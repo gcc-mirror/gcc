@@ -64,11 +64,11 @@ namespace __regex
 
       const _FwdIterT&
       _M_begin() const
-			{ return _M_b; }
+      { return _M_b; }
 
       const _FwdIterT&
       _M_end() const
-			{ return _M_e; }
+      { return _M_e; }
 
       bool
       _M_at_end() const
@@ -82,9 +82,9 @@ namespace __regex
 
   // Helper funxtion to create a cursor specialized for an iterator class.
   template<typename _FwdIterT>
-  	_SpecializedCursor<_FwdIterT>
-  	__cursor(const _FwdIterT& __b, const _FwdIterT __e)
-		{ return _SpecializedCursor<_FwdIterT>(__b, __e); }
+    inline _SpecializedCursor<_FwdIterT>
+    __cursor(const _FwdIterT& __b, const _FwdIterT __e)
+    { return _SpecializedCursor<_FwdIterT>(__b, __e); }
 
 } // namespace __regex
 } // namespace std

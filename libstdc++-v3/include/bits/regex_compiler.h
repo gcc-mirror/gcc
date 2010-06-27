@@ -34,7 +34,8 @@ namespace __regex
 {
   struct _Scanner_base
   {
-    typedef unsigned int _StateT; // FIXME: replace these constanst with constexpr
+    // FIXME: replace these constanst with constexpr
+    typedef unsigned int _StateT;
 
     static const _StateT _S_state_at_start    = 1 << 0;
     static const _StateT _S_state_in_brace    = 1 << 2;
@@ -153,92 +154,92 @@ namespace __regex
     _M_advance()
     {
       if (_M_current == _M_end)
-      {
-	_M_curToken = _S_token_eof;
-	return;
-      }
+	{
+	  _M_curToken = _S_token_eof;
+	  return;
+	}
 
       _CharT __c = *_M_current;
       if (_M_state & _S_state_in_bracket)
-      {
-	_M_scan_in_bracket();
-	return;
-      }
+	{
+	  _M_scan_in_bracket();
+	  return;
+	}
       if (_M_state & _S_state_in_brace)
-      {
-	_M_scan_in_brace();
-	return;
-      }
+	{
+	  _M_scan_in_brace();
+	  return;
+	}
       else if (_M_state & _S_state_at_start && __c == _M_ctype.widen('^'))
-      {
-	_M_curToken = _S_token_line_begin;
-	++_M_current;
-	return;
-      }
+	{
+	  _M_curToken = _S_token_line_begin;
+	  ++_M_current;
+	  return;
+	}
       else if (__c == _M_ctype.widen('$'))
-      {
-	_M_curToken = _S_token_line_end;
-	++_M_current;
-	return;
-      }
+	{
+	  _M_curToken = _S_token_line_end;
+	  ++_M_current;
+	  return;
+	}
       else if (__c == _M_ctype.widen('.'))
-      {
-	_M_curToken = _S_token_anychar;
-	++_M_current;
-	return;
-      }
+	{
+	  _M_curToken = _S_token_anychar;
+	  ++_M_current;
+	  return;
+	}
       else if (__c == _M_ctype.widen('*'))
-      {
-	_M_curToken = _S_token_closure0;
-	++_M_current;
-	return;
-      }
+	{
+	  _M_curToken = _S_token_closure0;
+	  ++_M_current;
+	  return;
+	}
       else if (__c == _M_ctype.widen('+'))
-      {
-	_M_curToken = _S_token_closure1;
-	++_M_current;
-	return;
-      }
+	{
+	  _M_curToken = _S_token_closure1;
+	  ++_M_current;
+	  return;
+	}
       else if (__c == _M_ctype.widen('|'))
-      {
-	_M_curToken = _S_token_or;
-	++_M_current;
-	return;
-      }
+	{
+	  _M_curToken = _S_token_or;
+	  ++_M_current;
+	  return;
+	}
       else if (__c == _M_ctype.widen('['))
-      {
-	_M_curToken = _S_token_bracket_begin;
-	_M_state |= (_S_state_in_bracket | _S_state_at_start);
-	++_M_current;
-	return;
-      }
+	{
+	  _M_curToken = _S_token_bracket_begin;
+	  _M_state |= (_S_state_in_bracket | _S_state_at_start);
+	  ++_M_current;
+	  return;
+	}
       else if (__c == _M_ctype.widen('\\'))
-      {
-	_M_eat_escape();
-	return;
-      }
+	{
+	  _M_eat_escape();
+	  return;
+	}
       else if (!(_M_flags & (regex_constants::basic | regex_constants::grep)))
-      {
-	if (__c == _M_ctype.widen('('))
 	{
-	  _M_curToken = _S_token_subexpr_begin;
-	  ++_M_current;
-	  return;
+	  if (__c == _M_ctype.widen('('))
+	    {
+	      _M_curToken = _S_token_subexpr_begin;
+	      ++_M_current;
+	      return;
+	    }
+	  else if (__c == _M_ctype.widen(')'))
+	    {
+	      _M_curToken = _S_token_subexpr_end;
+	      ++_M_current;
+	      return;
+	    }
+	  else if (__c == _M_ctype.widen('{'))
+	    {
+	      _M_curToken = _S_token_interval_begin;
+	      _M_state |= _S_state_in_brace;
+	      ++_M_current;
+	      return;
+	    }
 	}
-	else if (__c == _M_ctype.widen(')'))
-	{
-	  _M_curToken = _S_token_subexpr_end;
-	  ++_M_current;
-	  return;
-	}
-	else if (__c == _M_ctype.widen('{'))
-	{
-	  _M_curToken = _S_token_interval_begin;
-	  _M_state |= _S_state_in_brace;
-	  ++_M_current;
-	  return;
-	}
-      }
 
       _M_curToken = _S_token_ord_char;
       _M_curValue.assign(1, __c);
@@ -252,38 +253,39 @@ namespace __regex
     _M_scan_in_brace()
     {
       if (_M_ctype.is(_CtypeT::digit, *_M_current))
-      {
-	_M_curToken = _S_token_dup_count;
-	_M_curValue.assign(1, *_M_current);
-	++_M_current;
-	while (_M_current != _M_end && _M_ctype.is(_CtypeT::digit, *_M_current))
 	{
-	  _M_curValue += *_M_current;
+	  _M_curToken = _S_token_dup_count;
+	  _M_curValue.assign(1, *_M_current);
 	  ++_M_current;
+	  while (_M_current != _M_end
+		 && _M_ctype.is(_CtypeT::digit, *_M_current))
+	    {
+	      _M_curValue += *_M_current;
+	      ++_M_current;
+	    }
+	  return;
 	}
-	return;
-      }
       else if (*_M_current == _M_ctype.widen(','))
-      {
-	_M_curToken = _S_token_comma;
-	++_M_current;
-	return;
-      }
-      if (_M_flags & (regex_constants::basic | regex_constants::grep))
-      {
-	if (*_M_current == _M_ctype.widen('\\'))
-	{ _M_eat_escape(); }
-      }
-      else 
-      {
-	if (*_M_current == _M_ctype.widen('}'))
 	{
-	  _M_curToken = _S_token_interval_end;
-	  _M_state &= ~_S_state_in_brace;
+	  _M_curToken = _S_token_comma;
 	  ++_M_current;
 	  return;
 	}
-      }
+      if (_M_flags & (regex_constants::basic | regex_constants::grep))
+	{
+	  if (*_M_current == _M_ctype.widen('\\'))
+	    _M_eat_escape();
+	}
+      else 
+	{
+	  if (*_M_current == _M_ctype.widen('}'))
+	    {
+	      _M_curToken = _S_token_interval_end;
+	      _M_state &= ~_S_state_in_brace;
+	      ++_M_current;
+	      return;
+	    }
+	}
     }
 
   template<typename _InputIterator>
@@ -292,58 +294,58 @@ namespace __regex
     _M_scan_in_bracket()
     {
       if (_M_state & _S_state_at_start && *_M_current == _M_ctype.widen('^'))
-      {
-	_M_curToken = _S_token_inverse_class;
-	_M_state &= ~_S_state_at_start;
-	++_M_current;
-	return;
-      }
-      else if (*_M_current == _M_ctype.widen('['))
-      {
-	++_M_current;
-	if (_M_current == _M_end)
 	{
-	  _M_curToken = _S_token_eof;
-	  return;
-	}
-
-	if (*_M_current == _M_ctype.widen('.'))
-	{
-	  _M_curToken = _S_token_collsymbol;
-	  _M_eat_collsymbol();
-	  return;
-	}
-	else if (*_M_current == _M_ctype.widen(':'))
-	{
-	  _M_curToken = _S_token_char_class_name;
-	  _M_eat_charclass();
-	  return;
-	}
-	else if (*_M_current == _M_ctype.widen('='))
-	{
-	  _M_curToken = _S_token_equiv_class_name;
-	  _M_eat_equivclass();
-	  return;
-	}
-      }
-      else if (*_M_current == _M_ctype.widen('-'))
-      {
-	_M_curToken = _S_token_dash;
-	++_M_current;
-	return;
-      }
-      else if (*_M_current == _M_ctype.widen(']'))
-      {
-	if (!(_M_flags & regex_constants::ECMAScript)
-	 || !(_M_state & _S_state_at_start))
-	{
-	  // special case: only if  _not_ chr first after '[' or '[^' and if not
-	  // ECMAscript
-	  _M_curToken = _S_token_bracket_end;
+	  _M_curToken = _S_token_inverse_class;
+	  _M_state &= ~_S_state_at_start;
 	  ++_M_current;
 	  return;
 	}
-      }
+      else if (*_M_current == _M_ctype.widen('['))
+	{
+	  ++_M_current;
+	  if (_M_current == _M_end)
+	    {
+	      _M_curToken = _S_token_eof;
+	      return;
+	    }
+
+	  if (*_M_current == _M_ctype.widen('.'))
+	    {
+	      _M_curToken = _S_token_collsymbol;
+	      _M_eat_collsymbol();
+	      return;
+	    }
+	  else if (*_M_current == _M_ctype.widen(':'))
+	    {
+	      _M_curToken = _S_token_char_class_name;
+	      _M_eat_charclass();
+	      return;
+	    }
+	  else if (*_M_current == _M_ctype.widen('='))
+	    {
+	      _M_curToken = _S_token_equiv_class_name;
+	      _M_eat_equivclass();
+	      return;
+	    }
+	}
+      else if (*_M_current == _M_ctype.widen('-'))
+	{
+	  _M_curToken = _S_token_dash;
+	  ++_M_current;
+	  return;
+	}
+      else if (*_M_current == _M_ctype.widen(']'))
+	{
+	  if (!(_M_flags & regex_constants::ECMAScript)
+	      || !(_M_state & _S_state_at_start))
+	    {
+	      // special case: only if  _not_ chr first after
+	      // '[' or '[^' and if not ECMAscript
+	      _M_curToken = _S_token_bracket_end;
+	      ++_M_current;
+	      return;
+	    }
+	}
       _M_curToken = _S_token_collelem_single;
       _M_curValue.assign(1, *_M_current);
       ++_M_current;
@@ -356,108 +358,102 @@ namespace __regex
     {
       ++_M_current;
       if (_M_current == _M_end)
-      {
-	_M_curToken = _S_token_eof;
-	return;
-      }
-      _CharT __c = *_M_current;
-      ++_M_current;
-
-      if (__c == _M_ctype.widen('('))
-      {
-	if (!(_M_flags & (regex_constants::basic | regex_constants::grep)))
-	{
-	  _M_curToken = _S_token_ord_char;
-	  _M_curValue.assign(1, __c);
-	}
-	else
-	{
-	  _M_curToken = _S_token_subexpr_begin;
-	}
-      }
-      else if (__c == _M_ctype.widen(')'))
-      {
-	if (!(_M_flags & (regex_constants::basic | regex_constants::grep)))
-	{
-	  _M_curToken = _S_token_ord_char;
-	  _M_curValue.assign(1, __c);
-	}
-	else
-	{
-	  _M_curToken = _S_token_subexpr_end;
-	}
-      }
-      else if (__c == _M_ctype.widen('{'))
-      {
-	if (!(_M_flags & (regex_constants::basic | regex_constants::grep)))
-	{
-	  _M_curToken = _S_token_ord_char;
-	  _M_curValue.assign(1, __c);
-	}
-	else
-	{
-	  _M_curToken = _S_token_interval_begin;
-	  _M_state |= _S_state_in_brace;
-	}
-      }
-      else if (__c == _M_ctype.widen('}'))
-      {
-	if (!(_M_flags & (regex_constants::basic | regex_constants::grep)))
-	{
-	  _M_curToken = _S_token_ord_char;
-	  _M_curValue.assign(1, __c);
-	}
-	else
-	{
-	  if (!(_M_state && _S_state_in_brace))
-	    __throw_regex_error(regex_constants::error_badbrace);
-	  _M_state &= ~_S_state_in_brace;
-	  _M_curToken = _S_token_interval_end;
-	}
-      }
-      else if (__c == _M_ctype.widen('x'))
-      {
-	++_M_current;
-	if (_M_current == _M_end)
 	{
 	  _M_curToken = _S_token_eof;
 	  return;
 	}
-	if (_M_ctype.is(_CtypeT::digit, *_M_current))
+      _CharT __c = *_M_current;
+      ++_M_current;
+
+      if (__c == _M_ctype.widen('('))
 	{
-	  _M_curValue.assign(1, *_M_current);
+	  if (!(_M_flags & (regex_constants::basic | regex_constants::grep)))
+	    {
+	      _M_curToken = _S_token_ord_char;
+	      _M_curValue.assign(1, __c);
+	    }
+	  else
+	    _M_curToken = _S_token_subexpr_begin;
+	}
+      else if (__c == _M_ctype.widen(')'))
+	{
+	  if (!(_M_flags & (regex_constants::basic | regex_constants::grep)))
+	    {
+	      _M_curToken = _S_token_ord_char;
+	      _M_curValue.assign(1, __c);
+	    }
+	  else
+	    _M_curToken = _S_token_subexpr_end;
+	}
+      else if (__c == _M_ctype.widen('{'))
+	{
+	  if (!(_M_flags & (regex_constants::basic | regex_constants::grep)))
+	    {
+	      _M_curToken = _S_token_ord_char;
+	      _M_curValue.assign(1, __c);
+	    }
+	  else
+	    {
+	      _M_curToken = _S_token_interval_begin;
+	      _M_state |= _S_state_in_brace;
+	    }
+	}
+      else if (__c == _M_ctype.widen('}'))
+	{
+	  if (!(_M_flags & (regex_constants::basic | regex_constants::grep)))
+	    {
+	      _M_curToken = _S_token_ord_char;
+	      _M_curValue.assign(1, __c);
+	    }
+	  else
+	    {
+	      if (!(_M_state && _S_state_in_brace))
+		__throw_regex_error(regex_constants::error_badbrace);
+	      _M_state &= ~_S_state_in_brace;
+	      _M_curToken = _S_token_interval_end;
+	    }
+	}
+      else if (__c == _M_ctype.widen('x'))
+	{
 	  ++_M_current;
 	  if (_M_current == _M_end)
-	  {
-	    _M_curToken = _S_token_eof;
-	    return;
-	  }
+	    {
+	      _M_curToken = _S_token_eof;
+	      return;
+	    }
 	  if (_M_ctype.is(_CtypeT::digit, *_M_current))
-	  {
-	    _M_curValue += *_M_current;
-	    ++_M_current;
-	    return;
-	  }
+	    {
+	      _M_curValue.assign(1, *_M_current);
+	      ++_M_current;
+	      if (_M_current == _M_end)
+		{
+		  _M_curToken = _S_token_eof;
+		  return;
+		}
+	      if (_M_ctype.is(_CtypeT::digit, *_M_current))
+		{
+		  _M_curValue += *_M_current;
+		  ++_M_current;
+		  return;
+		}
+	    }
 	}
-      }
       else if (__c == _M_ctype.widen('^')
-	    || __c == _M_ctype.widen('.')
-	    || __c == _M_ctype.widen('*')
-	    || __c == _M_ctype.widen('$')
-	    || __c == _M_ctype.widen('\\'))
-      {
-	_M_curToken = _S_token_ord_char;
-	_M_curValue.assign(1, __c);
-      }
+	       || __c == _M_ctype.widen('.')
+	       || __c == _M_ctype.widen('*')
+	       || __c == _M_ctype.widen('$')
+	       || __c == _M_ctype.widen('\\'))
+	{
+	  _M_curToken = _S_token_ord_char;
+	  _M_curValue.assign(1, __c);
+	}
       else if (_M_ctype.is(_CtypeT::digit, __c))
-      {
-	_M_curToken = _S_token_backref;
-	_M_curValue.assign(1, __c);
-      }
+	{
+	  _M_curToken = _S_token_backref;
+	  _M_curValue.assign(1, __c);
+	}
       else
-      {
 	__throw_regex_error(regex_constants::error_escape);
-      }
     }
 
 
@@ -534,89 +530,89 @@ namespace __regex
       switch (_M_curToken)
       {
 	case _S_token_anychar:
-		ostr << "any-character\n";
-		break;
+	  ostr << "any-character\n";
+	  break;
 	case _S_token_backref:
-		ostr << "backref\n";
-		break;
+	  ostr << "backref\n";
+	  break;
 	case _S_token_bracket_begin:
-		ostr << "bracket-begin\n";
-		break;
+	  ostr << "bracket-begin\n";
+	  break;
 	case _S_token_bracket_end:
-		ostr << "bracket-end\n";
-		break;
+	  ostr << "bracket-end\n";
+	  break;
 	case _S_token_char_class_name:
-		ostr << "char-class-name \"" << _M_curValue << "\"\n";
-		break;
+	  ostr << "char-class-name \"" << _M_curValue << "\"\n";
+	  break;
 	case _S_token_closure0:
-		ostr << "closure0\n";
-		break;
+	  ostr << "closure0\n";
+	  break;
 	case _S_token_closure1:
-		ostr << "closure1\n";
-		break;
+	  ostr << "closure1\n";
+	  break;
 	case _S_token_collelem_multi:
-		ostr << "coll-elem-multi \"" << _M_curValue << "\"\n";
-		break;
+	  ostr << "coll-elem-multi \"" << _M_curValue << "\"\n";
+	  break;
 	case _S_token_collelem_single:
-		ostr << "coll-elem-single \"" << _M_curValue << "\"\n";
-		break;
+	  ostr << "coll-elem-single \"" << _M_curValue << "\"\n";
+	  break;
 	case _S_token_collsymbol:
-		ostr << "collsymbol \"" << _M_curValue << "\"\n";
-		break;
+	  ostr << "collsymbol \"" << _M_curValue << "\"\n";
+	  break;
 	case _S_token_comma:
-		ostr << "comma\n";
-		break;
+	  ostr << "comma\n";
+	  break;
 	case _S_token_dash:
-		ostr << "dash\n";
-		break;
+	  ostr << "dash\n";
+	  break;
 	case _S_token_dup_count:
-		ostr << "dup count: " << _M_curValue << "\n";
-		break;
+	  ostr << "dup count: " << _M_curValue << "\n";
+	  break;
 	case _S_token_eof:
-		ostr << "EOF\n";
-		break;
+	  ostr << "EOF\n";
+	  break;
 	case _S_token_equiv_class_name:
-		ostr << "equiv-class-name \"" << _M_curValue << "\"\n";
-		break;
+	  ostr << "equiv-class-name \"" << _M_curValue << "\"\n";
+	  break;
 	case _S_token_interval_begin:
-		ostr << "interval begin\n";
-		break;
+	  ostr << "interval begin\n";
+	  break;
 	case _S_token_interval_end:
-		ostr << "interval end\n";
-		break;
+	  ostr << "interval end\n";
+	  break;
 	case _S_token_line_begin:
-		ostr << "line begin\n";
-		break;
+	  ostr << "line begin\n";
+	  break;
 	case _S_token_line_end:
-		ostr << "line end\n";
-		break;
+	  ostr << "line end\n";
+	  break;
 	case _S_token_opt:
-		ostr << "opt\n";
-		break;
+	  ostr << "opt\n";
+	  break;
 	case _S_token_or:
-		ostr << "or\n";
-		break;
+	  ostr << "or\n";
+	  break;
 	case _S_token_ord_char:
-		ostr << "ordinary character: \"" << _M_value() << "\"\n";
-		break;
+	  ostr << "ordinary character: \"" << _M_value() << "\"\n";
+	  break;
 	case _S_token_quoted_char:
-		ostr << "quoted char\n";
-		break;
+	  ostr << "quoted char\n";
+	  break;
 	case _S_token_subexpr_begin:
-		ostr << "subexpr begin\n";
-		break;
+	  ostr << "subexpr begin\n";
+	  break;
 	case _S_token_subexpr_end:
-		ostr << "subexpr end\n";
-		break;
+	  ostr << "subexpr end\n";
+	  break;
 	case _S_token_word_begin:
-		ostr << "word begin\n";
-		break;
+	  ostr << "word begin\n";
+	  break;
 	case _S_token_word_end:
-		ostr << "word end\n";
-		break;
+	  ostr << "word end\n";
+	  break;
 	case _S_token_unknown:
-		ostr << "-- unknown token --\n";
-		break;
+	  ostr << "-- unknown token --\n";
+	  break;
       }
       return ostr;
     }
@@ -648,7 +644,7 @@ namespace __regex
 
       // accepts a specific token or returns false.
       bool
-      _M_match_token(_TokenT token);
+      _M_match_token(_TokenT __token);
 
       void
       _M_disjunction();
@@ -727,12 +723,12 @@ namespace __regex
                         bind(_Start(0), _1, _2)));
       _M_disjunction();
       if (!_M_stack.empty())
-      {
-	__r._M_append(_M_stack.top());
-	_M_stack.pop();
-      }
-      __r._M_append(_M_state_store._M_insert_subexpr_end(0,
-                        bind(_End(0), _1, _2)));
+	{
+	  __r._M_append(_M_stack.top());
+	  _M_stack.pop();
+	}
+      __r._M_append(_M_state_store.
+		    _M_insert_subexpr_end(0, bind(_End(0), _1, _2)));
       __r._M_append(_M_state_store._M_insert_accept());
     }
 
@@ -742,11 +738,11 @@ namespace __regex
     _M_match_token(_Compiler<_InIter, _TraitsT>::_TokenT token)
     { 
       if (token == _M_scanner._M_token())
-      {
-	_M_cur_value = _M_scanner._M_value();
-	_M_scanner._M_advance();
-	return true;
-      }
+	{
+	  _M_cur_value = _M_scanner._M_value();
+	  _M_scanner._M_advance();
+	  return true;
+	}
       return false;
     }
 
@@ -757,12 +753,12 @@ namespace __regex
     {
       this->_M_alternative();
       if (_M_match_token(_ScannerT::_S_token_or))
-      {
-	_StateSeq __alt1 = _M_stack.top(); _M_stack.pop();
-	this->_M_disjunction();
-	_StateSeq __alt2 = _M_stack.top(); _M_stack.pop();
-	_M_stack.push(_StateSeq(__alt1, __alt2));
-      }
+	{
+	  _StateSeq __alt1 = _M_stack.top(); _M_stack.pop();
+	  this->_M_disjunction();
+	  _StateSeq __alt2 = _M_stack.top(); _M_stack.pop();
+	  _M_stack.push(_StateSeq(__alt1, __alt2));
+	}
     }
 
   template<typename _InIter, typename _TraitsT>
@@ -771,17 +767,17 @@ namespace __regex
     _M_alternative()
     {
       if (this->_M_term())
-      {
-	_StateSeq __re = _M_stack.top(); _M_stack.pop();
-	this->_M_alternative();
-	if (!_M_stack.empty())
 	{
-	  __re._M_append(_M_stack.top());
-	  _M_stack.pop();
+	  _StateSeq __re = _M_stack.top(); _M_stack.pop();
+	  this->_M_alternative();
+	  if (!_M_stack.empty())
+	    {
+	      __re._M_append(_M_stack.top());
+	      _M_stack.pop();
+	    }
+	  _M_stack.push(__re);
+	  return true;
 	}
-	_M_stack.push(__re);
-	return true;
-      }
       return false;
     }
 
@@ -793,10 +789,10 @@ namespace __regex
       if (this->_M_assertion())
 	return true;
       if (this->_M_atom())
-      {
-	this->_M_quantifier();
-	return true;
-      }
+	{
+	  this->_M_quantifier();
+	  return true;
+	}
       return false;
     }
 
@@ -806,25 +802,25 @@ namespace __regex
     _M_assertion()
     {
       if (_M_match_token(_ScannerT::_S_token_line_begin))
-      {
-	// __m.push(_Matcher::_S_opcode_line_begin);
-	return true;
-      }
+	{
+	  // __m.push(_Matcher::_S_opcode_line_begin);
+	  return true;
+	}
       if (_M_match_token(_ScannerT::_S_token_line_end))
-      {
-	// __m.push(_Matcher::_S_opcode_line_end);
-	return true;
-      }
+	{
+	  // __m.push(_Matcher::_S_opcode_line_end);
+	  return true;
+	}
       if (_M_match_token(_ScannerT::_S_token_word_begin))
-      {
-	// __m.push(_Matcher::_S_opcode_word_begin);
-	return true;
-      }
+	{
+	  // __m.push(_Matcher::_S_opcode_word_begin);
+	  return true;
+	}
       if (_M_match_token(_ScannerT::_S_token_word_end))
-      {
-	// __m.push(_Matcher::_S_opcode_word_end);
-	return true;
-      }
+	{
+	  // __m.push(_Matcher::_S_opcode_word_end);
+	  return true;
+	}
       return false;
     }
 
@@ -834,69 +830,71 @@ namespace __regex
     _M_quantifier()
     {
       if (_M_match_token(_ScannerT::_S_token_closure0))
-      {
-	if (_M_stack.empty())
-	  __throw_regex_error(regex_constants::error_badrepeat);
-	_StateSeq __r(_M_stack.top(), -1);
-	__r._M_append(__r._M_front());
-	_M_stack.pop();
-	_M_stack.push(__r);
-	return true;
-      }
+	{
+	  if (_M_stack.empty())
+	    __throw_regex_error(regex_constants::error_badrepeat);
+	  _StateSeq __r(_M_stack.top(), -1);
+	  __r._M_append(__r._M_front());
+	  _M_stack.pop();
+	  _M_stack.push(__r);
+	  return true;
+	}
       if (_M_match_token(_ScannerT::_S_token_closure1))
-      {
-	if (_M_stack.empty())
-	  __throw_regex_error(regex_constants::error_badrepeat);
-	_StateSeq __r(_M_state_store,
-		       _M_state_store._M_insert_alt(_S_invalid_state_id,
-					    _M_stack.top()._M_front()));
-	_M_stack.top()._M_append(__r);
-	return true;
-      }
+	{
+	  if (_M_stack.empty())
+	    __throw_regex_error(regex_constants::error_badrepeat);
+	  _StateSeq __r(_M_state_store,
+			_M_state_store.
+			_M_insert_alt(_S_invalid_state_id,
+				      _M_stack.top()._M_front()));
+	  _M_stack.top()._M_append(__r);
+	  return true;
+	}
       if (_M_match_token(_ScannerT::_S_token_opt))
-      {
-	if (_M_stack.empty())
+	{
+	  if (_M_stack.empty())
 	  __throw_regex_error(regex_constants::error_badrepeat);
-	_StateSeq __r(_M_stack.top(), -1);
-	_M_stack.pop();
-	_M_stack.push(__r);
-	return true;
-      }
+	  _StateSeq __r(_M_stack.top(), -1);
+	  _M_stack.pop();
+	  _M_stack.push(__r);
+	  return true;
+	}
       if (_M_match_token(_ScannerT::_S_token_interval_begin))
-      {
-	if (_M_stack.empty())
-	  __throw_regex_error(regex_constants::error_badrepeat);
-	if (!_M_match_token(_ScannerT::_S_token_dup_count))
-	  __throw_regex_error(regex_constants::error_badbrace);
-	_StateSeq __r(_M_stack.top());
-	int __min_rep = _M_cur_int_value(10);
-	for (int __i = 1; __i < __min_rep; ++__i)
-	  _M_stack.top()._M_append(__r._M_clone()); 
-	if (_M_match_token(_ScannerT::_S_token_comma))
-	  if (_M_match_token(_ScannerT::_S_token_dup_count))
-	  {
-	    int __n = _M_cur_int_value(10) - __min_rep;
-	    if (__n < 0)
-	      __throw_regex_error(regex_constants::error_badbrace);
-	    for (int __i = 0; __i < __n; ++__i)
-	    {
-	      _StateSeq __r(_M_state_store,
-			    _M_state_store._M_insert_alt(_S_invalid_state_id,
-						  _M_stack.top()._M_front()));
-	      _M_stack.top()._M_append(__r);
-	    }
-	  }
-	  else
-	  {
-	    _StateSeq __r(_M_stack.top(), -1);
-	    __r._M_push_back(__r._M_front());
-	    _M_stack.pop();
-	    _M_stack.push(__r);
-	  }
-	if (!_M_match_token(_ScannerT::_S_token_interval_end))
-	  __throw_regex_error(regex_constants::error_brace);
-	return true;
-      }
+	{
+	  if (_M_stack.empty())
+	    __throw_regex_error(regex_constants::error_badrepeat);
+	  if (!_M_match_token(_ScannerT::_S_token_dup_count))
+	    __throw_regex_error(regex_constants::error_badbrace);
+	  _StateSeq __r(_M_stack.top());
+	  int __min_rep = _M_cur_int_value(10);
+	  for (int __i = 1; __i < __min_rep; ++__i)
+	    _M_stack.top()._M_append(__r._M_clone()); 
+	  if (_M_match_token(_ScannerT::_S_token_comma))
+	    if (_M_match_token(_ScannerT::_S_token_dup_count))
+	      {
+		int __n = _M_cur_int_value(10) - __min_rep;
+		if (__n < 0)
+		  __throw_regex_error(regex_constants::error_badbrace);
+		for (int __i = 0; __i < __n; ++__i)
+		  {
+		    _StateSeq __r(_M_state_store,
+				  _M_state_store.
+				  _M_insert_alt(_S_invalid_state_id,
+						_M_stack.top()._M_front()));
+		    _M_stack.top()._M_append(__r);
+		  }
+	      }
+	    else
+	      {
+		_StateSeq __r(_M_stack.top(), -1);
+		__r._M_push_back(__r._M_front());
+		_M_stack.pop();
+		_M_stack.push(__r);
+	      }
+	  if (!_M_match_token(_ScannerT::_S_token_interval_end))
+	    __throw_regex_error(regex_constants::error_brace);
+	  return true;
+	}
       return false;
     }
 
@@ -913,49 +911,54 @@ namespace __regex
       typedef _EndTagger<_InIter, _TraitsT> _End;
 
       if (_M_match_token(_ScannerT::_S_token_anychar))
-      {
-	_M_stack.push(_StateSeq(_M_state_store,
-	     _M_state_store._M_insert_matcher(bind(_AnyMatcher, _1))));
-	return true;
-      }
-      if (_M_match_token(_ScannerT::_S_token_ord_char))
-      {
-	_M_stack.push(_StateSeq(_M_state_store,
-	                        _M_state_store._M_insert_matcher(
-	                        bind(_CMatcher(_M_cur_value[0], _M_traits), _1))));
-	return true;
-      }
-      if (_M_match_token(_ScannerT::_S_token_quoted_char))
-      {
-	// note that in the ECMA grammar, this case covers backrefs.
-	_M_stack.push(_StateSeq(_M_state_store,
-	                        _M_state_store._M_insert_matcher(
-	                        bind(_CMatcher(_M_cur_value[0], _M_traits), _1))));
-	return true;
-      }
-      if (_M_match_token(_ScannerT::_S_token_backref))
-      {
-	// __m.push(_Matcher::_S_opcode_ordchar, _M_cur_value);
-	return true;
-      }
-      if (_M_match_token(_ScannerT::_S_token_subexpr_begin))
-      {
-	int __mark = _M_state_store._M_sub_count();
-	_StateSeq __r(_M_state_store,
-		      _M_state_store._M_insert_subexpr_begin(bind(_Start(__mark), _1, _2)));
-	this->_M_disjunction();
-	if (!_M_match_token(_ScannerT::_S_token_subexpr_end))
-	  __throw_regex_error(regex_constants::error_paren);
-	if (!_M_stack.empty())
 	{
-	  __r._M_append(_M_stack.top());
-	  _M_stack.pop();
+	  _M_stack.push(_StateSeq(_M_state_store,
+				  _M_state_store.
+				  _M_insert_matcher(bind(_AnyMatcher, _1))));
+	  return true;
 	}
-	__r._M_append(_M_state_store._M_insert_subexpr_end(__mark,
-	                  bind(_End(__mark), _1, _2)));
-	_M_stack.push(__r);
-	return true;
-      }
+      if (_M_match_token(_ScannerT::_S_token_ord_char))
+	{
+	  _M_stack.push(_StateSeq
+			(_M_state_store, _M_state_store. 
+			 _M_insert_matcher
+			 (bind(_CMatcher(_M_cur_value[0], _M_traits), _1))));
+	  return true;
+	}
+      if (_M_match_token(_ScannerT::_S_token_quoted_char))
+	{
+	  // note that in the ECMA grammar, this case covers backrefs.
+	  _M_stack.push(_StateSeq(_M_state_store,
+				  _M_state_store.
+				  _M_insert_matcher
+				  (bind(_CMatcher(_M_cur_value[0], _M_traits),
+					_1))));
+	  return true;
+	}
+      if (_M_match_token(_ScannerT::_S_token_backref))
+	{
+	  // __m.push(_Matcher::_S_opcode_ordchar, _M_cur_value);
+	  return true;
+	}
+      if (_M_match_token(_ScannerT::_S_token_subexpr_begin))
+	{
+	  int __mark = _M_state_store._M_sub_count();
+	  _StateSeq __r(_M_state_store,
+			_M_state_store.
+			_M_insert_subexpr_begin(bind(_Start(__mark), _1, _2)));
+	  this->_M_disjunction();
+	  if (!_M_match_token(_ScannerT::_S_token_subexpr_end))
+	    __throw_regex_error(regex_constants::error_paren);
+	  if (!_M_stack.empty())
+	    {
+	      __r._M_append(_M_stack.top());
+	      _M_stack.pop();
+	    }
+	  __r._M_append(_M_state_store._M_insert_subexpr_end
+			(__mark, bind(_End(__mark), _1, _2)));
+	  _M_stack.push(__r);
+	  return true;
+	}
       return _M_bracket_expression();
     }
 
@@ -967,17 +970,17 @@ namespace __regex
       using std::bind;
       using std::placeholders::_1;
       if (_M_match_token(_ScannerT::_S_token_bracket_begin))
-      {
-	_RMatcherT __matcher(_M_match_token(_ScannerT::_S_token_line_begin),
-	                     _M_traits);
-	if (!_M_bracket_list(__matcher)
-	 || !_M_match_token(_ScannerT::_S_token_bracket_end))
-	  __throw_regex_error(regex_constants::error_brack);
-	_M_stack.push(_StateSeq(_M_state_store,
-	                        _M_state_store._M_insert_matcher(
-	                            bind(__matcher, _1))));
-	return true;
-      }
+	{
+	  _RMatcherT __matcher(_M_match_token(_ScannerT::_S_token_line_begin),
+			       _M_traits);
+	  if (!_M_bracket_list(__matcher)
+	      || !_M_match_token(_ScannerT::_S_token_bracket_end))
+	    __throw_regex_error(regex_constants::error_brack);
+	  _M_stack.push(_StateSeq(_M_state_store,
+				  _M_state_store._M_insert_matcher
+				  (bind(__matcher, _1))));
+	  return true;
+	}
       return false;
     }
 
@@ -989,11 +992,11 @@ namespace __regex
     _M_bracket_list(_RMatcherT& __matcher)
     {
       if (_M_follow_list(__matcher))
-      {
-	if (_M_match_token(_ScannerT::_S_token_dash))
-	  __matcher._M_add_char(_M_cur_value[0]);
-	return true;
-      }
+	{
+	  if (_M_match_token(_ScannerT::_S_token_dash))
+	    __matcher._M_add_char(_M_cur_value[0]);
+	  return true;
+	}
       return false;
     }
 
@@ -1018,10 +1021,11 @@ namespace __regex
     _Compiler<_InIter, _TraitsT>::
     _M_expression_term(_RMatcherT& __matcher)
     {
-      return _M_collating_symbol(__matcher)
-	  || _M_character_class(__matcher)
-	  || _M_equivalence_class(__matcher)
-	  || (_M_start_range(__matcher) && _M_range_expression(__matcher));
+      return (_M_collating_symbol(__matcher)
+	      || _M_character_class(__matcher)
+	      || _M_equivalence_class(__matcher)
+	      || (_M_start_range(__matcher)
+		  && _M_range_expression(__matcher)));
     }
 
   template<typename _InIter, typename _TraitsT>
@@ -1048,15 +1052,15 @@ namespace __regex
     _M_collating_symbol(_RMatcherT& __matcher)
     {
       if (_M_match_token(_ScannerT::_S_token_collelem_single))
-      {
-	__matcher._M_add_char(_M_cur_value[0]);
-	return true;
-      }
+	{
+	  __matcher._M_add_char(_M_cur_value[0]);
+	  return true;
+	}
       if (_M_match_token(_ScannerT::_S_token_collsymbol))
-      {
-	__matcher._M_add_collating_element(_M_cur_value);
-	return true;
-      }
+	{
+	  __matcher._M_add_collating_element(_M_cur_value);
+	  return true;
+	}
       return false;
     }
 
@@ -1066,10 +1070,10 @@ namespace __regex
     _M_equivalence_class(_RMatcherT& __matcher)
     {
       if (_M_match_token(_ScannerT::_S_token_equiv_class_name))
-      {
-	__matcher._M_add_equivalence_class(_M_cur_value);
-	return true;
-      }
+	{
+	  __matcher._M_add_equivalence_class(_M_cur_value);
+	  return true;
+	}
       return false;
     }
 
@@ -1079,10 +1083,10 @@ namespace __regex
     _M_character_class(_RMatcherT& __matcher)
     {
       if (_M_match_token(_ScannerT::_S_token_char_class_name))
-      {
-	__matcher._M_add_character_class(_M_cur_value);
-	return true;
-      }
+	{
+	  __matcher._M_add_character_class(_M_cur_value);
+	  return true;
+	}
       return false;
     }
 
