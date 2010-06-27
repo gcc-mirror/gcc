@@ -1,3 +1,35 @@
+2010-06-27  Anatoly Sokolov  <aesok@post.ru>
+
+	* target.h (struct gcc_target): Add register_move_cost field.
+	* target-def.h (TARGET_REGISTER_MOVE_COST): New.
+	(TARGET_INITIALIZER): Use TARGET_REGISTER_MOVE_COST.
+	* targhooks.c (default_register_move_cost): New function.
+	* targhooks.h (default_register_move_cost): Declare function.
+	* defaults.h (REGISTER_MOVE_COST): Delete.
+	* ira-int.h (ira_register_move_cost): Update comment.
+	* ira.c: (ira_register_move_cost): Update comment.
+	* reload.h (register_move_cost): Declare.
+	* reginfo.c (register_move_cost): New function.
+	(move_cost): Update comment.
+	(init_move_cost, memory_move_secondary_cost): Replace
+	REGISTER_MOVE_COST with register_move_cost.
+	* postreload.c (reload_cse_simplify_set): (Ditto.).
+	* reload.c (find_valid_class, find_reloads): (Ditto.).
+	* reload1.c (choose_reload_regs): (Ditto.).
+	* doc/tm.texi (TARGET_REGISTER_MOVE_COST): New.
+	(REGISTER_MOVE_COST, TARGET_MEMORY_MOVE_COST): Update documentation.
+	* doc/md.texi (can_create_pseudo_p): Update documentation.
+
+	* config/i386/i386.h (MEMORY_MOVE_COST): Remove macro.
+	* config/i386/i386-protos.h (int ix86_memory_move_cost): Remove.
+	* config/i386/i386.h (ix86_memory_move_cost): Make static.
+	(TARGET_MEMORY_MOVE_COST): Define.
+
+	* config/ia64/ia64.h (MEMORY_MOVE_COST): Remove macro.
+	* config/ia64/ia64-protos.h (int ia64_memory_move_cost): Remove.
+	* config/ia64/ia64.h (ia64_memory_move_cost): Make static.
+	(TARGET_MEMORY_MOVE_COST): Define.
+
 2010-06-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44683

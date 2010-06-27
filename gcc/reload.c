@@ -688,7 +688,7 @@ find_valid_class (enum machine_mode outer ATTRIBUTE_UNUSED,
 
       if (bad || !good)
 	continue;
-      cost = REGISTER_MOVE_COST (outer, (enum reg_class) rclass, dest_class);
+      cost = register_move_cost (outer, (enum reg_class) rclass, dest_class);
 
       if ((reg_class_size[rclass] > best_size
 	   && (best_cost < 0 || best_cost >= cost))
@@ -696,7 +696,7 @@ find_valid_class (enum machine_mode outer ATTRIBUTE_UNUSED,
 	{
 	  best_class = (enum reg_class) rclass;
 	  best_size = reg_class_size[rclass];
-	  best_cost = REGISTER_MOVE_COST (outer, (enum reg_class) rclass,
+	  best_cost = register_move_cost (outer, (enum reg_class) rclass,
 					  dest_class);
 	}
     }
@@ -2651,7 +2651,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
       && REGNO (SET_DEST (body)) < FIRST_PSEUDO_REGISTER
       && REG_P (SET_SRC (body))
       && REGNO (SET_SRC (body)) < FIRST_PSEUDO_REGISTER
-      && REGISTER_MOVE_COST (GET_MODE (SET_SRC (body)),
+      && register_move_cost (GET_MODE (SET_SRC (body)),
 			     REGNO_REG_CLASS (REGNO (SET_SRC (body))),
 			     REGNO_REG_CLASS (REGNO (SET_DEST (body)))) == 2)
     return 0;

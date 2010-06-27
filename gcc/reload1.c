@@ -6496,7 +6496,7 @@ choose_reload_regs (struct insn_chain *chain)
 			     register, we might use it for reload_override_in,
 			     if copying it to the desired class is cheap
 			     enough.  */
-			  || ((REGISTER_MOVE_COST (mode, last_class, rclass)
+			  || ((register_move_cost (mode, last_class, rclass)
 			       < memory_move_cost (mode, rclass, true))
 			      && (secondary_reload_class (1, rclass, mode,
 							  last_reg)

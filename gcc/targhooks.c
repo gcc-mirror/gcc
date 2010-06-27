@@ -1127,4 +1127,19 @@ default_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 #endif
 }
 
+/* Compute cost of moving data from a register of class FROM to one of
+   TO, using MODE.  */
+
+int
+default_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+                            enum reg_class from ATTRIBUTE_UNUSED,
+                            enum reg_class to ATTRIBUTE_UNUSED)
+{
+#ifndef REGISTER_MOVE_COST
+  return 2;
+#else
+  return REGISTER_MOVE_COST (mode, from, to);
+#endif
+}
+
 #include "gt-targhooks.h"

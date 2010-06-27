@@ -140,3 +140,6 @@ extern rtx default_addr_space_convert (rtx, tree, tree);
 extern unsigned int default_case_values_threshold (void);
 extern bool default_have_conditional_execution (void);
 extern int default_memory_move_cost (enum machine_mode, enum reg_class, bool);
+extern int default_register_move_cost (enum machine_mode, enum reg_class,
+				       enum reg_class);
+

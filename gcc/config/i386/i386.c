@@ -25656,7 +25656,7 @@ ix86_memory_move_cost (enum machine_mode mode, enum reg_class regclass,
    on some machines it is expensive to move between registers if they are not
    general registers.  */
 
-int
+static int
 ix86_register_move_cost (enum machine_mode mode, enum reg_class class1,
 			 enum reg_class class2)
 {
@@ -30828,6 +30828,8 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION ix86_handle_option
 
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST ix86_register_move_cost
 #undef TARGET_MEMORY_MOVE_COST
 #define TARGET_MEMORY_MOVE_COST ix86_memory_move_cost
 #undef TARGET_RTX_COSTS
