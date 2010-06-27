@@ -1764,7 +1764,7 @@ record_edge_info (basic_block bb)
               edge_info = allocate_edge_info (false_edge);
               record_conditions (edge_info, inverted, cond);
 
-              if (code == NE_EXPR)
+              if (TREE_CODE (inverted) == EQ_EXPR)
                 {
                   edge_info->lhs = op1;
                   edge_info->rhs = op0;
@@ -1791,7 +1791,7 @@ record_edge_info (basic_block bb)
               edge_info = allocate_edge_info (false_edge);
               record_conditions (edge_info, inverted, cond);
 
-              if (TREE_CODE (cond) == NE_EXPR)
+              if (TREE_CODE (inverted) == EQ_EXPR)
                 {
                   edge_info->lhs = op0;
                   edge_info->rhs = op1;

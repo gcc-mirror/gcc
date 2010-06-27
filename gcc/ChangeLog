@@ -1,3 +1,9 @@
+2010-06-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44683
+	* tree-ssa-dom.c (record_edge_info): Record equivalences for the
+	false edge from the inverted condition.
+
 2010-06-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/39690
