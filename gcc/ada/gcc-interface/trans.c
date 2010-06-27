@@ -33,6 +33,7 @@
 #include "output.h"
 #include "libfuncs.h"	/* For set_stack_check_libfunc.  */
 #include "tree-iterator.h"
+#include "tree-flow.h"
 #include "gimple.h"
 
 #include "ada.h"
@@ -167,9 +168,6 @@ static GTY(()) VEC(tree,gc) *gnu_return_label_stack;
 
 /* Stack of LOOP_STMT nodes.  */
 static GTY(()) VEC(tree,gc) *gnu_loop_label_stack;
-
-/* Stack of labels for switch statements.  */
-static GTY(()) VEC(tree,gc) *gnu_switch_label_stack;
 
 /* The stacks for N_{Push,Pop}_*_Label.  */
 static GTY(()) VEC(tree,gc) *gnu_constraint_error_label_stack;
@@ -1908,9 +1906,9 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 static tree
 Case_Statement_to_gnu (Node_Id gnat_node)
 {
-  tree gnu_result;
-  tree gnu_expr;
+  tree gnu_result, gnu_expr, gnu_label;
   Node_Id gnat_when;
+  bool may_fallthru = false;
 
   gnu_expr = gnat_to_gnu (Expression (gnat_node));
   gnu_expr = convert (get_base_type (TREE_TYPE (gnu_expr)), gnu_expr);
@@ -1933,8 +1931,7 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 
   /* We build a SWITCH_EXPR that contains the code with interspersed
      CASE_LABEL_EXPRs for each label.  */
-  VEC_safe_push (tree, gc, gnu_switch_label_stack,
-		 create_artificial_label (input_location));
+  gnu_label = create_artificial_label (input_location);
   start_stmt_group ();
 
   for (gnat_when = First_Non_Pragma (Alternatives (gnat_node));
@@ -2014,18 +2011,22 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 	 containing the Case statement.  */
       if (choices_added_p)
 	{
-	  add_stmt (build_stmt_group (Statements (gnat_when), true));
-	  add_stmt (build1 (GOTO_EXPR, void_type_node,
-			    VEC_last (tree, gnu_switch_label_stack)));
+	  tree group = build_stmt_group (Statements (gnat_when), true);
+	  bool group_may_fallthru = block_may_fallthru (group);
+	  add_stmt (group);
+	  if (group_may_fallthru)
+	    {
+	      add_stmt (build1 (GOTO_EXPR, void_type_node, gnu_label));
+	      may_fallthru = true;
+	    }
 	}
     }
 
-  /* Now emit a definition of the label all the cases branched to.  */
-  add_stmt (build1 (LABEL_EXPR, void_type_node,
-		    VEC_last (tree, gnu_switch_label_stack)));
+  /* Now emit a definition of the label the cases branche to, if any.  */
+  if (may_fallthru)
+    add_stmt (build1 (LABEL_EXPR, void_type_node, gnu_label));
   gnu_result = build3 (SWITCH_EXPR, TREE_TYPE (gnu_expr), gnu_expr,
 		       end_stmt_group (), NULL_TREE);
-  VEC_pop (tree, gnu_switch_label_stack);
 
   return gnu_result;
 }
