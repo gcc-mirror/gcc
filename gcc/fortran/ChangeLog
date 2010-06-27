@@ -1,3 +1,15 @@
+2010-06-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/43841
+	PR fortran/43843
+	* trans-expr.c (gfc_conv_expr): Supply an address expression for
+	GFC_SS_REFERENCE.
+	(gfc_conv_expr_reference): Call gfc_conv_expr and return for
+	GFC_SS_REFERENCE.
+	* trans-array.c (gfc_add_loop_ss_code): Store the value rather
+	than the address of a GFC_SS_REFERENCE.
+	* trans.h : Change comment on GFC_SS_REFERENCE. 
+
 2010-06-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44556

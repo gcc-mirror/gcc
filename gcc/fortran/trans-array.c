@@ -2046,9 +2046,10 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript,
 	  break;
 
 	case GFC_SS_REFERENCE:
-	  /* Scalar reference.  Evaluate this now.  */
+	  /* Scalar argument to elemental procedure.  Evaluate this
+	     now.  */
 	  gfc_init_se (&se, NULL);
-	  gfc_conv_expr_reference (&se, ss->expr);
+	  gfc_conv_expr (&se, ss->expr);
 	  gfc_add_block_to_block (&loop->pre, &se.pre);
 	  gfc_add_block_to_block (&loop->post, &se.post);
 
