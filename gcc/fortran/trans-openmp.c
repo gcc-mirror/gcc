@@ -1357,12 +1357,10 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
      present for this loop.  */
   cycle_label = gfc_build_label_decl (NULL_TREE);
 
-  /* Put these labels where they can be found later. We put the
-     labels in a TREE_LIST node (because TREE_CHAIN is already
-     used). cycle_label goes in TREE_PURPOSE (backend_decl), exit
-     label in TREE_VALUE (backend_decl).  */
+  /* Put these labels where they can be found later.  */
 
-  code->block->backend_decl = tree_cons (cycle_label, NULL, NULL);
+  code->block->cycle_label = cycle_label;
+  code->block->exit_label = NULL_TREE;
 
   /* Main loop body.  */
   tmp = gfc_trans_omp_code (code->block->next, true);

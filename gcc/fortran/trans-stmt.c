@@ -928,7 +928,8 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
   exit_label = gfc_build_label_decl (NULL_TREE);
 
   /* Put the labels where they can be found later. See gfc_trans_do().  */
-  code->block->backend_decl = tree_cons (cycle_label, exit_label, NULL);
+  code->block->cycle_label = cycle_label;
+  code->block->exit_label = exit_label;
 
   /* Loop body.  */
   gfc_start_block (&body);
@@ -1196,12 +1197,10 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
   /* Loop body.  */
   gfc_start_block (&body);
 
-  /* Put these labels where they can be found later. We put the
-     labels in a TREE_LIST node (because TREE_CHAIN is already
-     used). cycle_label goes in TREE_PURPOSE (backend_decl), exit
-     label in TREE_VALUE (backend_decl).  */
+  /* Put these labels where they can be found later.  */
 
-  code->block->backend_decl = tree_cons (cycle_label, exit_label, NULL);
+  code->block->cycle_label = cycle_label;
+  code->block->exit_label = exit_label;
 
   /* Main loop body.  */
   tmp = gfc_trans_code_cond (code->block->next, exit_cond);
@@ -1305,7 +1304,8 @@ gfc_trans_do_while (gfc_code * code)
   exit_label = gfc_build_label_decl (NULL_TREE);
 
   /* Put the labels where they can be found later. See gfc_trans_do().  */
-  code->block->backend_decl = tree_cons (cycle_label, exit_label, NULL);
+  code->block->cycle_label = cycle_label;
+  code->block->exit_label = exit_label;
 
   /* Create a GIMPLE version of the exit condition.  */
   gfc_init_se (&cond, NULL);
@@ -4080,7 +4080,7 @@ gfc_trans_cycle (gfc_code * code)
 {
   tree cycle_label;
 
-  cycle_label = TREE_PURPOSE (code->ext.whichloop->backend_decl);
+  cycle_label = code->ext.whichloop->cycle_label;
   TREE_USED (cycle_label) = 1;
   return build1_v (GOTO_EXPR, cycle_label);
 }
@@ -4095,7 +4095,7 @@ gfc_trans_exit (gfc_code * code)
 {
   tree exit_label;
 
-  exit_label = TREE_VALUE (code->ext.whichloop->backend_decl);
+  exit_label = code->ext.whichloop->exit_label;
   TREE_USED (exit_label) = 1;
   return build1_v (GOTO_EXPR, exit_label);
 }

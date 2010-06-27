@@ -2077,9 +2077,9 @@ typedef struct gfc_code
   }
   ext;		/* Points to additional structures required by statement */
 
-  /* Backend_decl is used for cycle and break labels in do loops, and
-     probably for other constructs as well, once we translate them.  */
-  tree backend_decl;
+  /* Cycle and break labels in do loops.  */
+  tree cycle_label;
+  tree exit_label;
 }
 gfc_code;
 

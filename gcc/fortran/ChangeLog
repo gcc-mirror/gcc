@@ -1,3 +1,15 @@
+2010-06-27  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gfortran.h (gfc_code): Split backend_decl field into cycle_label
+	and exit_label fields.
+	* trans-openmp.c (gfc_trans_omp_do): Assign to new fields
+	individually.
+	* trans-stmt.c (gfc_trans_simple_do): Likewise.
+	(gfc_trans_do): Likewise.
+	(gfc_trans_do_while): Likewise.
+	(gfc_trans_cycle): Use cycle_label directly.
+	(gfc_trans_exit): Use exit_label directly.
+
 2010-06-27  Daniel Kraft  <d@domob.eu>
 
 	* dump-parse-tree.c (show_symbol): Dump target-expression for
