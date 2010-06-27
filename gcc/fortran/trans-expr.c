@@ -3903,6 +3903,8 @@ gfc_conv_expr (gfc_se * se, gfc_expr * expr)
       /* Substitute a scalar expression evaluated outside the scalarization
          loop.  */
       se->expr = se->ss->data.scalar.expr;
+      if (se->ss->type == GFC_SS_REFERENCE)
+	se->expr = gfc_build_addr_expr (NULL_TREE, se->expr);
       se->string_length = se->ss->string_length;
       gfc_advance_se_ss_chain (se);
       return;
@@ -4023,9 +4025,9 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
   if (se->ss && se->ss->expr == expr
       && se->ss->type == GFC_SS_REFERENCE)
     {
-      se->expr = se->ss->data.scalar.expr;
-      se->string_length = se->ss->string_length;
-      gfc_advance_se_ss_chain (se);
+      /* Returns a reference to the scalar evaluated outside the loop
+	 for this case.  */
+      gfc_conv_expr (se, expr);
       return;
     }
 
