@@ -981,10 +981,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #endif /* old constraint mechanism in use */
 
-#ifndef REGISTER_MOVE_COST
-#define REGISTER_MOVE_COST(m, x, y) 2
-#endif
-
 /* Determine whether the entire c99 runtime
    is present in the runtime library.  */
 #ifndef TARGET_C99_FUNCTIONS

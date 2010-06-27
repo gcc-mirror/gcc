@@ -724,7 +724,7 @@ minmax_set_iter_next (minmax_set_iterator *i)
 extern HARD_REG_SET ira_reg_mode_hard_regset
                     [FIRST_PSEUDO_REGISTER][NUM_MACHINE_MODES];
 
-/* Array analogous to macro REGISTER_MOVE_COST.  Don't use
+/* Array based on TARGET_REGISTER_MOVE_COST.  Don't use
    ira_register_move_cost directly.  Use function of
    ira_get_may_move_cost instead.  */
 extern move_table *ira_register_move_cost[MAX_MACHINE_MODE];

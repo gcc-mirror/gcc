@@ -82,8 +82,6 @@ extern void ia64_vms_elf_asm_named_section (const char *, unsigned int, tree);
 extern void ia64_start_function (FILE *, const char *, tree);
 #endif /* TREE_CODE */
 
-extern int ia64_register_move_cost (enum machine_mode, enum reg_class,
-				    enum reg_class);
 extern int ia64_epilogue_uses (int);
 extern int ia64_eh_uses (int);
 extern void emit_safe_across_calls (void);

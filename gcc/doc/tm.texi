@@ -6116,7 +6116,31 @@ classes returns a value of 2, reload does not check to ensure that the
 constraints of the insn are met.  Setting a cost of other than 2 will
 allow reload to verify that the constraints are met.  You should do this
 if the @samp{mov@var{m}} pattern's constraints do not allow such copying.
+
+These macros are obsolete, new ports should use the target hook
+@code{TARGET_REGISTER_MOVE_COST} instead.
 @end defmac
+
+@deftypefn {Target Hook} int TARGET_REGISTER_MOVE_COST (enum machine_mode @var{mode}, enum reg_class @var{from}, enum reg_class @var{to})
+This target hook should return the cost of moving data of mode @var{mode}
+from a register in class @var{from} to one in class @var{to}.  The classes
+are expressed using the enumeration values such as @code{GENERAL_REGS}.
+A value of 2 is the default; other values are interpreted relative to
+that.
+
+It is not required that the cost always equal 2 when @var{from} is the
+same as @var{to}; on some machines it is expensive to move between
+registers if they are not general registers.
+
+If reload sees an insn consisting of a single @code{set} between two
+hard registers, and if @code{TARGET_REGISTER_MOVE_COST} applied to their
+classes returns a value of 2, reload does not check to ensure that the
+constraints of the insn are met.  Setting a cost of other than 2 will
+allow reload to verify that the constraints are met.  You should do this
+if the @samp{mov@var{m}} pattern's constraints do not allow such copying.
+
+The default version of this function returns 2.
+@end deftypefn
 
 @defmac MEMORY_MOVE_COST (@var{mode}, @var{class}, @var{in})
 A C expression for the cost of moving data of mode @var{mode} between a
@@ -6149,9 +6173,9 @@ These macros are obsolete, new ports should use the target hook
 This target hook should return the cost of moving data of mode @var{mode}
 between a register of class @var{class} and memory; @var{in} is @code{false}
 if the value is to be written to memory, @code{true} if it is to be read in.
-This cost is relative to those in @code{REGISTER_MOVE_COST}.  If moving
-between registers and memory is more expensive than between two registers,
-you should add this target hook to express the relative cost.
+This cost is relative to those in @code{TARGET_REGISTER_MOVE_COST}.
+If moving between registers and memory is more expensive than between two
+registers, you should add this target hook to express the relative cost.
 
 If you do not add this target hook, GCC uses a default cost of 4 plus
 the cost of copying via a secondary reload register, if one is

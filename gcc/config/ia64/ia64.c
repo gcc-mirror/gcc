@@ -210,6 +210,8 @@ static bool ia64_return_in_memory (const_tree, const_tree);
 static rtx ia64_function_value (const_tree, const_tree, bool);
 static rtx ia64_libcall_value (enum machine_mode, const_rtx);
 static bool ia64_function_value_regno_p (const unsigned int);
+static int ia64_register_move_cost (enum machine_mode, enum reg_class,
+                                    enum reg_class);
 static bool ia64_rtx_costs (rtx, int, int, int *, bool);
 static int ia64_unspec_may_trap_p (const_rtx, unsigned);
 static void fix_range (const char *);
@@ -454,6 +456,8 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_ASM_GLOBALIZE_DECL_NAME
 #define TARGET_ASM_GLOBALIZE_DECL_NAME ia64_globalize_decl_name
 
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST ia64_register_move_cost
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS ia64_rtx_costs
 #undef TARGET_ADDRESS_COST
@@ -5202,7 +5206,7 @@ ia64_rtx_costs (rtx x, int code, int outer_code, int *total,
 /* Calculate the cost of moving data from a register in class FROM to
    one in class TO, using MODE.  */
 
-int
+static int
 ia64_register_move_cost (enum machine_mode mode, enum reg_class from,
 			 enum reg_class to)
 {

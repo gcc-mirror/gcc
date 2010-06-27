@@ -149,8 +149,6 @@ extern void ix86_split_fp_branch (enum rtx_code code, rtx, rtx,
 				  rtx, rtx, rtx, rtx);
 extern bool ix86_hard_regno_mode_ok (int, enum machine_mode);
 extern bool ix86_modes_tieable_p (enum machine_mode, enum machine_mode);
-extern int ix86_register_move_cost (enum machine_mode, enum reg_class,
-				    enum reg_class);
 extern int ix86_secondary_memory_needed (enum reg_class, enum reg_class,
 					 enum machine_mode, int);
 extern bool ix86_cannot_change_mode_class (enum machine_mode,

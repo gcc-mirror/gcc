@@ -3763,7 +3763,8 @@ it is unsafe to call @code{gen_reg_rtx} to allocate a new pseudo.
 The constraints on a @samp{mov@var{m}} must permit moving any hard
 register to any other hard register provided that
 @code{HARD_REGNO_MODE_OK} permits mode @var{m} in both registers and
-@code{REGISTER_MOVE_COST} applied to their classes returns a value of 2.
+@code{TARGET_REGISTER_MOVE_COST} applied to their classes returns a value
+of 2.
 
 It is obligatory to support floating point @samp{mov@var{m}}
 instructions into and out of any registers that can hold fixed point

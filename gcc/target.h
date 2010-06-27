@@ -812,6 +812,11 @@ struct gcc_target
      for further details.  */
   bool (* vector_mode_supported_p) (enum machine_mode mode);
 
+  /* Compute cost of moving data from a register of class FROM to one of
+     TO, using MODE.  */
+  int (* register_move_cost) (enum machine_mode, enum reg_class,
+			      enum reg_class);
+
   /* Compute cost of moving registers to/from memory.  */
   int (* memory_move_cost) (enum machine_mode, enum reg_class, bool);
 

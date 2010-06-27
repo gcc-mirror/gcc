@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
   SECONDARY_RELOAD_CLASS (CLASS, MODE, X)
 #endif
 
+extern int register_move_cost (enum machine_mode, enum reg_class,
+			       enum reg_class);
 extern int memory_move_cost (enum machine_mode, enum reg_class, bool);
 extern int memory_move_secondary_cost (enum machine_mode, enum reg_class,
 				       bool);
