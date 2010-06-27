@@ -451,7 +451,8 @@ namespace std
        */
       template<typename _Ch_traits, typename _Ch_alloc>
         explicit
-        basic_regex(const std::basic_string<_Ch_type, _Ch_traits, _Ch_alloc>& __s,
+        basic_regex(const std::basic_string<_Ch_type, _Ch_traits,
+		    _Ch_alloc>& __s,
 		    flag_type __f = regex_constants::ECMAScript)
 	: _M_flags(__f),
 	  _M_automaton(__regex::__compile(__s.begin(), __s.end(),

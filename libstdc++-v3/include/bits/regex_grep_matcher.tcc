@@ -34,10 +34,9 @@ namespace
 {
 
   // A stack of states used in evaluating the NFA.
-  typedef std::stack<
-                     std::__regex::_StateIdT,
+  typedef std::stack<std::__regex::_StateIdT,
                      std::vector<std::__regex::_StateIdT>
-                    > _StateStack;
+		     > _StateStack;
 
   // Obtains the next state set given the current state set __s and the current
   // input character.
@@ -48,16 +47,16 @@ namespace
   {
     std::__regex::_StateSet __m;
     for (std::__regex::_StateSet::const_iterator __i = __s.begin();
-		     __i != __s.end(); ++__i)
-    {
-      if (*__i == std::__regex::_S_invalid_state_id)
-	continue;
+	 __i != __s.end(); ++__i)
+      {
+	if (*__i == std::__regex::_S_invalid_state_id)
+	  continue;
 
-      const std::__regex::_State& __state = __nfa[*__i];
-      if (__state._M_opcode == std::__regex::_S_opcode_match
-       && __state._M_matches(__p))
+	const std::__regex::_State& __state = __nfa[*__i];
+	if (__state._M_opcode == std::__regex::_S_opcode_match
+	    && __state._M_matches(__p))
 	  __m.insert(__state._M_next);
-    }
+      }
     return __m;
   }
 
@@ -67,19 +66,19 @@ namespace
                   const std::__regex::_StateSet& __t)
   {
     if (__s.size() > 0 && __t.size() > 0)
-    {
-      std::__regex::_StateSet::const_iterator __first = __s.begin();
-      std::__regex::_StateSet::const_iterator __second = __t.begin();
-      while (__first != __s.end() && __second != __t.end())
       {
-	if (*__first < *__second)
-	  ++__first;
-	else if (*__second < *__first)
-	  ++__second;
-	else
-	  return true;
+	std::__regex::_StateSet::const_iterator __first = __s.begin();
+	std::__regex::_StateSet::const_iterator __second = __t.begin();
+	while (__first != __s.end() && __second != __t.end())
+	  {
+	    if (*__first < *__second)
+	      ++__first;
+	    else if (*__second < *__first)
+	      ++__second;
+	    else
+	      return true;
+	  }
       }
-    }
     return false;
   }
 
@@ -91,10 +90,10 @@ namespace
                       std::__regex::_StateSet&      __e)
   {
     if (__e.count(__u) == 0)
-    {
-      __e.insert(__u);
-      __s.push(__u);
-    }
+      {
+	__e.insert(__u);
+	__s.push(__u);
+      }
   }
 
 } // anonymous namespace
@@ -102,9 +101,8 @@ namespace
 namespace __regex
 {
   inline _Grep_matcher::
-  _Grep_matcher(_PatternCursor&                  __p,
-		_Results&                        __r,
-		const _AutomatonPtr&             __nfa,
+  _Grep_matcher(_PatternCursor& __p, _Results& __r,
+		const _AutomatonPtr& __nfa,
 		regex_constants::match_flag_type __flags)
   : _M_nfa(static_pointer_cast<_Nfa>(__nfa)), _M_pattern(__p), _M_results(__r)
   {
@@ -142,34 +140,34 @@ namespace __regex
   {
     _StateSet __e = __s;
     while (!__stack.empty())
-    {
-      _StateIdT __t = __stack.top(); __stack.pop();
-      if (__t == _S_invalid_state_id)
-	continue;
-      // for each __u with edge from __t to __u labeled e do ...
-      const _State& __state = _M_nfa->operator[](__t);
-      switch (__state._M_opcode)
       {
-	case _S_opcode_alternative:
-	  __add_visited_state(__state._M_next, __stack, __e);
-	  __add_visited_state(__state._M_alt, __stack, __e);
-	  break;
-	case _S_opcode_subexpr_begin:
-	  __add_visited_state(__state._M_next, __stack, __e);
-	  __state._M_tagger(_M_pattern, _M_results);
-	  break;
-	case _S_opcode_subexpr_end:
-	  __add_visited_state(__state._M_next, __stack, __e);
-	  __state._M_tagger(_M_pattern, _M_results);
-	  _M_results._M_set_matched(__state._M_subexpr, true);
-	  break;
-	case _S_opcode_accept:
-	  __add_visited_state(__state._M_next, __stack, __e);
-	  break;
-	default:
-	  break;
+	_StateIdT __t = __stack.top(); __stack.pop();
+	if (__t == _S_invalid_state_id)
+	  continue;
+	// for each __u with edge from __t to __u labeled e do ...
+	const _State& __state = _M_nfa->operator[](__t);
+	switch (__state._M_opcode)
+	  {
+	  case _S_opcode_alternative:
+	    __add_visited_state(__state._M_next, __stack, __e);
+	    __add_visited_state(__state._M_alt, __stack, __e);
+	    break;
+	  case _S_opcode_subexpr_begin:
+	    __add_visited_state(__state._M_next, __stack, __e);
+	    __state._M_tagger(_M_pattern, _M_results);
+	    break;
+	  case _S_opcode_subexpr_end:
+	    __add_visited_state(__state._M_next, __stack, __e);
+	    __state._M_tagger(_M_pattern, _M_results);
+	    _M_results._M_set_matched(__state._M_subexpr, true);
+	    break;
+	  case _S_opcode_accept:
+	    __add_visited_state(__state._M_next, __stack, __e);
+	    break;
+	  default:
+	    break;
+	  }
       }
-    }
     return __e;
   }
 
