@@ -1,3 +1,36 @@
+2010-06-27  Jan Hubicka  <jh@suse.cz>
+
+	Backport inliner heruistic fixes from mainline
+	2010-05-27  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (cgraph_estimate_size_after_inlining): Make inline.
+	(update_caller_keys): Return early if there are no callers;
+	only update fibheap when decresing the key.
+	(update_callee_keys): Avoid recursion.
+	(decide_inlining_of_small_functions): When badness does not match;
+	re-insert into fibheap.
+
+	2010-05-11  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimize/44063
+	* ipa-inline.c (cgraph_edge_badness): Move always inlines to top of
+	queue.
+
+	2010-04-13  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (cgraph_mark_inline_edge): Avoid double accounting
+	of optimized out static functions.
+	(cgraph_edge_badness): Add DUMP parameter and dump reasons for the
+	cost computation.  Also sanity check for overflows.
+	(update_caller_keys): Update cgraph_edge_badness call; properly
+	update fibheap and sanity check that it is up to date.
+	(add_new_edges_to_heap): Update cgraph_edge_badness.
+	(cgraph_decide_inlining_of_small_function): Likewise;
+	add sanity checking that badness in heap is up to date;
+	improve dumping of reason; Update badness of calls to the
+	offline copy of function currently inlined; dump badness
+	of functions not inlined because of unit growth limits.
+
 2010-06-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44683
