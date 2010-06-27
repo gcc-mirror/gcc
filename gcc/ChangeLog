@@ -1,3 +1,10 @@
+2010-06-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/44684
+	* tree-ssa-alias.c (refs_may_alias_p_1): Allow SSA name refs.
+	(stmt_may_clobber_ref_p_1): Do not bother to call the oracle
+	for register LHS.  Or non-store assignments.
+
 2010-06-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44393

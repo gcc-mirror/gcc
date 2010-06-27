@@ -802,11 +802,13 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
 
 #ifdef ENABLE_CHECKING
   gcc_assert ((!ref1->ref
+	       || TREE_CODE (ref1->ref) == SSA_NAME
 	       || DECL_P (ref1->ref)
 	       || handled_component_p (ref1->ref)
 	       || INDIRECT_REF_P (ref1->ref)
 	       || TREE_CODE (ref1->ref) == TARGET_MEM_REF)
 	      && (!ref2->ref
+		  || TREE_CODE (ref2->ref) == SSA_NAME
 		  || DECL_P (ref2->ref)
 		  || handled_component_p (ref2->ref)
 		  || INDIRECT_REF_P (ref2->ref)
@@ -1433,11 +1435,15 @@ stmt_may_clobber_ref_p_1 (gimple stmt, ao_ref *ref)
 
       return call_may_clobber_ref_p_1 (stmt, ref);
     }
-  else if (is_gimple_assign (stmt))
+  else if (gimple_assign_single_p (stmt))
     {
-      ao_ref r;
-      ao_ref_init (&r, gimple_assign_lhs (stmt));
-      return refs_may_alias_p_1 (ref, &r, true);
+      tree lhs = gimple_assign_lhs (stmt);
+      if (!is_gimple_reg (lhs))
+	{
+	  ao_ref r;
+	  ao_ref_init (&r, gimple_assign_lhs (stmt));
+	  return refs_may_alias_p_1 (ref, &r, true);
+	}
     }
   else if (gimple_code (stmt) == GIMPLE_ASM)
     return true;
