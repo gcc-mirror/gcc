@@ -1,3 +1,14 @@
+2010-06-28  Philipp Tomsich <philipp.tomsich@theobroma-systems.com>
+
+	* config.gcc (powerpc*-*-*): Handle titan.
+	* config/rs6000/rs6000.c (titan_cost): New costs.
+	(rs6000_override_options): Add "titan" to processor_target_table.
+	Add Titan to branch alignment logic.
+	Correctly set rs6000_cost for titan.
+	* config/rs6000/rs6000.md (cpu): Add titan.  Include "titan.md".
+	* config/rs6000/titan.md: New file.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document -mcpu=titan.
+	
 2010-06-28  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree-browser.c (TB_history_stack): Convert to a VEC.
