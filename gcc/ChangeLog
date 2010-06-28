@@ -1,3 +1,8 @@
+2010-06-28  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/44671
+	* ipa-split.c (test_nonssa_use, mark_nonssa_use): Check also uses of RESULT_DECL.
+
 2010-06-28  Anatoly Sokolov  <aesok@post.ru>
 
 	* double-int.h (force_fit_type_double): Remove declaration.
