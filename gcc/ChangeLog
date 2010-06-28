@@ -1,3 +1,8 @@
+2010-06-28  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/44687
+	* ipa-split.c (split_function): Use DECL_RESULT to store return value.
+
 2010-06-28  Martin Jambor  <mjambor@suse.cz>
 
 	PR c++/44535

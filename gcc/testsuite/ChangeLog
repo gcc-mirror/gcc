@@ -1,3 +1,8 @@
+2010-06-28  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/44687
+	* gcc.c-torture/compile/pr44687.c
+
 2010-06-28  Martin Jambor  <mjambor@suse.cz>
 
 	PR c++/44535
