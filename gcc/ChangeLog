@@ -1,3 +1,22 @@
+2010-06-28  Anatoly Sokolov  <aesok@post.ru>
+
+	* double-int.h (force_fit_type_double): Remove declaration.
+	* double-int.c (force_fit_type_double): Move to tree.c.
+	* tree.h (force_fit_type_double): Declare.
+	* tree.h (force_fit_type_double): Moved from double-int.c. Use
+	double_int type for 'cst' argument. Use double_int_fits_to_tree_p and
+	double_int_to_tree instead of fit_double_type and build_int_cst_wide.
+	* convert.c (convert_to_pointer): Adjust call to
+	force_fit_type_double.
+	* tree-vrp.c (extract_range_from_assert,
+	extract_range_from_unary_expr): Adjust call to force_fit_type_double.
+	* fold-const.c: Update comment.
+	(int_const_binop, fold_convert_const_int_from_int,
+	fold_convert_const_int_from_real, fold_convert_const_int_from_fixed,
+	extract_muldiv_1, fold_div_compare, fold_sign_changed_comparison,
+	fold_unary_loc, fold_negate_const, fold_abs_const, fold_not_const,
+	round_up_loc): Adjust call to force_fit_type_double.
+
 2010-06-28  Philipp Tomsich <philipp.tomsich@theobroma-systems.com>
 
 	* config/rs6000/rs6000.h (PROCESSOR_TITAN): Declare.

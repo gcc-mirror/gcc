@@ -134,56 +134,6 @@ fit_double_type (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
   return l1 != low0 || h1 != high0;
 }
 
-/* We force the double-int HIGH:LOW to the range of the type TYPE by
-   sign or zero extending it.
-   OVERFLOWABLE indicates if we are interested
-   in overflow of the value, when >0 we are only interested in signed
-   overflow, for <0 we are interested in any overflow.  OVERFLOWED
-   indicates whether overflow has already occurred.  CONST_OVERFLOWED
-   indicates whether constant overflow has already occurred.  We force
-   T's value to be within range of T's type (by setting to 0 or 1 all
-   the bits outside the type's range).  We set TREE_OVERFLOWED if,
-  	OVERFLOWED is nonzero,
-	or OVERFLOWABLE is >0 and signed overflow occurs
-	or OVERFLOWABLE is <0 and any overflow occurs
-   We return a new tree node for the extended double-int.  The node
-   is shared if no overflow flags are set.  */
-
-tree
-force_fit_type_double (tree type, unsigned HOST_WIDE_INT low,
-		       HOST_WIDE_INT high, int overflowable,
-		       bool overflowed)
-{
-  int sign_extended_type;
-  bool overflow;
-
-  /* Size types *are* sign extended.  */
-  sign_extended_type = (!TYPE_UNSIGNED (type)
-			|| (TREE_CODE (type) == INTEGER_TYPE
-			    && TYPE_IS_SIZETYPE (type)));
-
-  overflow = fit_double_type (low, high, &low, &high, type);
-
-  /* If we need to set overflow flags, return a new unshared node.  */
-  if (overflowed || overflow)
-    {
-      if (overflowed
-	  || overflowable < 0
-	  || (overflowable > 0 && sign_extended_type))
-	{
-          tree t = make_node (INTEGER_CST);
-          TREE_INT_CST_LOW (t) = low;
-          TREE_INT_CST_HIGH (t) = high;
-          TREE_TYPE (t) = type;
-	  TREE_OVERFLOW (t) = 1;
-	  return t;
-	}
-    }
-
-  /* Else build a shared node.  */
-  return build_int_cst_wide (type, low, high);
-}
-
 /* Add two doubleword integers with doubleword result.
    Return nonzero if the operation overflows according to UNSIGNED_P.
    Each argument is given as two `HOST_WIDE_INT' pieces.

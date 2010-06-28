@@ -27,8 +27,7 @@ along with GCC; see the file COPYING3.  If not see
   @@ This would also make life easier when this technology is used
   @@ for cross-compilers.  */
 
-/* The entry points in this file are fold, size_int_wide, size_binop
-   and force_fit_type_double.
+/* The entry points in this file are fold, size_int_wide and size_binop.
 
    fold takes a tree as argument and returns a simplified tree.
 
@@ -38,10 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 
    size_int takes an integer value, and creates a tree constant
    with type from `sizetype'.
-
-   force_fit_type_double takes a constant, an overflowable flag and a
-   prior overflow indicator.  It forces the value to fit the type and
-   sets TREE_OVERFLOW.
 
    Note: Since the folders get called on non-gimple code as well as
    gimple code, we need to handle GIMPLE tuples as well as their
@@ -141,7 +136,7 @@ static tree fold_inf_compare (location_t, enum tree_code, tree, tree, tree);
 static tree fold_div_compare (location_t, enum tree_code, tree, tree, tree);
 static bool reorder_operands_p (const_tree, const_tree);
 static tree fold_negate_const (tree, tree);
-static tree fold_not_const (tree, tree);
+static tree fold_not_const (const_tree, tree);
 static tree fold_relational_const (enum tree_code, tree, tree, tree);
 static tree fold_convert_const (enum tree_code, tree, tree);
 
@@ -1077,7 +1072,7 @@ int_const_binop (enum tree_code code, const_tree arg1, const_tree arg2, int notr
 	}
     }
   else
-    t = force_fit_type_double (TREE_TYPE (arg1), res.low, res.high, 1,
+    t = force_fit_type_double (TREE_TYPE (arg1), res, 1,
 			       ((!uns || is_sizetype) && overflow)
 			       | TREE_OVERFLOW (arg1) | TREE_OVERFLOW (arg2));
 
@@ -1510,8 +1505,7 @@ fold_convert_const_int_from_int (tree type, const_tree arg1)
 
   /* Given an integer constant, make new constant with new type,
      appropriately sign-extended or truncated.  */
-  t = force_fit_type_double (type, TREE_INT_CST_LOW (arg1),
-			     TREE_INT_CST_HIGH (arg1),
+  t = force_fit_type_double (type, tree_to_double_int (arg1),
 			     !POINTER_TYPE_P (TREE_TYPE (arg1)),
 			     (TREE_INT_CST_HIGH (arg1) < 0
 		 	      && (TYPE_UNSIGNED (type)
@@ -1591,8 +1585,7 @@ fold_convert_const_int_from_real (enum tree_code code, tree type, const_tree arg
   if (! overflow)
     real_to_integer2 ((HOST_WIDE_INT *) &val.low, &val.high, &r);
 
-  t = force_fit_type_double (type, val.low, val.high, -1,
-			     overflow | TREE_OVERFLOW (arg1));
+  t = force_fit_type_double (type, val, -1, overflow | TREE_OVERFLOW (arg1));
   return t;
 }
 
@@ -1635,7 +1628,7 @@ fold_convert_const_int_from_fixed (tree type, const_tree arg1)
 
   /* Given a fixed-point constant, make new constant with new type,
      appropriately sign-extended or truncated.  */
-  t = force_fit_type_double (type, temp.low, temp.high, -1,
+  t = force_fit_type_double (type, temp, -1,
 			     (double_int_negative_p (temp)
 		 	      && (TYPE_UNSIGNED (type)
 				  < TYPE_UNSIGNED (TREE_TYPE (arg1))))
@@ -5947,8 +5940,7 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	  && 0 != (t1 = int_const_binop (MULT_EXPR,
 					 fold_convert (ctype, op1),
 					 fold_convert (ctype, c), 1))
-	  && 0 != (t1 = force_fit_type_double (ctype, TREE_INT_CST_LOW (t1),
-					       TREE_INT_CST_HIGH (t1),
+	  && 0 != (t1 = force_fit_type_double (ctype, tree_to_double_int (t1),
 					       (TYPE_UNSIGNED (ctype)
 					        && tcode != MULT_EXPR) ? -1 : 1,
 					       TREE_OVERFLOW (t1)))
@@ -6352,8 +6344,7 @@ fold_div_compare (location_t loc,
   tree prod, tmp, hi, lo;
   tree arg00 = TREE_OPERAND (arg0, 0);
   tree arg01 = TREE_OPERAND (arg0, 1);
-  unsigned HOST_WIDE_INT lpart;
-  HOST_WIDE_INT hpart;
+  double_int val;
   bool unsigned_p = TYPE_UNSIGNED (TREE_TYPE (arg0));
   bool neg_overflow;
   int overflow;
@@ -6364,9 +6355,8 @@ fold_div_compare (location_t loc,
 				   TREE_INT_CST_HIGH (arg01),
 				   TREE_INT_CST_LOW (arg1),
 				   TREE_INT_CST_HIGH (arg1),
-				   &lpart, &hpart, unsigned_p);
-  prod = force_fit_type_double (TREE_TYPE (arg00), lpart, hpart,
-				-1, overflow);
+				   &val.low, &val.high, unsigned_p);
+  prod = force_fit_type_double (TREE_TYPE (arg00), val, -1, overflow);
   neg_overflow = false;
 
   if (unsigned_p)
@@ -6380,8 +6370,8 @@ fold_div_compare (location_t loc,
 				       TREE_INT_CST_HIGH (prod),
 				       TREE_INT_CST_LOW (tmp),
 				       TREE_INT_CST_HIGH (tmp),
-				       &lpart, &hpart, unsigned_p);
-      hi = force_fit_type_double (TREE_TYPE (arg00), lpart, hpart,
+				       &val.low, &val.high, unsigned_p);
+      hi = force_fit_type_double (TREE_TYPE (arg00), val,
 				  -1, overflow | TREE_OVERFLOW (prod));
     }
   else if (tree_int_cst_sgn (arg01) >= 0)
@@ -6834,9 +6824,8 @@ fold_sign_changed_comparison (location_t loc, enum tree_code code, tree type,
     return NULL_TREE;
 
   if (TREE_CODE (arg1) == INTEGER_CST)
-    arg1 = force_fit_type_double (inner_type, TREE_INT_CST_LOW (arg1),
-				  TREE_INT_CST_HIGH (arg1), 0,
-				  TREE_OVERFLOW (arg1));
+    arg1 = force_fit_type_double (inner_type, tree_to_double_int (arg1),
+				  0, TREE_OVERFLOW (arg1));
   else
     arg1 = fold_convert_loc (loc, inner_type, arg1);
 
@@ -7941,9 +7930,8 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	    }
 	  if (change)
 	    {
-	      tem = force_fit_type_double (type, TREE_INT_CST_LOW (and1),
-					   TREE_INT_CST_HIGH (and1), 0,
-					   TREE_OVERFLOW (and1));
+	      tem = force_fit_type_double (type, tree_to_double_int (and1),
+					   0, TREE_OVERFLOW (and1));
 	      return fold_build2_loc (loc, BIT_AND_EXPR, type,
 				  fold_convert_loc (loc, type, and0), tem);
 	    }
@@ -15139,12 +15127,10 @@ fold_negate_const (tree arg0, tree type)
     {
     case INTEGER_CST:
       {
-	unsigned HOST_WIDE_INT low;
-	HOST_WIDE_INT high;
-	int overflow = neg_double (TREE_INT_CST_LOW (arg0),
-				   TREE_INT_CST_HIGH (arg0),
-				   &low, &high);
-	t = force_fit_type_double (type, low, high, 1,
+	double_int val = tree_to_double_int (arg0);
+	int overflow = neg_double (val.low, val.high, &val.low, &val.high);
+
+	t = force_fit_type_double (type, val, 1,
 				   (overflow | TREE_OVERFLOW (arg0))
 				   && !TYPE_UNSIGNED (type));
 	break;
@@ -15187,25 +15173,26 @@ fold_abs_const (tree arg0, tree type)
   switch (TREE_CODE (arg0))
     {
     case INTEGER_CST:
-      /* If the value is unsigned, then the absolute value is
-	 the same as the ordinary value.  */
-      if (TYPE_UNSIGNED (type))
-	t = arg0;
-      /* Similarly, if the value is non-negative.  */
-      else if (INT_CST_LT (integer_minus_one_node, arg0))
-	t = arg0;
-      /* If the value is negative, then the absolute value is
-	 its negation.  */
-      else
-	{
-	  unsigned HOST_WIDE_INT low;
-	  HOST_WIDE_INT high;
-	  int overflow = neg_double (TREE_INT_CST_LOW (arg0),
-				     TREE_INT_CST_HIGH (arg0),
-				     &low, &high);
-	  t = force_fit_type_double (type, low, high, -1,
-				     overflow | TREE_OVERFLOW (arg0));
-	}
+      {
+	double_int val = tree_to_double_int (arg0);
+
+        /* If the value is unsigned or non-negative, then the absolute value
+	   is the same as the ordinary value.  */
+	if (TYPE_UNSIGNED (type)
+	    || !double_int_negative_p (val))
+	  t = arg0;
+
+	/* If the value is negative, then the absolute value is
+	   its negation.  */
+	else
+	  {
+	    int overflow;
+
+	    overflow = neg_double (val.low, val.high, &val.low, &val.high);
+	    t = force_fit_type_double (type, val, -1,
+				       overflow | TREE_OVERFLOW (arg0));
+	  }
+      }
       break;
 
     case REAL_CST:
@@ -15226,17 +15213,14 @@ fold_abs_const (tree arg0, tree type)
    constant.  TYPE is the type of the result.  */
 
 static tree
-fold_not_const (tree arg0, tree type)
+fold_not_const (const_tree arg0, tree type)
 {
-  tree t = NULL_TREE;
+  double_int val;  
 
   gcc_assert (TREE_CODE (arg0) == INTEGER_CST);
 
-  t = force_fit_type_double (type, ~TREE_INT_CST_LOW (arg0),
-			     ~TREE_INT_CST_HIGH (arg0), 0,
-			     TREE_OVERFLOW (arg0));
-
-  return t;
+  val = double_int_not (tree_to_double_int (arg0));
+  return force_fit_type_double (type, val, 0, TREE_OVERFLOW (arg0));
 }
 
 /* Given CODE, a relational operator, the target type, TYPE and two
@@ -15634,25 +15618,23 @@ round_up_loc (location_t loc, tree value, int divisor)
     {
       if (TREE_CODE (value) == INTEGER_CST)
 	{
-	  unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (value);
-	  unsigned HOST_WIDE_INT high;
+	  double_int val = tree_to_double_int (value);
 	  bool overflow_p;
 
-	  if ((low & (divisor - 1)) == 0)
+	  if ((val.low & (divisor - 1)) == 0)
 	    return value;
 
 	  overflow_p = TREE_OVERFLOW (value);
-	  high = TREE_INT_CST_HIGH (value);
-	  low &= ~(divisor - 1);
-	  low += divisor;
-	  if (low == 0)
+	  val.low &= ~(divisor - 1);
+	  val.low += divisor;
+	  if (val.low == 0)
 	    {
-	      high++;
-	      if (high == 0)
+	      val.high++;
+	      if (val.high == 0)
 		overflow_p = true;
 	    }
 
-	  return force_fit_type_double (TREE_TYPE (value), low, high,
+	  return force_fit_type_double (TREE_TYPE (value), val,
 					-1, overflow_p);
 	}
       else
