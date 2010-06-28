@@ -1,3 +1,9 @@
+2010-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/44682
+	* class.c (build_base_path): If want_pointer, call mark_rvalue_use
+	on expr.
+
 2010-06-28  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* init.c: Do not include except.h.
