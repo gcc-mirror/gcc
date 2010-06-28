@@ -1,3 +1,12 @@
+2010-06-28  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* java-tree.h (struct lang_type) [catch_classes]: Change type to a
+	VEC.
+	* except.c (prepare_eh_table_type): Call CONSTRUCTOR_APPEND_ELT
+	instead of tree_cons.
+	* class.c (make_class): Add dummy entry to TYPE_CATCH_CLASSES.
+	(emit_catch_table): Adjust for new type of TYPE_CATCH_CLASSES.
+
 2010-06-28  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* lang.c: Do not include except.h

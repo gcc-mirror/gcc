@@ -952,7 +952,7 @@ struct GTY((variable_size)) lang_type {
 
   tree ctable_decl;             /* The table of classes for the runtime
 				   type matcher.  */
-  tree catch_classes;
+  VEC(constructor_elt,gc) *catch_classes;
 
   htab_t GTY ((param_is (struct treetreehash_entry))) type_to_runtime_map;   
                                 /* The mapping of classes to exception region
