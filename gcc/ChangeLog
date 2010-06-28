@@ -1,3 +1,10 @@
+2010-06-28  Martin Jambor  <mjambor@suse.cz>
+
+	PR c++/44535
+	* gimple-fold.c (get_first_base_binfo_with_virtuals): New function.
+	(gimple_get_relevant_ref_binfo): Use get_first_base_binfo_with_virtuals
+	instead of BINFO_BASE_BINFO.
+
 2010-06-28  Michael Matz  <matz@suse.de>
 
 	PR middle-end/44592
