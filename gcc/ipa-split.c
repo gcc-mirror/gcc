@@ -277,7 +277,7 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
     }
 
   /* FIXME: we currently can pass only SSA function parameters to the split
-     arguments.  Once parm_adjustment infrastructure is supported by clonning,
+     arguments.  Once parm_adjustment infrastructure is supported by cloning,
      we can pass more than that.  */
   if (num_args != bitmap_count_bits (current->ssa_names_to_pass))
     {
@@ -843,6 +843,14 @@ split_function (struct split_point *split_point)
 				     args_to_skip,
 				     split_point->split_bbs,
 				     split_point->entry_bb, "_part");
+  /* For usual cloning it is enough to clear builtin only when signature
+     changes.  For partial inlining we however can not expect the part
+     of builtin implementation to have same semantic as the whole.  */
+  if (DECL_BUILT_IN (node->decl))
+    {
+      DECL_BUILT_IN_CLASS (node->decl) = NOT_BUILT_IN;
+      DECL_FUNCTION_CODE (node->decl) = (enum built_in_function) 0;
+    }
   cgraph_node_remove_callees (cgraph_node (current_function_decl));
   if (!split_part_return_p)
     TREE_THIS_VOLATILE (node->decl) = 1;
