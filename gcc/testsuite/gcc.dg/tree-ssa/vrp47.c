@@ -5,6 +5,7 @@
    this.  */
 /* { dg-do compile { target { ! "mips*-*-* s390*-*-*  avr-*-*" } } } */
 /* { dg-options "-O2 -fdump-tree-vrp -fdump-tree-dom" } */
+/* { dg-options "-O2 -fdump-tree-vrp -fdump-tree-dom -march=i586" { target { i?86-*-* && ilp32 } } } */
 
 int h(int x, int y)
 {
