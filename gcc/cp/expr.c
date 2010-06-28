@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "cp-tree.h"
 #include "toplev.h"
-#include "except.h"
 #include "tm_p.h"
 
 /* Expand C++-specific constants.  Currently, this means PTRMEM_CST.  */

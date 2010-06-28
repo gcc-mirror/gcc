@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "flags.h"
 #include "output.h"
-#include "except.h"
 #include "toplev.h"
 #include "tree-inline.h"
 #include "tree-iterator.h"
@@ -50,7 +49,6 @@ static tree wrap_cleanups_r (tree *, int *, void *);
 static int complete_ptr_ref_or_void_ptr_p (tree, tree);
 static bool is_admissible_throw_operand (tree);
 static int can_convert_eh (tree, tree);
-static tree cp_protect_cleanup_actions (void);
 
 /* Sets up all the global eh stuff that needs to be initialized at the
    start of compilation.  */
@@ -72,14 +70,12 @@ init_exception_processing (void)
   tmp = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
   call_unexpected_node
     = push_throw_library_fn (get_identifier ("__cxa_call_unexpected"), tmp);
-
-  lang_protect_cleanup_actions = &cp_protect_cleanup_actions;
 }
 
 /* Returns an expression to be executed if an unhandled exception is
    propagated out of a cleanup region.  */
 
-static tree
+tree
 cp_protect_cleanup_actions (void)
 {
   /* [except.terminate]
@@ -407,6 +403,30 @@ initialize_handler_parm (tree decl, tree exp)
 		  LOOKUP_ONLYCONVERTING|DIRECT_BIND);
 }
 
+
+/* Routine to see if exception handling is turned on.
+   DO_WARN is nonzero if we want to inform the user that exception
+   handling is turned off.
+
+   This is used to ensure that -fexceptions has been specified if the
+   compiler tries to use any exception-specific functions.  */
+
+static inline int
+doing_eh (void)
+{
+  if (! flag_exceptions)
+    {
+      static int warned = 0;
+      if (! warned)
+	{
+	  error ("exception handling disabled, use -fexceptions to enable");
+	  warned = 1;
+	}
+      return 0;
+    }
+  return 1;
+}
+
 /* Call this to start a catch block.  DECL is the catch parameter.  */
 
 tree
@@ -415,7 +435,7 @@ expand_start_catch_block (tree decl)
   tree exp;
   tree type, init;
 
-  if (! doing_eh (1))
+  if (! doing_eh ())
     return NULL_TREE;
 
   /* Make sure this declaration is reasonable.  */
@@ -494,7 +514,7 @@ expand_start_catch_block (tree decl)
 void
 expand_end_catch_block (void)
 {
-  if (! doing_eh (1))
+  if (! doing_eh ())
     return;
 
   /* The exception being handled is rethrown if control reaches the end of
@@ -641,7 +661,7 @@ build_throw (tree exp)
 	return error_mark_node;
     }
 
-  if (! doing_eh (1))
+  if (! doing_eh ())
     return error_mark_node;
 
   if (exp && decl_is_java_type (TREE_TYPE (exp), 1))

@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "decl.h"
 #include "output.h"
-#include "except.h"
 #include "toplev.h"
 #include "timevar.h"
 #include "tree-iterator.h"

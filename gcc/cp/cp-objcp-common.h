@@ -143,4 +143,7 @@ extern bool cp_function_decl_explicit_p (tree decl);
 #undef LANG_HOOKS_EH_USE_CXA_END_CLEANUP
 #define LANG_HOOKS_EH_USE_CXA_END_CLEANUP true
 
+#undef LANG_HOOKS_EH_PROTECT_CLEANUP_ACTIONS
+#define LANG_HOOKS_EH_PROTECT_CLEANUP_ACTIONS cp_protect_cleanup_actions
+
 #endif /* GCC_CP_OBJCP_COMMON */

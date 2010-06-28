@@ -1,3 +1,7 @@
+2010-06-28  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-cppbuiltin.c: Do not include except.h.
+
 2010-06-24  Andi Kleen  <ak@linux.intel.com>
 
         * c-common.c (warn_for_omitted_condop): New.

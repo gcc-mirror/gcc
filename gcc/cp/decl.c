@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "decl.h"
 #include "intl.h"
 #include "output.h"
-#include "except.h"
 #include "toplev.h"
 #include "hashtab.h"
 #include "tm_p.h"

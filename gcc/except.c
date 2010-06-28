@@ -40,7 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 
    During pass_lower_eh (tree-eh.c) we record the nested structure
    of the TRY nodes in EH_REGION nodes in CFUN->EH->REGION_TREE.
-   We expand the lang_protect_cleanup_actions hook into MUST_NOT_THROW
+   We expand the eh_protect_cleanup_actions langhook into MUST_NOT_THROW
    regions at this time.  We can then flatten the statements within
    the TRY nodes to straight-line code.  Statements that had been within
    TRY nodes that can throw are recorded within CFUN->EH->THROW_STMT_TABLE,
@@ -150,10 +150,6 @@ along with GCC; see the file COPYING3.  If not see
 #define EH_RETURN_DATA_REGNO(N) INVALID_REGNUM
 #endif
 
-/* Protect cleanup actions with must-not-throw regions, with a call
-   to the given failure handler.  */
-tree (*lang_protect_cleanup_actions) (void);
-
 static GTY(()) int call_site_base;
 static GTY ((param_is (union tree_node)))
   htab_t type_to_runtime_map;
@@ -201,30 +197,6 @@ static int sjlj_size_of_call_site_table (void);
 #endif
 static void dw2_output_call_site_table (int, int);
 static void sjlj_output_call_site_table (void);
-
-
-/* Routine to see if exception handling is turned on.
-   DO_WARN is nonzero if we want to inform the user that exception
-   handling is turned off.
-
-   This is used to ensure that -fexceptions has been specified if the
-   compiler tries to use any exception-specific functions.  */
-
-int
-doing_eh (int do_warn)
-{
-  if (! flag_exceptions)
-    {
-      static int warned = 0;
-      if (! warned && do_warn)
-	{
-	  error ("exception handling disabled, use -fexceptions to enable");
-	  warned = 1;
-	}
-      return 0;
-    }
-  return 1;
-}
 
 
 void
@@ -344,10 +316,6 @@ static eh_region
 gen_eh_region (enum eh_region_type type, eh_region outer)
 {
   eh_region new_eh;
-
-#ifdef ENABLE_CHECKING
-  gcc_assert (doing_eh (0));
-#endif
 
   /* Insert a new blank region as a leaf in the tree.  */
   new_eh = ggc_alloc_cleared_eh_region_d ();

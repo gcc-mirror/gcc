@@ -1,3 +1,25 @@
+2010-06-28  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* init.c: Do not include except.h.
+	* decl.c: Likewise.
+	* expr.c: Likewise.
+	* cp-lang.c: Likewise.
+	* pt.c: Likewise.
+	* semantics.c: Likewise.
+	* decl2.c: Likewise.
+	* except.c: Likewise.
+	(init_exception_processing): Do not set the removed
+	lang_protect_cleanup_actions here.
+	(cp_protect_cleanup_actions): Make non-static and remove prototype.
+	(doing_eh): New, moved from except.c but removed the do_warning flag.
+	(expand_start_catch_block): Update doing_eh call.
+	(expand_end_catch_block): Likewise.
+	(build_throw): Likewise.
+	* cp-tree.h: Prototype cp_protect_cleanup_actions.
+	* cp-objcp-common.h: Set LANG_HOOKS_EH_PROTECT_CLEANUP_ACTIONS to
+	cp_protect_cleanup_actions.
+	* Make-lang.in: Update dependencies.
+
 2010-06-26  Jason Merrill  <jason@redhat.com>
 
 	* call.c (add_function_candidate): Set LOOKUP_COPY_PARM for any
