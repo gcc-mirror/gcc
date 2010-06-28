@@ -2,6 +2,7 @@
    optimizations that expose the VRP opportunity.  */
 /* { dg-do compile { target { ! mips*-*-* } } } */
 /* { dg-options "-O2 -fdump-tree-vrp -fdump-tree-dom" } */
+/* { dg-options "-O2 -fdump-tree-vrp -fdump-tree-dom -march=i586" { target { i?86-*-* && ilp32 } } } */
 
 int h(int x, int y)
 {
