@@ -1,3 +1,24 @@
+2010-06-28  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* system.h: Poison GCC_EXCEPT_H for front-end files.
+
+	* langhooks.h (struct lang_hooks): Add eh_protect_cleanup_actions
+	langhook.
+	* langhooks-def.h (LANG_HOOKS_EH_PROTECT_CLEANUP_ACTIONS) New.
+	Define to NULL by default.
+	* except.h: Define GCC_EXCEPT_H.
+	(doing_eh): Remove prototype.
+	(init_eh, init_eh_for_function): Move prototypes to toplev.h.
+	(lang_protect_cleanup_actions): Remove.
+	* except.c (lang_protect_cleanup_actions): Remove.
+	(doing_eh): Remove.
+	(gen_eh_region): Don't check doing_eh here.
+	* toplev.h (init_eh, init_eh_for_function_): Moved from except.h.
+	* tree-eh.c (honor_protect_cleanup_actions): Use new langhook
+	instead of lang_protect_cleanup_actions.
+	* omp-low.c (maybe_catch_exception): Likewise.
+	* Makefile.in: Update dependencies.
+
 2010-06-28  Bingfeng Mei <bmei@broadcom.com>
 
         * cgraph.h (struct varpool_node): new used_from_object_file flag.

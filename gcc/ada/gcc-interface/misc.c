@@ -25,7 +25,7 @@
 
 /* This file contains parts of the compiler that are required for interfacing
    with GCC but otherwise do nothing and parts of Gigi that need to know
-   about RTL.  */
+   about GIMPLE.  */
 
 #include "config.h"
 #include "system.h"
@@ -44,7 +44,6 @@
 #include "options.h"
 #include "plugin.h"
 #include "function.h"	/* For pass_by_reference.  */
-#include "except.h"	/* For USING_SJLJ_EXCEPTIONS.  */
 
 #include "ada.h"
 #include "adadecode.h"

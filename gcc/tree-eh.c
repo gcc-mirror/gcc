@@ -951,12 +951,12 @@ lower_try_finally_fallthru_label (struct leh_tf_state *tf)
   return label;
 }
 
-/* A subroutine of lower_try_finally.  If lang_protect_cleanup_actions
-   returns non-null, then the language requires that the exception path out
-   of a try_finally be treated specially.  To wit: the code within the
-   finally block may not itself throw an exception.  We have two choices here.
-   First we can duplicate the finally block and wrap it in a must_not_throw
-   region.  Second, we can generate code like
+/* A subroutine of lower_try_finally.  If the eh_protect_cleanup_actions
+   langhook returns non-null, then the language requires that the exception
+   path out of a try_finally be treated specially.  To wit: the code within
+   the finally block may not itself throw an exception.  We have two choices
+   here. First we can duplicate the finally block and wrap it in a
+   must_not_throw region.  Second, we can generate code like
 
 	try {
 	  finally_block;
@@ -983,9 +983,9 @@ honor_protect_cleanup_actions (struct leh_state *outer_state,
   gimple x;
 
   /* First check for nothing to do.  */
-  if (lang_protect_cleanup_actions == NULL)
+  if (lang_hooks.eh_protect_cleanup_actions == NULL)
     return;
-  protect_cleanup_actions = lang_protect_cleanup_actions ();
+  protect_cleanup_actions = lang_hooks.eh_protect_cleanup_actions ();
   if (protect_cleanup_actions == NULL)
     return;
 

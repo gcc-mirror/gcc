@@ -43,7 +43,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tree-dump.h"
 #include "opts.h"
 #include "options.h"
-#include "except.h"	/* For USING_SJLJ_EXCEPTIONS.  */
 
 static bool java_init (void);
 static void java_finish (void);

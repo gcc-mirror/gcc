@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "cp-objcp-common.h"
-#include "except.h"	/* For USING_SJLJ_EXCEPTIONS.  */
 
 enum c_language_kind c_language = clk_objcxx;
 static void objcxx_init_ts (void);

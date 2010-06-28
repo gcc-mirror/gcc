@@ -49,6 +49,11 @@ extern void init_optimization_passes (void);
 extern void finish_optimization_passes (void);
 extern bool enable_rtl_dump_file (void);
 
+/* In except.c.  Initialize exception handling.  This is used by the Ada
+   and LTO front ends to initialize EH "on demand".  See lto-streamer-in.c
+   and ada/gcc-interface/misc.c.  */
+extern void init_eh (void);
+
 extern void announce_function (tree);
 
 extern void error_for_asm (const_rtx, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);

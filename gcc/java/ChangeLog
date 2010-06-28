@@ -1,3 +1,12 @@
+2010-06-28  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* lang.c: Do not include except.h
+	* except.c: Likewise.
+	(doing_eh): New, moved from except.c (in gcc/) but removed the
+	do_warning flag.
+	(maybe_start_try): Update doing_eh call.
+	* Make-lang.in: Update dependencies.
+
 2010-06-23  Anatoly Sokolov  <aesok@post.ru>
 
 	* decl.c (java_init_decl_processing): Use double_int_to_tree instead

@@ -19,6 +19,13 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* No include guards here, but define an include file marker anyway, so
+   that the compiler can keep track of where this file is included.  This
+   is e.g. used to avoid including this file in front-end specific files.  */
+#ifndef GCC_EXCEPT_H
+#  define GCC_EXCEPT_H
+#endif
+
 #include "hashtab.h"
 #include "vecprim.h"
 #include "vecir.h"
@@ -222,14 +229,10 @@ struct GTY(()) eh_status
 };
 
 
-/* Test: is exception handling turned on?  */
-extern int doing_eh (int);
-
 /* Invokes CALLBACK for every exception handler label.  Only used by old
    loop hackery; should not be used by new code.  */
 extern void for_each_eh_label (void (*) (rtx));
 
-extern void init_eh (void);
 extern void init_eh_for_function (void);
 
 extern void remove_eh_landing_pad (eh_landing_pad);
@@ -286,14 +289,6 @@ extern void assign_filter_values (void);
 
 extern eh_region get_eh_region_from_rtx (const_rtx);
 extern eh_landing_pad get_eh_landing_pad_from_rtx (const_rtx);
-
-/* If non-NULL, this is a function that returns a function decl to be
-   executed if an unhandled exception is propagated out of a cleanup
-   region.  For example, in C++, an exception thrown by a destructor
-   during stack unwinding is required to result in a call to
-   `std::terminate', so the C++ version of this function returns a
-   FUNCTION_DECL for `std::terminate'.  */
-extern tree (*lang_protect_cleanup_actions) (void);
 
 struct GTY(()) throw_stmt_node {
   gimple stmt;

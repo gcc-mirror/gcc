@@ -1,3 +1,7 @@
+2010-06-28  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* Make-lang.in: Update dependencies.
+
 2010-06-27  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* gfortran.h (gfc_code): Split backend_decl field into cycle_label

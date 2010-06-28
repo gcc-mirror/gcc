@@ -285,7 +285,7 @@ java/decl.o: java/decl.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
   libfuncs.h java/java-except.h $(GGC_H) $(REAL_H) gt-java-decl.h \
   $(TARGET_H) $(CGRAPH_H) langhooks.h
 java/except.o: java/except.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h $(REAL_H) \
-  java/javaop.h java/java-opcodes.h except.h java/java-except.h \
+  java/javaop.h java/java-opcodes.h java/java-except.h \
   toplev.h $(SYSTEM_H) coretypes.h
 java/expr.o: java/expr.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h $(REAL_H) \
   java/javaop.h java/java-opcodes.h \
@@ -302,7 +302,7 @@ java/jvgenmain.o: java/jvgenmain.c $(CONFIG_H) $(JAVA_TREE_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) intl.h
 java/lang.o: java/lang.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h input.h \
   toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(DIAGNOSTIC_H) \
-  langhooks.h $(LANGHOOKS_DEF_H) gt-java-lang.h opts.h options.h $(EXCEPT_H)
+  langhooks.h $(LANGHOOKS_DEF_H) gt-java-lang.h opts.h options.h
 java/mangle.o: java/mangle.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) toplev.h $(GGC_H) gt-java-mangle.h $(LANGHOOKS_DEF_H)
 java/mangle_name.o: java/mangle_name.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) \

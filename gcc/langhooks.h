@@ -446,6 +446,14 @@ struct lang_hooks
   /* Map a type to a runtime object to match type.  */
   tree (*eh_runtime_type) (tree);
 
+  /* If non-NULL, this is a function that returns a function decl to be
+     executed if an unhandled exception is propagated out of a cleanup
+     region.  For example, in C++, an exception thrown by a destructor
+     during stack unwinding is required to result in a call to
+     `std::terminate', so the C++ version of this function returns a
+     FUNCTION_DECL for `std::terminate'.  */
+  tree (*eh_protect_cleanup_actions) (void);
+
   /* True if this language uses __cxa_end_cleanup when the ARM EABI
      is enabled.  */
   bool eh_use_cxa_end_cleanup;

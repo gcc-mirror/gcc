@@ -31,7 +31,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "javaop.h"
 #include "java-opcodes.h"
 #include "jcf.h"
-#include "except.h"	/* for doing_eh.  */
 #include "java-except.h"
 #include "toplev.h"
 #include "tree-iterator.h"
@@ -565,6 +564,29 @@ check_start_handlers (struct eh_range *range, int pc)
 }
 
 
+/* Routine to see if exception handling is turned on.
+   DO_WARN is nonzero if we want to inform the user that exception
+   handling is turned off.
+
+   This is used to ensure that -fexceptions has been specified if the
+   compiler tries to use any exception-specific functions.  */
+
+static inline int
+doing_eh (void)
+{
+  if (! flag_exceptions)
+    {
+      static int warned = 0;
+      if (! warned)
+	{
+	  error ("exception handling disabled, use -fexceptions to enable");
+	  warned = 1;
+	}
+      return 0;
+    }
+  return 1;
+}
+
 static struct eh_range *current_range;
 
 /* Emit any start-of-try-range starting at start_pc and ending after
@@ -574,7 +596,7 @@ void
 maybe_start_try (int start_pc, int end_pc)
 {
   struct eh_range *range;
-  if (! doing_eh (1))
+  if (! doing_eh ())
     return;
 
   range = find_handler (start_pc);

@@ -59,7 +59,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "objc-act.h"
 #include "input.h"
-#include "except.h"	/* For USING_SJLJ_EXCEPTIONS.  */
 #include "function.h"
 #include "output.h"
 #include "toplev.h"

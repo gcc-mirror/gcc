@@ -4855,6 +4855,7 @@ extern tree eh_type_info			(tree);
 extern tree begin_eh_spec_block			(void);
 extern void finish_eh_spec_block		(tree, tree);
 extern tree build_eh_type_type			(tree);
+extern tree cp_protect_cleanup_actions		(void);
 
 /* in expr.c */
 extern tree cplus_expand_constant		(tree);

@@ -1,3 +1,8 @@
+2010-06-28  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* objcp-lang.c: Do not include except.h.
+	* Make-lang.in: Update dependencies.
+
 2010-06-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* lang-specs.h: Remove +e handling.
