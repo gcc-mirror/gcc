@@ -1,3 +1,7 @@
+2010-06-28  Anatoly Sokolov  <aesok@post.ru>
+
+	* c-common.c (shorten_compare): Adjust call to force_fit_type_double.
+
 2010-06-28  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* c-cppbuiltin.c: Do not include except.h.

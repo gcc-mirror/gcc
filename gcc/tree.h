@@ -4014,6 +4014,7 @@ tree_to_double_int (const_tree cst)
 
 extern tree double_int_to_tree (tree, double_int);
 extern bool double_int_fits_to_tree_p (const_tree, double_int);
+extern tree force_fit_type_double (tree, double_int, int, bool);
 
 /* Create an INT_CST node with a CST value zero extended.  */
 
