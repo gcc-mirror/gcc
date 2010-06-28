@@ -382,6 +382,12 @@ make_class (void)
      loading works.  */
   TYPE_BINFO (type) = make_tree_binfo (0);
   MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC (type);
+  TYPE_CATCH_CLASSES (type) = NULL;
+  /* Push a dummy entry; we can't call make_catch_class_record here
+     because other infrastructure may not be set up yet.  We'll come
+     back and fill it in later once said infrastructure is
+     initialized.  */
+  CONSTRUCTOR_APPEND_ELT (TYPE_CATCH_CLASSES (type), NULL_TREE, NULL_TREE);
 
   return type;
 }
@@ -2960,18 +2966,17 @@ tree
 emit_catch_table (tree this_class)
 {
   tree table, table_size, array_type;
-  TYPE_CATCH_CLASSES (this_class) =
-    tree_cons (NULL,
-	       make_catch_class_record (null_pointer_node, null_pointer_node),
-	       TYPE_CATCH_CLASSES (this_class));
-  TYPE_CATCH_CLASSES (this_class) = nreverse (TYPE_CATCH_CLASSES (this_class));
-  TYPE_CATCH_CLASSES (this_class) = 
-    tree_cons (NULL,
-	       make_catch_class_record (null_pointer_node, null_pointer_node),
-	       TYPE_CATCH_CLASSES (this_class));
-  table_size = build_index_type
-    (build_int_cst (NULL_TREE,
-		    list_length (TYPE_CATCH_CLASSES (this_class))));
+  int n_catch_classes;
+  constructor_elt *e;
+  /* Fill in the dummy entry that make_class created.  */
+  e = VEC_index (constructor_elt, TYPE_CATCH_CLASSES (this_class), 0);
+  e->value = make_catch_class_record (null_pointer_node, null_pointer_node);
+  CONSTRUCTOR_APPEND_ELT (TYPE_CATCH_CLASSES (this_class), NULL_TREE,
+			  make_catch_class_record (null_pointer_node,
+						   null_pointer_node));
+  n_catch_classes = VEC_length (constructor_elt,
+				TYPE_CATCH_CLASSES (this_class));
+  table_size = build_index_type (build_int_cst (NULL_TREE, n_catch_classes));
   array_type 
     = build_array_type (TREE_TYPE (TREE_TYPE (TYPE_CTABLE_DECL (this_class))),
 			table_size);
@@ -2979,7 +2984,7 @@ emit_catch_table (tree this_class)
     build_decl (input_location,
 		VAR_DECL, DECL_NAME (TYPE_CTABLE_DECL (this_class)), array_type);
   DECL_INITIAL (table) = 
-    build_constructor_from_list (array_type, TYPE_CATCH_CLASSES (this_class));
+    build_constructor (array_type, TYPE_CATCH_CLASSES (this_class));
   TREE_STATIC (table) = 1;
   TREE_READONLY (table) = 1;  
   DECL_IGNORED_P (table) = 1;

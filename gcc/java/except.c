@@ -419,9 +419,9 @@ prepare_eh_table_type (tree type)
       layout_decl (decl, 0);
       pushdecl (decl);
       exp = build1 (ADDR_EXPR, build_pointer_type (utf8const_ptr_type), decl);
-      TYPE_CATCH_CLASSES (output_class) = 
-	tree_cons (NULL, make_catch_class_record (exp, utf8_ref), 
-		   TYPE_CATCH_CLASSES (output_class));
+      CONSTRUCTOR_APPEND_ELT (TYPE_CATCH_CLASSES (output_class),
+			      NULL_TREE,
+			      make_catch_class_record (exp, utf8_ref));
     }
 
   exp = convert (ptr_type_node, exp);
