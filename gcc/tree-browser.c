@@ -108,7 +108,7 @@ void browse_tree (tree);
 
 /* Static variables.  */
 static htab_t TB_up_ht;
-static tree TB_history_stack = NULL_TREE;
+static VEC(tree,gc) *TB_history_stack;
 static int TB_verbose = 1;
 
 
@@ -126,7 +126,7 @@ browse_tree (tree begin)
   fprintf (TB_OUT_FILE, "\nTree Browser\n");
 
 #define TB_SET_HEAD(N) do {                                           \
-  TB_history_stack = tree_cons (NULL_TREE, (N), TB_history_stack);    \
+  VEC_safe_push (tree, gc, TB_history_stack, N);                      \
   head = N;                                                           \
   if (TB_verbose)                                                     \
     if (head)                                                         \
@@ -876,11 +876,11 @@ find_node_with_code (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 static tree
 TB_history_prev (void)
 {
-  if (TB_history_stack)
+  if (!VEC_empty (tree, TB_history_stack))
     {
-      TB_history_stack = TREE_CHAIN (TB_history_stack);
-      if (TB_history_stack)
-	return TREE_VALUE (TB_history_stack);
+      tree last = VEC_last (tree, TB_history_stack);
+      VEC_pop (tree, TB_history_stack);
+      return last;
     }
   return NULL_TREE;
 }
