@@ -360,7 +360,8 @@ enum processor_type
    PROCESSOR_POWER6,
    PROCESSOR_POWER7,
    PROCESSOR_CELL,
-   PROCESSOR_PPCA2
+   PROCESSOR_PPCA2,
+   PROCESSOR_TITAN
 };
 
 /* FPU operations supported. 
