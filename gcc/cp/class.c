@@ -283,6 +283,8 @@ build_base_path (enum tree_code code,
   if (!want_pointer)
     /* This must happen before the call to save_expr.  */
     expr = cp_build_unary_op (ADDR_EXPR, expr, 0, tf_warning_or_error);
+  else
+    mark_rvalue_use (expr);
 
   offset = BINFO_OFFSET (binfo);
   fixed_type_p = resolves_to_fixed_type_p (expr, &nonnull);
