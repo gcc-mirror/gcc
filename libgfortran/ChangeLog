@@ -1,3 +1,8 @@
+2010-06-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43298
+	* list_read.c (parse_real, read_real): Support NAN(alphanum).
+
 2010-06-25  Tobias Burnus  <burnus@net-b.de>
 
 	* intrinsics/selected_real_kind.f90
