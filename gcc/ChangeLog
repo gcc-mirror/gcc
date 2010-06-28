@@ -1,3 +1,9 @@
+2010-06-28  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.c (ipcp_init_cloned_node): Replace calls to
+	ipa_check_create_node_params and ipa_initialize_node_params with
+	checking asserts they are not necessary.
+
 2010-06-28  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/44687
