@@ -4167,7 +4167,8 @@ all_callers_have_enough_arguments_p (struct cgraph_node *node)
 /* Convert all callers of NODE to pass parameters as given in ADJUSTMENTS.  */
 
 static void
-convert_callers (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
+convert_callers (struct cgraph_node *node, tree old_decl,
+		 ipa_parm_adjustment_vec adjustments)
 {
   tree old_cur_fndecl = current_function_decl;
   struct cgraph_edge *cs;
@@ -4214,10 +4215,11 @@ convert_callers (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
 	  if (gimple_code (stmt) != GIMPLE_CALL)
 	    continue;
 	  call_fndecl = gimple_call_fndecl (stmt);
-	  if (call_fndecl && cgraph_get_node (call_fndecl) == node)
+	  if (call_fndecl == old_decl)
 	    {
 	      if (dump_file)
 		fprintf (dump_file, "Adjusting recursive call");
+	      gimple_call_set_fndecl (stmt, node->decl);
 	      ipa_modify_call_arguments (NULL, stmt, adjustments);
 	    }
 	}
@@ -4256,7 +4258,7 @@ modify_function (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
   ipa_modify_formal_parameters (current_function_decl, adjustments, "ISRA");
   ipa_sra_modify_function_body (adjustments);
   sra_ipa_reset_debug_stmts (adjustments);
-  convert_callers (new_node, adjustments);
+  convert_callers (new_node, node->decl, adjustments);
   cgraph_make_node_local (new_node);
   return;
 }
