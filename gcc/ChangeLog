@@ -1,3 +1,22 @@
+2010-06-28  Bingfeng Mei <bmei@broadcom.com>
+
+        * cgraph.h (struct varpool_node): new used_from_object_file flag.
+        (struct cgraph_local_info): new used_from_object_file flag.
+        * cgraph.c (dump_cgraph_node): dump used_from_object_file flag.
+        (cgraph_clone_node): initialize used_from_object_file.
+        (cgraph_create_virtual_clone): initialize used_from_object_file.
+        * lto-symbtab.c (lto_symtab_merge_decls_1): Set
+        used_from_object_file flags for symbols of LDPR_PREVAILING_DEF
+        when compiling with -fwhole-program.
+        (lto_symtab_resolve_symbols) Use LDPR_PREVAILING_DEF_IRONLY for
+	internal resolver.
+        * ipa.c (function_and_variable_visibility): Set externally_visible
+        flag of varpool_node if used_from_object_file flag is set.
+        (cgraph_externally_visible_p): check used_from_object_file flag.
+        * doc/invoke.texi (-fwhole-program option): Change description of
+        externally_visible attribute accordingly.
+        * doc/extend.texi (externally_visible): Ditto.
+
 2010-06-27  Jan Hubicka  <jh@suse.cz>
 
 	* params.def (max-inline-insns-auto): Default to 40.

@@ -576,6 +576,8 @@ cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program)
     return false;
   if (!whole_program)
     return true;
+  if (node->local.used_from_object_file)
+    return true;
   if (DECL_PRESERVE_P (node->decl))
     return true;
   /* COMDAT functions must be shared only if they have address taken,
@@ -729,6 +731,7 @@ function_and_variable_visibility (bool whole_program)
 	         we start reordering datastructures.  */
 	      || DECL_COMDAT (vnode->decl)
 	      || DECL_WEAK (vnode->decl)
+              || vnode->used_from_object_file
 	      || lookup_attribute ("externally_visible",
 				   DECL_ATTRIBUTES (vnode->decl))))
 	vnode->externally_visible = true;

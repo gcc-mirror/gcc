@@ -1825,6 +1825,8 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
     fprintf (f, " local");
   if (node->local.externally_visible)
     fprintf (f, " externally_visible");
+  if (node->local.used_from_object_file)
+    fprintf (f, " used_from_object_file");
   if (node->local.finalized)
     fprintf (f, " finalized");
   if (node->local.disregard_inline_limits)
@@ -2075,6 +2077,7 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
   new_node->analyzed = n->analyzed;
   new_node->local = n->local;
   new_node->local.externally_visible = false;
+  new_node->local.used_from_object_file = false;
   new_node->local.local = true;
   new_node->local.vtable_method = false;
   new_node->global = n->global;
@@ -2266,6 +2269,7 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   else
     new_node->clone.combined_args_to_skip = args_to_skip;
   new_node->local.externally_visible = 0;
+  new_node->local.used_from_object_file = 0;
   new_node->local.local = 1;
   new_node->lowered = true;
   new_node->reachable = true;

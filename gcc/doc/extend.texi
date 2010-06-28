@@ -2296,7 +2296,7 @@ attribute is present.
 @cindex @code{externally_visible} attribute.
 This attribute, attached to a global variable or function, nullifies
 the effect of the @option{-fwhole-program} command-line option, so the
-object remains visible outside the current compilation unit.
+object remains visible outside the current compilation unit. If @option{-fwhole-program} is used together with @option{-flto} and @command{gold} is used as the linker plugin, @code{externally_visible} attributes are automatically added to functions (not variable yet due to a current @command{gold} issue) that are accessed outside of LTO objects according to resolution file produced by @command{gold}.  For other linkers that cannot generate resolution file, explicit @code{externally_visible} attributes are still necessary.
 
 @item far
 @cindex functions which handle memory bank switching
