@@ -1,5 +1,10 @@
 2010-06-27  Jan Hubicka  <jh@suse.cz>
 
+	* params.def (max-inline-insns-auto): Default to 40.
+	* doc/invoke.texi (max-inline-insns-auto): Document the change.
+
+2010-06-27  Jan Hubicka  <jh@suse.cz>
+
 	PR middle-end/44671
 	PR middle-end/44686
 	* tree.c (build_function_decl_skip_args): Clear DECL_BUILT_IN on signature
