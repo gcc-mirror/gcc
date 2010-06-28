@@ -1376,6 +1376,30 @@ compare_pointer (gfc_symbol *formal, gfc_expr *actual)
 }
 
 
+/* Emit clear error messages for rank mismatch.  */
+
+static void
+argument_rank_mismatch (const char *name, locus *where,
+			int rank1, int rank2)
+{
+  if (rank1 == 0)
+    {
+      gfc_error ("Rank mismatch in argument '%s' at %L "
+		 "(scalar and rank-%d)", name, where, rank2);
+    }
+  else if (rank2 == 0)
+    {
+      gfc_error ("Rank mismatch in argument '%s' at %L "
+		 "(rank-%d and scalar)", name, where, rank1);
+    }
+  else
+    {    
+      gfc_error ("Rank mismatch in argument '%s' at %L "
+		 "(rank-%d and rank-%d)", name, where, rank1, rank2);
+    }
+}
+
+
 /* Given a symbol of a formal argument list and an expression, see if
    the two are compatible as arguments.  Returns nonzero if
    compatible, zero if not compatible.  */
@@ -1559,9 +1583,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	  && gfc_is_coindexed (actual)))
     {
       if (where)
-	gfc_error ("Rank mismatch in argument '%s' at %L (%d and %d)",
-		   formal->name, &actual->where, symbol_rank (formal),
-		   actual->rank);
+	argument_rank_mismatch (formal->name, &actual->where,
+				symbol_rank (formal), actual->rank);
       return 0;
     }
   else if (actual->rank != 0 && (is_elemental || formal->attr.dimension))
@@ -1600,9 +1623,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   else if (ref == NULL && actual->expr_type != EXPR_NULL)
     {
       if (where)
-	gfc_error ("Rank mismatch in argument '%s' at %L (%d and %d)",
-		   formal->name, &actual->where, symbol_rank (formal),
-		   actual->rank);
+	argument_rank_mismatch (formal->name, &actual->where,
+				symbol_rank (formal), actual->rank);
       return 0;
     }
 

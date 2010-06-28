@@ -1,3 +1,10 @@
+2010-06-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40158
+	* interface.c (argument_rank_mismatch): New function.
+	(compare_parameter): Call new function instead of generating
+	the error directly.
+
 2010-06-28  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* trans-openmp.c (dovar_init): Define.  Define VECs containing it.
