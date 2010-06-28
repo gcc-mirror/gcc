@@ -138,6 +138,7 @@ test_nonssa_use (gimple stmt ATTRIBUTE_UNUSED, tree t,
   if (t && !is_gimple_reg (t)
       && ((TREE_CODE (t) == VAR_DECL
 	  && auto_var_in_fn_p (t, current_function_decl))
+	  || (TREE_CODE (t) == RESULT_DECL)
 	  || (TREE_CODE (t) == PARM_DECL)))
     return bitmap_bit_p ((bitmap)data, DECL_UID (t));
   return false;
@@ -441,7 +442,8 @@ mark_nonssa_use (gimple stmt ATTRIBUTE_UNUSED, tree t,
       return true;
     }
 
-  if (TREE_CODE (t) == VAR_DECL && auto_var_in_fn_p (t, current_function_decl))
+  if ((TREE_CODE (t) == VAR_DECL && auto_var_in_fn_p (t, current_function_decl))
+      || (TREE_CODE (t) == RESULT_DECL))
     bitmap_set_bit ((bitmap)data, DECL_UID (t));
   return false;
 }
