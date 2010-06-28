@@ -1,5 +1,11 @@
 2010-06-28  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* tree-browser.c (TB_history_stack): Convert to a VEC.
+	(TB_SET_HEAD): Adjust for new type of TB_history_stack.
+	(TB_history_prev): Likewise.
+
+2010-06-28  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* vec.h (vec_heap_free): Add parentheses around free.
 
 2010-06-28  Steven Bosscher  <steven@gcc.gnu.org>
