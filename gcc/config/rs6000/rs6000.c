@@ -838,6 +838,25 @@ struct processor_costs ppce500mc64_cost = {
   1,			/* prefetch streams /*/
 };
 
+/* Instruction costs on AppliedMicro Titan processors.  */
+static const
+struct processor_costs titan_cost = {
+  COSTS_N_INSNS (5),    /* mulsi */
+  COSTS_N_INSNS (5),    /* mulsi_const */
+  COSTS_N_INSNS (5),    /* mulsi_const9 */
+  COSTS_N_INSNS (5),    /* muldi */
+  COSTS_N_INSNS (18),   /* divsi */
+  COSTS_N_INSNS (18),   /* divdi */
+  COSTS_N_INSNS (10),   /* fp */
+  COSTS_N_INSNS (10),   /* dmul */
+  COSTS_N_INSNS (46),   /* sdiv */
+  COSTS_N_INSNS (72),   /* ddiv */
+  32,			/* cache line size */
+  32,			/* l1 cache */
+  512,			/* l2 cache */
+  1,			/* prefetch streams /*/
+};
+
 /* Instruction costs on POWER4 and POWER5 processors.  */
 static const
 struct processor_costs power4_cost = {
@@ -2439,6 +2458,8 @@ rs6000_override_options (const char *default_cpu)
 	 {"G4",  PROCESSOR_PPC7450, POWERPC_7400_MASK},
 	 {"G5", PROCESSOR_POWER4,
 	  POWERPC_7400_MASK | MASK_PPC_GPOPT | MASK_MFCRF | MASK_POWERPC64},
+	 {"titan", PROCESSOR_TITAN,
+	  POWERPC_BASE_MASK | MASK_MULHW | MASK_DLMZB},
 	 {"power", PROCESSOR_POWER, MASK_POWER | MASK_MULTIPLE | MASK_STRING},
 	 {"power2", PROCESSOR_POWER,
 	  MASK_POWER | MASK_POWER2 | MASK_MULTIPLE | MASK_STRING},
@@ -2882,6 +2903,12 @@ rs6000_override_options (const char *default_cpu)
   if (!rs6000_explicit_options.aix_struct_ret)
     aix_struct_return = (DEFAULT_ABI != ABI_V4 || DRAFT_V4_STRUCT_RET);
 
+#if 0
+  /* IBM XL compiler defaults to unsigned bitfields.  */
+  if (TARGET_XL_COMPAT)
+    flag_signed_bitfields = 0;
+#endif
+
   if (TARGET_LONG_DOUBLE_128 && !TARGET_IEEEQUAD)
     REAL_MODE_FORMAT (TFmode) = &ibm_extended_format;
 
@@ -2899,8 +2926,10 @@ rs6000_override_options (const char *default_cpu)
   /* Set branch target alignment, if not optimizing for size.  */
   if (!optimize_size)
     {
-      /* Cell wants to be aligned 8byte for dual issue. */
-      if (rs6000_cpu == PROCESSOR_CELL)
+      /* Cell wants to be aligned 8byte for dual issue.  Titan wants to be
+	 aligned 8byte to avoid misprediction by the branch predictor.  */
+      if (rs6000_cpu == PROCESSOR_TITAN
+	  || rs6000_cpu == PROCESSOR_CELL)
 	{
 	  if (align_functions <= 0)
 	    align_functions = 8;
@@ -3022,6 +3051,10 @@ rs6000_override_options (const char *default_cpu)
 
       case PROCESSOR_PPCE500MC64:
 	rs6000_cost = &ppce500mc64_cost;
+	break;
+
+      case PROCESSOR_TITAN:
+	rs6000_cost = &titan_cost;
 	break;
 
       case PROCESSOR_POWER4:
@@ -22514,6 +22547,7 @@ rs6000_issue_rate (void)
   case CPU_PPCE300C3:
   case CPU_PPCE500MC:
   case CPU_PPCE500MC64:
+  case CPU_TITAN:
     return 2;
   case CPU_RIOS2:
   case CPU_PPC476:
