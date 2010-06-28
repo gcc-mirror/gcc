@@ -1,3 +1,7 @@
+2010-06-28  Martin Jambor  <mjambor@suse.cz>
+
+	* testsuite/gcc.dg/ipa/ipa-sra-6.c: New test.
+
 2010-06-28  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/44687

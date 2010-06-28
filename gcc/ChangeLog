@@ -1,5 +1,11 @@
 2010-06-28  Martin Jambor  <mjambor@suse.cz>
 
+	* tree-sra.c (convert_callers): New parameter, change fndecls of
+	recursive calls.
+	(modify_function): Pass the old decl to convert_callers.
+
+2010-06-28  Martin Jambor  <mjambor@suse.cz>
+
 	* ipa-cp.c (ipcp_init_cloned_node): Replace calls to
 	ipa_check_create_node_params and ipa_initialize_node_params with
 	checking asserts they are not necessary.
