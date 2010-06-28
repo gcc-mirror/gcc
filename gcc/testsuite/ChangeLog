@@ -1,3 +1,14 @@
+2010-06-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/tree-ssa/ltrans-1.c: Add -march=i486 for i?86-*-* && ilp32.
+	* gcc.dg/tree-ssa/ltrans-3.c: Likewise.
+	* gcc.dg/tree-ssa/ltrans-4.c: Likewise.
+	* gcc.dg/tree-ssa/ltrans-5.c: Likewise.
+	* gcc.dg/tree-ssa/ltrans-6.c: Likewise.
+	* gcc.dg/tree-ssa/ltrans-8.c: Likewise.
+	* gcc.dg/tree-ssa/vrp47.c: Add -march=i586 for i?86-*-* && ilp32.
+	* gfortran.dg/ltrans-7.f90: Add -march=i486 for i?86-*-* && ilp32.
+
 2010-06-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/43841
