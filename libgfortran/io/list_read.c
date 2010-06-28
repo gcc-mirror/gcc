@@ -1199,6 +1199,21 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
       push_char (dtp, 'n');
       push_char (dtp, 'a');
       push_char (dtp, 'n');
+      
+      /* Match "NAN(alphanum)".  */
+      if (c == '(')
+	{
+	  for ( ; c != ')'; c = next_char (dtp))
+	    if (is_separator (c))
+	      goto bad;
+	    else
+	      push_char (dtp, c);
+
+	  push_char (dtp, ')');
+	  c = next_char (dtp);
+	  if (is_separator (c))
+	    unget_char (dtp, c);
+	}
       goto done;
     }
 
@@ -1576,6 +1591,20 @@ read_real (st_parameter_dt *dtp, void * dest, int length)
 	goto unwind;
       c = next_char (dtp);
       l_push_char (dtp, c);
+
+      /* Match NAN(alphanum).  */
+      if (c == '(')
+	{
+	  for (c = next_char (dtp); c != ')'; c = next_char (dtp))
+	    if (is_separator (c))
+	      goto unwind;
+	    else
+	      l_push_char (dtp, c);
+
+	  l_push_char (dtp, ')');
+	  c = next_char (dtp);
+	  l_push_char (dtp, c);
+	}
     }
 
   if (!is_separator (c))
