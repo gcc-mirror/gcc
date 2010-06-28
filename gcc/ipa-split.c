@@ -928,9 +928,7 @@ split_function (struct split_point *split_point)
 	  gimple ret;
 	  if (!VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))))
 	    {
-	      retval
-	        = create_tmp_var (TREE_TYPE (TREE_TYPE (current_function_decl)),
-				  "RET");
+	      retval = DECL_RESULT (current_function_decl);
 	      if (is_gimple_reg (retval))
 		retval = make_ssa_name (retval, call);
 	      gimple_call_set_lhs (call, retval);
