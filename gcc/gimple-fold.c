@@ -1476,6 +1476,22 @@ gimple_fold_builtin (gimple stmt)
   return result;
 }
 
+/* Return the first of the base binfos of BINFO that has virtual functions.  */
+
+static tree
+get_first_base_binfo_with_virtuals (tree binfo)
+{
+  int i;
+  tree base_binfo;
+
+  for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+    if (BINFO_VIRTUALS (base_binfo))
+      return base_binfo;
+
+  return NULL_TREE;
+}
+
+
 /* Search for a base binfo of BINFO that corresponds to TYPE and return it if
    it is found or NULL_TREE if it is not.  */
 
@@ -1531,8 +1547,8 @@ gimple_get_relevant_ref_binfo (tree ref, tree known_binfo)
 	      || BINFO_N_BASE_BINFOS (binfo) == 0)
 	    return NULL_TREE;
 
-	  base_binfo = BINFO_BASE_BINFO (binfo, 0);
-	  if (BINFO_TYPE (base_binfo) != TREE_TYPE (field))
+	  base_binfo = get_first_base_binfo_with_virtuals (binfo);
+	  if (base_binfo && BINFO_TYPE (base_binfo) != TREE_TYPE (field))
 	    {
 	      tree d_binfo;
 
