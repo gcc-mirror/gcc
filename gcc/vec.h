@@ -436,7 +436,8 @@ extern void dump_vec_loc_statistics (void);
 #ifdef GATHER_STATISTICS
 void vec_heap_free (void *);
 #else
-#define vec_heap_free(V) free (V)
+/* Avoid problems with frontends that #define free(x).  */
+#define vec_heap_free(V) (free) (V)
 #endif
 
 #if ENABLE_CHECKING

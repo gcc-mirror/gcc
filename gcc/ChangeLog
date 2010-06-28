@@ -1,3 +1,7 @@
+2010-06-28  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* vec.h (vec_heap_free): Add parentheses around free.
+
 2010-06-28  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* system.h: Poison GCC_EXCEPT_H for front-end files.

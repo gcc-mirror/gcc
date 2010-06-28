@@ -1150,6 +1150,14 @@ gfc_trans_omp_critical (gfc_code *code)
   return build2 (OMP_CRITICAL, void_type_node, stmt, name);
 }
 
+typedef struct dovar_init_d {
+  tree var;
+  tree init;
+} dovar_init;
+
+DEF_VEC_O(dovar_init);
+DEF_VEC_ALLOC_O(dovar_init,heap);
+
 static tree
 gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
 		  gfc_omp_clauses *do_clauses, tree par_clauses)
@@ -1161,7 +1169,9 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
   stmtblock_t body;
   gfc_omp_clauses *clauses = code->ext.omp_clauses;
   int i, collapse = clauses->collapse;
-  tree dovar_init = NULL_TREE;
+  VEC(dovar_init,heap) *inits = NULL;
+  dovar_init *di;
+  unsigned ix;
 
   if (collapse <= 0)
     collapse = 1;
@@ -1276,7 +1286,9 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
 	  /* Initialize DOVAR.  */
 	  tmp = fold_build2 (MULT_EXPR, type, count, step);
 	  tmp = fold_build2 (PLUS_EXPR, type, from, tmp);
-	  dovar_init = tree_cons (dovar, tmp, dovar_init);
+	  di = VEC_safe_push (dovar_init, heap, inits, NULL);
+	  di->var = dovar;
+	  di->init = tmp;
 	}
 
       if (!dovar_found)
@@ -1345,13 +1357,9 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
 
   gfc_start_block (&body);
 
-  dovar_init = nreverse (dovar_init);
-  while (dovar_init)
-    {
-      gfc_add_modify (&body, TREE_PURPOSE (dovar_init),
-			   TREE_VALUE (dovar_init));
-      dovar_init = TREE_CHAIN (dovar_init);
-    }
+  for (ix = 0; VEC_iterate (dovar_init, inits, ix, di); ix++)
+    gfc_add_modify (&body, di->var, di->init);
+  VEC_free (dovar_init, heap, inits);
 
   /* Cycle statement is implemented with a goto.  Exit statement must not be
      present for this loop.  */

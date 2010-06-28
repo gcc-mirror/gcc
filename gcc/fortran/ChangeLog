@@ -1,3 +1,9 @@
+2010-06-28  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* trans-openmp.c (dovar_init): Define.  Define VECs containing it.
+	(gfc_trans_omp_do): Use a VEC to accumulate variables and their
+	initializers.
+
 2010-06-28  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* Make-lang.in: Update dependencies.
