@@ -102,6 +102,9 @@ struct GTY(()) cgraph_local_info {
   /* Set when function is visible by other units.  */
   unsigned externally_visible : 1;
 
+  /* Set when resolver determines that function is visible by other units.  */
+  unsigned used_from_object_file : 1;
+  
   /* Set once it has been finalized so we consider it to be output.  */
   unsigned finalized : 1;
 
@@ -487,6 +490,8 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) varpool_node {
   unsigned output : 1;
   /* Set when function is visible by other units.  */
   unsigned externally_visible : 1;
+  /* Set when resolver determines that variable is visible by other units.  */
+  unsigned used_from_object_file : 1;
   /* Set for aliases once they got through assemble_alias.  Also set for
      extra name aliases in varpool_extra_name_alias.  */
   unsigned alias : 1;
