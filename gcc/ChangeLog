@@ -1,3 +1,12 @@
+2010-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/44668
+	* dwarf2out.c (add_accessibility_attribute): New function.
+	(gen_subprogram_die, gen_variable_die, gen_field_die): Use it
+	instead of adding DW_AT_accessibility manually.
+	(gen_enumeration_type_die, gen_struct_or_union_type_die,
+	gen_typedef_die): Use it.
+
 2010-06-29  Douglas B Rupp  <rupp@gnat.com>
 
 	* vmsdbgout.c (full_name): Just output the file name if not native.
