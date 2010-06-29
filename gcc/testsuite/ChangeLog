@@ -1,3 +1,9 @@
+2010-06-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/44587
+	* g++.dg/template/qualified-id2.C: New.
+	* g++.dg/template/qualified-id3.C: New.
+
 2010-06-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/44582
