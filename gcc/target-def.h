@@ -971,6 +971,10 @@
 #define TARGET_OPTION_PRAGMA_PARSE default_target_option_pragma_parse
 #endif
 
+#ifndef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE default_target_option_override
+#endif
+
 #ifndef TARGET_CAN_INLINE_P
 #define TARGET_CAN_INLINE_P default_target_can_inline_p
 #endif
@@ -982,6 +986,7 @@
     TARGET_OPTION_RESTORE,			\
     TARGET_OPTION_PRINT,			\
     TARGET_OPTION_PRAGMA_PARSE,			\
+    TARGET_OPTION_OVERRIDE,			\
     TARGET_CAN_INLINE_P,			\
   }
 

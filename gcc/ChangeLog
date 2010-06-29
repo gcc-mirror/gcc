@@ -1,3 +1,19 @@
+2010-06-29  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* doc/tm.texi (TARGET_OPTION_OVERRIDE): Document.
+	(OVERRIDE_OPTIONS): Add note of obsolescence.
+	Replace references with references to TARGET_OPTION_OVERRIDE.
+	(Except for C_COMMON_OVERRIDE_OPTIONS, which remains similar to
+	 the macro).
+	* targhooks.c (default_target_option_override): New function.
+	* targhooks.h (default_target_option_override): Declare.
+	* target.h (struct gcc_target): Add override member to
+	target_option emmber.
+	* toplev.c (process_options): Replace OVERRIDE_OPTIONS use with
+	targetm.target_option.override call.
+	* target-def.h (TARGET_OPTION_OVERRIDE): Define.
+	(TARGET_OPTION_HOOKS): Add TARGET_OPTION_OVERRIDE.
+
 2010-06-29  Jan Hubicka  <jh@suse.cz>
 
 	* tree-inline.c: Replace incomming by incomin and clonning by cloning.
