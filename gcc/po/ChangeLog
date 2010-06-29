@@ -1,3 +1,8 @@
+2010-06-29  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR other/44034
+	* EXCLUDES: Add genhooks.c.
+
 2010-05-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* sv.po: Update.

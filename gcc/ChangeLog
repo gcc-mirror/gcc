@@ -1,3 +1,42 @@
+2010-06-29  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR other/44034
+	* target.def, doc/tm.texi.in, genhooks.c: New files.
+	* target.h: Instead of defining individual hook members,
+	define DEFHOOKPOD / DEFHOOK / DEFHOOK_UNDOC / HOOKSTRUCT and
+	include target.def.
+	* target-def.h: Instead of defining individual hook initializers,
+	include target-hooks-def.h.
+	* df-scan.c, haifa-sched.c, sel-sched.c: Rename targetm members:
+	targetm.live_on_entry -> targetm.extra_live_on_entry
+	targetm.sched.md_finish ->targetm.sched.finish
+	targetm.sched.md_init -> targetm.sched.init
+	targetm.sched.md_init_global -> targetm.sched.init_global
+	targetm.asm_out.unwind_label -> targetm.asm_out.emit_unwind_label
+	targetm.asm_out.except_table_label ->
+	  targetm.asm_out.emit_except_table_label
+	targetm.asm_out.visibility -> targetm.asm_out.assemble_visibility
+	targetm.target_help -> targetm.help
+	targetm.vectorize.builtin_support_vector_misalignment ->
+	  targetm.vectorize.support_vector_misalignment
+	targetm.file_start_app_off -> targetm.asm_file_start_app_off
+	targetm.file_start_file_directive ->
+	 targetm.asm_file_start_file_directive
+	* dwarf2out.c, opts.c, tree-vect-data-refs.c, except.c: Likewise.
+	* varasm.c, config/alpha/alpha.c, config/cris/cris.c: Likewise.
+	* gcc/config/spu/spu.c, config/ia64/ia64.c: Rename target macros:
+	TARGET_VECTOR_ALIGNMENT_REACHABLE ->
+	  TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE
+	TARGET_SUPPORT_VECTOR_MISALIGNMENT ->
+	  TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT
+	TARGET_UNWIND_EMIT -> TARGET_ASM_UNWIND_EMIT
+	* config/rs6000/rs6000.c, config/arm/arm.c: Likewise.
+	* Makefile.in (TARGET_H): Depend on target.def.
+	(TARGET_DEF_H): Depend on target-hooks-def.h.
+	(target-hooks-def.h, tm.texi, s-target-hooks-def-h): New rules.
+	(s-tm-texi, build/genhooks.o, build/genhooks): Likewise.
+	* doc/tm.texi: Regenerate.
+
 2010-06-29  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR bootstrap/44713

@@ -1798,7 +1798,7 @@ schedule_insn (rtx insn)
      forward dependencies for INSN anymore.  Nevertheless they are used in
      heuristics in rank_for_schedule (), early_queue_to_ready () and in
      some targets (e.g. rs6000).  Thus the earliest place where we *can*
-     remove dependencies is after targetm.sched.md_finish () call in
+     remove dependencies is after targetm.sched.finish () call in
      schedule_block ().  But, on the other side, the safest place to remove
      dependencies is when we are finishing scheduling entire region.  As we
      don't generate [many] dependencies during scheduling itself, we won't
@@ -2808,8 +2808,8 @@ schedule_block (basic_block *target_bb)
   /* It is used for first cycle multipass scheduling.  */
   temp_state = alloca (dfa_state_size);
 
-  if (targetm.sched.md_init)
-    targetm.sched.md_init (sched_dump, sched_verbose, ready.veclen);
+  if (targetm.sched.init)
+    targetm.sched.init (sched_dump, sched_verbose, ready.veclen);
 
   /* We start inserting insns after PREV_HEAD.  */
   last_scheduled_insn = prev_head;
@@ -3283,9 +3283,9 @@ schedule_block (basic_block *target_bb)
       fix_inter_tick (NEXT_INSN (prev_head), last_scheduled_insn);
     }
 
-  if (targetm.sched.md_finish)
+  if (targetm.sched.finish)
     {
-      targetm.sched.md_finish (sched_dump, sched_verbose);
+      targetm.sched.finish (sched_dump, sched_verbose);
       /* Target might have added some instructions to the scheduled block
 	 in its md_finish () hook.  These new insns don't have any data
 	 initialized and to identify them we extend h_i_d so that they'll
@@ -3444,9 +3444,8 @@ sched_init (void)
 
   regstat_compute_calls_crossed ();
 
-  if (targetm.sched.md_init_global)
-    targetm.sched.md_init_global (sched_dump, sched_verbose,
-				  get_max_uid () + 1);
+  if (targetm.sched.init_global)
+    targetm.sched.init_global (sched_dump, sched_verbose, get_max_uid () + 1);
 
   if (sched_pressure_p)
     {
@@ -3571,8 +3570,8 @@ sched_finish (void)
     }
   free (curr_state);
 
-  if (targetm.sched.md_finish_global)
-    targetm.sched.md_finish_global (sched_dump, sched_verbose);
+  if (targetm.sched.finish_global)
+    targetm.sched.finish_global (sched_dump, sched_verbose);
 
   end_alias_analysis ();
 

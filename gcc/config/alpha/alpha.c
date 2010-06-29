@@ -9742,7 +9742,7 @@ alpha_file_start (void)
   /* If emitting dwarf2 debug information, we cannot generate a .file
      directive to start the file, as it will conflict with dwarf2out
      file numbers.  So it's only useful when emitting mdebug output.  */
-  targetm.file_start_file_directive = (write_symbols == DBX_DEBUG);
+  targetm.asm_file_start_file_directive = (write_symbols == DBX_DEBUG);
 #endif
 
   default_file_start ();
