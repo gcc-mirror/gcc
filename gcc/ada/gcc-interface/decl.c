@@ -1047,15 +1047,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      = TYPE_PADDING_P (gnu_type)
 		? TYPE_FIELDS (TREE_TYPE (TYPE_FIELDS (gnu_type)))
 		: TYPE_FIELDS (gnu_type);
-	    gnu_expr
-	      = gnat_build_constructor
-		(gnu_type,
-		 tree_cons
-		 (template_field,
-		  build_template (TREE_TYPE (template_field),
-				  TREE_TYPE (TREE_CHAIN (template_field)),
-				  NULL_TREE),
-		  NULL_TREE));
+	    VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, 1);
+	    tree t = build_template (TREE_TYPE (template_field),
+				     TREE_TYPE (TREE_CHAIN (template_field)),
+				     NULL_TREE);
+	    CONSTRUCTOR_APPEND_ELT (v, template_field, t);
+	    gnu_expr = gnat_build_constructor (gnu_type, v);
 	  }
 
 	/* Convert the expression to the type of the object except in the
