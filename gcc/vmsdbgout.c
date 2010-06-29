@@ -149,7 +149,6 @@ static unsigned int line_info_table_in_use;
 /* Forward declarations for functions defined in this file.  */
 static char *full_name (const char *);
 static unsigned int lookup_filename (const char *);
-static void addr_const_to_string (char *, rtx);
 static int write_debug_header (DST_HEADER *, const char *, int);
 static int write_debug_addr (const char *, const char *, int);
 static int write_debug_data1 (unsigned int, const char *, int);
@@ -425,136 +424,6 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 #endif
 
 
-/* General utility functions.  */
-
-/* Convert an integer constant expression into assembler syntax.  Addition and
-   subtraction are the only arithmetic that may appear in these expressions.
-   This is an adaptation of output_addr_const in final.c.  Here, the target
-   of the conversion is a string buffer.  We can't use output_addr_const
-   directly, because it writes to a file.  */
-
-static void
-addr_const_to_string (char *str, rtx x)
-{
-  char buf1[256];
-  char buf2[256];
-
- restart:
-  str[0] = '\0';
-  switch (GET_CODE (x))
-    {
-    case PC:
-      gcc_assert (flag_pic);
-      strcat (str, ",");
-      break;
-
-    case SYMBOL_REF:
-      ASM_NAME_TO_STRING (buf1, XSTR (x, 0));
-      strcat (str, buf1);
-      break;
-
-    case LABEL_REF:
-      ASM_GENERATE_INTERNAL_LABEL (buf1, "L", CODE_LABEL_NUMBER (XEXP (x, 0)));
-      ASM_NAME_TO_STRING (buf2, buf1);
-      strcat (str, buf2);
-      break;
-
-    case CODE_LABEL:
-      ASM_GENERATE_INTERNAL_LABEL (buf1, "L", CODE_LABEL_NUMBER (x));
-      ASM_NAME_TO_STRING (buf2, buf1);
-      strcat (str, buf2);
-      break;
-
-    case CONST_INT:
-      sprintf (buf1, HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
-      strcat (str, buf1);
-      break;
-
-    case CONST:
-      /* This used to output parentheses around the expression, but that does
-         not work on the 386 (either ATT or BSD assembler).  */
-      addr_const_to_string (buf1, XEXP (x, 0));
-      strcat (str, buf1);
-      break;
-
-    case CONST_DOUBLE:
-      if (GET_MODE (x) == VOIDmode)
-	{
-	  /* We can use %d if the number is one word and positive.  */
-	  if (CONST_DOUBLE_HIGH (x))
-	    sprintf (buf1, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
-		     CONST_DOUBLE_HIGH (x), CONST_DOUBLE_LOW (x));
-	  else if (CONST_DOUBLE_LOW (x) < 0)
-	    sprintf (buf1, HOST_WIDE_INT_PRINT_HEX, CONST_DOUBLE_LOW (x));
-	  else
-	    sprintf (buf1, HOST_WIDE_INT_PRINT_DEC,
-		     CONST_DOUBLE_LOW (x));
-	  strcat (str, buf1);
-	}
-      else
-	/* We can't handle floating point constants;
-	   TARGET_PRINT_OPERAND must handle them.  */
-	output_operand_lossage ("floating constant misused");
-      break;
-
-    case PLUS:
-      /* Some assemblers need integer constants to appear last (eg masm).  */
-      if (CONST_INT_P (XEXP (x, 0)))
-	{
-	  addr_const_to_string (buf1, XEXP (x, 1));
-	  strcat (str, buf1);
-	  if (INTVAL (XEXP (x, 0)) >= 0)
-	    strcat (str, "+");
-	  addr_const_to_string (buf1, XEXP (x, 0));
-	  strcat (str, buf1);
-	}
-      else
-	{
-	  addr_const_to_string (buf1, XEXP (x, 0));
-	  strcat (str, buf1);
-	  if (INTVAL (XEXP (x, 1)) >= 0)
-	    strcat (str, "+");
-	  addr_const_to_string (buf1, XEXP (x, 1));
-	  strcat (str, buf1);
-	}
-      break;
-
-    case MINUS:
-      /* Avoid outputting things like x-x or x+5-x, since some assemblers
-         can't handle that.  */
-      x = simplify_subtraction (x);
-      if (GET_CODE (x) != MINUS)
-	goto restart;
-
-      addr_const_to_string (buf1, XEXP (x, 0));
-      strcat (str, buf1);
-      strcat (str, "-");
-      if (CONST_INT_P (XEXP (x, 1))
-	  && INTVAL (XEXP (x, 1)) < 0)
-	{
-	  strcat (str, "(");
-	  addr_const_to_string (buf1, XEXP (x, 1));
-	  strcat (str, buf1);
-	  strcat (str, ")");
-	}
-      else
-	{
-	  addr_const_to_string (buf1, XEXP (x, 1));
-	  strcat (str, buf1);
-	}
-      break;
-
-    case ZERO_EXTEND:
-    case SIGN_EXTEND:
-      addr_const_to_string (buf1, XEXP (x, 0));
-      strcat (str, buf1);
-      break;
-
-    default:
-      output_operand_lossage ("invalid expression as operand");
-    }
-}
-
 /* Output the debug header HEADER.  Also output COMMENT if flag_verbose_asm is
    set.  Return the header size.  Just return the size if DOSIZEONLY is
    nonzero.  */
@@ -744,7 +613,7 @@ write_modbeg (int dosizeonly)
   modbeg.dst_b_modbeg_flags.dst_v_modbeg_version = 1;
   modbeg.dst_b_modbeg_flags.dst_v_modbeg_unused = 0;
   modbeg.dst_b_modbeg_unused = 0;
-  modbeg.dst_l_modbeg_language = module_language;
+  modbeg.dst_l_modbeg_language = (DST_LANGUAGE) module_language;
   modbeg.dst_w_version_major = DST_K_VERSION_MAJOR;
   modbeg.dst_w_version_minor = DST_K_VERSION_MINOR;
   modbeg.dst_b_modbeg_name = strlen (module_name);
@@ -823,7 +692,7 @@ write_rtnbeg (int rtnnum, int dosizeonly)
 	 + string count byte + string length */
       header.dst__header_length.dst_w_length
 	= DST_K_DST_HEADER_SIZE - 1 + 1 + 4 + 1 + strlen (go);
-      header.dst__header_type.dst_w_type = 0x17;
+      header.dst__header_type.dst_w_type = DST_K_TBG;
 
       totsize += write_debug_header (&header, "transfer", dosizeonly);
 
