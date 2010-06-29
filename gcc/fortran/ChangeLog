@@ -1,3 +1,13 @@
+2010-06-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/44582
+	* trans-expr.c (arrayfunc_assign_needs_temporary): New function
+	to determine if a function assignment can be made without a
+	temporary.
+	(gfc_trans_arrayfunc_assign): Move all the conditions that
+	suppress the direct function call to the above new functon and
+	call it.
+
 2010-06-27  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/43841

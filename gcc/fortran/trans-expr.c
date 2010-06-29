@@ -5000,41 +5000,40 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
 }
 
 
-/* Try to translate array(:) = func (...), where func is a transformational
-   array function, without using a temporary.  Returns NULL is this isn't the
-   case.  */
+/* There are quite a lot of restrictions on the optimisation in using an
+   array function assign without a temporary.  */
 
-static tree
-gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
+static bool
+arrayfunc_assign_needs_temporary (gfc_expr * expr1, gfc_expr * expr2)
 {
-  gfc_se se;
-  gfc_ss *ss;
   gfc_ref * ref;
   bool seen_array_ref;
   bool c = false;
-  gfc_component *comp = NULL;
+  gfc_symbol *sym = expr1->symtree->n.sym;
 
   /* The caller has already checked rank>0 and expr_type == EXPR_FUNCTION.  */
   if (expr2->value.function.isym && !gfc_is_intrinsic_libcall (expr2))
-    return NULL;
+    return true;
 
-  /* Elemental functions don't need a temporary anyway.  */
+  /* Elemental functions are scalarized so that they don't need a
+     temporary in gfc_trans_assignment_1, so return a true.  Otherwise,
+     they would need special treatment in gfc_trans_arrayfunc_assign.  */
   if (expr2->value.function.esym != NULL
       && expr2->value.function.esym->attr.elemental)
-    return NULL;
+    return true;
 
-  /* Fail if rhs is not FULL or a contiguous section.  */
+  /* Need a temporary if rhs is not FULL or a contiguous section.  */
   if (expr1->ref && !(gfc_full_array_ref_p (expr1->ref, &c) || c))
-    return NULL;
+    return true;
 
-  /* Fail if EXPR1 can't be expressed as a descriptor.  */
+  /* Need a temporary if EXPR1 can't be expressed as a descriptor.  */
   if (gfc_ref_needs_temporary_p (expr1->ref))
-    return NULL;
+    return true;
 
   /* Functions returning pointers need temporaries.  */
   if (expr2->symtree->n.sym->attr.pointer 
       || expr2->symtree->n.sym->attr.allocatable)
-    return NULL;
+    return true;
 
   /* Character array functions need temporaries unless the
      character lengths are the same.  */
@@ -5042,15 +5041,15 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
     {
       if (expr1->ts.u.cl->length == NULL
 	    || expr1->ts.u.cl->length->expr_type != EXPR_CONSTANT)
-	return NULL;
+	return true;
 
       if (expr2->ts.u.cl->length == NULL
 	    || expr2->ts.u.cl->length->expr_type != EXPR_CONSTANT)
-	return NULL;
+	return true;
 
       if (mpz_cmp (expr1->ts.u.cl->length->value.integer,
 		     expr2->ts.u.cl->length->value.integer) != 0)
-	return NULL;
+	return true;
     }
 
   /* Check that no LHS component references appear during an array
@@ -5064,7 +5063,7 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
       if (ref->type == REF_ARRAY)
 	seen_array_ref= true;
       else if (ref->type == REF_COMPONENT && seen_array_ref)
-	return NULL;
+	return true;
     }
 
   /* Check for a dependency.  */
@@ -5072,6 +5071,62 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
 				   expr2->value.function.esym,
 				   expr2->value.function.actual,
 				   NOT_ELEMENTAL))
+    return true;
+
+  /* If we have reached here with an intrinsic function, we do not
+     need a temporary.  */
+  if (expr2->value.function.isym)
+    return false;
+
+  /* If the LHS is a dummy, we need a temporary if it is not
+     INTENT(OUT).  */
+  if (sym->attr.dummy && sym->attr.intent != INTENT_OUT)
+    return true;
+
+  /* A PURE function can unconditionally be called without a temporary.  */
+  if (expr2->value.function.esym != NULL
+      && expr2->value.function.esym->attr.pure)
+    return false;
+
+  /* TODO a function that could correctly be declared PURE but is not
+     could do with returning false as well.  */
+
+  if (!sym->attr.use_assoc
+	&& !sym->attr.in_common
+	&& !sym->attr.pointer
+	&& !sym->attr.target
+	&& expr2->value.function.esym)
+    {
+      /* A temporary is not needed if the function is not contained and
+	 the variable is local or host associated and not a pointer or
+	 a target. */
+      if (!expr2->value.function.esym->attr.contained)
+	return false;
+
+      /* A temporary is not needed if the variable is local and not
+	 a pointer, a target or a result.  */
+      if (sym->ns->parent
+	    && expr2->value.function.esym->ns == sym->ns->parent)
+	return false;
+    }
+
+  /* Default to temporary use.  */
+  return true;
+}
+
+
+/* Try to translate array(:) = func (...), where func is a transformational
+   array function, without using a temporary.  Returns NULL if this isn't the
+   case.  */
+
+static tree
+gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
+{
+  gfc_se se;
+  gfc_ss *ss;
+  gfc_component *comp = NULL;
+
+  if (arrayfunc_assign_needs_temporary (expr1, expr2))
     return NULL;
 
   /* The frontend doesn't seem to bother filling in expr->symtree for intrinsic
