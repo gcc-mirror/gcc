@@ -581,8 +581,6 @@ extern enum reg_class score_char_to_class[256];
    `crtl->outgoing_args_size'.  */
 #define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) 1
 
-#define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, STACK_SIZE) 0
-
 /* Passing Arguments in Registers  */
 /* Determine where to put an argument to a function.
    Value is zero to push the argument on the stack,

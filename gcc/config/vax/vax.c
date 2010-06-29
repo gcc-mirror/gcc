@@ -58,6 +58,7 @@ static rtx vax_struct_value_rtx (tree, int);
 static rtx vax_builtin_setjmp_frame_value (void);
 static void vax_asm_trampoline_template (FILE *);
 static void vax_trampoline_init (rtx, tree, rtx);
+static int vax_return_pops_args (tree, tree, int);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -106,6 +107,8 @@ static void vax_trampoline_init (rtx, tree, rtx);
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE vax_asm_trampoline_template
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT vax_trampoline_init
+#undef TARGET_RETURN_POPS_ARGS
+#define TARGET_RETURN_POPS_ARGS vax_return_pops_args
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2068,3 +2071,18 @@ vax_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
   emit_insn (gen_sync_istream ());
 }
 
+/* Value is the number of bytes of arguments automatically
+   popped when returning from a subroutine call.
+   FUNDECL is the declaration node of the function (as a tree),
+   FUNTYPE is the data type of the function (as a tree),
+   or for a library call it is an identifier node for the subroutine name.
+   SIZE is the number of bytes of arguments passed on the stack.
+
+   On the VAX, the RET insn pops a maximum of 255 args for any function.  */
+
+static int
+vax_return_pops_args (tree fundecl ATTRIBUTE_UNUSED,
+		      tree funtype ATTRIBUTE_UNUSED, int size)
+{
+  return size > 255 * 4 ? 0 : size;
+}

@@ -568,41 +568,6 @@ enum reg_class
    proper.  */
 #define ACCUMULATE_OUTGOING_ARGS 1
 
-/* A C expression that should indicate the number of bytes of its own arguments
-   that a function pops on returning, or 0 if the function pops no arguments
-   and the caller must therefore pop them all after the function returns.
-
-   FUNDECL is a C variable whose value is a tree node that describes the
-   function in question.  Normally it is a node of type `FUNCTION_DECL' that
-   describes the declaration of the function.  From this it is possible to
-   obtain the DECL_ATTRIBUTES of the function.
-
-   FUNTYPE is a C variable whose value is a tree node that describes the
-   function in question.  Normally it is a node of type `FUNCTION_TYPE' that
-   describes the data type of the function.  From this it is possible to obtain
-   the data types of the value and arguments (if known).
-
-   When a call to a library function is being considered, FUNTYPE will contain
-   an identifier node for the library function.  Thus, if you need to
-   distinguish among various library functions, you can do so by their names.
-   Note that "library function" in this context means a function used to
-   perform arithmetic, whose name is known specially in the compiler and was
-   not mentioned in the C code being compiled.
-
-   STACK-SIZE is the number of bytes of arguments passed on the stack.  If a
-   variable number of bytes is passed, it is zero, and argument popping will
-   always be the responsibility of the calling function.
-
-   On the VAX, all functions always pop their arguments, so the definition of
-   this macro is STACK-SIZE.  On the 68000, using the standard calling
-   convention, no functions pop their arguments, so the value of the macro is
-   always 0 in this case.  But an alternative calling convention is available
-   in which functions that take a fixed number of arguments pop them but other
-   functions (such as `printf') pop nothing (the caller pops all).  When this
-   convention is in use, FUNTYPE is examined to determine whether a function
-   takes a fixed number of arguments.  */
-#define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, STACK_SIZE) 0
-
 /*}}}*/ 
 /*{{{  Function Arguments in Registers.  */ 
 

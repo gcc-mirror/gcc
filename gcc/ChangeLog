@@ -1,3 +1,68 @@
+2010-06-29  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* reginfo.c (init_reg_sets_1): Adjust comments.
+	* combine-stack-adj.c (rest_of_handle_stack_adjustments): Likewise.
+	* calls.c (prepare_call_address): Likewise.
+	(emit_call_1): Use targetm.calls.return_pops_args.
+	(expand_call): Likewise.
+	* function.c (assign_parms): Likewise.
+	* system.h (RETURN_POPS_ARGS): Add to #pragma poison list.
+	* target.h (struct gcc_target) [struct calls]: Add
+	return_pops_args field.
+	* targhooks.h (default_return_pops_args): Declare.
+	* targhooks.c (default_return_pops_args): Define.
+	* target-def.h (TARGET_RETURN_POPS_ARGS): Define.
+	(TARGET_CALLS): Add TARGET_RETURN_POPS_ARGS.
+	* doc/tm.texi (RETURN_POPS_ARGS): Rename to...
+	(TARGET_RETURN_POPS_ARGS): ...this.  Use deftypefn.  Adjust
+	documentation.
+	* config/alpha/alpha.h (RETURN_POPS_ARGS): Delete.
+	* config/arc/arc.h (RETURN_POPS_ARGS): Likewise.
+	* config/arm/arm.h (RETURN_POPS_ARGS): Likewise.
+	* config/avr/avr.h (RETURN_POPS_ARGS): Likewise.
+	* config/bfin/bfin.h (RETURN_POPS_ARGS): Likewise.
+	* config/cris/cris.h (RETURN_POPS_ARGS): Likewise.
+	* config/crx/crx.h (RETURN_POPS_ARGS): Likewise.
+	* config/fr30/fr30.h (RETURN_POPS_ARGS): Likewise.
+	* config/frv/frv.h (RETURN_POPS_ARGS): Likewise.
+	* config/h8300/h8300.h (RETURN_POPS_ARGS): Likewise.
+	* config/ia64/ia64.h (RETURN_POPS_ARGS): Likewise.
+	* config/iq2000/iq2000.h (RETURN_POPS_ARGS): Likewise.
+	* config/lm32/lm32.h (RETURN_POPS_ARGS): Likewise.
+	* config/m32c/m32c.h (RETURN_POPS_ARGS): Likewise.
+	* config/m32r/m32r.h (RETURN_POPS_ARGS): Likewise.
+	* config/m68hc11/m68hc11.h (RETURN_POPS_ARGS): Likewise.
+	* config/mcore/mcore.h (RETURN_POPS_ARGS): Likewise.
+	* config/mep/mep.h (RETURN_POPS_ARGS): Likewise.
+	* config/mips/mips.h (RETURN_POPS_ARGS): Likewise.
+	* config/mmix/mmix.h (RETURN_POPS_ARGS): Likewise.
+	* config/mn10300/mn10300.h (RETURN_POPS_ARGS): Likewise.
+	* config/moxie/moxie.h (RETURN_POPS_ARGS): Likewise.
+	* config/pa/pa.h (RETURN_POPS_ARGS): Likewise.
+	* config/pdp11/pdp11.h (RETURN_POPS_ARGS): Likewise.
+	* config/picochip/picochip.h (RETURN_POPS_ARGS): Likewise.
+	* config/rs6000/rs6000.h (RETURN_POPS_ARGS): Likewise.
+	* config/rx/rx.h (RETURN_POPS_ARGS): Likewise.
+	* config/s390/s390.h (RETURN_POPS_ARGS): Likewise.
+	* config/score/score.h (RETURN_POPS_ARGS): Likewise.
+	* config/sh/sh.h (RETURN_POPS_ARGS): Likewise.
+	* config/sparc/sparc.h (RETURN_POPS_ARGS): Likewise.
+	* config/spu/spu.h (RETURN_POPS_ARGS): Likewise.
+	* config/stormy16/stormy16.h (RETURN_POPS_ARGS): Likewise.
+	* config/v850/v850.h (RETURN_POPS_ARGS): Likewise.
+	* config/xtensa/xtensa.h (RETURN_POPS_ARGS): Likewise.
+	* config/i386/i386-protos.h (ix86_return_pops_args): Delete.
+	* config/i386/i386.h (RETURN_POPS_ARGS): Delete.
+	* config/i386/i386.c (ix86_return_pops_args): Make static.
+	Constify arguments.
+	(TARGET_RETURN_POPS_ARGS): Define.
+	* config/m68k/m68k.h (RETURN_POPS_ARGS): Move to...
+	* config/m68k/m68k.c (m68k_return_pops_args): ...here.  New function.
+	(TARGET_RETURN_POPS_ARGS): Define.
+	* config/vax/vax.h (RETURN_POPS_ARGS): Move to...
+	* config/vax/vax.c (vax_return_pops_args): ...here.  New function.
+	(TARGET_RETURN_POPS_ARGS): Define.
+
 2010-06-29  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/44667

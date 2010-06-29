@@ -871,8 +871,6 @@ typedef struct {
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
   (function_arg_advance (&CUM, MODE, TYPE, NAMED))
 
-#define RETURN_POPS_ARGS(FDECL, FUNTYPE, STKSIZE) 0
-
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
    If the precise function being called is known, FUNC is its FUNCTION_DECL;

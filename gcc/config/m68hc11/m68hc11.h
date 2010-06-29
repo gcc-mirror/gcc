@@ -896,15 +896,6 @@ extern enum reg_class m68hc11_tmp_regs_class;
    stack pointer really advances by. No rounding or alignment needed
    for MC6811.  */
 #define PUSH_ROUNDING(BYTES)	(BYTES)
-
-/* Value is 1 if returning from a function call automatically pops the
-   arguments described by the number-of-args field in the call. FUNTYPE is
-   the data type of the function (as a tree), or for a library call it is
-   an identifier node for the subroutine name.
-  
-   The standard MC6811 call, with arg count word, includes popping the
-   args as part of the call template.  */
-#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)	0
 
 /* Passing Arguments in Registers.  */
 

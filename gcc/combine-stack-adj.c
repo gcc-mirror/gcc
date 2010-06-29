@@ -555,7 +555,7 @@ rest_of_handle_stack_adjustments (void)
   cleanup_cfg (flag_crossjumping ? CLEANUP_CROSSJUMP : 0);
 
   /* This is kind of a heuristic.  We need to run combine_stack_adjustments
-     even for machines with possibly nonzero RETURN_POPS_ARGS
+     even for machines with possibly nonzero TARGET_RETURN_POPS_ARGS
      and ACCUMULATE_OUTGOING_ARGS.  We expect that only ports having
      push instructions will have popping returns.  */
 #ifndef PUSH_ROUNDING

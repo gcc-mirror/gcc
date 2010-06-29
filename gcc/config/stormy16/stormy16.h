@@ -328,8 +328,6 @@ enum reg_class
 
 #define PUSH_ROUNDING(BYTES) (((BYTES) + 1) & ~1)
 
-#define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, STACK_SIZE) 0
-
 
 /* Function Arguments in Registers.  */
 

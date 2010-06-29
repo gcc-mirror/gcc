@@ -406,9 +406,6 @@ extern const enum reg_class picochip_regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 #define PUSH_ARGS 0
 
-/* Functions don't pop their args.  */
-#define RETURN_POPS_ARGS(FNDECL, FNTYPE, STACK) 0
-
 /* Passing Arguments in Registers  */
 
 /* Store the offset of the next argument. */

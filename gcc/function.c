@@ -3369,8 +3369,9 @@ assign_parms (tree fndecl)
   /* See how many bytes, if any, of its args a function should try to pop
      on return.  */
 
-  crtl->args.pops_args = RETURN_POPS_ARGS (fndecl, TREE_TYPE (fndecl),
-						 crtl->args.size);
+  crtl->args.pops_args = targetm.calls.return_pops_args (fndecl,
+							 TREE_TYPE (fndecl),
+							 crtl->args.size);
 
   /* For stdarg.h function, save info about
      regs and stack space used by the named args.  */

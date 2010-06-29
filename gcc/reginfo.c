@@ -530,11 +530,12 @@ init_reg_sets_1 (void)
       /* There are a couple of fixed registers that we know are safe to
 	 exclude from being clobbered by calls:
 
-	 The frame pointer is always preserved across calls.  The arg pointer
-	 is if it is fixed.  The stack pointer usually is, unless
-	 RETURN_POPS_ARGS, in which case an explicit CLOBBER will be present.
-	 If we are generating PIC code, the PIC offset table register is
-	 preserved across calls, though the target can override that.  */
+	 The frame pointer is always preserved across calls.  The arg
+	 pointer is if it is fixed.  The stack pointer usually is,
+	 unless TARGET_RETURN_POPS_ARGS, in which case an explicit
+	 CLOBBER will be present.  If we are generating PIC code, the
+	 PIC offset table register is preserved across calls, though the
+	 target can override that.  */
 
       if (i == STACK_POINTER_REGNUM)
 	;

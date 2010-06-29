@@ -188,8 +188,6 @@ extern void function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 #endif	/* RTX_CODE  */
 
 #ifdef TREE_CODE
-extern int ix86_return_pops_args (tree, tree, int);
-
 extern int ix86_data_alignment (tree, int);
 extern unsigned int ix86_local_alignment (tree, enum machine_mode,
 					  unsigned int);

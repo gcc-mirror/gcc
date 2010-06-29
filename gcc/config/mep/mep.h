@@ -503,8 +503,6 @@ extern unsigned int mep_selected_isa;
 
 #define ACCUMULATE_OUTGOING_ARGS 1
 
-#define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, STACK_SIZE) 0
-
 
 
 /* The ABI is thus: Arguments are in $1, $2, $3, $4, stack.  Arguments
