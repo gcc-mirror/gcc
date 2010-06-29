@@ -1,5 +1,8 @@
 2010-06-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/43801
+	* g++.dg/torture/pr43801.C: New test.
+
 	PR debug/44668
 	* g++.dg/debug/dwarf2/accessibility1.C: New test.
 
