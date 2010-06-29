@@ -8,7 +8,7 @@
 	* targhooks.c (default_target_option_override): New function.
 	* targhooks.h (default_target_option_override): Declare.
 	* target.h (struct gcc_target): Add override member to
-	target_option emmber.
+	target_option member.
 	* toplev.c (process_options): Replace OVERRIDE_OPTIONS use with
 	targetm.target_option.override call.
 	* target-def.h (TARGET_OPTION_OVERRIDE): Define.
