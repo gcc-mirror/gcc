@@ -106,25 +106,13 @@ static unsigned int file_info_table_in_use;
    table.  */
 #define FILE_TABLE_INCREMENT 64
 
-/* A structure to hold basic information for the VMS end
-   routine.  */
+typedef char *char_p;
+DEF_VEC_P(char_p);
+DEF_VEC_ALLOC_P(char_p,heap);
 
-typedef struct vms_func_struct
-{
-  const char *vms_func_name;
-  unsigned funcdef_number;
-}
-vms_func_node;
-
-typedef struct vms_func_struct *vms_func_ref;
-
-static unsigned int func_table_allocated;
-static unsigned int func_table_in_use;
-#define FUNC_TABLE_INCREMENT 256
-
-/* A pointer to the base of a table that contains frame description
-   information for each routine.  */
-static vms_func_ref func_table;
+static VEC(char_p,heap) *funcnam_table;
+static VEC(unsigned,heap) *funcnum_table;
+#define FUNC_TABLE_INITIAL 256
 
 /* Local pointer to the name of the main input file.  Initialized in
    vmsdbgout_init.  */
@@ -679,9 +667,8 @@ write_rtnbeg (int rtnnum, int dosizeonly)
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
   DST_ROUTINE_BEGIN rtnbeg;
   DST_PROLOG prolog;
-  vms_func_ref fde = &func_table[rtnnum];
 
-  rtnname = fde->vms_func_name;
+  rtnname = VEC_index (char_p, funcnam_table, rtnnum);
   rtnnamelen = strlen (rtnname);
   rtnentryname = concat (rtnname, "..en", NULL);
 
@@ -752,7 +739,9 @@ write_rtnbeg (int rtnnum, int dosizeonly)
       totsize += write_debug_header (&prolog.dst_a_prolog_header, "prolog",
 				     dosizeonly);
 
-      ASM_GENERATE_INTERNAL_LABEL (label, FUNC_PROLOG_LABEL, fde->funcdef_number);
+      ASM_GENERATE_INTERNAL_LABEL
+        (label, FUNC_PROLOG_LABEL,
+	 VEC_index (unsigned, funcnum_table, rtnnum));
       totsize += write_debug_addr (label, "prolog breakpoint addr",
 				   dosizeonly);
     }
@@ -770,8 +759,6 @@ write_rtnend (int rtnnum, int dosizeonly)
   char label1[MAX_ARTIFICIAL_LABEL_BYTES];
   char label2[MAX_ARTIFICIAL_LABEL_BYTES];
   int totsize;
-  vms_func_ref fde = &func_table[rtnnum];
-  int corrected_rtnnum = fde->funcdef_number;
 
   totsize = 0;
 
@@ -786,8 +773,12 @@ write_rtnend (int rtnnum, int dosizeonly)
   totsize += write_debug_data1 (rtnend.dst_b_rtnend_unused, "unused",
 				dosizeonly);
 
-  ASM_GENERATE_INTERNAL_LABEL (label1, FUNC_BEGIN_LABEL, corrected_rtnnum);
-  ASM_GENERATE_INTERNAL_LABEL (label2, FUNC_END_LABEL, corrected_rtnnum);
+  ASM_GENERATE_INTERNAL_LABEL
+   (label1, FUNC_BEGIN_LABEL,
+    VEC_index (unsigned, funcnum_table, rtnnum));
+  ASM_GENERATE_INTERNAL_LABEL
+   (label2, FUNC_END_LABEL,
+    VEC_index (unsigned, funcnum_table, rtnnum));
   totsize += write_debug_delta4 (label2, label1, "routine size", dosizeonly);
 
   return totsize;
@@ -1289,30 +1280,20 @@ vmsdbgout_ignore_block (const_tree block)
   return retval;
 }
 
-/* Add an entry for function DECL into the func_table.  */
+/* Add an entry for function DECL into the funcnam_table.  */
 
 static void
 vmsdbgout_begin_function (tree decl)
 {
   const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
-  vms_func_ref fde;
 
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.begin_function) (decl);
 
-  if (func_table_in_use == func_table_allocated)
-    {
-      func_table_allocated += FUNC_TABLE_INCREMENT;
-      func_table
-        = (vms_func_ref) xrealloc (func_table,
-				   func_table_allocated * sizeof (vms_func_node));
-    }
-
   /* Add the new entry to the end of the function name table.  */
-  fde = &func_table[func_table_in_use++];
-  fde->vms_func_name = xstrdup (name);
-  fde->funcdef_number = current_function_funcdef_no;
-
+  VEC_safe_push (char_p, heap, funcnam_table, xstrdup (name));
+  VEC_safe_push (unsigned, heap, funcnum_table,
+		 current_function_funcdef_no);
 }
 
 static char fullname_buff [4096];
@@ -1492,13 +1473,11 @@ vmsdbgout_init (const char *main_input_filename)
   /* Allocate the initial hunk of the file_info_table.  */
   file_info_table = XCNEWVEC (dst_file_info_entry, FILE_TABLE_INCREMENT);
   file_info_table_allocated = FILE_TABLE_INCREMENT;
-
-  /* Skip the first entry - file numbers begin at 1 */
+  /* Skip the first entry - file numbers begin at 1.  */
   file_info_table_in_use = 1;
 
-  func_table = (vms_func_ref) xcalloc (FUNC_TABLE_INCREMENT, sizeof (vms_func_node));
-  func_table_allocated = FUNC_TABLE_INCREMENT;
-  func_table_in_use = 1;
+  funcnam_table = VEC_alloc (char_p, heap, FUNC_TABLE_INITIAL);
+  funcnum_table = VEC_alloc (unsigned, heap, FUNC_TABLE_INITIAL);
 
   /* Allocate the initial hunk of the line_info_table.  */
   line_info_table = XCNEWVEC (dst_line_info_entry, LINE_INFO_TABLE_INCREMENT);
@@ -1594,7 +1573,7 @@ vmsdbgout_abstract_function (tree decl)
 static void
 vmsdbgout_finish (const char *main_input_filename ATTRIBUTE_UNUSED)
 {
-  unsigned int i;
+  unsigned int i, ifunc;
   int totsize;
 
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
@@ -1614,7 +1593,7 @@ vmsdbgout_finish (const char *main_input_filename ATTRIBUTE_UNUSED)
   ASM_OUTPUT_ALIGN (asm_out_file, 0);
 
   totsize = write_modbeg (1);
-  for (i = 1; i < func_table_in_use; i++)
+  for (i = 0; VEC_iterate (unsigned, funcnum_table, i, ifunc); i++)
     {
       totsize += write_rtnbeg (i, 1);
       totsize += write_rtnend (i, 1);
@@ -1622,7 +1601,7 @@ vmsdbgout_finish (const char *main_input_filename ATTRIBUTE_UNUSED)
   totsize += write_pclines (1);
 
   write_modbeg (0);
-  for (i = 1; i < func_table_in_use; i++)
+  for (i = 0; VEC_iterate (unsigned, funcnum_table, i, ifunc); i++)
     {
       write_rtnbeg (i, 0);
       write_rtnend (i, 0);
