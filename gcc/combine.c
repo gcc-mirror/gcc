@@ -7277,22 +7277,21 @@ make_compound_operation (rtx x, enum rtx_code in_code)
       /* Call ourselves recursively on the inner expression.  If we are
 	 narrowing the object and it has a different RTL code from
 	 what it originally did, do this SUBREG as a force_to_mode.  */
-
-      tem = make_compound_operation (SUBREG_REG (x), in_code);
-
       {
-	rtx simplified = simplify_subreg (mode, tem, GET_MODE (SUBREG_REG (x)),
-					  SUBREG_BYTE (x));
+	rtx inner = SUBREG_REG (x), simplified;
+	
+	tem = make_compound_operation (inner, in_code);
 
+	simplified
+	  = simplify_subreg (mode, tem, GET_MODE (inner), SUBREG_BYTE (x));
 	if (simplified)
 	  tem = simplified;
 
-	if (GET_CODE (tem) != GET_CODE (SUBREG_REG (x))
-	    && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
+	if (GET_CODE (tem) != GET_CODE (inner)
+	    && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (inner))
 	    && subreg_lowpart_p (x))
 	  {
-	    rtx newer = force_to_mode (tem, mode, ~(HOST_WIDE_INT) 0,
-				       0);
+	    rtx newer = force_to_mode (tem, mode, ~(HOST_WIDE_INT) 0, 0);
 
 	    /* If we have something other than a SUBREG, we might have
 	       done an expansion, so rerun ourselves.  */
@@ -7300,9 +7299,16 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 	      newer = make_compound_operation (newer, in_code);
 
 	    /* force_to_mode can expand compounds.  If it just re-expanded the
-	       compound use gen_lowpart instead to convert to the desired
-	       mode.  */
-	    if (rtx_equal_p (newer, x))
+	       compound, use gen_lowpart to convert to the desired mode.  */
+	    if (rtx_equal_p (newer, x)
+		/* Likewise if it re-expanded the compound only partially.
+		   This happens for SUBREG of ZERO_EXTRACT if they extract
+		   the same number of bits.  */
+		|| (GET_CODE (newer) == SUBREG
+		    && (GET_CODE (SUBREG_REG (newer)) == LSHIFTRT
+			|| GET_CODE (SUBREG_REG (newer)) == ASHIFTRT)
+		    && GET_CODE (inner) == AND
+		    && rtx_equal_p (SUBREG_REG (newer), XEXP (inner, 0))))
 	      return gen_lowpart (GET_MODE (x), tem);
 
 	    return newer;
