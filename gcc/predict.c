@@ -1855,9 +1855,6 @@ propagate_freq (basic_block head, bitmap tovisit)
       edge_iterator ei;
       int count = 0;
 
-       /* The outermost "loop" includes the exit block, which we can not
-	  look up via BASIC_BLOCK.  Detect this and use EXIT_BLOCK_PTR
-	  directly.  Do the same for the entry block.  */
       bb = BASIC_BLOCK (i);
 
       FOR_EACH_EDGE (e, ei, bb->preds)
@@ -1872,6 +1869,9 @@ propagate_freq (basic_block head, bitmap tovisit)
 		     e->src->index, bb->index);
 	}
       BLOCK_INFO (bb)->npredecessors = count;
+      /* When function never returns, we will never process exit block.  */
+      if (!count && bb == EXIT_BLOCK_PTR)
+	bb->count = bb->frequency = 0;
     }
 
   memcpy (&BLOCK_INFO (head)->frequency, &real_one, sizeof (real_one));
@@ -2282,3 +2282,27 @@ struct gimple_opt_pass pass_strip_predict_hints =
   TODO_ggc_collect | TODO_verify_ssa			/* todo_flags_finish */
  }
 };
+
+/* Rebuild function frequencies.  Passes are in general expected to
+   maintain profile by hand, however in some cases this is not possible:
+   for example when inlining several functions with loops freuqencies might run
+   out of scale and thus needs to be recomputed.  */
+
+void
+rebuild_frequencies (void)
+{
+  if (profile_status == PROFILE_GUESSED)
+    {
+      loop_optimizer_init (0);
+      add_noreturn_fake_exit_edges ();
+      mark_irreducible_loops ();
+      connect_infinite_loops_to_exit ();
+      estimate_bb_frequencies ();
+      remove_fake_exit_edges ();
+      loop_optimizer_finalize ();
+    }
+  else if (profile_status == PROFILE_READ)
+    counts_to_freqs ();
+  else
+    gcc_unreachable ();
+}

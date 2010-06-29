@@ -1,3 +1,15 @@
+2010-06-29  Jan Hubicka  <jh@suse.cz>
+
+	* predict.c (propagate_freq): Clear EXIT_BLOCK_PTR frequency if it is
+	unreachable.
+	(rebuild_frequencies): New function.
+	* predict.h (rebuild_frequencies): Declare.
+	* tree-inline.c (copy_cfg_body): Compute properly count & frequency of
+	entry block and edge reaching new_entry.
+	(tree_function_versioning): When doing partial cloning, rebuild frequencies
+	when done.
+	* passes.c (execute_function_todo): Use rebild_frequencies.
+
 2010-06-29  Richard Guenther  <rguenther@suse.de>
 
 	* tree-dfa.c (dump_variable): Remove noalias_state dumping.
