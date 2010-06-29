@@ -1,5 +1,9 @@
 2010-06-29  Jan Hubicka  <jh@suse.cz>
 
+	* tree-inline.c: Replace incomming by incomin and clonning by cloning.
+
+2010-06-29  Jan Hubicka  <jh@suse.cz>
+
 	* predict.c (propagate_freq): Clear EXIT_BLOCK_PTR frequency if it is
 	unreachable.
 	(rebuild_frequencies): New function.
