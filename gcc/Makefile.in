@@ -3685,7 +3685,7 @@ s-target-hooks-def-h: build/genhooks$(build_exeext)
 
 # check if someone mistakenly only changed tm.texi.
 s-tm-texi: $(srcdir)/doc/tm.texi
-	
+
 s-tm-texi: build/genhooks$(build_exeext) $(srcdir)/doc/tm.texi.in
 	$(RUN_GEN) build/genhooks$(build_exeext) \
 			$(srcdir)/doc/tm.texi.in > tmp-tm.texi
