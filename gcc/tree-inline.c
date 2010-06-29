@@ -2159,6 +2159,8 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
   bool need_debug_cleanup = false;
   gcov_type count_scale;
   int last;
+  int incomming_frequency = 0;
+  gcov_type incomming_count = 0;
 
   if (ENTRY_BLOCK_PTR_FOR_FUNCTION (src_cfun)->count)
     count_scale = (REG_BR_PROB_BASE * count
@@ -2168,6 +2170,28 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
 
   /* Register specific tree functions.  */
   gimple_register_cfg_hooks ();
+
+  /* If we are inlining just region of the function, make sure to connect new entry
+     to ENTRY_BLOCK_PTR.  Since new entry can be part of loop, we must compute
+     frequency and probability of ENTRY_BLOCK_PTR based on the frequencies and
+     probabilities of edges incomming from nonduplicated region.  */
+  if (new_entry)
+    {
+      edge e;
+      edge_iterator ei;
+
+      FOR_EACH_EDGE (e, ei, new_entry->preds)
+	if (!e->src->aux)
+	  {
+	    incomming_frequency += EDGE_FREQUENCY (e);
+	    incomming_count += e->count;
+	  }
+      incomming_count = incomming_count * count_scale / REG_BR_PROB_BASE;
+      incomming_frequency
+	= incomming_frequency * frequency_scale / REG_BR_PROB_BASE;
+      ENTRY_BLOCK_PTR->count = incomming_count;
+      ENTRY_BLOCK_PTR->frequency = incomming_frequency;
+    }
 
   /* Must have a CFG here at this point.  */
   gcc_assert (ENTRY_BLOCK_PTR_FOR_FUNCTION
@@ -2204,10 +2228,9 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
 
   if (new_entry)
     {
-      edge e;
-      e = make_edge (entry_block_map, (basic_block)new_entry->aux, EDGE_FALLTHRU);
+      edge e = make_edge (entry_block_map, (basic_block)new_entry->aux, EDGE_FALLTHRU);
       e->probability = REG_BR_PROB_BASE;
-      e->count = entry_block_map->count;
+      e->count = incomming_count;
     }
 
   if (gimple_in_ssa_p (cfun))
@@ -5206,6 +5229,23 @@ tree_function_versioning (tree old_decl, tree new_decl,
   if (id.dst_node->analyzed)
     cgraph_rebuild_references ();
   update_ssa (TODO_update_ssa);
+
+  /* After partial cloning we need to rescale frequencies, so they are
+     within proper range in the cloned function.  */
+  if (new_entry)
+    {
+      struct cgraph_edge *e;
+      rebuild_frequencies ();
+
+      new_version_node->count = ENTRY_BLOCK_PTR->count;
+      for (e = new_version_node->callees; e; e = e->next_callee)
+	{
+	  basic_block bb = gimple_bb (e->call_stmt);
+	  e->frequency = compute_call_stmt_bb_frequency (current_function_decl, bb);
+	  e->count = bb->count;
+	}
+    }
+
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
 
