@@ -785,9 +785,9 @@ extern tree build_call_0_expr (tree fundecl);
     (N_Raise_{Constraint,Storage,Program}_Error).  */
 extern tree build_call_raise (int msg, Node_Id gnat_node, char kind);
 
-/* Return a CONSTRUCTOR of TYPE whose list is LIST.  This is not the
+/* Return a CONSTRUCTOR of TYPE whose elements are V.  This is not the
    same as build_constructor in the language-independent tree.c.  */
-extern tree gnat_build_constructor (tree type, tree list);
+extern tree gnat_build_constructor (tree type, VEC(constructor_elt,gc) *v);
 
 /* Return a COMPONENT_REF to access a field that is given by COMPONENT,
    an IDENTIFIER_NODE giving the name of the field, FIELD, a FIELD_DECL,

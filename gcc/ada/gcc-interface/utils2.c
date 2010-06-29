@@ -1521,34 +1521,31 @@ build_call_raise (int msg, Node_Id gnat_node, char kind)
 static int
 compare_elmt_bitpos (const PTR rt1, const PTR rt2)
 {
-  const_tree const elmt1 = * (const_tree const *) rt1;
-  const_tree const elmt2 = * (const_tree const *) rt2;
-  const_tree const field1 = TREE_PURPOSE (elmt1);
-  const_tree const field2 = TREE_PURPOSE (elmt2);
+  const constructor_elt * const elmt1 = (const constructor_elt const *) rt1;
+  const constructor_elt * const elmt2 = (const constructor_elt const *) rt2;
+  const_tree const field1 = elmt1->index;
+  const_tree const field2 = elmt2->index;
   const int ret
     = tree_int_cst_compare (bit_position (field1), bit_position (field2));
 
   return ret ? ret : (int) (DECL_UID (field1) - DECL_UID (field2));
 }
 
-/* Return a CONSTRUCTOR of TYPE whose list is LIST.  */
+/* Return a CONSTRUCTOR of TYPE whose elements are V.  */
 
 tree
-gnat_build_constructor (tree type, tree list)
+gnat_build_constructor (tree type, VEC(constructor_elt,gc) *v)
 {
   bool allconstant = (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST);
   bool side_effects = false;
-  tree elmt, result;
-  int n_elmts;
+  tree result, obj, val;
+  unsigned int n_elmts;
 
   /* Scan the elements to see if they are all constant or if any has side
      effects, to let us set global flags on the resulting constructor.  Count
      the elements along the way for possible sorting purposes below.  */
-  for (n_elmts = 0, elmt = list; elmt; elmt = TREE_CHAIN (elmt), n_elmts ++)
+  FOR_EACH_CONSTRUCTOR_ELT (v, n_elmts, obj, val)
     {
-      tree obj = TREE_PURPOSE (elmt);
-      tree val = TREE_VALUE (elmt);
-
       /* The predicate must be in keeping with output_constructor.  */
       if (!TREE_CONSTANT (val)
 	  || (TREE_CODE (type) == RECORD_TYPE
@@ -1565,27 +1562,10 @@ gnat_build_constructor (tree type, tree list)
      by increasing bit position.  This is necessary to ensure the
      constructor can be output as static data.  */
   if (allconstant && TREE_CODE (type) == RECORD_TYPE && n_elmts > 1)
-    {
-      /* Fill an array with an element tree per index, and ask qsort to order
-	 them according to what a bitpos comparison function says.  */
-      tree *gnu_arr = (tree *) alloca (sizeof (tree) * n_elmts);
-      int i;
+    qsort (VEC_address (constructor_elt, v), n_elmts,
+           sizeof (constructor_elt), compare_elmt_bitpos);
 
-      for (i = 0, elmt = list; elmt; elmt = TREE_CHAIN (elmt), i++)
-	gnu_arr[i] = elmt;
-
-      qsort (gnu_arr, n_elmts, sizeof (tree), compare_elmt_bitpos);
-
-      /* Then reconstruct the list from the sorted array contents.  */
-      list = NULL_TREE;
-      for (i = n_elmts - 1; i >= 0; i--)
-	{
-	  TREE_CHAIN (gnu_arr[i]) = list;
-	  list = gnu_arr[i];
-	}
-    }
-
-  result = build_constructor_from_list (type, list);
+  result = build_constructor (type, v);
   TREE_CONSTANT (result) = TREE_STATIC (result) = allconstant;
   TREE_SIDE_EFFECTS (result) = side_effects;
   TREE_READONLY (result) = TYPE_READONLY (type) || allconstant;
@@ -1986,7 +1966,6 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
       tree template_type = TREE_TYPE (TYPE_FIELDS (storage_type));
       tree storage_ptr_type = build_pointer_type (storage_type);
       tree storage;
-      tree template_cons = NULL_TREE;
 
       size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TYPE_SIZE_UNIT (storage_type),
 					     init);
@@ -2013,12 +1992,12 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 	 bounds.  */
       if (init)
 	{
-	  template_cons = tree_cons (TREE_CHAIN (TYPE_FIELDS (storage_type)),
-				     init, NULL_TREE);
-	  template_cons = tree_cons (TYPE_FIELDS (storage_type),
-				     build_template (template_type, type,
-						     init),
-				     template_cons);
+	  VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, 2);
+
+	  CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (storage_type),
+				  build_template (template_type, type, init));
+	  CONSTRUCTOR_APPEND_ELT (v, TREE_CHAIN (TYPE_FIELDS (storage_type)),
+				  init);
 
 	  return convert
 	    (result_type,
@@ -2027,7 +2006,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 		     (MODIFY_EXPR, storage_type,
 		      build_unary_op (INDIRECT_REF, NULL_TREE,
 				      convert (storage_ptr_type, storage)),
-		      gnat_build_constructor (storage_type, template_cons)),
+		      gnat_build_constructor (storage_type, v)),
 		     convert (storage_ptr_type, storage)));
 	}
       else
@@ -2100,10 +2079,11 @@ fill_vms_descriptor (tree expr, Entity_Id gnat_formal, Node_Id gnat_actual)
 {
   tree parm_decl = get_gnu_tree (gnat_formal);
   tree record_type = TREE_TYPE (TREE_TYPE (parm_decl));
-  tree const_list = NULL_TREE, field;
+  tree field;
   const bool do_range_check
     = strcmp ("MBO",
 	      IDENTIFIER_POINTER (DECL_NAME (TYPE_FIELDS (record_type))));
+  VEC(constructor_elt,gc) *v = NULL;
 
   expr = maybe_unconstrained_array (expr);
   gnat_mark_addressable (expr);
@@ -2135,10 +2115,10 @@ fill_vms_descriptor (tree expr, Entity_Id gnat_formal, Node_Id gnat_actual)
 					      N_Raise_Constraint_Error),
 			    NULL_TREE));
         }
-      const_list = tree_cons (field, conexpr, const_list);
+      CONSTRUCTOR_APPEND_ELT (v, field, conexpr);
     }
 
-  return gnat_build_constructor (record_type, nreverse (const_list));
+  return gnat_build_constructor (record_type, v);
 }
 
 /* Indicate that we need to take the address of T and that it therefore

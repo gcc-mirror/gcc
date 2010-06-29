@@ -2222,7 +2222,7 @@ max_size (tree exp, bool max_p)
 tree
 build_template (tree template_type, tree array_type, tree expr)
 {
-  tree template_elts = NULL_TREE;
+  VEC(constructor_elt,gc) *template_elts = NULL;
   tree bound_list = NULL_TREE;
   tree field;
 
@@ -2271,11 +2271,11 @@ build_template (tree template_type, tree array_type, tree expr)
       min = SUBSTITUTE_PLACEHOLDER_IN_EXPR (min, expr);
       max = SUBSTITUTE_PLACEHOLDER_IN_EXPR (max, expr);
 
-      template_elts = tree_cons (TREE_CHAIN (field), max,
-				 tree_cons (field, min, template_elts));
+      CONSTRUCTOR_APPEND_ELT (template_elts, field, min);
+      CONSTRUCTOR_APPEND_ELT (template_elts, TREE_CHAIN (field), max);
     }
 
-  return gnat_build_constructor (template_type, nreverse (template_elts));
+  return gnat_build_constructor (template_type, template_elts);
 }
 
 /* Build a 32-bit VMS descriptor from a Mechanism_Type, which must specify a
@@ -2950,6 +2950,7 @@ convert_vms_descriptor64 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
       /* See the head comment of build_vms_descriptor.  */
       int iklass = TREE_INT_CST_LOW (DECL_INITIAL (klass));
       tree lfield, ufield;
+      VEC(constructor_elt,gc) *v;
 
       /* Convert POINTER to the pointer-to-array type.  */
       gnu_expr64 = convert (p_array_type, gnu_expr64);
@@ -2959,14 +2960,15 @@ convert_vms_descriptor64 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
 	case 1:  /* Class S  */
 	case 15: /* Class SB */
 	  /* Build {1, LENGTH} template; LENGTH64 is the 5th field.  */
+	  v = VEC_alloc (constructor_elt, gc, 2);
 	  t = TREE_CHAIN (TREE_CHAIN (klass));
 	  t = build3 (COMPONENT_REF, TREE_TYPE (t), desc, t, NULL_TREE);
-	  t = tree_cons (min_field,
-			 convert (TREE_TYPE (min_field), integer_one_node),
-			 tree_cons (max_field,
-				    convert (TREE_TYPE (max_field), t),
-				    NULL_TREE));
-	  template_tree = gnat_build_constructor (template_type, t);
+	  CONSTRUCTOR_APPEND_ELT (v, min_field,
+				  convert (TREE_TYPE (min_field),
+					   integer_one_node));
+	  CONSTRUCTOR_APPEND_ELT (v, max_field,
+				  convert (TREE_TYPE (max_field), t));
+	  template_tree = gnat_build_constructor (template_type, v);
 	  template_addr = build_unary_op (ADDR_EXPR, NULL_TREE, template_tree);
 
 	  /* For class S, we are done.  */
@@ -2990,10 +2992,11 @@ convert_vms_descriptor64 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
            (TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (template_type))), ufield);
 
 	  /* Build the template in the form of a constructor. */
-	  t = tree_cons (TYPE_FIELDS (template_type), lfield,
-			 tree_cons (TREE_CHAIN (TYPE_FIELDS (template_type)),
-                                    ufield, NULL_TREE));
-	  template_tree = gnat_build_constructor (template_type, t);
+	  v = VEC_alloc (constructor_elt, gc, 2);
+	  CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (template_type), lfield);
+	  CONSTRUCTOR_APPEND_ELT (v, TREE_CHAIN (TYPE_FIELDS (template_type)),
+				  ufield);
+	  template_tree = gnat_build_constructor (template_type, v);
 
 	  /* Otherwise use the {1, LENGTH} template we build above.  */
 	  template_addr = build3 (COND_EXPR, p_bounds_type, u,
@@ -3037,10 +3040,11 @@ convert_vms_descriptor64 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
            (TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (template_type))), ufield);
 
 	  /* Build the template in the form of a constructor. */
-	  t = tree_cons (TYPE_FIELDS (template_type), lfield,
-			 tree_cons (TREE_CHAIN (TYPE_FIELDS (template_type)),
-                                    ufield, NULL_TREE));
-	  template_tree = gnat_build_constructor (template_type, t);
+	  v = VEC_alloc (constructor_elt, gc, 2);
+	  CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (template_type), lfield);
+	  CONSTRUCTOR_APPEND_ELT (v, TREE_CHAIN (TYPE_FIELDS (template_type)),
+				  ufield);
+	  template_tree = gnat_build_constructor (template_type, v);
 	  template_tree = build3 (COND_EXPR, template_type, u,
 			    build_call_raise (CE_Length_Check_Failed, Empty,
 					      N_Raise_Constraint_Error),
@@ -3057,10 +3061,11 @@ convert_vms_descriptor64 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
 	}
 
       /* Build the fat pointer in the form of a constructor.  */
-      t = tree_cons (TYPE_FIELDS (gnu_type), gnu_expr64,
-		     tree_cons (TREE_CHAIN (TYPE_FIELDS (gnu_type)),
-				template_addr, NULL_TREE));
-      return gnat_build_constructor (gnu_type, t);
+      v = VEC_alloc (constructor_elt, gc, 2);
+      CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (gnu_type), gnu_expr64);
+      CONSTRUCTOR_APPEND_ELT (v, TREE_CHAIN (TYPE_FIELDS (gnu_type)),
+			      template_addr);
+      return gnat_build_constructor (gnu_type, v);
     }
 
   else
@@ -3098,6 +3103,7 @@ convert_vms_descriptor32 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
       tree template_tree, template_addr, aflags, dimct, t, u;
       /* See the head comment of build_vms_descriptor.  */
       int iklass = TREE_INT_CST_LOW (DECL_INITIAL (klass));
+      VEC(constructor_elt,gc) *v;
 
       /* Convert POINTER to the pointer-to-array type.  */
       gnu_expr32 = convert (p_array_type, gnu_expr32);
@@ -3107,14 +3113,15 @@ convert_vms_descriptor32 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
 	case 1:  /* Class S  */
 	case 15: /* Class SB */
 	  /* Build {1, LENGTH} template; LENGTH is the 1st field.  */
+	  v = VEC_alloc (constructor_elt, gc, 2);
 	  t = TYPE_FIELDS (desc_type);
 	  t = build3 (COMPONENT_REF, TREE_TYPE (t), desc, t, NULL_TREE);
-	  t = tree_cons (min_field,
-			 convert (TREE_TYPE (min_field), integer_one_node),
-			 tree_cons (max_field,
-				    convert (TREE_TYPE (max_field), t),
-				    NULL_TREE));
-	  template_tree = gnat_build_constructor (template_type, t);
+	  CONSTRUCTOR_APPEND_ELT (v, min_field,
+				  convert (TREE_TYPE (min_field),
+					   integer_one_node));
+	  CONSTRUCTOR_APPEND_ELT (v, max_field,
+				  convert (TREE_TYPE (max_field), t));
+	  template_tree = gnat_build_constructor (template_type, v);
 	  template_addr = build_unary_op (ADDR_EXPR, NULL_TREE, template_tree);
 
 	  /* For class S, we are done.  */
@@ -3178,11 +3185,12 @@ convert_vms_descriptor32 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
 	}
 
       /* Build the fat pointer in the form of a constructor.  */
-      t = tree_cons (TYPE_FIELDS (gnu_type), gnu_expr32,
-		     tree_cons (TREE_CHAIN (TYPE_FIELDS (gnu_type)),
-				template_addr, NULL_TREE));
+      v = VEC_alloc (constructor_elt, gc, 2);
+      CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (gnu_type), gnu_expr32);
+      CONSTRUCTOR_APPEND_ELT (v, TREE_CHAIN (TYPE_FIELDS (gnu_type)),
+			      template_addr);
 
-      return gnat_build_constructor (gnu_type, t);
+      return gnat_build_constructor (gnu_type, v);
     }
 
   else
@@ -3551,19 +3559,19 @@ convert_to_fat_pointer (tree type, tree expr)
   tree p_array_type = TREE_TYPE (TYPE_FIELDS (type));
   tree etype = TREE_TYPE (expr);
   tree template_tree;
+  VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, 2);
 
   /* If EXPR is null, make a fat pointer that contains null pointers to the
      template and array.  */
   if (integer_zerop (expr))
-    return
-      gnat_build_constructor
-	(type,
-	 tree_cons (TYPE_FIELDS (type),
-		    convert (p_array_type, expr),
-		    tree_cons (TREE_CHAIN (TYPE_FIELDS (type)),
-			       convert (build_pointer_type (template_type),
-					expr),
-			       NULL_TREE)));
+    {
+      CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (type),
+			      convert (p_array_type, expr));
+      CONSTRUCTOR_APPEND_ELT (v, TREE_CHAIN (TYPE_FIELDS (type)),
+			      convert (build_pointer_type (template_type),
+				       expr));
+      return gnat_build_constructor (type, v);
+    }
 
   /* If EXPR is a thin pointer, make template and data from the record..  */
   else if (TYPE_IS_THIN_POINTER_P (etype))
@@ -3598,15 +3606,12 @@ convert_to_fat_pointer (tree type, tree expr)
 
      Note that the call to "build_template" above is still fine because it
      will only refer to the provided TEMPLATE_TYPE in this case.  */
-  return
-    gnat_build_constructor
-      (type,
-       tree_cons (TYPE_FIELDS (type),
-		  convert (p_array_type, expr),
-		  tree_cons (TREE_CHAIN (TYPE_FIELDS (type)),
-			     build_unary_op (ADDR_EXPR, NULL_TREE,
-					     template_tree),
-			     NULL_TREE)));
+  CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (type),
+			  convert (p_array_type, expr));
+  CONSTRUCTOR_APPEND_ELT (v, TREE_CHAIN (TYPE_FIELDS (type)),
+			  build_unary_op (ADDR_EXPR, NULL_TREE,
+					  template_tree));
+  return gnat_build_constructor (type, v);
 }
 
 /* Convert to a thin pointer type, TYPE.  The only thing we know how to convert
@@ -3663,6 +3668,8 @@ convert (tree type, tree expr)
      constructor to build the record, unless a variable size is involved.  */
   else if (code == RECORD_TYPE && TYPE_PADDING_P (type))
     {
+      VEC(constructor_elt,gc) *v;
+
       /* If we previously converted from another type and our type is
 	 of variable size, remove the conversion to avoid the need for
 	 variable-sized temporaries.  Likewise for a conversion between
@@ -3713,13 +3720,10 @@ convert (tree type, tree expr)
 					   expr),
 				  false);
 
-      return
-	gnat_build_constructor (type,
-				tree_cons (TYPE_FIELDS (type),
-					   convert (TREE_TYPE
-						    (TYPE_FIELDS (type)),
-						    expr),
-					   NULL_TREE));
+      v = VEC_alloc (constructor_elt, gc, 1);
+      CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (type),
+			      convert (TREE_TYPE (TYPE_FIELDS (type)), expr));
+      return gnat_build_constructor (type, v);
     }
 
   /* If the input type has padding, remove it and convert to the output type.
@@ -3771,20 +3775,19 @@ convert (tree type, tree expr)
   if (code == RECORD_TYPE && TYPE_CONTAINS_TEMPLATE_P (type))
     {
       tree obj_type = TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (type)));
+      VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, 2);
 
       /* If the source already has a template, get a reference to the
 	 associated array only, as we are going to rebuild a template
 	 for the target type anyway.  */
       expr = maybe_unconstrained_array (expr);
 
-      return
-	gnat_build_constructor
-	  (type,
-	   tree_cons (TYPE_FIELDS (type),
-		      build_template (TREE_TYPE (TYPE_FIELDS (type)),
-				      obj_type, NULL_TREE),
-		      tree_cons (TREE_CHAIN (TYPE_FIELDS (type)),
-				 convert (obj_type, expr), NULL_TREE)));
+      CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (type),
+			      build_template (TREE_TYPE (TYPE_FIELDS (type)),
+					      obj_type, NULL_TREE));
+      CONSTRUCTOR_APPEND_ELT (v, TREE_CHAIN (TYPE_FIELDS (type)),
+			      convert (obj_type, expr));
+      return gnat_build_constructor (type, v);
     }
 
   /* There are some special cases of expressions that we process
@@ -4114,11 +4117,14 @@ convert (tree type, tree expr)
 
     case RECORD_TYPE:
       if (TYPE_JUSTIFIED_MODULAR_P (type) && !AGGREGATE_TYPE_P (etype))
-	return
-	  gnat_build_constructor
-	    (type, tree_cons (TYPE_FIELDS (type),
-			      convert (TREE_TYPE (TYPE_FIELDS (type)), expr),
-			      NULL_TREE));
+	{
+	  VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, 1);
+
+	  CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (type),
+				  convert (TREE_TYPE (TYPE_FIELDS (type)),
+					   expr));
+	  return gnat_build_constructor (type, v);
+	}
 
       /* ... fall through ... */
 
@@ -4410,11 +4416,13 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
       tree rec_type = make_node (RECORD_TYPE);
       tree field = create_field_decl (get_identifier ("OBJ"), etype, rec_type,
 				      NULL_TREE, NULL_TREE, 1, 0);
+      VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, 1);
 
       TYPE_FIELDS (rec_type) = field;
       layout_type (rec_type);
 
-      expr = gnat_build_constructor (rec_type, build_tree_list (field, expr));
+      CONSTRUCTOR_APPEND_ELT (v, field, expr);
+      expr = gnat_build_constructor (rec_type, v);
       expr = unchecked_convert (type, expr, notrunc_p);
     }
 
