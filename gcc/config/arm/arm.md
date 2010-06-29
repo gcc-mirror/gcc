@@ -1422,7 +1422,15 @@
    (set_attr "predicable" "yes")]
 )
 
-;; Unnamed template to match long long multiply-accumulate (smlal)
+(define_expand "maddsidi4"
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(plus:DI
+	 (mult:DI
+	  (sign_extend:DI (match_operand:SI 1 "s_register_operand" ""))
+	  (sign_extend:DI (match_operand:SI 2 "s_register_operand" "")))
+	 (match_operand:DI 3 "s_register_operand" "")))]
+  "TARGET_32BIT && arm_arch3m"
+  "")
 
 (define_insn "*mulsidi3adddi"
   [(set (match_operand:DI 0 "s_register_operand" "=&r")
@@ -1518,7 +1526,15 @@
    (set_attr "predicable" "yes")]
 )
 
-;; Unnamed template to match long long unsigned multiply-accumulate (umlal)
+(define_expand "umaddsidi4"
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(plus:DI
+	 (mult:DI
+	  (zero_extend:DI (match_operand:SI 1 "s_register_operand" ""))
+	  (zero_extend:DI (match_operand:SI 2 "s_register_operand" "")))
+	 (match_operand:DI 3 "s_register_operand" "")))]
+  "TARGET_32BIT && arm_arch3m"
+  "")
 
 (define_insn "*umulsidi3adddi"
   [(set (match_operand:DI 0 "s_register_operand" "=&r")
@@ -1686,29 +1702,29 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "*mulhisi3addsi"
+(define_insn "maddhisi4"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
-	(plus:SI (match_operand:SI 1 "s_register_operand" "r")
+	(plus:SI (match_operand:SI 3 "s_register_operand" "r")
 		 (mult:SI (sign_extend:SI
-			   (match_operand:HI 2 "s_register_operand" "%r"))
+			   (match_operand:HI 1 "s_register_operand" "%r"))
 			  (sign_extend:SI
-			   (match_operand:HI 3 "s_register_operand" "r")))))]
+			   (match_operand:HI 2 "s_register_operand" "r")))))]
   "TARGET_DSP_MULTIPLY"
-  "smlabb%?\\t%0, %2, %3, %1"
+  "smlabb%?\\t%0, %1, %2, %3"
   [(set_attr "insn" "smlaxy")
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "*mulhidi3adddi"
+(define_insn "*maddhidi4"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
 	(plus:DI
-	  (match_operand:DI 1 "s_register_operand" "0")
+	  (match_operand:DI 3 "s_register_operand" "0")
 	  (mult:DI (sign_extend:DI
-	 	    (match_operand:HI 2 "s_register_operand" "%r"))
+	 	    (match_operand:HI 1 "s_register_operand" "%r"))
 		   (sign_extend:DI
-		    (match_operand:HI 3 "s_register_operand" "r")))))]
+		    (match_operand:HI 2 "s_register_operand" "r")))))]
   "TARGET_DSP_MULTIPLY"
-  "smlalbb%?\\t%Q0, %R0, %2, %3"
+  "smlalbb%?\\t%Q0, %R0, %1, %2"
   [(set_attr "insn" "smlalxy")
    (set_attr "predicable" "yes")])
 
