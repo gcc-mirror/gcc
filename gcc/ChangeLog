@@ -1,7 +1,14 @@
+2010-06-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/44659
+	* combine.c (make_compound_operation) <SUBREG>: Do not return the
+	result of force_to_mode if it partially re-expanded the compound.
+
 2010-06-28  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/44671
-	* ipa-split.c (test_nonssa_use, mark_nonssa_use): Check also uses of RESULT_DECL.
+	* ipa-split.c (test_nonssa_use, mark_nonssa_use): Check also uses of
+	RESULT_DECL.
 
 2010-06-28  Anatoly Sokolov  <aesok@post.ru>
 
@@ -22,7 +29,7 @@
 	fold_unary_loc, fold_negate_const, fold_abs_const, fold_not_const,
 	round_up_loc): Adjust call to force_fit_type_double.
 
-2010-06-28  Philipp Tomsich <philipp.tomsich@theobroma-systems.com>
+2010-06-28  Philipp Tomsich  <philipp.tomsich@theobroma-systems.com>
 
 	* config/rs6000/rs6000.h (PROCESSOR_TITAN): Declare.
 
@@ -62,7 +69,7 @@
 	* ipa-inline.c (add_new_edges_to_heap): Do not add edges to uninlinable
 	functions.
 
-2010-06-28  Philipp Tomsich <philipp.tomsich@theobroma-systems.com>
+2010-06-28  Philipp Tomsich  <philipp.tomsich@theobroma-systems.com>
 
 	* config.gcc (powerpc*-*-*): Handle titan.
 	* config/rs6000/rs6000.c (titan_cost): New costs.
@@ -104,7 +111,7 @@
 	* omp-low.c (maybe_catch_exception): Likewise.
 	* Makefile.in: Update dependencies.
 
-2010-06-28  Bingfeng Mei <bmei@broadcom.com>
+2010-06-28  Bingfeng Mei  <bmei@broadcom.com>
 
         * cgraph.h (struct varpool_node): new used_from_object_file flag.
         (struct cgraph_local_info): new used_from_object_file flag.
@@ -132,8 +139,8 @@
 
 	PR middle-end/44671
 	PR middle-end/44686
-	* tree.c (build_function_decl_skip_args): Clear DECL_BUILT_IN on signature
-	change.
+	* tree.c (build_function_decl_skip_args): Clear DECL_BUILT_IN on
+	signature change.
 	* ipa-split.c (split_function): Always clear DECL_BUILT_IN.
 	* ipa-prop.c (ipa_modify_formal_parameters): Likewise.
 
@@ -501,8 +508,8 @@
 	functions for dealing with three-operand statements.
 	* tree.c (commutative_ternary_tree_code): New function.
 	* tree.h (commutative_ternary_tree_code): Declare it.
-	* tree-vrp.c (gimple_assign_nonnegative_warnv_p): Return false for ternary
-	statements.
+	* tree-vrp.c (gimple_assign_nonnegative_warnv_p): Return false for
+	ternary statements.
 	(gimple_assign_nonzero_warnv_p): Likewise.
 	* tree-ssa-sccvn.c (stmt_has_constants): Handle GIMPLE_TERNARY_RHS.
 	* tree-ssa-ccp.c (get_rhs_assign_op_for_ccp): New static function.
@@ -3050,7 +3057,7 @@
 	* tree-inline.c (expand_call_inline): Pass translated return value of
 	cgraph_inline_failed_string to diagnostic function.
 
-2010-06-08  Andrew Pinski <pinskia@gmail.com>
+2010-06-08  Andrew Pinski  <pinskia@gmail.com>
 	    Shujing Zhao  <pearly.zhao@oracle.com>
 
 	PR c/37724

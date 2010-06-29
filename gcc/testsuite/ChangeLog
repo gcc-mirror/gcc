@@ -1,3 +1,13 @@
+2010-06-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/44659
+	* gcc.target/i386/extract-1.c: New.
+	* gcc.target/i386/extract-2.c: Likewise.
+	* gcc.target/i386/extract-3.c: Likewise.
+	* gcc.target/i386/extract-4.c: Likewise.
+	* gcc.target/i386/extract-5.c: Likewise.
+	* gcc.target/i386/extract-6.c: Likewise.
+
 2010-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/44682
