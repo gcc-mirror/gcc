@@ -180,9 +180,6 @@ extern void ix86_expand_truncdf_32 (rtx, rtx);
 
 #ifdef TREE_CODE
 extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
-extern rtx function_arg (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
-extern void function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
-				  tree, int);
 #endif	/* TREE_CODE  */
 
 #endif	/* RTX_CODE  */

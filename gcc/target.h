@@ -1020,6 +1020,26 @@ struct gcc_target
     int (* arg_partial_bytes) (CUMULATIVE_ARGS *ca, enum machine_mode mode,
 			       tree type, bool named);
 
+    /* Update the state in CA to advance past an argument in the
+       argument list.  The values MODE, TYPE, and NAMED describe that
+       argument.  */
+    void (*function_arg_advance) (CUMULATIVE_ARGS *ca,
+				  enum machine_mode mode, const_tree type,
+				  bool named);
+
+    /* Return zero if the argument described by the state of CA should
+       be placed on a stack, or a hard register in which to store the
+       argument.  The values MODE, TYPE, and NAMED describe that
+       argument.  */
+    rtx (*function_arg) (const CUMULATIVE_ARGS *ca,
+			 enum machine_mode mode, const_tree type, bool named);
+
+    /* Likewise, but for machines with register windows.  Return the
+       location where the argument will appear to the callee.  */
+    rtx (*function_incoming_arg) (const CUMULATIVE_ARGS *ca,
+				  enum machine_mode mode,
+				  const_tree type, bool named);
+
     /* Return the diagnostic message string if function without a prototype
        is not allowed for this 'val' argument; NULL otherwise. */
     const char *(*invalid_arg_for_unprototyped_fn) (const_tree typelist,
