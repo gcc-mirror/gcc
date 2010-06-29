@@ -1,5 +1,9 @@
 2010-06-29  Douglas B Rupp  <rupp@gnat.com>
 
+	* vmsdbgout.c (full_name): Just output the file name if not native.
+
+2010-06-29  Douglas B Rupp  <rupp@gnat.com>
+
 	* vmsdbgout.c (func_table): Replace with VEC func{nam,num}_tables.
 	(funcnam_table): New static table.
 	(funcnum_table): New static table.
