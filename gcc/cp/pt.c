@@ -4340,6 +4340,36 @@ check_valid_ptrmem_cst_expr (tree type, tree expr)
   return false;
 }
 
+/* Returns TRUE iff the address of OP is value-dependent.
+
+   14.6.2.4 [temp.dep.temp]:
+   A non-integral non-type template-argument is dependent if its type is
+   dependent or it has either of the following forms
+     qualified-id
+     & qualified-id
+   and contains a nested-name-specifier which specifies a class-name that
+   names a dependent type.
+
+   We generalize this to just say that the address of a member of a
+   dependent class is value-dependent; the above doesn't cover the
+   address of a static data member named with an unqualified-id.  */
+
+static bool
+has_value_dependent_address (tree op)
+{
+  /* We could use get_inner_reference here, but there's no need;
+     this is only relevant for template non-type arguments, which
+     can only be expressed as &id-expression.  */
+  if (DECL_P (op))
+    {
+      tree ctx = CP_DECL_CONTEXT (op);
+      if (TYPE_P (ctx) && dependent_type_p (ctx))
+	return true;
+    }
+
+  return false;
+}
+
 /* Attempt to convert the non-type template parameter EXPR to the
    indicated TYPE.  If the conversion is successful, return the
    converted value.  If the conversion is unsuccessful, return
@@ -4378,6 +4408,11 @@ convert_nontype_argument (tree type, tree expr)
       return NULL_TREE;
     }
 
+  /* Add the ADDR_EXPR now for the benefit of
+     value_dependent_expression_p.  */
+  if (TYPE_PTROBV_P (type))
+    expr = decay_conversion (expr);
+
   /* If we are in a template, EXPR may be non-dependent, but still
      have a syntactic, rather than semantic, form.  For example, EXPR
      might be a SCOPE_REF, rather than the VAR_DECL to which the
@@ -4385,7 +4420,11 @@ convert_nontype_argument (tree type, tree expr)
      so that access checking can be performed when the template is
      instantiated -- but here we need the resolved form so that we can
      convert the argument.  */
-  expr = fold_non_dependent_expr (expr);
+  if (TYPE_REF_OBJ_P (type)
+      && has_value_dependent_address (expr))
+    /* If we want the address and it's value-dependent, don't fold.  */;
+  else
+    expr = fold_non_dependent_expr (expr);
   if (error_operand_p (expr))
     return error_mark_node;
   expr_type = TREE_TYPE (expr);
@@ -16445,6 +16484,13 @@ value_dependent_expression_p (tree expression)
     case MODOP_EXPR:
       return ((value_dependent_expression_p (TREE_OPERAND (expression, 0)))
 	      || (value_dependent_expression_p (TREE_OPERAND (expression, 2))));
+
+    case ADDR_EXPR:
+      {
+	tree op = TREE_OPERAND (expression, 0);
+	return (value_dependent_expression_p (op)
+		|| has_value_dependent_address (op));
+      }
 
     default:
       /* A constant expression is value-dependent if any subexpression is

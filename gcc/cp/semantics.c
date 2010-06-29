@@ -2943,7 +2943,13 @@ finish_id_expression (tree id_expression,
 	    {
 	      tree r = convert_from_reference (decl);
 
-	      if (processing_template_decl && TYPE_P (scope))
+	      /* In a template, return a SCOPE_REF for most qualified-ids
+		 so that we can check access at instantiation time.  But if
+		 we're looking at a member of the current instantiation, we
+		 know we have access and building up the SCOPE_REF confuses
+		 non-type template argument handling.  */
+	      if (processing_template_decl && TYPE_P (scope)
+		  && !currently_open_class (scope))
 		r = build_qualified_name (TREE_TYPE (r),
 					  scope, decl,
 					  template_p);

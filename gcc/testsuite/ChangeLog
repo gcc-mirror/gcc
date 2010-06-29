@@ -1,3 +1,9 @@
+2010-06-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/44587
+	* g++.dg/template/qualified-id2.C: New.
+	* g++.dg/template/qualified-id3.C: New.
+
 2010-06-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/tree-ssa/ltrans-1.c: Add -march=i486 for i?86-*-* && ilp32.

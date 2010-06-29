@@ -1,3 +1,13 @@
+2010-06-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/44587
+	* pt.c (has_value_dependent_address): New.
+	(value_dependent_expression_p): Check it.
+	(convert_nontype_argument): Likewise.  Call decay_conversion before
+	folding if we want a pointer.
+	* semantics.c (finish_id_expression): Don't add SCOPE_REF if the
+	scope is the current instantiation.
+
 2010-06-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/44627
