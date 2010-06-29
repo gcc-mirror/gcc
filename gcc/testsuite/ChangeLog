@@ -1,3 +1,7 @@
+2010-06-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/lto.exp (lto_prune_warns): Also accept leading single quote.
+
 2010-06-29  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/ipa-split-3.c: New testcase.
