@@ -1,5 +1,9 @@
 2010-06-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/43801
+	* cgraph.c (cgraph_create_virtual_clone): Clear DECL_SECTION_NAME
+	if old_decl was DECL_ONE_ONLY.
+
 	PR debug/44668
 	* dwarf2out.c (add_accessibility_attribute): New function.
 	(gen_subprogram_die, gen_variable_die, gen_field_die): Use it
