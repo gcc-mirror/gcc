@@ -1,5 +1,14 @@
 2010-06-29  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (dependent_scope_ref_p): Remove.
+	(value_dependent_expression_p): Don't call it.
+	(type_dependent_expression_p): Here either.
+	* init.c (build_offset_ref): Set TREE_TYPE on a qualified-id
+	if the scope isn't dependent.
+
+	* pt.c (convert_nontype_argument): Use mark_lvalue_use if we want
+	a reference.
+
 	PR c++/44587
 	* pt.c (has_value_dependent_address): New.
 	(value_dependent_expression_p): Check it.
