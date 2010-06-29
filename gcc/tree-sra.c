@@ -1659,14 +1659,15 @@ sort_and_splice_var_accesses (tree var)
    ACCESS->replacement.  */
 
 static tree
-create_access_replacement (struct access *access)
+create_access_replacement (struct access *access, bool rename)
 {
   tree repl;
 
   repl = create_tmp_var (access->type, "SR");
   get_var_ann (repl);
   add_referenced_var (repl);
-  mark_sym_for_renaming (repl);
+  if (rename)
+    mark_sym_for_renaming (repl);
 
   if (!access->grp_partial_lhs
       && (TREE_CODE (access->type) == COMPLEX_TYPE
@@ -1715,7 +1716,20 @@ get_access_replacement (struct access *access)
   gcc_assert (access->grp_to_be_replaced);
 
   if (!access->replacement_decl)
-    access->replacement_decl = create_access_replacement (access);
+    access->replacement_decl = create_access_replacement (access, true);
+  return access->replacement_decl;
+}
+
+/* Return ACCESS scalar replacement, create it if it does not exist yet but do
+   not mark it for renaming.  */
+
+static inline tree
+get_unrenamed_access_replacement (struct access *access)
+{
+  gcc_assert (!access->grp_to_be_replaced);
+
+  if (!access->replacement_decl)
+    access->replacement_decl = create_access_replacement (access, false);
   return access->replacement_decl;
 }
 
@@ -2556,32 +2570,21 @@ sra_modify_constructor_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 }
 
 /* Create a new suitable default definition SSA_NAME and replace all uses of
-   SSA with it.  */
+   SSA with it, RACC is access describing the uninitialized part of an
+   aggregate that is being loaded.  */
 
 static void
-replace_uses_with_default_def_ssa_name (tree ssa)
+replace_uses_with_default_def_ssa_name (tree ssa, struct access *racc)
 {
-  tree repl, decl = SSA_NAME_VAR (ssa);
-  if (TREE_CODE (decl) == PARM_DECL)
-    {
-      tree tmp = create_tmp_var (TREE_TYPE (decl), "SR");
-      if (TREE_CODE (TREE_TYPE (tmp)) == COMPLEX_TYPE
-	  || TREE_CODE (TREE_TYPE (tmp)) == VECTOR_TYPE)
-	DECL_GIMPLE_REG_P (tmp) = 1;
+  tree repl, decl;
 
-      get_var_ann (tmp);
-      add_referenced_var (tmp);
-      repl = make_ssa_name (tmp, gimple_build_nop ());
-      set_default_def (tmp, repl);
-    }
-  else
+  decl = get_unrenamed_access_replacement (racc);
+
+  repl = gimple_default_def (cfun, decl);
+  if (!repl)
     {
-      repl = gimple_default_def (cfun, decl);
-      if (!repl)
-	{
-	  repl = make_ssa_name (decl, gimple_build_nop ());
-	  set_default_def (decl, repl);
-	}
+      repl = make_ssa_name (decl, gimple_build_nop ());
+      set_default_def (decl, repl);
     }
 
   replace_uses_by (ssa, repl);
@@ -2771,7 +2774,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi,
 					     false, false);
 		  gcc_assert (*stmt == gsi_stmt (*gsi));
 		  if (TREE_CODE (lhs) == SSA_NAME)
-		    replace_uses_with_default_def_ssa_name (lhs);
+		    replace_uses_with_default_def_ssa_name (lhs, racc);
 
 		  unlink_stmt_vdef (*stmt);
 		  gsi_remove (gsi, true);

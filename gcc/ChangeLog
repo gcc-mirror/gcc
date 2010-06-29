@@ -1,6 +1,20 @@
 2010-06-29  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
+	2010-05-17  Martin Jambor  <mjambor@suse.cz>
+
+        PR middle-end/44133
+        * tree-sra.c (create_access_replacement): New parameter rename, mark
+        the replaement for renaming only when it is true.
+        (get_access_replacement): Pass true in the rename parameter of
+        create_access_replacement.
+        (get_unrenamed_access_replacement): New function.
+        (replace_uses_with_default_def_ssa_name): New parameter racc, get the
+        replacement declaration from it.
+
+2010-06-29  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
 	2010-04-13  Martin Jambor  <mjambor@suse.cz>
 
         * tree-sra.c (replace_uses_with_default_def_ssa_name): New function.

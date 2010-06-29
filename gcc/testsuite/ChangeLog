@@ -1,6 +1,14 @@
 2010-06-29  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
+	2010-05-17  Martin Jambor  <mjambor@suse.cz>
+
+        PR middle-end/44133
+        * gcc.dg/tree-ssa/pr44133.c: New test.
+
+2010-06-29  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
 	2010-04-13  Martin Jambor  <mjambor@suse.cz>
 
         * gcc.dg/tree-ssa/sra-9.c: New test.
