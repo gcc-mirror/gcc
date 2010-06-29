@@ -2555,6 +2555,37 @@ sra_modify_constructor_assign (gimple *stmt, gimple_stmt_iterator *gsi)
     }
 }
 
+/* Create a new suitable default definition SSA_NAME and replace all uses of
+   SSA with it.  */
+
+static void
+replace_uses_with_default_def_ssa_name (tree ssa)
+{
+  tree repl, decl = SSA_NAME_VAR (ssa);
+  if (TREE_CODE (decl) == PARM_DECL)
+    {
+      tree tmp = create_tmp_var (TREE_TYPE (decl), "SR");
+      if (TREE_CODE (TREE_TYPE (tmp)) == COMPLEX_TYPE
+	  || TREE_CODE (TREE_TYPE (tmp)) == VECTOR_TYPE)
+	DECL_GIMPLE_REG_P (tmp) = 1;
+
+      get_var_ann (tmp);
+      add_referenced_var (tmp);
+      repl = make_ssa_name (tmp, gimple_build_nop ());
+      set_default_def (tmp, repl);
+    }
+  else
+    {
+      repl = gimple_default_def (cfun, decl);
+      if (!repl)
+	{
+	  repl = make_ssa_name (decl, gimple_build_nop ());
+	  set_default_def (decl, repl);
+	}
+    }
+
+  replace_uses_by (ssa, repl);
+}
 
 /* Callback of scan_function to process assign statements.  It examines both
    sides of the statement, replaces them with a scalare replacement if there is
@@ -2730,26 +2761,28 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi,
 	}
       else
 	{
-	  if (access_has_children_p (racc))
+	  if (racc)
 	    {
-	      if (!racc->grp_unscalarized_data
-		  /* Do not remove SSA name definitions (PR 42704).  */
-		  && TREE_CODE (lhs) != SSA_NAME)
+	      if (!racc->grp_to_be_replaced && !racc->grp_unscalarized_data)
 		{
-		  generate_subtree_copies (racc->first_child, lhs,
-					   racc->offset, 0, 0, gsi,
-					   false, false);
+		  if (racc->first_child)
+		    generate_subtree_copies (racc->first_child, lhs,
+					     racc->offset, 0, 0, gsi,
+					     false, false);
 		  gcc_assert (*stmt == gsi_stmt (*gsi));
+		  if (TREE_CODE (lhs) == SSA_NAME)
+		    replace_uses_with_default_def_ssa_name (lhs);
+
 		  unlink_stmt_vdef (*stmt);
 		  gsi_remove (gsi, true);
 		  sra_stats.deleted++;
 		  return SRA_SA_REMOVED;
 		}
-	      else
+	      else if (racc->first_child)
 		generate_subtree_copies (racc->first_child, lhs,
 					 racc->offset, 0, 0, gsi, false, true);
 	    }
-	  else if (access_has_children_p (lacc))
+	  if (access_has_children_p (lacc))
 	    generate_subtree_copies (lacc->first_child, rhs, lacc->offset,
 				     0, 0, gsi, true, true);
 	}

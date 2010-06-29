@@ -1,3 +1,10 @@
+2010-06-29  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2010-04-13  Martin Jambor  <mjambor@suse.cz>
+
+        * gcc.dg/tree-ssa/sra-9.c: New test.
+
 2010-06-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/tree-ssa/ltrans-1.c: Add -march=i486 for i?86-*-* && ilp32.

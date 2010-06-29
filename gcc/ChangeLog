@@ -1,3 +1,13 @@
+2010-06-29  Martin Jambor  <mjambor@suse.cz>
+
+	Backport from mainline
+	2010-04-13  Martin Jambor  <mjambor@suse.cz>
+
+        * tree-sra.c (replace_uses_with_default_def_ssa_name): New function.
+        (sra_modify_assign): Delete stmts loading dead data even if racc has no
+        children.  Call replace_uses_with_default_def_ssa_name to handle
+        SSA_NAES on lhs.
+
 2010-06-27  Jan Hubicka  <jh@suse.cz>
 
 	Backport inliner heruistic fixes from mainline
