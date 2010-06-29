@@ -3463,8 +3463,8 @@ output_fde (dw_fde_ref fde, bool for_eh, bool second,
   char l1[20], l2[20];
   dw_cfi_ref cfi;
 
-  targetm.asm_out.unwind_label (asm_out_file, fde->decl, for_eh,
-				/* empty */ 0);
+  targetm.asm_out.emit_unwind_label (asm_out_file, fde->decl, for_eh,
+				     /* empty */ 0);
   targetm.asm_out.internal_label (asm_out_file, FDE_LABEL,
 				  for_eh + j);
   ASM_GENERATE_INTERNAL_LABEL (l1, FDE_AFTER_SIZE_LABEL, for_eh + j);
@@ -3680,7 +3680,8 @@ output_call_frame_info (int for_eh)
 	else if (fde_needed_for_eh_p (&fde_table[i]))
 	  any_eh_needed = true;
 	else if (TARGET_USES_WEAK_UNWIND_INFO)
-	  targetm.asm_out.unwind_label (asm_out_file, fde_table[i].decl, 1, 1);
+	  targetm.asm_out.emit_unwind_label (asm_out_file, fde_table[i].decl,
+					     1, 1);
 
       if (!any_eh_needed)
 	return;

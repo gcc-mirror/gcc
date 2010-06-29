@@ -434,8 +434,8 @@ static const struct attribute_spec arm_attribute_table[] =
 #define TARGET_MUST_PASS_IN_STACK arm_must_pass_in_stack
 
 #ifdef TARGET_UNWIND_INFO
-#undef TARGET_UNWIND_EMIT
-#define TARGET_UNWIND_EMIT arm_unwind_emit
+#undef TARGET_ASM_UNWIND_EMIT
+#define TARGET_ASM_UNWIND_EMIT arm_unwind_emit
 
 /* EABI unwinding tables use a different format for the typeinfo tables.  */
 #undef TARGET_ASM_TTYPE

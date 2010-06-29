@@ -74,6 +74,7 @@ genextract.c
 genflags.c
 gengenrtl.c
 gengtype.c
+genhooks.c
 genmodes.c
 genopinit.c
 genoutput.c

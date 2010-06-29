@@ -5979,7 +5979,7 @@ maybe_assemble_visibility (tree decl)
 
   if (vis != VISIBILITY_DEFAULT)
     {
-      targetm.asm_out.visibility (decl, vis);
+      targetm.asm_out.assemble_visibility (decl, vis);
       return 1;
     }
   else
@@ -6905,11 +6905,11 @@ default_asm_declare_constant_name (FILE *file, const char *name,
 void
 default_file_start (void)
 {
-  if (targetm.file_start_app_off
+  if (targetm.asm_file_start_app_off
       && !(flag_verbose_asm || flag_debug_asm || flag_dump_rtl_in_asm))
     fputs (ASM_APP_OFF, asm_out_file);
 
-  if (targetm.file_start_file_directive)
+  if (targetm.asm_file_start_file_directive)
     output_file_directive (asm_out_file, main_input_filename);
 }
 

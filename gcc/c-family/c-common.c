@@ -4906,13 +4906,13 @@ c_common_nodes_and_builtins (void)
     (build_decl (UNKNOWN_LOCATION,
 		 TYPE_DECL, get_identifier ("__builtin_va_list"),
 		 va_list_type_node));
-  if (targetm.enum_va_list)
+  if (targetm.enum_va_list_p)
     {
       int l;
       const char *pname;
       tree ptype;
 
-      for (l = 0; targetm.enum_va_list (l, &pname, &ptype); ++l)
+      for (l = 0; targetm.enum_va_list_p (l, &pname, &ptype); ++l)
 	{
 	  lang_hooks.decls.pushdecl
 	    (build_decl (UNKNOWN_LOCATION,

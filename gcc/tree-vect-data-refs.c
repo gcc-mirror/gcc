@@ -3677,8 +3677,8 @@ vect_supportable_dr_alignment (struct data_reference *dr)
 	}
 
       if (targetm.vectorize.
-	  builtin_support_vector_misalignment (mode, type,
-					       DR_MISALIGNMENT (dr), is_packed))
+	  support_vector_misalignment (mode, type,
+				       DR_MISALIGNMENT (dr), is_packed))
 	/* Can't software pipeline the loads, but can at least do them.  */
 	return dr_unaligned_supported;
     }
@@ -3696,8 +3696,8 @@ vect_supportable_dr_alignment (struct data_reference *dr)
 	}
 
      if (targetm.vectorize.
-         builtin_support_vector_misalignment (mode, type,
-					      DR_MISALIGNMENT (dr), is_packed))
+         support_vector_misalignment (mode, type,
+				      DR_MISALIGNMENT (dr), is_packed))
        return dr_unaligned_supported;
     }
 

@@ -2571,8 +2571,8 @@ cris_file_start (void)
 {
   /* These expressions can vary at run time, so we cannot put
      them into TARGET_INITIALIZER.  */
-  targetm.file_start_app_off = !(TARGET_PDEBUG || flag_print_asm_name);
-  targetm.file_start_file_directive = TARGET_ELF;
+  targetm.asm_file_start_app_off = !(TARGET_PDEBUG || flag_print_asm_name);
+  targetm.asm_file_start_file_directive = TARGET_ELF;
 
   default_file_start ();
 }

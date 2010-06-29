@@ -3922,7 +3922,7 @@ df_get_entry_block_def_set (bitmap entry_block_defs)
     bitmap_set_bit (entry_block_defs, REGNO (INCOMING_RETURN_ADDR_RTX));
 #endif
 
-  targetm.live_on_entry (entry_block_defs);
+  targetm.extra_live_on_entry (entry_block_defs);
 }
 
 

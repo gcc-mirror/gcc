@@ -1,3 +1,9 @@
+2010-06-29  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR other/44034
+	* c-common.c: Rename targetm member:
+	targetm.enum_va_list -> targetm.enum_va_list_p
+
 2010-06-28  Anatoly Sokolov  <aesok@post.ru>
 
 	* c-common.c (shorten_compare): Adjust call to force_fit_type_double.

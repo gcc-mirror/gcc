@@ -2930,7 +2930,7 @@ output_one_function_exception_table (const char * ARG_UNUSED (fnname),
 #endif
 
   /* If the target wants a label to begin the table, emit it here.  */
-  targetm.asm_out.except_table_label (asm_out_file);
+  targetm.asm_out.emit_except_table_label (asm_out_file);
 
   have_tt_data = (VEC_length (tree, cfun->eh->ttype_data)
 		  || (targetm.arm_eabi_unwinder
