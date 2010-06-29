@@ -1,3 +1,8 @@
+2010-06-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44696
+	* gfortran.dg/associated_target_4.f90: New.
+
 2010-06-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/44582

@@ -4416,6 +4416,8 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
   else
     {
       /* An optional target.  */
+      if (arg2->expr->ts.type == BT_CLASS)
+	gfc_add_component_ref (arg2->expr, "$data");
       ss2 = gfc_walk_expr (arg2->expr);
 
       nonzero_charlen = NULL_TREE;

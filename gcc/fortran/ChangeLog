@@ -1,3 +1,9 @@
+2010-06-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44696
+	* trans-intrinsic.c (gfc_conv_associated): Handle polymorphic variables
+	passed as second argument of ASSOCIATED.
+
 2010-06-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/44582
