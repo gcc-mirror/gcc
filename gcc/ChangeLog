@@ -1,5 +1,14 @@
 2010-06-29  Douglas B Rupp  <rupp@gnat.com>
 
+	* vmsdbgout.c (vmsdbgout_begin_epilogue): Declare
+	(vmsdbgout_type_decl): Declare
+	(vmsdbg_debug_hooks): Add entry for type_decl and begin_epilogue.
+	(FUNC_EPILOGUE_LABEL): New macro
+	(vmsdbgout_begin_epilogue): New function.
+	(vmsdbgout_type_decl): New function.
+
+2010-06-29  Douglas B Rupp  <rupp@gnat.com>
+
 	* vmsdbg.h: Update copyright.
 
 2010-06-29  Douglas B Rupp  <rupp@gnat.com>
