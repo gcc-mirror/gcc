@@ -1064,6 +1064,11 @@ struct gcc_target
 
     /* Adjust the address of the trampoline in a target-specific way.  */
     rtx (*trampoline_adjust_address) (rtx addr);
+
+    /* Return the number of bytes of its own arguments that a function
+       pops on returning, or 0 if the function pops no arguments and the
+       caller must therefore pop them all after the function returns.  */
+    int (*return_pops_args) (tree fundecl, tree funtype, int size);
   } calls;
 
   /* Return the diagnostic message string if conversion from FROMTYPE

@@ -273,8 +273,6 @@ enum reg_class
 
 #define ACCUMULATE_OUTGOING_ARGS 1
 
-#define RETURN_POPS_ARGS(DECL, FUNTYPE, SIZE) 0
-
 /*--------------------------------*/
 /* Passing Arguments in Registers */
 /*--------------------------------*/

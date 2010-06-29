@@ -534,21 +534,6 @@ extern enum reg_class regno_reg_class[];
 
 #define FIRST_PARM_OFFSET(FNDECL) 8
 
-/* On the 68000, the RTS insn cannot pop anything.
-   On the 68010, the RTD insn may be used to pop them if the number
-     of args is fixed, but if the number is variable then the caller
-     must pop them all.  RTD can't be used for library calls now
-     because the library is compiled with the Unix compiler.
-   Use of RTD is a selectable option, since it is incompatible with
-   standard Unix calling sequences.  If the option is not selected,
-   the caller must always pop the args.  */
-#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)   \
-  ((TARGET_RTD && (!(FUNDECL) || TREE_CODE (FUNDECL) != IDENTIFIER_NODE)	\
-    && (TYPE_ARG_TYPES (FUNTYPE) == 0				\
-	|| (TREE_VALUE (tree_last (TYPE_ARG_TYPES (FUNTYPE)))	\
-	    == void_type_node)))				\
-   ? (SIZE) : 0)
-
 /* On the m68k the return value defaults to D0.  */
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
   gen_rtx_REG (TYPE_MODE (VALTYPE), D0_REG)

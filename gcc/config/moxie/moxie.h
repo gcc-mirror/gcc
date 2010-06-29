@@ -453,8 +453,6 @@ enum reg_class
 /* All load operations zero extend.  */
 #define LOAD_EXTEND_OP(MEM) ZERO_EXTEND
 
-#define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, STACK_SIZE) 0
-
 /* A C expression that is nonzero if X is a legitimate constant for
    an immediate operand on the target machine.  */
 #define LEGITIMATE_CONSTANT_P(X) 1

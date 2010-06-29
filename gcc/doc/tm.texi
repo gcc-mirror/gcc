@@ -3928,11 +3928,10 @@ suppresses this behavior and causes the parameter to be passed on the
 stack in its natural location.
 @end defmac
 
-@defmac RETURN_POPS_ARGS (@var{fundecl}, @var{funtype}, @var{stack-size})
-A C expression that should indicate the number of bytes of its own
-arguments that a function pops on returning, or 0 if the
-function pops no arguments and the caller must therefore pop them all
-after the function returns.
+@deftypefn {Target Hook} TARGET_RETURN_POPS_ARGS (@var{fundecl}, @var{funtype}, @var{stack-size})
+This target hook returns the number of bytes of its own arguments that
+a function pops on returning, or 0 if the function pops no arguments
+and the caller must therefore pop them all after the function returns.
 
 @var{fundecl} is a C variable whose value is a tree node that describes
 the function in question.  Normally it is a node of type
@@ -3965,7 +3964,7 @@ arguments pop them but other functions (such as @code{printf}) pop
 nothing (the caller pops all).  When this convention is in use,
 @var{funtype} is examined to determine whether a function takes a fixed
 number of arguments.
-@end defmac
+@end deftypefn
 
 @defmac CALL_POPS_ARGS (@var{cum})
 A C expression that should indicate the number of bytes a call sequence

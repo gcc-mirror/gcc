@@ -1423,17 +1423,6 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 /* Offset of first parameter from the argument pointer register value.  */
 #define FIRST_PARM_OFFSET(FNDECL)  0
 
-/* Value is the number of byte of arguments automatically
-   popped when returning from a subroutine call.
-   FUNDECL is the declaration node of the function (as a tree),
-   FUNTYPE is the data type of the function (as a tree),
-   or for a library call it is an identifier node for the subroutine name.
-   SIZE is the number of bytes of arguments passed on the stack.
-
-   On the SH, the caller does not pop any of its arguments that were passed
-   on the stack.  */
-#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)  0
-
 /* Value is the number of bytes of arguments automatically popped when
    calling a subroutine.
    CUM is the accumulated argument list.

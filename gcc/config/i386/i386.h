@@ -1542,26 +1542,6 @@ enum reg_class
 #define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) \
   (ix86_function_type_abi (FNTYPE) == MS_ABI)
 
-/* Value is the number of bytes of arguments automatically
-   popped when returning from a subroutine call.
-   FUNDECL is the declaration node of the function (as a tree),
-   FUNTYPE is the data type of the function (as a tree),
-   or for a library call it is an identifier node for the subroutine name.
-   SIZE is the number of bytes of arguments passed on the stack.
-
-   On the 80386, the RTD insn may be used to pop them if the number
-     of args is fixed, but if the number is variable then the caller
-     must pop them all.  RTD can't be used for library calls now
-     because the library is compiled with the Unix compiler.
-   Use of RTD is a selectable option, since it is incompatible with
-   standard Unix calling sequences.  If the option is not selected,
-   the caller must always pop the args.
-
-   The attribute stdcall is equivalent to RTD on a per module basis.  */
-
-#define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, SIZE) \
-  ix86_return_pops_args ((FUNDECL), (FUNTYPE), (SIZE))
-
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 

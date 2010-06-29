@@ -2162,8 +2162,6 @@ enum reg_class
 
 #define STACK_BOUNDARY (TARGET_NEWABI ? 128 : 64)
 
-#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
-
 /* Symbolic macros for the registers used to return integer and floating
    point values.  */
 

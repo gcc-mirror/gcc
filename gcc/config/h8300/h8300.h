@@ -536,17 +536,6 @@ enum reg_class {
 
 #define FIRST_PARM_OFFSET(FNDECL) 0
 
-/* Value is the number of bytes of arguments automatically
-   popped when returning from a subroutine call.
-   FUNDECL is the declaration node of the function (as a tree),
-   FUNTYPE is the data type of the function (as a tree),
-   or for a library call it is an identifier node for the subroutine name.
-   SIZE is the number of bytes of arguments passed on the stack.
-
-   On the H8 the return does not pop anything.  */
-
-#define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, SIZE) 0
-
 /* Definitions for register eliminations.
 
    This is an array of structures.  Each structure initializes one pair

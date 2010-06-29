@@ -673,9 +673,6 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 /* We need current_function_outgoing_args to be valid.  */
 #define ACCUMULATE_OUTGOING_ARGS 1
 
-/* Return doesn't modify the stack.  */
-#define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, SIZE) 0
-
 
 /* Register arguments.  */
 

@@ -313,8 +313,6 @@ enum reg_class
 
 #define PUSH_ROUNDING(BYTES) (((BYTES) + 3) & ~3)
 
-#define RETURN_POPS_ARGS(FNDECL, FUNTYPE, SIZE)   0
-
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   ((rtx) crx_function_arg(&(CUM), (MODE), (TYPE), (NAMED)))
 

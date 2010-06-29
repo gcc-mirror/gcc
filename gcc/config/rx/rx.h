@@ -154,7 +154,6 @@ extern enum rx_cpu_types  rx_cpu_type;
 #define MOVE_MAX 			4
 #define STARTING_FRAME_OFFSET		0
 
-#define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, SIZE) 0
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC)   1
 
 #define LEGITIMATE_CONSTANT_P(X) 	rx_is_legitimate_constant (X)

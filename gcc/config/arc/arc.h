@@ -530,14 +530,6 @@ extern enum reg_class arc_regno_reg_class[FIRST_PSEUDO_REGISTER];
    increase the stack frame size by this amount.  */
 #define ACCUMULATE_OUTGOING_ARGS 1
 
-/* Value is the number of bytes of arguments automatically
-   popped when returning from a subroutine call.
-   FUNDECL is the declaration node of the function (as a tree),
-   FUNTYPE is the data type of the function (as a tree),
-   or for a library call it is an identifier node for the subroutine name.
-   SIZE is the number of bytes of arguments passed on the stack.  */
-#define RETURN_POPS_ARGS(DECL, FUNTYPE, SIZE) 0
-
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
    hold all necessary information about the function itself

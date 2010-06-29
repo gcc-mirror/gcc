@@ -1387,15 +1387,6 @@ extern char leaf_reg_remap[];
    the function!  */
 #define ACCUMULATE_OUTGOING_ARGS 1
 
-/* Value is the number of bytes of arguments automatically
-   popped when returning from a subroutine call.
-   FUNDECL is the declaration node of the function (as a tree),
-   FUNTYPE is the data type of the function (as a tree),
-   or for a library call it is an identifier node for the subroutine name.
-   SIZE is the number of bytes of arguments passed on the stack.  */
-
-#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
-
 /* Define this macro if the target machine has "register windows".  This
    C expression returns the register number as seen by the called function
    corresponding to register number OUT as seen by the calling function.

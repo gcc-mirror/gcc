@@ -586,8 +586,6 @@ enum reg_class
 
 #define ACCUMULATE_OUTGOING_ARGS 1
 
-#define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, STACKSIZE) 0
-
 
 /* Node: Register Arguments */
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)	\

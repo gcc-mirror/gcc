@@ -365,8 +365,6 @@ enum reg_class
 
 #define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) 1
 
-#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
-
 
 /* Function Arguments in Registers.  */
 
