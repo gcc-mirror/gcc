@@ -1,3 +1,22 @@
+2010-06-30  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* recog.c (peep2_do_rebuild_jump_labels, peep2_do_cleanup_cfg): New
+	static variables.
+	(peep2_buf_position): New static function.
+	(peep2_regno_dead_p, peep2_reg_dead_p, peep2_find_free_register,
+	peephole2_optimize): Use it.
+	(peep2_attempt, peep2_update_life): New static functions, broken out
+	of peephole2_optimize.
+	(peep2_fill_buffer): New static function.
+	(peephole2_optimize): Change the main loop to try to fill the buffer
+	with the maximum number of insns before matching them against
+	peepholes.  Use a forward scan.  Remove special case for targets with
+	conditional execution.
+	* genrecog.c (change_state): Delete dead code.
+	* config/i386/i386.md (peephole2 for arithmetic ops with memory):
+	Rewrite so as not to expect the second insn to have had a peephole
+	applied yet.
+
 2010-06-29  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* genhooks.c (emit_findices): Cast field precision to int.
