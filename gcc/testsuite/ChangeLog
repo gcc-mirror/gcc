@@ -1,3 +1,8 @@
+2010-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/44668
+	* g++.dg/debug/dwarf2/accessibility1.C: New test.
+
 2010-06-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44587
