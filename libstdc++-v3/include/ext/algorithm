@@ -123,8 +123,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,
 	    typename iterator_traits<_InputIterator>::value_type>)
 
-      return __copy_n(__first, __count, __result,
-		      std::__iterator_category(__first));
+      return __gnu_cxx::__copy_n(__first, __count, __result,
+				 std::__iterator_category(__first));
     }
 
   template<typename _InputIterator1, typename _InputIterator2>
