@@ -2259,6 +2259,7 @@ is_external_proc (gfc_symbol *sym)
 	&& !(sym->attr.intrinsic
 	      || gfc_is_intrinsic (sym, sym->attr.subroutine, sym->declared_at))
 	&& sym->attr.proc != PROC_ST_FUNCTION
+	&& !sym->attr.proc_pointer
 	&& !sym->attr.use_assoc
 	&& sym->name)
     return true;
