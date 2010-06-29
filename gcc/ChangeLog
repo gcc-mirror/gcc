@@ -1,3 +1,8 @@
+2010-06-29  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* genhooks.c (emit_findices): Cast field precision to int.
+	(emit_documentation): Likewise.
+
 2010-06-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/43801

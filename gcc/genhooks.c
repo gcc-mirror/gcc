@@ -52,7 +52,7 @@ emit_findices (const char *doc, const char *hook_name)
       doc = strchr (fcode, '}');
       if (!doc)
 	fatal ("Malformed @Fcode for hook %s\n", hook_name);
-      printf ("@findex %.*s\n", doc - fcode, fcode);
+      printf ("@findex %.*s\n", (int) (doc - fcode), fcode);
       doc = fcode;
     }
 }
@@ -238,9 +238,9 @@ emit_documentation (const char *in_fname)
 		    /* Type names like 'int' are followed by a space, sometimes
 		       also by '*'.  'void' should appear only in "(void)".  */
 		    if (*e == ' ' || *e == '*' || *q == '(')
-		      printf ("%.*s", e - q + 1, q);
+		      printf ("%.*s", (int) (e - q + 1), q);
 		    else
-		      printf ("@var{%.*s}%c", e - q, q, *e);
+		      printf ("@var{%.*s}%c", (int) (e - q), q, *e);
 		}
 	      /* POD-valued hooks sometimes come in groups with common
 		 documentation.*/
@@ -265,8 +265,8 @@ emit_documentation (const char *in_fname)
 		      /* Print paragraph, emitting @Fcode as @code.  */
 		      for (; (fcode = strstr (doc, "@Fcode{")) && fcode < p_end;
 			   doc = fcode + 2)
-			printf ("%.*s@", fcode - doc, doc);
-		      printf ("%.*s", p_end - doc, doc);
+			printf ("%.*s@", (int) (fcode - doc), doc);
+		      printf ("%.*s", (int) (p_end - doc), doc);
 		      /* Emit function indices for next paragraph.  */
 		      emit_findices (p_end, name);
 		    }
