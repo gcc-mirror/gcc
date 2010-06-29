@@ -2642,6 +2642,32 @@ initialize_inlined_parameters (copy_body_data *id, gimple stmt,
       val = i < gimple_call_num_args (stmt) ? gimple_call_arg (stmt, i) : NULL;
       setup_one_parameter (id, p, val, fn, bb, &vars);
     }
+  /* After remapping parameters remap their types.  This has to be done
+     in a second loop over all parameters to appropriately remap
+     variable sized arrays when the size is specified in a
+     parameter following the array.  */
+  for (p = parms, i = 0; p; p = TREE_CHAIN (p), i++)
+    {
+      tree *varp = (tree *) pointer_map_contains (id->decl_map, p);
+      if (varp
+	  && TREE_CODE (*varp) == VAR_DECL)
+	{
+	  tree def = (gimple_in_ssa_p (cfun)
+		      ? gimple_default_def (id->src_cfun, p) : NULL);
+	  TREE_TYPE (*varp) = remap_type (TREE_TYPE (*varp), id);
+	  /* Also remap the default definition if it was remapped
+	     to the default definition of the parameter replacement
+	     by the parameter setup.  */
+	  if (def && gimple_in_ssa_p (cfun) && is_gimple_reg (p))
+	    {
+	      tree *defp = (tree *) pointer_map_contains (id->decl_map, def);
+	      if (defp
+		  && TREE_CODE (*defp) == SSA_NAME
+		  && SSA_NAME_VAR (*defp) == *varp)
+		TREE_TYPE (*defp) = TREE_TYPE (*varp);
+	    }
+	}
+    }
 
   /* Initialize the static chain.  */
   p = DECL_STRUCT_FUNCTION (fn)->static_chain_decl;

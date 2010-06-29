@@ -1,3 +1,9 @@
+2010-06-29  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/44667
+	* tree-inline.c (initialize_inlined_parameters): Make sure
+	to remap the inlined parameter variable substitutions types.
+
 2010-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/44659
