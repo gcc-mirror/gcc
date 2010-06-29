@@ -1712,7 +1712,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		  /* We have missing edge in the callgraph.  This can happen
 		     when previous inlining turned an indirect call into a
 		     direct call by constant propagating arguments or we are
-		     producing dead clone (for further clonning).  In all
+		     producing dead clone (for further cloning).  In all
 		     other cases we hit a bug (incorrect node sharing is the
 		     most common reason for missing edges).  */
 		  gcc_assert (dest->needed || !dest->analyzed
@@ -1975,7 +1975,7 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
 	      tree block = id->block;
 	      edge_iterator ei2;
 
-	      /* When doing partial clonning, we allow PHIs on the entry block
+	      /* When doing partial cloning, we allow PHIs on the entry block
 		 as long as all the arguments are the same.  Find any input
 		 edge to see argument to copy.  */
 	      if (!old_edge)
@@ -2042,7 +2042,7 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, gcov_type count)
   gcc_assert (cfun->cfg == NULL);
   gcc_assert (cfun->decl == new_fndecl);
 
-  /* Copy items we preserve during clonning.  */
+  /* Copy items we preserve during cloning.  */
   cfun->static_chain_decl = src_cfun->static_chain_decl;
   cfun->nonlocal_goto_save_area = src_cfun->nonlocal_goto_save_area;
   cfun->function_end_locus = src_cfun->function_end_locus;
@@ -2159,8 +2159,8 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
   bool need_debug_cleanup = false;
   gcov_type count_scale;
   int last;
-  int incomming_frequency = 0;
-  gcov_type incomming_count = 0;
+  int incoming_frequency = 0;
+  gcov_type incoming_count = 0;
 
   if (ENTRY_BLOCK_PTR_FOR_FUNCTION (src_cfun)->count)
     count_scale = (REG_BR_PROB_BASE * count
@@ -2174,7 +2174,7 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
   /* If we are inlining just region of the function, make sure to connect new entry
      to ENTRY_BLOCK_PTR.  Since new entry can be part of loop, we must compute
      frequency and probability of ENTRY_BLOCK_PTR based on the frequencies and
-     probabilities of edges incomming from nonduplicated region.  */
+     probabilities of edges incoming from nonduplicated region.  */
   if (new_entry)
     {
       edge e;
@@ -2183,14 +2183,14 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
       FOR_EACH_EDGE (e, ei, new_entry->preds)
 	if (!e->src->aux)
 	  {
-	    incomming_frequency += EDGE_FREQUENCY (e);
-	    incomming_count += e->count;
+	    incoming_frequency += EDGE_FREQUENCY (e);
+	    incoming_count += e->count;
 	  }
-      incomming_count = incomming_count * count_scale / REG_BR_PROB_BASE;
-      incomming_frequency
-	= incomming_frequency * frequency_scale / REG_BR_PROB_BASE;
-      ENTRY_BLOCK_PTR->count = incomming_count;
-      ENTRY_BLOCK_PTR->frequency = incomming_frequency;
+      incoming_count = incoming_count * count_scale / REG_BR_PROB_BASE;
+      incoming_frequency
+	= incoming_frequency * frequency_scale / REG_BR_PROB_BASE;
+      ENTRY_BLOCK_PTR->count = incoming_count;
+      ENTRY_BLOCK_PTR->frequency = incoming_frequency;
     }
 
   /* Must have a CFG here at this point.  */
@@ -2230,7 +2230,7 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
     {
       edge e = make_edge (entry_block_map, (basic_block)new_entry->aux, EDGE_FALLTHRU);
       e->probability = REG_BR_PROB_BASE;
-      e->count = incomming_count;
+      e->count = incoming_count;
     }
 
   if (gimple_in_ssa_p (cfun))
