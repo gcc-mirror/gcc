@@ -544,6 +544,49 @@ hook_int_CUMULATIVE_ARGS_mode_tree_bool_0 (
 }
 
 void
+default_function_arg_advance (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+			      enum machine_mode mode ATTRIBUTE_UNUSED,
+			      const_tree type ATTRIBUTE_UNUSED,
+			      bool named ATTRIBUTE_UNUSED)
+{
+#ifdef FUNCTION_ARG_ADVANCE
+  CUMULATIVE_ARGS args = *ca;
+  FUNCTION_ARG_ADVANCE (args, mode, CONST_CAST_TREE (type), named);
+  *ca = args;
+#else
+  gcc_unreachable ();
+#endif
+}
+
+rtx
+default_function_arg (const CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+		      enum machine_mode mode ATTRIBUTE_UNUSED,
+		      const_tree type ATTRIBUTE_UNUSED,
+		      bool named ATTRIBUTE_UNUSED)
+{
+#ifdef FUNCTION_ARG
+  return FUNCTION_ARG (*(CONST_CAST (CUMULATIVE_ARGS *, ca)), mode,
+		       CONST_CAST_TREE (type), named);
+#else
+  gcc_unreachable ();
+#endif
+}
+
+rtx
+default_function_incoming_arg (const CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
+			       enum machine_mode mode ATTRIBUTE_UNUSED,
+			       const_tree type ATTRIBUTE_UNUSED,
+			       bool named ATTRIBUTE_UNUSED)
+{
+#ifdef FUNCTION_INCOMING_ARG
+  return FUNCTION_INCOMING_ARG (*(CONST_CAST (CUMULATIVE_ARGS *, ca)), mode,
+				CONST_CAST_TREE (type), named);
+#else
+  gcc_unreachable ();
+#endif
+}
+
+void
 hook_void_bitmap (bitmap regs ATTRIBUTE_UNUSED)
 {
 }

@@ -712,6 +712,22 @@
 #define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_false
 #define TARGET_ARG_PARTIAL_BYTES hook_int_CUMULATIVE_ARGS_mode_tree_bool_0
 
+#ifndef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE default_function_arg_advance
+#endif
+
+#ifndef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG default_function_arg
+#endif
+
+#ifndef TARGET_FUNCTION_INCOMING_ARG
+#ifndef FUNCTION_INCOMING_ARG
+#define TARGET_FUNCTION_INCOMING_ARG TARGET_FUNCTION_ARG
+#else
+#define TARGET_FUNCTION_INCOMING_ARG default_function_incoming_arg
+#endif
+#endif
+
 #define TARGET_FUNCTION_VALUE default_function_value
 #define TARGET_LIBCALL_VALUE default_libcall_value
 #define TARGET_FUNCTION_VALUE_REGNO_P default_function_value_regno_p
@@ -739,6 +755,9 @@
    TARGET_MUST_PASS_IN_STACK,					\
    TARGET_CALLEE_COPIES,					\
    TARGET_ARG_PARTIAL_BYTES,					\
+   TARGET_FUNCTION_ARG_ADVANCE,					\
+   TARGET_FUNCTION_ARG,						\
+   TARGET_FUNCTION_INCOMING_ARG,				\
    TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN,			\
    TARGET_FUNCTION_VALUE,					\
    TARGET_LIBCALL_VALUE,					\

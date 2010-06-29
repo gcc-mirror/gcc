@@ -1,5 +1,32 @@
 2010-06-29  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* calls.c, dse.c, expr.c, function.c: Call targetm.calls.function_arg,
+	targetm.calls.function_incoming_arg, and
+	targetm.calls.function_arg_advance instead of FUNCTION_ARG,
+	FUNCTION_INCOMING_ARG, and FUNCTION_ARG_ADVANCE, respectively.
+	* target.h (struct gcc_target): Add function_arg_advance,
+	function_arg, and function_incoming_arg fields.
+	* target-def.h (TARGET_FUNCTION_ARG_ADVANCE, TARGET_FUNCTION_ARG):
+	(TARGET_FUNCTION_INCOMING_ARG): Define.
+	(TARGET_CALLS): Add TARGET_FUNCTION_ARG_ADVANCE, TARGET_FUNCTION_ARG,
+	and TARGET_FUNCTION_INCOMING_ARG.
+	* targhooks.h (default_function_arg_advance): Declare.
+	(default_function_arg, default_function_incoming_arg): Declare.
+	* targhooks.c (default_function_arg_advance): New function.
+	(default_function_arg, default_function_incoming_arg): New function.
+	* config/i386/i386.c (function_arg_advance): Rename to...
+	(ix86_function_arg_advance): ...this.  Make static.
+	(function_arg): Rename to...
+	(ix86_function_arg): ...this.  Make static.
+	(TARGET_FUNCTION_ARG_ADVANCE): Define.
+	(TARGET_FUNCTION_ARG): Define.
+	* config/i386/i386.h (FUNCTION_ARG_ADVANCE): Delete.
+	(FUNCTION_ARG): Delete.
+	* config/i386/i386-protos.h (function_arg_advance): Delete prototype.
+	(function_arg): Delete prototype.
+
+2010-06-29  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* reginfo.c (init_reg_sets_1): Adjust comments.
 	* combine-stack-adj.c (rest_of_handle_stack_adjustments): Likewise.
 	* calls.c (prepare_call_address): Likewise.
