@@ -57,6 +57,8 @@
 	(s-tm-texi, build/genhooks.o, build/genhooks): Likewise.
 	* doc/tm.texi: Regenerate.
 
+	* Makefile.in (s-tm-texi): Remove stray tab / rule.
+
 2010-06-29  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR bootstrap/44713
