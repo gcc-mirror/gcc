@@ -5,6 +5,10 @@
 	(maddhisi4): Renamed from mulhisi3addsi.  Operands renumbered.
 	(maddhidi4): Likewise.
 
+	Revert parts of the change for PR25130.
+	* cse.c (exp_equiv_p): For MEMs, if for_gcse, only compare
+	MEM_ALIAS_SET.
+
 2010-06-29  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* calls.c, dse.c, expr.c, function.c: Call targetm.calls.function_arg,
