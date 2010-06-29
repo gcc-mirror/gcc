@@ -6149,7 +6149,7 @@ m68k_sched_first_cycle_multipass_dfa_lookahead (void)
   return m68k_sched_issue_rate () - 1;
 }
 
-/* Implementation of targetm.sched.md_init_global () hook.
+/* Implementation of targetm.sched.init_global () hook.
    It is invoked once per scheduling pass and is used here
    to initialize scheduler constants.  */
 static void
@@ -6257,7 +6257,7 @@ m68k_sched_md_finish_global (FILE *dump ATTRIBUTE_UNUSED,
   sched_branch_type = NULL;
 }
 
-/* Implementation of targetm.sched.md_init () hook.
+/* Implementation of targetm.sched.init () hook.
    It is invoked each time scheduler starts on the new block (basic block or
    extended basic block).  */
 static void

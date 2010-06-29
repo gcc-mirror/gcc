@@ -74,6 +74,9 @@
 
 	* Makefile.in (s-tm-texi): Remove stray tab / rule.
 
+	* config/m68k/m68k.c (targetm.sched.init_global): Update comment.
+	(targetm.sched.init): Likewise.
+
 2010-06-29  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR bootstrap/44713
