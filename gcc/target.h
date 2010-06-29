@@ -1264,6 +1264,9 @@ struct gcc_target
        true if the options are valid, and set the current state.  */
     bool (*pragma_parse) (tree, tree);
 
+     /* Do option overrides for the target.  */
+     void (*override) (void);
+
     /* Function to determine if one function can inline another function.  */
     bool (*can_inline_p) (tree, tree);
   } target_option;
