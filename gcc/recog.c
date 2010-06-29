@@ -2958,6 +2958,10 @@ struct peep2_insn_data
 
 static struct peep2_insn_data peep2_insn_data[MAX_INSNS_PER_PEEP2 + 1];
 static int peep2_current;
+
+static bool peep2_do_rebuild_jump_labels;
+static bool peep2_do_cleanup_cfg;
+
 /* The number of instructions available to match a peep2.  */
 int peep2_current_count;
 
@@ -2965,6 +2969,16 @@ int peep2_current_count;
    The live_before regset for this element is correct, indicating
    DF_LIVE_OUT for the block.  */
 #define PEEP2_EOB	pc_rtx
+
+/* Wrap N to fit into the peep2_insn_data buffer.  */
+
+static int
+peep2_buf_position (int n)
+{
+  if (n >= MAX_INSNS_PER_PEEP2 + 1)
+    n -= MAX_INSNS_PER_PEEP2 + 1;
+  return n;
+}
 
 /* Return the Nth non-note insn after `current', or return NULL_RTX if it
    does not exist.  Used by the recognizer to find the next insn to match
@@ -2975,9 +2989,7 @@ peep2_next_insn (int n)
 {
   gcc_assert (n <= peep2_current_count);
 
-  n += peep2_current;
-  if (n >= MAX_INSNS_PER_PEEP2 + 1)
-    n -= MAX_INSNS_PER_PEEP2 + 1;
+  n = peep2_buf_position (peep2_current + n);
 
   return peep2_insn_data[n].insn;
 }
@@ -2990,9 +3002,7 @@ peep2_regno_dead_p (int ofs, int regno)
 {
   gcc_assert (ofs < MAX_INSNS_PER_PEEP2 + 1);
 
-  ofs += peep2_current;
-  if (ofs >= MAX_INSNS_PER_PEEP2 + 1)
-    ofs -= MAX_INSNS_PER_PEEP2 + 1;
+  ofs = peep2_buf_position (peep2_current + ofs);
 
   gcc_assert (peep2_insn_data[ofs].insn != NULL_RTX);
 
@@ -3008,9 +3018,7 @@ peep2_reg_dead_p (int ofs, rtx reg)
 
   gcc_assert (ofs < MAX_INSNS_PER_PEEP2 + 1);
 
-  ofs += peep2_current;
-  if (ofs >= MAX_INSNS_PER_PEEP2 + 1)
-    ofs -= MAX_INSNS_PER_PEEP2 + 1;
+  ofs = peep2_buf_position (peep2_current + ofs);
 
   gcc_assert (peep2_insn_data[ofs].insn != NULL_RTX);
 
@@ -3045,12 +3053,8 @@ peep2_find_free_register (int from, int to, const char *class_str,
   gcc_assert (from < MAX_INSNS_PER_PEEP2 + 1);
   gcc_assert (to < MAX_INSNS_PER_PEEP2 + 1);
 
-  from += peep2_current;
-  if (from >= MAX_INSNS_PER_PEEP2 + 1)
-    from -= MAX_INSNS_PER_PEEP2 + 1;
-  to += peep2_current;
-  if (to >= MAX_INSNS_PER_PEEP2 + 1)
-    to -= MAX_INSNS_PER_PEEP2 + 1;
+  from = peep2_buf_position (peep2_current + from);
+  to = peep2_buf_position (peep2_current + to);
 
   gcc_assert (peep2_insn_data[from].insn != NULL_RTX);
   REG_SET_TO_HARD_REG_SET (live, peep2_insn_data[from].live_before);
@@ -3059,8 +3063,7 @@ peep2_find_free_register (int from, int to, const char *class_str,
     {
       HARD_REG_SET this_live;
 
-      if (++from >= MAX_INSNS_PER_PEEP2 + 1)
-	from = 0;
+      from = peep2_buf_position (from + 1);
       gcc_assert (peep2_insn_data[from].insn != NULL_RTX);
       REG_SET_TO_HARD_REG_SET (this_live, peep2_insn_data[from].live_before);
       IOR_HARD_REG_SET (live, this_live);
@@ -3153,19 +3156,234 @@ peep2_reinit_state (regset live)
   COPY_REG_SET (peep2_insn_data[MAX_INSNS_PER_PEEP2].live_before, live);
 }
 
+/* While scanning basic block BB, we found a match of length MATCH_LEN,
+   starting at INSN.  Perform the replacement, removing the old insns and
+   replacing them with ATTEMPT.  Returns the last insn emitted.  */
+
+static rtx
+peep2_attempt (basic_block bb, rtx insn, int match_len, rtx attempt)
+{
+  int i;
+  rtx last, note, before_try, x;
+  bool was_call = false;
+
+  /* If we are splitting a CALL_INSN, look for the CALL_INSN
+     in SEQ and copy our CALL_INSN_FUNCTION_USAGE and other
+     cfg-related call notes.  */
+  for (i = 0; i <= match_len; ++i)
+    {
+      int j;
+      rtx old_insn, new_insn, note;
+
+      j = peep2_buf_position (peep2_current + i);
+      old_insn = peep2_insn_data[j].insn;
+      if (!CALL_P (old_insn))
+	continue;
+      was_call = true;
+
+      new_insn = attempt;
+      while (new_insn != NULL_RTX)
+	{
+	  if (CALL_P (new_insn))
+	    break;
+	  new_insn = NEXT_INSN (new_insn);
+	}
+
+      gcc_assert (new_insn != NULL_RTX);
+
+      CALL_INSN_FUNCTION_USAGE (new_insn)
+	= CALL_INSN_FUNCTION_USAGE (old_insn);
+
+      for (note = REG_NOTES (old_insn);
+	   note;
+	   note = XEXP (note, 1))
+	switch (REG_NOTE_KIND (note))
+	  {
+	  case REG_NORETURN:
+	  case REG_SETJMP:
+	    add_reg_note (new_insn, REG_NOTE_KIND (note),
+			  XEXP (note, 0));
+	    break;
+	  default:
+	    /* Discard all other reg notes.  */
+	    break;
+	  }
+
+      /* Croak if there is another call in the sequence.  */
+      while (++i <= match_len)
+	{
+	  j = peep2_buf_position (peep2_current + i);
+	  old_insn = peep2_insn_data[j].insn;
+	  gcc_assert (!CALL_P (old_insn));
+	}
+      break;
+    }
+
+  i = peep2_buf_position (peep2_current + match_len);
+
+  note = find_reg_note (peep2_insn_data[i].insn, REG_EH_REGION, NULL_RTX);
+
+  /* Replace the old sequence with the new.  */
+  last = emit_insn_after_setloc (attempt,
+				 peep2_insn_data[i].insn,
+				 INSN_LOCATOR (peep2_insn_data[i].insn));
+  before_try = PREV_INSN (insn);
+  delete_insn_chain (insn, peep2_insn_data[i].insn, false);
+
+  /* Re-insert the EH_REGION notes.  */
+  if (note || (was_call && nonlocal_goto_handler_labels))
+    {
+      edge eh_edge;
+      edge_iterator ei;
+
+      FOR_EACH_EDGE (eh_edge, ei, bb->succs)
+	if (eh_edge->flags & (EDGE_EH | EDGE_ABNORMAL_CALL))
+	  break;
+
+      if (note)
+	copy_reg_eh_region_note_backward (note, last, before_try);
+
+      if (eh_edge)
+	for (x = last; x != before_try; x = PREV_INSN (x))
+	  if (x != BB_END (bb)
+	      && (can_throw_internal (x)
+		  || can_nonlocal_goto (x)))
+	    {
+	      edge nfte, nehe;
+	      int flags;
+
+	      nfte = split_block (bb, x);
+	      flags = (eh_edge->flags
+		       & (EDGE_EH | EDGE_ABNORMAL));
+	      if (CALL_P (x))
+		flags |= EDGE_ABNORMAL_CALL;
+	      nehe = make_edge (nfte->src, eh_edge->dest,
+				flags);
+
+	      nehe->probability = eh_edge->probability;
+	      nfte->probability
+		= REG_BR_PROB_BASE - nehe->probability;
+
+	      peep2_do_cleanup_cfg |= purge_dead_edges (nfte->dest);
+	      bb = nfte->src;
+	      eh_edge = nehe;
+	    }
+
+      /* Converting possibly trapping insn to non-trapping is
+	 possible.  Zap dummy outgoing edges.  */
+      peep2_do_cleanup_cfg |= purge_dead_edges (bb);
+    }
+
+  /* If we generated a jump instruction, it won't have
+     JUMP_LABEL set.  Recompute after we're done.  */
+  for (x = last; x != before_try; x = PREV_INSN (x))
+    if (JUMP_P (x))
+      {
+	peep2_do_rebuild_jump_labels = true;
+	break;
+      }
+
+  return last;
+}
+
+/* After performing a replacement in basic block BB, fix up the life
+   information in our buffer.  LAST is the last of the insns that we
+   emitted as a replacement.  PREV is the insn before the start of
+   the replacement.  MATCH_LEN is the number of instructions that were
+   matched, and which now need to be replaced in the buffer.  */
+
+static void
+peep2_update_life (basic_block bb, int match_len, rtx last, rtx prev)
+{
+  int i = peep2_buf_position (peep2_current + match_len + 1);
+  rtx x;
+  regset_head live;
+
+  INIT_REG_SET (&live);
+  COPY_REG_SET (&live, peep2_insn_data[i].live_before);
+
+  gcc_assert (peep2_current_count >= match_len + 1);
+  peep2_current_count -= match_len + 1;
+
+  x = last;
+  do
+    {
+      if (INSN_P (x))
+	{
+	  df_insn_rescan (x);
+	  if (peep2_current_count < MAX_INSNS_PER_PEEP2)
+	    {
+	      peep2_current_count++;
+	      if (--i < 0)
+		i = MAX_INSNS_PER_PEEP2;
+	      peep2_insn_data[i].insn = x;
+	      df_simulate_one_insn_backwards (bb, x, &live);
+	      COPY_REG_SET (peep2_insn_data[i].live_before, &live);
+	    }
+	}
+      x = PREV_INSN (x);
+    }
+  while (x != prev);
+  CLEAR_REG_SET (&live);
+
+  peep2_current = i;
+}
+
+/* Add INSN, which is in BB, at the end of the peep2 insn buffer if possible.
+   Return true if we added it, false otherwise.  The caller will try to match
+   peepholes against the buffer if we return false; otherwise it will try to
+   add more instructions to the buffer.  */
+
+static bool
+peep2_fill_buffer (basic_block bb, rtx insn, regset live)
+{
+  int pos;
+
+  /* Once we have filled the maximum number of insns the buffer can hold,
+     allow the caller to match the insns against peepholes.  We wait until
+     the buffer is full in case the target has similar peepholes of different
+     length; we always want to match the longest if possible.  */
+  if (peep2_current_count == MAX_INSNS_PER_PEEP2)
+    return false;
+
+  /* If an insn has RTX_FRAME_RELATED_P set, peephole substitution would lose
+     the REG_FRAME_RELATED_EXPR that is attached.  */
+  if (RTX_FRAME_RELATED_P (insn))
+    {
+      /* Let the buffer drain first.  */
+      if (peep2_current_count > 0)
+	return false;
+      /* Step over the insn then return true without adding the insn
+	 to the buffer; this will cause us to process the next
+	 insn.  */
+      df_simulate_one_insn_forwards (bb, insn, live);
+      return true;
+    }
+
+  pos = peep2_buf_position (peep2_current + peep2_current_count);
+  peep2_insn_data[pos].insn = insn;
+  COPY_REG_SET (peep2_insn_data[pos].live_before, live);
+  peep2_current_count++;
+
+  df_simulate_one_insn_forwards (bb, insn, live);
+  return true;
+}
+
 /* Perform the peephole2 optimization pass.  */
 
 static void
 peephole2_optimize (void)
 {
-  rtx insn, prev;
+  rtx insn;
   bitmap live;
   int i;
   basic_block bb;
-  bool do_cleanup_cfg = false;
-  bool do_rebuild_jump_labels = false;
+
+  peep2_do_cleanup_cfg = false;
+  peep2_do_rebuild_jump_labels = false;
 
   df_set_flags (DF_LR_RUN_DCE);
+  df_note_add_problem ();
   df_analyze ();
 
   /* Initialize the regsets we're going to use.  */
@@ -3175,214 +3393,59 @@ peephole2_optimize (void)
 
   FOR_EACH_BB_REVERSE (bb)
     {
+      bool past_end = false;
+      int pos;
+
       rtl_profile_for_bb (bb);
 
       /* Start up propagation.  */
-      bitmap_copy (live, DF_LR_OUT (bb));
-      df_simulate_initialize_backwards (bb, live);
+      bitmap_copy (live, DF_LR_IN (bb));
+      df_simulate_initialize_forwards (bb, live);
       peep2_reinit_state (live);
 
-      for (insn = BB_END (bb); ; insn = prev)
+      insn = BB_HEAD (bb);
+      for (;;)
 	{
-	  prev = PREV_INSN (insn);
-	  if (NONDEBUG_INSN_P (insn))
+	  rtx attempt, head;
+	  int match_len;
+
+	  if (!past_end && !NONDEBUG_INSN_P (insn))
 	    {
-	      rtx attempt, before_try, x;
-	      int match_len;
-	      rtx note;
-	      bool was_call = false;
-
-	      /* Record this insn.  */
-	      if (--peep2_current < 0)
-		peep2_current = MAX_INSNS_PER_PEEP2;
-	      if (peep2_current_count < MAX_INSNS_PER_PEEP2
-		  && peep2_insn_data[peep2_current].insn == NULL_RTX)
-		peep2_current_count++;
-	      peep2_insn_data[peep2_current].insn = insn;
-	      df_simulate_one_insn_backwards (bb, insn, live);
-	      COPY_REG_SET (peep2_insn_data[peep2_current].live_before, live);
-
-	      if (RTX_FRAME_RELATED_P (insn))
-		{
-		  /* If an insn has RTX_FRAME_RELATED_P set, peephole
-		     substitution would lose the
-		     REG_FRAME_RELATED_EXPR that is attached.  */
-		  peep2_reinit_state (live);
-		  attempt = NULL;
-		}
-	      else
-		/* Match the peephole.  */
-		attempt = peephole2_insns (PATTERN (insn), insn, &match_len);
-
-	      if (attempt != NULL)
-		{
-		  /* If we are splitting a CALL_INSN, look for the CALL_INSN
-		     in SEQ and copy our CALL_INSN_FUNCTION_USAGE and other
-		     cfg-related call notes.  */
-		  for (i = 0; i <= match_len; ++i)
-		    {
-		      int j;
-		      rtx old_insn, new_insn, note;
-
-		      j = i + peep2_current;
-		      if (j >= MAX_INSNS_PER_PEEP2 + 1)
-			j -= MAX_INSNS_PER_PEEP2 + 1;
-		      old_insn = peep2_insn_data[j].insn;
-		      if (!CALL_P (old_insn))
-			continue;
-		      was_call = true;
-
-		      new_insn = attempt;
-		      while (new_insn != NULL_RTX)
-			{
-			  if (CALL_P (new_insn))
-			    break;
-			  new_insn = NEXT_INSN (new_insn);
-			}
-
-		      gcc_assert (new_insn != NULL_RTX);
-
-		      CALL_INSN_FUNCTION_USAGE (new_insn)
-			= CALL_INSN_FUNCTION_USAGE (old_insn);
-
-		      for (note = REG_NOTES (old_insn);
-			   note;
-			   note = XEXP (note, 1))
-			switch (REG_NOTE_KIND (note))
-			  {
-			  case REG_NORETURN:
-			  case REG_SETJMP:
-			    add_reg_note (new_insn, REG_NOTE_KIND (note),
-					  XEXP (note, 0));
-			    break;
-			  default:
-			    /* Discard all other reg notes.  */
-			    break;
-			  }
-
-		      /* Croak if there is another call in the sequence.  */
-		      while (++i <= match_len)
-			{
-			  j = i + peep2_current;
-			  if (j >= MAX_INSNS_PER_PEEP2 + 1)
-			    j -= MAX_INSNS_PER_PEEP2 + 1;
-			  old_insn = peep2_insn_data[j].insn;
-			  gcc_assert (!CALL_P (old_insn));
-			}
-		      break;
-		    }
-
-		  i = match_len + peep2_current;
-		  if (i >= MAX_INSNS_PER_PEEP2 + 1)
-		    i -= MAX_INSNS_PER_PEEP2 + 1;
-
-		  note = find_reg_note (peep2_insn_data[i].insn,
-					REG_EH_REGION, NULL_RTX);
-
-		  /* Replace the old sequence with the new.  */
-		  attempt = emit_insn_after_setloc (attempt,
-						    peep2_insn_data[i].insn,
-				       INSN_LOCATOR (peep2_insn_data[i].insn));
-		  before_try = PREV_INSN (insn);
-		  delete_insn_chain (insn, peep2_insn_data[i].insn, false);
-
-		  /* Re-insert the EH_REGION notes.  */
-		  if (note || (was_call && nonlocal_goto_handler_labels))
-		    {
-		      edge eh_edge;
-		      edge_iterator ei;
-
-		      FOR_EACH_EDGE (eh_edge, ei, bb->succs)
-			if (eh_edge->flags & (EDGE_EH | EDGE_ABNORMAL_CALL))
-			  break;
-
-		      if (note)
-			copy_reg_eh_region_note_backward (note, attempt,
-							  before_try);
-
-		      if (eh_edge)
-			for (x = attempt ; x != before_try ; x = PREV_INSN (x))
-			  if (x != BB_END (bb)
-			      && (can_throw_internal (x)
-				  || can_nonlocal_goto (x)))
-			    {
-			      edge nfte, nehe;
-			      int flags;
-
-			      nfte = split_block (bb, x);
-			      flags = (eh_edge->flags
-				       & (EDGE_EH | EDGE_ABNORMAL));
-			      if (CALL_P (x))
-				flags |= EDGE_ABNORMAL_CALL;
-			      nehe = make_edge (nfte->src, eh_edge->dest,
-						flags);
-
-			      nehe->probability = eh_edge->probability;
-			      nfte->probability
-				= REG_BR_PROB_BASE - nehe->probability;
-
-			      do_cleanup_cfg |= purge_dead_edges (nfte->dest);
-			      bb = nfte->src;
-			      eh_edge = nehe;
-			    }
-
-		      /* Converting possibly trapping insn to non-trapping is
-			 possible.  Zap dummy outgoing edges.  */
-		      do_cleanup_cfg |= purge_dead_edges (bb);
-		    }
-
-		  if (targetm.have_conditional_execution ())
-		    {
-		      for (i = 0; i < MAX_INSNS_PER_PEEP2 + 1; ++i)
-			peep2_insn_data[i].insn = NULL_RTX;
-		      peep2_insn_data[peep2_current].insn = PEEP2_EOB;
-		      peep2_current_count = 0;
-		    }
-		  else
-		    {
-		      /* Back up lifetime information past the end of the
-			 newly created sequence.  */
-		      if (++i >= MAX_INSNS_PER_PEEP2 + 1)
-			i = 0;
-		      bitmap_copy (live, peep2_insn_data[i].live_before);
-
-		      /* Update life information for the new sequence.  */
-		      x = attempt;
-		      do
-			{
-			  if (INSN_P (x))
-			    {
-			      if (--i < 0)
-				i = MAX_INSNS_PER_PEEP2;
-			      if (peep2_current_count < MAX_INSNS_PER_PEEP2
-				  && peep2_insn_data[i].insn == NULL_RTX)
-				peep2_current_count++;
-			      peep2_insn_data[i].insn = x;
-			      df_insn_rescan (x);
-			      df_simulate_one_insn_backwards (bb, x, live);
-			      bitmap_copy (peep2_insn_data[i].live_before,
-					   live);
-			    }
-			  x = PREV_INSN (x);
-			}
-		      while (x != prev);
-
-		      peep2_current = i;
-		    }
-
-		  /* If we generated a jump instruction, it won't have
-		     JUMP_LABEL set.  Recompute after we're done.  */
-		  for (x = attempt; x != before_try; x = PREV_INSN (x))
-		    if (JUMP_P (x))
-		      {
-		        do_rebuild_jump_labels = true;
-			break;
-		      }
-		}
+	    next_insn:
+	      insn = NEXT_INSN (insn);
+	      if (insn == NEXT_INSN (BB_END (bb)))
+		past_end = true;
+	      continue;
 	    }
+	  if (!past_end && peep2_fill_buffer (bb, insn, live))
+	    goto next_insn;
 
-	  if (insn == BB_HEAD (bb))
+	  /* If we did not fill an empty buffer, it signals the end of the
+	     block.  */
+	  if (peep2_current_count == 0)
 	    break;
+
+	  /* The buffer filled to the current maximum, so try to match.  */
+
+	  pos = peep2_buf_position (peep2_current + peep2_current_count);
+	  peep2_insn_data[pos].insn = PEEP2_EOB;
+	  COPY_REG_SET (peep2_insn_data[pos].live_before, live);
+
+	  /* Match the peephole.  */
+	  head = peep2_insn_data[peep2_current].insn;
+	  attempt = peephole2_insns (PATTERN (head), head, &match_len);
+	  if (attempt != NULL)
+	    {
+	      rtx last;
+	      last = peep2_attempt (bb, head, match_len, attempt);
+	      peep2_update_life (bb, match_len, last, PREV_INSN (attempt));
+	    }
+	  else
+	    {
+	      /* If no match, advance the buffer by one insn.  */
+	      peep2_current = peep2_buf_position (peep2_current + 1);
+	      peep2_current_count--;
+	    }
 	}
     }
 
@@ -3390,7 +3453,7 @@ peephole2_optimize (void)
   for (i = 0; i < MAX_INSNS_PER_PEEP2 + 1; ++i)
     BITMAP_FREE (peep2_insn_data[i].live_before);
   BITMAP_FREE (live);
-  if (do_rebuild_jump_labels)
+  if (peep2_do_rebuild_jump_labels)
     rebuild_jump_labels (get_insns ());
 }
 #endif /* HAVE_peephole2 */
