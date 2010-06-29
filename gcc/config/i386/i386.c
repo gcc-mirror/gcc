@@ -5180,7 +5180,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
    NULL.  */
 
 static enum machine_mode
-type_natural_mode (const_tree type, CUMULATIVE_ARGS *cum)
+type_natural_mode (const_tree type, const CUMULATIVE_ARGS *cum)
 {
   enum machine_mode mode = TYPE_MODE (type);
 
@@ -5937,7 +5937,8 @@ construct_container (enum machine_mode mode, enum machine_mode orig_mode,
 
 static void
 function_arg_advance_32 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-			 tree type, HOST_WIDE_INT bytes, HOST_WIDE_INT words)
+			 const_tree type, HOST_WIDE_INT bytes,
+			 HOST_WIDE_INT words)
 {
   switch (mode)
     {
@@ -6025,7 +6026,7 @@ function_arg_advance_32 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
 static void
 function_arg_advance_64 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-			 tree type, HOST_WIDE_INT words, int named)
+			 const_tree type, HOST_WIDE_INT words, bool named)
 {
   int int_nregs, sse_nregs;
 
@@ -6067,7 +6068,7 @@ function_arg_advance_ms_64 (CUMULATIVE_ARGS *cum, HOST_WIDE_INT bytes,
 
 static void
 ix86_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-			   const_tree type, int named)
+			   const_tree type, bool named)
 {
   HOST_WIDE_INT bytes, words;
 
@@ -6102,8 +6103,8 @@ ix86_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     (otherwise it is an extra parameter matching an ellipsis).  */
 
 static rtx
-function_arg_32 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-		 enum machine_mode orig_mode, tree type,
+function_arg_32 (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		 enum machine_mode orig_mode, const_tree type,
 		 HOST_WIDE_INT bytes, HOST_WIDE_INT words)
 {
   static bool warnedsse, warnedmmx;
@@ -6219,8 +6220,8 @@ function_arg_32 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 static rtx
-function_arg_64 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-		 enum machine_mode orig_mode, tree type, int named)
+function_arg_64 (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		 enum machine_mode orig_mode, const_tree type, bool named)
 {
   /* Handle a hidden AL argument containing number of registers
      for varargs x86-64 functions.  */
@@ -6255,8 +6256,8 @@ function_arg_64 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 static rtx
-function_arg_ms_64 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-		    enum machine_mode orig_mode, int named,
+function_arg_ms_64 (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		    enum machine_mode orig_mode, bool named,
 		    HOST_WIDE_INT bytes)
 {
   unsigned int regno;
@@ -6314,7 +6315,7 @@ function_arg_ms_64 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
 static rtx
 ix86_function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode omode,
-		   const_tree type, int named)
+		   const_tree type, bool named)
 {
   enum machine_mode mode = omode;
   HOST_WIDE_INT bytes, words;
@@ -7047,7 +7048,7 @@ ix86_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
      For stdargs, we do want to skip the last named argument.  */
   next_cum = *cum;
   if (stdarg_p (fntype))
-    function_arg_advance (&next_cum, mode, type, 1);
+    ix86_function_arg_advance (&next_cum, mode, type, true);
 
   if (cum->call_abi == MS_ABI)
     setup_incoming_varargs_ms_64 (&next_cum);
