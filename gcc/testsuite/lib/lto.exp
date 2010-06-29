@@ -32,7 +32,7 @@ proc lto_prune_warns { text } {
 
     # Sun ld warns about common symbols with differing sizes.  Unlike GNU ld
     # --warn-common (off by default), they cannot be disabled.
-    regsub -all "(^|\n)ld: warning: symbol `\[^\n\]*' has differing sizes:" $text "" text
+    regsub -all "(^|\n)ld: warning: symbol \[`'\]\[^\n\]*' has differing sizes:" $text "" text
     regsub -all "(^|\n)\[ \t\]*\[\(\]file \[^\n\]* value=\[^\n\]*; file \[^\n\]* value=\[^\n\]*\[)\];" $text "" text
     regsub -all "(^|\n)\[ \t\]*\[^\n\]* definition taken" $text "" text
 
