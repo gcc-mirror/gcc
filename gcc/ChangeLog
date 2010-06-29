@@ -1,5 +1,9 @@
 2010-06-29  Douglas B Rupp  <rupp@gnat.com>
 
+	* vmsdbg.h: Update copyright.
+
+2010-06-29  Douglas B Rupp  <rupp@gnat.com>
+
 	* vmsdbg.h (DST_K_TBG): New DST constant.
 	* vmsdbgout.c (addr_const_to_string): Removed, not referenced.
 	(write_modbeg): Cast module_language to avoid warning.
