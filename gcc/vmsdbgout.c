@@ -179,10 +179,12 @@ static void vmsdbgout_source_line (unsigned int, const char *, int, bool);
 static void vmsdbgout_begin_prologue (unsigned int, const char *);
 static void vmsdbgout_end_prologue (unsigned int, const char *);
 static void vmsdbgout_end_function (unsigned int);
+static void vmsdbgout_begin_epilogue (unsigned int, const char *);
 static void vmsdbgout_end_epilogue (unsigned int, const char *);
 static void vmsdbgout_begin_function (tree);
 static void vmsdbgout_decl (tree);
 static void vmsdbgout_global_decl (tree);
+static void vmsdbgout_type_decl (tree, int);
 static void vmsdbgout_abstract_function (tree);
 
 /* The debug hooks structure.  */
@@ -201,13 +203,13 @@ const struct gcc_debug_hooks vmsdbg_debug_hooks
    vmsdbgout_source_line,
    vmsdbgout_begin_prologue,
    vmsdbgout_end_prologue,
-   debug_nothing_int_charstar,  /* begin_epilogue */
+   vmsdbgout_begin_epilogue,
    vmsdbgout_end_epilogue,
    vmsdbgout_begin_function,
    vmsdbgout_end_function,
    vmsdbgout_decl,
    vmsdbgout_global_decl,
-   debug_nothing_tree_int,	  /* type_decl */
+   vmsdbgout_type_decl,		  /* type_decl */
    debug_nothing_tree_tree_tree_bool, /* imported_module_or_decl */
    debug_nothing_tree,		  /* deferred_inline_function */
    vmsdbgout_abstract_function,
@@ -284,6 +286,9 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 #endif
 #ifndef FUNC_PROLOG_LABEL
 #define FUNC_PROLOG_LABEL	"LVFP"
+#endif
+#ifndef FUNC_EPILOG_LABEL
+#define FUNC_EPILOG_LABEL	"LVEB"
 #endif
 #ifndef FUNC_END_LABEL
 #define FUNC_END_LABEL		"LVFE"
@@ -1188,6 +1193,38 @@ vmsdbgout_end_function (unsigned int line)
     (*dwarf2_debug_hooks.end_function) (line);
 }
 
+/* Output a marker (i.e. a label) for the beginning of the epilogue.
+   This gets called *before* the epilogue code has been generated.  */
+
+static void
+vmsdbgout_begin_epilogue (unsigned int line, const char *file)
+{
+  char label[MAX_ARTIFICIAL_LABEL_BYTES];
+  static int save_current_function_funcdef_no = -1;
+
+  if (write_symbols == VMS_AND_DWARF2_DEBUG)
+    (*dwarf2_debug_hooks.begin_epilogue) (line, file);
+
+  if (debug_info_level > DINFO_LEVEL_NONE)
+    {
+      if (save_current_function_funcdef_no != current_function_funcdef_no)
+	{
+	  /* Output a label to mark the endpoint of the code generated for this
+	     function.  */
+	  ASM_GENERATE_INTERNAL_LABEL (label, FUNC_EPILOG_LABEL,
+				       current_function_funcdef_no);
+
+	  ASM_OUTPUT_LABEL (asm_out_file, label);
+
+	  save_current_function_funcdef_no = current_function_funcdef_no;
+
+	  /* VMS PCA expects every PC range to correlate to some line and
+	     file.  */
+	  vmsdbgout_source_line (line, file, 0, true);
+	}
+    }
+}
+
 /* Output a marker (i.e. a label) for the absolute end of the generated code
    for a function definition.  This gets called *after* the epilogue code has
    been generated.  */
@@ -1531,6 +1568,15 @@ vmsdbgout_global_decl (tree decl)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.global_decl) (decl);
+}
+
+/* Not implemented in VMS Debug.  */
+
+static void
+vmsdbgout_type_decl (tree decl, int local)
+{
+  if (write_symbols == VMS_AND_DWARF2_DEBUG)
+    (*dwarf2_debug_hooks.type_decl) (decl, local);
 }
 
 /* Not implemented in VMS Debug.  */
