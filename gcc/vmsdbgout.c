@@ -1310,13 +1310,9 @@ full_name (const char *filename)
   fgetname (fp, fullname_buff, 1);
   fclose (fp);
 #else
-  getcwd (fullname_buff, sizeof (fullname_buff));
-
-  strcat (fullname_buff, "/");
-  strcat (fullname_buff, filename);
-
-  /* ??? Insert hairy code here to translate Unix style file specification
-     to VMS style.  */
+  /* Unix paths really mess up VMS debug. Better to just output the
+     base filename.  */
+  strcpy (fullname_buff, filename);
 #endif
 
   return fullname_buff;
