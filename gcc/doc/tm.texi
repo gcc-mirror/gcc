@@ -6170,9 +6170,9 @@ These macros are obsolete, new ports should use the target hook
 @code{TARGET_MEMORY_MOVE_COST} instead.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_MEMORY_MOVE_COST (enum machine_mode @var{mode}, enum reg_class @var{regclass}, bool @var{in})
+@deftypefn {Target Hook} int TARGET_MEMORY_MOVE_COST (enum machine_mode @var{mode}, enum reg_class @var{rclass}, bool @var{in})
 This target hook should return the cost of moving data of mode @var{mode}
-between a register of class @var{class} and memory; @var{in} is @code{false}
+between a register of class @var{rclass} and memory; @var{in} is @code{false}
 if the value is to be written to memory, @code{true} if it is to be read in.
 This cost is relative to those in @code{TARGET_REGISTER_MOVE_COST}.
 If moving between registers and memory is more expensive than between two
@@ -6181,7 +6181,7 @@ registers, you should add this target hook to express the relative cost.
 If you do not add this target hook, GCC uses a default cost of 4 plus
 the cost of copying via a secondary reload register, if one is
 needed.  If your machine requires a secondary reload register to copy
-between memory and a register of @var{class} but the reload mechanism is
+between memory and a register of @var{rclass} but the reload mechanism is
 more complex than copying via an intermediate, use this target hook to
 reflect the actual cost of the move.
 
