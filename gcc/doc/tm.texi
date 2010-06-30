@@ -7780,7 +7780,7 @@ You may wish to use @code{ASM_OUTPUT_TYPE_DIRECTIVE} and/or
 @code{ASM_OUTPUT_SIZE_DIRECTIVE} in the definition of this macro.
 @end defmac
 
-@deftypefn {Target Hook} void TARGET_ASM_DECLARE_CONSTANT_NAME (FILE * @var{file}, const char * @var{name}, const_tree @var{expr}, HOST_WIDE_INT @var{size})
+@deftypefn {Target Hook} void TARGET_ASM_DECLARE_CONSTANT_NAME (FILE *@var{file}, const char *@var{name}, const_tree @var{expr}, HOST_WIDE_INT @var{size})
 A target hook to output to the stdio stream @var{file} any text necessary
 for declaring the name @var{name} of a constant which is being defined.  This
 target hook is responsible for outputting the label definition (perhaps using

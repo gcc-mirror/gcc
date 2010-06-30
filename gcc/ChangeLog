@@ -3,6 +3,10 @@
 	* target.def: Remove comment about licensing problems of function
 	declarations.
 
+	* target.def (declare_constant_name): Change exp to expr.  Use DEFHOOK.
+	* doc/tm.texi.in (TARGET_ASM_DECLARE_CONSTANT_NAME): Use @hook.
+	* doc/tm.texi: Regenerate.
+
 2010-06-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* toplev.h (_fatal_insn_not_found, _fatal_insn): Move declarations
