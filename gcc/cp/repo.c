@@ -269,7 +269,7 @@ finish_repo (void)
 
   for (ix = VEC_length (tree, pending_repo) - 1;
        VEC_iterate (tree, pending_repo, ix, val);
-       ix--);
+       ix--)
     {
       tree name = DECL_ASSEMBLER_NAME (val);
       char type = IDENTIFIER_REPO_CHOSEN (name) ? 'C' : 'O';
