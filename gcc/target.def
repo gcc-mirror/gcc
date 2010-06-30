@@ -1038,11 +1038,10 @@ DEFHOOK_UNDOC
  tree, (unsigned int /*location_t*/ loc, tree fndecl, void *params), NULL)
 
 /* Fold a target-specific builtin.  */
-/* ??? The documentation uses a different name for nargs.  */
-DEFHOOK_UNDOC
+DEFHOOK
 (fold_builtin,
  "",
- tree, (tree fndecl, int nargs, tree *argp, bool ignore),
+ tree, (tree fndecl, int n_args, tree *argp, bool ignore),
  hook_tree_tree_int_treep_bool_null)
 
 /* Returns a code for a target-specific builtin that implements
