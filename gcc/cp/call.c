@@ -1020,6 +1020,9 @@ convert_class_to_reference (tree reference_type, tree s, tree expr, int flags)
   struct z_candidate *cand;
   bool any_viable_p;
 
+  if (!expr)
+    return NULL;
+
   conversions = lookup_conversions (s, /*lookup_template_convs_p=*/true);
   if (!conversions)
     return NULL;
