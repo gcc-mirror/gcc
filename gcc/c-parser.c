@@ -8150,10 +8150,11 @@ c_parser_omp_for_loop (location_t loc,
 		       c_parser *parser, tree clauses, tree *par_clauses)
 {
   tree decl, cond, incr, save_break, save_cont, body, init, stmt, cl;
-  tree declv, condv, incrv, initv, for_block = NULL, ret = NULL;
+  tree declv, condv, incrv, initv, ret = NULL;
   bool fail = false, open_brace_parsed = false;
   int i, collapse = 1, nbraces = 0;
   location_t for_loc;
+  VEC(tree,gc) *for_block = make_tree_vector ();
 
   for (cl = clauses; cl; cl = OMP_CLAUSE_CHAIN (cl))
     if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_COLLAPSE)
@@ -8185,8 +8186,7 @@ c_parser_omp_for_loop (location_t loc,
       if (c_parser_next_token_starts_declaration (parser))
 	{
 	  if (i > 0)
-	    for_block
-	      = tree_cons (NULL, c_begin_compound_stmt (true), for_block);
+	    VEC_safe_push (tree, gc, for_block, c_begin_compound_stmt (true));
 	  c_parser_declaration_or_fndef (parser, true, true, true, true, true);
 	  decl = check_for_loop_decls (for_loc);
 	  if (decl == NULL)
@@ -8416,15 +8416,15 @@ c_parser_omp_for_loop (location_t loc,
       ret = stmt;
     }
 pop_scopes:
-  while (for_block)
+  while (!VEC_empty (tree, for_block))
     {
       /* FIXME diagnostics: LOC below should be the actual location of
 	 this particular for block.  We need to build a list of
 	 locations to go along with FOR_BLOCK.  */
-      stmt = c_end_compound_stmt (loc, TREE_VALUE (for_block), true);
+      stmt = c_end_compound_stmt (loc, VEC_pop (tree, for_block), true);
       add_stmt (stmt);
-      for_block = TREE_CHAIN (for_block);
     }
+  release_tree_vector (for_block);
   return ret;
 }
 

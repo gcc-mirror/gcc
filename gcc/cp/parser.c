@@ -22705,11 +22705,12 @@ static tree
 cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
 {
   tree init, cond, incr, body, decl, pre_body = NULL_TREE, ret;
-  tree for_block = NULL_TREE, real_decl, initv, condv, incrv, declv;
+  tree real_decl, initv, condv, incrv, declv;
   tree this_pre_body, cl;
   location_t loc_first;
   bool collapse_err = false;
   int i, collapse = 1, nbraces = 0;
+  VEC(tree,gc) *for_block = make_tree_vector ();
 
   for (cl = clauses; cl; cl = OMP_CLAUSE_CHAIN (cl))
     if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_COLLAPSE)
@@ -22828,8 +22829,7 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
 				      LOOKUP_ONLYCONVERTING);
 		      if (CLASS_TYPE_P (TREE_TYPE (decl)))
 			{
-			  for_block
-			    = tree_cons (NULL, this_pre_body, for_block);
+			  VEC_safe_push (tree, gc, for_block, this_pre_body);
 			  init = NULL_TREE;
 			}
 		      else
@@ -23083,11 +23083,9 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
 	}
     }
 
-  while (for_block)
-    {
-      add_stmt (pop_stmt_list (TREE_VALUE (for_block)));
-      for_block = TREE_CHAIN (for_block);
-    }
+  while (!VEC_empty (tree, for_block))
+    add_stmt (pop_stmt_list (VEC_pop (tree, for_block)));
+  release_tree_vector (for_block);
 
   return ret;
 }
