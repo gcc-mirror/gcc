@@ -25287,13 +25287,13 @@ ix86_free_from_memory (enum machine_mode mode)
 /* Implement TARGET_IRA_COVER_CLASSES.  If -mfpmath=sse, we prefer
    SSE_REGS to FLOAT_REGS if their costs for a pseudo are the
    same.  */
-static const enum reg_class *
+static const reg_class_t *
 i386_ira_cover_classes (void)
 {
-  static const enum reg_class sse_fpmath_classes[] = {
+  static const reg_class_t sse_fpmath_classes[] = {
     GENERAL_REGS, SSE_REGS, MMX_REGS, FLOAT_REGS, LIM_REG_CLASSES
   };
-  static const enum reg_class no_sse_fpmath_classes[] = {
+  static const reg_class_t no_sse_fpmath_classes[] = {
     GENERAL_REGS, FLOAT_REGS, MMX_REGS, SSE_REGS, LIM_REG_CLASSES
   };
 
@@ -25403,8 +25403,8 @@ ix86_preferred_output_reload_class (rtx x, enum reg_class regclass)
   return regclass;
 }
 
-static enum reg_class
-ix86_secondary_reload (bool in_p, rtx x, enum reg_class rclass,
+static reg_class_t
+ix86_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
 		       enum machine_mode mode,
 		       secondary_reload_info *sri ATTRIBUTE_UNUSED)
 {
@@ -25657,10 +25657,10 @@ inline_memory_move_cost (enum machine_mode mode, enum reg_class regclass,
 }
 
 static int
-ix86_memory_move_cost (enum machine_mode mode, enum reg_class regclass,
+ix86_memory_move_cost (enum machine_mode mode, reg_class_t regclass,
 		       bool in)
 {
-  return inline_memory_move_cost (mode, regclass, in ? 1 : 0);
+  return inline_memory_move_cost (mode, (enum reg_class) regclass, in ? 1 : 0);
 }
 
 
@@ -25672,9 +25672,12 @@ ix86_memory_move_cost (enum machine_mode mode, enum reg_class regclass,
    general registers.  */
 
 static int
-ix86_register_move_cost (enum machine_mode mode, enum reg_class class1,
-			 enum reg_class class2)
+ix86_register_move_cost (enum machine_mode mode, reg_class_t class1_i,
+			 reg_class_t class2_i)
 {
+  enum reg_class class1 = (enum reg_class) class1_i;
+  enum reg_class class2 = (enum reg_class) class2_i;
+
   /* In case we require secondary memory, compute cost of the store followed
      by load.  In order to avoid bad register allocation choices, we need
      for this to be *at least* as high as the symmetric MEMORY_MOVE_COST.  */

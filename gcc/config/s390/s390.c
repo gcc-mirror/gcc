@@ -2957,10 +2957,12 @@ s390_reload_symref_address (rtx reg, rtx mem, rtx scratch, bool tomem)
    RCLASS requires an extra scratch or immediate register.  Return the class
    needed for the immediate register.  */
 
-static enum reg_class
-s390_secondary_reload (bool in_p, rtx x, enum reg_class rclass,
+static reg_class_t
+s390_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 		       enum machine_mode mode, secondary_reload_info *sri)
 {
+  enum reg_class rclass = (enum reg_class) rclass_i;
+
   /* Intermediate register needed.  */
   if (reg_classes_intersect_p (CC_REGS, rclass))
     return GENERAL_REGS;

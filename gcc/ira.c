@@ -740,7 +740,7 @@ setup_cover_and_important_classes (void)
 {
   int i, j, n, cl;
   bool set_p;
-  const enum reg_class *cover_classes;
+  const reg_class_t *cover_classes;
   HARD_REG_SET temp_hard_regset2;
   static enum reg_class classes[LIM_REG_CLASSES + 1];
 

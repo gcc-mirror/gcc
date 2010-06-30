@@ -362,7 +362,8 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
 
   sri.icode = CODE_FOR_nothing;
   sri.prev_sri = prev_sri;
-  rclass = targetm.secondary_reload (in_p, x, reload_class, reload_mode, &sri);
+  rclass = (enum reg_class) targetm.secondary_reload (in_p, x, reload_class,
+						      reload_mode, &sri);
   icode = (enum insn_code) sri.icode;
 
   /* If we don't need any secondary registers, done.  */
@@ -525,7 +526,8 @@ secondary_reload_class (bool in_p, enum reg_class rclass,
 
   sri.icode = CODE_FOR_nothing;
   sri.prev_sri = NULL;
-  rclass = targetm.secondary_reload (in_p, x, rclass, mode, &sri);
+  rclass
+    = (enum reg_class) targetm.secondary_reload (in_p, x, rclass, mode, &sri);
   icode = (enum insn_code) sri.icode;
 
   /* If there are no secondary reloads at all, we return NO_REGS.

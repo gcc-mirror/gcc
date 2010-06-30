@@ -119,6 +119,11 @@ typedef const struct basic_block_def *const_basic_block;
 		  obstack_chunk_alloc,			\
 		  obstack_chunk_free)
 
+/* enum reg_class is target specific, so it should not appear in
+   target-independent code or interfaces, like the target hook declarations
+   in target.h.  */
+typedef int reg_class_t;
+
 #else
 
 struct _dont_use_rtx_here_;

@@ -1,3 +1,44 @@
+2010-06-30  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR other/44566
+	* coretypes.h [!USED_FOR_TARGET] (reg_class_t): Define.
+	* target.def (struct gcc_target): Replace enum reg_class with
+	reg_class_t in hook argument / return types.
+	* doc/tm.texi.in (TARGET_SECONDARY_RELOAD): Likewise.
+	(TARGET_IRA_COVER_CLASSES, TARGET_MEMORY_MOVE_COST): Likewise.
+	(TARGET_BRANCH_TARGET_REGISTER_CLASS): Likewise.
+	* targhooks.h (default_branch_target_register_class): Likewise.
+	(default_ira_cover_classes, default_secondary_reload): Likewise.
+	(default_memory_move_cost, default_register_move_cost): Likewise.
+	* targhooks.c (default_branch_target_register_class): Likewise.
+	(default_ira_cover_classes, default_secondary_reload): Likewise.
+	(default_memory_move_cost, default_register_move_cost): Likewise.
+	* reload.c (push_secondary_reload, secondary_reload_class): Likewise.
+	* bt-load.c (branch_target_load_optimize): Likewise.
+	* ira.c (setup_cover_and_important_classes): Likewise.
+	* ira-costs.c (copy_cost): Likewise.
+	* reload1.c (emit_input_reload_insns): Likewise.
+	* config/alpha/alpha.c (alpha_secondary_reload): Likewise.
+	* config/frv/frv.c (frv_secondary_reload): Likewise.
+	* config/s390/s390.c (s390_secondary_reload): Likewise.
+	* config/i386/i386.c (i386_ira_cover_classes): Likewise.
+	(ix86_secondary_reload, ix86_memory_move_cost): Likewise.
+	(ix86_register_move_cost): Likewise.
+	* config/sh/sh-protos.h (sh_secondary_reload): Likewise.
+	* config/sh/sh.c (sh_target_reg_class, sh_secondary_reload): Likewise.
+	* config/xtensa/xtensa.c (xtensa_secondary_reload): Likewise.
+	* config/xtensa/xtensa-protos.h (xtensa_secondary_reload): Likewise.
+	* config/rs6000/rs6000.c (rs6000_secondary_reload): Likewise.
+	(rs6000_ira_cover_classes): Likewise.
+	* config/picochip/picochip.c (picochip_secondary_reload): Likewise.
+	* config/picochip/picochip-protos.h (picochip_secondary_reload):
+	Likewise.
+	* config/pa/pa.c (pa_secondary_reload): Likewise.
+	* config/mips/mips.c (mips_ira_cover_classes): Likewise.
+	* config/bfin/bfin.c (bfin_secondary_reload): Likewise.
+	* config/ia64/ia64.c (ia64_register_move_cost): Likewise.
+	* doc/tm.texi: Regenerate.
+
 2010-06-30  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR bootstrrap/44726

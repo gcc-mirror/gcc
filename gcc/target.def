@@ -1083,7 +1083,7 @@ DEFHOOK
 DEFHOOK
 (branch_target_register_class,
  "",
- enum reg_class, (void),
+ reg_class_t, (void),
  default_branch_target_register_class)
 
 /* Return true if branch target register optimizations should include
@@ -1362,7 +1362,7 @@ DEFHOOK
 DEFHOOK
 (register_move_cost,
  "",
- int, (enum machine_mode mode, enum reg_class from, enum reg_class to),
+ int, (enum machine_mode mode, reg_class_t from, reg_class_t to),
  default_register_move_cost)
 
 /* Compute cost of moving registers to/from memory.  */
@@ -1371,7 +1371,7 @@ DEFHOOK
 DEFHOOK
 (memory_move_cost,
  "",
- int, (enum machine_mode mode, enum reg_class rclass, bool in),
+ int, (enum machine_mode mode, reg_class_t rclass, bool in),
  default_memory_move_cost)
 
 /* True for MODE if the target expects that registers in this mode will
@@ -1931,15 +1931,15 @@ DEFHOOK
 DEFHOOK
 (ira_cover_classes,
  "",
- const enum reg_class *, (void),
+ const reg_class_t *, (void),
  default_ira_cover_classes)
 
 /* Return the class for a secondary reload, and fill in extra information.  */
 DEFHOOK
 (secondary_reload,
  "",
- enum reg_class,
- (bool in_p, rtx x, enum reg_class reload_class, enum machine_mode reload_mode,
+ reg_class_t,
+ (bool in_p, rtx x, reg_class_t reload_class, enum machine_mode reload_mode,
   secondary_reload_info *sri),
  default_secondary_reload)
 

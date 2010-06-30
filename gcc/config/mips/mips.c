@@ -10929,14 +10929,14 @@ mips_register_move_cost (enum machine_mode mode,
 
 /* Implement TARGET_IRA_COVER_CLASSES.  */
 
-static const enum reg_class *
+static const reg_class_t *
 mips_ira_cover_classes (void)
 {
-  static const enum reg_class acc_classes[] = {
+  static const reg_class_t acc_classes[] = {
     GR_AND_ACC_REGS, FP_REGS, COP0_REGS, COP2_REGS, COP3_REGS,
     ST_REGS, LIM_REG_CLASSES
   };
-  static const enum reg_class no_acc_classes[] = {
+  static const reg_class_t no_acc_classes[] = {
     GR_REGS, FP_REGS, COP0_REGS, COP2_REGS, COP3_REGS,
     ST_REGS, LIM_REG_CLASSES
   };

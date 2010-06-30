@@ -67,9 +67,9 @@ extern void xtensa_output_literal (FILE *, rtx, enum machine_mode, int);
 extern rtx xtensa_return_addr (int, rtx);
 extern enum reg_class xtensa_preferred_reload_class (rtx, enum reg_class, int);
 struct secondary_reload_info;
-extern enum reg_class xtensa_secondary_reload (bool, rtx, enum reg_class,
-					       enum machine_mode,
-					       struct secondary_reload_info *);
+extern reg_class_t xtensa_secondary_reload (bool, rtx, reg_class_t,
+					    enum machine_mode,
+					    struct secondary_reload_info *);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE

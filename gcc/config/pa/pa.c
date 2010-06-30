@@ -155,9 +155,9 @@ static bool pa_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 static int pa_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				 tree, bool);
 static struct machine_function * pa_init_machine_status (void);
-static enum reg_class pa_secondary_reload (bool, rtx, enum reg_class,
-					   enum machine_mode,
-					   secondary_reload_info *);
+static reg_class_t pa_secondary_reload (bool, rtx, reg_class_t,
+					enum machine_mode,
+					secondary_reload_info *);
 static void pa_extra_live_on_entry (bitmap);
 static enum machine_mode pa_promote_function_mode (const_tree,
 						   enum machine_mode, int *,
@@ -5688,11 +5688,12 @@ output_arg_descriptor (rtx call_insn)
   fputc ('\n', asm_out_file);
 }
 
-static enum reg_class
-pa_secondary_reload (bool in_p, rtx x, enum reg_class rclass,
+static reg_class_t
+pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 		     enum machine_mode mode, secondary_reload_info *sri)
 {
   int is_symbolic, regno;
+  enum reg_class rclass = (enum reg_class) rclass_i;
 
   /* Handle the easy stuff first.  */
   if (rclass == R1_REGS)

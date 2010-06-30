@@ -73,9 +73,9 @@ extern int picochip_symbol_offset (rtx operand);
 
 extern int picochip_get_function_arg_boundary (enum machine_mode mode);
 
-extern enum reg_class picochip_secondary_reload(bool in_p,
+extern reg_class_t picochip_secondary_reload(bool in_p,
                                  rtx x,
-                                 enum reg_class cla,
+                                 reg_class_t cla,
                                  enum machine_mode mode,
                                  secondary_reload_info *sri);
 
