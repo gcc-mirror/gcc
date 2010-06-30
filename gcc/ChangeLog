@@ -29,6 +29,10 @@
 	s/TARGET_VALID_OPTION_ATTRIBUTE_P/TARGET_OPTION_VALID_ATRIBUTE_P/ .
 	* doc/tm.texi: Regenerate.
 
+	* target.def (pass_by_reference): Use DEFHOOK.
+	* doc/tm.texi.in (TARGET_PASS_BY_REFERENCE): Use @hook.
+	* doc/tm.texi: Regenerate.
+
 2010-06-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* toplev.h (_fatal_insn_not_found, _fatal_insn): Move declarations

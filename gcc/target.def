@@ -1676,8 +1676,7 @@ DEFHOOK
 /* Return true if a parameter must be passed by reference.  TYPE may
    be null if this is a libcall.  CA may be null if this query is
    from __builtin_va_arg.  */
-/* ??? The documentation disagrees on the type of 'type'.  */
-DEFHOOK_UNDOC
+DEFHOOK
 (pass_by_reference,
  "",
  bool,
