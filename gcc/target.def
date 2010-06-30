@@ -599,13 +599,11 @@ DEFHOOK
    verbose level of the debugging output.  The forth and the fifth
    parameter values are correspondingly processor cycle on which
    the previous insn has been issued and the current processor cycle.  */
-/* ??? The documentation uses different names for dump_file,
-   last_sched_cycle and cur_cycle.  */
-DEFHOOK_UNDOC
+DEFHOOK
 (dfa_new_cycle,
  "",
- int, (FILE *dump_file, int verbose, rtx insn, int last_sched_cycle,
-       int cur_cycle, int *sort_p),
+ int, (FILE *dump, int verbose, rtx insn, int last_clock,
+       int clock, int *sort_p),
  NULL)
 
 /* The following member value is a pointer to a function called by the
