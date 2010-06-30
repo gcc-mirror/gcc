@@ -10782,8 +10782,7 @@ ignored.  This function should return the result of the call to the
 built-in function.
 @end deftypefn
 
-@deftypefn {Target Hook} tree TARGET_RESOLVE_OVERLOADED_BUILTIN (unsigned int @var{loc}, tree @var{fndecl}, void *@var{arglist})
-
+@hook TARGET_RESOLVE_OVERLOADED_BUILTIN
 Select a replacement for a machine specific built-in function that
 was set up by @samp{TARGET_INIT_BUILTINS}.  This is done
 @emph{before} regular type checking, and so allows the target to

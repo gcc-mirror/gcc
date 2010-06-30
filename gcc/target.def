@@ -1030,12 +1030,10 @@ DEFHOOK
    implement a crude form of function overloading.  The result is a
    complete expression that implements the operation.  PARAMS really
    has type VEC(tree,gc)*, but we don't want to include tree.h here.  */
- /* ??? params is called differently in the documentation, and we can't
-    fix that because of GPL / GFDL incompatibility.  */
-DEFHOOK_UNDOC
+DEFHOOK
 (resolve_overloaded_builtin,
  "",
- tree, (unsigned int /*location_t*/ loc, tree fndecl, void *params), NULL)
+ tree, (unsigned int /*location_t*/ loc, tree fndecl, void *arglist), NULL)
 
 /* Fold a target-specific builtin.  */
 DEFHOOK
