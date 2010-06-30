@@ -1,3 +1,9 @@
+2010-06-30  Richard Guenther  <rguenther@suse.de>
+
+	PR target/44722
+	* config/i386/i386.md (peephole2 for fix:SSEMODEI24): Guard
+	against oscillation with reverse peephole2.
+
 2010-06-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/44721
