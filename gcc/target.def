@@ -1866,7 +1866,7 @@ DEFHOOK
    pops on returning, or 0 if the function pops no arguments and the
    caller must therefore pop them all after the function returns.  */
 /* ??? tm.texi has no types for the parameters.  */
-DEFHOOK_UNDOC
+DEFHOOK
 (return_pops_args,
  "",
  int, (tree fundecl, tree funtype, int size),

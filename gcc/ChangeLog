@@ -38,6 +38,11 @@
 	* doc/tm.texi.in (TARGET_RESOLVE_OVERLOADED_BUILTIN): Use @hook.
 	* doc/tm.texi: Regenerate.
 
+	* target.def (return_pops_args): Use DEFHOOK.
+	* doc/tm.texi.in (TARGET_RETURN_POPS_ARGS): Use @hook.
+	Rename stack-size to size.
+	* doc/tm.texi: Regenerate.
+
 2010-06-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* toplev.h (_fatal_insn_not_found, _fatal_insn): Move declarations
