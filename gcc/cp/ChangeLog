@@ -1,3 +1,9 @@
+2010-06-30  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* repo.c (pending_repo): Change type to a VEC.
+	(finish_repo): Adjust for new type of pending_repo.
+	(repo_emit_p): Likewise.
+
 2010-06-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* tree.c: Include gimple.h. Do not include tree-flow.h

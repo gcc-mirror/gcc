@@ -43,7 +43,7 @@ static FILE *open_repo_file (const char *);
 static char *afgets (FILE *);
 static FILE *reopen_repo_file_for_write (void);
 
-static GTY(()) tree pending_repo;
+static GTY(()) VEC(tree,gc) *pending_repo;
 static char *repo_name;
 
 static const char *old_args, *old_dir, *old_main;
@@ -236,9 +236,10 @@ reopen_repo_file_for_write (void)
 void
 finish_repo (void)
 {
-  tree t;
+  tree val;
   char *dir, *args;
   FILE *repo_file;
+  unsigned ix;
 
   if (!flag_use_repository || flag_compare_debug)
     return;
@@ -266,9 +267,10 @@ finish_repo (void)
       fprintf (repo_file, "\n");
     }
 
-  for (t = pending_repo; t; t = TREE_CHAIN (t))
+  for (ix = VEC_length (tree, pending_repo) - 1;
+       VEC_iterate (tree, pending_repo, ix, val);
+       ix--);
     {
-      tree val = TREE_VALUE (t);
       tree name = DECL_ASSEMBLER_NAME (val);
       char type = IDENTIFIER_REPO_CHOSEN (name) ? 'C' : 'O';
       fprintf (repo_file, "%c %s\n", type, IDENTIFIER_POINTER (name));
@@ -352,7 +354,7 @@ repo_emit_p (tree decl)
   if (!DECL_REPO_AVAILABLE_P (decl))
     {
       DECL_REPO_AVAILABLE_P (decl) = 1;
-      pending_repo = tree_cons (NULL_TREE, decl, pending_repo);
+      VEC_safe_push (tree, gc, pending_repo, decl);
     }
 
   return IDENTIFIER_REPO_CHOSEN (DECL_ASSEMBLER_NAME (decl)) ? 1 : ret;
