@@ -1486,8 +1486,7 @@ DEFHOOK
  std_build_builtin_va_list)
 
 /* Enumerate the va list variants.  */
-/* ??? The documentation gets the type of ptree wrong.  */
-DEFHOOK_UNDOC
+DEFHOOK
 (enum_va_list_p,
  "",
  int, (int idx, const char **pname, tree *ptree),
