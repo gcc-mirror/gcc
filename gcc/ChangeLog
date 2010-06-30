@@ -1,3 +1,23 @@
+2010-06-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* toplev.h (_fatal_insn_not_found, _fatal_insn): Move declarations
+	to rtl.h.
+	(error_for_asm,	warning_for_asm): Move declarations to rtl-error.h.
+	* rtl.h (_fatal_insn_not_found, _fatal_insn): Move declarations
+	here.
+	* rtl-error.h: New.
+	* regrename.c: Do not include toplev.h. Include rtl-error.h.
+	* rtl-error.c: Likewise.
+	* reload.c: Likewise.
+	* recog.c:  Likewise.
+	* sel-sched.c: Likewise.
+	* function.c: Likewise.
+	* reg-stack.c: Likewise.
+	* cfgrtl.c: Likewise.
+	* reload1.c: Likewise.
+	* final.c: Include rtl-error.
+	* Makefile.in: Adjust dependencies.
+
 2010-06-30  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/PR44706

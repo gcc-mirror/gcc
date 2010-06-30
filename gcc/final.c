@@ -62,7 +62,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "except.h"
 #include "function.h"
-#include "toplev.h"
+#include "rtl-error.h"
+#include "toplev.h" /* exact_log2, floor_log2 */
 #include "reload.h"
 #include "intl.h"
 #include "basic-block.h"
