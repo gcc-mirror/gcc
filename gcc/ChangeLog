@@ -15,6 +15,10 @@
 	Rename ptype to ptree.
 	* doc/tm.texi: Regenerate.
 
+	* target.def (fold_builtin): Rename nargs to n_args.  Use DEFHOOK.
+	* doc/tm.texi.in (TARGET_FOLD_BUILTIN): Use @hook.
+	* doc/tm.texi: Regenerate.
+
 2010-06-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* toplev.h (_fatal_insn_not_found, _fatal_insn): Move declarations
