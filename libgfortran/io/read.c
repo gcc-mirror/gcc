@@ -810,6 +810,66 @@ read_f (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
   if (w == 0)
     goto zero;
 
+  /* Check for Infinity or NaN.  */    
+  if (unlikely ((w >= 3 && (*p == 'i' || *p == 'I' || *p == 'n' || *p == 'N'))))
+    {
+      int seen_paren = 0;
+      char *save = out;
+
+      /* Scan through the buffer keeping track of spaces and parenthesis. We
+	 null terminate the string as soon as we see a left paren or if we are
+	 BLANK_NULL mode.  Leading spaces have already been skipped above,
+	 trailing spaces are ignored by converting to '\0'. A space
+	 between "NaN" and the optional perenthesis is not permitted.  */
+      while (w > 0)
+	{
+	  *out = tolower (*p);
+	  switch (*p)
+	    {
+	    case ' ':
+	      if (dtp->u.p.blank_status == BLANK_ZERO)
+		{
+		  *out = '0';
+		  break;
+		}
+	      *out = '\0';
+	      if (seen_paren == 1)
+	        goto bad_float;
+	      break;
+	    case '(':
+	      seen_paren++;
+	      *out = '\0';
+	      break;
+	    case ')':
+	      if (seen_paren++ != 1)
+		goto bad_float;
+	      break;
+	    default:
+	      if (!isalnum (*out))
+		goto bad_float;
+	    }
+	  --w;
+	  ++p;
+	  ++out;
+	}
+	 
+      *out = '\0';
+      
+      if (seen_paren != 0 && seen_paren != 2)
+	goto bad_float;
+
+      if ((strcmp (save, "inf") == 0) || (strcmp (save, "infinity") == 0))
+	{
+	   if (seen_paren)
+	     goto bad_float;
+	}
+      else if (strcmp (save, "nan") != 0)
+	goto bad_float;
+
+      convert_real (dtp, dest, buffer, length);
+      return;
+    }
+
   /* Process the mantissa string.  */
   while (w > 0)
     {

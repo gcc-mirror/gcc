@@ -1,3 +1,9 @@
+2010-06-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/43298
+	* io/read.c: Add code to parse and read Inf, Infinity, NaN, and Nan with
+	optional parenthesis.
+
 2010-06-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43298
