@@ -1,3 +1,9 @@
+2010-06-30  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR other/44034
+	* config/darwin.c (darwin_override_options): Use renamed
+	targetm.asm_out.emit_unwind_label.
+
 2010-06-30  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR tree-optimization/39799

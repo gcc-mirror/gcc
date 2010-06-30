@@ -1864,7 +1864,7 @@ darwin_override_options (void)
 
   /* Disable -freorder-blocks-and-partition for darwin_emit_unwind_label.  */
   if (flag_reorder_blocks_and_partition 
-      && (targetm.asm_out.unwind_label == darwin_emit_unwind_label))
+      && (targetm.asm_out.emit_unwind_label == darwin_emit_unwind_label))
     {
       inform (input_location,
               "-freorder-blocks-and-partition does not work with exceptions "
