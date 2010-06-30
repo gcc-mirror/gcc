@@ -160,11 +160,10 @@ DEFHOOK
  default_internal_label)
 
 /* Output label for the constant.  */
-/* ??? The documentation uses a different name for the hook argument EXP.  */
-DEFHOOK_UNDOC
+DEFHOOK
 (declare_constant_name,
  "",
- void, (FILE *file, const char *name, const_tree exp, HOST_WIDE_INT size),
+ void, (FILE *file, const char *name, const_tree expr, HOST_WIDE_INT size),
  default_asm_declare_constant_name)
 
 /* Emit a ttype table reference to a typeinfo object.  */
