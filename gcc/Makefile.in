@@ -2027,7 +2027,7 @@ c-parser.o : c-parser.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 
 c-typeck.o : c-typeck.c c-lang.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	$(TREE_H) $(C_TREE_H) $(TARGET_H) $(FLAGS_H) intl.h output.h $(EXPR_H) \
-	$(TOPLEV_H) langhooks.h $(TREE_FLOW_H) tree-iterator.h
+	$(TOPLEV_H) langhooks.h tree-iterator.h $(BITMAP_H) $(GIMPLE_H)
 
 
 
@@ -2096,7 +2096,7 @@ c-family/c-format.o : c-family/c-format.c c-family/c-format.h \
 
 c-family/c-gimplify.o : c-family/c-gimplify.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
 	$(C_COMMON_H) $(DIAGNOSTIC_CORE_H) $(GIMPLE_H) \
-	$(FLAGS_H) langhooks.h $(TOPLEV_H) $(TREE_FLOW_H) $(LANGHOOKS_DEF_H) \
+	$(FLAGS_H) langhooks.h $(TOPLEV_H) $(LANGHOOKS_DEF_H) \
 	$(TM_H) coretypes.h $(C_PRETTY_PRINT_H) $(CGRAPH_H) $(BASIC_BLOCK_H) \
 	hard-reg-set.h $(TREE_DUMP_H) $(TREE_INLINE_H)
 

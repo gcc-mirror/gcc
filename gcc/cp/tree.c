@@ -31,9 +31,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "debug.h"
 #include "convert.h"
-#include "tree-flow.h"
 #include "cgraph.h"
 #include "splay-tree.h"
+#include "gimple.h" /* gimple_has_body_p */
 
 static tree bot_manip (tree *, int *, void *);
 static tree bot_replace (tree *, int *, void *);
