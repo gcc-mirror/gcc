@@ -48,6 +48,9 @@
 	* doc/tm.texi.in: Use @hook.
 	* doc/tm.texi: Regenerate.
 
+	* target.def (print_operand, print_operand_address): Update comment.
+	(print_operand_punct_valid_p): Likewise.
+
 2010-06-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* toplev.h (_fatal_insn_not_found, _fatal_insn): Move declarations
