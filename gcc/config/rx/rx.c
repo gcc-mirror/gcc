@@ -707,12 +707,6 @@ rx_gen_cond_branch_template (rtx condition, bool reversed)
 {
   enum rtx_code code = GET_CODE (condition);
 
-  if ((cc_status.flags & CC_NO_OVERFLOW) && ! rx_float_compare_mode)
-    gcc_assert (code != GT && code != GE && code != LE && code != LT);
-
-  if ((cc_status.flags & CC_NO_CARRY) || rx_float_compare_mode)
-    gcc_assert (code != GEU && code != GTU && code != LEU && code != LTU);
-
   if (reversed)
     {
       if (rx_float_compare_mode)
@@ -1063,7 +1057,7 @@ rx_get_stack_layout (unsigned int * lowest,
       return;
     }
 
-  for (save_mask = high = low = 0, reg = 1; reg < FIRST_PSEUDO_REGISTER; reg++)
+  for (save_mask = high = low = 0, reg = 1; reg < CC_REGNUM; reg++)
     {
       if (df_regs_ever_live_p (reg)
 	  && (! call_used_regs[reg]
@@ -1241,7 +1235,7 @@ rx_expand_prologue (void)
   if (mask)
     {
       /* Push registers in reverse order.  */
-      for (reg = FIRST_PSEUDO_REGISTER; reg --;)
+      for (reg = CC_REGNUM; reg --;)
 	if (mask & (1 << reg))
 	  {
 	    insn = emit_insn (gen_stack_push (gen_rtx_REG (SImode, reg)));
@@ -1270,7 +1264,7 @@ rx_expand_prologue (void)
 	{
 	  acc_low = acc_high = 0;
 
-	  for (reg = 1; reg < FIRST_PSEUDO_REGISTER; reg ++)
+	  for (reg = 1; reg < CC_REGNUM; reg ++)
 	    if (mask & (1 << reg))
 	      {
 		if (acc_low == 0)
@@ -1543,7 +1537,8 @@ rx_expand_epilogue (bool is_sibcall)
 	  if (register_mask)
 	    {
 	      acc_low = acc_high = 0;
-	      for (reg = 1; reg < FIRST_PSEUDO_REGISTER; reg ++)
+
+	      for (reg = 1; reg < CC_REGNUM; reg ++)
 		if (register_mask & (1 << reg))
 		  {
 		    if (acc_low == 0)
@@ -1574,7 +1569,7 @@ rx_expand_epilogue (bool is_sibcall)
 
       if (register_mask)
 	{
-	  for (reg = 0; reg < FIRST_PSEUDO_REGISTER; reg ++)
+	  for (reg = 0; reg < CC_REGNUM; reg ++)
 	    if (register_mask & (1 << reg))
 	      emit_insn (gen_stack_pop (gen_rtx_REG (SImode, reg)));
 	}
@@ -1672,54 +1667,6 @@ rx_initial_elimination_offset (int from, int to)
 
   gcc_assert (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM);
   return stack_size;
-}
-
-/* Update the status of the condition
-   codes (cc0) based on the given INSN.  */
-
-void
-rx_notice_update_cc (rtx body, rtx insn)
-{
-  switch (get_attr_cc (insn))
-    {
-    case CC_NONE:
-      /* Insn does not affect cc0 at all.  */
-      break;
-    case CC_CLOBBER:
-      /* Insn doesn't leave cc0 in a usable state.  */
-      CC_STATUS_INIT;
-      break;
-    case CC_SET_ZSOC:
-      /* The insn sets all the condition code bits.  */
-      CC_STATUS_INIT;
-      cc_status.value1 = SET_DEST (body);
-      break;
-    case CC_SET_ZSO:
-      /* Insn sets the Z,S and O flags, but not the C flag.  */
-      CC_STATUS_INIT;
-      cc_status.flags |= CC_NO_CARRY;
-      /* Do not set the value1 field in this case.  The final_scan_insn()
-	 function naively believes that if cc_status.value1 is set then
-	 it can eliminate *any* comparison against that value, even if
-	 the type of comparison cannot be satisfied by the range of flag
-	 bits being set here.  See gcc.c-torture/execute/20041210-1.c
-	 for an example of this in action.  */
-      break;
-    case CC_SET_ZSC:
-      /* Insn sets the Z,S and C flags, but not the O flag.  */
-      CC_STATUS_INIT;
-      cc_status.flags |= CC_NO_OVERFLOW;
-      /* See comment above regarding cc_status.value1.  */
-      break;
-    case CC_SET_ZS:
-      /* Insn sets the Z and S flags, but not the O or C flags.  */
-      CC_STATUS_INIT;
-      cc_status.flags |= (CC_NO_CARRY | CC_NO_OVERFLOW);
-      /* See comment above regarding cc_status.value1.  */
-      break;
-    default:
-      gcc_unreachable ();
-    }
 }
 
 /* Decide if a variable should go into one of the small data sections.  */
@@ -2517,6 +2464,220 @@ rx_trampoline_init (rtx tramp, tree fndecl, rtx chain)
     }
 }
 
+
+static enum machine_mode
+rx_cc_modes_compatible (enum machine_mode m1, enum machine_mode m2)
+{
+  if (m1 == CCmode)
+    return m2;
+  if (m2 == CCmode)
+    return m1;
+  if (m1 == m2)
+    return m1;
+  if (m1 == CC_ZSmode)
+    return m1;
+  if (m2 == CC_ZSmode)
+    return m2;
+  return VOIDmode;   
+}
+
+#define CC_FLAG_S (1 << 0)
+#define CC_FLAG_Z (1 << 1)
+#define CC_FLAG_O (1 << 2)
+#define CC_FLAG_C (1 << 3)
+
+static unsigned int
+flags_needed_for_conditional (rtx conditional)
+{
+  switch (GET_CODE (conditional))
+    {
+    case LE:
+    case GT:	return CC_FLAG_S | CC_FLAG_Z | CC_FLAG_O;
+
+    case LEU:
+    case GTU:	return CC_FLAG_Z | CC_FLAG_C;
+
+    case LT:
+    case GE:	return CC_FLAG_S | CC_FLAG_O;
+
+    case LTU:
+    case GEU:	return CC_FLAG_C;
+
+    case EQ:
+    case NE:	return CC_FLAG_Z;
+
+    default:	gcc_unreachable ();
+    }
+}
+
+static unsigned int
+flags_from_mode (enum machine_mode mode)
+{
+  switch (mode)
+    {
+    case CCmode:     return CC_FLAG_S | CC_FLAG_Z | CC_FLAG_O | CC_FLAG_C;
+    case CC_ZSmode:  return CC_FLAG_S | CC_FLAG_Z;
+    case CC_ZSOmode: return CC_FLAG_S | CC_FLAG_Z | CC_FLAG_O;
+    case CC_ZSCmode: return CC_FLAG_S | CC_FLAG_Z | CC_FLAG_C;
+    default:         gcc_unreachable ();
+    }
+}
+
+/* Returns true if a compare insn is redundant because it
+   would only set flags that are already set correctly.  */
+
+bool
+rx_compare_redundant (rtx cmp)
+{
+  unsigned int flags_needed;
+  unsigned int flags_set;
+  rtx next;
+  rtx prev;
+  rtx source;
+  rtx dest;
+  static rtx cc_reg = NULL_RTX;
+
+  if (cc_reg == NULL_RTX)
+    cc_reg = gen_rtx_REG (CCmode, CC_REGNUM);
+
+  /* We can only eliminate compares against 0.  */
+  if (GET_CODE (XEXP (SET_SRC (PATTERN (cmp)), 1)) != CONST_INT
+      || INTVAL (XEXP (SET_SRC (PATTERN (cmp)), 1)) != 0)
+    return false;
+
+  /* Locate the branch insn that follows the
+     compare and which tests the bits in the PSW.  */
+  next = cmp;
+  do
+    {
+      /* If we have found an insn that sets or clobbers the CC
+	 register and it was not the IF_THEN_ELSE insn that we
+	 are looking for, then the comparison is redundant.  */
+      if (next != cmp && reg_mentioned_p (cc_reg, PATTERN (next)))
+	return true;
+
+      next = next_nonnote_insn (next);
+
+      /* If we run out of insns without finding the
+	 user then the comparison is unnecessary.  */
+      if (next == NULL_RTX)
+	return true;
+
+      /* If we have found another comparison
+	 insn then the first one is redundant.  */
+      if (INSN_P (next)
+	  && GET_CODE (PATTERN (next)) == SET
+	  && REG_P (SET_DEST (PATTERN (next)))
+	  && REGNO (SET_DEST (PATTERN (next))) == CC_REGNUM)
+	return true;
+
+      /* If we have found another arithmetic/logic insn that
+	 sets the PSW flags then the comparison is redundant.  */
+      if (INSN_P (next)
+	  && GET_CODE (PATTERN (next)) == PARALLEL
+	  && GET_CODE (XVECEXP (PATTERN (next), 0, 1)) == SET
+	  && REG_P (SET_DEST (XVECEXP (PATTERN (next), 0, 1)))
+	  && REGNO (SET_DEST (XVECEXP (PATTERN (next), 0, 1))) == CC_REGNUM)
+	return true;
+
+      /* If we have found an unconditional branch then the
+	 PSW flags might be carried along with the jump, so
+	 the comparison is necessary.  */
+      if (INSN_P (next) && JUMP_P (next))
+	{
+	  if (GET_CODE (PATTERN (next)) != SET)
+	    /* If the jump does not involve setting the PC
+	       then it is a return of some kind, and we know
+	       that the comparison is not used.  */
+	    return true;
+
+	  if (GET_CODE (SET_SRC (PATTERN (next))) != IF_THEN_ELSE)
+	    return false;
+	}
+    }
+  while (! INSN_P (next)
+	 || DEBUG_INSN_P (next)
+	 || GET_CODE (PATTERN (next)) != SET
+	 || GET_CODE (SET_SRC (PATTERN (next))) != IF_THEN_ELSE);
+
+  flags_needed = flags_needed_for_conditional (XEXP (SET_SRC (PATTERN (next)), 0));
+
+  /* Now look to see if there was a previous
+     instruction which set the PSW bits.  */
+  source = XEXP (SET_SRC (PATTERN (cmp)), 0);
+  prev = cmp;
+  do
+    {
+      /* If this insn uses/sets/clobbers the CC register
+	 and it is not the insn that we are looking for
+	 below, then we must need the comparison.  */
+      if (prev != cmp && reg_mentioned_p (cc_reg, PATTERN (prev)))
+	return false;
+
+      prev = prev_nonnote_insn (prev);
+
+      if (prev == NULL_RTX)
+	return false;
+
+      /* If we encounter an insn which changes the contents of
+	 the register which is the source of the comparison then
+	 we will definitely need the comparison.  */
+      if (INSN_P (prev)
+	  && GET_CODE (PATTERN (prev)) == SET
+	  && rtx_equal_p (SET_DEST (PATTERN (prev)), source))
+	{
+	  /* Unless this instruction is a simple register move
+	     instruction.  In which case we can continue our
+	     scan backwards, but now using the *source* of this
+	     set instruction.  */
+	  if (REG_P (SET_SRC (PATTERN (prev))))
+	    source = SET_SRC (PATTERN (prev));
+	  /* We can also survive a sign-extension if the test is
+	     for EQ/NE.  Note the same does not apply to zero-
+	     extension as this can turn a non-zero bit-pattern
+	     into zero.  */
+	  else if (flags_needed == CC_FLAG_Z
+		   && GET_CODE (SET_SRC (PATTERN (prev))) == SIGN_EXTEND)
+	    source = XEXP (SET_SRC (PATTERN (prev)), 0);
+	  else
+	    return false;
+	}
+
+      /* A label means a possible branch into the
+	 code here, so we have to stop scanning.  */
+      if (LABEL_P (prev))
+	return false;
+    }
+  while (! INSN_P (prev)
+	 || DEBUG_INSN_P (prev)
+	 || GET_CODE (PATTERN (prev)) != PARALLEL
+	 || GET_CODE (XVECEXP (PATTERN (prev), 0, 1)) != SET
+	 || ! REG_P (SET_DEST (XVECEXP (PATTERN (prev), 0, 1)))
+	 || REGNO (SET_DEST (XVECEXP (PATTERN (prev), 0, 1))) != CC_REGNUM);
+
+  flags_set = flags_from_mode (GET_MODE (SET_DEST (XVECEXP (PATTERN (prev), 0, 1))));
+
+  dest = SET_DEST (XVECEXP (PATTERN (prev), 0, 0));
+  /* The destination of the previous arithmetic/logic instruction
+     must match the source in the comparison operation.  For registers
+     we ignore the mode as there may have been a sign-extension involved.  */
+  if (! rtx_equal_p (source, dest))
+    {
+      if (REG_P (source) && REG_P (dest) && REGNO (dest) == REGNO (source))
+	;
+      else
+	return false;
+    }
+
+  return ((flags_set & flags_needed) == flags_needed);
+}
+
+static int
+rx_memory_move_cost (enum machine_mode mode, enum reg_class regclass, bool in)
+{
+  return 2 + memory_move_secondary_cost (mode, regclass, in);
+}
+
 #undef  TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE		rx_function_value
 
@@ -2609,6 +2770,12 @@ rx_trampoline_init (rtx tramp, tree fndecl, rtx chain)
 
 #undef  TARGET_PRINT_OPERAND_ADDRESS
 #define TARGET_PRINT_OPERAND_ADDRESS		rx_print_operand_address
+
+#undef  TARGET_CC_MODES_COMPATIBLE
+#define TARGET_CC_MODES_COMPATIBLE		rx_cc_modes_compatible
+
+#undef  TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST			rx_memory_move_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
