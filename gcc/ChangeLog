@@ -1,6 +1,16 @@
 2010-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2010-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/42278
+	* dwarf2out.c (base_type_die): Don't add name attribute here.
+	(modified_type_die): Instead of sizetype use
+	its underlying original type.  If a DW_TAG_base_type doesn't
+	have name added, add __unknown__.
+	(dwarf2out_imported_module_or_decl_1): Don't call base_type_die,
+	always call force_type_die instead.
+
 	2010-05-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/44059
