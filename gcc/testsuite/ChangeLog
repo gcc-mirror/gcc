@@ -1,5 +1,14 @@
 2010-06-29  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/defaulted10.C: Adjust for new deleted message.
+	* g++.dg/cpp0x/defaulted13.C: Adjust.
+	* g++.dg/cpp0x/defaulted2.C: Adjust.
+	* g++.dg/cpp0x/defaulted3.C: Adjust.
+	* g++.dg/cpp0x/initlist9.C: Adjust.
+	* g++.dg/cpp0x/lambda/lambda-errloc.C: Adjust.
+	* g++.dg/cpp0x/lambda/lambda-errloc2.C: Adjust.
+	* g++.dg/init/synth2.C: Adjust.
+
 	* g++.dg/cpp0x/defaulted19.C: New.
 
 	* g++.dg/expr/string-1.C: Fix for -std=c++0x.

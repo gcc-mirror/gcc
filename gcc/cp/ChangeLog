@@ -1,5 +1,7 @@
 2010-06-29  Jason Merrill  <jason@redhat.com>
 
+	* decl2.c (mark_used): Adjust error for use of deleted function.
+
 	Machinery to support implicit delete/move.
 	* cp-tree.h: (struct lang_type_class): Add lazy_move_assign,
 	has_complex_move_ctor, has_complex_move_assign bitfields.

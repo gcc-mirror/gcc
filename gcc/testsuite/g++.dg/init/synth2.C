@@ -13,5 +13,5 @@ class A				// { dg-error "no match" }
 int main()
 {
   A a;
-  A b = a;			// { dg-message "required here" }
+  A b = a;			// { dg-message "required here|deleted" }
 }

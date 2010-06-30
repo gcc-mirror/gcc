@@ -26,7 +26,7 @@ void test01()
   typedef std::atomic_flag test_type;
   test_type t1;
   test_type t2;
-  t1 = t2;
+  t1 = t2;			// { dg-error "deleted" }
 }
-// { dg-error "used here" "" { target *-*-* } 29 }
-// { dg-excess-errors "deleted function" }
+
+// { dg-prune-output "include" }

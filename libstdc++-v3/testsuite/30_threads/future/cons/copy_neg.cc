@@ -30,8 +30,7 @@ void test01()
 {
   // copy
   std::future<int>& p1 = get();
-  std::future<int> p2(p1);
+  std::future<int> p2(p1);	// { dg-error "deleted" }
 }
 
-// { dg-error "used here" "" { target *-*-* } 33 }
-// { dg-error "deleted function" "" { target *-*-* } 580 }
+// { dg-prune-output "include" }

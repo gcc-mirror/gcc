@@ -18,15 +18,16 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-prune-output "include" }
+
 #include <functional>
 
 void test01()
 {
   std::function<void()> f1;
   std::function<void()> f2;
-  f1 == f2;  // { dg-error "here" }
-  f1 != f2;  // { dg-error "here" }
-  // { dg-excess-errors "" }
+  f1 == f2;  // { dg-error "deleted" }
+  f1 != f2;  // { dg-error "deleted" }
 }
 
 int main()
