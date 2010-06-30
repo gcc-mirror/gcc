@@ -1,5 +1,9 @@
 2010-06-30  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* parser.c (cp_parser_omp_for_loop): Use a VEC for for_block.
+
+2010-06-30  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* repo.c (pending_repo): Change type to a VEC.
 	(finish_repo): Adjust for new type of pending_repo.
 	(repo_emit_p): Likewise.
