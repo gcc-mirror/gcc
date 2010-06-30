@@ -1,3 +1,8 @@
+2010-06-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/43298
+	* gfortran.dg/read_infnan_1.f90: New test.
+
 2010-06-29  Jason Merrill  <jason@redhat.com>
 
 	Enable implicitly declared move constructor/operator= (N3053).
