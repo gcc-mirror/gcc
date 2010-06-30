@@ -1,5 +1,9 @@
 2010-06-29  Jason Merrill  <jason@redhat.com>
 
+	Enable implicitly deleted functions (N2346)
+	* class.c (check_bases_and_members): Adjust lambda flags.
+	* method.c (implicitly_declare_fn): Set DECL_DELETED_FN if appropriate.
+
 	* decl2.c (mark_used): Adjust error for use of deleted function.
 
 	Machinery to support implicit delete/move.

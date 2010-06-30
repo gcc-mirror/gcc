@@ -5,7 +5,7 @@ struct G {
   G(G&);			// { dg-message "" "candidate" }
 };
 
-class A				// { dg-error "no match" }
+class A				// { dg-error "" }
 {
   const G g;
 };

@@ -6,10 +6,12 @@
 // Subject: gcc 2.4.3.1: illegal constructor call not rejected
 // Date: Tue, 15 Jun 1993 18:34:14 +0200 (MET DST)
 
+// C++0x mode doesn't print the deleted copy constructor as a candidate.
+// { dg-prune-output ":14:" }
 
 #include <fstream>
 
-class X : public std::ifstream { // { dg-message "note" } candidate
+class X : public std::ifstream {
     public:
       X(int a, const char *b) {} // { dg-message "note" } candidate
 };

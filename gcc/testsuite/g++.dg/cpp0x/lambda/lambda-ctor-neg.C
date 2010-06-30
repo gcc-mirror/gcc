@@ -3,7 +3,7 @@
 void f()
 {
   int i;
-  auto lam = [i]{};		// { dg-message "note" }
+  auto lam = [i]{};		// { dg-message "" }
   decltype(lam) lam2 = { 1 };	// { dg-error "" "not an aggregate" }
   decltype(lam) lam3;		// { dg-error "" "deleted default ctor" }
   lam3 = lam;			// { dg-error "" "deleted assignment op" }
@@ -12,7 +12,7 @@ void f()
 template <class T>
 void g(T i)
 {
-  auto lam = [i]{};		// { dg-message "note" }
+  auto lam = [i]{};		// { dg-message "" }
   decltype(lam) lam2 = { 1 };	// { dg-error "" "not an aggregate" }
   decltype(lam) lam3;		// { dg-error "" "deleted default ctor" }
   lam3 = lam;			// { dg-error "" "deleted assignment op" }

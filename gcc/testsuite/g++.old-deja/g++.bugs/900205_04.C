@@ -23,9 +23,9 @@ struct0::struct0 (int, void *) // { dg-message "note" }
 {
 }
 
-struct struct0_derived_struct_0 : public struct0 { // { dg-error "no matching" }
+struct struct0_derived_struct_0 : public struct0 { // { dg-error "no matching|deleted" }
 };
 
-struct0_derived_struct_0 object; // { dg-message "synthesized" }
+struct0_derived_struct_0  object; // { dg-message "synthesized|deleted" }
 
 int main () { return 0; }
