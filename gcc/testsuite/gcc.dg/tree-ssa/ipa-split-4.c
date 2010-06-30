@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fdump-tree-fnsplit" } */
 int make_me_big (void);
+void abort (void);
 
 int
 split_me (int a)
@@ -19,7 +20,8 @@ split_me (int a)
     }
 }
 
-main()
+int
+test(void)
 {
   return split_me (0)+split_me(1)+split_me(2);
 }
