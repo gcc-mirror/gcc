@@ -1047,11 +1047,10 @@ DEFHOOK_UNDOC
 
 /* Returns a code for a target-specific builtin that implements
    reciprocal of the function, or NULL_TREE if not available.  */
-/* ??? The documentation uses a different name for tm_fn.  */
-DEFHOOK_UNDOC
+DEFHOOK
 (builtin_reciprocal,
  "",
- tree, (unsigned fn, bool tm_fn, bool sqrt),
+ tree, (unsigned fn, bool md_fn, bool sqrt),
  default_builtin_reciprocal)
 
 /* For a vendor-specific TYPE, return a pointer to a statically-allocated
