@@ -1,3 +1,9 @@
+2010-06-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/44721
+	* config/i386/i386.md (peephole2 for arithmetic ops with memory):
+	Fix last commit.
+
 2010-06-30  Nick Clifton  <nickc@redhat.com>
 
 	* config/rx/rx-modes.def: New file.
