@@ -42,9 +42,9 @@ eight sink_8_12345678(const volatile A&&);
 int test8_12345678()
 {
                    A a;
-    const          A ca = a;
+    const          A ca;
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva;
     sa<sizeof(sink_8_12345678(a))           == 1> t1;
     sa<sizeof(sink_8_12345678(ca))          == 2> t2;
     sa<sizeof(sink_8_12345678(va))          == 3> t3;

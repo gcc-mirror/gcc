@@ -5197,7 +5197,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	       OK.  */
 	    if ((lvalue & clk_packed)
 		&& CLASS_TYPE_P (type)
-		&& !TYPE_HAS_TRIVIAL_COPY_CTOR (type))
+		&& type_has_nontrivial_copy_init (type))
 	      {
 		if (complain & tf_error)
 		  error ("cannot bind packed field %qE to %qT",
@@ -5905,7 +5905,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  if (TREE_CODE (arg) == TARGET_EXPR)
 	    return arg;
 	  else if (trivial)
-	    return build_target_expr_with_type (arg, DECL_CONTEXT (fn));
+	    return force_target_expr (DECL_CONTEXT (fn), arg);
 	}
       else if (TREE_CODE (arg) == TARGET_EXPR || trivial)
 	{

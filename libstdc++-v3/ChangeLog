@@ -1,5 +1,9 @@
 2010-06-29  Jason Merrill  <jason@redhat.com>
 
+	Enable implicitly declared move constructor/operator= (N3053).
+	* include/bits/unordered_map.h: Explicitly default copy constructors.
+	* include/bits/unordered_set.h: Likewise.
+
 	* 19_diagnostics/error_category/cons/copy_neg.cc: Adjust expected
 	errors, use dg-prune-output.
 	* 20_util/function/cmp/cmp_neg.cc: Likewise.

@@ -1,5 +1,34 @@
 2010-06-29  Jason Merrill  <jason@redhat.com>
 
+	Enable implicitly declared move constructor/operator= (N3053).
+	* g++.dg/cpp0x/implicit3.C: New.
+	* g++.dg/cpp0x/implicit4.C: New.
+	* g++.dg/cpp0x/implicit5.C: New.
+	* g++.dg/cpp0x/implicit-copy.C: Adjust.
+	* g++.dg/cpp0x/not_special.C: Adjust.
+	* g++.dg/cpp0x/rv-trivial-bug.C: Adjust.
+	* g++.dg/cpp0x/rv1n.C: Adjust.
+	* g++.dg/cpp0x/rv1p.C: Adjust.
+	* g++.dg/cpp0x/rv2n.C: Adjust.
+	* g++.dg/cpp0x/rv2p.C: Adjust.
+	* g++.dg/cpp0x/rv3n.C: Adjust.
+	* g++.dg/cpp0x/rv3p.C: Adjust.
+	* g++.dg/cpp0x/rv4n.C: Adjust.
+	* g++.dg/cpp0x/rv4p.C: Adjust.
+	* g++.dg/cpp0x/rv5n.C: Adjust.
+	* g++.dg/cpp0x/rv5p.C: Adjust.
+	* g++.dg/cpp0x/rv6n.C: Adjust.
+	* g++.dg/cpp0x/rv6p.C: Adjust.
+	* g++.dg/cpp0x/rv7n.C: Adjust.
+	* g++.dg/cpp0x/rv7p.C: Adjust.
+	* g++.dg/cpp0x/rv8p.C: Adjust.
+	* g++.dg/gomp/pr26690-1.C: Adjust.
+	* g++.dg/other/error20.C: Adjust.
+	* g++.dg/other/error31.C: Adjust.
+	* g++.dg/parse/error19.C: Adjust.
+	* g++.dg/template/qualttp5.C: Adjust.
+	* g++.old-deja/g++.law/ctors5.C: Adjust.
+
 	Enable implicitly deleted functions (N2346)
 	* g++.dg/cpp0x/defaulted17.C: New.
 	* g++.dg/cpp0x/implicit1.C: New.

@@ -1,5 +1,21 @@
 2010-06-29  Jason Merrill  <jason@redhat.com>
 
+	Enable implicitly declared move constructor/operator= (N3053).
+	* class.c (add_implicitly_declared_members): A class with no
+	explicitly declared copy or move constructor gets both declared
+	implicitly, and similarly for operator=.
+	(check_bases): A type with no copy ctor does not inhibit
+	a const copy ctor in a derived class.  It does mean the derived
+	one is non-trivial.
+	(check_field_decl): Likewise.
+	(check_bases_and_members): A nonexistent copy ctor/op= is non-trivial.
+	* tree.c (type_has_nontrivial_copy_init): Adjust semantics.
+	(trivially_copyable_p): Likewise.
+	* call.c (convert_like_real): Use type_has_nontrivial_copy_init.
+	* class.c (finish_struct_bits): Likewise.
+	* tree.c (build_target_expr_with_type): Likewise.
+	* typeck2.c (store_init_value): Likewise.
+
 	Enable implicitly deleted functions (N2346)
 	* class.c (check_bases_and_members): Adjust lambda flags.
 	* method.c (implicitly_declare_fn): Set DECL_DELETED_FN if appropriate.
