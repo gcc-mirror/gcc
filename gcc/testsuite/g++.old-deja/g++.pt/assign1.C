@@ -2,7 +2,7 @@
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 template <class T>
-struct S { // { dg-error "assignment" }
+struct S {			// { dg-error "const|operator=" }
   S();
   T t;
 };
@@ -10,5 +10,5 @@ struct S { // { dg-error "assignment" }
 void f()
 {
   S<const int> s;
-  s = s; // { dg-message "synthesized" }
+  s = s; // { dg-message "synthesized|deleted" }
 }

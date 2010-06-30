@@ -1,5 +1,24 @@
 2010-06-29  Jason Merrill  <jason@redhat.com>
 
+	Enable implicitly deleted functions (N2346)
+	* g++.dg/cpp0x/defaulted17.C: New.
+	* g++.dg/cpp0x/implicit1.C: New.
+	* g++.dg/cpp0x/implicit2.C: New.
+	* g++.dg/cpp0x/lambda/lambda-ctor-neg.C: Adjust.
+	* g++.dg/ext/has_virtual_destructor.C: Adjust.
+	* g++.dg/init/ctor4.C: Adjust.
+	* g++.dg/init/synth2.C: Adjust.
+	* g++.dg/lto/20081118_1.C: Adjust.
+	* g++.dg/other/error13.C: Adjust.
+	* g++.dg/other/unused1.C: Adjust.
+	* g++.old-deja/g++.bob/inherit2.C: Adjust.
+	* g++.old-deja/g++.bugs/900205_04.C: Adjust.
+	* g++.old-deja/g++.jason/opeq3.C: Adjust.
+	* g++.old-deja/g++.law/ctors17.C: Adjust.
+	* g++.old-deja/g++.oliva/delete1.C: Adjust.
+	* g++.old-deja/g++.pt/assign1.C: Adjust.
+	* g++.old-deja/g++.pt/crash20.C: Adjust.
+
 	* g++.dg/cpp0x/defaulted10.C: Adjust for new deleted message.
 	* g++.dg/cpp0x/defaulted13.C: Adjust.
 	* g++.dg/cpp0x/defaulted2.C: Adjust.

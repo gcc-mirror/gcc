@@ -1408,6 +1408,8 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
   DECL_IN_AGGR_P (fn) = 1;
   DECL_ARTIFICIAL (fn) = 1;
   DECL_DEFAULTED_FN (fn) = 1;
+  if (cxx_dialect >= cxx0x)
+    DECL_DELETED_FN (fn) = deleted_p;
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
   gcc_assert (!TREE_USED (fn));

@@ -4563,10 +4563,9 @@ check_bases_and_members (tree t)
       /* "The closure type associated with a lambda-expression has a deleted
 	 default constructor and a deleted copy assignment operator."  */
       TYPE_NEEDS_CONSTRUCTING (t) = 1;
-      TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 0;
-      CLASSTYPE_LAZY_DEFAULT_CTOR (t) = 0;
-      TYPE_HAS_COPY_ASSIGN (t) = 0;
-      CLASSTYPE_LAZY_COPY_ASSIGN (t) = 0;
+      TYPE_HAS_COMPLEX_DFLT (t) = 1;
+      TYPE_HAS_COMPLEX_COPY_ASSIGN (t) = 1;
+      CLASSTYPE_LAZY_MOVE_ASSIGN (t) = 0;
 
       /* "This class type is not an aggregate."  */
       CLASSTYPE_NON_AGGREGATE (t) = 1;
