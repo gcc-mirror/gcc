@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-common.h"
 #include "gimple.h"
 #include "basic-block.h"
-#include "tree-flow.h"
 #include "tree-inline.h"
 #include "diagnostic-core.h"
 #include "langhooks.h"

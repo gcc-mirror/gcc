@@ -1,3 +1,7 @@
+2010-06-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c-gimplify.c: Do not include tree-flow.h
+
 2010-06-29  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR other/44034

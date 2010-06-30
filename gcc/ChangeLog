@@ -1,3 +1,11 @@
+2010-06-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* tree.h (block_may_fallthru): Declare here.
+	* tree-flow.h (block_may_fallthru): Do not declare here.
+	* c-typeck.c: Do not include tree-flow.h. Include gimple.h and
+	bitmap.h
+	* Makefile.in (c-typeck.o): Update dependencies.
+
 2010-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/44694

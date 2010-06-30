@@ -39,7 +39,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "target.h"
 #include "tree-iterator.h"
-#include "tree-flow.h"
+#include "bitmap.h"
+#include "gimple.h"
 
 /* Possible cases of implicit bad conversions.  Used to select
    diagnostic messages in convert_for_assignment.  */

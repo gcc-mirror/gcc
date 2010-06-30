@@ -33,7 +33,6 @@
 #include "output.h"
 #include "libfuncs.h"	/* For set_stack_check_libfunc.  */
 #include "tree-iterator.h"
-#include "tree-flow.h"
 #include "gimple.h"
 
 #include "ada.h"

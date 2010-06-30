@@ -253,7 +253,7 @@ cp/cp-lang.o: cp/cp-lang.c $(CXX_TREE_H) $(TM_H) toplev.h debug.h langhooks.h \
 cp/decl.o: cp/decl.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) cp/decl.h \
   output.h toplev.h $(HASHTAB_H) $(RTL_H) \
   cp/operators.def $(TM_P_H) $(TREE_INLINE_H) $(DIAGNOSTIC_H) $(C_PRAGMA_H) \
-  debug.h gt-cp-decl.h $(TIMEVAR_H) $(TREE_FLOW_H) $(TARGET_H) $(PLUGIN_H) \
+  debug.h gt-cp-decl.h $(TIMEVAR_H) $(TARGET_H) $(PLUGIN_H) \
   intl.h tree-iterator.h $(SPLAY_TREE_H)
 cp/decl2.o: cp/decl2.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) cp/decl.h \
   output.h toplev.h $(C_COMMON_H) gt-cp-decl2.h $(CGRAPH_H) \
@@ -284,7 +284,7 @@ cp/search.o: cp/search.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h \
   intl.h
 cp/tree.o: cp/tree.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h \
   $(TREE_INLINE_H) $(REAL_H) gt-cp-tree.h \
-  $(TARGET_H) debug.h $(TREE_FLOW_H) $(CGRAPH_H) $(SPLAY_TREE_H)
+  $(TARGET_H) debug.h $(CGRAPH_H) $(SPLAY_TREE_H) $(GIMPLE_H)
 cp/ptree.o: cp/ptree.c $(CXX_TREE_H) $(TM_H)
 cp/rtti.o: cp/rtti.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h convert.h \
   $(TARGET_H) $(C_PRAGMA_H) gt-cp-rtti.h intl.h

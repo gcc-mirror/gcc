@@ -1,3 +1,8 @@
+2010-06-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* gcc-interface/trans.c: Do not include tree-flow.h.
+	* gcc-interface/Make-lang.in: Adjust dependencies.
+
 2010-06-29  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* gcc-interface/gigi.h (gnat_build_constructor): Take a VEC instead
