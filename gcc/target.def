@@ -1375,7 +1375,7 @@ DEFHOOK
 /* Compute cost of moving registers to/from memory.  */
 /* ??? Documenting the argument types for this hook requires a GFDL
    license grant.  Also, the documentation uses a different name for RCLASS.  */
-DEFHOOK_UNDOC
+DEFHOOK
 (memory_move_cost,
  "",
  int, (enum machine_mode mode, enum reg_class rclass, bool in),
