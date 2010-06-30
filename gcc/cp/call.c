@@ -5600,7 +5600,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     }
 
   /* Give any warnings we noticed during overload resolution.  */
-  if (cand->warnings)
+  if (cand->warnings && (complain & tf_warning))
     {
       struct candidate_warning *w;
       for (w = cand->warnings; w; w = w->next)

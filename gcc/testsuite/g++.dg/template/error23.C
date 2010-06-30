@@ -8,10 +8,10 @@ struct nullptr_type {
   operator T* ( void ) const {
     return ( 0 );
   }
-} const nullptr;
+} const nullptr_ob;
 
 int main ( void ) {
-  0 == nullptr; // { dg-error "match" }
+  0 == nullptr_ob; // { dg-error "match" }
 }
 
 

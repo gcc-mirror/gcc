@@ -10295,6 +10295,7 @@ grok_special_member_properties (tree decl)
 	    TYPE_HAS_CONST_COPY_ASSIGN (class_type) = 1;
 	}
     }
+  /* Destructors are handled in check_methods.  */
 }
 
 /* Check a constructor DECL has the correct form.  Complains
