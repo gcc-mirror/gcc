@@ -1934,7 +1934,7 @@ cgraph_clone_node (struct cgraph_node *n, gcov_type count, int freq,
 
 static GTY(()) unsigned int clone_fn_id_num;
 
-static tree
+tree
 clone_function_name (tree decl)
 {
   tree name = DECL_ASSEMBLER_NAME (decl);
