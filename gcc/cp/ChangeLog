@@ -1,3 +1,10 @@
+2010-06-29  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* decl.c (struct named_label_entry): Change type of bad_decls field
+	to a VEC.
+	(poplevel_named_label_1): Adjust for new type of bad_decls.
+	(check_goto): Likewise.
+
 2010-06-29  Jason Merrill  <jason@redhat.com>
 
 	Enable implicitly declared move constructor/operator= (N3053).
