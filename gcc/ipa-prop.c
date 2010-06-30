@@ -1608,6 +1608,12 @@ ipa_modify_formal_parameters (tree fndecl, ipa_parm_adjustment_vec adjustments,
       TYPE_CONTEXT (new_type) = TYPE_CONTEXT (orig_type);
       DECL_VINDEX (fndecl) = NULL_TREE;
     }
+  /* When signature changes, we need to clear builtin info.  */
+  if (DECL_BUILT_IN (fndecl))
+    {
+      DECL_BUILT_IN_CLASS (fndecl) = NOT_BUILT_IN;
+      DECL_FUNCTION_CODE (fndecl) = (enum built_in_function) 0;
+    }
 
   /* This is a new type, not a copy of an old type.  Need to reassociate
      variants.  We can handle everything except the main variant lazily.  */
