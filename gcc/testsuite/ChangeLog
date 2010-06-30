@@ -1,3 +1,8 @@
+2010-06-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/43905
+	* g++.dg/torture/pr43905.C: New test.
+
 2010-06-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44587

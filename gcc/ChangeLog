@@ -1,5 +1,17 @@
 2010-06-30  Martin Jambor  <mjambor@suse.cz>
 
+	PR tree-optimization/43905
+	* tree-sra.c (encountered_recursive_call): Removed with all its uses.
+	(convert_callers): Do not handle recursive calls specially.
+	(create_abstract_origin): Removed.
+	(modify_function): Version the call graph node instead of creating
+	abstract origins and dealing with same_body aliases.
+	(ipa_sra_preliminary_function_checks): Check whether the function
+	is versionable.
+	* Makefile.in (tree-sra.o): Add TREE_INLINE_H to dependencies.
+
+2010-06-30  Martin Jambor  <mjambor@suse.cz>
+
 	Backport from mainline
 	2010-05-29  Jan Hubicka  <jh@suse.cz>
 

@@ -89,6 +89,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "target.h"
 #include "flags.h"
+#include "tree-inline.h"
 
 /* Enumeration of all aggregate reductions we can do.  */
 enum sra_mode { SRA_MODE_EARLY_IPA,   /* early call regularization */
@@ -270,9 +271,6 @@ static int func_param_count;
 /* scan_function sets the following to true if it encounters a call to
    __builtin_apply_args.  */
 static bool encountered_apply_args;
-
-/* Set by scan_function when it finds a recursive call.  */
-static bool encountered_recursive_call;
 
 /* Set by scan_function when it finds a recursive call with less actual
    arguments than formal parameters..  */
@@ -571,7 +569,6 @@ sra_initialize (void)
   base_access_vec = pointer_map_create ();
   memset (&sra_stats, 0, sizeof (sra_stats));
   encountered_apply_args = false;
-  encountered_recursive_call = false;
   encountered_unchangable_recursive_call = false;
 }
 
@@ -1169,12 +1166,9 @@ scan_function (bool (*scan_expr) (tree *, gimple_stmt_iterator *, bool, void *),
 			  && DECL_FUNCTION_CODE (dest) == BUILT_IN_APPLY_ARGS)
 			encountered_apply_args = true;
 		      if (cgraph_get_node (dest)
-			  == cgraph_get_node (current_function_decl))
-			{
-			  encountered_recursive_call = true;
-			  if (!callsite_has_enough_arguments_p (stmt))
-			    encountered_unchangable_recursive_call = true;
-			}
+			  == cgraph_get_node (current_function_decl)
+			  && !callsite_has_enough_arguments_p (stmt))
+			encountered_unchangable_recursive_call = true;
 		    }
 
 		  if (final_bbs
@@ -4059,7 +4053,6 @@ convert_callers (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
 {
   tree old_cur_fndecl = current_function_decl;
   struct cgraph_edge *cs;
-  basic_block this_block;
   bitmap recomputed_callers = BITMAP_ALLOC (NULL);
 
   for (cs = node->callers; cs; cs = cs->next_caller)
@@ -4079,7 +4072,8 @@ convert_callers (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
     }
 
   for (cs = node->callers; cs; cs = cs->next_caller)
-    if (!bitmap_bit_p (recomputed_callers, cs->caller->uid))
+    if (cs->caller != node
+	&& !bitmap_bit_p (recomputed_callers, cs->caller->uid))
       {
 	compute_inline_parameters (cs->caller);
 	bitmap_set_bit (recomputed_callers, cs->caller->uid);
@@ -4087,51 +4081,7 @@ convert_callers (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
   BITMAP_FREE (recomputed_callers);
 
   current_function_decl = old_cur_fndecl;
-
-  if (!encountered_recursive_call)
-    return;
-
-  FOR_EACH_BB (this_block)
-    {
-      gimple_stmt_iterator gsi;
-
-      for (gsi = gsi_start_bb (this_block); !gsi_end_p (gsi); gsi_next (&gsi))
-        {
-	  gimple stmt = gsi_stmt (gsi);
-	  tree call_fndecl;
-	  if (gimple_code (stmt) != GIMPLE_CALL)
-	    continue;
-	  call_fndecl = gimple_call_fndecl (stmt);
-	  if (call_fndecl && cgraph_get_node (call_fndecl) == node)
-	    {
-	      if (dump_file)
-		fprintf (dump_file, "Adjusting recursive call");
-	      ipa_modify_call_arguments (NULL, stmt, adjustments);
-	    }
-	}
-    }
-
   return;
-}
-
-/* Create an abstract origin declaration for OLD_DECL and make it an abstract
-   origin of the provided decl so that there are preserved parameters for debug
-   information.  */
-
-static void
-create_abstract_origin (tree old_decl)
-{
-  if (!DECL_ABSTRACT_ORIGIN (old_decl))
-    {
-      tree new_decl = copy_node (old_decl);
-
-      DECL_ABSTRACT (new_decl) = 1;
-      SET_DECL_ASSEMBLER_NAME (new_decl, NULL_TREE);
-      SET_DECL_RTL (new_decl, NULL);
-      DECL_STRUCT_FUNCTION (new_decl) = NULL;
-      DECL_ARTIFICIAL (old_decl) = 1;
-      DECL_ABSTRACT_ORIGIN (old_decl) = new_decl;
-    }
 }
 
 /* Perform all the modification required in IPA-SRA for NODE to have parameters
@@ -4140,18 +4090,32 @@ create_abstract_origin (tree old_decl)
 static void
 modify_function (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
 {
-  struct cgraph_node *alias;
-  for (alias = node->same_body; alias; alias = alias->next)
-    ipa_modify_formal_parameters (alias->decl, adjustments, "ISRA");
-  /* current_function_decl must be handled last, after same_body aliases,
-     as following functions will use what it computed.  */
-  create_abstract_origin (current_function_decl);
+  struct cgraph_node *new_node;
+  struct cgraph_edge *cs;
+  VEC (cgraph_edge_p, heap) * redirect_callers;
+  int node_callers;
+
+  node_callers = 0;
+  for (cs = node->callers; cs != NULL; cs = cs->next_caller)
+    node_callers++;
+  redirect_callers = VEC_alloc (cgraph_edge_p, heap, node_callers);
+  for (cs = node->callers; cs != NULL; cs = cs->next_caller)
+    VEC_quick_push (cgraph_edge_p, redirect_callers, cs);
+
+  rebuild_cgraph_edges ();
+  pop_cfun ();
+  current_function_decl = NULL_TREE;
+
+  new_node = cgraph_function_versioning (node, redirect_callers, NULL, NULL);
+  current_function_decl = new_node->decl;
+  push_cfun (DECL_STRUCT_FUNCTION (new_node->decl));
+
   ipa_modify_formal_parameters (current_function_decl, adjustments, "ISRA");
   scan_function (sra_ipa_modify_expr, sra_ipa_modify_assign,
 		 replace_removed_params_ssa_names, false, adjustments);
   sra_ipa_reset_debug_stmts (adjustments);
-  convert_callers (node, adjustments);
-  cgraph_make_node_local (node);
+  convert_callers (new_node, adjustments);
+  cgraph_make_node_local (new_node);
   return;
 }
 
@@ -4163,6 +4127,13 @@ static bool
 ipa_sra_preliminary_function_checks (struct cgraph_node *node)
 {
   if (!cgraph_node_can_be_local_p (node))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Function not local to this compilation unit.\n");
+      return false;
+    }
+
+  if (!tree_versionable_function_p (node->decl))
     {
       if (dump_file)
 	fprintf (dump_file, "Function not local to this compilation unit.\n");
