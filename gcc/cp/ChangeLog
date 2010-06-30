@@ -1,5 +1,12 @@
 2010-06-29  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* decl.c (incomplete_var): Declare.  Declare VECs containing them.
+	(incomplete_vars): Adjust comment.  Change type to a VEC.
+	(maybe_register_incomplete_var): Adjust for new type.
+	(complete_vars): Adjust iteration over incomplete_vars.
+
+2010-06-29  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* decl.c (struct named_label_entry): Change type of bad_decls field
 	to a VEC.
 	(poplevel_named_label_1): Adjust for new type of bad_decls.

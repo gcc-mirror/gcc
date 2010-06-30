@@ -245,11 +245,18 @@ VEC(tree, gc) *deferred_mark_used_calls;
 enum deprecated_states deprecated_state = DEPRECATED_NORMAL;
 
 
-/* A TREE_LIST of VAR_DECLs.  The TREE_PURPOSE is a RECORD_TYPE or
-   UNION_TYPE; the TREE_VALUE is a VAR_DECL with that type.  At the
-   time the VAR_DECL was declared, the type was incomplete.  */
+/* A list of VAR_DECLs whose type was incomplete at the time the
+   variable was declared.  */
 
-static GTY(()) tree incomplete_vars;
+typedef struct GTY(()) incomplete_var_d {
+  tree decl;
+  tree incomplete_type;
+} incomplete_var;
+
+DEF_VEC_O(incomplete_var);
+DEF_VEC_ALLOC_O(incomplete_var,gc);
+
+static GTY(()) VEC(incomplete_var,gc) *incomplete_vars;
 
 /* Returns the kind of template specialization we are currently
    processing, given that it's declaration contained N_CLASS_SCOPES
@@ -12934,7 +12941,12 @@ maybe_register_incomplete_var (tree var)
 	  /* RTTI TD entries are created while defining the type_info.  */
 	  || (TYPE_LANG_SPECIFIC (inner_type)
 	      && TYPE_BEING_DEFINED (inner_type)))
-	incomplete_vars = tree_cons (inner_type, var, incomplete_vars);
+	{
+	  incomplete_var *iv
+	    = VEC_safe_push (incomplete_var, gc, incomplete_vars, NULL);
+	  iv->decl = var;
+	  iv->incomplete_type = inner_type;
+	}
     }
 }
 
@@ -12945,24 +12957,24 @@ maybe_register_incomplete_var (tree var)
 void
 complete_vars (tree type)
 {
-  tree *list = &incomplete_vars;
+  unsigned ix;
+  incomplete_var *iv;
 
-  gcc_assert (CLASS_TYPE_P (type));
-  while (*list)
+  for (ix = 0; VEC_iterate (incomplete_var, incomplete_vars, ix, iv); )
     {
-      if (same_type_p (type, TREE_PURPOSE (*list)))
+      if (same_type_p (type, iv->incomplete_type))
 	{
-	  tree var = TREE_VALUE (*list);
+	  tree var = iv->decl;
 	  tree type = TREE_TYPE (var);
 	  /* Complete the type of the variable.  The VAR_DECL itself
 	     will be laid out in expand_expr.  */
 	  complete_type (type);
 	  cp_apply_type_quals_to_decl (cp_type_quals (type), var);
 	  /* Remove this entry from the list.  */
-	  *list = TREE_CHAIN (*list);
+	  VEC_unordered_remove (incomplete_var, incomplete_vars, ix);
 	}
       else
-	list = &TREE_CHAIN (*list);
+	ix++;
     }
 
   /* Check for pending declarations which may have abstract type.  */
