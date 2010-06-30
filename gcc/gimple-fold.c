@@ -1133,7 +1133,8 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
       if (gimple_vdef (stmt) && laststore)
 	{
 	  gimple_set_vdef (laststore, gimple_vdef (stmt));
-	  move_ssa_defining_stmt_for_defs (laststore, stmt);
+	  if (TREE_CODE (gimple_vdef (stmt)) == SSA_NAME)
+	    SSA_NAME_DEF_STMT (gimple_vdef (stmt)) = laststore;
 	  update_stmt (laststore);
 	}
       else
@@ -1150,7 +1151,15 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 	  gsi_insert_before (si_p, last, GSI_NEW_STMT);
 	  gsi_next (si_p);
 	}
-      if (laststore)
+      if (laststore && is_gimple_reg (lhs))
+	{
+	  gimple_set_vdef (laststore, gimple_vdef (stmt));
+	  update_stmt (laststore);
+	  if (TREE_CODE (gimple_vdef (stmt)) == SSA_NAME)
+	    SSA_NAME_DEF_STMT (gimple_vdef (stmt)) = laststore;
+	  laststore = NULL;
+	}
+      else if (laststore)
 	{
 	  reaching_vuse = make_ssa_name (gimple_vop (cfun), laststore);
 	  gimple_set_vdef (laststore, reaching_vuse);
@@ -1158,9 +1167,14 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
 	  laststore = NULL;
 	}
       new_stmt = gimple_build_assign (lhs, tmp);
-      gimple_set_vuse (new_stmt, reaching_vuse);
-      gimple_set_vdef (new_stmt, gimple_vdef (stmt));
-      move_ssa_defining_stmt_for_defs (new_stmt, stmt);
+      if (!is_gimple_reg (tmp))
+	gimple_set_vuse (new_stmt, reaching_vuse);
+      if (!is_gimple_reg (lhs))
+	{
+	  gimple_set_vdef (new_stmt, gimple_vdef (stmt));
+	  if (TREE_CODE (gimple_vdef (stmt)) == SSA_NAME)
+	    SSA_NAME_DEF_STMT (gimple_vdef (stmt)) = new_stmt;
+	}
     }
 
   gimple_set_location (new_stmt, gimple_location (stmt));

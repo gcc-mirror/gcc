@@ -1,3 +1,11 @@
+2010-06-30  Michael Matz  <matz@suse.de>
+
+	PR bootstrap/44699
+	* tree-vrp.c (vrp_finalize): Deal with changing num_ssa_names.
+	* gimple-fold.c (gimplify_and_update_call_from_tree): If LHS is
+	a gimple reg, attach the original VDEF to the last store in the
+	sequence.
+
 2010-06-30  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR other/44034
