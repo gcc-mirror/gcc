@@ -3570,7 +3570,7 @@ cxx_omp_create_clause_info (tree c, tree type, bool need_default_ctor,
   CP_OMP_CLAUSE_INFO (c) = info;
 
   if (need_default_ctor
-      || (need_copy_ctor && !TYPE_HAS_TRIVIAL_INIT_REF (type)))
+      || (need_copy_ctor && !TYPE_HAS_TRIVIAL_COPY_CTOR (type)))
     {
       VEC(tree,gc) *vec;
 
@@ -3624,7 +3624,7 @@ cxx_omp_create_clause_info (tree c, tree type, bool need_default_ctor,
       TREE_VEC_ELT (info, 1) = omp_clause_info_fndecl (t, type);
     }
 
-  if (need_copy_assignment && !TYPE_HAS_TRIVIAL_ASSIGN_REF (type))
+  if (need_copy_assignment && !TYPE_HAS_TRIVIAL_COPY_ASSIGN (type))
     {
       VEC(tree,gc) *vec;
 
@@ -5011,7 +5011,7 @@ classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
 	return false;
       fns = VEC_index (tree, CLASSTYPE_METHOD_VEC (type), ix);
     } 
-  else if (TYPE_HAS_INIT_REF (type))
+  else if (TYPE_HAS_COPY_CTOR (type))
     {
       /* If construction of the copy constructor was postponed, create
 	 it now.  */
@@ -5070,7 +5070,7 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
       return (!CP_TYPE_CONST_P (type1) && type_code1 != REFERENCE_TYPE
 	      && (trivial_type_p (type1)
 		    || (CLASS_TYPE_P (type1)
-			&& TYPE_HAS_TRIVIAL_ASSIGN_REF (type1))));
+			&& TYPE_HAS_TRIVIAL_COPY_ASSIGN (type1))));
 
     case CPTK_HAS_NOTHROW_CONSTRUCTOR:
       type1 = strip_array_types (type1);
@@ -5095,7 +5095,7 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 	 type" wording for this trait.  */
       type1 = strip_array_types (type1);
       return (trivial_type_p (type1) || type_code1 == REFERENCE_TYPE
-	      || (CLASS_TYPE_P (type1) && TYPE_HAS_TRIVIAL_INIT_REF (type1)));
+	      || (CLASS_TYPE_P (type1) && TYPE_HAS_TRIVIAL_COPY_CTOR (type1)));
 
     case CPTK_HAS_TRIVIAL_DESTRUCTOR:
       type1 = strip_array_types (type1);

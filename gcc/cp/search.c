@@ -1362,8 +1362,8 @@ lookup_fnfields_1 (tree type, tree name)
 	    lazily_declare_fn (sfk_move_constructor, type);
 	}
       else if (name == ansi_assopname(NOP_EXPR)
-	       && CLASSTYPE_LAZY_ASSIGNMENT_OP (type))
-	lazily_declare_fn (sfk_assignment_operator, type);
+	       && CLASSTYPE_LAZY_COPY_ASSIGN (type))
+	lazily_declare_fn (sfk_copy_assignment, type);
       else if ((name == dtor_identifier
 		|| name == base_dtor_identifier
 		|| name == complete_dtor_identifier

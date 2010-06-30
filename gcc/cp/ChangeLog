@@ -1,5 +1,18 @@
 2010-06-29  Jason Merrill  <jason@redhat.com>
 
+	* cp-tree.h (TYPE_HAS_ASSIGN_REF): Rename to TYPE_HAS_COPY_ASSIGN.
+	(TYPE_HAS_CONST_ASSIGN_REF): Rename to TYPE_HAS_CONST_COPY_ASSIGN.
+	(TYPE_HAS_INIT_REF): Rename to TYPE_HAS_COPY_CTOR.
+	(TYPE_HAS_CONST_INIT_REF): Rename to TYPE_HAS_CONST_COPY_CTOR.
+	(TYPE_HAS_COMPLEX_ASSIGN_REF): Rename to TYPE_HAS_COMPLEX_COPY_ASSIGN.
+	(TYPE_HAS_COMPLEX_INIT_REF): Rename to TYPE_HAS_COMPLEX_COPY_CTOR.
+	(TYPE_HAS_TRIVIAL_ASSIGN_REF): Rename to TYPE_HAS_TRIVIAL_COPY_ASSIGN.
+	(TYPE_HAS_TRIVIAL_INIT_REF): Rename to TYPE_HAS_TRIVIAL_COPY_CTOR.
+	(CLASSTYPE_LAZY_ASSIGNMENT_OP): Rename to CLASSTYPE_LAZY_COPY_ASSIGN.
+	(sfk_assignment_operator): Rename to sfk_copy_assignment.
+	* decl.c, call.c, class.c, init.c, method.c, pt.c, ptree.c: Adjust.
+	* search.c, semantics.c, tree.c: Adjust.
+
 	* pt.c (dependent_scope_ref_p): Remove.
 	(value_dependent_expression_p): Don't call it.
 	(type_dependent_expression_p): Here either.

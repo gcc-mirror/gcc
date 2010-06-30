@@ -5197,7 +5197,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	       OK.  */
 	    if ((lvalue & clk_packed)
 		&& CLASS_TYPE_P (type)
-		&& !TYPE_HAS_TRIVIAL_INIT_REF (type))
+		&& !TYPE_HAS_TRIVIAL_COPY_CTOR (type))
 	      {
 		if (complain & tf_error)
 		  error ("cannot bind packed field %qE to %qT",
@@ -5853,7 +5853,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	}
       /* [class.copy]: the copy constructor is implicitly defined even if
 	 the implementation elided its use.  */
-      else if (TYPE_HAS_COMPLEX_INIT_REF (DECL_CONTEXT (fn))
+      else if (TYPE_HAS_COMPLEX_COPY_CTOR (DECL_CONTEXT (fn))
 	       || move_fn_p (fn))
 	{
 	  mark_used (fn);
@@ -5872,12 +5872,12 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	{
 	  if (TREE_CODE (arg) == TARGET_EXPR)
 	    return arg;
-	  else if (TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn))
+	  else if (TYPE_HAS_TRIVIAL_COPY_CTOR (DECL_CONTEXT (fn))
 		   && !move_fn_p (fn))
 	    return build_target_expr_with_type (arg, DECL_CONTEXT (fn));
 	}
       else if (TREE_CODE (arg) == TARGET_EXPR
-	       || (TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn))
+	       || (TYPE_HAS_TRIVIAL_COPY_CTOR (DECL_CONTEXT (fn))
 		   && !move_fn_p (fn)))
 	{
 	  tree to = stabilize_reference (cp_build_indirect_ref (fa, RO_NULL,
@@ -5889,7 +5889,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     }
   else if (DECL_OVERLOADED_OPERATOR_P (fn) == NOP_EXPR
 	   && copy_fn_p (fn)
-	   && TYPE_HAS_TRIVIAL_ASSIGN_REF (DECL_CONTEXT (fn)))
+	   && TYPE_HAS_TRIVIAL_COPY_ASSIGN (DECL_CONTEXT (fn)))
     {
       tree to = stabilize_reference
 	(cp_build_indirect_ref (argarray[0], RO_NULL, complain));

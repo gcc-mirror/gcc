@@ -1282,10 +1282,10 @@ check_bases (tree t,
 	 assignment operators that take const references, then the
 	 derived class cannot have such a member automatically
 	 generated.  */
-      if (! TYPE_HAS_CONST_INIT_REF (basetype))
+      if (! TYPE_HAS_CONST_COPY_CTOR (basetype))
 	*cant_have_const_ctor_p = 1;
-      if (TYPE_HAS_ASSIGN_REF (basetype)
-	  && !TYPE_HAS_CONST_ASSIGN_REF (basetype))
+      if (TYPE_HAS_COPY_ASSIGN (basetype)
+	  && !TYPE_HAS_CONST_COPY_ASSIGN (basetype))
 	*no_const_asn_ref_p = 1;
 
       if (BINFO_VIRTUAL_P (base_binfo))
@@ -1311,9 +1311,9 @@ check_bases (tree t,
       TYPE_NEEDS_CONSTRUCTING (t) |= TYPE_NEEDS_CONSTRUCTING (basetype);
       TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
 	|= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (basetype);
-      TYPE_HAS_COMPLEX_ASSIGN_REF (t)
-	|= TYPE_HAS_COMPLEX_ASSIGN_REF (basetype);
-      TYPE_HAS_COMPLEX_INIT_REF (t) |= TYPE_HAS_COMPLEX_INIT_REF (basetype);
+      TYPE_HAS_COMPLEX_COPY_ASSIGN (t)
+	|= TYPE_HAS_COMPLEX_COPY_ASSIGN (basetype);
+      TYPE_HAS_COMPLEX_COPY_CTOR (t) |= TYPE_HAS_COMPLEX_COPY_CTOR (basetype);
       TYPE_POLYMORPHIC_P (t) |= TYPE_POLYMORPHIC_P (basetype);
       CLASSTYPE_CONTAINS_EMPTY_CLASS_P (t)
 	|= CLASSTYPE_CONTAINS_EMPTY_CLASS_P (basetype);
@@ -1541,7 +1541,7 @@ finish_struct_bits (tree t)
      mode to be BLKmode, and force its TREE_ADDRESSABLE bit to be
      nonzero.  This will cause it to be passed by invisible reference
      and prevent it from being returned in a register.  */
-  if (! TYPE_HAS_TRIVIAL_INIT_REF (t) || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
+  if (! TYPE_HAS_TRIVIAL_COPY_CTOR (t) || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
     {
       tree variants;
       DECL_MODE (TYPE_MAIN_DECL (t)) = BLKmode;
@@ -1668,10 +1668,10 @@ maybe_warn_about_overly_private_class (tree t)
 
 	   template <class T> class C { private: C(); };
 
-	 To avoid this asymmetry, we check TYPE_HAS_INIT_REF.  All
+	 To avoid this asymmetry, we check TYPE_HAS_COPY_CTOR.  All
 	 complete non-template or fully instantiated classes have this
 	 flag set.  */
-      if (!TYPE_HAS_INIT_REF (t))
+      if (!TYPE_HAS_COPY_CTOR (t))
 	nonprivate_ctor = 1;
       else
 	for (fn = CLASSTYPE_CONSTRUCTORS (t); fn; fn = OVL_NEXT (fn))
@@ -2643,14 +2643,14 @@ add_implicitly_declared_members (tree t,
 
      If a class definition does not explicitly declare a copy
      constructor, one is declared implicitly.  */
-  if (! TYPE_HAS_INIT_REF (t) && ! TYPE_FOR_JAVA (t))
+  if (! TYPE_HAS_COPY_CTOR (t) && ! TYPE_FOR_JAVA (t))
     {
-      TYPE_HAS_INIT_REF (t) = 1;
-      TYPE_HAS_CONST_INIT_REF (t) = !cant_have_const_cctor;
+      TYPE_HAS_COPY_CTOR (t) = 1;
+      TYPE_HAS_CONST_COPY_CTOR (t) = !cant_have_const_cctor;
       CLASSTYPE_LAZY_COPY_CTOR (t) = 1;
     }
 
-  /* Currently only lambdas get a lazy move ctor, but N2987 adds them for
+  /* Currently only lambdas get a lazy move ctor, but N3053 adds them for
      other classes.  */
   if (LAMBDA_TYPE_P (t))
     CLASSTYPE_LAZY_MOVE_CTOR (t) = 1;
@@ -2659,17 +2659,17 @@ add_implicitly_declared_members (tree t,
      when it is needed.  For now, just record whether or not the type
      of the parameter to the assignment operator will be a const or
      non-const reference.  */
-  if (!TYPE_HAS_ASSIGN_REF (t) && !TYPE_FOR_JAVA (t))
+  if (!TYPE_HAS_COPY_ASSIGN (t) && !TYPE_FOR_JAVA (t))
     {
-      TYPE_HAS_ASSIGN_REF (t) = 1;
-      TYPE_HAS_CONST_ASSIGN_REF (t) = !cant_have_const_assignment;
-      CLASSTYPE_LAZY_ASSIGNMENT_OP (t) = 1;
+      TYPE_HAS_COPY_ASSIGN (t) = 1;
+      TYPE_HAS_CONST_COPY_ASSIGN (t) = !cant_have_const_assignment;
+      CLASSTYPE_LAZY_COPY_ASSIGN (t) = 1;
     }
 
   /* We can't be lazy about declaring functions that might override
      a virtual function from a base class.  */
   if (TYPE_POLYMORPHIC_P (t)
-      && (CLASSTYPE_LAZY_ASSIGNMENT_OP (t)
+      && (CLASSTYPE_LAZY_COPY_ASSIGN (t)
 	  || CLASSTYPE_LAZY_DESTRUCTOR (t)))
     {
       tree binfo = TYPE_BINFO (t);
@@ -2684,8 +2684,8 @@ add_implicitly_declared_members (tree t,
 	      tree fn = BV_FN (bv);
 	      if (DECL_NAME (fn) == opname)
 		{
-		  if (CLASSTYPE_LAZY_ASSIGNMENT_OP (t))
-		    lazily_declare_fn (sfk_assignment_operator, t);
+		  if (CLASSTYPE_LAZY_COPY_ASSIGN (t))
+		    lazily_declare_fn (sfk_copy_assignment, t);
 		}
 	      else if (DECL_DESTRUCTOR_P (fn)
 		       && CLASSTYPE_LAZY_DESTRUCTOR (t))
@@ -2819,7 +2819,7 @@ check_field_decl (tree field,
      the settings of CANT_HAVE_CONST_CTOR and friends.  */
   if (ANON_UNION_TYPE_P (type))
     ;
-  /* And, we don't set TYPE_HAS_CONST_INIT_REF, etc., for anonymous
+  /* And, we don't set TYPE_HAS_CONST_COPY_CTOR, etc., for anonymous
      structs.  So, we recurse through their fields here.  */
   else if (ANON_AGGR_TYPE_P (type))
     {
@@ -2845,7 +2845,7 @@ check_field_decl (tree field,
 		   field);
 	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
 	    error ("member %q+#D with destructor not allowed in union", field);
-	  if (TYPE_HAS_COMPLEX_ASSIGN_REF (type))
+	  if (TYPE_HAS_COMPLEX_COPY_ASSIGN (type))
 	    error ("member %q+#D with copy assignment operator not allowed in union",
 		   field);
 	}
@@ -2854,15 +2854,15 @@ check_field_decl (tree field,
 	  TYPE_NEEDS_CONSTRUCTING (t) |= TYPE_NEEDS_CONSTRUCTING (type);
 	  TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
 	    |= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type);
-	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) |= TYPE_HAS_COMPLEX_ASSIGN_REF (type);
-	  TYPE_HAS_COMPLEX_INIT_REF (t) |= TYPE_HAS_COMPLEX_INIT_REF (type);
+	  TYPE_HAS_COMPLEX_COPY_ASSIGN (t) |= TYPE_HAS_COMPLEX_COPY_ASSIGN (type);
+	  TYPE_HAS_COMPLEX_COPY_CTOR (t) |= TYPE_HAS_COMPLEX_COPY_CTOR (type);
 	  TYPE_HAS_COMPLEX_DFLT (t) |= TYPE_HAS_COMPLEX_DFLT (type);
 	}
 
-      if (!TYPE_HAS_CONST_INIT_REF (type))
+      if (!TYPE_HAS_CONST_COPY_CTOR (type))
 	*cant_have_const_ctor = 1;
 
-      if (!TYPE_HAS_CONST_ASSIGN_REF (type))
+      if (!TYPE_HAS_CONST_COPY_ASSIGN (type))
 	*no_const_asn_ref = 1;
     }
   if (DECL_INITIAL (field) != NULL_TREE)
@@ -3021,7 +3021,7 @@ check_field_decls (tree t, tree *access_decls,
 	     aggregate, initialization by a brace-enclosed list) is the
 	     only way to initialize nonstatic const and reference
 	     members.  */
-	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) = 1;
+	  TYPE_HAS_COMPLEX_COPY_ASSIGN (t) = 1;
 	}
 
       type = strip_array_types (type);
@@ -3107,7 +3107,7 @@ check_field_decls (tree t, tree *access_decls,
 	     aggregate, initialization by a brace-enclosed list) is the
 	     only way to initialize nonstatic const and reference
 	     members.  */
-	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) = 1;
+	  TYPE_HAS_COMPLEX_COPY_ASSIGN (t) = 1;
 	}
       /* A field that is pseudo-const makes the structure likewise.  */
       else if (CLASS_TYPE_P (type))
@@ -3144,18 +3144,18 @@ check_field_decls (tree t, tree *access_decls,
       && has_pointers
       && TYPE_HAS_USER_CONSTRUCTOR (t)
       && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
-      && !(TYPE_HAS_INIT_REF (t) && TYPE_HAS_ASSIGN_REF (t)))
+      && !(TYPE_HAS_COPY_CTOR (t) && TYPE_HAS_COPY_ASSIGN (t)))
     {
       warning (OPT_Weffc__, "%q#T has pointer data members", t);
 
-      if (! TYPE_HAS_INIT_REF (t))
+      if (! TYPE_HAS_COPY_CTOR (t))
 	{
 	  warning (OPT_Weffc__,
 		   "  but does not override %<%T(const %T&)%>", t, t);
-	  if (!TYPE_HAS_ASSIGN_REF (t))
+	  if (!TYPE_HAS_COPY_ASSIGN (t))
 	    warning (OPT_Weffc__, "  or %<operator=(const %T&)%>", t);
 	}
-      else if (! TYPE_HAS_ASSIGN_REF (t))
+      else if (! TYPE_HAS_COPY_ASSIGN (t))
 	warning (OPT_Weffc__,
 		 "  but does not override %<operator=(const %T&)%>", t);
     }
@@ -4375,7 +4375,7 @@ check_bases_and_members (tree t)
   /* Save the initial values of these flags which only indicate whether
      or not the class has user-provided functions.  As we analyze the
      bases and members we can set these flags for other reasons.  */
-  saved_complex_asn_ref = TYPE_HAS_COMPLEX_ASSIGN_REF (t);
+  saved_complex_asn_ref = TYPE_HAS_COMPLEX_COPY_ASSIGN (t);
   saved_nontrivial_dtor = TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t);
 
   /* Check all the data member declarations.  We cannot call
@@ -4393,7 +4393,7 @@ check_bases_and_members (tree t)
 
   /* Do some bookkeeping that will guide the generation of implicitly
      declared member functions.  */
-  TYPE_HAS_COMPLEX_INIT_REF (t) |= TYPE_CONTAINS_VPTR_P (t);
+  TYPE_HAS_COMPLEX_COPY_CTOR (t) |= TYPE_CONTAINS_VPTR_P (t);
   /* We need to call a constructor for this class if it has a
      user-provided constructor, or if the default constructor is going
      to initialize the vptr.  (This is not an if-and-only-if;
@@ -4416,7 +4416,7 @@ check_bases_and_members (tree t)
     |= (CLASSTYPE_NON_AGGREGATE (t)
 	|| saved_nontrivial_dtor || saved_complex_asn_ref);
   CLASSTYPE_NON_STD_LAYOUT (t) |= TYPE_CONTAINS_VPTR_P (t);
-  TYPE_HAS_COMPLEX_ASSIGN_REF (t) |= TYPE_CONTAINS_VPTR_P (t);
+  TYPE_HAS_COMPLEX_COPY_ASSIGN (t) |= TYPE_CONTAINS_VPTR_P (t);
   TYPE_HAS_COMPLEX_DFLT (t) |= TYPE_CONTAINS_VPTR_P (t);
 
   /* If the class has no user-declared constructor, but does have
@@ -4488,8 +4488,8 @@ check_bases_and_members (tree t)
       TYPE_NEEDS_CONSTRUCTING (t) = 1;
       TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 0;
       CLASSTYPE_LAZY_DEFAULT_CTOR (t) = 0;
-      TYPE_HAS_ASSIGN_REF (t) = 0;
-      CLASSTYPE_LAZY_ASSIGNMENT_OP (t) = 0;
+      TYPE_HAS_COPY_ASSIGN (t) = 0;
+      CLASSTYPE_LAZY_COPY_ASSIGN (t) = 0;
 
       /* "This class type is not an aggregate."  */
       CLASSTYPE_NON_AGGREGATE (t) = 1;

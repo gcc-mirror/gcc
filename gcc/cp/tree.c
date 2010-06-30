@@ -479,7 +479,7 @@ build_target_expr_with_type (tree init, tree type)
 
   if (TREE_CODE (init) == TARGET_EXPR)
     return init;
-  else if (CLASS_TYPE_P (type) && !TYPE_HAS_TRIVIAL_INIT_REF (type)
+  else if (CLASS_TYPE_P (type) && !TYPE_HAS_TRIVIAL_COPY_CTOR (type)
 	   && !VOID_TYPE_P (TREE_TYPE (init))
 	   && TREE_CODE (init) != COND_EXPR
 	   && TREE_CODE (init) != CONSTRUCTOR
@@ -2376,7 +2376,7 @@ type_has_nontrivial_copy_init (const_tree t)
   t = strip_array_types (CONST_CAST_TREE (t));
 
   if (CLASS_TYPE_P (t))
-    return TYPE_HAS_COMPLEX_INIT_REF (t);
+    return TYPE_HAS_COMPLEX_COPY_CTOR (t);
   else
     return 0;
 }
@@ -2390,8 +2390,8 @@ trivial_type_p (const_tree t)
 
   if (CLASS_TYPE_P (t))
     return (TYPE_HAS_TRIVIAL_DFLT (t)
-	    && TYPE_HAS_TRIVIAL_INIT_REF (t)
-	    && TYPE_HAS_TRIVIAL_ASSIGN_REF (t)
+	    && TYPE_HAS_TRIVIAL_COPY_CTOR (t)
+	    && TYPE_HAS_TRIVIAL_COPY_ASSIGN (t)
 	    && TYPE_HAS_TRIVIAL_DESTRUCTOR (t));
   else
     return scalarish_type_p (t);
@@ -2832,7 +2832,7 @@ special_function_p (const_tree decl)
   if (DECL_CONSTRUCTOR_P (decl))
     return sfk_constructor;
   if (DECL_OVERLOADED_OPERATOR_P (decl) == NOP_EXPR)
-    return sfk_assignment_operator;
+    return sfk_copy_assignment;
   if (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl))
     return sfk_destructor;
   if (DECL_COMPLETE_DESTRUCTOR_P (decl))
