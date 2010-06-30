@@ -2231,8 +2231,8 @@ DEFHOOK
    change the state if the options are valid.  If the first argument is
    NULL, the second argument specifies the default options to use.  Return
    true if the options are valid, and set the current state.  */
-/* ??? The documentation disagrees on the signature of this hook.  */
-DEFHOOK_UNDOC
+/* ??? The documentation in tm.texi is incomplete.  */
+DEFHOOK
 (pragma_parse,
  "",
  bool, (tree args, tree pop_target),

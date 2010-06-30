@@ -24,6 +24,11 @@
 	Rename regclass AKA class to rclass.
 	* doc/tm.texi: Regenerate.
 
+	* target.def (pragma_parse): Use DEFHOOK.
+	* doc/tm.texi.in (TARGET_OPTION_PRAGMA_PARSE): Use @hook.
+	s/TARGET_VALID_OPTION_ATTRIBUTE_P/TARGET_OPTION_VALID_ATRIBUTE_P/ .
+	* doc/tm.texi: Regenerate.
+
 2010-06-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* toplev.h (_fatal_insn_not_found, _fatal_insn): Move declarations
