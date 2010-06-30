@@ -1,3 +1,11 @@
+2010-06-30  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR bootstrrap/44726
+	* graphite-sese-to-poly.c (build_poly_dr): Avoid uninitialized
+	use.
+	(build_alias_set_optimal_p): Likewise.
+	(build_base_obj_set_for_drs): Likewise.
+
 2010-06-30  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* target.def: Remove comment about licensing problems of function
