@@ -10,6 +10,11 @@
 	* target.def (builtin_reciprocal): Change tm_fn to md_fn.  Use DEFHOOK.
 	* doc/tm.texi.in (TARGET_BUILTIN_RECIPROCAL): Use @hook.
 
+	* target.def (enum_va_list_p): Use DEFHOOK.
+	* doc/tm.texi.in (TARGET_ENUM_VA_LIST_P): Use @hook.
+	Rename ptype to ptree.
+	* doc/tm.texi: Regenerate.
+
 2010-06-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* toplev.h (_fatal_insn_not_found, _fatal_insn): Move declarations
