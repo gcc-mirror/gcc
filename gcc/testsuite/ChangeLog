@@ -1,3 +1,8 @@
+2010-06-30  Michael Matz  <matz@suse.de>
+
+	PR bootstrap/44699
+	* gcc.dg/pr44699.c: New test.
+
 2010-06-30  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR tree-optimization/39799
