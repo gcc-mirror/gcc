@@ -1,3 +1,8 @@
+2010-06-30  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* target.def: Remove comment about licensing problems of function
+	declarations.
+
 2010-06-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* toplev.h (_fatal_insn_not_found, _fatal_insn): Move declarations
