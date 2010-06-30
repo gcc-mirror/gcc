@@ -1778,10 +1778,11 @@ build_poly_dr (data_reference_p dr, poly_bb_p pbb)
 							    accesses);
   ppl_delete_Polyhedron (accesses);
 
-  if (dr->aux)
-    dr_base_object_set = ((base_alias_pair *)(dr->aux))->base_obj_set;
+  gcc_assert (dr->aux);
+  dr_base_object_set = ((base_alias_pair *)(dr->aux))->base_obj_set;
 
-  new_poly_dr (pbb, dr_base_object_set, accesses_ps, DR_IS_READ (dr) ? PDR_READ : PDR_WRITE,
+  new_poly_dr (pbb, dr_base_object_set, accesses_ps,
+	       DR_IS_READ (dr) ? PDR_READ : PDR_WRITE,
 	       dr, DR_NUM_DIMENSIONS (dr));
 }
 
@@ -1923,8 +1924,8 @@ build_alias_set_optimal_p (VEC (data_reference_p, heap) *drs)
       data_reference_p dr = VEC_index (data_reference_p, drs, i);
       base_alias_pair *bap;
 
-      if (dr->aux)
-	bap = (base_alias_pair *)(dr->aux);
+      gcc_assert (dr->aux);
+      bap = (base_alias_pair *)(dr->aux);
 
       bap->alias_set = XNEW (int);
       *(bap->alias_set) = g->vertices[i].component + 1;
@@ -2002,8 +2003,8 @@ build_base_obj_set_for_drs (VEC (data_reference_p, heap) *drs)
       data_reference_p dr = VEC_index (data_reference_p, drs, i);
       base_alias_pair *bap;
 
-      if (dr->aux)
-	bap = (base_alias_pair *)(dr->aux);
+      gcc_assert (dr->aux);
+      bap = (base_alias_pair *)(dr->aux);
 
       bap->base_obj_set = g->vertices[i].component + 1;
     }
