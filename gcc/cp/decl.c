@@ -211,9 +211,9 @@ struct GTY(()) named_label_entry {
      defined, or the inner scope popped.  These are the decls that will
      be skipped when jumping to the label.  */
   tree names_in_scope;
-  /* A tree list of all decls from all binding levels that would be
+  /* A vector of all decls from all binding levels that would be
      crossed by a backward branch to the label.  */
-  tree bad_decls;
+  VEC(tree,gc) *bad_decls;
 
   /* A list of uses of the label, before the label is defined.  */
   struct named_label_use_entry *uses;
@@ -470,7 +470,7 @@ poplevel_named_label_1 (void **slot, void *data)
 
       for (decl = ent->names_in_scope; decl; decl = TREE_CHAIN (decl))
 	if (decl_jump_unsafe (decl))
-	  ent->bad_decls = tree_cons (NULL, decl, ent->bad_decls);
+	  VEC_safe_push (tree, gc, ent->bad_decls, decl);
 
       ent->binding_level = obl;
       ent->names_in_scope = obl->names;
@@ -2651,6 +2651,7 @@ check_goto (tree decl)
   struct named_label_entry *ent, dummy;
   bool saw_catch = false, identified = false;
   tree bad;
+  unsigned ix;
 
   /* We can't know where a computed goto is jumping.
      So we assume that it's OK.  */
@@ -2689,29 +2690,28 @@ check_goto (tree decl)
     }
 
   if (ent->in_try_scope || ent->in_catch_scope
-      || ent->in_omp_scope || ent->bad_decls)
+      || ent->in_omp_scope || !VEC_empty (tree, ent->bad_decls))
     {
       permerror (input_location, "jump to label %q+D", decl);
       permerror (input_location, "  from here");
       identified = true;
     }
 
-  for (bad = ent->bad_decls; bad; bad = TREE_CHAIN (bad))
+  for (ix = 0; VEC_iterate (tree, ent->bad_decls, ix, bad); ix++)
     {
-      tree b = TREE_VALUE (bad);
-      int u = decl_jump_unsafe (b);
+      int u = decl_jump_unsafe (bad);
 
-      if (u > 1 && DECL_ARTIFICIAL (b))
+      if (u > 1 && DECL_ARTIFICIAL (bad))
 	{
 	  /* Can't skip init of __exception_info.  */
-	  error_at (DECL_SOURCE_LOCATION (b), "  enters catch block");
+	  error_at (DECL_SOURCE_LOCATION (bad), "  enters catch block");
 	  saw_catch = true;
 	}
       else if (u > 1)
-	error ("  skips initialization of %q+#D", b);
+	error ("  skips initialization of %q+#D", bad);
       else
 	permerror (input_location, "  enters scope of %q+#D which has "
-		   "non-trivial destructor", b);
+		   "non-trivial destructor", bad);
     }
 
   if (ent->in_try_scope)
