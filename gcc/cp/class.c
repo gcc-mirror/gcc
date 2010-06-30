@@ -3838,7 +3838,9 @@ check_methods (tree t)
 	  if (DECL_PURE_VIRTUAL_P (x))
 	    VEC_safe_push (tree, gc, CLASSTYPE_PURE_VIRTUALS (t), x);
 	}
-      /* All user-provided destructors are non-trivial.  */
+      /* All user-provided destructors are non-trivial.
+         Constructors and assignment ops are handled in
+	 grok_special_member_properties.  */
       if (DECL_DESTRUCTOR_P (x) && user_provided_p (x))
 	TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) = 1;
     }
@@ -4258,6 +4260,21 @@ type_has_user_provided_default_constructor (tree t)
     }
 
   return false;
+}
+
+/* Returns true iff class TYPE has a virtual destructor.  */
+
+bool
+type_has_virtual_destructor (tree type)
+{
+  tree dtor;
+
+  if (!CLASS_TYPE_P (type))
+    return false;
+
+  gcc_assert (COMPLETE_TYPE_P (type));
+  dtor = CLASSTYPE_DESTRUCTORS (type);
+  return (dtor && DECL_VIRTUAL_P (dtor));
 }
 
 /* Remove all zero-width bit-fields from T.  */

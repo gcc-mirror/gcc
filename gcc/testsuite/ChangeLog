@@ -1,3 +1,10 @@
+2010-06-29  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/defaulted19.C: New.
+
+	* g++.dg/expr/string-1.C: Fix for -std=c++0x.
+	* g++.dg/template/error23.C: Fix for -std=c++0x.
+
 2010-06-29  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44718

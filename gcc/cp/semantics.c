@@ -5104,8 +5104,7 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 		  && TYPE_HAS_TRIVIAL_DESTRUCTOR (type1)));
 
     case CPTK_HAS_VIRTUAL_DESTRUCTOR:
-      return (CLASS_TYPE_P (type1)
-	      && (t = locate_dtor (type1, NULL)) && DECL_VIRTUAL_P (t));
+      return type_has_virtual_destructor (type1);
 
     case CPTK_IS_ABSTRACT:
       return (CLASS_TYPE_P (type1) && CLASSTYPE_PURE_VIRTUALS (type1));

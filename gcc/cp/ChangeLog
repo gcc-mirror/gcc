@@ -1,5 +1,13 @@
 2010-06-29  Jason Merrill  <jason@redhat.com>
 
+	* class.c (type_has_virtual_destructor): New.
+	* cp-tree.h: Declare it.
+	* semantics.c (trait_expr_value): Use it.
+
+	* call.c (build_over_call): Only give warnings with tf_warning.
+
+	* name-lookup.c (pop_scope): Handle NULL_TREE.
+
 	* cp-tree.h (TYPE_HAS_ASSIGN_REF): Rename to TYPE_HAS_COPY_ASSIGN.
 	(TYPE_HAS_CONST_ASSIGN_REF): Rename to TYPE_HAS_CONST_COPY_ASSIGN.
 	(TYPE_HAS_INIT_REF): Rename to TYPE_HAS_COPY_CTOR.

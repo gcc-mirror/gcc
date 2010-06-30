@@ -2381,7 +2381,24 @@ type_has_nontrivial_copy_init (const_tree t)
     return 0;
 }
 
-/* Returns 1 iff type T is a trivial type, as defined in [basic.types].  */
+/* Returns 1 iff type T is a trivially copyable type, as defined in
+   [basic.types] and [class].  */
+
+bool
+trivially_copyable_p (const_tree t)
+{
+  t = strip_array_types (CONST_CAST_TREE (t));
+
+  if (CLASS_TYPE_P (t))
+    return (TYPE_HAS_TRIVIAL_COPY_CTOR (t)
+	    && TYPE_HAS_TRIVIAL_COPY_ASSIGN (t)
+	    && TYPE_HAS_TRIVIAL_DESTRUCTOR (t));
+  else
+    return scalarish_type_p (t);
+}
+
+/* Returns 1 iff type T is a trivial type, as defined in [basic.types] and
+   [class].  */
 
 bool
 trivial_type_p (const_tree t)
@@ -2390,9 +2407,7 @@ trivial_type_p (const_tree t)
 
   if (CLASS_TYPE_P (t))
     return (TYPE_HAS_TRIVIAL_DFLT (t)
-	    && TYPE_HAS_TRIVIAL_COPY_CTOR (t)
-	    && TYPE_HAS_TRIVIAL_COPY_ASSIGN (t)
-	    && TYPE_HAS_TRIVIAL_DESTRUCTOR (t));
+	    && trivially_copyable_p (t));
   else
     return scalarish_type_p (t);
 }
