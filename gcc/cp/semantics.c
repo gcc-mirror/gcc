@@ -3527,31 +3527,6 @@ finalize_nrv (tree *tp, tree var, tree result)
   htab_delete (data.visited);
 }
 
-/* Return the declaration for the function called by CALL_EXPR T,
-   TYPE is the class type of the clause decl.  */
-
-static tree
-omp_clause_info_fndecl (tree t, tree type)
-{
-  tree ret = get_callee_fndecl (t);
-
-  if (ret)
-    return ret;
-
-  gcc_assert (TREE_CODE (t) == CALL_EXPR);
-  t = CALL_EXPR_FN (t);
-  STRIP_NOPS (t);
-  if (TREE_CODE (t) == OBJ_TYPE_REF)
-    {
-      t = cp_fold_obj_type_ref (t, type);
-      if (TREE_CODE (t) == ADDR_EXPR
-	  && TREE_CODE (TREE_OPERAND (t, 0)) == FUNCTION_DECL)
-	return TREE_OPERAND (t, 0);
-    }
-
-  return NULL_TREE;
-}
-
 /* Create CP_OMP_CLAUSE_INFO for clause C.  Returns true if it is invalid.  */
 
 bool
@@ -3569,80 +3544,27 @@ cxx_omp_create_clause_info (tree c, tree type, bool need_default_ctor,
   info = make_tree_vec (3);
   CP_OMP_CLAUSE_INFO (c) = info;
 
-  if (need_default_ctor
-      || (need_copy_ctor && !TYPE_HAS_TRIVIAL_COPY_CTOR (type)))
+  if (need_default_ctor || need_copy_ctor)
     {
-      VEC(tree,gc) *vec;
-
       if (need_default_ctor)
-	vec = NULL;
+	t = get_default_ctor (type);
       else
-	{
-	  t = build_int_cst (build_pointer_type (type), 0);
-	  t = build1 (INDIRECT_REF, type, t);
-	  vec = make_tree_vector_single (t);
-	}
-      t = build_special_member_call (NULL_TREE, complete_ctor_identifier,
-				     &vec, type, LOOKUP_NORMAL,
-				     tf_warning_or_error);
+	t = get_copy_ctor (type);
 
-      if (vec != NULL)
-	release_tree_vector (vec);
-
-      if (targetm.cxx.cdtor_returns_this () || errorcount)
-	/* Because constructors and destructors return this,
-	   the call will have been cast to "void".  Remove the
-	   cast here.  We would like to use STRIP_NOPS, but it
-	   wouldn't work here because TYPE_MODE (t) and
-	   TYPE_MODE (TREE_OPERAND (t, 0)) are different.
-	   They are VOIDmode and Pmode, respectively.  */
-	if (TREE_CODE (t) == NOP_EXPR)
-	  t = TREE_OPERAND (t, 0);
-
-      TREE_VEC_ELT (info, 0) = get_callee_fndecl (t);
+      if (t && !trivial_fn_p (t))
+	TREE_VEC_ELT (info, 0) = t;
     }
 
   if ((need_default_ctor || need_copy_ctor)
       && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+    TREE_VEC_ELT (info, 1) = get_dtor (type);
+
+  if (need_copy_assignment)
     {
-      t = build_int_cst (build_pointer_type (type), 0);
-      t = build1 (INDIRECT_REF, type, t);
-      t = build_special_member_call (t, complete_dtor_identifier,
-				     NULL, type, LOOKUP_NORMAL,
-				     tf_warning_or_error);
+      t = get_copy_assign (type);
 
-      if (targetm.cxx.cdtor_returns_this () || errorcount)
-	/* Because constructors and destructors return this,
-	   the call will have been cast to "void".  Remove the
-	   cast here.  We would like to use STRIP_NOPS, but it
-	   wouldn't work here because TYPE_MODE (t) and
-	   TYPE_MODE (TREE_OPERAND (t, 0)) are different.
-	   They are VOIDmode and Pmode, respectively.  */
-	if (TREE_CODE (t) == NOP_EXPR)
-	  t = TREE_OPERAND (t, 0);
-
-      TREE_VEC_ELT (info, 1) = omp_clause_info_fndecl (t, type);
-    }
-
-  if (need_copy_assignment && !TYPE_HAS_TRIVIAL_COPY_ASSIGN (type))
-    {
-      VEC(tree,gc) *vec;
-
-      t = build_int_cst (build_pointer_type (type), 0);
-      t = build1 (INDIRECT_REF, type, t);
-      vec = make_tree_vector_single (t);
-      t = build_special_member_call (t, ansi_assopname (NOP_EXPR),
-				     &vec, type, LOOKUP_NORMAL,
-				     tf_warning_or_error);
-      release_tree_vector (vec);
-
-      /* We'll have called convert_from_reference on the call, which
-	 may well have added an indirect_ref.  It's unneeded here,
-	 and in the way, so kill it.  */
-      if (TREE_CODE (t) == INDIRECT_REF)
-	t = TREE_OPERAND (t, 0);
-
-      TREE_VEC_ELT (info, 2) = omp_clause_info_fndecl (t, type);
+      if (t && !trivial_fn_p (t))
+	TREE_VEC_ELT (info, 2) = t;
     }
 
   return errorcount != save_errorcount;
@@ -5076,7 +4998,7 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
       type1 = strip_array_types (type1);
       return (trait_expr_value (CPTK_HAS_TRIVIAL_CONSTRUCTOR, type1, type2) 
 	      || (CLASS_TYPE_P (type1)
-		  && (t = locate_ctor (type1, NULL))
+		  && (t = locate_ctor (type1))
 		  && TYPE_NOTHROW_P (TREE_TYPE (t))));
 
     case CPTK_HAS_TRIVIAL_CONSTRUCTOR:

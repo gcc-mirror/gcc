@@ -1314,10 +1314,14 @@ check_bases (tree t,
       TYPE_HAS_COMPLEX_COPY_ASSIGN (t)
 	|= TYPE_HAS_COMPLEX_COPY_ASSIGN (basetype);
       TYPE_HAS_COMPLEX_COPY_CTOR (t) |= TYPE_HAS_COMPLEX_COPY_CTOR (basetype);
+      TYPE_HAS_COMPLEX_MOVE_ASSIGN (t)
+	|= TYPE_HAS_COMPLEX_MOVE_ASSIGN (basetype);
+      TYPE_HAS_COMPLEX_MOVE_CTOR (t) |= TYPE_HAS_COMPLEX_MOVE_CTOR (basetype);
       TYPE_POLYMORPHIC_P (t) |= TYPE_POLYMORPHIC_P (basetype);
       CLASSTYPE_CONTAINS_EMPTY_CLASS_P (t)
 	|= CLASSTYPE_CONTAINS_EMPTY_CLASS_P (basetype);
-      TYPE_HAS_COMPLEX_DFLT (t) |= TYPE_HAS_COMPLEX_DFLT (basetype);      
+      TYPE_HAS_COMPLEX_DFLT (t) |= (!TYPE_HAS_DEFAULT_CONSTRUCTOR (basetype)
+				    || TYPE_HAS_COMPLEX_DFLT (basetype));
 
       /*  A standard-layout class is a class that:
 	  ...
@@ -2670,6 +2674,7 @@ add_implicitly_declared_members (tree t,
      a virtual function from a base class.  */
   if (TYPE_POLYMORPHIC_P (t)
       && (CLASSTYPE_LAZY_COPY_ASSIGN (t)
+	  || CLASSTYPE_LAZY_MOVE_ASSIGN (t)
 	  || CLASSTYPE_LAZY_DESTRUCTOR (t)))
     {
       tree binfo = TYPE_BINFO (t);
@@ -2686,6 +2691,8 @@ add_implicitly_declared_members (tree t,
 		{
 		  if (CLASSTYPE_LAZY_COPY_ASSIGN (t))
 		    lazily_declare_fn (sfk_copy_assignment, t);
+		  if (CLASSTYPE_LAZY_MOVE_ASSIGN (t))
+		    lazily_declare_fn (sfk_move_assignment, t);
 		}
 	      else if (DECL_DESTRUCTOR_P (fn)
 		       && CLASSTYPE_LAZY_DESTRUCTOR (t))
@@ -2848,6 +2855,8 @@ check_field_decl (tree field,
 	  if (TYPE_HAS_COMPLEX_COPY_ASSIGN (type))
 	    error ("member %q+#D with copy assignment operator not allowed in union",
 		   field);
+	  /* Don't bother diagnosing move assop now; C++0x has more
+	     flexible unions.  */
 	}
       else
 	{
@@ -2856,7 +2865,10 @@ check_field_decl (tree field,
 	    |= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type);
 	  TYPE_HAS_COMPLEX_COPY_ASSIGN (t) |= TYPE_HAS_COMPLEX_COPY_ASSIGN (type);
 	  TYPE_HAS_COMPLEX_COPY_CTOR (t) |= TYPE_HAS_COMPLEX_COPY_CTOR (type);
-	  TYPE_HAS_COMPLEX_DFLT (t) |= TYPE_HAS_COMPLEX_DFLT (type);
+	  TYPE_HAS_COMPLEX_MOVE_ASSIGN (t) |= TYPE_HAS_COMPLEX_MOVE_ASSIGN (type);
+	  TYPE_HAS_COMPLEX_MOVE_CTOR (t) |= TYPE_HAS_COMPLEX_MOVE_CTOR (type);
+	  TYPE_HAS_COMPLEX_DFLT (t) |= (!TYPE_HAS_DEFAULT_CONSTRUCTOR (type)
+					|| TYPE_HAS_COMPLEX_DFLT (type));
 	}
 
       if (!TYPE_HAS_CONST_COPY_CTOR (type))
@@ -3022,6 +3034,7 @@ check_field_decls (tree t, tree *access_decls,
 	     only way to initialize nonstatic const and reference
 	     members.  */
 	  TYPE_HAS_COMPLEX_COPY_ASSIGN (t) = 1;
+	  TYPE_HAS_COMPLEX_MOVE_ASSIGN (t) = 1;
 	}
 
       type = strip_array_types (type);
@@ -3108,6 +3121,7 @@ check_field_decls (tree t, tree *access_decls,
 	     only way to initialize nonstatic const and reference
 	     members.  */
 	  TYPE_HAS_COMPLEX_COPY_ASSIGN (t) = 1;
+	  TYPE_HAS_COMPLEX_MOVE_ASSIGN (t) = 1;
 	}
       /* A field that is pseudo-const makes the structure likewise.  */
       else if (CLASS_TYPE_P (type))
@@ -4277,6 +4291,50 @@ type_has_virtual_destructor (tree type)
   return (dtor && DECL_VIRTUAL_P (dtor));
 }
 
+/* Returns true iff class T has a move constructor.  */
+
+bool
+type_has_move_constructor (tree t)
+{
+  tree fns;
+
+  if (CLASSTYPE_LAZY_MOVE_CTOR (t))
+    {
+      gcc_assert (COMPLETE_TYPE_P (t));
+      lazily_declare_fn (sfk_move_constructor, t);
+    }
+
+  if (!CLASSTYPE_METHOD_VEC (t))
+    return false;
+
+  for (fns = CLASSTYPE_CONSTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+    if (move_fn_p (OVL_CURRENT (fns)))
+      return true;
+
+  return false;
+}
+
+/* Returns true iff class T has a move assignment operator.  */
+
+bool
+type_has_move_assign (tree t)
+{
+  tree fns;
+
+  if (CLASSTYPE_LAZY_MOVE_ASSIGN (t))
+    {
+      gcc_assert (COMPLETE_TYPE_P (t));
+      lazily_declare_fn (sfk_move_assignment, t);
+    }
+
+  for (fns = lookup_fnfields_slot (t, ansi_assopname (NOP_EXPR));
+       fns; fns = OVL_NEXT (fns))
+    if (move_fn_p (OVL_CURRENT (fns)))
+      return true;
+
+  return false;
+}
+
 /* Remove all zero-width bit-fields from T.  */
 
 static void
@@ -4411,6 +4469,7 @@ check_bases_and_members (tree t)
   /* Do some bookkeeping that will guide the generation of implicitly
      declared member functions.  */
   TYPE_HAS_COMPLEX_COPY_CTOR (t) |= TYPE_CONTAINS_VPTR_P (t);
+  TYPE_HAS_COMPLEX_MOVE_CTOR (t) |= TYPE_CONTAINS_VPTR_P (t);
   /* We need to call a constructor for this class if it has a
      user-provided constructor, or if the default constructor is going
      to initialize the vptr.  (This is not an if-and-only-if;
@@ -4434,6 +4493,7 @@ check_bases_and_members (tree t)
 	|| saved_nontrivial_dtor || saved_complex_asn_ref);
   CLASSTYPE_NON_STD_LAYOUT (t) |= TYPE_CONTAINS_VPTR_P (t);
   TYPE_HAS_COMPLEX_COPY_ASSIGN (t) |= TYPE_CONTAINS_VPTR_P (t);
+  TYPE_HAS_COMPLEX_MOVE_ASSIGN (t) |= TYPE_CONTAINS_VPTR_P (t);
   TYPE_HAS_COMPLEX_DFLT (t) |= TYPE_CONTAINS_VPTR_P (t);
 
   /* If the class has no user-declared constructor, but does have

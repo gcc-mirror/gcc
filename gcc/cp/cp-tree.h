@@ -1307,9 +1307,12 @@ struct GTY(()) lang_type_class {
   unsigned has_complex_dflt : 1;
   unsigned has_list_ctor : 1;
   unsigned non_std_layout : 1;
-  unsigned lazy_move_ctor : 1;
-
   unsigned is_literal : 1;
+
+  unsigned lazy_move_ctor : 1;
+  unsigned lazy_move_assign : 1;
+  unsigned has_complex_move_ctor : 1;
+  unsigned has_complex_move_assign : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -1318,7 +1321,7 @@ struct GTY(()) lang_type_class {
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 7;
+  unsigned dummy : 4;
 
   tree primary_base;
   VEC(tree_pair_s,gc) *vcall_indices;
@@ -1415,6 +1418,11 @@ struct GTY((variable_size)) lang_type {
    -- but that it has not yet been declared.  */
 #define CLASSTYPE_LAZY_COPY_ASSIGN(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->lazy_copy_assign)
+
+/* Nonzero means that NODE (a class type) has an assignment operator
+   -- but that it has not yet been declared.  */
+#define CLASSTYPE_LAZY_MOVE_ASSIGN(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->lazy_move_assign)
 
 /* Nonzero means that NODE (a class type) has a destructor -- but that
    it has not yet been declared.  */
@@ -3166,6 +3174,12 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* Nonzero if there is a non-trivial X::X(cv X&) for this class.  */
 #define TYPE_HAS_COMPLEX_COPY_CTOR(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_copy_ctor)
 
+/* Nonzero if there is a non-trivial X::op=(X&&) for this class.  */
+#define TYPE_HAS_COMPLEX_MOVE_ASSIGN(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_move_assign)
+
+/* Nonzero if there is a non-trivial X::X(X&&) for this class.  */
+#define TYPE_HAS_COMPLEX_MOVE_CTOR(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_move_ctor)
+
 /* Nonzero if there is a non-trivial default constructor for this class.  */
 #define TYPE_HAS_COMPLEX_DFLT(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_dflt)
 
@@ -3869,6 +3883,7 @@ typedef enum special_function_kind {
   sfk_copy_constructor,    /* A copy constructor.  */
   sfk_move_constructor,    /* A move constructor.  */
   sfk_copy_assignment,     /* A copy assignment operator.  */
+  sfk_move_assignment,     /* A move assignment operator.  */
   sfk_destructor,	   /* A destructor.  */
   sfk_complete_destructor, /* A destructor for complete objects.  */
   sfk_base_destructor,     /* A destructor for base subobjects.  */
@@ -4163,12 +4178,21 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
 /* We're inside an init-list, so narrowing conversions are ill-formed.  */
 #define LOOKUP_NO_NARROWING (LOOKUP_PREFER_RVALUE << 1)
 /* Avoid user-defined conversions for the first parameter of a copy
-   constructor.  */
+   constructor (or move constructor).  */
 #define LOOKUP_NO_COPY_CTOR_CONVERSION (LOOKUP_NO_NARROWING << 1)
 /* This is the first parameter of a copy constructor.  */
 #define LOOKUP_COPY_PARM (LOOKUP_NO_COPY_CTOR_CONVERSION << 1)
 /* We only want to consider list constructors.  */
 #define LOOKUP_LIST_ONLY (LOOKUP_COPY_PARM << 1)
+/* Return after determining which function to call and checking access.
+   Used by sythesized_method_walk to determine which functions will
+   be called to initialize subobjects, in order to determine exception
+   specification and possible implicit delete.
+   This is kind of a hack, but since access control doesn't respect SFINAE
+   we can't just use tf_none to avoid access control errors, we need
+   another mechanism.  Exiting early also avoids problems with trying
+   to perform argument conversions when the class isn't complete yet.  */
+#define LOOKUP_SPECULATIVE (LOOKUP_LIST_ONLY << 1)
 
 #define LOOKUP_NAMESPACES_ONLY(F)  \
   (((F) & LOOKUP_PREFER_NAMESPACES) && !((F) & LOOKUP_PREFER_TYPES))
@@ -4656,6 +4680,8 @@ extern bool user_provided_p			(tree);
 extern bool type_has_user_provided_constructor  (tree);
 extern bool type_has_user_provided_default_constructor (tree);
 extern bool type_has_virtual_destructor		(tree);
+extern bool type_has_move_constructor		(tree);
+extern bool type_has_move_assign		(tree);
 extern void defaulted_late_check		(tree);
 extern bool defaultable_fn_check		(tree);
 extern void fixup_type_variants			(tree);
@@ -4921,15 +4947,19 @@ extern void init_method				(void);
 extern tree make_thunk				(tree, bool, tree, tree);
 extern void finish_thunk			(tree);
 extern void use_thunk				(tree, bool);
+extern bool trivial_fn_p			(tree);
+extern bool maybe_explain_implicit_delete	(tree);
 extern void synthesize_method			(tree);
 extern tree lazily_declare_fn			(special_function_kind,
 						 tree);
 extern tree skip_artificial_parms_for		(const_tree, tree);
 extern int num_artificial_parms_for		(const_tree);
 extern tree make_alias_for			(tree, tree);
-extern tree locate_copy				(tree, void *);
-extern tree locate_ctor				(tree, void *);
-extern tree locate_dtor				(tree, void *);
+extern tree get_copy_ctor			(tree);
+extern tree get_copy_assign			(tree);
+extern tree get_default_ctor			(tree);
+extern tree get_dtor				(tree);
+extern tree locate_ctor				(tree);
 
 /* In optimize.c */
 extern bool maybe_clone_body			(tree);
@@ -5070,6 +5100,7 @@ extern int accessible_p				(tree, tree, bool);
 extern tree lookup_field_1			(tree, tree, bool);
 extern tree lookup_field			(tree, tree, int, bool);
 extern int lookup_fnfields_1			(tree, tree);
+extern tree lookup_fnfields_slot		(tree, tree);
 extern int class_method_index_for_fn		(tree, tree);
 extern tree lookup_fnfields			(tree, tree, int);
 extern tree lookup_member			(tree, tree, int, bool);
