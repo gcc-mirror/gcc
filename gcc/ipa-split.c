@@ -931,6 +931,13 @@ split_function (struct split_point *split_point)
 	  if (!VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))))
 	    {
 	      retval = DECL_RESULT (current_function_decl);
+
+	      /* We use temporary register to hold value when aggregate_value_p
+		 is false.  Similarly for DECL_BY_REFERENCE we must avoid extra
+		 copy.  */
+	      if (!aggregate_value_p (retval, TREE_TYPE (current_function_decl))
+		  && !DECL_BY_REFERENCE (retval))
+		retval = create_tmp_reg (TREE_TYPE (retval), NULL);
 	      if (is_gimple_reg (retval))
 		retval = make_ssa_name (retval, call);
 	      gimple_call_set_lhs (call, retval);
