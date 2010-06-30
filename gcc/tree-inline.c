@@ -234,6 +234,7 @@ remap_ssa_name (tree name, copy_body_data *id)
 	     regions of the CFG, but this is expensive to test.  */
 	  if (id->entry_bb
 	      && is_gimple_reg (SSA_NAME_VAR (name))
+	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name)
 	      && TREE_CODE (SSA_NAME_VAR (name)) != PARM_DECL
 	      && (id->entry_bb != EDGE_SUCC (ENTRY_BLOCK_PTR, 0)->dest
 		  || EDGE_COUNT (id->entry_bb->preds) != 1))
