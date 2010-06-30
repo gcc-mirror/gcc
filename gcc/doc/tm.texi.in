@@ -6644,8 +6644,7 @@ be issued.
 The default is that any ready insns can be chosen to be issued.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_DFA_NEW_CYCLE (FILE *@var{dump}, int @var{verbose}, rtx @var{insn}, int @var{last_clock}, int @var{clock}, int *@var{sort_p})
-
+@hook TARGET_SCHED_DFA_NEW_CYCLE
 This hook is called by the insn scheduler before issuing @var{insn}
 on cycle @var{clock}.  If the hook returns nonzero,
 @var{insn} is not issued on this processor cycle.  Instead,

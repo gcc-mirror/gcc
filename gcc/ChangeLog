@@ -43,6 +43,11 @@
 	Rename stack-size to size.
 	* doc/tm.texi: Regenerate.
 
+	* target.def (dfa_new_cycle): Use DEFHOOK.  Rename dump_file to dump,
+	last-sched_cycle to last_clock, cur_cycle to clock.
+	* doc/tm.texi.in: Use @hook.
+	* doc/tm.texi: Regenerate.
+
 2010-06-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* toplev.h (_fatal_insn_not_found, _fatal_insn): Move declarations
