@@ -1,3 +1,41 @@
+2010-06-29  Jason Merrill  <jason@redhat.com>
+
+	* 19_diagnostics/error_category/cons/copy_neg.cc: Adjust expected
+	errors, use dg-prune-output.
+	* 20_util/function/cmp/cmp_neg.cc: Likewise.
+	* 20_util/unique_ptr/assign/assign_neg.cc: Likewise.
+	* 20_util/unique_ptr/cons/pointer_array_convertible.cc: Likewise.
+	* 20_util/unique_ptr/modifiers/reset_neg.cc: Likewise.
+	* 29_atomics/atomic/cons/assign_neg.cc: Likewise.
+	* 29_atomics/atomic/cons/copy_neg.cc: Likewise.
+	* 29_atomics/atomic_address/cons/assign_neg.cc: Likewise.
+	* 29_atomics/atomic_address/cons/copy_neg.cc: Likewise.
+	* 29_atomics/atomic_flag/cons/assign_neg.cc: Likewise.
+	* 29_atomics/atomic_flag/cons/copy_neg.cc: Likewise.
+	* 29_atomics/atomic_integral/cons/assign_neg.cc: Likewise.
+	* 29_atomics/atomic_integral/cons/copy_neg.cc: Likewise.
+	* 29_atomics/condition_variable/cons/assign_neg.cc: Likewise.
+	* 30_threads/condition_variable/cons/copy_neg.cc: Likewise.
+	* 30_threads/condition_variable_any/cons/assign_neg.cc: Likewise.
+	* 30_threads/condition_variable_any/cons/copy_neg.cc: Likewise.
+	* 30_threads/future/cons/assign_neg.cc: Likewise.
+	* 30_threads/future/cons/copy_neg.cc: Likewise.
+	* 30_threads/mutex/cons/assign_neg.cc: Likewise.
+	* 30_threads/mutex/cons/copy_neg.cc: Likewise.
+	* 30_threads/packaged_task/cons/assign_neg.cc: Likewise.
+	* 30_threads/packaged_task/cons/copy_neg.cc: Likewise.
+	* 30_threads/promise/cons/assign_neg.cc: Likewise.
+	* 30_threads/promise/cons/copy_neg.cc: Likewise.
+	* 30_threads/recursive_mutex/cons/assign_neg.cc: Likewise.
+	* 30_threads/recursive_mutex/cons/copy_neg.cc: Likewise.
+	* 30_threads/recursive_timed_mutex/cons/assign_neg.cc: Likewise.
+	* 30_threads/recursive_timed_mutex/cons/copy_neg.cc: Likewise.
+	* 30_threads/thread/cons/assign_neg.cc: Likewise.
+	* 30_threads/thread/cons/copy_neg.cc: Likewise.
+	* 30_threads/timed_mutex/cons/assign_neg.cc: Likewise.
+	* 30_threads/timed_mutex/cons/copy_neg.cc: Likewise.
+	* ext/ext_pointer/1_neg.cc: Likewise.
+
 2010-06-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/44708

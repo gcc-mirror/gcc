@@ -4110,8 +4110,9 @@ mark_used (tree decl)
 	      return;
 	    }
 	}
-      error ("deleted function %q+D", decl);
-      error ("used here");
+      error ("use of deleted function %qD", decl);
+      if (!maybe_explain_implicit_delete (decl))
+	error_at (DECL_SOURCE_LOCATION (decl), "declared here");
       return;
     }
   /* If we don't need a value, then we don't need to synthesize DECL.  */

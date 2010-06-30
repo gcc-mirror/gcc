@@ -29,4 +29,4 @@ int main()
 }
 
 // { dg-error "ambiguous" "" { target *-*-* } 522 }
-// { dg-excess-errors "In member function" }
+// { dg-prune-output "include" }

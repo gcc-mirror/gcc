@@ -32,8 +32,7 @@ struct B : A
 void test01()
 {
   std::unique_ptr<B[]> up;
-  up.reset(new A[3]);
+  up.reset(new A[3]);		// { dg-error "deleted" }
 }
 
-// { dg-error "used here" "" { target *-*-* } 35 } 
-// { dg-error "deleted function" "" { target *-*-* } 363 }
+// { dg-prune-output "include" }

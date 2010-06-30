@@ -28,4 +28,4 @@ void test01()
   test_type t2;
   t1 = t2;			// { dg-error "ambiguous" }
 }
-// { dg-excess-errors "deleted function" }
+// { dg-prune-output "include" }

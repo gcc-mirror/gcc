@@ -5,7 +5,7 @@
 struct A
 {
   A();
-  A(const A& a) = delete;	// { dg-error "deleted" }
+  A(const A& a) = delete;	// { dg-error "declared" }
 };
 
 int main()

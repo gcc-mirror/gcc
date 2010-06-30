@@ -28,8 +28,7 @@ void test01()
   // assign
   typedef std::recursive_timed_mutex mutex_type;
   mutex_type m1;
-  mutex_type m2(m1);
+  mutex_type m2(m1);		// { dg-error "deleted" }
 }
 
-// { dg-error "used here" "" { target *-*-* } 31 } 
-// { dg-error "deleted function" "" { target *-*-* } 296 }
+// { dg-prune-output "include" }

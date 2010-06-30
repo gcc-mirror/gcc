@@ -28,19 +28,5 @@ int main()
   return 0;
 }
 
-// { dg-error "used here" "" { target *-*-* } 561 }
-// { dg-error "deleted function" "" { target *-*-* } 229 }
-// { dg-error "deleted function" "" { target *-*-* } 247 }
-// { dg-error "deleted function" "" { target *-*-* } 265 }
-// { dg-error "deleted function" "" { target *-*-* } 283 }
-// { dg-error "deleted function" "" { target *-*-* } 301 }
-// { dg-error "deleted function" "" { target *-*-* } 319 }
-// { dg-error "deleted function" "" { target *-*-* } 337 }
-// { dg-error "deleted function" "" { target *-*-* } 355 }
-// { dg-error "deleted function" "" { target *-*-* } 373 }
-// { dg-error "deleted function" "" { target *-*-* } 391 }
-// { dg-error "deleted function" "" { target *-*-* } 409 }
-// { dg-error "deleted function" "" { target *-*-* } 427 }
-// { dg-error "deleted function" "" { target *-*-* } 445 }
-// { dg-error "deleted function" "" { target *-*-* } 463 }
-// { dg-error "deleted function" "" { target *-*-* } 481 }
+// { dg-error "deleted" "" { target *-*-* } 561 }
+// { dg-prune-output "include" }

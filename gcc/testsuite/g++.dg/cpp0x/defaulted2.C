@@ -41,7 +41,7 @@ struct E
 struct F
 {
   F() = default;
-  F(const F&) = delete;		// { dg-error "deleted" }
+  F(const F&) = delete;		// { dg-error "declared" }
 };
 
 struct G
@@ -60,7 +60,7 @@ union U
 int main()
 {
   F f;
-  F f2(f);			// { dg-error "used" }
+  F f2(f);			// { dg-error "use" }
   B* b = new const B;		// { dg-error "uninitialized const" }
 }
 

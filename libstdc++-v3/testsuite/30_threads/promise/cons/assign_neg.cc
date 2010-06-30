@@ -29,8 +29,7 @@ void test01()
   // assign
   std::promise<int> p1;
   std::promise<int> p2;
-  p1 = p2;
+  p1 = p2;			// { dg-error "deleted" }
 }
 
-// { dg-error "used here" "" { target *-*-* } 32 }
-// { dg-error "deleted function" "" { target *-*-* } 871 }
+// { dg-prune-output "include" }

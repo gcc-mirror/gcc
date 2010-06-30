@@ -91,8 +91,4 @@ void test01(void) {
   aptr5 = __const_pointer_cast<B_pointer>(cbptr);  // ok
 }
 
-// { dg-error "invalid conversion " "" { target *-*-* } 314 }
-// { dg-error "invalid conversion " "" { target *-*-* } 308 }
-// { dg-error "invalid conversion " "" { target *-*-* } 331 }
-// { dg-error "invalid conversion " "" { target *-*-* } 339 }
-// { dg-excess-errors "In constructor" }
+// { dg-prune-output "include" }

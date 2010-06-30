@@ -28,8 +28,7 @@ void test01()
 {
   // copy
   std::promise<int> p1;
-  std::promise<int> p2(p1);
+  std::promise<int> p2(p1);	// { dg-error "deleted" }
 }
 
-// { dg-error "used here" "" { target *-*-* } 31 }
-// { dg-error "deleted function" "" { target *-*-* } 855 }
+// { dg-prune-output "include" }

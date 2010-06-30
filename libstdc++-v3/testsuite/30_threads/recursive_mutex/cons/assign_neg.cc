@@ -29,8 +29,7 @@ void test01()
   typedef std::recursive_mutex mutex_type;
   mutex_type m1;
   mutex_type m2;
-  m1 = m2;
+  m1 = m2;			// { dg-error "deleted" }
 }
 
-// { dg-error "used here" "" { target *-*-* } 32 } 
-// { dg-error "deleted function" "" { target *-*-* } 134 }
+// { dg-prune-output "include" }

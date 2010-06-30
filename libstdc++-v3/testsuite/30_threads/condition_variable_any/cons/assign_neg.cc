@@ -28,8 +28,7 @@ void test01()
   // assign
   std::condition_variable_any c1;
   std::condition_variable_any c2;
-  c1 = c2;
+  c1 = c2;			// { dg-error "deleted" }
 }
 
-// { dg-error "used here" "" { target *-*-* } 31 }
-// { dg-error "deleted function" "" { target *-*-* } 179 }
+// { dg-prune-output "include" }
