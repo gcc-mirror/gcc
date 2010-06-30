@@ -1,6 +1,16 @@
 2010-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2010-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/43866
+	* tree-ssa-loop-unswitch.c (tree_may_unswitch_on): If stmt is always
+	true or always false, return NULL_TREE.
+	(tree_unswitch_single_loop): Optimize conditions even when reaching
+	max-unswitch-level parameter.  If num > 0, optimize first all conditions
+	using entry checks, then do still reachable block discovery and consider
+	only conditions in still reachable basic blocks in the loop.
+
 	2010-05-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/42278
