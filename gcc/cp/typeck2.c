@@ -714,7 +714,7 @@ store_init_value (tree decl, tree init, int flags)
 
   if (MAYBE_CLASS_TYPE_P (type))
     {
-      gcc_assert (TYPE_HAS_TRIVIAL_INIT_REF (type)
+      gcc_assert (TYPE_HAS_TRIVIAL_COPY_CTOR (type)
 		  || TREE_CODE (init) == CONSTRUCTOR);
 
       if (TREE_CODE (init) == TREE_LIST)

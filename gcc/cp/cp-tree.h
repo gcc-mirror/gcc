@@ -1239,11 +1239,11 @@ struct GTY(()) lang_type_header {
   BOOL_BITFIELD is_lang_type_class : 1;
 
   BOOL_BITFIELD has_type_conversion : 1;
-  BOOL_BITFIELD has_init_ref : 1;
+  BOOL_BITFIELD has_copy_ctor : 1;
   BOOL_BITFIELD has_default_ctor : 1;
   BOOL_BITFIELD const_needs_init : 1;
   BOOL_BITFIELD ref_needs_init : 1;
-  BOOL_BITFIELD has_const_assign_ref : 1;
+  BOOL_BITFIELD has_const_copy_assign : 1;
 
   BOOL_BITFIELD spare : 1;
 };
@@ -1271,7 +1271,7 @@ struct GTY(()) lang_type_class {
   unsigned non_pod_class : 1;
   unsigned nearly_empty_p : 1;
   unsigned user_align : 1;
-  unsigned has_assign_ref : 1;
+  unsigned has_copy_assign : 1;
   unsigned has_new : 1;
   unsigned has_array_new : 1;
 
@@ -1297,17 +1297,18 @@ struct GTY(()) lang_type_class {
   unsigned was_anonymous : 1;
   unsigned lazy_default_ctor : 1;
   unsigned lazy_copy_ctor : 1;
-  unsigned lazy_assignment_op : 1;
+  unsigned lazy_copy_assign : 1;
   unsigned lazy_destructor : 1;
 
-  unsigned has_const_init_ref : 1;
-  unsigned has_complex_init_ref : 1;
-  unsigned has_complex_assign_ref : 1;
+  unsigned has_const_copy_ctor : 1;
+  unsigned has_complex_copy_ctor : 1;
+  unsigned has_complex_copy_assign : 1;
   unsigned non_aggregate : 1;
   unsigned has_complex_dflt : 1;
   unsigned has_list_ctor : 1;
   unsigned non_std_layout : 1;
   unsigned lazy_move_ctor : 1;
+
   unsigned is_literal : 1;
 
   /* When adding a flag here, consider whether or not it ought to
@@ -1412,8 +1413,8 @@ struct GTY((variable_size)) lang_type {
 
 /* Nonzero means that NODE (a class type) has an assignment operator
    -- but that it has not yet been declared.  */
-#define CLASSTYPE_LAZY_ASSIGNMENT_OP(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->lazy_assignment_op)
+#define CLASSTYPE_LAZY_COPY_ASSIGN(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->lazy_copy_assign)
 
 /* Nonzero means that NODE (a class type) has a destructor -- but that
    it has not yet been declared.  */
@@ -1421,17 +1422,17 @@ struct GTY((variable_size)) lang_type {
   (LANG_TYPE_CLASS_CHECK (NODE)->lazy_destructor)
 
 /* Nonzero means that this _CLASSTYPE node overloads operator=(X&).  */
-#define TYPE_HAS_ASSIGN_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_assign_ref)
+#define TYPE_HAS_COPY_ASSIGN(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_copy_assign)
 
 /* True iff the class type NODE has an "operator =" whose parameter
    has a parameter of type "const X&".  */
-#define TYPE_HAS_CONST_ASSIGN_REF(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->h.has_const_assign_ref)
+#define TYPE_HAS_CONST_COPY_ASSIGN(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->h.has_const_copy_assign)
 
 /* Nonzero means that this _CLASSTYPE node has an X(X&) constructor.  */
-#define TYPE_HAS_INIT_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->h.has_init_ref)
-#define TYPE_HAS_CONST_INIT_REF(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->has_const_init_ref)
+#define TYPE_HAS_COPY_CTOR(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->h.has_copy_ctor)
+#define TYPE_HAS_CONST_COPY_CTOR(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->has_const_copy_ctor)
 
 /* Nonzero if this class has an X(initializer_list<T>) constructor.  */
 #define TYPE_HAS_LIST_CTOR(NODE) \
@@ -3159,13 +3160,13 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define TYPE_NON_AGGREGATE_CLASS(NODE) \
   (CLASS_TYPE_P (NODE) && CLASSTYPE_NON_AGGREGATE (NODE))
 
-/* Nonzero if there is a user-defined X::op=(x&) for this class.  */
-#define TYPE_HAS_COMPLEX_ASSIGN_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_assign_ref)
+/* Nonzero if there is a non-trivial X::op=(cv X&) for this class.  */
+#define TYPE_HAS_COMPLEX_COPY_ASSIGN(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_copy_assign)
 
-/* Nonzero if there is a user-defined X::X(x&) for this class.  */
-#define TYPE_HAS_COMPLEX_INIT_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_init_ref)
+/* Nonzero if there is a non-trivial X::X(cv X&) for this class.  */
+#define TYPE_HAS_COMPLEX_COPY_CTOR(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_copy_ctor)
 
-/* Nonzero if there is a user-defined default constructor for this class.  */
+/* Nonzero if there is a non-trivial default constructor for this class.  */
 #define TYPE_HAS_COMPLEX_DFLT(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_complex_dflt)
 
 /* Nonzero if TYPE has a trivial destructor.  From [class.dtor]:
@@ -3195,13 +3196,13 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
 /* Nonzero for class type means that copy initialization of this type can use
    a bitwise copy.  */
-#define TYPE_HAS_TRIVIAL_INIT_REF(NODE) \
-  (TYPE_HAS_INIT_REF (NODE) && ! TYPE_HAS_COMPLEX_INIT_REF (NODE))
+#define TYPE_HAS_TRIVIAL_COPY_CTOR(NODE) \
+  (TYPE_HAS_COPY_CTOR (NODE) && ! TYPE_HAS_COMPLEX_COPY_CTOR (NODE))
 
 /* Nonzero for class type means that assignment of this type can use
    a bitwise copy.  */
-#define TYPE_HAS_TRIVIAL_ASSIGN_REF(NODE) \
-  (TYPE_HAS_ASSIGN_REF (NODE) && ! TYPE_HAS_COMPLEX_ASSIGN_REF (NODE))
+#define TYPE_HAS_TRIVIAL_COPY_ASSIGN(NODE) \
+  (TYPE_HAS_COPY_ASSIGN (NODE) && ! TYPE_HAS_COMPLEX_COPY_ASSIGN (NODE))
 
 /* Returns true if NODE is a pointer-to-data-member.  */
 #define TYPE_PTRMEM_P(NODE)			\
@@ -3867,7 +3868,7 @@ typedef enum special_function_kind {
   sfk_constructor,	   /* A constructor.  */
   sfk_copy_constructor,    /* A copy constructor.  */
   sfk_move_constructor,    /* A move constructor.  */
-  sfk_assignment_operator, /* An assignment operator.  */
+  sfk_copy_assignment,     /* A copy assignment operator.  */
   sfk_destructor,	   /* A destructor.  */
   sfk_complete_destructor, /* A destructor for complete objects.  */
   sfk_base_destructor,     /* A destructor for base subobjects.  */

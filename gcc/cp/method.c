@@ -57,7 +57,7 @@ enum mangling_flags
 
 typedef enum mangling_flags mangling_flags;
 
-static void do_build_assign_ref (tree);
+static void do_build_copy_assign (tree);
 static void do_build_copy_constructor (tree);
 static tree synthesize_exception_spec (tree, tree (*) (tree, void *), void *);
 static tree make_alias_for_thunk (tree);
@@ -410,11 +410,11 @@ do_build_copy_constructor (tree fndecl)
 
   parm = convert_from_reference (parm);
 
-  if (TYPE_HAS_TRIVIAL_INIT_REF (current_class_type)
+  if (TYPE_HAS_TRIVIAL_COPY_CTOR (current_class_type)
       && is_empty_class (current_class_type))
     /* Don't copy the padding byte; it might not have been allocated
        if *this is a base subobject.  */;
-  else if (TYPE_HAS_TRIVIAL_INIT_REF (current_class_type))
+  else if (TYPE_HAS_TRIVIAL_COPY_CTOR (current_class_type))
     {
       tree t = build2 (INIT_EXPR, void_type_node, current_class_ref, parm);
       finish_expr_stmt (t);
@@ -508,7 +508,7 @@ do_build_copy_constructor (tree fndecl)
 }
 
 static void
-do_build_assign_ref (tree fndecl)
+do_build_copy_assign (tree fndecl)
 {
   tree parm = TREE_CHAIN (DECL_ARGUMENTS (fndecl));
   tree compound_stmt;
@@ -516,11 +516,11 @@ do_build_assign_ref (tree fndecl)
   compound_stmt = begin_compound_stmt (0);
   parm = convert_from_reference (parm);
 
-  if (TYPE_HAS_TRIVIAL_ASSIGN_REF (current_class_type)
+  if (TYPE_HAS_TRIVIAL_COPY_ASSIGN (current_class_type)
       && is_empty_class (current_class_type))
     /* Don't copy the padding byte; it might not have been allocated
        if *this is a base subobject.  */;
-  else if (TYPE_HAS_TRIVIAL_ASSIGN_REF (current_class_type))
+  else if (TYPE_HAS_TRIVIAL_COPY_ASSIGN (current_class_type))
     {
       tree t = build2 (MODIFY_EXPR, void_type_node, current_class_ref, parm);
       finish_expr_stmt (t);
@@ -657,7 +657,7 @@ synthesize_method (tree fndecl)
 
   if (DECL_OVERLOADED_OPERATOR_P (fndecl) == NOP_EXPR)
     {
-      do_build_assign_ref (fndecl);
+      do_build_copy_assign (fndecl);
       need_body = false;
     }
   else if (DECL_CONSTRUCTOR_P (fndecl))
@@ -806,7 +806,7 @@ locate_copy (tree type, void *client_)
 	return NULL_TREE;
       fns = VEC_index (tree, CLASSTYPE_METHOD_VEC (type), ix);
     }
-  else if (TYPE_HAS_INIT_REF (type))
+  else if (TYPE_HAS_COPY_CTOR (type))
     {
       /* If construction of the copy constructor was postponed, create
 	 it now.  */
@@ -913,14 +913,14 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
       break;
 
     case sfk_copy_constructor:
-    case sfk_assignment_operator:
+    case sfk_copy_assignment:
     case sfk_move_constructor:
     {
       struct copy_data data;
 
       data.name = NULL;
       data.quals = 0;
-      if (kind == sfk_assignment_operator)
+      if (kind == sfk_copy_assignment)
 	{
 	  return_type = build_reference_type (type);
 	  name = ansi_assopname (NOP_EXPR);
@@ -1057,7 +1057,7 @@ defaultable_fn_check (tree fn)
   else if (DECL_ASSIGNMENT_OPERATOR_P (fn)
 	   && DECL_OVERLOADED_OPERATOR_P (fn) == NOP_EXPR
 	   && copy_fn_p (fn))
-    kind = sfk_assignment_operator;
+    kind = sfk_copy_assignment;
 
   if (kind == sfk_none)
     {
@@ -1108,9 +1108,9 @@ lazily_declare_fn (special_function_kind sfk, tree type)
   /* Figure out whether or not the argument has a const reference
      type.  */
   if (sfk == sfk_copy_constructor)
-    const_p = TYPE_HAS_CONST_INIT_REF (type);
-  else if (sfk == sfk_assignment_operator)
-    const_p = TYPE_HAS_CONST_ASSIGN_REF (type);
+    const_p = TYPE_HAS_CONST_COPY_CTOR (type);
+  else if (sfk == sfk_copy_assignment)
+    const_p = TYPE_HAS_CONST_COPY_ASSIGN (type);
   else
     /* In this case, CONST_P will be ignored.  */
     const_p = false;
@@ -1118,7 +1118,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
   fn = implicitly_declare_fn (sfk, type, const_p);
   /* A destructor may be virtual.  */
   if (sfk == sfk_destructor
-      || sfk == sfk_assignment_operator)
+      || sfk == sfk_copy_assignment)
     check_for_override (fn, type);
   /* Add it to CLASSTYPE_METHOD_VEC.  */
   add_method (type, fn, NULL_TREE);
@@ -1143,8 +1143,8 @@ lazily_declare_fn (special_function_kind sfk, tree type)
       TYPE_METHODS (type) = fn;
     }
   maybe_add_class_template_decl_list (type, fn, /*friend_p=*/0);
-  if (sfk == sfk_assignment_operator)
-    CLASSTYPE_LAZY_ASSIGNMENT_OP (type) = 0;
+  if (sfk == sfk_copy_assignment)
+    CLASSTYPE_LAZY_COPY_ASSIGN (type) = 0;
   else
     {
       /* Remember that the function has been created.  */

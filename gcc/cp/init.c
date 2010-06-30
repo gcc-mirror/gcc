@@ -2834,7 +2834,7 @@ build_vec_init (tree base, tree maxindex, tree init,
       && TREE_CODE (atype) == ARRAY_TYPE
       && (from_array == 2
 	  ? (!CLASS_TYPE_P (inner_elt_type)
-	     || !TYPE_HAS_COMPLEX_ASSIGN_REF (inner_elt_type))
+	     || !TYPE_HAS_COMPLEX_COPY_ASSIGN (inner_elt_type))
 	  : !TYPE_NEEDS_CONSTRUCTING (type))
       && ((TREE_CODE (init) == CONSTRUCTOR
 	   /* Don't do this if the CONSTRUCTOR might contain something
