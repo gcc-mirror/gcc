@@ -33,6 +33,11 @@
 	* doc/tm.texi.in (TARGET_PASS_BY_REFERENCE): Use @hook.
 	* doc/tm.texi: Regenerate.
 
+	* target.def (resolve_overloaded_builtin): Rename params to arglist.
+	Use DEFHOOK.
+	* doc/tm.texi.in (TARGET_RESOLVE_OVERLOADED_BUILTIN): Use @hook.
+	* doc/tm.texi: Regenerate.
+
 2010-06-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* toplev.h (_fatal_insn_not_found, _fatal_insn): Move declarations
