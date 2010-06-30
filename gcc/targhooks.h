@@ -115,13 +115,13 @@ extern rtx default_internal_arg_pointer (void);
 extern rtx default_static_chain (const_tree, bool);
 extern void default_trampoline_init (rtx, tree, rtx);
 extern int default_return_pops_args (tree, tree, int);
-extern enum reg_class default_branch_target_register_class (void);
+extern reg_class_t default_branch_target_register_class (void);
 #ifdef IRA_COVER_CLASSES
-extern const enum reg_class *default_ira_cover_classes (void);
+extern const reg_class_t *default_ira_cover_classes (void);
 #endif
-extern enum reg_class default_secondary_reload (bool, rtx, enum reg_class,
-						enum machine_mode,
-						secondary_reload_info *);
+extern reg_class_t default_secondary_reload (bool, rtx, reg_class_t,
+					     enum machine_mode,
+					     secondary_reload_info *);
 extern void default_target_option_override (void);
 extern void hook_void_bitmap (bitmap);
 extern bool default_handle_c_option (size_t, const char *, int);
@@ -147,7 +147,7 @@ extern bool default_addr_space_subset_p (addr_space_t, addr_space_t);
 extern rtx default_addr_space_convert (rtx, tree, tree);
 extern unsigned int default_case_values_threshold (void);
 extern bool default_have_conditional_execution (void);
-extern int default_memory_move_cost (enum machine_mode, enum reg_class, bool);
-extern int default_register_move_cost (enum machine_mode, enum reg_class,
-				       enum reg_class);
+extern int default_memory_move_cost (enum machine_mode, reg_class_t, bool);
+extern int default_register_move_cost (enum machine_mode, reg_class_t,
+				       reg_class_t);
 

@@ -7506,8 +7506,10 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 
 	  sri.icode = CODE_FOR_nothing;
 	  sri.prev_sri = NULL;
-	  new_class = targetm.secondary_reload (1, real_oldequiv, rl->rclass,
-						mode, &sri);
+	  new_class
+	    = (enum reg_class) targetm.secondary_reload (1, real_oldequiv,
+							 rl->rclass, mode,
+							 &sri);
 
 	  if (new_class == NO_REGS && sri.icode == CODE_FOR_nothing)
 	    second_reload_reg = 0;
@@ -7533,8 +7535,10 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 	    {
 	      sri2.icode = CODE_FOR_nothing;
 	      sri2.prev_sri = &sri;
-	      new_t_class = targetm.secondary_reload (1, real_oldequiv,
-						      new_class, mode, &sri);
+	      new_t_class
+		= (enum reg_class) targetm.secondary_reload (1, real_oldequiv,
+							     new_class, mode,
+							     &sri);
 	      if (new_t_class == NO_REGS && sri2.icode == CODE_FOR_nothing)
 		{
 		  if (reload_adjust_reg_for_temp (&second_reload_reg,

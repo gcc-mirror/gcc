@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Tensilica's Xtensa architecture.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
@@ -3089,8 +3089,8 @@ xtensa_preferred_reload_class (rtx x, enum reg_class rclass, int isoutput)
 }
 
 
-enum reg_class
-xtensa_secondary_reload (bool in_p, rtx x, enum reg_class rclass,
+reg_class_t
+xtensa_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
 			 enum machine_mode mode, secondary_reload_info *sri)
 {
   int regno;

@@ -807,28 +807,29 @@ default_return_pops_args (tree fundecl ATTRIBUTE_UNUSED,
   return 0;
 }
 
-enum reg_class
+reg_class_t
 default_branch_target_register_class (void)
 {
   return NO_REGS;
 }
 
 #ifdef IRA_COVER_CLASSES
-const enum reg_class *
+const reg_class_t *
 default_ira_cover_classes (void)
 {
-  static enum reg_class classes[] = IRA_COVER_CLASSES;
+  static reg_class_t classes[] = IRA_COVER_CLASSES;
   return classes;
 }
 #endif
 
-enum reg_class
+reg_class_t
 default_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
-			  enum reg_class reload_class ATTRIBUTE_UNUSED,
+			  reg_class_t reload_class_i ATTRIBUTE_UNUSED,
 			  enum machine_mode reload_mode ATTRIBUTE_UNUSED,
 			  secondary_reload_info *sri)
 {
   enum reg_class rclass = NO_REGS;
+  enum reg_class reload_class = (enum reg_class) reload_class_i;
 
   if (sri->prev_sri && sri->prev_sri->t_icode != CODE_FOR_nothing)
     {
@@ -1176,13 +1177,13 @@ default_have_conditional_execution (void)
 
 int
 default_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
-			  enum reg_class rclass ATTRIBUTE_UNUSED,
+			  reg_class_t rclass ATTRIBUTE_UNUSED,
 			  bool in ATTRIBUTE_UNUSED)
 {
 #ifndef MEMORY_MOVE_COST
-    return (4 + memory_move_secondary_cost (mode, rclass, in));
+    return (4 + memory_move_secondary_cost (mode, (enum reg_class) rclass, in));
 #else
-    return MEMORY_MOVE_COST (mode, rclass, in);
+    return MEMORY_MOVE_COST (mode, (enum reg_class) rclass, in);
 #endif
 }
 
@@ -1191,13 +1192,13 @@ default_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 
 int
 default_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
-                            enum reg_class from ATTRIBUTE_UNUSED,
-                            enum reg_class to ATTRIBUTE_UNUSED)
+                            reg_class_t from ATTRIBUTE_UNUSED,
+                            reg_class_t to ATTRIBUTE_UNUSED)
 {
 #ifndef REGISTER_MOVE_COST
   return 2;
 #else
-  return REGISTER_MOVE_COST (mode, from, to);
+  return REGISTER_MOVE_COST (mode, (enum reg_class) from, (enum reg_class) to);
 #endif
 }
 

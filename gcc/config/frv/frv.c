@@ -1,5 +1,5 @@
 /* Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007,
-   2008, 2009  Free Software Foundation, Inc.
+   2008, 2009, 2010  Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GCC.
@@ -384,7 +384,7 @@ static int frv_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				  tree, bool);
 static void frv_output_dwarf_dtprel		(FILE *, int, rtx)
   ATTRIBUTE_UNUSED;
-static bool frv_secondary_reload                (bool, rtx, enum reg_class,
+static reg_class_t frv_secondary_reload		(bool, rtx, reg_class_t,
 						 enum machine_mode,
 						 secondary_reload_info *);
 static bool frv_frame_pointer_required		(void);
@@ -6492,12 +6492,13 @@ frv_secondary_reload_class (enum reg_class rclass,
    called from init_reg_autoinc() in regclass.c - before the reload optabs
    have been initialised.  */
    
-static bool
-frv_secondary_reload (bool in_p, rtx x, enum reg_class reload_class,
+static reg_class_t
+frv_secondary_reload (bool in_p, rtx x, reg_class_t reload_class_i,
 		      enum machine_mode reload_mode,
 		      secondary_reload_info * sri)
 {
   enum reg_class rclass = NO_REGS;
+  enum reg_class reload_class = (enum reg_class) reload_class_i;
 
   if (sri->prev_sri && sri->prev_sri->t_icode != CODE_FOR_nothing)
     {

@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on picoChip processors.
-   Copyright (C) 2001,2008, 2009   Free Software Foundation, Inc.
+   Copyright (C) 2001, 2008, 2009, 2010   Free Software Foundation, Inc.
    Contributed by picoChip Designs Ltd. (http://www.picochip.com)
    Maintained by Daniel Towner (daniel.towner@picochip.com) and
    Hariharan Sandanagobalane (hariharan@picochip.com)
@@ -103,12 +103,12 @@ int picochip_legitimize_reload_address (rtx *x, enum machine_mode mode,
 rtx picochip_struct_value_rtx(tree fntype ATTRIBUTE_UNUSED, int incoming ATTRIBUTE_UNUSED);
 rtx picochip_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED,
                          bool outgoing ATTRIBUTE_UNUSED);
-enum reg_class
+reg_class_t
 picochip_secondary_reload (bool in_p,
-				 rtx x ATTRIBUTE_UNUSED,
-				 enum reg_class cla ATTRIBUTE_UNUSED,
-				 enum machine_mode mode,
-				 secondary_reload_info *sri);
+			   rtx x ATTRIBUTE_UNUSED,
+			   reg_class_t cla ATTRIBUTE_UNUSED,
+			   enum machine_mode mode,
+			   secondary_reload_info *sri);
 void
 picochip_asm_named_section (const char *name,
 			    unsigned int flags ATTRIBUTE_UNUSED,
@@ -4363,12 +4363,12 @@ picochip_get_high_const (rtx value)
    choice of two registers to choose from, so that we a guaranteed to
    get at least one register which is different to the output
    register.  This trick is taken from the alpha implementation. */
-enum reg_class
+reg_class_t
 picochip_secondary_reload (bool in_p,
-				 rtx x ATTRIBUTE_UNUSED,
-				 enum reg_class cla ATTRIBUTE_UNUSED,
-				 enum machine_mode mode,
-				 secondary_reload_info *sri)
+			   rtx x ATTRIBUTE_UNUSED,
+			   reg_class_t cla ATTRIBUTE_UNUSED,
+			   enum machine_mode mode,
+			   secondary_reload_info *sri)
 {
   if (mode == QImode && !TARGET_HAS_BYTE_ACCESS)
   {

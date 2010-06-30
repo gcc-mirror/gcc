@@ -1240,11 +1240,11 @@ bool (*rs6000_cannot_change_mode_class_ptr) (enum machine_mode,
 					     enum reg_class)
   = rs6000_cannot_change_mode_class;
 
-static enum reg_class rs6000_secondary_reload (bool, rtx, enum reg_class,
-					       enum machine_mode,
-					       struct secondary_reload_info *);
+static reg_class_t rs6000_secondary_reload (bool, rtx, reg_class_t,
+					    enum machine_mode,
+					    struct secondary_reload_info *);
 
-static const enum reg_class *rs6000_ira_cover_classes (void);
+static const reg_class_t *rs6000_ira_cover_classes (void);
 
 const int INSN_NOT_AVAILABLE = -1;
 static enum machine_mode rs6000_eh_return_filter_mode (void);
@@ -13728,14 +13728,15 @@ rs6000_reload_register_type (enum reg_class rclass)
    For VSX and Altivec, we may need a register to convert sp+offset into
    reg+sp.  */
 
-static enum reg_class
+static reg_class_t
 rs6000_secondary_reload (bool in_p,
 			 rtx x,
-			 enum reg_class rclass,
+			 reg_class_t rclass_i,
 			 enum machine_mode mode,
 			 secondary_reload_info *sri)
 {
-  enum reg_class ret = ALL_REGS;
+  enum reg_class rclass = (enum reg_class) rclass_i;
+  reg_class_t ret = ALL_REGS;
   enum insn_code icode;
   bool default_p = false;
 
@@ -14127,11 +14128,11 @@ rs6000_secondary_reload_inner (rtx reg, rtx mem, rtx scratch, bool store_p)
    account for the Altivec and Floating registers being subsets of the VSX
    register set under VSX, but distinct register sets on pre-VSX machines.  */
 
-static const enum reg_class *
+static const reg_class_t *
 rs6000_ira_cover_classes (void)
 {
-  static const enum reg_class cover_pre_vsx[] = IRA_COVER_CLASSES_PRE_VSX;
-  static const enum reg_class cover_vsx[]     = IRA_COVER_CLASSES_VSX;
+  static const reg_class_t cover_pre_vsx[] = IRA_COVER_CLASSES_PRE_VSX;
+  static const reg_class_t cover_vsx[]     = IRA_COVER_CLASSES_VSX;
 
   return (TARGET_VSX) ? cover_vsx : cover_pre_vsx;
 }
