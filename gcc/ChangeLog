@@ -1,6 +1,23 @@
 2010-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2010-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/44694
+	* cselib.h (cselib_preserve_cfa_base_value): Add regno argument.
+	* cselib.c (cfa_base_preserved_regno): New static variable.
+	(cselib_reset_table): Don't reset cfa_base_preserved_regno instead
+	of REGNO (cfa_base_preserved_val->locs->loc).
+	(cselib_preserve_cfa_base_value): Add regno argument, set
+	cfa_base_preserved_regno to it.
+	(cselib_invalidate_regno): Allow removal of registers other than
+	cfa_base_preserved_regno from cfa_base_preserved_val.
+	(cselib_finish): Set cfa_base_preserved_regno to INVALID_REGNUM.
+	* var-tracking.c (adjust_mems): Replace sp or hfp even outside
+	of MEM addresses, if not on LHS.
+	(reverse_op): Don't add reverse ops for cfa_base_rtx.
+	(vt_init_cfa_base): Adjust cselib_preserve_cfa_base_value caller.
+
 	2010-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/43866

@@ -178,6 +178,7 @@ static cselib_val dummy_val;
    that is constant through the whole function and should never be
    eliminated.  */
 static cselib_val *cfa_base_preserved_val;
+static unsigned int cfa_base_preserved_regno;
 
 /* Used to list all values that contain memory reference.
    May or may not contain the useless values - the list is compacted
@@ -338,7 +339,7 @@ cselib_reset_table (unsigned int num)
 
   if (cfa_base_preserved_val)
     {
-      unsigned int regno = REGNO (cfa_base_preserved_val->locs->loc);
+      unsigned int regno = cfa_base_preserved_regno;
       unsigned int new_used_regs = 0;
       for (i = 0; i < n_used_regs; i++)
 	if (used_regs[i] == regno)
@@ -571,12 +572,15 @@ cselib_preserved_value_p (cselib_val *v)
    never invalidated and preserved across cselib_reset_table calls.  */
 
 void
-cselib_preserve_cfa_base_value (cselib_val *v)
+cselib_preserve_cfa_base_value (cselib_val *v, unsigned int regno)
 {
   if (cselib_preserve_constants
       && v->locs
       && REG_P (v->locs->loc))
-    cfa_base_preserved_val = v;
+    {
+      cfa_base_preserved_val = v;
+      cfa_base_preserved_regno = regno;
+    }
 }
 
 /* Clean all non-constant expressions in the hash table, but retain
@@ -1783,7 +1787,9 @@ cselib_invalidate_regno (unsigned int regno, enum machine_mode mode)
 	  if (i < FIRST_PSEUDO_REGISTER && v != NULL)
 	    this_last = end_hard_regno (GET_MODE (v->val_rtx), i) - 1;
 
-	  if (this_last < regno || v == NULL || v == cfa_base_preserved_val)
+	  if (this_last < regno || v == NULL
+	      || (v == cfa_base_preserved_val
+		  && i == cfa_base_preserved_regno))
 	    {
 	      l = &(*l)->next;
 	      continue;
@@ -2266,6 +2272,7 @@ cselib_finish (void)
   cselib_discard_hook = NULL;
   cselib_preserve_constants = false;
   cfa_base_preserved_val = NULL;
+  cfa_base_preserved_regno = INVALID_REGNUM;
   free_alloc_pool (elt_list_pool);
   free_alloc_pool (elt_loc_list_pool);
   free_alloc_pool (cselib_val_pool);

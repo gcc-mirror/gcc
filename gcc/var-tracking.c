@@ -797,8 +797,9 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
   switch (GET_CODE (loc))
     {
     case REG:
-      /* Don't do any sp or fp replacements outside of MEM addresses.  */
-      if (amd->mem_mode == VOIDmode)
+      /* Don't do any sp or fp replacements outside of MEM addresses
+         on the LHS.  */
+      if (amd->mem_mode == VOIDmode && amd->store)
 	return loc;
       if (loc == stack_pointer_rtx
 	  && !frame_pointer_needed)
@@ -5170,7 +5171,9 @@ reverse_op (rtx val, const_rtx expr)
       return NULL_RTX;
     }
 
-  if (!REG_P (XEXP (src, 0)) || !SCALAR_INT_MODE_P (GET_MODE (src)))
+  if (!REG_P (XEXP (src, 0))
+      || !SCALAR_INT_MODE_P (GET_MODE (src))
+      || XEXP (src, 0) == cfa_base_rtx)
     return NULL_RTX;
 
   v = cselib_lookup (XEXP (src, 0), GET_MODE (XEXP (src, 0)), 0);
@@ -8140,7 +8143,7 @@ vt_init_cfa_base (void)
   val = cselib_lookup_from_insn (cfa_base_rtx, GET_MODE (cfa_base_rtx), 1,
 				 get_insns ());
   preserve_value (val);
-  cselib_preserve_cfa_base_value (val);
+  cselib_preserve_cfa_base_value (val, REGNO (cfa_base_rtx));
   var_reg_decl_set (&VTI (ENTRY_BLOCK_PTR)->out, cfa_base_rtx,
 		    VAR_INIT_STATUS_INITIALIZED, dv_from_value (val->val_rtx),
 		    0, NULL_RTX, INSERT);
