@@ -411,9 +411,8 @@ DEFHOOK
 #define HOOK_PREFIX "TARGET_"
 
 /* Emit a machine-specific insn operand.  */
-/* ??? Documenting the argument types for this hook requires a GFDL
-   license grant.  Also, the documentation documents this as a macro,
-   not a hook, and uses a different name for the hook argument FILE.  */
+/* ??? tm.texi only documents the old macro PRINT_OPERAND,
+   not this  hook, and uses a different name for the argument FILE.  */
 DEFHOOK_UNDOC
 (print_operand,
  "",
@@ -421,9 +420,8 @@ DEFHOOK_UNDOC
  default_print_operand)
 
 /* Emit a machine-specific memory address.  */
-/* ??? Documenting the argument types for this hook requires a GFDL
-   license grant.  Also, the documentation documents this as a macro,
-   not a hook, and uses different hook argument names.  */
+/* ??? tm.texi only documents the old macro PRINT_OPERAND_ADDRESS,
+   not this  hook, and uses different argument names.  */
 DEFHOOK_UNDOC
 (print_operand_address,
  "",
@@ -432,9 +430,8 @@ DEFHOOK_UNDOC
 
 /* Determine whether CODE is a valid punctuation character for the
    `print_operand' hook.  */
-/* ??? Documenting the argument types for this hook requires a GFDL
-   license grant.  Also, the documentation documents this as a macro,
-   not a hook.  */
+/* ??? tm.texi only documents the old macro PRINT_OPERAND_PUNCT_VALID_P,
+   not this  hook.  */
 DEFHOOK_UNDOC
 (print_operand_punct_valid_p,
  "",
