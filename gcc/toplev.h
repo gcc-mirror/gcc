@@ -32,16 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 
 extern int toplev_main (int, char **);
 extern void strip_off_ending (char *, int);
-extern void _fatal_insn_not_found (const_rtx, const char *, int, const char *)
-     ATTRIBUTE_NORETURN;
-extern void _fatal_insn (const char *, const_rtx, const char *, int, const char *)
-     ATTRIBUTE_NORETURN;
-
-#define fatal_insn(msgid, insn) \
-	_fatal_insn (msgid, insn, __FILE__, __LINE__, __FUNCTION__)
-#define fatal_insn_not_found(insn) \
-	_fatal_insn_not_found (insn, __FILE__, __LINE__, __FUNCTION__)
-
 extern void rest_of_decl_compilation (tree, int, int);
 extern void rest_of_type_compilation (tree, int);
 extern void tree_rest_of_compilation (tree);
@@ -56,8 +46,6 @@ extern void init_eh (void);
 
 extern void announce_function (tree);
 
-extern void error_for_asm (const_rtx, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
-extern void warning_for_asm (const_rtx, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern void warn_deprecated_use (tree, tree);
 extern bool parse_optimize_options (tree, bool);
 

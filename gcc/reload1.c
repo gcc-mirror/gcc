@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "machmode.h"
 #include "hard-reg-set.h"
-#include "rtl.h"
+#include "rtl-error.h"
 #include "tm_p.h"
 #include "obstack.h"
 #include "insn-config.h"
@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "recog.h"
 #include "output.h"
-#include "toplev.h"
 #include "except.h"
 #include "tree.h"
 #include "ira.h"

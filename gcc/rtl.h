@@ -2440,4 +2440,17 @@ extern int curr_insn_locator (void);
 extern bool optimize_insn_for_size_p (void);
 extern bool optimize_insn_for_speed_p (void);
 
+/* rtl-error.c */
+extern void _fatal_insn_not_found (const_rtx, const char *, int, const char *)
+     ATTRIBUTE_NORETURN;
+extern void _fatal_insn (const char *, const_rtx, const char *, int, const char *)
+     ATTRIBUTE_NORETURN;
+
+#define fatal_insn(msgid, insn) \
+	_fatal_insn (msgid, insn, __FILE__, __LINE__, __FUNCTION__)
+#define fatal_insn_not_found(insn) \
+	_fatal_insn_not_found (insn, __FILE__, __LINE__, __FUNCTION__)
+
+
+
 #endif /* ! GCC_RTL_H */
