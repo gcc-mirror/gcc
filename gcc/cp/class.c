@@ -1282,7 +1282,8 @@ check_bases (tree t,
 	 assignment operators that take const references, then the
 	 derived class cannot have such a member automatically
 	 generated.  */
-      if (! TYPE_HAS_CONST_COPY_CTOR (basetype))
+      if (TYPE_HAS_COPY_CTOR (basetype)
+	  && ! TYPE_HAS_CONST_COPY_CTOR (basetype))
 	*cant_have_const_ctor_p = 1;
       if (TYPE_HAS_COPY_ASSIGN (basetype)
 	  && !TYPE_HAS_CONST_COPY_ASSIGN (basetype))
@@ -1312,8 +1313,10 @@ check_bases (tree t,
       TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
 	|= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (basetype);
       TYPE_HAS_COMPLEX_COPY_ASSIGN (t)
-	|= TYPE_HAS_COMPLEX_COPY_ASSIGN (basetype);
-      TYPE_HAS_COMPLEX_COPY_CTOR (t) |= TYPE_HAS_COMPLEX_COPY_CTOR (basetype);
+	|= (TYPE_HAS_COMPLEX_COPY_ASSIGN (basetype)
+	    || !TYPE_HAS_COPY_ASSIGN (basetype));
+      TYPE_HAS_COMPLEX_COPY_CTOR (t) |= (TYPE_HAS_COMPLEX_COPY_CTOR (basetype)
+					 || !TYPE_HAS_COPY_CTOR (basetype));
       TYPE_HAS_COMPLEX_MOVE_ASSIGN (t)
 	|= TYPE_HAS_COMPLEX_MOVE_ASSIGN (basetype);
       TYPE_HAS_COMPLEX_MOVE_CTOR (t) |= TYPE_HAS_COMPLEX_MOVE_CTOR (basetype);
@@ -1545,7 +1548,8 @@ finish_struct_bits (tree t)
      mode to be BLKmode, and force its TREE_ADDRESSABLE bit to be
      nonzero.  This will cause it to be passed by invisible reference
      and prevent it from being returned in a register.  */
-  if (! TYPE_HAS_TRIVIAL_COPY_CTOR (t) || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
+  if (type_has_nontrivial_copy_init (t)
+      || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
     {
       tree variants;
       DECL_MODE (TYPE_MAIN_DECL (t)) = BLKmode;
@@ -2647,27 +2651,28 @@ add_implicitly_declared_members (tree t,
 
      If a class definition does not explicitly declare a copy
      constructor, one is declared implicitly.  */
-  if (! TYPE_HAS_COPY_CTOR (t) && ! TYPE_FOR_JAVA (t))
+  if (! TYPE_HAS_COPY_CTOR (t) && ! TYPE_FOR_JAVA (t)
+      && !type_has_move_constructor (t))
     {
       TYPE_HAS_COPY_CTOR (t) = 1;
       TYPE_HAS_CONST_COPY_CTOR (t) = !cant_have_const_cctor;
       CLASSTYPE_LAZY_COPY_CTOR (t) = 1;
+      if (cxx_dialect >= cxx0x)
+	CLASSTYPE_LAZY_MOVE_CTOR (t) = 1;
     }
-
-  /* Currently only lambdas get a lazy move ctor, but N3053 adds them for
-     other classes.  */
-  if (LAMBDA_TYPE_P (t))
-    CLASSTYPE_LAZY_MOVE_CTOR (t) = 1;
 
   /* If there is no assignment operator, one will be created if and
      when it is needed.  For now, just record whether or not the type
      of the parameter to the assignment operator will be a const or
      non-const reference.  */
-  if (!TYPE_HAS_COPY_ASSIGN (t) && !TYPE_FOR_JAVA (t))
+  if (!TYPE_HAS_COPY_ASSIGN (t) && !TYPE_FOR_JAVA (t)
+      && !type_has_move_assign (t))
     {
       TYPE_HAS_COPY_ASSIGN (t) = 1;
       TYPE_HAS_CONST_COPY_ASSIGN (t) = !cant_have_const_assignment;
       CLASSTYPE_LAZY_COPY_ASSIGN (t) = 1;
+      if (cxx_dialect >= cxx0x)
+	CLASSTYPE_LAZY_MOVE_ASSIGN (t) = 1;
     }
 
   /* We can't be lazy about declaring functions that might override
@@ -2863,18 +2868,23 @@ check_field_decl (tree field,
 	  TYPE_NEEDS_CONSTRUCTING (t) |= TYPE_NEEDS_CONSTRUCTING (type);
 	  TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t)
 	    |= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type);
-	  TYPE_HAS_COMPLEX_COPY_ASSIGN (t) |= TYPE_HAS_COMPLEX_COPY_ASSIGN (type);
-	  TYPE_HAS_COMPLEX_COPY_CTOR (t) |= TYPE_HAS_COMPLEX_COPY_CTOR (type);
+	  TYPE_HAS_COMPLEX_COPY_ASSIGN (t)
+	    |= (TYPE_HAS_COMPLEX_COPY_ASSIGN (type)
+		|| !TYPE_HAS_COPY_ASSIGN (type));
+	  TYPE_HAS_COMPLEX_COPY_CTOR (t) |= (TYPE_HAS_COMPLEX_COPY_CTOR (type)
+					     || !TYPE_HAS_COPY_CTOR (type));
 	  TYPE_HAS_COMPLEX_MOVE_ASSIGN (t) |= TYPE_HAS_COMPLEX_MOVE_ASSIGN (type);
 	  TYPE_HAS_COMPLEX_MOVE_CTOR (t) |= TYPE_HAS_COMPLEX_MOVE_CTOR (type);
 	  TYPE_HAS_COMPLEX_DFLT (t) |= (!TYPE_HAS_DEFAULT_CONSTRUCTOR (type)
 					|| TYPE_HAS_COMPLEX_DFLT (type));
 	}
 
-      if (!TYPE_HAS_CONST_COPY_CTOR (type))
+      if (TYPE_HAS_COPY_CTOR (type)
+	  && !TYPE_HAS_CONST_COPY_CTOR (type))
 	*cant_have_const_ctor = 1;
 
-      if (!TYPE_HAS_CONST_COPY_ASSIGN (type))
+      if (TYPE_HAS_COPY_ASSIGN (type)
+	  && !TYPE_HAS_CONST_COPY_ASSIGN (type))
 	*no_const_asn_ref = 1;
     }
   if (DECL_INITIAL (field) != NULL_TREE)

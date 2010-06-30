@@ -20,7 +20,7 @@ struct eight {char x[8];};
 struct A
 {
     A();
-    A(const volatile A&&);
+    A(const volatile A&&);	// { dg-error "argument 1" }
 };
 
                A    source();
@@ -41,9 +41,9 @@ seven sink_7_1234567(volatile       A&&);  // { dg-message "note" }
 int test7_1234567()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_7_1234567(cv_source());  // { dg-error "no match" }
     return 0;
 }
@@ -59,9 +59,9 @@ eight sink_7_1235678(const volatile A&&); // { dg-message "" }
 int test7_1235678()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_7_1235678(cva);	// { dg-error "lvalue" }
     return 0;
 }
@@ -77,9 +77,9 @@ eight sink_7_2345678(const volatile A&&);  // { dg-message "note" }
 int test7_2345678()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_7_2345678(a);  // { dg-error "ambiguous" }
     return 0;
 }
@@ -95,9 +95,9 @@ eight sink_7_1234678(const volatile A&&);  // { dg-message "note" }
 int test7_1234678()
 {
                    A a;
-    const          A ca = a;
+    const          A ca = a; // { dg-error "lvalue" }
           volatile A va;
-    const volatile A cva = a;
+    const volatile A cva = a; // { dg-error "lvalue" }
     sink_7_1234678(source());  // { dg-error "ambiguous" }
     return 0;
 }

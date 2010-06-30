@@ -479,7 +479,7 @@ build_target_expr_with_type (tree init, tree type)
 
   if (TREE_CODE (init) == TARGET_EXPR)
     return init;
-  else if (CLASS_TYPE_P (type) && !TYPE_HAS_TRIVIAL_COPY_CTOR (type)
+  else if (CLASS_TYPE_P (type) && type_has_nontrivial_copy_init (type)
 	   && !VOID_TYPE_P (TREE_TYPE (init))
 	   && TREE_CODE (init) != COND_EXPR
 	   && TREE_CODE (init) != CONSTRUCTOR
@@ -497,7 +497,8 @@ build_target_expr_with_type (tree init, tree type)
 
 /* Like the above function, but without the checking.  This function should
    only be used by code which is deliberately trying to subvert the type
-   system, such as call_builtin_trap.  */
+   system, such as call_builtin_trap.  Or build_over_call, to avoid
+   infinite recursion.  */
 
 tree
 force_target_expr (tree type, tree init)
@@ -2368,7 +2369,9 @@ type_has_nontrivial_default_init (const_tree t)
     return 0;
 }
 
-/* Returns true iff copying an object of type T is non-trivial.  */
+/* Returns true iff copying an object of type T (including via move
+   constructor) is non-trivial.  That is, T has no non-trivial copy
+   constructors and no non-trivial move constructors.  */
 
 bool
 type_has_nontrivial_copy_init (const_tree t)
@@ -2376,7 +2379,12 @@ type_has_nontrivial_copy_init (const_tree t)
   t = strip_array_types (CONST_CAST_TREE (t));
 
   if (CLASS_TYPE_P (t))
-    return TYPE_HAS_COMPLEX_COPY_CTOR (t);
+    {
+      gcc_assert (COMPLETE_TYPE_P (t));
+      return ((TYPE_HAS_COPY_CTOR (t)
+	       && TYPE_HAS_COMPLEX_COPY_CTOR (t))
+	      || TYPE_HAS_COMPLEX_MOVE_CTOR (t));
+    }
   else
     return 0;
 }
@@ -2390,8 +2398,12 @@ trivially_copyable_p (const_tree t)
   t = strip_array_types (CONST_CAST_TREE (t));
 
   if (CLASS_TYPE_P (t))
-    return (TYPE_HAS_TRIVIAL_COPY_CTOR (t)
-	    && TYPE_HAS_TRIVIAL_COPY_ASSIGN (t)
+    return ((!TYPE_HAS_COPY_CTOR (t)
+	     || !TYPE_HAS_COMPLEX_COPY_CTOR (t))
+	    && !TYPE_HAS_COMPLEX_MOVE_CTOR (t)
+	    && (!TYPE_HAS_COPY_ASSIGN (t)
+		|| !TYPE_HAS_COMPLEX_COPY_ASSIGN (t))
+	    && !TYPE_HAS_COMPLEX_MOVE_ASSIGN (t)
 	    && TYPE_HAS_TRIVIAL_DESTRUCTOR (t));
   else
     return scalarish_type_p (t);

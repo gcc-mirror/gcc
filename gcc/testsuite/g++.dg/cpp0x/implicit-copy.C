@@ -3,13 +3,13 @@ struct S
 {
   S();
 private:
-  S(S const &&);
-  S & operator=(S const &&);
+  S(S const &&);		// { dg-error "" }
+  S & operator=(S const &&);	// { dg-error "" }
 };
 
 void f()
 {
   S a;
-  S b(a);
-  a = b;
+  S b(a);			// { dg-error "" }
+  a = b;			// { dg-error "" }
 }
