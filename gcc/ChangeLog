@@ -1,3 +1,9 @@
+2010-07-01  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR target/44727
+	* config/i386/i386.md (peephole2 for arithmetic ops with memory):
+	Make sure operand 0 dies.
+
 2010-07-01  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/42834
