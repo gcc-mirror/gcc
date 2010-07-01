@@ -1,6 +1,11 @@
 2010-07-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2010-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/43801
+	* g++.dg/torture/pr43801.C: New test.
+
 	2010-06-21  Jakub Jelinek  <jakub@redhat.com>
  
 	PR target/44575

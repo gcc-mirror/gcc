@@ -1,6 +1,12 @@
 2010-07-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
+	2010-06-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/43801
+	* cgraph.c (cgraph_create_virtual_clone): Clear DECL_SECTION_NAME
+	if old_decl was DECL_ONE_ONLY.
+
 	2010-06-21  Jakub Jelinek  <jakub@redhat.com>
  
 	PR target/44575
