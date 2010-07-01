@@ -1116,6 +1116,7 @@ target system bytes are not the same width as host system bytes.
 @subsection References to storage
 @tindex ADDR_EXPR
 @tindex INDIRECT_REF
+@tindex MEM_REF
 @tindex ARRAY_REF
 @tindex ARRAY_RANGE_REF
 @tindex TARGET_MEM_REF
@@ -1175,6 +1176,13 @@ the address of the temporary is used.
 These nodes are used to represent the object pointed to by a pointer.
 The operand is the pointer being dereferenced; it will always have
 pointer or reference type.
+
+@item MEM_REF
+These nodes are used to represent the object pointed to by a pointer
+offset by a constant.
+The first operand is the pointer being dereferenced; it will always have
+pointer or reference type.  The second operand is a pointer constant.
+Its type is specifying the type to be used for type-based alias analysis.
 
 @item COMPONENT_REF
 These nodes represent non-static data member accesses.  The first

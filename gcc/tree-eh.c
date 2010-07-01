@@ -2437,6 +2437,10 @@ tree_could_trap_p (tree expr)
 	return false;
       return !in_array_bounds_p (expr);
 
+    case MEM_REF:
+      if (TREE_CODE (TREE_OPERAND (expr, 0)) == ADDR_EXPR)
+	return false;
+      /* Fallthru.  */
     case INDIRECT_REF:
     case ALIGN_INDIRECT_REF:
     case MISALIGNED_INDIRECT_REF:

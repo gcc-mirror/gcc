@@ -1,3 +1,70 @@
+2010-07-01  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42834
+	PR middle-end/44468
+	* gcc.c-torture/execute/20100316-1.c: New testcase.
+	* gcc.c-torture/execute/pr44468.c: Likewise.
+	* gcc.c-torture/compile/20100609-1.c: Likewise.
+	* gcc.dg/volatile2.c: Adjust.
+	* gcc.dg/plugin/selfassign.c: Likewise.
+	* gcc.dg/pr36902.c: Likewise.
+	* gcc.dg/tree-ssa/foldaddr-2.c: Remove.
+	* gcc.dg/tree-ssa/foldaddr-3.c: Likewise.
+	* gcc.dg/tree-ssa/forwprop-8.c: Adjust.
+	* gcc.dg/tree-ssa/pr17141-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-13.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-14.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ccp-21.c: Likewise.
+	* gcc.dg/tree-ssa/pta-ptrarith-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030807-7.c: Likewise.
+	* gcc.dg/tree-ssa/forwprop-10.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-1.c: Likewise.
+	* gcc.dg/tree-ssa/pta-ptrarith-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ccp-23.c: Likewise.
+	* gcc.dg/tree-ssa/forwprop-1.c: Likewise.
+	* gcc.dg/tree-ssa/forwprop-2.c: Likewise.
+	* gcc.dg/tree-ssa/struct-aliasing-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ccp-25.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-26.c: Likewise.
+	* gcc.dg/tree-ssa/struct-aliasing-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ccp-26.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-sccvn-4.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-7.c: Likewise.
+	* gcc.dg/tree-ssa/forwprop-5.c: Likewise.
+	* gcc.dg/struct/w_prof_two_strs.c: XFAIL.
+	* gcc.dg/struct/wo_prof_escape_arg_to_local.c: Likewise.
+	* gcc.dg/struct/wo_prof_global_var.c: Likewise.
+	* gcc.dg/struct/wo_prof_malloc_size_var.c: Likewise.
+	* gcc.dg/struct/w_prof_local_array.c: Likewise.
+	* gcc.dg/struct/w_prof_single_str_global.c: Likewise.
+	* gcc.dg/struct/wo_prof_escape_str_init.c: Likewise.
+	* gcc.dg/struct/wo_prof_array_through_pointer.c: Likewise.
+	* gcc.dg/struct/w_prof_global_array.c: Likewise.
+	* gcc.dg/struct/wo_prof_array_field.c: Likewise.
+	* gcc.dg/struct/wo_prof_single_str_local.c: Likewise.
+	* gcc.dg/struct/w_prof_local_var.c: Likewise.
+	* gcc.dg/struct/wo_prof_two_strs.c: Likewise.
+	* gcc.dg/struct/wo_prof_empty_str.c: Likewise.
+	* gcc.dg/struct/wo_prof_local_array.c: Likewise.
+	* gcc.dg/struct/w_prof_global_var.c: Likewise.
+	* gcc.dg/struct/wo_prof_single_str_global.c: Likewise.
+	* gcc.dg/struct/wo_prof_escape_substr_value.c: Likewise.
+	* gcc.dg/struct/wo_prof_global_array.c: Likewise.
+	* gcc.dg/struct/wo_prof_escape_return.c: Likewise.
+	* gcc.dg/struct/wo_prof_escape_substr_array.c: Likewise.
+	* gcc.dg/struct/wo_prof_double_malloc.c: Likewise.
+	* gcc.dg/struct/w_ratio_cold_str.c: Likewise.
+	* gcc.dg/struct/wo_prof_escape_substr_pointer.c: Likewise.
+	* gcc.dg/struct/wo_prof_local_var.c: Likewise.
+	* gcc.dg/tree-prof/stringop-1.c: Adjust.
+	* g++.dg/tree-ssa/pr31146.C: Likewise.
+	* g++.dg/tree-ssa/copyprop-1.C: Likewise.
+	* g++.dg/tree-ssa/pr33604.C: Likewise.
+	* g++.dg/plugin/selfassign.c: Likewise.
+	* gfortran.dg/array_memcpy_3.f90: Likewise.
+	* gfortran.dg/array_memcpy_4.f90: Likewise.
+	* c-c++-common/torture/pr42834.c: New testcase.
+
 2010-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/44628

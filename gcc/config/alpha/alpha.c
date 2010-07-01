@@ -6025,7 +6025,7 @@ alpha_stdarg_optimize_hook (struct stdarg_info *si, const_gimple stmt)
   rhs = gimple_assign_rhs1 (stmt);
   while (handled_component_p (rhs))
     rhs = TREE_OPERAND (rhs, 0);
-  if (TREE_CODE (rhs) != INDIRECT_REF
+  if (TREE_CODE (rhs) != MEM_REF
       || TREE_CODE (TREE_OPERAND (rhs, 0)) != SSA_NAME)
     return false;
 

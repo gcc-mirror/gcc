@@ -616,6 +616,24 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
 		      }
 		  }
 
+	      /* If the stmt does a memory store and the replacement
+	         is a load aliasing it avoid creating overlapping
+		 assignments which we cannot expand correctly.  */
+	      if (gimple_vdef (stmt)
+		  && gimple_assign_single_p (stmt))
+		{
+		  gimple def_stmt = SSA_NAME_DEF_STMT (use);
+		  while (is_gimple_assign (def_stmt)
+			 && gimple_assign_rhs_code (def_stmt) == SSA_NAME)
+		    def_stmt
+		      = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (def_stmt));
+		  if (gimple_vuse (def_stmt)
+		      && gimple_assign_single_p (def_stmt)
+		      && refs_may_alias_p (gimple_assign_lhs (stmt),
+					   gimple_assign_rhs1 (def_stmt)))
+		    same_root_var = true;
+		}
+
 	      /* Mark expression as replaceable unless stmt is volatile or the
 		 def variable has the same root variable as something in the
 		 substitution list.  */

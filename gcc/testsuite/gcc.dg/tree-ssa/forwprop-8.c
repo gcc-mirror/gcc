@@ -12,5 +12,5 @@ int foo(struct X *q)
 
 /* We should have propragated &q->a into (*pointer).  */
 /* { dg-final { scan-tree-dump-times "pointer" 0 "forwprop1"} } */
-/* { dg-final { scan-tree-dump "->a\\\[0\\\]" "forwprop1" } } */
+/* { dg-final { scan-tree-dump "\\\[0\\\]" "forwprop1" } } */
 /* { dg-final { cleanup-tree-dump "forwprop1" } } */

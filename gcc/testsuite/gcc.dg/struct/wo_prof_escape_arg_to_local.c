@@ -42,5 +42,5 @@ main ()
 }
 
 /*--------------------------------------------------------------------------*/
-/* { dg-final { scan-ipa-dump "is passed to local function...Excluded." "ipa_struct_reorg" } } */
+/* { dg-final { scan-ipa-dump "is passed to local function...Excluded." "ipa_struct_reorg" { xfail *-*-* } } } */
 /* { dg-final { cleanup-ipa-dump "*" } } */

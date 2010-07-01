@@ -357,7 +357,7 @@ take_address_of (tree obj, tree type, edge entry, htab_t decl_address)
 
   if (var_p != &obj)
     {
-      *var_p = build1 (INDIRECT_REF, TREE_TYPE (*var_p), name);
+      *var_p = build_simple_mem_ref (name);
       name = force_gimple_operand (build_addr (obj, current_function_decl),
 				   &stmts, true, NULL_TREE);
       if (!gimple_seq_empty_p (stmts))
@@ -456,7 +456,7 @@ eliminate_local_variables_1 (tree *tp, int *walk_subtrees, void *data)
       type = TREE_TYPE (t);
       addr_type = build_pointer_type (type);
       addr = take_address_of (t, addr_type, dta->entry, dta->decl_address);
-      *tp = build1 (INDIRECT_REF, TREE_TYPE (*tp), addr);
+      *tp = build_simple_mem_ref (addr);
 
       dta->changed = true;
       return NULL_TREE;
@@ -857,7 +857,6 @@ create_call_for_reduction_1 (void **slot, void *data)
   struct clsn_data *const clsn_data = (struct clsn_data *) data;
   gimple_stmt_iterator gsi;
   tree type = TREE_TYPE (PHI_RESULT (reduc->reduc_phi));
-  tree struct_type = TREE_TYPE (TREE_TYPE (clsn_data->load));
   tree load_struct;
   basic_block bb;
   basic_block new_bb;
@@ -866,7 +865,7 @@ create_call_for_reduction_1 (void **slot, void *data)
   tree tmp_load, name;
   gimple load;
 
-  load_struct = fold_build1 (INDIRECT_REF, struct_type, clsn_data->load);
+  load_struct = build_simple_mem_ref (clsn_data->load);
   t = build3 (COMPONENT_REF, type, load_struct, reduc->field, NULL_TREE);
 
   addr = build_addr (t, current_function_decl);
@@ -925,13 +924,12 @@ create_loads_for_reductions (void **slot, void *data)
   gimple stmt;
   gimple_stmt_iterator gsi;
   tree type = TREE_TYPE (gimple_assign_lhs (red->reduc_stmt));
-  tree struct_type = TREE_TYPE (TREE_TYPE (clsn_data->load));
   tree load_struct;
   tree name;
   tree x;
 
   gsi = gsi_after_labels (clsn_data->load_bb);
-  load_struct = fold_build1 (INDIRECT_REF, struct_type, clsn_data->load);
+  load_struct = build_simple_mem_ref (clsn_data->load);
   load_struct = build3 (COMPONENT_REF, type, load_struct, red->field,
 			NULL_TREE);
 
@@ -1012,7 +1010,6 @@ create_loads_and_stores_for_name (void **slot, void *data)
   gimple stmt;
   gimple_stmt_iterator gsi;
   tree type = TREE_TYPE (elt->new_name);
-  tree struct_type = TREE_TYPE (TREE_TYPE (clsn_data->load));
   tree load_struct;
 
   gsi = gsi_last_bb (clsn_data->store_bb);
@@ -1022,7 +1019,7 @@ create_loads_and_stores_for_name (void **slot, void *data)
   gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
 
   gsi = gsi_last_bb (clsn_data->load_bb);
-  load_struct = fold_build1 (INDIRECT_REF, struct_type, clsn_data->load);
+  load_struct = build_simple_mem_ref (clsn_data->load);
   t = build3 (COMPONENT_REF, type, load_struct, elt->field, NULL_TREE);
   stmt = gimple_build_assign (elt->new_name, t);
   SSA_NAME_DEF_STMT (elt->new_name) = stmt;

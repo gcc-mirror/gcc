@@ -61,6 +61,6 @@ main ()
 }
 
 /*--------------------------------------------------------------------------*/
-/* { dg-final-use { scan-ipa-dump "Number of structures to transform is 2" "ipa_struct_reorg" } } */
+/* { dg-final-use { scan-ipa-dump "Number of structures to transform is 2" "ipa_struct_reorg" { xfail *-*-* } } } */
 /* { dg-final-use { cleanup-ipa-dump "*" } } */
 

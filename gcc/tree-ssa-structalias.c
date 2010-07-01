@@ -3107,7 +3107,8 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results,
      &0->a.b */
   forzero = t;
   while (handled_component_p (forzero)
-	 || INDIRECT_REF_P (forzero))
+	 || INDIRECT_REF_P (forzero)
+	 || TREE_CODE (forzero) == MEM_REF)
     forzero = TREE_OPERAND (forzero, 0);
 
   if (CONSTANT_CLASS_P (forzero) && integer_zerop (forzero))
@@ -3334,9 +3335,10 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p)
       {
 	switch (TREE_CODE (t))
 	  {
-	  case INDIRECT_REF:
+	  case MEM_REF:
 	    {
-	      get_constraint_for_1 (TREE_OPERAND (t, 0), results, address_p);
+	      get_constraint_for_ptr_offset (TREE_OPERAND (t, 0),
+					     TREE_OPERAND (t, 1), results);
 	      do_deref (results);
 	      return;
 	    }
@@ -4572,7 +4574,11 @@ find_func_clobbers (gimple origt)
 	tem = TREE_OPERAND (tem, 0);
       if ((DECL_P (tem)
 	   && !auto_var_in_fn_p (tem, cfun->decl))
-	  || INDIRECT_REF_P (tem))
+	  || INDIRECT_REF_P (tem)
+	  || (TREE_CODE (tem) == MEM_REF
+	      && !(TREE_CODE (TREE_OPERAND (tem, 0)) == ADDR_EXPR
+		   && auto_var_in_fn_p
+		        (TREE_OPERAND (TREE_OPERAND (tem, 0), 0), cfun->decl))))
 	{
 	  struct constraint_expr lhsc, *rhsp;
 	  unsigned i;
@@ -4596,7 +4602,11 @@ find_func_clobbers (gimple origt)
 	tem = TREE_OPERAND (tem, 0);
       if ((DECL_P (tem)
 	   && !auto_var_in_fn_p (tem, cfun->decl))
-	  || INDIRECT_REF_P (tem))
+	  || INDIRECT_REF_P (tem)
+	  || (TREE_CODE (tem) == MEM_REF
+	      && !(TREE_CODE (TREE_OPERAND (tem, 0)) == ADDR_EXPR
+		   && auto_var_in_fn_p
+		        (TREE_OPERAND (TREE_OPERAND (tem, 0), 0), cfun->decl))))
 	{
 	  struct constraint_expr lhs, *rhsp;
 	  unsigned i;

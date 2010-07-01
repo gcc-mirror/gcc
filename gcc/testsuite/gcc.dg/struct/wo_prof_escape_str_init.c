@@ -28,6 +28,6 @@ main ()
 }
 
 /*--------------------------------------------------------------------------*/
-/* { dg-final { scan-ipa-dump "is initialized...Excluded" "ipa_struct_reorg" } } */
+/* { dg-final { scan-ipa-dump "is initialized...Excluded" "ipa_struct_reorg" { xfail *-*-* } } } */
 /* { dg-final { cleanup-ipa-dump "*" } } */
 

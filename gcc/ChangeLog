@@ -1,3 +1,275 @@
+2010-07-01  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/42834
+	PR middle-end/44468
+	* doc/gimple.texi (is_gimple_mem_ref_addr): Document.
+	* doc/generic.texi (References to storage): Document MEM_REF.
+	* tree-pretty-print.c (dump_generic_node): Handle MEM_REF.
+	(print_call_name): Likewise.
+	* tree.c (recompute_tree_invariant_for_addr_expr): Handle MEM_REF.
+	(build_simple_mem_ref_loc): New function.
+	(mem_ref_offset): Likewise.
+	* tree.h (build_simple_mem_ref_loc): Declare.
+	(build_simple_mem_ref): Define.
+	(mem_ref_offset): Declare.
+	* fold-const.c: Include tree-flow.h.
+	(operand_equal_p): Handle MEM_REF.
+	(build_fold_addr_expr_with_type_loc): Likewise.
+	(fold_comparison): Likewise.
+	(fold_unary_loc): Fold
+	VIEW_CONVERT_EXPR <T1, MEM_REF <T2, ...>> to MEM_REF <T1, ...>.
+	(fold_binary_loc): Fold MEM[&MEM[p, CST1], CST2] to MEM[p, CST1 + CST2],
+	fold MEM[&a.b, CST2] to MEM[&a, offsetof (a, b) + CST2].
+	* tree-ssa-alias.c (ptr_deref_may_alias_decl_p): Handle MEM_REF.
+	(ptr_deref_may_alias_ref_p_1): Likewise.
+	(ao_ref_base_alias_set): Properly differentiate base object for
+	offset and TBAA.
+	(ao_ref_init_from_ptr_and_size): Use MEM_REF.
+	(indirect_ref_may_alias_decl_p): Handle MEM_REFs properly.
+	(indirect_refs_may_alias_p): Likewise.
+	(refs_may_alias_p_1): Likewise.  Remove pointer SSA name def
+	chasing code.
+	(ref_maybe_used_by_call_p_1): Handle MEM_REF.
+	(call_may_clobber_ref_p_1): Likewise.
+	* dwarf2out.c (loc_list_from_tree): Handle MEM_REF.
+	* expr.c (expand_assignment): Handle MEM_REF.
+	(store_expr): Handle MEM_REFs from STRING_CSTs.
+	(store_field): If expanding a MEM_REF of a non-addressable
+	decl use bitfield operations.
+	(get_inner_reference): Handle MEM_REF.
+	(expand_expr_addr_expr_1): Likewise.
+	(expand_expr_real_1): Likewise.
+	* tree-eh.c (tree_could_trap_p): Handle MEM_REF.
+	* alias.c (ao_ref_from_mem): Handle MEM_REF.
+	(get_alias_set): Likewise.  Properly handle VIEW_CONVERT_EXPRs.
+	* tree-data-ref.c (dr_analyze_innermost): Handle MEM_REF.
+	(dr_analyze_indices): Likewise.
+	(dr_analyze_alias): Likewise.
+	(object_address_invariant_in_loop_p): Likewise.
+	* gimplify.c (mark_addressable): Handle MEM_REF.
+	(gimplify_cond_expr): Build MEM_REFs.
+	(gimplify_modify_expr_to_memcpy): Likewise.
+	(gimplify_init_ctor_preeval_1): Handle MEM_REF.
+	(gimple_fold_indirect_ref): Adjust.
+	(gimplify_expr): Handle MEM_REF.  Gimplify INDIRECT_REF to MEM_REF.
+	* tree.def (MEM_REF): New tree code.
+	* tree-dfa.c: Include toplev.h.
+	(get_ref_base_and_extent): Handle MEM_REF.
+	(get_addr_base_and_unit_offset): New function.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Handle MEM_REF.
+	* gimple-fold.c (may_propagate_address_into_dereference): Handle
+	MEM_REF.
+	(maybe_fold_offset_to_array_ref): Allow possibly out-of bounds
+	accesses if the array has just one dimension.  Remove always true
+	parameter.  Do not require type compatibility here.
+	(maybe_fold_offset_to_component_ref): Remove.
+	(maybe_fold_stmt_indirect): Remove.
+	(maybe_fold_reference): Remove INDIRECT_REF handling.
+	Fold back to non-MEM_REF.
+	(maybe_fold_offset_to_address): Simplify.  Deal with type
+	mismatches here.
+	(maybe_fold_reference): Likewise.
+	(maybe_fold_stmt_addition): Likewise.  Also handle
+	&ARRAY + I in addition to &ARRAY[0] + I.
+	(fold_gimple_assign): Handle ADDR_EXPR of MEM_REFs.
+	(gimple_get_relevant_ref_binfo): Handle MEM_REF.
+	* cfgexpand.c (expand_debug_expr): Handle MEM_REF.
+	* tree-ssa.c (useless_type_conversion_p): Make most pointer
+	conversions useless.
+	(warn_uninitialized_var): Handle MEM_REF.
+	(maybe_rewrite_mem_ref_base): New function.
+	(execute_update_addresses_taken): Implement re-writing of MEM_REFs
+	to SSA form.
+	* tree-inline.c (remap_gimple_op_r): Handle MEM_REF, remove
+	INDIRECT_REF handling.
+	(copy_tree_body_r): Handle MEM_REF.
+	* gimple.c (is_gimple_addressable): Adjust.
+	(is_gimple_address): Likewise.
+	(is_gimple_invariant_address): ADDR_EXPRs of MEM_REFs with
+	invariant base are invariant.
+	(is_gimple_min_lval): Adjust.
+	(is_gimple_mem_ref_addr): New function.
+	(get_base_address): Handle MEM_REF.
+	(count_ptr_derefs): Likewise.
+	(get_base_loadstore): Likewise.
+	* gimple.h (is_gimple_mem_ref_addr): Declare.
+	(gimple_call_fndecl): Handle invariant MEM_REF addresses.
+	* tree-cfg.c (verify_address): New function, split out from ...
+	(verify_expr): ... here.  Use for verifying ADDR_EXPRs and
+	the address operand of MEM_REFs.  Verify MEM_REFs.  Reject
+	INDIRECT_REFs.
+	(verify_types_in_gimple_min_lval): Handle MEM_REF.  Disallow
+	INDIRECT_REF.  Allow conversions.
+	(verify_types_in_gimple_reference): Verify VIEW_CONVERT_EXPR of
+	a register does not change its size.
+	(verify_types_in_gimple_reference): Verify MEM_REF.
+	(verify_gimple_assign_single): Disallow INDIRECT_REF.
+	Handle MEM_REF.
+	* tree-ssa-operands.c (opf_non_addressable, opf_not_non_addressable):
+	New.
+	(mark_address_taken): Handle MEM_REF.
+	(get_indirect_ref_operands): Pass through opf_not_non_addressable.
+	(get_asm_expr_operands): Pass opf_not_non_addressable.
+	(get_expr_operands): Handle opf_[not_]non_addressable.
+	Handle MEM_REF.  Remove INDIRECT_REF handling.
+	* tree-vrp.c: (check_array_ref): Handle MEM_REF.
+	(search_for_addr_array): Likewise.
+	(check_array_bounds): Likewise.
+	(vrp_stmt_computes_nonzero): Adjust for MEM_REF.
+	* tree-ssa-loop-im.c (for_each_index): Handle MEM_REF.
+	(ref_always_accessed_p): Likewise.
+	(gen_lsm_tmp_name): Likewise.  Handle ADDR_EXPR.
+	* tree-complex.c (extract_component): Do not handle INDIRECT_REF.
+	Handle MEM_REF.
+	* cgraphbuild.c (mark_load): Properly check for NULL result
+	from get_base_address.
+	(mark_store): Likewise.
+	* tree-ssa-loop-niter.c (array_at_struct_end_p): Handle MEM_REF.
+	* tree-loop-distribution.c (generate_builtin): Exchange INDIRECT_REF
+	handling for MEM_REF.
+	* tree-scalar-evolution.c (follow_ssa_edge_expr): Handle
+	&MEM[ptr + CST] similar to POINTER_PLUS_EXPR.
+	* builtins.c (stabilize_va_list_loc): Use the function ABI
+	valist type if we couldn't canonicalize the argument type.
+	Always dereference with the canonical va-list type.
+	(maybe_emit_free_warning): Handle MEM_REF.
+	(fold_builtin_memory_op): Simplify and handle MEM_REFs in folding
+	memmove to memcpy.
+	* builtins.c (fold_builtin_memory_op): Use ref-all types
+	for all memcpy foldings.
+	* omp-low.c (build_receiver_ref): Adjust for MEM_REF.
+	(build_outer_var_ref): Likewise.
+	(scan_omp_1_op): Likewise.
+	(lower_rec_input_clauses): Likewise.
+	(lower_lastprivate_clauses): Likewise.
+	(lower_reduction_clauses): Likewise.
+	(lower_copyprivate_clauses): Likewise.
+	(expand_omp_atomic_pipeline): Likewise.
+	(expand_omp_atomic_mutex): Likewise.
+	(create_task_copyfn): Likewise.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Handle MEM_REF.
+	Remove old union trick.  Initialize constant offsets.
+	(ao_ref_init_from_vn_reference): Likewise.  Do not handle
+	INDIRECT_REF.  Init base_alias_set properly.
+	(vn_reference_lookup_3): Replace INDIRECT_REF handling with
+	MEM_REF.
+	(vn_reference_fold_indirect): Adjust for MEM_REFs.
+	(valueize_refs): Fold MEM_REFs.  Re-evaluate constant offset
+	for ARRAY_REFs.
+	(may_insert): Remove.
+	(visit_reference_op_load): Do not test may_insert.
+	(run_scc_vn): Remove parameter, do not fiddle with may_insert.
+	* tree-ssa-sccvn.h (struct vn_reference_op_struct): Add
+	a field to store the constant offset this op applies.
+	(run_scc_vn): Adjust prototype.
+	* cgraphunit.c (thunk_adjust): Adjust for MEM_REF.
+	* tree-ssa-ccp.c (ccp_fold): Replace INDIRECT_REF folding with
+	MEM_REF.  Propagate &foo + CST as &MEM[&foo, CST].  Do not
+	bother about volatile qualifiers on pointers.
+	(fold_const_aggregate_ref): Handle MEM_REF, do not handle INDIRECT_REF.
+	* tree-ssa-loop-ivopts.c
+	* tree-ssa-loop-ivopts.c (determine_base_object): Adjust
+	for MEM_REF.
+	(strip_offset_1): Likewise.
+	(find_interesting_uses_address): Replace INDIRECT_REF handling with
+	MEM_REF handling.
+	(get_computation_cost_at): Likewise.
+	* ipa-pure-const.c (check_op): Handle MEM_REF.
+	* tree-stdarg.c (check_all_va_list_escapes): Adjust for MEM_REF.
+	* tree-ssa-sink.c (is_hidden_global_store): Handle MEM_REF
+	and constants.
+	* ipa-inline.c (likely_eliminated_by_inlining_p): Handle MEM_REF.
+	* tree-parloops.c (take_address_of): Adjust for MEM_REF.
+	(eliminate_local_variables_1): Likewise.
+	(create_call_for_reduction_1): Likewise.
+	(create_loads_for_reductions): Likewise.
+	(create_loads_and_stores_for_name): Likewise.
+	* matrix-reorg.c (may_flatten_matrices_1): Sanitize.
+	(ssa_accessed_in_tree): Handle MEM_REF.
+	(ssa_accessed_in_assign_rhs): Likewise.
+	(update_type_size): Likewise.
+	(analyze_accesses_for_call_stmt): Likewise.
+	(analyze_accesses_for_assign_stmt): Likewise.
+	(transform_access_sites): Likewise.
+	(transform_allocation_sites): Likewise.
+	* tree-affine.c (tree_to_aff_combination): Handle MEM_REF.
+	* tree-vect-data-refs.c (vect_create_addr_base_for_vector_ref): Do
+	not handle INDIRECT_REF.
+	* tree-ssa-phiopt.c (add_or_mark_expr): Handle MEM_REF.
+	(cond_store_replacement): Likewise.
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Handle
+	MEM_REF, no not handle INDIRECT_REFs.
+	(insert_into_preds_of_block): Properly initialize avail.
+	(phi_translate_1): Fold MEM_REFs.  Re-evaluate constant offset
+	for ARRAY_REFs.  Properly handle reference lookups that
+	require a bit re-interpretation.
+	(can_PRE_operation): Do not handle INDIRECT_REF.  Handle MEM_REF.
+	* tree-sra.c
+	* tree-sra.c (build_access_from_expr_1): Handle MEM_REF.
+	(build_ref_for_offset_1): Remove.
+	(build_ref_for_offset): Build MEM_REFs.
+	(gate_intra_sra): Disable for now.
+	(sra_ipa_modify_expr): Handle MEM_REF.
+	(ipa_early_sra_gate): Disable for now.
+	* tree-sra.c (create_access): Swap INDIRECT_REF handling for
+	MEM_REF handling.
+	(disqualify_base_of_expr): Likewise.
+	(ptr_parm_has_direct_uses): Swap INDIRECT_REF handling for
+	MEM_REF handling.
+	(sra_ipa_modify_expr): Remove INDIRECT_REF handling.
+	Use mem_ref_offset.  Remove bogus folding.
+	(build_access_from_expr_1): Properly handle MEM_REF for
+	non IPA-SRA.
+	(make_fancy_name_1): Add support for MEM_REF.
+	* tree-predcom.c (ref_at_iteration): Handle MEM_REFs.
+	* tree-mudflap.c (mf_xform_derefs_1): Adjust for MEM_REF.
+	* ipa-prop.c (compute_complex_assign_jump_func): Handle MEM_REF.
+	(compute_complex_ancestor_jump_func): Likewise.
+	(ipa_analyze_virtual_call_uses): Likewise.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Replace
+	INDIRECT_REF folding with more generalized MEM_REF folding.
+	(tree_ssa_forward_propagate_single_use_vars): Adjust accordingly.
+	(forward_propagate_addr_into_variable_array_index): Also handle
+	&ARRAY + I in addition to &ARRAY[0] + I.
+	* tree-ssa-dce.c (ref_may_be_aliased): Handle MEM_REF.
+	* tree-ssa-ter.c (find_replaceable_in_bb): Avoid TER if that
+	creates assignments with overlap.
+	* tree-nested.c (get_static_chain): Adjust for MEM_REF.
+	(get_frame_field): Likewise.
+	(get_nonlocal_debug_decl): Likewise.
+	(convert_nonlocal_reference_op): Likewise.
+	(struct nesting_info): Add mem_refs pointer-set.
+	(create_nesting_tree): Allocate it.
+	(convert_local_reference_op): Insert to be folded mem-refs.
+	(fold_mem_refs): New function.
+	(finalize_nesting_tree_1): Perform defered folding of mem-refs 
+	(free_nesting_tree): Free the pointer-set.
+	* tree-vect-stmts.c (vectorizable_store): Adjust for MEM_REF.
+	(vectorizable_load): Likewise.
+	* tree-ssa-phiprop.c (phiprop_insert_phi): Adjust for MEM_REF.
+	(propagate_with_phi): Likewise.
+	* tree-object-size.c (addr_object_size): Handle MEM_REFs
+	instead of INDIRECT_REFs.
+	(compute_object_offset): Handle MEM_REF.
+	(plus_stmt_object_size): Handle MEM_REF.
+	(collect_object_sizes_for): Dispatch to plus_stmt_object_size
+	for &MEM_REF.
+	* tree-flow.h (get_addr_base_and_unit_offset): Declare.
+	(symbol_marked_for_renaming): Likewise.
+	* Makefile.in (tree-dfa.o): Add $(TOPLEV_H).
+	(fold-const.o): Add $(TREE_FLOW_H).
+	* tree-ssa-structalias.c (get_constraint_for_1): Handle MEM_REF.
+	(find_func_clobbers): Likewise.
+	* ipa-struct-reorg.c (decompose_indirect_ref_acc): Handle MEM_REF.
+	(decompose_access): Likewise.
+	(replace_field_acc): Likewise.
+	(replace_field_access_stmt): Likewise.
+	(insert_new_var_in_stmt): Likewise.
+	(get_stmt_accesses): Likewise.
+	(reorg_structs_drive): Disable.
+	* config/i386/i386.c (ix86_va_start): Adjust for MEM_REF.
+	(ix86_canonical_va_list_type): Likewise.
+
 2010-06-30  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR other/44566

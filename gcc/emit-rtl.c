@@ -1614,6 +1614,35 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
       || TREE_CODE (t) == ALIGN_INDIRECT_REF
       || TYPE_ALIGN_OK (type))
     align = MAX (align, TYPE_ALIGN (type));
+  else if (TREE_CODE (t) == MEM_REF)
+    {
+      HOST_WIDE_INT aoff = BITS_PER_UNIT;
+      if (host_integerp (TREE_OPERAND (t, 1), 1))
+	{
+	  HOST_WIDE_INT ioff = TREE_INT_CST_LOW (TREE_OPERAND (t, 1));
+	  aoff = (ioff & -ioff) * BITS_PER_UNIT;
+	}
+      if (TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR
+	  && DECL_P (TREE_OPERAND (TREE_OPERAND (t, 0), 0)))
+	align = MAX (align,
+		     DECL_ALIGN (TREE_OPERAND (TREE_OPERAND (t, 0), 0)));
+      else if (TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR
+	       && CONSTANT_CLASS_P (TREE_OPERAND (TREE_OPERAND (t, 0), 0)))
+	{
+	  align = TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0)));
+#ifdef CONSTANT_ALIGNMENT
+	  align = CONSTANT_ALIGNMENT (TREE_OPERAND (TREE_OPERAND (t, 0), 0), align);
+#endif
+	}
+      else
+	/* This technically isn't correct.  We can't really derive
+	   alignment information from types.  */
+	align = MAX (align,
+		     TYPE_ALIGN (TREE_TYPE (TREE_TYPE (TREE_OPERAND (t, 1)))));
+      if (!integer_zerop (TREE_OPERAND (t, 1))
+	  && aoff < align)
+	align = aoff;
+    }
   else
     if (TREE_CODE (t) == MISALIGNED_INDIRECT_REF)
       {
@@ -1654,6 +1683,9 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	     || TREE_CODE (base) == BIT_FIELD_REF)
 	base = TREE_OPERAND (base, 0);
 
+      if (TREE_CODE (base) == MEM_REF
+	  && TREE_CODE (TREE_OPERAND (base, 0)) == ADDR_EXPR)
+	base = TREE_OPERAND (TREE_OPERAND (base, 0), 0);
       if (DECL_P (base))
 	{
 	  if (CODE_CONTAINS_STRUCT (TREE_CODE (base), TS_DECL_WITH_VIS))
@@ -1774,7 +1806,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	    }
 
 	  /* If this is an indirect reference, record it.  */
-	  else if (TREE_CODE (t) == INDIRECT_REF
+	  else if (TREE_CODE (t) == MEM_REF 
 		   || TREE_CODE (t) == MISALIGNED_INDIRECT_REF)
 	    {
 	      expr = t;
@@ -1784,7 +1816,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	}
 
       /* If this is an indirect reference, record it.  */
-      else if (TREE_CODE (t) == INDIRECT_REF
+      else if (TREE_CODE (t) == MEM_REF 
 	       || TREE_CODE (t) == MISALIGNED_INDIRECT_REF)
 	{
 	  expr = t;

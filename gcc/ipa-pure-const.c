@@ -324,7 +324,7 @@ check_op (funct_state local, tree t, bool checking_write)
       return;
     }
   else if (t
-  	   && INDIRECT_REF_P (t)
+  	   && (INDIRECT_REF_P (t) || TREE_CODE (t) == MEM_REF)
 	   && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME
 	   && !ptr_deref_may_alias_global_p (TREE_OPERAND (t, 0)))
     {

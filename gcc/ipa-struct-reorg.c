@@ -421,6 +421,10 @@ decompose_indirect_ref_acc (tree str_decl, struct field_access_site *acc)
   if (!is_result_of_mult (before_cast, &acc->num, struct_size))
     return false;
 
+  /* ???  Add TREE_OPERAND (acc->ref, 1) to acc->offset.  */
+  if (!integer_zerop (TREE_OPERAND (acc->ref, 1)))
+    return false;
+
   return true;
 }
 
@@ -434,7 +438,7 @@ decompose_access (tree str_decl, struct field_access_site *acc)
 {
   gcc_assert (acc->ref);
 
-  if (TREE_CODE (acc->ref) == INDIRECT_REF)
+  if (TREE_CODE (acc->ref) == MEM_REF)
     return decompose_indirect_ref_acc (str_decl, acc);
   else if (TREE_CODE (acc->ref) == ARRAY_REF)
     return true;
@@ -969,12 +973,12 @@ replace_field_acc (struct field_access_site *acc, tree new_type)
   type_wrapper_t *wr_p = NULL;
   struct ref_pos r_pos;
 
-  while (TREE_CODE (ref_var) == INDIRECT_REF
+  while (TREE_CODE (ref_var) == MEM_REF
 	 || TREE_CODE (ref_var) == ARRAY_REF)
     {
       type_wrapper_t wr;
 
-      if ( TREE_CODE (ref_var) == INDIRECT_REF)
+      if (TREE_CODE (ref_var) == MEM_REF)
 	{
 	  wr.wrap = 0;
 	  wr.domain = 0;
@@ -1001,7 +1005,7 @@ replace_field_acc (struct field_access_site *acc, tree new_type)
 	new_ref = build4 (ARRAY_REF, type, new_ref,
 			  wr_p->domain, NULL_TREE, NULL_TREE);
       else /* Pointer.  */
-	new_ref = build1 (INDIRECT_REF, type, new_ref);
+	new_ref = build_simple_mem_ref (new_ref);
       VEC_pop (type_wrapper_t, wrapper);
     }
 
@@ -1041,7 +1045,7 @@ static void
 replace_field_access_stmt (struct field_access_site *acc, tree new_type)
 {
 
-  if (TREE_CODE (acc->ref) == INDIRECT_REF
+  if (TREE_CODE (acc->ref) == MEM_REF
       ||TREE_CODE (acc->ref) == ARRAY_REF
       ||TREE_CODE (acc->ref) == VAR_DECL)
     replace_field_acc (acc, new_type);
@@ -1277,13 +1281,11 @@ insert_new_var_in_stmt (gimple stmt, tree var, tree new_var)
   pos = find_pos_in_stmt (stmt, var, &r_pos);
   gcc_assert (pos);
 
-  while (r_pos.container && (TREE_CODE(r_pos.container) == INDIRECT_REF
+  while (r_pos.container && (TREE_CODE(r_pos.container) == MEM_REF
 			     || TREE_CODE(r_pos.container) == ADDR_EXPR))
     {
-      tree type = TREE_TYPE (TREE_TYPE (new_var));
-
-      if (TREE_CODE(r_pos.container) == INDIRECT_REF)
-	new_var = build1 (INDIRECT_REF, type, new_var);
+      if (TREE_CODE(r_pos.container) == MEM_REF)
+	new_var = build_simple_mem_ref (new_var);
       else
 	new_var = build_fold_addr_expr (new_var);
       pos = find_pos_in_stmt (stmt, r_pos.container, &r_pos);
@@ -2530,7 +2532,7 @@ get_stmt_accesses (tree *tp, int *walk_subtrees, void *data)
 	tree field_decl = TREE_OPERAND (t, 1);
 
 
-	if ((TREE_CODE (ref) == INDIRECT_REF
+	if ((TREE_CODE (ref) == MEM_REF
 	     || TREE_CODE (ref) == ARRAY_REF
 	     || TREE_CODE (ref) == VAR_DECL)
 	    && TREE_CODE (field_decl) == FIELD_DECL)
@@ -4031,7 +4033,10 @@ reorg_structs (void)
 static unsigned int
 reorg_structs_drive (void)
 {
-  reorg_structs ();
+  /* IPA struct-reorg is completely broken - its analysis phase is
+     non-conservative (which is not the only reason it is broken).  */
+  if (0)
+    reorg_structs ();
   return 0;
 }
 

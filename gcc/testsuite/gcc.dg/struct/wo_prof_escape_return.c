@@ -29,5 +29,5 @@ main ()
 }
 
 /*--------------------------------------------------------------------------*/
-/* { dg-final { scan-ipa-dump "is return type of function...Excluded" "ipa_struct_reorg" } } */
+/* { dg-final { scan-ipa-dump "is return type of function...Excluded" "ipa_struct_reorg" { xfail *-*-* } } } */
 /* { dg-final { cleanup-ipa-dump "*" } } */

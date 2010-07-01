@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-ccp -fdump-tree-alias" } */
+/* { dg-options "-O2 -fno-tree-ccp -fdump-tree-ealias" } */
 
 extern void abort (void);
 struct X {
@@ -22,5 +22,5 @@ foo(int i, int j, int k, int off)
   return *q;
 }
 
-/* { dg-final { scan-tree-dump "q_., points-to vars: { i }" "alias" } } */
-/* { dg-final { cleanup-tree-dump "alias" } } */
+/* { dg-final { scan-tree-dump "q_., points-to vars: { i }" "ealias" } } */
+/* { dg-final { cleanup-tree-dump "ealias" } } */

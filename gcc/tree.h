@@ -4963,6 +4963,10 @@ extern tree build_fold_indirect_ref_loc (location_t, tree);
 #define fold_indirect_ref(T)\
         fold_indirect_ref_loc (UNKNOWN_LOCATION, T)
 extern tree fold_indirect_ref_loc (location_t, tree);
+extern tree build_simple_mem_ref_loc (location_t, tree);
+#define build_simple_mem_ref(T)\
+	build_simple_mem_ref_loc (UNKNOWN_LOCATION, T)
+extern double_int mem_ref_offset (const_tree);
 extern tree constant_boolean_node (int, tree);
 extern tree div_if_zero_remainder (enum tree_code, const_tree, const_tree);
 

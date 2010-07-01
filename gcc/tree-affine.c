@@ -309,6 +309,15 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
       return;
 
     case ADDR_EXPR:
+      /* Handle &MEM[ptr + CST] which is equivalent to POINTER_PLUS_EXPR.  */
+      if (TREE_CODE (TREE_OPERAND (expr, 0)) == MEM_REF)
+	{
+	  expr = TREE_OPERAND (expr, 0);
+	  tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
+	  tree_to_aff_combination (TREE_OPERAND (expr, 1), sizetype, &tmp);
+	  aff_combination_add (comb, &tmp);
+	  return;
+	}
       core = get_inner_reference (TREE_OPERAND (expr, 0), &bitsize, &bitpos,
 				  &toffset, &mode, &unsignedp, &volatilep,
 				  false);
@@ -329,6 +338,25 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
 	  tree_to_aff_combination (toffset, type, &tmp);
 	  aff_combination_add (comb, &tmp);
 	}
+      return;
+
+    case MEM_REF:
+      if (TREE_CODE (TREE_OPERAND (expr, 0)) == ADDR_EXPR)
+	tree_to_aff_combination (TREE_OPERAND (TREE_OPERAND (expr, 0), 0),
+				 type, comb);
+      else if (integer_zerop (TREE_OPERAND (expr, 1)))
+	{
+	  aff_combination_elt (comb, type, expr);
+	  return;
+	}
+      else
+	aff_combination_elt (comb, type,
+			     build2 (MEM_REF, TREE_TYPE (expr),
+				     TREE_OPERAND (expr, 0),
+				     build_int_cst
+				      (TREE_TYPE (TREE_OPERAND (expr, 1)), 0)));
+      tree_to_aff_combination (TREE_OPERAND (expr, 1), sizetype, &tmp);
+      aff_combination_add (comb, &tmp);
       return;
 
     default:

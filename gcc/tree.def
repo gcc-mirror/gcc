@@ -970,6 +970,16 @@ DEFTREECODE (REALIGN_LOAD_EXPR, "realign_load", tcc_expression, 3)
 
 DEFTREECODE (TARGET_MEM_REF, "target_mem_ref", tcc_reference, 6)
 
+/* Memory addressing.  Operands are a pointer and a tree constant integer
+   byte offset of the pointer type that when dereferenced yields the
+   type of the base object the pointer points into and which is used for
+   TBAA purposes.
+   The type of the MEM_REF is the type the bytes at the memory location
+   are interpreted as.
+   MEM_REF <p, c> is equivalent to ((typeof(c))p)->x... where x... is a
+   chain of component references offsetting p by c.  */
+DEFTREECODE (MEM_REF, "mem_ref", tcc_reference, 2)
+
 /* The ordering of the codes between OMP_PARALLEL and OMP_CRITICAL is
    exposed to TREE_RANGE_CHECK.  */
 /* OpenMP - #pragma omp parallel [clause1 ... clauseN]

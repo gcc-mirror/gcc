@@ -9,5 +9,5 @@
 
   d = s
 end
-! { dg-final { scan-tree-dump-times "d = " 1 "original" } }
+! { dg-final { scan-tree-dump-times "MEM.*d\\\] = MEM" 1 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }

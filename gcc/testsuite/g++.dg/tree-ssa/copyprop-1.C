@@ -25,5 +25,7 @@ int foo(Object&o)
   return o[0];
 }
 
-/* { dg-final { scan-tree-dump-not ".* = \[^>;\]*;" "dce2" } } */
+/* Remaining should be two loads.  */
+
+/* { dg-final { scan-tree-dump-times " = \[^\n\]*;" 2 "dce2" } } */
 /* { dg-final { cleanup-tree-dump "dce2" } } */

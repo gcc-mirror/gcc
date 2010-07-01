@@ -2398,12 +2398,9 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
                              data_ref_base, base_offset);
   else
     {
-      if (TREE_CODE (DR_REF (dr)) == INDIRECT_REF)
-        addr_base = unshare_expr (TREE_OPERAND (DR_REF (dr), 0));
-      else
-        addr_base = build1 (ADDR_EXPR,
-                            build_pointer_type (TREE_TYPE (DR_REF (dr))),
-                            unshare_expr (DR_REF (dr)));
+      addr_base = build1 (ADDR_EXPR,
+			  build_pointer_type (TREE_TYPE (DR_REF (dr))),
+			  unshare_expr (DR_REF (dr)));
     }
 
   vect_ptr_type = build_pointer_type (STMT_VINFO_VECTYPE (stmt_info));

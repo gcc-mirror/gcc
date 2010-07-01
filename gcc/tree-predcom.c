@@ -1345,14 +1345,16 @@ ref_at_iteration (struct loop *loop, tree ref, int iter)
       if (!op0)
 	return NULL_TREE;
     }
-  else if (!INDIRECT_REF_P (ref))
+  else if (!INDIRECT_REF_P (ref)
+	   && TREE_CODE (ref) != MEM_REF)
     return unshare_expr (ref);
 
-  if (INDIRECT_REF_P (ref))
+  if (INDIRECT_REF_P (ref)
+      || TREE_CODE (ref) == MEM_REF)
     {
-      /* Take care for INDIRECT_REF and MISALIGNED_INDIRECT_REF at
+      /* Take care for MEM_REF and MISALIGNED_INDIRECT_REF at
          the same time.  */
-      ret = copy_node (ref);
+      ret = unshare_expr (ref);
       idx = TREE_OPERAND (ref, 0);
       idx_p = &TREE_OPERAND (ret, 0);
     }

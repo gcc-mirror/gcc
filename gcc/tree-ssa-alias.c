@@ -182,7 +182,8 @@ ptr_deref_may_alias_decl_p (tree ptr, tree decl)
     {
       tree base = get_base_address (TREE_OPERAND (ptr, 0));
       if (base
-	  && INDIRECT_REF_P (base))
+	  && (INDIRECT_REF_P (base)
+	      || TREE_CODE (base) == MEM_REF))
 	ptr = TREE_OPERAND (base, 0);
       else if (base
 	       && SSA_VAR_P (base))
@@ -238,7 +239,8 @@ ptr_derefs_may_alias_p (tree ptr1, tree ptr2)
     {
       tree base = get_base_address (TREE_OPERAND (ptr1, 0));
       if (base
-	  && INDIRECT_REF_P (base))
+	  && (INDIRECT_REF_P (base)
+	      || TREE_CODE (base) == MEM_REF))
 	ptr1 = TREE_OPERAND (base, 0);
       else if (base
 	       && SSA_VAR_P (base))
@@ -250,7 +252,8 @@ ptr_derefs_may_alias_p (tree ptr1, tree ptr2)
     {
       tree base = get_base_address (TREE_OPERAND (ptr2, 0));
       if (base
-	  && INDIRECT_REF_P (base))
+	  && (INDIRECT_REF_P (base)
+	      || TREE_CODE (base) == MEM_REF))
 	ptr2 = TREE_OPERAND (base, 0);
       else if (base
 	       && SSA_VAR_P (base))
@@ -299,7 +302,8 @@ ptr_deref_may_alias_ref_p_1 (tree ptr, ao_ref *ref)
 {
   tree base = ao_ref_base (ref);
 
-  if (INDIRECT_REF_P (base))
+  if (INDIRECT_REF_P (base)
+      || TREE_CODE (base) == MEM_REF)
     return ptr_derefs_may_alias_p (ptr, TREE_OPERAND (base, 0));
   else if (SSA_VAR_P (base))
     return ptr_deref_may_alias_decl_p (ptr, base);
@@ -470,12 +474,18 @@ ao_ref_base (ao_ref *ref)
 
 /* Returns the base object alias set of the memory reference *REF.  */
 
-static alias_set_type ATTRIBUTE_UNUSED
+static alias_set_type
 ao_ref_base_alias_set (ao_ref *ref)
 {
+  tree base_ref;
   if (ref->base_alias_set != -1)
     return ref->base_alias_set;
-  ref->base_alias_set = get_alias_set (ao_ref_base (ref));
+  if (!ref->ref)
+    return 0;
+  base_ref = ref->ref;
+  while (handled_component_p (base_ref))
+    base_ref = TREE_OPERAND (base_ref, 0);
+  ref->base_alias_set = get_alias_set (base_ref);
   return ref->base_alias_set;
 }
 
@@ -505,7 +515,8 @@ ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
 					 &ref->offset, &t1, &t2);
   else
     {
-      ref->base = build1 (INDIRECT_REF, char_type_node, ptr);
+      ref->base = build2 (MEM_REF, char_type_node,
+			  ptr, build_int_cst (ptr_type_node, 0));
       ref->offset = 0;
     }
   if (size
@@ -665,33 +676,45 @@ decl_refs_may_alias_p (tree base1,
    if non-NULL are the complete memory reference trees.  */
 
 static bool
-indirect_ref_may_alias_decl_p (tree ref1, tree ptr1,
-			       HOST_WIDE_INT offset1, HOST_WIDE_INT max_size1,
+indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
+			       HOST_WIDE_INT offset1,
+			       HOST_WIDE_INT max_size1 ATTRIBUTE_UNUSED,
 			       alias_set_type ref1_alias_set,
 			       alias_set_type base1_alias_set,
-			       tree ref2, tree base2,
+			       tree ref2 ATTRIBUTE_UNUSED, tree base2,
 			       HOST_WIDE_INT offset2, HOST_WIDE_INT max_size2,
 			       alias_set_type ref2_alias_set,
-			       alias_set_type base2_alias_set)
+			       alias_set_type base2_alias_set, bool tbaa_p)
 {
+  tree ptr1 = TREE_OPERAND (base1, 0);
+  tree ptrtype1;
+  HOST_WIDE_INT offset1p = offset1;
+
+  if (TREE_CODE (base1) == MEM_REF)
+    offset1p = offset1 + mem_ref_offset (base1).low * BITS_PER_UNIT;
+
   /* If only one reference is based on a variable, they cannot alias if
      the pointer access is beyond the extent of the variable access.
      (the pointer base cannot validly point to an offset less than zero
      of the variable).
      They also cannot alias if the pointer may not point to the decl.  */
-  if (max_size2 != -1
-      && !ranges_overlap_p (offset1, max_size1, 0, offset2 + max_size2))
+  if (!ranges_overlap_p (MAX (0, offset1p), -1, offset2, max_size2))
     return false;
   if (!ptr_deref_may_alias_decl_p (ptr1, base2))
     return false;
 
   /* Disambiguations that rely on strict aliasing rules follow.  */
-  if (!flag_strict_aliasing)
+  if (!flag_strict_aliasing || !tbaa_p)
     return true;
+
+  if (TREE_CODE (base1) == MEM_REF)
+    ptrtype1 = TREE_TYPE (TREE_OPERAND (base1, 1));
+  else
+    ptrtype1 = TREE_TYPE (ptr1);
 
   /* If the alias set for a pointer access is zero all bets are off.  */
   if (base1_alias_set == -1)
-    base1_alias_set = get_deref_alias_set (ptr1);
+    base1_alias_set = get_deref_alias_set (ptrtype1);
   if (base1_alias_set == 0)
     return true;
   if (base2_alias_set == -1)
@@ -699,22 +722,52 @@ indirect_ref_may_alias_decl_p (tree ref1, tree ptr1,
 
   /* If both references are through the same type, they do not alias
      if the accesses do not overlap.  This does extra disambiguation
-     for mixed/pointer accesses but requires strict aliasing.  */
-  if (same_type_for_tbaa (TREE_TYPE (TREE_TYPE (ptr1)),
-			  TREE_TYPE (base2)) == 1)
+     for mixed/pointer accesses but requires strict aliasing.
+     For MEM_REFs we require that the component-ref offset we computed
+     is relative to the start of the type which we ensure by
+     comparing rvalue and access type and disregarding the constant
+     pointer offset.  */
+  if ((TREE_CODE (base1) != MEM_REF
+       || same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (ptrtype1)) == 1)
+      && same_type_for_tbaa (TREE_TYPE (ptrtype1), TREE_TYPE (base2)) == 1)
     return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
 
-  /* The only way to access a variable is through a pointer dereference
-     of the same alias set or a subset of it.  */
+  /* When we are trying to disambiguate an access with a pointer dereference
+     as base versus one with a decl as base we can use both the size
+     of the decl and its dynamic type for extra disambiguation.
+     ???  We do not know anything about the dynamic type of the decl
+     other than that its alias-set contains base2_alias_set as a subset
+     which does not help us here.  */
+  /* As we know nothing useful about the dynamic type of the decl just
+     use the usual conflict check rather than a subset test.
+     ???  We could introduce -fvery-strict-aliasing when the language
+     does not allow decls to have a dynamic type that differs from their
+     static type.  Then we can check 
+     !alias_set_subset_of (base1_alias_set, base2_alias_set) instead.  */
   if (base1_alias_set != base2_alias_set
-      && !alias_set_subset_of (base1_alias_set, base2_alias_set))
+      && !alias_sets_conflict_p (base1_alias_set, base2_alias_set))
+    return false;
+  /* If the size of the access relevant for TBAA through the pointer
+     is bigger than the size of the decl we can't possibly access the
+     decl via that pointer.  */
+  if (DECL_SIZE (base2) && COMPLETE_TYPE_P (TREE_TYPE (ptrtype1))
+      && TREE_CODE (DECL_SIZE (base2)) == INTEGER_CST
+      && TREE_CODE (TYPE_SIZE (TREE_TYPE (ptrtype1))) == INTEGER_CST
+      /* ???  This in turn may run afoul when a decl of type T which is
+	 a member of union type U is accessed through a pointer to
+	 type U and sizeof T is smaller than sizeof U.  */
+      && TREE_CODE (TREE_TYPE (ptrtype1)) != UNION_TYPE
+      && TREE_CODE (TREE_TYPE (ptrtype1)) != QUAL_UNION_TYPE
+      && tree_int_cst_lt (DECL_SIZE (base2), TYPE_SIZE (TREE_TYPE (ptrtype1))))
     return false;
 
   /* Do access-path based disambiguation.  */
   if (ref1 && ref2
       && handled_component_p (ref1)
-      && handled_component_p (ref2))
-    return aliasing_component_refs_p (ref1, TREE_TYPE (TREE_TYPE (ptr1)),
+      && handled_component_p (ref2)
+      && (TREE_CODE (base1) != MEM_REF
+	  || same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (ptrtype1)) == 1))
+    return aliasing_component_refs_p (ref1, TREE_TYPE (ptrtype1),
 				      ref1_alias_set, base1_alias_set,
 				      offset1, max_size1,
 				      ref2, TREE_TYPE (base2),
@@ -732,42 +785,65 @@ indirect_ref_may_alias_decl_p (tree ref1, tree ptr1,
    if non-NULL are the complete memory reference trees. */
 
 static bool
-indirect_refs_may_alias_p (tree ref1, tree ptr1,
+indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 			   HOST_WIDE_INT offset1, HOST_WIDE_INT max_size1,
 			   alias_set_type ref1_alias_set,
 			   alias_set_type base1_alias_set,
-			   tree ref2, tree ptr2,
+			   tree ref2 ATTRIBUTE_UNUSED, tree base2,
 			   HOST_WIDE_INT offset2, HOST_WIDE_INT max_size2,
 			   alias_set_type ref2_alias_set,
-			   alias_set_type base2_alias_set)
+			   alias_set_type base2_alias_set, bool tbaa_p)
 {
+  tree ptr1 = TREE_OPERAND (base1, 0);
+  tree ptr2 = TREE_OPERAND (base2, 0);
+  tree ptrtype1, ptrtype2;
+
   /* If both bases are based on pointers they cannot alias if they may not
      point to the same memory object or if they point to the same object
      and the accesses do not overlap.  */
   if (operand_equal_p (ptr1, ptr2, 0))
-    return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
+    {
+      if (TREE_CODE (base1) == MEM_REF)
+	offset1 += mem_ref_offset (base1).low * BITS_PER_UNIT;
+      if (TREE_CODE (base2) == MEM_REF)
+	offset2 += mem_ref_offset (base2).low * BITS_PER_UNIT;
+      return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
+    }
   if (!ptr_derefs_may_alias_p (ptr1, ptr2))
     return false;
 
   /* Disambiguations that rely on strict aliasing rules follow.  */
-  if (!flag_strict_aliasing)
+  if (!flag_strict_aliasing || !tbaa_p)
     return true;
+
+  if (TREE_CODE (base1) == MEM_REF)
+    ptrtype1 = TREE_TYPE (TREE_OPERAND (base1, 1));
+  else
+    ptrtype1 = TREE_TYPE (ptr1);
+  if (TREE_CODE (base2) == MEM_REF)
+    ptrtype2 = TREE_TYPE (TREE_OPERAND (base2, 1));
+  else
+    ptrtype2 = TREE_TYPE (ptr2);
 
   /* If the alias set for a pointer access is zero all bets are off.  */
   if (base1_alias_set == -1)
-    base1_alias_set = get_deref_alias_set (ptr1);
+    base1_alias_set = get_deref_alias_set (ptrtype1);
   if (base1_alias_set == 0)
     return true;
   if (base2_alias_set == -1)
-    base2_alias_set = get_deref_alias_set (ptr2);
+    base2_alias_set = get_deref_alias_set (ptrtype2);
   if (base2_alias_set == 0)
     return true;
 
   /* If both references are through the same type, they do not alias
      if the accesses do not overlap.  This does extra disambiguation
      for mixed/pointer accesses but requires strict aliasing.  */
-  if (same_type_for_tbaa (TREE_TYPE (TREE_TYPE (ptr1)),
-			  TREE_TYPE (TREE_TYPE (ptr2))) == 1)
+  if ((TREE_CODE (base1) != MEM_REF
+       || same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (ptrtype1)) == 1)
+      && (TREE_CODE (base2) != MEM_REF
+	  || same_type_for_tbaa (TREE_TYPE (base2), TREE_TYPE (ptrtype2)) == 1)
+      && same_type_for_tbaa (TREE_TYPE (ptrtype1),
+			     TREE_TYPE (ptrtype2)) == 1)
     return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
 
   /* Do type-based disambiguation.  */
@@ -778,11 +854,15 @@ indirect_refs_may_alias_p (tree ref1, tree ptr1,
   /* Do access-path based disambiguation.  */
   if (ref1 && ref2
       && handled_component_p (ref1)
-      && handled_component_p (ref2))
-    return aliasing_component_refs_p (ref1, TREE_TYPE (TREE_TYPE (ptr1)),
+      && handled_component_p (ref2)
+      && (TREE_CODE (base1) != MEM_REF
+	  || same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (ptrtype1)) == 1)
+      && (TREE_CODE (base2) != MEM_REF
+	  || same_type_for_tbaa (TREE_TYPE (base2), TREE_TYPE (ptrtype2)) == 1))
+    return aliasing_component_refs_p (ref1, TREE_TYPE (ptrtype1),
 				      ref1_alias_set, base1_alias_set,
 				      offset1, max_size1,
-				      ref2, TREE_TYPE (TREE_TYPE (ptr2)),
+				      ref2, TREE_TYPE (ptrtype2),
 				      ref2_alias_set, base2_alias_set,
 				      offset2, max_size2, false);
 
@@ -798,19 +878,20 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
   HOST_WIDE_INT offset1 = 0, offset2 = 0;
   HOST_WIDE_INT max_size1 = -1, max_size2 = -1;
   bool var1_p, var2_p, ind1_p, ind2_p;
-  alias_set_type set;
 
   gcc_checking_assert ((!ref1->ref
 			|| TREE_CODE (ref1->ref) == SSA_NAME
 			|| DECL_P (ref1->ref)
 			|| handled_component_p (ref1->ref)
 			|| INDIRECT_REF_P (ref1->ref)
+			|| TREE_CODE (ref1->ref) == MEM_REF
 			|| TREE_CODE (ref1->ref) == TARGET_MEM_REF)
 		       && (!ref2->ref
 			   || TREE_CODE (ref2->ref) == SSA_NAME
 			   || DECL_P (ref2->ref)
 			   || handled_component_p (ref2->ref)
 			   || INDIRECT_REF_P (ref2->ref)
+			   || TREE_CODE (ref2->ref) == MEM_REF
 			   || TREE_CODE (ref2->ref) == TARGET_MEM_REF));
 
   /* Decompose the references into their base objects and the access.  */
@@ -851,8 +932,9 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
     return decl_refs_may_alias_p (base1, offset1, max_size1,
 				  base2, offset2, max_size2);
 
-  ind1_p = INDIRECT_REF_P (base1);
-  ind2_p = INDIRECT_REF_P (base2);
+  ind1_p = INDIRECT_REF_P (base1) || (TREE_CODE (base1) == MEM_REF);
+  ind2_p = INDIRECT_REF_P (base2) || (TREE_CODE (base2) == MEM_REF);
+
   /* Canonicalize the pointer-vs-decl case.  */
   if (ind1_p && var2_p)
     {
@@ -867,59 +949,6 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
       ind1_p = false;
       var2_p = false;
       ind2_p = true;
-    }
-
-  /* If we are about to disambiguate pointer-vs-decl try harder to
-     see must-aliases and give leeway to some invalid cases.
-     This covers a pretty minimal set of cases only and does not
-     when called from the RTL oracle.  It handles cases like
-
-       int i = 1;
-       return *(float *)&i;
-
-     and also fixes gfortran.dg/lto/pr40725.  */
-  if (var1_p && ind2_p
-      && cfun
-      && gimple_in_ssa_p (cfun)
-      && TREE_CODE (TREE_OPERAND (base2, 0)) == SSA_NAME)
-    {
-      gimple def_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (base2, 0));
-      while (is_gimple_assign (def_stmt)
-	     && (gimple_assign_rhs_code (def_stmt) == SSA_NAME
-		 || CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt))))
-	{
-	  tree rhs = gimple_assign_rhs1 (def_stmt);
-	  HOST_WIDE_INT offset, size, max_size;
-
-	  /* Look through SSA name copies and pointer conversions.  */
-	  if (TREE_CODE (rhs) == SSA_NAME
-	      && POINTER_TYPE_P (TREE_TYPE (rhs)))
-	    {
-	      def_stmt = SSA_NAME_DEF_STMT (rhs);
-	      continue;
-	    }
-	  if (TREE_CODE (rhs) != ADDR_EXPR)
-	    break;
-
-	  /* If the pointer is defined as an address based on a decl
-	     use plain offset disambiguation and ignore TBAA.  */
-	  rhs = TREE_OPERAND (rhs, 0);
-	  rhs = get_ref_base_and_extent (rhs, &offset, &size, &max_size);
-	  if (SSA_VAR_P (rhs))
-	    {
-	      base2 = rhs;
-	      offset2 += offset;
-	      if (size != max_size
-		  || max_size == -1)
-		max_size2 = -1;
-	      return decl_refs_may_alias_p (base1, offset1, max_size1,
-					    base2, offset2, max_size2);
-	    }
-
-	  /* Do not continue looking through &p->x to limit time
-	     complexity.  */
-	  break;
-	}
     }
 
   /* First defer to TBAA if possible.  */
@@ -937,21 +966,23 @@ refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
     return true;
 
   /* Dispatch to the pointer-vs-decl or pointer-vs-pointer disambiguators.  */
-  set = tbaa_p ? -1 : 0;
   if (var1_p && ind2_p)
-    return indirect_ref_may_alias_decl_p (ref2->ref, TREE_OPERAND (base2, 0),
+    return indirect_ref_may_alias_decl_p (ref2->ref, base2,
 					  offset2, max_size2,
-					  ao_ref_alias_set (ref2), set,
+					  ao_ref_alias_set (ref2), -1,
 					  ref1->ref, base1,
 					  offset1, max_size1,
-					  ao_ref_alias_set (ref1), set);
+					  ao_ref_alias_set (ref1),
+					  ao_ref_base_alias_set (ref1),
+					  tbaa_p);
   else if (ind1_p && ind2_p)
-    return indirect_refs_may_alias_p (ref1->ref, TREE_OPERAND (base1, 0),
+    return indirect_refs_may_alias_p (ref1->ref, base1,
 				      offset1, max_size1,
-				      ao_ref_alias_set (ref1), set,
-				      ref2->ref, TREE_OPERAND (base2, 0),
+				      ao_ref_alias_set (ref1), -1,
+				      ref2->ref, base2,
 				      offset2, max_size2,
-				      ao_ref_alias_set (ref2), set);
+				      ao_ref_alias_set (ref2), -1,
+				      tbaa_p);
 
   gcc_unreachable ();
 }
@@ -1110,7 +1141,8 @@ ref_maybe_used_by_call_p_1 (gimple call, ao_ref *ref)
       if (pt_solution_includes (gimple_call_use_set (call), base))
 	return true;
     }
-  else if (INDIRECT_REF_P (base)
+  else if ((INDIRECT_REF_P (base)
+	    || TREE_CODE (base) == MEM_REF)
 	   && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
     {
       struct ptr_info_def *pi = SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0));
@@ -1281,7 +1313,8 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 	      if (DECL_P (base)
 		  && !TREE_STATIC (base))
 		return true;
-	      else if (INDIRECT_REF_P (base)
+	      else if ((INDIRECT_REF_P (base)
+			|| TREE_CODE (base) == MEM_REF)
 		       && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME
 		       && (pi = SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0))))
 		return pi->pt.anything || pi->pt.nonlocal;
@@ -1360,7 +1393,8 @@ call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
   /* Check if the base variable is call-clobbered.  */
   if (DECL_P (base))
     return pt_solution_includes (gimple_call_clobber_set (call), base);
-  else if (INDIRECT_REF_P (base)
+  else if ((INDIRECT_REF_P (base)
+	    || TREE_CODE (base) == MEM_REF)
 	   && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
     {
       struct ptr_info_def *pi = SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0));

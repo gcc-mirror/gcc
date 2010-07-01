@@ -15160,6 +15160,11 @@ loc_list_from_tree (tree loc, int want_address)
       }
       break;
 
+    case MEM_REF:
+      /* ??? FIXME.  */
+      if (!integer_zerop (TREE_OPERAND (loc, 1)))
+	return 0;
+      /* Fallthru.  */
     case INDIRECT_REF:
     case ALIGN_INDIRECT_REF:
     case MISALIGNED_INDIRECT_REF:
