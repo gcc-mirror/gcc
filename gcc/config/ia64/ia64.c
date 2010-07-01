@@ -5212,7 +5212,7 @@ ia64_register_move_cost (enum machine_mode mode, enum reg_class from_i,
 {
   enum reg_class from = (enum reg_class) from_i;
   enum reg_class to = (enum reg_class) to_i;
-{
+
   /* ADDL_REGS is the same as GR_REGS for movement purposes.  */
   if (to == ADDL_REGS)
     to = GR_REGS;
