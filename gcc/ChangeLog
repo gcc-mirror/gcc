@@ -1,3 +1,8 @@
+2010-07-01  Richard Guenther  <rguenther@suse.de>
+
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Use unsigned
+	types for offsets.
+
 2010-07-01  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR target/44732
