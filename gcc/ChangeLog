@@ -1,5 +1,11 @@
 2010-07-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/44694
+	* dwarf2out.c (reg_loc_descriptor): For eliminated arg_pointer_rtx
+	or frame_pointer_rtx use DW_OP_fbreg offset DW_OP_stack_value.
+
+2010-07-01  Jakub Jelinek  <jakub@redhat.com>
+
 	Backport from mainline
 	2010-06-29  Jakub Jelinek  <jakub@redhat.com>
 
