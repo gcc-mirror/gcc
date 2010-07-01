@@ -1,3 +1,8 @@
+2010-07-01  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* compare-debug (Darwin): Remove '-x' flag from ld-based object
+	stripping.  Add a comment as to why we do it this way.
+	
 2010-06-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* test_summary: Don't use diff -u.
