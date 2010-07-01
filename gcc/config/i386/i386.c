@@ -7137,7 +7137,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 	}
       if (need_temp)
 	{
-	  int i;
+	  int i, prev_size = 0;
 	  tree temp = create_tmp_var (type, "va_arg_tmp");
 
 	  /* addr = &temp; */
@@ -7149,13 +7149,29 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 	      rtx slot = XVECEXP (container, 0, i);
 	      rtx reg = XEXP (slot, 0);
 	      enum machine_mode mode = GET_MODE (reg);
-	      tree piece_type = lang_hooks.types.type_for_mode (mode, 1);
-	      tree addr_type = build_pointer_type (piece_type);
-	      tree daddr_type = build_pointer_type_for_mode (piece_type,
-							     ptr_mode, true);
+	      tree piece_type;
+	      tree addr_type;
+	      tree daddr_type;
 	      tree src_addr, src;
 	      int src_offset;
 	      tree dest_addr, dest;
+	      int cur_size = GET_MODE_SIZE (mode);
+
+	      if (prev_size + cur_size > size)
+		{
+		  cur_size = size - prev_size;
+		  mode = mode_for_size (cur_size * BITS_PER_UNIT, MODE_INT, 1);
+		  if (mode == BLKmode)
+		    mode = QImode;
+		}
+	      piece_type = lang_hooks.types.type_for_mode (mode, 1);
+	      if (mode == GET_MODE (reg))
+		addr_type = build_pointer_type (piece_type);
+	      else
+		addr_type = build_pointer_type_for_mode (piece_type, ptr_mode,
+							 true);
+	      daddr_type = build_pointer_type_for_mode (piece_type, ptr_mode,
+							true);
 
 	      if (SSE_REGNO_P (REGNO (reg)))
 		{
@@ -7170,14 +7186,26 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 	      src_addr = fold_convert (addr_type, src_addr);
 	      src_addr = fold_build2 (POINTER_PLUS_EXPR, addr_type, src_addr,
 				      size_int (src_offset));
-	      src = build_va_arg_indirect_ref (src_addr);
 
 	      dest_addr = fold_convert (daddr_type, addr);
 	      dest_addr = fold_build2 (POINTER_PLUS_EXPR, daddr_type, dest_addr,
 				       size_int (INTVAL (XEXP (slot, 1))));
-	      dest = build_va_arg_indirect_ref (dest_addr);
+	      if (cur_size == GET_MODE_SIZE (mode))
+		{
+		  src = build_va_arg_indirect_ref (src_addr);
+		  dest = build_va_arg_indirect_ref (dest_addr);
 
-	      gimplify_assign (dest, src, pre_p);
+		  gimplify_assign (dest, src, pre_p);
+		}
+	      else
+		{
+		  tree copy
+		    = build_call_expr (implicit_built_in_decls[BUILT_IN_MEMCPY],
+				       3, dest_addr, src_addr,
+				       size_int (cur_size));
+		  gimplify_and_add (copy, pre_p);
+		}
+	      prev_size += cur_size;
 	    }
 	}
 

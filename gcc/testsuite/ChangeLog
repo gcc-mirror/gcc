@@ -1,3 +1,11 @@
+2010-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline
+	2010-06-21  Jakub Jelinek  <jakub@redhat.com>
+ 
+	PR target/44575
+	* gcc.c-torture/execute/pr44575.c: New test.
+
 2010-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/44628
