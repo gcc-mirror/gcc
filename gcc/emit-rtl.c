@@ -1616,10 +1616,10 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
     align = MAX (align, TYPE_ALIGN (type));
   else if (TREE_CODE (t) == MEM_REF)
     {
-      HOST_WIDE_INT aoff = BITS_PER_UNIT;
+      unsigned HOST_WIDE_INT aoff = BITS_PER_UNIT;
       if (host_integerp (TREE_OPERAND (t, 1), 1))
 	{
-	  HOST_WIDE_INT ioff = TREE_INT_CST_LOW (TREE_OPERAND (t, 1));
+	  unsigned HOST_WIDE_INT ioff = TREE_INT_CST_LOW (TREE_OPERAND (t, 1));
 	  aoff = (ioff & -ioff) * BITS_PER_UNIT;
 	}
       if (TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR
