@@ -1,3 +1,16 @@
+2010-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/40421
+	* gfortran.fortran-torture/compile/pr40421.f90: New test.
+
+	Backport from mainline
+	2009-06-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/40421
+	* gfortran.fortran-torture/compile/pr40421.f: New testcase.
+
+	* gfortran.fortran-torture/compile/pr40421.f90: New test.
+
 2010-06-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44587
