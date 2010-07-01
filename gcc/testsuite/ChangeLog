@@ -1,3 +1,8 @@
+2010-06-30  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/nullptr04.C: Use __INTPTR_TYPE__.
+	* g++.dg/other/pr25632.C: Likewise.
+
 2010-07-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/40421
