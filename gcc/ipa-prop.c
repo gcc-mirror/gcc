@@ -405,11 +405,12 @@ compute_complex_assign_jump_func (struct ipa_node_params *info,
   if (TREE_CODE (type) != RECORD_TYPE)
     return;
   op1 = get_ref_base_and_extent (op1, &offset, &size, &max_size);
-  if (TREE_CODE (op1) != INDIRECT_REF
+  if (TREE_CODE (op1) != MEM_REF
       /* If this is a varying address, punt.  */
       || max_size == -1
       || max_size != size)
     return;
+  offset += mem_ref_offset (op1).low * BITS_PER_UNIT;
   op1 = TREE_OPERAND (op1, 0);
   if (TREE_CODE (op1) != SSA_NAME
       || !SSA_NAME_IS_DEFAULT_DEF (op1))
@@ -481,11 +482,12 @@ compute_complex_ancestor_jump_func (struct ipa_node_params *info,
   expr = TREE_OPERAND (expr, 0);
   expr = get_ref_base_and_extent (expr, &offset, &size, &max_size);
 
-  if (TREE_CODE (expr) != INDIRECT_REF
+  if (TREE_CODE (expr) != MEM_REF
       /* If this is a varying address, punt.  */
       || max_size == -1
       || max_size != size)
     return;
+  offset += mem_ref_offset (expr).low * BITS_PER_UNIT;
   parm = TREE_OPERAND (expr, 0);
   if (TREE_CODE (parm) != SSA_NAME
       || !SSA_NAME_IS_DEFAULT_DEF (parm))
@@ -1179,7 +1181,7 @@ ipa_analyze_virtual_call_uses (struct cgraph_node *node,
 	  obj = TREE_OPERAND (obj, 0);
 	}
       while (TREE_CODE (obj) == COMPONENT_REF);
-      if (TREE_CODE (obj) != INDIRECT_REF)
+      if (TREE_CODE (obj) != MEM_REF)
 	return;
       obj = TREE_OPERAND (obj, 0);
     }

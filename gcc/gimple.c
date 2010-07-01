@@ -2595,7 +2595,8 @@ is_gimple_condexpr (tree t)
 bool
 is_gimple_addressable (tree t)
 {
-  return (is_gimple_id (t) || handled_component_p (t) || INDIRECT_REF_P (t));
+  return (is_gimple_id (t) || handled_component_p (t)
+	  || TREE_CODE (t) == MEM_REF);
 }
 
 /* Return true if T is a valid gimple constant.  */
@@ -2646,7 +2647,7 @@ is_gimple_address (const_tree t)
       op = TREE_OPERAND (op, 0);
     }
 
-  if (CONSTANT_CLASS_P (op) || INDIRECT_REF_P (op))
+  if (CONSTANT_CLASS_P (op) || TREE_CODE (op) == MEM_REF)
     return true;
 
   switch (TREE_CODE (op))
@@ -2706,8 +2707,18 @@ is_gimple_invariant_address (const_tree t)
     return false;
 
   op = strip_invariant_refs (TREE_OPERAND (t, 0));
+  if (!op)
+    return false;
 
-  return op && (CONSTANT_CLASS_P (op) || decl_address_invariant_p (op));
+  if (TREE_CODE (op) == MEM_REF)
+    {
+      const_tree op0 = TREE_OPERAND (op, 0);
+      return (TREE_CODE (op0) == ADDR_EXPR
+	      && (CONSTANT_CLASS_P (TREE_OPERAND (op0, 0))
+		  || decl_address_invariant_p (TREE_OPERAND (op0, 0))));
+    }
+
+  return CONSTANT_CLASS_P (op) || decl_address_invariant_p (op);
 }
 
 /* Return true if T is a gimple invariant address at IPA level
@@ -2924,7 +2935,7 @@ is_gimple_min_lval (tree t)
 {
   if (!(t = CONST_CAST_TREE (strip_invariant_refs (t))))
     return false;
-  return (is_gimple_id (t) || TREE_CODE (t) == INDIRECT_REF);
+  return (is_gimple_id (t) || TREE_CODE (t) == MEM_REF);
 }
 
 /* Return true if T is a typecast operation.  */
@@ -2942,6 +2953,18 @@ bool
 is_gimple_call_addr (tree t)
 {
   return (TREE_CODE (t) == OBJ_TYPE_REF || is_gimple_val (t));
+}
+
+/* Return true if T is a valid address operand of a MEM_REF.  */
+
+bool
+is_gimple_mem_ref_addr (tree t)
+{
+  return (is_gimple_reg (t)
+	  || TREE_CODE (t) == INTEGER_CST
+	  || (TREE_CODE (t) == ADDR_EXPR
+	      && (CONSTANT_CLASS_P (TREE_OPERAND (t, 0))
+		  || decl_address_invariant_p (TREE_OPERAND (t, 0)))));
 }
 
 /* If T makes a function call, return the corresponding CALL_EXPR operand.
@@ -2975,10 +2998,15 @@ get_base_address (tree t)
   while (handled_component_p (t))
     t = TREE_OPERAND (t, 0);
 
+  if (TREE_CODE (t) == MEM_REF
+      && TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR)
+    t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
+
   if (SSA_VAR_P (t)
       || TREE_CODE (t) == STRING_CST
       || TREE_CODE (t) == CONSTRUCTOR
-      || INDIRECT_REF_P (t))
+      || INDIRECT_REF_P (t)
+      || TREE_CODE (t) == MEM_REF)
     return t;
   else
     return NULL_TREE;
@@ -4418,7 +4446,7 @@ count_ptr_derefs (tree *tp, int *walk_subtrees, void *data)
       return NULL_TREE;
     }
 
-  if (INDIRECT_REF_P (*tp) && TREE_OPERAND (*tp, 0) == count_p->ptr)
+  if (TREE_CODE (*tp) == MEM_REF && TREE_OPERAND (*tp, 0) == count_p->ptr)
     {
       if (wi_p->is_lhs)
 	count_p->num_stores++;
@@ -4491,6 +4519,7 @@ get_base_loadstore (tree op)
     op = TREE_OPERAND (op, 0);
   if (DECL_P (op)
       || INDIRECT_REF_P (op)
+      || TREE_CODE (op) == MEM_REF
       || TREE_CODE (op) == TARGET_MEM_REF)
     return op;
   return NULL_TREE;

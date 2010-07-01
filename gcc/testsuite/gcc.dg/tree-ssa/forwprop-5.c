@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-forwprop1 -w" } */
+/* { dg-options "-O1 -fdump-tree-esra -w" } */
 
 #define vector __attribute__((vector_size(16) ))
 struct VecClass
@@ -15,7 +15,8 @@ vector float foo( vector float v )
     return y.v;
 }
 
-/* We should be able to convert the cast to a VCE in forwprop1. */
-/* { dg-final { scan-tree-dump-times "VIEW_CONVERT_EXPR" 1 "forwprop1"} } */
-/* { dg-final { cleanup-tree-dump "forwprop1" } } */
-
+/* We should be able to remove the intermediate struct and directly
+   return x.  As we do not fold VIEW_CONVERT_EXPR<struct VecClass>(x).v
+   that doesn't happen right now.  */
+/* { dg-final { scan-tree-dump-times "VIEW_CONVERT_EXPR" 1 "esra"} } */
+/* { dg-final { cleanup-tree-dump "esra" } } */

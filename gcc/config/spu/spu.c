@@ -4171,7 +4171,7 @@ spu_gimplify_va_arg_expr (tree valist, tree type, gimple_seq * pre_p,
   f_args = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
   f_skip = TREE_CHAIN (f_args);
 
-  valist = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (valist)), valist);
+  valist = build_simple_mem_ref (valist);
   args =
     build3 (COMPONENT_REF, TREE_TYPE (f_args), valist, f_args, NULL_TREE);
   skip =

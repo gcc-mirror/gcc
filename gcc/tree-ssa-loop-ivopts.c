@@ -813,7 +813,7 @@ determine_base_object (tree expr)
       if (!base)
 	return expr;
 
-      if (TREE_CODE (base) == INDIRECT_REF)
+      if (TREE_CODE (base) == MEM_REF)
 	return determine_base_object (TREE_OPERAND (base, 0));
 
       return fold_convert (ptr_type_node,
@@ -1694,9 +1694,11 @@ find_interesting_uses_address (struct ivopts_data *data, gimple stmt, tree *op_p
 	  tree *ref = &TREE_OPERAND (base, 0);
 	  while (handled_component_p (*ref))
 	    ref = &TREE_OPERAND (*ref, 0);
-	  if (TREE_CODE (*ref) == INDIRECT_REF)
+	  if (TREE_CODE (*ref) == MEM_REF)
 	    {
-	      tree tem = gimple_fold_indirect_ref (TREE_OPERAND (*ref, 0));
+	      tree tem = fold_binary (MEM_REF, TREE_TYPE (*ref),
+				      TREE_OPERAND (*ref, 0),
+				      TREE_OPERAND (*ref, 1));
 	      if (tem)
 		*ref = tem;
 	    }
@@ -2018,7 +2020,8 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
       expr = build_fold_addr_expr (op0);
       return fold_convert (orig_type, expr);
 
-    case INDIRECT_REF:
+    case MEM_REF:
+      /* ???  Offset operand?  */
       inside_addr = false;
       break;
 
@@ -3889,7 +3892,7 @@ fallback:
       return infinite_cost;
 
     if (address_p)
-      comp = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (comp)), comp);
+      comp = build_simple_mem_ref (comp);
 
     return new_cost (computation_cost (comp, speed), 0);
   }

@@ -751,7 +751,8 @@ create_access (tree expr, gimple stmt, bool write)
 
   base = get_ref_base_and_extent (expr, &offset, &size, &max_size);
 
-  if (sra_mode == SRA_MODE_EARLY_IPA && INDIRECT_REF_P (base))
+  if (sra_mode == SRA_MODE_EARLY_IPA
+      && TREE_CODE (base) == MEM_REF)
     {
       base = get_ssa_base_param (TREE_OPERAND (base, 0));
       if (!base)
@@ -885,15 +886,10 @@ completely_scalarize_record (tree base, tree decl, HOST_WIDE_INT offset)
 static void
 disqualify_base_of_expr (tree t, const char *reason)
 {
-  while (handled_component_p (t))
-    t = TREE_OPERAND (t, 0);
-
-  if (sra_mode == SRA_MODE_EARLY_IPA)
-    {
-      if (INDIRECT_REF_P (t))
-	t = TREE_OPERAND (t, 0);
-      t = get_ssa_base_param (t);
-    }
+  t = get_base_address (t);
+  if (sra_mode == SRA_MODE_EARLY_IPA
+      && TREE_CODE (t) == MEM_REF)
+    t = get_ssa_base_param (TREE_OPERAND (t, 0));
 
   if (t && DECL_P (t))
     disqualify_candidate (t, reason);
@@ -935,8 +931,9 @@ build_access_from_expr_1 (tree expr, gimple stmt, bool write)
 
   switch (TREE_CODE (expr))
     {
-    case INDIRECT_REF:
-      if (sra_mode != SRA_MODE_EARLY_IPA)
+    case MEM_REF:
+      if (TREE_CODE (TREE_OPERAND (expr, 0)) != ADDR_EXPR
+	  && sra_mode != SRA_MODE_EARLY_IPA)
 	return NULL;
       /* fall through */
     case VAR_DECL:
@@ -1285,7 +1282,21 @@ make_fancy_name_1 (tree expr)
 	break;
       sprintf (buffer, HOST_WIDE_INT_PRINT_DEC, TREE_INT_CST_LOW (index));
       obstack_grow (&name_obstack, buffer, strlen (buffer));
+      break;
 
+    case ADDR_EXPR:
+      make_fancy_name_1 (TREE_OPERAND (expr, 0));
+      break;
+
+    case MEM_REF:
+      make_fancy_name_1 (TREE_OPERAND (expr, 0));
+      if (!integer_zerop (TREE_OPERAND (expr, 1)))
+	{
+	  obstack_1grow (&name_obstack, '$');
+	  sprintf (buffer, HOST_WIDE_INT_PRINT_DEC,
+		   TREE_INT_CST_LOW (TREE_OPERAND (expr, 1)));
+	  obstack_grow (&name_obstack, buffer, strlen (buffer));
+	}
       break;
 
     case BIT_FIELD_REF:
@@ -1308,7 +1319,11 @@ make_fancy_name (tree expr)
   return XOBFINISH (&name_obstack, char *);
 }
 
-/* Helper function for build_ref_for_offset.  */
+/* Helper function for build_ref_for_offset.
+
+   FIXME: Eventually this should be rewritten to either re-use the
+   original access expression unshared (which is good for alias
+   analysis) or to build a MEM_REF expression.  */
 
 static bool
 build_ref_for_offset_1 (tree *res, tree type, HOST_WIDE_INT offset,
@@ -1406,12 +1421,7 @@ build_ref_for_offset_1 (tree *res, tree type, HOST_WIDE_INT offset,
    type TYPE at the given OFFSET of the type EXP_TYPE.  If EXPR is NULL, the
    function only determines whether it can build such a reference without
    actually doing it, otherwise, the tree it points to is unshared first and
-   then used as a base for furhter sub-references.
-
-   FIXME: Eventually this should be replaced with
-   maybe_fold_offset_to_reference() from tree-ssa-ccp.c but that requires a
-   minor rewrite of fold_stmt.
- */
+   then used as a base for furhter sub-references.  */
 
 bool
 build_ref_for_offset (tree *expr, tree type, HOST_WIDE_INT offset,
@@ -1426,7 +1436,7 @@ build_ref_for_offset (tree *expr, tree type, HOST_WIDE_INT offset,
     {
       type = TREE_TYPE (type);
       if (expr)
-	*expr = fold_build1_loc (loc, INDIRECT_REF, type, *expr);
+	*expr = build_simple_mem_ref_loc (loc, *expr);
     }
 
   return build_ref_for_offset_1 (expr, type, offset, exp_type);
@@ -3026,8 +3036,11 @@ ptr_parm_has_direct_uses (tree parm)
 	  tree lhs = gimple_get_lhs (stmt);
 	  while (handled_component_p (lhs))
 	    lhs = TREE_OPERAND (lhs, 0);
-	  if (INDIRECT_REF_P (lhs)
-	      && TREE_OPERAND (lhs, 0) == name)
+	  if (TREE_CODE (lhs) == MEM_REF
+	      && TREE_OPERAND (lhs, 0) == name
+	      && integer_zerop (TREE_OPERAND (lhs, 1))
+	      && types_compatible_p (TREE_TYPE (lhs),
+				     TREE_TYPE (TREE_TYPE (name))))
 	    uses_ok++;
 	}
       if (gimple_assign_single_p (stmt))
@@ -3035,8 +3048,11 @@ ptr_parm_has_direct_uses (tree parm)
 	  tree rhs = gimple_assign_rhs1 (stmt);
 	  while (handled_component_p (rhs))
 	    rhs = TREE_OPERAND (rhs, 0);
-	  if (INDIRECT_REF_P (rhs)
-	      && TREE_OPERAND (rhs, 0) == name)
+	  if (TREE_CODE (rhs) == MEM_REF
+	      && TREE_OPERAND (rhs, 0) == name
+	      && integer_zerop (TREE_OPERAND (rhs, 1))
+	      && types_compatible_p (TREE_TYPE (rhs),
+				     TREE_TYPE (TREE_TYPE (name))))
 	    uses_ok++;
 	}
       else if (is_gimple_call (stmt))
@@ -3047,8 +3063,11 @@ ptr_parm_has_direct_uses (tree parm)
 	      tree arg = gimple_call_arg (stmt, i);
 	      while (handled_component_p (arg))
 		arg = TREE_OPERAND (arg, 0);
-	      if (INDIRECT_REF_P (arg)
-		  && TREE_OPERAND (arg, 0) == name)
+	      if (TREE_CODE (arg) == MEM_REF
+		  && TREE_OPERAND (arg, 0) == name
+		  && integer_zerop (TREE_OPERAND (arg, 1))
+		  && types_compatible_p (TREE_TYPE (arg),
+					 TREE_TYPE (TREE_TYPE (name))))
 		uses_ok++;
 	    }
 	}
@@ -3917,8 +3936,11 @@ sra_ipa_modify_expr (tree *expr, bool convert,
   if (!base || size == -1 || max_size == -1)
     return false;
 
-  if (INDIRECT_REF_P (base))
-    base = TREE_OPERAND (base, 0);
+  if (TREE_CODE (base) == MEM_REF)
+    {
+      offset += mem_ref_offset (base).low * BITS_PER_UNIT;
+      base = TREE_OPERAND (base, 0);
+    }
 
   base = get_ssa_base_param (base);
   if (!base || TREE_CODE (base) != PARM_DECL)
@@ -3939,14 +3961,7 @@ sra_ipa_modify_expr (tree *expr, bool convert,
     return false;
 
   if (cand->by_ref)
-    {
-      tree folded;
-      src = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (cand->reduction)),
-		    cand->reduction);
-      folded = gimple_fold_indirect_ref (src);
-      if (folded)
-        src = folded;
-    }
+    src = build_simple_mem_ref (cand->reduction);
   else
     src = cand->reduction;
 

@@ -790,7 +790,8 @@ mf_xform_derefs_1 (gimple_stmt_iterator *iter, tree *tp,
               }
             else if (TREE_CODE (var) == COMPONENT_REF)
               var = TREE_OPERAND (var, 0);
-            else if (INDIRECT_REF_P (var))
+            else if (INDIRECT_REF_P (var)
+		     || TREE_CODE (var) == MEM_REF)
               {
 		base = TREE_OPERAND (var, 0);
                 break;
@@ -860,6 +861,18 @@ mf_xform_derefs_1 (gimple_stmt_iterator *iter, tree *tp,
 
     case INDIRECT_REF:
       addr = TREE_OPERAND (t, 0);
+      base = addr;
+      limit = fold_build2_loc (location, POINTER_PLUS_EXPR, ptr_type_node,
+			   fold_build2_loc (location,
+					POINTER_PLUS_EXPR, ptr_type_node, base,
+					size),
+			   size_int (-1));
+      break;
+
+    case MEM_REF:
+      addr = build2 (POINTER_PLUS_EXPR, TREE_TYPE (TREE_OPERAND (t, 1)),
+		     TREE_OPERAND (t, 0),
+		     fold_convert (sizetype, TREE_OPERAND (t, 1)));
       base = addr;
       limit = fold_build2_loc (location, POINTER_PLUS_EXPR, ptr_type_node,
 			   fold_build2_loc (location,

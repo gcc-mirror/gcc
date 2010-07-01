@@ -139,7 +139,7 @@ phiprop_insert_phi (basic_block bb, gimple phi, gimple use_stmt,
   edge e;
 
   gcc_assert (is_gimple_assign (use_stmt)
-	      && gimple_assign_rhs_code (use_stmt) == INDIRECT_REF);
+	      && gimple_assign_rhs_code (use_stmt) == MEM_REF);
 
   /* Build a new PHI node to replace the definition of
      the indirect reference lhs.  */
@@ -295,8 +295,11 @@ propagate_with_phi (basic_block bb, gimple phi, struct phiprop_d *phivn,
       /* Check whether this is a load of *ptr.  */
       if (!(is_gimple_assign (use_stmt)
 	    && TREE_CODE (gimple_assign_lhs (use_stmt)) == SSA_NAME
-	    && gimple_assign_rhs_code (use_stmt) == INDIRECT_REF
+	    && gimple_assign_rhs_code (use_stmt) == MEM_REF
 	    && TREE_OPERAND (gimple_assign_rhs1 (use_stmt), 0) == ptr
+	    && integer_zerop (TREE_OPERAND (gimple_assign_rhs1 (use_stmt), 1))
+	    && types_compatible_p (TREE_TYPE (gimple_assign_rhs1 (use_stmt)),
+				   TREE_TYPE (TREE_TYPE (ptr)))
 	    /* We cannot replace a load that may throw or is volatile.  */
 	    && !stmt_can_throw_internal (use_stmt)))
 	continue;

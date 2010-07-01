@@ -452,8 +452,8 @@ becomes
 
 The same rule holds for arguments to a @code{GIMPLE_CALL}.
 
-The target of an assignment is usually a variable, but can also be an
-@code{INDIRECT_REF} or a compound lvalue as described below.
+The target of an assignment is usually a variable, but can also be a
+@code{MEM_REF} or a compound lvalue as described below.
 
 @menu
 * Compound Expressions::
@@ -662,6 +662,11 @@ Similar to @code{is_gimple_val} but it also accepts hard registers.
 @deftypefn {GIMPLE function} is_gimple_call_addr (tree t)
 Return true if t is a valid expression to use as the function
 called by a @code{GIMPLE_CALL}.
+@end deftypefn
+
+@deftypefn {GIMPLE function} is_gimple_mem_ref_addr (tree t)
+Return true if t is a valid expression to use as first operand
+of a @code{MEM_REF} expression.
 @end deftypefn
 
 @deftypefn {GIMPLE function} is_gimple_constant (tree t)

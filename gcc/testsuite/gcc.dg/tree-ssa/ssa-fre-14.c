@@ -27,6 +27,5 @@ void foo(double (*q)[4])
   bar(a);
 }
 
-/* { dg-final { scan-tree-dump "Inserted .* &a" "fre" } } */
-/* { dg-final { scan-tree-dump "Replaced tmp1.data" "fre" } } */
+/* { dg-final { scan-tree-dump "Replaced tmp1.data with &a" "fre" } } */
 /* { dg-final { cleanup-tree-dump "fre" } } */

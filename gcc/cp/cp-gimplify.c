@@ -575,7 +575,7 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  TREE_OPERAND (*expr_p, 1) = build1 (VIEW_CONVERT_EXPR,
 					      TREE_TYPE (op0), op1);
 
-	else if ((rhs_predicate_for (op0)) (op1)
+	else if ((is_gimple_lvalue (op1) || INDIRECT_REF_P (op1))
 		 && !(TREE_CODE (op1) == CALL_EXPR
 		      && CALL_EXPR_RETURN_SLOT_OPT (op1))
 		 && is_really_empty_class (TREE_TYPE (op0)))

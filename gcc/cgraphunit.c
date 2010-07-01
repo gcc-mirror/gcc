@@ -1364,8 +1364,7 @@ thunk_adjust (gimple_stmt_iterator * bsi,
       vtabletmp2 = create_tmp_var (TREE_TYPE (TREE_TYPE (vtabletmp)),
 				   "vtableaddr");
       stmt = gimple_build_assign (vtabletmp2,
-				  build1 (INDIRECT_REF,
-					  TREE_TYPE (vtabletmp2), vtabletmp));
+				  build_simple_mem_ref (vtabletmp));
       gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
       mark_symbols_for_renaming (stmt);
       find_referenced_vars_in (stmt);
@@ -1384,9 +1383,7 @@ thunk_adjust (gimple_stmt_iterator * bsi,
       vtabletmp3 = create_tmp_var (TREE_TYPE (TREE_TYPE (vtabletmp2)),
 				   "vcalloffset");
       stmt = gimple_build_assign (vtabletmp3,
-				  build1 (INDIRECT_REF,
-					  TREE_TYPE (vtabletmp3),
-					  vtabletmp2));
+				  build_simple_mem_ref (vtabletmp2));
       gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
       mark_symbols_for_renaming (stmt);
       find_referenced_vars_in (stmt);

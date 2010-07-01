@@ -4213,6 +4213,10 @@ expand_assignment (tree to, tree from, bool nontemporal)
      an array element in an unaligned packed structure field, has the same
      problem.  */
   if (handled_component_p (to)
+      /* ???  We only need to handle MEM_REF here if the access is not
+         a full access of the base object.  */
+      || (TREE_CODE (to) == MEM_REF
+	  && TREE_CODE (TREE_OPERAND (to, 0)) == ADDR_EXPR)
       || TREE_CODE (TREE_TYPE (to)) == ARRAY_TYPE)
     {
       enum machine_mode mode1;
@@ -4678,6 +4682,51 @@ store_expr (tree exp, rtx target, int call_param_p, bool nontemporal)
       dest_mem = store_by_pieces (dest_mem,
 				  str_copy_len, builtin_strncpy_read_str,
 				  CONST_CAST(char *, TREE_STRING_POINTER (exp)),
+				  MEM_ALIGN (target), false,
+				  exp_len > str_copy_len ? 1 : 0);
+      if (exp_len > str_copy_len)
+	clear_storage (adjust_address (dest_mem, BLKmode, 0),
+		       GEN_INT (exp_len - str_copy_len),
+		       BLOCK_OP_NORMAL);
+      return NULL_RTX;
+    }
+  else if (TREE_CODE (exp) == MEM_REF
+	   && TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
+	   && TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)) == STRING_CST
+	   && integer_zerop (TREE_OPERAND (exp, 1))
+	   && !nontemporal && !call_param_p
+	   && TYPE_MODE (TREE_TYPE (exp)) == BLKmode)
+    {
+      /* Optimize initialization of an array with a STRING_CST.  */
+      HOST_WIDE_INT exp_len, str_copy_len;
+      rtx dest_mem;
+      tree str = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+
+      exp_len = int_expr_size (exp);
+      if (exp_len <= 0)
+	goto normal_expr;
+
+      str_copy_len = strlen (TREE_STRING_POINTER (str));
+      if (str_copy_len < TREE_STRING_LENGTH (str) - 1)
+	goto normal_expr;
+
+      str_copy_len = TREE_STRING_LENGTH (str);
+      if ((STORE_MAX_PIECES & (STORE_MAX_PIECES - 1)) == 0)
+	{
+	  str_copy_len += STORE_MAX_PIECES - 1;
+	  str_copy_len &= ~(STORE_MAX_PIECES - 1);
+	}
+      str_copy_len = MIN (str_copy_len, exp_len);
+      if (!can_store_by_pieces (str_copy_len, builtin_strncpy_read_str,
+				CONST_CAST(char *, TREE_STRING_POINTER (str)),
+				MEM_ALIGN (target), false))
+	goto normal_expr;
+
+      dest_mem = target;
+
+      dest_mem = store_by_pieces (dest_mem,
+				  str_copy_len, builtin_strncpy_read_str,
+				  CONST_CAST(char *, TREE_STRING_POINTER (str)),
 				  MEM_ALIGN (target), false,
 				  exp_len > str_copy_len ? 1 : 0);
       if (exp_len > str_copy_len)
@@ -5852,7 +5901,15 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	 operations.  */
       || (bitsize >= 0
 	  && TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) == INTEGER_CST
-	  && compare_tree_int (TYPE_SIZE (TREE_TYPE (exp)), bitsize) != 0))
+	  && compare_tree_int (TYPE_SIZE (TREE_TYPE (exp)), bitsize) != 0)
+      /* If we are expanding a MEM_REF of a non-BLKmode non-addressable
+         decl we must use bitfield operations.  */
+      || (bitsize >= 0
+	  && TREE_CODE (exp) == MEM_REF
+	  && TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
+	  && DECL_P (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
+	  && !TREE_ADDRESSABLE (TREE_OPERAND (TREE_OPERAND (exp, 0),0 ))
+	  && DECL_MODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0)) != BLKmode))
     {
       rtx temp;
       gimple nop_def;
@@ -6112,6 +6169,24 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 		  || TYPE_ALIGN_OK (TREE_TYPE (TREE_OPERAND (exp, 0)))))
 	    goto done;
 	  break;
+
+	case MEM_REF:
+	  /* Hand back the decl for MEM[&decl, off].  */
+	  if (TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR)
+	    {
+	      tree off = TREE_OPERAND (exp, 1);
+	      if (!integer_zerop (off))
+		{
+		  double_int boff, coff = mem_ref_offset (exp);
+		  boff = double_int_lshift (coff,
+					    BITS_PER_UNIT == 8
+					    ? 3 : exact_log2 (BITS_PER_UNIT),
+					    HOST_BITS_PER_DOUBLE_INT, true);
+		  bit_offset = double_int_add (bit_offset, boff);
+		}
+	      exp = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+	    }
+	  goto done;
 
 	default:
 	  goto done;
@@ -6872,6 +6947,16 @@ expand_expr_addr_expr_1 (tree exp, rtx target, enum machine_mode tmode,
     case INDIRECT_REF:
       /* This case will happen via recursion for &a->b.  */
       return expand_expr (TREE_OPERAND (exp, 0), target, tmode, modifier);
+
+    case MEM_REF:
+      {
+	tree tem = TREE_OPERAND (exp, 0);
+	if (!integer_zerop (TREE_OPERAND (exp, 1)))
+	  tem = build2 (POINTER_PLUS_EXPR, TREE_TYPE (TREE_OPERAND (exp, 1)),
+			tem,
+			double_int_to_tree (sizetype, mem_ref_offset (exp)));
+	return expand_expr (tem, target, tmode, modifier);
+      }
 
     case CONST_DECL:
       /* Expand the initializer like constants above.  */
@@ -8683,6 +8768,71 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  }
       }
       return temp;
+
+    case MEM_REF:
+      {
+	addr_space_t as
+	  = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 1))));
+	enum machine_mode address_mode;
+	tree base = TREE_OPERAND (exp, 0);
+	/* Handle expansion of non-aliased memory with non-BLKmode.  That
+	   might end up in a register.  */
+	if (TREE_CODE (base) == ADDR_EXPR)
+	  {
+	    HOST_WIDE_INT offset = mem_ref_offset (exp).low;
+	    tree bit_offset;
+	    base = TREE_OPERAND (base, 0);
+	    if (!DECL_P (base))
+	      {
+		HOST_WIDE_INT off;
+		base = get_addr_base_and_unit_offset (base, &off);
+		gcc_assert (base);
+		offset += off;
+	      }
+	    /* If we are expanding a MEM_REF of a non-BLKmode non-addressable
+	       decl we must use bitfield operations.  */
+	    if (DECL_P (base)
+		&& !TREE_ADDRESSABLE (base)
+		&& DECL_MODE (base) != BLKmode
+		&& DECL_RTL_SET_P (base)
+		&& !MEM_P (DECL_RTL (base)))
+	      {
+		tree bftype;
+		if (offset == 0
+		    && host_integerp (TYPE_SIZE (TREE_TYPE (exp)), 1)
+		    && (GET_MODE_BITSIZE (DECL_MODE (base))
+			== TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (exp)))))
+		  return expand_expr (build1 (VIEW_CONVERT_EXPR,
+					      TREE_TYPE (exp), base),
+				      target, tmode, modifier);
+		bit_offset = bitsize_int (offset * BITS_PER_UNIT);
+		bftype = TREE_TYPE (base);
+		if (TYPE_MODE (TREE_TYPE (exp)) != BLKmode)
+		  bftype = TREE_TYPE (exp);
+		return expand_expr (build3 (BIT_FIELD_REF, bftype,
+					    base,
+					    TYPE_SIZE (TREE_TYPE (exp)),
+					    bit_offset),
+				    target, tmode, modifier);
+	      }
+	  }
+	address_mode = targetm.addr_space.address_mode (as);
+	op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, address_mode,
+			   EXPAND_NORMAL);
+	if (!integer_zerop (TREE_OPERAND (exp, 1)))
+	  {
+	    rtx off;
+	    off = immed_double_int_const (mem_ref_offset (exp), address_mode);
+	    op0 = simplify_gen_binary (PLUS, address_mode, op0, off);
+	  }
+	op0 = memory_address_addr_space (mode, op0, as);
+	temp = gen_rtx_MEM (mode, op0);
+	set_mem_attributes (temp, exp, 0);
+	set_mem_addr_space (temp, as);
+	if (TREE_THIS_VOLATILE (exp))
+	  MEM_VOLATILE_P (temp) = 1;
+	return temp;
+      }
 
     case ARRAY_REF:
 

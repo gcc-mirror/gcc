@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "md5.h"
 #include "gimple.h"
+#include "tree-flow.h"
 
 /* Nonzero if we are folding constants inside an initializer; zero
    otherwise.  */
@@ -2590,6 +2591,17 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	case REALPART_EXPR:
 	case IMAGPART_EXPR:
 	  return OP_SAME (0);
+
+	case MEM_REF:
+	  /* Require equal access sizes.  We can have incomplete types
+	     for array references of variable-sized arrays from the
+	     Fortran frontent though.  */
+	  return ((TYPE_SIZE (TREE_TYPE (arg0)) == TYPE_SIZE (TREE_TYPE (arg1))
+		   || (TYPE_SIZE (TREE_TYPE (arg0))
+		       && TYPE_SIZE (TREE_TYPE (arg1))
+		       && operand_equal_p (TYPE_SIZE (TREE_TYPE (arg0)),
+					   TYPE_SIZE (TREE_TYPE (arg1)), flags)))
+		  && OP_SAME (0) && OP_SAME (1));
 
 	case ARRAY_REF:
 	case ARRAY_RANGE_REF:
@@ -7596,6 +7608,9 @@ build_fold_addr_expr_with_type_loc (location_t loc, tree t, tree ptrtype)
 	  SET_EXPR_LOCATION (t, loc);
 	}
     }
+  else if (TREE_CODE (t) == MEM_REF
+      && integer_zerop (TREE_OPERAND (t, 1)))
+    return TREE_OPERAND (t, 0);
   else if (TREE_CODE (t) == VIEW_CONVERT_EXPR)
     {
       t = build_fold_addr_expr_loc (loc, TREE_OPERAND (t, 0));
@@ -8014,6 +8029,9 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
       if (TREE_CODE (op0) == VIEW_CONVERT_EXPR)
 	return fold_build1_loc (loc, VIEW_CONVERT_EXPR,
 			    type, TREE_OPERAND (op0, 0));
+      if (TREE_CODE (op0) == MEM_REF)
+	return fold_build2_loc (loc, MEM_REF, type,
+				TREE_OPERAND (op0, 0), TREE_OPERAND (op0, 1));
 
       /* For integral conversions with the same precision or pointer
 	 conversions use a NOP_EXPR instead.  */
@@ -8665,6 +8683,11 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
       else if (TREE_CODE (arg0) == POINTER_PLUS_EXPR)
 	{
 	  base0 = TREE_OPERAND (arg0, 0);
+	  if (TREE_CODE (base0) == ADDR_EXPR)
+	    {
+	      base0 = TREE_OPERAND (base0, 0);
+	      indirect_base0 = true;
+	    }
 	  offset0 = TREE_OPERAND (arg0, 1);
 	}
 
@@ -8682,6 +8705,11 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
       else if (TREE_CODE (arg1) == POINTER_PLUS_EXPR)
 	{
 	  base1 = TREE_OPERAND (arg1, 0);
+	  if (TREE_CODE (base1) == ADDR_EXPR)
+	    {
+	      base1 = TREE_OPERAND (base1, 0);
+	      indirect_base1 = true;
+	    }
 	  offset1 = TREE_OPERAND (arg1, 1);
 	}
 
@@ -9524,6 +9552,36 @@ fold_binary_loc (location_t loc,
 
   switch (code)
     {
+    case MEM_REF:
+      /* MEM[&MEM[p, CST1], CST2] -> MEM[p, CST1 + CST2].  */
+      if (TREE_CODE (arg0) == ADDR_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == MEM_REF)
+	{
+	  tree iref = TREE_OPERAND (arg0, 0);
+	  return fold_build2 (MEM_REF, type,
+			      TREE_OPERAND (iref, 0),
+			      int_const_binop (PLUS_EXPR, arg1,
+					       TREE_OPERAND (iref, 1), 0));
+	}
+
+      /* MEM[&a.b, CST2] -> MEM[&a, offsetof (a, b) + CST2].  */
+      if (TREE_CODE (arg0) == ADDR_EXPR
+	  && handled_component_p (TREE_OPERAND (arg0, 0)))
+	{
+	  tree base;
+	  HOST_WIDE_INT coffset;
+	  base = get_addr_base_and_unit_offset (TREE_OPERAND (arg0, 0),
+						&coffset);
+	  if (!base)
+	    return NULL_TREE;
+	  return fold_build2 (MEM_REF, type,
+			      build_fold_addr_expr (base),
+			      int_const_binop (PLUS_EXPR, arg1,
+					       size_int (coffset), 0));
+	}
+
+      return NULL_TREE;
+
     case POINTER_PLUS_EXPR:
       /* 0 +p index -> (type)index */
       if (integer_zerop (arg0))

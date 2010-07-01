@@ -1629,12 +1629,28 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    newop.op0 = op0;
 	    newop.op1 = op1;
 	    newop.op2 = op2;
+	    /* If it transforms a non-constant ARRAY_REF into a constant
+	       one, adjust the constant offset.  */
+	    if (newop.opcode == ARRAY_REF
+		&& newop.off == -1
+		&& TREE_CODE (op0) == INTEGER_CST
+		&& TREE_CODE (op1) == INTEGER_CST
+		&& TREE_CODE (op2) == INTEGER_CST)
+	      {
+		double_int off = tree_to_double_int (op0);
+		off = double_int_add (off,
+				      double_int_neg
+				        (tree_to_double_int (op1)));
+		off = double_int_mul (off, tree_to_double_int (op2));
+		if (double_int_fits_in_shwi_p (off))
+		  newop.off = off.low;
+	      }
 	    VEC_replace (vn_reference_op_s, newoperands, j, &newop);
 	    /* If it transforms from an SSA_NAME to an address, fold with
 	       a preceding indirect reference.  */
 	    if (j > 0 && op0 && TREE_CODE (op0) == ADDR_EXPR
 		&& VEC_index (vn_reference_op_s,
-			      newoperands, j - 1)->opcode == INDIRECT_REF)
+			      newoperands, j - 1)->opcode == MEM_REF)
 	      vn_reference_fold_indirect (&newoperands, &j);
 	  }
 	if (i != VEC_length (vn_reference_op_s, operands))
@@ -1661,6 +1677,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	  {
 	    unsigned int new_val_id;
 	    pre_expr constant;
+	    bool converted = false;
 
 	    tree result = vn_reference_lookup_pieces (newvuse, ref->set,
 						      ref->type,
@@ -1668,6 +1685,13 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 						      &newref, true);
 	    if (result)
 	      VEC_free (vn_reference_op_s, heap, newoperands);
+
+	    if (result
+		&& !useless_type_conversion_p (ref->type, TREE_TYPE (result)))
+	      {
+		result = fold_build1 (VIEW_CONVERT_EXPR, ref->type, result);
+		converted = true;
+	      }
 
 	    if (result && is_gimple_min_invariant (result))
 	      {
@@ -1679,7 +1703,54 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    expr->kind = REFERENCE;
 	    expr->id = 0;
 
-	    if (newref)
+	    if (converted)
+	      {
+		vn_nary_op_t nary;
+		tree nresult;
+
+		gcc_assert (CONVERT_EXPR_P (result)
+			    || TREE_CODE (result) == VIEW_CONVERT_EXPR);
+
+		nresult = vn_nary_op_lookup_pieces (1, TREE_CODE (result),
+						    TREE_TYPE (result),
+						    TREE_OPERAND (result, 0),
+						    NULL_TREE, NULL_TREE,
+						    NULL_TREE,
+						    &nary);
+		if (nresult && is_gimple_min_invariant (nresult))
+		  return get_or_alloc_expr_for_constant (nresult);
+
+		expr->kind = NARY;
+		if (nary)
+		  {
+		    PRE_EXPR_NARY (expr) = nary;
+		    constant = fully_constant_expression (expr);
+		    if (constant != expr)
+		      return constant;
+
+		    new_val_id = nary->value_id;
+		    get_or_alloc_expression_id (expr);
+		  }
+		else
+		  {
+		    new_val_id = get_next_value_id ();
+		    VEC_safe_grow_cleared (bitmap_set_t, heap,
+					   value_expressions,
+					   get_max_value_id() + 1);
+		    nary = vn_nary_op_insert_pieces (1, TREE_CODE (result),
+						     TREE_TYPE (result),
+						     TREE_OPERAND (result, 0),
+						     NULL_TREE, NULL_TREE,
+						     NULL_TREE, NULL_TREE,
+						     new_val_id);
+		    PRE_EXPR_NARY (expr) = nary;
+		    constant = fully_constant_expression (expr);
+		    if (constant != expr)
+		      return constant;
+		    get_or_alloc_expression_id (expr);
+		  }
+	      }
+	    else if (newref)
 	      {
 		PRE_EXPR_REFERENCE (expr) = newref;
 		constant = fully_constant_expression (expr);
@@ -2598,7 +2669,7 @@ can_PRE_operation (tree op)
   return UNARY_CLASS_P (op)
     || BINARY_CLASS_P (op)
     || COMPARISON_CLASS_P (op)
-    || TREE_CODE (op) == INDIRECT_REF
+    || TREE_CODE (op) == MEM_REF 
     || TREE_CODE (op) == COMPONENT_REF
     || TREE_CODE (op) == VIEW_CONVERT_EXPR
     || TREE_CODE (op) == CALL_EXPR
@@ -2674,6 +2745,29 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	return folded;
       }
       break;
+    case MEM_REF:
+      {
+	tree baseop = create_component_ref_by_pieces_1 (block, ref, operand,
+							stmts, domstmt);
+	tree offset = currop->op0;
+	if (!baseop)
+	  return NULL_TREE;
+	if (TREE_CODE (baseop) == ADDR_EXPR
+	    && handled_component_p (TREE_OPERAND (baseop, 0)))
+	  {
+	    HOST_WIDE_INT off;
+	    tree base;
+	    base = get_addr_base_and_unit_offset (TREE_OPERAND (baseop, 0),
+						  &off);
+	    gcc_assert (base);
+	    offset = int_const_binop (PLUS_EXPR, offset,
+				      build_int_cst (TREE_TYPE (offset),
+						     off), 0);
+	    baseop = build_fold_addr_expr (base);
+	  }
+	return fold_build2 (MEM_REF, currop->type, baseop, offset);
+      }
+      break;
     case TARGET_MEM_REF:
       {
 	vn_reference_op_t nextop = VEC_index (vn_reference_op_s, ref->operands,
@@ -2728,7 +2822,6 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
       break;
     case ALIGN_INDIRECT_REF:
     case MISALIGNED_INDIRECT_REF:
-    case INDIRECT_REF:
       {
 	tree folded;
 	tree genop1 = create_component_ref_by_pieces_1 (block, ref,
@@ -2880,7 +2973,7 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 }
 
 /* For COMPONENT_REF's and ARRAY_REF's, we can't have any intermediates for the
-   COMPONENT_REF or INDIRECT_REF or ARRAY_REF portion, because we'd end up with
+   COMPONENT_REF or MEM_REF or ARRAY_REF portion, because we'd end up with
    trying to rename aggregates into ssa form directly, which is a no no.
 
    Thus, this routine doesn't create temporaries, it just builds a
@@ -3131,7 +3224,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
   VN_INFO (name)->value_id = value_id;
   nameexpr = get_or_alloc_expr_for_name (name);
   add_to_value (value_id, nameexpr);
-  if (!in_fre)
+  if (NEW_SETS (block))
     bitmap_value_replace_in_set (NEW_SETS (block), nameexpr);
   bitmap_value_replace_in_set (AVAIL_OUT (block), nameexpr);
 
@@ -3310,6 +3403,8 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 		      avail[bprime->index] = get_or_alloc_expr_for_name (forcedexpr);
 		    }
 		}
+	      else
+		avail[bprime->index] = get_or_alloc_expr_for_constant (builtexpr);
 	    }
 	}
       else if (eprime->kind == NAME)
@@ -4723,7 +4818,7 @@ execute_pre (bool do_fre)
   if (!do_fre)
     loop_optimizer_init (LOOPS_NORMAL);
 
-  if (!run_scc_vn (do_fre))
+  if (!run_scc_vn ())
     {
       if (!do_fre)
 	loop_optimizer_finalize ();

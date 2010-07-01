@@ -52,9 +52,7 @@ get_real_ref_rhs (tree expr)
               /* We are only interested in an assignment with a single
                  rhs operand because if it is not, the original assignment
                  will not possibly be a self-assignment.  */
-              if (is_gimple_assign (def_stmt)
-                  && (get_gimple_rhs_class (gimple_assign_rhs_code (def_stmt))
-                      == GIMPLE_SINGLE_RHS))
+              if (gimple_assign_single_p (def_stmt))
                 return get_real_ref_rhs (gimple_assign_rhs1 (def_stmt));
               else
                 return NULL_TREE;
@@ -66,7 +64,7 @@ get_real_ref_rhs (tree expr)
       case PARM_DECL:
       case FIELD_DECL:
       case COMPONENT_REF:
-      case INDIRECT_REF:
+      case MEM_REF:
       case ARRAY_REF:
         return expr;
       default:
@@ -116,17 +114,18 @@ get_non_ssa_expr (tree expr)
           else
             return expr;
         }
-      case INDIRECT_REF:
+      case MEM_REF:
         {
           tree orig_base = TREE_OPERAND (expr, 0);
-          tree base = get_non_ssa_expr (orig_base);
-          if (!base)
-            return NULL_TREE;
-          /* If BASE is converted, build a new indirect reference tree.  */
-          if (base != orig_base)
-            return build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (base)), base);
-          else
-            return expr;
+	  if (TREE_CODE (orig_base) == SSA_NAME)
+	    {
+	      tree base = get_non_ssa_expr (orig_base);
+	      if (!base)
+		return NULL_TREE;
+	      return fold_build2 (MEM_REF, TREE_TYPE (expr),
+				  base, TREE_OPERAND (expr, 1));
+	    }
+	  return expr;
         }
       case ARRAY_REF:
         {
@@ -153,9 +152,7 @@ get_non_ssa_expr (tree expr)
               && !gimple_nop_p (SSA_NAME_DEF_STMT (expr)))
             {
               gimple def_stmt = SSA_NAME_DEF_STMT (expr);
-              if (is_gimple_assign (def_stmt)
-                  && (get_gimple_rhs_class (gimple_assign_rhs_code (def_stmt))
-                      == GIMPLE_SINGLE_RHS))
+              if (gimple_assign_single_p (def_stmt))
                 vdecl = gimple_assign_rhs1 (def_stmt);
             }
           return get_non_ssa_expr (vdecl);
@@ -201,9 +198,7 @@ warn_self_assign (gimple stmt)
   tree rhs, lhs;
 
   /* Check assigment statement.  */
-  if (is_gimple_assign (stmt)
-      && (get_gimple_rhs_class (gimple_assign_rhs_code (stmt))
-          == GIMPLE_SINGLE_RHS))
+  if (gimple_assign_single_p (stmt))
     {
       rhs = get_real_ref_rhs (gimple_assign_rhs1 (stmt));
       if (!rhs)

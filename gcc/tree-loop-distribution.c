@@ -397,7 +397,7 @@ generate_builtin (struct loop *loop, bitmap partition, bool copy_p)
   op1 = gimple_assign_rhs1 (write);
 
   if (!(TREE_CODE (op0) == ARRAY_REF
-	|| TREE_CODE (op0) == INDIRECT_REF))
+	|| TREE_CODE (op0) == MEM_REF))
     goto end;
 
   /* The new statements will be placed before LOOP.  */

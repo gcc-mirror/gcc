@@ -556,7 +556,7 @@ set_livein_block (tree var, basic_block bb)
 
 /* Return true if symbol SYM is marked for renaming.  */
 
-static inline bool
+bool
 symbol_marked_for_renaming (tree sym)
 {
   return bitmap_bit_p (SYMS_TO_RENAME (cfun), DECL_UID (sym));

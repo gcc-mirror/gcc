@@ -275,7 +275,7 @@ mark_load (gimple stmt ATTRIBUTE_UNUSED, tree t,
 	   void *data ATTRIBUTE_UNUSED)
 {
   t = get_base_address (t);
-  if (TREE_CODE (t) == VAR_DECL
+  if (t && TREE_CODE (t) == VAR_DECL
       && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
     {
       struct varpool_node *vnode = varpool_node (t);
@@ -300,7 +300,7 @@ mark_store (gimple stmt ATTRIBUTE_UNUSED, tree t,
 	    void *data ATTRIBUTE_UNUSED)
 {
   t = get_base_address (t);
-  if (TREE_CODE (t) == VAR_DECL
+  if (t && TREE_CODE (t) == VAR_DECL
       && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
     {
       struct varpool_node *vnode = varpool_node (t);

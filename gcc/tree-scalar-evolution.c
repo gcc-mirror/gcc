@@ -1170,6 +1170,24 @@ follow_ssa_edge_expr (struct loop *loop, gimple at_stmt, tree expr,
 				    halting_phi, evolution_of_loop, limit);
       break;
 
+    case ADDR_EXPR:
+      /* Handle &MEM[ptr + CST] which is equivalent to POINTER_PLUS_EXPR.  */
+      if (TREE_CODE (TREE_OPERAND (expr, 0)) == MEM_REF)
+	{
+	  expr = TREE_OPERAND (expr, 0);
+	  rhs0 = TREE_OPERAND (expr, 0);
+	  rhs1 = TREE_OPERAND (expr, 1);
+	  type = TREE_TYPE (rhs0);
+	  STRIP_USELESS_TYPE_CONVERSION (rhs0);
+	  STRIP_USELESS_TYPE_CONVERSION (rhs1);
+	  res = follow_ssa_edge_binary (loop, at_stmt, type,
+					rhs0, POINTER_PLUS_EXPR, rhs1,
+					halting_phi, evolution_of_loop, limit);
+	}
+      else
+	res = t_false;
+      break;
+
     case ASSERT_EXPR:
       /* This assignment is of the form: "a_1 = ASSERT_EXPR <a_2, ...>"
 	 It must be handled as a copy assignment of the form a_1 = a_2.  */

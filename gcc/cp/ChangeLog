@@ -1,3 +1,9 @@
+2010-07-01  Richard Guenther  <rguenther@suse.de>
+
+	* cp-gimplify.c (cp_gimplify_expr): Open-code the rhs
+	predicate we are looking for, allow non-gimplified
+	INDIRECT_REFs.
+
 2010-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/44628

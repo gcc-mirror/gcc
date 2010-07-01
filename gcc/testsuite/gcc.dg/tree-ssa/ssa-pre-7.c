@@ -7,6 +7,6 @@ foo (int *array)
           return array[1];
       return 0;
 }
-/* We should eliminate one address calculation, and one load.  */
-/* { dg-final { scan-tree-dump-times "Eliminated: 2" 1 "fre"} } */
+/* We should eliminate one load.  */
+/* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "fre"} } */
 /* { dg-final { cleanup-tree-dump "fre" } } */

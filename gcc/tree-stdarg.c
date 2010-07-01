@@ -512,7 +512,7 @@ check_all_va_list_escapes (struct stdarg_info *si)
 		  enum tree_code rhs_code = gimple_assign_rhs_code (stmt);
 
 		  /* x = *ap_temp;  */
-		  if (gimple_assign_rhs_code (stmt) == INDIRECT_REF
+		  if (gimple_assign_rhs_code (stmt) == MEM_REF
 		      && TREE_OPERAND (rhs, 0) == use
 		      && TYPE_SIZE_UNIT (TREE_TYPE (rhs))
 		      && host_integerp (TYPE_SIZE_UNIT (TREE_TYPE (rhs)), 1)
@@ -522,6 +522,7 @@ check_all_va_list_escapes (struct stdarg_info *si)
 		      tree access_size = TYPE_SIZE_UNIT (TREE_TYPE (rhs));
 
 		      gpr_size = si->offsets[SSA_NAME_VERSION (use)]
+			  	 + tree_low_cst (TREE_OPERAND (rhs, 1), 0)
 				 + tree_low_cst (access_size, 1);
 		      if (gpr_size >= VA_LIST_MAX_GPR_SIZE)
 			cfun->va_list_gpr_size = VA_LIST_MAX_GPR_SIZE;

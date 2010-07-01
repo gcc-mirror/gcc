@@ -746,7 +746,22 @@ dr_analyze_innermost (struct data_reference *dr)
       return false;
     }
 
-  base = build_fold_addr_expr (base);
+  if (TREE_CODE (base) == MEM_REF)
+    {
+      if (!integer_zerop (TREE_OPERAND (base, 1)))
+	{
+	  if (!poffset)
+	    {
+	      double_int moff = mem_ref_offset (base);
+	      poffset = double_int_to_tree (sizetype, moff);
+	    }
+	  else
+	    poffset = size_binop (PLUS_EXPR, poffset, TREE_OPERAND (base, 1));
+	}
+      base = TREE_OPERAND (base, 0);
+    }
+  else
+    base = build_fold_addr_expr (base);
   if (in_loop)
     {
       if (!simple_iv (loop, loop_containing_stmt (stmt), base, &base_iv,
@@ -844,19 +859,40 @@ dr_analyze_indices (struct data_reference *dr, struct loop *nest)
       aref = TREE_OPERAND (aref, 0);
     }
 
-  if (nest && INDIRECT_REF_P (aref))
+  if (nest
+      && (INDIRECT_REF_P (aref)
+	  || TREE_CODE (aref) == MEM_REF))
     {
       op = TREE_OPERAND (aref, 0);
       access_fn = analyze_scalar_evolution (loop, op);
       access_fn = instantiate_scev (before_loop, loop, access_fn);
       base = initial_condition (access_fn);
       split_constant_offset (base, &base, &off);
+      if (TREE_CODE (aref) == MEM_REF)
+	off = size_binop (PLUS_EXPR, off,
+			  fold_convert (ssizetype, TREE_OPERAND (aref, 1)));
       access_fn = chrec_replace_initial_condition (access_fn,
 			fold_convert (TREE_TYPE (base), off));
 
       TREE_OPERAND (aref, 0) = base;
       VEC_safe_push (tree, heap, access_fns, access_fn);
     }
+
+  if (TREE_CODE (aref) == MEM_REF)
+    TREE_OPERAND (aref, 1)
+      = build_int_cst (TREE_TYPE (TREE_OPERAND (aref, 1)), 0);
+
+  if (TREE_CODE (ref) == MEM_REF
+      && TREE_CODE (TREE_OPERAND (ref, 0)) == ADDR_EXPR
+      && integer_zerop (TREE_OPERAND (ref, 1)))
+    ref = TREE_OPERAND (TREE_OPERAND (ref, 0), 0);
+
+  /* For canonicalization purposes we'd like to strip all outermost
+     zero-offset component-refs.
+     ???  For now simply handle zero-index array-refs.  */
+  while (TREE_CODE (ref) == ARRAY_REF
+	 && integer_zerop (TREE_OPERAND (ref, 1)))
+    ref = TREE_OPERAND (ref, 0);
 
   DR_BASE_OBJECT (dr) = ref;
   DR_ACCESS_FNS (dr) = access_fns;
@@ -870,7 +906,8 @@ dr_analyze_alias (struct data_reference *dr)
   tree ref = DR_REF (dr);
   tree base = get_base_address (ref), addr;
 
-  if (INDIRECT_REF_P (base))
+  if (INDIRECT_REF_P (base)
+      || TREE_CODE (base) == MEM_REF)
     {
       addr = TREE_OPERAND (base, 0);
       if (TREE_CODE (addr) == SSA_NAME)
@@ -1188,7 +1225,8 @@ object_address_invariant_in_loop_p (const struct loop *loop, const_tree obj)
       obj = TREE_OPERAND (obj, 0);
     }
 
-  if (!INDIRECT_REF_P (obj))
+  if (!INDIRECT_REF_P (obj)
+      && TREE_CODE (obj) != MEM_REF)
     return true;
 
   return !chrec_contains_symbols_defined_in_loop (TREE_OPERAND (obj, 0),

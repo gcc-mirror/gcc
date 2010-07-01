@@ -274,7 +274,7 @@ for_each_index (tree *addr_p, bool (*cbck) (tree, tree *, void *), void *data)
 
 	case MISALIGNED_INDIRECT_REF:
 	case ALIGN_INDIRECT_REF:
-	case INDIRECT_REF:
+	case MEM_REF:
 	  nxt = &TREE_OPERAND (*addr_p, 0);
 	  return cbck (*addr_p, nxt, data);
 
@@ -1985,9 +1985,13 @@ gen_lsm_tmp_name (tree ref)
     {
     case MISALIGNED_INDIRECT_REF:
     case ALIGN_INDIRECT_REF:
-    case INDIRECT_REF:
+    case MEM_REF:
       gen_lsm_tmp_name (TREE_OPERAND (ref, 0));
       lsm_tmp_name_add ("_");
+      break;
+
+    case ADDR_EXPR:
+      gen_lsm_tmp_name (TREE_OPERAND (ref, 0));
       break;
 
     case BIT_FIELD_REF:
@@ -2150,7 +2154,8 @@ ref_always_accessed_p (struct loop *loop, mem_ref_p ref, bool stored_p)
   tree base;
 
   base = get_base_address (ref->mem);
-  if (INDIRECT_REF_P (base))
+  if (INDIRECT_REF_P (base)
+      || TREE_CODE (base) == MEM_REF)
     base = TREE_OPERAND (base, 0);
 
   get_all_locs_in_loop (loop, ref, &locs);
@@ -2169,7 +2174,8 @@ ref_always_accessed_p (struct loop *loop, mem_ref_p ref, bool stored_p)
 	  lhs = get_base_address (gimple_get_lhs (loc->stmt));
 	  if (!lhs)
 	    continue;
-	  if (INDIRECT_REF_P (lhs))
+	  if (INDIRECT_REF_P (lhs)
+	      || TREE_CODE (lhs) == MEM_REF)
 	    lhs = TREE_OPERAND (lhs, 0);
 	  if (lhs != base)
 	    continue;

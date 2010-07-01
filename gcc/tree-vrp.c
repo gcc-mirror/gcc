@@ -987,7 +987,7 @@ vrp_stmt_computes_nonzero (gimple stmt, bool *strict_overflow_p)
       tree base = get_base_address (TREE_OPERAND (expr, 0));
 
       if (base != NULL_TREE
-	  && TREE_CODE (base) == INDIRECT_REF
+	  && TREE_CODE (base) == MEM_REF
 	  && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
 	{
 	  value_range_t *vr = get_value_range (TREE_OPERAND (base, 0));
@@ -5075,8 +5075,7 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
   /* Accesses to trailing arrays via pointers may access storage
      beyond the types array bounds.  */
   base = get_base_address (ref);
-  if (base
-      && INDIRECT_REF_P (base))
+  if (base && TREE_CODE (base) == MEM_REF)
     {
       tree cref, next = NULL_TREE;
 
@@ -5175,6 +5174,51 @@ search_for_addr_array (tree t, location_t location)
       t = TREE_OPERAND (t, 0);
     }
   while (handled_component_p (t));
+
+  if (TREE_CODE (t) == MEM_REF
+      && TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR
+      && !TREE_NO_WARNING (t))
+    {
+      tree tem = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
+      tree low_bound, up_bound, el_sz;
+      double_int idx;
+      if (TREE_CODE (TREE_TYPE (tem)) != ARRAY_TYPE
+	  || TREE_CODE (TREE_TYPE (TREE_TYPE (tem))) == ARRAY_TYPE
+	  || !TYPE_DOMAIN (TREE_TYPE (tem)))
+	return;
+
+      low_bound = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (tem)));
+      up_bound = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (tem)));
+      el_sz = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (tem)));
+      if (!low_bound
+	  || TREE_CODE (low_bound) != INTEGER_CST
+	  || !up_bound
+	  || TREE_CODE (up_bound) != INTEGER_CST
+	  || !el_sz
+	  || TREE_CODE (el_sz) != INTEGER_CST)
+	return;
+
+      idx = mem_ref_offset (t);
+      idx = double_int_sdiv (idx, tree_to_double_int (el_sz), TRUNC_DIV_EXPR);
+      if (double_int_scmp (idx, double_int_zero) < 0)
+	{
+	  warning_at (location, OPT_Warray_bounds,
+		      "array subscript is below array bounds");
+	  TREE_NO_WARNING (t) = 1;
+	}
+      else if (double_int_scmp (idx,
+				double_int_add
+				  (double_int_add
+				    (tree_to_double_int (up_bound),
+				     double_int_neg
+				       (tree_to_double_int (low_bound))),
+				    double_int_one)) > 0)
+	{
+	  warning_at (location, OPT_Warray_bounds,
+		      "array subscript is above array bounds");
+	  TREE_NO_WARNING (t) = 1;
+	}
+    }
 }
 
 /* walk_tree() callback that checks if *TP is
@@ -5203,7 +5247,7 @@ check_array_bounds (tree *tp, int *walk_subtree, void *data)
   if (TREE_CODE (t) == ARRAY_REF)
     check_array_ref (location, t, false /*ignore_off_by_one*/);
 
-  if (TREE_CODE (t) == INDIRECT_REF
+  if (TREE_CODE (t) == MEM_REF
       || (TREE_CODE (t) == RETURN_EXPR && TREE_OPERAND (t, 0)))
     search_for_addr_array (TREE_OPERAND (t, 0), location);
 

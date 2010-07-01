@@ -141,6 +141,10 @@ compute_object_offset (const_tree expr, const_tree var)
       off = size_binop (MULT_EXPR, TYPE_SIZE_UNIT (TREE_TYPE (expr)), t);
       break;
 
+    case MEM_REF:
+      gcc_assert (TREE_CODE (TREE_OPERAND (expr, 0)) == ADDR_EXPR);
+      return TREE_OPERAND (expr, 1);
+
     default:
       return error_mark_node;
     }
@@ -166,15 +170,21 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
     pt_var = get_base_address (pt_var);
 
   if (pt_var
-      && TREE_CODE (pt_var) == INDIRECT_REF
+      && TREE_CODE (pt_var) == MEM_REF
       && TREE_CODE (TREE_OPERAND (pt_var, 0)) == SSA_NAME
       && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (pt_var, 0))))
     {
       unsigned HOST_WIDE_INT sz;
 
       if (!osi || (object_size_type & 1) != 0)
-	sz = compute_builtin_object_size (TREE_OPERAND (pt_var, 0),
-					  object_size_type & ~1);
+	{
+	  sz = compute_builtin_object_size (TREE_OPERAND (pt_var, 0),
+					    object_size_type & ~1);
+	  if (host_integerp (TREE_OPERAND (pt_var, 1), 0))
+	    sz -= TREE_INT_CST_LOW (TREE_OPERAND (pt_var, 1));
+	  else
+	    sz = offset_limit;
+	}
       else
 	{
 	  tree var = TREE_OPERAND (pt_var, 0);
@@ -185,6 +195,10 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	    sz = object_sizes[object_size_type][SSA_NAME_VERSION (var)];
 	  else
 	    sz = unknown[object_size_type];
+	  if (host_integerp (TREE_OPERAND (pt_var, 1), 0))
+	    sz -= TREE_INT_CST_LOW (TREE_OPERAND (pt_var, 1));
+	  else
+	    sz = offset_limit;
 	}
 
       if (sz != unknown[object_size_type] && sz < offset_limit)
@@ -225,7 +239,7 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 		  && tree_int_cst_lt (pt_var_size,
 				      TYPE_SIZE_UNIT (TREE_TYPE (var)))))
 	    var = pt_var;
-	  else if (var != pt_var && TREE_CODE (pt_var) == INDIRECT_REF)
+	  else if (var != pt_var && TREE_CODE (pt_var) == MEM_REF)
 	    {
 	      tree v = var;
 	      /* For &X->fld, compute object size only if fld isn't the last
@@ -328,12 +342,14 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 	}
       if (var != pt_var
 	  && pt_var_size
-	  && TREE_CODE (pt_var) == INDIRECT_REF
+	  && TREE_CODE (pt_var) == MEM_REF
 	  && bytes != error_mark_node)
 	{
 	  tree bytes2 = compute_object_offset (TREE_OPERAND (ptr, 0), pt_var);
 	  if (bytes2 != error_mark_node)
 	    {
+	      bytes2 = size_binop (PLUS_EXPR, bytes2,
+				   TREE_OPERAND (pt_var, 1));
 	      if (TREE_CODE (bytes2) == INTEGER_CST
 		  && tree_int_cst_lt (pt_var_size, bytes2))
 		bytes2 = size_zero_node;
@@ -746,10 +762,20 @@ plus_stmt_object_size (struct object_size_info *osi, tree var, gimple stmt)
   unsigned HOST_WIDE_INT bytes;
   tree op0, op1;
 
-  gcc_assert (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR);
-
-  op0 = gimple_assign_rhs1 (stmt);
-  op1 = gimple_assign_rhs2 (stmt);
+  if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
+    {
+      op0 = gimple_assign_rhs1 (stmt);
+      op1 = gimple_assign_rhs2 (stmt);
+    }
+  else if (gimple_assign_rhs_code (stmt) == ADDR_EXPR)
+    {
+      tree rhs = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
+      gcc_assert (TREE_CODE (rhs) == MEM_REF);
+      op0 = TREE_OPERAND (rhs, 0);
+      op1 = TREE_OPERAND (rhs, 1);
+    }
+  else
+    gcc_unreachable ();
 
   if (object_sizes[object_size_type][varno] == unknown[object_size_type])
     return false;
@@ -897,13 +923,14 @@ collect_object_sizes_for (struct object_size_info *osi, tree var)
     {
     case GIMPLE_ASSIGN:
       {
-        if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
+	tree rhs = gimple_assign_rhs1 (stmt);
+        if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR
+	    || (gimple_assign_rhs_code (stmt) == ADDR_EXPR
+		&& TREE_CODE (TREE_OPERAND (rhs, 0)) == MEM_REF))
           reexamine = plus_stmt_object_size (osi, var, stmt);
         else if (gimple_assign_single_p (stmt)
                  || gimple_assign_unary_nop_p (stmt))
           {
-            tree rhs = gimple_assign_rhs1 (stmt);
-
             if (TREE_CODE (rhs) == SSA_NAME
                 && POINTER_TYPE_P (TREE_TYPE (rhs)))
               reexamine = merge_object_sizes (osi, var, rhs, 0);
