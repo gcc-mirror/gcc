@@ -12259,7 +12259,7 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
       add_name_attribute (mod_type_die, IDENTIFIER_POINTER (name));
     }
   /* This probably indicates a bug.  */
-  else if (mod_type_die->die_tag == DW_TAG_base_type)
+  else if (mod_type_die && mod_type_die->die_tag == DW_TAG_base_type)
     add_name_attribute (mod_type_die, "__unknown__");
 
   if (qualified_type)

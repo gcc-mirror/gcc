@@ -21,6 +21,12 @@
 	if the container is bigger than type size, do the copying
 	using smaller mode or using memcpy.
 
+	2010-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/44104
+	* dwarf2out.c (modified_type_die): Don't dereference mod_type_die
+	if it is NULL.
+
 2010-06-30  Jan Hubicka  <jh@suse.cz>
 
 	Backport from mainline
