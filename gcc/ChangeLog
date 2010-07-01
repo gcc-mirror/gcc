@@ -1,3 +1,8 @@
+2010-07-01  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR target/44732
+	* config/ia64/ia64.c (ia64_register_move_cost): Remove stray '{'.
+
 2010-07-01  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR target/44727
