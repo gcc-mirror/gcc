@@ -1,3 +1,9 @@
+2010-07-01  López-Ibáñez  <manu@gcc.gnu.org>
+
+	* reload.c: Include toplev.h.
+	* recog.c:  Likewise.
+	* Makefile.in: Adjust dependencies.
+
 2010-07-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/44694
