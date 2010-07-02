@@ -1,3 +1,9 @@
+2010-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/44039
+	* pt.c (tsubst_baselink): Return error_mark_node if lookup_fnfields
+	returns NULL_TREE.
+
 2010-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/44628

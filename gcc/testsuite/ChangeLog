@@ -1,3 +1,8 @@
+2010-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/44039
+	* g++.dg/template/crash98.C: New.
+
 2010-07-02  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* obj-c++.dg/cxx-ivars-3.mm: Make the test require OSX <= 10.4.
@@ -24,7 +29,7 @@
 	* g++.dg/torture/pr43801.C: New test.
 
 	2010-06-21  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	PR target/44575
 	* gcc.c-torture/execute/pr44575.c: New test.
 
