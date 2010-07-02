@@ -26,7 +26,8 @@
 #include <bits/c++config.h>
 
 #if defined(_GLIBCXX_SYMVER_GNU) && defined(PIC) \
-    && defined(_GLIBCXX_HAVE_AS_SYMVER_DIRECTIVE)
+    && defined(_GLIBCXX_HAVE_AS_SYMVER_DIRECTIVE)\
+    && defined(_GLIBCXX_HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT)
 #define istreambuf_iterator istreambuf_iteratorXX
 #define basic_fstream basic_fstreamXX
 #define basic_ifstream basic_ifstreamXX
@@ -201,7 +202,8 @@ _GLIBCXX_END_NAMESPACE
 // NB: These symbols renames should go into the shared library only,
 // and only those shared libraries that support versioning.
 #if defined(_GLIBCXX_SYMVER_GNU) && defined(PIC) \
-    && defined(_GLIBCXX_HAVE_AS_SYMVER_DIRECTIVE)
+    && defined(_GLIBCXX_HAVE_AS_SYMVER_DIRECTIVE) \
+    && defined(_GLIBCXX_HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT)
 
 /* gcc-3.4.4
 _ZNSt19istreambuf_iteratorIcSt11char_traitsIcEEppEv

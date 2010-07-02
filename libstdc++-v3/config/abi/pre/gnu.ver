@@ -740,6 +740,7 @@ GLIBCXX_3.4 {
     sqrtl;
     copysignf;
 
+#ifdef HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT
    # GLIBCXX_ABI compatibility only.
     # std::string
     _ZNKSs11_M_disjunctEPKc;
@@ -767,6 +768,7 @@ GLIBCXX_3.4 {
     _ZNSt11char_traitsI[cw]E2eqERK[cw]S2_;
 
     _ZNSt19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEppEv;
+#endif
 
     # std::locale::Impl _M_ members
     _ZNSt6locale5_Impl16_M_install_facetEPKNS_2idEPKNS_5facetE;
@@ -875,7 +877,9 @@ GLIBCXX_3.4.6 {
 
     _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EE9showmanycEv;
 
+#ifdef HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT
     _ZNKSt15basic_stringbufIwSt11char_traitsIwESaIwEE3strEv;
+#endif
 
     _ZN9__gnu_cxx6__poolILb1EE13_M_initializeEv;
 

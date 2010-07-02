@@ -2812,11 +2812,14 @@ AC_DEFUN([GLIBCXX_ENABLE_SYMVERS], [
 
 GLIBCXX_ENABLE(symvers,$1,[=STYLE],
   [enables symbol versioning of the shared library],
-  [permit yes|no|gnu|gnu-versioned-namespace|darwin|darwin-export])
+  [permit yes|no|gnu|gnu-versioned-namespace|darwin|darwin-export|sun])
 
 # If we never went through the GLIBCXX_CHECK_LINKER_FEATURES macro, then we
 # don't know enough about $LD to do tricks...
 AC_REQUIRE([GLIBCXX_CHECK_LINKER_FEATURES])
+# Sun style symbol versions needs GNU c++filt for make_sunver.pl to work
+# with extern "C++" in version scripts.
+AC_REQUIRE([GCC_PROG_GNU_CXXFILT])
 
 # Turn a 'yes' into a suitable default.
 if test x$enable_symvers = xyes ; then
@@ -2834,6 +2837,20 @@ if test x$enable_symvers = xyes ; then
       case ${target_os} in
         darwin*)
 	  enable_symvers=darwin ;;
+	# Sun symbol versioning exists since Solaris 2.5.
+	solaris2.[[5-9]]* | solaris2.1[[0-9]]*)
+	  # make_sunver.pl needs GNU c++filt to support extern "C++" in
+	  # version scripts, so disable symbol versioning if none can be
+	  # found.
+	  if test -z "$ac_cv_path_CXXFILT"; then
+	    AC_MSG_WARN([=== You have requested Sun symbol versioning, but])
+	    AC_MSG_WARN([=== no GNU c++filt could  be found.])
+	    AC_MSG_WARN([=== Symbol versioning will be disabled.])
+	    enable_symvers=no
+	  else
+	    enable_symvers=sun
+	  fi
+	  ;;
         *)
           enable_symvers=no ;;
       esac
@@ -2846,8 +2863,26 @@ if test x$enable_symvers = xdarwin-export ; then
     enable_symvers=darwin
 fi
 
+# Check if 'sun' was requested on non-Solaris 2 platforms.
+if test x$enable_symvers = xsun ; then
+  case ${target_os} in
+    solaris2*)
+      # All fine.
+      ;;
+    *)
+      # Unlikely to work.
+      AC_MSG_WARN([=== You have requested Sun symbol versioning, but])
+      AC_MSG_WARN([=== you are not targetting Solaris 2.])
+      AC_MSG_WARN([=== Symbol versioning will be disabled.])
+      enable_symvers=no
+      ;;
+  esac
+fi
+
 # Check to see if 'gnu' can win.
-if test $enable_symvers = gnu || test $enable_symvers = gnu-versioned-namespace; then
+if test $enable_symvers = gnu || 
+  test $enable_symvers = gnu-versioned-namespace || 
+  test $enable_symvers = sun; then
   # Check to see if libgcc_s exists, indicating that shared libgcc is possible.
   AC_MSG_CHECKING([for shared libgcc])
   ac_save_CFLAGS="$CFLAGS"
@@ -2883,6 +2918,8 @@ changequote([,])dnl
       AC_MSG_WARN([=== you are not building a shared libgcc_s.])
       AC_MSG_WARN([=== Symbol versioning will be disabled.])
       enable_symvers=no
+  elif test $with_gnu_ld != yes && test $enable_symvers = sun; then
+    : All interesting versions of Sun ld support sun style symbol versioning.
   elif test $with_gnu_ld != yes ; then
     # just fail for now
     AC_MSG_WARN([=== You have requested GNU symbol versioning, but])
@@ -2922,6 +2959,11 @@ case $enable_symvers in
     AC_DEFINE(_GLIBCXX_SYMVER_DARWIN, 1, 
               [Define to use darwin versioning in the shared library.])
     ;;
+  sun)
+    SYMVER_FILE=config/abi/pre/gnu.ver
+    AC_DEFINE(_GLIBCXX_SYMVER_SUN, 1, 
+              [Define to use Sun versioning in the shared library.])
+    ;;
 esac
 
 if test x$enable_symvers != xno ; then
@@ -2945,7 +2987,23 @@ GLIBCXX_CONDITIONAL(ENABLE_SYMVERS, test $enable_symvers != no)
 GLIBCXX_CONDITIONAL(ENABLE_SYMVERS_GNU, test $enable_symvers = gnu)
 GLIBCXX_CONDITIONAL(ENABLE_SYMVERS_GNU_NAMESPACE, test $enable_symvers = gnu-versioned-namespace)
 GLIBCXX_CONDITIONAL(ENABLE_SYMVERS_DARWIN, test $enable_symvers = darwin)
+GLIBCXX_CONDITIONAL(ENABLE_SYMVERS_SUN, test $enable_symvers = sun)
 AC_MSG_NOTICE(versioning on shared library symbols is $enable_symvers)
+
+if test $enable_symvers != no ; then
+   case ${target_os} in
+     # The Solaris 2 runtime linker doesn't support the GNU extension of
+     # binding the same symbol to different versions
+     solaris2*)
+       symvers_renaming=no  ;;
+     # Other platforms with GNU symbol versioning (GNU/Linux, more?) do.
+     *)
+       AC_DEFINE(_GLIBCXX_HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT, 1,
+         [Define to 1 if the target runtime linker supports binding the same symbol to different versions.])
+       symvers_renaming=yes
+    esac
+fi
+GLIBCXX_CONDITIONAL(ENABLE_SYMVERS_SOL2, test $symvers_renaming = no)
 
 # Now, set up compatibility support, if any.
 # In addition, need this to deal with std::size_t mangling in
@@ -3083,5 +3141,6 @@ AC_DEFUN([AC_LC_MESSAGES], [
 ])
 
 # Macros from the top-level gcc directory.
+m4_include([../config/gc++filt.m4])
 m4_include([../config/tls.m4])
 

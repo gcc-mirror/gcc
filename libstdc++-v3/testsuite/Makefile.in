@@ -54,6 +54,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
 	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/crossconfig.m4 \
 	$(top_srcdir)/linkage.m4 $(top_srcdir)/acinclude.m4 \
+	$(top_srcdir)/../config/gc++filt.m4 \
 	$(top_srcdir)/../config/tls.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
@@ -99,6 +100,7 @@ CTIME_CC = @CTIME_CC@
 CTIME_H = @CTIME_H@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
+CXXFILT = @CXXFILT@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 C_INCLUDE_DIR = @C_INCLUDE_DIR@
@@ -272,6 +274,7 @@ lists_of_files = \
    testsuite_files_performance
 
 extract_symvers = $(glibcxx_srcdir)/scripts/extract_symvers
+baseline_subdir := $(shell $(CXX) --print-multi-dir)
 check_DEJAGNU_normal_targets = $(patsubst %,check-DEJAGNUnormal%,0 1 2 3)
 
 # Runs the testsuite, but in compile only mode.
@@ -495,7 +498,7 @@ site.exp: Makefile
 	@mv site.tmp site.exp
 
 baseline_symbols:
-	-@(output=${baseline_dir}/baseline_symbols.txt; \
+	-@(output=${baseline_dir}/${baseline_subdir}/baseline_symbols.txt; \
 	  if test ! -f $${output}; then \
 	    echo "Baseline file doesn't exist."; \
 	    echo "Try 'make new-abi-baseline' to create it."; \
@@ -503,8 +506,8 @@ baseline_symbols:
 	  fi; true)
 
 new-abi-baseline:
-	-@$(mkinstalldirs) ${baseline_dir}
-	-@(output=${baseline_dir}/baseline_symbols.txt; \
+	-@$(mkinstalldirs) ${baseline_dir}${baseline_subdir}
+	-@(output=${baseline_dir}/${baseline_subdir}/baseline_symbols.txt; \
 	  if test -f $${output}; then \
 	    output=$${output}.new; \
 	    t=`echo $${output} | sed 's=.*config/abi/=='`; \

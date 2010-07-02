@@ -1,6 +1,6 @@
 // Support for atomic operations -*- C++ -*-
 
-// Copyright (C) 2008, 2009
+// Copyright (C) 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -127,7 +127,8 @@ namespace std
 // _GLIBCXX_*_SYMVER macros in this file.
 
 #if defined(_GLIBCXX_SYMVER_GNU) && defined(PIC) \
-    && defined(_GLIBCXX_HAVE_AS_SYMVER_DIRECTIVE)
+    && defined(_GLIBCXX_HAVE_AS_SYMVER_DIRECTIVE) \
+    && defined(_GLIBCXX_HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT)
 
 #define _GLIBCXX_ASM_SYMVER(cur, old, version) \
    asm (".symver " #cur "," #old "@@" #version);
