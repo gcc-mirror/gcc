@@ -1042,7 +1042,7 @@ void
 m68k_expand_prologue (void)
 {
   HOST_WIDE_INT fsize_with_regs;
-  rtx limit, src, dest, insn;
+  rtx limit, src, dest;
 
   m68k_compute_frame_layout ();
 
@@ -1185,7 +1185,7 @@ m68k_expand_prologue (void)
 
   if (!TARGET_SEP_DATA
       && crtl->uses_pic_offset_table)
-    insn = emit_insn (gen_load_got (pic_offset_table_rtx));
+    emit_insn (gen_load_got (pic_offset_table_rtx));
 }
 
 /* Return true if a simple (return) instruction is sufficient for this

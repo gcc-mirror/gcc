@@ -1,3 +1,9 @@
+2010-07-02  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/44771
+	* config/m68k/m68k.c (m68k_expand_prologue): Remove set but not
+	used variable insn.
+
 2010-07-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* implicit-zee.c (combine_reaching_defs): Fix long lines.
