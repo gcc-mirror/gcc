@@ -43,7 +43,7 @@
 	* implicit-zee.c (combine_reaching_defs): Fix long lines.
 	(is_set_with_extension_DI): Delete.
 	(struct zero_extend_info): New structure.
-	(add_removable_zero_extend ): New function.
+	(add_removable_zero_extend): New function.
 	(find_removable_zero_extends): Use note_stores to find SETs.
 	(find_and_remove_ze): Fix long line, remove superfluous parentheses.
 
@@ -6092,7 +6092,7 @@
 	* sched-int.h: Likewise.
 	* sched-rgn.c: Likewise.
 
-2010-05-27  Jon Beniston <jon@beniston.com>
+2010-05-27  Jon Beniston  <jon@beniston.com>
 
 	PR 43726
 	* config/lm32/lm32.h: Remove definition of
@@ -6545,7 +6545,7 @@
 
 	* Makefile.in (EXCEPT_H): Fix typo.
 
-2010-05-25  Vladimir Makarov <vmakarov@redhat.com>
+2010-05-25  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-build.c (update_conflict_hard_reg_costs): New.
 	(ira_build): Call update_conflict_hard_reg_costs.
@@ -7141,7 +7141,7 @@
 	(*arm_return): New name for ARM return insn.
 	* config/arm/thumb2.md (*thumb2_return): New insn pattern.
 
-2010-05-19  Joel Sherrill <joel.sherrill@oarcorp.com>
+2010-05-19  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	* config.gcc (sparc64-*-rtems*): New target.
 
@@ -7222,7 +7222,7 @@
 	goto_locus of outgoing edge, or gimple_location of any of the
 	labels differs.
 
-2009-09-14  Vladimir Makarov <vmakarov@redhat.com>
+2009-09-14  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira.c (ira_non_ordered_class_hard_regs): Define.
 	(setup_class_hard_regs): Initialize ira_non_ordered_class_hard_regs.
@@ -8762,7 +8762,7 @@
 	* doc/standards.texi (Standards): Link to unversioned
 	cxx0x_status.html page.
 
-2010-05-07  Iain Sandoe <iains@gcc.gnu.org>
+2010-05-07  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/43708
 	* config/darwin-c.c (darwin_pragma_unused): Set DECL_READ_P
@@ -8787,7 +8787,7 @@
 	* tree-ssa-loop-prefetch.c (is_loop_prefetching_profitable): Dump
 	a diagnostic info when the insn-to-mem ratio is too small.
 
-2010-05-07  Richard Guenther <rguenther@suse.de>
+2010-05-07  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.c (LINK_COMMAND_SPEC): Provide a resolution file to
 	the linker plugin.
@@ -9277,7 +9277,7 @@
 	in a temporary instead of invoking the macro multiple times.
 	(track_expr_p): Likewise.
 
-2010-05-04  Neil Vachharajani <nvachhar@google.com>
+2010-05-04  Neil Vachharajani  <nvachhar@google.com>
 
 	* doc/invoke.texi (-Wcoverage-mismatch): Updated documentation as
 	per new semantics.
@@ -9399,7 +9399,7 @@
 	* c.opt (-fstrict-enums): New.
 	* doc/invoke.texi (C++ Dialect Options): Document -fstrict-enums.
 
-2010-05-03  David Ung <davidu@mips.com>
+2010-05-03  David Ung  <davidu@mips.com>
 	    James E. Wilson  <wilson@codesourcery.com>
 
 	* config/mips/mips.c (mips_output_division): If GENERATE_DIVIDE_TRAPS,
@@ -9773,7 +9773,7 @@
 
 2010-04-29  Bernd Schmidt  <bernds@codesourcery.com>
 
-	From Dominique d'Humieres <dominiq@lps.ens.fr>
+	From Dominique d'Humieres  <dominiq@lps.ens.fr>
 	PR bootstrap/43858
 	* ifcvt.c (dead_or_predicable): Use df_simulate_find_defs to compute
 	test_set.
@@ -10061,7 +10061,7 @@
 	* tree-inline.c (copy_bind_expr): Also copy bind expr vars value-exprs.
 
 2010-04-27  Manuel López-Ibáñez  <manu@gcc.gnu.org>
-	    Jan Hubicka <hubicka@ucw.cz>
+	    Jan Hubicka  <hubicka@ucw.cz>
 
 	* doc/invoke.texi (-Wsuggest-attribute=const,
 	-Wsuggest-attribute=pure): Document.
@@ -10223,7 +10223,7 @@
 	bits for artificial defs at the top of the block.
 	* fwprop.c (single_def_use_enter_block): Don't call it.
 
-2010-04-26  Jack Howarth <howarth@bromo.med.uc.edu>
+2010-04-26  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR 43715
 	* gcc/configure.ac: Use "$gcc_cv_nm -g" on darwin
@@ -12770,11 +12770,11 @@
 	* Makefile.in ($(out_object_file)): Depend on
 	gt-$(basename $(notdir $(out_file))).h.
 
-2010-04-01  Ralf Corsépius <ralf.corsepius@rtems.org>
+2010-04-01  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config.gcc (lm32-*-rtems*): Add t-lm32.
 
-2010-04-01  Joel Sherrill <joel.sherrill@oarcorp.com>
+2010-04-01  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	* config.gcc: Add lm32-*-rtems*.
 	* config/lm32/rtems.h: New file.
@@ -12829,8 +12829,8 @@
 
 	PR middle-end/43602
 	Revert
-	2010-03-30  Seongbae Park <seongbae.park@gmail.com>
-		    Jack Howarth <howarth@bromo.med.uc.edu>
+	2010-03-30  Seongbae Park  <seongbae.park@gmail.com>
+		    Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* tree-profile.c (tree_init_ic_make_global_vars): Make static
 	variables TLS.
@@ -13120,8 +13120,8 @@
 	* config/s390/s390.c (s390_emit_prologue): Omit issuing a dynamic
 	stack check if the mask would be zero.
 
-2010-03-30  Seongbae Park <seongbae.park@gmail.com>
-	    Jack Howarth <howarth@bromo.med.uc.edu>
+2010-03-30  Seongbae Park  <seongbae.park@gmail.com>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* tree-profile.c (tree_init_ic_make_global_vars): Make static
 	variables TLS.
@@ -13464,7 +13464,7 @@
 	instead of callq.
 
 2010-03-22  Janis Johnson  <janis187@us.ibm.com>
-	    Rainer Orth <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/sourcebuild.texi (Test Directives): Split into six
 	subsections, with most of the current text in new subsections
@@ -13619,8 +13619,8 @@
 	(sparc_file_end): Emit a hidden comdat symbol for the PIC
 	thunk if possible.  Output CFI information as needed.
 
-2010-03-18  Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
-	    Jack Howarth <howarth@bromo.med.uc.edu>
+2010-03-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR target/36399
 	* config/i386/i386.h: Fix ABI on darwin x86-32.
@@ -13763,7 +13763,7 @@
 	* graphite-sese-to-poly.c (split_reduction_stmt): Skip debug
 	statements before splitting block.
 
-2010-03-16  Rainer Orth <ro@CeBiTec.Uni-Bielefeld.DE>
+2010-03-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/sourcebuild.texi (Testsuites): Fix markup.
 	Use pathnames relative to gcc/testsuite.
@@ -14375,7 +14375,7 @@
 	* tree-vect-loop.c (vect_transform_loop): Kill out-of-loop debug
 	uses of relevant DEFs that are dead outside the loop too.
 
-2010-03-06  Alexandre Oliva <aoliva@redhat.com>
+2010-03-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* var-tracking.c (dataflow_set_merge): Swap src and src2.
 	Reverted:
@@ -15157,7 +15157,7 @@
 	* config/spu/spu-c.c (spu_resolve_overloaded_builtin): Call
 	lang_hooks.types_compatible_p instead of comptypes.
 
-2010-02-18  Sebastian Huber <sebastian.huber@embedded-brains.de>
+2010-02-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/arm/lib1funcs.asm (__prefer_thumb__): New define.
 	(udivsi3, aeabi_uidivmod, divsi3, aeabi_idivmod): Use Thumb-1 variant
@@ -15256,8 +15256,8 @@
 	flag_var_tracking_assignments.
 	* Makefile.in (var-tracking.o): Adjust dependencies.
 
-2010-02-16  Jack Howarth <howarth@bromo.med.uc.edu>
-	    Jakub Jelinek <jakub@redhat.com>
+2010-02-16  Jack Howarth  <howarth@bromo.med.uc.edu>
+	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/42854
 	* config/darwin.h (ASM_WEAKEN_DECL): Don't check weak attribute
@@ -15356,7 +15356,7 @@
 
 2010-02-12  Dave Korn  <dave.korn.cygwin@gmail.com>
 	    Jack Howarth  <howarth@bromo.med.uc.edu>
-	    Iain Sandoe <iain.sandoe@sandoe-acoustics.co.uk>
+	    Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
 	PR target/42982
 	Partial revert of unintended change in fix for PR41605.
@@ -16779,7 +16779,7 @@
 	(maybe_tidy_empty_bb): Delete prototype.
 	(purge_empty_blocks): Declare.
 
-2010-01-14  Andrey Belevantsev <abel@ispras.ru>
+2010-01-14  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/42249
 	* sel-sched.c (try_replace_dest_reg): When chosen register
