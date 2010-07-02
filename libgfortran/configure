@@ -630,6 +630,10 @@ RANLIB
 AR
 AS
 SECTION_FLAGS
+LIBGFOR_USE_SYMVER_SUN_FALSE
+LIBGFOR_USE_SYMVER_SUN_TRUE
+LIBGFOR_USE_SYMVER_GNU_FALSE
+LIBGFOR_USE_SYMVER_GNU_TRUE
 LIBGFOR_USE_SYMVER_FALSE
 LIBGFOR_USE_SYMVER_TRUE
 AM_CFLAGS
@@ -4414,13 +4418,13 @@ fi
 # Check for symbol versioning (copied from libssp).
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether symbol versioning is supported" >&5
 $as_echo_n "checking whether symbol versioning is supported... " >&6; }
+save_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
 cat > conftest.map <<EOF
 FOO_1.0 {
   global: *foo*; bar; local: *;
 };
 EOF
-save_LDFLAGS="$LDFLAGS"
-LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
 
 if test x$gcc_no_link = xyes; then
   as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
@@ -4437,21 +4441,68 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  gfortran_use_symver=yes
+  gfortran_use_symver=gnu
 else
   gfortran_use_symver=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+if test x$gfortran_use_symver = xno; then
+  LDFLAGS="$save_LDFLAGS"
+  LDFLAGS="$LDFLAGS -fPIC -shared -Wl,-M,./conftest.map"
+  # Sun ld cannot handle wildcards and treats all entries as undefined.
+  cat > conftest.map <<EOF
+FOO_1.0 {
+  global: foo; local: *;
+};
+EOF
+  if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int foo;
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  gfortran_use_symver=sun
+else
+  gfortran_use_symver=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
 LDFLAGS="$save_LDFLAGS"
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gfortran_use_symver" >&5
 $as_echo "$gfortran_use_symver" >&6; }
- if test "x$gfortran_use_symver" = xyes; then
+ if test "x$gfortran_use_symver" != xno; then
   LIBGFOR_USE_SYMVER_TRUE=
   LIBGFOR_USE_SYMVER_FALSE='#'
 else
   LIBGFOR_USE_SYMVER_TRUE='#'
   LIBGFOR_USE_SYMVER_FALSE=
+fi
+
+ if test "x$gfortran_use_symver" = xgnu; then
+  LIBGFOR_USE_SYMVER_GNU_TRUE=
+  LIBGFOR_USE_SYMVER_GNU_FALSE='#'
+else
+  LIBGFOR_USE_SYMVER_GNU_TRUE='#'
+  LIBGFOR_USE_SYMVER_GNU_FALSE=
+fi
+
+ if test "x$gfortran_use_symver" = xsun; then
+  LIBGFOR_USE_SYMVER_SUN_TRUE=
+  LIBGFOR_USE_SYMVER_SUN_FALSE='#'
+else
+  LIBGFOR_USE_SYMVER_SUN_TRUE='#'
+  LIBGFOR_USE_SYMVER_SUN_FALSE=
 fi
 
 
@@ -11307,7 +11358,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11310 "configure"
+#line 11361 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11413,7 +11464,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11416 "configure"
+#line 11467 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -25089,6 +25140,14 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGFOR_USE_SYMVER_TRUE}" && test -z "${LIBGFOR_USE_SYMVER_FALSE}"; then
   as_fn_error "conditional \"LIBGFOR_USE_SYMVER\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGFOR_USE_SYMVER_GNU_TRUE}" && test -z "${LIBGFOR_USE_SYMVER_GNU_FALSE}"; then
+  as_fn_error "conditional \"LIBGFOR_USE_SYMVER_GNU\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGFOR_USE_SYMVER_SUN_TRUE}" && test -z "${LIBGFOR_USE_SYMVER_SUN_FALSE}"; then
+  as_fn_error "conditional \"LIBGFOR_USE_SYMVER_SUN\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
