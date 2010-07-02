@@ -640,27 +640,29 @@ ddown (HOST_WIDE_INT x, unsigned HOST_WIDE_INT by)
 /* Given a CACHE_LINE_SIZE and two inductive memory references
    with a common STEP greater than CACHE_LINE_SIZE and an address
    difference DELTA, compute the probability that they will fall
-   in different cache lines.  DISTINCT_ITERS is the number of
-   distinct iterations after which the pattern repeats itself.
+   in different cache lines.  Return true if the computed miss rate
+   is not greater than the ACCEPTABLE_MISS_RATE.  DISTINCT_ITERS is the
+   number of distinct iterations after which the pattern repeats itself.
    ALIGN_UNIT is the unit of alignment in bytes.  */
 
-static int
-compute_miss_rate (unsigned HOST_WIDE_INT cache_line_size,
+static bool
+is_miss_rate_acceptable (unsigned HOST_WIDE_INT cache_line_size,
 		   HOST_WIDE_INT step, HOST_WIDE_INT delta,
 		   unsigned HOST_WIDE_INT distinct_iters,
 		   int align_unit)
 {
   unsigned align, iter;
-  int total_positions, miss_positions, miss_rate;
+  int total_positions, miss_positions, max_allowed_miss_positions;
   int address1, address2, cache_line1, cache_line2;
 
   /* It always misses if delta is greater than or equal to the cache
      line size.  */
-  if (delta >= cache_line_size)
-    return 1000;
+  if (delta >= (HOST_WIDE_INT) cache_line_size)
+    return false;
 
-  total_positions = 0;
   miss_positions = 0;
+  total_positions = (cache_line_size / align_unit) * distinct_iters;
+  max_allowed_miss_positions = (ACCEPTABLE_MISS_RATE * total_positions) / 1000;
 
   /* Iterate through all possible alignments of the first
      memory reference within its cache line.  */
@@ -673,12 +675,14 @@ compute_miss_rate (unsigned HOST_WIDE_INT cache_line_size,
 	address2 = address1 + delta;
 	cache_line1 = address1 / cache_line_size;
 	cache_line2 = address2 / cache_line_size;
-	total_positions += 1;
 	if (cache_line1 != cache_line2)
-	  miss_positions += 1;
+	  {
+	    miss_positions += 1;
+            if (miss_positions > max_allowed_miss_positions)
+	      return false;
+          }
       }
-  miss_rate = 1000 * miss_positions / total_positions;
-  return miss_rate;
+  return true;
 }
 
 /* Prune the prefetch candidate REF using the reuse with BY.
@@ -694,7 +698,6 @@ prune_ref_by_group_reuse (struct mem_ref *ref, struct mem_ref *by,
   HOST_WIDE_INT delta = delta_b - delta_r;
   HOST_WIDE_INT hit_from;
   unsigned HOST_WIDE_INT prefetch_before, prefetch_block;
-  int miss_rate;
   HOST_WIDE_INT reduced_step;
   unsigned HOST_WIDE_INT reduced_prefetch_block;
   tree ref_type;
@@ -793,9 +796,8 @@ prune_ref_by_group_reuse (struct mem_ref *ref, struct mem_ref *by,
   delta %= step;
   ref_type = TREE_TYPE (ref->mem);
   align_unit = TYPE_ALIGN (ref_type) / 8;
-  miss_rate = compute_miss_rate(prefetch_block, step, delta,
-				reduced_prefetch_block, align_unit);
-  if (miss_rate <= ACCEPTABLE_MISS_RATE)
+  if (is_miss_rate_acceptable (prefetch_block, step, delta,
+			       reduced_prefetch_block, align_unit))
     {
       /* Do not reduce prefetch_before if we meet beyond cache size.  */
       if (prefetch_before > L2_CACHE_SIZE_BYTES / PREFETCH_BLOCK)
@@ -809,9 +811,8 @@ prune_ref_by_group_reuse (struct mem_ref *ref, struct mem_ref *by,
   /* Try also the following iteration.  */
   prefetch_before++;
   delta = step - delta;
-  miss_rate = compute_miss_rate(prefetch_block, step, delta,
-				reduced_prefetch_block, align_unit);
-  if (miss_rate <= ACCEPTABLE_MISS_RATE)
+  if (is_miss_rate_acceptable (prefetch_block, step, delta,
+			       reduced_prefetch_block, align_unit))
     {
       if (prefetch_before < ref->prefetch_before)
 	ref->prefetch_before = prefetch_before;

@@ -1,5 +1,14 @@
 2010-07-02  Changpeng Fang  <changpeng.fang@amd.com>
 
+	* tree-ssa-loop-prefetch.c (compute_miss_rate): Rename to
+	is_miss_rate_acceptable. Pull total_positions computation
+	out of the loops.  Early return if miss_positions exceeds
+	the acceptable threshold.
+	* tree-ssa-loop-prefetch.c (prune_ref_by_group_reuse): Call
+	is_miss_rate_acceptable after renaming of compute_miss_rate.
+
+2010-07-02  Changpeng Fang  <changpeng.fang@amd.com>
+
 	PR middle-end/44576
 	* tree-ssa-loop-prefetch.c (compute_miss_rate): Return 1000 (out
 	of 1000) for miss rate if the address diference is greater than or
