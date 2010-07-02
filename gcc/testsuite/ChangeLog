@@ -1,3 +1,8 @@
+2010-07-02  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* obj-c++.dg/cxx-ivars-3.mm: Make the test require OSX <= 10.4.
+	Use the ABI-0 accessors and fail it for m64.
+
 2010-07-02  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/tree-ssa/pr44706.C: New testcase.
