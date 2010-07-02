@@ -7211,7 +7211,10 @@ convert_for_assignment (tree type, tree rhs,
 
   if (TREE_CODE (type) == VECTOR_TYPE && coder == VECTOR_TYPE
       && vector_types_convertible_p (type, rhstype, true))
-    return convert (type, rhs);
+    {
+      rhs = mark_rvalue_use (rhs);
+      return convert (type, rhs);
+    }
 
   if (rhs == error_mark_node || rhstype == error_mark_node)
     return error_mark_node;
@@ -7255,7 +7258,10 @@ convert_for_assignment (tree type, tree rhs,
 	}
 
       if (objc_compare_types (type, rhstype, parmno, rname))
-	return convert (type, rhs);
+	{
+	  rhs = mark_rvalue_use (rhs);
+	  return convert (type, rhs);
+	}
     }
 
   /* [expr.ass]

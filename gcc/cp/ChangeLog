@@ -1,3 +1,13 @@
+2010-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/44780
+	* typeck.c (convert_for_assignment): When converting a convertible
+	vector type or objc++ types, call mark_rvalue_use.
+	* typeck2.c (build_m_component_ref): Use return values from
+	mark_rvalue_use or mark_lvalue_use.
+	* class.c (build_base_path): Likewise.
+	* call.c (build_conditional_expr): Likewise.
+
 2010-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/44039
