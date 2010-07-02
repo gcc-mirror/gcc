@@ -6040,11 +6040,10 @@ hppa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
       u = fold_build1 (NEGATE_EXPR, sizetype, u);
       t = build2 (POINTER_PLUS_EXPR, valist_type, valist, u);
 
-      /* Copied from va-pa.h, but we probably don't need to align to
-	 word size, since we generate and preserve that invariant.  */
-      u = size_int (size > 4 ? -8 : -4);
-      t = fold_convert (sizetype, t);
-      t = build2 (BIT_AND_EXPR, sizetype, t, u);
+      /* Align to 4 or 8 byte boundary depending on argument size.  */
+
+      u = build_int_cst (TREE_TYPE (t), (HOST_WIDE_INT)(size > 4 ? -8 : -4));
+      t = build2 (BIT_AND_EXPR, TREE_TYPE (t), t, u);
       t = fold_convert (valist_type, t);
 
       t = build2 (MODIFY_EXPR, valist_type, valist, t);
