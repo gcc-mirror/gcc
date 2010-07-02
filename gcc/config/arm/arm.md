@@ -1149,6 +1149,19 @@
   [(set_attr "conds" "set")]
 )
 
+(define_insn "*subsi3_compare0_c"
+  [(set (reg:CC_NOTB CC_REGNUM)
+	(compare:CC_NOTB (match_operand:SI 1 "arm_rhs_operand" "r,I")
+			 (match_operand:SI 2 "arm_rhs_operand" "rI,r")))
+   (set (match_operand:SI 0 "s_register_operand" "=r,r")
+	(minus:SI (match_dup 1) (match_dup 2)))]
+  "TARGET_32BIT"
+  "@
+   sub%.\\t%0, %1, %2
+   rsb%.\\t%0, %2, %1"
+  [(set_attr "conds" "set")]
+)
+
 (define_expand "decscc"
   [(set (match_operand:SI            0 "s_register_operand" "=r,r")
         (minus:SI (match_operand:SI  1 "s_register_operand" "0,?r")
@@ -9304,41 +9317,96 @@
    (set_attr "length" "4,8")]
 )
 
-(define_insn "*compare_scc"
+; A series of splitters for the compare_scc pattern below.  Note that
+; order is important.
+(define_split
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(lt:SI (match_operand:SI 1 "s_register_operand" "")
+	       (const_int 0)))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_32BIT && reload_completed"
+  [(set (match_dup 0) (lshiftrt:SI (match_dup 1) (const_int 31)))])
+
+(define_split
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(ge:SI (match_operand:SI 1 "s_register_operand" "")
+	       (const_int 0)))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_32BIT && reload_completed"
+  [(set (match_dup 0) (not:SI (match_dup 1)))
+   (set (match_dup 0) (lshiftrt:SI (match_dup 0) (const_int 31)))])
+
+(define_split
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(eq:SI (match_operand:SI 1 "s_register_operand" "")
+	       (const_int 0)))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_32BIT && reload_completed"
+  [(parallel
+    [(set (reg:CC_NOTB CC_REGNUM)
+	  (compare:CC_NOTB (const_int 1) (match_dup 1)))
+     (set (match_dup 0)
+	  (minus:SI (const_int 1) (match_dup 1)))])
+   (cond_exec (ltu:CC_NOTB (reg:CC_NOTB CC_REGNUM) (const_int 0))
+	      (set (match_dup 0) (const_int 0)))])
+
+(define_split
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(ne:SI (match_operand:SI 1 "s_register_operand" "")
+	       (match_operand:SI 2 "const_int_operand" "")))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_32BIT && reload_completed"
+  [(parallel
+    [(set (reg:CC CC_REGNUM)
+	  (compare:CC (match_dup 1) (match_dup 2)))
+     (set (match_dup 0) (plus:SI (match_dup 1) (match_dup 3)))])
+   (cond_exec (ne:CC (reg:CC CC_REGNUM) (const_int 0))
+	      (set (match_dup 0) (const_int 1)))]
+{
+  operands[3] = GEN_INT (-INTVAL (operands[2]));
+})
+
+(define_split
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(ne:SI (match_operand:SI 1 "s_register_operand" "")
+	       (match_operand:SI 2 "arm_add_operand" "")))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_32BIT && reload_completed"
+  [(parallel
+    [(set (reg:CC_NOOV CC_REGNUM)
+	  (compare:CC_NOOV (minus:SI (match_dup 1) (match_dup 2))
+			   (const_int 0)))
+     (set (match_dup 0) (minus:SI (match_dup 1) (match_dup 2)))])
+   (cond_exec (ne:CC_NOOV (reg:CC_NOOV CC_REGNUM) (const_int 0))
+	      (set (match_dup 0) (const_int 1)))])
+
+(define_insn_and_split "*compare_scc"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(match_operator:SI 1 "arm_comparison_operator"
 	 [(match_operand:SI 2 "s_register_operand" "r,r")
 	  (match_operand:SI 3 "arm_add_operand" "rI,L")]))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_ARM"
-  "*
-    if (operands[3] == const0_rtx)
-      {
-	if (GET_CODE (operands[1]) == LT)
-	  return \"mov\\t%0, %2, lsr #31\";
+  "TARGET_32BIT"
+  "#"
+  "&& reload_completed"
+  [(set (reg:CC CC_REGNUM) (compare:CC (match_dup 2) (match_dup 3)))
+   (cond_exec (match_dup 4) (set (match_dup 0) (const_int 0)))
+   (cond_exec (match_dup 5) (set (match_dup 0) (const_int 1)))]
+{
+  rtx tmp1;
+  enum machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
+					   operands[2], operands[3]);
+  enum rtx_code rc = GET_CODE (operands[1]);
 
-	if (GET_CODE (operands[1]) == GE)
-	  return \"mvn\\t%0, %2\;mov\\t%0, %0, lsr #31\";
-
-	if (GET_CODE (operands[1]) == EQ)
-	  return \"rsbs\\t%0, %2, #1\;movcc\\t%0, #0\";
-      }
-
-    if (GET_CODE (operands[1]) == NE)
-      {
-        if (which_alternative == 1)
-	  return \"adds\\t%0, %2, #%n3\;movne\\t%0, #1\";
-        return \"subs\\t%0, %2, %3\;movne\\t%0, #1\";
-      }
-    if (which_alternative == 1)
-      output_asm_insn (\"cmn\\t%2, #%n3\", operands);
-    else
-      output_asm_insn (\"cmp\\t%2, %3\", operands);
-    return \"mov%D1\\t%0, #0\;mov%d1\\t%0, #1\";
-  "
-  [(set_attr "conds" "clob")
-   (set_attr "length" "12")]
-)
+  tmp1 = gen_rtx_REG (mode, CC_REGNUM);
+  
+  operands[5] = gen_rtx_fmt_ee (rc, VOIDmode, tmp1, const0_rtx);
+  if (mode == CCFPmode || mode == CCFPEmode)
+    rc = reverse_condition_maybe_unordered (rc);
+  else
+    rc = reverse_condition (rc);
+  operands[4] = gen_rtx_fmt_ee (rc, VOIDmode, tmp1, const0_rtx);
+})
 
 (define_insn "*cond_move"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")

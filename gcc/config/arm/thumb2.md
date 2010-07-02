@@ -599,42 +599,6 @@
    (set_attr "length" "6,10")]
 )
 
-(define_insn "*thumb2_compare_scc"
-  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
-	(match_operator:SI 1 "arm_comparison_operator"
-	 [(match_operand:SI 2 "s_register_operand" "r,r")
-	  (match_operand:SI 3 "arm_add_operand" "rI,L")]))
-   (clobber (reg:CC CC_REGNUM))]
-  "TARGET_THUMB2"
-  "*
-    if (operands[3] == const0_rtx)
-      {
-	if (GET_CODE (operands[1]) == LT)
-	  return \"lsr\\t%0, %2, #31\";
-
-	if (GET_CODE (operands[1]) == GE)
-	  return \"mvn\\t%0, %2\;lsr\\t%0, %0, #31\";
-
-	if (GET_CODE (operands[1]) == EQ)
-	  return \"rsbs\\t%0, %2, #1\;it\\tcc\;movcc\\t%0, #0\";
-      }
-
-    if (GET_CODE (operands[1]) == NE)
-      {
-        if (which_alternative == 1)
-	  return \"adds\\t%0, %2, #%n3\;it\\tne\;movne\\t%0, #1\";
-        return \"subs\\t%0, %2, %3\;it\\tne\;movne\\t%0, #1\";
-      }
-    if (which_alternative == 1)
-      output_asm_insn (\"cmn\\t%2, #%n3\", operands);
-    else
-      output_asm_insn (\"cmp\\t%2, %3\", operands);
-    return \"ite\\t%D1\;mov%D1\\t%0, #0\;mov%d1\\t%0, #1\";
-  "
-  [(set_attr "conds" "clob")
-   (set_attr "length" "14")]
-)
-
 (define_insn "*thumb2_cond_move"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r,r")
 	(if_then_else:SI (match_operator 3 "equality_operator"

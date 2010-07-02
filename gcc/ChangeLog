@@ -1,3 +1,13 @@
+2010-07-02  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR target/42835
+	* config/arm/arm-modes.def (CC_NOTB): New mode.
+	* config/arm/arm.c (get_arm_condition_code): Handle it.
+	* config/arm/thumb2.md (thumb2_compare_scc): Delete pattern.
+	* config/arm/arm.md (subsi3_compare0_c): New pattern.
+	(compare_scc): Now a define_and_split.  Add a number of extra
+	splitters before it.
+
 2010-07-02  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/arm/arm.c (neon_vdup_constant): Expand into canonical RTL
