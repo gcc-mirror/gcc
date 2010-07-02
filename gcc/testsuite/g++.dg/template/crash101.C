@@ -5,7 +5,7 @@ struct locale {  };
 template<class charT>
   void
   foo()
-  { locale::locale(); } // // { dg-error "cannot call|function-style" }
+  { locale::locale(); } // { dg-error "cannot call|function-style" }
 
 void
 bar()
