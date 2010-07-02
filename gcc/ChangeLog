@@ -1,3 +1,8 @@
+2010-07-02  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/arm/neon.md (vec_extractv2di): Correct error in register
+	numbering to reconcile with neon_vget_lanev2di.
+
 2010-07-02  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (pt_solution_set_var): New function.

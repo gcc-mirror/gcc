@@ -802,11 +802,11 @@
           (parallel [(match_operand:SI 2 "immediate_operand" "i")])))]
   "TARGET_NEON"
 {
-  int regno = REGNO (operands[1]) + INTVAL (operands[2]);
+  int regno = REGNO (operands[1]) + 2 * INTVAL (operands[2]);
 
   operands[1] = gen_rtx_REG (DImode, regno);
 
-  return "vmov%?.64\t%Q0, %R0, %P1";
+  return "vmov%?\t%Q0, %R0, %P1  @ v2di";
 }
   [(set_attr "predicable" "yes")
    (set_attr "neon_type" "neon_int_1")]
