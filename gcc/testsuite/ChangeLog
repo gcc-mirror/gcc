@@ -1,5 +1,9 @@
 2010-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* g++.dg/template/crash98.C: Remove stray // from dg-error comment.
+
+2010-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/44039
 	* g++.dg/template/crash98.C: New.
 
