@@ -1,3 +1,7 @@
+2010-07-02  Richard Guenther  <rguenther@suse.de>
+
+	* g++.dg/torture/20100702-1.C: New testcase.
+
 2010-07-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR target/44707
