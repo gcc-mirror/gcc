@@ -1317,7 +1317,14 @@ fold_const_aggregate_ref (tree t)
 	  if (DECL_P (base)
 	      && !AGGREGATE_TYPE_P (TREE_TYPE (base))
 	      && integer_zerop (TREE_OPERAND (t, 1)))
-	    return get_symbol_constant_value (base);
+	    {
+	      tree res = get_symbol_constant_value (base);
+	      if (res
+		  && !useless_type_conversion_p
+		        (TREE_TYPE (t), TREE_TYPE (res)))
+		res = fold_unary (VIEW_CONVERT_EXPR, TREE_TYPE (t), res);
+	      return res;
+	    }
 
 	  if (!TREE_READONLY (base)
 	      || TREE_CODE (TREE_TYPE (base)) != ARRAY_TYPE

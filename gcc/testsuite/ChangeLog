@@ -1,3 +1,8 @@
+2010-07-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44748
+	* gcc.dg/tree-ssa/ssa-ccp-29.c: New testcase.
+
 2010-07-02  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc-obj-c++-shared/next-abi.h: Remove dependency on system
