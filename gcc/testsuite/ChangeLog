@@ -1,3 +1,7 @@
+2010-07-02  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc-obj-c++-shared/Object1.h: Correct Line endings.
+
 2010-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/template/crash98.C: Remove stray // from dg-error comment.
