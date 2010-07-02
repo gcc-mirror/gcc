@@ -2188,15 +2188,30 @@ extract_range_from_binary_expr (value_range_t *vr,
 
 	  return;
 	}
-      gcc_assert (code == POINTER_PLUS_EXPR);
-      /* For pointer types, we are really only interested in asserting
-	 whether the expression evaluates to non-NULL.  */
-      if (range_is_nonnull (&vr0) || range_is_nonnull (&vr1))
-	set_value_range_to_nonnull (vr, expr_type);
-      else if (range_is_null (&vr0) && range_is_null (&vr1))
-	set_value_range_to_null (vr, expr_type);
+      if (code == POINTER_PLUS_EXPR)
+	{
+	  /* For pointer types, we are really only interested in asserting
+	     whether the expression evaluates to non-NULL.  */
+	  if (range_is_nonnull (&vr0) || range_is_nonnull (&vr1))
+	    set_value_range_to_nonnull (vr, expr_type);
+	  else if (range_is_null (&vr0) && range_is_null (&vr1))
+	    set_value_range_to_null (vr, expr_type);
+	  else
+	    set_value_range_to_varying (vr);
+	}
+      else if (code == BIT_AND_EXPR)
+	{
+	  /* For pointer types, we are really only interested in asserting
+	     whether the expression evaluates to non-NULL.  */
+	  if (range_is_nonnull (&vr0) && range_is_nonnull (&vr1))
+	    set_value_range_to_nonnull (vr, expr_type);
+	  else if (range_is_null (&vr0) || range_is_null (&vr1))
+	    set_value_range_to_null (vr, expr_type);
+	  else
+	    set_value_range_to_varying (vr);
+	}
       else
-	set_value_range_to_varying (vr);
+	gcc_unreachable ();
 
       return;
     }
