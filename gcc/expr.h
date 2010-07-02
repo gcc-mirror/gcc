@@ -645,6 +645,9 @@ extern void update_nonlocal_goto_save_area (void);
    says how many bytes.  */
 extern rtx allocate_dynamic_stack_space (rtx, rtx, int);
 
+/* Emit one stack probe at ADDRESS, an address within the stack.  */
+extern void emit_stack_probe (rtx);
+
 /* Probe a range of stack addresses from FIRST to FIRST+SIZE, inclusive.
    FIRST is a constant and size is a Pmode RTX.  These are offsets from
    the current stack pointer.  STACK_GROWS_DOWNWARD says whether to add

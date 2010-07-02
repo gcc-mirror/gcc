@@ -188,4 +188,7 @@ along with GCC; see the file COPYING3.  If not see
 #define PUSHSECTION_FORMAT	"\t.pushsection\t\"%s\"\n"
 #endif
 
+/* Static stack checking is supported by means of probes.  */
+#define STACK_CHECK_STATIC_BUILTIN 1
+
 #define MD_UNWIND_SUPPORT "config/sparc/sol2-unwind.h"

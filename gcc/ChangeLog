@@ -1,3 +1,20 @@
+2010-07-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.h (emit_stack_probe): Declare.
+	* explow.c (emit_stack_probe): Make global.
+	(anti_adjust_stack_and_probe): Fix comments.
+	* config/sparc/linux.h (STACK_CHECK_STATIC_BUILTIN): Define to 1.
+	* config/sparc/linux64.h (STACK_CHECK_STATIC_BUILTIN): Likewise.
+	* config/sparc/sol2.h (STACK_CHECK_STATIC_BUILTIN): Likewise.
+	* config/sparc/sparc.c: Include except.h.
+	(sparc_emit_probe_stack_range): New function.
+	(output_probe_stack_range): Likewise.
+	(sparc_expand_prologue): Invoke sparc_emit_probe_stack_range if static
+	built-in stack checking is enabled.
+	* config/sparc/sparc-protos.h (output_probe_stack_range): Declare.
+	* config/sparc/sparc.md (UNSPECV_PROBE_STACK_RANGE): New constant.
+	(probe_stack_range): New insn.
+
 2010-07-02  Richard Guenther  <rguenther@suse.de>
 
 	PR target/43958
@@ -6,14 +23,14 @@
 
 2010-07-02  Jan Hubicka  <jh@suse.cz>
 
-	* ipa-split.c (verify_non_ssa_vars): Break out from ...; perform DFS walk
-	backwards from entry_bb to check only those basic block of header
+	* ipa-split.c (verify_non_ssa_vars): Break out from ...; perform DFS
+	walk backwards from entry_bb to check only those basic block of header
 	that might lead to execution of split part.
 	(consider_split) ... here.
 	(find_return_bb): Allow assignment in return BB.
 	(find_retval): New.
-	(split_function): Fix name of cloned function; take care of updating return
-	value in return_bb containing move.
+	(split_function): Fix name of cloned function; take care of updating
+	return value in return_bb containing move.
 
 2010-07-02  Andreas Schwab  <schwab@linux-m68k.org>
 

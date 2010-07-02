@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 
 static rtx break_out_memory_refs (rtx);
-static void emit_stack_probe (rtx);
 
 
 /* Truncate and perhaps sign-extend C as appropriate for MODE.  */
@@ -1355,7 +1354,7 @@ set_stack_check_libfunc (const char *libfunc_name)
 
 /* Emit one stack probe at ADDRESS, an address within the stack.  */
 
-static void
+void
 emit_stack_probe (rtx address)
 {
   rtx memref = gen_rtx_MEM (word_mode, address);
@@ -1567,7 +1566,7 @@ anti_adjust_stack_and_probe (rtx size, bool adjust_back)
       HOST_WIDE_INT isize = INTVAL (size), i;
       bool first_probe = true;
 
-      /* Adjust SP and probe to PROBE_INTERVAL + N * PROBE_INTERVAL for
+      /* Adjust SP and probe at PROBE_INTERVAL + N * PROBE_INTERVAL for
 	 values of N from 1 until it exceeds SIZE.  If only one probe is
 	 needed, this will not generate any code.  Then adjust and probe
 	 to PROBE_INTERVAL + SIZE.  */
@@ -1623,13 +1622,13 @@ anti_adjust_stack_and_probe (rtx size, bool adjust_back)
 
       /* Step 3: the loop
 
-	  while (SP != LAST_ADDR)
-	    {
-	      SP = SP + PROBE_INTERVAL
-	      probe at SP
-	    }
+	 while (SP != LAST_ADDR)
+	   {
+	     SP = SP + PROBE_INTERVAL
+	     probe at SP
+	   }
 
-	 adjusts SP and probes to PROBE_INTERVAL + N * PROBE_INTERVAL for
+	 adjusts SP and probes at PROBE_INTERVAL + N * PROBE_INTERVAL for
 	 values of N from 1 until it is equal to ROUNDED_SIZE.  */
 
       emit_label (loop_lab);
@@ -1647,7 +1646,7 @@ anti_adjust_stack_and_probe (rtx size, bool adjust_back)
       emit_label (end_lab);
 
 
-      /* Step 4: adjust SP and probe to PROBE_INTERVAL + SIZE if we cannot
+      /* Step 4: adjust SP and probe at PROBE_INTERVAL + SIZE if we cannot
 	 assert at compile-time that SIZE is equal to ROUNDED_SIZE.  */
 
       /* TEMP = SIZE - ROUNDED_SIZE.  */
