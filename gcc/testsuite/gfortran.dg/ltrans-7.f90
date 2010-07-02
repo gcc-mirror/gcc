@@ -27,5 +27,5 @@ Program FOO
 end Program FOO
 
 ! Please do not XFAIL.
-! { dg-final { scan-tree-dump-times "transformed loop" 1 "ltrans"} }
+! { dg-final { scan-tree-dump-times "transformed loop" 1 "ltrans" } }
 ! { dg-final { cleanup-tree-dump "ltrans" } }

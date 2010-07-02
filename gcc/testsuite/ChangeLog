@@ -1,3 +1,10 @@
+2010-07-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/runtime_warning_1.f90: Fix dg syntax.
+	* gfortran.dg/intent_out_5.f90: Same.
+	* gfortran.dg/ltrans-7.f90: Same.
+	* gfortran.dg/char_bounds_check_fail_1.f90: Same.
+
 2010-07-02  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/ipa-split-5.c: New function.
