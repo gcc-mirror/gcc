@@ -1,3 +1,11 @@
+2010-07-02  Changpeng Fang  <changpeng.fang@amd.com>
+
+	PR middle-end/44576
+	* tree-ssa-loop-prefetch.c (compute_miss_rate): Return 1000 (out
+	of 1000) for miss rate if the address diference is greater than or
+	equal to the cache line size (the two reference will never hit the
+	same cache line).
+
 2010-07-02  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR target/42835
