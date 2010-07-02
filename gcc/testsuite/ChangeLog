@@ -1,3 +1,7 @@
+2010-07-02  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/tree-ssa/pr44706.C: New testcase.
+
 2010-07-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44748
