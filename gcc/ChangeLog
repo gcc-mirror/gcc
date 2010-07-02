@@ -1,3 +1,9 @@
+2010-07-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44748
+	* tree-ssa-ccp.c (fold_const_aggregate_ref): Properly handle
+	the embedded conversion in MEM_REFs.
+
 2010-07-01  López-Ibáñez  <manu@gcc.gnu.org>
 
 	* reload.c: Include toplev.h.
