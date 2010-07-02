@@ -75,6 +75,7 @@ extern const char *output_return (rtx);
 extern const char *output_sibcall (rtx, rtx);
 extern const char *output_v8plus_shift (rtx *, rtx, const char *);
 extern const char *output_v9branch (rtx, rtx, int, int, int, int, rtx);
+extern const char *output_probe_stack_range (rtx, rtx);
 extern bool emit_scc_insn (rtx []);
 extern void emit_conditional_branch_insn (rtx []);
 extern void print_operand (FILE *, rtx, int);

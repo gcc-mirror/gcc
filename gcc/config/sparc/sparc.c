@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "flags.h"
 #include "function.h"
+#include "except.h"
 #include "expr.h"
 #include "optabs.h"
 #include "recog.h"
@@ -4005,6 +4006,160 @@ sparc_output_scratch_registers (FILE *file ATTRIBUTE_UNUSED)
 #endif
 }
 
+#define PROBE_INTERVAL (1 << STACK_CHECK_PROBE_INTERVAL_EXP)
+
+#if PROBE_INTERVAL > 4096
+#error Cannot use indexed addressing mode for stack probing
+#endif
+
+/* Emit code to probe a range of stack addresses from FIRST to FIRST+SIZE,
+   inclusive.  These are offsets from the current stack pointer.
+
+   Note that we don't use the REG+REG addressing mode for the probes because
+   of the stack bias in 64-bit mode.  And it doesn't really buy us anything
+   so the advantages of having a single code win here.  */
+
+static void
+sparc_emit_probe_stack_range (HOST_WIDE_INT first, HOST_WIDE_INT size)
+{
+  rtx g1 = gen_rtx_REG (Pmode, 1);
+
+  /* See if we have a constant small number of probes to generate.  If so,
+     that's the easy case.  */
+  if (size <= PROBE_INTERVAL)
+    {
+      emit_move_insn (g1, GEN_INT (first));
+      emit_insn (gen_rtx_SET (VOIDmode, g1,
+			      gen_rtx_MINUS (Pmode, stack_pointer_rtx, g1)));
+      emit_stack_probe (plus_constant (g1, -size));
+    }
+
+  /* The run-time loop is made up of 10 insns in the generic case while the
+     compile-time loop is made up of 4+2*(n-2) insns for n # of intervals.  */
+  else if (size <= 5 * PROBE_INTERVAL)
+    {
+      HOST_WIDE_INT i;
+
+      emit_move_insn (g1, GEN_INT (first + PROBE_INTERVAL));
+      emit_insn (gen_rtx_SET (VOIDmode, g1,
+			      gen_rtx_MINUS (Pmode, stack_pointer_rtx, g1)));
+      emit_stack_probe (g1);
+
+      /* Probe at FIRST + N * PROBE_INTERVAL for values of N from 2 until
+	 it exceeds SIZE.  If only two probes are needed, this will not
+	 generate any code.  Then probe at FIRST + SIZE.  */
+      for (i = 2 * PROBE_INTERVAL; i < size; i += PROBE_INTERVAL)
+	{
+	  emit_insn (gen_rtx_SET (VOIDmode, g1,
+				  plus_constant (g1, -PROBE_INTERVAL)));
+	  emit_stack_probe (g1);
+	}
+
+      emit_stack_probe (plus_constant (g1, (i - PROBE_INTERVAL) - size));
+    }
+
+  /* Otherwise, do the same as above, but in a loop.  Note that we must be
+     extra careful with variables wrapping around because we might be at
+     the very top (or the very bottom) of the address space and we have
+     to be able to handle this case properly; in particular, we use an
+     equality test for the loop condition.  */
+  else
+    {
+      HOST_WIDE_INT rounded_size;
+      rtx g4 = gen_rtx_REG (Pmode, 4);
+
+      emit_move_insn (g1, GEN_INT (first));
+
+
+      /* Step 1: round SIZE to the previous multiple of the interval.  */
+
+      rounded_size = size & -PROBE_INTERVAL;
+      emit_move_insn (g4, GEN_INT (rounded_size));
+
+
+      /* Step 2: compute initial and final value of the loop counter.  */
+
+      /* TEST_ADDR = SP + FIRST.  */
+      emit_insn (gen_rtx_SET (VOIDmode, g1,
+			      gen_rtx_MINUS (Pmode, stack_pointer_rtx, g1)));
+
+      /* LAST_ADDR = SP + FIRST + ROUNDED_SIZE.  */
+      emit_insn (gen_rtx_SET (VOIDmode, g4, gen_rtx_MINUS (Pmode, g1, g4)));
+
+
+      /* Step 3: the loop
+
+	 while (TEST_ADDR != LAST_ADDR)
+	   {
+	     TEST_ADDR = TEST_ADDR + PROBE_INTERVAL
+	     probe at TEST_ADDR
+	   }
+
+	 probes at FIRST + N * PROBE_INTERVAL for values of N from 1
+	 until it is equal to ROUNDED_SIZE.  */
+
+      if (TARGET_64BIT)
+	emit_insn (gen_probe_stack_rangedi (g1, g1, g4));
+      else
+	emit_insn (gen_probe_stack_rangesi (g1, g1, g4));
+
+
+      /* Step 4: probe at FIRST + SIZE if we cannot assert at compile-time
+	 that SIZE is equal to ROUNDED_SIZE.  */
+
+      if (size != rounded_size)
+	emit_stack_probe (plus_constant (g4, rounded_size - size));
+    }
+
+  /* Make sure nothing is scheduled before we are done.  */
+  emit_insn (gen_blockage ());
+}
+
+/* Probe a range of stack addresses from REG1 to REG2 inclusive.  These are
+   absolute addresses.  */
+
+const char *
+output_probe_stack_range (rtx reg1, rtx reg2)
+{
+  static int labelno = 0;
+  char loop_lab[32], end_lab[32];
+  rtx xops[2];
+
+  ASM_GENERATE_INTERNAL_LABEL (loop_lab, "LPSRL", labelno);
+  ASM_GENERATE_INTERNAL_LABEL (end_lab, "LPSRE", labelno++);
+
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, loop_lab);
+
+   /* Jump to END_LAB if TEST_ADDR == LAST_ADDR.  */
+  xops[0] = reg1;
+  xops[1] = reg2;
+  output_asm_insn ("cmp\t%0, %1", xops);
+  if (TARGET_ARCH64)
+    fputs ("\tbe,pn\t%xcc,", asm_out_file);
+  else
+    fputs ("\tbe\t", asm_out_file);
+  assemble_name_raw (asm_out_file, end_lab);
+  fputc ('\n', asm_out_file);
+
+  /* TEST_ADDR = TEST_ADDR + PROBE_INTERVAL.  */
+  xops[1] = GEN_INT (-PROBE_INTERVAL);
+  output_asm_insn (" add\t%0, %1, %0", xops);
+
+  /* Probe at TEST_ADDR and branch.  */
+  if (TARGET_ARCH64)
+    fputs ("\tba,pt\t%xcc,", asm_out_file);
+  else
+    fputs ("\tba\t", asm_out_file);
+  assemble_name_raw (asm_out_file, loop_lab);
+  fputc ('\n', asm_out_file);
+  xops[1] = GEN_INT (SPARC_STACK_BIAS);
+  output_asm_insn (" st\t%%g0, [%0+%1]", xops);
+
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, end_lab);
+
+  return "";
+}
+
 /* Save/restore call-saved registers from LOW to HIGH at BASE+OFFSET
    as needed.  LOW should be double-word aligned for 32-bit registers.
    Return the new OFFSET.  */
@@ -4192,6 +4347,9 @@ sparc_expand_prologue (void)
 
   /* Advertise that the data calculated just above are now valid.  */
   sparc_prologue_data_valid_p = true;
+
+  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK && actual_fsize)
+    sparc_emit_probe_stack_range (STACK_CHECK_PROTECT, actual_fsize);
 
   if (sparc_leaf_function_p)
     {
