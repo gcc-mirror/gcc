@@ -7697,8 +7697,8 @@ match_procedure_in_type (void)
     }
 
   /* Construct the data structure.  */
+  memset (&tb, 0, sizeof (tb));
   tb.where = gfc_current_locus;
-  tb.is_generic = 0;
 
   /* Match binding attributes.  */
   m = match_binding_attributes (&tb, false, false);
@@ -7855,6 +7855,9 @@ gfc_match_generic (void)
   block = gfc_state_stack->previous->sym;
   ns = block->f2k_derived;
   gcc_assert (block && ns);
+
+  memset (&tbattr, 0, sizeof (tbattr));
+  tbattr.where = gfc_current_locus;
 
   /* See if we get an access-specifier.  */
   m = match_binding_attributes (&tbattr, true, false);

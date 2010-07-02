@@ -1,3 +1,9 @@
+2010-07-02  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/44662
+	* decl.c (match_procedure_in_type): Clear structure before using.
+	(gfc_match_generic): Ditto.
+
 2010-07-02  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* trans-types.h (gfc_add_field_to_struct): Add tree ** parameter.
