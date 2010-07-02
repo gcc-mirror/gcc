@@ -1,13 +1,12 @@
 // Check if ObjC classes with non-POD C++ ivars are specially marked in the metadata.
 
 // { dg-do run { target *-*-darwin* } }
-// { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } 
-// { dg-options "-fobjc-call-cxx-cdtors" }
-// { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } }
+// { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } }
+// { dg-options "-fobjc-call-cxx-cdtors -mmacosx-version-min=10.4" }
+// This test has no equivalent or meaning for m64/ABI V2
+// { dg-xfail-run-if "No Test Avail" { *-*-darwin* && lp64 } { "-fnext-runtime" } { "" } }
 
-#include "../objc-obj-c++-shared/Object1.h"
-#include "../objc-obj-c++-shared/next-mapping.h"
-
+#include <objc/objc-runtime.h>
 #include <stdlib.h>
 #define CHECK_IF(expr) if(!(expr)) abort()
 
@@ -39,18 +38,17 @@ struct cxx_struct {
 
 int main (void)
 {
+#ifndef __LP64__
   Class cls;
 
-  cls = objc_get_class("Foo");
-#if NEXT_OBJC_USE_NEW_INTERFACE
-  CHECK_IF(class_isMetaClass(cls) & CLS_HAS_CXX_STRUCTORS);
-  cls = objc_getClass("Bar");
-  CHECK_IF(!(class_isMetaClass(cls) & CLS_HAS_CXX_STRUCTORS));
-#else
+  cls = objc_getClass("Foo");
   CHECK_IF(cls->info & CLS_HAS_CXX_STRUCTORS);
   cls = objc_getClass("Bar");
   CHECK_IF(!(cls->info & CLS_HAS_CXX_STRUCTORS));
+
+#else
+  /* No test needed or available.  */
+  abort ();
 #endif
   return 0;
 }
-#include "../objc-obj-c++-shared/Object1-implementation.h"
