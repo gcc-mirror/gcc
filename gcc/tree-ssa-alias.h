@@ -132,6 +132,8 @@ extern bool pt_solutions_same_restrict_base (struct pt_solution *,
 					     struct pt_solution *);
 extern void pt_solution_reset (struct pt_solution *);
 extern void pt_solution_set (struct pt_solution *, bitmap, bool, bool);
+extern void pt_solution_set_var (struct pt_solution *, tree);
+
 extern void dump_pta_stats (FILE *);
 
 extern GTY(()) struct pt_solution ipa_escaped_pt;

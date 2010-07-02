@@ -5549,6 +5549,27 @@ copy_ref_info (tree new_ref, tree old_ref)
       TMR_ORIGINAL (new_ref) = unshare_and_remove_ssa_names (old_ref);
       TREE_SIDE_EFFECTS (new_ref) = TREE_SIDE_EFFECTS (old_ref);
       TREE_THIS_VOLATILE (new_ref) = TREE_THIS_VOLATILE (old_ref);
+      /* We can transfer points-to information from an old pointer
+         or decl base to the new one.  */
+      if (TMR_BASE (new_ref)
+	  && TREE_CODE (TMR_BASE (new_ref)) == SSA_NAME
+	  && POINTER_TYPE_P (TREE_TYPE (TMR_BASE (new_ref)))
+	  && !SSA_NAME_PTR_INFO (TMR_BASE (new_ref)))
+	{
+	  tree base = get_base_address (old_ref);
+	  if ((INDIRECT_REF_P (base)
+	       || TREE_CODE (base) == MEM_REF)
+	      && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
+	    duplicate_ssa_name_ptr_info
+	      (TMR_BASE (new_ref), SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0)));
+	  else if (TREE_CODE (base) == VAR_DECL
+		   || TREE_CODE (base) == PARM_DECL
+		   || TREE_CODE (base) == RESULT_DECL)
+	    {
+	      struct ptr_info_def *pi = get_ptr_info (TMR_BASE (new_ref));
+	      pt_solution_set_var (&pi->pt, base);
+	    }
+	}
     }
 }
 
