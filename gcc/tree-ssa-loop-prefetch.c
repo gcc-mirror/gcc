@@ -654,6 +654,11 @@ compute_miss_rate (unsigned HOST_WIDE_INT cache_line_size,
   int total_positions, miss_positions, miss_rate;
   int address1, address2, cache_line1, cache_line2;
 
+  /* It always misses if delta is greater than or equal to the cache
+     line size.  */
+  if (delta >= cache_line_size)
+    return 1000;
+
   total_positions = 0;
   miss_positions = 0;
 
