@@ -506,13 +506,15 @@
 (define_predicate "imm_for_neon_logic_operand"
   (match_code "const_vector")
 {
-  return neon_immediate_valid_for_logic (op, mode, 0, NULL, NULL);
+  return (TARGET_NEON
+          && neon_immediate_valid_for_logic (op, mode, 0, NULL, NULL));
 })
 
 (define_predicate "imm_for_neon_inv_logic_operand"
   (match_code "const_vector")
 {
-  return neon_immediate_valid_for_logic (op, mode, 1, NULL, NULL);
+  return (TARGET_NEON
+          && neon_immediate_valid_for_logic (op, mode, 1, NULL, NULL));
 })
 
 (define_predicate "neon_logic_op2"

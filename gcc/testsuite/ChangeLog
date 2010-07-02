@@ -1,3 +1,26 @@
+2010-07-02  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/arm/neon-vands64.c: New.
+	* gcc.target/arm/neon-vandu64.c: New.
+	* gcc.target/arm/neon-vbics64.c: New.
+	* gcc.target/arm/neon-vbicu64.c: New.
+	* gcc.target/arm/neon-veors64.c: New.
+	* gcc.target/arm/neon-veoru64.c: New.
+	* gcc.target/arm/neon-vorns64.c: New.
+	* gcc.target/arm/neon-vornu64.c: New.
+	* gcc.target/arm/neon-vorrs64.c: New.
+	* gcc.target/arm/neon-vorru64.c: New.
+	* gcc.target/arm/neon/vands64.c: Regenerated.
+	* gcc.target/arm/neon/vandu64.c: Regenerated.
+	* gcc.target/arm/neon/vbics64.c: Regenerated.
+	* gcc.target/arm/neon/vbicu64.c: Regenerated.
+	* gcc.target/arm/neon/veors64.c: Regenerated.
+	* gcc.target/arm/neon/veoru64.c: Regenerated.
+	* gcc.target/arm/neon/vorns64.c: Regenerated.
+	* gcc.target/arm/neon/vornu64.c: Regenerated.
+	* gcc.target/arm/neon/vorrs64.c: Regenerated.
+	* gcc.target/arm/neon/vorru64.c: Regenerated.
+
 2010-07-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* gfortran.dg/runtime_warning_1.f90: Remove extra dg line.
