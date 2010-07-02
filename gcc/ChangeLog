@@ -8,6 +8,34 @@
 	(compare_scc): Now a define_and_split.  Add a number of extra
 	splitters before it.
 
+	PR target/42172
+	* config/arm/arm.c (thumb1_rtx_costs): Improve support for SIGN_EXTEND
+	and ZERO_EXTEND.
+	(arm_rtx_costs_1): Likewise.
+	(arm_size_rtx_costs): Use arm_rtx_costs_1 for these codes.
+	* config/arm/arm.md (is_arch6): New attribute.
+	(zero_extendhisi2, zero_extendqisi2, extendhisi2,
+	extendqisi2): Tighten the code somewhat, avoiding invalid
+	RTL to occur in the expander patterns.
+	(thumb1_zero_extendhisi2): Merge with thumb1_zero_extendhisi2_v6.
+	(thumb1_zero_extendhisi2_v6): Delete.
+	(thumb1_extendhisi2): Merge with thumb1_extendhisi2_v6.
+	(thumb1_extendhisi2_v6): Delete.
+	(thumb1_extendqisi2): Merge with thumb1_extendhisi2_v6.
+	(thumb1_extendqisi2_v6): Delete.
+	(zero_extendhisi2 for register input splitter): New.
+	(zero_extendqisi2 for register input splitter): New.
+	(thumb1_extendhisi2 for register input splitter): New.
+	(extendhisi2 for register input splitter): New.
+	(extendqisi2 for register input splitter): New.
+	(TARGET_THUMB1 extendqisi2 for memory input splitter): New.
+	(arm_zero_extendhisi2): Allow nonimmediate_operand for operand 1,
+	and add support for a register alternative requiring a split.
+	(thumb1_zero_extendqisi2): Likewise.
+	(arm_zero_extendqisi2): Likewise.
+	(arm_extendhisi2): Likewise.
+	(arm_extendqisi2): Likewise.
+
 2010-07-02  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/arm/arm.c (neon_vdup_constant): Expand into canonical RTL
