@@ -16129,11 +16129,19 @@ get_arm_condition_code (rtx comparison)
 
     case CC_Cmode:
       switch (comp_code)
-      {
-      case LTU: return ARM_CS;
-      case GEU: return ARM_CC;
-      default: gcc_unreachable ();
-      }
+	{
+	case LTU: return ARM_CS;
+	case GEU: return ARM_CC;
+	default: gcc_unreachable ();
+	}
+
+    case CC_NOTBmode:
+      switch (comp_code)
+	{
+	case LTU: return ARM_CC;
+	case GEU: return ARM_CS;
+	default: gcc_unreachable ();
+	}
 
     case CCmode:
       switch (comp_code)
