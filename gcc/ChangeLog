@@ -1,3 +1,8 @@
+2010-07-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree-data-ref.c (initialize_data_dependence_relation): Handle
+	mismatching number of dimensions properly.
+
 2010-07-02  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR target/44707

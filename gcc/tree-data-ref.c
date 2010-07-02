@@ -1452,7 +1452,14 @@ initialize_data_dependence_relation (struct data_reference *a,
       return res;
     }
 
-  gcc_assert (DR_NUM_DIMENSIONS (a) == DR_NUM_DIMENSIONS (b));
+  /* If the number of dimensions of the access to not agree we can have
+     a pointer access to a component of the array element type and an
+     array access while the base-objects are still the same.  Punt.  */
+  if (DR_NUM_DIMENSIONS (a) != DR_NUM_DIMENSIONS (b))
+    {
+      DDR_ARE_DEPENDENT (res) = chrec_dont_know;
+      return res;
+    }
 
   DDR_AFFINE_P (res) = true;
   DDR_ARE_DEPENDENT (res) = NULL_TREE;
