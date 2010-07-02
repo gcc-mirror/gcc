@@ -949,6 +949,13 @@ split_function (struct split_point *split_point)
   call = gimple_build_call_vec (node->decl, args_to_pass);
   gimple_set_block (call, DECL_INITIAL (current_function_decl));
 
+  /* We avoid address being taken on any variable used by split part,
+     so return slot optimization is always possible.  Moreover this is
+     required to make DECL_BY_REFERENCE work.  */
+  if (aggregate_value_p (DECL_RESULT (current_function_decl),
+			 TREE_TYPE (current_function_decl)))
+    gimple_call_set_return_slot_opt (call, true);
+
   /* Update return value.  This is bit tricky.  When we do not return,
      do nothing.  When we return we might need to update return_bb
      or produce a new return statement.  */
@@ -1002,7 +1009,10 @@ split_function (struct split_point *split_point)
 		      update_stmt (gsi_stmt (bsi));
 		    }
 		}
-	      gimple_call_set_lhs (call, retval);
+	      if (DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
+	        gimple_call_set_lhs (call, build_simple_mem_ref (retval));
+	      else
+	        gimple_call_set_lhs (call, retval);
 	    }
           gsi_insert_after (&gsi, call, GSI_NEW_STMT);
 	}
@@ -1021,7 +1031,10 @@ split_function (struct split_point *split_point)
 		retval = create_tmp_reg (TREE_TYPE (retval), NULL);
 	      if (is_gimple_reg (retval))
 		retval = make_ssa_name (retval, call);
-	      gimple_call_set_lhs (call, retval);
+	      if (DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
+	        gimple_call_set_lhs (call, build_simple_mem_ref (retval));
+	      else
+	        gimple_call_set_lhs (call, retval);
 	    }
           gsi_insert_after (&gsi, call, GSI_NEW_STMT);
 	  ret = gimple_build_return (retval);
@@ -1083,13 +1096,6 @@ execute_split_functions (void)
     {
       if (dump_file)
 	fprintf (dump_file, "Not splitting: nested function.\n");
-      return 0;
-    }
-  /* FIXME: Should be easy to support.  */
-  if (DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
-    {
-      if (dump_file)
-	fprintf (dump_file, "Not splitting: returns value by reference.\n");
       return 0;
     }
 
