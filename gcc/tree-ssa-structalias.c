@@ -5817,6 +5817,17 @@ pt_solution_set (struct pt_solution *pt, bitmap vars,
   pt->vars_contains_restrict = vars_contains_restrict;
 }
 
+/* Set the points-to solution *PT to point only to the variable VAR.  */
+
+void
+pt_solution_set_var (struct pt_solution *pt, tree var)
+{
+  memset (pt, 0, sizeof (struct pt_solution));
+  pt->vars = BITMAP_GGC_ALLOC ();
+  bitmap_set_bit (pt->vars, DECL_UID (var));
+  pt->vars_contains_global = is_global_var (var);
+}
+
 /* Computes the union of the points-to solutions *DEST and *SRC and
    stores the result in *DEST.  This changes the points-to bitmap
    of *DEST and thus may not be used if that might be shared.

@@ -1,3 +1,10 @@
+2010-07-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-structalias.c (pt_solution_set_var): New function.
+	* tree-ssa-alias.h (pt_solution_set_var): Declare.
+	* tree-ssa-loop-ivopts.c (copy_ref_info): Also copy or create
+	points-to information.
+
 2010-07-02  Christian Borntraeger  <borntraeger@de.ibm.com>
 
 	* config/s390/s390.c (override_options): Adopt prefetching
