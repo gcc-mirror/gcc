@@ -1,3 +1,8 @@
+2010-07-02  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/44777
+	* tree-cfg.c (gimple_block_ends_with_call_p): Handle empty BBs.
+
 2010-07-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/44694

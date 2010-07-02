@@ -6437,7 +6437,7 @@ static bool
 gimple_block_ends_with_call_p (basic_block bb)
 {
   gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb);
-  return is_gimple_call (gsi_stmt (gsi));
+  return !gsi_end_p (gsi) && is_gimple_call (gsi_stmt (gsi));
 }
 
 
