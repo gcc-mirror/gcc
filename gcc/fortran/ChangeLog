@@ -1,3 +1,18 @@
+2010-07-02  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* trans-types.h (gfc_add_field_to_struct): Add tree ** parameter.
+	* trans-types.c (gfc_add_field_to_struct_1): New function, most
+	of which comes from...
+	(gfc_add_field_to_struct): ...here.  Call it.  Add new parameter.
+	(gfc_get_desc_dim_type): Call gfc_add_field_to_struct_1 for
+	building fields.
+	(gfc_get_array_descriptor_base): Likewise.
+	(gfc_get_mixed_entry_union): Likewise.
+	(gfc_get_derived_type): Add extra chain parameter for
+	gfc_add_field_to_struct.
+	* trans-stmt.c (gfc_trans_character_select): Likewise.
+	* trans-io.c (gfc_build_st_parameter): Likewise.
+
 2010-06-29  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44718
