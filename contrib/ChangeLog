@@ -1,3 +1,7 @@
+2010-07-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* check_GNU_style.sh: New.
+
 2010-07-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* make_sunver.pl: New file.
