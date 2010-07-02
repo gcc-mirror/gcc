@@ -1,3 +1,9 @@
+2010-07-02  Richard Guenther  <rguenther@suse.de>
+
+	PR target/43958
+	* config/pa/pa.c (hppa_gimplify_va_arg_expr): Use pointer arithmetic
+	for argument alignment.
+
 2010-07-02  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-split.c (verify_non_ssa_vars): Break out from ...; perform DFS walk
