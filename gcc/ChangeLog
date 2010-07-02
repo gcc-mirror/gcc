@@ -1,5 +1,11 @@
 2010-07-02  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-structalias.c (find_func_aliases): Handle
+	pointer alignment via BIT_AND_EXPR.
+	* tree-vrp.c (extract_range_from_binary_expr): Likewise.
+
+2010-07-02  Richard Guenther  <rguenther@suse.de>
+
 	* tree-data-ref.c (initialize_data_dependence_relation): Handle
 	mismatching number of dimensions properly.
 

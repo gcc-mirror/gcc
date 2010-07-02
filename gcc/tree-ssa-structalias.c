@@ -4395,6 +4395,14 @@ find_func_aliases (gimple origt)
 	  if (gimple_assign_rhs_code (t) == POINTER_PLUS_EXPR)
 	    get_constraint_for_ptr_offset (gimple_assign_rhs1 (t),
 					   gimple_assign_rhs2 (t), &rhsc);
+	  else if (gimple_assign_rhs_code (t) == BIT_AND_EXPR
+		   && TREE_CODE (gimple_assign_rhs2 (t)) == INTEGER_CST)
+	    {
+	      /* Aligning a pointer via a BIT_AND_EXPR is offsetting
+		 the pointer.  Handle it by offsetting it by UNKNOWN.  */
+	      get_constraint_for_ptr_offset (gimple_assign_rhs1 (t),
+					     NULL_TREE, &rhsc);
+	    }
 	  else if ((CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (t))
 		    && !(POINTER_TYPE_P (gimple_expr_type (t))
 			 && !POINTER_TYPE_P (TREE_TYPE (rhsop))))
