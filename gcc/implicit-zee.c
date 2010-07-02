@@ -100,17 +100,17 @@ along with GCC; see the file COPYING3.  If not see
    }
    **********************************************
 
-   $ gcc -O2 -fsee bad_code.c (Turned on existing sign-extension elimination.)
+   $ gcc -O2 -fsee bad_code.c (Turned on existing sign-extension elimination)
      ........
      400315:       b8 4e 00 00 00          mov    $0x4e,%eax
      40031a:       0f af f8                imul   %eax,%edi
-     40031d:       89 ff                   mov    %edi,%edi  ---> Useless extend.
+     40031d:       89 ff                   mov    %edi,%edi  --> Useless extend
      40031f:       8b 04 bd 60 19 40 00    mov    0x401960(,%rdi,4),%eax
      400326:       c3                      retq
      ......
      400330:       ba 2d 00 00 00          mov    $0x2d,%edx
      400335:       0f af fa                imul   %edx,%edi
-     400338:       89 ff                   mov    %edi,%edi  ---> Useless extend.
+     400338:       89 ff                   mov    %edi,%edi  --> Useless extend
      40033a:       8b 04 bd 60 19 40 00    mov    0x401960(,%rdi,4),%eax
      400341:       c3                      retq
 
@@ -141,14 +141,14 @@ along with GCC; see the file COPYING3.  If not see
      return (unsigned long long)(z);
    }
 
-   $ gcc -O2 -fsee bad_code.c (Turned on existing sign-extension elimination.)
+   $ gcc -O2 -fsee bad_code.c (Turned on existing sign-extension elimination)
      ............
      400360:       8d 14 3e                lea    (%rsi,%rdi,1),%edx
      400363:       89 f8                   mov    %edi,%eax
      400365:       29 f0                   sub    %esi,%eax
      400367:       83 ff 65                cmp    $0x65,%edi
      40036a:       0f 43 c2                cmovae %edx,%eax
-     40036d:       89 c0                   mov    %eax,%eax ---> Useless extend.
+     40036d:       89 c0                   mov    %eax,%eax  --> Useless extend
      40036f:       c3                      retq
 
    $ gcc -O2 -fzee bad_code.c
@@ -165,16 +165,13 @@ along with GCC; see the file COPYING3.  If not see
    Usefulness :
    ----------
 
-   This pass reduces the dynamic instruction count of a compression benchmark by
-   2.8% and improves its run-time by about 1%.  The compression benchmark had the
-   following code sequence in a very hot region of code before ZEE optimized it :
+   This pass reduces the dynamic instruction count of a compression benchmark
+   by 2.8% and improves its run time by about 1%.  The compression benchmark
+   had the following code sequence in a very hot region of code before ZEE
+   optimized it :
 
    shr $0x5, %edx
-   mov %edx, %edx --> Useless zero-extend.
-
-   How to turn on ?
-   ----------------
-   -fzee -O2.  */
+   mov %edx, %edx --> Useless zero-extend  */
 
 
 #include "config.h"
@@ -238,31 +235,6 @@ set_insn_status (rtx insn, enum insn_merge_code code)
 {
   gcc_assert (INSN_UID (insn) < max_insn_uid);
   is_insn_merge_attempted[INSN_UID (insn)] = code;
-}
-
-/* Check to see if this zero-extend matches a pattern
-   that could be eliminated.  This is called via
-   for_each_rtx in function find_and_remove_ze.  */
-
-static int
-is_set_with_extension_DI (rtx *expr, void *data)
-{
-  /* Looking only for patterns of the type :
-     SET (REG:DI X) (ZERO_EXTEND (REG:SI x))
-   */
-
-  if (GET_CODE (*expr) == SET
-      && GET_MODE (SET_DEST (*expr)) == DImode
-      && GET_CODE (SET_DEST (*expr)) == REG
-      && GET_CODE (SET_SRC (*expr)) == ZERO_EXTEND
-      && GET_CODE (XEXP (SET_SRC (*expr),0)) == REG
-      && GET_MODE (XEXP (SET_SRC (*expr),0)) == SImode
-      && REGNO (SET_DEST (*expr)) == REGNO (XEXP (SET_SRC (*expr),0)))
-        {
-          *(rtx **)(data) = expr;
-          return 1;
-        }
-  return 0;
 }
 
 /* Given a insn (CURR_INSN) and a pointer to the SET rtx (ORIG_SET)
@@ -737,7 +709,7 @@ combine_reaching_defs (rtx zero_extend_insn, rtx set_pat)
       VEC_free (rtx, heap, defs_list);
       VEC_free (rtx, heap, copies_list);
       if (dump_file)
-        fprintf (dump_file, "All definitions have been merged previously...\n");
+        fprintf (dump_file, "All definitions have been merged previously.\n");
       return true;
     }
 
@@ -812,8 +784,8 @@ combine_reaching_defs (rtx zero_extend_insn, rtx set_pat)
         }
       else
         {
-          /* Changes need not be cancelled explicitly as apply_change_group ()
-             does it.   Print list of definitions in the dump_file for debug
+          /* Changes need not be cancelled explicitly as apply_change_group
+             does it.  Print list of definitions in the dump_file for debug
              purposes.  This zero-extension cannot be deleted.  */
 
           if (dump_file)
@@ -838,50 +810,74 @@ combine_reaching_defs (rtx zero_extend_insn, rtx set_pat)
   return false;
 }
 
-/* Goes through the instruction stream looking for zero-extends.  If the zero
-   extension instruction has atleast one def it adds it to a list of possible
-   candidates for deletion.  It returns the list of candidates.  */
+/* Carry information about zero-extensions while walking the RTL.  */
+
+struct zero_extend_info
+{
+  /* The insn where the zero-extension is.  */
+  rtx insn;
+
+  /* The list of candidates.  */
+  VEC (rtx, heap) *insn_list;
+};
+
+/* Add a zero-extend pattern that could be eliminated.  This is called via
+   note_stores from find_removable_zero_extends.  */
+
+static void
+add_removable_zero_extend (rtx x ATTRIBUTE_UNUSED, const_rtx expr, void *data)
+{
+  struct zero_extend_info *zei = (struct zero_extend_info *)data;
+  rtx src, dest;
+
+  /* We are looking for SET (REG:DI N) (ZERO_EXTEND (REG:SI N)).  */
+  if (GET_CODE (expr) != SET)
+    return;
+
+  src = SET_SRC (expr);
+  dest = SET_DEST (expr);
+
+  if (REG_P (dest)
+      && GET_MODE (dest) == DImode
+      && GET_CODE (src) == ZERO_EXTEND
+      && REG_P (XEXP (src, 0))
+      && GET_MODE (XEXP (src, 0)) == SImode
+      && REGNO (dest) == REGNO (XEXP (src, 0)))
+    {
+      if (get_defs (zei->insn, XEXP (src, 0), NULL))
+	VEC_safe_push (rtx, heap, zei->insn_list, zei->insn);
+      else if (dump_file)
+	{
+	  fprintf (dump_file, "Cannot eliminate zero-extension: \n");
+	  print_rtl_single (dump_file, zei->insn);
+	  fprintf (dump_file, "No defs. Could be extending parameters.\n");
+	}
+    }
+}
+
+/* Traverse the instruction stream looking for zero-extends and return the
+   list of candidates.  */
 
 static VEC (rtx,heap)*
 find_removable_zero_extends (void)
 {
-  VEC (rtx, heap) *zeinsn_list;
-  basic_block curr_block;
-  rtx curr_insn;
-  rtx *set_insn;
-  rtx which_reg;
-  int type ;
-  int has_defs;
+  struct zero_extend_info zei;
+  basic_block bb;
+  rtx insn;
 
-  zeinsn_list = VEC_alloc (rtx, heap, 8);
-  FOR_EACH_BB (curr_block)
-    {
-      FOR_BB_INSNS (curr_block, curr_insn)
-        {
-          if (!NONDEBUG_INSN_P (curr_insn))
-            continue;
+  zei.insn_list = VEC_alloc (rtx, heap, 8);
 
-          type = for_each_rtx (&PATTERN (curr_insn),
-                               is_set_with_extension_DI,
-                               (void *)&set_insn);
+  FOR_EACH_BB (bb)
+    FOR_BB_INSNS (bb, insn)
+      {
+	if (!NONDEBUG_INSN_P (insn))
+	  continue;
 
-          if (!type)
-            continue;
+	zei.insn = insn;
+	note_stores (PATTERN (insn), add_removable_zero_extend, &zei);
+      }
 
-          which_reg = XEXP (SET_SRC (*set_insn), 0);
-          has_defs = get_defs (curr_insn, which_reg, NULL);
-          if (has_defs)
-            VEC_safe_push (rtx, heap, zeinsn_list, curr_insn);
-          else if (dump_file)
-            {
-              fprintf (dump_file, "Cannot eliminate zero extension : \n");
-              print_rtl_single (dump_file, curr_insn);
-              fprintf (dump_file,
-                       "This has no defs. Could be extending parameters.\n");
-            }
-        }
-    }
-  return zeinsn_list;
+  return zei.insn_list;
 }
 
 /* This is the main function that checks the insn stream for redundant
@@ -906,13 +902,12 @@ find_and_remove_ze (void)
 
   max_insn_uid = get_max_uid ();
 
-  is_insn_merge_attempted = XNEWVEC (enum insn_merge_code,
-                                     sizeof (enum insn_merge_code)* max_insn_uid);
+  is_insn_merge_attempted
+    = XNEWVEC (enum insn_merge_code,
+	       sizeof (enum insn_merge_code) * max_insn_uid);
 
   for (i = 0; i < max_insn_uid; i++)
-    {
-      is_insn_merge_attempted[i] = MERGE_NOT_ATTEMPTED;
-    }
+    is_insn_merge_attempted[i] = MERGE_NOT_ATTEMPTED;
 
   num_ze_opportunities = num_realized = 0;
 
@@ -942,9 +937,7 @@ find_and_remove_ze (void)
 
   /* Delete all useless zero extensions here in one sweep.  */
   for (ix = 0; VEC_iterate (rtx, zeinsn_del_list, ix, curr_insn); ix++)
-    {
-      delete_insn (curr_insn);
-    }
+    delete_insn (curr_insn);
 
   free (is_insn_merge_attempted);
   VEC_free (rtx, heap, zeinsn_list);

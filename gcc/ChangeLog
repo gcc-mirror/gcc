@@ -1,3 +1,12 @@
+2010-07-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* implicit-zee.c (combine_reaching_defs): Fix long lines.
+	(is_set_with_extension_DI): Delete.
+	(struct zero_extend_info): New structure.
+	(add_removable_zero_extend ): New function.
+	(find_removable_zero_extends): Use note_stores to find SETs.
+	(find_and_remove_ze): Fix long line, remove superfluous parentheses.
+
 2010-07-02  Changpeng Fang  <changpeng.fang@amd.com>
 
 	* tree-ssa-loop-prefetch.c (compute_miss_rate): Rename to
