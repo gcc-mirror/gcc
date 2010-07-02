@@ -1,3 +1,10 @@
+2010-07-02  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* objc-obj-c++-shared/next-abi.h: Remove dependency on system
+	headers.  Add clause to reflect that, pre-10.5, ABI is always 0.
+	* objc/execute/forward-1.m: Depend only on __NEXT_RUNTIME__ for
+	the method types to forward:.
+
 2010-07-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/40421
