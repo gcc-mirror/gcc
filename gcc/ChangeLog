@@ -1,3 +1,11 @@
+2010-07-02  Jan Hubicka  <jh@suse.cz>
+
+	* df-problems.c (df_kill_notes): Do not collect dead  notes.
+	(df_set_note): Just call add_reg_note.
+	(df_set_unused_notes_for_mw, df_set_dead_notes_for_mw,
+	df_create_unused_note): Do not deal with lists of old notes.
+	(df_note_bb_compute): Likewise.
+
 2010-07-02  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (find_func_aliases): Handle

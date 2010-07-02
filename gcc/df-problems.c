@@ -3050,12 +3050,10 @@ df_ignore_stack_reg (int regno ATTRIBUTE_UNUSED)
    them to OLD_DEAD_NOTES and OLD_UNUSED_NOTES.  */
 
 static void
-df_kill_notes (rtx insn, rtx *old_dead_notes, rtx *old_unused_notes)
+df_kill_notes (rtx insn)
 {
   rtx *pprev = &REG_NOTES (insn);
   rtx link = *pprev;
-  rtx dead = NULL;
-  rtx unused = NULL;
 
   while (link)
     {
@@ -3075,8 +3073,7 @@ df_kill_notes (rtx insn, rtx *old_dead_notes, rtx *old_unused_notes)
 #ifdef REG_DEAD_DEBUGGING
 	      df_print_note ("deleting: ", insn, link);
 #endif
-	      XEXP (link, 1) = dead;
-	      dead = link;
+	      free_EXPR_LIST_node (link);
 	      *pprev = link = next;
 	    }
 	  break;
@@ -3095,8 +3092,7 @@ df_kill_notes (rtx insn, rtx *old_dead_notes, rtx *old_unused_notes)
 #ifdef REG_DEAD_DEBUGGING
 	      df_print_note ("deleting: ", insn, link);
 #endif
-	      XEXP (link, 1) = unused;
-	      unused = link;
+	      free_EXPR_LIST_node (link);
 	      *pprev = link = next;
 	    }
 	  break;
@@ -3107,43 +3103,16 @@ df_kill_notes (rtx insn, rtx *old_dead_notes, rtx *old_unused_notes)
 	  break;
 	}
     }
-
-  *old_dead_notes = dead;
-  *old_unused_notes = unused;
 }
 
 
-/* Set a NOTE_TYPE note for REG in INSN.  Try to pull it from the OLD
-   list, otherwise create a new one.  */
+/* Set a NOTE_TYPE note for REG in INSN.  */
 
-static inline rtx
-df_set_note (enum reg_note note_type, rtx insn, rtx old, rtx reg)
+static inline void
+df_set_note (enum reg_note note_type, rtx insn, rtx reg)
 {
-  rtx curr = old;
-  rtx prev = NULL;
-
-  gcc_assert (!DEBUG_INSN_P (insn));
-
-  while (curr)
-    if (XEXP (curr, 0) == reg)
-      {
-	if (prev)
-	  XEXP (prev, 1) = XEXP (curr, 1);
-	else
-	  old = XEXP (curr, 1);
-	XEXP (curr, 1) = REG_NOTES (insn);
-	REG_NOTES (insn) = curr;
-	return old;
-      }
-    else
-      {
-	prev = curr;
-	curr = XEXP (curr, 1);
-      }
-
-  /* Did not find the note.  */
+  gcc_checking_assert (!DEBUG_INSN_P (insn));
   add_reg_note (insn, note_type, reg);
-  return old;
 }
 
 /* A subroutine of df_set_unused_notes_for_mw, with a selection of its
@@ -3179,8 +3148,8 @@ df_whole_mw_reg_unused_p (struct df_mw_hardreg *mws,
    instruction.
 */
 
-static rtx
-df_set_unused_notes_for_mw (rtx insn, rtx old, struct df_mw_hardreg *mws,
+static void
+df_set_unused_notes_for_mw (rtx insn, struct df_mw_hardreg *mws,
 			    bitmap live, bitmap do_not_gen,
 			    bitmap artificial_uses)
 {
@@ -3195,7 +3164,7 @@ df_set_unused_notes_for_mw (rtx insn, rtx old, struct df_mw_hardreg *mws,
   if (df_whole_mw_reg_unused_p (mws, live, artificial_uses))
     {
       unsigned int regno = mws->start_regno;
-      old = df_set_note (REG_UNUSED, insn, old, mws->mw_reg);
+      df_set_note (REG_UNUSED, insn, mws->mw_reg);
 
 #ifdef REG_DEAD_DEBUGGING
       df_print_note ("adding 1: ", insn, REG_NOTES (insn));
@@ -3209,14 +3178,13 @@ df_set_unused_notes_for_mw (rtx insn, rtx old, struct df_mw_hardreg *mws,
 	if (!bitmap_bit_p (live, r)
 	    && !bitmap_bit_p (artificial_uses, r))
 	  {
-	    old = df_set_note (REG_UNUSED, insn, old, regno_reg_rtx[r]);
+	    df_set_note (REG_UNUSED, insn, regno_reg_rtx[r]);
 #ifdef REG_DEAD_DEBUGGING
 	    df_print_note ("adding 2: ", insn, REG_NOTES (insn));
 #endif
 	  }
 	bitmap_set_bit (do_not_gen, r);
       }
-  return old;
 }
 
 
@@ -3253,8 +3221,8 @@ df_whole_mw_reg_dead_p (struct df_mw_hardreg *mws,
    from being set if the instruction both reads and writes the
    register.  */
 
-static rtx
-df_set_dead_notes_for_mw (rtx insn, rtx old, struct df_mw_hardreg *mws,
+static void
+df_set_dead_notes_for_mw (rtx insn, struct df_mw_hardreg *mws,
 			  bitmap live, bitmap do_not_gen,
 			  bitmap artificial_uses, bool *added_notes_p)
 {
@@ -3282,9 +3250,9 @@ df_set_dead_notes_for_mw (rtx insn, rtx old, struct df_mw_hardreg *mws,
       if (is_debug)
 	{
 	  *added_notes_p = true;
-	  return old;
+	  return;
 	}
-      old = df_set_note (REG_DEAD, insn, old, mws->mw_reg);
+      df_set_note (REG_DEAD, insn, mws->mw_reg);
 #ifdef REG_DEAD_DEBUGGING
       df_print_note ("adding 1: ", insn, REG_NOTES (insn));
 #endif
@@ -3299,23 +3267,23 @@ df_set_dead_notes_for_mw (rtx insn, rtx old, struct df_mw_hardreg *mws,
 	    if (is_debug)
 	      {
 		*added_notes_p = true;
-		return old;
+		return;
 	      }
-	    old = df_set_note (REG_DEAD, insn, old, regno_reg_rtx[r]);
+	    df_set_note (REG_DEAD, insn, regno_reg_rtx[r]);
 #ifdef REG_DEAD_DEBUGGING
 	    df_print_note ("adding 2: ", insn, REG_NOTES (insn));
 #endif
 	  }
     }
-  return old;
+  return;
 }
 
 
 /* Create a REG_UNUSED note if necessary for DEF in INSN updating
    LIVE.  Do not generate notes for registers in ARTIFICIAL_USES.  */
 
-static rtx
-df_create_unused_note (rtx insn, rtx old, df_ref def,
+static void
+df_create_unused_note (rtx insn, df_ref def,
 		       bitmap live, bitmap artificial_uses)
 {
   unsigned int dregno = DF_REF_REGNO (def);
@@ -3335,13 +3303,13 @@ df_create_unused_note (rtx insn, rtx old, df_ref def,
     {
       rtx reg = (DF_REF_LOC (def))
                 ? *DF_REF_REAL_LOC (def): DF_REF_REG (def);
-      old = df_set_note (REG_UNUSED, insn, old, reg);
+      df_set_note (REG_UNUSED, insn, reg);
 #ifdef REG_DEAD_DEBUGGING
       df_print_note ("adding 3: ", insn, REG_NOTES (insn));
 #endif
     }
 
-  return old;
+  return;
 }
 
 /* Node of a linked list of uses of dead REGs in debug insns.  */
@@ -3564,8 +3532,6 @@ df_note_bb_compute (unsigned int bb_index,
     {
       unsigned int uid = INSN_UID (insn);
       struct df_mw_hardreg **mws_rec;
-      rtx old_dead_notes;
-      rtx old_unused_notes;
       int debug_insn;
 
       if (!INSN_P (insn))
@@ -3574,7 +3540,7 @@ df_note_bb_compute (unsigned int bb_index,
       debug_insn = DEBUG_INSN_P (insn);
 
       bitmap_clear (do_not_gen);
-      df_kill_notes (insn, &old_dead_notes, &old_unused_notes);
+      df_kill_notes (insn);
 
       /* Process the defs.  */
       if (CALL_P (insn))
@@ -3594,10 +3560,9 @@ df_note_bb_compute (unsigned int bb_index,
 	      struct df_mw_hardreg *mws = *mws_rec;
 	      if ((DF_MWS_REG_DEF_P (mws))
 		  && !df_ignore_stack_reg (mws->start_regno))
-		old_unused_notes
-		  = df_set_unused_notes_for_mw (insn, old_unused_notes,
-						mws, live, do_not_gen,
-						artificial_uses);
+	      df_set_unused_notes_for_mw (insn,
+					  mws, live, do_not_gen,
+					  artificial_uses);
 	      mws_rec++;
 	    }
 
@@ -3609,9 +3574,8 @@ df_note_bb_compute (unsigned int bb_index,
 	      unsigned int dregno = DF_REF_REGNO (def);
 	      if (!DF_REF_FLAGS_IS_SET (def, DF_REF_MUST_CLOBBER | DF_REF_MAY_CLOBBER))
 		{
-		  old_unused_notes
-		    = df_create_unused_note (insn, old_unused_notes,
-					     def, live, artificial_uses);
+		  df_create_unused_note (insn,
+					 def, live, artificial_uses);
 		  bitmap_set_bit (do_not_gen, dregno);
 		}
 
@@ -3627,10 +3591,9 @@ df_note_bb_compute (unsigned int bb_index,
 	    {
 	      struct df_mw_hardreg *mws = *mws_rec;
 	      if (DF_MWS_REG_DEF_P (mws))
-		old_unused_notes
-		  = df_set_unused_notes_for_mw (insn, old_unused_notes,
-						mws, live, do_not_gen,
-						artificial_uses);
+		df_set_unused_notes_for_mw (insn,
+					    mws, live, do_not_gen,
+					    artificial_uses);
 	      mws_rec++;
 	    }
 
@@ -3638,9 +3601,8 @@ df_note_bb_compute (unsigned int bb_index,
 	    {
 	      df_ref def = *def_rec;
 	      unsigned int dregno = DF_REF_REGNO (def);
-	      old_unused_notes
-		= df_create_unused_note (insn, old_unused_notes,
-					 def, live, artificial_uses);
+	      df_create_unused_note (insn,
+				     def, live, artificial_uses);
 
 	      if (!DF_REF_FLAGS_IS_SET (def, DF_REF_MUST_CLOBBER | DF_REF_MAY_CLOBBER))
 		bitmap_set_bit (do_not_gen, dregno);
@@ -3660,11 +3622,10 @@ df_note_bb_compute (unsigned int bb_index,
 	    {
 	      bool really_add_notes = debug_insn != 0;
 
-	      old_dead_notes
-		= df_set_dead_notes_for_mw (insn, old_dead_notes,
-					    mws, live, do_not_gen,
-					    artificial_uses,
-					    &really_add_notes);
+	      df_set_dead_notes_for_mw (insn,
+					mws, live, do_not_gen,
+					artificial_uses,
+					&really_add_notes);
 
 	      if (really_add_notes)
 		debug_insn = -1;
@@ -3706,7 +3667,7 @@ df_note_bb_compute (unsigned int bb_index,
 		{
 		  rtx reg = (DF_REF_LOC (use))
                             ? *DF_REF_REAL_LOC (use) : DF_REF_REG (use);
-		  old_dead_notes = df_set_note (REG_DEAD, insn, old_dead_notes, reg);
+		  df_set_note (REG_DEAD, insn, reg);
 
 #ifdef REG_DEAD_DEBUGGING
 		  df_print_note ("adding 4: ", insn, REG_NOTES (insn));
@@ -3715,19 +3676,6 @@ df_note_bb_compute (unsigned int bb_index,
 	      /* This register is now live.  */
 	      bitmap_set_bit (live, uregno);
 	    }
-	}
-
-      while (old_unused_notes)
-	{
-	  rtx next = XEXP (old_unused_notes, 1);
-	  free_EXPR_LIST_node (old_unused_notes);
-	  old_unused_notes = next;
-	}
-      while (old_dead_notes)
-	{
-	  rtx next = XEXP (old_dead_notes, 1);
-	  free_EXPR_LIST_node (old_dead_notes);
-	  old_dead_notes = next;
 	}
 
       if (debug_insn == -1)
