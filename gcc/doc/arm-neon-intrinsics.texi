@@ -9713,13 +9713,11 @@
 
 @itemize @bullet
 @item uint64x1_t vand_u64 (uint64x1_t, uint64x1_t)
-@*@emph{Form of expected instruction(s):} @code{vand @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
 @itemize @bullet
 @item int64x1_t vand_s64 (int64x1_t, int64x1_t)
-@*@emph{Form of expected instruction(s):} @code{vand @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
@@ -9813,13 +9811,11 @@
 
 @itemize @bullet
 @item uint64x1_t vorr_u64 (uint64x1_t, uint64x1_t)
-@*@emph{Form of expected instruction(s):} @code{vorr @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
 @itemize @bullet
 @item int64x1_t vorr_s64 (int64x1_t, int64x1_t)
-@*@emph{Form of expected instruction(s):} @code{vorr @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
@@ -9913,13 +9909,11 @@
 
 @itemize @bullet
 @item uint64x1_t veor_u64 (uint64x1_t, uint64x1_t)
-@*@emph{Form of expected instruction(s):} @code{veor @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
 @itemize @bullet
 @item int64x1_t veor_s64 (int64x1_t, int64x1_t)
-@*@emph{Form of expected instruction(s):} @code{veor @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
@@ -10013,13 +10007,11 @@
 
 @itemize @bullet
 @item uint64x1_t vbic_u64 (uint64x1_t, uint64x1_t)
-@*@emph{Form of expected instruction(s):} @code{vbic @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
 @itemize @bullet
 @item int64x1_t vbic_s64 (int64x1_t, int64x1_t)
-@*@emph{Form of expected instruction(s):} @code{vbic @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
@@ -10113,13 +10105,11 @@
 
 @itemize @bullet
 @item uint64x1_t vorn_u64 (uint64x1_t, uint64x1_t)
-@*@emph{Form of expected instruction(s):} @code{vorn @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
 @itemize @bullet
 @item int64x1_t vorn_s64 (int64x1_t, int64x1_t)
-@*@emph{Form of expected instruction(s):} @code{vorn @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 

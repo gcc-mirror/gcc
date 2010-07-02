@@ -17,5 +17,4 @@ void test_vbics64 (void)
   out_int64x1_t = vbic_s64 (arg0_int64x1_t, arg1_int64x1_t);
 }
 
-/* { dg-final { scan-assembler "vbic\[ 	\]+\[dD\]\[0-9\]+, \[dD\]\[0-9\]+, \[dD\]\[0-9\]+!?\(\[ 	\]+@\[a-zA-Z0-9 \]+\)?\n" } } */
 /* { dg-final { cleanup-saved-temps } } */

@@ -31,8 +31,6 @@
    (UNSPEC_VADDHN		73)
    (UNSPEC_VADDL		74)
    (UNSPEC_VADDW		75)
-   (UNSPEC_VAND			76)
-   (UNSPEC_VBIC			77)
    (UNSPEC_VBSL			78)
    (UNSPEC_VCAGE		79)
    (UNSPEC_VCAGT		80)
@@ -40,11 +38,8 @@
    (UNSPEC_VCGE			82)
    (UNSPEC_VCGT			83)
    (UNSPEC_VCLS			84)
-   (UNSPEC_VCLZ			85)
-   (UNSPEC_VCNT			86)
    (UNSPEC_VCVT			88)
    (UNSPEC_VCVT_N		89)
-   (UNSPEC_VEOR			92)
    (UNSPEC_VEXT			93)
    (UNSPEC_VHADD		97)
    (UNSPEC_VHSUB		98)
@@ -81,8 +76,6 @@
    (UNSPEC_VMUL_LANE		129)
    (UNSPEC_VMULL_LANE		130)
    (UNSPEC_VMUL_N		131)
-   (UNSPEC_VORN			133)
-   (UNSPEC_VORR			134)
    (UNSPEC_VPADAL		135)
    (UNSPEC_VPADD		136)
    (UNSPEC_VPADDL		137)
@@ -940,10 +933,9 @@
 )
 
 (define_insn "iordi3_neon"
-  [(set (match_operand:DI 0 "s_register_operand" "=w,w")
-	(unspec:DI [(match_operand:DI 1 "s_register_operand" "w,0")
-		    (match_operand:DI 2 "neon_logic_op2" "w,Dl")]
-                    UNSPEC_VORR))]
+  [(set (match_operand:DI 0 "s_register_operand" "=w,w,?&r,?&r")
+        (ior:DI (match_operand:DI 1 "s_register_operand" "%w,0,0,r")
+		(match_operand:DI 2 "neon_logic_op2" "w,Dl,r,r")))]
   "TARGET_NEON"
 {
   switch (which_alternative)
@@ -951,10 +943,13 @@
     case 0: return "vorr\t%P0, %P1, %P2";
     case 1: return neon_output_logic_immediate ("vorr", &operands[2],
 		     DImode, 0, VALID_NEON_QREG_MODE (DImode));
+    case 2: return "#";
+    case 3: return "#";
     default: gcc_unreachable ();
     }
 }
-  [(set_attr "neon_type" "neon_int_1")]
+  [(set_attr "neon_type" "neon_int_1,neon_int_1,*,*")
+   (set_attr "length" "*,*,8,8")]
 )
 
 ;; The concrete forms of the Neon immediate-logic instructions are vbic and
@@ -980,10 +975,9 @@
 )
 
 (define_insn "anddi3_neon"
-  [(set (match_operand:DI 0 "s_register_operand" "=w,w")
-	(unspec:DI [(match_operand:DI 1 "s_register_operand" "w,0")
-		    (match_operand:DI 2 "neon_inv_logic_op2" "w,DL")]
-                    UNSPEC_VAND))]
+  [(set (match_operand:DI 0 "s_register_operand" "=w,w,?&r,?&r")
+        (and:DI (match_operand:DI 1 "s_register_operand" "%w,0,0,r")
+		(match_operand:DI 2 "neon_inv_logic_op2" "w,DL,r,r")))]
   "TARGET_NEON"
 {
   switch (which_alternative)
@@ -991,10 +985,13 @@
     case 0: return "vand\t%P0, %P1, %P2";
     case 1: return neon_output_logic_immediate ("vand", &operands[2],
     		     DImode, 1, VALID_NEON_QREG_MODE (DImode));
+    case 2: return "#";
+    case 3: return "#";
     default: gcc_unreachable ();
     }
 }
-  [(set_attr "neon_type" "neon_int_1")]
+  [(set_attr "neon_type" "neon_int_1,neon_int_1,*,*")
+   (set_attr "length" "*,*,8,8")]
 )
 
 (define_insn "orn<mode>3_neon"
@@ -1007,13 +1004,16 @@
 )
 
 (define_insn "orndi3_neon"
-  [(set (match_operand:DI 0 "s_register_operand" "=w")
-	(unspec:DI [(match_operand:DI 1 "s_register_operand" "w")
-		    (match_operand:DI 2 "s_register_operand" "w")]
-                    UNSPEC_VORN))]
+  [(set (match_operand:DI 0 "s_register_operand" "=w,?=&r,?&r")
+	(ior:DI (match_operand:DI 1 "s_register_operand" "w,r,0")
+	         (not:DI (match_operand:DI 2 "s_register_operand" "w,0,r"))))]
   "TARGET_NEON"
-  "vorn\t%P0, %P1, %P2"
-  [(set_attr "neon_type" "neon_int_1")]
+  "@
+   vorn\t%P0, %P1, %P2
+   #
+   #"
+  [(set_attr "neon_type" "neon_int_1,*,*")
+   (set_attr "length" "*,8,8")]
 )
 
 (define_insn "bic<mode>3_neon"
@@ -1025,14 +1025,18 @@
   [(set_attr "neon_type" "neon_int_1")]
 )
 
+;; Compare to *anddi_notdi_di.
 (define_insn "bicdi3_neon"
-  [(set (match_operand:DI 0 "s_register_operand" "=w")
-	(unspec:DI [(match_operand:DI 1 "s_register_operand" "w")
-		     (match_operand:DI 2 "s_register_operand" "w")]
-                    UNSPEC_VBIC))]
+  [(set (match_operand:DI 0 "s_register_operand" "=w,?=&r,?&r")
+        (and:DI (not:DI (match_operand:DI 2 "s_register_operand" "w,r,0"))
+		(match_operand:DI 1 "s_register_operand" "w,0,r")))]
   "TARGET_NEON"
-  "vbic\t%P0, %P1, %P2"
-  [(set_attr "neon_type" "neon_int_1")]
+  "@
+   vbic\t%P0, %P1, %P2
+   #
+   #"
+  [(set_attr "neon_type" "neon_int_1,*,*")
+   (set_attr "length" "*,8,8")]
 )
 
 (define_insn "xor<mode>3"
@@ -1045,13 +1049,16 @@
 )
 
 (define_insn "xordi3_neon"
-  [(set (match_operand:DI 0 "s_register_operand" "=w")
-	(unspec:DI [(match_operand:DI 1 "s_register_operand" "w")
-		     (match_operand:DI 2 "s_register_operand" "w")]
-                    UNSPEC_VEOR))]
+  [(set (match_operand:DI 0 "s_register_operand" "=w,?&r,?&r")
+        (xor:DI (match_operand:DI 1 "s_register_operand" "%w,0,r")
+	        (match_operand:DI 2 "s_register_operand" "w,r,r")))]
   "TARGET_NEON"
-  "veor\t%P0, %P1, %P2"
-  [(set_attr "neon_type" "neon_int_1")]
+  "@
+   veor\t%P0, %P1, %P2
+   #
+   #"
+  [(set_attr "neon_type" "neon_int_1,*,*")
+   (set_attr "length" "*,8,8")]
 )
 
 (define_insn "one_cmpl<mode>2"
@@ -2359,25 +2366,41 @@
   [(set_attr "neon_type" "neon_int_1")]
 )
 
-(define_insn "neon_vclz<mode>"
+(define_insn "clz<mode>2"
   [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
-	(unspec:VDQIW [(match_operand:VDQIW 1 "s_register_operand" "w")
-		       (match_operand:SI 2 "immediate_operand" "i")]
-		      UNSPEC_VCLZ))]
+        (clz:VDQIW (match_operand:VDQIW 1 "s_register_operand" "w")))]
   "TARGET_NEON"
   "vclz.<V_if_elem>\t%<V_reg>0, %<V_reg>1"
   [(set_attr "neon_type" "neon_int_1")]
 )
 
-(define_insn "neon_vcnt<mode>"
+(define_expand "neon_vclz<mode>"
+  [(match_operand:VDQIW 0 "s_register_operand" "")
+   (match_operand:VDQIW 1 "s_register_operand" "")
+   (match_operand:SI 2 "immediate_operand" "")]
+  "TARGET_NEON"
+{
+  emit_insn (gen_clz<mode>2 (operands[0], operands[1]));
+  DONE;
+})
+
+(define_insn "popcount<mode>2"
   [(set (match_operand:VE 0 "s_register_operand" "=w")
-	(unspec:VE [(match_operand:VE 1 "s_register_operand" "w")
-                    (match_operand:SI 2 "immediate_operand" "i")]
-                   UNSPEC_VCNT))]
+        (popcount:VE (match_operand:VE 1 "s_register_operand" "w")))]
   "TARGET_NEON"
   "vcnt.<V_sz_elem>\t%<V_reg>0, %<V_reg>1"
   [(set_attr "neon_type" "neon_int_1")]
 )
+
+(define_expand "neon_vcnt<mode>"
+  [(match_operand:VE 0 "s_register_operand" "=w")
+   (match_operand:VE 1 "s_register_operand" "w")
+   (match_operand:SI 2 "immediate_operand" "i")]
+  "TARGET_NEON"
+{
+  emit_insn (gen_popcount<mode>2 (operands[0], operands[1]));
+  DONE;
+})
 
 (define_insn "neon_vrecpe<mode>"
   [(set (match_operand:V32 0 "s_register_operand" "=w")

@@ -1,3 +1,40 @@
+2010-07-02  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/arm/neon.md (UNSPEC_VAND): Delete.
+	(UNSPEC_VBIC): Delete.
+	(UNSPEC_VCLZ): Delete.
+	(UNSPEC_VCNT): Delete.
+	(UNSPEC_VEOR): Delete.
+	(UNSPEC_VORN): Delete.
+	(UNSPEC_VORR): Delete.
+	(iordi3_neon): Rewrite RTL without unspec.  Add alternatives to handle
+	core registers too.
+	(anddi3_neon): Likewise.
+	(orndi3_neon): Likewise.
+	(bicdi3_neon): Likewise.
+	(xordi3_neon): Likewise.
+	(neon_vclz<mode>): Rewrite as define_expand and clz<mode>2 to get
+	rid of unspec and handle unused operand.
+	(neon_vcnt<mode>): Similarly, with popcount<mode>2.
+	* config/arm/predicates.md (imm_for_neon_logic_operand):
+	Require TARGET_NEON.
+	(imm_for_neon_inv_logic_operand): Likewise.
+	* config/arm/arm.md (define_split for logical_binary_operator): 
+	Disable for NEON registers.
+	(anddi3): Add new define_expand, and rename the insn.  Disable
+	this insn for NEON, where anddi3_neon now applies.
+	(*anddi_notdi_di): Disable for TARGET_NEON, where bicdi3_neon applies.
+	(iordi3): As for anddi3.
+	(xordi3): Likewise.
+	* config/arm/neon.ml (Vand): Split DImode variants and mark them
+	as No_op to disable testing for exact instruction match.
+	(Vorr): Likewise.
+	(Veor): Likewise.
+	(Vbic): Likewise.
+	(Vorn): Likewise.
+	* config/arm/arm_neon.h: Regenerated.
+	* doc/arm-neon-intrinsics.texi: Regenerated.
+
 2010-07-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.h (emit_stack_probe): Declare.

@@ -1619,23 +1619,28 @@ let ops =
       store_3, [P16; F32; U16; U32; S16; S32];
 
     (* Logical operations. And.  *)
-    Vand, [], All (3, Dreg), "vand", notype_2, su_8_64;
+    Vand, [], All (3, Dreg), "vand", notype_2, su_8_32;
+    Vand, [No_op], All (3, Dreg), "vand", notype_2, [S64; U64];
     Vand, [], All (3, Qreg), "vandQ", notype_2, su_8_64;
 
     (* Or.  *)
-    Vorr, [], All (3, Dreg), "vorr", notype_2, su_8_64;
+    Vorr, [], All (3, Dreg), "vorr", notype_2, su_8_32;
+    Vorr, [No_op], All (3, Dreg), "vorr", notype_2, [S64; U64];
     Vorr, [], All (3, Qreg), "vorrQ", notype_2, su_8_64;
 
     (* Eor.  *)
-    Veor, [], All (3, Dreg), "veor", notype_2, su_8_64;
+    Veor, [], All (3, Dreg), "veor", notype_2, su_8_32;
+    Veor, [No_op], All (3, Dreg), "veor", notype_2, [S64; U64];
     Veor, [], All (3, Qreg), "veorQ", notype_2, su_8_64;
 
     (* Bic (And-not).  *)
-    Vbic, [], All (3, Dreg), "vbic", notype_2, su_8_64;
+    Vbic, [], All (3, Dreg), "vbic", notype_2, su_8_32;
+    Vbic, [No_op], All (3, Dreg), "vbic", notype_2, [S64; U64];
     Vbic, [], All (3, Qreg), "vbicQ", notype_2, su_8_64;
 
     (* Or-not.  *)
-    Vorn, [], All (3, Dreg), "vorn", notype_2, su_8_64;
+    Vorn, [], All (3, Dreg), "vorn", notype_2, su_8_32;
+    Vorn, [No_op], All (3, Dreg), "vorn", notype_2, [S64; U64];
     Vorn, [], All (3, Qreg), "vornQ", notype_2, su_8_64;
   ]
 

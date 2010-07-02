@@ -1810,6 +1810,7 @@
 	  [(match_operand:DI 1 "s_register_operand" "")
 	   (match_operand:DI 2 "s_register_operand" "")]))]
   "TARGET_32BIT && reload_completed
+   && ! (TARGET_NEON && IS_VFP_REGNUM (REGNO (operands[0])))
    && ! IS_IWMMXT_REGNUM (REGNO (operands[0]))"
   [(set (match_dup 0) (match_op_dup:SI 6 [(match_dup 1) (match_dup 2)]))
    (set (match_dup 3) (match_op_dup:SI 6 [(match_dup 4) (match_dup 5)]))]
@@ -1883,11 +1884,19 @@
   }"
 )
 
-(define_insn "anddi3"
+(define_expand "anddi3"
+  [(set (match_operand:DI         0 "s_register_operand" "")
+	(and:DI (match_operand:DI 1 "s_register_operand" "")
+		(match_operand:DI 2 "neon_inv_logic_op2" "")))]
+  "TARGET_32BIT"
+  ""
+)
+
+(define_insn "*anddi3_insn"
   [(set (match_operand:DI         0 "s_register_operand" "=&r,&r")
 	(and:DI (match_operand:DI 1 "s_register_operand"  "%0,r")
 		(match_operand:DI 2 "s_register_operand"   "r,r")))]
-  "TARGET_32BIT && ! TARGET_IWMMXT"
+  "TARGET_32BIT && !TARGET_IWMMXT && !TARGET_NEON"
   "#"
   [(set_attr "length" "8")]
 )
@@ -2487,7 +2496,9 @@
 		(match_operand:DI 2 "s_register_operand" "r,0")))]
   "TARGET_32BIT"
   "#"
-  "TARGET_32BIT && reload_completed && ! IS_IWMMXT_REGNUM (REGNO (operands[0]))"
+  "TARGET_32BIT && reload_completed
+   && ! (TARGET_NEON && IS_VFP_REGNUM (REGNO (operands[0])))
+   && ! IS_IWMMXT_REGNUM (REGNO (operands[0]))"
   [(set (match_dup 0) (and:SI (not:SI (match_dup 1)) (match_dup 2)))
    (set (match_dup 3) (and:SI (not:SI (match_dup 4)) (match_dup 5)))]
   "
@@ -2611,11 +2622,19 @@
   [(set_attr "conds" "set")]
 )
 
-(define_insn "iordi3"
+(define_expand "iordi3"
+  [(set (match_operand:DI         0 "s_register_operand" "")
+	(ior:DI (match_operand:DI 1 "s_register_operand" "")
+		(match_operand:DI 2 "neon_logic_op2" "")))]
+  "TARGET_32BIT"
+  ""
+)
+
+(define_insn "*iordi3_insn"
   [(set (match_operand:DI         0 "s_register_operand" "=&r,&r")
 	(ior:DI (match_operand:DI 1 "s_register_operand"  "%0,r")
 		(match_operand:DI 2 "s_register_operand"   "r,r")))]
-  "TARGET_32BIT && ! TARGET_IWMMXT"
+  "TARGET_32BIT && !TARGET_IWMMXT && !TARGET_NEON"
   "#"
   [(set_attr "length" "8")
    (set_attr "predicable" "yes")]
@@ -2741,11 +2760,19 @@
   [(set_attr "conds" "set")]
 )
 
-(define_insn "xordi3"
+(define_expand "xordi3"
+  [(set (match_operand:DI         0 "s_register_operand" "")
+	(xor:DI (match_operand:DI 1 "s_register_operand" "")
+		(match_operand:DI 2 "s_register_operand" "")))]
+  "TARGET_32BIT"
+  ""
+)
+
+(define_insn "*xordi3_insn"
   [(set (match_operand:DI         0 "s_register_operand" "=&r,&r")
 	(xor:DI (match_operand:DI 1 "s_register_operand"  "%0,r")
 		(match_operand:DI 2 "s_register_operand"   "r,r")))]
-  "TARGET_32BIT && !TARGET_IWMMXT"
+  "TARGET_32BIT && !TARGET_IWMMXT && !TARGET_NEON"
   "#"
   [(set_attr "length" "8")
    (set_attr "predicable" "yes")]
