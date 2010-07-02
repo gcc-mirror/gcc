@@ -33,9 +33,9 @@
 <title>The C++ Interface</title>
 
 <para>
-  C++ applications often dependent on specific language support
+  C++ applications often depend on specific language support
   routines, say for throwing exceptions, or catching exceptions, and
-  perhaps also dependent on features in the C++ Standard Library.
+  perhaps also depend on features in the C++ Standard Library.
 </para>
 
 <para>
@@ -122,7 +122,7 @@ as to give distinct versions to the C++ interface.
 releases of library binaries the ability to add new symbols and add
 functionality, all the while retaining compatibility with the previous
 releases in the series. Thus, program binaries linked with the initial
-release of a library binary will still link correctly if the library
+release of a library binary will still run correctly if the library
 binary is replaced by carefully-managed subsequent library
 binaries. This is called forward compatibility.
 </para>
@@ -232,7 +232,7 @@ compatible.
     <listitem>
       <para>
 	Release versioning on the libstdc++.so binary, implemented in
-	the same was as the libgcc_s.so binary above. Listed is the
+	the same way as the libgcc_s.so binary above. Listed is the
 	filename: <constant>DT_SONAME</constant> can be deduced from
 	the filename by removing the last two period-delimited numbers. For
 	example, filename <filename>libstdc++.so.5.0.4</filename>
@@ -306,10 +306,10 @@ compatible.
 
     <listitem><para>Symbol versioning on the libstdc++.so binary.</para>
 
-    <para>mapfile: libstdc++/config/linker-map.gnu</para>
+    <para>mapfile: libstdc++-v3/config/abi/pre/gnu.ver</para>
     <para>It is versioned with the following labels and version
    definitions, where the version definition is the maximum for a
-   particular release. Note, only symbol which are newly introduced
+   particular release. Note, only symbols which are newly introduced
    will use the maximum version definition. Thus, for release series
    with the same label, but incremented version definitions, the later
    release has both versions. (An example of this would be the
@@ -410,7 +410,7 @@ compatible.
 
     <para>
     This macro is defined in the file "c++config" in the
-    "libstdc++/include/bits" directory. (Up to gcc-4.1.0, it was
+    "libstdc++-v3/include/bits" directory. (Up to gcc-4.1.0, it was
     changed every night by an automated script. Since gcc-4.1.0, it is
     the same value as gcc/DATESTAMP.)
     </para>
@@ -474,7 +474,7 @@ compatible.
 
     <para>
     This macro is defined in the file "c++config" in the
-    "libstdc++/include/bits" directory and is generated
+    "libstdc++-v3/include/bits" directory and is generated
     automatically by autoconf as part of the configure-time generation
     of config.h.
     </para>
@@ -514,7 +514,7 @@ compatible.
     All C++ includes are installed in include/c++, then nest in a
     directory hierarchy corresponding to the C++ compiler's released
     version. This version corresponds to the variable "gcc_version" in
-    "libstdc++/acinclude.m4," and more details can be found in that
+    "libstdc++-v3/acinclude.m4," and more details can be found in that
     file's macro GLIBCXX_CONFIGURE (GLIBCPP_CONFIGURE before gcc-3.4.0).
     </para>
     <para>
@@ -584,7 +584,8 @@ compatible.
     <para>
       Minimum environment that supports a versioned ABI: A supported
       dynamic linker, a GNU linker of sufficient vintage to understand
-      demangled C++ name globbing (ld), a shared executable compiled
+      demangled C++ name globbing (ld) or the Sun linker, a shared
+      executable compiled
       with g++, and shared libraries (libgcc_s, libstdc++) compiled by
       a compiler (g++) with a compatible ABI. Phew.
     </para>
@@ -598,7 +599,7 @@ compatible.
     <para>
       Most modern Linux and BSD versions, particularly ones using
       gcc-3.1.x tools and more recent vintages, will meet the
-      requirements above.
+      requirements above, as does Solaris 2.5 and up.
     </para>
   </sect3>
 
@@ -614,7 +615,7 @@ compatible.
     <para>
       For more information on configure options, including ABI
       impacts, see:
-      http://gcc.gnu.org/onlinedocs/libstdc++/configopts.html
+      <link linkend="manual.intro.setup.configure">here</link>
     </para>
 
     <para>
@@ -623,7 +624,7 @@ compatible.
     </para>
 
     <para>
-      In particular, libstdc++/acinclude.m4 has a macro called
+      In particular, libstdc++-v3/acinclude.m4 has a macro called
       GLIBCXX_ENABLE_SYMVERS that defaults to yes (or the argument
       passed in via --enable-symvers=foo). At that point, the macro
       attempts to make sure that all the requirement for symbol
@@ -648,6 +649,7 @@ compatible.
 </screen>
 
 <para>
+  or another of the supported styles.
   If you don't see this line in the configure output, or if this line
   appears but the last word is 'no', then you are out of luck.
 </para>
@@ -683,6 +685,23 @@ of the name, then the executable is versioned. Here's an example:
 
 <para>
    <code>U _ZNSt8ios_base4InitC1Ev@@GLIBCXX_3.4</code>
+</para>
+
+<para>
+On Solaris 2, you can use <code>pvs -r</code> instead:
+</para>
+
+<programlisting>
+%g++ hello.cc -o hello.out
+
+%pvs -r hello.out
+        libstdc++.so.6 (GLIBCXX_3.4, GLIBCXX_3.4.12);
+        libgcc_s.so.1 (GCC_3.0);
+        libc.so.1 (SUNWprivate_1.1, SYSVABI_1.3);
+</programlisting>
+
+<para>
+<code>ldd -v</code> works too, but is very verbose.
 </para>
 
   </sect3>
@@ -735,7 +754,7 @@ number to increase, say from "libstdc++.so.3.0.4" to
 <listitem><para> Adding an explicit copy constructor or destructor to a
 class that would otherwise have implicit versions. This will change
 the way the compiler deals with this class in by-value return
-statements or parameters: instead of being passing instances of this
+statements or parameters: instead of passing instances of this
 class in registers, the compiler will be forced to use memory. See <ulink url="http://www.codesourcery.com/cxx-abi/abi.html#calls"> this part</ulink>
  of the C++ ABI documentation for further details.
  </para></listitem>
@@ -920,7 +939,7 @@ Use the 'make check-abi' rule in the libstdc++ Makefile.
 </para>
 
 <para>
-This is a proactive check the library ABI. Currently, exported symbol
+This is a proactive check of the library ABI. Currently, exported symbol
 names that are either weak or defined are checked against a last known
 good baseline. Currently, this baseline is keyed off of 3.4.0
 binaries, as this was the last time the .so number was incremented. In
@@ -955,7 +974,7 @@ Another approach might be to use the -fdump-class-hierarchy flag to
 get information. However, currently this approach gives insufficient
 data for use in library testing, as class data members, their offsets,
 and other detailed data is not displayed with this flag.
-(See g++/7470 on how this was used to find bugs.)
+(See PR g++/7470 on how this was used to find bugs.)
 </para>
 
 <para>
@@ -968,7 +987,7 @@ us. We'd like to know about them!
     <title>Multiple ABI Testing</title>
 <para>
 A "C" application, dynamically linked to two shared libraries, liba,
-libb. The dependent library liba is C++ shared library compiled with
+libb. The dependent library liba is a C++ shared library compiled with
 gcc-3.3.x, and uses io, exceptions, locale, etc. The dependent library
 libb is a C++ shared library compiled with gcc-3.4.x, and also uses io,
 exceptions, locale, etc.
@@ -1114,9 +1133,9 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
 
   <biblioentry>
     <biblioid class="uri">
-      <ulink url="http://docs.sun.com/app/docs/doc/817-1984">
+      <ulink url="http://docs.sun.com/app/docs/doc/819-0690">
 	<citetitle>
-	  Sun Solaris 2.9 : Linker and Libraries Guide (document 816-1386)
+	  Linker and Libraries Guide (document 819-0690)
 	</citetitle>
       </ulink>
     </biblioid>
@@ -1125,9 +1144,9 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
 
   <biblioentry>
     <biblioid class="uri">
-      <ulink url="http://docs.sun.com/app/docs/doc/819-5266">
+      <ulink url="http://docs.sun.com/app/docs/doc/819-3689">
 	<citetitle>
-	  Sun Solaris 2.9 : C++ Migration Guide (document 816-2459)
+	  Sun Studio 11: C++ Migration Guide (document 819-3689)
 	</citetitle>
       </ulink>
     </biblioid>

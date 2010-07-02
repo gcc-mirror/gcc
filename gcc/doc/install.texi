@@ -456,8 +456,13 @@ snapshots of the development sources are also available via FTP@.
 Necessary when regenerating @file{Makefile} dependencies in libiberty.
 Necessary when regenerating @file{libiberty/functions.texi}.
 Necessary when generating manpages from Texinfo manuals.
-Necessary when targetting Darwin, building libstdc++,
+Necessary when targetting Darwin, building @samp{libstdc++},
 and not using @option{--disable-symvers}.
+Necessary when targetting Solaris 2 with Sun @command{ld}, building
+@samp{libstdc++}, and not using @option{--disable-symvers}.  A helper
+scripts needs @samp{Glob.pm}, which is missing from @command{perl} 5.005
+included in Solaris~8.  The bundled @command{perl} in Solaris~9 and up
+works.
 Used by various scripts to generate some files included in SVN (mainly
 Unicode-related and rarely changing) from source tables.
 
@@ -4108,6 +4113,12 @@ GNU @command{ld} usually works as well, although the version included in
 Solaris 10 cannot be used due to several bugs.  Again, the current
 version (2.20.1) is known to work, but generally lacks platform specific
 features, so better stay with Sun @command{ld}.
+
+To enable symbol versioning in @samp{libstdc++} with Sun @command{ld},
+you need to have any version of GNU @command{c++filt}, which is part of
+GNU binutils.  @samp{libstdc++} symbol versioning will be disabled if no
+appropriate version is found.  Sun @command{c++filt} from the Sun Studio
+compilers does @emph{not} work.
 
 Sun bug 4296832 turns up when compiling X11 headers with GCC 2.95 or
 newer: @command{g++} will complain that types are missing.  These headers

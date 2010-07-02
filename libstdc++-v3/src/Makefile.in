@@ -55,6 +55,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/enable.m4 \
 	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
 	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/crossconfig.m4 \
 	$(top_srcdir)/linkage.m4 $(top_srcdir)/acinclude.m4 \
+	$(top_srcdir)/../config/gc++filt.m4 \
 	$(top_srcdir)/../config/tls.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
@@ -157,6 +158,7 @@ CTIME_CC = @CTIME_CC@
 CTIME_H = @CTIME_H@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
+CXXFILT = @CXXFILT@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 C_INCLUDE_DIR = @C_INCLUDE_DIR@
@@ -321,14 +323,19 @@ AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 
 # Cross compiler support.
 toolexeclib_LTLIBRARIES = libstdc++.la
+@ENABLE_SYMVERS_TRUE@CLEANFILES = libstdc++-symbols.ver $(version_dep)
 @ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,-exported_symbols_list,libstdc++-symbols.explist
 @ENABLE_SYMVERS_FALSE@version_arg = 
 @ENABLE_SYMVERS_GNU_NAMESPACE_TRUE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,--version-script=libstdc++-symbols.ver
-@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,--version-script=libstdc++-symbols.ver
+@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_SOL2_FALSE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,--version-script=libstdc++-symbols.ver
+@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_SOL2_TRUE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,--version-script,libstdc++-symbols.ver-sol2
+@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@version_arg = -Wl,-M,libstdc++-symbols.ver-sun
 @ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.explist
 @ENABLE_SYMVERS_FALSE@version_dep = 
 @ENABLE_SYMVERS_GNU_NAMESPACE_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.ver
-@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.ver
+@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_SOL2_FALSE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.ver
+@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_SOL2_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.ver-sol2
+@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@version_dep = libstdc++-symbols.ver-sun
 
 # Source files linked in via configuration/make substitution for a
 # particular host.
@@ -649,6 +656,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -760,6 +768,19 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 @ENABLE_SYMVERS_TRUE@	    rm tmp.top tmp.bottom; \
 @ENABLE_SYMVERS_TRUE@	  fi; \
 @ENABLE_SYMVERS_TRUE@	fi
+@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_SOL2_TRUE@@ENABLE_SYMVERS_TRUE@libstdc++-symbols.ver-sol2 : libstdc++-symbols.ver
+@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_SOL2_TRUE@@ENABLE_SYMVERS_TRUE@	sed -e '/^#ifdef HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT/,/^#endif/d' $< \
+@ENABLE_SYMVERS_GNU_TRUE@@ENABLE_SYMVERS_SOL2_TRUE@@ENABLE_SYMVERS_TRUE@	 > $@ || (rm -f $@ ; exit 1)
+@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@libstdc++-symbols.ver-sun : libstdc++-symbols.ver \
+@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@		$(toplevel_srcdir)/contrib/make_sunver.pl \
+@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@		$(libstdc___la_OBJECTS) $(libstdc___la_LIBADD)
+@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@	CXXFILT="$(CXXFILT)"; export CXXFILT; \
+@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@	perl $(toplevel_srcdir)/contrib/make_sunver.pl \
+@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@	  libstdc++-symbols.ver \
+@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@	  $(libstdc___la_OBJECTS:%.lo=.libs/%.o) \
+@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@	 `echo $(libstdc___la_LIBADD) | \
+@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
+@ENABLE_SYMVERS_SUN_TRUE@@ENABLE_SYMVERS_TRUE@	 > $@ || (rm -f $@ ; exit 1)
 @ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@libstdc++-symbols.explist : libstdc++-symbols.ver \
 @ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@		${glibcxx_srcdir}/scripts/make_exports.pl \
 @ENABLE_SYMVERS_DARWIN_TRUE@@ENABLE_SYMVERS_TRUE@		$(libstdc___la_OBJECTS) $(libstdc___la_LIBADD)
