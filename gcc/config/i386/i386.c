@@ -3558,7 +3558,7 @@ override_options (bool main_args_p)
   /* Enable sw prefetching at -O3 for CPUS that prefetching is helpful.  */
   if (flag_prefetch_loop_arrays < 0
       && HAVE_prefetch
-      && optimize >= 3
+      && (optimize >= 3 || flag_profile_use)
       && software_prefetching_beneficial_p ())
     flag_prefetch_loop_arrays = 1;
 

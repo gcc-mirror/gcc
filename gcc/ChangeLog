@@ -1,3 +1,9 @@
+2010-07-02  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-split.c (split_function): For aggregate values set return_slot_opt;
+	when passing DECL_BY_REFERENCE produce *<retval> = fncall.part ()
+	(execute_split_functions): Do not care about DECL_BY_REFERENCE.
+
 2010-07-02  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/arm/neon.md (UNSPEC_VAND): Delete.
@@ -60,8 +66,8 @@
 
 2010-07-02  Jan Hubicka  <jh@suse.cz>
 
-	* ipa-split.c (verify_non_ssa_vars): Break out from ...; perform DFS
-	walk backwards from entry_bb to check only those basic block of header
+	* ipa-split.c (verify_non_ssa_vars): Break out from ...; perform DFS walk
+	backwards from entry_bb to check only those basic block of header
 	that might lead to execution of split part.
 	(consider_split) ... here.
 	(find_return_bb): Allow assignment in return BB.
