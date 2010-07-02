@@ -1206,10 +1206,7 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
 	  for ( ; c != ')'; c = next_char (dtp))
 	    if (is_separator (c))
 	      goto bad;
-	    else
-	      push_char (dtp, c);
 
-	  push_char (dtp, ')');
 	  c = next_char (dtp);
 	  if (is_separator (c))
 	    unget_char (dtp, c);

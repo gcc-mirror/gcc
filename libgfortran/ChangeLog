@@ -1,3 +1,9 @@
+2010-06-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43298
+	* list_read.c (parse_real): Do not pass (..) on for NAN(..).
+	* read.c (convert_real): Fix comment about NAN/INF.
+
 2010-07-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gfortran_use_symver): Only check for Sun-style symbol
