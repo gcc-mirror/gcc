@@ -55,13 +55,12 @@ id forwarder, receiver;
     receiver = theReceiver;
     return self;
 }
-#ifdef NEXT_OBJC_USE_NEW_INTERFACE
+#ifdef __NEXT_RUNTIME__
 - forward: (SEL)theSel: (marg_list)theArgFrame
-{
 #else
 -(retval_t) forward: (SEL)theSel: (arglist_t)theArgFrame
-{
 #endif
+{
   /* If we have a reciever try to perform on that object */
     if (receiver)
         return [receiver performv: theSel: theArgFrame];
