@@ -1675,8 +1675,9 @@ override_options (void)
     set_param_value ("simultaneous-prefetches", 6);
 
   /* This cannot reside in optimization_options since HAVE_prefetch
-     requires the arch flags to be evaluated already.  */
-  if (HAVE_prefetch && optimize >= 3)
+     requires the arch flags to be evaluated already.  Since prefetching
+     is beneficial on s390, we enable it if available.  */
+  if (flag_prefetch_loop_arrays < 0 && HAVE_prefetch && optimize >= 3)
     flag_prefetch_loop_arrays = 1;
 }
 

@@ -1,3 +1,8 @@
+2010-07-02  Christian Borntraeger  <borntraeger@de.ibm.com>
+
+	* config/s390/s390.c (override_options): Adopt prefetching
+	at -O3 to handle flag_prefetch_loop_arrays as a tristate.
+
 2010-07-02  Jan Hubicka  <jh@suse.cz>
 
 	* df-problems.c (df_kill_notes): Do not collect dead  notes.
