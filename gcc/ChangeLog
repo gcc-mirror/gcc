@@ -1,5 +1,59 @@
 2010-07-02  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* config/arm/arm.c (neon_vdup_constant): Expand into canonical RTL
+	instead of an unspec.
+	(neon_expand_vector_init): Likewise.
+	* config/arm/neon.md (UNSPEC_VCOMBINE): Delete.
+	(UNSPEC_VDUP_LANE): Delete.
+	(UNSPEC VDUP_N): Delete.
+	(UNSPEC_VGET_HIGH): Delete.
+	(UNSPEC_VGET_LANE): Delete.
+	(UNSPEC_VGET_LOW): Delete.
+	(UNSPEC_VMVN): Delete.
+	(UNSPEC_VSET_LANE): Delete.
+	(V_double_vector_mode): New.
+	(vec_set<mode>_internal): Make code emitted match that for the
+	corresponding intrinsics.
+	(vec_setv2di_internal): Likewise.
+	(neon_vget_lanedi): Rewrite to expand into emit_move_insn.
+	(neon_vget_lanev2di): Rewrite to expand into vec_extractv2di.
+	(neon_vset_lane<mode>): Combine double and quad patterns and
+	expand into vec_set<mode>_internal instead of UNSPEC_VSET_LANE.
+	(neon_vset_lanedi): Rewrite to expand into emit_move_insn.
+	(neon_vdup_n<mode>): Rewrite RTL without unspec.
+	(neon_vdup_ndi): Rewrite as define_expand and use emit_move_insn.
+	(neon_vdup_nv2di): Rewrite RTL without unspec and merge with
+	with neon_vdup_lanev2di, adjusting the pattern from the latter
+	to be predicable for consistency.
+	(neon_vdup_lane<mode>_internal): New.
+	(neon_vdup_lane<mode>): Turn into a define_expand and rewrite
+	to avoid using an unspec.
+	(neon_vdup_lanedi): Rewrite RTL pattern to avoid unspec.
+	(neon_vdup_lanev2di): Turn into a define_expand.
+	(neon_vcombine): Rewrite pattern to eliminate UNPSEC_VCOMBINE.
+	(neon_vget_high<mode>): Replace with....
+	(neon_vget_highv16qi): New pattern using canonical RTL.
+	(neon_vget_highv8hi): Likewise.
+	(neon_vget_highv4si): Likewise.
+	(neon_vget_highv4sf): Likewise.
+	(neon_vget_highv2di): Likewise.
+	(neon_vget_low<mode>): Replace with....
+	(neon_vget_lowv16qi): New pattern using canonical RTL.
+	(neon_vget_lowv8hi): Likewise.
+	(neon_vget_lowv4si): Likewise.
+	(neon_vget_lowv4sf): Likewise.
+	(neon_vget_lowv2di): Likewise.
+
+	* config/arm/neon.ml (Vget_lane): Add No_op attribute to suppress
+	test for this emitting vmov.
+	(Vset_lane): Likewise.
+	(Vdup_n): Likewise.
+	(Vmov_n): Likewise.
+
+	* doc/arm-neon-intrinsics.texi: Regenerated.
+
+2010-07-02  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* config/arm/neon.md (vec_extractv2di): Correct error in register
 	numbering to reconcile with neon_vget_lanev2di.
 
