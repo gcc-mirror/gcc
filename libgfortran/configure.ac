@@ -147,15 +147,19 @@ FOO_1.0 {
 EOF
 AC_TRY_LINK([int foo;],[],[gfortran_use_symver=gnu],[gfortran_use_symver=no])
 if test x$gfortran_use_symver = xno; then
-  LDFLAGS="$save_LDFLAGS"
-  LDFLAGS="$LDFLAGS -fPIC -shared -Wl,-M,./conftest.map"
-  # Sun ld cannot handle wildcards and treats all entries as undefined.
-  cat > conftest.map <<EOF
+  case "$target_os" in
+    solaris2*)
+      LDFLAGS="$save_LDFLAGS"
+      LDFLAGS="$LDFLAGS -fPIC -shared -Wl,-M,./conftest.map"
+      # Sun ld cannot handle wildcards and treats all entries as undefined.
+      cat > conftest.map <<EOF
 FOO_1.0 {
   global: foo; local: *;
 };
 EOF
-  AC_TRY_LINK([int foo;],[],[gfortran_use_symver=sun],[gfortran_use_symver=no])
+      AC_TRY_LINK([int foo;],[],[gfortran_use_symver=sun],[gfortran_use_symver=no])
+      ;;
+  esac
 fi
 LDFLAGS="$save_LDFLAGS"
 AC_MSG_RESULT($gfortran_use_symver)
