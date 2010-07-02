@@ -1,3 +1,32 @@
+2010-07-02  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.target/arm/neon/vdup_ns64.c: Regenerated.
+	* gcc.target/arm/neon/vdup_nu64.c: Regenerated.
+	* gcc.target/arm/neon/vdupQ_ns64.c: Regenerated.
+	* gcc.target/arm/neon/vdupQ_nu64.c: Regenerated.
+	* gcc.target/arm/neon/vmov_ns64.c: Regenerated.
+	* gcc.target/arm/neon/vmov_nu64.c: Regenerated.
+	* gcc.target/arm/neon/vmovQ_ns64.c: Regenerated.
+	* gcc.target/arm/neon/vmovQ_nu64.c: Regenerated.
+	* gcc.target/arm/neon/vget_lanes64.c: Regenerated.
+	* gcc.target/arm/neon/vget_laneu64.c: Regenerated.
+	* gcc.target/arm/neon/vset_lanes64.c: Regenerated.
+	* gcc.target/arm/neon/vset_laneu64.c: Regenerated.
+	* gcc.target/arm/neon-vdup_ns64.c: New.
+	* gcc.target/arm/neon-vdup_nu64.c: New.
+	* gcc.target/arm/neon-vdupQ_ns64.c: New.
+	* gcc.target/arm/neon-vdupQ_nu64.c: New.
+	* gcc.target/arm/neon-vdupQ_lanes64.c: New.
+	* gcc.target/arm/neon-vdupQ_laneu64.c: New.
+	* gcc.target/arm/neon-vmov_ns64.c: New.
+	* gcc.target/arm/neon-vmov_nu64.c: New.
+	* gcc.target/arm/neon-vmovQ_ns64.c: New.
+	* gcc.target/arm/neon-vmovQ_nu64.c: New.
+	* gcc.target/arm/neon-vget_lanes64.c: New.
+	* gcc.target/arm/neon-vget_laneu64.c: New.
+	* gcc.target/arm/neon-vset_lanes64.c: New.
+	* gcc.target/arm/neon-vset_laneu64.c: New.
+
 2010-07-02  Richard Guenther  <rguenther@suse.de>
 
 	* g++.dg/torture/20100702-1.C: New testcase.

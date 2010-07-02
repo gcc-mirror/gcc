@@ -967,7 +967,8 @@ let ops =
       Use_operands [| Corereg; Dreg; Immed |],
       "vget_lane", get_lane, pf_su_8_32;
     Vget_lane,
-      [InfoWord;
+      [No_op;
+       InfoWord;
        Disassembles_as [Use_operands [| Corereg; Corereg; Dreg |]];
        Instruction_name ["vmov"]; Const_valuator (fun _ -> 0)],
       Use_operands [| Corereg; Dreg; Immed |],
@@ -989,7 +990,8 @@ let ops =
                 Instruction_name ["vmov"]],
       Use_operands [| Dreg; Corereg; Dreg; Immed |], "vset_lane",
       set_lane, pf_su_8_32;
-    Vset_lane, [Disassembles_as [Use_operands [| Dreg; Corereg; Corereg |]];
+    Vset_lane, [No_op;
+                Disassembles_as [Use_operands [| Dreg; Corereg; Corereg |]];
                 Instruction_name ["vmov"]; Const_valuator (fun _ -> 0)],
       Use_operands [| Dreg; Corereg; Dreg; Immed |], "vset_lane",
       set_lane_notype, [S64; U64];
@@ -1017,7 +1019,8 @@ let ops =
       Use_operands [| Dreg; Corereg |], "vdup_n", bits_1,
       pf_su_8_32;
     Vdup_n,
-      [Instruction_name ["vmov"];
+      [No_op;
+       Instruction_name ["vmov"];
        Disassembles_as [Use_operands [| Dreg; Corereg; Corereg |]]],
       Use_operands [| Dreg; Corereg |], "vdup_n", notype_1,
       [S64; U64];
@@ -1028,7 +1031,8 @@ let ops =
       Use_operands [| Qreg; Corereg |], "vdupQ_n", bits_1,
       pf_su_8_32;
     Vdup_n,
-      [Instruction_name ["vmov"];
+      [No_op;
+       Instruction_name ["vmov"];
        Disassembles_as [Use_operands [| Dreg; Corereg; Corereg |];
                         Use_operands [| Dreg; Corereg; Corereg |]]],
       Use_operands [| Qreg; Corereg |], "vdupQ_n", notype_1,
@@ -1043,7 +1047,8 @@ let ops =
       Use_operands [| Dreg; Corereg |],
       "vmov_n", bits_1, pf_su_8_32;
     Vmov_n,
-      [Builtin_name "vdup_n";
+      [No_op;
+       Builtin_name "vdup_n";
        Instruction_name ["vmov"];
        Disassembles_as [Use_operands [| Dreg; Corereg; Corereg |]]],
       Use_operands [| Dreg; Corereg |],
@@ -1056,7 +1061,8 @@ let ops =
       Use_operands [| Qreg; Corereg |],
       "vmovQ_n", bits_1, pf_su_8_32;
     Vmov_n,
-      [Builtin_name "vdupQ_n";
+      [No_op;
+       Builtin_name "vdupQ_n";
        Instruction_name ["vmov"];
        Disassembles_as [Use_operands [| Dreg; Corereg; Corereg |];
                         Use_operands [| Dreg; Corereg; Corereg |]]],

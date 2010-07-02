@@ -8250,8 +8250,7 @@ neon_vdup_constant (rtx vals)
      load.  */
 
   x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, 0));
-  return gen_rtx_UNSPEC (mode, gen_rtvec (1, x),
-			 UNSPEC_VDUP_N);
+  return gen_rtx_VEC_DUPLICATE (mode, x);
 }
 
 /* Generate code to load VALS, which is a PARALLEL containing only
@@ -8347,8 +8346,7 @@ neon_expand_vector_init (rtx target, rtx vals)
     {
       x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, 0));
       emit_insn (gen_rtx_SET (VOIDmode, target,
-			      gen_rtx_UNSPEC (mode, gen_rtvec (1, x),
-					      UNSPEC_VDUP_N)));
+			      gen_rtx_VEC_DUPLICATE (mode, x)));
       return;
     }
 
@@ -8357,7 +8355,7 @@ neon_expand_vector_init (rtx target, rtx vals)
   if (n_var == 1)
     {
       rtx copy = copy_rtx (vals);
-      rtvec ops;
+      rtx index = GEN_INT (one_var);
 
       /* Load constant part of vector, substitute neighboring value for
 	 varying element.  */
@@ -8366,9 +8364,38 @@ neon_expand_vector_init (rtx target, rtx vals)
 
       /* Insert variable.  */
       x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, one_var));
-      ops = gen_rtvec (3, x, target, GEN_INT (one_var));
-      emit_insn (gen_rtx_SET (VOIDmode, target,
-			      gen_rtx_UNSPEC (mode, ops, UNSPEC_VSET_LANE)));
+      switch (mode)
+	{
+	case V8QImode:
+	  emit_insn (gen_neon_vset_lanev8qi (target, x, target, index));
+	  break;
+	case V16QImode:
+	  emit_insn (gen_neon_vset_lanev16qi (target, x, target, index));
+	  break;
+	case V4HImode:
+	  emit_insn (gen_neon_vset_lanev4hi (target, x, target, index));
+	  break;
+	case V8HImode:
+	  emit_insn (gen_neon_vset_lanev8hi (target, x, target, index));
+	  break;
+	case V2SImode:
+	  emit_insn (gen_neon_vset_lanev2si (target, x, target, index));
+	  break;
+	case V4SImode:
+	  emit_insn (gen_neon_vset_lanev4si (target, x, target, index));
+	  break;
+	case V2SFmode:
+	  emit_insn (gen_neon_vset_lanev2sf (target, x, target, index));
+	  break;
+	case V4SFmode:
+	  emit_insn (gen_neon_vset_lanev4sf (target, x, target, index));
+	  break;
+	case V2DImode:
+	  emit_insn (gen_neon_vset_lanev2di (target, x, target, index));
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
       return;
     }
 
