@@ -1,3 +1,9 @@
+2010-07-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/misc.c (gnat_handle_option): Do not populate gnat_argv.
+	(gnat_handle_option): Allocate only one element for gnat_argv.
+	(gnat_init): Do not populate gnat_argv.
+
 2010-06-30  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* gcc-interface/trans.c: Do not include tree-flow.h.
