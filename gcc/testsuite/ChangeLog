@@ -1,5 +1,10 @@
 2010-07-02  Iain Sandoe  <iains@gcc.gnu.org>
 
+	* obj-c++.dg/cxx-ivars-3.mm: Make the test require OSX <= 10.4.
+	Use the ABI-0 accessors and fail it for m64.
+
+2010-07-02  Iain Sandoe  <iains@gcc.gnu.org>
+
 	* objc-obj-c++-shared/next-abi.h: Remove dependency on system
 	headers.  Add clause to reflect that, pre-10.5, ABI is always 0.
 	* objc/execute/forward-1.m: Depend only on __NEXT_RUNTIME__ for
