@@ -1,3 +1,14 @@
+2010-07-02  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-split.c (verify_non_ssa_vars): Break out from ...; perform DFS walk
+	backwards from entry_bb to check only those basic block of header
+	that might lead to execution of split part.
+	(consider_split) ... here.
+	(find_return_bb): Allow assignment in return BB.
+	(find_retval): New.
+	(split_function): Fix name of cloned function; take care of updating return
+	value in return_bb containing move.
+
 2010-07-02  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR target/44771
