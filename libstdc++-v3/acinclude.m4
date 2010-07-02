@@ -2998,9 +2998,9 @@ if test $enable_symvers != no ; then
        symvers_renaming=no  ;;
      # Other platforms with GNU symbol versioning (GNU/Linux, more?) do.
      *)
-       AC_DEFINE(_GLIBCXX_HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT, 1,
+       AC_DEFINE(HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT, 1,
          [Define to 1 if the target runtime linker supports binding the same symbol to different versions.])
-       symvers_renaming=yes
+       symvers_renaming=yes  ;;
     esac
 fi
 GLIBCXX_CONDITIONAL(ENABLE_SYMVERS_SOL2, test $symvers_renaming = no)

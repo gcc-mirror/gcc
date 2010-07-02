@@ -58414,9 +58414,9 @@ if test $enable_symvers != no ; then
      # Other platforms with GNU symbol versioning (GNU/Linux, more?) do.
      *)
 
-$as_echo "#define _GLIBCXX_HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT 1" >>confdefs.h
+$as_echo "#define HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT 1" >>confdefs.h
 
-       symvers_renaming=yes
+       symvers_renaming=yes  ;;
     esac
 fi
 
