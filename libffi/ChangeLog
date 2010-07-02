@@ -1,3 +1,8 @@
+2010-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (AM_MAKEFLAGS): Pass also mandir to submakes.
+	* Makefile.in: Regenerated.
+
 2010-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (libffi_cv_as_x86_pcrel): Check for illegal in as
