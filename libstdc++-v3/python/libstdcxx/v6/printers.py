@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#import gdb
+import gdb
 import itertools
 import re
 
@@ -77,8 +77,7 @@ class StdListPrinter:
         elif self.typename == "std::__debug::list":
             nodetype = gdb.lookup_type('std::__norm::_List_node<%s>' % itype).pointer()
         else:
-            #raise ValueError, "Cannot cast list node for list printer."
-            raise "Cannot cast list node for list printer."
+            raise ValueError, "Cannot cast list node for list printer."
         return self._iterator(nodetype, self.val['_M_impl']['_M_node'])
 
     def to_string(self):
