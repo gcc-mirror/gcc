@@ -1,3 +1,8 @@
+2010-07-02  Iain Sandoe  <iains@gcc.gnu.org>
+
+       * compare-debug (Darwin): Remove '-x' flag from ld-based object
+       stripping.  Add a comment as to why we do it this way.
+
 2010-06-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* compare-debug: Drop LTO sections.
