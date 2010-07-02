@@ -1,5 +1,9 @@
 2010-07-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	* gfortran.dg/runtime_warning_1.f90: Remove extra dg line.
+
+2010-07-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	* gfortran.dg/runtime_warning_1.f90: Fix dg syntax.
 	* gfortran.dg/intent_out_5.f90: Same.
 	* gfortran.dg/ltrans-7.f90: Same.
