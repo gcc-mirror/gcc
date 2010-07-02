@@ -77,7 +77,7 @@ tree gfc_get_array_type_bounds (tree, int, int, tree *, tree *, int,
 tree gfc_get_nodesc_array_type (tree, gfc_array_spec *, gfc_packed, bool);
 
 /* Add a field of given name and type to a UNION_TYPE or RECORD_TYPE.  */
-tree gfc_add_field_to_struct (tree *, tree, tree, tree);
+tree gfc_add_field_to_struct (tree *, tree, tree, tree, tree **);
 
 /* Layout and output debugging info for a type.  */
 void gfc_finish_type (tree);

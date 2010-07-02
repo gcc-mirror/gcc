@@ -1633,6 +1633,7 @@ gfc_trans_character_select (gfc_code *code)
 
   if (select_struct[k] == NULL)
     {
+      tree *chain = NULL;
       select_struct[k] = make_node (RECORD_TYPE);
 
       if (code->expr1->ts.kind == 1)
@@ -1646,7 +1647,7 @@ gfc_trans_character_select (gfc_code *code)
 #define ADD_FIELD(NAME, TYPE)					\
   ss_##NAME[k] = gfc_add_field_to_struct				\
      (&(TYPE_FIELDS (select_struct[k])), select_struct[k],	\
-      get_identifier (stringize(NAME)), TYPE)
+      get_identifier (stringize(NAME)), TYPE, &chain)
 
       ADD_FIELD (string1, pchartype);
       ADD_FIELD (string1_len, gfc_charlen_type_node);
