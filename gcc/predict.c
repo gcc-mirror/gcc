@@ -1786,8 +1786,33 @@ predict_paths_for_bb (basic_block cur, basic_block bb,
     if (e->src->index >= NUM_FIXED_BLOCKS
 	&& !dominated_by_p (CDI_POST_DOMINATORS, e->src, bb))
     {
+      edge e2;
+      edge_iterator ei2;
+      bool found = false;
+
+      /* Ignore abnormals, we predict them as not taken anyway.  */
+      if (e->flags & (EDGE_EH | EDGE_FAKE | EDGE_ABNORMAL))
+	continue;
       gcc_assert (bb == cur || dominated_by_p (CDI_POST_DOMINATORS, cur, bb));
-      predict_edge_def (e, pred, taken);
+
+      /* See if there is how many edge from e->src that is not abnormal
+	 and does not lead to BB.  */
+      FOR_EACH_EDGE (e2, ei2, e->src->succs)
+	if (e2 != e
+	    && !(e2->flags & (EDGE_EH | EDGE_FAKE | EDGE_ABNORMAL))
+	    && !dominated_by_p (CDI_POST_DOMINATORS, e2->dest, bb))
+	  {
+	    found = true;
+	    break;
+	  }
+
+      /* If there is non-abnormal path leaving e->src, predict edge
+	 using predictor.  Otherwise we need to look for paths
+	 leading to e->src.  */
+      if (found)
+        predict_edge_def (e, pred, taken);
+      else
+	predict_paths_for_bb (e->src, e->src, pred, taken);
     }
   for (son = first_dom_son (CDI_POST_DOMINATORS, cur);
        son;
