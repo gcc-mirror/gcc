@@ -3,6 +3,9 @@
 	PR target/42835
 	* gcc.target/arm/pr42835.c: New test.
 
+	PR target/42172
+	* gcc.target/arm/pr42172-1.c: New test.
+
 2010-07-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/template/crash98.C: Remove stray // from dg-error comment.
