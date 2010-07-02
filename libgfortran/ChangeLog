@@ -1,3 +1,16 @@
+2010-07-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Check for Sun symbol versioning.
+	* configure: Regenerate.
+
+	* Makefile.am [LIBGFOR_USE_SYMVER]: Protect version_arg with
+	LIBGFOR_USE_SYMVER_GNU.
+	Add version_dep.
+	[LIBGFOR_USE_SYMVER_SUN]: Handle Sun symbol versioning.
+	[!LIBGFOR_USE_SYMVER]: Add version_dep.
+	(libgfortran_la_DEPENDENCIES): Set to $(version_dep).
+	* Makefile.in: Regenerate.
+
 2010-06-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/43298

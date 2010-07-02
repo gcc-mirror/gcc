@@ -8,9 +8,26 @@ gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 
 ## Symbol versioning (copied from libssp).
 if LIBGFOR_USE_SYMVER
+if LIBGFOR_USE_SYMVER_GNU
 version_arg = -Wl,--version-script=$(srcdir)/gfortran.map
+version_dep = $(srcdir)/gfortran.map
+endif
+if LIBGFOR_USE_SYMVER_SUN
+version_arg = -Wl,-M,gfortran.map-sun
+version_dep = gfortran.map-sun
+gfortran.map-sun : $(srcdir)/gfortran.map \
+		$(top_srcdir)/../contrib/make_sunver.pl \
+		$(libgfortran_la_OBJECTS) $(libgfortran_la_LIBADD)
+	perl $(top_srcdir)/../contrib/make_sunver.pl \
+	  $(srcdir)/gfortran.map \
+	  $(libgfortran_la_OBJECTS:%.lo=.libs/%.o) \
+	 `echo $(libgfortran_la_LIBADD) | \
+	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
+	 > $@ || (rm -f $@ ; exit 1)
+endif
 else
 version_arg =
+version_dep =
 endif
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
@@ -19,6 +36,7 @@ LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS)) \
 toolexeclib_LTLIBRARIES = libgfortran.la
 libgfortran_la_LINK = $(LINK) $(libgfortran_la_LDFLAGS)
 libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LTLDFLAGS) -lm $(extra_ldflags_libgfortran) $(version_arg)
+libgfortran_la_DEPENDENCIES = $(version_dep)
 
 myexeclib_LTLIBRARIES = libgfortranbegin.la
 myexeclibdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)$(MULTISUBDIR)
