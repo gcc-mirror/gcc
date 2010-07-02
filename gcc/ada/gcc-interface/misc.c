@@ -191,7 +191,6 @@ gnat_handle_option (size_t scode, const char *arg, int value,
 {
   const struct cl_option *option = &cl_options[scode];
   enum opt_code code = (enum opt_code) scode;
-  char *q;
 
   if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
     {
@@ -201,20 +200,11 @@ gnat_handle_option (size_t scode, const char *arg, int value,
 
   switch (code)
     {
-    case OPT_I:
-      q = XNEWVEC (char, sizeof("-I") + strlen (arg));
-      strcpy (q, "-I");
-      strcat (q, arg);
-      gnat_argv[gnat_argc] = q;
-      gnat_argc++;
-      break;
-
     case OPT_Wall:
       warn_unused = value;
       warn_uninitialized = value;
       break;
 
-      /* These are used in the GCC Makefile.  */
     case OPT_Wmissing_prototypes:
     case OPT_Wstrict_prototypes:
     case OPT_Wwrite_strings:
@@ -223,15 +213,7 @@ gnat_handle_option (size_t scode, const char *arg, int value,
     case OPT_Wold_style_definition:
     case OPT_Wmissing_format_attribute:
     case OPT_Woverlength_strings:
-      break;
-
-      /* This is handled by the front-end.  */
-    case OPT_nostdinc:
-      break;
-
-    case OPT_nostdlib:
-      gnat_argv[gnat_argc] = xstrdup ("-nostdlib");
-      gnat_argc++;
+      /* These are used in the GCC Makefile.  */
       break;
 
     case OPT_feliminate_unused_debug_types:
@@ -242,9 +224,8 @@ gnat_handle_option (size_t scode, const char *arg, int value,
       flag_eliminate_unused_debug_types = -value;
       break;
 
-    case OPT_fRTS_:
-      gnat_argv[gnat_argc] = xstrdup ("-fRTS");
-      gnat_argc++;
+    case OPT_gdwarfplus:
+      gnat_dwarf_extensions = 1;
       break;
 
     case OPT_gant:
@@ -253,22 +234,12 @@ gnat_handle_option (size_t scode, const char *arg, int value,
       /* ... fall through ... */
 
     case OPT_gnat:
-      /* Recopy the switches without the 'gnat' prefix.  */
-      gnat_argv[gnat_argc] = XNEWVEC (char, strlen (arg) + 2);
-      gnat_argv[gnat_argc][0] = '-';
-      strcpy (gnat_argv[gnat_argc] + 1, arg);
-      gnat_argc++;
-      break;
-
     case OPT_gnatO:
-      gnat_argv[gnat_argc] = xstrdup ("-O");
-      gnat_argc++;
-      gnat_argv[gnat_argc] = xstrdup (arg);
-      gnat_argc++;
-      break;
-
-    case OPT_gdwarfplus:
-      gnat_dwarf_extensions = 1;
+    case OPT_fRTS_:
+    case OPT_I:
+    case OPT_nostdinc:
+    case OPT_nostdlib:
+      /* These are handled by the front-end.  */
       break;
 
     default:
@@ -283,8 +254,7 @@ gnat_handle_option (size_t scode, const char *arg, int value,
 static unsigned int
 gnat_init_options (unsigned int argc, const char **argv)
 {
-  /* Initialize gnat_argv with save_argv size.  */
-  gnat_argv = (char **) xmalloc ((argc + 1) * sizeof (argv[0]));
+  gnat_argv = (char **) xmalloc (sizeof (argv[0]));
   gnat_argv[0] = xstrdup (argv[0]);     /* name of the command */
   gnat_argc = 1;
 
@@ -422,14 +392,6 @@ gnat_init (void)
 
   /* Show that REFERENCE_TYPEs are internal and should be Pmode.  */
   internal_reference_types ();
-
-  /* Add the input filename as the last argument.  */
-  if (main_input_filename)
-    {
-      gnat_argv[gnat_argc] = xstrdup (main_input_filename);
-      gnat_argc++;
-      gnat_argv[gnat_argc] = NULL;
-    }
 
   /* Register our internal error function.  */
   global_dc->internal_error = &internal_error_function;
