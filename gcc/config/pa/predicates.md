@@ -239,64 +239,6 @@
   return memory_address_p (mode, XEXP (op, 0));
 })
 
-;; Accept anything that can be used as the source operand for a
-;; prefetch instruction with a cache-control completer.
-
-(define_predicate "prefetch_cc_operand"
-  (match_code "mem")
-{
-  if (GET_CODE (op) != MEM)
-    return 0;
-
-  op = XEXP (op, 0);
-
-  /* We must reject virtual registers as we don't allow REG+D.  */
-  if (op == virtual_incoming_args_rtx
-      || op == virtual_stack_vars_rtx
-      || op == virtual_stack_dynamic_rtx
-      || op == virtual_outgoing_args_rtx
-      || op == virtual_cfa_rtx)
-    return 0;
-
-  if (!REG_P (op) && !IS_INDEX_ADDR_P (op))
-    return 0;
-
-  /* Until problems with management of the REG_POINTER flag are resolved,
-     we need to delay creating prefetch insns with unscaled indexed addresses
-     until CSE is not expected.  */
-  if (!TARGET_NO_SPACE_REGS
-      && !cse_not_expected
-      && GET_CODE (op) == PLUS
-      && REG_P (XEXP (op, 0)))
-    return 0;
-
-  return memory_address_p (mode, op);
-})
-
-;; Accept anything that can be used as the source operand for a
-;; prefetch instruction with no cache-control completer.
-
-(define_predicate "prefetch_nocc_operand"
-  (match_code "mem")
-{
-  if (GET_CODE (op) != MEM)
-    return 0;
-
-  op = XEXP (op, 0);
-
-  /* Until problems with management of the REG_POINTER flag are resolved,
-     we need to delay creating prefetch insns with unscaled indexed addresses
-     until CSE is not expected.  */
-  if (!TARGET_NO_SPACE_REGS
-      && !cse_not_expected
-      && GET_CODE (op) == PLUS
-      && REG_P (XEXP (op, 0))
-      && REG_P (XEXP (op, 1)))
-    return 0;
-
-  return memory_address_p (mode, op);
-})
-
 ;; Accept REG and any CONST_INT that can be moved in one instruction
 ;; into a general register.
 
