@@ -1,3 +1,12 @@
+2010-07-03  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (update_edge_key): Break out from ...
+	update_callers_keys): ... here;
+	(update_callee_keys): Update only the edges from caller to callee.
+	(update_all_calle_keys): Do what update_calle_keys did.
+	(decide_inlining_of_small_functions): Avoid recomputing of all
+	callees when badness increase.
+
 2010-07-03  Jie Zhang  <jie@codesourcery.com>
 
 	* config/arm/arm.c (arm_attr_length_move_neon): New.

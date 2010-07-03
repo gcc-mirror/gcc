@@ -661,6 +661,30 @@ cgraph_edge_badness (struct cgraph_edge *edge, bool dump)
     return badness;
 }
 
+/* Recompute badness of EDGE and update its key in HEAP if needed.  */
+static void
+update_edge_key (fibheap_t heap, struct cgraph_edge *edge)
+{
+  int badness = cgraph_edge_badness (edge, false);
+  if (edge->aux)
+    {
+      fibnode_t n = (fibnode_t) edge->aux;
+      gcc_checking_assert (n->data == edge);
+
+      /* fibheap_replace_key only decrease the keys.
+	 When we increase the key we do not update heap
+	 and instead re-insert the element once it becomes
+	 a minium of heap.  */
+      if (badness < n->key)
+	{
+	  fibheap_replace_key (heap, n, badness);
+	  gcc_checking_assert (n->key == badness);
+	}
+    }
+  else
+    edge->aux = fibheap_insert (heap, badness, edge);
+}
+
 /* Recompute heap nodes for each of caller edge.  */
 
 static void
@@ -678,8 +702,6 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
   bitmap_set_bit (updated_nodes, node->uid);
   node->global.estimated_growth = INT_MIN;
 
-  if (!node->local.inlinable)
-    return;
   /* See if there is something to do.  */
   for (edge = node->callers; edge; edge = edge->next_caller)
     if (edge->inline_failed)
@@ -702,28 +724,53 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
 
   for (; edge; edge = edge->next_caller)
     if (edge->inline_failed)
-      {
-	int badness = cgraph_edge_badness (edge, false);
-	if (edge->aux)
-	  {
-	    fibnode_t n = (fibnode_t) edge->aux;
-	    gcc_assert (n->data == edge);
-	    if (n->key == badness)
-	      continue;
+      update_edge_key (heap, edge);
+}
 
-	    /* fibheap_replace_key only decrease the keys.
-	       When we increase the key we do not update heap
-	       and instead re-insert the element once it becomes
-	       a minium of heap.  */
-	    if (badness < n->key)
-	      {
-		fibheap_replace_key (heap, n, badness);
-		gcc_assert (n->key == badness);
-	        continue;
-	      }
+/* Recompute heap nodes for each uninlined call.
+   This is used when we know that edge badnesses are going only to increase
+   (we introduced new call site) and thus all we need is to insert newly
+   created edges into heap.  */
+
+static void
+update_callee_keys (fibheap_t heap, struct cgraph_node *node,
+		    bitmap updated_nodes)
+{
+  struct cgraph_edge *e = node->callees;
+  node->global.estimated_growth = INT_MIN;
+
+  if (!e)
+    return;
+  while (true)
+    if (!e->inline_failed && e->callee->callees)
+      e = e->callee->callees;
+    else
+      {
+	if (e->inline_failed
+	    && e->callee->local.inlinable
+	    && !bitmap_bit_p (updated_nodes, e->callee->uid))
+	  {
+	    node->global.estimated_growth = INT_MIN;
+	    /* If function becomes uninlinable, we need to remove it from the heap.  */
+	    if (!cgraph_default_inline_p (e->callee, &e->inline_failed))
+	      update_caller_keys (heap, e->callee, updated_nodes);
+	    else
+	    /* Otherwise update just edge E.  */
+	      update_edge_key (heap, e);
 	  }
+	if (e->next_callee)
+	  e = e->next_callee;
 	else
-	  edge->aux = fibheap_insert (heap, badness, edge);
+	  {
+	    do
+	      {
+		if (e->caller == node)
+		  return;
+		e = e->caller->callers;
+	      }
+	    while (!e->next_callee);
+	    e = e->next_callee;
+	  }
       }
 }
 
@@ -731,8 +778,8 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
    Walk recursively into all inline clones.  */
 
 static void
-update_callee_keys (fibheap_t heap, struct cgraph_node *node,
-		    bitmap updated_nodes)
+update_all_callee_keys (fibheap_t heap, struct cgraph_node *node,
+			bitmap updated_nodes)
 {
   struct cgraph_edge *e = node->callees;
   node->global.estimated_growth = INT_MIN;
@@ -1166,7 +1213,7 @@ cgraph_decide_inlining_of_small_functions (void)
 	    continue;
 	  if (flag_indirect_inlining)
 	    add_new_edges_to_heap (heap, new_indirect_edges);
-          update_callee_keys (heap, where, updated_nodes);
+          update_all_callee_keys (heap, where, updated_nodes);
 	}
       else
 	{
@@ -1182,11 +1229,18 @@ cgraph_decide_inlining_of_small_functions (void)
 	      continue;
 	    }
 	  callee = edge->callee;
+	  gcc_checking_assert (!callee->global.inlined_to);
 	  cgraph_mark_inline_edge (edge, true, &new_indirect_edges);
 	  if (flag_indirect_inlining)
 	    add_new_edges_to_heap (heap, new_indirect_edges);
 
-	  update_callee_keys (heap, callee, updated_nodes);
+	  /* We inlined last offline copy to the body.  This might lead
+	     to callees of function having fewer call sites and thus they
+	     may need updating.  */
+	  if (callee->global.inlined_to)
+	    update_all_callee_keys (heap, callee, updated_nodes);
+	  else
+	    update_callee_keys (heap, edge->callee, updated_nodes);
 	}
       where = edge->caller;
       if (where->global.inlined_to)
