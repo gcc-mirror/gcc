@@ -1,3 +1,7 @@
+2010-07-02  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/i386.c (override_options): Revert accidental commit.
+
 2010-07-02  Le-Chun Wu  <lcwu@google.com>
 
 	PR c++/44128
