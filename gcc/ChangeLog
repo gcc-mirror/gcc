@@ -1,3 +1,8 @@
+2010-07-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/44705
+	* config/pa/pa.h (GO_IF_LEGITIMATE_ADDRESS): Reject LABEL_REF.
+
 2010-06-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/39690

@@ -1337,9 +1337,7 @@ extern int may_call_alloca;
 	       || ((MODE) != SFmode					\
 		   && (MODE) != DFmode)))				\
     goto ADDR;								\
-  else if (GET_CODE (X) == LABEL_REF					\
-	   || (GET_CODE (X) == CONST_INT				\
-	       && INT_5_BITS (X)))					\
+  else if (GET_CODE (X) == CONST_INT && INT_5_BITS (X))			\
     goto ADDR;								\
   /* Needed for -fPIC */						\
   else if (GET_CODE (X) == LO_SUM					\
