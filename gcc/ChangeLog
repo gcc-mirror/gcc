@@ -1,3 +1,10 @@
+2010-07-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* expr.c (vector_mode_valid_p): Move to c-common.c.
+	* expr.h (vector_mode_valid_p): Do not declare here.
+	* system.h: Poison GCC_EXPR_H in front-ends.
+	* Makefile.in: Update dependencies.
+
 2010-07-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/44705

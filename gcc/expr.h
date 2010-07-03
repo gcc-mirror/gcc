@@ -695,6 +695,4 @@ extern tree build_libfunc_function (const char *);
 /* Get the personality libfunc for a function decl.  */
 rtx get_personality_function (tree);
 
-extern int vector_mode_valid_p (enum machine_mode);
-
 #endif /* GCC_EXPR_H */
