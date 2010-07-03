@@ -22,11 +22,8 @@
 (define_constants
   [(UNSPEC_ASHIFT_SIGNED	65)
    (UNSPEC_ASHIFT_UNSIGNED	66)
-   (UNSPEC_VABA			67)
-   (UNSPEC_VABAL		68)
    (UNSPEC_VABD			69)
    (UNSPEC_VABDL		70)
-   (UNSPEC_VABS			71)
    (UNSPEC_VADD			72)
    (UNSPEC_VADDHN		73)
    (UNSPEC_VADDL		74)
@@ -75,7 +72,6 @@
    (UNSPEC_VMULL		128)
    (UNSPEC_VMUL_LANE		129)
    (UNSPEC_VMULL_LANE		130)
-   (UNSPEC_VMUL_N		131)
    (UNSPEC_VPADAL		135)
    (UNSPEC_VPADD		136)
    (UNSPEC_VPADDL		137)
@@ -816,11 +812,8 @@
 
 ;; Doubleword and quadword arithmetic.
 
-;; NOTE: vadd/vsub and some other instructions also support 64-bit integer
-;; element size, which we could potentially use for "long long" operations. We
-;; don't want to do this at present though, because moving values from the
-;; vector unit to the ARM core is currently slow and 64-bit addition (etc.) is
-;; easy to do with ARM instructions anyway.
+;; NOTE: some other instructions also support 64-bit integer
+;; element size, which we could potentially use for "long long" operations.
 
 (define_insn "*add<mode>3_neon"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
@@ -836,6 +829,26 @@
                     (const_string "neon_int_1")))]
 )
 
+(define_insn "adddi3_neon"
+  [(set (match_operand:DI 0 "s_register_operand" "=w,?&r,?&r")
+        (plus:DI (match_operand:DI 1 "s_register_operand" "%w,0,0")
+                 (match_operand:DI 2 "s_register_operand" "w,r,0")))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_NEON"
+{
+  switch (which_alternative)
+    {
+    case 0: return "vadd.i64\t%P0, %P1, %P2";
+    case 1: return "#";
+    case 2: return "#";
+    default: gcc_unreachable ();
+    }
+}
+  [(set_attr "neon_type" "neon_int_1,*,*")
+   (set_attr "conds" "*,clob,clob")
+   (set_attr "length" "*,8,8")]
+)
+
 (define_insn "*sub<mode>3_neon"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
         (minus:VDQ (match_operand:VDQ 1 "s_register_operand" "w")
@@ -848,6 +861,27 @@
                                   (const_string "neon_fp_vadd_ddd_vabs_dd")
                                   (const_string "neon_fp_vadd_qqq_vabs_qq"))
                     (const_string "neon_int_2")))]
+)
+
+(define_insn "subdi3_neon"
+  [(set (match_operand:DI 0 "s_register_operand" "=w,?&r,?&r,?&r")
+        (minus:DI (match_operand:DI 1 "s_register_operand" "w,0,r,0")
+                  (match_operand:DI 2 "s_register_operand" "w,r,0,0")))
+   (clobber (reg:CC CC_REGNUM))]
+  "TARGET_NEON"
+{
+  switch (which_alternative)
+    {
+    case 0: return "vsub.i64\t%P0, %P1, %P2";
+    case 1: /* fall through */ 
+    case 2: /* fall through */
+    case 3: return  "subs\\t%Q0, %Q1, %Q2\;sbc\\t%R0, %R1, %R2";
+    default: gcc_unreachable ();
+    }
+}
+  [(set_attr "neon_type" "neon_int_2,*,*,*")
+   (set_attr "conds" "*,clob,clob,clob")
+   (set_attr "length" "*,8,8,8")]
 )
 
 (define_insn "*mul<mode>3_neon"
@@ -871,7 +905,7 @@
                                     (const_string "neon_mul_qqq_8_16_32_ddd_32")))))]
 )
 
-(define_insn "*mul<mode>3add<mode>_neon"
+(define_insn "mul<mode>3add<mode>_neon"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
         (plus:VDQ (mult:VDQ (match_operand:VDQ 2 "s_register_operand" "w")
                             (match_operand:VDQ 3 "s_register_operand" "w"))
@@ -893,7 +927,7 @@
                                     (const_string "neon_mla_qqq_32_qqd_32_scalar")))))]
 )
 
-(define_insn "*mul<mode>3neg<mode>add<mode>_neon"
+(define_insn "mul<mode>3neg<mode>add<mode>_neon"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
         (minus:VDQ (match_operand:VDQ 1 "s_register_operand" "0")
                    (mult:VDQ (match_operand:VDQ 2 "s_register_operand" "w")
@@ -1718,11 +1752,37 @@
 
 ; good for plain vadd, vaddq.
 
-(define_insn "neon_vadd<mode>"
+(define_expand "neon_vadd<mode>"
+  [(match_operand:VDQX 0 "s_register_operand" "=w")
+   (match_operand:VDQX 1 "s_register_operand" "w")
+   (match_operand:VDQX 2 "s_register_operand" "w")
+   (match_operand:SI 3 "immediate_operand" "i")]
+  "TARGET_NEON"
+{
+  if (!<Is_float_mode> || flag_unsafe_math_optimizations)
+    emit_insn (gen_add<mode>3 (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_neon_vadd<mode>_unspec (operands[0], operands[1],
+					   operands[2]));
+  DONE;
+})
+
+; Note that NEON operations don't support the full IEEE 754 standard: in
+; particular, denormal values are flushed to zero.  This means that GCC cannot
+; use those instructions for autovectorization, etc. unless
+; -funsafe-math-optimizations is in effect (in which case flush-to-zero
+; behaviour is permissible).  Intrinsic operations (provided by the arm_neon.h
+; header) must work in either case: if -funsafe-math-optimizations is given,
+; intrinsics expand to "canonical" RTL where possible, otherwise intrinsics
+; expand to unspecs (which may potentially limit the extent to which they might
+; be optimized by generic code).
+
+; Used for intrinsics when flag_unsafe_math_optimizations is false.
+
+(define_insn "neon_vadd<mode>_unspec"
   [(set (match_operand:VDQX 0 "s_register_operand" "=w")
         (unspec:VDQX [(match_operand:VDQX 1 "s_register_operand" "w")
-		      (match_operand:VDQX 2 "s_register_operand" "w")
-                      (match_operand:SI 3 "immediate_operand" "i")]
+		      (match_operand:VDQX 2 "s_register_operand" "w")]
                      UNSPEC_VADD))]
   "TARGET_NEON"
   "vadd.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
@@ -1795,6 +1855,8 @@
   [(set_attr "neon_type" "neon_int_4")]
 )
 
+;; We cannot replace this unspec with mul<mode>3 because of the odd 
+;; polynomial multiplication case that can specified by operand 3.
 (define_insn "neon_vmul<mode>"
   [(set (match_operand:VDQW 0 "s_register_operand" "=w")
         (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "w")
@@ -1818,13 +1880,31 @@
                                     (const_string "neon_mul_qqq_8_16_32_ddd_32")))))]
 )
 
-(define_insn "neon_vmla<mode>"
-  [(set (match_operand:VDQW 0 "s_register_operand" "=w")
-        (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "0")
-		      (match_operand:VDQW 2 "s_register_operand" "w")
-		      (match_operand:VDQW 3 "s_register_operand" "w")
-                     (match_operand:SI 4 "immediate_operand" "i")]
-                    UNSPEC_VMLA))]
+(define_expand "neon_vmla<mode>"
+  [(match_operand:VDQW 0 "s_register_operand" "=w")
+   (match_operand:VDQW 1 "s_register_operand" "0")
+   (match_operand:VDQW 2 "s_register_operand" "w")
+   (match_operand:VDQW 3 "s_register_operand" "w")
+   (match_operand:SI 4 "immediate_operand" "i")]
+  "TARGET_NEON"
+{
+  if (!<Is_float_mode> || flag_unsafe_math_optimizations)
+    emit_insn (gen_mul<mode>3add<mode>_neon (operands[0], operands[1],
+				             operands[2], operands[3]));
+  else
+    emit_insn (gen_neon_vmla<mode>_unspec (operands[0], operands[1],
+					   operands[2], operands[3]));
+  DONE;
+})
+
+; Used for intrinsics when flag_unsafe_math_optimizations is false.
+
+(define_insn "neon_vmla<mode>_unspec"
+  [(set (match_operand:VDQ 0 "s_register_operand" "=w")
+	(unspec:VDQ [(match_operand:VDQ 1 "s_register_operand" "0")
+		     (match_operand:VDQ 2 "s_register_operand" "w")
+		     (match_operand:VDQ 3 "s_register_operand" "w")]
+		    UNSPEC_VMLA))]
   "TARGET_NEON"
   "vmla.<V_if_elem>\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
   [(set (attr "neon_type")
@@ -1857,13 +1937,31 @@
                    (const_string "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long")))]
 )
 
-(define_insn "neon_vmls<mode>"
-  [(set (match_operand:VDQW 0 "s_register_operand" "=w")
-        (unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "0")
-		      (match_operand:VDQW 2 "s_register_operand" "w")
-		      (match_operand:VDQW 3 "s_register_operand" "w")
-                     (match_operand:SI 4 "immediate_operand" "i")]
-                    UNSPEC_VMLS))]
+(define_expand "neon_vmls<mode>"
+  [(match_operand:VDQW 0 "s_register_operand" "=w")
+   (match_operand:VDQW 1 "s_register_operand" "0")
+   (match_operand:VDQW 2 "s_register_operand" "w")
+   (match_operand:VDQW 3 "s_register_operand" "w")
+   (match_operand:SI 4 "immediate_operand" "i")]
+  "TARGET_NEON"
+{
+  if (!<Is_float_mode> || flag_unsafe_math_optimizations)
+    emit_insn (gen_mul<mode>3neg<mode>add<mode>_neon (operands[0],
+		 operands[1], operands[2], operands[3]));
+  else
+    emit_insn (gen_neon_vmls<mode>_unspec (operands[0], operands[1],
+					   operands[2], operands[3]));
+  DONE;
+})
+
+; Used for intrinsics when flag_unsafe_math_optimizations is false.
+
+(define_insn "neon_vmls<mode>_unspec"
+  [(set (match_operand:VDQ 0 "s_register_operand" "=w")
+	(unspec:VDQ [(match_operand:VDQ 1 "s_register_operand" "0")
+		     (match_operand:VDQ 2 "s_register_operand" "w")
+		     (match_operand:VDQ 3 "s_register_operand" "w")]
+		    UNSPEC_VMLS))]
   "TARGET_NEON"
   "vmls.<V_if_elem>\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
   [(set (attr "neon_type")
@@ -1973,11 +2071,27 @@
                    (const_string "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar")))]
 )
 
-(define_insn "neon_vsub<mode>"
+(define_expand "neon_vsub<mode>"
+  [(match_operand:VDQX 0 "s_register_operand" "=w")
+   (match_operand:VDQX 1 "s_register_operand" "w")
+   (match_operand:VDQX 2 "s_register_operand" "w")
+   (match_operand:SI 3 "immediate_operand" "i")]
+  "TARGET_NEON"
+{
+  if (!<Is_float_mode> || flag_unsafe_math_optimizations)
+    emit_insn (gen_sub<mode>3 (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_neon_vsub<mode>_unspec (operands[0], operands[1],
+					   operands[2]));
+  DONE;
+})
+
+; Used for intrinsics when flag_unsafe_math_optimizations is false.
+
+(define_insn "neon_vsub<mode>_unspec"
   [(set (match_operand:VDQX 0 "s_register_operand" "=w")
         (unspec:VDQX [(match_operand:VDQX 1 "s_register_operand" "w")
-		      (match_operand:VDQX 2 "s_register_operand" "w")
-                      (match_operand:SI 3 "immediate_operand" "i")]
+		      (match_operand:VDQX 2 "s_register_operand" "w")]
                      UNSPEC_VSUB))]
   "TARGET_NEON"
   "vsub.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
@@ -2160,11 +2274,11 @@
 
 (define_insn "neon_vaba<mode>"
   [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
-        (unspec:VDQIW [(match_operand:VDQIW 1 "s_register_operand" "0")
-		       (match_operand:VDQIW 2 "s_register_operand" "w")
-		       (match_operand:VDQIW 3 "s_register_operand" "w")
-                       (match_operand:SI 4 "immediate_operand" "i")]
-		      UNSPEC_VABA))]
+        (plus:VDQIW (match_operand:VDQIW 1 "s_register_operand" "0")
+                    (unspec:VDQIW [(match_operand:VDQIW 2 "s_register_operand" "w")
+		                   (match_operand:VDQIW 3 "s_register_operand" "w")
+                                   (match_operand:SI 4 "immediate_operand" "i")]
+		                  UNSPEC_VABD)))]
   "TARGET_NEON"
   "vaba.%T4%#<V_sz_elem>\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
   [(set (attr "neon_type")
@@ -2174,11 +2288,11 @@
 
 (define_insn "neon_vabal<mode>"
   [(set (match_operand:<V_widen> 0 "s_register_operand" "=w")
-        (unspec:<V_widen> [(match_operand:<V_widen> 1 "s_register_operand" "0")
-		           (match_operand:VW 2 "s_register_operand" "w")
-		           (match_operand:VW 3 "s_register_operand" "w")
-                           (match_operand:SI 4 "immediate_operand" "i")]
-                          UNSPEC_VABAL))]
+        (plus:<V_widen> (match_operand:<V_widen> 1 "s_register_operand" "0")
+                        (unspec:<V_widen> [(match_operand:VW 2 "s_register_operand" "w")
+                                           (match_operand:VW 3 "s_register_operand" "w")
+                                           (match_operand:SI 4 "immediate_operand" "i")]
+                          UNSPEC_VABDL)))]
   "TARGET_NEON"
   "vabal.%T4%#<V_sz_elem>\t%q0, %P2, %P3"
   [(set_attr "neon_type" "neon_vaba")]
@@ -2309,22 +2423,15 @@
                     (const_string "neon_fp_vrecps_vrsqrts_qqq")))]
 )
 
-(define_insn "neon_vabs<mode>"
-  [(set (match_operand:VDQW 0 "s_register_operand" "=w")
-	(unspec:VDQW [(match_operand:VDQW 1 "s_register_operand" "w")
-		      (match_operand:SI 2 "immediate_operand" "i")]
-                     UNSPEC_VABS))]
+(define_expand "neon_vabs<mode>"
+  [(match_operand:VDQW 0 "s_register_operand" "")
+   (match_operand:VDQW 1 "s_register_operand" "")
+   (match_operand:SI 2 "immediate_operand" "")]
   "TARGET_NEON"
-  "vabs.<V_s_elem>\t%<V_reg>0, %<V_reg>1"
-  [(set (attr "neon_type")
-     (if_then_else (ior (ne (symbol_ref "<Is_float_mode>") (const_int 0))
-                        (ne (symbol_ref "<Is_float_mode>") (const_int 0)))
-                   (if_then_else
-                      (ne (symbol_ref "<Is_d_reg>") (const_int 0))
-                      (const_string "neon_fp_vadd_ddd_vabs_dd")
-                      (const_string "neon_fp_vadd_qqq_vabs_qq"))
-                   (const_string "neon_vqneg_vqabs")))]
-)
+{
+  emit_insn (gen_abs<mode>2 (operands[0], operands[1]));
+  DONE;
+})
 
 (define_insn "neon_vqabs<mode>"
   [(set (match_operand:VDQIW 0 "s_register_operand" "=w")

@@ -43,20 +43,18 @@
 
 
 @itemize @bullet
+@item float32x2_t vadd_f32 (float32x2_t, float32x2_t)
+@*@emph{Form of expected instruction(s):} @code{vadd.f32 @var{d0}, @var{d0}, @var{d0}}
+@end itemize
+
+
+@itemize @bullet
 @item uint64x1_t vadd_u64 (uint64x1_t, uint64x1_t)
-@*@emph{Form of expected instruction(s):} @code{vadd.i64 @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
 @itemize @bullet
 @item int64x1_t vadd_s64 (int64x1_t, int64x1_t)
-@*@emph{Form of expected instruction(s):} @code{vadd.i64 @var{d0}, @var{d0}, @var{d0}}
-@end itemize
-
-
-@itemize @bullet
-@item float32x2_t vadd_f32 (float32x2_t, float32x2_t)
-@*@emph{Form of expected instruction(s):} @code{vadd.f32 @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
@@ -1013,20 +1011,18 @@
 
 
 @itemize @bullet
+@item float32x2_t vsub_f32 (float32x2_t, float32x2_t)
+@*@emph{Form of expected instruction(s):} @code{vsub.f32 @var{d0}, @var{d0}, @var{d0}}
+@end itemize
+
+
+@itemize @bullet
 @item uint64x1_t vsub_u64 (uint64x1_t, uint64x1_t)
-@*@emph{Form of expected instruction(s):} @code{vsub.i64 @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
 @itemize @bullet
 @item int64x1_t vsub_s64 (int64x1_t, int64x1_t)
-@*@emph{Form of expected instruction(s):} @code{vsub.i64 @var{d0}, @var{d0}, @var{d0}}
-@end itemize
-
-
-@itemize @bullet
-@item float32x2_t vsub_f32 (float32x2_t, float32x2_t)
-@*@emph{Form of expected instruction(s):} @code{vsub.f32 @var{d0}, @var{d0}, @var{d0}}
 @end itemize
 
 
