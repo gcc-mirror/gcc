@@ -868,9 +868,9 @@ mostly_copy_tree_r (tree *tp, int *walk_subtrees, void *data)
   tree t = *tp;
   enum tree_code code = TREE_CODE (t);
 
-  /* Do not copy SAVE_EXPR or TARGET_EXPR nodes themselves, but copy
-     their subtrees if we can make sure to do it only once.  */
-  if (code == SAVE_EXPR || code == TARGET_EXPR)
+  /* Do not copy SAVE_EXPR, TARGET_EXPR or BIND_EXPR nodes themselves, but
+     copy their subtrees if we can make sure to do it only once.  */
+  if (code == SAVE_EXPR || code == TARGET_EXPR || code == BIND_EXPR)
     {
       if (data && !pointer_set_insert ((struct pointer_set_t *)data, t))
 	;
@@ -895,10 +895,7 @@ mostly_copy_tree_r (tree *tp, int *walk_subtrees, void *data)
 
   /* Leave the bulk of the work to copy_tree_r itself.  */
   else
-    {
-      gcc_assert (code != BIND_EXPR);
-      copy_tree_r (tp, walk_subtrees, NULL);
-    }
+    copy_tree_r (tp, walk_subtrees, NULL);
 
   return NULL_TREE;
 }
