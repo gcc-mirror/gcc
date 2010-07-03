@@ -1496,7 +1496,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* Note that the bounds are updated at the end of this function
 	   to avoid an infinite recursion since they refer to the type.  */
       }
-      break;
+      goto discrete_type;
 
     case E_Signed_Integer_Type:
     case E_Ordinary_Fixed_Point_Type:
@@ -1504,7 +1504,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       /* For integer types, just make a signed type the appropriate number
 	 of bits.  */
       gnu_type = make_signed_type (esize);
-      break;
+      goto discrete_type;
 
     case E_Modular_Integer_Type:
       {
@@ -1543,7 +1543,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    gnu_type = gnu_subtype;
 	  }
       }
-      break;
+      goto discrete_type;
 
     case E_Signed_Integer_Subtype:
     case E_Enumeration_Subtype:
@@ -1632,6 +1632,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			   gnat_to_gnu_type
 			   (Original_Array_Type (gnat_entity)));
 
+    discrete_type:
+
       /* We have to handle clauses that under-align the type specially.  */
       if ((Present (Alignment_Clause (gnat_entity))
 	   || (Is_Packed_Array_Type (gnat_entity)
@@ -1685,9 +1687,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	  relate_alias_sets (gnu_type, gnu_field_type, ALIAS_SET_COPY);
 
-	  /* Don't notify the field as "addressable", since we won't be taking
-	     it's address and it would prevent create_field_decl from making a
-	     bitfield.  */
+	  /* Don't declare the field as addressable since we won't be taking
+	     its address and this would prevent create_field_decl from making
+	     a bitfield.  */
 	  gnu_field
 	    = create_field_decl (get_identifier ("OBJECT"), gnu_field_type,
 				 gnu_type, NULL_TREE, bitsize_zero_node, 1, 0);
@@ -1736,9 +1738,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  TYPE_ALIGN (gnu_type) = align;
 	  relate_alias_sets (gnu_type, gnu_field_type, ALIAS_SET_COPY);
 
-	  /* Don't notify the field as "addressable", since we won't be taking
-	     it's address and it would prevent create_field_decl from making a
-	     bitfield.  */
+	  /* Don't declare the field as addressable since we won't be taking
+	     its address and this would prevent create_field_decl from making
+	     a bitfield.  */
 	  gnu_field
 	    = create_field_decl (get_identifier ("F"), gnu_field_type,
 				 gnu_type, NULL_TREE, bitsize_zero_node, 1, 0);

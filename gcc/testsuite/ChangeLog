@@ -1,3 +1,8 @@
+2010-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/modular3.adb: New test.
+	* gnat.dg/modular3_pkg.ads: New helper.
+
 2010-07-03  Iain Sandoe  <iains@gcc.gnu.org>
 	    Mikael Pettersson  <mikpe@it.uu.se>
 
@@ -19,12 +24,12 @@
 
 2010-07-02  Daniel Jacobowitz  <dan@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
-	    Sandra Loosemore <sandra@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gcc.c-torture/execute/20100416-1.c: New test case.
 
 2010-07-02  Julian Brown  <julian@codesourcery.com>
-	    Sandra Loosemore <sandra@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR target/43703
 
