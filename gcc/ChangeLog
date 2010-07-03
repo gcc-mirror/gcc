@@ -1,3 +1,30 @@
+2010-07-02  Sandra Loosemore  <sandra@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/neon.md (UNSPEC_VABA): Delete.
+	(UNSPEC_VABAL): Delete.
+	(UNSPEC_VABS): Delete.
+	(UNSPEC_VMUL_N): Delete.
+	(adddi3_neon): New.
+	(subdi3_neon): New.
+	(mul<mode>3add<mode>_neon): Make the pattern named.
+	(mul<mode>3neg<mode>add<mode>_neon): Likewise.
+	(neon_vadd<mode>): Replace with define_expand, and move the remaining
+	unspec parts...
+	(neon_vadd<mode>_unspec): ...to this.
+	(neon_vmla<mode>, neon_vmla<mode>_unspec): Likewise.
+	(neon_vlms<mode>, neon_vmls<mode>_unspec): Likewise.
+	(neon_vsub<mode>, neon_vsub<mode>_unspec): Likewise.
+	(neon_vaba<mode>): Rewrite in terms of vabd.
+	(neon_vabal<mode>): Rewrite in terms of vabdl.
+	(neon_vabs<mode>): Rewrite without unspec.
+	* config/arm/arm.md (*arm_adddi3): Disable for TARGET_NEON.
+	(*arm_subdi3): Likewise.
+	* config/arm/neon.ml (Vadd, Vsub): Split out 64-bit variants and add
+	No_op attribute to disable assembly output checks.
+	* config/arm/arm_neon.h: Regenerated.
+	* doc/arm-neon-intrinsics.texi: Regenerated.
+
 2010-07-02  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-split.c (split_function): For aggregate values set return_slot_opt;

@@ -414,12 +414,6 @@ vadd_s32 (int32x2_t __a, int32x2_t __b)
   return (int32x2_t)__builtin_neon_vaddv2si (__a, __b, 1);
 }
 
-__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
-vadd_s64 (int64x1_t __a, int64x1_t __b)
-{
-  return (int64x1_t)__builtin_neon_vadddi (__a, __b, 1);
-}
-
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vadd_f32 (float32x2_t __a, float32x2_t __b)
 {
@@ -442,6 +436,12 @@ __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vadd_u32 (uint32x2_t __a, uint32x2_t __b)
 {
   return (uint32x2_t)__builtin_neon_vaddv2si ((int32x2_t) __a, (int32x2_t) __b, 0);
+}
+
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vadd_s64 (int64x1_t __a, int64x1_t __b)
+{
+  return (int64x1_t)__builtin_neon_vadddi (__a, __b, 1);
 }
 
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
@@ -1368,12 +1368,6 @@ vsub_s32 (int32x2_t __a, int32x2_t __b)
   return (int32x2_t)__builtin_neon_vsubv2si (__a, __b, 1);
 }
 
-__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
-vsub_s64 (int64x1_t __a, int64x1_t __b)
-{
-  return (int64x1_t)__builtin_neon_vsubdi (__a, __b, 1);
-}
-
 __extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
 vsub_f32 (float32x2_t __a, float32x2_t __b)
 {
@@ -1396,6 +1390,12 @@ __extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
 vsub_u32 (uint32x2_t __a, uint32x2_t __b)
 {
   return (uint32x2_t)__builtin_neon_vsubv2si ((int32x2_t) __a, (int32x2_t) __b, 0);
+}
+
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vsub_s64 (int64x1_t __a, int64x1_t __b)
+{
+  return (int64x1_t)__builtin_neon_vsubdi (__a, __b, 1);
 }
 
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))

@@ -709,7 +709,8 @@ let pf_su_8_64 = P8 :: P16 :: F32 :: su_8_64
 let ops =
   [
     (* Addition.  *)
-    Vadd, [], All (3, Dreg), "vadd", sign_invar_2, F32 :: su_8_64;
+    Vadd, [], All (3, Dreg), "vadd", sign_invar_2, F32 :: su_8_32;
+    Vadd, [No_op], All (3, Dreg), "vadd", sign_invar_2, [S64; U64];
     Vadd, [], All (3, Qreg), "vaddQ", sign_invar_2, F32 :: su_8_64;
     Vadd, [], Long, "vaddl", elts_same_2, su_8_32;
     Vadd, [], Wide, "vaddw", elts_same_2, su_8_32;
@@ -758,7 +759,8 @@ let ops =
     Vmls, [Saturating; Doubling], Long, "vqdmlsl", elts_same_io, [S16; S32];
 
     (* Subtraction.  *)
-    Vsub, [], All (3, Dreg), "vsub", sign_invar_2, F32 :: su_8_64;
+    Vsub, [], All (3, Dreg), "vsub", sign_invar_2, F32 :: su_8_32;
+    Vsub, [No_op], All (3, Dreg), "vsub", sign_invar_2,  [S64; U64];
     Vsub, [], All (3, Qreg), "vsubQ", sign_invar_2, F32 :: su_8_64;
     Vsub, [], Long, "vsubl", elts_same_2, su_8_32;
     Vsub, [], Wide, "vsubw", elts_same_2, su_8_32;

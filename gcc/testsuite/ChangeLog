@@ -1,4 +1,18 @@
 2010-07-02  Sandra Loosemore  <sandra@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* gcc.target/arm/neon/vadds64.c: Regenerated.
+	* gcc.target/arm/neon/vaddu64.c: Regenerated.
+	* gcc.target/arm/neon/vsubs64.c: Regenerated.
+	* gcc.target/arm/neon/vsubu64.c: Regenerated.
+	* gcc.target/arm/neon-vmla-1.c: Add -ffast-math to options.
+	* gcc.target/arm/neon-vmls-1.c: Likewise.
+	* gcc.target/arm/neon-vsubs64.c: New execution test.
+	* gcc.target/arm/neon-vsubu64.c: New execution test.
+	* gcc.target/arm/neon-vadds64.c: New execution test.
+	* gcc.target/arm/neon-vaddu64.c: New execution test.
+
+2010-07-02  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* gcc.target/arm/neon-vands64.c: New.
 	* gcc.target/arm/neon-vandu64.c: New.
