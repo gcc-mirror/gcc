@@ -2075,8 +2075,6 @@
 	(enable_warning_as_error): Likewise.
 	* diagnostic-core.h (DK_POP): Add after "real" diagnostics, for
 	use in the history chain.
-	* c-family/c-pragma.c (handle_pragma_diagnostic): Add push/pop,
-	allow these pragmas anywhere.
 	* doc/extend.texi: Document pragma GCC diagnostic changes.
 
 2010-06-21  Jakub Jelinek  <jakub@redhat.com>
@@ -2811,10 +2809,6 @@
 
 	PR bootstrap/44509
 	* c-config-lang.in (gtfiles): Add c-family/c-cppbuiltin.c.
-	* c-family/c-cppbuiltin.c: Include gt-c-family-c-cppbuiltin.h.
-	(lazy_hex_fp_values, lazy_hex_fp_value_count): Add GTY(()) markers.
-	(lazy_hex_fp_value, builtin_define_with_hex_fp_value): Use
-	ggc_strdup instead of xstrdup.
 
 2010-06-14  Ira Rosen  <irar@il.ibm.com>
 
@@ -3006,10 +3000,6 @@
 
 2010-06-10  Jakub Jelinek  <jakub@redhat.com>
 
-	* c-family/c-cppbuiltin.c: Include cpp-id-data.h.
-	(lazy_hex_fp_values, lazy_hex_fp_value_count): New variables.
-	(lazy_hex_fp_value): New function.
-	(builtin_define_with_hex_fp_value): Provide definitions lazily.
 	* Makefile.in (c-family/c-cppbuiltin.o): Depend on $(CPP_ID_DATA_H).
 
 2010-06-11  Sebastian Pop  <sebastian.pop@amd.com>
