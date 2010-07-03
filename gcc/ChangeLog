@@ -1,6 +1,6 @@
 2010-07-02  Le-Chun Wu  <lcwu@google.com>
 
-	PR/44128
+	PR c++/44128
 	* doc/invoke.texi: Update documentation of -Wshadow.
 
 2010-07-02  Daniel Jacobowitz  <dan@codesourcery.com>
@@ -33,7 +33,6 @@
 	    Sandra Loosemore <sandra@codesourcery.com>
 
 	PR target/43703
-
 	* config/arm/vec-common.md (add<mode>3, sub<mode>3, smin<mode>3)
 	(smax<mode>3): Disable for NEON float modes when
 	flag_unsafe_math_optimizations is false.
@@ -76,8 +75,9 @@
 
 2010-07-02  Jan Hubicka  <jh@suse.cz>
 
-	* ipa-split.c (split_function): For aggregate values set return_slot_opt;
-	when passing DECL_BY_REFERENCE produce *<retval> = fncall.part ()
+	* ipa-split.c (split_function): For aggregate values, set the return
+	slot optimization bit.  When passing DECL_BY_REFERENCE, produce
+ 	*<retval> = fncall.part ()
 	(execute_split_functions): Do not care about DECL_BY_REFERENCE.
 
 2010-07-02  Sandra Loosemore  <sandra@codesourcery.com>
@@ -142,8 +142,8 @@
 
 2010-07-02  Jan Hubicka  <jh@suse.cz>
 
-	* ipa-split.c (verify_non_ssa_vars): Break out from ...; perform DFS walk
-	backwards from entry_bb to check only those basic block of header
+	* ipa-split.c (verify_non_ssa_vars): Break out from ...; perform DFS
+	walk backwards from entry_bb to check only those basic block of header
 	that might lead to execution of split part.
 	(consider_split) ... here.
 	(find_return_bb): Allow assignment in return BB.
