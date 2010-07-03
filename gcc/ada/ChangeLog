@@ -3103,7 +3103,7 @@
 	* gnat-style.texi: Ditto.
 	* gnat_ugn.texi: Ditto.
 
-2010-06-12  Kai Tietz
+2010-06-12  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR ada/43731
 	* gcc-interface/Makefile.in: Add rules for multilib x86/x64
