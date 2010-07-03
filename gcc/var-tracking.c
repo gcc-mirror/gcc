@@ -5992,6 +5992,7 @@ vt_find_locations (void)
   int htabmax = PARAM_VALUE (PARAM_MAX_VARTRACK_SIZE);
   bool success = true;
 
+  timevar_push (TV_VAR_TRACKING_DATAFLOW);
   /* Compute reverse completion order of depth first search of the CFG
      so that the data-flow runs faster.  */
   rc_order = XNEWVEC (int, n_basic_blocks - NUM_FIXED_BLOCKS);
@@ -6027,6 +6028,7 @@ vt_find_locations (void)
 	{
 	  bb = (basic_block) fibheap_extract_min (worklist);
 	  RESET_BIT (in_worklist, bb->index);
+	  gcc_assert (!TEST_BIT (visited, bb->index));
 	  if (!TEST_BIT (visited, bb->index))
 	    {
 	      bool changed;
@@ -6179,6 +6181,7 @@ vt_find_locations (void)
   sbitmap_free (in_worklist);
   sbitmap_free (in_pending);
 
+  timevar_pop (TV_VAR_TRACKING_DATAFLOW);
   return success;
 }
 
@@ -8534,7 +8537,9 @@ variable_tracking_main_1 (void)
       dump_flow_info (dump_file, dump_flags);
     }
 
+  timevar_push (TV_VAR_TRACKING_EMIT);
   vt_emit_notes ();
+  timevar_pop (TV_VAR_TRACKING_EMIT);
 
   vt_finalize ();
   vt_debug_insns_local (false);
