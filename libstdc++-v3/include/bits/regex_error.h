@@ -23,7 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 /**
- * @file bits/regex_error
+ * @file bits/regex_error.h
  * @brief Error and exception objects for the std regex library.
  *
  *  This is an internal header file, included by other library headers.

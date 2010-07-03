@@ -23,7 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 /**
- * @file regex_nfa.cc
+ * @file bits/regex_nfa.tcc
  */
 #include <regex>
 

@@ -23,7 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 /**
- * @file bits/regex_constants
+ * @file bits/regex_constants.h
  * @brief Constant definitions for the std regex library.
  *
  *  This is an internal header file, included by other library headers.
