@@ -50,8 +50,7 @@ extern int arm_hard_regno_mode_ok (unsigned int, enum machine_mode);
 extern int const_ok_for_arm (HOST_WIDE_INT);
 extern int arm_split_constant (RTX_CODE, enum machine_mode, rtx,
 			       HOST_WIDE_INT, rtx, rtx, int);
-extern RTX_CODE arm_canonicalize_comparison (RTX_CODE, enum machine_mode,
-					     rtx *);
+extern RTX_CODE arm_canonicalize_comparison (RTX_CODE, rtx *, rtx *);
 extern int legitimate_pic_operand_p (rtx);
 extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
 extern rtx legitimize_tls_address (rtx, rtx);
@@ -117,6 +116,7 @@ extern void arm_reload_in_hi (rtx *);
 extern void arm_reload_out_hi (rtx *);
 extern int arm_const_double_inline_cost (rtx);
 extern bool arm_const_double_by_parts (rtx);
+extern bool arm_const_double_by_immediates (rtx);
 extern const char *fp_immediate_constant (rtx);
 extern void arm_emit_call_insn (rtx, rtx);
 extern const char *output_call (rtx *);

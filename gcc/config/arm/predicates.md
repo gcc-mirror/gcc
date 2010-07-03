@@ -86,6 +86,12 @@
   (and (match_code "const_int")
        (match_test "const_ok_for_arm (INTVAL (op))")))
 
+;; A constant value which fits into two instructions, each taking
+;; an arithmetic constant operand for one of the words.
+(define_predicate "arm_immediate_di_operand"
+  (and (match_code "const_int,const_double")
+       (match_test "arm_const_double_by_immediates (op)")))
+
 (define_predicate "arm_neg_immediate_operand"
   (and (match_code "const_int")
        (match_test "const_ok_for_arm (-INTVAL (op))")))
@@ -118,6 +124,10 @@
 (define_predicate "arm_not_operand"
   (ior (match_operand 0 "arm_rhs_operand")
        (match_operand 0 "arm_not_immediate_operand")))
+
+(define_predicate "arm_di_operand"
+  (ior (match_operand 0 "s_register_operand")
+       (match_operand 0 "arm_immediate_di_operand")))
 
 ;; True if the operand is a memory reference which contains an
 ;; offsettable address.
@@ -529,4 +539,12 @@
 (define_predicate "neon_lane_number"
   (and (match_code "const_int")
        (match_test "INTVAL (op) >= 0 && INTVAL (op) <= 7")))
+;; Predicates for named expanders that overlap multiple ISAs.
+
+(define_predicate "cmpdi_operand"
+  (if_then_else (match_test "TARGET_HARD_FLOAT && TARGET_MAVERICK")
+		(and (match_test "TARGET_ARM")
+		     (match_operand 0 "cirrus_fp_register"))
+		(and (match_test "TARGET_32BIT")
+		     (match_operand 0 "arm_di_operand"))))
 

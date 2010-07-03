@@ -1,3 +1,29 @@
+2010-07-02  Daniel Jacobowitz  <dan@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Sandra Loosemore <sandra@codesourcery.com>
+
+	* config/arm/arm.c (arm_canonicalize_comparison): Canonicalize DImode
+	comparisons.  Adjust to take both operands.
+	(arm_select_cc_mode): Handle DImode comparisons.
+	(arm_gen_compare_reg): Generate a scratch register for DImode
+	comparisons which require one.  Use xor for Thumb equality checks.
+	(arm_const_double_by_immediates): New.
+	(arm_print_operand): Allow 'Q' and 'R' for constants.
+	(get_arm_condition_code): Handle new CC_CZmode and CC_NCVmode.
+	* config/arm/arm.h (CANONICALIZE_COMPARISON): Always use
+	arm_canonicalize_comparison.
+	* config/arm/arm-modes.def: Add CC_CZmode and CC_NCVmode.
+	* config/arm/arm-protos.h (arm_canonicalize_comparison): Update
+	prototype.
+	(arm_const_double_by_immediates): Declare.
+	* config/arm/constraints.md (Di): New constraint.
+	* config/arm/predicates.md (arm_immediate_di_operand)
+	(arm_di_operand, cmpdi_operand): New.
+	* config/arm/arm.md (cbranchdi4): Handle non-Cirrus also.
+	(*arm_cmpdi_insn, *arm_cmpdi_unsigned)
+	(*arm_cmpdi_zero, *thumb_cmpdi_zero): New insns.
+	(cstoredi4): Handle non-Cirrus also.
+
 2010-07-02  Julian Brown  <julian@codesourcery.com>
 	    Sandra Loosemore <sandra@codesourcery.com>
 
