@@ -1017,10 +1017,22 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 		   /* Inline decls shadow nothing.  */
 		   && !DECL_FROM_INLINE (x)
 		   && (TREE_CODE (oldlocal) == PARM_DECL
-		       || TREE_CODE (oldlocal) == VAR_DECL)
-		   /* Don't check the `this' parameter.  */
-		   && !DECL_ARTIFICIAL (oldlocal)
-		   && !DECL_ARTIFICIAL (x))
+		       || TREE_CODE (oldlocal) == VAR_DECL
+                       /* If the old decl is a type decl, only warn if the
+                          old decl is an explicit typedef or if both the old
+                          and new decls are type decls.  */
+                       || (TREE_CODE (oldlocal) == TYPE_DECL
+                           && (!DECL_ARTIFICIAL (oldlocal)
+                               || TREE_CODE (x) == TYPE_DECL)))
+		   /* Don't check the `this' parameter or internally generated
+                      vars unless it's an implicit typedef (see
+                      create_implicit_typedef in decl.c).  */
+		   && (!DECL_ARTIFICIAL (oldlocal)
+                       || DECL_IMPLICIT_TYPEDEF_P (oldlocal))
+                   /* Don't check for internally generated vars unless
+                      it's an implicit typedef (see create_implicit_typedef
+                      in decl.c).  */
+		   && (!DECL_ARTIFICIAL (x) || DECL_IMPLICIT_TYPEDEF_P (x)))
 	    {
 	      bool nowarn = false;
 
@@ -1081,10 +1093,12 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 
 	  /* Maybe warn if shadowing something else.  */
 	  else if (warn_shadow && !DECL_EXTERNAL (x)
-	      /* No shadow warnings for internally generated vars.  */
-	      && ! DECL_ARTIFICIAL (x)
-	      /* No shadow warnings for vars made for inlining.  */
-	      && ! DECL_FROM_INLINE (x))
+                   /* No shadow warnings for internally generated vars unless
+                      it's an implicit typedef (see create_implicit_typedef
+                      in decl.c).  */
+                   && (! DECL_ARTIFICIAL (x) || DECL_IMPLICIT_TYPEDEF_P (x))
+                   /* No shadow warnings for vars made for inlining.  */
+                   && ! DECL_FROM_INLINE (x))
 	    {
 	      tree member;
 
@@ -1103,7 +1117,13 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 			   x);
 		}
 	      else if (oldglobal != NULL_TREE
-		       && TREE_CODE (oldglobal) == VAR_DECL)
+		       && (TREE_CODE (oldglobal) == VAR_DECL
+                           /* If the old decl is a type decl, only warn if the
+                              old decl is an explicit typedef or if both the
+                              old and new decls are type decls.  */
+                           || (TREE_CODE (oldglobal) == TYPE_DECL
+                               && (!DECL_ARTIFICIAL (oldglobal)
+                                   || TREE_CODE (x) == TYPE_DECL))))
 		/* XXX shadow warnings in outer-more namespaces */
 		{
 		  warning_at (input_location, OPT_Wshadow,

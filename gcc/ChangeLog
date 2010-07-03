@@ -1,3 +1,8 @@
+2010-07-02  Le-Chun Wu  <lcwu@google.com>
+
+	PR/44128
+	* doc/invoke.texi: Update documentation of -Wshadow.
+
 2010-07-02  Daniel Jacobowitz  <dan@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 	    Sandra Loosemore <sandra@codesourcery.com>
