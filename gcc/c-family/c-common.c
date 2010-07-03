@@ -19,10 +19,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* FIXME: Still need to include rtl.h here (via expr.h) in a front-end file.
-   Pretend this is a back-end file.  */
-#undef IN_GCC_FRONTEND
-
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -49,8 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "target-def.h"
 #include "libfuncs.h"
-
-#include "expr.h" /* For vector_mode_valid_p */
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -6248,6 +6242,40 @@ handle_destructor_attribute (tree *node, tree name, tree args,
 
   return NULL_TREE;
 }
+
+/* Nonzero if the mode is a valid vector mode for this architecture.
+   This returns nonzero even if there is no hardware support for the
+   vector mode, but we can emulate with narrower modes.  */
+
+static int
+vector_mode_valid_p (enum machine_mode mode)
+{
+  enum mode_class mclass = GET_MODE_CLASS (mode);
+  enum machine_mode innermode;
+
+  /* Doh!  What's going on?  */
+  if (mclass != MODE_VECTOR_INT
+      && mclass != MODE_VECTOR_FLOAT
+      && mclass != MODE_VECTOR_FRACT
+      && mclass != MODE_VECTOR_UFRACT
+      && mclass != MODE_VECTOR_ACCUM
+      && mclass != MODE_VECTOR_UACCUM)
+    return 0;
+
+  /* Hardware support.  Woo hoo!  */
+  if (targetm.vector_mode_supported_p (mode))
+    return 1;
+
+  innermode = GET_MODE_INNER (mode);
+
+  /* We should probably return 1 if requesting V4DI and we have no DI,
+     but we have V2DI, but this is probably very unlikely.  */
+
+  /* If we have support for the inner mode, we can safely emulate it.
+     We may not have V2DI, but me can emulate with a pair of DIs.  */
+  return targetm.scalar_mode_supported_p (innermode);
+}
+
 
 /* Handle a "mode" attribute; arguments as in
    struct attribute_spec.handler.  */

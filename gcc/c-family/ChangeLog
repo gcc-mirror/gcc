@@ -1,3 +1,9 @@
+2010-07-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c-family/c-common.c (IN_GCC_FRONTEND): Do not undef.
+	Do not include expr.h
+	(vector_mode_valid_p): Move here.
+
 2010-06-21  DJ Delorie  <dj@redhat.com>
 
 	* c-pragma.c (handle_pragma_diagnostic): Add push/pop,

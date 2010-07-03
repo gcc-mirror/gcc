@@ -10295,39 +10295,6 @@ try_tablejump (tree index_type, tree index_expr, tree minval, tree range,
   return 1;
 }
 
-/* Nonzero if the mode is a valid vector mode for this architecture.
-   This returns nonzero even if there is no hardware support for the
-   vector mode, but we can emulate with narrower modes.  */
-
-int
-vector_mode_valid_p (enum machine_mode mode)
-{
-  enum mode_class mclass = GET_MODE_CLASS (mode);
-  enum machine_mode innermode;
-
-  /* Doh!  What's going on?  */
-  if (mclass != MODE_VECTOR_INT
-      && mclass != MODE_VECTOR_FLOAT
-      && mclass != MODE_VECTOR_FRACT
-      && mclass != MODE_VECTOR_UFRACT
-      && mclass != MODE_VECTOR_ACCUM
-      && mclass != MODE_VECTOR_UACCUM)
-    return 0;
-
-  /* Hardware support.  Woo hoo!  */
-  if (targetm.vector_mode_supported_p (mode))
-    return 1;
-
-  innermode = GET_MODE_INNER (mode);
-
-  /* We should probably return 1 if requesting V4DI and we have no DI,
-     but we have V2DI, but this is probably very unlikely.  */
-
-  /* If we have support for the inner mode, we can safely emulate it.
-     We may not have V2DI, but me can emulate with a pair of DIs.  */
-  return targetm.scalar_mode_supported_p (innermode);
-}
-
 /* Return a CONST_VECTOR rtx for a VECTOR_CST tree.  */
 static rtx
 const_vector_from_tree (tree exp)
