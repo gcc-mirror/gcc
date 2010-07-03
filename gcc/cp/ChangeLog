@@ -1,3 +1,9 @@
+2010-07-02  Le-Chun Wu  <lcwu@google.com>
+
+	PR/44128
+	* name-lookup.c (pushdecl_maybe_friend): Warn when a local decl
+	(variable or type) shadows another type.
+
 2010-07-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/44780

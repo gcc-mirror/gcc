@@ -3859,8 +3859,10 @@ Do not warn whenever an @samp{#else} or an @samp{#endif} are followed by text.
 @item -Wshadow
 @opindex Wshadow
 @opindex Wno-shadow
-Warn whenever a local variable shadows another local variable, parameter or
-global variable or whenever a built-in function is shadowed.
+Warn whenever a local variable or type declaration shadows another variable,
+parameter, type, or class member (in C++), or whenever a built-in function
+is shadowed. Note that in C++, the compiler will not warn if a local variable
+shadows a struct/class/enum, but will warn if it shadows an explicit typedef.
 
 @item -Wlarger-than=@var{len}
 @opindex Wlarger-than=@var{len}
