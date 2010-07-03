@@ -2244,19 +2244,7 @@ extern int making_const_table;
    : reverse_condition (code))
 
 #define CANONICALIZE_COMPARISON(CODE, OP0, OP1)				\
-  do									\
-    {									\
-      if (GET_CODE (OP1) == CONST_INT					\
-          && ! (const_ok_for_arm (INTVAL (OP1))				\
-	        || (const_ok_for_arm (- INTVAL (OP1)))))		\
-        {								\
-          rtx const_op = OP1;						\
-          CODE = arm_canonicalize_comparison ((CODE), GET_MODE (OP0),	\
-					      &const_op);		\
-          OP1 = const_op;						\
-        }								\
-    }									\
-  while (0)
+  (CODE) = arm_canonicalize_comparison (CODE, &(OP0), &(OP1))
 
 /* The arm5 clz instruction returns 32.  */
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)

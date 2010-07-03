@@ -29,7 +29,7 @@
 ;; in Thumb-1 state: I, J, K, L, M, N, O
 
 ;; The following multi-letter normal constraints have been used:
-;; in ARM/Thumb-2 state: Da, Db, Dc, Dn, Dl, DL, Dv, Dy
+;; in ARM/Thumb-2 state: Da, Db, Dc, Dn, Dl, DL, Dv, Dy, Di
 ;; in Thumb-1 state: Pa, Pb
 ;; in Thumb-2 state: Ps, Pt, Pu, Pv, Pw, Px
 
@@ -210,6 +210,13 @@
  (and (match_code "const_double,const_int,const_vector")
       (match_test "TARGET_32BIT && arm_const_double_inline_cost (op) == 4
 		   && !(optimize_size || arm_ld_sched)")))
+
+(define_constraint "Di"
+ "@internal
+  In ARM/Thumb-2 state a const_int or const_double where both the high
+  and low SImode words can be generated as immediates in 32-bit instructions."
+ (and (match_code "const_double,const_int")
+      (match_test "TARGET_32BIT && arm_const_double_by_immediates (op)")))
 
 (define_constraint "Dn"
  "@internal

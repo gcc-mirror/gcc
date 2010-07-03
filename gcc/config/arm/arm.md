@@ -6593,17 +6593,45 @@
 				   operands[3])); DONE;"
 )
 
-;; this uses the Cirrus DI compare instruction
 (define_expand "cbranchdi4"
   [(set (pc) (if_then_else
 	      (match_operator 0 "arm_comparison_operator"
-	       [(match_operand:DI 1 "cirrus_fp_register" "")
-	        (match_operand:DI 2 "cirrus_fp_register" "")])
+	       [(match_operand:DI 1 "cmpdi_operand" "")
+	        (match_operand:DI 2 "cmpdi_operand" "")])
 	      (label_ref (match_operand 3 "" ""))
 	      (pc)))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_MAVERICK"
-  "emit_jump_insn (gen_cbranch_cc (operands[0], operands[1], operands[2],
-				   operands[3])); DONE;"
+  "TARGET_32BIT"
+  "{
+     rtx swap = NULL_RTX;
+     enum rtx_code code = GET_CODE (operands[0]);
+
+     /* We should not have two constants.  */
+     gcc_assert (GET_MODE (operands[1]) == DImode
+		 || GET_MODE (operands[2]) == DImode);
+
+    /* Flip unimplemented DImode comparisons to a form that
+       arm_gen_compare_reg can handle.  */
+     switch (code)
+     {
+     case GT:
+       swap = gen_rtx_LT (VOIDmode, operands[2], operands[1]); break;
+     case LE:
+       swap = gen_rtx_GE (VOIDmode, operands[2], operands[1]); break;
+     case GTU:
+       swap = gen_rtx_LTU (VOIDmode, operands[2], operands[1]); break;
+     case LEU:
+       swap = gen_rtx_GEU (VOIDmode, operands[2], operands[1]); break;
+     default:
+       break;
+     }
+     if (swap)
+       emit_jump_insn (gen_cbranch_cc (swap, operands[2], operands[1],
+                                       operands[3]));
+     else
+       emit_jump_insn (gen_cbranch_cc (operands[0], operands[1], operands[2],
+				       operands[3]));
+     DONE;
+   }"
 )
 
 (define_insn "cbranchsi4_insn"
@@ -7767,6 +7795,52 @@
 				    (const_string "alu_shift_reg")))]
 )
 
+;; DImode comparisons.  The generic code generates branches that
+;; if-conversion can not reduce to a conditional compare, so we do
+;; that directly.
+
+(define_insn "*arm_cmpdi_insn"
+  [(set (reg:CC_NCV CC_REGNUM)
+	(compare:CC_NCV (match_operand:DI 0 "s_register_operand" "r")
+			(match_operand:DI 1 "arm_di_operand"	   "rDi")))
+   (clobber (match_scratch:SI 2 "=r"))]
+  "TARGET_32BIT && !(TARGET_HARD_FLOAT && TARGET_MAVERICK)"
+  "cmp\\t%Q0, %Q1\;sbcs\\t%2, %R0, %R1"
+  [(set_attr "conds" "set")
+   (set_attr "length" "8")]
+)
+
+(define_insn "*arm_cmpdi_unsigned"
+  [(set (reg:CC_CZ CC_REGNUM)
+	(compare:CC_CZ (match_operand:DI 0 "s_register_operand" "r")
+		       (match_operand:DI 1 "arm_di_operand"	"rDi")))]
+  "TARGET_ARM"
+  "cmp%?\\t%R0, %R1\;cmpeq\\t%Q0, %Q1"
+  [(set_attr "conds" "set")
+   (set_attr "length" "8")]
+)
+
+(define_insn "*arm_cmpdi_zero"
+  [(set (reg:CC_Z CC_REGNUM)
+	(compare:CC_Z (match_operand:DI 0 "s_register_operand" "r")
+		      (const_int 0)))
+   (clobber (match_scratch:SI 1 "=r"))]
+  "TARGET_32BIT"
+  "orr%.\\t%1, %Q0, %R0"
+  [(set_attr "conds" "set")]
+)
+
+(define_insn "*thumb_cmpdi_zero"
+  [(set (reg:CC_Z CC_REGNUM)
+	(compare:CC_Z (match_operand:DI 0 "s_register_operand" "l")
+		      (const_int 0)))
+   (clobber (match_scratch:SI 1 "=l"))]
+  "TARGET_THUMB1"
+  "orr\\t%1, %Q0, %R0"
+  [(set_attr "conds" "set")
+   (set_attr "length" "2")]
+)
+
 ;; Cirrus SF compare instruction
 (define_insn "*cirrus_cmpsf"
   [(set (reg:CCFP CC_REGNUM)
@@ -8070,17 +8144,44 @@
 			     operands[2], operands[3])); DONE;"
 )
 
-;; this uses the Cirrus DI compare instruction
 (define_expand "cstoredi4"
   [(set (match_operand:SI 0 "s_register_operand" "")
 	(match_operator:SI 1 "arm_comparison_operator"
-	 [(match_operand:DI 2 "cirrus_fp_register" "")
-	  (match_operand:DI 3 "cirrus_fp_register" "")]))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_MAVERICK"
-  "emit_insn (gen_cstore_cc (operands[0], operands[1],
-			     operands[2], operands[3])); DONE;"
-)
+	 [(match_operand:DI 2 "cmpdi_operand" "")
+	  (match_operand:DI 3 "cmpdi_operand" "")]))]
+  "TARGET_32BIT"
+  "{
+     rtx swap = NULL_RTX;
+     enum rtx_code code = GET_CODE (operands[1]);
 
+     /* We should not have two constants.  */
+     gcc_assert (GET_MODE (operands[2]) == DImode
+		 || GET_MODE (operands[3]) == DImode);
+
+    /* Flip unimplemented DImode comparisons to a form that
+       arm_gen_compare_reg can handle.  */
+     switch (code)
+     {
+     case GT:
+       swap = gen_rtx_LT (VOIDmode, operands[3], operands[2]); break;
+     case LE:
+       swap = gen_rtx_GE (VOIDmode, operands[3], operands[2]); break;
+     case GTU:
+       swap = gen_rtx_LTU (VOIDmode, operands[3], operands[2]); break;
+     case LEU:
+       swap = gen_rtx_GEU (VOIDmode, operands[3], operands[2]); break;
+     default:
+       break;
+     }
+     if (swap)
+       emit_insn (gen_cstore_cc (operands[0], swap, operands[3],
+		      	         operands[2]));
+     else
+       emit_insn (gen_cstore_cc (operands[0], operands[1], operands[2],
+		      	         operands[3]));
+     DONE;
+   }"
+)
 
 (define_expand "cstoresi_eq0_thumb1"
   [(parallel

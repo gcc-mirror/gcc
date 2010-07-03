@@ -1,3 +1,9 @@
+2010-07-02  Daniel Jacobowitz  <dan@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Sandra Loosemore <sandra@codesourcery.com>
+
+	* gcc.c-torture/execute/20100416-1.c: New test case.
+
 2010-07-02  Julian Brown  <julian@codesourcery.com>
 	    Sandra Loosemore <sandra@codesourcery.com>
 

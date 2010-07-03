@@ -3183,12 +3183,81 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
    immediate value easier to load.  */
 
 enum rtx_code
-arm_canonicalize_comparison (enum rtx_code code, enum machine_mode mode,
-			     rtx * op1)
+arm_canonicalize_comparison (enum rtx_code code, rtx *op0, rtx *op1)
 {
-  unsigned HOST_WIDE_INT i = INTVAL (*op1);
-  unsigned HOST_WIDE_INT maxval;
+  enum machine_mode mode;
+  unsigned HOST_WIDE_INT i, maxval;
+
+  mode = GET_MODE (*op0);
+  if (mode == VOIDmode)
+    mode = GET_MODE (*op1);
+
   maxval = (((unsigned HOST_WIDE_INT) 1) << (GET_MODE_BITSIZE(mode) - 1)) - 1;
+
+  /* For DImode, we have GE/LT/GEU/LTU comparisons.  In ARM mode
+     we can also use cmp/cmpeq for GTU/LEU.  GT/LE must be either
+     reversed or (for constant OP1) adjusted to GE/LT.  Similarly
+     for GTU/LEU in Thumb mode.  */
+  if (mode == DImode)
+    {
+      rtx tem;
+
+      /* To keep things simple, always use the Cirrus cfcmp64 if it is
+	 available.  */
+      if (TARGET_ARM && TARGET_HARD_FLOAT && TARGET_MAVERICK)
+	return code;
+
+      if (code == GT || code == LE
+	  || (!TARGET_ARM && (code == GTU || code == LEU)))
+	{
+	  /* Missing comparison.  First try to use an available
+	     comparison.  */
+	  if (GET_CODE (*op1) == CONST_INT)
+	    {
+	      i = INTVAL (*op1);
+	      switch (code)
+		{
+		case GT:
+		case LE:
+		  if (i != maxval
+		      && arm_const_double_by_immediates (GEN_INT (i + 1)))
+		    {
+		      *op1 = GEN_INT (i + 1);
+		      return code == GT ? GE : LT;
+		    }
+		  break;
+		case GTU:
+		case LEU:
+		  if (i != ~((unsigned HOST_WIDE_INT) 0)
+		      && arm_const_double_by_immediates (GEN_INT (i + 1)))
+		    {
+		      *op1 = GEN_INT (i + 1);
+		      return code == GTU ? GEU : LTU;
+		    }
+		  break;
+		default:
+		  gcc_unreachable ();
+		}
+	    }
+
+	  /* If that did not work, reverse the condition.  */
+	  tem = *op0;
+	  *op0 = *op1;
+	  *op1 = tem;
+	  return swap_condition (code);
+	}
+
+      return code;
+    }
+
+  /* Comparisons smaller than DImode.  Only adjust comparisons against
+     an out-of-range constant.  */
+  if (GET_CODE (*op1) != CONST_INT
+      || const_ok_for_arm (INTVAL (*op1))
+      || const_ok_for_arm (- INTVAL (*op1)))
+    return code;
+
+  i = INTVAL (*op1);
 
   switch (code)
     {
@@ -10014,6 +10083,55 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
       && (rtx_equal_p (XEXP (x, 0), y) || rtx_equal_p (XEXP (x, 1), y)))
     return CC_Cmode;
 
+  if (GET_MODE (x) == DImode || GET_MODE (y) == DImode)
+    {
+      /* To keep things simple, always use the Cirrus cfcmp64 if it is
+	 available.  */
+      if (TARGET_ARM && TARGET_HARD_FLOAT && TARGET_MAVERICK)
+	return CCmode;
+
+      switch (op)
+	{
+	case EQ:
+	case NE:
+	  /* A DImode comparison against zero can be implemented by
+	     or'ing the two halves together.  */
+	  if (y == const0_rtx)
+	    return CC_Zmode;
+
+	  /* We can do an equality test in three Thumb instructions.  */
+	  if (!TARGET_ARM)
+	    return CC_Zmode;
+
+	  /* FALLTHROUGH */
+
+	case LTU:
+	case LEU:
+	case GTU:
+	case GEU:
+	  /* DImode unsigned comparisons can be implemented by cmp +
+	     cmpeq without a scratch register.  Not worth doing in
+	     Thumb-2.  */
+	  if (TARGET_ARM)
+	    return CC_CZmode;
+
+	  /* FALLTHROUGH */
+
+	case LT:
+	case LE:
+	case GT:
+	case GE:
+	  /* DImode signed and unsigned comparisons can be implemented
+	     by cmp + sbcs with a scratch register, but that does not
+	     set the Z flag - we must reverse GT/LE/GTU/LEU.  */
+	  gcc_assert (op != EQ && op != NE);
+	  return CC_NCVmode;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
   return CCmode;
 }
 
@@ -10023,10 +10141,39 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 rtx
 arm_gen_compare_reg (enum rtx_code code, rtx x, rtx y)
 {
-  enum machine_mode mode = SELECT_CC_MODE (code, x, y);
-  rtx cc_reg = gen_rtx_REG (mode, CC_REGNUM);
+  enum machine_mode mode;
+  rtx cc_reg;
+  int dimode_comparison = GET_MODE (x) == DImode || GET_MODE (y) == DImode;
 
-  emit_set_insn (cc_reg, gen_rtx_COMPARE (mode, x, y));
+  /* We might have X as a constant, Y as a register because of the predicates
+     used for cmpdi.  If so, force X to a register here.  */
+  if (dimode_comparison && !REG_P (x))
+    x = force_reg (DImode, x);
+
+  mode = SELECT_CC_MODE (code, x, y);
+  cc_reg = gen_rtx_REG (mode, CC_REGNUM);
+
+  if (dimode_comparison
+      && !(TARGET_HARD_FLOAT && TARGET_MAVERICK)
+      && mode != CC_CZmode)
+    {
+      rtx clobber, set;
+
+      /* To compare two non-zero values for equality, XOR them and
+	 then compare against zero.  Not used for ARM mode; there
+	 CC_CZmode is cheaper.  */
+      if (mode == CC_Zmode && y != const0_rtx)
+	{
+	  x = expand_binop (DImode, xor_optab, x, y, NULL_RTX, 0, OPTAB_WIDEN);
+	  y = const0_rtx;
+	}
+      /* A scratch register is required.  */
+      clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (SImode));
+      set = gen_rtx_SET (VOIDmode, cc_reg, gen_rtx_COMPARE (mode, x, y));
+      emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set, clobber)));
+    }
+  else
+    emit_set_insn (cc_reg, gen_rtx_COMPARE (mode, x, y));
 
   return cc_reg;
 }
@@ -11353,6 +11500,34 @@ arm_const_double_by_parts (rtx val)
     return true;
 
   return false;
+}
+
+/* Return true if it is possible to inline both the high and low parts
+   of a 64-bit constant into 32-bit data processing instructions.  */
+bool
+arm_const_double_by_immediates (rtx val)
+{
+  enum machine_mode mode = GET_MODE (val);
+  rtx part;
+
+  if (mode == VOIDmode)
+    mode = DImode;
+
+  part = gen_highpart_mode (SImode, mode, val);
+
+  gcc_assert (GET_CODE (part) == CONST_INT);
+
+  if (!const_ok_for_arm (INTVAL (part)))
+    return false;
+
+  part = gen_lowpart (SImode, val);
+
+  gcc_assert (GET_CODE (part) == CONST_INT);
+
+  if (!const_ok_for_arm (INTVAL (part)))
+    return false;
+
+  return true;
 }
 
 /* Scan INSN and note any of its operands that need fixing.
@@ -15256,8 +15431,18 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	 the value being loaded is big-wordian or little-wordian.  The
 	 order of the two register loads can matter however, if the address
 	 of the memory location is actually held in one of the registers
-	 being overwritten by the load.  */
+	 being overwritten by the load.
+
+	 The 'Q' and 'R' constraints are also available for 64-bit
+	 constants.  */
     case 'Q':
+      if (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE)
+	{
+	  rtx part = gen_lowpart (SImode, x);
+	  fprintf (stream, "#" HOST_WIDE_INT_PRINT_DEC, INTVAL (part));
+	  return;
+	}
+
       if (GET_CODE (x) != REG || REGNO (x) > LAST_ARM_REGNUM)
 	{
 	  output_operand_lossage ("invalid operand for code '%c'", code);
@@ -15268,6 +15453,18 @@ arm_print_operand (FILE *stream, rtx x, int code)
       return;
 
     case 'R':
+      if (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE)
+	{
+	  enum machine_mode mode = GET_MODE (x);
+	  rtx part;
+
+	  if (mode == VOIDmode)
+	    mode = DImode;
+	  part = gen_highpart_mode (SImode, mode, x);
+	  fprintf (stream, "#" HOST_WIDE_INT_PRINT_DEC, INTVAL (part));
+	  return;
+	}
+
       if (GET_CODE (x) != REG || REGNO (x) > LAST_ARM_REGNUM)
 	{
 	  output_operand_lossage ("invalid operand for code '%c'", code);
@@ -16099,6 +16296,28 @@ get_arm_condition_code (rtx comparison)
 	{
 	case LTU: return ARM_CC;
 	case GEU: return ARM_CS;
+	default: gcc_unreachable ();
+	}
+
+    case CC_CZmode:
+      switch (comp_code)
+	{
+	case NE: return ARM_NE;
+	case EQ: return ARM_EQ;
+	case GEU: return ARM_CS;
+	case GTU: return ARM_HI;
+	case LEU: return ARM_LS;
+	case LTU: return ARM_CC;
+	default: gcc_unreachable ();
+	}
+
+    case CC_NCVmode:
+      switch (comp_code)
+	{
+	case GE: return ARM_GE;
+	case LT: return ARM_LT;
+	case GEU: return ARM_CS;
+	case LTU: return ARM_CC;
 	default: gcc_unreachable ();
 	}
 
