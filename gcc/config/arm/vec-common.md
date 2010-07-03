@@ -57,7 +57,8 @@
   [(set (match_operand:VALL 0 "s_register_operand" "")
         (plus:VALL (match_operand:VALL 1 "s_register_operand" "")
                    (match_operand:VALL 2 "s_register_operand" "")))]
-  "TARGET_NEON
+  "(TARGET_NEON && ((<MODE>mode != V2SFmode && <MODE>mode != V4SFmode)
+		    || flag_unsafe_math_optimizations))
    || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
 {
 })
@@ -66,7 +67,8 @@
   [(set (match_operand:VALL 0 "s_register_operand" "")
         (minus:VALL (match_operand:VALL 1 "s_register_operand" "")
                     (match_operand:VALL 2 "s_register_operand" "")))]
-  "TARGET_NEON
+  "(TARGET_NEON && ((<MODE>mode != V2SFmode && <MODE>mode != V4SFmode)
+		    || flag_unsafe_math_optimizations))
    || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
 {
 })
@@ -75,7 +77,9 @@
   [(set (match_operand:VALLW 0 "s_register_operand" "")
         (mult:VALLW (match_operand:VALLW 1 "s_register_operand" "")
 		    (match_operand:VALLW 2 "s_register_operand" "")))]
-  "TARGET_NEON || (<MODE>mode == V4HImode && TARGET_REALLY_IWMMXT)"
+  "(TARGET_NEON && ((<MODE>mode != V2SFmode && <MODE>mode != V4SFmode)
+		    || flag_unsafe_math_optimizations))
+   || (<MODE>mode == V4HImode && TARGET_REALLY_IWMMXT)"
 {
 })
 
@@ -83,7 +87,8 @@
   [(set (match_operand:VALLW 0 "s_register_operand" "")
 	(smin:VALLW (match_operand:VALLW 1 "s_register_operand" "")
 		    (match_operand:VALLW 2 "s_register_operand" "")))]
-  "TARGET_NEON
+  "(TARGET_NEON && ((<MODE>mode != V2SFmode && <MODE>mode != V4SFmode)
+		    || flag_unsafe_math_optimizations))
    || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
 {
 })
@@ -101,7 +106,8 @@
   [(set (match_operand:VALLW 0 "s_register_operand" "")
 	(smax:VALLW (match_operand:VALLW 1 "s_register_operand" "")
 		    (match_operand:VALLW 2 "s_register_operand" "")))]
-  "TARGET_NEON
+  "(TARGET_NEON && ((<MODE>mode != V2SFmode && <MODE>mode != V4SFmode)
+		    || flag_unsafe_math_optimizations))
    || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
 {
 })

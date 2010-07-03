@@ -1,3 +1,21 @@
+2010-07-02  Julian Brown  <julian@codesourcery.com>
+	    Sandra Loosemore <sandra@codesourcery.com>
+
+	PR target/43703
+
+	* config/arm/vec-common.md (add<mode>3, sub<mode>3, smin<mode>3)
+	(smax<mode>3): Disable for NEON float modes when
+	flag_unsafe_math_optimizations is false.
+	* config/arm/neon.md (*add<mode>3_neon, *sub<mode>3_neon)
+	(*mul<mode>3_neon)
+	(mul<mode>3add<mode>_neon, mul<mode>3neg<mode>add<mode>_neon)
+	(reduc_splus_<mode>, reduc_smin_<mode>, reduc_smax_<mode>): Disable
+	for NEON float modes when flag_unsafe_math_optimizations is false.
+	(quad_halves_<code>v4sf): Only enable if flag_unsafe_math_optimizations
+	is true.
+	* doc/invoke.texi (ARM Options): Add note about floating point
+	vectorization requiring -funsafe-math-optimizations.
+
 2010-07-02  Sandra Loosemore  <sandra@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 

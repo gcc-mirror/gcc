@@ -9976,6 +9976,14 @@ of GCC@.
 If @option{-msoft-float} is specified this specifies the format of
 floating point values.
 
+If the selected floating-point hardware includes the NEON extension
+(e.g. @option{-mfpu}=@samp{neon}), note that floating-point
+operations will not be used by GCC's auto-vectorization pass unless
+@option{-funsafe-math-optimizations} is also specified.  This is
+because NEON hardware does not fully implement the IEEE 754 standard for
+floating-point arithmetic (in particular denormal values are treated as
+zero), so the use of NEON instructions may lead to a loss of precision.
+
 @item -mfp16-format=@var{name}
 @opindex mfp16-format
 Specify the format of the @code{__fp16} half-precision floating-point type.

@@ -1,3 +1,11 @@
+2010-07-02  Julian Brown  <julian@codesourcery.com>
+	    Sandra Loosemore <sandra@codesourcery.com>
+
+	PR target/43703
+
+	* gcc.dg/vect/vect.exp: Add -ffast-math for NEON.
+	* gcc.dg/vect/vect-reduc-6.c: Add XFAIL for NEON.
+
 2010-07-02  Sandra Loosemore  <sandra@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 
