@@ -1,3 +1,13 @@
+2010-07-03  Iain Sandoe  <iains@gcc.gnu.org>
+	    Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR testsuite/44518
+	* obj-c++.dg/encode-2.mm: Produce object and save temps.
+	Make signed-ness of chars explicit.  Scan the object for
+	strings that are split by some target assemblers.
+	* obj-c++.dg/encode-3.mm: Make the signed-ness of chars
+	explicit.
+
 2010-07-03  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gfortran.dg/char_bounds_check_fail_1.f90: Correct dg-output string.
