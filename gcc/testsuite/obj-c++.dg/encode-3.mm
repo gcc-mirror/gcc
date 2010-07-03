@@ -18,7 +18,7 @@ typedef struct {
   int iscalar;
   long z;
   long long zz;
-  Vec<const char> cv;
+  Vec<const signed char> cv;
 } anonymous;
 
 //Vec<double> dd;
@@ -44,7 +44,7 @@ int main(void) {
   if (strcmp (enc2, "{Vec<double>=dd" L "q}"))
     _exit(-(__LINE__));
 
-  if (strcmp (enc3, "{?=f[10d]i" L "q{Vec<const char>=rcrc" L "q}}"))
+  if (strcmp (enc3, "{?=f[10d]i" L "q{Vec<const signed char>=rcrc" L "q}}"))
     _exit(-(__LINE__));
 
   return 0;
