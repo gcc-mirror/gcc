@@ -1,3 +1,7 @@
+2010-07-03  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gfortran.dg/char_bounds_check_fail_1.f90: Correct dg-output string.
+
 2010-07-02  Le-Chun Wu  <lcwu@google.com>
 
 	PR/44128
