@@ -1,3 +1,13 @@
+2010-07-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/44597
+	* config/pa/predicates.md (prefetch_cc_operand): Remove.
+	(prefetch_nocc_operand): Likewise.
+	* config/pa/pa.md (prefetch): Revise expander to use prefetch_20.
+	(prefetch_20): New insn.
+	(prefetch_cc): Remove.
+	(prefetch_nocc): Likewise.
+
 2010-07-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* expr.c (vector_mode_valid_p): Move to c-common.c.
