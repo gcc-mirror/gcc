@@ -2132,7 +2132,7 @@ struct ipa_opt_pass_d pass_ipa_lto_gimple_out =
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
-  TV_IPA_LTO_GIMPLE_IO,		        /* tv_id */
+  TV_IPA_LTO_GIMPLE_OUT,		        /* tv_id */
   0,	                                /* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */
@@ -2544,7 +2544,7 @@ struct ipa_opt_pass_d pass_ipa_lto_finish_out =
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
-  TV_IPA_LTO_DECL_IO,		        /* tv_id */
+  TV_IPA_LTO_DECL_OUT,		        /* tv_id */
   0,	                                /* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */
