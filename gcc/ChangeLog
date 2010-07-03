@@ -1,4 +1,8 @@
-2010-07-02  Jan Hubicka  <jh@suse.cz>
+2010-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (mostly_copy_tree_r): Deal with BIND_EXPR.
+
+2010-07-03  Jan Hubicka  <jh@suse.cz>
 
 	* config/i386/i386.c (override_options): Revert accidental commit.
 

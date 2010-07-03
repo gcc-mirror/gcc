@@ -1,5 +1,9 @@
 2010-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/cond_expr1.adb: New test.
+
+2010-07-03  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/modular3.adb: New test.
 	* gnat.dg/modular3_pkg.ads: New helper.
 
