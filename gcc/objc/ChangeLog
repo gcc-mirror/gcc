@@ -1,3 +1,28 @@
+2010-07-03  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR objc/24867
+	* objc-act.c (build_sized_array_type): New function.
+	(add_objc_string): Use it.
+	(generate_protocol_list): Likewise.
+	(generate_objc_image_info): Likewise.
+	(add_field_decl): New function.
+	(objc_build_struct): Use a VEC rather than building a TREE_LIST.
+	(generate_struct_by_value_array): Use add_field_decl.
+	(build_objc_symtab_template): Likewise.
+	(build_module_descriptor): Likewise.
+	(build_objc_exception_stuff): Likewise.
+	(build_protocol_template): Likewise.
+	(build_method_prototype_list_template): Likewise.
+	(build_method_prototype_template): Likewise.
+	(build_category_template): Likewise.
+	(build_selector_template): Likewise.
+	(build_class_template): Likewise.
+	(build_super_template): Likewise.
+	(build_ivar_template): Likewise.
+	(build_ivar_list_template): Likewise.
+	(build_method_list_template): Likewise.
+	(build_method_template): Likewise.
+
 2010-06-28  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* objc-act.c: Do not include except.h.
