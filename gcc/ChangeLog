@@ -1,5 +1,13 @@
 2010-07-03  Jie Zhang  <jie@codesourcery.com>
 
+	* config/arm/arm.c (arm_attr_length_move_neon): New.
+	* config/arm/arm-protos.h (arm_attr_length_move_neon): Declare.
+	* config/arm/neon.md (define_mode_attr V_slen): Remove.
+	(neon_mov<mode> for VSTRUCT): Use arm_attr_length_move_neon
+	to compute length attribute.
+
+2010-07-03  Jie Zhang  <jie@codesourcery.com>
+
 	* config/arm/vfp.md (*push_multi_vfp): Use vfp_register_operand
 	as predicate for operand 1 and remove its constraint.
 	* config/arm/predicates.md (vfp_register_operand): New.
