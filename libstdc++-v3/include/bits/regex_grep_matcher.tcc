@@ -23,7 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 /**
- * @file regex_grep_matcher.cc
+ * @file bits/regex_grep_matcher.tcc
  */
 #include <regex>
 
