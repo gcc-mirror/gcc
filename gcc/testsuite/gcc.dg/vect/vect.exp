@@ -105,6 +105,10 @@ if  [istarget "powerpc-*paired*"]  {
     set dg-do-what-default run
 } elseif [is-effective-target arm_neon_ok] {
     eval lappend DEFAULT_VECTCFLAGS [add_options_for_arm_neon ""]
+    # NEON does not support denormals, so is not used for vectorization by
+    # default to avoid loss of precision.  We must pass -ffast-math to test
+    # vectorization of float operations.
+    lappend DEFAULT_VECTCFLAGS "-ffast-math"
     if [is-effective-target arm_neon_hw] {
       set dg-do-what-default run
     } else {

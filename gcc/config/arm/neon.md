@@ -819,7 +819,7 @@
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
         (plus:VDQ (match_operand:VDQ 1 "s_register_operand" "w")
 		  (match_operand:VDQ 2 "s_register_operand" "w")))]
-  "TARGET_NEON"
+  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
   "vadd.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
       (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
@@ -853,7 +853,7 @@
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
         (minus:VDQ (match_operand:VDQ 1 "s_register_operand" "w")
                    (match_operand:VDQ 2 "s_register_operand" "w")))]
-  "TARGET_NEON"
+  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
   "vsub.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
       (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
@@ -888,7 +888,7 @@
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
         (mult:VDQ (match_operand:VDQ 1 "s_register_operand" "w")
                   (match_operand:VDQ 2 "s_register_operand" "w")))]
-  "TARGET_NEON"
+  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
   "vmul.<V_if_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "neon_type")
       (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
@@ -910,7 +910,7 @@
         (plus:VDQ (mult:VDQ (match_operand:VDQ 2 "s_register_operand" "w")
                             (match_operand:VDQ 3 "s_register_operand" "w"))
 		  (match_operand:VDQ 1 "s_register_operand" "0")))]
-  "TARGET_NEON"
+  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
   "vmla.<V_if_elem>\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
   [(set (attr "neon_type")
       (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
@@ -932,7 +932,7 @@
         (minus:VDQ (match_operand:VDQ 1 "s_register_operand" "0")
                    (mult:VDQ (match_operand:VDQ 2 "s_register_operand" "w")
                              (match_operand:VDQ 3 "s_register_operand" "w"))))]
-  "TARGET_NEON"
+  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
   "vmls.<V_if_elem>\t%<V_reg>0, %<V_reg>2, %<V_reg>3"
   [(set (attr "neon_type")
       (if_then_else (ne (symbol_ref "<Is_float_mode>") (const_int 0))
@@ -1361,7 +1361,7 @@
                            (parallel [(const_int 0) (const_int 1)]))
           (vec_select:V2SF (match_dup 1)
                            (parallel [(const_int 2) (const_int 3)]))))]
-  "TARGET_NEON"
+  "TARGET_NEON && flag_unsafe_math_optimizations"
   "<VQH_mnem>.f32\t%P0, %e1, %f1"
   [(set_attr "vqh_mnem" "<VQH_mnem>")
    (set (attr "neon_type")
@@ -1496,7 +1496,7 @@
 (define_expand "reduc_splus_<mode>"
   [(match_operand:VD 0 "s_register_operand" "")
    (match_operand:VD 1 "s_register_operand" "")]
-  "TARGET_NEON"
+  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
 {
   neon_pairwise_reduce (operands[0], operands[1], <MODE>mode,
 			&gen_neon_vpadd_internal<mode>);
@@ -1506,7 +1506,7 @@
 (define_expand "reduc_splus_<mode>"
   [(match_operand:VQ 0 "s_register_operand" "")
    (match_operand:VQ 1 "s_register_operand" "")]
-  "TARGET_NEON"
+  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
 {
   rtx step1 = gen_reg_rtx (<V_HALF>mode);
   rtx res_d = gen_reg_rtx (<V_HALF>mode);
@@ -1541,7 +1541,7 @@
 (define_expand "reduc_smin_<mode>"
   [(match_operand:VD 0 "s_register_operand" "")
    (match_operand:VD 1 "s_register_operand" "")]
-  "TARGET_NEON"
+  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
 {
   neon_pairwise_reduce (operands[0], operands[1], <MODE>mode,
 			&gen_neon_vpsmin<mode>);
@@ -1551,7 +1551,7 @@
 (define_expand "reduc_smin_<mode>"
   [(match_operand:VQ 0 "s_register_operand" "")
    (match_operand:VQ 1 "s_register_operand" "")]
-  "TARGET_NEON"
+  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
 {
   rtx step1 = gen_reg_rtx (<V_HALF>mode);
   rtx res_d = gen_reg_rtx (<V_HALF>mode);
@@ -1566,7 +1566,7 @@
 (define_expand "reduc_smax_<mode>"
   [(match_operand:VD 0 "s_register_operand" "")
    (match_operand:VD 1 "s_register_operand" "")]
-  "TARGET_NEON"
+  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
 {
   neon_pairwise_reduce (operands[0], operands[1], <MODE>mode,
 			&gen_neon_vpsmax<mode>);
@@ -1576,7 +1576,7 @@
 (define_expand "reduc_smax_<mode>"
   [(match_operand:VQ 0 "s_register_operand" "")
    (match_operand:VQ 1 "s_register_operand" "")]
-  "TARGET_NEON"
+  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
 {
   rtx step1 = gen_reg_rtx (<V_HALF>mode);
   rtx res_d = gen_reg_rtx (<V_HALF>mode);
