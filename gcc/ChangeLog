@@ -1,5 +1,13 @@
 2010-07-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	PR target/44597
+	* config/pa/predicates.md (prefetch_cc_operand): Remove.
+	(prefetch_nocc_operand): Likewise.
+	* config/pa/pa.md (prefetch): Revise expander to use prefetch_20.
+	(prefetch_20): New insn.
+	(prefetch_cc): Remove.
+	(prefetch_nocc): Likewise.
+
 	PR target/44705
 	* config/pa/pa.h (GO_IF_LEGITIMATE_ADDRESS): Reject LABEL_REF.
 
