@@ -1,3 +1,11 @@
+2010-07-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-07-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/44806
+	* gcc.dg/torture/pr44806.c: New.
+
 2010-07-02  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc-obj-c++-shared/Object1.h: Correct Line endings.
