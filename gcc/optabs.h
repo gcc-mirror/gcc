@@ -29,10 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 
    For example, add_optab applies to addition.
 
-   The insn_code slot is the enum insn_code that says how to
-   generate an insn for this operation on a particular machine mode.
-   It is CODE_FOR_nothing if there is no such insn on the target machine.
-
    The `lib_call' slot is the name of the library function that
    can be used to perform the operation.
 
@@ -40,7 +36,10 @@ along with GCC; see the file COPYING3.  If not see
 
 struct optab_handlers
 {
-  enum insn_code insn_code;
+  /* I - CODE_FOR_nothing, where I is either the insn code of the
+     associated insn generator or CODE_FOR_nothing if there is no such
+     insn on the target machine.  */
+  int insn_code;
 };
 
 struct optab_d
@@ -788,7 +787,8 @@ extern rtx expand_vec_shift_expr (sepops, rtx);
 static inline enum insn_code
 optab_handler (optab op, enum machine_mode mode)
 {
-  return op->handlers[(int) mode].insn_code;
+  return (enum insn_code) (op->handlers[(int) mode].insn_code
+			   + (int) CODE_FOR_nothing);
 }
 
 /* Record that insn CODE should be used to implement mode MODE of OP.  */
@@ -796,7 +796,7 @@ optab_handler (optab op, enum machine_mode mode)
 static inline void
 set_optab_handler (optab op, enum machine_mode mode, enum insn_code code)
 {
-  op->handlers[(int) mode].insn_code = code;
+  op->handlers[(int) mode].insn_code = (int) code - (int) CODE_FOR_nothing;
 }
 
 /* Return the insn used to perform conversion OP from mode FROM_MODE
@@ -807,7 +807,9 @@ static inline enum insn_code
 convert_optab_handler (convert_optab op, enum machine_mode to_mode,
 		       enum machine_mode from_mode)
 {
-  return op->handlers[(int) to_mode][(int) from_mode].insn_code;
+  return ((enum insn_code)
+	  (op->handlers[(int) to_mode][(int) from_mode].insn_code
+	   + (int) CODE_FOR_nothing));
 }
 
 /* Record that insn CODE should be used to perform conversion OP
@@ -817,7 +819,8 @@ static inline void
 set_convert_optab_handler (convert_optab op, enum machine_mode to_mode,
 			   enum machine_mode from_mode, enum insn_code code)
 {
-  op->handlers[(int) to_mode][(int) from_mode].insn_code = code;
+  op->handlers[(int) to_mode][(int) from_mode].insn_code
+    = (int) code - (int) CODE_FOR_nothing;
 }
 
 extern rtx optab_libfunc (optab optab, enum machine_mode mode);
