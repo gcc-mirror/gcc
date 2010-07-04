@@ -1,5 +1,19 @@
 2010-07-04  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/44479
+	* tree-ssa-loop-ivopts.c (rewrite_use_nonlinear_expr): Avoid
+	extra SSA name copy statements which preserves points-to
+	information.
+	* tree-vect-data-refs.c (vect_create_addr_base_for_vector_ref):
+	Copy points-to information for all pointers.  Properly handle
+	MEM_REFs.
+	(vect_create_data_ref_ptr): Likewise.  Avoid extra SSA name
+	copy statements.
+	* Makefile.in (tree-ssa-loop-ivopts.o): Add tree-ssa-propagate.h
+	dependency.
+
+2010-07-04  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/44785
 	* tree-inline.c (initialize_inlined_parameters): Do not
 	re-use pointer-map slot over remap_type call.
