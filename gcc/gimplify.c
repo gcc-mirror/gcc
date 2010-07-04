@@ -7416,7 +7416,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	 that temporary.  */
       tmp = build_fold_addr_expr_loc (input_location, *expr_p);
       gimplify_expr (&tmp, pre_p, post_p, is_gimple_reg, fb_rvalue);
-      *expr_p = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (tmp)), tmp);
+      *expr_p = build_simple_mem_ref (tmp);
     }
   else if ((fallback & fb_rvalue) && is_gimple_reg_rhs_or_call (*expr_p))
     {
