@@ -1,3 +1,10 @@
+2010-07-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/44596
+	PR fortran/44745
+	* trans-types.c (gfc_get_derived_type): Derived type fields
+	with the vtype attribute must have TYPE_REF_CAN_ALIAS_ALL set.
+
 2010-07-02  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/44662
