@@ -1,3 +1,7 @@
+2010-07-04  Jeremie Salvucci  <jeremie.salvucci@free.fr>
+
+	* gimple.c (gimple_body): Comments added.
+
 2010-07-04  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/44809
