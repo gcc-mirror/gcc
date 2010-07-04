@@ -1731,7 +1731,10 @@ gimple_set_body (tree fndecl, gimple_seq seq)
 }
 
 
-/* Return the body of GIMPLE statements for function FN.  */
+/* Return the body of GIMPLE statements for function FN.  After the
+   CFG pass, the function body doesn't exist anymore because it has
+   been split up into basic blocks.  In this case, it returns
+   NULL.  */
 
 gimple_seq
 gimple_body (tree fndecl)
