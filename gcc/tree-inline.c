@@ -2690,19 +2690,20 @@ initialize_inlined_parameters (copy_body_data *id, gimple stmt,
       if (varp
 	  && TREE_CODE (*varp) == VAR_DECL)
 	{
-	  tree def = (gimple_in_ssa_p (cfun)
+	  tree def = (gimple_in_ssa_p (cfun) && is_gimple_reg (p)
 		      ? gimple_default_def (id->src_cfun, p) : NULL);
-	  TREE_TYPE (*varp) = remap_type (TREE_TYPE (*varp), id);
+	  tree var = *varp;
+	  TREE_TYPE (var) = remap_type (TREE_TYPE (var), id);
 	  /* Also remap the default definition if it was remapped
 	     to the default definition of the parameter replacement
 	     by the parameter setup.  */
-	  if (def && gimple_in_ssa_p (cfun) && is_gimple_reg (p))
+	  if (def)
 	    {
 	      tree *defp = (tree *) pointer_map_contains (id->decl_map, def);
 	      if (defp
 		  && TREE_CODE (*defp) == SSA_NAME
-		  && SSA_NAME_VAR (*defp) == *varp)
-		TREE_TYPE (*defp) = TREE_TYPE (*varp);
+		  && SSA_NAME_VAR (*defp) == var)
+		TREE_TYPE (*defp) = TREE_TYPE (var);
 	    }
 	}
     }

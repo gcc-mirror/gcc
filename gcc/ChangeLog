@@ -1,5 +1,11 @@
 2010-07-04  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/44785
+	* tree-inline.c (initialize_inlined_parameters): Do not
+	re-use pointer-map slot over remap_type call.
+
+2010-07-04  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-sccvn.c (vn_reference_lookup_3): Fix last commit.
 
 2010-07-04  Richard Guenther  <rguenther@suse.de>
