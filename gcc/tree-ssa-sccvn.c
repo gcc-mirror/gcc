@@ -1212,6 +1212,23 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
   tree base;
   HOST_WIDE_INT offset, maxsize;
 
+  /* First try to disambiguate after value-replacing in the definitions LHS.  */
+  if (is_gimple_assign (def_stmt))
+    {
+      tree lhs = gimple_assign_lhs (def_stmt);
+      ao_ref ref1;
+      VEC (vn_reference_op_s, heap) *operands = NULL;
+      bool res;
+      copy_reference_ops_from_ref (lhs, &operands);
+      operands = valueize_refs (operands);
+      ao_ref_init_from_vn_reference (&ref1, get_alias_set (lhs),
+				     TREE_TYPE (lhs), operands);
+      res = refs_may_alias_p_1 (ref, &ref1, true);
+      VEC_free (vn_reference_op_s, heap, operands);
+      if (!res)
+	return NULL;
+    }
+
   base = ao_ref_base (ref);
   offset = ref->offset;
   maxsize = ref->max_size;

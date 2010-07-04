@@ -73,8 +73,7 @@ main (void)
   return 0;
 }
 
-/* See PR44656.  The last elimination is only done by PRE.  */
-/* { dg-final { scan-tree-dump-not "= unexpanded_var_list;" "fre" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "Eliminated: 1" 2 "pre" } } */
+/* { dg-final { scan-tree-dump-not "= unexpanded_var_list;" "fre" } } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 1" 1 "pre" } } */
 /* { dg-final { scan-tree-dump-times "Insertions: 2" 1 "pre" } } */
 /* { dg-final { cleanup-tree-dump "pre" } } */
