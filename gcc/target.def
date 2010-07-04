@@ -789,11 +789,13 @@ DEFHOOK
  "",
  tree, (tree x), NULL)
 
-/* Cost of different vector/scalar statements in vectorization cost model.  */
+/* Cost of different vector/scalar statements in vectorization cost
+   model. In case of misaligned vector loads and stores the cost depends
+   on the data type and misalignment value.  */
 DEFHOOK
 (builtin_vectorization_cost,
  "",
- int, (enum vect_cost_for_stmt type_of_cost),
+ int, (enum vect_cost_for_stmt type_of_cost, tree vectype, int misalign),
  default_builtin_vectorization_cost)
 
 /* Return true if vector alignment is reachable (by peeling N

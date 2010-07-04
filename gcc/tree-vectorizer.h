@@ -170,6 +170,21 @@ DEF_VEC_ALLOC_P(slp_instance, heap);
 #define SLP_TREE_OUTSIDE_OF_LOOP_COST(S)         (S)->cost.outside_of_loop
 #define SLP_TREE_INSIDE_OF_LOOP_COST(S)          (S)->cost.inside_of_loop
 
+
+typedef struct _vect_peel_info
+{
+  int npeel;
+  struct data_reference *dr;
+  unsigned int count;
+} *vect_peel_info;
+
+typedef struct _vect_peel_extended_info
+{
+  struct _vect_peel_info peel_info;
+  unsigned int inside_cost;
+  unsigned int outside_cost;
+} *vect_peel_extended_info;
+
 /*-----------------------------------------------------------------*/
 /* Info on vectorized loops.                                       */
 /*-----------------------------------------------------------------*/
@@ -245,6 +260,10 @@ typedef struct _loop_vec_info {
 
   /* Reduction cycles detected in the loop. Used in loop-aware SLP.  */
   VEC (gimple, heap) *reductions;
+
+  /* Hash table used to choose the best peeling option.  */
+  htab_t peeling_htab;
+
 } *loop_vec_info;
 
 /* Access Functions.  */
@@ -270,6 +289,7 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_SLP_INSTANCES(L)        (L)->slp_instances
 #define LOOP_VINFO_SLP_UNROLLING_FACTOR(L) (L)->slp_unrolling_factor
 #define LOOP_VINFO_REDUCTIONS(L)           (L)->reductions
+#define LOOP_VINFO_PEELING_HTAB(L)         (L)->peeling_htab
 
 #define LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT(L) \
 VEC_length (gimple, (L)->may_misalign_stmts) > 0
@@ -543,6 +563,8 @@ typedef struct _stmt_vec_info {
 #define PURE_SLP_STMT(S)                  ((S)->slp_type == pure_slp)
 #define STMT_SLP_TYPE(S)                   (S)->slp_type
 
+#define VECT_MAX_COST 1000
+
 /* The maximum number of intermediate steps required in multi-step type
    conversion.  */
 #define MAX_INTERM_CVT_STEPS         3
@@ -743,11 +765,14 @@ extern void vect_remove_stores (gimple);
 extern bool vect_analyze_stmt (gimple, bool *, slp_tree);
 extern bool vectorizable_condition (gimple, gimple_stmt_iterator *, gimple *,
                                     tree, int);
+extern void vect_get_load_cost (struct data_reference *, int, bool,
+                                unsigned int *, unsigned int *);
+extern void vect_get_store_cost (struct data_reference *, int, unsigned int *);
 
 /* In tree-vect-data-refs.c.  */
 extern bool vect_can_force_dr_alignment_p (const_tree, unsigned int);
 extern enum dr_alignment_support vect_supportable_dr_alignment
-                                           (struct data_reference *);
+                                           (struct data_reference *, bool);
 extern tree vect_get_smallest_scalar_type (gimple, HOST_WIDE_INT *,
                                            HOST_WIDE_INT *);
 extern bool vect_analyze_data_ref_dependences (loop_vec_info, bb_vec_info,
@@ -795,7 +820,8 @@ extern bool vectorizable_induction (gimple, gimple_stmt_iterator *, gimple *);
 extern int vect_estimate_min_profitable_iters (loop_vec_info);
 extern tree get_initial_def_for_reduction (gimple, tree, tree *);
 extern int vect_min_worthwhile_factor (enum tree_code);
-
+extern int vect_get_known_peeling_cost (loop_vec_info, int, int *, int);
+extern int vect_get_single_scalar_iteraion_cost (loop_vec_info);
 
 /* In tree-vect-slp.c.  */
 extern void vect_free_slp_instance (slp_instance);

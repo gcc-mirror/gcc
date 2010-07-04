@@ -119,6 +119,7 @@ enum vect_cost_for_stmt
   vector_stmt,
   vector_load,
   unaligned_load,
+  unaligned_store,
   vector_store,
   vec_to_scalar,
   scalar_to_vec,
