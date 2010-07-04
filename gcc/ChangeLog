@@ -1,5 +1,9 @@
 2010-07-04  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Fix last commit.
+
+2010-07-04  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/44656
 	* tree-ssa-sccvn.c (vn_reference_lookup_3): Try disambiguation
 	again after value-replacing in the defintions lhs.
