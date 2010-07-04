@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.   Log dumping infrastructure.
-   Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -164,7 +164,7 @@ dump_insn_rtx (rtx insn)
 
 
 /* Dump INSN to stderr.  */
-void
+DEBUG_FUNCTION void
 debug_insn_rtx (rtx insn)
 {
   switch_dump (stderr);
@@ -214,7 +214,7 @@ dump_vinsn (vinsn_t vi)
 }
 
 /* Dump vinsn VI to stderr.  */
-void
+DEBUG_FUNCTION void
 debug_vinsn (vinsn_t vi)
 {
   switch_dump (stderr);
@@ -295,7 +295,7 @@ dump_expr (expr_t expr)
 }
 
 /* Dump expression EXPR to stderr.  */
-void
+DEBUG_FUNCTION void
 debug_expr (expr_t expr)
 {
   switch_dump (stderr);
@@ -353,7 +353,7 @@ dump_insn (insn_t i)
 }
 
 /* Dump INSN to stderr.  */
-void
+DEBUG_FUNCTION void
 debug_insn (insn_t insn)
 {
   switch_dump (stderr);
@@ -566,7 +566,7 @@ replace_str_in_buf (char *buf, const char *str1, const char *str2)
 }
 
 /* Replace characters in BUF that have special meaning in .dot file.  */
-void
+static void
 sel_prepare_string_for_dot_label (char *buf)
 {
   static char specials_from[7][2] = { "<", ">", "{", "|", "}", "\"",
@@ -577,6 +577,28 @@ sel_prepare_string_for_dot_label (char *buf)
 
   for (i = 0; i < 7; i++)
     replace_str_in_buf (buf, specials_from[i], specials_to[i]);
+}
+
+/* This function acts like printf but dumps to the sched_dump file.  */
+void
+sel_print (const char *fmt, ...)
+{
+  va_list ap;
+  va_start (ap, fmt);
+  if (sched_dump_to_dot_p)
+    {
+      char *message;
+      if (vasprintf (&message, fmt, ap) >= 0 && message != NULL)
+	{
+	  message = (char *) xrealloc (message, 2 * strlen (message) + 1);
+	  sel_prepare_string_for_dot_label (message);
+	  fprintf (sched_dump, "%s", message);
+	  free (message);
+	}
+    }
+  else
+    vfprintf (sched_dump, fmt, ap);
+  va_end (ap);
 }
 
 /* Dump INSN with FLAGS.  */
@@ -861,7 +883,7 @@ sel_debug_cfg_1 (int flags)
 }
 
 /* Dumps av_set AV to stderr.  */
-void
+DEBUG_FUNCTION void
 debug_av_set (av_set_t av)
 {
   switch_dump (stderr);
@@ -871,7 +893,7 @@ debug_av_set (av_set_t av)
 }
 
 /* Dump LV to stderr.  */
-void
+DEBUG_FUNCTION void
 debug_lv_set (regset lv)
 {
   switch_dump (stderr);
@@ -881,7 +903,7 @@ debug_lv_set (regset lv)
 }
 
 /* Dump an instruction list P to stderr.  */
-void
+DEBUG_FUNCTION void
 debug_ilist (ilist_t p)
 {
   switch_dump (stderr);
@@ -891,7 +913,7 @@ debug_ilist (ilist_t p)
 }
 
 /* Dump a boundary list BNDS to stderr.  */
-void
+DEBUG_FUNCTION void
 debug_blist (blist_t bnds)
 {
   switch_dump (stderr);
@@ -901,7 +923,7 @@ debug_blist (blist_t bnds)
 }
 
 /* Dump an insn vector SUCCS.  */
-void
+DEBUG_FUNCTION void
 debug_insn_vector (rtx_vec_t succs)
 {
   switch_dump (stderr);
@@ -911,7 +933,7 @@ debug_insn_vector (rtx_vec_t succs)
 }
 
 /* Dump a hard reg set SET to stderr.  */
-void
+DEBUG_FUNCTION void
 debug_hard_reg_set (HARD_REG_SET set)
 {
   switch_dump (stderr);
@@ -928,7 +950,7 @@ sel_debug_cfg (void)
 }
 
 /* Print a current cselib value for X's address to stderr.  */
-rtx
+DEBUG_FUNCTION rtx
 debug_mem_addr_value (rtx x)
 {
   rtx t, addr;

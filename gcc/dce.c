@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "dbgcnt.h"
 #include "tm_p.h"
+#include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 
 
 /* -------------------------------------------------------------------------
@@ -93,14 +94,6 @@ deletable_insn_p (rtx insn, bool fast, bitmap arg_stores)
   rtx body, x;
   int i;
 
-  /* Don't delete jumps, notes and the like.  */
-  if (!NONJUMP_INSN_P (insn))
-    return false;
-
-  /* Don't delete insns that can throw.  */
-  if (!insn_nothrow_p (insn))
-    return false;
-
   if (CALL_P (insn)
       /* We cannot delete calls inside of the recursive dce because
 	 this may cause basic blocks to be deleted and this messes up
@@ -114,6 +107,14 @@ deletable_insn_p (rtx insn, bool fast, bitmap arg_stores)
       && (RTL_CONST_OR_PURE_CALL_P (insn)
 	  && !RTL_LOOPING_CONST_OR_PURE_CALL_P (insn)))
     return find_call_stack_args (insn, false, fast, arg_stores);
+
+  /* Don't delete jumps, notes and the like.  */
+  if (!NONJUMP_INSN_P (insn))
+    return false;
+
+  /* Don't delete insns that can throw.  */
+  if (!insn_nothrow_p (insn))
+    return false;
 
   body = PATTERN (insn);
   switch (GET_CODE (body))
@@ -903,19 +904,18 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au)
   FOR_BB_INSNS_REVERSE (bb, insn)
     if (INSN_P (insn))
       {
-	bool needed = false;
+	bool needed = marked_insn_p (insn);
 
 	/* The insn is needed if there is someone who uses the output.  */
-	for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
-	  if (bitmap_bit_p (local_live, DF_REF_REGNO (*def_rec))
-	      || bitmap_bit_p (au, DF_REF_REGNO (*def_rec)))
-	    {
-	      needed = true;
-	      break;
-	    }
-
-	if (needed)
-	  mark_insn (insn, true);
+	if (!needed)
+	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	    if (bitmap_bit_p (local_live, DF_REF_REGNO (*def_rec))
+		|| bitmap_bit_p (au, DF_REF_REGNO (*def_rec)))
+	      {
+		needed = true;
+		mark_insn (insn, true);
+		break;
+	      }
 
 	/* No matter if the instruction is needed or not, we remove
 	   any regno in the defs from the live set.  */
@@ -923,7 +923,7 @@ dce_process_block (basic_block bb, bool redo_out, bitmap au)
 
 	/* On the other hand, we do not allow the dead uses to set
 	   anything in local_live.  */
-	if (marked_insn_p (insn))
+	if (needed)
 	  df_simulate_uses (insn, local_live);
       }
 
@@ -960,8 +960,8 @@ fast_dce (bool byte_level)
      df_simulate_fixup_sets has the disadvantage of calling
      bb_has_eh_pred once per insn, so we cache the information
      here.  */
-  bitmap au = df->regular_block_artificial_uses;
-  bitmap au_eh = df->eh_block_artificial_uses;
+  bitmap au = &df->regular_block_artificial_uses;
+  bitmap au_eh = &df->eh_block_artificial_uses;
   int i;
 
   prescan_insns_for_dce (true);

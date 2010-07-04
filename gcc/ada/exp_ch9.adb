@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -127,6 +127,14 @@ package body Exp_Ch9 is
       Def_Id : Entity_Id) return Node_Id;
    --  Build a specification for a function implementing the protected entry
    --  barrier of the specified entry body.
+
+   function Build_Corresponding_Record
+     (N    : Node_Id;
+      Ctyp : Node_Id;
+      Loc  : Source_Ptr) return Node_Id;
+   --  Common to tasks and protected types. Copy discriminant specifications,
+   --  build record declaration. N is the type declaration, Ctyp is the
+   --  concurrent entity (task type or protected type).
 
    function Build_Entry_Count_Expression
      (Concurrent_Type : Node_Id;
@@ -1037,8 +1045,9 @@ package body Exp_Ch9 is
       --  record is "limited tagged". It is "limited" to reflect the underlying
       --  limitedness of the task or protected object that it represents, and
       --  ensuring for example that it is properly passed by reference. It is
-      --  "tagged" to give support to dispatching calls through interfaces (Ada
-      --  2005: AI-345)
+      --  "tagged" to give support to dispatching calls through interfaces. We
+      --  propagate here the list of interfaces covered by the concurrent type
+      --  (Ada 2005: AI-345).
 
       return
         Make_Full_Type_Declaration (Loc,
@@ -1051,6 +1060,7 @@ package body Exp_Ch9 is
                   Component_Items => Cdecls),
               Tagged_Present  =>
                  Ada_Version >= Ada_05 and then Is_Tagged_Type (Ctyp),
+              Interface_List  => Interface_List (N),
               Limited_Present => True));
    end Build_Corresponding_Record;
 
@@ -1168,8 +1178,7 @@ package body Exp_Ch9 is
       procedure Build_Entry_Family_Name (Id : Entity_Id) is
          Def     : constant Node_Id :=
                      Discrete_Subtype_Definition (Parent (Id));
-         L_Id    : constant Entity_Id :=
-                     Make_Defining_Identifier (Loc, New_Internal_Name ('L'));
+         L_Id    : constant Entity_Id := Make_Temporary (Loc, 'L');
          L_Stmts : constant List_Id := New_List;
          Val     : Node_Id;
 
@@ -1265,9 +1274,8 @@ package body Exp_Ch9 is
                Make_Iteration_Scheme (Loc,
                  Loop_Parameter_Specification =>
                    Make_Loop_Parameter_Specification (Loc,
-                    Defining_Identifier => L_Id,
-                    Discrete_Subtype_Definition =>
-                      Build_Range (Def))),
+                    Defining_Identifier         => L_Id,
+                    Discrete_Subtype_Definition => Build_Range (Def))),
              Statements => L_Stmts,
              End_Label => Empty));
       end Build_Entry_Family_Name;
@@ -1411,7 +1419,7 @@ package body Exp_Ch9 is
          return Empty;
       end if;
 
-      Index := Make_Defining_Identifier (Loc, New_Internal_Name ('I'));
+      Index := Make_Temporary (Loc, 'I');
 
       --  Step 1: Generate the declaration of the index variable:
       --    Inn : Protected_Entry_Index := 0;
@@ -1428,10 +1436,8 @@ package body Exp_Ch9 is
       Append_To (B_Decls,
         Make_Object_Declaration (Loc,
           Defining_Identifier => Index,
-          Object_Definition =>
-            New_Reference_To (RTE (Index_Typ), Loc),
-          Expression =>
-            Make_Integer_Literal (Loc, 0)));
+          Object_Definition   => New_Reference_To (RTE (Index_Typ), Loc),
+          Expression          => Make_Integer_Literal (Loc, 0)));
 
       B_Stmts := New_List;
 
@@ -1488,19 +1494,15 @@ package body Exp_Ch9 is
             --  Generate:
             --    type Ann is access all <actual-type>
 
-            Comp_Nam :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+            Comp_Nam := Make_Temporary (Loc, 'A');
 
             Append_To (Decls,
               Make_Full_Type_Declaration (Loc,
-                Defining_Identifier =>
-                  Comp_Nam,
-                Type_Definition =>
+                Defining_Identifier => Comp_Nam,
+                Type_Definition     =>
                   Make_Access_To_Object_Definition (Loc,
-                    All_Present =>
-                      True,
-                    Constant_Present =>
-                      Ekind (Formal) = E_In_Parameter,
+                    All_Present        => True,
+                    Constant_Present   => Ekind (Formal) = E_In_Parameter,
                     Subtype_Indication =>
                       New_Reference_To (Etype (Actual), Loc))));
 
@@ -1525,8 +1527,7 @@ package body Exp_Ch9 is
          Next_Formal_With_Extras (Formal);
       end loop;
 
-      Rec_Nam :=
-        Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
+      Rec_Nam := Make_Temporary (Loc, 'P');
 
       if Has_Comp then
 
@@ -2141,7 +2142,6 @@ package body Exp_Ch9 is
          --  record type, so mark the spec accordingly.
 
          if Ekind (Subp_Id) = E_Function then
-
             declare
                Res_Def : Node_Id;
 
@@ -2397,12 +2397,10 @@ package body Exp_Ch9 is
          Add_Object_Pointer (Loc, Typ, Decls);
 
          while Present (Ent) loop
-
             if Ekind (Ent) = E_Entry then
                Add_If_Clause (Make_Integer_Literal (Loc, 1));
 
             elsif Ekind (Ent) = E_Entry_Family then
-
                E_Typ := Etype (Discrete_Subtype_Definition (Parent (Ent)));
                Hi := Convert_Discriminant_Ref (Type_High_Bound (E_Typ));
                Lo := Convert_Discriminant_Ref (Type_Low_Bound  (E_Typ));
@@ -3104,7 +3102,7 @@ package body Exp_Ch9 is
 
       if Nkind (Op_Spec) = N_Function_Specification then
          if Exc_Safe then
-            R := Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+            R := Make_Temporary (Loc, 'R');
             Unprot_Call :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => R,
@@ -3115,8 +3113,10 @@ package body Exp_Ch9 is
                     Name => Make_Identifier (Loc,
                       Chars (Defining_Unit_Name (N_Op_Spec))),
                     Parameter_Associations => Uactuals));
-            Return_Stmt := Make_Simple_Return_Statement (Loc,
-              Expression => New_Reference_To (R, Loc));
+
+            Return_Stmt :=
+              Make_Simple_Return_Statement (Loc,
+                Expression => New_Reference_To (R, Loc));
 
          else
             Unprot_Call := Make_Simple_Return_Statement (Loc,
@@ -3489,8 +3489,8 @@ package body Exp_Ch9 is
            and then Ada_Version >= Ada_05
          then
             declare
-               Obj : constant Entity_Id :=
-                  Make_Defining_Identifier (Loc, New_Internal_Name ('F'));
+               ExpR : constant Node_Id   := Relocate_Node (Concval);
+               Obj  : constant Entity_Id := Make_Temporary (Loc, 'F', ExpR);
                Decl : Node_Id;
 
             begin
@@ -3498,7 +3498,7 @@ package body Exp_Ch9 is
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Obj,
                    Object_Definition   => New_Occurrence_Of (Conctyp, Loc),
-                   Expression          => Relocate_Node (Concval));
+                   Expression          => ExpR);
                Set_Etype (Obj, Conctyp);
                Decls := New_List (Decl);
                Rewrite (Concval, New_Occurrence_Of (Obj, Loc));
@@ -3568,11 +3568,9 @@ package body Exp_Ch9 is
                if Is_By_Copy_Type (Etype (Actual)) then
                   N_Node :=
                     Make_Object_Declaration (Loc,
-                      Defining_Identifier =>
-                        Make_Defining_Identifier (Loc,
-                          Chars => New_Internal_Name ('J')),
-                      Aliased_Present => True,
-                      Object_Definition =>
+                      Defining_Identifier => Make_Temporary (Loc, 'J'),
+                      Aliased_Present     => True,
+                      Object_Definition   =>
                         New_Reference_To (Etype (Formal), Loc));
 
                   --  Mark the object as not needing initialization since the
@@ -3683,13 +3681,12 @@ package body Exp_Ch9 is
 
                   --  Bnn : Communications_Block;
 
-                  Comm_Name :=
-                    Make_Defining_Identifier (Loc, New_Internal_Name ('B'));
+                  Comm_Name := Make_Temporary (Loc, 'B');
 
                   Append_To (Decls,
                     Make_Object_Declaration (Loc,
                       Defining_Identifier => Comm_Name,
-                      Object_Definition =>
+                      Object_Definition   =>
                         New_Reference_To (RTE (RE_Communication_Block), Loc)));
 
                   --  Some additional statements for protected entry calls
@@ -3941,16 +3938,13 @@ package body Exp_Ch9 is
       Loc    : constant Source_Ptr := Sloc (N);
       Chain  : constant Entity_Id  :=
                  Make_Defining_Identifier (Loc, Name_uChain);
-
-      Blkent : Entity_Id;
+      Blkent : constant Entity_Id  := Make_Temporary (Loc, 'A');
       Block  : Node_Id;
 
    begin
-      Blkent := Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
-
       Block :=
         Make_Block_Statement (Loc,
-          Identifier => New_Reference_To (Blkent, Loc),
+          Identifier   => New_Reference_To (Blkent, Loc),
           Declarations => New_List (
 
             --  _Chain  : Activation_Chain;
@@ -4006,12 +4000,10 @@ package body Exp_Ch9 is
       Loc    : constant Source_Ptr := Sloc (N);
       Chain  : constant Entity_Id  :=
                  Make_Defining_Identifier (Loc, Name_uChain);
-      Blkent : Entity_Id;
+      Blkent : constant Entity_Id  := Make_Temporary (Loc, 'A');
       Block  : Node_Id;
 
    begin
-      Blkent := Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
-
       Append_To (Init_Stmts,
         Make_Procedure_Call_Statement (Loc,
           Name => New_Reference_To (RTE (RE_Activate_Tasks), Loc),
@@ -4141,9 +4133,7 @@ package body Exp_Ch9 is
       Efam := First_Entity (Conctyp);
       while Present (Efam) loop
          if Ekind (Efam) = E_Entry_Family then
-            Efam_Type :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('F'));
+            Efam_Type := Make_Temporary (Loc, 'F');
 
             declare
                Bas : Entity_Id :=
@@ -4158,9 +4148,7 @@ package body Exp_Ch9 is
                  (Discrete_Subtype_Definition (Parent (Efam)), Lo, Hi);
 
                if Is_Potentially_Large_Family (Bas, Conctyp, Lo, Hi) then
-                  Bas :=
-                    Make_Defining_Identifier (Loc,
-                      Chars => New_Internal_Name ('B'));
+                  Bas := Make_Temporary (Loc, 'B');
 
                   Bas_Decl :=
                     Make_Subtype_Declaration (Loc,
@@ -4397,20 +4385,19 @@ package body Exp_Ch9 is
             else
                declare
                   Decl   : Node_Id;
-                  T_Self : constant Entity_Id :=
-                             Make_Defining_Identifier (Loc,
-                               Chars => New_Internal_Name ('T'));
+                  T_Self : constant Entity_Id := Make_Temporary (Loc, 'T');
                   T_Body : constant Node_Id :=
                              Parent (Corresponding_Body (Parent (Entity (N))));
 
                begin
-                  Decl := Make_Object_Declaration (Loc,
-                     Defining_Identifier => T_Self,
-                     Object_Definition =>
-                       New_Occurrence_Of (RTE (RO_ST_Task_Id), Loc),
-                     Expression =>
-                       Make_Function_Call (Loc,
-                         Name => New_Reference_To (RTE (RE_Self), Loc)));
+                  Decl :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => T_Self,
+                      Object_Definition   =>
+                        New_Occurrence_Of (RTE (RO_ST_Task_Id), Loc),
+                      Expression          =>
+                        Make_Function_Call (Loc,
+                          Name => New_Reference_To (RTE (RE_Self), Loc)));
                   Prepend (Decl, Declarations (T_Body));
                   Analyze (Decl);
                   Set_Scope (T_Self, Entity (N));
@@ -4707,25 +4694,28 @@ package body Exp_Ch9 is
          --  completes in the middle of the accept body.
 
          if Present (Handled_Statement_Sequence (N)) then
-            Lab_Id := Make_Identifier (Loc, New_Internal_Name ('L'));
-            Set_Entity (Lab_Id,
-              Make_Defining_Identifier (Loc, Chars (Lab_Id)));
-            Lab := Make_Label (Loc, Lab_Id);
-            Ldecl :=
-              Make_Implicit_Label_Declaration (Loc,
-                Defining_Identifier  => Entity (Lab_Id),
-                Label_Construct      => Lab);
-            Append (Lab, Statements (Handled_Statement_Sequence (N)));
+            declare
+               Ent : Entity_Id;
 
-            Lab_Id := Make_Identifier (Loc, New_Internal_Name ('L'));
-            Set_Entity (Lab_Id,
-              Make_Defining_Identifier (Loc, Chars (Lab_Id)));
-            Lab := Make_Label (Loc, Lab_Id);
-            Ldecl2 :=
-              Make_Implicit_Label_Declaration (Loc,
-                Defining_Identifier  => Entity (Lab_Id),
-                Label_Construct      => Lab);
-            Append (Lab, Statements (Handled_Statement_Sequence (N)));
+            begin
+               Ent := Make_Temporary (Loc, 'L');
+               Lab_Id := New_Reference_To (Ent, Loc);
+               Lab := Make_Label (Loc, Lab_Id);
+               Ldecl :=
+                 Make_Implicit_Label_Declaration (Loc,
+                   Defining_Identifier  => Ent,
+                   Label_Construct      => Lab);
+               Append (Lab, Statements (Handled_Statement_Sequence (N)));
+
+               Ent := Make_Temporary (Loc, 'L');
+               Lab_Id := New_Reference_To (Ent, Loc);
+               Lab := Make_Label (Loc, Lab_Id);
+               Ldecl2 :=
+                 Make_Implicit_Label_Declaration (Loc,
+                   Defining_Identifier  => Ent,
+                   Label_Construct      => Lab);
+               Append (Lab, Statements (Handled_Statement_Sequence (N)));
+            end;
 
          else
             Ldecl := Empty;
@@ -4737,9 +4727,7 @@ package body Exp_Ch9 is
          if Is_List_Member (N) then
 
             if Present (Handled_Statement_Sequence (N)) then
-               Ann :=
-                 Make_Defining_Identifier (Loc,
-                   Chars => New_Internal_Name ('A'));
+               Ann := Make_Temporary (Loc, 'A');
 
                Adecl :=
                  Make_Object_Declaration (Loc,
@@ -4796,9 +4784,7 @@ package body Exp_Ch9 is
                --  label for requeue expansion must be declared.
 
                if N = Accept_Statement (Alt) then
-                  Ann :=
-                    Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
-
+                  Ann := Make_Temporary (Loc, 'A');
                   Adecl :=
                     Make_Object_Declaration (Loc,
                       Defining_Identifier => Ann,
@@ -4911,10 +4897,8 @@ package body Exp_Ch9 is
       Comps  : List_Id;
       T      : constant Entity_Id  := Defining_Identifier (N);
       D_T    : constant Entity_Id  := Designated_Type (T);
-      D_T2   : constant Entity_Id  := Make_Defining_Identifier (Loc,
-                                        Chars => New_Internal_Name ('D'));
-      E_T    : constant Entity_Id  := Make_Defining_Identifier (Loc,
-                                        Chars => New_Internal_Name ('E'));
+      D_T2   : constant Entity_Id  := Make_Temporary (Loc, 'D');
+      E_T    : constant Entity_Id  := Make_Temporary (Loc, 'E');
       P_List : constant List_Id    := Build_Protected_Spec
                                         (N, RTE (RE_Address), D_T, False);
       Decl1  : Node_Id;
@@ -4950,8 +4934,7 @@ package body Exp_Ch9 is
 
       Comps := New_List (
         Make_Component_Declaration (Loc,
-          Defining_Identifier =>
-            Make_Defining_Identifier (Loc, New_Internal_Name ('P')),
+          Defining_Identifier => Make_Temporary (Loc, 'P'),
           Component_Definition =>
             Make_Component_Definition (Loc,
               Aliased_Present => False,
@@ -4959,11 +4942,10 @@ package body Exp_Ch9 is
                 New_Occurrence_Of (RTE (RE_Address), Loc))),
 
         Make_Component_Declaration (Loc,
-          Defining_Identifier =>
-            Make_Defining_Identifier (Loc, New_Internal_Name ('S')),
+          Defining_Identifier  => Make_Temporary (Loc, 'S'),
           Component_Definition =>
             Make_Component_Definition (Loc,
-              Aliased_Present => False,
+              Aliased_Present    => False,
               Subtype_Indication => New_Occurrence_Of (D_T2, Loc))));
 
       Decl2 :=
@@ -5291,7 +5273,7 @@ package body Exp_Ch9 is
          --  Construct the block, using the declarations from the accept
          --  statement if any to initialize the declarations of the block.
 
-         Blkent := Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+         Blkent := Make_Temporary (Loc, 'A');
          Set_Ekind (Blkent, E_Block);
          Set_Etype (Blkent, Standard_Void_Type);
          Set_Scope (Blkent, Current_Scope);
@@ -5676,7 +5658,7 @@ package body Exp_Ch9 is
       T   : Entity_Id;  --  Additional status flag
 
    begin
-      Blk_Ent := Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+      Blk_Ent := Make_Temporary (Loc, 'A');
       Ecall   := Triggering_Statement (Trig);
 
       --  The arguments in the call may require dynamic allocation, and the
@@ -5717,13 +5699,11 @@ package body Exp_Ch9 is
             --  Communication block processing, generate:
             --    Bnn : Communication_Block;
 
-            Bnn := Make_Defining_Identifier (Loc, New_Internal_Name ('B'));
-
+            Bnn := Make_Temporary (Loc, 'B');
             Append_To (Decls,
               Make_Object_Declaration (Loc,
-                Defining_Identifier =>
-                  Bnn,
-                Object_Definition =>
+                Defining_Identifier => Bnn,
+                Object_Definition   =>
                   New_Reference_To (RTE (RE_Communication_Block), Loc)));
 
             --  Call kind processing, generate:
@@ -5761,14 +5741,13 @@ package body Exp_Ch9 is
             S := Build_S (Loc, Decls);
 
             --  Additional status flag processing, generate:
+            --    Tnn : Boolean;
 
-            T := Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
-
+            T := Make_Temporary (Loc, 'T');
             Append_To (Decls,
               Make_Object_Declaration (Loc,
-                Defining_Identifier =>
-                  T,
-                Object_Definition =>
+                Defining_Identifier => T,
+                Object_Definition   =>
                   New_Reference_To (Standard_Boolean, Loc)));
 
             ------------------------------
@@ -5853,9 +5832,7 @@ package body Exp_Ch9 is
             --       _clean;
             --    end;
 
-            Cleanup_Block_Ent :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('C'));
-
+            Cleanup_Block_Ent := Make_Temporary (Loc, 'C');
             Cleanup_Block :=
               Build_Cleanup_Block (Loc, Cleanup_Block_Ent, Cleanup_Stmts, Bnn);
 
@@ -5868,9 +5845,7 @@ package body Exp_Ch9 is
             --       when Abort_Signal => Abort_Undefer;
             --    end;
 
-            Abort_Block_Ent :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
-
+            Abort_Block_Ent := Make_Temporary (Loc, 'A');
             ProtE_Stmts :=
               New_List (
                 Make_Implicit_Label_Declaration (Loc,
@@ -5985,9 +5960,7 @@ package body Exp_Ch9 is
             --       _clean;
             --    end;
 
-            Cleanup_Block_Ent :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('C'));
-
+            Cleanup_Block_Ent := Make_Temporary (Loc, 'C');
             Cleanup_Block :=
               Build_Cleanup_Block (Loc, Cleanup_Block_Ent, Cleanup_Stmts, T);
 
@@ -6000,13 +5973,11 @@ package body Exp_Ch9 is
             --       when Abort_Signal => Abort_Undefer;
             --    end;
 
-            Abort_Block_Ent :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+            Abort_Block_Ent := Make_Temporary (Loc, 'A');
 
             Append_To (TaskE_Stmts,
               Make_Implicit_Label_Declaration (Loc,
-                Defining_Identifier =>
-                  Abort_Block_Ent));
+                Defining_Identifier => Abort_Block_Ent));
 
             Append_To (TaskE_Stmts,
               Build_Abort_Block
@@ -6143,8 +6114,7 @@ package body Exp_Ch9 is
             --  Add a Delay_Block object to the parameter list of the delay
             --  procedure to form the parameter list of the Wait entry call.
 
-            Dblock_Ent :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('D'));
+            Dblock_Ent := Make_Temporary (Loc, 'D');
 
             Pdef := Entity (Name (Ecall));
 
@@ -7092,8 +7062,7 @@ package body Exp_Ch9 is
 
             --  Declare new access type and then append
 
-            Ctype :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+            Ctype := Make_Temporary (Loc, 'A');
 
             Decl :=
               Make_Full_Type_Declaration (Loc,
@@ -7120,8 +7089,7 @@ package body Exp_Ch9 is
 
          --  Create the Entry_Parameter_Record declaration
 
-         Rec_Ent :=
-           Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
+         Rec_Ent := Make_Temporary (Loc, 'P');
 
          Decl :=
            Make_Full_Type_Declaration (Loc,
@@ -7137,8 +7105,7 @@ package body Exp_Ch9 is
 
          --  Construct and link in the corresponding access type
 
-         Acc_Ent :=
-           Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+         Acc_Ent := Make_Temporary (Loc, 'A');
 
          Set_Entry_Parameters_Type (Entry_Ent, Acc_Ent);
 
@@ -7724,11 +7691,6 @@ package body Exp_Ch9 is
       end if;
 
       Cdecls := Component_Items (Component_List (Type_Definition (Rec_Decl)));
-
-      --  Ada 2005 (AI-345): Propagate the attribute that contains the list
-      --  of implemented interfaces.
-
-      Set_Interface_List (Type_Definition (Rec_Decl), Interface_List (N));
 
       Qualify_Entity_Names (N);
 
@@ -8751,8 +8713,7 @@ package body Exp_Ch9 is
       function Accept_Or_Raise return List_Id is
          Cond  : Node_Id;
          Stats : List_Id;
-         J     : constant Entity_Id := Make_Defining_Identifier (Loc,
-                                                  New_Internal_Name ('J'));
+         J     : constant Entity_Id := Make_Temporary (Loc, 'J');
 
       begin
          --  We generate the following:
@@ -9344,8 +9305,8 @@ package body Exp_Ch9 is
          --  Create Duration and Delay_Mode objects used for passing a delay
          --  value to RTS
 
-         D := Make_Defining_Identifier (Loc, New_Internal_Name ('D'));
-         M := Make_Defining_Identifier (Loc, New_Internal_Name ('M'));
+         D := Make_Temporary (Loc, 'D');
+         M := Make_Temporary (Loc, 'M');
 
          declare
             Discr : Entity_Id;
@@ -9990,11 +9951,6 @@ package body Exp_Ch9 is
 
       Rec_Decl := Build_Corresponding_Record (N, Tasktyp, Loc);
 
-      --  Ada 2005 (AI-345): Propagate the attribute that contains the list
-      --  of implemented interfaces.
-
-      Set_Interface_List (Type_Definition (Rec_Decl), Interface_List (N));
-
       Rec_Ent  := Defining_Identifier (Rec_Decl);
       Cdecls   := Component_Items (Component_List
                                      (Type_Definition (Rec_Decl)));
@@ -10579,7 +10535,7 @@ package body Exp_Ch9 is
            New_List (New_Copy (Expression (D_Stat))));
       end if;
 
-      D := Make_Defining_Identifier (Loc, New_Internal_Name ('D'));
+      D := Make_Temporary (Loc, 'D');
 
       --  Generate:
       --    D : Duration;
@@ -10591,7 +10547,7 @@ package body Exp_Ch9 is
           Object_Definition =>
             New_Reference_To (Standard_Duration, Loc)));
 
-      M := Make_Defining_Identifier (Loc, New_Internal_Name ('M'));
+      M := Make_Temporary (Loc, 'M');
 
       --  Generate:
       --    M : Integer := (0 | 1 | 2);
@@ -11370,9 +11326,7 @@ package body Exp_Ch9 is
 
       if Is_Protected then
          declare
-            Prot_Ent : constant Entity_Id :=
-                         Make_Defining_Identifier (Loc,
-                           New_Internal_Name ('R'));
+            Prot_Ent : constant Entity_Id := Make_Temporary (Loc, 'R');
             Prot_Typ : RE_Id;
 
          begin
@@ -11561,8 +11515,7 @@ package body Exp_Ch9 is
                High := Replace_Bound (High);
                Low  := Replace_Bound (Low);
 
-               Index_Typ :=
-                 Make_Defining_Identifier (Loc, New_Internal_Name ('J'));
+               Index_Typ := Make_Temporary (Loc, 'J');
 
                --  Generate:
                --    subtype Jnn is <Etype of Index> range Low .. High;
@@ -11790,9 +11743,7 @@ package body Exp_Ch9 is
             --  Interrupt_Priority).
 
             else
-               Temp :=
-                 Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
-
+               Temp := Make_Temporary (Loc, 'R', Prio);
                Append_To (L,
                   Make_Object_Declaration (Loc,
                      Defining_Identifier => Temp,
@@ -11800,7 +11751,7 @@ package body Exp_Ch9 is
                        New_Occurrence_Of (RTE (RE_Any_Priority), Loc),
                      Expression          => Relocate_Node (Prio)));
 
-                  Append_To (Args, New_Occurrence_Of (Temp, Loc));
+               Append_To (Args, New_Occurrence_Of (Temp, Loc));
             end if;
          end;
 
@@ -12170,9 +12121,8 @@ package body Exp_Ch9 is
 
          --  Master parameter. This is a reference to the _Master parameter of
          --  the initialization procedure, except in the case of the pragma
-         --  Restrictions (No_Task_Hierarchy) where the value is fixed to 3.
-         --  See comments in System.Tasking.Initialization.Init_RTS for the
-         --  value 3.
+         --  Restrictions (No_Task_Hierarchy) where the value is fixed to 3
+         --  (3 is System.Tasking.Library_Task_Level).
 
          if Restriction_Active (No_Task_Hierarchy) = False then
             Append_To (Args, Make_Identifier (Loc, Name_uMaster));
@@ -12380,8 +12330,7 @@ package body Exp_Ch9 is
             --  Generate:
             --    Jnn : aliased <formal-type>
 
-            Temp_Nam :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('J'));
+            Temp_Nam := Make_Temporary (Loc, 'J');
 
             Append_To (Decls,
               Make_Object_Declaration (Loc,
@@ -12447,7 +12396,7 @@ package body Exp_Ch9 is
       --      <actual2>'reference;
       --      ...);
 
-      P := Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
+      P := Make_Temporary (Loc, 'P');
 
       Append_To (Decls,
         Make_Object_Declaration (Loc,

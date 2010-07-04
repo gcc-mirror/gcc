@@ -1,19 +1,21 @@
 # Simplified Chinese translation for cpplib.
 # Copyright (C) 2005 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
-# Meng Jie <zuxy.meng@gmail.com>, 2005-2009.
+# Meng Jie <zuxy.meng@gmail.com>, 2005-2010.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.5-b20100204\n"
+"Project-Id-Version: cpplib 4.5.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-01-11 11:42+0000\n"
-"PO-Revision-Date: 2010-02-23 15:53+0800\n"
+"POT-Creation-Date: 2010-04-06 14:10+0000\n"
+"PO-Revision-Date: 2010-04-19 14:55+0800\n"
 "Last-Translator: Meng Jie <zuxy.meng@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: Chinese\n"
+"X-Poedit-Country: CHINA\n"
 
 #: charset.c:674
 #, c-format
@@ -34,7 +36,7 @@ msgstr "没有 iconv 的实现，无法从 %s 转换到 %s"
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr "字符 0x%lx 不在基本源字符集中\n"
 
-#: charset.c:798 charset.c:1457
+#: charset.c:798 charset.c:1444
 msgid "converting to execution character set"
 msgstr "转换到可执行文件的字符集"
 
@@ -71,7 +73,7 @@ msgstr "不完全的 Unicode 字符名 %.*s"
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s 不是一个有效的 Unicode 字符"
 
-#: charset.c:1056 lex.c:486
+#: charset.c:1056 lex.c:488
 msgid "'$' in identifier or number"
 msgstr "‘$’出现在标识符或数字中"
 
@@ -85,7 +87,7 @@ msgstr "Unicode 字符 %.*s 在标识符中无效"
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "Unicode 字符 %.*s 在标识符开头无效"
 
-#: charset.c:1102 charset.c:1687
+#: charset.c:1102 charset.c:1674
 msgid "converting UCN to source character set"
 msgstr "将 UCN 转换到源字符集"
 
@@ -132,19 +134,19 @@ msgstr "未知的转义序列：‘\\%s’"
 msgid "converting escape sequence to execution character set"
 msgstr "将转义序列转换到执行字符集"
 
-#: charset.c:1522 charset.c:1586
+#: charset.c:1509 charset.c:1573
 msgid "character constant too long for its type"
 msgstr "字符常量大小超出其类型"
 
-#: charset.c:1525
+#: charset.c:1512
 msgid "multi-character character constant"
 msgstr "多字节字符常量"
 
-#: charset.c:1625
+#: charset.c:1612
 msgid "empty character constant"
 msgstr "空的字符常量"
 
-#: charset.c:1734
+#: charset.c:1721
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr "无法从 %s 转换到 %s"
@@ -396,7 +398,7 @@ msgstr "重断言“%s”"
 msgid "unterminated #%s"
 msgstr "未终止的 #%s"
 
-#: directives-only.c:222 lex.c:1415 traditional.c:163
+#: directives-only.c:222 lex.c:1516 traditional.c:163
 msgid "unterminated comment"
 msgstr "未结束的注释"
 
@@ -702,78 +704,78 @@ msgstr "三元符 ??%c 转换为 %c"
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr "三元符 ??%c 被忽略，请使用 -trigraphs 来启用"
 
-#: lex.c:358
+#: lex.c:360
 msgid "\"/*\" within comment"
 msgstr "“/*”出现在注释中"
 
-#: lex.c:416
+#: lex.c:418
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr "预处理指示中出现 %s"
 
-#: lex.c:425
+#: lex.c:427
 msgid "null character(s) ignored"
 msgstr "忽略空字符"
 
-#: lex.c:462
+#: lex.c:464
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "‘%.*s’不在 NFKC 中"
 
-#: lex.c:465
+#: lex.c:467
 #, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "‘%.*s’不在 NFC 中"
 
-#: lex.c:533 lex.c:610
+#: lex.c:535 lex.c:612
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "试图使用有毒的“%s”"
 
-#: lex.c:541 lex.c:618
+#: lex.c:543 lex.c:620
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__ 只能出现在 C99 可变参数宏的展开中"
 
-#: lex.c:547 lex.c:624
+#: lex.c:549 lex.c:626
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr "标识符“%s”是 C++ 中的一个特殊操作符"
 
-#: lex.c:739
+#: lex.c:771
 msgid "raw string delimiter longer than 16 characters"
 msgstr "原始字符串分隔符长过 16 个字符"
 
-#: lex.c:742
+#: lex.c:774
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "原始字符串分隔符中有无效字符‘%c’"
 
-#: lex.c:771 lex.c:818
+#: lex.c:895 lex.c:917
 msgid "unterminated raw string"
 msgstr "未终止的原始字符串"
 
-#: lex.c:831 lex.c:930
+#: lex.c:932 lex.c:1031
 msgid "null character(s) preserved in literal"
 msgstr "空字符将保留在字面字符串中"
 
-#: lex.c:933
+#: lex.c:1034
 #, c-format
 msgid "missing terminating %c character"
 msgstr "缺少结尾的 %c 字符"
 
-#: lex.c:1426
+#: lex.c:1527
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "C++ 风格的注释在 ISO C90 中不被允许"
 
-#: lex.c:1428
+#: lex.c:1529
 msgid "(this will be reported only once per input file)"
 msgstr "(此警告为每个输入文件只报告一次)"
 
-#: lex.c:1433
+#: lex.c:1534
 msgid "multi-line comment"
 msgstr "多行注释"
 
-#: lex.c:1753
+#: lex.c:1854
 #, c-format
 msgid "unspellable token %s"
 msgstr "无法拼出的标识符 %s"

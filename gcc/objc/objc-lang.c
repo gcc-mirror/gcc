@@ -26,12 +26,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "c-tree.h"
-#include "c-common.h"
+#include "c-family/c-common.h"
 #include "ggc.h"
 #include "objc-act.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
-#include "diagnostic.h"
 #include "c-objc-common.h"
 
 enum c_language_kind c_language = clk_objc;

@@ -91,7 +91,7 @@ To import a new release:
     in the classpath/ChangeLog.gcj file.
    (Don't forget to svn resolved files.)
 - Use auto* to create configure, Makefile.in, etc
-  Make sure you have Automake 1.11 installed. Exactly that version!
+  Make sure you have Automake 1.11.1 installed. Exactly that version!
   You have to make sure to use the gcc libtool.m4 and gcc lt* scripts
   cd .../classpath
   cp ../../lt* .

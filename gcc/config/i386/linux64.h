@@ -1,5 +1,5 @@
 /* Definitions for AMD x86-64 running Linux-based GNU systems with ELF format.
-   Copyright (C) 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Jan Hubicka <jh@suse.cz>, based on linux.h.
 
@@ -61,11 +61,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define GLIBC_DYNAMIC_LINKER32 "/lib/ld-linux.so.2"
 #define GLIBC_DYNAMIC_LINKER64 "/lib64/ld-linux-x86-64.so.2"
 
-#undef ASM_SPEC
-#define ASM_SPEC "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} \
- %{Wa,*:%*} %{m32:--32} %{m64:--64} \
- %{!mno-sse2avx:%{mavx:-msse2avx}} %{msse2avx:%{!mavx:-msse2avx}}"
-
 #if TARGET_64BIT_DEFAULT
 #define SPEC_32 "m32"
 #define SPEC_64 "!m32"
@@ -73,6 +68,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define SPEC_32 "!m64"
 #define SPEC_64 "m64"
 #endif
+
+#undef ASM_SPEC
+#define ASM_SPEC "%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} \
+ %{Wa,*:%*} %{" SPEC_32 ":--32} %{" SPEC_64 ":--64} \
+ %{!mno-sse2avx:%{mavx:-msse2avx}} %{msse2avx:%{!mavx:-msse2avx}}"
 
 #undef	LINK_SPEC
 #define LINK_SPEC "%{" SPEC_64 ":-m elf_x86_64} %{" SPEC_32 ":-m elf_i386} \
@@ -106,8 +106,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define LIBGCC2_TF_CEXT q
 #define TF_SIZE 113
 
-#undef NEED_INDICATE_EXEC_STACK
-#define NEED_INDICATE_EXEC_STACK 1
+#define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 
 #define MD_UNWIND_SUPPORT "config/i386/linux-unwind.h"
 

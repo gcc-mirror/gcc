@@ -1,3 +1,41 @@
+2010-05-21  Richard Guenther  <rguenther@suse.de>
+
+	* lto-plugin.c (write_resolution): Do not assert syms is non-NULL.
+
+2010-05-07  Richard Guenther <rguenther@suse.de>
+
+	* lto-plugin.c (free_2): Do not free resolution_file.
+	(write_resolution): Check that we were passed a resolution file.
+	(all_symbols_read_handler): Adjust.
+	(cleanup_handler): Do not remove the resolution file.
+	(process_option): Handle -fresolution=.
+
+2010-05-04  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/43620
+	* configure.ac (AM_INIT_AUTOMAKE): Add no-dist.
+	* Makefile.in: Regenerate.
+
+2010-04-23  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41550
+	* lto-plugin.c (parse_table_entry): Use xstrdup and xrealloc.
+	(translate): Likewise.
+	(all_symbols_read_handler): Likewise.
+	(claim_file_handler): Likewise.
+	(process_option): Likewise.
+	(add_output_files): Likewise.  Remove filename length limit.
+
+2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+
+2010-03-16  Dmitry Gorbachev  <d.g.gorbachev@gmail.com>
+
+	PR lto/43336
+	* lto-plugin.c (cleanup_handler): Delete temporary output files.
+
 2010-01-11  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/41569

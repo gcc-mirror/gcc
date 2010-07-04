@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,8 +23,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Osint;  use Osint;
-with Output; use Output;
+with Makeutl;
+with Osint;   use Osint;
+with Output;  use Output;
 with Usage;
 
 procedure Makeusg is
@@ -310,6 +311,14 @@ begin
    --  Line for --subdirs=
 
    Write_Str ("  --subdirs=dir real obj/lib/exec dirs are subdirs");
+   Write_Eol;
+
+   --  Line for --unchecked-shared-lib-imports
+
+   Write_Str ("  ");
+   Write_Str (Makeutl.Unchecked_Shared_Lib_Imports);
+   Write_Eol;
+   Write_Str ("            Allow shared libraries to import static libraries");
    Write_Eol;
    Write_Eol;
 

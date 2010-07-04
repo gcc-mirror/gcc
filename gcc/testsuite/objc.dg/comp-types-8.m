@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* Another gimplifier ICE... */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 @interface MyView: Object {
   int _frame;

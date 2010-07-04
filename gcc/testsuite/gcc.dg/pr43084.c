@@ -1,6 +1,6 @@
 /* PR debug/43084 */
 /* { dg-do compile } */
-/* { dg-options "-O1 -fipa-struct-reorg -fwhole-program -fipa-type-escape -fcompare-debug" } */
+/* { dg-options "-O1 -fipa-struct-reorg -fwhole-program -fcompare-debug" } */
 
 struct S
 {

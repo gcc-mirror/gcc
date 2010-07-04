@@ -25,3 +25,4 @@ CONTAINS
     END DO mainloop
   END SUBROUTINE trsapp
 END MODULE powell
+! { dg-final { cleanup-modules "powell" } }

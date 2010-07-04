@@ -3,9 +3,7 @@
  * Fri Feb  2 11:48:01 GMT 2001
  */
 
-#include <objc/objc.h>
-#include <objc/Object.h>
-#include <objc/Protocol.h>
+#include "../../objc-obj-c++-shared/Protocol1.h"
 
 @protocol MyProtocol
 + (bycopy id<MyProtocol>) bycopyMethod;

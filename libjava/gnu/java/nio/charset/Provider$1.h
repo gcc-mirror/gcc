@@ -31,8 +31,8 @@ class gnu::java::nio::charset::Provider$1 : public ::java::lang::Object
 public: // actually package-private
   Provider$1();
 public:
-  ::gnu::java::nio::charset::Provider * Provider$1$run();
-  ::java::lang::Object * run();
+  virtual ::gnu::java::nio::charset::Provider * Provider$1$run();
+  virtual ::java::lang::Object * run();
   static ::java::lang::Class class$;
 };
 

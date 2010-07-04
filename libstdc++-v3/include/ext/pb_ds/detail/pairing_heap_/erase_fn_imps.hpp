@@ -48,8 +48,8 @@ pop()
 
   node_pointer p_new_root = join_node_children(base_type::m_p_root);
   _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_new_root, false);)
-  if (p_new_root != NULL)
-    p_new_root->m_p_prev_or_parent = NULL;
+  if (p_new_root != 0)
+    p_new_root->m_p_prev_or_parent = 0;
 
   base_type::actual_erase_node(base_type::m_p_root);
   base_type::m_p_root = p_new_root;
@@ -78,27 +78,27 @@ remove_node(node_pointer p_nd)
   node_pointer p_new_child = join_node_children(p_nd);
 
 #ifdef _GLIBCXX_DEBUG
-  if (p_new_child != NULL)
+  if (p_new_child != 0)
     base_type::assert_node_consistent(p_new_child, false);
 #endif 
 
   if (p_nd == base_type::m_p_root)
     {
-      if (p_new_child != NULL)
-	p_new_child->m_p_prev_or_parent = NULL;
+      if (p_new_child != 0)
+	p_new_child->m_p_prev_or_parent = 0;
       base_type::m_p_root = p_new_child;
       _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(base_type::m_p_root, false);)
       return;
     }
 
-  _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_prev_or_parent != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_prev_or_parent != 0);
   if (p_nd->m_p_prev_or_parent->m_p_l_child == p_nd)
     {
-      if (p_new_child != NULL)
+      if (p_new_child != 0)
         {
 	  p_new_child->m_p_prev_or_parent = p_nd->m_p_prev_or_parent;
 	  p_new_child->m_p_next_sibling = p_nd->m_p_next_sibling;
-	  if (p_new_child->m_p_next_sibling != NULL)
+	  if (p_new_child->m_p_next_sibling != 0)
 	    p_new_child->m_p_next_sibling->m_p_prev_or_parent = p_new_child;
 	  p_nd->m_p_prev_or_parent->m_p_l_child = p_new_child;
 	  _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(p_nd->m_p_prev_or_parent, false);)
@@ -106,17 +106,17 @@ remove_node(node_pointer p_nd)
         }
 
       p_nd->m_p_prev_or_parent->m_p_l_child = p_nd->m_p_next_sibling;
-      if (p_nd->m_p_next_sibling != NULL)
+      if (p_nd->m_p_next_sibling != 0)
 	p_nd->m_p_next_sibling->m_p_prev_or_parent = p_nd->m_p_prev_or_parent;
       _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(p_nd->m_p_prev_or_parent, false);)
       return;
     }
 
-  if (p_new_child != NULL)
+  if (p_new_child != 0)
     {
       p_new_child->m_p_prev_or_parent = p_nd->m_p_prev_or_parent;
       p_new_child->m_p_next_sibling = p_nd->m_p_next_sibling;
-      if (p_new_child->m_p_next_sibling != NULL)
+      if (p_new_child->m_p_next_sibling != 0)
 	p_new_child->m_p_next_sibling->m_p_prev_or_parent = p_new_child;
       p_new_child->m_p_prev_or_parent->m_p_next_sibling = p_new_child;
       _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(p_nd->m_p_prev_or_parent, false);)
@@ -124,7 +124,7 @@ remove_node(node_pointer p_nd)
     }
 
   p_nd->m_p_prev_or_parent->m_p_next_sibling = p_nd->m_p_next_sibling;
-  if (p_nd->m_p_next_sibling != NULL)
+  if (p_nd->m_p_next_sibling != 0)
     p_nd->m_p_next_sibling->m_p_prev_or_parent = p_nd->m_p_prev_or_parent;
   _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(p_nd->m_p_prev_or_parent, false);)
 }
@@ -134,11 +134,11 @@ typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 join_node_children(node_pointer p_nd)
 {
-  _GLIBCXX_DEBUG_ASSERT(p_nd != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_nd != 0);
   node_pointer p_ret = p_nd->m_p_l_child;
-  if (p_ret == NULL)
-    return NULL;
-  while (p_ret->m_p_next_sibling != NULL)
+  if (p_ret == 0)
+    return 0;
+  while (p_ret->m_p_next_sibling != 0)
     p_ret = forward_join(p_ret, p_ret->m_p_next_sibling);
   while (p_ret->m_p_prev_or_parent != p_nd)
     p_ret = back_join(p_ret->m_p_prev_or_parent, p_ret);
@@ -151,17 +151,17 @@ typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 forward_join(node_pointer p_nd, node_pointer p_next)
 {
-  _GLIBCXX_DEBUG_ASSERT(p_nd != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_nd != 0);
   _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_next_sibling == p_next);
   if (Cmp_Fn::operator()(p_nd->m_value, p_next->m_value))
     {
       p_next->m_p_prev_or_parent = p_nd->m_p_prev_or_parent;
       base_type::make_child_of(p_nd, p_next);
-      return p_next->m_p_next_sibling == NULL 
+      return p_next->m_p_next_sibling == 0 
 	? p_next : p_next->m_p_next_sibling;
     }
 
-  if (p_next->m_p_next_sibling != NULL)
+  if (p_next->m_p_next_sibling != 0)
     {
       p_next->m_p_next_sibling->m_p_prev_or_parent = p_nd;
       p_nd->m_p_next_sibling = p_next->m_p_next_sibling;
@@ -169,7 +169,7 @@ forward_join(node_pointer p_nd, node_pointer p_next)
       return p_nd->m_p_next_sibling;
     }
 
-  p_nd->m_p_next_sibling = NULL;
+  p_nd->m_p_next_sibling = 0;
   base_type::make_child_of(p_next, p_nd);
   _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(p_nd, false));
   return p_nd;
@@ -180,8 +180,8 @@ typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 back_join(node_pointer p_nd, node_pointer p_next)
 {
-  _GLIBCXX_DEBUG_ASSERT(p_nd != NULL);
-  _GLIBCXX_DEBUG_ASSERT(p_next->m_p_next_sibling == NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_nd != 0);
+  _GLIBCXX_DEBUG_ASSERT(p_next->m_p_next_sibling == 0);
 
   if (Cmp_Fn::operator()(p_nd->m_value, p_next->m_value))
     {
@@ -191,7 +191,7 @@ back_join(node_pointer p_nd, node_pointer p_next)
       return p_next;
     }
 
-  p_nd->m_p_next_sibling = NULL;
+  p_nd->m_p_next_sibling = 0;
   base_type::make_child_of(p_next, p_nd);
   _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(p_nd, false));
   return p_nd;
@@ -212,7 +212,7 @@ erase_if(Pred pred)
   base_type::to_linked_list();
   node_pointer p_out = base_type::prune(pred);
   size_type ersd = 0;
-  while (p_out != NULL)
+  while (p_out != 0)
     {
       ++ersd;
       node_pointer p_next = p_out->m_p_next_sibling;
@@ -221,11 +221,11 @@ erase_if(Pred pred)
     }
 
   node_pointer p_cur = base_type::m_p_root;
-  base_type::m_p_root = NULL;
-  while (p_cur != NULL)
+  base_type::m_p_root = 0;
+  while (p_cur != 0)
     {
       node_pointer p_next = p_cur->m_p_next_sibling;
-      p_cur->m_p_l_child = p_cur->m_p_next_sibling = p_cur->m_p_prev_or_parent = NULL;
+      p_cur->m_p_l_child = p_cur->m_p_next_sibling = p_cur->m_p_prev_or_parent = 0;
 
       push_imp(p_cur);
       p_cur = p_next;

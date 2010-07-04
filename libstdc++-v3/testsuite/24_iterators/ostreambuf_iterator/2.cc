@@ -1,6 +1,6 @@
 // 2001-04-30  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2003, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,7 +49,7 @@ bool test02(void)
   *ostrb_it01;
   VERIFY( !ostrb_it01.failed() );
 
-  costreambuf_iter ostrb_it02(NULL);
+  costreambuf_iter ostrb_it02(0);
   VERIFY( ostrb_it02.failed() );
   ostrb_it02++;
   ++ostrb_it02;

@@ -1,5 +1,6 @@
 /* Predictive commoning.
-   Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -197,7 +198,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-chrec.h"
 #include "params.h"
-#include "diagnostic.h"
+#include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
 #include "tree-pass.h"
 #include "tree-affine.h"
 #include "tree-inline.h"
@@ -1459,13 +1461,9 @@ static tree
 predcom_tmp_var (tree ref, unsigned i, bitmap tmp_vars)
 {
   tree type = TREE_TYPE (ref);
-  tree var = create_tmp_var (type, get_lsm_tmp_name (ref, i));
-
   /* We never access the components of the temporary variable in predictive
      commoning.  */
-  if (TREE_CODE (type) == COMPLEX_TYPE
-      || TREE_CODE (type) == VECTOR_TYPE)
-    DECL_GIMPLE_REG_P (var) = 1;
+  tree var = create_tmp_reg (type, get_lsm_tmp_name (ref, i));
 
   add_referenced_var (var);
   bitmap_set_bit (tmp_vars, DECL_UID (var));
@@ -2208,18 +2206,12 @@ reassociate_to_the_same_stmt (tree name1, tree name2)
 
   /* Insert the new statement combining NAME1 and NAME2 before S1, and
      combine it with the rhs of S1.  */
-  var = create_tmp_var (type, "predreastmp");
-  if (TREE_CODE (type) == COMPLEX_TYPE
-      || TREE_CODE (type) == VECTOR_TYPE)
-    DECL_GIMPLE_REG_P (var) = 1;
+  var = create_tmp_reg (type, "predreastmp");
   add_referenced_var (var);
   new_name = make_ssa_name (var, NULL);
   new_stmt = gimple_build_assign_with_ops (code, new_name, name1, name2);
 
-  var = create_tmp_var (type, "predreastmp");
-  if (TREE_CODE (type) == COMPLEX_TYPE
-      || TREE_CODE (type) == VECTOR_TYPE)
-    DECL_GIMPLE_REG_P (var) = 1;
+  var = create_tmp_reg (type, "predreastmp");
   add_referenced_var (var);
   tmp_name = make_ssa_name (var, NULL);
 

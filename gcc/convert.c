@@ -1,6 +1,6 @@
 /* Utility routines for data type conversion for GCC.
    Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1997, 1998,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -32,8 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "convert.h"
 #include "toplev.h"
 #include "langhooks.h"
-#include "real.h"
-#include "fixed-value.h"
 
 /* Convert EXPR to some pointer or reference type TYPE.
    EXPR must be pointer, reference, integer, enumeral, or literal zero;
@@ -56,7 +54,8 @@ convert_to_pointer (tree type, tree expr)
 
   /* Propagate overflow to the NULL pointer.  */
   if (integer_zerop (expr))
-    return force_fit_type_double (type, 0, 0, 0, TREE_OVERFLOW (expr));
+    return force_fit_type_double (type, double_int_zero, 0,
+				  TREE_OVERFLOW (expr));
 
   switch (TREE_CODE (TREE_TYPE (expr)))
     {

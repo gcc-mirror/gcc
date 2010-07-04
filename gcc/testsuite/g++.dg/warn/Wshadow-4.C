@@ -8,13 +8,13 @@ public:
     int GetMainURL() const;
 };
 
-int foo(int infoo)		// { dg-warning "shadowed declaration" }
+int foo(int infoo)		// { dg-bogus "shadowed declaration" }
 {
   int outfoo( INetURLObject( infoo ).GetMainURL()); // { dg-bogus "shadows" }
   extern void f(int infoo);
   struct A
   {
-    void f(int infoo) { }	// { dg-warning "shadows a parameter" }
+    void f(int infoo) { }	// { dg-bogus "shadows a parameter" }
   };
   return outfoo;
 }
@@ -22,11 +22,11 @@ int foo(int infoo)		// { dg-warning "shadowed declaration" }
 // PR c++/39763
 int foo2(void)
 {
-    int infoo = 0;		// { dg-warning "shadowed declaration" }
+    int infoo = 0;		// { dg-bogus "shadowed declaration" }
     int outfoo( INetURLObject( infoo ).GetMainURL()); // { dg-bogus "shadows" }
     struct A
     {
-      void f(int infoo) { }	// { dg-warning "shadows a previous local" }
+      void f(int infoo) { }	// { dg-bogus "shadows a previous local" }
     };
     return outfoo;
 }

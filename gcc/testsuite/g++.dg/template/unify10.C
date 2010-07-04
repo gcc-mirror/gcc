@@ -12,16 +12,16 @@ struct MyClass {
 };
 
 template<class CLASS>
-void mFunction(void (CLASS::* method)()) {}
+void mFunction(void (CLASS::* method)()) {} // { dg-message "candidate" }
 
 template<class CLASS>
-void cFunction(void (CLASS::* method)() const) {}
+void cFunction(void (CLASS::* method)() const) {} // { dg-message "candidate" }
 
 template<class CLASS>
-void vFunction(void (CLASS::* method)() volatile) {}
+void vFunction(void (CLASS::* method)() volatile) {} // { dg-message "candidate" }
 
 template<class CLASS>
-void cvFunction(void (CLASS::* method)() const volatile) {}
+void cvFunction(void (CLASS::* method)() const volatile) {} // { dg-message "candidate" }
 
 int main() {
   mFunction(&MyClass::mMethod);

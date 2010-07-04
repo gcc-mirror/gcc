@@ -490,7 +490,7 @@ namespace __gnu_pbds
 		  resize_base::notify_find_search_end();
 		  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(key);)
 
-		    return NULL;
+		    return 0;
 		}
 		break;
 	      case valid_entry_status:
@@ -513,7 +513,7 @@ namespace __gnu_pbds
 
 	_GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(key);)
 	resize_base::notify_find_search_end();
-	return NULL;
+	return 0;
       }
 
       inline pointer
@@ -538,7 +538,7 @@ namespace __gnu_pbds
 		  resize_base::notify_find_search_end();
 		  _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(key);)
 
-		  return NULL;
+		  return 0;
 		}
 		break;
 	      case valid_entry_status:
@@ -562,7 +562,7 @@ namespace __gnu_pbds
 
 	_GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(key);)
 	resize_base::notify_find_search_end();
-	return NULL;
+	return 0;
       }
 
       inline bool
@@ -583,7 +583,7 @@ namespace __gnu_pbds
       void
       inc_it_state(const_pointer& r_p_value, size_type& r_pos) const
       {
-	_GLIBCXX_DEBUG_ASSERT(r_p_value != NULL);
+	_GLIBCXX_DEBUG_ASSERT(r_p_value != 0);
 	for (++r_pos; r_pos < m_num_e; ++r_pos)
 	  {
 	    const_entry_pointer p_e =& m_entries[r_pos];
@@ -593,7 +593,7 @@ namespace __gnu_pbds
 		return;
 	      }
 	  }
-	r_p_value = NULL;
+	r_p_value = 0;
       }
 
       void
@@ -608,7 +608,7 @@ namespace __gnu_pbds
 		return;
 	      }
 	  }
-	r_p_value = NULL;
+	r_p_value = 0;
       }
 
       void
@@ -623,7 +623,7 @@ namespace __gnu_pbds
 		return;
 	      }
 	  }
-	r_p_value = NULL;
+	r_p_value = 0;
       }
 
 #ifdef _GLIBCXX_DEBUG

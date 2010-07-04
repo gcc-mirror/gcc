@@ -26,6 +26,38 @@
 with SCOs; use SCOs;
 
 procedure Put_SCOs is
+   Ctr : Nat;
+
+   procedure Output_Range (T : SCO_Table_Entry);
+   --  Outputs T.From and T.To in line:col-line:col format
+
+   procedure Output_Source_Location (Loc : Source_Location);
+   --  Output source location in line:col format
+
+   ------------------
+   -- Output_Range --
+   ------------------
+
+   procedure Output_Range (T : SCO_Table_Entry) is
+   begin
+      Output_Source_Location (T.From);
+      Write_Info_Char ('-');
+      Output_Source_Location (T.To);
+   end Output_Range;
+
+   ----------------------------
+   -- Output_Source_Location --
+   ----------------------------
+
+   procedure Output_Source_Location (Loc : Source_Location) is
+   begin
+      Write_Info_Nat  (Nat (Loc.Line));
+      Write_Info_Char (':');
+      Write_Info_Nat  (Nat (Loc.Col));
+   end Output_Source_Location;
+
+--  Start of processing for Put_SCOs
+
 begin
    --  Loop through entries in SCO_Unit_Table
 
@@ -64,35 +96,16 @@ begin
             Output_SCO_Line : declare
                T : SCO_Table_Entry renames SCO_Table.Table (Start);
 
-               procedure Output_Range (T : SCO_Table_Entry);
-               --  Outputs T.From and T.To in line:col-line:col format
-
-               ------------------
-               -- Output_Range --
-               ------------------
-
-               procedure Output_Range (T : SCO_Table_Entry) is
-               begin
-                  Write_Info_Nat  (Nat (T.From.Line));
-                  Write_Info_Char (':');
-                  Write_Info_Nat  (Nat (T.From.Col));
-                  Write_Info_Char ('-');
-                  Write_Info_Nat  (Nat (T.To.Line));
-                  Write_Info_Char (':');
-                  Write_Info_Nat  (Nat (T.To.Col));
-               end Output_Range;
-
-            --  Start of processing for Output_SCO_Line
-
             begin
-               Write_Info_Initiate ('C');
-               Write_Info_Char (T.C1);
-
                case T.C1 is
 
                   --  Statements
 
                   when 'S' =>
+                     Write_Info_Initiate ('C');
+                     Write_Info_Char ('S');
+
+                     Ctr := 0;
                      loop
                         Write_Info_Char (' ');
 
@@ -105,7 +118,21 @@ begin
 
                         Start := Start + 1;
                         pragma Assert (SCO_Table.Table (Start).C1 = 's');
+
+                        Ctr := Ctr + 1;
+
+                        --  Up to 6 items on a line, if more than 6 items,
+                        --  continuation lines are marked Cs.
+
+                        if Ctr = 6 then
+                           Write_Info_Terminate;
+                           Write_Info_Initiate ('C');
+                           Write_Info_Char ('s');
+                           Ctr := 0;
+                        end if;
                      end loop;
+
+                     Write_Info_Terminate;
 
                   --  Statement continuations should not occur since they
                   --  are supposed to have been handled in the loop above.
@@ -116,41 +143,59 @@ begin
                   --  Decision
 
                   when 'I' | 'E' | 'P' | 'W' | 'X' =>
-                     if T.C2 = ' ' then
-                        Start := Start + 1;
-                     end if;
+                     Start := Start + 1;
 
-                     --  Loop through table entries for this decision
+                     --  For disabled pragma, skip decision output
 
-                     loop
-                        declare
-                           T : SCO_Table_Entry renames SCO_Table.Table (Start);
-
-                        begin
-                           Write_Info_Char (' ');
-
-                           if T.C1 = '!' or else
-                              T.C1 = '^' or else
-                              T.C1 = '&' or else
-                              T.C1 = '|'
-                           then
-                              Write_Info_Char (T.C1);
-
-                           else
-                              Write_Info_Char (T.C2);
-                              Output_Range (T);
-                           end if;
-
-                           exit when T.Last;
+                     if T.C1 = 'P' and then T.C2 = 'd' then
+                        while not SCO_Table.Table (Start).Last loop
                            Start := Start + 1;
-                        end;
-                     end loop;
+                        end loop;
+
+                     --  For all other cases output decision line
+
+                     else
+                        Write_Info_Initiate ('C');
+                        Write_Info_Char (T.C1);
+
+                        if T.C1 /= 'X' then
+                           Write_Info_Char (' ');
+                           Output_Source_Location (T.From);
+                        end if;
+
+                        --  Loop through table entries for this decision
+
+                        loop
+                           declare
+                              T : SCO_Table_Entry
+                                    renames SCO_Table.Table (Start);
+
+                           begin
+                              Write_Info_Char (' ');
+
+                              if T.C1 = '!' or else
+                                 T.C1 = '&' or else
+                                 T.C1 = '|'
+                              then
+                                 Write_Info_Char (T.C1);
+                                 Output_Source_Location (T.From);
+
+                              else
+                                 Write_Info_Char (T.C2);
+                                 Output_Range (T);
+                              end if;
+
+                              exit when T.Last;
+                              Start := Start + 1;
+                           end;
+                        end loop;
+
+                        Write_Info_Terminate;
+                     end if;
 
                   when others =>
                      raise Program_Error;
                end case;
-
-               Write_Info_Terminate;
             end Output_SCO_Line;
 
             Start := Start + 1;

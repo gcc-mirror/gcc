@@ -39,6 +39,8 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_SPEC "%{v:-v} %{n} %{T} %{Ym,*} %{Yd,*} \
  %{Wa,*:%*} %{m32:--32} %{m64:--64}"
 
+#undef SPEC_32
+#undef SPEC_64
 #if TARGET_64BIT_DEFAULT
 #define SPEC_32 "m32"
 #define SPEC_64 "!m32"
@@ -47,8 +49,21 @@ along with GCC; see the file COPYING3.  If not see
 #define SPEC_64 "m64"
 #endif
 
-#define SUB_LINK_SPEC "%{" SPEC_64 ":-m i386pep} %{" SPEC_32 ":-m i386pe}"
+#undef SUB_LINK_ENTRY32
+#undef SUB_LINK_ENTRY64
+#define SUB_LINK_ENTRY32 "-e _DllMainCRTStartup@12"
+#if defined(USE_MINGW64_LEADING_UNDERSCORES)
+#define SUB_LINK_ENTRY64 "-e _DllMainCRTStartup"
+#else
+#define SUB_LINK_ENTRY64 "-e DllMainCRTStartup"
+#endif
 
+#undef SUB_LINK_SPEC
+#undef SUB_LINK_ENTRY
+#define SUB_LINK_SPEC "%{" SPEC_64 ":-m i386pep} %{" SPEC_32 ":-m i386pe}"
+#define SUB_LINK_ENTRY "%{" SPEC_64 ":" SUB_LINK_ENTRY64 "} %{" SPEC_32 ":" SUB_LINK_ENTRY32 "}"
+
+#undef MULTILIB_DEFAULTS
 #if TARGET_64BIT_DEFAULT
 #define MULTILIB_DEFAULTS { "m64" }
 #else
@@ -61,5 +76,5 @@ along with GCC; see the file COPYING3.  If not see
   %{shared: %{mdll: %eshared and mdll are not compatible}} \
   %{shared: --shared} %{mdll:--dll} \
   %{static:-Bstatic} %{!static:-Bdynamic} \
-  %{shared|mdll: -e _DllMainCRTStartup@12 --enable-auto-image-base} \
+  %{shared|mdll: " SUB_LINK_ENTRY " --enable-auto-image-base} \
   %(shared_libgcc_undefs)"

@@ -1,4 +1,4 @@
-// Copyright (C) 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,7 +41,7 @@ void test_03()
   int first_fd = ::open(name_01, O_RDONLY);
   VERIFY( first_fd != -1 );
   FILE* first_file = ::fdopen(first_fd, "r");
-  VERIFY( first_file != NULL );
+  VERIFY( first_file );
   __gnu_cxx::stdio_filebuf<char> fb(first_file, std::ios_base::in);
 
   int second_fd = fb.fd();

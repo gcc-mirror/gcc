@@ -119,7 +119,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU cpplib 4.3.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-01-11 11:42+0000\n"
+"POT-Creation-Date: 2010-04-06 14:10+0000\n"
 "PO-Revision-Date: 2008-03-27 22:46+0000\n"
 "Last-Translator: François-Xavier Coudert <fxcoudert@gmail.com>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -147,7 +147,7 @@ msgstr "pas d'implantation iconv, ne peut convertir de %s vers %s"
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr "caractère 0x%lx n'est pas dans le jeu de caractères de base\n"
 
-#: charset.c:798 charset.c:1457
+#: charset.c:798 charset.c:1444
 msgid "converting to execution character set"
 msgstr "conversion vers un jeu d'exécution de caractères"
 
@@ -185,7 +185,7 @@ msgstr "nom de caractère universel incomplet %.*s"
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s n'est pas un caractère universel valide"
 
-#: charset.c:1056 lex.c:486
+#: charset.c:1056 lex.c:488
 msgid "'$' in identifier or number"
 msgstr "« $ » dans un identificateur ou un nombre"
 
@@ -199,7 +199,7 @@ msgstr "caractère universel %.*s n'est pas valide dans un identificcateur"
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "caractère universel %.*s n'est pas valide au début d'un identificcateur"
 
-#: charset.c:1102 charset.c:1687
+#: charset.c:1102 charset.c:1674
 msgid "converting UCN to source character set"
 msgstr "conversion UCN vers le jeu source de caractères"
 
@@ -246,19 +246,19 @@ msgstr "séquence d'échappement « \\%s » inconnue"
 msgid "converting escape sequence to execution character set"
 msgstr "conversion d'une séquence d'échappement vers un jeu d'exécution de caractères"
 
-#: charset.c:1522 charset.c:1586
+#: charset.c:1509 charset.c:1573
 msgid "character constant too long for its type"
 msgstr "constante caractère trop longue pour son type"
 
-#: charset.c:1525
+#: charset.c:1512
 msgid "multi-character character constant"
 msgstr "constante caractère multi-caractères"
 
-#: charset.c:1625
+#: charset.c:1612
 msgid "empty character constant"
 msgstr "constante caractère vide"
 
-#: charset.c:1734
+#: charset.c:1721
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr "échec de conversion de %s vers %s"
@@ -520,7 +520,7 @@ msgstr "« %s » re-asserti"
 msgid "unterminated #%s"
 msgstr "#%s non terminé"
 
-#: directives-only.c:222 lex.c:1415 traditional.c:163
+#: directives-only.c:222 lex.c:1516 traditional.c:163
 msgid "unterminated comment"
 msgstr "commentaire non terminé"
 
@@ -833,81 +833,81 @@ msgstr "trigraphe ??%c converti en %c"
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr "trigraphe ??%c ignoré, utilisez -trigraphs pour le permettre"
 
-#: lex.c:358
+#: lex.c:360
 msgid "\"/*\" within comment"
 msgstr "« /* » à l'intérieur d'un commentaire"
 
-#: lex.c:416
+#: lex.c:418
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr "%s dans la directive du préprocesseur"
 
 # I18N
-#: lex.c:425
+#: lex.c:427
 msgid "null character(s) ignored"
 msgstr "caractère(s) nul(s) ignoré(s)"
 
-#: lex.c:462
+#: lex.c:464
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "« %.*s » n'est pas dans la normalisation NFKC"
 
-#: lex.c:465
+#: lex.c:467
 #, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "« %.*s » n'est pas dans la normalisation NFC"
 
 # FIXME
-#: lex.c:533 lex.c:610
+#: lex.c:535 lex.c:612
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "tentative d'utilisation d'un « %s » corrompu"
 
-#: lex.c:541 lex.c:618
+#: lex.c:543 lex.c:620
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "« __VA_ARGS__ » peut seulement appraître dans l'expansion des macros C99 à nombre variable d'arguments"
 
-#: lex.c:547 lex.c:624
+#: lex.c:549 lex.c:626
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr ""
 
-#: lex.c:739
+#: lex.c:771
 msgid "raw string delimiter longer than 16 characters"
 msgstr ""
 
-#: lex.c:742
+#: lex.c:774
 #, fuzzy, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "caractère « %c » invalide dans #if"
 
-#: lex.c:771 lex.c:818
+#: lex.c:895 lex.c:917
 #, fuzzy
 msgid "unterminated raw string"
 msgstr "chaîne de format non terminée"
 
-#: lex.c:831 lex.c:930
+#: lex.c:932 lex.c:1031
 msgid "null character(s) preserved in literal"
 msgstr "caractère(s) nul préservé(s) dans la chaîne"
 
-#: lex.c:933
+#: lex.c:1034
 #, c-format
 msgid "missing terminating %c character"
 msgstr "caractère %c de terminaison manquant"
 
-#: lex.c:1426
+#: lex.c:1527
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "Les commentaires à la C++ ne sont pas permis en C89 ISO"
 
-#: lex.c:1428
+#: lex.c:1529
 msgid "(this will be reported only once per input file)"
 msgstr "(ceci sera rapporté une seule fois seulement par fichier d'entrée)"
 
-#: lex.c:1433
+#: lex.c:1534
 msgid "multi-line comment"
 msgstr "commentaire multi-lignes"
 
-#: lex.c:1753
+#: lex.c:1854
 #, c-format
 msgid "unspellable token %s"
 msgstr "l'élément lexical %s ne peut être épelé"

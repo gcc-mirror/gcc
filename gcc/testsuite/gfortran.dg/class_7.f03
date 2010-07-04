@@ -16,6 +16,6 @@
   class(t1), pointer :: c  ! { dg-error "before it is defined" }
 
   select type (c)          ! { dg-error "shall be polymorphic" }
-    type is (t1)           ! { dg-error "Unexpected" }
-  end select               ! { dg-error "Expecting END PROGRAM" }
+    type is (t0)
+  end select
 end

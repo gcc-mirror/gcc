@@ -32,7 +32,7 @@ class javax::swing::plaf::metal::MetalLookAndFeel$1 : public ::java::lang::Objec
 public: // actually package-private
   MetalLookAndFeel$1(::javax::swing::plaf::metal::MetalLookAndFeel *);
 public:
-  ::java::lang::Object * createValue(::javax::swing::UIDefaults *);
+  virtual ::java::lang::Object * createValue(::javax::swing::UIDefaults *);
 public: // actually package-private
   ::javax::swing::plaf::metal::MetalLookAndFeel * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

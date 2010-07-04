@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -325,6 +325,46 @@ default_unwind_emit (FILE * stream ATTRIBUTE_UNUSED,
   gcc_unreachable ();
 }
 
+/* Emit to STREAM the assembler syntax for insn operand X.  */
+
+void
+default_print_operand (FILE *stream ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
+		       int code ATTRIBUTE_UNUSED)
+{
+#ifdef PRINT_OPERAND
+  PRINT_OPERAND (stream, x, code);
+#else
+  gcc_unreachable ();
+#endif
+}
+
+/* Emit to STREAM the assembler syntax for an insn operand whose memory
+   address is X.  */
+
+void
+default_print_operand_address (FILE *stream ATTRIBUTE_UNUSED,
+			       rtx x ATTRIBUTE_UNUSED)
+{
+#ifdef PRINT_OPERAND_ADDRESS
+  PRINT_OPERAND_ADDRESS (stream, x);
+#else
+  gcc_unreachable ();
+#endif
+}
+
+/* Return true if CODE is a valid punctuation character for the
+   `print_operand' hook.  */
+
+bool
+default_print_operand_punct_valid_p (unsigned char code ATTRIBUTE_UNUSED)
+{
+#ifdef PRINT_OPERAND_PUNCT_VALID_P
+  return PRINT_OPERAND_PUNCT_VALID_P (code);
+#else
+  return false;
+#endif
+}
+
 /* True if MODE is valid for the target.  By "valid", we mean able to
    be manipulated in non-trivial ways.  In particular, this means all
    the arithmetic is supported.
@@ -419,7 +459,7 @@ default_invalid_within_doloop (const_rtx insn)
 /* Mapping of builtin functions to vectorized variants.  */
 
 tree
-default_builtin_vectorized_function (unsigned int fn ATTRIBUTE_UNUSED,
+default_builtin_vectorized_function (tree fndecl ATTRIBUTE_UNUSED,
 				     tree type_out ATTRIBUTE_UNUSED,
 				     tree type_in ATTRIBUTE_UNUSED)
 {
@@ -430,9 +470,40 @@ default_builtin_vectorized_function (unsigned int fn ATTRIBUTE_UNUSED,
 
 tree
 default_builtin_vectorized_conversion (unsigned int code ATTRIBUTE_UNUSED,
-				       tree type ATTRIBUTE_UNUSED)
+				       tree dest_type ATTRIBUTE_UNUSED,
+				       tree src_type ATTRIBUTE_UNUSED)
 {
   return NULL_TREE;
+}
+
+/* Default vectorizer cost model values.  */
+
+int
+default_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost)
+{
+  switch (type_of_cost)
+    {
+      case scalar_stmt:
+      case scalar_load:
+      case scalar_store:
+      case vector_stmt:
+      case vector_load:
+      case vector_store:
+      case vec_to_scalar:
+      case scalar_to_vec:
+      case cond_branch_not_taken:
+      case vec_perm:
+        return 1;
+
+      case unaligned_load:
+        return 2;
+
+      case cond_branch_taken:
+        return 3;
+
+      default:
+        gcc_unreachable ();
+    }
 }
 
 /* Reciprocal.  */
@@ -498,6 +569,8 @@ default_stack_protect_guard (void)
 
   if (t == NULL)
     {
+      rtx x;
+
       t = build_decl (UNKNOWN_LOCATION,
 		      VAR_DECL, get_identifier ("__stack_chk_guard"),
 		      ptr_type_node);
@@ -508,6 +581,11 @@ default_stack_protect_guard (void)
       TREE_THIS_VOLATILE (t) = 1;
       DECL_ARTIFICIAL (t) = 1;
       DECL_IGNORED_P (t) = 1;
+
+      /* Do not share RTL as the declaration is visible outside of
+	 current function.  */
+      x = DECL_RTL (t);
+      RTX_FLAG (x, used) = 1;
 
       stack_chk_guard_decl = t;
     }
@@ -595,11 +673,6 @@ default_function_value (const_tree ret_type ATTRIBUTE_UNUSED,
       && !DECL_P (fn_decl_or_type))
     fn_decl_or_type = NULL;
 
-#ifdef FUNCTION_OUTGOING_VALUE
-  if (outgoing)
-    return FUNCTION_OUTGOING_VALUE (ret_type, fn_decl_or_type);
-#endif
-
 #ifdef FUNCTION_VALUE
   return FUNCTION_VALUE (ret_type, fn_decl_or_type);
 #else
@@ -613,6 +686,18 @@ default_libcall_value (enum machine_mode mode ATTRIBUTE_UNUSED,
 {
 #ifdef LIBCALL_VALUE
   return LIBCALL_VALUE (mode);
+#else
+  gcc_unreachable ();
+#endif
+}
+
+/* The default hook for TARGET_FUNCTION_VALUE_REGNO_P.  */
+
+bool
+default_function_value_regno_p (const unsigned int regno ATTRIBUTE_UNUSED)
+{
+#ifdef FUNCTION_VALUE_REGNO_P
+  return FUNCTION_VALUE_REGNO_P (regno);
 #else
   gcc_unreachable ();
 #endif
@@ -938,6 +1023,26 @@ default_hard_regno_scratch_ok (unsigned int regno ATTRIBUTE_UNUSED)
   return true;
 }
 
+/* The default implementation of TARGET_MODE_DEPENDENT_ADDRESS_P.  */
+
+bool
+default_mode_dependent_address_p (const_rtx addr ATTRIBUTE_UNUSED)
+{
+#ifdef GO_IF_MODE_DEPENDENT_ADDRESS
+
+  GO_IF_MODE_DEPENDENT_ADDRESS (CONST_CAST_RTX (addr), win);
+  return false;
+  /* Label `win' might (not) be used via GO_IF_MODE_DEPENDENT_ADDRESS.  */
+ win: ATTRIBUTE_UNUSED_LABEL
+  return true;
+
+#else
+
+  return false;
+
+#endif
+}
+
 bool
 default_target_option_valid_attribute_p (tree ARG_UNUSED (fndecl),
 					 tree ARG_UNUSED (name),
@@ -1005,6 +1110,35 @@ default_have_conditional_execution (void)
   return HAVE_conditional_execution;
 #else
   return false;
+#endif
+}
+
+/* Compute cost of moving registers to/from memory.  */
+
+int
+default_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+			  enum reg_class rclass ATTRIBUTE_UNUSED,
+			  bool in ATTRIBUTE_UNUSED)
+{
+#ifndef MEMORY_MOVE_COST
+    return (4 + memory_move_secondary_cost (mode, rclass, in));
+#else
+    return MEMORY_MOVE_COST (mode, rclass, in);
+#endif
+}
+
+/* Compute cost of moving data from a register of class FROM to one of
+   TO, using MODE.  */
+
+int
+default_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+                            enum reg_class from ATTRIBUTE_UNUSED,
+                            enum reg_class to ATTRIBUTE_UNUSED)
+{
+#ifndef REGISTER_MOVE_COST
+  return 2;
+#else
+  return REGISTER_MOVE_COST (mode, from, to);
 #endif
 }
 

@@ -2,9 +2,9 @@
    layout of bitfields.  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do run } */
-/* { dg-options "-lobjc -Wpadded" } */
+/* { dg-options "-Wpadded" } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 #include <stdlib.h>
 #include <string.h>

@@ -29,7 +29,6 @@
  *                                                                          *
  ****************************************************************************/
 
-
 /* C counterparts of what System.Standard_Library defines.  */
 
 typedef unsigned Exception_Code;
@@ -45,16 +44,6 @@ struct Exception_Data
 };
 
 typedef struct Exception_Data *Exception_Id;
-
-struct Exception_Occurrence
-{
-  int Max_Length;
-  Exception_Id Id;
-  int Msg_Length;
-  char Msg[0];
-};
-
-typedef struct Exception_Occurrence *Exception_Occurrence_Access;
 
 extern void _gnat_builtin_longjmp	(void *, int);
 extern void __gnat_unhandled_terminate	(void);

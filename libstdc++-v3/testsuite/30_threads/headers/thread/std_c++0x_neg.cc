@@ -20,6 +20,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <thread>  // { dg-excess-errors "In file included from" }
+#include <thread>
 
 // { dg-error "upcoming ISO" "" { target *-*-* } 31 }

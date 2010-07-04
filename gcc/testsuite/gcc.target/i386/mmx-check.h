@@ -5,6 +5,13 @@
 
 static void mmx_test (void);
 
+static void
+__attribute__ ((noinline))
+do_test (void)
+{
+  mmx_test ();
+}
+
 int
 main ()
 {
@@ -15,7 +22,7 @@ main ()
 
   /* Run MMX test only if host has MMX support.  */
   if (edx & bit_MMX)
-    mmx_test ();
+    do_test ();
 
   return 0;
 }

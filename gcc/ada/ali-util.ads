@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,9 +32,8 @@ package ALI.Util is
    -- Source File Table --
    -----------------------
 
-   --  A source file table entry is built for every source file that is
-   --  in the source dependency table of any of the ALI files that make
-   --  up the current program.
+   --  A table entry is built for every source file that is in the source
+   --  dependency table of any ALI file that is part of the current program.
 
    No_Source_Id : constant Source_Id := Source_Id'First;
    --  Special value indicating no Source table entry
@@ -101,11 +100,11 @@ package ALI.Util is
    -- Subprograms for Manipulating ALI Information --
    --------------------------------------------------
 
-   procedure Read_ALI (Id : ALI_Id);
-   --  Process an ALI file which has been read and scanned by looping
-   --  through all withed units in the ALI file, checking if they have
-   --  been processed. Each unit that has not yet been processed will
-   --  be read, scanned, and processed recursively.
+   procedure Read_Withed_ALIs (Id : ALI_Id);
+   --  Process an ALI file which has been read and scanned by looping through
+   --  all withed units in the ALI file, checking if they have been processed.
+   --  Each unit that has not yet been processed will be read, scanned, and
+   --  processed recursively.
 
    procedure Set_Source_Table (A : ALI_Id);
    --  Build source table entry corresponding to the ALI file whose id is A

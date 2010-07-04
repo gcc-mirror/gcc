@@ -410,7 +410,7 @@ dump_ebitmap (FILE *file, ebitmap bmap)
 
 /* Dump ebitmap BMAP to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_ebitmap (ebitmap bmap)
 {
   dump_ebitmap (stderr, bmap);

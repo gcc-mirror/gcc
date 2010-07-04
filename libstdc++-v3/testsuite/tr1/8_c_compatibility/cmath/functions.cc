@@ -2,7 +2,7 @@
 
 // 2006-02-07  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -181,6 +181,13 @@ void test01()
   ret = std::tr1::trunc(d0);
   fret = std::tr1::truncf(f0);
   ldret = std::tr1::truncl(ld0);
+
+  ret = ret; // Suppress unused warnings.
+  iret = iret;
+  lret = lret;
+  llret = llret;
+  fret = fret;
+  ldret = ldret;
   
 #endif
 }

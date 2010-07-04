@@ -60,11 +60,11 @@ PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::point_iterator
 PB_DS_CLASS_C_DEC::
 find_end()
-{ return NULL; }
+{ return 0; }
 
 PB_DS_CLASS_T_DEC
 inline typename PB_DS_CLASS_C_DEC::const_point_iterator
 PB_DS_CLASS_C_DEC::
 find_end() const
-{ return NULL; }
+{ return 0; }
 

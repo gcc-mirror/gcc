@@ -1,6 +1,6 @@
 /* Prints out tree in human readable form - GCC
    Copyright (C) 1990, 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -25,12 +25,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "real.h"
-#include "fixed-value.h"
 #include "ggc.h"
 #include "langhooks.h"
 #include "tree-iterator.h"
 #include "diagnostic.h"
+#include "gimple-pretty-print.h"
 #include "tree-flow.h"
 #include "tree-pass.h"
 
@@ -51,11 +50,25 @@ static struct bucket **table;
    Most nodes referred to by this one are printed recursively
    down to a depth of six.  */
 
-void
+DEBUG_FUNCTION void
 debug_tree (tree node)
 {
   table = XCNEWVEC (struct bucket *, HASH_SIZE);
   print_node (stderr, "", node, 0);
+  free (table);
+  table = 0;
+  putc ('\n', stderr);
+}
+
+/* Print the vector of trees VEC on standard error, for debugging.
+   Most nodes referred to by this one are printed recursively
+   down to a depth of six.  */
+
+DEBUG_FUNCTION void
+debug_vec_tree (VEC(tree,gc) *vec)
+{
+  table = XCNEWVEC (struct bucket *, HASH_SIZE);
+  print_vec_tree (stderr, "", vec, 0);
   free (table);
   table = 0;
   putc ('\n', stderr);
@@ -869,8 +882,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
 	      {
 		char temp[10];
 		sprintf (temp, "elt %d", i);
-		indent_to (file, indent + 4);
-		print_node_brief (file, temp, TREE_VEC_ELT (node, i), 0);
+		print_node (file, temp, TREE_VEC_ELT (node, i), indent + 4);
 	      }
 	  break;
 
@@ -987,4 +999,28 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
     }
 
   fprintf (file, ">");
+}
+
+/* Print the tree vector VEC in full on file FILE, preceded by PREFIX,
+   starting in column INDENT.  */
+
+void
+print_vec_tree (FILE *file, const char *prefix, VEC(tree,gc) *vec, int indent)
+{
+  tree elt;
+  unsigned ix;
+
+  /* Indent to the specified column, since this is the long form.  */
+  indent_to (file, indent);
+
+  /* Print the slot this node is in, and its code, and address.  */
+  fprintf (file, "%s <VEC", prefix);
+  dump_addr (file, " ", vec);
+
+  for (ix = 0; VEC_iterate (tree, vec, ix, elt); ++ix)
+    {
+      char temp[10];
+      sprintf (temp, "elt %d", ix);
+      print_node (file, temp, elt, indent + 4);
+    }
 }

@@ -72,11 +72,11 @@
 @c Part 2 Summary Description and Copyright
 @copying
 Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-2008 Free Software Foundation, Inc.
+1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+2010 Free Software Foundation, Inc.
 @sp 1
 Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.2 or
+under the terms of the GNU Free Documentation License, Version 1.3 or
 any later version published by the Free Software Foundation; with no
 Invariant Sections, the Front-Cover texts being (a) (see below), and
 with the Back-Cover Texts being (b) (see below).  A copy of the
@@ -359,7 +359,9 @@ Necessary to build libgcj, the GCJ runtime.
 
 Necessary to build link-time optimization (LTO) support.  It can be
 downloaded from @uref{http://www.mr511.de/software/libelf-0.8.12.tar.gz},
-though it is commonly available in several systems.
+though it is commonly available in several systems.  The version in
+IRIX 6.5 doesn't work since it lacks @file{gelf.h}.  The version in
+Solaris 2 does work.
 
 The @option{--with-libelf} configure option should be used if libelf is
 not installed in your default library search patch.
@@ -374,7 +376,7 @@ not installed in your default library search patch.
 Necessary when modifying @file{configure.ac}, @file{aclocal.m4}, etc.@:
 to regenerate @file{configure} and @file{config.in} files.
 
-@item automake version 1.11
+@item automake version 1.11.1
 
 Necessary when modifying a @file{Makefile.am} file to regenerate its
 associated @file{Makefile.in}.
@@ -385,7 +387,7 @@ file.  Specifically this applies to the @file{gcc}, @file{intl},
 as any of their subdirectories.
 
 For directories that use automake, GCC requires the latest release in
-the 1.11 series, which is currently 1.11.  When regenerating a directory
+the 1.11 series, which is currently 1.11.1.  When regenerating a directory
 to a newer version, please update all the directories using an older 1.11
 to the latest released version.
 
@@ -1231,6 +1233,10 @@ This is the default for the m32r platform.
 Specify that the user visible @command{cpp} program should be installed
 in @file{@var{prefix}/@var{dirname}/cpp}, in addition to @var{bindir}.
 
+@item --enable-comdat
+Enable COMDAT group support.  This is primarily used to override the
+automatically detected value.
+
 @item --enable-initfini-array
 Force the use of sections @code{.init_array} and @code{.fini_array}
 (instead of @code{.init} and @code{.fini}) for constructors and
@@ -1631,6 +1637,29 @@ static data members and inline function local statics.  Enabled by
 default for a native toolchain with an assembler that accepts it and
 GLIBC 2.11 or above, otherwise disabled.
 
+@item --enable-lto
+Enable support for link-time optimization (LTO).  This is enabled by
+default if a working libelf implementation is found (see
+@option{--with-libelf}).
+
+@item --with-libelf=@var{pathname}
+@itemx --with-libelf-include=@var{pathname}
+@itemx --with-libelf-lib=@var{pathname}
+If you do not have libelf installed in a standard location and you
+want to enable support for link-time optimization (LTO), you can
+explicitly specify the directory where libelf is installed
+(@samp{--with-libelf=@var{libelfinstalldir}}).  The
+@option{--with-libelf=@var{libelfinstalldir}} option is shorthand for
+@option{--with-libelf-include=@var{libelfinstalldir}/include}
+@option{--with-libelf-lib=@var{libelfinstalldir}/lib}.
+
+@item --enable-gold
+Enable support for using @command{gold} as the linker.  If gold support is
+enabled together with @option{--enable-lto}, an additional directory
+@file{lto-plugin} will be built.  The code in this directory is a
+plugin for gold that allows the link-time optimizer to extract object
+files with LTO information out of library archives.  See
+@option{-flto} and @option{-fwhopr} for details.
 @end table
 
 @subheading Cross-Compiler-Specific Options
@@ -1912,30 +1941,6 @@ Use the @code{WCHAR} and Win32 W functions natively.  Does @emph{not}
 add @code{-lunicows} to @file{libgcj.spec}.  The built executables will
 only run on Microsoft Windows NT and above.
 @end table
-
-@item --enable-lto
-Enable support for link-time optimization (LTO).  This is enabled by
-default if a working libelf implementation is found (see
-@option{--with-libelf}).
-
-@item --with-libelf=@var{pathname}
-@itemx --with-libelf-include=@var{pathname}
-@itemx --with-libelf-lib=@var{pathname}
-If you do not have libelf installed in a standard location and you
-want to enable support for link-time optimization (LTO), you can
-explicitly specify the directory where libelf is installed
-(@samp{--with-libelf=@var{libelfinstalldir}}).  The
-@option{--with-libelf=@var{libelfinstalldir}} option is shorthand for
-@option{--with-libelf-include=@var{libelfinstalldir}/include}
-@option{--with-libelf-lib=@var{libelfinstalldir}/lib}.
-
-@item --enable-gold
-Enable support for using @command{gold} as the linker.  If gold support is
-enabled together with @option{--enable-lto}, an additional directory
-@file{lto-plugin} will be built.  The code in this directory is a
-plugin for gold that allows the link-time optimizer to extract object
-files with LTO information out of library archives.  See
-@option{-flto} and @option{-fwhopr} for details.
 @end table
 
 @subsubheading AWT-Specific Options
@@ -2145,6 +2150,11 @@ Removes any @option{-O}-started option from @code{BOOT_CFLAGS}, and adds
 @item @samp{bootstrap-O3}
 Analogous to @code{bootstrap-O1}.
 
+@item @samp{bootstrap-lto}
+Enables Link-Time Optimization for host tools during bootstrapping.
+@samp{BUILD_CONFIG=bootstrap-lto} is equivalent to adding
+@option{-flto} to @samp{BOOT_CFLAGS}.
+
 @item @samp{bootstrap-debug}
 Verifies that the compiler generates the same executable code, whether
 or not it is asked to emit debug information.  To this end, this
@@ -2296,7 +2306,7 @@ and network filesystems.
 @section Building the Ada compiler
 
 In order to build GNAT, the Ada compiler, you need a working GNAT
-compiler (GCC version 3.4 or later).
+compiler (GCC version 4.0 or later).
 This includes GNAT tools such as @command{gnatmake} and
 @command{gnatlink}, since the Ada front end is written in Ada and
 uses some GNAT-specific extensions.
@@ -2857,7 +2867,7 @@ information are.
 @item
 @uref{#alpha-x-x,,alpha*-*-*}
 @item
-@uref{#alpha-dec-osf,,alpha*-dec-osf*}
+@uref{#alpha-dec-osf51,,alpha*-dec-osf5.1}
 @item
 @uref{#arc-x-elf,,arc-*-elf}
 @item
@@ -2947,8 +2957,6 @@ information are.
 @item
 @uref{#sparc-sun-solaris2,,sparc-sun-solaris2*}
 @item
-@uref{#sparc-sun-solaris27,,sparc-sun-solaris2.7}
-@item
 @uref{#sparc-sun-solaris210,,sparc-sun-solaris2.10}
 @item
 @uref{#sparc-x-linux,,sparc-*-linux*}
@@ -3004,63 +3012,39 @@ shared libraries.
 @html
 <hr />
 @end html
-@heading @anchor{alpha-dec-osf}alpha*-dec-osf*
+@heading @anchor{alpha-dec-osf51}alpha*-dec-osf5.1
 Systems using processors that implement the DEC Alpha architecture and
-are running the DEC/Compaq Unix (DEC OSF/1, Digital UNIX, or Compaq
+are running the DEC/Compaq/HP Unix (DEC OSF/1, Digital UNIX, or Compaq/HP
 Tru64 UNIX) operating system, for example the DEC Alpha AXP systems.
 
 As of GCC 3.2, versions before @code{alpha*-dec-osf4} are no longer
 supported.  (These are the versions which identify themselves as DEC
-OSF/1.)
+OSF/1.)  As of GCC 4.6, support for Tru64 UNIX V4.0 and V5.0 has been
+removed.
 
-In Digital Unix V4.0, virtual memory exhausted bootstrap failures
-may be fixed by configuring with @option{--with-gc=simple},
-reconfiguring Kernel Virtual Memory and Swap parameters
+On Tru64 UNIX, virtual memory exhausted bootstrap failures
+may be fixed by reconfiguring Kernel Virtual Memory and Swap parameters
 per the @command{/usr/sbin/sys_check} Tuning Suggestions,
 or applying the patch in
-@uref{http://gcc.gnu.org/ml/gcc/2002-08/msg00822.html}.
+@uref{http://gcc.gnu.org/ml/gcc/2002-08/msg00822.html}.  Depending on
+the OS version used, you need a data segment size between 512 MB and
+1 GB, so simply use @command{ulimit -Sd unlimited}.
 
-In Tru64 UNIX V5.1, Compaq introduced a new assembler that does not
-currently (2001-06-13) work with @command{mips-tfile}.  As a workaround,
-we need to use the old assembler, invoked via the barely documented
-@option{-oldas} option.  To bootstrap GCC, you either need to use the
-Compaq C Compiler:
-
-@smallexample
-   % CC=cc @var{srcdir}/configure [@var{options}] [@var{target}]
-@end smallexample
-
-or you can use a copy of GCC 2.95.3 or higher built on Tru64 UNIX V4.0:
-
-@smallexample
-   % CC=gcc -Wa,-oldas @var{srcdir}/configure [@var{options}] [@var{target}]
-@end smallexample
-
-As of GNU binutils 2.11.2, neither GNU @command{as} nor GNU @command{ld}
+As of GNU binutils 2.20.1, neither GNU @command{as} nor GNU @command{ld}
 are supported on Tru64 UNIX, so you must not configure GCC with
 @option{--with-gnu-as} or @option{--with-gnu-ld}.
 
 GCC writes a @samp{.verstamp} directive to the assembler output file
 unless it is built as a cross-compiler.  It gets the version to use from
 the system header file @file{/usr/include/stamp.h}.  If you install a
-new version of DEC Unix, you should rebuild GCC to pick up the new version
+new version of Tru64 UNIX, you should rebuild GCC to pick up the new version
 stamp.
-
-@samp{make compare} may fail on old versions of DEC Unix unless you add
-@option{-save-temps} to @code{BOOT_CFLAGS}.  On these systems, the name
-of the assembler input file is stored in the object file, and that makes
-comparison fail if it differs between the @code{stage1} and
-@code{stage2} compilations.  The option @option{-save-temps} forces a
-fixed name to be used for the assembler input file, instead of a
-randomly chosen name in @file{/tmp}.  Do not add @option{-save-temps}
-unless the comparisons fail without that option.  If you add
-@option{-save-temps}, you will have to manually delete the @samp{.i} and
-@samp{.s} files after each series of compilations.
 
 GCC now supports both the native (ECOFF) debugging format used by DBX
 and GDB and an encapsulated STABS format for use only with GDB@.  See the
 discussion of the @option{--with-stabs} option of @file{configure} above
 for more information on these formats and how to select them.
+@c FIXME: does this work at all?  If so, perhaps make default.
 
 There is a bug in DEC's assembler that produces incorrect line numbers
 for ECOFF format when the @samp{.align} directive is used.  To work
@@ -3073,6 +3057,8 @@ different depending on whether or not @option{-g} is also specified.
 To avoid this behavior, specify @option{-gstabs+} and use GDB instead of
 DBX@.  DEC is now aware of this problem with the assembler and hopes to
 provide a fix shortly.
+
+@c FIXME: still applicable?
 
 @html
 <hr />
@@ -3484,12 +3470,30 @@ found on @uref{http://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
 @end html
 @heading @anchor{ix86-x-solaris210}i?86-*-solaris2.10
 Use this for Solaris 10 or later on x86 and x86-64 systems.  This
-configuration is supported by GCC 4.0 and later versions only.
+configuration is supported by GCC 4.0 and later versions only.  Unlike
+@samp{sparcv9-sun-solaris2*}, there is no corresponding 64-bit
+configuration like @samp{amd64-*-solaris2*} or @samp{x86_64-*-solaris2*}.
+@c FIXME: will there ever be?
 
-It is recommended that you configure GCC to use the GNU assembler in
-@file{/usr/sfw/bin/gas} but the Sun linker, using the options
-@option{--with-gnu-as --with-as=/usr/sfw/bin/gas --without-gnu-ld
---with-ld=/usr/ccs/bin/ld}.
+It is recommended that you configure GCC to use the GNU assembler, in
+@file{/usr/sfw/bin/gas}.  The versions included in Solaris 10, from GNU
+binutils 2.15, and Solaris 11, from GNU binutils 2.19, work fine,
+although the current version, from GNU binutils
+2.20.1, is known to work, too.  Recent versions of the Sun assembler in
+@file{/usr/ccs/bin/as} work almost as well, though.
+@c FIXME: as patch requirements?
+
+For linking, the Sun linker, is preferred.  If you want to use the GNU
+linker instead, which is available in @file{/usr/sfw/bin/gld}, note that
+due to a packaging bug the version in Solaris 10, from GNU binutils
+2.15, cannot be used, while the version in Solaris 11, from GNU binutils
+2.19, works, as does the latest version, from GNU binutils 2.20.1.
+
+To use GNU @command{as}, configure with the options
+@option{--with-gnu-as --with-as=/usr/sfw/bin/gas}.  It may be necessary
+to configure with @option{--without-gnu-ld --with-ld=/usr/ccs/bin/ld} to
+guarantee use of Sun @command{ld}.
+@c FIXME: why --without-gnu-ld --with-ld?
 
 @html
 <hr />
@@ -3824,36 +3828,22 @@ made after Nov. 9, 2006) should be free from both of these problems.
 @end html
 @heading @anchor{mips-sgi-irix5}mips-sgi-irix5
 
-In order to compile GCC on an SGI running IRIX 5, the @samp{compiler_dev.hdr}
-subsystem must be installed from the IDO CD-ROM supplied by SGI@.
-It is also available for download from
-@uref{ftp://ftp.sgi.com/sgi/IRIX5.3/iris-development-option-5.3.tardist}.
-
-If you use the MIPS C compiler to bootstrap, it may be necessary
-to increase its table size for switch statements with the
-@option{-Wf,-XNg1500} option.  If you use the @option{-O2}
-optimization option, you also need to use @option{-Olimit 3000}.
-
-To enable debugging under IRIX 5, you must use GNU binutils 2.15 or
-later, and use the @option{--with-gnu-ld} @command{configure} option
-when configuring GCC@.  You need to use GNU @command{ar} and @command{nm},
-also distributed with GNU binutils.
-
-Some users have reported that @command{/bin/sh} will hang during bootstrap.
-This problem can be avoided by running the commands:
-
-@smallexample
-   % CONFIG_SHELL=/bin/ksh
-   % export CONFIG_SHELL
-@end smallexample
-
-@noindent
-before starting the build.
+Support for IRIX 5 has been removed in GCC 4.6.
 
 @html
 <hr />
 @end html
 @heading @anchor{mips-sgi-irix6}mips-sgi-irix6
+
+Support for IRIX 6 releases before 6.5 has been removed in GCC 4.6, as
+well as support for
+the O32 ABI.  It is @emph{strongly} recommended to upgrade to at least
+IRIX 6.5.18.  This release introduced full ISO C99 support, though for
+the N32 and N64 ABIs only.
+
+To build and use GCC on IRIX 6.5, you need the IRIX Development Foundation
+(IDF) and IRIX Development Libraries (IDL).  They are included with the
+IRIX 6.5 media.
 
 If you are using SGI's MIPSpro @command{cc} as your bootstrap compiler, you must
 ensure that the N32 ABI is in use.  To test this, compile a simple C
@@ -3910,17 +3900,17 @@ MIPSpro C 7.4 may cause bootstrap failures, due to a bug when inlining
 @code{memcmp}.  Either add @code{-U__INLINE_INTRINSICS} to the @env{CC}
 environment variable as a workaround or upgrade to MIPSpro C 7.4.1m.
 
-GCC on IRIX 6 is usually built to support the N32, O32 and N64 ABIs.  If
+GCC on IRIX 6.5 is usually built to support the N32 and N64 ABIs.  If
 you build GCC on a system that doesn't have the N64 libraries installed
 or cannot run 64-bit binaries,
 you need to configure with @option{--disable-multilib} so GCC doesn't
-try to use them.  This will disable building the O32 libraries, too.
+try to use them.
 Look for @file{/usr/lib64/libc.so.1} to see if you
 have the 64-bit libraries installed.
 
-To enable debugging for the O32 ABI, you must use GNU @command{as} from
-GNU binutils 2.15 or later.  You may also use GNU @command{ld}, but
-this is not required and currently causes some problems with Ada.
+GCC must be configured with GNU @command{as}.  The latest version, from GNU
+binutils 2.20.1, is known to work.  On the other hand, bootstrap fails
+with GNU @command{ld} at least since GNU binutils 2.17.
 
 The @option{--enable-libgcj}
 option is disabled by default: IRIX 6 uses a very low default limit
@@ -3930,14 +3920,12 @@ to build despite this, running into an internal error of the native
 @command{ld}.  A sure fix is to increase this limit (@samp{ncargs}) to
 its maximum of 262144 bytes.  If you have root access, you can use the
 @command{systune} command to do this.
+@c FIXME: does this work with current libtool?
 
 @code{wchar_t} support in @samp{libstdc++} is not available for old
 IRIX 6.5.x releases, @math{x < 19}.  The problem cannot be autodetected
 and in order to build GCC for such targets you need to configure with
 @option{--disable-wchar_t}.
-
-See @uref{http://freeware.sgi.com/} for more
-information about using GCC on IRIX platforms.
 
 @html
 <hr />
@@ -4062,12 +4050,16 @@ supported as cross-compilation target only.
 @c alone is too unspecific and must be avoided.
 @heading @anchor{x-x-solaris2}*-*-solaris2*
 
-Sun does not ship a C compiler with Solaris 2.  To bootstrap and install
-GCC you first have to install a pre-built compiler, see the
+Support for Solaris 7 has been removed in GCC 4.6.
+
+Sun does not ship a C compiler with Solaris 2, though you can download
+the Sun Studio compilers for free from
+@uref{http://developers.sun.com/sunstudio/downloads/}.  Alternatively,
+you can install a pre-built GCC to bootstrap and install GCC.  See the
 @uref{binaries.html,,binaries page} for details.
 
 The Solaris 2 @command{/bin/sh} will often fail to configure
-@file{libstdc++-v3}, @file{boehm-gc} or @file{libjava}.  We therefore
+@samp{libstdc++-v3}, @samp{boehm-gc} or @samp{libjava}.  We therefore
 recommend using the following initial sequence of commands
 
 @smallexample
@@ -4075,9 +4067,10 @@ recommend using the following initial sequence of commands
    % export CONFIG_SHELL
 @end smallexample
 
+@noindent
 and proceed as described in @uref{configure.html,,the configure instructions}.
 In addition we strongly recommend specifying an absolute path to invoke
-@var{srcdir}/configure.
+@command{@var{srcdir}/configure}.
 
 Solaris 2 comes with a number of optional OS packages.  Some of these
 are needed to use GCC fully, namely @code{SUNWarc},
@@ -4100,28 +4093,21 @@ The build process works more smoothly with the legacy Sun tools so, if you
 have @file{/usr/xpg4/bin} in your @env{PATH}, we recommend that you place
 @file{/usr/bin} before @file{/usr/xpg4/bin} for the duration of the build.
 
-We recommend the use of GNU binutils 2.14 or later, or the vendor tools
-(Sun @command{as}, Sun @command{ld}).  Note that your mileage may vary
+We recommend the use of the Sun assembler or the GNU assembler, in
+conjunction with the Sun linker.  The GNU @command{as}
+versions included in Solaris 10, from GNU binutils 2.15, and Solaris 11,
+from GNU binutils 2.19, are known to work.  They can be found in
+@file{/usr/sfw/bin/gas}.  Current versions of GNU binutils (2.20.1)
+are known to work as well.  Note that your mileage may vary
 if you use a combination of the GNU tools and the Sun tools: while the
 combination GNU @command{as} + Sun @command{ld} should reasonably work,
 the reverse combination Sun @command{as} + GNU @command{ld} is known to
 cause memory corruption at runtime in some cases for C++ programs.
-
-The stock GNU binutils 2.15 release is broken on this platform because of a
-single bug.  It has been fixed on the 2.15 branch in the CVS repository.
-You can obtain a working version by checking out the binutils-2_15-branch
-from the CVS repository or applying the patch
-@uref{http://sourceware.org/ml/binutils-cvs/2004-09/msg00036.html} to the
-release.
-
-We recommend the use of GNU binutils 2.16 or later in conjunction with GCC
-4.x, or the vendor tools (Sun @command{as}, Sun @command{ld}).  However,
-for Solaris 10 and above, an additional patch is required in order for the
-GNU linker to be able to cope with a new flavor of shared libraries.  You
-can obtain a working version by checking out the binutils-2_16-branch from
-the CVS repository or applying the patch
-@uref{http://sourceware.org/ml/binutils-cvs/2005-07/msg00122.html} to the
-release.
+@c FIXME: still?
+GNU @command{ld} usually works as well, although the version included in
+Solaris 10 cannot be used due to several bugs.  Again, the current
+version (2.20.1) is known to work, but generally lacks platform specific
+features, so better stay with Sun @command{ld}.
 
 Sun bug 4296832 turns up when compiling X11 headers with GCC 2.95 or
 newer: @command{g++} will complain that types are missing.  These headers
@@ -4132,8 +4118,7 @@ C90 but is wrong for C++, and is now wrong for C99 also.
 @option{-fpermissive}; it will assume that any missing type is @code{int}
 (as defined by C90).
 
-There are patches for Solaris 7 (108376-21 or newer for SPARC,
-108377-20 for Intel), and Solaris 8 (108652-24 or newer for SPARC,
+There are patches for Solaris 8 (108652-24 or newer for SPARC,
 108653-22 for Intel) that fix this bug.
 
 Sun bug 4927647 sometimes causes random spurious testsuite failures
@@ -4152,7 +4137,7 @@ SPARC, 117172-11 or newer for Intel) that address this problem.
 @end html
 @heading @anchor{sparc-sun-solaris2}sparc-sun-solaris2*
 
-When GCC is configured to use binutils 2.14 or later the binaries
+When GCC is configured to use GNU binutils 2.14 or later, the binaries
 produced are smaller than the ones produced using Sun's native tools;
 this difference is quite significant for binaries containing debugging
 information.
@@ -4182,7 +4167,7 @@ and 5.5 (Sun ONE Studio 8) of the Sun compiler, which causes a bootstrap
 failure in form of a miscompilation of the stage1 compiler by the Sun
 compiler.  This is Sun bug 4974440.  This is fixed with patch 112760-07.
 
-GCC 3.4 changed the default debugging format from STABS to DWARF-2 for
+GCC 3.4 changed the default debugging format from Stabs to DWARF-2 for
 32-bit code on Solaris 7 and later.  If you use the Sun assembler, this
 change apparently runs afoul of Sun bug 4910101 (which is referenced as
 an x86-only problem by Sun, probably because they do not use DWARF-2).
@@ -4195,81 +4180,20 @@ ld: warning: relocation error: R_SPARC_UA32: @dots{}
   .debug_info cannot be processed at runtime: relocation ignored.
 @end smallexample
 
+@noindent
 To work around this problem, compile with @option{-gstabs+} instead of
 plain @option{-g}.
 
 When configuring the GNU Multiple Precision Library (GMP) or the MPFR
 library on a Solaris 7 or later system, the canonical target triplet
 must be specified as the @command{build} parameter on the configure
-line.  This triplet can be obtained by invoking ./config.guess in
+line.  This triplet can be obtained by invoking @command{./config.guess} in
 the toplevel source directory of GCC (and not that of GMP or MPFR).
-For example on a Solaris 7 system:
+For example on a Solaris 9 system:
 
 @smallexample
-   % ./configure --build=sparc-sun-solaris2.7 --prefix=xxx
+   % ./configure --build=sparc-sun-solaris2.9 --prefix=xxx
 @end smallexample
-
-@html
-<hr />
-@end html
-@heading @anchor{sparc-sun-solaris27}sparc-sun-solaris2.7
-
-Sun patch 107058-01 (1999-01-13) for Solaris 7/SPARC triggers a bug in
-the dynamic linker.  This problem (Sun bug 4210064) affects GCC 2.8
-and later, including all EGCS releases.  Sun formerly recommended
-107058-01 for all Solaris 7 users, but around 1999-09-01 it started to
-recommend it only for people who use Sun's compilers.
-
-Here are some workarounds to this problem:
-@itemize @bullet
-@item
-Do not install Sun patch 107058-01 until after Sun releases a
-complete patch for bug 4210064.  This is the simplest course to take,
-unless you must also use Sun's C compiler.  Unfortunately 107058-01
-is preinstalled on some new Solaris 7-based hosts, so you may have to
-back it out.
-
-@item
-Copy the original, unpatched Solaris 7
-@command{/usr/ccs/bin/as} into
-@command{/usr/local/libexec/gcc/sparc-sun-solaris2.7/3.4/as},
-adjusting the latter name to fit your local conventions and software
-version numbers.
-
-@item
-Install Sun patch 106950-03 (1999-05-25) or later.  Nobody with
-both 107058-01 and 106950-03 installed has reported the bug with GCC
-and Sun's dynamic linker.  This last course of action is riskiest,
-for two reasons.  First, you must install 106950 on all hosts that
-run code generated by GCC; it doesn't suffice to install it only on
-the hosts that run GCC itself.  Second, Sun says that 106950-03 is
-only a partial fix for bug 4210064, but Sun doesn't know whether the
-partial fix is adequate for GCC@.  Revision -08 or later should fix
-the bug.  The current (as of 2004-05-23) revision is -24, and is included in
-the Solaris 7 Recommended Patch Cluster.
-@end itemize
-
-GCC 3.3 triggers a bug in version 5.0 Alpha 03/27/98 of the Sun assembler,
-which causes a bootstrap failure when linking the 64-bit shared version of
-libgcc.  A typical error message is:
-
-@smallexample
-ld: fatal: relocation error: R_SPARC_32: file libgcc/sparcv9/_muldi3.o:
-  symbol <unknown>:  offset 0xffffffff7ec133e7 is non-aligned.
-@end smallexample
-
-This bug has been fixed in the final 5.0 version of the assembler.
-
-A similar problem was reported for version Sun WorkShop 6 99/08/18 of the
-Sun assembler, which causes a bootstrap failure with GCC 4.0.0:
-
-@smallexample
-ld: fatal: relocation error: R_SPARC_DISP32:
-  file .libs/libstdc++.lax/libsupc++convenience.a/vterminate.o:
-    symbol <unknown>: offset 0xfccd33ad is non-aligned
-@end smallexample
-
-This bug has been fixed in more recent revisions of the assembler.
 
 @html
 <hr />
@@ -4284,6 +4208,7 @@ ld: fatal: relocation error: R_SPARC_TLS_LE_HIX22: file /var/tmp//ccamPA1v.o:
   symbol <unknown>: bad symbol type SECT: symbol type must be TLS
 @end smallexample
 
+@noindent
 This bug is fixed in Sun patch 118683-03 or later.
 
 @html
@@ -4304,10 +4229,10 @@ releases mishandled unaligned relocations on @code{sparc-*-*} targets.
 When configuring the GNU Multiple Precision Library (GMP) or the
 MPFR library, the canonical target triplet must be specified as
 the @command{build} parameter on the configure line.  For example
-on a Solaris 7 system:
+on a Solaris 9 system:
 
 @smallexample
-   % ./configure --build=sparc64-sun-solaris2.7 --prefix=xxx
+   % ./configure --build=sparc64-sun-solaris2.9 --prefix=xxx
 @end smallexample
 
 The following compiler flags must be specified in the configure
@@ -4317,6 +4242,7 @@ step in order to bootstrap this target with the Sun compiler:
    % CC="cc -xarch=v9 -xildoff" @var{srcdir}/configure [@var{options}] [@var{target}]
 @end smallexample
 
+@noindent
 @option{-xarch=v9} specifies the SPARC-V9 architecture to the Sun toolchain
 and @option{-xildoff} turns off the incremental linker.
 
@@ -4325,7 +4251,7 @@ and @option{-xildoff} turns off the incremental linker.
 @end html
 @heading @anchor{sparcv9-x-solaris2}sparcv9-*-solaris2*
 
-This is a synonym for sparc64-*-solaris2*.
+This is a synonym for @samp{sparc64-*-solaris2*}.
 
 @html
 <hr />

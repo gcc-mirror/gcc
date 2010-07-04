@@ -1,6 +1,6 @@
 /* Subroutines used for MIPS code generation.
    Copyright (C) 1989, 1990, 1991, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
-#include "real.h"
 #include "insn-config.h"
 #include "conditions.h"
 #include "insn-attr.h"
@@ -505,11 +504,11 @@ struct mips_asm_switch mips_noat = { "at", 0 };
 static bool mips_branch_likely;
 
 /* The current instruction-set architecture.  */
-enum processor_type mips_arch;
+enum processor mips_arch;
 const struct mips_cpu_info *mips_arch_info;
 
 /* The processor that we should tune the code for.  */
-enum processor_type mips_tune;
+enum processor mips_tune;
 const struct mips_cpu_info *mips_tune_info;
 
 /* The ISA level associated with mips_arch.  */
@@ -549,7 +548,7 @@ bool mips_hard_regno_mode_ok[(int) MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
 
 /* Index C is true if character C is a valid PRINT_OPERAND punctation
    character.  */
-bool mips_print_operand_punct[256];
+static bool mips_print_operand_punct[256];
 
 static GTY (()) int mips_output_filename_first_time = 1;
 
@@ -798,7 +797,8 @@ static const struct mips_rtx_cost_data mips_rtx_cost_optimize_size = {
 };
 
 /* Costs to use when optimizing for speed, indexed by processor.  */
-static const struct mips_rtx_cost_data mips_rtx_cost_data[PROCESSOR_MAX] = {
+static const struct mips_rtx_cost_data
+  mips_rtx_cost_data[NUM_PROCESSOR_VALUES] = {
   { /* R3000 */
     COSTS_N_INSNS (2),            /* fp_add */
     COSTS_N_INSNS (4),            /* fp_mult_sf */
@@ -1218,7 +1218,7 @@ mflip_mips16_use_mips16_p (tree decl)
   if (!entry)
     {
       mips16_flipper = !mips16_flipper;
-      entry = GGC_NEW (struct mflip_mips16_entry);
+      entry = ggc_alloc_mflip_mips16_entry ();
       entry->name = name;
       entry->mips16_p = mips16_flipper ? !mips_base_mips16 : mips_base_mips16;
       *slot = entry;
@@ -5449,7 +5449,7 @@ mips_build_builtin_va_list (void)
       layout_type (record);
       return record;
     }
-  else if (TARGET_IRIX && TARGET_IRIX6)
+  else if (TARGET_IRIX6)
     /* On IRIX 6, this type is 'char *'.  */
     return build_pointer_type (char_type_node);
   else
@@ -5852,7 +5852,7 @@ mips16_local_alias (rtx func)
       SYMBOL_REF_FLAGS (local) = SYMBOL_REF_FLAGS (func) | SYMBOL_FLAG_LOCAL;
 
       /* Create a new structure to represent the mapping.  */
-      alias = GGC_NEW (struct mips16_local_alias);
+      alias = ggc_alloc_mips16_local_alias ();
       alias->func = func;
       alias->local = local;
       *slot = alias;
@@ -7447,7 +7447,15 @@ mips_print_float_branch_condition (FILE *file, enum rtx_code code, int letter)
     }
 }
 
-/* Implement the PRINT_OPERAND macro.  The MIPS-specific operand codes are:
+/* Implement TARGET_PRINT_OPERAND_PUNCT_VALID_P.  */
+
+static bool
+mips_print_operand_punct_valid_p (unsigned char code)
+{
+  return mips_print_operand_punct[code];
+}
+
+/* Implement TARGET_PRINT_OPERAND.  The MIPS-specific operand codes are:
 
    'X'	Print CONST_INT OP in hexadecimal format.
    'x'	Print the low 16 bits of CONST_INT OP in hexadecimal format.
@@ -7471,12 +7479,12 @@ mips_print_float_branch_condition (FILE *file, enum rtx_code code, int letter)
    'M'	Print high-order register in a double-word register operand.
    'z'	Print $0 if OP is zero, otherwise print OP normally.  */
 
-void
+static void
 mips_print_operand (FILE *file, rtx op, int letter)
 {
   enum rtx_code code;
 
-  if (PRINT_OPERAND_PUNCT_VALID_P (letter))
+  if (mips_print_operand_punct_valid_p (letter))
     {
       mips_print_operand_punctuation (file, letter);
       return;
@@ -7618,9 +7626,9 @@ mips_print_operand (FILE *file, rtx op, int letter)
     }
 }
 
-/* Output address operand X to FILE.  */
+/* Implement TARGET_PRINT_OPERAND_ADDRESS.  */
 
-void
+static void
 mips_print_operand_address (FILE *file, rtx x)
 {
   struct mips_address_info addr;
@@ -7863,19 +7871,6 @@ mips_output_external (FILE *file, tree decl, const char *name)
 	  assemble_name (file, name);
 	  fprintf (file, ", " HOST_WIDE_INT_PRINT_DEC "\n",
 		   int_size_in_bytes (TREE_TYPE (decl)));
-	}
-      else if (TARGET_IRIX
-	       && mips_abi == ABI_32
-	       && TREE_CODE (decl) == FUNCTION_DECL)
-	{
-	  /* In IRIX 5 or IRIX 6 for the O32 ABI, we must output a
-	     `.global name .text' directive for every used but
-	     undefined function.  If we don't, the linker may perform
-	     an optimization (skipping over the insns that set $gp)
-	     when it is unsafe.  */
-	  fputs ("\t.globl ", file);
-	  assemble_name (file, name);
-	  fputs (" .text\n", file);
 	}
     }
 }
@@ -8166,7 +8161,7 @@ mips_file_start (void)
   /* Generate a special section to describe the ABI switches used to
      produce the resultant binary.  This is unnecessary on IRIX and
      causes unwanted warnings from the native linker.  */
-  if (!TARGET_IRIX)
+  if (!TARGET_IRIX6)
     {
       /* Record the ABI itself.  Modern versions of binutils encode
 	 this information in the ELF header flags, but GDB needs the
@@ -8185,10 +8180,27 @@ mips_file_start (void)
 		 "\t.previous\n", TARGET_LONG64 ? 64 : 32);
 
 #ifdef HAVE_AS_GNU_ATTRIBUTE
-      fprintf (asm_out_file, "\t.gnu_attribute 4, %d\n",
-	       (TARGET_HARD_FLOAT_ABI
-		? (TARGET_DOUBLE_FLOAT
-		   ? ((!TARGET_64BIT && TARGET_FLOAT64) ? 4 : 1) : 2) : 3));
+      {
+	int attr;
+
+	/* No floating-point operations, -mno-float.  */
+	if (TARGET_NO_FLOAT)
+	  attr = 0;
+	/* Soft-float code, -msoft-float.  */
+	else if (!TARGET_HARD_FLOAT_ABI)
+	  attr = 3;
+	/* Single-float code, -msingle-float.  */
+	else if (!TARGET_DOUBLE_FLOAT)
+	  attr = 2;
+	/* 64-bit FP registers on a 32-bit target, -mips32r2 -mfp64.  */
+	else if (!TARGET_64BIT && TARGET_FLOAT64)
+	  attr = 4;
+	/* Regular FP code, FP regs same size as GP regs, -mdouble-float.  */
+	else
+	  attr = 1;
+
+	fprintf (asm_out_file, "\t.gnu_attribute 4, %d\n", attr);
+      }
 #endif
     }
 
@@ -9811,10 +9823,6 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
   fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
   mips_start_function_definition (fnname, TARGET_MIPS16);
 
-  /* Stop mips_file_end from treating this function as external.  */
-  if (TARGET_IRIX && mips_abi == ABI_32)
-    TREE_ASM_WRITTEN (DECL_NAME (cfun->decl)) = 1;
-
   /* Output MIPS-specific frame information.  */
   if (!flag_inhibit_size_directive)
     {
@@ -10716,6 +10724,15 @@ mips_cannot_change_mode_class (enum machine_mode from ATTRIBUTE_UNUSED,
 
      We therefore disallow all mode changes involving FPRs.  */
   return reg_classes_intersect_p (FP_REGS, rclass);
+}
+
+/* Implement target hook small_register_classes_for_mode_p.  */
+
+static bool
+mips_small_register_classes_for_mode_p (enum machine_mode mode
+					ATTRIBUTE_UNUSED)
+{
+  return TARGET_MIPS16;
 }
 
 /* Return true if moves in mode MODE can use the FPU's mov.fmt instruction.  */
@@ -11808,10 +11825,17 @@ mips_output_division (const char *division, rtx *operands)
 	  s = "bnez\t%2,1f\n\tbreak\t7\n1:";
 	}
       else if (GENERATE_DIVIDE_TRAPS)
-        {
-	  output_asm_insn (s, operands);
-	  s = "teq\t%2,%.,7";
-        }
+	{
+	  /* Avoid long replay penalty on load miss by putting the trap before
+	     the divide.  */
+	  if (TUNE_74K)
+	    output_asm_insn ("teq\t%2,%.,7", operands);
+	  else
+	    {
+	      output_asm_insn (s, operands);
+	      s = "teq\t%2,%.,7";
+	    }
+	}
       else
 	{
 	  output_asm_insn ("%(bne\t%2,%.,1f", operands);
@@ -14007,23 +14031,35 @@ r10k_insert_cache_barriers (void)
 }
 
 /* If INSN is a call, return the underlying CALL expr.  Return NULL_RTX
-   otherwise.  */
+   otherwise.  If INSN has two call rtx, then store the second one in
+   SECOND_CALL.  */
 
 static rtx
-mips_call_expr_from_insn (rtx insn)
+mips_call_expr_from_insn (rtx insn, rtx *second_call)
 {
   rtx x;
+  rtx x2;
 
   if (!CALL_P (insn))
     return NULL_RTX;
 
   x = PATTERN (insn);
   if (GET_CODE (x) == PARALLEL)
-    x = XVECEXP (x, 0, 0);
+    {
+      /* Calls returning complex values have two CALL rtx.  Look for the second
+	 one here, and return it via the SECOND_CALL arg.  */
+      x2 = XVECEXP (x, 0, 1);
+      if (GET_CODE (x2) == SET)
+	x2 = XEXP (x2, 1);
+      if (GET_CODE (x2) == CALL)
+	*second_call = x2;
+
+      x = XVECEXP (x, 0, 0);
+    }
   if (GET_CODE (x) == SET)
     x = XEXP (x, 1);
-
   gcc_assert (GET_CODE (x) == CALL);
+
   return x;
 }
 
@@ -14155,9 +14191,10 @@ mips_annotate_pic_calls (void)
   FOR_EACH_BB (bb)
     FOR_BB_INSNS (bb, insn)
     {
-      rtx call, reg, symbol;
+      rtx call, reg, symbol, second_call;
 
-      call = mips_call_expr_from_insn (insn);
+      second_call = 0;
+      call = mips_call_expr_from_insn (insn, &second_call);
       if (!call)
 	continue;
       gcc_assert (MEM_P (XEXP (call, 0)));
@@ -14167,7 +14204,11 @@ mips_annotate_pic_calls (void)
 
       symbol = mips_find_pic_call_symbol (insn, reg);
       if (symbol)
-	mips_annotate_pic_call_expr (call, symbol);
+	{
+	  mips_annotate_pic_call_expr (call, symbol);
+	  if (second_call)
+	    mips_annotate_pic_call_expr (second_call, symbol);
+	}
     }
 }
 
@@ -15181,8 +15222,7 @@ mips_set_current_function (tree fndecl)
 static struct machine_function *
 mips_init_machine_status (void)
 {
-  return ((struct machine_function *)
-	  ggc_alloc_cleared (sizeof (struct machine_function)));
+  return ggc_alloc_cleared_machine_function ();
 }
 
 /* Return the processor associated with the given ISA level, or null
@@ -15388,6 +15428,13 @@ mips_override_options (void)
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
+
+  /* -mno-float overrides -mhard-float and -msoft-float.  */
+  if (TARGET_NO_FLOAT)
+    {
+      target_flags |= MASK_SOFT_FLOAT_ABI;
+      target_flags_explicit |= MASK_SOFT_FLOAT_ABI;
+    }
 
   /* Set the small data limit.  */
   mips_small_data_threshold = (g_switch_set
@@ -16270,6 +16317,9 @@ void mips_function_profiler (FILE *file)
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD \
   mips_multipass_dfa_lookahead
+#undef TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P
+#define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P \
+  mips_small_register_classes_for_mode_p
 
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS		\
@@ -16334,6 +16384,13 @@ void mips_function_profiler (FILE *file)
 #define TARGET_ASM_OUTPUT_MI_THUNK mips_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_const_tree_hwi_hwi_const_tree_true
+
+#undef TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND mips_print_operand
+#undef TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS mips_print_operand_address
+#undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P mips_print_operand_punct_valid_p
 
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS mips_setup_incoming_varargs

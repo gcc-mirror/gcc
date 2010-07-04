@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -376,6 +376,9 @@ package Errout is
    Gname5 : aliased constant String := "gnat05";
    Vname5 : aliased constant String := "05";
 
+   Gname6 : aliased constant String := "gnat12";
+   Vname6 : aliased constant String := "12";
+
    type Cstring_Ptr is access constant String;
 
    Gnames : array (Nat range <>) of Cstring_Ptr :=
@@ -383,14 +386,16 @@ package Errout is
                Gname2'Access,
                Gname3'Access,
                Gname4'Access,
-               Gname5'Access);
+               Gname5'Access,
+               Gname6'Access);
 
    Vnames : array (Nat range <>) of Cstring_Ptr :=
               (Vname1'Access,
                Vname2'Access,
                Vname3'Access,
                Vname4'Access,
-               Vname5'Access);
+               Vname5'Access,
+               Vname6'Access);
 
    -----------------------------------------------------
    -- Global Values Used for Error Message Insertions --
@@ -600,13 +605,6 @@ package Errout is
    --  Any message marked with this -- CODEFIX comment should not be modified
    --  without appropriate coordination. If new messages are added which may
    --  be susceptible to automatic codefix action, they are marked using:
-
-   --     Error_Msg -- CODEFIX???
-   --       (parameters)
-
-   --  And subsequently either the appropriate code is added to codefix and the
-   --  ??? are removed, or it is determined that this is not an appropriate
-   --  case for codefix action, and the comment is removed.
 
    ------------------------------
    -- Error Output Subprograms --

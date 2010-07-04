@@ -1,7 +1,7 @@
 // { dg-options "-std=c++0x" }
 
 template<class U, class... T>
-void f()
+void f()			// { dg-message "candidate" }
 {
   f<T...>(); // { dg-error "no matching" }
 }

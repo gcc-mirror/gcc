@@ -1,5 +1,6 @@
 /* The Blackfin code generation auxiliary output file.
-   Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Analog Devices.
 
    This file is part of GCC.
@@ -25,7 +26,6 @@
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
-#include "real.h"
 #include "insn-config.h"
 #include "insn-codes.h"
 #include "conditions.h"
@@ -2634,11 +2634,7 @@ bfin_handle_option (size_t code, const char *arg, int value)
 static struct machine_function *
 bfin_init_machine_status (void)
 {
-  struct machine_function *f;
-
-  f = GGC_CNEW (struct machine_function);
-
-  return f;
+  return ggc_alloc_cleared_machine_function ();
 }
 
 /* Implement the macro OVERRIDE_OPTIONS.  */

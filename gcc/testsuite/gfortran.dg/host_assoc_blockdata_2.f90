@@ -15,3 +15,4 @@ program main
   use globals
   common /co/ pdm_bps ! { dg-error "already in a COMMON block" }
 end program main
+! { dg-final { cleanup-modules "globals" } }

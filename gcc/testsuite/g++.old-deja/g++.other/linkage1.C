@@ -3,13 +3,13 @@ typedef struct {
   int i;
 } *p;
 
-void f (p) { }			// { dg-error "uses anonymous type" }
-p q;				// { dg-warning "uses anonymous type" } 
+void f (p) { }			// { dg-error "with no linkage" }
+p q;				// { dg-warning "with no linkage" }
 
 int main()
 {
-  extern p j;			// { dg-warning "uses anonymous type" }
+  extern p j;			// { dg-warning "with no linkage" }
   struct A { int j; };
-  extern A a;			// { dg-warning "uses local type" }
-  extern void f (A);		// { dg-error "uses local type" }
+  extern A a;			// { dg-warning "with no linkage" }
+  extern void f (A);		// { dg-error "with no linkage" }
 }

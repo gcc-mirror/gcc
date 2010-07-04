@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,7 +64,8 @@ package body Ch6 is
 
          if Token = Tok_Return then
             Restore_Scan_State (Scan_State);
-            Error_Msg_SC ("|extra "";"" ignored");
+            Error_Msg_SC -- CODEFIX
+              ("|extra "";"" ignored");
             Scan; -- rescan past junk semicolon
          else
             Restore_Scan_State (Scan_State);
@@ -195,7 +196,8 @@ package body Ch6 is
             Not_Overriding := True;
 
          else
-            Error_Msg_SC ("OVERRIDING expected!");
+            Error_Msg_SC -- CODEFIX
+              ("OVERRIDING expected!");
          end if;
 
       --  Ada 2005: scan leading OVERRIDING indicator
@@ -215,14 +217,17 @@ package body Ch6 is
          --  already been given, so no need to give another message here.
 
          --  An overriding indicator is allowed for subprogram declarations,
-         --  bodies, renamings, stubs, and instantiations. The test against
-         --  Pf_Decl_Pbod is added to account for the case of subprograms
-         --  declared in a protected type, where only subprogram declarations
-         --  and bodies can occur.
+         --  bodies (including subunits), renamings, stubs, and
+         --  instantiations. The test against Pf_Decl_Pbod is added to account
+         --  for the case of subprograms declared in a protected type, where
+         --  only subprogram declarations and bodies can occur. The Pf_Pbod
+         --  case is for subunits.
 
          if Pf_Flags /= Pf_Decl_Gins_Pbod_Rnam_Stub
               and then
             Pf_Flags /= Pf_Decl_Pbod
+              and then
+            Pf_Flags /= Pf_Pbod
          then
             Error_Msg_SC ("overriding indicator not allowed here!");
 
@@ -345,7 +350,8 @@ package body Ch6 is
 
       if Token = Tok_Return then
          if not Func then
-            Error_Msg ("PROCEDURE should be FUNCTION", Fproc_Sloc);
+            Error_Msg -- CODEFIX
+              ("PROCEDURE should be FUNCTION", Fproc_Sloc);
             Func := True;
          end if;
 
@@ -418,7 +424,8 @@ package body Ch6 is
          Scan; -- past semicolon
 
          if Token = Tok_Is then
-            Error_Msg_SP ("extra "";"" ignored");
+            Error_Msg_SP -- CODEFIX
+              ("extra "";"" ignored");
          else
             Restore_Scan_State (Scan_State);
          end if;
@@ -437,7 +444,8 @@ package body Ch6 is
          --  semicolon, and go process the body.
 
          if Token = Tok_Is then
-            Error_Msg_SP ("|extra "";"" ignored");
+            Error_Msg_SP -- CODEFIX
+              ("|extra "";"" ignored");
             T_Is; -- scan past IS
             goto Subprogram_Body;
 
@@ -449,7 +457,8 @@ package body Ch6 is
          elsif Token = Tok_Begin
             and then Start_Column >= Scope.Table (Scope.Last).Ecol
          then
-            Error_Msg_SP ("|"";"" should be IS!");
+            Error_Msg_SP -- CODEFIX
+              ("|"";"" should be IS!");
             goto Subprogram_Body;
 
          else
@@ -489,7 +498,8 @@ package body Ch6 is
             --  Deal nicely with (now obsolete) use of <> in place of abstract
 
             if Token = Tok_Box then
-               Error_Msg_SC ("ABSTRACT expected");
+               Error_Msg_SC -- CODEFIX
+                 ("ABSTRACT expected");
                Token := Tok_Abstract;
             end if;
 
@@ -553,7 +563,8 @@ package body Ch6 is
          --  semicolon which should really be an IS
 
          else
-            Error_Msg_AP ("|missing "";""");
+            Error_Msg_AP -- CODEFIX
+              ("|missing "";""");
             SIS_Missing_Semicolon_Message := Get_Msg_Id;
             goto Subprogram_Declaration;
          end if;
@@ -1216,7 +1227,8 @@ package body Ch6 is
             --  that semicolon should have been a right parenthesis and exit
 
             if Token = Tok_Is or else Token = Tok_Return then
-               Error_Msg_SP ("|"";"" should be "")""");
+               Error_Msg_SP -- CODEFIX
+                 ("|"";"" should be "")""");
                exit Specification_Loop;
             end if;
 
@@ -1224,7 +1236,8 @@ package body Ch6 is
             --  assume we had a missing right parenthesis and terminate list
 
             if Token in Token_Class_Declk then
-               Error_Msg_AP ("missing "")""");
+               Error_Msg_AP -- CODEFIX
+                 ("missing "")""");
                Restore_Scan_State (Scan_State);
                exit Specification_Loop;
             end if;
@@ -1287,7 +1300,8 @@ package body Ch6 is
          Set_In_Present (Node, True);
 
          if Style.Mode_In_Check and then Token /= Tok_Out then
-            Error_Msg_SP ("(style) IN should be omitted");
+            Error_Msg_SP -- CODEFIX
+              ("(style) IN should be omitted");
          end if;
 
          if Token = Tok_Access then
@@ -1302,8 +1316,7 @@ package body Ch6 is
       end if;
 
       if Token = Tok_In then
-         Error_Msg_SC -- CODEFIX ???
-           ("IN must precede OUT in parameter mode");
+         Error_Msg_SC ("IN must precede OUT in parameter mode");
          Scan; -- past IN
          Set_In_Present (Node, True);
       end if;

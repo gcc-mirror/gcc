@@ -64,10 +64,10 @@ PB_DS_CLASS_C_DEC::
 make_binomial_heap()
 {
   node_pointer p_nd = base_type::m_p_root;
-  while (p_nd != NULL)
+  while (p_nd != 0)
     {
       node_pointer p_next = p_nd->m_p_next_sibling;
-      if (p_next == NULL)
+      if (p_next == 0)
 	p_nd = p_next;
       else if (p_nd->m_metadata == p_next->m_metadata)
 	p_nd = link_with_next_sibling(p_nd);

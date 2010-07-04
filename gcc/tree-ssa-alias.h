@@ -38,8 +38,13 @@ struct GTY(()) pt_solution
      even if this is zero pt_vars can still include global variables.  */
   unsigned int nonlocal : 1;
 
-  /* Nonzero if the points-to set includes any escaped local variable.  */
+  /* Nonzero if the points-to set includes the local escaped solution by
+     reference.  */
   unsigned int escaped : 1;
+
+  /* Nonzero if the points-to set includes the IPA escaped solution by
+     reference.  */
+  unsigned int ipa_escaped : 1;
 
   /* Nonzero if the points-to set includes 'nothing', the points-to set
      includes memory at address NULL.  */
@@ -99,6 +104,7 @@ extern bool refs_output_dependent_p (tree, tree);
 extern bool ref_maybe_used_by_stmt_p (gimple, tree);
 extern bool stmt_may_clobber_ref_p (gimple, tree);
 extern bool stmt_may_clobber_ref_p_1 (gimple, ao_ref *);
+extern bool call_may_clobber_ref_p (gimple, tree);
 extern tree get_continuation_for_phi (gimple, ao_ref *, bitmap *);
 extern void *walk_non_aliased_vuses (ao_ref *, tree,
 				     void *(*)(ao_ref *, tree, void *),
@@ -118,14 +124,17 @@ extern void dump_alias_stats (FILE *);
 /* In tree-ssa-structalias.c  */
 extern unsigned int compute_may_aliases (void);
 extern void delete_alias_heapvars (void);
+extern bool pt_solution_empty_p (struct pt_solution *);
 extern bool pt_solution_includes_global (struct pt_solution *);
 extern bool pt_solution_includes (struct pt_solution *, const_tree);
 extern bool pt_solutions_intersect (struct pt_solution *, struct pt_solution *);
 extern bool pt_solutions_same_restrict_base (struct pt_solution *,
 					     struct pt_solution *);
 extern void pt_solution_reset (struct pt_solution *);
-extern void pt_solution_set (struct pt_solution *, bitmap);
+extern void pt_solution_set (struct pt_solution *, bitmap, bool, bool);
 extern void dump_pta_stats (FILE *);
+
+extern GTY(()) struct pt_solution ipa_escaped_pt;
 
 
 #endif /* TREE_SSA_ALIAS_H  */

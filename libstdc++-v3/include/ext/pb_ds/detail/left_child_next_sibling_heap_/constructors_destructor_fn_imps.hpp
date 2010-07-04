@@ -49,7 +49,7 @@ PB_DS_CLASS_C_DEC::s_no_throw_copies_ind;
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 left_child_next_sibling_heap_() :
-  m_p_root(NULL),
+  m_p_root(0),
   m_size(0)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
@@ -59,7 +59,7 @@ PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 left_child_next_sibling_heap_(const Cmp_Fn& r_cmp_fn) :
   Cmp_Fn(r_cmp_fn),
-  m_p_root(NULL),
+  m_p_root(0),
   m_size(0)
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
@@ -68,7 +68,7 @@ left_child_next_sibling_heap_(const Cmp_Fn& r_cmp_fn) :
 PB_DS_CLASS_T_DEC
 PB_DS_CLASS_C_DEC::
 left_child_next_sibling_heap_(const PB_DS_CLASS_C_DEC& other) 
-: Cmp_Fn(other), m_p_root(NULL), m_size(0)
+: Cmp_Fn(other), m_p_root(0), m_size(0)
 {
   m_size = other.m_size;
   _GLIBCXX_DEBUG_ONLY(other.assert_valid();)
@@ -111,8 +111,8 @@ typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 recursive_copy_node(const_node_pointer p_nd)
 {
-  if (p_nd == NULL)
-    return (NULL);
+  if (p_nd == 0)
+    return (0);
 
   node_pointer p_ret = s_node_allocator.allocate(1);
 
@@ -127,7 +127,7 @@ recursive_copy_node(const_node_pointer p_nd)
     }
 
   p_ret->m_p_l_child = p_ret->m_p_next_sibling =
-    p_ret->m_p_prev_or_parent = NULL;
+    p_ret->m_p_prev_or_parent = 0;
 
   __try
     {
@@ -140,12 +140,12 @@ recursive_copy_node(const_node_pointer p_nd)
       __throw_exception_again;
     }
 
-  if (p_ret->m_p_l_child != NULL)
+  if (p_ret->m_p_l_child != 0)
     p_ret->m_p_l_child->m_p_prev_or_parent = p_ret;
 
-  if (p_ret->m_p_next_sibling != NULL)
+  if (p_ret->m_p_next_sibling != 0)
     p_ret->m_p_next_sibling->m_p_prev_or_parent =
-      p_nd->m_p_next_sibling->m_p_prev_or_parent == p_nd ? p_ret : NULL;
+      p_nd->m_p_next_sibling->m_p_prev_or_parent == p_nd ? p_ret : 0;
 
   return p_ret;
 }

@@ -46,19 +46,39 @@ and a path ending in @code{/} returns the empty string after it.
 #include "filenames.h"
 
 const char *
-lbasename (const char *name)
+unix_lbasename (const char *name)
 {
   const char *base;
 
-#if defined (HAVE_DOS_BASED_FILE_SYSTEM)
-  /* Skip over a possible disk name.  */
-  if (ISALPHA (name[0]) && name[1] == ':') 
-    name += 2;
-#endif
-
   for (base = name; *name; name++)
-    if (IS_DIR_SEPARATOR (*name))
+    if (IS_UNIX_DIR_SEPARATOR (*name))
       base = name + 1;
 
   return base;
+}
+
+const char *
+dos_lbasename (const char *name)
+{
+  const char *base;
+
+  /* Skip over a possible disk name.  */
+  if (ISALPHA (name[0]) && name[1] == ':') 
+    name += 2;
+
+  for (base = name; *name; name++)
+    if (IS_DOS_DIR_SEPARATOR (*name))
+      base = name + 1;
+
+  return base;
+}
+
+const char *
+lbasename (const char *name)
+{
+#if defined (HAVE_DOS_BASED_FILE_SYSTEM)
+  return dos_lbasename (name);
+#else
+  return unix_lbasename (name);
+#endif
 }

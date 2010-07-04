@@ -4,9 +4,9 @@
 --                                                                          --
 --                             S E M _ S C I L                              --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2009, Free Software Foundation, Inc.           --
+--          Copyright (C) 2009-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,20 +33,12 @@ package Sem_SCIL is
 
    --  Here would be a good place to document what SCIL is all about ???
 
-   procedure Adjust_SCIL_Node (Old_Node : Node_Id; New_Node : Node_Id);
-   --  Searches for a SCIL dispatching node associated with Old_Node. If found
-   --  then update its SCIL_Related_Node field to reference New_Node.
-
    function Check_SCIL_Node (N : Node_Id) return Traverse_Result;
    --  Process a single node during the tree traversal. Done to verify that
    --  SCIL nodes decoration fulfill the requirements of the SCIL backend.
 
    procedure Check_SCIL_Nodes is new Traverse_Proc (Check_SCIL_Node);
    --  The traversal procedure itself
-
-   function Find_SCIL_Node (Node : Node_Id) return Node_Id;
-   --  Searches for a SCIL dispatching node associated with Node. If not found
-   --  then return Empty.
 
    function First_Non_SCIL_Node (L : List_Id) return Node_Id;
    --  Returns the first non-SCIL node of list L

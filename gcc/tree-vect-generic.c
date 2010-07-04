@@ -23,12 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "tm.h"
-#include "rtl.h"
-#include "expr.h"
-#include "insn-codes.h"
-#include "diagnostic.h"
-#include "optabs.h"
-#include "machmode.h"
 #include "langhooks.h"
 #include "tree-flow.h"
 #include "gimple.h"
@@ -37,6 +31,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "ggc.h"
 
+/* Need to include rtl.h, expr.h, etc. for optabs.  */
+#include "expr.h"
+#include "optabs.h"
 
 /* Build a constant of type TYPE, made of VALUE's bits replicated
    every TYPE_SIZE (INNER_TYPE) bits to fit TYPE's precision.  */

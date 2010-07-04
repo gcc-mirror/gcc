@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,9 +34,6 @@ with System; use type System.Address;
 
 package body Ada.Containers.Vectors is
 
-   type Int is range System.Min_Int .. System.Max_Int;
-   type UInt is mod System.Max_Binary_Modulus;
-
    procedure Free is
      new Ada.Unchecked_Deallocation (Elements_Type, Elements_Access);
 
@@ -45,10 +42,22 @@ package body Ada.Containers.Vectors is
    ---------
 
    function "&" (Left, Right : Vector) return Vector is
-      LN : constant Count_Type := Length (Left);
-      RN : constant Count_Type := Length (Right);
+      LN   : constant Count_Type := Length (Left);
+      RN   : constant Count_Type := Length (Right);
+      N    : Count_Type'Base;  -- length of result
+      J    : Count_Type'Base;  -- for computing intermediate index values
+      Last : Index_Type'Base;  -- Last index of result
 
    begin
+      --  We decide that the capacity of the result is the sum of the lengths
+      --  of the vector parameters. We could decide to make it larger, but we
+      --  have no basis for knowing how much larger, so we just allocate the
+      --  minimum amount of storage.
+
+      --  Here we handle the easy cases first, when one of the vector
+      --  parameters is empty. (We say "easy" because there's nothing to
+      --  compute, that can potentially overflow.)
+
       if LN = 0 then
          if RN = 0 then
             return Empty_Vector;
@@ -80,44 +89,117 @@ package body Ada.Containers.Vectors is
 
       end if;
 
+      --  Neither of the vector parameters is empty, so must compute the length
+      --  of the result vector and its last index. (This is the harder case,
+      --  because our computations must avoid overflow.)
+
+      --  There are two constraints we need to satisfy. The first constraint is
+      --  that a container cannot have more than Count_Type'Last elements, so
+      --  we must check the sum of the combined lengths. Note that we cannot
+      --  simply add the lengths, because of the possibilty of overflow.
+
+      if LN > Count_Type'Last - RN then
+         raise Constraint_Error with "new length is out of range";
+      end if;
+
+      --  It is now safe compute the length of the new vector, without fear of
+      --  overflow.
+
+      N := LN + RN;
+
+      --  The second constraint is that the new Last index value cannot
+      --  exceed Index_Type'Last. We use the wider of Index_Type'Base and
+      --  Count_Type'Base as the type for intermediate values.
+
+      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+         --  We perform a two-part test. First we determine whether the
+         --  computed Last value lies in the base range of the type, and then
+         --  determine whether it lies in the range of the index (sub)type.
+
+         --  Last must satisfy this relation:
+         --    First + Length - 1 <= Last
+         --  We regroup terms:
+         --    First - 1 <= Last - Length
+         --  Which can rewrite as:
+         --    No_Index <= Last - Length
+
+         if Index_Type'Base'Last - Index_Type'Base (N) < No_Index then
+            raise Constraint_Error with "new length is out of range";
+         end if;
+
+         --  We now know that the computed value of Last is within the base
+         --  range of the type, so it is safe to compute its value:
+
+         Last := No_Index + Index_Type'Base (N);
+
+         --  Finally we test whether the value is within the range of the
+         --  generic actual index subtype:
+
+         if Last > Index_Type'Last then
+            raise Constraint_Error with "new length is out of range";
+         end if;
+
+      elsif Index_Type'First <= 0 then
+         --  Here we can compute Last directly, in the normal way. We know that
+         --  No_Index is less than 0, so there is no danger of overflow when
+         --  adding the (positive) value of length.
+
+         J := Count_Type'Base (No_Index) + N;  -- Last
+
+         if J > Count_Type'Base (Index_Type'Last) then
+            raise Constraint_Error with "new length is out of range";
+         end if;
+
+         --  We know that the computed value (having type Count_Type) of Last
+         --  is within the range of the generic actual index subtype, so it is
+         --  safe to convert to Index_Type:
+
+         Last := Index_Type'Base (J);
+
+      else
+         --  Here Index_Type'First (and Index_Type'Last) is positive, so we
+         --  must test the length indirectly (by working backwards from the
+         --  largest possible value of Last), in order to prevent overflow.
+
+         J := Count_Type'Base (Index_Type'Last) - N;  -- No_Index
+
+         if J < Count_Type'Base (No_Index) then
+            raise Constraint_Error with "new length is out of range";
+         end if;
+
+         --  We have determined that the result length would not create a Last
+         --  index value outside of the range of Index_Type, so we can now
+         --  safely compute its value.
+
+         Last := Index_Type'Base (Count_Type'Base (No_Index) + N);
+      end if;
+
       declare
-         N           : constant Int'Base := Int (LN) + Int (RN);
-         Last_As_Int : Int'Base;
+         LE : Elements_Array renames
+                Left.Elements.EA (Index_Type'First .. Left.Last);
+
+         RE : Elements_Array renames
+                Right.Elements.EA (Index_Type'First .. Right.Last);
+
+         Elements : constant Elements_Access :=
+                      new Elements_Type'(Last, LE & RE);
 
       begin
-         if Int (No_Index) > Int'Last - N then
-            raise Constraint_Error with "new length is out of range";
-         end if;
-
-         Last_As_Int := Int (No_Index) + N;
-
-         if Last_As_Int > Int (Index_Type'Last) then
-            raise Constraint_Error with "new length is out of range";
-         end if;
-
-         declare
-            Last : constant Index_Type := Index_Type (Last_As_Int);
-
-            LE : Elements_Array renames
-                   Left.Elements.EA (Index_Type'First .. Left.Last);
-
-            RE : Elements_Array renames
-                   Right.Elements.EA (Index_Type'First .. Right.Last);
-
-            Elements : constant Elements_Access :=
-                         new Elements_Type'(Last, LE & RE);
-
-         begin
-            return (Controlled with Elements, Last, 0, 0);
-         end;
+         return (Controlled with Elements, Last, 0, 0);
       end;
    end "&";
 
    function "&" (Left  : Vector; Right : Element_Type) return Vector is
-      LN : constant Count_Type := Length (Left);
-
    begin
-      if LN = 0 then
+      --  We decide that the capacity of the result is the sum of the lengths
+      --  of the parameters. We could decide to make it larger, but we have no
+      --  basis for knowing how much larger, so we just allocate the minimum
+      --  amount of storage.
+
+      --  Here we handle the easy case first, when the vector parameter (Left)
+      --  is empty.
+
+      if Left.Is_Empty then
          declare
             Elements : constant Elements_Access :=
                          new Elements_Type'
@@ -129,42 +211,47 @@ package body Ada.Containers.Vectors is
          end;
       end if;
 
+      --  The vector parameter is not empty, so we must compute the length of
+      --  the result vector and its last index, but in such a way that overflow
+      --  is avoided. We must satisfy two constraints: the new length cannot
+      --  exceed Count_Type'Last, and the new Last index cannot exceed
+      --  Index_Type'Last.
+
+      if Left.Length = Count_Type'Last then
+         raise Constraint_Error with "new length is out of range";
+      end if;
+
+      if Left.Last >= Index_Type'Last then
+         raise Constraint_Error with "new length is out of range";
+      end if;
+
       declare
-         Last_As_Int : Int'Base;
+         Last : constant Index_Type := Left.Last + 1;
+
+         LE : Elements_Array renames
+           Left.Elements.EA (Index_Type'First .. Left.Last);
+
+         Elements : constant Elements_Access :=
+           new Elements_Type'
+                 (Last => Last,
+                  EA   => LE & Right);
 
       begin
-         if Int (Index_Type'First) > Int'Last - Int (LN) then
-            raise Constraint_Error with "new length is out of range";
-         end if;
-
-         Last_As_Int := Int (Index_Type'First) + Int (LN);
-
-         if Last_As_Int > Int (Index_Type'Last) then
-            raise Constraint_Error with "new length is out of range";
-         end if;
-
-         declare
-            Last : constant Index_Type := Index_Type (Last_As_Int);
-
-            LE : Elements_Array renames
-                   Left.Elements.EA (Index_Type'First .. Left.Last);
-
-            Elements : constant Elements_Access :=
-                         new Elements_Type'
-                               (Last => Last,
-                                EA   => LE & Right);
-
-         begin
-            return (Controlled with Elements, Last, 0, 0);
-         end;
+         return (Controlled with Elements, Last, 0, 0);
       end;
    end "&";
 
    function "&" (Left  : Element_Type; Right : Vector) return Vector is
-      RN : constant Count_Type := Length (Right);
-
    begin
-      if RN = 0 then
+      --  We decide that the capacity of the result is the sum of the lengths
+      --  of the parameters. We could decide to make it larger, but we have no
+      --  basis for knowing how much larger, so we just allocate the minimum
+      --  amount of storage.
+
+      --  Here we handle the easy case first, when the vector parameter (Right)
+      --  is empty.
+
+      if Right.Is_Empty then
          declare
             Elements : constant Elements_Access :=
                          new Elements_Type'
@@ -176,39 +263,49 @@ package body Ada.Containers.Vectors is
          end;
       end if;
 
+      --  The vector parameter is not empty, so we must compute the length of
+      --  the result vector and its last index, but in such a way that overflow
+      --  is avoided. We must satisfy two constraints: the new length cannot
+      --  exceed Count_Type'Last, and the new Last index cannot exceed
+      --  Index_Type'Last.
+
+      if Right.Length = Count_Type'Last then
+         raise Constraint_Error with "new length is out of range";
+      end if;
+
+      if Right.Last >= Index_Type'Last then
+         raise Constraint_Error with "new length is out of range";
+      end if;
+
       declare
-         Last_As_Int : Int'Base;
+         Last : constant Index_Type := Right.Last + 1;
+
+         RE : Elements_Array renames
+                Right.Elements.EA (Index_Type'First .. Right.Last);
+
+         Elements : constant Elements_Access :=
+                      new Elements_Type'
+                        (Last => Last,
+                         EA   => Left & RE);
 
       begin
-         if Int (Index_Type'First) > Int'Last - Int (RN) then
-            raise Constraint_Error with "new length is out of range";
-         end if;
-
-         Last_As_Int := Int (Index_Type'First) + Int (RN);
-
-         if Last_As_Int > Int (Index_Type'Last) then
-            raise Constraint_Error with "new length is out of range";
-         end if;
-
-         declare
-            Last : constant Index_Type := Index_Type (Last_As_Int);
-
-            RE : Elements_Array renames
-                   Right.Elements.EA (Index_Type'First .. Right.Last);
-
-            Elements : constant Elements_Access :=
-                         new Elements_Type'
-                               (Last => Last,
-                                EA   => Left & RE);
-
-         begin
-            return (Controlled with Elements, Last, 0, 0);
-         end;
+         return (Controlled with Elements, Last, 0, 0);
       end;
    end "&";
 
    function "&" (Left, Right : Element_Type) return Vector is
    begin
+      --  We decide that the capacity of the result is the sum of the lengths
+      --  of the parameters. We could decide to make it larger, but we have no
+      --  basis for knowing how much larger, so we just allocate the minimum
+      --  amount of storage.
+
+      --  We must compute the length of the result vector and its last index,
+      --  but in such a way that overflow is avoided. We must satisfy two
+      --  constraints: the new length cannot exceed Count_Type'Last (here, we
+      --  know that that condition is satisfied), and the new Last index cannot
+      --  exceed Index_Type'Last.
+
       if Index_Type'First >= Index_Type'Last then
          raise Constraint_Error with "new length is out of range";
       end if;
@@ -370,56 +467,117 @@ package body Ada.Containers.Vectors is
       Index     : Extended_Index;
       Count     : Count_Type := 1)
    is
+      Old_Last : constant Index_Type'Base := Container.Last;
+      New_Last : Index_Type'Base;
+      Count2   : Count_Type'Base;  -- count of items from Index to Old_Last
+      J        : Index_Type'Base;  -- first index of items that slide down
+
    begin
+      --  Delete removes items from the vector, the number of which is the
+      --  minimum of the specified Count and the items (if any) that exist from
+      --  Index to Container.Last. There are no constraints on the specified
+      --  value of Count (it can be larger than what's available at this
+      --  position in the vector, for example), but there are constraints on
+      --  the allowed values of the Index.
+
+      --  As a precondition on the generic actual Index_Type, the base type
+      --  must include Index_Type'Pred (Index_Type'First); this is the value
+      --  that Container.Last assumes when the vector is empty. However, we do
+      --  not allow that as the value for Index when specifying which items
+      --  should be deleted, so we must manually check. (That the user is
+      --  allowed to specify the value at all here is a consequence of the
+      --  declaration of the Extended_Index subtype, which includes the values
+      --  in the base range that immediately precede and immediately follow the
+      --  values in the Index_Type.)
+
       if Index < Index_Type'First then
          raise Constraint_Error with "Index is out of range (too small)";
       end if;
 
-      if Index > Container.Last then
-         if Index > Container.Last + 1 then
+      --  We do allow a value greater than Container.Last to be specified as
+      --  the Index, but only if it's immediately greater. This allows the
+      --  corner case of deleting no items from the back end of the vector to
+      --  be treated as a no-op. (It is assumed that specifying an index value
+      --  greater than Last + 1 indicates some deeper flaw in the caller's
+      --  algorithm, so that case is treated as a proper error.)
+
+      if Index > Old_Last then
+         if Index > Old_Last + 1 then
             raise Constraint_Error with "Index is out of range (too large)";
          end if;
 
          return;
       end if;
 
+      --  Here and elsewhere we treat deleting 0 items from the container as a
+      --  no-op, even when the container is busy, so we simply return.
+
       if Count = 0 then
          return;
       end if;
+
+      --  The tampering bits exist to prevent an item from being deleted (or
+      --  otherwise harmfully manipulated) while it is being visited. Query,
+      --  Update, and Iterate increment the busy count on entry, and decrement
+      --  the count on exit. Delete checks the count to determine whether it is
+      --  being called while the associated callback procedure is executing.
 
       if Container.Busy > 0 then
          raise Program_Error with
            "attempt to tamper with elements (vector is busy)";
       end if;
 
+      --  We first calculate what's available for deletion starting at
+      --  Index. Here and elsewhere we use the wider of Index_Type'Base and
+      --  Count_Type'Base as the type for intermediate values. (See function
+      --  Length for more information.)
+
+      if Count_Type'Base'Last >= Index_Type'Pos (Index_Type'Base'Last) then
+         Count2 := Count_Type'Base (Old_Last) - Count_Type'Base (Index) + 1;
+
+      else
+         Count2 := Count_Type'Base (Old_Last - Index + 1);
+      end if;
+
+      --  If more elements are requested (Count) for deletion than are
+      --  available (Count2) for deletion beginning at Index, then everything
+      --  from Index is deleted. There are no elements to slide down, and so
+      --  all we need to do is set the value of Container.Last.
+
+      if Count >= Count2 then
+         Container.Last := Index - 1;
+         return;
+      end if;
+
+      --  There are some elements aren't being deleted (the requested count was
+      --  less than the available count), so we must slide them down to
+      --  Index. We first calculate the index values of the respective array
+      --  slices, using the wider of Index_Type'Base and Count_Type'Base as the
+      --  type for intermediate calculations. For the elements that slide down,
+      --  index value New_Last is the last index value of their new home, and
+      --  index value J is the first index of their old home.
+
+      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+         New_Last := Old_Last - Index_Type'Base (Count);
+         J := Index + Index_Type'Base (Count);
+
+      else
+         New_Last := Index_Type'Base (Count_Type'Base (Old_Last) - Count);
+         J := Index_Type'Base (Count_Type'Base (Index) + Count);
+      end if;
+
+      --  The internal elements array isn't guaranteed to exist unless we have
+      --  elements, but we have that guarantee here because we know we have
+      --  elements to slide.  The array index values for each slice have
+      --  already been determined, so we just slide down to Index the elements
+      --  that weren't deleted.
+
       declare
-         I_As_Int        : constant Int := Int (Index);
-         Old_Last_As_Int : constant Int := Index_Type'Pos (Container.Last);
-
-         Count1 : constant Int'Base := Count_Type'Pos (Count);
-         Count2 : constant Int'Base := Old_Last_As_Int - I_As_Int + 1;
-         N      : constant Int'Base := Int'Min (Count1, Count2);
-
-         J_As_Int : constant Int'Base := I_As_Int + N;
+         EA : Elements_Array renames Container.Elements.EA;
 
       begin
-         if J_As_Int > Old_Last_As_Int then
-            Container.Last := Index - 1;
-
-         else
-            declare
-               J  : constant Index_Type := Index_Type (J_As_Int);
-               EA : Elements_Array renames Container.Elements.EA;
-
-               New_Last_As_Int : constant Int'Base := Old_Last_As_Int - N;
-               New_Last        : constant Index_Type :=
-                                   Index_Type (New_Last_As_Int);
-
-            begin
-               EA (Index .. New_Last) := EA (J .. Container.Last);
-               Container.Last := New_Last;
-            end;
-         end if;
+         EA (Index .. New_Last) := EA (J .. Old_Last);
+         Container.Last := New_Last;
       end;
    end Delete;
 
@@ -476,24 +634,48 @@ package body Ada.Containers.Vectors is
      (Container : in out Vector;
       Count     : Count_Type := 1)
    is
-      Index : Int'Base;
-
    begin
+      --  It is not permitted to delete items while the container is busy (for
+      --  example, we're in the middle of a passive iteration). However, we
+      --  always treat deleting 0 items as a no-op, even when we're busy, so we
+      --  simply return without checking.
+
       if Count = 0 then
          return;
       end if;
+
+      --  The tampering bits exist to prevent an item from being deleted (or
+      --  otherwise harmfully manipulated) while it is being visited. Query,
+      --  Update, and Iterate increment the busy count on entry, and decrement
+      --  the count on exit. Delete_Last checks the count to determine whether
+      --  it is being called while the associated callback procedure is
+      --  executing.
 
       if Container.Busy > 0 then
          raise Program_Error with
            "attempt to tamper with elements (vector is busy)";
       end if;
 
-      Index := Int'Base (Container.Last) - Int'Base (Count);
+      --  There is no restriction on how large Count can be when deleting
+      --  items. If it is equal or greater than the current length, then this
+      --  is equivalent to clearing the vector. (In particular, there's no need
+      --  for us to actually calculate the new value for Last.)
 
-      Container.Last :=
-         (if Index < Index_Type'Pos (Index_Type'First)
-          then No_Index
-          else Index_Type (Index));
+      --  If the requested count is less than the current length, then we must
+      --  calculate the new value for Last. For the type we use the widest of
+      --  Index_Type'Base and Count_Type'Base for the intermediate values of
+      --  our calculation.  (See the comments in Length for more information.)
+
+      if Count >= Container.Length then
+         Container.Last := No_Index;
+
+      elsif Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+         Container.Last := Container.Last - Index_Type'Base (Count);
+
+      else
+         Container.Last :=
+           Index_Type'Base (Count_Type'Base (Container.Last) - Count);
+      end if;
    end Delete_Last;
 
    -------------
@@ -772,21 +954,41 @@ package body Ada.Containers.Vectors is
       New_Item  : Element_Type;
       Count     : Count_Type := 1)
    is
-      N : constant Int := Count_Type'Pos (Count);
+      Old_Length : constant Count_Type := Container.Length;
 
-      First           : constant Int := Int (Index_Type'First);
-      New_Last_As_Int : Int'Base;
-      New_Last        : Index_Type;
-      New_Length      : UInt;
-      Max_Length      : constant UInt := UInt (Count_Type'Last);
+      Max_Length : Count_Type'Base;  -- determined from range of Index_Type
+      New_Length : Count_Type'Base;  -- sum of current length and Count
+      New_Last   : Index_Type'Base;  -- last index of vector after insertion
 
-      Dst : Elements_Access;
+      Index : Index_Type'Base;  -- scratch for intermediate values
+      J     : Count_Type'Base;  -- scratch
+
+      New_Capacity : Count_Type'Base;  -- length of new, expanded array
+      Dst_Last     : Index_Type'Base;  -- last index of new, expanded array
+      Dst          : Elements_Access;  -- new, expanded internal array
 
    begin
+      --  As a precondition on the generic actual Index_Type, the base type
+      --  must include Index_Type'Pred (Index_Type'First); this is the value
+      --  that Container.Last assumes when the vector is empty. However, we do
+      --  not allow that as the value for Index when specifying where the new
+      --  items should be inserted, so we must manually check. (That the user
+      --  is allowed to specify the value at all here is a consequence of the
+      --  declaration of the Extended_Index subtype, which includes the values
+      --  in the base range that immediately precede and immediately follow the
+      --  values in the Index_Type.)
+
       if Before < Index_Type'First then
          raise Constraint_Error with
            "Before index is out of range (too small)";
       end if;
+
+      --  We do allow a value greater than Container.Last to be specified as
+      --  the Index, but only if it's immediately greater. This allows for the
+      --  case of appending items to the back end of the vector. (It is assumed
+      --  that specifying an index value greater than Last + 1 indicates some
+      --  deeper flaw in the caller's algorithm, so that case is treated as a
+      --  proper error.)
 
       if Before > Container.Last
         and then Before > Container.Last + 1
@@ -795,67 +997,192 @@ package body Ada.Containers.Vectors is
            "Before index is out of range (too large)";
       end if;
 
+      --  We treat inserting 0 items into the container as a no-op, even when
+      --  the container is busy, so we simply return.
+
       if Count = 0 then
          return;
       end if;
 
-      declare
-         Old_Last_As_Int : constant Int := Int (Container.Last);
+      --  There are two constraints we need to satisfy. The first constraint is
+      --  that a container cannot have more than Count_Type'Last elements, so
+      --  we must check the sum of the current length and the insertion
+      --  count. Note that we cannot simply add these values, because of the
+      --  possibilty of overflow.
 
-      begin
-         if Old_Last_As_Int > Int'Last - N then
-            raise Constraint_Error with "new length is out of range";
+      if Old_Length > Count_Type'Last - Count then
+         raise Constraint_Error with "Count is out of range";
+      end if;
+
+      --  It is now safe compute the length of the new vector, without fear of
+      --  overflow.
+
+      New_Length := Old_Length + Count;
+
+      --  The second constraint is that the new Last index value cannot exceed
+      --  Index_Type'Last. In each branch below, we calculate the maximum
+      --  length (computed from the range of values in Index_Type), and then
+      --  compare the new length to the maximum length. If the new length is
+      --  acceptable, then we compute the new last index from that.
+
+      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+         --  We have to handle the case when there might be more values in the
+         --  range of Index_Type than in the range of Count_Type.
+
+         if Index_Type'First <= 0 then
+            --  We know that No_Index (the same as Index_Type'First - 1) is
+            --  less than 0, so it is safe to compute the following sum without
+            --  fear of overflow.
+
+            Index := No_Index + Index_Type'Base (Count_Type'Last);
+
+            if Index <= Index_Type'Last then
+               --  We have determined that range of Index_Type has at least as
+               --  many values as in Count_Type, so Count_Type'Last is the
+               --  maximum number of items that are allowed.
+
+               Max_Length := Count_Type'Last;
+
+            else
+               --  The range of Index_Type has fewer values than in Count_Type,
+               --  so the maximum number of items is computed from the range of
+               --  the Index_Type.
+
+               Max_Length := Count_Type'Base (Index_Type'Last - No_Index);
+            end if;
+
+         else
+            --  No_Index is equal or greater than 0, so we can safely compute
+            --  the difference without fear of overflow (which we would have to
+            --  worry about if No_Index were less than 0, but that case is
+            --  handled above).
+
+            Max_Length := Count_Type'Base (Index_Type'Last - No_Index);
          end if;
 
-         New_Last_As_Int := Old_Last_As_Int + N;
+      elsif Index_Type'First <= 0 then
+         --  We know that No_Index (the same as Index_Type'First - 1) is less
+         --  than 0, so it is safe to compute the following sum without fear of
+         --  overflow.
 
-         if New_Last_As_Int > Int (Index_Type'Last) then
-            raise Constraint_Error with "new length is out of range";
+         J := Count_Type'Base (No_Index) + Count_Type'Last;
+
+         if J <= Count_Type'Base (Index_Type'Last) then
+            --  We have determined that range of Index_Type has at least as
+            --  many values as in Count_Type, so Count_Type'Last is the maximum
+            --  number of items that are allowed.
+
+            Max_Length := Count_Type'Last;
+
+         else
+            --  The range of Index_Type has fewer values than Count_Type does,
+            --  so the maximum number of items is computed from the range of
+            --  the Index_Type.
+
+            Max_Length :=
+              Count_Type'Base (Index_Type'Last) - Count_Type'Base (No_Index);
          end if;
 
-         New_Length := UInt (New_Last_As_Int - First + Int'(1));
+      else
+         --  No_Index is equal or greater than 0, so we can safely compute the
+         --  difference without fear of overflow (which we would have to worry
+         --  about if No_Index were less than 0, but that case is handled
+         --  above).
 
-         if New_Length > Max_Length then
-            raise Constraint_Error with "new length is out of range";
-         end if;
+         Max_Length :=
+           Count_Type'Base (Index_Type'Last) - Count_Type'Base (No_Index);
+      end if;
 
-         New_Last := Index_Type (New_Last_As_Int);
-      end;
+      --  We have just computed the maximum length (number of items). We must
+      --  now compare the requested length to the maximum length, as we do not
+      --  allow a vector expand beyond the maximum (because that would create
+      --  an internal array with a last index value greater than
+      --  Index_Type'Last, with no way to index those elements).
+
+      if New_Length > Max_Length then
+         raise Constraint_Error with "Count is out of range";
+      end if;
+
+      --  New_Last is the last index value of the items in the container after
+      --  insertion.  Use the wider of Index_Type'Base and Count_Type'Base to
+      --  compute its value from the New_Length.
+
+      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+         New_Last := No_Index + Index_Type'Base (New_Length);
+
+      else
+         New_Last := Index_Type'Base (Count_Type'Base (No_Index) + New_Length);
+      end if;
+
+      if Container.Elements = null then
+         pragma Assert (Container.Last = No_Index);
+
+         --  This is the simplest case, with which we must always begin: we're
+         --  inserting items into an empty vector that hasn't allocated an
+         --  internal array yet. Note that we don't need to check the busy bit
+         --  here, because an empty container cannot be busy.
+
+         --  In order to preserve container invariants, we allocate the new
+         --  internal array first, before setting the Last index value, in case
+         --  the allocation fails (which can happen either because there is no
+         --  storage available, or because element initialization fails).
+
+         Container.Elements := new Elements_Type'
+                                     (Last => New_Last,
+                                      EA   => (others => New_Item));
+
+         --  The allocation of the new, internal array succeeded, so it is now
+         --  safe to update the Last index, restoring container invariants.
+
+         Container.Last := New_Last;
+
+         return;
+      end if;
+
+      --  The tampering bits exist to prevent an item from being harmfully
+      --  manipulated while it is being visited. Query, Update, and Iterate
+      --  increment the busy count on entry, and decrement the count on
+      --  exit. Insert checks the count to determine whether it is being called
+      --  while the associated callback procedure is executing.
 
       if Container.Busy > 0 then
          raise Program_Error with
            "attempt to tamper with elements (vector is busy)";
       end if;
 
-      if Container.Elements = null then
-         Container.Elements := new Elements_Type'
-                                     (Last => New_Last,
-                                      EA   => (others => New_Item));
-         Container.Last := New_Last;
-         return;
-      end if;
+      --  An internal array has already been allocated, so we must determine
+      --  whether there is enough unused storage for the new items.
 
-      if New_Last <= Container.Elements.Last then
+      if New_Length <= Container.Elements.EA'Length then
+         --  In this case, we're inserting elements into a vector that has
+         --  already allocated an internal array, and the existing array has
+         --  enough unused storage for the new items.
+
          declare
             EA : Elements_Array renames Container.Elements.EA;
 
          begin
-            if Before <= Container.Last then
-               declare
-                  Index_As_Int : constant Int'Base :=
-                                   Index_Type'Pos (Before) + N;
+            if Before > Container.Last then
+               --  The new items are being appended to the vector, so no
+               --  sliding of existing elements is required.
 
-                  Index : constant Index_Type := Index_Type (Index_As_Int);
-
-               begin
-                  EA (Index .. New_Last) := EA (Before .. Container.Last);
-
-                  EA (Before .. Index_Type'Pred (Index)) :=
-                      (others => New_Item);
-               end;
+               EA (Before .. New_Last) := (others => New_Item);
 
             else
-               EA (Before .. New_Last) := (others => New_Item);
+               --  The new items are being inserted before some existing
+               --  elements, so we must slide the existing elements up to their
+               --  new home. We use the wider of Index_Type'Base and
+               --  Count_Type'Base as the type for intermediate index values.
+
+               if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+                  Index := Before + Index_Type'Base (Count);
+
+               else
+                  Index := Index_Type'Base (Count_Type'Base (Before) + Count);
+               end if;
+
+               EA (Index .. New_Last) := EA (Before .. Container.Last);
+               EA (Before .. Index - 1) := (others => New_Item);
             end if;
          end;
 
@@ -863,67 +1190,79 @@ package body Ada.Containers.Vectors is
          return;
       end if;
 
+      --  In this case, we're inserting elements into a vector that has already
+      --  allocated an internal array, but the existing array does not have
+      --  enough storage, so we must allocate a new, longer array. In order to
+      --  guarantee that the amortized insertion cost is O(1), we always
+      --  allocate an array whose length is some power-of-two factor of the
+      --  current array length. (The new array cannot have a length less than
+      --  the New_Length of the container, but its last index value cannot be
+      --  greater than Index_Type'Last.)
+
+      New_Capacity := Count_Type'Max (1, Container.Elements.EA'Length);
+      while New_Capacity < New_Length loop
+         if New_Capacity > Count_Type'Last / 2 then
+            New_Capacity := Count_Type'Last;
+            exit;
+         end if;
+
+         New_Capacity := 2 * New_Capacity;
+      end loop;
+
+      if New_Capacity > Max_Length then
+         --  We have reached the limit of capacity, so no further expansion
+         --  will occur. (This is not a problem, as there is never a need to
+         --  have more capacity than the maximum container length.)
+
+         New_Capacity := Max_Length;
+      end if;
+
+      --  We have computed the length of the new internal array (and this is
+      --  what "vector capacity" means), so use that to compute its last index.
+
+      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+         Dst_Last := No_Index + Index_Type'Base (New_Capacity);
+
+      else
+         Dst_Last :=
+           Index_Type'Base (Count_Type'Base (No_Index) + New_Capacity);
+      end if;
+
+      --  Now we allocate the new, longer internal array. If the allocation
+      --  fails, we have not changed any container state, so no side-effect
+      --  will occur as a result of propagating the exception.
+
+      Dst := new Elements_Type (Dst_Last);
+
+      --  We have our new internal array. All that needs to be done now is to
+      --  copy the existing items (if any) from the old array (the "source"
+      --  array, object SA below) to the new array (the "destination" array,
+      --  object DA below), and then deallocate the old array.
+
       declare
-         C, CC : UInt;
+         SA : Elements_Array renames Container.Elements.EA; -- source
+         DA : Elements_Array renames Dst.EA;                -- destination
 
       begin
-         C := UInt'Max (1, Container.Elements.EA'Length);  -- ???
-         while C < New_Length loop
-            if C > UInt'Last / 2 then
-               C := UInt'Last;
-               exit;
+         DA (Index_Type'First .. Before - 1) :=
+           SA (Index_Type'First .. Before - 1);
+
+         if Before > Container.Last then
+            DA (Before .. New_Last) := (others => New_Item);
+
+         else
+            --  The new items are being inserted before some existing elements,
+            --  so we must slide the existing elements up to their new home.
+
+            if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+               Index := Before + Index_Type'Base (Count);
+
+            else
+               Index := Index_Type'Base (Count_Type'Base (Before) + Count);
             end if;
 
-            C := 2 * C;
-         end loop;
-
-         if C > Max_Length then
-            C := Max_Length;
-         end if;
-
-         if Index_Type'First <= 0
-           and then Index_Type'Last >= 0
-         then
-            CC := UInt (Index_Type'Last) + UInt (-Index_Type'First) + 1;
-         else
-            CC := UInt (Int (Index_Type'Last) - First + 1);
-         end if;
-
-         if C > CC then
-            C := CC;
-         end if;
-
-         declare
-            Dst_Last : constant Index_Type :=
-                         Index_Type (First + UInt'Pos (C) - 1);
-
-         begin
-            Dst := new Elements_Type (Dst_Last);
-         end;
-      end;
-
-      declare
-         SA : Elements_Array renames Container.Elements.EA;
-         DA : Elements_Array renames Dst.EA;
-
-      begin
-         DA (Index_Type'First .. Index_Type'Pred (Before)) :=
-           SA (Index_Type'First .. Index_Type'Pred (Before));
-
-         if Before <= Container.Last then
-            declare
-               Index_As_Int : constant Int'Base :=
-                                Index_Type'Pos (Before) + N;
-
-               Index : constant Index_Type := Index_Type (Index_As_Int);
-
-            begin
-               DA (Before .. Index_Type'Pred (Index)) := (others => New_Item);
-               DA (Index .. New_Last) := SA (Before .. Container.Last);
-            end;
-
-         else
-            DA (Before .. New_Last) := (others => New_Item);
+            DA (Before .. Index - 1) := (others => New_Item);
+            DA (Index .. New_Last) := SA (Before .. Container.Last);
          end if;
       exception
          when others =>
@@ -931,11 +1270,23 @@ package body Ada.Containers.Vectors is
             raise;
       end;
 
+      --  We have successfully copied the items onto the new array, so the
+      --  final thing to do is deallocate the old array.
+
       declare
          X : Elements_Access := Container.Elements;
       begin
+         --  We first isolate the old internal array, removing it from the
+         --  container and replacing it with the new internal array, before we
+         --  deallocate the old array (which can fail if finalization of
+         --  elements propagates an exception).
+
          Container.Elements := Dst;
          Container.Last := New_Last;
+
+         --  The container invariants have been restored, so it is now safe to
+         --  attempt to deallocate the old array.
+
          Free (X);
       end;
    end Insert;
@@ -946,83 +1297,118 @@ package body Ada.Containers.Vectors is
       New_Item  : Vector)
    is
       N : constant Count_Type := Length (New_Item);
+      J : Index_Type'Base;
 
    begin
-      if Before < Index_Type'First then
-         raise Constraint_Error with
-           "Before index is out of range (too small)";
-      end if;
-
-      if Before > Container.Last
-        and then Before > Container.Last + 1
-      then
-         raise Constraint_Error with
-           "Before index is out of range (too large)";
-      end if;
-
-      if N = 0 then
-         return;
-      end if;
+      --  Use Insert_Space to create the "hole" (the destination slice) into
+      --  which we copy the source items.
 
       Insert_Space (Container, Before, Count => N);
 
-      declare
-         Dst_Last_As_Int : constant Int'Base :=
-                             Int'Base (Before) + Int'Base (N) - 1;
+      if N = 0 then
+         --  There's nothing else to do here (vetting of parameters was
+         --  performed already in Insert_Space), so we simply return.
 
-         Dst_Last : constant Index_Type := Index_Type (Dst_Last_As_Int);
+         return;
+      end if;
+
+      --  We calculate the last index value of the destination slice using the
+      --  wider of Index_Type'Base and count_Type'Base.
+
+      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+         J := (Before - 1) + Index_Type'Base (N);
+
+      else
+         J := Index_Type'Base (Count_Type'Base (Before - 1) + N);
+      end if;
+
+      if Container'Address /= New_Item'Address then
+         --  This is the simple case.  New_Item denotes an object different
+         --  from Container, so there's nothing special we need to do to copy
+         --  the source items to their destination, because all of the source
+         --  items are contiguous.
+
+         Container.Elements.EA (Before .. J) :=
+           New_Item.Elements.EA (Index_Type'First .. New_Item.Last);
+
+         return;
+      end if;
+
+      --  New_Item denotes the same object as Container, so an insertion has
+      --  potentially split the source items. The destination is always the
+      --  range [Before, J], but the source is [Index_Type'First, Before) and
+      --  (J, Container.Last]. We perform the copy in two steps, using each of
+      --  the two slices of the source items.
+
+      declare
+         L : constant Index_Type'Base := Before - 1;
+
+         subtype Src_Index_Subtype is Index_Type'Base range
+           Index_Type'First .. L;
+
+         Src : Elements_Array renames
+           Container.Elements.EA (Src_Index_Subtype);
+
+         K : Index_Type'Base;
 
       begin
-         if Container'Address /= New_Item'Address then
-            Container.Elements.EA (Before .. Dst_Last) :=
-              New_Item.Elements.EA (Index_Type'First .. New_Item.Last);
+         --  We first copy the source items that precede the space we
+         --  inserted. Index value K is the last index of that portion
+         --  destination that receives this slice of the source. (If Before
+         --  equals Index_Type'First, then this first source slice will be
+         --  empty, which is harmless.)
+
+         if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+            K := L + Index_Type'Base (Src'Length);
+
+         else
+            K := Index_Type'Base (Count_Type'Base (L) + Src'Length);
+         end if;
+
+         Container.Elements.EA (Before .. K) := Src;
+
+         if Src'Length = N then
+            --  The new items were effectively appended to the container, so we
+            --  have already copied all of the items that need to be copied.
+            --  We return early here, even though the source slice below is
+            --  empty (so the assignment would be harmless), because we want to
+            --  avoid computing J + 1, which will overflow if J equals
+            --  Index_Type'Base'Last.
 
             return;
          end if;
+      end;
 
-         declare
-            subtype Src_Index_Subtype is Index_Type'Base range
-              Index_Type'First .. Before - 1;
+      declare
+         --  Note that we want to avoid computing J + 1 here, in case J equals
+         --  Index_Type'Base'Last. We prevent that by returning early above,
+         --  immediately after copying the first slice of the source, and
+         --  determining that this second slice of the source is empty.
 
-            Src : Elements_Array renames
-                    Container.Elements.EA (Src_Index_Subtype);
+         F : constant Index_Type'Base := J + 1;
 
-            Index_As_Int : constant Int'Base :=
-                             Int (Before) + Src'Length - 1;
+         subtype Src_Index_Subtype is Index_Type'Base range
+           F .. Container.Last;
 
-            Index : constant Index_Type'Base :=
-                      Index_Type'Base (Index_As_Int);
+         Src : Elements_Array renames
+           Container.Elements.EA (Src_Index_Subtype);
 
-            Dst : Elements_Array renames
-                    Container.Elements.EA (Before .. Index);
+         K : Index_Type'Base;
 
-         begin
-            Dst := Src;
-         end;
+      begin
+         --  We next copy the source items that follow the space we
+         --  inserted. Index value K is the first index of that portion of the
+         --  destination that receives this slice of the source. (For the
+         --  reasons given above, this slice is guaranteed to be non-empty.)
 
-         if Dst_Last = Container.Last then
-            return;
+         if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+            K := F - Index_Type'Base (Src'Length);
+
+         else
+            K := Index_Type'Base (Count_Type'Base (F) - Src'Length);
          end if;
 
-         declare
-            subtype Src_Index_Subtype is Index_Type'Base range
-              Dst_Last + 1 .. Container.Last;
-
-            Src : Elements_Array renames
-                    Container.Elements.EA (Src_Index_Subtype);
-
-            Index_As_Int : constant Int'Base :=
-                             Dst_Last_As_Int - Src'Length + 1;
-
-            Index : constant Index_Type :=
-                      Index_Type (Index_As_Int);
-
-            Dst : Elements_Array renames
-                    Container.Elements.EA (Index .. Dst_Last);
-
-         begin
-            Dst := Src;
-         end;
+         Container.Elements.EA (K .. J) := Src;
       end;
    end Insert;
 
@@ -1224,21 +1610,41 @@ package body Ada.Containers.Vectors is
       Before    : Extended_Index;
       Count     : Count_Type := 1)
    is
-      N : constant Int := Count_Type'Pos (Count);
+      Old_Length : constant Count_Type := Container.Length;
 
-      First           : constant Int := Int (Index_Type'First);
-      New_Last_As_Int : Int'Base;
-      New_Last        : Index_Type;
-      New_Length      : UInt;
-      Max_Length      : constant UInt := UInt (Count_Type'Last);
+      Max_Length : Count_Type'Base;  -- determined from range of Index_Type
+      New_Length : Count_Type'Base;  -- sum of current length and Count
+      New_Last   : Index_Type'Base;  -- last index of vector after insertion
 
-      Dst : Elements_Access;
+      Index : Index_Type'Base;  -- scratch for intermediate values
+      J     : Count_Type'Base;  -- scratch
+
+      New_Capacity : Count_Type'Base;  -- length of new, expanded array
+      Dst_Last     : Index_Type'Base;  -- last index of new, expanded array
+      Dst          : Elements_Access;  -- new, expanded internal array
 
    begin
+      --  As a precondition on the generic actual Index_Type, the base type
+      --  must include Index_Type'Pred (Index_Type'First); this is the value
+      --  that Container.Last assumes when the vector is empty. However, we do
+      --  not allow that as the value for Index when specifying where the new
+      --  items should be inserted, so we must manually check. (That the user
+      --  is allowed to specify the value at all here is a consequence of the
+      --  declaration of the Extended_Index subtype, which includes the values
+      --  in the base range that immediately precede and immediately follow the
+      --  values in the Index_Type.)
+
       if Before < Index_Type'First then
          raise Constraint_Error with
            "Before index is out of range (too small)";
       end if;
+
+      --  We do allow a value greater than Container.Last to be specified as
+      --  the Index, but only if it's immediately greater. This allows for the
+      --  case of appending items to the back end of the vector. (It is assumed
+      --  that specifying an index value greater than Last + 1 indicates some
+      --  deeper flaw in the caller's algorithm, so that case is treated as a
+      --  proper error.)
 
       if Before > Container.Last
         and then Before > Container.Last + 1
@@ -1247,58 +1653,184 @@ package body Ada.Containers.Vectors is
            "Before index is out of range (too large)";
       end if;
 
+      --  We treat inserting 0 items into the container as a no-op, even when
+      --  the container is busy, so we simply return.
+
       if Count = 0 then
          return;
       end if;
 
-      declare
-         Old_Last_As_Int : constant Int := Int (Container.Last);
+      --  There are two constraints we need to satisfy. The first constraint is
+      --  that a container cannot have more than Count_Type'Last elements, so
+      --  we must check the sum of the current length and the insertion
+      --  count. Note that we cannot simply add these values, because of the
+      --  possibilty of overflow.
 
-      begin
-         if Old_Last_As_Int > Int'Last - N then
-            raise Constraint_Error with "new length is out of range";
+      if Old_Length > Count_Type'Last - Count then
+         raise Constraint_Error with "Count is out of range";
+      end if;
+
+      --  It is now safe compute the length of the new vector, without fear of
+      --  overflow.
+
+      New_Length := Old_Length + Count;
+
+      --  The second constraint is that the new Last index value cannot exceed
+      --  Index_Type'Last. In each branch below, we calculate the maximum
+      --  length (computed from the range of values in Index_Type), and then
+      --  compare the new length to the maximum length. If the new length is
+      --  acceptable, then we compute the new last index from that.
+
+      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+         --  We have to handle the case when there might be more values in the
+         --  range of Index_Type than in the range of Count_Type.
+
+         if Index_Type'First <= 0 then
+            --  We know that No_Index (the same as Index_Type'First - 1) is
+            --  less than 0, so it is safe to compute the following sum without
+            --  fear of overflow.
+
+            Index := No_Index + Index_Type'Base (Count_Type'Last);
+
+            if Index <= Index_Type'Last then
+               --  We have determined that range of Index_Type has at least as
+               --  many values as in Count_Type, so Count_Type'Last is the
+               --  maximum number of items that are allowed.
+
+               Max_Length := Count_Type'Last;
+
+            else
+               --  The range of Index_Type has fewer values than in Count_Type,
+               --  so the maximum number of items is computed from the range of
+               --  the Index_Type.
+
+               Max_Length := Count_Type'Base (Index_Type'Last - No_Index);
+            end if;
+
+         else
+            --  No_Index is equal or greater than 0, so we can safely compute
+            --  the difference without fear of overflow (which we would have to
+            --  worry about if No_Index were less than 0, but that case is
+            --  handled above).
+
+            Max_Length := Count_Type'Base (Index_Type'Last - No_Index);
          end if;
 
-         New_Last_As_Int := Old_Last_As_Int + N;
+      elsif Index_Type'First <= 0 then
+         --  We know that No_Index (the same as Index_Type'First - 1) is less
+         --  than 0, so it is safe to compute the following sum without fear of
+         --  overflow.
 
-         if New_Last_As_Int > Int (Index_Type'Last) then
-            raise Constraint_Error with "new length is out of range";
+         J := Count_Type'Base (No_Index) + Count_Type'Last;
+
+         if J <= Count_Type'Base (Index_Type'Last) then
+            --  We have determined that range of Index_Type has at least as
+            --  many values as in Count_Type, so Count_Type'Last is the maximum
+            --  number of items that are allowed.
+
+            Max_Length := Count_Type'Last;
+
+         else
+            --  The range of Index_Type has fewer values than Count_Type does,
+            --  so the maximum number of items is computed from the range of
+            --  the Index_Type.
+
+            Max_Length :=
+              Count_Type'Base (Index_Type'Last) - Count_Type'Base (No_Index);
          end if;
 
-         New_Length := UInt (New_Last_As_Int - First + Int'(1));
+      else
+         --  No_Index is equal or greater than 0, so we can safely compute the
+         --  difference without fear of overflow (which we would have to worry
+         --  about if No_Index were less than 0, but that case is handled
+         --  above).
 
-         if New_Length > Max_Length then
-            raise Constraint_Error with "new length is out of range";
-         end if;
+         Max_Length :=
+           Count_Type'Base (Index_Type'Last) - Count_Type'Base (No_Index);
+      end if;
 
-         New_Last := Index_Type (New_Last_As_Int);
-      end;
+      --  We have just computed the maximum length (number of items). We must
+      --  now compare the requested length to the maximum length, as we do not
+      --  allow a vector expand beyond the maximum (because that would create
+      --  an internal array with a last index value greater than
+      --  Index_Type'Last, with no way to index those elements).
+
+      if New_Length > Max_Length then
+         raise Constraint_Error with "Count is out of range";
+      end if;
+
+      --  New_Last is the last index value of the items in the container after
+      --  insertion.  Use the wider of Index_Type'Base and Count_Type'Base to
+      --  compute its value from the New_Length.
+
+      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+         New_Last := No_Index + Index_Type'Base (New_Length);
+
+      else
+         New_Last := Index_Type'Base (Count_Type'Base (No_Index) + New_Length);
+      end if;
+
+      if Container.Elements = null then
+         pragma Assert (Container.Last = No_Index);
+
+         --  This is the simplest case, with which we must always begin: we're
+         --  inserting items into an empty vector that hasn't allocated an
+         --  internal array yet. Note that we don't need to check the busy bit
+         --  here, because an empty container cannot be busy.
+
+         --  In order to preserve container invariants, we allocate the new
+         --  internal array first, before setting the Last index value, in case
+         --  the allocation fails (which can happen either because there is no
+         --  storage available, or because default-valued element
+         --  initialization fails).
+
+         Container.Elements := new Elements_Type (New_Last);
+
+         --  The allocation of the new, internal array succeeded, so it is now
+         --  safe to update the Last index, restoring container invariants.
+
+         Container.Last := New_Last;
+
+         return;
+      end if;
+
+      --  The tampering bits exist to prevent an item from being harmfully
+      --  manipulated while it is being visited. Query, Update, and Iterate
+      --  increment the busy count on entry, and decrement the count on
+      --  exit. Insert checks the count to determine whether it is being called
+      --  while the associated callback procedure is executing.
 
       if Container.Busy > 0 then
          raise Program_Error with
            "attempt to tamper with elements (vector is busy)";
       end if;
 
-      if Container.Elements = null then
-         Container.Elements := new Elements_Type (New_Last);
-         Container.Last := New_Last;
-         return;
-      end if;
+      --  An internal array has already been allocated, so we must determine
+      --  whether there is enough unused storage for the new items.
 
       if New_Last <= Container.Elements.Last then
+         --  In this case, we're inserting space into a vector that has already
+         --  allocated an internal array, and the existing array has enough
+         --  unused storage for the new items.
+
          declare
             EA : Elements_Array renames Container.Elements.EA;
+
          begin
             if Before <= Container.Last then
-               declare
-                  Index_As_Int : constant Int'Base :=
-                                   Index_Type'Pos (Before) + N;
+               --  The space is being inserted before some existing elements,
+               --  so we must slide the existing elements up to their new
+               --  home. We use the wider of Index_Type'Base and
+               --  Count_Type'Base as the type for intermediate index values.
 
-                  Index : constant Index_Type := Index_Type (Index_As_Int);
+               if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+                  Index := Before + Index_Type'Base (Count);
 
-               begin
-                  EA (Index .. New_Last) := EA (Before .. Container.Last);
-               end;
+               else
+                  Index := Index_Type'Base (Count_Type'Base (Before) + Count);
+               end if;
+
+               EA (Index .. New_Last) := EA (Before .. Container.Last);
             end if;
          end;
 
@@ -1306,63 +1838,75 @@ package body Ada.Containers.Vectors is
          return;
       end if;
 
+      --  In this case, we're inserting space into a vector that has already
+      --  allocated an internal array, but the existing array does not have
+      --  enough storage, so we must allocate a new, longer array. In order to
+      --  guarantee that the amortized insertion cost is O(1), we always
+      --  allocate an array whose length is some power-of-two factor of the
+      --  current array length. (The new array cannot have a length less than
+      --  the New_Length of the container, but its last index value cannot be
+      --  greater than Index_Type'Last.)
+
+      New_Capacity := Count_Type'Max (1, Container.Elements.EA'Length);
+      while New_Capacity < New_Length loop
+         if New_Capacity > Count_Type'Last / 2 then
+            New_Capacity := Count_Type'Last;
+            exit;
+         end if;
+
+         New_Capacity := 2 * New_Capacity;
+      end loop;
+
+      if New_Capacity > Max_Length then
+         --  We have reached the limit of capacity, so no further expansion
+         --  will occur. (This is not a problem, as there is never a need to
+         --  have more capacity than the maximum container length.)
+
+         New_Capacity := Max_Length;
+      end if;
+
+      --  We have computed the length of the new internal array (and this is
+      --  what "vector capacity" means), so use that to compute its last index.
+
+      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+         Dst_Last := No_Index + Index_Type'Base (New_Capacity);
+
+      else
+         Dst_Last :=
+           Index_Type'Base (Count_Type'Base (No_Index) + New_Capacity);
+      end if;
+
+      --  Now we allocate the new, longer internal array. If the allocation
+      --  fails, we have not changed any container state, so no side-effect
+      --  will occur as a result of propagating the exception.
+
+      Dst := new Elements_Type (Dst_Last);
+
+      --  We have our new internal array. All that needs to be done now is to
+      --  copy the existing items (if any) from the old array (the "source"
+      --  array, object SA below) to the new array (the "destination" array,
+      --  object DA below), and then deallocate the old array.
+
       declare
-         C, CC : UInt;
+         SA : Elements_Array renames Container.Elements.EA;  -- source
+         DA : Elements_Array renames Dst.EA;                 -- destination
 
       begin
-         C := UInt'Max (1, Container.Elements.EA'Length);  -- ???
-         while C < New_Length loop
-            if C > UInt'Last / 2 then
-               C := UInt'Last;
-               exit;
-            end if;
-
-            C := 2 * C;
-         end loop;
-
-         if C > Max_Length then
-            C := Max_Length;
-         end if;
-
-         if Index_Type'First <= 0
-           and then Index_Type'Last >= 0
-         then
-            CC := UInt (Index_Type'Last) + UInt (-Index_Type'First) + 1;
-         else
-            CC := UInt (Int (Index_Type'Last) - First + 1);
-         end if;
-
-         if C > CC then
-            C := CC;
-         end if;
-
-         declare
-            Dst_Last : constant Index_Type :=
-                         Index_Type (First + UInt'Pos (C) - 1);
-
-         begin
-            Dst := new Elements_Type (Dst_Last);
-         end;
-      end;
-
-      declare
-         SA : Elements_Array renames Container.Elements.EA;
-         DA : Elements_Array renames Dst.EA;
-
-      begin
-         DA (Index_Type'First .. Index_Type'Pred (Before)) :=
-           SA (Index_Type'First .. Index_Type'Pred (Before));
+         DA (Index_Type'First .. Before - 1) :=
+           SA (Index_Type'First .. Before - 1);
 
          if Before <= Container.Last then
-            declare
-               Index_As_Int : constant Int'Base :=
-                                Index_Type'Pos (Before) + N;
+            --  The space is being inserted before some existing elements, so
+            --  we must slide the existing elements up to their new home.
 
-               Index : constant Index_Type := Index_Type (Index_As_Int);
+            if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+               Index := Before + Index_Type'Base (Count);
 
-            begin
-               DA (Index .. New_Last) := SA (Before .. Container.Last);
-            end;
+            else
+               Index := Index_Type'Base (Count_Type'Base (Before) + Count);
+            end if;
+
+            DA (Index .. New_Last) := SA (Before .. Container.Last);
          end if;
       exception
          when others =>
@@ -1370,11 +1914,24 @@ package body Ada.Containers.Vectors is
             raise;
       end;
 
+      --  We have successfully copied the items onto the new array, so the
+      --  final thing to do is restore invariants, and deallocate the old
+      --  array.
+
       declare
          X : Elements_Access := Container.Elements;
       begin
+         --  We first isolate the old internal array, removing it from the
+         --  container and replacing it with the new internal array, before we
+         --  deallocate the old array (which can fail if finalization of
+         --  elements propagates an exception).
+
          Container.Elements := Dst;
          Container.Last := New_Last;
+
+         --  The container invariants have been restored, so it is now safe to
+         --  attempt to deallocate the old array.
+
          Free (X);
       end;
    end Insert_Space;
@@ -1501,12 +2058,33 @@ package body Ada.Containers.Vectors is
    ------------
 
    function Length (Container : Vector) return Count_Type is
-      L : constant Int := Int (Container.Last);
-      F : constant Int := Int (Index_Type'First);
-      N : constant Int'Base := L - F + 1;
+      L : constant Index_Type'Base := Container.Last;
+      F : constant Index_Type := Index_Type'First;
 
    begin
-      return Count_Type (N);
+      --  The base range of the index type (Index_Type'Base) might not include
+      --  all values for length (Count_Type). Contrariwise, the index type
+      --  might include values outside the range of length.  Hence we use
+      --  whatever type is wider for intermediate values when calculating
+      --  length. Note that no matter what the index type is, the maximum
+      --  length to which a vector is allowed to grow is always the minimum
+      --  of Count_Type'Last and (IT'Last - IT'First + 1).
+
+      --  For example, an Index_Type with range -127 .. 127 is only guaranteed
+      --  to have a base range of -128 .. 127, but the corresponding vector
+      --  would have lengths in the range 0 .. 255. In this case we would need
+      --  to use Count_Type'Base for intermediate values.
+
+      --  Another case would be the index range -2**63 + 1 .. -2**63 + 10. The
+      --  vector would have a maximum length of 10, but the index values lie
+      --  outside the range of Count_Type (which is only 32 bits). In this
+      --  case we would need to use Index_Type'Base for intermediate values.
+
+      if Count_Type'Base'Last >= Index_Type'Pos (Index_Type'Base'Last) then
+         return Count_Type'Base (L) - Count_Type'Base (F) + 1;
+      else
+         return Count_Type (L - F + 1);
+      end if;
    end Length;
 
    ----------
@@ -1767,17 +2345,51 @@ package body Ada.Containers.Vectors is
    is
       N : constant Count_Type := Length (Container);
 
+      Index : Count_Type'Base;
+      Last  : Index_Type'Base;
+
    begin
+      --  Reserve_Capacity can be used to either expand the storage available
+      --  for elements (this would be its typical use, in anticipation of
+      --  future insertion), or to trim back storage. In the latter case,
+      --  storage can only be trimmed back to the limit of the container
+      --  length. Note that Reserve_Capacity neither deletes (active) elements
+      --  nor inserts elements; it only affects container capacity, never
+      --  container length.
+
       if Capacity = 0 then
+         --  This is a request to trim back storage, to the minimum amount
+         --  possible given the current state of the container.
+
          if N = 0 then
+            --  The container is empty, so in this unique case we can
+            --  deallocate the entire internal array. Note that an empty
+            --  container can never be busy, so there's no need to check the
+            --  tampering bits.
+
             declare
                X : Elements_Access := Container.Elements;
             begin
+               --  First we remove the internal array from the container, to
+               --  handle the case when the deallocation raises an exception.
+
                Container.Elements := null;
+
+               --  Container invariants have been restored, so it is now safe
+               --  to attempt to deallocate the internal array.
+
                Free (X);
             end;
 
          elsif N < Container.Elements.EA'Length then
+            --  The container is not empty, and the current length is less than
+            --  the current capacity, so there's storage available to trim. In
+            --  this case, we allocate a new internal array having a length
+            --  that exactly matches the number of items in the
+            --  container. (Reserve_Capacity does not delete active elements,
+            --  so this is the best we can do with respect to minimizing
+            --  storage).
+
             if Container.Busy > 0 then
                raise Program_Error with
                  "attempt to tamper with elements (vector is busy)";
@@ -1793,7 +2405,23 @@ package body Ada.Containers.Vectors is
                X : Elements_Access := Container.Elements;
 
             begin
+               --  Although we have isolated the old internal array that we're
+               --  going to deallocate, we don't deallocate it until we have
+               --  successfully allocated a new one. If there is an exception
+               --  during allocation (either because there is not enough
+               --  storage, or because initialization of the elements fails),
+               --  we let it propagate without causing any side-effect.
+
                Container.Elements := new Elements_Type'(Container.Last, Src);
+
+               --  We have succesfully allocated a new internal array (with a
+               --  smaller length than the old one, and containing a copy of
+               --  just the active elements in the container), so it is now
+               --  safe to attempt to deallocate the old array. The old array
+               --  has been isolated, and container invariants have been
+               --  restored, so if the deallocation fails (because finalization
+               --  of the elements fails), we simply let it propagate.
+
                Free (X);
             end;
          end if;
@@ -1801,29 +2429,102 @@ package body Ada.Containers.Vectors is
          return;
       end if;
 
+      --  Reserve_Capacity can be used to expand the storage available for
+      --  elements, but we do not let the capacity grow beyond the number of
+      --  values in Index_Type'Range. (Were it otherwise, there would be no way
+      --  to refer to the elements with an index value greater than
+      --  Index_Type'Last, so that storage would be wasted.) Here we compute
+      --  the Last index value of the new internal array, in a way that avoids
+      --  any possibility of overflow.
+
+      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+         --  We perform a two-part test. First we determine whether the
+         --  computed Last value lies in the base range of the type, and then
+         --  determine whether it lies in the range of the index (sub)type.
+
+         --  Last must satisfy this relation:
+         --    First + Length - 1 <= Last
+         --  We regroup terms:
+         --    First - 1 <= Last - Length
+         --  Which can rewrite as:
+         --    No_Index <= Last - Length
+
+         if Index_Type'Base'Last - Index_Type'Base (Capacity) < No_Index then
+            raise Constraint_Error with "Capacity is out of range";
+         end if;
+
+         --  We now know that the computed value of Last is within the base
+         --  range of the type, so it is safe to compute its value:
+
+         Last := No_Index + Index_Type'Base (Capacity);
+
+         --  Finally we test whether the value is within the range of the
+         --  generic actual index subtype:
+
+         if Last > Index_Type'Last then
+            raise Constraint_Error with "Capacity is out of range";
+         end if;
+
+      elsif Index_Type'First <= 0 then
+         --  Here we can compute Last directly, in the normal way. We know that
+         --  No_Index is less than 0, so there is no danger of overflow when
+         --  adding the (positive) value of Capacity.
+
+         Index := Count_Type'Base (No_Index) + Capacity;  -- Last
+
+         if Index > Count_Type'Base (Index_Type'Last) then
+            raise Constraint_Error with "Capacity is out of range";
+         end if;
+
+         --  We know that the computed value (having type Count_Type) of Last
+         --  is within the range of the generic actual index subtype, so it is
+         --  safe to convert to Index_Type:
+
+         Last := Index_Type'Base (Index);
+
+      else
+         --  Here Index_Type'First (and Index_Type'Last) is positive, so we
+         --  must test the length indirectly (by working backwards from the
+         --  largest possible value of Last), in order to prevent overflow.
+
+         Index := Count_Type'Base (Index_Type'Last) - Capacity;  -- No_Index
+
+         if Index < Count_Type'Base (No_Index) then
+            raise Constraint_Error with "Capacity is out of range";
+         end if;
+
+         --  We have determined that the value of Capacity would not create a
+         --  Last index value outside of the range of Index_Type, so we can now
+         --  safely compute its value.
+
+         Last := Index_Type'Base (Count_Type'Base (No_Index) + Capacity);
+      end if;
+
+      --  The requested capacity is non-zero, but we don't know yet whether
+      --  this is a request for expansion or contraction of storage.
+
       if Container.Elements = null then
-         declare
-            Last_As_Int : constant Int'Base :=
-                            Int (Index_Type'First) + Int (Capacity) - 1;
+         --  The container is empty (it doesn't even have an internal array),
+         --  so this represents a request to allocate (expand) storage having
+         --  the given capacity.
 
-         begin
-            if Last_As_Int > Index_Type'Pos (Index_Type'Last) then
-               raise Constraint_Error with "new length is out of range";
-            end if;
-
-            declare
-               Last : constant Index_Type := Index_Type (Last_As_Int);
-
-            begin
-               Container.Elements := new Elements_Type (Last);
-            end;
-         end;
-
+         Container.Elements := new Elements_Type (Last);
          return;
       end if;
 
       if Capacity <= N then
+         --  This is a request to trim back storage, but only to the limit of
+         --  what's already in the container. (Reserve_Capacity never deletes
+         --  active elements, it only reclaims excess storage.)
+
          if N < Container.Elements.EA'Length then
+            --  The container is not empty (because the requested capacity is
+            --  positive, and less than or equal to the container length), and
+            --  the current length is less than the current capacity, so
+            --  there's storage available to trim. In this case, we allocate a
+            --  new internal array having a length that exactly matches the
+            --  number of items in the container.
+
             if Container.Busy > 0 then
                raise Program_Error with
                  "attempt to tamper with elements (vector is busy)";
@@ -1839,63 +2540,99 @@ package body Ada.Containers.Vectors is
                X : Elements_Access := Container.Elements;
 
             begin
+               --  Although we have isolated the old internal array that we're
+               --  going to deallocate, we don't deallocate it until we have
+               --  successfully allocated a new one. If there is an exception
+               --  during allocation (either because there is not enough
+               --  storage, or because initialization of the elements fails),
+               --  we let it propagate without causing any side-effect.
+
                Container.Elements := new Elements_Type'(Container.Last, Src);
+
+               --  We have succesfully allocated a new internal array (with a
+               --  smaller length than the old one, and containing a copy of
+               --  just the active elements in the container), so it is now
+               --  safe to attempt to deallocate the old array. The old array
+               --  has been isolated, and container invariants have been
+               --  restored, so if the deallocation fails (because finalization
+               --  of the elements fails), we simply let it propagate.
+
                Free (X);
             end;
-
          end if;
 
          return;
       end if;
 
+      --  The requested capacity is larger than the container length (the
+      --  number of active elements). Whether this represents a request for
+      --  expansion or contraction of the current capacity depends on what the
+      --  current capacity is.
+
       if Capacity = Container.Elements.EA'Length then
+         --  The requested capacity matches the existing capacity, so there's
+         --  nothing to do here. We treat this case as a no-op, and simply
+         --  return without checking the busy bit.
+
          return;
       end if;
+
+      --  There is a change in the capacity of a non-empty container, so a new
+      --  internal array will be allocated. (The length of the new internal
+      --  array could be less or greater than the old internal array. We know
+      --  only that the length of the new internal array is greater than the
+      --  number of active elements in the container.) We must check whether
+      --  the container is busy before doing anything else.
 
       if Container.Busy > 0 then
          raise Program_Error with
            "attempt to tamper with elements (vector is busy)";
       end if;
 
+      --  We now allocate a new internal array, having a length different from
+      --  its current value.
+
       declare
-         Last_As_Int : constant Int'Base :=
-                         Int (Index_Type'First) + Int (Capacity) - 1;
+         E : Elements_Access := new Elements_Type (Last);
 
       begin
-         if Last_As_Int > Index_Type'Pos (Index_Type'Last) then
-            raise Constraint_Error with "new length is out of range";
-         end if;
+         --  We have successfully allocated the new internal array. We first
+         --  attempt to copy the existing elements from the old internal array
+         --  ("src" elements) onto the new internal array ("tgt" elements).
 
          declare
-            Last : constant Index_Type := Index_Type (Last_As_Int);
+            subtype Index_Subtype is Index_Type'Base range
+              Index_Type'First .. Container.Last;
 
-            E : Elements_Access := new Elements_Type (Last);
+            Src : Elements_Array renames
+                    Container.Elements.EA (Index_Subtype);
+
+            Tgt : Elements_Array renames E.EA (Index_Subtype);
 
          begin
-            declare
-               subtype Index_Subtype is Index_Type'Base range
-                 Index_Type'First .. Container.Last;
+            Tgt := Src;
 
-               Src : Elements_Array renames
-                       Container.Elements.EA (Index_Subtype);
+         exception
+            when others =>
+               Free (E);
+               raise;
+         end;
 
-               Tgt : Elements_Array renames E.EA (Index_Subtype);
+         --  We have successfully copied the existing elements onto the new
+         --  internal array, so now we can attempt to deallocate the old one.
 
-            begin
-               Tgt := Src;
+         declare
+            X : Elements_Access := Container.Elements;
+         begin
+            --  First we isolate the old internal array, and replace it in the
+            --  container with the new internal array.
 
-            exception
-               when others =>
-                  Free (E);
-                  raise;
-            end;
+            Container.Elements := E;
 
-            declare
-               X : Elements_Access := Container.Elements;
-            begin
-               Container.Elements := E;
-               Free (X);
-            end;
+            --  Container invariants have been restored, so it is now safe to
+            --  attempt to deallocate the old internal array.
+
+            Free (X);
          end;
       end;
    end Reserve_Capacity;
@@ -2023,26 +2760,25 @@ package body Ada.Containers.Vectors is
    ----------------
 
    procedure Set_Length (Container : in out Vector; Length : Count_Type) is
+      Count : constant Count_Type'Base := Container.Length - Length;
+
    begin
-      if Length = Vectors.Length (Container) then
-         return;
-      end if;
+      --  Set_Length allows the user to set the length explicitly, instead of
+      --  implicitly as a side-effect of deletion or insertion. If the
+      --  requested length is less then the current length, this is equivalent
+      --  to deleting items from the back end of the vector. If the requested
+      --  length is greater than the current length, then this is equivalent to
+      --  inserting "space" (nonce items) at the end.
 
-      if Container.Busy > 0 then
-         raise Program_Error with
-           "attempt to tamper with elements (vector is busy)";
-      end if;
+      if Count >= 0 then
+         Container.Delete_Last (Count);
 
-      if Length > Capacity (Container) then
-         Reserve_Capacity (Container, Capacity => Length);
-      end if;
+      elsif Container.Last >= Index_Type'Last then
+         raise Constraint_Error with "vector is already at its maximum length";
 
-      declare
-         Last_As_Int : constant Int'Base :=
-                         Int (Index_Type'First) + Int (Length) - 1;
-      begin
-         Container.Last := Index_Type'Base (Last_As_Int);
-      end;
+      else
+         Container.Insert_Space (Container.Last + 1, -Count);
+      end if;
    end Set_Length;
 
    ----------
@@ -2135,54 +2871,176 @@ package body Ada.Containers.Vectors is
    ---------------
 
    function To_Vector (Length : Count_Type) return Vector is
+      Index    : Count_Type'Base;
+      Last     : Index_Type'Base;
+      Elements : Elements_Access;
+
    begin
       if Length = 0 then
          return Empty_Vector;
       end if;
 
-      declare
-         First       : constant Int := Int (Index_Type'First);
-         Last_As_Int : constant Int'Base := First + Int (Length) - 1;
-         Last        : Index_Type;
-         Elements    : Elements_Access;
+      --  We create a vector object with a capacity that matches the specified
+      --  Length, but we do not allow the vector capacity (the length of the
+      --  internal array) to exceed the number of values in Index_Type'Range
+      --  (otherwise, there would be no way to refer to those components via an
+      --  index).  We must therefore check whether the specified Length would
+      --  create a Last index value greater than Index_Type'Last.
 
-      begin
-         if Last_As_Int > Index_Type'Pos (Index_Type'Last) then
+      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+         --  We perform a two-part test. First we determine whether the
+         --  computed Last value lies in the base range of the type, and then
+         --  determine whether it lies in the range of the index (sub)type.
+
+         --  Last must satisfy this relation:
+         --    First + Length - 1 <= Last
+         --  We regroup terms:
+         --    First - 1 <= Last - Length
+         --  Which can rewrite as:
+         --    No_Index <= Last - Length
+
+         if Index_Type'Base'Last - Index_Type'Base (Length) < No_Index then
             raise Constraint_Error with "Length is out of range";
          end if;
 
-         Last := Index_Type (Last_As_Int);
-         Elements := new Elements_Type (Last);
+         --  We now know that the computed value of Last is within the base
+         --  range of the type, so it is safe to compute its value:
 
-         return Vector'(Controlled with Elements, Last, 0, 0);
-      end;
+         Last := No_Index + Index_Type'Base (Length);
+
+         --  Finally we test whether the value is within the range of the
+         --  generic actual index subtype:
+
+         if Last > Index_Type'Last then
+            raise Constraint_Error with "Length is out of range";
+         end if;
+
+      elsif Index_Type'First <= 0 then
+         --  Here we can compute Last directly, in the normal way. We know that
+         --  No_Index is less than 0, so there is no danger of overflow when
+         --  adding the (positive) value of Length.
+
+         Index := Count_Type'Base (No_Index) + Length;  -- Last
+
+         if Index > Count_Type'Base (Index_Type'Last) then
+            raise Constraint_Error with "Length is out of range";
+         end if;
+
+         --  We know that the computed value (having type Count_Type) of Last
+         --  is within the range of the generic actual index subtype, so it is
+         --  safe to convert to Index_Type:
+
+         Last := Index_Type'Base (Index);
+
+      else
+         --  Here Index_Type'First (and Index_Type'Last) is positive, so we
+         --  must test the length indirectly (by working backwards from the
+         --  largest possible value of Last), in order to prevent overflow.
+
+         Index := Count_Type'Base (Index_Type'Last) - Length;  -- No_Index
+
+         if Index < Count_Type'Base (No_Index) then
+            raise Constraint_Error with "Length is out of range";
+         end if;
+
+         --  We have determined that the value of Length would not create a
+         --  Last index value outside of the range of Index_Type, so we can now
+         --  safely compute its value.
+
+         Last := Index_Type'Base (Count_Type'Base (No_Index) + Length);
+      end if;
+
+      Elements := new Elements_Type (Last);
+
+      return Vector'(Controlled with Elements, Last, 0, 0);
    end To_Vector;
 
    function To_Vector
      (New_Item : Element_Type;
       Length   : Count_Type) return Vector
    is
+      Index    : Count_Type'Base;
+      Last     : Index_Type'Base;
+      Elements : Elements_Access;
+
    begin
       if Length = 0 then
          return Empty_Vector;
       end if;
 
-      declare
-         First       : constant Int := Int (Index_Type'First);
-         Last_As_Int : constant Int'Base := First + Int (Length) - 1;
-         Last        : Index_Type;
-         Elements    : Elements_Access;
+      --  We create a vector object with a capacity that matches the specified
+      --  Length, but we do not allow the vector capacity (the length of the
+      --  internal array) to exceed the number of values in Index_Type'Range
+      --  (otherwise, there would be no way to refer to those components via an
+      --  index). We must therefore check whether the specified Length would
+      --  create a Last index value greater than Index_Type'Last.
 
-      begin
-         if Last_As_Int > Index_Type'Pos (Index_Type'Last) then
+      if Index_Type'Base'Last >= Count_Type'Pos (Count_Type'Last) then
+         --  We perform a two-part test. First we determine whether the
+         --  computed Last value lies in the base range of the type, and then
+         --  determine whether it lies in the range of the index (sub)type.
+
+         --  Last must satisfy this relation:
+         --    First + Length - 1 <= Last
+         --  We regroup terms:
+         --    First - 1 <= Last - Length
+         --  Which can rewrite as:
+         --    No_Index <= Last - Length
+
+         if Index_Type'Base'Last - Index_Type'Base (Length) < No_Index then
             raise Constraint_Error with "Length is out of range";
          end if;
 
-         Last := Index_Type (Last_As_Int);
-         Elements := new Elements_Type'(Last, EA => (others => New_Item));
+         --  We now know that the computed value of Last is within the base
+         --  range of the type, so it is safe to compute its value:
 
-         return Vector'(Controlled with Elements, Last, 0, 0);
-      end;
+         Last := No_Index + Index_Type'Base (Length);
+
+         --  Finally we test whether the value is within the range of the
+         --  generic actual index subtype:
+
+         if Last > Index_Type'Last then
+            raise Constraint_Error with "Length is out of range";
+         end if;
+
+      elsif Index_Type'First <= 0 then
+         --  Here we can compute Last directly, in the normal way. We know that
+         --  No_Index is less than 0, so there is no danger of overflow when
+         --  adding the (positive) value of Length.
+
+         Index := Count_Type'Base (No_Index) + Length;  -- same value as V.Last
+
+         if Index > Count_Type'Base (Index_Type'Last) then
+            raise Constraint_Error with "Length is out of range";
+         end if;
+
+         --  We know that the computed value (having type Count_Type) of Last
+         --  is within the range of the generic actual index subtype, so it is
+         --  safe to convert to Index_Type:
+
+         Last := Index_Type'Base (Index);
+
+      else
+         --  Here Index_Type'First (and Index_Type'Last) is positive, so we
+         --  must test the length indirectly (by working backwards from the
+         --  largest possible value of Last), in order to prevent overflow.
+
+         Index := Count_Type'Base (Index_Type'Last) - Length;  -- No_Index
+
+         if Index < Count_Type'Base (No_Index) then
+            raise Constraint_Error with "Length is out of range";
+         end if;
+
+         --  We have determined that the value of Length would not create a
+         --  Last index value outside of the range of Index_Type, so we can now
+         --  safely compute its value.
+
+         Last := Index_Type'Base (Count_Type'Base (No_Index) + Length);
+      end if;
+
+      Elements := new Elements_Type'(Last, EA => (others => New_Item));
+
+      return Vector'(Controlled with Elements, Last, 0, 0);
    end To_Vector;
 
    --------------------

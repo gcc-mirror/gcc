@@ -9,20 +9,18 @@
 
 /* Contributed by Alexander Malmberg <alexander@malmberg.org>  */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/next-mapping.h"
 #include <stdlib.h>
 #include <stdio.h>
 #define CHECK_IF(expr) if(!(expr)) abort()
 
 #ifdef __NEXT_RUNTIME__
 #define METHOD Method
-#define OBJC_GETCLASS objc_getClass
-#define CLASS_GETINSTANCEMETHOD class_getInstanceMethod
 #else
 #include <objc/objc-api.h>
 #define METHOD Method_t
-#define OBJC_GETCLASS objc_get_class
-#define CLASS_GETINSTANCEMETHOD class_get_instance_method
+#define method_get_types(M) (M)->method_types
 #endif
 
 @interface Test : Object
@@ -49,7 +47,7 @@ int offs1, offs2, offs3, offs4, offs5, offs6;
 
 int main(int argc, char **argv)
 {
-  Class testClass = OBJC_GETCLASS("Test");
+  Class testClass = objc_get_class("Test");
   METHOD meth;
 
   cc[0] = [Test new];
@@ -60,16 +58,16 @@ int main(int argc, char **argv)
   [*c test2: bb with: bb + 5];
   CHECK_IF (bb[3] == 5);
 
-  meth = CLASS_GETINSTANCEMETHOD(testClass, @selector(test2:with:));
+  meth = class_get_instance_method(testClass, @selector(test2:with:));
   offs1 = offs2 = offs3 = offs4 = offs5 = offs6 = -1;
-  sscanf(meth->method_types, "v%d@%d:%d[%di]%d^i%d", &offs1, &offs2, &offs3,
+  sscanf(method_get_types(meth), "v%d@%d:%d[%di]%d^i%d", &offs1, &offs2, &offs3,
       &offs4, &offs5, &offs6);
   CHECK_IF (!offs2 && offs4 == 5 && offs3 > 0);
   CHECK_IF (offs5 == 2 * offs3 && offs6 == 3 * offs3 && offs1 == 4 * offs3);
   
-  meth = CLASS_GETINSTANCEMETHOD(testClass, @selector(test3:));
+  meth = class_get_instance_method(testClass, @selector(test3:));
   offs1 = offs2 = offs3 = offs4 = offs5 = offs6 = -1;
-  sscanf(meth->method_types, "v%d@%d:%d[%d[%d{Test=#f}]]%d", &offs1, &offs2, &offs3,
+  sscanf(method_get_types(meth), "v%d@%d:%d[%d[%d{Test=#f}]]%d", &offs1, &offs2, &offs3,
       &offs4, &offs5, &offs6);
   CHECK_IF (!offs2 && offs4 == 3 && offs5 == 4 && offs3 > 0);
   CHECK_IF (offs6 == 2 * offs3 && offs1 == 3 * offs3);

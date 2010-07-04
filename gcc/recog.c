@@ -1,6 +1,6 @@
 /* Subroutines used by or related to instruction recognition.
    Copyright (C) 1987, 1988, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "function.h"
 #include "flags.h"
-#include "real.h"
 #include "toplev.h"
 #include "basic-block.h"
 #include "output.h"
@@ -787,12 +786,18 @@ validate_replace_rtx_part_nosimplify (rtx from, rtx to, rtx *where,
 
 }
 
-/* Try replacing every occurrence of FROM in INSN with TO.  */
+/* Try replacing every occurrence of FROM in INSN with TO.  This also
+   will replace in REG_EQUAL and REG_EQUIV notes.  */
 
 void
 validate_replace_rtx_group (rtx from, rtx to, rtx insn)
 {
+  rtx note;
   validate_replace_rtx_1 (&PATTERN (insn), from, to, insn, true);
+  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+    if (REG_NOTE_KIND (note) == REG_EQUAL
+	|| REG_NOTE_KIND (note) == REG_EQUIV)
+      validate_replace_rtx_1 (&XEXP (note, 0), from, to, insn, true);
 }
 
 /* Function called by note_uses to replace used subexpressions.  */
@@ -1596,6 +1601,9 @@ int
 asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 {
   int result = 0;
+#ifdef AUTO_INC_DEC
+  bool incdec_ok = false;
+#endif
 
   /* Use constrain_operands after reload.  */
   gcc_assert (!reload_completed);
@@ -1603,7 +1611,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
   /* Empty constraint string is the same as "X,...,X", i.e. X for as
      many alternatives as required to match the other operands.  */
   if (*constraint == '\0')
-    return 1;
+    result = 1;
 
   while (*constraint)
     {
@@ -1680,6 +1688,9 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 		  || GET_CODE (XEXP (op, 0)) == PRE_DEC
 		  || GET_CODE (XEXP (op, 0)) == POST_DEC))
 	    result = 1;
+#ifdef AUTO_INC_DEC
+	  incdec_ok = true;
+#endif
 	  break;
 
 	case '>':
@@ -1688,6 +1699,9 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 		  || GET_CODE (XEXP (op, 0)) == PRE_INC
 		  || GET_CODE (XEXP (op, 0)) == POST_INC))
 	    result = 1;
+#ifdef AUTO_INC_DEC
+	  incdec_ok = true;
+#endif
 	  break;
 
 	case 'E':
@@ -1808,6 +1822,23 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
       if (len)
 	return 0;
     }
+
+#ifdef AUTO_INC_DEC
+  /* For operands without < or > constraints reject side-effects.  */
+  if (!incdec_ok && result && MEM_P (op))
+    switch (GET_CODE (XEXP (op, 0)))
+      {
+      case PRE_INC:
+      case POST_INC:
+      case PRE_DEC:
+      case POST_DEC:
+      case PRE_MODIFY:
+      case POST_MODIFY:
+	return 0;
+      default:
+	break;
+      }
+#endif
 
   return result;
 }
@@ -1972,7 +2003,7 @@ offsettable_address_addr_space_p (int strictp, enum machine_mode mode, rtx y,
    Autoincrement addressing is a typical example of mode-dependence
    because the amount of the increment depends on the mode.  */
 
-int
+bool
 mode_dependent_address_p (rtx addr)
 {
   /* Auto-increment addressing with anything other than post_modify
@@ -1982,13 +2013,9 @@ mode_dependent_address_p (rtx addr)
       || GET_CODE (addr) == POST_INC
       || GET_CODE (addr) == PRE_DEC
       || GET_CODE (addr) == POST_DEC)
-    return 1;
+    return true;
 
-  GO_IF_MODE_DEPENDENT_ADDRESS (addr, win);
-  return 0;
-  /* Label `win' might (not) be used via GO_IF_MODE_DEPENDENT_ADDRESS.  */
- win: ATTRIBUTE_UNUSED_LABEL
-  return 1;
+  return targetm.mode_dependent_address_p (addr);
 }
 
 /* Like extract_insn, but save insn extracted and don't extract again, when
@@ -2038,6 +2065,7 @@ extract_insn (rtx insn)
   recog_data.n_operands = 0;
   recog_data.n_alternatives = 0;
   recog_data.n_dups = 0;
+  recog_data.is_asm = false;
 
   switch (GET_CODE (body))
     {
@@ -2076,6 +2104,7 @@ extract_insn (rtx insn)
 			       recog_data.operand_loc,
 			       recog_data.constraints,
 			       recog_data.operand_mode, NULL);
+	  memset (recog_data.is_operator, 0, sizeof recog_data.is_operator);
 	  if (noperands > 0)
 	    {
 	      const char *p =  recog_data.constraints[0];
@@ -2083,6 +2112,7 @@ extract_insn (rtx insn)
 	      while (*p)
 		recog_data.n_alternatives += (*p++ == ',');
 	    }
+	  recog_data.is_asm = true;
 	  break;
 	}
       fatal_insn_not_found (insn);
@@ -2105,6 +2135,7 @@ extract_insn (rtx insn)
       for (i = 0; i < noperands; i++)
 	{
 	  recog_data.constraints[i] = insn_data[icode].operand[i].constraint;
+	  recog_data.is_operator[i] = insn_data[icode].operand[i].is_operator;
 	  recog_data.operand_mode[i] = insn_data[icode].operand[i].mode;
 	  /* VOIDmode match_operands gets mode from their real operand.  */
 	  if (recog_data.operand_mode[i] == VOIDmode)
@@ -2696,6 +2727,30 @@ constrain_operands (int strict)
 		    = recog_data.operand[funny_match[funny_match_index].this_op];
 		}
 
+#ifdef AUTO_INC_DEC
+	      /* For operands without < or > constraints reject side-effects.  */
+	      if (recog_data.is_asm)
+		{
+		  for (opno = 0; opno < recog_data.n_operands; opno++)
+		    if (MEM_P (recog_data.operand[opno]))
+		      switch (GET_CODE (XEXP (recog_data.operand[opno], 0)))
+			{
+			case PRE_INC:
+			case POST_INC:
+			case PRE_DEC:
+			case POST_DEC:
+			case PRE_MODIFY:
+			case POST_MODIFY:
+			  if (strchr (recog_data.constraints[opno], '<') == NULL
+			      || strchr (recog_data.constraints[opno], '>')
+				 == NULL)
+			    return 0;
+			  break;
+			default:
+			  break;
+			}
+		}
+#endif
 	      return 1;
 	    }
 	}

@@ -387,6 +387,11 @@
     linker has different names on different platforms but the man page
     is usually called something such as <filename>ld.so/rtld/dld.so</filename>.
     </para>
+    <para>
+    Using LD_LIBRARY_PATH is not always the best solution, <link
+    linkend="manual.intro.using.linkage.dynamic">Finding Dynamic or Shared
+    Libraries</link> in the manual gives some alternatives.
+    </para>
   </answer>
 </qandaentry>
 
@@ -486,7 +491,7 @@
     non-standard features of g++ that are not present in older
     versions of proprietary compilers. It may take as much as a year or two
     after an official release of GCC that contains these features for
-    proprietary tools support these constructs.
+    proprietary tools to support these constructs.
     </para>
     <para>
     In the near past, specific released versions of libstdc++ have
@@ -633,9 +638,10 @@
   <answer id="a-linux_glibc">
       <para>When running on GNU/Linux, libstdc++ 3.2.1 (shared library version
          5.0.1) and later uses localization and formatting code from the system
-         C library (glibc) version 2.2.5.  That version of glibc is over a
-         year old and contains necessary bugfixes.  Many GNU/Linux distros make
-         glibc version 2.3.x available now.
+         C library (glibc) version 2.2.5 which contains necessary bugfixes.
+         Most GNU/Linux distros make more recent versions available now.
+         libstdc++ 4.6.0 and later require glibc 2.3 or later for this
+         localization and formatting code.
       </para>
       <para>The guideline is simple:  the more recent the C++ library, the
          more recent the C library.  (This is also documented in the main
@@ -713,7 +719,7 @@
     For those people who are not part of the ISO Library Group
     (i.e., nearly all of us needing to read this page in the first
     place), a public list of the library defects is occasionally
-    published <ulink url="http://anubis.dkuug.dk/jtc1/sc22/wg21/">here</ulink>.
+    published <ulink url="http://www.open-std.org/jtc1/sc22/wg21/">here</ulink>.
     Some of these issues have resulted in code changes in libstdc++.
     </para> 
     <para>
@@ -895,8 +901,9 @@
     </para>
     <para>
     More information, including how to optionally enable/disable the
-    checks, is available
-    <link linkend="std.diagnostics.concept_checking">here</link>.
+    checks, is available in the
+    <link linkend="std.diagnostics.concept_checking">Diagnostics</link>.
+    chapter of the manual.
     </para> 
   </answer>
 </qandaentry>

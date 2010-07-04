@@ -1,5 +1,5 @@
 /* Miscellaneous SSA utility functions.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -24,23 +24,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "flags.h"
-#include "rtl.h"
 #include "tm_p.h"
 #include "target.h"
 #include "ggc.h"
 #include "langhooks.h"
-#include "hard-reg-set.h"
 #include "basic-block.h"
 #include "output.h"
-#include "expr.h"
 #include "function.h"
-#include "diagnostic.h"
+#include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
 #include "bitmap.h"
 #include "pointer-set.h"
 #include "tree-flow.h"
 #include "gimple.h"
 #include "tree-inline.h"
-#include "varray.h"
 #include "timevar.h"
 #include "hashtab.h"
 #include "tree-dump.h"
@@ -858,7 +855,7 @@ error:
 /* Verify common invariants in the SSA web.
    TODO: verify the variable annotations.  */
 
-void
+DEBUG_FUNCTION void
 verify_ssa (bool check_modified_stmt)
 {
   size_t i;
@@ -1117,13 +1114,12 @@ uid_ssaname_map_hash (const void *item)
 void
 init_tree_ssa (struct function *fn)
 {
-  fn->gimple_df = GGC_CNEW (struct gimple_df);
+  fn->gimple_df = ggc_alloc_cleared_gimple_df ();
   fn->gimple_df->referenced_vars = htab_create_ggc (20, uid_decl_map_hash,
 				     		    uid_decl_map_eq, NULL);
   fn->gimple_df->default_defs = htab_create_ggc (20, uid_ssaname_map_hash,
 				                 uid_ssaname_map_eq, NULL);
   pt_solution_reset (&fn->gimple_df->escaped);
-  pt_solution_reset (&fn->gimple_df->callused);
   init_ssanames (fn, 0);
   init_phinodes ();
 }
@@ -1163,7 +1159,6 @@ delete_tree_ssa (void)
   htab_delete (cfun->gimple_df->default_defs);
   cfun->gimple_df->default_defs = NULL;
   pt_solution_reset (&cfun->gimple_df->escaped);
-  pt_solution_reset (&cfun->gimple_df->callused);
   if (cfun->gimple_df->decls_to_pointers != NULL)
     pointer_map_destroy (cfun->gimple_df->decls_to_pointers);
   cfun->gimple_df->decls_to_pointers = NULL;
@@ -1618,25 +1613,6 @@ walk_use_def_chains (tree var, walk_use_def_chains_fn fn, void *data,
 }
 
 
-/* Return true if T, an SSA_NAME, has an undefined value.  */
-
-bool
-ssa_undefined_value_p (tree t)
-{
-  tree var = SSA_NAME_VAR (t);
-
-  /* Parameters get their initial value from the function entry.  */
-  if (TREE_CODE (var) == PARM_DECL)
-    return false;
-
-  /* Hard register variables get their initial value from the ether.  */
-  if (TREE_CODE (var) == VAR_DECL && DECL_HARD_REGISTER (var))
-    return false;
-
-  /* The value is undefined iff its definition statement is empty.  */
-  return gimple_nop_p (SSA_NAME_DEF_STMT (t));
-}
-
 /* Emit warnings for uninitialized variables.  This is done in two passes.
 
    The first pass notices real uses of SSA names with undefined values.
@@ -1655,7 +1631,7 @@ ssa_undefined_value_p (tree t)
 /* Emit a warning for T, an SSA_NAME, being uninitialized.  The exact
    warning text is in MSGID and LOCUS may contain a location or be null.  */
 
-static void
+void
 warn_uninit (tree t, const char *gmsgid, void *data)
 {
   tree var = SSA_NAME_VAR (t);
@@ -1785,28 +1761,7 @@ warn_uninitialized_var (tree *tp, int *walk_subtrees, void *data_)
   return NULL_TREE;
 }
 
-/* Look for inputs to PHI that are SSA_NAMEs that have empty definitions
-   and warn about them.  */
-
-static void
-warn_uninitialized_phi (gimple phi)
-{
-  size_t i, n = gimple_phi_num_args (phi);
-
-  /* Don't look at memory tags.  */
-  if (!is_gimple_reg (gimple_phi_result (phi)))
-    return;
-
-  for (i = 0; i < n; ++i)
-    {
-      tree op = gimple_phi_arg_def (phi, i);
-      if (TREE_CODE (op) == SSA_NAME)
-	warn_uninit (op, "%qD may be used uninitialized in this function",
-		     NULL);
-    }
-}
-
-static unsigned int
+unsigned int
 warn_uninitialized_vars (bool warn_possibly_uninitialized)
 {
   gimple_stmt_iterator gsi;
@@ -1815,7 +1770,6 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 
   data.warn_possibly_uninitialized = warn_possibly_uninitialized;
 
-  calculate_dominance_info (CDI_POST_DOMINATORS);
 
   FOR_EACH_BB (bb)
     {
@@ -1833,10 +1787,6 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 	}
     }
 
-  /* Post-dominator information can not be reliably updated. Free it
-     after the use.  */
-
-  free_dominance_info (CDI_POST_DOMINATORS);
   return 0;
 }
 
@@ -1849,25 +1799,14 @@ execute_early_warn_uninitialized (void)
      as possible, thus don't do it here.  However, without
      optimization we need to warn here about "may be uninitialized".
   */
+  calculate_dominance_info (CDI_POST_DOMINATORS);
+
   warn_uninitialized_vars (/*warn_possibly_uninitialized=*/!optimize);
-  return 0;
-}
 
-static unsigned int
-execute_late_warn_uninitialized (void)
-{
-  basic_block bb;
-  gimple_stmt_iterator gsi;
+  /* Post-dominator information can not be reliably updated. Free it
+     after the use.  */
 
-  /* Re-do the plain uninitialized variable check, as optimization may have
-     straightened control flow.  Do this first so that we don't accidentally
-     get a "may be" warning when we'd have seen an "is" warning later.  */
-  warn_uninitialized_vars (/*warn_possibly_uninitialized=*/1);
-
-  FOR_EACH_BB (bb)
-    for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-      warn_uninitialized_phi (gsi_stmt (gsi));
-
+  free_dominance_info (CDI_POST_DOMINATORS);
   return 0;
 }
 
@@ -1884,25 +1823,6 @@ struct gimple_opt_pass pass_early_warn_uninitialized =
   "*early_warn_uninitialized",		/* name */
   gate_warn_uninitialized,		/* gate */
   execute_early_warn_uninitialized,	/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_ssa,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
-};
-
-struct gimple_opt_pass pass_late_warn_uninitialized =
-{
- {
-  GIMPLE_PASS,
-  "*late_warn_uninitialized",		/* name */
-  gate_warn_uninitialized,		/* gate */
-  execute_late_warn_uninitialized,	/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */

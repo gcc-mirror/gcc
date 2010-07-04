@@ -162,7 +162,8 @@ shared [10] struct bupc_156_struct bupc_156;
 void
 bupc156_test()
 {
-  size_t bs_No, bs_a;
+  size_t bs_No __attribute__ ((unused));
+  size_t bs_a __attribute__ ((unused));
   bs_No = upc_blocksizeof(*&(bupc_156.No));
   bs_a = upc_blocksizeof(*&(bupc_156.a));
   upc_barrier;
@@ -492,11 +493,17 @@ void
 bug323_test ()
 {
   static size_t shared full_filevec_datasz = 10;
-  static size_t shared full_full_smemvec_cnt1 = 0;
-  static size_t shared full_full_smemvec_cnt = 0;
+  static size_t shared full_full_smemvec_cnt1 __attribute__ ((unused)) = 0;
+  static size_t shared full_full_smemvec_cnt  __attribute__ ((unused)) = 0;
   static unsigned int neededsz_bytes = 0;
   while (0) {
-     /* Bug 323: ICE: in statement below. */
+     /* Bug 323: ICE: in statement below.
+        "The cause of failure is subtle. Internally, the compiler tries to
+	cache constants in the form (<type> <vlue>). In the failing test, there
+	are two places that it creates a ((shared unsigned int) 0) constant.
+	But the internal cache discards "shared", yet the code tries to compare
+	the constant's type that it pulls from the cache with the (shareed
+	unsigned int) type. They don't match, and the assertion fails."  */
      if (full_filevec_datasz > 0 &&
         full_filevec_datasz >= neededsz_bytes) break;
   }

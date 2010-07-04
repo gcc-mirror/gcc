@@ -309,7 +309,7 @@ package body GNAT.Sockets.Thin is
    function C_Recvmsg
      (S     : C.int;
       Msg   : System.Address;
-      Flags : C.int) return ssize_t
+      Flags : C.int) return System.CRTL.ssize_t
    is
       Res : C.int;
 
@@ -323,7 +323,7 @@ package body GNAT.Sockets.Thin is
          delay Quantum;
       end loop;
 
-      return ssize_t (Res);
+      return System.CRTL.ssize_t (Res);
    end C_Recvmsg;
 
    ---------------
@@ -333,7 +333,7 @@ package body GNAT.Sockets.Thin is
    function C_Sendmsg
      (S     : C.int;
       Msg   : System.Address;
-      Flags : C.int) return ssize_t
+      Flags : C.int) return System.CRTL.ssize_t
    is
       Res : C.int;
 
@@ -347,7 +347,7 @@ package body GNAT.Sockets.Thin is
          delay Quantum;
       end loop;
 
-      return ssize_t (Res);
+      return System.CRTL.ssize_t (Res);
    end C_Sendmsg;
 
    --------------

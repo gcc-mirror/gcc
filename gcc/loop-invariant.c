@@ -1,5 +1,5 @@
 /* RTL-level loop invariant motion.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1367,6 +1367,32 @@ find_invariants_to_move (bool speed)
     }
 }
 
+/* Replace the uses, reached by the definition of invariant INV, by REG.
+
+   IN_GROUP is nonzero if this is part of a group of changes that must be
+   performed as a group.  In that case, the changes will be stored.  The
+   function `apply_change_group' will validate and apply the changes.  */
+
+static int
+replace_uses (struct invariant *inv, rtx reg, bool in_group)
+{
+  /* Replace the uses we know to be dominated.  It saves work for copy
+     propagation, and also it is necessary so that dependent invariants
+     are computed right.  */
+  if (inv->def)
+    {
+      struct use *use;
+      for (use = inv->def->uses; use; use = use->next)
+	validate_change (use->insn, use->pos, reg, true);
+
+      /* If we aren't part of a larger group, apply the changes now.  */
+      if (!in_group)
+	return apply_change_group ();
+    }
+
+  return 1;
+}
+
 /* Move invariant INVNO out of the LOOP.  Returns true if this succeeds, false
    otherwise.  */
 
@@ -1378,15 +1404,14 @@ move_invariant_reg (struct loop *loop, unsigned invno)
   unsigned i;
   basic_block preheader = loop_preheader_edge (loop)->src;
   rtx reg, set, dest, note;
-  struct use *use;
   bitmap_iterator bi;
-  int regno;
+  int regno = -1;
 
   if (inv->reg)
     return true;
   if (!repr->move)
     return false;
-  regno = -1;
+
   /* If this is a representative of the class of equivalent invariants,
      really move the invariant.  Otherwise just replace its use with
      the register used for the representative.  */
@@ -1402,10 +1427,10 @@ move_invariant_reg (struct loop *loop, unsigned invno)
 	}
 
       /* Move the set out of the loop.  If the set is always executed (we could
-	 omit this condition if we know that the register is unused outside of the
-	 loop, but it does not seem worth finding out) and it has no uses that
-	 would not be dominated by it, we may just move it (TODO).  Otherwise we
-	 need to create a temporary register.  */
+	 omit this condition if we know that the register is unused outside of
+	 the loop, but it does not seem worth finding out) and it has no uses
+	 that would not be dominated by it, we may just move it (TODO).
+	 Otherwise we need to create a temporary register.  */
       set = single_set (inv->insn);
       reg = dest = SET_DEST (set);
       if (GET_CODE (reg) == SUBREG)
@@ -1416,21 +1441,28 @@ move_invariant_reg (struct loop *loop, unsigned invno)
       reg = gen_reg_rtx_and_attrs (dest);
 
       /* Try replacing the destination by a new pseudoregister.  */
-      if (!validate_change (inv->insn, &SET_DEST (set), reg, false))
+      validate_change (inv->insn, &SET_DEST (set), reg, true);
+
+      /* As well as all the dominated uses.  */
+      replace_uses (inv, reg, true);
+
+      /* And validate all the changes.  */
+      if (!apply_change_group ())
 	goto fail;
-      df_insn_rescan (inv->insn);
 
       emit_insn_after (gen_move_insn (dest, reg), inv->insn);
       reorder_insns (inv->insn, inv->insn, BB_END (preheader));
 
-      /* If there is a REG_EQUAL note on the insn we just moved, and
-	 insn is in a basic block that is not always executed, the note
-	 may no longer be valid after we move the insn.
-	 Note that uses in REG_EQUAL notes are taken into account in
-	 the computation of invariants.  Hence it is safe to retain the
-	 note even if the note contains register references.  */
-      if (! inv->always_executed
-	  && (note = find_reg_note (inv->insn, REG_EQUAL, NULL_RTX)))
+      /* If there is a REG_EQUAL note on the insn we just moved, and the
+	 insn is in a basic block that is not always executed or the note
+	 contains something for which we don't know the invariant status,
+	 the note may no longer be valid after we move the insn.  Note that
+	 uses in REG_EQUAL notes are taken into account in the computation
+	 of invariants, so it is safe to retain the note even if it contains
+	 register references for which we know the invariant status.  */
+      if ((note = find_reg_note (inv->insn, REG_EQUAL, NULL_RTX))
+	  && (!inv->always_executed
+	      || !check_maybe_invariant (XEXP (note, 0))))
 	remove_note (inv->insn, note);
     }
   else
@@ -1439,26 +1471,15 @@ move_invariant_reg (struct loop *loop, unsigned invno)
 	goto fail;
       reg = repr->reg;
       regno = repr->orig_regno;
+      if (!replace_uses (inv, reg, false))
+	goto fail;
       set = single_set (inv->insn);
       emit_insn_after (gen_move_insn (SET_DEST (set), reg), inv->insn);
       delete_insn (inv->insn);
     }
 
-
   inv->reg = reg;
   inv->orig_regno = regno;
-
-  /* Replace the uses we know to be dominated.  It saves work for copy
-     propagation, and also it is necessary so that dependent invariants
-     are computed right.  */
-  if (inv->def)
-    {
-      for (use = inv->def->uses; use; use = use->next)
-	{
-	  *use->pos = reg;
-	  df_insn_rescan (use->insn);
-	}
-    }
 
   return true;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,9 +24,12 @@
 ------------------------------------------------------------------------------
 
 with Opt;      use Opt;
+with Output;   use Output;
 with Targparm; use Targparm;
 
 package body Osint.B is
+
+   Current_List_File : File_Descriptor := Invalid_FD;
 
    -------------------------
    -- Close_Binder_Output --
@@ -44,6 +47,19 @@ package body Osint.B is
       end if;
 
    end Close_Binder_Output;
+
+   ---------------------
+   -- Close_List_File --
+   ---------------------
+
+   procedure Close_List_File is
+   begin
+      if Current_List_File /= Invalid_FD then
+         Close (Current_List_File);
+         Current_List_File := Invalid_FD;
+         Set_Standard_Output;
+      end if;
+   end Close_List_File;
 
    --------------------------
    -- Create_Binder_Output --
@@ -65,8 +81,8 @@ package body Osint.B is
 
    begin
       if Output_File_Name /= "" then
-         Name_Buffer (Output_File_Name'Range) := Output_File_Name;
-         Name_Buffer (Output_File_Name'Last + 1) := ASCII.NUL;
+         Name_Buffer (1 .. Output_File_Name'Length) := Output_File_Name;
+         Name_Buffer (Output_File_Name'Length + 1)  := ASCII.NUL;
 
          if Typ = 's' then
             Name_Buffer (Output_File_Name'Last) := 's';
@@ -175,6 +191,22 @@ package body Osint.B is
    begin
       Current_File_Name_Index := To;
    end Set_Current_File_Name_Index;
+
+   -------------------
+   -- Set_List_File --
+   -------------------
+
+   procedure Set_List_File (Filename : String) is
+   begin
+      pragma Assert (Current_List_File = Invalid_FD);
+      Current_List_File := Create_File (Filename, Text);
+
+      if Current_List_File = Invalid_FD then
+         Fail ("cannot create list file: " & Filename);
+      else
+         Set_Output (Current_List_File);
+      end if;
+   end Set_List_File;
 
    -----------------------
    -- Write_Binder_Info --

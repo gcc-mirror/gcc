@@ -1,13 +1,13 @@
 // { dg-do assemble  }
 
 template <class T>
-void f(T t1, T t2);
+void f(T t1, T t2);		// { dg-message "candidate" }
 
 template <>
 void f(int i, int j);
 
 template <class T>
-void g(T t1, T t2) {}
+void g(T t1, T t2) {}		// { dg-message "candidate" }
 
 template void g(int i, int j);
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -146,6 +146,11 @@ package Erroutc is
       Next : Error_Msg_Id;
       --  Pointer to next message in error chain. A value of No_Error_Msg
       --  indicates the end of the chain.
+
+      Prev : Error_Msg_Id;
+      --  Pointer to previous message in error chain. Only set during the
+      --  Finalize procedure. A value of No_Error_Msg indicates the first
+      --  message in the chain.
 
       Sfile : Source_File_Index;
       --  Source table index of source file. In the case of an error that

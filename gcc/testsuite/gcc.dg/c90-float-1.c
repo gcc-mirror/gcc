@@ -3,8 +3,8 @@
 /* { dg-do preprocess } */
 /* { dg-options "-std=iso9899:1990 -pedantic-errors" } */
 
-/* This test checks that the C90 macros (but not the C99 ones) are defined;
-   it does not check the correctness of their values.  */
+/* This test checks that the C90 macros (but not the C99 or C1X ones)
+   are defined; it does not check the correctness of their values.  */
 
 #include <float.h>
 
@@ -130,4 +130,40 @@
 
 #ifdef DECIMAL_DIG
 #error "DECIMAL_DIG defined"
+#endif
+
+#ifdef FLT_DECIMAL_DIG
+#error "FLT_DECIMAL_DIG defined"
+#endif
+
+#ifdef DBL_DECIMAL_DIG
+#error "DBL_DECIMAL_DIG defined"
+#endif
+
+#ifdef LDBL_DECIMAL_DIG
+#error "LDBL_DECIMAL_DIG defined"
+#endif
+
+#ifdef FLT_HAS_SUBNORM
+#error "FLT_HAS_SUBNORM defined"
+#endif
+
+#ifdef DBL_HAS_SUBNORM
+#error "DBL_HAS_SUBNORM defined"
+#endif
+
+#ifdef LDBL_HAS_SUBNORM
+#error "LDBL_HAS_SUBNORM defined"
+#endif
+
+#ifdef FLT_TRUE_MIN
+#error "FLT_TRUE_MIN defined"
+#endif
+
+#ifdef DBL_TRUE_MIN
+#error "DBL_TRUE_MIN defined"
+#endif
+
+#ifdef LDBL_TRUE_MIN
+#error "LDBL_TRUE_MIN defined"
 #endif

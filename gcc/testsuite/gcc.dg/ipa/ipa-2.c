@@ -15,8 +15,10 @@ int f (int a)
 }
 int main ()
 {
-  f (7);
-  return 0;	
+  int i;
+  for (i = 0; i < 100; i++)
+    f (7);
+  return 0;
 }
 
 

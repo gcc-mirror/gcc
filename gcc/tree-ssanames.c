@@ -23,8 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "varray.h"
-#include "ggc.h"
 #include "tree-flow.h"
 #include "tree-pass.h"
 
@@ -271,7 +269,7 @@ duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)
   if (!ptr_info)
     return;
 
-  new_ptr_info = GGC_NEW (struct ptr_info_def);
+  new_ptr_info = ggc_alloc_ptr_info_def ();
   *new_ptr_info = *ptr_info;
 
   SSA_NAME_PTR_INFO (name) = new_ptr_info;

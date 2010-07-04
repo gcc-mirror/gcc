@@ -23,8 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DSE_H
 #define GCC_DSE_H
 
-struct df;
-
 extern void dse_record_singleton_alias_set (alias_set_type, enum machine_mode);
 extern void dse_invalidate_singleton_alias_set (alias_set_type);
 

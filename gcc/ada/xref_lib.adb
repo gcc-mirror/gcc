@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -231,7 +231,7 @@ package body Xref_Lib is
 
       Line_Start := Index (Entity (File_Start .. Entity'Last), ":");
 
-      --  Check if it was a disk:\directory item (for NT and OS/2)
+      --  Check if it was a disk:\directory item (for Windows)
 
       if File_Start = Line_Start - 1
         and then Line_Start < Entity'Last
@@ -508,6 +508,7 @@ package body Xref_Lib is
          when 'D' => return "decimal type";
          when 'E' => return "enumeration type";
          when 'F' => return "float type";
+         when 'H' => return "abstract type";
          when 'I' => return "integer type";
          when 'M' => return "modular type";
          when 'O' => return "fixed type";
@@ -523,7 +524,6 @@ package body Xref_Lib is
          when 'd' => return Param_String & "decimal object";
          when 'e' => return Param_String & "enumeration object";
          when 'f' => return Param_String & "float object";
-         when 'h' => return "interface";
          when 'i' => return Param_String & "integer object";
          when 'm' => return Param_String & "modular object";
          when 'o' => return Param_String & "fixed object";
@@ -535,6 +535,8 @@ package body Xref_Lib is
          when 'x' => return Param_String & "abstract procedure";
          when 'y' => return Param_String & "abstract function";
 
+         when 'h' => return "interface";
+         when 'g' => return "macro";
          when 'K' => return "package";
          when 'k' => return "generic package";
          when 'L' => return "statement label";
@@ -542,6 +544,7 @@ package body Xref_Lib is
          when 'N' => return "named number";
          when 'n' => return "enumeration literal";
          when 'q' => return "block label";
+         when 'Q' => return "include file";
          when 'U' => return "procedure";
          when 'u' => return "generic procedure";
          when 'V' => return "function";
@@ -557,7 +560,11 @@ package body Xref_Lib is
          --  have an unknown Abbrev value
 
          when others =>
-            return "??? (" & Get_Type (Decl) & ")";
+            if Is_Parameter (Decl) then
+               return "parameter";
+            else
+               return "??? (" & Get_Type (Decl) & ")";
+            end if;
       end case;
    end Get_Full_Type;
 
@@ -1587,8 +1594,13 @@ package body Xref_Lib is
                File := Get_File_Ref (Arr (R));
                F := Osint.To_Host_File_Spec
                  (Get_Gnatchop_File (Arr (R), Full_Path_Name));
-               Write_Str (F.all & ' ');
-               Free (F);
+
+               if F = null then
+                  Write_Str ("<unknown> ");
+               else
+                  Write_Str (F.all & ' ');
+                  Free (F);
+               end if;
             end if;
 
             Print_Ref (Get_Line (Arr (R)), Get_Column (Arr (R)));
@@ -1637,8 +1649,14 @@ package body Xref_Lib is
          Write_Str ("  Decl:  ");
          F := Osint.To_Host_File_Spec
                (Get_Gnatchop_File (Decl, Full_Path_Name));
-         Print80 (F.all & ' ');
-         Free (F);
+
+         if F = null then
+            Print80 ("<unknown> ");
+         else
+            Print80 (F.all & ' ');
+            Free (F);
+         end if;
+
          Print_Ref (Get_Line (Decl), Get_Column (Decl));
 
          Print_List

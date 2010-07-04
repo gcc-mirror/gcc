@@ -189,7 +189,7 @@ alpha*-*-netbsd*)
 	;;
 alpha*-*-openbsd*)
 	;;
-alpha*-dec-osf[45]*)
+alpha*-dec-osf5.1*)
 	;;
 alpha64-dec-*vms*)
 	tmake_file="vms/t-vms vms/t-vms64 alpha/t-vms"
@@ -357,7 +357,7 @@ ia64-hp-*vms*)
 	;;
 iq2000*-*-elf*)
         ;;
-lm32-*-elf*)
+lm32-*-elf*|lm32-*-rtems*)
         extra_parts="crtbegin.o crtend.o crti.o crtn.o"
         tmake_file="lm32/t-lm32 lm32/t-elf t-softfp"
 	;;
@@ -400,8 +400,12 @@ mips-sgi-irix[56]*)
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	;;
 mips64*-*-linux*)
+	extra_parts="$extra_parts crtfastmath.o"
+	tmake_file="{$tmake_file} mips/t-crtfm"
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
+	extra_parts="$extra_parts crtfastmath.o"
+	tmake_file="{$tmake_file} mips/t-crtfm"
 	;;
 mips*-*-openbsd*)
 	;;
@@ -535,7 +539,7 @@ sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
 	extra_parts="$extra_parts crtfastmath.o"
 	tmake_file="${tmake_file} sparc/t-crtfm"
 	;;
-sparc-*-rtems*)
+sparc-*-rtems* | sparc64-*-rtems* )
 	;;
 sparc64-*-solaris2* | sparcv9-*-solaris2*)
 	;;
@@ -600,6 +604,8 @@ case ${host} in
 i[34567]86-*-darwin* | x86_64-*-darwin* | \
   i[34567]86-*-kfreebsd*-gnu | x86_64-*-kfreebsd*-gnu | \
   i[34567]86-*-linux* | x86_64-*-linux* | \
+  i[34567]86-*-gnu* | \
+  i[34567]86-*-solaris2* | \
   i[34567]86-*-cygwin* | i[34567]86-*-mingw* | x86_64-*-mingw*)
 	if test "${host_address}" = 32; then
 		tmake_file="${tmake_file} t-softfp i386/${host_address}/t-fprules-softfp"

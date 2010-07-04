@@ -292,7 +292,7 @@ SetLD<T>::contains(const T& item) const
 }
 template<class T>
 int
-operator==(const SetLD<T>& a, const SetLD<T>& b)
+operator==(const SetLD<T>& a, const SetLD<T>& b) // { dg-message "note" }
 {
     if (a.length() != b.length())
 	return FALSE;

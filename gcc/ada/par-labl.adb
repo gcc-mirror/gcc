@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -375,13 +375,21 @@ procedure Labl is
               and then Matches (Node (N), Node (S1))
             then
                if not Found then
-                  if Parent (Node (N)) = Parent (Node (S1)) then
+
+                  --  If the label and the goto are both in the same statement
+                  --  list, then we've found a loop. Note that labels and goto
+                  --  statements are always part of some list, so
+                  --  List_Containing always makes sense.
+
+                  if List_Containing (Node (N)) =
+                     List_Containing (Node (S1))
+                  then
                      Source := S1;
                      Found  := True;
 
-                  else
-                     --  The goto is within some nested structure
+                  --  The goto is within some nested structure
 
+                  else
                      No_Header (N);
                      return;
                   end if;

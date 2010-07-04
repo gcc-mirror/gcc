@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2007,2009  Free Software Foundation, Inc.         --
+--          Copyright (C) 2007-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,44 +86,74 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Calendar;              use Ada.Calendar;
+with Ada.Calendar;             use Ada.Calendar;
 with Ada.Unchecked_Conversion;
-with Interfaces;                use Interfaces;
+
+with Interfaces; use Interfaces;
 
 use Ada;
 
 package body System.Random_Numbers is
 
-   -------------------------
-   -- Implementation Note --
-   -------------------------
-
-   --  The design of this spec is very awkward, as a result of Ada 95 not
-   --  permitting in-out parameters for function formals (most naturally,
-   --  Generator values would be passed this way). In pure Ada 95, the only
-   --  solution is to use the heap and pointers, and, to avoid memory leaks,
-   --  controlled types.
-
-   --  This is awfully heavy, so what we do is to use Unrestricted_Access to
-   --  get a pointer to the state in the passed Generator. This works because
-   --  Generator is a limited type and will thus always be passed by reference.
-
-   Low31_Mask : constant := 2**31-1;
-   Bit31_Mask : constant := 2**31;
-
-   Matrix_A_X : constant array (State_Val range 0 .. 1) of State_Val :=
-                  (0, 16#9908b0df#);
-
    Y2K : constant Calendar.Time :=
            Calendar.Time_Of
              (Year => 2000, Month => 1, Day => 1, Seconds => 0.0);
-   --  First Year 2000 day
+   --  First day of Year 2000 (what is this for???)
 
+   Image_Numeral_Length : constant := Max_Image_Width / N;
    subtype Image_String is String (1 .. Max_Image_Width);
 
-   --  Utility functions
+   ----------------------------
+   -- Algorithmic Parameters --
+   ----------------------------
 
-   procedure Init (Gen : out Generator; Initiator : Unsigned_32);
+   Lower_Mask : constant := 2**31-1;
+   Upper_Mask : constant := 2**31;
+
+   Matrix_A   : constant array (State_Val range 0 .. 1) of State_Val
+     := (0, 16#9908b0df#);
+   --  The twist transformation is represented by a matrix of the form
+   --
+   --               [  0    I(31) ]
+   --               [    _a       ]
+   --
+   --  where 0 is a 31x31 block of 0s, I(31) is the 31x31 identity matrix and
+   --  _a is a particular bit row-vector, represented here by a 32-bit integer.
+   --  If integer x represents a row vector of bits (with x(0), the units bit,
+   --  last), then
+   --           x * A = [0 x(31..1)] xor Matrix_A(x(0)).
+
+   U      : constant := 11;
+   S      : constant := 7;
+   B_Mask : constant := 16#9d2c5680#;
+   T      : constant := 15;
+   C_Mask : constant := 16#efc60000#;
+   L      : constant := 18;
+   --  The tempering shifts and bit masks, in the order applied
+
+   Seed0 : constant := 5489;
+   --  Default seed, used to initialize the state vector when Reset not called
+
+   Seed1 : constant := 19650218;
+   --  Seed used to initialize the state vector when calling Reset with an
+   --  initialization vector.
+
+   Mult0 : constant := 1812433253;
+   --  Multiplier for a modified linear congruential generator used to
+   --  initialize the state vector when calling Reset with a single integer
+   --  seed.
+
+   Mult1 : constant := 1664525;
+   Mult2 : constant := 1566083941;
+   --  Multipliers for two modified linear congruential generators used to
+   --  initialize the state vector when calling Reset with an initialization
+   --  vector.
+
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
+
+   procedure Init (Gen : Generator; Initiator : Unsigned_32);
    --  Perform a default initialization of the state of Gen. The resulting
    --  state is identical for identical values of Initiator.
 
@@ -147,75 +177,208 @@ package body System.Random_Numbers is
    ------------
 
    function Random (Gen : Generator) return Unsigned_32 is
-      G : Generator renames Gen'Unrestricted_Access.all;
+      G : Generator renames Gen.Writable.Self.all;
       Y : State_Val;
-      I : Integer;
+      I : Integer;      --  should avoid use of identifier I ???
 
    begin
       I := G.I;
 
       if I < N - M then
-         Y := (G.S (I) and Bit31_Mask) or (G.S (I + 1) and Low31_Mask);
-         Y := G.S (I + M) xor Shift_Right (Y, 1) xor Matrix_A_X (Y and 1);
+         Y := (G.S (I) and Upper_Mask) or (G.S (I + 1) and Lower_Mask);
+         Y := G.S (I + M) xor Shift_Right (Y, 1) xor Matrix_A (Y and 1);
          I := I + 1;
 
       elsif I < N - 1 then
-         Y := (G.S (I) and Bit31_Mask) or (G.S (I + 1) and Low31_Mask);
+         Y := (G.S (I) and Upper_Mask) or (G.S (I + 1) and Lower_Mask);
          Y := G.S (I + (M - N))
                 xor Shift_Right (Y, 1)
-                xor Matrix_A_X (Y and 1);
+                xor Matrix_A (Y and 1);
          I := I + 1;
 
       elsif I = N - 1 then
-         Y := (G.S (I) and Bit31_Mask) or (G.S (0) and Low31_Mask);
-         Y := G.S (M - 1) xor Shift_Right (Y, 1) xor Matrix_A_X (Y and 1);
+         Y := (G.S (I) and Upper_Mask) or (G.S (0) and Lower_Mask);
+         Y := G.S (M - 1) xor Shift_Right (Y, 1) xor Matrix_A (Y and 1);
          I := 0;
 
       else
-         Init (G, 5489);
+         Init (G, Seed0);
          return Random (Gen);
       end if;
 
       G.S (G.I) := Y;
       G.I := I;
 
-      Y := Y xor Shift_Right (Y, 11);
-      Y := Y xor (Shift_Left (Y, 7)  and 16#9d2c5680#);
-      Y := Y xor (Shift_Left (Y, 15) and 16#efc60000#);
-      Y := Y xor Shift_Right (Y, 18);
+      Y := Y xor Shift_Right (Y, U);
+      Y := Y xor (Shift_Left (Y, S)  and B_Mask);
+      Y := Y xor (Shift_Left (Y, T) and C_Mask);
+      Y := Y xor Shift_Right (Y, L);
 
       return Y;
    end Random;
 
-   function Random (Gen : Generator) return Float is
+   generic
+      type Unsigned is mod <>;
+      type Real is digits <>;
+      with function Random (G : Generator) return Unsigned is <>;
+   function Random_Float_Template (Gen : Generator) return Real;
+   pragma Inline (Random_Float_Template);
+   --  Template for a random-number generator implementation that delivers
+   --  values of type Real in the range [0 .. 1], using values from Gen,
+   --  assuming that Unsigned is large enough to hold the bits of a mantissa
+   --  for type Real.
 
-      --  Note: The application of Float'Machine (...) is necessary to avoid
-      --  returning extra significand bits. Without it, the function's value
-      --  will change if it is spilled, for example, causing
-      --  gratuitous nondeterminism.
+   ---------------------------
+   -- Random_Float_Template --
+   ---------------------------
 
-      Result : constant Float :=
-                 Float'Machine
-                   (Float (Unsigned_32'(Random (Gen))) * 2.0 ** (-32));
+   function Random_Float_Template (Gen : Generator) return Real is
+
+      pragma Compile_Time_Error
+        (Unsigned'Last <= 2**(Real'Machine_Mantissa - 1),
+         "insufficiently large modular type used to hold mantissa");
+
    begin
-      if Result < 1.0 then
-         return Result;
+      --  This code generates random floating-point numbers from unsigned
+      --  integers. Assuming that Real'Machine_Radix = 2, it can deliver all
+      --  machine values of type Real (as implied by Real'Machine_Mantissa and
+      --  Real'Machine_Emin), which is not true of the standard method (to
+      --  which we fall back for non-binary radix): computing Real(<random
+      --  integer>) / (<max random integer>+1). To do so, we first extract an
+      --  (M-1)-bit significand (where M is Real'Machine_Mantissa), and then
+      --  decide on a normalized exponent by repeated coin flips, decrementing
+      --  from 0 as long as we flip heads (1 bits). This process yields the
+      --  proper geometric distribution for the exponent: in a uniformly
+      --  distributed set of floating-point numbers, 1/2 of them will be in
+      --  (0.5, 1], 1/4 will be in (0.25, 0.5], and so forth. It makes a
+      --  further adjustment at binade boundaries (see comments below) to give
+      --  the effect of selecting a uniformly distributed real deviate in
+      --  [0..1] and then rounding to the nearest representable floating-point
+      --  number.  The algorithm attempts to be stingy with random integers. In
+      --  the worst case, it can consume roughly -Real'Machine_Emin/32 32-bit
+      --  integers, but this case occurs with probability around
+      --  2**Machine_Emin, and the expected number of calls to integer-valued
+      --  Random is 1.  For another discussion of the issues addressed by this
+      --  process, see Allen Downey's unpublished paper at
+      --  http://allendowney.com/research/rand/downey07randfloat.pdf.
+
+      if Real'Machine_Radix /= 2 then
+         return Real'Machine
+           (Real (Unsigned'(Random (Gen))) * 2.0**(-Unsigned'Size));
+
       else
-         return Float'Adjacent (1.0, 0.0);
+         declare
+            type Bit_Count is range 0 .. 4;
+
+            subtype T is Real'Base;
+
+            Trailing_Ones : constant array (Unsigned_32 range 0 .. 15)
+              of Bit_Count :=
+                  (2#00000# => 0, 2#00001# => 1, 2#00010# => 0, 2#00011# => 2,
+                   2#00100# => 0, 2#00101# => 1, 2#00110# => 0, 2#00111# => 3,
+                   2#01000# => 0, 2#01001# => 1, 2#01010# => 0, 2#01011# => 2,
+                   2#01100# => 0, 2#01101# => 1, 2#01110# => 0, 2#01111# => 4);
+
+            Pow_Tab : constant array (Bit_Count range 0 .. 3) of Real
+              := (0 => 2.0**(0 - T'Machine_Mantissa),
+                  1 => 2.0**(-1 - T'Machine_Mantissa),
+                  2 => 2.0**(-2 - T'Machine_Mantissa),
+                  3 => 2.0**(-3 - T'Machine_Mantissa));
+
+            Extra_Bits : constant Natural :=
+                         (Unsigned'Size - T'Machine_Mantissa + 1);
+            --  Random bits left over after selecting mantissa
+
+            Mantissa : Unsigned;
+
+            X      : Real;            --  Scaled mantissa
+            R      : Unsigned_32;     --  Supply of random bits
+            R_Bits : Natural;         --  Number of bits left in R
+            K      : Bit_Count;       --  Next decrement to exponent
+
+         begin
+            Mantissa := Random (Gen) / 2**Extra_Bits;
+            R := Unsigned_32 (Mantissa mod 2**Extra_Bits);
+            R_Bits := Extra_Bits;
+            X := Real (2**(T'Machine_Mantissa - 1) + Mantissa); -- Exact
+
+            if Extra_Bits < 4 and then R < 2 ** Extra_Bits - 1 then
+
+               --  We got lucky and got a zero in our few extra bits
+
+               K := Trailing_Ones (R);
+
+            else
+               Find_Zero : loop
+
+                  --  R has R_Bits unprocessed random bits, a multiple of 4.
+                  --  X needs to be halved for each trailing one bit. The
+                  --  process stops as soon as a 0 bit is found. If R_Bits
+                  --  becomes zero, reload R.
+
+                  --  Process 4 bits at a time for speed: the two iterations
+                  --  on average with three tests each was still too slow,
+                  --  probably because the branches are not predictable.
+                  --  This loop now will only execute once 94% of the cases,
+                  --  doing more bits at a time will not help.
+
+                  while R_Bits >= 4 loop
+                     K := Trailing_Ones (R mod 16);
+
+                     exit Find_Zero when K < 4; -- Exits 94% of the time
+
+                     R_Bits := R_Bits - 4;
+                     X := X / 16.0;
+                     R := R / 16;
+                  end loop;
+
+                  --  Do not allow us to loop endlessly even in the (very
+                  --  unlikely) case that Random (Gen) keeps yielding all ones.
+
+                  exit Find_Zero when X = 0.0;
+                  R := Random (Gen);
+                  R_Bits := 32;
+               end loop Find_Zero;
+            end if;
+
+            --  K has the count of trailing ones not reflected yet in X. The
+            --  following multiplication takes care of that, as well as the
+            --  correction to move the radix point to the left of the mantissa.
+            --  Doing it at the end avoids repeated rounding errors in the
+            --  exceedingly unlikely case of ever having a subnormal result.
+
+            X := X * Pow_Tab (K);
+
+            --  The smallest value in each binade is rounded to by 0.75 of
+            --  the span of real numbers as its next larger neighbor, and
+            --  1.0 is rounded to by half of the span of real numbers as its
+            --  next smaller neighbor. To account for this, when we encounter
+            --  the smallest number in a binade, we substitute the smallest
+            --  value in the next larger binade with probability 1/2.
+
+            if Mantissa = 0 and then Unsigned_32'(Random (Gen)) mod 2 = 0 then
+               X := 2.0 * X;
+            end if;
+
+            return X;
+         end;
       end if;
+   end Random_Float_Template;
+
+   ------------
+   -- Random --
+   ------------
+
+   function Random (Gen : Generator) return Float is
+      function F is new Random_Float_Template (Unsigned_32, Float);
+   begin
+      return F (Gen);
    end Random;
 
    function Random (Gen : Generator) return Long_Float is
-      Result : constant Long_Float :=
-                 Long_Float'Machine ((Long_Float (Unsigned_32'(Random (Gen)))
-                   * 2.0 ** (-32))
-                   + (Long_Float (Unsigned_32'(Random (Gen))) * 2.0 ** (-64)));
+      function F is new Random_Float_Template (Unsigned_64, Long_Float);
    begin
-      if Result < 1.0 then
-         return Result;
-      else
-         return Long_Float'Adjacent (1.0, 0.0);
-      end if;
+      return F (Gen);
    end Random;
 
    function Random (Gen : Generator) return Unsigned_64 is
@@ -244,10 +407,10 @@ package body System.Random_Numbers is
          declare
             --  In the 64-bit case, we have to be careful, since not all 64-bit
             --  unsigned values are representable in GNAT's root_integer type.
-            --  Ignore different-size warnings here; since GNAT's handling
+            --  Ignore different-size warnings here since GNAT's handling
             --  is correct.
 
-            pragma Warnings ("Z");
+            pragma Warnings ("Z");  -- better to use msg string! ???
             function Conv_To_Unsigned is
                new Unchecked_Conversion (Result_Subtype'Base, Unsigned_64);
             function Conv_To_Result is
@@ -320,25 +483,30 @@ package body System.Random_Numbers is
    -- Reset --
    -----------
 
-   procedure Reset (Gen : out Generator) is
-      X : constant Unsigned_32 := Unsigned_32 ((Calendar.Clock - Y2K) * 64.0);
+   procedure Reset (Gen : Generator) is
+      Clock              : constant Time := Calendar.Clock;
+      Duration_Since_Y2K : constant Duration := Clock - Y2K;
+
+      X : constant Unsigned_32 :=
+            Unsigned_32'Mod (Unsigned_64 (Duration_Since_Y2K) * 64);
+
    begin
       Init (Gen, X);
    end Reset;
 
-   procedure Reset (Gen : out Generator; Initiator : Integer_32) is
+   procedure Reset (Gen : Generator; Initiator : Integer_32) is
    begin
       Init (Gen, To_Unsigned (Initiator));
    end Reset;
 
-   procedure Reset (Gen : out Generator; Initiator : Unsigned_32) is
+   procedure Reset (Gen : Generator; Initiator : Unsigned_32) is
    begin
       Init (Gen, Initiator);
    end Reset;
 
-   procedure Reset (Gen : out Generator; Initiator : Integer) is
+   procedure Reset (Gen : Generator; Initiator : Integer) is
    begin
-      pragma Warnings ("C");
+      pragma Warnings (Off, "condition is always *");
       --  This is probably an unnecessary precaution against future change, but
       --  since the test is a static expression, no extra code is involved.
 
@@ -358,30 +526,30 @@ package body System.Random_Numbers is
          end;
       end if;
 
-      pragma Warnings ("c");
+      pragma Warnings (On, "condition is always *");
    end Reset;
 
-   procedure Reset (Gen : out Generator; Initiator : Initialization_Vector) is
+   procedure Reset (Gen : Generator; Initiator : Initialization_Vector) is
+      G    : Generator renames Gen.Writable.Self.all;
       I, J : Integer;
 
    begin
-      Init (Gen, 19650218);
+      Init (G, Seed1);
       I := 1;
       J := 0;
 
       if Initiator'Length > 0 then
          for K in reverse 1 .. Integer'Max (N, Initiator'Length) loop
-            Gen.S (I) :=
-              (Gen.S (I)
-                 xor ((Gen.S (I - 1) xor Shift_Right (Gen.S (I - 1), 30))
-                                                                 * 1664525))
+            G.S (I) :=
+              (G.S (I) xor ((G.S (I - 1)
+                               xor Shift_Right (G.S (I - 1), 30)) * Mult1))
               + Initiator (J + Initiator'First) + Unsigned_32 (J);
 
             I := I + 1;
             J := J + 1;
 
             if I >= N then
-               Gen.S (0) := Gen.S (N - 1);
+               G.S (0) := G.S (N - 1);
                I := 1;
             end if;
 
@@ -392,39 +560,42 @@ package body System.Random_Numbers is
       end if;
 
       for K in reverse 1 .. N - 1 loop
-         Gen.S (I) :=
-           (Gen.S (I) xor ((Gen.S (I - 1)
-                            xor Shift_Right (Gen.S (I - 1), 30)) * 1566083941))
+         G.S (I) :=
+           (G.S (I) xor ((G.S (I - 1)
+                            xor Shift_Right (G.S (I - 1), 30)) * Mult2))
            - Unsigned_32 (I);
          I := I + 1;
 
          if I >= N then
-            Gen.S (0) := Gen.S (N - 1);
+            G.S (0) := G.S (N - 1);
             I := 1;
          end if;
       end loop;
 
-      Gen.S (0) := Bit31_Mask;
+      G.S (0) := Upper_Mask;
    end Reset;
 
-   procedure Reset (Gen : out Generator; From_State : Generator) is
+   procedure Reset (Gen : Generator; From_State : Generator) is
+      G : Generator renames Gen.Writable.Self.all;
    begin
-      Gen.S := From_State.S;
-      Gen.I := From_State.I;
+      G.S := From_State.S;
+      G.I := From_State.I;
    end Reset;
 
-   procedure Reset (Gen : out Generator; From_State : State) is
+   procedure Reset (Gen : Generator; From_State : State) is
+      G : Generator renames Gen.Writable.Self.all;
    begin
-      Gen.I := 0;
-      Gen.S := From_State;
+      G.I := 0;
+      G.S := From_State;
    end Reset;
 
-   procedure Reset (Gen : out Generator; From_Image : String) is
+   procedure Reset (Gen : Generator; From_Image : String) is
+      G : Generator renames Gen.Writable.Self.all;
    begin
-      Gen.I := 0;
+      G.I := 0;
 
       for J in 0 .. N - 1 loop
-         Gen.S (J) := Extract_Value (From_Image, J);
+         G.S (J) := Extract_Value (From_Image, J);
       end loop;
    end Reset;
 
@@ -468,7 +639,6 @@ package body System.Random_Numbers is
 
    begin
       Result := (others => ' ');
-
       for J in 0 .. N - 1 loop
          Insert_Image (Result, J, Gen.S ((J + Gen.I) mod N));
       end loop;
@@ -493,18 +663,18 @@ package body System.Random_Numbers is
    -- Init --
    ----------
 
-   procedure Init (Gen : out Generator; Initiator : Unsigned_32) is
+   procedure Init (Gen : Generator; Initiator : Unsigned_32) is
+      G : Generator renames Gen.Writable.Self.all;
    begin
-      Gen.S (0) := Initiator;
+      G.S (0) := Initiator;
 
       for I in 1 .. N - 1 loop
-         Gen.S (I) :=
-           1812433253
-             * (Gen.S (I - 1) xor Shift_Right (Gen.S (I - 1), 30))
+         G.S (I) :=
+           (G.S (I - 1) xor Shift_Right (G.S (I - 1), 30)) * Mult0
            + Unsigned_32 (I);
       end loop;
 
-      Gen.I := 0;
+      G.I := 0;
    end Init;
 
    ------------------
@@ -526,9 +696,8 @@ package body System.Random_Numbers is
    -------------------
 
    function Extract_Value (S : String; Index : Integer) return State_Val is
+      Start : constant Integer := S'First + Index * Image_Numeral_Length;
    begin
-      return State_Val'Value (S (S'First + Index * 11 ..
-                                 S'First + Index * 11 + 11));
+      return State_Val'Value (S (Start .. Start + Image_Numeral_Length - 1));
    end Extract_Value;
-
 end System.Random_Numbers;

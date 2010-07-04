@@ -42,7 +42,7 @@
 
 #pragma GCC system_header
 
-#include <cstddef>
+#include <bits/c++config.h>
 #include <time.h>
 
 // Get rid of those macros defined in <time.h> in lieu of real functions.

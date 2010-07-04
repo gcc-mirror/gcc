@@ -1,3 +1,93 @@
+2010-06-21  Rafael Espindola  <espindola@google.com>
+
+	* plugin-api.h (ld_plugin_set_extra_library_path): New.
+	(ld_plugin_tag): Add LDPT_SET_EXTRA_LIBRARY_PATH.
+	(ld_plugin_tv): Add tv_set_extra_library_path.
+
+2010-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2.h (enum dwarf_type): Add DW_ATE_UTF.
+
+2010-06-18  Rafael Espindola  <espindola@google.com>
+
+	* plugin.h (ld_plugin_add_input_file, ld_plugin_add_input_library):
+	Make argument const.
+
+2010-06-08  Tristan Gingold  <gingold@adacore.com>
+
+	* dwarf2.h (enum dwarf_tag): Add DW_TAG_HP_Bliss_field and
+	DW_TAG_HP_Bliss_field_set.
+	(enum dwarf_attribute): Add DW_AT_HP_prologue, DW_AT_HP_epilogue,
+	DW_AT_HP_unit_name, DW_AT_HP_unit_size, DW_AT_HP_widened_byte_size,
+	DW_AT_HP_definition_points, DW_AT_HP_default_location and
+	DW_AT_HP_is_result_param.
+	(enum dwarf_type): Add DW_ATE_HP_VAX_float, DW_ATE_HP_VAX_float_d,
+	DW_ATE_HP_packed_decimal, DW_ATE_HP_zoned_decimal, DW_ATE_HP_edited,
+	DW_ATE_HP_signed_fixed, DW_ATE_HP_unsigned_fixed,
+	DW_ATE_HP_VAX_complex_float and DW_ATE_HP_VAX_complex_float_d.
+	(enum dwarf_line_number_x_ops): Add
+	DW_LNE_HP_source_file_correlation.
+	(enum dwarf_source_language): Add DW_LANG_HP_Bliss,
+	DW_LANG_HP_Basic91, DW_LANG_HP_Pascal91, DW_LANG_HP_IMacro,
+	DW_LANG_HP_Assembler.
+
+2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* splay-tree.h: Update copyright years.
+	(splay_tree_s): Document fields.
+	(splay_tree_new_typed_alloc): New.
+
+	* hashtab.h: Update copyright years.
+	(htab_create_typed_alloc): New.
+
+2010-06-01  Rafael Espindola  <espindola@google.com>
+
+	* plugin-api.h (ld_plugin_tag): Add LDPT_OUTPUT_NAME.
+
+2010-04-26  Pedro Alves  <pedro@codesourcery.com>
+
+	* filenames.h (PATH_SEPARATOR): Delete.
+
+2010-04-23  Pedro Alves  <pedro@codesourcery.com>
+
+	* filenames.h (IS_DIR_SEPARATOR_1): Rename from IS_DIR_SEPARATOR,
+	always define it independently of host, add `dos_based' parameter,
+	and handle it.
+	(PATH_SEPARATOR): Define.
+	(HAS_DRIVE_SPEC_1): Rename from HAS_DRIVE_SPEC, always define it
+	independently of host, add `dos_based' parameter, and handle it.
+	(IS_ABSOLUTE_PATH_1): Rename from IS_ABSOLUTE_PATH, always define
+	it independently of host, add `dos_based' parameter, and handle
+	it.
+	(IS_DOS_DIR_SEPARATOR, IS_DOS_ABSOLUTE_PATH)
+	(IS_UNIX_DIR_SEPARATOR, IS_UNIX_ABSOLUTE_PATH)
+	(HAS_DOS_DRIVE_SPEC): New.
+	(HAS_DRIVE_SPEC): Reimplement on top of HAS_DRIVE_SPEC_1.
+	(IS_DIR_SEPARATOR): Reimplement on top of IS_DIR_SEPARATOR_1.
+	(IS_ABSOLUTE_PATH): Reimplement on top of IS_ABSOLUTE_PATH_1.
+	* libiberty.h (dos_lbasename, unix_lbasename): Declare.
+
+2010-04-20  Nick Clifton  <nickc@redhat.com>
+
+	* sha1.h: Update copyright notice to use GPLv3.
+
+2010-04-14  Doug Evans  <dje@google.com>
+
+	* filenames.h (HAS_DRIVE_SPEC, STRIP_DRIVE_SPEC): New macros.
+
+2010-04-13  Matthias Klose  <doko@ubuntu.com>
+
+	* elf: Remove empty directory.
+
+2010-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2.h (DWARF2_Internal_LineInfo): Add li_max_ops_per_insn
+	field.
+
+2010-03-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* symcat.h (CONCAT5, CONCAT6, XCONCAT5, XCONCAT6): Define.
+
 2010-01-13  Joel Brobecker  <brobecker@adacore.com>
 
 	Add new DW_AT_use_GNAT_descriptive_type CU attribute.
@@ -31,7 +121,7 @@
 2009-10-19  Rafael Avila de Espindola  <espindola@google.com>
 
 	PR40790
-        * plugin-api.h: Don't include stdint.h unconditionally.
+	* plugin-api.h: Don't include stdint.h unconditionally.
 
 2009-10-15  Jakub Jelinek  <jakub@redhat.com>
 
@@ -59,7 +149,7 @@
 
 	* plugin-api.h: Fix compile.
 
-2008-10-03  Rafael Espindola  <espindola@google.com>
+2009-10-03  Rafael Espindola  <espindola@google.com>
 
 	* plugin-api.h: New.
 	* lto-symtab.h: New.
@@ -147,7 +237,7 @@
 
 	* ansidecl.h: Add extern "C" when compiling with C++.  Treat C++
 	the way we treat an ISO C compiler.  Don't define inline as a
-	macdro when compiling with C++.
+	macro when compiling with C++.
 	* dyn-string.h: Add header guard DYN_STRING_H.  Add extern "C"
 	when compiling with C++.
 	* fibheap.h: Add extern "C" when compiling with C++.

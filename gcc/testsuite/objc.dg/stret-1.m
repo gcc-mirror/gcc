@@ -1,8 +1,9 @@
 /* Test for handling of struct-returning methods.  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do run } */
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 extern void abort(void);
 #define CHECK_IF(expr) if(!(expr)) abort()
@@ -60,3 +61,5 @@ int main(void)
   
   return 0;
 }
+
+#include "../objc-obj-c++-shared/Object1-implementation.h"

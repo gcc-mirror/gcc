@@ -1,5 +1,6 @@
 /* Deal with I/O statements & related stuff.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+   2009, 2010
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -729,7 +730,7 @@ data_desc:
       t = format_lex ();
       if (t == FMT_ERROR)
 	goto fail;
-      if (gfc_option.allow_std < GFC_STD_F2003 && t != FMT_COMMA
+      if (!(gfc_option.allow_std & GFC_STD_F2003) && t != FMT_COMMA
 	  && t != FMT_F && t != FMT_E && t != FMT_EN && t != FMT_ES
 	  && t != FMT_D && t != FMT_G && t != FMT_RPAREN && t != FMT_SLASH)
 	{
@@ -850,11 +851,11 @@ data_desc:
       if (u != FMT_POSINT)
 	{
 	  format_locus.nextc += format_string_pos;
-	  gfc_error_now ("Positive width required in format "
+	  gfc_error ("Positive width required in format "
 			 "specifier %s at %L", token_to_string (t),
 			 &format_locus);
 	  saved_token = u;
-	  goto finished;
+	  goto fail;
 	}
 
       u = format_lex ();
@@ -866,11 +867,11 @@ data_desc:
 	  format_locus.nextc += format_string_pos;
 	  if (gfc_option.warn_std != 0)
 	    {
-	      gfc_error_now ("Period required in format "
+	      gfc_error ("Period required in format "
 			     "specifier %s at %L", token_to_string (t),
 			     &format_locus);
 	      saved_token = u;
-	      goto finished;
+              goto fail;
 	    }
 	  else
 	    gfc_warning ("Period required in format "
@@ -970,11 +971,11 @@ data_desc:
 	  gfc_warning ("The H format specifier at %L is"
 		       " a Fortran 95 deleted feature", &format_locus);
 	}
-
       if (mode == MODE_STRING)
 	{
 	  format_string += value;
 	  format_length -= value;
+          format_string_pos += repeat;
 	}
       else
 	{
@@ -1152,6 +1153,8 @@ finished:
 static gfc_try
 check_format_string (gfc_expr *e, bool is_input)
 {
+  gfc_try rv;
+  int i;
   if (!e || e->ts.type != BT_CHARACTER || e->expr_type != EXPR_CONSTANT)
     return SUCCESS;
 
@@ -1162,8 +1165,20 @@ check_format_string (gfc_expr *e, bool is_input)
      format string that has been calculated, but that's probably not worth the
      effort.  */
   format_locus = e->where;
-
-  return check_format (is_input);
+  rv = check_format (is_input);
+  /* check for extraneous characters at the end of an otherwise valid format
+     string, like '(A10,I3)F5'
+     start at the end and move back to the last character processed,
+     spaces are OK */
+  if (rv == SUCCESS && e->value.character.length > format_string_pos)
+    for (i=e->value.character.length-1;i>format_string_pos-1;i--)
+      if (e->value.character.string[i] != ' ')
+        {
+          format_locus.nextc += format_length + 1; 
+          gfc_warning ("Extraneous characters in format at %L", &format_locus); 
+          break;
+        }
+  return rv;
 }
 
 
@@ -1215,14 +1230,9 @@ gfc_match_format (void)
   new_st.loc = start;
   new_st.op = EXEC_NOP;
 
-  e = gfc_get_expr();
-  e->expr_type = EXPR_CONSTANT;
-  e->ts.type = BT_CHARACTER;
-  e->ts.kind = gfc_default_character_kind;
-  e->where = start;
-  e->value.character.string = format_string
-			    = gfc_get_wide_string (format_length + 1);
-  e->value.character.length = format_length;
+  e = gfc_get_character_expr (gfc_default_character_kind, &start,
+			      NULL, format_length);
+  format_string = e->value.character.string;
   gfc_statement_label->format = e;
 
   mode = MODE_COPY;
@@ -1761,8 +1771,6 @@ gfc_match_open (void)
   if (m == MATCH_NO)
     {
       m = gfc_match_expr (&open->unit);
-      if (m == MATCH_NO)
-	goto syntax;
       if (m == MATCH_ERROR)
 	goto cleanup;
     }
@@ -1809,6 +1817,11 @@ gfc_match_open (void)
 		     "or STATUS='scratch' at %C");
 	  goto cleanup;
 	}
+    }
+  else if (!open->unit)
+    {
+      gfc_error ("OPEN statement at %C must have UNIT or NEWUNIT specified");
+      goto cleanup;
     }
 
   /* Checks on the ACCESS specifier.  */
@@ -2425,7 +2438,7 @@ default_unit (io_kind k)
   else
     unit = 6;
 
-  return gfc_int_expr (unit);
+  return gfc_get_int_expr (gfc_default_integer_kind, NULL, unit);
 }
 
 
@@ -3641,17 +3654,8 @@ get_io_list:
      that might have a format expression without unit number.  */
   if (!comma_flag && gfc_match_char (',') == MATCH_YES)
     {
-      dt->extra_comma = gfc_get_expr ();
-
-      /* Set the types to something compatible with iokind. This is needed to
-	 get through gfc_free_expr later since iokind really has no Basic Type,
-	 BT, of its own.  */
-      dt->extra_comma->expr_type = EXPR_CONSTANT;
-      dt->extra_comma->ts.type = BT_LOGICAL;
-
       /* Save the iokind and locus for later use in resolution.  */
-      dt->extra_comma->value.iokind = k;
-      dt->extra_comma->where = gfc_current_locus;
+      dt->extra_comma = gfc_get_iokind_expr (&gfc_current_locus, k);
     }
 
   io_code = NULL;

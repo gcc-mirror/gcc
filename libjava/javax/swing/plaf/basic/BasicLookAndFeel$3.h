@@ -32,7 +32,7 @@ class javax::swing::plaf::basic::BasicLookAndFeel$3 : public ::java::lang::Objec
 public: // actually package-private
   BasicLookAndFeel$3(::javax::swing::plaf::basic::BasicLookAndFeel *);
 public:
-  ::java::lang::Object * createValue(::javax::swing::UIDefaults *);
+  virtual ::java::lang::Object * createValue(::javax::swing::UIDefaults *);
 public: // actually package-private
   ::javax::swing::plaf::basic::BasicLookAndFeel * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

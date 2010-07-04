@@ -1,5 +1,5 @@
 /* Integrated Register Allocator.  Changing code and generating moves.
-   Copyright (C) 2006, 2007, 2008, 2009
+   Copyright (C) 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "output.h"
 #include "reload.h"
-#include "errors.h"
 #include "df.h"
 #include "ira-int.h"
 
@@ -914,7 +913,7 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
   move_t move;
   ira_allocno_t to, from, a;
   ira_copy_t cp;
-  allocno_live_range_t r;
+  live_range_t r;
   bitmap_iterator bi;
   HARD_REG_SET hard_regs_live;
 

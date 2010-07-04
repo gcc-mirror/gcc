@@ -1,9 +1,9 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -308,7 +308,7 @@ raw_truncate (unix_stream * s, gfc_offset length)
       errno = EBADF;
       return -1;
     }
-  h = _get_osfhandle (s->fd);
+  h = (HANDLE) _get_osfhandle (s->fd);
   if (h == INVALID_HANDLE_VALUE)
     {
       errno = EBADF;
@@ -351,7 +351,7 @@ raw_close (unix_stream * s)
     retval = close (s->fd);
   else
     retval = 0;
-  free_mem (s);
+  free (s);
   return retval;
 }
 
@@ -496,13 +496,17 @@ buf_write (unix_stream * s, const void * buf, ssize_t nbyte)
           s->ndirty += nbyte;
         }
       else
-        {
-          if (s->file_length != -1 && s->physical_offset != s->logical_offset
-              && lseek (s->fd, s->logical_offset, SEEK_SET) < 0)
-            return -1;
-          nbyte = raw_write (s, buf, nbyte);
-          s->physical_offset += nbyte;
-        }
+	{
+	  if (s->file_length != -1 && s->physical_offset != s->logical_offset)
+	    {
+	      if (lseek (s->fd, s->logical_offset, SEEK_SET) < 0)
+		return -1;
+	      s->physical_offset = s->logical_offset;
+	    }
+
+	  nbyte = raw_write (s, buf, nbyte);
+	  s->physical_offset += nbyte;
+	}
     }
   s->logical_offset += nbyte;
   /* Don't increment file_length if the file is non-seekable.  */
@@ -560,7 +564,7 @@ buf_close (unix_stream * s)
 {
   if (buf_flush (s) != 0)
     return -1;
-  free_mem (s->buffer);
+  free (s->buffer);
   return raw_close (s);
 }
 
@@ -735,7 +739,7 @@ static int
 mem_close (unix_stream * s)
 {
   if (s != NULL)
-    free_mem (s);
+    free (s);
 
   return 0;
 }
@@ -873,42 +877,67 @@ tempfile (st_parameter_open *opp)
 {
   const char *tempdir;
   char *template;
+  const char *slash = "/";
   int fd;
 
   tempdir = getenv ("GFORTRAN_TMPDIR");
+#ifdef __MINGW32__
+  if (tempdir == NULL)
+    {
+      char buffer[MAX_PATH + 1];
+      DWORD ret;
+      ret = GetTempPath (MAX_PATH, buffer);
+      /* If we are not able to get a temp-directory, we use
+	 current directory.  */
+      if (ret > MAX_PATH || !ret)
+        buffer[0] = 0;
+      else
+        buffer[ret] = 0;
+      tempdir = strdup (buffer);
+    }
+#else
   if (tempdir == NULL)
     tempdir = getenv ("TMP");
   if (tempdir == NULL)
     tempdir = getenv ("TEMP");
   if (tempdir == NULL)
     tempdir = DEFAULT_TEMPDIR;
+#endif
+  /* Check for special case that tempdir contains slash
+     or backslash at end.  */
+  if (*tempdir == 0 || tempdir[strlen (tempdir) - 1] == '/'
+#ifdef __MINGW32__
+      || tempdir[strlen (tempdir) - 1] == '\\'
+#endif
+     )
+    slash = "";
 
   template = get_mem (strlen (tempdir) + 20);
 
-  sprintf (template, "%s/gfortrantmpXXXXXX", tempdir);
-
 #ifdef HAVE_MKSTEMP
+  sprintf (template, "%s%sgfortrantmpXXXXXX", tempdir, slash);
 
   fd = mkstemp (template);
 
 #else /* HAVE_MKSTEMP */
-
-  if (mktemp (template))
-    do
+  fd = -1;
+  do
+    {
+      sprintf (template, "%s%sgfortrantmpXXXXXX", tempdir, slash);
+      if (!mktemp (template))
+	break;
 #if defined(HAVE_CRLF) && defined(O_BINARY)
       fd = open (template, O_RDWR | O_CREAT | O_EXCL | O_BINARY,
 		 S_IREAD | S_IWRITE);
 #else
       fd = open (template, O_RDWR | O_CREAT | O_EXCL, S_IREAD | S_IWRITE);
 #endif
-    while (!(fd == -1 && errno == EEXIST) && mktemp (template));
-  else
-    fd = -1;
-
+    }
+  while (fd == -1 && errno == EEXIST);
 #endif /* HAVE_MKSTEMP */
 
   if (fd < 0)
-    free_mem (template);
+    free (template);
   else
     {
       opp->file = template;
@@ -1366,7 +1395,7 @@ retry:
 	  __gthread_mutex_lock (&unit_lock);
 	  __gthread_mutex_unlock (&u->lock);
 	  if (predec_waiting_locked (u) == 0)
-	    free_mem (u);
+	    free (u);
 	  goto retry;
 	}
 
@@ -1431,7 +1460,7 @@ flush_all_units (void)
 	  __gthread_mutex_lock (&unit_lock);
 	  __gthread_mutex_unlock (&u->lock);
 	  if (predec_waiting_locked (u) == 0)
-	    free_mem (u);
+	    free (u);
 	}
     }
   while (1);
@@ -1475,6 +1504,22 @@ file_exists (const char *file, gfc_charlen_type file_len)
 }
 
 
+/* file_size()-- Returns the size of the file.  */
+
+GFC_IO_INT
+file_size (const char *file, gfc_charlen_type file_len)
+{
+  char path[PATH_MAX + 1];
+  gfstat_t statbuf;
+
+  if (unpack_filename (path, file, file_len))
+    return -1;
+
+  if (stat (path, &statbuf) < 0)
+    return -1;
+
+  return (GFC_IO_INT) statbuf.st_size;
+}
 
 static const char yes[] = "YES", no[] = "NO", unknown[] = "UNKNOWN";
 

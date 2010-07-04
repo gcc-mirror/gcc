@@ -7,7 +7,7 @@ template <int I, int J>
 struct S<I, J, 2> : public S<I, I, I>, S<J, J, J> {};
 
 template <int I, int J, int K>
-void f(S<I, J, K>, S<I, I, I>);
+void f(S<I, J, K>, S<I, I, I>);	// { dg-message "candidate" }
 
 void g() {
   S<0, 0, 0> s0;

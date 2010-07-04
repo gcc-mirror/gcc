@@ -73,12 +73,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "match.h"
 #include "parse.h" /* FIXME */
 #include "md5.h"
+#include "constructor.h"
+#include "cpp.h"
 
 #define MODULE_EXTENSION ".mod"
 
 /* Don't put any single quote (') in MOD_VERSION, 
    if yout want it to be recognized.  */
-#define MOD_VERSION "4"
+#define MOD_VERSION "5"
 
 
 /* Structure that describes a position within a module file.  */
@@ -1298,7 +1300,7 @@ static void
 write_char (char out)
 {
   if (putc (out, module_fp) == EOF)
-    gfc_fatal_error ("Error writing modules file: %s", strerror (errno));
+    gfc_fatal_error ("Error writing modules file: %s", xstrerror (errno));
 
   /* Add this to our MD5.  */
   md5_process_bytes (&out, sizeof (out), &ctx);
@@ -1672,7 +1674,8 @@ typedef enum
   AB_CRAY_POINTER, AB_CRAY_POINTEE, AB_THREADPRIVATE, AB_ALLOC_COMP,
   AB_POINTER_COMP, AB_PRIVATE_COMP, AB_VALUE, AB_VOLATILE, AB_PROTECTED,
   AB_IS_BIND_C, AB_IS_C_INTEROP, AB_IS_ISO_C, AB_ABSTRACT, AB_ZERO_COMP,
-  AB_IS_CLASS, AB_PROCEDURE, AB_PROC_POINTER, AB_ASYNCHRONOUS
+  AB_IS_CLASS, AB_PROCEDURE, AB_PROC_POINTER, AB_ASYNCHRONOUS, AB_CODIMENSION,
+  AB_COARRAY_COMP, AB_VTYPE, AB_VTAB, AB_CONTIGUOUS
 }
 ab_attribute;
 
@@ -1681,6 +1684,8 @@ static const mstring attr_bits[] =
     minit ("ALLOCATABLE", AB_ALLOCATABLE),
     minit ("ASYNCHRONOUS", AB_ASYNCHRONOUS),
     minit ("DIMENSION", AB_DIMENSION),
+    minit ("CODIMENSION", AB_CODIMENSION),
+    minit ("CONTIGUOUS", AB_CONTIGUOUS),
     minit ("EXTERNAL", AB_EXTERNAL),
     minit ("INTRINSIC", AB_INTRINSIC),
     minit ("OPTIONAL", AB_OPTIONAL),
@@ -1708,6 +1713,7 @@ static const mstring attr_bits[] =
     minit ("IS_ISO_C", AB_IS_ISO_C),
     minit ("VALUE", AB_VALUE),
     minit ("ALLOC_COMP", AB_ALLOC_COMP),
+    minit ("COARRAY_COMP", AB_COARRAY_COMP),
     minit ("POINTER_COMP", AB_POINTER_COMP),
     minit ("PRIVATE_COMP", AB_PRIVATE_COMP),
     minit ("ZERO_COMP", AB_ZERO_COMP),
@@ -1716,6 +1722,8 @@ static const mstring attr_bits[] =
     minit ("IS_CLASS", AB_IS_CLASS),
     minit ("PROCEDURE", AB_PROCEDURE),
     minit ("PROC_POINTER", AB_PROC_POINTER),
+    minit ("VTYPE", AB_VTYPE),
+    minit ("VTAB", AB_VTAB),
     minit (NULL, -1)
 };
 
@@ -1798,6 +1806,10 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_ASYNCHRONOUS, attr_bits);
       if (attr->dimension)
 	MIO_NAME (ab_attribute) (AB_DIMENSION, attr_bits);
+      if (attr->codimension)
+	MIO_NAME (ab_attribute) (AB_CODIMENSION, attr_bits);
+      if (attr->contiguous)
+	MIO_NAME (ab_attribute) (AB_CONTIGUOUS, attr_bits);
       if (attr->external)
 	MIO_NAME (ab_attribute) (AB_EXTERNAL, attr_bits);
       if (attr->intrinsic)
@@ -1864,6 +1876,8 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_POINTER_COMP, attr_bits);
       if (attr->private_comp)
 	MIO_NAME (ab_attribute) (AB_PRIVATE_COMP, attr_bits);
+      if (attr->coarray_comp)
+	MIO_NAME (ab_attribute) (AB_COARRAY_COMP, attr_bits);
       if (attr->zero_comp)
 	MIO_NAME (ab_attribute) (AB_ZERO_COMP, attr_bits);
       if (attr->is_class)
@@ -1872,6 +1886,10 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_PROCEDURE, attr_bits);
       if (attr->proc_pointer)
 	MIO_NAME (ab_attribute) (AB_PROC_POINTER, attr_bits);
+      if (attr->vtype)
+	MIO_NAME (ab_attribute) (AB_VTYPE, attr_bits);
+      if (attr->vtab)
+	MIO_NAME (ab_attribute) (AB_VTAB, attr_bits);
 
       mio_rparen ();
 
@@ -1896,6 +1914,12 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      break;
 	    case AB_DIMENSION:
 	      attr->dimension = 1;
+	      break;
+	    case AB_CODIMENSION:
+	      attr->codimension = 1;
+	      break;
+	    case AB_CONTIGUOUS:
+	      attr->contiguous = 1;
 	      break;
 	    case AB_EXTERNAL:
 	      attr->external = 1;
@@ -1984,6 +2008,9 @@ mio_symbol_attribute (symbol_attribute *attr)
 	    case AB_ALLOC_COMP:
 	      attr->alloc_comp = 1;
 	      break;
+	    case AB_COARRAY_COMP:
+	      attr->coarray_comp = 1;
+	      break;
 	    case AB_POINTER_COMP:
 	      attr->pointer_comp = 1;
 	      break;
@@ -2001,6 +2028,12 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      break;
 	    case AB_PROC_POINTER:
 	      attr->proc_pointer = 1;
+	      break;
+	    case AB_VTYPE:
+	      attr->vtype = 1;
+	      break;
+	    case AB_VTAB:
+	      attr->vtab = 1;
 	      break;
 	    }
 	}
@@ -2131,9 +2164,10 @@ mio_array_spec (gfc_array_spec **asp)
     }
 
   mio_integer (&as->rank);
+  mio_integer (&as->corank);
   as->type = MIO_NAME (array_type) (as->type, array_spec_types);
 
-  for (i = 0; i < as->rank; i++)
+  for (i = 0; i < as->rank + as->corank; i++)
     {
       mio_expr (&as->lower[i]);
       mio_expr (&as->upper[i]);
@@ -2614,15 +2648,15 @@ done:
 
 
 static void
-mio_constructor (gfc_constructor **cp)
+mio_constructor (gfc_constructor_base *cp)
 {
-  gfc_constructor *c, *tail;
+  gfc_constructor *c;
 
   mio_lparen ();
 
   if (iomode == IO_OUTPUT)
     {
-      for (c = *cp; c; c = c->next)
+      for (c = gfc_constructor_first (*cp); c; c = gfc_constructor_next (c))
 	{
 	  mio_lparen ();
 	  mio_expr (&c->expr);
@@ -2632,19 +2666,9 @@ mio_constructor (gfc_constructor **cp)
     }
   else
     {
-      *cp = NULL;
-      tail = NULL;
-
       while (peek_atom () != ATOM_RPAREN)
 	{
-	  c = gfc_get_constructor ();
-
-	  if (tail == NULL)
-	    *cp = c;
-	  else
-	    tail->next = c;
-
-	  tail = c;
+	  c = gfc_constructor_append_expr (cp, NULL, NULL);
 
 	  mio_lparen ();
 	  mio_expr (&c->expr);
@@ -3306,7 +3330,7 @@ mio_typebound_proc (gfc_typebound_proc** proc)
 
   if (iomode == IO_INPUT)
     {
-      *proc = gfc_get_typebound_proc ();
+      *proc = gfc_get_typebound_proc (NULL);
       (*proc)->where = gfc_current_locus;
     }
   gcc_assert (*proc);
@@ -4194,6 +4218,9 @@ check_for_ambiguous (gfc_symbol *st_sym, pointer_info *info)
 
   rsym = info->u.rsym.sym;
   if (st_sym == rsym)
+    return false;
+
+  if (st_sym->attr.vtab || st_sym->attr.vtype)
     return false;
 
   /* If the existing symbol is generic from a different module and
@@ -5100,11 +5127,14 @@ gfc_dump_module (const char *name, int dump_flag)
       return;
     }
 
+  if (gfc_cpp_makedep ())
+    gfc_cpp_add_target (filename);
+
   /* Write the module to the temporary file.  */
   module_fp = fopen (filename_tmp, "w");
   if (module_fp == NULL)
     gfc_fatal_error ("Can't open module file '%s' for writing at %C: %s",
-		     filename_tmp, strerror (errno));
+		     filename_tmp, xstrerror (errno));
 
   /* Write the header, including space reserved for the MD5 sum.  */
   now = time (NULL);
@@ -5142,7 +5172,7 @@ gfc_dump_module (const char *name, int dump_flag)
 
   if (fclose (module_fp))
     gfc_fatal_error ("Error writing module file '%s' for writing: %s",
-		     filename_tmp, strerror (errno));
+		     filename_tmp, xstrerror (errno));
 
   /* Read the MD5 from the header of the old module file and compare.  */
   if (read_md5_from_module_file (filename, md5_old) != 0
@@ -5151,16 +5181,16 @@ gfc_dump_module (const char *name, int dump_flag)
       /* Module file have changed, replace the old one.  */
       if (unlink (filename) && errno != ENOENT)
 	gfc_fatal_error ("Can't delete module file '%s': %s", filename,
-			 strerror (errno));
+			 xstrerror (errno));
       if (rename (filename_tmp, filename))
 	gfc_fatal_error ("Can't rename module file '%s' to '%s': %s",
-			 filename_tmp, filename, strerror (errno));
+			 filename_tmp, filename, xstrerror (errno));
     }
   else
     {
       if (unlink (filename_tmp))
 	gfc_fatal_error ("Can't delete temporary module file '%s': %s",
-			 filename_tmp, strerror (errno));
+			 filename_tmp, xstrerror (errno));
     }
 }
 
@@ -5329,7 +5359,7 @@ create_int_parameter (const char *name, int value, const char *modname,
   sym->attr.flavor = FL_PARAMETER;
   sym->ts.type = BT_INTEGER;
   sym->ts.kind = gfc_default_integer_kind;
-  sym->value = gfc_int_expr (value);
+  sym->value = gfc_get_int_expr (gfc_default_integer_kind, NULL, value);
   sym->attr.use_assoc = 1;
   sym->from_intmod = module;
   sym->intmod_sym_id = id;
@@ -5401,6 +5431,11 @@ use_iso_fortran_env_module (void)
 			   gfc_option.flag_default_integer
 			     ? "-fdefault-integer-8" : "-fdefault-real-8");
 
+        if (gfc_notify_std (symbol[i].standard, "The symbol '%s', referrenced "
+			    "at %C, is not in the selected standard",
+			    symbol[i].name) == FAILURE)
+	  continue;
+
 	create_int_parameter (u->local_name[0] ? u->local_name
 					       : symbol[i].name,
 			      symbol[i].value, mod, INTMOD_ISO_FORTRAN_ENV,
@@ -5411,6 +5446,7 @@ use_iso_fortran_env_module (void)
       for (i = 0; symbol[i].name; i++)
 	{
 	  local_name = NULL;
+
 	  for (u = gfc_rename_list; u; u = u->next)
 	    {
 	      if (strcmp (symbol[i].name, u->use_name) == 0)
@@ -5420,6 +5456,13 @@ use_iso_fortran_env_module (void)
 		  break;
 		}
 	    }
+
+	  if (u && gfc_notify_std (symbol[i].standard, "The symbol '%s', "
+				   "referrenced at %C, is not in the selected "
+				   "standard", symbol[i].name) == FAILURE)
+	    continue;
+	  else if ((gfc_option.allow_std & symbol[i].standard) == 0)
+	    continue;
 
 	  if ((gfc_option.flag_default_integer || gfc_option.flag_default_real)
 	      && symbol[i].id == ISOFORTRANENV_NUMERIC_STORAGE_SIZE)
@@ -5497,7 +5540,7 @@ gfc_use_module (void)
 
   if (module_fp == NULL)
     gfc_fatal_error ("Can't open module file '%s' for reading at %C: %s",
-		     filename, strerror (errno));
+		     filename, xstrerror (errno));
 
   /* Check that we haven't already USEd an intrinsic module with the
      same name.  */

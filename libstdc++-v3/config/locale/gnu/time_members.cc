@@ -45,7 +45,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       const size_t __len = __strftime_l(__s, __maxlen, __format, __tm,
 					_M_c_locale_timepunct);
 #else
-      char* __old = setlocale(LC_ALL, NULL);
+      char* __old = setlocale(LC_ALL, 0);
       const size_t __llen = strlen(__old) + 1;  
       char* __sav = new char[__llen];
       memcpy(__sav, __old, __llen);
@@ -201,7 +201,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       const size_t __len = __wcsftime_l(__s, __maxlen, __format, __tm,
 					_M_c_locale_timepunct);
 #else
-      char* __old = setlocale(LC_ALL, NULL);
+      char* __old = setlocale(LC_ALL, 0);
       const size_t __llen = strlen(__old) + 1;
       char* __sav = new char[__llen];
       memcpy(__sav, __old, __llen);

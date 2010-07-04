@@ -1,5 +1,6 @@
 /* RTL-based forward propagation pass for GNU compiler.
-   Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Paolo Bonzini and Steven Bosscher.
 
 This file is part of GCC.
@@ -27,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "rtl.h"
 #include "tm_p.h"
-#include "emit-rtl.h"
 #include "insn-config.h"
 #include "recog.h"
 #include "flags.h"
@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-pass.h"
 #include "domwalk.h"
+#include "emit-rtl.h"
 
 
 /* This pass does simple forward propagation and simplification when an
@@ -219,15 +220,18 @@ single_def_use_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
   struct df_lr_bb_info *lr_bb_info = df_lr_get_bb_info (bb_index);
   rtx insn;
 
-  bitmap_copy (local_md, md_bb_info->in);
-  bitmap_copy (local_lr, lr_bb_info->in);
+  bitmap_copy (local_md, &md_bb_info->in);
+  bitmap_copy (local_lr, &lr_bb_info->in);
 
   /* Push a marker for the leave_block callback.  */
   VEC_safe_push (df_ref, heap, reg_defs_stack, NULL);
 
   process_uses (df_get_artificial_uses (bb_index), DF_REF_AT_TOP);
   process_defs (df_get_artificial_defs (bb_index), DF_REF_AT_TOP);
-  df_simulate_initialize_forwards (bb, local_lr);
+
+  /* We don't call df_simulate_initialize_forwards, as it may overestimate
+     the live registers if there are unused artificial defs.  We prefer
+     liveness to be underestimated.  */
 
   FOR_BB_INSNS (bb, insn)
     if (INSN_P (insn))

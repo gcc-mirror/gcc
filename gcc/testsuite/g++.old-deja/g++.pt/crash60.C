@@ -7,7 +7,7 @@
 template< typename SID, class SDR >
 void k( SID sid, SDR* p,
  void (SDR::*)
- ( typename SID::T ) );
+ ( typename SID::T ) );		// { dg-message "candidate" }
 
 struct E { };
 struct S { void f( int ); };

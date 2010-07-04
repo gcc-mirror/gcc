@@ -38,7 +38,7 @@ class javax::swing::plaf::basic::BasicOptionPaneUI$4 : public ::javax::swing::pl
 public: // actually package-private
   BasicOptionPaneUI$4();
 public:
-  void paintIcon(::java::awt::Component *, ::java::awt::Graphics *, jint, jint);
+  virtual void paintIcon(::java::awt::Component *, ::java::awt::Graphics *, jint, jint);
   static ::java::lang::Class class$;
 };
 

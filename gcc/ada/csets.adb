@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -618,9 +618,9 @@ package body Csets is
    -- Definitions for IBM PC (Code Page 437) --
    --------------------------------------------
 
-   --  Note: Code page 437 is the typical default in DOS, Windows and OS/2
-   --  for PC's in the US, it corresponds to the original PC character set.
-   --  See also the definitions for code page 850.
+   --  Note: Code page 437 is the typical default in Windows for PC's in the
+   --  US, it corresponds to the original PC character set. See also the
+   --  definitions for code page 850.
 
    Fold_IBM_PC_437 : constant Translate_Table := Translate_Table'(
 
@@ -752,10 +752,10 @@ package body Csets is
    -- Definitions for IBM PC (Code Page 850) --
    --------------------------------------------
 
-   --  Note: Code page 850 is the typical default in DOS, Windows and OS/2
-   --  for PC's in Europe, it is an extension of the original PC character
-   --  set to include the additional characters defined in ISO Latin-1.
-   --  See also the definitions for code page 437.
+   --  Note: Code page 850 is the typical default in Windows for PC's in
+   --  Europe, it is an extension of the original PC character set to include
+   --  the additional characters defined in ISO Latin-1. See also the
+   --  definitions for code page 437.
 
    Fold_IBM_PC_850 : constant Translate_Table := Translate_Table'(
 

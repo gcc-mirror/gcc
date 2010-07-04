@@ -1,5 +1,6 @@
 // { dg-do link { target i?86-*-* x86_64-*-* } }
 // { dg-options "-O2 -mmmx" }
+// { dg-prune-output "mangled name" }
 
 #include <mmintrin.h>
 

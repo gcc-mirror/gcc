@@ -169,17 +169,6 @@ namespace std
     : _Weak_result_type_impl<typename remove_cv<_Functor>::type>
     { };
 
-  template<typename _Signature>
-    class result_of;
-
-  template<typename _Functor, typename... _ArgTypes>
-    struct result_of<_Functor(_ArgTypes...)>
-    {
-      typedef
-        decltype( std::declval<_Functor>()(std::declval<_ArgTypes>()...) )
-        type;
-    };
-
   /// Determines if the type _Tp derives from unary_function.
   template<typename _Tp>
     struct _Derives_from_unary_function : __sfinae_types
@@ -401,7 +390,8 @@ namespace std
     public:
       typedef _Tp type;
 
-      reference_wrapper(_Tp& __indata): _M_data(&__indata)
+      reference_wrapper(_Tp& __indata)
+      : _M_data(std::__addressof(__indata))
       { }
 
       reference_wrapper(_Tp&&) = delete;
@@ -500,12 +490,12 @@ namespace std
         _Res
         _M_call(_Tp& __object, const volatile _Class *, 
                 _ArgTypes... __args) const
-        { return (__object.*__pmf)(__args...); }
+        { return (__object.*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       template<typename _Tp>
         _Res
         _M_call(_Tp& __ptr, const volatile void *, _ArgTypes... __args) const
-        { return ((*__ptr).*__pmf)(__args...); }
+        { return ((*__ptr).*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
     public:
       typedef _Res result_type;
@@ -515,18 +505,21 @@ namespace std
       // Handle objects
       _Res
       operator()(_Class& __object, _ArgTypes... __args) const
-      { return (__object.*__pmf)(__args...); }
+      { return (__object.*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       // Handle pointers
       _Res
       operator()(_Class* __object, _ArgTypes... __args) const
-      { return (__object->*__pmf)(__args...); }
+      { return (__object->*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       // Handle smart pointers, references and pointers to derived
       template<typename _Tp>
         _Res
 	operator()(_Tp& __object, _ArgTypes... __args) const
-        { return _M_call(__object, &__object, __args...); }
+        {
+          return _M_call(__object, &__object,
+              std::forward<_ArgTypes>(__args)...);
+        }
 
     private:
       _Functor __pmf;
@@ -544,12 +537,12 @@ namespace std
         _Res
         _M_call(_Tp& __object, const volatile _Class *, 
                 _ArgTypes... __args) const
-        { return (__object.*__pmf)(__args...); }
+        { return (__object.*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       template<typename _Tp>
         _Res
         _M_call(_Tp& __ptr, const volatile void *, _ArgTypes... __args) const
-        { return ((*__ptr).*__pmf)(__args...); }
+        { return ((*__ptr).*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
     public:
       typedef _Res result_type;
@@ -559,17 +552,20 @@ namespace std
       // Handle objects
       _Res
       operator()(const _Class& __object, _ArgTypes... __args) const
-      { return (__object.*__pmf)(__args...); }
+      { return (__object.*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       // Handle pointers
       _Res
       operator()(const _Class* __object, _ArgTypes... __args) const
-      { return (__object->*__pmf)(__args...); }
+      { return (__object->*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       // Handle smart pointers, references and pointers to derived
       template<typename _Tp>
         _Res operator()(_Tp& __object, _ArgTypes... __args) const
-        { return _M_call(__object, &__object, __args...); }
+        {
+          return _M_call(__object, &__object,
+              std::forward<_ArgTypes>(__args)...);
+        }
 
     private:
       _Functor __pmf;
@@ -587,12 +583,12 @@ namespace std
         _Res
         _M_call(_Tp& __object, const volatile _Class *, 
                 _ArgTypes... __args) const
-        { return (__object.*__pmf)(__args...); }
+        { return (__object.*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       template<typename _Tp>
         _Res
         _M_call(_Tp& __ptr, const volatile void *, _ArgTypes... __args) const
-        { return ((*__ptr).*__pmf)(__args...); }
+        { return ((*__ptr).*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
     public:
       typedef _Res result_type;
@@ -602,18 +598,21 @@ namespace std
       // Handle objects
       _Res
       operator()(volatile _Class& __object, _ArgTypes... __args) const
-      { return (__object.*__pmf)(__args...); }
+      { return (__object.*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       // Handle pointers
       _Res
       operator()(volatile _Class* __object, _ArgTypes... __args) const
-      { return (__object->*__pmf)(__args...); }
+      { return (__object->*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       // Handle smart pointers, references and pointers to derived
       template<typename _Tp>
         _Res
 	operator()(_Tp& __object, _ArgTypes... __args) const
-        { return _M_call(__object, &__object, __args...); }
+        {
+          return _M_call(__object, &__object,
+              std::forward<_ArgTypes>(__args)...);
+        }
 
     private:
       _Functor __pmf;
@@ -631,12 +630,12 @@ namespace std
         _Res
         _M_call(_Tp& __object, const volatile _Class *, 
                 _ArgTypes... __args) const
-        { return (__object.*__pmf)(__args...); }
+        { return (__object.*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       template<typename _Tp>
         _Res
         _M_call(_Tp& __ptr, const volatile void *, _ArgTypes... __args) const
-        { return ((*__ptr).*__pmf)(__args...); }
+        { return ((*__ptr).*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
     public:
       typedef _Res result_type;
@@ -646,17 +645,20 @@ namespace std
       // Handle objects
       _Res 
       operator()(const volatile _Class& __object, _ArgTypes... __args) const
-      { return (__object.*__pmf)(__args...); }
+      { return (__object.*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       // Handle pointers
       _Res 
       operator()(const volatile _Class* __object, _ArgTypes... __args) const
-      { return (__object->*__pmf)(__args...); }
+      { return (__object->*__pmf)(std::forward<_ArgTypes>(__args)...); }
 
       // Handle smart pointers, references and pointers to derived
       template<typename _Tp>
         _Res operator()(_Tp& __object, _ArgTypes... __args) const
-        { return _M_call(__object, &__object, __args...); }
+        {
+          return _M_call(__object, &__object,
+              std::forward<_ArgTypes>(__args)...);
+        }
 
     private:
       _Functor __pmf;
@@ -844,29 +846,6 @@ namespace std
     struct is_placeholder<_Placeholder<_Num> >
     : public integral_constant<int, _Num>
     { };
-
-  /**
-   * Stores a tuple of indices. Used by bind() to extract the elements
-   * in a tuple. 
-   */
-  template<int... _Indexes>
-    struct _Index_tuple
-    {
-      typedef _Index_tuple<_Indexes..., sizeof...(_Indexes)> __next;
-    };
-
-  /// Builds an _Index_tuple<0, 1, 2, ..., _Num-1>.
-  template<std::size_t _Num>
-    struct _Build_index_tuple
-    {
-      typedef typename _Build_index_tuple<_Num-1>::__type::__next __type;
-    };
-
-  template<>
-    struct _Build_index_tuple<0>
-    {
-      typedef _Index_tuple<> __type;
-    };
 
   /** 
    * Used by _Safe_tuple_element to indicate that there is no tuple
@@ -1405,13 +1384,6 @@ namespace std
   class bad_function_call : public std::exception { };
 
   /**
-   *  The integral constant expression 0 can be converted into a
-   *  pointer to this type. It is used by the function template to
-   *  accept NULL pointers.
-   */
-  struct _M_clear_type;
-
-  /**
    *  Trait identifying "location-invariant" types, meaning that the
    *  address of the object (or any of its members) will not escape.
    *  Also implies a trivial copy constructor and assignment operator.
@@ -1818,10 +1790,10 @@ namespace std
       function() : _Function_base() { }
       
       /**
-       *  @brief Default construct creates an empty function call wrapper.
+       *  @brief Creates an empty function call wrapper.
        *  @post @c !(bool)*this
        */
-      function(_M_clear_type*) : _Function_base() { }
+      function(nullptr_t) : _Function_base() { }
       
       /**
        *  @brief %Function copy constructor.
@@ -1914,7 +1886,7 @@ namespace std
        *  The target of @c *this is deallocated, leaving it empty.
        */
       function&
-      operator=(_M_clear_type*)
+      operator=(nullptr_t)
       {
         if (_M_manager)
 	  {
@@ -1969,16 +1941,9 @@ namespace std
        */
       void swap(function& __x)
       {
-	/* We cannot perform direct assignments of the _M_functor
-	   parts as they are of type _Any_data and have a different
-	   dynamic type.  Doing so would violate type-based aliasing
-	   rules and lead to spurious miscompilations.
-	   Instead perform a bytewise exchange of the memory of
-	   both POD objects.
-	   ???  A wordwise exchange honoring alignment of _M_functor
-	   would be more efficient.  See PR42845.  */
-	for (unsigned i = 0; i < sizeof (_M_functor._M_pod_data); ++i)
-	  std::swap (_M_functor._M_pod_data[i], __x._M_functor._M_pod_data[i]);
+	_Any_data __old_functor = _M_functor;
+	_M_functor = __x._M_functor;
+	__x._M_functor = __old_functor;
 	_Manager_type __old_manager = _M_manager;
 	_M_manager = __x._M_manager;
 	__x._M_manager = __old_manager;
@@ -2167,13 +2132,13 @@ namespace std
    */
   template<typename _Res, typename... _Args>
     inline bool
-    operator==(const function<_Res(_Args...)>& __f, _M_clear_type*)
+    operator==(const function<_Res(_Args...)>& __f, nullptr_t)
     { return !static_cast<bool>(__f); }
 
   /// @overload
   template<typename _Res, typename... _Args>
     inline bool
-    operator==(_M_clear_type*, const function<_Res(_Args...)>& __f)
+    operator==(nullptr_t, const function<_Res(_Args...)>& __f)
     { return !static_cast<bool>(__f); }
 
   /**
@@ -2185,13 +2150,13 @@ namespace std
    */
   template<typename _Res, typename... _Args>
     inline bool
-    operator!=(const function<_Res(_Args...)>& __f, _M_clear_type*)
+    operator!=(const function<_Res(_Args...)>& __f, nullptr_t)
     { return static_cast<bool>(__f); }
 
   /// @overload
   template<typename _Res, typename... _Args>
     inline bool
-    operator!=(_M_clear_type*, const function<_Res(_Args...)>& __f)
+    operator!=(nullptr_t, const function<_Res(_Args...)>& __f)
     { return static_cast<bool>(__f); }
 
   // [20.7.15.2.7] specialized algorithms

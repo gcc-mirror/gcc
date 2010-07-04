@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -504,7 +504,7 @@ package body Exp_Ch3 is
             --  And insert this declaration into the tree. The type of the
             --  discriminant is then reset to this more restricted subtype.
 
-            Tnn := Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
+            Tnn := Make_Temporary (Loc, 'T');
 
             Insert_Action (Declaration_Node (Rtype),
               Make_Subtype_Declaration (Loc,
@@ -593,7 +593,7 @@ package body Exp_Ch3 is
       ------------------------
 
       function Init_One_Dimension (N : Int) return List_Id is
-         Index      : Entity_Id;
+         Index : Entity_Id;
 
       begin
          --  If the component does not need initializing, then there is nothing
@@ -1465,8 +1465,8 @@ package body Exp_Ch3 is
       if Has_Task (Full_Type) then
          if Restriction_Active (No_Task_Hierarchy) then
 
-            --  See comments in System.Tasking.Initialization.Init_RTS
-            --  for the value 3 (should be rtsfindable constant ???)
+            --  3 is System.Tasking.Library_Task_Level
+            --  (should be rtsfindable constant ???)
 
             Append_To (Args, Make_Integer_Literal (Loc, 3));
 
@@ -2020,8 +2020,7 @@ package body Exp_Ch3 is
          if Has_Task (Rec_Type) then
             if Restriction_Active (No_Task_Hierarchy) then
 
-               --  See comments in System.Tasking.Initialization.Init_RTS
-               --  for the value 3.
+               --  3 is System.Tasking.Library_Task_Level
 
                Append_To (Args, Make_Integer_Literal (Loc, 3));
             else
@@ -2115,10 +2114,7 @@ package body Exp_Ch3 is
             Spec_Node : Node_Id;
 
          begin
-            Func_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('F'));
-
+            Func_Id := Make_Temporary (Loc, 'F');
             Set_DT_Offset_To_Top_Func (Iface_Comp, Func_Id);
 
             --  Generate
@@ -2246,9 +2242,7 @@ package body Exp_Ch3 is
          if Is_Tagged_Type (Rec_Type)
            and then not Is_CPP_Class (Rec_Type)
          then
-            Set_Tag :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('P'));
+            Set_Tag := Make_Temporary (Loc, 'P');
 
             Append_To (Parameters,
               Make_Parameter_Specification (Loc,
@@ -2335,22 +2329,6 @@ package body Exp_Ch3 is
                 Expression =>
                   New_Reference_To
                     (Node (First_Elmt (Access_Disp_Table (Rec_Type))), Loc)));
-
-            --  Generate the SCIL node associated with the initialization of
-            --  the tag component.
-
-            if Generate_SCIL then
-               declare
-                  New_Node : Node_Id;
-
-               begin
-                  New_Node :=
-                    Make_SCIL_Tag_Init (Sloc (First (Init_Tags_List)));
-                  Set_SCIL_Related_Node (New_Node, First (Init_Tags_List));
-                  Set_SCIL_Entity (New_Node, Rec_Type);
-                  Prepend_To (Init_Tags_List, New_Node);
-               end;
-            end if;
 
             --  Ada 2005 (AI-251): Initialize the secondary tags components
             --  located at fixed positions (tags whose position depends on
@@ -3404,37 +3382,21 @@ package body Exp_Ch3 is
       Loc   : constant Source_Ptr := Sloc (Typ);
       Index : constant Entity_Id  := Base_Type (Etype (First_Index (Typ)));
 
-      --  Build formal parameters of procedure
+      Larray    : constant Entity_Id := Make_Temporary (Loc, 'A');
+      Rarray    : constant Entity_Id := Make_Temporary (Loc, 'R');
+      Left_Lo   : constant Entity_Id := Make_Temporary (Loc, 'L');
+      Left_Hi   : constant Entity_Id := Make_Temporary (Loc, 'L');
+      Right_Lo  : constant Entity_Id := Make_Temporary (Loc, 'R');
+      Right_Hi  : constant Entity_Id := Make_Temporary (Loc, 'R');
+      Rev       : constant Entity_Id := Make_Temporary (Loc, 'D');
+      --  Formal parameters of procedure
 
-      Larray   : constant Entity_Id :=
-                   Make_Defining_Identifier
-                     (Loc, Chars => New_Internal_Name ('A'));
-      Rarray   : constant Entity_Id :=
-                   Make_Defining_Identifier
-                     (Loc, Chars => New_Internal_Name ('R'));
-      Left_Lo  : constant Entity_Id :=
-                   Make_Defining_Identifier
-                     (Loc, Chars => New_Internal_Name ('L'));
-      Left_Hi  : constant Entity_Id :=
-                   Make_Defining_Identifier
-                     (Loc, Chars => New_Internal_Name ('L'));
-      Right_Lo : constant Entity_Id :=
-                   Make_Defining_Identifier
-                     (Loc, Chars => New_Internal_Name ('R'));
-      Right_Hi : constant Entity_Id :=
-                   Make_Defining_Identifier
-                     (Loc, Chars => New_Internal_Name ('R'));
-      Rev      : constant Entity_Id :=
-                   Make_Defining_Identifier
-                     (Loc, Chars => New_Internal_Name ('D'));
       Proc_Name : constant Entity_Id :=
                     Make_Defining_Identifier (Loc,
                       Chars => Make_TSS_Name (Typ, TSS_Slice_Assign));
 
-      Lnn : constant Entity_Id :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('L'));
-      Rnn : constant Entity_Id :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+      Lnn : constant Entity_Id := Make_Temporary (Loc, 'L');
+      Rnn : constant Entity_Id := Make_Temporary (Loc, 'R');
       --  Subscripts for left and right sides
 
       Decls : List_Id;
@@ -4466,7 +4428,10 @@ package body Exp_Ch3 is
          --  it will be assigned subsequently. In particular, there is no point
          --  in applying Initialize_Scalars to such a temporary.
 
-         elsif Needs_Simple_Initialization (Typ)
+         elsif Needs_Simple_Initialization
+                 (Typ,
+                  Initialize_Scalars
+                    and then not Has_Following_Address_Clause (N))
            and then not Is_Internal (Def_Id)
            and then not Has_Init_Expression (N)
          then
@@ -4617,8 +4582,7 @@ package body Exp_Ch3 is
                      Decl_1 :=
                        Make_Object_Declaration (Loc,
                          Defining_Identifier =>
-                           Make_Defining_Identifier (Loc,
-                             New_Internal_Name ('D')),
+                           Make_Temporary (Loc, 'D', Expr_N),
                          Object_Definition =>
                            New_Occurrence_Of (Expr_Typ, Loc),
                          Expression =>
@@ -4630,12 +4594,9 @@ package body Exp_Ch3 is
 
                      Decl_2 :=
                        Make_Object_Renaming_Declaration (Loc,
-                         Defining_Identifier =>
-                           Make_Defining_Identifier (Loc,
-                             New_Internal_Name ('D')),
-                         Subtype_Mark =>
-                           New_Occurrence_Of (Typ, Loc),
-                         Name =>
+                         Defining_Identifier => Make_Temporary (Loc, 'D'),
+                         Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
+                         Name                =>
                            Unchecked_Convert_To (Typ,
                              Make_Selected_Component (Loc,
                                Prefix =>
@@ -4679,23 +4640,19 @@ package body Exp_Ch3 is
                      Decl_1 :=
                        Make_Object_Declaration (Loc,
                          Defining_Identifier =>
-                           Make_Defining_Identifier (Loc,
-                             New_Internal_Name ('D')),
-                         Object_Definition =>
+                           Make_Temporary (Loc, 'D', New_Expr),
+                         Object_Definition   =>
                            New_Occurrence_Of
                             (Etype (Object_Definition (N)), Loc),
-                         Expression =>
+                         Expression          =>
                            Unchecked_Convert_To
                              (Etype (Object_Definition (N)), New_Expr));
 
                      Decl_2 :=
                        Make_Object_Renaming_Declaration (Loc,
-                         Defining_Identifier =>
-                           Make_Defining_Identifier (Loc,
-                             New_Internal_Name ('D')),
-                         Subtype_Mark =>
-                           New_Occurrence_Of (Typ, Loc),
-                         Name =>
+                         Defining_Identifier => Make_Temporary (Loc, 'D'),
+                         Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
+                         Name                =>
                            Unchecked_Convert_To (Typ,
                              Make_Explicit_Dereference (Loc,
                                Unchecked_Convert_To (RTE (RE_Tag_Ptr),
@@ -5969,8 +5926,8 @@ package body Exp_Ch3 is
         and then Has_Discriminants (Def_Id)
       then
          declare
-            Ctyp : constant Entity_Id :=
-                     Corresponding_Concurrent_Type (Def_Id);
+            Ctyp       : constant Entity_Id :=
+                           Corresponding_Concurrent_Type (Def_Id);
             Conc_Discr : Entity_Id;
             Rec_Discr  : Entity_Id;
             Temp       : Entity_Id;
@@ -5978,7 +5935,6 @@ package body Exp_Ch3 is
          begin
             Conc_Discr := First_Discriminant (Ctyp);
             Rec_Discr  := First_Discriminant (Def_Id);
-
             while Present (Conc_Discr) loop
                Temp := Discriminal (Conc_Discr);
                Set_Discriminal (Conc_Discr, Discriminal (Rec_Discr));
@@ -6247,9 +6203,7 @@ package body Exp_Ch3 is
 
       --  See GNAT Pool packages in the Run-Time for more details
 
-      elsif Ekind (Def_Id) = E_Access_Type
-        or else Ekind (Def_Id) = E_General_Access_Type
-      then
+      elsif Ekind_In (Def_Id, E_Access_Type, E_General_Access_Type) then
          declare
             Loc         : constant Source_Ptr := Sloc (N);
             Desig_Type  : constant Entity_Id  := Designated_Type (Def_Id);
@@ -7865,12 +7819,11 @@ package body Exp_Ch3 is
 
             --  If a primitive is encountered that renames the predefined
             --  equality operator before reaching any explicit equality
-            --  primitive, then we still need to create a predefined
-            --  equality function, because calls to it can occur via
-            --  the renaming. A new name is created for the equality
-            --  to avoid conflicting with any user-defined equality.
-            --  (Note that this doesn't account for renamings of
-            --  equality nested within subpackages???)
+            --  primitive, then we still need to create a predefined equality
+            --  function, because calls to it can occur via the renaming. A new
+            --  name is created for the equality to avoid conflicting with any
+            --  user-defined equality. (Note that this doesn't account for
+            --  renamings of equality nested within subpackages???)
 
             if Is_Predefined_Eq_Renaming (Node (Prim)) then
                Eq_Name := New_External_Name (Chars (Node (Prim)), 'E');
@@ -8145,7 +8098,14 @@ package body Exp_Ch3 is
    -- Needs_Simple_Initialization --
    ---------------------------------
 
-   function Needs_Simple_Initialization (T : Entity_Id) return Boolean is
+   function Needs_Simple_Initialization
+     (T           : Entity_Id;
+      Consider_IS : Boolean := True) return Boolean
+   is
+      Consider_IS_NS : constant Boolean :=
+                         Normalize_Scalars
+                           or (Initialize_Scalars and Consider_IS);
+
    begin
       --  Check for private type, in which case test applies to the underlying
       --  type of the private type.
@@ -8167,7 +8127,7 @@ package body Exp_Ch3 is
       --  types.
 
       elsif Is_Access_Type (T)
-        or else (Init_Or_Norm_Scalars and then (Is_Scalar_Type (T)))
+        or else (Consider_IS_NS and then (Is_Scalar_Type (T)))
       then
          return True;
 
@@ -8176,7 +8136,7 @@ package body Exp_Ch3 is
       --  expanding an aggregate (since in the latter case they will be
       --  filled with appropriate initializing values before they are used).
 
-      elsif Init_Or_Norm_Scalars
+      elsif Consider_IS_NS
         and then
           (Root_Type (T) = Standard_String
              or else Root_Type (T) = Standard_Wide_String

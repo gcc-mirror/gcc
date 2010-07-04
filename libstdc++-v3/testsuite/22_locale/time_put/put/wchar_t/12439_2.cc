@@ -1,4 +1,4 @@
-// Copyright (C) 2003, 2009 Free Software Foundation
+// Copyright (C) 2003, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -42,7 +42,7 @@ void test02()
   
   locale loc;
   const tp_type& tp = use_facet<tp_type>(loc);
-  time_t tt = time(NULL);
+  time_t tt = time(0);
   wostringstream stream;
   
   tp.put(tp_type::iter_type(stream), stream, stream.fill(),

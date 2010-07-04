@@ -1,5 +1,5 @@
 /* Gimple Represented as Polyhedra.
-   Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@inria.fr>.
 
 This file is part of GCC.
@@ -202,7 +202,7 @@ graphite_initialize (void)
   if (number_of_loops () <= 1
       /* FIXME: This limit on the number of basic blocks of a function
 	 should be removed when the SCOP detection is faster.  */
-      || n_basic_blocks > 100)
+      || n_basic_blocks > PARAM_VALUE (PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	print_global_statistics (dump_file);

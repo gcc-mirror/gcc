@@ -759,21 +759,6 @@
   DONE;
 })
 
-(define_expand "cbranchsi4"
-  [(set (pc)
-	(if_then_else (match_operator 0 "comparison_operator"
-				      [(match_operand:SI 1 "register_operand" "")
-				       (match_operand:SI 2 "nonmemory_operand" "")])
-		      (label_ref (match_operand 3 "" ""))
-		      (pc)))
-   (clobber (reg:BI CARRY_REG))]
-  ""
-  {
-  xstormy16_emit_cbranch (GET_CODE (operands[0]), operands[1], operands[2],
-			  operands[3]);
-  DONE;
-})
-
 (define_insn "cbranchhi"
   [(set (pc)
 	(if_then_else (match_operator:HI 1 "comparison_operator"
@@ -826,24 +811,6 @@
 }"
   [(set_attr "branch_class" "bcc8p2")
    (set_attr "psw_operand" "clobber")])
-
-(define_insn_and_split "*ineqbranchsi"
-  [(set (pc)
-	(if_then_else (match_operator:SI 1 "xstormy16_ineqsi_operator"
-				      [(match_operand:SI 2 "register_operand"
-							 "r")
-				       (match_operand:SI 3 "nonmemory_operand"
-							 "ri")])
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))
-   (clobber (match_operand:SI 4 "register_operand" "=2"))
-   (clobber (reg:BI CARRY_REG))]
-  ""
-  "#"
-  "reload_completed"
-  [(pc)]
-  { xstormy16_split_cbranch (SImode, operands[0], operands[1], operands[2]); DONE; }
-  [(set_attr "length" "8")])
 
 (define_insn "*ineqbranch_1"
   [(set (pc)

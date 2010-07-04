@@ -14,10 +14,10 @@ class java::util::IdentityHashMap$3 : public ::java::util::AbstractCollection
 public: // actually package-private
   IdentityHashMap$3(::java::util::IdentityHashMap *);
 public:
-  jint size();
-  ::java::util::Iterator * iterator();
-  void clear();
-  jboolean remove(::java::lang::Object *);
+  virtual jint size();
+  virtual ::java::util::Iterator * iterator();
+  virtual void clear();
+  virtual jboolean remove(::java::lang::Object *);
 public: // actually package-private
   ::java::util::IdentityHashMap * __attribute__((aligned(__alignof__( ::java::util::AbstractCollection)))) this$0;
 public:

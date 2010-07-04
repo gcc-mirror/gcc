@@ -1,5 +1,5 @@
 /* Data structure definitions for a generic GCC target.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
@@ -97,6 +97,9 @@ struct _dep;
 /* This is defined in ddg.h .  */
 struct ddg;
 
+/* This is defined in cfgloop.h .  */
+struct loop;
+
 /* Assembler instructions for creating various kinds of integer object.  */
 
 struct asm_int_op
@@ -105,6 +108,23 @@ struct asm_int_op
   const char *si;
   const char *di;
   const char *ti;
+};
+
+/* Types of costs for vectorizer cost model.  */
+enum vect_cost_for_stmt
+{
+  scalar_stmt,
+  scalar_load,
+  scalar_store,
+  vector_stmt,
+  vector_load,
+  unaligned_load,
+  vector_store,
+  vec_to_scalar,
+  scalar_to_vec,
+  cond_branch_not_taken,
+  cond_branch_taken,
+  vec_perm
 };
 
 /* The target structure.  This holds all the backend hooks.  */
@@ -150,6 +170,10 @@ struct gcc_target
 
     /* Output an internal label.  */
     void (* internal_label) (FILE *, const char *, unsigned long);
+
+    /* Output label for the constant.  */
+    void (* declare_constant_name) (FILE *, const char *, const_tree, 
+				    HOST_WIDE_INT);
 
     /* Emit a ttype table reference to a typeinfo object.  */
     bool (* ttype) (rtx);
@@ -235,6 +259,18 @@ struct gcc_target
        translation unit.  */
     void (*file_end) (void);
 
+    /* Output any boilerplate text needed at the beginning of an
+       LTO output stream.  */
+    void (*lto_start) (void);
+
+    /* Output any boilerplate text needed at the end of an
+       LTO output stream.  */
+    void (*lto_end) (void);
+
+    /* Output any boilerplace text needed at the end of a
+       translation unit before debug and unwind info is emitted.  */
+    void (*code_end) (void);
+
     /* Output an assembler pseudo-op to declare a library function name
        external.  */
     void (*external_libcall) (rtx);
@@ -262,6 +298,16 @@ struct gcc_target
 
     /* Emit the trampoline template.  This hook may be NULL.  */
     void (*trampoline_template) (FILE *);
+
+    /* Emit a machine-specific insn operand.  */
+    void (*print_operand) (FILE *, rtx, int);
+
+    /* Emit a machine-specific memory address.  */
+    void (*print_operand_address) (FILE *, rtx);
+
+    /* Determine whether CODE is a valid punctuation character for the
+       `print_operand' hook.  */
+    bool (*print_operand_punct_valid_p)(unsigned char code);
   } asm_out;
 
   /* Functions relating to instruction scheduling.  */
@@ -467,11 +513,11 @@ struct gcc_target
 
     /* Returns a code for builtin that realizes vectorized version of
        function, or NULL_TREE if not available.  */
-    tree (* builtin_vectorized_function) (unsigned, tree, tree);
+    tree (* builtin_vectorized_function) (tree, tree, tree);
 
-    /* Returns a code for builtin that realizes vectorized version of
-       conversion, or NULL_TREE if not available.  */
-    tree (* builtin_conversion) (unsigned, tree);
+    /* Returns a function declaration for a builtin that realizes the
+       vector conversion, or NULL_TREE if not available.  */
+    tree (* builtin_conversion) (unsigned, tree, tree);
 
     /* Target builtin that implements vector widening multiplication.
        builtin_mul_widen_eve computes the element-by-element products
@@ -480,9 +526,9 @@ struct gcc_target
     tree (* builtin_mul_widen_even) (tree);
     tree (* builtin_mul_widen_odd) (tree);
 
-    /* Returns the cost to be added to the overheads involved with
-       executing the vectorized version of a loop.  */
-    int (*builtin_vectorization_cost) (bool);
+    /* Cost of different vector/scalar statements in vectorization cost
+       model.  */ 
+    int (* builtin_vectorization_cost) (enum vect_cost_for_stmt);
 
     /* Return true if vector alignment is reachable (by peeling N
        iterations) for the given type.  */
@@ -516,6 +562,9 @@ struct gcc_target
      form was.  Return true if the switch was valid.  */
   bool (* handle_option) (size_t code, const char *arg, int value);
 
+  /* Handle target-specific parts of specifying -Ofast.  */
+  void (* handle_ofast) (void);
+
   /* Display extra, target specific information in response to a
      --target-help switch.  */
   void (* target_help) (void);
@@ -541,6 +590,10 @@ struct gcc_target
   /* Table of machine attributes and functions to handle them.
      Ignored if NULL.  */
   const struct attribute_spec *attribute_table;
+
+  /* Return true iff attribute NAME expects a plain identifier as its first
+     argument.  */
+  bool (*attribute_takes_identifier_p) (const_tree name);
 
   /* Return zero if the attributes on TYPE1 and TYPE2 are incompatible,
      one if they are compatible and two if they are nearly compatible
@@ -597,7 +650,7 @@ struct gcc_target
       				      tree decl, void *params);
 
   /* Fold a target-specific builtin.  */
-  tree (* fold_builtin) (tree fndecl, tree arglist, bool ignore);
+  tree (* fold_builtin) (tree fndecl, int nargs, tree *argp, bool ignore);
 
   /* Returns a code for a target-specific builtin that implements
      reciprocal of the function, or NULL_TREE if not available.  */
@@ -633,6 +686,9 @@ struct gcc_target
   /* Return true if the target supports conditional execution.  */
   bool (* have_conditional_execution) (void);
 
+  /* Return a new value for loop unroll size.  */
+  unsigned (* loop_unroll_adjust) (unsigned nunroll, struct loop *loop);
+
   /* True if the constant X cannot be placed in the constant pool.  */
   bool (* cannot_force_const_mem) (rtx);
 
@@ -641,6 +697,10 @@ struct gcc_target
 
   /* True if X is considered to be commutative.  */
   bool (* commutative_p) (const_rtx, int);
+  
+  /* True if ADDR is an address-expression whose effect depends
+     on the mode of the memory reference it is used in.  */
+  bool (* mode_dependent_address_p) (const_rtx addr);
 
   /* Given an invalid address X for a given machine mode, try machine-specific
      ways to make it legitimate.  Return X or an invalid address on failure.  */
@@ -752,6 +812,20 @@ struct gcc_target
      for further details.  */
   bool (* vector_mode_supported_p) (enum machine_mode mode);
 
+  /* Compute cost of moving data from a register of class FROM to one of
+     TO, using MODE.  */
+  int (* register_move_cost) (enum machine_mode, enum reg_class,
+			      enum reg_class);
+
+  /* Compute cost of moving registers to/from memory.  */
+  int (* memory_move_cost) (enum machine_mode, enum reg_class, bool);
+
+  /* True for MODE if the target expects that registers in this mode will
+     be allocated to registers in a small register class.  The compiler is
+     allowed to use registers explicitly used in the rtl as spill registers
+     but it should prevent extending the lifetime of these registers.  */
+  bool (* small_register_classes_for_mode_p) (enum machine_mode mode);
+
   /* Compute a (partial) cost for rtx X.  Return true if the complete
      cost has been computed, and false if subexpressions should be
      scanned.  In either case, *TOTAL contains the cost result.  */
@@ -808,6 +882,9 @@ struct gcc_target
 
   /* Create the __builtin_va_list type.  */
   tree (* build_builtin_va_list) (void);
+
+  /* Enumerate the va list variants.  */
+  int (* enum_va_list) (int, const char **, tree *);
 
   /* Get the cfun/fndecl calling abi __builtin_va_list type.  */
   tree (* fn_abi_va_list) (tree);
@@ -957,6 +1034,10 @@ struct gcc_target
     /* Return the rtx for the result of a libcall of mode MODE,
        calling the function FN_NAME.  */
     rtx (*libcall_value) (enum machine_mode, const_rtx);
+
+    /* Return true if REGNO is a possible register number for
+       a function value as seen by the caller.  */
+    bool (*function_value_regno_p) (const unsigned int);
 
     /* Return an rtx for the argument pointer incoming to the
        current function.  */

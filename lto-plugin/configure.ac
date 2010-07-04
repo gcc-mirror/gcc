@@ -1,7 +1,7 @@
 AC_PREREQ(2.64)
 AC_INIT([LTO plugin for ld], 0.1,,[lto-plugin])
 GCC_TOPLEV_SUBDIRS
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([foreign no-dist])
 AM_MAINTAINER_MODE
 AC_PROG_CC
 AC_SYS_LARGEFILE

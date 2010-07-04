@@ -1,3 +1,257 @@
+2010-06-28  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* java-tree.h (struct lang_type) [catch_classes]: Change type to a
+	VEC.
+	* except.c (prepare_eh_table_type): Call CONSTRUCTOR_APPEND_ELT
+	instead of tree_cons.
+	* class.c (make_class): Add dummy entry to TYPE_CATCH_CLASSES.
+	(emit_catch_table): Adjust for new type of TYPE_CATCH_CLASSES.
+
+2010-06-28  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* lang.c: Do not include except.h
+	* except.c: Likewise.
+	(doing_eh): New, moved from except.c (in gcc/) but removed the
+	do_warning flag.
+	(maybe_start_try): Update doing_eh call.
+	* Make-lang.in: Update dependencies.
+
+2010-06-23  Anatoly Sokolov  <aesok@post.ru>
+
+	* decl.c (java_init_decl_processing): Use double_int_to_tree instead
+	of build_int_cst_wide.
+	* boehm.c (set_bit): Remove.
+	(mark_reference_fields): Use double_int type for 'mask' argument.
+	Use double_int_setbit instead of set_bit.
+	(get_boehm_type_descriptor): Use double_int_setbit instead of
+	set_bit. Use double_int_to_tree instead of build_int_cst_wide.
+
+2010-06-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gcj.texi: Move to GFDL version 1.3.  Fix copyright years.
+
+2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* jcf-reader.c (jcf_parse_constant_pool): Use typed GC allocation.
+
+	* jcf-parse.c (java_parse_file): Likewise.
+	(process_zip_dir): Likewise.
+
+	* java-tree.h (MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC): Likewise.
+	(MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC): Likewise.
+
+	* expr.c (add_type_assertion): Likewise.
+
+	* decl.c (make_binding_level): Likewise.
+	(java_dup_lang_specific_decl): Likewise.
+
+	* constants.c (set_constant_entry): Likewise.
+	(cpool_for_class): Likewise.
+
+	* class.c (add_method_1): Likewise.
+	(java_treetreehash_new): Likewise.
+
+	* java-tree.h (struct lang_type): Add variable_size GTY option.
+	(struct lang_decl): Likewise.
+
+	* jch.h (struct cpool_entry): Likewise.
+
+	* java-tree.h (java_treetreehash_create): Remove parameter ggc.
+
+	* except.c (prepare_eh_table_type): Update
+	java_treetreehash_create call.
+
+	* class.c (add_method_1): Update java_treetreehash_create call.
+	(java_treetreehash_create): Remove parameter gc.  Use
+	htab_create_ggc.
+
+2010-06-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* jvspec.c (lang_specific_driver): Use GCC-specific formats in
+	diagnostics.
+
+2010-05-30  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* except.c: Include tm.h.
+
+2010-05-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* jvspec.c (lang_specific_driver): Use fatal_error instead of
+	fatal.  Use warning instead of error for warnings.
+
+2010-05-28  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* expr.c (get_symbol_table_index): Add spaces in expression.
+
+2010-05-28  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* java-tree.h (method_entry): Declare.  Declare VECs containing it.
+	(struct lang_type): Change type of otable_methods, atable_methods, and
+	itable_methods to VECs.  Fix comment for atable_methods.
+	(emit_symbol_table): Take a VEC instead of a tree.
+	(get_symbol_table_index): Take a VEC * instead of a tree *.
+	* class.c (add_table_and_syms): Take a VEC instead of a tree.
+	(emit_symbol_table): Update for changed parameter type.
+	* expr.c (get_symbol_table_index): Likewise.
+
+2010-05-27  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* buildings.c: Pretend to be a backend file by undefining
+	IN_GCC_FRONTEND (still need rtl.h here).
+
+2010-05-26  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* java-tree.h (struct lang_decl_func): Change type of throws_list
+	field to a VEC.
+	* jcf-parse.c (HANDLE_EXCEPTIONS_ATTRIBUTE): Adjust for changed type
+	of DECL_FUNCTION_THROWS.
+	* class.c (make_method_value): Likewise.
+
+2010-05-26  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* class.c (utf8_decl_list): Delete.
+	(build_utf8_ref): Remove references to it.
+	* java-tree.h (all_class_list): Delete.
+	(predef_filenames): Delete.
+	(enum java_tree_index) [JTI ALL_CLASS_LIST,JTI_PREDEF_FILENAMES]:
+	Delete.
+	* jcf-parse.c (parse_roots): Decrease size to 2.
+	(current_file_list): Convert to a VEC.
+	(all_class_list): Declare.
+	(jcf_parse): Adjust for new type of all_class_list.
+	(java_layout_seen_class_methods): Likewise.
+	(predefined_filenames): Declare.
+	(add_predefined_file): Use it.
+	(predefined_filename_p): Likewise.
+	(java_parse_file): Adjust for new type of current_file_list.                                                                                                                                                     *
+
+2010-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* lang.c (java_classify_record): Return RECORD_IS_INTERFACE
+	for interfaces.
+
+	PR debug/43260
+	* java-tree.h (pending_static_fields): New extern declaration.
+	(java_write_globals): New prototype.
+	* lang.c (LANG_HOOKS_WRITE_GLOBALS): Define.
+	* decl.c (java_mark_class_local): When clearing DECL_EXTERNAL
+	of a static field push it into pending_static_fields vector.
+	* class.c (pending_static_fields): New variable.
+	(add_field): If static field is not DECL_EXTERNAL, push it into
+	pending_static_fields vector.
+	(java_write_globals): New function.
+
+2010-05-24  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* expr.c (quick_stack): Change type to a VEC.  Update comment.
+	(tree_list_free_list): Delete.
+	(flush_quick_stack): Update for quick_stack type change.
+	(push_value): Likewise.
+	(pop_value): Likewise.
+
+2010-05-23  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* java-gimplify.c: Do not include tm.h, toplev.h.
+	* typeck.c: Do not include tm.h.
+	* mangle_name.c: Do not include tm.h.
+	* jcf-dump.c: Do not include tm.h, ggc.h.
+	* class.c: Do not include rtl.h, tm_p.h, target.h, except.h, cgraph.h.
+	* decl.c: Do not include tm.h, rtl.h, function.h, expr.h, except.h,
+	and timevar.h.
+	* jcf-parse.c: Do not include tm.h and tm_p.h.
+	* resource.c: Do not include tm.h, rtl.h, flags.h, obstack.h,
+	target.h, and expr.h.
+	* except.c: Do not include tm.h, rtl.h, function.h.
+	* builtins.c: Do not include convert.h.  Explain why RTL headers
+	have to be included here.
+	* verify-glue.c: Do not include tm.h.
+	* jcf-depend.c: Do not include tm.h.
+	* jcf-reader.c: Include ggc.h.
+	* jcf-io.c: Do not include tm.h, toplev.h.
+	* expr.c: Do not include tm.h, rtl.h, expr.h, except.h, tm_p.h,
+	gimple.h.
+	* lang.c: Do not include rtl.h, expr.h.
+	* Make-lang.in: Update dependencies.
+
+2010-05-23  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* jcf-parse.c: Include bitmap.h.
+	* Make-lang.in: Update dependencies.
+
+2010-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/43521
+	* decl.c (start_java_method): Set DECL_ARTIFICIAL on the 'this'
+	PARM_DECL.
+
+2010-05-19  Anatoly Sokolov  <aesok@post.ru>
+
+	* jcf-parse.c (get_constant): Use double_int_to_tree instead of
+	build_int_cst_wide_type.
+
+2010-05-18  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* expr.c (pop_arguments): Fix use of undeclared variable.
+
+2010-05-18  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* expr.c (expand_java_multianewarray): Use build_call_vec instead of
+	build_call_list.
+	(pop_arguments): Return a VEC instead of a tree.  Take a method type
+	rather than a list of argument types.
+	(rewrite_rule): Change signature. of rewrite_arglist member.
+	(rewrite_arglist_getcaller): Update signature.
+	(rewrite_arglist_getclass): Likewise.
+	(maybe_rewrite_invocation): Update for rewrite_arglist change.
+	(build_known_method_ref): Take a VEC instead of a tree.
+	(invoke_build_dtable): Likewise.
+	(expand_invoke): Update calls to pop_arguments.  Use build_call_vec
+	instead of build_call_list.
+	(build_jni_stub): Use build_call_vec instead of build_call_list.
+	* java-tree.h (maybe_rewrite_invocation): Update declaration.
+	(build_known_method_ref): Likewise.
+	(invoke_build_dtable): Likewise.
+
+2010-05-14  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR 44103
+	* java-tree.h (START_RECORD_CONSTRUCTOR): Change first argument to a
+	vector.  Move call to build_constructor...
+	(FINISH_RECORD_CONSTRUCTOR): ...here.  Add necessary arguments.  Clear
+	TREE_CONSTANT on the constructor.
+	(PUSH_SUPER_VALUE): Change first argument to a vector.
+	(PUSH_FIELD_VALUE): Likewise.
+	* resource.c (compile_resource_data): Update calls to above macros.
+	* constants.c (build_constants_constructor): Likewise.
+	* class.c (build_utf8_ref): Likewise.
+	(make_field_value): Likewise.
+	(make_method_value): Likewise.
+	(add_table_and_syms): New function.
+	(make_class_data): Call it.  Update calls to above macros.
+	(build_symbol_table_entry): New function.
+	(build_symbol_entry): Call it.  Update calls to above macros.
+	(emit_symbol_table): Likewise.
+	(make_catch_class_record): Update calls to above macros.
+	(build_assertion_table_entry): New function.
+	(add_assertion_table_entry): Call it.
+	(emit_assertion_table): Likewise.
+
+2010-05-06  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 40989
+	* lang.c (java_handle_option): Add argument kind.
+
+2010-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* decl.c (java_init_decl_processing): Remove argument in call to
+	initialize_sizetypes
+
+2010-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* exception.cc (_Jv_Throw): Avoid set but not used warning.
+	* include/java-assert.h (JvAssertMessage, JvAssert): Use argument in
+	sizeof to avoid set but not used warnings.
+
 2010-01-20  Joern Rennecke  <amylaar@spamcop.net>
 
 	* lang.c (java_post_options): Constify variable "dot".

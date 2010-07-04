@@ -584,7 +584,9 @@ bool lambda_transform_legal_p (lambda_trans_matrix, int,
 void lambda_collect_parameters (VEC (data_reference_p, heap) *,
 				VEC (tree, heap) **);
 bool lambda_compute_access_matrices (VEC (data_reference_p, heap) *,
-				     VEC (tree, heap) *, VEC (loop_p, heap) *);
+				     VEC (tree, heap) *,
+				     VEC (loop_p, heap) *,
+				     struct obstack *);
 
 /* In tree-data-ref.c  */
 void split_constant_offset (tree , tree *, tree *);

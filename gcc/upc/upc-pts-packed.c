@@ -39,8 +39,8 @@ Boston, MA 02111-1307, USA.  */
 #include "upc-act.h"
 #include "upc-pts.h"
 #include "cgraph.h"
-#include "c-common.h"
-#include "c-pragma.h"
+#include "c-family/c-common.h"
+#include "c-family/c-pragma.h"
 /* define decl_default_tls_model() prototype */
 #include "rtl.h"
 

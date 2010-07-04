@@ -20,3 +20,4 @@ recursive recursive subroutine a3(b) ! { dg-error "Duplicate RECURSIVE attribute
   real, intent(in) :: b    ! { dg-error "Unexpected data declaration statement" }
 end subroutine a3          ! { dg-error "Expecting END MODULE" }
 end module m3
+! { dg-final { cleanup-modules "m1 m2 m3" } }

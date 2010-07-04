@@ -1,5 +1,5 @@
 /* Target definitions for x86 running Darwin.
-   Copyright (C) 2001, 2002, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2010
    Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
@@ -92,6 +92,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) \
+  %<mdynamic-no-pic " /* For now, we just ignore this flag */ " \
   %{!mkernel:%{!static:%{!mdynamic-no-pic:-fPIC}}} \
   %{!mmacosx-version-min=*:-mmacosx-version-min=%(darwin_minversion)} \
   %{g: %{!fno-eliminate-unused-debug-symbols: -feliminate-unused-debug-symbols }}"
@@ -142,9 +143,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define SHIFT_DOUBLE_OMITS_COUNT 0
 
-extern void darwin_x86_file_end (void);
 #undef TARGET_ASM_FILE_END
-#define TARGET_ASM_FILE_END darwin_x86_file_end
+#define TARGET_ASM_FILE_END darwin_file_end
 
 /* Define the syntax of pseudo-ops, labels and comments.  */
 
@@ -210,7 +210,7 @@ extern void darwin_x86_file_end (void);
    to define a global common symbol.  */
 
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
-( fputs (".comm ", (FILE)),			\
+( fputs ("\t.comm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", (ROUNDED)))
 
@@ -218,7 +218,7 @@ extern void darwin_x86_file_end (void);
    to define a local common symbol.  */
 
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
-( fputs (".lcomm ", (FILE)),			\
+( fputs ("\t.lcomm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", (ROUNDED)))
 
@@ -299,3 +299,5 @@ extern void darwin_x86_file_end (void);
    used in Mach-O.  */
 #undef MACHO_SYMBOL_FLAG_VARIABLE
 #define MACHO_SYMBOL_FLAG_VARIABLE ((SYMBOL_FLAG_MACH_DEP) << 3)
+
+#define SUBTARGET32_DEFAULT_CPU "i686"

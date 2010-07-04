@@ -1,6 +1,6 @@
 // Vector implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -458,6 +458,59 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	}
     }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Tp, typename _Alloc>
+    void
+    vector<_Tp, _Alloc>::
+    _M_default_append(size_type __n)
+    {
+      if (__n != 0)
+	{
+	  if (size_type(this->_M_impl._M_end_of_storage
+			- this->_M_impl._M_finish) >= __n)
+	    {
+	      std::__uninitialized_default_n_a(this->_M_impl._M_finish,
+					       __n, _M_get_Tp_allocator());
+	      this->_M_impl._M_finish += __n;
+	    }
+	  else
+	    {
+	      const size_type __len =
+		_M_check_len(__n, "vector::_M_default_append");
+	      const size_type __old_size = this->size();
+	      pointer __new_start(this->_M_allocate(__len));
+	      pointer __new_finish(__new_start);
+	      __try
+		{
+		  __new_finish =
+		    std::__uninitialized_move_a(this->_M_impl._M_start,
+						this->_M_impl._M_finish,
+						__new_start,
+						_M_get_Tp_allocator());
+		  std::__uninitialized_default_n_a(__new_finish, __n,
+						   _M_get_Tp_allocator());
+		  __new_finish += __n;
+		}
+	      __catch(...)
+		{
+		  std::_Destroy(__new_start, __new_finish,
+				_M_get_Tp_allocator());
+		  _M_deallocate(__new_start, __len);
+		  __throw_exception_again;
+		}
+	      std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
+			    _M_get_Tp_allocator());
+	      _M_deallocate(this->_M_impl._M_start,
+			    this->_M_impl._M_end_of_storage
+			    - this->_M_impl._M_start);
+	      this->_M_impl._M_start = __new_start;
+	      this->_M_impl._M_finish = __new_finish;
+	      this->_M_impl._M_end_of_storage = __new_start + __len;
+	    }
+	}
+    }
+#endif
+
   template<typename _Tp, typename _Alloc>
     template<typename _InputIterator>
       void
@@ -677,5 +730,46 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     }
 
 _GLIBCXX_END_NESTED_NAMESPACE
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  template<typename _Alloc>
+    size_t
+    hash<_GLIBCXX_STD_D::vector<bool, _Alloc>>::
+    operator()(const _GLIBCXX_STD_D::vector<bool, _Alloc>& __b) const
+    {
+      size_t __hash = 0;
+      using _GLIBCXX_STD_D::_S_word_bit;
+      using _GLIBCXX_STD_D::_Bit_type;
+
+      const size_t __words = __b.size() / _S_word_bit;
+      if (__words)
+	{
+	  const size_t __clength = __words * sizeof(_Bit_type);
+	  __hash = std::_Fnv_hash::hash(__b._M_impl._M_start._M_p, __clength);
+	}
+
+      const size_t __extrabits = __b.size() % _S_word_bit;
+      if (__extrabits)
+	{
+	  _Bit_type __hiword = *__b._M_impl._M_finish._M_p;
+	  __hiword &= ~((~static_cast<_Bit_type>(0)) << __extrabits);
+
+	  const size_t __clength
+	    = (__extrabits + __CHAR_BIT__ - 1) / __CHAR_BIT__;
+	  if (__words)
+	    __hash = std::_Fnv_hash::hash(&__hiword, __clength, __hash);
+	  else
+	    __hash = std::_Fnv_hash::hash(&__hiword, __clength);
+	}
+
+      return __hash;
+    }
+
+_GLIBCXX_END_NAMESPACE
+
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #endif /* _VECTOR_TCC */

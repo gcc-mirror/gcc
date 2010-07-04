@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -667,6 +667,10 @@ package Prj is
       Project : Project_Id := No_Project;
       --  Project of the source
 
+      Location : Source_Ptr := No_Location;
+      --  Location in the project file of the declaration of the source in
+      --  package Naming.
+
       Source_Dir_Rank : Natural := 0;
       --  The rank of the source directory in list declared with attribute
       --  Source_Dirs. Two source files with the same name cannot appears in
@@ -768,6 +772,7 @@ package Prj is
 
    No_Source_Data : constant Source_Data :=
                       (Project                => No_Project,
+                       Location               => No_Location,
                        Source_Dir_Rank        => 0,
                        Language               => No_Language_Index,
                        In_Interfaces          => True,
@@ -894,6 +899,7 @@ package Prj is
    type Response_File_Format is
      (None,
       GNU,
+      GCC,
       Object_List,
       Option_List);
    --  The format of the different response files
@@ -1448,11 +1454,13 @@ package Prj is
    function Create_Flags
      (Report_Error               : Error_Handler;
       When_No_Sources            : Error_Warning;
-      Require_Sources_Other_Lang : Boolean := True;
-      Allow_Duplicate_Basenames  : Boolean := True;
-      Compiler_Driver_Mandatory  : Boolean := False;
-      Error_On_Unknown_Language  : Boolean := True;
-      Require_Obj_Dirs           : Error_Warning := Error)
+      Require_Sources_Other_Lang : Boolean       := True;
+      Allow_Duplicate_Basenames  : Boolean       := True;
+      Compiler_Driver_Mandatory  : Boolean       := False;
+      Error_On_Unknown_Language  : Boolean       := True;
+      Require_Obj_Dirs           : Error_Warning := Error;
+      Allow_Invalid_External     : Error_Warning := Error;
+      Missing_Source_Files       : Error_Warning := Error)
       return Processing_Flags;
    --  Function used to create Processing_Flags structure
    --
@@ -1481,6 +1489,15 @@ package Prj is
    --  If Require_Obj_Dirs is true, then all object directories must exist
    --  (possibly after they have been created automatically if the appropriate
    --  switches were specified), or an error is raised.
+   --
+   --  If Allow_Invalid_External is Silent, then no error is reported when an
+   --  invalid value is used for an external variable (and it doesn't match its
+   --  type). Instead, the first possible value is used.
+   --
+   --  Missing_Source_Files indicates whether it is an error or a warning that
+   --  a source file mentioned in the Source_Files attributes is not actually
+   --  found in the source directories. This also impacts errors for missing
+   --  source directories.
 
    Gprbuild_Flags : constant Processing_Flags;
    Gprclean_Flags : constant Processing_Flags;
@@ -1510,6 +1527,10 @@ package Prj is
    --  another program running on the same machine has recreated it.
    --  Does nothing if Debug.Debug_Flag_N is set
 
+   Virtual_Prefix : constant String := "v$";
+   --  The prefix for virtual extending projects. Because of the '$', which is
+   --  normally forbidden for project names, there cannot be any name clash.
+
 private
 
    All_Packages : constant String_List_Access := null;
@@ -1523,10 +1544,6 @@ private
                            Kind     => Undefined,
                            Location => No_Location,
                            Default  => False);
-
-   Virtual_Prefix : constant String := "v$";
-   --  The prefix for virtual extending projects. Because of the '$', which is
-   --  normally forbidden for project names, there cannot be any name clash.
 
    type Source_Iterator is record
       In_Tree : Project_Tree_Ref;
@@ -1589,6 +1606,8 @@ private
       Compiler_Driver_Mandatory  : Boolean;
       Error_On_Unknown_Language  : Boolean;
       Require_Obj_Dirs           : Error_Warning;
+      Allow_Invalid_External     : Error_Warning;
+      Missing_Source_Files       : Error_Warning;
    end record;
 
    Gprbuild_Flags : constant Processing_Flags :=
@@ -1598,7 +1617,9 @@ private
       Allow_Duplicate_Basenames  => False,
       Compiler_Driver_Mandatory  => True,
       Error_On_Unknown_Language  => True,
-      Require_Obj_Dirs           => Error);
+      Require_Obj_Dirs           => Error,
+      Allow_Invalid_External     => Error,
+      Missing_Source_Files       => Error);
 
    Gprclean_Flags : constant Processing_Flags :=
      (Report_Error               => null,
@@ -1607,7 +1628,9 @@ private
       Allow_Duplicate_Basenames  => False,
       Compiler_Driver_Mandatory  => True,
       Error_On_Unknown_Language  => True,
-      Require_Obj_Dirs           => Warning);
+      Require_Obj_Dirs           => Warning,
+      Allow_Invalid_External     => Error,
+      Missing_Source_Files       => Error);
 
    Gnatmake_Flags : constant Processing_Flags :=
      (Report_Error               => null,
@@ -1616,6 +1639,8 @@ private
       Allow_Duplicate_Basenames  => False,
       Compiler_Driver_Mandatory  => False,
       Error_On_Unknown_Language  => False,
-      Require_Obj_Dirs           => Error);
+      Require_Obj_Dirs           => Error,
+      Allow_Invalid_External     => Error,
+      Missing_Source_Files       => Error);
 
 end Prj;

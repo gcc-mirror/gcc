@@ -1,4 +1,4 @@
-# Copyright (C) 1997, 2004, 2005, 2006, 2007, 2008
+# Copyright (C) 1997, 2004, 2005, 2006, 2007, 2008, 2010
 # Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -39,6 +39,9 @@ lappend DEFAULT_VECTCFLAGS "-O2" "-ftree-vectorize" "-fvect-cost-model"
 global dg-do-what-default
 set save-dg-do-what-default ${dg-do-what-default}
 
+if { ![check_effective_target_sse2] } then {
+  return
+}
 lappend DEFAULT_VECTCFLAGS "-msse2"
 if [check_sse2_hw_available] {
     set dg-do-what-default run

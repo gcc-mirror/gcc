@@ -1,5 +1,6 @@
 /* Loop autoparallelization.
-   Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr> and
    Zdenek Dvorak <dvorakz@suse.cz>.
 
@@ -24,12 +25,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"
 #include "tree-flow.h"
 #include "cfgloop.h"
-#include "ggc.h"
 #include "tree-data-ref.h"
-#include "diagnostic.h"
+#include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
 #include "tree-pass.h"
 #include "tree-scalar-evolution.h"
 #include "hashtab.h"
@@ -63,7 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /*
   Reduction handling:
-  currently we use vect_is_simple_reduction() to detect reduction patterns.
+  currently we use vect_force_simple_reduction() to detect reduction patterns.
   The code transformation will be introduced by an example.
 
 
@@ -247,7 +247,7 @@ name_to_copy_elt_hash (const void *aa)
    in parallel).  */
 
 static bool
-loop_parallel_p (struct loop *loop)
+loop_parallel_p (struct loop *loop, struct obstack * parloop_obstack)
 {
   VEC (ddr_p, heap) * dependence_relations;
   VEC (data_reference_p, heap) *datarefs;
@@ -272,7 +272,7 @@ loop_parallel_p (struct loop *loop)
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_data_dependence_relations (dump_file, dependence_relations);
 
-  trans = lambda_trans_matrix_new (1, 1);
+  trans = lambda_trans_matrix_new (1, 1, parloop_obstack);
   LTM_MATRIX (trans)[0][0] = -1;
 
   if (lambda_transform_legal_p (trans, 1, dependence_relations))
@@ -1626,7 +1626,7 @@ gen_parallel_loop (struct loop *loop, htab_t reduction_list,
   free_original_copy_tables ();
 
   /* Base all the induction variables in LOOP on a single control one.  */
-  canonicalize_loop_ivs (loop, &nit);
+  canonicalize_loop_ivs (loop, &nit, true);
 
   /* Ensure that the exit condition is the first statement in the loop.  */
   transform_to_exit_first_loop (loop, reduction_list, nit);
@@ -1744,7 +1744,9 @@ gather_scalar_reductions (loop_p loop, htab_t reduction_list)
       if (!simple_iv (loop, loop, res, &iv, true)
 	&& simple_loop_info)
 	{
-           gimple reduc_stmt = vect_is_simple_reduction (simple_loop_info, phi, true, &double_reduc);
+           gimple reduc_stmt = vect_force_simple_reduction (simple_loop_info,
+							    phi, true,
+							    &double_reduc);
 	   if (reduc_stmt && !double_reduc)
               build_new_reduction (reduction_list, reduc_stmt, phi);
         }
@@ -1883,15 +1885,17 @@ parallelize_loops (void)
   struct tree_niter_desc niter_desc;
   loop_iterator li;
   htab_t reduction_list;
+  struct obstack parloop_obstack;
   HOST_WIDE_INT estimated;
   LOC loop_loc;
-  
+
   /* Do not parallelize loops in the functions created by parallelization.  */
   if (parallelized_function_p (cfun->decl))
     return false;
   if (cfun->has_nonlocal_label)
     return false;
 
+  gcc_obstack_init (&parloop_obstack);
   reduction_list = htab_create (10, reduction_info_hash,
 				     reduction_info_eq, free);
   init_stmt_vec_info_vec ();
@@ -1949,7 +1953,8 @@ parallelize_loops (void)
       if (!try_create_reduction_list (loop, reduction_list))
 	continue;
 
-      if (!flag_loop_parallelize_all && !loop_parallel_p (loop))
+      if (!flag_loop_parallelize_all
+	  && !loop_parallel_p (loop, &parloop_obstack))
 	continue;
 
       changed = true;
@@ -1969,20 +1974,18 @@ parallelize_loops (void)
       verify_flow_info ();
       verify_dominators (CDI_DOMINATORS);
       verify_loop_structure ();
-      verify_loop_closed_ssa ();
+      verify_loop_closed_ssa (true);
     }
 
   free_stmt_vec_info_vec ();
   htab_delete (reduction_list);
+  obstack_free (&parloop_obstack, NULL);
 
   /* Parallelization will cause new function calls to be inserted through
-     which local variables will escape.  Reset the points-to solutions
-     for ESCAPED and CALLUSED.  */
+     which local variables will escape.  Reset the points-to solution
+     for ESCAPED.  */
   if (changed)
-    {
-      pt_solution_reset (&cfun->gimple_df->escaped);
-      pt_solution_reset (&cfun->gimple_df->callused);
-    }
+    pt_solution_reset (&cfun->gimple_df->escaped);
 
   return changed;
 }

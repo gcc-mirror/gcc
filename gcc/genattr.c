@@ -1,6 +1,6 @@
 /* Generate attribute information (insn-attr.h) from machine description.
-   Copyright (C) 1991, 1994, 1996, 1998, 1999, 2000, 2003, 2004, 2007, 2008
-   Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 1996, 1998, 1999, 2000, 2003, 2004, 2007, 2008,
+   2010  Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "errors.h"
+#include "read-md.h"
 #include "gensupport.h"
 
 
@@ -39,36 +40,48 @@ write_upcase (const char *str)
     putchar (TOUPPER(*str));
 }
 
+static VEC (rtx, heap) *const_attrs, *reservations;
+
+
 static void
 gen_attr (rtx attr)
 {
   const char *p, *tag;
   int is_const = GET_CODE (XEXP (attr, 2)) == CONST;
 
+  if (is_const)
+    VEC_safe_push (rtx, heap, const_attrs, attr);
+
   printf ("#define HAVE_ATTR_%s\n", XSTR (attr, 0));
 
   /* If numeric attribute, don't need to write an enum.  */
-  p = XSTR (attr, 1);
-  if (*p == '\0')
-    printf ("extern int get_attr_%s (%s);\n", XSTR (attr, 0),
-	    (is_const ? "void" : "rtx"));
+  if (GET_CODE (attr) == DEFINE_ENUM_ATTR)
+    printf ("extern enum %s get_attr_%s (%s);\n\n",
+	    XSTR (attr, 1), XSTR (attr, 0), (is_const ? "void" : "rtx"));
   else
     {
-      printf ("enum attr_%s {", XSTR (attr, 0));
-
-      while ((tag = scan_comma_elt (&p)) != 0)
+      p = XSTR (attr, 1);
+      if (*p == '\0')
+	printf ("extern int get_attr_%s (%s);\n", XSTR (attr, 0),
+		(is_const ? "void" : "rtx"));
+      else
 	{
-	  write_upcase (XSTR (attr, 0));
-	  putchar ('_');
-	  while (tag != p)
-	    putchar (TOUPPER (*tag++));
-	  if (*p == ',')
-	    fputs (", ", stdout);
-	}
+	  printf ("enum attr_%s {", XSTR (attr, 0));
 
-      fputs ("};\n", stdout);
-      printf ("extern enum attr_%s get_attr_%s (%s);\n\n",
-	      XSTR (attr, 0), XSTR (attr, 0), (is_const ? "void" : "rtx"));
+	  while ((tag = scan_comma_elt (&p)) != 0)
+	    {
+	      write_upcase (XSTR (attr, 0));
+	      putchar ('_');
+	      while (tag != p)
+		putchar (TOUPPER (*tag++));
+	      if (*p == ',')
+		fputs (", ", stdout);
+	    }
+	  fputs ("};\n", stdout);
+
+	  printf ("extern enum attr_%s get_attr_%s (%s);\n\n",
+		  XSTR (attr, 0), XSTR (attr, 0), (is_const ? "void" : "rtx"));
+	}
     }
 
   /* If `length' attribute, write additional function definitions and define
@@ -85,6 +98,68 @@ extern int insn_current_length (rtx);\n\n\
     }
 }
 
+/* Check that attribute NAME is used in define_insn_reservation condition
+   EXP.  Return true if it is.  */
+static bool
+check_tune_attr (const char *name, rtx exp)
+{
+  switch (GET_CODE (exp))
+    {
+    case AND:
+      if (check_tune_attr (name, XEXP (exp, 0)))
+	return true;
+      return check_tune_attr (name, XEXP (exp, 1));
+
+    case IOR:
+      return (check_tune_attr (name, XEXP (exp, 0))
+	      && check_tune_attr (name, XEXP (exp, 1)));
+
+    case EQ_ATTR:
+      return strcmp (XSTR (exp, 0), name) == 0;
+
+    default:
+      return false;
+    }
+}
+
+/* Try to find a const attribute (usually cpu or tune) that is used
+   in all define_insn_reservation conditions.  */
+static bool
+find_tune_attr (rtx exp)
+{
+  unsigned int i;
+  rtx attr;
+
+  switch (GET_CODE (exp))
+    {
+    case AND:
+    case IOR:
+      if (find_tune_attr (XEXP (exp, 0)))
+	return true;
+      return find_tune_attr (XEXP (exp, 1));
+
+    case EQ_ATTR:
+      if (strcmp (XSTR (exp, 0), "alternative") == 0)
+	return false;
+
+      for (i = 0; VEC_iterate (rtx, const_attrs, i, attr); i++)
+	if (strcmp (XSTR (attr, 0), XSTR (exp, 0)) == 0)
+	  {
+	    unsigned int j;
+	    rtx resv;
+
+	    for (j = 0; VEC_iterate (rtx, reservations, j, resv); j++)
+	      if (! check_tune_attr (XSTR (attr, 0), XEXP (resv, 2)))
+		return false;
+	    return true;
+	  }
+      return false;
+
+    default:
+      return false;
+    }
+}
+
 int
 main (int argc, char **argv)
 {
@@ -97,7 +172,7 @@ main (int argc, char **argv)
 
   progname = "genattr";
 
-  if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
+  if (!init_rtx_reader_args (argc, argv))
     return (FATAL_EXIT_CODE);
 
   puts ("/* Generated automatically by the program `genattr'");
@@ -121,7 +196,8 @@ main (int argc, char **argv)
       if (desc == NULL)
 	break;
 
-      if (GET_CODE (desc) == DEFINE_ATTR)
+      if (GET_CODE (desc) == DEFINE_ATTR
+	  || GET_CODE (desc) == DEFINE_ENUM_ATTR)
 	gen_attr (desc);
 
       else if (GET_CODE (desc) == DEFINE_DELAY)
@@ -154,11 +230,16 @@ main (int argc, char **argv)
         }
 
       else if (GET_CODE (desc) == DEFINE_INSN_RESERVATION)
-	num_insn_reservations++;
+	{
+	  num_insn_reservations++;
+	  VEC_safe_push (rtx, heap, reservations, desc);
+	}
     }
 
   if (num_insn_reservations > 0)
     {
+      bool has_tune_attr
+	= find_tune_attr (XEXP (VEC_index (rtx, reservations, 0), 2));
       /* Output interface for pipeline hazards recognition based on
 	 DFA (deterministic finite state automata.  */
       printf ("\n#define INSN_SCHEDULING\n");
@@ -173,10 +254,24 @@ main (int argc, char **argv)
       printf ("#define CPU_UNITS_QUERY 0\n");
       printf ("#endif\n\n");
       /* Interface itself: */
-      printf ("/* Internal insn code number used by automata.  */\n");
-      printf ("extern int internal_dfa_insn_code (rtx);\n\n");
-      printf ("/* Insn latency time defined in define_insn_reservation. */\n");
-      printf ("extern int insn_default_latency (rtx);\n\n");
+      if (has_tune_attr)
+	{
+	  printf ("/* Initialize fn pointers for internal_dfa_insn_code\n");
+	  printf ("   and insn_default_latency.  */\n");
+	  printf ("extern void init_sched_attrs (void);\n\n");
+	  printf ("/* Internal insn code number used by automata.  */\n");
+	  printf ("extern int (*internal_dfa_insn_code) (rtx);\n\n");
+	  printf ("/* Insn latency time defined in define_insn_reservation. */\n");
+	  printf ("extern int (*insn_default_latency) (rtx);\n\n");
+	}
+      else
+	{
+	  printf ("#define init_sched_attrs() do { } while (0)\n\n");
+	  printf ("/* Internal insn code number used by automata.  */\n");
+	  printf ("extern int internal_dfa_insn_code (rtx);\n\n");
+	  printf ("/* Insn latency time defined in define_insn_reservation. */\n");
+	  printf ("extern int insn_default_latency (rtx);\n\n");
+	}
       printf ("/* Return nonzero if there is a bypass for given insn\n");
       printf ("   which is a data producer.  */\n");
       printf ("extern int bypass_p (rtx);\n\n");

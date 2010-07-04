@@ -32,9 +32,9 @@ private:
   void checkMod();
   ::gnu::java::util::WeakIdentityHashMap$WeakBucket$WeakEntry * findNext(::gnu::java::util::WeakIdentityHashMap$WeakBucket$WeakEntry *);
 public:
-  jboolean hasNext();
-  ::java::lang::Object * next();
-  void remove();
+  virtual jboolean hasNext();
+  virtual ::java::lang::Object * next();
+  virtual void remove();
 public: // actually package-private
   ::gnu::java::util::WeakIdentityHashMap$WeakBucket$WeakEntry * __attribute__((aligned(__alignof__( ::java::lang::Object)))) lastEntry;
   ::gnu::java::util::WeakIdentityHashMap$WeakBucket$WeakEntry * nextEntry;

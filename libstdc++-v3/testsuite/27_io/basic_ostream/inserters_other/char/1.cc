@@ -1,7 +1,8 @@
 // 1999-08-16 bkoz
 // 1999-11-01 bkoz
 
-// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2009 Free Software Foundation
+// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2009, 2010
+// Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,7 +47,7 @@ test02()
   // filebuf-> NULL 
   std::ifstream f_in1(name_01);
   std::ofstream f_out1(name_02);
-  std::stringbuf* strbuf01 = NULL;
+  std::stringbuf* strbuf01 = 0;
   iostate state01 = f_in1.rdstate();
   f_in1 >> strbuf01;
   iostate state02 = f_in1.rdstate();

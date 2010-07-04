@@ -10,8 +10,8 @@ inline void g(int n) {
   // The closure type is encoded as Z1giEUlvE_.
   // The call operator of that type is _ZZ1giENKUlvE_clEv.
 
-// { dg-final { scan-assembler "_ZZ1giENUlvE_clEv" } }
-// { dg-final { scan-assembler "weak\[^\n\r\]*_?_ZZ1giENUlvE_clEv" { target { ! { *-*-darwin* *-*-mingw* *-*-cygwin } } } } }
+// { dg-final { scan-assembler "_ZZ1giENKUlvE_clEv" } }
+// { dg-final { scan-assembler "weak\[^\n\r\]*_?_ZZ1giENKUlvE_clEv" { target { ! { *-*-darwin* *-*-mingw* *-*-cygwin } } } } }
 
   algo([=]{return n+bef();});
   // The captured entities do not participate in <lambda-sig>
@@ -32,17 +32,17 @@ struct S {
   void f(int =
 	 // Type: ZN1S1fEiiEd0_UlvE_
 	 // Operator: _ZZN1S1fEiiEd0_NKUlvE_clEv
-// { dg-final { scan-assembler "_ZZN1S1fEiiEd0_NUlvE_clEv" } }
-// { dg-final { scan-assembler "weak\[^\n\r\]*_?_ZZN1S1fEiiEd0_NUlvE_clEv" { target { ! { *-*-darwin* *-*-mingw* *-*-cygwin } } } } }
+// { dg-final { scan-assembler "_ZZN1S1fEiiEd0_NKUlvE_clEv" } }
+// { dg-final { scan-assembler "weak\[^\n\r\]*_?_ZZN1S1fEiiEd0_NKUlvE_clEv" { target { ! { *-*-darwin* *-*-mingw* *-*-cygwin } } } } }
 	 []{return 1;}()
 	 // Type: ZN1S1fEiiEd0_UlvE0_
 	 // Operator: _ZZN1S1fEiiEd0_NKUlvE0_clEv
-// { dg-final { scan-assembler "_ZZN1S1fEiiEd0_NUlvE0_clEv" } }
+// { dg-final { scan-assembler "_ZZN1S1fEiiEd0_NKUlvE0_clEv" } }
 	 + []{return 2;}(),
 	 int =
 	 // Type: ZN1S1fEiiEd_UlvE_
 	 // Operator: _ZZN1S1fEiiEd_NKUlvE_clEv
-// { dg-final { scan-assembler "_ZZN1S1fEiiEd_NUlvE_clEv" } }
+// { dg-final { scan-assembler "_ZZN1S1fEiiEd_NKUlvE_clEv" } }
 	 []{return 3;}());
 };
 
@@ -53,8 +53,8 @@ template<typename T> int R<T>::x = []{return 1;}();
 template int R<int>::x;
 // Type of lambda in intializer of R<int>::x: N1RIiE1xMUlvE_E
 // Corresponding operator(): _ZNK1RIiE1xMUlvE_clEv
-// { dg-final { scan-assembler "_ZN1RIiE1xMUlvE_clEv" } }
-// { dg-final { scan-assembler "weak\[^\n\r\]*_?_ZN1RIiE1xMUlvE_clEv" { target { ! { *-*-mingw* *-*-cygwin } } } } }
+// { dg-final { scan-assembler "_ZNK1RIiE1xMUlvE_clEv" } }
+// { dg-final { scan-assembler "weak\[^\n\r\]*_?_ZNK1RIiE1xMUlvE_clEv" { target { ! { *-*-mingw* *-*-cygwin } } } } }
 
 void bar()
 {
@@ -64,7 +64,7 @@ void bar()
 }
 
 // lambdas used in non-template, non-class body initializers are internal.
-// { dg-final { scan-assembler-not "weak\[^\n\r\]*_ZNUlv" } }
+// { dg-final { scan-assembler-not "weak\[^\n\r\]*_ZNKUlv" } }
 // { dg-final { scan-assembler-not "weak\[^\n\r\]*variable" } }
 int variable = []{return 1;}();
 

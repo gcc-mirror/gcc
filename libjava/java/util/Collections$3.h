@@ -14,7 +14,7 @@ class java::util::Collections$3 : public ::java::util::Collections$SynchronizedS
 public: // actually package-private
   Collections$3(::java::util::Collections$SynchronizedMap *, ::java::lang::Object *, ::java::util::Set *);
 public:
-  ::java::util::Iterator * iterator();
+  virtual ::java::util::Iterator * iterator();
 public: // actually package-private
   static ::java::util::Collections$SynchronizedMap * access$0(::java::util::Collections$3 *);
   ::java::util::Collections$SynchronizedMap * __attribute__((aligned(__alignof__( ::java::util::Collections$SynchronizedSet)))) this$1;

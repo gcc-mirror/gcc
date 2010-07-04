@@ -34,7 +34,7 @@ class gnu::javax::net::ssl::provider::SSLSocketImpl$1 : public ::java::lang::Obj
 public: // actually package-private
   SSLSocketImpl$1(::gnu::javax::net::ssl::provider::SSLSocketImpl *);
 public:
-  void run();
+  virtual void run();
 public: // actually package-private
   ::gnu::javax::net::ssl::provider::SSLSocketImpl * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

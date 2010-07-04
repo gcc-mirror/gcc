@@ -113,3 +113,4 @@
       ENDIF
  999  CONTINUE
       END
+! { dg-final { cleanup-modules "main1" } }

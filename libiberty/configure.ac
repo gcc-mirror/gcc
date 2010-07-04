@@ -379,7 +379,7 @@ if test "x" = "y"; then
     table times tmpnam \
     vasprintf vfprintf vprintf vsprintf \
     wait3 wait4 waitpid)
-  AC_CHECK_DECLS([basename, ffs, asprintf, vasprintf, snprintf, vsnprintf])
+  AC_CHECK_DECLS([basename(char *), ffs, asprintf, vasprintf, snprintf, vsnprintf])
   AC_DEFINE(HAVE_SYS_ERRLIST, 1, [Define if you have the sys_errlist variable.])
   AC_DEFINE(HAVE_SYS_NERR,    1, [Define if you have the sys_nerr variable.])
   AC_DEFINE(HAVE_SYS_SIGLIST, 1, [Define if you have the sys_siglist variable.])
@@ -663,7 +663,7 @@ if test -z "${setobjs}"; then
     [AC_MSG_RESULT([no])])
 
   AC_CHECK_FUNCS($checkfuncs)
-  AC_CHECK_DECLS([basename, ffs, asprintf, vasprintf, snprintf, vsnprintf])
+  AC_CHECK_DECLS([basename(char *), ffs, asprintf, vasprintf, snprintf, vsnprintf])
   AC_CHECK_DECLS([calloc, getenv, getopt, malloc, realloc, sbrk])
   AC_CHECK_DECLS([strverscmp])
   libiberty_NEED_DECLARATION(canonicalize_file_name)

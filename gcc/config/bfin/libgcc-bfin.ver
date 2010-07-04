@@ -1906,3 +1906,9 @@ GCC_4.4.0 {
 
   ___sync_synchronize
 }
+
+%inherit GCC_4.5.0 GCC_4.4.0
+GCC_4.5.0 {
+  ___unordxf2
+  ___unordtf2
+}

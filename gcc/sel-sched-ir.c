@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec.h"
 #include "langhooks.h"
 #include "rtlhooks-def.h"
+#include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 
 #ifdef INSN_SCHEDULING
 #include "sel-sched-ir.h"
@@ -426,7 +427,7 @@ reset_target_context (tc_t tc, bool clean_p)
 }
 
 /* Functions to work with dependence contexts.
-   Dc (aka deps context, aka deps_t, aka struct deps *) is short for dependence
+   Dc (aka deps context, aka deps_t, aka struct deps_desc *) is short for dependence
    context.  It accumulates information about processed insns to decide if
    current insn is dependent on the processed ones.  */
 
@@ -442,7 +443,7 @@ copy_deps_context (deps_t to, deps_t from)
 static deps_t
 alloc_deps_context (void)
 {
-  return XNEW (struct deps);
+  return XNEW (struct deps_desc);
 }
 
 /* Allocate and initialize dep context.  */
@@ -2674,7 +2675,7 @@ init_id_from_df (idata_t id, insn_t insn, bool force_unique_p)
 static void
 deps_init_id (idata_t id, insn_t insn, bool force_unique_p)
 {
-  struct deps _dc, *dc = &_dc;
+  struct deps_desc _dc, *dc = &_dc;
 
   deps_init_id_data.where = DEPS_IN_NOWHERE;
   deps_init_id_data.id = id;
@@ -2865,7 +2866,7 @@ init_global_and_expr_for_insn (insn_t insn)
 	|| SCHED_GROUP_P (insn)
 	|| prologue_epilogue_contains (insn)
 	/* Exception handling insns are always unique.  */
-	|| (flag_non_call_exceptions && can_throw_internal (insn))
+	|| (cfun->can_throw_non_call_exceptions && can_throw_internal (insn))
 	/* TRAP_IF though have an INSN code is control_flow_insn_p ().  */
 	|| control_flow_insn_p (insn))
       force_unique_p = true;
@@ -3229,7 +3230,7 @@ has_dependence_p (expr_t expr, insn_t pred, ds_t **has_dep_pp)
 {
   int i;
   ds_t ds;
-  struct deps *dc;
+  struct deps_desc *dc;
 
   if (INSN_SIMPLEJUMP_P (pred))
     /* Unconditional jump is just a transfer of control flow.

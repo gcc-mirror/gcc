@@ -1,5 +1,5 @@
 /* Pretty formatting of GENERIC trees in C syntax.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Adapted from c-pretty-print.c by Diego Novillo <dnovillo@redhat.com>
 
@@ -25,15 +25,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "output.h"
-#include "diagnostic.h"
-#include "real.h"
+#include "tree-pretty-print.h"
 #include "hashtab.h"
 #include "tree-flow.h"
 #include "langhooks.h"
 #include "tree-iterator.h"
 #include "tree-chrec.h"
 #include "tree-pass.h"
-#include "fixed-value.h"
 #include "value-prof.h"
 #include "predict.h"
 
@@ -78,7 +76,7 @@ do_niy (pretty_printer *buffer, const_tree node)
 
 /* Debugging function to print out a generic expression.  */
 
-void
+DEBUG_FUNCTION void
 debug_generic_expr (tree t)
 {
   print_generic_expr (stderr, t, TDF_VOPS|TDF_MEMSYMS);
@@ -87,7 +85,7 @@ debug_generic_expr (tree t)
 
 /* Debugging function to print out a generic statement.  */
 
-void
+DEBUG_FUNCTION void
 debug_generic_stmt (tree t)
 {
   print_generic_stmt (stderr, t, TDF_VOPS|TDF_MEMSYMS);
@@ -96,7 +94,7 @@ debug_generic_stmt (tree t)
 
 /* Debugging function to print out a chain of trees .  */
 
-void
+DEBUG_FUNCTION void
 debug_tree_chain (tree t)
 {
   struct pointer_set_t *seen = pointer_set_create ();
@@ -198,6 +196,13 @@ dump_decl_name (pretty_printer *buffer, tree node, int flags)
 	  else
 	    pp_printf (buffer, "%c.%u", c, DECL_UID (node));
 	}
+    }
+  if ((flags & TDF_ALIAS) && DECL_PT_UID (node) != DECL_UID (node))
+    {
+      if (flags & TDF_NOUID)
+	pp_printf (buffer, "ptD.xxxx");
+      else
+	pp_printf (buffer, "ptD.%u", DECL_PT_UID (node));
     }
 }
 
@@ -697,7 +702,10 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	      }
 	    else if (TREE_CODE (node) == VECTOR_TYPE)
 	      {
-		pp_string (buffer, "vector ");
+		pp_string (buffer, "vector");
+		pp_character (buffer, '(');
+		pp_wide_integer (buffer, TYPE_VECTOR_SUBPARTS (node));
+		pp_string (buffer, ") ");
 		dump_generic_node (buffer, TREE_TYPE (node), spc, flags, false);
 	      }
 	    else if (TREE_CODE (node) == INTEGER_TYPE)
@@ -1941,6 +1949,26 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_string (buffer, " > ");
       break;
 
+    case WIDEN_MULT_PLUS_EXPR:
+      pp_string (buffer, " WIDEN_MULT_PLUS_EXPR < ");
+      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_string (buffer, ", ");
+      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
+      pp_string (buffer, ", ");
+      dump_generic_node (buffer, TREE_OPERAND (node, 2), spc, flags, false);
+      pp_string (buffer, " > ");
+      break;
+
+    case WIDEN_MULT_MINUS_EXPR:
+      pp_string (buffer, " WIDEN_MULT_MINUS_EXPR < ");
+      dump_generic_node (buffer, TREE_OPERAND (node, 0), spc, flags, false);
+      pp_string (buffer, ", ");
+      dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
+      pp_string (buffer, ", ");
+      dump_generic_node (buffer, TREE_OPERAND (node, 2), spc, flags, false);
+      pp_string (buffer, " > ");
+      break;
+
     case OMP_PARALLEL:
       pp_string (buffer, "#pragma omp parallel");
       dump_omp_clauses (buffer, OMP_PARALLEL_CLAUSES (node), spc, flags);
@@ -2434,6 +2462,8 @@ op_code_prio (enum tree_code code)
     case VEC_WIDEN_MULT_LO_EXPR:
     case WIDEN_MULT_EXPR:
     case DOT_PROD_EXPR:
+    case WIDEN_MULT_PLUS_EXPR:
+    case WIDEN_MULT_MINUS_EXPR:
     case MULT_EXPR:
     case TRUNC_DIV_EXPR:
     case CEIL_DIV_EXPR:
@@ -2848,4 +2878,53 @@ newline_and_indent (pretty_printer *buffer, int spc)
 {
   pp_newline (buffer);
   INDENT (spc);
+}
+
+/* Handle a %K format for TEXT.  Separate from default_tree_printer so
+   it can also be used in front ends.
+   %K: a statement, from which EXPR_LOCATION and TREE_BLOCK will be recorded.
+*/
+
+void
+percent_K_format (text_info *text)
+{
+  tree t = va_arg (*text->args_ptr, tree), block;
+  gcc_assert (text->locus != NULL);
+  *text->locus = EXPR_LOCATION (t);
+  gcc_assert (pp_ti_abstract_origin (text) != NULL);
+  block = TREE_BLOCK (t);
+  *pp_ti_abstract_origin (text) = NULL;
+  while (block
+	 && TREE_CODE (block) == BLOCK
+	 && BLOCK_ABSTRACT_ORIGIN (block))
+    {
+      tree ao = BLOCK_ABSTRACT_ORIGIN (block);
+
+      while (TREE_CODE (ao) == BLOCK
+	     && BLOCK_ABSTRACT_ORIGIN (ao)
+	     && BLOCK_ABSTRACT_ORIGIN (ao) != ao)
+	ao = BLOCK_ABSTRACT_ORIGIN (ao);
+
+      if (TREE_CODE (ao) == FUNCTION_DECL)
+	{
+	  *pp_ti_abstract_origin (text) = block;
+	  break;
+	}
+      block = BLOCK_SUPERCONTEXT (block);
+    }
+}
+
+/* Print the identifier ID to PRETTY-PRINTER.  */
+
+void
+pp_base_tree_identifier (pretty_printer *pp, tree id)
+{
+  if (pp_translate_identifiers (pp))
+    {
+      const char *text = identifier_to_locale (IDENTIFIER_POINTER (id));
+      pp_append_text (pp, text, text + strlen (text));
+    }
+  else
+    pp_append_text (pp, IDENTIFIER_POINTER (id),
+		    IDENTIFIER_POINTER (id) + IDENTIFIER_LENGTH (id));
 }

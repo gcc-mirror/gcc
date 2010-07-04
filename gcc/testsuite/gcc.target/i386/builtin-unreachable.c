@@ -9,5 +9,5 @@ int h (char *p)
     __builtin_unreachable ();
   return p ? 1 : 0;
 }
-/* { dg-final { scan-assembler-not "%e\[bs\]p" } } */
+/* { dg-final { scan-assembler-not "%e\[bs\]p" { target { ! *-*-darwin* } } } } */
 /* { dg-final { scan-assembler-not "\[\\t \]+j" } } */

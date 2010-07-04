@@ -34,7 +34,7 @@ class gnu::javax::net::ssl::provider::Jessie$1 : public ::java::lang::Object
 public: // actually package-private
   Jessie$1(::gnu::javax::net::ssl::provider::Jessie *);
 public:
-  ::java::lang::Object * run();
+  virtual ::java::lang::Object * run();
 public: // actually package-private
   ::gnu::javax::net::ssl::provider::Jessie * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

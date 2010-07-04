@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2009, AdaCore                     --
+--                     Copyright (C) 2001-2010, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -422,6 +422,11 @@ package GNAT.Sockets is
    type Selector_Access is access all Selector_Type;
    --  Selector objects are used to wait for i/o events to occur on sockets
 
+   Null_Selector : constant Selector_Type;
+   --  The Null_Selector can be used in place of a normal selector without
+   --  having to call Create_Selector if the use of Abort_Selector is not
+   --  required.
+
    --  Timeval_Duration is a subtype of Standard.Duration because the full
    --  range of Standard.Duration cannot be represented in the equivalent C
    --  structure. Moreover, negative values are not allowed to avoid system
@@ -459,8 +464,7 @@ package GNAT.Sockets is
 
    type Family_Type is (Family_Inet, Family_Inet6);
    --  Address family (or protocol family) identifies the communication domain
-   --  and groups protocols with similar address formats. IPv6 will soon be
-   --  supported.
+   --  and groups protocols with similar address formats.
 
    type Mode_Type is (Socket_Stream, Socket_Datagram);
    --  Stream sockets provide connection-oriented byte streams. Datagram
@@ -665,33 +669,33 @@ package GNAT.Sockets is
    --  with a socket. Options may exist at multiple protocol levels in the
    --  communication stack. Socket_Level is the uppermost socket level.
 
-   type Level_Type is (
-     Socket_Level,
-     IP_Protocol_For_IP_Level,
-     IP_Protocol_For_UDP_Level,
-     IP_Protocol_For_TCP_Level);
+   type Level_Type is
+     (Socket_Level,
+      IP_Protocol_For_IP_Level,
+      IP_Protocol_For_UDP_Level,
+      IP_Protocol_For_TCP_Level);
 
    --  There are several options available to manipulate sockets. Each option
    --  has a name and several values available. Most of the time, the value is
    --  a boolean to enable or disable this option.
 
-   type Option_Name is (
-     Keep_Alive,          -- Enable sending of keep-alive messages
-     Reuse_Address,       -- Allow bind to reuse local address
-     Broadcast,           -- Enable datagram sockets to recv/send broadcasts
-     Send_Buffer,         -- Set/get the maximum socket send buffer in bytes
-     Receive_Buffer,      -- Set/get the maximum socket recv buffer in bytes
-     Linger,              -- Shutdown wait for msg to be sent or timeout occur
-     Error,               -- Get and clear the pending socket error
-     No_Delay,            -- Do not delay send to coalesce data (TCP_NODELAY)
-     Add_Membership,      -- Join a multicast group
-     Drop_Membership,     -- Leave a multicast group
-     Multicast_If,        -- Set default out interface for multicast packets
-     Multicast_TTL,       -- Set the time-to-live of sent multicast packets
-     Multicast_Loop,      -- Sent multicast packets are looped to local socket
-     Receive_Packet_Info, -- Receive low level packet info as ancillary data
-     Send_Timeout,        -- Set timeout value for output
-     Receive_Timeout);    -- Set timeout value for input
+   type Option_Name is
+     (Keep_Alive,          -- Enable sending of keep-alive messages
+      Reuse_Address,       -- Allow bind to reuse local address
+      Broadcast,           -- Enable datagram sockets to recv/send broadcasts
+      Send_Buffer,         -- Set/get the maximum socket send buffer in bytes
+      Receive_Buffer,      -- Set/get the maximum socket recv buffer in bytes
+      Linger,              -- Shutdown wait for msg to be sent or timeout occur
+      Error,               -- Get and clear the pending socket error
+      No_Delay,            -- Do not delay send to coalesce data (TCP_NODELAY)
+      Add_Membership,      -- Join a multicast group
+      Drop_Membership,     -- Leave a multicast group
+      Multicast_If,        -- Set default out interface for multicast packets
+      Multicast_TTL,       -- Set the time-to-live of sent multicast packets
+      Multicast_Loop,      -- Sent multicast packets are looped to local socket
+      Receive_Packet_Info, -- Receive low level packet info as ancillary data
+      Send_Timeout,        -- Set timeout value for output
+      Receive_Timeout);    -- Set timeout value for input
 
    type Option_Type (Name : Option_Name := Keep_Alive) is record
       case Name is
@@ -741,8 +745,8 @@ package GNAT.Sockets is
    --  socket options in that they are not specific to sockets but are
    --  available for any device.
 
-   type Request_Name is (
-      Non_Blocking_IO,  --  Cause a caller not to wait on blocking operations.
+   type Request_Name is
+     (Non_Blocking_IO,  --  Cause a caller not to wait on blocking operations
       N_Bytes_To_Read); --  Return the number of bytes available to read
 
    type Request_Type (Name : Request_Name := Non_Blocking_IO) is record
@@ -1068,7 +1072,7 @@ package GNAT.Sockets is
    --  the situation where a change to the monitored sockets set must be made.
 
    procedure Create_Selector (Selector : out Selector_Type);
-   --  Create a new selector
+   --  Initialize (open) a new selector
 
    procedure Close_Selector (Selector : in out Selector_Type);
    --  Close Selector and all internal descriptors associated; deallocate any
@@ -1078,7 +1082,7 @@ package GNAT.Sockets is
    --  already closed.
 
    procedure Check_Selector
-     (Selector     : in out Selector_Type;
+     (Selector     : Selector_Type;
       R_Socket_Set : in out Socket_Set_Type;
       W_Socket_Set : in out Socket_Set_Type;
       Status       : out Selector_Status;
@@ -1089,15 +1093,17 @@ package GNAT.Sockets is
    --  R_Socket_Set or W_Socket_Set. Status is set to Expired if no socket was
    --  ready after a Timeout expiration. Status is set to Aborted if an abort
    --  signal has been received while checking socket status.
+   --
    --  Note that two different Socket_Set_Type objects must be passed as
    --  R_Socket_Set and W_Socket_Set (even if they denote the same set of
    --  Sockets), or some event may be lost.
+   --
    --  Socket_Error is raised when the select(2) system call returns an
    --  error condition, or when a read error occurs on the signalling socket
    --  used for the implementation of Abort_Selector.
 
    procedure Check_Selector
-     (Selector     : in out Selector_Type;
+     (Selector     : Selector_Type;
       R_Socket_Set : in out Socket_Set_Type;
       W_Socket_Set : in out Socket_Set_Type;
       E_Socket_Set : in out Socket_Set_Type;
@@ -1109,7 +1115,8 @@ package GNAT.Sockets is
    --  different objects.
 
    procedure Abort_Selector (Selector : Selector_Type);
-   --  Send an abort signal to the selector
+   --  Send an abort signal to the selector. The Selector may not be the
+   --  Null_Selector.
 
    type Fd_Set is private;
    --  ??? This type must not be used directly, it needs to be visible because
@@ -1125,13 +1132,27 @@ private
    type Socket_Type is new Integer;
    No_Socket : constant Socket_Type := -1;
 
-   type Selector_Type is limited record
-      R_Sig_Socket : Socket_Type := No_Socket;
-      W_Sig_Socket : Socket_Type := No_Socket;
-      --  Signalling sockets used to abort a select operation
+   --  A selector is either a null selector, which is always "open" and can
+   --  never be aborted, or a regular selector, which is created "closed",
+   --  becomes "open" when Create_Selector is called, and "closed" again when
+   --  Close_Selector is called.
+
+   type Selector_Type (Is_Null : Boolean := False) is limited record
+      case Is_Null is
+         when True =>
+            null;
+
+         when False =>
+            R_Sig_Socket : Socket_Type := No_Socket;
+            W_Sig_Socket : Socket_Type := No_Socket;
+            --  Signalling sockets used to abort a select operation
+
+      end case;
    end record;
 
    pragma Volatile (Selector_Type);
+
+   Null_Selector : constant Selector_Type := (Is_Null => True);
 
    type Fd_Set is
      new System.Storage_Elements.Storage_Array (1 .. SOSC.SIZEOF_fd_set);

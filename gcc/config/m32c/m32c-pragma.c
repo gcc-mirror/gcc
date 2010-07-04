@@ -24,9 +24,8 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"
 #include "toplev.h"
-#include "c-pragma.h"
+#include "c-family/c-pragma.h"
 #include "cpplib.h"
 #include "hard-reg-set.h"
 #include "output.h"
@@ -88,9 +87,47 @@ m32c_pragma_memregs (cpp_reader * reader ATTRIBUTE_UNUSED)
   error ("#pragma GCC memregs takes a number [0..16]");
 }
 
+/* Implements the "pragma ADDRESS" pragma.  This pragma takes a
+   variable name and an address, and arranges for that variable to be
+   "at" that address.  The variable is also made volatile.  */
+static void
+m32c_pragma_address (cpp_reader * reader ATTRIBUTE_UNUSED)
+{
+  /* on off */
+  tree var, addr;
+  enum cpp_ttype type;
+  const char *var_str;
+
+  type = pragma_lex (&var);
+  if (type == CPP_NAME)
+    {
+      var_str = IDENTIFIER_POINTER (var);
+
+      type = pragma_lex (&addr);
+      if (type == CPP_NUMBER)
+	{
+	  if (var != error_mark_node)
+	    {
+	      unsigned uaddr = tree_low_cst (addr, 1);
+	      m32c_note_pragma_address (IDENTIFIER_POINTER (var), uaddr);
+	    }
+
+	  type = pragma_lex (&var);
+	  if (type != CPP_EOF)
+	    {
+	      error ("junk at end of #pragma ADDRESS");
+	    }
+	  return;
+	}
+    }
+  error ("malformed #pragma ADDRESS variable address");
+}
+
 /* Implements REGISTER_TARGET_PRAGMAS.  */
 void
 m32c_register_pragmas (void)
 {
   c_register_pragma ("GCC", "memregs", m32c_pragma_memregs);
+  c_register_pragma (NULL, "ADDRESS", m32c_pragma_address);
+  c_register_pragma (NULL, "address", m32c_pragma_address);
 }

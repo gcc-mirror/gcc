@@ -1,7 +1,7 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2008, 2009
+// 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -130,7 +130,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #endif
 	// NB: Not required, but considered best practice.
 	if (__gnu_cxx::__is_null_pointer(__beg) && __beg != __end)
-	  __throw_logic_error(__N("basic_string::_S_construct NULL not valid"));
+	  __throw_logic_error(__N("basic_string::_S_construct null not valid"));
 
 	const size_type __dnew = static_cast<size_type>(std::distance(__beg,
 								      __end));

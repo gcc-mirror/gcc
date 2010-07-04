@@ -8,7 +8,7 @@
 __extension__ typedef __SIZE_TYPE__ size_t;
 
 void *p = (size_t)(void *)0; /* { dg-error "without a cast" } */
-struct s { void *a; } q = { (size_t)(void *)0 }; /* { dg-error "without a cast" } */
+struct s { void *a; } q = { (size_t)(void *)0 }; /* { dg-error "without a cast|near initialization" } */
 void *
 f (void)
 {

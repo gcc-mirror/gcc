@@ -3,12 +3,15 @@
    points).  */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do compile { target *-*-darwin* } } */
+/* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
+/* { dg-require-effective-target ilp32 } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 struct astruct {
   float a, b;
-} glob = { 1.0, 2.0 };
+  char c;
+} glob = { 1.0, 2.0, 'a' };
 
 struct bstruct {
   float a, b, c, d, e, f;

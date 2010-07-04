@@ -1,6 +1,6 @@
 // 2003-05-01 Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,7 @@ void test04()
   std::wstringbuf b1;
   std::wcout.rdbuf( &b1 );
   std::wcout << L"hello\n";
-  std::wcout.rdbuf(NULL);
+  std::wcout.rdbuf(0);
 }
 
 int main()

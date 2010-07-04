@@ -1,5 +1,5 @@
 /* Top-level control of tree optimizations.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
@@ -24,14 +24,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"
 #include "tm_p.h"
-#include "hard-reg-set.h"
 #include "basic-block.h"
 #include "output.h"
-#include "expr.h"
-#include "diagnostic.h"
-#include "basic-block.h"
 #include "flags.h"
 #include "tree-flow.h"
 #include "tree-dump.h"
@@ -50,7 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "except.h"
 #include "plugin.h"
-
+#include "regset.h"	/* FIXME: For reg_obstack.  */
 
 /* Gate: execute, or not, all of the non-trivial optimizations.  */
 
@@ -60,7 +55,7 @@ gate_all_optimizations (void)
   return (optimize >= 1
 	  /* Don't bother doing anything if the program has errors.
 	     We have to pass down the queue if we already went into SSA */
-	  && (!(errorcount || sorrycount) || gimple_in_ssa_p (cfun)));
+	  && (!seen_error () || gimple_in_ssa_p (cfun)));
 }
 
 struct gimple_opt_pass pass_all_optimizations =
@@ -88,7 +83,7 @@ static bool
 gate_all_early_local_passes (void)
 {
 	  /* Don't bother doing anything if the program has errors.  */
-  return (!errorcount && !sorrycount && !in_lto_p);
+  return (!seen_error () && !in_lto_p);
 }
 
 struct simple_ipa_opt_pass pass_early_local_passes =
@@ -129,7 +124,7 @@ gate_all_early_optimizations (void)
 {
   return (optimize >= 1
 	  /* Don't bother doing anything if the program has errors.  */
-	  && !(errorcount || sorrycount));
+	  && !seen_error ());
 }
 
 struct gimple_opt_pass pass_all_early_optimizations =
@@ -234,7 +229,8 @@ execute_free_datastructures (void)
 }
 
 /* Pass: fixup_cfg.  IPA passes, compilation of earlier functions or inlining
-   might have changed some properties, such as marked functions nothrow.
+   might have changed some properties, such as marked functions nothrow,
+   pure, const or noreturn.
    Remove redundant edges and basic blocks, and create new ones if necessary.
 
    This pass can't be executed as stand alone pass from pass manager, because
@@ -270,19 +266,23 @@ execute_fixup_cfg (void)
 	  tree decl = is_gimple_call (stmt)
 		      ? gimple_call_fndecl (stmt)
 		      : NULL;
-
-	  if (decl
-	      && gimple_call_flags (stmt) & (ECF_CONST
-					     | ECF_PURE
-					     | ECF_LOOPING_CONST_OR_PURE))
+	  if (decl)
 	    {
-	      if (gimple_in_ssa_p (cfun))
+	      int flags = gimple_call_flags (stmt);
+	      if (flags & (ECF_CONST | ECF_PURE | ECF_LOOPING_CONST_OR_PURE))
 		{
-		  todo |= TODO_update_ssa | TODO_cleanup_cfg;
-		  mark_symbols_for_renaming (stmt);
-		  update_stmt (stmt);
+		  if (gimple_in_ssa_p (cfun))
+		    {
+		      todo |= TODO_update_ssa | TODO_cleanup_cfg;
+		      mark_symbols_for_renaming (stmt);
+		      update_stmt (stmt);
+		    }
 		}
-	    }
+	      
+	      if (flags & ECF_NORETURN
+		  && fixup_noreturn_call (stmt))
+		todo |= TODO_cleanup_cfg;
+	     }
 
 	  maybe_clean_eh_stmt (stmt);
 	}
@@ -295,6 +295,13 @@ execute_fixup_cfg (void)
     }
   if (count_scale != REG_BR_PROB_BASE)
     compute_function_frequency ();
+
+  /* We just processed all calls.  */
+  if (cfun->gimple_df)
+    {
+      VEC_free (gimple, gc, MODIFIED_NORETURN_CALLS (cfun));
+      MODIFIED_NORETURN_CALLS (cfun) = NULL;
+    }
 
   /* Dump a textual representation of the flowgraph.  */
   if (dump_file)

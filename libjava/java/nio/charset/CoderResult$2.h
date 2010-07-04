@@ -28,7 +28,7 @@ class java::nio::charset::CoderResult$2 : public ::java::nio::charset::CoderResu
 public: // actually package-private
   CoderResult$2();
 public: // actually protected
-  ::java::nio::charset::CoderResult * make(jint);
+  virtual ::java::nio::charset::CoderResult * make(jint);
 public:
   static ::java::lang::Class class$;
 };

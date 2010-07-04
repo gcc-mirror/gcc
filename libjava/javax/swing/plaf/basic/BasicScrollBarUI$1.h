@@ -41,7 +41,7 @@ class javax::swing::plaf::basic::BasicScrollBarUI$1 : public ::javax::swing::Abs
 public: // actually package-private
   BasicScrollBarUI$1(::javax::swing::plaf::basic::BasicScrollBarUI *, ::java::lang::String *);
 public:
-  void actionPerformed(::java::awt::event::ActionEvent *);
+  virtual void actionPerformed(::java::awt::event::ActionEvent *);
 public: // actually package-private
   ::javax::swing::plaf::basic::BasicScrollBarUI * __attribute__((aligned(__alignof__( ::javax::swing::AbstractAction)))) this$0;
 public:

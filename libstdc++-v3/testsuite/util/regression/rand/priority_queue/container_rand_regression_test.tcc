@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -45,7 +45,7 @@ container_rand_regression_test(unsigned long seed, size_t n, size_t m,
 			       double cp, double mp, bool disp) 
 : m_seed(seed == 0 ? twister_rand_gen::get_time_determined_seed(): seed),
   m_n(n), m_m(m), m_tp(tp), m_ip(ip), m_dp(dp), m_ep(ep), m_cp(cp),
-  m_mp(mp), m_disp(disp), m_p_c(NULL)
+  m_mp(mp), m_disp(disp), m_p_c(0)
 { }
 
 PB_DS_CLASS_T_DEC
@@ -71,7 +71,7 @@ default_constructor()
       done = false;
     }
 
-  if (m_p_c != NULL)
+  if (m_p_c)
     PB_DS_COND_COMPARE(*m_p_c, m_native_c);
 
   return done;
@@ -99,7 +99,7 @@ copy_constructor()
 {
   PB_DS_TRACE("copy_constructor");
   bool done = true;
-  Cntnr* p_c = NULL;
+  Cntnr* p_c = 0;
   m_alloc.set_probability(m_tp);
 
   typedef typename allocator_type::group_adjustor adjustor;
@@ -127,7 +127,7 @@ assignment_operator()
 {
   PB_DS_TRACE("assignment operator");
   bool done = true;
-  Cntnr* p_c = NULL;
+  Cntnr* p_c = 0;
   m_alloc.set_probability(m_tp);
 
   typedef typename allocator_type::group_adjustor adjustor;
@@ -155,7 +155,7 @@ PB_DS_CLASS_C_DEC::
 it_constructor()
 {
   bool done = true;
-  Cntnr* p_c = NULL;
+  Cntnr* p_c = 0;
   m_alloc.set_probability(m_tp);
   typedef typename allocator_type::group_adjustor adjustor;
   adjustor adjust(m_p_c->size());
@@ -242,7 +242,7 @@ PB_DS_CLASS_C_DEC::
 operator()()
 {
   typedef xml_result_set_regression_formatter formatter_type;
-  formatter_type* p_fmt = NULL;
+  formatter_type* p_fmt = 0;
   if (m_disp)
     p_fmt = new formatter_type(string_form<Cntnr>::name(),
 			       string_form<Cntnr>::desc());
@@ -668,12 +668,12 @@ policy_access()
 
   {
     typename Cntnr::cmp_fn& r_t = m_p_c->get_cmp_fn();
-    assert(&r_t != NULL);
+    assert(&r_t);
   }
 
   {
     const typename Cntnr::cmp_fn& r_t =((const Cntnr& )*m_p_c).get_cmp_fn();
-    assert(&r_t != NULL);
+    assert(&r_t);
   }
 }
 

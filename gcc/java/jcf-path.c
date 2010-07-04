@@ -27,7 +27,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "tm.h"		/* FIXME: For GET_ENVIRONMENT from defaults.h.  */
 
 #include <dirent.h>
 

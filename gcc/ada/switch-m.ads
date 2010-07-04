@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,11 @@
 --  switches that are recognized. In addition, package Debug documents
 --  the otherwise undocumented debug switches that are also recognized.
 
+pragma Warnings (Off);
+--  This package is used also by gnatcoll
 with System.OS_Lib; use System.OS_Lib;
+pragma Warnings (On);
+
 with Prj.Tree;
 
 package Switch.M is

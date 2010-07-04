@@ -28,7 +28,7 @@ class gnu::classpath::jdwp::Jdwp$1 : public ::java::lang::Object
 public: // actually package-private
   Jdwp$1(::gnu::classpath::jdwp::Jdwp *);
 public:
-  void run();
+  virtual void run();
 public: // actually package-private
   ::gnu::classpath::jdwp::Jdwp * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

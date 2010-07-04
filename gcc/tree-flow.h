@@ -1,5 +1,5 @@
 /* Data and Control Flow Analysis for Trees.
-   Copyright (C) 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #define _TREE_FLOW_H 1
 
 #include "bitmap.h"
-#include "hard-reg-set.h"
+#include "sbitmap.h"
 #include "basic-block.h"
 #include "hashtab.h"
 #include "gimple.h"
@@ -56,9 +56,6 @@ struct GTY(()) gimple_df {
   /* The PTA solution for the ESCAPED artificial variable.  */
   struct pt_solution escaped;
 
-  /* The PTA solution for the CALLUSED artificial variable.  */
-  struct pt_solution callused;
-
   /* A map of decls to artificial ssa-names that point to the partition
      of the decl.  */
   struct pointer_map_t * GTY((skip(""))) decls_to_pointers;
@@ -78,6 +75,9 @@ struct GTY(()) gimple_df {
 
   /* True if the code is in ssa form.  */
   unsigned int in_ssa_p : 1;
+
+  /* True if IPA points-to information was computed for this function.  */
+  unsigned int ipa_pta : 1;
 
   struct ssa_operands ssa_operands;
 };
@@ -114,9 +114,10 @@ typedef struct
 ---------------------------------------------------------------------------*/
 
 /* Aliasing information for SSA_NAMEs representing pointer variables.  */
+
 struct GTY(()) ptr_info_def
 {
-  /* The points-to solution, TBAA-pruned if the pointer is dereferenced.  */
+  /* The points-to solution.  */
   struct pt_solution pt;
 };
 
@@ -252,17 +253,17 @@ typedef struct immediate_use_iterator_d
 /* Use this iterator when simply looking at stmts.  Adding, deleting or
    modifying stmts will cause this iterator to malfunction.  */
 
-#define FOR_EACH_IMM_USE_FAST(DEST, ITER, SSAVAR)			\
+#define FOR_EACH_IMM_USE_FAST(DEST, ITER, SSAVAR)		\
   for ((DEST) = first_readonly_imm_use (&(ITER), (SSAVAR));	\
        !end_readonly_imm_use_p (&(ITER));			\
-       (DEST) = next_readonly_imm_use (&(ITER)))
+       (void) ((DEST) = next_readonly_imm_use (&(ITER))))
 
 /* Use this iterator to visit each stmt which has a use of SSAVAR.  */
 
 #define FOR_EACH_IMM_USE_STMT(STMT, ITER, SSAVAR)		\
   for ((STMT) = first_imm_use_stmt (&(ITER), (SSAVAR));		\
        !end_imm_use_stmt_p (&(ITER));				\
-       (STMT) = next_imm_use_stmt (&(ITER)))
+       (void) ((STMT) = next_imm_use_stmt (&(ITER))))
 
 /* Use this to terminate the FOR_EACH_IMM_USE_STMT loop early.  Failure to
    do so will result in leaving a iterator marker node in the immediate
@@ -290,7 +291,7 @@ typedef struct immediate_use_iterator_d
 #define FOR_EACH_IMM_USE_ON_STMT(DEST, ITER)			\
   for ((DEST) = first_imm_use_on_stmt (&(ITER));		\
        !end_imm_use_on_stmt_p (&(ITER));			\
-       (DEST) = next_imm_use_on_stmt (&(ITER)))
+       (void) ((DEST) = next_imm_use_on_stmt (&(ITER))))
 
 
 
@@ -485,7 +486,6 @@ extern void end_recording_case_labels (void);
 extern basic_block move_sese_region_to_fn (struct function *, basic_block,
 				           basic_block, tree);
 void remove_edge_and_dominated_blocks (edge);
-void mark_virtual_ops_in_bb (basic_block);
 bool tree_node_can_be_shared (tree);
 
 /* In tree-cfgcleanup.c  */
@@ -574,6 +574,8 @@ extern void flush_pending_stmts (edge);
 extern void verify_ssa (bool);
 extern void delete_tree_ssa (void);
 extern bool ssa_undefined_value_p (tree);
+extern void warn_uninit (tree, const char *, void *);
+extern unsigned int warn_uninitialized_vars (bool);
 extern void execute_update_addresses_taken (bool);
 
 /* Call-back function for walk_use_def_chains().  At each reaching
@@ -617,12 +619,7 @@ extern void ssanames_print_statistics (void);
 #endif
 
 /* In tree-ssa-ccp.c  */
-bool fold_stmt (gimple_stmt_iterator *);
-bool fold_stmt_inplace (gimple);
-tree get_symbol_constant_value (tree);
 tree fold_const_aggregate_ref (tree);
-bool may_propagate_address_into_dereference (tree, tree);
-
 
 /* In tree-ssa-dom.c  */
 extern void dump_dominator_optimization_stats (FILE *);
@@ -687,14 +684,14 @@ basic_block *blocks_in_phiopt_order (void);
 
 /* In tree-ssa-loop*.c  */
 
-void tree_ssa_lim (void);
+unsigned int tree_ssa_lim (void);
 unsigned int tree_ssa_unswitch_loops (void);
 unsigned int canonicalize_induction_variables (void);
 unsigned int tree_unroll_loops_completely (bool, bool);
 unsigned int tree_ssa_prefetch_arrays (void);
 void tree_ssa_iv_optimize (void);
 unsigned tree_predictive_commoning (void);
-tree canonicalize_loop_ivs (struct loop *, tree *);
+tree canonicalize_loop_ivs (struct loop *, tree *, bool);
 bool parallelize_loops (void);
 
 bool loop_only_exit_p (const struct loop *, const_edge);
@@ -715,7 +712,7 @@ enum ev_direction scev_direction (const_tree);
 void free_numbers_of_iterations_estimates (void);
 void free_numbers_of_iterations_estimates_loop (struct loop *);
 void rewrite_into_loop_closed_ssa (bitmap, unsigned);
-void verify_loop_closed_ssa (void);
+void verify_loop_closed_ssa (bool);
 bool for_each_index (tree *, bool (*) (tree, tree *, void *), void *);
 void create_iv (tree, tree, tree, struct loop *, gimple_stmt_iterator *, bool,
 		tree *, tree *);
@@ -778,11 +775,9 @@ extern enum move_pos movement_possibility (gimple);
 char *get_lsm_tmp_name (tree, unsigned);
 
 /* In tree-flow-inline.h  */
-static inline bool is_call_clobbered (const_tree);
 static inline void set_is_used (tree);
 static inline bool unmodifiable_var_p (const_tree);
 static inline bool ref_contains_array_ref (const_tree);
-static inline bool array_ref_contains_indirect_ref (const_tree);
 
 /* In tree-eh.c  */
 extern void make_eh_edges (gimple);
@@ -873,6 +868,10 @@ tree maybe_fold_tmr (tree);
 
 unsigned int execute_free_datastructures (void);
 unsigned int execute_fixup_cfg (void);
+bool fixup_noreturn_call (gimple stmt);
+
+/* In ipa-pure-const.c  */
+void warn_function_noreturn (tree);
 
 #include "tree-flow-inline.h"
 

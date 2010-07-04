@@ -1,7 +1,7 @@
 // A basic sanity check for Objective-C++.
 // { dg-do run }
-
-#include <objc/Object.h>
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+#include "../objc-obj-c++-shared/Object1.h"
 #include <iostream>
 
 @interface Greeter : Object
@@ -19,3 +19,4 @@ main ()
   Greeter *obj = [Greeter new];
   [obj greet: "Hello from Objective-C\n"];
 }
+#include "../objc-obj-c++-shared/Object1-implementation.h"

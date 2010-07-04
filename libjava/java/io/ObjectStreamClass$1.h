@@ -14,7 +14,7 @@ class java::io::ObjectStreamClass$1 : public ::java::lang::Object
 public: // actually package-private
   ObjectStreamClass$1(::java::io::ObjectStreamClass *);
 public:
-  jint compare(::java::lang::Object *, ::java::lang::Object *);
+  virtual jint compare(::java::lang::Object *, ::java::lang::Object *);
 public: // actually package-private
   ::java::io::ObjectStreamClass * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

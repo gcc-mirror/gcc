@@ -1,5 +1,5 @@
 -- { dg-do compile }
--- { dg-options "-O2 -gnatp -cargs -fdump-tree-optimized" }
+-- { dg-options "-O2 -gnatp -fdump-tree-optimized" }
 
 package body Pack9 is
 

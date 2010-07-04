@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib-4.0.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-01-11 11:42+0000\n"
+"POT-Creation-Date: 2010-04-06 14:10+0000\n"
 "PO-Revision-Date: 2005-11-25 22:56+0100\n"
 "Last-Translator: Mateu Gilles <gilles@mateu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
@@ -38,7 +38,7 @@ msgstr "cap implementació de iconv, no es pot convertir de %s a %s"
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr "el caràcter 0x%lx no és en el joc de caràcters de base\n"
 
-#: charset.c:798 charset.c:1457
+#: charset.c:798 charset.c:1444
 msgid "converting to execution character set"
 msgstr "convertint al joc de caràcters d'execució"
 
@@ -75,7 +75,7 @@ msgstr "el nom de caràcter universal %.*s és incomplet"
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s no és un caràcter universal vàlid"
 
-#: charset.c:1056 lex.c:486
+#: charset.c:1056 lex.c:488
 msgid "'$' in identifier or number"
 msgstr "\"$\" en un identificador o un nombre"
 
@@ -89,7 +89,7 @@ msgstr "el nom de caràcter universal  %.*s no és vàlid en un identificador"
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "el nom de caràcter universal  %.*s no és vàlid a l'inici d'un identificador"
 
-#: charset.c:1102 charset.c:1687
+#: charset.c:1102 charset.c:1674
 msgid "converting UCN to source character set"
 msgstr "convertint UCN al joc font de caràcters"
 
@@ -136,19 +136,19 @@ msgstr "seqüència d'escapa \"\\%c\" desconeguda"
 msgid "converting escape sequence to execution character set"
 msgstr "convertint una seqüència d'escapa al joc de caràcters d'execució"
 
-#: charset.c:1522 charset.c:1586
+#: charset.c:1509 charset.c:1573
 msgid "character constant too long for its type"
 msgstr "constant de caràcter massa gran pel seu tipus"
 
-#: charset.c:1525
+#: charset.c:1512
 msgid "multi-character character constant"
 msgstr "constant de caràcter amb múltiples caràcters"
 
-#: charset.c:1625
+#: charset.c:1612
 msgid "empty character constant"
 msgstr "constant de caràter buida"
 
-#: charset.c:1734
+#: charset.c:1721
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr "fallada convertint %s a %s"
@@ -402,7 +402,7 @@ msgstr "\"%s\" reafirmat"
 msgid "unterminated #%s"
 msgstr "#%s sense acabar"
 
-#: directives-only.c:222 lex.c:1415 traditional.c:163
+#: directives-only.c:222 lex.c:1516 traditional.c:163
 msgid "unterminated comment"
 msgstr "comentari sense acabar"
 
@@ -716,79 +716,79 @@ msgstr "trigraph ??%c convertit a %c"
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr "s'ignora el trigraph ??%c, usi -trigraphs per permetre-ho"
 
-#: lex.c:358
+#: lex.c:360
 msgid "\"/*\" within comment"
 msgstr "\"/*\" dintre d'un comentari"
 
-#: lex.c:416
+#: lex.c:418
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr "%s en una directiva de preprocessament"
 
-#: lex.c:425
+#: lex.c:427
 msgid "null character(s) ignored"
 msgstr "caràter(es) nul(s) ignorats"
 
-#: lex.c:462
+#: lex.c:464
 #, fuzzy, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "\"%s\" no és definit"
 
-#: lex.c:465
+#: lex.c:467
 #, fuzzy, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "\"%s\" no és definit"
 
-#: lex.c:533 lex.c:610
+#: lex.c:535 lex.c:612
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "intent d'usar \"%s\" enverinat"
 
-#: lex.c:541 lex.c:618
+#: lex.c:543 lex.c:620
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__ solament pot aparèixer en l'expansió d'una macro variadic C99"
 
-#: lex.c:547 lex.c:624
+#: lex.c:549 lex.c:626
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr ""
 
-#: lex.c:739
+#: lex.c:771
 msgid "raw string delimiter longer than 16 characters"
 msgstr ""
 
-#: lex.c:742
+#: lex.c:774
 #, fuzzy, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "el nom de caràcter universal  %.*s no és vàlid en un identificador"
 
-#: lex.c:771 lex.c:818
+#: lex.c:895 lex.c:917
 #, fuzzy
 msgid "unterminated raw string"
 msgstr "#%s sense acabar"
 
-#: lex.c:831 lex.c:930
+#: lex.c:932 lex.c:1031
 msgid "null character(s) preserved in literal"
 msgstr "caràcter(es) nul(s) preservats en la literal"
 
-#: lex.c:933
+#: lex.c:1034
 #, fuzzy, c-format
 msgid "missing terminating %c character"
 msgstr "falta el caràcter de terminació >"
 
-#: lex.c:1426
+#: lex.c:1527
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "els comentaris d'estil C++ no són permesos en ISO C90"
 
-#: lex.c:1428
+#: lex.c:1529
 msgid "(this will be reported only once per input file)"
 msgstr "(això es reportarà solament una vegada per cada fitxer d'entrada)"
 
-#: lex.c:1433
+#: lex.c:1534
 msgid "multi-line comment"
 msgstr "comentari en múltiples línies"
 
-#: lex.c:1753
+#: lex.c:1854
 #, c-format
 msgid "unspellable token %s"
 msgstr "Element %s impronunciable"

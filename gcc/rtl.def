@@ -2,7 +2,7 @@
    Register Transfer Expressions (rtx's) that make up the
    Register Transfer Language (rtl) used in the Back End of the GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1994, 1995, 1997, 1998, 1999, 2000, 2004,
-   2005, 2006, 2007, 2008, 2009
+   2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -715,9 +715,6 @@ DEF_RTL_EXPR(VAR_LOCATION, "var_location", "tei", RTX_EXTRA)
    descriptions.  */
 #ifdef GENERATOR_FILE
 
-/* Include a secondary machine-description file at this point.  */
-DEF_RTL_EXPR(INCLUDE, "include", "s", RTX_EXTRA)
-
 /* Pattern-matching operators:  */
 
 /* Use the function named by the second arg (the string)
@@ -1200,6 +1197,12 @@ DEF_RTL_EXPR(DEFINE_INSN_RESERVATION, "define_insn_reservation", "sies", RTX_EXT
    2nd operand: comma-separated list of possible attribute values
    3rd operand: expression for the default value of the attribute.  */
 DEF_RTL_EXPR(DEFINE_ATTR, "define_attr", "sse", RTX_EXTRA)
+
+/* Definition of an insn attribute that uses an existing enumerated type.
+   1st operand: name of the attribute
+   2nd operand: the name of the enumerated type
+   3rd operand: expression for the default value of the attribute.  */
+DEF_RTL_EXPR(DEFINE_ENUM_ATTR, "define_enum_attr", "sse", RTX_EXTRA)
 
 /* Marker for the name of an attribute.  */
 DEF_RTL_EXPR(ATTR, "attr", "s", RTX_EXTRA)

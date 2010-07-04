@@ -116,6 +116,17 @@ extern char *basename (const char *);
 
 extern const char *lbasename (const char *);
 
+/* Same, but assumes DOS semantics (drive name, backslash is also a
+   dir separator) regardless of host.  */
+
+extern const char *dos_lbasename (const char *);
+
+/* Same, but assumes Unix semantics (absolute paths always start with
+   a slash, only forward slash is accepted as dir separator)
+   regardless of host.  */
+
+extern const char *unix_lbasename (const char *);
+
 /* A well-defined realpath () that is always compiled in.  */
 
 extern char *lrealpath (const char *);

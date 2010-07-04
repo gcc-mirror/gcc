@@ -17,10 +17,10 @@ void f2(void)
 
 void f3(int p)
 {
-  int x;		/* { dg-warning "may be used" "conditional" } */
+  int x;		
   if (p)
     x = p;
-  sink = x;
+  sink = x;            /* { dg-warning "may be used" "conditional" } */
 }
 
 void f4(int p)

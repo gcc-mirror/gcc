@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -119,7 +119,8 @@ package body Ch11 is
             Set_Choice_Parameter (Handler_Node, Choice_Param_Node);
 
          elsif Token = Tok_Others then
-            Error_Msg_AP ("missing "":""");
+            Error_Msg_AP -- CODEFIX
+              ("missing "":""");
             Change_Identifier_To_Defining_Identifier (Choice_Param_Node);
             Set_Choice_Parameter (Handler_Node, Choice_Param_Node);
 

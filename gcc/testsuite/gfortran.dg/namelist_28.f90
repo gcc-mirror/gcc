@@ -27,12 +27,12 @@ contains
     character(len=*), intent(in) :: name
 
     character(len=255) :: line
-    integer            :: ios, idx
+    integer            :: ios, idx, k
     logical            :: first
 
     first = .true.
     status = 0
-    do
+    do k=1,25
        line = ""
        read (unit,'(a)',iostat=ios) line
        if (ios < 0) then
@@ -51,12 +51,13 @@ contains
           return
        end if
     end do
+    if (k.gt.10) call abort
   end subroutine position_nml
 
   subroutine read_report (unit, status)
     integer :: unit, status
 
-    integer            :: iuse, ios
+    integer            :: iuse, ios, k
     !------------------
     ! Namelist 'REPORT'
     !------------------
@@ -66,7 +67,7 @@ contains
     ! Loop to read namelist multiple times
     !-------------------------------------
     iuse = 0
-    do
+    do k=1,25
        !----------------------------------------
        ! Preset namelist variables with defaults
        !----------------------------------------
@@ -84,6 +85,7 @@ contains
        if (ios /= 0) exit
        iuse = iuse + 1
     end do
+    if (k.gt.10) call abort
     status = ios
   end subroutine read_report
 

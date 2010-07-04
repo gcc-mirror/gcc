@@ -38,9 +38,9 @@ class javax::security::auth::kerberos::ServicePermission$1 : public ::java::secu
 public: // actually package-private
   ServicePermission$1(::javax::security::auth::kerberos::ServicePermission *);
 public:
-  void add(::java::security::Permission *);
-  jboolean implies(::java::security::Permission *);
-  ::java::util::Enumeration * elements();
+  virtual void add(::java::security::Permission *);
+  virtual jboolean implies(::java::security::Permission *);
+  virtual ::java::util::Enumeration * elements();
 private:
   ::java::util::Vector * __attribute__((aligned(__alignof__( ::java::security::PermissionCollection)))) permissions;
 public: // actually package-private

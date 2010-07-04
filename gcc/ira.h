@@ -58,7 +58,7 @@ extern HARD_REG_SET ira_no_alloc_regs;
    mode or when the conflict table is too big.  */
 extern bool ira_conflicts_p;
 
-/* Array analogous to macro MEMORY_MOVE_COST.  */
+/* Array analogous to target hook TARGET_MEMORY_MOVE_COST.  */
 extern short ira_memory_move_cost[MAX_MACHINE_MODE][N_REG_CLASSES][2];
 
 /* Array of number of hard registers of given class which are
@@ -86,4 +86,6 @@ extern bool ira_reassign_pseudos (int *, int, HARD_REG_SET, HARD_REG_SET *,
 extern rtx ira_reuse_stack_slot (int, unsigned int, unsigned int);
 extern void ira_mark_new_stack_slot (rtx, int, unsigned int);
 extern bool ira_better_spill_reload_regno_p (int *, int *, rtx, rtx, rtx);
+extern bool ira_bad_reload_regno (int, rtx, rtx);
 
+extern void ira_adjust_equiv_reg_cost (unsigned, int);

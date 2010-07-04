@@ -69,10 +69,10 @@
 		     || VLOGICAL_REGNO_P (REGNO (op))
 		     || REGNO (op) > LAST_VIRTUAL_REGISTER")))
 
-;; Return 1 if op is XER register.
-(define_predicate "xer_operand"
+;; Return 1 if op is the carry register.
+(define_predicate "ca_operand"
   (and (match_code "reg")
-       (match_test "XER_REGNO_P (REGNO (op))")))
+       (match_test "CA_REGNO_P (REGNO (op))")))
 
 ;; Return 1 if op is a signed 5-bit constant integer.
 (define_predicate "s5bit_cint_operand"
@@ -116,7 +116,7 @@
    (and (match_operand 0 "register_operand")
 	(match_test "(GET_CODE (op) != REG
 		      || (REGNO (op) >= ARG_POINTER_REGNUM
-			  && !XER_REGNO_P (REGNO (op)))
+			  && !CA_REGNO_P (REGNO (op)))
 		      || REGNO (op) < MQ_REGNO)
 		     && !((TARGET_E500_DOUBLE || TARGET_SPE)
 			  && invalid_e500_subreg (op, mode))")))
@@ -837,7 +837,7 @@
     return 1;
 
   /* A SYMBOL_REF referring to the TOC is valid.  */
-  if (legitimate_constant_pool_address_p (op))
+  if (legitimate_constant_pool_address_p (op, false))
     return 1;
 
   /* A constant pool expression (relative to the TOC) is valid */

@@ -25,7 +25,7 @@ class javax::swing::JPopupMenu$2 : public ::java::lang::Object
 public: // actually package-private
   JPopupMenu$2(::javax::swing::JPopupMenu *, jboolean);
 public:
-  void run();
+  virtual void run();
 public: // actually package-private
   ::javax::swing::JPopupMenu * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 private:

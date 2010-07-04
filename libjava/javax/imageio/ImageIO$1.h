@@ -25,10 +25,10 @@ class javax::imageio::ImageIO$1 : public ::java::lang::Object
 public: // actually package-private
   ImageIO$1(::java::util::Iterator *);
 public:
-  jboolean hasNext();
-  ::javax::imageio::ImageTranscoder * ImageIO$1$next();
-  void remove();
-  ::java::lang::Object * next();
+  virtual jboolean hasNext();
+  virtual ::javax::imageio::ImageTranscoder * ImageIO$1$next();
+  virtual void remove();
+  virtual ::java::lang::Object * next();
 private:
   ::java::util::Iterator * __attribute__((aligned(__alignof__( ::java::lang::Object)))) val$spiIterator;
 public:

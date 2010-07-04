@@ -1,4 +1,5 @@
 /* { dg-require-effective-target size32plus } */
+/* { dg-timeout-factor 4.0 } */
 
 #define DEBUG 0
 #if DEBUG

@@ -16,3 +16,8 @@
 #  define __STRING_INLINE extern __inline
 # endif
 #endif  /* GLIBC_C99_INLINE_3_CHECK */
+
+
+#if defined( GLIBC_STRNCPY_CHECK )
+#  define strncpy(dest, src, n) __builtin_strncpy (dest, src, n)
+#endif  /* GLIBC_STRNCPY_CHECK */

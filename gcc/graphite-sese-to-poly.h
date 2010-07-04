@@ -1,5 +1,5 @@
 /* Conversion of SESE regions to Polyhedra.
-   Copyright (C) 2009 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com>.
 
 This file is part of GCC.
@@ -28,7 +28,7 @@ struct base_alias_pair
   int *alias_set;
 };
 
-bool build_poly_scop (scop_p);
+void build_poly_scop (scop_p);
 void check_poly_representation (scop_p);
 
 #endif

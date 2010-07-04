@@ -3,7 +3,7 @@
 
 // 2003-04-30  Petur Runolfsson <peturr02@ru.is>
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -58,7 +58,7 @@ bool test01()
   if (child == 0)
     {
       FILE* file = fopen(name, "r+");
-      VERIFY( file != NULL );
+      VERIFY( file != 0 );
       fputs("Whatever\n", file);
       fflush(file);
       s1.signal();
@@ -68,7 +68,7 @@ bool test01()
       exit(0);
     }
 
-  freopen(name, "r", stdin);
+  VERIFY( freopen(name, "r", stdin) );
   s1.wait();
 
   int c1 = fgetc(stdin);

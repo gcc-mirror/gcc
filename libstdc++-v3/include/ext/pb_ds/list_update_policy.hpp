@@ -1,6 +1,7 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2009, 2010
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -41,6 +42,7 @@
 #ifndef PB_DS_LU_POLICY_HPP
 #define PB_DS_LU_POLICY_HPP
 
+#include <bits/c++config.h>
 #include <cstdlib>
 #include <ext/pb_ds/detail/list_update_policy/counter_lu_metadata.hpp>
 
@@ -87,12 +89,13 @@ namespace __gnu_pbds
 #undef PB_DS_CLASS_T_DEC
 #undef PB_DS_CLASS_C_DEC
 
-#define PB_DS_CLASS_T_DEC template<size_t Max_Count, class Allocator>
+#define PB_DS_CLASS_T_DEC template<std::size_t Max_Count, class Allocator>
 #define PB_DS_CLASS_C_DEC counter_lu_policy<Max_Count, Allocator>
 
   // A list-update policy that moves elements to the front of the list
   // based on the counter algorithm.
-  template<size_t Max_Count = 5, typename Allocator = std::allocator<char> >
+  template<std::size_t Max_Count = 5,
+	   typename Allocator = std::allocator<char> >
   class counter_lu_policy 
   : private detail::counter_lu_policy_base<typename Allocator::size_type>
   {

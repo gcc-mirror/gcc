@@ -37,6 +37,10 @@ package body System.Storage_Elements is
 
    pragma Suppress (All_Checks);
 
+   --  Conversion to/from address
+
+   --  Note qualification below of To_Address to avoid ambiguities on VMS
+
    function To_Address is
      new Ada.Unchecked_Conversion (Storage_Offset, Address);
    function To_Offset  is
@@ -47,37 +51,61 @@ package body System.Storage_Elements is
    --  These functions must be place first because they are inlined_always
    --  and are used and inlined in other subprograms defined in this unit.
 
-   function To_Integer (Value : Address) return Integer_Address is
-   begin
-      return Integer_Address (Value);
-   end To_Integer;
+   ----------------
+   -- To_Address --
+   ----------------
 
    function To_Address (Value : Integer_Address) return Address is
    begin
       return Address (Value);
    end To_Address;
 
+   ----------------
+   -- To_Integer --
+   ----------------
+
+   function To_Integer (Value : Address) return Integer_Address is
+   begin
+      return Integer_Address (Value);
+   end To_Integer;
+
    --  Address arithmetic
+
+   ---------
+   -- "+" --
+   ---------
 
    function "+" (Left : Address; Right : Storage_Offset) return Address is
    begin
-      return To_Address (To_Integer (Left) + To_Integer (To_Address (Right)));
+      return Storage_Elements.To_Address
+        (To_Integer (Left) + To_Integer (To_Address (Right)));
    end "+";
 
    function "+" (Left : Storage_Offset; Right : Address) return Address is
    begin
-      return To_Address (To_Integer (To_Address (Left)) + To_Integer (Right));
+      return Storage_Elements.To_Address
+        (To_Integer (To_Address (Left)) + To_Integer (Right));
    end "+";
+
+   ---------
+   -- "-" --
+   ---------
 
    function "-" (Left : Address; Right : Storage_Offset) return Address is
    begin
-      return To_Address (To_Integer (Left) - To_Integer (To_Address (Right)));
+      return Storage_Elements.To_Address
+        (To_Integer (Left) - To_Integer (To_Address (Right)));
    end "-";
 
    function "-" (Left, Right : Address) return Storage_Offset is
    begin
-      return To_Offset (To_Address (To_Integer (Left) - To_Integer (Right)));
+      return To_Offset (Storage_Elements.To_Address
+                         (To_Integer (Left) - To_Integer (Right)));
    end "-";
+
+   -----------
+   -- "mod" --
+   -----------
 
    function "mod"
      (Left  : Address;
@@ -98,4 +126,5 @@ package body System.Storage_Elements is
          raise Constraint_Error;
       end if;
    end "mod";
+
 end System.Storage_Elements;

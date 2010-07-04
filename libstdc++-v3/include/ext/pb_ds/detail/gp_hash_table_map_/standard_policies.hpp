@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -60,7 +60,7 @@ namespace __gnu_pbds
       typedef
       typename __conditional_type<
       is_same<
-      __gnu_pbds::direct_mask_range_hashing<size_t>,
+	__gnu_pbds::direct_mask_range_hashing<std::size_t>,
       Comb_Probe_Fn>::value,
       __gnu_pbds::linear_probe_fn<size_type>,
       __gnu_pbds::quadratic_probe_fn<size_type> >::__type

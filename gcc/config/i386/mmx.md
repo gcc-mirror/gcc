@@ -396,7 +396,7 @@
 	  (match_operand:V2SF 2 "nonimmediate_operand" "ym")))]
   "TARGET_3DNOW && flag_finite_math_only
    && ix86_binary_operator_ok (<CODE>, V2SFmode, operands)"
-  "pf<maxminfprefix>\t{%2, %0|%0, %2}"
+  "pf<maxmin_float>\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxadd")
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "V2SF")])
@@ -407,7 +407,7 @@
 	  (match_operand:V2SF 1 "register_operand" "0")
 	  (match_operand:V2SF 2 "nonimmediate_operand" "ym")))]
   "TARGET_3DNOW"
-  "pf<maxminfprefix>\t{%2, %0|%0, %2}"
+  "pf<maxmin_float>\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxadd")
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "V2SF")])
@@ -970,7 +970,7 @@
 	  (match_operand:V4HI 2 "nonimmediate_operand" "ym")))]
   "(TARGET_SSE || TARGET_3DNOW_A)
    && ix86_binary_operator_ok (<CODE>, V4HImode, operands)"
-  "p<maxminiprefix>w\t{%2, %0|%0, %2}"
+  "p<maxmin_int>w\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxadd")
    (set_attr "mode" "DI")])
 
@@ -989,7 +989,7 @@
 	  (match_operand:V8QI 2 "nonimmediate_operand" "ym")))]
   "(TARGET_SSE || TARGET_3DNOW_A)
    && ix86_binary_operator_ok (<CODE>, V8QImode, operands)"
-  "p<maxminiprefix>b\t{%2, %0|%0, %2}"
+  "p<maxmin_int>b\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxadd")
    (set_attr "mode" "DI")])
 
@@ -1099,7 +1099,7 @@
 	  (match_operand:MMXMODEI 1 "nonimmediate_operand" "%0")
 	  (match_operand:MMXMODEI 2 "nonimmediate_operand" "ym")))]
   "TARGET_MMX && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
-  "p<logicprefix>\t{%2, %0|%0, %2}"
+  "p<logic>\t{%2, %0|%0, %2}"
   [(set_attr "type" "mmxadd")
    (set_attr "mode" "DI")])
 

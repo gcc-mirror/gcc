@@ -1,6 +1,7 @@
 /* This file contains the definitions for timing variables used to
    measure run-time performance of the compiler.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+   2009, 2010
    Free Software Foundation, Inc.
    Contributed by Alex Samuel <samuel@codesourcery.com>
 
@@ -39,19 +40,32 @@ DEFTIMEVAR (TV_GC                    , "garbage collection")
 /* Time spent generating dump files.  */
 DEFTIMEVAR (TV_DUMP                  , "dump files")
 
+/* Time spent saving/restoring PCH state.  */
+DEFTIMEVAR (TV_PCH_SAVE              , "PCH main state save")
+DEFTIMEVAR (TV_PCH_CPP_SAVE          , "PCH preprocessor state save")
+DEFTIMEVAR (TV_PCH_PTR_REALLOC       , "PCH pointer reallocation")
+DEFTIMEVAR (TV_PCH_PTR_SORT          , "PCH pointer sort")
+DEFTIMEVAR (TV_PCH_RESTORE           , "PCH main state restore")
+DEFTIMEVAR (TV_PCH_CPP_RESTORE       , "PCH preprocessor state restore")
+
 DEFTIMEVAR (TV_CGRAPH                , "callgraph construction")
 DEFTIMEVAR (TV_CGRAPHOPT             , "callgraph optimization")
+DEFTIMEVAR (TV_VARPOOL               , "varpool construction")
 DEFTIMEVAR (TV_IPA_CONSTANT_PROP     , "ipa cp")
+DEFTIMEVAR (TV_IPA_FNSPLIT           , "ipa function splitting")
 DEFTIMEVAR (TV_IPA_LTO_GIMPLE_IO     , "ipa lto gimple I/O")
 DEFTIMEVAR (TV_IPA_LTO_DECL_IO       , "ipa lto decl I/O")
+DEFTIMEVAR (TV_IPA_LTO_DECL_INIT_IO  , "ipa lto decl init I/O")
 DEFTIMEVAR (TV_IPA_LTO_CGRAPH_IO     , "ipa lto cgraph I/O")
+DEFTIMEVAR (TV_IPA_LTO_DECL_MERGE    , "ipa lto decl merge")
+DEFTIMEVAR (TV_IPA_LTO_CGRAPH_MERGE  , "ipa lto cgraph merge")
 DEFTIMEVAR (TV_LTO                   , "lto")
 DEFTIMEVAR (TV_WHOPR_WPA             , "whopr wpa")
 DEFTIMEVAR (TV_WHOPR_WPA_IO          , "whopr wpa I/O")
 DEFTIMEVAR (TV_WHOPR_LTRANS          , "whopr ltrans")
-DEFTIMEVAR (TV_WHOPR_WPA_FIXUP       , "whopr wpa fixup")
 DEFTIMEVAR (TV_WHOPR_WPA_LTRANS_EXEC , "whopr wpa->ltrans")
 DEFTIMEVAR (TV_IPA_REFERENCE         , "ipa reference")
+DEFTIMEVAR (TV_IPA_PROFILE           , "ipa profile")
 DEFTIMEVAR (TV_IPA_PURE_CONST        , "ipa pure const")
 DEFTIMEVAR (TV_IPA_TYPE_ESCAPE       , "ipa type escape")
 DEFTIMEVAR (TV_IPA_PTA               , "ipa points-to")
@@ -195,6 +209,7 @@ DEFTIMEVAR (TV_RELOAD	   	     , "reload")
 DEFTIMEVAR (TV_RELOAD_CSE_REGS       , "reload CSE regs")
 DEFTIMEVAR (TV_SEQABSTR              , "sequence abstraction")
 DEFTIMEVAR (TV_GCSE_AFTER_RELOAD      , "load CSE after reload")
+DEFTIMEVAR (TV_ZEE		     , "zee")
 DEFTIMEVAR (TV_THREAD_PROLOGUE_AND_EPILOGUE, "thread pro- & epilogue")
 DEFTIMEVAR (TV_IFCVT2		     , "if-conversion 2")
 DEFTIMEVAR (TV_COMBINE_STACK_ADJUST  , "combine stack adjustments")
@@ -208,9 +223,11 @@ DEFTIMEVAR (TV_REORDER_BLOCKS        , "reorder blocks")
 DEFTIMEVAR (TV_SHORTEN_BRANCH        , "shorten branches")
 DEFTIMEVAR (TV_REG_STACK             , "reg stack")
 DEFTIMEVAR (TV_FINAL                 , "final")
+DEFTIMEVAR (TV_VAROUT                , "variable output")
 DEFTIMEVAR (TV_SYMOUT                , "symout")
 DEFTIMEVAR (TV_VAR_TRACKING          , "variable tracking")
 DEFTIMEVAR (TV_TREE_IFCOMBINE        , "tree if-combine")
+DEFTIMEVAR (TV_TREE_UNINIT           , "uninit var anaysis")
 DEFTIMEVAR (TV_PLUGIN_INIT           , "plugin initialization")
 DEFTIMEVAR (TV_PLUGIN_RUN            , "plugin execution")
 

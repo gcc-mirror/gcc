@@ -1,4 +1,4 @@
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,7 +17,6 @@
 
 #include <typeinfo>
 #include <exception>
-#include <cstddef>
 #include "unwind.h"
 #include <testsuite_hooks.h>
 
@@ -67,21 +66,21 @@ void test01 ()
     throw 0;
   } catch(...) {
     __cxa_exception *exc = __cxa_get_globals()->caughtExceptions;
-    VERIFY ( exc != NULL );
+    VERIFY ( exc != 0 );
     VERIFY ( typeid(int) == *exc->exceptionType );
   }
   try {
     throw 0LL;
   } catch(...) {
     __cxa_exception *exc = __cxa_get_globals()->caughtExceptions;
-    VERIFY ( exc != NULL );
+    VERIFY ( exc != 0 );
     VERIFY ( typeid(long long int) == *exc->exceptionType );
   }
   try {
     throw 0.0;
   } catch(...) {
     __cxa_exception *exc = __cxa_get_globals()->caughtExceptions;
-    VERIFY ( exc != NULL );
+    VERIFY ( exc != 0 );
     VERIFY ( typeid(double) == *exc->exceptionType );
   }
 }

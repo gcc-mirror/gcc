@@ -1,5 +1,5 @@
 /* Subroutines for the C front end on the POWER and PowerPC architectures.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
    Contributed by Zack Weinberg <zack@codesourcery.com>
@@ -27,9 +27,8 @@
 #include "tm.h"
 #include "cpplib.h"
 #include "tree.h"
-#include "c-common.h"
-#include "c-pragma.h"
-#include "c-tree.h"
+#include "c-family/c-common.h"
+#include "c-family/c-pragma.h"
 #include "toplev.h"
 #include "tm_p.h"
 #include "target.h"
@@ -363,6 +362,16 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
       builtin_define ("__builtin_vsx_xvnmsubasp=__builtin_vsx_xvnmsubsp");
       builtin_define ("__builtin_vsx_xvnmsubmsp=__builtin_vsx_xvnmsubsp");
     }
+  if (RS6000_RECIP_HAVE_RE_P (DFmode))
+    builtin_define ("__RECIP__");
+  if (RS6000_RECIP_HAVE_RE_P (SFmode))
+    builtin_define ("__RECIPF__");
+  if (RS6000_RECIP_HAVE_RSQRTE_P (DFmode))
+    builtin_define ("__RSQRTE__");
+  if (RS6000_RECIP_HAVE_RSQRTE_P (SFmode))
+    builtin_define ("__RSQRTEF__");
+  if (TARGET_RECIP_PRECISION)
+    builtin_define ("__RECIP_PRECISION__");
 
   /* Tell users they can use __builtin_bswap{16,64}.  */
   builtin_define ("__HAVE_BSWAP__");
@@ -480,10 +489,22 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_void, RS6000_BTI_bool_V16QI, 0, 0 },
   { ALTIVEC_BUILTIN_VEC_RE, ALTIVEC_BUILTIN_VREFP,
     RS6000_BTI_V4SF, RS6000_BTI_V4SF, 0, 0 },
+  { ALTIVEC_BUILTIN_VEC_RE, VSX_BUILTIN_XVREDP,
+    RS6000_BTI_V2DF, RS6000_BTI_V2DF, 0, 0 },
   { ALTIVEC_BUILTIN_VEC_ROUND, ALTIVEC_BUILTIN_VRFIN,
     RS6000_BTI_V4SF, RS6000_BTI_V4SF, 0, 0 },
+  { ALTIVEC_BUILTIN_VEC_RECIP, ALTIVEC_BUILTIN_VRECIPFP,
+    RS6000_BTI_V4SF, RS6000_BTI_V4SF, RS6000_BTI_V4SF, 0 },
+  { ALTIVEC_BUILTIN_VEC_RECIP, VSX_BUILTIN_RECIP_V2DF,
+    RS6000_BTI_V2DF, RS6000_BTI_V2DF, RS6000_BTI_V2DF, 0 },
+  { ALTIVEC_BUILTIN_VEC_RSQRT, ALTIVEC_BUILTIN_VRSQRTFP,
+    RS6000_BTI_V4SF, RS6000_BTI_V4SF, 0, 0 },
+  { ALTIVEC_BUILTIN_VEC_RSQRT, VSX_BUILTIN_VEC_RSQRT_V2DF,
+    RS6000_BTI_V2DF, RS6000_BTI_V2DF, 0, 0 },
   { ALTIVEC_BUILTIN_VEC_RSQRTE, ALTIVEC_BUILTIN_VRSQRTEFP,
     RS6000_BTI_V4SF, RS6000_BTI_V4SF, 0, 0 },
+  { ALTIVEC_BUILTIN_VEC_RSQRTE, VSX_BUILTIN_XVRSQRTEDP,
+    RS6000_BTI_V2DF, RS6000_BTI_V2DF, 0, 0 },
   { ALTIVEC_BUILTIN_VEC_TRUNC, ALTIVEC_BUILTIN_VRFIZ,
     RS6000_BTI_V4SF, RS6000_BTI_V4SF, 0, 0 },
   { ALTIVEC_BUILTIN_VEC_TRUNC, VSX_BUILTIN_XVRDPIZ,

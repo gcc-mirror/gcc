@@ -22,10 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_REGS_H
 #define GCC_REGS_H
 
-#include "varray.h"
-#include "obstack.h"
+#include "machmode.h"
 #include "hard-reg-set.h"
-#include "basic-block.h"
 
 #define REG_BYTES(R) mode_size[(int) GET_MODE (R)]
 
@@ -36,10 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef REGMODE_NATURAL_SIZE
 #define REGMODE_NATURAL_SIZE(MODE)	UNITS_PER_WORD
-#endif
-
-#ifndef SMALL_REGISTER_CLASSES
-#define SMALL_REGISTER_CLASSES 0
 #endif
 
 /* Maximum register number used in this function, plus one.  */

@@ -2,7 +2,7 @@
 
 // Utility subroutines for the C++ library testsuite. 
 //
-// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -32,7 +32,6 @@
 #include <list>
 #include <string>
 #include <stdexcept>
-#include <cstddef>
 #include <clocale>
 #include <cstdlib>
 #include <locale>
@@ -170,13 +169,13 @@ namespace __gnu_test
     locale orig = locale::global(loc_name);
 
     const char* res = setlocale(LC_ALL, name);
-    if (res != NULL)
+    if (res)
       {
 	string preLC_ALL = res;
 	const func_callback::test_type* tests = l.tests();
 	for (int i = 0; i < l.size(); ++i)
 	  (*tests[i])();
-	string postLC_ALL= setlocale(LC_ALL, NULL);
+	string postLC_ALL= setlocale(LC_ALL, 0);
 	VERIFY( preLC_ALL == postLC_ALL );
       }
     else

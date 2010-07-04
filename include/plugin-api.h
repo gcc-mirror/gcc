@@ -220,13 +220,19 @@ enum ld_plugin_status
 
 typedef
 enum ld_plugin_status
-(*ld_plugin_add_input_file) (char *pathname);
+(*ld_plugin_add_input_file) (const char *pathname);
 
 /* The linker's interface for adding a library that should be searched.  */
 
 typedef
 enum ld_plugin_status
-(*ld_plugin_add_input_library) (char *libname);
+(*ld_plugin_add_input_library) (const char *libname);
+
+/* The linker's interface for adding a library path that should be searched.  */
+
+typedef
+enum ld_plugin_status
+(*ld_plugin_set_extra_library_path) (const char *path);
 
 /* The linker's interface for issuing a warning or error message.  */
 
@@ -260,7 +266,9 @@ enum ld_plugin_tag
   LDPT_MESSAGE,
   LDPT_GET_INPUT_FILE,
   LDPT_RELEASE_INPUT_FILE,
-  LDPT_ADD_INPUT_LIBRARY
+  LDPT_ADD_INPUT_LIBRARY,
+  LDPT_OUTPUT_NAME,
+  LDPT_SET_EXTRA_LIBRARY_PATH
 };
 
 /* The plugin transfer vector.  */
@@ -282,6 +290,7 @@ struct ld_plugin_tv
     ld_plugin_get_input_file tv_get_input_file;
     ld_plugin_release_input_file tv_release_input_file;
     ld_plugin_add_input_library tv_add_input_library;
+    ld_plugin_set_extra_library_path tv_set_extra_library_path;
   } tv_u;
 };
 

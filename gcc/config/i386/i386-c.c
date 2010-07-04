@@ -22,16 +22,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "rtl.h"
 #include "tree.h"
 #include "tm_p.h"
 #include "flags.h"
-#include "c-common.h"
+#include "c-family/c-common.h"
 #include "ggc.h"
 #include "target.h"
 #include "target-def.h"
 #include "cpplib.h"
-#include "c-pragma.h"
+#include "c-family/c-pragma.h"
 
 static bool ix86_pragma_target_parse (tree, tree);
 static void ix86_target_macros_internal
@@ -107,6 +106,10 @@ ix86_target_macros_internal (int isa_flag,
       def_or_undef (parse_in, "__amdfam10");
       def_or_undef (parse_in, "__amdfam10__");
       break;
+    case PROCESSOR_BDVER1:
+      def_or_undef (parse_in, "__bdver1");
+      def_or_undef (parse_in, "__bdver1__");
+      break;
     case PROCESSOR_PENTIUM4:
       def_or_undef (parse_in, "__pentium4");
       def_or_undef (parse_in, "__pentium4__");
@@ -181,6 +184,9 @@ ix86_target_macros_internal (int isa_flag,
       break;
     case PROCESSOR_AMDFAM10:
       def_or_undef (parse_in, "__tune_amdfam10__");
+      break;
+    case PROCESSOR_BDVER1:
+      def_or_undef (parse_in, "__tune_bdver1__");
       break;
     case PROCESSOR_PENTIUM4:
       def_or_undef (parse_in, "__tune_pentium4__");

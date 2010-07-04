@@ -1,5 +1,5 @@
 /* String pool for GCC.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "ggc.h"
+#include "ggc-internal.h"
 #include "tree.h"
 #include "symtab.h"
 #include "cpplib.h"
@@ -40,10 +41,12 @@ const char empty_string[] = "";
 
 /* Character strings, each containing a single decimal digit.
    Written this way to save space.  */
-const char digit_vector[] = {
+static const char digit_vector[] = {
   '0', 0, '1', 0, '2', 0, '3', 0, '4', 0,
   '5', 0, '6', 0, '7', 0, '8', 0, '9', 0
 };
+
+#define digit_string(d) (digit_vector + ((d) * 2))
 
 struct ht *ident_hash;
 
@@ -53,7 +56,7 @@ static int mark_ident (struct cpp_reader *, hashnode, const void *);
 static void *
 stringpool_ggc_alloc (size_t x)
 {
-  return ggc_alloc (x);
+  return ggc_alloc_atomic (x);
 }
 
 /* Initialize the string pool.  */
@@ -78,7 +81,7 @@ alloc_node (hash_table *table ATTRIBUTE_UNUSED)
    nul-terminated string, and the length is calculated using strlen.  */
 
 const char *
-ggc_alloc_string (const char *contents, int length)
+ggc_alloc_string_stat (const char *contents, int length MEM_STAT_DECL)
 {
   char *result;
 
@@ -90,7 +93,7 @@ ggc_alloc_string (const char *contents, int length)
   if (length == 1 && ISDIGIT (contents[0]))
     return digit_string (contents[0] - '0');
 
-  result = GGC_NEWVAR (char, length + 1);
+  result = (char *) ggc_alloc_atomic_stat (length + 1 PASS_MEM_STAT);
   memcpy (result, contents, length);
   result[length] = '\0';
   return (const char *) result;
@@ -215,7 +218,7 @@ gt_pch_n_S (const void *x)
    to restore the string pool.  */
 
 struct GTY(()) string_pool_data {
-  struct ht_identifier * *
+  ht_identifier_ptr *
     GTY((length ("%h.nslots"),
 	 nested_ptr (union tree_node, "%h ? GCC_IDENT_TO_HT_IDENT (%h) : NULL",
 		     "%h ? HT_IDENT_TO_GCC_IDENT (%h) : NULL")))
@@ -231,10 +234,10 @@ static GTY(()) struct string_pool_data * spd;
 void
 gt_pch_save_stringpool (void)
 {
-  spd = GGC_NEW (struct string_pool_data);
+  spd = ggc_alloc_string_pool_data ();
   spd->nslots = ident_hash->nslots;
   spd->nelements = ident_hash->nelements;
-  spd->entries = GGC_NEWVEC (struct ht_identifier *, spd->nslots);
+  spd->entries = ggc_alloc_vec_ht_identifier_ptr (spd->nslots);
   memcpy (spd->entries, ident_hash->entries,
 	  spd->nslots * sizeof (spd->entries[0]));
 }

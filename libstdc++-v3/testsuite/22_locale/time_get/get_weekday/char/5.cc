@@ -1,6 +1,6 @@
 // 2006-06-16  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2006, 2009 Free Software Foundation
+// Copyright (C) 2006, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,7 +49,7 @@ void test01()
   const time_get_type& tg = use_facet<time_get_type>(iss.getloc());
 
   const string str0 = "T";
-  iter_type end0 = tg.get_weekday(str0.begin(), str0.end(), iss, err, &tm0);
+  tg.get_weekday(str0.begin(), str0.end(), iss, err, &tm0);
   VERIFY( err == (failbit | eofbit) );
   VERIFY( tm1.tm_wday == 0 );
 

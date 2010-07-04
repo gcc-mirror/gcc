@@ -59,7 +59,7 @@ extern FILE *ira_dump_file;
 
 /* Typedefs for pointers to allocno live range, allocno, and copy of
    allocnos.  */
-typedef struct ira_allocno_live_range *allocno_live_range_t;
+typedef struct live_range *live_range_t;
 typedef struct ira_allocno *ira_allocno_t;
 typedef struct ira_allocno_copy *ira_copy_t;
 
@@ -196,7 +196,7 @@ extern ira_loop_tree_node_t ira_loop_nodes;
    conflicts for other allocnos (e.g. to assign stack memory slot) we
    use the live ranges.  If the live ranges of two allocnos are
    intersected, the allocnos are in conflict.  */
-struct ira_allocno_live_range
+struct live_range
 {
   /* Allocno whose live range is described by given structure.  */
   ira_allocno_t allocno;
@@ -204,9 +204,9 @@ struct ira_allocno_live_range
   int start, finish;
   /* Next structure describing program points where the allocno
      lives.  */
-  allocno_live_range_t next;
+  live_range_t next;
   /* Pointer to structures with the same start/finish.  */
-  allocno_live_range_t start_next, finish_next;
+  live_range_t start_next, finish_next;
 };
 
 /* Program points are enumerated by numbers from range
@@ -220,7 +220,7 @@ extern int ira_max_point;
 
 /* Arrays of size IRA_MAX_POINT mapping a program point to the allocno
    live ranges with given start/finish point.  */
-extern allocno_live_range_t *ira_start_point_ranges, *ira_finish_point_ranges;
+extern live_range_t *ira_start_point_ranges, *ira_finish_point_ranges;
 
 /* A structure representing an allocno (allocation entity).  Allocno
    represents a pseudo-register in an allocation region.  If
@@ -305,7 +305,7 @@ struct ira_allocno
      allocno lives.  We always maintain the list in such way that *the
      ranges in the list are not intersected and ordered by decreasing
      their program points*.  */
-  allocno_live_range_t live_ranges;
+  live_range_t live_ranges;
   /* Before building conflicts the two member values are
      correspondingly minimal and maximal points of the accumulated
      allocno live ranges.  After building conflicts the values are
@@ -542,7 +542,7 @@ extern int ira_copies_num;
 struct ira_spilled_reg_stack_slot
 {
   /* pseudo-registers assigned to the stack slot.  */
-  regset_head spilled_regs;
+  bitmap_head spilled_regs;
   /* RTL representation of the stack slot.  */
   rtx mem;
   /* Size of the stack slot.  */
@@ -567,10 +567,16 @@ extern int ira_move_loops_num, ira_additional_jumps_num;
 
 /* Maximal value of element of array ira_reg_class_nregs.  */
 extern int ira_max_nregs;
+
+/* This page contains a bitset implementation called 'min/max sets' used to
+   record conflicts in IRA.
+   They are named min/maxs set since we keep track of a minimum and a maximum
+   bit number for each set representing the bounds of valid elements.  Otherwise,
+   the implementation resembles sbitmaps in that we store an array of integers
+   whose bits directly represent the members of the set.  */
 
-/* The number of bits in each element of array used to implement a bit
-   vector of allocnos and what type that element has.  We use the
-   largest integer format on the host machine.  */
+/* The type used as elements in the array, and the number of bits in
+   this type.  */
 #define IRA_INT_BITS HOST_BITS_PER_WIDE_INT
 #define IRA_INT_TYPE HOST_WIDE_INT
 
@@ -579,7 +585,7 @@ extern int ira_max_nregs;
    MAX.  */
 #if defined ENABLE_IRA_CHECKING && (GCC_VERSION >= 2007)
 
-#define SET_ALLOCNO_SET_BIT(R, I, MIN, MAX) __extension__	        \
+#define SET_MINMAX_SET_BIT(R, I, MIN, MAX) __extension__	        \
   (({ int _min = (MIN), _max = (MAX), _i = (I);				\
      if (_i < _min || _i > _max)					\
        {								\
@@ -592,7 +598,7 @@ extern int ira_max_nregs;
       |= ((IRA_INT_TYPE) 1 << ((unsigned) (_i - _min) % IRA_INT_BITS))); }))
 
 
-#define CLEAR_ALLOCNO_SET_BIT(R, I, MIN, MAX) __extension__	        \
+#define CLEAR_MINMAX_SET_BIT(R, I, MIN, MAX) __extension__	        \
   (({ int _min = (MIN), _max = (MAX), _i = (I);				\
      if (_i < _min || _i > _max)					\
        {								\
@@ -604,7 +610,7 @@ extern int ira_max_nregs;
      ((R)[(unsigned) (_i - _min) / IRA_INT_BITS]			\
       &= ~((IRA_INT_TYPE) 1 << ((unsigned) (_i - _min) % IRA_INT_BITS))); }))
 
-#define TEST_ALLOCNO_SET_BIT(R, I, MIN, MAX) __extension__	        \
+#define TEST_MINMAX_SET_BIT(R, I, MIN, MAX) __extension__	        \
   (({ int _min = (MIN), _max = (MAX), _i = (I);				\
      if (_i < _min || _i > _max)					\
        {								\
@@ -618,25 +624,24 @@ extern int ira_max_nregs;
 
 #else
 
-#define SET_ALLOCNO_SET_BIT(R, I, MIN, MAX)			\
+#define SET_MINMAX_SET_BIT(R, I, MIN, MAX)			\
   ((R)[(unsigned) ((I) - (MIN)) / IRA_INT_BITS]			\
    |= ((IRA_INT_TYPE) 1 << ((unsigned) ((I) - (MIN)) % IRA_INT_BITS)))
 
-#define CLEAR_ALLOCNO_SET_BIT(R, I, MIN, MAX)			\
+#define CLEAR_MINMAX_SET_BIT(R, I, MIN, MAX)			\
   ((R)[(unsigned) ((I) - (MIN)) / IRA_INT_BITS]			\
    &= ~((IRA_INT_TYPE) 1 << ((unsigned) ((I) - (MIN)) % IRA_INT_BITS)))
 
-#define TEST_ALLOCNO_SET_BIT(R, I, MIN, MAX)			\
+#define TEST_MINMAX_SET_BIT(R, I, MIN, MAX)			\
   ((R)[(unsigned) ((I) - (MIN)) / IRA_INT_BITS]			\
    & ((IRA_INT_TYPE) 1 << ((unsigned) ((I) - (MIN)) % IRA_INT_BITS)))
 
 #endif
 
-/* The iterator for allocno set implemented ed as allocno bit
-   vector.  */
+/* The iterator for min/max sets.  */
 typedef struct {
 
-  /* Array containing the allocno bit vector.  */
+  /* Array containing the bit vector.  */
   IRA_INT_TYPE *vec;
 
   /* The number of the current element in the vector.  */
@@ -653,13 +658,13 @@ typedef struct {
 
   /* The word of the bit vector currently visited.  */
   unsigned IRA_INT_TYPE word;
-} ira_allocno_set_iterator;
+} minmax_set_iterator;
 
-/* Initialize the iterator I for allocnos bit vector VEC containing
-   minimal and maximal values MIN and MAX.  */
+/* Initialize the iterator I for bit vector VEC containing minimal and
+   maximal values MIN and MAX.  */
 static inline void
-ira_allocno_set_iter_init (ira_allocno_set_iterator *i,
-			   IRA_INT_TYPE *vec, int min, int max)
+minmax_set_iter_init (minmax_set_iterator *i, IRA_INT_TYPE *vec, int min,
+		      int max)
 {
   i->vec = vec;
   i->word_num = 0;
@@ -669,11 +674,11 @@ ira_allocno_set_iter_init (ira_allocno_set_iterator *i,
   i->word = i->nel == 0 ? 0 : vec[0];
 }
 
-/* Return TRUE if we have more allocnos to visit, in which case *N is
-   set to the allocno number to be visited.  Otherwise, return
+/* Return TRUE if we have more elements to visit, in which case *N is
+   set to the number of the element to be visited.  Otherwise, return
    FALSE.  */
 static inline bool
-ira_allocno_set_iter_cond (ira_allocno_set_iterator *i, int *n)
+minmax_set_iter_cond (minmax_set_iterator *i, int *n)
 {
   /* Skip words that are zeros.  */
   for (; i->word == 0; i->word = i->vec[i->word_num])
@@ -695,23 +700,23 @@ ira_allocno_set_iter_cond (ira_allocno_set_iterator *i, int *n)
   return true;
 }
 
-/* Advance to the next allocno in the set.  */
+/* Advance to the next element in the set.  */
 static inline void
-ira_allocno_set_iter_next (ira_allocno_set_iterator *i)
+minmax_set_iter_next (minmax_set_iterator *i)
 {
   i->word >>= 1;
   i->bit_num++;
 }
 
-/* Loop over all elements of allocno set given by bit vector VEC and
+/* Loop over all elements of a min/max set given by bit vector VEC and
    their minimal and maximal values MIN and MAX.  In each iteration, N
    is set to the number of next allocno.  ITER is an instance of
-   ira_allocno_set_iterator used to iterate the allocnos in the set.  */
-#define FOR_EACH_ALLOCNO_IN_SET(VEC, MIN, MAX, N, ITER)		\
-  for (ira_allocno_set_iter_init (&(ITER), (VEC), (MIN), (MAX));	\
-       ira_allocno_set_iter_cond (&(ITER), &(N));			\
-       ira_allocno_set_iter_next (&(ITER)))
-
+   minmax_set_iterator used to iterate over the set.  */
+#define FOR_EACH_BIT_IN_MINMAX_SET(VEC, MIN, MAX, N, ITER)	\
+  for (minmax_set_iter_init (&(ITER), (VEC), (MIN), (MAX));	\
+       minmax_set_iter_cond (&(ITER), &(N));			\
+       minmax_set_iter_next (&(ITER)))
+
 /* ira.c: */
 
 /* Map: hard regs X modes -> set of hard registers for storing value
@@ -719,7 +724,7 @@ ira_allocno_set_iter_next (ira_allocno_set_iterator *i)
 extern HARD_REG_SET ira_reg_mode_hard_regset
                     [FIRST_PSEUDO_REGISTER][NUM_MACHINE_MODES];
 
-/* Array analogous to macro REGISTER_MOVE_COST.  Don't use
+/* Array based on TARGET_REGISTER_MOVE_COST.  Don't use
    ira_register_move_cost directly.  Use function of
    ira_get_may_move_cost instead.  */
 extern move_table *ira_register_move_cost[MAX_MACHINE_MODE];
@@ -742,6 +747,11 @@ extern move_table *ira_may_move_out_cost[MAX_MACHINE_MODE];
    of the second one considering only hard registers available for the
    allocation.  */
 extern int ira_class_subset_p[N_REG_CLASSES][N_REG_CLASSES];
+
+/* Array of the number of hard registers of given class which are
+   available for allocation.  The order is defined by the the hard
+   register numbers.  */
+extern short ira_non_ordered_class_hard_regs[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
 
 /* Index (in ira_class_hard_regs) for given register class and hard
    register (in general case a hard register can belong to several
@@ -833,6 +843,8 @@ extern void ira_debug_allocno_copies (ira_allocno_t);
 extern void ira_traverse_loop_tree (bool, ira_loop_tree_node_t,
 				    void (*) (ira_loop_tree_node_t),
 				    void (*) (ira_loop_tree_node_t));
+extern ira_allocno_t ira_parent_allocno (ira_allocno_t);
+extern ira_allocno_t ira_parent_or_cap_allocno (ira_allocno_t);
 extern ira_allocno_t ira_create_allocno (int, bool, ira_loop_tree_node_t);
 extern void ira_set_allocno_cover_class (ira_allocno_t, enum reg_class);
 extern bool ira_conflict_vector_profitable_p (ira_allocno_t, int);
@@ -840,16 +852,13 @@ extern void ira_allocate_allocno_conflict_vec (ira_allocno_t, int);
 extern void ira_allocate_allocno_conflicts (ira_allocno_t, int);
 extern void ira_add_allocno_conflict (ira_allocno_t, ira_allocno_t);
 extern void ira_print_expanded_allocno (ira_allocno_t);
-extern allocno_live_range_t ira_create_allocno_live_range
-	                    (ira_allocno_t, int, int, allocno_live_range_t);
-extern allocno_live_range_t ira_copy_allocno_live_range_list
-                            (allocno_live_range_t);
-extern allocno_live_range_t ira_merge_allocno_live_ranges
-                            (allocno_live_range_t, allocno_live_range_t);
-extern bool ira_allocno_live_ranges_intersect_p (allocno_live_range_t,
-						 allocno_live_range_t);
-extern void ira_finish_allocno_live_range (allocno_live_range_t);
-extern void ira_finish_allocno_live_range_list (allocno_live_range_t);
+extern live_range_t ira_create_allocno_live_range (ira_allocno_t, int, int,
+						   live_range_t);
+extern live_range_t ira_copy_allocno_live_range_list (live_range_t);
+extern live_range_t ira_merge_allocno_live_ranges (live_range_t, live_range_t);
+extern bool ira_allocno_live_ranges_intersect_p (live_range_t, live_range_t);
+extern void ira_finish_allocno_live_range (live_range_t);
+extern void ira_finish_allocno_live_range_list (live_range_t);
 extern void ira_free_allocno_updated_costs (ira_allocno_t);
 extern ira_copy_t ira_create_copy (ira_allocno_t, ira_allocno_t,
 				   int, bool, rtx, ira_loop_tree_node_t);
@@ -876,8 +885,8 @@ extern void ira_tune_allocno_costs_and_cover_classes (void);
 /* ira-lives.c */
 
 extern void ira_rebuild_start_finish_chains (void);
-extern void ira_print_live_range_list (FILE *, allocno_live_range_t);
-extern void ira_debug_live_range_list (allocno_live_range_t);
+extern void ira_print_live_range_list (FILE *, live_range_t);
+extern void ira_debug_live_range_list (live_range_t);
 extern void ira_debug_allocno_live_ranges (ira_allocno_t);
 extern void ira_debug_live_ranges (void);
 extern void ira_create_allocno_live_ranges (void);

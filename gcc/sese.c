@@ -1,5 +1,6 @@
 /* Single entry single exit control flow regions.
-   Copyright (C) 2008, 2009  Free Software Foundation, Inc.
+   Copyright (C) 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Jan Sjodin <jan.sjodin@amd.com> and
    Sebastian Pop <sebastian.pop@amd.com>.
 
@@ -28,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "basic-block.h"
 #include "diagnostic.h"
+#include "tree-pretty-print.h"
 #include "tree-flow.h"
 #include "toplev.h"
 #include "tree-dump.h"
@@ -67,7 +69,7 @@ debug_rename_map_1 (void **slot, void *s ATTRIBUTE_UNUSED)
 
 /* Print to stderr all the elements of MAP.  */
 
-void
+DEBUG_FUNCTION void
 debug_rename_map (htab_t map)
 {
   htab_traverse (map, debug_rename_map_1, NULL);
@@ -116,7 +118,7 @@ debug_ivtype_map_1 (void **slot, void *s ATTRIBUTE_UNUSED)
 
 /* Print to stderr all the elements of MAP.  */
 
-void
+DEBUG_FUNCTION void
 debug_ivtype_map (htab_t map)
 {
   htab_traverse (map, debug_ivtype_map_1, NULL);
@@ -778,7 +780,7 @@ expand_scalar_variables_call (gimple stmt, basic_block bb, sese region,
    to translate the names of induction variables.  */
 
 static tree
-expand_scalar_variables_ssa_name (tree op0, basic_block bb,
+expand_scalar_variables_ssa_name (tree type, tree op0, basic_block bb,
 				  sese region, htab_t map,
 				  gimple_stmt_iterator *gsi)
 {
@@ -787,7 +789,7 @@ expand_scalar_variables_ssa_name (tree op0, basic_block bb,
 
   if (is_parameter (region, op0)
       || is_iv (op0))
-    return get_rename (map, op0);
+    return fold_convert (type, get_rename (map, op0));
 
   def_stmt = SSA_NAME_DEF_STMT (op0);
 
@@ -796,7 +798,7 @@ expand_scalar_variables_ssa_name (tree op0, basic_block bb,
 
   if (new_op != op0
       && gimple_bb (SSA_NAME_DEF_STMT (new_op)) == bb)
-    return new_op;
+    return fold_convert (type, new_op);
 
   if (gimple_bb (def_stmt) == bb)
     {
@@ -804,13 +806,13 @@ expand_scalar_variables_ssa_name (tree op0, basic_block bb,
 	 we do not need to create a new expression for it, we
 	 only need to ensure its operands are expanded.  */
       expand_scalar_variables_stmt (def_stmt, bb, region, map, gsi);
-      return new_op;
+      return fold_convert (type, new_op);
     }
   else
     {
       if (!gimple_bb (def_stmt)
 	  || !bb_in_sese_p (gimple_bb (def_stmt), region))
-	return new_op;
+	return fold_convert (type, new_op);
 
       switch (gimple_code (def_stmt))
 	{
@@ -871,7 +873,7 @@ expand_scalar_variables_expr (tree type, tree op0, enum tree_code code,
 	  {
 	    tree old_name = TREE_OPERAND (op0, 0);
 	    tree expr = expand_scalar_variables_ssa_name
-	      (old_name, bb, region, map, gsi);
+	      (type, old_name, bb, region, map, gsi);
 
 	    if (TREE_CODE (expr) != SSA_NAME
 		&& is_gimple_reg (old_name))
@@ -938,7 +940,7 @@ expand_scalar_variables_expr (tree type, tree op0, enum tree_code code,
     }
 
   if (code == SSA_NAME)
-    return expand_scalar_variables_ssa_name (op0, bb, region, map, gsi);
+    return expand_scalar_variables_ssa_name (type, op0, bb, region, map, gsi);
 
   if (code == ADDR_EXPR)
     {
@@ -1106,9 +1108,8 @@ get_false_edge_from_guard_bb (basic_block bb)
 static bool
 name_defined_in_loop_p (tree name, loop_p loop)
 {
-  gimple stmt = SSA_NAME_DEF_STMT (name);
-
-  return (gimple_bb (stmt)->loop_father == loop);
+  return !SSA_NAME_IS_DEFAULT_DEF (name)
+    && gimple_bb (SSA_NAME_DEF_STMT (name))->loop_father == loop;
 }
 
 /* Returns true when EXPR contains SSA_NAMEs defined in LOOP.  */
@@ -1492,7 +1493,7 @@ if_region_set_false_region (ifsese if_region, sese region)
 
   if (slot)
     {
-      struct loop_exit *loop_exit = GGC_CNEW (struct loop_exit);
+      struct loop_exit *loop_exit = ggc_alloc_cleared_loop_exit ();
 
       memcpy (loop_exit, *((struct loop_exit **) slot), sizeof (struct loop_exit));
       htab_clear_slot (current_loops->exits, slot);
@@ -1508,7 +1509,7 @@ if_region_set_false_region (ifsese if_region, sese region)
 
 /* Creates an IFSESE with CONDITION on edge ENTRY.  */
 
-ifsese
+static ifsese
 create_if_region_on_edge (edge entry, tree condition)
 {
   edge e;

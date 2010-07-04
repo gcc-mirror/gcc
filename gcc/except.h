@@ -19,8 +19,16 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "sbitmap.h"
+/* No include guards here, but define an include file marker anyway, so
+   that the compiler can keep track of where this file is included.  This
+   is e.g. used to avoid including this file in front-end specific files.  */
+#ifndef GCC_EXCEPT_H
+#  define GCC_EXCEPT_H
+#endif
+
+#include "hashtab.h"
 #include "vecprim.h"
+#include "vecir.h"
 
 struct function;
 struct eh_region_d;
@@ -221,14 +229,10 @@ struct GTY(()) eh_status
 };
 
 
-/* Test: is exception handling turned on?  */
-extern int doing_eh (int);
-
 /* Invokes CALLBACK for every exception handler label.  Only used by old
    loop hackery; should not be used by new code.  */
 extern void for_each_eh_label (void (*) (rtx));
 
-extern void init_eh (void);
 extern void init_eh_for_function (void);
 
 extern void remove_eh_landing_pad (eh_landing_pad);
@@ -285,61 +289,6 @@ extern void assign_filter_values (void);
 
 extern eh_region get_eh_region_from_rtx (const_rtx);
 extern eh_landing_pad get_eh_landing_pad_from_rtx (const_rtx);
-
-/* If non-NULL, this is a function that returns a function decl to be
-   executed if an unhandled exception is propagated out of a cleanup
-   region.  For example, in C++, an exception thrown by a destructor
-   during stack unwinding is required to result in a call to
-   `std::terminate', so the C++ version of this function returns a
-   FUNCTION_DECL for `std::terminate'.  */
-extern tree (*lang_protect_cleanup_actions) (void);
-
-/* Return true if type A catches type B.  */
-extern int (*lang_eh_type_covers) (tree a, tree b);
-
-
-/* Just because the user configured --with-sjlj-exceptions=no doesn't
-   mean that we can use call frame exceptions.  Detect that the target
-   has appropriate support.  */
-
-#ifndef MUST_USE_SJLJ_EXCEPTIONS
-# if defined (EH_RETURN_DATA_REGNO)			\
-       && (defined (TARGET_UNWIND_INFO)			\
-	   || (DWARF2_UNWIND_INFO			\
-	       && (defined (EH_RETURN_HANDLER_RTX)	\
-		   || defined (HAVE_eh_return))))
-#  define MUST_USE_SJLJ_EXCEPTIONS	0
-# else
-#  define MUST_USE_SJLJ_EXCEPTIONS	1
-# endif
-#endif
-
-#ifdef CONFIG_SJLJ_EXCEPTIONS
-# if CONFIG_SJLJ_EXCEPTIONS == 1
-#  define USING_SJLJ_EXCEPTIONS		1
-# endif
-# if CONFIG_SJLJ_EXCEPTIONS == 0
-#  define USING_SJLJ_EXCEPTIONS		0
-#  if !defined(EH_RETURN_DATA_REGNO)
-    #error "EH_RETURN_DATA_REGNO required"
-#  endif
-#  if ! (defined(TARGET_UNWIND_INFO) || DWARF2_UNWIND_INFO)
-    #error "{DWARF2,TARGET}_UNWIND_INFO required"
-#  endif
-#  if !defined(TARGET_UNWIND_INFO) \
-	&& !(defined(EH_RETURN_HANDLER_RTX) || defined(HAVE_eh_return))
-    #error "EH_RETURN_HANDLER_RTX or eh_return required"
-#  endif
-/* Usually the above error checks will have already triggered an
-   error, but backends may set MUST_USE_SJLJ_EXCEPTIONS for their own
-   reasons.  */
-#  if MUST_USE_SJLJ_EXCEPTIONS
-    #error "Must use SJLJ exceptions but configured not to"
-#  endif
-# endif
-#else
-# define USING_SJLJ_EXCEPTIONS		MUST_USE_SJLJ_EXCEPTIONS
-#endif
 
 struct GTY(()) throw_stmt_node {
   gimple stmt;

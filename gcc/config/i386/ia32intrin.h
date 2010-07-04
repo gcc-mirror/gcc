@@ -178,6 +178,7 @@ __bswapq (long long __X)
   return __builtin_bswap64 (__X);
 }
 
+#ifdef __SSE4_2__
 /* 64bit accumulate CRC32 (polynomial 0x11EDC6F41) value.  */
 extern __inline unsigned long long
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -185,6 +186,7 @@ __crc32q (unsigned long long __C, unsigned long long __V)
 {
   return __builtin_ia32_crc32di (__C, __V);
 }
+#endif
 
 /* 64bit popcnt */
 extern __inline long long

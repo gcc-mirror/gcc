@@ -27,9 +27,16 @@ if ![info exists DEFAULT_CFLAGS] then {
 # Initialize `dg'.
 dg-init
 
+# Gather a list of all tests.
+set tests [lsort [glob -nocomplain $srcdir/$subdir/*.m]]
+
 # Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[m\]]] \
-	"" $DEFAULT_CFLAGS
+dg-runtest $tests "-fgnu-runtime" $DEFAULT_CFLAGS
+
+# darwin targets can also run code with the NeXT runtime.
+if [istarget "*-*-darwin*" ] {
+  dg-runtest $tests "-fnext-runtime" $DEFAULT_CFLAGS
+}
 
 # All done.
 dg-finish

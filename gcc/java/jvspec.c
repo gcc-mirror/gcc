@@ -1,7 +1,7 @@
 /* Specific flags and argument handling of the front-end of the 
    GNU compiler for the Java(TM) language.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -400,33 +400,33 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
     }
 
   if (quote)
-    fatal ("argument to '%s' missing\n", quote);
+    fatal_error ("argument to %qs missing", quote);
 
   if (saw_D && ! main_class_name)
-    fatal ("can't specify '-D' without '--main'\n");
+    fatal_error ("can't specify %<-D%> without %<--main%>");
 
   if (main_class_name && ! verify_class_name (main_class_name))
-    fatal ("'%s' is not a valid class name", main_class_name);
+    fatal_error ("%qs is not a valid class name", main_class_name);
 
   num_args = argc + added;
   if (saw_resource)
     {
       if (! saw_o)
-	fatal ("--resource requires -o");
+	fatal_error ("--resource requires -o");
     }
   if (saw_C)
     {
       num_args += 3;
       if (class_files_count + zip_files_count > 0)
 	{
-	  error ("warning: already-compiled .class files ignored with -C"); 
+	  warning (0, "already-compiled .class files ignored with -C"); 
 	  num_args -= class_files_count + zip_files_count;
 	  class_files_count = 0;
 	  zip_files_count = 0;
 	}
       num_args += 2;  /* For -o NONE. */
       if (saw_o)
-	fatal ("cannot specify both -C and -o");
+	fatal_error ("cannot specify both -C and -o");
     }
   if ((saw_o && java_files_count + class_files_count + zip_files_count > 1)
       || (saw_C && java_files_count > 1)
@@ -438,7 +438,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
     {
       filelist_filename = make_temp_file ("jx");
       if (filelist_filename == NULL)
-	fatal ("cannot create temporary file");
+	fatal_error ("cannot create temporary file");
       record_temp_file (filelist_filename, ! saw_save_temps, 0);
       filelist_file = fopen (filelist_filename, "w");
       if (filelist_file == NULL)
@@ -460,7 +460,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
   if (combine_inputs || indirect_files_count > 0)
     num_args += 1; /* for "-ffilelist-file" */
   if (combine_inputs && indirect_files_count > 0)
-    fatal("using both @FILE with multiple files not implemented");
+    fatal_error ("using both @FILE with multiple files not implemented");
 
   /* There's no point adding -shared-libgcc if we don't have a shared
      libgcc.  */
@@ -582,7 +582,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
       if (strncmp (argv[i], "-fmain=", 7) == 0)
 	{
 	  if (! will_link)
-	    fatal ("cannot specify 'main' class when not linking");
+	    fatal_error ("cannot specify %<main%> class when not linking");
 	  --j;
 	  continue;
 	}

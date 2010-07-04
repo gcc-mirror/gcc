@@ -39,9 +39,9 @@ class gnu::javax::swing::text::html::css::CSSParser$1 : public ::java::lang::Obj
 public: // actually package-private
   CSSParser$1();
 public:
-  void startStatement(JArray< ::gnu::javax::swing::text::html::css::Selector * > *);
-  void endStatement();
-  void declaration(::java::lang::String *, ::java::lang::String *);
+  virtual void startStatement(JArray< ::gnu::javax::swing::text::html::css::Selector * > *);
+  virtual void endStatement();
+  virtual void declaration(::java::lang::String *, ::java::lang::String *);
   static ::java::lang::Class class$;
 };
 

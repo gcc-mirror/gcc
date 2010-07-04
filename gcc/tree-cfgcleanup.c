@@ -1,5 +1,5 @@
 /* CFG cleanup for trees.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -23,18 +23,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"
 #include "tm_p.h"
-#include "hard-reg-set.h"
 #include "basic-block.h"
 #include "output.h"
 #include "toplev.h"
 #include "flags.h"
 #include "function.h"
-#include "expr.h"
 #include "ggc.h"
 #include "langhooks.h"
-#include "diagnostic.h"
 #include "tree-flow.h"
 #include "timevar.h"
 #include "tree-dump.h"
@@ -103,20 +99,28 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi)
 	    /* For conditions try harder and lookup single-argument
 	       PHI nodes.  Only do so from the same basic-block though
 	       as other basic-blocks may be dead already.  */
-	    if (TREE_CODE (lhs) == SSA_NAME)
+	    if (TREE_CODE (lhs) == SSA_NAME
+		&& !name_registered_for_update_p (lhs))
 	      {
 		gimple def_stmt = SSA_NAME_DEF_STMT (lhs);
 		if (gimple_code (def_stmt) == GIMPLE_PHI
 		    && gimple_phi_num_args (def_stmt) == 1
-		    && gimple_bb (def_stmt) == gimple_bb (stmt))
+		    && gimple_bb (def_stmt) == gimple_bb (stmt)
+		    && (TREE_CODE (PHI_ARG_DEF (def_stmt, 0)) != SSA_NAME
+			|| !name_registered_for_update_p (PHI_ARG_DEF (def_stmt,
+								       0))))
 		  lhs = PHI_ARG_DEF (def_stmt, 0);
 	      }
-	    if (TREE_CODE (rhs) == SSA_NAME)
+	    if (TREE_CODE (rhs) == SSA_NAME
+		&& !name_registered_for_update_p (rhs))
 	      {
 		gimple def_stmt = SSA_NAME_DEF_STMT (rhs);
 		if (gimple_code (def_stmt) == GIMPLE_PHI
 		    && gimple_phi_num_args (def_stmt) == 1
-		    && gimple_bb (def_stmt) == gimple_bb (stmt))
+		    && gimple_bb (def_stmt) == gimple_bb (stmt)
+		    && (TREE_CODE (PHI_ARG_DEF (def_stmt, 0)) != SSA_NAME
+			|| !name_registered_for_update_p (PHI_ARG_DEF (def_stmt,
+								       0))))
 		  rhs = PHI_ARG_DEF (def_stmt, 0);
 	      }
 	    val = fold_binary_loc (loc, gimple_cond_code (stmt),
@@ -259,6 +263,7 @@ static bool
 tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 {
   gimple_stmt_iterator gsi;
+  location_t locus;
 
   /* BB must have a single outgoing edge.  */
   if (single_succ_p (bb) != 1
@@ -277,6 +282,8 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
   gcc_assert (bb != ENTRY_BLOCK_PTR);
 #endif
 
+  locus = single_succ_edge (bb)->goto_locus;
+
   /* There should not be an edge coming from entry, or an EH edge.  */
   {
     edge_iterator ei;
@@ -284,6 +291,10 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 
     FOR_EACH_EDGE (e, ei, bb->preds)
       if (e->src == ENTRY_BLOCK_PTR || (e->flags & EDGE_EH))
+	return false;
+      /* If goto_locus of any of the edges differs, prevent removing
+	 the forwarder block for -O0.  */
+      else if (optimize == 0 && e->goto_locus != locus)
 	return false;
   }
 
@@ -297,6 +308,8 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 	{
 	case GIMPLE_LABEL:
 	  if (DECL_NONLOCAL (gimple_label_label (stmt)))
+	    return false;
+	  if (optimize == 0 && gimple_location (stmt) != locus)
 	    return false;
 	  break;
 
@@ -376,6 +389,7 @@ remove_forwarder_block (basic_block bb)
   gimple label;
   edge_iterator ei;
   gimple_stmt_iterator gsi, gsi_to;
+  bool can_move_debug_stmts;
 
   /* We check for infinite loops already in tree_forwarder_block_p.
      However it may happen that the infinite loop is created
@@ -423,6 +437,8 @@ remove_forwarder_block (basic_block bb)
 	    return false;
 	}
     }
+
+  can_move_debug_stmts = single_pred_p (dest);
 
   /* Redirect the edges.  */
   for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
@@ -480,15 +496,16 @@ remove_forwarder_block (basic_block bb)
 
   /* Move debug statements if the destination has just a single
      predecessor.  */
-  if (single_pred_p (dest))
+  if (can_move_debug_stmts)
     {
       gsi_to = gsi_after_labels (dest);
       for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); )
 	{
-	  if (!is_gimple_debug (gsi_stmt (gsi)))
+	  gimple debug = gsi_stmt (gsi);
+	  if (!is_gimple_debug (debug))
 	    break;
 	  gsi_remove (&gsi, false);
-	  gsi_insert_before (&gsi_to, label, GSI_SAME_STMT);
+	  gsi_insert_before (&gsi_to, debug, GSI_SAME_STMT);
 	}
     }
 
@@ -519,6 +536,68 @@ remove_forwarder_block (basic_block bb)
   return true;
 }
 
+/* STMT is a call that has been discovered noreturn.  Fixup the CFG
+   and remove LHS.  Return true if something changed.  */
+
+bool
+fixup_noreturn_call (gimple stmt)
+{
+  basic_block bb = gimple_bb (stmt);
+  bool changed = false;
+
+  if (gimple_call_builtin_p (stmt, BUILT_IN_RETURN))
+    return false;
+
+  /* First split basic block if stmt is not last.  */
+  if (stmt != gsi_stmt (gsi_last_bb (bb)))
+    split_block (bb, stmt);
+
+  changed |= remove_fallthru_edge (bb->succs);
+
+  /* If there is LHS, remove it.  */
+  if (gimple_call_lhs (stmt))
+    {
+      tree op = gimple_call_lhs (stmt);
+      gimple_call_set_lhs (stmt, NULL_TREE);
+
+      /* We need to remove SSA name to avoid checking errors.
+	 All uses are dominated by the noreturn and thus will
+	 be removed afterwards.
+	 We proactively remove affected non-PHI statements to avoid
+	 fixup_cfg from trying to update them and crashing.  */
+      if (TREE_CODE (op) == SSA_NAME)
+	{
+	  use_operand_p use_p;
+          imm_use_iterator iter;
+	  gimple use_stmt;
+	  bitmap_iterator bi;
+	  unsigned int bb_index;
+
+	  bitmap blocks = BITMAP_ALLOC (NULL);
+
+          FOR_EACH_IMM_USE_STMT (use_stmt, iter, op)
+	    {
+	      if (gimple_code (use_stmt) != GIMPLE_PHI)
+	        bitmap_set_bit (blocks, gimple_bb (use_stmt)->index);
+	      else
+		FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		  SET_USE (use_p, error_mark_node);
+	    }
+	  EXECUTE_IF_SET_IN_BITMAP (blocks, 0, bb_index, bi)
+	    delete_basic_block (BASIC_BLOCK (bb_index));
+	  BITMAP_FREE (blocks);
+	  release_ssa_name (op);
+	}
+      update_stmt (stmt);
+      changed = true;
+    }
+  /* Similarly remove VDEF if there is any.  */
+  else if (gimple_vdef (stmt))
+    update_stmt (stmt);
+  return changed;
+}
+
+
 /* Split basic blocks on calls in the middle of a basic block that are now
    known not to return, and remove the unreachable code.  */
 
@@ -541,13 +620,10 @@ split_bbs_on_noreturn_calls (void)
 	    || bb->index < NUM_FIXED_BLOCKS
 	    || bb->index >= n_basic_blocks
 	    || BASIC_BLOCK (bb->index) != bb
-	    || last_stmt (bb) == stmt
 	    || !gimple_call_noreturn_p (stmt))
 	  continue;
 
-	changed = true;
-	split_block (bb, stmt);
-	remove_fallthru_edge (bb->succs);
+	changed |= fixup_noreturn_call (stmt);
       }
 
   return changed;
@@ -596,11 +672,7 @@ cleanup_tree_cfg_bb (basic_block bb)
 
   retval = cleanup_control_flow_bb (bb);
 
-  /* Forwarder blocks can carry line number information which is
-     useful when debugging, so we only clean them up when
-     optimizing.  */
-  if (optimize > 0
-      && tree_forwarder_block_p (bb, false)
+  if (tree_forwarder_block_p (bb, false)
       && remove_forwarder_block (bb))
     return true;
 

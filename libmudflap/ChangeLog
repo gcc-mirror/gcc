@@ -1,3 +1,41 @@
+2010-06-09  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR bootstrap/43170
+	* configure: Regenerate.
+
+2010-05-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/libmudflap.c/pass46-frag.c (dg-options): Remove -Wall.
+
+2010-05-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/lib/mfdg.exp (additional_prunes): New global.
+	(dg-test): Clear additional_prunes before test is run.
+	(dg-prune-output): New procedure.
+	* testsuite/lib/libmudflap.exp (libmudflap-dg-test): Do not call
+	prune_gcc_output.
+	(libmudflap-dg-prune): New procedure.
+	* testsuite/libmudflap.c++/pass57-frag.cxx (dg-prune-output):
+	New dg directive.
+
+2010-05-04  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/43620
+	* configure.ac (AM_INIT_AUTOMAKE): Add no-dist.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2010-03-15  David S. Miller  <davem@davemloft.net>
+
+	* testsuite/libmudflap.c/pass54-frag.c: Add explicit return from
+	main.
+
 2010-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* mf-runtime.c (__mf_usage): Update copyright notice dates.

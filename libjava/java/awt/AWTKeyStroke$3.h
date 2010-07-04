@@ -24,7 +24,7 @@ class java::awt::AWTKeyStroke$3 : public ::java::lang::Object
 public: // actually package-private
   AWTKeyStroke$3(::java::lang::Class *);
 public:
-  ::java::lang::Object * run();
+  virtual ::java::lang::Object * run();
 private:
   ::java::lang::Class * __attribute__((aligned(__alignof__( ::java::lang::Object)))) val$subclass;
 public:

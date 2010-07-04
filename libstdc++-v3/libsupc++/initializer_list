@@ -36,7 +36,7 @@
 
 #pragma GCC visibility push(default)
 
-#include <cstddef>
+#include <bits/c++config.h>
 
 namespace std
 {
@@ -61,7 +61,7 @@ namespace std
       : _M_array(__a), _M_len(__l) { }
 
     public:
-      initializer_list() : _M_array(NULL), _M_len(0) { }
+      initializer_list() : _M_array(0), _M_len(0) { }
 
       // Number of elements.
       size_type

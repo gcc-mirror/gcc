@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 @protocol Foo
 - (id)meth1;

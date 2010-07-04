@@ -14,9 +14,9 @@ class java::util::Collections$1 : public ::java::lang::Object
 public: // actually package-private
   Collections$1(::java::util::Collections$SingletonSet *);
 public:
-  jboolean hasNext();
-  ::java::lang::Object * next();
-  void remove();
+  virtual jboolean hasNext();
+  virtual ::java::lang::Object * next();
+  virtual void remove();
 private:
   jboolean __attribute__((aligned(__alignof__( ::java::lang::Object)))) hasNext__;
 public: // actually package-private

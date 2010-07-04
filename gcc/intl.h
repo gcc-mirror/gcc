@@ -1,5 +1,6 @@
 /* intl.h - internationalization
-   Copyright 1998, 2001, 2003, 2004, 2007, 2009 Free Software Foundation, Inc.
+   Copyright 1998, 2001, 2003, 2004, 2007, 2009, 2010
+   Free Software Foundation, Inc.
 
    GCC is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

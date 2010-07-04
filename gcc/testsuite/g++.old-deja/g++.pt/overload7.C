@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-prune-output "note" }
 
 // Adapted from testcase by Corey Kosak <kosak@cs.cmu.edu>
 

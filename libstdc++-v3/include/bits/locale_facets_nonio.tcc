@@ -44,7 +44,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	const locale::facet** __caches = __loc._M_impl->_M_caches;
 	if (!__caches[__i])
 	  {
-	    __moneypunct_cache<_CharT, _Intl>* __tmp = NULL;
+	    __moneypunct_cache<_CharT, _Intl>* __tmp = 0;
 	    __try
 	      {
 		__tmp = new __moneypunct_cache<_CharT, _Intl>;

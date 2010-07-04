@@ -5,6 +5,13 @@
 
 static void ssse3_test (void);
 
+static void
+__attribute__ ((noinline))
+do_test (void)
+{
+  ssse3_test ();
+}
+
 int
 main ()
 {
@@ -15,7 +22,7 @@ main ()
 
   /* Run SSSE3 test only if host has SSSE3 support.  */
   if (ecx & bit_SSSE3)
-    ssse3_test ();
+    do_test ();
 
   return 0;
 }

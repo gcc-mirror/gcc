@@ -1,5 +1,6 @@
 ;; Predicate definitions for Renesas / SuperH SH.
-;; Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -420,6 +421,25 @@
 
   return general_operand (op, mode);
 })
+
+
+;; Returns 1 if OP is a POST_INC on stack pointer register.
+
+(define_predicate "sh_no_delay_pop_operand"
+  (match_code "mem")
+{
+  rtx inside;
+  inside = XEXP (op, 0);
+
+  if (GET_CODE (op) == MEM && GET_MODE (op) == SImode 
+      && GET_CODE (inside) == POST_INC 
+      && GET_CODE (XEXP (inside, 0)) == REG
+      && REGNO (XEXP (inside, 0)) == SP_REG)
+    return 1;
+
+  return 0;
+})
+
 
 ;; Returns 1 if OP is a MEM that can be source of a simple move operation.
 

@@ -2,7 +2,7 @@
 // { dg-options "" }
 
 template <class ARRY>
-inline unsigned int asize(ARRY &a)
+inline unsigned int asize(ARRY &a) // { dg-message "candidate" }
 {
   return sizeof(a) / sizeof(a[0]);
 }

@@ -1,3 +1,43 @@
+2010-06-20  Alexandre Oliva  <aoliva@redhat.com>
+
+	* compare-debug: Drop LTO sections.
+
+2010-06-15  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* gcc_update: Support updating a git clone.
+
+2010-06-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* test_summary: Don't use diff -u.
+	Adapt egrep regex.
+
+2010-06-02  Andrew Haley  <aph@redhat.com>
+
+	* download_prerequisites: New script.
+
+2010-05-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* dg-extract-results.sh: Redirect grep output to /dev/null instead
+	of grep -q.
+
+2010-04-22  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* gcc_update: Sets the locale to C.
+
+2010-04-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* gennews (files): Add files for GCC 4.5.
+
+2010-03-22  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	Fix *.log tests output containing "===".
+	* dg-extract-results.sh (/\===/): Rename to ...
+	(/^\t\t=== .* ===$/): ... this pattern.
+
+2010-03-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* dg-extract-results.sh: Fix result order to match sequential case.
+
 2010-01-16  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* check_warning_flags.sh: Use \012 instead of \n with tr.

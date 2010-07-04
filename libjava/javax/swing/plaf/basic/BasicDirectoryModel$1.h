@@ -31,7 +31,7 @@ class javax::swing::plaf::basic::BasicDirectoryModel$1 : public ::java::lang::Ob
 public: // actually package-private
   BasicDirectoryModel$1(::javax::swing::plaf::basic::BasicDirectoryModel *);
 public:
-  jint compare(::java::lang::Object *, ::java::lang::Object *);
+  virtual jint compare(::java::lang::Object *, ::java::lang::Object *);
 public: // actually package-private
   ::javax::swing::plaf::basic::BasicDirectoryModel * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

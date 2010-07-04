@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,149 +37,145 @@
 #ifndef _GLIBCXX_PROFILE_PROFILER_HASH_FUNC_H
 #define _GLIBCXX_PROFILE_PROFILER_HASH_FUNC_H 1
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#else
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#endif
 #include "profile/impl/profiler.h"
 #include "profile/impl/profiler_node.h"
 #include "profile/impl/profiler_trace.h"
 
 namespace __gnu_profile
 {
+  /** @brief A hash performance instrumentation line in the object table.  */
+  class __hashfunc_info
+  : public __object_info_base
+  {
+  public:
+    __hashfunc_info()
+    : _M_longest_chain(0), _M_accesses(0), _M_hops(0) { }
 
-/** @brief A hash performance instrumentation line in the object table.  */
-class __hashfunc_info: public __object_info_base
-{
- public:
-  __hashfunc_info()
-      :_M_longest_chain(0), _M_accesses(0), _M_hops(0) {}
-  __hashfunc_info(const __hashfunc_info& o);
-  __hashfunc_info(__stack_t __stack)
-      : __object_info_base(__stack),
-        _M_longest_chain(0), _M_accesses(0), _M_hops(0){} 
-  virtual ~__hashfunc_info() {}
+    __hashfunc_info(const __hashfunc_info& __o)
+    : __object_info_base(__o), _M_longest_chain(__o._M_longest_chain),
+      _M_accesses(__o._M_accesses), _M_hops(__o._M_hops) { }
 
-  void __merge(const __hashfunc_info& __o);
-  void __destruct(size_t __chain, size_t __accesses, size_t __hops);
-  void __write(FILE* __f) const;
-  float __magnitude() const { return static_cast<float>(_M_hops); }
-  const char* __advice() const { return strdup("change hash function"); }
+    __hashfunc_info(__stack_t __stack)
+    : __object_info_base(__stack), _M_longest_chain(0),
+      _M_accesses(0), _M_hops(0) { }
 
-private:
-  size_t _M_longest_chain;
-  size_t _M_accesses;
-  size_t _M_hops;
-};
+    virtual ~__hashfunc_info() { }
 
-inline __hashfunc_info::__hashfunc_info(const __hashfunc_info& __o)
-    : __object_info_base(__o)
-{
-  _M_longest_chain = __o._M_longest_chain;
-  _M_accesses      = __o._M_accesses;
-  _M_hops          = __o._M_hops;
-}
+    void
+    __merge(const __hashfunc_info& __o)
+    {
+      _M_longest_chain  = std::max(_M_longest_chain, __o._M_longest_chain);
+      _M_accesses      += __o._M_accesses;
+      _M_hops          += __o._M_hops;
+    }
 
-inline void __hashfunc_info::__merge(const __hashfunc_info& __o)
-{
-  _M_longest_chain  = __max(_M_longest_chain, __o._M_longest_chain);
-  _M_accesses      += __o._M_accesses;
-  _M_hops          += __o._M_hops;
-}
+    void
+    __destruct(std::size_t __chain, std::size_t __accesses,
+	       std::size_t __hops)
+    { 
+      _M_longest_chain  = std::max(_M_longest_chain, __chain);
+      _M_accesses      += __accesses;
+      _M_hops          += __hops;
+    }
 
-inline void __hashfunc_info::__destruct(size_t __chain, size_t __accesses, 
-                                        size_t __hops)
-{ 
-  _M_longest_chain  = __max(_M_longest_chain, __chain);
-  _M_accesses      += __accesses;
-  _M_hops          += __hops;
-}
+    void
+    __write(FILE* __f) const
+    { std::fprintf(__f, "%Zu %Zu %Zu\n", _M_hops,
+		   _M_accesses, _M_longest_chain); }
 
-/** @brief A hash performance instrumentation line in the stack table.  */
-class __hashfunc_stack_info: public __hashfunc_info {
- public:
-  __hashfunc_stack_info(const __hashfunc_info& __o) : __hashfunc_info(__o) {}
-};
+    float
+    __magnitude() const
+    { return static_cast<float>(_M_hops); }
 
-/** @brief Hash performance instrumentation producer.  */
-class __trace_hash_func
-    : public __trace_base<__hashfunc_info, __hashfunc_stack_info> 
-{
- public:
-  __trace_hash_func();
-  ~__trace_hash_func() {}
+    std::string
+    __advice() const
+    { return "change hash function"; }
 
-  // Insert a new node at construct with object, callstack and initial size. 
-  void __insert(__object_t __obj, __stack_t __stack);
-  // Call at destruction/clean to set container final size.
-  void __destruct(const void* __obj, size_t __chain,
-                  size_t __accesses, size_t __hops);
-};
+  private:
+    std::size_t _M_longest_chain;
+    std::size_t _M_accesses;
+    std::size_t _M_hops;
+  };
 
-inline __trace_hash_func::__trace_hash_func()
+
+  /** @brief A hash performance instrumentation line in the stack table.  */
+  class __hashfunc_stack_info 
+  : public __hashfunc_info
+  {
+  public:
+    __hashfunc_stack_info(const __hashfunc_info& __o)
+    : __hashfunc_info(__o) { }
+  };
+
+
+  /** @brief Hash performance instrumentation producer.  */
+  class __trace_hash_func
+  : public __trace_base<__hashfunc_info, __hashfunc_stack_info> 
+  {
+  public:
+    __trace_hash_func()
     : __trace_base<__hashfunc_info, __hashfunc_stack_info>()
-{
-  __id = "hash-distr";
-}
+    { __id = "hash-distr"; }
 
-inline void __trace_hash_func::__insert(__object_t __obj, __stack_t __stack)
-{
-  __add_object(__obj, __hashfunc_info(__stack));
-}
+    ~__trace_hash_func() {}
+    
+    // Insert a new node at construct with object, callstack and initial size.
+    void
+    __insert(__object_t __obj, __stack_t __stack)
+    { __add_object(__obj, __hashfunc_info(__stack)); }
 
-inline void __hashfunc_info::__write(FILE* __f) const
-{
-  fprintf(__f, "%Zu %Zu %Zu\n", _M_hops, _M_accesses, _M_longest_chain);
-}
+    // Call at destruction/clean to set container final size.
+    void
+    __destruct(const void* __obj, std::size_t __chain,
+	       std::size_t __accesses, std::size_t __hops)
+    {
+      if (!__is_on())
+	return;
 
-inline void __trace_hash_func::__destruct(const void* __obj, size_t __chain,
-                                          size_t __accesses, size_t __hops)
-{
-  if (!__is_on()) return;
+      // First find the item from the live objects and update the informations.
+      __hashfunc_info* __objs = __get_object_info(__obj);
+      if (!__objs)
+	return;
 
-  // First find the item from the live objects and update the informations.
-  __hashfunc_info* __objs = __get_object_info(__obj);
-  if (!__objs)
-    return;
+      __objs->__destruct(__chain, __accesses, __hops);
+      __retire_object(__obj);
+    }
+  };
 
-  __objs->__destruct(__chain, __accesses, __hops);
-  __retire_object(__obj);
-}
 
-inline void __trace_hash_func_init()
-{
-  _GLIBCXX_PROFILE_DATA(_S_hash_func) = new __trace_hash_func();
-}
+  inline void
+  __trace_hash_func_init()
+  { _GLIBCXX_PROFILE_DATA(_S_hash_func) = new __trace_hash_func(); }
 
-inline void __trace_hash_func_report(FILE* __f,
-                                     __warning_vector_t& __warnings)
-{
-  if (_GLIBCXX_PROFILE_DATA(_S_hash_func)) {
-    _GLIBCXX_PROFILE_DATA(_S_hash_func)->__collect_warnings(__warnings);
-    _GLIBCXX_PROFILE_DATA(_S_hash_func)->__write(__f);
+  inline void
+  __trace_hash_func_report(FILE* __f, __warning_vector_t& __warnings)
+  {
+    if (_GLIBCXX_PROFILE_DATA(_S_hash_func))
+      {
+	_GLIBCXX_PROFILE_DATA(_S_hash_func)->__collect_warnings(__warnings);
+	_GLIBCXX_PROFILE_DATA(_S_hash_func)->__write(__f);
+      }
   }
-}
 
-inline void __trace_hash_func_construct(const void* __obj)
-{
-  if (!__profcxx_init()) return;
+  inline void
+  __trace_hash_func_construct(const void* __obj)
+  {
+    if (!__profcxx_init())
+      return;
 
-  _GLIBCXX_PROFILE_DATA(_S_hash_func)->__insert(__obj, __get_stack());
-}
+    _GLIBCXX_PROFILE_DATA(_S_hash_func)->__insert(__obj, __get_stack());
+  }
 
-inline void __trace_hash_func_destruct(const void* __obj, size_t __chain,
-                                       size_t __accesses, size_t __hops)
-{
-  if (!__profcxx_init()) return;
+  inline void
+  __trace_hash_func_destruct(const void* __obj, std::size_t __chain,
+			     std::size_t __accesses, std::size_t __hops)
+  {
+    if (!__profcxx_init())
+      return;
 
-  _GLIBCXX_PROFILE_DATA(_S_hash_func)->__destruct(__obj, __chain, __accesses, 
-                                                  __hops);
-}
+    _GLIBCXX_PROFILE_DATA(_S_hash_func)->__destruct(__obj, __chain,
+						    __accesses, __hops);
+  }
 
 } // namespace __gnu_profile
 #endif /* _GLIBCXX_PROFILE_PROFILER_HASH_FUNC_H */

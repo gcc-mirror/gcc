@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
@@ -39,7 +39,7 @@ extern int small_data_operand (rtx, enum machine_mode);
 extern bool toc_relative_expr_p (rtx);
 extern bool invalid_e500_subreg (rtx, enum machine_mode);
 extern void validate_condition_mode (enum rtx_code, enum machine_mode);
-extern bool legitimate_constant_pool_address_p (rtx);
+extern bool legitimate_constant_pool_address_p (const_rtx, bool);
 extern bool legitimate_indirect_address_p (rtx, int);
 extern bool legitimate_indexed_address_p (rtx, int);
 extern bool avoiding_indexed_address_p (enum machine_mode);
@@ -106,20 +106,18 @@ extern void rs6000_split_compare_and_swap (rtx, rtx, rtx, rtx, rtx);
 extern void rs6000_expand_compare_and_swapqhi (rtx, rtx, rtx, rtx);
 extern void rs6000_split_compare_and_swapqhi (rtx, rtx, rtx, rtx, rtx, rtx);
 extern void rs6000_split_lock_test_and_set (rtx, rtx, rtx, rtx);
-extern void rs6000_emit_swdivsf (rtx, rtx, rtx);
-extern void rs6000_emit_swdivdf (rtx, rtx, rtx);
-extern void rs6000_emit_swrsqrtsf (rtx, rtx);
+extern void rs6000_emit_swdiv (rtx, rtx, rtx, bool);
+extern void rs6000_emit_swrsqrt (rtx, rtx);
 extern void output_toc (FILE *, rtx, int, enum machine_mode);
 extern rtx rs6000_longcall_ref (rtx);
 extern void rs6000_fatal_bad_address (rtx);
-extern rtx create_TOC_reference (rtx);
+extern rtx create_TOC_reference (rtx, rtx);
 extern void rs6000_split_multireg_move (rtx, rtx);
 extern void rs6000_emit_move (rtx, rtx, enum machine_mode);
 extern rtx rs6000_secondary_memory_needed_rtx (enum machine_mode);
 extern rtx (*rs6000_legitimize_reload_address_ptr) (rtx, enum machine_mode,
 						    int, int, int, int *);
 extern bool rs6000_legitimate_offset_address_p (enum machine_mode, rtx, int);
-extern bool (*rs6000_mode_dependent_address_ptr) (rtx);
 extern rtx rs6000_find_base_term (rtx);
 extern bool rs6000_offsettable_memref_p (rtx);
 extern rtx rs6000_return_addr (int, rtx);

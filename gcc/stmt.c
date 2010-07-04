@@ -52,6 +52,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "alloc-pool.h"
 #include "pretty-print.h"
+#include "bitmap.h"
+
 
 /* Functions and data structures for expanding case statements.  */
 
@@ -1317,7 +1319,7 @@ resolve_asm_operand_names (tree string, tree outputs, tree inputs, tree labels)
 	break;
       else
 	{
-	  c += 1;
+	  c += 1 + (c[1] == '%');
 	  continue;
 	}
     }
@@ -1339,7 +1341,7 @@ resolve_asm_operand_names (tree string, tree outputs, tree inputs, tree labels)
 	    p += 2;
 	  else
 	    {
-	      p += 1;
+	      p += 1 + (p[1] == '%');
 	      continue;
 	    }
 

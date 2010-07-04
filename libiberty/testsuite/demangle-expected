@@ -3220,6 +3220,16 @@ _26_GLOBAL_$N$_tmp_n.iilg4Gya$app_instance
 {anonymous}::app_instance
 {anonymous}::app_instance
 #
+--format=gnu-v3 --no-params
+_Z3fo5n
+fo5(__int128)
+fo5
+#
+--format=gnu-v3 --no-params
+_Z3fo5o
+fo5(unsigned __int128)
+fo5
+#
 --format=java
 _ZN4java3awt10ScrollPane7addImplEPNS0_9ComponentEPNS_4lang6ObjectEi
 java.awt.ScrollPane.addImpl(java.awt.Component, java.lang.Object, int)
@@ -3928,16 +3938,22 @@ _Z1fN1SUt_E
 f(S::{unnamed type#1})
 --format=gnu-v3
 _Z1fDv32_f
-f(float vector[32])
+f(float __vector(32))
 --format=gnu-v3
 _Z1fIfLi4EEvDv_T0__T_
-void f<float, 4>(float vector[4])
+void f<float, 4>(float __vector(4))
 --format=gnu-v3
 _Z1fI1AEDTclonplfp_fp_EET_
 decltype ((operator+)({parm#1}, {parm#1})) f<A>(A)
 --format=gnu-v3
 _Z1hI1AEDTcldtfp_miEET_
 decltype (({parm#1}.(operator-))()) h<A>(A)
+--format=gnu-v3
+_Z1fDn
+f(decltype(nullptr))
+--format=gnu-v3
+_ZN5aaaaa6bbbbbb5cccccIN23ddddddddddddddddddddddd3eeeENS2_4ffff16ggggggggggggggggENS0_9hhhhhhhhhES6_S6_S6_S6_S6_S6_S6_EE
+aaaaa::bbbbbb::ccccc<ddddddddddddddddddddddd::eee, ddddddddddddddddddddddd::ffff::gggggggggggggggg, aaaaa::bbbbbb::hhhhhhhhh, aaaaa::bbbbbb::hhhhhhhhh, aaaaa::bbbbbb::hhhhhhhhh, aaaaa::bbbbbb::hhhhhhhhh, aaaaa::bbbbbb::hhhhhhhhh, aaaaa::bbbbbb::hhhhhhhhh, aaaaa::bbbbbb::hhhhhhhhh, aaaaa::bbbbbb::hhhhhhhhh>
 #
 # Ada (GNAT) tests.
 #

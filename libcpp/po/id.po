@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.5-b20100204\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-01-11 11:42+0000\n"
+"POT-Creation-Date: 2010-04-06 14:10+0000\n"
 "PO-Revision-Date: 2010-02-05 19:00+0700\n"
 "Last-Translator: Arif E. Nugroho <arif_endro@yahoo.com>\n"
 "Language-Team: Indonesian <translation-team-id@lists.sourceforge.net>\n"
@@ -34,7 +34,7 @@ msgstr "tidak ada implementasi iconv, tidak dapat mengubah dari %s ke %s"
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr "karakter 0x%lx tidak dalam sumber dasar set karaketer\n"
 
-#: charset.c:798 charset.c:1457
+#: charset.c:798 charset.c:1444
 msgid "converting to execution character set"
 msgstr "mengubah ke eksekusi set karakter"
 
@@ -71,7 +71,7 @@ msgstr "nama karakter universal %.*s tidak lengkap"
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s bukan sebuah karakter universal yang valid"
 
-#: charset.c:1056 lex.c:486
+#: charset.c:1056 lex.c:488
 msgid "'$' in identifier or number"
 msgstr "'$' dalam identifier atau angka"
 
@@ -85,7 +85,7 @@ msgstr "karakter universal %.*s tidak valid dalam sebuah pengidentifikasi"
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "karakter universal %.*s tidak valid di awal dari sebuah pengidentifikasi"
 
-#: charset.c:1102 charset.c:1687
+#: charset.c:1102 charset.c:1674
 msgid "converting UCN to source character set"
 msgstr "mengubah UCN ke set karakter asal"
 
@@ -132,19 +132,19 @@ msgstr "escape sequence: '\\%s' tidak diketahui"
 msgid "converting escape sequence to execution character set"
 msgstr "mengubah escape sequence ke set karakter eksekusi"
 
-#: charset.c:1522 charset.c:1586
+#: charset.c:1509 charset.c:1573
 msgid "character constant too long for its type"
 msgstr "konstanta karakter terlalu panjang untuk tipenya"
 
-#: charset.c:1525
+#: charset.c:1512
 msgid "multi-character character constant"
 msgstr "konstanta karakter multi-karakter"
 
-#: charset.c:1625
+#: charset.c:1612
 msgid "empty character constant"
 msgstr "konstanta karakter kosong"
 
-#: charset.c:1734
+#: charset.c:1721
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr "gagal untuk mengubah %s ke %s"
@@ -396,7 +396,7 @@ msgstr "\"%s\" re-asserted"
 msgid "unterminated #%s"
 msgstr "tidak terakhiri #%s"
 
-#: directives-only.c:222 lex.c:1415 traditional.c:163
+#: directives-only.c:222 lex.c:1516 traditional.c:163
 msgid "unterminated comment"
 msgstr "komentar tidak terakhiri"
 
@@ -702,78 +702,78 @@ msgstr "trigraph ??%c diubah ke %c"
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr "trigraph ??%c diabaikan, gunakan -trigraph untuk mengaktifkan"
 
-#: lex.c:358
+#: lex.c:360
 msgid "\"/*\" within comment"
 msgstr "\"/*\" di dalam komentar"
 
-#: lex.c:416
+#: lex.c:418
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr "%s dalam direktif preprosesing"
 
-#: lex.c:425
+#: lex.c:427
 msgid "null character(s) ignored"
 msgstr "karakter kosong diabaikan"
 
-#: lex.c:462
+#: lex.c:464
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "`%.*s' tidak dalam NFKC"
 
-#: lex.c:465
+#: lex.c:467
 #, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "`%.*s' tidak dalam NFC"
 
-#: lex.c:533 lex.c:610
+#: lex.c:535 lex.c:612
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "mencoba untuk menggunakan terusak \"%s\""
 
-#: lex.c:541 lex.c:618
+#: lex.c:543 lex.c:620
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__ hanya dapat muncul dalam ekspansi dari sebuah variadik makro C99"
 
-#: lex.c:547 lex.c:624
+#: lex.c:549 lex.c:626
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr "pengidentifikasi \"%s\" adalah nama operator spesial dalam C++"
 
-#: lex.c:739
+#: lex.c:771
 msgid "raw string delimiter longer than 16 characters"
 msgstr "pembatas mentah string lebih panjang dari 16 karakter"
 
-#: lex.c:742
+#: lex.c:774
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "karakter '%c' tidak valid dalam pembatas mentah string"
 
-#: lex.c:771 lex.c:818
+#: lex.c:895 lex.c:917
 msgid "unterminated raw string"
 msgstr "tidak terselesaikan raw string"
 
-#: lex.c:831 lex.c:930
+#: lex.c:932 lex.c:1031
 msgid "null character(s) preserved in literal"
 msgstr "karakter kosong dijaga dalam literal"
 
-#: lex.c:933
+#: lex.c:1034
 #, c-format
 msgid "missing terminating %c character"
 msgstr "hilang karakter pengakhir %c"
 
-#: lex.c:1426
+#: lex.c:1527
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "komentar gaya C++ tidak diijinkan dalam ISO C90"
 
-#: lex.c:1428
+#: lex.c:1529
 msgid "(this will be reported only once per input file)"
 msgstr "(ini hanya akan dilaporkan sekali setiap berkas masukan)"
 
-#: lex.c:1433
+#: lex.c:1534
 msgid "multi-line comment"
 msgstr "komentar multi baris"
 
-#: lex.c:1753
+#: lex.c:1854
 #, c-format
 msgid "unspellable token %s"
 msgstr "tanda %s tidak dapat disebutkan"

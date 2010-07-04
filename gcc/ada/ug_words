@@ -85,6 +85,7 @@ gcc -c          ^ GNAT COMPILE
 -gnatN          ^ /INLINE=FULL
 -gnato          ^ /CHECKS=OVERFLOW
 -gnatp          ^ /CHECKS=SUPPRESS_ALL
+-gnat-p         ^ /CHECKS=UNSUPPRESS_ALL
 -gnatP          ^ /POLLING
 -gnatR          ^ /REPRESENTATION_INFO
 -gnatR0         ^ /REPRESENTATION_INFO=NONE

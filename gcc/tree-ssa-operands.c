@@ -1,5 +1,5 @@
 /* SSA operands management for trees.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -25,7 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "flags.h"
 #include "function.h"
-#include "diagnostic.h"
+#include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
 #include "tree-flow.h"
 #include "tree-inline.h"
 #include "tree-pass.h"
@@ -319,9 +320,10 @@ ssa_operand_alloc (unsigned size)
 	  gcc_unreachable ();
 	}
 
-      ptr = (struct ssa_operand_memory_d *)
-	      ggc_alloc (sizeof (void *)
-			 + gimple_ssa_operands (cfun)->ssa_operand_mem_size);
+
+      ptr = ggc_alloc_ssa_operand_memory_d (sizeof (void *)
+                        + gimple_ssa_operands (cfun)->ssa_operand_mem_size);
+
       ptr->next = gimple_ssa_operands (cfun)->operand_memory;
       gimple_ssa_operands (cfun)->operand_memory = ptr;
       gimple_ssa_operands (cfun)->operand_memory_index = 0;
@@ -732,6 +734,9 @@ get_indirect_ref_operands (gimple stmt, tree expr, int flags,
 static void
 get_tmr_operands (gimple stmt, tree expr, int flags)
 {
+  if (TREE_THIS_VOLATILE (expr))
+    gimple_set_has_volatile_ops (stmt, true);
+
   /* First record the real operands.  */
   get_expr_operands (stmt, &TMR_BASE (expr), opf_use | (flags & opf_no_vops));
   get_expr_operands (stmt, &TMR_INDEX (expr), opf_use | (flags & opf_no_vops));
@@ -795,11 +800,7 @@ get_asm_expr_operands (gimple stmt)
       /* Memory operands are addressable.  Note that STMT needs the
 	 address of this operand.  */
       if (!allows_reg && allows_mem)
-	{
-	  tree t = get_base_address (TREE_VALUE (link));
-	  if (t && DECL_P (t))
-	    mark_address_taken (t);
-	}
+	mark_address_taken (TREE_VALUE (link));
 
       get_expr_operands (stmt, &TREE_VALUE (link), opf_def);
     }
@@ -815,11 +816,7 @@ get_asm_expr_operands (gimple stmt)
       /* Memory operands are addressable.  Note that STMT needs the
 	 address of this operand.  */
       if (!allows_reg && allows_mem)
-	{
-	  tree t = get_base_address (TREE_VALUE (link));
-	  if (t && DECL_P (t))
-	    mark_address_taken (t);
-	}
+	mark_address_taken (TREE_VALUE (link));
 
       get_expr_operands (stmt, &TREE_VALUE (link), 0);
     }
@@ -991,11 +988,13 @@ get_expr_operands (gimple stmt, tree *expr_p, int flags)
 
     case DOT_PROD_EXPR:
     case REALIGN_LOAD_EXPR:
+    case WIDEN_MULT_PLUS_EXPR:
+    case WIDEN_MULT_MINUS_EXPR:
       {
 	get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags);
-        get_expr_operands (stmt, &TREE_OPERAND (expr, 1), flags);
-        get_expr_operands (stmt, &TREE_OPERAND (expr, 2), flags);
-        return;
+	get_expr_operands (stmt, &TREE_OPERAND (expr, 1), flags);
+	get_expr_operands (stmt, &TREE_OPERAND (expr, 2), flags);
+	return;
       }
 
     case FUNCTION_DECL:
@@ -1183,7 +1182,7 @@ swap_tree_operands (gimple stmt, tree *exp0, tree *exp1)
 /* Scan the immediate_use list for VAR making sure its linked properly.
    Return TRUE if there is a problem and emit an error message to F.  */
 
-bool
+DEBUG_FUNCTION bool
 verify_imm_links (FILE *f, tree var)
 {
   use_operand_p ptr, prev, list;
@@ -1307,7 +1306,7 @@ dump_immediate_uses (FILE *file)
 
 /* Dump def-use edges on stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_immediate_uses (void)
 {
   dump_immediate_uses (stderr);
@@ -1316,7 +1315,7 @@ debug_immediate_uses (void)
 
 /* Dump def-use edges on stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_immediate_uses_for (tree var)
 {
   dump_immediate_uses_for (stderr, var);

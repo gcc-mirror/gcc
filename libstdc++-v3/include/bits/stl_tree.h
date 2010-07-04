@@ -1,6 +1,7 @@
 // RB tree implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+// 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -176,7 +177,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       pointer
       operator->() const
-      { return &static_cast<_Link_type>(_M_node)->_M_value_field; }
+      { return std::__addressof(static_cast<_Link_type>
+				(_M_node)->_M_value_field); }
 
       _Self&
       operator++()
@@ -251,7 +253,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       pointer
       operator->() const
-      { return &static_cast<_Link_type>(_M_node)->_M_value_field; }
+      { return std::__addressof(static_cast<_Link_type>
+				(_M_node)->_M_value_field); }
 
       _Self&
       operator++()
@@ -368,7 +371,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       {
 	_Link_type __tmp = _M_get_node();
 	__try
-	  { get_allocator().construct(&__tmp->_M_value_field, __x); }
+	  { get_allocator().construct
+	      (std::__addressof(__tmp->_M_value_field), __x); }
 	__catch(...)
 	  {
 	    _M_put_node(__tmp);
@@ -380,7 +384,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       void
       _M_destroy_node(_Link_type __p)
       {
-	get_allocator().destroy(&__p->_M_value_field);
+	get_allocator().destroy(std::__addressof(__p->_M_value_field));
 	_M_put_node(__p);
       }
 #else
@@ -1354,7 +1358,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // DR 130. Associative erase should return an iterator.
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
-    inline typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::iterator
+    typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::iterator
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     erase(iterator __position)
     {
@@ -1373,7 +1377,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // DR 130. Associative erase should return an iterator.
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
-    inline typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::const_iterator
+    typename _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::const_iterator
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     erase(const_iterator __position)
     {

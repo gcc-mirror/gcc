@@ -40,7 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 
    During pass_lower_eh (tree-eh.c) we record the nested structure
    of the TRY nodes in EH_REGION nodes in CFUN->EH->REGION_TREE.
-   We expand the lang_protect_cleanup_actions hook into MUST_NOT_THROW
+   We expand the eh_protect_cleanup_actions langhook into MUST_NOT_THROW
    regions at this time.  We can then flatten the statements within
    the TRY nodes to straight-line code.  Statements that had been within
    TRY nodes that can throw are recorded within CFUN->EH->THROW_STMT_TABLE,
@@ -139,6 +139,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "cgraph.h"
 #include "diagnostic.h"
+#include "tree-pretty-print.h"
 #include "tree-pass.h"
 #include "timevar.h"
 #include "tree-flow.h"
@@ -148,13 +149,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef EH_RETURN_DATA_REGNO
 #define EH_RETURN_DATA_REGNO(N) INVALID_REGNUM
 #endif
-
-/* Protect cleanup actions with must-not-throw regions, with a call
-   to the given failure handler.  */
-tree (*lang_protect_cleanup_actions) (void);
-
-/* Return true if type A catches type B.  */
-int (*lang_eh_type_covers) (tree a, tree b);
 
 static GTY(()) int call_site_base;
 static GTY ((param_is (union tree_node)))
@@ -203,30 +197,6 @@ static int sjlj_size_of_call_site_table (void);
 #endif
 static void dw2_output_call_site_table (int, int);
 static void sjlj_output_call_site_table (void);
-
-
-/* Routine to see if exception handling is turned on.
-   DO_WARN is nonzero if we want to inform the user that exception
-   handling is turned off.
-
-   This is used to ensure that -fexceptions has been specified if the
-   compiler tries to use any exception-specific functions.  */
-
-int
-doing_eh (int do_warn)
-{
-  if (! flag_exceptions)
-    {
-      static int warned = 0;
-      if (! warned && do_warn)
-	{
-	  error ("exception handling disabled, use -fexceptions to enable");
-	  warned = 1;
-	}
-      return 0;
-    }
-  return 1;
-}
 
 
 void
@@ -331,7 +301,7 @@ init_eh (void)
 void
 init_eh_for_function (void)
 {
-  cfun->eh = GGC_CNEW (struct eh_status);
+  cfun->eh = ggc_alloc_cleared_eh_status ();
 
   /* Make sure zero'th entries are used.  */
   VEC_safe_push (eh_region, gc, cfun->eh->region_array, NULL);
@@ -347,12 +317,8 @@ gen_eh_region (enum eh_region_type type, eh_region outer)
 {
   eh_region new_eh;
 
-#ifdef ENABLE_CHECKING
-  gcc_assert (doing_eh (0));
-#endif
-
   /* Insert a new blank region as a leaf in the tree.  */
-  new_eh = GGC_CNEW (struct eh_region_d);
+  new_eh = ggc_alloc_cleared_eh_region_d ();
   new_eh->type = type;
   new_eh->outer = outer;
   if (outer)
@@ -409,7 +375,7 @@ gen_eh_region_catch (eh_region t, tree type_or_list)
 	add_type_for_runtime (TREE_VALUE (type_node));
     }
 
-  c = GGC_CNEW (struct eh_catch_d);
+  c = ggc_alloc_cleared_eh_catch_d ();
   c->type_list = type_list;
   l = t->u.eh_try.last_catch;
   c->prev_catch = l;
@@ -443,7 +409,7 @@ gen_eh_region_must_not_throw (eh_region outer)
 eh_landing_pad
 gen_eh_landing_pad (eh_region region)
 {
-  eh_landing_pad lp = GGC_CNEW (struct eh_landing_pad_d);
+  eh_landing_pad lp = ggc_alloc_cleared_eh_landing_pad_d ();
 
   lp->next_lp = region->landing_pads;
   lp->region = region;
@@ -974,6 +940,7 @@ dw2_build_landing_pads (void)
 
       lp->landing_pad = gen_label_rtx ();
       emit_label (lp->landing_pad);
+      LABEL_PRESERVE_P (lp->landing_pad) = 1;
 
 #ifdef HAVE_exception_receiver
       if (HAVE_exception_receiver)
@@ -1618,9 +1585,11 @@ make_reg_eh_region_note_nothrow_nononlocal (rtx insn)
 bool
 insn_could_throw_p (const_rtx insn)
 {
+  if (!flag_exceptions)
+    return false;
   if (CALL_P (insn))
     return true;
-  if (INSN_P (insn) && flag_non_call_exceptions)
+  if (INSN_P (insn) && cfun->can_throw_non_call_exceptions)
     return may_trap_p (PATTERN (insn));
   return false;
 }
@@ -2369,7 +2338,7 @@ add_call_site (rtx landing_pad, int action, int section)
 {
   call_site_record record;
 
-  record = GGC_NEW (struct call_site_record_d);
+  record = ggc_alloc_call_site_record_d ();
   record->landing_pad = landing_pad;
   record->action = action;
 
@@ -3308,7 +3277,7 @@ dump_eh_tree (FILE * out, struct function *fun)
 
 /* Dump the EH tree for FN on stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_eh_tree (struct function *fn)
 {
   dump_eh_tree (stderr, fn);
@@ -3316,7 +3285,7 @@ debug_eh_tree (struct function *fn)
 
 /* Verify invariants on EH datastructures.  */
 
-void
+DEBUG_FUNCTION void
 verify_eh_tree (struct function *fun)
 {
   eh_region r, outer;

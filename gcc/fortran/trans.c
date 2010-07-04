@@ -1,6 +1,6 @@
 /* Code translation -- generate GCC trees from gfc_code.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free
-   Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -23,12 +23,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "gimple.h"
+#include "gimple.h"	/* For create_tmp_var_raw.  */
 #include "tree-iterator.h"
-#include "ggc.h"
-#include "toplev.h"
+#include "toplev.h"	/* For internal_error.  */
 #include "defaults.h"
-#include "real.h"
 #include "flags.h"
 #include "gfortran.h"
 #include "trans.h"
@@ -47,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 
 static gfc_file *gfc_current_backend_file;
 
-const char gfc_msg_bounds[] = N_("Array bound mismatch");
 const char gfc_msg_fault[] = N_("Array reference out of bounds");
 const char gfc_msg_wrong_return[] = N_("Incorrect function return value");
 
@@ -705,7 +702,7 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status)
 	  return mem;
 	}
 	else
-	  runtime_error ("Attempting to allocate already allocated array");
+	  runtime_error ("Attempting to allocate already allocated variable");
       }
     }
     
@@ -744,13 +741,13 @@ gfc_allocate_array_with_status (stmtblock_t * block, tree mem, tree size,
 
       error = gfc_trans_runtime_error (true, &expr->where,
 				       "Attempting to allocate already"
-				       " allocated array '%s'",
+				       " allocated variable '%s'",
 				       varname);
     }
   else
     error = gfc_trans_runtime_error (true, NULL,
 				     "Attempting to allocate already allocated"
-				     "array");
+				     "variable");
 
   if (status != NULL_TREE && !integer_zerop (status))
     {
@@ -1068,6 +1065,8 @@ trans_code (gfc_code * code, tree cond)
 	  gfc_add_expr_to_block (&block, res);
 	}
 
+      gfc_set_backend_locus (&code->loc);
+
       switch (code->op)
 	{
 	case EXEC_NOP:
@@ -1105,6 +1104,10 @@ trans_code (gfc_code * code, tree cond)
 	  res = NULL_TREE;
 	  break;
 
+	case EXEC_CRITICAL:
+	  res = gfc_trans_critical (code);
+	  break;
+
 	case EXEC_CYCLE:
 	  res = gfc_trans_cycle (code);
 	  break;
@@ -1126,7 +1129,8 @@ trans_code (gfc_code * code, tree cond)
 	  break;
 
 	case EXEC_STOP:
-	  res = gfc_trans_stop (code);
+	case EXEC_ERROR_STOP:
+	  res = gfc_trans_stop (code, code->op == EXEC_ERROR_STOP);
 	  break;
 
 	case EXEC_CALL:
@@ -1189,6 +1193,12 @@ trans_code (gfc_code * code, tree cond)
 
 	case EXEC_FLUSH:
 	  res = gfc_trans_flush (code);
+	  break;
+
+	case EXEC_SYNC_ALL:
+	case EXEC_SYNC_IMAGES:
+	case EXEC_SYNC_MEMORY:
+	  res = gfc_trans_sync (code, code->op);
 	  break;
 
 	case EXEC_FORALL:

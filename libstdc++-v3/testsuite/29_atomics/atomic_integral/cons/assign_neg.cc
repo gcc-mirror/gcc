@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,12 +29,5 @@ int main()
   return 0;
 }
 
-// { dg-error "used here" "" { target *-*-* } 521 }
-// { dg-excess-errors "deleted function" }
-// { dg-excess-errors "deleted function" }
-// { dg-error "instantiated from" "" { target *-*-* } 28 }
-// { dg-error "instantiated from" "" { target *-*-* } 528 }
-// { dg-error "instantiated from" "" { target *-*-* } 170 }
-// { dg-error "instantiated from" "" { target *-*-* } 399 }
-// { dg-error "instantiated from" "" { target *-*-* } 168 }
+// { dg-error "ambiguous" "" { target *-*-* } 522 }
 // { dg-excess-errors "In member function" }

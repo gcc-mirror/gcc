@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "toplev.h"
-#include "fixed-value.h"
 
 /* Compare two fixed objects for bitwise identity.  */
 
@@ -68,7 +67,7 @@ check_real_for_fixed_mode (REAL_VALUE_TYPE *real_value, enum machine_mode mode)
   real_2expN (&epsilon_value, -GET_MODE_FBIT (mode), mode);
 
   if (SIGNED_FIXED_POINT_MODE_P (mode))
-    min_value = REAL_VALUE_NEGATE (max_value);
+    min_value = real_value_negate (&max_value);
   else
     real_from_string (&min_value, "0.0");
 

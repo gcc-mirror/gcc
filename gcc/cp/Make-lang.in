@@ -1,6 +1,6 @@
 # Top level -*- makefile -*- fragment for GNU C++.
 #   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-#   2005, 2007, 2008, 2009
+#   2005, 2007, 2008, 2009, 2010
 #   Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -71,10 +71,8 @@ g++-cross$(exeext): g++$(exeext)
 
 # The compiler itself.
 # Shared with C front end:
-CXX_C_OBJS = attribs.o c-common.o c-format.o c-pragma.o c-semantics.o c-lex.o \
-	c-dump.o $(CXX_TARGET_OBJS) c-pretty-print.o c-opts.o c-pch.o \
-	incpath.o c-ppoutput.o c-cppbuiltin.o prefix.o \
-	c-gimplify.o c-omp.o
+CXX_C_OBJS = attribs.o incpath.o prefix.o \
+	$(C_COMMON_OBJS) $(CXX_TARGET_OBJS)
 
 # Language-specific object files for C++ and Objective C++.
 CXX_AND_OBJCXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
@@ -85,7 +83,7 @@ CXX_AND_OBJCXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
  cp/cp-gimplify.o tree-mudflap.o $(CXX_C_OBJS)
 
 # Language-specific object files for C++.
-CXX_OBJS = cp/cp-lang.o stub-objc.o $(CXX_AND_OBJCXX_OBJS)
+CXX_OBJS = cp/cp-lang.o c-family/stub-objc.o $(CXX_AND_OBJCXX_OBJS)
 
 c++_OBJS = $(CXX_OBJS) dummy-checksum.o cc1plus-checksum.o cp/g++spec.o
 
@@ -241,9 +239,9 @@ c++.stagefeedback: stagefeedback-start
 #
 # .o: .h dependencies.
 CXX_TREE_H = $(TREE_H) cp/name-lookup.h cp/cp-tree.h $(C_COMMON_H) \
-	$(FUNCTION_H) $(VARRAY_H) \
+	$(FUNCTION_H) \
 	$(SYSTEM_H) coretypes.h $(CONFIG_H) $(TARGET_H) $(GGC_H) \
-	$(srcdir)/../include/hashtab.h $(srcdir)/../include/splay-tree.h
+	$(srcdir)/../include/hashtab.h
 
 CXX_PRETTY_PRINT_H = cp/cxx-pretty-print.h $(C_PRETTY_PRINT_H)
 
@@ -251,72 +249,73 @@ cp/lex.o: cp/lex.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) \
   $(C_PRAGMA_H) toplev.h output.h input.h cp/operators.def $(TM_P_H)
 cp/cp-lang.o: cp/cp-lang.c $(CXX_TREE_H) $(TM_H) toplev.h debug.h langhooks.h \
   $(LANGHOOKS_DEF_H) $(C_COMMON_H) gtype-cp.h gt-cp-cp-lang.h \
-  $(DIAGNOSTIC_H) cp/cp-objcp-common.h $(EXPR_H) $(EXCEPT_H)
+  cp/cp-objcp-common.h $(EXPR_H)
 cp/decl.o: cp/decl.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) cp/decl.h \
-  output.h $(EXPR_H) except.h toplev.h $(HASHTAB_H) $(RTL_H) \
+  output.h toplev.h $(HASHTAB_H) $(RTL_H) \
   cp/operators.def $(TM_P_H) $(TREE_INLINE_H) $(DIAGNOSTIC_H) $(C_PRAGMA_H) \
   debug.h gt-cp-decl.h $(TIMEVAR_H) $(TREE_FLOW_H) $(TARGET_H) $(PLUGIN_H) \
-  intl.h
-cp/decl2.o: cp/decl2.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) cp/decl.h $(EXPR_H) \
-  output.h except.h toplev.h $(RTL_H) $(C_COMMON_H) gt-cp-decl2.h $(CGRAPH_H) \
-  $(C_PRAGMA_H) $(TREE_DUMP_H) intl.h $(TARGET_H) $(GIMPLE_H) $(POINTER_SET_H)
+  intl.h tree-iterator.h $(SPLAY_TREE_H)
+cp/decl2.o: cp/decl2.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) cp/decl.h \
+  output.h toplev.h $(C_COMMON_H) gt-cp-decl2.h $(CGRAPH_H) \
+  $(C_PRAGMA_H) $(TREE_DUMP_H) intl.h $(TARGET_H) $(GIMPLE_H) $(POINTER_SET_H) \
+  $(SPLAY_TREE_H) c-family/c-ada-spec.h
 cp/cp-objcp-common.o : cp/cp-objcp-common.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) $(TREE_H) $(CXX_TREE_H) $(C_COMMON_H) toplev.h \
   langhooks.h $(LANGHOOKS_DEF_H) $(DIAGNOSTIC_H) debug.h \
   $(CXX_PRETTY_PRINT_H) cp/cp-objcp-common.h gt-cp-cp-objcp-common.h
 cp/typeck2.o: cp/typeck2.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h output.h \
-  $(TM_P_H) $(DIAGNOSTIC_H) gt-cp-typeck2.h $(REAL_H) intl.h
-cp/typeck.o: cp/typeck.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) $(RTL_H) $(EXPR_H) \
-  toplev.h $(DIAGNOSTIC_H) convert.h $(C_COMMON_H) $(TARGET_H)
-cp/class.o: cp/class.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h $(RTL_H) \
-  $(TARGET_H) convert.h $(CGRAPH_H) $(TREE_DUMP_H) gt-cp-class.h
-cp/call.o: cp/call.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h $(RTL_H) \
-  $(EXPR_H) $(DIAGNOSTIC_H) intl.h gt-cp-call.h convert.h $(TARGET_H) langhooks.h
-cp/friend.o: cp/friend.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) $(RTL_H) toplev.h \
-  $(EXPR_H)
-cp/init.o: cp/init.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) $(RTL_H) $(EXPR_H) \
-  toplev.h except.h $(TARGET_H)
-cp/method.o: cp/method.c $(CXX_TREE_H) $(TM_H) toplev.h $(RTL_H) $(EXPR_H) \
+  $(TM_P_H) $(DIAGNOSTIC_CORE_H) gt-cp-typeck2.h $(REAL_H) intl.h
+cp/typeck.o: cp/typeck.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) \
+  toplev.h $(DIAGNOSTIC_H) convert.h $(C_COMMON_H) $(TARGET_H) \
+  output.h toplev.h
+cp/class.o: cp/class.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h \
+  $(TARGET_H) convert.h $(CGRAPH_H) $(TREE_DUMP_H) gt-cp-class.h \
+  $(SPLAY_TREE_H)
+cp/call.o: cp/call.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h \
+  $(DIAGNOSTIC_CORE_H) intl.h gt-cp-call.h convert.h $(TARGET_H) langhooks.h
+cp/friend.o: cp/friend.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h
+cp/init.o: cp/init.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) \
+  toplev.h $(EXCEPT_H) $(TARGET_H)
+cp/method.o: cp/method.c $(CXX_TREE_H) $(TM_H) toplev.h \
   $(TM_P_H) $(TARGET_H) $(DIAGNOSTIC_H) gt-cp-method.h $(GIMPLE_H)
 cp/cvt.o: cp/cvt.c $(CXX_TREE_H) $(TM_H) cp/decl.h $(FLAGS_H) toplev.h \
   convert.h $(TARGET_H) intl.h
-cp/search.o: cp/search.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h $(RTL_H) \
+cp/search.o: cp/search.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h \
   intl.h
-cp/tree.o: cp/tree.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h $(RTL_H) \
-  insn-config.h $(INTEGRATE_H) $(TREE_INLINE_H) $(REAL_H) gt-cp-tree.h \
-  $(TARGET_H) debug.h $(TREE_FLOW_H) $(CGRAPH_H)
+cp/tree.o: cp/tree.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h \
+  $(TREE_INLINE_H) $(REAL_H) gt-cp-tree.h \
+  $(TARGET_H) debug.h $(TREE_FLOW_H) $(CGRAPH_H) $(SPLAY_TREE_H)
 cp/ptree.o: cp/ptree.c $(CXX_TREE_H) $(TM_H)
 cp/rtti.o: cp/rtti.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h convert.h \
   $(TARGET_H) $(C_PRAGMA_H) gt-cp-rtti.h intl.h
-cp/except.o: cp/except.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) $(RTL_H) except.h \
-  toplev.h cp/cfns.h $(EXPR_H) libfuncs.h $(TREE_INLINE_H) $(TARGET_H)
-cp/expr.o: cp/expr.c $(CXX_TREE_H) $(TM_H) $(RTL_H) $(FLAGS_H) $(EXPR_H) \
-  toplev.h except.h $(TM_P_H)
+cp/except.o: cp/except.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) \
+  toplev.h cp/cfns.h $(TREE_INLINE_H) $(TARGET_H)
+cp/expr.o: cp/expr.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) toplev.h $(TM_P_H)
 cp/pt.o: cp/pt.c $(CXX_TREE_H) $(TM_H) cp/decl.h cp/cp-objcp-common.h \
-  toplev.h $(RTL_H) except.h $(TREE_INLINE_H) pointer-set.h gt-cp-pt.h \
-  vecprim.h intl.h
+  toplev.h $(TREE_INLINE_H) pointer-set.h gt-cp-pt.h vecprim.h intl.h
 cp/error.o: cp/error.c $(CXX_TREE_H) $(TM_H) toplev.h $(DIAGNOSTIC_H) \
-  $(FLAGS_H) $(REAL_H) $(LANGHOOKS_DEF_H) $(CXX_PRETTY_PRINT_H)
-cp/repo.o: cp/repo.c $(CXX_TREE_H) $(TM_H) toplev.h $(DIAGNOSTIC_H) \
+  $(FLAGS_H) $(REAL_H) $(LANGHOOKS_DEF_H) $(CXX_PRETTY_PRINT_H) \
+  tree-diagnostic.h tree-pretty-print.h
+cp/repo.o: cp/repo.c $(CXX_TREE_H) $(TM_H) toplev.h $(DIAGNOSTIC_CORE_H) \
   gt-cp-repo.h
-cp/semantics.o: cp/semantics.c $(CXX_TREE_H) $(TM_H) except.h toplev.h \
-  $(FLAGS_H) debug.h output.h $(RTL_H) $(TIMEVAR_H) $(EXPR_H) \
+cp/semantics.o: cp/semantics.c $(CXX_TREE_H) $(TM_H) toplev.h \
+  $(FLAGS_H) output.h $(RTL_H) $(TIMEVAR_H) \
   $(TREE_INLINE_H) $(CGRAPH_H) $(TARGET_H) $(C_COMMON_H) $(GIMPLE_H) \
-  gt-cp-semantics.h
+  bitmap.h gt-cp-semantics.h
 cp/dump.o: cp/dump.c $(CXX_TREE_H) $(TM_H) $(TREE_DUMP_H)
-cp/optimize.o: cp/optimize.c $(CXX_TREE_H) $(TM_H) rtl.h $(INTEGRATE_H) \
-  insn-config.h input.h $(PARAMS_H) debug.h $(TREE_INLINE_H) $(GIMPLE_H) \
-  $(TARGET_H) tree-iterator.h $(CGRAPH_H)
+cp/optimize.o: cp/optimize.c $(CXX_TREE_H) $(TM_H) \
+  input.h $(PARAMS_H) debug.h $(TREE_INLINE_H) $(GIMPLE_H) \
+  $(TARGET_H) tree-iterator.h $(CGRAPH_H) $(DIAGNOSTIC_CORE_H)
 cp/mangle.o: cp/mangle.c $(CXX_TREE_H) $(TM_H) toplev.h $(REAL_H) \
-  gt-cp-mangle.h $(TARGET_H) $(TM_P_H)
-cp/parser.o: cp/parser.c $(CXX_TREE_H) $(TM_H) $(DIAGNOSTIC_H) gt-cp-parser.h \
-  output.h $(TARGET_H) $(PLUGIN_H) intl.h
+  gt-cp-mangle.h $(TARGET_H) $(TM_P_H) $(CGRAPH_H)
+cp/parser.o: cp/parser.c $(CXX_TREE_H) $(TM_H) $(DIAGNOSTIC_CORE_H) \
+  gt-cp-parser.h output.h $(TARGET_H) $(PLUGIN_H) intl.h
 cp/cp-gimplify.o: cp/cp-gimplify.c $(CXX_TREE_H) toplev.h $(C_COMMON_H) \
 	$(TM_H) coretypes.h pointer-set.h tree-iterator.h
 
 cp/name-lookup.o: cp/name-lookup.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TM_H) $(CXX_TREE_H) $(TIMEVAR_H) gt-cp-name-lookup.h toplev.h \
-	$(DIAGNOSTIC_H) $(FLAGS_H) debug.h
+	$(DIAGNOSTIC_CORE_H) $(FLAGS_H) debug.h
 
 cp/cxx-pretty-print.o: cp/cxx-pretty-print.c $(CXX_PRETTY_PRINT_H) \
-  $(CONFIG_H) $(SYSTEM_H) $(TM_H) coretypes.h $(CXX_TREE_H)
+  $(CONFIG_H) $(SYSTEM_H) $(TM_H) coretypes.h $(CXX_TREE_H) tree-pretty-print.h

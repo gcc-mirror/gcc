@@ -43,8 +43,6 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-#include <cstddef>
-
 #include <stdio.h>
 
 // Get rid of those macros defined in <stdio.h> in lieu of real functions.
@@ -151,13 +149,13 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 #if _GLIBCXX_USE_C99_CHECK || _GLIBCXX_USE_C99_DYNAMIC
   extern "C" int
-  (snprintf)(char * restrict, size_t, const char * restrict, ...) throw ();
+  (snprintf)(char * restrict, std::size_t, const char * restrict, ...) throw ();
   extern "C" int
   (vfscanf)(FILE * restrict, const char * restrict, __gnuc_va_list);
   extern "C" int (vscanf)(const char * restrict, __gnuc_va_list);
   extern "C" int
-  (vsnprintf)(char * restrict, size_t, const char * restrict, __gnuc_va_list)
-  throw ();
+  (vsnprintf)(char * restrict, std::size_t, const char * restrict,
+	      __gnuc_va_list) throw ();
   extern "C" int
   (vsscanf)(const char * restrict, const char * restrict, __gnuc_va_list)
   throw ();

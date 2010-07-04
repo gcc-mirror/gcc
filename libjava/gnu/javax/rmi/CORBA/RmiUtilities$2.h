@@ -30,7 +30,7 @@ class gnu::javax::rmi::CORBA::RmiUtilities$2 : public ::java::lang::Object
 public: // actually package-private
   RmiUtilities$2();
 public:
-  jint compare(::java::lang::Object *, ::java::lang::Object *);
+  virtual jint compare(::java::lang::Object *, ::java::lang::Object *);
   static ::java::lang::Class class$;
 };
 

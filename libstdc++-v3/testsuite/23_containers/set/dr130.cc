@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // 2008-07-22  Edward Smith-Rowland  <3dw4rd@verizon.net>
 //
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,7 @@ test01()
   typedef set<int>::const_iterator const_iterator;
   typedef pair<iterator, bool> insert_return_type;
 
-  insert_return_type irt0 = s0.insert(1);
+  s0.insert(1);
   insert_return_type irt1 = s0.insert(2);
   insert_return_type irt2 = s0.insert(3);
 
@@ -56,7 +56,7 @@ test02()
   typedef pair<iterator, bool> insert_return_type;
 
   insert_return_type irt0 = s0.insert(1);
-  insert_return_type irt1 = s0.insert(2);
+  s0.insert(2);
   insert_return_type irt2 = s0.insert(3);
   insert_return_type irt3 = s0.insert(4);
 

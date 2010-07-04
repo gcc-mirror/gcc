@@ -122,6 +122,22 @@ document ptn
 Print the name of the type-node that is $.
 end
 
+define pvt
+set debug_vec_tree ($)
+end
+
+document pvt
+Print the VEC(tree) that is in $.
+end
+
+define pdd
+set debug_dwarf_die ($)
+end
+
+document pdd
+Print the dw_die_ref that is in $.
+end
+
 define prc
 output (enum rtx_code) $.code
 echo \ (

@@ -2,7 +2,7 @@
 
 // 2006-02-05  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,6 +46,7 @@ void test01(int dummy, ...)
   ret = std::tr1::vfscanf(stream, format, ap); 
   ret = std::tr1::vscanf(format, ap);
   ret = std::tr1::vsscanf(cs, format, ap);
+  ret = ret; // Suppress unused warning.
   
 #endif
 }

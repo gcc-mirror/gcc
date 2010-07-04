@@ -23,14 +23,10 @@ along with GCC; see the file COPYING3.  If not see
 
 struct obstack;
 extern struct obstack *rtl_obstack;
-extern const char *in_fname;
 
-extern int init_md_reader_args_cb (int, char **, bool (*)(const char *));
-extern int init_md_reader_args (int, char **);
+extern bool init_rtx_reader_args_cb (int, char **, bool (*)(const char *));
+extern bool init_rtx_reader_args (int, char **);
 extern rtx read_md_rtx (int *, int *);
-
-extern void message_with_line (int, const char *, ...)
-     ATTRIBUTE_PRINTF_2;
 
 /* Set this to 0 to disable automatic elision of insn patterns which
    can never be used in this configuration.  See genconditions.c.
@@ -60,9 +56,6 @@ extern int cmp_c_test (const void *, const void *);
 extern void traverse_c_tests (htab_trav, void *);
 #endif
 
-extern int n_comma_elts	(const char *);
-extern const char *scan_comma_elt (const char **);
-
 /* Predicate handling: helper functions and data structures.  */
 
 struct pred_data
@@ -89,9 +82,5 @@ extern void add_predicate_code (struct pred_data *, enum rtx_code);
 extern void add_predicate (struct pred_data *);
 
 #define FOR_ALL_PREDICATES(p) for (p = first_predicate; p; p = p->next)
-
-/* This callback will be invoked whenever an rtl include directive is
-   processed.  To be used for creation of the dependency file.  */
-extern void (*include_callback) (const char *);
 
 #endif /* GCC_GENSUPPORT_H */

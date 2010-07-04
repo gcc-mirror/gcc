@@ -6,7 +6,7 @@
 --                                                                          --
 --                             T e m p l a t e                              --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,7 @@ with Namet; use Namet;
 package Snames is
 
 --  This package contains definitions of standard names (i.e. entries in the
---  Names table) that are used throughout the GNAT compiler). It also contains
+--  Names table) that are used throughout the GNAT compiler. It also contains
 --  the definitions of some enumeration types whose definitions are tied to
 --  the order of these preset names.
 
@@ -334,6 +334,8 @@ package Snames is
    Name_Ada_95                         : constant Name_Id := N + $; -- GNAT
    Name_Ada_05                         : constant Name_Id := N + $; -- GNAT
    Name_Ada_2005                       : constant Name_Id := N + $; -- GNAT
+   Name_Ada_12                         : constant Name_Id := N + $; -- GNAT
+   Name_Ada_2012                       : constant Name_Id := N + $; -- GNAT
    Name_Assertion_Policy               : constant Name_Id := N + $; -- Ada 05
    Name_Assume_No_Invalid_Values       : constant Name_Id := N + $; -- GNAT
    Name_C_Pass_By_Copy                 : constant Name_Id := N + $; -- GNAT
@@ -1416,6 +1418,8 @@ package Snames is
       Pragma_Ada_95,
       Pragma_Ada_05,
       Pragma_Ada_2005,
+      Pragma_Ada_12,
+      Pragma_Ada_2012,
       Pragma_Assertion_Policy,
       Pragma_Assume_No_Invalid_Values,
       Pragma_C_Pass_By_Copy,
@@ -1690,9 +1694,10 @@ package Snames is
    --  call this function with a name that is not the name of a attribute.
 
    function Get_Convention_Id (N : Name_Id) return Convention_Id;
-   --  Returns Id of language convention corresponding to given name. It is an
-   --  to call this function with a name that is not the name of a convention,
-   --  or one previously given in a call to Record_Convention_Identifier.
+   --  Returns Id of language convention corresponding to given name. It is
+   --  an error to call this function with a name that is not the name of a
+   --  convention, or one that has been previously recorded using a call to
+   --  Record_Convention_Identifier.
 
    function Get_Convention_Name (C : Convention_Id) return Name_Id;
    --  Returns the name of language convention corresponding to given

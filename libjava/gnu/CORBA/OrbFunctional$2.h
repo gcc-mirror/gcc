@@ -33,7 +33,7 @@ class gnu::CORBA::OrbFunctional$2 : public ::java::lang::Thread
 public: // actually package-private
   OrbFunctional$2(::gnu::CORBA::OrbFunctional *, ::gnu::CORBA::OrbFunctional$portServer *, ::java::net::Socket *);
 public:
-  void run();
+  virtual void run();
 public: // actually package-private
   ::gnu::CORBA::OrbFunctional * __attribute__((aligned(__alignof__( ::java::lang::Thread)))) this$0;
 private:

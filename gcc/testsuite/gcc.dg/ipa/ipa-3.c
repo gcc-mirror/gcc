@@ -10,19 +10,21 @@ void t(void);
 int g (double b, double c)
 {
   t();
-  return (int)(b+c);  
+  return (int)(b+c);
 }
 int f (double a)
 {
   if (a > 0)
     g (a, 3.1);
   else
-    g (a, 3.1); 	
+    g (a, 3.1);
 }
 int main ()
 {
-  f (7.44);
-  return 0;	
+  int i;
+  for (i = 0; i < 100; i++)
+    f (7.44);
+  return 0;
 }
 
 

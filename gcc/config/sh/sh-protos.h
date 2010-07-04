@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2003,
-   2004, 2005, 2006, 2007, 2008, 2009
+   2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
@@ -59,12 +59,11 @@ extern int fp_one_operand (rtx);
 extern int fp_int_operand (rtx);
 extern rtx get_fpscr_rtx (void);
 extern bool sh_legitimate_index_p (enum machine_mode, rtx);
+extern bool sh_legitimize_reload_address (rtx *, enum machine_mode, int, int);
 extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
 extern int nonpic_symbol_mentioned_p (rtx);
 extern void emit_sf_insn (rtx);
 extern void emit_df_insn (rtx);
-extern void print_operand_address (FILE *, rtx);
-extern void print_operand (FILE *, rtx, int);
 extern void output_pic_addr_const (FILE *, rtx);
 extern int expand_block_move (rtx *);
 extern int prepare_move_operands (rtx[], enum machine_mode mode);
@@ -144,6 +143,7 @@ extern int sh_attr_renesas_p (const_tree);
 extern int sh_cfun_attr_renesas_p (void);
 extern bool sh_cannot_change_mode_class
 	      (enum machine_mode, enum machine_mode, enum reg_class);
+extern bool sh_small_register_classes_for_mode_p (enum machine_mode);
 extern void sh_mark_label (rtx, int);
 extern int sh_register_move_cost
   (enum machine_mode mode, enum reg_class, enum reg_class);

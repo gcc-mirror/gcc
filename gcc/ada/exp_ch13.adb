@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,6 +46,7 @@ with Snames;   use Snames;
 with Stand;    use Stand;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
+with Validsw;  use Validsw;
 
 package body Exp_Ch13 is
 
@@ -345,6 +346,23 @@ package body Exp_Ch13 is
                Push_Scope (Scope (Corresponding_Spec (Decl)));
                Analyze (Decl, Suppress => All_Checks);
                Pop_Scope;
+
+            --  We treat generated equality specially, if validity checks are
+            --  enabled, in order to detect components default-initialized
+            --  with invalid values.
+
+            elsif Nkind (Decl) = N_Subprogram_Body
+              and then Chars (Defining_Entity (Decl)) = Name_Op_Eq
+              and then Validity_Checks_On
+              and then Initialize_Scalars
+            then
+               declare
+                  Save_Force : constant Boolean := Force_Validity_Checks;
+               begin
+                  Force_Validity_Checks := True;
+                  Analyze (Decl);
+                  Force_Validity_Checks := Save_Force;
+               end;
 
             else
                Analyze (Decl, Suppress => All_Checks);

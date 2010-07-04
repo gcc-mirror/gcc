@@ -123,17 +123,17 @@ remove_node(node_pointer p_z)
 {
   update_min_max_for_erased_node(p_z);
   node_pointer p_y = p_z;
-  node_pointer p_x = NULL;
-  node_pointer p_new_x_parent = NULL;
+  node_pointer p_x = 0;
+  node_pointer p_new_x_parent = 0;
 
-  if (p_y->m_p_left == NULL)
+  if (p_y->m_p_left == 0)
     p_x = p_y->m_p_right;
-  else if (p_y->m_p_right == NULL)
+  else if (p_y->m_p_right == 0)
     p_x = p_y->m_p_left;
   else
     {
       p_y = p_y->m_p_right;
-      while (p_y->m_p_left != NULL)
+      while (p_y->m_p_left != 0)
 	p_y = p_y->m_p_left;
       p_x = p_y->m_p_right;
     }
@@ -141,7 +141,7 @@ remove_node(node_pointer p_z)
   if (p_y == p_z)
     {
       p_new_x_parent = p_y->m_p_parent;
-      if (p_x != NULL)
+      if (p_x != 0)
 	p_x->m_p_parent = p_y->m_p_parent;
 
       if (base_type::m_p_head->m_p_parent == p_z)
@@ -153,7 +153,7 @@ remove_node(node_pointer p_z)
         }
       else
         {
-	  p_y->m_p_left = NULL;
+	  p_y->m_p_left = 0;
 	  p_z->m_p_parent->m_p_right = p_x;
         }
     }
@@ -164,7 +164,7 @@ remove_node(node_pointer p_z)
       if (p_y != p_z->m_p_right)
         {
 	  p_new_x_parent = p_y->m_p_parent;
-	  if (p_x != NULL)
+	  if (p_x != 0)
 	    p_x->m_p_parent = p_y->m_p_parent;
 	  p_y->m_p_parent->m_p_left = p_x;
 	  p_y->m_p_right = p_z->m_p_right;
@@ -198,7 +198,7 @@ void
 PB_DS_CLASS_C_DEC::
 remove_fixup(node_pointer p_x, node_pointer p_new_x_parent)
 {
-  _GLIBCXX_DEBUG_ASSERT(p_x == NULL || p_x->m_p_parent == p_new_x_parent);
+  _GLIBCXX_DEBUG_ASSERT(p_x == 0 || p_x->m_p_parent == p_new_x_parent);
 
   while (p_x != base_type::m_p_head->m_p_parent && is_effectively_black(p_x))
     if (p_x == p_new_x_parent->m_p_left)
@@ -223,7 +223,7 @@ remove_fixup(node_pointer p_x, node_pointer p_new_x_parent)
 	  {
 	    if (is_effectively_black(p_w->m_p_right))
 	      {
-		if (p_w->m_p_left != NULL)
+		if (p_w->m_p_left != 0)
 		  p_w->m_p_left->m_red = false;
 
 		p_w->m_red = true;
@@ -234,7 +234,7 @@ remove_fixup(node_pointer p_x, node_pointer p_new_x_parent)
 	    p_w->m_red = p_new_x_parent->m_red;
 	    p_new_x_parent->m_red = false;
 
-	    if (p_w->m_p_right != NULL)
+	    if (p_w->m_p_right != 0)
 	      p_w->m_p_right->m_red = false;
 
 	    base_type::rotate_left(p_new_x_parent);
@@ -264,7 +264,7 @@ remove_fixup(node_pointer p_x, node_pointer p_new_x_parent)
 	  {
 	    if (is_effectively_black(p_w->m_p_left))
 	      {
-		if (p_w->m_p_right != NULL)
+		if (p_w->m_p_right != 0)
 		  p_w->m_p_right->m_red = false;
 
 		p_w->m_red = true;
@@ -275,7 +275,7 @@ remove_fixup(node_pointer p_x, node_pointer p_new_x_parent)
 	    p_w->m_red = p_new_x_parent->m_red;
 	    p_new_x_parent->m_red = false;
 
-	    if (p_w->m_p_left != NULL)
+	    if (p_w->m_p_left != 0)
 	      p_w->m_p_left->m_red = false;
 
 	    base_type::rotate_right(p_new_x_parent);
@@ -284,6 +284,6 @@ remove_fixup(node_pointer p_x, node_pointer p_new_x_parent)
 	  }
       }
 
-  if (p_x != NULL)
+  if (p_x != 0)
     p_x->m_red = false;
 }

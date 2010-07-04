@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 #include "errors.h"
+#include "read-md.h"
 #include "gensupport.h"
 #include "vec.h"
 #include "vecprim.h"
@@ -409,7 +410,7 @@ main (int argc, char **argv)
 
   progname = "genextract";
 
-  if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
+  if (!init_rtx_reader_args (argc, argv))
     return (FATAL_EXIT_CODE);
 
   /* Read the machine description.  */

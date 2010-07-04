@@ -1,7 +1,7 @@
 /* Typedefs of ObjC types should work without any bogus warnings. */
 /* { dg-do compile } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 typedef Object MyObject;
 

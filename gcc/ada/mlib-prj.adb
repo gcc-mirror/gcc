@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2009, AdaCore                     --
+--                     Copyright (C) 2001-2010, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2285,6 +2285,11 @@ package body MLib.Prj is
          for Index in 1 .. Argument_Number loop
             Write_Char (' ');
             Write_Str (Arguments (Index).all);
+
+            if not Opt.Verbose_Mode and then Index > 4 then
+               Write_Str (" ...");
+               exit;
+            end if;
          end loop;
 
          Write_Eol;

@@ -2,7 +2,7 @@
 // { dg-do compile }
 // 2009-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
 //
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,13 +19,11 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "static assertion failed" "" { target *-*-* } 626 }
-// { dg-error "instantiated from here" "" { target *-*-* } 30 }
-// { dg-excess-errors "In function" }
+// { dg-error "static assertion failed" "" { target *-*-* } 676 }
 
 #include <utility>
 
 void test01()
 {
-  std::declval<int>();
+  std::declval<int>();		// { dg-error "instantiated from here" }
 }

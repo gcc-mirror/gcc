@@ -25,8 +25,8 @@ class java::security::Permissions$1 : public ::java::lang::Object
 public: // actually package-private
   Permissions$1(::java::security::Permissions *);
 public:
-  jboolean hasMoreElements();
-  ::java::lang::Object * nextElement();
+  virtual jboolean hasMoreElements();
+  virtual ::java::lang::Object * nextElement();
 public: // actually package-private
   ::java::util::Enumeration * __attribute__((aligned(__alignof__( ::java::lang::Object)))) main_enum;
   ::java::util::Enumeration * sub_enum;

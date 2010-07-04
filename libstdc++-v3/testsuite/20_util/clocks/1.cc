@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-require-cstdint "" }
 
-// Copyright (C) 2008, 2009 Free Software Foundation
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,6 +33,7 @@ main()
   is_monotonic = is_monotonic; // suppress unused warning
   std::time_t t2 = system_clock::to_time_t(t1);
   system_clock::time_point t3 = system_clock::from_time_t(t2);
+  t3 = t3; // suppress unused warning
   
   return 0;
 }

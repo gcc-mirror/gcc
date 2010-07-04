@@ -6,5 +6,5 @@ void
 foo (int i)
 {
   int a[i];
-  a = { }; // { dg-error "may not be initialized" }
+  a = { }; // { dg-error "assign" }
 }

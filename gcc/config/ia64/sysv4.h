@@ -1,7 +1,7 @@
 /* Override definitions in elfos.h/svr4.h to be correct for IA64.
 
 Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005,
-2007 Free Software Foundation, Inc.
+2007, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -127,12 +127,7 @@ do {						\
 
 #undef ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
-do {									\
-  fputs ("\t.proc ", FILE);						\
-  assemble_name (FILE, NAME);						\
-  fputc ('\n', FILE);							\
-  ASM_OUTPUT_LABEL (FILE, NAME);					\
-} while (0)
+  ia64_start_function(FILE,NAME,DECL)
 
 /* We redefine this to use the ia64 .endp pseudo-op.  */
 

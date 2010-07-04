@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright (C) 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -37,15 +37,6 @@
 #ifndef _GLIBCXX_PROFILE_PROFILER_VECTOR_SIZE_H
 #define _GLIBCXX_PROFILE_PROFILER_VECTOR_SIZE_H 1
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#else
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#endif
 #include "profile/impl/profiler.h"
 #include "profile/impl/profiler_node.h"
 #include "profile/impl/profiler_trace.h"
@@ -54,50 +45,59 @@
 
 namespace __gnu_profile
 {
+  /** @brief Hashtable size instrumentation trace producer.  */
+  class __trace_vector_size
+  : public __trace_container_size
+  {
+  public:
+    __trace_vector_size()
+    : __trace_container_size()
+    { __id = "vector-size"; }
+  };
 
-/** @brief Hashtable size instrumentation trace producer.  */
-class __trace_vector_size : public __trace_container_size
-{
- public:
-  __trace_vector_size() : __trace_container_size() { __id = "vector-size"; }
-};
+  inline void
+  __trace_vector_size_init()
+  { _GLIBCXX_PROFILE_DATA(_S_vector_size) = new __trace_vector_size(); }
 
-inline void __trace_vector_size_init()
-{
-  _GLIBCXX_PROFILE_DATA(_S_vector_size) = new __trace_vector_size();
-}
-
-inline void __trace_vector_size_report(FILE* __f, 
-                                       __warning_vector_t& __warnings)
-{
-  if (_GLIBCXX_PROFILE_DATA(_S_vector_size)) {
-    _GLIBCXX_PROFILE_DATA(_S_vector_size)->__collect_warnings(__warnings);
-    _GLIBCXX_PROFILE_DATA(_S_vector_size)->__write(__f);
+  inline void
+  __trace_vector_size_report(FILE* __f, __warning_vector_t& __warnings)
+  {
+    if (_GLIBCXX_PROFILE_DATA(_S_vector_size))
+      {
+	_GLIBCXX_PROFILE_DATA(_S_vector_size)->__collect_warnings(__warnings);
+	_GLIBCXX_PROFILE_DATA(_S_vector_size)->__write(__f);
+      }
   }
-}
 
-inline void __trace_vector_size_construct(const void* __obj, size_t __num)
-{
-  if (!__profcxx_init()) return;
+  inline void
+  __trace_vector_size_construct(const void* __obj, std::size_t __num)
+  {
+    if (!__profcxx_init())
+      return;
 
-  _GLIBCXX_PROFILE_DATA(_S_vector_size)->__insert(__obj, __get_stack(), __num);
-}
+    _GLIBCXX_PROFILE_DATA(_S_vector_size)->__insert(__obj, __get_stack(),
+						    __num);
+  }
 
-inline void __trace_vector_size_destruct(const void* __obj, size_t __num,
-                                         size_t __inum)
-{
-  if (!__profcxx_init()) return;
+  inline void
+  __trace_vector_size_destruct(const void* __obj, std::size_t __num,
+			       std::size_t __inum)
+  {
+    if (!__profcxx_init())
+      return;
 
-  _GLIBCXX_PROFILE_DATA(_S_vector_size)->__destruct(__obj, __num, __inum);
-}
+    _GLIBCXX_PROFILE_DATA(_S_vector_size)->__destruct(__obj, __num, __inum);
+  }
 
-inline void __trace_vector_size_resize(const void* __obj, size_t __from,
-                                       size_t __to)
-{
-  if (!__profcxx_init()) return;
+  inline void
+  __trace_vector_size_resize(const void* __obj, std::size_t __from,
+			     std::size_t __to)
+  {
+    if (!__profcxx_init())
+      return;
 
-  _GLIBCXX_PROFILE_DATA(_S_vector_size)->__resize(__obj, __from, __to);
-}
+    _GLIBCXX_PROFILE_DATA(_S_vector_size)->__resize(__obj, __from, __to);
+  }
 
 } // namespace __gnu_profile
 

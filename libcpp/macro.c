@@ -65,7 +65,7 @@ static bool create_iso_definition (cpp_reader *, cpp_macro *);
 
 static cpp_token *alloc_expansion_token (cpp_reader *, cpp_macro *);
 static cpp_token *lex_expansion_token (cpp_reader *, cpp_macro *);
-static bool warn_of_redefinition (cpp_reader *, const cpp_hashnode *,
+static bool warn_of_redefinition (cpp_reader *, cpp_hashnode *,
 				  const cpp_macro *);
 static bool parse_params (cpp_reader *, cpp_macro *);
 static void check_trad_stringification (cpp_reader *, const cpp_macro *,
@@ -83,8 +83,8 @@ _cpp_warn_if_unused_macro (cpp_reader *pfile, cpp_hashnode *node,
 
       if (!macro->used
 	  && MAIN_FILE_P (linemap_lookup (pfile->line_table, macro->line)))
-	cpp_error_with_line (pfile, CPP_DL_WARNING, macro->line, 0,
-			     "macro \"%s\" is not used", NODE_NAME (node));
+	cpp_warning_with_line (pfile, CPP_W_UNUSED_MACROS, macro->line, 0,
+			       "macro \"%s\" is not used", NODE_NAME (node));
     }
 
   return 1;
@@ -835,7 +835,9 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
   if ((node->flags & NODE_BUILTIN) && !(node->flags & NODE_USED))
     {
       node->flags |= NODE_USED;
-      if (pfile->cb.used_define)
+      if ((!pfile->cb.user_builtin_macro
+	   || !pfile->cb.user_builtin_macro (pfile, node))
+	  && pfile->cb.used_define)
 	pfile->cb.used_define (pfile, pfile->directive_line, node);
     }
 
@@ -860,9 +862,9 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
 	  if (buff == NULL)
 	    {
 	      if (CPP_WTRADITIONAL (pfile) && ! node->value.macro->syshdr)
-		cpp_error (pfile, CPP_DL_WARNING,
+		cpp_warning (pfile, CPP_W_TRADITIONAL,
  "function-like macro \"%s\" must be used with arguments in traditional C",
-			   NODE_NAME (node));
+			     NODE_NAME (node));
 
 	      if (pragma_buff)
 		_cpp_release_buff (pfile, pragma_buff);
@@ -1430,7 +1432,7 @@ _cpp_backup_tokens (cpp_reader *pfile, unsigned int count)
 
 /* Returns nonzero if a macro redefinition warning is required.  */
 static bool
-warn_of_redefinition (cpp_reader *pfile, const cpp_hashnode *node,
+warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
 		      const cpp_macro *macro2)
 {
   const cpp_macro *macro1;
@@ -1442,7 +1444,11 @@ warn_of_redefinition (cpp_reader *pfile, const cpp_hashnode *node,
 
   /* Suppress warnings for builtins that lack the NODE_WARN flag.  */
   if (node->flags & NODE_BUILTIN)
-    return false;
+    {
+      if (!pfile->cb.user_builtin_macro
+	  || !pfile->cb.user_builtin_macro (pfile, node))
+	return false;
+    }
 
   /* Redefinitions of conditional (context-sensitive) macros, on
      the other hand, must be allowed silently.  */
@@ -1585,13 +1591,14 @@ parse_params (cpp_reader *pfile, cpp_macro *macro)
 	      if (! CPP_OPTION (pfile, c99)
 		  && CPP_OPTION (pfile, pedantic)
 		  && CPP_OPTION (pfile, warn_variadic_macros))
-		cpp_error (pfile, CPP_DL_PEDWARN,
-			   "anonymous variadic macros were introduced in C99");
+		cpp_pedwarning
+                  (pfile, CPP_W_VARIADIC_MACROS,
+		   "anonymous variadic macros were introduced in C99");
 	    }
 	  else if (CPP_OPTION (pfile, pedantic)
 		   && CPP_OPTION (pfile, warn_variadic_macros))
-	    cpp_error (pfile, CPP_DL_PEDWARN,
-		       "ISO C does not permit named variadic macros");
+	    cpp_pedwarning (pfile, CPP_W_VARIADIC_MACROS,
+		            "ISO C does not permit named variadic macros");
 
 	  /* We're at the end, and just expect a closing parenthesis.  */
 	  token = _cpp_lex_token (pfile);
@@ -1894,10 +1901,14 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
 
       if (warn_of_redefinition (pfile, node, macro))
 	{
+          const int reason = (node->flags & NODE_BUILTIN)
+                             ? CPP_W_BUILTIN_MACRO_REDEFINED : CPP_W_NONE;
 	  bool warned;
-	  warned = cpp_error_with_line (pfile, CPP_DL_PEDWARN,
-					pfile->directive_line, 0,
-					"\"%s\" redefined", NODE_NAME (node));
+
+	  warned = cpp_pedwarning_with_line (pfile, reason,
+					     pfile->directive_line, 0,
+					     "\"%s\" redefined",
+                                             NODE_NAME (node));
 
 	  if (warned && node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
 	    cpp_error_with_line (pfile, CPP_DL_NOTE,
@@ -1977,19 +1988,26 @@ check_trad_stringification (cpp_reader *pfile, const cpp_macro *macro,
    Caller is expected to generate the "#define" bit if needed.  The
    returned text is temporary, and automatically freed later.  */
 const unsigned char *
-cpp_macro_definition (cpp_reader *pfile, const cpp_hashnode *node)
+cpp_macro_definition (cpp_reader *pfile, cpp_hashnode *node)
 {
   unsigned int i, len;
-  const cpp_macro *macro = node->value.macro;
+  const cpp_macro *macro;
   unsigned char *buffer;
 
   if (node->type != NT_MACRO || (node->flags & NODE_BUILTIN))
     {
-      cpp_error (pfile, CPP_DL_ICE,
-		 "invalid hash type %d in cpp_macro_definition", node->type);
-      return 0;
+      if (node->type != NT_MACRO
+	  || !pfile->cb.user_builtin_macro
+          || !pfile->cb.user_builtin_macro (pfile, node))
+	{
+	  cpp_error (pfile, CPP_DL_ICE,
+		     "invalid hash type %d in cpp_macro_definition",
+		     node->type);
+	  return 0;
+	}
     }
 
+  macro = node->value.macro;
   /* Calculate length.  */
   len = NODE_LEN (node) + 2;			/* ' ' and NUL.  */
   if (macro->fun_like)

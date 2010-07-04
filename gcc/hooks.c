@@ -70,6 +70,13 @@ hook_bool_mode_false (enum machine_mode mode ATTRIBUTE_UNUSED)
   return false;
 }
 
+/* Generic hook that takes (enum machine_mode) and returns true.  */
+bool
+hook_bool_mode_true (enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
 /* Generic hook that takes (enum machine_mode, rtx) and returns false.  */
 bool
 hook_bool_mode_const_rtx_false (enum machine_mode mode ATTRIBUTE_UNUSED,
@@ -292,9 +299,10 @@ hook_constcharptr_const_tree_null (const_tree t ATTRIBUTE_UNUSED)
 }
 
 tree
-hook_tree_tree_tree_bool_null (tree t0 ATTRIBUTE_UNUSED,
-			       tree t1 ATTRIBUTE_UNUSED,
-			       bool ignore ATTRIBUTE_UNUSED)
+hook_tree_tree_int_treep_bool_null (tree t0 ATTRIBUTE_UNUSED,
+				    int i ATTRIBUTE_UNUSED,
+				    tree *p ATTRIBUTE_UNUSED,
+				    bool ignore ATTRIBUTE_UNUSED)
 {
   return NULL;
 }

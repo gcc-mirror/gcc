@@ -7,7 +7,7 @@ void call(const F& f) { f(); }
 
 int main() {
   call([] () -> void {});
-  call([] () mutable -> void {}); // { dg-message "" "declared mutable" }
+  call([] () mutable -> void {});
 
   int i = -1;
   call([&i] () -> void { i = 0; });

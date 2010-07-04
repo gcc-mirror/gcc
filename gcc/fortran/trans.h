@@ -1,5 +1,5 @@
 /* Header for code translation functions
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Paul Brook
 
@@ -126,8 +126,9 @@ typedef enum
      scalarization loop.  */
   GFC_SS_SCALAR,
 
-  /* Like GFC_SS_SCALAR except it evaluates a pointer to the expression.
-     Used for elemental function parameters.  */
+  /* Like GFC_SS_SCALAR it evaluates the expression outside the
+     loop. Is always evaluated as a reference to the temporary.
+     Used for elemental function arguments.  */
   GFC_SS_REFERENCE,
 
   /* An array section.  Scalarization indices will be substituted during
@@ -320,7 +321,8 @@ void gfc_conv_subref_array_arg (gfc_se *, gfc_expr *, int, sym_intent, bool);
 /* gfc_trans_* shouldn't call push/poplevel, use gfc_push/pop_scope */
 
 /* Generate code for a scalar assignment.  */
-tree gfc_trans_scalar_assign (gfc_se *, gfc_se *, gfc_typespec, bool, bool);
+tree gfc_trans_scalar_assign (gfc_se *, gfc_se *, gfc_typespec, bool, bool,
+			      bool);
 
 /* Translate COMMON blocks.  */
 void gfc_trans_common (gfc_namespace *);
@@ -401,7 +403,7 @@ tree gfc_get_symbol_decl (gfc_symbol *);
 tree gfc_conv_initializer (gfc_expr *, gfc_typespec *, tree, bool, bool);
 
 /* Assign a default initializer to a derived type.  */
-tree gfc_init_default_dt (gfc_symbol *, tree);
+tree gfc_init_default_dt (gfc_symbol *, tree, bool);
 
 /* Substitute a temporary variable in place of the real one.  */
 void gfc_shadow_sym (gfc_symbol *, tree, gfc_saved_var *);
@@ -449,7 +451,7 @@ extern GTY(()) tree gfc_static_ctors;
 void gfc_generate_constructors (void);
 
 /* Get the string length of an array constructor.  */
-bool get_array_ctor_strlen (stmtblock_t *, gfc_constructor *, tree *);
+bool get_array_ctor_strlen (stmtblock_t *, gfc_constructor_base, tree *);
 
 /* Generate a runtime error call.  */
 tree gfc_trans_runtime_error (bool, locus*, const char*, ...);
@@ -485,10 +487,13 @@ tree gfc_deallocate_with_status (tree, tree, bool, gfc_expr*);
 tree gfc_call_realloc (stmtblock_t *, tree, tree);
 
 /* Generate code for an assignment, includes scalarization.  */
-tree gfc_trans_assignment (gfc_expr *, gfc_expr *, bool);
+tree gfc_trans_assignment (gfc_expr *, gfc_expr *, bool, bool);
 
 /* Generate code for a pointer assignment.  */
 tree gfc_trans_pointer_assignment (gfc_expr *, gfc_expr *);
+
+/* Generate code to assign typebound procedures to a derived vtab.  */
+void gfc_trans_assign_vtab_procs (stmtblock_t*, gfc_symbol*, gfc_symbol*);
 
 /* Initialize function decls for library functions.  */
 void gfc_build_intrinsic_lib_fndecls (void);
@@ -518,6 +523,7 @@ bool gfc_get_array_descr_info (const_tree, struct array_descr_info *);
 /* In trans-openmp.c */
 bool gfc_omp_privatize_by_reference (const_tree);
 enum omp_clause_default_kind gfc_omp_predetermined_sharing (tree);
+tree gfc_omp_report_decl (tree);
 tree gfc_omp_clause_default_ctor (tree, tree, tree);
 tree gfc_omp_clause_copy_ctor (tree, tree, tree);
 tree gfc_omp_clause_assign_op (tree, tree, tree);
@@ -533,6 +539,8 @@ extern GTY(()) tree gfor_fndecl_pause_numeric;
 extern GTY(()) tree gfor_fndecl_pause_string;
 extern GTY(()) tree gfor_fndecl_stop_numeric;
 extern GTY(()) tree gfor_fndecl_stop_string;
+extern GTY(()) tree gfor_fndecl_error_stop_numeric;
+extern GTY(()) tree gfor_fndecl_error_stop_string;
 extern GTY(()) tree gfor_fndecl_runtime_error;
 extern GTY(()) tree gfor_fndecl_runtime_error_at;
 extern GTY(()) tree gfor_fndecl_runtime_warning_at;
@@ -612,18 +620,24 @@ extern GTY(()) tree gfor_fndecl_sr_kind;
 /* True if node is an integer constant.  */
 #define INTEGER_CST_P(node) (TREE_CODE(node) == INTEGER_CST)
 
-/* G95-specific declaration information.  */
+/* gfortran-specific declaration information, the _CONT versions denote
+   arrays with CONTIGUOUS attribute.  */
 
 enum gfc_array_kind
 {
   GFC_ARRAY_UNKNOWN,
   GFC_ARRAY_ASSUMED_SHAPE,
+  GFC_ARRAY_ASSUMED_SHAPE_CONT,
   GFC_ARRAY_ALLOCATABLE,
-  GFC_ARRAY_POINTER
+  GFC_ARRAY_POINTER,
+  GFC_ARRAY_POINTER_CONT
 };
 
 /* Array types only.  */
-struct GTY(())	lang_type	 {
+/* FIXME: the variable_size annotation here is needed because these types are
+   variable-sized in some other frontends.  Due to gengtype deficiency the GTY
+   options of such types have to agree across all frontends. */
+struct GTY((variable_size))	lang_type	 {
   int rank;
   enum gfc_array_kind akind;
   tree lbound[GFC_MAX_DIMENSIONS];
@@ -637,7 +651,7 @@ struct GTY(())	lang_type	 {
   tree base_decl[2];
 };
 
-struct GTY(()) lang_decl {
+struct GTY((variable_size)) lang_decl {
   /* Dummy variables.  */
   tree saved_descriptor;
   /* Assigned integer nodes.  Stringlength is the IO format string's length.
@@ -771,7 +785,6 @@ void gfc_apply_interface_mapping (gfc_interface_mapping *,
 
 
 /* Standard error messages used in all the trans-*.c files.  */
-extern const char gfc_msg_bounds[];
 extern const char gfc_msg_fault[];
 extern const char gfc_msg_wrong_return[];
 

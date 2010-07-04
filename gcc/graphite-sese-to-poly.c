@@ -1,5 +1,5 @@
 /* Conversion of SESE regions to Polyhedra.
-   Copyright (C) 2009 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com>.
 
 This file is part of GCC.
@@ -180,7 +180,7 @@ reduction_phi_p (sese region, gimple_stmt_iterator *psi)
 
   if (simple_copy_phi_p (phi))
     {
-      /* FIXME: PRE introduces phi nodes like these, for an example,
+      /* PRE introduces phi nodes like these, for an example,
 	 see id-5.f in the fortran graphite testsuite:
 
 	 # prephitmp.85_265 = PHI <prephitmp.85_258(33), prephitmp.85_265(18)>
@@ -280,7 +280,6 @@ new_gimple_bb (basic_block bb, VEC (data_reference_p, heap) *drs)
   GBB_DATA_REFS (gbb) = drs;
   GBB_CONDITIONS (gbb) = NULL;
   GBB_CONDITION_CASES (gbb) = NULL;
-  GBB_CLOOG_IV_TYPES (gbb) = NULL;
 
   return gbb;
 }
@@ -308,9 +307,6 @@ free_data_refs_aux (VEC (data_reference_p, heap) *datarefs)
 static void
 free_gimple_bb (struct gimple_bb *gbb)
 {
-  if (GBB_CLOOG_IV_TYPES (gbb))
-    htab_delete (GBB_CLOOG_IV_TYPES (gbb));
-
   free_data_refs_aux (GBB_DATA_REFS (gbb));
   free_data_refs (GBB_DATA_REFS (gbb));
 
@@ -519,11 +515,11 @@ build_pbb_scattering_polyhedrons (ppl_Linear_Expression_t static_schedule,
   int nb_params = scop_nb_params (scop);
   ppl_Coefficient_t c;
   ppl_dimension_type dim = scattering_dimensions + nb_iterators + nb_params;
-  Value v;
+  mpz_t v;
 
   gcc_assert (scattering_dimensions >= used_scattering_dimensions);
 
-  value_init (v);
+  mpz_init (v);
   ppl_new_Coefficient (&c);
   PBB_TRANSFORMED (pbb) = poly_scattering_new ();
   ppl_new_C_Polyhedron_from_space_dimension
@@ -537,7 +533,7 @@ build_pbb_scattering_polyhedrons (ppl_Linear_Expression_t static_schedule,
       ppl_Linear_Expression_t expr;
 
       ppl_new_Linear_Expression_with_dimension (&expr, dim);
-      value_set_si (v, 1);
+      mpz_set_si (v, 1);
       ppl_assign_Coefficient_from_mpz_t (c, v);
       ppl_Linear_Expression_add_to_coefficient (expr, i, c);
 
@@ -546,7 +542,7 @@ build_pbb_scattering_polyhedrons (ppl_Linear_Expression_t static_schedule,
 	{
 	  ppl_Linear_Expression_coefficient (static_schedule, i / 2, c);
 	  ppl_Coefficient_to_mpz_t (c, v);
-	  value_oppose (v, v);
+	  mpz_neg (v, v);
 	  ppl_assign_Coefficient_from_mpz_t (c, v);
 	  ppl_Linear_Expression_add_to_inhomogeneous (expr, c);
 	}
@@ -556,7 +552,7 @@ build_pbb_scattering_polyhedrons (ppl_Linear_Expression_t static_schedule,
 	{
 	  int loop = (i - 1) / 2;
 
-	  value_set_si (v, -1);
+	  mpz_set_si (v, -1);
 	  ppl_assign_Coefficient_from_mpz_t (c, v);
 	  ppl_Linear_Expression_add_to_coefficient
 	    (expr, scattering_dimensions + loop, c);
@@ -568,7 +564,7 @@ build_pbb_scattering_polyhedrons (ppl_Linear_Expression_t static_schedule,
       ppl_delete_Constraint (cstr);
     }
 
-  value_clear (v);
+  mpz_clear (v);
   ppl_delete_Coefficient (c);
 
   PBB_ORIGINAL (pbb) = poly_scattering_copy (PBB_TRANSFORMED (pbb));
@@ -618,9 +614,9 @@ build_scop_scattering (scop_p scop)
   gimple_bb_p previous_gbb = NULL;
   ppl_Linear_Expression_t static_schedule;
   ppl_Coefficient_t c;
-  Value v;
+  mpz_t v;
 
-  value_init (v);
+  mpz_init (v);
   ppl_new_Coefficient (&c);
   ppl_new_Linear_Expression (&static_schedule);
 
@@ -628,7 +624,7 @@ build_scop_scattering (scop_p scop)
      because we cannot compare_prefix_loops against a previous loop,
      prefix will be equal to zero, and that index will be
      incremented before copying.  */
-  value_set_si (v, -1);
+  mpz_set_si (v, -1);
   ppl_assign_Coefficient_from_mpz_t (c, v);
   ppl_Linear_Expression_add_to_coefficient (static_schedule, 0, c);
 
@@ -649,7 +645,7 @@ build_scop_scattering (scop_p scop)
       ppl_assign_Linear_Expression_from_Linear_Expression (common,
 							   static_schedule);
 
-      value_set_si (v, 1);
+      mpz_set_si (v, 1);
       ppl_assign_Coefficient_from_mpz_t (c, v);
       ppl_Linear_Expression_add_to_coefficient (common, prefix, c);
       ppl_assign_Linear_Expression_from_Linear_Expression (static_schedule,
@@ -660,7 +656,7 @@ build_scop_scattering (scop_p scop)
       ppl_delete_Linear_Expression (common);
     }
 
-  value_clear (v);
+  mpz_clear (v);
   ppl_delete_Coefficient (c);
   ppl_delete_Linear_Expression (static_schedule);
 }
@@ -669,21 +665,21 @@ build_scop_scattering (scop_p scop)
 
 static void
 add_value_to_dim (ppl_dimension_type d, ppl_Linear_Expression_t expr,
-		  Value k)
+		  mpz_t k)
 {
-  Value val;
+  mpz_t val;
   ppl_Coefficient_t coef;
 
   ppl_new_Coefficient (&coef);
   ppl_Linear_Expression_coefficient (expr, d, coef);
-  value_init (val);
+  mpz_init (val);
   ppl_Coefficient_to_mpz_t (coef, val);
 
-  value_addto (val, val, k);
+  mpz_add (val, val, k);
 
   ppl_assign_Coefficient_from_mpz_t (coef, val);
   ppl_Linear_Expression_add_to_coefficient (expr, d, coef);
-  value_clear (val);
+  mpz_clear (val);
   ppl_delete_Coefficient (coef);
 }
 
@@ -699,7 +695,7 @@ scan_tree_for_params_right_scev (sese s, tree e, int var,
     {
       loop_p loop = get_loop (var);
       ppl_dimension_type l = sese_loop_depth (s, loop) - 1;
-      Value val;
+      mpz_t val;
 
       /* Scalar evolutions should happen in the sese region.  */
       gcc_assert (sese_loop_depth (s, loop) > 0);
@@ -712,10 +708,10 @@ scan_tree_for_params_right_scev (sese s, tree e, int var,
       |   a [i * p] = ...   */
       gcc_assert (TREE_CODE (e) == INTEGER_CST);
 
-      value_init (val);
-      value_set_si (val, int_cst_value (e));
+      mpz_init (val);
+      mpz_set_si (val, int_cst_value (e));
       add_value_to_dim (l, expr, val);
-      value_clear (val);
+      mpz_clear (val);
     }
 }
 
@@ -723,26 +719,26 @@ scan_tree_for_params_right_scev (sese s, tree e, int var,
    linear expression EXPR.  K is the multiplier of the constant.  */
 
 static void
-scan_tree_for_params_int (tree cst, ppl_Linear_Expression_t expr, Value k)
+scan_tree_for_params_int (tree cst, ppl_Linear_Expression_t expr, mpz_t k)
 {
-  Value val;
+  mpz_t val;
   ppl_Coefficient_t coef;
   int v = int_cst_value (cst);
 
-  value_init (val);
-  value_set_si (val, 0);
+  mpz_init (val);
+  mpz_set_si (val, 0);
 
   /* Necessary to not get "-1 = 2^n - 1". */
   if (v < 0)
-    value_sub_int (val, val, -v);
+    mpz_sub_ui (val, val, -v);
   else
-    value_add_int (val, val, v);
+    mpz_add_ui (val, val, v);
 
-  value_multiply (val, val, k);
+  mpz_mul (val, val, k);
   ppl_new_Coefficient (&coef);
   ppl_assign_Coefficient_from_mpz_t (coef, val);
   ppl_Linear_Expression_add_to_inhomogeneous (expr, coef);
-  value_clear (val);
+  mpz_clear (val);
   ppl_delete_Coefficient (coef);
 }
 
@@ -793,7 +789,7 @@ parameter_index_in_region (tree name, sese region)
 
 static void
 scan_tree_for_params (sese s, tree e, ppl_Linear_Expression_t c,
-		      Value k)
+		      mpz_t k)
 {
   if (e == chrec_dont_know)
     return;
@@ -811,13 +807,13 @@ scan_tree_for_params (sese s, tree e, ppl_Linear_Expression_t c,
 	{
 	  if (c)
 	    {
-	      Value val;
+	      mpz_t val;
 	      gcc_assert (host_integerp (TREE_OPERAND (e, 1), 0));
-	      value_init (val);
-	      value_set_si (val, int_cst_value (TREE_OPERAND (e, 1)));
-	      value_multiply (val, val, k);
+	      mpz_init (val);
+	      mpz_set_si (val, int_cst_value (TREE_OPERAND (e, 1)));
+	      mpz_mul (val, val, k);
 	      scan_tree_for_params (s, TREE_OPERAND (e, 0), c, val);
-	      value_clear (val);
+	      mpz_clear (val);
 	    }
 	  else
 	    scan_tree_for_params (s, TREE_OPERAND (e, 0), c, k);
@@ -826,13 +822,13 @@ scan_tree_for_params (sese s, tree e, ppl_Linear_Expression_t c,
 	{
 	  if (c)
 	    {
-	      Value val;
+	      mpz_t val;
 	      gcc_assert (host_integerp (TREE_OPERAND (e, 0), 0));
-	      value_init (val);
-	      value_set_si (val, int_cst_value (TREE_OPERAND (e, 0)));
-	      value_multiply (val, val, k);
+	      mpz_init (val);
+	      mpz_set_si (val, int_cst_value (TREE_OPERAND (e, 0)));
+	      mpz_mul (val, val, k);
 	      scan_tree_for_params (s, TREE_OPERAND (e, 1), c, val);
-	      value_clear (val);
+	      mpz_clear (val);
 	    }
 	  else
 	    scan_tree_for_params (s, TREE_OPERAND (e, 1), c, k);
@@ -908,16 +904,16 @@ scan_tree_for_params (sese s, tree e, ppl_Linear_Expression_t c,
 	if (c)
 	  {
 	    ppl_Coefficient_t coef;
-	    Value minus_one;
+	    mpz_t minus_one;
 
 	    ppl_subtract_Linear_Expression_from_Linear_Expression (c,
 								   tmp_expr);
 	    ppl_delete_Linear_Expression (tmp_expr);
-	    value_init (minus_one);
-	    value_set_si (minus_one, -1);
+	    mpz_init (minus_one);
+	    mpz_set_si (minus_one, -1);
 	    ppl_new_Coefficient_from_mpz_t (&coef, minus_one);
 	    ppl_Linear_Expression_add_to_inhomogeneous (c, coef);
-	    value_clear (minus_one);
+	    mpz_clear (minus_one);
 	    ppl_delete_Coefficient (coef);
 	  }
 
@@ -965,10 +961,10 @@ find_params_in_bb (sese region, gimple_bb_p gbb)
   data_reference_p dr;
   gimple stmt;
   loop_p loop = GBB_BB (gbb)->loop_father;
-  Value one;
+  mpz_t one;
 
-  value_init (one);
-  value_set_si (one, 1);
+  mpz_init (one);
+  mpz_set_si (one, 1);
 
   /* Find parameters in the access functions of data references.  */
   for (i = 0; VEC_iterate (data_reference_p, GBB_DATA_REFS (gbb), i, dr); i++)
@@ -987,7 +983,7 @@ find_params_in_bb (sese region, gimple_bb_p gbb)
       scan_tree_for_params (region, rhs, NULL, one);
     }
 
-  value_clear (one);
+  mpz_clear (one);
 }
 
 /* Record the parameters used in the SCOP.  A variable is a parameter
@@ -1000,10 +996,10 @@ find_scop_parameters (scop_p scop)
   unsigned i;
   sese region = SCOP_REGION (scop);
   struct loop *loop;
-  Value one;
+  mpz_t one;
 
-  value_init (one);
-  value_set_si (one, 1);
+  mpz_init (one);
+  mpz_set_si (one, 1);
 
   /* Find the parameters used in the loop bounds.  */
   for (i = 0; VEC_iterate (loop_p, SESE_LOOP_NEST (region), i, loop); i++)
@@ -1017,7 +1013,7 @@ find_scop_parameters (scop_p scop)
       scan_tree_for_params (region, nb_iters, NULL, one);
     }
 
-  value_clear (one);
+  mpz_clear (one);
 
   /* Find the parameters used in data accesses.  */
   for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
@@ -1036,6 +1032,74 @@ static inline gimple_bb_p
 gbb_from_bb (basic_block bb)
 {
   return (gimple_bb_p) bb->aux;
+}
+
+/* Insert in the SCOP context constraints from the estimation of the
+   number of iterations.  UB_EXPR is a linear expression describing
+   the number of iterations in a loop.  This expression is bounded by
+   the estimation NIT.  */
+
+static void
+add_upper_bounds_from_estimated_nit (scop_p scop, double_int nit,
+				     ppl_dimension_type dim,
+				     ppl_Linear_Expression_t ub_expr)
+{
+  mpz_t val;
+  ppl_Linear_Expression_t nb_iters_le;
+  ppl_Polyhedron_t pol;
+  ppl_Coefficient_t coef;
+  ppl_Constraint_t ub;
+
+  ppl_new_Linear_Expression_with_dimension (&ub_expr, dim);
+  ppl_new_C_Polyhedron_from_space_dimension (&pol, dim, 0);
+  ppl_new_Linear_Expression_from_Linear_Expression (&nb_iters_le,
+						    ub_expr);
+
+  /* Construct the negated number of last iteration in VAL.  */
+  mpz_init (val);
+  mpz_set_double_int (val, nit, false);
+  mpz_sub_ui (val, val, 1);
+  mpz_neg (val, val);
+
+  /* NB_ITERS_LE holds the number of last iteration in
+     parametrical form.  Subtract estimated number of last
+     iteration and assert that result is not positive.  */
+  ppl_new_Coefficient_from_mpz_t (&coef, val);
+  ppl_Linear_Expression_add_to_inhomogeneous (nb_iters_le, coef);
+  ppl_delete_Coefficient (coef);
+  ppl_new_Constraint (&ub, nb_iters_le,
+		      PPL_CONSTRAINT_TYPE_LESS_OR_EQUAL);
+  ppl_Polyhedron_add_constraint (pol, ub);
+
+  /* Remove all but last GDIM dimensions from POL to obtain
+     only the constraints on the parameters.  */
+  {
+    graphite_dim_t gdim = scop_nb_params (scop);
+    ppl_dimension_type *dims = XNEWVEC (ppl_dimension_type, dim - gdim);
+    graphite_dim_t i;
+
+    for (i = 0; i < dim - gdim; i++)
+      dims[i] = i;
+
+    ppl_Polyhedron_remove_space_dimensions (pol, dims, dim - gdim);
+    XDELETEVEC (dims);
+  }
+
+  /* Add the constraints on the parameters to the SCoP context.  */
+  {
+    ppl_Pointset_Powerset_C_Polyhedron_t constraints_ps;
+
+    ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron
+      (&constraints_ps, pol);
+    ppl_Pointset_Powerset_C_Polyhedron_intersection_assign
+      (SCOP_CONTEXT (scop), constraints_ps);
+    ppl_delete_Pointset_Powerset_C_Polyhedron (constraints_ps);
+  }
+
+  ppl_delete_Polyhedron (pol);
+  ppl_delete_Linear_Expression (nb_iters_le);
+  ppl_delete_Constraint (ub);
+  mpz_clear (val);
 }
 
 /* Builds the constraint polyhedra for LOOP in SCOP.  OUTER_PH gives
@@ -1101,76 +1165,20 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
     }
   else if (!chrec_contains_undetermined (nb_iters))
     {
-      Value one;
+      mpz_t one;
       ppl_Constraint_t ub;
       ppl_Linear_Expression_t ub_expr;
       double_int nit;
 
-      value_init (one);
-      value_set_si (one, 1);
+      mpz_init (one);
+      mpz_set_si (one, 1);
       ppl_new_Linear_Expression_with_dimension (&ub_expr, dim);
       nb_iters = scalar_evolution_in_region (region, loop, nb_iters);
       scan_tree_for_params (SCOP_REGION (scop), nb_iters, ub_expr, one);
-      value_clear (one);
+      mpz_clear (one);
 
-      /* N <= estimated_nb_iters
-
-	 FIXME: This is a workaround that should go away once we will
-	 have the PIP algorithm.  */
       if (estimated_loop_iterations (loop, true, &nit))
-	{
-	  Value val;
-	  ppl_Linear_Expression_t nb_iters_le;
-	  ppl_Polyhedron_t pol;
-	  graphite_dim_t n = scop_nb_params (scop);
-	  ppl_Coefficient_t coef;
-
-	  ppl_new_C_Polyhedron_from_space_dimension (&pol, dim, 0);
-	  ppl_new_Linear_Expression_from_Linear_Expression (&nb_iters_le,
-							    ub_expr);
-
-	  /* Construct the negated number of last iteration in VAL.  */
-	  value_init (val);
-	  mpz_set_double_int (val, nit, false);
-	  value_sub_int (val, val, 1);
-	  value_oppose (val, val);
-
-	  /* NB_ITERS_LE holds number of last iteration in parametrical form.
-	  Subtract estimated number of last iteration and assert that result
-	  is not positive.  */
-	  ppl_new_Coefficient_from_mpz_t (&coef, val);
-	  ppl_Linear_Expression_add_to_inhomogeneous (nb_iters_le, coef);
-	  ppl_delete_Coefficient (coef);
-	  ppl_new_Constraint (&ub, nb_iters_le,
-			      PPL_CONSTRAINT_TYPE_LESS_OR_EQUAL);
-	  ppl_Polyhedron_add_constraint (pol, ub);
-
-	  /* Remove all but last N dimensions from POL to obtain constraints
-	     on parameters.  */
-	    {
-	      ppl_dimension_type *dims = XNEWVEC (ppl_dimension_type, dim - n);
-	      graphite_dim_t i;
-	      for (i = 0; i < dim - n; i++)
-		dims[i] = i;
-	      ppl_Polyhedron_remove_space_dimensions (pol, dims, dim - n);
-	      XDELETEVEC (dims);
-	    }
-
-	  /* Add constraints on parameters to SCoP context.  */
-	    {
-	      ppl_Pointset_Powerset_C_Polyhedron_t constraints_ps;
-	      ppl_new_Pointset_Powerset_C_Polyhedron_from_C_Polyhedron
-	       (&constraints_ps, pol);
-	      ppl_Pointset_Powerset_C_Polyhedron_intersection_assign
-	       (SCOP_CONTEXT (scop), constraints_ps);
-	      ppl_delete_Pointset_Powerset_C_Polyhedron (constraints_ps);
-	    }
-
-	  ppl_delete_Polyhedron (pol);
-	  ppl_delete_Linear_Expression (nb_iters_le);
-	  ppl_delete_Constraint (ub);
-	  value_clear (val);
-	}
+	add_upper_bounds_from_estimated_nit (scop, nit, dim, ub_expr);
 
       /* loop_i <= expr_nb_iters */
       ppl_set_coef (ub_expr, nb, -1);
@@ -1201,7 +1209,7 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
 static ppl_Linear_Expression_t
 create_linear_expr_from_tree (poly_bb_p pbb, tree t)
 {
-  Value one;
+  mpz_t one;
   ppl_Linear_Expression_t res;
   ppl_dimension_type dim;
   sese region = SCOP_REGION (PBB_SCOP (pbb));
@@ -1213,10 +1221,10 @@ create_linear_expr_from_tree (poly_bb_p pbb, tree t)
   t = scalar_evolution_in_region (region, loop, t);
   gcc_assert (!automatically_generated_chrec_p (t));
 
-  value_init (one);
-  value_set_si (one, 1);
+  mpz_init (one);
+  mpz_set_si (one, 1);
   scan_tree_for_params (region, t, res, one);
-  value_clear (one);
+  mpz_clear (one);
 
   return res;
 }
@@ -1257,7 +1265,7 @@ static void
 add_condition_to_domain (ppl_Pointset_Powerset_C_Polyhedron_t ps, gimple stmt,
 			 poly_bb_p pbb, enum tree_code code)
 {
-  Value v;
+  mpz_t v;
   ppl_Coefficient_t c;
   ppl_Linear_Expression_t left, right;
   ppl_Constraint_t cstr;
@@ -1270,25 +1278,25 @@ add_condition_to_domain (ppl_Pointset_Powerset_C_Polyhedron_t ps, gimple stmt,
      the left or the right side of the expression. */
   if (code == LT_EXPR)
     {
-      value_init (v);
-      value_set_si (v, 1);
+      mpz_init (v);
+      mpz_set_si (v, 1);
       ppl_new_Coefficient (&c);
       ppl_assign_Coefficient_from_mpz_t (c, v);
       ppl_Linear_Expression_add_to_inhomogeneous (left, c);
       ppl_delete_Coefficient (c);
-      value_clear (v);
+      mpz_clear (v);
 
       code = LE_EXPR;
     }
   else if (code == GT_EXPR)
     {
-      value_init (v);
-      value_set_si (v, 1);
+      mpz_init (v);
+      mpz_set_si (v, 1);
       ppl_new_Coefficient (&c);
       ppl_assign_Coefficient_from_mpz_t (c, v);
       ppl_Linear_Expression_add_to_inhomogeneous (right, c);
       ppl_delete_Coefficient (c);
-      value_clear (v);
+      mpz_clear (v);
 
       code = GE_EXPR;
     }
@@ -1320,8 +1328,7 @@ add_condition_to_pbb (poly_bb_p pbb, gimple stmt, enum tree_code code)
 	(&right, left);
       add_condition_to_domain (left, stmt, pbb, LT_EXPR);
       add_condition_to_domain (right, stmt, pbb, GT_EXPR);
-      ppl_Pointset_Powerset_C_Polyhedron_upper_bound_assign (left,
-							       right);
+      ppl_Pointset_Powerset_C_Polyhedron_upper_bound_assign (left, right);
       ppl_delete_Pointset_Powerset_C_Polyhedron (right);
     }
   else
@@ -1336,12 +1343,11 @@ add_conditions_to_domain (poly_bb_p pbb)
   unsigned int i;
   gimple stmt;
   gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
-  VEC (gimple, heap) *conditions = GBB_CONDITIONS (gbb);
 
-  if (VEC_empty (gimple, conditions))
+  if (VEC_empty (gimple, GBB_CONDITIONS (gbb)))
     return;
 
-  for (i = 0; VEC_iterate (gimple, conditions, i, stmt); i++)
+  for (i = 0; VEC_iterate (gimple, GBB_CONDITIONS (gbb), i, stmt); i++)
     switch (gimple_code (stmt))
       {
       case GIMPLE_COND:
@@ -1349,7 +1355,7 @@ add_conditions_to_domain (poly_bb_p pbb)
 	    enum tree_code code = gimple_cond_code (stmt);
 
 	    /* The conditions for ELSE-branches are inverted.  */
-	    if (VEC_index (gimple, gbb->condition_cases, i) == NULL)
+	    if (!VEC_index (gimple, GBB_CONDITION_CASES (gbb), i))
 	      code = invert_tree_comparison (code, false);
 
 	    add_condition_to_pbb (pbb, stmt, code);
@@ -1373,21 +1379,28 @@ struct bsc
   sese region;
 };
 
-/* Returns non NULL when BB has a single predecessor and the last
-   statement of that predecessor is a COND_EXPR.  */
+/* Returns a COND_EXPR statement when BB has a single predecessor, the
+   edge between BB and its predecessor is not a loop exit edge, and
+   the last statement of the single predecessor is a COND_EXPR.  */
 
 static gimple
-single_pred_cond (basic_block bb)
+single_pred_cond_non_loop_exit (basic_block bb)
 {
   if (single_pred_p (bb))
     {
       edge e = single_pred_edge (bb);
       basic_block pred = e->src;
-      gimple stmt = last_stmt (pred);
+      gimple stmt;
+
+      if (loop_depth (pred->loop_father) > loop_depth (bb->loop_father))
+	return NULL;
+
+      stmt = last_stmt (pred);
 
       if (stmt && gimple_code (stmt) == GIMPLE_COND)
 	return stmt;
     }
+
   return NULL;
 }
 
@@ -1401,11 +1414,13 @@ build_sese_conditions_before (struct dom_walk_data *dw_data,
   struct bsc *data = (struct bsc *) dw_data->global_data;
   VEC (gimple, heap) **conditions = data->conditions;
   VEC (gimple, heap) **cases = data->cases;
-  gimple_bb_p gbb = gbb_from_bb (bb);
-  gimple stmt = single_pred_cond (bb);
+  gimple_bb_p gbb;
+  gimple stmt;
 
   if (!bb_in_sese_p (bb, data->region))
     return;
+
+  stmt = single_pred_cond_non_loop_exit (bb);
 
   if (stmt)
     {
@@ -1418,6 +1433,8 @@ build_sese_conditions_before (struct dom_walk_data *dw_data,
       else
 	VEC_safe_push (gimple, heap, *cases, NULL);
     }
+
+  gbb = gbb_from_bb (bb);
 
   if (gbb)
     {
@@ -1440,7 +1457,7 @@ build_sese_conditions_after (struct dom_walk_data *dw_data,
   if (!bb_in_sese_p (bb, data->region))
     return;
 
-  if (single_pred_cond (bb))
+  if (single_pred_cond_non_loop_exit (bb))
     {
       VEC_pop (gimple, *conditions);
       VEC_pop (gimple, *cases);
@@ -1499,16 +1516,18 @@ add_param_constraints (scop_p scop, ppl_Polyhedron_t context, graphite_dim_t p)
   ppl_Linear_Expression_t le;
   tree parameter = VEC_index (tree, SESE_PARAMS (SCOP_REGION (scop)), p);
   tree type = TREE_TYPE (parameter);
-  tree lb, ub;
+  tree lb = NULL_TREE;
+  tree ub = NULL_TREE;
 
-  /* Disabled until we fix CPU2006.  */
-  return;
+  if (POINTER_TYPE_P (type) || !TYPE_MIN_VALUE (type))
+    lb = lower_bound_in_type (type, type);
+  else
+    lb = TYPE_MIN_VALUE (type);
 
-  if (!INTEGRAL_TYPE_P (type))
-    return;
-
-  lb = TYPE_MIN_VALUE (type);
-  ub = TYPE_MAX_VALUE (type);
+  if (POINTER_TYPE_P (type) || !TYPE_MAX_VALUE (type))
+    ub = upper_bound_in_type (type, type);
+  else
+    ub = TYPE_MAX_VALUE (type);
 
   if (lb)
     {
@@ -1641,11 +1660,11 @@ pdr_add_memory_accesses (ppl_Polyhedron_t accesses, data_reference_p dr,
 			 poly_bb_p pbb)
 {
   int i, nb_subscripts = DR_NUM_DIMENSIONS (dr);
-  Value v;
+  mpz_t v;
   scop_p scop = PBB_SCOP (pbb);
   sese region = SCOP_REGION (scop);
 
-  value_init (v);
+  mpz_init (v);
 
   for (i = 0; i < nb_subscripts; i++)
     {
@@ -1657,7 +1676,7 @@ pdr_add_memory_accesses (ppl_Polyhedron_t accesses, data_reference_p dr,
       ppl_new_Linear_Expression_with_dimension (&fn, dom_nb_dims);
       ppl_new_Linear_Expression_with_dimension (&access, accessp_nb_dims);
 
-      value_set_si (v, 1);
+      mpz_set_si (v, 1);
       scan_tree_for_params (region, afn, fn, v);
       ppl_assign_Linear_Expression_from_Linear_Expression (access, fn);
 
@@ -1670,7 +1689,7 @@ pdr_add_memory_accesses (ppl_Polyhedron_t accesses, data_reference_p dr,
       ppl_delete_Constraint (cstr);
     }
 
-  value_clear (v);
+  mpz_clear (v);
 }
 
 /* Add constrains representing the size of the accessed data to the
@@ -2169,6 +2188,9 @@ scalar_close_phi_node_p (gimple phi)
       || !is_gimple_reg (gimple_phi_result (phi)))
     return false;
 
+  /* Note that loop close phi nodes should have a single argument
+     because we translated the representation into a canonical form
+     before Graphite: see canonicalize_loop_closed_ssa_form.  */
   return (gimple_phi_num_args (phi) == 1);
 }
 
@@ -2186,7 +2208,13 @@ rewrite_close_phi_out_of_ssa (gimple_stmt_iterator *psi)
   gimple stmt = gimple_build_assign (res, zero_dim_array);
   tree arg = gimple_phi_arg_def (phi, 0);
 
-  if (TREE_CODE (arg) == SSA_NAME)
+  /* Note that loop close phi nodes should have a single argument
+     because we translated the representation into a canonical form
+     before Graphite: see canonicalize_loop_closed_ssa_form.  */
+  gcc_assert (gimple_phi_num_args (phi) == 1);
+
+  if (TREE_CODE (arg) == SSA_NAME
+      && !SSA_NAME_IS_DEFAULT_DEF (arg))
     insert_out_of_ssa_copy (zero_dim_array, arg);
   else
     insert_out_of_ssa_copy_on_edge (single_pred_edge (gimple_bb (phi)),
@@ -2351,7 +2379,8 @@ rewrite_cross_bb_scalar_deps (sese region, gimple_stmt_iterator *gsi)
 
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
     if (def_bb != gimple_bb (use_stmt)
-	&& gimple_code (use_stmt) != GIMPLE_PHI)
+	&& gimple_code (use_stmt) != GIMPLE_PHI
+	&& !is_gimple_debug (use_stmt))
       {
 	if (!zero_dim_array)
 	  {
@@ -2386,8 +2415,7 @@ rewrite_reductions_out_of_ssa (scop_p scop)
 
   update_ssa (TODO_update_ssa);
 #ifdef ENABLE_CHECKING
-  verify_ssa (false);
-  verify_loop_closed_ssa ();
+  verify_loop_closed_ssa (true);
 #endif
 
   FOR_EACH_BB (bb)
@@ -2397,8 +2425,7 @@ rewrite_reductions_out_of_ssa (scop_p scop)
 
   update_ssa (TODO_update_ssa);
 #ifdef ENABLE_CHECKING
-  verify_ssa (false);
-  verify_loop_closed_ssa ();
+  verify_loop_closed_ssa (true);
 #endif
 }
 
@@ -2450,7 +2477,7 @@ split_reduction_stmt (gimple stmt)
 
   split_block (bb, stmt);
 
-  if (gsi_one_before_end_p (gsi_start_bb (bb)))
+  if (gsi_one_before_end_p (gsi_start_nondebug_bb (bb)))
     return bb;
 
   gsi = gsi_last_bb (bb);
@@ -2651,6 +2678,11 @@ detect_commutative_reduction (gimple stmt, VEC (gimple, heap) **in,
       if (TREE_CODE (arg) != SSA_NAME)
 	return NULL;
 
+      /* Note that loop close phi nodes should have a single argument
+	 because we translated the representation into a canonical form
+	 before Graphite: see canonicalize_loop_closed_ssa_form.  */
+      gcc_assert (gimple_phi_num_args (stmt) == 1);
+
       def = SSA_NAME_DEF_STMT (arg);
       loop_phi = detect_commutative_reduction (def, in, out);
 
@@ -2771,7 +2803,7 @@ translate_scalar_reduction_to_array (VEC (gimple, heap) *in,
 {
   unsigned int i;
   gimple loop_phi;
-  tree red;
+  tree red = NULL_TREE;
 
   for (i = 0; VEC_iterate (gimple, in, i, loop_phi); i++)
     {
@@ -2852,8 +2884,7 @@ rewrite_commutative_reductions_out_of_ssa (sese region, sbitmap reductions)
   gsi_commit_edge_inserts ();
   update_ssa (TODO_update_ssa);
 #ifdef ENABLE_CHECKING
-  verify_ssa (false);
-  verify_loop_closed_ssa ();
+  verify_loop_closed_ssa (true);
 #endif
 }
 
@@ -2871,7 +2902,7 @@ graphite_loop_normal_form (loop_p loop)
 
   bool known_niter = number_of_iterations_exit (loop, exit, &niter, false);
 
-  /* At this point we should know the number of iterations,  */
+  /* At this point we should know the number of iterations.  */
   gcc_assert (known_niter);
 
   nit = force_gimple_operand (unshare_expr (niter.niter), &stmts, true,
@@ -2879,7 +2910,7 @@ graphite_loop_normal_form (loop_p loop)
   if (stmts)
     gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
 
-  loop->single_iv = canonicalize_loop_ivs (loop, &nit);
+  loop->single_iv = canonicalize_loop_ivs (loop, &nit, false);
 }
 
 /* Rewrite all the loops of SCOP in normal form: one induction
@@ -2896,13 +2927,51 @@ scop_canonicalize_loops (scop_p scop)
       graphite_loop_normal_form (loop);
 }
 
+/* Java does not initialize long_long_integer_type_node.  */
+#define my_long_long (long_long_integer_type_node ? long_long_integer_type_node : ssizetype)
+
+/* Can all ivs be represented by a signed integer?
+   As CLooG might generate negative values in its expressions, signed loop ivs
+   are required in the backend. */
+
+static bool
+scop_ivs_can_be_represented (scop_p scop)
+{
+  loop_iterator li;
+  loop_p loop;
+
+  FOR_EACH_LOOP (li, loop, 0)
+    {
+      tree type;
+      int precision;
+
+      if (!loop_in_sese_p (loop, SCOP_REGION (scop)))
+	continue;
+
+      if (!loop->single_iv)
+	continue;
+
+      type = TREE_TYPE (loop->single_iv);
+      precision = TYPE_PRECISION (type);
+
+      if (TYPE_UNSIGNED (type)
+	  && precision >= TYPE_PRECISION (my_long_long))
+	return false;
+    }
+
+  return true;
+}
+
+#undef my_long_long
+
 /* Builds the polyhedral representation for a SESE region.  */
 
-bool
+void
 build_poly_scop (scop_p scop)
 {
   sese region = SCOP_REGION (scop);
   sbitmap reductions = sbitmap_alloc (last_basic_block * 2);
+  graphite_dim_t max_dim;
 
   sbitmap_zero (reductions);
   rewrite_commutative_reductions_out_of_ssa (region, reductions);
@@ -2915,12 +2984,19 @@ build_poly_scop (scop_p scop)
      sense to optimize a scop containing only PBBs that do not belong
      to any loops.  */
   if (nb_pbbs_in_loops (scop) == 0)
-    return false;
+    return;
 
   scop_canonicalize_loops (scop);
+  if (!scop_ivs_can_be_represented (scop))
+    return;
+
   build_sese_loop_nests (region);
   build_sese_conditions (region);
   find_scop_parameters (scop);
+
+  max_dim = PARAM_VALUE (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS);
+  if (scop_nb_params (scop) > max_dim)
+    return;
 
   build_scop_iteration_domain (scop);
   build_scop_context (scop);
@@ -2929,9 +3005,10 @@ build_poly_scop (scop_p scop)
   scop_to_lst (scop);
   build_scop_scattering (scop);
   build_scop_drs (scop);
-  POLY_SCOP_P (scop) = true;
 
-  return true;
+  /* This SCoP has been translated to the polyhedral
+     representation.  */
+  POLY_SCOP_P (scop) = true;
 }
 
 /* Always return false.  Exercise the scop_to_clast function.  */

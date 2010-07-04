@@ -1,6 +1,6 @@
 // 2001-06-21  Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2004, 2005, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004, 2005, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,6 +27,7 @@ void test02()
   typedef std::front_insert_iterator<std::list<int> > iterator_type;
   std::list<int> li;
   iterator_type it = std::front_inserter(li);
+  it = it; // Suppress unused warning.
 }
 
 int main() 

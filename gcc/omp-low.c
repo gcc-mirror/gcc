@@ -3,7 +3,8 @@
    marshalling to implement data sharing and copying clauses.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
-   Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "tree-inline.h"
 #include "langhooks.h"
-#include "diagnostic.h"
+#include "diagnostic-core.h"
 #include "tree-flow.h"
 #include "timevar.h"
 #include "flags.h"
@@ -1111,13 +1112,13 @@ dump_omp_region (FILE *file, struct omp_region *region, int indent)
     dump_omp_region (file, region->next, indent);
 }
 
-void
+DEBUG_FUNCTION void
 debug_omp_region (struct omp_region *region)
 {
   dump_omp_region (stderr, region, 0);
 }
 
-void
+DEBUG_FUNCTION void
 debug_all_omp_regions (void)
 {
   dump_omp_region (stderr, root_omp_region, 0);
@@ -1432,10 +1433,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	  break;
 
 	case OMP_CLAUSE_COPYPRIVATE:
-	  if (ctx->outer)
-	    scan_omp_op (&OMP_CLAUSE_DECL (c), ctx->outer);
-	  /* FALLTHRU */
-
 	case OMP_CLAUSE_COPYIN:
 	  decl = OMP_CLAUSE_DECL (c);
 	  by_ref = use_pointer_for_field (decl, NULL);
@@ -1534,22 +1531,8 @@ static GTY(()) unsigned int tmp_ompfn_id_num;
 static tree
 create_omp_child_function_name (bool task_copy)
 {
-  tree name = DECL_ASSEMBLER_NAME (current_function_decl);
-  size_t len = IDENTIFIER_LENGTH (name);
-  char *tmp_name, *prefix;
-  const char *suffix;
-
-  suffix = task_copy ? "_omp_cpyfn" : "_omp_fn";
-  prefix = XALLOCAVEC (char, len + strlen (suffix) + 1);
-  memcpy (prefix, IDENTIFIER_POINTER (name), len);
-  strcpy (prefix + len, suffix);
-#ifndef NO_DOT_IN_LABEL
-  prefix[len] = '.';
-#elif !defined NO_DOLLAR_IN_LABEL
-  prefix[len] = '$';
-#endif
-  ASM_FORMAT_PRIVATE_NAME (tmp_name, prefix, tmp_ompfn_id_num++);
-  return get_identifier (tmp_name);
+  return (clone_function_name (current_function_decl,
+			       task_copy ? "_omp_cpyfn" : "_omp_fn"));
 }
 
 /* Build a decl for the omp child function.  It'll not contain a body
@@ -2701,7 +2684,7 @@ lower_copyprivate_clauses (tree clauses, gimple_seq *slist, gimple_seq *rlist,
 
   for (c = clauses; c ; c = OMP_CLAUSE_CHAIN (c))
     {
-      tree var, ref, x;
+      tree var, new_var, ref, x;
       bool by_ref;
       location_t clause_loc = OMP_CLAUSE_LOCATION (c);
 
@@ -2712,17 +2695,29 @@ lower_copyprivate_clauses (tree clauses, gimple_seq *slist, gimple_seq *rlist,
       by_ref = use_pointer_for_field (var, NULL);
 
       ref = build_sender_ref (var, ctx);
-      x = lookup_decl_in_outer_ctx (var, ctx);
-      x = by_ref ? build_fold_addr_expr_loc (clause_loc, x) : x;
+      x = new_var = lookup_decl_in_outer_ctx (var, ctx);
+      if (by_ref)
+	{
+	  x = build_fold_addr_expr_loc (clause_loc, new_var);
+	  x = fold_convert_loc (clause_loc, TREE_TYPE (ref), x);
+	}
       gimplify_assign (ref, x, slist);
 
-      ref = build_receiver_ref (var, by_ref, ctx);
+      ref = build_receiver_ref (var, false, ctx);
+      if (by_ref)
+	{
+	  ref = fold_convert_loc (clause_loc,
+				  build_pointer_type (TREE_TYPE (new_var)),
+				  ref);
+	  ref = build_fold_indirect_ref_loc (clause_loc, ref);
+	}
       if (is_reference (var))
 	{
+	  ref = fold_convert_loc (clause_loc, TREE_TYPE (new_var), ref);
 	  ref = build_fold_indirect_ref_loc (clause_loc, ref);
-	  var = build_fold_indirect_ref_loc (clause_loc, var);
+	  new_var = build_fold_indirect_ref_loc (clause_loc, new_var);
 	}
-      x = lang_hooks.decls.omp_clause_assign_op (c, var, ref);
+      x = lang_hooks.decls.omp_clause_assign_op (c, new_var, ref);
       gimplify_and_add (x, rlist);
     }
 }
@@ -3117,8 +3112,8 @@ maybe_catch_exception (gimple_seq body)
   if (!flag_exceptions)
     return body;
 
-  if (lang_protect_cleanup_actions)
-    decl = lang_protect_cleanup_actions ();
+  if (lang_hooks.eh_protect_cleanup_actions != NULL)
+    decl = lang_hooks.eh_protect_cleanup_actions ();
   else
     decl = built_in_decls[BUILT_IN_TRAP];
 
@@ -5503,7 +5498,7 @@ execute_expand_omp (void)
 static bool
 gate_expand_omp (void)
 {
-  return (flag_openmp != 0 && errorcount == 0);
+  return (flag_openmp != 0 && !seen_error ());
 }
 
 struct gimple_opt_pass pass_expand_omp =
@@ -5892,7 +5887,9 @@ lower_omp_critical (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
       if (!critical_name_mutexes)
 	critical_name_mutexes
-	  = splay_tree_new_ggc (splay_tree_compare_pointers);
+	  = splay_tree_new_ggc (splay_tree_compare_pointers,
+				ggc_alloc_splay_tree_tree_node_tree_node_splay_tree_s,
+				ggc_alloc_splay_tree_tree_node_tree_node_splay_tree_node_s);
 
       n = splay_tree_lookup (critical_name_mutexes, (splay_tree_key) name);
       if (n == NULL)
@@ -6552,7 +6549,7 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   /* If we have issued syntax errors, avoid doing any heavy lifting.
      Just replace the OpenMP directives with a NOP to avoid
      confusing RTL expansion.  */
-  if (errorcount && is_gimple_omp (stmt))
+  if (seen_error () && is_gimple_omp (stmt))
     {
       gsi_replace (gsi_p, gimple_build_nop (), true);
       return;

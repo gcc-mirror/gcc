@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Matsushita MN10300 series
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2007, 2008, 2009 Free Software Foundation, Inc.
+   2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GCC.
@@ -237,7 +237,7 @@ extern enum processor_type mn10300_processor;
 
 /* 4 data, and effectively 3 address registers is small as far as I'm
    concerned.  */
-#define SMALL_REGISTER_CLASSES 1
+#define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.

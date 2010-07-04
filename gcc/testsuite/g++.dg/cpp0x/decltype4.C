@@ -62,6 +62,7 @@ void wibble() {
 }
 
 struct B {
+  B () : bit(), cbit() {} 
   int bit : 2;
   const int cbit : 3;
 

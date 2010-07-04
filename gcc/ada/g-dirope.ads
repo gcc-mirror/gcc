@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2008, AdaCore                     --
+--                     Copyright (C) 1998-2010, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -209,8 +209,8 @@ package GNAT.Directory_Operations is
    --      Recognize both forms described above.
    --
    --    System_Default
-   --      Uses either UNIX on Unix and OpenVMS systems, or DOS on Windows and
-   --      OS/2 depending on the running environment.
+   --      Uses either UNIX on Unix and OpenVMS systems, or DOS on Windows,
+   --      depending on the running environment. What about other OS's???
 
    ---------------
    -- Iterators --

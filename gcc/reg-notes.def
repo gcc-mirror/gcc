@@ -1,5 +1,6 @@
 /* Register note definitions.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -152,6 +153,11 @@ REG_NOTE (CFA_REGISTER)
    or the like.  Either the attached rtx, or the destination of the insn's
    first pattern is the register to be restored.  */
 REG_NOTE (CFA_RESTORE)
+
+/* Attached to insn that is RTX_FRAME_RELATED_P, marks insn that sets
+   vDRAP from DRAP.  If vDRAP is a register, vdrap_reg is initalized
+   to the argument, if it is a MEM, it is ignored.  */
+REG_NOTE (CFA_SET_VDRAP)
 
 /* Indicates that REG holds the exception context for the function.
    This context is shared by inline functions, so the code to acquire

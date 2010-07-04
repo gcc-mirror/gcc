@@ -31,8 +31,8 @@ class gnu::java::nio::charset::ByteCharset$1 : public ::gnu::java::nio::charset:
 public: // actually package-private
   ByteCharset$1(::gnu::java::nio::charset::ByteCharset$Decoder *);
 public: // actually protected
-  jboolean isMappable(jbyte);
-  jchar mapToChar(jbyte);
+  virtual jboolean isMappable(jbyte);
+  virtual jchar mapToChar(jbyte);
 public: // actually package-private
   ::gnu::java::nio::charset::ByteCharset$Decoder * __attribute__((aligned(__alignof__( ::gnu::java::nio::charset::ByteDecodeLoopHelper)))) this$1;
 public:

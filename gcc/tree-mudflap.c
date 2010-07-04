@@ -1,5 +1,5 @@
 /* Mudflap: narrow-pointer bounds-checking by tree rewriting.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Frank Ch. Eigler <fche@redhat.com>
    and Graydon Hoare <graydon@redhat.com>
@@ -25,8 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "hard-reg-set.h"
-#include "rtl.h"
 #include "tree.h"
 #include "tm_p.h"
 #include "basic-block.h"
@@ -332,24 +330,6 @@ mf_make_mf_cache_struct_type (tree field_type)
   return struct_type;
 }
 
-#define build_function_type_0(rtype)           				\
-  build_function_type (rtype, void_list_node)
-#define build_function_type_1(rtype, arg1)                		\
-  build_function_type (rtype, tree_cons (0, arg1, void_list_node))
-#define build_function_type_3(rtype, arg1, arg2, arg3)                  \
-  build_function_type (rtype,						\
-		       tree_cons (0, arg1, 				\
-				  tree_cons (0, arg2,  			\
-                                              tree_cons (0, arg3, 	\
-							 void_list_node))))
-#define build_function_type_4(rtype, arg1, arg2, arg3, arg4)            \
-  build_function_type (rtype, 						\
-		       tree_cons (0, arg1,				\
-				  tree_cons (0, arg2,   		\
-                                             tree_cons (0, arg3,	\
-							tree_cons (0, arg4, \
-                                                		   void_list_node)))))
-
 /* Initialize the global tree nodes that correspond to mf-runtime.h
    declarations.  */
 void
@@ -377,15 +357,15 @@ mudflap_init (void)
   mf_cache_structptr_type = build_pointer_type (mf_cache_struct_type);
   mf_cache_array_type = build_array_type (mf_cache_struct_type, 0);
   mf_check_register_fntype =
-    build_function_type_4 (void_type_node, ptr_type_node, size_type_node,
-                           integer_type_node, mf_const_string_type);
+    build_function_type_list (void_type_node, ptr_type_node, size_type_node,
+			      integer_type_node, mf_const_string_type, NULL_TREE);
   mf_unregister_fntype =
-    build_function_type_3 (void_type_node, ptr_type_node, size_type_node,
-                           integer_type_node);
+    build_function_type_list (void_type_node, ptr_type_node, size_type_node,
+			      integer_type_node, NULL_TREE);
   mf_init_fntype =
-    build_function_type_0 (void_type_node);
+    build_function_type_list (void_type_node, NULL_TREE);
   mf_set_options_fntype =
-    build_function_type_1 (integer_type_node, mf_const_string_type);
+    build_function_type_list (integer_type_node, mf_const_string_type, NULL_TREE);
 
   mf_cache_array_decl = mf_make_builtin (VAR_DECL, "__mf_lookup_cache",
                                          mf_cache_array_type);
@@ -409,10 +389,6 @@ mudflap_init (void)
   mf_set_options_fndecl = mf_make_builtin (FUNCTION_DECL, "__mf_set_options",
                                            mf_set_options_fntype);
 }
-#undef build_function_type_4
-#undef build_function_type_3
-#undef build_function_type_1
-#undef build_function_type_0
 
 
 /* ------------------------------------------------------------------------ */
@@ -1316,7 +1292,7 @@ mudflap_finish_file (void)
   tree ctor_statements = NULL_TREE;
 
   /* No need to continue when there were errors.  */
-  if (errorcount != 0 || sorrycount != 0)
+  if (seen_error ())
     return;
 
   /* Insert a call to __mf_init.  */

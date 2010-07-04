@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -41,18 +41,18 @@
 --    - (optional) the name of the reference symbol file
 --    - the names of one or more object files where the symbols are found
 
-with Ada.Exceptions; use Ada.Exceptions;
-with Ada.Text_IO;    use Ada.Text_IO;
-
-with GNAT.Command_Line; use GNAT.Command_Line;
-with GNAT.OS_Lib;       use GNAT.OS_Lib;
-
 with Gnatvsn; use Gnatvsn;
 with Osint;   use Osint;
 with Output;  use Output;
-
 with Symbols; use Symbols;
 with Table;
+
+with Ada.Exceptions; use Ada.Exceptions;
+with Ada.Text_IO;    use Ada.Text_IO;
+
+with GNAT.Command_Line;         use GNAT.Command_Line;
+with GNAT.Directory_Operations; use GNAT.Directory_Operations;
+with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
 procedure Gnatsym is
 
@@ -82,8 +82,13 @@ procedure Gnatsym is
    Version_String : String_Access := Empty;
    --  The version of the library (used on VMS)
 
+   type Object_File_Data is record
+      Path : String_Access;
+      Name : String_Access;
+   end record;
+
    package Object_Files is new Table.Table
-     (Table_Component_Type => String_Access,
+     (Table_Component_Type => Object_File_Data,
       Table_Index_Type     => Natural,
       Table_Low_Bound      => 0,
       Table_Initial        => 10,
@@ -164,7 +169,8 @@ procedure Gnatsym is
          end case;
       end loop;
 
-      --  Get the file names
+      --  Get the object file names and put them in the table in alphabetical
+      --  order of base names.
 
       loop
          declare
@@ -175,7 +181,26 @@ procedure Gnatsym is
             exit when S'Length = 0;
 
             Object_Files.Increment_Last;
-            Object_Files.Table (Object_Files.Last) := S;
+
+            declare
+               Base : constant String := Base_Name (S.all);
+               Last : constant Positive := Object_Files.Last;
+               J    : Positive;
+
+            begin
+               J := 1;
+               while J < Last loop
+                  if Object_Files.Table (J).Name.all > Base then
+                     Object_Files.Table (J + 1 .. Last) :=
+                       Object_Files.Table (J .. Last - 1);
+                     exit;
+                  end if;
+
+                  J := J + 1;
+               end loop;
+
+               Object_Files.Table (J) := (S, new String'(Base));
+            end;
          end;
       end loop;
    exception
@@ -304,14 +329,16 @@ begin
 
          if Verbose then
             Write_Str ("Processing object file """);
-            Write_Str (Object_Files.Table (Object_File).all);
+            Write_Str (Object_Files.Table (Object_File).Path.all);
             Write_Line ("""");
          end if;
 
-         Processing.Process (Object_Files.Table (Object_File).all, Success);
+         Processing.Process
+           (Object_Files.Table (Object_File).Path.all,
+            Success);
       end loop;
 
-      --  Finalize the object file
+      --  Finalize the symbol file
 
       if Success then
          if Verbose then

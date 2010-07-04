@@ -33,18 +33,18 @@ int main()
 {
   std::exception e;
 
-  const char* str = typeid(e).name();
+  const char* str __attribute__((unused)) = typeid(e).name();
   
   typedef std::numeric_limits<long> limit_type;
-  limit_type limit_l;
-  int r = limit_type::radix;
+  limit_type limit_l __attribute__((unused));
+  int r __attribute__((unused)) = limit_type::radix;
 
   const char* cp = new char;
   delete cp;
 
-  bool b = std::is_integral<int>::value;
+  bool b __attribute__((unused)) = std::is_integral<int>::value;
 
-  std::initializer_list<int> ilisti;
+  std::initializer_list<int> ilisti __attribute__((unused));
 
   return 0;
 }

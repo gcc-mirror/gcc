@@ -2325,52 +2325,6 @@ do {									\
 #define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS)\
   frv_final_prescan_insn (INSN, OPVEC, NOPERANDS)
 
-
-/* A C compound statement to output to stdio stream STREAM the assembler syntax
-   for an instruction operand X.  X is an RTL expression.
-
-   CODE is a value that can be used to specify one of several ways of printing
-   the operand.  It is used when identical operands must be printed differently
-   depending on the context.  CODE comes from the `%' specification that was
-   used to request printing of the operand.  If the specification was just
-   `%DIGIT' then CODE is 0; if the specification was `%LTR DIGIT' then CODE is
-   the ASCII code for LTR.
-
-   If X is a register, this macro should print the register's name.  The names
-   can be found in an array `reg_names' whose type is `char *[]'.  `reg_names'
-   is initialized from `REGISTER_NAMES'.
-
-   When the machine description has a specification `%PUNCT' (a `%' followed by
-   a punctuation character), this macro is called with a null pointer for X and
-   the punctuation character for CODE.  */
-#define PRINT_OPERAND(STREAM, X, CODE) frv_print_operand (STREAM, X, CODE)
-
-/* A C expression which evaluates to true if CODE is a valid punctuation
-   character for use in the `PRINT_OPERAND' macro.  If
-   `PRINT_OPERAND_PUNCT_VALID_P' is not defined, it means that no punctuation
-   characters (except for the standard one, `%') are used in this way.  */
-/* . == gr0
-   # == hint operand -- always zero for now
-   @ == small data base register (gr16)
-   ~ == pic register (gr17)
-   * == temporary integer CCR register (cr3)
-   & == temporary integer ICC register (icc3)  */
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
-((CODE) == '.' || (CODE) == '#' || (CODE) == '@' || (CODE) == '~'	\
- || (CODE) == '*' || (CODE) == '&')
-
-/* A C compound statement to output to stdio stream STREAM the assembler syntax
-   for an instruction operand that is a memory reference whose address is X.  X
-   is an RTL expression.
-
-   On some machines, the syntax for a symbolic address depends on the section
-   that the address refers to.  On these machines, define the macro
-   `ENCODE_SECTION_INFO' to store the information into the `symbol_ref', and
-   then check for it here.
-
-   This declaration must be present.  */
-#define PRINT_OPERAND_ADDRESS(STREAM, X) frv_print_operand_address (STREAM, X)
-
 /* If defined, C string expressions to be used for the `%R', `%L', `%U', and
    `%I' options of `asm_fprintf' (see `final.c').  These are useful when a
    single `md' file must support multiple assembler formats.  In that case, the

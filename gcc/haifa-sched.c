@@ -148,6 +148,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "cfgloop.h"
 #include "ira.h"
+#include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 
 #ifdef INSN_SCHEDULING
 
@@ -718,7 +719,7 @@ initiate_bb_reg_pressure_info (basic_block bb)
 
   if (current_nr_blocks > 1)
     FOR_BB_INSNS (bb, insn)
-      if (INSN_P (insn))
+      if (NONDEBUG_INSN_P (insn))
 	setup_ref_regs (PATTERN (insn));
   initiate_reg_pressure_info (df_get_live_in (bb));
 #ifdef EH_RETURN_DATA_REGNO
@@ -1123,6 +1124,8 @@ setup_insn_reg_pressure_info (rtx insn)
   struct reg_use_data *use;
   static int death[N_REG_CLASSES];
 
+  gcc_checking_assert (!DEBUG_INSN_P (insn));
+
   excess_cost_change = 0;
   for (i = 0; i < ira_reg_class_cover_size; i++)
     death[ira_reg_class_cover[i]] = 0;
@@ -1499,7 +1502,8 @@ ready_sort (struct ready_list *ready)
   if (sched_pressure_p)
     {
       for (i = 0; i < ready->n_ready; i++)
-	setup_insn_reg_pressure_info (first[i]);
+	if (!DEBUG_INSN_P (first[i]))
+	  setup_insn_reg_pressure_info (first[i]);
     }
   SCHED_SORT (first, ready->n_ready);
 }
@@ -1563,6 +1567,8 @@ update_register_pressure (rtx insn)
   struct reg_use_data *use;
   struct reg_set_data *set;
 
+  gcc_checking_assert (!DEBUG_INSN_P (insn));
+
   for (use = INSN_REG_USE_LIST (insn); use != NULL; use = use->next_insn_use)
     if (dying_use_p (use) && bitmap_bit_p (curr_reg_live, use->regno))
       mark_regno_birth_or_death (use->regno, false);
@@ -1586,7 +1592,8 @@ setup_insn_max_reg_pressure (rtx after, bool update_p)
     max_reg_pressure[ira_reg_class_cover[i]]
       = curr_reg_pressure[ira_reg_class_cover[i]];
   for (insn = NEXT_INSN (after);
-       insn != NULL_RTX && BLOCK_FOR_INSN (insn) == BLOCK_FOR_INSN (after);
+       insn != NULL_RTX && ! BARRIER_P (insn)
+	 && BLOCK_FOR_INSN (insn) == BLOCK_FOR_INSN (after);
        insn = NEXT_INSN (insn))
     if (NONDEBUG_INSN_P (insn))
       {
@@ -1682,7 +1689,7 @@ schedule_insn (rtx insn)
       fputc ('\n', sched_dump);
     }
 
-  if (sched_pressure_p)
+  if (sched_pressure_p && !DEBUG_INSN_P (insn))
     update_reg_and_insn_max_reg_pressure (insn);
 
   /* Scheduling instruction should have all its dependencies resolved and
@@ -1695,6 +1702,7 @@ schedule_insn (rtx insn)
 	 sd_iterator_cond (&sd_it, &dep);)
       {
 	rtx dbg = DEP_PRO (dep);
+	struct reg_use_data *use, *next;
 
 	gcc_assert (DEBUG_INSN_P (dbg));
 
@@ -1715,6 +1723,20 @@ schedule_insn (rtx insn)
 	   temps introduced won't survive the schedule change.  */
 	INSN_VAR_LOCATION_LOC (dbg) = gen_rtx_UNKNOWN_VAR_LOC ();
 	df_insn_rescan (dbg);
+
+	/* Unknown location doesn't use any registers.  */
+	for (use = INSN_REG_USE_LIST (dbg); use != NULL; use = next)
+	  {
+	    struct reg_use_data *prev = use;
+
+	    /* Remove use from the cyclic next_regno_use chain first.  */
+	    while (prev->next_regno_use != use)
+	      prev = prev->next_regno_use;
+	    prev->next_regno_use = use->next_regno_use;
+	    next = use->next_insn_use;
+	    free (use);
+	  }
+	INSN_REG_USE_LIST (dbg) = NULL;
 
 	/* We delete rather than resolve these deps, otherwise we
 	   crash in sched_free_deps(), because forward deps are

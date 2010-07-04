@@ -1,4 +1,4 @@
-/* { dg-do compile } */ 
+/* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-pre-stats" } */
 int p;
 int r;
@@ -8,7 +8,7 @@ static int a(void)
 {
   return p;
 }
-int main(int argc)
+int foo(int argc)
 {
   int q;
   q = a();

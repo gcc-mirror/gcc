@@ -1,6 +1,6 @@
 // 2001-05-21 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,7 +41,7 @@ void test01()
 
   bool test __attribute__((unused)) = true;
   streamsize 			strmsz_1, strmsz_2;
-  int_type 			c1, c2, c3;
+  int_type 			c1, c2;
 
   // int_type sungetc()
   // if in_cur not avail, return pbackfail(), else decrement and
@@ -56,7 +56,7 @@ void test01()
     fb_01.sputc('u');
     fb_01.sputc('v');
     fb_01.pubseekoff(-1, std::ios_base::end);
-    c3 = fb_01.sbumpc();
+    fb_01.sbumpc();
     strmsz_1 = fb_01.in_avail();
     c2 = fb_01.sungetc(); 
     strmsz_2 = fb_01.in_avail();
@@ -68,7 +68,7 @@ void test01()
     c1 = fb_01.sgetc(); 
     c2 = fb_01.sungetc();
     strmsz_2 = fb_01.in_avail(); // 1
-    c3 = fb_01.sgetc();
+    fb_01.sgetc();
     VERIFY( c1 != c2 );
     VERIFY( strmsz_2 != strmsz_1 );
     VERIFY( strmsz_2 == 1 );

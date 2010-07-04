@@ -48,7 +48,7 @@ assert_valid() const
   base_type::assert_valid(false);
   if (!base_type::empty())
     {
-      _GLIBCXX_DEBUG_ASSERT(base_type::m_p_max != NULL);
+      _GLIBCXX_DEBUG_ASSERT(base_type::m_p_max != 0);
       base_type::assert_max();
     }
 
@@ -57,7 +57,7 @@ assert_valid() const
   if (m_rc.empty())
     {
       base_type::assert_valid(true);
-      _GLIBCXX_DEBUG_ASSERT(next_2_pointer(base_type::m_p_root) == NULL);
+      _GLIBCXX_DEBUG_ASSERT(next_2_pointer(base_type::m_p_root) == 0);
       return;
     }
 
@@ -65,13 +65,13 @@ assert_valid() const
   typename rc_t::const_iterator it = m_rc.end();
   --it;
 
-  while (p_nd != NULL)
+  while (p_nd != 0)
     {
       _GLIBCXX_DEBUG_ASSERT(*it == p_nd);
       const_node_pointer p_next = p_nd->m_p_next_sibling;
-      _GLIBCXX_DEBUG_ASSERT(p_next != NULL);
+      _GLIBCXX_DEBUG_ASSERT(p_next != 0);
       _GLIBCXX_DEBUG_ASSERT(p_nd->m_metadata == p_next->m_metadata);
-      _GLIBCXX_DEBUG_ASSERT(p_next->m_p_next_sibling == NULL ||
+      _GLIBCXX_DEBUG_ASSERT(p_next->m_p_next_sibling == 0 ||
 		       p_next->m_metadata < p_next->m_p_next_sibling->m_metadata);
 
       --it;
@@ -85,13 +85,13 @@ typename PB_DS_CLASS_C_DEC::const_node_pointer
 PB_DS_CLASS_C_DEC::
 next_2_pointer(const_node_pointer p_nd)
 {
-  if (p_nd == NULL)
-    return NULL;
+  if (p_nd == 0)
+    return 0;
 
   node_pointer p_next = p_nd->m_p_next_sibling;
 
-  if (p_next == NULL)
-    return NULL;
+  if (p_next == 0)
+    return 0;
 
   if (p_nd->m_metadata == p_next->m_metadata)
     return p_nd;
@@ -104,13 +104,13 @@ typename PB_DS_CLASS_C_DEC::const_node_pointer
 PB_DS_CLASS_C_DEC::
 next_after_0_pointer(const_node_pointer p_nd)
 {
-  if (p_nd == NULL)
-    return NULL;
+  if (p_nd == 0)
+    return 0;
 
   node_pointer p_next = p_nd->m_p_next_sibling;
 
-  if (p_next == NULL)
-    return NULL;
+  if (p_next == 0)
+    return 0;
 
   if (p_nd->m_metadata < p_next->m_metadata)
     return p_next;

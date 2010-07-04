@@ -7,8 +7,8 @@
 
 struct A
 {
-  template<typename>   void foo(int);
-  template<typename T> void bar(T t) {
+  template<typename>   void foo(int); // { dg-message "candidate" }
+  template<typename T> void bar(T t) { // { dg-message "candidate" }
     this->foo<typename T>(t); } // { dg-error "expected|parse error|no matching" }
   template<typename T> void bad(T t) {
     foo<typename T>(t); } // { dg-error "expected|parse error|no matching" }

@@ -22,10 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "rtl.h"
-#include "regs.h"
-#include "hard-reg-set.h"
-#include "output.h"
 #include "tree.h"
 #include "cp/cp-tree.h" /* This is why we're a separate module.  */
 #include "flags.h"

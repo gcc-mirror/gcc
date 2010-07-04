@@ -1,6 +1,6 @@
 // { dg-options "-w" }
 
-template<typename T> void foo(T);
+template<typename T> void foo(T); // { dg-message "candidate" }
  
 void bar()
 {

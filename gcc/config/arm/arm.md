@@ -1,6 +1,6 @@
 ;;- Machine description for ARM for GNU compiler
 ;;  Copyright 1991, 1993, 1994, 1995, 1996, 1996, 1997, 1998, 1999, 2000,
-;;  2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+;;  2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 ;;  Free Software Foundation, Inc.
 ;;  Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
 ;;  and Martin Simmons (@harleqn.co.uk).
@@ -101,6 +101,8 @@
 			  ; a given symbolic address.
    (UNSPEC_THUMB1_CASESI 25) ; A Thumb1 compressed dispatch-table call.
    (UNSPEC_RBIT 26)       ; rbit operation.
+   (UNSPEC_SYMBOL_OFFSET 27) ; The offset of the start of the symbol from
+                             ; another symbolic address.
   ]
 )
 
@@ -145,13 +147,6 @@
 ; generating ARM code.  This is used to control the length of some insn
 ; patterns that share the same RTL in both ARM and Thumb code.
 (define_attr "is_thumb" "no,yes" (const (symbol_ref "thumb_code")))
-
-; IS_STRONGARM is set to 'yes' when compiling for StrongARM, it affects
-; scheduling decisions for the load unit and the multiplier.
-(define_attr "is_strongarm" "no,yes" (const (symbol_ref "arm_tune_strongarm")))
-
-; IS_XSCALE is set to 'yes' when compiling for XScale.
-(define_attr "is_xscale" "no,yes" (const (symbol_ref "arm_tune_xscale")))
 
 ;; Operand number of an input operand that is shifted.  Zero if the
 ;; given instruction does not shift one of its input operands.
@@ -698,7 +693,6 @@
   ""
 )
 
-;; ??? Make Thumb-2 variants which prefer low regs
 (define_insn "*addsi3_compare0"
   [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV
@@ -707,7 +701,7 @@
 	 (const_int 0)))
    (set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(plus:SI (match_dup 1) (match_dup 2)))]
-  "TARGET_32BIT"
+  "TARGET_ARM"
   "@
    add%.\\t%0, %1, %2
    sub%.\\t%0, %1, #%n2"
@@ -720,7 +714,7 @@
 	 (plus:SI (match_operand:SI 0 "s_register_operand" "r, r")
 		  (match_operand:SI 1 "arm_add_operand"    "rI,L"))
 	 (const_int 0)))]
-  "TARGET_32BIT"
+  "TARGET_ARM"
   "@
    cmn%?\\t%0, %1
    cmp%?\\t%0, #%n1"
@@ -743,14 +737,14 @@
   [(set (reg:CC CC_REGNUM)
 	(compare:CC
 	 (match_operand:SI 1 "s_register_operand" "r,r")
-	 (match_operand:SI 2 "arm_addimm_operand" "I,L")))
+	 (match_operand:SI 2 "arm_addimm_operand" "L,I")))
    (set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(plus:SI (match_dup 1)
-		 (match_operand:SI 3 "arm_addimm_operand" "L,I")))]
+		 (match_operand:SI 3 "arm_addimm_operand" "I,L")))]
   "TARGET_32BIT && INTVAL (operands[2]) == -INTVAL (operands[3])"
   "@
-   sub%.\\t%0, %1, %2
-   add%.\\t%0, %1, #%n2"
+   add%.\\t%0, %1, %3
+   sub%.\\t%0, %1, #%n3"
   [(set_attr "conds" "set")]
 )
 
@@ -1265,8 +1259,8 @@
 		 (match_operand:SI 2 "register_operand" "l,0,0")))]
   "TARGET_THUMB1 && arm_arch6"
   "@
-   mul\\t%0, %2 
-   mul\\t%0, %1 
+   mul\\t%0, %2
+   mul\\t%0, %1
    mul\\t%0, %1"
   [(set_attr "length" "2")
    (set_attr "insn" "mul")]
@@ -3538,17 +3532,11 @@
 
 (define_expand "negdi2"
  [(parallel
-   [(set (match_operand:DI          0 "s_register_operand" "")
-	  (neg:DI (match_operand:DI 1 "s_register_operand" "")))
+   [(set (match_operand:DI 0 "s_register_operand" "")
+	 (neg:DI (match_operand:DI 1 "s_register_operand" "")))
     (clobber (reg:CC CC_REGNUM))])]
   "TARGET_EITHER"
-  "
-  if (TARGET_THUMB1)
-    {
-      if (GET_CODE (operands[1]) != REG)
-        operands[1] = force_reg (DImode, operands[1]);
-     }
-  "
+  ""
 )
 
 ;; The constraints here are to prevent a *partial* overlap (where %Q0 == %R1).
@@ -3564,8 +3552,8 @@
 )
 
 (define_insn "*thumb1_negdi2"
-  [(set (match_operand:DI         0 "register_operand" "=&l")
-	(neg:DI (match_operand:DI 1 "register_operand"   "l")))
+  [(set (match_operand:DI 0 "register_operand" "=&l")
+	(neg:DI (match_operand:DI 1 "register_operand" "l")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_THUMB1"
   "mov\\t%R0, #0\;neg\\t%Q0, %Q1\;sbc\\t%R0, %R1"
@@ -6666,6 +6654,30 @@
     operands[2] = force_reg (SImode, operands[2]);
   ")
 
+;; A pattern to recognize a special situation and optimize for it.
+;; On the thumb, zero-extension from memory is preferrable to sign-extension
+;; due to the available addressing modes.  Hence, convert a signed comparison
+;; with zero into an unsigned comparison with 127 if possible.
+(define_expand "cbranchqi4"
+  [(set (pc) (if_then_else
+	      (match_operator 0 "lt_ge_comparison_operator"
+	       [(match_operand:QI 1 "memory_operand" "")
+	        (match_operand:QI 2 "const0_operand" "")])
+	      (label_ref (match_operand 3 "" ""))
+	      (pc)))]
+  "TARGET_THUMB1"
+{
+  rtx xops[3];
+  xops[1] = gen_reg_rtx (SImode);
+  emit_insn (gen_zero_extendqisi2 (xops[1], operands[1]));
+  xops[2] = GEN_INT (127);
+  xops[0] = gen_rtx_fmt_ee (GET_CODE (operands[0]) == GE ? LEU : GTU,
+			    VOIDmode, xops[1], xops[2]);
+  xops[3] = operands[3];
+  emit_insn (gen_cbranchsi4 (xops[0], xops[1], xops[2], xops[3]));
+  DONE;
+})
+
 (define_expand "cbranchsf4"
   [(set (pc) (if_then_else
 	      (match_operator 0 "arm_comparison_operator"
@@ -6703,7 +6715,7 @@
 				   operands[3])); DONE;"
 )
 
-(define_insn "*cbranchsi4_insn"
+(define_insn "cbranchsi4_insn"
   [(set (pc) (if_then_else
 	      (match_operator 0 "arm_comparison_operator"
 	       [(match_operand:SI 1 "s_register_operand" "l,*h")
@@ -6712,7 +6724,20 @@
 	      (pc)))]
   "TARGET_THUMB1"
   "*
-  output_asm_insn (\"cmp\\t%1, %2\", operands);
+  rtx t = prev_nonnote_insn (insn);
+  if (t != NULL_RTX
+      && INSN_P (t)
+      && INSN_CODE (t) == CODE_FOR_cbranchsi4_insn)
+    {
+      t = XEXP (SET_SRC (PATTERN (t)), 0);
+      if (!rtx_equal_p (XEXP (t, 0), operands[1])
+	  || !rtx_equal_p (XEXP (t, 1), operands[2]))
+	t = NULL_RTX;
+    }
+  else
+    t = NULL_RTX;
+  if (t == NULL_RTX)
+    output_asm_insn (\"cmp\\t%1, %2\", operands);
 
   switch (get_attr_length (insn))
     {
@@ -7528,15 +7553,15 @@
 	(if_then_else
 	 (match_operator 4 "arm_comparison_operator"
 	  [(plus:SI
-	    (match_operand:SI 2 "s_register_operand" "%l,0,*0,1,1,1")
-	    (match_operand:SI 3 "reg_or_int_operand" "lL,IJ,*r,lIJ,lIJ,lIJ"))
+	    (match_operand:SI 2 "s_register_operand" "%l,0,*l,1,1,1")
+	    (match_operand:SI 3 "reg_or_int_operand" "lL,IJ,*l,lIJ,lIJ,lIJ"))
 	   (const_int 0)])
 	 (label_ref (match_operand 5 "" ""))
 	 (pc)))
    (set
     (match_operand:SI 0 "thumb_cbrch_target_operand" "=l,l,*!h,*?h,*?m,*?m")
     (plus:SI (match_dup 2) (match_dup 3)))
-   (clobber (match_scratch:SI 1 "=X,X,X,l,&l,&l"))]
+   (clobber (match_scratch:SI 1 "=X,X,l,l,&l,&l"))]
   "TARGET_THUMB1
    && (GET_CODE (operands[4]) == EQ
        || GET_CODE (operands[4]) == NE
@@ -7546,8 +7571,7 @@
    {
      rtx cond[3];
 
-     
-     cond[0] = (which_alternative < 3) ? operands[0] : operands[1];
+     cond[0] = (which_alternative < 2) ? operands[0] : operands[1];
      cond[1] = operands[2];
      cond[2] = operands[3];
 
@@ -7556,7 +7580,7 @@
      else
        output_asm_insn (\"add\\t%0, %1, %2\", cond);
 
-     if (which_alternative >= 3
+     if (which_alternative >= 2
 	 && which_alternative < 4)
        output_asm_insn (\"mov\\t%0, %1\", operands);
      else if (which_alternative >= 4)
@@ -8625,7 +8649,7 @@
 	 (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_ARM
+  "TARGET_32BIT
    && (GET_CODE (operands[0]) == SYMBOL_REF)
    && !arm_is_long_call_p (SYMBOL_REF_DECL (operands[0]))"
   "*
@@ -8641,7 +8665,7 @@
 	(match_operand:SI 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_ARM
+  "TARGET_32BIT
    && (GET_CODE (operands[1]) == SYMBOL_REF)
    && !arm_is_long_call_p (SYMBOL_REF_DECL (operands[1]))"
   "*
@@ -8656,7 +8680,7 @@
 	 (match_operand:SI 1 "" ""))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_THUMB
+  "TARGET_THUMB1
    && GET_CODE (operands[0]) == SYMBOL_REF
    && !arm_is_long_call_p (SYMBOL_REF_DECL (operands[0]))"
   "bl\\t%a0"
@@ -8670,7 +8694,7 @@
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_THUMB
+  "TARGET_THUMB1
    && GET_CODE (operands[1]) == SYMBOL_REF
    && !arm_is_long_call_p (SYMBOL_REF_DECL (operands[1]))"
   "bl\\t%a1"
@@ -8684,7 +8708,7 @@
 		    (match_operand 1 "general_operand" ""))
 	      (return)
 	      (use (match_operand 2 "" ""))])]
-  "TARGET_ARM"
+  "TARGET_32BIT"
   "
   {
     if (operands[2] == NULL_RTX)
@@ -8698,7 +8722,7 @@
 			 (match_operand 2 "general_operand" "")))
 	      (return)
 	      (use (match_operand 3 "" ""))])]
-  "TARGET_ARM"
+  "TARGET_32BIT"
   "
   {
     if (operands[3] == NULL_RTX)
@@ -8711,7 +8735,7 @@
 	(match_operand 1 "" ""))
   (return)
   (use (match_operand 2 "" ""))]
-  "TARGET_ARM && GET_CODE (operands[0]) == SYMBOL_REF"
+  "TARGET_32BIT && GET_CODE (operands[0]) == SYMBOL_REF"
   "*
   return NEED_PLT_RELOC ? \"b%?\\t%a0(PLT)\" : \"b%?\\t%a0\";
   "
@@ -8724,15 +8748,20 @@
 	     (match_operand 2 "" "")))
   (return)
   (use (match_operand 3 "" ""))]
-  "TARGET_ARM && GET_CODE (operands[1]) == SYMBOL_REF"
+  "TARGET_32BIT && GET_CODE (operands[1]) == SYMBOL_REF"
   "*
   return NEED_PLT_RELOC ? \"b%?\\t%a1(PLT)\" : \"b%?\\t%a1\";
   "
   [(set_attr "type" "call")]
 )
 
+(define_expand "return"
+  [(return)]
+  "TARGET_32BIT && USE_RETURN_INSN (FALSE)"
+  "")
+
 ;; Often the return insn will be the same as loading from memory, so set attr
-(define_insn "return"
+(define_insn "*arm_return"
   [(return)]
   "TARGET_ARM && USE_RETURN_INSN (FALSE)"
   "*

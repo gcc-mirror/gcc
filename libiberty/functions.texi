@@ -3,7 +3,7 @@
 @c Edit the *.c files, configure with --enable-maintainer-mode,
 @c run 'make stamp-functions' and gather-docs will build a new copy.
 
-@c safe-ctype.c:25
+@c splay-tree.c:277
 @defvr Extension HOST_CHARSET
 This macro indicates the basic character set and encoding used by the
 host: more precisely, the encoding used for character constants in
@@ -24,6 +24,25 @@ The host character set is some variant of EBCDIC.  (Only one of the
 nineteen EBCDIC varying characters is tested; exercise caution.)
 @end ftable
 @end defvr
+@deftypefn Supplemental splay_tree splay_tree_new_with_typed_alloc
+(splay_tree_compare_fn @var{compare_fn},
+splay_tree_delete_key_fn @var{delete_key_fn},
+splay_tree_delete_value_fn @var{delete_value_fn},
+splay_tree_allocate_fn @var{tree_allocate_fn},
+splay_tree_allocate_fn @var{node_allocate_fn},
+splay_tree_deallocate_fn @var{deallocate_fn},
+void * @var{allocate_data})
+
+This function creates a splay tree that uses two different allocators
+@var{tree_allocate_fn} and @var{node_allocate_fn} to use for allocating the
+tree itself and its nodes respectively.  This is useful when variables of
+different types need to be allocated with different allocators.
+
+The splay tree will use @var{compare_fn} to compare nodes,
+@var{delete_key_fn} to deallocate keys, and @var{delete_value_fn} to
+deallocate values.
+
+@end deftypefn
 
 @c alloca.c:26
 @deftypefn Replacement void* alloca (size_t @var{size})
@@ -474,6 +493,24 @@ signed @code{int}, to make it easier to use in parsing addresses from
 hex dump files: a signed @code{int} would be sign-extended when
 converted to a wider unsigned type --- like @code{bfd_vma}, on some
 systems.
+
+@end deftypefn
+
+@c hashtab.c:336
+@deftypefn Supplemental htab_t htab_create_typed_alloc (size_t @var{size},
+htab_hash @var{hash_f}, htab_eq @var{eq_f}, htab_del @var{del_f},
+htab_alloc @var{alloc_tab_f}, htab_alloc @var{alloc_f},
+htab_free @var{free_f})
+
+This function creates a hash table that uses two different allocators
+@var{alloc_tab_f} and @var{alloc_f} to use for allocating the table itself
+and its entries respectively.  This is useful when variables of different
+types need to be allocated with different allocators.
+
+The created hash table is slightly larger than @var{size} and it is
+initially empty (all the hash table entries are @code{HTAB_EMPTY_ENTRY}).
+The function returns the created hash table, or @code{NULL} if memory
+allocation fails.
 
 @end deftypefn
 

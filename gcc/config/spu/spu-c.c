@@ -1,4 +1,4 @@
-/* Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -20,17 +20,10 @@
 #include "tm.h"
 #include "cpplib.h"
 #include "tree.h"
-#include "c-tree.h"
-#include "c-pragma.h"
-#include "function.h"
-#include "rtl.h"
-#include "expr.h"
+#include "c-family/c-common.h"
+#include "c-family/c-pragma.h"
 #include "tm_p.h"
 #include "langhooks.h"
-#include "insn-config.h"
-#include "insn-codes.h"
-#include "recog.h"
-#include "optabs.h"
 
 
 /* Keep the vector keywords handy for fast comparisons.  */

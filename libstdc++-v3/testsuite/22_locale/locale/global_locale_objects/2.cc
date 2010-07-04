@@ -2,7 +2,7 @@
 
 // 2000-09-13 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2000, 2002, 2003, 2005, 2009 Free Software Foundation
+// Copyright (C) 2000, 2002, 2003, 2005, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,7 @@ void test02()
   
   const string ph("en_PH");
   const string mx("es_MX");
-  const char* orig = setlocale(LC_ALL, NULL);
+  const char* orig = setlocale(LC_ALL, 0);
   const char* testph = setlocale(LC_ALL, ph.c_str());
   const char* testmx = setlocale(LC_ALL, mx.c_str());
   setlocale(LC_ALL, orig);
@@ -54,7 +54,7 @@ void test02()
       
       // Change global locale.
       locale global_orig = locale::global(loc_mx);
-      const char* lc_all_mx = setlocale(LC_ALL, NULL);
+      const char* lc_all_mx = setlocale(LC_ALL, 0);
       if (lc_all_mx)
 	{
 	  VERIFY( mx == lc_all_mx );

@@ -1,6 +1,6 @@
 /* Calculate branch probabilities, and basic block execution counts.
    Copyright (C) 1990, 1991, 1992, 1993, 1994, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010
    Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
@@ -30,12 +30,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "rtl.h"
 #include "flags.h"
-#include "output.h"
 #include "regs.h"
-#include "expr.h"
 #include "function.h"
+#include "basic-block.h"
 #include "toplev.h"
 #include "coverage.h"
 #include "tree.h"
@@ -44,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "timevar.h"
 #include "value-prof.h"
-#include "ggc.h"
 #include "cgraph.h"
 
 static GTY(()) tree gcov_type_node;
@@ -83,6 +80,7 @@ tree_init_ic_make_global_vars (void)
   DECL_ARTIFICIAL (ic_void_ptr_var) = 1;
   DECL_INITIAL (ic_void_ptr_var) = NULL;
   varpool_finalize_decl (ic_void_ptr_var);
+  varpool_mark_needed_node (varpool_node (ic_void_ptr_var));
 
   gcov_type_ptr = build_pointer_type (get_gcov_type ());
   ic_gcov_type_ptr_var
@@ -94,6 +92,7 @@ tree_init_ic_make_global_vars (void)
   DECL_ARTIFICIAL (ic_gcov_type_ptr_var) = 1;
   DECL_INITIAL (ic_gcov_type_ptr_var) = NULL;
   varpool_finalize_decl (ic_gcov_type_ptr_var);
+  varpool_mark_needed_node (varpool_node (ic_gcov_type_ptr_var));
 }
 
 static void
@@ -343,7 +342,7 @@ tree_gen_ic_func_profiler (void)
   gimple stmt1, stmt2;
   tree tree_uid, cur_func;
 
-  if (!c_node->needed)
+  if (cgraph_only_called_directly_p (c_node))
     return;
 
   tree_init_edge_profiler ();
@@ -466,6 +465,10 @@ tree_profiling (void)
      child function from already instrumented body).  */
   if (cgraph_state == CGRAPH_STATE_FINISHED
       || cfun->after_tree_profile)
+    return 0;
+
+  /* Don't profile functions produced for builtin stuff.  */
+  if (DECL_SOURCE_LOCATION (current_function_decl) == BUILTINS_LOCATION)
     return 0;
 
   /* Re-set global shared temporary variable for edge-counters.  */

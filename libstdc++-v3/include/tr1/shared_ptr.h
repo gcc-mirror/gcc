@@ -1,6 +1,6 @@
 // <tr1/shared_ptr.h> -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -367,7 +367,7 @@ namespace tr1
 	: _M_ptr(__p), _M_refcount(__p)
         {
 	  __glibcxx_function_requires(_ConvertibleConcept<_Tp1*, _Tp*>)
-	  // __glibcxx_function_requires(_CompleteConcept<_Tp1*>)
+	  typedef int _IsComplete[sizeof(_Tp1)];
 	  __enable_shared_from_this_helper(_M_refcount, __p, __p);
 	}
 
@@ -404,9 +404,9 @@ namespace tr1
         explicit
         __shared_ptr(std::auto_ptr<_Tp1>& __r)
 	: _M_ptr(__r.get()), _M_refcount()
-        {
+        { // TODO requries delete __r.release() well-formed
 	  __glibcxx_function_requires(_ConvertibleConcept<_Tp1*, _Tp*>)
-	  // TODO requires _Tp1 is complete, delete __r.release() well-formed
+	  typedef int _IsComplete[sizeof(_Tp1)];
 	  _Tp1* __tmp = __r.get();
 	  _M_refcount = __shared_count<_Lp>(__r);
 	  __enable_shared_from_this_helper(_M_refcount, __tmp, __tmp);

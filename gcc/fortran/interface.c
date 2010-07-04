@@ -1,5 +1,6 @@
 /* Deal with interfaces.
-   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -1128,8 +1129,8 @@ check_interface1 (gfc_interface *p, gfc_interface *q0,
 	if (p->sym->name == q->sym->name && p->sym->module == q->sym->module)
 	  continue;
 
-	if (gfc_compare_interfaces (p->sym, q->sym, q->sym->name, generic_flag, 0,
-				    NULL, 0))
+	if (gfc_compare_interfaces (p->sym, q->sym, q->sym->name, generic_flag,
+				    0, NULL, 0))
 	  {
 	    if (referenced)
 	      gfc_error ("Ambiguous interfaces '%s' and '%s' in %s at %L",
@@ -1375,6 +1376,30 @@ compare_pointer (gfc_symbol *formal, gfc_expr *actual)
 }
 
 
+/* Emit clear error messages for rank mismatch.  */
+
+static void
+argument_rank_mismatch (const char *name, locus *where,
+			int rank1, int rank2)
+{
+  if (rank1 == 0)
+    {
+      gfc_error ("Rank mismatch in argument '%s' at %L "
+		 "(scalar and rank-%d)", name, where, rank2);
+    }
+  else if (rank2 == 0)
+    {
+      gfc_error ("Rank mismatch in argument '%s' at %L "
+		 "(rank-%d and scalar)", name, where, rank1);
+    }
+  else
+    {    
+      gfc_error ("Rank mismatch in argument '%s' at %L "
+		 "(rank-%d and rank-%d)", name, where, rank1, rank2);
+    }
+}
+
+
 /* Given a symbol of a formal argument list and an expression, see if
    the two are compatible as arguments.  Returns nonzero if
    compatible, zero if not compatible.  */
@@ -1434,6 +1459,16 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       return 1;
     }
 
+  /* F2008, C1241.  */
+  if (formal->attr.pointer && formal->attr.contiguous
+      && !gfc_is_simply_contiguous (actual, true))
+    {
+      if (where)
+	gfc_error ("Actual argument to contiguous pointer dummy '%s' at %L "
+		   "must be simply contigous", formal->name, &actual->where);
+      return 0;
+    }
+
   if ((actual->expr_type != EXPR_NULL || actual->ts.type != BT_UNKNOWN)
       && !gfc_compare_types (&formal->ts, &actual->ts))
     {
@@ -1441,6 +1476,93 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	gfc_error ("Type mismatch in argument '%s' at %L; passed %s to %s",
 		   formal->name, &actual->where, gfc_typename (&actual->ts),
 		   gfc_typename (&formal->ts));
+      return 0;
+    }
+
+  if (formal->attr.codimension)
+    {
+      gfc_ref *last = NULL;
+
+      if (actual->expr_type != EXPR_VARIABLE
+	  || (actual->ref == NULL
+	      && !actual->symtree->n.sym->attr.codimension))
+	{
+	  if (where)
+	    gfc_error ("Actual argument to '%s' at %L must be a coarray",
+		       formal->name, &actual->where);
+	  return 0;
+	}
+
+      for (ref = actual->ref; ref; ref = ref->next)
+	{
+	  if (ref->type == REF_ARRAY && ref->u.ar.codimen != 0)
+	    {
+	      if (where)
+		gfc_error ("Actual argument to '%s' at %L must be a coarray "
+			   "and not coindexed", formal->name, &ref->u.ar.where);
+	      return 0;
+	    }
+	  if (ref->type == REF_ARRAY && ref->u.ar.as->corank
+	      && ref->u.ar.type != AR_FULL && ref->u.ar.dimen != 0)
+	    {
+	      if (where)
+		gfc_error ("Actual argument to '%s' at %L must be a coarray "
+			   "and thus shall not have an array designator",
+			   formal->name, &ref->u.ar.where);
+	      return 0;
+	    }
+	  if (ref->type == REF_COMPONENT)
+	    last = ref;
+	}
+
+      if (last && !last->u.c.component->attr.codimension)
+      	{
+	  if (where)
+	    gfc_error ("Actual argument to '%s' at %L must be a coarray",
+		       formal->name, &actual->where);
+	  return 0;
+	}
+
+      /* F2008, 12.5.2.6.  */
+      if (formal->attr.allocatable &&
+	  ((last && last->u.c.component->as->corank != formal->as->corank)
+	   || (!last
+	       && actual->symtree->n.sym->as->corank != formal->as->corank)))
+	{
+	  if (where)
+	    gfc_error ("Corank mismatch in argument '%s' at %L (%d and %d)",
+		   formal->name, &actual->where, formal->as->corank,
+		   last ? last->u.c.component->as->corank
+			: actual->symtree->n.sym->as->corank);
+	  return 0;
+	}
+
+      /* F2008, 12.5.2.8.  */
+      if (formal->attr.dimension
+	  && (formal->attr.contiguous || formal->as->type != AS_ASSUMED_SHAPE)
+	  && !gfc_is_simply_contiguous (actual, true))
+	{
+	  if (where)
+	    gfc_error ("Actual argument to '%s' at %L must be simply "
+		       "contiguous", formal->name, &actual->where);
+	  return 0;
+	}
+    }
+
+  /* F2008, C1239/C1240.  */
+  if (actual->expr_type == EXPR_VARIABLE
+      && (actual->symtree->n.sym->attr.asynchronous
+         || actual->symtree->n.sym->attr.volatile_)
+      &&  (formal->attr.asynchronous || formal->attr.volatile_)
+      && actual->rank && !gfc_is_simply_contiguous (actual, true)
+      && ((formal->as->type != AS_ASSUMED_SHAPE && !formal->attr.pointer)
+	  || formal->attr.contiguous))
+    {
+      if (where)
+	gfc_error ("Dummy argument '%s' has to be a pointer or assumed-shape "
+		   "array without CONTIGUOUS attribute - as actual argument at"
+		   " %L is not simply contiguous and both are ASYNCHRONOUS "
+		   "or VOLATILE", formal->name, &actual->where);
       return 0;
     }
 
@@ -1452,15 +1574,17 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 		   || formal->as->type == AS_DEFERRED)
 	       && actual->expr_type != EXPR_NULL;
 
+  /* Scalar & coindexed, see: F2008, Section 12.5.2.4.  */
   if (rank_check || ranks_must_agree
       || (formal->attr.pointer && actual->expr_type != EXPR_NULL)
       || (actual->rank != 0 && !(is_elemental || formal->attr.dimension))
-      || (actual->rank == 0 && formal->as->type == AS_ASSUMED_SHAPE))
+      || (actual->rank == 0 && formal->as->type == AS_ASSUMED_SHAPE)
+      || (actual->rank == 0 && formal->attr.dimension
+	  && gfc_is_coindexed (actual)))
     {
       if (where)
-	gfc_error ("Rank mismatch in argument '%s' at %L (%d and %d)",
-		   formal->name, &actual->where, symbol_rank (formal),
-		   actual->rank);
+	argument_rank_mismatch (formal->name, &actual->where,
+				symbol_rank (formal), actual->rank);
       return 0;
     }
   else if (actual->rank != 0 && (is_elemental || formal->attr.dimension))
@@ -1473,7 +1597,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
      - (F2003) if the actual argument is of type character.  */
 
   for (ref = actual->ref; ref; ref = ref->next)
-    if (ref->type == REF_ARRAY && ref->u.ar.type == AR_ELEMENT)
+    if (ref->type == REF_ARRAY && ref->u.ar.type == AR_ELEMENT
+	&& ref->u.ar.dimen > 0)
       break;
 
   /* Not an array element.  */
@@ -1498,9 +1623,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   else if (ref == NULL && actual->expr_type != EXPR_NULL)
     {
       if (where)
-	gfc_error ("Rank mismatch in argument '%s' at %L (%d and %d)",
-		   formal->name, &actual->where, symbol_rank (formal),
-		   actual->rank);
+	argument_rank_mismatch (formal->name, &actual->where,
+				symbol_rank (formal), actual->rank);
       return 0;
     }
 
@@ -1581,8 +1705,8 @@ get_sym_storage_size (gfc_symbol *sym)
 	  || sym->as->lower[i]->expr_type != EXPR_CONSTANT)
 	return 0;
 
-      elements *= mpz_get_ui (sym->as->upper[i]->value.integer)
-		  - mpz_get_ui (sym->as->lower[i]->value.integer) + 1L;
+      elements *= mpz_get_si (sym->as->upper[i]->value.integer)
+		  - mpz_get_si (sym->as->lower[i]->value.integer) + 1L;
     }
 
   return strlen*elements;
@@ -1757,8 +1881,8 @@ get_expr_storage_size (gfc_expr *e)
    which has a vector subscript. If it has, one is returned,
    otherwise zero.  */
 
-static int
-has_vector_subscript (gfc_expr *e)
+int
+gfc_has_vector_subscript (gfc_expr *e)
 {
   int i;
   gfc_ref *ref;
@@ -1983,6 +2107,57 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  return 0;
 	}
 
+      /* Fortran 2008, C1242.  */
+      if (f->sym->attr.pointer && gfc_is_coindexed (a->expr))
+	{
+	  if (where)
+	    gfc_error ("Coindexed actual argument at %L to pointer "
+		       "dummy '%s'",
+		       &a->expr->where, f->sym->name);
+	  return 0;
+	}
+
+      /* Fortran 2008, 12.5.2.5 (no constraint).  */
+      if (a->expr->expr_type == EXPR_VARIABLE
+	  && f->sym->attr.intent != INTENT_IN
+	  && f->sym->attr.allocatable
+	  && gfc_is_coindexed (a->expr))
+	{
+	  if (where)
+	    gfc_error ("Coindexed actual argument at %L to allocatable "
+		       "dummy '%s' requires INTENT(IN)",
+		       &a->expr->where, f->sym->name);
+	  return 0;
+	}
+
+      /* Fortran 2008, C1237.  */
+      if (a->expr->expr_type == EXPR_VARIABLE
+	  && (f->sym->attr.asynchronous || f->sym->attr.volatile_)
+	  && gfc_is_coindexed (a->expr)
+	  && (a->expr->symtree->n.sym->attr.volatile_
+	      || a->expr->symtree->n.sym->attr.asynchronous))
+	{
+	  if (where)
+	    gfc_error ("Coindexed ASYNCHRONOUS or VOLATILE actual argument at "
+		       "at %L requires that dummy %s' has neither "
+		       "ASYNCHRONOUS nor VOLATILE", &a->expr->where,
+		       f->sym->name);
+	  return 0;
+	}
+
+      /* Fortran 2008, 12.5.2.4 (no constraint).  */
+      if (a->expr->expr_type == EXPR_VARIABLE
+	  && f->sym->attr.intent != INTENT_IN && !f->sym->attr.value
+	  && gfc_is_coindexed (a->expr)
+	  && gfc_has_ultimate_allocatable (a->expr))
+	{
+	  if (where)
+	    gfc_error ("Coindexed actual argument at %L with allocatable "
+		       "ultimate component to dummy '%s' requires either VALUE "
+		       "or INTENT(IN)", &a->expr->where, f->sym->name);
+	  return 0;
+	}
+
       if (a->expr->expr_type != EXPR_NULL
 	  && compare_allocatable (f->sym, a->expr) == 0)
 	{
@@ -2018,13 +2193,15 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 
       if ((f->sym->attr.intent == INTENT_OUT
 	   || f->sym->attr.intent == INTENT_INOUT
-	   || f->sym->attr.volatile_)
-          && has_vector_subscript (a->expr))
+	   || f->sym->attr.volatile_
+	   || f->sym->attr.asynchronous)
+	  && gfc_has_vector_subscript (a->expr))
 	{
 	  if (where)
-	    gfc_error ("Array-section actual argument with vector subscripts "
-		       "at %L is incompatible with INTENT(OUT), INTENT(INOUT) "
-		       "or VOLATILE attribute of the dummy argument '%s'",
+	    gfc_error ("Array-section actual argument with vector "
+		       "subscripts at %L is incompatible with INTENT(OUT), "
+		       "INTENT(INOUT), VOLATILE or ASYNCHRONOUS attribute "
+		       "of the dummy argument '%s'",
 		       &a->expr->where, f->sym->name);
 	  return 0;
 	}
@@ -2366,6 +2543,36 @@ check_intents (gfc_formal_arglist *f, gfc_actual_arglist *a)
 	      return FAILURE;
 	    }
 	}
+
+       /* Fortran 2008, C1283.  */
+       if (gfc_pure (NULL) && gfc_is_coindexed (a->expr))
+	{
+	  if (f_intent == INTENT_INOUT || f_intent == INTENT_OUT)
+	    {
+	      gfc_error ("Coindexed actual argument at %L in PURE procedure "
+			 "is passed to an INTENT(%s) argument",
+			 &a->expr->where, gfc_intent_string (f_intent));
+	      return FAILURE;
+	    }
+
+	  if (f->sym->attr.pointer)
+	    {
+	      gfc_error ("Coindexed actual argument at %L in PURE procedure "
+			 "is passed to a POINTER dummy argument",
+			 &a->expr->where);
+	      return FAILURE;
+	    }
+	}
+
+       /* F2008, Section 12.5.2.4.  */
+       if (a->expr->ts.type == BT_CLASS && f->sym->ts.type == BT_CLASS
+	   && gfc_is_coindexed (a->expr))
+	 {
+	   gfc_error ("Coindexed polymorphic actual argument at %L is passed "
+		      "polymorphic dummy argument '%s'",
+			 &a->expr->where, f->sym->name);
+	   return FAILURE;
+	 }
     }
 
   return SUCCESS;
@@ -2589,7 +2796,7 @@ matching_typebound_op (gfc_expr** tb_base,
 	gfc_try result;
 
 	if (base->expr->ts.type == BT_CLASS)
-	  derived = base->expr->ts.u.derived->components->ts.u.derived;
+	  derived = CLASS_DATA (base->expr)->ts.u.derived;
 	else
 	  derived = base->expr->ts.u.derived;
 

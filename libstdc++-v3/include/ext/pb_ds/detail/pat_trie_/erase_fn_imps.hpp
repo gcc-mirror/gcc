@@ -44,7 +44,7 @@ PB_DS_CLASS_C_DEC::
 erase(const_key_reference r_key)
 {
   node_pointer p_nd = find_imp(r_key);
-  if (p_nd == NULL || p_nd->m_type == pat_trie_internal_node_type)
+  if (p_nd == 0 || p_nd->m_type == pat_trie_internal_node_type)
     {
       _GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(r_key));
       return false;

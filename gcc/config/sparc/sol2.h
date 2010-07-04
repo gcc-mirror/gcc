@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC, for SPARC running Solaris 2
    Copyright 1992, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2004, 2005,
-   2006, 2007, 2008 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2010 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@netcom.com).
    Additional changes by David V. Henkel-Wallace (gumby@cygnus.com).
 
@@ -177,22 +177,15 @@ along with GCC; see the file COPYING3.  If not see
     }								\
   while (0)
 
-/* Solaris 'as' has a bug: a .common directive in .tbss section
-   behaves as .tls_common rather than normal non-TLS .common.  */
-#undef  ASM_OUTPUT_ALIGNED_COMMON
-#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
-  do									\
-    {									\
-      if (TARGET_SUN_TLS						\
-	  && in_section							\
-	  && ((in_section->common.flags & (SECTION_TLS | SECTION_BSS))	\
-	      == (SECTION_TLS | SECTION_BSS)))				\
-	switch_to_section (bss_section);				\
-      fprintf ((FILE), "%s", COMMON_ASM_OP);				\
-      assemble_name ((FILE), (NAME));					\
-      fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",		\
-	       (SIZE), (ALIGN) / BITS_PER_UNIT);			\
-    }									\
-  while (0)
+/* Use Solaris ELF section syntax.  */
+#undef TARGET_ASM_NAMED_SECTION
+#define TARGET_ASM_NAMED_SECTION sparc_solaris_elf_asm_named_section
+
+/* Solaris/SPARC as uses a non-standard .section/.pushsection syntax.
+   While gas supports it, too, we prefer the standard variant.  */
+#ifndef USE_GAS
+#undef PUSHSECTION_FORMAT
+#define PUSHSECTION_FORMAT	"\t.pushsection\t\"%s\"\n"
+#endif
 
 #define MD_UNWIND_SUPPORT "config/sparc/sol2-unwind.h"

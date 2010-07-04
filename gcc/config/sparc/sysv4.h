@@ -42,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef FINI_SECTION_ASM_OP
 #undef READONLY_DATA_SECTION_ASM_OP
 #undef TYPE_OPERAND_FMT
-#undef PUSHSECTION_FORMAT
 #undef STRING_ASM_OP
 #undef COMMON_ASM_OP
 #undef SKIP_ASM_OP
@@ -63,18 +62,11 @@ along with GCC; see the file COPYING3.  If not see
 #define STRING_ASM_OP		"\t.asciz\t"
 #define COMMON_ASM_OP		"\t.common\t"
 #define SKIP_ASM_OP		"\t.skip\t"
-#define PUSHSECTION_ASM_OP	"\t.pushsection\t"
-#define POPSECTION_ASM_OP	"\t.popsection"
 
 /* This is the format used to print the second operand of a .type pseudo-op
    for the SPARC/svr4 assembler.  */
 
 #define TYPE_OPERAND_FMT      "#%s"
-
-/* This is the format used to print a .pushsection pseudo-op (and its operand)
-   for the SPARC/svr4 assembler.  */
-
-#define PUSHSECTION_FORMAT	"%s\"%s\"\n"
 
 #undef ASM_OUTPUT_CASE_LABEL
 #define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, JUMPTABLE)		\
@@ -126,10 +118,6 @@ do { ASM_OUTPUT_ALIGN ((FILE), Pmode == SImode ? 2 : 3);		\
 #define CTORS_SECTION_ASM_OP    "\t.section\t\".ctors\",#alloc,#write"
 #undef DTORS_SECTION_ASM_OP
 #define DTORS_SECTION_ASM_OP    "\t.section\t\".dtors\",#alloc,#write"
-
-/* Switch into a generic section.  */
-#undef TARGET_ASM_NAMED_SECTION
-#define TARGET_ASM_NAMED_SECTION  sparc_elf_asm_named_section
 
 #undef ASM_OUTPUT_ALIGNED_BSS
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \

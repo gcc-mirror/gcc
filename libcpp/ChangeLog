@@ -1,3 +1,119 @@
+2010-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (struct cpp_callbacks): Add user_builtin_macro
+	callback.
+	(enum cpp_builtin_type): Add BT_FIRST_USER and BT_LAST_USER.
+	(cpp_macro_definition): Remove const qual from second argument.
+	* macro.c (enter_macro_context): Call user_builtin_macro callback for
+	NODE_BUILTIN !NODE_USED macros.
+	(warn_of_redefinition): Likewise.  Remove const qual from second
+	argument.
+	(cpp_macro_definition): Likewise.
+	* pch.c (write_macdef, save_macros): Call user_builtin_macro callback
+	for NODE_BUILTIN !NODE_USED macros.
+
+2010-06-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_options): Remove show_column.
+	* init.c (cpp_create_reader, post_options): Don't set show_column.
+
+2010-06-09  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR bootstrap/44432
+	* configure.ac: Before using ZW_PROG_COMPILER_DEPENDENCIES for C++,
+	check that C++ compiler works.
+	* configure: Regenerate.
+
+2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* include/symtab.h (ht_identifier_ptr): New.
+
+2010-06-03  Joern Rennecke <joern.rennecke@embecosm.com>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/42798
+	* configure.ac: Check for declaration of 'basename(char *)'.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+2010-04-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (enum c_lang): Add CLK_GNUC1X and CLK_STDC1X.
+	* init.c (lang_defaults): Add entries for new language variants.
+	(cpp_init_builtins): Define __STDC_VERSION__ to 201000L for C1X
+	variants.
+
+2010-04-09  Manuel López-Ibáñez <manu@gcc.gnu.org>
+
+	PR cpp/43195
+	* files.c (report_missing_guard): Test for #pragma once.
+
+2010-04-07  Simon Baldwin  <simonb@google.com>
+
+	* directives.c (do_diagnostic): Add warning reason argument,
+	call appropriate error reporting function for code.
+	(directive_diagnostics): Call specific warning functions with
+	warning reason where appropriate.
+	(do_error, do_warning, do_pragma_dependency): Add warning reason
+	argument to do_diagnostic calls.
+	* macro.c (_cpp_warn_if_unused_macro, enter_macro_context,
+	_cpp_create_definition): Call specific warning functions with
+	warning reason where appropriate.
+	* Makefile.in: Add new diagnostic functions to gettext translations.
+	* include/cpplib.h (struct cpp_callbacks): Add warning reason code
+	to error callback.
+	(CPP_DL_WARNING, CPP_DL_WARNING_SYSHDR, CPP_DL_PEDWARN, CPP_DL_ERROR,
+	CPP_DL_ICE, CPP_DL_NOTE, CPP_DL_FATAL): Replace macros with enums.
+	(CPP_W_NONE, CPP_W_DEPRECATED, CPP_W_COMMENTS,
+	CPP_W_MISSING_INCLUDE_DIRS, CPP_W_TRIGRAPHS, CPP_W_MULTICHAR,
+	CPP_W_TRADITIONAL, CPP_W_LONG_LONG, CPP_W_ENDIF_LABELS,
+	CPP_W_NUM_SIGN_CHANGE, CPP_W_VARIADIC_MACROS,
+	CPP_W_BUILTIN_MACRO_REDEFINED, CPP_W_DOLLARS, CPP_W_UNDEF,
+	CPP_W_UNUSED_MACROS, CPP_W_CXX_OPERATOR_NAMES, CPP_W_NORMALIZE,
+	CPP_W_INVALID_PCH, CPP_W_WARNING_DIRECTIVE): New enums for cpp
+	warning reason codes.
+	(cpp_warning, cpp_pedwarning, cpp_warning_syshdr,
+	cpp_warning_with_line, cpp_pedwarning_with_line,
+	cpp_warning_with_line_syshdr): New specific error reporting functions.
+	* pch.c (cpp_valid_state): Call specific warning functions with
+	warning reason where appropriate.
+	* errors.c (cpp_diagnostic, cpp_diagnostic_with_line): New central
+	diagnostic handlers.
+	(cpp_warning, cpp_pedwarning, cpp_warning_syshdr,
+	cpp_warning_with_line, cpp_pedwarning_with_line,
+	cpp_warning_with_line_syshdr): New specific error reporting functions.
+	* expr.c (cpp_classify_number, eval_token, num_unary_op): Call
+	specific warning functions with warning reason where appropriate.
+	* lex.c (_cpp_process_line_notes, _cpp_skip_block_comment,
+	warn_about_normalization, lex_identifier_intern, lex_identifier,
+	_cpp_lex_direct): Ditto.
+	* charset.c (_cpp_valid_ucn, convert_hex, convert_escape,
+	narrow_str_to_charconst): Ditto.
+
+2010-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/43642
+	* lex.c (lex_raw_string): Change type of TYPE variable to
+	unsigned char.
+
+2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* aclocal.m4: Regenerate.
+
+2010-03-29  Jason Merrill  <jason@redhat.com>
+
+	More N3077 raw string changes
+	* charset.c (cpp_interpret_string): Don't transform UCNs in raw
+	strings.
+	* lex.c (bufring_append): Split out from...
+	(lex_raw_string): ...here.  Undo trigraph and line splicing
+	transformations.  Do process line notes in multi-line literals.
+	(_cpp_process_line_notes): Ignore notes that were already handled.
+
+	Some raw string changes from N3077
+	* charset.c (cpp_interpret_string): Change inner delimiters to ().
+	* lex.c (lex_raw_string): Likewise.  Also disallow '\' in delimiter.
+
 2010-02-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* init.c (read_original_filename): Don't call read_original_directory

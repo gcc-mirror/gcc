@@ -8,8 +8,8 @@ namespace N __attribute ((__visibility__ ("hidden")))
   struct A { };
 }
 
-struct B
-{				// { dg-warning "visibility" }
+struct B			// { dg-warning "visibility" }
+{
   N::A a;
 };
 

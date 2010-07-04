@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,10 +34,13 @@
 --  create and close routines are elsewhere (in Osint in the compiler, and in
 --  the tree read driver for the tree read interface).
 
-with Types; use Types;
+with Types;  use Types;
+with System; use System;
 
-with System;        use System;
+pragma Warnings (Off);
+--  This package is used also by gnatcoll
 with System.OS_Lib; use System.OS_Lib;
+pragma Warnings (On);
 
 package Tree_IO is
 

@@ -14,9 +14,9 @@ class java::util::TreeMap$3 : public ::java::util::AbstractCollection
 public: // actually package-private
   TreeMap$3(::java::util::TreeMap$DescendingMap *);
 public:
-  jint size();
-  ::java::util::Iterator * iterator();
-  void clear();
+  virtual jint size();
+  virtual ::java::util::Iterator * iterator();
+  virtual void clear();
 public: // actually package-private
   static ::java::util::TreeMap$DescendingMap * access$0(::java::util::TreeMap$3 *);
   ::java::util::TreeMap$DescendingMap * __attribute__((aligned(__alignof__( ::java::util::AbstractCollection)))) this$1;

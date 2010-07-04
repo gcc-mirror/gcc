@@ -2,9 +2,8 @@
 // Test that failed lvalue-to-rvalue conversion of vf doesn't crash the
 // compiler.
 
-class f_class
-{ };				// { dg-message "candidates" "candidates" } 
-// { dg-message "note" "note" { target *-*-* } 6 }
+class f_class		       // { dg-message "note" "candidates" }
+{ };
 
 volatile f_class
 ret_v_f_class()

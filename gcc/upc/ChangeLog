@@ -1,3 +1,30 @@
+2010-07-03  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 161517 into gupc branch.
+	* gcc/stub-upc.c: Move to gcc/c-family/.
+	* config-lang.in: Update references to files
+	  moved into c-family/.
+	* Make-lang.in: Likewise.
+	* upc-act.c: Likewise.
+	* upc-gasp.c: Likewise.
+	* upc-gimplify.c: Likewise.
+	* upc-lang.c: Likewise.
+	* upc-pts-packed.c: Likewise.
+	* upc-pts-struct.c: Likewise.
+	* upc-act.c: (upc_handle_option) add parameters to
+	  effect pass through call to c_common_handle_option.
+	* upc-act.h: (upc_handle_option) Likewise.
+	* upc-act.c: (map_unshared_var) used typed ggc allocation.
+	* upc-act.c: (upc_build_init_func) add call to
+	  to mark_decl_referenced(), to ensure that UPC shared
+	  variable initializer function is not removed from
+	  the call tree graph.
+        * libupc/testsuite/libupc.upc/intrepid/test19.upc:
+	  Add 'unused' attributes to avoid "set, but
+	  not referenced" warnings.
+        * libupc/testsuite/libupc.upc/intrepid/test18.upc:
+	  Likewise.
+
 2010-02-28  Gary Funck  <gary@intrepid.com>
 
 	Initial implementation and checkin.

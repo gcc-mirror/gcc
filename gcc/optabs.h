@@ -46,8 +46,8 @@ struct optab_handlers
 struct optab_d
 {
   enum rtx_code code;
-  const char *libcall_basename;
   char libcall_suffix;
+  const char *libcall_basename;
   void (*libcall_gen)(struct optab_d *, const char *name, char suffix,
 		      enum machine_mode);
   struct optab_handlers handlers[NUM_MACHINE_MODES];
@@ -810,6 +810,9 @@ extern void expand_fix (rtx, rtx, int);
 
 /* Generate code for float to integral conversion.  */
 extern bool expand_sfix_optab (rtx, rtx, convert_optab);
+
+/* Generate code for a widening multiply.  */
+extern rtx expand_widening_mult (enum machine_mode, rtx, rtx, rtx, int, optab);
 
 /* Return tree if target supports vector operations for COND_EXPR.  */
 bool expand_vec_cond_expr_p (tree, enum machine_mode);

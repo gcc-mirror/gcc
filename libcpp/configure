@@ -2239,8 +2239,10 @@ $as_echo "$ac_res" >&6; }
 ac_fn_cxx_check_decl ()
 {
   as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $2 is declared" >&5
-$as_echo_n "checking whether $2 is declared... " >&6; }
+  as_decl_name=`echo $2|sed 's/ *(.*//'`
+  as_decl_use=`echo $2|sed -e 's/(/((/' -e 's/)/) 0&/' -e 's/,/) 0& (/g'`
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $as_decl_name is declared" >&5
+$as_echo_n "checking whether $as_decl_name is declared... " >&6; }
 if { as_var=$3; eval "test \"\${$as_var+set}\" = set"; }; then :
   $as_echo_n "(cached) " >&6
 else
@@ -2250,8 +2252,12 @@ $4
 int
 main ()
 {
-#ifndef $2
-  (void) $2;
+#ifndef $as_decl_name
+#ifdef __cplusplus
+  (void) $as_decl_use;
+#else
+  (void) $as_decl_name;
+#endif
 #endif
 
   ;
@@ -4394,6 +4400,29 @@ else CCDEPMODE=depmode=$am_cv_CC_dependencies_compiler_type
 fi
 
 else
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int i;
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+
+else
+  as_fn_error "C++ compiler missing or inoperational" "$LINENO" 5
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
 depcc="$CXX"  am_compiler_list=
 
 am_depcomp=$ac_aux_dir/depcomp
@@ -4991,8 +5020,7 @@ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
-
-ac_ext=cpp
+   ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
@@ -5480,8 +5508,8 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_ASPRINTF $ac_have_decl
 _ACEOF
-ac_fn_cxx_check_decl "$LINENO" "basename" "ac_cv_have_decl_basename" "$ac_includes_default"
-if test "x$ac_cv_have_decl_basename" = x""yes; then :
+ac_fn_cxx_check_decl "$LINENO" "basename(char *)" "ac_cv_have_decl_basename_char_p_" "$ac_includes_default"
+if test "x$ac_cv_have_decl_basename_char_p_" = x""yes; then :
   ac_have_decl=1
 else
   ac_have_decl=0
@@ -5510,6 +5538,17 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_GETOPT $ac_have_decl
 _ACEOF
+ac_fn_cxx_check_decl "$LINENO" "vasprintf" "ac_cv_have_decl_vasprintf" "$ac_includes_default"
+if test "x$ac_cv_have_decl_vasprintf" = x""yes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_VASPRINTF $ac_have_decl
+_ACEOF
+
 ac_fn_cxx_check_decl "$LINENO" "clearerr_unlocked" "ac_cv_have_decl_clearerr_unlocked" "$ac_includes_default"
 if test "x$ac_cv_have_decl_clearerr_unlocked" = x""yes; then :
   ac_have_decl=1
@@ -5669,16 +5708,6 @@ fi
 
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_PUTC_UNLOCKED $ac_have_decl
-_ACEOF
-ac_fn_cxx_check_decl "$LINENO" "vasprintf" "ac_cv_have_decl_vasprintf" "$ac_includes_default"
-if test "x$ac_cv_have_decl_vasprintf" = x""yes; then :
-  ac_have_decl=1
-else
-  ac_have_decl=0
-fi
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_DECL_VASPRINTF $ac_have_decl
 _ACEOF
 
 

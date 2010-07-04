@@ -18,16 +18,16 @@ public: // actually package-private
 private:
   ::java::io::ObjectStreamField * getField(::java::lang::String *);
 public:
-  void put(::java::lang::String *, jboolean);
-  void put(::java::lang::String *, jbyte);
-  void put(::java::lang::String *, jchar);
-  void put(::java::lang::String *, jdouble);
-  void put(::java::lang::String *, jfloat);
-  void put(::java::lang::String *, jint);
-  void put(::java::lang::String *, jlong);
-  void put(::java::lang::String *, jshort);
-  void put(::java::lang::String *, ::java::lang::Object *);
-  void write(::java::io::ObjectOutput *);
+  virtual void put(::java::lang::String *, jboolean);
+  virtual void put(::java::lang::String *, jbyte);
+  virtual void put(::java::lang::String *, jchar);
+  virtual void put(::java::lang::String *, jdouble);
+  virtual void put(::java::lang::String *, jfloat);
+  virtual void put(::java::lang::String *, jint);
+  virtual void put(::java::lang::String *, jlong);
+  virtual void put(::java::lang::String *, jshort);
+  virtual void put(::java::lang::String *, ::java::lang::Object *);
+  virtual void write(::java::io::ObjectOutput *);
 private:
   void checkType(::java::io::ObjectStreamField *, jchar);
   JArray< jbyte > * __attribute__((aligned(__alignof__( ::java::io::ObjectOutputStream$PutField)))) prim_field_data;

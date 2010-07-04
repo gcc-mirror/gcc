@@ -1,5 +1,6 @@
 /* Prototypes for exported functions defined in mmix.c
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2007, 2010
+   Free Software Foundation, Inc.
    Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 
 This file is part of GCC.
@@ -52,8 +53,6 @@ extern int mmix_local_regno (int);
 extern int mmix_dbx_register_number (int);
 extern int mmix_use_simple_return (void);
 extern void mmix_make_decl_one_only (tree);
-extern rtx mmix_function_outgoing_value (const_tree, const_tree);
-extern int mmix_function_value_regno_p (int);
 extern int mmix_data_alignment (tree, int);
 extern int mmix_constant_alignment (tree, int);
 extern int mmix_local_alignment (tree, int);

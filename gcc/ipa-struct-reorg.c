@@ -40,6 +40,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "cgraph.h"
 #include "diagnostic.h"
+#include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
 #include "timevar.h"
 #include "params.h"
 #include "fibheap.h"
@@ -1389,6 +1391,7 @@ create_new_general_access (struct access_site *acc, d_str str)
 	 for now just reset all debug stmts referencing objects that have
 	 been peeled.  */
       gimple_debug_bind_reset_value (stmt);
+      update_stmt (stmt);
       break;
 
     default:
@@ -3240,6 +3243,7 @@ do_reorg_for_func (struct cgraph_node *node)
   create_new_accesses_for_func ();
   update_ssa (TODO_update_ssa);
   cleanup_tree_cfg ();
+  cgraph_rebuild_references ();
 
   /* Free auxiliary data representing local variables.  */
   free_new_vars_htab (new_local_vars);

@@ -92,7 +92,7 @@ namespace __gnu_pbds
 
       // Default constructor.
       inline
-      binary_heap_const_point_iterator_() : m_p_e(NULL) { }
+      binary_heap_const_point_iterator_() : m_p_e(0) { }
 
       // Copy constructor.
       inline
@@ -104,7 +104,7 @@ namespace __gnu_pbds
       inline const_pointer
       operator->() const
       {
-	_GLIBCXX_DEBUG_ASSERT(m_p_e != NULL);
+	_GLIBCXX_DEBUG_ASSERT(m_p_e != 0);
 	return to_ptr(integral_constant<int, Simple>());
       }
 
@@ -112,7 +112,7 @@ namespace __gnu_pbds
       inline const_reference
       operator*() const
       {
-	_GLIBCXX_DEBUG_ASSERT(m_p_e != NULL);
+	_GLIBCXX_DEBUG_ASSERT(m_p_e != 0);
 	return *to_ptr(integral_constant<int, Simple>());
       }
 

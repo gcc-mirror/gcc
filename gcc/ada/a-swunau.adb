@@ -37,31 +37,20 @@ package body Ada.Strings.Wide_Unbounded.Aux is
 
    procedure Get_Wide_String
      (U : Unbounded_Wide_String;
-      S : out Wide_String_Access;
+      S : out Big_Wide_String_Access;
       L : out Natural)
    is
+      X : aliased Big_Wide_String;
+      for X'Address use U.Reference.all'Address;
+
    begin
-      S := U.Reference;
+      S := X'Unchecked_Access;
       L := U.Last;
    end Get_Wide_String;
 
    ---------------------
    -- Set_Wide_String --
    ---------------------
-
-   procedure Set_Wide_String
-     (UP : in out Unbounded_Wide_String;
-      S  : Wide_String)
-   is
-   begin
-      if S'Length > UP.Last then
-         Finalize (UP);
-         UP.Reference := new Wide_String (1 .. S'Length);
-      end if;
-
-      UP.Reference (1 .. S'Length) := S;
-      UP.Last := S'Length;
-   end Set_Wide_String;
 
    procedure Set_Wide_String
      (UP : in out Unbounded_Wide_String;

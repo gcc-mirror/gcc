@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Renesas H8/300.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "regs.h"
 #include "hard-reg-set.h"
-#include "real.h"
 #include "insn-config.h"
 #include "conditions.h"
 #include "output.h"
@@ -40,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "optabs.h"
 #include "toplev.h"
-#include "c-pragma.h"
+#include "c-family/c-pragma.h"	/* ??? */
 #include "tm_p.h"
 #include "ggc.h"
 #include "target.h"
@@ -1468,12 +1467,20 @@ print_operand (FILE *file, rtx x, int code)
 	goto def;
       break;
     case 'V':
-      bitint = exact_log2 (INTVAL (x) & 0xff);
+      bitint = (INTVAL (x) & 0xffff);
+      if ((exact_log2 ((bitint >> 8) & 0xff)) == -1)
+	bitint = exact_log2 (bitint & 0xff);
+      else
+        bitint = exact_log2 ((bitint >> 8) & 0xff);	      
       gcc_assert (bitint >= 0);
       fprintf (file, "#%d", bitint);
       break;
     case 'W':
-      bitint = exact_log2 ((~INTVAL (x)) & 0xff);
+      bitint = ((~INTVAL (x)) & 0xffff);
+      if ((exact_log2 ((bitint >> 8) & 0xff)) == -1 )
+	bitint = exact_log2 (bitint & 0xff);
+      else
+	bitint = (exact_log2 ((bitint >> 8) & 0xff));      
       gcc_assert (bitint >= 0);
       fprintf (file, "#%d", bitint);
       break;

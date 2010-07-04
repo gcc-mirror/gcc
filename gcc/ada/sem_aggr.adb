@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,6 +54,7 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stringt;  use Stringt;
 with Stand;    use Stand;
+with Style;    use Style;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
@@ -1443,8 +1444,9 @@ package body Sem_Aggr is
                   --  a missing component association for a 1-aggregate.
 
                   if Paren_Count (Expr) > 0 then
-                     Error_Msg_N ("\if single-component aggregate is intended,"
-                                  & " write e.g. (1 ='> ...)", Expr);
+                     Error_Msg_N
+                       ("\if single-component aggregate is intended,"
+                        & " write e.g. (1 ='> ...)", Expr);
                   end if;
                   return Failure;
                end if;
@@ -1798,8 +1800,8 @@ package body Sem_Aggr is
 
                elsif Is_Tagged_Type (Etype (Expression (Assoc))) then
                   Check_Dynamically_Tagged_Expression
-                    (Expr => Expression (Assoc),
-                     Typ  => Component_Type (Etype (N)),
+                    (Expr        => Expression (Assoc),
+                     Typ         => Component_Type (Etype (N)),
                      Related_Nod => N);
                end if;
 
@@ -2288,6 +2290,18 @@ package body Sem_Aggr is
             then
                A_Type := Etype (Imm_Type);
                return True;
+
+            --  The parent type may be a private extension. The aggregate is
+            --  legal if the type of the aggregate is an extension of it that
+            --  is not a private extension.
+
+            elsif Is_Private_Type (A_Type)
+              and then not Is_Private_Type (Imm_Type)
+              and then Present (Full_View (A_Type))
+              and then Base_Type (Full_View (A_Type)) = Etype (Imm_Type)
+            then
+               return True;
+
             else
                Imm_Type := Etype (Base_Type (Imm_Type));
             end if;
@@ -2488,21 +2502,24 @@ package body Sem_Aggr is
       --  whose value may already have been specified by N's ancestor part.
       --  This routine checks whether this is indeed the case and if so returns
       --  False, signaling that no value for Discr should appear in N's
-      --  aggregate part. Also, in this case, the routine appends
-      --  New_Assoc_List Discr the discriminant value specified in the ancestor
-      --  part.
-      --  Can't parse previous sentence, appends what where???
+      --  aggregate part. Also, in this case, the routine appends to
+      --  New_Assoc_List the discriminant value specified in the ancestor part.
+      --
+      --  If the aggregate is in a context with expansion delayed, it will be
+      --  reanalyzed. The inherited discriminant values must not be reinserted
+      --  in the component list to prevent spurious errors, but they must be
+      --  present on first analysis to build the proper subtype indications.
+      --  The flag Inherited_Discriminant is used to prevent the re-insertion.
 
       function Get_Value
         (Compon                 : Node_Id;
          From                   : List_Id;
          Consider_Others_Choice : Boolean := False)
          return                   Node_Id;
-      --  Given a record component stored in parameter Compon, the following
-      --  function returns its value as it appears in the list From, which is
-      --  a list of N_Component_Association nodes.
-      --  What is this referring to??? There is no "following function" in
-      --  sight???
+      --  Given a record component stored in parameter Compon, this function
+      --  returns its value as it appears in the list From, which is a list
+      --  of N_Component_Association nodes.
+      --
       --  If no component association has a choice for the searched component,
       --  the value provided by the others choice is returned, if there is one,
       --  and Consider_Others_Choice is set to true. Otherwise Empty is
@@ -2556,6 +2573,7 @@ package body Sem_Aggr is
          Loc : Source_Ptr;
 
          Ancestor     : Node_Id;
+         Comp_Assoc   : Node_Id;
          Discr_Expr   : Node_Id;
 
          Ancestor_Typ : Entity_Id;
@@ -2568,6 +2586,21 @@ package body Sem_Aggr is
       begin
          if Regular_Aggr then
             return True;
+         end if;
+
+         --  Check whether inherited discriminant values have already been
+         --  inserted in the aggregate. This will be the case if we are
+         --  re-analyzing an aggregate whose expansion was delayed.
+
+         if Present (Component_Associations (N)) then
+            Comp_Assoc := First (Component_Associations (N));
+            while Present (Comp_Assoc) loop
+               if Inherited_Discriminant (Comp_Assoc) then
+                  return True;
+               end if;
+
+               Next (Comp_Assoc);
+            end loop;
          end if;
 
          Ancestor     := Ancestor_Part (N);
@@ -2627,6 +2660,7 @@ package body Sem_Aggr is
                end if;
 
                Resolve_Aggr_Expr (Discr_Expr, Discr);
+               Set_Inherited_Discriminant (Last (New_Assoc_List));
                return False;
             end if;
 
@@ -2991,13 +3025,15 @@ package body Sem_Aggr is
                   if Selector_Name /= First (Choices (Assoc))
                     or else Present (Next (Selector_Name))
                   then
-                     Error_Msg_N ("OTHERS must appear alone in a choice list",
-                                  Selector_Name);
+                     Error_Msg_N
+                       ("OTHERS must appear alone in a choice list",
+                        Selector_Name);
                      return;
 
                   elsif Present (Next (Assoc)) then
-                     Error_Msg_N ("OTHERS must appear last in an aggregate",
-                                  Selector_Name);
+                     Error_Msg_N
+                       ("OTHERS must appear last in an aggregate",
+                        Selector_Name);
                      return;
 
                   --  (Ada2005): If this is an association with a box,
@@ -3213,18 +3249,17 @@ package body Sem_Aggr is
                   Error_Msg_NE
                     ("type of aggregate has private ancestor&!",
                      N, Root_Typ);
-                  Error_Msg_N  ("must use extension aggregate!", N);
+                  Error_Msg_N ("must use extension aggregate!", N);
                   return;
                end if;
 
                Dnode := Declaration_Node (Base_Type (Root_Typ));
 
-               --  If we don't get a full declaration, then we have some
-               --  error which will get signalled later so skip this part.
-               --  Otherwise, gather components of root that apply to the
-               --  aggregate type. We use the base type in case there is an
-               --  applicable stored constraint that renames the discriminants
-               --  of the root.
+               --  If we don't get a full declaration, then we have some error
+               --  which will get signalled later so skip this part. Otherwise
+               --  gather components of root that apply to the aggregate type.
+               --  We use the base type in case there is an applicable stored
+               --  constraint that renames the discriminants of the root.
 
                if Nkind (Dnode) = N_Full_Type_Declaration then
                   Record_Def := Type_Definition (Dnode);
@@ -3259,6 +3294,15 @@ package body Sem_Aggr is
                          Ancestor_Part (N), Parent_Typ);
                      return;
                   end if;
+
+               --  The current view of ancestor part may be a private type,
+               --  while the context type is always non-private.
+
+               elsif Is_Private_Type (Root_Typ)
+                 and then Present (Full_View (Root_Typ))
+                 and then Nkind (N) = N_Extension_Aggregate
+               then
+                  exit when Base_Type (Full_View (Root_Typ)) = Parent_Typ;
                end if;
             end loop;
 
@@ -3460,8 +3504,8 @@ package body Sem_Aggr is
                      --  subaggregate is needed.
 
                      Capture_Discriminants : declare
-                        Loc        : constant Source_Ptr := Sloc (N);
-                        Expr       : Node_Id;
+                        Loc  : constant Source_Ptr := Sloc (N);
+                        Expr : Node_Id;
 
                         procedure Add_Discriminant_Values
                           (New_Aggr   : Node_Id;
@@ -3567,7 +3611,6 @@ package body Sem_Aggr is
                            New_Aggr   : Node_Id;
 
                         begin
-
                            Inner_Comp := First_Component (Etype (Comp));
                            while Present (Inner_Comp) loop
                               Comp_Type := Etype (Inner_Comp);
@@ -3580,7 +3623,7 @@ package body Sem_Aggr is
                                  Set_Etype (New_Aggr, Comp_Type);
                                  Add_Association
                                    (Inner_Comp, New_Aggr,
-                                     Component_Associations (Aggr));
+                                    Component_Associations (Aggr));
 
                                  --  Collect discriminant values and recurse
 
@@ -3630,7 +3673,7 @@ package body Sem_Aggr is
 
                         else
                            declare
-                              Comp            : Entity_Id;
+                              Comp : Entity_Id;
 
                            begin
                               --  If the type has additional components, create
@@ -3737,7 +3780,15 @@ package body Sem_Aggr is
                New_Assoc := First (New_Assoc_List);
                while Present (New_Assoc) loop
                   Component := First (Choices (New_Assoc));
-                  exit when Chars (Selectr) = Chars (Component);
+
+                  if Chars (Selectr) = Chars (Component) then
+                     if Style_Check then
+                        Check_Identifier (Selectr, Entity (Component));
+                     end if;
+
+                     exit;
+                  end if;
+
                   Next (New_Assoc);
                end loop;
 

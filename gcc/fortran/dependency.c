@@ -1,5 +1,5 @@
 /* Dependency analysis
-   Copyright (C) 2000, 2001, 2002, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2000, 2001, 2002, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
@@ -25,8 +25,10 @@ along with GCC; see the file COPYING3.  If not see
    if dependencies.  Ideally these would probably be merged.  */
    
 #include "config.h"
+#include "system.h"
 #include "gfortran.h"
 #include "dependency.h"
+#include "constructor.h"
 
 /* static declarations */
 /* Enums  */
@@ -843,7 +845,8 @@ gfc_check_dependency (gfc_expr *expr1, gfc_expr *expr2, bool identical)
 
     case EXPR_ARRAY:
       /* Loop through the array constructor's elements.  */
-      for (c = expr2->value.constructor; c; c = c->next)
+      for (c = gfc_constructor_first (expr2->value.constructor);
+	   c; c = gfc_constructor_next (c))
 	{
 	  /* If this is an iterator, assume the worst.  */
 	  if (c->iterator)
@@ -995,6 +998,42 @@ gfc_check_section_vs_section (gfc_ref *lref, gfc_ref *rref, int n)
       if (l_dir == -1 && r_dir == 1)
 	return GFC_DEP_EQUAL;
     }
+
+  /* Handle cases like x:y:2 vs. x+1:z:4 as GFC_DEP_NODEP.
+     There is no dependency if the remainder of
+     (l_start - r_start) / gcd(l_stride, r_stride) is
+     nonzero.
+     TODO:
+       - Handle cases where x is an expression.
+       - Cases like a(1:4:2) = a(2:3) are still not handled.
+  */
+
+#define IS_CONSTANT_INTEGER(a) ((a) && ((a)->expr_type == EXPR_CONSTANT) \
+			      && (a)->ts.type == BT_INTEGER)
+
+  if (IS_CONSTANT_INTEGER(l_start) && IS_CONSTANT_INTEGER(r_start)
+      && IS_CONSTANT_INTEGER(l_stride) && IS_CONSTANT_INTEGER(r_stride))
+    {
+      mpz_t gcd, tmp;
+      int result;
+
+      mpz_init (gcd);
+      mpz_init (tmp);
+
+      mpz_gcd (gcd, l_stride->value.integer, r_stride->value.integer);
+      mpz_sub (tmp, l_start->value.integer, r_start->value.integer);
+
+      mpz_fdiv_r (tmp, tmp, gcd);
+      result = mpz_cmp_si (tmp, 0L);
+
+      mpz_clear (gcd);
+      mpz_clear (tmp);
+
+      if (result != 0)
+	return GFC_DEP_NODEP;
+    }
+
+#undef IS_CONSTANT_INTEGER
 
   /* Check for forward dependencies x:y vs. x+1:z.  */
   if (l_dir == 1 && r_dir == 1
@@ -1190,7 +1229,8 @@ contains_forall_index_p (gfc_expr *expr)
 
     case EXPR_STRUCTURE:
     case EXPR_ARRAY:
-      for (c = expr->value.constructor; c; c = c->next)
+      for (c = gfc_constructor_first (expr->value.constructor);
+	   c; gfc_constructor_next (c))
 	if (contains_forall_index_p (c->expr))
 	  return true;
       break;
@@ -1548,4 +1588,3 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref)
 
   return fin_dep == GFC_DEP_OVERLAP;
 }
-

@@ -29,7 +29,7 @@
 #include <mutex>
 #include <testsuite_hooks.h>
 
-void wait(std::shared_future<void> f)
+void fut_wait(std::shared_future<void> f)
 {
   f.wait();
 }
@@ -39,9 +39,9 @@ void test01()
   std::promise<void> p1;
   std::shared_future<void> f1(p1.get_future());
 
-  std::thread t1(wait, f1);
-  std::thread t2(wait, f1);
-  std::thread t3(wait, f1);
+  std::thread t1(fut_wait, f1);
+  std::thread t2(fut_wait, f1);
+  std::thread t3(fut_wait, f1);
 
   p1.set_value();
   t1.join();

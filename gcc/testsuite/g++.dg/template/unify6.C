@@ -8,7 +8,7 @@ template <typename T> void Foo1 (T const *a) {a (1);} // #2
 
 template <typename T> T const *Foo2 (T *);
 
-template <typename T> void Foo3 (T *, T const * = 0);
+template <typename T> void Foo3 (T *, T const * = 0); // { dg-message "candidate" }
 
 void Bar ()
 {

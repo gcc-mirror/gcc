@@ -140,13 +140,13 @@ namespace __gnu_parallel
 
   /** @brief Equivalent to std::min. */
   template<typename _Tp>
-    const _Tp&
+    inline const _Tp&
     min(const _Tp& __a, const _Tp& __b)
     { return (__a < __b) ? __a : __b; }
 
   /** @brief Equivalent to std::max. */
   template<typename _Tp>
-    const _Tp&
+    inline const _Tp&
     max(const _Tp& __a, const _Tp& __b)
     { return (__a > __b) ? __a : __b; }
 
@@ -262,71 +262,45 @@ namespace __gnu_parallel
 
   // Partial specialization for one type. Same as std::less.
   template<typename _Tp>
-    struct _Less<_Tp, _Tp> : public std::binary_function<_Tp, _Tp, bool>
-    {
-      bool
-      operator()(const _Tp& __x, const _Tp& __y) const
-      { return __x < __y; }
-    };
-
+    struct _Less<_Tp, _Tp>
+    : public std::less<_Tp> { };
 
   /** @brief Similar to std::plus, but allows two different types. */
-  template<typename _Tp1, typename _Tp2>
-    struct _Plus : public std::binary_function<_Tp1, _Tp2, _Tp1>
+  template<typename _Tp1, typename _Tp2, typename _Result
+	   = __typeof__(*static_cast<_Tp1*>(0)
+			+ *static_cast<_Tp2*>(0))>
+    struct _Plus : public std::binary_function<_Tp1, _Tp2, _Result>
     {
-      typedef __typeof__(*static_cast<_Tp1*>(NULL)
-			 + *static_cast<_Tp2*>(NULL)) __result;
-
-      __result
+      _Result
       operator()(const _Tp1& __x, const _Tp2& __y) const
       { return __x + __y; }
     };
 
   // Partial specialization for one type. Same as std::plus.
   template<typename _Tp>
-    struct _Plus<_Tp, _Tp> : public std::binary_function<_Tp, _Tp, _Tp>
-    {
-      typedef __typeof__(*static_cast<_Tp*>(NULL)
-			 + *static_cast<_Tp*>(NULL)) __result;
-
-      __result
-      operator()(const _Tp& __x, const _Tp& __y) const
-      { return __x + __y; }
-    };
-
+    struct _Plus<_Tp, _Tp, _Tp>
+    : public std::plus<_Tp> { };
 
   /** @brief Similar to std::multiplies, but allows two different types. */
-  template<typename _Tp1, typename _Tp2>
-    struct _Multiplies : public std::binary_function<_Tp1, _Tp2, _Tp1>
+  template<typename _Tp1, typename _Tp2, typename _Result
+	   = __typeof__(*static_cast<_Tp1*>(0)
+			* *static_cast<_Tp2*>(0))>
+    struct _Multiplies : public std::binary_function<_Tp1, _Tp2, _Result>
     {
-      typedef __typeof__(*static_cast<_Tp1*>(NULL)
-			 * *static_cast<_Tp2*>(NULL)) __result;
-
-      __result
+      _Result
       operator()(const _Tp1& __x, const _Tp2& __y) const
       { return __x * __y; }
     };
 
   // Partial specialization for one type. Same as std::multiplies.
   template<typename _Tp>
-    struct _Multiplies<_Tp, _Tp> : public std::binary_function<_Tp, _Tp, _Tp>
-    {
-      typedef __typeof__(*static_cast<_Tp*>(NULL)
-			 * *static_cast<_Tp*>(NULL)) __result;
-
-      __result
-      operator()(const _Tp& __x, const _Tp& __y) const
-      { return __x * __y; }
-    };
-
-
-  template<typename _Tp, typename _DifferenceTp>
-    class _PseudoSequence;
+    struct _Multiplies<_Tp, _Tp, _Tp>
+    : public std::multiplies<_Tp> { };
 
   /** @brief _Iterator associated with __gnu_parallel::_PseudoSequence.
    *  If features the usual random-access iterator functionality.
    *  @param _Tp Sequence _M_value type.
-   *  @param _DifferenceType Sequence difference type.
+   *  @param _DifferenceTp Sequence difference type.
    */
   template<typename _Tp, typename _DifferenceTp>
     class _PseudoSequenceIterator
@@ -334,11 +308,6 @@ namespace __gnu_parallel
     public:
       typedef _DifferenceTp _DifferenceType;
 
-    private:
-      const _Tp& _M_val;
-      _DifferenceType _M_pos;
-
-    public:
       _PseudoSequenceIterator(const _Tp& __val, _DifferenceType __pos)
       : _M_val(__val), _M_pos(__pos) { }
 
@@ -351,7 +320,7 @@ namespace __gnu_parallel
       }
 
       // Post-increment operator.
-      const _PseudoSequenceIterator
+      _PseudoSequenceIterator
       operator++(int)
       { return _PseudoSequenceIterator(_M_pos++); }
 
@@ -367,20 +336,24 @@ namespace __gnu_parallel
       operator==(const _PseudoSequenceIterator& __i2)
       { return _M_pos == __i2._M_pos; }
 
-      _DifferenceType
+      bool
       operator!=(const _PseudoSequenceIterator& __i2)
       { return _M_pos != __i2._M_pos; }
 
       _DifferenceType
       operator-(const _PseudoSequenceIterator& __i2)
       { return _M_pos - __i2._M_pos; }
+
+    private:
+      const _Tp& _M_val;
+      _DifferenceType _M_pos;
     };
 
   /** @brief Sequence that conceptually consists of multiple copies of
       the same element.
       *  The copies are not stored explicitly, of course.
       *  @param _Tp Sequence _M_value type.
-      *  @param _DifferenceType Sequence difference type.
+      *  @param _DifferenceTp Sequence difference type.
       */
   template<typename _Tp, typename _DifferenceTp>
     class _PseudoSequence
@@ -413,14 +386,6 @@ namespace __gnu_parallel
       _DifferenceType _M_count;
     };
 
-  /** @brief Functor that does nothing */
-  template<typename _ValueTp>
-    class _VoidFunctor
-    {
-      inline void
-      operator()(const _ValueTp& __v) const { }
-    };
-
   /** @brief Compute the median of three referenced elements,
       according to @c __comp.
       *  @param __a First iterator.
@@ -431,7 +396,7 @@ namespace __gnu_parallel
   template<typename _RAIter, typename _Compare>
     _RAIter
     __median_of_three_iterators(_RAIter __a, _RAIter __b,
-				_RAIter __c, _Compare& __comp)
+				_RAIter __c, _Compare __comp)
     {
       if (__comp(*__a, *__b))
 	if (__comp(*__b, *__c))

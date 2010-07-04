@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,6 +63,10 @@ package body Exp_Intr is
    -- Local Subprograms --
    -----------------------
 
+   procedure Expand_Binary_Operator_Call (N : Node_Id);
+   --  Expand a call to an intrinsic arithmetic operator when the operand
+   --  types or sizes are not identical.
+
    procedure Expand_Is_Negative (N : Node_Id);
    --  Expand a call to the intrinsic Is_Negative function
 
@@ -107,6 +111,49 @@ package body Exp_Intr is
    --    Name_Line             - expand integer line number
    --    Name_Source_Location  - expand string of form file:line
    --    Name_Enclosing_Entity - expand string  with name of enclosing entity
+
+   ---------------------------------
+   -- Expand_Binary_Operator_Call --
+   ---------------------------------
+
+   procedure Expand_Binary_Operator_Call (N : Node_Id) is
+      T1  : constant Entity_Id := Underlying_Type (Left_Opnd  (N));
+      T2  : constant Entity_Id := Underlying_Type (Right_Opnd (N));
+      TR  : constant Entity_Id := Etype (N);
+      T3  : Entity_Id;
+      Res : Node_Id;
+
+      Siz : constant Uint := UI_Max (Esize (T1), Esize (T2));
+      --  Maximum of operand sizes
+
+   begin
+      --  Use Unsigned_32 for sizes of 32 or below, else Unsigned_64
+
+      if Siz > 32 then
+         T3 := RTE (RE_Unsigned_64);
+      else
+         T3 := RTE (RE_Unsigned_32);
+      end if;
+
+      --  Copy operator node, and reset type and entity fields, for
+      --  subsequent reanalysis.
+
+      Res := New_Copy (N);
+      Set_Etype (Res, Empty);
+      Set_Entity (Res, Empty);
+
+      --  Convert operands to large enough intermediate type
+
+      Set_Left_Opnd (Res,
+        Unchecked_Convert_To (T3, Relocate_Node (Left_Opnd (N))));
+      Set_Right_Opnd (Res,
+        Unchecked_Convert_To (T3, Relocate_Node (Right_Opnd (N))));
+
+      --  Analyze and resolve result formed by conversion to target type
+
+      Rewrite (N, Unchecked_Convert_To (TR, Res));
+      Analyze_And_Resolve (N, TR);
+   end Expand_Binary_Operator_Call;
 
    -----------------------------------------
    -- Expand_Dispatching_Constructor_Call --
@@ -171,11 +218,10 @@ package body Exp_Intr is
 
             Iface_Tag :=
               Make_Object_Declaration (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc, New_Internal_Name ('V')),
-                Object_Definition =>
+                Defining_Identifier => Make_Temporary (Loc, 'V'),
+                Object_Definition   =>
                   New_Reference_To (RTE (RE_Tag), Loc),
-                Expression =>
+                Expression          =>
                   Make_Function_Call (Loc,
                     Name => New_Reference_To (RTE (RE_Secondary_Tag), Loc),
                     Parameter_Associations => New_List (
@@ -325,7 +371,7 @@ package body Exp_Intr is
             --  be referencing it by normal visibility methods.
 
             if No (Choice_Parameter (P)) then
-               E := Make_Defining_Identifier (Loc, New_Internal_Name ('E'));
+               E := Make_Temporary (Loc, 'E');
                Set_Choice_Parameter (P, E);
                Set_Ekind (E, E_Variable);
                Set_Etype (E, RTE (RE_Exception_Occurrence));
@@ -362,11 +408,9 @@ package body Exp_Intr is
       Loc : constant Source_Ptr := Sloc (N);
       Ent : constant Entity_Id  := Entity (Name (N));
       Str : constant Node_Id    := First_Actual (N);
-      Dum : Entity_Id;
+      Dum : constant Entity_Id  := Make_Temporary (Loc, 'D');
 
    begin
-      Dum := Make_Defining_Identifier (Loc, New_Internal_Name ('D'));
-
       Insert_Actions (N, New_List (
         Make_Object_Declaration (Loc,
           Defining_Identifier => Dum,
@@ -489,6 +533,9 @@ package body Exp_Intr is
 
       elsif Present (Alias (E)) then
          Expand_Intrinsic_Call (N,  Alias (E));
+
+      elsif Nkind (N) in N_Binary_Op then
+         Expand_Binary_Operator_Call (N);
 
          --  The only other case is where an external name was specified,
          --  since this is the only way that an otherwise unrecognized
@@ -1025,13 +1072,11 @@ package body Exp_Intr is
                   D_Type := Entity (D_Subtyp);
 
                else
-                  D_Type := Make_Defining_Identifier (Loc,
-                              New_Internal_Name ('A'));
+                  D_Type := Make_Temporary (Loc, 'A');
                   Insert_Action (Deref,
                     Make_Subtype_Declaration (Loc,
                       Defining_Identifier => D_Type,
                       Subtype_Indication  => D_Subtyp));
-
                end if;
 
                --  Force freezing at the point of the dereference. For the

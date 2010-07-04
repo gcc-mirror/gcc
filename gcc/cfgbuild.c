@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "toplev.h"
 #include "timevar.h"
+#include "sbitmap.h"
 
 static void make_edges (basic_block, basic_block, int);
 static void make_label_edge (sbitmap, basic_block, rtx, int);
@@ -111,7 +112,7 @@ control_flow_insn_p (const_rtx insn)
       if (GET_CODE (PATTERN (insn)) == TRAP_IF
 	  && XEXP (PATTERN (insn), 0) == const1_rtx)
 	return true;
-      if (!flag_non_call_exceptions)
+      if (!cfun->can_throw_non_call_exceptions)
 	return false;
       break;
 
@@ -332,7 +333,7 @@ make_edges (basic_block min, basic_block max, int update_p)
 	 handler for this CALL_INSN.  If we're handling non-call
 	 exceptions then any insn can reach any of the active handlers.
 	 Also mark the CALL_INSN as reaching any nonlocal goto handler.  */
-      else if (code == CALL_INSN || flag_non_call_exceptions)
+      else if (code == CALL_INSN || cfun->can_throw_non_call_exceptions)
 	{
 	  /* Add any appropriate EH edges.  */
 	  rtl_make_eh_edge (edge_cache, bb, insn);

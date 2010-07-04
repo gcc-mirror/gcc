@@ -38,8 +38,8 @@ Boston, MA 02111-1307, USA.  */
 #include "tm.h"
 #include "function.h"
 #include "target.h"
-#include "c-common.h"
-#include "c-pragma.h"
+#include "c-family/c-common.h"
+#include "c-family/c-pragma.h"
 #include "upc-gasp.h"
 
 static tree build_string_ref (const char *string);

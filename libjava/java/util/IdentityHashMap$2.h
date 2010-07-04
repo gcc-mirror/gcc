@@ -14,12 +14,12 @@ class java::util::IdentityHashMap$2 : public ::java::util::AbstractSet
 public: // actually package-private
   IdentityHashMap$2(::java::util::IdentityHashMap *);
 public:
-  jint size();
-  ::java::util::Iterator * iterator();
-  void clear();
-  jboolean contains(::java::lang::Object *);
-  jint hashCode();
-  jboolean remove(::java::lang::Object *);
+  virtual jint size();
+  virtual ::java::util::Iterator * iterator();
+  virtual void clear();
+  virtual jboolean contains(::java::lang::Object *);
+  virtual jint hashCode();
+  virtual jboolean remove(::java::lang::Object *);
 public: // actually package-private
   ::java::util::IdentityHashMap * __attribute__((aligned(__alignof__( ::java::util::AbstractSet)))) this$0;
 public:

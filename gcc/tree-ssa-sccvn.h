@@ -204,4 +204,5 @@ unsigned int get_next_value_id (void);
 unsigned int get_constant_value_id (tree);
 unsigned int get_or_alloc_constant_value_id (tree);
 bool value_id_constant_p (unsigned int);
+tree fully_constant_vn_reference_p (vn_reference_t);
 #endif /* TREE_SSA_SCCVN_H  */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -312,8 +312,8 @@ package body Sem_Aux is
       Ent : Entity_Id;
 
    begin
-      --  If the base type has no freeze node, it is a type in Standard,
-      --  and always acts as its own first subtype unless it is one of the
+      --  If the base type has no freeze node, it is a type in Standard, and
+      --  always acts as its own first subtype, except where it is one of the
       --  predefined integer types. If the type is formal, it is also a first
       --  subtype, and its base type has no freeze node. On the other hand, a
       --  subtype of a generic formal is not its own first subtype. Its base
@@ -321,7 +321,6 @@ package body Sem_Aux is
       --  the first subtype is obtained.
 
       if No (F) then
-
          if B = Base_Type (Standard_Integer) then
             return Standard_Integer;
 
@@ -799,5 +798,21 @@ package body Sem_Aux is
    begin
       Obsolescent_Warnings.Tree_Write;
    end Tree_Write;
+
+   --------------------
+   -- Ultimate_Alias --
+   --------------------
+
+   function Ultimate_Alias (Prim : Entity_Id) return Entity_Id is
+      E : Entity_Id := Prim;
+
+   begin
+      while Present (Alias (E)) loop
+         pragma Assert (Alias (E) /= E);
+         E := Alias (E);
+      end loop;
+
+      return E;
+   end Ultimate_Alias;
 
 end Sem_Aux;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2560,10 +2560,10 @@ package body Layout is
 
             begin
                --  For some reasons, access types can cause trouble, So let's
-               --  just do this for discrete types ???
+               --  just do this for scalar types ???
 
                if Present (CT)
-                 and then Is_Discrete_Type (CT)
+                 and then Is_Scalar_Type (CT)
                  and then Known_Static_Esize (CT)
                then
                   declare
@@ -2736,8 +2736,7 @@ package body Layout is
       begin
          if Spec < Min then
             Error_Msg_Uint_1 := Min;
-            Error_Msg_NE
-              ("size for & too small, minimum allowed is ^", SC, E);
+            Error_Msg_NE ("size for & too small, minimum allowed is ^", SC, E);
             Init_Esize   (E);
             Init_RM_Size (E);
          end if;
@@ -3119,11 +3118,7 @@ package body Layout is
       Make_Func : Boolean   := False) return Dynamic_SO_Ref
    is
       Loc  : constant Source_Ptr := Sloc (Ins_Type);
-
-      K : constant Entity_Id :=
-            Make_Defining_Identifier (Loc,
-              Chars => New_Internal_Name ('K'));
-
+      K    : constant Entity_Id := Make_Temporary (Loc, 'K');
       Decl : Node_Id;
 
       Vtype_Primary_View : Entity_Id;

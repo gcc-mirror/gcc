@@ -25,7 +25,7 @@ class gnu::CORBA::OrbFunctional$1 : public ::java::lang::Thread
 public: // actually package-private
   OrbFunctional$1(::gnu::CORBA::OrbFunctional *, ::gnu::CORBA::OrbFunctional *);
 public:
-  void run();
+  virtual void run();
 public: // actually package-private
   ::gnu::CORBA::OrbFunctional * __attribute__((aligned(__alignof__( ::java::lang::Thread)))) this$0;
 private:

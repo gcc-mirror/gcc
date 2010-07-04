@@ -14,9 +14,9 @@ class java::util::TreeMap$5 : public ::java::lang::Object
 public: // actually package-private
   TreeMap$5(::java::util::TreeMap$DescendingSet *);
 public:
-  jboolean hasNext();
-  ::java::lang::Object * next();
-  void remove();
+  virtual jboolean hasNext();
+  virtual ::java::lang::Object * next();
+  virtual void remove();
 private:
   ::java::lang::Object * __attribute__((aligned(__alignof__( ::java::lang::Object)))) last;
   ::java::lang::Object * next__;

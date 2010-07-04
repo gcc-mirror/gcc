@@ -1,9 +1,9 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <ctype.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 #define FARRAY_SIZE 64
 
@@ -90,7 +91,7 @@ free_format_hash_table (gfc_unit *u)
       if (u->format_hash_table[i].hashed_fmt != NULL)
 	{
 	  free_format_data (u->format_hash_table[i].hashed_fmt);
-	  free_mem (u->format_hash_table[i].key);
+	  free (u->format_hash_table[i].key);
 	}
       u->format_hash_table[i].key = NULL;
       u->format_hash_table[i].key_len = 0;      
@@ -171,7 +172,7 @@ save_parsed_format (st_parameter_dt *dtp)
   u->format_hash_table[hash].hashed_fmt = NULL;
 
   if (u->format_hash_table[hash].key != NULL)
-    free_mem (u->format_hash_table[hash].key);
+    free (u->format_hash_table[hash].key);
   u->format_hash_table[hash].key = get_mem (dtp->format_len);
   memcpy (u->format_hash_table[hash].key, dtp->format, dtp->format_len);
 
@@ -282,10 +283,10 @@ free_format_data (format_data *fmt)
   for (fa = fmt->array.next; fa; fa = fa_next)
     {
       fa_next = fa->next;
-      free_mem (fa);
+      free (fa);
     }
 
-  free_mem (fmt);
+  free (fmt);
   fmt = NULL;
 }
 
@@ -863,7 +864,7 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok)
       t = format_lex (fmt);
       if (t != FMT_POSINT)
 	{
-	  if (notification_std(GFC_STD_GNU) == ERROR)
+	  if (notification_std(GFC_STD_GNU) == NOTIFICATION_ERROR)
 	    {
 	      fmt->error = posint_required;
 	      goto finished;
@@ -912,7 +913,7 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok)
       u = format_lex (fmt);
       if (t == FMT_G && u == FMT_ZERO)
 	{
-	  if (notification_std (GFC_STD_F2008) == ERROR
+	  if (notification_std (GFC_STD_F2008) == NOTIFICATION_ERROR
 	      || dtp->u.p.mode == READING)
 	    {
 	      fmt->error = zero_width;

@@ -1,5 +1,5 @@
 /* Discovery of auto-inc and auto-dec instructions.
-   Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -1068,6 +1068,13 @@ find_inc (bool first_try)
       /* For the post_add to work, the result_reg of the inc must not be
 	 used in the mem insn since this will become the new index
 	 register.  */
+      if (count_occurrences (PATTERN (mem_insn.insn), inc_insn.reg_res, 1) == 0
+	  && reg_overlap_mentioned_p (inc_insn.reg_res, PATTERN (mem_insn.insn)))
+	{
+	  debug_rtx (mem_insn.insn);
+	  debug_rtx (inc_insn.reg_res);
+	  gcc_unreachable ();
+	}
       if (count_occurrences (PATTERN (mem_insn.insn), inc_insn.reg_res, 1) != 0)
 	{
 	  if (dump_file)

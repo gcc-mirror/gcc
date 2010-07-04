@@ -1,6 +1,6 @@
 /* Specific flags and argument handling of the C++ front end.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2007, 2008, 2009 Free Software Foundation, Inc.
+   2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -258,7 +258,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
     }
 
   if (quote)
-    fatal ("argument to '%s' missing\n", quote);
+    fatal_error ("argument to %qs missing", quote);
 
   /* There's no point adding -shared-libgcc if we don't have a shared
      libgcc.  */

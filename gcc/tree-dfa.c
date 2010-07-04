@@ -1,5 +1,5 @@
 /* Data flow functions for trees.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
@@ -26,18 +26,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "pointer-set.h"
 #include "tree.h"
-#include "rtl.h"
 #include "tm_p.h"
-#include "hard-reg-set.h"
 #include "basic-block.h"
 #include "output.h"
 #include "timevar.h"
-#include "expr.h"
 #include "ggc.h"
 #include "langhooks.h"
 #include "flags.h"
 #include "function.h"
-#include "diagnostic.h"
+#include "tree-pretty-print.h"
 #include "tree-dump.h"
 #include "gimple.h"
 #include "tree-flow.h"
@@ -137,7 +134,7 @@ create_var_ann (tree t)
 	      || TREE_CODE (t) == PARM_DECL
 	      || TREE_CODE (t) == RESULT_DECL);
 
-  ann = GGC_CNEW (struct var_ann_d);
+  ann = ggc_alloc_cleared_var_ann_d ();
   *DECL_VAR_ANN_PTR (t) = ann;
 
   return ann;
@@ -193,11 +190,7 @@ renumber_gimple_stmt_uids_in_blocks (basic_block *blocks, int n_blocks)
 tree
 make_rename_temp (tree type, const char *prefix)
 {
-  tree t = create_tmp_var (type, prefix);
-
-  if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE
-      || TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
-    DECL_GIMPLE_REG_P (t) = 1;
+  tree t = create_tmp_reg (type, prefix);
 
   if (gimple_referenced_vars (cfun))
     {
@@ -237,7 +230,7 @@ dump_referenced_vars (FILE *file)
 
 /* Dump the list of all the referenced variables to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_referenced_vars (void)
 {
   dump_referenced_vars (stderr);
@@ -269,6 +262,8 @@ dump_variable (FILE *file, tree var)
   ann = var_ann (var);
 
   fprintf (file, ", UID D.%u", (unsigned) DECL_UID (var));
+  if (DECL_PT_UID (var) != DECL_UID (var))
+    fprintf (file, ", PT-UID D.%u", (unsigned) DECL_PT_UID (var));
 
   fprintf (file, ", ");
   print_generic_expr (file, TREE_TYPE (var), dump_flags);
@@ -281,11 +276,6 @@ dump_variable (FILE *file, tree var)
 
   if (TREE_THIS_VOLATILE (var))
     fprintf (file, ", is volatile");
-
-  if (is_call_clobbered (var))
-    fprintf (file, ", call clobbered");
-  else if (is_call_used (var))
-    fprintf (file, ", call used");
 
   if (ann && ann->noalias_state == NO_ALIAS)
     fprintf (file, ", NO_ALIAS (does not alias other NO_ALIAS symbols)");
@@ -313,7 +303,7 @@ dump_variable (FILE *file, tree var)
 
 /* Dump variable VAR and its may-aliases to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_variable (tree var)
 {
   dump_variable (stderr, var);
@@ -400,7 +390,7 @@ dump_dfa_stats (FILE *file)
 
 /* Dump DFA statistics on stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_dfa_stats (void)
 {
   dump_dfa_stats (stderr);

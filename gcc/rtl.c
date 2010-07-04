@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
-#include "real.h"
 #include "ggc.h"
 #ifdef GENERATOR_FILE
 # include "errors.h"
@@ -150,7 +149,7 @@ rtvec_alloc (int n)
 {
   rtvec rt;
 
-  rt = ggc_alloc_rtvec (n);
+  rt = ggc_alloc_rtvec_sized (n);
   /* Clear out the vector.  */
   memset (&rt->elem[0], 0, n * sizeof (rtx));
 
@@ -194,9 +193,8 @@ rtx_size (const_rtx x)
 rtx
 rtx_alloc_stat (RTX_CODE code MEM_STAT_DECL)
 {
-  rtx rt;
-
-  rt = (rtx) ggc_alloc_zone_pass_stat (RTX_CODE_SIZE (code), &rtl_zone);
+  rtx rt = ggc_alloc_zone_rtx_def_stat (&rtl_zone, RTX_CODE_SIZE (code)
+                                        PASS_MEM_STAT);
 
   /* We want to clear everything up to the FLD array.  Normally, this
      is one int, but we don't want to assume that and it isn't very
@@ -338,7 +336,7 @@ rtx
 shallow_copy_rtx_stat (const_rtx orig MEM_STAT_DECL)
 {
   const unsigned int size = rtx_size (orig);
-  rtx const copy = (rtx) ggc_alloc_zone_pass_stat (size, &rtl_zone);
+  rtx const copy = ggc_alloc_zone_rtx_def_stat (&rtl_zone, size PASS_MEM_STAT);
   return (rtx) memcpy (copy, orig, size);
 }
 

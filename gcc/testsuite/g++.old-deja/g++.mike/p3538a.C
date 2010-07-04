@@ -24,8 +24,8 @@ const ccObjectInfo& ccHandle<T>::repInvariant (int)
 class ccHandleBase : public ccObjectInfo
 {};
 
-class cc_CircleHdl : public virtual ccHandleBase, public ccObjectInfo
-{				// { dg-warning "" } 
+class cc_CircleHdl : public virtual ccHandleBase, public ccObjectInfo // { dg-warning "" } 
+{
 public:
   virtual const ccObjectInfo& ri (int);
 };

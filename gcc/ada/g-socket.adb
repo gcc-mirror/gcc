@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2009, AdaCore                     --
+--                     Copyright (C) 2001-2010, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,6 @@ with Interfaces.C.Strings;
 
 with GNAT.Sockets.Thin_Common;          use GNAT.Sockets.Thin_Common;
 with GNAT.Sockets.Thin;                 use GNAT.Sockets.Thin;
-with GNAT.Sockets.Thin.Task_Safe_NetDB; use GNAT.Sockets.Thin.Task_Safe_NetDB;
 
 with GNAT.Sockets.Linker_Options;
 pragma Warnings (Off, GNAT.Sockets.Linker_Options);
@@ -49,6 +48,7 @@ pragma Warnings (Off, GNAT.Sockets.Linker_Options);
 with System;               use System;
 with System.Communication; use System.Communication;
 with System.CRTL;          use System.CRTL;
+with System.Task_Lock;
 
 package body GNAT.Sockets is
 
@@ -59,6 +59,7 @@ package body GNAT.Sockets is
    ENOERROR : constant := 0;
 
    Netdb_Buffer_Size : constant := SOSC.Need_Netdb_Buffer * 1024;
+   Need_Netdb_Lock   : constant Boolean := SOSC.Need_Netdb_Lock /= 0;
    --  The network database functions gethostbyname, gethostbyaddr,
    --  getservbyname and getservbyport can either be guaranteed task safe by
    --  the operating system, or else return data through a user-provided buffer
@@ -155,17 +156,28 @@ package body GNAT.Sockets is
    function Is_IP_Address (Name : String) return Boolean;
    --  Return true when Name is an IP address in standard dot notation
 
+   procedure Netdb_Lock;
+   pragma Inline (Netdb_Lock);
+   procedure Netdb_Unlock;
+   pragma Inline (Netdb_Unlock);
+   --  Lock/unlock operation used to protect netdb access for platforms that
+   --  require such protection.
+
    function To_In_Addr (Addr : Inet_Addr_Type) return In_Addr;
    procedure To_Inet_Addr
      (Addr   : In_Addr;
       Result : out Inet_Addr_Type);
    --  Conversion functions
 
-   function To_Host_Entry (E : Hostent) return Host_Entry_Type;
+   function To_Host_Entry (E : Hostent_Access) return Host_Entry_Type;
    --  Conversion function
 
    function To_Service_Entry (E : Servent_Access) return Service_Entry_Type;
    --  Conversion function
+
+   function Value (S : System.Address) return String;
+   --  Same as Interfaces.C.Strings.Value but taking a System.Address (on VMS,
+   --  chars_ptr is a 32-bit pointer, and here we need a 64-bit version).
 
    function To_Timeval (Val : Timeval_Duration) return Timeval;
    --  Separate Val in seconds and microseconds
@@ -261,7 +273,8 @@ package body GNAT.Sockets is
 
    function Is_Open (S : Selector_Type) return Boolean;
    --  Return True for an "open" Selector_Type object, i.e. one for which
-   --  Create_Selector has been called and Close_Selector has not been called.
+   --  Create_Selector has been called and Close_Selector has not been called,
+   --  or the null selector.
 
    ---------
    -- "+" --
@@ -282,6 +295,10 @@ package body GNAT.Sockets is
    begin
       if not Is_Open (Selector) then
          raise Program_Error with "closed selector";
+
+      elsif Selector.Is_Null then
+         raise Program_Error with "null selector";
+
       end if;
 
       --  Send one byte to unblock select system call
@@ -453,7 +470,7 @@ package body GNAT.Sockets is
    --------------------
 
    procedure Check_Selector
-     (Selector     : in out Selector_Type;
+     (Selector     : Selector_Type;
       R_Socket_Set : in out Socket_Set_Type;
       W_Socket_Set : in out Socket_Set_Type;
       Status       : out Selector_Status;
@@ -470,7 +487,7 @@ package body GNAT.Sockets is
    --------------------
 
    procedure Check_Selector
-     (Selector     : in out Selector_Type;
+     (Selector     : Selector_Type;
       R_Socket_Set : in out Socket_Set_Type;
       W_Socket_Set : in out Socket_Set_Type;
       E_Socket_Set : in out Socket_Set_Type;
@@ -479,7 +496,7 @@ package body GNAT.Sockets is
    is
       Res  : C.int;
       Last : C.int;
-      RSig : constant Socket_Type := Selector.R_Sig_Socket;
+      RSig : Socket_Type := No_Socket;
       TVal : aliased Timeval;
       TPtr : Timeval_Access;
 
@@ -499,9 +516,12 @@ package body GNAT.Sockets is
          TPtr := TVal'Unchecked_Access;
       end if;
 
-      --  Add read signalling socket
+      --  Add read signalling socket, if present
 
-      Set (R_Socket_Set, RSig);
+      if not Selector.Is_Null then
+         RSig := Selector.R_Sig_Socket;
+         Set (R_Socket_Set, RSig);
+      end if;
 
       Last := C.int'Max (C.int'Max (C.int (R_Socket_Set.Last),
                                     C.int (W_Socket_Set.Last)),
@@ -528,7 +548,7 @@ package body GNAT.Sockets is
       --  If Select was resumed because of read signalling socket, read this
       --  data and remove socket from set.
 
-      if Is_Set (R_Socket_Set, RSig) then
+      if RSig /= No_Socket and then Is_Set (R_Socket_Set, RSig) then
          Clear (R_Socket_Set, RSig);
 
          Res := Signalling_Fds.Read (C.int (RSig));
@@ -573,10 +593,9 @@ package body GNAT.Sockets is
 
    procedure Close_Selector (Selector : in out Selector_Type) is
    begin
-      if not Is_Open (Selector) then
+      --  Nothing to do if selector already in closed state
 
-         --  Selector already in closed state: nothing to do
-
+      if Selector.Is_Null or else not Is_Open (Selector) then
          return;
       end if;
 
@@ -891,13 +910,20 @@ package body GNAT.Sockets is
       Err    : aliased C.int;
 
    begin
-      if Safe_Gethostbyaddr (HA'Address, HA'Size / 8, SOSC.AF_INET,
+      Netdb_Lock;
+
+      if C_Gethostbyaddr (HA'Address, HA'Size / 8, SOSC.AF_INET,
                              Res'Access, Buf'Address, Buflen, Err'Access) /= 0
       then
+         Netdb_Unlock;
          Raise_Host_Error (Integer (Err));
       end if;
 
-      return To_Host_Entry (Res);
+      return H : constant Host_Entry_Type :=
+                   To_Host_Entry (Res'Unchecked_Access)
+      do
+         Netdb_Unlock;
+      end return;
    end Get_Host_By_Address;
 
    ----------------------
@@ -920,13 +946,20 @@ package body GNAT.Sockets is
          Err    : aliased C.int;
 
       begin
-         if Safe_Gethostbyname
+         Netdb_Lock;
+
+         if C_Gethostbyname
            (HN, Res'Access, Buf'Address, Buflen, Err'Access) /= 0
          then
+            Netdb_Unlock;
             Raise_Host_Error (Integer (Err));
          end if;
 
-         return To_Host_Entry (Res);
+         return H : constant Host_Entry_Type :=
+                      To_Host_Entry (Res'Unchecked_Access)
+         do
+            Netdb_Unlock;
+         end return;
       end;
    end Get_Host_By_Name;
 
@@ -965,13 +998,20 @@ package body GNAT.Sockets is
       Res    : aliased Servent;
 
    begin
-      if Safe_Getservbyname (SN, SP, Res'Access, Buf'Address, Buflen) /= 0 then
+      Netdb_Lock;
+
+      if C_Getservbyname (SN, SP, Res'Access, Buf'Address, Buflen) /= 0 then
+         Netdb_Unlock;
          raise Service_Error with "Service not found";
       end if;
 
       --  Translate from the C format to the API format
 
-      return To_Service_Entry (Res'Unchecked_Access);
+      return S : constant Service_Entry_Type :=
+                   To_Service_Entry (Res'Unchecked_Access)
+      do
+         Netdb_Unlock;
+      end return;
    end Get_Service_By_Name;
 
    -------------------------
@@ -988,16 +1028,23 @@ package body GNAT.Sockets is
       Res    : aliased Servent;
 
    begin
-      if Safe_Getservbyport
+      Netdb_Lock;
+
+      if C_Getservbyport
         (C.int (Short_To_Network (C.unsigned_short (Port))), SP,
          Res'Access, Buf'Address, Buflen) /= 0
       then
+         Netdb_Unlock;
          raise Service_Error with "Service not found";
       end if;
 
       --  Translate from the C format to the API format
 
-      return To_Service_Entry (Res'Unchecked_Access);
+      return S : constant Service_Entry_Type :=
+                   To_Service_Entry (Res'Unchecked_Access)
+      do
+         Netdb_Unlock;
+      end return;
    end Get_Service_By_Port;
 
    ---------------------
@@ -1282,7 +1329,6 @@ package body GNAT.Sockets is
       use Interfaces.C.Strings;
 
       Img    : aliased char_array := To_C (Image);
-      Cp     : constant chars_ptr := To_Chars_Ptr (Img'Unchecked_Access);
       Addr   : aliased C.int;
       Res    : C.int;
       Result : Inet_Addr_Type;
@@ -1295,7 +1341,7 @@ package body GNAT.Sockets is
          Raise_Socket_Error (SOSC.EINVAL);
       end if;
 
-      Res := Inet_Pton (SOSC.AF_INET, Cp, Addr'Address);
+      Res := Inet_Pton (SOSC.AF_INET, Img'Address, Addr'Address);
 
       if Res < 0 then
          Raise_Socket_Error (Socket_Errno);
@@ -1386,14 +1432,19 @@ package body GNAT.Sockets is
 
    function Is_Open (S : Selector_Type) return Boolean is
    begin
-      --  Either both controlling socket descriptors are valid (case of an
-      --  open selector) or neither (case of a closed selector).
+      if S.Is_Null then
+         return True;
 
-      pragma Assert ((S.R_Sig_Socket /= No_Socket)
-                       =
-                     (S.W_Sig_Socket /= No_Socket));
+      else
+         --  Either both controlling socket descriptors are valid (case of an
+         --  open selector) or neither (case of a closed selector).
 
-      return S.R_Sig_Socket /= No_Socket;
+         pragma Assert ((S.R_Sig_Socket /= No_Socket)
+                          =
+                        (S.W_Sig_Socket /= No_Socket));
+
+         return S.R_Sig_Socket /= No_Socket;
+      end if;
    end Is_Open;
 
    ------------
@@ -1437,6 +1488,28 @@ package body GNAT.Sockets is
          Item.Last := Socket_Type (Last);
       end if;
    end Narrow;
+
+   ----------------
+   -- Netdb_Lock --
+   ----------------
+
+   procedure Netdb_Lock is
+   begin
+      if Need_Netdb_Lock then
+         System.Task_Lock.Lock;
+      end if;
+   end Netdb_Lock;
+
+   ------------------
+   -- Netdb_Unlock --
+   ------------------
+
+   procedure Netdb_Unlock is
+   begin
+      if Need_Netdb_Lock then
+         System.Task_Lock.Unlock;
+      end if;
+   end Netdb_Unlock;
 
    --------------------------------
    -- Normalize_Empty_Socket_Set --
@@ -1750,53 +1823,93 @@ package body GNAT.Sockets is
 
       pragma Warnings (On);
 
-      case Error_Value is
-         when ENOERROR        => return Success;
-         when EACCES          => return Permission_Denied;
-         when EADDRINUSE      => return Address_Already_In_Use;
-         when EADDRNOTAVAIL   => return Cannot_Assign_Requested_Address;
-         when EAFNOSUPPORT    => return
-                                 Address_Family_Not_Supported_By_Protocol;
-         when EALREADY        => return Operation_Already_In_Progress;
-         when EBADF           => return Bad_File_Descriptor;
-         when ECONNABORTED    => return Software_Caused_Connection_Abort;
-         when ECONNREFUSED    => return Connection_Refused;
-         when ECONNRESET      => return Connection_Reset_By_Peer;
-         when EDESTADDRREQ    => return Destination_Address_Required;
-         when EFAULT          => return Bad_Address;
-         when EHOSTDOWN       => return Host_Is_Down;
-         when EHOSTUNREACH    => return No_Route_To_Host;
-         when EINPROGRESS     => return Operation_Now_In_Progress;
-         when EINTR           => return Interrupted_System_Call;
-         when EINVAL          => return Invalid_Argument;
-         when EIO             => return Input_Output_Error;
-         when EISCONN         => return Transport_Endpoint_Already_Connected;
-         when ELOOP           => return Too_Many_Symbolic_Links;
-         when EMFILE          => return Too_Many_Open_Files;
-         when EMSGSIZE        => return Message_Too_Long;
-         when ENAMETOOLONG    => return File_Name_Too_Long;
-         when ENETDOWN        => return Network_Is_Down;
-         when ENETRESET       => return
-                                 Network_Dropped_Connection_Because_Of_Reset;
-         when ENETUNREACH     => return Network_Is_Unreachable;
-         when ENOBUFS         => return No_Buffer_Space_Available;
-         when ENOPROTOOPT     => return Protocol_Not_Available;
-         when ENOTCONN        => return Transport_Endpoint_Not_Connected;
-         when ENOTSOCK        => return Socket_Operation_On_Non_Socket;
-         when EOPNOTSUPP      => return Operation_Not_Supported;
-         when EPFNOSUPPORT    => return Protocol_Family_Not_Supported;
-         when EPIPE           => return Broken_Pipe;
-         when EPROTONOSUPPORT => return Protocol_Not_Supported;
-         when EPROTOTYPE      => return Protocol_Wrong_Type_For_Socket;
-         when ESHUTDOWN       => return
-                                 Cannot_Send_After_Transport_Endpoint_Shutdown;
-         when ESOCKTNOSUPPORT => return Socket_Type_Not_Supported;
-         when ETIMEDOUT       => return Connection_Timed_Out;
-         when ETOOMANYREFS    => return Too_Many_References;
-         when EWOULDBLOCK     => return Resource_Temporarily_Unavailable;
-
-         when others          => return Cannot_Resolve_Error;
-      end case;
+      --  This is not a case statement because if a particular error
+      --  number constant is not defined, s-oscons-tmplt.c defines
+      --  it to -1.  If multiple constants are not defined, they
+      --  would each be -1 and result in a "duplicate value in case" error.
+      if Error_Value = ENOERROR then
+         return Success;
+      elsif Error_Value = EACCES then
+         return Permission_Denied;
+      elsif Error_Value = EADDRINUSE then
+         return Address_Already_In_Use;
+      elsif Error_Value = EADDRNOTAVAIL then
+         return Cannot_Assign_Requested_Address;
+      elsif Error_Value = EAFNOSUPPORT then
+         return Address_Family_Not_Supported_By_Protocol;
+      elsif Error_Value = EALREADY then
+         return Operation_Already_In_Progress;
+      elsif Error_Value = EBADF then
+         return Bad_File_Descriptor;
+      elsif Error_Value = ECONNABORTED then
+         return Software_Caused_Connection_Abort;
+      elsif Error_Value = ECONNREFUSED then
+         return Connection_Refused;
+      elsif Error_Value = ECONNRESET then
+         return Connection_Reset_By_Peer;
+      elsif Error_Value = EDESTADDRREQ then
+         return Destination_Address_Required;
+      elsif Error_Value = EFAULT then
+         return Bad_Address;
+      elsif Error_Value = EHOSTDOWN then
+         return Host_Is_Down;
+      elsif Error_Value = EHOSTUNREACH then
+         return No_Route_To_Host;
+      elsif Error_Value = EINPROGRESS then
+         return Operation_Now_In_Progress;
+      elsif Error_Value = EINTR then
+         return Interrupted_System_Call;
+      elsif Error_Value = EINVAL then
+         return Invalid_Argument;
+      elsif Error_Value = EIO then
+         return Input_Output_Error;
+      elsif Error_Value = EISCONN then
+         return Transport_Endpoint_Already_Connected;
+      elsif Error_Value = ELOOP then
+         return Too_Many_Symbolic_Links;
+      elsif Error_Value = EMFILE then
+         return Too_Many_Open_Files;
+      elsif Error_Value = EMSGSIZE then
+         return Message_Too_Long;
+      elsif Error_Value = ENAMETOOLONG then
+         return File_Name_Too_Long;
+      elsif Error_Value = ENETDOWN then
+         return Network_Is_Down;
+      elsif Error_Value = ENETRESET then
+         return Network_Dropped_Connection_Because_Of_Reset;
+      elsif Error_Value = ENETUNREACH then
+         return Network_Is_Unreachable;
+      elsif Error_Value = ENOBUFS then
+         return No_Buffer_Space_Available;
+      elsif Error_Value = ENOPROTOOPT then
+         return Protocol_Not_Available;
+      elsif Error_Value = ENOTCONN then
+         return Transport_Endpoint_Not_Connected;
+      elsif Error_Value = ENOTSOCK then
+         return Socket_Operation_On_Non_Socket;
+      elsif Error_Value = EOPNOTSUPP then
+         return Operation_Not_Supported;
+      elsif Error_Value = EPFNOSUPPORT then
+         return Protocol_Family_Not_Supported;
+      elsif Error_Value = EPIPE then
+         return Broken_Pipe;
+      elsif Error_Value = EPROTONOSUPPORT then
+         return Protocol_Not_Supported;
+      elsif Error_Value = EPROTOTYPE then
+         return Protocol_Wrong_Type_For_Socket;
+      elsif Error_Value = ESHUTDOWN then
+         return Cannot_Send_After_Transport_Endpoint_Shutdown;
+      elsif Error_Value = ESOCKTNOSUPPORT then
+         return Socket_Type_Not_Supported;
+      elsif Error_Value = ETIMEDOUT then
+         return Connection_Timed_Out;
+      elsif Error_Value = ETOOMANYREFS then
+         return Too_Many_References;
+      elsif Error_Value = EWOULDBLOCK then
+         return Resource_Temporarily_Unavailable;
+      else
+         return Cannot_Resolve_Error;
+      end if;
    end Resolve_Error;
 
    -----------------------
@@ -2233,54 +2346,49 @@ package body GNAT.Sockets is
    -- To_Host_Entry --
    -------------------
 
-   function To_Host_Entry (E : Hostent) return Host_Entry_Type is
+   function To_Host_Entry (E : Hostent_Access) return Host_Entry_Type is
       use type C.size_t;
+      use C.Strings;
 
-      Official : constant String :=
-                  C.Strings.Value (E.H_Name);
+      Aliases_Count, Addresses_Count : Natural;
 
-      Aliases : constant Chars_Ptr_Array :=
-                  Chars_Ptr_Pointers.Value (E.H_Aliases);
-      --  H_Aliases points to a list of name aliases. The list is terminated by
-      --  a NULL pointer.
-
-      Addresses : constant In_Addr_Access_Array :=
-                    In_Addr_Access_Pointers.Value (E.H_Addr_List);
-      --  H_Addr_List points to a list of binary addresses (in network byte
-      --  order). The list is terminated by a NULL pointer.
-      --
-      --  H_Length is not used because it is currently only set to 4.
+      --  H_Length is not used because it is currently only set to 4
       --  H_Addrtype is always AF_INET
 
-      Result : Host_Entry_Type
-                 (Aliases_Length   => Aliases'Length - 1,
-                  Addresses_Length => Addresses'Length - 1);
-      --  The last element is a null pointer
-
-      Source : C.size_t;
-      Target : Natural;
-
    begin
-      Result.Official := To_Name (Official);
-
-      Source := Aliases'First;
-      Target := Result.Aliases'First;
-      while Target <= Result.Aliases_Length loop
-         Result.Aliases (Target) :=
-           To_Name (C.Strings.Value (Aliases (Source)));
-         Source := Source + 1;
-         Target := Target + 1;
+      Aliases_Count := 0;
+      while Hostent_H_Alias (E, C.int (Aliases_Count)) /= Null_Address loop
+         Aliases_Count := Aliases_Count + 1;
       end loop;
 
-      Source := Addresses'First;
-      Target := Result.Addresses'First;
-      while Target <= Result.Addresses_Length loop
-         To_Inet_Addr (Addresses (Source).all, Result.Addresses (Target));
-         Source := Source + 1;
-         Target := Target + 1;
+      Addresses_Count := 0;
+      while Hostent_H_Addr (E, C.int (Addresses_Count)) /= Null_Address loop
+         Addresses_Count := Addresses_Count + 1;
       end loop;
 
-      return Result;
+      return Result : Host_Entry_Type
+                        (Aliases_Length   => Aliases_Count,
+                         Addresses_Length => Addresses_Count)
+      do
+         Result.Official := To_Name (Value (Hostent_H_Name (E)));
+
+         for J in Result.Aliases'Range loop
+            Result.Aliases (J) :=
+              To_Name (Value (Hostent_H_Alias
+                                (E, C.int (J - Result.Aliases'First))));
+         end loop;
+
+         for J in Result.Addresses'Range loop
+            declare
+               Addr : In_Addr;
+               for Addr'Address use
+                 Hostent_H_Addr (E, C.int (J - Result.Addresses'First));
+               pragma Import (Ada, Addr);
+            begin
+               To_Inet_Addr (Addr, Result.Addresses (J));
+            end;
+         end loop;
+      end return;
    end To_Host_Entry;
 
    ----------------
@@ -2354,40 +2462,30 @@ package body GNAT.Sockets is
    ----------------------
 
    function To_Service_Entry (E : Servent_Access) return Service_Entry_Type is
+      use C.Strings;
       use type C.size_t;
 
-      Official : constant String := C.Strings.Value (Servent_S_Name (E));
-
-      Aliases : constant Chars_Ptr_Array :=
-                  Chars_Ptr_Pointers.Value (Servent_S_Aliases (E));
-      --  S_Aliases points to a list of name aliases. The list is
-      --  terminated by a NULL pointer.
-
-      Protocol : constant String := C.Strings.Value (Servent_S_Proto (E));
-
-      Result : Service_Entry_Type (Aliases_Length => Aliases'Length - 1);
-      --  The last element is a null pointer
-
-      Source : C.size_t;
-      Target : Natural;
+      Aliases_Count : Natural;
 
    begin
-      Result.Official := To_Name (Official);
-
-      Source := Aliases'First;
-      Target := Result.Aliases'First;
-      while Target <= Result.Aliases_Length loop
-         Result.Aliases (Target) :=
-           To_Name (C.Strings.Value (Aliases (Source)));
-         Source := Source + 1;
-         Target := Target + 1;
+      Aliases_Count := 0;
+      while Servent_S_Alias (E, C.int (Aliases_Count)) /= Null_Address loop
+         Aliases_Count := Aliases_Count + 1;
       end loop;
 
-      Result.Port :=
-        Port_Type (Network_To_Short (C.unsigned_short (Servent_S_Port (E))));
+      return Result : Service_Entry_Type (Aliases_Length   => Aliases_Count) do
+         Result.Official := To_Name (Value (Servent_S_Name (E)));
 
-      Result.Protocol := To_Name (Protocol);
-      return Result;
+         for J in Result.Aliases'Range loop
+            Result.Aliases (J) :=
+              To_Name (Value (Servent_S_Alias
+                                (E, C.int (J - Result.Aliases'First))));
+         end loop;
+
+         Result.Protocol := To_Name (Value (Servent_S_Proto (E)));
+         Result.Port :=
+           Port_Type (Network_To_Short (Servent_S_Port (E)));
+      end return;
    end To_Service_Entry;
 
    ---------------
@@ -2423,6 +2521,25 @@ package body GNAT.Sockets is
 
       return (S, uS);
    end To_Timeval;
+
+   -----------
+   -- Value --
+   -----------
+
+   function Value (S : System.Address) return String is
+      Str : String (1 .. Positive'Last);
+      for Str'Address use S;
+      pragma Import (Ada, Str);
+
+      Terminator : Positive := Str'First;
+
+   begin
+      while Str (Terminator) /= ASCII.NUL loop
+         Terminator := Terminator + 1;
+      end loop;
+
+      return Str (1 .. Terminator - 1);
+   end Value;
 
    -----------
    -- Write --

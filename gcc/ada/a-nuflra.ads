@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -33,17 +33,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Note: the implementation used in this package was contributed by
---  Robert Eachus. It is based on the work of L. Blum, M. Blum, and
---  M. Shub, SIAM Journal of Computing, Vol 15. No 2, May 1986. The
---  particular choices for P and Q chosen here guarantee a period of
---  562,085,314,430,582 (about 2**49), and the generated sequence has
---  excellent randomness properties. For further details, see the
---  paper "Fast Generation of Trustworthy Random Numbers", by Robert
---  Eachus, which describes both the algorithm and the efficient
---  implementation approach used here.
+--  Note: the implementation used in this package is a version of the
+--  Mersenne Twister. See s-rannum.adb for details and references.
 
-with Interfaces;
+with System.Random_Numbers;
 
 package Ada.Numerics.Float_Random is
 
@@ -65,35 +58,15 @@ package Ada.Numerics.Float_Random is
    procedure Save  (Gen : Generator; To_State   : out State);
    procedure Reset (Gen : Generator; From_State : State);
 
-   Max_Image_Width : constant := 80;
+   Max_Image_Width : constant := System.Random_Numbers.Max_Image_Width;
 
    function Image (Of_State    : State)  return String;
    function Value (Coded_State : String) return State;
 
 private
-   type Int is new Interfaces.Integer_32;
 
-   --  We prefer to use 14 digits for Flt, but some targets are more limited
+   type Generator is new System.Random_Numbers.Generator;
 
-   type Flt is digits Positive'Min (14, Long_Long_Float'Digits);
-
-   K1   : constant := 94_833_359;
-   K1F  : constant := 94_833_359.0;
-   K2   : constant := 47_416_679;
-   K2F  : constant := 47_416_679.0;
-   Scal : constant := 1.0 / (K1F * K2F);
-
-   type State is record
-      X1  : Int := 2999 ** 2;      --  Square mod p
-      X2  : Int := 1439 ** 2;      --  Square mod q
-      P   : Int := K1;
-      Q   : Int := K2;
-      X   : Int := 1;
-      Scl : Flt := Scal;
-   end record;
-
-   type Generator is limited record
-      Gen_State : State;
-   end record;
+   type State is new System.Random_Numbers.State;
 
 end Ada.Numerics.Float_Random;

@@ -14,7 +14,7 @@ class java::util::concurrent::Executors$4 : public ::java::lang::Object
 public: // actually package-private
   Executors$4(::java::util::concurrent::Executors$3 *, ::java::lang::Runnable *);
 public:
-  ::java::lang::Object * run();
+  virtual ::java::lang::Object * run();
 public: // actually package-private
   ::java::util::concurrent::Executors$3 * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$2;
 private:

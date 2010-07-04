@@ -1,3 +1,72 @@
+2010-06-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* libgomp.texi: Move to GFDL version 1.3.  Update copyright years.
+
+2010-06-09  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR bootstrap/43170
+	* configure: Regenerate.
+
+2010-05-04  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/43620
+	* configure.ac (AM_INIT_AUTOMAKE): Add no-dist.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2010-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/43893
+	* testsuite/libgomp.c/pr43893.c: New test.
+	* testsuite/libgomp.c++/pr43893.C: New test.
+
+2010-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/43570
+	* testsuite/libgomp.fortran/vla8.f90: New test.
+
+2010-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/43706
+	* config/linux/affinity.c (gomp_init_affinity): Decrease
+	gomp_available_cpus if affinity mask confines the process to fewer
+	CPUs.
+	* config/linux/proc.c (get_num_procs): If gomp_cpu_affinity is
+	non-NULL, just return gomp_available_cpus.
+
+	PR libgomp/43569
+	* sections.c (gomp_sections_init): Initialize ws->mode.
+
+2010-04-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* acinclude.m4 (LIBGOMP_CHECK_SYNC_BUILTINS): Remove set but
+	not unused bar variable.
+	* configure: Regenerate.
+
+2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2010-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/42942
+	* env.c (parse_unsigned_long): Add ALLOW_ZERO argument.
+	(initialize_env): Adjust callers.
+	(omp_set_max_active_levels): Set gomp_max_active_levels_var even
+	when the argument is 0.
+
+	* testsuite/libgomp.c/pr42942.c: New test.
+
+2010-03-08  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	PR middle-end/42644
+	PR middle-end/42130
+	* testsuite/libgomp.graphite/force-parallel-1.c: Adjust.
+	* testsuite/libgomp.graphite/force-parallel-2.c: Adjust.
+
 2010-01-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/libgomp.c++/task-1.C: Renamed err to e.

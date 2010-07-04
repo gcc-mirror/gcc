@@ -13,3 +13,4 @@ SUBROUTINE VOLCALC()
     IF ( WETSCIM ) HRVALD(ITYP) = 0.0
  ENDDO
 END SUBROUTINE VOLCALC
+! { dg-final { cleanup-modules "main1" } }

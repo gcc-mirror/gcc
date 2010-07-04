@@ -434,7 +434,7 @@ namespace __gnu_parallel
 		(::operator new(__size * sizeof(_ValueType)));
 	    }
 	  else
-	    __sd._M_samples = NULL;
+	    __sd._M_samples = 0;
 
 	  __sd._M_offsets = new _DifferenceType[__num_threads - 1];
 	  __sd._M_pieces

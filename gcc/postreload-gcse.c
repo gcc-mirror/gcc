@@ -1,5 +1,5 @@
 /* Post reload partially redundant load elimination
-   Copyright (C) 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "flags.h"
-#include "real.h"
 #include "insn-config.h"
 #include "recog.h"
 #include "basic-block.h"
@@ -1201,7 +1200,7 @@ eliminate_partially_redundant_loads (void)
 		  /* Are the operands unchanged since the start of the
 		     block?  */
 		  && oprs_unchanged_p (src, insn, false)
-		  && !(flag_non_call_exceptions && may_trap_p (src))
+		  && !(cfun->can_throw_non_call_exceptions && may_trap_p (src))
 		  && !side_effects_p (src)
 		  /* Is the expression recorded?  */
 		  && (expr = lookup_expr_in_table (src)) != NULL)

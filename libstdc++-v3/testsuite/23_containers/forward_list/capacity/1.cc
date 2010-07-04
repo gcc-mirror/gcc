@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,8 +39,7 @@ test01()
   VERIFY(fld.empty() == true);
 
   VERIFY( (fld.max_size()
-	   == std::allocator<std::_Fwd_list_node<double,
-	                     std::allocator<double> > >().max_size()) );
+	   == std::allocator<std::_Fwd_list_node<double> >().max_size()) );
 }
 
 int

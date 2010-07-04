@@ -1,6 +1,6 @@
 // { dg-require-namedlocale "" }
 
-// Copyright (C) 2006, 2009 Free Software Foundation
+// Copyright (C) 2006, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,7 +36,7 @@ void test01()
 	  "LC_PAPER=C;LC_NAME=C;LC_ADDRESS=C;LC_TELEPHONE=C;"
 	  "LC_MEASUREMENT=C;LC_IDENTIFICATION=C" );
 
-  VERIFY( locale().name() == setlocale(LC_ALL, NULL) );
+  VERIFY( locale().name() == setlocale(LC_ALL, 0) );
 
   locale loc1 = locale(locale::classic(), "en_US.UTF-8", locale::time);
 

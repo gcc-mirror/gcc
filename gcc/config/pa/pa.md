@@ -1,6 +1,7 @@
 ;;- Machine description for HP PA-RISC architecture for GCC compiler
 ;;   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-;;   2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+;;   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010
+;;   Free Software Foundation, Inc.
 ;;   Contributed by the Center for Software Science at the University
 ;;   of Utah.
 
@@ -3097,7 +3098,7 @@
 
   size = INTVAL (operands[2]);
   align = INTVAL (operands[3]);
-  align = align > 4 ? 4 : align;
+  align = align > 4 ? 4 : (align ? align : 1);
 
   /* If size/alignment is large, then use the library routines.  */
   if (size / align > 16)
@@ -3285,7 +3286,7 @@
 
   size = INTVAL (operands[2]);
   align = INTVAL (operands[3]);
-  align = align > 8 ? 8 : align;
+  align = align > 8 ? 8 : (align ? align : 1);
 
   /* If size/alignment is large, then use the library routines.  */
   if (size / align > 16)
@@ -5975,27 +5976,41 @@
 ;; Processors prior to PA 2.0 don't have a fneg instruction.  Fast
 ;; negation can be done by subtracting from plus zero.  However, this
 ;; violates the IEEE standard when negating plus and minus zero.
+;; The slow path toggles the sign bit in the general registers.
 (define_expand "negdf2"
-  [(parallel [(set (match_operand:DF 0 "register_operand" "")
-		   (neg:DF (match_operand:DF 1 "register_operand" "")))
-	      (use (match_dup 2))])]
-  "! TARGET_SOFT_FLOAT"
+  [(set (match_operand:DF 0 "register_operand" "")
+	(neg:DF (match_operand:DF 1 "register_operand" "")))]
+  "!TARGET_SOFT_FLOAT"
 {
   if (TARGET_PA_20 || flag_unsafe_math_optimizations)
     emit_insn (gen_negdf2_fast (operands[0], operands[1]));
   else
-    {
-      operands[2] = force_reg (DFmode,
-	CONST_DOUBLE_FROM_REAL_VALUE (dconstm1, DFmode));
-      emit_insn (gen_muldf3 (operands[0], operands[1], operands[2]));
-    }
+    emit_insn (gen_negdf2_slow (operands[0], operands[1]));
   DONE;
 })
+
+(define_insn "negdf2_slow"
+  [(set (match_operand:DF 0 "register_operand" "=r")
+	(neg:DF (match_operand:DF 1 "register_operand" "r")))]
+  "!TARGET_SOFT_FLOAT && !TARGET_PA_20"
+  "*
+{
+  if (rtx_equal_p (operands[0], operands[1]))
+    return \"and,< %1,%1,%0\;depi,tr 1,0,1,%0\;depi 0,0,1,%0\";
+  else
+    return \"and,< %1,%1,%0\;depi,tr 1,0,1,%0\;depi 0,0,1,%0\;copy %R1,%R0\";
+}"
+  [(set_attr "type" "multi")
+   (set (attr "length")
+	(if_then_else (ne (symbol_ref "rtx_equal_p (operands[0], operands[1])")
+			  (const_int 0))
+	    (const_int 12)
+	    (const_int 16)))])
 
 (define_insn "negdf2_fast"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(neg:DF (match_operand:DF 1 "register_operand" "f")))]
-  "! TARGET_SOFT_FLOAT && (TARGET_PA_20 || flag_unsafe_math_optimizations)"
+  "!TARGET_SOFT_FLOAT"
   "*
 {
   if (TARGET_PA_20)
@@ -6007,26 +6022,29 @@
    (set_attr "length" "4")])
 
 (define_expand "negsf2"
-  [(parallel [(set (match_operand:SF 0 "register_operand" "")
-		   (neg:SF (match_operand:SF 1 "register_operand" "")))
-	      (use (match_dup 2))])]
-  "! TARGET_SOFT_FLOAT"
+  [(set (match_operand:SF 0 "register_operand" "")
+	(neg:SF (match_operand:SF 1 "register_operand" "")))]
+  "!TARGET_SOFT_FLOAT"
 {
   if (TARGET_PA_20 || flag_unsafe_math_optimizations)
     emit_insn (gen_negsf2_fast (operands[0], operands[1]));
   else
-    {
-      operands[2] = force_reg (SFmode,
-	CONST_DOUBLE_FROM_REAL_VALUE (dconstm1, SFmode));
-      emit_insn (gen_mulsf3 (operands[0], operands[1], operands[2]));
-    }
+    emit_insn (gen_negsf2_slow (operands[0], operands[1]));
   DONE;
 })
+
+(define_insn "negsf2_slow"
+  [(set (match_operand:SF 0 "register_operand" "=r")
+	(neg:SF (match_operand:SF 1 "register_operand" "r")))]
+  "!TARGET_SOFT_FLOAT && !TARGET_PA_20"
+  "and,< %1,%1,%0\;depi,tr 1,0,1,%0\;depi 0,0,1,%0"
+  [(set_attr "type" "multi")
+   (set_attr "length" "12")])
 
 (define_insn "negsf2_fast"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(neg:SF (match_operand:SF 1 "register_operand" "f")))]
-  "! TARGET_SOFT_FLOAT && (TARGET_PA_20 || flag_unsafe_math_optimizations)"
+  "!TARGET_SOFT_FLOAT"
   "*
 {
   if (TARGET_PA_20)
@@ -7231,7 +7249,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   ""
   "
 {
-  rtx op, call_insn;
+  rtx op;
   rtx nb = operands[1];
 
   if (TARGET_PORTABLE_RUNTIME)
@@ -7296,11 +7314,11 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
     {
       rtx r4 = gen_rtx_REG (word_mode, 4);
       if (GET_CODE (op) == SYMBOL_REF)
-	call_insn = emit_call_insn (gen_call_symref_64bit (op, nb, r4));
+	emit_call_insn (gen_call_symref_64bit (op, nb, r4));
       else
 	{
 	  op = force_reg (word_mode, op);
-	  call_insn = emit_call_insn (gen_call_reg_64bit (op, nb, r4));
+	  emit_call_insn (gen_call_reg_64bit (op, nb, r4));
 	}
     }
   else
@@ -7310,10 +7328,10 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	  if (flag_pic)
 	    {
 	      rtx r4 = gen_rtx_REG (word_mode, 4);
-	      call_insn = emit_call_insn (gen_call_symref_pic (op, nb, r4));
+	      emit_call_insn (gen_call_symref_pic (op, nb, r4));
 	    }
 	  else
-	    call_insn = emit_call_insn (gen_call_symref (op, nb));
+	    emit_call_insn (gen_call_symref (op, nb));
 	}
       else
 	{
@@ -7322,10 +7340,10 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	  if (flag_pic)
 	    {
 	      rtx r4 = gen_rtx_REG (word_mode, 4);
-	      call_insn = emit_call_insn (gen_call_reg_pic (nb, r4));
+	      emit_call_insn (gen_call_reg_pic (nb, r4));
 	    }
 	  else
-	    call_insn = emit_call_insn (gen_call_reg (nb));
+	    emit_call_insn (gen_call_reg (nb));
 	}
     }
 
@@ -7723,7 +7741,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   ""
   "
 {
-  rtx op, call_insn;
+  rtx op;
   rtx dst = operands[0];
   rtx nb = operands[2];
 
@@ -7789,13 +7807,11 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
     {
       rtx r4 = gen_rtx_REG (word_mode, 4);
       if (GET_CODE (op) == SYMBOL_REF)
-	call_insn
-	  = emit_call_insn (gen_call_val_symref_64bit (dst, op, nb, r4));
+	  emit_call_insn (gen_call_val_symref_64bit (dst, op, nb, r4));
       else
 	{
 	  op = force_reg (word_mode, op);
-	  call_insn
-	    = emit_call_insn (gen_call_val_reg_64bit (dst, op, nb, r4));
+	  emit_call_insn (gen_call_val_reg_64bit (dst, op, nb, r4));
 	}
     }
   else
@@ -7805,11 +7821,10 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	  if (flag_pic)
 	    {
 	      rtx r4 = gen_rtx_REG (word_mode, 4);
-	      call_insn
-		= emit_call_insn (gen_call_val_symref_pic (dst, op, nb, r4));
+	      emit_call_insn (gen_call_val_symref_pic (dst, op, nb, r4));
 	    }
 	  else
-	    call_insn = emit_call_insn (gen_call_val_symref (dst, op, nb));
+	    emit_call_insn (gen_call_val_symref (dst, op, nb));
 	}
       else
 	{
@@ -7818,10 +7833,10 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 	  if (flag_pic)
 	    {
 	      rtx r4 = gen_rtx_REG (word_mode, 4);
-	      call_insn = emit_call_insn (gen_call_val_reg_pic (dst, nb, r4));
+	      emit_call_insn (gen_call_val_reg_pic (dst, nb, r4));
 	    }
 	  else
-	    call_insn = emit_call_insn (gen_call_val_reg (dst, nb));
+	    emit_call_insn (gen_call_val_reg (dst, nb));
 	}
     }
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -69,10 +69,10 @@ package body Ch7 is
    --    Pf_Flags.Rnam                 Set if renaming declaration OK
    --    Pf_Flags.Stub                 Set if body stub OK
 
-   --  If an inappropriate form is encountered, it is scanned out but an
-   --  error message indicating that it is appearing in an inappropriate
-   --  context is issued. The only possible settings for Pf_Flags are those
-   --  defined as constants in package Par.
+   --  If an inappropriate form is encountered, it is scanned out but an error
+   --  message indicating that it is appearing in an inappropriate context is
+   --  issued. The only possible settings for Pf_Flags are those defined as
+   --  constants in package Par.
 
    --  Note: in all contexts where a package specification is required, there
    --  is a terminating semicolon. This semicolon is scanned out in the case
@@ -101,7 +101,8 @@ package body Ch7 is
       Scan; -- past PACKAGE
 
       if Token = Tok_Type then
-         Error_Msg_SC ("TYPE not allowed here");
+         Error_Msg_SC -- CODEFIX
+           ("TYPE not allowed here");
          Scan; -- past TYPE
       end if;
 

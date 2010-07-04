@@ -33,11 +33,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "tm_p.h"
 #include "flags.h"
-#include "real.h"
 #include "regs.h"
 #include "function.h"
 #include "df.h"
 #include "tree.h"
+#include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 
 /* Forward declarations */
 static void set_of_1 (rtx, const_rtx, void *);
@@ -1694,7 +1694,7 @@ find_reg_note (const_rtx insn, enum reg_note kind, const_rtx datum)
 {
   rtx link;
 
-  gcc_assert (insn);
+  gcc_checking_assert (insn);
 
   /* Ignore anything that is not an INSN, JUMP_INSN or CALL_INSN.  */
   if (! INSN_P (insn))
@@ -3474,7 +3474,7 @@ keep_with_call_p (const_rtx insn)
 	  && general_operand (SET_SRC (set), VOIDmode))
 	return true;
       if (REG_P (SET_SRC (set))
-	  && FUNCTION_VALUE_REGNO_P (REGNO (SET_SRC (set)))
+	  && targetm.calls.function_value_regno_p (REGNO (SET_SRC (set)))
 	  && REG_P (SET_DEST (set))
 	  && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER)
 	return true;

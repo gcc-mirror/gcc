@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "params.h"
 #include "input.h"
-#include "varray.h"
 #include "hashtab.h"
 #include "basic-block.h"
 #include "tree-flow.h"
@@ -50,48 +49,6 @@ static VEC(lto_out_decl_state_ptr, heap) *decl_state_stack;
    generate the decl directory later. */
 
 VEC(lto_out_decl_state_ptr, heap) *lto_function_decl_states;
-
-/* Bitmap indexed by DECL_UID to indicate if a function needs to be
-   forced extern inline. */
-static bitmap forced_extern_inline;
-
-/* Initialize states for determining which function decls to be ouput
-   as extern inline, regardless of the decls' own attributes.  */
-
-void
-lto_new_extern_inline_states (void)
-{
-  forced_extern_inline = lto_bitmap_alloc ();
-}
-
-/* Releasing resources use for states to determine which function decls
-   to be ouput as extern inline */
-
-void
-lto_delete_extern_inline_states (void)
-{
-  lto_bitmap_free (forced_extern_inline);
-  forced_extern_inline = NULL;
-}
-
-/* Force all the functions in DECLS to be output as extern inline.
-   DECLS is a bitmap indexed by DECL_UID. */
-
-void
-lto_force_functions_extern_inline (bitmap decls)
-{
-  bitmap_ior_into (forced_extern_inline, decls);
-}
-
-/* Return true if FN_DECL is a function which should be emitted as
-   extern inline.  */
-
-bool
-lto_forced_extern_inline_p (tree fn_decl)
-{
-  return bitmap_bit_p (forced_extern_inline, DECL_UID (fn_decl));
-}
-
 /* Returns a hash code for P.  */
 
 hashval_t
@@ -584,8 +541,6 @@ lto_new_out_decl_state (void)
 	}
       lto_init_tree_ref_encoder (&state->streams[i], hash_fn, eq_fn);
     }
-
-  state->cgraph_node_encoder = lto_cgraph_encoder_new ();
 
   return state;
 }

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,9 @@ with Errout;   use Errout;
 with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
+with Opt;      use Opt;
 with Sem;      use Sem;
+with Sem_Aux;  use Sem_Aux;
 with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
 with Sinput;   use Sinput;
@@ -234,6 +236,7 @@ package body Sem_Elim is
       Elmt : Access_Elim_Data;
       Scop : Entity_Id;
       Form : Entity_Id;
+      Up   : Nat;
 
    begin
       if No_Elimination then
@@ -286,21 +289,49 @@ package body Sem_Elim is
                goto Continue;
             end if;
 
-            --  Find enclosing unit
+            --  Find enclosing unit, and verify that its name and those of its
+            --  parents match.
 
             Scop := Cunit_Entity (Current_Sem_Unit);
 
             --  Now see if compilation unit matches
 
-            for J in reverse Elmt.Unit_Name'Range loop
+            Up := Elmt.Unit_Name'Last;
+
+            --  If we are within a subunit, the name in the pragma has been
+            --  parsed as a child unit, but the current compilation unit is in
+            --  fact the parent in which the subunit is embedded. We must skip
+            --  the first name which is that of the subunit to match the pragma
+            --  specification. Body may be that of a package or subprogram.
+
+            declare
+               Par : Node_Id;
+
+            begin
+               Par := Parent (E);
+               while Present (Par) loop
+                  if Nkind (Par) = N_Subunit then
+                     if Chars (Defining_Entity (Proper_Body (Par))) =
+                                                         Elmt.Unit_Name (Up)
+                     then
+                        Up := Up - 1;
+                        exit;
+
+                     else
+                        goto Continue;
+                     end if;
+                  end if;
+
+                  Par := Parent (Par);
+               end loop;
+            end;
+
+            for J in reverse Elmt.Unit_Name'First .. Up loop
                if Elmt.Unit_Name (J) /= Chars (Scop) then
                   goto Continue;
                end if;
 
                Scop := Scope (Scop);
-               while Ekind (Scop) = E_Block loop
-                  Scop := Scope (Scop);
-               end loop;
 
                if Scop /= Standard_Standard and then J = 1 then
                   goto Continue;
@@ -311,8 +342,59 @@ package body Sem_Elim is
                goto Continue;
             end if;
 
-            --  Check for case of given entity is a library level subprogram
-            --  and we have the single parameter Eliminate case, a match!
+            if Present (Elmt.Entity_Node)
+              and then Elmt.Entity_Scope /= null
+            then
+               --  Check that names of enclosing scopes match. Skip blocks and
+               --  wrapper package of subprogram instances, which do not appear
+               --  in the pragma.
+
+               Scop := Scope (E);
+
+               for J in reverse  Elmt.Entity_Scope'Range loop
+                  while Ekind (Scop) = E_Block
+                    or else
+                     (Ekind (Scop) = E_Package
+                       and then Is_Wrapper_Package (Scop))
+                  loop
+                     Scop := Scope (Scop);
+                  end loop;
+
+                  if Elmt.Entity_Scope (J) /= Chars (Scop) then
+                     if Ekind (Scop) /= E_Protected_Type
+                       or else Comes_From_Source (Scop)
+                     then
+                        goto Continue;
+
+                     --  For simple protected declarations, retrieve the source
+                     --  name of the object, which appeared in the Eliminate
+                     --  pragma.
+
+                     else
+                        declare
+                           Decl : constant Node_Id :=
+                             Original_Node (Parent (Scop));
+
+                        begin
+                           if Elmt.Entity_Scope (J) /=
+                             Chars (Defining_Identifier (Decl))
+                           then
+                              if J > 0 then
+                                 null;
+                              end if;
+                              goto Continue;
+                           end if;
+                        end;
+                     end if;
+
+                  end if;
+
+                  Scop := Scope (Scop);
+               end loop;
+            end if;
+
+            --  If given entity is a library level subprogram and pragma had a
+            --  single parameter, a match!
 
             if Is_Compilation_Unit (E)
               and then Is_Subprogram (E)
@@ -332,9 +414,8 @@ package body Sem_Elim is
 
             --  Check for case of subprogram
 
-            elsif Ekind (E) = E_Function
-              or else Ekind (E) = E_Procedure
-            then
+            elsif Ekind_In (E, E_Function, E_Procedure) then
+
                --  If Source_Location present, then see if it matches
 
                if Elmt.Source_Location /= No_Name then
@@ -642,7 +723,20 @@ package body Sem_Elim is
             Enclosing_Subp := Enclosing_Subprogram (Enclosing_Subp);
          end loop;
 
-         Eliminate_Error_Msg (N, Ultimate_Subp);
+         --  Emit error, unless we are within an instance body and the expander
+         --  is disabled, indicating an instance within an enclosing generic.
+         --  In an instance, the ultimate alias is an internal entity, so place
+         --  the message on the original subprogram.
+
+         if In_Instance_Body and then not Expander_Active then
+            null;
+
+         elsif Comes_From_Source (Ultimate_Subp) then
+            Eliminate_Error_Msg (N, Ultimate_Subp);
+
+         else
+            Eliminate_Error_Msg (N, S);
+         end if;
       end if;
    end Check_For_Eliminated_Subprogram;
 
@@ -673,7 +767,9 @@ package body Sem_Elim is
       --  Otherwise should not fall through, entry should be in table
 
       else
-         raise Program_Error;
+         Error_Msg_NE
+           ("subprogram& is called but its alias is eliminated", N, E);
+         --  raise Program_Error;
       end if;
    end Eliminate_Error_Msg;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1396,7 +1396,7 @@ package body Exp_Strm is
             --  If the enclosing record is an unchecked_union, we use the
             --  default expressions for the discriminant (it must exist)
             --  because we cannot generate a reference to it, given that
-            --  it is not stored..
+            --  it is not stored.
 
             if Is_Unchecked_Union (Scope (Entity (Name (VP)))) then
                D_Ref :=

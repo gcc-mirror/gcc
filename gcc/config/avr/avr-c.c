@@ -24,9 +24,9 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tm_p.h"
-#include "regs.h"
-#include "c-common.h"
-
+#include "cpplib.h"
+#include "tree.h"
+#include "c-family/c-common.h"
 
 /* Not included in avr.c since this requires C front end.  */
 

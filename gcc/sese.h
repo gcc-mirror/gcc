@@ -1,5 +1,6 @@
 /* Single entry single exit control flow regions.
-   Copyright (C) 2008, 2009  Free Software Foundation, Inc.
+   Copyright (C) 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Jan Sjodin <jan.sjodin@amd.com> and
    Sebastian Pop <sebastian.pop@amd.com>.
 
@@ -225,7 +226,6 @@ typedef struct ifsese_s {
 } *ifsese;
 
 extern void if_region_set_false_region (ifsese, sese);
-extern ifsese create_if_region_on_edge (edge, tree);
 extern ifsese move_sese_in_condition (sese);
 extern edge get_true_edge_from_guard_bb (basic_block);
 extern edge get_false_edge_from_guard_bb (basic_block);
@@ -345,14 +345,12 @@ typedef struct gimple_bb
   VEC (gimple, heap) *conditions;
   VEC (gimple, heap) *condition_cases;
   VEC (data_reference_p, heap) *data_refs;
-  htab_t cloog_iv_types;
 } *gimple_bb_p;
 
 #define GBB_BB(GBB) GBB->bb
 #define GBB_DATA_REFS(GBB) GBB->data_refs
 #define GBB_CONDITIONS(GBB) GBB->conditions
 #define GBB_CONDITION_CASES(GBB) GBB->condition_cases
-#define GBB_CLOOG_IV_TYPES(GBB) GBB->cloog_iv_types
 
 /* Return the innermost loop that contains the basic block GBB.  */
 

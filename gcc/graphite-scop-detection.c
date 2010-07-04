@@ -1,5 +1,5 @@
 /* Detection of Static Control Parts (SCoP) for Graphite.
-   Copyright (C) 2009 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com> and
    Tobias Grosser <grosser@fim.uni-passau.de>.
 
@@ -1303,7 +1303,7 @@ canonicalize_loop_closed_ssa_form (void)
   loop_p loop;
 
 #ifdef ENABLE_CHECKING
-  verify_loop_closed_ssa ();
+  verify_loop_closed_ssa (true);
 #endif
 
   FOR_EACH_LOOP (li, loop, 0)
@@ -1313,7 +1313,7 @@ canonicalize_loop_closed_ssa_form (void)
   update_ssa (TODO_update_ssa);
 
 #ifdef ENABLE_CHECKING
-  verify_loop_closed_ssa ();
+  verify_loop_closed_ssa (true);
 #endif
 }
 

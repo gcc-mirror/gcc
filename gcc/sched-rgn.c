@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2010
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
@@ -237,7 +237,7 @@ static void compute_block_dependences (int);
 static void schedule_region (int);
 static rtx concat_INSN_LIST (rtx, rtx);
 static void concat_insn_mem_list (rtx, rtx, rtx *, rtx *);
-static void propagate_deps (int, struct deps *);
+static void propagate_deps (int, struct deps_desc *);
 static void free_pending_lists (void);
 
 /* Functions for construction of the control flow graph.  */
@@ -354,7 +354,7 @@ extract_edgelst (sbitmap set, edgelst *el)
 
 /* Print the regions, for debugging purposes.  Callable from debugger.  */
 
-void
+DEBUG_FUNCTION void
 debug_regions (void)
 {
   int rgn, bb;
@@ -379,7 +379,7 @@ debug_regions (void)
 
 /* Print the region's basic blocks.  */
 
-void
+DEBUG_FUNCTION void
 debug_region (int rgn)
 {
   int bb;
@@ -1594,7 +1594,7 @@ free_trg_info (void)
 
 /* Print candidates info, for debugging purposes.  Callable from debugger.  */
 
-void
+DEBUG_FUNCTION void
 debug_candidate (int i)
 {
   if (!candidate_table[i].is_valid)
@@ -1631,7 +1631,7 @@ debug_candidate (int i)
 
 /* Print candidates info, for debugging purposes.  Callable from debugger.  */
 
-void
+DEBUG_FUNCTION void
 debug_candidates (int trg)
 {
   int i;
@@ -2567,7 +2567,7 @@ add_branch_dependences (rtx head, rtx tail)
    the variables of its predecessors.  When the analysis for a bb completes,
    we save the contents to the corresponding bb_deps[bb] variable.  */
 
-static struct deps *bb_deps;
+static struct deps_desc *bb_deps;
 
 /* Duplicate the INSN_LIST elements of COPY and prepend them to OLD.  */
 
@@ -2601,7 +2601,7 @@ concat_insn_mem_list (rtx copy_insns, rtx copy_mems, rtx *old_insns_p,
 
 /* Join PRED_DEPS to the SUCC_DEPS.  */
 void
-deps_join (struct deps *succ_deps, struct deps *pred_deps)
+deps_join (struct deps_desc *succ_deps, struct deps_desc *pred_deps)
 {
   unsigned reg;
   reg_set_iterator rsi;
@@ -2660,7 +2660,7 @@ deps_join (struct deps *succ_deps, struct deps *pred_deps)
 /* After computing the dependencies for block BB, propagate the dependencies
    found in TMP_DEPS to the successors of the block.  */
 static void
-propagate_deps (int bb, struct deps *pred_deps)
+propagate_deps (int bb, struct deps_desc *pred_deps)
 {
   basic_block block = BASIC_BLOCK (BB_TO_BLOCK (bb));
   edge_iterator ei;
@@ -2715,7 +2715,7 @@ static void
 compute_block_dependences (int bb)
 {
   rtx head, tail;
-  struct deps tmp_deps;
+  struct deps_desc tmp_deps;
 
   tmp_deps = bb_deps[bb];
 
@@ -2775,7 +2775,7 @@ free_pending_lists (void)
    Callable from debugger.  */
 /* Print dependences for debugging starting from FROM_BB.
    Callable from debugger.  */
-void
+DEBUG_FUNCTION void
 debug_rgn_dependencies (int from_bb)
 {
   int bb;
@@ -3150,7 +3150,7 @@ sched_rgn_compute_dependencies (int rgn)
       init_deps_global ();
 
       /* Initializations for region data dependence analysis.  */
-      bb_deps = XNEWVEC (struct deps, current_nr_blocks);
+      bb_deps = XNEWVEC (struct deps_desc, current_nr_blocks);
       for (bb = 0; bb < current_nr_blocks; bb++)
 	init_deps (bb_deps + bb, false);
 

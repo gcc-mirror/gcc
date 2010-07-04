@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "basic-block.h"
 #include "domwalk.h"
-#include "ggc.h"
+#include "sbitmap.h"
 
 /* This file implements a generic walker for dominator trees.
 
@@ -144,6 +144,9 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
   basic_block dest;
   basic_block *worklist = XNEWVEC (basic_block, n_basic_blocks * 2);
   int sp = 0;
+  sbitmap visited = sbitmap_alloc (last_basic_block + 1);
+  sbitmap_zero (visited);
+  SET_BIT (visited, ENTRY_BLOCK_PTR->index);
 
   while (true)
     {
@@ -184,6 +187,8 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
 	  if (walk_data->before_dom_children)
 	    (*walk_data->before_dom_children) (walk_data, bb);
 
+	  SET_BIT (visited, bb->index);
+
 	  /* Mark the current BB to be popped out of the recursion stack
 	     once children are processed.  */
 	  worklist[sp++] = bb;
@@ -213,11 +218,44 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
 	    }
 	}
       if (sp)
-	bb = worklist[--sp];
+	{
+	  int spp;
+	  spp = sp - 1;
+	  if (walk_data->dom_direction == CDI_DOMINATORS)
+	    /* Find the dominator son that has all its predecessors
+	       visited and continue with that.  */
+	    while (1)
+	      {
+		edge_iterator ei;
+		edge e;
+		bool found = true;
+		bb = worklist[spp];
+		FOR_EACH_EDGE (e, ei, bb->preds)
+		  {
+		    if (!dominated_by_p (CDI_DOMINATORS, e->src, e->dest)
+			&& !TEST_BIT (visited, e->src->index))
+		      {
+			found = false;
+			break;
+		      }
+		  }
+		if (found)
+		  break;
+		/* If we didn't find a dom child with all visited
+		   predecessors just use the candidate we were checking.
+		   This happens for candidates in irreducible loops.  */
+		if (!worklist[spp - 1])
+		  break;
+		--spp;
+	      }
+	  bb = worklist[spp];
+	  worklist[spp] = worklist[--sp];
+	}
       else
 	break;
     }
   free (worklist);
+  sbitmap_free (visited);
 }
 
 void

@@ -1,3 +1,34 @@
+2010-06-20  Alexandre Oliva  <aoliva@redhat.com>
+
+	* bootstrap-lto.mk: New.
+
+2010-06-10  Paolo Bonzini  <bonzini@gnu.org>
+
+	* override.m4: Remove obsolete (<2.64) definitions.
+
+2010-06-09  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR bootstrap/43170
+	* tls.m4 (GCC_CHECK_TLS): Add volatile qualifier to the test 
+	references.  Move the main () test reference ahead of 
+	pthread_create().  Add a comment to explain the requirements
+	of the test.
+
+2010-06-03  Joern Rennecke <joern.rennecke@embecosm.com>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/42798
+	* override.m4 (_AC_CHECK_DECL_BODY, _AC_CHECK_DECLS): Import
+	definitions from git Autoconf.
+
+2010-04-13  Steve Ellcey  <sje@cup.hp.com>
+
+	* elf.m4: Add hppa[12]*-*-hpux* to list of non-elf platforms.
+
+2010-03-23  Kai Tietz  <kai.tietz@onevision.com>
+
+	* mh-mingw: Revert accidentally checking r156315.
+
 2010-01-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* stdint.m4 (GCC_HEADER_STDINT): Don't typedef uint8_t etc. if

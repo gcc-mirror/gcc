@@ -2375,7 +2375,7 @@
 					      calloc(1, (size_t)bytes + GC_page_size) \
 					      + GC_page_size-1)
 #     else
-#	ifdef MSWIN32
+#	if defined(MSWIN32) || defined(CYGWIN32)
 	  extern ptr_t GC_win32_get_mem();
 #         define GET_MEM(bytes) (struct hblk *)GC_win32_get_mem(bytes)
 #	else

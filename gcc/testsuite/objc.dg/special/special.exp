@@ -33,12 +33,27 @@ dg-init
 # This test is special because we must compile two different modules,
 # unclaimed-category-1a.m and unclaimed-category-1.m, then link
 # together, then run the resulting executable.
-set lines [objc_target_compile "$srcdir/$subdir/unclaimed-category-1a.m" "unclaimed-category-1a.o" object "additional_flags=-I${srcdir}/../../libobjc"]
+# for all systems we point to the libobjc includes and use the -fgnu-runtime
+set add_flags "additional_flags=-I${srcdir}/../../libobjc"
+lappend add_flags "additional_flags=-fgnu-runtime"
+set lines [objc_target_compile "$srcdir/$subdir/unclaimed-category-1a.m" "unclaimed-category-1a.o" object $add_flags ]
 if ![string match "" $lines] then {
     fail "unclaimed-category-1a.o"
 } else {
-    dg-runtest "$srcdir/$subdir/unclaimed-category-1.m" "unclaimed-category-1a.o" "-I${srcdir}/../../libobjc"
+    dg-runtest "$srcdir/$subdir/unclaimed-category-1.m" "unclaimed-category-1a.o" "-I${srcdir}/../../libobjc -fgnu-runtime"
     file delete unclaimed-category-1a.o
+}
+
+if [istarget "*-*-darwin*" ] {
+set add_flags ""
+lappend add_flags "additional_flags=-fnext-runtime"
+set lines [objc_target_compile "$srcdir/$subdir/unclaimed-category-1a.m" "unclaimed-category-1a.o" object $add_flags ]
+if ![string match "" $lines] then {
+    fail "unclaimed-category-1a.o"
+} else {
+    dg-runtest "$srcdir/$subdir/unclaimed-category-1.m" "unclaimed-category-1a.o" "-fnext-runtime"
+    file delete unclaimed-category-1a.o
+}
 }
 
 # All done.

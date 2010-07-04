@@ -48,7 +48,7 @@ insert(const_reference r_val)
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
   entry_pointer p_l = find_imp(PB_DS_V2F(r_val));
 
-  if (p_l != NULL)
+  if (p_l != 0)
     {
       _GLIBCXX_DEBUG_ONLY(debug_base::check_key_exists(PB_DS_V2F(r_val));)
       return std::make_pair(point_iterator(&p_l->m_value), false);

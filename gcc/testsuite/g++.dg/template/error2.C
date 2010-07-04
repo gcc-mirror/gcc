@@ -15,8 +15,8 @@ template<class T> struct X
 template<class T >
 struct Derived
 {
-  class Nested : public X<T>
-  { // { dg-message "instantiated" "" }
+  class Nested : public X<T> // { dg-message "instantiated" "" }
+  {
   };
   
   Nested m; // { dg-message "instantiated" "" }

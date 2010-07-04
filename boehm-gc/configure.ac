@@ -1,4 +1,5 @@
-# Copyright (c) 1999, 2000, 2001, 2002, 2003, 2006 by Red Hat, Inc. All rights reserved.
+# Copyright (c) 1999, 2000, 2001, 2002, 2003, 2006, 2010 by Red Hat, Inc.
+# All rights reserved.
 # Copyright 2004 Nathanael Nerode
 # 
 # THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
@@ -179,13 +180,20 @@ case "$THREADS" in
 	AM_CPPFLAGS="$AM_CPPFLAGS -pthread"
 	THREADLIBS=-pthread
       	;;
-     *-*-solaris*)
+     *-*-solaris2.8*)
 	AC_DEFINE(GC_SOLARIS_PTHREADS,1,[support for Solaris pthreads])
 	# Need to use alternate thread library, otherwise gctest hangs
 	# on Solaris 8.
 	multi_os_directory=`$CC -print-multi-os-directory`
 	THREADLIBS="-L/usr/lib/lwp/$multi_os_directory \
 		    -R/usr/lib/lwp/$multi_os_directory -lpthread -lthread -lrt"
+	;;
+     *-*-solaris2*)
+	AC_DEFINE(GC_SOLARIS_PTHREADS,1,[support for Solaris pthreads])
+	# The alternate thread library was only introduced in Solaris 8 and
+	# became the default in Solaris 9, so no need for the special code
+	# above otherwise.
+	THREADLIBS=-lpthread
 	;;
      *-*-irix*)
 	AC_DEFINE(GC_IRIX_THREADS,1,[support for Irix pthreads])

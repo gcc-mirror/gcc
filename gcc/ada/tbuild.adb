@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -442,9 +442,9 @@ package body Tbuild is
    function Make_Temporary
      (Loc          : Source_Ptr;
       Id           : Character;
-      Related_Node : Node_Id := Empty) return Node_Id
+      Related_Node : Node_Id := Empty) return Entity_Id
    is
-      Temp : constant Node_Id :=
+      Temp : constant Entity_Id :=
                Make_Defining_Identifier (Loc,
                  Chars => New_Internal_Name (Id));
    begin
@@ -659,7 +659,7 @@ package body Tbuild is
 
          --  We don't really need these shift operators, since they never
          --  appear as operators in the source, but the path of least
-         --  resistance is to put them in (the aggregate must be complete)
+         --  resistance is to put them in (the aggregate must be complete).
 
          N_Op_Rotate_Left            => Name_Rotate_Left,
          N_Op_Rotate_Right           => Name_Rotate_Right,
@@ -686,7 +686,6 @@ package body Tbuild is
       Loc    : Source_Ptr) return Node_Id
    is
       Occurrence : Node_Id;
-
    begin
       Occurrence := New_Node (N_Identifier, Loc);
       Set_Chars (Occurrence, Chars (Def_Id));

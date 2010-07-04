@@ -28,7 +28,7 @@ class gnu::CORBA::NamingService::NamingServiceTransient$1 : public ::java::lang:
 public: // actually package-private
   NamingServiceTransient$1(::gnu::CORBA::OrbFunctional *);
 public:
-  void run();
+  virtual void run();
 private:
   ::gnu::CORBA::OrbFunctional * __attribute__((aligned(__alignof__( ::java::lang::Thread)))) val$orb;
 public:

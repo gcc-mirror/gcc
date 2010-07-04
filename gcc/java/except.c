@@ -27,14 +27,10 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "real.h"
-#include "rtl.h"
 #include "java-tree.h"
 #include "javaop.h"
 #include "java-opcodes.h"
 #include "jcf.h"
-#include "function.h"
-#include "except.h"
 #include "java-except.h"
 #include "toplev.h"
 #include "tree-iterator.h"
@@ -384,7 +380,7 @@ prepare_eh_table_type (tree type)
     return NULL_TREE;
 
   if (TYPE_TO_RUNTIME_MAP (output_class) == NULL)
-    TYPE_TO_RUNTIME_MAP (output_class) = java_treetreehash_create (10, 1);
+    TYPE_TO_RUNTIME_MAP (output_class) = java_treetreehash_create (10);
   
   slot = java_treetreehash_new (TYPE_TO_RUNTIME_MAP (output_class), type);
   if (*slot != NULL)
@@ -423,9 +419,9 @@ prepare_eh_table_type (tree type)
       layout_decl (decl, 0);
       pushdecl (decl);
       exp = build1 (ADDR_EXPR, build_pointer_type (utf8const_ptr_type), decl);
-      TYPE_CATCH_CLASSES (output_class) = 
-	tree_cons (NULL, make_catch_class_record (exp, utf8_ref), 
-		   TYPE_CATCH_CLASSES (output_class));
+      CONSTRUCTOR_APPEND_ELT (TYPE_CATCH_CLASSES (output_class),
+			      NULL_TREE,
+			      make_catch_class_record (exp, utf8_ref));
     }
 
   exp = convert (ptr_type_node, exp);
@@ -568,6 +564,29 @@ check_start_handlers (struct eh_range *range, int pc)
 }
 
 
+/* Routine to see if exception handling is turned on.
+   DO_WARN is nonzero if we want to inform the user that exception
+   handling is turned off.
+
+   This is used to ensure that -fexceptions has been specified if the
+   compiler tries to use any exception-specific functions.  */
+
+static inline int
+doing_eh (void)
+{
+  if (! flag_exceptions)
+    {
+      static int warned = 0;
+      if (! warned)
+	{
+	  error ("exception handling disabled, use -fexceptions to enable");
+	  warned = 1;
+	}
+      return 0;
+    }
+  return 1;
+}
+
 static struct eh_range *current_range;
 
 /* Emit any start-of-try-range starting at start_pc and ending after
@@ -577,7 +596,7 @@ void
 maybe_start_try (int start_pc, int end_pc)
 {
   struct eh_range *range;
-  if (! doing_eh (1))
+  if (! doing_eh ())
     return;
 
   range = find_handler (start_pc);

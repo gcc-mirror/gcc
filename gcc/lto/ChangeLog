@@ -1,3 +1,330 @@
+2010-06-13  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (lto_fixup_type): Do not register or fixup TYPE_CANONICAL.
+
+2010-06-09  Kai Tietz  <kai.tietz@onevision.com>
+
+	* lto.c (lto_resolution_read):  Pre-initialize local variable r.
+	* lto-coff.c (coff_write_object_file): Add braces to if.
+
+2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* lto.c (lto_read_in_decl_state): Use typed GC allocation.
+	(lto_file_read): Likewise.
+	(new_partition): Likewise.
+	(read_cgraph_and_symbols): Likewise.
+
+2010-06-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* lto-lang.c (flag_no_builtin, flag_no_nonansi_builtin): Remove.
+	(lto_handle_option): Don't set flag_signed_char here.
+
+2010-06-04  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/41584
+	* lto.c (lto_1_to_1_map): Use the proper file_data for
+	varpool nodes.
+
+2010-05-30  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (promote_var, promote_fn, lto_wpa_write_files): Dump
+	partitioning decisions.
+
+2010-05-29  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (bitmap vector): Remove.
+	(lto_cgraph_node_sets,  lto_varpool_node_sets): Remove.
+	(ltrans_partition_def): New structure.
+	(ltrans_partition): New type and VECtor.
+	(new_partition): New function.
+	(add_cgraph_node_to_partition): New function.
+	(lto_1_to_1_map): Reorganize for partitions.
+	(lto_add_inline_clones): Remove.
+	(lto_add_all_inlinees): Remove.
+	(lto_promote_cross_file_statics): Use partitions.
+	(cmp_partitions): New function.
+	(lto_wpa_write_files): Do not call lto_add_all_inlinees;
+	use partitions; output files sorted by size.
+
+2010-05-29  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* Make-lang.in: Replace vec.h dependency with VEC_H.
+
+2010-05-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* lto-coff.c (coff_errmsg): Remove.
+	(lto_coff_begin_section_with_type, lto_obj_append_data): Use %m in
+	errors instead of coff_errmsg (-1).
+	* lto-macho.c (mach_o_errmsg): Remove.
+	(lto_obj_begin_section, lto_obj_append_data): Use %m in errors
+	instead of mach_o_errmsg (-1).
+	* lto.c (read_cgraph_and_symbols): Use %m in errors instead of
+	xstrerror (errno).
+
+2010-05-28  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (prefix_name_with_star): Removed.
+	(strip_extension): Likewise.
+	(get_filename_for_set): Likewise.
+	(lto_write_ltrans_list): Fold into ...
+	(lto_wpa_write_files): ... this.  Name LTRANS units
+	by suffixing the ltrans output list filename.
+	(do_whole_program_analysis): Adjust.
+
+2010-05-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* lto.c: Include diagnostic-core.h instead of diagnostic.h.
+	(read_cgraph_and_symbols, lto_main): Use seen_error.
+	* Make-lang.in (lto/lto.o): Update dependencies.
+
+2010-05-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR lto/44230
+	* lto.h (lto_eh_personality): New prototype.
+	* lto.c: Include debug.h.
+	(first_personality_decl): New static variable.
+	(lto_materialize_function): Set it to DECL_FUNCTION_PERSONALITY of the
+	first function for which it is non-null.
+	(lto_eh_personality_decl): New static variable.
+	(lto_eh_personality): New function.
+	* lto-lang.c (LANG_HOOKS_EH_PERSONALITY): Redefine to above function.
+	* Make-lang.in (lto/lto.o): Add dependency on debug.h.
+
+2010-05-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* lto-lang.c: Do not include expr.h.
+
+2010-05-24  Richard Guenther  <rguenther@suse.de>
+
+	* lto-elf.c (lto_obj_build_section_table): Work around
+	FreeBSD libelf issue.
+
+2010-05-22  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (read_cgraph_and_symbols): Do not collect.
+
+2010-05-20  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (promote_var, promote_fn): New functions.
+	(lto_promote_cross_file_statics): Compute correctly boundary including
+	static initializers of readonly vars.
+
+2010-05-18  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_1_to_1_map): Partition non-inline clones.
+	(lto_promote_cross_file_statics): Deal with non-inline clones.
+
+2010-05-18  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_materialize_function): Announce function when
+	reading body; allocate_struct_function only when reading body;
+	do not finalize local statics; ggc_collect after reading;
+	do not mark reachable node.
+	(materialize_cgraph): Do not announce function.
+
+2010-05-11  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (materialize_cgraph): Revert my previous patch.
+
+2010-05-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	* lto-coff.c (IMAGE_FILE_MACHINE_ADM64): Rename to
+	IMAGE_FILE_MACHINE_AMD64.
+	* lto-coff.c (IMAGE_FILE_MACHINE_ADM64): Likewise.
+
+2010-05-11  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_fixup_decls): Remove global var decls freeing here.
+	(materialize_cgraph): Add it here.
+
+2010-05-11  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_fixup_decls): Free no longer needed lto_global_var_decls
+	vector.
+
+2010-05-11  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_1_to_1_map): Remove some no longer needed checks.
+	(lto_promote_cross_file_statics): Never promote DECL_EXTERNAL;
+	use reachable_from_other_partition_p and
+	referenced_from_other_partition_p test.
+
+2010-05-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	* lto-coff.c (validate_file): Add x64-coff support.
+	* lto-coff.h (IMAGE_FILE_MACHINE_ADM64): New.
+	(COFF_KNOWN_MACHINES): Add IMAGE_FILE_MACHINE_ADM64.
+	* lto-lang.c (lto_build_c_type_nodes): Add check for
+	'long long unsigned int' for x64-windows.
+	(lto_init): Likewise.
+
+
+2010-05-07  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* lto.h (struct lto_file_struct): Document offset member.
+	* lto-endian.h: New file.
+	* lto-macho.h: New file.
+	* lto-macho.c: New file.
+	* Make-lang.in: Add rule for lto-macho.o.
+
+2010-05-07  Richard Guenther <rguenther@suse.de>
+
+	PR lto/43857
+	PR lto/43371
+	* lang.opt (fresolution): Change to ...
+	(fresolution=): ... this.
+	* lto-lang.c (lto_handle_option): Adjust.
+
+2010-05-07  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (DUMPBASE_SUFFIX): Remove.
+	(lto_execute_ltrans): Move functionality to lto-wrapper.c.
+	Rename to ...
+	(lto_write_ltrans_list): ... only output the list of ltrans files.
+	(lto_maybe_unlink): Remove.
+	(do_whole_program_analysis): Do not execute LTRANS phase
+	from here.
+
+2010-05-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* lto-lang.c (lto_handle_option): Add argument kind.
+
+2010-05-05  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_promote_cross_file_statics): Compute boundary based on
+	refs.
+
+2010-05-05  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_1_to_1_map): Partition only needed nodes.
+
+2010-04-30  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (get_filename_for_set): Look for cgraph node and if none found, use
+	default name.
+	(lto_wpa_write_files): Write any non-empty partition.
+
+2010-04-30  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c: Do not attempt to make constant pool references global.
+
+2010-04-28  Jan Hubicka  <jh@suse.cz>
+
+	* lto/lto.c (lto_read_in_decl_state): Use GGC.
+	(lto_wpa_write_files): Announce what we are writting.
+	(all_file_decl_data): New.
+	(read_cgraph_and_symbols): Use GGC; correct timevars.
+	(do_whole_program_analysis): Collect.
+	* lto/Make-lang.in (lto.o): Fix dependency.
+	* Makefile.in (GTFILES): Add lto-streamer.h.
+	* varpool.c (varpool_analyze_pending_decls): Use TV_VARPOOL.
+	(varpool_assemble_pending_decls): Use VAROUT.
+	* lto-streamer.h (lto_tree_ref_table): Annotate.
+	(lto_in_decl_state): Annotate.
+	(lto_file_decl_data): Annotate.
+
+2010-04-28  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_varpool_node_sets): New.
+	(lto_1_to_1_map): Partition varpool too.
+	(globalize_context_t, globalize_cross_file_statics,
+	lto_scan_statics_in_ref_table, lto_scan_statics_in_cgraph_node,
+	lto_scan_statics_in_remaining_global_vars): Remove.
+	(lto_promote_cross_file_statics): Rewrite.
+	(get_filename_for_set): Take vset argument.
+	(lto_wpa_write_files): Pass around vsets.
+
+2010-04-27  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR lto/42776
+	* Make-lang.in (LTO_OBJS): Use LTO_BINARY_READER instead of
+	hardcoding 'lto-elf.o'.
+	($(LTO_EXE)): Use LTO_USE_LIBELF instead of hardcoding '-lelf'.
+
+	* lto-coff.h: New file.
+	* lto-coff.c: Likewise.
+
+2010-04-26  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (lto_fixup_type): Deal with non-type TYPE_CONTEXT.
+
+2010-04-26  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* lto.h (lto_elf_file_open): Rename prototype from this ...
+	(lto_obj_file_open): ... to this.
+	(lto_elf_file_close): Likewise ...
+	(lto_obj_file_close): ... and likewise.
+	(lto_elf_build_section_table): Likewise ...
+	(lto_obj_build_section_table): ... and likewise.
+	(lto_elf_begin_section): Likewise ...
+	(lto_obj_begin_section): ... and likewise.
+	(lto_elf_append_data): Likewise ...
+	(lto_obj_append_data): ... and likewise.
+	(lto_elf_end_section): Likewise ...
+	(lto_obj_end_section): ... and likewise.
+	* lto.c (lto_file_read): Update references to the above.
+	(lto_wpa_write_files): Likewise.
+	(lto_read_all_file_options): Likewise.
+	(read_cgraph_and_symbols): Likewise.
+	* lto-lang.c (LANG_HOOKS_BEGIN_SECTION): Likewise.
+	(LANG_HOOKS_APPEND_DATA): Likewise.
+	(LANG_HOOKS_END_SECTION): Likewise.
+	* lto-elf.c (lto_elf_file_open): Rename from this ...
+	(lto_obj_file_open): ... to this, updating any references.
+	(lto_elf_file_close): Likewise ...
+	(lto_obj_file_close): ... and likewise.
+	(lto_elf_build_section_table): Likewise ...
+	(lto_obj_build_section_table): ... and likewise.
+	(lto_elf_begin_section): Likewise ...
+	(lto_obj_begin_section): ... and likewise.
+	(lto_elf_append_data): Likewise ...
+	(lto_obj_append_data): ... and likewise.
+	(lto_elf_end_section): Likewise ...
+	(lto_obj_end_section): ... and likewise.
+
+2010-04-21  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_fixup_tree): Do not call wpa fixup.
+	(materialize_cgraph): Likewise.
+
+2010-04-21  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_wpa_write_files): Update.
+	(read_cgraph_and_symbols): Be more verbose.
+	(materialize_cgraph): Likewise.
+	(do_whole_program_analysis): Likewise.
+
+2010-04-21  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (globalize_cross_file_statics): When function has address taken,
+	it needs to be public.
+
+2010-04-20  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_add_inline_clones): Do not track inlined_decls.
+	(lto_add_all_inlinees): Likewise.
+	(lto_wpa_write_files): Likewise.
+
+2010-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lto-lang.c (lto_init): Remove second argument in call to
+	build_common_tree_nodes.
+
+2010-04-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lto-elf.c [!HAVE_ELF_GETSHDRSTRNDX] (elf_getshdrstrndx): New
+	function.
+
+2010-03-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/43276
+	* lto-elf.c: Define EM_* constants if not already defined.
+
+2010-03-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lto-elf.c (is_compatible_architecture): New static function.
+	(DEFINE_VALIDATE_EHDR): Use it to validate the architecture.
+
 2010-02-11  Richard Guenther  <rguenther@suse.de>
 
 	PR driver/43021

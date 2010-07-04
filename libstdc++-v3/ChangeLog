@@ -1,3 +1,2297 @@
+2010-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/regex_compiler.h: Trivial formatting / stylistic fixes.
+	* include/bits/regex_grep_matcher.tcc: Likewise.
+	* include/bits/regex_cursor.h: Likewise.
+	* include/bits/regex.h: Likewise.
+
+2010-06-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/util/testsuite_hooks.h: Cast fn to bool.
+
+2010-06-26  Kees Cook  <kees.cook@canonical.com>
+
+	* testsuite/27_io/ios_base/sync_with_stdio/1.cc: Verify freopen.
+	* testsuite/27_io/objects/wchar_t/9520.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/9661-1.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-2.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-4.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/11.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-1.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-3.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/10.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-5.cc: Likewise.
+	* testsuite/27_io/objects/char/9661-1.cc: Likewise.
+	* testsuite/27_io/objects/char/12048-2.cc: Likewise.
+	* testsuite/27_io/objects/char/12048-4.cc: Likewise.
+	* testsuite/27_io/objects/char/9.cc: Likewise.
+	* testsuite/27_io/objects/char/12048-1.cc: Likewise.
+	* testsuite/27_io/objects/char/12048-3.cc: Likewise.
+	* testsuite/27_io/objects/char/12048-5.cc: Likewise.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12077.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/setbuf/char/12875-2.cc: Verify fgets.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11544-2.cc: Verify
+	fwrite.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/1.cc: Likewise.
+	* testsuite/ext/stdio_sync_filebuf/char/1.cc: Likewise.
+
+2010-06-26  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/faq.xml: Fix typo.
+	* doc/html/faq.xml: Likewise.
+
+2010-06-25  Stephen M. Webb  <stephen.webb@bregmasoft.ca>
+
+	Initial regex implementation.
+	* include/std/regex: Modified to use bits/regex_* headers.
+	* include/bits/regex_compiler.h: New.
+	* include/bits/regex_constants.h: Likewise.
+	* include/bits/regex_cursor.h: Likewise.
+	* include/bits/regex_error.h: Likewise.
+	* include/bits/regex_grep_matcher.h: Likewise.
+	* include/bits/regex_grep_matcher.tcc: Likewise.
+	* include/bits/regex.h: Likewise.
+	* include/bits/regex_nfa.h: Likewise.
+	* include/bits/regex_nfa.tcc: Likewise.
+	* include/Makefile.am: Add.
+	* include/Makefile.in: Regenerated.
+	* testsuite/28_regex/02_definitions: New.
+	* testsuite/28_regex/03_requirements: Likewise.
+	* testsuite/28_regex/03_requirements/typedefs.cc: Likewise.
+	* testsuite/28_regex/04_header: Likewise.
+	* testsuite/28_regex/04_header/regex: Likewise.
+	* testsuite/28_regex/04_header/regex/std_c++0x_neg.cc: Likewise.
+	* testsuite/28_regex/05_constants: Likewise.
+	* testsuite/28_regex/05_constants/error_type.cc: Likewise.
+	* testsuite/28_regex/05_constants/match_flag_type.cc: Likewise.
+	* testsuite/28_regex/05_constants/syntax_option_type.cc: Likewise.
+	* testsuite/28_regex/06_exception_type: Likewise.
+	* testsuite/28_regex/06_exception_type/regex_error.cc: Likewise.
+	* testsuite/28_regex/07_traits: Likewise.
+	* testsuite/28_regex/07_traits/char: Likewise.
+	* testsuite/28_regex/07_traits/char/ctor.cc: Likewise.
+	* testsuite/28_regex/07_traits/char/isctype.cc: Likewise.
+	* testsuite/28_regex/07_traits/char/length.cc: Likewise.
+	* testsuite/28_regex/07_traits/char/lookup_classname.cc: Likewise.
+	* testsuite/28_regex/07_traits/char/lookup_collatename.cc: Likewise.
+	* testsuite/28_regex/07_traits/char/transform.cc: Likewise.
+	* testsuite/28_regex/07_traits/char/transform_primary.cc: Likewise.
+	* testsuite/28_regex/07_traits/char/translate.cc: Likewise.
+	* testsuite/28_regex/07_traits/char/translate_nocase.cc: Likewise.
+	* testsuite/28_regex/07_traits/char/value.cc: Likewise.
+	* testsuite/28_regex/07_traits/wchar_t: Likewise.
+	* testsuite/28_regex/07_traits/wchar_t/ctor.cc: Likewise.
+	* testsuite/28_regex/07_traits/wchar_t/length.cc: Likewise.
+	* testsuite/28_regex/07_traits/wchar_t/transform.cc: Likewise.
+	* testsuite/28_regex/07_traits/wchar_t/translate.cc: Likewise.
+	* testsuite/28_regex/07_traits/wchar_t/translate_nocase.cc: Likewise.
+	* testsuite/28_regex/07_traits/wchar_t/value.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex: Likewise.
+	* testsuite/28_regex/08_basic_regex/assign: Likewise.
+	* testsuite/28_regex/08_basic_regex/assign/char: Likewise.
+	* testsuite/28_regex/08_basic_regex/assign/char/cstring.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/assign/char/cstring_op.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/assign/char/moveable.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/assign/char/pstring.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/assign/char/range.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/assign/char/string.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/assign/char/string_op.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/assign/wchar_t: Likewise.
+	* testsuite/28_regex/08_basic_regex/assign/wchar_t/cstring.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/assign/wchar_t/cstring_op.cc:
+	Likewise.
+	* testsuite/28_regex/08_basic_regex/assign/wchar_t/pstring.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/assign/wchar_t/range.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/assign/wchar_t/string.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/assign/wchar_t/string_op.cc:
+	Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors: Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/basic: Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/basic/cstring.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/basic/pstring_char.cc:
+	Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/basic/pstring_wchar_t.cc:
+	Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/basic/
+	string_range_01_02_03.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/char: Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/char/cstring_awk.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/char/cstring.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/char/cstring_ecma.cc:
+	Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/char/cstring_egrep.cc:
+	Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/char/cstring_grep.cc:
+	Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/char/default.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/char/range.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/copy_char.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/extended: Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/extended/cstring.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/extended/
+	string_range_01_02_03.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/move_char.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/string_char.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/string_wchar_t.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/wchar_t: Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/wchar_t/cstring.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/wchar_t/default.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/ctors/wchar_t/range.cc: Likewise.
+	* testsuite/28_regex/08_basic_regex/regex.cc: Likewise.
+	* testsuite/28_regex/09_sub_match: Likewise.
+	* testsuite/28_regex/09_sub_match/cast_char.cc: Likewise.
+	* testsuite/28_regex/09_sub_match/cast_wchar_t.cc: Likewise.
+	* testsuite/28_regex/09_sub_match/length.cc: Likewise.
+	* testsuite/28_regex/09_sub_match/typedefs.cc: Likewise.
+	* testsuite/28_regex/10_match_results: Likewise.
+	* testsuite/28_regex/10_match_results/ctors: Likewise.
+	* testsuite/28_regex/10_match_results/ctors/char: Likewise.
+	* testsuite/28_regex/10_match_results/ctors/char/default.cc: Likewise.
+	* testsuite/28_regex/10_match_results/ctors/wchar_t: Likewise.
+	* testsuite/28_regex/10_match_results/ctors/wchar_t/default.cc:
+	Likewise.
+	* testsuite/28_regex/10_match_results/typedefs.cc: Likewise.
+	* testsuite/28_regex/11_algorithms: Likewise.
+	* testsuite/28_regex/11_algorithms/02_match: Likewise.
+	* testsuite/28_regex/11_algorithms/02_match/basic: Likewise.
+	* testsuite/28_regex/11_algorithms/02_match/basic/string_01.cc:
+	Likewise.
+	* testsuite/28_regex/11_algorithms/02_match/basic/
+	string_range_00_03.cc: Likewise.
+	* testsuite/28_regex/11_algorithms/02_match/basic/
+	string_range_01_03.cc: Likewise.
+	* testsuite/28_regex/11_algorithms/02_match/basic/
+	string_range_02_03.cc: Likewise.
+	* testsuite/28_regex/11_algorithms/02_match/extended: Likewise.
+	* testsuite/28_regex/11_algorithms/02_match/extended/cstring_plus.cc:
+	Likewise.
+	* testsuite/28_regex/11_algorithms/02_match/extended/
+	cstring_questionmark.cc: Likewise.
+	* testsuite/28_regex/11_algorithms/02_match/extended/string_any.cc:
+	Likewise.
+	* testsuite/28_regex/11_algorithms/02_match/extended/
+	string_range_00_03.cc: Likewise.
+	* testsuite/28_regex/11_algorithms/02_match/extended/
+	string_range_01_03.cc: Likewise.
+	* testsuite/28_regex/11_algorithms/02_match/extended/
+	string_range_02_03.cc: Likewise.
+	* testsuite/28_regex/12_iterators: Likewise.
+	* testsuite/28_regex/12_iterators/regex_iterator: Likewise.
+	* testsuite/28_regex/12_iterators/regex_iterator/ctors: Likewise.
+	* testsuite/28_regex/12_iterators/regex_iterator/ctors/char: Likewise.
+	* testsuite/28_regex/12_iterators/regex_iterator/ctors/char/
+	default.cc: Likewise.
+	* testsuite/28_regex/12_iterators/regex_iterator/ctors/wchar_t:
+	Likewise.
+	* testsuite/28_regex/12_iterators/regex_iterator/ctors/wchar_t/
+	default.cc: Likewise.
+	* testsuite/28_regex/12_iterators/regex_iterator/typedefs.cc: Likewise.
+	* testsuite/28_regex/12_iterators/regex_token_iterator: Likewise.
+	* testsuite/28_regex/12_iterators/regex_token_iterator/ctors: Likewise.
+	* testsuite/28_regex/12_iterators/regex_token_iterator/ctors/char:
+	Likewise.
+	* testsuite/28_regex/12_iterators/regex_token_iterator/ctors/char/
+	default.cc: Likewise.
+	* testsuite/28_regex/12_iterators/regex_token_iterator/ctors/
+	wchar_t: Likewise.
+	* testsuite/28_regex/12_iterators/regex_token_iterator/ctors/
+	wchar_t/default.cc: Likewise.
+	* testsuite/28_regex/12_iterators/regex_token_iterator/
+	typedefs.cc: Likewise.
+	* testsuite/28_regex/13_ecmascript: Likewise.
+
+2010-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/profile/impl/profiler_list_to_slist.h: Remove spurious
+	semicolon; prefer pre-increment.
+	* include/profile/impl/profiler_container_size.h: Use everywhere
+	qualified std::size_t.
+	* include/profile/impl/profiler_trace.h (__trace_base<>::
+	__collect_warnings): Tidy loop.
+	* include/profile/impl/profiler_vector_to_list.h: Minor formatting
+	changes.
+
+2010-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/profile/impl/profiler_trace.h: Uglify it to __it, use
+	everywhere std::size_t instead of size_t.
+
+2010-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/profile/impl/profiler_trace.h (__trace_base<>::
+	__trace_base()): Move inline, simplify; formatting tweaks.
+	* include/profile/impl/profiler_hash_func.h: Formatting tweaks.
+
+2010-06-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/profile/impl/profiler_trace.h (__warning_data::
+	__warning_message): Change to std::string; clean-up includes,
+	qualify size_t, fprintf, etc, with std everywhere.
+	(struct __warn::operator()): Adjust.
+	* include/profile/impl/profiler_list_to_slist.h
+	(__list2slist_info::__advice): Change to return a std::string;
+	clean-up includes, qualify size_t, fprintf, etc, with std.
+	* include/profile/impl/profiler_container_size.h
+	(__container_size_info::__advice): Likewise.
+	* include/profile/impl/profiler_hash_func.h (__hashfunc_info::
+	__advice): Likewise.
+	* include/profile/impl/profiler_list_to_vector.h
+	(__list2vector_info::__advice): Likewise.
+	* include/profile/impl/profiler_vector_to_list.h
+	(__vector2list_info::__advice): Likewise.
+	* include/profile/impl/profiler_map_to_unordered_map.h
+	(__map2umap_info::__advice): Likewise.
+	* include/profile/impl/profiler.h: Likewise.
+	* include/profile/impl/profiler_hashtable_size.h: Likewise.
+	* include/profile/impl/profiler_node.h: Likewise.
+	* include/profile/impl/profiler_vector_size.h: Likewise.
+
+	* include/profile/iterator_tracker.h: Formatting and stylistic
+	tweaks.
+	* include/profile/base.h: Likewise.
+	* include/profile/map.h: Likewise.
+
+2010-06-23  Paolo Carlini <paolo.carlini@oracle.com>
+
+	* include/bits/stl_tree.h (erase(iterator), erase(const_iterator)):
+	Remove inline specifier.
+
+2010-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/profile/impl/profiler_list_to_slist.h: Fix formatting,
+	other minor stylistic changes.
+	* include/profile/impl/profiler_container_size.h: Likewise.
+	* include/profile/impl/profiler_vector_size.h: Likewise.
+	* include/profile/impl/profiler_hash_func.h: Likewise.
+	* include/profile/impl/profiler_trace.h: Likewise.
+	* include/profile/impl/profiler_list_to_vector.h: Likewise.
+	* include/profile/impl/profiler_vector_to_list.h: Likewise.
+	* include/profile/impl/profiler_state.h: Likewise.
+	* include/profile/impl/profiler_map_to_unordered_map.h: Likewise.
+	* include/profile/impl/profiler_hashtable_size.h: Likewise.
+	* include/profile/impl/profiler_node.h: Likewise.
+
+2010-06-22  Matthias Klose  <doko@ubuntu.com>
+
+	* python/libstdcxx/v6/printers.py: Don't use string exceptions.
+
+2010-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/44630
+	* include/profile/impl/profiler_trace.h (__min, __max): Remove,
+	use std::min, std::max everywhere.
+	* include/profile/impl/profiler_container_size.h: Use std::min and
+	std::max.
+	* include/profile/impl/profiler_hash_func.h: Likewise.
+	* include/profile/impl/profiler_list_to_vector.h: Likewise.
+
+2010-06-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc:
+	Add *-*-solaris2.1[0-9]* to dg-xfail-if, dg-excess-errors.
+
+2010-06-20  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Kai-Uwe Bux  <bux@kubux.net>
+
+	* include/bits/random.tcc (uniform_int_distribution<>::operator()):
+	Fix to work well for arbitrary urng.max() and urng.min().
+
+2010-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/32618
+	* include/bits/stl_list.h (vector<>::_M_default_initialize,
+	_M_default_append): Declare.
+	(list<>::list(size_type), resize(size_type)): Add in C++0x mode,
+	use the latter.
+	* include/bits/list.tcc (list<>::resize, _M_default_append): Define.
+	* include/bits/stl_vector.h (vector<>::_M_default_initialize,
+	_M_default_append): Declare.
+	(vector<>::vector(size_type), resize(size_type)): Add in C++0x mode,
+	use the latter.
+	* include/bits/vector.tcc (vector<>::_M_default_append): Define.
+	* include/bits/stl_deque.h (deque<>::_M_default_initialize,
+	_M_default_append): Declare.
+	(deque<>::deque(size_type), resize(size_type)): Add in C++0x mode,
+	use the latter.
+	* include/bits/deque.tcc (deque<>::_M_default_append): Define.
+	* include/debug/vector: Update.
+	* include/debug/deque: Likewise.
+	* include/debug/list: Likewise.
+	* include/profile/vector: Likewise.
+	* include/profile/deque: Likewise.
+	* include/profile/list: Likewise.
+	* include/bits/forward_list.h (_M_default_initialize,
+	_M_default_insert_after): Declare.
+	(forward_list<>::forward_list(size_type), resize(size_type)): Fix,
+	use the latter.
+	* include/bits/forward_list.tcc (forward_list<>::_M_default_append,
+	_M_default_insert_after): Define.
+	* testsuite/util/testsuite_api.h (NonCopyConstructible): Add.
+	* testsuite/23_containers/forward_list/modifiers/6.cc: Move to...
+	* testsuite/23_containers/forward_list/capacity/resize_size.cc:
+	... here.
+	* testsuite/23_containers/forward_list/cons/10.cc: Move to...
+	* testsuite/23_containers/forward_list/cons/cons_size.cc: ... here.
+	* testsuite/23_containers/vector/resize/1.cc: Move to...
+	* testsuite/23_containers/vector/capacity/resize/1.cc: ... here.
+	* testsuite/23_containers/vector/resize/moveable.cc: Move to...
+	* testsuite/23_containers/vector/resize/capacity/moveable.cc: ... here.
+	* testsuite/23_containers/vector/cons/cons_size.cc: New.
+	* testsuite/23_containers/vector/capacity/resize/resize_size.cc:
+	Likewise.
+	* testsuite/23_containers/deque/cons/cons_size.cc: Likewise.
+	* testsuite/23_containers/deque/capacity/resize_size.cc: Likewise.
+	* testsuite/23_containers/list/cons/cons_size.cc: Likewise.
+	* testsuite/23_containers/list/capacity/resize_size.cc: Likewise.
+	* testsuite/23_containers/vector/capacity/resize/moveable.cc: Adjust.
+	* testsuite/23_containers/deque/capacity/moveable.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: Adjust dg-error line numbers.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+2010-06-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_uninitialized.h (__uninitialized_default,
+	__uninitialized_default_n, __uninitialized_default_a,
+	__uninitialized_default_n_a): Add.
+
+	* include/bits/stl_uninitialized.h (uninitialized_copy,
+	uninitialized_fill, uninitialized_fill_n): Use __is_trivial
+	instead of __is_pod.
+	* include/bits/valarray_array.h: Likewise.
+	* include/bits/stl_algobase.h (__copy_move_backward_a,
+	__copy_move_a): Likewise.
+
+2010-06-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_construct.h (_Construct): Change to variadic in
+	C++0x mode, consistently with allocator::construct.
+	* include/bits/stl_uninitialized.h (__uninitialized_copy_n): Use
+	_Construct.
+	(__uninitialized_construct_range): Move to...
+	* include/bits/stl_tempbuf.h (__uninitialized_construct_buf): ... here.
+
+2010-06-16  Matthias Klose  <doko@ubuntu.com>
+
+	* src/compatibility.cc: Export long double versions of "C" math
+	library for arm-linux-gnueabi, m68k-linux-gnu (ColdFire),
+	mips*-linux-gnu (o32 ABI), sh*-linux-gnu (32 bit).
+
+2010-06-15  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/lib/libstdc++.exp: Set additional_prunes.
+	(libstdc++-dg-test): Don't prune here.
+	* testsuite/lib/prune.exp (dg-prune-output): New.
+	(libstdc++-dg-prune): Rename from prune_g++_output.
+	Add a bunch of prunes from gcc's prune.exp.
+	* testsuite/18_support/headers/cstdbool/std_c++0x_neg.cc:
+	Remove dg-excess-errors.
+	* testsuite/18_support/headers/cstdint/std_c++0x_neg.cc: Likewise.
+	* testsuite/19_diagnostics/error_category/cons/copy_neg.cc: Likewise.
+	* testsuite/19_diagnostics/headers/system_error/std_c++0x_neg.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Likewise.
+	* testsuite/20_util/headers/type_traits/std_c++0x_neg.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/assign/shared_ptr_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/43820.cc: Likewise.
+	* testsuite/23_containers/headers/array/std_c++0x_neg.cc: Likewise.
+	* testsuite/23_containers/headers/tuple/std_c++0x_neg.cc: Likewise.
+	* testsuite/23_containers/headers/unordered_map/std_c++0x_neg.cc:
+	Likewise.
+	* testsuite/23_containers/headers/unordered_set/std_c++0x_neg.cc:
+	Likewise.
+	* testsuite/26_numerics/headers/ccomplex/std_c++0x_neg.cc: Likewise.
+	* testsuite/26_numerics/headers/cfenv/std_c++0x_neg.cc: Likewise.
+	* testsuite/26_numerics/headers/ctgmath/std_c++0x_neg.cc: Likewise.
+	* testsuite/26_numerics/headers/random/std_c++0x_neg.cc: Likewise.
+	* testsuite/27_io/headers/cinttypes/std_c++0x_neg.cc: Likewise.
+	* testsuite/28_regex/headers/regex/std_c++0x_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/decrement_neg.cc:
+	Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/increment_neg.cc:
+	Likewise.
+	* testsuite/30_threads/headers/condition_variable/std_c++0x_neg.cc:
+	Likewise.
+	* testsuite/30_threads/headers/future/std_c++0x_neg.cc: Likewise.
+	* testsuite/30_threads/headers/mutex/std_c++0x_neg.cc: Likewise.
+	* testsuite/30_threads/headers/thread/std_c++0x_neg.cc: Likewise.
+	* testsuite/ext/pb_ds/example/hash_resize_neg.cc: Likewise.
+	* testsuite/ext/profile/mutex_extensions.cc: Likewise.
+	* testsuite/ext/type_traits/add_unsigned_floating_neg.cc: Likewise.
+	* testsuite/ext/type_traits/remove_unsigned_floating_neg.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/assign/
+	shared_ptr_neg.cc: Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820.cc: Likewise.
+
+2010-06-13  Paolo Carlini <paolo.carlini@oracle.com>
+
+	* include/parallel/base.h (min, max): Mark inline.
+	* include/parallel/set_operations.h (__parallel_set_operation):
+	Uglify the Operation template parameter.
+
+2010-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/shared_ptr.h (hash<shared_ptr>): Add.
+	* include/bits/shared_ptr_base.h (hash<__shared_ptr>): Likewise.
+	* include/bits/unique_ptr.h (hash<unique_ptr>): Likewise.
+	* testsuite/20_util/shared_ptr/hash/1.cc: New.
+	* testsuite/20_util/unique_ptr/hash/1.cc: Likewise.
+
+2010-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Indent code examples
+	to match original C++STYLE document. Fix typos and syntax errors.
+	Add some basic docbook markup.
+	* doc/html/*: Regenerate.
+
+2010-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/44268
+	* doc/xml/manual/abi.xml: Fix libgcc version for hppa-linux.
+
+2010-06-11  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/tuple (_Swallow_assign::operator=): Add const.
+	(ignore): Replace anonymous namespace member with const instance.
+
+2010-06-10  Suresh Gumpula  <suresh.gumpula@amd.com>
+
+	PR libstdc++/43918
+	* config/os/djgpp/error_constants.h: New.
+	* configure.host: Use it.
+
+2010-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/tuple (tuple(const tuple&)): Define explicitly-defaulted.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Tweak dg-warning
+	line number.
+
+2010-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/44487
+	* include/bits/stl_pair.h (pair(pair&&)): Remove.
+	(pair(pair<_U1, _U2>&&): Use forward, consistently with Bullet 5
+	of LWG 1326.
+	* include/std/tuple (tuple(pair<_U1, _U2>&&)): Likewise.
+	* testsuite/20_util/pair/44487.cc: Add.
+	* testsuite/20_util/tuple/cons/44487.cc: Likewise.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust dg-warning
+	line numbers.
+
+2010-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/type_traits (is_nothrow_constructible): Add.
+	(declval): Add noexcept specification.
+	* testsuite/util/testsuite_tr1.h (struct NothrowExplicitClass,
+	ThrowExplicitClass, NoexceptExplicitClass, ExceptExplicitClass):
+	Add.
+	* testsuite/20_util/is_nothrow_constructible/value.cc: New.
+	* testsuite/20_util/is_nothrow_constructible/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/is_nothrow_constructible/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Adjust dg-error line numbers.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+
+2010-06-09  Khem Raj  <raj.khem@gmail.com>
+
+	PR libstdc++/44461
+	* libsupc++/eh_arm.cc (__cxa_end_cleanup): Use .pushsection/.popsection
+	to emit inline assembly into .text section.
+
+2010-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert:
+	2010-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/44413
+	* include/ext/vstring_util.h (__vstring_utility<>::_S_compare):
+	Simplify, just return -1, 0, 1.
+
+2010-06-09  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR bootstrap/43170
+	* configure: Regenerate.
+
+2010-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/44413
+	* include/ext/vstring_util.h (__vstring_utility<>::_S_compare):
+	Simplify, just return -1, 0, 1.
+
+2010-06-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/type_traits (has_nothrow_assign): Rename to
+	has_nothrow_copy_assign.
+	(has_trivial_assign): Rename to has_trivial_copy_assign.
+	* testsuite/20_util/has_nothrow_copy_assign/value.cc: New.
+	* testsuite/20_util/has_nothrow_copy_assign/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/has_nothrow_copy_assign/requirements/
+	explicit_instantiation.cc: Likewise.
+	* testsuite/20_util/has_trivial_copy_assign/value.cc: Likewise.
+	* testsuite/20_util/has_trivial_copy_assign/requirements/
+	typedefs.cc: Likewise.
+	* testsuite/20_util/has_trivial_copy_assign/requirements/
+	explicit_instantiation.cc: Likewise.
+
+2010-06-08  Johannes Singler  <singler@kit.edu>
+
+        * include/parallel/find.h
+        (__find_template(.., growing_blocks_tag)): Make block size
+        proportional to current position.
+        * include/parallel/settings.h (_Settings): Introduce new tuning
+        parameter find_scale_factor to the end of the struct, defaults to
+        0.01f.
+
+2010-06-08  Johannes Singler  <singler@kit.edu>
+
+        * include/parallel/partial_sum.h
+        (__parallel_partial_sum_linear):
+        Correctly calculate part lengths for partial_sum_dilation!=1.
+
+2010-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/44417
+	* include/c_std/cwctype: Provide a workaround for bug glibc
+	BZ 9694 affecting glibc 2.9 and older.
+	* include/c_global/cwctype: Likewise.
+	* testsuite/util/testsuite_abi.h: Remove temporary workaround.
+	* testsuite/util/testsuite_allocator.h: Use everywhere std::size_t
+	and std::ptrdiff_t, don't include <cstddef>.
+
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	error_code.cc: Minor tweak, prefer <cwchar> to <wchar.h>.
+
+2010-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/pb_ds/detail/trie_policy/order_statistics_imp.hpp:
+	Avoid -Wall warnings.
+	* testsuite/27_io/ios_base/failure/what-3.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/str/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/str/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputbackc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputbackc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sgetn/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sgetn/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekoff/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekoff/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sbumpc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sbumpc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/snextc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/snextc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sgetc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sgetc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sungetc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sungetc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekpos/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/seekpos/char/1.cc: Likewise.
+	* testsuite/27_io/types/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/peek/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/peek/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/ws/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/ws/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/wchar_t/8348-2.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/char/8348-2.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/8348.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/char/8348.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/01.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/01.cc:
+	Likewise.
+	* testsuite/27_io/fpos/mbstate_t/4_neg.cc: Likewise.
+	* testsuite/27_io/fpos/mbstate_t/2.cc: Likewise.
+	* testsuite/27_io/fpos/mbstate_t/3.cc: Likewise.
+	* testsuite/27_io/fpos/mbstate_t/5.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/4.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/char/4.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/sgetn/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/12790-4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/1-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/2-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/1-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/2-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/2-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sungetc/char/1-io.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sungetc/char/2-io.cc: Likewise.
+	* testsuite/25_algorithms/minmax/3.cc: Likewise.
+	* testsuite/19_diagnostics/logic_error/what-3.cc: Likewise.
+	* testsuite/19_diagnostics/runtime_error/what-3.cc: Likewise.
+	* testsuite/19_diagnostics/system_error/what-3.cc: Likewise.
+	* testsuite/24_iterators/front_insert_iterator/2.cc: Likewise.
+	* testsuite/24_iterators/back_insert_iterator/2.cc: Likewise.
+	* testsuite/24_iterators/insert_iterator/2.cc: Likewise.
+	* testsuite/18_support/exception_ptr/make_exception_ptr.cc: Likewise.
+	* testsuite/21_strings/c_strings/wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/c_strings/wchar_t/2.cc: Likewise.
+	* testsuite/21_strings/c_strings/char/1.cc: Likewise.
+	* testsuite/21_strings/c_strings/char/2.cc: Likewise.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/
+	copy.cc: Likewise.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/
+	cons/copy.cc: Likewise.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/
+	requirements/constants.cc: Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/
+	cons/copy.cc: Likewise.
+	* testsuite/26_numerics/random/mersenne_twister_engine/
+	cons/copy.cc: Likewise.
+	* testsuite/26_numerics/random/mersenne_twister_engine/
+	requirements/constants.cc: Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/
+	cons/copy.cc: Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/
+	requirements/constants.cc: Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/
+	cons/copy.cc: Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/
+	requirements/constants.cc: Likewise.
+	* testsuite/26_numerics/complex/complex_value.cc: Likewise.
+	* testsuite/26_numerics/headers/cmath/overloads.cc: Likewise.
+	* testsuite/26_numerics/headers/cmath/
+	c99_classification_macros_c++.cc: Likewise.
+	* testsuite/26_numerics/slice_array/array_assignment.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/12971.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/1.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/2.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/3.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/12971.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/3.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/4.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/6.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/7.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/8.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/17038.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/1.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/2.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/3.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/4.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/5.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/6.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/7.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/8.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/17038.cc: Likewise.
+	* testsuite/22_locale/num_put/put/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_year/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_year/char/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/char/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/char/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/char/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/wchar_t/5.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/char/5.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/1.cc: Likewise.
+	* testsuite/22_locale/moneypunct/members/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/moneypunct/members/char/1.cc: Likewise.
+	* testsuite/22_locale/ctype_base/mask.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry/requirements/constants.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	subtract_with_carry_01/requirements/constants.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	discard_block/requirements/constants.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	linear_congruential/requirements/constants.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	mersenne_twister/requirements/constants.cc: Likewise.
+	* testsuite/tr1/5_numerical_facilities/random/
+	xor_combine/requirements/constants.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cfenv/functions.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cinttypes/functions.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cstdlib/functions.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cstdio/functions.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cctype/functions.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cwchar/functions.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cmath/templates.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cmath/functions.cc: Likewise.
+	* testsuite/tr1/8_c_compatibility/cwctype/functions.cc: Likewise.
+	* testsuite/tr1/6_containers/utility/pair.cc: Likewise.
+	* testsuite/29_atomics/atomic_address/cons/aggregate.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/assign_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/cons/copy_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/
+	increment_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/
+	bitwise_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/operators/
+	decrement_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_flag/cons/1.cc: Likewise.
+	* testsuite/29_atomics/atomic/cons/assign_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Likewise.
+	* testsuite/23_containers/priority_queue/members/7161.cc
+	* testsuite/23_containers/set/dr130.cc: Likewise.
+	* testsuite/23_containers/list/pthread5.cc: Likewise.
+	* testsuite/23_containers/map/dr130.cc: Likewise.
+	* testsuite/util/exception/safety.h: Likewise.
+	* testsuite/util/testsuite_common_types.h: Likewise.
+	* testsuite/20_util/clocks/1.cc: Likewise.
+
+2010-06-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/Makefile.am, doc/Makefile.in (xml_sources_extra): Add
+	fdl-1.3.xml.
+	* doc/xml/manual/intro.xml: Update FDL link.
+	* doc/xml/manual/spine.xml: Update FDL include.
+	* doc/xml/gnu/fdl-1.3.xml: Add.
+	* doc/html/*: Regenerate.
+
+2010-06-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/ext/pointer.h (_Pointer_adapter::operator++): Remove
+	name of unused parameter.
+
+2010-06-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/40296
+	* libsupc++/exception_ptr.h (exception_ptr::exception_ptr): Replace
+	__safe_bool constructor with nullptr_t constructor in C++0x mode.
+	(exception_ptr::operator bool): Add explicit conversion to bool.
+	(swap(exception_ptr&, exception_ptr&)): Add.
+	(exception_ptr::_M_safe_bool_dummy): Only declare for old ABI.
+	* libsupc++/eh_ptr.cc (exception_ptr::_M_safe_bool_dummy): Move
+	next to other functions retained for ABI compatibility.
+	* testsuite/18_support/exception_ptr/requirements.cc: New.
+	* testsuite/18_support/exception_ptr/requirements_neg.cc: New.
+
+2010-06-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/shared_ptr_base.h (_Sp_counted_ptr::_M_dispose): Make
+	nullptr_t specializations inline.
+
+2010-06-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx200x.xml: Update.
+
+2010-06-05  Magnus Fromreide  <magfr@lysator.liu.se>
+            Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/functional (function): Add nullptr_t support.
+	* include/bits/shared_ptr.h (shared_ptr): Likewise.
+	* include/bits/unique_ptr.h (unique_ptr): Likewise.
+
+2010-06-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/shared_ptr_base.h (__shared_ptr): Add nullptr_t support.
+	(__shared_count): Add nullptr_t support and make constructors explicit.
+	* testsuite/20_util/shared_ptr/cons/43820.cc: Adjust.
+	* testsuite/20_util/shared_ptr/cons/nullptr.cc: New.
+	* testsuite/20_util/unique_ptr/cons/nullptr.cc: New.
+	* testsuite/20_util/unique_ptr/assign/nullptr.cc: New.
+	* testsuite/20_util/unique_ptr/assign/assign_neg.cc: Adjust.
+	* testsuite/20_util/unique_ptr/modifiers/reset_neg.cc: Adjust.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust.
+
+2010-06-04  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/util/testsuite_abi.h: Work around glibc BZ 9694.
+
+2010-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/util/testsuite_iterators.h: Don't include <cstddef>,
+	don't use NULL, use std::size_t and std::ptrdiff_t.
+	* testsuite/18_support/exception/38732.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/12439_1.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/12439_2.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/12439_3.cc: Likewise.
+	* testsuite/22_locale/locale/cons/12658_thread-2.cc: Likewise.
+	* testsuite/22_locale/locale/cons/12658_thread-2.cc: Likewise.
+	* testsuite/23_containers/list/pthread1.cc: Likewise.
+	* testsuite/23_containers/map/pthread6.cc: Likewise.
+	* testsuite/util/testsuite_hooks.cc: Likewise.
+	* config/locale/gnu/codecvt_members.cc: Likewise.
+	* config/locale/gnu/messages_members.cc: Likewise.
+	* config/locale/gnu/c_locale.h: Likewise.
+	* config/locale/gnu/messages_members.h: Likewise.
+	* config/locale/gnu/monetary_members.cc: Likewise.
+	* config/locale/gnu/time_members.cc: Likewise.
+	* config/locale/gnu/time_members.h: Likewise.
+	* config/locale/generic/c_locale.cc: Likewise.
+	* config/locale/generic/codecvt_members.cc: Likewise.
+	* config/locale/generic/c_locale.h: Likewise.
+	* config/locale/generic/time_members.cc: Likewise.
+	* config/locale/generic/time_members.h: Likewise.
+
+2010-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/c++config (std::size_t, std::ptrdiff_t,
+        std::nullptr_t): Provide typedefs.
+	* include/c_std/cstddef: Don't provide std::size_t and
+	std::ptrdiff_t here.
+	* include/c_global/cstddef: Likewise.
+	* src/condition_variable.cc: Don't include <cstddef>,
+	don't use NULL, use std::size_t and std::ptrdiff_t.
+	* src/mt_allocator.cc: Likewise.
+	* src/localename.cc: Likewise.
+	* src/chrono.cc: Likewise.
+	* src/thread.cc: Likewise.
+	* include/debug/formatter.h: Likewise.
+	* include/debug/functions.h: Likewise.
+	* include/std/valarray: Likewise.
+	* include/std/thread: Likewise.
+	* include/std/type_traits: Likewise.
+	* include/std/atomic: Likewise.
+	* include/std/iterator: Likewise.
+	* include/std/bitset: Likewise.
+	* include/std/fstream: Likewise.
+	* include/std/mutex: Likewise.
+	* include/c_std/cstdlib: Likewise.
+	* include/c_std/cstdio: Likewise.
+	* include/c_std/ctime: Likewise.
+	* include/c_std/cwchar: Likewise.
+	* include/c_std/cstring: Likewise.
+	* include/parallel/multiway_merge.h: Likewise.
+	* include/parallel/multiseq_selection.h: Likewise.
+	* include/parallel/base.h: Likewise.
+	* include/parallel/basic_iterator.h: Likewise.
+	* include/parallel/multiway_mergesort.h
+	* include/parallel/partition.h: Likewise.
+	* include/ext/string_conversions.h: Likewise.
+	* include/ext/pb_ds/assoc_container.hpp: Likewise.
+	* include/ext/pb_ds/detail/resize_policy/sample_size_policy.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/resize_policy/
+	hash_prime_size_policy_imp.hpp: Likewise.
+	* include/ext/pb_ds/detail/resize_policy/
+	sample_resize_policy.hpp: Likewise.
+	* include/ext/pb_ds/detail/resize_policy/
+	sample_resize_trigger.hpp: Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_base_/
+	erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_base_/
+	find_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_base_/
+	insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_base_/
+	constructors_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_base_/
+	debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/binomial_heap_base_/
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	erase_store_hash_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/d: Likewise.etail/cc_hash_table_map_/
+	insert_no_store_hash_fn_imps.hpp
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	cmp_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	find_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	insert_store_hash_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	info_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	entry_list_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	trace_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	cc_ht_map_.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	resize_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	constructor_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/cc_hash_table_map_/
+	erase_no_store_hash_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/unordered_iterator/
+	iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/unordered_iterator/
+	const_iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/unordered_iterator/
+	point_iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/unordered_iterator/
+	const_point_iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/r_erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/find_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/child_iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/update_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/
+	insert_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/
+	constructors_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/
+	const_child_iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/split_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/rotate_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/trace_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/node_iterators.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/internal_node.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/point_iterators.hpp: Likewise.
+	* include/ext/pb_ds/detail/pat_trie_/iterators_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	find_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	r_erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	constructors_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	rotate_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	node_iterators.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	point_iterators.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/bin_search_tree_/
+	iterators_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	find_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	gp_ht_map_.hpp: Likewise.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	resize_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/
+	standard_policies.hpp: Likewise.
+	* include/ext/pb_ds/detail/tree_policy/
+	sample_tree_node_update.hpp: Likewise.
+	* include/ext/pb_ds/detail/basic_tree_policy/
+	null_node_metadata.hpp: Likewise.
+	* include/ext/pb_ds/detail/binary_heap_/const_iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/binary_heap_/
+	const_point_iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/binary_heap_/
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/trie_policy/
+	sample_trie_node_update.hpp: Likewise.
+	* include/ext/pb_ds/detail/trie_policy/
+	sample_trie_e_access_traits.hpp: Likewise.
+	* include/ext/pb_ds/detail/pairing_heap_/erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pairing_heap_/insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pairing_heap_/debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/pairing_heap_/
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_policy/
+	counter_lu_metadata.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	trace_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	null_metadata.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	const_iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	constructors_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	iterators_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/left_child_next_sibling_heap_/
+	const_point_iterator.hpp: Likewise.
+	* include/ext/pb_ds/detail/thin_heap_/erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/thin_heap_/find_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/thin_heap_/insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/thin_heap_/
+	constructors_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/thin_heap_/debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/thin_heap_/
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/
+	constructors_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/node_iterators.hpp: Likewise.
+	* include/ext/pb_ds/detail/ov_tree_map_/
+	iterators_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/hash_fn/sample_probe_fn.hpp: Likewise.
+	* include/ext/pb_ds/detail/hash_fn/
+	sample_ranged_probe_fn.hpp: Likewise.
+	* include/ext/pb_ds/detail/hash_fn/sample_range_hashing.hpp: Likewise.
+	* include/ext/pb_ds/detail/hash_fn/
+	sample_ranged_hash_fn.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/find_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/splay_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/splay_tree_/
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/
+	trace_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/
+	erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/
+	find_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/lu_map_.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/
+	constructor_destructor_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/
+	insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/
+	info_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/list_update_map_/
+	iterators_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/
+	erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/
+	insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rc_binomial_heap_/
+	debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rb_tree_map_/erase_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rb_tree_map_/insert_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rb_tree_map_/debug_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rb_tree_map_/
+	split_join_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/detail/rb_tree_map_/info_fn_imps.hpp: Likewise.
+	* include/ext/pb_ds/list_update_policy.hpp: Likewise.
+	* include/ext/pb_ds/exception.hpp: Likewise.
+	* include/ext/pb_ds/tree_policy.hpp: Likewise.
+	* include/ext/pb_ds/tag_and_trait.hpp: Likewise.
+	* include/ext/pb_ds/hash_policy.hpp: Likewise.
+	* include/ext/pb_ds/trie_policy.hpp: Likewise.
+	* include/ext/pb_ds/priority_queue.hpp: Likewise.
+	* include/ext/throw_allocator.h: Likewis: Likewise.e.
+	* include/ext/bitmap_allocator.h
+	* include/ext/rc_string_base.h: Likewise.
+	* include/ext/new_allocator.h: Likewise.
+	* include/ext/codecvt_specializations.h: Likewise.
+	* include/ext/functional: Likewise.: Likewise.
+	* include/ext/array_allocator.h: Likewise.
+	* include/ext/mt_allocator.h: Likewise.
+	* include/ext/sso_string_base.h: Likewise.
+	* include/profile/impl/profiler_trace.h: Likewise.
+	* include/profile/impl/profiler_node.h: Likewise.
+	* include/bits/stl_algobase.h: Likewise.
+	* include/bits/functional_hash.h: Likewise.
+	* include/bits/locale_facets.tcc: Likewise.
+	* include/bits/locale_facets.h: Likewise.
+	* include/bits/stl_iterator_base_types.h: Likewise.
+	* include/bits/move.h: Likewise.
+	* include/bits/boost_concept_check.h: Likewise.
+	* include/bits/basic_string.tcc: Likewise.
+	* include/bits/locale_facets_nonio.tcc: Likewise.
+	* include/bits/fstream.tcc: Likewise.
+	* include/bits/locale_facets_nonio.h: Likewise.
+	* include/c_global/cstdlib: Likewise.
+	* include/c_global/cstdio: Likewise.
+	* include/c_global/ctime: Likewise.
+	* include/c_global/cwchar: Likewise.
+	* include/c_global/cstring
+	* include/tr1/type_traits: Likewise.
+	* include/backward/hash_fun.h: Likewise.
+	* libsupc++/new: Likewise.
+	* libsupc++/initializer_list: Likewise.
+	* testsuite/27_io/basic_ofstream/pthread2.cc: Likewise.
+	* testsuite/27_io/basic_iostream/cons/2020.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sgetn/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sgetn/char/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/overflow/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/overflow/char/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sgetc/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sgetc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputn/wchar_t/1057.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputn/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputn/char/1057.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputn/char/1.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputc/wchar_t/1057.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/sputc/char/1057.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/5268.cc: Likewise.
+	* testsuite/27_io/objects/char/9661-1.cc: Likewise.
+	* testsuite/27_io/objects/char/5268.cc: Likewise.
+	* testsuite/27_io/objects/char/10.cc: Likewise.
+	* testsuite/27_io/basic_ios/copyfmt/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ios/copyfmt/char/2.cc: Likewise.
+	* testsuite/27_io/basic_ios/exceptions/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ios/locales/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ios/clear/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/pthread3.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputc/wchar_t/1057.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputc/char/1057.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputn/wchar_t/1057.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/sputn/char/1057.cc: Likewise.
+	* testsuite/27_io/basic_istream/get/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/get/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/peek/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/peek/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	exceptions_null.cc
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/cons/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/
+	wchar_t/01.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/
+	char/01.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/
+	wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/
+	wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/
+	wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/
+	char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/
+	char/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/
+	char/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/
+	char/9826.cc: Likewise.
+	* testsuite/27_io/basic_istream/read/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/read/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/cons/2020.cc: Likewise.
+	* testsuite/27_io/basic_ostream/sentry/pod/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/
+	wchar_t/8.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/
+	char/8.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/setbuf/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputc/char/1057.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/open/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/open/char/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/open/char/9507.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/14975-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/wchar_t/12790-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/9964.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/char/12790-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputn/char/1057.cc: Likewise.
+	* testsuite/24_iterators/ostreambuf_iterator/2.cc: Likewise.
+	* testsuite/18_support/bad_exception/23591_thread-1.c
+	* testsuite/18_support/new_delete_placement.cc: Likewise.
+	* testsuite/18_support/pthread_guard.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/operations/char/1.cc: Likewise.
+	* testsuite/21_strings/basic_string/pthread4.cc: Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/5.cc: Likewise.
+	* testsuite/21_strings/basic_string/cons/char/5.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/cons/assign_neg.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/cons/assign_neg.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/mutex/cons/assign_neg.cc: Likewise.
+	* testsuite/30_threads/mutex/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/thread/cons/assign_neg.cc: Likewise.
+	* testsuite/30_threads/thread/cons/copy_neg.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/cons/
+	assign_neg.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/cons/
+	copy_neg.cc: Likewise.
+	* testsuite/ext/mt_allocator/22309_thread.cc: Likewise.
+	* testsuite/ext/slist/23781.cc: Likewise.
+	* testsuite/ext/rope/pthread7-rope.cc: Likewise.
+	* testsuite/ext/stdio_filebuf/char/10063-2.cc: Likewise.
+	* testsuite/22_locale/ctype/is/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/ctype/is/char/1.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/12439_1.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/12439_3.cc: Likewise.
+	* testsuite/22_locale/locale/cons/2.cc: Likewise.
+	* testsuite/22_locale/locale/cons/12658_thread-1.cc: Likewise.
+	* testsuite/22_locale/locale/cons/29217.cc: Likewise.
+	* testsuite/22_locale/locale/global_locale_objects/14071.cc: Likewise.
+	* testsuite/22_locale/locale/global_locale_objects/2.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multimap/
+	requirements/iterator_null_neg.cc: Likewise.
+	* testsuite/tr1/6_containers/unordered_multiset/
+	requirements/iterator_null_neg.cc: Likewise.
+	* testsuite/29_atomics/atomic_address/cons/single_value.cc: Likewise.
+	* testsuite/29_atomics/atomic_address/cons/aggregate.cc: Likewise.
+	* testsuite/23_containers/multimap/23781.cc: Likewise.
+	* testsuite/23_containers/set/23781.cc: Likewise.
+	* testsuite/23_containers/multiset/23781.cc: Likewise.
+	* testsuite/23_containers/list/pthread1.cc: Likewise.
+	* testsuite/23_containers/list/23781.cc: Likewise.
+	* testsuite/23_containers/map/pthread6.cc: Likewise.
+	* testsuite/23_containers/map/23781.cc: Likewise.
+	* testsuite/util/regression/rand/priority_queue/
+	rand_regression_test.hpp: Likewise.
+	* testsuite/util/regression/rand/priority_queue/
+	container_rand_regression_test.tcc: Likewise.
+	* testsuite/util/regression/rand/assoc/
+	rand_regression_test.hpp: Likewise.
+	* testsuite/util/regression/rand/assoc/
+	container_rand_regression_test.tcc: Likewise.
+	* testsuite/util/testsuite_hooks.cc: Likewise.
+	* testsuite/util/testsuite_io.h: Likewise.
+	* testsuite/util/testsuite_iterators.h: Likewise.
+	* testsuite/util/replacement_memory_operators.h: Likewise.
+	* testsuite/util/testsuite_allocator.h: Likewise.
+	* testsuite/util/testsuite_performance.h: Likewise.
+
+2010-06-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/pointer.cc: Fix
+	which tests are run.
+	* testsuite/20_util/shared_ptr/cons/pointer.cc: Likewise.
+
+2010-06-01  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* acinclude.m4, configure.host: Support Bionic C library.
+	* configure: Regenerate.
+	* config/os/bionic/ctype_base.h, config/os/bionic/ctype_inline.h,
+	* config/os/bionic/ctype_noincline.h, config/os/bionic/os_defines.h:
+	New files, based on config/os/newlib/*.
+
+2010-05-31  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/43820
+	* include/bits/shared_ptr_base.h: Require complete type.
+	* include/tr1/shared_ptr.h: Likewise.
+	* testsuite/20_util/shared_ptr/cons/43820.cc: New.
+	* testsuite/tr1/2_general_utilities/shared_ptr/cons/43820.cc: New.
+
+2010-05-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/basic_string.h (front, back): Add.
+	* include/debug/string: Adjust.
+	* include/ext/vstring.h (front, back): Tweak the implementation
+	to follow more closely the letter of the specs.
+	* testsuite/21_strings/basic_string/element_access/char/
+	front_back.cc: New.
+	* testsuite/21_strings/basic_string/element_access/wchar_t/
+	front_back.cc: Likewise.
+	* config/abi/pre/gnu.ver: Export new symbols.
+	* testsuite/util/testsuite_abi.cc: Adjust.
+	* configure.ac: Bump minor version to 6:15:0.
+	* configure: Regenerate.
+
+2010-05-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_vector.h (vector<>::data): Fix return type
+	in c++0x mode.
+	* testsuite/23_containers/vector/requirements/dr438/
+	assign_neg.cc: Adjust dg-error line number.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+2010-05-27  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	PR libstdc++/42832
+	* include/std/functional (function<>::swap): Perform bytewise
+	swap of _M_functor.
+	* include/tr1/functional (function<>::swap): Likewise.
+
+2010-05-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/40497
+	* include/bits/cpp_type_traits.h (__is_iterator): Add.
+	* include/bits/stl_iterator_base_funcs.h (next, prev): Use it.
+	* testsuite/24_iterators/operations/40497.cc: New.
+
+2010-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/25306
+	* include/bits/stl_algobase.h (fill_n): Use a properly typed __niter
+	initialized to __n.
+	* include/bits/stl_algo.h (generate_n): Likewise.
+	* testsuite/25_algorithms/fill_n/25306.cc: New.
+	* testsuite/25_algorithms/generate_n/25306.cc: Likewise.
+
+2010-05-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_CLOCALE): Use GNU locale model for
+	glibc 2.3 and later, but not uClibc, without an execution test.
+	* configure: Regenerate.
+	* doc/xml/manual/configure.xml, doc/xml/manual/prerequisites.xml,
+	doc/xml/faq.xml: Update.
+
+2010-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/tr1/functional: Use std::__addressof.
+	* include/tr1/hashtable_policy.h: Likewise.
+
+2010-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/41792
+	* include/tr1_impl/array: Use std::__addressof.
+	* include/std/functional (reference_wrapper): Likewise.
+	* include/ext/throw_allocator.h: Likewise.
+	* include/ext/pool_allocator.h: Likewise.
+	* include/ext/bitmap_allocator.h: Likewise.
+	* include/ext/new_allocator.h: Likewise.
+	* include/ext/malloc_allocator.h: Likewise.
+	* include/ext/array_allocator.h: Likewise.
+	* include/ext/mt_allocator.h: Likewise.
+	* include/ext/extptr_allocator.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/hashtable_policy.h: Likewise.
+	* include/bits/forward_list.h: Likewise.
+	* include/bits/stl_uninitialized.h: Likewise.
+	* include/bits/list.tcc: Likewise.
+	* include/bits/stl_construct.h: Likewise.
+	* include/bits/stl_tree.h: Likewise.
+	* testsuite/20_util/reference_wrapper/41792.cc: New.
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/multimap/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/set/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/unordered_set/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/multiset/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/list/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/map/requirements/
+	explicit_instantiation/4.cc: Likewise.
+	* testsuite/23_containers/array/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/
+	dr438/assign_neg.cc: Adjust dg-error line numbers.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+2010-05-20  Peter Dimov  <pdimov@pdimov.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/move.h (__addressof, addressof): Add.
+	* testsuite/util/testsuite_api.h (struct OverloadedAddress): Add.
+	* testsuite/20_util/addressof/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/20_util/addressof/1.cc: Likewise.
+
+2010-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_pair.h (pair<>::pair(const pair&)): Defaulted
+	in C++0x mode.
+	(pair<>::operator=(const pair<>&)): Add in C++0x mode.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust dg-error
+	line number.
+
+2010-05-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* testsuite/30_threads/future/members/wait.cc (wait): Rename.
+	* testsuite/30_threads/shared_future/members/wait.cc (wait): Likewise.
+
+2010-05-18  Eelis van der Weegen  <gcc-bugzilla@contacts.eelis.net>
+
+	PR libstdc++/44190
+	* include/debug/vector (vector<>::resize): Call
+	_M_update_guaranteed_capacity.
+	* testsuite/23_containers/vector/capacity/44190.cc: New.
+
+2010-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/functional (result_of): Move...
+	* include/std/type_traits: ... here.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line number.
+
+2010-05-12  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/20_util/auto_ptr/assign_neg.cc: Expect template
+	candidate messages.
+	* testsuite/20_util/unique_ptr/assign/assign_neg.cc: Likewise.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Likewise.
+
+2010-05-11  Silvius Rus  <silvius.rus@gmail.com>
+
+	PR libstdc++/43259
+	* include/profile/impl/profiler_algos.h: New.
+	* include/Makefile.am: Add.
+	* include/Makefile.in: Regenerate.
+	* include/profile/impl/profiler.h
+	(_GLIBCXX_PROFILE_DEFINE_UNINIT_DATA): Add.
+	* include/profile/impl/profiler_trace.h
+	(__mutex_t, __lock, __unlock): Remove.
+	(__lock_object_table, __lock_stack_table): Remove. Replace uses with
+	calls to __gnu_cxx::__mutex::lock.
+	(__unlock_object_table, __unlock_stack_table): Remove. Replace uses
+	with calls to __gnu_cxx::__mutex::unlock.
+	(__warn, __cost_factor_writer, __cost_factor_setter): Add.
+	* testsuite/ext/profile/profiler_algos.cc: New.
+
+2010-05-07  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* libsupc++/exception_ptr.h (make_exception_ptr): Add.
+	* testsuite/18_support/exception_ptr/make_exception_ptr.cc: New.
+
+2010-05-06  Jason Merrill  <jason@redhat.com>
+
+	* config/abi/pre/gnu.ver: Move decltype(nullptr) into CXXABI_1.3.5.
+	* testsuite/util/testsuite_abi.cc (check_version): Add CXXABI_1.3.5.
+
+	* config/abi/pre/gnu.ver: Add typeinfo for decltype(nullptr).
+
+2010-05-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/basic_string.h: Escape class names in doxygen docs.
+
+2010-05-06  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/44014
+	* include/bits/stringfwd.h: Add doxygen comments and new group.
+	* include/bits/basic_string.h: Add to new doxygen group.
+	* doc/doxygen/user.cfg.in (ALIASES): Link to correct group.
+
+2010-05-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.host: Removed irix[1-6], irix[1-5].*, irix6.[0-4]*
+	support.
+	* config/os/irix/irix5.2: Removed.
+
+2010-05-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/23_containers/vector/bool/capacity/29134.cc: Adjust
+	for profile-mode too.
+	* testsuite/23_containers/vector/bool/modifiers/insert/31370.cc:
+	Likewise.
+
+2010-05-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/profile/unordered_map (unordered_map<>::insert(_InputIter,
+	_InputIter), unordered_multimap<>::insert(_InputIter, _InputIter)):
+	Fix typo, don't call base() on __first and __last.
+
+2010-05-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Fix profile-mode vs -std=c++0x
+	* include/profile/impl/profiler_trace.h: Do not include the
+	whole <algorithm>, include <bits/stl_heap.h> (additionally
+	to <bits/stl_algobase.h>).
+	(__write_cost_factors): Replace std::for_each with open-coding.
+	(__set_cost_factors): Likewise.
+	(__report): Likewise; use std::make_heap / std::sort_heap
+	instead of std::sort.
+	(__report_cost_factors): Replace std::remove with open-coding.
+	(__warn, __cost_factor_writer, __cost_factor_setter): Remove.
+
+2010-05-04  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/43620
+	* configure.ac (AM_INIT_AUTOMAKE): Add no-dist.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* doc/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2010-05-01  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/faq.xml: Fix anachronisms.
+	* doc/xml/manual/intro.xml (Make): Tweak grammar and whitespace.
+	* doc/xml/manual/support.xml (NULL): Use inline <code> element
+	instead of <programlisting> block.
+	* doc/html/*: Regenerate.
+
+2010-04-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_pair.h (piecewise_construct_t,
+	pair<>::pair(piecewise_construct_t, tuple, tuple)): Add.
+	(pair<>::__cons, pair<>::__do_cons): Declare.
+	(__decay_and_strip, __strip_reference_wrapper): Move...
+	* include/std/type_traits: ... here.
+	* include/std/functional (_Index_tuple, _Build_index_tuple): Move...
+	* include/std/tuple: ... here.
+	(pack_arguments): Add.
+	(pair<>::__cons, pair<>::__do_cons): Define.
+	* testsuite/20_util/tuple/creation_functions/pack_arguments.cc: New.
+	* testsuite/20_util/pair/piecewise.cc: Likewise.
+	* testsuite/20_util/tuple/cons/big_tuples.cc: Include <utility>.
+	* testsuite/20_util/tuple/cons/constructor.cc: Likewise.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc: Adjust
+	dg-error line numbers.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Likewise.
+
+2010-04-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/43865
+	* include/c_global/cstdlib (abort, exit): _GLIBCXX_NORETURN typo.
+
+2010-04-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx200x.xml: Update quick_exit status.
+	* doc/html/*: Regenerate.
+
+2010-04-27  Fabien Chêne  <fabien.chene@gmail.com>
+
+	* testsuite/util/testsuite_error.h: Add empty default constructor
+	to __gnu_test::test_category and
+	__gnu_test::test_derived_category.
+	* src/future.cc: Add empty default constructor to
+	future_error_category.
+	* src/system_error.cc: Add default ctor to generic_error_category
+	and system_error_category.
+
+2010-04-27  Alexander Monakov  <amonakov@ispras.ru>
+
+	* testsuite/22_locale/codecvt/unshift/char/1.cc (test01): Clarify size
+	definition.  Use memcpy and memcmp to avoid access beyond allocated
+	memory.
+
+2010-04-27  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx200x.xml: Update to match n3092.
+	* doc/html/*: Regenerate.
+
+2010-04-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx200x.xml: Update Threads status.
+	* doc/html/manual/status.html: Regenerate.
+
+2010-04-24  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/unique_ptr (unique_ptr::pointer): Use deleter's
+	pointer type if it exists.
+	* testsuite/20_util/unique_ptr/requirements/pointer_type.cc: New.
+	* testsuite/20_util/unique_ptr/assign/assign_neg.cc: Adjust.
+	* testsuite/20_util/unique_ptr/modifiers/reset_neg.cc: Adjust.
+
+2010-04-22  Johannes Singler  <singler@kit.edu>
+
+        * include/parallel/partition.h (__parallel_partition):
+        Improve scalability by:
+        -introducing new variables __leftold, __rightold, __dist, thus
+        -getting rid of omp lock by using atomic operations
+        -getting rid of two omp barriers
+
+2010-04-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/faq.xml: Link to manual.
+	* doc/xml/manual/using.xml: Expand dynamic libraries section.
+	* doc/xml/manual/strings.xml: Mention shrink_to_fit() member.
+	* doc/xml/manual/prerequisites.xml: Link to doxygen requirements.
+	* doc/xml/manual/appendix_contributing.xml: Update Bash version.
+	* doc/html/*: Regenerate.
+
+2010-04-13  Ian Lance Taylor  <iant@google.com>
+
+	* include/backward/hash_map: Don't #include "backward_warning.h"
+	if _GLIBCXX_PERMIT_BACKWARD_HASH is defined.
+	* include/backward/hash_set: Likewise.
+
+2010-04-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.host (os_include_dir): Removed solaris2.7 support.
+	* crossconfig.m4 (GLIBCXX_CROSSCONFIG): Likewise.
+	* configure: Regenerate.
+
+2010-04-06  Matthias Klose  <doko@ubuntu.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Show test result.
+	* configure: Regenerate.
+	* doc/xml/manual/configure.xml, doc/html/manual/configure.html:
+	Document --enable-libstdcxx-time as the short form for
+	--enable-libstdcxx-time=yes.
+
+2010-04-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/basic_string.h: Fix pasto in comment.
+	* include/ext/vstring.h: Likewise.
+
+2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* doc/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2010-03-30  Johannes Singler  <singler@kit.edu>
+
+        * include/parallel/random_shuffle.h
+        (__parallel_random_shuffle_drs) : Take as many threads as
+        possible, i. e. favor parallelism over cache efficiency.
+        Use own PRNG also for the 1 thread case.
+
+2010-03-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/debug/unordered_map: Clean-up includes and guards.
+	* include/debug/unordered_set: Likewise.
+	* include/debug/list: Likewise.
+	* include/profile/unordered_map: Likewise.
+	* include/profile/unordered_set: Likewise.
+
+2010-03-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/43458
+	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc:
+	Xfail hppa*-*-hpux*.
+
+2010-03-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/xml/manual/profile_mode.xml (Profile Diagnostics): Correct
+	cols.
+	* doc/xml/manual/using.xml (C++ 1998 Library Headers): Add missing
+	c5 colspec.
+	(C++ 1998 Library Headers for C Library Facilities): Likewise.
+	(C++ 200x Library Headers): Likewise.
+
+2010-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/unordered_map.h (operator==, operator!=): Add per N3068.
+	* include/bits/unordered_set.h (operator==, operator!=): Likewise.
+	* include/debug/unordered_map (operator==, operator!=): Likewise.
+	* include/debug/unordered_set: Likewise.
+	* include/profile/unordered_map: Likewise.
+	* include/profile/unordered_set: Likewise.
+	* testsuite/23_containers/unordered_map/operators/1.cc: New.
+	* testsuite/23_containers/unordered_multimap/operators/1.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/operators/2.cc: Likewise.
+	* testsuite/23_containers/unordered_set/operators/1.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/operators/1.cc: Likewise.
+
+2010-03-25  John Lakos  <jlakos@bloomberg.net>
+	    Pablo Halpern  <phalpern@halpernwightsoftware.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/hashtable_policy.h (struct _Equality_base): Add.
+	* include/bits/hashtable.h (_Hashtable<>): Derive from the latter.
+
+2010-03-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/util/testsuite_tr1.h (NType, TType, SLType, PODType): Add.
+	* testsuite/20_util/is_trivial/value.cc: Adjust.
+	* testsuite/20_util/is_standard_layout/value.cc: Likewise.
+	* testsuite/20_util/is_pod/value.cc: Likewise.
+
+2010-03-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/20_util/is_trivial/value.cc: New.
+	* testsuite/20_util/is_standard_layout/value.cc: Likewise.
+	* testsuite/20_util/is_pod/value.cc: Extend.
+
+2010-03-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algobase.h (lower_bound(_ForwardIterator,
+	_ForwardIterator, const _Tp&, _Compare)): Move...
+	* include/bits/stl_algo.h: ... here.
+
+2010-03-22  Johannes Singler  <singler@kit.edu>
+
+        * include/parallel/numeric (inner_product, partial_sum):
+        Precede subsequent call with _GLIBCXX_STD_P:: to avoid ambiguity
+        between __gnu_parallel:: and std::
+        * include/parallel/algobase.h (equal): Likewise.
+        * include/parallel/algo.h (find_first_of, search_n, merge, nth_element,
+        partial_sort, max_element, min_element): Likewise.
+        * include/parallel/partial_sum.h (__parallel_partial_sum_linear):
+        Qualify accumulate call with __gnu_parallel::.
+
+2010-03-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/parallel/base.h (_PseudoSequence): Do not forward declare.
+	(_VoidFunctor): Remove, unused.
+	(__median_of_three_iterators): Take __comp by value.
+	(_PseudoSequenceIterator<>::operator++(int)): Do not const qualify
+	the return type.
+	(_PseudoSequenceIterator<>::operator!=): Fix return type to bool.
+
+2010-03-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/parallel/base.h (_Less): Use std::less.
+	(_Plus): Likewise use std::plus.
+	(_Multiplies): Likewise use std::multiplies.
+	* include/parallel/numeric: Adjust.
+
+2010-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/17_intro/freestanding.cc: Avoid -Wall warnings.
+
+2010-03-19  Rodolfo Lima  <rodolfo@rodsoft.org>
+
+	* include/bits/shared_ptr.h (shared_ptr(unique_ptr&&),
+	shared_ptr(auto_ptr&&)): Remove explicit specifier (as per DR 925).
+	* include/bits/shared_ptr_base.h: Likewise.
+	* testsuite/20_util/shared_ptr/creation/dr925.cc: New.
+
+2010-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/random.tcc: Minor formatting changes.
+
+2010-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algo.h (shuffle): Fix typo in signature.
+	* include/bits/algorithmfwd.h: Adjust.
+	* testsuite/25_algorithms/shuffle/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/shuffle/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+
+2010-03-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_algo.h (shuffle): Add, per D3056.
+	(random_shuffle): Fix signature in C++0x mode.
+	(lower_bound, __lg): Move...
+	* include/bits/stl_algobase.h: ... here.
+	* include/bits/algorithmfwd.h: Adjust.
+	* include/parallel/algorithmfwd.h: Likewise.
+	* include/parallel/algo.h: Likewise.
+	* include/bits/hashtable_policy.h (__lower_bound): Remove,
+	adjust callers.
+	* include/tr1/hashtable_policy.h (__lower_bound): Likewise.
+	* include/bits/random.tcc (__detail::__transform): Add,
+	adjust std::transform callers; don't include <algorithm>.
+	* testsuite/25_algorithms/shuffle/1.cc: Add.
+	* testsuite/25_algorithms/shuffle/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/shuffle/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+
+	* include/bits/random.h: Add comments.
+
+2010-03-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/debug_mode.xml: Correct debug headers.
+
+2010-03-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/43397
+	* include/std/functional (_Mem_fn): Use perfect forwarding.
+	* testsuite/20_util/function/43397.cc: New.
+
+2010-03-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/43394
+	* include/parallel/compatibility.h: Add __k8 and __core2 among the
+	i386 targets supporting atomic operations.
+
+2010-03-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/backward/hash_map: Use consistently the _BACKWARD_*
+	prefix for the include guard.
+	* include/backward/hash_fun.h: Likewise.
+	* include/backward/hashtable.h: Likewise.
+	* include/backward/auto_ptr.h: Likewise.
+	* include/backward/strstream: Likewise.
+	* include/backward/binders.h: Likewise.
+	* include/backward/hash_set: Likewise.
+
+2010-03-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/random.h (operator==(const uniform_int_distribution<>&,
+	const uniform_int_distribution<>&), operator==(const
+	uniform_real_distribution<>&, const uniform_real_distribution<>&),
+	operator==(const lognormal_distribution<>&,
+	const lognormal_distribution<>&), operator==(const
+	chi_squared_distribution<>&, const chi_squared_distribution<>&),
+	operator==(const cauchy_distribution<>&, const cauchy_distribution<>&),
+	operator==(const fisher_distribution<>&, const fisher_distribution<>&),
+	operator==(const student_t_distribution<>&,
+	const student_t_distribution<>&), operator==(const
+	bernoulli_distribution<>&, const bernoulli_distribution<>&),
+	operator==(const binomial_distribution<>&, const
+	binomial_distribution<>&), operator==(const geometric_distribution<>&,
+	const geometric_distribution<>&), operator==(const
+	negative_binomial_distribution<>&, const
+	negative_binomial_distribution<>&), operator==(const
+	poisson_distribution<>&, const poisson_distribution<>&),
+	operator==(const exponential_distribution<>&,
+	const exponential_distribution<>&), operator==(const
+	gamma_distribution<>&, const gamma_distribution<>&), operator==(const
+	weibull_distribution<>&, const weibull_distribution<>&),
+	operator==(const extreme_value_distribution<>&,
+	const extreme_value_distribution<>&), operator==(const
+	discrete_distribution<>&, const discrete_distribution<>&),
+	operator==(const piecewise_constant_distribution<>&,
+	const piecewise_constant_distribution<>&), operator==(const
+	piecewise_linear_distribution<>&, const
+	piecewise_linear_distribution<>&)): Add, likewise for operator!=.
+	(operator!=(const independent_bits_engine<>&, const
+	independent_bits_engine<>&), operator!=(const
+	subtract_with_carry_engine<>&, const subtract_with_carry_engine<>&),
+	operator!=(const discard_block_engine<>&, const
+	discard_block_engine<>&), operator!=(const mersenne_twister_engine<>&,
+	const mersenne_twister_engine<>&), operator!=(const
+	linear_congruential_engine<>&, const linear_congruential_engine<>&),
+	operator!=(const shuffle_order_engine<>&, const
+	shuffle_order_engine<>&): Add.
+	* include/bits/random.tcc (operator==(const normal_distribution<>&,
+	const normal_distribution<>&)): Add.
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/
+	inequal.cc: New.
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/
+	operators/inequal.cc: Likewise.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/
+	operators/equal.cc: Likewise.
+	* testsuite/26_numerics/random/chi_squared_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/chi_squared_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/normal_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/normal_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/uniform_int_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/uniform_int_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/poisson_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/poisson_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/bernoulli_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/bernoulli_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/discrete_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/discrete_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/weibull_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/weibull_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/independent_bits_engine/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/discard_block_engine/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/cauchy_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/cauchy_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/negative_binomial_distribution/
+	operators/inequal.cc: Likewise.
+	* testsuite/26_numerics/random/negative_binomial_distribution/
+	operators/equal.cc: Likewise.
+	* testsuite/26_numerics/random/gamma_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/gamma_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/mersenne_twister_engine/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/fisher_f_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/fisher_f_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/exponential_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/exponential_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/binomial_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/binomial_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/lognormal_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/lognormal_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/extreme_value_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/extreme_value_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/
+	operators/inequal.cc: Likewise.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/
+	operators/equal.cc: Likewise.
+	* testsuite/26_numerics/random/student_t_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/student_t_distribution/operators/
+	equal.cc: Likewise.
+	* testsuite/26_numerics/random/linear_congruential_engine/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/shuffle_order_engine/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/geometric_distribution/operators/
+	inequal.cc: Likewise.
+	* testsuite/26_numerics/random/geometric_distribution/operators/
+	equal.cc: Likewise.
+
+2010-03-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/forward_list.tcc (_Fwd_list_node_base::
+	_M_transfer_after): Return _Fwd_list_node_base*.
+	(forward_list<>::_M_splice_after): Add.
+	(forward_list<>::insert_after(const_iterator, size_type, const _Tp&),
+	insert_after(const_iterator, _InputIterator, _InputIterator),
+	insert_after(const_iterator, initializer_list<>)): Use the above,
+	implement DR 1278 ([Ready] in Pittsburgh).
+	* include/bits/forward_list.h (insert_after(const_iterator,
+	size_type, const _Tp&), insert_after(const_iterator, _InputIterator,
+	_InputIterator), insert_after(const_iterator, initializer_list<>)):
+	Only declare.
+	* testsuite/23_containers/forward_list/modifiers/2.cc: Adjust.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: Adjust dg-error line number.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+2010-03-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: Adjust dg-error line number.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/capacity/1.cc: Adjust.
+
+	Revert:
+	2008-11-11  Bob Walters  <bob.s.walters@gmail.com>
+
+	* include/bits/forward_list.h: Support non-standard pointer types
+	(_Fwd_list_node_base): Add _Alloc template parameter.
+	(_Fwd_list_node<>): Likewise.
+	(_Fwd_list_iterator<>): Likewise.
+	(_Fwd_list_const_iterator<>): Likewise.
+	(_Fwd_list_node_base::_M_next, _M_transfer_after, _M_reverse_after):
+	Use _Alloc<_Tp>::pointer.
+	(_Fwd_list_iterator<>::_M_node): Use _Node_base::_Pointer.
+	(_Fwd_list_base<>::_M_get_node, _M_create_node, _M_create_node,
+	_M_insert_after, _M_put_node, _M_erase_after): Likewise.
+	(_Fwd_list_const_iterator<>::_M_node): use _Node_base::_Const_pointer.
+	(forward_list<>): Use __static_pointer_cast in place of static_cast,
+	and __const_pointer_cast in place of const_cast.
+	* include/bits/forward_list.tcc
+	(_Fwd_list_node<>::_M_sort_after): Using _Pointer typedefs in place
+	of standard pointers, __static_pointer_cast in place of static_cast.
+	(_Fwd_list_base<>::_Fwd_list_base, _M_insert_after, _M_erase_after):
+	Likewise.
+	(forward_list<>::_M_initialize_dispatch, _M_fill_initialize,
+	splice_after, remove, remove_if, merge): Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/modifiers/1.cc: New.
+	* testsuite/23_containers/forward_list/ext_pointer/modifiers/2.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/modifiers/3.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/modifiers/4.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/modifiers/5.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/operations/1.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/operations/2.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/operations/3.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/operations/4.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/operations/5.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/operations/6.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/operations/7.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/requirements/1.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/requirements/
+	explicit_instantiation/1.cc: Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/forward_list/ext_pointer/1.cc: Likewise.
+
+2010-03-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/tr1_impl/array (swap(array<>&, array<>&)): Use member swap.
+
+	* include/bits/stl_algo.h: Improve comment.
+
+2010-03-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* scripts/run_doxygen: Adjust.
+	* doc/doxygen/user.cfg.in: Adjust latex, xml prefs.
+	* doc/xml/api.xml: Update.
+	* doc/Makefile.am: Re-do stamp rules.
+	* doc/Makefile.in: Regenerate.
+
+2010-03-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/hashtable_policy.h (_Rehash_base<_Prime_rehash_policy,
+	_Hashtable>::reserve): Add, per DR 1189.
+	* include/bits/hashtable.h (_Hashtable<>::size_type,
+	_Hashtable<>::difference_type): Do not typedef from _Allocator.
+	* testsuite/23_containers/unordered_map/dr1189.cc: New.
+	* testsuite/23_containers/unordered_set/dr1189.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/dr1189.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/dr1189.cc: Likewise.
+
+2010-03-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert:
+	2010-02-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/41975, DR 579
+	* include/bits/hashtable.h (_Hashtable<>::_M_erase_node): Remove.
+	(erase(const_iterator), erase(const_iterator, const_iterator)):
+	Change return type to void.
+	* include/debug/unordered_map: Adjust.
+	* include/debug/unordered_set: Likewise.
+	* testsuite/util/exception/safety.h: Likewise.
+	* testsuite/23_containers/unordered_map/erase/1.cc: Likewise.
+	* testsuite/23_containers/unordered_map/erase/24061-map.cc: Likewise.
+	* testsuite/23_containers/unordered_set/erase/1.cc:  Likewise.
+	* testsuite/23_containers/unordered_set/erase/24061-map.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/erase/1.cc:  Likewise.
+	* testsuite/23_containers/unordered_multimap/erase/24061-map.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/erase/1.cc:  Likewise.
+	* testsuite/23_containers/unordered_multiset/erase/24061-map.cc:
+	Likewise.
+
+2010-03-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/util/testsuite_container_traits.h (traits_base): Add
+	has_throwing_erase trait.
+	(traits<vector>, traits<deque>): Typedef the latter to true_type.
+	* testsuite/util/exception/safety.h (generation_prohibited):
+	Do not test vector::erase and deque::erase: can throw if
+	either copy constructor or assignment operator of value_type
+	throws.
+	* testsuite/23_containers/vector/requirements/exception/
+	generation_prohibited.cc: Remove xfail.
+	* testsuite/23_containers/deque/requirements/exception/
+	generation_prohibited.cc: Likewise.
+
+	* include/ext/throw_allocator.h (hash<__gnu_cxx::throw_value_limit>::
+	operator(), hash<__gnu_cxx::throw_value_random>::operator()): Pass
+	argument by const ref.
+
+	* testsuite/util/testsuite_container_traits.h (traits<map>,
+	traits<multimap>, traits<set>, traits<multiset>,
+	traits<unordered_map>, traits<unordered_multimap>,
+	traits<unordered_set>, traits<unordered_multiset>): Typedef
+	consistently has_erase and has_insert as true_type.
+
+	* testsuite/util/testsuite_container_traits.h
+	(traits<unordered_map>, traits<unordered_multimap>,
+	traits<unordered_set>, traits<unordered_multiset>): Do not wrongly
+	typedef has_size_type_constructor as true_type: the constructor
+	accepting a size_type actually gets the initial number of
+	buckets.
+
+2010-03-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/Makefile.am: Re-organize xml sources.
+	(doc-latex-doxygen): New.
+	(doc-pdf-doxygen): New.
+	(stamp-xml-doxygen, stamp-latex-doxygen): New.
+	* doc/Makefile.in: Regenerate.
+	* doc/doxygen/user.cfg.in: Add support here.
+	* doc/xml/manual/appendix_contributing.xml: Add specifics.
+
+	* doc/xml/manual/concurrency.xml: New.
+	* doc/xml/manual/atomics.xml: New.
+	* doc/xml/manual/spine.xml: Adjust.
+	* doc/xml/manual/diagnostics.xml: Adjust.
+
+2010-03-03  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/unique_ptr.h (unique_ptr<>::get_deleter): Simplify
+	return type.
+	* testsuite/20_util/unique_ptr/modifiers/reset_neg.cc: Adjust
+	dg-error line number.
+	* testsuite/20_util/unique_ptr/assign/assign_neg.cc: Likewise.
+
+2010-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/debug/bitset (hash): Minor tweaks.
+	* include/debug/vector (hash): Likewise.
+	* include/profile/bitset (hash): Likewise.
+	* include/profile/vector (hash): Likewise.
+
+2010-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/functional_hash.h (_Fnv_hash_base<>::hash): Change
+	to template.
+	* include/tr1/functional_hash.h (_Fnv_hash_base<>::hash): Likewise.
+	* include/bits/vector.tcc (hash): Adjust.
+	* include/bits/basic_string.h (hash): Likewise.
+	* include/std/bitset (hash): Likewise.
+	* src/hash-string-aux.cc (hash): Likewise.
+
+2010-03-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/mutex (lock_guard::lock_guard): Do not lock mutex when
+	adopt_lock_t constructor is used.
+	* testsuite/30_threads/lock_guard/cons/1.cc: New.
+
+2010-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_bvector.h (hash<vector<bool, _Alloc>>::
+	operator()(const vector<bool, _Alloc>&)): Move definition...
+	* include/bits/vector.tcc: ... here.
+
+2010-03-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/Makefile.am (check-DEJAGNU): Include de* in normal0
+	dirs.
+	* testsuite/Makefile.in: Regenerate.
+
+2010-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_bvector.h (hash<vector<bool, _Alloc>>): Add.
+	* include/debug/vector (hash<__debug::vector<bool, _Alloc>>):
+	Likewise.
+	* include/profile/vector (hash<__profile::vector<bool, _Alloc>>):
+	Likewise.
+	* testsuite/23_containers/vector/bool/hash/1.cc: New.
+
+	* include/std/bitset (hash<bitset<_Nb>>): Small tweaks.
+	(hash<bitset<0>>): Add.
+	* include/debug/bitset (hash<__debug::bitset<_Nb>>): Forward to
+	hash<bitset<_Nb>>.
+	* include/profile/bitset (hash<__profile::bitset<_Nb>>): Likewise.
+	* testsuite/23_containers/bitset/hash/1.cc: Improve.
+
+2010-03-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/43230
+	* testsuite/30_threads/promise/members/set_value3.cc
+	(tester::~tester): Remove.
+
+2010-03-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/bitset (_Base_bitset<>::_M_getdata()): Add.
+	(hash<bitset<_Nb>>): Add, use the latter.
+	* include/debug/bitset (hash<__debug::bitset<_Nb>>): Add.
+	* include/profile/bitset (hash<__profile::bitset<_Nb>>): Likewise.
+	* testsuite/23_containers/bitset/hash/1.cc: New.
+
+2010-03-02  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/43183
+	* include/bits/unique_ptr.h (reset): Fix as per working paper.
+	(operator*, operator->, operator[], operator bool, release): Use
+	pointer's null value instead of 0.
+	* testsuite/20_util/unique_ptr/assign/assign_neg.cc: Adjust.
+	* testsuite/20_util/unique_ptr/modifiers/reset_neg.cc: Adjust.
+	* testsuite/20_util/unique_ptr/modifiers/43183.cc: New.
+
+2010-03-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/iomanip (get_money, put_money): Add in C++0x mode; tidy.
+	* testsuite/27_io/manipulators/extended/get_money/char/1.cc: New.
+	* testsuite/27_io/manipulators/extended/get_money/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/manipulators/extended/put_money/char/1.cc: Likewise.
+	* testsuite/27_io/manipulators/extended/put_money/wchar_t/1.cc:
+	Likewise.
+
+2010-03-01  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/atomicfwd_cxx.h: Add typedefs to group.
+
+2010-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/32499
+	* testsuite/Makefile.am (check-DEJAGNU
+	$(check_DEJAGNU_normal_targets)): Export AR, RANLIB.
+	* testsuite/Makefile.in: Regenerate.
+
 2010-02-28  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/html/ext/pb_ds/references.html: Adjust link to SGI's STL

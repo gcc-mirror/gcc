@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -123,7 +123,7 @@ namespace detail
 	return -2;
       };
 
-    xml_test_rand_regression_formatter* p_fmt = NULL;
+    xml_test_rand_regression_formatter* p_fmt = 0;
     if (sd == 0)
       sd = twister_rand_gen::get_time_determined_seed();
     if (disp)

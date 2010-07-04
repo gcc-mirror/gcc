@@ -1,8 +1,8 @@
-/* Copyright (C) 2002, 2003, 2005, 2006, 2007, 2009
+/* Copyright (C) 2002, 2003, 2005, 2006, 2007, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -159,7 +159,7 @@ show_locus (st_parameter_common *cmp)
 	{
 	  st_printf ("At line %d of file %s (unit = %d, file = '%s')\n",
 		   (int) cmp->line, cmp->filename, (int) cmp->unit, filename);
-	  free_mem (filename);
+	  free (filename);
 	}
       else
 	{
@@ -452,13 +452,13 @@ notification_std (int std)
   int warning;
 
   if (!compile_options.pedantic)
-    return SILENT;
+    return NOTIFICATION_SILENT;
 
   warning = compile_options.warn_std & std;
   if ((compile_options.allow_std & std) != 0 && !warning)
-    return SILENT;
+    return NOTIFICATION_SILENT;
 
-  return warning ? WARNING : ERROR;
+  return warning ? NOTIFICATION_WARNING : NOTIFICATION_ERROR;
 }
 
 

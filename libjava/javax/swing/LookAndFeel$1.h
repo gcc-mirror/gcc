@@ -32,7 +32,7 @@ class javax::swing::LookAndFeel$1 : public ::java::lang::Object
 public: // actually package-private
   LookAndFeel$1(::java::net::URL *);
 public:
-  ::java::lang::Object * createValue(::javax::swing::UIDefaults *);
+  virtual ::java::lang::Object * createValue(::javax::swing::UIDefaults *);
 private:
   ::java::net::URL * __attribute__((aligned(__alignof__( ::java::lang::Object)))) val$file;
 public:

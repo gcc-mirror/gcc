@@ -1,6 +1,6 @@
 // 2001-05-23 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,10 +29,6 @@ void test01()
   const std::string str00; 
   const std::string str01 = "123";
   std::string str02;
-
-  std::ios_base::iostate statefail, stateeof;
-  statefail = std::ios_base::failbit;
-  stateeof = std::ios_base::eofbit;
 
   // string str() const
   str02 = os01.str();

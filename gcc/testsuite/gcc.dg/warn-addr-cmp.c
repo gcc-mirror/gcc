@@ -36,13 +36,13 @@ test_func_cmp (void)
 int
 test_func_cmp_rhs_zero (void)
 {
-  if (func == 0)     /* { dg-warning "the address of 'func'" } */
+  if (func == 0)     /* { dg-warning "the comparison will always evaluate as 'false'" } */
     return 1;
-  if (func != 0)     /* { dg-warning "the address of 'func'" } */
+  if (func != 0)     /* { dg-warning "the comparison will always evaluate as 'true'" } */
     return 1;
-  if (&var == 0)     /* { dg-warning "the address of 'var'" } */
+  if (&var == 0)     /* { dg-warning "the comparison will always evaluate as 'false'" } */
     return 1;
-  if (&var != 0)     /* { dg-warning "the address of 'var'" } */
+  if (&var != 0)     /* { dg-warning "the comparison will always evaluate as 'true'" } */
     return 1;
   if (weak_func == 0)
     return 1;
@@ -59,13 +59,13 @@ test_func_cmp_rhs_zero (void)
 int
 test_func_cmp_lhs_zero (void)
 {
-  if (0 == func)     /* { dg-warning "the address of 'func'" } */
+  if (0 == func)     /* { dg-warning "the comparison will always evaluate as 'false'" } */
     return 1;
-  if (0 != func)     /* { dg-warning "the address of 'func'" } */
+  if (0 != func)     /* { dg-warning "the comparison will always evaluate as 'true'" } */
     return 1;
-  if (0 == &var)     /* { dg-warning "the address of 'var'" } */
+  if (0 == &var)     /* { dg-warning "the comparison will always evaluate as 'false'" } */
     return 1;
-  if (0 != &var)     /* { dg-warning "the address of 'var'" } */
+  if (0 != &var)     /* { dg-warning "the comparison will always evaluate as 'true'" } */
     return 1;
   if (0 == weak_func)
     return 1;

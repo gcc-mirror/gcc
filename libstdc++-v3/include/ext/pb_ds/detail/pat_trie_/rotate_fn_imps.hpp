@@ -46,7 +46,7 @@ rotate_left(node_pointer p_x)
   node_pointer p_y = p_x->m_p_right;
   p_x->m_p_right = p_y->m_p_left;
 
-  if (p_y->m_p_left != NULL)
+  if (p_y->m_p_left != 0)
     p_y->m_p_left->m_p_parent = p_x;
 
   p_y->m_p_parent = p_x->m_p_parent;
@@ -75,7 +75,7 @@ rotate_right(node_pointer p_x)
   node_pointer p_y = p_x->m_p_left;
   p_x->m_p_left = p_y->m_p_right;
 
-  if (p_y->m_p_right != NULL)
+  if (p_y->m_p_right != 0)
     p_y->m_p_right->m_p_parent = p_x;
 
   p_y->m_p_parent = p_x->m_p_parent;
@@ -122,10 +122,10 @@ inline void
 PB_DS_CLASS_C_DEC::
 apply_update(node_pointer p_nd, Node_Update_* p_update)
 {
-  p_update->operator()(& PB_DS_V2F(p_nd->m_value),(p_nd->m_p_left == NULL) ?
-			NULL :
-			& PB_DS_V2F(p_nd->m_p_left->m_value),(p_nd->m_p_right == NULL) ?
-			NULL :
+  p_update->operator()(& PB_DS_V2F(p_nd->m_value),(p_nd->m_p_left == 0) ?
+			0 :
+			& PB_DS_V2F(p_nd->m_p_left->m_value),(p_nd->m_p_right == 0) ?
+			0 :
 			& PB_DS_V2F(p_nd->m_p_right->m_value));
 }
 

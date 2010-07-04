@@ -1,0 +1,85 @@
+<?xml version='1.0'?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
+[ ]>
+
+<chapter id="std.concurrency" xreflabel="Concurrency">
+<?dbhtml filename="concurrency.html"?>
+
+<chapterinfo>
+  <keywordset>
+    <keyword>
+      ISO C++
+    </keyword>
+    <keyword>
+      library
+    </keyword>
+    <keyword>
+      mutex
+    </keyword>
+    <keyword>
+      thread
+    </keyword>
+    <keyword>
+      future
+    </keyword>
+    <keyword>
+      condition_variable
+    </keyword>
+  </keywordset>
+</chapterinfo>
+
+<title>
+  Concurrency
+  <indexterm><primary>Concurrency</primary></indexterm>
+</title>
+
+<para>
+  Facilities for concurrent operation, and control thereof.
+</para>
+
+
+<!-- Sect1 01 : API -->
+<sect1 id="std.concurrency.api">
+  <title>API Reference</title>
+
+  <para>
+    All items are declared in one of four standard header files.
+  </para>
+
+  <para>
+    In header <filename>mutex</filename>, class
+    template <classname>mutex</classname> and variants,
+    class <classname>once_flag</classname>, and class
+    template <classname>unique_lock</classname>.
+  </para>
+
+  <para>
+    In header <filename>condition_variable</filename>,
+    classes <classname>condition_variable</classname>
+    and <classname>condition_variable_any</classname>.
+  </para>
+
+  <para>
+    In header <filename>thread</filename>,
+    class <classname>thread</classname> and
+    namespace <code>this_thread</code>.
+  </para>
+
+  <para>
+    In header <filename>future</filename>, class
+    template <classname>future</classname> and class
+    template <classname>shared_future</classname>, class
+    template <classname>promise</classname>,
+    and <classname>packaged_task</classname>.
+  </para>
+
+  <para>
+    Full API details.
+  </para>
+
+  <!-- Doxygen XML: api/group__concurrency.xml -->
+
+</sect1>
+
+</chapter>

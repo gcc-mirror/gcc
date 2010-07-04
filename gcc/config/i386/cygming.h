@@ -1,7 +1,7 @@
 /* Operating system specific defines to be used when targeting GCC for
    hosting on Windows32, using a Unix style C library and tools.
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-   2004, 2005, 2007, 2008, 2009
+   2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -38,6 +38,23 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef DEFAULT_ABI
 #define DEFAULT_ABI (TARGET_64BIT ? MS_ABI : SYSV_ABI)
+
+#if ! defined (USE_MINGW64_LEADING_UNDERSCORES)
+#undef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX (TARGET_64BIT ? "" : "_")
+
+#undef LOCAL_LABEL_PREFIX
+#define LOCAL_LABEL_PREFIX (TARGET_64BIT ? "." : "")
+
+#undef ASM_GENERATE_INTERNAL_LABEL
+#define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)  \
+  sprintf ((BUF), "*%s%s%ld", LOCAL_LABEL_PREFIX, \
+	   (PREFIX), (long)(NUMBER))
+
+#undef LPREFIX
+#define LPREFIX (TARGET_64BIT ? ".L" : "L")
+
+#endif
 
 #undef DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(n)				\
@@ -79,11 +96,13 @@ along with GCC; see the file COPYING3.  If not see
 	builtin_assert ("system=winnt");				\
 	builtin_define ("__stdcall=__attribute__((__stdcall__))");	\
 	builtin_define ("__fastcall=__attribute__((__fastcall__))");	\
+	builtin_define ("__thiscall=__attribute__((__thiscall__))");	\
 	builtin_define ("__cdecl=__attribute__((__cdecl__))");		\
 	if (!flag_iso)							\
 	  {								\
 	    builtin_define ("_stdcall=__attribute__((__stdcall__))");	\
 	    builtin_define ("_fastcall=__attribute__((__fastcall__))");	\
+	    builtin_define ("_thiscall=__attribute__((__thiscall__))");	\
 	    builtin_define ("_cdecl=__attribute__((__cdecl__))");	\
 	  }								\
 	/* Even though linkonce works with static libs, this is needed 	\
@@ -145,7 +164,15 @@ union tree_node;
 #undef  SUBTARGET_OVERRIDE_OPTIONS
 #define SUBTARGET_OVERRIDE_OPTIONS					\
 do {									\
-  if (flag_pic)								\
+  if (TARGET_64BIT && flag_pic != 1)					\
+    {									\
+      if (flag_pic > 1)							\
+        warning (0,							\
+	         "-fPIC ignored for target (all code is position independent)"\
+                 );                         				\
+      flag_pic = 1;							\
+    }									\
+  else if (!TARGET_64BIT && flag_pic)					\
     {									\
       warning (0, "-f%s ignored for target (all code is position independent)",\
 	       (flag_pic > 1) ? "PIC" : "pic");				\

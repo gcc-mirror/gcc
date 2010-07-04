@@ -1,4 +1,4 @@
-// Copyright (C) 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,7 +48,7 @@ void test_02()
 
   // read (ext)
   FILE* f2 = fopen(name_01, "r");
-  VERIFY( f2 != NULL );
+  VERIFY( f2 );
   if (f2)
   {
     __gnu_cxx::stdio_filebuf<char> fb(f2, std::ios_base::in, 512);
@@ -58,7 +58,7 @@ void test_02()
 
   // read (standard)
   FILE* f = fopen(name_01, "r");
-  VERIFY( f != NULL );
+  VERIFY( f );
   if (f)
   {
     std::ifstream ifstream1(name_01);

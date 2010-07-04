@@ -80,10 +80,15 @@ typedef enum
 timevar_id_t;
 #undef DEFTIMEVAR
 
+/* True if timevars should be used.  In GCC, this happens with
+   the -ftime-report flag.  */
+extern bool timevar_enable;
+
+/* Total amount of memory allocated by garbage collector.  */
+extern size_t timevar_ggc_mem_total;
+
 /* Execute the sequence: timevar_pop (TV), return (E);  */
 #define POP_TIMEVAR_AND_RETURN(TV, E)  do { timevar_pop (TV); return (E); }while(0)
-#define timevar_pop(TV) do { if (timevar_enable) timevar_pop_1 (TV); }while(0)
-#define timevar_push(TV) do { if (timevar_enable) timevar_push_1 (TV); }while(0)
 
 extern void timevar_init (void);
 extern void timevar_push_1 (timevar_id_t);
@@ -93,10 +98,20 @@ extern void timevar_stop (timevar_id_t);
 extern void timevar_print (FILE *);
 
 /* Provided for backward compatibility.  */
+static inline void
+timevar_push (timevar_id_t tv)
+{
+  if (timevar_enable)
+    timevar_push_1 (tv);
+}
+
+static inline void
+timevar_pop (timevar_id_t tv)
+{
+  if (timevar_enable)
+    timevar_pop_1 (tv);
+}
+
 extern void print_time (const char *, long);
-
-extern bool timevar_enable;
-
-extern size_t timevar_ggc_mem_total;
 
 #endif /* ! GCC_TIMEVAR_H */

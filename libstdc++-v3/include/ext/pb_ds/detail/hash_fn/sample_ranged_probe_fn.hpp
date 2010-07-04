@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -48,7 +48,7 @@ class sample_ranged_probe_fn
 public:
 
   // Size type.
-  typedef size_t size_type;
+  typedef std::size_t size_type;
 
 public:
 
@@ -70,7 +70,7 @@ protected:
 
   // Transforms the const key reference r_key into the i-th position within the table. This method is called for each collision within the probe sequence.
   inline size_type
-  operator()(const_key_reference r_key, size_t hash, size_type i) const;
+  operator()(const_key_reference r_key, std::size_t hash, size_type i) const;
 
 };
 

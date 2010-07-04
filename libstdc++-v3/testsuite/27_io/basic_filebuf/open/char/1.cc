@@ -1,4 +1,4 @@
-// Copyright (C) 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,11 +53,11 @@ void test_01()
   // Should keep the old file attached, and disregard attempt to overthrow.
   std::filebuf* f = fb_02.open(name_02, std::ios_base::in | std::ios_base::out 
 			       | std::ios_base::trunc);
-  VERIFY( f != NULL );
+  VERIFY( f );
   VERIFY( fb_02.is_open() );
   
   f = fb_02.open(name_03, std::ios_base::in | std::ios_base::out);
-  VERIFY( f == NULL );
+  VERIFY( !f );
   VERIFY( fb_02.is_open() );
 
   fb_03.open(name_03, std::ios_base::out | std::ios_base::trunc);

@@ -14,7 +14,7 @@ class java::io::ObjectInputStream$1 : public ::java::lang::Object
 public: // actually package-private
   ObjectInputStream$1(::java::io::ObjectInputStream *, ::java::lang::Class *);
 public:
-  ::java::lang::Object * run();
+  virtual ::java::lang::Object * run();
 public: // actually package-private
   ::java::io::ObjectInputStream * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 private:

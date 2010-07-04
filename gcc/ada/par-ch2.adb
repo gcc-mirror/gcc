@@ -503,7 +503,9 @@ package body Ch2 is
 
       if Identifier_Seen and not Id_Present then
          Error_Msg_SC
-           ("|pragma argument identifier required here (RM 2.8(4))");
+           ("|pragma argument identifier required here");
+         Error_Msg_SC
+           ("\since previous argument had identifier (RM 2.8(4))");
       end if;
 
       if Id_Present then

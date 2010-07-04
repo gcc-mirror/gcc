@@ -30,4 +30,5 @@ int main ()
   foo ();
   bar ();
   __mf_set_options ("-mode-check");
+  return 0;
 }

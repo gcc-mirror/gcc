@@ -1,5 +1,5 @@
 /* OpenMP directive matching and resolving.
-   Copyright (C) 2005, 2006, 2007, 2008
+   Copyright (C) 2005, 2006, 2007, 2008, 2010
    Free Software Foundation, Inc.
    Contributed by Jakub Jelinek
 
@@ -26,8 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "match.h"
 #include "parse.h"
 #include "pointer-set.h"
-#include "target.h"
-#include "toplev.h"
 
 /* Match an end of OpenMP directive.  End of OpenMP directive is optional
    whitespace, followed by '\n' or comment '!'.  */
@@ -467,7 +465,10 @@ match
 gfc_match_omp_taskwait (void)
 {
   if (gfc_match_omp_eos () != MATCH_YES)
-    return MATCH_ERROR;
+    {
+      gfc_error ("Unexpected junk after TASKWAIT clause at %C");
+      return MATCH_ERROR;
+    }
   new_st.op = EXEC_OMP_TASKWAIT;
   new_st.ext.omp_clauses = NULL;
   return MATCH_YES;
@@ -482,7 +483,10 @@ gfc_match_omp_critical (void)
   if (gfc_match (" ( %n )", n) != MATCH_YES)
     n[0] = '\0';
   if (gfc_match_omp_eos () != MATCH_YES)
-    return MATCH_ERROR;
+    {
+      gfc_error ("Unexpected junk after $OMP CRITICAL statement at %C");
+      return MATCH_ERROR;
+    }
   new_st.op = EXEC_OMP_CRITICAL;
   new_st.ext.omp_name = n[0] ? xstrdup (n) : NULL;
   return MATCH_YES;
@@ -508,6 +512,7 @@ gfc_match_omp_flush (void)
   gfc_match_omp_variable_list (" (", &list, true);
   if (gfc_match_omp_eos () != MATCH_YES)
     {
+      gfc_error ("Unexpected junk after $OMP FLUSH statement at %C");
       gfc_free_namelist (list);
       return MATCH_ERROR;
     }
@@ -654,7 +659,10 @@ match
 gfc_match_omp_workshare (void)
 {
   if (gfc_match_omp_eos () != MATCH_YES)
-    return MATCH_ERROR;
+    {
+      gfc_error ("Unexpected junk after $OMP WORKSHARE statement at %C");
+      return MATCH_ERROR;
+    }
   new_st.op = EXEC_OMP_WORKSHARE;
   new_st.ext.omp_clauses = gfc_get_omp_clauses ();
   return MATCH_YES;
@@ -665,7 +673,10 @@ match
 gfc_match_omp_master (void)
 {
   if (gfc_match_omp_eos () != MATCH_YES)
-    return MATCH_ERROR;
+    {
+      gfc_error ("Unexpected junk after $OMP MASTER statement at %C");
+      return MATCH_ERROR;
+    }
   new_st.op = EXEC_OMP_MASTER;
   new_st.ext.omp_clauses = NULL;
   return MATCH_YES;
@@ -676,7 +687,10 @@ match
 gfc_match_omp_ordered (void)
 {
   if (gfc_match_omp_eos () != MATCH_YES)
-    return MATCH_ERROR;
+    {
+      gfc_error ("Unexpected junk after $OMP ORDERED statement at %C");
+      return MATCH_ERROR;
+    }
   new_st.op = EXEC_OMP_ORDERED;
   new_st.ext.omp_clauses = NULL;
   return MATCH_YES;
@@ -687,7 +701,10 @@ match
 gfc_match_omp_atomic (void)
 {
   if (gfc_match_omp_eos () != MATCH_YES)
-    return MATCH_ERROR;
+    {
+      gfc_error ("Unexpected junk after $OMP ATOMIC statement at %C");
+      return MATCH_ERROR;
+    }
   new_st.op = EXEC_OMP_ATOMIC;
   new_st.ext.omp_clauses = NULL;
   return MATCH_YES;
@@ -698,7 +715,10 @@ match
 gfc_match_omp_barrier (void)
 {
   if (gfc_match_omp_eos () != MATCH_YES)
-    return MATCH_ERROR;
+    {
+      gfc_error ("Unexpected junk after $OMP BARRIER statement at %C");
+      return MATCH_ERROR;
+    }
   new_st.op = EXEC_OMP_BARRIER;
   new_st.ext.omp_clauses = NULL;
   return MATCH_YES;
@@ -712,7 +732,10 @@ gfc_match_omp_end_nowait (void)
   if (gfc_match ("% nowait") == MATCH_YES)
     nowait = true;
   if (gfc_match_omp_eos () != MATCH_YES)
-    return MATCH_ERROR;
+    {
+      gfc_error ("Unexpected junk after NOWAIT clause at %C");
+      return MATCH_ERROR;
+    }
   new_st.op = EXEC_OMP_END_NOWAIT;
   new_st.ext.omp_bool = nowait;
   return MATCH_YES;
@@ -812,6 +835,8 @@ resolve_omp_clauses (gfc_code *code)
 		if (el)
 		  continue;
 	      }
+	    if (n->sym->attr.proc_pointer)
+	      continue;
 	  }
 	gfc_error ("Object '%s' is not a variable at %L", n->sym->name,
 		   &code->loc);
@@ -820,11 +845,13 @@ resolve_omp_clauses (gfc_code *code)
   for (list = 0; list < OMP_LIST_NUM; list++)
     if (list != OMP_LIST_FIRSTPRIVATE && list != OMP_LIST_LASTPRIVATE)
       for (n = omp_clauses->lists[list]; n; n = n->next)
-	if (n->sym->mark)
-	  gfc_error ("Symbol '%s' present on multiple clauses at %L",
-		     n->sym->name, &code->loc);
-	else
-	  n->sym->mark = 1;
+	{
+	  if (n->sym->mark)
+	    gfc_error ("Symbol '%s' present on multiple clauses at %L",
+		       n->sym->name, &code->loc);
+	  else
+	    n->sym->mark = 1;
+	}
 
   gcc_assert (OMP_LIST_LASTPRIVATE == OMP_LIST_FIRSTPRIVATE + 1);
   for (list = OMP_LIST_FIRSTPRIVATE; list <= OMP_LIST_LASTPRIVATE; list++)
@@ -837,22 +864,24 @@ resolve_omp_clauses (gfc_code *code)
 	}
 
   for (n = omp_clauses->lists[OMP_LIST_FIRSTPRIVATE]; n; n = n->next)
-    if (n->sym->mark)
-      gfc_error ("Symbol '%s' present on multiple clauses at %L",
-		 n->sym->name, &code->loc);
-    else
-      n->sym->mark = 1;
-
+    {
+      if (n->sym->mark)
+	gfc_error ("Symbol '%s' present on multiple clauses at %L",
+		   n->sym->name, &code->loc);
+      else
+	n->sym->mark = 1;
+    }
   for (n = omp_clauses->lists[OMP_LIST_LASTPRIVATE]; n; n = n->next)
     n->sym->mark = 0;
 
   for (n = omp_clauses->lists[OMP_LIST_LASTPRIVATE]; n; n = n->next)
-    if (n->sym->mark)
-      gfc_error ("Symbol '%s' present on multiple clauses at %L",
-		 n->sym->name, &code->loc);
-    else
-      n->sym->mark = 1;
-
+    {
+      if (n->sym->mark)
+	gfc_error ("Symbol '%s' present on multiple clauses at %L",
+		   n->sym->name, &code->loc);
+      else
+	n->sym->mark = 1;
+    }
   for (list = 0; list < OMP_LIST_NUM; list++)
     if ((n = omp_clauses->lists[list]) != NULL)
       {
@@ -1367,7 +1396,6 @@ gfc_resolve_omp_parallel_blocks (gfc_code *code, gfc_namespace *ns)
 void
 gfc_resolve_do_iterator (gfc_code *code, gfc_symbol *sym)
 {
-  struct omp_context *ctx;
   int i = omp_current_do_collapse;
   gfc_code *c = omp_current_do_code;
 
@@ -1386,21 +1414,21 @@ gfc_resolve_do_iterator (gfc_code *code, gfc_symbol *sym)
       c = c->block->next;
     }
 
-  for (ctx = omp_current_ctx; ctx; ctx = ctx->previous)
+  if (omp_current_ctx == NULL)
+    return;
+
+  if (pointer_set_contains (omp_current_ctx->sharing_clauses, sym))
+    return;
+
+  if (! pointer_set_insert (omp_current_ctx->private_iterators, sym))
     {
-      if (pointer_set_contains (ctx->sharing_clauses, sym))
-	continue;
+      gfc_omp_clauses *omp_clauses = omp_current_ctx->code->ext.omp_clauses;
+      gfc_namelist *p;
 
-      if (! pointer_set_insert (ctx->private_iterators, sym))
-	{
-	  gfc_omp_clauses *omp_clauses = ctx->code->ext.omp_clauses;
-	  gfc_namelist *p;
-
-	  p = gfc_get_namelist ();
-	  p->sym = sym;
-	  p->next = omp_clauses->lists[OMP_LIST_PRIVATE];
-	  omp_clauses->lists[OMP_LIST_PRIVATE] = p;
-	}
+      p = gfc_get_namelist ();
+      p->sym = sym;
+      p->next = omp_clauses->lists[OMP_LIST_PRIVATE];
+      omp_clauses->lists[OMP_LIST_PRIVATE] = p;
     }
 }
 

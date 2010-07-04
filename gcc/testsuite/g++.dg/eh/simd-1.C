@@ -1,6 +1,6 @@
 // Test EH when V2SI SIMD registers are involved.
 // Contributed by Aldy Hernandez (aldy@quesejoda.com).
-// { dg-options "-O" }
+// { dg-options "-O -Wno-abi" }
 // { dg-options "-O -w" { target { { i?86-*-* x86_64-*-* } && ilp32 } } }
 // { dg-do run }
 

@@ -187,14 +187,14 @@ CTOR_LIST_BEGIN;
 #elif defined(CTORS_SECTION_ASM_OP)
 /* Hack: force cc1 to switch to .data section early, so that assembling
    __CTOR_LIST__ does not undo our behind-the-back change to .ctors.  */
-static func_ptr force_to_data[1] __attribute__ ((__unused__)) = { };
+static func_ptr force_to_data[1] __attribute__ ((__used__)) = { };
 asm (CTORS_SECTION_ASM_OP);
 STATIC func_ptr __CTOR_LIST__[1]
-  __attribute__ ((__unused__, aligned(sizeof(func_ptr))))
+  __attribute__ ((__used__, aligned(sizeof(func_ptr))))
   = { (func_ptr) (-1) };
 #else
 STATIC func_ptr __CTOR_LIST__[1]
-  __attribute__ ((__unused__, section(".ctors"), aligned(sizeof(func_ptr))))
+  __attribute__ ((__used__, section(".ctors"), aligned(sizeof(func_ptr))))
   = { (func_ptr) (-1) };
 #endif /* __CTOR_LIST__ alternatives */
 
@@ -223,7 +223,7 @@ STATIC EH_FRAME_SECTION_CONST char __EH_FRAME_BEGIN__[]
 /* Stick a label at the beginning of the java class registration info
    so we can register them properly.  */
 STATIC void *__JCR_LIST__[]
-  __attribute__ ((unused, section(JCR_SECTION_NAME), aligned(sizeof(void*))))
+  __attribute__ ((used, section(JCR_SECTION_NAME), aligned(sizeof(void*))))
   = { };
 #endif /* JCR_SECTION_NAME */
 
@@ -336,7 +336,7 @@ __do_global_dtors_aux (void)
 CRT_CALL_STATIC_FUNCTION (FINI_SECTION_ASM_OP, __do_global_dtors_aux)
 #elif defined (FINI_ARRAY_SECTION_ASM_OP)
 static func_ptr __do_global_dtors_aux_fini_array_entry[]
-  __attribute__ ((__unused__, section(".fini_array")))
+  __attribute__ ((__used__, section(".fini_array")))
   = { __do_global_dtors_aux };
 #else /* !FINI_SECTION_ASM_OP && !FINI_ARRAY_SECTION_ASM_OP */
 static void __attribute__((used))
@@ -383,7 +383,7 @@ frame_dummy (void)
 CRT_CALL_STATIC_FUNCTION (INIT_SECTION_ASM_OP, frame_dummy)
 #else /* defined(INIT_SECTION_ASM_OP) */
 static func_ptr __frame_dummy_init_array_entry[]
-  __attribute__ ((__unused__, section(".init_array")))
+  __attribute__ ((__used__, section(".init_array")))
   = { frame_dummy };
 #endif /* !defined(INIT_SECTION_ASM_OP) */
 #endif /* USE_EH_FRAME_REGISTRY || JCR_SECTION_NAME */
@@ -491,7 +491,7 @@ CTOR_LIST_END;
 #elif defined(CTORS_SECTION_ASM_OP)
 /* Hack: force cc1 to switch to .data section early, so that assembling
    __CTOR_LIST__ does not undo our behind-the-back change to .ctors.  */
-static func_ptr force_to_data[1] __attribute__ ((__unused__)) = { };
+static func_ptr force_to_data[1] __attribute__ ((__used__)) = { };
 asm (CTORS_SECTION_ASM_OP);
 STATIC func_ptr __CTOR_END__[1]
   __attribute__((aligned(sizeof(func_ptr))))
@@ -509,7 +509,7 @@ DTOR_LIST_END;
 asm (DTORS_SECTION_ASM_OP);
 #endif
 func_ptr __DTOR_END__[1]
-  __attribute__ ((unused,
+  __attribute__ ((used,
 #ifndef DTORS_SECTION_ASM_OP
 		  section(".dtors"),
 #endif
@@ -518,11 +518,11 @@ func_ptr __DTOR_END__[1]
 #elif defined(DTORS_SECTION_ASM_OP)
 asm (DTORS_SECTION_ASM_OP);
 STATIC func_ptr __DTOR_END__[1]
-  __attribute__ ((unused, aligned(sizeof(func_ptr))))
+  __attribute__ ((used, aligned(sizeof(func_ptr))))
   = { (func_ptr) 0 };
 #else
 STATIC func_ptr __DTOR_END__[1]
-  __attribute__((unused, section(".dtors"), aligned(sizeof(func_ptr))))
+  __attribute__((used, section(".dtors"), aligned(sizeof(func_ptr))))
   = { (func_ptr) 0 };
 #endif
 
@@ -539,7 +539,7 @@ typedef short int32;
 #  error "Missing a 4 byte integer"
 # endif
 STATIC EH_FRAME_SECTION_CONST int32 __FRAME_END__[]
-     __attribute__ ((unused, section(EH_FRAME_SECTION_NAME),
+     __attribute__ ((used, section(EH_FRAME_SECTION_NAME),
 		     aligned(sizeof(int32))))
      = { 0 };
 #endif /* EH_FRAME_SECTION_NAME */
@@ -547,7 +547,7 @@ STATIC EH_FRAME_SECTION_CONST int32 __FRAME_END__[]
 #ifdef JCR_SECTION_NAME
 /* Null terminate the .jcr section array.  */
 STATIC void *__JCR_END__[1]
-   __attribute__ ((unused, section(JCR_SECTION_NAME),
+   __attribute__ ((used, section(JCR_SECTION_NAME),
 		   aligned(sizeof(void *))))
    = { 0 };
 #endif /* JCR_SECTION_NAME */

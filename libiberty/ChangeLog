@@ -1,3 +1,72 @@
+2010-06-14  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* libiberty.texi: Remove reference to GCC 3 and 2001 (thrice).
+	Update copyright years.
+	Move to GFDL 1.3.
+
+2010-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/43838
+	* cp-demangle.c (struct d_print_info): Add flush_count field.
+	(d_print_init): Initialize it to 0.
+	(d_print_flush): Increment it.
+	(d_print_comp): If needed flush before appending ", ".  Only
+	decrement dpi->len if no flushes happened during the recursive
+	call.
+	* testsuite/demangle-expected: Add a test for this.
+
+2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* splay-tree.c: Update copyright years.
+	(splay_tree_new_typed_alloc): New.
+	(splay_tree_new_with_allocator): Use it.
+
+	* hashtab.c: Update copyright years.
+	(htab_create_typed_alloc): New.
+	(htab_create_alloc): Use it.
+
+	* functions.texi: Regenerate.
+
+2010-06-03  Joern Rennecke <joern.rennecke@embecosm.com>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR bootstrap/42798
+	* configure.ac: Check for declaration of 'basename(char *)'.
+	* configure: Regenerate.
+
+2010-05-26  Kai Tietz  <kai.tietz@onevision.com>
+
+	* testsuite/demangle-expected: Add tests for __int128
+	and unsigned __int128 types.
+
+2010-05-06  Magnus Fromreide  <magfr@lysator.liu.se>
+	    Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (cplus_demangle_builtin_types): Add nullptr.
+	(cplus_demangle_type): Handle nullptr.
+	* testsuite/demangle-expected: Test it.
+
+2010-04-23  Pedro Alves  <pedro@codesourcery.com>
+
+	* lbasename.c (lbasename): Split into ...
+	(unix_lbasename, dos_basename): ... these.
+	(lbasename): ... and reimplement on top of them.
+	* Makefile.in (lbasename.o): Add dependency on
+	$(INCDIR)/filenames.h.
+
+2010-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* regex.c (byte_re_match_2_internal): Avoid set but not used
+	warning.
+
+2010-03-22  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (d_print_mod): Use () rather than [] for vectors.
+
+2010-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in (all): Do not use exec.
+
 2010-02-04  Tom Tromey  <tromey@redhat.com>
 
 	* testsuite/demangle-expected: Add missing --format=gnu-v3.

@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-fabi-version=2" }
+// { dg-options "-fabi-version=2 -Wno-abi" }
 
 // Copyright (C) 2003 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 15 Dec 2003 <nathan@codesourcery.com>

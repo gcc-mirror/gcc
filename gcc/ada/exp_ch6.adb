@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -808,9 +808,7 @@ package body Exp_Ch6 is
       Elm := First_Elmt (Var_List);
       while Present (Elm) loop
          Var := Node (Elm);
-         Ent :=
-           Make_Defining_Identifier (Loc,
-             Chars => New_Internal_Name ('S'));
+         Ent := Make_Temporary (Loc, 'S');
          Append_Elmt (Ent, Shad_List);
 
          --  Insert a declaration for this temporary at the start of the
@@ -966,9 +964,7 @@ package body Exp_Ch6 is
             return;
          end if;
 
-         Temp :=
-           Make_Defining_Identifier (Loc,
-             Chars => New_Internal_Name ('T'));
+         Temp := Make_Temporary (Loc, 'T', Actual);
 
          --  Use formal type for temp, unless formal type is an unconstrained
          --  array, in which case we don't have to worry about bounds checks,
@@ -1220,9 +1216,7 @@ package body Exp_Ch6 is
 
          Reset_Packed_Prefix;
 
-         Temp :=
-           Make_Defining_Identifier (Loc,
-             Chars => New_Internal_Name ('T'));
+         Temp := Make_Temporary (Loc, 'T', Actual);
          Incod  := Relocate_Node (Actual);
          Outcod := New_Copy_Tree (Incod);
 
@@ -1387,9 +1381,7 @@ package body Exp_Ch6 is
             return Entity (Actual);
 
          else
-            Var :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('T'));
+            Var := Make_Temporary (Loc, 'T', Actual);
 
             N_Node :=
               Make_Object_Renaming_Declaration (Loc,
@@ -2676,9 +2668,7 @@ package body Exp_Ch6 is
          if Present (Inherited_From_Formal (Subp)) then
             Parent_Subp := Inherited_From_Formal (Subp);
          else
-            while Present (Alias (Parent_Subp)) loop
-               Parent_Subp := Alias (Parent_Subp);
-            end loop;
+            Parent_Subp := Ultimate_Alias (Parent_Subp);
          end if;
 
          --  The below setting of Entity is suspect, see F109-018 discussion???
@@ -2778,20 +2768,6 @@ package body Exp_Ch6 is
                         Rewrite (Actual,
                           Unchecked_Convert_To (Parent_Typ,
                             Relocate_Node (Actual)));
-
-                        --  If the relocated node is a function call then it
-                        --  can be part of the expansion of the predefined
-                        --  equality operator of a tagged type and we may
-                        --  need to adjust its SCIL dispatching node.
-
-                        if Generate_SCIL
-                          and then Nkind (Actual) /= N_Null
-                          and then Nkind (Expression (Actual))
-                                     = N_Function_Call
-                        then
-                           Adjust_SCIL_Node (Actual, Expression (Actual));
-                        end if;
-
                         Analyze (Actual);
                         Resolve (Actual, Parent_Typ);
                      end if;
@@ -2949,9 +2925,8 @@ package body Exp_Ch6 is
          return;
       end if;
 
-      if Ekind (Subp) = E_Function
-        or else Ekind (Subp) = E_Procedure
-      then
+      if Ekind_In (Subp, E_Function, E_Procedure) then
+
          --  We perform two simple optimization on calls:
 
          --  a) replace calls to null procedures unconditionally;
@@ -3104,12 +3079,14 @@ package body Exp_Ch6 is
       --  In Ada 2005, this may be an indirect call to an access parameter that
       --  is an access_to_subprogram. In that case the anonymous type has a
       --  scope that is a protected operation, but the call is a regular one.
+      --  In either case do not expand call if subprogram is eliminated.
 
       Scop := Scope (Subp);
 
       if Nkind (N) /= N_Entry_Call_Statement
         and then Is_Protected_Type (Scop)
         and then Ekind (Subp) /= E_Subprogram_Type
+        and then not Is_Eliminated (Subp)
       then
          --  If the call is an internal one, it is rewritten as a call to the
          --  corresponding unprotected subprogram.
@@ -3304,6 +3281,9 @@ package body Exp_Ch6 is
       Temp     : Entity_Id;
       Temp_Typ : Entity_Id;
 
+      Return_Object : Entity_Id := Empty;
+      --  Entity in declaration in an extended_return_statement
+
       Is_Unc : constant Boolean :=
                     Is_Array_Type (Etype (Subp))
                       and then not Is_Constrained (Etype (Subp));
@@ -3312,8 +3292,8 @@ package body Exp_Ch6 is
 
       procedure Make_Exit_Label;
       --  Build declaration for exit label to be used in Return statements,
-      --  sets Exit_Lab (the label node) and Lab_Decl (corresponding implcit
-      --  declaration).
+      --  sets Exit_Lab (the label node) and Lab_Decl (corresponding implicit
+      --  declaration). Does nothing if Exit_Lab already set.
 
       function Process_Formals (N : Node_Id) return Traverse_Result;
       --  Replace occurrence of a formal with the corresponding actual, or the
@@ -3343,20 +3323,15 @@ package body Exp_Ch6 is
       ---------------------
 
       procedure Make_Exit_Label is
+         Lab_Ent : Entity_Id;
       begin
-         --  Create exit label for subprogram if one does not exist yet
-
          if No (Exit_Lab) then
-            Lab_Id :=
-              Make_Identifier (Loc,
-                Chars => New_Internal_Name ('L'));
-            Set_Entity (Lab_Id,
-              Make_Defining_Identifier (Loc, Chars (Lab_Id)));
+            Lab_Ent := Make_Temporary (Loc, 'L');
+            Lab_Id  := New_Reference_To (Lab_Ent, Loc);
             Exit_Lab := Make_Label (Loc, Lab_Id);
-
             Lab_Decl :=
               Make_Implicit_Label_Declaration (Loc,
-                Defining_Identifier  => Entity (Lab_Id),
+                Defining_Identifier  => Lab_Ent,
                 Label_Construct      => Exit_Lab);
          end if;
       end Make_Exit_Label;
@@ -3402,6 +3377,22 @@ package body Exp_Ch6 is
                   Rewrite (N, New_Copy (A));
                end if;
             end if;
+            return Skip;
+
+         elsif Is_Entity_Name (N)
+           and then Present (Return_Object)
+           and then Chars (N) = Chars (Return_Object)
+         then
+            --  Occurrence within an extended return statement. The return
+            --  object is local to the body been inlined, and thus the generic
+            --  copy is not analyzed yet, so we match by name, and replace it
+            --  with target of call.
+
+            if Nkind (Targ) = N_Defining_Identifier then
+               Rewrite (N, New_Occurrence_Of (Targ, Loc));
+            else
+               Rewrite (N, New_Copy_Tree (Targ));
+            end if;
 
             return Skip;
 
@@ -3409,8 +3400,7 @@ package body Exp_Ch6 is
             if No (Expression (N)) then
                Make_Exit_Label;
                Rewrite (N,
-                 Make_Goto_Statement (Loc,
-                   Name => New_Copy (Lab_Id)));
+                 Make_Goto_Statement (Loc, Name => New_Copy (Lab_Id)));
 
             else
                if Nkind (Parent (N)) = N_Handled_Sequence_Of_Statements
@@ -3467,6 +3457,46 @@ package body Exp_Ch6 is
             end if;
 
             return OK;
+
+         elsif Nkind (N) = N_Extended_Return_Statement then
+
+            --  An extended return becomes a block whose first statement is
+            --  the assignment of the initial expression of the return object
+            --  to the target of the call itself.
+
+            declare
+               Return_Decl : constant Entity_Id :=
+                               First (Return_Object_Declarations (N));
+               Assign      : Node_Id;
+
+            begin
+               Return_Object := Defining_Identifier (Return_Decl);
+
+               if Present (Expression (Return_Decl)) then
+                  if Nkind (Targ) = N_Defining_Identifier then
+                     Assign :=
+                       Make_Assignment_Statement (Loc,
+                         Name => New_Occurrence_Of (Targ, Loc),
+                         Expression => Expression (Return_Decl));
+                  else
+                     Assign :=
+                       Make_Assignment_Statement (Loc,
+                         Name => New_Copy (Targ),
+                         Expression => Expression (Return_Decl));
+                  end if;
+
+                  Set_Assignment_OK (Name (Assign));
+                  Prepend (Assign,
+                    Statements (Handled_Statement_Sequence (N)));
+               end if;
+
+               Rewrite (N,
+                 Make_Block_Statement (Loc,
+                    Handled_Statement_Sequence =>
+                      Handled_Statement_Sequence (N)));
+
+               return OK;
+            end;
 
          --  Remove pragma Unreferenced since it may refer to formals that
          --  are not visible in the inlined body, and in any case we will
@@ -3674,15 +3704,18 @@ package body Exp_Ch6 is
       if Nkind (Orig_Bod) = N_Defining_Identifier
         or else Nkind (Orig_Bod) = N_Defining_Operator_Symbol
       then
-         --  Subprogram is a renaming_as_body. Calls appearing after the
-         --  renaming can be replaced with calls to the renamed entity
-         --  directly, because the subprograms are subtype conformant. If
-         --  the renamed subprogram is an inherited operation, we must redo
-         --  the expansion because implicit conversions may be needed.
+         --  Subprogram is renaming_as_body. Calls occurring after the renaming
+         --  can be replaced with calls to the renamed entity directly, because
+         --  the subprograms are subtype conformant. If the renamed subprogram
+         --  is an inherited operation, we must redo the expansion because
+         --  implicit conversions may be needed. Similarly, if the renamed
+         --  entity is inlined, expand the call for further optimizations.
 
          Set_Name (N, New_Occurrence_Of (Orig_Bod, Loc));
 
-         if Present (Alias (Orig_Bod)) then
+         if Present (Alias (Orig_Bod))
+           or else Is_Inlined (Orig_Bod)
+         then
             Expand_Call (N);
          end if;
 
@@ -3793,9 +3826,7 @@ package body Exp_Ch6 is
             end if;
 
          else
-            Temp :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('C'));
+            Temp := Make_Temporary (Loc, 'C');
 
             --  If the actual for an in/in-out parameter is a view conversion,
             --  make it into an unchecked conversion, given that an untagged
@@ -3880,11 +3911,15 @@ package body Exp_Ch6 is
          then
             Targ := Name (Parent (N));
 
+         elsif Nkind (Parent (N)) = N_Object_Declaration
+           and then Is_Limited_Type (Etype (Subp))
+         then
+            Targ := Defining_Identifier (Parent (N));
+
          else
             --  Replace call with temporary and create its declaration
 
-            Temp :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('C'));
+            Temp := Make_Temporary (Loc, 'C');
             Set_Is_Internal (Temp);
 
             --  For the unconstrained case, the generated temporary has the
@@ -4354,9 +4389,7 @@ package body Exp_Ch6 is
       --  For a procedure, we add a return for all possible syntactic ends of
       --  the subprogram.
 
-      if Ekind (Spec_Id) = E_Procedure
-        or else Ekind (Spec_Id) = E_Generic_Procedure
-      then
+      if Ekind_In (Spec_Id, E_Procedure, E_Generic_Procedure) then
          Add_Return (Statements (H));
 
          if Present (Exception_Handlers (H)) then
@@ -4610,10 +4643,8 @@ package body Exp_Ch6 is
          --  define _object later on.
 
          declare
-            Decls : List_Id;
-            Obj_Ptr : constant Entity_Id :=  Make_Defining_Identifier (Loc,
-                                               Chars =>
-                                                 New_Internal_Name ('T'));
+            Decls   : List_Id;
+            Obj_Ptr : constant Entity_Id :=  Make_Temporary (Loc, 'T');
 
          begin
             Decls := New_List (
@@ -4623,7 +4654,7 @@ package body Exp_Ch6 is
                      Make_Access_To_Object_Definition (Loc,
                        Subtype_Indication =>
                          New_Reference_To
-                      (Corresponding_Record_Type (Scop), Loc))));
+                           (Corresponding_Record_Type (Scop), Loc))));
 
             Insert_Actions (N, Decls);
             Insert_Actions (N, Freeze_Entity (Obj_Ptr, Sloc (N)));
@@ -4719,14 +4750,21 @@ package body Exp_Ch6 is
 
    function Is_Build_In_Place_Function (E : Entity_Id) return Boolean is
    begin
+      --  This function is called from Expand_Subtype_From_Expr during
+      --  semantic analysis, even when expansion is off. In those cases
+      --  the build_in_place expansion will not take place.
+
+      if not Expander_Active then
+         return False;
+      end if;
+
       --  For now we test whether E denotes a function or access-to-function
       --  type whose result subtype is inherently limited. Later this test may
       --  be revised to allow composite nonlimited types. Functions with a
       --  foreign convention or whose result type has a foreign convention
       --  never qualify.
 
-      if Ekind (E) = E_Function
-        or else Ekind (E) = E_Generic_Function
+      if Ekind_In (E, E_Function, E_Generic_Function)
         or else (Ekind (E) = E_Subprogram_Type
                   and then Etype (E) /= Standard_Void_Type)
       then
@@ -5115,10 +5153,11 @@ package body Exp_Ch6 is
          Rewrite (Allocator, New_Allocator);
 
          --  Create a new access object and initialize it to the result of the
-         --  new uninitialized allocator.
+         --  new uninitialized allocator. Note: we do not use Allocator as the
+         --  Related_Node of Return_Obj_Access in call to Make_Temporary below
+         --  as this would create a sort of infinite "recursion".
 
-         Return_Obj_Access :=
-           Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+         Return_Obj_Access := Make_Temporary (Loc, 'R');
          Set_Etype (Return_Obj_Access, Acc_Type);
 
          Insert_Action (Allocator,
@@ -5251,9 +5290,7 @@ package body Exp_Ch6 is
 
          --  Create a temporary object to hold the function result
 
-         Return_Obj_Id :=
-           Make_Defining_Identifier (Loc,
-             Chars => New_Internal_Name ('R'));
+         Return_Obj_Id := Make_Temporary (Loc, 'R');
          Set_Etype (Return_Obj_Id, Result_Subt);
 
          Return_Obj_Decl :=
@@ -5406,8 +5443,7 @@ package body Exp_Ch6 is
 
       --  Create an access type designating the function's result subtype
 
-      Ptr_Typ :=
-        Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+      Ptr_Typ := Make_Temporary (Loc, 'A');
 
       Ptr_Typ_Decl :=
         Make_Full_Type_Declaration (Loc,
@@ -5422,7 +5458,7 @@ package body Exp_Ch6 is
       --  Finally, create an access object initialized to a reference to the
       --  function call.
 
-      Obj_Id := Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+      Obj_Id := Make_Temporary (Loc, 'R');
       Set_Etype (Obj_Id, Ptr_Typ);
 
       Obj_Decl :=
@@ -5682,10 +5718,12 @@ package body Exp_Ch6 is
       Add_Access_Actual_To_Build_In_Place_Call
         (Func_Call, Function_Id, Caller_Object, Is_Access => Pass_Caller_Acc);
 
-      --  Create an access type designating the function's result subtype
+      --  Create an access type designating the function's result subtype. We
+      --  use the type of the original expression because it may be a call to
+      --  an inherited operation, which the expansion has replaced with the
+      --  parent operation that yields the parent type.
 
-      Ref_Type :=
-        Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+      Ref_Type := Make_Temporary (Loc, 'A');
 
       Ptr_Typ_Decl :=
         Make_Full_Type_Declaration (Loc,
@@ -5694,7 +5732,7 @@ package body Exp_Ch6 is
             Make_Access_To_Object_Definition (Loc,
               All_Present => True,
               Subtype_Indication =>
-                New_Reference_To (Result_Subt, Loc)));
+                New_Reference_To (Etype (Function_Call), Loc)));
 
       --  The access type and its accompanying object must be inserted after
       --  the object declaration in the constrained case, so that the function
@@ -5712,14 +5750,12 @@ package body Exp_Ch6 is
       --  Finally, create an access object initialized to a reference to the
       --  function call.
 
-      Def_Id :=
-        Make_Defining_Identifier (Loc,
-          Chars => New_Internal_Name ('R'));
-      Set_Etype (Def_Id, Ref_Type);
-
       New_Expr :=
         Make_Reference (Loc,
           Prefix => Relocate_Node (Func_Call));
+
+      Def_Id := Make_Temporary (Loc, 'R', New_Expr);
+      Set_Etype (Def_Id, Ref_Type);
 
       Insert_After_And_Analyze (Ptr_Typ_Decl,
         Make_Object_Declaration (Loc,
@@ -5744,8 +5780,7 @@ package body Exp_Ch6 is
 
          Rewrite (Object_Decl,
            Make_Object_Renaming_Declaration (Loc,
-             Defining_Identifier => Make_Defining_Identifier (Loc,
-                                      New_Internal_Name ('D')),
+             Defining_Identifier => Make_Temporary (Loc, 'D'),
              Access_Definition   => Empty,
              Subtype_Mark        => New_Occurrence_Of (Result_Subt, Loc),
              Name                => Call_Deref));

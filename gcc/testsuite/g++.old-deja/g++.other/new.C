@@ -3,12 +3,12 @@
 #include <new>
 
 inline void *
-operator new(size_t alloc_sz, const char *fname, unsigned lineno)
+operator new(std::size_t alloc_sz, const char *fname, unsigned lineno)
 {
   return ::operator new (alloc_sz);
 }
 inline void *
-operator new[](size_t alloc_sz, const char *fname, unsigned lineno) 
+operator new[](std::size_t alloc_sz, const char *fname, unsigned lineno) 
 {
   return ::operator new[] (alloc_sz);
 }

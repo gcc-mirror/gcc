@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -201,6 +201,14 @@ package body Make is
 
    Unique_Compile_All_Projects : Boolean := False;
    --  Set to True if -U is used
+
+   Must_Compile : Boolean := False;
+   --  True if gnatmake is invoked with -f -u and one or several mains on the
+   --  command line.
+
+   Main_On_Command_Line : Boolean := False;
+   --  True if gnatmake is invoked with one or several mains on the command
+   --  line.
 
    RTS_Specified : String_Access := null;
    --  Used to detect multiple --RTS= switches
@@ -1387,7 +1395,7 @@ package body Make is
 
       if Project_Of_Current_Object_Directory /= Project then
          Project_Of_Current_Object_Directory := Project;
-         Object_Directory := Project.Object_Directory.Name;
+         Object_Directory := Project.Object_Directory.Display_Name;
 
          --  Set the working directory to the object directory of the actual
          --  project.
@@ -1784,6 +1792,13 @@ package body Make is
          Set_Source_Table (ALI);
 
          Modified_Source := Time_Stamp_Mismatch (ALI, Read_Only);
+
+         --  To avoid using too much memory when switch -m is used, free the
+         --  memory allocated for the source file when computing the checksum.
+
+         if Minimal_Recompilation then
+            Sinput.P.Clear_Source_File_Table;
+         end if;
 
          if Modified_Source /= No_File then
             ALI := No_ALI_Id;
@@ -2236,12 +2251,14 @@ package body Make is
             if Arguments_Project = No_Project then
                Add_Arguments (The_Saved_Gcc_Switches.all);
 
-            elsif not Arguments_Project.Externally_Built then
+            elsif not Arguments_Project.Externally_Built
+              or else Must_Compile
+            then
                --  We get the project directory for the relative path
                --  switches and arguments.
 
-               Arguments_Project := Ultimate_Extending_Project_Of
-                 (Arguments_Project);
+               Arguments_Project :=
+                 Ultimate_Extending_Project_Of (Arguments_Project);
 
                --  If building a dynamic or relocatable library, compile with
                --  PIC option, if it exists.
@@ -2251,7 +2268,6 @@ package body Make is
                then
                   declare
                      PIC : constant String := MLib.Tgt.PIC_Option;
-
                   begin
                      if PIC /= "" then
                         Add_Arguments ((1 => new String'(PIC)));
@@ -2432,7 +2448,7 @@ package body Make is
       --  Info on the mapping file
 
       Need_To_Check_Standard_Library : Boolean :=
-                                         Check_Readonly_Files
+                                         (Check_Readonly_Files or Must_Compile)
                                            and not Unique_Compile;
 
       procedure Add_Process
@@ -2719,11 +2735,14 @@ package body Make is
          --  check for an eventual library project, and use the full path.
 
          if Arguments_Project /= No_Project then
-            if not Arguments_Project.Externally_Built then
+            if not Arguments_Project.Externally_Built
+              or else Must_Compile
+            then
                Prj.Env.Set_Ada_Paths
                  (Arguments_Project,
                   Project_Tree,
-                  Including_Libraries => True);
+                  Including_Libraries => True,
+                  Include_Path        => Use_Include_Path_File);
 
                if not Unique_Compile
                  and then MLib.Tgt.Support_For_Libraries /= Prj.None
@@ -2734,7 +2753,7 @@ package body Make is
 
                   begin
                      if Prj.Library
-                       and then not Prj.Externally_Built
+                       and then (not Prj.Externally_Built or else Must_Compile)
                        and then not Prj.Need_To_Build_Lib
                      then
                         --  Add to the Q all sources of the project that have
@@ -2886,7 +2905,7 @@ package body Make is
 
          begin
             if Is_Predefined_File_Name (Fname, False) then
-               if Check_Readonly_Files then
+               if Check_Readonly_Files or else Must_Compile then
                   Comp_Args (Comp_Args'First + 2 .. Comp_Last + 1) :=
                     Comp_Args (Comp_Args'First + 1 .. Comp_Last);
                   Comp_Last := Comp_Last + 1;
@@ -3084,7 +3103,7 @@ package body Make is
                         if Is_Marked (Sfile, Source_Index) then
                            Debug_Msg ("Skipping marked file:", Sfile);
 
-                        elsif not Check_Readonly_Files
+                        elsif not (Check_Readonly_Files or Must_Compile)
                           and then Is_Internal_File_Name (Sfile, False)
                         then
                            Debug_Msg ("Skipping internal file:", Sfile);
@@ -3265,14 +3284,14 @@ package body Make is
             end if;
 
             In_Lib_Dir := Full_Lib_File /= No_File
-              and then In_Ada_Lib_Dir (Full_Lib_File);
+                          and then In_Ada_Lib_Dir (Full_Lib_File);
 
             --  Since the following requires a system call, we precompute it
             --  when needed.
 
             if not In_Lib_Dir then
                if Full_Lib_File /= No_File
-                 and then not Check_Readonly_Files
+                 and then not (Check_Readonly_Files or else Must_Compile)
                then
                   Get_Name_String (Full_Lib_File);
                   Name_Buffer (Name_Len + 1) := ASCII.NUL;
@@ -3314,7 +3333,7 @@ package body Make is
                --  Source and library files can be located but are internal
                --  files.
 
-            elsif not Check_Readonly_Files
+            elsif not (Check_Readonly_Files or else Must_Compile)
               and then Full_Lib_File /= No_File
               and then Is_Internal_File_Name (Source_File, False)
             then
@@ -3342,6 +3361,7 @@ package body Make is
 
                if Arguments_Project = No_Project
                  or else not Arguments_Project.Externally_Built
+                 or else Must_Compile
                then
                   --  Don't waste any time if we have to recompile anyway
 
@@ -4731,13 +4751,6 @@ package body Make is
          Display_Version ("GNATMAKE", "1995");
       end if;
 
-      if Main_Project /= No_Project
-        and then Main_Project.Externally_Built
-      then
-         Make_Failed
-           ("nothing to do for a main project that is externally built");
-      end if;
-
       if Osint.Number_Of_Files = 0 then
          if Main_Project /= No_Project
            and then Main_Project.Library
@@ -5172,6 +5185,25 @@ package body Make is
                   Program           => Linker);
             end if;
          end;
+      end if;
+
+      --  The combination of -f -u and one or several mains on the command line
+      --  implies -a.
+
+      if Force_Compilations
+        and then Unique_Compile
+        and then not Unique_Compile_All_Projects
+        and then Main_On_Command_Line
+      then
+         Must_Compile := True;
+      end if;
+
+      if Main_Project /= No_Project
+        and then not Must_Compile
+        and then Main_Project.Externally_Built
+      then
+         Make_Failed
+           ("nothing to do for a main project that is externally built");
       end if;
 
       --  Get the target parameters, which are only needed for a couple of
@@ -6026,7 +6058,8 @@ package body Make is
                   --  and all the object directories in ADA_OBJECTS_PATH,
                   --  except those of library projects.
 
-                  Prj.Env.Set_Ada_Paths (Main_Project, Project_Tree, False);
+                  Prj.Env.Set_Ada_Paths
+                    (Main_Project, Project_Tree, Use_Include_Path_File);
 
                   --  If switch -C was specified, create a binder mapping file
 
@@ -6043,7 +6076,7 @@ package body Make is
                exception
                   when others =>
 
-                     --  Delete the temporary mapping file, if one was created.
+                     --  Delete the temporary mapping file if one was created
 
                      if Mapping_Path /= No_Path then
                         Delete_Temporary_File (Project_Tree, Mapping_Path);
@@ -6054,7 +6087,7 @@ package body Make is
                      raise;
                end;
 
-               --  If -dn was not specified, delete the temporary mapping file,
+               --  If -dn was not specified, delete the temporary mapping file
                --  if one was created.
 
                if Mapping_Path /= No_Path then
@@ -6253,7 +6286,11 @@ package body Make is
 
                   --  Put the object directories in ADA_OBJECTS_PATH
 
-                  Prj.Env.Set_Ada_Paths (Main_Project, Project_Tree, False);
+                  Prj.Env.Set_Ada_Paths
+                    (Main_Project,
+                     Project_Tree,
+                     Including_Libraries => False,
+                     Include_Path        => False);
 
                   --  Check for attributes Linker'Linker_Options in projects
                   --  other than the main project
@@ -8174,13 +8211,11 @@ package body Make is
 
          elsif Argv (2 .. Argv'Last) = "nostdlib" then
 
-            --  Don't pass -nostdlib to gnatlink, it will disable
-            --  linking with all standard library files.
+            --  Pass -nstdlib to gnatbind and gnatlink
 
             No_Stdlib := True;
-
-            Add_Switch (Argv, Compiler, And_Save => And_Save);
             Add_Switch (Argv, Binder, And_Save => And_Save);
+            Add_Switch (Argv, Linker, And_Save => And_Save);
 
          elsif Argv (2 .. Argv'Last) = "nostdinc" then
 
@@ -8206,6 +8241,10 @@ package body Make is
       --  If not a switch it must be a file name
 
       else
+         if And_Save then
+            Main_On_Command_Line := True;
+         end if;
+
          Add_File (Argv);
          Mains.Add_Main (Argv);
       end if;

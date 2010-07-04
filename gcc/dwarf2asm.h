@@ -1,5 +1,6 @@
 /* Dwarf2 assembler output helper routines.
-   Copyright (C) 2001, 2003, 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003, 2005, 2007, 2008, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,6 +29,10 @@ extern void dw2_asm_output_data (int, unsigned HOST_WIDE_INT,
 
 extern void dw2_asm_output_delta (int, const char *, const char *,
 				  const char *, ...)
+     ATTRIBUTE_NULL_PRINTF_4;
+
+extern void dw2_asm_output_vms_delta (int, const char *, const char *,
+				      const char *, ...)
      ATTRIBUTE_NULL_PRINTF_4;
 
 extern void dw2_asm_output_offset (int, const char *, section *,

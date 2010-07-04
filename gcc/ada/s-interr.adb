@@ -367,11 +367,27 @@ package body System.Interrupts is
    --------------
 
    procedure Finalize (Object : in out Static_Interrupt_Protection) is
+      function State
+        (Int : System.Interrupt_Management.Interrupt_ID) return Character;
+      pragma Import (C, State, "__gnat_get_interrupt_state");
+      --  Get interrupt state for interrupt number Int. Defined in init.c
+
+      Default : constant Character := 's';
+      --    's'   Interrupt_State pragma set state to System (use "default"
+      --           system handler)
+
    begin
       --  ??? loop to be executed only when we're not doing library level
       --  finalization, since in this case all interrupt tasks are gone.
 
-      if not Interrupt_Manager'Terminated then
+      --  If the Abort_Task signal is set to system, it means that we cannot
+      --  reset interrupt handlers since this would require sending the abort
+      --  signal to the Server_Task
+
+      if not Interrupt_Manager'Terminated
+        and then State (System.Interrupt_Management.Abort_Task_Interrupt)
+                  /= Default
+      then
          for N in reverse Object.Previous_Handlers'Range loop
             Interrupt_Manager.Attach_Handler
               (New_Handler => Object.Previous_Handlers (N).Handler,

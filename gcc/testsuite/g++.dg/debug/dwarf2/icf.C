@@ -46,5 +46,5 @@ test2(A* a)
 // { dg-final { scan-assembler "Caller DIE offset" } }
 // { dg-final { scan-assembler "Point of call" } }
 // { dg-final { scan-assembler "Callee DIE offset" } }
-// { dg-final { scan-assembler "0x0.*Vtable slot" } }
-// { dg-final { scan-assembler "0x1.*Vtable slot" } }
+// { dg-final { scan-assembler "0\[ \t\]+.*Vtable slot" } }
+// { dg-final { scan-assembler "0x1\[ \t\]+.*Vtable slot" } }

@@ -342,6 +342,9 @@ package ALI is
       SAL_Interface : Boolean;
       --  Set True when this is an interface to a standalone library
 
+      Directly_Scanned : Boolean;
+      --  True iff it is a unit from an ALI file specified to gnatbind
+
       Body_Needed_For_SAL : Boolean;
       --  Indicates that the source for the body of the unit (subprogram,
       --  package, or generic unit) must be included in a standalone library.
@@ -602,8 +605,6 @@ package ALI is
       --  table.
    end record;
 
-   --  Declare the Linker_Options Table
-
    --  The indexes of active entries in this table range from 1 to the
    --  value of Linker_Options.Last. The zero'th element is for sort call.
 
@@ -614,6 +615,44 @@ package ALI is
      Table_Initial        => 200,
      Table_Increment      => 400,
      Table_Name           => "Linker_Options");
+
+   -----------------
+   -- Notes Table --
+   -----------------
+
+   --  The notes table records entries from N lines
+
+   type Notes_Record is record
+      Pragma_Type : Character;
+      --  'A', 'C', 'I', 'S', 'T' for Annotate/Comment/Ident/Subtitle/Title
+
+      Pragma_Line : Nat;
+      --  Line number of pragma
+
+      Pragma_Col : Nat;
+      --  Column number of pragma
+
+      Unit : Unit_Id;
+      --  Unit_Id for the entry
+
+      Pragma_Args : Name_Id;
+      --  Pragma arguments. No_Name if no arguments, otherwise a single
+      --  name table entry consisting of all the characters on the notes
+      --  line from the first non-blank character following the source
+      --  location to the last character on the line.
+   end record;
+
+   --  The indexes of active entries in this table range from 1 to the
+   --  value of Linker_Options.Last. The zero'th element is for convenience
+   --  if the table needs to be sorted.
+
+   package Notes is new Table.Table (
+     Table_Component_Type => Notes_Record,
+     Table_Index_Type     => Integer,
+     Table_Low_Bound      => 0,
+     Table_Initial        => 200,
+     Table_Increment      => 400,
+     Table_Name           => "Notes");
 
    -------------------------------------------
    -- External Version Reference Hash Table --
@@ -772,6 +811,11 @@ package ALI is
      Tref_Derived, --  Derived type typeref (points to parent type)
      Tref_Type);   --  All other cases
 
+   type Visibility_Kind is
+     (Global, --  Library level entity
+      Static, --  Static C/C++ entity
+      Other); --  Local and other entity
+
    --  The following table records entities for which xrefs are recorded
 
    type Xref_Entity_Record is record
@@ -785,8 +829,8 @@ package ALI is
       Col : Pos;
       --  Column number of definition
 
-      Lib : Boolean;
-      --  True if entity is library level entity
+      Visibility : Visibility_Kind;
+      --  Visiblity of entity
 
       Entity : Name_Id;
       --  Name of entity
@@ -933,14 +977,15 @@ package ALI is
    --  Initialize the ALI tables. Also resets all switch values to defaults
 
    function Scan_ALI
-     (F             : File_Name_Type;
-      T             : Text_Buffer_Ptr;
-      Ignore_ED     : Boolean;
-      Err           : Boolean;
-      Read_Xref     : Boolean := False;
-      Read_Lines    : String  := "";
-      Ignore_Lines  : String  := "X";
-      Ignore_Errors : Boolean := False) return ALI_Id;
+     (F                : File_Name_Type;
+      T                : Text_Buffer_Ptr;
+      Ignore_ED        : Boolean;
+      Err              : Boolean;
+      Read_Xref        : Boolean := False;
+      Read_Lines       : String  := "";
+      Ignore_Lines     : String  := "X";
+      Ignore_Errors    : Boolean := False;
+      Directly_Scanned : Boolean := False) return ALI_Id;
    --  Given the text, T, of an ALI file, F, scan and store the information
    --  from the file, and return the Id of the resulting entry in the ALI
    --  table. Switch settings may be modified as described above in the
@@ -986,5 +1031,11 @@ package ALI is
    --    Scan_ALI was completely unable to process the file (e.g. it did not
    --    look like an ALI file at all). Ignore_Errors is intended to improve
    --    the downward compatibility of new compilers with old tools.
+   --
+   --    Directly_Scanned is normally False. If it is set to True, then the
+   --    units (spec and/or body) corresponding to the ALI file are marked as
+   --    such. It is used to decide for what units gnatbind should generate
+   --    the symbols corresponding to 'Version or 'Body_Version in
+   --    Stand-Alone Libraries.
 
 end ALI;

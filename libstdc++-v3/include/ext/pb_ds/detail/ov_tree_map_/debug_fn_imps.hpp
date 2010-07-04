@@ -47,8 +47,8 @@ assert_valid() const
 {
   std::cout << "av1" << std::endl;
 
-  if (m_a_values == NULL || m_end_it == NULL || m_size == 0)
-    _GLIBCXX_DEBUG_ASSERT(m_a_values == NULL &&  m_end_it == NULL && m_size == 0);
+  if (m_a_values == 0 || m_end_it == 0 || m_size == 0)
+    _GLIBCXX_DEBUG_ASSERT(m_a_values == 0 &&  m_end_it == 0 && m_size == 0);
 
   std::cout << "av2" << std::endl;
   assert_iterators();

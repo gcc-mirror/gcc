@@ -195,6 +195,10 @@ struct lang_hooks_for_decls
      predetermined, OMP_CLAUSE_DEFAULT_UNSPECIFIED otherwise.  */
   enum omp_clause_default_kind (*omp_predetermined_sharing) (tree);
 
+  /* Return decl that should be reported for DEFAULT(NONE) failure
+     diagnostics.  Usually the DECL passed in.  */
+  tree (*omp_report_decl) (tree);
+
   /* Return true if DECL's DECL_VALUE_EXPR (if any) should be
      disregarded in OpenMP construct, because it is going to be
      remapped during OpenMP lowering.  SHARED is true if DECL
@@ -283,7 +287,7 @@ struct lang_hooks
 
      Return 1 if the switch is valid, 0 if invalid, and -1 if it's
      valid and should not be treated as language-independent too.  */
-  int (*handle_option) (size_t code, const char *arg, int value);
+  int (*handle_option) (size_t code, const char *arg, int value, int kind);
 
   /* Return false to use the default complaint about a missing
      argument, otherwise output a complaint and return true.  */
@@ -427,10 +431,6 @@ struct lang_hooks
      (called from gimplify_function_tree()).  */
   void (*instrument_func) (tree);
 
-  /* Fold an OBJ_TYPE_REF expression to the address of a function.
-     KNOWN_TYPE carries the true type of the OBJ_TYPE_REF_OBJECT.  */
-  tree (*fold_obj_type_ref) (tree, tree);
-
   /* Do language specific processing in the builtin function DECL  */
   tree (*builtin_function) (tree decl);
 
@@ -456,9 +456,21 @@ struct lang_hooks
   /* Map a type to a runtime object to match type.  */
   tree (*eh_runtime_type) (tree);
 
+  /* If non-NULL, this is a function that returns a function decl to be
+     executed if an unhandled exception is propagated out of a cleanup
+     region.  For example, in C++, an exception thrown by a destructor
+     during stack unwinding is required to result in a call to
+     `std::terminate', so the C++ version of this function returns a
+     FUNCTION_DECL for `std::terminate'.  */
+  tree (*eh_protect_cleanup_actions) (void);
+
   /* True if this language uses __cxa_end_cleanup when the ARM EABI
      is enabled.  */
   bool eh_use_cxa_end_cleanup;
+
+  /* True if this language requires deep unsharing of tree nodes prior to
+     gimplification.  */
+  bool deep_unsharing;
 
   /* Whenever you add entries here, make sure you adjust langhooks-def.h
      and langhooks.c accordingly.  */

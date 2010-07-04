@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -234,10 +234,11 @@ package body Sem_Warn is
    --  within the body of the loop.
 
    procedure Check_Infinite_Loop_Warning (Loop_Statement : Node_Id) is
-      Iter : constant Node_Id := Iteration_Scheme (Loop_Statement);
+      Expression : Node_Id := Empty;
+      --  Set to WHILE or EXIT WHEN condition to be tested
 
       Ref : Node_Id := Empty;
-      --  Reference in iteration scheme to variable that might not be modified
+      --  Reference in Expression to variable that might not be modified
       --  in loop, indicating a possible infinite loop.
 
       Var : Entity_Id := Empty;
@@ -267,9 +268,9 @@ package body Sem_Warn is
 
       function Test_Ref (N : Node_Id) return Traverse_Result;
       --  Test for reference to variable in question. Returns Abandon if
-      --  matching reference found.
+      --  matching reference found. Used in instantiation of No_Ref_Found.
 
-      function Find_Ref is new Traverse_Func (Test_Ref);
+      function No_Ref_Found is new Traverse_Func (Test_Ref);
       --  Function to traverse body of procedure. Returns Abandon if matching
       --  reference found.
 
@@ -465,9 +466,9 @@ package body Sem_Warn is
 
       function Test_Ref (N : Node_Id) return Traverse_Result is
       begin
-         --  Waste of time to look at iteration scheme
+         --  Waste of time to look at the expression we are testing
 
-         if N = Iter then
+         if N = Expression then
             return Skip;
 
          --  Direct reference to variable in question
@@ -537,6 +538,29 @@ package body Sem_Warn is
             then
                return Abandon;
             end if;
+
+            --  If any of the arguments are of type access to subprogram, then
+            --  we may have funny side effects, so no warning in this case.
+
+            declare
+               Actual : Node_Id;
+            begin
+               Actual := First_Actual (N);
+               while Present (Actual) loop
+                  if Is_Access_Subprogram_Type (Etype (Actual)) then
+                     return Abandon;
+                  else
+                     Next_Actual (Actual);
+                  end if;
+               end loop;
+            end;
+
+         --  Declaration of the variable in question
+
+         elsif Nkind (N) = N_Object_Declaration
+           and then Defining_Identifier (N) = Var
+         then
+            return Abandon;
          end if;
 
          --  All OK, continue scan
@@ -547,20 +571,96 @@ package body Sem_Warn is
    --  Start of processing for Check_Infinite_Loop_Warning
 
    begin
-      --  We need a while iteration with no condition actions. Condition
-      --  actions just make things too complicated to get the warning right.
+      --  Skip processing if debug flag gnatd.w is set
 
-      if No (Iter)
-        or else No (Condition (Iter))
-        or else Present (Condition_Actions (Iter))
-        or else Debug_Flag_Dot_W
-      then
+      if Debug_Flag_Dot_W then
+         return;
+      end if;
+
+      --  Deal with Iteration scheme present
+
+      declare
+         Iter : constant Node_Id := Iteration_Scheme (Loop_Statement);
+
+      begin
+         if Present (Iter) then
+
+            --  While iteration
+
+            if Present (Condition (Iter)) then
+
+               --  Skip processing for while iteration with conditions actions,
+               --  since they make it too complicated to get the warning right.
+
+               if Present (Condition_Actions (Iter)) then
+                  return;
+               end if;
+
+               --  Capture WHILE condition
+
+               Expression := Condition (Iter);
+
+            --  For iteration, do not process, since loop will always terminate
+
+            elsif Present (Loop_Parameter_Specification (Iter)) then
+               return;
+            end if;
+         end if;
+      end;
+
+      --  Check chain of EXIT statements, we only process loops that have a
+      --  single exit condition (either a single EXIT WHEN statement, or a
+      --  WHILE loop not containing any EXIT WHEN statements).
+
+      declare
+         Ident     : constant Node_Id := Identifier (Loop_Statement);
+         Exit_Stmt : Node_Id;
+
+      begin
+         --  If we don't have a proper chain set, ignore call entirely. This
+         --  happens because of previous errors.
+
+         if No (Entity (Ident))
+           or else Ekind (Entity (Ident)) /= E_Loop
+         then
+            return;
+         end if;
+
+         --  Otherwise prepare to scan list of EXIT statements
+
+         Exit_Stmt := First_Exit_Statement (Entity (Ident));
+         while Present (Exit_Stmt) loop
+
+            --  Check for EXIT WHEN
+
+            if Present (Condition (Exit_Stmt)) then
+
+               --  Quit processing if EXIT WHEN in WHILE loop, or more than
+               --  one EXIT WHEN statement present in the loop.
+
+               if Present (Expression) then
+                  return;
+
+               --  Otherwise capture condition from EXIT WHEN statement
+
+               else
+                  Expression := Condition (Exit_Stmt);
+               end if;
+            end if;
+
+            Exit_Stmt := Next_Exit_Statement (Exit_Stmt);
+         end loop;
+      end;
+
+      --  Return if no condition to test
+
+      if No (Expression) then
          return;
       end if;
 
       --  Initial conditions met, see if condition is of right form
 
-      Find_Var (Condition (Iter));
+      Find_Var (Expression);
 
       --  Nothing to do if local variable from source not found. If it's a
       --  renaming, it is probably renaming something too complicated to deal
@@ -608,7 +708,7 @@ package body Sem_Warn is
       --  We have a variable reference of the right form, now we scan the loop
       --  body to see if it looks like it might not be modified
 
-      if Find_Ref (Loop_Statement) = OK then
+      if No_Ref_Found (Loop_Statement) = OK then
          Error_Msg_NE
            ("?variable& is not modified in loop body!", Ref, Var);
          Error_Msg_N
@@ -927,9 +1027,8 @@ package body Sem_Warn is
             --  we exclude protected types, too complicated to worry about.
 
             if Ekind (E1) = E_Variable
-                 or else
-                ((Ekind (E1) = E_Out_Parameter
-                    or else Ekind (E1) = E_In_Out_Parameter)
+              or else
+                (Ekind_In (E1, E_Out_Parameter, E_In_Out_Parameter)
                   and then not Is_Protected_Type (Current_Scope))
             then
                --  Case of an unassigned variable
@@ -1245,7 +1344,7 @@ package body Sem_Warn is
                               while Present (Comp) loop
                                  if Ekind (Comp) = E_Component
                                    and then Nkind (Parent (Comp)) =
-                                   N_Component_Declaration
+                                              N_Component_Declaration
                                    and then No (Expression (Parent (Comp)))
                                  then
                                     Error_Msg_Node_2 := Comp;
@@ -1364,12 +1463,9 @@ package body Sem_Warn is
                --  a separate spec.
 
                and then not (Is_Formal (E1)
-                               and then
-                             Ekind (Scope (E1)) = E_Subprogram_Body
-                               and then
-                             Present (Spec_Entity (E1))
-                               and then
-                             Referenced (Spec_Entity (E1)))
+                              and then Ekind (Scope (E1)) = E_Subprogram_Body
+                              and then Present (Spec_Entity (E1))
+                              and then Referenced (Spec_Entity (E1)))
 
                --  Consider private type referenced if full view is referenced.
                --  If there is not full view, this is a generic type on which
@@ -1377,8 +1473,7 @@ package body Sem_Warn is
 
                and then
                  not (Is_Private_Type (E1)
-                   and then
-                     Present (Full_View (E1))
+                       and then Present (Full_View (E1))
                        and then Referenced (Full_View (E1)))
 
                --  Don't worry about full view, only about private type
@@ -1408,16 +1503,15 @@ package body Sem_Warn is
                --  be non-referenced, since they start up tasks!
 
                and then ((Ekind (E1) /= E_Variable
-                             and then Ekind (E1) /= E_Constant
-                             and then Ekind (E1) /= E_Component)
-                           or else not Is_Task_Type (E1T))
+                           and then Ekind (E1) /= E_Constant
+                           and then Ekind (E1) /= E_Component)
+                          or else not Is_Task_Type (E1T))
 
                --  For subunits, only place warnings on the main unit itself,
                --  since parent units are not completely compiled.
 
                and then (Nkind (Unit (Cunit (Main_Unit))) /= N_Subunit
-                           or else
-                         Get_Source_Unit (E1) = Main_Unit)
+                          or else Get_Source_Unit (E1) = Main_Unit)
 
                --  No warning on a return object, because these are often
                --  created with a single expression and an implicit return.
@@ -1432,9 +1526,8 @@ package body Sem_Warn is
                --  since they refer to problems in internal units).
 
                if GNAT_Mode
-                 or else not
-                   Is_Internal_File_Name
-                     (Unit_File_Name (Get_Source_Unit (E1)))
+                 or else not Is_Internal_File_Name
+                               (Unit_File_Name (Get_Source_Unit (E1)))
                then
                   --  We do not immediately flag the error. This is because we
                   --  have not expanded generic bodies yet, and they may have
@@ -2004,7 +2097,7 @@ package body Sem_Warn is
                   while Present (Nam) loop
                      if Entity (Nam) = Pack then
                         Error_Msg_Qual_Level := 1;
-                        Error_Msg_NE
+                        Error_Msg_NE -- CODEFIX
                           ("?no entities of package& are referenced!",
                              Nam, Pack);
                         Error_Msg_Qual_Level := 0;
@@ -2201,7 +2294,7 @@ package body Sem_Warn is
                      --  else or a pragma elaborate with a body library task).
 
                      elsif Has_Visible_Entities (Entity (Name (Item))) then
-                        Error_Msg_N
+                        Error_Msg_N -- CODEFIX
                           ("?unit& is not referenced!", Name (Item));
                      end if;
                   end if;
@@ -2278,7 +2371,7 @@ package body Sem_Warn is
                               if not
                                 Has_Unreferenced (Entity (Name (Item)))
                               then
-                                 Error_Msg_N
+                                 Error_Msg_N -- CODEFIX
                                    ("?no entities of & are referenced!",
                                     Name (Item));
                               end if;
@@ -2294,7 +2387,7 @@ package body Sem_Warn is
                                 and then not Has_Warnings_Off (Lunit)
                                 and then not Has_Unreferenced (Pack)
                               then
-                                 Error_Msg_NE
+                                 Error_Msg_NE -- CODEFIX
                                    ("?no entities of & are referenced!",
                                      Unit_Declaration_Node (Pack),
                                      Pack);
@@ -2334,12 +2427,12 @@ package body Sem_Warn is
                            end if;
 
                            if Unreferenced_In_Spec (Item) then
-                              Error_Msg_N
+                              Error_Msg_N -- CODEFIX
                                 ("?unit& is not referenced in spec!",
                                  Name (Item));
 
                            elsif No_Entities_Ref_In_Spec (Item) then
-                              Error_Msg_N
+                              Error_Msg_N -- CODEFIX
                                 ("?no entities of & are referenced in spec!",
                                  Name (Item));
 
@@ -2688,8 +2781,9 @@ package body Sem_Warn is
                      --  default mode.
 
                   elsif Check_Unreferenced then
-                     Error_Msg_N ("?formal parameter& is read but "
-                                  & "never assigned!", E1);
+                     Error_Msg_N
+                       ("?formal parameter& is read but "
+                        & "never assigned!", E1);
                   end if;
                end if;
 
@@ -2783,9 +2877,7 @@ package body Sem_Warn is
 
       --  Reference to obsolescent component
 
-      elsif Ekind (E) = E_Component
-        or else Ekind (E) = E_Discriminant
-      then
+      elsif Ekind_In (E, E_Component, E_Discriminant) then
          Error_Msg_NE
            ("?reference to obsolescent component& declared#", N, E);
 
@@ -3423,28 +3515,16 @@ package body Sem_Warn is
         and then Is_Known_Branch
       then
          declare
-            Start : Source_Ptr;
-            Dummy : Source_Ptr;
-            Typ   : Character;
             Atrue : Boolean;
 
          begin
-            Sloc_Range (Orig, Start, Dummy);
             Atrue := Test_Result;
 
-            if Present (Parent (C))
-              and then Nkind (Parent (C)) = N_Op_Not
-            then
+            if Present (Parent (C)) and then Nkind (Parent (C)) = N_Op_Not then
                Atrue := not Atrue;
             end if;
 
-            if Atrue then
-               Typ := 't';
-            else
-               Typ := 'f';
-            end if;
-
-            Set_SCO_Condition (Start, Typ);
+            Set_SCO_Condition (Orig, Atrue);
          end;
       end if;
 
@@ -3776,7 +3856,8 @@ package body Sem_Warn is
          procedure Warn1 is
          begin
             Error_Msg_Uint_1 := Low_Bound;
-            Error_Msg_FE ("?index for& may assume lower bound of^", X, Ent);
+            Error_Msg_FE -- CODEFIX
+              ("?index for& may assume lower bound of^", X, Ent);
          end Warn1;
 
       --  Start of processing for Test_Suspicious_Index
@@ -3800,11 +3881,11 @@ package body Sem_Warn is
 
             if Nkind (Original_Node (X)) = N_Integer_Literal then
                if Intval (X) = Low_Bound then
-                  Error_Msg_FE --  CODEFIX
+                  Error_Msg_FE -- CODEFIX
                     ("\suggested replacement: `&''First`", X, Ent);
                else
                   Error_Msg_Uint_1 := Intval (X) - Low_Bound;
-                  Error_Msg_FE --  CODEFIX
+                  Error_Msg_FE -- CODEFIX
                     ("\suggested replacement: `&''First + ^`", X, Ent);
 
                end if;
@@ -3910,7 +3991,7 @@ package body Sem_Warn is
 
                --  Replacement subscript is now in string buffer
 
-               Error_Msg_FE --  CODEFIX
+               Error_Msg_FE -- CODEFIX
                  ("\suggested replacement: `&~`", Original_Node (X), Ent);
             end if;
 
@@ -4082,10 +4163,10 @@ package body Sem_Warn is
                      if Present (Renamed_Object (E))
                        and then Comes_From_Source (Renamed_Object (E))
                      then
-                        Error_Msg_N
+                        Error_Msg_N -- CODEFIX
                           ("?renamed variable & is not referenced!", E);
                      else
-                        Error_Msg_N
+                        Error_Msg_N -- CODEFIX
                           ("?variable & is not referenced!", E);
                      end if;
                   end if;
@@ -4095,10 +4176,11 @@ package body Sem_Warn is
                if Present (Renamed_Object (E))
                  and then Comes_From_Source (Renamed_Object (E))
                then
-                  Error_Msg_N
+                  Error_Msg_N -- CODEFIX
                     ("?renamed constant & is not referenced!", E);
                else
-                  Error_Msg_N ("?constant & is not referenced!", E);
+                  Error_Msg_N -- CODEFIX
+                    ("?constant & is not referenced!", E);
                end if;
 
             when E_In_Parameter     |
@@ -4123,7 +4205,7 @@ package body Sem_Warn is
                      end if;
 
                      if not Is_Trivial_Subprogram (Scope (E)) then
-                        Error_Msg_NE
+                        Error_Msg_NE -- CODEFIX
                           ("?formal parameter & is not referenced!",
                            E, Spec_E);
                      end if;
@@ -4138,28 +4220,36 @@ package body Sem_Warn is
 
             when E_Named_Integer |
                  E_Named_Real    =>
-               Error_Msg_N ("?named number & is not referenced!", E);
+               Error_Msg_N -- CODEFIX
+                 ("?named number & is not referenced!", E);
 
             when Formal_Object_Kind =>
-               Error_Msg_N ("?formal object & is not referenced!", E);
+               Error_Msg_N -- CODEFIX
+                 ("?formal object & is not referenced!", E);
 
             when E_Enumeration_Literal =>
-               Error_Msg_N ("?literal & is not referenced!", E);
+               Error_Msg_N -- CODEFIX
+                 ("?literal & is not referenced!", E);
 
             when E_Function =>
-               Error_Msg_N ("?function & is not referenced!", E);
+               Error_Msg_N -- CODEFIX
+                 ("?function & is not referenced!", E);
 
             when E_Procedure =>
-               Error_Msg_N ("?procedure & is not referenced!", E);
+               Error_Msg_N -- CODEFIX
+                 ("?procedure & is not referenced!", E);
 
             when E_Package =>
-               Error_Msg_N ("?package & is not referenced!", E);
+               Error_Msg_N -- CODEFIX
+                 ("?package & is not referenced!", E);
 
             when E_Exception =>
-               Error_Msg_N ("?exception & is not referenced!", E);
+               Error_Msg_N -- CODEFIX
+                 ("?exception & is not referenced!", E);
 
             when E_Label =>
-               Error_Msg_N ("?label & is not referenced!", E);
+               Error_Msg_N -- CODEFIX
+                 ("?label & is not referenced!", E);
 
             when E_Generic_Procedure =>
                Error_Msg_N -- CODEFIX
@@ -4170,10 +4260,12 @@ package body Sem_Warn is
                  ("?generic function & is never instantiated!", E);
 
             when Type_Kind =>
-               Error_Msg_N ("?type & is not referenced!", E);
+               Error_Msg_N -- CODEFIX
+                 ("?type & is not referenced!", E);
 
             when others =>
-               Error_Msg_N ("?& is not referenced!", E);
+               Error_Msg_N -- CODEFIX
+                 ("?& is not referenced!", E);
          end case;
 
          --  Kill warnings on the entity on which the message has been posted
@@ -4270,7 +4362,7 @@ package body Sem_Warn is
                           ("?& modified by call, but value never referenced",
                            Last_Assignment (Ent), Ent);
                      else
-                        Error_Msg_NE
+                        Error_Msg_NE -- CODEFIX
                           ("?useless assignment to&, value never referenced!",
                            Last_Assignment (Ent), Ent);
                      end if;
@@ -4286,7 +4378,7 @@ package body Sem_Warn is
                        ("?& modified by call, but value overwritten #!",
                         Last_Assignment (Ent), Ent);
                   else
-                     Error_Msg_NE
+                     Error_Msg_NE -- CODEFIX
                        ("?useless assignment to&, value overwritten #!",
                         Last_Assignment (Ent), Ent);
                   end if;

@@ -1,5 +1,6 @@
 /* Routines for discovering and unpropagating edge equivalences.
-   Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,19 +24,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "flags.h"
-#include "rtl.h"
 #include "tm_p.h"
-#include "ggc.h"
 #include "basic-block.h"
 #include "output.h"
-#include "expr.h"
 #include "function.h"
-#include "diagnostic.h"
 #include "timevar.h"
 #include "tree-dump.h"
 #include "tree-flow.h"
 #include "domwalk.h"
-#include "real.h"
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
 #include "langhooks.h"

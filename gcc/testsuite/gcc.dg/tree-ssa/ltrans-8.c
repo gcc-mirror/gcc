@@ -1,5 +1,6 @@
 /* { dg-do compile } */ 
 /* { dg-options "-O2 -ftree-loop-linear -fdump-tree-ltrans-all" } */
+/* { dg-options "-O2 -ftree-loop-linear -fdump-tree-ltrans-all -march=i486" { target { i?86-*-* && ilp32} } } */
 double foo(double *a)
 {
        int i,j;

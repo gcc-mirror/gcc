@@ -36,6 +36,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "flags.h"
 #include "diagnostic.h"
+#include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
 #include "toplev.h"
 #include "debug.h"
 #include "params.h"
@@ -43,7 +45,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "target.h"
 #include "ssaexpand.h"
-
+#include "bitmap.h"
+#include "sbitmap.h"
+#include "insn-attr.h" /* For INSN_SCHEDULING.  */
 
 /* This variable holds information helping the rewriting of SSA trees
    into RTL.  */
@@ -64,7 +68,13 @@ gimple_assign_rhs_to_tree (gimple stmt)
 
   grhs_class = get_gimple_rhs_class (gimple_expr_code (stmt));
 
-  if (grhs_class == GIMPLE_BINARY_RHS)
+  if (grhs_class == GIMPLE_TERNARY_RHS)
+    t = build3 (gimple_assign_rhs_code (stmt),
+		TREE_TYPE (gimple_assign_lhs (stmt)),
+		gimple_assign_rhs1 (stmt),
+		gimple_assign_rhs2 (stmt),
+		gimple_assign_rhs3 (stmt));
+  else if (grhs_class == GIMPLE_BINARY_RHS)
     t = build2 (gimple_assign_rhs_code (stmt),
 		TREE_TYPE (gimple_assign_lhs (stmt)),
 		gimple_assign_rhs1 (stmt),
@@ -77,8 +87,12 @@ gimple_assign_rhs_to_tree (gimple stmt)
     {
       t = gimple_assign_rhs1 (stmt);
       /* Avoid modifying this tree in place below.  */
-      if (gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (t)
-	  && gimple_location (stmt) != EXPR_LOCATION (t))
+      if ((gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (t)
+	   && gimple_location (stmt) != EXPR_LOCATION (t))
+	  || (gimple_block (stmt)
+	      && currently_expanding_to_rtl
+	      && EXPR_P (t)
+	      && gimple_block (stmt) != TREE_BLOCK (t)))
 	t = copy_node (t);
     }
   else
@@ -86,6 +100,8 @@ gimple_assign_rhs_to_tree (gimple stmt)
 
   if (gimple_has_location (stmt) && CAN_HAVE_LOCATION_P (t))
     SET_EXPR_LOCATION (t, gimple_location (stmt));
+  if (gimple_block (stmt) && currently_expanding_to_rtl && EXPR_P (t))
+    TREE_BLOCK (t) = gimple_block (stmt);
 
   return t;
 }
@@ -494,12 +510,12 @@ update_alias_info_with_stack_vars (void)
       for (j = i; j != EOC; j = stack_vars[j].next)
 	{
 	  tree decl = stack_vars[j].decl;
-	  unsigned int uid = DECL_UID (decl);
+	  unsigned int uid = DECL_PT_UID (decl);
 	  /* We should never end up partitioning SSA names (though they
 	     may end up on the stack).  Neither should we allocate stack
 	     space to something that is unused and thus unreferenced.  */
 	  gcc_assert (DECL_P (decl)
-		      && referenced_var_lookup (uid));
+		      && referenced_var_lookup (DECL_UID (decl)));
 	  bitmap_set_bit (part, uid);
 	  *((bitmap *) pointer_map_insert (decls_to_partitions,
 					   (void *)(size_t) uid)) = part;
@@ -509,7 +525,7 @@ update_alias_info_with_stack_vars (void)
 
       /* Make the SSA name point to all partition members.  */
       pi = get_ptr_info (name);
-      pt_solution_set (&pi->pt, part);
+      pt_solution_set (&pi->pt, part, false, false);
     }
 
   /* Make all points-to sets that contain one member of a partition
@@ -533,8 +549,6 @@ update_alias_info_with_stack_vars (void)
 	}
 
       add_partitioned_vars_to_ptset (&cfun->gimple_df->escaped,
-				     decls_to_partitions, visited, temp);
-      add_partitioned_vars_to_ptset (&cfun->gimple_df->callused,
 				     decls_to_partitions, visited, temp);
 
       pointer_set_destroy (visited);
@@ -1283,6 +1297,7 @@ static void
 expand_used_vars (void)
 {
   tree t, next, outer_block = DECL_INITIAL (current_function_decl);
+  tree maybe_local_decls = NULL_TREE;
   unsigned i;
 
   /* Compute the phase of the stack frame for this function.  */
@@ -1367,6 +1382,15 @@ expand_used_vars (void)
 	      cfun->local_decls = t;
 	      continue;
 	    }
+	  else if (rtl == NULL_RTX)
+	    {
+	      /* If rtl isn't set yet, which can happen e.g. with
+		 -fstack-protector, retry before returning from this
+		 function.  */
+	      TREE_CHAIN (t) = maybe_local_decls;
+	      maybe_local_decls = t;
+	      continue;
+	    }
 	}
 
       ggc_free (t);
@@ -1423,6 +1447,28 @@ expand_used_vars (void)
       expand_stack_vars (NULL);
 
       fini_vars_expansion ();
+    }
+
+  /* If there were any artificial non-ignored vars without rtl
+     found earlier, see if deferred stack allocation hasn't assigned
+     rtl to them.  */
+  for (t = maybe_local_decls; t; t = next)
+    {
+      tree var = TREE_VALUE (t);
+      rtx rtl = DECL_RTL_IF_SET (var);
+
+      next = TREE_CHAIN (t);
+
+      /* Keep artificial non-ignored vars in cfun->local_decls
+	 chain until instantiate_decls.  */
+      if (rtl && (MEM_P (rtl) || GET_CODE (rtl) == CONCAT))
+	{
+	  TREE_CHAIN (t) = cfun->local_decls;
+	  cfun->local_decls = t;
+	  continue;
+	}
+
+      ggc_free (t);
     }
 
   /* If the target requires that FRAME_OFFSET be aligned, do it.  */
@@ -1849,6 +1895,9 @@ expand_gimple_stmt_1 (gimple stmt)
 	    ops.type = TREE_TYPE (lhs);
 	    switch (get_gimple_rhs_class (gimple_expr_code (stmt)))
 	      {
+		case GIMPLE_TERNARY_RHS:
+		  ops.op2 = gimple_assign_rhs3 (stmt);
+		  /* Fallthru */
 		case GIMPLE_BINARY_RHS:
 		  ops.op1 = gimple_assign_rhs2 (stmt);
 		  /* Fallthru */
@@ -2198,6 +2247,9 @@ expand_debug_expr (tree exp)
       switch (TREE_CODE (exp))
 	{
 	case COND_EXPR:
+	case DOT_PROD_EXPR:
+	case WIDEN_MULT_PLUS_EXPR:
+	case WIDEN_MULT_MINUS_EXPR:
 	  goto ternary;
 
 	case TRUTH_ANDIF_EXPR:
@@ -2306,8 +2358,7 @@ expand_debug_expr (tree exp)
 	      || mode == VOIDmode)
 	    return NULL;
 
-	  op0 = DECL_RTL (exp);
- 	  SET_DECL_RTL (exp, NULL);
+	  op0 = make_decl_rtl_for_debug (exp);
 	  if (!MEM_P (op0)
 	      || GET_CODE (XEXP (op0, 0)) != SYMBOL_REF
 	      || SYMBOL_REF_DECL (XEXP (op0, 0)) != exp)
@@ -2320,7 +2371,8 @@ expand_debug_expr (tree exp)
 	  /* If op0 is not BLKmode, but BLKmode is, adjust_mode
 	     below would ICE.  While it is likely a FE bug,
 	     try to be robust here.  See PR43166.  */
-	  || mode == BLKmode)
+	  || mode == BLKmode
+	  || (mode == VOIDmode && GET_MODE (op0) != VOIDmode))
 	{
 	  gcc_assert (MEM_P (op0));
 	  op0 = adjust_address_nv (op0, mode, 0);
@@ -2463,7 +2515,8 @@ expand_debug_expr (tree exp)
 	  {
 	    enum machine_mode addrmode, offmode;
 
-	    gcc_assert (MEM_P (op0));
+	    if (!MEM_P (op0))
+	      return NULL;
 
 	    op0 = XEXP (op0, 0);
 	    addrmode = GET_MODE (op0);
@@ -2523,12 +2576,13 @@ expand_debug_expr (tree exp)
         if (bitpos < 0)
           return NULL;
 
+	if (GET_MODE (op0) == BLKmode)
+	  return NULL;
+
 	if ((bitpos % BITS_PER_UNIT) == 0
 	    && bitsize == GET_MODE_BITSIZE (mode1))
 	  {
 	    enum machine_mode opmode = GET_MODE (op0);
-
-	    gcc_assert (opmode != BLKmode);
 
 	    if (opmode == VOIDmode)
 	      opmode = mode1;
@@ -2578,6 +2632,22 @@ expand_debug_expr (tree exp)
 	return gen_rtx_FIX (mode, op0);
 
     case POINTER_PLUS_EXPR:
+      /* For the rare target where pointers are not the same size as
+	 size_t, we need to check for mis-matched modes and correct
+	 the addend.  */
+      if (op0 && op1
+	  && GET_MODE (op0) != VOIDmode && GET_MODE (op1) != VOIDmode
+	  && GET_MODE (op0) != GET_MODE (op1))
+	{
+	  if (GET_MODE_BITSIZE (GET_MODE (op0)) < GET_MODE_BITSIZE (GET_MODE (op1)))
+	    op1 = gen_rtx_TRUNCATE (GET_MODE (op0), op1);
+	  else
+	    /* We always sign-extend, regardless of the signedness of
+	       the operand, because the operand is always unsigned
+	       here even if the original C expression is signed.  */
+	    op1 = gen_rtx_SIGN_EXTEND (GET_MODE (op0), op1);
+	}
+      /* Fall through.  */
     case PLUS_EXPR:
       return gen_rtx_PLUS (mode, op0, op1);
 
@@ -2916,6 +2986,90 @@ expand_debug_expr (tree exp)
       }
 
     case ERROR_MARK:
+      return NULL;
+
+    /* Vector stuff.  For most of the codes we don't have rtl codes.  */
+    case REALIGN_LOAD_EXPR:
+    case REDUC_MAX_EXPR:
+    case REDUC_MIN_EXPR:
+    case REDUC_PLUS_EXPR:
+    case VEC_COND_EXPR:
+    case VEC_EXTRACT_EVEN_EXPR:
+    case VEC_EXTRACT_ODD_EXPR:
+    case VEC_INTERLEAVE_HIGH_EXPR:
+    case VEC_INTERLEAVE_LOW_EXPR:
+    case VEC_LSHIFT_EXPR:
+    case VEC_PACK_FIX_TRUNC_EXPR:
+    case VEC_PACK_SAT_EXPR:
+    case VEC_PACK_TRUNC_EXPR:
+    case VEC_RSHIFT_EXPR:
+    case VEC_UNPACK_FLOAT_HI_EXPR:
+    case VEC_UNPACK_FLOAT_LO_EXPR:
+    case VEC_UNPACK_HI_EXPR:
+    case VEC_UNPACK_LO_EXPR:
+    case VEC_WIDEN_MULT_HI_EXPR:
+    case VEC_WIDEN_MULT_LO_EXPR:
+      return NULL;
+
+   /* Misc codes.  */
+    case ADDR_SPACE_CONVERT_EXPR:
+    case FIXED_CONVERT_EXPR:
+    case OBJ_TYPE_REF:
+    case WITH_SIZE_EXPR:
+      return NULL;
+
+    case DOT_PROD_EXPR:
+      if (SCALAR_INT_MODE_P (GET_MODE (op0))
+	  && SCALAR_INT_MODE_P (mode))
+	{
+	  if (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))))
+	    op0 = gen_rtx_ZERO_EXTEND (mode, op0);
+	  else
+	    op0 = gen_rtx_SIGN_EXTEND (mode, op0);
+	  if (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 1))))
+	    op1 = gen_rtx_ZERO_EXTEND (mode, op1);
+	  else
+	    op1 = gen_rtx_SIGN_EXTEND (mode, op1);
+	  op0 = gen_rtx_MULT (mode, op0, op1);
+	  return gen_rtx_PLUS (mode, op0, op2);
+	}
+      return NULL;
+
+    case WIDEN_MULT_EXPR:
+    case WIDEN_MULT_PLUS_EXPR:
+    case WIDEN_MULT_MINUS_EXPR:
+      if (SCALAR_INT_MODE_P (GET_MODE (op0))
+	  && SCALAR_INT_MODE_P (mode))
+	{
+	  enum machine_mode inner_mode = GET_MODE (op0);
+	  if (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))))
+	    op0 = simplify_gen_unary (ZERO_EXTEND, mode, op0, inner_mode);
+	  else
+	    op0 = simplify_gen_unary (SIGN_EXTEND, mode, op0, inner_mode);
+	  if (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 1))))
+	    op1 = simplify_gen_unary (ZERO_EXTEND, mode, op1, inner_mode);
+	  else
+	    op1 = simplify_gen_unary (SIGN_EXTEND, mode, op1, inner_mode);
+	  op0 = gen_rtx_MULT (mode, op0, op1);
+	  if (TREE_CODE (exp) == WIDEN_MULT_EXPR)
+	    return op0;
+	  else if (TREE_CODE (exp) == WIDEN_MULT_PLUS_EXPR)
+	    return gen_rtx_PLUS (mode, op0, op2);
+	  else
+	    return gen_rtx_MINUS (mode, op2, op0);
+	}
+      return NULL;
+
+    case WIDEN_SUM_EXPR:
+      if (SCALAR_INT_MODE_P (GET_MODE (op0))
+	  && SCALAR_INT_MODE_P (mode))
+	{
+	  if (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))))
+	    op0 = gen_rtx_ZERO_EXTEND (mode, op0);
+	  else
+	    op0 = gen_rtx_SIGN_EXTEND (mode, op0);
+	  return gen_rtx_PLUS (mode, op0, op1);
+	}
       return NULL;
 
     default:
@@ -3509,7 +3663,8 @@ discover_nonconstant_array_refs (void)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	gimple stmt = gsi_stmt (gsi);
-	walk_gimple_op (stmt, discover_nonconstant_array_refs_r, NULL);
+	if (!is_gimple_debug (stmt))
+	  walk_gimple_op (stmt, discover_nonconstant_array_refs_r, NULL);
       }
 }
 
@@ -3548,7 +3703,7 @@ expand_stack_alignment (void)
      stack.  We check PREFERRED_STACK_BOUNDARY if there may be non-call
      exceptions since callgraph doesn't collect incoming stack alignment
      in this case.  */
-  if (flag_non_call_exceptions
+  if (cfun->can_throw_non_call_exceptions
       && PREFERRED_STACK_BOUNDARY > crtl->preferred_stack_boundary)
     preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
   else
@@ -3626,6 +3781,10 @@ gimple_expand_cfg (void)
   set_curr_insn_block (DECL_INITIAL (current_function_decl));
   prologue_locator = curr_insn_locator ();
 
+#ifdef INSN_SCHEDULING
+  init_sched_attrs ();
+#endif
+
   /* Make sure first insn is a note even if we don't want linenums.
      This makes sure the first insn will never be deleted.
      Also, final expects a note to appear there.  */
@@ -3650,10 +3809,12 @@ gimple_expand_cfg (void)
     {
       if (cfun->calls_alloca)
 	warning (OPT_Wstack_protector,
-		 "not protecting local variables: variable length buffer");
+		 "stack protector not protecting local variables: "
+                 "variable length buffer");
       if (has_short_buffer && !crtl->stack_protect_guard)
 	warning (OPT_Wstack_protector,
-		 "not protecting function: no buffer at least %d bytes long",
+		 "stack protector not protecting function: "
+                 "all local arrays are less than %d bytes long",
 		 (int) PARAM_VALUE (PARAM_SSP_BUFFER_SIZE));
     }
 

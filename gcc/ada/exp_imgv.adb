@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,8 +43,14 @@ with Stringt;  use Stringt;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
+with Urealp;   use Urealp;
 
 package body Exp_Imgv is
+
+   function Has_Decimal_Small (E : Entity_Id) return Boolean;
+   --  Applies to all entities. True for a Decimal_Fixed_Point_Type, or an
+   --  Ordinary_Fixed_Point_Type with a small that is a negative power of ten.
+   --  Shouldn't this be in einfo.adb or sem_aux.adb???
 
    ------------------------------------
    -- Build_Enumeration_Image_Tables --
@@ -260,13 +266,8 @@ package body Exp_Imgv is
       Ins_List : List_Id;
       --  List of actions to be inserted
 
-      Snn : constant Entity_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('S'));
-
-      Pnn : constant Entity_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('P'));
+      Snn : constant Entity_Id := Make_Temporary (Loc, 'S');
+      Pnn : constant Entity_Id := Make_Temporary (Loc, 'P');
 
    begin
       --  Build declarations of Snn and Pnn to be inserted
@@ -335,7 +336,7 @@ package body Exp_Imgv is
             Tent := RTE (RE_Long_Long_Unsigned);
          end if;
 
-      elsif Is_Decimal_Fixed_Point_Type (Rtyp) then
+      elsif Is_Fixed_Point_Type (Rtyp) and then Has_Decimal_Small (Rtyp) then
          if UI_To_Int (Esize (Rtyp)) <= Standard_Integer_Size then
             Imid := RE_Image_Decimal;
             Tent := Standard_Integer;
@@ -358,8 +359,8 @@ package body Exp_Imgv is
          if Discard_Names (First_Subtype (Ptyp))
            or else No (Lit_Strings (Root_Type (Ptyp)))
          then
-            --  When pragma Discard_Names applies to the first subtype,
-            --  then build (Pref'Pos)'Img.
+            --  When pragma Discard_Names applies to the first subtype, build
+            --  (Pref'Pos)'Img.
 
             Rewrite (N,
               Make_Attribute_Reference (Loc,
@@ -380,8 +381,10 @@ package body Exp_Imgv is
 
             if Ttyp = Standard_Integer_8 then
                Imid := RE_Image_Enumeration_8;
-            elsif Ttyp = Standard_Integer_16  then
+
+            elsif Ttyp = Standard_Integer_16 then
                Imid := RE_Image_Enumeration_16;
+
             else
                Imid := RE_Image_Enumeration_32;
             end if;
@@ -454,18 +457,23 @@ package body Exp_Imgv is
              Prefix         => New_Reference_To (Ptyp, Loc),
              Attribute_Name => Name_Aft));
 
+         if Has_Decimal_Small (Rtyp) then
+            Set_Conversion_OK (First (Arg_List));
+            Set_Etype (First (Arg_List), Tent);
+         end if;
+
       --  For decimal, append Scale and also set to do literal conversion
 
       elsif Is_Decimal_Fixed_Point_Type (Rtyp) then
          Append_To (Arg_List,
            Make_Attribute_Reference (Loc,
-             Prefix => New_Reference_To (Ptyp, Loc),
+             Prefix         => New_Reference_To (Ptyp, Loc),
              Attribute_Name => Name_Scale));
 
          Set_Conversion_OK (First (Arg_List));
          Set_Etype (First (Arg_List), Tent);
 
-         --  For Wide_Character, append Ada 2005 indication
+      --  For Wide_Character, append Ada 2005 indication
 
       elsif Rtyp = Standard_Wide_Character then
          Append_To (Arg_List,
@@ -771,14 +779,8 @@ package body Exp_Imgv is
    procedure Expand_Wide_Image_Attribute (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
       Rtyp : constant Entity_Id  := Root_Type (Entity (Prefix (N)));
-
-      Rnn : constant Entity_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('S'));
-
-      Lnn : constant Entity_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('P'));
+      Rnn  : constant Entity_Id := Make_Temporary (Loc, 'S');
+      Lnn  : constant Entity_Id := Make_Temporary (Loc, 'P');
 
    begin
       Insert_Actions (N, New_List (
@@ -869,13 +871,8 @@ package body Exp_Imgv is
       Loc  : constant Source_Ptr := Sloc (N);
       Rtyp : constant Entity_Id  := Root_Type (Entity (Prefix (N)));
 
-      Rnn : constant Entity_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('S'));
-
-      Lnn : constant Entity_Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('P'));
+      Rnn : constant Entity_Id := Make_Temporary (Loc, 'S');
+      Lnn : constant Entity_Id := Make_Temporary (Loc, 'P');
 
    begin
       Insert_Actions (N, New_List (
@@ -1253,5 +1250,17 @@ package body Exp_Imgv is
 
       Analyze_And_Resolve (N, Typ);
    end Expand_Width_Attribute;
+
+   -----------------------
+   -- Has_Decimal_Small --
+   -----------------------
+
+   function Has_Decimal_Small (E : Entity_Id) return Boolean is
+   begin
+      return Is_Decimal_Fixed_Point_Type (E)
+        or else
+          (Is_Ordinary_Fixed_Point_Type (E)
+             and then Ureal_10**Aft_Value (E) * Small_Value (E) = Ureal_1);
+   end Has_Decimal_Small;
 
 end Exp_Imgv;

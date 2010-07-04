@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -280,16 +280,14 @@ package body Exp_Attr is
    --  Start of processing for Expand_Access_To_Protected_Op
 
    begin
-      --  Within the body of the protected type, the prefix
-      --  designates a local operation, and the object is the first
-      --  parameter of the corresponding protected body of the
-      --  current enclosing operation.
+      --  Within the body of the protected type, the prefix designates a local
+      --  operation, and the object is the first parameter of the corresponding
+      --  protected body of the current enclosing operation.
 
       if Is_Entity_Name (Pref) then
          if May_Be_External_Call then
             Sub :=
-              New_Occurrence_Of
-                (External_Subprogram (Entity (Pref)), Loc);
+              New_Occurrence_Of (External_Subprogram (Entity (Pref)), Loc);
          else
             Sub :=
               New_Occurrence_Of
@@ -372,6 +370,7 @@ package body Exp_Attr is
         Make_Aggregate (Loc,
           Expressions => New_List (Obj_Ref, Sub_Ref));
 
+      Freeze_Before (N, Entity (Sub));
       Rewrite (N, Agg);
       Analyze_And_Resolve (N, E_T);
 
@@ -530,9 +529,7 @@ package body Exp_Attr is
            and then Is_Written
          then
             declare
-               Temp : constant Entity_Id :=
-                        Make_Defining_Identifier
-                          (Loc, New_Internal_Name ('V'));
+               Temp : constant Entity_Id := Make_Temporary (Loc, 'V');
                Decl : Node_Id;
                Assn : Node_Id;
 
@@ -1208,6 +1205,20 @@ package body Exp_Attr is
          Analyze_And_Resolve (N, RTE (RE_AST_Handler));
       end AST_Entry;
 
+      ---------
+      -- Bit --
+      ---------
+
+      --  We compute this if a packed array reference was present, otherwise we
+      --  leave the computation up to the back end.
+
+      when Attribute_Bit =>
+         if Involves_Packed_Array_Reference (Pref) then
+            Expand_Packed_Bit_Reference (N);
+         else
+            Apply_Universal_Integer_Attribute_Checks (N);
+         end if;
+
       ------------------
       -- Bit_Position --
       ------------------
@@ -1220,8 +1231,7 @@ package body Exp_Attr is
       --  in generated code (i.e. the prefix is an identifier that
       --  references the component or discriminant entity).
 
-      when Attribute_Bit_Position => Bit_Position :
-      declare
+      when Attribute_Bit_Position => Bit_Position : declare
          CE : Entity_Id;
 
       begin
@@ -1259,12 +1269,11 @@ package body Exp_Attr is
       --  subprogram spec or package. This sequence of code references the
       --  the unsigned constant created in the main program by the binder.
 
-      --  A special exception occurs for Standard, where the string
-      --  returned is a copy of the library string in gnatvsn.ads.
+      --  A special exception occurs for Standard, where the string returned
+      --  is a copy of the library string in gnatvsn.ads.
 
       when Attribute_Body_Version | Attribute_Version => Version : declare
-         E    : constant Entity_Id :=
-                  Make_Defining_Identifier (Loc, New_Internal_Name ('V'));
+         E    : constant Entity_Id := Make_Temporary (Loc, 'V');
          Pent : Entity_Id;
          S    : String_Id;
 
@@ -1777,9 +1786,7 @@ package body Exp_Attr is
            Attribute_Elab_Spec =>
 
          Elab_Body : declare
-            Ent  : constant Entity_Id :=
-                     Make_Defining_Identifier (Loc,
-                       New_Internal_Name ('E'));
+            Ent  : constant Entity_Id := Make_Temporary (Loc, 'E');
             Str  : String_Id;
             Lang : Node_Id;
 
@@ -2389,13 +2396,14 @@ package body Exp_Attr is
                   Rtyp : constant Entity_Id := Root_Type (P_Type);
                   Dnn  : Entity_Id;
                   Decl : Node_Id;
+                  Expr : Node_Id;
 
                begin
                   --  Read the internal tag (RM 13.13.2(34)) and use it to
                   --  initialize a dummy tag object:
 
-                  --    Dnn : Ada.Tags.Tag
-                  --           := Descendant_Tag (String'Input (Strm), P_Type);
+                  --    Dnn : Ada.Tags.Tag :=
+                  --            Descendant_Tag (String'Input (Strm), P_Type);
 
                   --  This dummy object is used only to provide a controlling
                   --  argument for the eventual _Input call. Descendant_Tag is
@@ -2406,30 +2414,28 @@ package body Exp_Attr is
                   --  required for Ada 2005 because tagged types can be
                   --  extended in nested scopes (AI-344).
 
-                  Dnn :=
-                    Make_Defining_Identifier (Loc,
-                      Chars => New_Internal_Name ('D'));
+                  Expr :=
+                    Make_Function_Call (Loc,
+                      Name =>
+                        New_Occurrence_Of (RTE (RE_Descendant_Tag), Loc),
+                      Parameter_Associations => New_List (
+                        Make_Attribute_Reference (Loc,
+                          Prefix => New_Occurrence_Of (Standard_String, Loc),
+                          Attribute_Name => Name_Input,
+                          Expressions => New_List (
+                            Relocate_Node (Duplicate_Subexpr (Strm)))),
+                        Make_Attribute_Reference (Loc,
+                          Prefix => New_Reference_To (P_Type, Loc),
+                          Attribute_Name => Name_Tag)));
+
+                  Dnn := Make_Temporary (Loc, 'D', Expr);
 
                   Decl :=
                     Make_Object_Declaration (Loc,
                       Defining_Identifier => Dnn,
-                      Object_Definition =>
+                      Object_Definition   =>
                         New_Occurrence_Of (RTE (RE_Tag), Loc),
-                      Expression =>
-                        Make_Function_Call (Loc,
-                          Name =>
-                            New_Occurrence_Of (RTE (RE_Descendant_Tag), Loc),
-                          Parameter_Associations => New_List (
-                            Make_Attribute_Reference (Loc,
-                              Prefix =>
-                                New_Occurrence_Of (Standard_String, Loc),
-                              Attribute_Name => Name_Input,
-                              Expressions => New_List (
-                                Relocate_Node
-                                  (Duplicate_Subexpr (Strm)))),
-                            Make_Attribute_Reference (Loc,
-                              Prefix => New_Reference_To (P_Type, Loc),
-                              Attribute_Name => Name_Tag))));
+                      Expression          => Expr);
 
                   Insert_Action (N, Decl);
 
@@ -2440,8 +2446,9 @@ package body Exp_Attr is
                   --  tagged object).
 
                   Fname := Find_Prim_Op (Rtyp, TSS_Stream_Input);
-                  Cntrl := Unchecked_Convert_To (P_Type,
-                             New_Occurrence_Of (Dnn, Loc));
+                  Cntrl :=
+                    Unchecked_Convert_To (P_Type,
+                      New_Occurrence_Of (Dnn, Loc));
                   Set_Etype (Cntrl, P_Type);
                   Set_Parent (Cntrl, N);
                end;
@@ -2987,9 +2994,7 @@ package body Exp_Attr is
       ---------
 
       when Attribute_Old => Old : declare
-         Tnn     : constant Entity_Id :=
-                     Make_Defining_Identifier (Loc,
-                       Chars => New_Internal_Name ('T'));
+         Tnn     : constant Entity_Id := Make_Temporary (Loc, 'T', Pref);
          Subp    : Node_Id;
          Asn_Stm : Node_Id;
 
@@ -3239,9 +3244,9 @@ package body Exp_Attr is
       --  For enumeration types with a standard representation, Pos is
       --  handled by the back end.
 
-      --  For enumeration types, with a non-standard representation we
-      --  generate a call to the _Rep_To_Pos function created when the
-      --  type was frozen. The call has the form
+      --  For enumeration types, with a non-standard representation we generate
+      --  a call to the _Rep_To_Pos function created when the type was frozen.
+      --  The call has the form
 
       --    _rep_to_pos (expr, flag)
 
@@ -3548,6 +3553,7 @@ package body Exp_Attr is
       ------------------
 
       when Attribute_Range_Length => Range_Length : begin
+
          --  The only special processing required is for the case where
          --  Range_Length is applied to an enumeration type with holes.
          --  In this case we transform
@@ -3586,8 +3592,7 @@ package body Exp_Attr is
                             Attribute_Name => Name_First,
                             Prefix => New_Occurrence_Of (Ptyp, Loc))))),
 
-                Right_Opnd =>
-                  Make_Integer_Literal (Loc, 1)));
+                Right_Opnd => Make_Integer_Literal (Loc, 1)));
 
             Analyze_And_Resolve (N, Typ);
 
@@ -3707,7 +3712,7 @@ package body Exp_Attr is
 
                   Rewrite (N,
                     Make_Assignment_Statement (Loc,
-                      Name => Lhs,
+                      Name       => Lhs,
                       Expression => Rhs));
 
                   Analyze (N);
@@ -3785,9 +3790,7 @@ package body Exp_Attr is
       --  the context of a _Postcondition function with a _Result parameter.
 
       when Attribute_Result =>
-         Rewrite (N,
-           Make_Identifier (Loc,
-            Chars => Name_uResult));
+         Rewrite (N, Make_Identifier (Loc, Chars => Name_uResult));
          Analyze_And_Resolve (N, Typ);
 
       -----------
@@ -4267,8 +4270,7 @@ package body Exp_Attr is
       --  2. For floating-point, generate call to attribute function
       --  3. For other cases, deal with constraint checking
 
-      when Attribute_Succ => Succ :
-      declare
+      when Attribute_Succ => Succ : declare
          Etyp : constant Entity_Id := Base_Type (Ptyp);
 
       begin
@@ -4360,8 +4362,7 @@ package body Exp_Attr is
 
       --  Transforms X'Tag into a direct reference to the tag of X
 
-      when Attribute_Tag => Tag :
-      declare
+      when Attribute_Tag => Tag : declare
          Ttyp           : Entity_Id;
          Prefix_Is_Type : Boolean;
 
@@ -4555,8 +4556,7 @@ package body Exp_Attr is
       -----------------
 
       when Attribute_UET_Address => UET_Address : declare
-         Ent : constant Entity_Id :=
-                 Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
+         Ent : constant Entity_Id := Make_Temporary (Loc, 'T');
 
       begin
          Insert_Action (N,
@@ -4609,8 +4609,7 @@ package body Exp_Attr is
       --  with a non-standard representation we use the _Pos_To_Rep array that
       --  was created when the type was frozen.
 
-      when Attribute_Val => Val :
-      declare
+      when Attribute_Val => Val : declare
          Etyp : constant Entity_Id := Base_Type (Entity (Pref));
 
       begin
@@ -4673,8 +4672,7 @@ package body Exp_Attr is
       --  The code for valid is dependent on the particular types involved.
       --  See separate sections below for the generated code in each case.
 
-      when Attribute_Valid => Valid :
-      declare
+      when Attribute_Valid => Valid : declare
          Btyp : Entity_Id := Base_Type (Ptyp);
          Tst  : Node_Id;
 
@@ -4734,6 +4732,13 @@ package body Exp_Attr is
       --  Start of processing for Attribute_Valid
 
       begin
+         --  Do not expand sourced code 'Valid reference in CodePeer mode,
+         --  will be handled by the back-end directly.
+
+         if CodePeer_Mode and then Comes_From_Source (N) then
+            return;
+         end if;
+
          --  Turn off validity checks. We do not want any implicit validity
          --  checks to intefere with the explicit check from the attribute
 
@@ -5278,7 +5283,6 @@ package body Exp_Attr is
       --  that the result is in range.
 
       when Attribute_Aft                          |
-           Attribute_Bit                          |
            Attribute_Max_Size_In_Storage_Elements
       =>
          Apply_Universal_Integer_Attribute_Checks (N);

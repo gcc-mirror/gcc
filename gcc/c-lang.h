@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_C_LANG_H
 #define GCC_C_LANG_H
 
-#include "c-common.h"
+#include "c-family/c-common.h"
 #include "ggc.h"
 
 struct GTY(()) lang_type {

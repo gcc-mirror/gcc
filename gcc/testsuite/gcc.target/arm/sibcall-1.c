@@ -30,5 +30,6 @@ int main(int argc, const char *argv[])
   return result;
 }
 
-/* { dg-final { scan-assembler "\tb\tfunc2\n" } } */
+/* The PLT marker may appear if the test is run with -fpic/-fPIC.  */
+/* { dg-final { scan-assembler "\tb\tfunc2(\\(PLT\\))?\n" } } */
 

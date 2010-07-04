@@ -1,3 +1,273 @@
+2010-06-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43298
+	* list_read.c (parse_real, read_real): Support NAN(alphanum).
+
+2010-06-25  Tobias Burnus  <burnus@net-b.de>
+
+	* intrinsics/selected_real_kind.f90
+	(_gfortran_selected_real_kind2008): Add function.
+	(_gfortran_selected_real_kind): Stub which calls
+	_gfortran_selected_real_kind2008.
+	* gfortran.map (GFORTRAN_1.4): Add
+	_gfortran_selected_real_kind2008.
+	* mk-srk-inc.sh: Save also RADIX.
+
+2010-06-25  Tobias Burnus  <burnus@net-b.de>
+
+	* runtime/compile_options.c (init_compile_options): Update
+	compile_options.allow_std for GFC_STD_F2008_OBS.
+	* io/transfer.c (formatted_transfer_scalar_read,
+	formatted_transfer_scalar_write): Fix allow_std check.
+	* io/list_read.c (nml_parse_qualifier): Ditto.
+
+2010-06-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/44477
+	* io/file_pos.c (st_endfile): Add check for ENDFILE when file is
+	already positioned after the EOF marker. Use find_or_create_unit
+	instead of find_unit. If unit is not connected, connect it and create 
+	the file with default settings.
+	* io/transfer.c (data_transfer_init):  Add check for attempted READ or
+	WRITE when file is already positioned after the EOF marker.
+
+2010-06-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* intrinsics/selected_char_kind.c (selected_char_kind): Fix
+	return value for ISO_10646.
+
+2010-06-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* mk-kinds-h.sh: Define GFC_REAL_*_LITERAL_SUFFIX and
+	GFC_REAL_*_LITERAL macros for each kind.
+	* intrinsics/cpu_time.c (cpu_time_4, cpu_time_8, cpu_time_10,
+	cpu_time_16): Use them.
+	* intrinsics/random.c (rnumber_4, rnumber_8, rnumber_10,
+	rnumber_16): Likewise.
+
+2010-06-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* intrinsics/system_clock.c (system_clock_4, system_clock_8):
+	Undefine TCK.
+
+2010-06-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/34670
+	* intrinsics/date_and_time.c:  Replace assert with runtime_error
+	when VALUE is too small.
+
+2010-05-20 Jerry DeLisle <jvdelisle@gcc.gnu.org>
+
+	PR fortran/43851
+	* runtime/stop.c (stop_string): Make sure nothing is emitted for
+	blank stop.
+
+2010-05-19 Jerry DeLisle <jvdelisle@gcc.gnu.org>
+
+	PR fortran/43851
+	* runtime/stop.c (error_stop_numeric): New function and updated comment.
+	Add declaration for stop_numeric and remove declaration for stop_string.
+	(stop_string): Use for blank STOP.
+	(stop_numeric): Remove use of special -1 stop code.
+	* runtime/pause.c (do_pause): Use stop_string for blank stop.
+	(pause_numeric): Remove use of special -1 pause code.
+	* gfortran.map: Add new symbol to run-time library.
+	* libgfortran.h: Move declaration for stop_string to here to make
+	function visible for do_pause. Remove declaration for stop_numeric.
+
+2010-05-08  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/unix.h (mem_alloc_r): Fix typo to reduce visibility.
+
+2010-05-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* libgfortran.h (free_mem): Remove prototype.
+	* runtime/memory.c (free_mem): Remove function.
+	* intrinsics/date_and_time.c (secnds): Replace free_mem() with
+	free().
+	* io/fbuf.c (fbuf_destroy): Likewise.
+	* io/format.c (free_format_hash_table): Likewise.
+	(save_parsed_format): Likewise.
+	(free_format_data): Likewise.
+	* io/list_read.c (free_saved): Likewise.
+	(free_line): Likewise.
+	(nml_touch_nodes): Likewise.
+	(nml_read_obj): Likewise
+	* io/lock.c (free_ionml): Likewise.
+	* io/open.c (new_unit): Likewise.
+	(already_open): Likewise.
+	* io/unit.c (destroy_unit_mutex): Likewise.
+	(free_internal_unit): Likewise.
+	(close_unit_1): Likewise.
+	* io/unix.c (raw_close): Likewise.
+	(buf_close): Likewise.
+	(mem_close): Likewise.
+	(tempfile): Likewise.
+	* io/write.c (nml_write_obj): Likewise.
+	* io/write_float.def (output_float_FMT_G_##): Likewise.
+	* runtime/error.c (show_locus): Likewise.
+
+2010-05-04  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/43620
+	* configure.ac (AM_INIT_AUTOMAKE): Add no-dist.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
+2010-04-30  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR/43844
+	* io/unix.c (raw_truncate): Explicit cast from integer-scalar
+	to pointer.
+	(tempfile): Use for mingw GetTempPath and avoid double slash
+	for path.
+
+2010-04-24  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR/43844
+	* io/unix.c (tempfile): Correct logic for mktemp case.
+
+2010-04-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/39997
+	* runtime/stop.c (error_stop_string): New function.
+	* gfortran.map (_gfortran_error_stop_string): Add.
+
+2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+
+2010-04-01  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/43605
+	* io/intrinsics.c (gf_ftell): New function, seek to correct offset.
+	(ftell): Call gf_ftell.
+	(FTELL_SUB): Likewise.
+
+2010-04-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	* io/transfer.c : Update copyright.
+	* io/unix.c : ditto
+	* io/read.c : ditto
+	* io/io.h : ditto
+	* io/unix.h : ditto
+	* io/inquire.c : ditto
+	* io/format.c : ditto
+	* io/list_read.c : ditto
+	* runtime/error.c : ditto
+	* libgfortran.h : ditto
+	* intrinsics/date_and_time.c: ditto
+	* intrinsics/args.c : ditto
+
+2010-04-01  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/43605
+	* io/intrinsics.c (ftell): Reset fbuf, correct offset.
+	(FTELL_SUB): Likewise.
+
+2010-03-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/43265
+	* io/transfer.c (next_record_r): Only call hit_eof for specific
+	conditions when an EOF is encountered.
+
+2010-03-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43551
+	* io/unix.c (buf_write): Set physical_offset after lseek.
+
+2010-03-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/43517
+	* io/read.c (read_x): Return if seen EOR condition.
+
+2010-03-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/43409
+	* io/io.h: Fix type of size in st_parameter_inquire structure.
+
+2010-03-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/43409
+	* io/unix.h: Add prototype for new function to return file size.
+	* io/unix.c (file_size): New function.
+	* io/inquire.c (inquire_via_unit): Use new function.
+	(inquire_via_filename): Use new function.
+
+2010-03-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/transfer.c (read_sf_internal): Remove stray function declaration
+	used during debugging.
+
+2010-03-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/43265
+	* io/io.h: Delete prototype for read_sf, making it static.
+	* io/read.c (read_x): Modify to call hit_eof if PAD="no".
+	* io/transfer.c (read_sf_internal): New static function extracted from
+	read_sf for use on internal units only. Handle empty string case.
+	(read_sf): New factoring of this function, make it static.  Add special
+	conditions for EOF based on ADVANCE="no", PAD="no", and whether any
+	bytes have been previously read from the record.
+	(read_block_form): Modify to call read_sf or read_sf_internal.
+	(next_record_r): Add a done flag similar to next_record_w. Call hit_eof
+	if internal array unit next record returns finished, meaning an EOF was
+	found and not done, ie not the last record expected.  For external
+	units call hit_eof if item_count is 1 or there are no pending spaces.
+	(next_record): Update call to next_record_r.
+
+2010-03-12  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR/42950
+	* io/format.c (parse_format_list): Add to ERROR, WARNING,
+	SILENT enumerators NOTIFICATION_ prefix.
+	* runtime/error.c (notification_std): Likewise.
+	* libgfortran.h (notification): Likewise.
+	(GFC_LARGEST_BUF): Check for HAVE_GFC_INTEGER_16.
+
+2010-03-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43228
+	* io/list_read.c (nml_parse_qualifier): Disable expanded_read
+	for array sections.
+
+2010-03-10  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/43320
+	* io/transfer.c (next_record_r): Add hit_eof based on item_count
+	condition.
+
+2010-03-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/43265
+	* io/read.c: Include fbuf.h and unix.h to enable lower level I/O for
+	read_x. (read_x): Replace the use of read_sf with equivalent lower level
+	I/O, eliminating unneeded code and handling EOF and EOR conditions.
+	* io/io.h: Revise prototype for read_sf.
+	* io/transfer.c (read_sf): Delete no_error parameter and all uses of it.
+	(read_block_form): Likewise.
+	(next_record_r): Delete wrong code call to hit_eof.
+
+2010-03-08  Kai TIetz  <kai.tietz@onevision.com>
+
+	PR/42950
+	* libgfortran.h (_POSIX): Define if __MINGW32__ is defined.
+	(gfc_printf): Define to gnu_printf for __MINGW32__ case,
+	otherwise to __printf__.
+	(gfc_strtof,gfc_strtod,gfc_strtold): Define for mingw case
+	to POSIX compatible converter functions.
+	(runtime_error): Use instead gfc_printf as formatter
+	attribute name.
+	(runtime_error_at): Likewise.
+	(runtime_warning_at): Likewise.
+	(st_printf): Likewise.
+	* intrinsics/date_and_time.c (localtime_r): Undefine
+	possible defined macro.
+	(gmtime_r): Likewise.
+	* io/read.c (convert_real): Use gfc_strtof, gfc_strtod,
+	and gfc_strtold.
+
 2010-02-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/43155

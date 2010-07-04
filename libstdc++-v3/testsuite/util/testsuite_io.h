@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Testing streambuf/filebuf/stringbuf for the C++ library testsuite.
 //
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -47,7 +47,7 @@ namespace __gnu_test
       bool
       write_position() 
       { 
-	bool one = this->pptr() != NULL; 
+	bool one = this->pptr() != 0; 
 	bool two = this->pptr() < this->epptr();
 	return one && two;
       }
@@ -55,7 +55,7 @@ namespace __gnu_test
       bool
       read_position()
       { 
-	bool one = this->gptr() != NULL; 
+	bool one = this->gptr() != 0; 
 	bool two = this->gptr() < this->egptr();
 	return one && two;
       }
@@ -63,21 +63,21 @@ namespace __gnu_test
       bool
       unbuffered() 
       { 
-	bool one = this->pbase() == NULL; 
-	bool two = this->pptr() == NULL; 
+	bool one = this->pbase() == 0; 
+	bool two = this->pptr() == 0; 
 	return one && two;
       }
   
       bool
       check_pointers()
       {
-	bool one   = this->eback() == NULL;
-	bool two   = this->gptr() == NULL;
-	bool three = this->egptr() == NULL;
+	bool one   = this->eback() == 0;
+	bool two   = this->gptr() == 0;
+	bool three = this->egptr() == 0;
 	
-	bool four  = this->pbase() == NULL;
-	bool five  = this->pptr() == NULL;
-	bool six   = this->epptr() == NULL;
+	bool four  = this->pbase() == 0;
+	bool five  = this->pptr() == 0;
+	bool six   = this->epptr() == 0;
 	return one && two && three && four && five && six;
       }
     };
@@ -276,37 +276,37 @@ namespace __gnu_test
     protected:
       iter_type 
       do_put(iter_type, ios_base&, char_type, bool) const
-      { throw facet_error(); return iter_type(NULL); }
+      { throw facet_error(); return iter_type(0); }
       
       virtual iter_type 
       do_put(iter_type, ios_base&, char_type, long) const
-      { throw facet_error(); return iter_type(NULL); }
+      { throw facet_error(); return iter_type(0); }
 
       virtual iter_type 
       do_put(iter_type, ios_base&, char_type, unsigned long) const
-      { throw facet_error(); return iter_type(NULL); }
+      { throw facet_error(); return iter_type(0); }
 
 #ifdef _GLIBCXX_USE_LONG_LONG 
       virtual iter_type 
       do_put(iter_type, ios_base&, char_type, long long) const
-      { throw facet_error(); return iter_type(NULL); }
+      { throw facet_error(); return iter_type(0); }
 
       virtual iter_type 
       do_put(iter_type, ios_base&, char_type, unsigned long long) const
-      { throw facet_error(); return iter_type(NULL); }
+      { throw facet_error(); return iter_type(0); }
 #endif
       
       virtual iter_type 
       do_put(iter_type, ios_base&, char_type, double) const
-      { throw facet_error(); return iter_type(NULL); }
+      { throw facet_error(); return iter_type(0); }
 
       virtual iter_type 
       do_put(iter_type, ios_base&, char_type, long double) const
-      { throw facet_error(); return iter_type(NULL); }
+      { throw facet_error(); return iter_type(0); }
       
       virtual iter_type 
       do_put(iter_type, ios_base&, char_type, const void*) const
-      { throw facet_error(); return iter_type(NULL); }
+      { throw facet_error(); return iter_type(0); }
     };
 
   typedef  fail_num_put<char>     fail_num_put_char;

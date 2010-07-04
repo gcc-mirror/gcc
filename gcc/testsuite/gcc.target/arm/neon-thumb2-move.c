@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_neon_ok } */
-/* { dg-options "-O2 -mthumb -march=armv7-a -mfloat-abi=softfp -mfpu=neon" } */
+/* { dg-options "-O2 -mthumb -march=armv7-a" } */
+/* { dg-add-options arm_neon } */
 
 #include <arm_neon.h>
 #include <stddef.h>

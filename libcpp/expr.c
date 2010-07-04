@@ -371,9 +371,9 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
       if (limit != str
 	  && CPP_WTRADITIONAL (pfile)
 	  && ! cpp_sys_macro_p (pfile))
-	cpp_error (pfile, CPP_DL_WARNING,
-		   "traditional C rejects the \"%.*s\" suffix",
-		   (int) (limit - str), str);
+	cpp_warning (pfile, CPP_W_TRADITIONAL,
+		     "traditional C rejects the \"%.*s\" suffix",
+		     (int) (limit - str), str);
 
       /* A suffix for double is a GCC extension via decimal float support.
 	 If the suffix also specifies an imaginary value we'll catch that
@@ -417,21 +417,27 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
       if (CPP_WTRADITIONAL (pfile) && ! cpp_sys_macro_p (pfile))
 	{
 	  int u_or_i = (result & (CPP_N_UNSIGNED|CPP_N_IMAGINARY));
-	  int large = (result & CPP_N_WIDTH) == CPP_N_LARGE;
+	  int large = (result & CPP_N_WIDTH) == CPP_N_LARGE
+		       && CPP_OPTION (pfile, warn_long_long);
 
-	  if (u_or_i || (large && CPP_OPTION (pfile, warn_long_long)))
-	    cpp_error (pfile, CPP_DL_WARNING,
-		       "traditional C rejects the \"%.*s\" suffix",
-		       (int) (limit - str), str);
+	  if (u_or_i || large)
+	    cpp_warning (pfile, large ? CPP_W_LONG_LONG : CPP_W_TRADITIONAL,
+		         "traditional C rejects the \"%.*s\" suffix",
+		         (int) (limit - str), str);
 	}
 
       if ((result & CPP_N_WIDTH) == CPP_N_LARGE
 	  && CPP_OPTION (pfile, warn_long_long))
-	cpp_error (pfile, 
-		   CPP_OPTION (pfile, c99) ? CPP_DL_WARNING : CPP_DL_PEDWARN,
-		   CPP_OPTION (pfile, cplusplus) 
-		   ? "use of C++0x long long integer constant"
-		   : "use of C99 long long integer constant");
+        {
+          const char *message = CPP_OPTION (pfile, cplusplus) 
+		                ? N_("use of C++0x long long integer constant")
+		                : N_("use of C99 long long integer constant");
+
+	  if (CPP_OPTION (pfile, c99))
+            cpp_warning (pfile, CPP_W_LONG_LONG, message);
+          else
+            cpp_pedwarning (pfile, CPP_W_LONG_LONG, message);
+        }
 
       result |= CPP_N_INTEGER;
     }
@@ -792,8 +798,8 @@ eval_token (cpp_reader *pfile, const cpp_token *token)
 	  result.high = 0;
 	  result.low = 0;
 	  if (CPP_OPTION (pfile, warn_undef) && !pfile->state.skip_eval)
-	    cpp_error (pfile, CPP_DL_WARNING, "\"%s\" is not defined",
-		       NODE_NAME (token->val.node.node));
+	    cpp_warning (pfile, CPP_W_UNDEF, "\"%s\" is not defined",
+		         NODE_NAME (token->val.node.node));
 	}
       break;
 
@@ -806,8 +812,8 @@ eval_token (cpp_reader *pfile, const cpp_token *token)
 	    cpp_error (pfile, CPP_DL_PEDWARN,
 		       "assertions are a GCC extension");
 	  else if (CPP_OPTION (pfile, warn_deprecated))
-	    cpp_error (pfile, CPP_DL_WARNING,
-		       "assertions are a deprecated extension");
+	    cpp_warning (pfile, CPP_W_DEPRECATED,
+		         "assertions are a deprecated extension");
 	}
       _cpp_test_assertion (pfile, &temp);
       result.high = 0;
@@ -1502,8 +1508,8 @@ num_unary_op (cpp_reader *pfile, cpp_num num, enum cpp_ttype op)
     {
     case CPP_UPLUS:
       if (CPP_WTRADITIONAL (pfile) && !pfile->state.skip_eval)
-	cpp_error (pfile, CPP_DL_WARNING,
-		   "traditional C rejects the unary plus operator");
+	cpp_warning (pfile, CPP_W_TRADITIONAL,
+		     "traditional C rejects the unary plus operator");
       num.overflow = false;
       break;
 

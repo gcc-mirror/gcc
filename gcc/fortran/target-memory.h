@@ -22,8 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GFC_TARGET_MEMORY_H
 #define GFC_TARGET_MEMORY_H
 
-#include "gfortran.h"
-
 /* Convert a BOZ to REAL or COMPLEX.  */
 bool gfc_convert_boz (gfc_expr *, gfc_typespec *);
 

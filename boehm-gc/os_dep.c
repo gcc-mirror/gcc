@@ -107,7 +107,7 @@
 # undef GC_AMIGA_DEF
 #endif
 
-#if defined(MSWIN32) || defined(MSWINCE)
+#if defined(MSWIN32) || defined(MSWINCE) || defined(CYGWIN32)
 # define WIN32_LEAN_AND_MEAN
 # define NOSERVICE
 # include <windows.h>
@@ -584,7 +584,7 @@ void GC_enable_signals()
 /* Find the page size */
 word GC_page_size;
 
-# if defined(MSWIN32) || defined(MSWINCE)
+# if defined(MSWIN32) || defined(MSWINCE) || defined (CYGWIN32)
   void GC_setpagesize()
   {
     GetSystemInfo(&GC_sysinfo);
@@ -1169,7 +1169,11 @@ void GC_register_data_segments()
 
 # else /* !OS2 */
 
-# if defined(MSWIN32) || defined(MSWINCE)
+# if defined(MSWIN32) || defined(MSWINCE) || defined (CYGWIN32)
+
+# ifdef CYGWIN32
+#    define GC_no_win32_dlls (FALSE)
+# endif
 
 # ifdef MSWIN32
   /* Unfortunately, we have to handle win32s very differently from NT, 	*/
@@ -1664,11 +1668,13 @@ void * os2_alloc(size_t bytes)
 # endif /* OS2 */
 
 
-# if defined(MSWIN32) || defined(MSWINCE)
+# if defined(MSWIN32) || defined(MSWINCE) || defined(CYGWIN32)
 SYSTEM_INFO GC_sysinfo;
 # endif
 
-# ifdef MSWIN32
+# if defined(MSWIN32) || defined(CYGWIN32)
+
+word GC_n_heap_bases = 0;
 
 # ifdef USE_GLOBAL_ALLOC
 #   define GLOBAL_ALLOC_TEST 1
@@ -1676,13 +1682,14 @@ SYSTEM_INFO GC_sysinfo;
 #   define GLOBAL_ALLOC_TEST GC_no_win32_dlls
 # endif
 
-word GC_n_heap_bases = 0;
-
 ptr_t GC_win32_get_mem(bytes)
 word bytes;
 {
     ptr_t result;
 
+# ifdef CYGWIN32
+    result = GC_unix_get_mem (bytes);
+# else
     if (GLOBAL_ALLOC_TEST) {
     	/* VirtualAlloc doesn't like PAGE_EXECUTE_READWRITE.	*/
     	/* There are also unconfirmed rumors of other		*/
@@ -1702,6 +1709,7 @@ word bytes;
     				      MEM_COMMIT | MEM_RESERVE,
     				      PAGE_EXECUTE_READWRITE);
     }
+#endif
     if (HBLKDISPL(result) != 0) ABORT("Bad VirtualAlloc result");
     	/* If I read the documentation correctly, this can	*/
     	/* only happen if HBLKSIZE > 64k or not a power of 2.	*/
@@ -1714,7 +1722,11 @@ void GC_win32_free_heap ()
 {
     if (GC_no_win32_dlls) {
  	while (GC_n_heap_bases > 0) {
+# ifdef CYGWIN32
+ 	    free (GC_heap_bases[--GC_n_heap_bases]);
+# else
  	    GlobalFree (GC_heap_bases[--GC_n_heap_bases]);
+# endif
  	    GC_heap_bases[GC_n_heap_bases] = 0;
  	}
     }

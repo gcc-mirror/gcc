@@ -224,7 +224,7 @@ else
   VARIANTS=""
   for VAR in $VARS
   do
-    grep -q "Running target $VAR" $SUM_FILES && VARIANTS="$VARIANTS $VAR"
+    grep "Running target $VAR" $SUM_FILES > /dev/null && VARIANTS="$VARIANTS $VAR"
   done
 fi
 
@@ -299,7 +299,7 @@ BEGIN {
     next
   }
 }
-/\===/ { curvar = ""; next }
+/^\t\t=== .* ===$/ { curvar = ""; next }
 /^(PASS|XPASS|FAIL|XFAIL|UNRESOLVED|WARNING|ERROR|UNSUPPORTED|UNTESTED|KFAIL):/ {
   testname=\$2
   # Ugly hack for gfortran.dg/dg.exp
@@ -365,8 +365,8 @@ BEGIN {
 END {
   printf ("\t\t=== %s Summary for %s ===\n\n", tool, variant)
   if (passcnt != 0) printf ("# of expected passes\t\t%d\n", passcnt)
-  if (xpasscnt != 0) printf ("# of unexpected successes\t%d\n", xpasscnt)
   if (failcnt != 0) printf ("# of unexpected failures\t%d\n", failcnt)
+  if (xpasscnt != 0) printf ("# of unexpected successes\t%d\n", xpasscnt)
   if (xfailcnt != 0) printf ("# of expected failures\t\t%d\n", xfailcnt)
   if (untstcnt != 0) printf ("# of untested testcases\t\t%d\n", untstcnt)
   if (unrescnt != 0) printf ("# of unresolved testcases\t%d\n", unrescnt)
@@ -418,6 +418,6 @@ cat ${TMP}/var-* | $AWK -f $TOTAL_AWK
 # This is ugly, but if there's version output from the compiler under test
 # at the end of the file, we want it.  The other thing that might be there
 # is the final summary counts.
-tail -2 $FIRST_SUM | grep -q '^#' || tail -2 $FIRST_SUM
+tail -2 $FIRST_SUM | grep '^#' > /dev/null || tail -2 $FIRST_SUM
 
 exit 0

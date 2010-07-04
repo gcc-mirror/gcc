@@ -5,6 +5,13 @@
 
 static void pclmul_test (void);
 
+static void
+__attribute__ ((noinline))
+do_test (void)
+{
+  pclmul_test ();
+}
+
 int
 main ()
 {
@@ -16,7 +23,7 @@ main ()
   /* Run PCLMULQDQ test only if host has PCLMULQDQ support.  */
   if (ecx & bit_PCLMUL)
     {
-      pclmul_test ();
+      do_test ();
 #ifdef DEBUG
       printf ("PASSED\n");
 #endif

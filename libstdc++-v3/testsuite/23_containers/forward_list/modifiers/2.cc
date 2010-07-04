@@ -36,8 +36,8 @@ test01()
 
   std::forward_list<int>::iterator ret = fl.insert_after(fl.before_begin(),
 							 42);
-  VERIFY(ret == fl.begin());
-  VERIFY(fl.front() == 42);
+  VERIFY( ret == fl.begin() );
+  VERIFY( fl.front() == 42 );
 }
 
 // This test verifies the following:
@@ -48,21 +48,24 @@ test02()
 
   std::forward_list<int>::const_iterator pos = fl.cbegin();
   ++pos;
-  VERIFY(*pos == 1);
+  VERIFY( *pos == 1 );
 
-  // Note: Calling l.insert_after(pos, 5, 42); without the long five
-  // gets resolved to the iterator range version and fails to compile!
-  std::forward_list<int>::iterator ret = fl.insert_after(pos, 5, 42);
-  VERIFY(ret == pos);
-  VERIFY(*pos == 1);
+  std::forward_list<int>::iterator ret = fl.insert_after(pos, 0, 42);
+  VERIFY( ret == pos );
+
+  ret = fl.insert_after(pos, 5, 42);
+  VERIFY( *pos == 1 );
 
   ++pos;
-  VERIFY(*pos == 42);
+  VERIFY( *pos == 42 );
   ++pos;
   ++pos;
   ++pos;
   ++pos;
-  VERIFY(*pos == 42);
+  VERIFY( *pos == 42 );
+  VERIFY( ret == pos );
+  ++pos;
+  VERIFY( *pos == 2 );
 }
 
 // This test verifies the following:
@@ -73,19 +76,22 @@ test03()
 
   std::forward_list<int>::const_iterator pos = fl.cbegin();
   ++pos;
-  VERIFY(*pos == 1);
+  VERIFY( *pos == 1 );
 
   int i[3] = {666, 777, 888};
-  std::forward_list<int>::iterator ret = fl.insert_after(pos, i, i + 3);
-  VERIFY(ret == pos);
-  VERIFY(*pos == 1);
+  std::forward_list<int>::iterator ret = fl.insert_after(pos, i, i);
+  VERIFY( ret == pos );
+
+  ret = fl.insert_after(pos, i, i + 3);
+  VERIFY( *pos == 1 );
 
   ++pos;
   ++pos;
   ++pos;
-  VERIFY(*pos == 888);
+  VERIFY( *pos == 888 );
+  VERIFY( ret == pos );
   ++pos;
-  VERIFY(*pos == 2);
+  VERIFY( *pos == 2 );
 }
 
 // This test verifies the following:
@@ -96,17 +102,23 @@ test04()
 
   std::forward_list<int>::const_iterator pos = fl.cbegin();
   ++pos;
-  VERIFY(*pos == 1);
+  VERIFY( *pos == 1 );
 
-  std::forward_list<int>::iterator ret
-    = fl.insert_after(pos, {-1, -2, -3, -4, -5});
-  VERIFY(ret == pos);
-  VERIFY(*pos == 1);
+  std::forward_list<int>::iterator ret = fl.insert_after(pos, { });
+  VERIFY( ret == pos);
+
+  ret = fl.insert_after(pos, {-1, -2, -3, -4, -5});
+  VERIFY( *pos == 1);
 
   ++pos;
   ++pos;
   ++pos;
-  VERIFY(*pos == -3);
+  VERIFY( *pos == -3 );
+  ++pos;
+  ++pos;
+  VERIFY( ret == pos );
+  ++pos;
+  VERIFY( *pos == 2 );
 }
 
 // This test verifies the following:
@@ -117,17 +129,17 @@ test05()
 
   std::forward_list<std::string>::const_iterator pos = fl.cbegin();
   ++pos;
-  VERIFY(*pos == "BBB");
+  VERIFY( *pos == "BBB" );
 
   std::string x( "XXX" );
   std::forward_list<std::string>::iterator ret
     = fl.insert_after(pos, std::move(x));
-  VERIFY(*pos == "BBB");
+  VERIFY( *pos == "BBB" );
   ++pos;
-  VERIFY(ret == pos);
-  VERIFY(*pos == "XXX");
+  VERIFY( ret == pos );
+  VERIFY( *pos == "XXX" );
   ++pos;
-  VERIFY(*pos == "CCC");
+  VERIFY( *pos == "CCC" );
 }
 
 int

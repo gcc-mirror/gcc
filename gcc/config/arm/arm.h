@@ -771,12 +771,11 @@ extern int arm_structure_size_boundary;
 	fixed_regs[regno] = call_used_regs[regno] = 1;		\
     }								\
 								\
-  if (TARGET_THUMB && optimize_size)				\
-    {								\
-      /* When optimizing for size, it's better not to use	\
-	 the HI regs, because of the overhead of stacking 	\
-	 them.  */						\
-      /* ??? Is this still true for thumb2?  */			\
+  if (TARGET_THUMB1 && optimize_size)				\
+    {                                                           \
+      /* When optimizing for size on Thumb-1, it's better not	\
+        to use the HI regs, because of the overhead of		\
+        stacking them.  */                                      \
       for (regno = FIRST_HI_REGNUM;				\
 	   regno <= LAST_HI_REGNUM; ++regno)			\
 	fixed_regs[regno] = call_used_regs[regno] = 1;		\
@@ -1122,7 +1121,11 @@ extern int arm_structure_size_boundary;
 }
 
 /* Use different register alloc ordering for Thumb.  */
-#define ORDER_REGS_FOR_LOCAL_ALLOC arm_order_regs_for_local_alloc ()
+#define ADJUST_REG_ALLOC_ORDER arm_order_regs_for_local_alloc ()
+
+/* Tell IRA to use the order we define rather than messing it up with its
+   own cost calculations.  */
+#define HONOR_REG_ALLOC_ORDER
 
 /* Interrupt functions can only use registers that have already been
    saved by the prologue, even if they would normally be
@@ -1264,11 +1267,12 @@ enum reg_class
    instead of BASE_REGS.  */
 #define MODE_BASE_REG_REG_CLASS(MODE) BASE_REG_CLASS
 
-/* When SMALL_REGISTER_CLASSES is nonzero, the compiler allows
+/* When this hook returns true for MODE, the compiler allows
    registers explicitly used in the rtl to be used as spill registers
    but prevents the compiler from extending the lifetime of these
    registers.  */
-#define SMALL_REGISTER_CLASSES   TARGET_THUMB1
+#define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P \
+  arm_small_register_classes_for_mode_p 
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
@@ -1810,10 +1814,8 @@ typedef struct
 
 /* Determine if the epilogue should be output as RTL.
    You should override this if you define FUNCTION_EXTRA_EPILOGUE.  */
-/* This is disabled for Thumb-2 because it will confuse the
-   conditional insn counter.  */
 #define USE_RETURN_INSN(ISCOND)				\
-  (TARGET_ARM ? use_return_insn (ISCOND, NULL) : 0)
+  (TARGET_32BIT ? use_return_insn (ISCOND, NULL) : 0)
 
 /* Definitions for register eliminations.
 
@@ -2412,17 +2414,6 @@ extern int making_const_table;
   else if (TARGET_THUMB1)				\
     thumb1_final_prescan_insn (INSN)
 
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE)	\
-  (CODE == '@' || CODE == '|' || CODE == '.'	\
-   || CODE == '(' || CODE == ')' || CODE == '#'	\
-   || (TARGET_32BIT && (CODE == '?'))		\
-   || (TARGET_THUMB2 && (CODE == '!'))		\
-   || (TARGET_THUMB && (CODE == '_')))
-
-/* Output an operand of an instruction.  */
-#define PRINT_OPERAND(STREAM, X, CODE)  \
-  arm_print_operand (STREAM, X, CODE)
-
 #define ARM_SIGN_EXTEND(x)  ((HOST_WIDE_INT)			\
   (HOST_BITS_PER_WIDE_INT <= 32 ? (unsigned HOST_WIDE_INT) (x)	\
    : ((((unsigned HOST_WIDE_INT)(x)) & (unsigned HOST_WIDE_INT) 0xffffffff) |\
@@ -2430,131 +2421,6 @@ extern int making_const_table;
        ? ((~ (unsigned HOST_WIDE_INT) 0)			\
 	  & ~ (unsigned HOST_WIDE_INT) 0xffffffff)		\
        : 0))))
-
-/* Output the address of an operand.  */
-#define ARM_PRINT_OPERAND_ADDRESS(STREAM, X)				\
-{									\
-    int is_minus = GET_CODE (X) == MINUS;				\
-									\
-    if (GET_CODE (X) == REG)						\
-      asm_fprintf (STREAM, "[%r, #0]", REGNO (X));			\
-    else if (GET_CODE (X) == PLUS || is_minus)				\
-      {									\
-	rtx base = XEXP (X, 0);						\
-	rtx index = XEXP (X, 1);					\
-	HOST_WIDE_INT offset = 0;					\
-	if (GET_CODE (base) != REG					\
-	    || (GET_CODE (index) == REG && REGNO (index) == SP_REGNUM))	\
-	  {								\
-	    /* Ensure that BASE is a register.  */			\
-            /* (one of them must be).  */				\
-	    /* Also ensure the SP is not used as in index register.  */ \
-	    rtx temp = base;						\
-	    base = index;						\
-	    index = temp;						\
-	  }								\
-	switch (GET_CODE (index))					\
-	  {								\
-	  case CONST_INT:						\
-	    offset = INTVAL (index);					\
-	    if (is_minus)						\
-	      offset = -offset;						\
-	    asm_fprintf (STREAM, "[%r, #%wd]",				\
-		         REGNO (base), offset);				\
-	    break;							\
-									\
-	  case REG:							\
-	    asm_fprintf (STREAM, "[%r, %s%r]",				\
-		     REGNO (base), is_minus ? "-" : "",			\
-		     REGNO (index));					\
-	    break;							\
-									\
-	  case MULT:							\
-	  case ASHIFTRT:						\
-	  case LSHIFTRT:						\
-	  case ASHIFT:							\
-	  case ROTATERT:						\
-	  {								\
-	    asm_fprintf (STREAM, "[%r, %s%r",				\
-		         REGNO (base), is_minus ? "-" : "",		\
-                         REGNO (XEXP (index, 0)));			\
-	    arm_print_operand (STREAM, index, 'S');			\
-	    fputs ("]", STREAM);					\
-	    break;							\
-	  }								\
-									\
-	  default:							\
-	    gcc_unreachable ();						\
-	}								\
-    }									\
-  else if (GET_CODE (X) == PRE_INC || GET_CODE (X) == POST_INC		\
-	   || GET_CODE (X) == PRE_DEC || GET_CODE (X) == POST_DEC)	\
-    {									\
-      extern enum machine_mode output_memory_reference_mode;		\
-									\
-      gcc_assert (GET_CODE (XEXP (X, 0)) == REG);			\
-									\
-      if (GET_CODE (X) == PRE_DEC || GET_CODE (X) == PRE_INC)		\
-	asm_fprintf (STREAM, "[%r, #%s%d]!",				\
-		     REGNO (XEXP (X, 0)),				\
-		     GET_CODE (X) == PRE_DEC ? "-" : "",		\
-		     GET_MODE_SIZE (output_memory_reference_mode));	\
-      else								\
-	asm_fprintf (STREAM, "[%r], #%s%d",				\
-		     REGNO (XEXP (X, 0)),				\
-		     GET_CODE (X) == POST_DEC ? "-" : "",		\
-		     GET_MODE_SIZE (output_memory_reference_mode));	\
-    }									\
-  else if (GET_CODE (X) == PRE_MODIFY)					\
-    {									\
-      asm_fprintf (STREAM, "[%r, ", REGNO (XEXP (X, 0)));		\
-      if (GET_CODE (XEXP (XEXP (X, 1), 1)) == CONST_INT)		\
-	asm_fprintf (STREAM, "#%wd]!", 					\
-		     INTVAL (XEXP (XEXP (X, 1), 1)));			\
-      else								\
-	asm_fprintf (STREAM, "%r]!", 					\
-		     REGNO (XEXP (XEXP (X, 1), 1)));			\
-    }									\
-  else if (GET_CODE (X) == POST_MODIFY)					\
-    {									\
-      asm_fprintf (STREAM, "[%r], ", REGNO (XEXP (X, 0)));		\
-      if (GET_CODE (XEXP (XEXP (X, 1), 1)) == CONST_INT)		\
-	asm_fprintf (STREAM, "#%wd", 					\
-		     INTVAL (XEXP (XEXP (X, 1), 1)));			\
-      else								\
-	asm_fprintf (STREAM, "%r", 					\
-		     REGNO (XEXP (XEXP (X, 1), 1)));			\
-    }									\
-  else output_addr_const (STREAM, X);					\
-}
-
-#define THUMB_PRINT_OPERAND_ADDRESS(STREAM, X)		\
-{							\
-  if (GET_CODE (X) == REG)				\
-    asm_fprintf (STREAM, "[%r]", REGNO (X));		\
-  else if (GET_CODE (X) == POST_INC)			\
-    asm_fprintf (STREAM, "%r!", REGNO (XEXP (X, 0)));	\
-  else if (GET_CODE (X) == PLUS)			\
-    {							\
-      gcc_assert (GET_CODE (XEXP (X, 0)) == REG);	\
-      if (GET_CODE (XEXP (X, 1)) == CONST_INT)		\
-	asm_fprintf (STREAM, "[%r, #%wd]", 		\
-		     REGNO (XEXP (X, 0)),		\
-		     INTVAL (XEXP (X, 1)));		\
-      else						\
-	asm_fprintf (STREAM, "[%r, %r]",		\
-		     REGNO (XEXP (X, 0)),		\
-		     REGNO (XEXP (X, 1)));		\
-    }							\
-  else							\
-    output_addr_const (STREAM, X);			\
-}
-
-#define PRINT_OPERAND_ADDRESS(STREAM, X)	\
-  if (TARGET_32BIT)				\
-    ARM_PRINT_OPERAND_ADDRESS (STREAM, X)	\
-  else						\
-    THUMB_PRINT_OPERAND_ADDRESS (STREAM, X)
 
 #define OUTPUT_ADDR_CONST_EXTRA(file, x, fail)		\
   if (arm_output_addr_const_extra (file, x) == FALSE)	\
@@ -2764,5 +2630,9 @@ enum arm_builtins
 #ifndef NEED_INDICATE_EXEC_STACK
 #define NEED_INDICATE_EXEC_STACK	0
 #endif
+
+/* The maximum number of parallel loads or stores we support in an ldm/stm
+   instruction.  */
+#define MAX_LDM_STM_OPS 4
 
 #endif /* ! GCC_ARM_H */

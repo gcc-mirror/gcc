@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.2.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-01-11 11:42+0000\n"
+"POT-Creation-Date: 2010-04-06 14:10+0000\n"
 "PO-Revision-Date: 2007-05-23 01:17+0300\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@buguner.name.tr>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -35,7 +35,7 @@ msgstr "iconv bulunamadığından %s ile %s karakter kümeleri arasında dönü�
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr "0x%lx karakteri temel kaynak karakter kümesinde değil\n"
 
-#: charset.c:798 charset.c:1457
+#: charset.c:798 charset.c:1444
 msgid "converting to execution character set"
 msgstr "çalışma karakter kümesine dönüştürülüyor"
 
@@ -72,7 +72,7 @@ msgstr "evrensel karakter ismi %.*s tamamlanmamış"
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s geçerli bir evrensel karakter değil"
 
-#: charset.c:1056 lex.c:486
+#: charset.c:1056 lex.c:488
 msgid "'$' in identifier or number"
 msgstr "belirteç ya da sayı içinde '$'"
 
@@ -86,7 +86,7 @@ msgstr "evrensel karakter %.*s bir belirteç içinde geçerli değil"
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "evrensel karakter %.*s bir belirtecin başında geçerli değil"
 
-#: charset.c:1102 charset.c:1687
+#: charset.c:1102 charset.c:1674
 msgid "converting UCN to source character set"
 msgstr "UCN'den kaynak karakter kümesine dönüşüm"
 
@@ -133,19 +133,19 @@ msgstr "bilinmeyen önceleme dizgesi '\\%s'"
 msgid "converting escape sequence to execution character set"
 msgstr "önceleme diziliminden icra karakter kümesine dönüşüm"
 
-#: charset.c:1522 charset.c:1586
+#: charset.c:1509 charset.c:1573
 msgid "character constant too long for its type"
 msgstr "karakter sabiti, türü için çok uzun"
 
-#: charset.c:1525
+#: charset.c:1512
 msgid "multi-character character constant"
 msgstr "çoklu-karakter karakter sabiti"
 
-#: charset.c:1625
+#: charset.c:1612
 msgid "empty character constant"
 msgstr "karakter sabit boş"
 
-#: charset.c:1734
+#: charset.c:1721
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr "`%s' ile `%s' arasında dönüşüm başarısız"
@@ -399,7 +399,7 @@ msgstr "\"%s\" tekrar olumlanmış"
 msgid "unterminated #%s"
 msgstr "sonlandırılmamış #%s"
 
-#: directives-only.c:222 lex.c:1415 traditional.c:163
+#: directives-only.c:222 lex.c:1516 traditional.c:163
 msgid "unterminated comment"
 msgstr "sonlandırılmamış açıklama"
 
@@ -713,79 +713,79 @@ msgstr "??%c üçlü harfi %c olarak dönüştürüldü"
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr "??%c üçlü harfi yoksayıldı, yoksayılmaması için -trigraphs kullanın"
 
-#: lex.c:358
+#: lex.c:360
 msgid "\"/*\" within comment"
 msgstr "açıklama içinde \"/*\" bulundu"
 
-#: lex.c:416
+#: lex.c:418
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr "önişlem yönergesi içinde %s"
 
-#: lex.c:425
+#: lex.c:427
 msgid "null character(s) ignored"
 msgstr "null karakter(ler) yoksayıldı"
 
-#: lex.c:462
+#: lex.c:464
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "`%.*s' NFKC'de yok"
 
-#: lex.c:465
+#: lex.c:467
 #, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "`%.*s' NFC'de yok"
 
-#: lex.c:533 lex.c:610
+#: lex.c:535 lex.c:612
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "zehirli \"%s\" kullanılmaya çalışılıyor"
 
-#: lex.c:541 lex.c:618
+#: lex.c:543 lex.c:620
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__  sadece argümanlarının sayısı değişebilen bir C99 makrosunun genişleme alanında görünebilir"
 
-#: lex.c:547 lex.c:624
+#: lex.c:549 lex.c:626
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr ""
 
-#: lex.c:739
+#: lex.c:771
 msgid "raw string delimiter longer than 16 characters"
 msgstr ""
 
-#: lex.c:742
+#: lex.c:774
 #, fuzzy, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "evrensel karakter %.*s bir belirteç içinde geçerli değil"
 
-#: lex.c:771 lex.c:818
+#: lex.c:895 lex.c:917
 #, fuzzy
 msgid "unterminated raw string"
 msgstr "sonlandırılmamış #%s"
 
-#: lex.c:831 lex.c:930
+#: lex.c:932 lex.c:1031
 msgid "null character(s) preserved in literal"
 msgstr "null karakter(ler) sabit içinde saklanmış"
 
-#: lex.c:933
+#: lex.c:1034
 #, c-format
 msgid "missing terminating %c character"
 msgstr "sonlandıran %c karakteri eksik"
 
-#: lex.c:1426
+#: lex.c:1527
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "C++ tarzı açıklamalara ISO C90'da izin verilmez"
 
-#: lex.c:1428
+#: lex.c:1529
 msgid "(this will be reported only once per input file)"
 msgstr "(her girdi dosyasında sadece bir kere raporlanacaktır)"
 
-#: lex.c:1433
+#: lex.c:1534
 msgid "multi-line comment"
 msgstr "çok satırlı açıklama"
 
-#: lex.c:1753
+#: lex.c:1854
 #, c-format
 msgid "unspellable token %s"
 msgstr "dizgecik %s okunabilir değil"

@@ -1,6 +1,7 @@
 // 1999-08-16 bkoz
 
-// Copyright (C) 1999, 2000, 2002, 2003, 2005, 2009 Free Software Foundation
+// Copyright (C) 1999, 2000, 2002, 2003, 2005, 2009, 2010
+// Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,9 +35,6 @@ test04()
   const int i_max=250;
 
   std::ostringstream oss_02(str_01, std::ios_base::out);
-
-  std::ios_base::iostate statefail;
-  statefail = std::ios_base::failbit;
 
   // template<_CharT, _Traits>
   //  basic_ostream& operator<<(ostream&, const char*)

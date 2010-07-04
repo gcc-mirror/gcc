@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "tree-pass.h"
 #include "dbgcnt.h"
+#include "df.h"
 
 #ifdef INSN_SCHEDULING
 

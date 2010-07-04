@@ -1,5 +1,5 @@
 /* LTO declarations.
-   Copyright 2009 Free Software Foundation, Inc.
+   Copyright 2009, 2010 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -28,6 +28,7 @@ typedef struct lto_file_struct
 {
   /* The name of the file.  */
   const char *filename;
+  /* The offset for the object inside an ar archive file (or zero).  */
   off_t offset;
 } lto_file;
 
@@ -35,16 +36,17 @@ typedef struct lto_file_struct
 extern const char *resolution_file_name;
 
 /* In lto.c  */
+extern tree lto_eh_personality (void);
 extern void lto_main (int);
 extern void lto_read_all_file_options (void);
 
-/* In lto-elf.c  */
-extern lto_file *lto_elf_file_open (const char *filename, bool writable);
-extern void lto_elf_file_close (lto_file *file);
-extern htab_t lto_elf_build_section_table (lto_file *file);
-extern void lto_elf_begin_section (const char *name);
-extern void lto_elf_append_data (const void *data, size_t len, void *block);
-extern void lto_elf_end_section (void);
+/* In lto-elf.c or lto-coff.c  */
+extern lto_file *lto_obj_file_open (const char *filename, bool writable);
+extern void lto_obj_file_close (lto_file *file);
+extern htab_t lto_obj_build_section_table (lto_file *file);
+extern void lto_obj_begin_section (const char *name);
+extern void lto_obj_append_data (const void *data, size_t len, void *block);
+extern void lto_obj_end_section (void);
 extern lto_file *lto_set_current_out_file (lto_file *file);
 extern lto_file *lto_get_current_out_file (void);
 

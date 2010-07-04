@@ -27,6 +27,7 @@
 #include "tree.h"
 #include "toplev.h"
 #include "real.h"
+#include "realmpfr.h"
 #include "tm_p.h"
 #include "dfp.h"
 
@@ -1057,14 +1058,19 @@ real_arithmetic (REAL_VALUE_TYPE *r, int icode, const REAL_VALUE_TYPE *op0,
   return false;
 }
 
-/* Legacy.  Similar, but return the result directly.  */
-
 REAL_VALUE_TYPE
-real_arithmetic2 (int icode, const REAL_VALUE_TYPE *op0,
-		  const REAL_VALUE_TYPE *op1)
+real_value_negate (const REAL_VALUE_TYPE *op0)
 {
   REAL_VALUE_TYPE r;
-  real_arithmetic (&r, icode, op0, op1);
+  real_arithmetic (&r, NEGATE_EXPR, op0, NULL);
+  return r;
+}
+
+REAL_VALUE_TYPE
+real_value_abs (const REAL_VALUE_TYPE *op0)
+{
+  REAL_VALUE_TYPE r;
+  real_arithmetic (&r, ABS_EXPR, op0, NULL);
   return r;
 }
 
@@ -4980,82 +4986,6 @@ void
 real_copysign (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *x)
 {
   r->sign = x->sign;
-}
-
-/* Convert from REAL_VALUE_TYPE to MPFR.  The caller is responsible
-   for initializing and clearing the MPFR parameter.  */
-
-void
-mpfr_from_real (mpfr_ptr m, const REAL_VALUE_TYPE *r, mp_rnd_t rndmode)
-{
-  /* We use a string as an intermediate type.  */
-  char buf[128];
-  int ret;
-
-  /* Take care of Infinity and NaN.  */
-  if (r->cl == rvc_inf)
-    {
-      mpfr_set_inf (m, r->sign == 1 ? -1 : 1);
-      return;
-    }
-
-  if (r->cl == rvc_nan)
-    {
-      mpfr_set_nan (m);
-      return;
-    }
-
-  real_to_hexadecimal (buf, r, sizeof (buf), 0, 1);
-  /* mpfr_set_str() parses hexadecimal floats from strings in the same
-     format that GCC will output them.  Nothing extra is needed.  */
-  ret = mpfr_set_str (m, buf, 16, rndmode);
-  gcc_assert (ret == 0);
-}
-
-/* Convert from MPFR to REAL_VALUE_TYPE, for a given type TYPE and rounding
-   mode RNDMODE.  TYPE is only relevant if M is a NaN.  */
-
-void
-real_from_mpfr (REAL_VALUE_TYPE *r, mpfr_srcptr m, tree type, mp_rnd_t rndmode)
-{
-  /* We use a string as an intermediate type.  */
-  char buf[128], *rstr;
-  mp_exp_t exp;
-
-  /* Take care of Infinity and NaN.  */
-  if (mpfr_inf_p (m))
-    {
-      real_inf (r);
-      if (mpfr_sgn (m) < 0)
-	*r = REAL_VALUE_NEGATE (*r);
-      return;
-    }
-
-  if (mpfr_nan_p (m))
-    {
-      real_nan (r, "", 1, TYPE_MODE (type));
-      return;
-    }
-
-  rstr = mpfr_get_str (NULL, &exp, 16, 0, m, rndmode);
-
-  /* The additional 12 chars add space for the sprintf below.  This
-     leaves 6 digits for the exponent which is supposedly enough.  */
-  gcc_assert (rstr != NULL && strlen (rstr) < sizeof (buf) - 12);
-
-  /* REAL_VALUE_ATOF expects the exponent for mantissa * 2**exp,
-     mpfr_get_str returns the exponent for mantissa * 16**exp, adjust
-     for that.  */
-  exp *= 4;
-
-  if (rstr[0] == '-')
-    sprintf (buf, "-0x.%sp%d", &rstr[1], (int) exp);
-  else
-    sprintf (buf, "0x.%sp%d", rstr, (int) exp);
-
-  mpfr_free_str (rstr);
-
-  real_from_string (r, buf);
 }
 
 /* Check whether the real constant value given is an integer.  */

@@ -98,7 +98,7 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
 #define HOST_WIDE_INT_PRINT_DEC "%" HOST_WIDE_INT_PRINT "d"
 #define HOST_WIDE_INT_PRINT_DEC_C HOST_WIDE_INT_PRINT_DEC HOST_WIDE_INT_PRINT_C
 #define HOST_WIDE_INT_PRINT_UNSIGNED "%" HOST_WIDE_INT_PRINT "u"
-#define HOST_WIDE_INT_PRINT_HEX "0x%" HOST_WIDE_INT_PRINT "x"
+#define HOST_WIDE_INT_PRINT_HEX "%#" HOST_WIDE_INT_PRINT "x"
 
 /* Set HOST_WIDEST_INT.  This is a 64-bit type unless the compiler
    in use has no 64-bit type at all; in that case it's 32 bits.  */
@@ -129,7 +129,7 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
 # define HOST_WIDEST_INT_PRINT_DEC	      "%" HOST_LONG_LONG_FORMAT "d"
 # define HOST_WIDEST_INT_PRINT_DEC_C	      "%" HOST_LONG_LONG_FORMAT "dLL"
 # define HOST_WIDEST_INT_PRINT_UNSIGNED	      "%" HOST_LONG_LONG_FORMAT "u"
-# define HOST_WIDEST_INT_PRINT_HEX	      "0x%" HOST_LONG_LONG_FORMAT "x"
+# define HOST_WIDEST_INT_PRINT_HEX	      "%#" HOST_LONG_LONG_FORMAT "x"
 # define HOST_WIDEST_INT_PRINT_DOUBLE_HEX     \
     "0x%" HOST_LONG_LONG_FORMAT "x%016" HOST_LONG_LONG_FORMAT "x"
 #endif

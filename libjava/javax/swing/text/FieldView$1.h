@@ -32,7 +32,7 @@ class javax::swing::text::FieldView$1 : public ::java::lang::Object
 public: // actually package-private
   FieldView$1(::javax::swing::text::FieldView *);
 public:
-  void stateChanged(::javax::swing::event::ChangeEvent *);
+  virtual void stateChanged(::javax::swing::event::ChangeEvent *);
 public: // actually package-private
   ::javax::swing::text::FieldView * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

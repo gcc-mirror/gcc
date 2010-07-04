@@ -100,6 +100,9 @@ package Alloc is
    Nodes_Initial                    : constant := 50_000;  -- Atree
    Nodes_Increment                  : constant := 100;
 
+   Notes_Initial                    : constant := 100;     -- Lib
+   Notes_Increment                  : constant := 200;
+
    Obsolescent_Warnings_Initial     : constant := 50;      -- Sem_Prag
    Obsolescent_Warnings_Increment   : constant := 200;
 

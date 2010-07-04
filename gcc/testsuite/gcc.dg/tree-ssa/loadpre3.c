@@ -1,6 +1,6 @@
-/* { dg-do compile } */ 
+/* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-pre-stats" } */
-int main(int **a,int argc)
+int foo(int **a,int argc)
 {
   int b;
   int d, e;
@@ -13,7 +13,7 @@ int main(int **a,int argc)
     {
 
     }
-  /* Should be able to eliminate one of the *(*a)'s along the if path 
+  /* Should be able to eliminate one of the *(*a)'s along the if path
      by pushing it into the else path. We will also eliminate
      one of the *a's.  */
   e = *(*a);

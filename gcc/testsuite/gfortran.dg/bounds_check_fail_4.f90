@@ -9,4 +9,4 @@
   if (any(x /= (/ 5, 2, 3, 6, 5, 6, 7, 8, 9, 10 /))) call abort()
   x(8:1:m) = x(1:3) + x(5:2:n) 
   end
-! { dg-output "line 10 .* bound mismatch, .* dimension 1 .* array \'x\' \\\(2/3\\\)" }
+! { dg-output "line 10 .* bound mismatch .* dimension 1 .* array \'x\' \\\(2/3\\\)" }

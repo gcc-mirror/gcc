@@ -155,9 +155,7 @@ test19()
       if (do_alloc || N == 0 || iter++ > MAX_ITERS)
         {
 	  size_t alloc_size;
-	  size_t save_sz;
 	  sz = random() % (2 * AVE_ALLOC_SIZE) + 1;
-	  save_sz = sz;
 	  alloc_size = ALLOC_OVERHEAD + round_up (sz, ALLOC_CHUNK_SIZE);
 	  if ((alloc_size >= alloc_quota)
 	      || (alloc_quota < MIN_ALLOC))

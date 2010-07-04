@@ -87,15 +87,15 @@ package body Prj.Proc is
    --  based languages)
 
    procedure Copy_Package_Declarations
-     (From              : Declarations;
-      To                : in out Declarations;
-      New_Loc           : Source_Ptr;
-      Naming_Restricted : Boolean;
-      In_Tree           : Project_Tree_Ref);
+     (From       : Declarations;
+      To         : in out Declarations;
+      New_Loc    : Source_Ptr;
+      Restricted : Boolean;
+      In_Tree    : Project_Tree_Ref);
    --  Copy a package declaration From to To for a renamed package. Change the
-   --  locations of all the attributes to New_Loc. When Naming_Restricted is
-   --  True, do not copy attributes Body, Spec, Implementation and
-   --  Specification.
+   --  locations of all the attributes to New_Loc. When Restricted is
+   --  True, do not copy attributes Body, Spec, Implementation, Specification
+   --  and Linker_Options.
 
    function Expression
      (Project                : Project_Id;
@@ -314,11 +314,11 @@ package body Prj.Proc is
    -------------------------------
 
    procedure Copy_Package_Declarations
-     (From              : Declarations;
-      To                : in out Declarations;
-      New_Loc           : Source_Ptr;
-      Naming_Restricted : Boolean;
-      In_Tree           : Project_Tree_Ref)
+     (From       : Declarations;
+      To         : in out Declarations;
+      New_Loc    : Source_Ptr;
+      Restricted : Boolean;
+      In_Tree    : Project_Tree_Ref)
    is
       V1  : Variable_Id;
       V2  : Variable_Id      := No_Variable;
@@ -345,6 +345,12 @@ package body Prj.Proc is
 
          Var := In_Tree.Variable_Elements.Table (V1);
          V1  := Var.Next;
+
+         --  Do not copy the value of attribute inker_Options if Restricted
+
+         if Restricted and then Var.Name = Snames.Name_Linker_Options then
+            Var.Value.Values := Nil_String;
+         end if;
 
          --  Remove the Next component
 
@@ -376,16 +382,16 @@ package body Prj.Proc is
          Arr := In_Tree.Arrays.Table (A1);
          A1  := Arr.Next;
 
-         if not Naming_Restricted or else
-           (Arr.Name /= Snames.Name_Body
-             and then Arr.Name /= Snames.Name_Spec
-             and then Arr.Name /= Snames.Name_Implementation
-             and then Arr.Name /= Snames.Name_Specification)
+         if not Restricted
+           or else
+             (Arr.Name /= Snames.Name_Body           and then
+              Arr.Name /= Snames.Name_Spec           and then
+              Arr.Name /= Snames.Name_Implementation and then
+              Arr.Name /= Snames.Name_Specification)
          then
             --  Remove the Next component
 
             Arr.Next := No_Array;
-
             Array_Table.Increment_Last (In_Tree.Arrays);
 
             --  Create new Array declaration
@@ -1255,8 +1261,100 @@ package body Prj.Proc is
       Pkg                    : Package_Id;
       Item                   : Project_Node_Id)
    is
+      procedure Check_Or_Set_Typed_Variable
+        (Value       : in out Variable_Value;
+         Declaration : Project_Node_Id);
+      --  Check whether Value is valid for this typed variable declaration. If
+      --  it is an error, the behavior depends on the flags: either an error is
+      --  reported, or a warning, or nothing. In the last two cases, the value
+      --  of the variable is set to a valid value, replacing Value.
+
+      ---------------------------------
+      -- Check_Or_Set_Typed_Variable --
+      ---------------------------------
+
+      procedure Check_Or_Set_Typed_Variable
+        (Value       : in out Variable_Value;
+         Declaration : Project_Node_Id)
+      is
+         Loc : constant Source_Ptr :=
+                 Location_Of (Declaration, From_Project_Node_Tree);
+
+         Reset_Value    : Boolean := False;
+         Current_String : Project_Node_Id;
+
+      begin
+         --  Report an error for an empty string
+
+         if Value.Value = Empty_String then
+            Error_Msg_Name_1 := Name_Of (Declaration, From_Project_Node_Tree);
+
+            case Flags.Allow_Invalid_External is
+               when Error =>
+                  Error_Msg (Flags, "no value defined for %%", Loc, Project);
+               when Warning =>
+                  Reset_Value := True;
+                  Error_Msg (Flags, "?no value defined for %%", Loc, Project);
+               when Silent =>
+                  Reset_Value := True;
+            end case;
+
+         else
+            --  Loop through all the valid strings for the
+            --  string type and compare to the string value.
+
+            Current_String :=
+              First_Literal_String
+                (String_Type_Of (Declaration, From_Project_Node_Tree),
+                 From_Project_Node_Tree);
+            while Present (Current_String)
+              and then String_Value_Of
+                (Current_String, From_Project_Node_Tree) /= Value.Value
+            loop
+               Current_String :=
+                 Next_Literal_String (Current_String, From_Project_Node_Tree);
+            end loop;
+
+            --  Report error if string value is not one for the string type
+
+            if No (Current_String) then
+               Error_Msg_Name_1 := Value.Value;
+               Error_Msg_Name_2 :=
+                 Name_Of (Declaration, From_Project_Node_Tree);
+
+               case Flags.Allow_Invalid_External is
+                  when Error =>
+                     Error_Msg
+                       (Flags, "value %% is illegal for typed string %%",
+                        Loc, Project);
+                  when Warning =>
+                     Error_Msg
+                       (Flags, "?value %% is illegal for typed string %%",
+                        Loc, Project);
+                     Reset_Value := True;
+                  when Silent =>
+                     Reset_Value := True;
+               end case;
+            end if;
+         end if;
+
+         if Reset_Value then
+            Current_String :=
+              First_Literal_String
+                (String_Type_Of (Declaration, From_Project_Node_Tree),
+                 From_Project_Node_Tree);
+
+            Value.Value := String_Value_Of
+              (Current_String, From_Project_Node_Tree);
+         end if;
+      end Check_Or_Set_Typed_Variable;
+
+      --  Local variables
+
       Current_Declarative_Item : Project_Node_Id;
       Current_Item             : Project_Node_Id;
+
+   --  Start of processing for Process_Declarative_Items
 
    begin
       --  Loop through declarative items
@@ -1353,15 +1451,15 @@ package body Prj.Proc is
                            --  renaming declaration.
 
                            Copy_Package_Declarations
-                             (From              =>
+                             (From       =>
                                 In_Tree.Packages.Table (Renamed_Package).Decl,
-                              To                =>
+                              To         =>
                                 In_Tree.Packages.Table (New_Pkg).Decl,
-                              New_Loc           =>
+                              New_Loc    =>
                                 Location_Of
                                   (Current_Item, From_Project_Node_Tree),
-                              Naming_Restricted => False,
-                              In_Tree           => In_Tree);
+                              Restricted => False,
+                              In_Tree    => In_Tree);
                         end;
 
                      --  Standard package declaration, not renaming
@@ -1677,7 +1775,7 @@ package body Prj.Proc is
 
                else
                   declare
-                     New_Value : constant Variable_Value :=
+                     New_Value : Variable_Value :=
                        Expression
                          (Project                => Project,
                           In_Tree                => In_Tree,
@@ -1713,59 +1811,9 @@ package body Prj.Proc is
                      if Kind_Of (Current_Item, From_Project_Node_Tree) =
                           N_Typed_Variable_Declaration
                      then
-                        --  Report an error for an empty string
-
-                        if New_Value.Value = Empty_String then
-                           Error_Msg_Name_1 :=
-                             Name_Of (Current_Item, From_Project_Node_Tree);
-                           Error_Msg
-                             (Flags,
-                              "no value defined for %%",
-                              Location_Of
-                                (Current_Item, From_Project_Node_Tree),
-                              Project);
-
-                        else
-                           declare
-                              Current_String : Project_Node_Id;
-
-                           begin
-                              --  Loop through all the valid strings for the
-                              --  string type and compare to the string value.
-
-                              Current_String :=
-                                First_Literal_String
-                                  (String_Type_Of (Current_Item,
-                                                   From_Project_Node_Tree),
-                                                   From_Project_Node_Tree);
-                              while Present (Current_String)
-                                and then
-                                  String_Value_Of
-                                    (Current_String, From_Project_Node_Tree) /=
-                                                               New_Value.Value
-                              loop
-                                 Current_String :=
-                                   Next_Literal_String
-                                     (Current_String, From_Project_Node_Tree);
-                              end loop;
-
-                              --  Report an error if the string value is not
-                              --  one for the string type.
-
-                              if No (Current_String) then
-                                 Error_Msg_Name_1 := New_Value.Value;
-                                 Error_Msg_Name_2 :=
-                                   Name_Of
-                                     (Current_Item, From_Project_Node_Tree);
-                                 Error_Msg
-                                   (Flags,
-                                    "value %% is illegal for typed string %%",
-                                    Location_Of
-                                      (Current_Item, From_Project_Node_Tree),
-                                    Project);
-                              end if;
-                           end;
-                        end if;
+                        Check_Or_Set_Typed_Variable
+                          (Value       => New_Value,
+                           Declaration => Current_Item);
                      end if;
 
                      --  Comment here ???
@@ -2274,13 +2322,13 @@ package body Prj.Proc is
           Is_Extending_All (From_Project_Node, From_Project_Node_Tree)
       then
          declare
-            Object_Dir : constant Path_Name_Type :=
-                           Project.Object_Directory.Name;
+            Object_Dir : constant Path_Information :=
+                           Project.Object_Directory;
          begin
             Prj := In_Tree.Projects;
             while Prj /= null loop
                if Prj.Project.Virtual then
-                  Prj.Project.Object_Directory.Name := Object_Dir;
+                  Prj.Project.Object_Directory := Object_Dir;
                end if;
                Prj := Prj.Next;
             end loop;
@@ -2579,13 +2627,12 @@ package body Prj.Proc is
                            Next   => Project.Decl.Packages);
                         Project.Decl.Packages := Current_Pkg;
                         Copy_Package_Declarations
-                          (From              => Element.Decl,
-                           To                =>
+                          (From       => Element.Decl,
+                           To         =>
                              In_Tree.Packages.Table (Current_Pkg).Decl,
-                           New_Loc           => No_Location,
-                           Naming_Restricted =>
-                             Element.Name = Snames.Name_Naming,
-                           In_Tree           => In_Tree);
+                           New_Loc    => No_Location,
+                           Restricted => True,
+                           In_Tree    => In_Tree);
                      end if;
 
                      Extended_Pkg := Element.Next;

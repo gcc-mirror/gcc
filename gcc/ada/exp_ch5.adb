@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -516,8 +516,7 @@ package body Exp_Ch5 is
 
       if Nkind (Rhs) = N_String_Literal then
          declare
-            Temp : constant Entity_Id :=
-                     Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
+            Temp : constant Entity_Id := Make_Temporary (Loc, 'T', Rhs);
             Decl : Node_Id;
 
          begin
@@ -1028,13 +1027,8 @@ package body Exp_Ch5 is
          R_Index := First_Index (R_Type);
 
          for J in 1 .. Ndim loop
-            Lnn (J) :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('L'));
-
-            Rnn (J) :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('R'));
+            Lnn (J) := Make_Temporary (Loc, 'L');
+            Rnn (J) := Make_Temporary (Loc, 'R');
 
             L_Index_Type (J) := Etype (L_Index);
             R_Index_Type (J) := Etype (R_Index);
@@ -1624,8 +1618,7 @@ package body Exp_Ch5 is
             BPAR_Expr : constant Node_Id   := Relocate_Node (Prefix (Lhs));
             BPAR_Typ  : constant Entity_Id := Etype (BPAR_Expr);
             Tnn       : constant Entity_Id :=
-                          Make_Defining_Identifier (Loc,
-                            Chars => New_Internal_Name ('T'));
+                          Make_Temporary (Loc, 'T', BPAR_Expr);
 
          begin
             --  Insert the post assignment first, because we want to copy the
@@ -2848,8 +2841,7 @@ package body Exp_Ch5 is
                      --  Create an access type designating the function's
                      --  result subtype.
 
-                     Ref_Type :=
-                       Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+                     Ref_Type := Make_Temporary (Loc, 'A');
 
                      Ptr_Type_Decl :=
                        Make_Full_Type_Declaration (Loc,
@@ -2867,9 +2859,7 @@ package body Exp_Ch5 is
                      --  from an implicit access value passed in by the caller
                      --  or from the result of an allocator.
 
-                     Alloc_Obj_Id :=
-                       Make_Defining_Identifier (Loc,
-                         Chars => New_Internal_Name ('R'));
+                     Alloc_Obj_Id := Make_Temporary (Loc, 'R');
                      Set_Etype (Alloc_Obj_Id, Ref_Type);
 
                      Alloc_Obj_Decl :=
@@ -3854,8 +3844,7 @@ package body Exp_Ch5 is
       then
          declare
             Return_Object_Entity : constant Entity_Id :=
-                                     Make_Defining_Identifier (Loc,
-                                       New_Internal_Name ('R'));
+                                     Make_Temporary (Loc, 'R', Exp);
             Obj_Decl : constant Node_Id :=
                          Make_Object_Declaration (Loc,
                            Defining_Identifier => Return_Object_Entity,
@@ -4009,13 +3998,9 @@ package body Exp_Ch5 is
          elsif CW_Or_Has_Controlled_Part (Utyp) then
             declare
                Loc        : constant Source_Ptr := Sloc (N);
-               Temp       : constant Entity_Id :=
-                              Make_Defining_Identifier (Loc,
-                                Chars => New_Internal_Name ('R'));
-               Acc_Typ    : constant Entity_Id :=
-                              Make_Defining_Identifier (Loc,
-                                Chars => New_Internal_Name ('A'));
+               Acc_Typ    : constant Entity_Id := Make_Temporary (Loc, 'A');
                Alloc_Node : Node_Id;
+               Temp       : Entity_Id;
 
             begin
                Set_Ekind (Acc_Typ, E_Access_Type);
@@ -4031,12 +4016,14 @@ package body Exp_Ch5 is
                    Expression =>
                      Make_Qualified_Expression (Loc,
                        Subtype_Mark => New_Reference_To (Etype (Exp), Loc),
-                       Expression => Relocate_Node (Exp)));
+                       Expression   => Relocate_Node (Exp)));
 
                --  We do not want discriminant checks on the declaration,
                --  given that it gets its value from the allocator.
 
                Set_No_Initialization (Alloc_Node);
+
+               Temp := Make_Temporary (Loc, 'R', Alloc_Node);
 
                Insert_List_Before_And_Analyze (N, New_List (
                  Make_Full_Type_Declaration (Loc,
@@ -4118,18 +4105,18 @@ package body Exp_Ch5 is
 
          else
             declare
+               ExpR       : constant Node_Id   := Relocate_Node (Exp);
                Result_Id  : constant Entity_Id :=
-                              Make_Defining_Identifier (Loc,
-                                Chars => New_Internal_Name ('R'));
-               Result_Exp : constant Node_Id :=
+                              Make_Temporary (Loc, 'R', ExpR);
+               Result_Exp : constant Node_Id   :=
                               New_Reference_To (Result_Id, Loc);
-               Result_Obj : constant Node_Id :=
+               Result_Obj : constant Node_Id   :=
                               Make_Object_Declaration (Loc,
                                 Defining_Identifier => Result_Id,
                                 Object_Definition   =>
                                   New_Reference_To (R_Type, Loc),
                                 Constant_Present    => True,
-                                Expression          => Relocate_Node (Exp));
+                                Expression          => ExpR);
 
             begin
                Set_Assignment_OK (Result_Obj);
@@ -4205,24 +4192,24 @@ package body Exp_Ch5 is
          end;
       end if;
 
-      --  If we are returning an object that may not be bit-aligned, then
-      --  copy the value into a temporary first. This copy may need to expand
-      --  to a loop of component operations..
+      --  If we are returning an object that may not be bit-aligned, then copy
+      --  the value into a temporary first. This copy may need to expand to a
+      --  loop of component operations.
 
       if Is_Possibly_Unaligned_Slice (Exp)
         or else Is_Possibly_Unaligned_Object (Exp)
       then
          declare
-            Tnn : constant Entity_Id :=
-                    Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
+            ExpR : constant Node_Id   := Relocate_Node (Exp);
+            Tnn  : constant Entity_Id := Make_Temporary (Loc, 'T', ExpR);
          begin
             Insert_Action (Exp,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Tnn,
                 Constant_Present    => True,
                 Object_Definition   => New_Occurrence_Of (R_Type, Loc),
-                Expression          => Relocate_Node (Exp)),
-                Suppress => All_Checks);
+                Expression          => ExpR),
+              Suppress            => All_Checks);
             Rewrite (Exp, New_Occurrence_Of (Tnn, Loc));
          end;
       end if;
@@ -4255,8 +4242,8 @@ package body Exp_Ch5 is
 
          else
             declare
-               Tnn : constant Entity_Id :=
-                       Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
+               ExpR : constant Node_Id   := Relocate_Node (Exp);
+               Tnn  : constant Entity_Id := Make_Temporary (Loc, 'T', ExpR);
 
             begin
                --  For a complex expression of an elementary type, capture
@@ -4268,7 +4255,7 @@ package body Exp_Ch5 is
                       Defining_Identifier => Tnn,
                       Constant_Present    => True,
                       Object_Definition   => New_Occurrence_Of (R_Type, Loc),
-                      Expression          => Relocate_Node (Exp)),
+                      Expression          => ExpR),
                     Suppress => All_Checks);
 
                   Rewrite (Exp, New_Occurrence_Of (Tnn, Loc));
@@ -4281,7 +4268,7 @@ package body Exp_Ch5 is
                     Make_Object_Renaming_Declaration (Loc,
                       Defining_Identifier => Tnn,
                       Subtype_Mark        => New_Occurrence_Of (R_Type, Loc),
-                      Name                => Relocate_Node (Exp)),
+                      Name                => ExpR),
                     Suppress => All_Checks);
 
                   Rewrite (Exp, New_Occurrence_Of (Tnn, Loc));
@@ -4421,8 +4408,7 @@ package body Exp_Ch5 is
       --  Save the Tag in a local variable Tag_Tmp
 
       if Save_Tag then
-         Tag_Tmp :=
-           Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+         Tag_Tmp := Make_Temporary (Loc, 'A');
 
          Append_To (Res,
            Make_Object_Declaration (Loc,
@@ -4461,8 +4447,7 @@ package body Exp_Ch5 is
                      New_Reference_To (Controller_Component (T), Loc));
             end if;
 
-            Prev_Tmp :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('B'));
+            Prev_Tmp := Make_Temporary (Loc, 'B');
 
             Append_To (Res,
               Make_Object_Declaration (Loc,
@@ -4477,9 +4462,7 @@ package body Exp_Ch5 is
                       Unchecked_Convert_To (RTE (RE_Finalizable), Ctrl_Ref),
                     Selector_Name => Make_Identifier (Loc, Name_Prev))));
 
-            Next_Tmp :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('C'));
+            Next_Tmp := Make_Temporary (Loc, 'C');
 
             Append_To (Res,
               Make_Object_Declaration (Loc,
@@ -4638,9 +4621,7 @@ package body Exp_Ch5 is
                      Make_Integer_Literal (Loc,
                        Intval => System_Storage_Unit));
 
-               Range_Type :=
-                 Make_Defining_Identifier (Loc,
-                   New_Internal_Name ('G'));
+               Range_Type := Make_Temporary (Loc, 'G');
 
                Append_To (Res,
                  Make_Subtype_Declaration (Loc,
@@ -4659,9 +4640,7 @@ package body Exp_Ch5 is
 
                Append_To (Res,
                  Make_Subtype_Declaration (Loc,
-                   Defining_Identifier =>
-                     Make_Defining_Identifier (Loc,
-                       New_Internal_Name ('S')),
+                   Defining_Identifier => Make_Temporary (Loc, 'S'),
                    Subtype_Indication  =>
                      Make_Subtype_Indication (Loc,
                        Subtype_Mark =>
@@ -4673,9 +4652,7 @@ package body Exp_Ch5 is
 
                --  type A is access S
 
-               Opaque_Type :=
-                 Make_Defining_Identifier (Loc,
-                   Chars => New_Internal_Name ('A'));
+               Opaque_Type := Make_Temporary (Loc, 'A');
 
                Append_To (Res,
                  Make_Full_Type_Declaration (Loc,
@@ -4721,9 +4698,7 @@ package body Exp_Ch5 is
                   --  Last index before hole: determined by position of the
                   --  _Controller.Prev component.
 
-                  Last_Before_Hole :=
-                    Make_Defining_Identifier (Loc,
-                      New_Internal_Name ('L'));
+                  Last_Before_Hole := Make_Temporary (Loc, 'L');
 
                   Append_To (Res,
                     Make_Object_Declaration (Loc,
@@ -4731,7 +4706,8 @@ package body Exp_Ch5 is
                       Object_Definition   => New_Occurrence_Of (
                         RTE (RE_Storage_Offset), Loc),
                       Constant_Present    => True,
-                      Expression          => Make_Op_Add (Loc,
+                      Expression          =>
+                        Make_Op_Add (Loc,
                           Make_Attribute_Reference (Loc,
                             Prefix => Prev_Ref,
                             Attribute_Name => Name_Position),
@@ -4756,9 +4732,7 @@ package body Exp_Ch5 is
 
                   --  First index after hole
 
-                  First_After_Hole :=
-                    Make_Defining_Identifier (Loc,
-                      New_Internal_Name ('F'));
+                  First_After_Hole := Make_Temporary (Loc, 'F');
 
                   Append_To (Res,
                     Make_Object_Declaration (Loc,

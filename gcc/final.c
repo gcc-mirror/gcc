@@ -1,6 +1,6 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -58,7 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "conditions.h"
 #include "flags.h"
-#include "real.h"
 #include "hard-reg-set.h"
 #include "output.h"
 #include "except.h"
@@ -207,6 +206,9 @@ static int dialect_number;
 /* Nonnull if the insn currently being emitted was a COND_EXEC pattern.  */
 rtx current_insn_predicate;
 
+/* True if printing into -fdump-final-insns= dump.  */   
+bool final_insns_dump_p;
+
 #ifdef HAVE_ATTR_length
 static int asm_insn_count (rtx);
 #endif
@@ -218,7 +220,6 @@ static void output_asm_name (void);
 static void output_alternate_entry_point (FILE *, rtx);
 static tree get_mem_expr_from_op (rtx, int *);
 static void output_asm_operand_names (rtx *, int *, int);
-static void output_operand (rtx, int);
 #ifdef LEAF_REGISTERS
 static void leaf_renumber_regs (rtx);
 #endif
@@ -1895,8 +1896,9 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	case NOTE_INSN_EPILOGUE_BEG:
 #if defined (DWARF2_UNWIND_INFO) && defined (HAVE_epilogue)
 	  if (dwarf2out_do_frame ())
-	    dwarf2out_begin_epilogue (insn);
+	    dwarf2out_cfi_begin_epilogue (insn);
 #endif
+	  (*debug_hooks->begin_epilogue) (last_linenum, last_filename);
 	  targetm.asm_out.function_begin_epilogue (file);
 	  break;
 
@@ -3327,7 +3329,7 @@ output_asm_insn (const char *templ, rtx *operands)
 	   outputs an operand in a special way depending on the letter.
 	   Letters `acln' are implemented directly.
 	   Other letters are passed to `output_operand' so that
-	   the PRINT_OPERAND macro can define them.  */
+	   the TARGET_PRINT_OPERAND hook can define them.  */
 	else if (ISALPHA (*p))
 	  {
 	    int letter = *p++;
@@ -3393,12 +3395,10 @@ output_asm_insn (const char *templ, rtx *operands)
 	    c = *p;
 	  }
 	/* % followed by punctuation: output something for that
-	   punctuation character alone, with no operand.
-	   The PRINT_OPERAND macro decides what is actually done.  */
-#ifdef PRINT_OPERAND_PUNCT_VALID_P
-	else if (PRINT_OPERAND_PUNCT_VALID_P ((unsigned char) *p))
+	   punctuation character alone, with no operand.  The
+	   TARGET_PRINT_OPERAND hook decides what is actually done.  */
+	else if (targetm.asm_out.print_operand_punct_valid_p ((unsigned char) *p))
 	  output_operand (NULL_RTX, *p++);
-#endif
 	else
 	  output_operand_lossage ("invalid %%-code");
 	break;
@@ -3470,16 +3470,15 @@ mark_symbol_refs_as_used (rtx x)
 }
 
 /* Print operand X using machine-dependent assembler syntax.
-   The macro PRINT_OPERAND is defined just to control this function.
    CODE is a non-digit that preceded the operand-number in the % spec,
    such as 'z' if the spec was `%z3'.  CODE is 0 if there was no char
    between the % and the digits.
    When CODE is a non-letter, X is 0.
 
    The meanings of the letters are machine-dependent and controlled
-   by PRINT_OPERAND.  */
+   by TARGET_PRINT_OPERAND.  */
 
-static void
+void
 output_operand (rtx x, int code ATTRIBUTE_UNUSED)
 {
   if (x && GET_CODE (x) == SUBREG)
@@ -3488,7 +3487,7 @@ output_operand (rtx x, int code ATTRIBUTE_UNUSED)
   /* X must not be a pseudo reg.  */
   gcc_assert (!x || !REG_P (x) || REGNO (x) < FIRST_PSEUDO_REGISTER);
 
-  PRINT_OPERAND (asm_out_file, x, code);
+  targetm.asm_out.print_operand (asm_out_file, x, code);
 
   if (x == NULL_RTX)
     return;
@@ -3496,16 +3495,15 @@ output_operand (rtx x, int code ATTRIBUTE_UNUSED)
   for_each_rtx (&x, mark_symbol_ref_as_used, NULL);
 }
 
-/* Print a memory reference operand for address X
-   using machine-dependent assembler syntax.
-   The macro PRINT_OPERAND_ADDRESS exists just to control this function.  */
+/* Print a memory reference operand for address X using
+   machine-dependent assembler syntax.  */
 
 void
 output_address (rtx x)
 {
   bool changed = false;
   walk_alter_subreg (&x, &changed);
-  PRINT_OPERAND_ADDRESS (asm_out_file, x);
+  targetm.asm_out.print_operand_address (asm_out_file, x);
 }
 
 /* Print an integer constant expression in assembler syntax.
@@ -3526,10 +3524,7 @@ output_addr_const (FILE *file, rtx x)
 
     case SYMBOL_REF:
       if (SYMBOL_REF_DECL (x))
-	{
-	  mark_decl_referenced (SYMBOL_REF_DECL (x));
-	  assemble_external (SYMBOL_REF_DECL (x));
-	}
+	assemble_external (SYMBOL_REF_DECL (x));
 #ifdef ASM_OUTPUT_SYMBOL_REF
       ASM_OUTPUT_SYMBOL_REF (file, x);
 #else
@@ -4364,26 +4359,30 @@ rest_of_clean_state (void)
       final_output = fopen (flag_dump_final_insns, "a");
       if (!final_output)
 	{
-	  error ("could not open final insn dump file %qs: %s",
-		 flag_dump_final_insns, strerror (errno));
+	  error ("could not open final insn dump file %qs: %m",
+		 flag_dump_final_insns);
 	  flag_dump_final_insns = NULL;
 	}
       else
 	{
 	  const char *aname;
+	  struct cgraph_node *node = cgraph_node (current_function_decl);
 
 	  aname = (IDENTIFIER_POINTER
 		   (DECL_ASSEMBLER_NAME (current_function_decl)));
 	  fprintf (final_output, "\n;; Function (%s) %s\n\n", aname,
-	     cfun->function_frequency == FUNCTION_FREQUENCY_HOT
+	     node->frequency == NODE_FREQUENCY_HOT
 	     ? " (hot)"
-	     : cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED
+	     : node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED
 	     ? " (unlikely executed)"
+	     : node->frequency == NODE_FREQUENCY_EXECUTED_ONCE
+	     ? " (executed once)"
 	     : "");
 
 	  flag_dump_noaddr = flag_dump_unnumbered = 1;
 	  if (flag_compare_debug_opt || flag_compare_debug)
 	    dump_flags |= TDF_NOUID;
+	  final_insns_dump_p = true;
 
 	  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	    if (LABEL_P (insn))
@@ -4417,11 +4416,12 @@ rest_of_clean_state (void)
     {
       flag_dump_noaddr = save_noaddr;
       flag_dump_unnumbered = save_unnumbered;
+      final_insns_dump_p = false;
 
       if (fclose (final_output))
 	{
-	  error ("could not close final insn dump file %qs: %s",
-		 flag_dump_final_insns, strerror (errno));
+	  error ("could not close final insn dump file %qs: %m",
+		 flag_dump_final_insns);
 	  flag_dump_final_insns = NULL;
 	}
     }

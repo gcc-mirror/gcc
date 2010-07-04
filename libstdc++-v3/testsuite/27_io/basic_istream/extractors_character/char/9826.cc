@@ -1,6 +1,6 @@
 // 2002-07-25 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2002, 2003, 2005, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003, 2005, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,7 +39,7 @@ void test02()
   sstr >> str;
 
   // 2
-  pod_char*  chr = NULL;
+  pod_char*  chr = 0;
   sstr >> chr;
 
   // 3

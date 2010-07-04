@@ -5,6 +5,13 @@
 
 static void aes_test (void);
 
+static void
+__attribute__ ((noinline))
+do_test (void)
+{
+  aes_test ();
+}
+
 int
 main ()
 {
@@ -16,7 +23,7 @@ main ()
   /* Run AES test only if host has AES support.  */
   if (ecx & bit_AES)
     {
-      aes_test ();
+      do_test ();
 #ifdef DEBUG
     printf ("PASSED\n");
 #endif

@@ -10,6 +10,8 @@ struct S2 { struct S1 s2; };
 struct S3 { unsigned s3; struct S2 **s4; };
 struct S5 { struct S2 *s5; };
 
+__extension__ typedef __INTPTR_TYPE__ ssize_t;
+
 extern void fn0 (void) __attribute__ ((__noreturn__));
 T fn6 (struct S3);
 void fn7 (void);
@@ -45,7 +47,7 @@ fn5 (struct S3 x, T *y)
 {
   if (!fn3 (x))
     {
-      *y = (T) (long) fn4 (x);
+      *y = (T) (ssize_t) fn4 (x);
       return 1;
     }
   return 0;

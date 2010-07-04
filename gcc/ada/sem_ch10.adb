@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -552,7 +552,8 @@ package body Sem_Ch10 is
                                      or else
                                        Used_In_Spec)
                      then
-                        Error_Msg_N ("?redundant with clause in body", Clause);
+                        Error_Msg_N -- CODEFIX
+                          ("?redundant with clause in body", Clause);
                      end if;
 
                      Used_In_Body := False;
@@ -580,7 +581,8 @@ package body Sem_Ch10 is
                        Exit_On_Self => True);
 
                      if Withed then
-                        Error_Msg_N ("?redundant with clause", Clause);
+                        Error_Msg_N -- CODEFIX
+                          ("?redundant with clause", Clause);
                      end if;
                   end;
                end if;
@@ -690,8 +692,7 @@ package body Sem_Ch10 is
             end if;
 
             if Circularity then
-               Error_Msg_N
-                 ("circular dependency caused by with_clauses", N);
+               Error_Msg_N ("circular dependency caused by with_clauses", N);
                Error_Msg_N
                  ("\possibly missing limited_with clause"
                   & " in one of the following", N);
@@ -2139,6 +2140,19 @@ package body Sem_Ch10 is
    --  Start of processing for Analyze_Subunit
 
    begin
+      if Style_Check then
+         declare
+            Nam : Node_Id := Name (Unit (N));
+
+         begin
+            if Nkind (Nam) = N_Selected_Component then
+               Nam := Selector_Name (Nam);
+            end if;
+
+            Check_Identifier (Nam, Par_Unit);
+         end;
+      end if;
+
       if not Is_Empty_List (Context_Items (N)) then
 
          --  Save current use clauses
@@ -2207,7 +2221,6 @@ package body Sem_Ch10 is
          if Present (Enclosing_Child) then
             Install_Siblings (Enclosing_Child, N);
          end if;
-
       end if;
 
       Analyze (Proper_Body (Unit (N)));
@@ -3373,6 +3386,11 @@ package body Sem_Ch10 is
       --  units. The shadow entities are created when the inserted clause is
       --  analyzed. Implements Ada 2005 (AI-50217).
 
+      function Is_Ancestor_Unit (U1 : Node_Id; U2 : Node_Id) return Boolean;
+      --  When compiling a unit Q descended from some parent unit P, a limited
+      --  with_clause in the context of P that names some other ancestor of Q
+      --  must not be installed because the ancestor is immediately visible.
+
       ---------------------
       -- Check_Renamings --
       ---------------------
@@ -3645,6 +3663,22 @@ package body Sem_Ch10 is
          New_Nodes_OK := New_Nodes_OK - 1;
       end Expand_Limited_With_Clause;
 
+      ----------------------
+      -- Is_Ancestor_Unit --
+      ----------------------
+
+      function Is_Ancestor_Unit (U1 : Node_Id; U2 : Node_Id) return Boolean is
+         E1 : constant Entity_Id := Defining_Entity (Unit (U1));
+         E2 : Entity_Id;
+      begin
+         if Nkind_In (Unit (U2), N_Package_Body, N_Subprogram_Body) then
+            E2 := Defining_Entity (Unit (Library_Unit (U2)));
+            return Is_Ancestor_Package (E1, E2);
+         else
+            return False;
+         end if;
+      end Is_Ancestor_Unit;
+
    --  Start of processing for Install_Limited_Context_Clauses
 
    begin
@@ -3678,6 +3712,9 @@ package body Sem_Ch10 is
 
             if Library_Unit (Item) /= Cunit (Current_Sem_Unit)
               and then not Limited_View_Installed (Item)
+              and then
+                not Is_Ancestor_Unit
+                      (Library_Unit (Item), Cunit (Current_Sem_Unit))
             then
                if not Private_Present (Item)
                  or else Private_Present (N)
@@ -4013,7 +4050,8 @@ package body Sem_Ch10 is
                   function In_Context return Boolean;
                   --  Scan context of current unit, to check whether there is
                   --  a with_clause on the same unit as a private with-clause
-                  --  on a parent, in which case child unit is visible.
+                  --  on a parent, in which case child unit is visible. If the
+                  --  unit is a grand-child, the same applies to its parent.
 
                   ----------------
                   -- In_Context --
@@ -4027,10 +4065,15 @@ package body Sem_Ch10 is
                         if Nkind (Clause) = N_With_Clause
                           and then Comes_From_Source (Clause)
                           and then Is_Entity_Name (Name (Clause))
-                          and then Entity (Name (Clause)) = Id
                           and then not Private_Present (Clause)
                         then
-                           return True;
+                           if Entity (Name (Clause)) = Id
+                             or else
+                               (Nkind (Name (Clause)) = N_Expanded_Name
+                                 and then Entity (Prefix (Name (Clause))) = Id)
+                           then
+                              return True;
+                           end if;
                         end if;
 
                         Next (Clause);
@@ -5346,7 +5389,7 @@ package body Sem_Ch10 is
          --  and the full-view.
 
          if No (Class_Wide_Type (T)) then
-            CW := Make_Defining_Identifier (Loc,  New_Internal_Name ('S'));
+            CW := Make_Temporary (Loc, 'S');
 
             --  Set parent to be the same as the parent of the tagged type.
             --  We need a parent field set, and it is supposed to point to
@@ -5398,9 +5441,7 @@ package body Sem_Ch10 is
          Sloc_Value : Source_Ptr;
          Id_Char    : Character) return Entity_Id
       is
-         E : constant Entity_Id :=
-               Make_Defining_Identifier (Sloc_Value,
-                 Chars => New_Internal_Name (Id_Char));
+         E : constant Entity_Id := Make_Temporary (Sloc_Value, Id_Char);
 
       begin
          Set_Ekind       (E, Kind);
@@ -5475,9 +5516,7 @@ package body Sem_Ch10 is
 
       --  Build the header of the limited_view
 
-      Lim_Header :=
-        Make_Defining_Identifier (Sloc (N),
-          Chars => New_Internal_Name (Id_Char => 'Z'));
+      Lim_Header := Make_Temporary (Sloc (N), 'Z');
       Set_Ekind (Lim_Header, E_Package);
       Set_Is_Internal (Lim_Header);
       Set_Limited_View (P, Lim_Header);
@@ -5535,9 +5574,7 @@ package body Sem_Ch10 is
          then
             return True;
 
-         elsif Ekind (E) = E_Generic_Function
-           or else Ekind (E) = E_Generic_Procedure
-         then
+         elsif Ekind_In (E, E_Generic_Function, E_Generic_Procedure) then
             return True;
 
          elsif Ekind (E) = E_Generic_Package
@@ -5578,10 +5615,7 @@ package body Sem_Ch10 is
       then
          Set_Body_Needed_For_SAL (Unit_Name);
 
-      elsif Ekind (Unit_Name) = E_Generic_Procedure
-              or else
-            Ekind (Unit_Name) = E_Generic_Function
-      then
+      elsif Ekind_In (Unit_Name, E_Generic_Procedure, E_Generic_Function) then
          Set_Body_Needed_For_SAL (Unit_Name);
 
       elsif Is_Subprogram (Unit_Name)
@@ -5927,9 +5961,9 @@ package body Sem_Ch10 is
          if Nkind (Item) = N_With_Clause
            and then Private_Present (Item)
          then
-            --  If private_with_clause is redundant, remove it from
-            --  context, as a small optimization to subsequent handling
-            --  of private_with clauses in other nested packages..
+            --  If private_with_clause is redundant, remove it from context,
+            --  as a small optimization to subsequent handling of private_with
+            --  clauses in other nested packages.
 
             if In_Regular_With_Clause (Entity (Name (Item))) then
                declare

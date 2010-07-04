@@ -28,7 +28,7 @@ int main()
   return 0;
 }
 
-// { dg-error "used here" "" { target *-*-* } 560 }
+// { dg-error "used here" "" { target *-*-* } 561 }
 // { dg-error "deleted function" "" { target *-*-* } 229 }
 // { dg-error "deleted function" "" { target *-*-* } 247 }
 // { dg-error "deleted function" "" { target *-*-* } 265 }
@@ -44,4 +44,3 @@ int main()
 // { dg-error "deleted function" "" { target *-*-* } 445 }
 // { dg-error "deleted function" "" { target *-*-* } 463 }
 // { dg-error "deleted function" "" { target *-*-* } 481 }
-// { dg-excess-errors "In member function" }

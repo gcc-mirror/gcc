@@ -812,10 +812,32 @@ if test "x${COMPILE_JNI}" = xyes; then
   dnl __gmpz_mul_si for earlier versions (>= 3.1).
   dnl IMPORTANT: if you decide to look for __gmpz_combit, don't forget to
   dnl change the name of the corresponding ac_ variable on lines 860...
+  AC_ARG_WITH(gmp, [  --with-gmp=PATH         specify prefix directory for the installed GMP package.
+                          Equivalent to --with-gmp-include=PATH/include
+                          plus --with-gmp-lib=PATH/lib])
+  AC_ARG_WITH(gmp_include, [  --with-gmp-include=PATH specify directory for installed GMP include files])
+  AC_ARG_WITH(gmp_lib, [  --with-gmp-lib=PATH     specify directory for the installed GMP library])
+
+  if test "x$with_gmp" != x; then
+    gmplibs=-lgmp
+    gmpinc=
+    gmplibs="-L$with_gmp/lib $gmplibs"
+    gmpinc="-I$with_gmp/include $gmpinc"
+    if test "x$with_gmp_include" != x; then
+      gmpinc="-I$with_gmp_include $gmpinc"
+    fi
+    if test "x$with_gmp_lib" != x; then
+      gmplibs="-L$with_gmp_lib $gmplibs"
+    fi
+  else
+    gmplibs="-lgmp"
+    gmpinc="-I/usr/include"
+  fi
+
   if test "x${COMPILE_GMP}" = xyes; then
     AC_CHECK_LIB(gmp, __gmpz_mul_si,
-      [GMP_CFLAGS=-I/usr/include
-       GMP_LIBS=-lgmp ],
+      [GMP_CFLAGS="$gmpinc"
+       GMP_LIBS="$gmplibs" ],
       [GMP_CFLAGS=
        GMP_LIBS= ])
     AC_SUBST(GMP_CFLAGS)

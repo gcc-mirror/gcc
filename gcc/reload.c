@@ -100,18 +100,17 @@ a register with any other reload.  */
 #include "expr.h"
 #include "optabs.h"
 #include "recog.h"
+#include "df.h"
 #include "reload.h"
 #include "regs.h"
 #include "addresses.h"
 #include "hard-reg-set.h"
 #include "flags.h"
-#include "real.h"
 #include "output.h"
 #include "function.h"
 #include "toplev.h"
 #include "params.h"
 #include "target.h"
-#include "df.h"
 #include "ira.h"
 
 /* True if X is a constant that can be forced into the constant pool.  */
@@ -438,7 +437,8 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
 	    || (! in_p && rld[s_reload].secondary_out_reload == t_reload))
 	&& ((in_p && rld[s_reload].secondary_in_icode == t_icode)
 	    || (! in_p && rld[s_reload].secondary_out_icode == t_icode))
-	&& (SMALL_REGISTER_CLASS_P (rclass) || SMALL_REGISTER_CLASSES)
+	&& (SMALL_REGISTER_CLASS_P (rclass)
+	    || targetm.small_register_classes_for_mode_p (VOIDmode))
 	&& MERGABLE_RELOADS (secondary_type, rld[s_reload].when_needed,
 			     opnum, rld[s_reload].opnum))
       {
@@ -688,7 +688,7 @@ find_valid_class (enum machine_mode outer ATTRIBUTE_UNUSED,
 
       if (bad || !good)
 	continue;
-      cost = REGISTER_MOVE_COST (outer, (enum reg_class) rclass, dest_class);
+      cost = register_move_cost (outer, (enum reg_class) rclass, dest_class);
 
       if ((reg_class_size[rclass] > best_size
 	   && (best_cost < 0 || best_cost >= cost))
@@ -696,7 +696,7 @@ find_valid_class (enum machine_mode outer ATTRIBUTE_UNUSED,
 	{
 	  best_class = (enum reg_class) rclass;
 	  best_size = reg_class_size[rclass];
-	  best_cost = REGISTER_MOVE_COST (outer, (enum reg_class) rclass,
+	  best_cost = register_move_cost (outer, (enum reg_class) rclass,
 					  dest_class);
 	}
     }
@@ -731,9 +731,9 @@ find_reusable_reload (rtx *p_in, rtx out, enum reg_class rclass,
      and the other is at worst neutral.
      (A zero compared against anything is neutral.)
 
-     If SMALL_REGISTER_CLASSES, don't use existing reloads unless they are
-     for the same thing since that can cause us to need more reload registers
-     than we otherwise would.  */
+     For targets with small register classes, don't use existing reloads
+     unless they are for the same thing since that can cause us to need
+     more reload registers than we otherwise would.  */
 
   for (i = 0; i < n_reloads; i++)
     if ((reg_class_subset_p (rclass, rld[i].rclass)
@@ -747,7 +747,8 @@ find_reusable_reload (rtx *p_in, rtx out, enum reg_class rclass,
 	    || (out != 0 && MATCHES (rld[i].out, out)
 		&& (in == 0 || rld[i].in == 0 || MATCHES (rld[i].in, in))))
 	&& (rld[i].out == 0 || ! earlyclobber_operand_p (rld[i].out))
-	&& (SMALL_REGISTER_CLASS_P (rclass) || SMALL_REGISTER_CLASSES)
+	&& (SMALL_REGISTER_CLASS_P (rclass)
+	    || targetm.small_register_classes_for_mode_p (VOIDmode))
 	&& MERGABLE_RELOADS (type, rld[i].when_needed, opnum, rld[i].opnum))
       return i;
 
@@ -772,7 +773,8 @@ find_reusable_reload (rtx *p_in, rtx out, enum reg_class rclass,
 		&& GET_RTX_CLASS (GET_CODE (in)) == RTX_AUTOINC
 		&& MATCHES (XEXP (in, 0), rld[i].in)))
 	&& (rld[i].out == 0 || ! earlyclobber_operand_p (rld[i].out))
-	&& (SMALL_REGISTER_CLASS_P (rclass) || SMALL_REGISTER_CLASSES)
+	&& (SMALL_REGISTER_CLASS_P (rclass)
+	    || targetm.small_register_classes_for_mode_p (VOIDmode))
 	&& MERGABLE_RELOADS (type, rld[i].when_needed,
 			     opnum, rld[i].opnum))
       {
@@ -1770,7 +1772,7 @@ combine_reloads (void)
 	    || rtx_equal_p (secondary_memlocs_elim[(int) rld[output_reload].outmode][rld[i].opnum],
 			    secondary_memlocs_elim[(int) rld[output_reload].outmode][rld[output_reload].opnum]))
 #endif
-	&& (SMALL_REGISTER_CLASSES
+	&& (targetm.small_register_classes_for_mode_p (VOIDmode)
 	    ? (rld[i].rclass == rld[output_reload].rclass)
 	    : (reg_class_subset_p (rld[i].rclass,
 				   rld[output_reload].rclass)
@@ -1794,7 +1796,7 @@ combine_reloads (void)
 	&& ! reload_inner_reg_of_subreg (rld[i].in, rld[i].inmode,
 					 rld[i].when_needed != RELOAD_FOR_INPUT)
 	&& (reg_class_size[(int) rld[i].rclass]
-	    || SMALL_REGISTER_CLASSES)
+	    || targetm.small_register_classes_for_mode_p (VOIDmode))
 	/* We will allow making things slightly worse by combining an
 	   input and an output, but no worse than that.  */
 	&& (rld[i].when_needed == RELOAD_FOR_INPUT
@@ -2649,7 +2651,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
       && REGNO (SET_DEST (body)) < FIRST_PSEUDO_REGISTER
       && REG_P (SET_SRC (body))
       && REGNO (SET_SRC (body)) < FIRST_PSEUDO_REGISTER
-      && REGISTER_MOVE_COST (GET_MODE (SET_SRC (body)),
+      && register_move_cost (GET_MODE (SET_SRC (body)),
 			     REGNO_REG_CLASS (REGNO (SET_SRC (body))),
 			     REGNO_REG_CLASS (REGNO (SET_DEST (body)))) == 2)
     return 0;
@@ -3631,7 +3633,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		   || modified[j] != RELOAD_WRITE)
 		  && j != i
 		  /* Ignore things like match_operator operands.  */
-		  && *recog_data.constraints[j] != 0
+		  && !recog_data.is_operator[j]
 		  /* Don't count an input operand that is constrained to match
 		     the early clobber operand.  */
 		  && ! (this_alternative_matches[j] == i
@@ -7335,7 +7337,7 @@ static const char *const reload_when_needed_name[] =
 
 /* These functions are used to print the variables set by 'find_reloads' */
 
-void
+DEBUG_FUNCTION void
 debug_reload_to_stream (FILE *f)
 {
   int r;
@@ -7430,7 +7432,7 @@ debug_reload_to_stream (FILE *f)
     }
 }
 
-void
+DEBUG_FUNCTION void
 debug_reload (void)
 {
   debug_reload_to_stream (stderr);

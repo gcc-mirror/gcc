@@ -1,7 +1,7 @@
 /* Xtensa configuration settings.
    Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
    Free Software Foundation, Inc.
-   Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
+   Contributed by Bob Wilson (bob.wilson@acm.org) at Tensilica.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -45,6 +45,9 @@
 
 #undef XSHAL_USE_ABSOLUTE_LITERALS
 #define XSHAL_USE_ABSOLUTE_LITERALS	0
+
+#undef XSHAL_HAVE_TEXT_SECTION_LITERALS
+#define XSHAL_HAVE_TEXT_SECTION_LITERALS 1 /* Set if there is some memory that allows both code and literals.  */
 
 #undef XCHAL_HAVE_MAC16
 #define XCHAL_HAVE_MAC16		0
@@ -100,6 +103,8 @@
 #undef XCHAL_HAVE_FP_RSQRT
 #define XCHAL_HAVE_FP_RSQRT		0
 
+#undef XCHAL_HAVE_DFP_accel
+#define XCHAL_HAVE_DFP_accel			0
 #undef XCHAL_HAVE_WINDOWED
 #define XCHAL_HAVE_WINDOWED		1
 

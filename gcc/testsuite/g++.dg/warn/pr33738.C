@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-options "-O2 -Wtype-limits" }
+// { dg-options "-O2 -Wtype-limits -fstrict-enums" }
 extern void link_error (void);
 
 enum Alpha {

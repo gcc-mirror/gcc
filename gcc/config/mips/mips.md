@@ -1,6 +1,6 @@
 ;;  Mips.md	     Machine Description for MIPS based processors
 ;;  Copyright (C) 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-;;  1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+;;  1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 ;;  Free Software Foundation, Inc.
 ;;  Contributed by   A. Lichnewsky, lich@inria.inria.fr
 ;;  Changes by       Michael Meissner, meissner@osf.org
@@ -23,246 +23,118 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-(define_constants
-  [(UNSPEC_LOAD_LOW		 0)
-   (UNSPEC_LOAD_HIGH		 1)
-   (UNSPEC_STORE_WORD		 2)
-   (UNSPEC_GET_FNADDR		 3)
-   (UNSPEC_BLOCKAGE		 4)
-   (UNSPEC_POTENTIAL_CPRESTORE	 5)
-   (UNSPEC_CPRESTORE		 6)
-   (UNSPEC_RESTORE_GP		 7)
-   (UNSPEC_MOVE_GP		 8)
-   (UNSPEC_EH_RETURN		 9)
-   (UNSPEC_CONSTTABLE_INT	10)
-   (UNSPEC_CONSTTABLE_FLOAT	11)
-   (UNSPEC_ALIGN		14)
-   (UNSPEC_HIGH			17)
-   (UNSPEC_LOAD_LEFT		18)
-   (UNSPEC_LOAD_RIGHT		19)
-   (UNSPEC_STORE_LEFT		20)
-   (UNSPEC_STORE_RIGHT		21)
-   (UNSPEC_LOADGP		22)
-   (UNSPEC_LOAD_CALL		23)
-   (UNSPEC_LOAD_GOT		24)
-   (UNSPEC_GP			25)
-   (UNSPEC_MFHI			26)
-   (UNSPEC_MTHI			27)
-   (UNSPEC_SET_HILO		28)
-   (UNSPEC_TLS_LDM		29)
-   (UNSPEC_TLS_GET_TP		30)
-   (UNSPEC_MFHC1		31)
-   (UNSPEC_MTHC1		32)
-   (UNSPEC_CLEAR_HAZARD		33)
-   (UNSPEC_RDHWR		34)
-   (UNSPEC_SYNCI		35)
-   (UNSPEC_SYNC			36)
-   (UNSPEC_COMPARE_AND_SWAP	37)
-   (UNSPEC_COMPARE_AND_SWAP_12	38)
-   (UNSPEC_SYNC_OLD_OP		39)
-   (UNSPEC_SYNC_NEW_OP		40)
-   (UNSPEC_SYNC_NEW_OP_12	41)
-   (UNSPEC_SYNC_OLD_OP_12	42)
-   (UNSPEC_SYNC_EXCHANGE	43)
-   (UNSPEC_SYNC_EXCHANGE_12	44)
-   (UNSPEC_MEMORY_BARRIER	45)
-   (UNSPEC_SET_GOT_VERSION	46)
-   (UNSPEC_UPDATE_GOT_VERSION	47)
-   (UNSPEC_COPYGP		48)
-   (UNSPEC_ERET			49)
-   (UNSPEC_DERET		50)
-   (UNSPEC_DI			51)
-   (UNSPEC_EHB			52)
-   (UNSPEC_RDPGPR		53)
-   (UNSPEC_COP0			54)
-   ;; Used in a call expression in place of args_size.  It's present for PIC
-   ;; indirect calls where it contains args_size and the function symbol.
-   (UNSPEC_CALL_ATTR		55)
-   
-   (UNSPEC_ADDRESS_FIRST	100)
+(define_enum "processor" [
+  r3000
+  4kc
+  4kp
+  5kc
+  5kf
+  20kc
+  24kc
+  24kf2_1
+  24kf1_1
+  74kc
+  74kf2_1
+  74kf1_1
+  74kf3_2
+  loongson_2e
+  loongson_2f
+  m4k
+  octeon
+  r3900
+  r6000
+  r4000
+  r4100
+  r4111
+  r4120
+  r4130
+  r4300
+  r4600
+  r4650
+  r5000
+  r5400
+  r5500
+  r7000
+  r8000
+  r9000
+  r10000
+  sb1
+  sb1a
+  sr71000
+  xlr
+])
 
-   (TLS_GET_TP_REGNUM		3)
+(define_c_enum "unspec" [
+  ;; Unaligned accesses.
+  UNSPEC_LOAD_LEFT
+  UNSPEC_LOAD_RIGHT
+  UNSPEC_STORE_LEFT
+  UNSPEC_STORE_RIGHT
+
+  ;; Floating-point moves.
+  UNSPEC_LOAD_LOW
+  UNSPEC_LOAD_HIGH
+  UNSPEC_STORE_WORD
+  UNSPEC_MFHC1
+  UNSPEC_MTHC1
+
+  ;; HI/LO moves.
+  UNSPEC_MFHI
+  UNSPEC_MTHI
+  UNSPEC_SET_HILO
+
+  ;; GP manipulation.
+  UNSPEC_LOADGP
+  UNSPEC_COPYGP
+  UNSPEC_MOVE_GP
+  UNSPEC_POTENTIAL_CPRESTORE
+  UNSPEC_CPRESTORE
+  UNSPEC_RESTORE_GP
+  UNSPEC_EH_RETURN
+  UNSPEC_GP
+  UNSPEC_SET_GOT_VERSION
+  UNSPEC_UPDATE_GOT_VERSION
+
+  ;; Symbolic accesses.
+  UNSPEC_LOAD_CALL
+  UNSPEC_LOAD_GOT
+  UNSPEC_TLS_LDM
+  UNSPEC_TLS_GET_TP
+
+  ;; MIPS16 constant pools.
+  UNSPEC_ALIGN
+  UNSPEC_CONSTTABLE_INT
+  UNSPEC_CONSTTABLE_FLOAT
+
+  ;; Blockage and synchronisation.
+  UNSPEC_BLOCKAGE
+  UNSPEC_CLEAR_HAZARD
+  UNSPEC_RDHWR
+  UNSPEC_SYNCI
+  UNSPEC_SYNC
+
+  ;; Cache manipulation.
+  UNSPEC_MIPS_CACHE
+  UNSPEC_R10K_CACHE_BARRIER
+
+  ;; Interrupt handling.
+  UNSPEC_ERET
+  UNSPEC_DERET
+  UNSPEC_DI
+  UNSPEC_EHB
+  UNSPEC_RDPGPR
+  UNSPEC_COP0
+
+  ;; Used in a call expression in place of args_size.  It's present for PIC
+  ;; indirect calls where it contains args_size and the function symbol.
+  UNSPEC_CALL_ATTR
+])
+
+(define_constants
+  [(TLS_GET_TP_REGNUM		3)
    (RETURN_ADDR_REGNUM		31)
    (CPRESTORE_SLOT_REGNUM	76)
    (GOT_VERSION_REGNUM		79)
-
-   ;; For MIPS Paired-Singled Floating Point Instructions.
-
-   (UNSPEC_MOVE_TF_PS		200)
-   (UNSPEC_C			201)
-
-   ;; MIPS64/MIPS32R2 alnv.ps
-   (UNSPEC_ALNV_PS		202)
-
-   ;; MIPS-3D instructions
-   (UNSPEC_CABS			203)
-
-   (UNSPEC_ADDR_PS		204)
-   (UNSPEC_CVT_PW_PS		205)
-   (UNSPEC_CVT_PS_PW		206)
-   (UNSPEC_MULR_PS		207)
-   (UNSPEC_ABS_PS		208)
-
-   (UNSPEC_RSQRT1		209)
-   (UNSPEC_RSQRT2		210)
-   (UNSPEC_RECIP1		211)
-   (UNSPEC_RECIP2		212)
-   (UNSPEC_SINGLE_CC		213)
-   (UNSPEC_SCC			214)
-
-   ;; MIPS DSP ASE Revision 0.98 3/24/2005
-   (UNSPEC_ADDQ			300)
-   (UNSPEC_ADDQ_S		301)
-   (UNSPEC_SUBQ			302)
-   (UNSPEC_SUBQ_S		303)
-   (UNSPEC_ADDSC		304)
-   (UNSPEC_ADDWC		305)
-   (UNSPEC_MODSUB		306)
-   (UNSPEC_RADDU_W_QB		307)
-   (UNSPEC_ABSQ_S		308)
-   (UNSPEC_PRECRQ_QB_PH		309)
-   (UNSPEC_PRECRQ_PH_W		310)
-   (UNSPEC_PRECRQ_RS_PH_W	311)
-   (UNSPEC_PRECRQU_S_QB_PH	312)
-   (UNSPEC_PRECEQ_W_PHL		313)
-   (UNSPEC_PRECEQ_W_PHR		314)
-   (UNSPEC_PRECEQU_PH_QBL	315)
-   (UNSPEC_PRECEQU_PH_QBR	316)
-   (UNSPEC_PRECEQU_PH_QBLA	317)
-   (UNSPEC_PRECEQU_PH_QBRA	318)
-   (UNSPEC_PRECEU_PH_QBL	319)
-   (UNSPEC_PRECEU_PH_QBR	320)
-   (UNSPEC_PRECEU_PH_QBLA	321)
-   (UNSPEC_PRECEU_PH_QBRA	322)
-   (UNSPEC_SHLL			323)
-   (UNSPEC_SHLL_S		324)
-   (UNSPEC_SHRL_QB		325)
-   (UNSPEC_SHRA_PH		326)
-   (UNSPEC_SHRA_R		327)
-   (UNSPEC_MULEU_S_PH_QBL	328)
-   (UNSPEC_MULEU_S_PH_QBR	329)
-   (UNSPEC_MULQ_RS_PH		330)
-   (UNSPEC_MULEQ_S_W_PHL	331)
-   (UNSPEC_MULEQ_S_W_PHR	332)
-   (UNSPEC_DPAU_H_QBL		333)
-   (UNSPEC_DPAU_H_QBR		334)
-   (UNSPEC_DPSU_H_QBL		335)
-   (UNSPEC_DPSU_H_QBR		336)
-   (UNSPEC_DPAQ_S_W_PH		337)
-   (UNSPEC_DPSQ_S_W_PH		338)
-   (UNSPEC_MULSAQ_S_W_PH	339)
-   (UNSPEC_DPAQ_SA_L_W		340)
-   (UNSPEC_DPSQ_SA_L_W		341)
-   (UNSPEC_MAQ_S_W_PHL		342)
-   (UNSPEC_MAQ_S_W_PHR		343)
-   (UNSPEC_MAQ_SA_W_PHL		344)
-   (UNSPEC_MAQ_SA_W_PHR		345)
-   (UNSPEC_BITREV		346)
-   (UNSPEC_INSV			347)
-   (UNSPEC_REPL_QB		348)
-   (UNSPEC_REPL_PH		349)
-   (UNSPEC_CMP_EQ		350)
-   (UNSPEC_CMP_LT		351)
-   (UNSPEC_CMP_LE		352)
-   (UNSPEC_CMPGU_EQ_QB		353)
-   (UNSPEC_CMPGU_LT_QB		354)
-   (UNSPEC_CMPGU_LE_QB		355)
-   (UNSPEC_PICK			356)
-   (UNSPEC_PACKRL_PH		357)
-   (UNSPEC_EXTR_W		358)
-   (UNSPEC_EXTR_R_W		359)
-   (UNSPEC_EXTR_RS_W		360)
-   (UNSPEC_EXTR_S_H		361)
-   (UNSPEC_EXTP			362)
-   (UNSPEC_EXTPDP		363)
-   (UNSPEC_SHILO		364)
-   (UNSPEC_MTHLIP		365)
-   (UNSPEC_WRDSP		366)
-   (UNSPEC_RDDSP		367)
-
-   ;; MIPS DSP ASE REV 2 Revision 0.02 11/24/2006
-   (UNSPEC_ABSQ_S_QB		400)
-   (UNSPEC_ADDU_PH		401)
-   (UNSPEC_ADDU_S_PH		402)
-   (UNSPEC_ADDUH_QB		403)
-   (UNSPEC_ADDUH_R_QB		404)
-   (UNSPEC_APPEND		405)
-   (UNSPEC_BALIGN		406)
-   (UNSPEC_CMPGDU_EQ_QB		407)
-   (UNSPEC_CMPGDU_LT_QB		408)
-   (UNSPEC_CMPGDU_LE_QB		409)
-   (UNSPEC_DPA_W_PH		410)
-   (UNSPEC_DPS_W_PH		411)
-   (UNSPEC_MADD			412)
-   (UNSPEC_MADDU		413)
-   (UNSPEC_MSUB			414)
-   (UNSPEC_MSUBU		415)
-   (UNSPEC_MUL_PH		416)
-   (UNSPEC_MUL_S_PH		417)
-   (UNSPEC_MULQ_RS_W		418)
-   (UNSPEC_MULQ_S_PH		419)
-   (UNSPEC_MULQ_S_W		420)
-   (UNSPEC_MULSA_W_PH		421)
-   (UNSPEC_MULT			422)
-   (UNSPEC_MULTU		423)
-   (UNSPEC_PRECR_QB_PH		424)
-   (UNSPEC_PRECR_SRA_PH_W	425)
-   (UNSPEC_PRECR_SRA_R_PH_W	426)
-   (UNSPEC_PREPEND		427)
-   (UNSPEC_SHRA_QB		428)
-   (UNSPEC_SHRA_R_QB		429)
-   (UNSPEC_SHRL_PH		430)
-   (UNSPEC_SUBU_PH		431)
-   (UNSPEC_SUBU_S_PH		432)
-   (UNSPEC_SUBUH_QB		433)
-   (UNSPEC_SUBUH_R_QB		434)
-   (UNSPEC_ADDQH_PH		435)
-   (UNSPEC_ADDQH_R_PH		436)
-   (UNSPEC_ADDQH_W		437)
-   (UNSPEC_ADDQH_R_W		438)
-   (UNSPEC_SUBQH_PH		439)
-   (UNSPEC_SUBQH_R_PH		440)
-   (UNSPEC_SUBQH_W		441)
-   (UNSPEC_SUBQH_R_W		442)
-   (UNSPEC_DPAX_W_PH		443)
-   (UNSPEC_DPSX_W_PH		444)
-   (UNSPEC_DPAQX_S_W_PH		445)
-   (UNSPEC_DPAQX_SA_W_PH	446)
-   (UNSPEC_DPSQX_S_W_PH		447)
-   (UNSPEC_DPSQX_SA_W_PH	448)
-
-   ;; ST Microelectronics Loongson-2E/2F.
-   (UNSPEC_LOONGSON_PAVG	500)
-   (UNSPEC_LOONGSON_PCMPEQ	501)
-   (UNSPEC_LOONGSON_PCMPGT	502)
-   (UNSPEC_LOONGSON_PEXTR	503)
-   (UNSPEC_LOONGSON_PINSR_0	504)
-   (UNSPEC_LOONGSON_PINSR_1	505)
-   (UNSPEC_LOONGSON_PINSR_2	506)
-   (UNSPEC_LOONGSON_PINSR_3	507)
-   (UNSPEC_LOONGSON_PMADD	508)
-   (UNSPEC_LOONGSON_PMOVMSK	509)
-   (UNSPEC_LOONGSON_PMULHU	510)
-   (UNSPEC_LOONGSON_PMULH	511)
-   (UNSPEC_LOONGSON_PMULL	512)
-   (UNSPEC_LOONGSON_PMULU	513)
-   (UNSPEC_LOONGSON_PASUBUB	514)
-   (UNSPEC_LOONGSON_BIADD	515)
-   (UNSPEC_LOONGSON_PSADBH	516)
-   (UNSPEC_LOONGSON_PSHUFH	517)
-   (UNSPEC_LOONGSON_PUNPCKH	518)
-   (UNSPEC_LOONGSON_PUNPCKL	519)
-   (UNSPEC_LOONGSON_PADDD	520)
-   (UNSPEC_LOONGSON_PSUBD	521)
-
-   ;; Used in loongson2ef.md
-   (UNSPEC_LOONGSON_ALU1_TURN_ENABLED_INSN   530)
-   (UNSPEC_LOONGSON_ALU2_TURN_ENABLED_INSN   531)
-   (UNSPEC_LOONGSON_FALU1_TURN_ENABLED_INSN  532)
-   (UNSPEC_LOONGSON_FALU2_TURN_ENABLED_INSN  533)
-
-   (UNSPEC_MIPS_CACHE		600)
-   (UNSPEC_R10K_CACHE_BARRIER	601)
 
    ;; PIC long branch sequences are never longer than 100 bytes.
    (MAX_PIC_BRANCH_LENGTH	100)
@@ -325,6 +197,9 @@
   "unknown,load,fpload,store,fpstore,mtc,mfc,mthilo,mfhilo,move,fmove,
    const,constN,signext,ext_ins,logical,arith,sll0,andi,loadpool,
    shift_shift,lui_movf"
+  (const_string "unknown"))
+
+(define_attr "alu_type" "unknown,add,sub,not,nor,and,or,xor"
   (const_string "unknown"))
 
 ;; Main data type used by the insn
@@ -402,6 +277,10 @@
    frsqrt,frsqrt1,frsqrt2,multi,nop,ghost"
   (cond [(eq_attr "jal" "!unset") (const_string "call")
 	 (eq_attr "got" "load") (const_string "load")
+
+	 (eq_attr "alu_type" "add,sub") (const_string "arith")
+
+	 (eq_attr "alu_type" "not,nor,and,or,xor") (const_string "logical")
 
 	 ;; If a doubleword move uses these expensive instructions,
 	 ;; it is usually better to schedule them in the same way
@@ -636,11 +515,9 @@
 	  (symbol_ref "mips_sync_loop_insns (insn, operands) * 4")
 	  ] (const_int 4)))
 
-;; Attribute describing the processor.  This attribute must match exactly
-;; with the processor_type enumeration in mips.h.
-(define_attr "cpu"
-  "r3000,4kc,4kp,5kc,5kf,20kc,24kc,24kf2_1,24kf1_1,74kc,74kf2_1,74kf1_1,74kf3_2,loongson_2e,loongson_2f,m4k,octeon,r3900,r6000,r4000,r4100,r4111,r4120,r4130,r4300,r4600,r4650,r5000,r5400,r5500,r7000,r8000,r9000,r10000,sb1,sb1a,sr71000,xlr"
-  (const (symbol_ref "mips_tune_attr")))
+;; Attribute describing the processor.
+(define_enum_attr "cpu" "processor"
+  (const (symbol_ref "mips_tune")))
 
 ;; The type of hardware hazard associated with this instruction.
 ;; DELAY means that the next instruction cannot read the result
@@ -1108,7 +985,7 @@
   "@
     <d>addu\t%0,%1,%2
     <d>addiu\t%0,%1,%2"
-  [(set_attr "type" "arith")
+  [(set_attr "alu_type" "add")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*add<mode>3_mips16"
@@ -1122,7 +999,7 @@
     <d>addiu\t%0,%2
     <d>addiu\t%0,%1,%2
     <d>addu\t%0,%1,%2"
-  [(set_attr "type" "arith")
+  [(set_attr "alu_type" "add")
    (set_attr "mode" "<MODE>")
    (set_attr_alternative "length"
 		[(if_then_else (match_operand 2 "m16_simm8_8")
@@ -1260,7 +1137,7 @@
   "@
     addu\t%0,%1,%2
     addiu\t%0,%1,%2"
-  [(set_attr "type" "arith")
+  [(set_attr "alu_type" "add")
    (set_attr "mode" "SI")])
 
 ;; Split this insn so that the addiu splitters can have a crack at it.
@@ -1275,7 +1152,7 @@
   "&& reload_completed"
   [(set (match_dup 3) (plus:SI (match_dup 1) (match_dup 2)))]
   { operands[3] = gen_lowpart (SImode, operands[0]); }
-  [(set_attr "type" "arith")
+  [(set_attr "alu_type" "add")
    (set_attr "mode" "SI")
    (set_attr "extended_mips16" "yes")])
 
@@ -1289,7 +1166,7 @@
 		   (match_operand:SI 2 "register_operand" "d")) 3)))]
   "ISA_HAS_BADDU && BYTES_BIG_ENDIAN"
   "baddu\\t%0,%1,%2"
-  [(set_attr "type" "arith")])
+  [(set_attr "alu_type" "add")])
 
 (define_insn "*baddu_si_el"
   [(set (match_operand:SI 0 "register_operand" "=d")
@@ -1299,7 +1176,7 @@
 		   (match_operand:SI 2 "register_operand" "d")) 0)))]
   "ISA_HAS_BADDU && !BYTES_BIG_ENDIAN"
   "baddu\\t%0,%1,%2"
-  [(set_attr "type" "arith")])
+  [(set_attr "alu_type" "add")])
 
 (define_insn "*baddu_di<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d")
@@ -1309,7 +1186,7 @@
 		   (match_operand:DI 2 "register_operand" "d")))))]
   "ISA_HAS_BADDU && TARGET_64BIT"
   "baddu\\t%0,%1,%2"
-  [(set_attr "type" "arith")])
+  [(set_attr "alu_type" "add")])
 
 ;;
 ;;  ....................
@@ -1334,7 +1211,7 @@
 		   (match_operand:GPR 2 "register_operand" "d")))]
   ""
   "<d>subu\t%0,%1,%2"
-  [(set_attr "type" "arith")
+  [(set_attr "alu_type" "sub")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*subsi3_extended"
@@ -1344,7 +1221,7 @@
 		      (match_operand:SI 2 "register_operand" "d"))))]
   "TARGET_64BIT"
   "subu\t%0,%1,%2"
-  [(set_attr "type" "arith")
+  [(set_attr "alu_type" "sub")
    (set_attr "mode" "DI")])
 
 ;;
@@ -2613,7 +2490,7 @@
   else
     return "subu\t%0,%.,%1";
 }
-  [(set_attr "type"	"arith")
+  [(set_attr "alu_type"	"sub")
    (set_attr "mode"	"SI")])
 
 (define_insn "negdi2"
@@ -2621,7 +2498,7 @@
 	(neg:DI (match_operand:DI 1 "register_operand" "d")))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "dsubu\t%0,%.,%1"
-  [(set_attr "type"	"arith")
+  [(set_attr "alu_type"	"sub")
    (set_attr "mode"	"DI")])
 
 ;; neg.fmt is an arithmetic instruction and treats all NaN inputs as
@@ -2646,7 +2523,7 @@
   else
     return "nor\t%0,%.,%1";
 }
-  [(set_attr "type" "logical")
+  [(set_attr "alu_type" "not")
    (set_attr "mode" "<MODE>")])
 
 ;;
@@ -2768,7 +2645,7 @@
   "@
    or\t%0,%1,%2
    ori\t%0,%1,%x2"
-  [(set_attr "type" "logical")
+  [(set_attr "alu_type" "or")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*ior<mode>3_mips16"
@@ -2777,7 +2654,7 @@
 		 (match_operand:GPR 2 "register_operand" "d")))]
   "TARGET_MIPS16"
   "or\t%0,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "alu_type" "or")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "xor<mode>3"
@@ -2795,7 +2672,7 @@
   "@
    xor\t%0,%1,%2
    xori\t%0,%1,%x2"
-  [(set_attr "type" "logical")
+  [(set_attr "alu_type" "xor")
    (set_attr "mode" "<MODE>")])
 
 (define_insn ""
@@ -2807,7 +2684,7 @@
    xor\t%0,%2
    cmpi\t%1,%2
    cmp\t%1,%2"
-  [(set_attr "type" "logical,arith,arith")
+  [(set_attr "alu_type" "xor")
    (set_attr "mode" "<MODE>")
    (set_attr_alternative "length"
 		[(const_int 4)
@@ -2822,7 +2699,7 @@
 		 (not:GPR (match_operand:GPR 2 "register_operand" "d"))))]
   "!TARGET_MIPS16"
   "nor\t%0,%1,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "alu_type" "nor")
    (set_attr "mode" "<MODE>")])
 
 ;;
@@ -3040,7 +2917,7 @@
   operands[2] = GEN_INT (GET_MODE_MASK (<SHORT:MODE>mode));
   return "andi\t%0,%1,%x2";
 }
-  [(set_attr "type" "logical")
+  [(set_attr "alu_type" "and")
    (set_attr "mode" "<GPR:MODE>")])
 
 (define_insn "*zero_extendhi_truncqi"
@@ -3049,7 +2926,7 @@
 	    (truncate:QI (match_operand:DI 1 "register_operand" "d"))))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "andi\t%0,%1,0xff"
-  [(set_attr "type" "logical")
+  [(set_attr "alu_type" "and")
    (set_attr "mode" "HI")])
 
 ;;
@@ -3981,7 +3858,7 @@
 		  (match_operand:P 2 "immediate_operand" "")))]
   "!TARGET_MIPS16"
   "<d>addiu\t%0,%1,%R2"
-  [(set_attr "type" "arith")
+  [(set_attr "alu_type" "add")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*low<mode>_mips16"
@@ -3990,7 +3867,7 @@
 		  (match_operand:P 2 "immediate_operand" "")))]
   "TARGET_MIPS16"
   "<d>addiu\t%0,%R2"
-  [(set_attr "type" "arith")
+  [(set_attr "alu_type" "add")
    (set_attr "mode" "<MODE>")
    (set_attr "extended_mips16" "yes")])
 
@@ -6581,3 +6458,7 @@
 
 ; ST-Microelectronics Loongson-2E/2F-specific patterns.
 (include "loongson.md")
+
+(define_c_enum "unspec" [
+  UNSPEC_ADDRESS_FIRST
+])

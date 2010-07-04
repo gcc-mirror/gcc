@@ -1,0 +1,158 @@
+2010-06-29  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR other/44034
+	* c-common.c: Rename targetm member:
+	targetm.enum_va_list -> targetm.enum_va_list_p
+
+2010-06-28  Anatoly Sokolov  <aesok@post.ru>
+
+	* c-common.c (shorten_compare): Adjust call to force_fit_type_double.
+
+2010-06-28  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-cppbuiltin.c: Do not include except.h.
+
+2010-06-24  Andi Kleen  <ak@linux.intel.com>
+
+        * c-common.c (warn_for_omitted_condop): New.
+        * c-common.h (warn_for_omitted_condop): Add prototype.
+
+2010-06-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (lang-objc): Remove.
+	* c-opts.c (c_common_handle_option): Don't handle OPT_lang_objc.
+
+2010-06-21  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* c-opts.c: Include "tm_p.h".
+
+2010-06-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (parse_optimize_options): Update call to
+	decode_options.
+
+2010-06-18  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.c (record_types_used_by_current_var_decl): Adjust for
+	new type of types_used_by_cur_var_decl.
+
+2010-06-17  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR bootstrap/44512
+	* c-cppbuiltin.c (builtin_define_with_hex_fp_value): Add cast
+	for C++ standard compliance.
+
+2010-06-16  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -Wnoexcept.
+
+2010-06-16  Richard Guenther  <rguenther@suse.de>
+
+	PR c/44555
+	* c-common.c (c_common_truthvalue_conversion): Remove
+	premature and wrong optimization concering ADDR_EXPRs.
+
+2010-06-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* c-ada-spec.c (dump_sloc): Remove column info.
+	(is_simple_enum): New function.
+	(dump_generic_ada_node, print_ada_declaration): Map C enum types to Ada
+	enum types when relevant.
+
+2010-06-11  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+        * c-common.c (conversion_warning): Warn at expression
+	location.
+
+2010-06-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-opts.c (c_common_handle_option): Don't handle
+	OPT_fshow_column.
+
+2010-06-08  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* c-pragma.c (push_alignment): Use typed GC allocation.
+	(handle_pragma_push_options): Likewise.
+
+	* c-common.c (parse_optimize_options): Likewise.
+
+	* c-common.h (struct sorted_fields_type): Add variable_size GTY
+	option.
+
+2010-06-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (flag_preprocess_only, flag_undef, flag_no_builtin,
+	flag_no_nonansi_builtin, flag_short_double, flag_short_wchar,
+	flag_lax_vector_conversions, flag_ms_extensions, flag_no_asm,
+	flag_signed_bitfields, warn_strict_null_sentinel,
+	flag_nil_receivers, flag_zero_link, flag_replace_objc_classes,
+	flag_gen_declaration, flag_no_gnu_keywords,
+	flag_implement_inlines, flag_implicit_templates,
+	flag_implicit_inline_templates, flag_optional_diags,
+	flag_elide_constructors, flag_default_inline, flag_rtti,
+	flag_conserve_space, flag_access_control, flag_check_new,
+	flag_new_for_scope, flag_weak, flag_working_directory,
+	flag_use_cxa_atexit, flag_use_cxa_get_exception_ptr,
+	flag_enforce_eh_specs, flag_threadsafe_statics,
+	flag_pretty_templates): Remove.
+	* c-common.h (flag_preprocess_only, flag_nil_receivers,
+	flag_objc_exceptions, flag_objc_sjlj_exceptions, flag_zero_link,
+	flag_replace_objc_classes, flag_undef, flag_no_builtin,
+	flag_no_nonansi_builtin, flag_short_double, flag_short_wchar,
+	flag_lax_vector_conversions, flag_ms_extensions, flag_no_asm,
+	flag_const_strings, flag_signed_bitfields, flag_gen_declaration,
+	flag_no_gnu_keywords, flag_implement_inlines,
+	flag_implicit_templates, flag_implicit_inline_templates,
+	flag_optional_diags, flag_elide_constructors, flag_default_inline,
+	flag_rtti, flag_conserve_space, flag_access_control,
+	flag_check_new, flag_new_for_scope, flag_weak,
+	flag_working_directory, flag_use_cxa_atexit,
+	flag_use_cxa_get_exception_ptr, flag_enforce_eh_specs,
+	flag_threadsafe_statics, flag_pretty_templates,
+	warn_strict_null_sentinel): Remove.
+	* c.opt (E, Wstrict-null-sentinel, faccess-control, fasm,
+	fbuiltin, fcheck-new, fconserve-space, felide-constructors,
+	fenforce-eh-specs, ffor-scope, fgnu-keywords, fimplement-inlines,
+	fimplicit-inline-templates, fimplicit-templates,
+	flax-vector-conversions, fms-extensions, fnil-receivers,
+	fnonansi-builtins, fpretty-templates, freplace-objc-classes,
+	frtti, fshort-double, fshort-enums, fshort-wchar,
+	fsigned-bitfields, fsigned-char, fstats, fthreadsafe-statics,
+	funsigned-bitfields, funsigned-char, fuse-cxa-atexit,
+	fuse-cxa-get-exception-ptr, fweak, fworking-directory, fzero-link,
+	gen-decls, undef): Use Var.
+	(fdefault-inline, foptional-diags): Document as doing nothing.
+	* c-opts.c (c_common_handle_option): Remove cases for options now
+	using Var.  Mark ignored options as such.
+
+2010-06-05  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-common.c: Moved to here from parent directory. 
+	* c-common.def: Likewise.
+	* c-common.h: Likewise.
+	* c-cppbuiltin.c: Likewise.
+	* c-dump.c: Likewise.
+	* c-format.c: Likewise.
+	* c-format.h : Likewise.
+	* c-gimplify.c: Likewise.
+	* c-lex.c: Likewise.
+	* c-omp.c: Likewise.
+	* c.opt: Likewise.
+	* c-opts.c: Likewise.
+	* c-pch.c: Likewise.
+	* c-ppoutput.c: Likewise.
+	* c-pragma.c: Likewise.
+	* c-pragma.h: Likewise.
+	* c-pretty-print.c: Likewise.
+	* c-pretty-print.h: Likewise.
+	* c-semantics.c: Likewise.
+	* stub-objc.c: Likewise.
+
+	* c-common.c: Include gt-c-family-c-common.h.
+	* c-pragma.c: Include gt-c-family-c-pragma.h.
+
+Copyright (C) 2010 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

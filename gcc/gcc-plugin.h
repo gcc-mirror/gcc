@@ -1,5 +1,5 @@
 /* Public header file for plugins to include.
-   Copyright (C) 2009 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -37,6 +37,12 @@ enum plugin_event
 # undef DEFEVENT
   PLUGIN_EVENT_FIRST_DYNAMIC
 };
+
+/* All globals declared here have C linkage to reduce link compatibility
+   issues with implementation language choice and mangling.  */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern const char **plugin_event_name;
 
@@ -96,16 +102,10 @@ extern bool plugin_default_version_check (struct plugin_gcc_version *,
 typedef int (*plugin_init_func) (struct plugin_name_args *plugin_info,
                                  struct plugin_gcc_version *version);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 /* Declaration for "plugin_init" function so that it doesn't need to be
    duplicated in every plugin.  */
 extern int plugin_init (struct plugin_name_args *plugin_info,
                         struct plugin_gcc_version *version);
-#ifdef __cplusplus
-}
-#endif
 
 /* Function type for a plugin callback routine.
 
@@ -140,5 +140,26 @@ extern void register_callback (const char *plugin_name,
                                void *user_data);
 
 extern int unregister_callback (const char *plugin_name, int event);
+
+
+/* Retrieve the plugin directory name, as returned by the
+   -fprint-file-name=plugin argument to the gcc program, which is the
+   -iplugindir program argument to cc1.  */
+extern const char* default_plugin_dir_name (void);
+
+#ifdef __cplusplus
+}
+#endif
+
+/* In case the C++ compiler does name mangling for globals, declare
+   plugin_is_GPL_compatible extern "C" so that a later definition
+   in a plugin file will have this linkage.  */
+#ifdef __cplusplus
+extern "C" {
+#endif
+extern int plugin_is_GPL_compatible;
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* GCC_PLUGIN_H */

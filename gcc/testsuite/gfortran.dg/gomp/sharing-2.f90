@@ -28,10 +28,10 @@
   end do
 !$omp end single
 !$omp end parallel
-!$omp parallel default (none) shared (a)
-  i = 1
-  j = 1
-  k = 1
+!$omp parallel default (none) shared (a) ! { dg-error "enclosing parallel" }
+  i = 1		! { dg-error "not specified in" }
+  j = 1		! { dg-error "not specified in" }
+  k = 1		! { dg-error "not specified in" }
 !$omp parallel default (none) shared (a)
   i = 1
   j = 1
@@ -68,8 +68,8 @@
     a(i, 1) = i + 1
   end do
 !$omp end parallel
-!$omp parallel default (none) shared (a)
-  i = 1
+!$omp parallel default (none) shared (a) ! { dg-error "enclosing parallel" }
+  i = 1		! { dg-error "not specified in" }
 !$omp parallel default (none) shared (a, i)
   i = 2
 !$omp parallel default (none) shared (a)

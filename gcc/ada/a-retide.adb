@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2010, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,10 +75,4 @@ package body Ada.Real_Time.Delays is
       return To_Duration (Time_Span (T));
    end To_Duration;
 
-begin
-   --  Ensure that the tasking run time is initialized when using delay
-   --  operations. The initialization routine has the required machinery to
-   --  prevent multiple calls to Initialize.
-
-   System.Tasking.Initialize;
 end Ada.Real_Time.Delays;

@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -Wcoverage-mismatch -w" } */
+/* { dg-options "-O2 -Wno-coverage-mismatch" } */
 
 int __attribute__((noinline)) bar (void)
 {

@@ -16,7 +16,7 @@ struct treenode * mktree(int i) {
   return r;
 }
 
-main()
+int main()
 {
   int i;
   for (i = 0; i < 10; ++i) {
@@ -26,4 +26,5 @@ main()
   GC_generate_random_backtrace();
   GC_generate_random_backtrace();
   GC_generate_random_backtrace();
+  return 0;
 }

@@ -34,7 +34,7 @@ class gnu::javax::security::auth::callback::GnuCallbacks$1 : public ::java::lang
 public: // actually package-private
   GnuCallbacks$1(::gnu::javax::security::auth::callback::GnuCallbacks *);
 public:
-  ::java::lang::Object * run();
+  virtual ::java::lang::Object * run();
 public: // actually package-private
   ::gnu::javax::security::auth::callback::GnuCallbacks * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

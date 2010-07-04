@@ -95,7 +95,7 @@ AC_DEFUN([GLIBCXX_CONFIGURE], [
   ## (Right now, this only matters for enable_wchar_t, but nothing prevents
   ## other macros from doing the same.  This should be automated.)  -pme
 
-  # Check for uClibc since Linux platforms use different configuration
+  # Check for C library flavor since Linux platforms use different configuration
   # directories depending on the C library in use.
   AC_EGREP_CPP([_using_uclibc], [
   #include <stdio.h>
@@ -103,6 +103,13 @@ AC_DEFUN([GLIBCXX_CONFIGURE], [
     _using_uclibc
   #endif
   ], uclibc=yes, uclibc=no)
+
+  AC_EGREP_CPP([_using_bionic], [
+  #include <stdio.h>
+  #if __BIONIC__
+    _using_bionic
+  #endif
+  ], bionic=yes, bionic=no)
 
   # Find platform-specific directories containing configuration info.
   # Also possibly modify flags used elsewhere, as needed by the platform.
@@ -1075,8 +1082,9 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
   CXXFLAGS="$CXXFLAGS -fno-exceptions"
   ac_save_LIBS="$LIBS"
 
-  ac_has_clock_monotonic=no;
-  ac_has_clock_realtime=no;
+  ac_has_clock_monotonic=no
+  ac_has_clock_realtime=no
+  AC_MSG_RESULT($enable_libstdcxx_time)
 
   if test x"$enable_libstdcxx_time" != x"no"; then
 
@@ -1739,40 +1747,10 @@ AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
   if test $enable_clocale_flag = gnu; then
     AC_EGREP_CPP([_GLIBCXX_ok], [
     #include <features.h>
-    #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2)
+    #if (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 3)) && !defined(__UCLIBC__)
       _GLIBCXX_ok
     #endif
     ], enable_clocale_flag=gnu, enable_clocale_flag=generic)
-
-    if test $enable_clocale = auto; then
-      # Test for bugs early in glibc-2.2.x series
-      AC_TRY_RUN([
-      #define _GNU_SOURCE 1
-      #include <locale.h>
-      #include <string.h>
-      #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-      extern __typeof(newlocale) __newlocale;
-      extern __typeof(duplocale) __duplocale;
-      extern __typeof(strcoll_l) __strcoll_l;
-      #endif
-      int main()
-      {
-	const char __one[] = "Äuglein Augmen";
-        const char __two[] = "Äuglein";
-       	int i;
-        int j;
-        __locale_t        loc;
-        __locale_t        loc_dup;
-        loc = __newlocale(1 << LC_ALL, "de_DE", 0);
-        loc_dup = __duplocale(loc);
-        i = __strcoll_l(__one, __two, loc);
-        j = __strcoll_l(__one, __two, loc_dup);
-        return 0;
-      }
-      ],
-      [enable_clocale_flag=gnu],[enable_clocale_flag=generic],
-      [enable_clocale_flag=generic])
-    fi
 
     # Set it to scream when it hurts.
     ac_save_CFLAGS="$CFLAGS"	

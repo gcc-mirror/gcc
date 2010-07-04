@@ -28,7 +28,7 @@ class java::awt::image::PixelGrabber$1 : public ::java::lang::Thread
 public: // actually package-private
   PixelGrabber$1(::java::awt::image::PixelGrabber *);
 public:
-  void run();
+  virtual void run();
 public: // actually package-private
   ::java::awt::image::PixelGrabber * __attribute__((aligned(__alignof__( ::java::lang::Thread)))) this$0;
 public:

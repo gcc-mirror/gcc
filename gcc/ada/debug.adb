@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -76,7 +76,7 @@ package body Debug is
    --  dJ   Output debugging trace info for JGNAT (Java VM version of GNAT)
    --  dK   Kill all error messages
    --  dL   Output trace information on elaboration checking
-   --  dM   Asssume all variables are modified (no current values)
+   --  dM   Assume all variables are modified (no current values)
    --  dN   No file name information in exception messages
    --  dO   Output immediate error messages
    --  dP   Do not check for controlled objects in preelaborable packages
@@ -113,7 +113,7 @@ package body Debug is
    --  d.t  Disable static allocation of library level dispatch tables
    --  d.u
    --  d.v  Enable OK_To_Reorder_Components in variant records
-   --  d.w  Do not check for infinite while loops
+   --  d.w  Do not check for infinite loops
    --  d.x  No exception handlers
    --  d.y
    --  d.z
@@ -129,7 +129,7 @@ package body Debug is
    --  d.I  SCIL generation mode
    --  d.J  Parallel SCIL generation mode
    --  d.K
-   --  d.L
+   --  d.L  Depend on back end for limited types in conditional expressions
    --  d.M
    --  d.N
    --  d.O  Dump internal SCO tables
@@ -141,9 +141,9 @@ package body Debug is
    --  d.U
    --  d.V
    --  d.W  Print out debugging information for Walk_Library_Items
-   --  d.X
-   --  d.Y
-   --  d.Z
+   --  d.X  Use Expression_With_Actions
+   --  d.Y  Do not use Expression_With_Actions
+   --  d.Z  Generate call-graph information
 
    --  d1   Error msgs have node numbers where possible
    --  d2   Eliminate error flags in verbose form error messages
@@ -548,7 +548,7 @@ package body Debug is
    --  d.v  Forces the flag OK_To_Reorder_Components to be set in all record
    --       base types that have at least one discriminant (v = variant).
 
-   --  d.w  This flag turns off the scanning of while loops to detect possible
+   --  d.w  This flag turns off the scanning of loops to detect possible
    --       infinite loops.
 
    --  d.x  No exception handlers in generated code. This causes exception
@@ -567,6 +567,11 @@ package body Debug is
    --       This means in particular not writing the same files under the
    --       same directory.
 
+   --  d.L  Normally the front end generates special expansion for conditional
+   --       expressions of a limited type. This debug flag removes this special
+   --       case expansion, leaving it up to the back end to handle conditional
+   --       expressions correctly.
+
    --  d.O  Dump internal SCO tables. Before outputting the SCO information to
    --       the ALI file, the internal SCO tables (SCO_Table/SCO_Unit_Table)
    --       are dumped for debugging purposes.
@@ -578,6 +583,24 @@ package body Debug is
    --  d.W  Print out debugging information for Walk_Library_Items, including
    --       the order in which units are walked. This is primarily for SofCheck
    --       Inspector.
+
+   --  d.X  By default, the compiler uses an elaborate rewriting framework for
+   --       short-circuited forms where the right hand condition generates
+   --       actions to be inserted. With the gcc backend, we now use the new
+   --       N_Expression_With_Actions node for this expansion, but we still use
+   --       the old method for other backends and in SCIL mode. This debug flag
+   --       forces use of the new N_Expression_With_Actions node in these other
+   --       cases and is intended for transitional use.
+
+   --  d.Y  Prevents the use of the N_Expression_With_Actions node even in the
+   --       case of the gcc back end. Provided as a back up in case the new
+   --       scheme has problems.
+
+   --  d.Z  This flag enables the frontend call-graph output associated with
+   --       dispatching calls. This is a temporary debug flag to be used during
+   --       development of this output. Once it works, it will always be output
+   --       (as part of the standard call-graph output) by default, and this
+   --       flag will be removed.
 
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when

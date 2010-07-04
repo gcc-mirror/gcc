@@ -14,9 +14,9 @@ class java::util::EnumMap$3 : public ::java::util::AbstractCollection
 public: // actually package-private
   EnumMap$3(::java::util::EnumMap *);
 public:
-  jint size();
-  ::java::util::Iterator * iterator();
-  void clear();
+  virtual jint size();
+  virtual ::java::util::Iterator * iterator();
+  virtual void clear();
 public: // actually package-private
   static ::java::util::EnumMap * access$0(::java::util::EnumMap$3 *);
   ::java::util::EnumMap * __attribute__((aligned(__alignof__( ::java::util::AbstractCollection)))) this$0;

@@ -1,6 +1,6 @@
-/* Type based alias analysis.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation,
-   Inc.
+/* Escape analysis for types.
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010
+   Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "timevar.h"
 #include "diagnostic.h"
+#include "tree-pretty-print.h"
 #include "langhooks.h"
 
 /* Some of the aliasing is called very early, before this phase is
@@ -1340,7 +1341,8 @@ check_call (gimple call)
       if (TYPE_ARG_TYPES (TREE_TYPE (callee_t)))
 	{
 	  for (arg_type = TYPE_ARG_TYPES (TREE_TYPE (callee_t)), i = 0;
-	       arg_type && TREE_VALUE (arg_type) != void_type_node;
+	       arg_type && TREE_VALUE (arg_type) != void_type_node
+	       && i < gimple_call_num_args (call);
 	       arg_type = TREE_CHAIN (arg_type), i++)
 	    {
 	      tree operand = gimple_call_arg (call, i);
@@ -1362,7 +1364,7 @@ check_call (gimple call)
 	     have to do this; the front ends should always process
 	     the arg list from the TYPE_ARG_LIST. */
 	  for (arg_type = DECL_ARGUMENTS (callee_t), i = 0;
-	       arg_type;
+	       arg_type && i < gimple_call_num_args (call);
 	       arg_type = TREE_CHAIN (arg_type), i++)
 	    {
 	      tree operand = gimple_call_arg (call, i);
@@ -2111,9 +2113,7 @@ type_escape_execute (void)
 static bool
 gate_type_escape_vars (void)
 {
-  return (flag_ipa_type_escape
-	  /* Don't bother doing anything if the program has errors.  */
-	  && !(errorcount || sorrycount));
+  return flag_ipa_struct_reorg && flag_whole_program && (optimize > 0);
 }
 
 struct simple_ipa_opt_pass pass_ipa_type_escape =

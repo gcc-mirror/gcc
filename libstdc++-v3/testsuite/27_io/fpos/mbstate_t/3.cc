@@ -1,6 +1,6 @@
 // 1999-09-20 bkoz
 
-// Copyright (C) 1999, 2001, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2001, 2003, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,6 +34,7 @@ void test03()
   // casts to const streamoff
   const std::streampos pos01 = 0;
   off01 = std::streamoff(pos01);
+  off01 = off01; // Suppress unused warning.
 
   // equality/inequality with const args
   const std::streampos pos02(54);

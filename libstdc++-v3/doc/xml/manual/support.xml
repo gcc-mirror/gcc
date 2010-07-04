@@ -166,7 +166,7 @@
 
     <para>
      For <command>g++</command>, <constant>NULL</constant> is
-     <programlisting>#define</programlisting>'d to be
+     <code>#define</code>'d to be
      <constant>__null</constant>, a magic keyword extension of
      <command>g++</command>.
     </para>

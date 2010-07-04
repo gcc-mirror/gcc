@@ -261,3 +261,4 @@ CONTAINS
     END DO
   END SUBROUTINE diff_momop
 END MODULE ai_moments
+! { dg-final { cleanup-modules "ai_moments" } }

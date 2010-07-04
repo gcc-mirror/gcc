@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1333,8 +1333,8 @@ package body Rtsfind is
                --  The RT_Unit_Table entry that may need updating
 
             begin
-               --  If entry is not set, set it now, and indicate that it
-               --  was loaded through an explicit context clause..
+               --  If entry is not set, set it now, and indicate that it was
+               --  loaded through an explicit context clause.
 
                if No (U.Entity) then
                   U := (Entity               => E,

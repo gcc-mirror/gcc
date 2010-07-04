@@ -14,9 +14,9 @@ class java::util::ServiceLoader$1 : public ::java::lang::Object
 public: // actually package-private
   ServiceLoader$1(::java::util::ServiceLoader *);
 public:
-  jboolean hasNext();
-  ::java::lang::Object * next();
-  void remove();
+  virtual jboolean hasNext();
+  virtual ::java::lang::Object * next();
+  virtual void remove();
 private:
   ::java::util::Iterator * __attribute__((aligned(__alignof__( ::java::lang::Object)))) cacheIt;
 public: // actually package-private

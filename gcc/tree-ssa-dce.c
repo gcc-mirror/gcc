@@ -1,5 +1,5 @@
 /* Dead code elimination pass for the GNU compiler.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Ben Elliston <bje@redhat.com>
    and Andrew MacLeod <amacleod@redhat.com>
@@ -47,17 +47,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "ggc.h"
-
-/* These RTL headers are needed for basic-block.h.  */
-#include "rtl.h"
-#include "tm_p.h"
-#include "hard-reg-set.h"
-#include "obstack.h"
-#include "basic-block.h"
 
 #include "tree.h"
-#include "diagnostic.h"
+#include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
+#include "basic-block.h"
 #include "tree-flow.h"
 #include "gimple.h"
 #include "tree-dump.h"
@@ -83,8 +77,8 @@ static VEC(gimple,heap) *worklist;
    as necessary.  */
 static sbitmap processed;
 
-/* Vector indicating that last_stmt if a basic block has already been
-   marked as necessary.  */
+/* Vector indicating that the last statement of a basic block has already
+   been marked as necessary.  */
 static sbitmap last_stmt_necessary;
 
 /* Vector indicating that BB contains statements that are live.  */
@@ -203,6 +197,7 @@ find_all_control_dependences (struct edge_list *el)
 
 /* If STMT is not already marked necessary, mark it, and add it to the
    worklist if ADD_TO_WORKLIST is true.  */
+
 static inline void
 mark_stmt_necessary (gimple stmt, bool add_to_worklist)
 {
@@ -277,10 +272,10 @@ static void
 mark_stmt_if_obviously_necessary (gimple stmt, bool aggressive)
 {
   tree lhs = NULL_TREE;
+
   /* With non-call exceptions, we have to assume that all statements could
      throw.  If a statement may throw, it is inherently necessary.  */
-  if (flag_non_call_exceptions
-      && stmt_could_throw_p (stmt))
+  if (cfun->can_throw_non_call_exceptions && stmt_could_throw_p (stmt))
     {
       mark_stmt_necessary (stmt, true);
       return;
@@ -371,14 +366,34 @@ mark_stmt_if_obviously_necessary (gimple stmt, bool aggressive)
 }
 
 
-/* Make corresponding control dependent edges necessary.  We only
-   have to do this once for each basic block, so we clear the bitmap
-   after we're done.  */
+/* Mark the last statement of BB as necessary.  */
+
 static void
-mark_control_dependent_edges_necessary (basic_block bb, struct edge_list *el)
+mark_last_stmt_necessary (basic_block bb)
+{
+  gimple stmt = last_stmt (bb);
+
+  SET_BIT (last_stmt_necessary, bb->index);
+  SET_BIT (bb_contains_live_stmts, bb->index);
+
+  /* We actually mark the statement only if it is a control statement.  */
+  if (stmt && is_ctrl_stmt (stmt))
+    mark_stmt_necessary (stmt, true);
+}
+
+
+/* Mark control dependent edges of BB as necessary.  We have to do this only
+   once for each basic block so we set the appropriate bit after we're done.
+
+   When IGNORE_SELF is true, ignore BB in the list of control dependences.  */
+
+static void
+mark_control_dependent_edges_necessary (basic_block bb, struct edge_list *el,
+					bool ignore_self)
 {
   bitmap_iterator bi;
   unsigned edge_number;
+  bool skipped = false;
 
   gcc_assert (bb != EXIT_BLOCK_PTR);
 
@@ -387,18 +402,20 @@ mark_control_dependent_edges_necessary (basic_block bb, struct edge_list *el)
 
   EXECUTE_IF_CONTROL_DEPENDENT (bi, bb->index, edge_number)
     {
-      gimple stmt;
       basic_block cd_bb = INDEX_EDGE_PRED_BB (el, edge_number);
 
-      if (TEST_BIT (last_stmt_necessary, cd_bb->index))
-	continue;
-      SET_BIT (last_stmt_necessary, cd_bb->index);
-      SET_BIT (bb_contains_live_stmts, cd_bb->index);
+      if (ignore_self && cd_bb == bb)
+	{
+	  skipped = true;
+	  continue;
+	}
 
-      stmt = last_stmt (cd_bb);
-      if (stmt && is_ctrl_stmt (stmt))
-	mark_stmt_necessary (stmt, true);
+      if (!TEST_BIT (last_stmt_necessary, cd_bb->index))
+	mark_last_stmt_necessary (cd_bb);
     }
+
+  if (!skipped)
+    SET_BIT (visited_control_parents, bb->index);
 }
 
 
@@ -459,7 +476,7 @@ find_obviously_necessary_stmts (struct edge_list *el)
 	          if (dump_file)
 	            fprintf (dump_file, "Marking back edge of irreducible loop %i->%i\n",
 		    	     e->src->index, e->dest->index);
-		  mark_control_dependent_edges_necessary (e->dest, el);
+		  mark_control_dependent_edges_necessary (e->dest, el, false);
 		}
 	  }
 
@@ -468,7 +485,7 @@ find_obviously_necessary_stmts (struct edge_list *el)
 	  {
 	    if (dump_file)
 	      fprintf (dump_file, "can not prove finiteness of loop %i\n", loop->num);
-	    mark_control_dependent_edges_necessary (loop->latch, el);
+	    mark_control_dependent_edges_necessary (loop->latch, el, false);
 	  }
       scev_finalize ();
     }
@@ -647,16 +664,13 @@ propagate_necessity (struct edge_list *el)
 
       if (aggressive)
 	{
-	  /* Mark the last statements of the basic blocks that the block
-	     containing STMT is control dependent on, but only if we haven't
+	  /* Mark the last statement of the basic blocks on which the block
+	     containing STMT is control dependent, but only if we haven't
 	     already done so.  */
 	  basic_block bb = gimple_bb (stmt);
 	  if (bb != ENTRY_BLOCK_PTR
-	      && ! TEST_BIT (visited_control_parents, bb->index))
-	    {
-	      SET_BIT (visited_control_parents, bb->index);
-	      mark_control_dependent_edges_necessary (bb, el);
-	    }
+	      && !TEST_BIT (visited_control_parents, bb->index))
+	    mark_control_dependent_edges_necessary (bb, el, false);
 	}
 
       if (gimple_code (stmt) == GIMPLE_PHI
@@ -679,17 +693,91 @@ propagate_necessity (struct edge_list *el)
 		mark_operand_necessary (arg);
 	    }
 
+	  /* For PHI operands it matters from where the control flow arrives
+	     to the BB.  Consider the following example:
+
+	     a=exp1;
+	     b=exp2;
+	     if (test)
+		;
+	     else
+		;
+	     c=PHI(a,b)
+
+	     We need to mark control dependence of the empty basic blocks, since they
+	     contains computation of PHI operands.
+
+	     Doing so is too restrictive in the case the predecestor block is in
+	     the loop. Consider:
+
+	      if (b)
+		{
+		  int i;
+		  for (i = 0; i<1000; ++i)
+		    ;
+		  j = 0;
+		}
+	      return j;
+
+	     There is PHI for J in the BB containing return statement.
+	     In this case the control dependence of predecestor block (that is
+	     within the empty loop) also contains the block determining number
+	     of iterations of the block that would prevent removing of empty
+	     loop in this case.
+
+	     This scenario can be avoided by splitting critical edges.
+	     To save the critical edge splitting pass we identify how the control
+	     dependence would look like if the edge was split.
+
+	     Consider the modified CFG created from current CFG by splitting
+	     edge B->C.  In the postdominance tree of modified CFG, C' is
+	     always child of C.  There are two cases how chlids of C' can look
+	     like:
+
+		1) C' is leaf
+
+		   In this case the only basic block C' is control dependent on is B.
+
+		2) C' has single child that is B
+
+		   In this case control dependence of C' is same as control
+		   dependence of B in original CFG except for block B itself.
+		   (since C' postdominate B in modified CFG)
+
+	     Now how to decide what case happens?  There are two basic options:
+
+		a) C postdominate B.  Then C immediately postdominate B and
+		   case 2 happens iff there is no other way from B to C except
+		   the edge B->C.
+
+		   There is other way from B to C iff there is succesor of B that
+		   is not postdominated by B.  Testing this condition is somewhat
+		   expensive, because we need to iterate all succesors of B.
+		   We are safe to assume that this does not happen: we will mark B
+		   as needed when processing the other path from B to C that is
+		   conrol dependent on B and marking control dependencies of B
+		   itself is harmless because they will be processed anyway after
+		   processing control statement in B.
+
+		b) C does not postdominate B.  Always case 1 happens since there is
+		   path from C to exit that does not go through B and thus also C'.  */
+
 	  if (aggressive && !degenerate_phi_p (stmt))
 	    {
 	      for (k = 0; k < gimple_phi_num_args (stmt); k++)
 		{
 		  basic_block arg_bb = gimple_phi_arg_edge (stmt, k)->src;
-		  if (arg_bb != ENTRY_BLOCK_PTR
-		      && ! TEST_BIT (visited_control_parents, arg_bb->index))
+
+		  if (gimple_bb (stmt)
+		      != get_immediate_dominator (CDI_POST_DOMINATORS, arg_bb))
 		    {
-		      SET_BIT (visited_control_parents, arg_bb->index);
-		      mark_control_dependent_edges_necessary (arg_bb, el);
+		      if (!TEST_BIT (last_stmt_necessary, arg_bb->index))
+			mark_last_stmt_necessary (arg_bb);
 		    }
+		  else if (arg_bb != ENTRY_BLOCK_PTR
+		           && !TEST_BIT (visited_control_parents,
+					 arg_bb->index))
+		    mark_control_dependent_edges_necessary (arg_bb, el, true);
 		}
 	    }
 	}

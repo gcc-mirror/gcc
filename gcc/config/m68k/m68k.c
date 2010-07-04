@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Motorola 68000 family.
    Copyright (C) 1987, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "regs.h"
 #include "hard-reg-set.h"
-#include "real.h"
 #include "insn-config.h"
 #include "conditions.h"
 #include "output.h"
@@ -154,6 +153,7 @@ static bool m68k_return_in_memory (const_tree, const_tree);
 #endif
 static void m68k_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 static void m68k_trampoline_init (rtx, tree, rtx);
+static rtx m68k_delegitimize_address (rtx);
 
 
 /* Specify the identification number of the library being built */
@@ -270,6 +270,9 @@ const char *m68k_library_id_string = "_current_shared_library_a5_offset_";
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT m68k_trampoline_init
+
+#undef TARGET_DELEGITIMIZE_ADDRESS
+#define TARGET_DELEGITIMIZE_ADDRESS m68k_delegitimize_address
 
 static const struct attribute_spec m68k_attribute_table[] =
 {
@@ -4594,7 +4597,8 @@ m68k_output_addr_const_extra (FILE *file, rtx x)
 	case UNSPEC_RELOC16:
 	case UNSPEC_RELOC32:
 	  output_addr_const (file, XVECEXP (x, 0, 0));
-	  fputs (m68k_get_reloc_decoration (INTVAL (XVECEXP (x, 0, 1))), file);
+	  fputs (m68k_get_reloc_decoration
+		 ((enum m68k_reloc) INTVAL (XVECEXP (x, 0, 1))), file);
 	  return true;
 
 	default:
@@ -4616,6 +4620,58 @@ m68k_output_dwarf_dtprel (FILE *file, int size, rtx x)
   fputs ("@TLSLDO+0x8000", file);
 }
 
+/* In the name of slightly smaller debug output, and to cater to
+   general assembler lossage, recognize various UNSPEC sequences
+   and turn them back into a direct symbol reference.  */
+
+static rtx
+m68k_delegitimize_address (rtx orig_x)
+{
+  rtx x, y;
+  rtx addend = NULL_RTX;
+  rtx result;
+
+  orig_x = delegitimize_mem_from_attrs (orig_x);
+  if (! MEM_P (orig_x))
+    return orig_x;
+
+  x = XEXP (orig_x, 0);
+
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 1)) == CONST
+      && REG_P (XEXP (x, 0))
+      && REGNO (XEXP (x, 0)) == PIC_REG)
+    {
+      y = x = XEXP (XEXP (x, 1), 0);
+
+      /* Handle an addend.  */
+      if ((GET_CODE (x) == PLUS || GET_CODE (x) == MINUS)
+	  && CONST_INT_P (XEXP (x, 1)))
+	{
+	  addend = XEXP (x, 1);
+	  x = XEXP (x, 0);
+	}
+
+      if (GET_CODE (x) == UNSPEC
+	  && (XINT (x, 1) == UNSPEC_RELOC16
+	      || XINT (x, 1) == UNSPEC_RELOC32))
+	{
+	  result = XVECEXP (x, 0, 0);
+	  if (addend)
+	    {
+	      if (GET_CODE (y) == PLUS)
+		result = gen_rtx_PLUS (Pmode, result, addend);
+	      else
+		result = gen_rtx_MINUS (Pmode, result, addend);
+	      result = gen_rtx_CONST (Pmode, result);
+	    }
+	  return result;
+	}
+    }
+
+  return orig_x;
+}
+  
 
 /* A C compound statement to output to stdio stream STREAM the
    assembler syntax for an instruction operand that is a memory
@@ -5554,7 +5610,6 @@ m68k_sched_attr_opx_type (rtx insn, int address_p)
 
     default:
       gcc_unreachable ();
-      return 0;
     }
 }
 
@@ -5598,7 +5653,6 @@ m68k_sched_attr_opy_type (rtx insn, int address_p)
 
     default:
       gcc_unreachable ();
-      return 0;
     }
 }
 
@@ -5704,7 +5758,6 @@ m68k_sched_attr_size (rtx insn)
 
     default:
       gcc_unreachable ();
-      return 0;
     }
 }
 
@@ -5736,7 +5789,6 @@ sched_get_opxy_mem_type (rtx insn, bool opx_p)
 
 	default:
 	  gcc_unreachable ();
-	  return 0;
 	}
     }
   else
@@ -5762,7 +5814,6 @@ sched_get_opxy_mem_type (rtx insn, bool opx_p)
 
 	default:
 	  gcc_unreachable ();
-	  return 0;
 	}
     }
 }
@@ -5795,7 +5846,6 @@ m68k_sched_attr_op_mem (rtx insn)
 
 	default:
 	  gcc_unreachable ();
-	  return 0;
 	}
     }
 
@@ -5814,7 +5864,6 @@ m68k_sched_attr_op_mem (rtx insn)
 
 	default:
 	  gcc_unreachable ();
-	  return 0;
 	}
     }
 

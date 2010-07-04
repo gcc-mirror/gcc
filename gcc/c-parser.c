@@ -1,6 +1,6 @@
 /* Parser for C and Objective-C.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
    Parser actions based on the old Bison parser; structure somewhat
@@ -40,25 +40,23 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "tm.h"			/* For rtl.h: needs enum reg_class.  */
 #include "tree.h"
-#include "rtl.h"
 #include "langhooks.h"
 #include "input.h"
 #include "cpplib.h"
 #include "timevar.h"
-#include "c-pragma.h"
+#include "c-family/c-pragma.h"
 #include "c-tree.h"
 #include "flags.h"
 #include "output.h"
 #include "toplev.h"
 #include "ggc.h"
-#include "c-common.h"
+#include "c-family/c-common.h"
 #include "vec.h"
 #include "target.h"
 #include "cgraph.h"
 #include "plugin.h"
-#include "except.h"
 
 #include "upc/upc-tree.h"
 
@@ -93,7 +91,7 @@ c_parse_init (void)
   if (!c_dialect_upc ())
      mask |= D_UPC;
 
-  ridpointers = GGC_CNEWVEC (tree, (int) RID_MAX);
+  ridpointers = ggc_alloc_cleared_vec_tree ((int) RID_MAX);
   for (i = 0; i < num_c_common_reswords; i++)
     {
       /* If a keyword is disabled, do not enter it into the table
@@ -161,10 +159,10 @@ typedef struct GTY (()) c_token {
   /* If this token is a CPP_PRAGMA, this indicates the pragma that
      was seen.  Otherwise it is PRAGMA_NONE.  */
   ENUM_BITFIELD (pragma_kind) pragma_kind : 8;
-  /* The value associated with this token, if any.  */
-  tree value;
   /* The location at which this token was found.  */
   location_t location;
+  /* The value associated with this token, if any.  */
+  tree value;
 } c_token;
 
 /* A parser structure recording information about the state and
@@ -385,6 +383,7 @@ c_token_starts_typename (c_token *token)
 	{
 	case RID_UNSIGNED:
 	case RID_LONG:
+	case RID_INT128:
 	case RID_SHORT:
 	case RID_SIGNED:
 	case RID_COMPLEX:
@@ -469,6 +468,7 @@ c_token_starts_declspecs (c_token *token)
 	case RID_THREAD:
 	case RID_UNSIGNED:
 	case RID_LONG:
+	case RID_INT128:
 	case RID_SHORT:
 	case RID_SIGNED:
 	case RID_COMPLEX:
@@ -510,6 +510,19 @@ c_token_starts_declspecs (c_token *token)
     }
 }
 
+
+/* Return true if TOKEN can start declaration specifiers or a static
+   assertion, false otherwise.  */
+static bool
+c_token_starts_declaration (c_token *token)
+{
+  if (c_token_starts_declspecs (token)
+      || token->keyword == RID_STATIC_ASSERT)
+    return true;
+  else
+    return false;
+}
+
 /* Return true if the next token from PARSER can start declaration
    specifiers, false otherwise.  */
 static inline bool
@@ -517,6 +530,15 @@ c_parser_next_token_starts_declspecs (c_parser *parser)
 {
   c_token *token = c_parser_peek_token (parser);
   return c_token_starts_declspecs (token);
+}
+
+/* Return true if the next token from PARSER can start declaration
+   specifiers or a static assertion, false otherwise.  */
+static inline bool
+c_parser_next_token_starts_declaration (c_parser *parser)
+{
+  c_token *token = c_parser_peek_token (parser);
+  return c_token_starts_declaration (token);
 }
 
 /* Return a pointer to the next-but-one token from PARSER, reading it
@@ -899,7 +921,10 @@ typedef enum c_dtr_syn {
 
 static void c_parser_external_declaration (c_parser *);
 static void c_parser_asm_definition (c_parser *);
-static void c_parser_declaration_or_fndef (c_parser *, bool, bool, bool, bool);
+static void c_parser_declaration_or_fndef (c_parser *, bool, bool, bool,
+					   bool, bool);
+static void c_parser_static_assert_declaration_no_semi (c_parser *);
+static void c_parser_static_assert_declaration (c_parser *);
 static void c_parser_declspecs (c_parser *, struct c_declspecs *, bool, bool,
 				bool);
 static struct c_typespec c_parser_enum_specifier (c_parser *);
@@ -921,8 +946,9 @@ static tree c_parser_attributes (c_parser *);
 static struct c_type_name *c_parser_type_name (c_parser *);
 static struct c_expr c_parser_initializer (c_parser *);
 static struct c_expr c_parser_braced_init (c_parser *, tree, bool);
-static void c_parser_initelt (c_parser *);
-static void c_parser_initval (c_parser *, struct c_expr *);
+static void c_parser_initelt (c_parser *, struct obstack *);
+static void c_parser_initval (c_parser *, struct c_expr *,
+			      struct obstack *);
 static tree c_parser_compound_statement (c_parser *);
 static void c_parser_compound_statement_nostart (c_parser *);
 static void c_parser_label (c_parser *);
@@ -1122,7 +1148,7 @@ c_parser_external_declaration (c_parser *parser)
       /* A declaration or a function definition.  We can only tell
 	 which after parsing the declaration specifiers, if any, and
 	 the first declarator.  */
-      c_parser_declaration_or_fndef (parser, true, true, false, true);
+      c_parser_declaration_or_fndef (parser, true, true, true, false, true);
       break;
     }
 }
@@ -1131,18 +1157,21 @@ c_parser_external_declaration (c_parser *parser)
 /* Parse a declaration or function definition (C90 6.5, 6.7.1, C99
    6.7, 6.9.1).  If FNDEF_OK is true, a function definition is
    accepted; otherwise (old-style parameter declarations) only other
-   declarations are accepted.  If NESTED is true, we are inside a
-   function or parsing old-style parameter declarations; any functions
-   encountered are nested functions and declaration specifiers are
-   required; otherwise we are at top level and functions are normal
-   functions and declaration specifiers may be optional.  If EMPTY_OK
-   is true, empty declarations are OK (subject to all other
-   constraints); otherwise (old-style parameter declarations) they are
-   diagnosed.  If START_ATTR_OK is true, the declaration specifiers
-   may start with attributes; otherwise they may not.
+   declarations are accepted.  If STATIC_ASSERT_OK is true, a static
+   assertion is accepted; otherwise (old-style parameter declarations)
+   it is not.  If NESTED is true, we are inside a function or parsing
+   old-style parameter declarations; any functions encountered are
+   nested functions and declaration specifiers are required; otherwise
+   we are at top level and functions are normal functions and
+   declaration specifiers may be optional.  If EMPTY_OK is true, empty
+   declarations are OK (subject to all other constraints); otherwise
+   (old-style parameter declarations) they are diagnosed.  If
+   START_ATTR_OK is true, the declaration specifiers may start with
+   attributes; otherwise they may not.
 
    declaration:
      declaration-specifiers init-declarator-list[opt] ;
+     static_assert-declaration
 
    function-definition:
      declaration-specifiers[opt] declarator declaration-list[opt]
@@ -1186,7 +1215,8 @@ c_parser_external_declaration (c_parser *parser)
      threadprivate-directive  */
 
 static void
-c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok, bool empty_ok,
+c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
+			       bool static_assert_ok, bool empty_ok,
 			       bool nested, bool start_attr_ok)
 {
   struct c_declspecs *specs;
@@ -1195,6 +1225,12 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok, bool empty_ok,
   bool diagnosed_no_specs = false;
   location_t here = c_parser_peek_token (parser)->location;
 
+  if (static_assert_ok
+      && c_parser_next_token_is_keyword (parser, RID_STATIC_ASSERT))
+    {
+      c_parser_static_assert_declaration (parser);
+      return;
+    }
   specs = build_null_declspecs ();
   c_parser_declspecs (parser, specs, true, true, start_attr_ok);
   if (parser->error)
@@ -1353,7 +1389,8 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok, bool empty_ok,
 	 function definitions either.  */
       while (c_parser_next_token_is_not (parser, CPP_EOF)
 	     && c_parser_next_token_is_not (parser, CPP_OPEN_BRACE))
-	c_parser_declaration_or_fndef (parser, false, false, true, false);
+	c_parser_declaration_or_fndef (parser, false, false, false,
+				       true, false);
       store_parm_decls ();
       DECL_STRUCT_FUNCTION (current_function_decl)->function_start_locus
 	= c_parser_peek_token (parser)->location;
@@ -1394,6 +1431,97 @@ c_parser_asm_definition (c_parser *parser)
   if (asm_str)
     cgraph_add_asm_node (asm_str);
   c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
+}
+
+/* Parse a static assertion (C1X N1425 6.7.10).
+
+   static_assert-declaration:
+     static_assert-declaration-no-semi ;
+*/
+
+static void
+c_parser_static_assert_declaration (c_parser *parser)
+{
+  c_parser_static_assert_declaration_no_semi (parser);
+  if (parser->error
+      || !c_parser_require (parser, CPP_SEMICOLON, "expected %<;%>"))
+    c_parser_skip_to_end_of_block_or_statement (parser);
+}
+
+/* Parse a static assertion (C1X N1425 6.7.10), without the trailing
+   semicolon.
+
+   static_assert-declaration-no-semi:
+     _Static_assert ( constant-expression , string-literal )
+*/
+
+static void
+c_parser_static_assert_declaration_no_semi (c_parser *parser)
+{
+  location_t assert_loc, value_loc;
+  tree value;
+  tree string;
+
+  gcc_assert (c_parser_next_token_is_keyword (parser, RID_STATIC_ASSERT));
+  assert_loc = c_parser_peek_token (parser)->location;
+  if (!flag_isoc1x)
+    {
+      if (flag_isoc99)
+	pedwarn (assert_loc, OPT_pedantic,
+		 "ISO C99 does not support %<_Static_assert%>");
+      else
+	pedwarn (assert_loc, OPT_pedantic,
+		 "ISO C90 does not support %<_Static_assert%>");
+    }
+  c_parser_consume_token (parser);
+  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+    return;
+  value_loc = c_parser_peek_token (parser)->location;
+  value = c_parser_expr_no_commas (parser, NULL).value;
+  parser->lex_untranslated_string = true;
+  if (!c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
+    {
+      parser->lex_untranslated_string = false;
+      return;
+    }
+  switch (c_parser_peek_token (parser)->type)
+    {
+    case CPP_STRING:
+    case CPP_STRING16:
+    case CPP_STRING32:
+    case CPP_WSTRING:
+    case CPP_UTF8STRING:
+      string = c_parser_peek_token (parser)->value;
+      c_parser_consume_token (parser);
+      parser->lex_untranslated_string = false;
+      break;
+    default:
+      c_parser_error (parser, "expected string literal");
+      parser->lex_untranslated_string = false;
+      return;
+    }
+  c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>");
+
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (value)))
+    {
+      error_at (value_loc, "expression in static assertion is not an integer");
+      return;
+    }
+  if (TREE_CODE (value) != INTEGER_CST)
+    {
+      value = c_fully_fold (value, false, NULL);
+      if (TREE_CODE (value) == INTEGER_CST)
+	pedwarn (value_loc, OPT_pedantic, "expression in static assertion "
+		 "is not an integer constant expression");
+    }
+  if (TREE_CODE (value) != INTEGER_CST)
+    {
+      error_at (value_loc, "expression in static assertion is not constant");
+      return;
+    }
+  constant_expression_warning (value);
+  if (integer_zerop (value))
+    error_at (assert_loc, "static assertion failed: %E", string);
 }
 
 /* Parse some declaration specifiers (possibly none) (C90 6.5, C99
@@ -1469,6 +1597,7 @@ c_parser_asm_definition (c_parser *parser)
 
    type-specifier:
      typeof-specifier
+     __int128
      _Decimal32
      _Decimal64
      _Decimal128
@@ -1586,6 +1715,7 @@ c_parser_declspecs (c_parser *parser, struct c_declspecs *specs,
 	  break;
 	case RID_UNSIGNED:
 	case RID_LONG:
+	case RID_INT128:
 	case RID_SHORT:
 	case RID_SIGNED:
 	case RID_COMPLEX:
@@ -2005,6 +2135,7 @@ c_parser_struct_or_union_specifier (c_parser *parser)
 
    struct-declaration:
      specifier-qualifier-list struct-declarator-list
+     static_assert-declaration-no-semi
 
    specifier-qualifier-list:
      type-specifier specifier-qualifier-list[opt]
@@ -2048,6 +2179,11 @@ c_parser_struct_declaration (c_parser *parser)
       decl = c_parser_struct_declaration (parser);
       restore_extension_diagnostics (ext);
       return decl;
+    }
+  if (c_parser_next_token_is_keyword (parser, RID_STATIC_ASSERT))
+    {
+      c_parser_static_assert_declaration_no_semi (parser);
+      return NULL_TREE;
     }
   specs = build_null_declspecs ();
   decl_loc = c_parser_peek_token (parser)->location;
@@ -2203,6 +2339,7 @@ c_parser_typeof_specifier (c_parser *parser)
       if (TREE_CODE (expr.value) == COMPONENT_REF
 	  && DECL_C_BIT_FIELD (TREE_OPERAND (expr.value, 1)))
 	error_at (here, "%<typeof%> applied to a bit-field");
+      mark_exp_read (expr.value);
       ret.spec = TREE_TYPE (expr.value);
       was_vm = variably_modified_type_p (ret.spec, NULL_TREE);
       /* This is returned with the type so that when the type is
@@ -2504,6 +2641,8 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
 				     "expected %<]%>");
 	  return NULL;
 	}
+      if (dimen)
+	mark_exp_read (dimen);
       declarator = build_array_declarator (brace_loc, dimen, quals_attrs,
 					   static_seen, star_seen);
       if (declarator == NULL)
@@ -2599,7 +2738,7 @@ c_parser_parms_declarator (c_parser *parser, bool id_list_ok, tree attrs)
 static struct c_arg_info *
 c_parser_parms_list_declarator (c_parser *parser, tree attrs)
 {
-  bool good_parm = false;
+  bool bad_parm = false;
   /* ??? Following the old parser, forward parameter declarations may
      use abstract declarators, and if no real parameter declarations
      follow the forward declarations then this is not diagnosed.  Also
@@ -2651,11 +2790,10 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs)
       /* Parse a parameter.  */
       struct c_parm *parm = c_parser_parameter_declaration (parser, attrs);
       attrs = NULL_TREE;
-      if (parm != NULL)
-	{
-	  good_parm = true;
-	  push_parm_decl (parm);
-	}
+      if (parm == NULL)
+	bad_parm = true;
+      else
+	push_parm_decl (parm);
       if (c_parser_next_token_is (parser, CPP_SEMICOLON))
 	{
 	  tree new_attrs;
@@ -2667,20 +2805,13 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs)
       if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
 	{
 	  c_parser_consume_token (parser);
-	  if (good_parm)
-	    return get_parm_info (false);
-	  else
+	  if (bad_parm)
 	    {
-	      struct c_arg_info *ret
-		= XOBNEW (&parser_obstack, struct c_arg_info);
-	      ret->parms = 0;
-	      ret->tags = 0;
-	      ret->types = 0;
-	      ret->others = 0;
-	      ret->pending_sizes = 0;
-	      ret->had_vla_unspec = 0;
-	      return ret;
+	      get_pending_sizes ();
+	      return NULL;
 	    }
+	  else
+	    return get_parm_info (false);
 	}
       if (!c_parser_require (parser, CPP_COMMA,
 			     "expected %<;%>, %<,%> or %<)%>"))
@@ -2695,20 +2826,13 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs)
 	  if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
 	    {
 	      c_parser_consume_token (parser);
-	      if (good_parm)
-		return get_parm_info (true);
-	      else
+	      if (bad_parm)
 		{
-		  struct c_arg_info *ret
-		    = XOBNEW (&parser_obstack, struct c_arg_info);
-		  ret->parms = 0;
-		  ret->tags = 0;
-		  ret->types = 0;
-		  ret->others = 0;
-		  ret->pending_sizes = 0;
-		  ret->had_vla_unspec = 0;
-		  return ret;
+		  get_pending_sizes ();
+		  return NULL;
 		}
+	      else
+		return get_parm_info (true);
 	    }
 	  else
 	    {
@@ -2734,10 +2858,22 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
   bool dummy = false;
   if (!c_parser_next_token_starts_declspecs (parser))
     {
+      c_token *token = c_parser_peek_token (parser);
+      if (parser->error)
+	return NULL;
+      c_parser_set_source_position_from_token (token);
+      if (token->type == CPP_NAME
+	  && c_parser_peek_2nd_token (parser)->type != CPP_COMMA
+	  && c_parser_peek_2nd_token (parser)->type != CPP_CLOSE_PAREN)
+	{
+	  error ("unknown type name %qE", token->value);
+	  parser->error = true;
+	}
       /* ??? In some Objective-C cases '...' isn't applicable so there
 	 should be a different message.  */
-      c_parser_error (parser,
-		      "expected declaration specifiers or %<...%>");
+      else
+	c_parser_error (parser,
+			"expected declaration specifiers or %<...%>");
       c_parser_skip_to_end_of_parameter (parser);
       return NULL;
     }
@@ -2902,6 +3038,7 @@ c_parser_attributes (c_parser *parser)
 		case RID_STATIC:
 		case RID_UNSIGNED:
 		case RID_LONG:
+		case RID_INT128:
 		case RID_CONST:
 		case RID_EXTERN:
 		case RID_REGISTER:
@@ -3111,7 +3248,7 @@ c_parser_initializer (c_parser *parser)
       ret = c_parser_expr_no_commas (parser, NULL);
       if (TREE_CODE (ret.value) != STRING_CST
 	  && TREE_CODE (ret.value) != COMPOUND_LITERAL_EXPR)
-	ret = default_function_array_conversion (loc, ret);
+	ret = default_function_array_read_conversion (loc, ret);
       return ret;
     }
 }
@@ -3125,11 +3262,14 @@ c_parser_initializer (c_parser *parser)
 static struct c_expr
 c_parser_braced_init (c_parser *parser, tree type, bool nested_p)
 {
+  struct c_expr ret;
+  struct obstack braced_init_obstack;
   location_t brace_loc = c_parser_peek_token (parser)->location;
+  gcc_obstack_init (&braced_init_obstack);
   gcc_assert (c_parser_next_token_is (parser, CPP_OPEN_BRACE));
   c_parser_consume_token (parser);
   if (nested_p)
-    push_init_level (0);
+    push_init_level (0, &braced_init_obstack);
   else
     really_start_incremental_init (type);
   if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
@@ -3142,7 +3282,7 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p)
 	 comma.  */
       while (true)
 	{
-	  c_parser_initelt (parser);
+	  c_parser_initelt (parser, &braced_init_obstack);
 	  if (parser->error)
 	    break;
 	  if (c_parser_next_token_is (parser, CPP_COMMA))
@@ -3155,22 +3295,24 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p)
     }
   if (c_parser_next_token_is_not (parser, CPP_CLOSE_BRACE))
     {
-      struct c_expr ret;
       ret.value = error_mark_node;
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;
       c_parser_skip_until_found (parser, CPP_CLOSE_BRACE, "expected %<}%>");
-      pop_init_level (0);
+      pop_init_level (0, &braced_init_obstack);
+      obstack_free (&braced_init_obstack, NULL);
       return ret;
     }
   c_parser_consume_token (parser);
-  return pop_init_level (0);
+  ret = pop_init_level (0, &braced_init_obstack);
+  obstack_free (&braced_init_obstack, NULL);
+  return ret;
 }
 
 /* Parse a nested initializer, including designators.  */
 
 static void
-c_parser_initelt (c_parser *parser)
+c_parser_initelt (c_parser *parser, struct obstack * braced_init_obstack)
 {
   /* Parse any designator or designator list.  A single array
      designator may have the subsequent "=" omitted in GNU C, but a
@@ -3179,7 +3321,8 @@ c_parser_initelt (c_parser *parser)
       && c_parser_peek_2nd_token (parser)->type == CPP_COLON)
     {
       /* Old-style structure member designator.  */
-      set_init_label (c_parser_peek_token (parser)->value);
+      set_init_label (c_parser_peek_token (parser)->value,
+		      braced_init_obstack);
       /* Use the colon as the error location.  */
       pedwarn (c_parser_peek_2nd_token (parser)->location, OPT_pedantic,
 	       "obsolete use of designated initializer with %<:%>");
@@ -3207,7 +3350,8 @@ c_parser_initelt (c_parser *parser)
 	      c_parser_consume_token (parser);
 	      if (c_parser_next_token_is (parser, CPP_NAME))
 		{
-		  set_init_label (c_parser_peek_token (parser)->value);
+		  set_init_label (c_parser_peek_token (parser)->value,
+				  braced_init_obstack);
 		  c_parser_consume_token (parser);
 		}
 	      else
@@ -3218,7 +3362,7 @@ c_parser_initelt (c_parser *parser)
 		  init.original_type = NULL;
 		  c_parser_error (parser, "expected identifier");
 		  c_parser_skip_until_found (parser, CPP_COMMA, NULL);
-		  process_init_element (init, false);
+		  process_init_element (init, false, braced_init_obstack);
 		  return;
 		}
 	    }
@@ -3267,6 +3411,7 @@ c_parser_initelt (c_parser *parser)
 		      goto parse_message_args;
 		    }
 		  first = c_parser_expr_no_commas (parser, NULL).value;
+		  mark_exp_read (first);
 		  if (c_parser_next_token_is (parser, CPP_ELLIPSIS)
 		      || c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
 		    goto array_desig_after_first;
@@ -3282,7 +3427,8 @@ c_parser_initelt (c_parser *parser)
 		      c_parser_consume_token (parser);
 		      exp_loc = c_parser_peek_token (parser)->location;
 		      next = c_parser_expr_no_commas (parser, NULL);
-		      next = default_function_array_conversion (exp_loc, next);
+		      next = default_function_array_read_conversion (exp_loc,
+								     next);
 		      rec = build_compound_expr (comma_loc, rec, next.value);
 		    }
 		parse_message_args:
@@ -3297,24 +3443,26 @@ c_parser_initelt (c_parser *parser)
 		  /* Now parse and process the remainder of the
 		     initializer, starting with this message
 		     expression as a primary-expression.  */
-		  c_parser_initval (parser, &mexpr);
+		  c_parser_initval (parser, &mexpr, braced_init_obstack);
 		  return;
 		}
 	      c_parser_consume_token (parser);
 	      first = c_parser_expr_no_commas (parser, NULL).value;
+	      mark_exp_read (first);
 	    array_desig_after_first:
 	      if (c_parser_next_token_is (parser, CPP_ELLIPSIS))
 		{
 		  ellipsis_loc = c_parser_peek_token (parser)->location;
 		  c_parser_consume_token (parser);
 		  second = c_parser_expr_no_commas (parser, NULL).value;
+		  mark_exp_read (second);
 		}
 	      else
 		second = NULL_TREE;
 	      if (c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
 		{
 		  c_parser_consume_token (parser);
-		  set_init_index (first, second);
+		  set_init_index (first, second, braced_init_obstack);
 		  if (second)
 		    pedwarn (ellipsis_loc, OPT_pedantic,
 			     "ISO C forbids specifying range of elements to initialize");
@@ -3346,13 +3494,13 @@ c_parser_initelt (c_parser *parser)
 		  init.original_type = NULL;
 		  c_parser_error (parser, "expected %<=%>");
 		  c_parser_skip_until_found (parser, CPP_COMMA, NULL);
-		  process_init_element (init, false);
+		  process_init_element (init, false, braced_init_obstack);
 		  return;
 		}
 	    }
 	}
     }
-  c_parser_initval (parser, NULL);
+  c_parser_initval (parser, NULL, braced_init_obstack);
 }
 
 /* Parse a nested initializer; as c_parser_initializer but parses
@@ -3362,7 +3510,8 @@ c_parser_initelt (c_parser *parser)
    initializer.  */
 
 static void
-c_parser_initval (c_parser *parser, struct c_expr *after)
+c_parser_initval (c_parser *parser, struct c_expr *after,
+		  struct obstack * braced_init_obstack)
 {
   struct c_expr init;
   gcc_assert (!after || c_dialect_objc ());
@@ -3375,9 +3524,9 @@ c_parser_initval (c_parser *parser, struct c_expr *after)
       if (init.value != NULL_TREE
 	  && TREE_CODE (init.value) != STRING_CST
 	  && TREE_CODE (init.value) != COMPOUND_LITERAL_EXPR)
-	init = default_function_array_conversion (loc, init);
+	init = default_function_array_read_conversion (loc, init);
     }
-  process_init_element (init, false);
+  process_init_element (init, false, braced_init_obstack);
 }
 
 /* Parse a compound statement (possibly a function body) (C90 6.6.2,
@@ -3541,11 +3690,11 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	  c_parser_label (parser);
 	}
       else if (!last_label
-	       && c_parser_next_token_starts_declspecs (parser))
+	       && c_parser_next_token_starts_declaration (parser))
 	{
 	  last_label = false;
 	  mark_valid_location_for_stdc_pragma (false);
-	  c_parser_declaration_or_fndef (parser, true, true, true, true);
+	  c_parser_declaration_or_fndef (parser, true, true, true, true, true);
 	  if (last_stmt)
 	    pedwarn_c90 (loc,
 			 (pedantic && !flag_isoc99)
@@ -3565,14 +3714,15 @@ c_parser_compound_statement_nostart (c_parser *parser)
 		 && (c_parser_peek_2nd_token (parser)->keyword
 		     == RID_EXTENSION))
 	    c_parser_consume_token (parser);
-	  if (c_token_starts_declspecs (c_parser_peek_2nd_token (parser)))
+	  if (c_token_starts_declaration (c_parser_peek_2nd_token (parser)))
 	    {
 	      int ext;
 	      ext = disable_extension_diagnostics ();
 	      c_parser_consume_token (parser);
 	      last_label = false;
 	      mark_valid_location_for_stdc_pragma (false);
-	      c_parser_declaration_or_fndef (parser, true, true, true, true);
+	      c_parser_declaration_or_fndef (parser, true, true, true, true,
+					     true);
 	      /* Following the old parser, __extension__ does not
 		 disable this diagnostic.  */
 	      restore_extension_diagnostics (ext);
@@ -3703,7 +3853,7 @@ c_parser_label (c_parser *parser)
     }
   if (label)
     {
-      if (c_parser_next_token_starts_declspecs (parser)
+      if (c_parser_next_token_starts_declaration (parser)
 	  && !(c_parser_next_token_is (parser, CPP_NAME)
 	       && c_parser_peek_2nd_token (parser)->type == CPP_COLON))
 	{
@@ -3711,6 +3861,7 @@ c_parser_label (c_parser *parser)
 		    "a label can only be part of a statement and "
 		    "a declaration is not a statement");
 	  c_parser_declaration_or_fndef (parser, /*fndef_ok*/ false,
+					 /*static_assert_ok*/ true,
 					 /*nested*/ true, /*empty_ok*/ false,
 					 /*start_attr_ok*/ true);
 	}
@@ -3892,6 +4043,7 @@ c_parser_statement_after_labels (c_parser *parser)
 	  else
 	    {
 	      struct c_expr expr = c_parser_expression_conv (parser);
+	      mark_exp_read (expr.value);
 	      stmt = c_finish_return (loc, expr.value, expr.original_type);
 	      goto expect_semicolon;
 	    }
@@ -4262,9 +4414,9 @@ c_parser_for_statement (c_parser *parser)
 	  c_parser_consume_token (parser);
 	  c_finish_expr_stmt (loc, NULL_TREE);
 	}
-      else if (c_parser_next_token_starts_declspecs (parser))
+      else if (c_parser_next_token_starts_declaration (parser))
 	{
-	  c_parser_declaration_or_fndef (parser, true, true, true, true);
+	  c_parser_declaration_or_fndef (parser, true, true, true, true, true);
 	  check_for_loop_decls (for_loc);
 	}
       else if (c_parser_next_token_is_keyword (parser, RID_EXTENSION))
@@ -4277,12 +4429,13 @@ c_parser_for_statement (c_parser *parser)
 		 && (c_parser_peek_2nd_token (parser)->keyword
 		     == RID_EXTENSION))
 	    c_parser_consume_token (parser);
-	  if (c_token_starts_declspecs (c_parser_peek_2nd_token (parser)))
+	  if (c_token_starts_declaration (c_parser_peek_2nd_token (parser)))
 	    {
 	      int ext;
 	      ext = disable_extension_diagnostics ();
 	      c_parser_consume_token (parser);
-	      c_parser_declaration_or_fndef (parser, true, true, true, true);
+	      c_parser_declaration_or_fndef (parser, true, true, true, true,
+					     true);
 	      restore_extension_diagnostics (ext);
 	      check_for_loop_decls (for_loc);
 	    }
@@ -4523,6 +4676,7 @@ c_parser_asm_operands (c_parser *parser, bool convert_p)
 	}
       loc = c_parser_peek_token (parser)->location;
       expr = c_parser_expression (parser);
+      mark_exp_read (expr.value);
       if (convert_p)
 	expr = default_function_array_conversion (loc, expr);
       expr.value = c_fully_fold (expr.value, false, NULL);
@@ -4673,7 +4827,7 @@ c_parser_expr_no_commas (c_parser *parser, struct c_expr *after)
   c_parser_consume_token (parser);
   exp_location = c_parser_peek_token (parser)->location;
   rhs = c_parser_expr_no_commas (parser, NULL);
-  rhs = default_function_array_conversion (exp_location, rhs);
+  rhs = default_function_array_read_conversion (exp_location, rhs);
   ret.value = build_modify_expr (op_location, lhs.value, lhs.original_type,
 				 code, exp_location, rhs.value,
 				 rhs.original_type);
@@ -4706,7 +4860,7 @@ static struct c_expr
 c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
 {
   struct c_expr cond, exp1, exp2, ret;
-  location_t cond_loc, colon_loc;
+  location_t cond_loc, colon_loc, middle_loc;
 
   gcc_assert (!after || c_dialect_objc ());
 
@@ -4715,13 +4869,16 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
   if (c_parser_next_token_is_not (parser, CPP_QUERY))
     return cond;
   cond_loc = c_parser_peek_token (parser)->location;
-  cond = default_function_array_conversion (cond_loc, cond);
+  cond = default_function_array_read_conversion (cond_loc, cond);
   c_parser_consume_token (parser);
   if (c_parser_next_token_is (parser, CPP_COLON))
     {
       tree eptype = NULL_TREE;
-      pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic,
+
+      middle_loc = c_parser_peek_token (parser)->location;
+      pedwarn (middle_loc, OPT_pedantic, 
 	       "ISO C forbids omitting the middle term of a ?: expression");
+      warn_for_omitted_condop (middle_loc, cond.value);
       if (TREE_CODE (cond.value) == EXCESS_PRECISION_EXPR)
 	{
 	  eptype = TREE_TYPE (cond.value);
@@ -4742,6 +4899,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
 	(cond_loc, default_conversion (cond.value));
       c_inhibit_evaluation_warnings += cond.value == truthvalue_false_node;
       exp1 = c_parser_expression_conv (parser);
+      mark_exp_read (exp1.value);
       c_inhibit_evaluation_warnings +=
 	((cond.value == truthvalue_true_node)
 	 - (cond.value == truthvalue_false_node));
@@ -4759,7 +4917,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
   {
     location_t exp2_loc = c_parser_peek_token (parser)->location;
     exp2 = c_parser_conditional_expression (parser, NULL);
-    exp2 = default_function_array_conversion (exp2_loc, exp2);
+    exp2 = default_function_array_read_conversion (exp2_loc, exp2);
   }
   c_inhibit_evaluation_warnings -= cond.value == truthvalue_true_node;
   ret.value = build_conditional_expr (colon_loc, cond.value,
@@ -4912,10 +5070,11 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after)
 	break;								      \
       }									      \
     stack[sp - 1].expr							      \
-      = default_function_array_conversion (stack[sp - 1].loc,		      \
-					   stack[sp - 1].expr);		      \
+      = default_function_array_read_conversion (stack[sp - 1].loc,	      \
+						stack[sp - 1].expr);	      \
     stack[sp].expr							      \
-      = default_function_array_conversion (stack[sp].loc, stack[sp].expr);    \
+      = default_function_array_read_conversion (stack[sp].loc,		      \
+						stack[sp].expr);	      \
     stack[sp - 1].expr = parser_build_binary_op (stack[sp].loc,		      \
 						 stack[sp].op,		      \
 						 stack[sp - 1].expr,	      \
@@ -5020,8 +5179,8 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after)
 	{
 	case TRUTH_ANDIF_EXPR:
 	  stack[sp].expr
-	    = default_function_array_conversion (stack[sp].loc,
-						 stack[sp].expr);
+	    = default_function_array_read_conversion (stack[sp].loc,
+						      stack[sp].expr);
 	  stack[sp].expr.value = c_objc_common_truthvalue_conversion
 	    (stack[sp].loc, default_conversion (stack[sp].expr.value));
 	  c_inhibit_evaluation_warnings += (stack[sp].expr.value
@@ -5029,8 +5188,8 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after)
 	  break;
 	case TRUTH_ORIF_EXPR:
 	  stack[sp].expr
-	    = default_function_array_conversion (stack[sp].loc,
-						 stack[sp].expr);
+	    = default_function_array_read_conversion (stack[sp].loc,
+						      stack[sp].expr);
 	  stack[sp].expr.value = c_objc_common_truthvalue_conversion
 	    (stack[sp].loc, default_conversion (stack[sp].expr.value));
 	  c_inhibit_evaluation_warnings += (stack[sp].expr.value
@@ -5100,7 +5259,7 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
       {
 	location_t expr_loc = c_parser_peek_token (parser)->location;
 	expr = c_parser_cast_expression (parser, NULL);
-	expr = default_function_array_conversion (expr_loc, expr);
+	expr = default_function_array_read_conversion (expr_loc, expr);
       }
       ret.value = c_cast_expr (cast_loc, type_name, expr.value);
       ret.original_code = ERROR_MARK;
@@ -5153,23 +5312,24 @@ c_parser_unary_expression (c_parser *parser)
       c_parser_consume_token (parser);
       exp_loc = c_parser_peek_token (parser)->location;
       op = c_parser_cast_expression (parser, NULL);
-      op = default_function_array_conversion (exp_loc, op);
+      op = default_function_array_read_conversion (exp_loc, op);
       return parser_build_unary_op (op_loc, PREINCREMENT_EXPR, op);
     case CPP_MINUS_MINUS:
       c_parser_consume_token (parser);
       exp_loc = c_parser_peek_token (parser)->location;
       op = c_parser_cast_expression (parser, NULL);
-      op = default_function_array_conversion (exp_loc, op);
+      op = default_function_array_read_conversion (exp_loc, op);
       return parser_build_unary_op (op_loc, PREDECREMENT_EXPR, op);
     case CPP_AND:
       c_parser_consume_token (parser);
-      return parser_build_unary_op (op_loc, ADDR_EXPR,
-				    c_parser_cast_expression (parser, NULL));
+      op = c_parser_cast_expression (parser, NULL);
+      mark_exp_read (op.value);
+      return parser_build_unary_op (op_loc, ADDR_EXPR, op);
     case CPP_MULT:
       c_parser_consume_token (parser);
       exp_loc = c_parser_peek_token (parser)->location;
       op = c_parser_cast_expression (parser, NULL);
-      op = default_function_array_conversion (exp_loc, op);
+      op = default_function_array_read_conversion (exp_loc, op);
       ret.value = build_indirect_ref (op_loc, op.value, RO_UNARY_STAR);
       return ret;
     case CPP_PLUS:
@@ -5180,25 +5340,25 @@ c_parser_unary_expression (c_parser *parser)
       c_parser_consume_token (parser);
       exp_loc = c_parser_peek_token (parser)->location;
       op = c_parser_cast_expression (parser, NULL);
-      op = default_function_array_conversion (exp_loc, op);
+      op = default_function_array_read_conversion (exp_loc, op);
       return parser_build_unary_op (op_loc, CONVERT_EXPR, op);
     case CPP_MINUS:
       c_parser_consume_token (parser);
       exp_loc = c_parser_peek_token (parser)->location;
       op = c_parser_cast_expression (parser, NULL);
-      op = default_function_array_conversion (exp_loc, op);
+      op = default_function_array_read_conversion (exp_loc, op);
       return parser_build_unary_op (op_loc, NEGATE_EXPR, op);
     case CPP_COMPL:
       c_parser_consume_token (parser);
       exp_loc = c_parser_peek_token (parser)->location;
       op = c_parser_cast_expression (parser, NULL);
-      op = default_function_array_conversion (exp_loc, op);
+      op = default_function_array_read_conversion (exp_loc, op);
       return parser_build_unary_op (op_loc, BIT_NOT_EXPR, op);
     case CPP_NOT:
       c_parser_consume_token (parser);
       exp_loc = c_parser_peek_token (parser)->location;
       op = c_parser_cast_expression (parser, NULL);
-      op = default_function_array_conversion (exp_loc, op);
+      op = default_function_array_read_conversion (exp_loc, op);
       return parser_build_unary_op (op_loc, TRUTH_NOT_EXPR, op);
     case CPP_AND_AND:
       /* Refer to the address of a label as a pointer.  */
@@ -5314,6 +5474,7 @@ c_parser_sizeof_expression (c_parser *parser)
     sizeof_expr:
       c_inhibit_evaluation_warnings--;
       in_sizeof--;
+      mark_exp_read (expr.value);
       if (TREE_CODE (expr.value) == COMPONENT_REF
 	  && DECL_C_BIT_FIELD (TREE_OPERAND (expr.value, 1)))
 	error_at (expr_loc, "%<sizeof%> applied to a bit-field");
@@ -5387,6 +5548,7 @@ c_parser_alignof_expression (c_parser *parser)
       struct c_expr ret;
       expr = c_parser_unary_expression (parser);
     alignof_expr:
+      mark_exp_read (expr.value);
       c_inhibit_evaluation_warnings--;
       in_alignof--;
       ret.value = c_alignof_expr (loc, expr.value);
@@ -5536,6 +5698,7 @@ c_parser_postfix_expression (c_parser *parser)
 	  pedwarn (loc, OPT_pedantic,
 		   "ISO C forbids braced-groups within expressions");
 	  expr.value = c_finish_stmt_expr (brace_loc, stmt);
+	  mark_exp_read (expr.value);
 	}
       else if (c_token_starts_typename (c_parser_peek_2nd_token (parser)))
 	{
@@ -5592,6 +5755,7 @@ c_parser_postfix_expression (c_parser *parser)
 	      break;
 	    }
 	  e1 = c_parser_expr_no_commas (parser, NULL);
+	  mark_exp_read (e1.value);
 	  e1.value = c_fully_fold (e1.value, false, NULL);
 	  if (!c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
 	    {
@@ -5736,6 +5900,8 @@ c_parser_postfix_expression (c_parser *parser)
 	    tree c;
 
 	    c = e1.value;
+	    mark_exp_read (e2.value);
+	    mark_exp_read (e3.value);
 	    if (TREE_CODE (c) != INTEGER_CST
 		|| !INTEGRAL_TYPE_P (TREE_TYPE (c)))
 	      error_at (loc,
@@ -5980,6 +6146,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				     "expected %<)%>");
 	  orig_expr = expr;
+	  mark_exp_read (expr.value);
 	  /* FIXME diagnostics: Ideally we want the FUNCNAME, not the
 	     "(" after the FUNCNAME, which is what we have now.    */
 	  expr.value = build_function_call_vec (op_loc, expr.value, exprlist,
@@ -6062,7 +6229,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	case CPP_PLUS_PLUS:
 	  /* Postincrement.  */
 	  c_parser_consume_token (parser);
-	  expr = default_function_array_conversion (expr_loc, expr);
+	  expr = default_function_array_read_conversion (expr_loc, expr);
 	  expr.value = build_unary_op (op_loc,
 				       POSTINCREMENT_EXPR, expr.value, 0);
 	  expr.original_code = ERROR_MARK;
@@ -6071,7 +6238,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	case CPP_MINUS_MINUS:
 	  /* Postdecrement.  */
 	  c_parser_consume_token (parser);
-	  expr = default_function_array_conversion (expr_loc, expr);
+	  expr = default_function_array_read_conversion (expr_loc, expr);
 	  expr.value = build_unary_op (op_loc,
 				       POSTDECREMENT_EXPR, expr.value, 0);
 	  expr.original_code = ERROR_MARK;
@@ -6098,10 +6265,16 @@ c_parser_expression (c_parser *parser)
   while (c_parser_next_token_is (parser, CPP_COMMA))
     {
       struct c_expr next;
+      tree lhsval;
       location_t loc = c_parser_peek_token (parser)->location;
       location_t expr_loc;
       c_parser_consume_token (parser);
       expr_loc = c_parser_peek_token (parser)->location;
+      lhsval = expr.value;
+      while (TREE_CODE (lhsval) == COMPOUND_EXPR)
+	lhsval = TREE_OPERAND (lhsval, 1);
+      if (DECL_P (lhsval) || handled_component_p (lhsval))
+	mark_exp_read (lhsval);
       next = c_parser_expr_no_commas (parser, NULL);
       next = default_function_array_conversion (expr_loc, next);
       expr.value = build_compound_expr (loc, expr.value, next.value);
@@ -6149,7 +6322,7 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
 
   expr = c_parser_expr_no_commas (parser, NULL);
   if (convert_p)
-    expr = default_function_array_conversion (loc, expr);
+    expr = default_function_array_read_conversion (loc, expr);
   if (fold_p)
     expr.value = c_fully_fold (expr.value, false, NULL);
   VEC_quick_push (tree, ret, expr.value);
@@ -6161,7 +6334,7 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
       loc = c_parser_peek_token (parser)->location;
       expr = c_parser_expr_no_commas (parser, NULL);
       if (convert_p)
-	expr = default_function_array_conversion (loc, expr);
+	expr = default_function_array_read_conversion (loc, expr);
       if (fold_p)
 	expr.value = c_fully_fold (expr.value, false, NULL);
       VEC_safe_push (tree, gc, ret, expr.value);
@@ -6583,7 +6756,8 @@ c_parser_objc_methodprotolist (c_parser *parser)
 	default:
 	  if (c_parser_next_token_is_keyword (parser, RID_AT_END))
 	    return;
-	  c_parser_declaration_or_fndef (parser, false, true, false, true);
+	  c_parser_declaration_or_fndef (parser, false, false, true,
+					 false, true);
 	  break;
 	}
     }
@@ -6916,6 +7090,7 @@ c_parser_objc_selector (c_parser *parser)
     case RID_ALIGNOF:
     case RID_UNSIGNED:
     case RID_LONG:
+    case RID_INT128:
     case RID_CONST:
     case RID_SHORT:
     case RID_VOLATILE:
@@ -7137,7 +7312,7 @@ c_parser_upc_forall_statement (c_parser *parser)
 	}
       else if (c_parser_next_token_starts_declspecs (parser))
 	{
-	  c_parser_declaration_or_fndef (parser, true, true, true, true);
+	  c_parser_declaration_or_fndef (parser, true, true, true, true, true);
 	  check_for_loop_decls (for_loc);
 	}
       else if (c_parser_next_token_is_keyword (parser, RID_EXTENSION))
@@ -7155,7 +7330,7 @@ c_parser_upc_forall_statement (c_parser *parser)
 	      int ext;
 	      ext = disable_extension_diagnostics ();
 	      c_parser_consume_token (parser);
-	      c_parser_declaration_or_fndef (parser, true, true, true, true);
+	      c_parser_declaration_or_fndef (parser, true, true, true, true, true);
 	      restore_extension_diagnostics (ext);
 	      check_for_loop_decls (for_loc);
 	    }
@@ -8180,7 +8355,7 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
       {
 	location_t rhs_loc = c_parser_peek_token (parser)->location;
 	rhs_expr = c_parser_expression (parser);
-	rhs_expr = default_function_array_conversion (rhs_loc, rhs_expr);
+	rhs_expr = default_function_array_read_conversion (rhs_loc, rhs_expr);
       }
       rhs = rhs_expr.value;
       rhs = c_fully_fold (rhs, false, NULL);
@@ -8300,12 +8475,12 @@ c_parser_omp_for_loop (location_t loc,
 	goto pop_scopes;
 
       /* Parse the initialization declaration or expression.  */
-      if (c_parser_next_token_starts_declspecs (parser))
+      if (c_parser_next_token_starts_declaration (parser))
 	{
 	  if (i > 0)
 	    for_block
 	      = tree_cons (NULL, c_begin_compound_stmt (true), for_block);
-	  c_parser_declaration_or_fndef (parser, true, true, true, true);
+	  c_parser_declaration_or_fndef (parser, true, true, true, true, true);
 	  decl = check_for_loop_decls (for_loc);
 	  if (decl == NULL)
 	    goto error_init;
@@ -8327,7 +8502,8 @@ c_parser_omp_for_loop (location_t loc,
 
 	  init_loc = c_parser_peek_token (parser)->location;
 	  init_exp = c_parser_expr_no_commas (parser, NULL);
-	  init_exp = default_function_array_conversion (init_loc, init_exp);
+	  init_exp = default_function_array_read_conversion (init_loc,
+							     init_exp);
 	  init = build_modify_expr (init_loc, decl, decl_exp.original_type,
 				    NOP_EXPR, init_loc, init_exp.value,
 				    init_exp.original_type);
@@ -8999,7 +9175,7 @@ c_parse_file (void)
   if (c_parser_peek_token (&tparser)->pragma_kind == PRAGMA_GCC_PCH_PREPROCESS)
     c_parser_pragma_pch_preprocess (&tparser);
 
-  the_parser = GGC_NEW (c_parser);
+  the_parser = ggc_alloc_c_parser ();
   *the_parser = tparser;
 
   /* Initialize EH, if we've been told to do so.  */

@@ -1,5 +1,5 @@
 /* Default initializers for a generic GCC target.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
@@ -82,6 +82,10 @@
 
 #ifndef TARGET_ASM_INTERNAL_LABEL
 #define TARGET_ASM_INTERNAL_LABEL default_internal_label
+#endif
+
+#ifndef TARGET_ASM_DECLARE_CONSTANT_NAME
+#define TARGET_ASM_DECLARE_CONSTANT_NAME default_asm_declare_constant_name
 #endif
 
 #ifndef TARGET_ASM_TTYPE
@@ -204,6 +208,18 @@
 #define TARGET_ASM_FILE_END hook_void_void
 #endif
 
+#ifndef TARGET_ASM_LTO_START
+#define TARGET_ASM_LTO_START hook_void_void
+#endif
+
+#ifndef TARGET_ASM_LTO_END
+#define TARGET_ASM_LTO_END hook_void_void
+#endif
+
+#ifndef TARGET_ASM_CODE_END
+#define TARGET_ASM_CODE_END hook_void_void
+#endif
+
 #ifndef TARGET_EXTRA_LIVE_ON_ENTRY
 #define TARGET_EXTRA_LIVE_ON_ENTRY hook_void_bitmap
 #endif
@@ -249,6 +265,18 @@
 
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE NULL
 
+#ifndef TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND default_print_operand
+#endif
+
+#ifndef TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS default_print_operand_address
+#endif
+
+#ifndef TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P default_print_operand_punct_valid_p
+#endif
+
 #define TARGET_ASM_ALIGNED_INT_OP				\
 		       {TARGET_ASM_ALIGNED_HI_OP,		\
 			TARGET_ASM_ALIGNED_SI_OP,		\
@@ -273,6 +301,7 @@
 			TARGET_ASM_EMIT_EXCEPT_TABLE_LABEL,	\
 			TARGET_UNWIND_EMIT,			\
 			TARGET_ASM_INTERNAL_LABEL,		\
+			TARGET_ASM_DECLARE_CONSTANT_NAME,	\
 			TARGET_ASM_TTYPE,			\
 			TARGET_ASM_ASSEMBLE_VISIBILITY,		\
 			TARGET_ASM_FUNCTION_PROLOGUE,		\
@@ -292,6 +321,9 @@
                         TARGET_ASM_CAN_OUTPUT_MI_THUNK,         \
                         TARGET_ASM_FILE_START,                  \
                         TARGET_ASM_FILE_END,			\
+                        TARGET_ASM_LTO_START,			\
+                        TARGET_ASM_LTO_END,			\
+                        TARGET_ASM_CODE_END,			\
 			TARGET_ASM_EXTERNAL_LIBCALL,            \
                         TARGET_ASM_MARK_DECL_PRESERVED,		\
 			TARGET_ASM_RECORD_GCC_SWITCHES,		\
@@ -299,7 +331,10 @@
 			TARGET_ASM_OUTPUT_ANCHOR,		\
 			TARGET_ASM_OUTPUT_DWARF_DTPREL,		\
 			TARGET_ASM_FINAL_POSTSCAN_INSN,		\
-			TARGET_ASM_TRAMPOLINE_TEMPLATE }
+			TARGET_ASM_TRAMPOLINE_TEMPLATE,		\
+			TARGET_PRINT_OPERAND,			\
+			TARGET_PRINT_OPERAND_ADDRESS,		\
+			TARGET_PRINT_OPERAND_PUNCT_VALID_P }
 
 /* Scheduler hooks.  All of these default to null pointers, which
    haifa-sched.c looks for and handles.  */
@@ -387,7 +422,8 @@
   default_builtin_vectorized_conversion
 #define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_EVEN 0
 #define TARGET_VECTORIZE_BUILTIN_MUL_WIDEN_ODD 0
-#define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST 0
+#define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST \
+  default_builtin_vectorization_cost
 #define TARGET_VECTOR_ALIGNMENT_REACHABLE \
   default_builtin_vector_alignment_reachable
 #define TARGET_VECTORIZE_BUILTIN_VEC_PERM 0
@@ -416,6 +452,7 @@
 #define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE hook_void_void
 
 #define TARGET_HANDLE_OPTION hook_bool_size_t_constcharptr_int_true
+#define TARGET_HANDLE_OFAST hook_void_void
 #define TARGET_HELP NULL
 
 /* In except.c */
@@ -437,11 +474,19 @@
 #define TARGET_ADDRESS_COST default_address_cost
 #define TARGET_CONST_ANCHOR 0
 
+#ifndef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST default_register_move_cost
+#endif
+
+#ifndef TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST default_memory_move_cost
+#endif
+
 /* In builtins.c.  */
 #define TARGET_INIT_BUILTINS hook_void_void
 #define TARGET_EXPAND_BUILTIN default_expand_builtin
 #define TARGET_RESOLVE_OVERLOADED_BUILTIN NULL
-#define TARGET_FOLD_BUILTIN hook_tree_tree_tree_bool_null
+#define TARGET_FOLD_BUILTIN hook_tree_tree_int_treep_bool_null
 #define TARGET_BUILTIN_DECL NULL
 
 /* In tree-ssa-math-opts.c  */
@@ -522,6 +567,10 @@
 #define TARGET_SCALAR_MODE_SUPPORTED_P default_scalar_mode_supported_p
 #endif
 
+#ifndef TARGET_ENUM_VA_LIST_P
+#define TARGET_ENUM_VA_LIST_P NULL
+#endif
+
 #ifndef TARGET_DECIMAL_FLOAT_SUPPORTED_P
 #define TARGET_DECIMAL_FLOAT_SUPPORTED_P default_decimal_float_supported_p
 #endif
@@ -534,12 +583,17 @@
 #define TARGET_VECTOR_MODE_SUPPORTED_P hook_bool_mode_false
 #endif
 
+#ifndef TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P
+#define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_false
+#endif
+
 /* In hooks.c.  */
 #define TARGET_CANNOT_MODIFY_JUMPS_P hook_bool_void_false
 #define TARGET_BRANCH_TARGET_REGISTER_CLASS \
   default_branch_target_register_class
 #define TARGET_BRANCH_TARGET_REGISTER_CALLEE_SAVED hook_bool_bool_false
 #define TARGET_HAVE_CONDITIONAL_EXECUTION default_have_conditional_execution
+#define TARGET_LOOP_UNROLL_ADJUST NULL
 #define TARGET_CANNOT_FORCE_CONST_MEM hook_bool_rtx_false
 #define TARGET_CANNOT_COPY_INSN_P NULL
 #define TARGET_COMMUTATIVE_P hook_bool_const_rtx_commutative_p
@@ -551,6 +605,7 @@
 #define TARGET_MAX_ANCHOR_OFFSET 0
 #define TARGET_USE_ANCHORS_FOR_SYMBOL_P default_use_anchors_for_symbol_p
 #define TARGET_FUNCTION_OK_FOR_SIBCALL hook_bool_tree_tree_false
+#define TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P hook_bool_const_tree_false
 #define TARGET_COMP_TYPE_ATTRIBUTES hook_int_const_tree_const_tree_1
 #ifndef TARGET_SET_DEFAULT_TYPE_ATTRIBUTES
 #define TARGET_SET_DEFAULT_TYPE_ATTRIBUTES hook_void_tree
@@ -576,6 +631,10 @@
 
 #ifndef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P hook_bool_const_tree_false
+#endif
+
+#ifndef TARGET_MODE_DEPENDENT_ADDRESS_P
+#define TARGET_MODE_DEPENDENT_ADDRESS_P default_mode_dependent_address_p
 #endif
 
 #ifndef TARGET_MANGLE_DECL_ASSEMBLER_NAME
@@ -655,6 +714,7 @@
 
 #define TARGET_FUNCTION_VALUE default_function_value
 #define TARGET_LIBCALL_VALUE default_libcall_value
+#define TARGET_FUNCTION_VALUE_REGNO_P default_function_value_regno_p
 #define TARGET_INTERNAL_ARG_POINTER default_internal_arg_pointer
 #define TARGET_UPDATE_STACK_BOUNDARY NULL
 #define TARGET_GET_DRAP_RTX NULL
@@ -681,6 +741,7 @@
    TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN,			\
    TARGET_FUNCTION_VALUE,					\
    TARGET_LIBCALL_VALUE,					\
+   TARGET_FUNCTION_VALUE_REGNO_P,				\
    TARGET_INTERNAL_ARG_POINTER,					\
    TARGET_UPDATE_STACK_BOUNDARY,				\
    TARGET_GET_DRAP_RTX,						\
@@ -912,6 +973,7 @@
   TARGET_DEFAULT_TARGET_FLAGS,			\
   TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE,		\
   TARGET_HANDLE_OPTION,				\
+  TARGET_HANDLE_OFAST,				\
   TARGET_HELP,					\
   TARGET_EH_RETURN_FILTER_MODE,			\
   TARGET_LIBGCC_CMP_RETURN_MODE,                \
@@ -920,6 +982,7 @@
   TARGET_MERGE_DECL_ATTRIBUTES,			\
   TARGET_MERGE_TYPE_ATTRIBUTES,			\
   TARGET_ATTRIBUTE_TABLE,			\
+  TARGET_ATTRIBUTE_TAKES_IDENTIFIER_P,		\
   TARGET_COMP_TYPE_ATTRIBUTES,			\
   TARGET_SET_DEFAULT_TYPE_ATTRIBUTES,		\
   TARGET_INSERT_ATTRIBUTES,			\
@@ -942,9 +1005,11 @@
   TARGET_BRANCH_TARGET_REGISTER_CLASS,		\
   TARGET_BRANCH_TARGET_REGISTER_CALLEE_SAVED,	\
   TARGET_HAVE_CONDITIONAL_EXECUTION,		\
+  TARGET_LOOP_UNROLL_ADJUST,			\
   TARGET_CANNOT_FORCE_CONST_MEM,		\
   TARGET_CANNOT_COPY_INSN_P,			\
   TARGET_COMMUTATIVE_P,				\
+  TARGET_MODE_DEPENDENT_ADDRESS_P,		\
   TARGET_LEGITIMIZE_ADDRESS,			\
   TARGET_DELEGITIMIZE_ADDRESS,			\
   TARGET_LEGITIMATE_ADDRESS_P,			\
@@ -966,6 +1031,9 @@
   TARGET_ADDR_SPACE_HOOKS,			\
   TARGET_SCALAR_MODE_SUPPORTED_P,		\
   TARGET_VECTOR_MODE_SUPPORTED_P,               \
+  TARGET_REGISTER_MOVE_COST,			\
+  TARGET_MEMORY_MOVE_COST, 			\
+  TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P,	\
   TARGET_RTX_COSTS,				\
   TARGET_ADDRESS_COST,				\
   TARGET_ALLOCATE_INITIAL_VALUE,		\
@@ -976,8 +1044,9 @@
   TARGET_CC_MODES_COMPATIBLE,			\
   TARGET_MACHINE_DEPENDENT_REORG,		\
   TARGET_BUILD_BUILTIN_VA_LIST,			\
+  TARGET_ENUM_VA_LIST_P,			\
   TARGET_FN_ABI_VA_LIST,			\
-  TARGET_CANONICAL_VA_LIST_TYPE,			\
+  TARGET_CANONICAL_VA_LIST_TYPE,		\
   TARGET_EXPAND_BUILTIN_VA_START,		\
   TARGET_GIMPLIFY_VA_ARG_EXPR,			\
   TARGET_GET_PCH_VALIDITY,			\

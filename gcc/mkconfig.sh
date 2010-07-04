@@ -63,6 +63,10 @@ done
 
 # The first entry in HEADERS may be auto-FOO.h ;
 # it wants to be included even when not -DIN_GCC.
+# Postpone including defaults.h until after the insn-*
+# headers, so that the HAVE_* flags are available
+# when defaults.h gets included.
+postpone_defaults_h="no"
 if [ -n "$HEADERS" ]; then
     set $HEADERS
     case "$1" in auto-* )
@@ -73,26 +77,34 @@ if [ -n "$HEADERS" ]; then
     if [ $# -ge 1 ]; then
 	echo '#ifdef IN_GCC' >> ${output}T
 	for file in "$@"; do
-	    echo "# include \"$file\"" >> ${output}T
+	    if test x"$file" = x"defaults.h"; then
+		postpone_defaults_h="yes"
+	    else
+		echo "# include \"$file\"" >> ${output}T
+	    fi
 	done
 	echo '#endif' >> ${output}T
     fi
 fi
 
-# If this is tm.h, now include insn-constants.h and insn-flags.h only
-# if IN_GCC is defined but neither GENERATOR_FILE nor USED_FOR_TARGET
-# is defined.  (Much of this is temporary.)
+# If this is tm.h, now include insn-flags.h only if IN_GCC is defined
+# but neither GENERATOR_FILE nor USED_FOR_TARGET is defined.  (Much of
+# this is temporary.)
 
 case $output in
     tm.h )
         cat >> ${output}T <<EOF
 #if defined IN_GCC && !defined GENERATOR_FILE && !defined USED_FOR_TARGET
-# include "insn-constants.h"
 # include "insn-flags.h"
 #endif
 EOF
     ;;
 esac
+
+# If we postponed including defaults.h, add the #include now.
+if test x"$postpone_defaults_h" = x"yes"; then
+    echo "# include \"defaults.h\"" >> ${output}T
+fi
 
 # Add multiple inclusion protection guard, part two.
 echo "#endif /* ${header_guard} */" >> ${output}T

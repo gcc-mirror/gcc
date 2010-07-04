@@ -2,7 +2,7 @@
 // { dg-options "-O" }
 
 #include <string>
-int main() {
+int test() {
   // blank line padding, could also be code...
   //
   //

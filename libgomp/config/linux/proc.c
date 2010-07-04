@@ -1,4 +1,5 @@
-/* Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -104,26 +105,13 @@ get_num_procs (void)
     }
   else
     {
-      size_t idx;
-      static int affinity_cpus;
-
       /* We can't use pthread_getaffinity_np in this case
 	 (we have changed it ourselves, it binds to just one CPU).
 	 Count instead the number of different CPUs we are
-	 using.  */
-      CPU_ZERO (&cpuset);
-      if (affinity_cpus == 0)
-	{
-	  int cpus = 0;
-	  for (idx = 0; idx < gomp_cpu_affinity_len; idx++)
-	    if (! CPU_ISSET (gomp_cpu_affinity[idx], &cpuset))
-	      {
-		cpus++;
-		CPU_SET (gomp_cpu_affinity[idx], &cpuset);
-	      }
-	  affinity_cpus = cpus;
-	}
-      return affinity_cpus;
+	 using.  gomp_init_affinity updated gomp_available_cpus to
+	 the number of CPUs in the GOMP_AFFINITY mask that we are
+	 allowed to use though.  */
+      return gomp_available_cpus;
     }
 #endif
 #ifdef _SC_NPROCESSORS_ONLN

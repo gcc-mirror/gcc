@@ -302,6 +302,8 @@ struct d_print_info
   /* The current index into any template argument packs we are using
      for printing.  */
   int pack_index;
+  /* Number of d_print_flush calls so far.  */
+  unsigned long int flush_count;
 };
 
 #ifdef CP_DEMANGLE_DEBUG
@@ -1987,6 +1989,8 @@ cplus_demangle_builtin_types[D_BUILTIN_TYPE_COUNT] =
   /* 29 */ { NL ("half"),	NL ("half"),		D_PRINT_FLOAT },
   /* 30 */ { NL ("char16_t"),	NL ("char16_t"),	D_PRINT_DEFAULT },
   /* 31 */ { NL ("char32_t"),	NL ("char32_t"),	D_PRINT_DEFAULT },
+  /* 32 */ { NL ("decltype(nullptr)"),	NL ("decltype(nullptr)"),
+	     D_PRINT_DEFAULT },
 };
 
 CP_STATIC_IF_GLIBCPP_V3
@@ -2219,6 +2223,12 @@ cplus_demangle_type (struct d_info *di)
 
 	case 'v':
 	  ret = d_vector_type (di);
+	  break;
+
+        case 'n':
+          /* decltype(nullptr) */
+	  ret = d_make_builtin_type (di, &cplus_demangle_builtin_types[32]);
+	  di->expansion += ret->u.s_builtin.type->len;
 	  break;
 
 	default:
@@ -3277,6 +3287,7 @@ d_print_init (struct d_print_info *dpi, int options,
   dpi->last_char = '\0';
   dpi->templates = NULL;
   dpi->modifiers = NULL;
+  dpi->flush_count = 0;
 
   dpi->callback = callback;
   dpi->opaque = opaque;
@@ -3306,6 +3317,7 @@ d_print_flush (struct d_print_info *dpi)
   dpi->buf[dpi->len] = '\0';
   dpi->callback (dpi->buf, dpi->len, dpi->opaque);
   dpi->len = 0;
+  dpi->flush_count++;
 }
 
 /* Append characters and buffers for printing.  */
@@ -4039,12 +4051,18 @@ d_print_comp (struct d_print_info *dpi,
       if (d_right (dc) != NULL)
 	{
 	  size_t len;
+	  unsigned long int flush_count;
+	  /* Make sure ", " isn't flushed by d_append_string, otherwise
+	     dpi->len -= 2 wouldn't work.  */
+	  if (dpi->len >= sizeof (dpi->buf) - 2)
+	    d_print_flush (dpi);
 	  d_append_string (dpi, ", ");
 	  len = dpi->len;
+	  flush_count = dpi->flush_count;
 	  d_print_comp (dpi, d_right (dc));
 	  /* If that didn't print anything (which can happen with empty
 	     template argument packs), remove the comma and space.  */
-	  if (dpi->len == len)
+	  if (dpi->flush_count == flush_count && dpi->len == len)
 	    dpi->len -= 2;
 	}
       return;
@@ -4506,9 +4524,9 @@ d_print_mod (struct d_print_info *dpi,
       d_print_comp (dpi, d_left (mod));
       return;
     case DEMANGLE_COMPONENT_VECTOR_TYPE:
-      d_append_string (dpi, " vector[");
+      d_append_string (dpi, " __vector(");
       d_print_comp (dpi, d_left (mod));
-      d_append_char (dpi, ']');
+      d_append_char (dpi, ')');
       return;
 
     default:

@@ -53,7 +53,7 @@ insert_leaf(const_reference r_value)
   node_pointer p_nd = m_p_head->m_p_parent;
   node_pointer p_pot = m_p_head;
 
-  while (p_nd != NULL)
+  while (p_nd != 0)
     if (!Cmp_Fn::operator()(
 			    PB_DS_V2F(p_nd->m_value),
 			    PB_DS_V2F(r_value)))
@@ -86,12 +86,12 @@ insert_leaf(const_reference r_value)
 							  PB_DS_V2F(r_value)));
 
   p_nd = p_pot->m_p_left;
-  if (p_nd == NULL)
+  if (p_nd == 0)
     return (std::make_pair(
 			   insert_leaf_new(r_value, p_pot, true),
 			   true));
 
-  while (p_nd->m_p_right != NULL)
+  while (p_nd->m_p_right != 0)
     p_nd = p_nd->m_p_right;
 
   return (std::make_pair(
@@ -109,7 +109,7 @@ insert_leaf_new(const_reference r_value, node_pointer p_nd, bool left_nd)
 
   if (left_nd)
     {
-      _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_left == NULL);
+      _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_left == 0);
       _GLIBCXX_DEBUG_ASSERT(Cmp_Fn::operator()(
 					  PB_DS_V2F(r_value),
 					  PB_DS_V2F(p_nd->m_value)));
@@ -121,7 +121,7 @@ insert_leaf_new(const_reference r_value, node_pointer p_nd, bool left_nd)
     }
   else
     {
-      _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_right == NULL);
+      _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_right == 0);
       _GLIBCXX_DEBUG_ASSERT(Cmp_Fn::operator()(
 					  PB_DS_V2F(p_nd->m_value),
 					  PB_DS_V2F(r_value)));
@@ -134,7 +134,7 @@ insert_leaf_new(const_reference r_value, node_pointer p_nd, bool left_nd)
 
   p_new_nd->m_p_parent = p_nd;
 
-  p_new_nd->m_p_left = p_new_nd->m_p_right = NULL;
+  p_new_nd->m_p_left = p_new_nd->m_p_right = 0;
 
   _GLIBCXX_DEBUG_ONLY(assert_node_consistent(p_nd));
 
@@ -159,7 +159,7 @@ insert_imp_empty(const_reference r_value)
 
   p_new_node->m_p_parent = m_p_head;
 
-  p_new_node->m_p_left = p_new_node->m_p_right = NULL;
+  p_new_node->m_p_left = p_new_node->m_p_right = 0;
 
   _GLIBCXX_DEBUG_ONLY(debug_base::insert_new(
 					    PB_DS_V2F(r_value)));
@@ -184,7 +184,7 @@ get_new_node_for_leaf_insert(const_reference r_val, false_type)
 
   cond.set_no_action();
 
-  p_new_nd->m_p_left = p_new_nd->m_p_right = NULL;
+  p_new_nd->m_p_left = p_new_nd->m_p_right = 0;
 
   ++m_size;
 
@@ -202,7 +202,7 @@ get_new_node_for_leaf_insert(const_reference r_val, true_type)
 			  static_cast<const void* >(&p_new_nd->m_value)))
     typename node::value_type(r_val);
 
-  p_new_nd->m_p_left = p_new_nd->m_p_right = NULL;
+  p_new_nd->m_p_left = p_new_nd->m_p_right = 0;
 
   ++m_size;
 

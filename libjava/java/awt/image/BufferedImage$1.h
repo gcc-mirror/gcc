@@ -29,11 +29,11 @@ class java::awt::image::BufferedImage$1 : public ::java::lang::Object
 public: // actually package-private
   BufferedImage$1(::java::awt::image::BufferedImage *);
 public:
-  void addConsumer(::java::awt::image::ImageConsumer *);
-  jboolean isConsumer(::java::awt::image::ImageConsumer *);
-  void removeConsumer(::java::awt::image::ImageConsumer *);
-  void startProduction(::java::awt::image::ImageConsumer *);
-  void requestTopDownLeftRightResend(::java::awt::image::ImageConsumer *);
+  virtual void addConsumer(::java::awt::image::ImageConsumer *);
+  virtual jboolean isConsumer(::java::awt::image::ImageConsumer *);
+  virtual void removeConsumer(::java::awt::image::ImageConsumer *);
+  virtual void startProduction(::java::awt::image::ImageConsumer *);
+  virtual void requestTopDownLeftRightResend(::java::awt::image::ImageConsumer *);
 public: // actually package-private
   ::java::util::Vector * __attribute__((aligned(__alignof__( ::java::lang::Object)))) consumers;
   ::java::awt::image::BufferedImage * this$0;

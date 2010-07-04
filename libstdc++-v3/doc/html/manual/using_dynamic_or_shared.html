@@ -21,7 +21,7 @@
 	  </p></li><li class="listitem"><p>
 	  <code class="filename">typeinfo</code>
 	  </p></li></ul></div><p>
-	In addition, throw in 
+	In addition, throw in
       </p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>
 	  <code class="filename">cxxabi.h</code>.
 	  </p></li></ul></div><p>
@@ -76,13 +76,27 @@ A quick read of the relevant part of the GCC
 	  the linker.  The exact format of the options is dependent on
 	  which linker you use:
 	</p><div class="itemizedlist"><ul class="itemizedlist" type="circle"><li class="listitem"><p>
-	      GNU ld (default on Linux):<code class="literal">-Wl,--rpath,<code class="filename">destdir</code>/lib</code>
+	      GNU ld (default on Linux):
+              <code class="literal">-Wl,-rpath,<code class="filename">destdir</code>/lib</code>
 	    </p></li><li class="listitem"><p>
-	      IRIX ld:<code class="literal">
-	      -Wl,-rpath,<code class="filename">destdir</code>/lib</code>
+	      IRIX ld:
+              <code class="literal">-Wl,-rpath,<code class="filename">destdir</code>/lib</code>
 	    </p></li><li class="listitem"><p>
-	  Solaris ld:<code class="literal">-Wl,-R<code class="filename">destdir</code>/lib</code>
-	  </p></li></ul></div></li></ul></div><p>
+	    Solaris ld:
+            <code class="literal">-Wl,-R<code class="filename">destdir</code>/lib</code>
+	  </p></li></ul></div></li><li class="listitem"><p>
+	  Some linkers allow you to specify the path to the library by
+	  setting <code class="literal">LD_RUN_PATH</code> in your environment
+	  when linking.
+	</p></li><li class="listitem"><p>
+	  On some platforms the system administrator can configure the
+	  dynamic linker to always look for libraries in
+	  <code class="filename">destdir/lib</code>, for example
+	  by using the <span class="command"><strong>ldconfig</strong></span> utility on Linux
+	  or the <span class="command"><strong>crle</strong></span> utility on Solaris. This is a
+	  system-wide change which can make the system unusable so if you
+	  are unsure then use one of the other methods described above.
+	</p></li></ul></div><p>
       Use the <span class="command"><strong>ldd</strong></span> utility on the linked executable
       to show
       which <code class="filename">libstdc++.so</code>

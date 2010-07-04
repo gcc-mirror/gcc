@@ -1,5 +1,5 @@
 /* Exception handling semantics and decomposition for trees.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -23,11 +23,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"
-#include "tm_p.h"
 #include "flags.h"
 #include "function.h"
 #include "except.h"
+#include "pointer-set.h"
 #include "tree-flow.h"
 #include "tree-dump.h"
 #include "tree-inline.h"
@@ -97,7 +96,7 @@ add_stmt_to_eh_lp_fn (struct function *ifun, gimple t, int num)
 
   gcc_assert (num != 0);
 
-  n = GGC_NEW (struct throw_stmt_node);
+  n = ggc_alloc_throw_stmt_node ();
   n->stmt = t;
   n->lp_nr = num;
 
@@ -563,6 +562,7 @@ replace_goto_queue (struct leh_tf_state *tf)
   if (tf->goto_queue_active == 0)
     return;
   replace_goto_queue_stmt_list (tf->top_p_seq, tf);
+  replace_goto_queue_stmt_list (eh_seq, tf);
 }
 
 /* Add a new record to the goto queue contained in TF. NEW_STMT is the
@@ -643,7 +643,6 @@ record_in_goto_queue_label (struct leh_tf_state *tf, treemple stmt, tree label)
      labels. */
   new_stmt = stmt;
   record_in_goto_queue (tf, new_stmt, index, true);
-
 }
 
 /* For any GIMPLE_GOTO or GIMPLE_RETURN, decide whether it leaves a try_finally
@@ -952,12 +951,12 @@ lower_try_finally_fallthru_label (struct leh_tf_state *tf)
   return label;
 }
 
-/* A subroutine of lower_try_finally.  If lang_protect_cleanup_actions
-   returns non-null, then the language requires that the exception path out
-   of a try_finally be treated specially.  To wit: the code within the
-   finally block may not itself throw an exception.  We have two choices here.
-   First we can duplicate the finally block and wrap it in a must_not_throw
-   region.  Second, we can generate code like
+/* A subroutine of lower_try_finally.  If the eh_protect_cleanup_actions
+   langhook returns non-null, then the language requires that the exception
+   path out of a try_finally be treated specially.  To wit: the code within
+   the finally block may not itself throw an exception.  We have two choices
+   here. First we can duplicate the finally block and wrap it in a
+   must_not_throw region.  Second, we can generate code like
 
 	try {
 	  finally_block;
@@ -984,9 +983,9 @@ honor_protect_cleanup_actions (struct leh_state *outer_state,
   gimple x;
 
   /* First check for nothing to do.  */
-  if (lang_protect_cleanup_actions == NULL)
+  if (lang_hooks.eh_protect_cleanup_actions == NULL)
     return;
-  protect_cleanup_actions = lang_protect_cleanup_actions ();
+  protect_cleanup_actions = lang_hooks.eh_protect_cleanup_actions ();
   if (protect_cleanup_actions == NULL)
     return;
 
@@ -1518,6 +1517,20 @@ decide_copy_try_finally (int ndests, gimple_seq finally)
     return f_estimate < 40 || f_estimate * 2 < sw_estimate * 3;
 }
 
+/* REG is the enclosing region for a possible cleanup region, or the region
+   itself.  Returns TRUE if such a region would be unreachable.
+
+   Cleanup regions within a must-not-throw region aren't actually reachable
+   even if there are throwing stmts within them, because the personality
+   routine will call terminate before unwinding.  */
+
+static bool
+cleanup_is_dead_in (eh_region reg)
+{
+  while (reg && reg->type == ERT_CLEANUP)
+    reg = reg->outer;
+  return (reg && reg->type == ERT_MUST_NOT_THROW);
+}
 
 /* A subroutine of lower_eh_constructs_1.  Lower a GIMPLE_TRY_FINALLY nodes
    to a sequence of labels and blocks, plus the exception region trees
@@ -1530,6 +1543,7 @@ lower_try_finally (struct leh_state *state, gimple tp)
   struct leh_tf_state this_tf;
   struct leh_state this_state;
   int ndests;
+  gimple_seq old_eh_seq;
 
   /* Process the try block.  */
 
@@ -1537,14 +1551,22 @@ lower_try_finally (struct leh_state *state, gimple tp)
   this_tf.try_finally_expr = tp;
   this_tf.top_p = tp;
   this_tf.outer = state;
-  if (using_eh_for_cleanups_p)
-    this_tf.region = gen_eh_region_cleanup (state->cur_region);
+  if (using_eh_for_cleanups_p && !cleanup_is_dead_in (state->cur_region))
+    {
+      this_tf.region = gen_eh_region_cleanup (state->cur_region);
+      this_state.cur_region = this_tf.region;
+    }
   else
-    this_tf.region = NULL;
+    {
+      this_tf.region = NULL;
+      this_state.cur_region = state->cur_region;
+    }
 
-  this_state.cur_region = this_tf.region;
   this_state.ehp_region = state->ehp_region;
   this_state.tf = &this_tf;
+
+  old_eh_seq = eh_seq;
+  eh_seq = NULL;
 
   lower_eh_constructs_1 (&this_state, gimple_try_eval(tp));
 
@@ -1552,7 +1574,7 @@ lower_try_finally (struct leh_state *state, gimple tp)
   this_tf.may_fallthru = gimple_seq_may_fallthru (gimple_try_eval (tp));
 
   /* Determine if any exceptions are possible within the try block.  */
-  if (using_eh_for_cleanups_p)
+  if (this_tf.region)
     this_tf.may_throw = eh_region_may_contain_throw (this_tf.region);
   if (this_tf.may_throw)
     honor_protect_cleanup_actions (state, &this_state, &this_tf);
@@ -1600,6 +1622,20 @@ lower_try_finally (struct leh_state *state, gimple tp)
     free (this_tf.goto_queue);
   if (this_tf.goto_queue_map)
     pointer_map_destroy (this_tf.goto_queue_map);
+
+  /* If there was an old (aka outer) eh_seq, append the current eh_seq.
+     If there was no old eh_seq, then the append is trivially already done.  */
+  if (old_eh_seq)
+    {
+      if (eh_seq == NULL)
+	eh_seq = old_eh_seq;
+      else
+	{
+	  gimple_seq new_eh_seq = eh_seq;
+	  eh_seq = old_eh_seq;
+	  gimple_seq_add_seq(&eh_seq, new_eh_seq);
+	}
+    }
 
   return this_tf.top_p_seq;
 }
@@ -1762,8 +1798,9 @@ lower_cleanup (struct leh_state *state, gimple tp)
   eh_region this_region = NULL;
   struct leh_tf_state fake_tf;
   gimple_seq result;
+  bool cleanup_dead = cleanup_is_dead_in (state->cur_region);
 
-  if (flag_exceptions)
+  if (flag_exceptions && !cleanup_dead)
     {
       this_region = gen_eh_region_cleanup (state->cur_region);
       this_state.cur_region = this_region;
@@ -1771,7 +1808,7 @@ lower_cleanup (struct leh_state *state, gimple tp)
 
   lower_eh_constructs_1 (&this_state, gimple_try_eval (tp));
 
-  if (!eh_region_may_contain_throw (this_region))
+  if (cleanup_dead || !eh_region_may_contain_throw (this_region))
     return gimple_try_eval (tp);
 
   /* Build enough of a try-finally state so that we can reuse
@@ -2489,12 +2526,12 @@ stmt_could_throw_p (gimple stmt)
 
     case GIMPLE_ASSIGN:
     case GIMPLE_COND:
-      if (!flag_non_call_exceptions)
+      if (!cfun->can_throw_non_call_exceptions)
         return false;
       return stmt_could_throw_1_p (stmt);
 
     case GIMPLE_ASM:
-      if (!flag_non_call_exceptions)
+      if (!cfun->can_throw_non_call_exceptions)
         return false;
       return gimple_asm_volatile_p (stmt);
 
@@ -2513,7 +2550,7 @@ tree_could_throw_p (tree t)
     return false;
   if (TREE_CODE (t) == MODIFY_EXPR)
     {
-      if (flag_non_call_exceptions
+      if (cfun->can_throw_non_call_exceptions
           && tree_could_trap_p (TREE_OPERAND (t, 0)))
         return true;
       t = TREE_OPERAND (t, 1);
@@ -2523,7 +2560,7 @@ tree_could_throw_p (tree t)
     t = TREE_OPERAND (t, 0);
   if (TREE_CODE (t) == CALL_EXPR)
     return (call_expr_flags (t) & ECF_NOTHROW) == 0;
-  if (flag_non_call_exceptions)
+  if (cfun->can_throw_non_call_exceptions)
     return tree_could_trap_p (t);
   return false;
 }
@@ -3038,9 +3075,10 @@ struct gimple_opt_pass pass_lower_resx =
 };
 
 
-/* At the end of inlining, we can lower EH_DISPATCH.  */
+/* At the end of inlining, we can lower EH_DISPATCH.  Return true when 
+   we have found some duplicate labels and removed some edges.  */
 
-static void
+static bool
 lower_eh_dispatch (basic_block src, gimple stmt)
 {
   gimple_stmt_iterator gsi;
@@ -3048,6 +3086,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
   eh_region r;
   tree filter, fn;
   gimple x;
+  bool redirected = false;
 
   region_nr = gimple_eh_dispatch_region (stmt);
   r = get_eh_region_from_number (region_nr);
@@ -3063,6 +3102,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 	eh_catch c;
 	edge_iterator ei;
 	edge e;
+	struct pointer_set_t *seen_values = pointer_set_create ();
 
 	/* Collect the labels for a switch.  Zero the post_landing_pad
 	   field becase we'll no longer have anything keeping these labels
@@ -3071,6 +3111,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 	for (c = r->u.eh_try.first_catch; c ; c = c->next_catch)
 	  {
 	    tree tp_node, flt_node, lab = c->label;
+	    bool have_label = false;
 
 	    c->label = NULL;
 	    tp_node = c->type_list;
@@ -3083,14 +3124,29 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 	      }
 	    do
 	      {
-		tree t = build3 (CASE_LABEL_EXPR, void_type_node,
-				 TREE_VALUE (flt_node), NULL, lab);
-		VEC_safe_push (tree, heap, labels, t);
+		/* Filter out duplicate labels that arise when this handler 
+		   is shadowed by an earlier one.  When no labels are 
+		   attached to the handler anymore, we remove 
+		   the corresponding edge and then we delete unreachable 
+		   blocks at the end of this pass.  */
+		if (! pointer_set_contains (seen_values, TREE_VALUE (flt_node)))
+		  {
+		    tree t = build3 (CASE_LABEL_EXPR, void_type_node,
+				     TREE_VALUE (flt_node), NULL, lab);
+		    VEC_safe_push (tree, heap, labels, t);
+		    pointer_set_insert (seen_values, TREE_VALUE (flt_node));
+		    have_label = true;
+		  }
 
 		tp_node = TREE_CHAIN (tp_node);
 		flt_node = TREE_CHAIN (flt_node);
 	      }
 	    while (tp_node);
+	    if (! have_label)
+	      {
+	        remove_edge (find_edge (src, label_to_block (lab)));
+	        redirected = true;
+	      }
 	  }
 
 	/* Clean up the edge flags.  */
@@ -3132,6 +3188,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 
 	    VEC_free (tree, heap, labels);
 	  }
+	pointer_set_destroy (seen_values);
       }
       break;
 
@@ -3165,6 +3222,7 @@ lower_eh_dispatch (basic_block src, gimple stmt)
 
   /* Replace the EH_DISPATCH with the SWITCH or COND generated above.  */
   gsi_remove (&gsi, true);
+  return redirected;
 }
 
 static unsigned
@@ -3172,6 +3230,7 @@ execute_lower_eh_dispatch (void)
 {
   basic_block bb;
   bool any_rewritten = false;
+  bool redirected = false;
 
   assign_filter_values ();
 
@@ -3180,11 +3239,13 @@ execute_lower_eh_dispatch (void)
       gimple last = last_stmt (bb);
       if (last && gimple_code (last) == GIMPLE_EH_DISPATCH)
 	{
-	  lower_eh_dispatch (bb, last);
+	  redirected |= lower_eh_dispatch (bb, last);
 	  any_rewritten = true;
 	}
     }
 
+  if (redirected)
+    delete_unreachable_blocks ();
   return any_rewritten ? TODO_update_ssa_only_virtuals : 0;
 }
 
@@ -3796,7 +3857,7 @@ cleanup_all_empty_eh (void)
 */
 
 static unsigned int
-execute_cleanup_eh (void)
+execute_cleanup_eh_1 (void)
 {
   /* Do this first: unsplit_all_eh and cleanup_all_empty_eh can die
      looking up unreachable landing pads.  */
@@ -3830,6 +3891,21 @@ execute_cleanup_eh (void)
   return 0;
 }
 
+static unsigned int
+execute_cleanup_eh (void)
+{
+  int ret = execute_cleanup_eh_1 ();
+
+  /* If the function no longer needs an EH personality routine
+     clear it.  This exposes cross-language inlining opportunities
+     and avoids references to a never defined personality routine.  */
+  if (DECL_FUNCTION_PERSONALITY (current_function_decl)
+      && function_needs_eh_personality (cfun) != eh_personality_lang)
+    DECL_FUNCTION_PERSONALITY (current_function_decl) = NULL_TREE;
+
+  return ret;
+}
+
 static bool
 gate_cleanup_eh (void)
 {
@@ -3857,7 +3933,7 @@ struct gimple_opt_pass pass_cleanup_eh = {
 /* Verify that BB containing STMT as the last statement, has precisely the
    edge that make_eh_edges would create.  */
 
-bool
+DEBUG_FUNCTION bool
 verify_eh_edges (gimple stmt)
 {
   basic_block bb = gimple_bb (stmt);
@@ -3918,7 +3994,7 @@ verify_eh_edges (gimple stmt)
 
 /* Similarly, but handle GIMPLE_EH_DISPATCH specifically.  */
 
-bool
+DEBUG_FUNCTION bool
 verify_eh_dispatch_edge (gimple stmt)
 {
   eh_region r;

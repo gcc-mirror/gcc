@@ -15,20 +15,16 @@
 
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do run } */
-
-
-#include <objc/objc.h>
-#include <objc/Object.h>
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/next-mapping.h"
 
 #ifdef __NEXT_RUNTIME__
 #define METHOD Method
-#define OBJC_GETCLASS objc_getClass
-#define CLASS_GETINSTANCEMETHOD class_getInstanceMethod
 #else
 #include <objc/objc-api.h>
 #define METHOD Method_t
-#define OBJC_GETCLASS objc_get_class
-#define CLASS_GETINSTANCEMETHOD class_get_instance_method
+#define method_get_types(M) (M)->method_types
 #endif
 
 #include <stdio.h>
@@ -78,27 +74,28 @@ unsigned offs1, offs2, offs3, offs4, offs5, offs6, offs7;
 
 int main(void) {
   Foo *foo = [[Foo alloc] init];
-  Class fooClass = OBJC_GETCLASS("Foo");
+  Class fooClass = objc_get_class("Foo");
   METHOD meth;
   const char *string;
 
-  meth = CLASS_GETINSTANCEMETHOD(fooClass, @selector(setRect:withInt:));
+  meth = class_get_instance_method(fooClass, @selector(setRect:withInt:));
   offs2 = 9999;
-  sscanf(meth->method_types, "@%u@%u:%u{_XXRect={?=ff}{?=ff}}%ui%u", &offs1, &offs2, &offs3,
+  sscanf(method_get_types(meth), "@%u@%u:%u{_XXRect={?=ff}{?=ff}}%ui%u", &offs1, &offs2, &offs3,
       &offs4, &offs5);
   CHECK_IF(!offs2);
   [foo setRect:my_rect withInt:123];
 
-  meth = CLASS_GETINSTANCEMETHOD(fooClass, @selector(char:float:double:long:));
+  meth = class_get_instance_method(fooClass, @selector(char:float:double:long:));
   offs2 = 9999;
   if (sizeof (long) == 8)
     string = "v%u@%u:%uc%uf%ud%uq%u";
   else
     string = "v%u@%u:%uc%uf%ud%ul%u";
-  sscanf(meth->method_types, string, &offs1, &offs2, &offs3,  
+  sscanf(method_get_types(meth), string, &offs1, &offs2, &offs3,  
 	 &offs4, &offs5, &offs6, &offs7);
   CHECK_IF(!offs2);
   [foo char:'c' float:2.3 double:3.5 long:2345L];
 
   return 0;
 }  
+#include "../objc-obj-c++-shared/Object1-implementation.h"

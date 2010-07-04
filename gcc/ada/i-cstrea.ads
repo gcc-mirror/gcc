@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -76,9 +76,9 @@ package Interfaces.C_Streams is
    -- Standard C functions --
    --------------------------
 
-   --  The functions selected below are ones that are available in DOS,
-   --  OS/2, UNIX and Xenix (but not necessarily in ANSI C). These are
-   --  very thin interfaces which copy exactly the C headers. For more
+   --  The functions selected below are ones that are available in
+   --  UNIX (but not necessarily in ANSI C). These are very thin
+   --  interfaces which copy exactly the C headers. For more
    --  documentation on these functions, see the Microsoft C "Run-Time
    --  Library Reference" (Microsoft Press, 1990, ISBN 1-55615-225-6),
    --  which includes useful information on system compatibility.

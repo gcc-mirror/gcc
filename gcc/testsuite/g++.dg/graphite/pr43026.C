@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fgraphite-identity -m32" } */
+/* { dg-options "-O2 -fgraphite-identity" } */
 
 template<typename Tp > class vector { };
 

@@ -151,12 +151,13 @@ AC_PROG_CC
 AC_PROG_CXX
 CXXFLAGS="$save_CXXFLAGS"
 
-AM_INIT_AUTOMAKE([1.9.0])
+AM_INIT_AUTOMAKE([no-dist 1.9.0])
 
 AC_CHECK_TOOL(AS, as)
 AC_CHECK_TOOL(LD, ld)
 AC_CHECK_TOOL(AR, ar)
 AC_CHECK_TOOL(RANLIB, ranlib, :)
+AC_CHECK_TOOL(DLLTOOL, dlltool, :)
 AC_PROG_AWK
 AC_CHECK_PROGS([JAR], [jar fastjar gjar], no)
 AC_PATH_PROG([ZIP], [zip], no)
@@ -194,13 +195,16 @@ AC_EXEEXT
 #	libgcj_cxxflags  - host specific C++ compiler flags
 #	libgcj_javaflags - host specific Java compiler flags
 #	libgcj_sublib_ltflags - host specific Libtool flags 
-#                          (only used when building sublibs)
+#	libgcj_sublib_core_extra_deps - host specific extra 
+#			   dependencies for core sublib
+#	(these last two only used when building sublibs)
 # and a number of others; see the list at the start of the file.
 
 libgcj_cflags=
 libgcj_cxxflags=
 libgcj_javaflags=
 libgcj_sublib_ltflags=
+libgcj_sublib_core_extra_deps=
 
 . ${srcdir}/configure.host
 
@@ -214,12 +218,14 @@ LIBGCJ_CFLAGS="${libgcj_cflags}"
 LIBGCJ_CXXFLAGS="${libgcj_cxxflags}"
 LIBGCJ_JAVAFLAGS="${libgcj_javaflags}"
 LIBGCJ_SUBLIB_LTFLAGS="${libgcj_sublib_ltflags}"
+LIBGCJ_SUBLIB_CORE_EXTRA_DEPS="${libgcj_sublib_core_extra_deps}"
 LIBGCJ_LD_SYMBOLIC="${libgcj_ld_symbolic}"
 LIBGCJ_LD_SYMBOLIC_FUNCTIONS="${libgcj_ld_symbolic_functions}"
 AC_SUBST(LIBGCJ_CFLAGS)
 AC_SUBST(LIBGCJ_CXXFLAGS)
 AC_SUBST(LIBGCJ_JAVAFLAGS)
 AC_SUBST(LIBGCJ_SUBLIB_LTFLAGS)
+AC_SUBST(LIBGCJ_SUBLIB_CORE_EXTRA_DEPS)
 AC_SUBST(LIBGCJ_LD_SYMBOLIC)
 AC_SUBST(LIBGCJ_LD_SYMBOLIC_FUNCTIONS)
 
@@ -877,7 +883,7 @@ case "${host}" in
       fi
     ;;
     *-*-darwin[[912]]*)
-      SYSTEMSPEC="-allow_stack_execute"
+      SYSTEMSPEC="%{!Zdynamiclib:%{!Zbundle:-allow_stack_execute}}"
     ;;
     *)
       SYSTEMSPEC=
@@ -921,6 +927,29 @@ arm*linux*eabi)
     extra_ldflags_libjava=-liconv
     ;;
 esac
+
+# Check for --no-merge-exidx-entries, an ARM-specific linker option.
+AC_CACHE_CHECK([for --no-merge-exidx-entries], [libgcj_cv_exidx],
+  [saved_ldflags="$LDFLAGS"
+   LDFLAGS="${LDFLAGS} -Wl,--no-merge-exidx-entries"
+   # The IRIX 6 ld doesn't recognize --no-merge-exidx-entries, but only
+   # warns about unknown options, which breaks the testsuite.  So enable
+   # AC_LANG_WERROR, but there's currently (autoconf 2.64) no way to turn
+   # it off again.  As a workaround, save and restore werror flag like
+   # AC_PATH_XTRA.
+   ac_xsave_[]_AC_LANG_ABBREV[]_werror_flag=$ac_[]_AC_LANG_ABBREV[]_werror_flag
+   AC_LANG_WERROR
+   AC_LINK_IFELSE([int main(void){ return 0;} ],
+		      [eval "libgcj_cv_exidx=yes"],
+		      [eval "libgcj_cv_exidx=no"])
+   ac_[]_AC_LANG_ABBREV[]_werror_flag=$ac_xsave_[]_AC_LANG_ABBREV[]_werror_flag
+   LDFLAGS="${saved_ldflags}"]
+)
+if test "${libgcj_cv_exidx}" = "yes"; then
+  SYSTEMSPEC="${SYSTEMSPEC} --no-merge-exidx-entries"
+  extra_ldflags="${extra_ldflags} -Wl,--no-merge-exidx-entries"
+fi   
+
 AC_SUBST(extra_ldflags_libjava)
 AC_SUBST(extra_ldflags)
 AC_SUBST(LIBSTDCXXSPEC)
@@ -1749,8 +1778,8 @@ AM_CONDITIONAL(ANONVERSCRIPT, test "$libjava_cv_anon_version_script" = yes)
 # Check if linker supports static linking on a per library basis
 LD_START_STATIC_SPEC=
 LD_FINISH_STATIC_SPEC=
-if $LD --help 2>&1 | grep -q -e -call_shared ; then
-  if $LD --help 2>&1 | grep -q -e -non_shared ; then
+if $LD --help 2>&1 | grep -- -call_shared >/dev/null 2>&1; then
+  if $LD --help 2>&1 | grep -- -non_shared >/dev/null 2>&1; then
     LD_START_STATIC_SPEC='%{static-libgcj:-non_shared}'
     LD_FINISH_STATIC_SPEC='%{static-libgcj:-call_shared}'
   fi

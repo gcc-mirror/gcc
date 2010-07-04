@@ -11,7 +11,7 @@ struct B
 
 struct D : B {};
 
-template <int (D::*fun)() const> int Get();
+template <int (D::*fun)() const> int Get(); // { dg-message "candidate" }
 
 int main () 
 {

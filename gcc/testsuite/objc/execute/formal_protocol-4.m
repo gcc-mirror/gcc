@@ -1,6 +1,7 @@
 /* Contributed by Nicola Pero - Fri Mar  9 21:35:47 CET 2001 */
-#include <objc/objc.h>
-#include <objc/Object.h>
+
+#include <stdlib.h>
+#import "../../objc-obj-c++-shared/Object1.h"
 
 /* Test defining a protocol, a class adopting it in a category */
 

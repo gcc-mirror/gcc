@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,8 +28,6 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
-
-with System.OS_Lib; use System.OS_Lib;
 
 package body Output is
 
@@ -228,17 +226,26 @@ package body Output is
       Special_Output_Proc := P;
    end Set_Special_Output;
 
+   ----------------
+   -- Set_Output --
+   ----------------
+
+   procedure Set_Output (FD : File_Descriptor) is
+   begin
+      if Special_Output_Proc = null then
+         Flush_Buffer;
+      end if;
+
+      Current_FD := FD;
+   end Set_Output;
+
    ------------------------
    -- Set_Standard_Error --
    ------------------------
 
    procedure Set_Standard_Error is
    begin
-      if Special_Output_Proc = null then
-         Flush_Buffer;
-      end if;
-
-      Current_FD := Standerr;
+      Set_Output (Standerr);
    end Set_Standard_Error;
 
    -------------------------
@@ -247,11 +254,7 @@ package body Output is
 
    procedure Set_Standard_Output is
    begin
-      if Special_Output_Proc = null then
-         Flush_Buffer;
-      end if;
-
-      Current_FD := Standout;
+      Set_Output (Standout);
    end Set_Standard_Output;
 
    -------

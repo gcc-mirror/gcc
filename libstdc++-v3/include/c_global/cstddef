@@ -42,15 +42,3 @@
 
 #include <bits/c++config.h>
 #include <stddef.h>
-
-#ifndef _GLIBCXX_CSTDDEF
-#define _GLIBCXX_CSTDDEF 1
-
-_GLIBCXX_BEGIN_NAMESPACE(std)
-
-  using ::ptrdiff_t;
-  using ::size_t;
-
-_GLIBCXX_END_NAMESPACE
-
-#endif

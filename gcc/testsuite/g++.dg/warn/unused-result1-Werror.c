@@ -1,5 +1,6 @@
 // PR 40614
 // { dg-options "-Werror=unused-result" }
+/* { dg-message "some warnings being treated as errors" "" {target "*-*-*"} 0 } */
 class QByteArray {
 public:
   QByteArray(const QByteArray &);

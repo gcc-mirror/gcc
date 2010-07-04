@@ -1,8 +1,9 @@
 /* Implementation of the DATE_AND_TIME intrinsic.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Steven Bosscher.
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -55,6 +56,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    thread-local storage so they are threadsafe.  */
 
 #ifndef HAVE_LOCALTIME_R
+/* If _POSIX is defined localtime_r gets defined by mingw-w64 headers.  */
+#ifdef localtime_r
+#undef localtime_r
+#endif
+
 static struct tm *
 localtime_r (const time_t * timep, struct tm * result)
 {
@@ -64,6 +70,11 @@ localtime_r (const time_t * timep, struct tm * result)
 #endif
 
 #ifndef HAVE_GMTIME_R
+/* If _POSIX is defined gmtime_r gets defined by mingw-w64 headers.  */
+#ifdef gmtime_r
+#undef gmtime_r
+#endif
+
 static struct tm *
 gmtime_r (const time_t * timep, struct tm * result)
 {
@@ -269,8 +280,12 @@ date_and_time (char *__date, char *__time, char *__zone,
       delta = GFC_DESCRIPTOR_STRIDE(__values,0);
       if (delta == 0)
 	delta = 1;
+      
+      if (unlikely (len < VALUES_SIZE))
+	  runtime_error ("Incorrect extent in VALUE argument to"
+			 " DATE_AND_TIME intrinsic: is %ld, should"
+			 " be >=%ld", (long int) len, (long int) VALUES_SIZE);
 
-      assert (len >= VALUES_SIZE);
       /* Cope with different type kinds.  */
       if (elt_size == 4)
         {
@@ -355,7 +370,7 @@ secnds (GFC_REAL_4 *x)
 
   date_and_time (NULL, NULL, NULL, avalues, 0, 0, 0);
 
-  free_mem (avalues);
+  free (avalues);
 
   temp1 = 3600.0 * (GFC_REAL_4)values[4] +
 	    60.0 * (GFC_REAL_4)values[5] +

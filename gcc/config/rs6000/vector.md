@@ -3,7 +3,7 @@
 ;; expander, and the actual vector instructions will be in altivec.md and
 ;; vsx.md
 
-;; Copyright (C) 2009
+;; Copyright (C) 2009, 2010
 ;; Free Software Foundation, Inc.
 ;; Contributed by Michael Meissner <meissner@linux.vnet.ibm.com>
 
@@ -265,6 +265,20 @@
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")
 	(sqrt:VEC_F (match_operand:VEC_F 1 "vfloat_operand" "")))]
   "VECTOR_UNIT_VSX_P (<MODE>mode)"
+  "")
+
+(define_expand "rsqrte<mode>2"
+  [(set (match_operand:VEC_F 0 "vfloat_operand" "")
+        (unspec:VEC_F [(match_operand:VEC_F 1 "vfloat_operand" "")]
+		      UNSPEC_RSQRT))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
+  "")
+
+(define_expand "re<mode>2"
+  [(set (match_operand:VEC_F 0 "vfloat_operand" "")
+	(unspec:VEC_F [(match_operand:VEC_F 1 "vfloat_operand" "f")]
+		      UNSPEC_FRES))]
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 (define_expand "ftrunc<mode>2"

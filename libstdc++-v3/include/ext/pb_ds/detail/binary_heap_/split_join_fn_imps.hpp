@@ -68,8 +68,8 @@ split(Pred pred, PB_DS_CLASS_C_DEC& other)
   const size_type other_actual_size =
     other.get_new_size_for_arbitrary(ersd);
 
-  entry_pointer a_entries = NULL;
-  entry_pointer a_other_entries = NULL;
+  entry_pointer a_entries = 0;
+  entry_pointer a_other_entries = 0;
 
   __try
     {
@@ -79,10 +79,10 @@ split(Pred pred, PB_DS_CLASS_C_DEC& other)
     }
   __catch(...)
     {
-      if (a_entries != NULL)
+      if (a_entries != 0)
 	s_entry_allocator.deallocate(a_entries, actual_size);
 
-      if (a_other_entries != NULL)
+      if (a_other_entries != 0)
 	s_entry_allocator.deallocate(a_other_entries, other_actual_size);
 
       __throw_exception_again;
@@ -128,8 +128,8 @@ join(PB_DS_CLASS_C_DEC& other)
   const size_type len = m_size + other.m_size;
   const size_type actual_size = resize_policy::get_new_size_for_arbitrary(len);
 
-  entry_pointer a_entries = NULL;
-  entry_pointer a_other_entries = NULL;
+  entry_pointer a_entries = 0;
+  entry_pointer a_other_entries = 0;
 
   __try
     {
@@ -138,10 +138,10 @@ join(PB_DS_CLASS_C_DEC& other)
     }
   __catch(...)
     {
-      if (a_entries != NULL)
+      if (a_entries != 0)
 	s_entry_allocator.deallocate(a_entries, actual_size);
 
-      if (a_other_entries != NULL)
+      if (a_other_entries != 0)
 	s_entry_allocator.deallocate(a_other_entries, resize_policy::min_size);
 
       __throw_exception_again;

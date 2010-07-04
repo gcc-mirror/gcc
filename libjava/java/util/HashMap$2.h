@@ -14,9 +14,9 @@ class java::util::HashMap$2 : public ::java::util::AbstractCollection
 public: // actually package-private
   HashMap$2(::java::util::HashMap *);
 public:
-  jint size();
-  ::java::util::Iterator * iterator();
-  void clear();
+  virtual jint size();
+  virtual ::java::util::Iterator * iterator();
+  virtual void clear();
 public: // actually package-private
   ::java::util::HashMap * __attribute__((aligned(__alignof__( ::java::util::AbstractCollection)))) this$0;
 public:

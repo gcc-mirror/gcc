@@ -33,6 +33,7 @@ load_lib dg.exp
 proc dg-test { args } {
     global dg-do-what-default dg-interpreter-batch-mode dg-linenum-format
     global errorCode errorInfo
+    global additional_prunes
     global tool
     global srcdir		;# eg: /calvin/dje/build/gcc/./testsuite/
     global host_triplet target_triplet
@@ -90,6 +91,8 @@ proc dg-test { args } {
     set dg-messages ""
     set dg-extra-tool-flags $default_extra_tool_flags
     set dg-final-code ""
+
+    set additional_prunes ""
 
     # `dg-output-text' is a list of two elements: pass/fail and text.
     # Leave second element off for now (indicates "don't perform test")
@@ -334,7 +337,6 @@ proc dg-test { args } {
 }
 
 
-
 # 
 # Indicate that this test case is to be rerun several times.  This
 # is useful if it is nondeterministic.  This applies to rerunning the
@@ -346,3 +348,18 @@ proc dg-repetitions { line value } {
     upvar dg-repetitions repetitions
     set repetitions $value
 }
+
+
+# Prune any messages matching ARGS[1] (a regexp) from test output.
+proc dg-prune-output { args } {
+    global additional_prunes
+
+    if { [llength $args] != 2 } {
+	error "[lindex $args 1]: need one argument"
+	return
+    }
+
+    lappend additional_prunes [lindex $args 1]
+}
+
+set additional_prunes ""

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -261,8 +261,7 @@ package body Sem_Ch7 is
                Error_Msg_N
                  ("optional package body (not allowed in Ada 95)?", N);
             else
-               Error_Msg_N
-                 ("spec of this package does not allow a body", N);
+               Error_Msg_N ("spec of this package does not allow a body", N);
             end if;
          end if;
       end if;
@@ -1954,6 +1953,7 @@ package body Sem_Ch7 is
          Set_Is_Volatile             (Priv, Is_Volatile                (Full));
          Set_Treat_As_Volatile       (Priv, Treat_As_Volatile          (Full));
          Set_Is_Ada_2005_Only        (Priv, Is_Ada_2005_Only           (Full));
+         Set_Has_Pragma_Unmodified   (Priv, Has_Pragma_Unmodified      (Full));
          Set_Has_Pragma_Unreferenced (Priv, Has_Pragma_Unreferenced    (Full));
          Set_Has_Pragma_Unreferenced_Objects
                                      (Priv, Has_Pragma_Unreferenced_Objects
@@ -2032,6 +2032,11 @@ package body Sem_Ch7 is
             end if;
 
             Set_Has_Discriminants (Priv, Has_Discriminants (Full));
+
+            if Has_Discriminants (Full) then
+               Set_Discriminant_Constraint (Priv,
+                 Discriminant_Constraint (Full));
+            end if;
          end if;
       end Preserve_Full_Attributes;
 
@@ -2068,7 +2073,7 @@ package body Sem_Ch7 is
          --  but the formals are private and remain so.
 
          if Ekind (Id) = E_Function
-           and then  Is_Operator_Symbol_Name (Chars (Id))
+           and then Is_Operator_Symbol_Name (Chars (Id))
            and then not Is_Hidden (Id)
            and then not Error_Posted (Id)
          then

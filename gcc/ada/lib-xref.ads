@@ -68,9 +68,10 @@ package Lib.Xref is
    --        col is the column number of the referenced entity
 
    --        level is a single character that separates the col and
-   --        entity fields. It is an asterisk for a top level library
+   --        entity fields. It is an asterisk (*) for a top level library
    --        entity that is publicly visible, as well for an entity declared
-   --        in the visible part of a generic package, and space otherwise.
+   --        in the visible part of a generic package, the plus sign (+) for
+   --        a C/C++ static entity, and space otherwise.
 
    --        entity is the name of the referenced entity, with casing in
    --        the canonical casing for the source file where it is defined.
@@ -541,7 +542,7 @@ package Lib.Xref is
    --    d     decimal fixed-point object      decimal fixed-point type
    --    e     non-Boolean enumeration object  non_Boolean enumeration type
    --    f     floating-point object           floating-point type
-   --    g     (unused)                        (unused)
+   --    g     C/C++ macro                     C/C++ fun-like macro
    --    h     Interface (Ada 2005)            Abstract type
    --    i     signed integer object           signed integer type
    --    j     (unused)                        (unused)
@@ -551,7 +552,7 @@ package Lib.Xref is
    --    n     enumeration literal             named number
    --    o     ordinary fixed-point object     ordinary fixed-point type
    --    p     access object                   access type
-   --    q     label on block                  (unused)
+   --    q     label on block                  C/C++ include file
    --    r     record object                   record type
    --    s     string object                   string type
    --    t     task object                     task type

@@ -1,5 +1,5 @@
 /* Basic block reordering routines for the GNU compiler.
-   Copyright (C) 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "df.h"
 #include "vecprim.h"
+#include "emit-rtl.h"
 
 /* Holds the interesting trailing notes for the function.  */
 rtx cfg_layout_function_footer;
@@ -793,7 +794,8 @@ fixup_reorder_chain (void)
 		 to prevent rtl_verify_flow_info from complaining.  */
 	      if (!e_fall)
 		{
-		  gcc_assert (!onlyjump_p (bb_end_insn));
+		  gcc_assert (!onlyjump_p (bb_end_insn)
+			      || returnjump_p (bb_end_insn));
 		  bb->il.rtl->footer = emit_barrier_after (bb_end_insn);
 		  continue;
 		}
@@ -861,8 +863,11 @@ fixup_reorder_chain (void)
 	    }
 	  else if (extract_asm_operands (PATTERN (bb_end_insn)) != NULL)
 	    {
-	      /* If the old fallthru is still next, nothing to do.  */
-	      if (bb->aux == e_fall->dest
+	      /* If the old fallthru is still next or if
+		 asm goto doesn't have a fallthru (e.g. when followed by
+		 __builtin_unreachable ()), nothing to do.  */
+	      if (! e_fall
+		  || bb->aux == e_fall->dest
 		  || e_fall->dest == EXIT_BLOCK_PTR)
 		continue;
 
@@ -986,7 +991,7 @@ fixup_reorder_chain (void)
    2. Count insns in chain, going both directions, and check if equal.
    3. Check that get_last_insn () returns the actual end of chain.  */
 
-void
+DEBUG_FUNCTION void
 verify_insn_chain (void)
 {
   rtx x, prevx, nextx;

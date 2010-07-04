@@ -41,7 +41,7 @@ class javax::swing::plaf::basic::BasicTableHeaderUI$1 : public ::java::lang::Obj
 public: // actually package-private
   BasicTableHeaderUI$1(::javax::swing::plaf::basic::BasicTableHeaderUI$MouseInputHandler *);
 public:
-  void actionPerformed(::java::awt::event::ActionEvent *);
+  virtual void actionPerformed(::java::awt::event::ActionEvent *);
 public: // actually package-private
   ::javax::swing::plaf::basic::BasicTableHeaderUI$MouseInputHandler * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$1;
 public:

@@ -1,6 +1,7 @@
 // -*- C++ -*-
 
-// Copyright (C) 2004, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005, 2006, 2007, 2009, 2010
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,7 +42,7 @@
 
 #pragma GCC system_header
 
-#include <cstddef>                // for ptrdiff_t, used next
+#include <bits/c++config.h>
 #include <bits/stl_iterator_base_types.h>    // for traits and tags
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)

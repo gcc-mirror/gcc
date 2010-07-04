@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2006-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,5 +32,7 @@
 --  Version for Mac OS X
 
 package body Interfaces.Fortran.BLAS is
+   pragma Linker_Options ("-lgnala");
+   pragma Linker_Options ("-lm");
    pragma Linker_Options ("-Wl,-framework,vecLib");
 end Interfaces.Fortran.BLAS;

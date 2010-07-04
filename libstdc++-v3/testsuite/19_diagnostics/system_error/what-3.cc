@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2007, 2009
+// Copyright (C) 2007, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -32,6 +32,9 @@ void allocate_on_stack(void)
   __extension__ char array[num];
   for (size_t i = 0; i < num; i++) 
     array[i]=0;
+  // Suppress unused warnings.
+  for (size_t i = 0; i < num; i++) 
+    array[i]=array[i];
 }
 
 void test04()

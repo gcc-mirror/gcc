@@ -1,6 +1,7 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -109,7 +110,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     void
     insert(void* p, size_t size)
     {
-      if (p == NULL)
+      if (!p)
 	{
 	  std::string error("annotate_base::insert null insert!\n");
 	  log_to_string(error, make_entry(p, size));
@@ -619,6 +620,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       { return _M_allocator.max_size(); }
 
       pointer
+      address(reference __x) const { return std::__addressof(__x); }
+
+      const_pointer
+      address(const_reference __x) const { return std::__addressof(__x); }
+
+      pointer
       allocate(size_type __n, std::allocator<void>::const_pointer hint = 0)
       {
 	if (__n > this->max_size())
@@ -728,7 +735,7 @@ namespace std
     : public std::unary_function<__gnu_cxx::throw_value_limit, size_t>
     {
       size_t
-      operator()(__gnu_cxx::throw_value_limit __val) const
+      operator()(const __gnu_cxx::throw_value_limit& __val) const
       {
 	std::hash<std::size_t> h;
 	size_t __result = h(__val._M_i);
@@ -742,7 +749,7 @@ namespace std
     : public std::unary_function<__gnu_cxx::throw_value_random, size_t>
     {
       size_t
-      operator()(__gnu_cxx::throw_value_random __val) const
+      operator()(const __gnu_cxx::throw_value_random& __val) const
       {
 	std::hash<std::size_t> h;
 	size_t __result = h(__val._M_i);

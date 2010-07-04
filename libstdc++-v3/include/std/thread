@@ -40,7 +40,6 @@
 #include <memory>
 #include <mutex>
 #include <condition_variable>
-#include <cstddef>
 #include <bits/functexcept.h>
 #include <bits/functional_hash.h>
 #include <bits/gthr.h>

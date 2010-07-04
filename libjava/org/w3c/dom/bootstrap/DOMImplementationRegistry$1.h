@@ -32,8 +32,8 @@ class org::w3c::dom::bootstrap::DOMImplementationRegistry$1 : public ::java::lan
 public: // actually package-private
   DOMImplementationRegistry$1(::org::w3c::dom::bootstrap::DOMImplementationRegistry *, ::java::util::Vector *);
 public:
-  ::org::w3c::dom::DOMImplementation * item(jint);
-  jint getLength();
+  virtual ::org::w3c::dom::DOMImplementation * item(jint);
+  virtual jint getLength();
 public: // actually package-private
   ::org::w3c::dom::bootstrap::DOMImplementationRegistry * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 private:

@@ -25,6 +25,9 @@ main1 (unsigned int x, unsigned int y)
   out[2] = a2 * x;
   out[3] = a3 * y;
 
+  if (x)
+    __asm__ volatile ("" : : : "memory");
+
   /* Check results.  */
   if (out[0] != a0 * x
       || out[1] != a1 * y

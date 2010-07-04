@@ -30,8 +30,8 @@ class gnu::java::nio::charset::US_ASCII$2 : public ::gnu::java::nio::charset::By
 public: // actually package-private
   US_ASCII$2();
 public: // actually protected
-  jboolean isMappable(jchar);
-  jbyte mapToByte(jchar);
+  virtual jboolean isMappable(jchar);
+  virtual jbyte mapToByte(jchar);
 public:
   static ::java::lang::Class class$;
 };

@@ -39,6 +39,7 @@ static void _name (int, siginfo_t *_si __attribute__((unused)), \
    and if dividend and divisor are as above, we simply return from the signal
    handler.  This causes execution to continue after the instruction.  
    Before returning, we the set result registers as expected.  */
+#define UC_EXTENDED	0x00000001
 
 #define HANDLE_DIVIDE_OVERFLOW						\
 do									\
@@ -47,6 +48,15 @@ do									\
     __builtin_extract_return_addr (_si->si_addr);			\
   unsigned long *_regs = _uc->uc_mcontext.gregs;			\
   int _r1, _r2, _d2, _x2, _b2;						\
+  struct                                                                \
+  {                                                                     \
+    unsigned long int uc_flags;                                         \
+    struct ucontext *uc_link;                                           \
+    stack_t uc_stack;                                                   \
+    mcontext_t uc_mcontext;                                             \
+    unsigned long sigmask[2];                                           \
+    unsigned long ext_regs[16];						\
+  } *_uc_ext = (typeof(_uc_ext))_uc;					\
 									\
   /* First, a couple of helper routines to decode instructions.  */	\
   struct _decode 							\
@@ -119,8 +129,16 @@ do									\
       {									\
 	return _d + (_x? _regs[_x] : 0) + (_b? _regs[_b] : 0);		\
       }									\
-    };									\
 									\
+      static inline int is_long_long_min_p (unsigned long *_regs,       \
+					    unsigned long *_ext_regs,   \
+					    int _r)			\
+      {									\
+	return ((long long)_regs[_r]					\
+		| (long long)_ext_regs[_r] << 32) ==			\
+	  LONG_LONG_MIN;						\
+      }									\
+  };									\
 									\
   /* DR r1,r2 */							\
   if (_decode::_is_rr (_eip, 0x1d, &_r1, &_r2)				\
@@ -175,8 +193,58 @@ do									\
       _regs[_r1] = 0;							\
       return;								\
     }									\
-									\
-}									\
+                                                                        \
+  /* The extended ucontext contains the upper halfs of the 64bit	\
+     registers in 31bit applications.  */				\
+  if (_uc->uc_flags & 1 == 1)						\
+    {             							\
+      /* DSGR r1,r2 */							\
+      if (_decode::_is_rre (_eip, 0xb9, 0x0d, &_r1, &_r2)		\
+	  && (int) _regs[_r2] == -1					\
+	  && (int) _uc_ext->ext_regs[_r2] == -1				\
+	  && _decode::is_long_long_min_p (_regs, _uc_ext->ext_regs,	\
+					  _r1 + 1))			\
+	{								\
+	  _regs[_r1] = 0;						\
+	  _uc_ext->ext_regs[_r1] = 0;					\
+	  return;							\
+	}								\
+      									\
+      /* DSGFR r1,r2 */							\
+      if (_decode::_is_rre (_eip, 0xb9, 0x1d, &_r1, &_r2)		\
+	  && (int) _regs[_r2] == -1					\
+	  && _decode::is_long_long_min_p (_regs, _uc_ext->ext_regs,	\
+					  _r1 + 1))			\
+	{								\
+	  _regs[_r1] = 0;						\
+	  _uc_ext->ext_regs[_r1] = 0;					\
+	  return;							\
+	}								\
+      									\
+      /* DSG r1,d2(x2,b2) */						\
+      if (_decode::_is_rxy (_eip, 0xe3, 0x0d, &_r1, &_d2, &_x2, &_b2)	\
+	  && *(int *) _decode::_eff (_regs, _d2, _x2, _b2) == -1	\
+	  && *(int *) _decode::_eff (_regs, _d2 + 4, _x2, _b2) == -1	\
+	  && _decode::is_long_long_min_p (_regs, _uc_ext->ext_regs,	\
+					  _r1 + 1))			\
+	{								\
+	  _regs[_r1] = 0;						\
+	  _uc_ext->ext_regs[_r1] = 0;					\
+	  return;							\
+	}								\
+	      								\
+      /* DSGF r1,d2(x2,b2) */						\
+      if (_decode::_is_rxy (_eip, 0xe3, 0x1d, &_r1, &_d2, &_x2, &_b2)	\
+	  && *(int *) _decode::_eff (_regs, _d2, _x2, _b2) == -1	\
+	  && _decode::is_long_long_min_p (_regs, _uc_ext->ext_regs,	\
+					  _r1 + 1))			\
+	{								\
+	  _regs[_r1] = 0;						\
+	  _uc_ext->ext_regs[_r1] = 0;					\
+	  return;							\
+	}								\
+    }									\
+ }                                                                      \
 while (0)
 
 /* For an explanation why we cannot simply use sigaction to

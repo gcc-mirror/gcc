@@ -2210,6 +2210,7 @@ _Jv_GetJVMTIEnv (void)
 {
   _Jv_JVMTIEnv *env
     = (_Jv_JVMTIEnv *) _Jv_MallocUnchecked (sizeof (_Jv_JVMTIEnv));
+  memset (env, 0, sizeof (_Jv_JVMTIEnv));
   env->p = &_Jv_JVMTI_Interface;
   struct jvmti_env_list *element
     = (struct jvmti_env_list *) _Jv_MallocUnchecked (sizeof (struct jvmti_env_list));

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -224,25 +224,25 @@ package body Binde is
       After  : Unit_Id;
       R      : Succ_Reason;
       Ea_Id  : Elab_All_Id := No_Elab_All_Link);
-   --  Establish a successor link, Before must be elaborated before After,
-   --  and the reason for the link is R. Ea_Id is the contents to be placed
-   --  in the Elab_All_Link of the entry.
+   --  Establish a successor link, Before must be elaborated before After, and
+   --  the reason for the link is R. Ea_Id is the contents to be placed in the
+   --  Elab_All_Link of the entry.
 
    procedure Choose (Chosen : Unit_Id);
-   --  Chosen is the next entry chosen in the elaboration order. This
-   --  procedure updates all data structures appropriately.
+   --  Chosen is the next entry chosen in the elaboration order. This procedure
+   --  updates all data structures appropriately.
 
    function Corresponding_Body (U : Unit_Id) return Unit_Id;
    pragma Inline (Corresponding_Body);
-   --  Given a unit which is a spec for which there is a separate body,
-   --  return the unit id of the body. It is an error to call this routine
-   --  with a unit that is not a spec, or which does not have a separate body.
+   --  Given a unit which is a spec for which there is a separate body, return
+   --  the unit id of the body. It is an error to call this routine with a unit
+   --  that is not a spec, or which does not have a separate body.
 
    function Corresponding_Spec (U : Unit_Id) return Unit_Id;
    pragma Inline (Corresponding_Spec);
-   --  Given a unit which is a body for which there is a separate spec,
-   --  return the unit id of the spec. It is an error to call this routine
-   --  with a unit that is not a body, or which does not have a separate spec.
+   --  Given a unit which is a body for which there is a separate spec, return
+   --  the unit id of the spec. It is an error to call this routine with a unit
+   --  that is not a body, or which does not have a separate spec.
 
    procedure Diagnose_Elaboration_Problem;
    --  Called when no elaboration order can be found. Outputs an appropriate
@@ -276,6 +276,10 @@ package body Binde is
    pragma Inline (Is_Body_Unit);
    --  Determines if given unit is a body
 
+   function Is_Pure_Or_Preelab_Unit (U : Unit_Id) return Boolean;
+   --  Returns True if corresponding unit is Pure or Preelaborate. Includes
+   --  dealing with testing flags on spec if it is given a body.
+
    function Is_Waiting_Body (U : Unit_Id) return Boolean;
    pragma Inline (Is_Waiting_Body);
    --  Determines if U is a waiting body, defined as a body which has
@@ -286,15 +290,15 @@ package body Binde is
       Link : Elab_All_Id) return Elab_All_Id;
    --  Make an Elab_All_Entries table entry with the given Unam and Link
 
+   function Pessimistic_Better_Choice (U1, U2 : Unit_Id) return Boolean;
+   --  This is like Better_Choice, and has the same interface, but returns
+   --  true if U1 is a worse choice than U2 in the sense of the -p (pessimistic
+   --  elaboration order) switch. We still have to obey Ada rules, so it is
+   --  not quite the direct inverse of Better_Choice.
+
    function Unit_Id_Of (Uname : Unit_Name_Type) return Unit_Id;
    --  This function uses the Info field set in the names table to obtain
    --  the unit Id of a unit, given its name id value.
-
-   function Worse_Choice (U1, U2 : Unit_Id) return Boolean;
-   --  This is like Better_Choice, and has the same interface, but returns
-   --  true if U1 is a worse choice than U2 in the sense of the -h (horrible
-   --  elaboration order) switch. We still have to obey Ada rules, so it is
-   --  not quite the direct inverse of Better_Choice.
 
    procedure Write_Dependencies;
    --  Write out dependencies (called only if appropriate option is set)
@@ -323,7 +327,7 @@ package body Binde is
       --  Note: the checks here are applied in sequence, and the ordering is
       --  significant (i.e. the more important criteria are applied first).
 
-      --  Prefer a waiting body to any other case
+      --  Prefer a waiting body to one that is not a waiting body
 
       if Is_Waiting_Body (U1) and then not Is_Waiting_Body (U2) then
          if Debug_Flag_B then
@@ -366,6 +370,28 @@ package body Binde is
       elsif UT2.Internal and then not UT1.Internal then
          if Debug_Flag_B then
             Write_Line ("  False: u2 is internal, u1 is not");
+         end if;
+
+         return False;
+
+      --  Prefer a pure or preelaborable unit to one that is not
+
+      elsif Is_Pure_Or_Preelab_Unit (U1)
+              and then not
+            Is_Pure_Or_Preelab_Unit (U2)
+      then
+         if Debug_Flag_B then
+            Write_Line ("  True: u1 is pure/preelab, u2 is not");
+         end if;
+
+         return True;
+
+      elsif Is_Pure_Or_Preelab_Unit (U2)
+              and then not
+            Is_Pure_Or_Preelab_Unit (U1)
+      then
+         if Debug_Flag_B then
+            Write_Line ("  False: u2 is pure/preelab, u1 is not");
          end if;
 
          return False;
@@ -1141,7 +1167,7 @@ package body Binde is
               or else ((not Pessimistic_Elab_Order)
                          and then Better_Choice (U, Best_So_Far))
               or else (Pessimistic_Elab_Order
-                         and then Worse_Choice (U, Best_So_Far))
+                         and then Pessimistic_Better_Choice (U, Best_So_Far))
             then
                if Debug_Flag_N then
                   Write_Str ("    tentatively chosen (best so far)");
@@ -1321,6 +1347,28 @@ package body Binde is
         or else Units.Table (U).Utype = Is_Body_Only;
    end Is_Body_Unit;
 
+   -----------------------------
+   -- Is_Pure_Or_Preelab_Unit --
+   -----------------------------
+
+   function Is_Pure_Or_Preelab_Unit (U : Unit_Id) return Boolean is
+   begin
+      --  If we have a body with separate spec, test flags on the spec
+
+      if Units.Table (U).Utype = Is_Body then
+         return Units.Table (U + 1).Preelab
+                  or else
+                Units.Table (U + 1).Pure;
+
+      --  Otherwise we have a spec or body acting as spec, test flags on unit
+
+      else
+         return Units.Table (U).Preelab
+                  or else
+                Units.Table (U).Pure;
+      end if;
+   end Is_Pure_Or_Preelab_Unit;
+
    ---------------------
    -- Is_Waiting_Body --
    ---------------------
@@ -1346,51 +1394,115 @@ package body Binde is
       return Elab_All_Entries.Last;
    end Make_Elab_Entry;
 
-   ----------------
-   -- Unit_Id_Of --
-   ----------------
+   -------------------------------
+   -- Pessimistic_Better_Choice --
+   -------------------------------
 
-   function Unit_Id_Of (Uname : Unit_Name_Type) return Unit_Id is
-      Info : constant Int := Get_Name_Table_Info (Uname);
-   begin
-      pragma Assert (Info /= 0 and then Unit_Id (Info) /= No_Unit_Id);
-      return Unit_Id (Info);
-   end Unit_Id_Of;
-
-   ------------------
-   -- Worse_Choice --
-   ------------------
-
-   function Worse_Choice (U1, U2 : Unit_Id) return Boolean is
+   function Pessimistic_Better_Choice (U1, U2 : Unit_Id) return Boolean is
       UT1 : Unit_Record renames Units.Table (U1);
       UT2 : Unit_Record renames Units.Table (U2);
 
    begin
+      if Debug_Flag_B then
+         Write_Str ("Pessimistic_Better_Choice (");
+         Write_Unit_Name (UT1.Uname);
+         Write_Str (", ");
+         Write_Unit_Name (UT2.Uname);
+         Write_Line (")");
+      end if;
+
       --  Note: the checks here are applied in sequence, and the ordering is
       --  significant (i.e. the more important criteria are applied first).
 
-      --  If either unit is internal, then use Better_Choice, since the
-      --  language requires that predefined units not mess up in the choice
-      --  of elaboration order, and for internal units, any problems are
-      --  ours and not the programmers.
+      --  If either unit is predefined or internal, then we use the normal
+      --  Better_Choice rule, since we don't want to disturb the elaboration
+      --  rules of the language with -p, same treatment for Pure/Preelab.
 
-      if UT1.Internal or else UT2.Internal then
-         return Better_Choice (U1, U2);
+      --  Prefer a predefined unit to a non-predefined unit
 
-      --  Prefer anything else to a waiting body (!)
+      if UT1.Predefined and then not UT2.Predefined then
+         if Debug_Flag_B then
+            Write_Line ("  True: u1 is predefined, u2 is not");
+         end if;
+
+         return True;
+
+      elsif UT2.Predefined and then not UT1.Predefined then
+         if Debug_Flag_B then
+            Write_Line ("  False: u2 is predefined, u1 is not");
+         end if;
+
+         return False;
+
+      --  Prefer an internal unit to a non-internal unit
+
+      elsif UT1.Internal and then not UT2.Internal then
+         if Debug_Flag_B then
+            Write_Line ("  True: u1 is internal, u2 is not");
+         end if;
+
+         return True;
+
+      elsif UT2.Internal and then not UT1.Internal then
+         if Debug_Flag_B then
+            Write_Line ("  False: u2 is internal, u1 is not");
+         end if;
+
+         return False;
+
+      --  Prefer a pure or preelaborable unit to one that is not
+
+      elsif Is_Pure_Or_Preelab_Unit (U1)
+              and then not
+            Is_Pure_Or_Preelab_Unit (U2)
+      then
+         if Debug_Flag_B then
+            Write_Line ("  True: u1 is pure/preelab, u2 is not");
+         end if;
+
+         return True;
+
+      elsif Is_Pure_Or_Preelab_Unit (U2)
+              and then not
+            Is_Pure_Or_Preelab_Unit (U1)
+      then
+         if Debug_Flag_B then
+            Write_Line ("  False: u2 is pure/preelab, u1 is not");
+         end if;
+
+         return False;
+
+      --  Prefer anything else to a waiting body. We want to make bodies wait
+      --  as long as possible, till we are forced to choose them!
 
       elsif Is_Waiting_Body (U1) and then not Is_Waiting_Body (U2) then
+         if Debug_Flag_B then
+            Write_Line ("  False: u1 is waiting body, u2 is not");
+         end if;
+
          return False;
 
       elsif Is_Waiting_Body (U2) and then not Is_Waiting_Body (U1) then
+         if Debug_Flag_B then
+            Write_Line ("  True: u2 is waiting body, u1 is not");
+         end if;
+
          return True;
 
       --  Prefer a spec to a body (!)
 
       elsif Is_Body_Unit (U1) and then not Is_Body_Unit (U2) then
+         if Debug_Flag_B then
+            Write_Line ("  False: u1 is body, u2 is not");
+         end if;
+
          return False;
 
       elsif Is_Body_Unit (U2) and then not Is_Body_Unit (U1) then
+         if Debug_Flag_B then
+            Write_Line ("  True: u2 is body, u1 is not");
+         end if;
+
          return True;
 
       --  If both are waiting bodies, then prefer the one whose spec is
@@ -1404,12 +1516,24 @@ package body Binde is
       --  A before the spec of B if it could. Since it could not, there it
       --  must be the case that A depends on B. It is therefore a good idea
       --  to put the body of B last so that if there is an elaboration order
-      --  problem, we will find it (that's what horrible order is about)
+      --  problem, we will find it (that's what pssimistic order is about)
 
       elsif Is_Waiting_Body (U1) and then Is_Waiting_Body (U2) then
-         return
-           UNR.Table (Corresponding_Spec (U1)).Elab_Position <
-           UNR.Table (Corresponding_Spec (U2)).Elab_Position;
+         declare
+            Result : constant Boolean :=
+                       UNR.Table (Corresponding_Spec (U1)).Elab_Position <
+                       UNR.Table (Corresponding_Spec (U2)).Elab_Position;
+         begin
+            if Debug_Flag_B then
+               if Result then
+                  Write_Line ("  True: based on waiting body elab positions");
+               else
+                  Write_Line ("  False: based on waiting body elab positions");
+               end if;
+            end if;
+
+            return Result;
+         end;
       end if;
 
       --  Remaining choice rules are disabled by Debug flag -do
@@ -1420,44 +1544,81 @@ package body Binde is
          --  as Elaborate_Body_Desirable. In the normal case, we generally want
          --  to delay the elaboration of these specs as long as possible, so
          --  that bodies have better chance of being elaborated closer to the
-         --  specs. Worse_Choice as usual wants to do the opposite and
-         --  elaborate such specs as early as possible.
+         --  specs. Pessimistic_Better_Choice as usual wants to do the opposite
+         --  and elaborate such specs as early as possible.
 
          --  If we have two units, one of which is a spec for which this flag
          --  is set, and the other is not, we normally prefer to delay the spec
-         --  for which the flag is set, and so Worse_Choice does the opposite.
+         --  for which the flag is set, so again Pessimistic_Better_Choice does
+         --  the opposite.
 
          if not UT1.Elaborate_Body_Desirable
            and then UT2.Elaborate_Body_Desirable
          then
+            if Debug_Flag_B then
+               Write_Line ("  False: u1 is elab body desirable, u2 is not");
+            end if;
+
             return False;
 
          elsif not UT2.Elaborate_Body_Desirable
            and then UT1.Elaborate_Body_Desirable
          then
+            if Debug_Flag_B then
+               Write_Line ("  True: u1 is elab body desirable, u2 is not");
+            end if;
+
             return True;
 
             --  If we have two specs that are both marked as Elaborate_Body
             --  desirable, we normally prefer the one whose body is nearer to
             --  being able to be elaborated, based on the Num_Pred count. This
             --  helps to ensure bodies are as close to specs as possible. As
-            --  usual, Worse_Choice does the opposite.
+            --  usual, Pessimistic_Better_Choice does the opposite.
 
          elsif UT1.Elaborate_Body_Desirable
            and then UT2.Elaborate_Body_Desirable
          then
-            return UNR.Table (Corresponding_Body (U1)).Num_Pred >=
-              UNR.Table (Corresponding_Body (U2)).Num_Pred;
+            declare
+               Result : constant Boolean :=
+                          UNR.Table (Corresponding_Body (U1)).Num_Pred >=
+                          UNR.Table (Corresponding_Body (U2)).Num_Pred;
+            begin
+               if Debug_Flag_B then
+                  if Result then
+                     Write_Line ("  True based on Num_Pred compare");
+                  else
+                     Write_Line ("  False based on Num_Pred compare");
+                  end if;
+               end if;
+
+               return Result;
+            end;
          end if;
       end if;
 
       --  If we fall through, it means that no preference rule applies, so we
       --  use alphabetical order to at least give a deterministic result. Since
-      --  Worse_Choice is in the business of stirring up the order, we will
-      --  use reverse alphabetical ordering.
+      --  Pessimistic_Better_Choice is in the business of stirring up the
+      --  order, we will use reverse alphabetical ordering.
+
+      if Debug_Flag_B then
+         Write_Line ("  choose on reverse alpha order");
+      end if;
 
       return Uname_Less (UT2.Uname, UT1.Uname);
-   end Worse_Choice;
+   end Pessimistic_Better_Choice;
+
+   ----------------
+   -- Unit_Id_Of --
+   ----------------
+
+   function Unit_Id_Of (Uname : Unit_Name_Type) return Unit_Id is
+      Info : constant Int := Get_Name_Table_Info (Uname);
+   begin
+      pragma Assert (Info /= 0 and then Unit_Id (Info) /= No_Unit_Id);
+      return Unit_Id (Info);
+   end Unit_Id_Of;
 
    ------------------------
    -- Write_Dependencies --

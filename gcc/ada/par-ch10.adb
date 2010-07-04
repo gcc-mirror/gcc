@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -344,7 +344,8 @@ package body Ch10 is
              Get_Expected_Unit_Type
                (File_Name (Current_Source_File)) = Expect_Body
          then
-            Error_Msg_BC ("keyword BODY expected here [see file name]");
+            Error_Msg_BC -- CODEFIX
+              ("keyword BODY expected here [see file name]");
             Restore_Scan_State (Scan_State);
             Set_Unit (Comp_Unit_Node, P_Package (Pf_Pbod));
          else
@@ -395,7 +396,8 @@ package body Ch10 is
                --  Otherwise we saved the semicolon position, so complain
 
                else
-                  Error_Msg (""";"" should be IS", SIS_Semicolon_Sloc);
+                  Error_Msg -- CODEFIX
+                    (""";"" should be IS", SIS_Semicolon_Sloc);
                end if;
 
                Body_Node := Unit (Comp_Unit_Node);
@@ -836,7 +838,8 @@ package body Ch10 is
             end if;
 
             if Token /= Tok_With then
-               Error_Msg_SC ("unexpected LIMITED ignored");
+               Error_Msg_SC -- CODEFIX
+                 ("unexpected LIMITED ignored");
             end if;
 
             if Ada_Version < Ada_05 then
@@ -876,8 +879,7 @@ package body Ch10 is
 
                --  WITH TYPE is an obsolete GNAT specific extension
 
-               Error_Msg_SP
-                 ("`WITH TYPE` is an obsolete 'G'N'A'T extension");
+               Error_Msg_SP ("`WITH TYPE` is an obsolete 'G'N'A'T extension");
                Error_Msg_SP ("\use Ada 2005 `LIMITED WITH` clause instead");
 
                Scan;  -- past TYPE
@@ -1028,7 +1030,11 @@ package body Ch10 is
 
       Ignore (Tok_Semicolon);
 
-      if Token = Tok_Function or else Token = Tok_Procedure then
+      if Token = Tok_Function
+        or else Token = Tok_Not
+        or else Token = Tok_Overriding
+        or else Token = Tok_Procedure
+      then
          Body_Node := P_Subprogram (Pf_Pbod);
 
       elsif Token = Tok_Package then

@@ -26,7 +26,7 @@
 
 (define_predicate "m32c_any_operand"
   (ior (match_operand 0 "general_operand")
-       (match_operand 1 "memory_operand"))
+       (match_code "mem,const_int,const_double"))
   {
     return ! m32c_illegal_subreg_p (op);
   }
@@ -36,7 +36,11 @@
 
 (define_predicate "m32c_nonimmediate_operand"
   (ior (match_operand 0 "nonimmediate_operand")
-       (match_operand 1 "memory_operand")))
+       (match_code "mem"))
+  {
+    return ! m32c_illegal_subreg_p (op);
+  }
+)
 
 ; TRUE if the operand is a pseudo-register.
 (define_predicate "m32c_pseudo"
@@ -135,7 +139,7 @@
 
 ; Likewise, plus TRUE for memory references.
 (define_predicate "mra_operand"
-  (and (and (match_operand 0 "nonimmediate_operand" "")
+  (and (and (match_operand 0 "m32c_nonimmediate_operand" "")
 	    (not (match_operand 1 "cr_operand" "")))
        (not (match_operand 2 "m32c_wide_subreg" ""))))
 

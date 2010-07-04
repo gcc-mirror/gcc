@@ -269,8 +269,8 @@ package body Exp_Prag is
    --------------------------
 
    procedure Expand_Pragma_Check (N : Node_Id) is
-      Loc  : constant Source_Ptr := Sloc (N);
       Cond : constant Node_Id    := Arg2 (N);
+      Loc  : constant Source_Ptr := Sloc (Cond);
       Nam  : constant Name_Id    := Chars (Arg1 (N));
       Msg  : Node_Id;
 
@@ -536,17 +536,14 @@ package body Exp_Prag is
       begin
          if Present (Call) then
             declare
-               Excep_Internal : constant Node_Id :=
-                                 Make_Defining_Identifier
-                                  (Loc, New_Internal_Name ('V'));
-
-               Export_Pragma : Node_Id;
-               Excep_Alias   : Node_Id;
-               Excep_Object  : Node_Id;
-               Excep_Image   : String_Id;
-               Exdata        : List_Id;
-               Lang_Char     : Node_Id;
-               Code          : Node_Id;
+               Excep_Internal : constant Node_Id := Make_Temporary (Loc, 'V');
+               Export_Pragma  : Node_Id;
+               Excep_Alias    : Node_Id;
+               Excep_Object   : Node_Id;
+               Excep_Image    : String_Id;
+               Exdata         : List_Id;
+               Lang_Char      : Node_Id;
+               Code           : Node_Id;
 
             begin
                if Present (Interface_Name (Id)) then

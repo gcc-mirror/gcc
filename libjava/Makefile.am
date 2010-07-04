@@ -202,11 +202,13 @@ toolexeclib_LTLIBRARIES += libgcj-noncore.la
 libgcj_noncore_la_LIBADD_SUBOBJECTS = $(NONCORE_PACKAGE_SOURCE_FILES_LO)
 libgcj_la_LIBADD_SUBOBJECTS = $(CORE_PACKAGE_SOURCE_FILES_LO)
 LIBJAVA_LDFLAGS_NOUNDEF = $(LIBGCJ_SUBLIB_LTFLAGS)
+LIBJAVA_CORE_EXTRA = @LIBGCJ_SUBLIB_CORE_EXTRA_DEPS@
 else
 # If not building sublibraries, everything goes in libgcj,
 # and it cannot be usefully built shared on PE platforms.
 libgcj_la_LIBADD_SUBOBJECTS = $(ALL_PACKAGE_SOURCE_FILES_LO)
 LIBJAVA_LDFLAGS_NOUNDEF = 
+LIBJAVA_CORE_EXTRA = 
 endif
 
 if USE_LIBGCJ_BC
@@ -460,7 +462,8 @@ libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
 	java/lang/Class.lo \
 	java/process-$(PLATFORM).lo \
 	$(ALL_PACKAGE_SOURCE_FILES_LO) \
-	$(LIBLTDL) $(libgcj_la_LIBADD)
+	$(LIBLTDL) $(libgcj_la_LIBADD) \
+	$(LIBJAVA_CORE_EXTRA)
 if ANONVERSCRIPT
 libgcj_la_DEPENDENCIES += $(srcdir)/libgcj.ver
 endif
@@ -472,17 +475,28 @@ libgcj_la_LINK = $(LIBLINK) $(libgcj_la_LDFLAGS)
 EXTRA_libgcj_la_SOURCES = java/lang/Object.java
 
 if BUILD_SUBLIBS
+## This extra target is invoked on windows hosts only by adding it
+## to LIBGCJ_SUBLIB_CORE_EXTRA_SRCS in configure.host, which causes
+## it to be linked in to the core DLL and generate a circular import
+## dependency loop between the two DLLs.  This is required to fix
+## PR42811 by ensuring that any application that links against
+## either always loads both at runtime.
+DLL_VERSION=`expr \`grep -v '^\#' $(srcdir)/libtool-version | sed -e 's/\(.*\):\(.*\):.*/\1 + \2/'\``
+libgcj-noncore-dummy.dll.a : $(srcdir)/libgcj-noncore-dummy.def
+	$(DLLTOOL) -d $^ -l $@ --dllname cyggcj-noncore-$(DLL_VERSION).dll 
+
+## These are the libtool definitions for the noncore library.
 libgcj_noncore_la_SOURCES =
 libgcj_noncore_la_LDFLAGS = $(libgcj_la_LDFLAGS)
-libgcj_noncore_la_LIBADD = $(libgcj_noncore_la_LIBADD_SUBOBJECTS) \
-		$(LIBFFI) $(ZLIBS) $(GCLIBS) libgcj.la
+libgcj_noncore_la_LIBADD = $(libgcj_noncore_la_LIBADD_SUBOBJECTS) libgcj.la
 libgcj_noncore_la_DEPENDENCIES = libgcj-$(gcc_version).jar $(LIBLTDL) \
 		$(libgcj_noncore_la_LIBADD) libgcj.la
 if ANONVERSCRIPT
 libgcj_noncore_la_DEPENDENCIES += $(srcdir)/libgcj.ver
 endif
 libgcj_noncore_la_LINK = $(libgcj_la_LINK)
-endif
+
+endif	# BUILD_SUBLIBS
 
 # We compile libgcj_tools with -findirect-dispatch so that they can
 # depend on external classes: in particular, gjdoc uses antlr.  In
@@ -1513,6 +1527,7 @@ AM_MAKEFLAGS = \
 	"gxx_include_dir=$(gxx_include_dir)" \
 	"AR=$(AR)" \
 	"AS=$(AS)" \
+	"DLLTOOL=$(DLLTOOL)" \
 	"LD=$(LD)" \
 	"LIBCFLAGS=$(LIBCFLAGS)" \
 	"NM=$(NM)" \

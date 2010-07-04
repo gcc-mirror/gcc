@@ -51,5 +51,5 @@ PB_DS_CLASS_C_DEC::
 apply_update(node_pointer p_nd, Node_Update_*  /*p_update*/)
 {
   Node_Update_::operator()(node_iterator(p_nd, this),
-			   const_node_iterator(NULL, this));
+			   const_node_iterator(0, this));
 }

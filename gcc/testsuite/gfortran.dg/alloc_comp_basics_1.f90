@@ -139,6 +139,6 @@ contains
     end subroutine check_alloc2
 
 end program alloc
-! { dg-final { scan-tree-dump-times "builtin_free" 21 "original" } }
+! { dg-final { scan-tree-dump-times "builtin_free" 18 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
 ! { dg-final { cleanup-modules "alloc_m" } }

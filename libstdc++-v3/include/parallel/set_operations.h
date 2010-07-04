@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -345,11 +345,11 @@ namespace __gnu_parallel
 
   template<typename _IIter,
            typename _OutputIterator,
-           typename Operation>
+           typename _Operation>
     _OutputIterator
     __parallel_set_operation(_IIter __begin1, _IIter __end1,
 			     _IIter __begin2, _IIter __end2,
-			     _OutputIterator __result, Operation __op)
+			     _OutputIterator __result, _Operation __op)
     {
       _GLIBCXX_CALL((__end1 - __begin1) + (__end2 - __begin2))
 

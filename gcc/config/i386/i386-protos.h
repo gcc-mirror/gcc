@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC for IA-32.
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -27,7 +27,6 @@ extern void ix86_conditional_register_usage (void);
 extern int ix86_can_use_return_insn_p (void);
 extern void ix86_setup_frame_addresses (void);
 
-extern void ix86_file_end (void);
 extern HOST_WIDE_INT ix86_initial_elimination_offset (int, int);
 extern void ix86_expand_prologue (void);
 extern void ix86_expand_epilogue (int);
@@ -45,6 +44,7 @@ extern int symbolic_reference_mentioned_p (rtx);
 extern bool extended_reg_mentioned_p (rtx);
 extern bool x86_extended_QIreg_mentioned_p (rtx);
 extern bool x86_extended_reg_mentioned_p (rtx);
+extern bool x86_maybe_negate_const_int (rtx *, enum machine_mode);
 extern enum machine_mode ix86_cc_mode (enum rtx_code, rtx, rtx);
 
 extern int avx_vpermilp_parallel (rtx par, enum machine_mode mode);
@@ -60,8 +60,7 @@ extern bool legitimate_pic_operand_p (rtx);
 extern int legitimate_pic_address_disp_p (rtx);
 
 extern void print_reg (rtx, int, FILE*);
-extern void print_operand (FILE*, rtx, int);
-extern void print_operand_address (FILE*, rtx);
+extern void ix86_print_operand (FILE *, rtx, int);
 extern bool output_addr_const_extra (FILE*, rtx);
 
 extern void split_di (rtx[], int, rtx[], rtx[]);
@@ -136,7 +135,6 @@ extern int ix86_attr_length_vex_default (rtx, int, int);
 extern enum machine_mode ix86_fp_compare_mode (enum rtx_code);
 
 extern rtx ix86_libcall_value (enum machine_mode);
-extern bool ix86_function_value_regno_p (int);
 extern bool ix86_function_arg_regno_p (int);
 extern int ix86_function_arg_boundary (enum machine_mode, tree);
 extern bool ix86_sol10_return_in_memory (const_tree,const_tree);
@@ -145,24 +143,18 @@ extern void ix86_free_from_memory (enum machine_mode);
 extern enum calling_abi ix86_cfun_abi (void);
 extern enum calling_abi ix86_function_type_abi (const_tree);
 extern void ix86_call_abi_override (const_tree);
-extern tree ix86_fn_abi_va_list (tree);
-extern tree ix86_canonical_va_list_type (tree);
-extern int ix86_enum_va_list (int, const char **, tree *);
 extern int ix86_reg_parm_stack_space (const_tree);
 
 extern void ix86_split_fp_branch (enum rtx_code code, rtx, rtx,
 				  rtx, rtx, rtx, rtx);
 extern bool ix86_hard_regno_mode_ok (int, enum machine_mode);
 extern bool ix86_modes_tieable_p (enum machine_mode, enum machine_mode);
-extern int ix86_register_move_cost (enum machine_mode, enum reg_class,
-				    enum reg_class);
 extern int ix86_secondary_memory_needed (enum reg_class, enum reg_class,
 					 enum machine_mode, int);
 extern bool ix86_cannot_change_mode_class (enum machine_mode,
 					   enum machine_mode, enum reg_class);
 extern enum reg_class ix86_preferred_reload_class (rtx, enum reg_class);
 extern enum reg_class ix86_preferred_output_reload_class (rtx, enum reg_class);
-extern int ix86_memory_move_cost (enum machine_mode, enum reg_class, int);
 extern int ix86_mode_needed (int, rtx);
 extern void emit_i387_cw_initialization (int);
 extern void x86_order_regs_for_local_alloc (void);
@@ -191,9 +183,9 @@ extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
 extern rtx function_arg (CUMULATIVE_ARGS *, enum machine_mode, tree, int);
 extern void function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
 				  tree, int);
-#endif
+#endif	/* TREE_CODE  */
 
-#endif
+#endif	/* RTX_CODE  */
 
 #ifdef TREE_CODE
 extern int ix86_return_pops_args (tree, tree, int);

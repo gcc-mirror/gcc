@@ -54,4 +54,4 @@ PB_DS_CLASS_T_DEC
 inline bool
 PB_DS_CLASS_C_DEC::
 empty() const
-{ return (m_p_l == NULL); }
+{ return (m_p_l == 0); }

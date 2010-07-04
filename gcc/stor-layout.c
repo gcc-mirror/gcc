@@ -1,6 +1,6 @@
 /* C-compiler utilities for types and variables storage layout
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1996, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -69,7 +69,7 @@ extern void debug_rli (record_layout_info);
 
 /* SAVE_EXPRs for sizes of types and decls, waiting to be expanded.  */
 
-static GTY(()) tree pending_sizes;
+static GTY(()) VEC(tree,gc) *pending_sizes;
 
 /* Show that REFERENCE_TYPES are internal and should use address_mode.
    Called only by front end.  */
@@ -80,12 +80,12 @@ internal_reference_types (void)
   reference_types_internal = 1;
 }
 
-/* Get a list of all the objects put on the pending sizes list.  */
+/* Get a VEC of all the objects put on the pending sizes list.  */
 
-tree
+VEC(tree,gc) *
 get_pending_sizes (void)
 {
-  tree chain = pending_sizes;
+  VEC(tree,gc) *chain = pending_sizes;
 
   pending_sizes = 0;
   return chain;
@@ -101,14 +101,14 @@ put_pending_size (tree expr)
   expr = skip_simple_arithmetic (expr);
 
   if (TREE_CODE (expr) == SAVE_EXPR)
-    pending_sizes = tree_cons (NULL_TREE, expr, pending_sizes);
+    VEC_safe_push (tree, gc, pending_sizes, expr);
 }
 
 /* Put a chain of objects into the pending sizes list, which must be
    empty.  */
 
 void
-put_pending_sizes (tree chain)
+put_pending_sizes (VEC(tree,gc) *chain)
 {
   gcc_assert (!pending_sizes);
   pending_sizes = chain;
@@ -342,7 +342,7 @@ self_referential_size (tree size)
   VEC_safe_push (tree, gc, size_functions, fndecl);
 
   /* Replace the original expression with a call to the size function.  */
-  return build_function_call_expr (input_location, fndecl, arg_list);
+  return build_function_call_expr (UNKNOWN_LOCATION, fndecl, arg_list);
 }
 
 /* Take, queue and compile all the size functions.  It is essential that
@@ -369,10 +369,6 @@ finalize_size_functions (void)
   VEC_free (tree, gc, size_functions);
 }
 
-#ifndef MAX_FIXED_MODE_SIZE
-#define MAX_FIXED_MODE_SIZE GET_MODE_BITSIZE (DImode)
-#endif
-
 /* Return the machine mode to use for a nonscalar of SIZE bits.  The
    mode must be in class MCLASS, and have exactly that many value bits;
    it may have padding as well.  If LIMIT is nonzero, modes of wider
@@ -774,7 +770,7 @@ start_record_layout (tree t)
   rli->offset = size_zero_node;
   rli->bitpos = bitsize_zero_node;
   rli->prev_field = 0;
-  rli->pending_statics = 0;
+  rli->pending_statics = NULL;
   rli->packed_maybe_necessary = 0;
   rli->remaining_in_alignment = 0;
 
@@ -840,7 +836,7 @@ normalize_offset (tree *poffset, tree *pbitpos, unsigned int off_align)
 
 /* Print debugging information about the information in RLI.  */
 
-void
+DEBUG_FUNCTION void
 debug_rli (record_layout_info rli)
 {
   print_node_brief (stderr, "type", rli->t, 0);
@@ -858,10 +854,10 @@ debug_rli (record_layout_info rli)
   if (rli->packed_maybe_necessary)
     fprintf (stderr, "packed may be necessary\n");
 
-  if (rli->pending_statics)
+  if (!VEC_empty (tree, rli->pending_statics))
     {
       fprintf (stderr, "pending statics:\n");
-      debug_tree (rli->pending_statics);
+      debug_vec_tree (rli->pending_statics);
     }
 }
 
@@ -1072,8 +1068,7 @@ place_field (record_layout_info rli, tree field)
      it *after* the record is laid out.  */
   if (TREE_CODE (field) == VAR_DECL)
     {
-      rli->pending_statics = tree_cons (NULL_TREE, field,
-					rli->pending_statics);
+      VEC_safe_push (tree, gc, rli->pending_statics, field);
       return;
     }
 
@@ -1373,11 +1368,12 @@ place_field (record_layout_info rli, tree field)
 	     until we see a bitfield (and come by here again) we just skip
 	     calculating it.  */
 	  if (DECL_SIZE (field) != NULL
-	      && host_integerp (TYPE_SIZE (TREE_TYPE (field)), 0)
-	      && host_integerp (DECL_SIZE (field), 0))
+	      && host_integerp (TYPE_SIZE (TREE_TYPE (field)), 1)
+	      && host_integerp (DECL_SIZE (field), 1))
 	    {
-	      HOST_WIDE_INT bitsize = tree_low_cst (DECL_SIZE (field), 1);
-	      HOST_WIDE_INT typesize
+	      unsigned HOST_WIDE_INT bitsize
+		= tree_low_cst (DECL_SIZE (field), 1);
+	      unsigned HOST_WIDE_INT typesize
 		= tree_low_cst (TYPE_SIZE (TREE_TYPE (field)), 1);
 
 	      if (typesize < bitsize)
@@ -1532,8 +1528,6 @@ finalize_record_size (record_layout_info rli)
       unpacked_size = round_up_loc (input_location, TYPE_SIZE (rli->t), rli->unpacked_align);
       if (simple_cst_equal (unpacked_size, TYPE_SIZE (rli->t)))
 	{
-	  TYPE_PACKED (rli->t) = 0;
-
 	  if (TYPE_NAME (rli->t))
 	    {
 	      tree name;
@@ -1750,15 +1744,15 @@ finish_record_layout (record_layout_info rli, int free_p)
 
   /* Lay out any static members.  This is done now because their type
      may use the record's type.  */
-  while (rli->pending_statics)
-    {
-      layout_decl (TREE_VALUE (rli->pending_statics), 0);
-      rli->pending_statics = TREE_CHAIN (rli->pending_statics);
-    }
+  while (!VEC_empty (tree, rli->pending_statics))
+    layout_decl (VEC_pop (tree, rli->pending_statics), 0);
 
   /* Clean up.  */
   if (free_p)
-    free (rli);
+    {
+      VEC_free (tree, gc, rli->pending_statics);
+      free (rli);
+    }
 }
 
 
@@ -2242,37 +2236,35 @@ make_accum_type (int precision, int unsignedp, int satp)
    value to enable integer types to be created.  */
 
 void
-initialize_sizetypes (bool signed_p)
+initialize_sizetypes (void)
 {
   tree t = make_node (INTEGER_TYPE);
   int precision = GET_MODE_BITSIZE (SImode);
 
   SET_TYPE_MODE (t, SImode);
   TYPE_ALIGN (t) = GET_MODE_ALIGNMENT (SImode);
-  TYPE_USER_ALIGN (t) = 0;
   TYPE_IS_SIZETYPE (t) = 1;
-  TYPE_UNSIGNED (t) = !signed_p;
+  TYPE_UNSIGNED (t) = 1;
   TYPE_SIZE (t) = build_int_cst (t, precision);
   TYPE_SIZE_UNIT (t) = build_int_cst (t, GET_MODE_SIZE (SImode));
   TYPE_PRECISION (t) = precision;
 
-  /* Set TYPE_MIN_VALUE and TYPE_MAX_VALUE.  */
-  set_min_and_max_values_for_integral_type (t, precision, !signed_p);
+  set_min_and_max_values_for_integral_type (t, precision, true);
 
   sizetype = t;
   bitsizetype = build_distinct_type_copy (t);
 }
 
-/* Make sizetype a version of TYPE, and initialize *sizetype
-   accordingly.  We do this by overwriting the stub sizetype and
-   bitsizetype nodes created by initialize_sizetypes.  This makes sure
-   that (a) anything stubby about them no longer exists, (b) any
-   INTEGER_CSTs created with such a type, remain valid.  */
+/* Make sizetype a version of TYPE, and initialize *sizetype accordingly.
+   We do this by overwriting the stub sizetype and bitsizetype nodes created
+   by initialize_sizetypes.  This makes sure that (a) anything stubby about
+   them no longer exists and (b) any INTEGER_CSTs created with such a type,
+   remain valid.  */
 
 void
 set_sizetype (tree type)
 {
-  tree t;
+  tree t, max;
   int oprecision = TYPE_PRECISION (type);
   /* The *bitsizetype types use a precision that avoids overflows when
      calculating signed sizes / offsets in bits.  However, when
@@ -2285,11 +2277,11 @@ set_sizetype (tree type)
   if (precision > HOST_BITS_PER_WIDE_INT * 2)
     precision = HOST_BITS_PER_WIDE_INT * 2;
 
-  gcc_assert (TYPE_UNSIGNED (type) == TYPE_UNSIGNED (sizetype));
+  /* sizetype must be an unsigned type.  */
+  gcc_assert (TYPE_UNSIGNED (type));
 
   t = build_distinct_type_copy (type);
-  /* We do want to use sizetype's cache, as we will be replacing that
-     type.  */
+  /* We want to use sizetype's cache, as we will be replacing that type.  */
   TYPE_CACHED_VALUES (t) = TYPE_CACHED_VALUES (sizetype);
   TYPE_CACHED_VALUES_P (t) = TYPE_CACHED_VALUES_P (sizetype);
   TREE_TYPE (TYPE_CACHED_VALUES (t)) = type;
@@ -2301,10 +2293,15 @@ set_sizetype (tree type)
   TYPE_MAIN_VARIANT (sizetype) = sizetype;
   TYPE_CANONICAL (sizetype) = sizetype;
 
+  /* sizetype is unsigned but we need to fix TYPE_MAX_VALUE so that it is
+     sign-extended in a way consistent with force_fit_type.  */
+  max = TYPE_MAX_VALUE (sizetype);
+  TYPE_MAX_VALUE (sizetype)
+    = double_int_to_tree (sizetype, tree_to_double_int (max));
+
   t = make_node (INTEGER_TYPE);
   TYPE_NAME (t) = get_identifier ("bit_size_type");
-  /* We do want to use bitsizetype's cache, as we will be replacing that
-     type.  */
+  /* We want to use bitsizetype's cache, as we will be replacing that type.  */
   TYPE_CACHED_VALUES (t) = TYPE_CACHED_VALUES (bitsizetype);
   TYPE_CACHED_VALUES_P (t) = TYPE_CACHED_VALUES_P (bitsizetype);
   TYPE_PRECISION (t) = precision;
@@ -2316,36 +2313,13 @@ set_sizetype (tree type)
   TYPE_MAIN_VARIANT (bitsizetype) = bitsizetype;
   TYPE_CANONICAL (bitsizetype) = bitsizetype;
 
-  if (TYPE_UNSIGNED (type))
-    {
-      fixup_unsigned_type (bitsizetype);
-      ssizetype = make_signed_type (oprecision);
-      TYPE_IS_SIZETYPE (ssizetype) = 1;
-      sbitsizetype = make_signed_type (precision);
-      TYPE_IS_SIZETYPE (sbitsizetype) = 1;
-    }
-  else
-    {
-      fixup_signed_type (bitsizetype);
-      ssizetype = sizetype;
-      sbitsizetype = bitsizetype;
-    }
+  fixup_unsigned_type (bitsizetype);
 
-  /* If SIZETYPE is unsigned, we need to fix TYPE_MAX_VALUE so that
-     it is sign extended in a way consistent with force_fit_type.  */
-  if (TYPE_UNSIGNED (type))
-    {
-      tree orig_max, new_max;
-
-      orig_max = TYPE_MAX_VALUE (sizetype);
-
-      /* Build a new node with the same values, but a different type.
-	 Sign extend it to ensure consistency.  */
-      new_max = build_int_cst_wide_type (sizetype,
-					 TREE_INT_CST_LOW (orig_max),
-					 TREE_INT_CST_HIGH (orig_max));
-      TYPE_MAX_VALUE (sizetype) = new_max;
-    }
+  /* Create the signed variants of *sizetype.  */
+  ssizetype = make_signed_type (oprecision);
+  TYPE_IS_SIZETYPE (ssizetype) = 1;
+  sbitsizetype = make_signed_type (precision);
+  TYPE_IS_SIZETYPE (sbitsizetype) = 1;
 }
 
 /* TYPE is an integral type, i.e., an INTEGRAL_TYPE, ENUMERAL_TYPE

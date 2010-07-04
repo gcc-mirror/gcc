@@ -1,6 +1,6 @@
 /* Calculate (post)dominators in slightly super-linear time.
-   Copyright (C) 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free
-   Software Foundation, Inc.
+   Copyright (C) 2000, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Michael Matz (matz@ifh.de).
 
    This file is part of GCC.
@@ -47,6 +47,7 @@
 #include "vecprim.h"
 #include "pointer-set.h"
 #include "graphds.h"
+#include "bitmap.h"
 
 /* We name our nodes with integers, beginning with 1.  Zero is reserved for
    'undefined' or 'end of list'.  The name of each node is given by the dfs
@@ -988,7 +989,7 @@ bb_dom_dfs_out (enum cdi_direction dir, basic_block bb)
 }
 
 /* Verify invariants of dominator structure.  */
-void
+DEBUG_FUNCTION void
 verify_dominators (enum cdi_direction dir)
 {
   int err = 0;
@@ -1465,7 +1466,7 @@ dom_info_available_p (enum cdi_direction dir)
   return dom_computed[dir_index] != DOM_NONE;
 }
 
-void
+DEBUG_FUNCTION void
 debug_dominance_info (enum cdi_direction dir)
 {
   basic_block bb, bb2;
@@ -1506,7 +1507,7 @@ debug_dominance_tree_1 (enum cdi_direction dir, basic_block root,
 /* Prints to stderr representation of the dominance tree (for direction DIR)
    rooted in ROOT.  */
 
-void
+DEBUG_FUNCTION void
 debug_dominance_tree (enum cdi_direction dir, basic_block root)
 {
   debug_dominance_tree_1 (dir, root, 0, false);

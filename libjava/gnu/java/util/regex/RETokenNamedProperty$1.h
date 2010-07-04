@@ -31,7 +31,7 @@ class gnu::java::util::regex::RETokenNamedProperty$1 : public ::gnu::java::util:
 public: // actually package-private
   RETokenNamedProperty$1(::gnu::java::util::regex::RETokenNamedProperty *);
 public:
-  jboolean includes(jchar);
+  virtual jboolean includes(jchar);
 public: // actually package-private
   ::gnu::java::util::regex::RETokenNamedProperty * __attribute__((aligned(__alignof__( ::gnu::java::util::regex::RETokenNamedProperty$Handler)))) this$0;
 public:

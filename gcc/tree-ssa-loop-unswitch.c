@@ -1,5 +1,5 @@
 /* Loop unswitching.
-   Copyright (C) 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2008, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,12 +22,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"
 #include "tm_p.h"
-#include "hard-reg-set.h"
 #include "basic-block.h"
 #include "output.h"
-#include "diagnostic.h"
 #include "tree-flow.h"
 #include "tree-dump.h"
 #include "timevar.h"
@@ -88,6 +85,26 @@ tree_ssa_unswitch_loops (void)
   /* Go through inner loops (only original ones).  */
   FOR_EACH_LOOP (li, loop, LI_ONLY_INNERMOST)
     {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+        fprintf (dump_file, ";; Considering loop %d\n", loop->num);
+
+      /* Do not unswitch in cold regions. */
+      if (optimize_loop_for_size_p (loop))
+        {
+          if (dump_file && (dump_flags & TDF_DETAILS))
+            fprintf (dump_file, ";; Not unswitching cold loops\n");
+          continue;
+        }
+
+      /* The loop should not be too large, to limit code growth. */
+      if (tree_num_loop_insns (loop, &eni_size_weights)
+          > (unsigned) PARAM_VALUE (PARAM_MAX_UNSWITCH_INSNS))
+        {
+          if (dump_file && (dump_flags & TDF_DETAILS))
+            fprintf (dump_file, ";; Not unswitching, loop too big\n");
+          continue;
+        }
+
       changed |= tree_unswitch_single_loop (loop, 0);
     }
 
@@ -112,6 +129,12 @@ tree_may_unswitch_on (basic_block bb, struct loop *loop)
   if (!stmt || gimple_code (stmt) != GIMPLE_COND)
     return NULL_TREE;
 
+  /* To keep the things simple, we do not directly remove the conditions,
+     but just replace tests with 0 != 0 resp. 1 != 0.  Prevent the infinite
+     loop where we would unswitch again on such a condition.  */
+  if (gimple_cond_true_p (stmt) || gimple_cond_false_p (stmt))
+    return NULL_TREE;
+
   /* Condition must be invariant.  */
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
@@ -124,12 +147,6 @@ tree_may_unswitch_on (basic_block bb, struct loop *loop)
 
   cond = build2 (gimple_cond_code (stmt), boolean_type_node,
 		 gimple_cond_lhs (stmt), gimple_cond_rhs (stmt));
-
-  /* To keep the things simple, we do not directly remove the conditions,
-     but just replace tests with 0/1.  Prevent the infinite loop where we
-     would unswitch again on such a condition.  */
-  if (integer_zerop (cond) || integer_nonzerop (cond))
-    return NULL_TREE;
 
   return cond;
 }
@@ -176,46 +193,14 @@ tree_unswitch_single_loop (struct loop *loop, int num)
 {
   basic_block *bbs;
   struct loop *nloop;
-  unsigned i;
+  unsigned i, found;
   tree cond = NULL_TREE;
   gimple stmt;
   bool changed = false;
 
-  /* Do not unswitch too much.  */
-  if (num > PARAM_VALUE (PARAM_MAX_UNSWITCH_LEVEL))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, ";; Not unswitching anymore, hit max level\n");
-      return false;
-    }
-
-  /* Only unswitch innermost loops.  */
-  if (loop->inner)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, ";; Not unswitching, not innermost loop\n");
-      return false;
-    }
-
-  /* Do not unswitch in cold regions.  */
-  if (optimize_loop_for_size_p (loop))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, ";; Not unswitching cold loops\n");
-      return false;
-    }
-
-  /* The loop should not be too large, to limit code growth.  */
-  if (tree_num_loop_insns (loop, &eni_size_weights)
-      > (unsigned) PARAM_VALUE (PARAM_MAX_UNSWITCH_INSNS))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, ";; Not unswitching, loop too big\n");
-      return false;
-    }
-
   i = 0;
   bbs = get_loop_body (loop);
+  found = loop->num_nodes;
 
   while (1)
     {
@@ -226,8 +211,17 @@ tree_unswitch_single_loop (struct loop *loop, int num)
 
       if (i == loop->num_nodes)
 	{
-	  free (bbs);
-	  return changed;
+	  if (dump_file
+	      && num > PARAM_VALUE (PARAM_MAX_UNSWITCH_LEVEL)
+	      && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, ";; Not unswitching anymore, hit max level\n");
+
+	  if (found == loop->num_nodes)
+	    {
+	      free (bbs);
+	      return changed;
+	    }
+	  break;
 	}
 
       cond = simplify_using_entry_checks (loop, cond);
@@ -244,11 +238,99 @@ tree_unswitch_single_loop (struct loop *loop, int num)
 	  gimple_cond_set_condition_from_tree (stmt, boolean_false_node);
 	  changed = true;
 	}
+      /* Do not unswitch too much.  */
+      else if (num > PARAM_VALUE (PARAM_MAX_UNSWITCH_LEVEL))
+	{
+	  i++;
+	  continue;
+	}
+      /* In nested tree_unswitch_single_loop first optimize all conditions
+	 using entry checks, then discover still reachable blocks in the
+	 loop and find the condition only among those still reachable bbs.  */
+      else if (num != 0)
+	{
+	  if (found == loop->num_nodes)
+	    found = i;
+	  i++;
+	  continue;
+	}
       else
-	break;
+	{
+	  found = i;
+	  break;
+	}
 
       update_stmt (stmt);
       i++;
+    }
+
+  if (num != 0)
+    {
+      basic_block *tos, *worklist;
+
+      /* When called recursively, first do a quick discovery
+	 of reachable bbs after the above changes and only
+	 consider conditions in still reachable bbs.  */
+      tos = worklist = XNEWVEC (basic_block, loop->num_nodes);
+
+      for (i = 0; i < loop->num_nodes; i++)
+	bbs[i]->flags &= ~BB_REACHABLE;
+
+      /* Start with marking header.  */
+      *tos++ = bbs[0];
+      bbs[0]->flags |= BB_REACHABLE;
+
+      /* Iterate: find everything reachable from what we've already seen
+	 within the same innermost loop.  Don't look through false edges
+	 if condition is always true or true edges if condition is
+	 always false.  */
+      while (tos != worklist)
+	{
+	  basic_block b = *--tos;
+	  edge e;
+	  edge_iterator ei;
+	  int flags = 0;
+
+	  if (EDGE_COUNT (b->succs) == 2)
+	    {
+	      gimple stmt = last_stmt (b);
+	      if (stmt
+		  && gimple_code (stmt) == GIMPLE_COND)
+		{
+		  if (gimple_cond_true_p (stmt))
+		    flags = EDGE_FALSE_VALUE;
+		  else if (gimple_cond_false_p (stmt))
+		    flags = EDGE_TRUE_VALUE;
+		}
+	    }
+
+	  FOR_EACH_EDGE (e, ei, b->succs)
+	    {
+	      basic_block dest = e->dest;
+
+	      if (dest->loop_father == loop
+		  && !(dest->flags & BB_REACHABLE)
+		  && !(e->flags & flags))
+		{
+		  *tos++ = dest;
+		  dest->flags |= BB_REACHABLE;
+		}
+	    }
+	}
+
+      free (worklist);
+
+      /* Find a bb to unswitch on.  */
+      for (; found < loop->num_nodes; found++)
+	if ((bbs[found]->flags & BB_REACHABLE)
+	    && (cond = tree_may_unswitch_on (bbs[found], loop)))
+	  break;
+
+      if (found == loop->num_nodes)
+	{
+	  free (bbs);
+	  return changed;
+	}
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -256,7 +338,7 @@ tree_unswitch_single_loop (struct loop *loop, int num)
 
   initialize_original_copy_tables ();
   /* Unswitch the loop on this condition.  */
-  nloop = tree_unswitch_loop (loop, bbs[i], cond);
+  nloop = tree_unswitch_loop (loop, bbs[found], cond);
   if (!nloop)
     {
       free_original_copy_tables ();

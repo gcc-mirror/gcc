@@ -1,6 +1,6 @@
 /* Handle initialization things in C++.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -27,12 +27,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"
-#include "expr.h"
 #include "cp-tree.h"
 #include "flags.h"
 #include "output.h"
-#include "except.h"
 #include "toplev.h"
 #include "target.h"
 
@@ -54,6 +51,7 @@ static tree dfs_initialize_vtbl_ptrs (tree, void *);
 static tree build_dtor_call (tree, special_function_kind, int);
 static tree build_field_list (tree, tree, int *);
 static tree build_vtbl_address (tree);
+static int diagnose_uninitialized_cst_or_ref_member_1 (tree, tree, bool, bool);
 
 /* We are about to generate some complex initialization code.
    Conceptually, it is all a single expression.  However, we may want
@@ -505,6 +503,7 @@ perform_member_init (tree member, tree init)
     {
       if (init == NULL_TREE)
 	{
+	  tree core_type;
 	  /* member traversal: note it leaves init NULL */
 	  if (TREE_CODE (type) == REFERENCE_TYPE)
 	    permerror (DECL_SOURCE_LOCATION (current_function_decl),
@@ -514,11 +513,19 @@ perform_member_init (tree member, tree init)
 	    permerror (DECL_SOURCE_LOCATION (current_function_decl),
 		       "uninitialized member %qD with %<const%> type %qT",
 		       member, type);
+
+	  core_type = strip_array_types (type);
+	  if (CLASS_TYPE_P (core_type)
+	      && (CLASSTYPE_READONLY_FIELDS_NEED_INIT (core_type)
+		  || CLASSTYPE_REF_FIELDS_NEED_INIT (core_type)))
+	    diagnose_uninitialized_cst_or_ref_member (core_type,
+						      /*using_new=*/false,
+						      /*complain=*/true);
 	}
       else if (TREE_CODE (init) == TREE_LIST)
 	/* There was an explicit member initialization.  Do some work
 	   in that case.  */
-	init = build_x_compound_expr_from_list (init, "member initializer");
+	init = build_x_compound_expr_from_list (init, ELK_MEM_INIT);
 
       if (init)
 	finish_expr_stmt (cp_build_modify_expr (decl, INIT_EXPR, init,
@@ -1230,7 +1237,9 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
   TREE_READONLY (exp) = 0;
   TREE_THIS_VOLATILE (exp) = 0;
 
-  if (init && TREE_CODE (init) != TREE_LIST)
+  if (init && TREE_CODE (init) != TREE_LIST
+      && !(BRACE_ENCLOSED_INITIALIZER_P (init)
+	   && CONSTRUCTOR_IS_DIRECT_INIT (init)))
     flags |= LOOKUP_ONLYCONVERTING;
 
   if (TREE_CODE (type) == ARRAY_TYPE)
@@ -1298,6 +1307,18 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
   tree rval;
   VEC(tree,gc) *parms;
 
+  if (init && BRACE_ENCLOSED_INITIALIZER_P (init)
+      && CP_AGGREGATE_TYPE_P (type))
+    {
+      /* A brace-enclosed initializer for an aggregate.  In C++0x this can
+	 happen for direct-initialization, too.  */
+      init = digest_init (type, init);
+      init = build2 (INIT_EXPR, TREE_TYPE (exp), exp, init);
+      TREE_SIDE_EFFECTS (init) = 1;
+      finish_expr_stmt (init);
+      return;
+    }
+
   if (init && TREE_CODE (init) != TREE_LIST
       && (flags & LOOKUP_ONLYCONVERTING))
     {
@@ -1310,12 +1331,6 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
 	   to run a new constructor; and catching an exception, where we
 	   have already built up the constructor call so we could wrap it
 	   in an exception region.  */;
-      else if (BRACE_ENCLOSED_INITIALIZER_P (init)
-	       && CP_AGGREGATE_TYPE_P (type))
-	{
-	  /* A brace-enclosed initializer for an aggregate.  */
-	  init = digest_init (type, init);
-	}
       else
 	init = ocp_convert (type, init, CONV_IMPLICIT|CONV_FORCE_TEMP, flags);
 
@@ -1504,8 +1519,7 @@ build_offset_ref (tree type, tree member, bool address_p)
   /* Callers should call mark_used before this point.  */
   gcc_assert (!DECL_P (member) || TREE_USED (member));
 
-  if (!COMPLETE_TYPE_P (complete_type (type))
-      && !TYPE_BEING_DEFINED (type))
+  if (!COMPLETE_OR_OPEN_TYPE_P (complete_type (type)))
     {
       error ("incomplete type %qT does not have member %qD", type, member);
       return error_mark_node;
@@ -1657,7 +1671,14 @@ constant_value_1 (tree decl, bool integral_p)
 	  init = DECL_INITIAL (decl);
 	}
       if (init == error_mark_node)
-	return decl;
+	{
+	  if (DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl))
+	    /* Treat the error as a constant to avoid cascading errors on
+	       excessively recursive template instantiation (c++/9335).  */
+	    return init;
+	  else
+	    return decl;
+	}
       /* Initializers in templates are generally expanded during
 	 instantiation, so before that for const int i(2)
 	 INIT is a TREE_LIST with the actual initializer as
@@ -1753,6 +1774,74 @@ build_raw_new_expr (VEC(tree,gc) *placement, tree type, tree nelts,
   return new_expr;
 }
 
+/* Diagnose uninitialized const members or reference members of type
+   TYPE. USING_NEW is used to disambiguate the diagnostic between a
+   new expression without a new-initializer and a declaration. Returns
+   the error count. */
+
+static int
+diagnose_uninitialized_cst_or_ref_member_1 (tree type, tree origin,
+					    bool using_new, bool complain)
+{
+  tree field;
+  int error_count = 0;
+
+  if (type_has_user_provided_constructor (type))
+    return 0;
+
+  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+    {
+      tree field_type;
+
+      if (TREE_CODE (field) != FIELD_DECL)
+	continue;
+
+      field_type = strip_array_types (TREE_TYPE (field));
+
+      if (TREE_CODE (field_type) == REFERENCE_TYPE)
+	{
+	  ++ error_count;
+	  if (complain)
+	    {
+	      if (using_new)
+		error ("uninitialized reference member in %q#T "
+		       "using %<new%> without new-initializer", origin);
+	      else
+		error ("uninitialized reference member in %q#T", origin);
+	      inform (DECL_SOURCE_LOCATION (field),
+		      "%qD should be initialized", field);
+	    }
+	}
+
+      if (CP_TYPE_CONST_P (field_type))
+	{
+	  ++ error_count;
+	  if (complain)
+	    {
+	      if (using_new)
+		error ("uninitialized const member in %q#T "
+		       "using %<new%> without new-initializer", origin);
+	      else
+		error ("uninitialized const member in %q#T", origin);
+	      inform (DECL_SOURCE_LOCATION (field),
+		      "%qD should be initialized", field);
+	    }
+	}
+
+      if (CLASS_TYPE_P (field_type))
+	error_count
+	  += diagnose_uninitialized_cst_or_ref_member_1 (field_type, origin,
+							 using_new, complain);
+    }
+  return error_count;
+}
+
+int
+diagnose_uninitialized_cst_or_ref_member (tree type, bool using_new, bool complain)
+{
+  return diagnose_uninitialized_cst_or_ref_member_1 (type, type, using_new, complain);
+}
+
 /* Generate code for a new-expression, including calling the "operator
    new" function, initializing the object, and, if an exception occurs
    during construction, cleaning up.  The arguments are as for
@@ -1838,6 +1927,36 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
     return error_mark_node;
 
   is_initialized = (TYPE_NEEDS_CONSTRUCTING (elt_type) || *init != NULL);
+
+  if (*init == NULL)
+    {
+      bool maybe_uninitialized_error = false;
+      /* A program that calls for default-initialization [...] of an
+	 entity of reference type is ill-formed. */
+      if (CLASSTYPE_REF_FIELDS_NEED_INIT (elt_type))
+	maybe_uninitialized_error = true;
+
+      /* A new-expression that creates an object of type T initializes
+	 that object as follows:
+      - If the new-initializer is omitted:
+        -- If T is a (possibly cv-qualified) non-POD class type
+	   (or array thereof), the object is default-initialized (8.5).
+	   [...]
+        -- Otherwise, the object created has indeterminate
+	   value. If T is a const-qualified type, or a (possibly
+	   cv-qualified) POD class type (or array thereof)
+	   containing (directly or indirectly) a member of
+	   const-qualified type, the program is ill-formed; */
+
+      if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (elt_type))
+	maybe_uninitialized_error = true;
+
+      if (maybe_uninitialized_error
+	  && diagnose_uninitialized_cst_or_ref_member (elt_type,
+						       /*using_new=*/true,
+						       complain & tf_error))
+	return error_mark_node;
+    }
 
   if (CP_TYPE_CONST_P (elt_type) && *init == NULL
       && !type_has_user_provided_default_constructor (elt_type))
@@ -2085,7 +2204,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
   /* But we want to operate on a non-const version to start with,
      since we'll be modifying the elements.  */
   non_const_pointer_type = build_pointer_type
-    (cp_build_qualified_type (type, TYPE_QUALS (type) & ~TYPE_QUAL_CONST));
+    (cp_build_qualified_type (type, cp_type_quals (type) & ~TYPE_QUAL_CONST));
 
   data_addr = fold_convert (non_const_pointer_type, data_addr);
   /* Any further uses of alloc_node will want this type, too.  */
@@ -2361,6 +2480,7 @@ build_new (VEC(tree,gc) **placement, tree type, tree nelts,
           else
             return error_mark_node;
         }
+      nelts = mark_rvalue_use (nelts);
       nelts = cp_save_expr (cp_convert (sizetype, nelts));
     }
 
@@ -3015,6 +3135,8 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
     return error_mark_node;
 
   type = TYPE_MAIN_VARIANT (type);
+
+  addr = mark_rvalue_use (addr);
 
   if (TREE_CODE (type) == POINTER_TYPE)
     {

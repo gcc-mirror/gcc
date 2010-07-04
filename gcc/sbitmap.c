@@ -21,25 +21,32 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "rtl.h"
-#include "flags.h"
-#include "hard-reg-set.h"
-#include "obstack.h"
+#include "sbitmap.h"
+
+#ifdef IN_GCC
+/* FIXME: sbitmap is just a data structure, but we define dataflow functions
+   here also.  This is conditional on IN_GCC (see second #ifdef IN_GCC
+   further down).
+   For now, also only conditionally include basic-block.h, but we should
+   find a better place for the dataflow functions.  Perhaps cfganal.c?  */
 #include "basic-block.h"
+#endif
 
 #if GCC_VERSION >= 3400
-#if HOST_BITS_PER_WIDEST_FAST_INT == HOST_BITS_PER_LONG
-#define do_popcount(x) __builtin_popcountl(x)
-#elif HOST_BITS_PER_WIDEST_FAST_INT == HOST_BITS_PER_LONGLONG
-#define do_popcount(x) __builtin_popcountll(x)
-#else
-#error "internal error: sbitmap.h and hwint.h are inconsistent"
-#endif
+#  if HOST_BITS_PER_WIDEST_FAST_INT == HOST_BITS_PER_LONG
+#    define do_popcount(x) __builtin_popcountl(x)
+#  elif HOST_BITS_PER_WIDEST_FAST_INT == HOST_BITS_PER_LONGLONG
+#    define do_popcount(x) __builtin_popcountll(x)
+#  else
+#    error "internal error: sbitmap.h and hwint.h are inconsistent"
+#  endif
 #else
 static unsigned long sbitmap_elt_popcount (SBITMAP_ELT_TYPE);
-#define do_popcount(x) sbitmap_elt_popcount((x))
+#  define do_popcount(x) sbitmap_elt_popcount((x))
 #endif
+
+typedef SBITMAP_ELT_TYPE *sbitmap_ptr;
+typedef const SBITMAP_ELT_TYPE *const_sbitmap_ptr;
 
 /* This macro controls debugging that is as expensive as the
    operations it verifies.  */
@@ -738,6 +745,14 @@ sbitmap_a_and_b_or_c (sbitmap dst, const_sbitmap a, const_sbitmap b, const_sbitm
 }
 
 #ifdef IN_GCC
+/* FIXME: depends on basic-block.h, see comment at start of this file.
+
+   Ironically, the comments before the functions below suggest they do
+   dataflow using the "new flow graph structures", but that's the *old*
+   new data structures.  The functions receive basic block numbers and
+   use BASIC_BLOCK(idx) to get the basic block.  They should receive
+   the basic block directly,  *sigh*.  */
+
 /* Set the bitmap DST to the intersection of SRC of successors of
    block number BB, using the new flow graph structures.  */
 
@@ -996,7 +1011,7 @@ dump_sbitmap_file (FILE *file, const_sbitmap bmap)
   fprintf (file, "}\n");
 }
 
-void
+DEBUG_FUNCTION void
 debug_sbitmap (const_sbitmap bmap)
 {
   dump_sbitmap_file (stderr, bmap);

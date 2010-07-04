@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,7 +46,6 @@ with Sem_Disp; use Sem_Disp;
 with Sem_Elab; use Sem_Elab;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
-with Sem_SCIL; use Sem_SCIL;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
@@ -448,14 +447,14 @@ package body Sem_Ch5 is
          end if;
          return;
 
-      --  Enforce RM 3.9.3 (8): left-hand side cannot be abstract
+      --  Enforce RM 3.9.3 (8): the target of an assignment operation cannot be
+      --  abstract. This is only checked when the assignment Comes_From_Source,
+      --  because in some cases the expander generates such assignments (such
+      --  in the _assign operation for an abstract type).
 
-      elsif Is_Interface (T1)
-        and then not Is_Class_Wide_Type (T1)
-      then
+      elsif Is_Abstract_Type (T1) and then Comes_From_Source (N) then
          Error_Msg_N
-           ("target of assignment operation may not be abstract", Lhs);
-         return;
+           ("target of assignment operation must not be abstract", Lhs);
       end if;
 
       --  Resolution may have updated the subtype, in case the left-hand
@@ -693,10 +692,10 @@ package body Sem_Ch5 is
         and then Nkind (Original_Node (Rhs)) not in N_Op
       then
          if Nkind (Lhs) in N_Has_Entity then
-            Error_Msg_NE
+            Error_Msg_NE -- CODEFIX
               ("?useless assignment of & to itself!", N, Entity (Lhs));
          else
-            Error_Msg_N
+            Error_Msg_N -- CODEFIX
               ("?useless assignment of object to itself!", N);
          end if;
       end if;
@@ -948,7 +947,7 @@ package body Sem_Ch5 is
       --  the case statement has a non static choice.
 
       procedure Process_Statements (Alternative : Node_Id);
-      --  Analyzes all the statements associated to a case alternative.
+      --  Analyzes all the statements associated with a case alternative.
       --  Needed by the generic instantiation below.
 
       package Case_Choices_Processing is new
@@ -998,11 +997,9 @@ package body Sem_Ch5 is
          if Is_Entity_Name (Exp) then
             Ent := Entity (Exp);
 
-            if Ekind (Ent) = E_Variable
-                 or else
-               Ekind (Ent) = E_In_Out_Parameter
-                 or else
-               Ekind (Ent) = E_Out_Parameter
+            if Ekind_In (Ent, E_Variable,
+                              E_In_Out_Parameter,
+                              E_Out_Parameter)
             then
                if List_Length (Choices) = 1
                  and then Nkind (First (Choices)) in N_Subexpr
@@ -1198,7 +1195,7 @@ package body Sem_Ch5 is
          else
             Error_Msg_N
               ("cannot exit from program unit or accept statement", N);
-            exit;
+            return;
          end if;
       end loop;
 
@@ -1208,6 +1205,11 @@ package body Sem_Ch5 is
          Analyze_And_Resolve (Cond, Any_Boolean);
          Check_Unset_Reference (Cond);
       end if;
+
+      --  Chain exit statement to associated loop entity
+
+      Set_Next_Exit_Statement  (N, First_Exit_Statement (Scope_Id));
+      Set_First_Exit_Statement (Scope_Id, N);
 
       --  Since the exit may take us out of a loop, any previous assignment
       --  statement is not useless, so clear last assignment indications. It
@@ -1472,8 +1474,8 @@ package body Sem_Ch5 is
          R_Copy       : constant Node_Id := New_Copy_Tree (R);
          Lo           : constant Node_Id := Low_Bound  (R);
          Hi           : constant Node_Id := High_Bound (R);
-         New_Lo_Bound : Node_Id := Empty;
-         New_Hi_Bound : Node_Id := Empty;
+         New_Lo_Bound : Node_Id;
+         New_Hi_Bound : Node_Id;
          Typ          : Entity_Id;
          Save_Analysis : Boolean;
 
@@ -1517,9 +1519,7 @@ package body Sem_Ch5 is
 
             Analyze_And_Resolve (Original_Bound, Typ);
 
-            Id :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('S'));
+            Id := Make_Temporary (Loc, 'S', Original_Bound);
 
             --  Normally, the best approach is simply to generate a constant
             --  declaration that captures the bound. However, there is a nasty
@@ -1570,15 +1570,6 @@ package body Sem_Ch5 is
               Make_Assignment_Statement (Loc,
                 Name        => New_Occurrence_Of (Id, Loc),
                 Expression  => Relocate_Node (Original_Bound));
-
-            --  If the relocated node is a function call then check if some
-            --  SCIL node references it and needs readjustment.
-
-            if Generate_SCIL
-              and then Nkind (Original_Bound) = N_Function_Call
-            then
-               Adjust_SCIL_Node (Original_Bound, Expression (Assign));
-            end if;
 
             Insert_Before (Parent (N), Assign);
             Analyze (Assign);
@@ -1718,13 +1709,10 @@ package body Sem_Ch5 is
          then
             declare
                Loc  : constant Source_Ptr := Sloc (N);
-               Arr  : constant Entity_Id :=
-                        Etype (Entity (Prefix (DS)));
+               Arr  : constant Entity_Id := Etype (Entity (Prefix (DS)));
                Indx : constant Entity_Id :=
                         Base_Type (Etype (First_Index (Arr)));
-               Subt : constant Entity_Id :=
-                        Make_Defining_Identifier
-                          (Loc, New_Internal_Name ('S'));
+               Subt : constant Entity_Id := Make_Temporary (Loc, 'S');
                Decl : Node_Id;
 
             begin
@@ -2060,8 +2048,12 @@ package body Sem_Ch5 is
       End_Scope;
       Kill_Current_Values;
 
-      --  Check for infinite loop. We skip this check for generated code, since
-      --  it justs waste time and makes debugging the routine called harder.
+      --  Check for infinite loop. Skip check for generated code, since it
+      --  justs waste time and makes debugging the routine called harder.
+
+      --  Note that we have to wait till the body of the loop is fully analyzed
+      --  before making this call, since Check_Infinite_Loop_Warning relies on
+      --  being able to use semantic visibility information to find references.
 
       if Comes_From_Source (N) then
          Check_Infinite_Loop_Warning (N);

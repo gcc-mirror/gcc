@@ -27,8 +27,7 @@
  *  You should not attempt to use it directly.
  */
 
-#include <numeric>
-#include <algorithm>
+#include <numeric> // std::accumulate and std::partial_sum
 
 namespace std
 {
@@ -87,6 +86,17 @@ namespace std
 	__calc(_Tp __x)
 	{ return __a * __x + __c; }
       };
+
+    template<typename _InputIterator, typename _OutputIterator,
+	     typename _UnaryOperation>
+      _OutputIterator
+      __transform(_InputIterator __first, _InputIterator __last,
+		  _OutputIterator __result, _UnaryOperation __unary_op)
+      {
+	for (; __first != __last; ++__first, ++__result)
+	  *__result = __unary_op(*__first);
+	return __result;
+      }
   } // namespace __detail
 
 
@@ -818,27 +828,61 @@ namespace std
       operator()(_UniformRandomNumberGenerator& __urng,
 		 const param_type& __param)
       {
-	// XXX Must be fixed to work well for *arbitrary* __urng.max(),
-	// __urng.min(), __param.b(), __param.a().  Currently works fine only
-	// in the most common case __urng.max() - __urng.min() >=
-	// __param.b() - __param.a(), with __urng.max() > __urng.min() >= 0.
 	typedef typename std::make_unsigned<typename
-	  _UniformRandomNumberGenerator::result_type>::type __urntype;
+	  _UniformRandomNumberGenerator::result_type>::type __urngtype;
 	typedef typename std::make_unsigned<result_type>::type __utype;
-	typedef typename std::conditional<(sizeof(__urntype) > sizeof(__utype)),
-	  __urntype, __utype>::type __uctype;
+	typedef typename std::conditional<(sizeof(__urngtype)
+					   > sizeof(__utype)),
+	  __urngtype, __utype>::type __uctype;
 
-	result_type __ret;
+	const __uctype __urngmin = __urng.min();
+	const __uctype __urngmax = __urng.max();
+	const __uctype __urngrange = __urngmax - __urngmin;
+	const __uctype __urange
+	  = __uctype(__param.b()) - __uctype(__param.a());
 
-	const __urntype __urnmin = __urng.min();
-	const __urntype __urnmax = __urng.max();
-	const __urntype __urnrange = __urnmax - __urnmin;
-	const __uctype __urange = __param.b() - __param.a();
-	const __uctype __udenom = (__urnrange <= __urange
-				   ? 1 : __urnrange / (__urange + 1));
-	do
-	  __ret = (__urntype(__urng()) -  __urnmin) / __udenom;
-	while (__ret > __param.b() - __param.a());
+	__uctype __ret;
+
+	if (__urngrange > __urange)
+	  {
+	    // downscaling
+	    const __uctype __uerange = __urange + 1; // __urange can be zero
+	    const __uctype __scaling = __urngrange / __uerange;
+	    const __uctype __past = __uerange * __scaling;
+	    do
+	      __ret = __uctype(__urng()) - __urngmin;
+	    while (__ret >= __past);
+	    __ret /= __scaling;
+	  }
+	else if (__urngrange < __urange)
+	  {
+	    // upscaling
+	    /*
+	      Note that every value in [0, urange]
+	      can be written uniquely as
+
+	      (urngrange + 1) * high + low
+
+	      where
+
+	      high in [0, urange / (urngrange + 1)]
+
+	      and
+	
+	      low in [0, urngrange].
+	    */
+	    __uctype __tmp; // wraparound control
+	    do
+	      {
+		const __uctype __uerngrange = __urngrange + 1;
+		__tmp = (__uerngrange * operator()
+			 (__urng, param_type(0, __urange / __uerngrange)));
+		__ret = __tmp + (__uctype(__urng()) - __urngmin);
+	      }
+	    while (__ret > __urange || __ret < __tmp);
+	  }
+	else
+	  __ret = __uctype(__urng()) - __urngmin;
 
 	return __ret + __param.a();
       }
@@ -1627,6 +1671,26 @@ namespace std
 	return __ret;
       }
 
+  template<typename _RealType>
+    bool
+    operator==(const std::normal_distribution<_RealType>& __d1,
+	       const std::normal_distribution<_RealType>& __d2)
+    {
+      if (__d1._M_param == __d2._M_param
+	  && __d1._M_saved_available == __d2._M_saved_available)
+	{
+	  if (__d1._M_saved_available
+	      && __d1._M_saved == __d2._M_saved)
+	    return true;
+	  else if(!__d1._M_saved_available)
+	    return true;
+	  else
+	    return false;
+	}
+      else
+	return false;
+    }
+
   template<typename _RealType, typename _CharT, typename _Traits>
     std::basic_ostream<_CharT, _Traits>&
     operator<<(std::basic_ostream<_CharT, _Traits>& __os,
@@ -2157,8 +2221,8 @@ namespace std
       const double __sum = std::accumulate(_M_prob.begin(),
 					   _M_prob.end(), 0.0);
       // Now normalize the probabilites.
-      std::transform(_M_prob.begin(), _M_prob.end(), _M_prob.begin(),
-		     std::bind2nd(std::divides<double>(), __sum));
+      __detail::__transform(_M_prob.begin(), _M_prob.end(), _M_prob.begin(),
+			  std::bind2nd(std::divides<double>(), __sum));
       // Accumulate partial sums.
       _M_cp.reserve(_M_prob.size());
       std::partial_sum(_M_prob.begin(), _M_prob.end(),
@@ -2279,8 +2343,8 @@ namespace std
       const double __sum = std::accumulate(_M_den.begin(),
 					   _M_den.end(), 0.0);
 
-      std::transform(_M_den.begin(), _M_den.end(), _M_den.begin(),
-		     std::bind2nd(std::divides<double>(), __sum));
+      __detail::__transform(_M_den.begin(), _M_den.end(), _M_den.begin(),
+			    std::bind2nd(std::divides<double>(), __sum));
 
       _M_cp.reserve(_M_den.size());
       std::partial_sum(_M_den.begin(), _M_den.end(),
@@ -2479,14 +2543,14 @@ namespace std
 	}
 
       //  Now normalize the densities...
-      std::transform(_M_den.begin(), _M_den.end(), _M_den.begin(),
-		     std::bind2nd(std::divides<double>(), __sum));
+      __detail::__transform(_M_den.begin(), _M_den.end(), _M_den.begin(),
+			  std::bind2nd(std::divides<double>(), __sum));
       //  ... and partial sums... 
-      std::transform(_M_cp.begin(), _M_cp.end(), _M_cp.begin(),
-		     std::bind2nd(std::divides<double>(), __sum));
+      __detail::__transform(_M_cp.begin(), _M_cp.end(), _M_cp.begin(),
+			    std::bind2nd(std::divides<double>(), __sum));
       //  ... and slopes.
-      std::transform(_M_m.begin(), _M_m.end(), _M_m.begin(),
-		     std::bind2nd(std::divides<double>(), __sum));
+      __detail::__transform(_M_m.begin(), _M_m.end(), _M_m.begin(),
+			    std::bind2nd(std::divides<double>(), __sum));
       //  Make sure the last cumulative probablility is one.
       _M_cp[_M_cp.size() - 1] = 1.0;
      }

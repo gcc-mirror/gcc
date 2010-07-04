@@ -1,5 +1,6 @@
 /* Memory address lowering and addressing mode selection.
-   Copyright (C) 2004, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,23 +26,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"
 #include "tm_p.h"
-#include "hard-reg-set.h"
 #include "basic-block.h"
 #include "output.h"
-#include "diagnostic.h"
+#include "tree-pretty-print.h"
 #include "tree-flow.h"
 #include "tree-dump.h"
 #include "tree-pass.h"
 #include "timevar.h"
 #include "flags.h"
 #include "tree-inline.h"
+#include "tree-affine.h"
+
+/* FIXME: We compute address costs using RTL.  */
 #include "insn-config.h"
+#include "rtl.h"
 #include "recog.h"
 #include "expr.h"
 #include "ggc.h"
-#include "tree-affine.h"
 #include "target.h"
 
 /* TODO -- handling of symbols (according to Richard Hendersons
@@ -191,14 +193,12 @@ addr_for_mem_ref (struct mem_address *addr, addr_space_t as,
   struct mem_addr_template *templ;
 
   if (addr->step && !integer_onep (addr->step))
-    st = immed_double_const (TREE_INT_CST_LOW (addr->step),
-			     TREE_INT_CST_HIGH (addr->step), address_mode);
+    st = immed_double_int_const (tree_to_double_int (addr->step), address_mode);
   else
     st = NULL_RTX;
 
   if (addr->offset && !integer_zerop (addr->offset))
-    off = immed_double_const (TREE_INT_CST_LOW (addr->offset),
-			      TREE_INT_CST_HIGH (addr->offset), address_mode);
+    off = immed_double_int_const (tree_to_double_int (addr->offset), address_mode);
   else
     off = NULL_RTX;
 
@@ -765,6 +765,8 @@ copy_mem_ref_info (tree to, tree from)
 {
   /* And the info about the original reference.  */
   TMR_ORIGINAL (to) = TMR_ORIGINAL (from);
+  TREE_SIDE_EFFECTS (to) = TREE_SIDE_EFFECTS (from);
+  TREE_THIS_VOLATILE (to) = TREE_THIS_VOLATILE (from);
 }
 
 /* Move constants in target_mem_ref REF to offset.  Returns the new target

@@ -3,7 +3,7 @@
 struct S1
 {
   template <class T>
-  void f(T t1, T t2);
+  void f(T t1, T t2);		// { dg-message "candidate" }
 };
 
 
@@ -14,7 +14,7 @@ template <class U>
 struct S2
 {
   template <class T>
-  void f(T t1, T t2);
+  void f(T t1, T t2);		// { dg-message "candidate" }
 };
 
 template <>

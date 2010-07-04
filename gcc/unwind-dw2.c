@@ -356,7 +356,16 @@ extract_cie_info (const struct dwarf_cie *cie, struct _Unwind_Context *context,
       aug += 2;
     }
 
-  /* Immediately following the augmentation are the code and
+  /* After the augmentation resp. pointer for "eh" augmentation
+     follows for CIE version >= 4 address size byte and
+     segment size byte.  */
+  if (__builtin_expect (cie->version >= 4, 0))
+    {
+      if (p[0] != sizeof (void *) || p[1] != 0)
+	return NULL;
+      p += 2;
+    }
+  /* Immediately following this are the code and
      data alignment and return address column.  */
   p = read_uleb128 (p, &utmp);
   fs->code_align = (_Unwind_Word)utmp;
@@ -1473,7 +1482,8 @@ uw_init_context_1 (struct _Unwind_Context *context,
   context->ra = __builtin_extract_return_addr (outer_ra);
 }
 
-static void _Unwind_DebugHook (void *, void *) __attribute__ ((__noinline__));
+static void _Unwind_DebugHook (void *, void *)
+  __attribute__ ((__noinline__, __used__, __noclone__));
 
 /* This function is called during unwinding.  It is intended as a hook
    for a debugger to intercept exceptions.  CFA is the CFA of the

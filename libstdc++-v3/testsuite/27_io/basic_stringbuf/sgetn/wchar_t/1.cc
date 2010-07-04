@@ -1,7 +1,7 @@
 // 981208 bkoz test functionality of basic_stringbuf for char_type == wchar_t
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-// 2006, 2007, 2009
+// 2006, 2007, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -34,20 +34,19 @@ void test04()
 {
   bool test __attribute__((unused)) = true;
   std::streamsize 		strmsz_1, strmsz_2;
-  std::streamoff  		strmof_1(-1), strmof_2;
   typedef std::wstringbuf::int_type int_type;
   typedef std::wstringbuf::traits_type traits_type;
 
   // GET
-  strmof_1 = strb_01.in_avail();
-  strmof_2 = strb_02.in_avail();
-  strmof_1 = strb_03.in_avail(); 
+  strb_01.in_avail();
+  strb_02.in_avail();
+  strb_03.in_avail(); 
 
   int_type c1 = strb_01.sbumpc();
   int_type c2 = strb_02.sbumpc();
   strb_01.sbumpc();
   int_type c4 = strb_02.sbumpc();
-  int_type c5 = strb_03.sbumpc();
+  strb_03.sbumpc();
 
   // int_type sgetc()
   // if read_cur not avail, return uflow(), else return *read_cur  
@@ -55,13 +54,13 @@ void test04()
   int_type c7 = strb_02.sgetc();
   strb_01.sgetc();
   strb_02.sgetc();
-   c5 = strb_03.sgetc();
+  strb_03.sgetc();
 
   // int_type snextc()
   // calls sbumpc and if sbumpc != eof, return sgetc
   c6 = strb_01.snextc();
   c7 = strb_02.snextc();
-  c5 = strb_03.snextc();
+  strb_03.snextc();
 
   // streamsize sgetn(char_type *s, streamsize n)
   // streamsize xsgetn(char_type *s, streamsize n)

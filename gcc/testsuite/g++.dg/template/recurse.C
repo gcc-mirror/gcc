@@ -8,8 +8,7 @@ template <int I> struct F
       F<I+1> f;			// { dg-error "incomplete type" "incomplete" }
 				// { dg-bogus "exceeds maximum.*exceeds maximum" "exceeds" { xfail *-*-* } 8 }
                                 // { dg-error "exceeds maximum" "exceeds" { xfail *-*-* } 8 }
-      return f()*I;             // { dg-message "instantiated" "recurse" }
-      // { dg-message "skipping 40 instantiation contexts" "" { target *-*-* } 11 }
+      return f()*I;             // { dg-message "recursively instantiated" "recurse" }
     }
 };
 

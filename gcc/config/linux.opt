@@ -1,6 +1,6 @@
 ; Processor-independent options for GNU/Linux.
 ;
-; Copyright (C) 2006, 2007, 2009 Free Software Foundation, Inc.
+; Copyright (C) 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
 ; Contributed by CodeSourcery.
 ;
 ; This file is part of GCC.
@@ -19,10 +19,14 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
+mbionic
+Target Report RejectNegative Var(linux_libc,LIBC_BIONIC) Init(DEFAULT_LIBC) Negative(mglibc)
+Use Bionic C library
+
 mglibc
-Target RejectNegative Report InverseMask(UCLIBC, GLIBC) Var(linux_uclibc) Init(UCLIBC_DEFAULT ? OPTION_MASK_UCLIBC : 0)
-Use GNU libc instead of uClibc
+Target Report RejectNegative Var(linux_libc,LIBC_GLIBC) VarExists Negative(muclibc)
+Use GNU C library
 
 muclibc
-Target RejectNegative Report Mask(UCLIBC) Var(linux_uclibc) VarExists
-Use uClibc instead of GNU libc
+Target Report RejectNegative Var(linux_libc,LIBC_UCLIBC) VarExists Negative(mbionic)
+Use uClibc C library

@@ -8,7 +8,7 @@ struct B
   void foo();
 };
 
-template<void (A::*)()> void bar();
+template<void (A::*)()> void bar(); // { dg-message "candidate" }
 
 void baz()
 {

@@ -27,18 +27,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "lambda.h"
 
-static void lambda_matrix_get_column (lambda_matrix, int, int,
-				      lambda_vector);
-
 /* Allocate a matrix of M rows x  N cols.  */
 
 lambda_matrix
-lambda_matrix_new (int m, int n)
+lambda_matrix_new (int m, int n, struct obstack * lambda_obstack)
 {
   lambda_matrix mat;
   int i;
 
-  mat = GGC_NEWVEC (lambda_vector, m);
+  mat = (lambda_matrix) obstack_alloc (lambda_obstack,
+				       sizeof (lambda_vector *) * m);
 
   for (i = 0; i < m; i++)
     mat[i] = lambda_vector_new (n);
@@ -163,19 +161,6 @@ lambda_matrix_mult (lambda_matrix mat1, lambda_matrix mat2,
 	    mat3[i][j] += mat1[i][k] * mat2[k][j];
 	}
     }
-}
-
-/* Get column COL from the matrix MAT and store it in VEC.  MAT has
-   N rows, so the length of VEC must be N.  */
-
-static void
-lambda_matrix_get_column (lambda_matrix mat, int n, int col,
-			  lambda_vector vec)
-{
-  int i;
-
-  for (i = 0; i < n; i++)
-    vec[i] = mat[i][col];
 }
 
 /* Delete rows r1 to r2 (not including r2).  */
@@ -307,10 +292,12 @@ lambda_matrix_col_mc (lambda_matrix mat, int m, int c1, int const1)
    When MAT is a 2 x 2 matrix, we don't go through the whole process, because
    it is easily inverted by inspection and it is a very common case.  */
 
-static int lambda_matrix_inverse_hard (lambda_matrix, lambda_matrix, int);
+static int lambda_matrix_inverse_hard (lambda_matrix, lambda_matrix, int,
+				       struct obstack *);
 
 int
-lambda_matrix_inverse (lambda_matrix mat, lambda_matrix inv, int n)
+lambda_matrix_inverse (lambda_matrix mat, lambda_matrix inv, int n,
+		       struct obstack * lambda_obstack)
 {
   if (n == 2)
     {
@@ -335,20 +322,21 @@ lambda_matrix_inverse (lambda_matrix mat, lambda_matrix inv, int n)
       return det;
     }
   else
-    return lambda_matrix_inverse_hard (mat, inv, n);
+    return lambda_matrix_inverse_hard (mat, inv, n, lambda_obstack);
 }
 
 /* If MAT is not a special case, invert it the hard way.  */
 
 static int
-lambda_matrix_inverse_hard (lambda_matrix mat, lambda_matrix inv, int n)
+lambda_matrix_inverse_hard (lambda_matrix mat, lambda_matrix inv, int n,
+			    struct obstack * lambda_obstack)
 {
   lambda_vector row;
   lambda_matrix temp;
   int i, j;
   int determinant;
 
-  temp = lambda_matrix_new (n, n);
+  temp = lambda_matrix_new (n, n, lambda_obstack);
   lambda_matrix_copy (mat, temp, n, n);
   lambda_matrix_id (inv, n);
 
@@ -590,45 +578,6 @@ lambda_matrix_first_nz_vec (lambda_matrix mat, int rowsize, int colsize,
   if (found)
     return j - 1;
   return rowsize;
-}
-
-/* Calculate the projection of E sub k to the null space of B.  */
-
-void
-lambda_matrix_project_to_null (lambda_matrix B, int rowsize,
-			       int colsize, int k, lambda_vector x)
-{
-  lambda_matrix M1, M2, M3, I;
-  int determinant;
-
-  /* Compute c(I-B^T inv(B B^T) B) e sub k.  */
-
-  /* M1 is the transpose of B.  */
-  M1 = lambda_matrix_new (colsize, colsize);
-  lambda_matrix_transpose (B, M1, rowsize, colsize);
-
-  /* M2 = B * B^T */
-  M2 = lambda_matrix_new (colsize, colsize);
-  lambda_matrix_mult (B, M1, M2, rowsize, colsize, rowsize);
-
-  /* M3 = inv(M2) */
-  M3 = lambda_matrix_new (colsize, colsize);
-  determinant = lambda_matrix_inverse (M2, M3, rowsize);
-
-  /* M2 = B^T (inv(B B^T)) */
-  lambda_matrix_mult (M1, M3, M2, colsize, rowsize, rowsize);
-
-  /* M1 = B^T (inv(B B^T)) B */
-  lambda_matrix_mult (M2, B, M1, colsize, rowsize, colsize);
-  lambda_matrix_negate (M1, M1, colsize, colsize);
-
-  I = lambda_matrix_new (colsize, colsize);
-  lambda_matrix_id (I, colsize);
-
-  lambda_matrix_add_mc (I, determinant, M1, 1, M2, colsize, colsize);
-
-  lambda_matrix_get_column (M2, colsize, k - 1, x);
-
 }
 
 /* Multiply a vector VEC by a matrix MAT.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,9 +23,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains a generic lexical analyzer. This is used
---  for scanning Ada source files or text files with an Ada-like syntax,
---  such as project files. It is instantiated in Scn and Prj.Err.
+--  This package contains a generic lexical analyzer. This is used for scanning
+--  Ada source files or text files with an Ada-like syntax, such as project
+--  files. It is instantiated in Scn and Prj.Err.
 
 with Casing; use Casing;
 with Styleg;

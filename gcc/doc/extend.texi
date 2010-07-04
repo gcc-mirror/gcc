@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1996, 1998, 1999, 2000, 2001,
-@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+@c 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 @c Free Software Foundation, Inc.
 
 @c This is part of the GCC manual.
@@ -33,6 +33,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Typeof::              @code{typeof}: referring to the type of an expression.
 * Conditionals::        Omitting the middle operand of a @samp{?:} expression.
 * Long Long::           Double-word integers---@code{long long int}.
+* __int128::			128-bit integers---@code{__int128}.
 * Complex::             Data types for complex numbers.
 * Floating Types::      Additional Floating Types.
 * Half-Precision::      Half-Precision Floating Point.
@@ -803,6 +804,17 @@ or may (if it is a macro argument), contain a side effect.  Then repeating
 the operand in the middle would perform the side effect twice.  Omitting
 the middle operand uses the value already computed without the undesirable
 effects of recomputing it.
+
+@node __int128
+@section 128-bits integers
+@cindex @code{__int128} data types
+
+As an extension the integer scalar type @code{__int128} is supported for
+targets having an integer mode wide enough to hold 128-bit.
+Simply write @code{__int128} for a signed 128-bit integer, or
+@code{unsigned __int128} for an unsigned 128-bit integer.  There is no
+support in GCC to express an integer constant of type @code{__int128}
+for targets having @code{long long} integer with less then 128 bit width.
 
 @node Long Long
 @section Double-Word Integers
@@ -2284,7 +2296,7 @@ attribute is present.
 @cindex @code{externally_visible} attribute.
 This attribute, attached to a global variable or function, nullifies
 the effect of the @option{-fwhole-program} command-line option, so the
-object remains visible outside the current compilation unit.
+object remains visible outside the current compilation unit. If @option{-fwhole-program} is used together with @option{-flto} and @command{gold} is used as the linker plugin, @code{externally_visible} attributes are automatically added to functions (not variable yet due to a current @command{gold} issue) that are accessed outside of LTO objects according to resolution file produced by @command{gold}.  For other linkers that cannot generate resolution file, explicit @code{externally_visible} attributes are still necessary.
 
 @item far
 @cindex functions which handle memory bank switching
@@ -2322,6 +2334,18 @@ the second argument (if of integral type) in the register EDX@.  Subsequent
 and other typed arguments are passed on the stack.  The called function will
 pop the arguments off the stack.  If the number of arguments is variable all
 arguments are pushed on the stack.
+
+@item thiscall
+@cindex functions that pop the argument stack on the 386
+On the Intel 386, the @code{thiscall} attribute causes the compiler to
+pass the first argument (if of integral type) in the register ECX.
+Subsequent and other typed arguments are passed on the stack. The called
+function will pop the arguments off the stack.
+If the number of arguments is variable all arguments are pushed on the
+stack.
+The @code{thiscall} attribute is intended for C++ non-static member functions.
+As gcc extension this calling convention can be used for C-functions
+and for static member methods.
 
 @item format (@var{archetype}, @var{string-index}, @var{first-to-check})
 @cindex @code{format} function attribute
@@ -2604,7 +2628,7 @@ an inlined PLT.
 @cindex indirect calls on ARM
 This attribute specifies how a particular function is called on
 ARM@.  Both attributes override the @option{-mlong-calls} (@pxref{ARM Options})
-command line switch and @code{#pragma long_calls} settings.  The
+command-line switch and @code{#pragma long_calls} settings.  The
 @code{long_call} attribute indicates that the function might be far
 away from the call site and require a different (more expensive)
 calling sequence.   The @code{short_call} attribute always places
@@ -2706,7 +2730,8 @@ attribute tells the compiler to use the Microsoft ABI, while the
 GNU/Linux and other systems.  The default is to use the Microsoft ABI
 when targeting Windows.  On all other systems, the default is the AMD ABI.
 
-Note, This feature is currently sorried out for Windows targets trying to
+Note, the @code{ms_abi} attribute for Windows targets currently requires
+the @option{-maccumulate-outgoing-args} option.
 
 @item ms_hook_prologue
 @cindex @code{ms_hook_prologue} attribute
@@ -3490,7 +3515,7 @@ static int x() __attribute__ ((alias ("y")));
 
 A weak reference is an alias that does not by itself require a
 definition to be given for the target symbol.  If the target symbol is
-only referenced through weak references, then the becomes a @code{weak}
+only referenced through weak references, then it becomes a @code{weak}
 undefined symbol.  If it is directly referenced, however, then such
 strong references prevail, and a definition will be required for the
 symbol, not necessarily in the same translation unit.
@@ -4153,7 +4178,7 @@ The @code{shared} attribute is only available on Microsoft Windows@.
 @cindex @code{tls_model} attribute
 The @code{tls_model} attribute sets thread-local storage model
 (@pxref{Thread-Local}) of a particular @code{__thread} variable,
-overriding @option{-ftls-model=} command line switch on a per-variable
+overriding @option{-ftls-model=} command-line switch on a per-variable
 basis.
 The @var{tls_model} argument should be one of @code{global-dynamic},
 @code{local-dynamic}, @code{initial-exec} or @code{local-exec}.
@@ -4923,8 +4948,10 @@ into their callers with the option @option{-finline-functions}.
 GCC implements three different semantics of declaring a function
 inline.  One is available with @option{-std=gnu89} or
 @option{-fgnu89-inline} or when @code{gnu_inline} attribute is present
-on all inline declarations, another when @option{-std=c99} or
-@option{-std=gnu99} (without @option{-fgnu89-inline}), and the third
+on all inline declarations, another when
+@option{-std=c99}, @option{-std=c1x},
+@option{-std=gnu99} or @option{-std=gnu1x}
+(without @option{-fgnu89-inline}), and the third
 is used when compiling C++.
 
 To declare a function inline, use the @code{inline} keyword in its
@@ -4934,7 +4961,7 @@ declaration, like this:
 static inline int
 inc (int *a)
 @{
-  (*a)++;
+  return (*a)++;
 @}
 @end smallexample
 
@@ -4952,7 +4979,7 @@ extern int inc (int *a);
 inline int
 inc (int *a)
 @{
-  (*a)++;
+  return (*a)++;
 @}
 @end smallexample
 
@@ -5855,10 +5882,12 @@ a general-purpose header file that should be usable by all programs,
 including ISO C programs.  The keywords @code{asm}, @code{typeof} and
 @code{inline} are not available in programs compiled with
 @option{-ansi} or @option{-std} (although @code{inline} can be used in a
-program compiled with @option{-std=c99}).  The ISO C99 keyword
+program compiled with @option{-std=c99} or @option{-std=c1x}).  The
+ISO C99 keyword
 @code{restrict} is only available when @option{-std=gnu99} (which will
 eventually be the default) or @option{-std=c99} (or the equivalent
-@option{-std=iso9899:1999}) is used.
+@option{-std=iso9899:1999}), or an option for a later standard
+version, is used.
 
 The way to solve these problems is to put @samp{__} at the beginning and
 end of each problematical keyword.  For example, use @code{__asm__}
@@ -6056,7 +6085,7 @@ purposes.
 
 On some targets, the instruction set contains SIMD vector instructions that
 operate on multiple values contained in one large register at the same time.
-For example, on the i386 the MMX, 3Dnow! and SSE extensions can be used
+For example, on the i386 the MMX, 3DNow!@: and SSE extensions can be used
 this way.
 
 The first step in using these extensions is to provide the necessary data
@@ -6844,8 +6873,8 @@ be emitted.
 
 @opindex ansi
 @opindex std
-Outside strict ISO C mode (@option{-ansi}, @option{-std=c90} or
-@option{-std=c99}), the functions
+Outside strict ISO C mode (@option{-ansi}, @option{-std=c90},
+@option{-std=c99} or @option{-std=c1x}), the functions
 @code{_exit}, @code{alloca}, @code{bcmp}, @code{bzero},
 @code{dcgettext}, @code{dgettext}, @code{dremf}, @code{dreml},
 @code{drem}, @code{exp10f}, @code{exp10l}, @code{exp10}, @code{ffsll},
@@ -8201,7 +8230,7 @@ The following machine modes are available for use with MMX built-in functions
 vector of eight 8-bit integers.  Some of the built-in functions operate on
 MMX registers as a whole 64-bit entity, these use @code{V1DI} as their mode.
 
-If 3Dnow extensions are enabled, @code{V2SF} is used as a mode for a vector
+If 3DNow!@: extensions are enabled, @code{V2SF} is used as a mode for a vector
 of two 32-bit floating point values.
 
 If SSE extensions are enabled, @code{V4SF} is used for a vector of four 32-bit
@@ -10965,6 +10994,10 @@ vector unsigned char vec_vrlb (vector unsigned char,
 
 vector float vec_round (vector float);
 
+vector float vec_recip (vector float, vector float);
+
+vector float vec_rsqrt (vector float);
+
 vector float vec_rsqrte (vector float);
 
 vector float vec_sel (vector float, vector float, vector bool int);
@@ -11893,8 +11926,10 @@ vector double vec_or (vector bool long, vector double);
 vector double vec_perm (vector double,
                         vector double,
                         vector unsigned char);
-vector float vec_rint (vector float);
 vector double vec_rint (vector double);
+vector double vec_recip (vector double, vector double);
+vector double vec_rsqrt (vector double);
+vector double vec_rsqrte (vector double);
 vector double vec_sel (vector double, vector double, vector bool long);
 vector double vec_sel (vector double, vector double, vector unsigned long);
 vector double vec_sub (vector double, vector double);
@@ -11935,9 +11970,19 @@ GCC provides a few other builtins on Powerpc to access certain instructions:
 float __builtin_recipdivf (float, float);
 float __builtin_rsqrtf (float);
 double __builtin_recipdiv (double, double);
+double __builtin_rsqrt (double);
 long __builtin_bpermd (long, long);
 int __builtin_bswap16 (int);
 @end smallexample
+
+The @code{vec_rsqrt}, @code{__builtin_rsqrt}, and
+@code{__builtin_rsqrtf} functions generate multiple instructions to
+implement the reciprocal sqrt functionality using reciprocal sqrt
+estimate instructions.
+
+The @code{__builtin_recipdiv}, and @code{__builtin_recipdivf}
+functions generate multiple instructions to implement division using
+the reciprocal estimate instructions.
 
 @node RX Built-in Functions
 @subsection RX Built-in Functions
@@ -12221,14 +12266,29 @@ subsequent functions.
 @subsection M32C Pragmas
 
 @table @code
-@item memregs @var{number}
+@item GCC memregs @var{number}
 @cindex pragma, memregs
-Overrides the command line option @code{-memregs=} for the current
+Overrides the command-line option @code{-memregs=} for the current
 file.  Use with care!  This pragma must be before any function in the
 file, and mixing different memregs values in different objects may
 make them incompatible.  This pragma is useful when a
 performance-critical function uses a memreg for temporary values,
 as it may allow you to reduce the number of memregs used.
+
+@item ADDRESS @var{name} @var{address}
+@cindex pragma, address
+For any declared symbols matching @var{name}, this does three things
+to that symbol: it forces the symbol to be located at the given
+address (a number), it forces the symbol to be volatile, and it
+changes the symbol's scope to be static.  This pragma exists for
+compatibility with other compilers, but note that the common
+@code{1234H} numeric syntax is not supported (use @code{0x1234}
+instead).  Example:
+
+@example
+#pragma ADDRESS port3 0x103
+char port3;
+@end example
 
 @end table
 
@@ -12467,7 +12527,7 @@ to be a small power of two and specifies the new alignment in bytes.
 @enumerate
 @item @code{#pragma pack(@var{n})} simply sets the new alignment.
 @item @code{#pragma pack()} sets the alignment to the one that was in
-effect when compilation started (see also command line option
+effect when compilation started (see also command-line option
 @option{-fpack-struct[=<n>]} @pxref{Code Gen Options}).
 @item @code{#pragma pack(push[,@var{n}])} pushes the current alignment
 setting on an internal stack and then optionally sets the new alignment.
@@ -12536,7 +12596,7 @@ are controllable and which option controls them.
 @var{kind} is @samp{error} to treat this diagnostic as an error,
 @samp{warning} to treat it like a warning (even if @option{-Werror} is
 in effect), or @samp{ignored} if the diagnostic is to be ignored.
-@var{option} is a double quoted string which matches the command line
+@var{option} is a double quoted string which matches the command-line
 option.
 
 @example
@@ -12545,15 +12605,30 @@ option.
 #pragma GCC diagnostic ignored "-Wformat"
 @end example
 
-Note that these pragmas override any command line options.  Also,
-while it is syntactically valid to put these pragmas anywhere in your
-sources, the only supported location for them is before any data or
-functions are defined.  Doing otherwise may result in unpredictable
-results depending on how the optimizer manages your sources.  If the
-same option is listed multiple times, the last one specified is the
-one that is in effect.  This pragma is not intended to be a general
-purpose replacement for command line options, but for implementing
-strict control over project policies.
+Note that these pragmas override any command-line options.  GCC keeps
+track of the location of each pragma, and issues diagnostics according
+to the state as of that point in the source file.  Thus, pragmas occurring
+after a line do not affect diagnostics caused by that line.
+
+@item #pragma GCC diagnostic push
+@itemx #pragma GCC diagnostic pop
+
+Causes GCC to remember the state of the diagnostics as of each
+@code{push}, and restore to that point at each @code{pop}.  If a
+@code{pop} has no matching @code{push}, the command line options are
+restored.
+
+@example
+#pragma GCC diagnostic error "-Wuninitialized"
+  foo(a);			/* error is given for this one */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+  foo(b);			/* no diagnostic for this one */
+#pragma GCC diagnostic pop
+  foo(c);			/* error is given for this one */
+#pragma GCC diagnostic pop
+  foo(d);			/* depends on command line options */
+@end example
 
 @end table
 
@@ -12710,7 +12785,8 @@ versions earlier than 4.4.
 @cindex struct
 @cindex union
 
-For compatibility with other compilers, GCC allows you to define
+As permitted by ISO C1X and for compatibility with other compilers,
+GCC allows you to define
 a structure or union that contains, as fields, structures and unions
 without names.  For example:
 
@@ -12743,17 +12819,17 @@ struct @{
 @end smallexample
 
 It is ambiguous which @code{a} is being referred to with @samp{foo.a}.
-Such constructs are not supported and must be avoided.  In the future,
-such constructs may be detected and treated as compilation errors.
+The compiler gives errors for such constructs.
 
 @opindex fms-extensions
 Unless @option{-fms-extensions} is used, the unnamed field must be a
 structure or union definition without a tag (for example, @samp{struct
-@{ int a; @};}).  If @option{-fms-extensions} is used, the field may
+@{ int a; @};}), or a @code{typedef} name for such a structure or
+union.  If @option{-fms-extensions} is used, the field may
 also be a definition with a tag such as @samp{struct foo @{ int a;
 @};}, a reference to a previously defined structure or union such as
 @samp{struct foo;}, or a reference to a @code{typedef} name for a
-previously defined structure or union type.
+previously defined structure or union type with a tag.
 
 @node Thread-Local
 @section Thread-Local Storage

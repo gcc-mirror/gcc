@@ -264,7 +264,7 @@ main (int argc, char **argv)
 
   progname = "genconfig";
 
-  if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
+  if (!init_rtx_reader_args (argc, argv))
     return (FATAL_EXIT_CODE);
 
   puts ("/* Generated automatically by the program `genconfig'");

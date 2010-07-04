@@ -5,8 +5,8 @@
 // Subject: bug in handling static const object of the enclosing class
 // Date: Tue, 1 Sep 92 10:38:44 EDT
 
-class X
-{ // { dg-message "1:X::X\\(const X&\\)" } implicit constructor
+class X	      // { dg-message "7:X::X\\(const X&\\)" } implicit constructor
+{
   private:
     int x;
   public:

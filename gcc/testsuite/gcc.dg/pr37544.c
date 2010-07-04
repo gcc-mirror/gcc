@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 /* { dg-options "-O2 -msse2 -mtune=core2 -mfpmath=387" { target { i?86-*-* x86_64-*-* } } } */
+/* { dg-require-effective-target sse2 { target { i?86-*-* x86_64-*-* } } } */
 
 #ifdef __i386__
 #include "cpuid.h"

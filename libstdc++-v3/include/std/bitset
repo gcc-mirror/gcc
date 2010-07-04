@@ -45,7 +45,6 @@
 
 #pragma GCC system_header
 
-#include <cstddef>     // For size_t
 #include <string>
 #include <bits/functexcept.h>   // For invalid_argument, out_of_range,
                                 // overflow_error
@@ -113,6 +112,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       _WordT
       _M_getword(size_t __pos) const
       { return _M_w[_S_whichword(__pos)]; }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      const _WordT*
+      _M_getdata() const
+      { return _M_w; }
+#endif
 
       _WordT&
       _M_hiword()
@@ -398,6 +403,12 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       _WordT
       _M_getword(size_t) const
       { return _M_w; }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      const _WordT*
+      _M_getdata() const
+      { return &_M_w; }
+#endif
 
       _WordT&
       _M_hiword()
@@ -707,6 +718,10 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 	  _Sanitize<_Nb % _GLIBCXX_BITSET_BITS_PER_WORD>::
 	    _S_do_sanitize(this->_M_hiword());
 	}
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      template<typename> friend class hash;
+#endif
 
     public:
       /**
@@ -1469,6 +1484,39 @@ _GLIBCXX_END_NESTED_NAMESPACE
 
 #undef _GLIBCXX_BITSET_WORDS
 #undef _GLIBCXX_BITSET_BITS_PER_WORD
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+
+#include <bits/functional_hash.h>
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  // DR 1182.
+  /// std::hash specialization for bitset.
+  template<size_t _Nb>
+    struct hash<_GLIBCXX_STD_D::bitset<_Nb>>
+    : public std::unary_function<_GLIBCXX_STD_D::bitset<_Nb>, size_t>
+    {
+      size_t
+      operator()(const _GLIBCXX_STD_D::bitset<_Nb>& __b) const
+      {
+	const size_t __clength = (_Nb + __CHAR_BIT__ - 1) / __CHAR_BIT__;
+	return std::_Fnv_hash::hash(__b._M_getdata(), __clength);
+      }
+    };
+
+  template<>
+    struct hash<_GLIBCXX_STD_D::bitset<0>>
+    : public std::unary_function<_GLIBCXX_STD_D::bitset<0>, size_t>
+    {
+      size_t
+      operator()(const _GLIBCXX_STD_D::bitset<0>&) const
+      { return 0; }
+    };
+
+_GLIBCXX_END_NAMESPACE
+
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #ifdef _GLIBCXX_DEBUG
 # include <debug/bitset>

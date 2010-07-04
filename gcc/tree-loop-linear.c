@@ -24,20 +24,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "ggc.h"
 #include "tree.h"
-#include "target.h"
-
-#include "rtl.h"
 #include "basic-block.h"
-#include "diagnostic.h"
 #include "obstack.h"
 #include "tree-flow.h"
 #include "tree-dump.h"
 #include "timevar.h"
 #include "cfgloop.h"
-#include "expr.h"
-#include "optabs.h"
 #include "tree-chrec.h"
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
@@ -358,14 +351,15 @@ linear_transform_loops (void)
 	goto free_and_continue;
 
       lambda_collect_parameters (datarefs, &lambda_parameters);
-      if (!lambda_compute_access_matrices (datarefs, lambda_parameters, nest))
+      if (!lambda_compute_access_matrices (datarefs, lambda_parameters,
+					   nest, &lambda_obstack))
 	goto free_and_continue;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	dump_ddrs (dump_file, dependence_relations);
 
       /* Build the transformation matrix.  */
-      trans = lambda_trans_matrix_new (depth, depth);
+      trans = lambda_trans_matrix_new (depth, depth, &lambda_obstack);
       lambda_matrix_id (LTM_MATRIX (trans), depth);
       trans = try_interchange_loops (trans, depth, dependence_relations,
 				     datarefs, loop_nest);

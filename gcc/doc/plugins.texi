@@ -1,4 +1,4 @@
-@c Copyright (c) 2009 Free Software Foundation, Inc.
+@c Copyright (c) 2009, 2010 Free Software Foundation, Inc.
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -22,6 +22,11 @@ The plugin arguments are parsed by GCC and passed to respective
 plugins as key-value pairs. Multiple plugins can be invoked by
 specifying multiple @option{-fplugin} arguments.
 
+A plugin can be simply given by its short name (no dots or
+slashes). When simply passing @option{-fplugin=NAME}, the plugin is
+loaded from the @file{plugin} directory, so @option{-fplugin=NAME} is
+the same as @option{-fplugin=`gcc -print-file-name=plugin`/NAME.so},
+using backquote shell syntax to query the @file{plugin} directory.
 
 @section Plugin API
 
@@ -45,8 +50,10 @@ fatal error: plugin <name> is not licensed under a GPL-compatible license
 compilation terminated
 @end smallexample
 
-The type of the symbol is irrelevant.  The compiler merely asserts that
-it exists in the global scope.  Something like this is enough:
+The declared type of the symbol should be int, to match a forward declaration
+in @file{gcc-plugin.h} that suppresses C++ mangling.  It does not need to be in
+any allocated section, though.  The compiler merely asserts that
+the symbol exists in the global scope.  Something like this is enough:
 
 @smallexample
 int plugin_is_GPL_compatible;
@@ -406,6 +413,9 @@ is installed, containing all the header files needed to build plugins.
 On most systems, you can query this @code{plugin} directory by
 invoking @command{gcc -print-file-name=plugin} (replace if needed
 @command{gcc} with the appropriate program path).
+
+Inside plugins, this @code{plugin} directory name can be queried by
+calling @code{default_plugin_dir_name ()}.
 
 The following GNU Makefile excerpt shows how to build a simple plugin:
 

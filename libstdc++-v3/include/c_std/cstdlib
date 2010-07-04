@@ -43,7 +43,6 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-#include <cstddef>
 
 #if !_GLIBCXX_HOSTED
 // The C standard does not require a freestanding implementation to

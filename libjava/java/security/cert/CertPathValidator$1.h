@@ -27,7 +27,7 @@ class java::security::cert::CertPathValidator$1 : public ::java::lang::Object
 public: // actually package-private
   CertPathValidator$1();
 public:
-  ::java::lang::Object * run();
+  virtual ::java::lang::Object * run();
   static ::java::lang::Class class$;
 };
 

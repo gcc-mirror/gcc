@@ -5,7 +5,7 @@
    use forward- and back-slash in path names interchangeably, and
    some of them have case-insensitive file names.
 
-   Copyright 2000, 2001, 2007 Free Software Foundation, Inc.
+   Copyright 2000, 2001, 2007, 2010 Free Software Foundation, Inc.
 
 This file is part of BFD, the Binary File Descriptor library.
 
@@ -31,24 +31,44 @@ extern "C" {
 #endif
 
 #if defined(__MSDOS__) || defined(_WIN32) || defined(__OS2__) || defined (__CYGWIN__)
-
-#ifndef HAVE_DOS_BASED_FILE_SYSTEM
-#define HAVE_DOS_BASED_FILE_SYSTEM 1
+#  ifndef HAVE_DOS_BASED_FILE_SYSTEM
+#    define HAVE_DOS_BASED_FILE_SYSTEM 1
+#  endif
+#  define HAS_DRIVE_SPEC(f) HAS_DOS_DRIVE_SPEC (f)
+#  define IS_DIR_SEPARATOR(c) IS_DOS_DIR_SEPARATOR (c)
+#  define IS_ABSOLUTE_PATH(f) IS_DOS_ABSOLUTE_PATH (f)
+#else /* not DOSish */
+#  define HAS_DRIVE_SPEC(f) (0)
+#  define IS_DIR_SEPARATOR(c) IS_UNIX_DIR_SEPARATOR (c)
+#  define IS_ABSOLUTE_PATH(f) IS_UNIX_ABSOLUTE_PATH (f)
 #endif
 
-#define IS_DIR_SEPARATOR(c)	((c) == '/' || (c) == '\\')
-/* Note that IS_ABSOLUTE_PATH accepts d:foo as well, although it is
-   only semi-absolute.  This is because the users of IS_ABSOLUTE_PATH
-   want to know whether to prepend the current working directory to
-   a file name, which should not be done with a name like d:foo.  */
-#define IS_ABSOLUTE_PATH(f)	(IS_DIR_SEPARATOR((f)[0]) || (((f)[0]) && ((f)[1] == ':')))
+#define IS_DIR_SEPARATOR_1(dos_based, c)				\
+  (((c) == '/')								\
+   || (((c) == '\\') && (dos_based)))
 
-#else  /* not DOSish */
+#define HAS_DRIVE_SPEC_1(dos_based, f)			\
+  ((f)[0] && ((f)[1] == ':') && (dos_based))
 
-#define IS_DIR_SEPARATOR(c)	((c) == '/')
-#define IS_ABSOLUTE_PATH(f)	(IS_DIR_SEPARATOR((f)[0]))
+/* Remove the drive spec from F, assuming HAS_DRIVE_SPEC (f).
+   The result is a pointer to the remainder of F.  */
+#define STRIP_DRIVE_SPEC(f)	((f) + 2)
 
-#endif /* not DOSish */
+#define IS_DOS_DIR_SEPARATOR(c) IS_DIR_SEPARATOR_1 (1, c)
+#define IS_DOS_ABSOLUTE_PATH(f) IS_ABSOLUTE_PATH_1 (1, f)
+#define HAS_DOS_DRIVE_SPEC(f) HAS_DRIVE_SPEC_1 (1, f)
+
+#define IS_UNIX_DIR_SEPARATOR(c) IS_DIR_SEPARATOR_1 (0, c)
+#define IS_UNIX_ABSOLUTE_PATH(f) IS_ABSOLUTE_PATH_1 (0, f)
+
+/* Note that when DOS_BASED is true, IS_ABSOLUTE_PATH accepts d:foo as
+   well, although it is only semi-absolute.  This is because the users
+   of IS_ABSOLUTE_PATH want to know whether to prepend the current
+   working directory to a file name, which should not be done with a
+   name like d:foo.  */
+#define IS_ABSOLUTE_PATH_1(dos_based, f)		 \
+  (IS_DIR_SEPARATOR_1 (dos_based, (f)[0])		 \
+   || HAS_DRIVE_SPEC_1 (dos_based, f))
 
 extern int filename_cmp (const char *s1, const char *s2);
 #define FILENAME_CMP(s1, s2)	filename_cmp(s1, s2)

@@ -41,7 +41,7 @@ class gnu::javax::naming::giop::GiopNamingServiceFactory$1 : public ::java::lang
 public: // actually package-private
   GiopNamingServiceFactory$1(::gnu::javax::naming::giop::GiopNamingServiceFactory *, ::org::omg::CORBA::ORB *);
 public:
-  void run();
+  virtual void run();
 public: // actually package-private
   ::gnu::javax::naming::giop::GiopNamingServiceFactory * __attribute__((aligned(__alignof__( ::java::lang::Thread)))) this$0;
 private:

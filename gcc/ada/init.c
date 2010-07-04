@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2009, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -214,12 +214,10 @@ nanosleep (struct timestruc_t *Rqtp, struct timestruc_t *Rmtp)
 
 #endif /* _AIXVERSION_430 */
 
-static void __gnat_error_handler (int sig, siginfo_t * si, void * uc);
-
 static void
 __gnat_error_handler (int sig,
-		      siginfo_t * si ATTRIBUTE_UNUSED,
-		      void * uc ATTRIBUTE_UNUSED)
+		      siginfo_t *si ATTRIBUTE_UNUSED,
+		      void *ucontext ATTRIBUTE_UNUSED)
 {
   struct Exception_Data *exception;
   const char *msg;
@@ -287,7 +285,6 @@ __gnat_install_handler (void)
 #include <signal.h>
 #include <sys/siginfo.h>
 
-static void __gnat_error_handler (int, siginfo_t *, struct sigcontext *);
 extern char *__gnat_get_code_loc (struct sigcontext *);
 extern void __gnat_set_code_loc (struct sigcontext *, char *);
 extern size_t __gnat_machine_state_length (void);
@@ -310,7 +307,7 @@ __gnat_adjust_context_for_raise (int signo, void *ucontext)
 }
 
 static void
-__gnat_error_handler (int sig, siginfo_t *sip, struct sigcontext *context)
+__gnat_error_handler (int sig, siginfo_t *si, void *ucontext)
 {
   struct Exception_Data *exception;
   static int recurse = 0;
@@ -318,10 +315,10 @@ __gnat_error_handler (int sig, siginfo_t *sip, struct sigcontext *context)
 
   /* Adjusting is required for every fault context, so adjust for this one
      now, before we possibly trigger a recursive fault below.  */
-  __gnat_adjust_context_for_raise (sig, context);
+  __gnat_adjust_context_for_raise (sig, ucontext);
 
   /* If this was an explicit signal from a "kill", just resignal it.  */
-  if (SI_FROMUSER (sip))
+  if (SI_FROMUSER (si))
     {
       signal (sig, SIG_DFL);
       kill (getpid(), sig);
@@ -338,8 +335,9 @@ __gnat_error_handler (int sig, siginfo_t *sip, struct sigcontext *context)
 	 ??? Using a static variable here isn't task-safe, but it's
 	 much too hard to do anything else and we're just determining
 	 which exception to raise.  */
-      if (sip->si_code == SEGV_ACCERR
-	  || (((long) sip->si_addr) & 3) != 0
+      if (si->si_code == SEGV_ACCERR
+	  || (long) si->si_addr == 0
+	  || (((long) si->si_addr) & 3) != 0
 	  || recurse)
 	{
 	  exception = &constraint_error;
@@ -353,9 +351,9 @@ __gnat_error_handler (int sig, siginfo_t *sip, struct sigcontext *context)
 	     the actual address, just to be on the same page.  */
 	  recurse++;
 	  ((volatile char *)
-	   ((long) sip->si_addr & - getpagesize ()))[getpagesize ()];
-	  msg = "stack overflow (or erroneous memory access)";
+	   ((long) si->si_addr & - getpagesize ()))[getpagesize ()];
 	  exception = &storage_error;
+	  msg = "stack overflow (or erroneous memory access)";
 	}
       break;
 
@@ -438,13 +436,9 @@ __gnat_machine_state_length (void)
 #include <sys/ucontext.h>
 
 static void
-__gnat_error_handler (int sig, siginfo_t *siginfo, void *ucontext);
-
-static void
-__gnat_error_handler
-  (int sig,
-   siginfo_t *siginfo ATTRIBUTE_UNUSED,
-   void *ucontext ATTRIBUTE_UNUSED)
+__gnat_error_handler (int sig,
+		      siginfo_t *si ATTRIBUTE_UNUSED,
+		      void *ucontext ATTRIBUTE_UNUSED)
 {
   struct Exception_Data *exception;
   const char *msg;
@@ -570,8 +564,6 @@ void fake_linux_sigemptyset (sigset_t *set) {
 
 #endif
 
-static void __gnat_error_handler (int, siginfo_t *siginfo, void *ucontext);
-
 #if defined (i386) || defined (__x86_64__) || defined (__ia64__)
 
 #define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
@@ -581,11 +573,7 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 {
   mcontext_t *mcontext = &((ucontext_t *) ucontext)->uc_mcontext;
 
-  /* On the i386 and x86-64 architectures, we specifically detect calls to
-     the null address and entirely fold the not-yet-fully-established frame
-     to prevent it from stopping the unwinding.
-
-     On the i386 and x86-64 architectures, stack checking is performed by
+  /* On the i386 and x86-64 architectures, stack checking is performed by
      means of probes with moving stack pointer, that is to say the probed
      address is always the value of the stack pointer.  Upon hitting the
      guard page, the stack pointer therefore points to an inaccessible
@@ -605,25 +593,13 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 
 #if defined (i386)
   unsigned long *pc = (unsigned long *)mcontext->gregs[REG_EIP];
-  /* The call insn pushes the return address onto the stack.  Pop it.  */
-  if (pc == NULL)
-    {
-      mcontext->gregs[REG_EIP] = *(unsigned long *)mcontext->gregs[REG_ESP];
-      mcontext->gregs[REG_ESP] += 4;
-    }
   /* The pattern is "orl $0x0,(%esp)" for a probe in 32-bit mode.  */
-  else if (signo == SIGSEGV && *pc == 0x00240c83)
+  if (signo == SIGSEGV && pc && *pc == 0x00240c83)
     mcontext->gregs[REG_ESP] += 4096 + 4 * sizeof (unsigned long);
 #elif defined (__x86_64__)
   unsigned long *pc = (unsigned long *)mcontext->gregs[REG_RIP];
-  /* The call insn pushes the return address onto the stack.  Pop it.  */
-  if (pc == NULL)
-    {
-      mcontext->gregs[REG_RIP] = *(unsigned long *)mcontext->gregs[REG_RSP];
-      mcontext->gregs[REG_RSP] += 8;
-    }
   /* The pattern is "orq $0x0,(%rsp)" for a probe in 64-bit mode.  */
-  else if (signo == SIGSEGV && (*pc & 0xffffffffff) == 0x00240c8348)
+  if (signo == SIGSEGV && pc && (*pc & 0xffffffffff) == 0x00240c8348)
     mcontext->gregs[REG_RSP] += 4096 + 4 * sizeof (unsigned long);
 #elif defined (__ia64__)
   /* ??? The IA-64 unwinder doesn't compensate for signals.  */
@@ -634,12 +610,9 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 #endif
 
 static void
-__gnat_error_handler (int sig,
-                      siginfo_t *siginfo ATTRIBUTE_UNUSED,
-                      void *ucontext)
+__gnat_error_handler (int sig, siginfo_t *si ATTRIBUTE_UNUSED, void *ucontext)
 {
   struct Exception_Data *exception;
-  static int recurse = 0;
   const char *msg;
 
   /* Adjusting is required for every fault context, so adjust for this one
@@ -649,42 +622,24 @@ __gnat_error_handler (int sig,
   switch (sig)
     {
     case SIGSEGV:
-      /* If the problem was permissions, this is a constraint error.
-       Likewise if the failing address isn't maximally aligned or if
-       we've recursed.
+      /* Here we would like a discrimination test to see whether the page
+	 before the faulting address is accessible.  Unfortunately, Linux
+	 seems to have no way of giving us the faulting address.
 
-       ??? Using a static variable here isn't task-safe, but it's
-       much too hard to do anything else and we're just determining
-       which exception to raise.  */
-      if (recurse)
-      {
-        exception = &constraint_error;
-        msg = "SIGSEGV";
-      }
-      else
-      {
-        /* Here we would like a discrimination test to see whether the
-           page before the faulting address is accessible. Unfortunately
-           Linux seems to have no way of giving us the faulting address.
+	 In old versions of init.c, we had a test of the page before the
+	 stack pointer:
 
-           In versions of a-init.c before 1.95, we had a test of the page
-           before the stack pointer using:
+	   ((volatile char *)
+	    ((long) si->esp_at_signal & - getpagesize ()))[getpagesize ()];
 
-            recurse++;
-             ((volatile char *)
-              ((long) info->esp_at_signal & - getpagesize ()))[getpagesize ()];
+	 but that's wrong since it tests the stack pointer location and the
+	 stack probing code may not move it until all probes succeed.
 
-           but that's wrong, since it tests the stack pointer location, and
-           the current stack probe code does not move the stack pointer
-           until all probes succeed.
-
-           For now we simply do not attempt any discrimination at all. Note
-           that this is quite acceptable, since a "real" SIGSEGV can only
-           occur as the result of an erroneous program.  */
-
-        msg = "stack overflow (or erroneous memory access)";
-        exception = &storage_error;
-      }
+	 For now we simply do not attempt any discrimination at all. Note
+	 that this is quite acceptable, since a "real" SIGSEGV can only
+	 occur as the result of an erroneous program.  */
+      exception = &storage_error;
+      msg = "stack overflow (or erroneous memory access)";
       break;
 
     case SIGBUS:
@@ -702,11 +657,10 @@ __gnat_error_handler (int sig,
       msg = "unhandled signal";
     }
 
-  recurse = 0;
   Raise_From_Signal_Handler (exception, msg);
 }
 
-#if defined (i386) || defined (__x86_64__)
+#if defined (i386) || defined (__x86_64__) || defined (__powerpc__)
 /* This must be in keeping with System.OS_Interface.Alternate_Stack_Size.  */
 char __gnat_alternate_stack[16 * 1024]; /* 2 * SIGSTKSZ */
 #endif
@@ -747,7 +701,7 @@ __gnat_install_handler (void)
      handled properly, avoiding a SEGV generation from stack usage by the
      handler itself.  */
 
-#if defined (i386) || defined (__x86_64__)
+#if defined (i386) || defined (__x86_64__) || defined (__powerpc__)
   stack_t stack;
   stack.ss_sp = __gnat_alternate_stack;
   stack.ss_size = sizeof (__gnat_alternate_stack);
@@ -768,7 +722,7 @@ __gnat_install_handler (void)
     sigaction (SIGILL,  &act, NULL);
   if (__gnat_get_interrupt_state (SIGBUS) != 's')
     sigaction (SIGBUS,  &act, NULL);
-#if defined (i386) || defined (__x86_64__)
+#if defined (i386) || defined (__x86_64__) || defined (__powerpc__)
   act.sa_flags |= SA_ONSTACK;
 #endif
   if (__gnat_get_interrupt_state (SIGSEGV) != 's')
@@ -799,8 +753,6 @@ __gnat_install_handler (void)
 extern int (*Check_Abort_Status) (void);
 
 extern struct Exception_Data _abort_signal;
-
-static void __gnat_error_handler (int, int, sigcontext_t *);
 
 /* We are not setting the SA_SIGINFO bit in the sigaction flags when
    connecting that handler, with the effects described in the sigaction
@@ -1007,57 +959,12 @@ __gnat_install_handler(void)
 #define RETURN_ADDR_OFFSET 0
 #endif
 
-/* Likewise regarding how the "instruction pointer" register slot can
-   be identified in signal machine contexts.  We have either "REG_PC"
-   or "PC" at hand, depending on the target CPU and Solaris version.  */
-#if !defined (REG_PC)
-#define REG_PC PC
-#endif
-
-static void __gnat_error_handler (int, siginfo_t *, void *);
-
-#define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
-
-void
-__gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
-{
-  mcontext_t *mcontext = &((ucontext_t *) ucontext)->uc_mcontext;
-  unsigned long *pc = (unsigned long *)mcontext->gregs[REG_PC];
-
-  /* We specifically detect calls to the null address and entirely fold
-     the not-yet-fully-established frame to prevent it from stopping the
-     unwinding.  */
-  if (pc == NULL)
-#if defined (__sparc)
-    /* The call insn moves the return address into %o7.  Move it back.  */
-    mcontext->gregs[REG_PC] = mcontext->gregs[REG_O7];
-#elif defined (i386)
-    {
-      /* The call insn pushes the return address onto the stack.  Pop it.  */
-      mcontext->gregs[REG_PC] = *(unsigned long *)mcontext->gregs[UESP];
-      mcontext->gregs[UESP] += 4;
-    }
-#elif defined (__x86_64__)
-    {
-      /* The call insn pushes the return address onto the stack.  Pop it.  */
-      mcontext->gregs[REG_PC] = *(unsigned long *)mcontext->gregs[REG_RSP];
-      mcontext->gregs[REG_RSP] += 8;
-    }
-#else
-#error architecture not supported on Solaris
-#endif
-}
-
 static void
-__gnat_error_handler (int sig, siginfo_t *sip, void *ucontext)
+__gnat_error_handler (int sig, siginfo_t *si, void *ucontext ATTRIBUTE_UNUSED)
 {
   struct Exception_Data *exception;
   static int recurse = 0;
   const char *msg;
-
-  /* Adjusting is required for every fault context, so adjust for this one
-     now, before we possibly trigger a recursive fault below.  */
-  __gnat_adjust_context_for_raise (sig, ucontext);
 
   switch (sig)
     {
@@ -1069,9 +976,9 @@ __gnat_error_handler (int sig, siginfo_t *sip, void *ucontext)
 	 ??? Using a static variable here isn't task-safe, but it's
 	 much too hard to do anything else and we're just determining
 	 which exception to raise.  */
-      if (sip->si_code == SEGV_ACCERR
-	  || (long) sip->si_addr == 0
-	  || (((long) sip->si_addr) & 3) != 0
+      if (si->si_code == SEGV_ACCERR
+	  || (long) si->si_addr == 0
+	  || (((long) si->si_addr) & 3) != 0
 	  || recurse)
 	{
 	  exception = &constraint_error;
@@ -1085,7 +992,7 @@ __gnat_error_handler (int sig, siginfo_t *sip, void *ucontext)
 	     the actual address, just to be on the same page.  */
 	  recurse++;
 	  ((volatile char *)
-	   ((long) sip->si_addr & - getpagesize ()))[getpagesize ()];
+	   ((long) si->si_addr & - getpagesize ()))[getpagesize ()];
 	  exception = &storage_error;
 	  msg = "stack overflow (or erroneous memory access)";
 	}
@@ -1661,15 +1568,18 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 
 #endif
 
-/* Feature logical name and global variable address pair */
+/* Feature logical name and global variable address pair.
+   If we ever add another feature logical to this list, the
+   feature struct will need to be enhanced to take into account
+   possible values for *gl_addr.  */
 struct feature {char *name; int* gl_addr;};
 
 /* Default values for GNAT features set by environment. */
-int __gl_no_malloc_64 = 0;
+int __gl_heap_size = 64;
 
 /* Array feature logical names and global variable addresses */
 static struct feature features[] = {
-  {"GNAT$NO_MALLOC_64", &__gl_no_malloc_64},
+  {"GNAT$NO_MALLOC_64", &__gl_heap_size},
   {0, 0}
 };
 
@@ -1700,10 +1610,14 @@ void __gnat_set_features ()
        else
          strcpy (buff, "");
 
-       if (strcmp (buff, "ENABLE") == 0)
-          *features [i].gl_addr = 1;
-       else if (strcmp (buff, "DISABLE") == 0)
-          *features [i].gl_addr = 0;
+       if ((strcmp (buff, "ENABLE") == 0) ||
+           (strcmp (buff, "TRUE") == 0) ||
+           (strcmp (buff, "1") == 0))
+          *features [i].gl_addr = 32;
+       else if ((strcmp (buff, "DISABLE") == 0) ||
+                (strcmp (buff, "FALSE") == 0) ||
+                (strcmp (buff, "0") == 0))
+          *features [i].gl_addr = 64;
     }
 
     __gnat_features_set = 1;
@@ -1719,11 +1633,10 @@ void __gnat_set_features ()
 #include <sys/ucontext.h>
 #include <unistd.h>
 
-static void __gnat_error_handler (int, siginfo_t *, ucontext_t *);
-
 static void
-__gnat_error_handler (int sig, siginfo_t *info __attribute__ ((unused)),
-		      ucontext_t *ucontext)
+__gnat_error_handler (int sig,
+		      siginfo_t *si ATTRIBUTE_UNUSED,
+		      void *ucontext ATTRIBUTE_UNUSED)
 {
   struct Exception_Data *exception;
   const char *msg;
@@ -1939,8 +1852,9 @@ __gnat_map_signal (int sig)
    propagation after the required low level adjustments.  */
 
 void
-__gnat_error_handler (int sig, void * si ATTRIBUTE_UNUSED,
-		      struct sigcontext * sc)
+__gnat_error_handler (int sig,
+		      void *si ATTRIBUTE_UNUSED,
+		      struct sigcontext *sc ATTRIBUTE_UNUSED)
 {
   sigset_t mask;
 
@@ -2176,8 +2090,6 @@ __gnat_install_handler(void)
 /* This must be in keeping with System.OS_Interface.Alternate_Stack_Size.  */
 char __gnat_alternate_stack[32 * 1024]; /* 1 * MINSIGSTKSZ */
 
-static void __gnat_error_handler (int sig, siginfo_t * si, void * uc);
-
 /* Defined in xnu unix_signal.c.
    Tell the kernel to re-use alt stack when delivering a signal.  */
 #define	UC_RESET_ALT_STACK	0x80000000
@@ -2208,7 +2120,7 @@ __gnat_is_stack_guard (mach_vm_address_t addr)
 }
 
 static void
-__gnat_error_handler (int sig, siginfo_t * si, void * uc ATTRIBUTE_UNUSED)
+__gnat_error_handler (int sig, siginfo_t *si, void *ucontext ATTRIBUTE_UNUSED)
 {
   struct Exception_Data *exception;
   const char *msg;
@@ -2306,10 +2218,10 @@ __gnat_install_handler (void)
 /*********************/
 
 /* This routine is called as each process thread is created, for possible
-   initialization of the FP processor.  This version is used under INTERIX,
-   WIN32 and could be used under OS/2.  */
+   initialization of the FP processor.  This version is used under INTERIX
+   and WIN32.  */
 
-#if defined (_WIN32) || defined (__INTERIX) || defined (__EMX__) \
+#if defined (_WIN32) || defined (__INTERIX) \
   || defined (__Lynx__) || defined(__NetBSD__) || defined(__FreeBSD__) \
   || defined (__OpenBSD__)
 

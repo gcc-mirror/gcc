@@ -24,7 +24,7 @@ class java::awt::AWTKeyStroke$2 : public ::java::lang::Object
 public: // actually package-private
   AWTKeyStroke$2();
 public:
-  ::java::lang::Object * run();
+  virtual ::java::lang::Object * run();
   static ::java::lang::Class class$;
 };
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2009 Free Software Foundation, Inc.
+# Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,6 +16,30 @@
 
 # Contributed by Diego Novillo <dnovillo@google.com>
 
+# Prune messages that aren't useful.
+
+proc lto_prune_warns { text } {
+
+    verbose "lto_prune_warns: entry: $text" 2
+
+    # Many tests that use visibility will still pass on platforms that don't support it.
+    regsub -all "(^|\n)\[^\n\]*: warning: visibility attribute not supported in this configuration; ignored\[^\n\]*" $text "" text
+
+    # And any stray location lines.
+    regsub -all "(^|\n)\[^\n\]*: In function \[^\n\]*" $text "" text
+    regsub -all "(^|\n)In file included from \[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[ \t\]*from \[^\n\]*" $text "" text
+
+    # Sun ld warns about common symbols with differing sizes.  Unlike GNU ld
+    # --warn-common (off by default), they cannot be disabled.
+    regsub -all "(^|\n)ld: warning: symbol `\[^\n\]*' has differing sizes:" $text "" text
+    regsub -all "(^|\n)\[ \t\]*\[\(\]file \[^\n\]* value=\[^\n\]*; file \[^\n\]* value=\[^\n\]*\[)\];" $text "" text
+    regsub -all "(^|\n)\[ \t\]*\[^\n\]* definition taken" $text "" text
+
+    verbose "lto_prune_warns: exit: $text" 2
+
+    return $text
+}
 
 # lto_init -- called at the start of each subdir of tests
 
@@ -86,6 +110,7 @@ set lto_skip_list $LTO_SKIPS
 
 load_lib dg.exp
 load_lib gcc-dg.exp
+load_lib gcc.exp
 
 # lto-obj -- compile to an object file
 #
@@ -113,7 +138,15 @@ proc lto-obj { source dest optall optfile optstr xfaildata } {
     lappend options "additional_flags=$optall $optfile"
 
     set compiler_conditional_xfail_data $xfaildata
-    set comp_output [${tool}_target_compile "$source" "$dest" object $options]
+
+    # Allow C source files to mix freely with other languages
+    if [ string match "*.c" $source ] then {
+      set comp_output [gcc_target_compile "$source" "$dest" object $options]
+    } else {
+      set comp_output [${tool}_target_compile "$source" "$dest" object $options]
+    }
+    # Prune unimportant visibility warnings before checking output.
+    set comp_output [lto_prune_warns $comp_output]
     ${tool}_check_compile "$testcase $dest assemble" $optstr $dest $comp_output
 }
 
@@ -147,7 +180,11 @@ proc lto-link-and-maybe-run { testname objlist dest optall optfile optstr } {
     # Link the objects into an executable.
     set comp_output [${tool}_target_compile "$objlist" $dest executable \
 		     "$options"]
-    if ![${tool}_check_compile "$testcase $testname link" "" \
+
+    # Prune unimportant visibility warnings before checking output.
+    set comp_output [lto_prune_warns $comp_output]
+
+    if ![${tool}_check_compile "$testcase $testname link" $optstr \
 	 $dest $comp_output] then {
 	unresolved "$testcase $testname execute $optstr"
 	return

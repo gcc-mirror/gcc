@@ -17,9 +17,9 @@ private:
   void checkMod();
   ::java::util::WeakHashMap$WeakBucket$WeakEntry * findNext(::java::util::WeakHashMap$WeakBucket$WeakEntry *);
 public:
-  jboolean hasNext();
-  ::java::lang::Object * next();
-  void remove();
+  virtual jboolean hasNext();
+  virtual ::java::lang::Object * next();
+  virtual void remove();
 public: // actually package-private
   ::java::util::WeakHashMap$WeakBucket$WeakEntry * __attribute__((aligned(__alignof__( ::java::lang::Object)))) lastEntry;
   ::java::util::WeakHashMap$WeakBucket$WeakEntry * nextEntry;

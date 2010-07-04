@@ -31,7 +31,7 @@ TOOLS_MANFILES = \
 	gtnameserv.1 \
 	gjdoc.1
 
-POD2MAN = pod2man --center="GNU" --release="$(VERSION)"
+POD2MAN = pod2man --center="GNU" --release="$(VERSION)" --date=$(shell sed -n '1s/ .*//p' <$(srcdir)/../ChangeLog)
 TEXI2POD = perl $(srcdir)/texi2pod.pl
 STAMP = echo timestamp >
 

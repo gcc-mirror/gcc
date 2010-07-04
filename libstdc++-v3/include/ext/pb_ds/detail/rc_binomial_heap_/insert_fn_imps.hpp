@@ -51,20 +51,20 @@ push(const_reference r_val)
 
     node_pointer p_nd = base_type::get_new_node_for_insert(r_val);
 
-  p_nd->m_p_l_child = p_nd->m_p_prev_or_parent = NULL;
+  p_nd->m_p_l_child = p_nd->m_p_prev_or_parent = 0;
   p_nd->m_metadata = 0;
 
-  if (base_type::m_p_max == NULL || Cmp_Fn::operator()(base_type::m_p_max->m_value, r_val))
+  if (base_type::m_p_max == 0 || Cmp_Fn::operator()(base_type::m_p_max->m_value, r_val))
     base_type::m_p_max = p_nd;
 
   p_nd->m_p_next_sibling = base_type::m_p_root;
 
-  if (base_type::m_p_root != NULL)
+  if (base_type::m_p_root != 0)
     base_type::m_p_root->m_p_prev_or_parent = p_nd;
 
   base_type::m_p_root = p_nd;
 
-  if (p_nd->m_p_next_sibling != NULL&&  p_nd->m_p_next_sibling->m_metadata == 0)
+  if (p_nd->m_p_next_sibling != 0&&  p_nd->m_p_next_sibling->m_metadata == 0)
     m_rc.push(p_nd);
 
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
@@ -95,14 +95,14 @@ link_with_next_sibling(node_pointer p_nd)
 {
   node_pointer p_next = p_nd->m_p_next_sibling;
 
-  _GLIBCXX_DEBUG_ASSERT(p_next != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_next != 0);
   _GLIBCXX_DEBUG_ASSERT(p_next->m_p_prev_or_parent == p_nd);
 
   if (Cmp_Fn::operator()(p_nd->m_value, p_next->m_value))
     {
       p_next->m_p_prev_or_parent = p_nd->m_p_prev_or_parent;
 
-      if (p_next->m_p_prev_or_parent == NULL)
+      if (p_next->m_p_prev_or_parent == 0)
 	base_type::m_p_root = p_next;
       else
 	p_next->m_p_prev_or_parent->m_p_next_sibling = p_next;
@@ -119,7 +119,7 @@ link_with_next_sibling(node_pointer p_nd)
 
   p_nd->m_p_next_sibling = p_next->m_p_next_sibling;
 
-  if (p_nd->m_p_next_sibling != NULL)
+  if (p_nd->m_p_next_sibling != 0)
     p_nd->m_p_next_sibling->m_p_prev_or_parent = p_nd;
 
   if (base_type::m_p_max == p_next)
@@ -144,11 +144,11 @@ make_0_exposed()
 
   m_rc.pop();
 
-  _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_next_sibling != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_next_sibling != 0);
   _GLIBCXX_DEBUG_ASSERT(p_nd->m_metadata == p_nd->m_p_next_sibling->m_metadata);
 
   node_pointer p_res = link_with_next_sibling(p_nd);
 
-  if (p_res->m_p_next_sibling != NULL&&  p_res->m_metadata == p_res->m_p_next_sibling->m_metadata)
+  if (p_res->m_p_next_sibling != 0&&  p_res->m_metadata == p_res->m_p_next_sibling->m_metadata)
     m_rc.push(p_res);
 }

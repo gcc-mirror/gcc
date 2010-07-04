@@ -33,7 +33,7 @@ class javax::swing::text::html::parser::Element$1 : public ::gnu::javax::swing::
 public: // actually package-private
   Element$1();
 public: // actually protected
-  void create();
+  virtual void create();
 public:
   static ::java::lang::Class class$;
 };

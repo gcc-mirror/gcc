@@ -1274,24 +1274,6 @@ L2:     .word STATIC
   SUBTARGET_ADDITIONAL_REGISTER_NAMES	\
 }
 
-/* A C expression which evaluates to true if CODE is a valid
-   punctuation character for use in the `PRINT_OPERAND' macro.  */
-extern char m32r_punct_chars[256];
-#define PRINT_OPERAND_PUNCT_VALID_P(CHAR) \
-  m32r_punct_chars[(unsigned char) (CHAR)]
-
-/* Print operand X (an rtx) in assembler syntax to file FILE.
-   CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
-   For `%' followed by punctuation, CODE is the punctuation and X is null.  */
-#define PRINT_OPERAND(FILE, X, CODE) \
-  m32r_print_operand (FILE, X, CODE)
-
-/* A C compound statement to output to stdio stream STREAM the
-   assembler syntax for an instruction operand that is a memory
-   reference whose address is ADDR.  ADDR is an RTL expression.  */
-#define PRINT_OPERAND_ADDRESS(FILE, ADDR) \
-  m32r_print_operand_address (FILE, ADDR)
-
 /* If defined, C string expressions to be used for the `%R', `%L',
    `%U', and `%I' options of `asm_fprintf' (see `final.c').  These
    are useful when a single `md' file must support multiple assembler

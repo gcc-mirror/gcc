@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,6 +49,7 @@ package body ALI is
       'U'    => True,   -- unit
       'W'    => True,   -- with
       'L'    => True,   -- linker option
+      'N'    => True,   -- notes
       'E'    => True,   -- external
       'D'    => True,   -- dependency
       'X'    => True,   -- xref
@@ -89,14 +90,16 @@ package body ALI is
       Withs.Init;
       Sdep.Init;
       Linker_Options.Init;
+      Notes.Init;
       Xref_Section.Init;
       Xref_Entity.Init;
       Xref.Init;
       Version_Ref.Reset;
 
-      --  Add dummy zero'th item in Linker_Options for the sort function
+      --  Add dummy zero'th item in Linker_Options and Notes for sort calls
 
       Linker_Options.Increment_Last;
+      Notes.Increment_Last;
 
       --  Initialize global variables recording cumulative options in all
       --  ALI files that are read for a given processing run in gnatbind.
@@ -119,14 +122,15 @@ package body ALI is
    --------------
 
    function Scan_ALI
-     (F             : File_Name_Type;
-      T             : Text_Buffer_Ptr;
-      Ignore_ED     : Boolean;
-      Err           : Boolean;
-      Read_Xref     : Boolean := False;
-      Read_Lines    : String  := "";
-      Ignore_Lines  : String  := "X";
-      Ignore_Errors : Boolean := False) return ALI_Id
+     (F                : File_Name_Type;
+      T                : Text_Buffer_Ptr;
+      Ignore_ED        : Boolean;
+      Err              : Boolean;
+      Read_Xref        : Boolean := False;
+      Read_Lines       : String  := "";
+      Ignore_Lines     : String  := "X";
+      Ignore_Errors    : Boolean := False;
+      Directly_Scanned : Boolean := False) return ALI_Id
    is
       P         : Text_Ptr := T'First;
       Line      : Logical_Line_Number := 1;
@@ -204,7 +208,7 @@ package body ALI is
       --
       --    If Ignore_Special is False (normal case), the scan is terminated by
       --    a typeref bracket or an equal sign except for the special case of
-      --    an operator name starting with a double quite which is terminated
+      --    an operator name starting with a double quote which is terminated
       --    by another double quote.
       --
       --  It is an error to set both Ignore_Spaces and Ignore_Special to True.
@@ -1291,9 +1295,9 @@ package body ALI is
          else
             Skip_Space;
             No_Deps.Append ((Id, Get_Name));
+            Skip_Eol;
          end if;
 
-         Skip_Eol;
          C := Getc;
       end loop;
 
@@ -1415,6 +1419,7 @@ package body ALI is
             UL.First_Arg                := First_Arg;
             UL.Elab_Position            := 0;
             UL.SAL_Interface            := ALIs.Table (Id).SAL_Interface;
+            UL.Directly_Scanned         := Directly_Scanned;
             UL.Body_Needed_For_SAL      := False;
             UL.Elaborate_Body_Desirable := False;
             UL.Optimize_Alignment       := 'O';
@@ -1860,6 +1865,45 @@ package body ALI is
             Linker_Options.Table (Linker_Options.Last).Original_Pos :=
               Linker_Options.Last;
          end if;
+
+         --  If there are notes present, scan them
+
+         Notes_Loop : loop
+            Check_Unknown_Line;
+            exit Notes_Loop when C /= 'N';
+
+            if Ignore ('N') then
+               Skip_Line;
+
+            else
+               Checkc (' ');
+
+               Notes.Increment_Last;
+               Notes.Table (Notes.Last).Pragma_Type := Getc;
+               Notes.Table (Notes.Last).Pragma_Line := Get_Nat;
+               Checkc (':');
+               Notes.Table (Notes.Last).Pragma_Col  := Get_Nat;
+               Notes.Table (Notes.Last).Unit        := Units.Last;
+
+               if At_Eol then
+                  Notes.Table (Notes.Last).Pragma_Args := No_Name;
+
+               else
+                  Checkc (' ');
+
+                  Name_Len := 0;
+                  while not At_Eol loop
+                     Add_Char_To_Name_Buffer (Getc);
+                  end loop;
+
+                  Notes.Table (Notes.Last).Pragma_Args := Name_Enter;
+               end if;
+
+               Skip_Eol;
+            end if;
+
+            C := Getc;
+         end loop Notes_Loop;
       end loop U_Loop;
 
       --  End loop through units for one ALI file
@@ -2146,10 +2190,19 @@ package body ALI is
                --  Start of processing for Read_Refs_For_One_Entity
 
                begin
-                  XE.Line   := Get_Nat;
-                  XE.Etype  := Getc;
-                  XE.Col    := Get_Nat;
-                  XE.Lib    := (Getc = '*');
+                  XE.Line  := Get_Nat;
+                  XE.Etype := Getc;
+                  XE.Col   := Get_Nat;
+
+                  case Getc is
+                     when '*' =>
+                        XE.Visibility := Global;
+                     when '+' =>
+                        XE.Visibility := Static;
+                     when others =>
+                        XE.Visibility := Other;
+                  end case;
+
                   XE.Entity := Get_Name;
 
                   --  Handle the information about generic instantiations

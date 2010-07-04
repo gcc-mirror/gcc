@@ -307,13 +307,10 @@ __gnat_initialize (void *eh)
      or the other, except for the mixed Ada/C++ case in which the first scheme
      would fail for the same reason as in the linked-with-kernel situation.
 
-     Selecting the crt set with the ctors/dtors capabilities (first scheme
-     above) is triggered by adding "-dynamic" to the gcc *link* command line
-     options. Selecting the other set is achieved by using "-static" instead.
-
-     This is a first approach, tightly synchronized with a number of GCC
-     configuration and crtstuff changes. We need to ensure that those changes
-     are there to activate this circuitry.  */
+     The crt set selection is controlled by command line options via GCC's
+     STARTFILE_SPEC in rs6000/vxworks.h.  This is tightly synchronized with a
+     number of other GCC configuration and crtstuff changes, and we need to
+     ensure that those changes are there to activate this circuitry.  */
 
 #if (__GNUC__ >= 3) && (defined (_ARCH_PPC) || defined (__ppc))
  {

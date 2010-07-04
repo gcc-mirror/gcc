@@ -57,14 +57,24 @@
 #ifndef _STL_PAIR_H
 #define _STL_PAIR_H 1
 
-#include <bits/move.h> // for std::move / std::forward, std::decay, and
-                       // std::swap
+#include <bits/move.h> // for std::move / std::forward, and std::swap
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
-#include <type_traits>
+#include <type_traits> // for std::__decay_and_strip too
 #endif
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  struct piecewise_construct_t { };
+
+  // forward declarations
+  template<typename...>
+    class tuple;
+
+  template<int...>
+    struct _Index_tuple;
+#endif
 
   /// pair holds two objects of arbitrary type.
   template<class _T1, class _T2>
@@ -88,6 +98,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       : first(__a), second(__b) { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
+      pair(const pair&) = default;
+
       // DR 811.
       template<class _U1, class = typename
 	       std::enable_if<std::is_convertible<_U1, _T1>::value>::type>
@@ -108,9 +120,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	: first(std::forward<_U1>(__x)),
 	  second(std::forward<_U2>(__y)) { }
 
-      pair(pair&& __p)
-      : first(std::move(__p.first)),
-	second(std::move(__p.second)) { }
+      template<class... _Args1, class... _Args2>
+        pair(piecewise_construct_t,
+	     tuple<_Args1...> __first_args,
+	     tuple<_Args2...> __second_args)
+	: first(__cons<first_type>(std::move(__first_args))),
+	  second(__cons<second_type>(std::move(__second_args))) { }
 #endif
 
       /** There is also a templated copy ctor for the @c pair class itself.  */
@@ -122,8 +137,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       template<class _U1, class _U2>
         pair(pair<_U1, _U2>&& __p)
-	: first(std::move(__p.first)),
-	  second(std::move(__p.second)) { }
+	: first(std::forward<_U1>(__p.first)),
+	  second(std::forward<_U2>(__p.second)) { }
 
       pair&
       operator=(pair&& __p)
@@ -132,6 +147,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	second = std::move(__p.second);
 	return *this;
       }
+
+      template<class _U1, class _U2>
+        pair&
+        operator=(const pair<_U1, _U2>& __p)
+	{
+	  first = __p.first;
+	  second = __p.second;
+	  return *this;
+	}
 
       template<class _U1, class _U2>
         pair&
@@ -149,6 +173,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	swap(first, __p.first);
 	swap(second, __p.second);	
       }
+
+    private:
+      template<typename _Tp, typename... _Args>
+        static _Tp
+        __cons(tuple<_Args...>&&);
+
+      template<typename _Tp, typename... _Args, int... _Indexes>
+        static _Tp
+        __do_cons(tuple<_Args...>&&, const _Index_tuple<_Indexes...>&);
 #endif
     };
 
@@ -217,35 +250,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     make_pair(_T1 __x, _T2 __y)
     { return pair<_T1, _T2>(__x, __y); }
 #else
-  template<typename _Tp>
-    class reference_wrapper;
-
-  // Helper which adds a reference to a type when given a reference_wrapper
-  template<typename _Tp>
-    struct __strip_reference_wrapper
-    {
-      typedef _Tp __type;
-    };
-
-  template<typename _Tp>
-    struct __strip_reference_wrapper<reference_wrapper<_Tp> >
-    {
-      typedef _Tp& __type;
-    };
-
-  template<typename _Tp>
-    struct __strip_reference_wrapper<const reference_wrapper<_Tp> >
-    {
-      typedef _Tp& __type;
-    };
-
-  template<typename _Tp>
-    struct __decay_and_strip
-    {
-      typedef typename __strip_reference_wrapper<
-	typename decay<_Tp>::type>::__type __type;
-    };
-
   // NB: DR 706.
   template<class _T1, class _T2>
     inline pair<typename __decay_and_strip<_T1>::__type,

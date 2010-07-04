@@ -2,7 +2,7 @@
 
 // 2001-09-17 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2009, 2010
 // Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -48,14 +48,15 @@ void test06()
   const wstring empty;
   wostringstream oss;
   oss.imbue(loc_de);
-  const time_put<wchar_t>& tim_put = use_facet<time_put<wchar_t> >(oss.getloc()); 
+  const time_put<wchar_t>& tim_put
+    = use_facet<time_put<wchar_t> >(oss.getloc()); 
 
-  iterator_type os_it07 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 
-				      date, date + traits::length(date));
+  tim_put.put(oss.rdbuf(), oss, L'*', &time1, 
+	      date, date + traits::length(date));
   wstring result7 = oss.str();
   VERIFY( result7 == L"Sonntag, the second of April");
-  iterator_type os_it08 = tim_put.put(oss.rdbuf(), oss, L'*', &time1, 
-				      date_ex, date_ex + traits::length(date));
+  tim_put.put(oss.rdbuf(), oss, L'*', &time1, 
+	      date_ex, date_ex + traits::length(date));
   wstring result8 = oss.str();
   VERIFY( result8 != result7 );
 }

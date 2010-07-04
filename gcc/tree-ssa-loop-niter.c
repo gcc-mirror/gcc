@@ -1,6 +1,6 @@
 /* Functions to determine/estimate number of iterations of a loop.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation,
-   Inc.
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,12 +23,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"
 #include "tm_p.h"
-#include "hard-reg-set.h"
 #include "basic-block.h"
 #include "output.h"
-#include "diagnostic.h"
+#include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
 #include "intl.h"
 #include "tree-flow.h"
 #include "tree-dump.h"
@@ -876,11 +875,11 @@ assert_loop_rolls_lt (tree type, affine_iv *iv0, affine_iv *iv1,
      -step + 1 <= (iv1->base - iv0->base) <= MAX - step + 1
 
      (where MAX is the maximum value of the unsigned variant of TYPE, and
-     the computations in this formula are performed in full precision
-     (without overflows).
+     the computations in this formula are performed in full precision,
+     i.e., without overflows).
 
      Usually, for loops with exit condition iv0->base + step * i < iv1->base,
-     we have a condition of form iv0->base - step < iv1->base before the loop,
+     we have a condition of the form iv0->base - step < iv1->base before the loop,
      and for loops iv0->base < iv1->base - step * i the condition
      iv0->base < iv1->base + step, due to loop header copying, which enable us
      to prove the lower bound.
@@ -1374,6 +1373,10 @@ simplify_replace_tree (tree expr, tree old, tree new_tree)
 
   if (!expr)
     return NULL_TREE;
+
+  /* Do not bother to replace constants.  */
+  if (CONSTANT_CLASS_P (old))
+    return expr;
 
   if (expr == old
       || operand_equal_p (expr, old, 0))
@@ -2522,7 +2525,7 @@ record_estimate (struct loop *loop, tree bound, double_int i_bound,
      list.  */
   if (upper)
     {
-      struct nb_iter_bound *elt = GGC_NEW (struct nb_iter_bound);
+      struct nb_iter_bound *elt = ggc_alloc_nb_iter_bound ();
 
       elt->bound = i_bound;
       elt->stmt = at_stmt;

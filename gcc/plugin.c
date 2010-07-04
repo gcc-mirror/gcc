@@ -1,5 +1,5 @@
 /* Support for GCC plugin mechanism.
-   Copyright (C) 2009 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -86,6 +86,8 @@ struct callback_info
 static struct callback_info *plugin_callbacks_init[PLUGIN_EVENT_FIRST_DYNAMIC];
 static struct callback_info **plugin_callbacks = plugin_callbacks_init;
 
+/* For invoke_plugin_callbacks(), see plugin.h.  */
+bool flag_plugin_added = false;
 
 #ifdef ENABLE_PLUGIN
 /* Each plugin should define an initialization function with exactly
@@ -124,16 +126,43 @@ get_plugin_base_name (const char *full_name)
 }
 
 
-/* Create a plugin_name_args object for the give plugin and insert it to
-   the hash table. This function is called when -fplugin=/path/to/NAME.so
-   option is processed.  */
+/* Create a plugin_name_args object for the given plugin and insert it
+   to the hash table. This function is called when
+   -fplugin=/path/to/NAME.so or -fplugin=NAME option is processed.  */
 
 void
 add_new_plugin (const char* plugin_name)
 {
   struct plugin_name_args *plugin;
   void **slot;
-  char *base_name = get_plugin_base_name (plugin_name);
+  char *base_name;
+  bool name_is_short;
+  const char *pc;
+
+  flag_plugin_added = true;
+
+  /* Replace short names by their full path when relevant.  */
+  name_is_short  = !IS_ABSOLUTE_PATH (plugin_name);
+  for (pc = plugin_name; name_is_short && *pc; pc++)
+    if (*pc == '.' || IS_DIR_SEPARATOR (*pc))
+      name_is_short = false;
+
+  if (name_is_short)
+    {
+      base_name = CONST_CAST (char*, plugin_name);
+      /* FIXME: the ".so" suffix is currently builtin, since plugins
+	 only work on ELF host systems like e.g. Linux or Solaris.
+	 When plugins shall be available on non ELF systems such as
+	 Windows or MacOS, this code has to be greatly improved.  */
+      plugin_name = concat (default_plugin_dir_name (), "/",
+			    plugin_name, ".so", NULL);
+      if (access (plugin_name, R_OK))
+	fatal_error
+	  ("inacessible plugin file %s expanded from short plugin name %s: %m",
+	   plugin_name, base_name);
+    }
+  else
+    base_name = get_plugin_base_name (plugin_name);
 
   /* If this is the first -fplugin= option we encounter, create
      'plugin_name_args_tab' hash table.  */
@@ -458,16 +487,11 @@ unregister_callback (const char *plugin_name, int event)
   return PLUGEVT_NO_CALLBACK;
 }
 
-/* Called from inside GCC.  Invoke all plug-in callbacks registered with
-   the specified event.
-   Return PLUGEVT_SUCCESS if at least one callback was called,
-   PLUGEVT_NO_CALLBACK if there was no callback.
-
-   EVENT    - the event identifier
-   GCC_DATA - event-specific data provided by the compiler  */
+/* Invoke all plugin callbacks registered with the specified event,
+   called from invoke_plugin_callbacks().  */
 
 int
-invoke_plugin_callbacks (int event, void *gcc_data)
+invoke_plugin_callbacks_full (int event, void *gcc_data)
 {
   int retval = PLUGEVT_SUCCESS;
 
@@ -754,7 +778,7 @@ plugins_active_p (void)
 /* Dump to FILE the names and associated events for all the active
    plugins.  */
 
-void
+DEBUG_FUNCTION void
 dump_active_plugins (FILE *file)
 {
   int event;
@@ -780,10 +804,36 @@ dump_active_plugins (FILE *file)
 
 /* Dump active plugins to stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_active_plugins (void)
 {
   dump_active_plugins (stderr);
+}
+
+/* Give a warning if plugins are present, before an ICE message asking
+   to submit a bug report.  */
+
+void
+warn_if_plugins (void)
+{
+  if (plugins_active_p ())
+    {
+      fnotice (stderr, "*** WARNING *** there are active plugins, do not report"
+	       " this as a bug unless you can reproduce it without enabling"
+	       " any plugins.\n");
+      dump_active_plugins (stderr);
+    }
+
+}
+
+/* Likewise, as a callback from the diagnostics code.  */
+
+void
+plugins_internal_error_function (struct diagnostic_context *context ATTRIBUTE_UNUSED,
+				 const char *msgid ATTRIBUTE_UNUSED,
+				 va_list *ap ATTRIBUTE_UNUSED)
+{
+  warn_if_plugins ();
 }
 
 /* The default version check. Compares every field in VERSION. */
@@ -809,6 +859,7 @@ plugin_default_version_check (struct plugin_gcc_version *gcc_version,
   return true;
 }
 
+
 /* Return the current value of event_last, so that plugins which provide
    additional functionality for events for the benefit of high-level plugins
    know how many valid entries plugin_event_name holds.  */
@@ -817,4 +868,16 @@ int
 get_event_last (void)
 {
   return event_last;
+}
+
+
+/* Retrieve the default plugin directory.  The gcc driver should have passed
+   it as -iplugindir <dir> to the cc1 program, and it is queriable thru the
+   -print-file-name=plugin option to gcc.  */
+const char*
+default_plugin_dir_name (void)
+{
+  if (!plugindir_string)
+    fatal_error ("-iplugindir <dir> option not passed from the gcc driver");
+  return plugindir_string;
 }

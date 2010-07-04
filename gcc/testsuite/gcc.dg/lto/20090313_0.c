@@ -1,3 +1,4 @@
+/* { dg-lto-options "-mcpu=v9" { target sparc*-*-* } } */
 void
 _cairo_clip_path_reference () {
   int a;

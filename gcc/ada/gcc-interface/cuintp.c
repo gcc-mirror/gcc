@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2009, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -106,7 +106,8 @@ UI_To_gnu (Uint Input, tree type)
 	 The base integer precision must be superior than 16.  */
 
       if (TREE_CODE (comp_type) != REAL_TYPE
-	  && TYPE_PRECISION (comp_type) < TYPE_PRECISION (long_integer_type_node))
+	  && TYPE_PRECISION (comp_type)
+	     < TYPE_PRECISION (long_integer_type_node))
 	{
 	  comp_type = long_integer_type_node;
 	  gcc_assert (TYPE_PRECISION (comp_type) > 16);
@@ -140,4 +141,62 @@ UI_To_gnu (Uint Input, tree type)
     gnu_ret = TREE_OPERAND (gnu_ret, 0);
 
   return gnu_ret;
+}
+
+/* Similar to UI_From_Int, but take a GCC INTEGER_CST.  We use UI_From_Int
+   when possible, i.e. for a 32-bit signed value, to take advantage of its
+   built-in caching mechanism.  For values of larger magnitude, we compute
+   digits into a vector and call Vector_To_Uint.  */
+
+Uint
+UI_From_gnu (tree Input)
+{
+  tree gnu_type = TREE_TYPE (Input), gnu_base, gnu_temp;
+  /* UI_Base is defined so that 5 Uint digits is sufficient to hold the
+     largest possible signed 64-bit value.  */
+  const int Max_For_Dint = 5;
+  int v[Max_For_Dint], i;
+  Vector_Template temp;
+  Int_Vector vec;
+
+#if HOST_BITS_PER_WIDE_INT == 64
+  /* On 64-bit hosts, host_integerp tells whether the input fits in a
+     signed 64-bit integer.  Then a truncation tells whether it fits
+     in a signed 32-bit integer.  */
+  if (host_integerp (Input, 0))
+    {
+      HOST_WIDE_INT hw_input = TREE_INT_CST_LOW (Input);
+      if (hw_input == (int) hw_input)
+	return UI_From_Int (hw_input);
+    }
+  else
+    return No_Uint;
+#else
+  /* On 32-bit hosts, host_integerp tells whether the input fits in a
+     signed 32-bit integer.  Then a sign test tells whether it fits
+     in a signed 64-bit integer.  */
+  if (host_integerp (Input, 0))
+    return UI_From_Int (TREE_INT_CST_LOW (Input));
+  else if (TREE_INT_CST_HIGH (Input) < 0
+	   && TYPE_UNSIGNED (gnu_type)
+	   && !(TREE_CODE (gnu_type) == INTEGER_TYPE
+		&& TYPE_IS_SIZETYPE (gnu_type)))
+    return No_Uint;
+#endif
+
+  gnu_base = build_int_cst (gnu_type, UI_Base);
+  gnu_temp = Input;
+
+  for (i = Max_For_Dint - 1; i >= 0; i--)
+    {
+      v[i] = tree_low_cst (fold_build1 (ABS_EXPR, gnu_type,
+					fold_build2 (TRUNC_MOD_EXPR, gnu_type,
+						     gnu_temp, gnu_base)),
+			   0);
+      gnu_temp = fold_build2 (TRUNC_DIV_EXPR, gnu_type, gnu_temp, gnu_base);
+    }
+
+  temp.Low_Bound = 1, temp.High_Bound = Max_For_Dint;
+  vec.Array = v, vec.Bounds = &temp;
+  return Vector_To_Uint (vec, tree_int_cst_sgn (Input) < 0);
 }

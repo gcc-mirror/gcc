@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm.h"
 #include "tree.h"
 #include "c-tree.h"
-#include "c-common.h"
+#include "c-family/c-common.h"
 #include "ggc.h"
 #include "upc-act.h"
 #include "upc-pts.h"
@@ -36,8 +36,8 @@ Boston, MA 02111-1307, USA.  */
 #include "c-objc-common.h"
 #include "toplev.h"
 #include "diagnostic.h"
-#include "c-pretty-print.h"
-#include "c-pragma.h"
+#include "c-family/c-pretty-print.h"
+#include "c-family/c-pragma.h"
 #include "flags.h"
 
 enum c_language_kind c_language = clk_upc;

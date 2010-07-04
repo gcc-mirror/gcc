@@ -1,6 +1,7 @@
 /* Check calls to formatted I/O functions (-Wformat).
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2005, 2007, 2008, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,12 +25,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "flags.h"
-#include "c-common.h"
+#include "c-family/c-common.h"
 #include "toplev.h"
 #include "intl.h"
 #include "diagnostic.h"
 #include "langhooks.h"
-#include "c-format.h"
+#include "c-family/c-format.h"
 #include "alloc-pool.h"
 
 /* Mingw specific format attributes ms_printf, ms_scanf, and ms_strftime.  */

@@ -28,9 +28,9 @@ class javax::imageio::spi::ServiceRegistry$1 : public ::java::lang::Object
 public: // actually package-private
   ServiceRegistry$1(::javax::imageio::spi::ServiceRegistry *);
 public:
-  jboolean hasNext();
-  ::java::lang::Object * next();
-  void remove();
+  virtual jboolean hasNext();
+  virtual ::java::lang::Object * next();
+  virtual void remove();
 public: // actually package-private
   jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) index;
   ::javax::imageio::spi::ServiceRegistry * this$0;

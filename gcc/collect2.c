@@ -35,6 +35,10 @@ along with GCC; see the file COPYING3.  If not see
 #  define SIGCHLD SIGCLD
 #endif
 
+/* TARGET_64BIT may be defined to use driver specific functionality. */
+#undef TARGET_64BIT
+#define TARGET_64BIT TARGET_64BIT_DEFAULT
+
 #ifndef LIBRARY_PATH_ENV
 #define LIBRARY_PATH_ENV "LIBRARY_PATH"
 #endif
@@ -174,7 +178,7 @@ struct head
   int number;
 };
 
-int vflag;				/* true if -v */
+bool vflag;				/* true if -v or --version */ 
 static int rflag;			/* true if -r */
 static int strip_flag;			/* true if -s */
 static const char *demangle_flag;
@@ -193,7 +197,8 @@ enum lto_mode_d {
 /* Current LTO mode.  */
 static enum lto_mode_d lto_mode = LTO_MODE_NONE;
 
-int debug;				/* true if -debug */
+bool debug;				/* true if -debug */
+bool helpflag;			/* true if --help */
 
 static int shared_obj;			/* true if -shared */
 
@@ -935,10 +940,8 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
 
   if (lto_objects.first)
     {
-      const char *opts;
       char **lto_c_argv;
       const char **lto_c_ptr;
-      const char *cp;
       const char **p, **q, **r;
       const char **lto_o_ptr;
       struct lto_object *list;
@@ -949,62 +952,21 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
       if (!lto_wrapper)
 	fatal ("COLLECT_LTO_WRAPPER must be set.");
 
+      num_lto_c_args++;
+
       /* There is at least one object file containing LTO info,
          so we need to run the LTO back end and relink.  */
-
-      /* Get compiler options passed down from the parent `gcc' command.
-         These must be passed to the LTO back end.  */
-      opts = getenv ("COLLECT_GCC_OPTIONS");
-
-      /* Increment the argument count by the number of inherited options.
-         Some arguments may be filtered out later.  Again, an upper bound
-         suffices.  */
-
-      cp = opts;
-
-      while (cp && *cp)
-        {
-          extract_string (&cp);
-          num_lto_c_args++;
-        }
-      obstack_free (&temporary_obstack, temporary_firstobj);
-
-      if (debug)
-	num_lto_c_args++;
-
-      /* Increment the argument count by the number of initial
-	 arguments added below.  */
-      num_lto_c_args += 9;
 
       lto_c_argv = (char **) xcalloc (sizeof (char *), num_lto_c_args);
       lto_c_ptr = CONST_CAST2 (const char **, char **, lto_c_argv);
 
       *lto_c_ptr++ = lto_wrapper;
-      *lto_c_ptr++ = c_file_name;
-
-      cp = opts;
-
-      while (cp && *cp)
-        {
-          const char *s = extract_string (&cp);
-
-	  /* Pass the option or argument to the wrapper.  */
-	  *lto_c_ptr++ = xstrdup (s);
-        }
-      obstack_free (&temporary_obstack, temporary_firstobj);
-
-      if (debug)
-	*lto_c_ptr++ = xstrdup ("-debug");
 
       /* Add LTO objects to the wrapper command line.  */
       for (list = lto_objects.first; list; list = list->next)
 	*lto_c_ptr++ = list->name;
 
       *lto_c_ptr = NULL;
-
-      /* Save intermediate WPA files in lto1 if debug.  */
-      if (debug)
-	putenv (xstrdup ("WPA_SAVE_LTRANS=1"));
 
       /* Run the LTO back end.  */
       pex = collect_execute (prog, lto_c_argv, NULL, NULL, PEX_SEARCH);
@@ -1239,13 +1201,13 @@ main (int argc, char **argv)
     for (i = 1; argv[i] != NULL; i ++)
       {
 	if (! strcmp (argv[i], "-debug"))
-	  debug = 1;
+	  debug = true;
         else if (! strcmp (argv[i], "-flto") && ! use_plugin)
 	  {
 	    use_verbose = true;
 	    lto_mode = LTO_MODE_LTO;
 	  }
-        else if (! strcmp (argv[i], "-fwhopr") && ! use_plugin)
+        else if (! strncmp (argv[i], "-fwhopr", 7) && ! use_plugin)
 	  {
 	    use_verbose = true;
 	    lto_mode = LTO_MODE_WHOPR;
@@ -1469,7 +1431,7 @@ main (int argc, char **argv)
       if (use_verbose && *q == '-' && q[1] == 'v' && q[2] == 0)
 	{
 	  /* Turn on trace in collect2 if needed.  */
-	  vflag = 1;
+	  vflag = true;
 	}
     }
   obstack_free (&temporary_obstack, temporary_firstobj);
@@ -1520,7 +1482,8 @@ main (int argc, char **argv)
 	      break;
 
             case 'f':
-	      if (strcmp (arg, "-flto") == 0 || strcmp (arg, "-fwhopr") == 0)
+	      if (strcmp (arg, "-flto") == 0
+		  || strncmp (arg, "-fwhopr", 7) == 0)
 		{
 #ifdef ENABLE_LTO
 		  /* Do not pass LTO flag to the linker. */
@@ -1572,12 +1535,7 @@ main (int argc, char **argv)
 	    case 'o':
 	      if (arg[2] == '\0')
 		output_file = *ld1++ = *ld2++ = *++argv;
-	      else if (1
-#ifdef SWITCHES_NEED_SPACES
-		       && ! strchr (SWITCHES_NEED_SPACES, arg[1])
-#endif
-		       )
-
+	      else
 		output_file = &arg[2];
 	      break;
 
@@ -1599,7 +1557,7 @@ main (int argc, char **argv)
 
 	    case 'v':
 	      if (arg[2] == '\0')
-		vflag = 1;
+		vflag = true;
 	      break;
 
 	    case '-':
@@ -1630,6 +1588,10 @@ main (int argc, char **argv)
 		}
 	      else if (strncmp (arg, "--sysroot=", 10) == 0)
 		target_system_root = arg + 10;
+	      else if (strcmp (arg, "--version") == 0)
+		vflag = true;
+	      else if (strcmp (arg, "--help") == 0)
+		helpflag = true;
 	      break;
 	    }
 	}
@@ -1731,6 +1693,20 @@ main (int argc, char **argv)
       fprintf (stderr, "\n");
     }
 
+  if (helpflag)
+    {
+      fprintf (stderr, "Usage: collect2 [options]\n");
+      fprintf (stderr, " Wrap linker and generate constructor code if needed.\n");
+      fprintf (stderr, " Options:\n");
+      fprintf (stderr, "  -debug          Enable debug output\n");
+      fprintf (stderr, "  --help          Display this information\n");
+      fprintf (stderr, "  -v, --version   Display this program's version number\n");
+      fprintf (stderr, "Overview: http://gcc.gnu.org/onlinedocs/gccint/Collect2.html\n");
+      fprintf (stderr, "Report bugs: %s\n", bug_report_url);
+
+      collect_exit (0);
+    }
+
   if (debug)
     {
       const char *ptr;
@@ -1798,7 +1774,7 @@ main (int argc, char **argv)
 	if (export_file != 0 && export_file[0])
 	  maybe_unlink (export_file);
 #endif
-	if (lto_mode)
+	if (lto_mode != LTO_MODE_NONE)
 	  maybe_run_lto_and_relink (ld1_argv, object_lst, object, false);
 
 	maybe_unlink (c_file);
@@ -2544,23 +2520,41 @@ write_aix_file (FILE *stream, struct id *list)
 
 #ifdef OBJECT_FORMAT_NONE
 
-/* Check to make sure the file is an ELF file.  LTO objects must
-   be in ELF format.  */
+/* Check to make sure the file is an LTO object file.  */
 
 static bool
-is_elf (const char *prog_name)
+maybe_lto_object_file (const char *prog_name)
 {
   FILE *f;
-  char buf[4];
-  static char magic[4] = { 0x7f, 'E', 'L', 'F' };
+  unsigned char buf[4];
+  int i;
 
-  f = fopen (prog_name, "r");
+  static unsigned char elfmagic[4] = { 0x7f, 'E', 'L', 'F' };
+  static unsigned char coffmagic[2] = { 0x4c, 0x01 };
+  static unsigned char coffmagic_x64[2] = { 0x64, 0x86 };
+  static unsigned char machomagic[4][4] = {
+    { 0xcf, 0xfa, 0xed, 0xfe },
+    { 0xce, 0xfa, 0xed, 0xfe },
+    { 0xfe, 0xed, 0xfa, 0xcf },
+    { 0xfe, 0xed, 0xfa, 0xce }
+  };
+
+  f = fopen (prog_name, "rb");
   if (f == NULL)
     return false;
   if (fread (buf, sizeof (buf), 1, f) != 1)
     buf[0] = 0;
   fclose (f);
-  return memcmp (buf, magic, sizeof (magic)) == 0;
+
+  if (memcmp (buf, elfmagic, sizeof (elfmagic)) == 0
+      || memcmp (buf, coffmagic, sizeof (coffmagic)) == 0
+      || memcmp (buf, coffmagic_x64, sizeof (coffmagic_x64)) == 0)
+    return true;
+  for (i = 0; i < 4; i++)
+    if (memcmp (buf, machomagic[i], sizeof (machomagic[i])) == 0)
+      return true;
+
+  return false;
 }
 
 /* Generic version to scan the name list of the loaded program for
@@ -2587,10 +2581,10 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
   if (which_pass == PASS_SECOND)
     return;
 
-  /* LTO objects must be in ELF format.  This check prevents
+  /* LTO objects must be in a known format.  This check prevents
      us from accepting an archive containing LTO objects, which
      gcc cannnot currently handle.  */
-  if (which_pass == PASS_LTOINFO && !is_elf (prog_name))
+  if (which_pass == PASS_LTOINFO && !maybe_lto_object_file (prog_name))
     return;
 
   /* If we do not have an `nm', complain.  */
@@ -2670,9 +2664,9 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
           /* Look for the LTO info marker symbol, and add filename to
              the LTO objects list if found.  */
           for (p = buf; (ch = *p) != '\0' && ch != '\n'; p++)
-            if (ch == ' '
-		&& (strncmp (p + 1, "__gnu_lto_v1", 12) == 0)
-		&& ISSPACE (p[13]))
+            if (ch == ' '  && p[1] == '_' && p[2] == '_'
+		&& (strncmp (p + (p[3] == '_' ? 2 : 1), "__gnu_lto_v1", 12) == 0)
+		&& ISSPACE (p[p[3] == '_' ? 14 : 13]))
               {
                 add_lto_object (&lto_objects, prog_name);
 

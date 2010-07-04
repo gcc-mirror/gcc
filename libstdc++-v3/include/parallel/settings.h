@@ -272,6 +272,9 @@ namespace __gnu_parallel
     /// Minimal input size for search and search_n.
     _SequenceIndex              search_minimal_n;
 
+    /// Block size scale-down factor with respect to current position.
+    float                       find_scale_factor;
+
     /// Get the global settings.
     _GLIBCXX_CONST static const _Settings&
     get() throw();
@@ -331,7 +334,8 @@ namespace __gnu_parallel
             TLB_size(128),
             cache_line_size(64),
             qsb_steals(0),
-            search_minimal_n(1000)
+            search_minimal_n(1000),
+            find_scale_factor(0.01f)
     { }
   };
 }

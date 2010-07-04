@@ -49,7 +49,7 @@ push(const_reference r_val)
 
   insert_node(p_nd);
 
-  m_p_max = NULL;
+  m_p_max = 0;
 
   _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
 
@@ -61,10 +61,10 @@ inline void
 PB_DS_CLASS_C_DEC::
 insert_node(node_pointer p_nd)
 {
-  if (base_type::m_p_root == NULL)
+  if (base_type::m_p_root == 0)
     {
       p_nd->m_p_next_sibling = p_nd->m_p_prev_or_parent =
-	p_nd->m_p_l_child = NULL;
+	p_nd->m_p_l_child = 0;
 
       p_nd->m_metadata = 0;
 
@@ -75,7 +75,7 @@ insert_node(node_pointer p_nd)
 
   if (base_type::m_p_root->m_metadata > 0)
     {
-      p_nd->m_p_prev_or_parent = p_nd->m_p_l_child = NULL;
+      p_nd->m_p_prev_or_parent = p_nd->m_p_l_child = 0;
 
       p_nd->m_p_next_sibling = base_type::m_p_root;
 
@@ -92,7 +92,7 @@ insert_node(node_pointer p_nd)
     {
       p_nd->m_p_next_sibling = base_type::m_p_root->m_p_next_sibling;
 
-      p_nd->m_p_prev_or_parent = NULL;
+      p_nd->m_p_prev_or_parent = 0;
 
       p_nd->m_metadata = 1;
 
@@ -100,15 +100,15 @@ insert_node(node_pointer p_nd)
 
       base_type::m_p_root->m_p_prev_or_parent = p_nd;
 
-      base_type::m_p_root->m_p_next_sibling = NULL;
+      base_type::m_p_root->m_p_next_sibling = 0;
 
       base_type::m_p_root = p_nd;
     }
   else
     {
-      p_nd->m_p_next_sibling = NULL;
+      p_nd->m_p_next_sibling = 0;
 
-      p_nd->m_p_l_child = NULL;
+      p_nd->m_p_l_child = 0;
 
       p_nd->m_p_prev_or_parent = base_type::m_p_root;
 
@@ -128,7 +128,7 @@ inline typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 fix(node_pointer p_nd) const
 {
-  while (p_nd->m_p_next_sibling != NULL&& 
+  while (p_nd->m_p_next_sibling != 0&& 
 	 p_nd->m_metadata == p_nd->m_p_next_sibling->m_metadata)
     {
       node_pointer p_next = p_nd->m_p_next_sibling;
@@ -138,7 +138,7 @@ fix(node_pointer p_nd) const
 	  p_next->m_p_prev_or_parent =
 	    p_nd->m_p_prev_or_parent;
 
-	  if (p_nd->m_p_prev_or_parent != NULL)
+	  if (p_nd->m_p_prev_or_parent != 0)
 	    p_nd->m_p_prev_or_parent->m_p_next_sibling = p_next;
 
 	  base_type::make_child_of(p_nd, p_next);
@@ -151,8 +151,8 @@ fix(node_pointer p_nd) const
         {
 	  p_nd->m_p_next_sibling = p_next->m_p_next_sibling;
 
-	  if (p_nd->m_p_next_sibling != NULL)
-	    p_next->m_p_next_sibling = NULL;
+	  if (p_nd->m_p_next_sibling != 0)
+	    p_next->m_p_next_sibling = 0;
 
 	  base_type::make_child_of(p_next, p_nd);
 
@@ -160,7 +160,7 @@ fix(node_pointer p_nd) const
         }
     }
 
-  if (p_nd->m_p_next_sibling != NULL)
+  if (p_nd->m_p_next_sibling != 0)
     p_nd->m_p_next_sibling->m_p_prev_or_parent = p_nd;
 
   return p_nd;
@@ -174,7 +174,7 @@ modify(point_iterator it, const_reference r_new_val)
   _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
     node_pointer p_nd = it.m_p_nd;
 
-  _GLIBCXX_DEBUG_ASSERT(p_nd != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_nd != 0);
   _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(p_nd, false);)
 
     const bool bubble_up = Cmp_Fn::operator()(p_nd->m_value, r_new_val);
@@ -185,7 +185,7 @@ modify(point_iterator it, const_reference r_new_val)
     {
       node_pointer p_parent = base_type::parent(p_nd);
 
-      while (p_parent != NULL&& 
+      while (p_parent != 0&& 
 	     Cmp_Fn::operator()(p_parent->m_value, p_nd->m_value))
         {
 	  base_type::swap_with_parent(p_nd, p_parent);
@@ -193,10 +193,10 @@ modify(point_iterator it, const_reference r_new_val)
 	  p_parent = base_type::parent(p_nd);
         }
 
-      if (p_nd->m_p_prev_or_parent == NULL)
+      if (p_nd->m_p_prev_or_parent == 0)
 	base_type::m_p_root = p_nd;
 
-      m_p_max = NULL;
+      m_p_max = 0;
 
       _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
 
@@ -209,7 +209,7 @@ modify(point_iterator it, const_reference r_new_val)
 
   insert_node(p_nd);
 
-  m_p_max = NULL;
+  m_p_max = 0;
 
   _GLIBCXX_DEBUG_ONLY(assert_valid(true);)
     }

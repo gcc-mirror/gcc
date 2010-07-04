@@ -8,8 +8,11 @@ program dfloat_1
    i2 = -4_2
    i4 = 4_4
    i8 = 10_8
-   if (dfloat(i2) /= -4.d0) call abort()
+   if (dfloat(i2) /= -4.d0) call abort()       ! { dg-warning "non-default INTEGER" }
    if (dfloat(i4) /= 4.d0) call abort()
-   if (dfloat(i8) /= 10.d0) call abort()
+   if (dfloat(i8) /= 10.d0) call abort()       ! { dg-warning "non-default INTEGER" }
    if (dfloat(i4*i2) /= -16.d0) call abort()
+
+   if (kind(dfloat(i4)) /= kind(1.0_8)) call abort
+   if (kind(dfloat(i8)) /= kind(1.0_8)) call abort   ! { dg-warning "non-default INTEGER" }
 end program dfloat_1

@@ -1,9 +1,10 @@
 /* Check that protocol qualifiers are compiled and encoded properly.  */
 /* Author: Ziemowit Laski <zlaski@apple.com>  */
-/* { dg-options "-lobjc" } */
+/* { dg-options "" } */
 /* { dg-do run } */
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
-#include <objc/Protocol.h>
+#include "../objc-obj-c++-shared/Protocol1.h"
 #ifndef __NEXT_RUNTIME__
 #include <objc/objc-api.h>
 #endif

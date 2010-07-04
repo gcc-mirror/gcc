@@ -1,5 +1,5 @@
 /* SSA Dominator optimizations for trees
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
@@ -25,20 +25,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "flags.h"
-#include "rtl.h"
 #include "tm_p.h"
-#include "ggc.h"
 #include "basic-block.h"
 #include "cfgloop.h"
 #include "output.h"
-#include "expr.h"
 #include "function.h"
-#include "diagnostic.h"
+#include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
 #include "timevar.h"
 #include "tree-dump.h"
 #include "tree-flow.h"
 #include "domwalk.h"
-#include "real.h"
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
 #include "langhooks.h"
@@ -54,6 +51,7 @@ enum expr_kind
   EXPR_SINGLE,
   EXPR_UNARY,
   EXPR_BINARY,
+  EXPR_TERNARY,
   EXPR_CALL
 };
 
@@ -64,7 +62,8 @@ struct hashable_expr
   union {
     struct { tree rhs; } single;
     struct { enum tree_code op;  tree opnd; } unary;
-    struct { enum tree_code op;  tree opnd0; tree opnd1; } binary;
+    struct { enum tree_code op;  tree opnd0, opnd1; } binary;
+    struct { enum tree_code op;  tree opnd0, opnd1, opnd2; } ternary;
     struct { tree fn; bool pure; size_t nargs; tree *args; } call;
   } ops;
 };
@@ -214,22 +213,30 @@ initialize_hash_element (gimple stmt, tree lhs,
       switch (get_gimple_rhs_class (subcode))
         {
         case GIMPLE_SINGLE_RHS:
-          expr->kind = EXPR_SINGLE;
-          expr->ops.single.rhs = gimple_assign_rhs1 (stmt);
-          break;
+	  expr->kind = EXPR_SINGLE;
+	  expr->ops.single.rhs = gimple_assign_rhs1 (stmt);
+	  break;
         case GIMPLE_UNARY_RHS:
-          expr->kind = EXPR_UNARY;
+	  expr->kind = EXPR_UNARY;
 	  expr->type = TREE_TYPE (gimple_assign_lhs (stmt));
-          expr->ops.unary.op = subcode;
-          expr->ops.unary.opnd = gimple_assign_rhs1 (stmt);
-          break;
+	  expr->ops.unary.op = subcode;
+	  expr->ops.unary.opnd = gimple_assign_rhs1 (stmt);
+	  break;
         case GIMPLE_BINARY_RHS:
-          expr->kind = EXPR_BINARY;
+	  expr->kind = EXPR_BINARY;
 	  expr->type = TREE_TYPE (gimple_assign_lhs (stmt));
-          expr->ops.binary.op = subcode;
-          expr->ops.binary.opnd0 = gimple_assign_rhs1 (stmt);
-          expr->ops.binary.opnd1 = gimple_assign_rhs2 (stmt);
-          break;
+	  expr->ops.binary.op = subcode;
+	  expr->ops.binary.opnd0 = gimple_assign_rhs1 (stmt);
+	  expr->ops.binary.opnd1 = gimple_assign_rhs2 (stmt);
+	  break;
+        case GIMPLE_TERNARY_RHS:
+	  expr->kind = EXPR_TERNARY;
+	  expr->type = TREE_TYPE (gimple_assign_lhs (stmt));
+	  expr->ops.ternary.op = subcode;
+	  expr->ops.ternary.opnd0 = gimple_assign_rhs1 (stmt);
+	  expr->ops.ternary.opnd1 = gimple_assign_rhs2 (stmt);
+	  expr->ops.ternary.opnd2 = gimple_assign_rhs3 (stmt);
+	  break;
         default:
           gcc_unreachable ();
         }
@@ -374,23 +381,40 @@ hashable_expr_equal_p (const struct hashable_expr *expr0,
                               expr1->ops.unary.opnd, 0);
 
     case EXPR_BINARY:
-      {
-        if (expr0->ops.binary.op != expr1->ops.binary.op)
-          return false;
+      if (expr0->ops.binary.op != expr1->ops.binary.op)
+	return false;
 
-        if (operand_equal_p (expr0->ops.binary.opnd0,
-                             expr1->ops.binary.opnd0, 0)
-            && operand_equal_p (expr0->ops.binary.opnd1,
-                                expr1->ops.binary.opnd1, 0))
-          return true;
+      if (operand_equal_p (expr0->ops.binary.opnd0,
+			   expr1->ops.binary.opnd0, 0)
+	  && operand_equal_p (expr0->ops.binary.opnd1,
+			      expr1->ops.binary.opnd1, 0))
+	return true;
 
-        /* For commutative ops, allow the other order.  */
-        return (commutative_tree_code (expr0->ops.binary.op)
-                && operand_equal_p (expr0->ops.binary.opnd0,
-                                    expr1->ops.binary.opnd1, 0)
-                && operand_equal_p (expr0->ops.binary.opnd1,
-                                    expr1->ops.binary.opnd0, 0));
-      }
+      /* For commutative ops, allow the other order.  */
+      return (commutative_tree_code (expr0->ops.binary.op)
+	      && operand_equal_p (expr0->ops.binary.opnd0,
+				  expr1->ops.binary.opnd1, 0)
+	      && operand_equal_p (expr0->ops.binary.opnd1,
+				  expr1->ops.binary.opnd0, 0));
+
+    case EXPR_TERNARY:
+      if (expr0->ops.ternary.op != expr1->ops.ternary.op
+	  || !operand_equal_p (expr0->ops.ternary.opnd2,
+			       expr1->ops.ternary.opnd2, 0))
+	return false;
+
+      if (operand_equal_p (expr0->ops.ternary.opnd0,
+			   expr1->ops.ternary.opnd0, 0)
+	  && operand_equal_p (expr0->ops.ternary.opnd1,
+			      expr1->ops.ternary.opnd1, 0))
+	return true;
+
+      /* For commutative ops, allow the other order.  */
+      return (commutative_ternary_tree_code (expr0->ops.ternary.op)
+	      && operand_equal_p (expr0->ops.ternary.opnd0,
+				  expr1->ops.ternary.opnd1, 0)
+	      && operand_equal_p (expr0->ops.ternary.opnd1,
+				  expr1->ops.ternary.opnd0, 0));
 
     case EXPR_CALL:
       {
@@ -453,13 +477,26 @@ iterative_hash_hashable_expr (const struct hashable_expr *expr, hashval_t val)
     case EXPR_BINARY:
       val = iterative_hash_object (expr->ops.binary.op, val);
       if (commutative_tree_code (expr->ops.binary.op))
-          val = iterative_hash_exprs_commutative (expr->ops.binary.opnd0,
-                                                  expr->ops.binary.opnd1, val);
+	val = iterative_hash_exprs_commutative (expr->ops.binary.opnd0,
+						expr->ops.binary.opnd1, val);
       else
         {
           val = iterative_hash_expr (expr->ops.binary.opnd0, val);
           val = iterative_hash_expr (expr->ops.binary.opnd1, val);
         }
+      break;
+
+    case EXPR_TERNARY:
+      val = iterative_hash_object (expr->ops.ternary.op, val);
+      if (commutative_ternary_tree_code (expr->ops.ternary.op))
+	val = iterative_hash_exprs_commutative (expr->ops.ternary.opnd0,
+						expr->ops.ternary.opnd1, val);
+      else
+        {
+          val = iterative_hash_expr (expr->ops.ternary.opnd0, val);
+          val = iterative_hash_expr (expr->ops.ternary.opnd1, val);
+        }
+      val = iterative_hash_expr (expr->ops.ternary.opnd2, val);
       break;
 
     case EXPR_CALL:
@@ -512,6 +549,16 @@ print_expr_hash_elt (FILE * stream, const struct expr_hash_elt *element)
         print_generic_expr (stream, element->expr.ops.binary.opnd0, 0);
         fprintf (stream, " %s ", tree_code_name[element->expr.ops.binary.op]);
         print_generic_expr (stream, element->expr.ops.binary.opnd1, 0);
+        break;
+
+      case EXPR_TERNARY:
+        fprintf (stream, " %s <", tree_code_name[element->expr.ops.ternary.op]);
+        print_generic_expr (stream, element->expr.ops.ternary.opnd0, 0);
+	fputs (", ", stream);
+        print_generic_expr (stream, element->expr.ops.ternary.opnd1, 0);
+	fputs (", ", stream);
+        print_generic_expr (stream, element->expr.ops.ternary.opnd2, 0);
+	fputs (">", stream);
         break;
 
       case EXPR_CALL:
@@ -1043,7 +1090,7 @@ dump_dominator_optimization_stats (FILE *file)
 
 /* Dump SSA statistics on stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_dominator_optimization_stats (void)
 {
   dump_dominator_optimization_stats (stderr);
@@ -1588,7 +1635,7 @@ record_edge_info (basic_block bb)
               edge_info = allocate_edge_info (false_edge);
               record_conditions (edge_info, inverted, cond);
 
-              if (code == NE_EXPR)
+              if (TREE_CODE (inverted) == EQ_EXPR)
                 {
                   edge_info->lhs = op1;
                   edge_info->rhs = op0;
@@ -1615,7 +1662,7 @@ record_edge_info (basic_block bb)
               edge_info = allocate_edge_info (false_edge);
               record_conditions (edge_info, inverted, cond);
 
-              if (TREE_CODE (cond) == NE_EXPR)
+              if (TREE_CODE (inverted) == EQ_EXPR)
                 {
                   edge_info->lhs = op0;
                   edge_info->rhs = op1;

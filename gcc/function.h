@@ -25,6 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "hashtab.h"
 #include "vecprim.h"
+#include "tm.h"		/* For CUMULATIVE_ARGS.  */
+#include "hard-reg-set.h"
 
 /* Stack of pending (incomplete) sequences saved by `start_sequence'.
    Each element describes one pending sequence.
@@ -176,17 +178,6 @@ typedef struct ipa_opt_pass_d *ipa_opt_pass;
 DEF_VEC_P(ipa_opt_pass);
 DEF_VEC_ALLOC_P(ipa_opt_pass,heap);
 
-enum function_frequency {
-  /* This function most likely won't be executed at all.
-     (set only when profile feedback is available or via function attribute). */
-  FUNCTION_FREQUENCY_UNLIKELY_EXECUTED,
-  /* The default value.  */
-  FUNCTION_FREQUENCY_NORMAL,
-  /* Optimize this function hard
-     (set only when profile feedback is available or via function attribute). */
-  FUNCTION_FREQUENCY_HOT
-};
-
 struct GTY(()) varasm_status {
   /* If we're using a per-function constant pool, this is it.  */
   struct rtx_constant_pool *pool;
@@ -242,6 +233,17 @@ struct GTY(()) function_subsections {
   const char *unlikely_text_section_name;
 };
 
+/* Describe an empty area of space in the stack frame.  These can be chained
+   into a list; this is used to keep track of space wasted for alignment
+   reasons.  */
+struct GTY(()) frame_space
+{
+  struct frame_space *next;
+
+  HOST_WIDE_INT start;
+  HOST_WIDE_INT length;
+};
+
 /* Datastructures maintained for currently processed function in RTL form.  */
 struct GTY(()) rtl_data {
   struct expr_status expr;
@@ -288,6 +290,9 @@ struct GTY(()) rtl_data {
   /* List (chain of EXPR_LISTs) of all stack slots in this function.
      Made for the sake of unshare_all_rtl.  */
   rtx x_stack_slot_list;
+
+  /* List of empty areas in the stack frame.  */
+  struct frame_space *frame_space_list;
 
   /* Place after which to insert the tail_recursion_label if we need one.  */
   rtx x_stack_check_probe_note;
@@ -433,6 +438,12 @@ struct GTY(()) rtl_data {
      TREE_NOTHROW (current_function_decl) it is set even for overwritable
      function where currently compiled version of it is nothrow.  */
   bool nothrow;
+
+  /* Like regs_ever_live, but 1 if a reg is set or clobbered from an
+     asm.  Unlike regs_ever_live, elements of this array corresponding
+     to eliminable regs (like the frame pointer) are set if an asm
+     sets them.  */
+  HARD_REG_SET asm_clobbers;
 };
 
 #define return_label (crtl->x_return_label)
@@ -538,10 +549,6 @@ struct GTY(()) function {
      function.  */
   unsigned int va_list_fpr_size : 8;
 
-  /* How commonly executed the function is.  Initialized during branch
-     probabilities pass.  */
-  ENUM_BITFIELD (function_frequency) function_frequency : 2;
-
   /* Nonzero if function being compiled can call setjmp.  */
   unsigned int calls_setjmp : 1;
 
@@ -572,6 +579,10 @@ struct GTY(()) function {
 
   unsigned int after_inlining : 1;
   unsigned int always_inline_functions_inlined : 1;
+
+  /* Nonzero if function being compiled can throw synchronous non-call
+     exceptions.  */
+  unsigned int can_throw_non_call_exceptions : 1;
 
   /* Fields below this point are not set for abstract functions; see
      allocate_struct_function.  */
@@ -634,9 +645,9 @@ hashval_t types_used_by_vars_do_hash (const void*);
 int types_used_by_vars_eq (const void *, const void *);
 void types_used_by_var_decl_insert (tree type, tree var_decl);
 
-/* During parsing of a global variable, this linked list points to
-   the list of types referenced by the global variable.  */
-extern GTY(()) tree types_used_by_cur_var_decl;
+/* During parsing of a global variable, this vector contains the types
+   referenced by the global variable.  */
+extern GTY(()) VEC(tree,gc) *types_used_by_cur_var_decl;
 
 
 /* cfun shouldn't be set directly; use one of these functions instead.  */
@@ -703,4 +714,9 @@ extern bool reference_callee_copied (CUMULATIVE_ARGS *, enum machine_mode,
 extern void used_types_insert (tree);
 
 extern int get_next_funcdef_no (void);
+
+/* In predict.c */
+extern bool optimize_function_for_size_p (struct function *);
+extern bool optimize_function_for_speed_p (struct function *);
+
 #endif  /* GCC_FUNCTION_H */

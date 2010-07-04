@@ -124,7 +124,7 @@ namespace __gnu_pbds
     public:
 
       inline
-      bin_search_tree_const_it_(const Node_Pointer p_nd = NULL) 
+      bin_search_tree_const_it_(const Node_Pointer p_nd = 0) 
       : m_p_nd(const_cast<Node_Pointer>(p_nd))
       { }
 
@@ -152,14 +152,14 @@ namespace __gnu_pbds
       inline const_pointer
       operator->() const
       {
-	_GLIBCXX_DEBUG_ASSERT(m_p_nd != NULL);
+	_GLIBCXX_DEBUG_ASSERT(m_p_nd != 0);
 	return &m_p_nd->m_value;
       }
 
       inline const_reference
       operator*() const
       {
-	_GLIBCXX_DEBUG_ASSERT(m_p_nd != NULL);
+	_GLIBCXX_DEBUG_ASSERT(m_p_nd != 0);
 	return m_p_nd->m_value;
       }
 
@@ -182,7 +182,7 @@ namespace __gnu_pbds
       inline PB_DS_TREE_CONST_IT_C_DEC& 
       operator++()
       {
-	_GLIBCXX_DEBUG_ASSERT(m_p_nd != NULL);
+	_GLIBCXX_DEBUG_ASSERT(m_p_nd != 0);
 	inc(integral_constant<int,Is_Forward_Iterator>());
 	return *this;
       }
@@ -225,10 +225,10 @@ namespace __gnu_pbds
 	    return;
 	  }
 
-	if (m_p_nd->m_p_right != NULL)
+	if (m_p_nd->m_p_right != 0)
 	  {
 	    m_p_nd = m_p_nd->m_p_right;
-	    while (m_p_nd->m_p_left != NULL)
+	    while (m_p_nd->m_p_left != 0)
 	      m_p_nd = m_p_nd->m_p_left;
 	    return;
 	  }
@@ -257,10 +257,10 @@ namespace __gnu_pbds
 	    return;
 	  }
 
-	if (m_p_nd->m_p_left != NULL)
+	if (m_p_nd->m_p_left != 0)
 	  {
 	    Node_Pointer p_y = m_p_nd->m_p_left;
-	    while (p_y->m_p_right != NULL)
+	    while (p_y->m_p_right != 0)
 	      p_y = p_y->m_p_right;
 	    m_p_nd = p_y;
 	    return;
@@ -297,7 +297,7 @@ namespace __gnu_pbds
     public:
 
       inline
-      bin_search_tree_it_(const Node_Pointer p_nd = NULL) 
+      bin_search_tree_it_(const Node_Pointer p_nd = 0) 
       : PB_DS_TREE_CONST_IT_C_DEC((Node_Pointer)p_nd)
       { }
 
@@ -325,14 +325,14 @@ namespace __gnu_pbds
       inline typename PB_DS_TREE_CONST_IT_C_DEC::pointer
       operator->() const
       {
-	_GLIBCXX_DEBUG_ASSERT(base_it_type::m_p_nd != NULL);
+	_GLIBCXX_DEBUG_ASSERT(base_it_type::m_p_nd != 0);
 	return &base_it_type::m_p_nd->m_value;
       }
 
       inline typename PB_DS_TREE_CONST_IT_C_DEC::reference
       operator*() const
       {
-	_GLIBCXX_DEBUG_ASSERT(base_it_type::m_p_nd != NULL);
+	_GLIBCXX_DEBUG_ASSERT(base_it_type::m_p_nd != 0);
 	return base_it_type::m_p_nd->m_value;
       }
 

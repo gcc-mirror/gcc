@@ -69,6 +69,10 @@ Os
 Common Optimization
 Optimize for space rather than speed
 
+Ofast
+Common Optimization
+Optimize for speed disregarding exact standards compliance
+
 W
 Common RejectNegative Var(extra_warnings) Warning
 This switch is deprecated; use -Wextra instead
@@ -88,6 +92,10 @@ Warn about inappropriate attribute usage
 Wcast-align
 Common Var(warn_cast_align) Warning
 Warn about pointer casts which increase alignment
+
+Wcpp
+Common Var(warn_cpp) Init(1) Warning
+Warn when a #warning directive is encountered
 
 Wdeprecated-declarations
 Common Var(warn_deprecated_decl) Init(1) Warning
@@ -165,7 +173,7 @@ Common Warning
 Warn about code which might break strict aliasing rules
 
 Wstrict-aliasing=
-Common Joined UInteger Var(warn_strict_aliasing) Init(-1) Warning
+Common Joined RejectNegative UInteger Var(warn_strict_aliasing) Init(-1) Warning
 Warn about code which might break strict aliasing rules
 
 Wstrict-overflow
@@ -173,8 +181,20 @@ Common Warning
 Warn about optimizations that assume that signed overflow is undefined
 
 Wstrict-overflow=
-Common Joined UInteger Var(warn_strict_overflow) Init(-1) Warning
+Common Joined RejectNegative UInteger Var(warn_strict_overflow) Init(-1) Warning
 Warn about optimizations that assume that signed overflow is undefined
+
+Wsuggest-attribute=const
+Common Var(warn_suggest_attribute_const) Warning
+Warn about functions which might be candidates for __attribute__((const))
+
+Wsuggest-attribute=pure
+Common Var(warn_suggest_attribute_pure) Warning
+Warn about functions which might be candidates for __attribute__((pure))
+
+Wsuggest-attribute=noreturn
+Common Var(warn_suggest_attribute_noreturn) Warning
+Warn about functions which might be candidates for __attribute__((noreturn))
 
 Wswitch
 Common Var(warn_switch) Warning
@@ -208,6 +228,14 @@ Wunused
 Common Var(warn_unused) Init(0) Warning
 Enable all -Wunused- warnings
 
+Wunused-but-set-parameter
+Common Var(warn_unused_but_set_parameter) Init(-1) Warning
+Warn when a function parameter is only set, otherwise unused
+
+Wunused-but-set-variable
+Common Var(warn_unused_but_set_variable) Init(-1) Warning
+Warn when a variable is only set, otherwise unused
+
 Wunused-function
 Common Var(warn_unused_function) Init(-1) Warning
 Warn when a function is unused
@@ -229,8 +257,8 @@ Common Var(warn_unused_variable) Init(-1) Warning
 Warn when a variable is unused
 
 Wcoverage-mismatch
-Common RejectNegative Var(warn_coverage_mismatch) Warning
-Warn instead of error in case profiles in -fprofile-use do not match
+Common Var(warn_coverage_mismatch) Init(1) Warning
+Warn in case profiles in -fprofile-use do not match
 
 aux-info
 Common Separate
@@ -255,7 +283,7 @@ Common Separate
 
 dumpdir
 Common Separate
--dumpdir <dir>		Set the directory name to be used for dumps
+-dumpdir <dir>	Set the directory name to be used for dumps
 
 ; The version of the C++ ABI in use.  The following values are allowed:
 ;
@@ -277,7 +305,7 @@ Common Separate
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
 fabi-version=
-Common Joined UInteger Var(flag_abi_version) Init(2)
+Common Joined RejectNegative UInteger Var(flag_abi_version) Init(2)
 
 falign-functions
 Common Report Var(align_functions,0) Optimization UInteger
@@ -307,29 +335,21 @@ Align the start of loops
 falign-loops=
 Common RejectNegative Joined UInteger
 
-; This flag is only tested if alias checking is enabled.
-; 0 if pointer arguments may alias each other.  True in C.
-; 1 if pointer arguments may not alias each other but may alias
-;   global variables.
-; 2 if pointer arguments may not alias each other and may not
-;   alias global variables.
-; 3 if pointer arguments may not alias anything.  True in Fortran.
-;   Set by the front end.
 fargument-alias
-Common Report Var(flag_argument_noalias,0) Optimization
-Specify that arguments may alias each other and globals
+Common
+Does nothing. Preserved for backward compatibility.
 
 fargument-noalias
-Common Report Var(flag_argument_noalias,1) VarExists Optimization
-Assume arguments may alias globals but not each other
+Common
+Does nothing. Preserved for backward compatibility.
 
 fargument-noalias-global
-Common Report Var(flag_argument_noalias,2) VarExists Optimization
-Assume arguments alias neither each other nor globals
+Common
+Does nothing. Preserved for backward compatibility.
 
 fargument-noalias-anything
-Common Report Var(flag_argument_noalias,3) VarExists Optimization
-Assume arguments alias no other storage
+Common
+Does nothing. Preserved for backward compatibility.
 
 fasynchronous-unwind-tables
 Common Report Var(flag_asynchronous_unwind_tables) Optimization
@@ -461,7 +481,7 @@ Common Joined RejectNegative
 -fdiagnostics-show-location=[once|every-line]	How often to emit source location at the beginning of line-wrapped diagnostics
 
 fdiagnostics-show-option
-Common
+Common Var(flag_diagnostics_show_option) Init(1)
 Amend appropriate diagnostic messages with the command line option that controls them
 
 fdump-
@@ -609,6 +629,10 @@ floop-block
 Common Report Var(flag_loop_block) Optimization
 Enable Loop Blocking transformation
 
+fstrict-volatile-bitfields
+Common Report Var(flag_strict_volatile_bitfields) Init(-1)
+Force bitfield accesses to match their type width
+
 fguess-branch-probability
 Common Report Var(flag_guess_branch_prob) Optimization
 Enable guessing of branch probabilities
@@ -689,21 +713,21 @@ fipa-cp-clone
 Common Report Var(flag_ipa_cp_clone) Optimization
 Perform cloning to make Interprocedural constant propagation stronger
 
-fipa-pure-const
-Common Report Var(flag_ipa_pure_const) Init(0) Optimization
-Discover pure and const functions
+fipa-profile
+Common Report Var(flag_ipa_profile) Init(0) Optimization
+Perform interprocedural profile propagation
 
 fipa-pta
 Common Report Var(flag_ipa_pta) Init(0) Optimization
 Perform interprocedural points-to analysis
 
+fipa-pure-const
+Common Report Var(flag_ipa_pure_const) Init(0) Optimization
+Discover pure and const functions
+
 fipa-reference
 Common Report Var(flag_ipa_reference) Init(0) Optimization
 Discover readonly and non addressable static variables
-
-fipa-type-escape
-Common Report Var(flag_ipa_type_escape) Init(0) Optimization
-Type based escape and alias analysis
 
 fipa-matrix-reorg
 Common Report Var(flag_ipa_matrix_reorg) Optimization
@@ -741,7 +765,7 @@ Common Report Var(flag_ira_share_spill_slots) Init(1)
 Share stack slots for spilled pseudo-registers.
 
 fira-verbose=
-Common RejectNegative Joined UInteger
+Common RejectNegative Joined UInteger Var(flag_ira_verbose) Init(5)
 -fira-verbose=<number>	Control IRA's level of diagnostic messages.
 
 fivopts
@@ -774,7 +798,7 @@ Enable link-time optimization.
 
 ; The initial value of -1 comes from Z_DEFAULT_COMPRESSION in zlib.h.
 flto-compression-level=
-Common Joined UInteger Var(flag_lto_compression_level) Init(-1)
+Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(-1)
 -flto-compression-level=<number>	Use zlib compression level <number> for IL
 
 flto-report
@@ -860,6 +884,10 @@ foptimize-sibling-calls
 Common Report Var(flag_optimize_sibling_calls) Optimization
 Optimize sibling and tail recursive calls
 
+fpartial-inlining
+Common Report Var(flag_partial_inlining)
+Perform partial inlining
+
 fpre-ipa-mem-report
 Common Report Var(pre_ipa_mem_report)
 Report on memory allocation before interprocedural optimization
@@ -877,7 +905,7 @@ Common RejectNegative Joined UInteger Optimization
 -fpack-struct=<number>	Set initial maximum structure member alignment
 
 fpcc-struct-return
-Common Report Var(flag_pcc_struct_return,1) VarExists
+Common Report Var(flag_pcc_struct_return,1) Init(DEFAULT_PCC_STRUCT_RETURN)
 Return small aggregates in memory, not registers
 
 fpeel-loops
@@ -921,7 +949,7 @@ Common Report Var(flag_predictive_commoning) Optimization
 Run predictive commoning optimization.
 
 fprefetch-loop-arrays
-Common Report Var(flag_prefetch_loop_arrays) Optimization
+Common Report Var(flag_prefetch_loop_arrays) Init(-1) Optimization
 Generate prefetch instructions, if available, for arrays in loops
 
 fprofile
@@ -1131,8 +1159,12 @@ fsee
 Common
 Does nothing.  Preserved for backward compatibility.
 
+fzee
+Common Report Var(flag_zee) Init(0)
+Eliminate redundant zero extensions on targets that support implicit extensions.
+
 fshow-column
-Common C ObjC C++ ObjC++ Report Var(flag_show_column) Init(1)
+Common Report Var(flag_show_column) Init(1)
 Show column numbers in diagnostics, when available.  Default on
 
 fsignaling-nans
@@ -1314,7 +1346,7 @@ Common Report Var(flag_tree_loop_optimize) Init(1) Optimization
 Enable loop optimizations on tree level
 
 ftree-parallelize-loops=
-Common Report Joined UInteger Var(flag_tree_parallelize_loops) Init(1)
+Common Report Joined RejectNegative UInteger Var(flag_tree_parallelize_loops) Init(1)
 Enable automatic parallelization of loops
 
 ftree-phiprop
@@ -1468,8 +1500,12 @@ Common Report Var(flag_web) Init(2) Optimization
 Construct webs and split unrelated uses of single variable
 
 fwhopr
-Common Var(flag_whopr)
-Enable partitioned link-time optimization.
+Common
+Enable partitioned link-time optimization
+
+fwhopr=
+Common RejectNegative UInteger Joined Var(flag_whopr)
+Enable partitioned link-time optimization with specified number of parallel jobs
 
 ftree-builtin-call-dce
 Common Report Var(flag_tree_builtin_call_dce) Init(0) Optimization
@@ -1534,6 +1570,10 @@ Generate debug information in XCOFF format
 gxcoff+
 Common JoinedOrMissing Negative(gcoff)
 Generate debug information in extended XCOFF format
+
+iplugindir=
+Common Joined Var(plugindir_string) Init(0)
+-iplugindir=<dir>	Set <dir> to be the default plugin directory
 
 o
 Common Joined Separate

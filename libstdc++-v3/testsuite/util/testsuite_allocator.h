@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Testing allocator for the C++ library testsuite.
 //
-// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -27,7 +27,6 @@
 #ifndef _GLIBCXX_TESTSUITE_ALLOCATOR_H
 #define _GLIBCXX_TESTSUITE_ALLOCATOR_H
 
-#include <cstddef>
 #include <tr1/unordered_map>
 #include <cassert>
 #include <bits/move.h>
@@ -186,8 +185,8 @@ namespace __gnu_test
     {
       // Let's not core here...
       Alloc  a;
-      a.deallocate(NULL, 1);
-      a.deallocate(NULL, 10);
+      a.deallocate(0, 1);
+      a.deallocate(0, 10);
       return true;
     }
 
@@ -241,8 +240,8 @@ namespace __gnu_test
     : private uneq_allocator_base
     {
     public:
-      typedef size_t                              size_type;
-      typedef ptrdiff_t                           difference_type;
+      typedef std::size_t                         size_type;
+      typedef std::ptrdiff_t                      difference_type;
       typedef Tp*                                 pointer;
       typedef const Tp*                           const_pointer;
       typedef Tp&                                 reference;

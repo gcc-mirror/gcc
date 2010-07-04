@@ -38,7 +38,7 @@ class javax::swing::plaf::metal::MetalInternalFrameUI$1 : public ::java::lang::O
 public: // actually package-private
   MetalInternalFrameUI$1(::javax::swing::plaf::metal::MetalInternalFrameUI *);
 public:
-  void propertyChange(::java::beans::PropertyChangeEvent *);
+  virtual void propertyChange(::java::beans::PropertyChangeEvent *);
 public: // actually package-private
   ::javax::swing::plaf::metal::MetalInternalFrameUI * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

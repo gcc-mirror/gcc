@@ -30,7 +30,7 @@ class gnu::java::security::util::IntegerUtil$1 : public ::java::util::LinkedHash
 public: // actually package-private
   IntegerUtil$1(jint, jfloat, jboolean);
 public:
-  jboolean removeEldestEntry(::java::util::Map$Entry *);
+  virtual jboolean removeEldestEntry(::java::util::Map$Entry *);
   static ::java::lang::Class class$;
 };
 

@@ -33,7 +33,7 @@ class gnu::javax::net::ssl::provider::Util$1 : public ::java::lang::Object
 public: // actually package-private
   Util$1(::java::lang::String *);
 public:
-  ::java::lang::Object * run();
+  virtual ::java::lang::Object * run();
 private:
   ::java::lang::String * __attribute__((aligned(__alignof__( ::java::lang::Object)))) val$name;
 public:

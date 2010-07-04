@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,8 +32,7 @@ with Validsw;  use Validsw;
 with Sem_Warn; use Sem_Warn;
 with Stylesw;  use Stylesw;
 
-with System.OS_Lib; use System.OS_Lib;
-
+with System.Strings;
 with System.WCh_Con; use System.WCh_Con;
 
 package body Switch.C is
@@ -41,11 +40,25 @@ package body Switch.C is
    RTS_Specified : String_Access := null;
    --  Used to detect multiple use of --RTS= flag
 
+   function Switch_Subsequently_Cancelled
+     (C        : String;
+      Args     : Argument_List;
+      Arg_Rank : Positive) return Boolean;
+   --  This function is called from Scan_Front_End_Switches. It determines if
+   --  the switch currently being scanned is followed by a switch of the form
+   --  "-gnat-" & C, where C is the argument. If so, then True is returned,
+   --  and Scan_Front_End_Switches will cancel the effect of the switch. If
+   --  no such switch is found, False is returned.
+
    -----------------------------
    -- Scan_Front_End_Switches --
    -----------------------------
 
-   procedure Scan_Front_End_Switches (Switch_Chars : String) is
+   procedure Scan_Front_End_Switches
+     (Switch_Chars : String;
+      Args         : Argument_List;
+      Arg_Rank     : Positive)
+   is
       First_Switch : Boolean := True;
       --  False for all but first switch
 
@@ -519,11 +532,11 @@ package body Switch.C is
                System_Extend_Unit := Empty;
                Warning_Mode := Treat_As_Error;
 
-               --  Set Ada 2005 mode explicitly. We don't want to rely on the
+               --  Set Ada 2012 mode explicitly. We don't want to rely on the
                --  implicit setting here, since for example, we want
                --  Preelaborate_05 treated as Preelaborate
 
-               Ada_Version := Ada_05;
+               Ada_Version := Ada_12;
                Ada_Version_Explicit := Ada_Version;
 
                --  Set default warnings and style checks for -gnatg
@@ -662,20 +675,27 @@ package body Switch.C is
             when 'p' =>
                Ptr := Ptr + 1;
 
-               --  Set all specific options as well as All_Checks in the
-               --  Suppress_Options array, excluding Elaboration_Check, since
-               --  this is treated specially because we do not want -gnatp to
-               --  disable static elaboration processing.
+               --  Skip processing if cancelled by subsequent -gnat-p
 
-               for J in Suppress_Options'Range loop
-                  if J /= Elaboration_Check then
-                     Suppress_Options (J) := True;
-                  end if;
-               end loop;
+               if Switch_Subsequently_Cancelled ("p", Args, Arg_Rank) then
+                  Store_Switch := False;
 
-               Validity_Checks_On         := False;
-               Opt.Suppress_Checks        := True;
-               Opt.Enable_Overflow_Checks := False;
+               else
+                  --  Set all specific options as well as All_Checks in the
+                  --  Suppress_Options array, excluding Elaboration_Check,
+                  --  since this is treated specially because we do not want
+                  --  -gnatp to disable static elaboration processing.
+
+                  for J in Suppress_Options'Range loop
+                     if J /= Elaboration_Check then
+                        Suppress_Options (J) := True;
+                     end if;
+                  end loop;
+
+                  Validity_Checks_On         := False;
+                  Opt.Suppress_Checks        := True;
+                  Opt.Enable_Overflow_Checks := False;
+               end if;
 
             --  Processing for P switch
 
@@ -883,6 +903,8 @@ package body Switch.C is
             when 'X' =>
                Ptr := Ptr + 1;
                Extensions_Allowed := True;
+               Ada_Version := Ada_Version_Type'Last;
+               Ada_Version_Explicit := Ada_Version_Type'Last;
 
             --  Processing for y switch
 
@@ -933,6 +955,7 @@ package body Switch.C is
             --  Processing for z switch
 
             when 'z' =>
+
                --  -gnatz must be the first and only switch in Switch_Chars,
                --  and is a two-letter switch.
 
@@ -1027,10 +1050,67 @@ package body Switch.C is
                   Ada_Version_Explicit := Ada_Version;
                end if;
 
-            --  Ignore extra switch character
+            --  Processing for 12 switch
 
-            when '/' | '-' =>
+            when '1' =>
+               if Ptr = Max then
+                  Bad_Switch ("-gnat1");
+               end if;
+
                Ptr := Ptr + 1;
+
+               if Switch_Chars (Ptr) /= '2' then
+                  Bad_Switch ("-gnat1" & Switch_Chars (Ptr .. Max));
+               else
+                  Ptr := Ptr + 1;
+                  Ada_Version := Ada_12;
+                  Ada_Version_Explicit := Ada_Version;
+               end if;
+
+            --  Processing for 2005 and 2012 switches
+
+            when '2' =>
+               if Ptr > Max - 3 then
+                  Bad_Switch ("-gnat" & Switch_Chars (Ptr .. Max));
+
+               elsif Switch_Chars (Ptr .. Ptr + 3) = "2005" then
+                  Ada_Version := Ada_05;
+
+               elsif Switch_Chars (Ptr .. Ptr + 3) = "2012" then
+                  Ada_Version := Ada_12;
+
+               else
+                  Bad_Switch ("-gnat" & Switch_Chars (Ptr .. Ptr + 3));
+               end if;
+
+               Ada_Version_Explicit := Ada_Version;
+               Ptr := Ptr + 4;
+
+            --  Switch cancellation, currently only -gnat-p is allowed.
+            --  All we do here is the error checking, since the actual
+            --  processing for switch cancellation is done by calls to
+            --  Switch_Subsequently_Cancelled at the appropriate point.
+
+            when '-' =>
+
+               --  Simple ignore -gnat-p
+
+               if Switch_Chars = "-gnat-p" then
+                  return;
+
+               --  Any other occurrence of minus is ignored. This is for
+               --  maximum compatibility with previous version which ignored
+               --  all occurrences of minus.
+
+               else
+                  Store_Switch := False;
+                  Ptr := Ptr + 1;
+               end if;
+
+            --  We ignore '/' in switches, this is historical, still needed???
+
+            when '/' =>
+               Store_Switch := False;
 
             --  Anything else is an error (illegal switch character)
 
@@ -1047,5 +1127,30 @@ package body Switch.C is
          end loop;
       end if;
    end Scan_Front_End_Switches;
+
+   -----------------------------------
+   -- Switch_Subsequently_Cancelled --
+   -----------------------------------
+
+   function Switch_Subsequently_Cancelled
+     (C        : String;
+      Args     : Argument_List;
+      Arg_Rank : Positive) return Boolean
+   is
+      use type System.Strings.String_Access;
+
+   begin
+      --  Loop through arguments following the current one
+
+      for Arg in Arg_Rank + 1 .. Args'Last loop
+         if Args (Arg).all = "-gnat-" & C then
+            return True;
+         end if;
+      end loop;
+
+      --  No match found, not cancelled
+
+      return False;
+   end Switch_Subsequently_Cancelled;
 
 end Switch.C;

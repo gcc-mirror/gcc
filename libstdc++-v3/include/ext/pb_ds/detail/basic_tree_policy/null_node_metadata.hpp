@@ -38,8 +38,8 @@
  * Contains an implementation class for tree-like classes.
  */
 
-#ifndef PB_DS_NULL_NODE_METADATA_HPP
-#define PB_DS_NULL_NODE_METADATA_HPP
+#ifndef PB_DS_0_NODE_METADATA_HPP
+#define PB_DS_0_NODE_METADATA_HPP
 
 #include <ext/pb_ds/detail/types_traits.hpp>
 

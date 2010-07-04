@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -397,47 +397,46 @@ begin
 
    Write_Switch_Char ("wxx");
    Write_Line ("Enable selected warning modes, xx = list of parameters:");
-   Write_Line ("        a    turn on all optional info/warnings " &
-                                                  "(except dhl.ot.w)");
+   Write_Line ("        a    turn on all info/warnings marked below with +");
    Write_Line ("        A    turn off all optional info/warnings");
-   Write_Line ("        .a*  turn on warnings for failing assertion");
+   Write_Line ("        .a*+ turn on warnings for failing assertion");
    Write_Line ("        .A   turn off warnings for failing assertion");
-   Write_Line ("        b    turn on warnings for bad fixed value " &
+   Write_Line ("        b+   turn on warnings for bad fixed value " &
                                                   "(not multiple of small)");
    Write_Line ("        B*   turn off warnings for bad fixed value " &
                                                   "(not multiple of small)");
-   Write_Line ("        .b*  turn on warnings for biased representation");
+   Write_Line ("        .b*+ turn on warnings for biased representation");
    Write_Line ("        .B   turn off warnings for biased representation");
-   Write_Line ("        c    turn on warnings for constant conditional");
+   Write_Line ("        c+   turn on warnings for constant conditional");
    Write_Line ("        C*   turn off warnings for constant conditional");
-   Write_Line ("        .c   turn on warnings for unrepped components");
+   Write_Line ("        .c+  turn on warnings for unrepped components");
    Write_Line ("        .C*  turn off warnings for unrepped components");
    Write_Line ("        d    turn on warnings for implicit dereference");
    Write_Line ("        D*   turn off warnings for implicit dereference");
    Write_Line ("        e    treat all warnings (but not info) as errors");
    Write_Line ("        .e   turn on every optional info/warning " &
                                                   "(no exceptions)");
-   Write_Line ("        f    turn on warnings for unreferenced formal");
+   Write_Line ("        f+   turn on warnings for unreferenced formal");
    Write_Line ("        F*   turn off warnings for unreferenced formal");
-   Write_Line ("        g*   turn on warnings for unrecognized pragma");
+   Write_Line ("        g*+  turn on warnings for unrecognized pragma");
    Write_Line ("        G    turn off warnings for unrecognized pragma");
    Write_Line ("        h    turn on warnings for hiding variable");
    Write_Line ("        H*   turn off warnings for hiding variable");
-   Write_Line ("        i*   turn on warnings for implementation unit");
+   Write_Line ("        i*+  turn on warnings for implementation unit");
    Write_Line ("        I    turn off warnings for implementation unit");
    Write_Line ("        .i   turn on warnings for overlapping actuals");
    Write_Line ("        .I*  turn off warnings for overlapping actuals");
-   Write_Line ("        j    turn on warnings for obsolescent " &
+   Write_Line ("        j+   turn on warnings for obsolescent " &
                                                   "(annex J) feature");
    Write_Line ("        J*   turn off warnings for obsolescent " &
                                                   "(annex J) feature");
-   Write_Line ("        k    turn on warnings on constant variable");
+   Write_Line ("        k+   turn on warnings on constant variable");
    Write_Line ("        K*   turn off warnings on constant variable");
    Write_Line ("        l    turn on warnings for missing " &
                                                   "elaboration pragma");
    Write_Line ("        L*   turn off warnings for missing " &
                                                   "elaboration pragma");
-   Write_Line ("        m    turn on warnings for variable assigned " &
+   Write_Line ("        m+   turn on warnings for variable assigned " &
                                                   "but not read");
    Write_Line ("        M*   turn off warnings for variable assigned " &
                                                   "but not read");
@@ -450,47 +449,48 @@ begin
                                                   "but not read");
    Write_Line ("        .O*  turn off warnings for out parameters assigned " &
                                                   "but not read");
-   Write_Line ("        p    turn on warnings for ineffective pragma " &
+   Write_Line ("        p+   turn on warnings for ineffective pragma " &
                                                   "Inline in frontend");
    Write_Line ("        P*   turn off warnings for ineffective pragma " &
                                                   "Inline in frontend");
-   Write_Line ("        .p   turn on warnings for suspicious parameter " &
+   Write_Line ("        .p+  turn on warnings for suspicious parameter " &
                                                   "order");
    Write_Line ("        .P*  turn off warnings for suspicious parameter " &
                                                   "order");
-   Write_Line ("        q*   turn on warnings for questionable " &
+   Write_Line ("        q*+  turn on warnings for questionable " &
                                                   "missing parenthesis");
    Write_Line ("        Q    turn off warnings for questionable " &
                                                   "missing parenthesis");
-   Write_Line ("        r    turn on warnings for redundant construct");
+   Write_Line ("        r+   turn on warnings for redundant construct");
    Write_Line ("        R*   turn off warnings for redundant construct");
-   Write_Line ("        .r   turn on warnings for object renaming function");
+   Write_Line ("        .r+  turn on warnings for object renaming function");
    Write_Line ("        .R*  turn off warnings for object renaming function");
    Write_Line ("        s    suppress all info/warnings");
    Write_Line ("        t    turn on warnings for tracking deleted code");
    Write_Line ("        T*   turn off warnings for tracking deleted code");
-   Write_Line ("        u    turn on warnings for unused entity");
+   Write_Line ("        u+   turn on warnings for unused entity");
    Write_Line ("        U*   turn off warnings for unused entity");
-   Write_Line ("        v*   turn on warnings for unassigned variable");
+   Write_Line ("        v*+  turn on warnings for unassigned variable");
    Write_Line ("        V    turn off warnings for unassigned variable");
-   Write_Line ("        .v*  turn on info messages for reverse bit order");
+   Write_Line ("        .v*+ turn on info messages for reverse bit order");
    Write_Line ("        .V   turn off info messages for reverse bit order");
-   Write_Line ("        w*   turn on warnings for wrong low bound assumption");
+   Write_Line ("        w*+  turn on warnings for wrong low bound assumption");
    Write_Line ("        W    turn off warnings for wrong low bound " &
                                                   "assumption");
    Write_Line ("        .w   turn on warnings on pragma Warnings Off");
    Write_Line ("        .W*  turn off warnings on pragma Warnings Off");
-   Write_Line ("        x*   turn on warnings for export/import");
+   Write_Line ("        x*+  turn on warnings for export/import");
    Write_Line ("        X    turn off warnings for export/import");
-   Write_Line ("        .x   turn on warnings for non-local exception");
+   Write_Line ("        .x+  turn on warnings for non-local exception");
    Write_Line ("        .X*  turn off warnings for non-local exception");
-   Write_Line ("        y*   turn on warnings for Ada 2005 incompatibility");
+   Write_Line ("        y*+  turn on warnings for Ada 2005 incompatibility");
    Write_Line ("        Y    turn off warnings for Ada 2005 incompatibility");
-   Write_Line ("        z*   turn on warnings for suspicious " &
+   Write_Line ("        z*+  turn on warnings for suspicious " &
                                                   "unchecked conversion");
    Write_Line ("        Z    turn off warnings for suspicious " &
                                                   "unchecked conversion");
    Write_Line ("        *    indicates default in above list");
+   Write_Line ("        +    indicates warning flag included in -gnatwa");
 
    --  Line for -gnatW switch
 
@@ -595,7 +595,22 @@ begin
    if Ada_Version_Default = Ada_05 then
       Write_Line ("Ada 2005 mode (default)");
    else
-      Write_Line ("Allow Ada 2005 extensions");
+      Write_Line ("Enforce Ada 2005 restrictions");
    end if;
+
+   --  Line for -gnat12 switch
+
+   Write_Switch_Char ("12");
+
+   if Ada_Version_Default = Ada_12 then
+      Write_Line ("Ada 2012 mode (default)");
+   else
+      Write_Line ("Allow Ada 2012 extensions");
+   end if;
+
+   --  Line for -gnat-p switch
+
+   Write_Switch_Char ("-p");
+   Write_Line ("Cancel effect of previous -gnatp switch");
 
 end Usage;

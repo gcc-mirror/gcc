@@ -18,7 +18,7 @@
 Copyright @copyright{} 1995-2008, Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.2 or
+under the terms of the GNU Free Documentation License, Version 1.3 or
 any later version published by the Free Software Foundation; with no
 Invariant Sections, with the Front-Cover Texts being ``GNAT Reference
 Manual'', and with no Back-Cover Texts.  A copy of the license is
@@ -81,7 +81,6 @@ AdaCore
 * Interfacing to Other Languages::
 * Specialized Needs Annexes::
 * Implementation of Specific Ada Features::
-* Project File Reference::
 * Obsolescent Features::
 * GNU Free Documentation License::
 * Index::
@@ -100,6 +99,8 @@ Implementation Defined Pragmas
 * Pragma Ada_95::
 * Pragma Ada_05::
 * Pragma Ada_2005::
+* Pragma Ada_12::
+* Pragma Ada_2012::
 * Pragma Annotate::
 * Pragma Assert::
 * Pragma Assume_No_Invalid_Values::
@@ -133,6 +134,7 @@ Implementation Defined Pragmas
 * Pragma Export_Value::
 * Pragma Export_Valued_Procedure::
 * Pragma Extend_System::
+* Pragma Extensions_Allowed::
 * Pragma External::
 * Pragma External_Name_Casing::
 * Pragma Fast_Math::
@@ -364,6 +366,8 @@ The GNAT Library
 * GNAT.IO (g-io.ads)::
 * GNAT.IO_Aux (g-io_aux.ads)::
 * GNAT.Lock_Files (g-locfil.ads)::
+* GNAT.MBBS_Discrete_Random (g-mbdira.ads)::
+* GNAT.MBBS_Float_Random (g-mbflra.ads)::
 * GNAT.MD5 (g-md5.ads)::
 * GNAT.Memory_Dump (g-memdum.ads)::
 * GNAT.Most_Recent_Exception (g-moreex.ads)::
@@ -462,8 +466,6 @@ Implementation of Specific Ada Features
 * Code Generation for Array Aggregates::
 * The Size of Discriminated Records with Default Discriminants::
 * Strict Conformance to the Ada Reference Manual::
-
-Project File Reference
 
 Obsolescent Features
 
@@ -580,10 +582,6 @@ of the specialized needs annexes.
 @ref{Implementation of Specific Ada Features}, discusses issues related
 to GNAT's implementation of machine code insertions, tasking, and several
 other features.
-
-@item
-@ref{Project File Reference}, presents the syntax and semantics
-of project files.
 
 @item
 @ref{Obsolescent Features} documents implementation dependent features,
@@ -717,6 +715,8 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Ada_95::
 * Pragma Ada_05::
 * Pragma Ada_2005::
+* Pragma Ada_12::
+* Pragma Ada_2012::
 * Pragma Annotate::
 * Pragma Assert::
 * Pragma Assume_No_Invalid_Values::
@@ -750,6 +750,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Export_Value::
 * Pragma Export_Valued_Procedure::
 * Pragma Extend_System::
+* Pragma Extensions_Allowed::
 * Pragma External::
 * Pragma External_Name_Casing::
 * Pragma Fast_Math::
@@ -908,9 +909,7 @@ pragma Ada_05;
 @noindent
 A configuration pragma that establishes Ada 2005 mode for the unit to which
 it applies, regardless of the mode set by the command line switches.
-This mode is set automatically for the @code{Ada} and @code{System}
-packages and their children, so you need not specify it in these
-contexts.  This pragma is useful when writing a reusable component that
+This pragma is useful when writing a reusable component that
 itself uses Ada 2005 features, but which is intended to be usable from
 either Ada 83 or Ada 95 programs.
 
@@ -925,6 +924,37 @@ pragma Ada_2005;
 
 @noindent
 This configuration pragma is a synonym for pragma Ada_05 and has the
+same syntax and effect.
+
+@node Pragma Ada_12
+@unnumberedsec Pragma Ada_12
+@findex Ada_12
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Ada_12;
+@end smallexample
+
+@noindent
+A configuration pragma that establishes Ada 2012 mode for the unit to which
+it applies, regardless of the mode set by the command line switches.
+This mode is set automatically for the @code{Ada} and @code{System}
+packages and their children, so you need not specify it in these
+contexts.  This pragma is useful when writing a reusable component that
+itself uses Ada 2012 features, but which is intended to be usable from
+Ada 83, Ada 95, or Ada 2005 programs.
+
+@node Pragma Ada_2012
+@unnumberedsec Pragma Ada_2012
+@findex Ada_2005
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Ada_2012;
+@end smallexample
+
+@noindent
+This configuration pragma is a synonym for pragma Ada_12 and has the
 same syntax and effect.
 
 @node Pragma Annotate
@@ -2179,6 +2209,35 @@ it you will have to use the appropriate switch for compiling
 system units.  @xref{Top, @value{EDITION} User's Guide, About This
 Guide,, gnat_ugn, @value{EDITION} User's Guide}, for details.
 
+@node Pragma Extensions_Allowed
+@unnumberedsec Pragma Extensions_Allowed
+@cindex Ada Extensions
+@cindex GNAT Extensions
+@findex Extensions_Allowed
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Extensions_Allowed (On | Off);
+@end smallexample
+
+@noindent
+This configuration pragma enables or disables the implementation
+extension mode (the use of Off as a parameter cancels the effect
+of the @option{-gnatX} command switch).
+
+In extension mode, the latest version of the Ada language is
+implemented (currently Ada 2012), and in addition a small number
+of GNAT specific extensions are recognized as follows:
+
+@table @asis
+@item Constrained attribute for generic objects
+The @code{Constrained} attribute is permitted for objects of
+generic types. The result indicates if the corresponding actual
+is constrained.
+
+@end table
+
 @node Pragma External
 @unnumberedsec Pragma External
 @findex External
@@ -2856,7 +2915,12 @@ the standard Ada pragma @code{Import}.  It is provided for compatibility
 with Ada 83.  The definition is upwards compatible both with pragma
 @code{Interface} as defined in the Ada 83 Reference Manual, and also
 with some extended implementations of this pragma in certain Ada 83
-implementations.
+implementations.  The only difference between pragma @code{Interface}
+and pragma @code{Import} is that there is special circuitry to allow
+both pragmas to appear for the same subprogram entity (normally it
+is illegal to have multiple @code{Import} pragmas. This is useful in
+maintaining Ada 83/Ada 95 compatibility and is compatible with other
+Ada 83 compilers.
 
 @node Pragma Interface_Name
 @unnumberedsec Pragma Interface_Name
@@ -2923,7 +2987,7 @@ Ada exceptions, or used to implement run-time functions such as the
 Pragma @code{Interrupt_State} provides a general mechanism for overriding
 such uses of interrupts.  It subsumes the functionality of pragma
 @code{Unreserve_All_Interrupts}.  Pragma @code{Interrupt_State} is not
-available on OS/2, Windows or VMS.  On all other platforms than VxWorks,
+available on Windows or VMS.  On all other platforms than VxWorks,
 it applies to signals; on VxWorks, it applies to vectored hardware interrupts
 and may be used to mark interrupts required by the board support package
 as reserved.
@@ -3967,8 +4031,6 @@ inlining (-gnatN option set) are accepted and legality-checked
 by the compiler, but are ignored at run-time even if postcondition
 checking is enabled.
 
-
-
 @node Pragma Profile (Ravenscar)
 @unnumberedsec Pragma Profile (Ravenscar)
 @findex Ravenscar
@@ -4533,7 +4595,11 @@ gcc -c -gnatyl @dots{}
 The form ALL_CHECKS activates all standard checks (its use is equivalent
 to the use of the @code{gnaty} switch with no options.  @xref{Top,
 @value{EDITION} User's Guide, About This Guide, gnat_ugn,
-@value{EDITION} User's Guide}, for details.
+@value{EDITION} User's Guide}, for details.)
+
+Note: the behavior is slightly different in GNAT mode (@option{-gnatg} used).
+In this case, ALL_CHECKS implies the standard set of GNAT mode style check
+options (i.e. equivalent to -gnatyg).
 
 The forms with @code{Off} and @code{On}
 can be used to temporarily disable style checks
@@ -5249,6 +5315,9 @@ used to cause the compiler to entirely ignore all WARNINGS pragmas. This can
 be useful in checking whether obsolete pragmas in existing programs are hiding
 real problems.
 
+Note: pragma Warnings does not affect the processing of style messages. See
+separate entry for pragma Style_Checks for control of style messages.
+
 @node Pragma Weak_External
 @unnumberedsec Pragma Weak_External
 @findex Weak_External
@@ -5946,7 +6015,7 @@ end record;
 @end smallexample
 
 @noindent
-will have a size of 40 (that is @code{Rec'Size} will be 40.  The
+will have a size of 40 (that is @code{Rec'Size} will be 40).  The
 alignment will be 4, because of the
 integer field, and so the default size of record objects for this type
 will be 64 (8 bytes).
@@ -6574,7 +6643,6 @@ For example:
   Y : Float;
   for Y'Address use X'Address;>>
 @end smallexample
-
 
 @sp 1
 @cartouche
@@ -8846,7 +8914,7 @@ floating-point.
 @code{Numerics.Float_Random.Max_Image_Width}.  See A.5.2(27).
 @end cartouche
 @noindent
-Maximum image width is 649, see library file @file{a-numran.ads}.
+Maximum image width is 6864, see library file @file{s-rannum.ads}.
 
 @sp 1
 @cartouche
@@ -8855,7 +8923,7 @@ Maximum image width is 649, see library file @file{a-numran.ads}.
 @code{Numerics.Discrete_Random.Max_Image_Width}.  See A.5.2(27).
 @end cartouche
 @noindent
-Maximum image width is 80, see library file @file{a-nudira.ads}.
+Maximum image width is 6864, see library file @file{s-rannum.ads}.
 
 @sp 1
 @cartouche
@@ -8864,8 +8932,9 @@ Maximum image width is 80, see library file @file{a-nudira.ads}.
 A.5.2(32).
 @end cartouche
 @noindent
-The algorithm is documented in the source files @file{a-numran.ads} and
-@file{a-numran.adb}.
+The algorithm is the Mersenne Twister, as documented in the source file
+@file{s-rannum.adb}. This version of the algorithm has a period of
+2**19937-1.
 
 @sp 1
 @cartouche
@@ -8874,7 +8943,9 @@ The algorithm is documented in the source files @file{a-numran.ads} and
 state.  See A.5.2(38).
 @end cartouche
 @noindent
-See the documentation contained in the file @file{a-numran.adb}.
+The value returned by the Image function is the concatenation of
+the fixed-width decimal representations of the 624 32-bit integers
+of the state vector.
 
 @sp 1
 @cartouche
@@ -11837,12 +11908,12 @@ This is a predefined instantiation of
 build the type @code{Complex} and @code{Imaginary}.
 
 @item Ada.Numerics.Discrete_Random
-This package provides a random number generator suitable for generating
-random integer values from a specified range.
+This generic package provides a random number generator suitable for generating
+uniformly distributed values of a specified discrete subtype.
 
 @item Ada.Numerics.Float_Random
 This package provides a random number generator suitable for generating
-uniformly distributed floating point values.
+uniformly distributed floating point values in the unit interval.
 
 @item Ada.Numerics.Generic_Complex_Elementary_Functions
 This is a generic version of the package that provides the
@@ -12224,8 +12295,6 @@ This package is similar to @code{Ada.Text_IO.Streams}, except that the
 types are @code{Wide_Character} and @code{Wide_String} instead of
 @code{Character} and @code{String}.
 @end table
-
-
 
 @node The Implementation of Standard I/O
 @chapter The Implementation of Standard I/O
@@ -13241,8 +13310,8 @@ package Interfaces.C_Streams is
   -- Standard C functions --
   --------------------------
   -- The functions selected below are ones that are
-  -- available in DOS, OS/2, UNIX and Xenix (but not
-  -- necessarily in ANSI C).  These are very thin interfaces
+  -- available in UNIX (but not necessarily in ANSI C).
+  -- These are very thin interfaces
   -- which copy exactly the C headers.  For more
   -- documentation on these functions, see the Microsoft C
   -- "Run-Time Library Reference" (Microsoft Press, 1990,
@@ -13545,6 +13614,8 @@ of GNAT, and will generate a warning message.
 * GNAT.IO (g-io.ads)::
 * GNAT.IO_Aux (g-io_aux.ads)::
 * GNAT.Lock_Files (g-locfil.ads)::
+* GNAT.MBBS_Discrete_Random (g-mbdira.ads)::
+* GNAT.MBBS_Float_Random (g-mbflra.ads)::
 * GNAT.MD5 (g-md5.ads)::
 * GNAT.Memory_Dump (g-memdum.ads)::
 * GNAT.Most_Recent_Exception (g-moreex.ads)::
@@ -14428,6 +14499,24 @@ for whether a file exists, and functions for reading a line of text.
 @noindent
 Provides a general interface for using files as locks.  Can be used for
 providing program level synchronization.
+
+@node GNAT.MBBS_Discrete_Random (g-mbdira.ads)
+@section @code{GNAT.MBBS_Discrete_Random} (@file{g-mbdira.ads})
+@cindex @code{GNAT.MBBS_Discrete_Random} (@file{g-mbdira.ads})
+@cindex Random number generation
+
+@noindent
+The original implementation of @code{Ada.Numerics.Discrete_Random}.  Uses
+a modified version of the Blum-Blum-Shub generator.
+
+@node GNAT.MBBS_Float_Random (g-mbflra.ads)
+@section @code{GNAT.MBBS_Float_Random} (@file{g-mbflra.ads})
+@cindex @code{GNAT.MBBS_Float_Random} (@file{g-mbflra.ads})
+@cindex Random number generation
+
+@noindent
+The original implementation of @code{Ada.Numerics.Float_Random}.  Uses
+a modified version of the Blum-Blum-Shub generator.
 
 @node GNAT.MD5 (g-md5.ads)
 @section @code{GNAT.MD5} (@file{g-md5.ads})
@@ -15477,7 +15566,7 @@ the underlying kernel.  Otherwise, some target dependent glue code maps
 the services offered by the underlying kernel to the semantics expected
 by GNARL@.
 
-Whatever the underlying OS (VxWorks, UNIX, OS/2, Windows NT, etc.) the
+Whatever the underlying OS (VxWorks, UNIX, Windows, etc.) the
 key point is that each Ada task is mapped on a thread in the underlying
 kernel.  For example, in the case of VxWorks, one Ada task = one VxWorks task.
 
@@ -15822,7 +15911,6 @@ If any of these conditions are violated, the aggregate will be built in
 a temporary (created either by the front-end or the code generator) and then
 that temporary will be copied onto the target.
 
-
 @node The Size of Discriminated Records with Default Discriminants
 @section The Size of Discriminated Records with Default Discriminants
 
@@ -15938,1135 +16026,6 @@ machines that are not fully compliant with this standard, such as Alpha, the
 @option{-mieee} compiler flag must be used for achieving IEEE confirming
 behavior (although at the cost of a significant performance penalty), so
 infinite and and NaN values are properly generated.
-
-
-@node Project File Reference
-@chapter Project File Reference
-
-@noindent
-This chapter describes the syntax and semantics of project files.
-Project files specify the options to be used when building a system.
-Project files can specify global settings for all tools,
-as well as tool-specific settings.
-@xref{Examples of Project Files,,, gnat_ugn, @value{EDITION} User's Guide},
-for examples of use.
-
-@menu
-* Reserved Words::
-* Lexical Elements::
-* Declarations::
-* Empty declarations::
-* Typed string declarations::
-* Variables::
-* Expressions::
-* Attributes::
-* Project Attributes::
-* Attribute References::
-* External Values::
-* Case Construction::
-* Packages::
-* Package Renamings::
-* Projects::
-* Project Extensions::
-* Project File Elaboration::
-@end menu
-
-@node Reserved Words
-@section Reserved Words
-
-@noindent
-All Ada reserved words are reserved in project files, and cannot be used
-as variable names or project names. In addition, the following are
-also reserved in project files:
-
-@itemize
-@item @code{extends}
-
-@item @code{external}
-
-@item @code{project}
-
-@end itemize
-
-@node Lexical Elements
-@section Lexical Elements
-
-@noindent
-Rules for identifiers are the same as in Ada. Identifiers
-are case-insensitive.  Strings are case sensitive, except where noted.
-Comments have the same form as in Ada.
-
-@noindent
-Syntax:
-
-@smallexample
-simple_name ::=
-  identifier
-
-name ::=
-  simple_name @{. simple_name@}
-@end smallexample
-
-@node Declarations
-@section Declarations
-
-@noindent
-Declarations introduce new entities that denote types, variables, attributes,
-and packages. Some declarations can only appear immediately within a project
-declaration. Others can appear within a project or within a package.
-
-Syntax:
-@smallexample
-declarative_item ::=
-  simple_declarative_item |
-  typed_string_declaration |
-  package_declaration
-
-simple_declarative_item ::=
-  variable_declaration |
-  typed_variable_declaration |
-  attribute_declaration |
-  case_construction |
-  empty_declaration
-@end smallexample
-
-@node Empty declarations
-@section Empty declarations
-
-@smallexample
-empty_declaration ::=
-  @b{null} ;
-@end smallexample
-
-An empty declaration is allowed anywhere a declaration is allowed.
-It has no effect.
-
-@node Typed string declarations
-@section Typed string declarations
-
-@noindent
-Typed strings are sequences of string literals. Typed strings are the only
-named types in project files. They are used in case constructions, where they
-provide support for conditional attribute definitions.
-
-Syntax:
-@smallexample
-typed_string_declaration ::=
-  @b{type} <typed_string_>_simple_name @b{is}
-   ( string_literal @{, string_literal@} );
-@end smallexample
-
-@noindent
-A typed string declaration can only appear immediately within a project
-declaration.
-
-All the string literals in a typed string declaration must be distinct.
-
-@node Variables
-@section Variables
-
-@noindent
-Variables denote values, and appear as constituents of expressions.
-
-@smallexample
-typed_variable_declaration ::=
-  <typed_variable_>simple_name : <typed_string_>name :=  string_expression ;
-
-variable_declaration ::=
-  <variable_>simple_name := expression;
-@end smallexample
-
-@noindent
-The elaboration of a variable declaration introduces the variable and
-assigns to it the value of the expression. The name of the variable is
-available after the assignment symbol.
-
-@noindent
-A typed_variable can only be declare once.
-
-@noindent
-a non-typed variable can be declared multiple times.
-
-@noindent
-Before the completion of its first declaration, the value of variable
-is the null string.
-
-@node Expressions
-@section Expressions
-
-@noindent
-An expression is a formula that defines a computation or retrieval of a value.
-In a project file the value of an expression is either a string or a list
-of strings. A string value in an expression is either a literal, the current
-value of a variable, an external value, an attribute reference, or a
-concatenation operation.
-
-Syntax:
-
-@smallexample
-expression ::=
-  term @{& term@}
-
-term ::=
-  string_literal |
-  string_list |
-  <variable_>name |
-  external_value |
-  attribute_reference
-
-string_literal ::=
-  (same as Ada)
-
-string_list ::=
-  ( <string_>expression @{ , <string_>expression @} )
-@end smallexample
-
-@subsection Concatenation
-@noindent
-The following concatenation functions are defined:
-
-@smallexample @c ada
-  function "&" (X : String;      Y : String)      return String;
-  function "&" (X : String_List; Y : String)      return String_List;
-  function "&" (X : String_List; Y : String_List) return String_List;
-@end smallexample
-
-@node Attributes
-@section Attributes
-
-@noindent
-An attribute declaration defines a property of a project or package. This
-property can later be queried by means of an attribute reference.
-Attribute values are strings or string lists.
-
-Some attributes are associative arrays. These attributes are mappings whose
-domain is a set of strings. These attributes are declared one association
-at a time, by specifying a point in the domain and the corresponding image
-of the attribute. They may also be declared as a full associative array,
-getting the same associations as the corresponding attribute in an imported
-or extended project.
-
-Attributes that are not associative arrays are called simple attributes.
-
-Syntax:
-@smallexample
-attribute_declaration ::=
-  full_associative_array_declaration |
-  @b{for} attribute_designator @b{use} expression ;
-
-full_associative_array_declaration ::=
-  @b{for} <associative_array_attribute_>simple_name @b{use}
-  <project_>simple_name [ . <package_>simple_Name ] ' <attribute_>simple_name ;
-
-attribute_designator ::=
-  <simple_attribute_>simple_name |
-  <associative_array_attribute_>simple_name ( string_literal )
-@end smallexample
-
-@noindent
-Some attributes are project-specific, and can only appear immediately within
-a project declaration. Others are package-specific, and can only appear within
-the proper package.
-
-The expression in an attribute definition must be a string or a string_list.
-The string literal appearing in the attribute_designator of an associative
-array attribute is case-insensitive.
-
-@node Project Attributes
-@section Project Attributes
-
-@noindent
-The following attributes apply to a project. All of them are simple
-attributes.
-
-@table @code
-@item   Object_Dir
-Expression must be a path name. The attribute defines the
-directory in which the object files created by the build are to be placed. If
-not specified, object files are placed in the project directory.
-
-@item   Exec_Dir
-Expression must be a path name. The attribute defines the
-directory in which the executables created by the build are to be placed.
-If not specified, executables are placed in the object directory.
-
-@item  Source_Dirs
-Expression must be a list of path names. The attribute
-defines the directories in which the source files for the project are to be
-found. If not specified, source files are found in the project directory.
-If a string in the list ends with "/**", then the directory that precedes
-"/**" and all of its subdirectories (recursively) are included in the list
-of source directories.
-
-@item  Excluded_Source_Dirs
-Expression must be a list of strings. Each entry designates a directory that
-is not to be included in the list of source directories of the project.
-This is normally used when there are strings ending with "/**" in the value
-of attribute Source_Dirs.
-
-@item  Source_Files
-Expression must be a list of file names. The attribute
-defines the individual files, in the project directory, which are to be used
-as sources for the project. File names are path_names that contain no directory
-information. If the project has no sources the attribute must be declared
-explicitly with an empty list.
-
-@item  Excluded_Source_Files (Locally_Removed_Files)
-Expression must be a list of strings that are legal file names.
-Each file name must designate a source that would normally be a source file
-in the source directories of the project or, if the project file is an
-extending project file, inherited by the current project file. It cannot
-designate an immediate source that is not inherited. Each of the source files
-in the list are not considered to be sources of the project file: they are not
-inherited. Attribute Locally_Removed_Files is obsolescent, attribute
-Excluded_Source_Files is preferred.
-
-@item  Source_List_File
-Expression must a single path name. The attribute
-defines a text file that contains a list of source file names to be used
-as sources for the project
-
-@item  Library_Dir
-Expression must be a path name. The attribute defines the
-directory in which a  library is to be built.  The directory must exist, must
-be distinct from the project's object directory, and must be writable.
-
-@item  Library_Name
-Expression must be a string that is a legal file name,
-without extension. The attribute defines a string that is used to generate
-the name of the library to be built by the project.
-
-@item  Library_Kind
-Argument must be a string value that must be one of the
-following @code{"static"}, @code{"dynamic"} or @code{"relocatable"}. This
-string is case-insensitive. If this attribute is not specified, the library is
-a static library. Otherwise, the library may be dynamic or relocatable. This
-distinction is operating-system dependent.
-
-@item  Library_Version
-Expression must be a string value whose interpretation
-is platform dependent. On UNIX, it is used only for dynamic/relocatable
-libraries as the internal name of the library (the @code{"soname"}). If the
-library file name (built from the @code{Library_Name}) is different from the
-@code{Library_Version}, then the library file will be a symbolic link to the
-actual file whose name will be @code{Library_Version}.
-
-@item Library_Interface
-Expression must be a string list. Each element of the string list
-must designate a unit of the project.
-If this attribute is present in a Library Project File, then the project
-file is a Stand-alone Library_Project_File.
-
-@item Library_Auto_Init
-Expression must be a single string "true" or "false", case-insensitive.
-If this attribute is present in a Stand-alone Library Project File,
-it indicates if initialization is automatic when the dynamic library
-is loaded.
-
-@item Library_Options
-Expression must be a string list. Indicates additional switches that
-are to be used when building a shared library.
-
-@item Library_GCC
-Expression must be a single string. Designates an alternative to "gcc"
-for building shared libraries.
-
-@item  Library_Src_Dir
-Expression must be a path name. The attribute defines the
-directory in which the sources of the interfaces of a Stand-alone Library will
-be copied.  The directory must exist, must be distinct from the project's
-object directory and source directories of all projects in the project tree,
-and must be writable.
-
-@item  Library_Src_Dir
-Expression must be a path name. The attribute defines the
-directory in which the ALI files of a Library will
-be copied.  The directory must exist, must be distinct from the project's
-object directory and source directories of all projects in the project tree,
-and must be writable.
-
-@item  Library_Symbol_File
-Expression must be a single string. Its value is the single file name of a
-symbol file to be created when building a stand-alone library when the
-symbol policy is either "compliant", "controlled" or "restricted",
-on platforms that support symbol control, such as VMS. When symbol policy
-is "direct", then a file with this name must exist in the object directory.
-
-@item   Library_Reference_Symbol_File
-Expression must be a single string. Its value is the path name of a
-reference symbol file that is read when the symbol policy is either
-"compliant" or "controlled", on platforms that support symbol control,
-such as VMS, when building a stand-alone library. The path may be an absolute
-path or a path relative to the project directory.
-
-@item  Library_Symbol_Policy
-Expression must be a single string. Its case-insensitive value can only be
-"autonomous", "default", "compliant", "controlled", "restricted" or "direct".
-
-This attribute is not taken into account on all platforms. It controls the
-policy for exported symbols and, on some platforms (like VMS) that have the
-notions of major and minor IDs built in the library files, it controls
-the setting of these IDs.
-
-"autonomous" or "default": exported symbols are not controlled.
-
-"compliant": if attribute Library_Reference_Symbol_File is not defined, then
-it is equivalent to policy "autonomous". If there are exported symbols in
-the reference symbol file that are not in the object files of the interfaces,
-the major ID of the library is increased. If there are symbols in the
-object files of the interfaces that are not in the reference symbol file,
-these symbols are put at the end of the list in the newly created symbol file
-and the minor ID is increased.
-
-"controlled": the attribute Library_Reference_Symbol_File must be defined.
-The library will fail to build if the exported symbols in the object files of
-the interfaces do not match exactly the symbol in the symbol file.
-
-"restricted": The attribute Library_Symbol_File must be defined. The library
-will fail to build if there are symbols in the symbol file that are not in
-the exported symbols of the object files of the interfaces. Additional symbols
-in the object files are not added to the symbol file.
-
-"direct": The attribute Library_Symbol_File must be defined and must designate
-an existing file in the object directory. This symbol file is passed directly
-to the underlying linker without any symbol processing.
-
-@item  Main
-Expression must be a list of strings that are legal file names.
-These file names designate existing compilation units in the source directory
-that are legal main subprograms.
-
-When a project file is elaborated, as part of the execution of a gnatmake
-command, one or several executables are built and placed in the Exec_Dir.
-If the gnatmake command does not include explicit file names, the executables
-that are built correspond to the files specified by this attribute.
-
-@item  Externally_Built
-Expression must be a single string. Its value must be either "true" of "false",
-case-insensitive. The default is "false". When the value of this attribute is
-"true", no attempt is made to compile the sources or to build the library,
-when the project is a library project.
-
-@item Main_Language
-This is a simple attribute. Its value is a string that specifies the
-language of the main program.
-
-@item  Languages
-Expression must be a string list. Each string designates
-a programming language that is known to GNAT. The strings are case-insensitive.
-
-@end table
-
-@node Attribute References
-@section Attribute References
-
-@noindent
-Attribute references are used to retrieve the value of previously defined
-attribute for a package or project.
-Syntax:
-@smallexample
-attribute_reference ::=
-  attribute_prefix ' <simple_attribute_>simple_name [ ( string_literal ) ]
-
-attribute_prefix ::=
-  @b{project} |
-  <project_simple_name | package_identifier |
-  <project_>simple_name . package_identifier
-@end smallexample
-
-@noindent
-If an attribute has not been specified for a given package or project, its
-value is the null string or the empty list.
-
-@node External Values
-@section External Values
-
-@noindent
-An external value is an expression whose value is obtained from the command
-that invoked the processing of the current project file (typically a
-gnatmake command).
-
-Syntax:
-@smallexample
-external_value ::=
-  @b{external} ( string_literal [, string_literal] )
-@end smallexample
-
-@noindent
-The first string_literal is the string to be used on the command line or
-in the environment to specify the external value. The second string_literal,
-if present, is the default to use if there is no specification for this
-external value either on the command line or in the environment.
-
-@node Case Construction
-@section Case Construction
-
-@noindent
-A case construction supports attribute and variable declarations that depend
-on the value of a previously declared variable.
-
-Syntax:
-@smallexample
-case_construction ::=
-  @b{case} <typed_variable_>name @b{is}
-    @{case_item@}
-  @b{end case} ;
-
-case_item ::=
-  @b{when} discrete_choice_list =>
-    @{case_construction |
-      attribute_declaration |
-      variable_declaration |
-      empty_declaration@}
-
-discrete_choice_list ::=
-  string_literal @{| string_literal@} |
-    @b{others}
-@end smallexample
-
-@noindent
-Inside a case construction, variable declarations must be for variables that
-have already been declared before the case construction.
-
-All choices in a choice list must be distinct. The choice lists of two
-distinct alternatives must be disjoint. Unlike Ada, the choice lists of all
-alternatives do not need to include all values of the type. An @code{others}
-choice must appear last in the list of alternatives.
-
-@node Packages
-@section Packages
-
-@noindent
-A package provides a grouping of variable declarations and attribute
-declarations to be used when invoking various GNAT tools. The name of
-the package indicates the tool(s) to which it applies.
-Syntax:
-
-@smallexample
-package_declaration ::=
-  package_spec | package_renaming
-
-package_spec ::=
-  @b{package} package_identifier @b{is}
-    @{simple_declarative_item@}
-  @b{end} package_identifier ;
-
-package_identifier ::=
-  @code{Naming} | @code{Builder} | @code{Compiler} | @code{Binder} |
-  @code{Linker} | @code{Finder}  | @code{Cross_Reference} |
-  @code{gnatls} | @code{IDE}     | @code{Pretty_Printer} | @code{Check}
-@end smallexample
-
-@subsection Package Naming
-
-@noindent
-The attributes of a @code{Naming} package specifies the naming conventions
-that apply to the source files in a project. When invoking other GNAT tools,
-they will use the sources in the source directories that satisfy these
-naming conventions.
-
-The following attributes apply to a @code{Naming} package:
-
-@table @code
-@item Casing
-This is a simple attribute whose value is a string. Legal values of this
-string are @code{"lowercase"}, @code{"uppercase"} or @code{"mixedcase"}.
-These strings are themselves case insensitive.
-
-@noindent
-If @code{Casing} is not specified, then the default is @code{"lowercase"}.
-
-@item Dot_Replacement
-This is a simple attribute whose string value satisfies the following
-requirements:
-
-@itemize @bullet
-@item It must not be empty
-@item It cannot start or end with an alphanumeric character
-@item It cannot be a single underscore
-@item It cannot start with an underscore followed by an alphanumeric
-@item It cannot contain a dot @code{'.'} if longer than one character
-@end itemize
-
-@noindent
-If @code{Dot_Replacement} is not specified, then the default is @code{"-"}.
-
-@item Spec_Suffix
-This is an associative array attribute, defined on language names,
-whose image is a string that must satisfy the following
-conditions:
-
-@itemize @bullet
-@item It must not be empty
-@item It cannot start with an alphanumeric character
-@item It cannot start with an underscore followed by an alphanumeric character
-@end itemize
-
-@noindent
-For Ada, the attribute denotes the suffix used in file names that contain
-library unit declarations, that is to say units that are package and
-subprogram declarations. If @code{Spec_Suffix ("Ada")} is not
-specified, then the default is @code{".ads"}.
-
-For C and C++, the attribute denotes the suffix used in file names that
-contain prototypes.
-
-@item Body_Suffix
-This is an associative array attribute defined on language names,
-whose image is a string that must satisfy the following
-conditions:
-
-@itemize @bullet
-@item It must not be empty
-@item It cannot start with an alphanumeric character
-@item It cannot start with an underscore followed by an alphanumeric character
-@item It cannot be a suffix of @code{Spec_Suffix}
-@end itemize
-
-@noindent
-For Ada, the attribute denotes the suffix used in file names that contain
-library bodies, that is to say units that are package and subprogram bodies.
-If @code{Body_Suffix ("Ada")} is not specified, then the default is
-@code{".adb"}.
-
-For C and C++, the attribute denotes the suffix used in file names that contain
-source code.
-
-@item Separate_Suffix
-This is a simple attribute whose value satisfies the same conditions as
-@code{Body_Suffix}.
-
-This attribute is specific to Ada. It denotes the suffix used in file names
-that contain separate bodies. If it is not specified, then it defaults to same
-value as @code{Body_Suffix ("Ada")}.
-
-@item Spec
-This is an associative array attribute, specific to Ada, defined over
-compilation unit names. The image is a string that is the name of the file
-that contains that library unit. The file name is case sensitive if the
-conventions of the host operating system require it.
-
-@item Body
-This is an associative array attribute, specific to Ada, defined over
-compilation unit names. The image is a string that is the name of the file
-that contains the library unit body for the named unit. The file name is case
-sensitive if the conventions of the host operating system require it.
-
-@item Specification_Exceptions
-This is an associative array attribute defined on language names,
-whose value is a list of strings.
-
-This attribute is not significant for Ada.
-
-For C and C++, each string in the list denotes the name of a file that
-contains prototypes, but whose suffix is not necessarily the
-@code{Spec_Suffix} for the language.
-
-@item Implementation_Exceptions
-This is an associative array attribute defined on language names,
-whose value is a list of strings.
-
-This attribute is not significant for Ada.
-
-For C and C++, each string in the list denotes the name of a file that
-contains source code, but whose suffix is not necessarily the
-@code{Body_Suffix} for the language.
-@end table
-
-The following attributes of package @code{Naming} are obsolescent. They are
-kept as synonyms of other attributes for compatibility with previous versions
-of the Project Manager.
-
-@table @code
-@item Specification_Suffix
-This is a synonym of @code{Spec_Suffix}.
-
-@item Implementation_Suffix
-This is a synonym of @code{Body_Suffix}.
-
-@item Specification
-This is a synonym of @code{Spec}.
-
-@item Implementation
-This is a synonym of @code{Body}.
-@end table
-
-@subsection package Compiler
-
-@noindent
-The attributes of the @code{Compiler} package specify the compilation options
-to be used by the underlying compiler.
-
-@table @code
-@item  Default_Switches
-This is an associative array attribute. Its
-domain is a set of language names. Its range is a string list that
-specifies the compilation options to be used when compiling a component
-written in that language, for which no file-specific switches have been
-specified.
-
-@item  Switches
-This is an associative array attribute. Its domain is
-a set of file names. Its range is a string list that specifies the
-compilation options to be used when compiling the named file. If a file
-is not specified in the Switches attribute, it is compiled with the
-options specified by Default_Switches of its language, if defined.
-
-@item  Local_Configuration_Pragmas.
-This is a simple attribute, whose
-value is a path name that designates a file containing configuration pragmas
-to be used for all invocations of the compiler for immediate sources of the
-project.
-@end table
-
-@subsection package Builder
-
-@noindent
-The attributes of package @code{Builder} specify the compilation, binding, and
-linking options to be used when building an executable for a project. The
-following attributes apply to package @code{Builder}:
-
-@table @code
-@item Default_Switches
-This is an associative array attribute. Its
-domain is a set of language names. Its range is a string list that
-specifies options to be used when building a main
-written in that language, for which no file-specific switches have been
-specified.
-
-@item Switches
-This is an associative array attribute. Its domain is
-a set of file names. Its range is a string list that specifies
-options to be used when building the named main file. If a main file
-is not specified in the Switches attribute, it is built with the
-options specified by Default_Switches of its language, if defined.
-
-@item Global_Configuration_Pragmas
-This is a simple attribute, whose
-value is a path name that designates a file that contains configuration pragmas
-to be used in every build of an executable. If both local and global
-configuration pragmas are specified, a compilation makes use of both sets.
-
-
-@item Executable
-This is an associative array attribute. Its domain is
-a set of main source file names. Its range is a simple string that specifies
-the executable file name to be used when linking the specified main source.
-If a main source is not specified in the Executable attribute, the executable
-file name is deducted from the main source file name.
-This attribute has no effect if its value is the empty string.
-
-@item Executable_Suffix
-This is a simple attribute whose value is the suffix to be added to
-the executables that don't have an attribute Executable specified.
-@end table
-
-@subsection package Gnatls
-
-@noindent
-The attributes of package @code{Gnatls} specify the tool options to be used
-when invoking the library browser @command{gnatls}.
-The following attributes apply to package @code{Gnatls}:
-
-@table @code
-@item Switches
-This is a single attribute with a string list value. Each nonempty string
-in the list is an option when invoking @code{gnatls}.
-@end table
-
-@subsection package Binder
-
-@noindent
-The attributes of package @code{Binder} specify the options to be used
-when invoking the binder in the construction of an executable.
-The following attributes apply to package @code{Binder}:
-
-@table @code
-@item     Default_Switches
-This is an associative array attribute. Its
-domain is a set of language names. Its range is a string list that
-specifies options to be used when binding a main
-written in that language, for which no file-specific switches have been
-specified.
-
-@item Switches
-This is an associative array attribute. Its domain is
-a set of file names. Its range is a string list that specifies
-options to be used when binding the named main file. If a main file
-is not specified in the Switches attribute, it is bound with the
-options specified by Default_Switches of its language, if defined.
-@end table
-
-@subsection package Linker
-
-@noindent
-The attributes of package @code{Linker} specify the options to be used when
-invoking the linker in the construction of an executable.
-The following attributes apply to package @code{Linker}:
-
-@table @code
-@item     Default_Switches
-This is an associative array attribute. Its
-domain is a set of language names. Its range is a string list that
-specifies options to be used when linking a main
-written in that language, for which no file-specific switches have been
-specified.
-
-@item Switches
-This is an associative array attribute. Its domain is
-a set of file names. Its range is a string list that specifies
-options to be used when linking the named main file. If a main file
-is not specified in the Switches attribute, it is linked with the
-options specified by Default_Switches of its language, if defined.
-
-@item  Linker_Options
-This is a string list attribute. Its value specifies additional options that
-be given to the linker when linking an executable. This attribute is not
-used in the main project, only in projects imported directly or indirectly.
-
-@end table
-
-@subsection package Cross_Reference
-
-@noindent
-The attributes of package @code{Cross_Reference} specify the tool options
-to be used
-when invoking the library tool @command{gnatxref}.
-The following attributes apply to package @code{Cross_Reference}:
-
-@table @code
-@item     Default_Switches
-This is an associative array attribute. Its
-domain is a set of language names. Its range is a string list that
-specifies options to be used when calling @command{gnatxref} on a source
-written in that language, for which no file-specific switches have been
-specified.
-
-@item Switches
-This is an associative array attribute. Its domain is
-a set of file names. Its range is a string list that specifies
-options to be used when calling @command{gnatxref} on the named main source.
-If a source is not specified in the Switches attribute, @command{gnatxref} will
-be called with the options specified by Default_Switches of its language,
-if defined.
-@end table
-
-@subsection package   Finder
-
-@noindent
-The attributes of package @code{Finder} specify the tool options to be used
-when invoking the search tool @command{gnatfind}.
-The following attributes apply to package @code{Finder}:
-
-@table @code
-@item     Default_Switches
-This is an associative array attribute. Its
-domain is a set of language names. Its range is a string list that
-specifies options to be used when calling @command{gnatfind} on a source
-written in that language, for which no file-specific switches have been
-specified.
-
-@item Switches
-This is an associative array attribute. Its domain is
-a set of file names. Its range is a string list that specifies
-options to be used when calling @command{gnatfind} on the named main source.
-If a source is not specified in the Switches attribute, @command{gnatfind} will
-be called with the options specified by Default_Switches of its language,
-if defined.
-@end table
-
-@subsection package Check
-
-@noindent
-The attributes of package @code{Check}
-specify the checking rule options to be used
-when invoking the checking tool @command{gnatcheck}.
-The following attributes apply to package @code{Check}:
-
-@table @code
-@item     Default_switches
-This is an associative array attribute. Its
-domain is a set of language names. Its range is a string list that
-specifies options to be used when calling @command{gnatcheck} on a source
-written in that language. The first string in the range should always be
-@code{"-rules"} to specify that all the other options belong to the
-@code{-rules} section of the parameters of @command{gnatcheck} call.
-
-@end table
-
-@subsection package Pretty_Printer
-
-@noindent
-The attributes of package @code{Pretty_Printer}
-specify the tool options to be used
-when invoking the formatting tool @command{gnatpp}.
-The following attributes apply to package @code{Pretty_Printer}:
-
-@table @code
-@item     Default_switches
-This is an associative array attribute. Its
-domain is a set of language names. Its range is a string list that
-specifies options to be used when calling @command{gnatpp} on a source
-written in that language, for which no file-specific switches have been
-specified.
-
-@item Switches
-This is an associative array attribute. Its domain is
-a set of file names. Its range is a string list that specifies
-options to be used when calling @command{gnatpp} on the named main source.
-If a source is not specified in the Switches attribute, @command{gnatpp} will
-be called with the options specified by Default_Switches of its language,
-if defined.
-@end table
-
-@subsection package gnatstub
-
-@noindent
-The attributes of package @code{gnatstub}
-specify the tool options to be used
-when invoking the tool @command{gnatstub}.
-The following attributes apply to package @code{gnatstub}:
-
-@table @code
-@item     Default_switches
-This is an associative array attribute. Its
-domain is a set of language names. Its range is a string list that
-specifies options to be used when calling @command{gnatstub} on a source
-written in that language, for which no file-specific switches have been
-specified.
-
-@item Switches
-This is an associative array attribute. Its domain is
-a set of file names. Its range is a string list that specifies
-options to be used when calling @command{gnatstub} on the named main source.
-If a source is not specified in the Switches attribute, @command{gnatpp} will
-be called with the options specified by Default_Switches of its language,
-if defined.
-@end table
-
-@subsection package Eliminate
-
-@noindent
-The attributes of package @code{Eliminate}
-specify the tool options to be used
-when invoking the tool @command{gnatelim}.
-The following attributes apply to package @code{Eliminate}:
-
-@table @code
-@item     Default_switches
-This is an associative array attribute. Its
-domain is a set of language names. Its range is a string list that
-specifies options to be used when calling @command{gnatelim} on a source
-written in that language, for which no file-specific switches have been
-specified.
-
-@item Switches
-This is an associative array attribute. Its domain is
-a set of file names. Its range is a string list that specifies
-options to be used when calling @command{gnatelim} on the named main source.
-If a source is not specified in the Switches attribute, @command{gnatelim} will
-be called with the options specified by Default_Switches of its language,
-if defined.
-@end table
-
-@subsection package Metrics
-
-@noindent
-The attributes of package @code{Metrics}
-specify the tool options to be used
-when invoking the tool @command{gnatmetric}.
-The following attributes apply to package @code{Metrics}:
-
-@table @code
-@item     Default_switches
-This is an associative array attribute. Its
-domain is a set of language names. Its range is a string list that
-specifies options to be used when calling @command{gnatmetric} on a source
-written in that language, for which no file-specific switches have been
-specified.
-
-@item Switches
-This is an associative array attribute. Its domain is
-a set of file names. Its range is a string list that specifies
-options to be used when calling @command{gnatmetric} on the named main source.
-If a source is not specified in the Switches attribute, @command{gnatmetric}
-will be called with the options specified by Default_Switches of its language,
-if defined.
-@end table
-
-@subsection  package IDE
-
-@noindent
-The attributes of package @code{IDE} specify the options to be used when using
-an Integrated Development Environment such as @command{GPS}.
-
-@table @code
-@item Remote_Host
-This is a simple attribute. Its value is a string that designates the remote
-host in a cross-compilation environment, to be used for remote compilation and
-debugging. This field should not be specified when running on the local
-machine.
-
-@item Program_Host
-This is a simple attribute. Its value is a string that specifies the
-name of IP address of the embedded target in a cross-compilation environment,
-on which the program should execute.
-
-@item Communication_Protocol
-This is a simple string attribute. Its value is the name of the protocol
-to use to communicate with the target in a cross-compilation environment,
-e.g.@: @code{"wtx"} or @code{"vxworks"}.
-
-@item Compiler_Command
-This is an associative array attribute, whose domain is a language name. Its
-value is  string that denotes the command to be used to invoke the compiler.
-The value of @code{Compiler_Command ("Ada")} is expected to be compatible with
-gnatmake, in particular in the handling of switches.
-
-@item Debugger_Command
-This is simple attribute, Its value is a string that specifies the name of
-the debugger to be used, such as gdb, powerpc-wrs-vxworks-gdb or gdb-4.
-
-@item Default_Switches
-This is an associative array attribute. Its indexes are the name of the
-external tools that the GNAT Programming System (GPS) is supporting. Its
-value is a list of switches to use when invoking that tool.
-
-@item  Gnatlist
-This is a simple attribute.  Its value is a string that specifies the name
-of the @command{gnatls} utility to be used to retrieve information about the
-predefined path; e.g., @code{"gnatls"}, @code{"powerpc-wrs-vxworks-gnatls"}.
-
-@item VCS_Kind
-This is a simple attribute. Its value is a string used to specify the
-Version Control System (VCS) to be used for this project, e.g.@: CVS, RCS
-ClearCase or Perforce.
-
-@item VCS_File_Check
-This is a simple attribute. Its value is a string that specifies the
-command used by the VCS to check the validity of a file, either
-when the user explicitly asks for a check, or as a sanity check before
-doing the check-in.
-
-@item VCS_Log_Check
-This is a simple attribute. Its value is a string that specifies
-the command used by the VCS to check the validity of a log file.
-
-@item VCS_Repository_Root
-The VCS repository root path. This is used to create tags or branches
-of the repository. For subversion the value should be the @code{URL}
-as specified to check-out the working copy of the repository.
-
-@item VCS_Patch_Root
-The local root directory to use for building patch file. All patch chunks
-will be relative to this path. The root project directory is used if
-this value is not defined.
-
-@end table
-
-@node Package Renamings
-@section Package Renamings
-
-@noindent
-A package can be defined by a renaming declaration. The new package renames
-a package declared in a different project file, and has the same attributes
-as the package it renames.
-Syntax:
-@smallexample
-package_renaming ::==
-  @b{package} package_identifier @b{renames}
-       <project_>simple_name.package_identifier ;
-@end smallexample
-
-@noindent
-The package_identifier of the renamed package must be the same as the
-package_identifier. The project whose name is the prefix of the renamed
-package must contain a package declaration with this name. This project
-must appear in the context_clause of the enclosing project declaration,
-or be the parent project of the enclosing child project.
-
-@node Projects
-@section Projects
-
-@noindent
-A project file specifies a set of rules for constructing a software system.
-A project file can be self-contained, or depend on other project files.
-Dependencies are expressed through a context clause that names other projects.
-
-Syntax:
-
-@smallexample
-project ::=
-  context_clause project_declaration
-
-project_declaration ::=
-  simple_project_declaration | project_extension
-
-simple_project_declaration ::=
-  @b{project} <project_>simple_name @b{is}
-    @{declarative_item@}
-  @b{end} <project_>simple_name;
-
-context_clause ::=
-  @{with_clause@}
-
-with_clause ::=
-  [@b{limited}] @b{with} path_name @{ , path_name @} ;
-
-path_name ::=
-   string_literal
-@end smallexample
-
-@noindent
-A path name denotes a project file. A path name can be absolute or relative.
-An absolute path name includes a sequence of directories, in the syntax of
-the host operating system, that identifies uniquely the project file in the
-file system. A relative path name identifies the project file, relative
-to the directory that contains the current project, or relative to a
-directory listed in the environment variable ADA_PROJECT_PATH.
-Path names are case sensitive if file names in the host operating system
-are case sensitive.
-
-The syntax of the environment variable ADA_PROJECT_PATH is a list of
-directory names separated by colons (semicolons on Windows).
-
-A given project name can appear only once in a context_clause.
-
-It is illegal for a project imported by a context clause to refer, directly
-or indirectly, to the project in which this context clause appears (the
-dependency graph cannot contain cycles), except when one of the with_clause
-in the cycle is a @code{limited with}.
-
-@node Project Extensions
-@section Project Extensions
-
-@noindent
-A project extension introduces a new project, which inherits the declarations
-of another project.
-Syntax:
-@smallexample
-
-project_extension ::=
-  @b{project} <project_>simple_name  @b{extends} path_name @b{is}
-    @{declarative_item@}
-  @b{end} <project_>simple_name;
-@end smallexample
-
-@noindent
-The project extension declares a child project. The child project inherits
-all the declarations and all the files of the parent project, These inherited
-declaration can be overridden in the child project, by means of suitable
-declarations.
-
-@node Project File Elaboration
-@section Project File Elaboration
-
-@noindent
-A project file is processed as part of the invocation of a gnat tool that
-uses the project option. Elaboration of the process file consists in the
-sequential elaboration of all its declarations. The computed values of
-attributes and variables in the project are then used to establish the
-environment in which the gnat tool will execute.
 
 @node Obsolescent Features
 @chapter Obsolescent Features

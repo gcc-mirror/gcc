@@ -147,3 +147,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define DRIVER_SELF_SPECS \
   BASE_DRIVER_SELF_SPECS, \
   LINUX_DRIVER_SELF_SPECS
+
+/* Similar to standard Linux, but adding -ffast-math support.  */
+#undef  ENDFILE_SPEC
+#define ENDFILE_SPEC \
+  "%{ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
+   %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"

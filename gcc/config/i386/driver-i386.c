@@ -396,6 +396,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   unsigned int has_movbe = 0, has_sse4_1 = 0, has_sse4_2 = 0;
   unsigned int has_popcnt = 0, has_aes = 0, has_avx = 0;
   unsigned int has_pclmul = 0, has_abm = 0, has_lwp = 0;
+  unsigned int has_fma4 = 0, has_xop = 0;
 
   bool arch;
 
@@ -460,6 +461,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       has_sse4a = ecx & bit_SSE4a;
       has_abm = ecx & bit_ABM;
       has_lwp = ecx & bit_LWP;
+      has_fma4 = ecx & bit_FMA4;
+      has_xop = ecx & bit_XOP;
 
       has_longmode = edx & bit_LM;
       has_3dnowp = edx & bit_3DNOWP;
@@ -490,6 +493,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 
       if (name == SIG_GEODE)
 	processor = PROCESSOR_GEODE;
+      else if (has_xop)
+	processor = PROCESSOR_BDVER1;
       else if (has_sse4a)
 	processor = PROCESSOR_AMDFAM10;
       else if (has_sse2 || has_longmode)
@@ -538,34 +543,61 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	cpu = "pentium";
       break;
     case PROCESSOR_PENTIUMPRO:
-      if (model == 28)
-	cpu = "atom";
-      else if (model >= 28 && l2sizekb < 2048)
-	/* Assume it's a small core if there's less than 2MB cache */
-	cpu = "atom";
-      else if (has_longmode)
-	cpu = "core2";
-      else if (arch)
+      switch (model)
 	{
-	  if (has_sse3)
-	    /* It is Core Duo.  */
-	    cpu = "pentium-m";
-	  else if (has_sse2)
-	    /* It is Pentium M.  */
-	    cpu = "pentium-m";
-	  else if (has_sse)
-	    /* It is Pentium III.  */
-	    cpu = "pentium3";
-	  else if (has_mmx)
-	    /* It is Pentium II.  */
-	    cpu = "pentium2";
+	case 0x1c:
+	case 0x26:
+	  /* Atom.  */
+	  cpu = "atom";
+	  break;
+	case 0x1a:
+	case 0x1e:
+	case 0x1f:
+	case 0x2e:
+	  /* FIXME: Optimize for Nehalem.  */
+	  cpu = "core2";
+	  break;
+	case 0x25:
+	case 0x2f:
+	  /* FIXME: Optimize for Westmere.  */
+	  cpu = "core2";
+	  break;
+	case 0x17:
+	case 0x1d:
+	  /* Penryn.  FIXME: -mtune=core2 is slower than -mtune=generic  */
+	  cpu = "core2";
+	  break;
+	case 0x0f:
+	  /* Merom.  FIXME: -mtune=core2 is slower than -mtune=generic  */
+	  cpu = "core2";
+	  break;
+	default:
+	  if (arch)
+	    {
+	      if (has_ssse3)
+		/* If it is an unknown CPU with SSSE3, assume Core 2.  */
+		cpu = "core2";
+	      else if (has_sse3)
+		/* It is Core Duo.  */
+		cpu = "pentium-m";
+	      else if (has_sse2)
+		/* It is Pentium M.  */
+		cpu = "pentium-m";
+	      else if (has_sse)
+		/* It is Pentium III.  */
+		cpu = "pentium3";
+	      else if (has_mmx)
+		/* It is Pentium II.  */
+		cpu = "pentium2";
+	      else
+		/* Default to Pentium Pro.  */
+		cpu = "pentiumpro";
+	    }
 	  else
-	    /* Default to Pentium Pro.  */
-	    cpu = "pentiumpro";
+	    /* For -mtune, we default to -mtune=generic.  */
+	    cpu = "generic";
+	  break;
 	}
-      else
-	/* For -mtune, we default to -mtune=generic.  */
-	cpu = "generic";
       break;
     case PROCESSOR_PENTIUM4:
       if (has_sse3)
@@ -601,6 +633,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       break;
     case PROCESSOR_AMDFAM10:
       cpu = "amdfam10";
+      break;
+    case PROCESSOR_BDVER1:
+      cpu = "bdver1";
       break;
 
     default:
@@ -647,6 +682,10 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	options = concat (options, " -mabm", NULL);
       if (has_lwp)
 	options = concat (options, " -mlwp", NULL);
+      if (has_fma4)
+	options = concat (options, " -mfma4", NULL);
+      if (has_xop)
+	options = concat (options, " -mxop", NULL);
 
       if (has_avx)
 	options = concat (options, " -mavx", NULL);

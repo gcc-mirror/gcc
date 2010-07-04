@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++0x" }
-template<class X, class Y, class... Z> X f(Y); 
+template<class X, class Y, class... Z> X f(Y); // { dg-message "candidate" }
 void g() 
 { 
   int i = f<int>(5.6);

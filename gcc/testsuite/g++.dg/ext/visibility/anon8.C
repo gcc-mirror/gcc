@@ -2,7 +2,7 @@
 // { dg-do compile }
 
 template <void (*fn) ()>
-void call ()
+void call ()			// { dg-message "candidate" }
 {
   fn ();
 }

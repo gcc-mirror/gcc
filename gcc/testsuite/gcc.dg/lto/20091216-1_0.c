@@ -1,6 +1,10 @@
 /* { dg-lto-do run } */
 
-asm (".globl start; start: nop");
+#ifdef __ia64
+asm (".globl start_\nstart_: nop 0");
+#else
+asm (".globl start_\nstart_: nop");
+#endif
 
 int
 main ()

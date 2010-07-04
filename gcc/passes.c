@@ -1,6 +1,6 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -25,8 +25,6 @@ along with GCC; see the file COPYING3.  If not see
    Error messages and low-level interface to malloc also handled here.  */
 
 #include "config.h"
-#undef FLOAT /* This is for hpux. They should change hpux.  */
-#undef FFS  /* Some systems define this in param.h.  */
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -62,12 +60,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "graph.h"
 #include "regs.h"
 #include "timevar.h"
-#include "diagnostic.h"
+#include "diagnostic-core.h"
 #include "params.h"
 #include "reload.h"
 #include "dwarf2asm.h"
 #include "integrate.h"
-#include "real.h"
 #include "debug.h"
 #include "target.h"
 #include "langhooks.h"
@@ -124,7 +121,7 @@ print_current_pass (FILE *file)
 
 
 /* Call from the debugger to get the current pass name.  */
-void
+DEBUG_FUNCTION void
 debug_pass (void)
 {
   print_current_pass (stderr);
@@ -191,7 +188,11 @@ rest_of_decl_compilation (tree decl,
 	   || DECL_INITIAL (decl))
 	  && !DECL_EXTERNAL (decl))
 	{
-	  if (TREE_CODE (decl) != FUNCTION_DECL)
+	  /* When reading LTO unit, we also read varpool, so do not
+	     rebuild it.  */
+	  if (in_lto_p && !at_end)
+	    ;
+	  else if (TREE_CODE (decl) != FUNCTION_DECL)
 	    varpool_finalize_decl (decl);
 	  else
 	    assemble_variable (decl, top_level, at_end, 0);
@@ -210,7 +211,7 @@ rest_of_decl_compilation (tree decl,
   else if (TREE_CODE (decl) == TYPE_DECL
 	   /* Like in rest_of_type_compilation, avoid confusing the debug
 	      information machinery when there are errors.  */
-	   && !(sorrycount || errorcount))
+	   && !seen_error ())
     {
       timevar_push (TV_SYMOUT);
       debug_hooks->type_decl (decl, !top_level);
@@ -218,7 +219,9 @@ rest_of_decl_compilation (tree decl,
     }
 
   /* Let cgraph know about the existence of variables.  */
-  if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
+  if (in_lto_p && !at_end)
+    ;
+  else if (TREE_CODE (decl) == VAR_DECL && !DECL_EXTERNAL (decl))
     varpool_node (decl);
 }
 
@@ -229,7 +232,7 @@ rest_of_type_compilation (tree type, int toplev)
 {
   /* Avoid confusing the debug information machinery when there are
      errors.  */
-  if (errorcount != 0 || sorrycount != 0)
+  if (seen_error ())
     return;
 
   timevar_push (TV_SYMOUT);
@@ -284,7 +287,7 @@ gate_rest_of_compilation (void)
 {
   /* Early return if there were errors.  We can run afoul of our
      consistency checks, and there's not really much point in fixing them.  */
-  return !(rtl_dump_and_exit || flag_syntax_only || errorcount || sorrycount);
+  return !(rtl_dump_and_exit || flag_syntax_only || seen_error ());
 }
 
 struct gimple_opt_pass pass_rest_of_compilation =
@@ -742,6 +745,7 @@ init_optimization_passes (void)
 
   /* Interprocedural optimization passes.  */
   p = &all_small_ipa_passes;
+  NEXT_PASS (pass_ipa_free_lang_data);
   NEXT_PASS (pass_ipa_function_and_variable_visibility);
   NEXT_PASS (pass_ipa_early_inline);
     {
@@ -750,7 +754,6 @@ init_optimization_passes (void)
       NEXT_PASS (pass_inline_parameters);
       NEXT_PASS (pass_rebuild_cgraph_edges);
     }
-  NEXT_PASS (pass_ipa_free_lang_data);
   NEXT_PASS (pass_early_local_passes);
     {
       struct opt_pass **p = &pass_early_local_passes.pass.sub;
@@ -792,6 +795,10 @@ init_optimization_passes (void)
           NEXT_PASS (pass_cleanup_eh);
           NEXT_PASS (pass_profile);
           NEXT_PASS (pass_local_pure_const);
+	  /* Split functions creates parts that are not run through
+	     early optimizations again.  It is thus good idea to do this
+	     late.  */
+          NEXT_PASS (pass_split_functions);
 	}
       NEXT_PASS (pass_release_ssa_names);
       NEXT_PASS (pass_rebuild_cgraph_edges);
@@ -803,10 +810,11 @@ init_optimization_passes (void)
 
   p = &all_regular_ipa_passes;
   NEXT_PASS (pass_ipa_whole_program_visibility);
+  NEXT_PASS (pass_ipa_profile);
   NEXT_PASS (pass_ipa_cp);
   NEXT_PASS (pass_ipa_inline);
-  NEXT_PASS (pass_ipa_reference);
   NEXT_PASS (pass_ipa_pure_const);
+  NEXT_PASS (pass_ipa_reference);
   NEXT_PASS (pass_ipa_type_escape);
   NEXT_PASS (pass_ipa_pta);
   NEXT_PASS (pass_ipa_struct_reorg);
@@ -814,7 +822,6 @@ init_optimization_passes (void)
 
   p = &all_lto_gen_passes;
   NEXT_PASS (pass_ipa_lto_gimple_out);
-  NEXT_PASS (pass_ipa_lto_wpa_fixup);
   NEXT_PASS (pass_ipa_lto_finish_out);  /* This must be the last LTO pass.  */
   *p = NULL;
 
@@ -885,9 +892,9 @@ init_optimization_passes (void)
 	{
 	  struct opt_pass **p = &pass_tree_loop.pass.sub;
 	  NEXT_PASS (pass_tree_loop_init);
+	  NEXT_PASS (pass_lim);
 	  NEXT_PASS (pass_copy_prop);
 	  NEXT_PASS (pass_dce_loop);
-	  NEXT_PASS (pass_lim);
 	  NEXT_PASS (pass_tree_unswitch);
 	  NEXT_PASS (pass_scev_cprop);
 	  NEXT_PASS (pass_record_bounds);
@@ -897,6 +904,7 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_graphite_transforms);
 	    {
 	      struct opt_pass **p = &pass_graphite_transforms.pass.sub;
+	      NEXT_PASS (pass_copy_prop);
 	      NEXT_PASS (pass_dce_loop);
 	      NEXT_PASS (pass_lim);
 	    }
@@ -943,6 +951,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_forwprop);
       NEXT_PASS (pass_phiopt);
       NEXT_PASS (pass_fold_builtins);
+      NEXT_PASS (pass_optimize_widening_mul);
       NEXT_PASS (pass_tail_calls);
       NEXT_PASS (pass_rename_ssa_copies);
       NEXT_PASS (pass_uncprop);
@@ -1023,6 +1032,7 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_postreload_cse);
 	  NEXT_PASS (pass_gcse2);
 	  NEXT_PASS (pass_split_after_reload);
+	  NEXT_PASS (pass_implicit_zee);
 	  NEXT_PASS (pass_branch_target_load_optimize1);
 	  NEXT_PASS (pass_thread_prologue_and_epilogue);
 	  NEXT_PASS (pass_rtl_dse2);
@@ -1114,7 +1124,7 @@ do_per_function (void (*callback) (void *data), void *data)
    keep the array visible to garbage collector to avoid reading collected
    out nodes.  */
 static int nnodes;
-static GTY ((length ("nnodes"))) struct cgraph_node **order;
+static GTY ((length ("nnodes"))) cgraph_node_ptr *order;
 
 /* If we are in IPA mode (i.e., current_function_decl is NULL), call
    function CALLBACK for every function in the call graph.  Otherwise,
@@ -1130,7 +1140,7 @@ do_per_function_toporder (void (*callback) (void *data), void *data)
   else
     {
       gcc_assert (!order);
-      order = GGC_NEWVEC (struct cgraph_node *, cgraph_n_nodes);
+      order = ggc_alloc_vec_cgraph_node_ptr (cgraph_n_nodes);
       nnodes = cgraph_postorder (order);
       for (i = nnodes - 1; i >= 0; i--)
         order[i]->process = 1;
@@ -1165,13 +1175,9 @@ static void
 execute_function_todo (void *data)
 {
   unsigned int flags = (size_t)data;
-  if (cfun->curr_properties & PROP_ssa)
-    flags |= TODO_verify_ssa;
   flags &= ~cfun->last_verified;
   if (!flags)
     return;
-
-  statistics_fini_pass ();
 
   /* Always cleanup the CFG before trying to update SSA.  */
   if (flags & TODO_cleanup_cfg)
@@ -1255,14 +1261,15 @@ execute_function_todo (void *data)
     }
 
 #if defined ENABLE_CHECKING
-  if (flags & TODO_verify_ssa)
+  if (flags & TODO_verify_ssa
+      || (current_loops && loops_state_satisfies_p (LOOP_CLOSED_SSA)))
     verify_ssa (true);
   if (flags & TODO_verify_flow)
     verify_flow_info ();
   if (flags & TODO_verify_stmts)
     verify_stmts ();
-  if (flags & TODO_verify_loops)
-    verify_loop_closed_ssa ();
+  if (current_loops && loops_state_satisfies_p (LOOP_CLOSED_SSA))
+    verify_loop_closed_ssa (false);
   if (flags & TODO_verify_rtl_sharing)
     verify_rtl_sharing ();
 #endif
@@ -1282,6 +1289,8 @@ execute_todo (unsigned int flags)
 
   /* Inform the pass whether it is the first time it is run.  */
   first_pass_instance = (flags & TODO_mark_first_instance) != 0;
+
+  statistics_fini_pass ();
 
   do_per_function (execute_function_todo, (void *)(size_t) flags);
 
@@ -1359,14 +1368,17 @@ pass_init_dump_file (struct opt_pass *pass)
       if (dump_file && current_function_decl)
 	{
 	  const char *dname, *aname;
+	  struct cgraph_node *node = cgraph_node (current_function_decl);
 	  dname = lang_hooks.decl_printable_name (current_function_decl, 2);
 	  aname = (IDENTIFIER_POINTER
 		   (DECL_ASSEMBLER_NAME (current_function_decl)));
 	  fprintf (dump_file, "\n;; Function %s (%s)%s\n\n", dname, aname,
-	     cfun->function_frequency == FUNCTION_FREQUENCY_HOT
+	     node->frequency == NODE_FREQUENCY_HOT
 	     ? " (hot)"
-	     : cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED
+	     : node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED
 	     ? " (unlikely executed)"
+	     : node->frequency == NODE_FREQUENCY_EXECUTED_ONCE
+	     ? " (executed once)"
 	     : "");
 	}
       return initializing_dump;
@@ -1489,6 +1501,7 @@ execute_all_ipa_transforms (void)
   if (!cfun)
     return;
   node = cgraph_node (current_function_decl);
+
   if (node->ipa_transforms_to_apply)
     {
       unsigned int i;
@@ -1632,6 +1645,7 @@ execute_pass_list (struct opt_pass *pass)
 
 static void
 ipa_write_summaries_2 (struct opt_pass *pass, cgraph_node_set set,
+		       varpool_node_set vset,
 		       struct lto_out_decl_state *state)
 {
   while (pass)
@@ -1648,7 +1662,11 @@ ipa_write_summaries_2 (struct opt_pass *pass, cgraph_node_set set,
 	  if (pass->tv_id)
 	    timevar_push (pass->tv_id);
 
-	  ipa_pass->write_summary (set);
+          pass_init_dump_file (pass);
+
+	  ipa_pass->write_summary (set,vset);
+
+          pass_fini_dump_file (pass);
 
 	  /* If a timevar is present, start it.  */
 	  if (pass->tv_id)
@@ -1656,7 +1674,7 @@ ipa_write_summaries_2 (struct opt_pass *pass, cgraph_node_set set,
 	}
 
       if (pass->sub && pass->sub->type != GIMPLE_PASS)
-	ipa_write_summaries_2 (pass->sub, set, state);
+	ipa_write_summaries_2 (pass->sub, set, vset, state);
 
       pass = pass->next;
     }
@@ -1667,14 +1685,16 @@ ipa_write_summaries_2 (struct opt_pass *pass, cgraph_node_set set,
    summaries.  SET is the set of nodes to be written.  */
 
 static void
-ipa_write_summaries_1 (cgraph_node_set set)
+ipa_write_summaries_1 (cgraph_node_set set, varpool_node_set vset)
 {
   struct lto_out_decl_state *state = lto_new_out_decl_state ();
+  compute_ltrans_boundary (state, set, vset);
+
   lto_push_out_decl_state (state);
 
-  if (!flag_wpa)
-    ipa_write_summaries_2 (all_regular_ipa_passes, set, state);
-  ipa_write_summaries_2 (all_lto_gen_passes, set, state);
+  gcc_assert (!flag_wpa);
+  ipa_write_summaries_2 (all_regular_ipa_passes, set, vset, state);
+  ipa_write_summaries_2 (all_lto_gen_passes, set, vset, state);
 
   gcc_assert (lto_get_out_decl_state () == state);
   lto_pop_out_decl_state ();
@@ -1687,13 +1707,14 @@ void
 ipa_write_summaries (void)
 {
   cgraph_node_set set;
+  varpool_node_set vset;
   struct cgraph_node **order;
+  struct varpool_node *vnode;
   int i, order_pos;
 
-  if (!flag_generate_lto || errorcount || sorrycount)
+  if (!flag_generate_lto || seen_error ())
     return;
 
-  lto_new_extern_inline_states ();
   set = cgraph_node_set_new ();
 
   /* Create the callgraph set in the same order used in
@@ -1720,25 +1741,81 @@ ipa_write_summaries (void)
 	  renumber_gimple_stmt_uids ();
 	  pop_cfun ();
 	}
-      cgraph_node_set_add (set, node);
+      if (node->analyzed)
+	cgraph_node_set_add (set, node);
     }
+  vset = varpool_node_set_new ();
 
-  ipa_write_summaries_1 (set);
-  lto_delete_extern_inline_states ();
+  for (vnode = varpool_nodes; vnode; vnode = vnode->next)
+    if (vnode->needed && !vnode->alias)
+      varpool_node_set_add (vset, vnode);
+
+  ipa_write_summaries_1 (set, vset);
 
   free (order);
   ggc_free (set);
+  ggc_free (vset);
 }
 
+/* Same as execute_pass_list but assume that subpasses of IPA passes
+   are local passes. If SET is not NULL, write out optimization summaries of
+   only those node in SET. */
 
-/* Write all the summaries for the cgraph nodes in SET.  If SET is
+static void
+ipa_write_optimization_summaries_1 (struct opt_pass *pass, cgraph_node_set set,
+		       varpool_node_set vset,
+		       struct lto_out_decl_state *state)
+{
+  while (pass)
+    {
+      struct ipa_opt_pass_d *ipa_pass = (struct ipa_opt_pass_d *)pass;
+      gcc_assert (!current_function_decl);
+      gcc_assert (!cfun);
+      gcc_assert (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS);
+      if (pass->type == IPA_PASS
+	  && ipa_pass->write_optimization_summary
+	  && (!pass->gate || pass->gate ()))
+	{
+	  /* If a timevar is present, start it.  */
+	  if (pass->tv_id)
+	    timevar_push (pass->tv_id);
+
+          pass_init_dump_file (pass);
+
+	  ipa_pass->write_optimization_summary (set, vset);
+
+          pass_fini_dump_file (pass);
+
+	  /* If a timevar is present, start it.  */
+	  if (pass->tv_id)
+	    timevar_pop (pass->tv_id);
+	}
+
+      if (pass->sub && pass->sub->type != GIMPLE_PASS)
+	ipa_write_optimization_summaries_1 (pass->sub, set, vset, state);
+
+      pass = pass->next;
+    }
+}
+
+/* Write all the optimization summaries for the cgraph nodes in SET.  If SET is
    NULL, write out all summaries of all nodes. */
 
 void
-ipa_write_summaries_of_cgraph_node_set (cgraph_node_set set)
+ipa_write_optimization_summaries (cgraph_node_set set, varpool_node_set vset)
 {
-  if (flag_generate_lto && !(errorcount || sorrycount))
-    ipa_write_summaries_1 (set);
+  struct lto_out_decl_state *state = lto_new_out_decl_state ();
+  compute_ltrans_boundary (state, set, vset);
+
+  lto_push_out_decl_state (state);
+
+  gcc_assert (flag_wpa);
+  ipa_write_optimization_summaries_1 (all_regular_ipa_passes, set, vset, state);
+  ipa_write_optimization_summaries_1 (all_lto_gen_passes, set, vset, state);
+
+  gcc_assert (lto_get_out_decl_state () == state);
+  lto_pop_out_decl_state ();
+  lto_delete_out_decl_state (state);
 }
 
 /* Same as execute_pass_list but assume that subpasses of IPA passes
@@ -1763,7 +1840,11 @@ ipa_read_summaries_1 (struct opt_pass *pass)
 	      if (pass->tv_id)
 		timevar_push (pass->tv_id);
 
+	      pass_init_dump_file (pass);
+
 	      ipa_pass->read_summary ();
+
+	      pass_fini_dump_file (pass);
 
 	      /* Stop timevar.  */
 	      if (pass->tv_id)
@@ -1783,9 +1864,57 @@ ipa_read_summaries_1 (struct opt_pass *pass)
 void
 ipa_read_summaries (void)
 {
-  if (!flag_ltrans)
-    ipa_read_summaries_1 (all_regular_ipa_passes);
+  ipa_read_summaries_1 (all_regular_ipa_passes);
   ipa_read_summaries_1 (all_lto_gen_passes);
+}
+
+/* Same as execute_pass_list but assume that subpasses of IPA passes
+   are local passes.  */
+
+static void
+ipa_read_optimization_summaries_1 (struct opt_pass *pass)
+{
+  while (pass)
+    {
+      struct ipa_opt_pass_d *ipa_pass = (struct ipa_opt_pass_d *) pass;
+
+      gcc_assert (!current_function_decl);
+      gcc_assert (!cfun);
+      gcc_assert (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS);
+
+      if (pass->gate == NULL || pass->gate ())
+	{
+	  if (pass->type == IPA_PASS && ipa_pass->read_optimization_summary)
+	    {
+	      /* If a timevar is present, start it.  */
+	      if (pass->tv_id)
+		timevar_push (pass->tv_id);
+
+	      pass_init_dump_file (pass);
+
+	      ipa_pass->read_optimization_summary ();
+
+	      pass_fini_dump_file (pass);
+
+	      /* Stop timevar.  */
+	      if (pass->tv_id)
+		timevar_pop (pass->tv_id);
+	    }
+
+	  if (pass->sub && pass->sub->type != GIMPLE_PASS)
+	    ipa_read_optimization_summaries_1 (pass->sub);
+	}
+      pass = pass->next;
+    }
+}
+
+/* Read all the summaries for all_regular_ipa_passes and all_lto_gen_passes.  */
+
+void
+ipa_read_optimization_summaries (void)
+{
+  ipa_read_optimization_summaries_1 (all_regular_ipa_passes);
+  ipa_read_optimization_summaries_1 (all_lto_gen_passes);
 }
 
 /* Same as execute_pass_list but assume that subpasses of IPA passes
@@ -1867,7 +1996,7 @@ execute_all_ipa_stmt_fixups (struct cgraph_node *node, gimple *stmts)
 extern void debug_properties (unsigned int);
 extern void dump_properties (FILE *, unsigned int);
 
-void
+DEBUG_FUNCTION void
 dump_properties (FILE *dump, unsigned int props)
 {
   fprintf (dump, "Properties:\n");
@@ -1891,9 +2020,11 @@ dump_properties (FILE *dump, unsigned int props)
     fprintf (dump, "PROP_gimple_lomp\n");
   if (props & PROP_gimple_lcx)
     fprintf (dump, "PROP_gimple_lcx\n");
+  if (props & PROP_cfglayout)
+    fprintf (dump, "PROP_cfglayout\n");
 }
 
-void
+DEBUG_FUNCTION void
 debug_properties (unsigned int props)
 {
   dump_properties (stderr, props);

@@ -119,11 +119,14 @@ gnu::gcj::runtime::SharedLibHelper::hasResource (jstring name)
 #endif
 }
 
+#ifdef HAVE_DLOPEN
+extern gnu::gcj::Core *_Jv_create_core (_Jv_core_chain *node, jstring name);
+#endif
+
 gnu::gcj::Core *
 gnu::gcj::runtime::SharedLibHelper::findCore (jstring name)
 {
 #ifdef HAVE_DLOPEN
-  extern gnu::gcj::Core *_Jv_create_core (_Jv_core_chain *node, jstring name);
   ensureInit();
   return _Jv_create_core ((_Jv_core_chain *) core_chain, name);
 #else

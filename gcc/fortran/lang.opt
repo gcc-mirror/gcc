@@ -1,5 +1,5 @@
 ; Options for the Fortran 95 front end.
-; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 ; Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
@@ -56,6 +56,42 @@ J
 Fortran Joined Separate
 -J<directory>	Put MODULE files in 'directory'
 
+M
+Fortran
+; Documented in C
+
+MD
+Fortran Separate
+; Documented in C
+
+MF
+Fortran Joined Separate
+; Documented in C
+
+MG
+Fortran
+; Documented in C
+
+MM
+Fortran
+; Documented in C
+
+MMD
+Fortran Separate
+; Documented in C
+
+MP
+Fortran
+; Documented in C
+
+MT
+Fortran Joined Separate
+; Documented in C
+
+MQ
+Fortran Joined Separate
+; Documented in C
+
 P
 Fortran
 ; Documented in C
@@ -92,6 +128,10 @@ Wconversion
 Fortran Warning
 ; Documented in C
 
+Wconversion-extra
+Fortran Warning
+Warn about most implicit conversions
+
 Wimplicit-interface
 Fortran Warning
 Warn about calls with implicit interface
@@ -127,6 +167,10 @@ Warn about underflow of numerical constant expressions
 Wintrinsic-shadow
 Fortran Warning
 Warn if a user-procedure has the same name as an intrinsic
+
+Wunused-dummy-argument
+Fortran Warning
+Warn about unused dummy arguments.
 
 cpp
 Fortran Joined Separate Negative(nocpp)
@@ -246,7 +290,7 @@ Allow arbitrary character line width in fixed mode
 
 ffixed-line-length-
 Fortran RejectNegative Joined UInteger
--ffixed-line-length-<n>		Use n as character line width in fixed mode
+-ffixed-line-length-<n>	Use n as character line width in fixed mode
 
 ffpe-trap=
 Fortran RejectNegative JoinedOrMissing
@@ -262,7 +306,7 @@ Allow arbitrary character line width in free mode
 
 ffree-line-length-
 Fortran RejectNegative Joined UInteger
--ffree-line-length-<n>		Use n as character line width in free mode
+-ffree-line-length-<n>	Use n as character line width in free mode
 
 fimplicit-none
 Fortran
@@ -348,6 +392,10 @@ frepack-arrays
 Fortran
 Copy array sections into a contiguous block on procedure entry
 
+fcoarray=
+Fortran RejectNegative JoinedOrMissing
+-fcoarray=[...]	Specify which coarray parallelization should be used
+
 fcheck=
 Fortran RejectNegative JoinedOrMissing
 -fcheck=[...]	Specify which runtime checks are to be performed
@@ -357,7 +405,7 @@ Fortran
 Append a second underscore if the name already contains an underscore
 
 fshort-enums
-Fortran
+Fortran Var(flag_short_enums) VarExists
 ; Documented in C
 
 fsign-zero

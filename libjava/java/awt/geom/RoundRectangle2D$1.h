@@ -33,11 +33,11 @@ class java::awt::geom::RoundRectangle2D$1 : public ::java::lang::Object
 public: // actually package-private
   RoundRectangle2D$1(::java::awt::geom::RoundRectangle2D *, ::java::awt::geom::AffineTransform *);
 public:
-  jint currentSegment(JArray< jdouble > *);
-  jint currentSegment(JArray< jfloat > *);
-  jint getWindingRule();
-  jboolean isDone();
-  void next();
+  virtual jint currentSegment(JArray< jdouble > *);
+  virtual jint currentSegment(JArray< jfloat > *);
+  virtual jint getWindingRule();
+  virtual jboolean isDone();
+  virtual void next();
 public: // actually package-private
   jdouble __attribute__((aligned(__alignof__( ::java::lang::Object)))) x;
   jdouble y;

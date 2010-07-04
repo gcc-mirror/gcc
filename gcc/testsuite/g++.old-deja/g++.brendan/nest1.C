@@ -3,7 +3,7 @@
 int x;
 class enclose {
 public:
-  int x;
+  int x;			// { dg-error "non-static" }
 
   class inner {
   public:

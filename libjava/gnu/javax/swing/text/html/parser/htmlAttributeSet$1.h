@@ -37,8 +37,8 @@ class gnu::javax::swing::text::html::parser::htmlAttributeSet$1 : public ::java:
 public: // actually package-private
   htmlAttributeSet$1(::gnu::javax::swing::text::html::parser::htmlAttributeSet *, ::java::util::Enumeration *);
 public:
-  jboolean hasMoreElements();
-  ::java::lang::Object * nextElement();
+  virtual jboolean hasMoreElements();
+  virtual ::java::lang::Object * nextElement();
 public: // actually package-private
   ::gnu::javax::swing::text::html::parser::htmlAttributeSet * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 private:

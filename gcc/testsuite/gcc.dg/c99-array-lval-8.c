@@ -12,15 +12,15 @@ f (void)
   const struct {
     int a[1];
   } s;
-  int *p1 = s.a; /* { dg-error "qualifiers" } */
+  int *p1 = s.a; /* { dg-error "qualifier" } */
   int *p2 = (a ? s : s).a;
   /* In this case, the qualifier is properly on the array element type
      not on the rvalue structure and so is not discarded.  */
   struct {
     const int a[1];
   } t;
-  int *p3 = t.a; /* { dg-error "qualifiers" } */
-  int *p4 = (a ? t : t).a; /* { dg-error "qualifiers" } */
+  int *p3 = t.a; /* { dg-error "qualifier" } */
+  int *p4 = (a ? t : t).a; /* { dg-error "qualifier" } */
   /* The issue could also lead to code being wrongly accepted.  */
   const struct {
     int a[1][1];

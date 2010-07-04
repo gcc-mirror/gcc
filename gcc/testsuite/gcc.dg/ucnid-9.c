@@ -2,6 +2,7 @@
    conversions.  */
 /* { dg-do run } */
 /* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "*" } { "" } } */
+/* { dg-skip-if "" { ! ucn } { "*" } { "" } } */
 /* { dg-options "-std=c99 -fextended-identifiers -fexec-charset=ISO-8859-1" } */
 /* { dg-require-iconv "ISO-8859-1" } */
 

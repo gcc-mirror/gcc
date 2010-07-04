@@ -397,7 +397,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	if (__testout && __off == 0 && _M_buf_size > 1 )
 	  this->setp(_M_buf, _M_buf + _M_buf_size - 1);
 	else
-	  this->setp(NULL, NULL);
+	  this->setp(0, 0);
       }
     };
 
@@ -795,7 +795,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       explicit
       basic_fstream(const char* __s,
 		    ios_base::openmode __mode = ios_base::in | ios_base::out)
-      : __iostream_type(NULL), _M_filebuf()
+      : __iostream_type(0), _M_filebuf()
       {
 	this->init(&_M_filebuf);
 	this->open(__s, __mode);
@@ -810,7 +810,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       explicit
       basic_fstream(const std::string& __s,
 		    ios_base::openmode __mode = ios_base::in | ios_base::out)
-      : __iostream_type(NULL), _M_filebuf()
+      : __iostream_type(0), _M_filebuf()
       {
 	this->init(&_M_filebuf);
 	this->open(__s, __mode);

@@ -1,7 +1,6 @@
 /* Definitions of target machine for GCC, for SPARC running Solaris 2
    using the GNU assembler.
-
-Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -34,3 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_SUN_TLS 0
 #define TARGET_GNU_TLS 1
 #endif
+
+/* Use default ELF section syntax.  */
+#undef TARGET_ASM_NAMED_SECTION
+#define TARGET_ASM_NAMED_SECTION default_elf_asm_named_section

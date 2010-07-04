@@ -1,6 +1,6 @@
 // 1999-09-20 bkoz
 
-// Copyright (C) 1999, 2001, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2001, 2003, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -60,7 +60,6 @@ void test02()
   pos04 += off02;
   VERIFY( pos03 == pos04 );
   std::streampos pos05 = pos03;
-  std::streampos pos06 = pos03 + off02;
   VERIFY ( pos05 == pos03 );
 
   // q = p - o
@@ -69,7 +68,6 @@ void test02()
   pos04 -= off02;
   VERIFY( pos03 == pos04 );
   std::streampos pos07 = pos03;
-  std::streampos pos08 = pos03 - off02;
   VERIFY ( pos07 == pos03 );
 
   // o = p - q

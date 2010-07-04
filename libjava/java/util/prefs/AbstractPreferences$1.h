@@ -14,7 +14,7 @@ class java::util::prefs::AbstractPreferences$1 : public ::java::lang::Object
 public: // actually package-private
   AbstractPreferences$1(::java::util::prefs::AbstractPreferences *, ::java::util::prefs::PreferenceChangeListener *, ::java::util::prefs::PreferenceChangeEvent *);
 public:
-  void run();
+  virtual void run();
 public: // actually package-private
   ::java::util::prefs::AbstractPreferences * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 private:

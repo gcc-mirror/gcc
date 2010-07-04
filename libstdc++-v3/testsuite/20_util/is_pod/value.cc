@@ -43,8 +43,12 @@ void test01()
   VERIFY( (test_category<is_pod, int (ClassType::*[2][3])>(true)) );
   VERIFY( (test_category<is_pod, int (ClassType::*[][2][3]) (int)>(true)) );
   VERIFY( (test_category<is_pod, ClassType>(true)) );
+  VERIFY( (test_category<is_pod, PODType>(true)) );
 
   VERIFY( (test_category<is_pod, void>(false)) );
+  VERIFY( (test_category<is_pod, NType>(false)) );
+  VERIFY( (test_category<is_pod, TType>(false)) );
+  VERIFY( (test_category<is_pod, SLType>(false)) );
 }
 
 int main()

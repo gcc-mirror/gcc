@@ -247,7 +247,7 @@ ptr_t p;
     	    if (GC_is_static_root(p)) return(p);
     	    /* Else do it again correctly:	*/
 #           if (defined(DYNAMIC_LOADING) || defined(MSWIN32) || \
-		defined(MSWINCE) || defined(PCR)) \
+		defined(MSWINCE) || defined (CYGWIN32) || defined(PCR)) \
                 && !defined(SRC_M3)
     	        DISABLE_SIGNALS();
     	        GC_register_dynamic_libraries();

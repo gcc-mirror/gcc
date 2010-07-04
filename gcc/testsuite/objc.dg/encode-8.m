@@ -1,5 +1,5 @@
-/* { dg-options "-fgnu-runtime" } */
 /* { dg-do run } */
+/* { dg-skip-if "" { *-*-* } { "-fnext-runtime" } { "" } } */
 
 #include <objc/encoding.h>
 #include <stdlib.h>

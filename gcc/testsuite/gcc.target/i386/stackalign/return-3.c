@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "" { ! { ilp32 && dfp } } } */
+/* { dg-skip-if "" { ! { ilp32 && dfp } } { "*" } { "" } } */
 /* { dg-options "-msse -std=gnu99 -mpreferred-stack-boundary=2" } */
 
 /* This compile only test is to detect an assertion failure in stack branch

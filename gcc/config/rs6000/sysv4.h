@@ -903,10 +903,12 @@ SVR4_ASM_SPEC \
 
 #define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
 #define UCLIBC_DYNAMIC_LINKER "/lib/ld-uClibc.so.0"
-#if UCLIBC_DEFAULT
-#define CHOOSE_DYNAMIC_LINKER(G, U) "%{mglibc:%{muclibc:%e-mglibc and -muclibc used together}" G ";:" U "}"
+#if DEFAULT_LIBC == LIBC_UCLIBC
+#define CHOOSE_DYNAMIC_LINKER(G, U) "%{mglibc:" G ";:" U "}"
+#elif DEFAULT_LIBC == LIBC_GLIBC
+#define CHOOSE_DYNAMIC_LINKER(G, U) "%{muclibc:" U ";:" G "}"
 #else
-#define CHOOSE_DYNAMIC_LINKER(G, U) "%{muclibc:%{mglibc:%e-mglibc and -muclibc used together}" U ";:" G "}"
+#error "Unsupported DEFAULT_LIBC"
 #endif
 #define LINUX_DYNAMIC_LINKER \
   CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER, UCLIBC_DYNAMIC_LINKER)

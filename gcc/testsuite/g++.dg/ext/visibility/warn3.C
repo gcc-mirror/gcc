@@ -14,8 +14,8 @@ void A::f() { }
 
 // This gets a warning because B objects might rely
 // on hidden symbols from A.
-struct B
-{				// { dg-warning "visibility" }
+struct B			// { dg-warning "visibility" }
+{
   A a;
 };
 

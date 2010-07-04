@@ -1,7 +1,7 @@
 /* Perform simple optimizations to clean up the result of reload.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
-   Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "output.h"
 #include "cselib.h"
-#include "real.h"
 #include "toplev.h"
 #include "except.h"
 #include "tree.h"
@@ -198,7 +197,7 @@ reload_cse_regs_1 (rtx first)
   rtx insn;
   rtx testreg = gen_rtx_REG (VOIDmode, -1);
 
-  cselib_init (true);
+  cselib_init (CSELIB_RECORD_MEMORY);
   init_alias_analysis ();
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
@@ -263,9 +262,9 @@ reload_cse_simplify_set (rtx set, rtx insn)
 
   /* If memory loads are cheaper than register copies, don't change them.  */
   if (MEM_P (src))
-    old_cost = MEMORY_MOVE_COST (GET_MODE (src), dclass, 1);
+    old_cost = memory_move_cost (GET_MODE (src), dclass, true);
   else if (REG_P (src))
-    old_cost = REGISTER_MOVE_COST (GET_MODE (src),
+    old_cost = register_move_cost (GET_MODE (src),
 				   REGNO_REG_CLASS (REGNO (src)), dclass);
   else
     old_cost = rtx_cost (src, SET, speed);
@@ -315,7 +314,7 @@ reload_cse_simplify_set (rtx set, rtx insn)
 	    }
 	  else
 #endif
-	    this_cost = REGISTER_MOVE_COST (GET_MODE (this_rtx),
+	    this_cost = register_move_cost (GET_MODE (this_rtx),
 					    REGNO_REG_CLASS (REGNO (this_rtx)),
 					    dclass);
 	}
@@ -1591,7 +1590,7 @@ rest_of_handle_postreload (void)
   reload_cse_regs (get_insns ());
   /* Reload_cse_regs can eliminate potentially-trapping MEMs.
      Remove any EH edges associated with them.  */
-  if (flag_non_call_exceptions)
+  if (cfun->can_throw_non_call_exceptions)
     purge_all_dead_edges ();
 
   return 0;

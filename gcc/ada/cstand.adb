@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -287,11 +287,10 @@ package body CStand is
       Set_Etype (Last_Entity  (Standard_Op_Concatw), Standard_Wide_String);
 
       Set_Etype (First_Entity (Standard_Op_Concatww),
-                  Standard_Wide_Wide_String);
+                 Standard_Wide_Wide_String);
 
       Set_Etype (Last_Entity (Standard_Op_Concatww),
-                   Standard_Wide_Wide_String);
-
+                 Standard_Wide_Wide_String);
    end Create_Operators;
 
    ---------------------
@@ -324,6 +323,10 @@ package body CStand is
       procedure Build_Exception (S : Standard_Entity_Type);
       --  Procedure to declare given entity as an exception
 
+      procedure Pack_String_Type (String_Type : Entity_Id);
+      --  Generate proper tree for pragma Pack that applies to given type, and
+      --  mark type as having the pragma.
+
       ---------------------
       -- Build_Exception --
       ---------------------
@@ -340,6 +343,25 @@ package body CStand is
              Defining_Identifier => Standard_Entity (S));
          Append (Decl, Decl_S);
       end Build_Exception;
+
+      ----------------------
+      -- Pack_String_Type --
+      ----------------------
+
+      procedure Pack_String_Type (String_Type : Entity_Id) is
+         Prag : constant Node_Id :=
+                  Make_Pragma (Stloc,
+                    Chars                        => Name_Pack,
+                    Pragma_Argument_Associations =>
+                      New_List (
+                        Make_Pragma_Argument_Association (Stloc,
+                          Expression =>
+                            New_Occurrence_Of (String_Type, Stloc))));
+      begin
+         Append (Prag, Decl_S);
+         Record_Rep_Item (String_Type, Prag);
+         Set_Has_Pragma_Pack (String_Type, True);
+      end Pack_String_Type;
 
    --  Start of processing for Create_Standard
 
@@ -688,12 +710,13 @@ package body CStand is
       Append (Identifier_For (S_Positive), Subtype_Marks (Tdef_Node));
       Set_Type_Definition (Parent (Standard_String), Tdef_Node);
 
-      Set_Ekind          (Standard_String, E_String_Type);
-      Set_Etype          (Standard_String, Standard_String);
-      Set_Component_Type (Standard_String, Standard_Character);
-      Set_Component_Size (Standard_String, Uint_8);
-      Init_Size_Align    (Standard_String);
-      Set_Alignment      (Standard_String, Uint_1);
+      Set_Ekind           (Standard_String, E_String_Type);
+      Set_Etype           (Standard_String, Standard_String);
+      Set_Component_Type  (Standard_String, Standard_Character);
+      Set_Component_Size  (Standard_String, Uint_8);
+      Init_Size_Align     (Standard_String);
+      Set_Alignment       (Standard_String, Uint_1);
+      Pack_String_Type    (Standard_String);
 
       --  On targets where a storage unit is larger than a byte (such as AAMP),
       --  pragma Pack has a real effect on the representation of type String,
@@ -731,11 +754,12 @@ package body CStand is
       Append (Identifier_For (S_Positive), Subtype_Marks (Tdef_Node));
       Set_Type_Definition (Parent (Standard_Wide_String), Tdef_Node);
 
-      Set_Ekind          (Standard_Wide_String, E_String_Type);
-      Set_Etype          (Standard_Wide_String, Standard_Wide_String);
-      Set_Component_Type (Standard_Wide_String, Standard_Wide_Character);
-      Set_Component_Size (Standard_Wide_String, Uint_16);
-      Init_Size_Align    (Standard_Wide_String);
+      Set_Ekind           (Standard_Wide_String, E_String_Type);
+      Set_Etype           (Standard_Wide_String, Standard_Wide_String);
+      Set_Component_Type  (Standard_Wide_String, Standard_Wide_Character);
+      Set_Component_Size  (Standard_Wide_String, Uint_16);
+      Init_Size_Align     (Standard_Wide_String);
+      Pack_String_Type    (Standard_Wide_String);
 
       --  Set index type of Wide_String
 
@@ -772,6 +796,7 @@ package body CStand is
       Set_Component_Size   (Standard_Wide_Wide_String, Uint_32);
       Init_Size_Align      (Standard_Wide_Wide_String);
       Set_Is_Ada_2005_Only (Standard_Wide_Wide_String);
+      Pack_String_Type     (Standard_Wide_Wide_String);
 
       --  Set index type of Wide_Wide_String
 

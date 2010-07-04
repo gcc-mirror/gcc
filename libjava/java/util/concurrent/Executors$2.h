@@ -14,7 +14,7 @@ class java::util::concurrent::Executors$2 : public ::java::lang::Object
 public: // actually package-private
   Executors$2(::java::util::concurrent::Executors$PrivilegedCallableUsingCurrentClassLoader *);
 public:
-  ::java::lang::Object * run();
+  virtual ::java::lang::Object * run();
 public: // actually package-private
   ::java::util::concurrent::Executors$PrivilegedCallableUsingCurrentClassLoader * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$1;
 public:

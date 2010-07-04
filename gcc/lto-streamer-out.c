@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "params.h"
 #include "input.h"
-#include "varray.h"
 #include "hashtab.h"
 #include "basic-block.h"
 #include "tree-flow.h"
@@ -38,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "function.h"
 #include "ggc.h"
-#include "diagnostic.h"
+#include "diagnostic-core.h"
 #include "except.h"
 #include "vec.h"
 #include "lto-symtab.h"
@@ -149,20 +148,6 @@ destroy_output_block (struct output_block *ob)
   lto_streamer_cache_delete (ob->writer_cache);
 
   free (ob);
-}
-
-
-/* Output bitpack BP to output stream S.  */
-
-void
-lto_output_bitpack (struct lto_output_stream *s, struct bitpack_d *bp)
-{
-  unsigned i;
-  bitpack_word_t v;
-
-  lto_output_uleb128_stream (s, VEC_length (bitpack_word_t, bp->values));
-  for (i = 0; VEC_iterate (bitpack_word_t, bp->values, i, v); i++)
-    lto_output_uleb128_stream (s, v);
 }
 
 
@@ -336,12 +321,16 @@ pack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
 	 so we skip it here.  */
       bp_pack_value (bp, TREE_PUBLIC (expr), 1);
     }
+  else
+    bp_pack_value (bp, 0, 4);
   bp_pack_value (bp, TREE_ADDRESSABLE (expr), 1);
   bp_pack_value (bp, TREE_THIS_VOLATILE (expr), 1);
   if (DECL_P (expr))
     bp_pack_value (bp, DECL_UNSIGNED (expr), 1);
   else if (TYPE_P (expr))
     bp_pack_value (bp, TYPE_UNSIGNED (expr), 1);
+  else
+    bp_pack_value (bp, 0, 1);
   /* We write debug info two times, do not confuse the second one.  */
   bp_pack_value (bp, TYPE_P (expr) ? 0 : TREE_ASM_WRITTEN (expr), 1);
   bp_pack_value (bp, TREE_NO_WARNING (expr), 1);
@@ -353,8 +342,10 @@ pack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, TREE_DEPRECATED (expr), 1);
   if (TYPE_P (expr))
     bp_pack_value (bp, TYPE_SATURATING (expr), 1);
-  if (TREE_CODE (expr) == SSA_NAME)
+  else if (TREE_CODE (expr) == SSA_NAME)
     bp_pack_value (bp, SSA_NAME_IS_DEFAULT_DEF (expr), 1);
+  else
+    bp_pack_value (bp, 0, 1);
 }
 
 
@@ -388,6 +379,7 @@ pack_ts_fixed_cst_value_fields (struct bitpack_d *bp, tree expr)
   struct fixed_value fv = TREE_FIXED_CST (expr);
   bp_pack_value (bp, fv.data.low, HOST_BITS_PER_WIDE_INT);
   bp_pack_value (bp, fv.data.high, HOST_BITS_PER_WIDE_INT);
+  bp_pack_value (bp, fv.mode, HOST_BITS_PER_INT);
 }
 
 
@@ -468,6 +460,7 @@ pack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
     {
       bp_pack_value (bp, DECL_HARD_REGISTER (expr), 1);
       bp_pack_value (bp, DECL_IN_TEXT_SECTION (expr), 1);
+      bp_pack_value (bp, DECL_IN_CONSTANT_POOL (expr), 1);
       bp_pack_value (bp, DECL_TLS_MODEL (expr),  3);
     }
 
@@ -513,12 +506,12 @@ pack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
 static void
 pack_ts_type_value_fields (struct bitpack_d *bp, tree expr)
 {
-  bp_pack_value (bp, TYPE_PRECISION (expr), 9);
-  bp_pack_value (bp, TYPE_MODE (expr), 7);
+  bp_pack_value (bp, TYPE_PRECISION (expr), 10);
+  bp_pack_value (bp, TYPE_MODE (expr), 8);
   bp_pack_value (bp, TYPE_STRING_FLAG (expr), 1);
   bp_pack_value (bp, TYPE_NO_FORCE_BLK (expr), 1);
-  bp_pack_value (bp, TYPE_NEEDS_CONSTRUCTING(expr), 1);
-  if (TREE_CODE (expr) == UNION_TYPE || TREE_CODE (expr) == RECORD_TYPE)
+  bp_pack_value (bp, TYPE_NEEDS_CONSTRUCTING (expr), 1);
+  if (RECORD_OR_UNION_TYPE_P (expr))
     bp_pack_value (bp, TYPE_TRANSPARENT_AGGR (expr), 1);
   bp_pack_value (bp, TYPE_PACKED (expr), 1);
   bp_pack_value (bp, TYPE_RESTRICT (expr), 1);
@@ -543,14 +536,12 @@ pack_ts_block_value_fields (struct bitpack_d *bp, tree expr)
 
 /* Pack all the non-pointer fields in EXPR into a bit pack.  */
 
-static struct bitpack_d *
-pack_value_fields (tree expr)
+static void
+pack_value_fields (struct bitpack_d *bp, tree expr)
 {
   enum tree_code code;
-  struct bitpack_d *bp;
 
   code = TREE_CODE (expr);
-  bp = bitpack_create ();
 
   /* Note that all these functions are highly sensitive to changes in
      the types and sizes of each of the fields being packed.  */
@@ -597,8 +588,6 @@ pack_value_fields (tree expr)
       /* This is only used by High GIMPLE.  */
       gcc_unreachable ();
     }
-
-  return bp;
 }
 
 
@@ -844,7 +833,23 @@ lto_output_ts_decl_common_tree_pointers (struct output_block *ob, tree expr,
   lto_output_tree_or_ref (ob, DECL_SIZE_UNIT (expr), ref_p);
 
   if (TREE_CODE (expr) != FUNCTION_DECL)
-    lto_output_tree_or_ref (ob, DECL_INITIAL (expr), ref_p);
+    {
+      tree initial = DECL_INITIAL (expr);
+      if (TREE_CODE (expr) == VAR_DECL
+	  && (TREE_STATIC (expr) || DECL_EXTERNAL (expr))
+	  && initial)
+	{
+	  lto_varpool_encoder_t varpool_encoder = ob->decl_state->varpool_node_encoder;
+	  struct varpool_node *vnode = varpool_get_node (expr);
+	  if (!vnode)
+	    initial = error_mark_node;
+	  else if (!lto_varpool_encoder_encode_initializer_p (varpool_encoder,
+							      vnode))
+	    initial = NULL;
+	}
+    
+      lto_output_tree_or_ref (ob, initial, ref_p);
+    }
 
   lto_output_tree_or_ref (ob, DECL_ATTRIBUTES (expr), ref_p);
   lto_output_tree_or_ref (ob, DECL_ABSTRACT_ORIGIN (expr), ref_p);
@@ -946,9 +951,10 @@ lto_output_ts_type_tree_pointers (struct output_block *ob, tree expr,
     lto_output_tree_or_ref (ob, TYPE_VALUES (expr), ref_p);
   else if (TREE_CODE (expr) == ARRAY_TYPE)
     lto_output_tree_or_ref (ob, TYPE_DOMAIN (expr), ref_p);
-  else if (TREE_CODE (expr) == RECORD_TYPE || TREE_CODE (expr) == UNION_TYPE)
+  else if (RECORD_OR_UNION_TYPE_P (expr))
     lto_output_tree_or_ref (ob, TYPE_FIELDS (expr), ref_p);
-  else if (TREE_CODE (expr) == FUNCTION_TYPE || TREE_CODE (expr) == METHOD_TYPE)
+  else if (TREE_CODE (expr) == FUNCTION_TYPE
+	   || TREE_CODE (expr) == METHOD_TYPE)
     lto_output_tree_or_ref (ob, TYPE_ARG_TYPES (expr), ref_p);
   else if (TREE_CODE (expr) == VECTOR_TYPE)
     lto_output_tree_or_ref (ob, TYPE_DEBUG_REPRESENTATION_TYPE (expr), ref_p);
@@ -965,10 +971,11 @@ lto_output_ts_type_tree_pointers (struct output_block *ob, tree expr,
   lto_output_tree_or_ref (ob, TYPE_MAIN_VARIANT (expr), ref_p);
   /* Do not stream TYPE_NEXT_VARIANT, we reconstruct the variant lists
      during fixup.  */
-  if (TREE_CODE (expr) == RECORD_TYPE || TREE_CODE (expr) == UNION_TYPE)
+  if (RECORD_OR_UNION_TYPE_P (expr))
     lto_output_tree_or_ref (ob, TYPE_BINFO (expr), ref_p);
   lto_output_tree_or_ref (ob, TYPE_CONTEXT (expr), ref_p);
-  lto_output_tree_or_ref (ob, TYPE_CANONICAL (expr), ref_p);
+  /* TYPE_CANONICAL is re-computed during type merging, so no need
+     to stream it here.  */
   lto_output_tree_or_ref (ob, TYPE_STUB_DECL (expr), ref_p);
 }
 
@@ -1275,7 +1282,7 @@ lto_output_builtin_tree (struct output_block *ob, tree expr, int ix)
 static void
 lto_write_tree (struct output_block *ob, tree expr, bool ref_p, int ix)
 {
-  struct bitpack_d *bp;
+  struct bitpack_d bp;
 
   /* Write the header, containing everything needed to materialize
      EXPR on the reading side.  */
@@ -1283,9 +1290,9 @@ lto_write_tree (struct output_block *ob, tree expr, bool ref_p, int ix)
 
   /* Pack all the non-pointer fields in EXPR into a bitpack and write
      the resulting bitpack.  */
-  bp = pack_value_fields (expr);
-  lto_output_bitpack (ob->main_stream, bp);
-  bitpack_delete (bp);
+  bp = bitpack_create (ob->main_stream);
+  pack_value_fields (&bp, expr);
+  lto_output_bitpack (&bp);
 
   /* Write all the pointer fields in EXPR.  */
   lto_output_tree_pointers (ob, expr, ref_p);
@@ -1642,7 +1649,7 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
   unsigned i;
   enum gimple_code code;
   enum LTO_tags tag;
-  struct bitpack_d *bp;
+  struct bitpack_d bp;
 
   /* Emit identifying tag.  */
   code = gimple_code (stmt);
@@ -1650,15 +1657,14 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
   output_record_start (ob, tag);
 
   /* Emit the tuple header.  */
-  bp = bitpack_create ();
-  bp_pack_value (bp, gimple_num_ops (stmt), sizeof (unsigned) * 8);
-  bp_pack_value (bp, gimple_no_warning_p (stmt), 1);
+  bp = bitpack_create (ob->main_stream);
+  bp_pack_value (&bp, gimple_num_ops (stmt), sizeof (unsigned) * 8);
+  bp_pack_value (&bp, gimple_no_warning_p (stmt), 1);
   if (is_gimple_assign (stmt))
-    bp_pack_value (bp, gimple_assign_nontemporal_move_p (stmt), 1);
-  bp_pack_value (bp, gimple_has_volatile_ops (stmt), 1);
-  bp_pack_value (bp, stmt->gsbase.subcode, 16);
-  lto_output_bitpack (ob->main_stream, bp);
-  bitpack_delete (bp);
+    bp_pack_value (&bp, gimple_assign_nontemporal_move_p (stmt), 1);
+  bp_pack_value (&bp, gimple_has_volatile_ops (stmt), 1);
+  bp_pack_value (&bp, stmt->gsbase.subcode, 16);
+  lto_output_bitpack (&bp);
 
   /* Emit location information for the statement.  */
   lto_output_location (ob, gimple_location (stmt));
@@ -1685,6 +1691,7 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
       lto_output_uleb128_stream (ob->main_stream, gimple_asm_ninputs (stmt));
       lto_output_uleb128_stream (ob->main_stream, gimple_asm_noutputs (stmt));
       lto_output_uleb128_stream (ob->main_stream, gimple_asm_nclobbers (stmt));
+      lto_output_uleb128_stream (ob->main_stream, gimple_asm_nlabels (stmt));
       output_string (ob, ob->main_stream, gimple_asm_string (stmt));
       /* Fallthru  */
 
@@ -1828,7 +1835,7 @@ produce_asm (struct output_block *ob, tree fn)
 static void
 output_function (struct cgraph_node *node)
 {
-  struct bitpack_d *bp;
+  struct bitpack_d bp;
   tree function;
   struct function *fn;
   basic_block bb;
@@ -1853,24 +1860,23 @@ output_function (struct cgraph_node *node)
   output_record_start (ob, LTO_function);
 
   /* Write all the attributes for FN.  */
-  bp = bitpack_create ();
-  bp_pack_value (bp, fn->is_thunk, 1);
-  bp_pack_value (bp, fn->has_local_explicit_reg_vars, 1);
-  bp_pack_value (bp, fn->after_tree_profile, 1);
-  bp_pack_value (bp, fn->returns_pcc_struct, 1);
-  bp_pack_value (bp, fn->returns_struct, 1);
-  bp_pack_value (bp, fn->always_inline_functions_inlined, 1);
-  bp_pack_value (bp, fn->after_inlining, 1);
-  bp_pack_value (bp, fn->dont_save_pending_sizes_p, 1);
-  bp_pack_value (bp, fn->stdarg, 1);
-  bp_pack_value (bp, fn->has_nonlocal_label, 1);
-  bp_pack_value (bp, fn->calls_alloca, 1);
-  bp_pack_value (bp, fn->calls_setjmp, 1);
-  bp_pack_value (bp, fn->function_frequency, 2);
-  bp_pack_value (bp, fn->va_list_fpr_size, 8);
-  bp_pack_value (bp, fn->va_list_gpr_size, 8);
-  lto_output_bitpack (ob->main_stream, bp);
-  bitpack_delete (bp);
+  bp = bitpack_create (ob->main_stream);
+  bp_pack_value (&bp, fn->is_thunk, 1);
+  bp_pack_value (&bp, fn->has_local_explicit_reg_vars, 1);
+  bp_pack_value (&bp, fn->after_tree_profile, 1);
+  bp_pack_value (&bp, fn->returns_pcc_struct, 1);
+  bp_pack_value (&bp, fn->returns_struct, 1);
+  bp_pack_value (&bp, fn->can_throw_non_call_exceptions, 1);
+  bp_pack_value (&bp, fn->always_inline_functions_inlined, 1);
+  bp_pack_value (&bp, fn->after_inlining, 1);
+  bp_pack_value (&bp, fn->dont_save_pending_sizes_p, 1);
+  bp_pack_value (&bp, fn->stdarg, 1);
+  bp_pack_value (&bp, fn->has_nonlocal_label, 1);
+  bp_pack_value (&bp, fn->calls_alloca, 1);
+  bp_pack_value (&bp, fn->calls_setjmp, 1);
+  bp_pack_value (&bp, fn->va_list_fpr_size, 8);
+  bp_pack_value (&bp, fn->va_list_gpr_size, 8);
+  lto_output_bitpack (&bp);
 
   /* Output current IL state of the function.  */
   output_uleb128 (ob, fn->curr_properties);
@@ -1929,22 +1935,14 @@ output_function (struct cgraph_node *node)
    the file processed by LTRANS.  */
 
 static bool
-output_alias_pair_p (alias_pair *p, cgraph_node_set set)
+output_alias_pair_p (alias_pair *p, cgraph_node_set set, varpool_node_set vset)
 {
-  cgraph_node_set_iterator csi;
-  struct cgraph_node *target_node;
-
-  /* Always emit VAR_DECLs.  FIXME lto, we should probably only emit
-     those VAR_DECLs that are instantiated in this file partition, but
-     we have no easy way of knowing this based on SET.  */
   if (TREE_CODE (p->decl) == VAR_DECL)
-    return true;
+    return varpool_node_in_set_p (varpool_node_for_asm (p->target), vset);
 
   /* Check if the assembler name for P->TARGET has its cgraph node in SET.  */
   gcc_assert (TREE_CODE (p->decl) == FUNCTION_DECL);
-  target_node = cgraph_node_for_asm (p->target);
-  csi = cgraph_node_set_find (set, target_node);
-  return (!csi_end_p (csi));
+  return cgraph_node_in_set_p (cgraph_node_for_asm (p->target), set);
 }
 
 
@@ -1952,7 +1950,7 @@ output_alias_pair_p (alias_pair *p, cgraph_node_set set)
    and labels.  */
 
 static void
-output_unreferenced_globals (cgraph_node_set set)
+output_unreferenced_globals (cgraph_node_set set, varpool_node_set vset)
 {
   struct output_block *ob;
   alias_pair *p;
@@ -1973,27 +1971,28 @@ output_unreferenced_globals (cgraph_node_set set)
      symbols at link time if a file defines a global symbol but
      never references it.  */
   FOR_EACH_STATIC_VARIABLE (vnode)
-    {
-      tree var = vnode->decl;
+   if (vnode->needed && varpool_node_in_set_p (vnode, vset))
+      {
+	tree var = vnode->decl;
 
-      if (TREE_CODE (var) == VAR_DECL)
-        {
-          /* Output the object in order to output references used in the
-             initialization. */
-          lto_output_tree (ob, var, true);
+	if (TREE_CODE (var) == VAR_DECL)
+	  {
+	    /* Output the object in order to output references used in the
+	       initialization. */
+	    lto_output_tree (ob, var, true);
 
-          /* If it is public we also need a reference to the object itself. */
-          if (TREE_PUBLIC (var))
-            lto_output_tree_ref (ob, var);
-        }
-    }
+	    /* If it is public we also need a reference to the object itself. */
+	    if (TREE_PUBLIC (var))
+	      lto_output_tree_ref (ob, var);
+	  }
+      }
 
   output_zero (ob);
 
   /* Emit the alias pairs for the nodes in SET.  */
   for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p); i++)
     {
-      if (output_alias_pair_p (p, set))
+      if (output_alias_pair_p (p, set, vset))
 	{
 	  lto_output_tree_ref (ob, p->decl);
 	  lto_output_tree_ref (ob, p->target);
@@ -2077,22 +2076,29 @@ lto_writer_init (void)
 /* Main entry point from the pass manager.  */
 
 static void
-lto_output (cgraph_node_set set)
+lto_output (cgraph_node_set set, varpool_node_set vset)
 {
   struct cgraph_node *node;
   struct lto_out_decl_state *decl_state;
-  cgraph_node_set_iterator csi;
+#ifdef ENABLE_CHECKING
   bitmap output = lto_bitmap_alloc ();
+#endif
+  int i, n_nodes;
+  lto_cgraph_encoder_t encoder = lto_get_out_decl_state ()->cgraph_node_encoder;
 
   lto_writer_init ();
 
+  n_nodes = lto_cgraph_encoder_size (encoder);
   /* Process only the functions with bodies.  */
-  for (csi = csi_start (set); !csi_end_p (csi); csi_next (&csi))
+  for (i = 0; i < n_nodes; i++)
     {
-      node = csi_node (csi);
-      if (node->analyzed && !bitmap_bit_p (output, DECL_UID (node->decl)))
+      node = lto_cgraph_encoder_deref (encoder, i);
+      if (lto_cgraph_encoder_encode_body_p (encoder, node))
 	{
+#ifdef ENABLE_CHECKING
+	  gcc_assert (!bitmap_bit_p (output, DECL_UID (node->decl)));
 	  bitmap_set_bit (output, DECL_UID (node->decl));
+#endif
 	  decl_state = lto_new_out_decl_state ();
 	  lto_push_out_decl_state (decl_state);
 	  if (!flag_wpa)
@@ -2109,9 +2115,11 @@ lto_output (cgraph_node_set set)
      be done now to make sure that all the statements in every function
      have been renumbered so that edges can be associated with call
      statements using the statement UIDs.  */
-  output_cgraph (set);
+  output_cgraph (set, vset);
 
+#ifdef ENABLE_CHECKING
   lto_bitmap_free (output);
+#endif
 }
 
 struct ipa_opt_pass_d pass_ipa_lto_gimple_out =
@@ -2134,7 +2142,8 @@ struct ipa_opt_pass_d pass_ipa_lto_gimple_out =
  NULL,		                        /* generate_summary */
  lto_output,           			/* write_summary */
  NULL,		         		/* read_summary */
- NULL,					/* function_read_summary */
+ lto_output,           			/* write_optimization_summary */
+ NULL,					/* read_optimization_summary */
  NULL,					/* stmt_fixup */
  0,					/* TODOs */
  NULL,			                /* function_transform */
@@ -2163,20 +2172,6 @@ write_global_stream (struct output_block *ob,
       t = lto_tree_ref_encoder_get_tree (encoder, index);
       if (!lto_streamer_cache_lookup (ob->writer_cache, t, NULL))
 	lto_output_tree (ob, t, false);
-
-      if (flag_wpa)
-	{
-	  /* In WPA we should not emit multiple definitions of the
-	     same symbol to all the files in the link set.  If
-	     T had already been emitted as the pervailing definition
-	     in one file, do not emit it in the others.  */
-	  /* FIXME lto.  We should check if T belongs to the
-	     file we are writing to.  */
-	  if (TREE_CODE (t) == VAR_DECL
-	      && TREE_PUBLIC (t)
-	      && !DECL_EXTERNAL (t))
-	    TREE_ASM_WRITTEN (t) = 1;
-	}
     }
 }
 
@@ -2429,7 +2424,7 @@ produce_symtab (struct lto_streamer_cache_d *cache)
    recover these on other side.  */
 
 static void
-produce_asm_for_decls (cgraph_node_set set)
+produce_asm_for_decls (cgraph_node_set set, varpool_node_set vset)
 {
   struct lto_out_decl_state *out_state;
   struct lto_out_decl_state *fn_out_state;
@@ -2447,7 +2442,7 @@ produce_asm_for_decls (cgraph_node_set set)
   /* Write out unreferenced globals, alias pairs and labels.  We defer
      doing this until now so that we can write out only what is
      needed.  */
-  output_unreferenced_globals (set);
+  output_unreferenced_globals (set, vset);
 
   memset (&header, 0, sizeof (struct lto_decl_header));
 
@@ -2525,7 +2520,14 @@ produce_asm_for_decls (cgraph_node_set set)
   lto_write_options ();
 
   /* Deallocate memory and clean up.  */
+  for (idx = 0; idx < num_fns; idx++)
+    {
+      fn_out_state =
+	VEC_index (lto_out_decl_state_ptr, lto_function_decl_states, idx);
+      lto_delete_out_decl_state (fn_out_state);
+    }
   lto_cgraph_encoder_delete (ob->decl_state->cgraph_node_encoder);
+  lto_varpool_encoder_delete (ob->decl_state->varpool_node_encoder);
   VEC_free (lto_out_decl_state_ptr, heap, lto_function_decl_states);
   lto_function_decl_states = NULL;
   destroy_output_block (ob);
@@ -2552,7 +2554,8 @@ struct ipa_opt_pass_d pass_ipa_lto_finish_out =
  NULL,		                        /* generate_summary */
  produce_asm_for_decls,			/* write_summary */
  NULL,		         		/* read_summary */
- NULL,					/* function_read_summary */
+ produce_asm_for_decls,			/* write_optimization_summary */
+ NULL,					/* read_optimization_summary */
  NULL,					/* stmt_fixup */
  0,					/* TODOs */
  NULL,			                /* function_transform */

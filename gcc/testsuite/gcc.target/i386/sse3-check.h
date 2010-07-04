@@ -5,6 +5,13 @@
 
 static void sse3_test (void);
 
+static void
+__attribute__ ((noinline))
+do_test (void)
+{
+  sse3_test ();
+}
+
 int
 main ()
 {
@@ -15,7 +22,7 @@ main ()
  
   /* Run SSE3 test only if host has SSE3 support.  */
   if (ecx & bit_SSE3)
-    sse3_test ();
+    do_test ();
 
   return 0;
 }

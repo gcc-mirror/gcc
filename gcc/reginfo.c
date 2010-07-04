@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "recog.h"
 #include "reload.h"
-#include "real.h"
 #include "toplev.h"
 #include "output.h"
 #include "ggc.h"
@@ -184,7 +183,7 @@ bool have_regs_of_mode [MAX_MACHINE_MODE];
 char contains_reg_of_mode [N_REG_CLASSES] [MAX_MACHINE_MODE];
 
 /* Maximum cost of moving from a register in one class to a register in
-   another class.  Based on REGISTER_MOVE_COST.  */
+   another class.  Based on TARGET_REGISTER_MOVE_COST.  */
 move_table *move_cost[MAX_MACHINE_MODE];
 
 /* Similar, but here we don't have to move if the first index is a subset
@@ -275,7 +274,7 @@ init_move_cost (enum machine_mode m)
 	    cost = 65535;
 	  else
 	    {
-	      cost = REGISTER_MOVE_COST (m, (enum reg_class) i,
+	      cost = register_move_cost (m, (enum reg_class) i,
 					 (enum reg_class) j);
 	      gcc_assert (cost < 65535);
 	    }
@@ -666,6 +665,8 @@ void
 reinit_regs (void)
 {
   init_regs ();
+  /* caller_save needs to be re-initialized.  */
+  caller_save_initialized_p = false;
   ira_init ();
 }
 
@@ -681,11 +682,28 @@ init_fake_stack_mems (void)
 }
 
 
+/* Compute cost of moving data from a register of class FROM to one of
+   TO, using MODE.  */
+
+int
+register_move_cost (enum machine_mode mode, enum reg_class from,
+                    enum reg_class to)
+{
+  return targetm.register_move_cost (mode, from, to);
+}
+
+/* Compute cost of moving registers to/from memory.  */
+int
+memory_move_cost (enum machine_mode mode, enum reg_class rclass, bool in)
+{
+  return targetm.memory_move_cost (mode, rclass, in);
+}
+
 /* Compute extra cost of moving registers to/from memory due to reloads.
    Only needed if secondary reloads are required for memory moves.  */
 int
 memory_move_secondary_cost (enum machine_mode mode, enum reg_class rclass,
-			    int in)
+			    bool in)
 {
   enum reg_class altclass;
   int partial_cost = 0;
@@ -699,14 +717,14 @@ memory_move_secondary_cost (enum machine_mode mode, enum reg_class rclass,
     return 0;
 
   if (in)
-    partial_cost = REGISTER_MOVE_COST (mode, altclass, rclass);
+    partial_cost = register_move_cost (mode, altclass, rclass);
   else
-    partial_cost = REGISTER_MOVE_COST (mode, rclass, altclass);
+    partial_cost = register_move_cost (mode, rclass, altclass);
 
   if (rclass == altclass)
     /* This isn't simply a copy-to-temporary situation.  Can't guess
-       what it is, so MEMORY_MOVE_COST really ought not to be calling
-       here in that case.
+       what it is, so TARGET_MEMORY_MOVE_COST really ought not to be
+       calling here in that case.
 
        I'm tempted to put in an assert here, but returning this will
        probably only give poor estimates, which is what we would've

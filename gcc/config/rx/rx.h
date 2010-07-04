@@ -142,6 +142,8 @@ extern enum rx_cpu_types  rx_cpu_type;
 #define POINTER_SIZE			32
 #undef  SIZE_TYPE
 #define SIZE_TYPE			"long unsigned int"
+#undef  PTRDIFF_TYPE
+#define PTRDIFF_TYPE			"long int"
 #define POINTERS_EXTEND_UNSIGNED	1
 #define FUNCTION_MODE 			QImode
 #define CASE_VECTOR_MODE		Pmode
@@ -607,11 +609,6 @@ typedef unsigned int CUMULATIVE_ARGS;
 /* For PIC put jump tables into the text section so that the offsets that
    they contain are always computed between two same-section symbols.  */
 #define JUMP_TABLES_IN_TEXT_SECTION	(flag_pic)
-
-#define PRINT_OPERAND(FILE, X, CODE)		\
-  rx_print_operand (FILE, X, CODE)
-#define PRINT_OPERAND_ADDRESS(FILE, ADDR)	\
-  rx_print_operand_address (FILE, ADDR)
 
 #define CC_NO_CARRY			0400
 #define NOTICE_UPDATE_CC(EXP, INSN)	rx_notice_update_cc (EXP, INSN)

@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "expr.h"
 #include "optabs.h"
-#include "real.h"
 #include "recog.h"
 #include "langhooks.h"
 #include "df.h"
@@ -302,7 +301,7 @@ negate_rtx (enum machine_mode mode, rtx x)
 enum machine_mode
 mode_for_extraction (enum extraction_pattern pattern, int opno)
 {
-  const struct insn_data *data;
+  const struct insn_data_d *data;
 
   switch (pattern)
     {
@@ -698,7 +697,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	   and we will need the original value of op0 if insv fails.  */
 	xop0 = gen_rtx_SUBREG (op_mode, SUBREG_REG (xop0), SUBREG_BYTE (xop0));
       if (REG_P (xop0) && GET_MODE (xop0) != op_mode)
-	xop0 = gen_rtx_SUBREG (op_mode, xop0, 0);
+	xop0 = gen_lowpart_SUBREG (op_mode, xop0);
 
       /* If the destination is a paradoxical subreg such that we need a
 	 truncate to the inner mode, perform the insertion on a temporary and
@@ -904,8 +903,14 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT offset,
       if (GET_MODE_BITSIZE (mode) == 0
 	  || GET_MODE_BITSIZE (mode) > GET_MODE_BITSIZE (word_mode))
 	mode = word_mode;
-      mode = get_best_mode (bitsize, bitpos + offset * BITS_PER_UNIT,
-			    MEM_ALIGN (op0), mode, MEM_VOLATILE_P (op0));
+
+      if (MEM_VOLATILE_P (op0)
+          && GET_MODE_BITSIZE (GET_MODE (op0)) > 0
+	  && flag_strict_volatile_bitfields > 0)
+	mode = GET_MODE (op0);
+      else
+	mode = get_best_mode (bitsize, bitpos + offset * BITS_PER_UNIT,
+			      MEM_ALIGN (op0), mode, MEM_VOLATILE_P (op0));
 
       if (mode == VOIDmode)
 	{
@@ -1378,6 +1383,14 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	    ? mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0)
 	    : mode);
 
+  /* If the bitfield is volatile, we need to make sure the access
+     remains on a type-aligned boundary.  */
+  if (GET_CODE (op0) == MEM
+      && MEM_VOLATILE_P (op0)
+      && GET_MODE_BITSIZE (GET_MODE (op0)) > 0
+      && flag_strict_volatile_bitfields > 0)
+    goto no_subreg_mode_swap;
+
   if (((bitsize >= BITS_PER_WORD && bitsize == GET_MODE_BITSIZE (mode)
 	&& bitpos % BITS_PER_WORD == 0)
        || (mode1 != BLKmode
@@ -1542,7 +1555,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       /* If op0 is a register, we need it in EXT_MODE to make it
 	 acceptable to the format of ext(z)v.  */
       if (REG_P (xop0) && GET_MODE (xop0) != ext_mode)
-	xop0 = gen_rtx_SUBREG (ext_mode, xop0, 0);
+	xop0 = gen_lowpart_SUBREG (ext_mode, xop0);
       if (MEM_P (xop0))
 	/* Get ref to first byte containing part of the field.  */
 	xop0 = adjust_address (xop0, byte_mode, xoffset);
@@ -1730,8 +1743,19 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
 	 includes the entire field.  If such a mode would be larger than
 	 a word, we won't be doing the extraction the normal way.  */
 
-      mode = get_best_mode (bitsize, bitpos + offset * BITS_PER_UNIT,
-			    MEM_ALIGN (op0), word_mode, MEM_VOLATILE_P (op0));
+      if (MEM_VOLATILE_P (op0)
+	  && flag_strict_volatile_bitfields > 0)
+	{
+	  if (GET_MODE_BITSIZE (GET_MODE (op0)) > 0)
+	    mode = GET_MODE (op0);
+	  else if (target && GET_MODE_BITSIZE (GET_MODE (target)) > 0)
+	    mode = GET_MODE (target);
+	  else
+	    mode = tmode;
+	}
+      else
+	mode = get_best_mode (bitsize, bitpos + offset * BITS_PER_UNIT,
+			      MEM_ALIGN (op0), word_mode, MEM_VOLATILE_P (op0));
 
       if (mode == VOIDmode)
 	/* The only way this should occur is if the field spans word
@@ -1752,12 +1776,51 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
 		     * BITS_PER_UNIT);
 	}
 
-      /* Get ref to an aligned byte, halfword, or word containing the field.
-	 Adjust BITPOS to be position within a word,
-	 and OFFSET to be the offset of that word.
-	 Then alter OP0 to refer to that word.  */
-      bitpos += (offset % (total_bits / BITS_PER_UNIT)) * BITS_PER_UNIT;
-      offset -= (offset % (total_bits / BITS_PER_UNIT));
+      /* If we're accessing a volatile MEM, we can't do the next
+	 alignment step if it results in a multi-word access where we
+	 otherwise wouldn't have one.  So, check for that case
+	 here.  */
+      if (MEM_P (op0)
+	  && MEM_VOLATILE_P (op0)
+	  && flag_strict_volatile_bitfields > 0
+	  && bitpos + bitsize <= total_bits
+	  && bitpos + bitsize + (offset % (total_bits / BITS_PER_UNIT)) * BITS_PER_UNIT > total_bits)
+	{
+	  if (STRICT_ALIGNMENT)
+	    {
+	      static bool informed_about_misalignment = false;
+	      bool warned;
+
+	      if (bitsize == total_bits)
+		warned = warning_at (input_location, OPT_fstrict_volatile_bitfields,
+				     "mis-aligned access used for structure member");
+	      else
+		warned = warning_at (input_location, OPT_fstrict_volatile_bitfields,
+				     "mis-aligned access used for structure bitfield");
+
+	      if (! informed_about_misalignment && warned)
+		{
+		  informed_about_misalignment = true;
+		  inform (input_location,
+			  "When a volatile object spans multiple type-sized locations,"
+			  " the compiler must choose between using a single mis-aligned access to"
+			  " preserve the volatility, or using multiple aligned accesses to avoid"
+			  " runtime faults.  This code may fail at runtime if the hardware does"
+			  " not allow this access.");
+		}
+	    }
+	}
+      else
+	{
+
+	  /* Get ref to an aligned byte, halfword, or word containing the field.
+	     Adjust BITPOS to be position within a word,
+	     and OFFSET to be the offset of that word.
+	     Then alter OP0 to refer to that word.  */
+	  bitpos += (offset % (total_bits / BITS_PER_UNIT)) * BITS_PER_UNIT;
+	  offset -= (offset % (total_bits / BITS_PER_UNIT));
+	}
+
       op0 = adjust_address (op0, mode, offset);
     }
 
@@ -1839,39 +1902,15 @@ extract_fixed_bit_field (enum machine_mode tmode, rtx op0,
 static rtx
 mask_rtx (enum machine_mode mode, int bitpos, int bitsize, int complement)
 {
-  HOST_WIDE_INT masklow, maskhigh;
+  double_int mask;
 
-  if (bitsize == 0)
-    masklow = 0;
-  else if (bitpos < HOST_BITS_PER_WIDE_INT)
-    masklow = (HOST_WIDE_INT) -1 << bitpos;
-  else
-    masklow = 0;
-
-  if (bitpos + bitsize < HOST_BITS_PER_WIDE_INT)
-    masklow &= ((unsigned HOST_WIDE_INT) -1
-		>> (HOST_BITS_PER_WIDE_INT - bitpos - bitsize));
-
-  if (bitpos <= HOST_BITS_PER_WIDE_INT)
-    maskhigh = -1;
-  else
-    maskhigh = (HOST_WIDE_INT) -1 << (bitpos - HOST_BITS_PER_WIDE_INT);
-
-  if (bitsize == 0)
-    maskhigh = 0;
-  else if (bitpos + bitsize > HOST_BITS_PER_WIDE_INT)
-    maskhigh &= ((unsigned HOST_WIDE_INT) -1
-		 >> (2 * HOST_BITS_PER_WIDE_INT - bitpos - bitsize));
-  else
-    maskhigh = 0;
+  mask = double_int_mask (bitsize);
+  mask = double_int_lshift (mask, bitpos, HOST_BITS_PER_DOUBLE_INT, false);
 
   if (complement)
-    {
-      maskhigh = ~maskhigh;
-      masklow = ~masklow;
-    }
+    mask = double_int_not (mask);
 
-  return immed_double_const (masklow, maskhigh, mode);
+  return immed_double_int_const (mask, mode);
 }
 
 /* Return a constant integer (CONST_INT or CONST_DOUBLE) rtx with the value
@@ -1880,24 +1919,12 @@ mask_rtx (enum machine_mode mode, int bitpos, int bitsize, int complement)
 static rtx
 lshift_value (enum machine_mode mode, rtx value, int bitpos, int bitsize)
 {
-  unsigned HOST_WIDE_INT v = INTVAL (value);
-  HOST_WIDE_INT low, high;
+  double_int val;
+  
+  val = double_int_zext (uhwi_to_double_int (INTVAL (value)), bitsize);
+  val = double_int_lshift (val, bitpos, HOST_BITS_PER_DOUBLE_INT, false);
 
-  if (bitsize < HOST_BITS_PER_WIDE_INT)
-    v &= ~((HOST_WIDE_INT) -1 << bitsize);
-
-  if (bitpos < HOST_BITS_PER_WIDE_INT)
-    {
-      low = v << bitpos;
-      high = (bitpos > 0 ? (v >> (HOST_BITS_PER_WIDE_INT - bitpos)) : 0);
-    }
-  else
-    {
-      low = 0;
-      high = v << (bitpos - HOST_BITS_PER_WIDE_INT);
-    }
-
-  return immed_double_const (low, high, mode);
+  return immed_double_int_const (val, mode);
 }
 
 /* Extract a bit field that is split across two words
@@ -3252,6 +3279,55 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 		      op0, op1, target, unsignedp, OPTAB_LIB_WIDEN);
   gcc_assert (op0);
   return op0;
+}
+
+/* Perform a widening multiplication and return an rtx for the result.
+   MODE is mode of value; OP0 and OP1 are what to multiply (rtx's);
+   TARGET is a suggestion for where to store the result (an rtx).
+   THIS_OPTAB is the optab we should use, it must be either umul_widen_optab
+   or smul_widen_optab.
+
+   We check specially for a constant integer as OP1, comparing the
+   cost of a widening multiply against the cost of a sequence of shifts
+   and adds.  */
+
+rtx
+expand_widening_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
+		      int unsignedp, optab this_optab)
+{
+  bool speed = optimize_insn_for_speed_p ();
+
+  if (CONST_INT_P (op1)
+      && (INTVAL (op1) >= 0
+	  || GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT))
+    {
+      HOST_WIDE_INT coeff = INTVAL (op1);
+      int max_cost;
+      enum mult_variant variant;
+      struct algorithm algorithm;
+
+      /* Special case powers of two.  */
+      if (EXACT_POWER_OF_2_OR_ZERO_P (coeff))
+	{
+	  op0 = convert_to_mode (mode, op0, this_optab == umul_widen_optab);
+	  return expand_shift (LSHIFT_EXPR, mode, op0,
+			       build_int_cst (NULL_TREE, floor_log2 (coeff)),
+			       target, unsignedp);
+	}
+
+      /* Exclude cost of op0 from max_cost to match the cost
+	 calculation of the synth_mult.  */
+      max_cost = mul_widen_cost[speed][mode];
+      if (choose_mult_variant (mode, coeff, &algorithm, &variant,
+			       max_cost))
+	{
+	  op0 = convert_to_mode (mode, op0, this_optab == umul_widen_optab);
+	  return expand_mult_const (mode, op0, coeff, target,
+				    &algorithm, variant);
+	}
+    }
+  return expand_binop (mode, this_optab, op0, op1, target,
+		       unsignedp, OPTAB_LIB_WIDEN);
 }
 
 /* Return the smallest n such that 2**n >= X.  */

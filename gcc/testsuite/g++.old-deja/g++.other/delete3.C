@@ -16,7 +16,7 @@ map<T, U>::~map ()
 
 struct SomeClass { };
 
-void* operator new(size_t numBytes, SomeClass&, const std::nothrow_t&) throw()
+void* operator new(std::size_t numBytes, SomeClass&, const std::nothrow_t&) throw()
 {
   return operator new(numBytes, std::nothrow);
 }

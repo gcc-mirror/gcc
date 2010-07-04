@@ -1,5 +1,6 @@
 /* { dg-do compile { target { size32plus } } } */ 
 /* { dg-options "-O2 -ftree-loop-linear -fdump-tree-ltrans-all" } */
+/* { dg-options "-O2 -ftree-loop-linear -fdump-tree-ltrans-all -march=i486" { target { i?86-*-* && ilp32} } } */
 
 int foo ()
 {

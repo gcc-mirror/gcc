@@ -1,7 +1,9 @@
 /* Based on objc/execute/va_method.m, by Nicola Pero */
 /* { dg-do run } */
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
+
 #include <stdarg.h>
 #include <stdlib.h>
 
@@ -67,3 +69,5 @@ int main (void)
   
   return 0;
 }
+
+#include "../objc-obj-c++-shared/Object1-implementation.h"

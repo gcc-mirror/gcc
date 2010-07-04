@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2009, AdaCore                     --
+--                     Copyright (C) 2002-2010, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,6 +50,11 @@ package body GNAT.Expect is
    Save_Output : File_Descriptor;
    Save_Error  : File_Descriptor;
 
+   Expect_Process_Died   : constant Expect_Match := -100;
+   Expect_Internal_Error : constant Expect_Match := -101;
+   --  Additional possible outputs of Expect_Internal. These are not visible in
+   --  the spec because the user will never see them.
+
    procedure Expect_Internal
      (Descriptors : in out Array_Of_Pd;
       Result      : out Expect_Match;
@@ -57,11 +62,14 @@ package body GNAT.Expect is
       Full_Buffer : Boolean);
    --  Internal function used to read from the process Descriptor.
    --
-   --  Three outputs are possible:
+   --  Several outputs are possible:
    --     Result=Expect_Timeout, if no output was available before the timeout
    --        expired.
    --     Result=Expect_Full_Buffer, if Full_Buffer is True and some characters
    --        had to be discarded from the internal buffer of Descriptor.
+   --     Result=Express_Process_Died if one of the processes was terminated.
+   --        That process's Input_Fd is set to Invalid_FD
+   --     Result=Express_Internal_Error
    --     Result=<integer>, indicates how many characters were added to the
    --        internal buffer. These characters are from indexes
    --        Descriptor.Buffer_Index - Result + 1 .. Descriptor.Buffer_Index
@@ -209,7 +217,9 @@ package body GNAT.Expect is
       Status     : out Integer)
    is
    begin
-      Close (Descriptor.Input_Fd);
+      if Descriptor.Input_Fd /= Invalid_FD then
+         Close (Descriptor.Input_Fd);
+      end if;
 
       if Descriptor.Error_Fd /= Descriptor.Output_Fd then
          Close (Descriptor.Error_Fd);
@@ -331,10 +341,17 @@ package body GNAT.Expect is
 
          Expect_Internal (Descriptors, N, Timeout_Tmp, Full_Buffer);
 
-         if N = Expect_Timeout or else N = Expect_Full_Buffer then
-            Result := N;
-            return;
-         end if;
+         case N is
+            when Expect_Internal_Error | Expect_Process_Died =>
+               raise Process_Died;
+
+            when Expect_Timeout | Expect_Full_Buffer =>
+               Result := N;
+               return;
+
+            when others =>
+               null;  --  See below
+         end case;
 
          --  Calculate the timeout for the next turn
 
@@ -478,10 +495,17 @@ package body GNAT.Expect is
 
          Expect_Internal (Descriptors, N, Timeout, Full_Buffer);
 
-         if N = Expect_Timeout or else N = Expect_Full_Buffer then
-            Result := N;
-            return;
-         end if;
+         case N is
+            when Expect_Internal_Error | Expect_Process_Died =>
+               raise Process_Died;
+
+            when Expect_Timeout | Expect_Full_Buffer =>
+               Result := N;
+               return;
+
+            when others =>
+               null;  --  Continue
+         end case;
       end loop;
    end Expect;
 
@@ -500,7 +524,10 @@ package body GNAT.Expect is
 
       for J in Descriptors'Range loop
          Descriptors (J) := Regexps (J).Descriptor;
-         Reinitialize_Buffer (Regexps (J).Descriptor.all);
+
+         if Descriptors (J) /= null then
+            Reinitialize_Buffer (Regexps (J).Descriptor.all);
+         end if;
       end loop;
 
       loop
@@ -511,25 +538,36 @@ package body GNAT.Expect is
          --  checking the regexps).
 
          for J in Regexps'Range loop
-            Match (Regexps (J).Regexp.all,
-                   Regexps (J).Descriptor.Buffer
-                     (1 .. Regexps (J).Descriptor.Buffer_Index),
-                   Matched);
+            if Regexps (J).Regexp /= null
+               and then Regexps (J).Descriptor /= null
+            then
+               Match (Regexps (J).Regexp.all,
+                      Regexps (J).Descriptor.Buffer
+                        (1 .. Regexps (J).Descriptor.Buffer_Index),
+                      Matched);
 
-            if Matched (0) /= No_Match then
-               Result := Expect_Match (J);
-               Regexps (J).Descriptor.Last_Match_Start := Matched (0).First;
-               Regexps (J).Descriptor.Last_Match_End := Matched (0).Last;
-               return;
+               if Matched (0) /= No_Match then
+                  Result := Expect_Match (J);
+                  Regexps (J).Descriptor.Last_Match_Start := Matched (0).First;
+                  Regexps (J).Descriptor.Last_Match_End := Matched (0).Last;
+                  return;
+               end if;
             end if;
          end loop;
 
          Expect_Internal (Descriptors, N, Timeout, Full_Buffer);
 
-         if N = Expect_Timeout or else N = Expect_Full_Buffer then
-            Result := N;
-            return;
-         end if;
+         case N is
+            when Expect_Internal_Error | Expect_Process_Died =>
+               raise Process_Died;
+
+            when Expect_Timeout | Expect_Full_Buffer =>
+               Result := N;
+               return;
+
+            when others =>
+               null;  --  Continue
+         end case;
       end loop;
    end Expect;
 
@@ -549,21 +587,30 @@ package body GNAT.Expect is
       N : Integer;
 
       type File_Descriptor_Array is
-        array (Descriptors'Range) of File_Descriptor;
+        array (0 .. Descriptors'Length - 1) of File_Descriptor;
       Fds : aliased File_Descriptor_Array;
+      Fds_Count : Natural := 0;
 
-      type Integer_Array is array (Descriptors'Range) of Integer;
+      Fds_To_Descriptor : array (Fds'Range) of Integer;
+      --  Maps file descriptor entries from Fds to entries in Descriptors.
+      --  They do not have the same index when entries in Descriptors are null.
+
+      type Integer_Array is array (Fds'Range) of Integer;
       Is_Set : aliased Integer_Array;
 
    begin
       for J in Descriptors'Range loop
-         Fds (J) := Descriptors (J).Output_Fd;
+         if Descriptors (J) /= null then
+            Fds (Fds'First + Fds_Count) := Descriptors (J).Output_Fd;
+            Fds_To_Descriptor (Fds'First + Fds_Count) := J;
+            Fds_Count := Fds_Count + 1;
 
-         if Descriptors (J).Buffer_Size = 0 then
-            Buffer_Size := Integer'Max (Buffer_Size, 4096);
-         else
-            Buffer_Size :=
-              Integer'Max (Buffer_Size, Descriptors (J).Buffer_Size);
+            if Descriptors (J).Buffer_Size = 0 then
+               Buffer_Size := Integer'Max (Buffer_Size, 4096);
+            else
+               Buffer_Size :=
+                 Integer'Max (Buffer_Size, Descriptors (J).Buffer_Size);
+            end if;
          end if;
       end loop;
 
@@ -572,19 +619,23 @@ package body GNAT.Expect is
          --  Buffer used for input. This is allocated only once, not for
          --  every iteration of the loop
 
+         D : Integer;
+         --  Index in Descriptors
+
       begin
          --  Loop until we match or we have a timeout
 
          loop
             Num_Descriptors :=
-              Poll (Fds'Address, Fds'Length, Timeout, Is_Set'Address);
+              Poll (Fds'Address, Fds_Count, Timeout, Is_Set'Address);
 
             case Num_Descriptors is
 
                --  Error?
 
                when -1 =>
-                  raise Process_Died;
+                  Result := Expect_Internal_Error;
+                  return;
 
                --  Timeout?
 
@@ -595,15 +646,17 @@ package body GNAT.Expect is
                --  Some input
 
                when others =>
-                  for J in Descriptors'Range loop
-                     if Is_Set (J) = 1 then
-                        Buffer_Size := Descriptors (J).Buffer_Size;
+                  for F in Fds'Range loop
+                     if Is_Set (F) = 1 then
+                        D := Fds_To_Descriptor (F);
+
+                        Buffer_Size := Descriptors (D).Buffer_Size;
 
                         if Buffer_Size = 0 then
                            Buffer_Size := 4096;
                         end if;
 
-                        N := Read (Descriptors (J).Output_Fd, Buffer'Address,
+                        N := Read (Descriptors (D).Output_Fd, Buffer'Address,
                                    Buffer_Size);
 
                         --  Error or End of file
@@ -611,43 +664,46 @@ package body GNAT.Expect is
                         if N <= 0 then
                            --  ??? Note that ddd tries again up to three times
                            --  in that case. See LiterateA.C:174
-                           raise Process_Died;
+
+                           Descriptors (D).Input_Fd := Invalid_FD;
+                           Result := Expect_Process_Died;
+                           return;
 
                         else
                            --  If there is no limit to the buffer size
 
-                           if Descriptors (J).Buffer_Size = 0 then
+                           if Descriptors (D).Buffer_Size = 0 then
 
                               declare
-                                 Tmp : String_Access := Descriptors (J).Buffer;
+                                 Tmp : String_Access := Descriptors (D).Buffer;
 
                               begin
                                  if Tmp /= null then
-                                    Descriptors (J).Buffer :=
+                                    Descriptors (D).Buffer :=
                                       new String (1 .. Tmp'Length + N);
-                                    Descriptors (J).Buffer (1 .. Tmp'Length) :=
+                                    Descriptors (D).Buffer (1 .. Tmp'Length) :=
                                       Tmp.all;
-                                    Descriptors (J).Buffer
+                                    Descriptors (D).Buffer
                                       (Tmp'Length + 1 .. Tmp'Length + N) :=
                                       Buffer (1 .. N);
                                     Free (Tmp);
-                                    Descriptors (J).Buffer_Index :=
-                                      Descriptors (J).Buffer'Last;
+                                    Descriptors (D).Buffer_Index :=
+                                      Descriptors (D).Buffer'Last;
 
                                  else
-                                    Descriptors (J).Buffer :=
+                                    Descriptors (D).Buffer :=
                                       new String (1 .. N);
-                                    Descriptors (J).Buffer.all :=
+                                    Descriptors (D).Buffer.all :=
                                       Buffer (1 .. N);
-                                    Descriptors (J).Buffer_Index := N;
+                                    Descriptors (D).Buffer_Index := N;
                                  end if;
                               end;
 
                            else
                               --  Add what we read to the buffer
 
-                              if Descriptors (J).Buffer_Index + N >
-                                Descriptors (J).Buffer_Size
+                              if Descriptors (D).Buffer_Index + N >
+                                Descriptors (D).Buffer_Size
                               then
                                  --  If the user wants to know when we have
                                  --  read more than the buffer can contain.
@@ -660,33 +716,33 @@ package body GNAT.Expect is
                                  --  Keep as much as possible from the buffer,
                                  --  and forget old characters.
 
-                                 Descriptors (J).Buffer
-                                   (1 .. Descriptors (J).Buffer_Size - N) :=
-                                  Descriptors (J).Buffer
-                                   (N - Descriptors (J).Buffer_Size +
-                                    Descriptors (J).Buffer_Index + 1 ..
-                                    Descriptors (J).Buffer_Index);
-                                 Descriptors (J).Buffer_Index :=
-                                   Descriptors (J).Buffer_Size - N;
+                                 Descriptors (D).Buffer
+                                   (1 .. Descriptors (D).Buffer_Size - N) :=
+                                  Descriptors (D).Buffer
+                                   (N - Descriptors (D).Buffer_Size +
+                                    Descriptors (D).Buffer_Index + 1 ..
+                                    Descriptors (D).Buffer_Index);
+                                 Descriptors (D).Buffer_Index :=
+                                   Descriptors (D).Buffer_Size - N;
                               end if;
 
                               --  Keep what we read in the buffer
 
-                              Descriptors (J).Buffer
-                                (Descriptors (J).Buffer_Index + 1 ..
-                                 Descriptors (J).Buffer_Index + N) :=
+                              Descriptors (D).Buffer
+                                (Descriptors (D).Buffer_Index + 1 ..
+                                 Descriptors (D).Buffer_Index + N) :=
                                 Buffer (1 .. N);
-                              Descriptors (J).Buffer_Index :=
-                                Descriptors (J).Buffer_Index + N;
+                              Descriptors (D).Buffer_Index :=
+                                Descriptors (D).Buffer_Index + N;
                            end if;
 
                            --  Call each of the output filter with what we
                            --  read.
 
                            Call_Filters
-                             (Descriptors (J).all, Buffer (1 .. N), Output);
+                             (Descriptors (D).all, Buffer (1 .. N), Output);
 
-                           Result := Expect_Match (N);
+                           Result := Expect_Match (D);
                            return;
                         end if;
                      end if;
@@ -714,6 +770,25 @@ package body GNAT.Expect is
       return Descriptor.Buffer
         (Descriptor.Last_Match_Start .. Descriptor.Last_Match_End);
    end Expect_Out_Match;
+
+   ------------------------
+   -- First_Dead_Process --
+   ------------------------
+
+   function First_Dead_Process
+     (Regexp : Multiprocess_Regexp_Array) return Natural
+   is
+   begin
+      for R in Regexp'Range loop
+         if Regexp (R).Descriptor /= null
+           and then Regexp (R).Descriptor.Input_Fd = GNAT.OS_Lib.Invalid_FD
+         then
+            return R;
+         end if;
+      end loop;
+
+      return 0;
+   end First_Dead_Process;
 
    -----------
    -- Flush --
@@ -769,6 +844,18 @@ package body GNAT.Expect is
          end case;
       end loop;
    end Flush;
+
+   ----------
+   -- Free --
+   ----------
+
+   procedure Free (Regexp : in out Multiprocess_Regexp) is
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+        (Process_Descriptor'Class, Process_Descriptor_Access);
+   begin
+      Unchecked_Free (Regexp.Descriptor);
+      Free (Regexp.Regexp);
+   end Free;
 
    ------------------------
    -- Get_Command_Output --
@@ -897,6 +984,15 @@ package body GNAT.Expect is
       return Descriptor.Pid;
    end Get_Pid;
 
+   -----------------
+   -- Has_Process --
+   -----------------
+
+   function Has_Process (Regexp : Multiprocess_Regexp_Array) return Boolean is
+   begin
+      return Regexp /= (Regexp'Range => (null, null));
+   end Has_Process;
+
    ---------------
    -- Interrupt --
    ---------------
@@ -1023,6 +1119,13 @@ package body GNAT.Expect is
 
          Expect_Internal (Descriptors, Result,
                           Timeout => 0, Full_Buffer => False);
+
+         if Result = Expect_Internal_Error
+           or else Result = Expect_Process_Died
+         then
+            raise Process_Died;
+         end if;
+
          Descriptor.Last_Match_End := Descriptor.Buffer_Index;
 
          --  Empty the buffer

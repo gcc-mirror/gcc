@@ -1,4 +1,5 @@
 /* { dg-do compile { target *-*-darwin* } } */
+/* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 
 #import <Foundation/Foundation.h>
 main() { [NSObject new]; }

@@ -334,9 +334,9 @@ flow_loop_tree_node_remove (struct loop *loop)
 struct loop *
 alloc_loop (void)
 {
-  struct loop *loop = GGC_CNEW (struct loop);
+  struct loop *loop = ggc_alloc_cleared_loop ();
 
-  loop->exits = GGC_CNEW (struct loop_exit);
+  loop->exits = ggc_alloc_cleared_loop_exit ();
   loop->exits->next = loop->exits->prev = loop->exits;
   loop->can_be_parallel = false;
   loop->single_iv = NULL_TREE;
@@ -1026,7 +1026,7 @@ rescan_loop_exit (edge e, bool new_edge, bool removed)
 	   aloop != cloop;
 	   aloop = loop_outer (aloop))
 	{
-	  exit = GGC_NEW (struct loop_exit);
+	  exit = ggc_alloc_loop_exit ();
 	  exit->e = e;
 
 	  exit->next = aloop->exits->next;
@@ -1076,11 +1076,9 @@ record_loop_exits (void)
   loops_state_set (LOOPS_HAVE_RECORDED_EXITS);
 
   gcc_assert (current_loops->exits == NULL);
-  current_loops->exits = htab_create_alloc (2 * number_of_loops (),
-					    loop_exit_hash,
-					    loop_exit_eq,
-					    loop_exit_free,
-					    ggc_calloc, ggc_free);
+  current_loops->exits = htab_create_ggc (2 * number_of_loops (),
+					  loop_exit_hash, loop_exit_eq,
+					  loop_exit_free);
 
   FOR_EACH_BB (bb)
     {
@@ -1316,7 +1314,7 @@ cancel_loop_tree (struct loop *loop)
      -- loop latches have only single successor that is header of their loop
      -- irreducible loops are correctly marked
   */
-void
+DEBUG_FUNCTION void
 verify_loop_structure (void)
 {
   unsigned *sizes, i, j;

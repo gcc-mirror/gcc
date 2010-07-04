@@ -3,8 +3,8 @@
 /* Author:  Ziemowit Laski <zlaski@apple.com>.  */
 
 /* { dg-do run } */
-
-#include <objc/Object.h>
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+#include "../objc-obj-c++-shared/Object1.h"
 #include <stdlib.h>
 
 #define CHECK_IF(expr) if(!(expr)) abort()
@@ -66,3 +66,4 @@ int main (void) {
   CHECK_IF(FooHolder::counter == 0);
   return 0;
 }
+#include "../objc-obj-c++-shared/Object1-implementation.h"

@@ -108,7 +108,7 @@ void
 PB_DS_CLASS_C_DEC::
 erase_node(node_pointer p_nd)
 {
-  _GLIBCXX_DEBUG_ASSERT(p_nd != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_nd != 0);
   splay(p_nd);
 
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
@@ -119,27 +119,27 @@ erase_node(node_pointer p_nd)
 
   base_type::update_min_max_for_erased_node(p_nd);
   base_type::actual_erase_node(p_nd);
-  if (p_r == NULL)
+  if (p_r == 0)
     {
       base_type::m_p_head->m_p_parent = p_l;
-      if (p_l != NULL)
+      if (p_l != 0)
 	p_l->m_p_parent = base_type::m_p_head;
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
       return;
     }
 
   node_pointer p_target_r = leftmost(p_r);
-  _GLIBCXX_DEBUG_ASSERT(p_target_r != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_target_r != 0);
   p_r->m_p_parent = base_type::m_p_head;
   base_type::m_p_head->m_p_parent = p_r;
   splay(p_target_r);
 
-  _GLIBCXX_DEBUG_ONLY(p_target_r->m_p_left = NULL);
+  _GLIBCXX_DEBUG_ONLY(p_target_r->m_p_left = 0);
   _GLIBCXX_DEBUG_ASSERT(p_target_r->m_p_parent == this->m_p_head);
   _GLIBCXX_DEBUG_ASSERT(this->m_p_head->m_p_parent == p_target_r);
 
   p_target_r->m_p_left = p_l;
-  if (p_l != NULL)
+  if (p_l != 0)
     p_l->m_p_parent = p_target_r;
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
   apply_update(p_target_r, (node_update* )this);
@@ -150,8 +150,8 @@ inline typename PB_DS_CLASS_C_DEC::node_pointer
 PB_DS_CLASS_C_DEC::
 leftmost(node_pointer p_nd)
 {
-  _GLIBCXX_DEBUG_ASSERT(p_nd != NULL);
-  while (p_nd->m_p_left != NULL)
+  _GLIBCXX_DEBUG_ASSERT(p_nd != 0);
+  while (p_nd->m_p_left != 0)
     p_nd = p_nd->m_p_left;
   return p_nd;
 }

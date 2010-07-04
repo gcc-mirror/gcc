@@ -1,3 +1,21 @@
+2010-06-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* update_web_docs_svn: Also pass -I option pointing to ada/ source
+	directory for Ada manual.
+
+2010-04-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* crontab: Enable 4.6 snapshots.
+
+2010-04-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* crontab: Switch 4.5 snapshots to 4.5 branch.
+
+2010-03-31  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc_release (build_tarfiles): Make directories mode 755, not
+	777.
+
 2009-10-10  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* update_web_docs_svn: Update BUGURL to http://gcc.gnu.org/bugs/.

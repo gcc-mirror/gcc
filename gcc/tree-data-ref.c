@@ -1,5 +1,5 @@
 /* Data references and dependences detectors.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
@@ -81,11 +81,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "flags.h"
 #include "tree.h"
-
-/* These RTL headers are needed for basic-block.h.  */
-#include "rtl.h"
 #include "basic-block.h"
-#include "diagnostic.h"
+#include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
 #include "tree-flow.h"
 #include "tree-dump.h"
 #include "timevar.h"
@@ -160,7 +158,7 @@ dump_data_references (FILE *file, VEC (data_reference_p, heap) *datarefs)
 
 /* Dump into STDERR all the data references from DATAREFS.  */
 
-void
+DEBUG_FUNCTION void
 debug_data_references (VEC (data_reference_p, heap) *datarefs)
 {
   dump_data_references (stderr, datarefs);
@@ -168,7 +166,7 @@ debug_data_references (VEC (data_reference_p, heap) *datarefs)
 
 /* Dump to STDERR all the dependence relations from DDRS.  */
 
-void
+DEBUG_FUNCTION void
 debug_data_dependence_relations (VEC (ddr_p, heap) *ddrs)
 {
   dump_data_dependence_relations (stderr, ddrs);
@@ -189,7 +187,7 @@ dump_data_dependence_relations (FILE *file,
 
 /* Print to STDERR the data_reference DR.  */
 
-void
+DEBUG_FUNCTION void
 debug_data_reference (struct data_reference *dr)
 {
   dump_data_reference (stderr, dr);
@@ -203,19 +201,19 @@ dump_data_reference (FILE *outf,
 {
   unsigned int i;
 
-  fprintf (outf, "(Data Ref: \n  stmt: ");
+  fprintf (outf, "#(Data Ref: \n#  stmt: ");
   print_gimple_stmt (outf, DR_STMT (dr), 0, 0);
-  fprintf (outf, "  ref: ");
+  fprintf (outf, "#  ref: ");
   print_generic_stmt (outf, DR_REF (dr), 0);
-  fprintf (outf, "  base_object: ");
+  fprintf (outf, "#  base_object: ");
   print_generic_stmt (outf, DR_BASE_OBJECT (dr), 0);
 
   for (i = 0; i < DR_NUM_DIMENSIONS (dr); i++)
     {
-      fprintf (outf, "  Access function %d: ", i);
+      fprintf (outf, "#  Access function %d: ", i);
       print_generic_stmt (outf, DR_ACCESS_FN (dr, i), 0);
     }
-  fprintf (outf, ")\n");
+  fprintf (outf, "#)\n");
 }
 
 /* Dumps the affine function described by FN to the file OUTF.  */
@@ -363,7 +361,7 @@ print_dist_vectors  (FILE *outf, VEC (lambda_vector, heap) *dist_vects,
 
 /* Debug version.  */
 
-void
+DEBUG_FUNCTION void
 debug_data_dependence_relation (struct data_dependence_relation *ddr)
 {
   dump_data_dependence_relation (stderr, ddr);
@@ -2176,6 +2174,7 @@ analyze_subscript_affine_affine (tree chrec_a,
   unsigned nb_vars_a, nb_vars_b, dim;
   HOST_WIDE_INT init_a, init_b, gamma, gcd_alpha_beta;
   lambda_matrix A, U, S;
+  struct obstack scratch_obstack;
 
   if (eq_evolutions_p (chrec_a, chrec_b))
     {
@@ -2203,10 +2202,12 @@ analyze_subscript_affine_affine (tree chrec_a,
   nb_vars_a = nb_vars_in_chrec (chrec_a);
   nb_vars_b = nb_vars_in_chrec (chrec_b);
 
+  gcc_obstack_init (&scratch_obstack);
+
   dim = nb_vars_a + nb_vars_b;
-  U = lambda_matrix_new (dim, dim);
-  A = lambda_matrix_new (dim, 1);
-  S = lambda_matrix_new (dim, 1);
+  U = lambda_matrix_new (dim, dim, &scratch_obstack);
+  A = lambda_matrix_new (dim, 1, &scratch_obstack);
+  S = lambda_matrix_new (dim, 1, &scratch_obstack);
 
   init_a = int_cst_value (initialize_matrix_A (A, chrec_a, 0, 1));
   init_b = int_cst_value (initialize_matrix_A (A, chrec_b, nb_vars_a, -1));
@@ -2420,6 +2421,7 @@ analyze_subscript_affine_affine (tree chrec_a,
     }
 
 end_analyze_subs_aa:
+  obstack_free (&scratch_obstack, NULL);
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "  (overlaps_a = ");
@@ -4601,7 +4603,7 @@ dump_rdg_vertex (FILE *file, struct graph *rdg, int i)
 
 /* Call dump_rdg_vertex on stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_rdg_vertex (struct graph *rdg, int i)
 {
   dump_rdg_vertex (stderr, rdg, i);
@@ -4630,7 +4632,7 @@ void dump_rdg_component (FILE *file, struct graph *rdg, int c, bitmap dumped)
 
 /* Call dump_rdg_vertex on stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_rdg_component (struct graph *rdg, int c)
 {
   dump_rdg_component (stderr, rdg, c, NULL);
@@ -4656,7 +4658,7 @@ dump_rdg (FILE *file, struct graph *rdg)
 
 /* Call dump_rdg on stderr.  */
 
-void
+DEBUG_FUNCTION void
 debug_rdg (struct graph *rdg)
 {
   dump_rdg (stderr, rdg);

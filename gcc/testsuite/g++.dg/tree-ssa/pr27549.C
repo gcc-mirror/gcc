@@ -13,6 +13,7 @@ struct E
 
 struct F : public E
 {
+  F () {}
   virtual ~F () {}
   virtual size_t e () const { return 0; }
   virtual void f (char *x) const { *x = '\0'; }

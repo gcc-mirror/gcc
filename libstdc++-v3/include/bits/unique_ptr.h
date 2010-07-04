@@ -81,12 +81,26 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     class unique_ptr
     {
       typedef std::tuple<_Tp*, _Tp_Deleter>  __tuple_type;
-      typedef _Tp* unique_ptr::*             __unspecified_pointer_type;
+
+      // use SFINAE to determine whether _Del::pointer exists
+      class _Pointer
+      {
+	template<typename _Up>
+	  static typename _Up::pointer __test(typename _Up::pointer*);
+
+	template<typename _Up>
+	  static _Tp* __test(...);
+
+	typedef typename remove_reference<_Tp_Deleter>::type _Del;
+
+      public:
+	typedef decltype( __test<_Del>(0) ) type;
+      };
 
     public:
-      typedef _Tp*               pointer;
-      typedef _Tp                element_type;      
-      typedef _Tp_Deleter        deleter_type;
+      typedef typename _Pointer::type	pointer;
+      typedef _Tp                       element_type;
+      typedef _Tp_Deleter               deleter_type;
 
       // Constructors.
       unique_ptr()
@@ -110,6 +124,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       : _M_t(std::move(__p), std::move(__d))
       { static_assert(!std::is_reference<deleter_type>::value, 
 		      "rvalue deleter bound to reference"); }
+
+      unique_ptr(nullptr_t)
+      : _M_t(pointer(), deleter_type())
+      { }
 
       // Move constructors.
       unique_ptr(unique_ptr&& __u) 
@@ -142,7 +160,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         }
 
       unique_ptr&
-      operator=(__unspecified_pointer_type) 
+      operator=(nullptr_t)
       {
 	reset();
 	return *this;
@@ -152,14 +170,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typename std::add_lvalue_reference<element_type>::type
       operator*() const
       {
-	_GLIBCXX_DEBUG_ASSERT(get() != 0);
+	_GLIBCXX_DEBUG_ASSERT(get() != pointer());
 	return *get();
       }
 
       pointer
       operator->() const
       {
-	_GLIBCXX_DEBUG_ASSERT(get() != 0);
+	_GLIBCXX_DEBUG_ASSERT(get() != pointer());
 	return get();
       }
 
@@ -167,36 +185,33 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       get() const
       { return std::get<0>(_M_t); }
 
-      typename std::add_lvalue_reference<deleter_type>::type
+      deleter_type&
       get_deleter()
       { return std::get<1>(_M_t); }
 
-      typename std::add_lvalue_reference<
-          typename std::add_const<deleter_type>::type
-              >::type
+      const deleter_type&
       get_deleter() const
       { return std::get<1>(_M_t); }
 
       explicit operator bool() const
-      { return get() == 0 ? false : true; }
+      { return get() == pointer() ? false : true; }
 
       // Modifiers.
       pointer
       release() 
       {
 	pointer __p = get();
-	std::get<0>(_M_t) = 0;
+	std::get<0>(_M_t) = pointer();
 	return __p;
       }
 
       void
       reset(pointer __p = pointer())
       {
-	if (__p != get())
-	  {
-	    get_deleter()(get());
-	    std::get<0>(_M_t) = __p;
-	  }
+	using std::swap;
+	swap(std::get<0>(_M_t), __p);
+	if (__p != pointer())
+	  get_deleter()(__p);
       }
 
       void
@@ -218,11 +233,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // [unique.ptr.runtime]
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 740 - omit specialization for array objects with a compile time length
-  template<typename _Tp, typename _Tp_Deleter> 
+  template<typename _Tp, typename _Tp_Deleter>
     class unique_ptr<_Tp[], _Tp_Deleter>
     {
       typedef std::tuple<_Tp*, _Tp_Deleter>  __tuple_type;
-      typedef _Tp* unique_ptr::*             __unspecified_pointer_type;
 
     public:
       typedef _Tp*               pointer;
@@ -251,6 +265,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       : _M_t(std::move(__p), std::move(__d))
       { static_assert(!std::is_reference<deleter_type>::value, 
 		      "rvalue deleter bound to reference"); }
+
+      /* TODO: use delegating constructor */
+      unique_ptr(nullptr_t)
+      : _M_t(pointer(), deleter_type())
+      { }
 
       // Move constructors.
       unique_ptr(unique_ptr&& __u) 
@@ -283,7 +302,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         }
 
       unique_ptr&
-      operator=(__unspecified_pointer_type)
+      operator=(nullptr_t)
       {
 	reset();
 	return *this;
@@ -293,7 +312,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typename std::add_lvalue_reference<element_type>::type 
       operator[](size_t __i) const 
       {
-	_GLIBCXX_DEBUG_ASSERT(get() != 0);
+	_GLIBCXX_DEBUG_ASSERT(get() != pointer());
 	return get()[__i];
       }
 
@@ -301,36 +320,42 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       get() const
       { return std::get<0>(_M_t); }
 
-      typename std::add_lvalue_reference<deleter_type>::type 
+      deleter_type& 
       get_deleter()
       { return std::get<1>(_M_t); }
 
-      typename std::add_lvalue_reference<
-          typename std::add_const<deleter_type>::type
-              >::type 
+      const deleter_type&
       get_deleter() const
       { return std::get<1>(_M_t); }    
 
       explicit operator bool() const 
-      { return get() == 0 ? false : true; }
+      { return get() == pointer() ? false : true; }
     
       // Modifiers.
       pointer
       release() 
       {
 	pointer __p = get();
-	std::get<0>(_M_t) = 0;
+	std::get<0>(_M_t) = pointer();
 	return __p;
       }
 
       void
       reset(pointer __p = pointer()) 
       {
-	if (__p != get())
-	{
-	  get_deleter()(get());
-	  std::get<0>(_M_t) = __p;
-	}
+	using std::swap;
+	swap(std::get<0>(_M_t), __p);
+	if (__p != nullptr)
+	  get_deleter()(__p);
+      }
+
+      void
+      reset(nullptr_t)
+      {
+	pointer __p = get();
+	std::get<0>(_M_t) = pointer();
+	if (__p != nullptr)
+	  get_deleter()(__p);
       }
 
       // DR 821.
@@ -418,6 +443,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     operator>=(const unique_ptr<_Tp, _Tp_Deleter>& __x,
 	       const unique_ptr<_Up, _Up_Deleter>& __y)
     { return !(__x.get() < __y.get()); }
+
+  /// std::hash specialization for unique_ptr.
+  template<typename _Tp, typename _Tp_Deleter>
+    struct hash<unique_ptr<_Tp, _Tp_Deleter>>
+    : public std::unary_function<unique_ptr<_Tp, _Tp_Deleter>, size_t>
+    {
+      size_t
+      operator()(const unique_ptr<_Tp, _Tp_Deleter>& __u) const
+      {
+	typedef unique_ptr<_Tp, _Tp_Deleter> _UP;
+	return std::hash<typename _UP::pointer>()(__u.get());
+      }
+    };
 
   // @} group pointer_abstractions
 

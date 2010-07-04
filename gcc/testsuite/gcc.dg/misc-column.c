@@ -19,7 +19,7 @@ void foo (void)
   if (p < q) /* { dg-warning "9:comparison of distinct pointer types" } */
     bar ();
 
-  if (&p == 0) /* { dg-warning "10:will never be NULL" } */
+  if (&p == 0) /* { dg-warning "10:comparison will always evaluate as 'false'" } */
     bar();
 
   if (p == 4) /* { dg-warning "9:comparison between pointer and integer" } */

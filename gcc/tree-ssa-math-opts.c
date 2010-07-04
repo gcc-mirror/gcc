@@ -1,5 +1,6 @@
 /* Global, SSA-based optimizations using mathematical identities.
-   Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -91,15 +92,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "tree.h"
 #include "tree-flow.h"
-#include "real.h"
 #include "timevar.h"
 #include "tree-pass.h"
 #include "alloc-pool.h"
 #include "basic-block.h"
 #include "target.h"
-#include "diagnostic.h"
-#include "rtl.h"
-#include "expr.h"
+#include "gimple-pretty-print.h"
+
+/* FIXME: RTL headers have to be included here for optabs.  */
+#include "rtl.h"		/* Because optabs.h wants enum rtx_code.  */
+#include "expr.h"		/* Because optabs.h wants sepops.  */
 #include "optabs.h"
 
 /* This structure represents one basic block that either computes a
@@ -940,15 +942,18 @@ find_bswap_1 (gimple stmt, struct symbolic_number *n, int limit)
 	{
 	  /* Set up the symbolic number N by setting each byte to a
 	     value between 1 and the byte size of rhs1.  The highest
-	     order byte is set to 1 and the lowest order byte to
-	     n.size.  */
+	     order byte is set to n->size and the lowest order
+	     byte to 1.  */
 	  n->size = TYPE_PRECISION (TREE_TYPE (rhs1));
 	  if (n->size % BITS_PER_UNIT != 0)
 	    return NULL_TREE;
 	  n->size /= BITS_PER_UNIT;
 	  n->n = (sizeof (HOST_WIDEST_INT) < 8 ? 0 :
-		  (unsigned HOST_WIDEST_INT)0x01020304 << 32 | 0x05060708);
-	  n->n >>= (sizeof (HOST_WIDEST_INT) - n->size) * BITS_PER_UNIT;
+		  (unsigned HOST_WIDEST_INT)0x08070605 << 32 | 0x04030201);
+
+	  if (n->size < (int)sizeof (HOST_WIDEST_INT))
+	    n->n &= ((unsigned HOST_WIDEST_INT)1 <<
+		     (n->size * BITS_PER_UNIT)) - 1;
 
 	  source_expr1 = rhs1;
 	}
@@ -988,9 +993,9 @@ find_bswap_1 (gimple stmt, struct symbolic_number *n, int limit)
 	      {
 		/* If STMT casts to a smaller type mask out the bits not
 		   belonging to the target type.  */
-		n->size = type_size / BITS_PER_UNIT;
 		n->n &= ((unsigned HOST_WIDEST_INT)1 << type_size) - 1;
 	      }
+	    n->size = type_size / BITS_PER_UNIT;
 	  }
 	  break;
 	default:
@@ -1051,11 +1056,11 @@ static tree
 find_bswap (gimple stmt)
 {
 /* The number which the find_bswap result should match in order to
-   have a full byte swap.  The insignificant bytes are masked out
-   before using it.  */
+   have a full byte swap.  The number is shifted to the left according
+   to the size of the symbolic number before using it.  */
   unsigned HOST_WIDEST_INT cmp =
     sizeof (HOST_WIDEST_INT) < 8 ? 0 :
-    (unsigned HOST_WIDEST_INT)0x08070605 << 32 | 0x04030201;
+    (unsigned HOST_WIDEST_INT)0x01020304 << 32 | 0x05060708;
 
   struct symbolic_number n;
   tree source_expr;
@@ -1079,7 +1084,7 @@ find_bswap (gimple stmt)
 	((unsigned HOST_WIDEST_INT)1 << (n.size * BITS_PER_UNIT)) - 1;
 
       n.n &= mask;
-      cmp &= mask;
+      cmp >>= (sizeof (HOST_WIDEST_INT) - n.size) * BITS_PER_UNIT;
     }
 
   /* A complete byte swap should make the symbolic number to start
@@ -1245,6 +1250,249 @@ struct gimple_opt_pass pass_optimize_bswap =
   "bswap",				/* name */
   gate_optimize_bswap,                  /* gate */
   execute_optimize_bswap,		/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_NONE,				/* tv_id */
+  PROP_ssa,				/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0                                     /* todo_flags_finish */
+ }
+};
+
+/* Process a single gimple statement STMT, which has a MULT_EXPR as
+   its rhs, and try to convert it into a WIDEN_MULT_EXPR.  The return
+   value is true iff we converted the statement.  */
+
+static bool
+convert_mult_to_widen (gimple stmt)
+{
+  gimple rhs1_stmt = NULL, rhs2_stmt = NULL;
+  tree type1 = NULL, type2 = NULL;
+  tree rhs1, rhs2, rhs1_convop = NULL, rhs2_convop = NULL;
+  enum tree_code rhs1_code, rhs2_code;
+  tree type;
+
+  type = TREE_TYPE (gimple_assign_lhs (stmt));
+
+  if (TREE_CODE (type) != INTEGER_TYPE)
+    return false;
+
+  rhs1 = gimple_assign_rhs1 (stmt);
+  rhs2 = gimple_assign_rhs2 (stmt);
+
+  if (TREE_CODE (rhs1) == SSA_NAME)
+    {
+      rhs1_stmt = SSA_NAME_DEF_STMT (rhs1);
+      if (!is_gimple_assign (rhs1_stmt))
+	return false;
+      rhs1_code = gimple_assign_rhs_code (rhs1_stmt);
+      if (!CONVERT_EXPR_CODE_P (rhs1_code))
+	return false;
+      rhs1_convop = gimple_assign_rhs1 (rhs1_stmt);
+      type1 = TREE_TYPE (rhs1_convop);
+      if (TYPE_PRECISION (type1) * 2 != TYPE_PRECISION (type))
+	return false;
+    }
+  else if (TREE_CODE (rhs1) != INTEGER_CST)
+    return false;
+
+  if (TREE_CODE (rhs2) == SSA_NAME)
+    {
+      rhs2_stmt = SSA_NAME_DEF_STMT (rhs2);
+      if (!is_gimple_assign (rhs2_stmt))
+	return false;
+      rhs2_code = gimple_assign_rhs_code (rhs2_stmt);
+      if (!CONVERT_EXPR_CODE_P (rhs2_code))
+	return false;
+      rhs2_convop = gimple_assign_rhs1 (rhs2_stmt);
+      type2 = TREE_TYPE (rhs2_convop);
+      if (TYPE_PRECISION (type2) * 2 != TYPE_PRECISION (type))
+	return false;
+    }
+  else if (TREE_CODE (rhs2) != INTEGER_CST)
+    return false;
+
+  if (rhs1_stmt == NULL && rhs2_stmt == NULL)
+    return false;
+
+  /* Verify that the machine can perform a widening multiply in this
+     mode/signedness combination, otherwise this transformation is
+     likely to pessimize code.  */
+  if ((rhs1_stmt == NULL || TYPE_UNSIGNED (type1))
+      && (rhs2_stmt == NULL || TYPE_UNSIGNED (type2))
+      && (optab_handler (umul_widen_optab, TYPE_MODE (type))
+	  ->insn_code == CODE_FOR_nothing))
+    return false;
+  else if ((rhs1_stmt == NULL || !TYPE_UNSIGNED (type1))
+	   && (rhs2_stmt == NULL || !TYPE_UNSIGNED (type2))
+	   && (optab_handler (smul_widen_optab, TYPE_MODE (type))
+	       ->insn_code == CODE_FOR_nothing))
+    return false;
+  else if (rhs1_stmt != NULL && rhs2_stmt != NULL
+	   && (TYPE_UNSIGNED (type1) != TYPE_UNSIGNED (type2))
+	   && (optab_handler (usmul_widen_optab, TYPE_MODE (type))
+	       ->insn_code == CODE_FOR_nothing))
+    return false;
+
+  if ((rhs1_stmt == NULL && !int_fits_type_p (rhs1, type2))
+      || (rhs2_stmt == NULL && !int_fits_type_p (rhs2, type1)))
+    return false;
+
+  if (rhs1_stmt == NULL)
+    gimple_assign_set_rhs1 (stmt, fold_convert (type2, rhs1));
+  else
+    gimple_assign_set_rhs1 (stmt, rhs1_convop);
+  if (rhs2_stmt == NULL)
+    gimple_assign_set_rhs2 (stmt, fold_convert (type1, rhs2));
+  else
+    gimple_assign_set_rhs2 (stmt, rhs2_convop);
+  gimple_assign_set_rhs_code (stmt, WIDEN_MULT_EXPR);
+  update_stmt (stmt);
+  return true;
+}
+
+/* Process a single gimple statement STMT, which is found at the
+   iterator GSI and has a either a PLUS_EXPR or a MINUS_EXPR as its
+   rhs (given by CODE), and try to convert it into a
+   WIDEN_MULT_PLUS_EXPR or a WIDEN_MULT_MINUS_EXPR.  The return value
+   is true iff we converted the statement.  */
+
+static bool
+convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
+			    enum tree_code code)
+{
+  gimple rhs1_stmt = NULL, rhs2_stmt = NULL;
+  tree type;
+  tree lhs, rhs1, rhs2, mult_rhs1, mult_rhs2, add_rhs;
+  enum tree_code rhs1_code = ERROR_MARK, rhs2_code = ERROR_MARK;
+  optab this_optab;
+  enum tree_code wmult_code;
+
+  lhs = gimple_assign_lhs (stmt);
+  type = TREE_TYPE (lhs);
+  if (TREE_CODE (type) != INTEGER_TYPE)
+    return false;
+
+  if (code == MINUS_EXPR)
+    wmult_code = WIDEN_MULT_MINUS_EXPR;
+  else
+    wmult_code = WIDEN_MULT_PLUS_EXPR;
+
+  /* Verify that the machine can perform a widening multiply
+     accumulate in this mode/signedness combination, otherwise
+     this transformation is likely to pessimize code.  */
+  this_optab = optab_for_tree_code (wmult_code, type, optab_default);
+  if (optab_handler (this_optab, TYPE_MODE (type))->insn_code
+      == CODE_FOR_nothing)
+    return false;
+
+  rhs1 = gimple_assign_rhs1 (stmt);
+  rhs2 = gimple_assign_rhs2 (stmt);
+
+  if (TREE_CODE (rhs1) == SSA_NAME)
+    {
+      rhs1_stmt = SSA_NAME_DEF_STMT (rhs1);
+      if (is_gimple_assign (rhs1_stmt))
+	rhs1_code = gimple_assign_rhs_code (rhs1_stmt);
+    }
+  else
+    return false;
+
+  if (TREE_CODE (rhs2) == SSA_NAME)
+    {
+      rhs2_stmt = SSA_NAME_DEF_STMT (rhs2);
+      if (is_gimple_assign (rhs2_stmt))
+	rhs2_code = gimple_assign_rhs_code (rhs2_stmt);
+    }
+  else
+    return false;
+
+  if (rhs1_code == MULT_EXPR)
+    {
+      if (!convert_mult_to_widen (rhs1_stmt))
+	return false;
+      rhs1_code = gimple_assign_rhs_code (rhs1_stmt);
+    }
+  if (rhs2_code == MULT_EXPR)
+    {
+      if (!convert_mult_to_widen (rhs2_stmt))
+	return false;
+      rhs2_code = gimple_assign_rhs_code (rhs2_stmt);
+    }
+  
+  if (code == PLUS_EXPR && rhs1_code == WIDEN_MULT_EXPR)
+    {
+      mult_rhs1 = gimple_assign_rhs1 (rhs1_stmt);
+      mult_rhs2 = gimple_assign_rhs2 (rhs1_stmt);
+      add_rhs = rhs2;
+    }
+  else if (rhs2_code == WIDEN_MULT_EXPR)
+    {
+      mult_rhs1 = gimple_assign_rhs1 (rhs2_stmt);
+      mult_rhs2 = gimple_assign_rhs2 (rhs2_stmt);
+      add_rhs = rhs1;
+    }
+  else
+    return false;
+
+  /* ??? May need some type verification here?  */
+
+  gimple_assign_set_rhs_with_ops_1 (gsi, wmult_code, mult_rhs1, mult_rhs2,
+				    add_rhs);
+  update_stmt (gsi_stmt (*gsi));
+  return true;
+}
+
+/* Find integer multiplications where the operands are extended from
+   smaller types, and replace the MULT_EXPR with a WIDEN_MULT_EXPR
+   where appropriate.  */
+
+static unsigned int
+execute_optimize_widening_mul (void)
+{
+  bool changed = false;
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      gimple_stmt_iterator gsi;
+
+      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+        {
+	  gimple stmt = gsi_stmt (gsi);
+	  enum tree_code code;
+
+	  if (!is_gimple_assign (stmt))
+	    continue;
+
+	  code = gimple_assign_rhs_code (stmt);
+	  if (code == MULT_EXPR)
+	    changed |= convert_mult_to_widen (stmt);
+	  else if (code == PLUS_EXPR || code == MINUS_EXPR)
+	    changed |= convert_plusminus_to_widen (&gsi, stmt, code);
+	}
+    }
+
+  return (changed ? TODO_dump_func | TODO_update_ssa | TODO_verify_ssa
+	  | TODO_verify_stmts : 0);
+}
+
+static bool
+gate_optimize_widening_mul (void)
+{
+  return flag_expensive_optimizations && optimize;
+}
+
+struct gimple_opt_pass pass_optimize_widening_mul =
+{
+ {
+  GIMPLE_PASS,
+  "widening_mul",			/* name */
+  gate_optimize_widening_mul,		/* gate */
+  execute_optimize_widening_mul,	/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */

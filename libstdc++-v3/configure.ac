@@ -12,7 +12,7 @@ AC_CONFIG_HEADER(config.h)
 ### am handles this now?  ORIGINAL_LD_FOR_MULTILIBS=$LD
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:14:0
+libtool_VERSION=6:15:0
 AC_SUBST(libtool_VERSION)
 
 # Find the rest of the source tree framework.
@@ -72,9 +72,10 @@ fi
 #  foreign:  we don't follow the normal rules for GNU packages (no COPYING
 #            file in the top srcdir, etc, etc), so stop complaining.
 #  no-dependencies:  turns off auto dependency generation (just for now)
+#  no-dist:  we don't want 'dist' and related rules.
 #  -Wall:  turns on all automake warnings...
 #  -Wno-portability:  ...except this one, since GNU make is now required.
-AM_INIT_AUTOMAKE([1.9.3 no-define foreign no-dependencies -Wall -Wno-portability -Wno-override])
+AM_INIT_AUTOMAKE([1.9.3 no-define foreign no-dependencies no-dist -Wall -Wno-portability -Wno-override])
 AH_TEMPLATE(PACKAGE, [Name of package])
 AH_TEMPLATE(VERSION, [Version number of package])
 

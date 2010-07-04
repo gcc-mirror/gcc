@@ -1,7 +1,7 @@
 /* Operating system specific defines to be used when targeting GCC for
    hosting on Windows32, using a Unix style C library and tools.
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-   2007, 2008, 2009 Free Software Foundation, Inc.
+   2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -108,7 +108,7 @@ along with GCC; see the file COPYING3.  If not see
 #define CXX_WRAP_SPEC_OPT "muse-libstdc-wrappers"
 #endif
 
-#define CXX_WRAP_SPEC "%{" CXX_WRAP_SPEC_OPT ":" CXX_WRAP_SPEC_LIST "}"
+#define CXX_WRAP_SPEC "%{!mno-cygwin:%{" CXX_WRAP_SPEC_OPT ":" CXX_WRAP_SPEC_LIST "}}"
 
 #else /* !defined (USE_CYGWIN_LIBSTDCXX_WRAPPERS)  */
 

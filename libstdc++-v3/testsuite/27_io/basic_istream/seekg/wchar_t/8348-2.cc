@@ -1,4 +1,4 @@
-// Copyright (C) 2004, 2005, 2006, 2009 Free Software Foundation
+// Copyright (C) 2004, 2005, 2006, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,7 +32,7 @@ void test06(void)
   // seekg
   {
     wistringstream iss(num1);
-    wistream::pos_type pos1 = iss.tellg();
+    iss.tellg();
     int asNum = 0;
     iss >> asNum;
     VERIFY( test = iss.eof() );

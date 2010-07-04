@@ -14,17 +14,17 @@ class java::util::EnumSet$1 : public ::java::util::EnumSet
 public: // actually package-private
   EnumSet$1();
 public:
-  jboolean EnumSet$1$add(::java::lang::Enum *);
-  jboolean addAll(::java::util::Collection *);
-  void clear();
-  jboolean contains(::java::lang::Object *);
-  jboolean containsAll(::java::util::Collection *);
-  ::java::util::Iterator * iterator();
-  jboolean remove(::java::lang::Object *);
-  jboolean removeAll(::java::util::Collection *);
-  jboolean retainAll(::java::util::Collection *);
-  jint size();
-  jboolean add(::java::lang::Object *);
+  virtual jboolean EnumSet$1$add(::java::lang::Enum *);
+  virtual jboolean addAll(::java::util::Collection *);
+  virtual void clear();
+  virtual jboolean contains(::java::lang::Object *);
+  virtual jboolean containsAll(::java::util::Collection *);
+  virtual ::java::util::Iterator * iterator();
+  virtual jboolean remove(::java::lang::Object *);
+  virtual jboolean removeAll(::java::util::Collection *);
+  virtual jboolean retainAll(::java::util::Collection *);
+  virtual jint size();
+  virtual jboolean add(::java::lang::Object *);
   static ::java::lang::Class class$;
 };
 

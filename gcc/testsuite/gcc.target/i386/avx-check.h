@@ -4,6 +4,13 @@
 
 static void avx_test (void);
 
+static void
+__attribute__ ((noinline))
+do_test (void)
+{
+  avx_test ();
+}
+
 int
 main ()
 {
@@ -15,7 +22,7 @@ main ()
   /* Run AVX test only if host has AVX support.  */
   if (ecx & bit_AVX)
     {
-      avx_test ();
+      do_test ();
 #ifdef DEBUG
       printf ("PASSED\n");
 #endif

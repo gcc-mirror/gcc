@@ -46,6 +46,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 struct bitmap_head_def;
 typedef struct bitmap_head_def *bitmap;
 typedef const struct bitmap_head_def *const_bitmap;
+struct simple_bitmap_def;
+typedef struct simple_bitmap_def *sbitmap;
+typedef const struct simple_bitmap_def *const_sbitmap;
 struct rtx_def;
 typedef struct rtx_def *rtx;
 typedef const struct rtx_def *const_rtx;
@@ -65,9 +68,6 @@ struct cl_optimization;
 struct gimple_seq_d;
 typedef struct gimple_seq_d *gimple_seq;
 typedef const struct gimple_seq_d *const_gimple_seq;
-struct gimple_seq_node_d;
-typedef struct gimple_seq_node_d *gimple_seq_node;
-typedef const struct gimple_seq_node_d *const_gimple_seq_node;
 
 /* Address space number for named address space support.  */
 typedef unsigned char addr_space_t;
@@ -110,6 +110,15 @@ typedef const struct edge_def *const_edge;
 struct basic_block_def;
 typedef struct basic_block_def *basic_block;
 typedef const struct basic_block_def *const_basic_block;
+
+#define obstack_chunk_alloc	((void *(*) (long)) xmalloc)
+#define obstack_chunk_free	((void (*) (void *)) free)
+#define OBSTACK_CHUNK_SIZE	0
+#define gcc_obstack_init(OBSTACK)			\
+  _obstack_begin ((OBSTACK), OBSTACK_CHUNK_SIZE, 0,	\
+		  obstack_chunk_alloc,			\
+		  obstack_chunk_free)
+
 #else
 
 struct _dont_use_rtx_here_;

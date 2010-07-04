@@ -40,7 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "flags.h"
 #include "convert.h"
-#include "toplev.h"
+#include "toplev.h"	/* For error.  */
 #include "gfortran.h"
 #include "trans.h"
 

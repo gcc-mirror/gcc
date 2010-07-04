@@ -54,8 +54,6 @@ extern int          mcore_is_dead                	(rtx, rtx);
 extern int          mcore_expand_insv            	(rtx *);
 extern bool         mcore_expand_block_move      	(rtx *);
 extern const char * mcore_output_andn          		(rtx, rtx *);
-extern void         mcore_print_operand_address  	(FILE *, rtx);
-extern void         mcore_print_operand          	(FILE *, rtx, int);
 extern bool         mcore_gen_compare	        	(RTX_CODE, rtx, rtx);
 extern int          mcore_symbolic_address_p     	(rtx);
 extern bool         mcore_r15_operand_p			(rtx);

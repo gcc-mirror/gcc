@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
    July 1997 Doctor Dobb's Journal, "Treaps in Java".  */
 
 #include "config.h"
+#include "system.h"
 #include "gfortran.h"
 
 typedef struct gfc_treap

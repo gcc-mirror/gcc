@@ -186,6 +186,8 @@ lookup_option (Option *xopt, int *xskip, const char **xarg, const char *text)
 	opt = OPTION_syntax_only;
       else if (!strcmp (text, "-static-libgfortran"))
 	opt = OPTION_static_libgfortran;
+      else if (!strcmp (text, "-static"))
+	opt = OPTION_static;
       else if (!strcmp (text, "-fversion"))	/* Really --version!! */
 	opt = OPTION_version;
       else if (!strcmp (text, "-Xlinker") || !strcmp (text, "-specs"))
@@ -242,7 +244,7 @@ append_arg (const char *arg)
     }
 
   if (g77_newargc == newargsize)
-    fatal ("overflowed output arg list for '%s'", arg);
+    fatal_error ("overflowed output arg list for %qs", arg);
 
   g77_newargv[g77_newargc++] = arg;
 }
@@ -275,11 +277,13 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
   /* By default, we throw on the math library if we have one.  */
   int need_math = (MATH_LIBRARY[0] != '\0');
 
-  /* Whether we should link a static libgfortran.  */
-  int static_lib = 0;
+#ifdef HAVE_LD_STATIC_DYNAMIC
+  /* Whether we should link a static libgfortran. */
+  int static_lib = 0; 
 
   /* Whether we need to link statically.  */
   int static_linking = 0;
+#endif
 
   /* The number of input and output files in the incoming arg list.  */
   int n_infiles = 0;
@@ -340,11 +344,16 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 	  break;
 
 	case OPTION_static_libgfortran:
+#ifdef HAVE_LD_STATIC_DYNAMIC
 	  static_lib = 1;
+#endif
 	  break;
 
 	case OPTION_static:
+#ifdef HAVE_LD_STATIC_DYNAMIC
 	  static_linking = 1;
+#endif
+	  break;
 
 	case OPTION_l:
 	  ++n_infiles;
@@ -393,11 +402,11 @@ For more information about these matters, see the file named COPYING\n\n"));
       if (i + skip < argc)
 	i += skip;
       else
-	fatal ("argument to '%s' missing", argv[i]);
+	fatal_error ("argument to %qs missing", argv[i]);
     }
 
   if ((n_outfiles != 0) && (n_infiles == 0))
-    fatal ("no input files; unwilling to write output files");
+    fatal_error ("no input files; unwilling to write output files");
 
   /* If there are no input files, no need for the library.  */
   if (n_infiles == 0)
@@ -412,36 +421,6 @@ For more information about these matters, see the file named COPYING\n\n"));
       if (argv[i][0] == '\0')
 	{
 	  append_arg (argv[i]);	/* Interesting.  Just append as is.  */
-	  continue;
-	}
-
-      if ((argv[i][0] == '-') && (argv[i][1] == 'M'))
-	{
-	  char *p;
-
-	  fprintf (stderr, _("Warning: Using -M <directory> is deprecated, "
-	           "use -J instead\n"));
-	  if (argv[i][2] == '\0')
-	    {
-	      if (i+1 < argc)
-		{
-		  p = XNEWVEC (char, strlen (argv[i + 1]) + 3);
-		  p[0] = '-';
-		  p[1] = 'J';
-		  strcpy (&p[2], argv[i + 1]);
-		  i++;
-		}
-	      else
-		fatal ("argument to '%s' missing", argv[i]);
-	    }
-	  else
-	    {
-	      p = XNEWVEC (char, strlen (argv[i]) + 1);
-	      p[0] = '-';
-	      p[1] = 'J';
-	      strcpy (&p[2], argv[i] + 2);
-	    }
-	  append_arg (p);
 	  continue;
 	}
 

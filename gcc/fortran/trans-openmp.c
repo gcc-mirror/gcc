@@ -1,5 +1,6 @@
 /* OpenMP directive translation -- generate GCC trees from gfc_code.
-   Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
 This file is part of GCC.
@@ -23,10 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
-#include "gimple.h"
-#include "ggc.h"
-#include "toplev.h"
-#include "real.h"
+#include "gimple.h"	/* For create_tmp_var_raw.  */
+#include "toplev.h"	/* For internal_error.  */
 #include "gfortran.h"
 #include "trans.h"
 #include "trans-stmt.h"
@@ -57,7 +56,8 @@ gfc_omp_privatize_by_reference (const_tree decl)
       if (GFC_POINTER_TYPE_P (type))
 	return false;
 
-      if (!DECL_ARTIFICIAL (decl))
+      if (!DECL_ARTIFICIAL (decl)
+	  && TREE_CODE (TREE_TYPE (type)) != FUNCTION_TYPE)
 	return true;
 
       /* Some arrays are expanded as DECL_ARTIFICIAL pointers
@@ -75,7 +75,10 @@ gfc_omp_privatize_by_reference (const_tree decl)
 enum omp_clause_default_kind
 gfc_omp_predetermined_sharing (tree decl)
 {
-  if (DECL_ARTIFICIAL (decl) && ! GFC_DECL_RESULT (decl))
+  if (DECL_ARTIFICIAL (decl)
+      && ! GFC_DECL_RESULT (decl)
+      && ! (DECL_LANG_SPECIFIC (decl)
+	    && GFC_DECL_SAVED_DESCRIPTOR (decl)))
     return OMP_CLAUSE_DEFAULT_SHARED;
 
   /* Cray pointees shouldn't be listed in any clauses and should be
@@ -96,6 +99,15 @@ gfc_omp_predetermined_sharing (tree decl)
 	 == NULL)
     return OMP_CLAUSE_DEFAULT_SHARED;
 
+  /* Dummy procedures aren't considered variables by OpenMP, thus are
+     disallowed in OpenMP clauses.  They are represented as PARM_DECLs
+     in the middle-end, so return OMP_CLAUSE_DEFAULT_FIRSTPRIVATE here
+     to avoid complaining about their uses with default(none).  */
+  if (TREE_CODE (decl) == PARM_DECL
+      && TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) == FUNCTION_TYPE)
+    return OMP_CLAUSE_DEFAULT_FIRSTPRIVATE;
+
   /* COMMON and EQUIVALENCE decls are shared.  They
      are only referenced through DECL_VALUE_EXPR of the variables
      contained in them.  If those are privatized, they will not be
@@ -109,6 +121,19 @@ gfc_omp_predetermined_sharing (tree decl)
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
 }
 
+/* Return decl that should be used when reporting DEFAULT(NONE)
+   diagnostics.  */
+
+tree
+gfc_omp_report_decl (tree decl)
+{
+  if (DECL_ARTIFICIAL (decl)
+      && DECL_LANG_SPECIFIC (decl)
+      && GFC_DECL_SAVED_DESCRIPTOR (decl))
+    return GFC_DECL_SAVED_DESCRIPTOR (decl);
+
+  return decl;
+}
 
 /* Return true if DECL in private clause needs
    OMP_CLAUSE_PRIVATE_OUTER_REF on the private clause.  */
@@ -624,11 +649,12 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
 					    build_int_cst (pvoid_type_node, 0),
 					    size, NULL, NULL);
       gfc_conv_descriptor_data_set (&block, decl, ptr);
-      gfc_add_expr_to_block (&block, gfc_trans_assignment (e1, e2, false));
+      gfc_add_expr_to_block (&block, gfc_trans_assignment (e1, e2, false,
+			     false));
       stmt = gfc_finish_block (&block);
     }
   else
-    stmt = gfc_trans_assignment (e1, e2, false);
+    stmt = gfc_trans_assignment (e1, e2, false, false);
   if (TREE_CODE (stmt) != BIND_EXPR)
     stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0, 0));
   else
@@ -645,12 +671,13 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
       stmtblock_t block;
 
       gfc_start_block (&block);
-      gfc_add_expr_to_block (&block, gfc_trans_assignment (e3, e4, false));
+      gfc_add_expr_to_block (&block, gfc_trans_assignment (e3, e4, false,
+			     true));
       gfc_add_expr_to_block (&block, gfc_trans_dealloc_allocated (decl));
       stmt = gfc_finish_block (&block);
     }
   else
-    stmt = gfc_trans_assignment (e3, e4, false);
+    stmt = gfc_trans_assignment (e3, e4, false, true);
   if (TREE_CODE (stmt) != BIND_EXPR)
     stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0, 0));
   else
@@ -1123,6 +1150,14 @@ gfc_trans_omp_critical (gfc_code *code)
   return build2 (OMP_CRITICAL, void_type_node, stmt, name);
 }
 
+typedef struct dovar_init_d {
+  tree var;
+  tree init;
+} dovar_init;
+
+DEF_VEC_O(dovar_init);
+DEF_VEC_ALLOC_O(dovar_init,heap);
+
 static tree
 gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
 		  gfc_omp_clauses *do_clauses, tree par_clauses)
@@ -1134,7 +1169,9 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
   stmtblock_t body;
   gfc_omp_clauses *clauses = code->ext.omp_clauses;
   int i, collapse = clauses->collapse;
-  tree dovar_init = NULL_TREE;
+  VEC(dovar_init,heap) *inits = NULL;
+  dovar_init *di;
+  unsigned ix;
 
   if (collapse <= 0)
     collapse = 1;
@@ -1249,7 +1286,9 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
 	  /* Initialize DOVAR.  */
 	  tmp = fold_build2 (MULT_EXPR, type, count, step);
 	  tmp = fold_build2 (PLUS_EXPR, type, from, tmp);
-	  dovar_init = tree_cons (dovar, tmp, dovar_init);
+	  di = VEC_safe_push (dovar_init, heap, inits, NULL);
+	  di->var = dovar;
+	  di->init = tmp;
 	}
 
       if (!dovar_found)
@@ -1318,24 +1357,18 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
 
   gfc_start_block (&body);
 
-  dovar_init = nreverse (dovar_init);
-  while (dovar_init)
-    {
-      gfc_add_modify (&body, TREE_PURPOSE (dovar_init),
-			   TREE_VALUE (dovar_init));
-      dovar_init = TREE_CHAIN (dovar_init);
-    }
+  for (ix = 0; VEC_iterate (dovar_init, inits, ix, di); ix++)
+    gfc_add_modify (&body, di->var, di->init);
+  VEC_free (dovar_init, heap, inits);
 
   /* Cycle statement is implemented with a goto.  Exit statement must not be
      present for this loop.  */
   cycle_label = gfc_build_label_decl (NULL_TREE);
 
-  /* Put these labels where they can be found later. We put the
-     labels in a TREE_LIST node (because TREE_CHAIN is already
-     used). cycle_label goes in TREE_PURPOSE (backend_decl), exit
-     label in TREE_VALUE (backend_decl).  */
+  /* Put these labels where they can be found later.  */
 
-  code->block->backend_decl = tree_cons (cycle_label, NULL, NULL);
+  code->block->cycle_label = cycle_label;
+  code->block->exit_label = NULL_TREE;
 
   /* Main loop body.  */
   tmp = gfc_trans_omp_code (code->block->next, true);

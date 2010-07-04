@@ -22,9 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_OBJC_ACT_H
 #define GCC_OBJC_ACT_H
 
-/* For enum gimplify_status */
-#include "gimple.h"
-
 /*** Language hooks ***/
 
 bool objc_init (void);
@@ -84,7 +81,8 @@ tree objc_eh_personality (void);
 #define SIZEOF_OBJC_TYPE_LANG_SPECIFIC sizeof (struct lang_type)
 #define ALLOC_OBJC_TYPE_LANG_SPECIFIC(NODE)				\
   do {									\
-    TYPE_LANG_SPECIFIC (NODE) = GGC_CNEW (struct lang_type);		\
+    TYPE_LANG_SPECIFIC (NODE)						\
+      = ggc_alloc_cleared_lang_type (sizeof (struct lang_type));	\
   } while (0)
 
 #define TYPE_HAS_OBJC_INFO(TYPE)				\

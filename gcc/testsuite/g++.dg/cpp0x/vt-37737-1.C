@@ -1,4 +1,5 @@
 // { dg-options "-std=c++0x" }
+// { dg-prune-output "note" }
 
 void f() { }
 

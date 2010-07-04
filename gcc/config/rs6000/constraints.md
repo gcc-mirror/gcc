@@ -1,5 +1,5 @@
 ;; Constraint definitions for RS6000
-;; Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+;; Copyright (C) 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -51,7 +51,7 @@
 (define_register_constraint "y" "CR_REGS"
   "@internal")
 
-(define_register_constraint "z" "XER_REGS"
+(define_register_constraint "z" "CA_REGS"
   "@internal")
 
 ;; Use w as a prefix to add VSX modes
@@ -166,7 +166,7 @@ usually better to use @samp{m} or @samp{es} in @code{asm} statements)"
 
 (define_constraint "R"
   "AIX TOC entry"
-  (match_test "legitimate_constant_pool_address_p (op)"))
+  (match_test "legitimate_constant_pool_address_p (op, false)"))
 
 ;; General constraints
 

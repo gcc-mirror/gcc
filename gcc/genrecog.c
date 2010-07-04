@@ -56,6 +56,7 @@
 #include "tm.h"
 #include "rtl.h"
 #include "errors.h"
+#include "read-md.h"
 #include "gensupport.h"
 
 #define OUTPUT_LABEL(INDENT_STRING, LABEL_NUMBER) \
@@ -169,9 +170,6 @@ static int max_depth;
 
 /* The line number of the start of the pattern currently being processed.  */
 static int pattern_lineno;
-
-/* Count of errors.  */
-static int error_count;
 
 /* Predicate handling.
 
@@ -288,8 +286,7 @@ compute_predicate_codes (rtx exp, char codes[NUM_RTX_CODE])
 
 	if (*next_code == '\0')
 	  {
-	    message_with_line (pattern_lineno, "empty match_code expression");
-	    error_count++;
+	    error_with_line (pattern_lineno, "empty match_code expression");
 	    break;
 	  }
 
@@ -308,9 +305,9 @@ compute_predicate_codes (rtx exp, char codes[NUM_RTX_CODE])
 		}
 	    if (!found_it)
 	      {
-		message_with_line (pattern_lineno, "match_code \"%.*s\" matches nothing",
-				   (int) n, code);
-		error_count ++;
+		error_with_line (pattern_lineno,
+				 "match_code \"%.*s\" matches nothing",
+				 (int) n, code);
 		for (i = 0; i < NUM_RTX_CODE; i++)
 		  if (!strncasecmp (code, GET_RTX_NAME (i), n)
 		      && GET_RTX_NAME (i)[n] == '\0'
@@ -332,10 +329,9 @@ compute_predicate_codes (rtx exp, char codes[NUM_RTX_CODE])
 	struct pred_data *p = lookup_predicate (XSTR (exp, 1));
 	if (!p)
 	  {
-	    message_with_line (pattern_lineno,
-			       "reference to unknown predicate '%s'",
-			       XSTR (exp, 1));
-	    error_count++;
+	    error_with_line (pattern_lineno,
+			     "reference to unknown predicate '%s'",
+			     XSTR (exp, 1));
 	    break;
 	  }
 	for (i = 0; i < NUM_RTX_CODE; i++)
@@ -350,10 +346,9 @@ compute_predicate_codes (rtx exp, char codes[NUM_RTX_CODE])
       break;
 
     default:
-      message_with_line (pattern_lineno,
-	 "'%s' cannot be used in a define_predicate expression",
-	 GET_RTX_NAME (GET_CODE (exp)));
-      error_count++;
+      error_with_line (pattern_lineno,
+		       "'%s' cannot be used in a define_predicate expression",
+		       GET_RTX_NAME (GET_CODE (exp)));
       memset (codes, I, NUM_RTX_CODE);
       break;
     }
@@ -633,12 +628,9 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
     case MATCH_OP_DUP:
     case MATCH_PAR_DUP:
       if (find_operand (insn, XINT (pattern, 0), pattern) == pattern)
-	{
-	  message_with_line (pattern_lineno,
-			     "operand %i duplicated before defined",
-			     XINT (pattern, 0));
-          error_count++;
-	}
+	error_with_line (pattern_lineno,
+			 "operand %i duplicated before defined",
+			 XINT (pattern, 0));
       break;
     case MATCH_OPERAND:
     case MATCH_OPERATOR:
@@ -694,20 +686,14 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 			     && find_matching_operand (insn, XINT (pattern, 0)))
 		      ;
 		    else
-		      {
-			message_with_line (pattern_lineno,
-					   "operand %d missing in-out reload",
-					   XINT (pattern, 0));
-			error_count++;
-		      }
+		      error_with_line (pattern_lineno,
+				       "operand %d missing in-out reload",
+				       XINT (pattern, 0));
 		  }
 		else if (constraints0 != '=' && constraints0 != '+')
-		  {
-		    message_with_line (pattern_lineno,
-				       "operand %d missing output reload",
-				       XINT (pattern, 0));
-		    error_count++;
-		  }
+		  error_with_line (pattern_lineno,
+				   "operand %d missing output reload",
+				   XINT (pattern, 0));
 	      }
 	  }
 
@@ -781,12 +767,9 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
         /* The operands of a SET must have the same mode unless one
 	   is VOIDmode.  */
         else if (dmode != VOIDmode && smode != VOIDmode && dmode != smode)
-	  {
-	    message_with_line (pattern_lineno,
-			       "mode mismatch in set: %smode vs %smode",
-			       GET_MODE_NAME (dmode), GET_MODE_NAME (smode));
-	    error_count++;
-	  }
+	  error_with_line (pattern_lineno,
+			   "mode mismatch in set: %smode vs %smode",
+			   GET_MODE_NAME (dmode), GET_MODE_NAME (smode));
 
 	/* If only one of the operands is VOIDmode, and PC or CC0 is
 	   not involved, it's probably a mistake.  */
@@ -827,12 +810,9 @@ validate_pattern (rtx pattern, rtx insn, rtx set, int set_code)
 
     case LABEL_REF:
       if (GET_MODE (XEXP (pattern, 0)) != VOIDmode)
-	{
-	  message_with_line (pattern_lineno,
-			     "operand to label_ref %smode not VOIDmode",
-			     GET_MODE_NAME (GET_MODE (XEXP (pattern, 0))));
-	  error_count++;
-	}
+	error_with_line (pattern_lineno,
+			 "operand to label_ref %smode not VOIDmode",
+			 GET_MODE_NAME (GET_MODE (XEXP (pattern, 0))));
       break;
 
     default:
@@ -1493,12 +1473,11 @@ merge_accept_insn (struct decision *oldd, struct decision *addd)
     }
   else
     {
-      message_with_line (add->u.insn.lineno, "`%s' matches `%s'",
-			 get_insn_name (add->u.insn.code_number),
-			 get_insn_name (old->u.insn.code_number));
+      error_with_line (add->u.insn.lineno, "`%s' matches `%s'",
+		       get_insn_name (add->u.insn.code_number),
+		       get_insn_name (old->u.insn.code_number));
       message_with_line (old->u.insn.lineno, "previous definition of `%s'",
 			 get_insn_name (old->u.insn.code_number));
-      error_count++;
     }
 }
 
@@ -2474,7 +2453,6 @@ write_header (void)
 #include \"function.h\"\n\
 #include \"insn-config.h\"\n\
 #include \"recog.h\"\n\
-#include \"real.h\"\n\
 #include \"output.h\"\n\
 #include \"flags.h\"\n\
 #include \"hard-reg-set.h\"\n\
@@ -2730,7 +2708,7 @@ main (int argc, char **argv)
   memset (&split_tree, 0, sizeof split_tree);
   memset (&peephole2_tree, 0, sizeof peephole2_tree);
 
-  if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
+  if (!init_rtx_reader_args (argc, argv))
     return (FATAL_EXIT_CODE);
 
   next_insn_code = 0;
@@ -2771,7 +2749,7 @@ main (int argc, char **argv)
 	}
     }
 
-  if (error_count || have_error)
+  if (have_error)
     return FATAL_EXIT_CODE;
 
   puts ("\n\n");
@@ -2898,13 +2876,13 @@ debug_decision_0 (struct decision *d, int indent, int maxdepth)
     debug_decision_0 (n, indent + 2, maxdepth - 1);
 }
 
-void
+DEBUG_FUNCTION void
 debug_decision (struct decision *d)
 {
   debug_decision_0 (d, 0, 1000000);
 }
 
-void
+DEBUG_FUNCTION void
 debug_decision_list (struct decision *d)
 {
   while (d)

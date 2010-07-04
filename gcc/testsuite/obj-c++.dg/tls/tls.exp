@@ -1,0 +1,25 @@
+# Load support procs.
+load_lib obj-c++-dg.exp
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_OBJCXXFLAGS
+if ![info exists DEFAULT_OBJCXXFLAGS] then {
+    set DEFAULT_OBJCXXFLAGS " -ansi -pedantic-errors -Wno-long-long"
+}
+
+# Initialize `dg'.
+dg-init
+
+# Gather a list of all tests.
+set tests [lsort [glob -nocomplain $srcdir/$subdir/*.mm]]
+
+# Main loop.
+dg-runtest $tests "-fgnu-runtime" $DEFAULT_OBJCXXFLAGS
+
+# darwin targets can also run code with the NeXT runtime.
+if [istarget "*-*-darwin*" ] {
+dg-runtest $tests "-fnext-runtime" $DEFAULT_OBJCXXFLAGS
+}
+
+# All done.
+dg-finish

@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "coretypes.h"
 #include "system.h"
 #include "tree.h"
+#include "tree-iterator.h"
 #include "ggc.h"
 #include "hashtab.h"
 #include "input.h"
@@ -43,8 +44,8 @@ Boston, MA 02111-1307, USA.  */
 #include "upc-act.h"
 #include "upc-pts.h"
 #include "cgraph.h"
-#include "c-common.h"
-#include "c-pragma.h"
+#include "c-family/c-common.h"
+#include "c-family/c-pragma.h"
 /* define decl_default_tls_model() prototype */
 #include "rtl.h"
 
@@ -89,14 +90,14 @@ static tree unshared_var_addr (location_t, const tree);
 /* Process UPC specific command line switches */
 
 int
-upc_handle_option (size_t scode, const char *arg, int value)
+upc_handle_option (size_t scode, const char *arg, int value, int kind)
 {
   enum opt_code code = (enum opt_code) scode;
   int result = 1;
   switch (code)
     {
     default:
-      result = c_common_handle_option (scode, arg, value);
+      result = c_common_handle_option (scode, arg, value, kind);
       break;
     case OPT_dwarf_2_upc:
       use_upc_dwarf2_extensions = value;
@@ -1319,7 +1320,7 @@ map_unshared_var (const tree var, const tree u_var)
   gcc_assert (var && TREE_CODE (var) == VAR_DECL);
   gcc_assert (u_var && TREE_CODE (u_var) == VAR_DECL);
   uid = DECL_UID (var);
-  h = GGC_NEW (struct uid_tree_map);
+  h = ggc_alloc_uid_tree_map ();
   h->uid = uid;
   h->to = u_var;
   loc = htab_find_slot_with_hash (unshared_vars, h, uid, INSERT);
@@ -1509,6 +1510,7 @@ upc_build_init_func (const tree stmt_list)
   struct c_arg_info args;
   tree init_func, t_list;
   location_t loc = input_location;
+  rtx init_func_symbol;
   int decl_ok;
   memset (&void_spec, '\0', sizeof (struct c_typespec));
   void_spec.kind = ctsk_typedef;
@@ -1540,9 +1542,9 @@ upc_build_init_func (const tree stmt_list)
   gcc_assert (DECL_RTL (init_func));
   upc_init_array_section = get_section (UPC_INIT_ARRAY_SECTION_NAME,
 				        0, NULL);
-  switch_to_section (upc_init_array_section);
-  assemble_align (POINTER_SIZE);
-  assemble_integer (XEXP (DECL_RTL (init_func), 0), POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
+  mark_decl_referenced (init_func);
+  init_func_symbol = XEXP (DECL_RTL (init_func), 0);
+  assemble_addr_to_section (init_func_symbol, upc_init_array_section);
 }
 
 void

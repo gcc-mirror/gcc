@@ -1,5 +1,6 @@
 // { dg-do compile }
 // { dg-options "-O2 -fprefetch-loop-arrays -msse2" { target i?86-*-* x86_64-*-* } }
+// { dg-require-effective-target sse2 { target i?86-*-* x86_64-*-* } }
 
 struct DOMStringHandle
 {

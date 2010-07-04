@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@
 --  tree may either blow up on a debugging check, or list incorrect source.
 
 with Types; use Types;
+
 package Sprint is
 
    -----------------------
@@ -53,8 +54,8 @@ package Sprint is
    --    Convert wi Rounded_Result           target@(source)
    --    Divide wi Treat_Fixed_As_Integer    x #/ y
    --    Divide wi Rounded_Result            x @/ y
+   --    Expression with actions             do action; .. action; in expr end
    --    Expression with range check         {expression}
-   --    Operator with range check           {operator} (e.g. {+})
    --    Free statement                      free expr [storage_pool = xxx]
    --    Freeze entity with freeze actions   freeze entityname [ actions ]
    --    Implicit call to run time routine   $routine-name
@@ -69,6 +70,7 @@ package Sprint is
    --    Multiple concatenation              expr && expr && expr ... && expr
    --    Multiply wi Treat_Fixed_As_Integer  x #* y
    --    Multiply wi Rounded_Result          x @* y
+   --    Operator with range check           {operator} (e.g. {+})
    --    Others choice for cleanup           when all others
    --    Pop exception label                 %pop_xxx_exception_label
    --    Push exception label                %push_xxx_exception_label (label)

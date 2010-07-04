@@ -1,6 +1,6 @@
 /* Scanning of rtl for dataflow analysis.
    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-   2008, 2009  Free Software Foundation, Inc.
+   2008, 2009, 2010 Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-def.h"
 #include "df.h"
 #include "tree-pass.h"
+#include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 
 DEF_VEC_P(df_ref);
 DEF_VEC_ALLOC_P_STACK(df_ref);
@@ -256,16 +257,15 @@ df_scan_free_internal (void)
   df_scan->block_info = NULL;
   df_scan->block_info_size = 0;
 
-  BITMAP_FREE (df->hardware_regs_used);
-  BITMAP_FREE (df->regular_block_artificial_uses);
-  BITMAP_FREE (df->eh_block_artificial_uses);
+  bitmap_clear (&df->hardware_regs_used);
+  bitmap_clear (&df->regular_block_artificial_uses);
+  bitmap_clear (&df->eh_block_artificial_uses);
   BITMAP_FREE (df->entry_block_defs);
   BITMAP_FREE (df->exit_block_uses);
-  BITMAP_FREE (df->insns_to_delete);
-  BITMAP_FREE (df->insns_to_rescan);
-  BITMAP_FREE (df->insns_to_notes_rescan);
+  bitmap_clear (&df->insns_to_delete);
+  bitmap_clear (&df->insns_to_rescan);
+  bitmap_clear (&df->insns_to_notes_rescan);
 
-  free_alloc_pool (df_scan->block_pool);
   free_alloc_pool (problem_data->ref_base_pool);
   free_alloc_pool (problem_data->ref_artificial_pool);
   free_alloc_pool (problem_data->ref_regular_pool);
@@ -279,17 +279,6 @@ df_scan_free_internal (void)
 }
 
 
-/* Set basic block info.  */
-
-static void
-df_scan_set_bb_info (unsigned int index,
-		     struct df_scan_bb_info *bb_info)
-{
-  df_grow_bb_info (df_scan);
-  df_scan->block_info[index] = (void *) bb_info;
-}
-
-
 /* Free basic block info.  */
 
 static void
@@ -297,7 +286,9 @@ df_scan_free_bb_info (basic_block bb, void *vbb_info)
 {
   struct df_scan_bb_info *bb_info = (struct df_scan_bb_info *) vbb_info;
   unsigned int bb_index = bb->index;
-  if (bb_info)
+
+  /* See if bb_info is initialized.  */
+  if (bb_info->artificial_defs)
     {
       rtx insn;
       FOR_BB_INSNS (bb, insn)
@@ -311,13 +302,15 @@ df_scan_free_bb_info (basic_block bb, void *vbb_info)
 	bb_info = df_scan_get_bb_info (bb_index);
 
       /* Get rid of any artificial uses or defs.  */
-      df_ref_chain_delete_du_chain (bb_info->artificial_defs);
-      df_ref_chain_delete_du_chain (bb_info->artificial_uses);
-      df_ref_chain_delete (bb_info->artificial_defs);
-      df_ref_chain_delete (bb_info->artificial_uses);
-      bb_info->artificial_defs = NULL;
-      bb_info->artificial_uses = NULL;
-      pool_free (df_scan->block_pool, bb_info);
+      if (bb_info->artificial_defs)
+	{
+	  df_ref_chain_delete_du_chain (bb_info->artificial_defs);
+	  df_ref_chain_delete_du_chain (bb_info->artificial_uses);
+	  df_ref_chain_delete (bb_info->artificial_defs);
+	  df_ref_chain_delete (bb_info->artificial_uses);
+	  bb_info->artificial_defs = NULL;
+	  bb_info->artificial_uses = NULL;
+	}
     }
 }
 
@@ -337,11 +330,6 @@ df_scan_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
      everything apart.  */
   if (df_scan->problem_data)
     df_scan_free_internal ();
-
-  df_scan->block_pool
-    = create_alloc_pool ("df_scan_block pool",
-			 sizeof (struct df_scan_bb_info),
-			 block_size);
 
   problem_data = XNEW (struct df_scan_problem_data);
   df_scan->problem_data = problem_data;
@@ -382,23 +370,18 @@ df_scan_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
     {
       unsigned int bb_index = bb->index;
       struct df_scan_bb_info *bb_info = df_scan_get_bb_info (bb_index);
-      if (!bb_info)
-	{
-	  bb_info = (struct df_scan_bb_info *) pool_alloc (df_scan->block_pool);
-	  df_scan_set_bb_info (bb_index, bb_info);
-	}
       bb_info->artificial_defs = NULL;
       bb_info->artificial_uses = NULL;
     }
 
-  df->hardware_regs_used = BITMAP_ALLOC (&problem_data->reg_bitmaps);
-  df->regular_block_artificial_uses = BITMAP_ALLOC (&problem_data->reg_bitmaps);
-  df->eh_block_artificial_uses = BITMAP_ALLOC (&problem_data->reg_bitmaps);
+  bitmap_initialize (&df->hardware_regs_used, &problem_data->reg_bitmaps);
+  bitmap_initialize (&df->regular_block_artificial_uses, &problem_data->reg_bitmaps);
+  bitmap_initialize (&df->eh_block_artificial_uses, &problem_data->reg_bitmaps);
   df->entry_block_defs = BITMAP_ALLOC (&problem_data->reg_bitmaps);
   df->exit_block_uses = BITMAP_ALLOC (&problem_data->reg_bitmaps);
-  df->insns_to_delete = BITMAP_ALLOC (&problem_data->insn_bitmaps);
-  df->insns_to_rescan = BITMAP_ALLOC (&problem_data->insn_bitmaps);
-  df->insns_to_notes_rescan = BITMAP_ALLOC (&problem_data->insn_bitmaps);
+  bitmap_initialize (&df->insns_to_delete, &problem_data->insn_bitmaps);
+  bitmap_initialize (&df->insns_to_rescan, &problem_data->insn_bitmaps);
+  bitmap_initialize (&df->insns_to_notes_rescan, &problem_data->insn_bitmaps);
   df_scan->optional_p = false;
 }
 
@@ -436,11 +419,11 @@ df_scan_start_dump (FILE *file ATTRIBUTE_UNUSED)
   fprintf (file, ";;  invalidated by call \t");
   df_print_regset (file, regs_invalidated_by_call_regset);
   fprintf (file, ";;  hardware regs used \t");
-  df_print_regset (file, df->hardware_regs_used);
+  df_print_regset (file, &df->hardware_regs_used);
   fprintf (file, ";;  regular block artificial uses \t");
-  df_print_regset (file, df->regular_block_artificial_uses);
+  df_print_regset (file, &df->regular_block_artificial_uses);
   fprintf (file, ";;  eh block artificial uses \t");
-  df_print_regset (file, df->eh_block_artificial_uses);
+  df_print_regset (file, &df->eh_block_artificial_uses);
   fprintf (file, ";;  entry block defs \t");
   df_print_regset (file, df->entry_block_defs);
   fprintf (file, ";;  exit block uses \t");
@@ -538,6 +521,7 @@ static struct df_problem problem_SCAN =
   NULL,                       /* Incremental solution verify start.  */
   NULL,                       /* Incremental solution verify end.  */
   NULL,                       /* Dependent problem.  */
+  sizeof (struct df_scan_bb_info),/* Size of entry of block_info array.  */
   TV_DF_SCAN,                 /* Timing variable.  */
   false                       /* Reset blocks on dropping out of blocks_to_analyze.  */
 };
@@ -681,11 +665,11 @@ df_scan_blocks (void)
   df->def_info.ref_order = DF_REF_ORDER_NO_TABLE;
   df->use_info.ref_order = DF_REF_ORDER_NO_TABLE;
 
-  df_get_regular_block_artificial_uses (df->regular_block_artificial_uses);
-  df_get_eh_block_artificial_uses (df->eh_block_artificial_uses);
+  df_get_regular_block_artificial_uses (&df->regular_block_artificial_uses);
+  df_get_eh_block_artificial_uses (&df->eh_block_artificial_uses);
 
-  bitmap_ior_into (df->eh_block_artificial_uses,
-		   df->regular_block_artificial_uses);
+  bitmap_ior_into (&df->eh_block_artificial_uses,
+		   &df->regular_block_artificial_uses);
 
   /* ENTRY and EXIT blocks have special defs/uses.  */
   df_get_entry_block_def_set (df->entry_block_defs);
@@ -1139,9 +1123,9 @@ df_insn_delete (basic_block bb, unsigned int uid)
     {
       if (insn_info)
 	{
-	  bitmap_clear_bit (df->insns_to_rescan, uid);
-	  bitmap_clear_bit (df->insns_to_notes_rescan, uid);
-	  bitmap_set_bit (df->insns_to_delete, uid);
+	  bitmap_clear_bit (&df->insns_to_rescan, uid);
+	  bitmap_clear_bit (&df->insns_to_notes_rescan, uid);
+	  bitmap_set_bit (&df->insns_to_delete, uid);
 	}
       if (dump_file)
 	fprintf (dump_file, "deferring deletion of insn with uid = %d.\n", uid);
@@ -1151,9 +1135,9 @@ df_insn_delete (basic_block bb, unsigned int uid)
   if (dump_file)
     fprintf (dump_file, "deleting insn with uid = %d.\n", uid);
 
-  bitmap_clear_bit (df->insns_to_delete, uid);
-  bitmap_clear_bit (df->insns_to_rescan, uid);
-  bitmap_clear_bit (df->insns_to_notes_rescan, uid);
+  bitmap_clear_bit (&df->insns_to_delete, uid);
+  bitmap_clear_bit (&df->insns_to_rescan, uid);
+  bitmap_clear_bit (&df->insns_to_notes_rescan, uid);
   if (insn_info)
     {
       struct df_scan_problem_data *problem_data
@@ -1256,9 +1240,9 @@ df_insn_rescan (rtx insn)
       if (dump_file)
 	fprintf (dump_file, "deferring rescan insn with uid = %d.\n", uid);
 
-      bitmap_clear_bit (df->insns_to_delete, uid);
-      bitmap_clear_bit (df->insns_to_notes_rescan, uid);
-      bitmap_set_bit (df->insns_to_rescan, INSN_UID (insn));
+      bitmap_clear_bit (&df->insns_to_delete, uid);
+      bitmap_clear_bit (&df->insns_to_notes_rescan, uid);
+      bitmap_set_bit (&df->insns_to_rescan, INSN_UID (insn));
       return false;
     }
 
@@ -1267,9 +1251,9 @@ df_insn_rescan (rtx insn)
   collection_rec.eq_use_vec = VEC_alloc (df_ref, stack, 32);
   collection_rec.mw_vec = VEC_alloc (df_mw_hardreg_ptr, stack, 32);
 
-  bitmap_clear_bit (df->insns_to_delete, uid);
-  bitmap_clear_bit (df->insns_to_rescan, uid);
-  bitmap_clear_bit (df->insns_to_notes_rescan, uid);
+  bitmap_clear_bit (&df->insns_to_delete, uid);
+  bitmap_clear_bit (&df->insns_to_rescan, uid);
+  bitmap_clear_bit (&df->insns_to_notes_rescan, uid);
   if (insn_info)
     {
       int luid;
@@ -1336,9 +1320,9 @@ df_insn_rescan_debug_internal (rtx insn)
   if (dump_file)
     fprintf (dump_file, "deleting debug_insn with uid = %d.\n", uid);
 
-  bitmap_clear_bit (df->insns_to_delete, uid);
-  bitmap_clear_bit (df->insns_to_rescan, uid);
-  bitmap_clear_bit (df->insns_to_notes_rescan, uid);
+  bitmap_clear_bit (&df->insns_to_delete, uid);
+  bitmap_clear_bit (&df->insns_to_rescan, uid);
+  bitmap_clear_bit (&df->insns_to_notes_rescan, uid);
 
   if (!insn_info->defs)
     return false;
@@ -1383,7 +1367,9 @@ df_insn_rescan_all (void)
   basic_block bb;
   bitmap_iterator bi;
   unsigned int uid;
-  bitmap tmp = BITMAP_ALLOC (&df_bitmap_obstack);
+  bitmap_head tmp;
+
+  bitmap_initialize (&tmp, &df_bitmap_obstack);
 
   if (df->changeable_flags & DF_NO_INSN_RESCAN)
     {
@@ -1397,18 +1383,18 @@ df_insn_rescan_all (void)
       defer_insn_rescan = true;
     }
 
-  bitmap_copy (tmp, df->insns_to_delete);
-  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, uid, bi)
+  bitmap_copy (&tmp, &df->insns_to_delete);
+  EXECUTE_IF_SET_IN_BITMAP (&tmp, 0, uid, bi)
     {
       struct df_insn_info *insn_info = DF_INSN_UID_SAFE_GET (uid);
       if (insn_info)
 	df_insn_delete (NULL, uid);
     }
 
-  BITMAP_FREE (tmp);
-  bitmap_clear (df->insns_to_delete);
-  bitmap_clear (df->insns_to_rescan);
-  bitmap_clear (df->insns_to_notes_rescan);
+  bitmap_clear (&tmp);
+  bitmap_clear (&df->insns_to_delete);
+  bitmap_clear (&df->insns_to_rescan);
+  bitmap_clear (&df->insns_to_notes_rescan);
 
   FOR_EACH_BB (bb)
     {
@@ -1435,7 +1421,9 @@ df_process_deferred_rescans (void)
   bool defer_insn_rescan = false;
   bitmap_iterator bi;
   unsigned int uid;
-  bitmap tmp = BITMAP_ALLOC (&df_bitmap_obstack);
+  bitmap_head tmp;
+
+  bitmap_initialize (&tmp, &df_bitmap_obstack);
 
   if (df->changeable_flags & DF_NO_INSN_RESCAN)
     {
@@ -1452,24 +1440,24 @@ df_process_deferred_rescans (void)
   if (dump_file)
     fprintf (dump_file, "starting the processing of deferred insns\n");
 
-  bitmap_copy (tmp, df->insns_to_delete);
-  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, uid, bi)
+  bitmap_copy (&tmp, &df->insns_to_delete);
+  EXECUTE_IF_SET_IN_BITMAP (&tmp, 0, uid, bi)
     {
       struct df_insn_info *insn_info = DF_INSN_UID_SAFE_GET (uid);
       if (insn_info)
 	df_insn_delete (NULL, uid);
     }
 
-  bitmap_copy (tmp, df->insns_to_rescan);
-  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, uid, bi)
+  bitmap_copy (&tmp, &df->insns_to_rescan);
+  EXECUTE_IF_SET_IN_BITMAP (&tmp, 0, uid, bi)
     {
       struct df_insn_info *insn_info = DF_INSN_UID_SAFE_GET (uid);
       if (insn_info)
 	df_insn_rescan (insn_info->insn);
     }
 
-  bitmap_copy (tmp, df->insns_to_notes_rescan);
-  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, uid, bi)
+  bitmap_copy (&tmp, &df->insns_to_notes_rescan);
+  EXECUTE_IF_SET_IN_BITMAP (&tmp, 0, uid, bi)
     {
       struct df_insn_info *insn_info = DF_INSN_UID_SAFE_GET (uid);
       if (insn_info)
@@ -1479,10 +1467,10 @@ df_process_deferred_rescans (void)
   if (dump_file)
     fprintf (dump_file, "ending the processing of deferred insns\n");
 
-  BITMAP_FREE (tmp);
-  bitmap_clear (df->insns_to_delete);
-  bitmap_clear (df->insns_to_rescan);
-  bitmap_clear (df->insns_to_notes_rescan);
+  bitmap_clear (&tmp);
+  bitmap_clear (&df->insns_to_delete);
+  bitmap_clear (&df->insns_to_rescan);
+  bitmap_clear (&df->insns_to_notes_rescan);
 
   if (no_insn_rescan)
     df_set_flags (DF_NO_INSN_RESCAN);
@@ -1566,7 +1554,7 @@ df_reorganize_refs_by_reg_by_reg (struct df_ref_info *ref_info,
 	      DF_REF_ID (ref) = offset++;
 	      count++;
 	      ref = DF_REF_NEXT_REG (ref);
-	      gcc_assert (offset < ref_info->refs_size);
+	      gcc_checking_assert (offset < ref_info->refs_size);
 	    }
 	}
       if (include_uses)
@@ -1578,7 +1566,7 @@ df_reorganize_refs_by_reg_by_reg (struct df_ref_info *ref_info,
 	      DF_REF_ID (ref) = offset++;
 	      count++;
 	      ref = DF_REF_NEXT_REG (ref);
-	      gcc_assert (offset < ref_info->refs_size);
+	      gcc_checking_assert (offset < ref_info->refs_size);
 	    }
 	}
       if (include_eq_uses)
@@ -1590,7 +1578,7 @@ df_reorganize_refs_by_reg_by_reg (struct df_ref_info *ref_info,
 	      DF_REF_ID (ref) = offset++;
 	      count++;
 	      ref = DF_REF_NEXT_REG (ref);
-	      gcc_assert (offset < ref_info->refs_size);
+	      gcc_checking_assert (offset < ref_info->refs_size);
 	    }
 	}
       ref_info->count[regno] = count;
@@ -2193,16 +2181,16 @@ df_notes_rescan (rtx insn)
 	  insn_info->mw_hardregs = df_null_mw_rec;
 	}
 
-      bitmap_clear_bit (df->insns_to_delete, uid);
+      bitmap_clear_bit (&df->insns_to_delete, uid);
       /* If the insn is set to be rescanned, it does not need to also
 	 be notes rescanned.  */
-      if (!bitmap_bit_p (df->insns_to_rescan, uid))
-	bitmap_set_bit (df->insns_to_notes_rescan, INSN_UID (insn));
+      if (!bitmap_bit_p (&df->insns_to_rescan, uid))
+	bitmap_set_bit (&df->insns_to_notes_rescan, INSN_UID (insn));
       return;
     }
 
-  bitmap_clear_bit (df->insns_to_delete, uid);
-  bitmap_clear_bit (df->insns_to_notes_rescan, uid);
+  bitmap_clear_bit (&df->insns_to_delete, uid);
+  bitmap_clear_bit (&df->insns_to_notes_rescan, uid);
 
   if (insn_info)
     {
@@ -2396,7 +2384,7 @@ df_ref_compare (const void *r1, const void *r2)
       if (DF_REF_EXTRACT_MODE (ref1) != DF_REF_EXTRACT_MODE (ref2))
 	return DF_REF_EXTRACT_MODE (ref1) - DF_REF_EXTRACT_MODE (ref2);
     }
-  return 0;
+  return (int)DF_REF_ORDER (ref1) - (int)DF_REF_ORDER (ref2);
 }
 
 static void
@@ -2605,8 +2593,8 @@ df_install_ref (df_ref this_ref,
       df->hard_regs_live_count[regno]++;
     }
 
-  gcc_assert (DF_REF_NEXT_REG (this_ref) == NULL
-	      && DF_REF_PREV_REG (this_ref) == NULL);
+  gcc_checking_assert (DF_REF_NEXT_REG (this_ref) == NULL
+		       && DF_REF_PREV_REG (this_ref) == NULL);
 
   DF_REF_NEXT_REG (this_ref) = head;
 
@@ -2801,19 +2789,19 @@ df_ref_create_structure (enum df_ref_class cl,
     {
     case DF_REF_BASE:
       this_ref = (df_ref) pool_alloc (problem_data->ref_base_pool);
-      gcc_assert (loc == NULL);
+      gcc_checking_assert (loc == NULL);
       break;
 
     case DF_REF_ARTIFICIAL:
       this_ref = (df_ref) pool_alloc (problem_data->ref_artificial_pool);
       this_ref->artificial_ref.bb = bb;
-      gcc_assert (loc == NULL);
+      gcc_checking_assert (loc == NULL);
       break;
 
     case DF_REF_REGULAR:
       this_ref = (df_ref) pool_alloc (problem_data->ref_regular_pool);
       this_ref->regular_ref.loc = loc;
-      gcc_assert (loc);
+      gcc_checking_assert (loc);
       break;
 
     case DF_REF_EXTRACT:
@@ -2822,7 +2810,7 @@ df_ref_create_structure (enum df_ref_class cl,
       DF_REF_EXTRACT_OFFSET (this_ref) = offset;
       DF_REF_EXTRACT_MODE (this_ref) = mode;
       this_ref->regular_ref.loc = loc;
-      gcc_assert (loc);
+      gcc_checking_assert (loc);
       break;
     }
 
@@ -2892,7 +2880,7 @@ df_ref_record (enum df_ref_class cl,
 {
   unsigned int regno;
 
-  gcc_assert (REG_P (reg) || GET_CODE (reg) == SUBREG);
+  gcc_checking_assert (REG_P (reg) || GET_CODE (reg) == SUBREG);
 
   regno = REGNO (GET_CODE (reg) == SUBREG ? SUBREG_REG (reg) : reg);
   if (regno < FIRST_PSEUDO_REGISTER)
@@ -3451,13 +3439,15 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
   bool is_sibling_call;
   unsigned int i;
   df_ref def;
-  bitmap defs_generated = BITMAP_ALLOC (&df_bitmap_obstack);
+  bitmap_head defs_generated;
+
+  bitmap_initialize (&defs_generated, &df_bitmap_obstack);
 
   /* Do not generate clobbers for registers that are the result of the
      call.  This causes ordering problems in the chain building code
      depending on which def is seen first.  */
   for (i = 0; VEC_iterate (df_ref, collection_rec->def_vec, i, def); ++i)
-    bitmap_set_bit (defs_generated, DF_REF_REGNO (def));
+    bitmap_set_bit (&defs_generated, DF_REF_REGNO (def));
 
   /* Record the registers used to pass arguments, and explicitly
      noted as clobbered.  */
@@ -3473,7 +3463,7 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
 	  if (REG_P (XEXP (XEXP (note, 0), 0)))
 	    {
 	      unsigned int regno = REGNO (XEXP (XEXP (note, 0), 0));
-	      if (!bitmap_bit_p (defs_generated, regno))
+	      if (!bitmap_bit_p (&defs_generated, regno))
 		df_defs_record (collection_rec, XEXP (note, 0), bb,
 				insn_info, flags);
 	    }
@@ -3507,7 +3497,7 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
   EXECUTE_IF_SET_IN_BITMAP (regs_invalidated_by_call_regset, 0, ui, bi)
     {
       if (!global_regs[ui]
-	  && (!bitmap_bit_p (defs_generated, ui))
+	  && (!bitmap_bit_p (&defs_generated, ui))
 	  && (!is_sibling_call
 	      || !bitmap_bit_p (df->exit_block_uses, ui)
 	      || refers_to_regno_p (ui, ui+1,
@@ -3518,7 +3508,7 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
 		       -1, -1, VOIDmode);
     }
 
-  BITMAP_FREE (defs_generated);
+  bitmap_clear (&defs_generated);
   return;
 }
 
@@ -3669,8 +3659,8 @@ df_bb_refs_collect (struct df_collection_rec *collection_rec, basic_block bb)
       bitmap_iterator bi;
       unsigned int regno;
       bitmap au = bb_has_eh_pred (bb)
-	? df->eh_block_artificial_uses
-	: df->regular_block_artificial_uses;
+	? &df->eh_block_artificial_uses
+	: &df->regular_block_artificial_uses;
 
       EXECUTE_IF_SET_IN_BITMAP (au, 0, regno, bi)
 	{
@@ -3691,23 +3681,12 @@ df_bb_refs_record (int bb_index, bool scan_insns)
   basic_block bb = BASIC_BLOCK (bb_index);
   rtx insn;
   int luid = 0;
-  struct df_scan_bb_info *bb_info;
   struct df_collection_rec collection_rec;
 
   if (!df)
     return;
 
-  bb_info = df_scan_get_bb_info (bb_index);
-
-  /* Need to make sure that there is a record in the basic block info. */
-  if (!bb_info)
-    {
-      bb_info = (struct df_scan_bb_info *) pool_alloc (df_scan->block_pool);
-      df_scan_set_bb_info (bb_index, bb_info);
-      bb_info->artificial_defs = NULL;
-      bb_info->artificial_uses = NULL;
-    }
-
+  df_grow_bb_info (df_scan);
   collection_rec.def_vec = VEC_alloc (df_ref, stack, 128);
   collection_rec.use_vec = VEC_alloc (df_ref, stack, 32);
   collection_rec.eq_use_vec = VEC_alloc (df_ref, stack, 32);
@@ -3992,13 +3971,14 @@ df_record_entry_block_defs (bitmap entry_block_defs)
 void
 df_update_entry_block_defs (void)
 {
-  bitmap refs = BITMAP_ALLOC (&df_bitmap_obstack);
+  bitmap_head refs;
   bool changed = false;
 
-  df_get_entry_block_def_set (refs);
+  bitmap_initialize (&refs, &df_bitmap_obstack);
+  df_get_entry_block_def_set (&refs);
   if (df->entry_block_defs)
     {
-      if (!bitmap_equal_p (df->entry_block_defs, refs))
+      if (!bitmap_equal_p (df->entry_block_defs, &refs))
 	{
 	  struct df_scan_bb_info *bb_info = df_scan_get_bb_info (ENTRY_BLOCK);
 	  df_ref_chain_delete_du_chain (bb_info->artificial_defs);
@@ -4011,17 +3991,18 @@ df_update_entry_block_defs (void)
     {
       struct df_scan_problem_data *problem_data
 	= (struct df_scan_problem_data *) df_scan->problem_data;
+	gcc_unreachable ();
       df->entry_block_defs = BITMAP_ALLOC (&problem_data->reg_bitmaps);
       changed = true;
     }
 
   if (changed)
     {
-      df_record_entry_block_defs (refs);
-      bitmap_copy (df->entry_block_defs, refs);
+      df_record_entry_block_defs (&refs);
+      bitmap_copy (df->entry_block_defs, &refs);
       df_set_bb_dirty (BASIC_BLOCK (ENTRY_BLOCK));
     }
-  BITMAP_FREE (refs);
+  bitmap_clear (&refs);
 }
 
 
@@ -4164,13 +4145,14 @@ df_record_exit_block_uses (bitmap exit_block_uses)
 void
 df_update_exit_block_uses (void)
 {
-  bitmap refs = BITMAP_ALLOC (&df_bitmap_obstack);
+  bitmap_head refs;
   bool changed = false;
 
-  df_get_exit_block_use_set (refs);
+  bitmap_initialize (&refs, &df_bitmap_obstack);
+  df_get_exit_block_use_set (&refs);
   if (df->exit_block_uses)
     {
-      if (!bitmap_equal_p (df->exit_block_uses, refs))
+      if (!bitmap_equal_p (df->exit_block_uses, &refs))
 	{
 	  struct df_scan_bb_info *bb_info = df_scan_get_bb_info (EXIT_BLOCK);
 	  df_ref_chain_delete_du_chain (bb_info->artificial_uses);
@@ -4183,17 +4165,18 @@ df_update_exit_block_uses (void)
     {
       struct df_scan_problem_data *problem_data
 	= (struct df_scan_problem_data *) df_scan->problem_data;
+	gcc_unreachable ();
       df->exit_block_uses = BITMAP_ALLOC (&problem_data->reg_bitmaps);
       changed = true;
     }
 
   if (changed)
     {
-      df_record_exit_block_uses (refs);
-      bitmap_copy (df->exit_block_uses, refs);
+      df_record_exit_block_uses (&refs);
+      bitmap_copy (df->exit_block_uses,& refs);
       df_set_bb_dirty (BASIC_BLOCK (EXIT_BLOCK));
     }
-  BITMAP_FREE (refs);
+  bitmap_clear (&refs);
 }
 
 static bool initialized = false;
@@ -4549,24 +4532,25 @@ df_bb_verify (basic_block bb)
 static bool
 df_entry_block_bitmap_verify (bool abort_if_fail)
 {
-  bitmap entry_block_defs = BITMAP_ALLOC (&df_bitmap_obstack);
+  bitmap_head entry_block_defs;
   bool is_eq;
 
-  df_get_entry_block_def_set (entry_block_defs);
+  bitmap_initialize (&entry_block_defs, &df_bitmap_obstack);
+  df_get_entry_block_def_set (&entry_block_defs);
 
-  is_eq = bitmap_equal_p (entry_block_defs, df->entry_block_defs);
+  is_eq = bitmap_equal_p (&entry_block_defs, df->entry_block_defs);
 
   if (!is_eq && abort_if_fail)
     {
       print_current_pass (stderr);
       fprintf (stderr, "entry_block_defs = ");
-      df_print_regset (stderr, entry_block_defs);
+      df_print_regset (stderr, &entry_block_defs);
       fprintf (stderr, "df->entry_block_defs = ");
       df_print_regset (stderr, df->entry_block_defs);
       gcc_assert (0);
     }
 
-  BITMAP_FREE (entry_block_defs);
+  bitmap_clear (&entry_block_defs);
 
   return is_eq;
 }
@@ -4578,24 +4562,25 @@ df_entry_block_bitmap_verify (bool abort_if_fail)
 static bool
 df_exit_block_bitmap_verify (bool abort_if_fail)
 {
-  bitmap exit_block_uses = BITMAP_ALLOC (&df_bitmap_obstack);
+  bitmap_head exit_block_uses;
   bool is_eq;
 
-  df_get_exit_block_use_set (exit_block_uses);
+  bitmap_initialize (&exit_block_uses, &df_bitmap_obstack);
+  df_get_exit_block_use_set (&exit_block_uses);
 
-  is_eq = bitmap_equal_p (exit_block_uses, df->exit_block_uses);
+  is_eq = bitmap_equal_p (&exit_block_uses, df->exit_block_uses);
 
   if (!is_eq && abort_if_fail)
     {
       print_current_pass (stderr);
       fprintf (stderr, "exit_block_uses = ");
-      df_print_regset (stderr, exit_block_uses);
+      df_print_regset (stderr, &exit_block_uses);
       fprintf (stderr, "df->exit_block_uses = ");
       df_print_regset (stderr, df->exit_block_uses);
       gcc_assert (0);
     }
 
-  BITMAP_FREE (exit_block_uses);
+  bitmap_clear (&exit_block_uses);
 
   return is_eq;
 }
@@ -4609,8 +4594,8 @@ df_scan_verify (void)
 {
   unsigned int i;
   basic_block bb;
-  bitmap regular_block_artificial_uses;
-  bitmap eh_block_artificial_uses;
+  bitmap_head regular_block_artificial_uses;
+  bitmap_head eh_block_artificial_uses;
 
   if (!df)
     return;
@@ -4631,23 +4616,23 @@ df_scan_verify (void)
   /* (2) There are various bitmaps whose value may change over the
      course of the compilation.  This step recomputes them to make
      sure that they have not slipped out of date.  */
-  regular_block_artificial_uses = BITMAP_ALLOC (&df_bitmap_obstack);
-  eh_block_artificial_uses = BITMAP_ALLOC (&df_bitmap_obstack);
+  bitmap_initialize (&regular_block_artificial_uses, &df_bitmap_obstack);
+  bitmap_initialize (&eh_block_artificial_uses, &df_bitmap_obstack);
 
-  df_get_regular_block_artificial_uses (regular_block_artificial_uses);
-  df_get_eh_block_artificial_uses (eh_block_artificial_uses);
+  df_get_regular_block_artificial_uses (&regular_block_artificial_uses);
+  df_get_eh_block_artificial_uses (&eh_block_artificial_uses);
 
-  bitmap_ior_into (eh_block_artificial_uses,
-		   regular_block_artificial_uses);
+  bitmap_ior_into (&eh_block_artificial_uses,
+		   &regular_block_artificial_uses);
 
   /* Check artificial_uses bitmaps didn't change. */
-  gcc_assert (bitmap_equal_p (regular_block_artificial_uses,
-			      df->regular_block_artificial_uses));
-  gcc_assert (bitmap_equal_p (eh_block_artificial_uses,
-			      df->eh_block_artificial_uses));
+  gcc_assert (bitmap_equal_p (&regular_block_artificial_uses,
+			      &df->regular_block_artificial_uses));
+  gcc_assert (bitmap_equal_p (&eh_block_artificial_uses,
+			      &df->eh_block_artificial_uses));
 
-  BITMAP_FREE (regular_block_artificial_uses);
-  BITMAP_FREE (eh_block_artificial_uses);
+  bitmap_clear (&regular_block_artificial_uses);
+  bitmap_clear (&eh_block_artificial_uses);
 
   /* Verify entry block and exit block. These only verify the bitmaps,
      the refs are verified in df_bb_verify.  */

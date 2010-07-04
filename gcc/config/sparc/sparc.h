@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for Sun SPARC.
    Copyright (C) 1987, 1988, 1989, 1992, 1994, 1995, 1996, 1997, 1998, 1999
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
@@ -1181,7 +1181,7 @@ extern enum reg_class sparc_regno_reg_class[FIRST_PSEUDO_REGISTER];
   96, 97, 98, 99,			/* %fcc0-3 */	\
   100, 0, 14, 30, 31, 101}		/* %icc, %g0, %o6, %i6, %i7, %sfp */
 
-#define ORDER_REGS_FOR_LOCAL_ALLOC order_regs_for_local_alloc ()
+#define ADJUST_REG_ALLOC_ORDER order_regs_for_local_alloc ()
 
 extern char sparc_leaf_regs[];
 #define LEAF_REGISTERS sparc_leaf_regs
@@ -1418,34 +1418,6 @@ extern char leaf_reg_remap[];
 
 #define LOCAL_REGNO(REGNO) \
   ((REGNO) >= 16 && (REGNO) <= 31)
-
-/* Define how to find the value returned by a function.
-   VALTYPE is the data type of the value (as a tree).
-   If the precise function being called is known, FUNC is its FUNCTION_DECL;
-   otherwise, FUNC is 0.  */
-
-/* On SPARC the value is found in the first "output" register.  */
-
-#define FUNCTION_VALUE(VALTYPE, FUNC) \
-  function_value ((VALTYPE), TYPE_MODE (VALTYPE), 1)
-
-/* But the called function leaves it in the first "input" register.  */
-
-#define FUNCTION_OUTGOING_VALUE(VALTYPE, FUNC) \
-  function_value ((VALTYPE), TYPE_MODE (VALTYPE), 0)
-
-/* Define how to find the value returned by a library function
-   assuming the value has mode MODE.  */
-
-#define LIBCALL_VALUE(MODE) \
-  function_value (NULL_TREE, (MODE), 1)
-
-/* 1 if N is a possible register number for a function value
-   as seen by the caller.
-   On SPARC, the first "output" reg is used for integer values,
-   and the first floating point register is used for floating point values.  */
-
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == 8 || (N) == 32)
 
 /* Define the size of space to allocate for the return value of an
    untyped_call.  */
@@ -1835,33 +1807,6 @@ do {									\
 #define RTX_OK_FOR_OLO10_P(X)						\
   (GET_CODE (X) == CONST_INT && INTVAL (X) >= -0x1000 && INTVAL (X) < 0xc00 - 8)
 
-/* Go to LABEL if ADDR (a legitimate address expression)
-   has an effect that depends on the machine mode it is used for.
-
-   In PIC mode,
-
-      (mem:HI [%l7+a])
-
-   is not equivalent to
-   
-      (mem:QI [%l7+a]) (mem:QI [%l7+a+1])
-
-   because [%l7+a+1] is interpreted as the address of (a+1).  */
-
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)	\
-{							\
-  if (flag_pic == 1)					\
-    {							\
-      if (GET_CODE (ADDR) == PLUS)			\
-	{						\
-	  rtx op0 = XEXP (ADDR, 0);			\
-	  rtx op1 = XEXP (ADDR, 1);			\
-	  if (op0 == pic_offset_table_rtx		\
-	      && SYMBOLIC_CONST (op1))			\
-	    goto LABEL;					\
-	}						\
-    }							\
-}
 
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and jump to WIN.  This

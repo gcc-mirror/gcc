@@ -4,7 +4,7 @@
    files.  On this glorious day maybe this code can be integrated into
    it too.  */
 
-/* Copyright (C) 2005, 2008, 2009  Free Software Foundation, Inc.
+/* Copyright (C) 2005, 2008, 2009, 2010  Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -307,5 +307,28 @@ __ffshi2 (UHWtype u)
     return 0;
 
   return 16 - __builtin_clz (u & - u);
+}
+#endif
+
+#ifdef XSTORMY16_UCMPSI2
+/* Performs an unsigned comparison of two 32-bit values: A and B.
+   If A is less than B, then 0 is returned.  If A is greater than B,
+   then 2 is returned.  Otherwise A and B are equal and 1 is returned.  */
+
+word_type
+__ucmpsi2 (USItype a, USItype b)
+{
+  word_type hi_a = (a >> 16);
+  word_type hi_b = (b >> 16);
+
+  if (hi_a == hi_b)
+    {
+      word_type low_a = (a & 0xffff);
+      word_type low_b = (b & 0xffff);
+
+      return low_a < low_b ? 0 : (low_a > low_b ? 2 : 1);
+    }
+
+  return hi_a < hi_b ? 0 : 2;
 }
 #endif

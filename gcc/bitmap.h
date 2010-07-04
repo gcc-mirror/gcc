@@ -77,7 +77,7 @@ typedef struct GTY(()) bitmap_head_def {
   bitmap_element *current;	/* Last element looked at.  */
   unsigned int indx;		/* Index of last element looked at.  */
   bitmap_obstack *obstack;	/* Obstack to allocate elements from.
-				   If NULL, then use ggc_alloc.  */
+				   If NULL, then use GGC allocation.  */
 #ifdef GATHER_STATISTICS
   struct bitmap_descriptor GTY((skip)) *desc;
 #endif
@@ -385,6 +385,27 @@ bmp_iter_next (bitmap_iterator *bi, unsigned *bit_no)
   *bit_no += 1;
 }
 
+/* Advance to first set bit in BI.  */
+
+static inline void
+bmp_iter_next_bit (bitmap_iterator * bi, unsigned *bit_no)
+{
+#if (GCC_VERSION >= 3004)
+  {
+    unsigned int n = __builtin_ctzl (bi->bits);
+    gcc_assert (sizeof (unsigned long) == sizeof (BITMAP_WORD));
+    bi->bits >>= n;
+    *bit_no += n;
+  }
+#else
+  while (!(bi->bits & 1))
+    {
+      bi->bits >>= 1;
+      *bit_no += 1;
+    }
+#endif
+}
+
 /* Advance to the next nonzero bit of a single bitmap, we will have
    already advanced past the just iterated bit.  Return true if there
    is a bit to iterate.  */
@@ -396,11 +417,7 @@ bmp_iter_set (bitmap_iterator *bi, unsigned *bit_no)
   if (bi->bits)
     {
     next_bit:
-      while (!(bi->bits & 1))
-	{
-	  bi->bits >>= 1;
-	  *bit_no += 1;
-	}
+      bmp_iter_next_bit (bi, bit_no);
       return true;
     }
 
@@ -443,11 +460,7 @@ bmp_iter_and (bitmap_iterator *bi, unsigned *bit_no)
   if (bi->bits)
     {
     next_bit:
-      while (!(bi->bits & 1))
-	{
-	  bi->bits >>= 1;
-	  *bit_no += 1;
-	}
+      bmp_iter_next_bit (bi, bit_no);
       return true;
     }
 
@@ -510,11 +523,7 @@ bmp_iter_and_compl (bitmap_iterator *bi, unsigned *bit_no)
   if (bi->bits)
     {
     next_bit:
-      while (!(bi->bits & 1))
-	{
-	  bi->bits >>= 1;
-	  *bit_no += 1;
-	}
+      bmp_iter_next_bit (bi, bit_no);
       return true;
     }
 

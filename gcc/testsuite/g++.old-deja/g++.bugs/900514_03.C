@@ -16,7 +16,7 @@
 
 struct t_0_st_0;
 
-struct t_0_st_1 {
+struct t_0_st_1 {		// { dg-error "initializing" }
   int member;
 
   t_0_st_1 (t_0_st_0&);// { dg-message "note" } 
@@ -83,7 +83,7 @@ void t_1_local_init ()
 
 struct t_2_st_0;
 
-struct t_2_st_1 {
+struct t_2_st_1 {		// { dg-error "initializing" }
   int member;
 
   t_2_st_1 (t_2_st_0);		// { dg-message "note" }

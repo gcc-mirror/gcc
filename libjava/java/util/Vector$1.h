@@ -14,8 +14,8 @@ class java::util::Vector$1 : public ::java::lang::Object
 public: // actually package-private
   Vector$1(::java::util::Vector *);
 public:
-  jboolean hasMoreElements();
-  ::java::lang::Object * nextElement();
+  virtual jboolean hasMoreElements();
+  virtual ::java::lang::Object * nextElement();
 private:
   jint __attribute__((aligned(__alignof__( ::java::lang::Object)))) i;
 public: // actually package-private

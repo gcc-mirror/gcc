@@ -25,8 +25,8 @@ class java::net::URLClassLoader$2 : public ::java::lang::Object
 public: // actually package-private
   URLClassLoader$2(::java::lang::ClassLoader *, ::java::lang::Object *);
 public:
-  ::java::net::URLClassLoader * URLClassLoader$2$run();
-  ::java::lang::Object * run();
+  virtual ::java::net::URLClassLoader * URLClassLoader$2$run();
+  virtual ::java::lang::Object * run();
 private:
   ::java::lang::ClassLoader * __attribute__((aligned(__alignof__( ::java::lang::Object)))) val$parent;
   ::java::lang::Object * val$securityContext;

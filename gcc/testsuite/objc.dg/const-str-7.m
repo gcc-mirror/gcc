@@ -1,18 +1,12 @@
-/* Test to make sure that the const objc strings are the same across
-   scopes.  */
+/* Test to make sure that the const objc strings are the same across scopes. */
 /* Developed by Andrew Pinski <pinskia@physics.uc.edu> */
+/* { dg-options "-fconstant-string-class=Foo " } */
+/* { dg-do run } */
 
-
-/* { dg-options "-fnext-runtime -fconstant-string-class=Foo -lobjc" } */
-/* { dg-do run { target *-*-darwin* } } */
-
-
+#include "../objc-obj-c++-shared/Object1.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <objc/objc.h>
-#include <objc/Object.h>
-
 
 @interface Foo: Object {
   char *cString;
@@ -21,8 +15,11 @@
 - (char *)customString;
 @end
 
+#ifndef NEXT_OBJC_USE_NEW_INTERFACE
 struct objc_class _FooClassReference;
-
+#else
+Class _FooClassReference;
+#endif
 
 @implementation Foo : Object
 - (char *)customString {
@@ -30,12 +27,10 @@ struct objc_class _FooClassReference;
 }
 @end
 
-
 int main () {
   Foo *string = @"bla";
   {
     Foo *string2 = @"bla";
-
 
     if(string != string2)
       abort();
@@ -44,3 +39,4 @@ int main () {
   return 0;
 }
 
+#include "../objc-obj-c++-shared/Object1-implementation.h"

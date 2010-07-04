@@ -1,10 +1,10 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009
+/* Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist input contributed by Paul Thomas
    F2003 I/O support contributed by Jerry DeLisle
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -110,7 +110,7 @@ free_saved (st_parameter_dt *dtp)
   if (dtp->u.p.saved_string == NULL)
     return;
 
-  free_mem (dtp->u.p.saved_string);
+  free (dtp->u.p.saved_string);
 
   dtp->u.p.saved_string = NULL;
   dtp->u.p.saved_used = 0;
@@ -128,7 +128,7 @@ free_line (st_parameter_dt *dtp)
   if (dtp->u.p.line_buffer == NULL)
     return;
 
-  free_mem (dtp->u.p.line_buffer);
+  free (dtp->u.p.line_buffer);
   dtp->u.p.line_buffer = NULL;
 }
 
@@ -1199,6 +1199,21 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
       push_char (dtp, 'n');
       push_char (dtp, 'a');
       push_char (dtp, 'n');
+      
+      /* Match "NAN(alphanum)".  */
+      if (c == '(')
+	{
+	  for ( ; c != ')'; c = next_char (dtp))
+	    if (is_separator (c))
+	      goto bad;
+	    else
+	      push_char (dtp, c);
+
+	  push_char (dtp, ')');
+	  c = next_char (dtp);
+	  if (is_separator (c))
+	    unget_char (dtp, c);
+	}
       goto done;
     }
 
@@ -1576,6 +1591,20 @@ read_real (st_parameter_dt *dtp, void * dest, int length)
 	goto unwind;
       c = next_char (dtp);
       l_push_char (dtp, c);
+
+      /* Match NAN(alphanum).  */
+      if (c == '(')
+	{
+	  for (c = next_char (dtp); c != ')'; c = next_char (dtp))
+	    if (is_separator (c))
+	      goto unwind;
+	    else
+	      l_push_char (dtp, c);
+
+	  l_push_char (dtp, ')');
+	  c = next_char (dtp);
+	  l_push_char (dtp, c);
+	}
     }
 
   if (!is_separator (c))
@@ -2077,7 +2106,7 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 		  /*  If -std=f95/2003 or an array section is specified,
 		      do not allow excess data to be processed.  */
                   if (is_array_section == 1
-		      || compile_options.allow_std < GFC_STD_GNU)
+		      || !(compile_options.allow_std & GFC_STD_GNU))
 		    ls[dim].end = ls[dim].start;
 		  else
 		    dtp->u.p.expanded_read = 1;
@@ -2090,6 +2119,14 @@ nml_parse_qualifier (st_parameter_dt *dtp, descriptor_dimension *ad,
 	      break;
 	    }
 	}
+
+      if (is_array_section == 1 && dtp->u.p.expanded_read == 1)
+     	{
+	  int i;
+	  dtp->u.p.expanded_read = 0;
+	  for (i = 0; i < dim; i++)
+	    ls[i].end = ls[i].start;
+      	}
 
       /* Check the values of the triplet indices.  */
       if ((ls[dim].start > (ssize_t) GFC_DIMENSION_UBOUND(ad[dim]))
@@ -2167,7 +2204,7 @@ nml_touch_nodes (namelist_info * nl)
       else
 	break;
     }
-  free_mem (ext_name);
+  free (ext_name);
   return;
 }
 
@@ -2432,18 +2469,18 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
 				  pprev_nl, nml_err_msg, nml_err_msg_size,
 				  clow, chigh) == FAILURE)
 		  {
-		    free_mem (obj_name);
+		    free (obj_name);
 		    return FAILURE;
 		  }
 
 		if (dtp->u.p.input_complete)
 		  {
-		    free_mem (obj_name);
+		    free (obj_name);
 		    return SUCCESS;
 		  }
 	      }
 
-	    free_mem (obj_name);
+	    free (obj_name);
 	    goto incr_idx;
 
           default:

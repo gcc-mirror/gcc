@@ -29,13 +29,13 @@ class javax::naming::directory::BasicAttributes$1 : public ::java::lang::Object
 public: // actually package-private
   BasicAttributes$1(::javax::naming::directory::BasicAttributes *, ::javax::naming::NamingEnumeration *);
 public:
-  jboolean hasMore();
-  jboolean hasMoreElements();
-  ::java::lang::String * BasicAttributes$1$next();
-  ::java::lang::String * BasicAttributes$1$nextElement();
-  void close();
-  ::java::lang::Object * next();
-  ::java::lang::Object * nextElement();
+  virtual jboolean hasMore();
+  virtual jboolean hasMoreElements();
+  virtual ::java::lang::String * BasicAttributes$1$next();
+  virtual ::java::lang::String * BasicAttributes$1$nextElement();
+  virtual void close();
+  virtual ::java::lang::Object * next();
+  virtual ::java::lang::Object * nextElement();
 public: // actually package-private
   ::javax::naming::directory::BasicAttributes * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 private:

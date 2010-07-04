@@ -22,17 +22,12 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GFC_ARITH_H
 #define GFC_ARITH_H
 
-#include "gfortran.h"
-
 /* MPFR also does not have the conversion of a mpfr_t to a mpz_t, so declare
    a function for this as well.  */
 
 void gfc_mpfr_to_mpz (mpz_t, mpfr_t, locus *);
 void gfc_set_model_kind (int);
 void gfc_set_model (mpfr_t);
-
-/* Return a constant result of a given type and kind, with locus.  */
-gfc_expr *gfc_constant_result (bt, int, locus *);
 
 /* Make sure a gfc_expr expression is within its allowed range.  Checks
    for overflow and underflow.  */

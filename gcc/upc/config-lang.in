@@ -35,7 +35,7 @@ stagestuff="cc1upc\$(exeext)"
 
 target_libs="target-libupc"
 
-gtfiles="\$(srcdir)/upc/upc-act.h \$(srcdir)/upc/upc-act.c \$(srcdir)/c-tree.h \$(srcdir)/c-decl.c \$(srcdir)/c-common.c \$(srcdir)/c-common.h \$(srcdir)/c-pragma.h \$(srcdir)/c-pragma.c \$(srcdir)/c-objc-common.c \$(srcdir)/c-parser.c"
+gtfiles="\$(srcdir)/upc/upc-act.h \$(srcdir)/upc/upc-act.c \$(srcdir)/c-tree.h \$(srcdir)/c-decl.c \$(srcdir)/c-family/c-common.c \$(srcdir)/c-family/c-common.h \$(srcdir)/c-family/c-pragma.h \$(srcdir)/c-family/c-pragma.c \$(srcdir)/c-objc-common.c \$(srcdir)/c-parser.c"
 
 #
 # UPC specific configuration definitions

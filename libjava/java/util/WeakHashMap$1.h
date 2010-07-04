@@ -14,8 +14,8 @@ class java::util::WeakHashMap$1 : public ::java::lang::Object
 public: // actually package-private
   WeakHashMap$1();
 public:
-  jint hashCode();
-  jboolean equals(::java::lang::Object *);
+  virtual jint hashCode();
+  virtual jboolean equals(::java::lang::Object *);
   static ::java::lang::Class class$;
 };
 

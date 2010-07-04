@@ -1,6 +1,6 @@
 // 2001-05-21 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,8 +40,8 @@ public:
   check_pointers()
   { 
     bool test __attribute__((unused)) = true;
-    test = (this->pbase() == NULL);
-    test &= (this->pptr() == NULL);
+    test = (!this->pbase());
+    test &= (!this->pptr());
     return test;
   }
 };

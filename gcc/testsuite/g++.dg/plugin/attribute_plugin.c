@@ -8,6 +8,8 @@
 #include "tree.h"
 #include "tree-pass.h"
 #include "intl.h"
+#include "toplev.h"
+#include "plugin.h"
 
 int plugin_is_GPL_compatible;
 

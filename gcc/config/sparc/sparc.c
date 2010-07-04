@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
-#include "real.h"
 #include "insn-config.h"
 #include "insn-codes.h"
 #include "conditions.h"
@@ -52,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "params.h"
 #include "df.h"
+#include "dwarf2out.h"
 
 /* Processor costs */
 static const
@@ -354,6 +354,8 @@ static int function_arg_slotno (const CUMULATIVE_ARGS *, enum machine_mode,
 static int supersparc_adjust_cost (rtx, rtx, rtx, int);
 static int hypersparc_adjust_cost (rtx, rtx, rtx, int);
 
+static void sparc_emit_set_const32 (rtx, rtx);
+static void sparc_emit_set_const64 (rtx, rtx);
 static void sparc_output_addr_vec (rtx);
 static void sparc_output_addr_diff_vec (rtx);
 static void sparc_output_deferred_case_vectors (void);
@@ -362,17 +364,13 @@ static rtx sparc_builtin_saveregs (void);
 static int epilogue_renumber (rtx *, int);
 static bool sparc_assemble_integer (rtx, unsigned int, int);
 static int set_extends (rtx);
-static void emit_pic_helper (void);
-static void load_pic_register (bool);
+static void load_pic_register (void);
 static int save_or_restore_regs (int, int, rtx, int, int);
 static void emit_save_or_restore_regs (int);
 static void sparc_asm_function_prologue (FILE *, HOST_WIDE_INT);
 static void sparc_asm_function_epilogue (FILE *, HOST_WIDE_INT);
-#if defined (OBJECT_FORMAT_ELF)
-static void sparc_elf_asm_named_section (const char *, unsigned int, tree)
-    ATTRIBUTE_UNUSED;
-#endif
-
+static void sparc_solaris_elf_asm_named_section (const char *, unsigned int,
+						 tree) ATTRIBUTE_UNUSED;
 static int sparc_adjust_cost (rtx, rtx, rtx, int);
 static int sparc_issue_rate (void);
 static void sparc_sched_init (FILE *, int, int);
@@ -389,7 +387,7 @@ static void sparc_init_libfuncs (void);
 static void sparc_init_builtins (void);
 static void sparc_vis_init_builtins (void);
 static rtx sparc_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
-static tree sparc_fold_builtin (tree, tree, bool);
+static tree sparc_fold_builtin (tree, int, tree *, bool);
 static int sparc_vis_mul8x16 (int, int);
 static tree sparc_handle_vis_mul8x16 (int, tree, tree, tree);
 static void sparc_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
@@ -404,6 +402,9 @@ static const char *get_some_local_dynamic_name (void);
 static int get_some_local_dynamic_name_1 (rtx *, void *);
 static bool sparc_rtx_costs (rtx, int, int, int *, bool);
 static bool sparc_promote_prototypes (const_tree);
+static rtx sparc_function_value (const_tree, const_tree, bool);
+static rtx sparc_libcall_value (enum machine_mode, const_rtx);
+static bool sparc_function_value_regno_p (const unsigned int);
 static rtx sparc_struct_value_rtx (tree, int);
 static enum machine_mode sparc_promote_function_mode (const_tree, enum machine_mode,
 						      int *, const_tree, int);
@@ -416,6 +417,7 @@ static bool sparc_tls_referenced_p (rtx);
 static rtx legitimize_tls_address (rtx);
 static rtx legitimize_pic_address (rtx, rtx);
 static rtx sparc_legitimize_address (rtx, rtx, enum machine_mode);
+static bool sparc_mode_dependent_address_p (const_rtx);
 static bool sparc_pass_by_reference (CUMULATIVE_ARGS *,
 				     enum machine_mode, const_tree, bool);
 static int sparc_arg_partial_bytes (CUMULATIVE_ARGS *,
@@ -464,14 +466,9 @@ static bool fpu_option_set = false;
 
 /* Initialize the GCC target structure.  */
 
-/* The sparc default is to use .half rather than .short for aligned
-   HI objects.  Use .word instead of .long on non-ELF systems.  */
+/* The default is to use .half rather than .short for aligned HI objects.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
-#ifndef OBJECT_FORMAT_ELF
-#undef TARGET_ASM_ALIGNED_SI_OP
-#define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
-#endif
 
 #undef TARGET_ASM_UNALIGNED_HI_OP
 #define TARGET_ASM_UNALIGNED_HI_OP "\t.uahalf\t"
@@ -508,6 +505,8 @@ static bool fpu_option_set = false;
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS sparc_legitimize_address
+#undef TARGET_MODE_DEPENDENT_ADDRESS_P
+#define TARGET_MODE_DEPENDENT_ADDRESS_P sparc_mode_dependent_address_p
 
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN sparc_expand_builtin
@@ -537,6 +536,13 @@ static bool fpu_option_set = false;
 
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES sparc_promote_prototypes
+
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE sparc_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE sparc_libcall_value
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P sparc_function_value_regno_p
 
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX sparc_struct_value_rtx
@@ -1107,7 +1113,7 @@ sparc_expand_move (enum machine_mode mode, rtx *operands)
    We know it can't be done in one insn when we get
    here, the move expander guarantees this.  */
 
-void
+static void
 sparc_emit_set_const32 (rtx op0, rtx op1)
 {
   enum machine_mode mode = GET_MODE (op0);
@@ -1349,7 +1355,7 @@ sparc_emit_set_symbolic_const64 (rtx op0, rtx op1, rtx temp)
 }
 
 #if HOST_BITS_PER_WIDE_INT == 32
-void
+static void
 sparc_emit_set_const64 (rtx op0 ATTRIBUTE_UNUSED, rtx op1 ATTRIBUTE_UNUSED)
 {
   gcc_unreachable ();
@@ -1706,7 +1712,7 @@ create_simple_focus_bits (unsigned HOST_WIDE_INT high_bits,
    being loaded into a register.  Emit the most efficient
    insn sequence possible.  Detection of all the 1-insn cases
    has been done already.  */
-void
+static void
 sparc_emit_set_const64 (rtx op0, rtx op1)
 {
   unsigned HOST_WIDE_INT high_bits, low_bits;
@@ -1932,10 +1938,6 @@ sparc_emit_set_const64 (rtx op0, rtx op1)
     }
 
   /* The easiest way when all else fails, is full decomposition.  */
-#if 0
-  printf ("sparc_emit_set_const64: Hard constant [%08lx%08lx] neg[%08lx%08lx]\n",
-	  high_bits, low_bits, ~high_bits, ~low_bits);
-#endif
   sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits);
 }
 #endif /* HOST_BITS_PER_WIDE_INT == 32 */
@@ -2916,9 +2918,8 @@ sparc_cannot_force_const_mem (rtx x)
 }
 
 /* PIC support.  */
-static GTY(()) char pic_helper_symbol_name[256];
+static GTY(()) bool pic_helper_needed = false;
 static GTY(()) rtx pic_helper_symbol;
-static GTY(()) bool pic_helper_emitted_p = false;
 static GTY(()) rtx global_offset_table;
 
 /* Ensure that we are not using patterns that are not OK with PIC.  */
@@ -3529,34 +3530,60 @@ sparc_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
   return x;
 }
 
-/* Emit the special PIC helper function.  */
+/* Return true if ADDR (a legitimate address expression)
+   has an effect that depends on the machine mode it is used for.
+
+   In PIC mode,
+
+      (mem:HI [%l7+a])
+
+   is not equivalent to
+
+      (mem:QI [%l7+a]) (mem:QI [%l7+a+1])
+
+   because [%l7+a+1] is interpreted as the address of (a+1).  */
+
+
+static bool
+sparc_mode_dependent_address_p (const_rtx addr)
+{
+  if (flag_pic && GET_CODE (addr) == PLUS)
+    {
+      rtx op0 = XEXP (addr, 0);
+      rtx op1 = XEXP (addr, 1);
+      if (op0 == pic_offset_table_rtx
+	  && SYMBOLIC_CONST (op1))
+	return true;
+    }
+
+  return false;
+}
+
+#ifdef HAVE_GAS_HIDDEN
+# define USE_HIDDEN_LINKONCE 1
+#else
+# define USE_HIDDEN_LINKONCE 0
+#endif
 
 static void
-emit_pic_helper (void)
+get_pc_thunk_name (char name[32], unsigned int regno)
 {
-  const char *pic_name = reg_names[REGNO (pic_offset_table_rtx)];
-  int align;
+  const char *pic_name = reg_names[regno];
 
-  switch_to_section (text_section);
+  /* Skip the leading '%' as that cannot be used in a
+     symbol name.  */
+  pic_name += 1;
 
-  align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
-  if (align > 0)
-    ASM_OUTPUT_ALIGN (asm_out_file, align);
-  ASM_OUTPUT_LABEL (asm_out_file, pic_helper_symbol_name);
-  if (flag_delayed_branch)
-    fprintf (asm_out_file, "\tjmp\t%%o7+8\n\t add\t%%o7, %s, %s\n",
-	    pic_name, pic_name);
+  if (USE_HIDDEN_LINKONCE)
+    sprintf (name, "__sparc_get_pc_thunk.%s", pic_name);
   else
-    fprintf (asm_out_file, "\tadd\t%%o7, %s, %s\n\tjmp\t%%o7+8\n\t nop\n",
-	    pic_name, pic_name);
-
-  pic_helper_emitted_p = true;
+    ASM_GENERATE_INTERNAL_LABEL (name, "LADDPC", regno);
 }
 
 /* Emit code to load the PIC register.  */
 
 static void
-load_pic_register (bool delay_pic_helper)
+load_pic_register (void)
 {
   int orig_flag_pic = flag_pic;
 
@@ -3568,17 +3595,17 @@ load_pic_register (bool delay_pic_helper)
     }
 
   /* If we haven't initialized the special PIC symbols, do so now.  */
-  if (!pic_helper_symbol_name[0])
+  if (!pic_helper_needed)
     {
-      ASM_GENERATE_INTERNAL_LABEL (pic_helper_symbol_name, "LADDPC", 0);
-      pic_helper_symbol = gen_rtx_SYMBOL_REF (Pmode, pic_helper_symbol_name);
+      char name[32];
+
+      pic_helper_needed = true;
+
+      get_pc_thunk_name (name, REGNO (pic_offset_table_rtx));
+      pic_helper_symbol = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
+
       global_offset_table = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
     }
-
-  /* If we haven't emitted the special PIC helper function, do so now unless
-     we are requested to delay it.  */
-  if (!delay_pic_helper && !pic_helper_emitted_p)
-    emit_pic_helper ();
 
   flag_pic = 0;
   if (TARGET_ARCH64)
@@ -4229,7 +4256,7 @@ sparc_expand_prologue (void)
 
   /* Load the PIC register if needed.  */
   if (flag_pic && crtl->uses_pic_offset_table)
-    load_pic_register (false);
+    load_pic_register ();
 }
 
 /* This function generates the assembly code for function entry, which boils
@@ -5131,10 +5158,10 @@ function_arg_record_value_2 (const_tree type, HOST_WIDE_INT startbitpos,
     }
 }
 
-/* Used by function_arg and function_value to implement the complex
+/* Used by function_arg and sparc_function_value_1 to implement the complex
    conventions of the 64-bit ABI for passing and returning structures.
-   Return an expression valid as a return value for the two macros
-   FUNCTION_ARG and FUNCTION_VALUE.
+   Return an expression valid as a return value for the FUNCTION_ARG
+   and TARGET_FUNCTION_VALUE.
 
    TYPE is the data type of the argument (as a tree).
     This is null for libcalls where that information may
@@ -5232,10 +5259,10 @@ function_arg_record_value (const_tree type, enum machine_mode mode,
   return parms.ret;
 }
 
-/* Used by function_arg and function_value to implement the conventions
+/* Used by function_arg and sparc_function_value_1 to implement the conventions
    of the 64-bit ABI for passing and returning unions.
-   Return an expression valid as a return value for the two macros
-   FUNCTION_ARG and FUNCTION_VALUE.
+   Return an expression valid as a return value for the FUNCTION_ARG
+   and TARGET_FUNCTION_VALUE.
 
    SIZE is the size in bytes of the union.
    MODE is the argument's machine mode.
@@ -5270,10 +5297,10 @@ function_arg_union_value (int size, enum machine_mode mode, int slotno,
   return regs;
 }
 
-/* Used by function_arg and function_value to implement the conventions
+/* Used by function_arg and sparc_function_value_1 to implement the conventions
    for passing and returning large (BLKmode) vectors.
-   Return an expression valid as a return value for the two macros
-   FUNCTION_ARG and FUNCTION_VALUE.
+   Return an expression valid as a return value for the FUNCTION_ARG
+   and TARGET_FUNCTION_VALUE.
 
    SIZE is the size in bytes of the vector (at least 8 bytes).
    REGNO is the FP hard register the vector will be passed in.  */
@@ -5728,17 +5755,18 @@ sparc_struct_value_rtx (tree fndecl, int incoming)
     }
 }
 
-/* Handle FUNCTION_VALUE, FUNCTION_OUTGOING_VALUE, and LIBCALL_VALUE macros.
+/* Handle TARGET_FUNCTION_VALUE, and TARGET_LIBCALL_VALUE target hook.
    For v9, function return values are subject to the same rules as arguments,
    except that up to 32 bytes may be returned in registers.  */
 
-rtx
-function_value (const_tree type, enum machine_mode mode, int incoming_p)
+static rtx
+sparc_function_value_1 (const_tree type, enum machine_mode mode,
+			bool outgoing)
 {
   /* Beware that the two values are swapped here wrt function_arg.  */
-  int regbase = (incoming_p
-		 ? SPARC_OUTGOING_INT_ARG_FIRST
-		 : SPARC_INCOMING_INT_ARG_FIRST);
+  int regbase = (outgoing
+		 ? SPARC_INCOMING_INT_ARG_FIRST
+		 : SPARC_OUTGOING_INT_ARG_FIRST);
   enum mode_class mclass = GET_MODE_CLASS (mode);
   int regno;
 
@@ -5819,6 +5847,38 @@ function_value (const_tree type, enum machine_mode mode, int incoming_p)
     regno = regbase;
 
   return gen_rtx_REG (mode, regno);
+}
+
+/* Handle TARGET_FUNCTION_VALUE.
+
+   On SPARC the value is found in the first "output" register, but the called
+   function leaves it in the first "input" register.  */
+
+static rtx
+sparc_function_value (const_tree valtype,
+		      const_tree fn_decl_or_type ATTRIBUTE_UNUSED,
+		      bool outgoing)
+{
+  return sparc_function_value_1 (valtype, TYPE_MODE (valtype), outgoing);
+}
+
+/* Handle TARGET_LIBCALL_VALUE.  */
+
+static rtx
+sparc_libcall_value (enum machine_mode mode,
+		     const_rtx fun ATTRIBUTE_UNUSED)
+{
+  return sparc_function_value_1 (NULL_TREE, mode, false);
+}
+
+/* Handle FUNCTION_VALUE_REGNO_P.  
+   On SPARC, the first "output" reg is used for integer values, and
+   the first floating point register is used for floating point values.  */
+
+static bool
+sparc_function_value_regno_p (const unsigned int regno)
+{
+  return (regno == 8 || regno == 32);
 }
 
 /* Do what is necessary for `va_start'.  We look at the current function
@@ -8002,10 +8062,11 @@ sparc_profile_hook (int labelno)
     }
 }
 
-#if defined (OBJECT_FORMAT_ELF)
+/* Solaris implementation of TARGET_ASM_NAMED_SECTION.  */
+
 static void
-sparc_elf_asm_named_section (const char *name, unsigned int flags,
-			     tree decl ATTRIBUTE_UNUSED)
+sparc_solaris_elf_asm_named_section (const char *name, unsigned int flags,
+				     tree decl ATTRIBUTE_UNUSED)
 {
   fprintf (asm_out_file, "\t.section\t\"%s\"", name);
 
@@ -8022,7 +8083,6 @@ sparc_elf_asm_named_section (const char *name, unsigned int flags,
 
   fputc ('\n', asm_out_file);
 }
-#endif /* OBJECT_FORMAT_ELF */
 
 /* We do not allow indirect calls to be optimized into sibling calls.
 
@@ -8384,7 +8444,8 @@ sparc_handle_vis_mul8x16 (int fncode, tree inner_type, tree elts0, tree elts1)
    function could not be folded.  */
 
 static tree
-sparc_fold_builtin (tree fndecl, tree arglist, bool ignore)
+sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
+		    tree *args, bool ignore)
 {
   tree arg0, arg1, arg2;
   tree rtype = TREE_TYPE (TREE_TYPE (fndecl));
@@ -8398,7 +8459,7 @@ sparc_fold_builtin (tree fndecl, tree arglist, bool ignore)
   switch (icode)
     {
     case CODE_FOR_fexpand_vis:
-      arg0 = TREE_VALUE (arglist);
+      arg0 = args[0];
       STRIP_NOPS (arg0);
 
       if (TREE_CODE (arg0) == VECTOR_CST)
@@ -8421,8 +8482,8 @@ sparc_fold_builtin (tree fndecl, tree arglist, bool ignore)
     case CODE_FOR_fmul8x16_vis:
     case CODE_FOR_fmul8x16au_vis:
     case CODE_FOR_fmul8x16al_vis:
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      arg0 = args[0];
+      arg1 = args[1];
       STRIP_NOPS (arg0);
       STRIP_NOPS (arg1);
 
@@ -8439,8 +8500,8 @@ sparc_fold_builtin (tree fndecl, tree arglist, bool ignore)
       break;
 
     case CODE_FOR_fpmerge_vis:
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      arg0 = args[0];
+      arg1 = args[1];
       STRIP_NOPS (arg0);
       STRIP_NOPS (arg1);
 
@@ -8462,9 +8523,9 @@ sparc_fold_builtin (tree fndecl, tree arglist, bool ignore)
       break;
 
     case CODE_FOR_pdist_vis:
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+      arg0 = args[0];
+      arg1 = args[1];
+      arg2 = args[2];
       STRIP_NOPS (arg0);
       STRIP_NOPS (arg1);
       STRIP_NOPS (arg2);
@@ -8890,7 +8951,7 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 	  start_sequence ();
 	  /* Delay emitting the PIC helper function because it needs to
 	     change the section and we are emitting assembly code.  */
-	  load_pic_register (true);  /* clobbers %o7 */
+	  load_pic_register ();  /* clobbers %o7 */
 	  scratch = legitimize_pic_address (funexp, scratch);
 	  seq = get_insns ();
 	  end_sequence ();
@@ -8969,7 +9030,7 @@ sparc_can_output_mi_thunk (const_tree thunk_fndecl ATTRIBUTE_UNUSED,
 static struct machine_function *
 sparc_init_machine_status (void)
 {
-  return GGC_CNEW (struct machine_function);
+  return ggc_alloc_cleared_machine_function ();
 }
 
 /* Locate some local-dynamic symbol still in use by this function
@@ -9045,9 +9106,59 @@ sparc_output_dwarf_dtprel (FILE *file, int size, rtx x)
 static void
 sparc_file_end (void)
 {
-  /* If we haven't emitted the special PIC helper function, do so now.  */
-  if (pic_helper_symbol_name[0] && !pic_helper_emitted_p)
-    emit_pic_helper ();
+  /* If need to emit the special PIC helper function, do so now.  */
+  if (pic_helper_needed)
+    {
+      unsigned int regno = REGNO (pic_offset_table_rtx);
+      const char *pic_name = reg_names[regno];
+      char name[32];
+#ifdef DWARF2_UNWIND_INFO
+      bool do_cfi;
+#endif
+
+      get_pc_thunk_name (name, regno);
+      if (USE_HIDDEN_LINKONCE)
+	{
+	  tree decl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
+				  get_identifier (name),
+				  build_function_type (void_type_node,
+						       void_list_node));
+	  DECL_RESULT (decl) = build_decl (BUILTINS_LOCATION, RESULT_DECL,
+					   NULL_TREE, void_type_node);
+	  TREE_STATIC (decl) = 1;
+	  make_decl_one_only (decl, DECL_ASSEMBLER_NAME (decl));
+	  DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
+	  DECL_VISIBILITY_SPECIFIED (decl) = 1;
+	  allocate_struct_function (decl, true);
+	  current_function_decl = decl;
+	  init_varasm_status ();
+	  assemble_start_function (decl, name);
+	}
+      else
+	{
+	  const int align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
+          switch_to_section (text_section);
+	  if (align > 0)
+	    ASM_OUTPUT_ALIGN (asm_out_file, align);
+	  ASM_OUTPUT_LABEL (asm_out_file, name);
+	}
+
+#ifdef DWARF2_UNWIND_INFO
+      do_cfi = dwarf2out_do_cfi_asm ();
+      if (do_cfi)
+	fprintf (asm_out_file, "\t.cfi_startproc\n");
+#endif
+      if (flag_delayed_branch)
+	fprintf (asm_out_file, "\tjmp\t%%o7+8\n\t add\t%%o7, %s, %s\n",
+		 pic_name, pic_name);
+      else
+	fprintf (asm_out_file, "\tadd\t%%o7, %s, %s\n\tjmp\t%%o7+8\n\t nop\n",
+		 pic_name, pic_name);
+#ifdef DWARF2_UNWIND_INFO
+      if (do_cfi)
+	fprintf (asm_out_file, "\t.cfi_endproc\n");
+#endif
+    }
 
   if (NEED_INDICATE_EXEC_STACK)
     file_end_indicate_exec_stack ();

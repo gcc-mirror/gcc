@@ -1,10 +1,11 @@
 /* Check if class references (generated for the NeXT runtime) are appropriately 
    folded.  This test is safe to run on all targets.  */
 /* Author: Ziemowit Laski <zlaski@apple.com>.  */
-/* { dg-options "-fnext-runtime" } */
-/* { dg-do compile } */
 
-#include <objc/Object.h>
+/* { dg-do compile } */
+/* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
+
+#include "../objc-obj-c++-shared/Object1.h"
 
 typedef Object ObjectTypedef1;
 typedef ObjectTypedef1 ObjectTypedef2;

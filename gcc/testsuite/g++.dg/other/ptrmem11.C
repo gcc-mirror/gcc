@@ -5,7 +5,7 @@ struct A {};
 
 template <int A::* p>
 int
-foo(A* q)
+foo(A* q)			// { dg-message "candidate" }
 {
   return q->*p;
 }

@@ -1,6 +1,6 @@
 // 2001-08-23 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2009 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -59,6 +59,8 @@ void test01()
   pattern neg1 = monp_c_t.neg_format();
   pattern pos2 = monp_c_f.pos_format();
   pattern neg2 = monp_c_f.neg_format();
+  neg1 = neg1;
+  neg2 = neg2;
 
   VERIFY( q1 == L'.' );
   VERIFY( q3 == L'.' );

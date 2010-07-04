@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -975,10 +975,10 @@ package body Exp_Dist is
                     Defining_Unit_Name (Specification (Current_Declaration))),
                 Asynchronous =>
                   Nkind (Specification (Current_Declaration)) =
-                    N_Procedure_Specification
-                  and then
-                    Is_Asynchronous (Defining_Unit_Name (Specification
-                      (Current_Declaration))));
+                                                 N_Procedure_Specification
+                    and then
+                      Is_Asynchronous (Defining_Unit_Name (Specification
+                        (Current_Declaration))));
 
             Append_To (Decls, Subp_Stubs);
             Analyze (Subp_Stubs);
@@ -1293,9 +1293,7 @@ package body Exp_Dist is
       end if;
 
       if not Is_RAS then
-         RPC_Receiver :=
-           Make_Defining_Identifier (Loc,
-             Chars => New_Internal_Name ('P'));
+         RPC_Receiver := Make_Temporary (Loc, 'P');
 
          Specific_Build_RPC_Receiver_Body
            (RPC_Receiver => RPC_Receiver,
@@ -1348,13 +1346,7 @@ package body Exp_Dist is
                --  primitive may have been inherited, go back the alias chain
                --  until the real primitive has been found.
 
-               Current_Primitive_Alias := Current_Primitive;
-               while Present (Alias (Current_Primitive_Alias)) loop
-                  pragma Assert
-                    (Current_Primitive_Alias
-                      /= Alias (Current_Primitive_Alias));
-                  Current_Primitive_Alias := Alias (Current_Primitive_Alias);
-               end loop;
+               Current_Primitive_Alias := Ultimate_Alias (Current_Primitive);
 
                --  Copy the spec from the original declaration for the purpose
                --  of declaring an overriding subprogram: we need to replace
@@ -1529,9 +1521,7 @@ package body Exp_Dist is
       Param_Assoc : constant List_Id := New_List;
       Stmts       : constant List_Id := New_List;
 
-      RAS_Parameter : constant Entity_Id :=
-                        Make_Defining_Identifier (Loc,
-                          Chars => New_Internal_Name ('P'));
+      RAS_Parameter : constant Entity_Id := Make_Temporary (Loc, 'P');
 
       Is_Function : constant Boolean :=
                       Nkind (Type_Def) = N_Access_Function_Definition;
@@ -1897,8 +1887,7 @@ package body Exp_Dist is
       end if;
 
       Existing := False;
-      Stub_Type :=
-        Make_Defining_Identifier (Loc, Chars => New_Internal_Name ('S'));
+      Stub_Type := Make_Temporary (Loc, 'S');
       Set_Ekind (Stub_Type, E_Record_Type);
       Set_Is_RACW_Stub_Type (Stub_Type);
       Stub_Type_Access :=
@@ -2058,8 +2047,8 @@ package body Exp_Dist is
 
             declare
                Constant_Object : constant Entity_Id :=
-                                   Make_Defining_Identifier (Loc,
-                                     New_Internal_Name ('P'));
+                                   Make_Temporary (Loc, 'P');
+
             begin
                Set_Defining_Identifier
                  (Last (Decls), Constant_Object);
@@ -2429,9 +2418,10 @@ package body Exp_Dist is
    --  Start of processing for Build_Subprogram_Calling_Stubs
 
    begin
-      Subp_Spec := Copy_Specification (Loc,
-        Spec     => Specification (Vis_Decl),
-        New_Name => New_Name);
+      Subp_Spec :=
+        Copy_Specification (Loc,
+          Spec     => Specification (Vis_Decl),
+          New_Name => New_Name);
 
       if Locator = Empty then
          RCI_Locator := RCI_Cache;
@@ -3019,9 +3009,7 @@ package body Exp_Dist is
          Remote_Statements : List_Id;
          --  Various parts of the procedure
 
-         Pnam              : constant Entity_Id :=
-                               Make_Defining_Identifier
-                                 (Loc, New_Internal_Name ('R'));
+         Pnam              : constant Entity_Id := Make_Temporary (Loc, 'R');
          Asynchronous_Flag : constant Entity_Id :=
                                Asynchronous_Flags_Table.Get (RACW_Type);
          pragma Assert (Present (Asynchronous_Flag));
@@ -3063,16 +3051,11 @@ package body Exp_Dist is
 
          --  Prepare local identifiers
 
-         Source_Partition :=
-           Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
-         Source_Receiver  :=
-           Make_Defining_Identifier (Loc, New_Internal_Name ('S'));
-         Source_Address   :=
-           Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
-         Local_Stub       :=
-           Make_Defining_Identifier (Loc, New_Internal_Name ('L'));
-         Stubbed_Result   :=
-           Make_Defining_Identifier (Loc, New_Internal_Name ('S'));
+         Source_Partition := Make_Temporary (Loc, 'P');
+         Source_Receiver  := Make_Temporary (Loc, 'S');
+         Source_Address   := Make_Temporary (Loc, 'P');
+         Local_Stub       := Make_Temporary (Loc, 'L');
+         Stubbed_Result   := Make_Temporary (Loc, 'S');
 
          --  Generate object declarations
 
@@ -3274,8 +3257,7 @@ package body Exp_Dist is
          Remote_Statements : List_Id;
          Null_Statements   : List_Id;
 
-         Pnam : constant Entity_Id :=
-                  Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+         Pnam : constant Entity_Id := Make_Temporary (Loc, 'R');
 
       begin
          Build_Stream_Procedure
@@ -3455,25 +3437,16 @@ package body Exp_Dist is
          Proc_Decls      : List_Id;
          Proc_Statements : List_Id;
 
-         Origin : constant Entity_Id :=
-                    Make_Defining_Identifier (Loc,
-                      Chars => New_Internal_Name ('P'));
+         Origin : constant Entity_Id := Make_Temporary (Loc, 'P');
 
          --  Additional local variables for the local case
 
-         Proxy_Addr : constant Entity_Id :=
-                        Make_Defining_Identifier (Loc,
-                          Chars => New_Internal_Name ('P'));
+         Proxy_Addr : constant Entity_Id := Make_Temporary (Loc, 'P');
 
          --  Additional local variables for the remote case
 
-         Local_Stub : constant Entity_Id :=
-                        Make_Defining_Identifier (Loc,
-                          Chars => New_Internal_Name ('L'));
-
-         Stub_Ptr : constant Entity_Id :=
-                      Make_Defining_Identifier (Loc,
-                        Chars => New_Internal_Name ('S'));
+         Local_Stub : constant Entity_Id := Make_Temporary (Loc, 'L');
+         Stub_Ptr   : constant Entity_Id := Make_Temporary (Loc, 'S');
 
          function Set_Field
            (Field_Name : Name_Id;
@@ -3699,18 +3672,15 @@ package body Exp_Dist is
          Request_Parameter : Node_Id;
 
          Pkg_RPC_Receiver            : constant Entity_Id :=
-                                         Make_Defining_Identifier (Loc,
-                                           New_Internal_Name ('H'));
+                                         Make_Temporary (Loc, 'H');
          Pkg_RPC_Receiver_Statements : List_Id;
          Pkg_RPC_Receiver_Cases      : constant List_Id := New_List;
          Pkg_RPC_Receiver_Body       : Node_Id;
          --  A Pkg_RPC_Receiver is built to decode the request
 
-         Lookup_RAS_Info : constant Entity_Id :=
-                             Make_Defining_Identifier (Loc,
-                               Chars => New_Internal_Name ('R'));
-         --  A remote subprogram is created to allow peers to look up
-         --  RAS information using subprogram ids.
+         Lookup_RAS_Info : constant Entity_Id := Make_Temporary (Loc, 'R');
+         --  A remote subprogram is created to allow peers to look up RAS
+         --  information using subprogram ids.
 
          Subp_Id    : Entity_Id;
          Subp_Index : Entity_Id;
@@ -3720,11 +3690,8 @@ package body Exp_Dist is
          Current_Subprogram_Number : Int := First_RCI_Subprogram_Id;
          Current_Stubs             : Node_Id;
 
-         Subp_Info_Array : constant Entity_Id :=
-                             Make_Defining_Identifier (Loc,
-                               Chars => New_Internal_Name ('I'));
-
-         Subp_Info_List : constant List_Id := New_List;
+         Subp_Info_Array : constant Entity_Id := Make_Temporary (Loc, 'I');
+         Subp_Info_List  : constant List_Id := New_List;
 
          Register_Pkg_Actuals : constant List_Id := New_List;
 
@@ -4165,8 +4132,7 @@ package body Exp_Dist is
          --  well as the declaration of Result. For a function call, 'Input is
          --  always used to read the result even if it is constrained.
 
-         Stream_Parameter :=
-           Make_Defining_Identifier (Loc, New_Internal_Name ('S'));
+         Stream_Parameter := Make_Temporary (Loc, 'S');
 
          Append_To (Decls,
            Make_Object_Declaration (Loc,
@@ -4182,8 +4148,7 @@ package body Exp_Dist is
                        New_List (Make_Integer_Literal (Loc, 0))))));
 
          if not Is_Known_Asynchronous then
-            Result_Parameter :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+            Result_Parameter := Make_Temporary (Loc, 'R');
 
             Append_To (Decls,
               Make_Object_Declaration (Loc,
@@ -4198,8 +4163,7 @@ package body Exp_Dist is
                         Constraints =>
                           New_List (Make_Integer_Literal (Loc, 0))))));
 
-            Exception_Return_Parameter :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('E'));
+            Exception_Return_Parameter := Make_Temporary (Loc, 'E');
 
             Append_To (Decls,
               Make_Object_Declaration (Loc,
@@ -4318,8 +4282,7 @@ package body Exp_Dist is
                   --  type and push it in the stream after the regular
                   --  parameters.
 
-                  Extra_Parameter := Make_Defining_Identifier
-                                       (Loc, New_Internal_Name ('P'));
+                  Extra_Parameter := Make_Temporary (Loc, 'P');
 
                   Append_To (Decls,
                      Make_Object_Declaration (Loc,
@@ -4556,7 +4519,7 @@ package body Exp_Dist is
              (RPC_Receiver      => RPC_Receiver,
               Request_Parameter => Request);
 
-         Subp_Id    := Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
+         Subp_Id    := Make_Temporary (Loc, 'P');
          Subp_Index := Subp_Id;
 
          --  Subp_Id may not be a constant, because in the case of the RPC
@@ -4600,9 +4563,10 @@ package body Exp_Dist is
          Controlling_Parameter : Entity_Id) return RPC_Target
       is
          Target_Info : RPC_Target (PCS_Kind => Name_GARLIC_DSA);
+
       begin
-         Target_Info.Partition :=
-           Make_Defining_Identifier (Loc, New_Internal_Name ('P'));
+         Target_Info.Partition := Make_Temporary (Loc, 'P');
+
          if Present (Controlling_Parameter) then
             Append_To (Decls,
               Make_Object_Declaration (Loc,
@@ -4707,10 +4671,9 @@ package body Exp_Dist is
             begin
                RPC_Receiver_Decl :=
                  Make_Subprogram_Declaration (Loc,
-                   Build_RPC_Receiver_Specification (
-                     RPC_Receiver      => Make_Defining_Identifier (Loc,
-                                            New_Internal_Name ('R')),
-                     Request_Parameter => RPC_Receiver_Request));
+                   Build_RPC_Receiver_Specification
+                     (RPC_Receiver      => Make_Temporary (Loc, 'R'),
+                      Request_Parameter => RPC_Receiver_Request));
             end;
          end if;
       end Build_Stub_Type;
@@ -4729,9 +4692,7 @@ package body Exp_Dist is
       is
          Loc : constant Source_Ptr := Sloc (Vis_Decl);
 
-         Request_Parameter : constant Entity_Id :=
-                               Make_Defining_Identifier (Loc,
-                                 New_Internal_Name ('R'));
+         Request_Parameter : constant Entity_Id := Make_Temporary (Loc, 'R');
          --  Formal parameter for receiving stubs: a descriptor for an incoming
          --  request.
 
@@ -4784,8 +4745,7 @@ package body Exp_Dist is
          end if;
 
          if Dynamically_Asynchronous then
-            Dynamic_Async :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('S'));
+            Dynamic_Async := Make_Temporary (Loc, 'S');
          else
             Dynamic_Async := Empty;
          end if;
@@ -4830,9 +4790,7 @@ package body Exp_Dist is
                Need_Extra_Constrained : Boolean;
                --  True when an Extra_Constrained actual is required
 
-               Object : constant Entity_Id :=
-                          Make_Defining_Identifier (Loc,
-                            New_Internal_Name ('P'));
+               Object : constant Entity_Id := Make_Temporary (Loc, 'P');
 
                Expr : Node_Id := Empty;
 
@@ -5051,9 +5009,8 @@ package body Exp_Dist is
             declare
                Etyp   : constant Entity_Id :=
                           Etype (Result_Definition (Specification (Vis_Decl)));
-               Result : constant Node_Id   :=
-                          Make_Defining_Identifier (Loc,
-                             New_Internal_Name ('R'));
+               Result : constant Node_Id   := Make_Temporary (Loc, 'R');
+
             begin
                Inner_Decls := New_List (
                  Make_Object_Declaration (Loc,
@@ -5139,8 +5096,7 @@ package body Exp_Dist is
             --  exception occurrence is copied into the output stream and
             --  no other output parameter is written.
 
-            Excep_Choice :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('E'));
+            Excep_Choice := Make_Temporary (Loc, 'E');
 
             Excep_Code := New_List (
               Make_Attribute_Reference (Loc,
@@ -5171,8 +5127,7 @@ package body Exp_Dist is
 
          Subp_Spec :=
            Make_Procedure_Specification (Loc,
-             Defining_Unit_Name       =>
-               Make_Defining_Identifier (Loc, New_Internal_Name ('F')),
+             Defining_Unit_Name       => Make_Temporary (Loc, 'F'),
 
              Parameter_Specifications => New_List (
                Make_Parameter_Specification (Loc,
@@ -5308,10 +5263,10 @@ package body Exp_Dist is
    begin
       return
         Make_Subprogram_Body (Loc,
-          Specification              => Make_Function_Specification (Loc,
-            Defining_Unit_Name =>
-              Make_Defining_Identifier (Loc, New_Internal_Name ('S')),
-            Result_Definition  => New_Occurrence_Of (Var_Type, Loc)),
+          Specification              =>
+            Make_Function_Specification (Loc,
+              Defining_Unit_Name => Make_Temporary (Loc, 'S'),
+              Result_Definition  => New_Occurrence_Of (Var_Type, Loc)),
           Declarations               => No_List,
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc, New_List (
@@ -5394,8 +5349,7 @@ package body Exp_Dist is
    --------------------
 
    function Make_Tag_Check (Loc : Source_Ptr; N : Node_Id) return Node_Id is
-      Occ : constant Entity_Id :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('E'));
+      Occ : constant Entity_Id := Make_Temporary (Loc, 'E');
 
    begin
       return Make_Block_Statement (Loc,
@@ -5762,8 +5716,7 @@ package body Exp_Dist is
                         Make_Defining_Identifier (Loc, Name_R);
          --  Various parts of the procedure
 
-         Pnam : constant Entity_Id := Make_Defining_Identifier (Loc,
-                                        New_Internal_Name ('R'));
+         Pnam : constant Entity_Id := Make_Temporary (Loc, 'R');
 
          Is_RAS : constant Boolean := not Comes_From_Source (RACW_Type);
 
@@ -5882,10 +5835,8 @@ package body Exp_Dist is
          RACW_Parameter : constant Entity_Id :=
                             Make_Defining_Identifier (Loc, Name_R);
 
-         Reference : constant Entity_Id :=
-                       Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
-         Any       : constant Entity_Id :=
-                       Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+         Reference : constant Entity_Id := Make_Temporary (Loc, 'R');
+         Any       : constant Entity_Id := Make_Temporary (Loc, 'A');
 
       begin
          Func_Spec :=
@@ -6074,8 +6025,7 @@ package body Exp_Dist is
          Attr_Decl : Node_Id;
 
          Statements : constant List_Id := New_List;
-         Pnam : constant Entity_Id :=
-                  Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+         Pnam : constant Entity_Id := Make_Temporary (Loc, 'R');
 
          function Stream_Parameter return Node_Id;
          function Object return Node_Id;
@@ -6233,15 +6183,9 @@ package body Exp_Dist is
            Make_Defining_Identifier (Loc, Name_A);
          --  For the call to Get_Local_Address
 
+         Local_Stub : constant Entity_Id := Make_Temporary (Loc, 'L');
+         Stub_Ptr   : constant Entity_Id := Make_Temporary (Loc, 'S');
          --  Additional local variables for the remote case
-
-         Local_Stub : constant Entity_Id :=
-                        Make_Defining_Identifier (Loc,
-                          Chars => New_Internal_Name ('L'));
-
-         Stub_Ptr : constant Entity_Id :=
-                      Make_Defining_Identifier (Loc,
-                        Chars => New_Internal_Name ('S'));
 
          function Set_Field
            (Field_Name : Name_Id;
@@ -6554,12 +6498,8 @@ package body Exp_Dist is
 
          Func_Spec : Node_Id;
 
-         Any            : constant Entity_Id :=
-                            Make_Defining_Identifier (Loc,
-                              Chars => New_Internal_Name ('A'));
-         RAS_Parameter  : constant Entity_Id :=
-                            Make_Defining_Identifier (Loc,
-                              Chars => New_Internal_Name ('R'));
+         Any            : constant Entity_Id := Make_Temporary (Loc, 'A');
+         RAS_Parameter  : constant Entity_Id := Make_Temporary (Loc, 'R');
          RACW_Parameter : constant Node_Id :=
                             Make_Selected_Component (Loc,
                               Prefix        => RAS_Parameter,
@@ -6675,8 +6615,7 @@ package body Exp_Dist is
          Loc : constant Source_Ptr := Sloc (Pkg_Spec);
 
          Pkg_RPC_Receiver            : constant Entity_Id :=
-                                         Make_Defining_Identifier (Loc,
-                                           New_Internal_Name ('H'));
+                                         Make_Temporary (Loc, 'H');
          Pkg_RPC_Receiver_Object     : Node_Id;
          Pkg_RPC_Receiver_Body       : Node_Id;
          Pkg_RPC_Receiver_Decls      : List_Id;
@@ -6697,13 +6636,9 @@ package body Exp_Dist is
          --  from the request structure, or the local subprogram address (in
          --  case of a RAS).
 
-         Is_Local : constant Entity_Id :=
-                      Make_Defining_Identifier (Loc,
-                        Chars => New_Internal_Name ('L'));
+         Is_Local : constant Entity_Id := Make_Temporary (Loc, 'L');
 
-         Local_Address : constant Entity_Id :=
-                           Make_Defining_Identifier (Loc,
-                             Chars => New_Internal_Name ('A'));
+         Local_Address : constant Entity_Id := Make_Temporary (Loc, 'A');
          --  Address of a local subprogram designated by a reference
          --  corresponding to a RAS.
 
@@ -6714,9 +6649,7 @@ package body Exp_Dist is
          Current_Stubs             : Node_Id;
          Current_Subprogram_Number : Int := First_RCI_Subprogram_Id;
 
-         Subp_Info_Array : constant Entity_Id :=
-                             Make_Defining_Identifier (Loc,
-                               Chars => New_Internal_Name ('I'));
+         Subp_Info_Array : constant Entity_Id := Make_Temporary (Loc, 'I');
 
          Subp_Info_List : constant List_Id := New_List;
 
@@ -7073,8 +7006,7 @@ package body Exp_Dist is
 
          Pkg_RPC_Receiver_Object :=
            Make_Object_Declaration (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, New_Internal_Name ('R')),
+             Defining_Identifier => Make_Temporary (Loc, 'R'),
              Aliased_Present     => True,
              Object_Definition   => New_Occurrence_Of (RTE (RE_Servant), Loc));
          Append_To (Decls, Pkg_RPC_Receiver_Object);
@@ -7163,8 +7095,7 @@ package body Exp_Dist is
       is
          Loc : constant Source_Ptr := Sloc (Nod);
 
-         Request : constant Entity_Id :=
-                     Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+         Request : constant Entity_Id := Make_Temporary (Loc, 'R');
          --  The request object constructed by these stubs
          --  Could we use Name_R instead??? (see GLADE client stubs)
 
@@ -7247,9 +7178,7 @@ package body Exp_Dist is
              Object_Definition   =>
                  New_Occurrence_Of (RTE (RE_Request_Access), Loc)));
 
-         Result :=
-           Make_Defining_Identifier (Loc,
-             Chars => New_Internal_Name ('R'));
+         Result := Make_Temporary (Loc, 'R');
 
          if Is_Function then
             Result_TC :=
@@ -7285,8 +7214,7 @@ package body Exp_Dist is
                      Expression => Make_Integer_Literal (Loc, 0))))));
 
          if not Is_Known_Asynchronous then
-            Exception_Return_Parameter :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('E'));
+            Exception_Return_Parameter := Make_Temporary (Loc, 'E');
 
             Append_To (Decls,
               Make_Object_Declaration (Loc,
@@ -7300,8 +7228,7 @@ package body Exp_Dist is
 
          --  Initialize and fill in arguments list
 
-         Arguments :=
-           Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
+         Arguments := Make_Temporary (Loc, 'A');
          Declare_Create_NVList (Loc, Arguments, Decls, Statements);
 
          Current_Parameter := First (Ordered_Parameters_List);
@@ -7336,9 +7263,7 @@ package body Exp_Dist is
                                   Is_Constrained (Etyp)
                                     or else Is_Elementary_Type (Etyp);
 
-                  Any : constant Entity_Id :=
-                          Make_Defining_Identifier (Loc,
-                            New_Internal_Name ('A'));
+                  Any : constant Entity_Id := Make_Temporary (Loc, 'A');
 
                   Actual_Parameter : Node_Id :=
                                        New_Occurrence_Of (
@@ -7447,8 +7372,7 @@ package body Exp_Dist is
 
                declare
                   Extra_Any_Parameter : constant Entity_Id :=
-                                          Make_Defining_Identifier
-                                            (Loc, New_Internal_Name ('P'));
+                                          Make_Temporary (Loc, 'P');
 
                   Parameter_Exp : constant Node_Id :=
                      Make_Attribute_Reference (Loc,
@@ -7595,9 +7519,8 @@ package body Exp_Dist is
          Controlling_Parameter : Entity_Id) return RPC_Target
       is
          Target_Info : RPC_Target (PCS_Kind => Name_PolyORB_DSA);
-         Target_Reference : constant Entity_Id :=
-                              Make_Defining_Identifier (Loc,
-                                New_Internal_Name ('T'));
+         Target_Reference : constant Entity_Id := Make_Temporary (Loc, 'T');
+
       begin
          if Present (Controlling_Parameter) then
             Append_To (Decls,
@@ -7666,8 +7589,7 @@ package body Exp_Dist is
 
          RPC_Receiver_Decl :=
            Make_Object_Declaration (Loc,
-             Defining_Identifier => Make_Defining_Identifier (Loc,
-                                      New_Internal_Name ('R')),
+             Defining_Identifier => Make_Temporary (Loc, 'R'),
              Aliased_Present     => True,
              Object_Definition   =>
                New_Occurrence_Of (RTE (RE_Servant), Loc));
@@ -7747,9 +7669,7 @@ package body Exp_Dist is
       is
          Loc : constant Source_Ptr := Sloc (Vis_Decl);
 
-         Request_Parameter : constant Entity_Id :=
-                               Make_Defining_Identifier (Loc,
-                                 New_Internal_Name ('R'));
+         Request_Parameter : constant Entity_Id := Make_Temporary (Loc, 'R');
          --  Formal parameter for receiving stubs: a descriptor for an incoming
          --  request.
 
@@ -7793,9 +7713,7 @@ package body Exp_Dist is
                                      Build_Ordered_Parameters_List
                                        (Specification (Vis_Decl));
 
-         Arguments : constant Entity_Id :=
-                       Make_Defining_Identifier (Loc,
-                         New_Internal_Name ('A'));
+         Arguments : constant Entity_Id := Make_Temporary (Loc, 'A');
          --  Name of the named values list used to retrieve parameters
 
          Subp_Spec : Node_Id;
@@ -7825,11 +7743,9 @@ package body Exp_Dist is
             declare
                Etyp        : Entity_Id;
                Constrained : Boolean;
-               Any         : Entity_Id := Empty;
-               Object      : constant Entity_Id :=
-                               Make_Defining_Identifier (Loc,
-                                 Chars => New_Internal_Name ('P'));
-               Expr        : Node_Id   := Empty;
+               Any         : Entity_Id          := Empty;
+               Object      : constant Entity_Id := Make_Temporary (Loc, 'P');
+               Expr        : Node_Id            := Empty;
 
                Is_Controlling_Formal : constant Boolean :=
                                          Is_RACW_Controlling_Formal
@@ -7865,9 +7781,7 @@ package body Exp_Dist is
                  Is_Constrained (Etyp) or else Is_Elementary_Type (Etyp);
 
                if not Is_First_Controlling_Formal then
-                  Any :=
-                    Make_Defining_Identifier (Loc,
-                      Chars => New_Internal_Name ('A'));
+                  Any := Make_Temporary (Loc, 'A');
 
                   Append_To (Outer_Decls,
                     Make_Object_Declaration (Loc,
@@ -7891,13 +7805,10 @@ package body Exp_Dist is
 
                if Is_First_Controlling_Formal then
                   declare
-                     Addr : constant Entity_Id :=
-                              Make_Defining_Identifier (Loc,
-                                Chars => New_Internal_Name ('A'));
+                     Addr : constant Entity_Id := Make_Temporary (Loc, 'A');
 
                      Is_Local : constant Entity_Id :=
-                                  Make_Defining_Identifier (Loc,
-                                    Chars => New_Internal_Name ('L'));
+                                  Make_Temporary (Loc, 'L');
 
                   begin
                      --  Special case: obtain the first controlling formal
@@ -8067,8 +7978,7 @@ package body Exp_Dist is
                                              (Current_Parameter));
 
                      Extra_Any : constant Entity_Id :=
-                                   Make_Defining_Identifier (Loc,
-                                     Chars => New_Internal_Name ('A'));
+                                   Make_Temporary (Loc, 'A');
 
                      Formal_Entity : constant Entity_Id :=
                                        Make_Defining_Identifier (Loc,
@@ -8139,9 +8049,7 @@ package body Exp_Dist is
             declare
                Etyp   : constant Entity_Id :=
                           Etype (Result_Definition (Specification (Vis_Decl)));
-               Result : constant Node_Id   :=
-                          Make_Defining_Identifier (Loc,
-                            Chars => New_Internal_Name ('R'));
+               Result : constant Node_Id   := Make_Temporary (Loc, 'R');
 
             begin
                Inner_Decls := New_List (
@@ -8209,8 +8117,7 @@ package body Exp_Dist is
 
          Subp_Spec :=
            Make_Procedure_Specification (Loc,
-             Defining_Unit_Name       =>
-               Make_Defining_Identifier (Loc, New_Internal_Name ('F')),
+             Defining_Unit_Name       => Make_Temporary (Loc, 'F'),
 
              Parameter_Specifications => New_List (
                Make_Parameter_Specification (Loc,
@@ -8396,9 +8303,7 @@ package body Exp_Dist is
             N      : Node_Id;
             Target : Entity_Id)
          is
-            Strm : constant Entity_Id :=
-                     Make_Defining_Identifier (Loc,
-                       Chars => New_Internal_Name ('S'));
+            Strm : constant Entity_Id := Make_Temporary (Loc, 'S');
             Expr : Node_Id;
 
             Read_Call_List : List_Id;
@@ -8456,9 +8361,7 @@ package body Exp_Dist is
 
                else
                   declare
-                     Temp : constant Entity_Id :=
-                              Make_Defining_Identifier
-                                (Loc, New_Internal_Name ('R'));
+                     Temp : constant Entity_Id := Make_Temporary (Loc, 'R');
 
                   begin
                      Read_Call_List := New_List;
@@ -8659,9 +8562,7 @@ package body Exp_Dist is
             Decls : constant List_Id := New_List;
             Stms  : constant List_Id := New_List;
 
-            Any_Parameter : constant Entity_Id :=
-                              Make_Defining_Identifier (Loc,
-                                New_Internal_Name ('A'));
+            Any_Parameter : constant Entity_Id := Make_Temporary (Loc, 'A');
 
             Use_Opaque_Representation : Boolean;
 
@@ -8744,9 +8645,7 @@ package body Exp_Dist is
 
                      --  The returned object
 
-                     Res : constant Entity_Id :=
-                             Make_Defining_Identifier (Loc,
-                               New_Internal_Name ('R'));
+                     Res : constant Entity_Id := Make_Temporary (Loc, 'R');
 
                      Res_Definition : Node_Id := New_Occurrence_Of (Typ, Loc);
 
@@ -8813,8 +8712,7 @@ package body Exp_Dist is
                               Choice_List : List_Id;
 
                               Struct_Any : constant Entity_Id :=
-                                             Make_Defining_Identifier (Loc,
-                                               New_Internal_Name ('S'));
+                                             Make_Temporary (Loc, 'S');
 
                            begin
                               Append_To (Decls,
@@ -9454,7 +9352,7 @@ package body Exp_Dist is
             --  that the expected type of its parameter is U_Type.
 
             if Ekind (Fnam) = E_Function
-                 and then Present (First_Formal (Fnam))
+              and then Present (First_Formal (Fnam))
             then
                C_Type := Etype (First_Formal (Fnam));
             else
@@ -9641,12 +9539,10 @@ package body Exp_Dist is
                               Choice_List : List_Id;
 
                               Union_Any : constant Entity_Id :=
-                                            Make_Defining_Identifier (Loc,
-                                              New_Internal_Name ('V'));
+                                            Make_Temporary (Loc, 'V');
 
                               Struct_Any : constant Entity_Id :=
-                                             Make_Defining_Identifier (Loc,
-                                                New_Internal_Name ('S'));
+                                             Make_Temporary (Loc, 'S');
 
                               function Make_Discriminant_Reference
                                 return Node_Id;
@@ -9865,8 +9761,7 @@ package body Exp_Dist is
 
                         declare
                            Dummy_Any : constant Entity_Id :=
-                                         Make_Defining_Identifier (Loc,
-                                           Chars => New_Internal_Name ('A'));
+                                         Make_Temporary (Loc, 'A');
 
                         begin
                            Append_To (Decls,
@@ -10016,9 +9911,7 @@ package body Exp_Dist is
 
             if Use_Opaque_Representation then
                declare
-                  Strm : constant Entity_Id :=
-                           Make_Defining_Identifier (Loc,
-                             Chars => New_Internal_Name ('S'));
+                  Strm : constant Entity_Id := Make_Temporary (Loc, 'S');
                   --  Stream used to store data representation produced by
                   --  stream attribute.
 
@@ -11192,9 +11085,7 @@ package body Exp_Dist is
       Pkg_Name := String_From_Name_Buffer;
       Inst :=
         Make_Package_Instantiation (Loc,
-          Defining_Unit_Name   =>
-            Make_Defining_Identifier (Loc,
-              Chars => New_Internal_Name ('R')),
+          Defining_Unit_Name   => Make_Temporary (Loc, 'R'),
 
           Name                 =>
             New_Occurrence_Of (RTE (RE_RCI_Locator), Loc),

@@ -39,7 +39,7 @@
 #  error C++0x header cannot be included from TR1 header
 #endif
 
-#include <cstddef>
+#include <bits/c++config.h>
 
 #if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
 #  include <tr1_impl/type_traits>
@@ -193,7 +193,7 @@ namespace std
     { };
 
   template<typename _Tp>
-    typename add_rvalue_reference<_Tp>::type declval();
+    typename add_rvalue_reference<_Tp>::type declval() noexcept;
 
   template<typename _Tp, typename... _Args>
     class __is_constructible_helper
@@ -234,6 +234,28 @@ namespace std
 							 _Args...>::__value>
     { };
 
+  template<bool, typename _Tp, typename... _Args>
+    struct __is_nt_constructible_helper
+    { static const bool __value = false; };
+
+  template<typename _Tp, typename... _Args>
+    struct __is_nt_constructible_helper<true, _Tp, _Args...>
+    { static const bool __value = noexcept(_Tp(declval<_Args>()...)); };
+
+  template<typename _Tp, typename _Arg>
+    struct __is_nt_constructible_helper<true, _Tp, _Arg>
+    {
+      static const bool __value = noexcept(static_cast<_Tp>(declval<_Arg>()));
+    };
+
+  /// is_nothrow_constructible
+  template<typename _Tp, typename... _Args>
+    struct is_nothrow_constructible
+    : public integral_constant<bool,
+	  __is_nt_constructible_helper<is_constructible<_Tp, _Args...>::value,
+				       _Tp, _Args...>::__value>
+    { };
+
   /// has_trivial_default_constructor
   template<typename _Tp>
     struct has_trivial_default_constructor
@@ -246,9 +268,9 @@ namespace std
     : public integral_constant<bool, __has_trivial_copy(_Tp)>
     { };
 
-  /// has_trivial_assign
+  /// has_trivial_copy_assign
   template<typename _Tp>
-    struct has_trivial_assign
+    struct has_trivial_copy_assign
     : public integral_constant<bool, __has_trivial_assign(_Tp)>
     { };
 
@@ -270,9 +292,9 @@ namespace std
     : public integral_constant<bool, __has_nothrow_copy(_Tp)>
     { };
 
-  /// has_nothrow_assign
+  /// has_nothrow_copy_assign
   template<typename _Tp>
-    struct has_nothrow_assign
+    struct has_nothrow_copy_assign
     : public integral_constant<bool, __has_nothrow_assign(_Tp)>
     { };
 
@@ -403,6 +425,35 @@ namespace std
 
     public:
       typedef typename __decay_selector<__remove_type>::__type type;
+    };
+
+  template<typename _Tp>
+    class reference_wrapper;
+
+  // Helper which adds a reference to a type when given a reference_wrapper
+  template<typename _Tp>
+    struct __strip_reference_wrapper
+    {
+      typedef _Tp __type;
+    };
+
+  template<typename _Tp>
+    struct __strip_reference_wrapper<reference_wrapper<_Tp> >
+    {
+      typedef _Tp& __type;
+    };
+
+  template<typename _Tp>
+    struct __strip_reference_wrapper<const reference_wrapper<_Tp> >
+    {
+      typedef _Tp& __type;
+    };
+
+  template<typename _Tp>
+    struct __decay_and_strip
+    {
+      typedef typename __strip_reference_wrapper<
+	typename decay<_Tp>::type>::__type __type;
     };
 
 
@@ -609,7 +660,6 @@ namespace std
       typedef typename
         common_type<typename common_type<_Tp, _Up>::type, _Vp...>::type type;
     };
-  // @} group metaprogramming
 
   /// declval
   template<typename _Tp>
@@ -621,12 +671,26 @@ namespace std
 
   template<typename _Tp>
     inline typename add_rvalue_reference<_Tp>::type
-    declval()
+    declval() noexcept
     {
       static_assert(__declval_protector<_Tp>::__stop,
 		    "declval() must not be used!");
       return __declval_protector<_Tp>::__delegate();
     }
+
+  /// result_of
+  template<typename _Signature>
+    class result_of;
+
+  template<typename _Functor, typename... _ArgTypes>
+    struct result_of<_Functor(_ArgTypes...)>
+    {
+      typedef
+        decltype( std::declval<_Functor>()(std::declval<_ArgTypes>()...) )
+        type;
+    };
+
+  // @} group metaprogramming
 }
 
 #endif  // __GXX_EXPERIMENTAL_CXX0X__

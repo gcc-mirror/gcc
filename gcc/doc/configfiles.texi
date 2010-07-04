@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+@c 1999, 2000, 2001, 2002, 2010 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -33,12 +33,8 @@ used.
 @item
 @file{cstamp-h} is used as a timestamp.
 @item
-@file{fixinc/Makefile} is constructed from @file{fixinc/Makefile.in}.
-@item
 @file{gccbug}, a script for reporting bugs in GCC, is constructed from
 @file{gccbug.in}.
-@item
-@file{intl/Makefile} is constructed from @file{intl/Makefile.in}.
 @item
 If a language @file{config-lang.in} file (@pxref{Front End Config, ,
 The Front End @file{config-lang.in} File}) sets @code{outputs}, then

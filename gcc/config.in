@@ -309,7 +309,19 @@
 #endif
 
 
-/* Define if your assembler supports the sahf mnemonic. */
+/* Define if your assembler supports the .quad directive. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_IX86_QUAD
+#endif
+
+
+/* Define true if the assembler supports 'rep <insn>, lock <insn>'. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_IX86_REP_LOCK_PREFIX
+#endif
+
+
+/* Define if your assembler supports the sahf mnemonic in 64bit mode. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_IX86_SAHF
 #endif
@@ -814,6 +826,24 @@
 #endif
 
 
+/* Define to 1 if you have the `elf_getshdrstrndx' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_ELF_GETSHDRSTRNDX
+#endif
+
+
+/* Define to 1 if you have the `elf_getshstrndx' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_ELF_GETSHSTRNDX
+#endif
+
+
+/* Define if elf_getshstrndx has gABI conformant return values. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_ELF_GETSHSTRNDX_GABI
+#endif
+
+
 /* Define to 1 if you have the <fcntl.h> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_FCNTL_H
@@ -1138,6 +1168,12 @@
 #endif
 
 
+/* Define if your PowerPC64 linker supports a large TOC. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_LARGE_TOC
+#endif
+
+
 /* Define if your PowerPC64 linker only needs function descriptor syms. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_NO_DOT_SYMS
@@ -1161,6 +1197,12 @@
    a read-write section. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_RO_RW_SECTION_MIXING
+#endif
+
+
+/* Define if your linker supports the *_sol2 emulations. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_SOL2_EMULATION
 #endif
 
 
@@ -1652,6 +1694,13 @@
 #endif
 
 
+/* Define to the flag used to mark TLS sections if the default (`T') doesn't
+   work. */
+#ifndef USED_FOR_TARGET
+#undef TLS_SECTION_ASM_FLAG
+#endif
+
+
 /* maximum shared array blocking size. */
 #ifndef USED_FOR_TARGET
 #undef UPC_MAX_BLOCK_SIZE
@@ -1747,6 +1796,12 @@
    still efficiently supported by the host hardware. */
 #ifndef USED_FOR_TARGET
 #undef USE_LONG_LONG_FOR_WIDEST_FAST_INT
+#endif
+
+
+/* Define if we should use leading underscore on 64 bit mingw targets */
+#ifndef USED_FOR_TARGET
+#undef USE_MINGW64_LEADING_UNDERSCORES
 #endif
 
 

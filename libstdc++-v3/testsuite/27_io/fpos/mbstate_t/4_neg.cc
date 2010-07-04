@@ -1,4 +1,4 @@
-// Copyright (C) 2003, 2009
+// Copyright (C) 2003, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -32,6 +32,8 @@ void test04()
 
   // Explicit conversion
   n = static_cast<long>(pos); // { dg-error "invalid static_cast" "" { xfail *-*-* } }
+
+  n = n; // Suppress unused warning.
 }
 
 int main()

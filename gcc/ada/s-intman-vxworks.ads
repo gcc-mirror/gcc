@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,8 +59,7 @@ package System.Interrupt_Management is
 
    type Interrupt_Set is array (Interrupt_ID) of Boolean;
 
-   subtype Signal_ID is Interrupt_ID
-     range 0 .. Interfaces.C."-" (System.OS_Interface.NSIG, 1);
+   subtype Signal_ID is Interrupt_ID range 0 .. System.OS_Interface.NSIG - 1;
 
    type Signal_Set is array (Signal_ID) of Boolean;
 
@@ -74,7 +73,7 @@ package System.Interrupt_Management is
    --  convention that ID zero is not used for any "real" signals, and SIGRARE
    --  = 0 when SIGRARE is not one of the locally supported signals, we can
    --  write:
-   --     Reserved (SIGRARE) := true;
+   --     Reserved (SIGRARE) := True;
    --  and the initialization code will be portable.
 
    Abort_Task_Interrupt : Signal_ID;

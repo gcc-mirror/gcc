@@ -37,11 +37,11 @@ bar (int a)
     foo (9);
   if (i == 0)
     foo (10);
-  if (&a == 0)	/* { dg-warning "never be NULL" "correct warning" } */
+  if (&a == 0)	/* { dg-warning "the comparison will always evaluate as 'false'" "correct warning" } */
     foo (11);
   if (a == 0)
     foo (12);
-  if (&&lab == 0) /* { dg-warning "never be NULL" "correct warning" } */
+  if (&&lab == 0) /* { dg-warning "the comparison will always evaluate as 'false'" "correct warning" } */
     foo (13);
   if (0 == foo)
     foo (14);
@@ -51,10 +51,10 @@ bar (int a)
     foo (16);
   if (0 == i)
     foo (17);
-  if (0 == &a)	/* { dg-warning "never be NULL" "correct warning" } */
+  if (0 == &a)	/* { dg-warning "the comparison will always evaluate as 'false'" "correct warning" } */
     foo (18);
   if (0 == a)
     foo (19);
-  if (0 == &&lab) /* { dg-warning "never be NULL" "correct warning" } */
+  if (0 == &&lab) /* { dg-warning "the comparison will always evaluate as 'false'" "correct warning" } */
     foo (20);
 }

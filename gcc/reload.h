@@ -1,6 +1,7 @@
 /* Communication between reload.c, reload1.c and the rest of compiler.
    Copyright (C) 1987, 1991, 1992, 1993, 1994, 1995, 1997, 1998, 1999,
-   2000, 2001, 2003, 2004, 2007, 2008 Free Software Foundation, Inc.
+   2000, 2001, 2003, 2004, 2007, 2008, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,12 +30,11 @@ along with GCC; see the file COPYING3.  If not see
   SECONDARY_RELOAD_CLASS (CLASS, MODE, X)
 #endif
 
-/* If MEMORY_MOVE_COST isn't defined, give it a default here.  */
-#ifndef MEMORY_MOVE_COST
-#define MEMORY_MOVE_COST(MODE,CLASS,IN) \
-  (4 + memory_move_secondary_cost ((MODE), (CLASS), (IN)))
-#endif
-extern int memory_move_secondary_cost (enum machine_mode, enum reg_class, int);
+extern int register_move_cost (enum machine_mode, enum reg_class,
+			       enum reg_class);
+extern int memory_move_cost (enum machine_mode, enum reg_class, bool);
+extern int memory_move_secondary_cost (enum machine_mode, enum reg_class,
+				       bool);
 
 /* Maximum number of reloads we can need.  */
 #define MAX_RELOADS (2 * MAX_RECOG_OPERANDS * (MAX_REGS_PER_ADDRESS + 1))
@@ -224,8 +224,8 @@ struct insn_chain
   /* Register life information: record all live hard registers, and
      all live pseudos that have a hard register.  This set also
      contains pseudos spilled by IRA.  */
-  regset_head live_throughout;
-  regset_head dead_or_set;
+  bitmap_head live_throughout;
+  bitmap_head dead_or_set;
 
   /* Copies of the global variables computed by find_reloads.  */
   struct reload *rld;
@@ -241,8 +241,10 @@ extern struct insn_chain *reload_insn_chain;
 
 /* Allocate a new insn_chain structure.  */
 extern struct insn_chain *new_insn_chain (void);
+#endif
 
-extern void compute_use_by_pseudos (HARD_REG_SET *, regset);
+#if defined SET_HARD_REG_BIT
+extern void compute_use_by_pseudos (HARD_REG_SET *, bitmap);
 #endif
 
 /* Functions from reload.c:  */
@@ -346,8 +348,15 @@ extern void mark_home_live (int);
 extern rtx eliminate_regs (rtx, enum machine_mode, rtx);
 extern bool elimination_target_reg_p (rtx);
 
+/* Called from the register allocator to estimate costs of eliminating
+   invariant registers.  */
+extern void calculate_elim_costs_all_insns (void);
+
 /* Deallocate the reload register used by reload number R.  */
 extern void deallocate_reload_reg (int r);
+
+/* True if caller-save has been reinitialized.  */
+extern bool caller_save_initialized_p;
 
 /* Functions in caller-save.c:  */
 

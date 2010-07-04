@@ -1,5 +1,5 @@
 /* Intrinsic translation
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
@@ -25,12 +25,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "tm.h"		/* For UNITS_PER_WORD.  */
 #include "tree.h"
 #include "ggc.h"
-#include "toplev.h"
-#include "real.h"
-#include "gimple.h"
+#include "toplev.h"	/* For rest_of_decl_compilation/internal_error.  */
 #include "flags.h"
 #include "gfortran.h"
 #include "arith.h"
@@ -52,14 +50,12 @@ typedef struct GTY(()) gfc_intrinsic_map_t {
 
   /* Enum value from the "language-independent", aka C-centric, part
      of gcc, or END_BUILTINS of no such value set.  */
-  enum built_in_function code_r4;
-  enum built_in_function code_r8;
-  enum built_in_function code_r10;
-  enum built_in_function code_r16;
-  enum built_in_function code_c4;
-  enum built_in_function code_c8;
-  enum built_in_function code_c10;
-  enum built_in_function code_c16;
+  enum built_in_function float_built_in;
+  enum built_in_function double_built_in;
+  enum built_in_function long_double_built_in;
+  enum built_in_function complex_float_built_in;
+  enum built_in_function complex_double_built_in;
+  enum built_in_function complex_long_double_built_in;
 
   /* True if the naming pattern is to prepend "c" for complex and
      append "f" for kind=4.  False if the naming pattern is to
@@ -92,28 +88,33 @@ gfc_intrinsic_map_t;
    except for atan2.  */
 #define DEFINE_MATH_BUILTIN(ID, NAME, ARGTYPE) \
   { GFC_ISYM_ ## ID, BUILT_IN_ ## ID ## F, BUILT_IN_ ## ID, \
-    BUILT_IN_ ## ID ## L, BUILT_IN_ ## ID ## L, (enum built_in_function) 0, \
-    (enum built_in_function) 0, (enum built_in_function) 0, \
-    (enum built_in_function) 0, true, false, true, NAME, NULL_TREE, \
-    NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, \
-    NULL_TREE},
+    BUILT_IN_ ## ID ## L, END_BUILTINS, END_BUILTINS, END_BUILTINS, \
+    true, false, true, NAME, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, \
+    NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE},
 
 #define DEFINE_MATH_BUILTIN_C(ID, NAME, ARGTYPE) \
   { GFC_ISYM_ ## ID, BUILT_IN_ ## ID ## F, BUILT_IN_ ## ID, \
-    BUILT_IN_ ## ID ## L, BUILT_IN_ ## ID ## L, BUILT_IN_C ## ID ## F, \
-    BUILT_IN_C ## ID, BUILT_IN_C ## ID ## L, BUILT_IN_C ## ID ## L, true, \
-    true, true, NAME, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, \
-    NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE},
+    BUILT_IN_ ## ID ## L, BUILT_IN_C ## ID ## F, BUILT_IN_C ## ID, \
+    BUILT_IN_C ## ID ## L, true, true, true, NAME, NULL_TREE, NULL_TREE, \
+    NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE},
 
 #define LIB_FUNCTION(ID, NAME, HAVE_COMPLEX) \
-  { GFC_ISYM_ ## ID, END_BUILTINS, END_BUILTINS, END_BUILTINS, END_BUILTINS, \
-    END_BUILTINS, END_BUILTINS, END_BUILTINS, END_BUILTINS, \
+  { GFC_ISYM_ ## ID, END_BUILTINS, END_BUILTINS, END_BUILTINS, \
+    END_BUILTINS, END_BUILTINS, END_BUILTINS, \
     false, HAVE_COMPLEX, true, NAME, NULL_TREE, NULL_TREE, NULL_TREE, \
     NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE }
 
+#define OTHER_BUILTIN(ID, NAME, TYPE) \
+  { GFC_ISYM_NONE, BUILT_IN_ ## ID ## F, BUILT_IN_ ## ID, \
+    BUILT_IN_ ## ID ## L, END_BUILTINS, END_BUILTINS, END_BUILTINS, \
+    true, false, true, NAME, NULL_TREE, NULL_TREE, \
+    NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE},
+
 static GTY(()) gfc_intrinsic_map_t gfc_intrinsic_map[] =
 {
-  /* Functions built into gcc itself.  */
+  /* Functions built into gcc itself (DEFINE_MATH_BUILTIN and
+     DEFINE_MATH_BUILTIN_C), then the built-ins that don't correspond
+     to any GFC_ISYM id directly, which use the OTHER_BUILTIN macro.  */
 #include "mathbuiltins.def"
 
   /* Functions in libgfortran.  */
@@ -123,30 +124,45 @@ static GTY(()) gfc_intrinsic_map_t gfc_intrinsic_map[] =
   LIB_FUNCTION (NONE, NULL, false)
 
 };
+#undef OTHER_BUILTIN
 #undef LIB_FUNCTION
 #undef DEFINE_MATH_BUILTIN
 #undef DEFINE_MATH_BUILTIN_C
 
-/* Structure for storing components of a floating number to be used by
-   elemental functions to manipulate reals.  */
-typedef struct
-{
-  tree arg;     /* Variable tree to view convert to integer.  */
-  tree expn;    /* Variable tree to save exponent.  */
-  tree frac;    /* Variable tree to save fraction.  */
-  tree smask;   /* Constant tree of sign's mask.  */
-  tree emask;   /* Constant tree of exponent's mask.  */
-  tree fmask;   /* Constant tree of fraction's mask.  */
-  tree edigits; /* Constant tree of the number of exponent bits.  */
-  tree fdigits; /* Constant tree of the number of fraction bits.  */
-  tree f1;      /* Constant tree of the f1 defined in the real model.  */
-  tree bias;    /* Constant tree of the bias of exponent in the memory.  */
-  tree type;    /* Type tree of arg1.  */
-  tree mtype;   /* Type tree of integer type. Kind is that of arg1.  */
-}
-real_compnt_info;
 
 enum rounding_mode { RND_ROUND, RND_TRUNC, RND_CEIL, RND_FLOOR };
+
+
+/* Find the correct variant of a given builtin from its argument.  */
+static tree
+builtin_decl_for_precision (enum built_in_function base_built_in,
+			    int precision)
+{
+  int i = END_BUILTINS;
+
+  gfc_intrinsic_map_t *m;
+  for (m = gfc_intrinsic_map; m->double_built_in != base_built_in ; m++)
+    ;
+
+  if (precision == TYPE_PRECISION (float_type_node))
+    i = m->float_built_in;
+  else if (precision == TYPE_PRECISION (double_type_node))
+    i = m->double_built_in;
+  else if (precision == TYPE_PRECISION (long_double_type_node))
+    i = m->long_double_built_in;
+
+  return (i == END_BUILTINS ? NULL_TREE : built_in_decls[i]);
+}
+
+
+static tree
+builtin_decl_for_float_kind (enum built_in_function double_built_in, int kind)
+{
+  int i = gfc_validate_kind (BT_REAL, kind, false);
+  return builtin_decl_for_precision (double_built_in,
+				     gfc_real_kinds[i].mode_precision);
+}
+
 
 /* Evaluate the arguments to an intrinsic function.  The value
    of NARGS may be less than the actual number of arguments in EXPR
@@ -355,14 +371,10 @@ build_round_expr (tree arg, tree restype)
     gcc_unreachable ();
 
   /* Now, depending on the argument type, we choose between intrinsics.  */
-  if (argprec == TYPE_PRECISION (float_type_node))
-    fn = built_in_decls[longlong ? BUILT_IN_LLROUNDF : BUILT_IN_LROUNDF];
-  else if (argprec == TYPE_PRECISION (double_type_node))
-    fn = built_in_decls[longlong ? BUILT_IN_LLROUND : BUILT_IN_LROUND];
-  else if (argprec == TYPE_PRECISION (long_double_type_node))
-    fn = built_in_decls[longlong ? BUILT_IN_LLROUNDL : BUILT_IN_LROUNDL];
+  if (longlong)
+    fn = builtin_decl_for_precision (BUILT_IN_LLROUND, argprec);
   else
-    gcc_unreachable ();
+    fn = builtin_decl_for_precision (BUILT_IN_LROUND, argprec);
 
   return fold_convert (restype, build_call_expr_loc (input_location,
 						 fn, 1, arg));
@@ -418,6 +430,7 @@ gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, enum rounding_mode op)
   tree arg[2];
   tree tmp;
   tree cond;
+  tree decl;
   mpfr_t huge;
   int n, nargs;
   int kind;
@@ -425,44 +438,16 @@ gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, enum rounding_mode op)
   kind = expr->ts.kind;
   nargs =  gfc_intrinsic_argument_list_length (expr);
 
-  n = END_BUILTINS;
+  decl = NULL_TREE;
   /* We have builtin functions for some cases.  */
   switch (op)
     {
     case RND_ROUND:
-      switch (kind)
-	{
-	case 4:
-	  n = BUILT_IN_ROUNDF;
-	  break;
-
-	case 8:
-	  n = BUILT_IN_ROUND;
-	  break;
-
-	case 10:
-	case 16:
-	  n = BUILT_IN_ROUNDL;
-	  break;
-	}
+      decl = builtin_decl_for_float_kind (BUILT_IN_ROUND, kind);
       break;
 
     case RND_TRUNC:
-      switch (kind)
-	{
-	case 4:
-	  n = BUILT_IN_TRUNCF;
-	  break;
-
-	case 8:
-	  n = BUILT_IN_TRUNC;
-	  break;
-
-	case 10:
-	case 16:
-	  n = BUILT_IN_TRUNCL;
-	  break;
-	}
+      decl = builtin_decl_for_float_kind (BUILT_IN_TRUNC, kind);
       break;
 
     default:
@@ -474,11 +459,9 @@ gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, enum rounding_mode op)
   gfc_conv_intrinsic_function_args (se, expr, arg, nargs);
 
   /* Use a builtin function if one exists.  */
-  if (n != END_BUILTINS)
+  if (decl != NULL_TREE)
     {
-      tmp = built_in_decls[n];
-      se->expr = build_call_expr_loc (input_location,
-				  tmp, 1, arg[0]);
+      se->expr = build_call_expr_loc (input_location, decl, 1, arg[0]);
       return;
     }
 
@@ -582,24 +565,30 @@ gfc_build_intrinsic_lib_fndecls (void)
   gfc_intrinsic_map_t *m;
 
   /* Add GCC builtin functions.  */
-  for (m = gfc_intrinsic_map; m->id != GFC_ISYM_NONE; m++)
+  for (m = gfc_intrinsic_map;
+       m->id != GFC_ISYM_NONE || m->double_built_in != END_BUILTINS; m++)
     {
-      if (m->code_r4 != END_BUILTINS)
-	m->real4_decl = built_in_decls[m->code_r4];
-      if (m->code_r8 != END_BUILTINS)
-	m->real8_decl = built_in_decls[m->code_r8];
-      if (m->code_r10 != END_BUILTINS)
-	m->real10_decl = built_in_decls[m->code_r10];
-      if (m->code_r16 != END_BUILTINS)
-	m->real16_decl = built_in_decls[m->code_r16];
-      if (m->code_c4 != END_BUILTINS)
-	m->complex4_decl = built_in_decls[m->code_c4];
-      if (m->code_c8 != END_BUILTINS)
-	m->complex8_decl = built_in_decls[m->code_c8];
-      if (m->code_c10 != END_BUILTINS)
-	m->complex10_decl = built_in_decls[m->code_c10];
-      if (m->code_c16 != END_BUILTINS)
-	m->complex16_decl = built_in_decls[m->code_c16];
+      if (m->float_built_in != END_BUILTINS)
+	m->real4_decl = built_in_decls[m->float_built_in];
+      if (m->complex_float_built_in != END_BUILTINS)
+	m->complex4_decl = built_in_decls[m->complex_float_built_in];
+      if (m->double_built_in != END_BUILTINS)
+	m->real8_decl = built_in_decls[m->double_built_in];
+      if (m->complex_double_built_in != END_BUILTINS)
+	m->complex8_decl = built_in_decls[m->complex_double_built_in];
+
+      /* If real(kind=10) exists, it is always long double.  */
+      if (m->long_double_built_in != END_BUILTINS)
+	m->real10_decl = built_in_decls[m->long_double_built_in];
+      if (m->complex_long_double_built_in != END_BUILTINS)
+	m->complex10_decl = built_in_decls[m->complex_long_double_built_in];
+
+      /* For now, we assume that if real(kind=16) exists, it is long double.
+	 Later, we will deal with __float128 and break this assumption.  */
+      if (m->long_double_built_in != END_BUILTINS)
+	m->real16_decl = built_in_decls[m->long_double_built_in];
+      if (m->complex_long_double_built_in != END_BUILTINS)
+	m->complex16_decl = built_in_decls[m->complex_long_double_built_in];
     }
 }
 
@@ -668,18 +657,18 @@ gfc_get_intrinsic_lib_fndecl (gfc_intrinsic_map_t * m, gfc_expr * expr)
 
   if (m->libm_name)
     {
-      if (ts->kind == 4)
+      int n = gfc_validate_kind (BT_REAL, ts->kind, false);
+      if (gfc_real_kinds[n].c_float)
 	snprintf (name, sizeof (name), "%s%s%s",
-		ts->type == BT_COMPLEX ? "c" : "", m->name, "f");
-      else if (ts->kind == 8)
+		  ts->type == BT_COMPLEX ? "c" : "", m->name, "f");
+      else if (gfc_real_kinds[n].c_double)
 	snprintf (name, sizeof (name), "%s%s",
-		ts->type == BT_COMPLEX ? "c" : "", m->name);
+		  ts->type == BT_COMPLEX ? "c" : "", m->name);
+      else if (gfc_real_kinds[n].c_long_double)
+	snprintf (name, sizeof (name), "%s%s%s",
+		  ts->type == BT_COMPLEX ? "c" : "", m->name, "l");
       else
-	{
-	  gcc_assert (ts->kind == 10 || ts->kind == 16);
-	  snprintf (name, sizeof (name), "%s%s%s",
-		ts->type == BT_COMPLEX ? "c" : "", m->name, "l");
-	}
+	gcc_unreachable ();
     }
   else
     {
@@ -727,7 +716,8 @@ gfc_conv_intrinsic_lib_function (gfc_se * se, gfc_expr * expr)
 
   id = expr->value.function.isym->id;
   /* Find the entry for this function.  */
-  for (m = gfc_intrinsic_map; m->id != GFC_ISYM_NONE; m++)
+  for (m = gfc_intrinsic_map;
+       m->id != GFC_ISYM_NONE || m->double_built_in != END_BUILTINS; m++)
     {
       if (id == m->id)
 	break;
@@ -789,31 +779,16 @@ gfc_trans_same_strlen_check (const char* intr_name, locus* where,
 static void
 gfc_conv_intrinsic_exponent (gfc_se *se, gfc_expr *expr)
 {
-  tree arg, type, res, tmp;
-  int frexp;
+  tree arg, type, res, tmp, frexp;
 
-  switch (expr->value.function.actual->expr->ts.kind)
-    {
-    case 4:
-      frexp = BUILT_IN_FREXPF;
-      break;
-    case 8:
-      frexp = BUILT_IN_FREXP;
-      break;
-    case 10:
-    case 16:
-      frexp = BUILT_IN_FREXPL;
-      break;
-    default:
-      gcc_unreachable ();
-    }
+  frexp = builtin_decl_for_float_kind (BUILT_IN_FREXP,
+				       expr->value.function.actual->expr->ts.kind);
 
   gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
 
   res = gfc_create_var (integer_type_node, NULL);
-  tmp = build_call_expr_loc (input_location,
-			 built_in_decls[frexp], 2, arg,
-			 gfc_build_addr_expr (NULL_TREE, res));
+  tmp = build_call_expr_loc (input_location, frexp, 2, arg,
+			     gfc_build_addr_expr (NULL_TREE, res));
   gfc_add_expr_to_block (&se->pre, tmp);
 
   type = gfc_typenode_for_spec (&expr->ts);
@@ -993,8 +968,7 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
 static void
 gfc_conv_intrinsic_abs (gfc_se * se, gfc_expr * expr)
 {
-  tree arg;
-  int n;
+  tree arg, cabs;
 
   gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
 
@@ -1006,23 +980,8 @@ gfc_conv_intrinsic_abs (gfc_se * se, gfc_expr * expr)
       break;
 
     case BT_COMPLEX:
-      switch (expr->ts.kind)
-	{
-	case 4:
-	  n = BUILT_IN_CABSF;
-	  break;
-	case 8:
-	  n = BUILT_IN_CABS;
-	  break;
-	case 10:
-	case 16:
-	  n = BUILT_IN_CABSL;
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
-      se->expr = build_call_expr_loc (input_location,
-				  built_in_decls[n], 1, arg);
+      cabs = builtin_decl_for_float_kind (BUILT_IN_CABS, expr->ts.kind);
+      se->expr = build_call_expr_loc (input_location, cabs, 1, arg);
       break;
 
     default:
@@ -1074,6 +1033,7 @@ gfc_conv_intrinsic_mod (gfc_se * se, gfc_expr * expr, int modulo)
   tree tmp;
   tree test;
   tree test2;
+  tree fmod;
   mpfr_t huge;
   int n, ikind;
   tree args[2];
@@ -1093,33 +1053,16 @@ gfc_conv_intrinsic_mod (gfc_se * se, gfc_expr * expr, int modulo)
       break;
 
     case BT_REAL:
-      n = END_BUILTINS;
+      fmod = NULL_TREE;
       /* Check if we have a builtin fmod.  */
-      switch (expr->ts.kind)
-	{
-	case 4:
-	  n = BUILT_IN_FMODF;
-	  break;
-
-	case 8:
-	  n = BUILT_IN_FMOD;
-	  break;
-
-	case 10:
-	case 16:
-	  n = BUILT_IN_FMODL;
-	  break;
-
-	default:
-	  break;
-	}
+      fmod = builtin_decl_for_float_kind (BUILT_IN_FMOD, expr->ts.kind);
 
       /* Use it if it exists.  */
-      if (n != END_BUILTINS)
+      if (fmod != NULL_TREE)
 	{
-  	  tmp = build_addr (built_in_decls[n], current_function_decl);
+  	  tmp = build_addr (fmod, current_function_decl);
 	  se->expr = build_call_array_loc (input_location,
-				       TREE_TYPE (TREE_TYPE (built_in_decls[n])),
+				       TREE_TYPE (TREE_TYPE (fmod)),
                                        tmp, 2, args);
 	  if (modulo == 0)
 	    return;
@@ -1137,7 +1080,7 @@ gfc_conv_intrinsic_mod (gfc_se * se, gfc_expr * expr, int modulo)
 	  test  = (fmod (arg, arg2) != 0) && ((arg < 0) xor (arg2 < 0))
 	 thereby avoiding another division and retaining the accuracy
 	 of the builtin function.  */
-      if (n != END_BUILTINS && modulo)
+      if (fmod != NULL_TREE && modulo)
 	{
 	  tree zero = gfc_build_const (type, integer_zero_node);
 	  tmp = gfc_evaluate_now (se->expr, &se->pre);
@@ -1234,24 +1177,8 @@ gfc_conv_intrinsic_sign (gfc_se * se, gfc_expr * expr)
     {
       tree abs;
 
-      switch (expr->ts.kind)
-	{
-	case 4:
-	  tmp = built_in_decls[BUILT_IN_COPYSIGNF];
-	  abs = built_in_decls[BUILT_IN_FABSF];
-	  break;
-	case 8:
-	  tmp = built_in_decls[BUILT_IN_COPYSIGN];
-	  abs = built_in_decls[BUILT_IN_FABS];
-	  break;
-	case 10:
-	case 16:
-	  tmp = built_in_decls[BUILT_IN_COPYSIGNL];
-	  abs = built_in_decls[BUILT_IN_FABSL];
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
+      tmp = builtin_decl_for_float_kind (BUILT_IN_COPYSIGN, expr->ts.kind);
+      abs = builtin_decl_for_float_kind (BUILT_IN_FABS, expr->ts.kind);
 
       /* We explicitly have to ignore the minus sign. We do so by using
 	 result = (arg1 == 0) ? abs(arg0) : copysign(arg0, arg1).  */
@@ -1266,8 +1193,8 @@ gfc_conv_intrinsic_sign (gfc_se * se, gfc_expr * expr)
 				  build_call_expr (tmp, 2, args[0], args[1]));
 	}
       else
-        se->expr = build_call_expr_loc (input_location,
-				  tmp, 2, args[0], args[1]);
+        se->expr = build_call_expr_loc (input_location, tmp, 2,
+					args[0], args[1]);
       return;
     }
 
@@ -1402,7 +1329,7 @@ gfc_conv_intrinsic_fdate (gfc_se * se, gfc_expr * expr)
   args = (tree *) alloca (sizeof (tree) * num_args);
 
   var = gfc_create_var (pchar_type_node, "pstr");
-  len = gfc_create_var (gfc_get_int_type (4), "len");
+  len = gfc_create_var (gfc_charlen_type_node, "len");
 
   gfc_conv_intrinsic_function_args (se, expr, &args[2], num_args - 2);
   args[0] = gfc_build_addr_expr (NULL_TREE, var);
@@ -1443,7 +1370,7 @@ gfc_conv_intrinsic_ttynam (gfc_se * se, gfc_expr * expr)
   args = (tree *) alloca (sizeof (tree) * num_args);
 
   var = gfc_create_var (pchar_type_node, "pstr");
-  len = gfc_create_var (gfc_get_int_type (4), "len");
+  len = gfc_create_var (gfc_charlen_type_node, "len");
 
   gfc_conv_intrinsic_function_args (se, expr, &args[2], num_args - 2);
   args[0] = gfc_build_addr_expr (NULL_TREE, var);
@@ -3622,32 +3549,16 @@ gfc_conv_intrinsic_merge (gfc_se * se, gfc_expr * expr)
 static void
 gfc_conv_intrinsic_fraction (gfc_se * se, gfc_expr * expr)
 {
-  tree arg, type, tmp;
-  int frexp;
+  tree arg, type, tmp, frexp;
 
-  switch (expr->ts.kind)
-    {
-      case 4:
-	frexp = BUILT_IN_FREXPF;
-	break;
-      case 8:
-	frexp = BUILT_IN_FREXP;
-	break;
-      case 10:
-      case 16:
-	frexp = BUILT_IN_FREXPL;
-	break;
-      default:
-	gcc_unreachable ();
-    }
+  frexp = builtin_decl_for_float_kind (BUILT_IN_FREXP, expr->ts.kind);
 
   type = gfc_typenode_for_spec (&expr->ts);
   gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
   tmp = gfc_create_var (integer_type_node, NULL);
-  se->expr = build_call_expr_loc (input_location,
-			      built_in_decls[frexp], 2,
-			      fold_convert (type, arg),
-			      gfc_build_addr_expr (NULL_TREE, tmp));
+  se->expr = build_call_expr_loc (input_location, frexp, 2,
+				  fold_convert (type, arg),
+				  gfc_build_addr_expr (NULL_TREE, tmp));
   se->expr = fold_convert (type, se->expr);
 }
 
@@ -3659,41 +3570,19 @@ gfc_conv_intrinsic_fraction (gfc_se * se, gfc_expr * expr)
 static void
 gfc_conv_intrinsic_nearest (gfc_se * se, gfc_expr * expr)
 {
-  tree args[2], type, tmp;
-  int nextafter, copysign, huge_val;
+  tree args[2], type, tmp, nextafter, copysign, huge_val;
 
-  switch (expr->ts.kind)
-    {
-      case 4:
-	nextafter = BUILT_IN_NEXTAFTERF;
-	copysign = BUILT_IN_COPYSIGNF;
-	huge_val = BUILT_IN_HUGE_VALF;
-	break;
-      case 8:
-	nextafter = BUILT_IN_NEXTAFTER;
-	copysign = BUILT_IN_COPYSIGN;
-	huge_val = BUILT_IN_HUGE_VAL;
-	break;
-      case 10:
-      case 16:
-	nextafter = BUILT_IN_NEXTAFTERL;
-	copysign = BUILT_IN_COPYSIGNL;
-	huge_val = BUILT_IN_HUGE_VALL;
-	break;
-      default:
-	gcc_unreachable ();
-    }
+  nextafter = builtin_decl_for_float_kind (BUILT_IN_NEXTAFTER, expr->ts.kind);
+  copysign = builtin_decl_for_float_kind (BUILT_IN_COPYSIGN, expr->ts.kind);
+  huge_val = builtin_decl_for_float_kind (BUILT_IN_HUGE_VAL, expr->ts.kind);
 
   type = gfc_typenode_for_spec (&expr->ts);
   gfc_conv_intrinsic_function_args (se, expr, args, 2);
-  tmp = build_call_expr_loc (input_location,
-			 built_in_decls[copysign], 2,
-			 build_call_expr_loc (input_location,
-					  built_in_decls[huge_val], 0),
-			 fold_convert (type, args[1]));
-  se->expr = build_call_expr_loc (input_location,
-			      built_in_decls[nextafter], 2,
-			      fold_convert (type, args[0]), tmp);
+  tmp = build_call_expr_loc (input_location, copysign, 2,
+			     build_call_expr_loc (input_location, huge_val, 0),
+			     fold_convert (type, args[1]));
+  se->expr = build_call_expr_loc (input_location, nextafter, 2,
+				  fold_convert (type, args[0]), tmp);
   se->expr = fold_convert (type, se->expr);
 }
 
@@ -3719,8 +3608,8 @@ static void
 gfc_conv_intrinsic_spacing (gfc_se * se, gfc_expr * expr)
 {
   tree arg, type, prec, emin, tiny, res, e;
-  tree cond, tmp;
-  int frexp, scalbn, k;
+  tree cond, tmp, frexp, scalbn;
+  int k;
   stmtblock_t block;
 
   k = gfc_validate_kind (BT_REAL, expr->ts.kind, false);
@@ -3728,24 +3617,8 @@ gfc_conv_intrinsic_spacing (gfc_se * se, gfc_expr * expr)
   emin = build_int_cst (NULL_TREE, gfc_real_kinds[k].min_exponent - 1);
   tiny = gfc_conv_mpfr_to_tree (gfc_real_kinds[k].tiny, expr->ts.kind, 0);
 
-  switch (expr->ts.kind)
-    {
-      case 4:
-	frexp = BUILT_IN_FREXPF;
-	scalbn = BUILT_IN_SCALBNF;
-	break;
-      case 8:
-	frexp = BUILT_IN_FREXP;
-	scalbn = BUILT_IN_SCALBN;
-	break;
-      case 10:
-      case 16:
-	frexp = BUILT_IN_FREXPL;
-	scalbn = BUILT_IN_SCALBNL;
-	break;
-      default:
-	gcc_unreachable ();
-    }
+  frexp = builtin_decl_for_float_kind (BUILT_IN_FREXP, expr->ts.kind);
+  scalbn = builtin_decl_for_float_kind (BUILT_IN_SCALBN, expr->ts.kind);
 
   gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
   arg = gfc_evaluate_now (arg, &se->pre);
@@ -3757,17 +3630,15 @@ gfc_conv_intrinsic_spacing (gfc_se * se, gfc_expr * expr)
 
   /* Build the block for s /= 0.  */
   gfc_start_block (&block);
-  tmp = build_call_expr_loc (input_location,
-			 built_in_decls[frexp], 2, arg,
-			 gfc_build_addr_expr (NULL_TREE, e));
+  tmp = build_call_expr_loc (input_location, frexp, 2, arg,
+			     gfc_build_addr_expr (NULL_TREE, e));
   gfc_add_expr_to_block (&block, tmp);
 
   tmp = fold_build2 (MINUS_EXPR, integer_type_node, e, prec);
   gfc_add_modify (&block, e, fold_build2 (MAX_EXPR, integer_type_node,
 					  tmp, emin));
 
-  tmp = build_call_expr_loc (input_location,
-			 built_in_decls[scalbn], 2,
+  tmp = build_call_expr_loc (input_location, scalbn, 2,
 			 build_real_from_int_cst (type, integer_one_node), e);
   gfc_add_modify (&block, res, tmp);
 
@@ -3798,33 +3669,16 @@ gfc_conv_intrinsic_spacing (gfc_se * se, gfc_expr * expr)
 static void
 gfc_conv_intrinsic_rrspacing (gfc_se * se, gfc_expr * expr)
 {
-  tree arg, type, e, x, cond, stmt, tmp;
-  int frexp, scalbn, fabs, prec, k;
+  tree arg, type, e, x, cond, stmt, tmp, frexp, scalbn, fabs;
+  int prec, k;
   stmtblock_t block;
 
   k = gfc_validate_kind (BT_REAL, expr->ts.kind, false);
   prec = gfc_real_kinds[k].digits;
-  switch (expr->ts.kind)
-    {
-      case 4:
-	frexp = BUILT_IN_FREXPF;
-	scalbn = BUILT_IN_SCALBNF;
-	fabs = BUILT_IN_FABSF;
-	break;
-      case 8:
-	frexp = BUILT_IN_FREXP;
-	scalbn = BUILT_IN_SCALBN;
-	fabs = BUILT_IN_FABS;
-	break;
-      case 10:
-      case 16:
-	frexp = BUILT_IN_FREXPL;
-	scalbn = BUILT_IN_SCALBNL;
-	fabs = BUILT_IN_FABSL;
-	break;
-      default:
-	gcc_unreachable ();
-    }
+
+  frexp = builtin_decl_for_float_kind (BUILT_IN_FREXP, expr->ts.kind);
+  scalbn = builtin_decl_for_float_kind (BUILT_IN_SCALBN, expr->ts.kind);
+  fabs = builtin_decl_for_float_kind (BUILT_IN_FABS, expr->ts.kind);
 
   type = gfc_typenode_for_spec (&expr->ts);
   gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
@@ -3833,20 +3687,17 @@ gfc_conv_intrinsic_rrspacing (gfc_se * se, gfc_expr * expr)
   e = gfc_create_var (integer_type_node, NULL);
   x = gfc_create_var (type, NULL);
   gfc_add_modify (&se->pre, x,
-		  build_call_expr_loc (input_location,
-				   built_in_decls[fabs], 1, arg));
+		  build_call_expr_loc (input_location, fabs, 1, arg));
 
 
   gfc_start_block (&block);
-  tmp = build_call_expr_loc (input_location,
-			 built_in_decls[frexp], 2, arg,
-			 gfc_build_addr_expr (NULL_TREE, e));
+  tmp = build_call_expr_loc (input_location, frexp, 2, arg,
+			     gfc_build_addr_expr (NULL_TREE, e));
   gfc_add_expr_to_block (&block, tmp);
 
   tmp = fold_build2 (MINUS_EXPR, integer_type_node,
 		     build_int_cst (NULL_TREE, prec), e);
-  tmp = build_call_expr_loc (input_location,
-			 built_in_decls[scalbn], 2, x, tmp);
+  tmp = build_call_expr_loc (input_location, scalbn, 2, x, tmp);
   gfc_add_modify (&block, x, tmp);
   stmt = gfc_finish_block (&block);
 
@@ -3863,31 +3714,15 @@ gfc_conv_intrinsic_rrspacing (gfc_se * se, gfc_expr * expr)
 static void
 gfc_conv_intrinsic_scale (gfc_se * se, gfc_expr * expr)
 {
-  tree args[2], type;
-  int scalbn;
+  tree args[2], type, scalbn;
 
-  switch (expr->ts.kind)
-    {
-      case 4:
-	scalbn = BUILT_IN_SCALBNF;
-	break;
-      case 8:
-	scalbn = BUILT_IN_SCALBN;
-	break;
-      case 10:
-      case 16:
-	scalbn = BUILT_IN_SCALBNL;
-	break;
-      default:
-	gcc_unreachable ();
-    }
+  scalbn = builtin_decl_for_float_kind (BUILT_IN_SCALBN, expr->ts.kind);
 
   type = gfc_typenode_for_spec (&expr->ts);
   gfc_conv_intrinsic_function_args (se, expr, args, 2);
-  se->expr = build_call_expr_loc (input_location,
-			      built_in_decls[scalbn], 2,
-			      fold_convert (type, args[0]),
-			      fold_convert (integer_type_node, args[1]));
+  se->expr = build_call_expr_loc (input_location, scalbn, 2,
+				  fold_convert (type, args[0]),
+				  fold_convert (integer_type_node, args[1]));
   se->expr = fold_convert (type, se->expr);
 }
 
@@ -3897,39 +3732,20 @@ gfc_conv_intrinsic_scale (gfc_se * se, gfc_expr * expr)
 static void
 gfc_conv_intrinsic_set_exponent (gfc_se * se, gfc_expr * expr)
 {
-  tree args[2], type, tmp;
-  int frexp, scalbn;
+  tree args[2], type, tmp, frexp, scalbn;
 
-  switch (expr->ts.kind)
-    {
-      case 4:
-	frexp = BUILT_IN_FREXPF;
-	scalbn = BUILT_IN_SCALBNF;
-	break;
-      case 8:
-	frexp = BUILT_IN_FREXP;
-	scalbn = BUILT_IN_SCALBN;
-	break;
-      case 10:
-      case 16:
-	frexp = BUILT_IN_FREXPL;
-	scalbn = BUILT_IN_SCALBNL;
-	break;
-      default:
-	gcc_unreachable ();
-    }
+  frexp = builtin_decl_for_float_kind (BUILT_IN_FREXP, expr->ts.kind);
+  scalbn = builtin_decl_for_float_kind (BUILT_IN_SCALBN, expr->ts.kind);
 
   type = gfc_typenode_for_spec (&expr->ts);
   gfc_conv_intrinsic_function_args (se, expr, args, 2);
 
   tmp = gfc_create_var (integer_type_node, NULL);
-  tmp = build_call_expr_loc (input_location,
-			 built_in_decls[frexp], 2,
-			 fold_convert (type, args[0]),
-			 gfc_build_addr_expr (NULL_TREE, tmp));
-  se->expr = build_call_expr_loc (input_location,
-			      built_in_decls[scalbn], 2, tmp,
-			      fold_convert (integer_type_node, args[1]));
+  tmp = build_call_expr_loc (input_location, frexp, 2,
+			     fold_convert (type, args[0]),
+			     gfc_build_addr_expr (NULL_TREE, tmp));
+  se->expr = build_call_expr_loc (input_location, scalbn, 2, tmp,
+				  fold_convert (integer_type_node, args[1]));
   se->expr = fold_convert (type, se->expr);
 }
 
@@ -4529,6 +4345,8 @@ gfc_conv_allocated (gfc_se *se, gfc_expr *expr)
     {
       /* Allocatable scalar.  */
       arg1se.want_pointer = 1;
+      if (arg1->expr->ts.type == BT_CLASS)
+	gfc_add_component_ref (arg1->expr, "$data");
       gfc_conv_expr (&arg1se, arg1->expr);
       tmp = arg1se.expr;
     }
@@ -4684,7 +4502,8 @@ gfc_conv_same_type_as (gfc_se *se, gfc_expr *expr)
       gfc_add_component_ref (a, "$hash");
     }
   else if (a->ts.type == BT_DERIVED)
-    a = gfc_int_expr (a->ts.u.derived->hash_value);
+    a = gfc_get_int_expr (gfc_default_integer_kind, NULL,
+			  a->ts.u.derived->hash_value);
 
   if (b->ts.type == BT_CLASS)
     {
@@ -4692,7 +4511,8 @@ gfc_conv_same_type_as (gfc_se *se, gfc_expr *expr)
       gfc_add_component_ref (b, "$hash");
     }
   else if (b->ts.type == BT_DERIVED)
-    b = gfc_int_expr (b->ts.u.derived->hash_value);
+    b = gfc_get_int_expr (gfc_default_integer_kind, NULL,
+			  b->ts.u.derived->hash_value);
 
   gfc_conv_expr (&se1, a);
   gfc_conv_expr (&se2, b);
@@ -4803,7 +4623,7 @@ gfc_conv_intrinsic_trim (gfc_se * se, gfc_expr * expr)
 
   var = gfc_create_var (gfc_get_pchar_type (expr->ts.kind), "pstr");
   addr = gfc_build_addr_expr (ppvoid_type_node, var);
-  len = gfc_create_var (gfc_get_int_type (4), "len");
+  len = gfc_create_var (gfc_charlen_type_node, "len");
 
   gfc_conv_intrinsic_function_args (se, expr, &args[2], num_args - 2);
   args[0] = gfc_build_addr_expr (NULL_TREE, len);

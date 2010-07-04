@@ -85,7 +85,7 @@ rnumber_4 (GFC_REAL_4 *f, GFC_UINTEGER_4 v)
 #error "GFC_REAL_4_RADIX has unknown value"
 #endif
   v = v & mask;
-  *f = (GFC_REAL_4) v * (GFC_REAL_4) 0x1.p-32f;
+  *f = (GFC_REAL_4) v * GFC_REAL_4_LITERAL(0x1.p-32);
 }
 
 static inline void
@@ -100,7 +100,7 @@ rnumber_8 (GFC_REAL_8 *f, GFC_UINTEGER_8 v)
 #error "GFC_REAL_8_RADIX has unknown value"
 #endif
   v = v & mask;
-  *f = (GFC_REAL_8) v * (GFC_REAL_8) 0x1.p-64;
+  *f = (GFC_REAL_8) v * GFC_REAL_8_LITERAL(0x1.p-64);
 }
 
 #ifdef HAVE_GFC_REAL_10
@@ -117,7 +117,7 @@ rnumber_10 (GFC_REAL_10 *f, GFC_UINTEGER_8 v)
 #error "GFC_REAL_10_RADIX has unknown value"
 #endif
   v = v & mask;
-  *f = (GFC_REAL_10) v * (GFC_REAL_10) 0x1.p-64;
+  *f = (GFC_REAL_10) v * GFC_REAL_10_LITERAL(0x1.p-64);
 }
 #endif
 
@@ -137,8 +137,8 @@ rnumber_16 (GFC_REAL_16 *f, GFC_UINTEGER_8 v1, GFC_UINTEGER_8 v2)
 #error "GFC_REAL_16_RADIX has unknown value"
 #endif
   v2 = v2 & mask;
-  *f = (GFC_REAL_16) v1 * (GFC_REAL_16) 0x1.p-64
-    + (GFC_REAL_16) v2 * (GFC_REAL_16) 0x1.p-128;
+  *f = (GFC_REAL_16) v1 * GFC_REAL_16_LITERAL(0x1.p-64)
+    + (GFC_REAL_16) v2 * GFC_REAL_16_LITERAL(0x1.p-128);
 }
 #endif
 /* libgfortran previously had a Mersenne Twister, taken from the paper:

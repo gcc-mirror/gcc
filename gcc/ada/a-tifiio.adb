@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -301,10 +301,14 @@ package body Ada.Text_IO.Fixed_IO is
      (To   : out String;
       Last : out Natural;
       Item : Num;
-      Fore : Field;
+      Fore : Integer;
       Aft  : Field;
       Exp  : Field);
-   --  Actual output function, used internally by all other Put routines
+   --  Actual output function, used internally by all other Put routines.
+   --  The formal Fore is an Integer, not a Field, because the routine is
+   --  also called from the version of Put that performs I/O to a string,
+   --  where the starting position depends on the size of the String, and
+   --  bears no relation to the bounds of Field.
 
    ---------
    -- Get --
@@ -392,7 +396,7 @@ package body Ada.Text_IO.Fixed_IO is
       Last : Natural;
 
    begin
-      if Fore - Boolean'Pos (Item < 0.0) < 1 or else Fore > Field'Last then
+      if Fore - Boolean'Pos (Item < 0.0) < 1 then
          raise Layout_Error;
       end if;
 
@@ -407,7 +411,7 @@ package body Ada.Text_IO.Fixed_IO is
      (To   : out String;
       Last : out Natural;
       Item : Num;
-      Fore : Field;
+      Fore : Integer;
       Aft  : Field;
       Exp  : Field)
    is

@@ -9,10 +9,10 @@
 unsigned int out[N];
 unsigned int in[N] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
+int i;
 __attribute__ ((noinline)) int
 main1 ()
 {
-  int i;
   unsigned int *pin = &in[0];
   unsigned int *pout = &out[0];
   
@@ -20,6 +20,9 @@ main1 ()
   *pout++ = *pin++;
   *pout++ = *pin++;
   *pout++ = *pin++;
+
+  if (i)
+    __asm__ volatile ("" : : : "memory");
 
   /* Check results.  */
   if (out[0] != in[0]

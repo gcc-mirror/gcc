@@ -15,11 +15,10 @@ public:
   B(void) {}
 };
 
-void f(B b) {
+void f(B b) {			// { dg-error "initializing" }
 }
 
 void g() {
   B h;
-  f(h); // { dg-error "argument" "arg" } 
-  // { dg-message "synthesized" "synth" { target *-*-* } 23 }
+  f(h);  // { dg-message "synthesized" "synth" }
 }

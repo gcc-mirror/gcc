@@ -22,8 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"
-#include "varray.h"
+#include "rtl.h"	/* FIXME: Only for ceil_log2, of all things...  */
 #include "ggc.h"
 #include "basic-block.h"
 #include "tree-flow.h"
@@ -154,7 +153,7 @@ allocate_phi_node (size_t len)
     }
   else
     {
-      phi = (gimple) ggc_alloc (size);
+      phi = ggc_alloc_gimple_statement_d (size);
 #ifdef GATHER_STATISTICS
       phi_nodes_created++;
 	{
@@ -473,6 +472,10 @@ void
 remove_phi_node (gimple_stmt_iterator *gsi, bool release_lhs_p)
 {
   gimple phi = gsi_stmt (*gsi);
+
+  if (release_lhs_p)
+    insert_debug_temps_for_defs (gsi);
+
   gsi_remove (gsi, false);
 
   /* If we are deleting the PHI node, then we should release the

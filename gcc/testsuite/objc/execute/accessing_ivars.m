@@ -1,7 +1,7 @@
 /* Contributed by Nicola Pero - Thu Mar  8 16:27:46 CET 2001 */
-#include <objc/objc.h>
+#include <stdlib.h>
+#import "../../objc-obj-c++-shared/Object1.h"
 #include <objc/objc-api.h>
-#include <objc/Object.h>
 
 /* Test that by using -> we can access ivars of other objects of the same 
    class */

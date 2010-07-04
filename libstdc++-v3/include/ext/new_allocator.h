@@ -1,6 +1,6 @@
 // Allocator that wraps operator new -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -30,6 +30,7 @@
 #ifndef _NEW_ALLOCATOR_H
 #define _NEW_ALLOCATOR_H 1
 
+#include <bits/c++config.h>
 #include <new>
 #include <bits/functexcept.h>
 #include <bits/move.h>
@@ -73,10 +74,10 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       ~new_allocator() throw() { }
 
       pointer
-      address(reference __x) const { return &__x; }
+      address(reference __x) const { return std::__addressof(__x); }
 
       const_pointer
-      address(const_reference __x) const { return &__x; }
+      address(const_reference __x) const { return std::__addressof(__x); }
 
       // NB: __n is permitted to be 0.  The C++ standard says nothing
       // about what the return value is when __n == 0.

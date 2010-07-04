@@ -3,9 +3,9 @@
 /* Author: Ziemowit Laski <zlaski@apple.com>  */
 
 /* { dg-do compile { target *-*-darwin* } } */
-/* { dg-options "-fnext-runtime" } */
+/* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 @interface FooBar: Object
 - (void)boo;
@@ -15,4 +15,5 @@
 - (void)boo { }
 @end
 
-/* { dg-final { scan-assembler "L_OBJC_MODULES:\n\[ \t\]*\.long\t6\n" } } */
+/* { dg-final { scan-assembler "L_OBJC_MODULES:\n\[ \t\]*\.long\t6\n" { target { *-*-darwin* && { ! lp64 } } } } } */
+/* { dg-final { scan-assembler "L_OBJC_MODULES:\n\[ \t\]*\.quad\t6\n" { target { *-*-darwin* && {  lp64 } } } } } */

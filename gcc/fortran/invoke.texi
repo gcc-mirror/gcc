@@ -1,15 +1,15 @@
-@c Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009
+@c Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
 @c Free Software Foundation, Inc.
 @c This is part of the GNU Fortran manual.   
 @c For copying conditions, see the file gfortran.texi.
 
 @ignore
 @c man begin COPYRIGHT
-Copyright @copyright{} 2004, 2005, 2006, 2007, 2008, 2009
+Copyright @copyright{} 2004, 2005, 2006, 2007, 2008, 2009, 2010
 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.2 or
+under the terms of the GNU Free Documentation License, Version 1.3 or
 any later version published by the Free Software Foundation; with the
 Invariant Sections being ``Funding Free Software'', the Front-Cover
 Texts being (a) (see below), and with the Back-Cover Texts being (b)
@@ -148,8 +148,7 @@ and warnings}.
 
 @item Directory Options
 @xref{Directory Options,,Options for directory search}.
-@gccoptlist{-I@var{dir}  -J@var{dir}  -M@var{dir}  @gol
--fintrinsic-modules-path @var{dir}}
+@gccoptlist{-I@var{dir}  -J@var{dir} -fintrinsic-modules-path @var{dir}}
 
 @item Link Options
 @xref{Link Options,,Options for influencing the linking step}.
@@ -166,8 +165,8 @@ and warnings}.
 @gccoptlist{-fno-automatic  -ff2c  -fno-underscoring @gol
 -fwhole-file -fsecond-underscore @gol
 -fbounds-check -fcheck-array-temporaries  -fmax-array-constructor =@var{n} @gol
--fcheck=@var{<all|array-temps|bounds|do|mem|pointer|recursion>}
--fmax-stack-var-size=@var{n} @gol
+-fcheck=@var{<all|array-temps|bounds|do|mem|pointer|recursion>} @gol
+-fcoarray=@var{<none|single>} -fmax-stack-var-size=@var{n} @gol
 -fpack-derived  -frepack-arrays  -fshort-enums  -fexternal-blas @gol
 -fblas-matmul-limit=@var{n} -frecursive -finit-local-zero @gol
 -finit-integer=@var{n} -finit-real=@var{<zero|inf|-inf|nan|snan>} @gol
@@ -688,9 +687,10 @@ warnings.
 @cindex warnings, all
 Enables commonly used warning options pertaining to usage that
 we recommend avoiding and that we believe are easy to avoid.
-This currently includes @option{-Waliasing},
-@option{-Wampersand}, @option{-Wsurprising}, @option{-Wintrinsics-std},
-@option{-Wno-tabs}, @option{-Wintrinsic-shadow} and @option{-Wline-truncation}.
+This currently includes @option{-Waliasing}, @option{-Wampersand}, 
+@option{-Wconversion}, @option{-Wsurprising}, @option{-Wintrinsics-std},
+@option{-Wno-tabs}, @option{-Wintrinsic-shadow}, @option{-Wline-truncation},
+and @option{-Wunused}.
 
 @item -Waliasing
 @opindex @code{Waliasing}
@@ -746,7 +746,14 @@ Warn when a source code line will be truncated.
 @opindex @code{Wconversion}
 @cindex warnings, conversion
 @cindex conversion
-Warn about implicit conversions between different types.
+Warn about implicit conversions that are likely to change the value of 
+the expression after conversion. Implied by @option{-Wall}.
+
+@item -Wconversion-extra
+@opindex @code{Wconversion-extra}
+@cindex warnings, conversion
+@cindex conversion
+Warn about implicit conversions between different types and kinds.
 
 @item -Wimplicit-interface
 @opindex @code{Wimplicit-interface}
@@ -825,15 +832,22 @@ intrinsic; in this case, an explicit interface or @code{EXTERNAL} or
 @code{INTRINSIC} declaration might be needed to get calls later resolved to
 the desired intrinsic/procedure.
 
+@item -Wunused-dummy-argument
+@opindex @code{Wunused-dummy-argument}
+@cindex warnings, unused dummy argument
+@cindex unused dummy argument
+@cindex dummy argument, unused
+Warn about unused dummy arguments. This option is implied by @option{-Wall}.
+
 @item -Wunused-parameter
 @opindex @code{Wunused-parameter}
 @cindex warnings, unused parameter
 @cindex unused parameter
 Contrary to @command{gcc}'s meaning of @option{-Wunused-parameter},
 @command{gfortran}'s implementation of this option does not warn
-about unused dummy arguments, but about unused @code{PARAMETER} values.
-@option{-Wunused-parameter} is not included in @option{-Wall} but is
-implied by @option{-Wall -Wextra}.
+about unused dummy arguments (see @option{-Wunused-dummy-argument}),
+but about unused @code{PARAMETER} values. @option{-Wunused-parameter}
+is not included in @option{-Wall} but is implied by @option{-Wall -Wextra}.
 
 @item -Walign-commons
 @opindex @code{Walign-commons}
@@ -949,7 +963,6 @@ gcc,Using the GNU Compiler Collection (GCC)}, for information on the
 @option{-I} option.
 
 @item -J@var{dir}
-@item -M@var{dir}
 @opindex @code{J}@var{dir}
 @opindex @code{M}@var{dir}
 @cindex paths, search
@@ -959,8 +972,6 @@ It is also added to the list of directories to searched by an @code{USE}
 statement.
 
 The default is the current directory.
-
-@option{-M} is deprecated to avoid conflicts with existing GCC options.
 
 @item -fintrinsic-modules-path @var{dir}
 @opindex @code{fintrinsic-modules-path} @var{dir}
@@ -1211,6 +1222,20 @@ is implemented as a reference to the link-time external symbol
 @code{max_count__}, instead of @code{max_count_}.  This is required
 for compatibility with @command{g77} and @command{f2c}, and is implied
 by use of the @option{-ff2c} option.
+
+@item -fcoarray=@var{<keyword>}
+@opindex @code{fcoarray}
+@cindex coarrays
+
+@table @asis
+@item @samp{none}
+Disable coarray support; using coarray declarations and image-control
+statements will produce a compile-time error. (Default)
+
+@item @samp{single}
+Single-image mode, i.e. @code{num_images()} is always one.
+@end table
+
 
 @item -fcheck=@var{<keyword>}
 @opindex @code{fcheck}

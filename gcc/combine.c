@@ -1,6 +1,6 @@
 /* Optimize by combining instructions for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -92,7 +92,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "insn-attr.h"
 #include "recog.h"
-#include "real.h"
 #include "toplev.h"
 #include "target.h"
 #include "optabs.h"
@@ -391,7 +390,7 @@ static int contains_muldiv (rtx);
 static rtx try_combine (rtx, rtx, rtx, int *);
 static void undo_all (void);
 static void undo_commit (void);
-static rtx *find_split_point (rtx *, rtx);
+static rtx *find_split_point (rtx *, rtx, bool);
 static rtx subst (rtx, rtx, rtx, int, int);
 static rtx combine_simplify_rtx (rtx, enum machine_mode, int);
 static rtx simplify_if_then_else (rtx);
@@ -2076,14 +2075,14 @@ likely_spilled_retval_p (rtx insn)
   unsigned regno, nregs;
   /* We assume here that no machine mode needs more than
      32 hard registers when the value overlaps with a register
-     for which FUNCTION_VALUE_REGNO_P is true.  */
+     for which TARGET_FUNCTION_VALUE_REGNO_P is true.  */
   unsigned mask;
   struct likely_spilled_retval_info info;
 
   if (!NONJUMP_INSN_P (use) || GET_CODE (PATTERN (use)) != USE || insn == use)
     return 0;
   reg = XEXP (PATTERN (use), 0);
-  if (!REG_P (reg) || !FUNCTION_VALUE_REGNO_P (REGNO (reg)))
+  if (!REG_P (reg) || !targetm.calls.function_value_regno_p (REGNO (reg)))
     return 0;
   regno = REGNO (reg);
   nregs = hard_regno_nregs[regno][GET_MODE (reg)];
@@ -2272,6 +2271,7 @@ cleanup_auto_inc_dec (rtx src, bool after, enum machine_mode mem_mode)
 
   return x;
 }
+#endif
 
 /* Auxiliary data structure for propagate_for_debug_stmt.  */
 
@@ -2286,19 +2286,25 @@ struct rtx_subst_pair
    substituted.  */
 
 static rtx
-propagate_for_debug_subst (rtx from ATTRIBUTE_UNUSED, void *data)
+propagate_for_debug_subst (rtx from, const_rtx old_rtx, void *data)
 {
   struct rtx_subst_pair *pair = (struct rtx_subst_pair *)data;
 
+  if (!rtx_equal_p (from, old_rtx))
+    return NULL_RTX;
   if (!pair->adjusted)
     {
       pair->adjusted = true;
+#ifdef AUTO_INC_DEC
       pair->to = cleanup_auto_inc_dec (pair->to, pair->after, VOIDmode);
+#else
+      pair->to = copy_rtx (pair->to);
+#endif
+      pair->to = make_compound_operation (pair->to, SET);
       return pair->to;
     }
   return copy_rtx (pair->to);
 }
-#endif
 
 /* Replace occurrences of DEST with SRC in DEBUG_INSNs between INSN
    and LAST.  If MOVE holds, debug insns must also be moved past
@@ -2309,12 +2315,10 @@ propagate_for_debug (rtx insn, rtx last, rtx dest, rtx src, bool move)
 {
   rtx next, move_pos = move ? last : NULL_RTX, loc;
 
-#ifdef AUTO_INC_DEC
   struct rtx_subst_pair p;
   p.to = src;
   p.adjusted = false;
   p.after = move;
-#endif
 
   next = NEXT_INSN (insn);
   while (next != last)
@@ -2323,12 +2327,8 @@ propagate_for_debug (rtx insn, rtx last, rtx dest, rtx src, bool move)
       next = NEXT_INSN (insn);
       if (DEBUG_INSN_P (insn))
 	{
-#ifdef AUTO_INC_DEC
 	  loc = simplify_replace_fn_rtx (INSN_VAR_LOCATION_LOC (insn),
 					 dest, propagate_for_debug_subst, &p);
-#else
-	  loc = simplify_replace_rtx (INSN_VAR_LOCATION_LOC (insn), dest, src);
-#endif
 	  if (loc == INSN_VAR_LOCATION_LOC (insn))
 	    continue;
 	  INSN_VAR_LOCATION_LOC (insn) = loc;
@@ -2587,74 +2587,20 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 
       if (offset >= 0
 	  && (GET_MODE_BITSIZE (GET_MODE (SET_DEST (temp)))
-	      <= HOST_BITS_PER_WIDE_INT * 2))
+	      <= HOST_BITS_PER_DOUBLE_INT))
 	{
-	  HOST_WIDE_INT mhi, ohi, ihi;
-	  HOST_WIDE_INT mlo, olo, ilo;
+	  double_int m, o, i;
 	  rtx inner = SET_SRC (PATTERN (i3));
 	  rtx outer = SET_SRC (temp);
 
-	  if (CONST_INT_P (outer))
-	    {
-	      olo = INTVAL (outer);
-	      ohi = olo < 0 ? -1 : 0;
-	    }
-	  else
-	    {
-	      olo = CONST_DOUBLE_LOW (outer);
-	      ohi = CONST_DOUBLE_HIGH (outer);
-	    }
+	  o = rtx_to_double_int (outer);
+	  i = rtx_to_double_int (inner);
 
-	  if (CONST_INT_P (inner))
-	    {
-	      ilo = INTVAL (inner);
-	      ihi = ilo < 0 ? -1 : 0;
-	    }
-	  else
-	    {
-	      ilo = CONST_DOUBLE_LOW (inner);
-	      ihi = CONST_DOUBLE_HIGH (inner);
-	    }
-
-	  if (width < HOST_BITS_PER_WIDE_INT)
-	    {
-	      mlo = ((unsigned HOST_WIDE_INT) 1 << width) - 1;
-	      mhi = 0;
-	    }
-	  else if (width < HOST_BITS_PER_WIDE_INT * 2)
-	    {
-	      mhi = ((unsigned HOST_WIDE_INT) 1
-		     << (width - HOST_BITS_PER_WIDE_INT)) - 1;
-	      mlo = -1;
-	    }
-	  else
-	    {
-	      mlo = -1;
-	      mhi = -1;
-	    }
-
-	  ilo &= mlo;
-	  ihi &= mhi;
-
-	  if (offset >= HOST_BITS_PER_WIDE_INT)
-	    {
-	      mhi = mlo << (offset - HOST_BITS_PER_WIDE_INT);
-	      mlo = 0;
-	      ihi = ilo << (offset - HOST_BITS_PER_WIDE_INT);
-	      ilo = 0;
-	    }
-	  else if (offset > 0)
-	    {
-	      mhi = (mhi << offset) | ((unsigned HOST_WIDE_INT) mlo
-		     		       >> (HOST_BITS_PER_WIDE_INT - offset));
-	      mlo = mlo << offset;
-	      ihi = (ihi << offset) | ((unsigned HOST_WIDE_INT) ilo
-		     		       >> (HOST_BITS_PER_WIDE_INT - offset));
-	      ilo = ilo << offset;
-	    }
-
-	  olo = (olo & ~mlo) | ilo;
-	  ohi = (ohi & ~mhi) | ihi;
+	  m = double_int_mask (width);
+	  i = double_int_and (i, m);
+	  m = double_int_lshift (m, offset, HOST_BITS_PER_DOUBLE_INT, false);
+	  i = double_int_lshift (i, offset, HOST_BITS_PER_DOUBLE_INT, false);
+	  o = double_int_ior (double_int_and (o, double_int_not (m)), i);
 
 	  combine_merges++;
 	  subst_insn = i3;
@@ -2667,7 +2613,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	     resulting insn the new pattern for I3.  Then skip to where we
 	     validate the pattern.  Everything was set up above.  */
 	  SUBST (SET_SRC (temp),
-		 immed_double_const (olo, ohi, GET_MODE (SET_DEST (temp))));
+		 immed_double_int_const (o, GET_MODE (SET_DEST (temp))));
 
 	  newpat = PATTERN (i2);
 
@@ -3265,7 +3211,8 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
       /* If we can split it and use I2DEST, go ahead and see if that
 	 helps things be recognized.  Verify that none of the registers
 	 are set between I2 and I3.  */
-      if (insn_code_number < 0 && (split = find_split_point (&newpat, i3)) != 0
+      if (insn_code_number < 0
+          && (split = find_split_point (&newpat, i3, false)) != 0
 #ifdef HAVE_cc0
 	  && REG_P (i2dest)
 #endif
@@ -3290,6 +3237,14 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	  newi2pat = NULL_RTX;
 
 	  i2scratch = true;
+
+	  /* *SPLIT may be part of I2SRC, so make sure we have the
+	     original expression around for later debug processing.
+	     We should not need I2SRC any more in other cases.  */
+	  if (MAY_HAVE_DEBUG_INSNS)
+	    i2src = copy_rtx (i2src);
+	  else
+	    i2src = NULL;
 
 	  /* Get NEWDEST as a register in the proper mode.  We have already
 	     validated that we can do this.  */
@@ -3787,7 +3742,13 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	call_usage = copy_rtx (call_usage);
 
 	if (substed_i2)
-	  replace_rtx (call_usage, i2dest, i2src);
+	  {
+	    /* I2SRC must still be meaningful at this point.  Some splitting
+	       operations can invalidate I2SRC, but those operations do not
+	       apply to calls.  */
+	    gcc_assert (i2src);
+	    replace_rtx (call_usage, i2dest, i2src);
+	  }
 
 	if (substed_i1)
 	  replace_rtx (call_usage, i1dest, i1src);
@@ -4142,7 +4103,7 @@ undo_commit (void)
    two insns.  */
 
 static rtx *
-find_split_point (rtx *loc, rtx insn)
+find_split_point (rtx *loc, rtx insn, bool set_src)
 {
   rtx x = *loc;
   enum rtx_code code = GET_CODE (x);
@@ -4162,7 +4123,7 @@ find_split_point (rtx *loc, rtx insn)
       if (MEM_P (SUBREG_REG (x)))
 	return loc;
 #endif
-      return find_split_point (&SUBREG_REG (x), insn);
+      return find_split_point (&SUBREG_REG (x), insn, false);
 
     case MEM:
 #ifdef HAVE_lo_sum
@@ -4279,12 +4240,12 @@ find_split_point (rtx *loc, rtx insn)
 #endif
 
       /* See if we can split SET_SRC as it stands.  */
-      split = find_split_point (&SET_SRC (x), insn);
+      split = find_split_point (&SET_SRC (x), insn, true);
       if (split && split != &SET_SRC (x))
 	return split;
 
       /* See if we can split SET_DEST as it stands.  */
-      split = find_split_point (&SET_DEST (x), insn);
+      split = find_split_point (&SET_DEST (x), insn, false);
       if (split && split != &SET_DEST (x))
 	return split;
 
@@ -4328,7 +4289,7 @@ find_split_point (rtx *loc, rtx insn)
 
 	  SUBST (SET_DEST (x), dest);
 
-	  split = find_split_point (&SET_SRC (x), insn);
+	  split = find_split_point (&SET_SRC (x), insn, true);
 	  if (split && split != &SET_SRC (x))
 	    return split;
 	}
@@ -4364,7 +4325,7 @@ find_split_point (rtx *loc, rtx insn)
 	      if (extraction != 0)
 		{
 		  SUBST (SET_SRC (x), extraction);
-		  return find_split_point (loc, insn);
+		  return find_split_point (loc, insn, false);
 		}
 	    }
 	  break;
@@ -4386,7 +4347,7 @@ find_split_point (rtx *loc, rtx insn)
 						    XEXP (SET_SRC (x), 0),
 						    GEN_INT (pos))));
 
-	      split = find_split_point (&SET_SRC (x), insn);
+	      split = find_split_point (&SET_SRC (x), insn, true);
 	      if (split && split != &SET_SRC (x))
 		return split;
 	    }
@@ -4445,7 +4406,7 @@ find_split_point (rtx *loc, rtx insn)
 				   GEN_INT (pos)),
 				  GEN_INT (((HOST_WIDE_INT) 1 << len) - 1)));
 
-	      split = find_split_point (&SET_SRC (x), insn);
+	      split = find_split_point (&SET_SRC (x), insn, true);
 	      if (split && split != &SET_SRC (x))
 		return split;
 	    }
@@ -4460,7 +4421,7 @@ find_split_point (rtx *loc, rtx insn)
 					       - len - pos)),
 		      GEN_INT (GET_MODE_BITSIZE (mode) - len)));
 
-	      split = find_split_point (&SET_SRC (x), insn);
+	      split = find_split_point (&SET_SRC (x), insn, true);
 	      if (split && split != &SET_SRC (x))
 		return split;
 	    }
@@ -4500,7 +4461,7 @@ find_split_point (rtx *loc, rtx insn)
 					      GET_MODE (x),
 					      XEXP (XEXP (x, 0), 0),
 					      XEXP (XEXP (x, 1), 0))));
-	  return find_split_point (loc, insn);
+	  return find_split_point (loc, insn, set_src);
 	}
 
       /* Many RISC machines have a large set of logical insns.  If the
@@ -4514,6 +4475,14 @@ find_split_point (rtx *loc, rtx insn)
 	}
       break;
 
+    case PLUS:
+    case MINUS:
+      /* Split at a multiply-accumulate instruction.  However if this is
+         the SET_SRC, we likely do not have such an instruction and it's
+         worthless to try this split.  */
+      if (!set_src && GET_CODE (XEXP (x, 0)) == MULT)
+        return loc;
+
     default:
       break;
     }
@@ -4523,7 +4492,7 @@ find_split_point (rtx *loc, rtx insn)
     {
     case RTX_BITFIELD_OPS:		/* This is ZERO_EXTRACT and SIGN_EXTRACT.  */
     case RTX_TERNARY:
-      split = find_split_point (&XEXP (x, 2), insn);
+      split = find_split_point (&XEXP (x, 2), insn, false);
       if (split)
 	return split;
       /* ... fall through ...  */
@@ -4531,7 +4500,7 @@ find_split_point (rtx *loc, rtx insn)
     case RTX_COMM_ARITH:
     case RTX_COMPARE:
     case RTX_COMM_COMPARE:
-      split = find_split_point (&XEXP (x, 1), insn);
+      split = find_split_point (&XEXP (x, 1), insn, false);
       if (split)
 	return split;
       /* ... fall through ...  */
@@ -4541,7 +4510,7 @@ find_split_point (rtx *loc, rtx insn)
       if (GET_CODE (x) != AND && GET_CODE (XEXP (x, 0)) == AND)
 	return &XEXP (x, 0);
 
-      split = find_split_point (&XEXP (x, 0), insn);
+      split = find_split_point (&XEXP (x, 0), insn, false);
       if (split)
 	return split;
       return loc;
@@ -6791,8 +6760,10 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
       if (mode == tmode)
 	return new_rtx;
 
-      if (CONST_INT_P (new_rtx))
-	return gen_int_mode (INTVAL (new_rtx), mode);
+      if (CONST_INT_P (new_rtx)
+	  || GET_CODE (new_rtx) == CONST_DOUBLE)
+	return simplify_unary_operation (unsignedp ? ZERO_EXTEND : SIGN_EXTEND,
+					 mode, new_rtx, tmode);
 
       /* If we know that no extraneous bits are set, and that the high
 	 bit is not set, convert the extraction to the cheaper of
@@ -12755,7 +12726,7 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 	    place = i2;
 	  else
 	    {
-	      gcc_assert (flag_non_call_exceptions);
+	      gcc_assert (cfun->can_throw_non_call_exceptions);
 	      if (may_trap_p (i3))
 		place = i3;
 	      else if (i2 && may_trap_p (i2))

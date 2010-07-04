@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -362,7 +362,6 @@ package body Sem_Type is
       --  performed, given that the operator was visible in the generic.
 
       if Ekind (E) = E_Operator then
-
          if Present (Opnd_Type) then
             Vis_Type := Opnd_Type;
          else
@@ -803,8 +802,8 @@ package body Sem_Type is
       then
          return True;
 
-      --  The context may be class wide, and a class-wide type is
-      --  compatible with any member of the class.
+      --  The context may be class wide, and a class-wide type is compatible
+      --  with any member of the class.
 
       elsif Is_Class_Wide_Type (T1)
         and then Is_Ancestor (Root_Type (T1), T2)
@@ -997,9 +996,7 @@ package body Sem_Type is
       --  imposed by context.
 
       elsif Ekind (T2) = E_Access_Attribute_Type
-        and then (Ekind (BT1) = E_General_Access_Type
-                    or else
-                  Ekind (BT1) = E_Access_Type)
+        and then Ekind_In (BT1, E_General_Access_Type, E_Access_Type)
         and then Covers (Designated_Type (T1), Designated_Type (T2))
       then
          --  If the target type is a RACW type while the source is an access
@@ -1677,9 +1674,8 @@ package body Sem_Type is
       elsif Nkind (Parent (N)) = N_Object_Renaming_Declaration
         and then Present (Access_Definition (Parent (N)))
       then
-         if Ekind (It1.Typ) = E_Anonymous_Access_Type
-              or else
-            Ekind (It1.Typ) = E_Anonymous_Access_Subprogram_Type
+         if Ekind_In (It1.Typ, E_Anonymous_Access_Type,
+                               E_Anonymous_Access_Subprogram_Type)
          then
             if Ekind (It2.Typ) = Ekind (It1.Typ) then
 
@@ -1691,9 +1687,8 @@ package body Sem_Type is
                return It1;
             end if;
 
-         elsif Ekind (It2.Typ) = E_Anonymous_Access_Type
-                 or else
-               Ekind (It2.Typ) = E_Anonymous_Access_Subprogram_Type
+         elsif Ekind_In (It2.Typ, E_Anonymous_Access_Type,
+                                  E_Anonymous_Access_Subprogram_Type)
          then
             return It2;
 
@@ -1880,8 +1875,8 @@ package body Sem_Type is
 
                   if Ekind (Etype (Opnd)) = E_Anonymous_Access_Type
                     and then
-                     List_Containing (Parent (Designated_Type (Etype (Opnd))))
-                       = List_Containing (Unit_Declaration_Node (User_Subp))
+                      List_Containing (Parent (Designated_Type (Etype (Opnd))))
+                        = List_Containing (Unit_Declaration_Node (User_Subp))
                   then
                      if It2.Nam = Predef_Subp then
                         return It1;
@@ -2559,9 +2554,9 @@ package body Sem_Type is
       BT1 := Base_Type (T1);
       BT2 := Base_Type (T2);
 
-      --  Handle underlying view of records with unknown discriminants
-      --  using the original entity that motivated the construction of
-      --  this underlying record view (see Build_Derived_Private_Type).
+      --  Handle underlying view of records with unknown discriminants using
+      --  the original entity that motivated the construction of this
+      --  underlying record view (see Build_Derived_Private_Type).
 
       if Is_Underlying_Record_View (BT1) then
          BT1 := Underlying_Record_View (BT1);
@@ -2574,9 +2569,17 @@ package body Sem_Type is
       if BT1 = BT2 then
          return True;
 
+      --  The predicate must look past privacy
+
       elsif Is_Private_Type (T1)
         and then Present (Full_View (T1))
         and then BT2 = Base_Type (Full_View (T1))
+      then
+         return True;
+
+      elsif Is_Private_Type (T2)
+        and then Present (Full_View (T2))
+        and then BT1 = Base_Type (Full_View (T2))
       then
          return True;
 

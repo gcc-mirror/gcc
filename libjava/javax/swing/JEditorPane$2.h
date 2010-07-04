@@ -25,7 +25,7 @@ class javax::swing::JEditorPane$2 : public ::java::lang::Object
 public: // actually package-private
   JEditorPane$2(::javax::swing::JEditorPane$PageLoader *);
 public:
-  void run();
+  virtual void run();
 public: // actually package-private
   ::javax::swing::JEditorPane$PageLoader * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$1;
 public:

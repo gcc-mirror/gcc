@@ -71,29 +71,26 @@ namespace __profile
       using _Base::value_compare;
 
       // 23.3.1.1 construct/copy/destroy:
-      explicit map(const _Compare& __comp = _Compare(),
-		   const _Allocator& __a = _Allocator())
-      : _Base(__comp, __a) {
-          __profcxx_map_to_unordered_map_construct(this);
-      }
+      explicit
+      map(const _Compare& __comp = _Compare(),
+	  const _Allocator& __a = _Allocator())
+      : _Base(__comp, __a)
+      { __profcxx_map_to_unordered_map_construct(this); }
 
       template<typename _InputIterator>
         map(_InputIterator __first, _InputIterator __last,
 	    const _Compare& __comp = _Compare(),
 	    const _Allocator& __a = _Allocator())
-	: _Base(__first, __last, __comp, __a) {
-          __profcxx_map_to_unordered_map_construct(this);
-        }
+	: _Base(__first, __last, __comp, __a)
+        { __profcxx_map_to_unordered_map_construct(this); }
 
       map(const map& __x)
-      : _Base(__x) {
-          __profcxx_map_to_unordered_map_construct(this);
-      }
+      : _Base(__x)
+      { __profcxx_map_to_unordered_map_construct(this); }
 
       map(const _Base& __x)
-      : _Base(__x) {
-          __profcxx_map_to_unordered_map_construct(this);
-      }
+      : _Base(__x)
+      { __profcxx_map_to_unordered_map_construct(this); }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       map(map&& __x)
@@ -106,9 +103,8 @@ namespace __profile
       : _Base(__l, __c, __a) { }
 #endif
 
-      ~map() {
-          __profcxx_map_to_unordered_map_destruct(this);
-      }
+      ~map()
+      { __profcxx_map_to_unordered_map_destruct(this); }
 
       map&
       operator=(const map& __x)

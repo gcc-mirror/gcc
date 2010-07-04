@@ -1,5 +1,5 @@
 /* Coalesce SSA_NAMES together for the out-of-ssa pass.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
 
@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "flags.h"
-#include "diagnostic.h"
+#include "tree-pretty-print.h"
 #include "bitmap.h"
 #include "tree-flow.h"
 #include "hashtab.h"

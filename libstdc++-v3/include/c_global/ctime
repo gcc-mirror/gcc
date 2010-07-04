@@ -40,7 +40,7 @@
 
 #pragma GCC system_header
 
-#include <cstddef>
+#include <bits/c++config.h>
 #include <time.h>
 
 #ifndef _GLIBCXX_CTIME

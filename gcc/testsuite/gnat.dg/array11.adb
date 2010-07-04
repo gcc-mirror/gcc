@@ -9,7 +9,7 @@ procedure Array11 is
   type Arr2 is array (Long_Integer) of aliased Rec; -- { dg-warning "padded" }
 
   A1 : Arr1;
-  A2 : Arr2; -- { dg-warning "Storage_Error will be raised" }
+  A2 : Arr2; -- { dg-warning "Storage_Error" }
 
 begin
   null;

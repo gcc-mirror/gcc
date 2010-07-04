@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* For state_t.  */
 #include "insn-attr.h"
-/* For regset_head.  */
+#include "regset.h"
 #include "basic-block.h"
 /* For reg_note.  */
 #include "rtl.h"
@@ -727,7 +727,7 @@ struct _sel_insn_data
   htab_t transformed_insns;
 
   /* A context incapsulating this insn.  */
-  struct deps deps_context;
+  struct deps_desc deps_context;
 
   /* This field is initialized at the beginning of scheduling and is used
      to handle sched group instructions.  If it is non-null, then it points

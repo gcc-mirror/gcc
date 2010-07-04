@@ -25,7 +25,7 @@ class javax::swing::Timer$1 : public ::java::lang::Object
 public: // actually package-private
   Timer$1(::javax::swing::Timer *);
 public:
-  void run();
+  virtual void run();
 public: // actually package-private
   ::javax::swing::Timer * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

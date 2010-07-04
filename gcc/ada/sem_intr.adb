@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,8 +53,8 @@ package body Sem_Intr is
    --  returns type String.
 
    procedure Check_Intrinsic_Operator (E : Entity_Id; N : Node_Id);
-   --  Check that operator is one of the binary arithmetic operators, and
-   --  that the types involved have the same size.
+   --  Check that operator is one of the binary arithmetic operators, and that
+   --  the types involved both have underlying integer types.
 
    procedure Check_Shift (E : Entity_Id; N : Node_Id);
    --  Check intrinsic shift subprogram, the two arguments are the same
@@ -73,9 +73,7 @@ package body Sem_Intr is
 
    procedure Check_Exception_Function (E : Entity_Id; N : Node_Id) is
    begin
-      if Ekind (E) /= E_Function
-        and then Ekind (E) /= E_Generic_Function
-      then
+      if not Ekind_In (E, E_Function, E_Generic_Function) then
          Errint
            ("intrinsic exception subprogram must be a function", E, N);
 
@@ -200,11 +198,24 @@ package body Sem_Intr is
             T2 := Etype (Next_Formal (First_Formal (E)));
          end if;
 
-         if Root_Type (T1) /= Root_Type (T2)
-           or else Root_Type (T1) /= Root_Type (Ret)
+         if Root_Type (T1) = Root_Type (T2)
+           or else Root_Type (T1) = Root_Type (Ret)
          then
+            --  Same types, predefined operator will apply
+
+            null;
+
+         elsif Is_Integer_Type (Underlying_Type (T1))
+           and then Is_Integer_Type (Underlying_Type (T2))
+           and then Is_Integer_Type (Underlying_Type (Ret))
+         then
+            --  Expansion will introduce conversions if sizes are not equal
+
+            null;
+
+         else
             Errint
-              ("types of intrinsic operator must have the same size", E, N);
+              ("types of intrinsic operator operands do not match", E, N);
          end if;
 
       --  Comparison operators
@@ -274,7 +285,7 @@ package body Sem_Intr is
          return;
       end if;
 
-      if not Is_Numeric_Type (T1) then
+      if not Is_Numeric_Type (Underlying_Type (T1)) then
          Errint ("intrinsic operator can only apply to numeric types", E, N);
       end if;
    end Check_Intrinsic_Operator;
@@ -374,9 +385,7 @@ package body Sem_Intr is
       Ptyp2 : Node_Id;
 
    begin
-      if Ekind (E) /= E_Function
-        and then Ekind (E) /= E_Generic_Function
-      then
+      if not Ekind_In (E, E_Function, E_Generic_Function) then
          Errint ("intrinsic shift subprogram must be a function", E, N);
          return;
       end if;

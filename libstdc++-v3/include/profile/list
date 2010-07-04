@@ -64,20 +64,40 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
 
       // 23.2.2.1 construct/copy/destroy:
-      explicit list(const _Allocator& __a = _Allocator())
+      explicit
+      list(const _Allocator& __a = _Allocator())
       : _Base(__a) 
       { 
         __profcxx_list_construct(this); 	// list2slist
         __profcxx_list_construct2(this); 	// list2vector
       }
 
-      explicit list(size_type __n, const _Tp& __value = _Tp(),
-		    const _Allocator& __a = _Allocator())
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      explicit
+      list(size_type __n)
+      : _Base(__n) 
+      { 
+        __profcxx_list_construct(this); 
+        __profcxx_list_construct2(this); 
+      }
+
+      list(size_type __n, const _Tp& __value,
+	   const _Allocator& __a = _Allocator())
       : _Base(__n, __value, __a) 
       { 
         __profcxx_list_construct(this); 
         __profcxx_list_construct2(this); 
       }
+#else
+      explicit
+      list(size_type __n, const _Tp& __value = _Tp(),
+	   const _Allocator& __a = _Allocator())
+      : _Base(__n, __value, __a) 
+      { 
+        __profcxx_list_construct(this); 
+        __profcxx_list_construct2(this); 
+      }
+#endif
 
       template<class _InputIterator>
       list(_InputIterator __first, _InputIterator __last,
@@ -229,9 +249,19 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       using _Base::size;
       using _Base::max_size;
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      void
+      resize(size_type __sz)
+      { _Base::resize(__sz); }
+
+      void
+      resize(size_type __sz, const _Tp& __c)
+      { _Base::resize(__sz, __c); }
+#else
       void
       resize(size_type __sz, _Tp __c = _Tp())
       { _Base::resize(__sz, __c); }
+#endif
 
       // element access:
       reference

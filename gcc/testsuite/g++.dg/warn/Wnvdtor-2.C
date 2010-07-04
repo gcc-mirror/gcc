@@ -6,37 +6,37 @@
 // destructor, in which case it would be possible but unsafe to delete
 // an instance of a derived class through a pointer to the base class.
 
-struct A
-{ // { dg-bogus "non-virtual destructor" }
+struct A // { dg-bogus "non-virtual destructor" }
+{
 protected:
   ~A();
 public:
   virtual void f() = 0;
 };
 
-struct B
-{ // { dg-bogus "non-virtual destructor" }
+struct B // { dg-bogus "non-virtual destructor" }
+{
 private:
   ~B();
 public:
   virtual void f() = 0;
 };
 
-struct C
-{ // { dg-warning "non-virtual destructor" }
+struct C // { dg-warning "non-virtual destructor" }
+{
   virtual void f() = 0;
 };
 
-struct D
-{ // { dg-warning "non-virtual destructor" }
+struct D // { dg-warning "non-virtual destructor" }
+{
   ~D();
   virtual void f() = 0;
 };
 
 struct E;
 
-struct F
-{ // { dg-warning "non-virtual destructor" }
+struct F // { dg-warning "non-virtual destructor" }
+{
 protected:
   friend class E;
   ~F();
@@ -44,8 +44,8 @@ public:
   virtual void f() = 0;
 };
 
-struct G
-{ // { dg-warning "non-virtual destructor" }
+struct G // { dg-warning "non-virtual destructor" }
+{
 private:
   friend class E;
   ~G();

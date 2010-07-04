@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -454,6 +454,15 @@ package body Exp_Pakd is
    --  Given an expression of a packed array type, builds a corresponding
    --  expression whose type is the implementation type used to represent
    --  the packed array. Aexp is analyzed and resolved on entry and on exit.
+
+   procedure Get_Base_And_Bit_Offset
+     (N      : Node_Id;
+      Base   : out Node_Id;
+      Offset : out Node_Id);
+   --  Given a node N for a name which involves a packed array reference,
+   --  return the base object of the reference and build an expression of
+   --  type Standard.Integer representing the zero-based offset in bits
+   --  from Base'Address to the first bit of the reference.
 
    function Known_Aligned_Enough (Obj : Node_Id; Csiz : Nat) return Boolean;
    --  There are two versions of the Set routines, the ones used when the
@@ -1134,16 +1143,6 @@ package body Exp_Pakd is
                 (Len_Bits <= System_Word_Size
                    or else (Len_Bits <= System_Max_Binary_Modulus_Power
                               and then Support_Long_Shifts_On_Target))
-
-            --  Also test for alignment given. If an alignment is given which
-            --  is smaller than the natural modular alignment, force the array
-            --  of bytes representation to accommodate the alignment.
-
-              and then
-                (No (Alignment_Clause (Typ))
-                   or else
-                 Alignment (Typ) >= ((Len_Bits + System_Storage_Unit)
-                                             / System_Storage_Unit))
             then
                --  We can use the modular type, it has the form:
 
@@ -1193,6 +1192,14 @@ package body Exp_Pakd is
                end if;
 
                Install_PAT;
+
+               --  Propagate a given alignment to the modular type. This can
+               --  cause it to be under-aligned, but that's OK.
+
+               if Present (Alignment_Clause (Typ)) then
+                  Set_Alignment (PAT, Alignment (Typ));
+               end if;
+
                return;
             end if;
          end if;
@@ -1349,10 +1356,9 @@ package body Exp_Pakd is
          begin
             Decl :=
               Make_Object_Declaration (Loc,
-                Defining_Identifier =>
-                  Make_Defining_Identifier (Loc,  New_Internal_Name ('T')),
-                Object_Definition => New_Occurrence_Of (Ctyp, Loc),
-                Expression => New_Copy_Tree (Rhs));
+                Defining_Identifier => Make_Temporary (Loc, 'T', Rhs),
+                Object_Definition   => New_Occurrence_Of (Ctyp, Loc),
+                Expression          => New_Copy_Tree (Rhs));
 
             Insert_Actions (N, New_List (Decl));
             Rhs := New_Occurrence_Of (Defining_Identifier (Decl), Loc);
@@ -1373,6 +1379,19 @@ package body Exp_Pakd is
          Analyze_And_Resolve (Rhs, Ctyp, Suppress => All_Checks);
       else
          Analyze_And_Resolve (Rhs, Ctyp);
+      end if;
+
+      --  For the AAMP target, indexing of certain packed array is passed
+      --  through to the back end without expansion, because the expansion
+      --  results in very inefficient code on that target. This allows the
+      --  GNAAMP back end to generate specialized macros that support more
+      --  efficient indexing of packed arrays with components having sizes
+      --  that are small powers of two.
+
+      if AAMP_On_Target
+        and then (Csiz = 1 or else Csiz = 2 or else Csiz = 4)
+      then
+         return;
       end if;
 
       --  Case of component size 1,2,4 or any component size for the modular
@@ -1666,18 +1685,11 @@ package body Exp_Pakd is
 
    procedure Expand_Packed_Address_Reference (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
-      Ploc   : Source_Ptr;
-      Pref   : Node_Id;
-      Expr   : Node_Id;
-      Term   : Node_Id;
-      Atyp   : Entity_Id;
-      Subscr : Node_Id;
+      Base   : Node_Id;
+      Offset : Node_Id;
 
    begin
-      Pref := Prefix (N);
-      Expr := Empty;
-
-      --  We build up an expression serially that has the form
+      --  We build an expression that has the form
 
       --    outer_object'Address
       --      + (linear-subscript * component_size  for each array reference
@@ -1685,49 +1697,7 @@ package body Exp_Pakd is
       --      +  ...
       --      +  ...) / Storage_Unit;
 
-      --  Some additional conversions are required to deal with the addition
-      --  operation, which is not normally visible to generated code.
-
-      loop
-         Ploc := Sloc (Pref);
-
-         if Nkind (Pref) = N_Indexed_Component then
-            Convert_To_Actual_Subtype (Prefix (Pref));
-            Atyp := Etype (Prefix (Pref));
-            Compute_Linear_Subscript (Atyp, Pref, Subscr);
-
-            Term :=
-              Make_Op_Multiply (Ploc,
-                Left_Opnd => Subscr,
-                Right_Opnd =>
-                 Make_Attribute_Reference (Ploc,
-                   Prefix         => New_Occurrence_Of (Atyp, Ploc),
-                   Attribute_Name => Name_Component_Size));
-
-         elsif Nkind (Pref) = N_Selected_Component then
-            Term :=
-              Make_Attribute_Reference (Ploc,
-                Prefix         => Selector_Name (Pref),
-                Attribute_Name => Name_Bit_Position);
-
-         else
-            exit;
-         end if;
-
-         Term := Convert_To (RTE (RE_Integer_Address), Term);
-
-         if No (Expr) then
-            Expr := Term;
-
-         else
-            Expr :=
-              Make_Op_Add (Ploc,
-                Left_Opnd  => Expr,
-                Right_Opnd => Term);
-         end if;
-
-         Pref := Prefix (Pref);
-      end loop;
+      Get_Base_And_Bit_Offset (Prefix (N), Base, Offset);
 
       Rewrite (N,
         Unchecked_Convert_To (RTE (RE_Address),
@@ -1735,17 +1705,46 @@ package body Exp_Pakd is
             Left_Opnd =>
               Unchecked_Convert_To (RTE (RE_Integer_Address),
                 Make_Attribute_Reference (Loc,
-                  Prefix         => Pref,
+                  Prefix         => Base,
                   Attribute_Name => Name_Address)),
 
             Right_Opnd =>
-              Make_Op_Divide (Loc,
-                Left_Opnd => Expr,
-                Right_Opnd =>
-                  Make_Integer_Literal (Loc, System_Storage_Unit)))));
+              Unchecked_Convert_To (RTE (RE_Integer_Address),
+                Make_Op_Divide (Loc,
+                  Left_Opnd => Offset,
+                  Right_Opnd =>
+                    Make_Integer_Literal (Loc, System_Storage_Unit))))));
 
       Analyze_And_Resolve (N, RTE (RE_Address));
    end Expand_Packed_Address_Reference;
+
+   ---------------------------------
+   -- Expand_Packed_Bit_Reference --
+   ---------------------------------
+
+   procedure Expand_Packed_Bit_Reference (N : Node_Id) is
+      Loc    : constant Source_Ptr := Sloc (N);
+      Base   : Node_Id;
+      Offset : Node_Id;
+
+   begin
+      --  We build an expression that has the form
+
+      --    (linear-subscript * component_size      for each array reference
+      --      +  field'Bit_Position                 for each record field
+      --      +  ...
+      --      +  ...) mod Storage_Unit;
+
+      Get_Base_And_Bit_Offset (Prefix (N), Base, Offset);
+
+      Rewrite (N,
+        Unchecked_Convert_To (Universal_Integer,
+          Make_Op_Mod (Loc,
+            Left_Opnd => Offset,
+            Right_Opnd => Make_Integer_Literal (Loc, System_Storage_Unit))));
+
+      Analyze_And_Resolve (N, Universal_Integer);
+   end Expand_Packed_Bit_Reference;
 
    ------------------------------------
    -- Expand_Packed_Boolean_Operator --
@@ -1843,11 +1842,8 @@ package body Exp_Pakd is
 
       else
          declare
-            Result_Ent : constant Entity_Id :=
-                           Make_Defining_Identifier (Loc,
-                             Chars => New_Internal_Name ('T'));
-
-            E_Id : RE_Id;
+            Result_Ent : constant Entity_Id := Make_Temporary (Loc, 'T');
+            E_Id       : RE_Id;
 
          begin
             if Nkind (N) = N_Op_And then
@@ -1949,6 +1945,19 @@ package body Exp_Pakd is
       PAT  := Packed_Array_Type (Atyp);
       Ctyp := Component_Type (Atyp);
       Csiz := UI_To_Int (Component_Size (Atyp));
+
+      --  For the AAMP target, indexing of certain packed array is passed
+      --  through to the back end without expansion, because the expansion
+      --  results in very inefficient code on that target. This allows the
+      --  GNAAMP back end to generate specialized macros that support more
+      --  efficient indexing of packed arrays with components having sizes
+      --  that are small powers of two.
+
+      if AAMP_On_Target
+        and then (Csiz = 1 or else Csiz = 2 or else Csiz = 4)
+      then
+         return;
+      end if;
 
       --  Case of component size 1,2,4 or any component size for the modular
       --  case. These are the cases for which we can inline the code.
@@ -2194,9 +2203,7 @@ package body Exp_Pakd is
 
       else
          declare
-            Result_Ent : constant Entity_Id :=
-                           Make_Defining_Identifier (Loc,
-                             Chars => New_Internal_Name ('T'));
+            Result_Ent : constant Entity_Id := Make_Temporary (Loc, 'T');
 
          begin
             Insert_Actions (N, New_List (
@@ -2236,6 +2243,70 @@ package body Exp_Pakd is
       Analyze_And_Resolve (N, Typ, Suppress => All_Checks);
 
    end Expand_Packed_Not;
+
+   -----------------------------
+   -- Get_Base_And_Bit_Offset --
+   -----------------------------
+
+   procedure Get_Base_And_Bit_Offset
+     (N      : Node_Id;
+      Base   : out Node_Id;
+      Offset : out Node_Id)
+   is
+      Loc    : Source_Ptr;
+      Term   : Node_Id;
+      Atyp   : Entity_Id;
+      Subscr : Node_Id;
+
+   begin
+      Base   := N;
+      Offset := Empty;
+
+      --  We build up an expression serially that has the form
+
+      --    linear-subscript * component_size       for each array reference
+      --      +  field'Bit_Position                 for each record field
+      --      +  ...
+
+      loop
+         Loc := Sloc (Base);
+
+         if Nkind (Base) = N_Indexed_Component then
+            Convert_To_Actual_Subtype (Prefix (Base));
+            Atyp := Etype (Prefix (Base));
+            Compute_Linear_Subscript (Atyp, Base, Subscr);
+
+            Term :=
+              Make_Op_Multiply (Loc,
+                Left_Opnd => Subscr,
+                Right_Opnd =>
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => New_Occurrence_Of (Atyp, Loc),
+                   Attribute_Name => Name_Component_Size));
+
+         elsif Nkind (Base) = N_Selected_Component then
+            Term :=
+              Make_Attribute_Reference (Loc,
+                Prefix         => Selector_Name (Base),
+                Attribute_Name => Name_Bit_Position);
+
+         else
+            return;
+         end if;
+
+         if No (Offset) then
+            Offset := Term;
+
+         else
+            Offset :=
+              Make_Op_Add (Loc,
+                Left_Opnd  => Offset,
+                Right_Opnd => Term);
+         end if;
+
+         Base := Prefix (Base);
+      end loop;
+   end Get_Base_And_Bit_Offset;
 
    -------------------------------------
    -- Involves_Packed_Array_Reference --

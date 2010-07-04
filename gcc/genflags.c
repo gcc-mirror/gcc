@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "obstack.h"
 #include "errors.h"
+#include "read-md.h"
 #include "gensupport.h"
 
 /* Obstack to remember insns with.  */
@@ -261,7 +262,7 @@ main (int argc, char **argv)
      direct calls to their generators in C code.  */
   insn_elision = 0;
 
-  if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
+  if (!init_rtx_reader_args (argc, argv))
     return (FATAL_EXIT_CODE);
 
   puts ("/* Generated automatically by the program `genflags'");

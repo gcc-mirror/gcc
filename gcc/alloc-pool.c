@@ -137,7 +137,7 @@ create_alloc_pool (const char *name, size_t size, size_t num)
   struct alloc_pool_descriptor *desc;
 #endif
 
-  gcc_assert (name);
+  gcc_checking_assert (name);
 
   /* Make size large enough to store the list header.  */
   if (size < sizeof (alloc_pool_list))
@@ -152,7 +152,7 @@ create_alloc_pool (const char *name, size_t size, size_t num)
 #endif
 
   /* Um, we can't really allocate 0 elements per block.  */
-  gcc_assert (num);
+  gcc_checking_assert (num);
 
   /* Allocate memory for the pool structure.  */
   pool = XNEW (struct alloc_pool_def);
@@ -201,7 +201,7 @@ empty_alloc_pool (alloc_pool pool)
   struct alloc_pool_descriptor *desc = alloc_pool_descriptor (pool->name);
 #endif
 
-  gcc_assert (pool);
+  gcc_checking_assert (pool);
 
   /* Free each block allocated to the pool.  */
   for (block = pool->block_list; block != NULL; block = next_block)
@@ -260,7 +260,7 @@ pool_alloc (alloc_pool pool)
     desc->peak = desc->current;
 #endif
 
-  gcc_assert (pool);
+  gcc_checking_assert (pool);
 
   /* If there are no more free elements, make some more!.  */
   if (!pool->returned_free_list)
@@ -328,19 +328,19 @@ pool_free (alloc_pool pool, void *ptr)
   struct alloc_pool_descriptor *desc = alloc_pool_descriptor (pool->name);
 #endif
 
-  gcc_assert (ptr);
 
 #ifdef ENABLE_CHECKING
-  /* Check whether the PTR was allocated from POOL.  */
-  gcc_assert (pool->id == ALLOCATION_OBJECT_PTR_FROM_USER_PTR (ptr)->id);
+  gcc_assert (ptr
+	      /* Check if we free more than we allocated, which is Bad (TM).  */
+	      && pool->elts_free < pool->elts_allocated
+	      /* Check whether the PTR was allocated from POOL.  */
+	      && pool->id == ALLOCATION_OBJECT_PTR_FROM_USER_PTR (ptr)->id);
 
   memset (ptr, 0xaf, pool->elt_size - offsetof (allocation_object, u.data));
 
   /* Mark the element to be free.  */
   ALLOCATION_OBJECT_PTR_FROM_USER_PTR (ptr)->id = 0;
 #else
-  /* Check if we free more than we allocated, which is Bad (TM).  */
-  gcc_assert (pool->elts_free < pool->elts_allocated);
 #endif
 
   header = (alloc_pool_list) ptr;

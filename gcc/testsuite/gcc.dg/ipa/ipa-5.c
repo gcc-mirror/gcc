@@ -20,8 +20,10 @@ int f (float a)
 }
 int main ()
 {
-  f (7.6);
-  return 0;	
+  int i;
+  for (i = 0; i < 100; i++)
+    f (7.6);
+  return 0;
 }
 
 

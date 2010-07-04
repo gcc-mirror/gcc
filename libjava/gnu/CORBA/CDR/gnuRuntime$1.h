@@ -28,7 +28,7 @@ class gnu::CORBA::CDR::gnuRuntime$1 : public ::java::lang::Object
 public: // actually package-private
   gnuRuntime$1(::gnu::CORBA::CDR::gnuRuntime *);
 public:
-  jint compare(::java::lang::Object *, ::java::lang::Object *);
+  virtual jint compare(::java::lang::Object *, ::java::lang::Object *);
 public: // actually package-private
   ::gnu::CORBA::CDR::gnuRuntime * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2006-2009, Free Software Foundation, Inc.       --
+--            Copyright (C) 2006-2010, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,23 +23,25 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Directories;  use Ada.Directories;
-with GNAT.HTable;      use GNAT.HTable;
-with Makeutl;          use Makeutl;
+with Hostparm;
+with Makeutl;  use Makeutl;
 with MLib.Tgt;
-with Opt;              use Opt;
-with Output;           use Output;
+with Opt;      use Opt;
+with Output;   use Output;
 with Prj.Env;
 with Prj.Err;
 with Prj.Part;
 with Prj.PP;
-with Prj.Proc;         use Prj.Proc;
-with Prj.Tree;         use Prj.Tree;
-with Prj.Util;         use Prj.Util;
-with Prj;              use Prj;
-with Snames;           use Snames;
-with System.Case_Util; use System.Case_Util;
-with System;
+with Prj.Proc; use Prj.Proc;
+with Prj.Tree; use Prj.Tree;
+with Prj.Util; use Prj.Util;
+with Prj;      use Prj;
+with Snames;   use Snames;
+
+with Ada.Directories; use Ada.Directories;
+
+with GNAT.Case_Util; use GNAT.Case_Util;
+with GNAT.HTable;    use GNAT.HTable;
 
 package body Prj.Conf is
 
@@ -889,8 +891,18 @@ package body Prj.Conf is
       <<Process_Config_File>>
 
       if Automatically_Generated then
-         --  This might raise an Invalid_Config exception
-         Do_Autoconf;
+         if Hostparm.OpenVMS then
+
+            --  There is no gprconfig on VMS
+
+            raise Invalid_Config
+              with "could not locate any configuration project file";
+
+         else
+            --  This might raise an Invalid_Config exception
+
+            Do_Autoconf;
+         end if;
       end if;
 
       --  Parse the configuration file

@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "tree.h"
 #include "gimple.h"
-#include "ggc.h"	/* lambda.h needs this */
+#include "ggc.h"
 #include "lambda.h"	/* gcd */
 #include "hashtab.h"
 #include "plugin-api.h"
@@ -44,6 +44,9 @@ struct GTY(()) lto_symtab_entry_def
   /* The cgraph node if decl is a function decl.  Filled in during the
      merging process.  */
   struct cgraph_node *node;
+  /* The varpool node if decl is a variable decl.  Filled in during the
+     merging process.  */
+  struct varpool_node *vnode;
   /* LTO file-data and symbol resolution for this decl.  */
   struct lto_file_decl_data * GTY((skip (""))) file_data;
   enum ld_plugin_symbol_resolution resolution;
@@ -62,6 +65,15 @@ static GTY ((if_marked ("lto_symtab_entry_marked_p"),
 	     param_is (struct lto_symtab_entry_def)))
   htab_t lto_symtab_identifiers;
 
+/* Free symtab hashtable.  */
+
+void
+lto_symtab_free (void)
+{
+  htab_delete (lto_symtab_identifiers);
+  lto_symtab_identifiers = NULL;
+}
+
 /* Return the hash value of an lto_symtab_entry_t object pointed to by P.  */
 
 static hashval_t
@@ -69,7 +81,7 @@ lto_symtab_entry_hash (const void *p)
 {
   const struct lto_symtab_entry_def *base =
     (const struct lto_symtab_entry_def *) p;
-  return htab_hash_string (IDENTIFIER_POINTER (base->id));
+  return IDENTIFIER_HASH_VALUE (base->id);
 }
 
 /* Return non-zero if P1 and P2 points to lto_symtab_entry_def structs
@@ -94,9 +106,10 @@ lto_symtab_entry_marked_p (const void *p)
   const struct lto_symtab_entry_def *base =
      (const struct lto_symtab_entry_def *) p;
 
-  /* Keep this only if the decl or the chain is marked.  */
-  return (ggc_marked_p (base->decl)
-	  || (base->next && ggc_marked_p (base->next)));
+  /* Keep this only if the common IDENTIFIER_NODE of the symtab chain
+     is marked which it will be if at least one of the DECLs in the
+     chain is marked.  */
+  return ggc_marked_p (base->id);
 }
 
 /* Lazily initialize resolution hash tables.  */
@@ -139,7 +152,7 @@ lto_symtab_register_decl (tree decl,
   if (TREE_CODE (decl) == FUNCTION_DECL)
     gcc_assert (!DECL_ABSTRACT (decl));
 
-  new_entry = GGC_CNEW (struct lto_symtab_entry_def);
+  new_entry = ggc_alloc_cleared_lto_symtab_entry_def ();
   new_entry->id = DECL_ASSEMBLER_NAME (decl);
   new_entry->decl = decl;
   new_entry->resolution = resolution;
@@ -211,15 +224,8 @@ lto_cgraph_replace_node (struct cgraph_node *node,
       next = e->next_caller;
       cgraph_redirect_edge_callee (e, prevailing_node);
     }
-
-  /* There are not supposed to be any outgoing edges from a node we
-     replace.  Still this can happen for multiple instances of weak
-     functions.  */
-  for (e = node->callees; e; e = next)
-    {
-      next = e->next_callee;
-      cgraph_remove_edge (e);
-    }
+  /* Redirect incomming references.  */
+  ipa_clone_refering (prevailing_node, NULL, &node->ref_list);
 
   if (node->same_body)
     {
@@ -242,6 +248,54 @@ lto_cgraph_replace_node (struct cgraph_node *node,
 
   /* Finally remove the replaced node.  */
   cgraph_remove_node (node);
+}
+
+/* Replace the cgraph node NODE with PREVAILING_NODE in the cgraph, merging
+   all edges and removing the old node.  */
+
+static void
+lto_varpool_replace_node (struct varpool_node *vnode,
+			  struct varpool_node *prevailing_node)
+{
+  /* Merge node flags.  */
+  if (vnode->needed)
+    {
+      gcc_assert (!vnode->analyzed || prevailing_node->analyzed);
+      varpool_mark_needed_node (prevailing_node);
+    }
+  /* Relink aliases.  */
+  if (vnode->extra_name && !vnode->alias)
+    {
+      struct varpool_node *alias, *last;
+      for (alias = vnode->extra_name;
+	   alias; alias = alias->next)
+	{
+	  last = alias;
+	  alias->extra_name = prevailing_node;
+	}
+
+      if (prevailing_node->extra_name)
+	{
+	  last->next = prevailing_node->extra_name;
+	  prevailing_node->extra_name->prev = last;
+	}
+      prevailing_node->extra_name = vnode->extra_name;
+      vnode->extra_name = NULL;
+    }
+  gcc_assert (!vnode->finalized || prevailing_node->finalized);
+  gcc_assert (!vnode->analyzed || prevailing_node->analyzed);
+
+  /* When replacing by an alias, the references goes to the original
+     variable.  */
+  if (prevailing_node->alias && prevailing_node->extra_name)
+    prevailing_node = prevailing_node->extra_name;
+  ipa_clone_refering (NULL, prevailing_node, &vnode->ref_list);
+
+  /* Be sure we can garbage collect the initializer.  */
+  if (DECL_INITIAL (vnode->decl))
+    DECL_INITIAL (vnode->decl) = error_mark_node;
+  /* Finally remove the replaced node.  */
+  varpool_remove_node (vnode);
 }
 
 /* Merge two variable or function symbol table entries PREVAILING and ENTRY.
@@ -383,11 +437,13 @@ lto_symtab_resolve_can_prevail_p (lto_symtab_entry_t e)
 
   /* A variable should have a size.  */
   else if (TREE_CODE (e->decl) == VAR_DECL)
-    return (DECL_SIZE (e->decl) != NULL_TREE
-	    /* The C++ frontend retains TREE_STATIC on the declaration
-	       of foo_ in struct Foo { static Foo *foo_; }; but it is
-	       not a definition.  g++.dg/lto/20090315_0.C.  */
-	    && !DECL_EXTERNAL (e->decl));
+    {
+      if (!e->vnode)
+	return false;
+      if (e->vnode->finalized)
+	return true;
+      return e->vnode->alias && e->vnode->extra_name->finalized;
+    }
 
   gcc_unreachable ();
 }
@@ -406,6 +462,14 @@ lto_symtab_resolve_symbols (void **slot)
     {
       if (TREE_CODE (e->decl) == FUNCTION_DECL)
 	e->node = cgraph_get_node (e->decl);
+      else if (TREE_CODE (e->decl) == VAR_DECL)
+	{
+	  e->vnode = varpool_get_node (e->decl);
+	  /* The LTO plugin for gold doesn't handle common symbols
+	     properly.  Let us choose manually.  */
+	  if (DECL_COMMON (e->decl))
+	    e->resolution = LDPR_UNKNOWN;
+	}
     }
 
   e = (lto_symtab_entry_t) *slot;
@@ -466,11 +530,20 @@ lto_symtab_resolve_symbols (void **slot)
     return;
 
 found:
-  if (TREE_CODE (prevailing->decl) == VAR_DECL
-      && TREE_READONLY (prevailing->decl))
+  /* If current lto files represent the whole program,
+    it is correct to use LDPR_PREVALING_DEF_IRONLY.
+    If current lto files are part of whole program, internal
+    resolver doesn't know if it is LDPR_PREVAILING_DEF
+    or LDPR_PREVAILING_DEF_IRONLY.  Use IRONLY conforms to
+    using -fwhole-program.  Otherwise, it doesn't
+    matter using either LDPR_PREVAILING_DEF or
+    LDPR_PREVAILING_DEF_IRONLY
+    
+    FIXME: above workaround due to gold plugin makes some
+    variables IRONLY, which are indeed PREVAILING_DEF in
+    resolution file.  These variables still need manual
+    externally_visible attribute.  */
     prevailing->resolution = LDPR_PREVAILING_DEF_IRONLY;
-  else
-    prevailing->resolution = LDPR_PREVAILING_DEF;
 }
 
 /* Merge all decls in the symbol table chain to the prevailing decl and
@@ -559,17 +632,22 @@ lto_symtab_merge_decls_1 (void **slot, void *data ATTRIBUTE_UNUSED)
 	while (!prevailing->node
 	       && prevailing->next)
 	  prevailing = prevailing->next;
-      /* We do not stream varpool nodes, so the first decl has to
-	 be good enough for now.
-	 ???  For QOI choose a variable with readonly initializer
-	 if there is one.  This matches C++
-	 struct Foo { static const int i = 1; }; without a real
-	 definition.  */
+      /* For variables chose with a priority variant with vnode
+	 attached (i.e. from unit where external declaration of
+	 variable is actually used).
+	 When there are multiple variants, chose one with size.
+	 This is needed for C++ typeinfos, for example in
+	 lto/20081204-1 there are typeifos in both units, just
+	 one of them do have size.  */
       if (TREE_CODE (prevailing->decl) == VAR_DECL)
-	while (!(TREE_READONLY (prevailing->decl)
-		 && DECL_INITIAL (prevailing->decl))
-	       && prevailing->next)
-	  prevailing = prevailing->next;
+	{
+	  for (e = prevailing->next; e; e = e->next)
+	    if ((!prevailing->vnode && e->vnode)
+		|| ((prevailing->vnode != NULL) == (e->vnode != NULL)
+		    && !COMPLETE_TYPE_P (TREE_TYPE (prevailing->decl))
+		    && COMPLETE_TYPE_P (TREE_TYPE (e->decl))))
+	      prevailing = e;
+	}
     }
 
   /* Move it first in the list.  */
@@ -625,9 +703,28 @@ lto_symtab_merge_decls_1 (void **slot, void *data ATTRIBUTE_UNUSED)
   lto_symtab_merge_decls_2 (slot);
 
   /* Drop all but the prevailing decl from the symtab.  */
-  if (TREE_CODE (prevailing->decl) != FUNCTION_DECL)
+  if (TREE_CODE (prevailing->decl) != FUNCTION_DECL
+      && TREE_CODE (prevailing->decl) != VAR_DECL)
     prevailing->next = NULL;
 
+  /* Set externally_visible flags for declaration of LDPR_PREVAILING_DEF */
+  if (flag_whole_program)
+    {
+      if (prevailing->resolution == LDPR_PREVAILING_DEF)
+        {
+          if (TREE_CODE (prevailing->decl) == FUNCTION_DECL)
+            prevailing->node->local.used_from_object_file = true;
+          else
+            prevailing->vnode->used_from_object_file = true;
+        }
+      else if (prevailing->resolution == LDPR_PREVAILING_DEF_IRONLY)
+        {
+          if (TREE_CODE (prevailing->decl) == FUNCTION_DECL)
+            prevailing->node->local.used_from_object_file = false;
+          else
+            prevailing->vnode->used_from_object_file = false;
+        }
+    }
   return 1;
 }
 
@@ -650,8 +747,6 @@ lto_symtab_merge_cgraph_nodes_1 (void **slot, void *data ATTRIBUTE_UNUSED)
   if (!prevailing->next)
     return 1;
 
-  gcc_assert (TREE_CODE (prevailing->decl) == FUNCTION_DECL);
-
   /* Replace the cgraph node of each entry with the prevailing one.  */
   for (e = prevailing->next; e; e = e->next)
     {
@@ -672,6 +767,8 @@ lto_symtab_merge_cgraph_nodes_1 (void **slot, void *data ATTRIBUTE_UNUSED)
 	    }
 	  lto_cgraph_replace_node (e->node, prevailing->node);
 	}
+      if (e->vnode != NULL)
+	lto_varpool_replace_node (e->vnode, prevailing->vnode);
     }
 
   /* Drop all but the prevailing decl from the symtab.  */

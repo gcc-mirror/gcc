@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -104,7 +104,7 @@ package body System.File_IO is
    File_Names_Case_Sensitive : constant Boolean := Get_Case_Sensitive /= 0;
    --  Set to indicate whether the operating system convention is for file
    --  names to be case sensitive (e.g., in Unix, set True), or non case
-   --  sensitive (e.g., in OS/2, set False).
+   --  sensitive (e.g., in Windows, set False).
 
    -----------------------
    -- Local Subprograms --

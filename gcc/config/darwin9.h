@@ -1,5 +1,5 @@
 /* Target definitions for Darwin (Mac OS X) systems.
-   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2010 Free Software Foundation, Inc.
    Contributed by Apple Inc.
 
 This file is part of GCC.
@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
     %{o*}%{!o:-o a.out} \
     %{!A:%{!nostdlib:%{!nostartfiles:%S}}} \
     %{L*} %(link_libgcc) %o %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} \
+    %{flto} %{fwhopr} \
     %{fopenmp|ftree-parallelize-loops=*: \
       %{static|static-libgcc|static-libstdc++|static-libgfortran: libgomp.a%s; : -lgomp } } \
     %{!nostdlib:%{!nodefaultlibs:  %(link_ssp) %G %L }} \
@@ -50,7 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
   do {									\
     unsigned HOST_WIDE_INT _new_size = (SIZE);				\
-    fprintf ((FILE), ".comm ");						\
+    fprintf ((FILE), "\t.comm ");						\
     assemble_name ((FILE), (NAME));					\
     if (_new_size == 0) _new_size = 1;					\
     fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",		\

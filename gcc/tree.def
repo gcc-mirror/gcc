@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    tree codes used in GCC.
    Copyright (C) 1987, 1988, 1993, 1995, 1997, 1998, 2000, 2001, 2004, 2005,
-   2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -432,16 +432,13 @@ DEFTREECODE (ALIGN_INDIRECT_REF, "align_indirect_ref", tcc_reference, 1)
    or 0 if the alignment is unknown.  */
 DEFTREECODE (MISALIGNED_INDIRECT_REF, "misaligned_indirect_ref", tcc_reference, 2)
 
-/* Used to represent lookup of runtime type dependent data.  Often this is
-   a reference to a vtable, but it needn't be.  Operands are:
+/* Used to represent lookup in a virtual method table which is dependent on
+   the runtime type of an object.  Operands are:
    OBJ_TYPE_REF_EXPR: An expression that evaluates the value to use.
    OBJ_TYPE_REF_OBJECT: Is the object on whose behalf the lookup is
    being performed.  Through this the optimizers may be able to statically
    determine the dynamic type of the object.
-   OBJ_TYPE_REF_TOKEN: Something front-end specific used to resolve the
-   reference to something simpler, usually to the address of a DECL.
-   Never touched by the middle-end.  Good choices would be either an
-   identifier or a vtable index.  */
+   OBJ_TYPE_REF_TOKEN: An integer index to the virtual method table.  */
 DEFTREECODE (OBJ_TYPE_REF, "obj_type_ref", tcc_expression, 3)
 
 /* Constructor: return an aggregate value made from specified components.
@@ -1082,6 +1079,18 @@ DEFTREECODE (WIDEN_SUM_EXPR, "widen_sum_expr", tcc_binary, 2)
    the size of t1. WIDEN_MULT_EXPR is equivalent to first widening (promoting)
    the arguments from type t1 to type t2, and then multiplying them.  */
 DEFTREECODE (WIDEN_MULT_EXPR, "widen_mult_expr", tcc_binary, 2)
+
+/* Widening multiply-accumulate.
+   The first two arguments are of type t1.
+   The third argument and the result are of type t2, such as t2 is at least
+   twice the size of t1.  t1 and t2 must be integral or fixed-point types.
+   The expression is equivalent to a WIDEN_MULT_EXPR operation
+   of the first two operands followed by an add or subtract of the third
+   operand.  */
+DEFTREECODE (WIDEN_MULT_PLUS_EXPR, "widen_mult_plus_expr", tcc_expression, 3)
+/* This is like the above, except in the final expression the multiply result
+   is subtracted from t3.  */
+DEFTREECODE (WIDEN_MULT_MINUS_EXPR, "widen_mult_plus_expr", tcc_expression, 3)
 
 /* Whole vector left/right shift in bits.
    Operand 0 is a vector to be shifted.

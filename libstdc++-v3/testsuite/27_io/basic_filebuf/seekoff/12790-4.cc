@@ -1,4 +1,4 @@
-// Copyright (C) 2003, 2005, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2005, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -47,7 +47,7 @@ void test01()
   fb.sputc(pod_uchar::from<char>(0xff));
 
   // Check that seekoff sets the current state during output
-  traits_type::pos_type pos = fb.pubseekoff(0, ios_base::cur);
+  fb.pubseekoff(0, ios_base::cur);
   fb.sputc(pod_uchar::from<char>('a'));
   fb.sputc(pod_uchar::from<char>(0xff));
   fb.sputc(pod_uchar::from<char>(0));

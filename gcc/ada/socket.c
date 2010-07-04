@@ -32,6 +32,7 @@
 /*  This file provides a portable binding to the sockets API                */
 
 #include "gsocket.h"
+
 #ifdef VMS
 /*
  * For VMS, gsocket.h can't include sockets-related DEC C header files
@@ -42,16 +43,27 @@
 # include "s-oscons.h"
 
 /*
- * We also need the declaration of struct servent, which s-oscons can't
- * provide, so we copy it manually here. This needs to be kept in synch
+ * We also need the declaration of struct hostent/servent, which s-oscons
+ * can't provide, so we copy it manually here. This needs to be kept in synch
  * with the definition of that structure in the DEC C headers, which
  * hopefully won't change frequently.
  */
+typedef char *__netdb_char_ptr __attribute__ (( mode (SI) ));
+typedef __netdb_char_ptr *__netdb_char_ptr_ptr __attribute__ (( mode (SI) ));
+
+struct hostent {
+  __netdb_char_ptr     h_name;
+  __netdb_char_ptr_ptr h_aliases;
+  int                  h_addrtype;
+  int                  h_length;
+  __netdb_char_ptr_ptr h_addr_list;
+};
+
 struct servent {
-  char *s_name;     /* official service name */
-  char **s_aliases; /* alias list */
-  int  s_port;      /* port # */
-  char *s_proto;    /* protocol to use */
+  __netdb_char_ptr     s_name;
+  __netdb_char_ptr_ptr s_aliases;
+  int                  s_port;
+  __netdb_char_ptr     s_proto;
 };
 #endif
 
@@ -87,15 +99,19 @@ extern void __gnat_remove_socket_from_set (fd_set *, int);
 extern void __gnat_reset_socket_set (fd_set *);
 extern int  __gnat_get_h_errno (void);
 extern int  __gnat_socket_ioctl (int, int, int *);
+
 extern char * __gnat_servent_s_name (struct servent *);
-extern char ** __gnat_servent_s_aliases (struct servent *);
-extern int __gnat_servent_s_port (struct servent *);
+extern char * __gnat_servent_s_alias (struct servent *, int index);
+extern unsigned short __gnat_servent_s_port (struct servent *);
 extern char * __gnat_servent_s_proto (struct servent *);
-extern void __gnat_servent_set_s_name (struct servent *, char *);
-extern void __gnat_servent_set_s_aliases (struct servent *, char **);
-extern void __gnat_servent_set_s_port (struct servent *, int);
-extern void __gnat_servent_set_s_proto (struct servent *, char *);
-#if defined (__vxworks) || defined (_WIN32)
+
+extern char * __gnat_hostent_h_name (struct hostent *);
+extern char * __gnat_hostent_h_alias (struct hostent *, int);
+extern int __gnat_hostent_h_addrtype (struct hostent *);
+extern int __gnat_hostent_h_length (struct hostent *);
+extern char * __gnat_hostent_h_addr (struct hostent *, int);
+
+#ifndef HAVE_INET_PTON
 extern int  __gnat_inet_pton (int, const char *, void *);
 #endif
 
@@ -164,76 +180,28 @@ __gnat_close_signalling_fd (int sig) {
 #endif
 
 /*
- * GetXXXbyYYY wrappers
- * These functions are used by the default implementation of g-socthi,
- * and also by the Windows version.
+ * Handling of gethostbyname, gethostbyaddr, getservbyname and getservbyport
+ * =========================================================================
  *
- * They can be used for any platform that either provides an intrinsically
- * task safe implementation of getXXXbyYYY, or a reentrant variant
- * getXXXbyYYY_r. Otherwise, a task safe wrapper, including proper mutual
- * exclusion if appropriate, must be implemented in the target specific
- * version of g-socthi.
+ * This module exposes __gnat_getXXXbyYYY operations with the same signature
+ * as the reentrant variant getXXXbyYYY_r.
+ *
+ * On platforms where getXXXbyYYY is intrinsically reentrant, the provided user
+ * buffer argument is ignored.
+ *
+ * When getXXXbyYYY is not reentrant but getXXXbyYYY_r exists, the latter is
+ * used, and the provided buffer argument must point to a valid, thread-local
+ * buffer (usually on the caller's stack).
+ *
+ * When getXXXbyYYY is not reentrant and no reentrant getXXXbyYYY_r variant
+ * is available, the non-reentrant getXXXbyYYY is called, the provided user
+ * buffer is ignored, and the caller is expected to take care of mutual
+ * exclusion.
  */
 
-#ifdef HAVE_THREAD_SAFE_GETxxxBYyyy
+#ifdef HAVE_GETxxxBYyyy_R
 int
-__gnat_safe_gethostbyname (const char *name,
-  struct hostent *ret, char *buf, size_t buflen,
-  int *h_errnop)
-{
-  struct hostent *rh;
-  rh = gethostbyname (name);
-  if (rh == NULL) {
-    *h_errnop = h_errno;
-    return -1;
-  }
-  *ret = *rh;
-  *h_errnop = 0;
-  return 0;
-}
-
-int
-__gnat_safe_gethostbyaddr (const char *addr, int len, int type,
-  struct hostent *ret, char *buf, size_t buflen,
-  int *h_errnop)
-{
-  struct hostent *rh;
-  rh = gethostbyaddr (addr, len, type);
-  if (rh == NULL) {
-    *h_errnop = h_errno;
-    return -1;
-  }
-  *ret = *rh;
-  *h_errnop = 0;
-  return 0;
-}
-
-int
-__gnat_safe_getservbyname (const char *name, const char *proto,
-  struct servent *ret, char *buf, size_t buflen)
-{
-  struct servent *rh;
-  rh = getservbyname (name, proto);
-  if (rh == NULL)
-    return -1;
-  *ret = *rh;
-  return 0;
-}
-
-int
-__gnat_safe_getservbyport (int port, const char *proto,
-  struct servent *ret, char *buf, size_t buflen)
-{
-  struct servent *rh;
-  rh = getservbyport (port, proto);
-  if (rh == NULL)
-    return -1;
-  *ret = *rh;
-  return 0;
-}
-#elif HAVE_GETxxxBYyyy_R
-int
-__gnat_safe_gethostbyname (const char *name,
+__gnat_gethostbyname (const char *name,
   struct hostent *ret, char *buf, size_t buflen,
   int *h_errnop)
 {
@@ -250,7 +218,7 @@ __gnat_safe_gethostbyname (const char *name,
 }
 
 int
-__gnat_safe_gethostbyaddr (const char *addr, int len, int type,
+__gnat_gethostbyaddr (const char *addr, int len, int type,
   struct hostent *ret, char *buf, size_t buflen,
   int *h_errnop)
 {
@@ -267,7 +235,7 @@ __gnat_safe_gethostbyaddr (const char *addr, int len, int type,
 }
 
 int
-__gnat_safe_getservbyname (const char *name, const char *proto,
+__gnat_getservbyname (const char *name, const char *proto,
   struct servent *ret, char *buf, size_t buflen)
 {
   struct servent *rh;
@@ -283,7 +251,7 @@ __gnat_safe_getservbyname (const char *name, const char *proto,
 }
 
 int
-__gnat_safe_getservbyport (int port, const char *proto,
+__gnat_getservbyport (int port, const char *proto,
   struct servent *ret, char *buf, size_t buflen)
 {
   struct servent *rh;
@@ -296,6 +264,130 @@ __gnat_safe_getservbyport (int port, const char *proto,
 #endif
   ri = (rh == NULL) ? -1 : 0;
   return ri;
+}
+#elif defined (__vxworks)
+static char vxw_h_name[MAXHOSTNAMELEN + 1];
+static char *vxw_h_aliases[1] = { NULL };
+static int vxw_h_addr;
+static char *vxw_h_addr_list[2] = { (char*) &vxw_h_addr, NULL };
+
+int
+__gnat_gethostbyname (const char *name,
+  struct hostent *ret, char *buf, size_t buflen,
+  int *h_errnop)
+{
+  vxw_h_addr = hostGetByName (name);
+  if (vxw_h_addr == ERROR) {
+    *h_errnop = __gnat_get_h_errno ();
+    return -1;
+  }
+  ret->h_name      = name;
+  ret->h_aliases   = &vxw_h_aliases;
+  ret->h_addrtype  = AF_INET;
+  ret->h_length    = 4;
+  ret->h_addr_list = &vxw_h_addr_list;
+  return 0;
+}
+
+int
+__gnat_gethostbyaddr (const char *addr, int len, int type,
+  struct hostent *ret, char *buf, size_t buflen,
+  int *h_errnop)
+{
+  if (type != AF_INET) {
+    *h_errnop = EAFNOSUPPORT;
+    return -1;
+  }
+
+  if (addr == NULL || len != 4) {
+    *h_errnop = EINVAL;
+    return -1;
+  }
+
+  if (hostGetByAddr (*(int*)addr, &vxw_h_name) != OK) {
+    *h_errnop = __gnat_get_h_errno ();
+    return -1;
+  }
+
+  vxw_h_addr       = addr;
+
+  ret->h_name      = &vxw_h_name;
+  ret->h_aliases   = &vxw_h_aliases;
+  ret->h_addrtype  = AF_INET;
+  ret->h_length    = 4;
+  ret->h_addr_list = &vxw_h_addr_list;
+}
+
+int
+__gnat_getservbyname (const char *name, const char *proto,
+  struct servent *ret, char *buf, size_t buflen)
+{
+  /* Not available under VxWorks */
+  return -1;
+}
+
+int
+__gnat_getservbyport (int port, const char *proto,
+  struct servent *ret, char *buf, size_t buflen)
+{
+  /* Not available under VxWorks */
+  return -1;
+}
+#else
+int
+__gnat_gethostbyname (const char *name,
+  struct hostent *ret, char *buf, size_t buflen,
+  int *h_errnop)
+{
+  struct hostent *rh;
+  rh = gethostbyname (name);
+  if (rh == NULL) {
+    *h_errnop = __gnat_get_h_errno ();
+    return -1;
+  }
+  *ret = *rh;
+  *h_errnop = 0;
+  return 0;
+}
+
+int
+__gnat_gethostbyaddr (const char *addr, int len, int type,
+  struct hostent *ret, char *buf, size_t buflen,
+  int *h_errnop)
+{
+  struct hostent *rh;
+  rh = gethostbyaddr (addr, len, type);
+  if (rh == NULL) {
+    *h_errnop = __gnat_get_h_errno ();
+    return -1;
+  }
+  *ret = *rh;
+  *h_errnop = 0;
+  return 0;
+}
+
+int
+__gnat_getservbyname (const char *name, const char *proto,
+  struct servent *ret, char *buf, size_t buflen)
+{
+  struct servent *rh;
+  rh = getservbyname (name, proto);
+  if (rh == NULL)
+    return -1;
+  *ret = *rh;
+  return 0;
+}
+
+int
+__gnat_getservbyport (int port, const char *proto,
+  struct servent *ret, char *buf, size_t buflen)
+{
+  struct servent *rh;
+  rh = getservbyport (port, proto);
+  if (rh == NULL)
+    return -1;
+  *ret = *rh;
+  return 0;
 }
 #endif
 
@@ -510,6 +602,30 @@ __gnat_inet_pton (int af, const char *src, void *dst) {
 #endif
 
 /*
+ * Accessor functions for struct hostent.
+ */
+
+char * __gnat_hostent_h_name (struct hostent * h) {
+  return h->h_name;
+}
+
+char * __gnat_hostent_h_alias (struct hostent * h, int index) {
+  return h->h_aliases[index];
+}
+
+int __gnat_hostent_h_addrtype (struct hostent * h) {
+  return h->h_addrtype;
+}
+
+int __gnat_hostent_h_length (struct hostent * h) {
+  return h->h_length;
+}
+
+char * __gnat_hostent_h_addr (struct hostent * h, int index) {
+  return h->h_addr_list[index];
+}
+
+/*
  * Accessor functions for struct servent.
  *
  * These are needed because servent has different representations on different
@@ -539,21 +655,19 @@ __gnat_inet_pton (int af, const char *src, void *dst) {
  *   };
  */
 
-/* Getters */
-
 char *
 __gnat_servent_s_name (struct servent * s)
 {
   return s->s_name;
 }
 
-char **
-__gnat_servent_s_aliases (struct servent * s)
+char *
+__gnat_servent_s_alias (struct servent * s, int index)
 {
-  return s->s_aliases;
+  return s->s_aliases[index];
 }
 
-int
+unsigned short
 __gnat_servent_s_port (struct servent * s)
 {
   return s->s_port;
@@ -563,32 +677,6 @@ char *
 __gnat_servent_s_proto (struct servent * s)
 {
   return s->s_proto;
-}
-
-/* Setters */
-
-void
-__gnat_servent_set_s_name (struct servent * s, char * s_name)
-{
-  s->s_name = s_name;
-}
-
-void
-__gnat_servent_set_s_aliases (struct servent * s, char ** s_aliases)
-{
-  s->s_aliases = s_aliases;
-}
-
-void
-__gnat_servent_set_s_port (struct servent * s, int s_port)
-{
-  s->s_port = s_port;
-}
-
-void
-__gnat_servent_set_s_proto (struct servent * s, char * s_proto)
-{
-  s->s_proto = s_proto;
 }
 
 #else

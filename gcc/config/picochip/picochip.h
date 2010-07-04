@@ -261,7 +261,7 @@ extern enum picochip_dfa_type picochip_schedule_type;
 /* We can dynamically change the REG_ALLOC_ORDER using the following hook.
    It would be desirable to change it for leaf functions so we can put
    r12 at the end of this list.*/
-#define ORDER_REGS_FOR_LOCAL_ALLOC picochip_order_regs_for_local_alloc ()
+#define ADJUST_REG_ALLOC_ORDER picochip_order_regs_for_local_alloc ()
 
 /* How Values Fit in Registers  */
 
@@ -495,7 +495,10 @@ extern const enum reg_class picochip_regno_reg_class[FIRST_PSEUDO_REGISTER];
    correct code is generated. */
 
 #define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)	     \
-if (picochip_symbol_offset(X)) { X = gen_rtx_CONST(MODE, X); }
+do {                                                                         \
+  if (picochip_legitimize_reload_address(&X,MODE,OPNUM,TYPE,IND_LEVELS))     \
+    goto WIN;                                                                \
+  } while(0);                                                                \
 
 /* Nonzero if the constant rtx X is a legitimate general operand.  X
    satisfies CONSTANT_P.  */

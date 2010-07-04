@@ -1,4 +1,4 @@
-;; Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+;; Copyright (C) 2005, 2006, 2007, 2008, 2010 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -15,6 +15,78 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
+
+;; MIPS DSP ASE Revision 0.98 3/24/2005
+(define_c_enum "unspec" [
+  UNSPEC_ADDQ
+  UNSPEC_ADDQ_S
+  UNSPEC_SUBQ
+  UNSPEC_SUBQ_S
+  UNSPEC_ADDSC
+  UNSPEC_ADDWC
+  UNSPEC_MODSUB
+  UNSPEC_RADDU_W_QB
+  UNSPEC_ABSQ_S
+  UNSPEC_PRECRQ_QB_PH
+  UNSPEC_PRECRQ_PH_W
+  UNSPEC_PRECRQ_RS_PH_W
+  UNSPEC_PRECRQU_S_QB_PH
+  UNSPEC_PRECEQ_W_PHL
+  UNSPEC_PRECEQ_W_PHR
+  UNSPEC_PRECEQU_PH_QBL
+  UNSPEC_PRECEQU_PH_QBR
+  UNSPEC_PRECEQU_PH_QBLA
+  UNSPEC_PRECEQU_PH_QBRA
+  UNSPEC_PRECEU_PH_QBL
+  UNSPEC_PRECEU_PH_QBR
+  UNSPEC_PRECEU_PH_QBLA
+  UNSPEC_PRECEU_PH_QBRA
+  UNSPEC_SHLL
+  UNSPEC_SHLL_S
+  UNSPEC_SHRL_QB
+  UNSPEC_SHRA_PH
+  UNSPEC_SHRA_R
+  UNSPEC_MULEU_S_PH_QBL
+  UNSPEC_MULEU_S_PH_QBR
+  UNSPEC_MULQ_RS_PH
+  UNSPEC_MULEQ_S_W_PHL
+  UNSPEC_MULEQ_S_W_PHR
+  UNSPEC_DPAU_H_QBL
+  UNSPEC_DPAU_H_QBR
+  UNSPEC_DPSU_H_QBL
+  UNSPEC_DPSU_H_QBR
+  UNSPEC_DPAQ_S_W_PH
+  UNSPEC_DPSQ_S_W_PH
+  UNSPEC_MULSAQ_S_W_PH
+  UNSPEC_DPAQ_SA_L_W
+  UNSPEC_DPSQ_SA_L_W
+  UNSPEC_MAQ_S_W_PHL
+  UNSPEC_MAQ_S_W_PHR
+  UNSPEC_MAQ_SA_W_PHL
+  UNSPEC_MAQ_SA_W_PHR
+  UNSPEC_BITREV
+  UNSPEC_INSV
+  UNSPEC_REPL_QB
+  UNSPEC_REPL_PH
+  UNSPEC_CMP_EQ
+  UNSPEC_CMP_LT
+  UNSPEC_CMP_LE
+  UNSPEC_CMPGU_EQ_QB
+  UNSPEC_CMPGU_LT_QB
+  UNSPEC_CMPGU_LE_QB
+  UNSPEC_PICK
+  UNSPEC_PACKRL_PH
+  UNSPEC_EXTR_W
+  UNSPEC_EXTR_R_W
+  UNSPEC_EXTR_RS_W
+  UNSPEC_EXTR_S_H
+  UNSPEC_EXTP
+  UNSPEC_EXTPDP
+  UNSPEC_SHILO
+  UNSPEC_MTHLIP
+  UNSPEC_WRDSP
+  UNSPEC_RDDSP
+])
 
 (define_constants
   [(CCDSP_PO_REGNUM	182)
@@ -60,7 +132,7 @@
 		     (match_operand:DSPV 2 "register_operand" "d")))
      (set (reg:CCDSP CCDSP_OU_REGNUM)
 	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_ADDQ))])]
-  ""
+  "ISA_HAS_DSP"
   "add<DSPV:dspfmt1>.<DSPV:dspfmt2>\t%0,%1,%2"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")])
@@ -73,7 +145,7 @@
 		      UNSPEC_ADDQ_S))
      (set (reg:CCDSP CCDSP_OU_REGNUM)
 	  (unspec:CCDSP [(match_dup 1) (match_dup 2)] UNSPEC_ADDQ_S))])]
-  ""
+  "ISA_HAS_DSP"
   "add<DSP:dspfmt1>_s.<DSP:dspfmt2>\t%0,%1,%2"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")])

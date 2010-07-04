@@ -1,5 +1,5 @@
 /* Convert a program in SSA form into Normal form.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Andrew Macleod <amacleod@redhat.com>
 
@@ -26,15 +26,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "ggc.h"
 #include "basic-block.h"
-#include "diagnostic.h"
+#include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
 #include "bitmap.h"
 #include "tree-flow.h"
 #include "timevar.h"
 #include "tree-dump.h"
 #include "tree-pass.h"
 #include "toplev.h"
-#include "expr.h"
 #include "ssaexpand.h"
+
+/* FIXME: A lot of code here deals with expanding to RTL.  All that code
+   should be in cfgexpand.c.  */
+#include "expr.h"
 
 
 DEF_VEC_I(source_location);
@@ -140,10 +144,12 @@ set_location_for_edge (edge e)
     }
 }
 
-/* Emit insns to copy SRC into DEST converting SRC if necessary.  */
+/* Emit insns to copy SRC into DEST converting SRC if necessary.  As
+   SRC/DEST might be BLKmode memory locations SIZEEXP is a tree from
+   which we deduce the size to copy in that case.  */
 
 static inline rtx
-emit_partition_copy (rtx dest, rtx src, int unsignedsrcp)
+emit_partition_copy (rtx dest, rtx src, int unsignedsrcp, tree sizeexp)
 {
   rtx seq;
 
@@ -151,7 +157,13 @@ emit_partition_copy (rtx dest, rtx src, int unsignedsrcp)
 
   if (GET_MODE (src) != VOIDmode && GET_MODE (src) != GET_MODE (dest))
     src = convert_to_mode (GET_MODE (dest), src, unsignedsrcp);
-  emit_move_insn (dest, src);
+  if (GET_MODE (src) == BLKmode)
+    {
+      gcc_assert (GET_MODE (dest) == BLKmode);
+      emit_block_move (dest, src, expr_size (sizeexp), BLOCK_OP_NORMAL);
+    }
+  else
+    emit_move_insn (dest, src);
 
   seq = get_insns ();
   end_sequence ();
@@ -164,6 +176,7 @@ emit_partition_copy (rtx dest, rtx src, int unsignedsrcp)
 static void
 insert_partition_copy_on_edge (edge e, int dest, int src, source_location locus)
 {
+  tree var;
   rtx seq;
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -183,10 +196,11 @@ insert_partition_copy_on_edge (edge e, int dest, int src, source_location locus)
   if (locus)
     set_curr_insn_source_location (locus);
 
+  var = partition_to_var (SA.map, src);
   seq = emit_partition_copy (SA.partition_to_pseudo[dest],
 			     SA.partition_to_pseudo[src],
-			     TYPE_UNSIGNED (TREE_TYPE (
-			       partition_to_var (SA.map, src))));
+			     TYPE_UNSIGNED (TREE_TYPE (var)),
+			     var);
 
   insert_insn_on_edge (seq, e);
 }
@@ -232,6 +246,11 @@ insert_value_copy_on_edge (edge e, int dest, tree src, source_location locus)
       x = expand_expr (src, NULL, src_mode, EXPAND_NORMAL);
       x = convert_modes (dest_mode, src_mode, x, unsignedp);
     }
+  else if (src_mode == BLKmode)
+    {
+      x = SA.partition_to_pseudo[dest];
+      store_expr (src, x, 0, false);
+    }
   else
     x = expand_expr (src, SA.partition_to_pseudo[dest],
 		     dest_mode, EXPAND_NORMAL);
@@ -269,9 +288,13 @@ insert_rtx_to_part_on_edge (edge e, int dest, rtx src, int unsignedsrcp,
   if (locus)
     set_curr_insn_source_location (locus);
 
+  /* We give the destination as sizeexp in case src/dest are BLKmode
+     mems.  Usually we give the source.  As we result from SSA names
+     the left and right size should be the same (and no WITH_SIZE_EXPR
+     involved), so it doesn't matter.  */
   seq = emit_partition_copy (SA.partition_to_pseudo[dest],
-			     src,
-			     unsignedsrcp);
+			     src, unsignedsrcp,
+			     partition_to_var (SA.map, dest));
 
   insert_insn_on_edge (seq, e);
 }
@@ -282,6 +305,7 @@ insert_rtx_to_part_on_edge (edge e, int dest, rtx src, int unsignedsrcp,
 static void
 insert_part_to_rtx_on_edge (edge e, rtx dest, int src, source_location locus)
 {
+  tree var;
   rtx seq;
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -300,10 +324,11 @@ insert_part_to_rtx_on_edge (edge e, rtx dest, int src, source_location locus)
   if (locus)
     set_curr_insn_source_location (locus);
 
+  var = partition_to_var (SA.map, src);
   seq = emit_partition_copy (dest,
 			     SA.partition_to_pseudo[src],
-			     TYPE_UNSIGNED (TREE_TYPE (
-			       partition_to_var (SA.map, src))));
+			     TYPE_UNSIGNED (TREE_TYPE (var)),
+			     var);
 
   insert_insn_on_edge (seq, e);
 }
@@ -431,8 +456,9 @@ do {									\
       y_ = VEC_index (int, (GRAPH)->edge_list, x_);			\
       if (y_ != (NODE))							\
         continue;							\
-      (VAR) = VEC_index (int, (GRAPH)->edge_list, x_ + 1);		\
-      (LOCUS) = VEC_index (source_location, (GRAPH)->edge_locus, x_ / 2); \
+      (void) ((VAR) = VEC_index (int, (GRAPH)->edge_list, x_ + 1));	\
+      (void) ((LOCUS) = VEC_index (source_location,			\
+				   (GRAPH)->edge_locus, x_ / 2));	\
       CODE;								\
     }									\
 } while (0)
@@ -451,8 +477,9 @@ do {									\
       y_ = VEC_index (int, (GRAPH)->edge_list, x_ + 1);			\
       if (y_ != (NODE))							\
         continue;							\
-      (VAR) = VEC_index (int, (GRAPH)->edge_list, x_);			\
-      (LOCUS) = VEC_index (source_location, (GRAPH)->edge_locus, x_ / 2); \
+      (void) ((VAR) = VEC_index (int, (GRAPH)->edge_list, x_));		\
+      (void) ((LOCUS) = VEC_index (source_location,			\
+				   (GRAPH)->edge_locus, x_ / 2));	\
       CODE;								\
     }									\
 } while (0)

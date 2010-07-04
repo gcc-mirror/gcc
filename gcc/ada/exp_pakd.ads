@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -271,5 +271,10 @@ package Exp_Pakd is
    --  The node N is an attribute reference for the 'Address reference, where
    --  the prefix involves a packed array reference. This routine expands the
    --  necessary code for performing the address reference in this case.
+
+   procedure Expand_Packed_Bit_Reference (N : Node_Id);
+   --  The node N is an attribute reference for the 'Bit reference, where the
+   --  prefix involves a packed array reference. This routine expands the
+   --  necessary code for performing the bit reference in this case.
 
 end Exp_Pakd;

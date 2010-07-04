@@ -1,5 +1,4 @@
 // { dg-do run { xfail sparc64-*-elf arm-*-pe } }
-// { dg-options "-fexceptions" }
 
 #include <exception>
 #include <stdlib.h>

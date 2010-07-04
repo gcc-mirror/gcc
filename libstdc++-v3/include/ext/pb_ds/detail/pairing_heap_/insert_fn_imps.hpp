@@ -59,17 +59,17 @@ inline void
 PB_DS_CLASS_C_DEC::
 push_imp(node_pointer p_nd)
 {
-  p_nd->m_p_l_child = NULL;
+  p_nd->m_p_l_child = 0;
 
-  if (base_type::m_p_root == NULL)
+  if (base_type::m_p_root == 0)
     {
-      p_nd->m_p_next_sibling = p_nd->m_p_prev_or_parent = NULL;
+      p_nd->m_p_next_sibling = p_nd->m_p_prev_or_parent = 0;
 
       base_type::m_p_root = p_nd;
     }
   else if (Cmp_Fn::operator()(base_type::m_p_root->m_value, p_nd->m_value))
     {
-      p_nd->m_p_next_sibling = p_nd->m_p_prev_or_parent = NULL;
+      p_nd->m_p_next_sibling = p_nd->m_p_prev_or_parent = 0;
 
       base_type::make_child_of(base_type::m_p_root, p_nd);
       _GLIBCXX_DEBUG_ONLY(base_type::assert_node_consistent(p_nd, false));

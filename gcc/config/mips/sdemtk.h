@@ -35,10 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 	builtin_define ("__mipsfp64");			\
 							\
       if (TARGET_NO_FLOAT) 				\
-	{						\
-	  builtin_define ("__NO_FLOAT");		\
-	  builtin_define ("__mips_no_float");		\
-	}						\
+	builtin_define ("__NO_FLOAT");			\
       else if (TARGET_SOFT_FLOAT_ABI)			\
 	builtin_define ("__SOFT_FLOAT");		\
       else if (TARGET_SINGLE_FLOAT)			\
@@ -53,18 +50,6 @@ along with GCC; see the file COPYING3.  If not see
         {						\
 	  builtin_assert ("endian=little");		\
 	  builtin_assert ("cpu=mipsel");		\
-	}						\
-    }							\
-  while (0)
-
-#undef SUBTARGET_OVERRIDE_OPTIONS
-#define SUBTARGET_OVERRIDE_OPTIONS			\
-  do							\
-    {							\
-      if (TARGET_NO_FLOAT)				\
-	{						\
-	  target_flags |= MASK_SOFT_FLOAT_ABI;		\
-	  target_flags_explicit |= MASK_SOFT_FLOAT_ABI;	\
 	}						\
     }							\
   while (0)
@@ -113,3 +98,6 @@ extern void mips_sync_icache (void *beg, unsigned long len);
 /* ...nor does the call sequence preserve $31.  */
 #undef MIPS_SAVE_REG_FOR_PROFILING_P
 #define MIPS_SAVE_REG_FOR_PROFILING_P(REGNO) ((REGNO) == RETURN_ADDR_REGNUM)
+
+/* Compile in support for the -mno-float option.  */
+#define TARGET_SUPPORTS_NO_FLOAT 1

@@ -8,10 +8,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 4.5-b20100204\n"
+"Project-Id-Version: cpplib 4.5.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-01-11 11:42+0000\n"
-"PO-Revision-Date: 2010-02-05 21:39+0100\n"
+"POT-Creation-Date: 2010-04-06 14:10+0000\n"
+"PO-Revision-Date: 2010-04-16 19:17+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "MIME-Version: 1.0\n"
@@ -37,7 +37,7 @@ msgstr "ingen iconv-implementation, kan inte konvertera från %s till %s"
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr "tecken 0x%lx finns inte i källkodens grundteckenuppsättning\n"
 
-#: charset.c:798 charset.c:1457
+#: charset.c:798 charset.c:1444
 msgid "converting to execution character set"
 msgstr "konverterar till teckenuppsättning för körning"
 
@@ -74,7 +74,7 @@ msgstr "ofullständigt unversellt teckennamn %.*s"
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s är inte ett giltigt universellt tecken"
 
-#: charset.c:1056 lex.c:486
+#: charset.c:1056 lex.c:488
 msgid "'$' in identifier or number"
 msgstr "\"$\" i identifierare eller tal"
 
@@ -88,7 +88,7 @@ msgstr "universellt tecken %.*s är inte giltigt i en identifierare"
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "universellt tecken %.*s är inte giltigt vid början av en identifierare"
 
-#: charset.c:1102 charset.c:1687
+#: charset.c:1102 charset.c:1674
 msgid "converting UCN to source character set"
 msgstr "vid konvertering av UCN källteckenuppsättning"
 
@@ -135,19 +135,19 @@ msgstr "okänd escape-sekvens: \"\\%s\""
 msgid "converting escape sequence to execution character set"
 msgstr "vid konvertering av specialsekvens till teckenuppsättning för körning"
 
-#: charset.c:1522 charset.c:1586
+#: charset.c:1509 charset.c:1573
 msgid "character constant too long for its type"
 msgstr "teckenkonstant för lång för sin typ"
 
-#: charset.c:1525
+#: charset.c:1512
 msgid "multi-character character constant"
 msgstr "flerteckens teckenkonstant"
 
-#: charset.c:1625
+#: charset.c:1612
 msgid "empty character constant"
 msgstr "tom teckenkonstant"
 
-#: charset.c:1734
+#: charset.c:1721
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr "misslyckades att konvertera %s till %s"
@@ -399,7 +399,7 @@ msgstr "\"%s\" omförsäkrat"
 msgid "unterminated #%s"
 msgstr "oavslutad #%s"
 
-#: directives-only.c:222 lex.c:1415 traditional.c:163
+#: directives-only.c:222 lex.c:1516 traditional.c:163
 msgid "unterminated comment"
 msgstr "ej avslutad kommentar"
 
@@ -705,78 +705,78 @@ msgstr "trigraph ??%c konverterad till %c"
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr "trigraph ??%c ingorerad, använd -trigraphs för att aktivera"
 
-#: lex.c:358
+#: lex.c:360
 msgid "\"/*\" within comment"
 msgstr "\"/*\" i kommentar"
 
-#: lex.c:416
+#: lex.c:418
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr "%s i preprocessordirektiv"
 
-#: lex.c:425
+#: lex.c:427
 msgid "null character(s) ignored"
 msgstr "nolltecken ignorerat"
 
-#: lex.c:462
+#: lex.c:464
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "\"%.*s\" är inte i NFKC"
 
-#: lex.c:465
+#: lex.c:467
 #, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "\"%.*s\" är inte i NFC"
 
-#: lex.c:533 lex.c:610
+#: lex.c:535 lex.c:612
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "försök att använda förgiftad \"%s\""
 
-#: lex.c:541 lex.c:618
+#: lex.c:543 lex.c:620
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__ kan endast dyka upp i expansionen av ett C99-makro med variabelt argumentantal"
 
-#: lex.c:547 lex.c:624
+#: lex.c:549 lex.c:626
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr "identifieraren \"%s\" är ett speciellt operatornamn i C++"
 
-#: lex.c:739
+#: lex.c:771
 msgid "raw string delimiter longer than 16 characters"
 msgstr "avgränsare för rå sträng längre än 16 tecken"
 
-#: lex.c:742
+#: lex.c:774
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "ogiltigt tecken \"%c\" i avgränsare för rå sträng"
 
-#: lex.c:771 lex.c:818
+#: lex.c:895 lex.c:917
 msgid "unterminated raw string"
 msgstr "oavslutad rå sträng"
 
-#: lex.c:831 lex.c:930
+#: lex.c:932 lex.c:1031
 msgid "null character(s) preserved in literal"
 msgstr "nolltecken bevarade i konstant"
 
-#: lex.c:933
+#: lex.c:1034
 #, c-format
 msgid "missing terminating %c character"
 msgstr "avslutande %c-tecken saknas"
 
-#: lex.c:1426
+#: lex.c:1527
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "C++ kommentarer tillåts inte i ISO C90"
 
-#: lex.c:1428
+#: lex.c:1529
 msgid "(this will be reported only once per input file)"
 msgstr "(detta rapporteras bara en gång per infil)"
 
-#: lex.c:1433
+#: lex.c:1534
 msgid "multi-line comment"
 msgstr "flerradskommentar"
 
-#: lex.c:1753
+#: lex.c:1854
 #, c-format
 msgid "unspellable token %s"
 msgstr "ostavbar symbol %s"

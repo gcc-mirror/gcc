@@ -1055,6 +1055,77 @@ package body Nlists is
       Set_List_Link (Node, To);
    end Prepend;
 
+   ------------------
+   -- Prepend_List --
+   ------------------
+
+   procedure Prepend_List (List : List_Id; To : List_Id) is
+
+      procedure Prepend_List_Debug;
+      pragma Inline (Prepend_List_Debug);
+      --  Output debug information if Debug_Flag_N set
+
+      ------------------------
+      -- Prepend_List_Debug --
+      ------------------------
+
+      procedure Prepend_List_Debug is
+      begin
+         if Debug_Flag_N then
+            Write_Str ("Prepend list ");
+            Write_Int (Int (List));
+            Write_Str (" to list ");
+            Write_Int (Int (To));
+            Write_Eol;
+         end if;
+      end Prepend_List_Debug;
+
+   --  Start of processing for Prepend_List
+
+   begin
+      if Is_Empty_List (List) then
+         return;
+
+      else
+         declare
+            F : constant Node_Id := First (To);
+            L : constant Node_Id := Last (List);
+            N : Node_Id;
+
+         begin
+            pragma Debug (Prepend_List_Debug);
+
+            N := L;
+            loop
+               Set_List_Link (N, To);
+               N := Prev (N);
+               exit when No (N);
+            end loop;
+
+            if No (F) then
+               Set_Last (To, L);
+            else
+               Set_Next (L, F);
+            end if;
+
+            Set_Prev (F, L);
+            Set_First (To, First (List));
+
+            Set_First (List, Empty);
+            Set_Last  (List, Empty);
+         end;
+      end if;
+   end Prepend_List;
+
+   ---------------------
+   -- Prepend_List_To --
+   ---------------------
+
+   procedure Prepend_List_To (To : List_Id; List : List_Id) is
+   begin
+      Prepend_List (List, To);
+   end Prepend_List_To;
+
    ----------------
    -- Prepend_To --
    ----------------

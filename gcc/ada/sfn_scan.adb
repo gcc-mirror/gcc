@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,11 +37,10 @@ package body SFN_Scan is
    --  Allow easy access to control character definitions
 
    EOF : constant Character := ASCII.SUB;
-   --  The character SUB (16#1A#) is used in DOS and other systems derived
-   --  from DOS (OS/2, NT etc.) to signal the end of a text file. If this
-   --  character appears as the last character of a file scanned by a call
-   --  to Scan_SFN_Pragmas, then it is ignored, otherwise it is treated as
-   --  an illegal character.
+   --  The character SUB (16#1A#) is used in DOS-derived systems, such as
+   --  Windows to signal the end of a text file. If this character appears as
+   --  the last character of a file scanned by a call to Scan_SFN_Pragmas, then
+   --  it is ignored, otherwise it is treated as an illegal character.
 
    type String_Ptr is access String;
 
@@ -637,7 +636,7 @@ package body SFN_Scan is
 
       loop
          if At_EOF or else S (P) = LF or else S (P) = CR then
-            Error --  CODEFIX
+            Error -- CODEFIX
               ("missing string quote");
 
          elsif S (P) = HT then

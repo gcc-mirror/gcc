@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -147,7 +147,8 @@ namespace __gnu_parallel
 #elif defined(__GNUC__) && defined(__x86_64)
     return __sync_fetch_and_add(__ptr, __addend);
 #elif defined(__GNUC__) && defined(__i386) &&                   \
-  (defined(__i686) || defined(__pentium4) || defined(__athlon))
+  (defined(__i686) || defined(__pentium4) || defined(__athlon)  \
+   || defined(__k8) || defined(__core2))
     return __sync_fetch_and_add(__ptr, __addend);
 #elif defined(__SUNPRO_CC) && defined(__sparc)
     volatile int64_t __before, __after;
@@ -299,7 +300,8 @@ namespace __gnu_parallel
 #elif defined(__GNUC__) && defined(__x86_64)
     return __sync_bool_compare_and_swap(__ptr, __comparand, __replacement);
 #elif defined(__GNUC__) && defined(__i386) &&                   \
-  (defined(__i686) || defined(__pentium4) || defined(__athlon))
+  (defined(__i686) || defined(__pentium4) || defined(__athlon)  \
+   || defined(__k8) || defined(__core2))
     return __sync_bool_compare_and_swap(__ptr, __comparand, __replacement);
 #elif defined(__SUNPRO_CC) && defined(__sparc)
     return atomic_cas_64((volatile unsigned long long*)__ptr,

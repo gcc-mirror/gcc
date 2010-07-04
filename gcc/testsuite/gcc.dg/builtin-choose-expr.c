@@ -29,6 +29,8 @@
           t1 = t1b;						\
           t2 = t2a;						\
           t2 = t2b;						\
+          (void) t1;						\
+          (void) t2;						\
         } while (0)
 
 

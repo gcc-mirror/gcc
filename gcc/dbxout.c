@@ -1,6 +1,6 @@
 /* Output dbx-format symbol table information from GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -357,6 +357,7 @@ const struct gcc_debug_hooks dbx_debug_hooks =
   dbxout_source_line,		         /* source_line */
   dbxout_begin_prologue,	         /* begin_prologue */
   debug_nothing_int_charstar,	         /* end_prologue */
+  debug_nothing_int_charstar,	         /* begin_epilogue */
   debug_nothing_int_charstar,	         /* end_epilogue */
 #ifdef DBX_FUNCTION_FIRST
   dbxout_begin_function,
@@ -399,6 +400,7 @@ const struct gcc_debug_hooks xcoff_debug_hooks =
   xcoffout_source_line,
   xcoffout_begin_prologue,	         /* begin_prologue */
   debug_nothing_int_charstar,	         /* end_prologue */
+  debug_nothing_int_charstar,	         /* begin_epilogue */
   xcoffout_end_epilogue,
   debug_nothing_tree,		         /* begin_function */
   xcoffout_end_function,
@@ -1004,7 +1006,7 @@ dbxout_init (const char *input_file_name)
   const char *mapped_name;
 
   typevec_len = 100;
-  typevec = GGC_CNEWVEC (struct typeinfo, typevec_len);
+  typevec = ggc_alloc_cleared_vec_typeinfo (typevec_len);
 
   /* stabstr_ob contains one string, which will be just fine with
      1-byte alignment.  */

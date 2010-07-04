@@ -55,3 +55,4 @@ END MODULE UPML_mod
 
 ! { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  } }
 ! { dg-final { cleanup-tree-dump "vect" } }
+! { dg-final { cleanup-modules "upml_mod" } }

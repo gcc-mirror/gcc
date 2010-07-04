@@ -39,19 +39,19 @@ class javax::swing::text::html::parser::Parser$1 : public ::gnu::javax::swing::t
 public: // actually package-private
   Parser$1(::javax::swing::text::html::parser::Parser *, ::javax::swing::text::html::parser::DTD *, ::javax::swing::text::html::parser::Parser *);
 public: // actually protected
-  void handleComment(JArray< jchar > *);
-  void handleEOFInComment();
-  void handleEmptyTag(::javax::swing::text::html::parser::TagElement *);
-  void handleStartTag(::javax::swing::text::html::parser::TagElement *);
-  void handleEndTag(::javax::swing::text::html::parser::TagElement *);
-  void handleError(jint, ::java::lang::String *);
-  void handleText(JArray< jchar > *);
-  void handleTitle(JArray< jchar > *);
-  void markFirstTime(::javax::swing::text::html::parser::Element *);
-  void startTag(::javax::swing::text::html::parser::TagElement *);
-  void endTag(jboolean);
-  ::javax::swing::text::html::parser::TagElement * makeTag(::javax::swing::text::html::parser::Element *);
-  ::javax::swing::text::html::parser::TagElement * makeTag(::javax::swing::text::html::parser::Element *, jboolean);
+  virtual void handleComment(JArray< jchar > *);
+  virtual void handleEOFInComment();
+  virtual void handleEmptyTag(::javax::swing::text::html::parser::TagElement *);
+  virtual void handleStartTag(::javax::swing::text::html::parser::TagElement *);
+  virtual void handleEndTag(::javax::swing::text::html::parser::TagElement *);
+  virtual void handleError(jint, ::java::lang::String *);
+  virtual void handleText(JArray< jchar > *);
+  virtual void handleTitle(JArray< jchar > *);
+  virtual void markFirstTime(::javax::swing::text::html::parser::Element *);
+  virtual void startTag(::javax::swing::text::html::parser::TagElement *);
+  virtual void endTag(jboolean);
+  virtual ::javax::swing::text::html::parser::TagElement * makeTag(::javax::swing::text::html::parser::Element *);
+  virtual ::javax::swing::text::html::parser::TagElement * makeTag(::javax::swing::text::html::parser::Element *, jboolean);
 public: // actually package-private
   ::javax::swing::text::html::parser::Parser * __attribute__((aligned(__alignof__( ::gnu::javax::swing::text::html::parser::support::Parser)))) this$0;
 private:

@@ -1,4 +1,5 @@
-#  Copyright (C) 2003,2004,2005,2006,2007,2008 Free Software Foundation, Inc.
+#  Copyright (C) 2003,2004,2005,2006,2007,2008, 2010
+#  Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -330,13 +331,7 @@ for (i = 0; i < n_opts; i++) {
 	}
 
 	len = length (opts[i]);
-	enum = "OPT_" opts[i]
-	if (opts[i] == "finline-limit=" || opts[i] == "Wlarger-than=" \
-	    || opts[i] == "ftemplate-depth=")
-		enum = enum "eq"
-	if (opts[i] == "gdwarf+")
-		enum = "OPT_gdwarfplus"
-	gsub ("[^A-Za-z0-9]", "_", enum)
+	enum = opt_enum(opts[i])
 
 	# If this switch takes joined arguments, back-chain all
 	# subsequent switches to it for which it is a prefix.  If
@@ -363,7 +358,10 @@ for (i = 0; i < n_opts; i++) {
 	print "  " enum "," s "/* -" opts[i] " */"
 }
 
-print "  N_OPTS"
+print "  N_OPTS,"
+print "  OPT_SPECIAL_unknown,"
+print "  OPT_SPECIAL_program_name,"
+print "  OPT_SPECIAL_input_file"
 print "};"
 print ""
 print "#endif /* OPTIONS_H */"

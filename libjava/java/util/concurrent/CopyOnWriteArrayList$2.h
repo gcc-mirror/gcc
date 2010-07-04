@@ -16,9 +16,9 @@ class java::util::concurrent::CopyOnWriteArrayList$2 : public ::java::lang::Obje
 public: // actually package-private
   CopyOnWriteArrayList$2(::java::util::concurrent::CopyOnWriteArrayList *);
 public:
-  jboolean hasNext();
-  ::java::lang::Object * next();
-  void remove();
+  virtual jboolean hasNext();
+  virtual ::java::lang::Object * next();
+  virtual void remove();
 public: // actually package-private
   JArray< ::java::lang::Object * > * __attribute__((aligned(__alignof__( ::java::lang::Object)))) iteratorData;
   jint currentElement;

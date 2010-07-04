@@ -32,7 +32,7 @@ void test02()
   test_base io1;
   test_base io2 = io1; 
 }
-// { dg-error "within this context" "" { target *-*-* } 27 } 
+// { dg-error "within this context" "" { target *-*-* } 26 }
 // { dg-error "synthesized" "" { target *-*-* } 33 } 
 // { dg-error "is private" "" { target *-*-* } 785 } 
 // { dg-error "copy constructor" "" { target *-*-* } 0 } 

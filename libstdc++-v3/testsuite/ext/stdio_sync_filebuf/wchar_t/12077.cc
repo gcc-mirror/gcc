@@ -64,7 +64,7 @@ void test01()
   fputs(str, file);
   fclose(file);
   
-  freopen(name, "r", stdin);
+  VERIFY( freopen(name, "r", stdin) );
   
   streamsize n = wcin.rdbuf()->in_avail();
   while (n--)

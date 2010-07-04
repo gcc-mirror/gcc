@@ -4,7 +4,7 @@ template <int I>
 struct S {};
 
 template <int J>
-void foo(S<J + 2>);
+void foo(S<J + 2>);		// { dg-message "candidate" }
 
 void bar()
 {

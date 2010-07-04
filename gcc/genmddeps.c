@@ -18,10 +18,8 @@
 #include "bconfig.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "rtl.h"
-#include "gensupport.h"
 #include "errors.h"
+#include "read-md.h"
 
 
 struct filedep
@@ -49,8 +47,8 @@ main (int argc, char **argv)
   progname = "genmddeps";
   include_callback = add_filedep;
 
-  if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
-    return (FATAL_EXIT_CODE);
+  if (!read_md_files (argc, argv, NULL, NULL))
+    return FATAL_EXIT_CODE;
 
   *last = NULL;
 

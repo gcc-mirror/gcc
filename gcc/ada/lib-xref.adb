@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -214,7 +214,6 @@ package body Lib.Xref is
       Base_T    : Entity_Id;
       Prim      : Elmt_Id;
       Prim_List : Elist_Id;
-      Ent       : Entity_Id;
 
    begin
       --  Handle subtypes of synchronized types
@@ -262,12 +261,8 @@ package body Lib.Xref is
          --  reference purposes (it is the original for which we want the xref
          --  and for which the comes_from_source test must be performed).
 
-         Ent := Node (Prim);
-         while Present (Alias (Ent)) loop
-            Ent := Alias (Ent);
-         end loop;
-
-         Generate_Reference (Typ, Ent, 'p', Set_Ref => False);
+         Generate_Reference
+           (Typ, Ultimate_Alias (Node (Prim)), 'p', Set_Ref => False);
          Next_Elmt (Prim);
       end loop;
    end Generate_Prim_Op_References;
@@ -666,7 +661,7 @@ package body Lib.Xref is
          --  Check for pragma Unreferenced given and reference is within
          --  this source unit (occasion for possible warning to be issued).
 
-         if Has_Pragma_Unreferenced (E)
+         if Has_Unreferenced (E)
            and then In_Same_Extended_Unit (E, N)
          then
             --  A reference as a named parameter in a call does not count
@@ -699,7 +694,7 @@ package body Lib.Xref is
                   BE := First_Entity (Current_Scope);
                   while Present (BE) loop
                      if Chars (BE) = Chars (E) then
-                        Error_Msg_NE
+                        Error_Msg_NE -- CODEFIX
                           ("?pragma Unreferenced given for&!", N, BE);
                         exit;
                      end if;
@@ -711,7 +706,8 @@ package body Lib.Xref is
             --  Here we issue the warning, since this is a real reference
 
             else
-               Error_Msg_NE ("?pragma Unreferenced given for&!", N, E);
+               Error_Msg_NE -- CODEFIX
+                 ("?pragma Unreferenced given for&!", N, E);
             end if;
          end if;
 
@@ -1703,10 +1699,7 @@ package body Lib.Xref is
                      --  through several levels of derivation, so find the
                      --  ultimate (source) ancestor.
 
-                     Op := Alias (Old_E);
-                     while Present (Alias (Op)) loop
-                        Op := Alias (Op);
-                     end loop;
+                     Op := Ultimate_Alias (Old_E);
 
                   --  Normal case of no alias present
 

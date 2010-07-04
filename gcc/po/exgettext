@@ -84,7 +84,7 @@ echo "scanning for keywords, %e and %n strings..." >&2
 
 ( cd $srcdir
   lang_subdirs=`echo */config-lang.in */*/config-lang.in | sed -e 's|config-lang\.in||g'`
-  { for dir in "" config/ config/*/ $lang_subdirs
+  { for dir in "" c-family/ config/ config/*/ $lang_subdirs
     do  for glob in '*.c' '*.h' '*.def'
         do  eval echo $dir$glob
         done
@@ -113,9 +113,15 @@ function keyword_option(line) {
     	format="c-format"
 
     if (n == 1) { keyword = "--keyword=" name }
-    else { keyword = "--keyword=" name ":" n }
+    else {
+       keyword = "--keyword=" name ":" n
+       if (name ~ /_n$/)
+         keyword = keyword "," (n + 1)
+    }
     if (format) {
         keyword=keyword "\n--flag=" name ":" n ":" format
+        if (name ~ /_n$/)
+          keyword = keyword "\n--flag=" name ":" (n + 1) ":" format
     }
 
     if (! keyword_seen[name]) {

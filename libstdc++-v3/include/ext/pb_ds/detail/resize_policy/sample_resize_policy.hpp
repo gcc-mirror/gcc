@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -47,7 +47,7 @@ class sample_resize_policy
 public:
 
   // Size type.
-  typedef size_t size_type;
+  typedef std::size_t size_type;
 
   // Default constructor.
   sample_resize_policy();

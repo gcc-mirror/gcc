@@ -49,7 +49,7 @@ assert_valid() const
   assert_consistent_with_debug_base();
   assert_size();
   assert_iterators();
-  if (m_p_head->m_p_parent == NULL)
+  if (m_p_head->m_p_parent == 0)
     {
       _GLIBCXX_DEBUG_ASSERT(m_size == 0);
     }
@@ -64,8 +64,8 @@ void
 PB_DS_CLASS_C_DEC::
 structure_only_assert_valid() const
 {
-  _GLIBCXX_DEBUG_ASSERT(m_p_head != NULL);
-  if (m_p_head->m_p_parent == NULL)
+  _GLIBCXX_DEBUG_ASSERT(m_p_head != 0);
+  if (m_p_head->m_p_parent == 0)
     {
       _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_left == m_p_head);
       _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_right == m_p_head);
@@ -77,7 +77,7 @@ structure_only_assert_valid() const
       _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_right != m_p_head);
     }
 
-  if (m_p_head->m_p_parent != NULL)
+  if (m_p_head->m_p_parent != 0)
     assert_node_consistent(m_p_head->m_p_parent);
   assert_min();
   assert_max();
@@ -96,8 +96,8 @@ typename PB_DS_CLASS_C_DEC::node_consistent_t
 PB_DS_CLASS_C_DEC::
 assert_node_consistent_(const node_pointer p_nd) const
 {
-  if (p_nd == NULL)
-    return (std::make_pair((const_pointer)NULL,(const_pointer)NULL));
+  if (p_nd == 0)
+    return (std::make_pair((const_pointer)0,(const_pointer)0));
 
   assert_node_consistent_with_left(p_nd);
   assert_node_consistent_with_right(p_nd);
@@ -105,18 +105,18 @@ assert_node_consistent_(const node_pointer p_nd) const
   const std::pair<const_pointer, const_pointer>
     l_range = assert_node_consistent_(p_nd->m_p_left);
 
-  if (l_range.second != NULL)
+  if (l_range.second != 0)
     _GLIBCXX_DEBUG_ASSERT(Cmp_Fn::operator()(PB_DS_V2F(*l_range.second),
 					     PB_DS_V2F(p_nd->m_value)));
 
   const std::pair<const_pointer, const_pointer>
     r_range = assert_node_consistent_(p_nd->m_p_right);
 
-  if (r_range.first != NULL)
+  if (r_range.first != 0)
     _GLIBCXX_DEBUG_ASSERT(Cmp_Fn::operator()(PB_DS_V2F(p_nd->m_value),
 					     PB_DS_V2F(*r_range.first)));
 
-  return (std::make_pair((l_range.first != NULL)? l_range.first :& p_nd->m_value,(r_range.second != NULL)? r_range.second :& p_nd->m_value));
+  return (std::make_pair((l_range.first != 0)? l_range.first :& p_nd->m_value,(r_range.second != 0)? r_range.second :& p_nd->m_value));
 }
 
 PB_DS_CLASS_T_DEC
@@ -124,7 +124,7 @@ void
 PB_DS_CLASS_C_DEC::
 assert_node_consistent_with_left(const node_pointer p_nd) const
 {
-  if (p_nd->m_p_left == NULL)
+  if (p_nd->m_p_left == 0)
     return;
   _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_left->m_p_parent == p_nd);
   _GLIBCXX_DEBUG_ASSERT(!Cmp_Fn::operator()(PB_DS_V2F(p_nd->m_value),
@@ -136,7 +136,7 @@ void
 PB_DS_CLASS_C_DEC::
 assert_node_consistent_with_right(const node_pointer p_nd) const
 {
-  if (p_nd->m_p_right == NULL)
+  if (p_nd->m_p_right == 0)
     return;
   _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_right->m_p_parent == p_nd);
   _GLIBCXX_DEBUG_ASSERT(!Cmp_Fn::operator()(PB_DS_V2F(p_nd->m_p_right->m_value),
@@ -156,13 +156,13 @@ void
 PB_DS_CLASS_C_DEC::
 assert_min_imp(const node_pointer p_nd) const
 {
-  if (p_nd == NULL)
+  if (p_nd == 0)
     {
       _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_left == m_p_head);
       return;
     }
 
-  if (p_nd->m_p_left == NULL)
+  if (p_nd->m_p_left == 0)
     {
       _GLIBCXX_DEBUG_ASSERT(p_nd == m_p_head->m_p_left);
       return;
@@ -183,13 +183,13 @@ void
 PB_DS_CLASS_C_DEC::
 assert_max_imp(const node_pointer p_nd) const
 {
-  if (p_nd == NULL)
+  if (p_nd == 0)
     {
       _GLIBCXX_DEBUG_ASSERT(m_p_head->m_p_right == m_p_head);
       return;
     }
 
-  if (p_nd->m_p_right == NULL)
+  if (p_nd->m_p_right == 0)
     {
       _GLIBCXX_DEBUG_ASSERT(p_nd == m_p_head->m_p_right);
       return;
@@ -254,7 +254,7 @@ void
 PB_DS_CLASS_C_DEC::
 assert_consistent_with_debug_base(const node_pointer p_nd) const
 {
-  if (p_nd == NULL)
+  if (p_nd == 0)
     return;
   debug_base::check_key_exists(PB_DS_V2F(p_nd->m_value));
   assert_consistent_with_debug_base(p_nd->m_p_left);

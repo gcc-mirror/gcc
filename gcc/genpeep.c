@@ -358,7 +358,7 @@ main (int argc, char **argv)
 
   progname = "genpeep";
 
-  if (init_md_reader_args (argc, argv) != SUCCESS_EXIT_CODE)
+  if (!init_rtx_reader_args (argc, argv))
     return (FATAL_EXIT_CODE);
 
   printf ("/* Generated automatically by the program `genpeep'\n\
@@ -373,7 +373,6 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"tm_p.h\"\n");
   printf ("#include \"regs.h\"\n");
   printf ("#include \"output.h\"\n");
-  printf ("#include \"real.h\"\n");
   printf ("#include \"recog.h\"\n");
   printf ("#include \"except.h\"\n");
   printf ("#include \"function.h\"\n");

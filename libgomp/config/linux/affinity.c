@@ -1,4 +1,4 @@
-/* Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
    This file is part of the GNU OpenMP Library (libgomp).
@@ -39,8 +39,9 @@ static unsigned int affinity_counter;
 void
 gomp_init_affinity (void)
 {
-  cpu_set_t cpuset;
+  cpu_set_t cpuset, cpusetnew;
   size_t idx, widx;
+  unsigned long cpus = 0;
 
   if (pthread_getaffinity_np (pthread_self (), sizeof (cpuset), &cpuset))
     {
@@ -51,10 +52,18 @@ gomp_init_affinity (void)
       return;
     }
 
+  CPU_ZERO (&cpusetnew);
   for (widx = idx = 0; idx < gomp_cpu_affinity_len; idx++)
     if (gomp_cpu_affinity[idx] < CPU_SETSIZE
         && CPU_ISSET (gomp_cpu_affinity[idx], &cpuset))
-      gomp_cpu_affinity[widx++] = gomp_cpu_affinity[idx];
+      {
+	if (! CPU_ISSET (gomp_cpu_affinity[idx], &cpusetnew))
+	  {
+	    cpus++;
+	    CPU_SET (gomp_cpu_affinity[idx], &cpusetnew);
+	  }
+	gomp_cpu_affinity[widx++] = gomp_cpu_affinity[idx];
+      }
 
   if (widx == 0)
     {
@@ -66,6 +75,8 @@ gomp_init_affinity (void)
     }
 
   gomp_cpu_affinity_len = widx;
+  if (cpus < gomp_available_cpus)
+    gomp_available_cpus = cpus;
   CPU_ZERO (&cpuset);
   CPU_SET (gomp_cpu_affinity[0], &cpuset);
   pthread_setaffinity_np (pthread_self (), sizeof (cpuset), &cpuset);

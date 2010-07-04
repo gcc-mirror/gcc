@@ -27,8 +27,8 @@ class javax::swing::JList$1 : public ::javax::swing::AbstractListModel
 public: // actually package-private
   JList$1(::javax::swing::JList *, JArray< ::java::lang::Object * > *);
 public:
-  jint getSize();
-  ::java::lang::Object * getElementAt(jint);
+  virtual jint getSize();
+  virtual ::java::lang::Object * getElementAt(jint);
 public: // actually package-private
   ::javax::swing::JList * __attribute__((aligned(__alignof__( ::javax::swing::AbstractListModel)))) this$0;
 private:

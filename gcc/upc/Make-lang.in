@@ -55,7 +55,7 @@ UPC_PTS_C = upc-pts-$(UPC_PTS_REP).c
 UPC_PTS_OBJ = upc-pts-$(UPC_PTS_REP).o
 
 # Language-specific object files for UPC.
-UPC_OBJS = stub-objc.o upc/upc-act.o upc/upc-gimplify.o \
+UPC_OBJS = c-family/stub-objc.o upc/upc-act.o upc/upc-gimplify.o \
            upc/upc-lang.o upc/$(UPC_PTS_OBJ) upc/upc-gasp.o
 
 cc1upc-dummy$(exeext): $(UPC_OBJS) $(C_AND_OBJC_OBJS) dummy-checksum.o $(BACKEND) \
@@ -112,20 +112,20 @@ upc/upc-act.o : upc/upc-act.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
    $(TM_P_H) $(EXPR_H) $(TARGET_H) $(C_TREE_H) diagnostic.h toplev.h \
    flags.h input.h function.h output.h debug.h langhooks.h \
-   $(LANGHOOKS_DEF_H) $(HASHTAB_H) c-pragma.h \
+   $(LANGHOOKS_DEF_H) $(HASHTAB_H) c-family/c-pragma.h \
    gtype-upc.h gt-upc-upc-act.h upc/upc-act.h upc/upc-pts.h
 
 upc/upc-gimplify.o : upc/upc-gimplify.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
    $(TM_P_H) $(EXPR_H) $(TARGET_H) $(C_TREE_H) diagnostic.h \
    toplev.h flags.h input.h function.h output.h debug.h langhooks.h \
-   $(LANGHOOKS_DEF_H) $(HASHTAB_H) c-pragma.h \
+   $(LANGHOOKS_DEF_H) $(HASHTAB_H) c-family/c-pragma.h \
    upc/upc-gimplify.h upc/upc-tree.h upc/upc-act.h upc/upc-pts.h
 
 upc/$(UPC_PTS_OBJ): upc/$(UPC_PTS_C) \
    $(CONFIG_H) $(SYSTEM_H) $(TARGET_H) $(TM_H) $(TM_P_H) \
    $(TREE_H) coretypes.h $(LANGHOOKS_DEF_H) langhooks.h \
-   c-pragma.h $(C_TREE_H) debug.h \
+   c-family/c-pragma.h $(C_TREE_H) debug.h \
    diagnostic.h $(EXPR_H) flags.h function.h input.h \
    output.h $(RTL_H) toplev.h \
    upc/upc-act.h upc/upc-pts.h
@@ -134,7 +134,7 @@ upc/upc-gasp.o : upc/upc-gasp.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
    $(TM_P_H) $(EXPR_H) $(TARGET_H) $(C_TREE_H) diagnostic.h \
    toplev.h flags.h input.h function.h output.h debug.h langhooks.h \
-   $(LANGHOOKS_DEF_H) $(HASHTAB_H) c-pragma.h \
+   $(LANGHOOKS_DEF_H) $(HASHTAB_H) c-family/c-pragma.h \
    upc/upc-gasp.h upc/upc-tree.h upc/upc-act.h upc/upc-pts.h
 
 #

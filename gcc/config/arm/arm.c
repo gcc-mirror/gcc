@@ -1,6 +1,6 @@
 /* Output routines for GCC for ARM.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
@@ -31,7 +31,6 @@
 #include "obstack.h"
 #include "regs.h"
 #include "hard-reg-set.h"
-#include "real.h"
 #include "insn-config.h"
 #include "conditions.h"
 #include "output.h"
@@ -46,7 +45,7 @@
 #include "cgraph.h"
 #include "ggc.h"
 #include "except.h"
-#include "c-pragma.h"
+#include "c-family/c-pragma.h"	/* ??? */
 #include "integrate.h"
 #include "tm_p.h"
 #include "target.h"
@@ -84,6 +83,9 @@ static int const_ok_for_op (HOST_WIDE_INT, enum rtx_code);
 static rtx emit_sfm (int, int);
 static unsigned arm_size_return_regs (void);
 static bool arm_assemble_integer (rtx, unsigned int, int);
+static void arm_print_operand (FILE *, rtx, int);
+static void arm_print_operand_address (FILE *, rtx);
+static bool arm_print_operand_punct_valid_p (unsigned char code);
 static const char *fp_const_from_val (REAL_VALUE_TYPE *);
 static arm_cc get_arm_condition_code (rtx);
 static HOST_WIDE_INT int_log2 (HOST_WIDE_INT);
@@ -151,7 +153,6 @@ static bool arm_memory_load_p (rtx);
 static bool arm_cirrus_insn_p (rtx);
 static void cirrus_reorg (rtx);
 static void arm_init_builtins (void);
-static rtx arm_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static void arm_init_iwmmxt_builtins (void);
 static rtx safe_vector_operand (rtx, enum machine_mode);
 static rtx arm_expand_binop_builtin (enum insn_code, tree, rtx);
@@ -224,6 +225,7 @@ static bool arm_can_eliminate (const int, const int);
 static void arm_asm_trampoline_template (FILE *);
 static void arm_trampoline_init (rtx, tree, rtx);
 static rtx arm_trampoline_adjust_address (rtx);
+static rtx arm_pic_static_addr (rtx orig, rtx reg);
 
 
 /* Table of machine attributes.  */
@@ -285,6 +287,13 @@ static const struct attribute_spec arm_attribute_table[] =
 #define TARGET_ASM_ALIGNED_SI_OP NULL
 #undef  TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER arm_assemble_integer
+
+#undef TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND arm_print_operand
+#undef TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS arm_print_operand_address
+#undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P arm_print_operand_punct_valid_p
 
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE arm_output_function_prologue
@@ -525,8 +534,8 @@ int making_const_table;
 /* The processor for which instructions should be scheduled.  */
 enum processor_type arm_tune = arm_none;
 
-/* The default processor used if not overridden by commandline.  */
-static enum processor_type arm_default_cpu = arm_none;
+/* The current tuning set.  */
+const struct tune_params *current_tune;
 
 /* Which floating point hardware to schedule for.  */
 int arm_fpu_attr;
@@ -582,6 +591,10 @@ static int thumb_call_reg_needed;
 					 architecture.  */
 
 #define FL_IWMMXT     (1 << 29)	      /* XScale v2 or "Intel Wireless MMX technology".  */
+
+/* Flags that only effect tuning, not available instructions.  */
+#define FL_TUNE		(FL_WBUF | FL_VFPV2 | FL_STRONG | FL_LDSCHED \
+			 | FL_CO_PROC)
 
 #define FL_FOR_ARCH2	FL_NOTM
 #define FL_FOR_ARCH3	(FL_FOR_ARCH2 | FL_MODE32)
@@ -685,9 +698,9 @@ int arm_arch_thumb2;
 /* Nonzero if chip supports integer division instruction.  */
 int arm_arch_hwdiv;
 
-/* In case of a PRE_INC, POST_INC, PRE_DEC, POST_DEC memory reference, we
-   must report the mode of the memory reference from PRINT_OPERAND to
-   PRINT_OPERAND_ADDRESS.  */
+/* In case of a PRE_INC, POST_INC, PRE_DEC, POST_DEC memory reference,
+   we must report the mode of the memory reference from
+   TARGET_PRINT_OPERAND to TARGET_PRINT_OPERAND_ADDRESS.  */
 enum machine_mode output_memory_reference_mode;
 
 /* The register number to be used for the PIC offset register.  */
@@ -696,9 +709,6 @@ unsigned arm_pic_register = INVALID_REGNUM;
 /* Set to 1 after arm_reorg has started.  Reset to start at the start of
    the next function.  */
 static int after_arm_reorg = 0;
-
-/* The maximum number of insns to be used when loading a constant.  */
-static int arm_constant_limit = 3;
 
 static enum arm_pcs arm_pcs_default;
 
@@ -738,7 +748,31 @@ struct processors
   enum processor_type core;
   const char *arch;
   const unsigned long flags;
-  bool (* rtx_costs) (rtx, enum rtx_code, enum rtx_code, int *, bool);
+  const struct tune_params *const tune;
+};
+
+const struct tune_params arm_slowmul_tune =
+{
+  arm_slowmul_rtx_costs,
+  3
+};
+
+const struct tune_params arm_fastmul_tune =
+{
+  arm_fastmul_rtx_costs,
+  1
+};
+
+const struct tune_params arm_xscale_tune =
+{
+  arm_xscale_rtx_costs,
+  2
+};
+
+const struct tune_params arm_9e_tune =
+{
+  arm_9e_rtx_costs,
+  1
 };
 
 /* Not all of these give usefully different compilation alternatives,
@@ -747,7 +781,7 @@ static const struct processors all_cores[] =
 {
   /* ARM Cores */
 #define ARM_CORE(NAME, IDENT, ARCH, FLAGS, COSTS) \
-  {NAME, arm_none, #ARCH, FLAGS | FL_FOR_ARCH##ARCH, arm_##COSTS##_rtx_costs},
+  {NAME, IDENT, #ARCH, FLAGS | FL_FOR_ARCH##ARCH, &arm_##COSTS##_tune},
 #include "arm-cores.def"
 #undef ARM_CORE
   {NULL, arm_none, NULL, 0, NULL}
@@ -756,7 +790,7 @@ static const struct processors all_cores[] =
 static const struct processors all_architectures[] =
 {
   /* ARM Architectures */
-  /* We don't specify rtx_costs here as it will be figured out
+  /* We don't specify tuning costs here as it will be figured out
      from the core.  */
 
   {"armv2",   arm2,       "2",   FL_CO_PROC | FL_MODE26 | FL_FOR_ARCH2, NULL},
@@ -782,36 +816,19 @@ static const struct processors all_architectures[] =
   {"armv7-a", cortexa8,	  "7A",	 FL_CO_PROC |		  FL_FOR_ARCH7A, NULL},
   {"armv7-r", cortexr4,	  "7R",	 FL_CO_PROC |		  FL_FOR_ARCH7R, NULL},
   {"armv7-m", cortexm3,	  "7M",	 FL_CO_PROC |		  FL_FOR_ARCH7M, NULL},
-  {"armv7e-m",   cortexm3, "7EM", FL_CO_PROC |		  FL_FOR_ARCH7EM, NULL},
+  {"armv7e-m", cortexm4,  "7EM", FL_CO_PROC |		  FL_FOR_ARCH7EM, NULL},
   {"ep9312",  ep9312,     "4T",  FL_LDSCHED | FL_CIRRUS | FL_FOR_ARCH4, NULL},
   {"iwmmxt",  iwmmxt,     "5TE", FL_LDSCHED | FL_STRONG | FL_FOR_ARCH5TE | FL_XSCALE | FL_IWMMXT , NULL},
   {"iwmmxt2", iwmmxt2,     "5TE", FL_LDSCHED | FL_STRONG | FL_FOR_ARCH5TE | FL_XSCALE | FL_IWMMXT , NULL},
   {NULL, arm_none, NULL, 0 , NULL}
 };
 
-struct arm_cpu_select
-{
-  const char *              string;
-  const char *              name;
-  const struct processors * processors;
-};
 
-/* This is a magic structure.  The 'string' field is magically filled in
-   with a pointer to the value specified by the user on the command line
-   assuming that the user has specified such a value.  */
-
-static struct arm_cpu_select arm_select[] =
-{
-  /* string	  name            processors  */
-  { NULL,	"-mcpu=",	all_cores  },
-  { NULL,	"-march=",	all_architectures },
-  { NULL,	"-mtune=",	all_cores }
-};
-
-/* Defines representing the indexes into the above table.  */
-#define ARM_OPT_SET_CPU 0
-#define ARM_OPT_SET_ARCH 1
-#define ARM_OPT_SET_TUNE 2
+/* These are populated as commandline arguments are processed, or NULL
+   if not specified.  */
+static const struct processors *arm_selected_arch;
+static const struct processors *arm_selected_cpu;
+static const struct processors *arm_selected_tune;
 
 /* The name of the preprocessor macro to define for this architecture.  */
 
@@ -904,6 +921,13 @@ enum tls_reloc {
   TLS_IE32,
   TLS_LE32
 };
+
+/* The maximum number of insns to be used when loading a constant.  */
+inline static int
+arm_constant_limit (bool size_p)
+{
+  return size_p ? 1 : current_tune->constant_limit;
+}
 
 /* Emit an insn that's a simple single-set.  Both the operands must be known
    to be valid.  */
@@ -1166,6 +1190,24 @@ arm_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 }
 
+/* Lookup NAME in SEL.  */
+
+static const struct processors *
+arm_find_cpu (const char *name, const struct processors *sel, const char *desc)
+{
+  if (!(name && *name))
+    return NULL;
+
+  for (; sel->name != NULL; sel++)
+    {
+      if (streq (name, sel->name))
+	return sel;
+    }
+
+  error ("bad value (%s) for %s switch", name, desc);
+  return NULL;
+}
+
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
@@ -1174,11 +1216,11 @@ arm_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
   switch (code)
     {
     case OPT_march_:
-      arm_select[1].string = arg;
+      arm_selected_arch = arm_find_cpu(arg, all_architectures, "-march");
       return true;
 
     case OPT_mcpu_:
-      arm_select[0].string = arg;
+      arm_selected_cpu = arm_find_cpu(arg, all_cores, "-mcpu");
       return true;
 
     case OPT_mhard_float:
@@ -1190,7 +1232,7 @@ arm_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
       return true;
 
     case OPT_mtune_:
-      arm_select[2].string = arg;
+      arm_selected_tune = arm_find_cpu(arg, all_cores, "-mtune");
       return true;
 
     default:
@@ -1290,88 +1332,52 @@ void
 arm_override_options (void)
 {
   unsigned i;
-  enum processor_type target_arch_cpu = arm_none;
-  enum processor_type selected_cpu = arm_none;
 
-  /* Set up the flags based on the cpu/architecture selected by the user.  */
-  for (i = ARRAY_SIZE (arm_select); i--;)
+  if (arm_selected_arch)
     {
-      struct arm_cpu_select * ptr = arm_select + i;
+      if (arm_selected_cpu)
+	{
+	  /* Check for conflict between mcpu and march.  */
+	  if ((arm_selected_cpu->flags ^ arm_selected_arch->flags) & ~FL_TUNE)
+	    {
+	      warning (0, "switch -mcpu=%s conflicts with -march=%s switch",
+		       arm_selected_cpu->name, arm_selected_arch->name);
+	      /* -march wins for code generation.
+	         -mcpu wins for default tuning.  */
+	      if (!arm_selected_tune)
+		arm_selected_tune = arm_selected_cpu;
 
-      if (ptr->string != NULL && ptr->string[0] != '\0')
-        {
-	  const struct processors * sel;
-
-          for (sel = ptr->processors; sel->name != NULL; sel++)
-            if (streq (ptr->string, sel->name))
-              {
-		/* Set the architecture define.  */
-		if (i != ARM_OPT_SET_TUNE)
-		  sprintf (arm_arch_name, "__ARM_ARCH_%s__", sel->arch);
-
-		/* Determine the processor core for which we should
-		   tune code-generation.  */
-		if (/* -mcpu= is a sensible default.  */
-		    i == ARM_OPT_SET_CPU
-		    /* -mtune= overrides -mcpu= and -march=.  */
-		    || i == ARM_OPT_SET_TUNE)
-		  arm_tune = (enum processor_type) (sel - ptr->processors);
-
-		/* Remember the CPU associated with this architecture.
-		   If no other option is used to set the CPU type,
-		   we'll use this to guess the most suitable tuning
-		   options.  */
-		if (i == ARM_OPT_SET_ARCH)
-		  target_arch_cpu = sel->core;
-
-		if (i == ARM_OPT_SET_CPU)
-		  selected_cpu = (enum processor_type) (sel - ptr->processors);
-		  
-		if (i != ARM_OPT_SET_TUNE)
-		  {
-		    /* If we have been given an architecture and a processor
-		       make sure that they are compatible.  We only generate
-		       a warning though, and we prefer the CPU over the
-		       architecture.  */
-		    if (insn_flags != 0 && (insn_flags ^ sel->flags))
-		      warning (0, "switch -mcpu=%s conflicts with -march= switch",
-			       ptr->string);
-
-		    insn_flags = sel->flags;
-		  }
-
-                break;
-              }
-
-          if (sel->name == NULL)
-            error ("bad value (%s) for %s switch", ptr->string, ptr->name);
-        }
+	      arm_selected_cpu = arm_selected_arch;
+	    }
+	  else
+	    /* -mcpu wins.  */
+	    arm_selected_arch = NULL;
+	}
+      else
+	/* Pick a CPU based on the architecture.  */
+	arm_selected_cpu = arm_selected_arch;
     }
 
-  /* Guess the tuning options from the architecture if necessary.  */
-  if (arm_tune == arm_none)
-    arm_tune = target_arch_cpu;
-
   /* If the user did not specify a processor, choose one for them.  */
-  if (insn_flags == 0)
+  if (!arm_selected_cpu)
     {
       const struct processors * sel;
       unsigned int        sought;
 
-      selected_cpu = (enum processor_type) TARGET_CPU_DEFAULT;
-      if (selected_cpu == arm_none)
+      arm_selected_cpu = &all_cores[TARGET_CPU_DEFAULT];
+      if (!arm_selected_cpu->name)
 	{
 #ifdef SUBTARGET_CPU_DEFAULT
 	  /* Use the subtarget default CPU if none was specified by
 	     configure.  */
-	  selected_cpu = (enum processor_type) SUBTARGET_CPU_DEFAULT;
+	  arm_selected_cpu = &all_cores[SUBTARGET_CPU_DEFAULT];
 #endif
 	  /* Default to ARM6.  */
-	  if (selected_cpu == arm_none)
-	    selected_cpu = arm6;
+	  if (arm_selected_cpu->name)
+	    arm_selected_cpu = &all_cores[arm6];
 	}
-      sel = &all_cores[selected_cpu];
 
+      sel = arm_selected_cpu;
       insn_flags = sel->flags;
 
       /* Now check to see if the user has specified some command line
@@ -1432,19 +1438,21 @@ arm_override_options (void)
 	      sel = best_fit;
 	    }
 
-	  insn_flags = sel->flags;
+	  arm_selected_cpu = sel;
 	}
-      sprintf (arm_arch_name, "__ARM_ARCH_%s__", sel->arch);
-      arm_default_cpu = (enum processor_type) (sel - all_cores);
-      if (arm_tune == arm_none)
-	arm_tune = arm_default_cpu;
     }
 
-  /* The processor for which we should tune should now have been
-     chosen.  */
-  gcc_assert (arm_tune != arm_none);
+  gcc_assert (arm_selected_cpu);
+  /* The selected cpu may be an architecture, so lookup tuning by core ID.  */
+  if (!arm_selected_tune)
+    arm_selected_tune = &all_cores[arm_selected_cpu->core];
 
-  tune_flags = all_cores[(int)arm_tune].flags;
+  sprintf (arm_arch_name, "__ARM_ARCH_%s__", arm_selected_cpu->arch);
+  insn_flags = arm_selected_cpu->flags;
+
+  arm_tune = arm_selected_tune->core;
+  tune_flags = arm_selected_tune->flags;
+  current_tune = arm_selected_tune->tune;
 
   if (target_fp16_format_name)
     {
@@ -1827,7 +1835,7 @@ arm_override_options (void)
   /* Enable -mfix-cortex-m3-ldrd by default for Cortex-M3 cores.  */
   if (fix_cm3_ldrd == 2)
     {
-      if (selected_cpu == cortexm3)
+      if (arm_selected_cpu->core == cortexm3)
 	fix_cm3_ldrd = 1;
       else
 	fix_cm3_ldrd = 0;
@@ -1841,26 +1849,12 @@ arm_override_options (void)
 
   if (optimize_size)
     {
-      arm_constant_limit = 1;
-
       /* If optimizing for size, bump the number of instructions that we
          are prepared to conditionally execute (even on a StrongARM).  */
       max_insns_skipped = 6;
     }
   else
     {
-      /* For processors with load scheduling, it never costs more than
-         2 cycles to load a constant, and the load scheduler may well
-	 reduce that to 1.  */
-      if (arm_ld_sched)
-        arm_constant_limit = 1;
-
-      /* On XScale the longer latency of a load makes it more difficult
-         to achieve a good schedule, so it's faster to synthesize
-	 constants that can be done in two insns.  */
-      if (arm_tune_xscale)
-        arm_constant_limit = 2;
-
       /* StrongARM has early execution of branches, so a sequence
          that is worth skipping is shorter.  */
       if (arm_tune_strongarm)
@@ -1876,13 +1870,6 @@ arm_override_options (void)
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }
-
-  /* Ideally we would want to use CFI directives to generate
-     debug info.  However this also creates the .eh_frame
-     section, so disable them until GAS can handle
-     this properly.  See PR40521. */
-  if (TARGET_AAPCS_BASED)
-    flag_dwarf2_cfi_asm = 0;
 
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();
@@ -2368,7 +2355,8 @@ arm_split_constant (enum rtx_code code, enum machine_mode mode, rtx insn,
 	  && !cond
 	  && (arm_gen_constant (code, mode, NULL_RTX, val, target, source,
 				1, 0)
-	      > arm_constant_limit + (code != SET)))
+	      > (arm_constant_limit (optimize_function_for_size_p (cfun))
+		 + (code != SET))))
 	{
 	  if (code == SET)
 	    {
@@ -2528,7 +2516,6 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
   int can_negate = 0;
   int final_invert = 0;
   int can_negate_initial = 0;
-  int can_shift = 0;
   int i;
   int num_bits_set = 0;
   int set_sign_bit_copies = 0;
@@ -2547,7 +2534,6 @@ arm_gen_constant (enum rtx_code code, enum machine_mode mode, rtx cond,
     {
     case SET:
       can_invert = 1;
-      can_shift = 1;
       can_negate = 1;
       break;
 
@@ -3845,7 +3831,18 @@ static bool
 use_vfp_abi (enum arm_pcs pcs_variant, bool is_double)
 {
   if (pcs_variant == ARM_PCS_AAPCS_VFP)
-    return true;
+    {
+      static bool seen_thumb1_vfp = false;
+
+      if (TARGET_THUMB1 && !seen_thumb1_vfp)
+	{
+	  sorry ("Thumb-1 hard-float VFP ABI");
+	  /* sorry() is not immediately fatal, so only display this once.  */
+	  seen_thumb1_vfp = true;
+	}
+
+      return true;
+    }
 
   if (pcs_variant != ARM_PCS_AAPCS_LOCAL)
     return false;
@@ -4785,8 +4782,8 @@ arm_function_ok_for_sibcall (tree decl, tree exp)
     return false;
 
   /* Never tailcall something for which we have no decl, or if we
-     are in Thumb mode.  */
-  if (decl == NULL || TARGET_THUMB)
+     are generating code for Thumb-1.  */
+  if (decl == NULL || TARGET_THUMB1)
     return false;
 
   /* The PIC register is live on entry to VxWorks PLT entries, so we
@@ -4912,28 +4909,15 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
     {
       rtx pic_ref, address;
       rtx insn;
-      int subregs = 0;
-
-      /* If this function doesn't have a pic register, create one now.  */
-      require_pic_register ();
 
       if (reg == 0)
 	{
 	  gcc_assert (can_create_pseudo_p ());
 	  reg = gen_reg_rtx (Pmode);
-
-	  subregs = 1;
+	  address = gen_reg_rtx (Pmode);
 	}
-
-      if (subregs)
-	address = gen_reg_rtx (Pmode);
       else
 	address = reg;
-
-      if (TARGET_32BIT)
-	emit_insn (gen_pic_load_addr_32bit (address, orig));
-      else /* TARGET_THUMB1 */
-	emit_insn (gen_pic_load_addr_thumb1 (address, orig));
 
       /* VxWorks does not impose a fixed gap between segments; the run-time
 	 gap can be different from the object-file gap.  We therefore can't
@@ -4946,15 +4930,22 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	       SYMBOL_REF_LOCAL_P (orig)))
 	  && NEED_GOT_RELOC
 	  && !TARGET_VXWORKS_RTP)
-	pic_ref = gen_rtx_PLUS (Pmode, cfun->machine->pic_reg, address);
+	insn = arm_pic_static_addr (orig, reg);
       else
 	{
+	  /* If this function doesn't have a pic register, create one now.  */
+	  require_pic_register ();
+
+	  if (TARGET_32BIT)
+	    emit_insn (gen_pic_load_addr_32bit (address, orig));
+	  else /* TARGET_THUMB1 */
+	    emit_insn (gen_pic_load_addr_thumb1 (address, orig));
+
 	  pic_ref = gen_const_mem (Pmode,
 				   gen_rtx_PLUS (Pmode, cfun->machine->pic_reg,
 					         address));
+	  insn = emit_move_insn (reg, pic_ref);
 	}
-
-      insn = emit_move_insn (reg, pic_ref);
 
       /* Put a REG_EQUAL note on this insn, so that it can be optimized
 	 by loop.  */
@@ -5162,6 +5153,43 @@ arm_load_pic_register (unsigned long saved_regs ATTRIBUTE_UNUSED)
   emit_use (pic_reg);
 }
 
+/* Generate code to load the address of a static var when flag_pic is set.  */
+static rtx
+arm_pic_static_addr (rtx orig, rtx reg)
+{
+  rtx l1, labelno, offset_rtx, insn;
+
+  gcc_assert (flag_pic);
+
+  /* We use an UNSPEC rather than a LABEL_REF because this label
+     never appears in the code stream.  */
+  labelno = GEN_INT (pic_labelno++);
+  l1 = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, labelno), UNSPEC_PIC_LABEL);
+  l1 = gen_rtx_CONST (VOIDmode, l1);
+
+  /* On the ARM the PC register contains 'dot + 8' at the time of the
+     addition, on the Thumb it is 'dot + 4'.  */
+  offset_rtx = plus_constant (l1, TARGET_ARM ? 8 : 4);
+  offset_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, orig, offset_rtx),
+                               UNSPEC_SYMBOL_OFFSET);
+  offset_rtx = gen_rtx_CONST (Pmode, offset_rtx);
+
+  if (TARGET_32BIT)
+    {
+      emit_insn (gen_pic_load_addr_32bit (reg, offset_rtx));
+      if (TARGET_ARM)
+        insn = emit_insn (gen_pic_add_dot_plus_eight (reg, reg, labelno));
+      else
+        insn = emit_insn (gen_pic_add_dot_plus_four (reg, reg, labelno));
+    }
+  else /* TARGET_THUMB1 */
+    {
+      emit_insn (gen_pic_load_addr_thumb1 (reg, offset_rtx));
+      insn = emit_insn (gen_pic_add_dot_plus_four (reg, reg, labelno));
+    }
+
+  return insn;
+}
 
 /* Return nonzero if X is valid as an ARM state addressing register.  */
 static int
@@ -5850,7 +5878,7 @@ legitimize_tls_address (rtx x, rtx reg)
       if (TARGET_ARM)
 	emit_insn (gen_tls_load_dot_plus_eight (reg, reg, labelno));
       else if (TARGET_THUMB2)
-	emit_insn (gen_tls_load_dot_plus_four (reg, reg, labelno));
+	emit_insn (gen_tls_load_dot_plus_four (reg, NULL, reg, labelno));
       else
 	{
 	  emit_insn (gen_pic_add_dot_plus_four (reg, reg, labelno));
@@ -6235,6 +6263,15 @@ thumb1_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
       else if ((outer == IOR || outer == XOR || outer == AND)
 	       && INTVAL (x) < 256 && INTVAL (x) >= -256)
 	return COSTS_N_INSNS (1);
+      else if (outer == AND)
+	{
+	  int i;
+	  /* This duplicates the tests in the andsi3 expander.  */
+	  for (i = 9; i <= 31; i++)
+	    if ((((HOST_WIDE_INT) 1) << i) - 1 == INTVAL (x)
+		|| (((HOST_WIDE_INT) 1) << i) - 1 == ~INTVAL (x))
+	      return COSTS_N_INSNS (2);
+	}
       else if (outer == ASHIFT || outer == ASHIFTRT
 	       || outer == LSHIFTRT)
 	return 0;
@@ -6306,7 +6343,6 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
   enum rtx_code subcode;
   rtx operand;
   enum rtx_code code = GET_CODE (x);
-  int extra_cost;
   *total = 0;
 
   switch (code)
@@ -6362,23 +6398,6 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
       return true;
 
     case MINUS:
-      if (TARGET_THUMB2)
-	{
-	  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
-	    {
-	      if (TARGET_HARD_FLOAT && (mode == SFmode || mode == DFmode))
-		*total = COSTS_N_INSNS (1);
-	      else
-		*total = COSTS_N_INSNS (20);
-	    }
-	  else
-	    *total = COSTS_N_INSNS (ARM_NUM_REGS (mode));
-	  /* Thumb2 does not have RSB, so all arguments must be
-	     registers (subtracting a constant is canonicalized as
-	     addition of the negated constant).  */
-	  return false;
-	}
-
       if (mode == DImode)
 	{
 	  *total = COSTS_N_INSNS (ARM_NUM_REGS (mode));
@@ -6530,7 +6549,6 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
       /* Fall through */
 
     case AND: case XOR: case IOR:
-      extra_cost = 0;
 
       /* Normally the frame registers will be spilt into reg+const during
 	 reload, so it is a bad idea to combine them with other instructions,
@@ -6882,6 +6900,130 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
     }
 }
 
+/* Estimates the size cost of thumb1 instructions.
+   For now most of the code is copied from thumb1_rtx_costs. We need more
+   fine grain tuning when we have more related test cases.  */
+static inline int
+thumb1_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
+{
+  enum machine_mode mode = GET_MODE (x);
+
+  switch (code)
+    {
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+    case ROTATERT:
+    case PLUS:
+    case MINUS:
+    case COMPARE:
+    case NEG:
+    case NOT:
+      return COSTS_N_INSNS (1);
+
+    case MULT:
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+        {
+          /* Thumb1 mul instruction can't operate on const. We must Load it
+             into a register first.  */
+          int const_size = thumb1_size_rtx_costs (XEXP (x, 1), CONST_INT, SET);
+          return COSTS_N_INSNS (1) + const_size;
+        }
+      return COSTS_N_INSNS (1);
+
+    case SET:
+      return (COSTS_N_INSNS (1)
+              + 4 * ((GET_CODE (SET_SRC (x)) == MEM)
+                     + GET_CODE (SET_DEST (x)) == MEM));
+
+    case CONST_INT:
+      if (outer == SET)
+        {
+          if ((unsigned HOST_WIDE_INT) INTVAL (x) < 256)
+            return 0;
+          if (thumb_shiftable_const (INTVAL (x)))
+            return COSTS_N_INSNS (2);
+          return COSTS_N_INSNS (3);
+        }
+      else if ((outer == PLUS || outer == COMPARE)
+               && INTVAL (x) < 256 && INTVAL (x) > -256)
+        return 0;
+      else if ((outer == IOR || outer == XOR || outer == AND)
+               && INTVAL (x) < 256 && INTVAL (x) >= -256)
+        return COSTS_N_INSNS (1);
+      else if (outer == AND)
+        {
+          int i;
+          /* This duplicates the tests in the andsi3 expander.  */
+          for (i = 9; i <= 31; i++)
+            if ((((HOST_WIDE_INT) 1) << i) - 1 == INTVAL (x)
+                || (((HOST_WIDE_INT) 1) << i) - 1 == ~INTVAL (x))
+              return COSTS_N_INSNS (2);
+        }
+      else if (outer == ASHIFT || outer == ASHIFTRT
+               || outer == LSHIFTRT)
+        return 0;
+      return COSTS_N_INSNS (2);
+
+    case CONST:
+    case CONST_DOUBLE:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      return COSTS_N_INSNS (3);
+
+    case UDIV:
+    case UMOD:
+    case DIV:
+    case MOD:
+      return 100;
+
+    case TRUNCATE:
+      return 99;
+
+    case AND:
+    case XOR:
+    case IOR:
+      /* XXX guess.  */
+      return 8;
+
+    case MEM:
+      /* XXX another guess.  */
+      /* Memory costs quite a lot for the first word, but subsequent words
+         load at the equivalent of a single insn each.  */
+      return (10 + 4 * ((GET_MODE_SIZE (mode) - 1) / UNITS_PER_WORD)
+              + ((GET_CODE (x) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (x))
+                 ? 4 : 0));
+
+    case IF_THEN_ELSE:
+      /* XXX a guess.  */
+      if (GET_CODE (XEXP (x, 1)) == PC || GET_CODE (XEXP (x, 2)) == PC)
+        return 14;
+      return 2;
+
+    case ZERO_EXTEND:
+      /* XXX still guessing.  */
+      switch (GET_MODE (XEXP (x, 0)))
+        {
+          case QImode:
+            return (1 + (mode == DImode ? 4 : 0)
+                    + (GET_CODE (XEXP (x, 0)) == MEM ? 10 : 0));
+
+          case HImode:
+            return (4 + (mode == DImode ? 4 : 0)
+                    + (GET_CODE (XEXP (x, 0)) == MEM ? 10 : 0));
+
+          case SImode:
+            return (1 + (GET_CODE (XEXP (x, 0)) == MEM ? 10 : 0));
+
+          default:
+            return 99;
+        }
+
+    default:
+      return 99;
+    }
+}
+
 /* RTX costs when optimizing for size.  */
 static bool
 arm_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
@@ -6890,8 +7032,7 @@ arm_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
   enum machine_mode mode = GET_MODE (x);
   if (TARGET_THUMB1)
     {
-      /* XXX TBD.  For now, use the standard costs.  */
-      *total = thumb1_rtx_costs (x, code, outer_code);
+      *total = thumb1_size_rtx_costs (x, code, outer_code);
       return true;
     }
 
@@ -7141,9 +7282,9 @@ arm_rtx_costs (rtx x, int code, int outer_code, int *total,
     return arm_size_rtx_costs (x, (enum rtx_code) code,
 			       (enum rtx_code) outer_code, total);
   else
-    return all_cores[(int)arm_tune].rtx_costs (x, (enum rtx_code) code,
-					       (enum rtx_code) outer_code,
-					       total, speed);
+    return current_tune->rtx_costs (x, (enum rtx_code) code,
+				    (enum rtx_code) outer_code,
+				    total, speed);
 }
 
 /* RTX costs for cores with a slow MUL implementation.  Thumb-2 is not
@@ -7288,7 +7429,8 @@ arm_fastmul_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
    so it can be ignored.  */
 
 static bool
-arm_xscale_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code, int *total, bool speed)
+arm_xscale_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
+		      int *total, bool speed)
 {
   enum machine_mode mode = GET_MODE (x);
 
@@ -7628,7 +7770,7 @@ neg_const_double_rtx_ok_for_fpa (rtx x)
     init_fp_table ();
 
   REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-  r = REAL_VALUE_NEGATE (r);
+  r = real_value_negate (&r);
   if (REAL_VALUE_MINUS_ZERO (r))
     return 0;
 
@@ -7679,7 +7821,7 @@ vfp3_const_double_index (rtx x)
 
   /* Extract sign, exponent and mantissa.  */
   sign = REAL_VALUE_NEGATIVE (r) ? 1 : 0;
-  r = REAL_VALUE_ABS (r);
+  r = real_value_abs (&r);
   exponent = REAL_EXP (&r);
   /* For the mantissa, we expand into two HOST_WIDE_INTS, apart from the
      highest (sign) bit, with a fixed binary point at bit point_pos.
@@ -8799,28 +8941,21 @@ tls_mentioned_p (rtx x)
     }
 }
 
-/* Must not copy a SET whose source operand is PC-relative.  */
+/* Must not copy any rtx that uses a pc-relative address.  */
+
+static int
+arm_note_pic_base (rtx *x, void *date ATTRIBUTE_UNUSED)
+{
+  if (GET_CODE (*x) == UNSPEC
+      && XINT (*x, 1) == UNSPEC_PIC_BASE)
+    return 1;
+  return 0;
+}
 
 static bool
 arm_cannot_copy_insn_p (rtx insn)
 {
-  rtx pat = PATTERN (insn);
-
-  if (GET_CODE (pat) == SET)
-    {
-      rtx rhs = SET_SRC (pat);
-
-      if (GET_CODE (rhs) == UNSPEC
-	  && XINT (rhs, 1) == UNSPEC_PIC_BASE)
-	return TRUE;
-
-      if (GET_CODE (rhs) == MEM
-	  && GET_CODE (XEXP (rhs, 0)) == UNSPEC
-	  && XINT (XEXP (rhs, 0), 1) == UNSPEC_PIC_BASE)
-	return TRUE;
-    }
-
-  return FALSE;
+  return for_each_rtx (&PATTERN (insn), arm_note_pic_base, NULL);
 }
 
 enum rtx_code
@@ -8908,21 +9043,105 @@ adjacent_mem_locations (rtx a, rtx b)
   return 0;
 }
 
+/* Return true iff it would be profitable to turn a sequence of NOPS loads
+   or stores (depending on IS_STORE) into a load-multiple or store-multiple
+   instruction.  ADD_OFFSET is nonzero if the base address register needs
+   to be modified with an add instruction before we can use it.  */
+
+static bool
+multiple_operation_profitable_p (bool is_store ATTRIBUTE_UNUSED,
+				 int nops, HOST_WIDE_INT add_offset)
+ {
+  /* For ARM8,9 & StrongARM, 2 ldr instructions are faster than an ldm
+     if the offset isn't small enough.  The reason 2 ldrs are faster
+     is because these ARMs are able to do more than one cache access
+     in a single cycle.  The ARM9 and StrongARM have Harvard caches,
+     whilst the ARM8 has a double bandwidth cache.  This means that
+     these cores can do both an instruction fetch and a data fetch in
+     a single cycle, so the trick of calculating the address into a
+     scratch register (one of the result regs) and then doing a load
+     multiple actually becomes slower (and no smaller in code size).
+     That is the transformation
+
+ 	ldr	rd1, [rbase + offset]
+ 	ldr	rd2, [rbase + offset + 4]
+
+     to
+
+ 	add	rd1, rbase, offset
+ 	ldmia	rd1, {rd1, rd2}
+
+     produces worse code -- '3 cycles + any stalls on rd2' instead of
+     '2 cycles + any stalls on rd2'.  On ARMs with only one cache
+     access per cycle, the first sequence could never complete in less
+     than 6 cycles, whereas the ldm sequence would only take 5 and
+     would make better use of sequential accesses if not hitting the
+     cache.
+
+     We cheat here and test 'arm_ld_sched' which we currently know to
+     only be true for the ARM8, ARM9 and StrongARM.  If this ever
+     changes, then the test below needs to be reworked.  */
+  if (nops == 2 && arm_ld_sched && add_offset != 0)
+    return false;
+
+  return true;
+}
+
+/* Subroutine of load_multiple_sequence and store_multiple_sequence.
+   Given an array of UNSORTED_OFFSETS, of which there are NOPS, compute
+   an array ORDER which describes the sequence to use when accessing the
+   offsets that produces an ascending order.  In this sequence, each
+   offset must be larger by exactly 4 than the previous one.  ORDER[0]
+   must have been filled in with the lowest offset by the caller.
+   If UNSORTED_REGS is nonnull, it is an array of register numbers that
+   we use to verify that ORDER produces an ascending order of registers.
+   Return true if it was possible to construct such an order, false if
+   not.  */
+
+static bool
+compute_offset_order (int nops, HOST_WIDE_INT *unsorted_offsets, int *order,
+		      int *unsorted_regs)
+{
+  int i;
+  for (i = 1; i < nops; i++)
+    {
+      int j;
+
+      order[i] = order[i - 1];
+      for (j = 0; j < nops; j++)
+	if (unsorted_offsets[j] == unsorted_offsets[order[i - 1]] + 4)
+	  {
+	    /* We must find exactly one offset that is higher than the
+	       previous one by 4.  */
+	    if (order[i] != order[i - 1])
+	      return false;
+	    order[i] = j;
+	  }
+      if (order[i] == order[i - 1])
+	return false;
+      /* The register numbers must be ascending.  */
+      if (unsorted_regs != NULL
+	  && unsorted_regs[order[i]] <= unsorted_regs[order[i - 1]])
+	return false;
+    }
+  return true;
+}
+
 int
 load_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
 			HOST_WIDE_INT *load_offset)
 {
-  int unsorted_regs[4];
-  HOST_WIDE_INT unsorted_offsets[4];
-  int order[4];
+  int unsorted_regs[MAX_LDM_STM_OPS];
+  HOST_WIDE_INT unsorted_offsets[MAX_LDM_STM_OPS];
+  int order[MAX_LDM_STM_OPS];
   int base_reg = -1;
-  int i;
+  int i, ldm_case;
 
-  /* Can only handle 2, 3, or 4 insns at present,
-     though could be easily extended if required.  */
-  gcc_assert (nops >= 2 && nops <= 4);
+  /* Can only handle up to MAX_LDM_STM_OPS insns at present, though could be
+     easily extended if required.  */
+  gcc_assert (nops >= 2 && nops <= MAX_LDM_STM_OPS);
 
-  memset (order, 0, 4 * sizeof (int));
+  memset (order, 0, MAX_LDM_STM_OPS * sizeof (int));
 
   /* Loop over the operands and check that the memory references are
      suitable (i.e. immediate offsets from the same base register).  At
@@ -8958,25 +9177,16 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
 		  == CONST_INT)))
 	{
 	  if (i == 0)
-	    {
-	      base_reg = REGNO (reg);
-	      unsorted_regs[0] = (GET_CODE (operands[i]) == REG
-				  ? REGNO (operands[i])
-				  : REGNO (SUBREG_REG (operands[i])));
-	      order[0] = 0;
-	    }
+	    base_reg = REGNO (reg);
 	  else
 	    {
 	      if (base_reg != (int) REGNO (reg))
 		/* Not addressed from the same base register.  */
 		return 0;
-
-	      unsorted_regs[i] = (GET_CODE (operands[i]) == REG
-				  ? REGNO (operands[i])
-				  : REGNO (SUBREG_REG (operands[i])));
-	      if (unsorted_regs[i] < unsorted_regs[order[0]])
-		order[0] = i;
 	    }
+	  unsorted_regs[i] = (GET_CODE (operands[i]) == REG
+			      ? REGNO (operands[i])
+			      : REGNO (SUBREG_REG (operands[i])));
 
 	  /* If it isn't an integer register, or if it overwrites the
 	     base register but isn't the last insn in the list, then
@@ -8986,6 +9196,8 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
 	    return 0;
 
 	  unsorted_offsets[i] = INTVAL (offset);
+	  if (i == 0 || unsorted_offsets[i] < unsorted_offsets[order[0]])
+	    order[0] = i;
 	}
       else
 	/* Not a suitable memory address.  */
@@ -8994,30 +9206,11 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
 
   /* All the useful information has now been extracted from the
      operands into unsorted_regs and unsorted_offsets; additionally,
-     order[0] has been set to the lowest numbered register in the
-     list.  Sort the registers into order, and check that the memory
-     offsets are ascending and adjacent.  */
-
-  for (i = 1; i < nops; i++)
-    {
-      int j;
-
-      order[i] = order[i - 1];
-      for (j = 0; j < nops; j++)
-	if (unsorted_regs[j] > unsorted_regs[order[i - 1]]
-	    && (order[i] == order[i - 1]
-		|| unsorted_regs[j] < unsorted_regs[order[i]]))
-	  order[i] = j;
-
-      /* Have we found a suitable register? if not, one must be used more
-	 than once.  */
-      if (order[i] == order[i - 1])
-	return 0;
-
-      /* Is the memory address adjacent and ascending? */
-      if (unsorted_offsets[order[i]] != unsorted_offsets[order[i - 1]] + 4)
-	return 0;
-    }
+     order[0] has been set to the lowest offset in the list.  Sort
+     the offsets into order, verifying that they are adjacent, and
+     check that the register numbers are ascending.  */
+  if (!compute_offset_order (nops, unsorted_offsets, order, unsorted_regs))
+    return 0;
 
   if (base)
     {
@@ -9030,59 +9223,31 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
     }
 
   if (unsorted_offsets[order[0]] == 0)
-    return 1; /* ldmia */
-
-  if (TARGET_ARM && unsorted_offsets[order[0]] == 4)
-    return 2; /* ldmib */
-
-  if (TARGET_ARM && unsorted_offsets[order[nops - 1]] == 0)
-    return 3; /* ldmda */
-
-  if (unsorted_offsets[order[nops - 1]] == -4)
-    return 4; /* ldmdb */
-
-  /* For ARM8,9 & StrongARM, 2 ldr instructions are faster than an ldm
-     if the offset isn't small enough.  The reason 2 ldrs are faster
-     is because these ARMs are able to do more than one cache access
-     in a single cycle.  The ARM9 and StrongARM have Harvard caches,
-     whilst the ARM8 has a double bandwidth cache.  This means that
-     these cores can do both an instruction fetch and a data fetch in
-     a single cycle, so the trick of calculating the address into a
-     scratch register (one of the result regs) and then doing a load
-     multiple actually becomes slower (and no smaller in code size).
-     That is the transformation
-
- 	ldr	rd1, [rbase + offset]
- 	ldr	rd2, [rbase + offset + 4]
-
-     to
-
- 	add	rd1, rbase, offset
- 	ldmia	rd1, {rd1, rd2}
-
-     produces worse code -- '3 cycles + any stalls on rd2' instead of
-     '2 cycles + any stalls on rd2'.  On ARMs with only one cache
-     access per cycle, the first sequence could never complete in less
-     than 6 cycles, whereas the ldm sequence would only take 5 and
-     would make better use of sequential accesses if not hitting the
-     cache.
-
-     We cheat here and test 'arm_ld_sched' which we currently know to
-     only be true for the ARM8, ARM9 and StrongARM.  If this ever
-     changes, then the test below needs to be reworked.  */
-  if (nops == 2 && arm_ld_sched)
+    ldm_case = 1; /* ldmia */
+  else if (TARGET_ARM && unsorted_offsets[order[0]] == 4)
+    ldm_case = 2; /* ldmib */
+  else if (TARGET_ARM && unsorted_offsets[order[nops - 1]] == 0)
+    ldm_case = 3; /* ldmda */
+  else if (unsorted_offsets[order[nops - 1]] == -4)
+    ldm_case = 4; /* ldmdb */
+  else if (const_ok_for_arm (unsorted_offsets[order[0]])
+	   || const_ok_for_arm (-unsorted_offsets[order[0]]))
+    ldm_case = 5;
+  else
     return 0;
 
-  /* Can't do it without setting up the offset, only do this if it takes
-     no more than one insn.  */
-  return (const_ok_for_arm (unsorted_offsets[order[0]])
-	  || const_ok_for_arm (-unsorted_offsets[order[0]])) ? 5 : 0;
+  if (!multiple_operation_profitable_p (false, nops,
+					ldm_case == 5
+					? unsorted_offsets[order[0]] : 0))
+    return 0;
+
+  return ldm_case;
 }
 
 const char *
 emit_ldm_seq (rtx *operands, int nops)
 {
-  int regs[4];
+  int regs[MAX_LDM_STM_OPS];
   int base_reg;
   HOST_WIDE_INT offset;
   char buf[100];
@@ -9141,17 +9306,17 @@ int
 store_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
 			 HOST_WIDE_INT * load_offset)
 {
-  int unsorted_regs[4];
-  HOST_WIDE_INT unsorted_offsets[4];
-  int order[4];
+  int unsorted_regs[MAX_LDM_STM_OPS];
+  HOST_WIDE_INT unsorted_offsets[MAX_LDM_STM_OPS];
+  int order[MAX_LDM_STM_OPS];
   int base_reg = -1;
-  int i;
+  int i, stm_case;
 
-  /* Can only handle 2, 3, or 4 insns at present, though could be easily
-     extended if required.  */
-  gcc_assert (nops >= 2 && nops <= 4);
+  /* Can only handle up to MAX_LDM_STM_OPS insns at present, though could be
+     easily extended if required.  */
+  gcc_assert (nops >= 2 && nops <= MAX_LDM_STM_OPS);
 
-  memset (order, 0, 4 * sizeof (int));
+  memset (order, 0, MAX_LDM_STM_OPS * sizeof (int));
 
   /* Loop over the operands and check that the memory references are
      suitable (i.e. immediate offsets from the same base register).  At
@@ -9186,32 +9351,22 @@ store_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
 	      && (GET_CODE (offset = XEXP (XEXP (operands[nops + i], 0), 1))
 		  == CONST_INT)))
 	{
+	  unsorted_regs[i] = (GET_CODE (operands[i]) == REG
+			      ? REGNO (operands[i])
+			      : REGNO (SUBREG_REG (operands[i])));
 	  if (i == 0)
-	    {
-	      base_reg = REGNO (reg);
-	      unsorted_regs[0] = (GET_CODE (operands[i]) == REG
-				  ? REGNO (operands[i])
-				  : REGNO (SUBREG_REG (operands[i])));
-	      order[0] = 0;
-	    }
-	  else
-	    {
-	      if (base_reg != (int) REGNO (reg))
-		/* Not addressed from the same base register.  */
-		return 0;
-
-	      unsorted_regs[i] = (GET_CODE (operands[i]) == REG
-				  ? REGNO (operands[i])
-				  : REGNO (SUBREG_REG (operands[i])));
-	      if (unsorted_regs[i] < unsorted_regs[order[0]])
-		order[0] = i;
-	    }
+	    base_reg = REGNO (reg);
+	  else if (base_reg != (int) REGNO (reg))
+	    /* Not addressed from the same base register.  */
+	    return 0;
 
 	  /* If it isn't an integer register, then we can't do this.  */
 	  if (unsorted_regs[i] < 0 || unsorted_regs[i] > 14)
 	    return 0;
 
 	  unsorted_offsets[i] = INTVAL (offset);
+	  if (i == 0 || unsorted_offsets[i] < unsorted_offsets[order[0]])
+	    order[0] = i;
 	}
       else
 	/* Not a suitable memory address.  */
@@ -9220,30 +9375,11 @@ store_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
 
   /* All the useful information has now been extracted from the
      operands into unsorted_regs and unsorted_offsets; additionally,
-     order[0] has been set to the lowest numbered register in the
-     list.  Sort the registers into order, and check that the memory
-     offsets are ascending and adjacent.  */
-
-  for (i = 1; i < nops; i++)
-    {
-      int j;
-
-      order[i] = order[i - 1];
-      for (j = 0; j < nops; j++)
-	if (unsorted_regs[j] > unsorted_regs[order[i - 1]]
-	    && (order[i] == order[i - 1]
-		|| unsorted_regs[j] < unsorted_regs[order[i]]))
-	  order[i] = j;
-
-      /* Have we found a suitable register? if not, one must be used more
-	 than once.  */
-      if (order[i] == order[i - 1])
-	return 0;
-
-      /* Is the memory address adjacent and ascending? */
-      if (unsorted_offsets[order[i]] != unsorted_offsets[order[i - 1]] + 4)
-	return 0;
-    }
+     order[0] has been set to the lowest offset in the list.  Sort
+     the offsets into order, verifying that they are adjacent, and
+     check that the register numbers are ascending.  */
+  if (!compute_offset_order (nops, unsorted_offsets, order, unsorted_regs))
+    return 0;
 
   if (base)
     {
@@ -9256,24 +9392,26 @@ store_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
     }
 
   if (unsorted_offsets[order[0]] == 0)
-    return 1; /* stmia */
+    stm_case = 1; /* stmia */
+  else if (TARGET_ARM && unsorted_offsets[order[0]] == 4)
+    stm_case = 2; /* stmib */
+  else if (TARGET_ARM && unsorted_offsets[order[nops - 1]] == 0)
+    stm_case = 3; /* stmda */
+  else if (unsorted_offsets[order[nops - 1]] == -4)
+    stm_case = 4; /* stmdb */
+  else
+    return 0;
 
-  if (unsorted_offsets[order[0]] == 4)
-    return 2; /* stmib */
+  if (!multiple_operation_profitable_p (false, nops, 0))
+    return 0;
 
-  if (unsorted_offsets[order[nops - 1]] == 0)
-    return 3; /* stmda */
-
-  if (unsorted_offsets[order[nops - 1]] == -4)
-    return 4; /* stmdb */
-
-  return 0;
+  return stm_case;
 }
 
 const char *
 emit_stm_seq (rtx *operands, int nops)
 {
-  int regs[4];
+  int regs[MAX_LDM_STM_OPS];
   int base_reg;
   HOST_WIDE_INT offset;
   char buf[100];
@@ -11304,6 +11442,60 @@ note_invalid_constants (rtx insn, HOST_WIDE_INT address, int do_pushes)
   return result;
 }
 
+/* Convert instructions to their cc-clobbering variant if possible, since
+   that allows us to use smaller encodings.  */
+
+static void
+thumb2_reorg (void)
+{
+  basic_block bb;
+  regset_head live;
+
+  INIT_REG_SET (&live);
+
+  /* We are freeing block_for_insn in the toplev to keep compatibility
+     with old MDEP_REORGS that are not CFG based.  Recompute it now.  */
+  compute_bb_for_insn ();
+  df_analyze ();
+
+  FOR_EACH_BB (bb)
+    {
+      rtx insn;
+      COPY_REG_SET (&live, DF_LR_OUT (bb));
+      df_simulate_initialize_backwards (bb, &live);
+      FOR_BB_INSNS_REVERSE (bb, insn)
+	{
+	  if (NONJUMP_INSN_P (insn)
+	      && !REGNO_REG_SET_P (&live, CC_REGNUM))
+	    {
+	      rtx pat = PATTERN (insn);
+	      if (GET_CODE (pat) == SET
+		  && low_register_operand (XEXP (pat, 0), SImode)
+		  && thumb_16bit_operator (XEXP (pat, 1), SImode)
+		  && low_register_operand (XEXP (XEXP (pat, 1), 0), SImode)
+		  && low_register_operand (XEXP (XEXP (pat, 1), 1), SImode))
+		{
+		  rtx dst = XEXP (pat, 0);
+		  rtx src = XEXP (pat, 1);
+		  rtx op0 = XEXP (src, 0);
+		  if (rtx_equal_p (dst, op0)
+		      || GET_CODE (src) == PLUS || GET_CODE (src) == MINUS)
+		    {
+		      rtx ccreg = gen_rtx_REG (CCmode, CC_REGNUM);
+		      rtx clobber = gen_rtx_CLOBBER (VOIDmode, ccreg);
+		      rtvec vec = gen_rtvec (2, pat, clobber);
+		      PATTERN (insn) = gen_rtx_PARALLEL (VOIDmode, vec);
+		      INSN_CODE (insn) = -1;
+		    }
+		}
+	    }
+	  if (NONDEBUG_INSN_P (insn))
+	    df_simulate_one_insn_backwards (bb, insn, &live);
+	}
+    }
+  CLEAR_REG_SET (&live);
+}
+
 /* Gcc puts the pool in the wrong place for ARM, since we can only
    load addresses a limited distance around the pc.  We do some
    special munging to move the constant pool values to the correct
@@ -11315,6 +11507,9 @@ arm_reorg (void)
   HOST_WIDE_INT address = 0;
   Mfix * fix;
 
+  if (TARGET_THUMB2)
+    thumb2_reorg ();
+  
   minipool_fix_head = minipool_fix_tail = NULL;
 
   /* The first insn must always be a note, or the code below won't
@@ -11655,9 +11850,14 @@ vfp_emit_fstmd (int base_reg, int count)
 
   XVECEXP (par, 0, 0)
     = gen_rtx_SET (VOIDmode,
-		   gen_frame_mem (BLKmode,
-				  gen_rtx_PRE_DEC (BLKmode,
-						   stack_pointer_rtx)),
+		   gen_frame_mem
+		   (BLKmode,
+		    gen_rtx_PRE_MODIFY (Pmode,
+					stack_pointer_rtx,
+					plus_constant
+					(stack_pointer_rtx,
+					 - (count * 8)))
+		    ),
 		   gen_rtx_UNSPEC (BLKmode,
 				   gen_rtvec (1, reg),
 				   UNSPEC_PUSH_MULT));
@@ -13724,24 +13924,29 @@ arm_output_epilogue (rtx sibling)
 
       if (TARGET_HARD_FLOAT && TARGET_VFP)
 	{
-	  start_reg = FIRST_VFP_REGNUM;
-	  for (reg = FIRST_VFP_REGNUM; reg < LAST_VFP_REGNUM; reg += 2)
+	  int end_reg = LAST_VFP_REGNUM + 1;
+
+	  /* Scan the registers in reverse order.  We need to match
+	     any groupings made in the prologue and generate matching
+	     pop operations.  */
+	  for (reg = LAST_VFP_REGNUM - 1; reg >= FIRST_VFP_REGNUM; reg -= 2)
 	    {
 	      if ((!df_regs_ever_live_p (reg) || call_used_regs[reg])
-		  && (!df_regs_ever_live_p (reg + 1) || call_used_regs[reg + 1]))
+		  && (!df_regs_ever_live_p (reg + 1)
+		      || call_used_regs[reg + 1]))
 		{
-		  if (start_reg != reg)
+		  if (end_reg > reg + 2)
 		    vfp_output_fldmd (f, SP_REGNUM,
-				      (start_reg - FIRST_VFP_REGNUM) / 2,
-				      (reg - start_reg) / 2);
-		  start_reg = reg + 2;
+				      (reg + 2 - FIRST_VFP_REGNUM) / 2,
+				      (end_reg - (reg + 2)) / 2);
+		  end_reg = reg;
 		}
 	    }
-	  if (start_reg != reg)
-	    vfp_output_fldmd (f, SP_REGNUM,
-			      (start_reg - FIRST_VFP_REGNUM) / 2,
-			      (reg - start_reg) / 2);
+	  if (end_reg > reg + 2)
+	    vfp_output_fldmd (f, SP_REGNUM, 0,
+			      (end_reg - (reg + 2)) / 2);
 	}
+
       if (TARGET_IWMMXT)
 	for (reg = FIRST_IWMMXT_REGNUM; reg <= LAST_IWMMXT_REGNUM; reg++)
 	  if (df_regs_ever_live_p (reg) && !call_used_regs[reg])
@@ -13910,16 +14115,17 @@ emit_multi_reg_push (unsigned long mask)
 
   /* For the body of the insn we are going to generate an UNSPEC in
      parallel with several USEs.  This allows the insn to be recognized
-     by the push_multi pattern in the arm.md file.  The insn looks
-     something like this:
+     by the push_multi pattern in the arm.md file.
+
+     The body of the insn looks something like this:
 
        (parallel [
-           (set (mem:BLK (pre_dec:BLK (reg:SI sp)))
+           (set (mem:BLK (pre_modify:SI (reg:SI sp)
+	                                (const_int:SI <num>)))
 	        (unspec:BLK [(reg:SI r4)] UNSPEC_PUSH_MULT))
-           (use (reg:SI 11 fp))
-           (use (reg:SI 12 ip))
-           (use (reg:SI 14 lr))
-           (use (reg:SI 15 pc))
+           (use (reg:SI XX))
+           (use (reg:SI YY))
+	   ...
         ])
 
      For the frame note however, we try to be more explicit and actually
@@ -13932,13 +14138,20 @@ emit_multi_reg_push (unsigned long mask)
       (sequence [
            (set (reg:SI sp) (plus:SI (reg:SI sp) (const_int -20)))
            (set (mem:SI (reg:SI sp)) (reg:SI r4))
-           (set (mem:SI (plus:SI (reg:SI sp) (const_int 4))) (reg:SI fp))
-           (set (mem:SI (plus:SI (reg:SI sp) (const_int 8))) (reg:SI ip))
-           (set (mem:SI (plus:SI (reg:SI sp) (const_int 12))) (reg:SI lr))
+           (set (mem:SI (plus:SI (reg:SI sp) (const_int 4))) (reg:SI XX))
+           (set (mem:SI (plus:SI (reg:SI sp) (const_int 8))) (reg:SI YY))
+	   ...
         ])
 
-      This sequence is used both by the code to support stack unwinding for
-      exceptions handlers and the code to generate dwarf2 frame debugging.  */
+     FIXME:: In an ideal world the PRE_MODIFY would not exist and
+     instead we'd have a parallel expression detailing all
+     the stores to the various memory addresses so that debug
+     information is more up-to-date. Remember however while writing
+     this to take care of the constraints with the push instruction.
+
+     Note also that this has to be taken care of for the VFP registers.
+
+     For more see PR43399.  */
 
   par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (num_regs));
   dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (num_dwarf_regs + 1));
@@ -13952,9 +14165,14 @@ emit_multi_reg_push (unsigned long mask)
 
 	  XVECEXP (par, 0, 0)
 	    = gen_rtx_SET (VOIDmode,
-			   gen_frame_mem (BLKmode,
-					  gen_rtx_PRE_DEC (BLKmode,
-							   stack_pointer_rtx)),
+			   gen_frame_mem
+			   (BLKmode,
+			    gen_rtx_PRE_MODIFY (Pmode,
+						stack_pointer_rtx,
+						plus_constant
+						(stack_pointer_rtx,
+						 -4 * num_regs))
+			    ),
 			   gen_rtx_UNSPEC (BLKmode,
 					   gen_rtvec (1, reg),
 					   UNSPEC_PUSH_MULT));
@@ -13985,9 +14203,10 @@ emit_multi_reg_push (unsigned long mask)
 	    {
 	      tmp
 		= gen_rtx_SET (VOIDmode,
-			       gen_frame_mem (SImode,
-					      plus_constant (stack_pointer_rtx,
-							     4 * j)),
+			       gen_frame_mem
+			       (SImode,
+				plus_constant (stack_pointer_rtx,
+					       4 * j)),
 			       reg);
 	      RTX_FRAME_RELATED_P (tmp) = 1;
 	      XVECEXP (dwarf, 0, dwarf_par_index++) = tmp;
@@ -14039,9 +14258,14 @@ emit_sfm (int base_reg, int count)
 
   XVECEXP (par, 0, 0)
     = gen_rtx_SET (VOIDmode,
-		   gen_frame_mem (BLKmode,
-				  gen_rtx_PRE_DEC (BLKmode,
-						   stack_pointer_rtx)),
+		   gen_frame_mem
+		   (BLKmode,
+		    gen_rtx_PRE_MODIFY (Pmode,
+					stack_pointer_rtx,
+					plus_constant
+					(stack_pointer_rtx,
+					 -12 * count))
+		    ),
 		   gen_rtx_UNSPEC (BLKmode,
 				   gen_rtvec (1, reg),
 				   UNSPEC_PUSH_MULT));
@@ -14400,7 +14624,7 @@ arm_save_coproc_regs(void)
   for (reg = LAST_IWMMXT_REGNUM; reg >= FIRST_IWMMXT_REGNUM; reg--)
     if (df_regs_ever_live_p (reg) && ! call_used_regs[reg])
       {
-	insn = gen_rtx_PRE_DEC (V2SImode, stack_pointer_rtx);
+	insn = gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx);
 	insn = gen_rtx_MEM (V2SImode, insn);
 	insn = emit_set_insn (insn, gen_rtx_REG (V2SImode, reg));
 	RTX_FRAME_RELATED_P (insn) = 1;
@@ -14414,7 +14638,7 @@ arm_save_coproc_regs(void)
       for (reg = LAST_FPA_REGNUM; reg >= FIRST_FPA_REGNUM; reg--)
 	if (df_regs_ever_live_p (reg) && !call_used_regs[reg])
 	  {
-	    insn = gen_rtx_PRE_DEC (XFmode, stack_pointer_rtx);
+	    insn = gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx);
 	    insn = gen_rtx_MEM (XFmode, insn);
 	    insn = emit_set_insn (insn, gen_rtx_REG (XFmode, reg));
 	    RTX_FRAME_RELATED_P (insn) = 1;
@@ -14809,7 +15033,7 @@ arm_expand_prologue (void)
      using the EABI unwinder, to prevent faulting instructions from being
      swapped with a stack adjustment.  */
   if (crtl->profile || !TARGET_SCHED_PROLOG
-      || (ARM_EABI_UNWIND_TABLES && flag_non_call_exceptions))
+      || (ARM_EABI_UNWIND_TABLES && cfun->can_throw_non_call_exceptions))
     emit_insn (gen_blockage ());
 
   /* If the link register is being kept alive, with the return address in it,
@@ -14868,7 +15092,7 @@ arm_print_condition (FILE *stream)
    before output.
    If CODE is 'B' then output a bitwise inverted value of X (a const int).
    If X is a REG and CODE is `M', output a ldm/stm style multi-reg.  */
-void
+static void
 arm_print_operand (FILE *stream, rtx x, int code)
 {
   switch (code)
@@ -14937,7 +15161,7 @@ arm_print_operand (FILE *stream, rtx x, int code)
       {
 	REAL_VALUE_TYPE r;
 	REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-	r = REAL_VALUE_NEGATE (r);
+	r = real_value_negate (&r);
 	fprintf (stream, "%s", fp_const_from_val (&r));
       }
       return;
@@ -15485,6 +15709,140 @@ arm_print_operand (FILE *stream, rtx x, int code)
 	  break;
 	}
     }
+}
+
+/* Target hook for printing a memory address.  */
+static void
+arm_print_operand_address (FILE *stream, rtx x)
+{
+  if (TARGET_32BIT)
+    {
+      int is_minus = GET_CODE (x) == MINUS;
+
+      if (GET_CODE (x) == REG)
+	asm_fprintf (stream, "[%r, #0]", REGNO (x));
+      else if (GET_CODE (x) == PLUS || is_minus)
+	{
+	  rtx base = XEXP (x, 0);
+	  rtx index = XEXP (x, 1);
+	  HOST_WIDE_INT offset = 0;
+	  if (GET_CODE (base) != REG
+	      || (GET_CODE (index) == REG && REGNO (index) == SP_REGNUM))
+	    {
+	      /* Ensure that BASE is a register.  */
+	      /* (one of them must be).  */
+	      /* Also ensure the SP is not used as in index register.  */
+	      rtx temp = base;
+	      base = index;
+	      index = temp;
+	    }
+	  switch (GET_CODE (index))
+	    {
+	    case CONST_INT:
+	      offset = INTVAL (index);
+	      if (is_minus)
+		offset = -offset;
+	      asm_fprintf (stream, "[%r, #%wd]",
+			   REGNO (base), offset);
+	      break;
+
+	    case REG:
+	      asm_fprintf (stream, "[%r, %s%r]",
+			   REGNO (base), is_minus ? "-" : "",
+			   REGNO (index));
+	      break;
+
+	    case MULT:
+	    case ASHIFTRT:
+	    case LSHIFTRT:
+	    case ASHIFT:
+	    case ROTATERT:
+	      {
+		asm_fprintf (stream, "[%r, %s%r",
+			     REGNO (base), is_minus ? "-" : "",
+			     REGNO (XEXP (index, 0)));
+		arm_print_operand (stream, index, 'S');
+		fputs ("]", stream);
+		break;
+	      }
+
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+      else if (GET_CODE (x) == PRE_INC || GET_CODE (x) == POST_INC
+	       || GET_CODE (x) == PRE_DEC || GET_CODE (x) == POST_DEC)
+	{
+	  extern enum machine_mode output_memory_reference_mode;
+
+	  gcc_assert (GET_CODE (XEXP (x, 0)) == REG);
+
+	  if (GET_CODE (x) == PRE_DEC || GET_CODE (x) == PRE_INC)
+	    asm_fprintf (stream, "[%r, #%s%d]!",
+			 REGNO (XEXP (x, 0)),
+			 GET_CODE (x) == PRE_DEC ? "-" : "",
+			 GET_MODE_SIZE (output_memory_reference_mode));
+	  else
+	    asm_fprintf (stream, "[%r], #%s%d",
+			 REGNO (XEXP (x, 0)),
+			 GET_CODE (x) == POST_DEC ? "-" : "",
+			 GET_MODE_SIZE (output_memory_reference_mode));
+	}
+      else if (GET_CODE (x) == PRE_MODIFY)
+	{
+	  asm_fprintf (stream, "[%r, ", REGNO (XEXP (x, 0)));
+	  if (GET_CODE (XEXP (XEXP (x, 1), 1)) == CONST_INT)
+	    asm_fprintf (stream, "#%wd]!",
+			 INTVAL (XEXP (XEXP (x, 1), 1)));
+	  else
+	    asm_fprintf (stream, "%r]!",
+			 REGNO (XEXP (XEXP (x, 1), 1)));
+	}
+      else if (GET_CODE (x) == POST_MODIFY)
+	{
+	  asm_fprintf (stream, "[%r], ", REGNO (XEXP (x, 0)));
+	  if (GET_CODE (XEXP (XEXP (x, 1), 1)) == CONST_INT)
+	    asm_fprintf (stream, "#%wd",
+			 INTVAL (XEXP (XEXP (x, 1), 1)));
+	  else
+	    asm_fprintf (stream, "%r",
+			 REGNO (XEXP (XEXP (x, 1), 1)));
+	}
+      else output_addr_const (stream, x);
+    }
+  else
+    {
+      if (GET_CODE (x) == REG)
+	asm_fprintf (stream, "[%r]", REGNO (x));
+      else if (GET_CODE (x) == POST_INC)
+	asm_fprintf (stream, "%r!", REGNO (XEXP (x, 0)));
+      else if (GET_CODE (x) == PLUS)
+	{
+	  gcc_assert (GET_CODE (XEXP (x, 0)) == REG);
+	  if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+	    asm_fprintf (stream, "[%r, #%wd]",
+			 REGNO (XEXP (x, 0)),
+			 INTVAL (XEXP (x, 1)));
+	  else
+	    asm_fprintf (stream, "[%r, %r]",
+			 REGNO (XEXP (x, 0)),
+			 REGNO (XEXP (x, 1)));
+	}
+      else
+	output_addr_const (stream, x);
+    }
+}
+
+/* Target hook for indicating whether a punctuation character for
+   TARGET_PRINT_OPERAND is valid.  */
+static bool
+arm_print_operand_punct_valid_p (unsigned char code)
+{
+  return (code == '@' || code == '|' || code == '.'
+	  || code == '(' || code == ')' || code == '#'
+	  || (TARGET_32BIT && (code == '?'))
+	  || (TARGET_THUMB2 && (code == '!'))
+	  || (TARGET_THUMB && (code == '_')));
 }
 
 /* Target hook for assembling integer objects.  The ARM version needs to
@@ -19117,7 +19475,7 @@ static struct machine_function *
 arm_init_machine_status (void)
 {
   struct machine_function *machine;
-  machine = (machine_function *) ggc_alloc_cleared (sizeof (machine_function));
+  machine = ggc_alloc_cleared_machine_function ();
 
 #if ARM_FT_UNKNOWN != 0
   machine->func_type = ARM_FT_UNKNOWN;
@@ -19207,6 +19565,51 @@ thumb_compute_initial_elimination_offset (unsigned int from, unsigned int to)
     }
 }
 
+/* Given the stack offsets and register mask in OFFSETS, decide
+   how many additional registers to push instead of subtracting
+   a constant from SP.  */
+static int
+thumb1_extra_regs_pushed (arm_stack_offsets *offsets)
+{
+  HOST_WIDE_INT amount = offsets->outgoing_args - offsets->saved_regs;
+  unsigned long live_regs_mask = offsets->saved_regs_mask;
+  /* Extract a mask of the ones we can give to the Thumb's push instruction.  */
+  unsigned long l_mask = live_regs_mask & 0x40ff;
+  /* Then count how many other high registers will need to be pushed.  */
+  unsigned long high_regs_pushed = bit_count (live_regs_mask & 0x0f00);
+  int n_free;
+
+  /* If the stack frame size is 512 exactly, we can save one load
+     instruction, which should make this a win even when optimizing
+     for speed.  */
+  if (!optimize_size && amount != 512)
+    return 0;
+
+  /* Can't do this if there are high registers to push, or if we
+     are not going to do a push at all.  */
+  if (high_regs_pushed != 0 || l_mask == 0)
+    return 0;
+
+  /* Don't do this if thumb1_expand_prologue wants to emit instructions
+     between the push and the stack frame allocation.  */
+  if ((flag_pic && arm_pic_register != INVALID_REGNUM)
+      || (!frame_pointer_needed && CALLER_INTERWORKING_SLOT_SIZE > 0))
+    return 0;
+
+  for (n_free = 0; n_free < 8 && !(live_regs_mask & 1); live_regs_mask >>= 1)
+    n_free++;
+
+  if (n_free == 0)
+    return 0;
+  gcc_assert (amount / 4 * 4 == amount);
+
+  if (amount >= 512 && (amount - n_free * 4) < 512)
+    return (amount - 508) / 4;
+  if (amount <= n_free * 4)
+    return amount / 4;
+  return 0;
+}
+
 /* Generate the rest of a function's prologue.  */
 void
 thumb1_expand_prologue (void)
@@ -19243,6 +19646,7 @@ thumb1_expand_prologue (void)
 		    stack_pointer_rtx);
 
   amount = offsets->outgoing_args - offsets->saved_regs;
+  amount -= 4 * thumb1_extra_regs_pushed (offsets);
   if (amount)
     {
       if (amount < 512)
@@ -19299,7 +19703,7 @@ thumb1_expand_prologue (void)
      using the EABI unwinder, to prevent faulting instructions from being
      swapped with a stack adjustment.  */
   if (crtl->profile || !TARGET_SCHED_PROLOG
-      || (ARM_EABI_UNWIND_TABLES && flag_non_call_exceptions))
+      || (ARM_EABI_UNWIND_TABLES && cfun->can_throw_non_call_exceptions))
     emit_insn (gen_blockage ());
 
   cfun->machine->lr_save_eliminated = !thumb_force_lr_save ();
@@ -19547,7 +19951,11 @@ thumb1_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
      register.  */
   else if ((l_mask & 0xff) != 0
 	   || (high_regs_pushed == 0 && l_mask))
-    thumb_pushpop (f, l_mask, 1, &cfa_offset, l_mask);
+    {
+      unsigned long mask = l_mask;
+      mask |= (1 << thumb1_extra_regs_pushed (offsets)) - 1;
+      thumb_pushpop (f, mask, 1, &cfa_offset, mask);
+    }
 
   if (high_regs_pushed)
     {
@@ -19921,13 +20329,10 @@ arm_file_start (void)
   if (TARGET_BPABI)
     {
       const char *fpu_name;
-      if (arm_select[0].string)
-	asm_fprintf (asm_out_file, "\t.cpu %s\n", arm_select[0].string);
-      else if (arm_select[1].string)
-	asm_fprintf (asm_out_file, "\t.arch %s\n", arm_select[1].string);
+      if (arm_selected_arch)
+	asm_fprintf (asm_out_file, "\t.arch %s\n", arm_selected_arch->name);
       else
-	asm_fprintf (asm_out_file, "\t.cpu %s\n",
-		     all_cores[arm_default_cpu].name);
+	asm_fprintf (asm_out_file, "\t.cpu %s\n", arm_selected_cpu->name);
 
       if (TARGET_SOFT_FLOAT)
 	{
@@ -20700,6 +21105,13 @@ arm_vector_mode_supported_p (enum machine_mode mode)
   return false;
 }
 
+/* Implements target hook small_register_classes_for_mode_p.  */
+bool
+arm_small_register_classes_for_mode_p (enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return TARGET_THUMB1;
+}
+
 /* Implement TARGET_SHIFT_TRUNCATION_MASK.  SImode shifts use normal
    ARM insns and therefore guarantee that the shift count is modulo 256.
    DImode shifts (those implemented by lib1funcs.asm or by optabs.c)
@@ -20942,7 +21354,7 @@ arm_unwind_emit_set (FILE * asm_out_file, rtx p)
 	      offset = INTVAL (XEXP (e1, 1));
 	      asm_fprintf (asm_out_file, "\t.setfp %r, %r, #%wd\n",
 			   HARD_FRAME_POINTER_REGNUM, reg,
-			   INTVAL (XEXP (e1, 1)));
+			   offset);
 	    }
 	  else if (GET_CODE (e1) == REG)
 	    {
@@ -21178,6 +21590,16 @@ arm_output_addr_const_extra (FILE *fp, rtx x)
       fputc (')', fp);
       return TRUE;
     }
+  else if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_SYMBOL_OFFSET)
+    {
+      output_addr_const (fp, XVECEXP (x, 0, 0));
+      if (GOT_PCREL)
+        fputs ("+.", fp);
+      fputs ("-(", fp);
+      output_addr_const (fp, XVECEXP (x, 0, 1));
+      fputc (')', fp);
+      return TRUE;
+    }
   else if (GET_CODE (x) == CONST_VECTOR)
     return arm_emit_vector_const (fp, x);
 
@@ -21222,11 +21644,8 @@ const char *
 thumb1_output_casesi (rtx *operands)
 {
   rtx diff_vec = PATTERN (next_real_insn (operands[0]));
-  addr_diff_vec_flags flags;
 
   gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
-
-  flags = ADDR_DIFF_VEC_FLAGS (diff_vec);
 
   switch (GET_MODE(diff_vec))
     {

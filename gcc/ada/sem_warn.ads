@@ -170,7 +170,8 @@ package Sem_Warn is
 
    procedure Check_Infinite_Loop_Warning (Loop_Statement : Node_Id);
    --  N is the node for a loop statement. This procedure checks if a warning
-   --  should be given for a possible infinite loop, and if so issues it.
+   --  for a possible infinite loop should be given for a suspicious WHILE or
+   --  EXIT WHEN condition.
 
    procedure Check_Low_Bound_Tested (Expr : Node_Id);
    --  Expr is the node for a comparison operation. This procedure checks if

@@ -2274,9 +2274,15 @@ package body VMS_Conv is
          New_Line;
 
          while Commands /= null loop
-            Put (Commands.Usage.all);
-            Set_Col (53);
-            Put_Line (Commands.Unix_String.all);
+
+            --  No usage for GNAT SYNC
+
+            if Commands.Command /= Sync then
+               Put (Commands.Usage.all);
+               Set_Col (53);
+               Put_Line (Commands.Unix_String.all);
+            end if;
+
             Commands := Commands.Next;
          end loop;
 

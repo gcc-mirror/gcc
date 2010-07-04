@@ -122,8 +122,8 @@ struct B1 : A
 {
 };
 
-struct C : A, A1
-{ // { dg-error "" } looser throw - A::~A()
+struct C : A, A1		// { dg-error "" } looser throw - A::~A()
+{
   virtual void foo() throw(int);    // { dg-error "" } looser throw - A::foo
   virtual void bar() throw(int);    // { dg-error "" } looser throw - A1::bar
 };

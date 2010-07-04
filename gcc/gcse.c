@@ -1,7 +1,7 @@
 /* Global common subexpression elimination/Partial redundancy elimination
    and global constant/copy propagation for GNU compiler.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -151,7 +151,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "flags.h"
-#include "real.h"
 #include "insn-config.h"
 #include "recog.h"
 #include "basic-block.h"
@@ -625,7 +624,7 @@ static void
 alloc_gcse_mem (void)
 {
   /* Allocate vars to track sets of regs.  */
-  reg_set_bitmap = BITMAP_ALLOC (NULL);
+  reg_set_bitmap = ALLOC_REG_SET (NULL);
 
   /* Allocate array to keep a list of insns which modify memory in each
      basic block.  */
@@ -2724,7 +2723,7 @@ local_cprop_pass (void)
   struct reg_use *reg_used;
   bool changed = false;
 
-  cselib_init (false);
+  cselib_init (0);
   FOR_EACH_BB (bb)
     {
       FOR_BB_INSNS (bb, insn)
@@ -3479,10 +3478,10 @@ insert_insn_end_basic_block (struct expr *expr, basic_block bb, int pre)
 	   && (!single_succ_p (bb)
 	       || single_succ_edge (bb)->flags & EDGE_ABNORMAL))
     {
-      /* Keeping in mind SMALL_REGISTER_CLASSES and parameters in registers,
-	 we search backward and place the instructions before the first
-	 parameter is loaded.  Do this for everyone for consistency and a
-	 presumption that we'll get better code elsewhere as well.
+      /* Keeping in mind targets with small register classes and parameters
+         in registers, we search backward and place the instructions before
+	 the first parameter is loaded.  Do this for everyone for consistency
+	 and a presumption that we'll get better code elsewhere as well.
 
 	 It should always be the case that we can put these instructions
 	 anywhere in the basic block with performing PRE optimizations.
@@ -4668,9 +4667,9 @@ simple_mem (const_rtx x)
     return 0;
 
   /* If we are handling exceptions, we must be careful with memory references
-     that may trap. If we are not, the behavior is undefined, so we may just
+     that may trap.  If we are not, the behavior is undefined, so we may just
      continue.  */
-  if (flag_non_call_exceptions && may_trap_p (x))
+  if (cfun->can_throw_non_call_exceptions && may_trap_p (x))
     return 0;
 
   if (side_effects_p (x))

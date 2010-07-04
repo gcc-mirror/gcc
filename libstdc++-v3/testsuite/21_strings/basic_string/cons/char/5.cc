@@ -1,6 +1,6 @@
 // 1999-06-04 bkoz
 
-// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2009
+// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -33,7 +33,7 @@ void test05()
   std::string empty2(empty.begin(), empty.end());
 
   // libstdc++/8716 (same underlying situation, same fix)
-  char const * s = NULL;
+  char const * s = 0;
   std::string zero_length_built_with_NULL(s,0);
 }
 

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.1\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-01-11 11:42+0000\n"
+"POT-Creation-Date: 2010-04-06 14:10+0000\n"
 "PO-Revision-Date: 2002-05-17 15:54+0200\n"
 "Last-Translator: Ales Nyakhaychyk <nyakhaychyk@i18n.linux.by>\n"
 "Language-Team: Belarusian <i18n@tut.by>\n"
@@ -33,7 +33,7 @@ msgstr ""
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr ""
 
-#: charset.c:798 charset.c:1457
+#: charset.c:798 charset.c:1444
 msgid "converting to execution character set"
 msgstr ""
 
@@ -70,7 +70,7 @@ msgstr ""
 msgid "%.*s is not a valid universal character"
 msgstr "\"%s\" - гэта не пачатак дэкларацыі"
 
-#: charset.c:1056 lex.c:486
+#: charset.c:1056 lex.c:488
 msgid "'$' in identifier or number"
 msgstr ""
 
@@ -84,7 +84,7 @@ msgstr ""
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr ""
 
-#: charset.c:1102 charset.c:1687
+#: charset.c:1102 charset.c:1674
 msgid "converting UCN to source character set"
 msgstr ""
 
@@ -131,20 +131,20 @@ msgstr "невядомая ESC-паслядоўнасць '\\%c'"
 msgid "converting escape sequence to execution character set"
 msgstr ""
 
-#: charset.c:1522 charset.c:1586
+#: charset.c:1509 charset.c:1573
 #, fuzzy
 msgid "character constant too long for its type"
 msgstr "сімвальная канстанта вельмі доўгая"
 
-#: charset.c:1525
+#: charset.c:1512
 msgid "multi-character character constant"
 msgstr "мнагасімвальная сімвальная канстанта"
 
-#: charset.c:1625
+#: charset.c:1612
 msgid "empty character constant"
 msgstr "пустая сімвальная канстанта"
 
-#: charset.c:1734
+#: charset.c:1721
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr ""
@@ -398,7 +398,7 @@ msgstr ""
 msgid "unterminated #%s"
 msgstr ""
 
-#: directives-only.c:222 lex.c:1415 traditional.c:163
+#: directives-only.c:222 lex.c:1516 traditional.c:163
 msgid "unterminated comment"
 msgstr "незавершаныя каментарыі"
 
@@ -706,79 +706,79 @@ msgstr ""
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr ""
 
-#: lex.c:358
+#: lex.c:360
 msgid "\"/*\" within comment"
 msgstr ""
 
-#: lex.c:416
+#: lex.c:418
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr ""
 
-#: lex.c:425
+#: lex.c:427
 msgid "null character(s) ignored"
 msgstr ""
 
-#: lex.c:462
+#: lex.c:464
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr ""
 
-#: lex.c:465
+#: lex.c:467
 #, fuzzy, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "`%D' - гэта ня функцыя,"
 
-#: lex.c:533 lex.c:610
+#: lex.c:535 lex.c:612
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr ""
 
-#: lex.c:541 lex.c:618
+#: lex.c:543 lex.c:620
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr ""
 
-#: lex.c:547 lex.c:624
+#: lex.c:549 lex.c:626
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr ""
 
-#: lex.c:739
+#: lex.c:771
 msgid "raw string delimiter longer than 16 characters"
 msgstr ""
 
-#: lex.c:742
+#: lex.c:774
 #, fuzzy, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "сімвальная канстанта вельмі доўгая"
 
-#: lex.c:771 lex.c:818
+#: lex.c:895 lex.c:917
 #, fuzzy
 msgid "unterminated raw string"
 msgstr "незавершаныя каментарыі"
 
-#: lex.c:831 lex.c:930
+#: lex.c:932 lex.c:1031
 msgid "null character(s) preserved in literal"
 msgstr ""
 
-#: lex.c:933
+#: lex.c:1034
 #, c-format
 msgid "missing terminating %c character"
 msgstr "прапушчан завяршаючы сімвал %c"
 
-#: lex.c:1426
+#: lex.c:1527
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr ""
 
-#: lex.c:1428
+#: lex.c:1529
 msgid "(this will be reported only once per input file)"
 msgstr ""
 
-#: lex.c:1433
+#: lex.c:1534
 msgid "multi-line comment"
 msgstr ""
 
-#: lex.c:1753
+#: lex.c:1854
 #, fuzzy, c-format
 msgid "unspellable token %s"
 msgstr "немагу адчыніць файл \"%s\""

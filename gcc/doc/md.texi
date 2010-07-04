@@ -1052,6 +1052,10 @@ an operand may be in a register, and which kinds of register; whether the
 operand can be a memory reference, and which kinds of address; whether the
 operand may be an immediate constant, and which possible values it may
 have.  Constraints can also require two operands to match.
+Side-effects aren't allowed in operands of inline @code{asm}, unless
+@samp{<} or @samp{>} constraints are used, because there is no guarantee
+that the side-effects will happen exactly once in an instruction that can update
+the addressing register.
 
 @ifset INTERNALS
 @menu
@@ -1129,12 +1133,21 @@ would fit the @samp{m} constraint but not the @samp{o} constraint.
 @cindex @samp{<} in constraint
 @item @samp{<}
 A memory operand with autodecrement addressing (either predecrement or
-postdecrement) is allowed.
+postdecrement) is allowed.  In inline @code{asm} this constraint is only
+allowed if the operand is used exactly once in an instruction that can
+handle the side-effects.  Not using an operand with @samp{<} in constraint
+string in the inline @code{asm} pattern at all or using it in multiple
+instructions isn't valid, because the side-effects wouldn't be performed
+or would be performed more than once.  Furthermore, on some targets
+the operand with @samp{<} in constraint string must be accompanied by
+special instruction suffixes like @code{%U0} instruction suffix on PowerPC
+or @code{%P0} on IA-64.
 
 @cindex @samp{>} in constraint
 @item @samp{>}
 A memory operand with autoincrement addressing (either preincrement or
-postincrement) is allowed.
+postincrement) is allowed.  In inline @code{asm} the same restrictions
+as for @samp{<} apply.
 
 @cindex @samp{r} in constraint
 @cindex registers in constraints
@@ -1949,7 +1962,7 @@ Any VSX register
 @samp{CR} register (condition register)
 
 @item z
-@samp{FPMEM} stack memory for FPR-GPR transfers
+@samp{XER[CA]} carry bit (part of the XER register)
 
 @item I
 Signed 16-bit constant
@@ -3750,7 +3763,8 @@ it is unsafe to call @code{gen_reg_rtx} to allocate a new pseudo.
 The constraints on a @samp{mov@var{m}} must permit moving any hard
 register to any other hard register provided that
 @code{HARD_REGNO_MODE_OK} permits mode @var{m} in both registers and
-@code{REGISTER_MOVE_COST} applied to their classes returns a value of 2.
+@code{TARGET_REGISTER_MOVE_COST} applied to their classes returns a value
+of 2.
 
 It is obligatory to support floating point @samp{mov@var{m}}
 instructions into and out of any registers that can hold fixed point
@@ -4705,20 +4719,28 @@ else must be negative.  Otherwise the instruction is not suitable and
 you should omit it from the machine description.  You describe to the
 compiler exactly which value is stored by defining the macro
 @code{STORE_FLAG_VALUE} (@pxref{Misc}).  If a description cannot be
-found that can be used for all the @samp{s@var{cond}} patterns, you
-should omit those operations from the machine description.
+found that can be used for all the possible comparison operators, you
+should pick one and use a @code{define_expand} to map all results
+onto the one you chose.
 
-These operations may fail, but should do so only in relatively
-uncommon cases; if they would fail for common cases involving
-integer comparisons, it is best to omit these patterns.
+These operations may @code{FAIL}, but should do so only in relatively
+uncommon cases; if they would @code{FAIL} for common cases involving
+integer comparisons, it is best to restrict the predicates to not
+allow these operands.  Likewise if a given comparison operator will
+always fail, independent of the operands (for floating-point modes, the
+@code{ordered_comparison_operator} predicate is often useful in this case).
 
-If these operations are omitted, the compiler will usually generate code
-that copies the constant one to the target and branches around an
-assignment of zero to the target.  If this code is more efficient than
-the potential instructions used for the @samp{cstore@var{mode}4} pattern
-followed by those required to convert the result into a 1 or a zero in
-@code{SImode}, you should omit the @samp{cstore@var{mode}4} operations from
-the machine description.
+If this pattern is omitted, the compiler will generate a conditional
+branch---for example, it may copy a constant one to the target and branching
+around an assignment of zero to the target---or a libcall.  If the predicate
+for operand 1 only rejects some operators, it will also try reordering the
+operands and/or inverting the result value (e.g.@: by an exclusive OR).
+These possibilities could be cheaper or equivalent to the instructions
+used for the @samp{cstore@var{mode}4} pattern followed by those required
+to convert a positive result from @code{STORE_FLAG_VALUE} to 1; in this
+case, you can and should make operand 1's predicate reject some operators
+in the @samp{cstore@var{mode}4} pattern, or remove the pattern altogether
+from the machine description.
 
 @cindex @code{cbranch@var{mode}4} instruction pattern
 @item @samp{cbranch@var{mode}4}
@@ -6692,9 +6714,46 @@ distances. @xref{Insn Lengths}.
 The @code{enabled} attribute can be defined to prevent certain
 alternatives of an insn definition from being used during code
 generation. @xref{Disable Insn Alternatives}.
-
 @end table
 
+@findex define_enum_attr
+@anchor{define_enum_attr}
+Another way of defining an attribute is to use:
+
+@smallexample
+(define_enum_attr "@var{attr}" "@var{enum}" @var{default})
+@end smallexample
+
+This works in just the same way as @code{define_attr}, except that
+the list of values is taken from a separate enumeration called
+@var{enum} (@pxref{define_enum}).  This form allows you to use
+the same list of values for several attributes without having to
+repeat the list each time.  For example:
+
+@smallexample
+(define_enum "processor" [
+  model_a
+  model_b
+  @dots{}
+])
+(define_enum_attr "arch" "processor"
+  (const (symbol_ref "target_arch")))
+(define_enum_attr "tune" "processor"
+  (const (symbol_ref "target_tune")))
+@end smallexample
+
+defines the same attributes as:
+
+@smallexample
+(define_attr "arch" "model_a,model_b,@dots{}"
+  (const (symbol_ref "target_arch")))
+(define_attr "tune" "model_a,model_b,@dots{}"
+  (const (symbol_ref "target_tune")))
+@end smallexample
+
+but without duplicating the processor list.  The second example defines two
+separate C enums (@code{attr_arch} and @code{attr_tune}) whereas the first
+defines a single C enum (@code{processor}).
 @end ifset
 @ifset INTERNALS
 @node Expressions
@@ -7894,6 +7953,124 @@ You could write:
 
 The constants that are defined with a define_constant are also output
 in the insn-codes.h header file as #defines.
+
+@cindex enumerations
+@findex define_c_enum
+You can also use the machine description file to define enumerations.
+Like the constants defined by @code{define_constant}, these enumerations
+are visible to both the machine description file and the main C code.
+
+The syntax is as follows:
+
+@smallexample
+(define_c_enum "@var{name}" [
+  @var{value0}
+  @var{value1}
+  @dots{}
+  @var{valuen}
+])
+@end smallexample
+
+This definition causes the equivalent of the following C code to appear
+in @file{insn-constants.h}:
+
+@smallexample
+enum @var{name} @{
+  @var{value0} = 0,
+  @var{value1} = 1,
+  @dots{}
+  @var{valuen} = @var{n}
+@};
+#define NUM_@var{cname}_VALUES (@var{n} + 1)
+@end smallexample
+
+where @var{cname} is the capitalized form of @var{name}.
+It also makes each @var{valuei} available in the machine description
+file, just as if it had been declared with:
+
+@smallexample
+(define_constants [(@var{valuei} @var{i})])
+@end smallexample
+
+Each @var{valuei} is usually an upper-case identifier and usually
+begins with @var{cname}.
+
+You can split the enumeration definition into as many statements as
+you like.  The above example is directly equivalent to:
+
+@smallexample
+(define_c_enum "@var{name}" [@var{value0}])
+(define_c_enum "@var{name}" [@var{value1}])
+@dots{}
+(define_c_enum "@var{name}" [@var{valuen}])
+@end smallexample
+
+Splitting the enumeration helps to improve the modularity of each
+individual @code{.md} file.  For example, if a port defines its
+synchronization instructions in a separate @file{sync.md} file,
+it is convenient to define all synchronization-specific enumeration
+values in @file{sync.md} rather than in the main @file{.md} file.
+
+Some enumeration names have special significance to GCC:
+
+@table @code
+@item unspecv
+@findex unspec_volatile
+If an enumeration called @code{unspecv} is defined, GCC will use it
+when printing out @code{unspec_volatile} expressions.  For example:
+
+@smallexample
+(define_c_enum "unspecv" [
+  UNSPECV_BLOCKAGE
+])
+@end smallexample
+
+causes GCC to print @samp{(unspec_volatile @dots{} 0)} as:
+
+@smallexample
+(unspec_volatile ... UNSPECV_BLOCKAGE)
+@end smallexample
+
+@item unspec
+@findex unspec
+If an enumeration called @code{unspec} is defined, GCC will use
+it when printing out @code{unspec} expressions.  GCC will also use
+it when printing out @code{unspec_volatile} expressions unless an
+@code{unspecv} enumeration is also defined.  You can therefore
+decide whether to keep separate enumerations for volatile and
+non-volatile expressions or whether to use the same enumeration
+for both.
+@end table
+
+@findex define_enum
+@anchor{define_enum}
+Another way of defining an enumeration is to use @code{define_enum}:
+
+@smallexample
+(define_enum "@var{name}" [
+  @var{value0}
+  @var{value1}
+  @dots{}
+  @var{valuen}
+])
+@end smallexample
+
+This directive implies:
+
+@smallexample
+(define_c_enum "@var{name}" [
+  @var{cname}_@var{cvalue0}
+  @var{cname}_@var{cvalue1}
+  @dots{}
+  @var{cname}_@var{cvaluen}
+])
+@end smallexample
+
+@findex define_enum_attr
+where @var{cvaluei} is the capitalized form of @var{valuei}.
+However, unlike @code{define_c_enum}, the enumerations defined
+by @code{define_enum} can be used in attribute specifications
+(@pxref{define_enum_attr}).
 @end ifset
 @ifset INTERNALS
 @node Iterators

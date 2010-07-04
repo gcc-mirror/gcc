@@ -25,7 +25,7 @@ class java::awt::Robot$1 : public ::java::lang::Object
 public: // actually package-private
   Robot$1(::java::awt::Robot *);
 public:
-  void run();
+  virtual void run();
 public: // actually package-private
   ::java::awt::Robot * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

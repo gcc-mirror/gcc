@@ -40,7 +40,7 @@ class gnu::javax::swing::text::html::parser::support::Parser$1 : public ::java::
 public: // actually package-private
   Parser$1(::gnu::javax::swing::text::html::parser::support::Parser *);
 public:
-  jint compare(::java::lang::Object *, ::java::lang::Object *);
+  virtual jint compare(::java::lang::Object *, ::java::lang::Object *);
 public: // actually package-private
   ::gnu::javax::swing::text::html::parser::support::Parser * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

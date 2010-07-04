@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Matsushita MN10300 series
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GCC.
@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "regs.h"
 #include "hard-reg-set.h"
-#include "real.h"
 #include "insn-config.h"
 #include "conditions.h"
 #include "output.h"

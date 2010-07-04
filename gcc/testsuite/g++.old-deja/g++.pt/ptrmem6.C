@@ -13,9 +13,9 @@ public:
 };
 
 template <void (A::*)() >
-void g() {}
+void g() {}			// { dg-message "candidate" }
 template <int A::*>
-void h() {}
+void h() {}			// { dg-message "candidate" }
 
 
 int main() {

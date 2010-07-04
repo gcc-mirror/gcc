@@ -47,4 +47,5 @@ main()
   return 0;
 }
 // { dg-error "candidates" "" { target *-*-* } 134 } 
+// { dg-error "note" "" { target *-*-* } 152 }
 // { dg-error "::auto_ptr" "" { target *-*-* } 262 } 

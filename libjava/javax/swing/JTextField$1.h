@@ -34,7 +34,7 @@ class javax::swing::JTextField$1 : public ::javax::swing::text::TextAction
 public: // actually package-private
   JTextField$1(::java::lang::String *);
 public:
-  void actionPerformed(::java::awt::event::ActionEvent *);
+  virtual void actionPerformed(::java::awt::event::ActionEvent *);
   static ::java::lang::Class class$;
 };
 

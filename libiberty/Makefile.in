@@ -101,7 +101,7 @@ SUBDIRS = testsuite
 
 # FIXME: add @BUILD_INFO@ once we're sure it works for everyone.
 all: stamp-picdir $(TARGETLIB) required-list all-subdir
-	@: $(MAKE) ; exec $(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=all
+	@: $(MAKE) ; $(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=all
 
 .PHONY: check installcheck
 check: check-subdir
@@ -724,7 +724,7 @@ $(CONFIGURED_OFILES): stamp-picdir
 
 ./lbasename.o: $(srcdir)/lbasename.c config.h $(INCDIR)/ansidecl.h \
 	$(INCDIR)/filenames.h $(INCDIR)/libiberty.h \
-	$(INCDIR)/safe-ctype.h
+	$(INCDIR)/safe-ctype.h $(INCDIR)/filenames.h
 	if [ x"$(PICFLAG)" != x ]; then \
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/lbasename.c -o pic/$@; \
 	else true; fi

@@ -99,6 +99,10 @@ extern rtx picochip_struct_value_rtx(tree fntype ATTRIBUTE_UNUSED,
 
 #endif /* RTX_CODE inside TREE_CODE */
 
+extern int picochip_legitimize_reload_address (rtx *x, enum machine_mode mode,
+                                        int opnum, int type, int ind_levels);
+
+
 void picochip_output_ascii (FILE * file, const char *str, int length);
 
 extern int picochip_hard_regno_mode_ok (int regno, enum machine_mode mode);

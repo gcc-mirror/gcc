@@ -1,6 +1,6 @@
 // std::codecvt implementation details, generic version -*- C++ -*-
 
-// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2009
+// Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -186,7 +186,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
     while (__from < __end && __max)
       {
-	size_t __conv = mbrtowc(NULL, __from, __end - __from, &__tmp_state);
+	size_t __conv = mbrtowc(0, __from, __end - __from, &__tmp_state);
 	if (__conv == static_cast<size_t>(-1))
 	  {
 	    // Invalid source character

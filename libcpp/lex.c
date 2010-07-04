@@ -301,19 +301,23 @@ _cpp_process_line_notes (cpp_reader *pfile, int in_comment)
 	      && (!in_comment || warn_in_comment (pfile, note)))
 	    {
 	      if (CPP_OPTION (pfile, trigraphs))
-		cpp_error_with_line (pfile, CPP_DL_WARNING, pfile->line_table->highest_line, col,
-				     "trigraph ??%c converted to %c",
-				     note->type,
-				     (int) _cpp_trigraph_map[note->type]);
+		cpp_warning_with_line (pfile, CPP_W_TRIGRAPHS,
+                                       pfile->line_table->highest_line, col,
+				       "trigraph ??%c converted to %c",
+				       note->type,
+				       (int) _cpp_trigraph_map[note->type]);
 	      else
 		{
-		  cpp_error_with_line 
-		    (pfile, CPP_DL_WARNING, pfile->line_table->highest_line, col,
+		  cpp_warning_with_line 
+		    (pfile, CPP_W_TRIGRAPHS,
+                     pfile->line_table->highest_line, col,
 		     "trigraph ??%c ignored, use -trigraphs to enable",
 		     note->type);
 		}
 	    }
 	}
+      else if (note->type == 0)
+	/* Already processed in lex_raw_string.  */;
       else
 	abort ();
     }
@@ -353,9 +357,10 @@ _cpp_skip_block_comment (cpp_reader *pfile)
 	      && cur[0] == '*' && cur[1] != '/')
 	    {
 	      buffer->cur = cur;
-	      cpp_error_with_line (pfile, CPP_DL_WARNING,
-				   pfile->line_table->highest_line, CPP_BUF_COL (buffer),
-				   "\"/*\" within comment");
+	      cpp_warning_with_line (pfile, CPP_W_COMMENTS,
+				     pfile->line_table->highest_line,
+				     CPP_BUF_COL (buffer),
+				     "\"/*\" within comment");
 	    }
 	}
       else if (c == '\n')
@@ -458,11 +463,11 @@ warn_about_normalization (cpp_reader *pfile,
 
       sz = cpp_spell_token (pfile, token, buf, false) - buf;
       if (NORMALIZE_STATE_RESULT (s) == normalized_C)
-	cpp_error_with_line (pfile, CPP_DL_WARNING, token->src_loc, 0,
-			     "`%.*s' is not in NFKC", (int) sz, buf);
+	cpp_warning_with_line (pfile, CPP_W_NORMALIZE, token->src_loc, 0,
+			       "`%.*s' is not in NFKC", (int) sz, buf);
       else
-	cpp_error_with_line (pfile, CPP_DL_WARNING, token->src_loc, 0,
-			     "`%.*s' is not in NFC", (int) sz, buf);
+	cpp_warning_with_line (pfile, CPP_W_NORMALIZE, token->src_loc, 0,
+			       "`%.*s' is not in NFC", (int) sz, buf);
     }
 }
 
@@ -543,9 +548,9 @@ lex_identifier_intern (cpp_reader *pfile, const uchar *base)
 
       /* For -Wc++-compat, warn about use of C++ named operators.  */
       if (result->flags & NODE_WARN_OPERATOR)
-	cpp_error (pfile, CPP_DL_WARNING,
-		   "identifier \"%s\" is a special operator name in C++",
-		   NODE_NAME (result));
+	cpp_warning (pfile, CPP_W_CXX_OPERATOR_NAMES,
+		     "identifier \"%s\" is a special operator name in C++",
+		     NODE_NAME (result));
     }
 
   return result;
@@ -620,9 +625,9 @@ lex_identifier (cpp_reader *pfile, const uchar *base, bool starts_ucn,
 
       /* For -Wc++-compat, warn about use of C++ named operators.  */
       if (result->flags & NODE_WARN_OPERATOR)
-	cpp_error (pfile, CPP_DL_WARNING,
-		   "identifier \"%s\" is a special operator name in C++",
-		   NODE_NAME (result));
+	cpp_warning (pfile, CPP_W_CXX_OPERATOR_NAMES,
+		     "identifier \"%s\" is a special operator name in C++",
+		     NODE_NAME (result));
     }
 
   return result;
@@ -674,8 +679,37 @@ create_literal (cpp_reader *pfile, cpp_token *token, const uchar *base,
   token->val.str.text = dest;
 }
 
+/* Subroutine of lex_raw_string: Append LEN chars from BASE to the buffer
+   sequence from *FIRST_BUFF_P to LAST_BUFF_P.  */
+
+static void
+bufring_append (cpp_reader *pfile, const uchar *base, size_t len,
+		_cpp_buff **first_buff_p, _cpp_buff **last_buff_p)
+{
+  _cpp_buff *first_buff = *first_buff_p;
+  _cpp_buff *last_buff = *last_buff_p;
+
+  if (first_buff == NULL)
+    first_buff = last_buff = _cpp_get_buff (pfile, len);
+  else if (len > BUFF_ROOM (last_buff))
+    {
+      size_t room = BUFF_ROOM (last_buff);
+      memcpy (BUFF_FRONT (last_buff), base, room);
+      BUFF_FRONT (last_buff) += room;
+      base += room;
+      len -= room;
+      last_buff = _cpp_append_extend_buff (pfile, last_buff, len);
+    }
+
+  memcpy (BUFF_FRONT (last_buff), base, len);
+  BUFF_FRONT (last_buff) += len;
+
+  *first_buff_p = first_buff;
+  *last_buff_p = last_buff;
+}
+
 /* Lexes a raw string.  The stored string contains the spelling, including
-   double quotes, delimiter string, '[' and ']', any leading
+   double quotes, delimiter string, '(' and ')', any leading
    'L', 'u', 'U' or 'u8' and 'R' modifier.  It returns the type of the
    literal, or CPP_OTHER if it was not properly terminated.
 
@@ -692,6 +726,7 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
   enum cpp_ttype type;
   size_t total_len = 0;
   _cpp_buff *first_buff = NULL, *last_buff = NULL;
+  _cpp_line_note *note = &pfile->buffer->notes[pfile->buffer->cur_note];
 
   type = (*base == 'L' ? CPP_WSTRING :
 	  *base == 'U' ? CPP_STRING32 :
@@ -703,7 +738,7 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
     {
       switch (raw_prefix[raw_prefix_len])
 	{
-	case ' ': case '[': case ']': case '\t':
+	case ' ': case '(': case ')': case '\\': case '\t':
 	case '\v': case '\f': case '\n': default:
 	  break;
 	/* Basic source charset except the above chars.  */
@@ -719,18 +754,18 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 	case 'Y': case 'Z':
 	case '0': case '1': case '2': case '3': case '4': case '5':
 	case '6': case '7': case '8': case '9':
-	case '_': case '{': case '}': case '#': case '(': case ')':
+	case '_': case '{': case '}': case '#': case '[': case ']':
 	case '<': case '>': case '%': case ':': case ';': case '.':
 	case '?': case '*': case '+': case '-': case '/': case '^':
 	case '&': case '|': case '~': case '!': case '=': case ',':
-	case '\\': case '"': case '\'':
+	case '"': case '\'':
 	  raw_prefix_len++;
 	  continue;
 	}
       break;
     }
 
-  if (raw_prefix[raw_prefix_len] != '[')
+  if (raw_prefix[raw_prefix_len] != '(')
     {
       int col = CPP_BUF_COLUMN (pfile->buffer, raw_prefix + raw_prefix_len)
 		+ 1;
@@ -749,9 +784,101 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
   cur = raw_prefix + raw_prefix_len + 1;
   for (;;)
     {
-      cppchar_t c = *cur++;
+#define BUF_APPEND(STR,LEN)					\
+      do {							\
+	bufring_append (pfile, (const uchar *)(STR), (LEN),	\
+			&first_buff, &last_buff);		\
+	total_len += (LEN);					\
+      } while (0);
 
-      if (c == ']'
+      cppchar_t c;
+
+      /* If we previously performed any trigraph or line splicing
+	 transformations, undo them within the body of the raw string.  */
+      while (note->pos < cur)
+	++note;
+      for (; note->pos == cur; ++note)
+	{
+	  switch (note->type)
+	    {
+	    case '\\':
+	    case ' ':
+	      /* Restore backslash followed by newline.  */
+	      BUF_APPEND (base, cur - base);
+	      base = cur;
+	      BUF_APPEND ("\\", 1);
+	    after_backslash:
+	      if (note->type == ' ')
+		{
+		  /* GNU backslash whitespace newline extension.  FIXME
+		     could be any sequence of non-vertical space.  When we
+		     can properly restore any such sequence, we should mark
+		     this note as handled so _cpp_process_line_notes
+		     doesn't warn.  */
+		  BUF_APPEND (" ", 1);
+		}
+
+	      BUF_APPEND ("\n", 1);
+	      break;
+
+	    case 0:
+	      /* Already handled.  */
+	      break;
+
+	    default:
+	      if (_cpp_trigraph_map[note->type])
+		{
+		  /* Don't warn about this trigraph in
+		     _cpp_process_line_notes, since trigraphs show up as
+		     trigraphs in raw strings.  */
+		  uchar type = note->type;
+		  note->type = 0;
+
+		  if (!CPP_OPTION (pfile, trigraphs))
+		    /* If we didn't convert the trigraph in the first
+		       place, don't do anything now either.  */
+		    break;
+
+		  BUF_APPEND (base, cur - base);
+		  base = cur;
+		  BUF_APPEND ("??", 2);
+
+		  /* ??/ followed by newline gets two line notes, one for
+		     the trigraph and one for the backslash/newline.  */
+		  if (type == '/' && note[1].pos == cur)
+		    {
+		      if (note[1].type != '\\'
+			  && note[1].type != ' ')
+			abort ();
+		      BUF_APPEND ("/", 1);
+		      ++note;
+		      goto after_backslash;
+		    }
+		  /* The ) from ??) could be part of the suffix.  */
+		  else if (type == ')'
+			   && strncmp ((const char *) cur+1,
+				       (const char *) raw_prefix,
+				       raw_prefix_len) == 0
+			   && cur[raw_prefix_len+1] == '"')
+		    {
+		      cur += raw_prefix_len+2;
+		      goto break_outer_loop;
+		    }
+		  else
+		    {
+		      /* Skip the replacement character.  */
+		      base = ++cur;
+		      BUF_APPEND (&type, 1);
+		    }
+		}
+	      else
+		abort ();
+	      break;
+	    }
+	}
+      c = *cur++;
+
+      if (c == ')'
 	  && strncmp ((const char *) cur, (const char *) raw_prefix,
 		      raw_prefix_len) == 0
 	  && cur[raw_prefix_len] == '"')
@@ -772,39 +899,14 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 	      break;
 	    }
 
-	  /* raw strings allow embedded non-escaped newlines, which
-	     complicates this routine a lot.  */
-	  if (first_buff == NULL)
-	    {
-	      total_len = cur - base;
-	      first_buff = last_buff = _cpp_get_buff (pfile, total_len);
-	      memcpy (BUFF_FRONT (last_buff), base, total_len);
-	      raw_prefix = BUFF_FRONT (last_buff) + (raw_prefix - base);
-	      BUFF_FRONT (last_buff) += total_len;
-	    }
-	  else
-	    {
-	      size_t len = cur - base;
-	      size_t cur_len = len > BUFF_ROOM (last_buff)
-			       ? BUFF_ROOM (last_buff) : len;
-
-	      total_len += len;
-	      memcpy (BUFF_FRONT (last_buff), base, cur_len);
-	      BUFF_FRONT (last_buff) += cur_len;
-	      if (len > cur_len)
-		{
-		  last_buff = _cpp_append_extend_buff (pfile, last_buff,
-						       len - cur_len);
-		  memcpy (BUFF_FRONT (last_buff), base + cur_len,
-			  len - cur_len);
-		  BUFF_FRONT (last_buff) += len - cur_len;
-		}
-	    }
+	  BUF_APPEND (base, cur - base);
 
 	  if (pfile->buffer->cur < pfile->buffer->rlimit)
 	    CPP_INCREMENT_LINE (pfile, 0);
 	  pfile->buffer->need_line = true;
 
+	  pfile->buffer->cur = cur-1;
+	  _cpp_process_line_notes (pfile, false);
 	  if (!_cpp_get_fresh_line (pfile))
 	    {
 	      source_location src_loc = token->src_loc;
@@ -820,11 +922,13 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 	    }
 
 	  cur = base = pfile->buffer->cur;
+	  note = &pfile->buffer->notes[pfile->buffer->cur_note];
 	}
       else if (c == '\0' && !saw_NUL)
 	LINEMAP_POSITION_FOR_COLUMN (saw_NUL, pfile->line_table,
 				     CPP_BUF_COLUMN (pfile->buffer, cur));
     }
+ break_outer_loop:
 
   if (saw_NUL && !pfile->state.skipping)
     cpp_error_with_line (pfile, CPP_DL_WARNING, saw_NUL, 0,
@@ -1430,7 +1534,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 	    }
 
 	  if (skip_line_comment (pfile) && CPP_OPTION (pfile, warn_comments))
-	    cpp_error (pfile, CPP_DL_WARNING, "multi-line comment");
+	    cpp_warning (pfile, CPP_W_COMMENTS, "multi-line comment");
 	}
       else if (c == '=')
 	{

@@ -3,6 +3,7 @@
 // { dg-options "-msse" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 // Ignore warning on some powerpc-linux configurations.
 // { dg-prune-output "non-standard ABI extension" }
+// { dg-prune-output "mangled name" }
 
 #define vector __attribute__((vector_size(16)))
 

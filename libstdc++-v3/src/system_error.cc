@@ -34,6 +34,8 @@ namespace
   
   struct generic_error_category : public std::error_category
   {
+    generic_error_category() {}
+
     virtual const char*
     name() const 
     { return "generic"; }
@@ -49,6 +51,8 @@ namespace
 
   struct system_error_category : public std::error_category
   {
+    system_error_category() {}
+
     virtual const char*
     name() const
     { return "system"; }

@@ -1,5 +1,5 @@
 /* Integrated Register Allocator (IRA) entry point.
-   Copyright (C) 2006, 2007, 2008, 2009
+   Copyright (C) 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
@@ -310,6 +310,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
+#include "df.h"
 #include "expr.h"
 #include "recog.h"
 #include "params.h"
@@ -318,9 +319,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "except.h"
 #include "reload.h"
-#include "errors.h"
+#include "toplev.h"
 #include "integrate.h"
-#include "df.h"
 #include "ggc.h"
 #include "ira-int.h"
 
@@ -330,9 +330,6 @@ int internal_flag_ira_verbose;
 
 /* Dump file of the allocator if it is not NULL.  */
 FILE *ira_dump_file;
-
-/* Pools for allocnos, copies, allocno live ranges.  */
-alloc_pool allocno_pool, copy_pool, allocno_live_range_pool;
 
 /* The number of elements in the following array.  */
 int ira_spilled_reg_stack_slots_num;
@@ -358,9 +355,10 @@ HARD_REG_SET eliminable_regset;
    of given mode starting with given hard register.  */
 HARD_REG_SET ira_reg_mode_hard_regset[FIRST_PSEUDO_REGISTER][NUM_MACHINE_MODES];
 
-/* The following two variables are array analogs of the macros
-   MEMORY_MOVE_COST and REGISTER_MOVE_COST.  */
+/* Array analogous to target hook TARGET_MEMORY_MOVE_COST.  */
 short int ira_memory_move_cost[MAX_MACHINE_MODE][N_REG_CLASSES][2];
+
+/* Array based on TARGET_REGISTER_MOVE_COST.  */
 move_table *ira_register_move_cost[MAX_MACHINE_MODE];
 
 /* Similar to may_move_in_cost but it is calculated in IRA instead of
@@ -413,6 +411,11 @@ static HARD_REG_SET no_unit_alloc_regs;
    allocation order.  */
 short ira_class_hard_regs[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
 
+/* Array of the number of hard registers of given class which are
+   available for allocation.  The order is defined by the
+   the hard register numbers.  */
+short ira_non_ordered_class_hard_regs[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
+
 /* The number of elements of the above array for given register
    class.  */
 int ira_class_hard_regs_num[N_REG_CLASSES];
@@ -431,16 +434,16 @@ setup_class_hard_regs (void)
   HARD_REG_SET processed_hard_reg_set;
 
   ira_assert (SHRT_MAX >= FIRST_PSEUDO_REGISTER);
-  /* We could call ORDER_REGS_FOR_LOCAL_ALLOC here (it is usually
-     putting hard callee-used hard registers first).  But our
-     heuristics work better.  */
   for (cl = (int) N_REG_CLASSES - 1; cl >= 0; cl--)
     {
       COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
       AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
       CLEAR_HARD_REG_SET (processed_hard_reg_set);
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	ira_class_hard_reg_index[cl][0] = -1;
+	{
+	  ira_non_ordered_class_hard_regs[cl][0] = -1;
+	  ira_class_hard_reg_index[cl][0] = -1;
+	}
       for (n = 0, i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	{
 #ifdef REG_ALLOC_ORDER
@@ -460,6 +463,10 @@ setup_class_hard_regs (void)
 	    }
 	}
       ira_class_hard_regs_num[cl] = n;
+      for (n = 0, i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (TEST_HARD_REG_BIT (temp_hard_regset, i))
+	  ira_non_ordered_class_hard_regs[cl][n++] = i;
+      ira_assert (ira_class_hard_regs_num[cl] == n);
     }
 }
 
@@ -490,6 +497,9 @@ setup_available_class_regs (void)
 static void
 setup_alloc_regs (bool use_hard_frame_p)
 {
+#ifdef ADJUST_REG_ALLOC_ORDER
+  ADJUST_REG_ALLOC_ORDER;
+#endif
   COPY_HARD_REG_SET (no_unit_alloc_regs, fixed_reg_set);
   if (! use_hard_frame_p)
     SET_HARD_REG_BIT (no_unit_alloc_regs, HARD_FRAME_POINTER_REGNUM);
@@ -515,11 +525,11 @@ setup_class_subset_and_memory_move_costs (void)
 	for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
 	  {
 	    ira_memory_move_cost[mode][cl][0] =
-	      MEMORY_MOVE_COST ((enum machine_mode) mode,
-				(enum reg_class) cl, 0);
+	      memory_move_cost ((enum machine_mode) mode,
+				(enum reg_class) cl, false);
 	    ira_memory_move_cost[mode][cl][1] =
-	      MEMORY_MOVE_COST ((enum machine_mode) mode,
-				(enum reg_class) cl, 1);
+	      memory_move_cost ((enum machine_mode) mode,
+				(enum reg_class) cl, true);
 	    /* Costs for NO_REGS are used in cost calculation on the
 	       1st pass when the preferred register classes are not
 	       known yet.  In this case we take the best scenario.  */
@@ -1362,6 +1372,46 @@ setup_prohibited_mode_move_regs (void)
 
 
 
+/* Return nonzero if REGNO is a particularly bad choice for reloading X.  */
+static bool
+ira_bad_reload_regno_1 (int regno, rtx x)
+{
+  int x_regno;
+  ira_allocno_t a;
+  enum reg_class pref;
+
+  /* We only deal with pseudo regs.  */
+  if (! x || GET_CODE (x) != REG)
+    return false;
+
+  x_regno = REGNO (x);
+  if (x_regno < FIRST_PSEUDO_REGISTER)
+    return false;
+
+  /* If the pseudo prefers REGNO explicitly, then do not consider
+     REGNO a bad spill choice.  */
+  pref = reg_preferred_class (x_regno);
+  if (reg_class_size[pref] == 1)
+    return !TEST_HARD_REG_BIT (reg_class_contents[pref], regno);
+
+  /* If the pseudo conflicts with REGNO, then we consider REGNO a
+     poor choice for a reload regno.  */
+  a = ira_regno_allocno_map[x_regno];
+  if (TEST_HARD_REG_BIT (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a), regno))
+    return true;
+
+  return false;
+}
+
+/* Return nonzero if REGNO is a particularly bad choice for reloading
+   IN or OUT.  */
+bool
+ira_bad_reload_regno (int regno, rtx in, rtx out)
+{
+  return (ira_bad_reload_regno_1 (regno, in)
+	  || ira_bad_reload_regno_1 (regno, out));
+}
+
 /* Function specific hard registers that can not be used for the
    register allocation.  */
 HARD_REG_SET ira_no_alloc_regs;
@@ -1385,13 +1435,11 @@ insn_contains_asm (rtx insn)
   return for_each_rtx (&insn, insn_contains_asm_1, NULL);
 }
 
-/* Set up regs_asm_clobbered.  */
+/* Add register clobbers from asm statements.  */
 static void
-compute_regs_asm_clobbered (char *regs_asm_clobbered)
+compute_regs_asm_clobbered (void)
 {
   basic_block bb;
-
-  memset (regs_asm_clobbered, 0, sizeof (char) * FIRST_PSEUDO_REGISTER);
 
   FOR_EACH_BB (bb)
     {
@@ -1413,7 +1461,7 @@ compute_regs_asm_clobbered (char *regs_asm_clobbered)
 		      + hard_regno_nregs[dregno][mode] - 1;
 
 		    for (i = dregno; i <= end; ++i)
-		      regs_asm_clobbered[i] = 1;
+		      SET_HARD_REG_BIT(crtl->asm_clobbers, i);
 		  }
 	      }
 	}
@@ -1425,12 +1473,6 @@ compute_regs_asm_clobbered (char *regs_asm_clobbered)
 void
 ira_setup_eliminable_regset (void)
 {
-  /* Like regs_ever_live, but 1 if a reg is set or clobbered from an
-     asm.  Unlike regs_ever_live, elements of this array corresponding
-     to eliminable regs (like the frame pointer) are set if an asm
-     sets them.  */
-  char *regs_asm_clobbered
-    = (char *) alloca (FIRST_PSEUDO_REGISTER * sizeof (char));
 #ifdef ELIMINABLE_REGS
   int i;
   static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
@@ -1454,7 +1496,8 @@ ira_setup_eliminable_regset (void)
   COPY_HARD_REG_SET (ira_no_alloc_regs, no_unit_alloc_regs);
   CLEAR_HARD_REG_SET (eliminable_regset);
 
-  compute_regs_asm_clobbered (regs_asm_clobbered);
+  compute_regs_asm_clobbered ();
+
   /* Build the regset of all eliminable registers and show we can't
      use those that we already know won't be eliminated.  */
 #ifdef ELIMINABLE_REGS
@@ -1464,7 +1507,7 @@ ira_setup_eliminable_regset (void)
 	= (! targetm.can_eliminate (eliminables[i].from, eliminables[i].to)
 	   || (eliminables[i].to == STACK_POINTER_REGNUM && need_fp));
 
-      if (! regs_asm_clobbered[eliminables[i].from])
+      if (!TEST_HARD_REG_BIT (crtl->asm_clobbers, eliminables[i].from))
 	{
 	    SET_HARD_REG_BIT (eliminable_regset, eliminables[i].from);
 
@@ -1478,7 +1521,7 @@ ira_setup_eliminable_regset (void)
 	df_set_regs_ever_live (eliminables[i].from, true);
     }
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-  if (! regs_asm_clobbered[HARD_FRAME_POINTER_REGNUM])
+  if (!TEST_HARD_REG_BIT (crtl->asm_clobbers, HARD_FRAME_POINTER_REGNUM))
     {
       SET_HARD_REG_BIT (eliminable_regset, HARD_FRAME_POINTER_REGNUM);
       if (need_fp)
@@ -1492,7 +1535,7 @@ ira_setup_eliminable_regset (void)
 #endif
 
 #else
-  if (! regs_asm_clobbered[FRAME_POINTER_REGNUM])
+  if (!TEST_HARD_REG_BIT (crtl->asm_clobbers, HARD_FRAME_POINTER_REGNUM))
     {
       SET_HARD_REG_BIT (eliminable_regset, FRAME_POINTER_REGNUM);
       if (need_fp)
@@ -1540,12 +1583,8 @@ find_reg_equiv_invariant_const (void)
 
 	  x = XEXP (note, 0);
 
-	  if (! function_invariant_p (x)
-	      || ! flag_pic
-	      /* A function invariant is often CONSTANT_P but may
-		 include a register.  We promise to only pass CONSTANT_P
-		 objects to LEGITIMATE_PIC_OPERAND_P.  */
-	      || (CONSTANT_P (x) && LEGITIMATE_PIC_OPERAND_P (x)))
+	  if (! CONSTANT_P (x)
+	      || ! flag_pic || LEGITIMATE_PIC_OPERAND_P (x))
 	    {
 	      /* It can happen that a REG_EQUIV note contains a MEM
 		 that is not a legitimate memory operand.  As later
@@ -1745,8 +1784,7 @@ fix_reg_equiv_init (void)
 
   if (reg_equiv_init_size < max_regno)
     {
-      reg_equiv_init
-	= (rtx *) ggc_realloc (reg_equiv_init, max_regno * sizeof (rtx));
+      reg_equiv_init = GGC_RESIZEVEC (rtx, reg_equiv_init, max_regno);
       while (reg_equiv_init_size < max_regno)
 	reg_equiv_init[reg_equiv_init_size++] = NULL_RTX;
       for (i = FIRST_PSEUDO_REGISTER; i < reg_equiv_init_size; i++)
@@ -1887,7 +1925,7 @@ mark_elimination (int from, int to)
   FOR_EACH_BB (bb)
     {
       /* We don't use LIVE info in IRA.  */
-      regset r = DF_LR_IN (bb);
+      bitmap r = DF_LR_IN (bb);
 
       if (REGNO_REG_SET_P (r, from))
 	{
@@ -2282,6 +2320,22 @@ no_equiv (rtx reg, const_rtx store ATTRIBUTE_UNUSED, void *data ATTRIBUTE_UNUSED
     }
 }
 
+/* In DEBUG_INSN location adjust REGs from CLEARED_REGS bitmap to the
+   equivalent replacement.  */
+
+static rtx
+adjust_cleared_regs (rtx loc, const_rtx old_rtx ATTRIBUTE_UNUSED, void *data)
+{
+  if (REG_P (loc))
+    {
+      bitmap cleared_regs = (bitmap) data;
+      if (bitmap_bit_p (cleared_regs, REGNO (loc)))
+	return simplify_replace_fn_rtx (*reg_equiv[REGNO (loc)].src_p,
+					NULL_RTX, adjust_cleared_regs, data);
+    }
+  return NULL_RTX;
+}
+
 /* Nonzero if we recorded an equivalence for a LABEL_REF.  */
 static int recorded_label_ref;
 
@@ -2309,7 +2363,7 @@ update_equiv_regs (void)
   recorded_label_ref = 0;
 
   reg_equiv = XCNEWVEC (struct equivalence, max_regno);
-  reg_equiv_init = GGC_CNEWVEC (rtx, max_regno);
+  reg_equiv_init = ggc_alloc_cleared_vec_rtx (max_regno);
   reg_equiv_init_size = max_regno;
 
   init_alias_analysis ();
@@ -2717,13 +2771,29 @@ update_equiv_regs (void)
     }
 
   if (!bitmap_empty_p (cleared_regs))
-    FOR_EACH_BB (bb)
-      {
-	bitmap_and_compl_into (DF_LIVE_IN (bb), cleared_regs);
-	bitmap_and_compl_into (DF_LIVE_OUT (bb), cleared_regs);
-	bitmap_and_compl_into (DF_LR_IN (bb), cleared_regs);
-	bitmap_and_compl_into (DF_LR_OUT (bb), cleared_regs);
-      }
+    {
+      FOR_EACH_BB (bb)
+	{
+	  bitmap_and_compl_into (DF_LIVE_IN (bb), cleared_regs);
+	  bitmap_and_compl_into (DF_LIVE_OUT (bb), cleared_regs);
+	  bitmap_and_compl_into (DF_LR_IN (bb), cleared_regs);
+	  bitmap_and_compl_into (DF_LR_OUT (bb), cleared_regs);
+	}
+
+      /* Last pass - adjust debug insns referencing cleared regs.  */
+      if (MAY_HAVE_DEBUG_INSNS)
+	for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+	  if (DEBUG_INSN_P (insn))
+	    {
+	      rtx old_loc = INSN_VAR_LOCATION_LOC (insn);
+	      INSN_VAR_LOCATION_LOC (insn)
+		= simplify_replace_fn_rtx (old_loc, NULL_RTX,
+					   adjust_cleared_regs,
+					   (void *) cleared_regs);
+	      if (old_loc != INSN_VAR_LOCATION_LOC (insn))
+		df_insn_rescan (insn);
+	    }
+    }
 
   BITMAP_FREE (cleared_regs);
 
@@ -3072,8 +3142,19 @@ build_insn_chain (void)
   if (dump_file)
     print_insn_chains (dump_file);
 }
-
 
+/* Allocate memory for reg_equiv_memory_loc.  */
+static void
+init_reg_equiv_memory_loc (void)
+{
+  max_regno = max_reg_num ();
+
+  /* And the reg_equiv_memory_loc array.  */
+  VEC_safe_grow (rtx, gc, reg_equiv_memory_loc_vec, max_regno);
+  memset (VEC_address (rtx, reg_equiv_memory_loc_vec), 0,
+	  sizeof (rtx) * max_regno);
+  reg_equiv_memory_loc = VEC_address (rtx, reg_equiv_memory_loc_vec);
+}
 
 /* All natural loops.  */
 struct loops ira_loops;
@@ -3094,6 +3175,9 @@ ira (FILE *f)
   basic_block bb;
 
   timevar_push (TV_IRA);
+
+  if (flag_caller_saves)
+    init_caller_save ();
 
   if (flag_ira_verbose < 10)
     {
@@ -3175,6 +3259,8 @@ ira (FILE *f)
   record_loop_exits ();
   current_loops = &ira_loops;
 
+  init_reg_equiv_memory_loc ();
+
   if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)
     fprintf (ira_dump_file, "Building IRA IR\n");
   loops_p = ira_build (optimize
@@ -3235,13 +3321,8 @@ ira (FILE *f)
 #endif
 
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
-  max_regno = max_reg_num ();
 
-  /* And the reg_equiv_memory_loc array.  */
-  VEC_safe_grow (rtx, gc, reg_equiv_memory_loc_vec, max_regno);
-  memset (VEC_address (rtx, reg_equiv_memory_loc_vec), 0,
-	  sizeof (rtx) * max_regno);
-  reg_equiv_memory_loc = VEC_address (rtx, reg_equiv_memory_loc_vec);
+  init_reg_equiv_memory_loc ();
 
   if (max_regno != max_regno_before_ira)
     {

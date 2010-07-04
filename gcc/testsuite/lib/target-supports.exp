@@ -1,4 +1,4 @@
-#   Copyright (C) 1999, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+#   Copyright (C) 1999, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 #    Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -29,10 +29,17 @@
 # If ARGS is not empty, its first element is a string that
 # should be added to the command line.
 #
-# Assume by default that CONTENTS is C code.  C++ code should contain
-# "// C++" and Fortran code should contain "! Fortran".
+# Assume by default that CONTENTS is C code.  
+# Otherwise, code should contain:
+# "// C++" for c++,
+# "! Fortran" for Fortran code,
+# "/* ObjC", for ObjC
+# and "// ObjC++" for ObjC++
+# If the tool is ObjC/ObjC++ then we overide the extension to .m/.mm to 
+# allow for ObjC/ObjC++ specific flags.
 proc check_compile {basename type contents args} {
     global tool
+    verbose "check_compile tool: $tool for $basename" 
 
     if { [llength $args] > 0 } {
 	set options [list "additional_flags=[lindex $args 0]"]
@@ -42,8 +49,17 @@ proc check_compile {basename type contents args} {
     switch -glob -- $contents {
 	"*! Fortran*" { set src ${basename}[pid].f90 }
 	"*// C++*" { set src ${basename}[pid].cc }
-	default { set src ${basename}[pid].c }
+	"*// ObjC++*" { set src ${basename}[pid].mm }
+	"*/* ObjC*" { set src ${basename}[pid].m }
+	default {
+	    switch -- $tool {
+		"objc" { set src ${basename}[pid].m }
+		"obj-c++" { set src ${basename}[pid].mm }
+		default { set src ${basename}[pid].c }
+	    }
+	}
     }
+
     set compile_type $type
     switch -glob $type {
 	assembly { set output ${basename}[pid].s }
@@ -976,6 +992,30 @@ proc check_vmx_hw_available { } {
     }]
 }
 
+proc check_ppc_recip_hw_available { } {
+    return [check_cached_effective_target ppc_recip_hw_available {
+	# Some simulators may not support FRE/FRES/FRSQRTE/FRSQRTES
+	# For now, disable on Darwin
+	if { [istarget powerpc-*-eabi] || [istarget powerpc*-*-eabispe] || [istarget *-*-darwin*]} {
+	    expr 0
+	} else {
+	    set options "-mpowerpc-gfxopt -mpowerpc-gpopt -mpopcntb"
+	    check_runtime_nocache ppc_recip_hw_available {
+		volatile double d_recip, d_rsqrt, d_four = 4.0;
+		volatile float f_recip, f_rsqrt, f_four = 4.0f;
+		int main()
+		{
+		  asm volatile ("fres %0,%1" : "=f" (f_recip) : "f" (f_four));
+		  asm volatile ("fre %0,%1" : "=d" (d_recip) : "d" (d_four));
+		  asm volatile ("frsqrtes %0,%1" : "=f" (f_rsqrt) : "f" (f_four));
+		  asm volatile ("frsqrte %0,%1" : "=f" (d_rsqrt) : "d" (d_four));
+		  return 0;
+		}
+	    } $options
+	}
+    }]
+}
+
 # Return 1 if the target supports executing AltiVec and Cell PPU
 # instructions, 0 otherwise.  Cache the result.
 
@@ -1188,6 +1228,25 @@ proc check_cxa_atexit_available { } {
     }]
 }
 
+proc check_effective_target_objc2 { } {
+    return [check_no_compiler_messages objc2 object {
+	#ifdef __OBJC2__
+	int dummy[1];
+	#else
+	#error
+	#endif 
+    }]
+}
+
+proc check_effective_target_next_runtime { } {
+    return [check_no_compiler_messages objc2 object {
+	#ifdef __NEXT_RUNTIME__
+	int dummy[1];
+	#else
+	#error
+	#endif 
+    }]
+}
 
 # Return 1 if we're generating 32-bit code using default options, 0
 # otherwise.
@@ -1336,13 +1395,39 @@ proc check_effective_target_dfp { } {
 }
 
 # Return 1 if the target supports linking and executing Decimal Floating
-# Point, # 0 otherwise.
+# Point, 0 otherwise.
 #
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_dfprt { } {
     return [check_cached_effective_target dfprt {
 	check_effective_target_dfprt_nocache
+    }]
+}
+
+# Return 1 if the target supports compiling and assembling UCN, 0 otherwise.
+
+proc check_effective_target_ucn_nocache { } {
+    # -std=c99 is only valid for C
+    if [check_effective_target_c] {
+	set ucnopts "-std=c99"
+    }
+    append ucnopts " -fextended-identifiers"
+    verbose "check_effective_target_ucn_nocache: compiling source" 2
+    set ret [check_no_compiler_messages_nocache ucn object {
+	int \u00C0;
+    } $ucnopts]
+    verbose "check_effective_target_ucn_nocache: returning $ret" 2
+    return $ret
+}
+
+# Return 1 if the target supports compiling and assembling UCN, 0 otherwise.
+#
+# This won't change for different subtargets, so cache the result.
+
+proc check_effective_target_ucn { } {
+    return [check_cached_effective_target ucn {
+	check_effective_target_ucn_nocache
     }]
 }
 
@@ -1439,6 +1524,19 @@ proc check_effective_target_vect_intfloat_cvt { } {
     return $et_vect_intfloat_cvt_saved
 }
 
+#Return 1 if we're supporting __int128 for target, 0 otherwise.
+
+proc check_effective_target_int128 { } {
+    return [check_no_compiler_messages int128 object {
+	int dummy[
+    	#ifndef __SIZEOF_INT128__
+    	-1
+    	#else
+    	1
+    	#endif
+	];
+    }]
+}
 
 # Return 1 if the target supports unsigned int->float conversion 
 #
@@ -1542,19 +1640,87 @@ proc check_effective_target_arm_hard_vfp_ok { } {
     }
 }
 
+# Add the options needed for NEON.  We need either -mfloat-abi=softfp
+# or -mfloat-abi=hard, but if one is already specified by the
+# multilib, use it.  Similarly, if a -mfpu option already enables
+# NEON, do not add -mfpu=neon.
+
+proc add_options_for_arm_neon { flags } {
+    if { ! [check_effective_target_arm_neon_ok] } {
+	return "$flags"
+    }
+    global et_arm_neon_flags
+    return "$flags $et_arm_neon_flags"
+}
+
 # Return 1 if this is an ARM target supporting -mfpu=neon
-# -mfloat-abi=softfp.  Some multilibs may be incompatible with these
-# options.
+# -mfloat-abi=softfp or equivalent options.  Some multilibs may be
+# incompatible with these options.  Also set et_arm_neon_flags to the
+# best options to add.
+
+proc check_effective_target_arm_neon_ok_nocache { } {
+    global et_arm_neon_flags
+    set et_arm_neon_flags ""
+    if { [check_effective_target_arm32] } {
+	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=neon" "-mfpu=neon -mfloat-abi=softfp"} {
+	    if { [check_no_compiler_messages_nocache arm_neon_ok object {
+		#include "arm_neon.h"
+		int dummy;
+	    } "$flags"] } {
+		set et_arm_neon_flags $flags
+		return 1
+	    }
+	}
+    }
+
+    return 0
+}
 
 proc check_effective_target_arm_neon_ok { } {
-    if { [check_effective_target_arm32] } {
-        return [check_no_compiler_messages arm_neon_ok object {
-	    #include "arm_neon.h"
-            int dummy;
-        } "-mfpu=neon -mfloat-abi=softfp"]
-    } else {
-        return 0
+    return [check_cached_effective_target arm_neon_ok \
+		check_effective_target_arm_neon_ok_nocache]
+}
+
+# Add the options needed for NEON.  We need either -mfloat-abi=softfp
+# or -mfloat-abi=hard, but if one is already specified by the
+# multilib, use it.
+
+proc add_options_for_arm_neon_fp16 { flags } {
+    if { ! [check_effective_target_arm_neon_fp16_ok] } {
+	return "$flags"
     }
+    global et_arm_neon_fp16_flags
+    return "$flags $et_arm_neon_fp16_flags"
+}
+
+# Return 1 if this is an ARM target supporting -mfpu=neon-fp16
+# -mfloat-abi=softfp or equivalent options.  Some multilibs may be
+# incompatible with these options.  Also set et_arm_neon_flags to the
+# best options to add.
+
+proc check_effective_target_arm_neon_fp16_ok_nocache { } {
+    global et_arm_neon_fp16_flags
+    set et_arm_neon_fp16_flags ""
+    if { [check_effective_target_arm32] } {
+	# Always add -mfpu=neon-fp16, since there is no preprocessor
+	# macro for FP16 support.
+	foreach flags {"-mfpu=neon-fp16" "-mfpu=neon-fp16 -mfloat-abi=softfp"} {
+	    if { [check_no_compiler_messages_nocache arm_neon_fp16_ok object {
+		#include "arm_neon.h"
+		int dummy;
+	    } "$flags"] } {
+		set et_arm_neon_fp16_flags $flags
+		return 1
+	    }
+	}
+    }
+
+    return 0
+}
+
+proc check_effective_target_arm_neon_fp16_ok { } {
+    return [check_cached_effective_target arm_neon_fp16_ok \
+		check_effective_target_arm_neon_fp16_ok_nocache]
 }
 
 # Return 1 is this is an ARM target where -mthumb causes Thumb-1 to be
@@ -1593,7 +1759,7 @@ proc check_effective_target_arm_neon_hw { } {
 	       : "0" (a), "w" (b));
 	  return (a != 1);
 	}
-    } "-mfpu=neon -mfloat-abi=softfp"]
+    } [add_options_for_arm_neon ""]]
 }
 
 # Return 1 if this is a ARM target with NEON enabled.
@@ -2044,6 +2210,25 @@ proc check_effective_target_vect_perm { } {
     return $et_vect_perm_saved
 }
 
+# Return 1 if the target plus current options supports a vector
+# widening summation of *short* args into *int* result, 0 otherwise.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_vect_widen_sum_hi_to_si_pattern { } {
+    global et_vect_widen_sum_hi_to_si_pattern
+
+    if [info exists et_vect_widen_sum_hi_to_si_pattern_saved] {
+        verbose "check_effective_target_vect_widen_sum_hi_to_si_pattern: using cached result" 2
+    } else {
+        set et_vect_widen_sum_hi_to_si_pattern_saved 0
+        if { [istarget powerpc*-*-*] } {
+            set et_vect_widen_sum_hi_to_si_pattern_saved 1
+        }
+    }
+    verbose "check_effective_target_vect_widen_sum_hi_to_si_pattern: returning $et_vect_widen_sum_hi_to_si_pattern_saved" 2
+    return $et_vect_widen_sum_hi_to_si_pattern_saved
+}
 
 # Return 1 if the target plus current options supports a vector
 # widening summation of *short* args into *int* result, 0 otherwise.
@@ -2811,6 +2996,8 @@ proc is-effective-target { arg } {
     } else {
 	switch $arg {
 	  "vmx_hw"         { set selected [check_vmx_hw_available] }
+	  "vsx_hw"         { set selected [check_vsx_hw_available] }
+	  "ppc_recip_hw"   { set selected [check_ppc_recip_hw_available] }
 	  "named_sections" { set selected [check_named_sections_available] }
 	  "gc_sections"    { set selected [check_gc_sections_available] }
 	  "cxa_atexit"     { set selected [check_cxa_atexit_available] }
@@ -2830,6 +3017,8 @@ proc is-effective-target-keyword { arg } {
 	# These have different names for their check_* procs.
 	switch $arg {
 	  "vmx_hw"         { return 1 }
+	  "vsx_hw"         { return 1 }
+	  "ppc_recip_hw"   { return 1 }
 	  "named_sections" { return 1 }
 	  "gc_sections"    { return 1 }
 	  "cxa_atexit"     { return 1 }
@@ -3072,6 +3261,18 @@ proc check_effective_target_avx { } {
     } "-O2 -mavx" ]
 }
 
+# Return 1 if sse2 instructions can be compiled.
+proc check_effective_target_sse2 { } {
+    return [check_no_compiler_messages sse2 object {
+	typedef long long __m128i __attribute__ ((__vector_size__ (16)));
+	
+	__m128i _mm_srli_si128 (__m128i __A, int __N)
+	{
+	    return (__m128i)__builtin_ia32_psrldqi128 (__A, 8);
+	}
+    } "-O2 -msse2" ]
+}
+
 # Return 1 if C wchar_t type is compatible with char16_t.
 
 proc check_effective_target_wchar_t_char16_t_compatible { } {
@@ -3130,6 +3331,28 @@ proc check_effective_target_correct_iso_cpp_string_wchar_protos { } {
 	int i;
 	#endif
     }]
+}
+
+# Return 1 if GNU as is used.
+
+proc check_effective_target_gas { } {
+    global use_gas_saved
+    global tool
+
+    if {![info exists use_gas_saved]} {
+	# Check if the as used by gcc is GNU as.
+	set gcc_as [lindex [${tool}_target_compile "-print-prog-name=as" "" "none" ""] 0]
+	# Provide /dev/null as input, otherwise gas times out reading from
+	# stdin.
+	set status [remote_exec host "$gcc_as" "-v /dev/null"]
+	set as_output [lindex $status 1]
+	if { [ string first "GNU" $as_output ] >= 0 } {
+	    set use_gas_saved 1
+	} else {
+	    set use_gas_saved 0
+	}
+    }
+    return $use_gas_saved
 }
 
 # Return 1 if the compiler has been configure with link-time optimization

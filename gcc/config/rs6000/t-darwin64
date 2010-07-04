@@ -1,0 +1,12 @@
+LIB2_SIDITI_CONV_FUNCS=yes
+
+LIB2FUNCS_EXTRA = $(srcdir)/config/rs6000/darwin-tramp.asm \
+	$(srcdir)/config/darwin-64.c \
+	$(srcdir)/config/rs6000/darwin-ldouble.c \
+	$(srcdir)/config/rs6000/darwin-world.asm
+
+MULTILIB_OPTIONS = m32
+MULTILIB_DIRNAMES = ppc
+
+#LIBGCC = stmp-multilib
+#INSTALL_LIBGCC = install-multilib

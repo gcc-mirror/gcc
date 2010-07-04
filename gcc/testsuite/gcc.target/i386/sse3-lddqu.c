@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-require-effective-target sse3 } */
 /* { dg-options "-O2 -msse3 -mfpmath=sse" } */
 
 #ifndef CHECK_H

@@ -14,7 +14,7 @@ class java::lang::SecurityManager$1 : public ::java::lang::Object
 public: // actually package-private
   SecurityManager$1(::java::lang::SecurityManager *, ::java::lang::String *);
 public:
-  ::java::lang::Object * run();
+  virtual ::java::lang::Object * run();
 public: // actually package-private
   ::java::lang::SecurityManager * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 private:

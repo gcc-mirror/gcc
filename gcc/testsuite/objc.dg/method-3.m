@@ -1,9 +1,10 @@
 /* Test for sending messages to aliased classes (and instances thereof).  */
 /* Author: Ziemowit Laski <zlaski@apple.com>.  */
-/* { dg-options "-lobjc" } */
+/* { dg-options "" } */
 /* { dg-do run } */
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
 
-#include <objc/Object.h>
+#include "../objc-obj-c++-shared/Object1.h"
 
 extern void abort(void);
 #define CHECK_IF(expr) if(!(expr)) abort()
@@ -43,3 +44,5 @@ int main(void) {
   CHECK_IF([(Int1Alias *)int2typedef instanceMeth] == 1697);
   return 0;
 }
+
+#include "../objc-obj-c++-shared/Object1-implementation.h"

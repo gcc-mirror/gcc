@@ -34,15 +34,12 @@
 #ifndef _GLIBCXX_PROFILE_UNORDERED_SET
 #define _GLIBCXX_PROFILE_UNORDERED_SET 1
 
-#include <profile/base.h>
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-# include <unordered_set>
-#else
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
 # include <bits/c++0x_warning.h>
-#endif
+#else
+# include <unordered_set>
 
-#include <initializer_list>
+#include <profile/base.h>
 
 #define _GLIBCXX_BASE unordered_set<_Key, _Hash, _Pred, _Alloc>
 #define _GLIBCXX_STD_BASE _GLIBCXX_STD_PR::_GLIBCXX_BASE
@@ -262,6 +259,18 @@ namespace __profile
 	 unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
     { __x.swap(__y); }
 
+  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
+    inline bool
+    operator==(const unordered_set<_Value, _Hash, _Pred, _Alloc>& __x,
+	       const unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
+    { return __x._M_equal(__y); }
+
+  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
+    inline bool
+    operator!=(const unordered_set<_Value, _Hash, _Pred, _Alloc>& __x,
+	       const unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
+    { return !(__x == __y); }
+
 #undef _GLIBCXX_BASE
 #undef _GLIBCXX_STD_BASE
 #define _GLIBCXX_STD_BASE _GLIBCXX_STD_PR::_GLIBCXX_BASE
@@ -474,10 +483,24 @@ namespace __profile
 	 unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
     { __x.swap(__y); }
 
+  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
+    inline bool
+    operator==(const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
+	       const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
+    { return __x._M_equal(__y); }
+
+  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
+    inline bool
+    operator!=(const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
+	       const unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
+    { return !(__x == __y); }
+
 } // namespace __profile
 } // namespace std
 
 #undef _GLIBCXX_BASE
 #undef _GLIBCXX_STD_BASE
+
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #endif

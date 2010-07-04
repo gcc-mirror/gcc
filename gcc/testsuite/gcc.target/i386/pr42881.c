@@ -1,6 +1,8 @@
 /* PR target/42881 */
 /* { dg-do run } */
 /* { dg-options "-O0 -msse2" } */
+/* { dg-require-effective-target sse2 } */
+
 #include "sse2-check.h"
 static void
 sse2_test (void)

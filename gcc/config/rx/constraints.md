@@ -63,6 +63,13 @@
   )
 )
 
+(define_constraint "NEGint4"
+  "@internal An signed 4-bit negative immediate value"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, -15, -1)")
+  )
+)
+
 ;; This is used in arithmetic and logic instructions for
 ;; a source operand that lies in memory and which satisfies
 ;; rx_restricted_memory_address().

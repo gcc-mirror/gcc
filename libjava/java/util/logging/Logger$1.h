@@ -14,7 +14,7 @@ class java::util::logging::Logger$1 : public ::java::lang::Object
 public: // actually package-private
   Logger$1();
 public:
-  ::java::lang::Object * run();
+  virtual ::java::lang::Object * run();
   static ::java::lang::Class class$;
 };
 

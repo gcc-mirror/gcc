@@ -9,14 +9,12 @@
  * interfere with what we are testing, which is that the `bycopy'
  * keyword generates the _F_BYCOPY qualifier for the return type.  */
 
-#include <objc/objc.h>
-#include <objc/Object.h>
-#include <objc/Protocol.h>
+#include "../../objc-obj-c++-shared/next-mapping.h"
+#include "../../objc-obj-c++-shared/Protocol1.h"
 
 #ifndef __NEXT_RUNTIME__
 #include <objc/encoding.h>
 #endif
-#include "next_mapping.h"
 
 @protocol MyProtocol
 + (bycopy id<MyProtocol>) bycopyMethod;

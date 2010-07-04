@@ -40,16 +40,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include <errno.h>
+#include <signal.h>
+#if ! defined( SIGCHLD ) && defined( SIGCLD )
+#  define SIGCHLD SIGCLD
+#endif
 #include "intl.h"
 #include "libiberty.h"
+#include "obstack.h"
 
-int debug;				/* true if -debug */
+#ifndef HAVE_KILL
+#define kill(p,s) raise(s)
+#endif
+
+int debug;				/* true if -save-temps.  */
+int verbose;				/* true if -v.  */
 
 enum lto_mode_d {
-  LTO_MODE_NONE,			/* Not doing LTO. */
-  LTO_MODE_LTO,				/* Normal LTO. */
-  LTO_MODE_WHOPR			/* WHOPR. */
+  LTO_MODE_NONE,			/* Not doing LTO.  */
+  LTO_MODE_LTO,				/* Normal LTO.  */
+  LTO_MODE_WHOPR			/* WHOPR.  */
 };
 
 /* Current LTO mode.  */
@@ -58,29 +68,52 @@ static enum lto_mode_d lto_mode = LTO_MODE_NONE;
 static char *ltrans_output_file;
 static char *flto_out;
 static char *args_name;
+static unsigned int nr;
+static char **input_names;
+static char **output_names;
+static char *makefile;
 
 static void maybe_unlink_file (const char *);
 
-/* Delete tempfiles and exit function.  */
+ /* Delete tempfiles.  */
 
 static void
-lto_wrapper_exit (int status)
+lto_wrapper_cleanup (void)
 {
   static bool cleanup_done = false;
-  if (!cleanup_done)
-    {
-      /* Setting cleanup_done prevents an infinite loop if one of the
-         calls to maybe_unlink_file fails. */
-      cleanup_done = true;
+  unsigned int i;
 
-      if (ltrans_output_file)
-        maybe_unlink_file (ltrans_output_file);
-      if (flto_out)
-        maybe_unlink_file (flto_out);
-      if (args_name)
-        maybe_unlink_file (args_name);
+  if (cleanup_done)
+    return;
+
+  /* Setting cleanup_done prevents an infinite loop if one of the
+     calls to maybe_unlink_file fails. */
+  cleanup_done = true;
+
+  if (ltrans_output_file)
+    maybe_unlink_file (ltrans_output_file);
+  if (flto_out)
+    maybe_unlink_file (flto_out);
+  if (args_name)
+    maybe_unlink_file (args_name);
+  if (makefile)
+    maybe_unlink_file (makefile);
+  for (i = 0; i < nr; ++i)
+    {
+      maybe_unlink_file (input_names[i]);
+      if (output_names[i])
+	maybe_unlink_file (output_names[i]);
     }
-  exit (status);
+}
+
+static void
+fatal_signal (int signum)
+{
+  signal (signum, SIG_DFL);
+  lto_wrapper_cleanup ();
+  /* Get the same signal again, this time not handled,
+     so its normal effect occurs.  */
+  kill (getpid (), signum);
 }
 
 /* Just die. CMSGID is the error message. */
@@ -96,7 +129,8 @@ fatal (const char * cmsgid, ...)
   fprintf (stderr, "\n");
   va_end (ap);
 
-  lto_wrapper_exit (FATAL_EXIT_CODE);
+  lto_wrapper_cleanup ();
+  exit (FATAL_EXIT_CODE);
 }
 
 
@@ -114,7 +148,8 @@ fatal_perror (const char *cmsgid, ...)
   fprintf (stderr, ": %s\n", xstrerror (e));
   va_end (ap);
 
-  lto_wrapper_exit (FATAL_EXIT_CODE);
+  lto_wrapper_cleanup ();
+  exit (FATAL_EXIT_CODE);
 }
 
 
@@ -128,7 +163,7 @@ collect_execute (char **argv)
   const char *errmsg;
   int err;
 
-  if (debug)
+  if (verbose)
     {
       char **p_argv;
       const char *str;
@@ -146,7 +181,10 @@ collect_execute (char **argv)
   if (pex == NULL)
     fatal_perror ("pex_init failed");
 
-  errmsg = pex_run (pex, PEX_LAST | PEX_SEARCH, argv[0], argv, NULL,
+  /* Do not use PEX_LAST here, we use our stdout for communicating with
+     collect2 or the linker-plugin.  Any output from the sub-process
+     will confuse that.  */
+  errmsg = pex_run (pex, PEX_SEARCH, argv[0], argv, NULL,
 		    NULL, &err);
   if (errmsg != NULL)
     {
@@ -203,7 +241,8 @@ maybe_unlink_file (const char *file)
 {
   if (! debug)
     {
-      if (unlink_if_ordinary (file))
+      if (unlink_if_ordinary (file)
+	  && errno != ENOENT)
 	fatal_perror ("deleting LTRANS file %s", file);
     }
   else
@@ -243,36 +282,139 @@ fork_execute (char **argv)
   collect_wait (new_argv[0], pex);
 
   maybe_unlink_file (args_name);
+  args_name = NULL;
   free (at_args);
 }
 
+/* Template of LTRANS dumpbase suffix.  */
+#define DUMPBASE_SUFFIX ".ltrans18446744073709551615"
 
 /* Execute gcc. ARGC is the number of arguments. ARGV contains the arguments. */
 
 static void
 run_gcc (unsigned argc, char *argv[])
 {
-  unsigned i;
-  unsigned new_argc = argc;
+  unsigned i, j;
   const char **new_argv;
   const char **argv_ptr;
   char *list_option_full = NULL;
+  const char *linker_output = NULL;
+  const char *collect_gcc_options, *collect_gcc;
+  struct obstack env_obstack;
+  bool seen_o = false;
+  int parallel = 0;
 
-  new_argc += 12;
-  new_argv = (const char **) xcalloc (sizeof (char *), new_argc);
+  /* Get the driver and options.  */
+  collect_gcc = getenv ("COLLECT_GCC");
+  if (!collect_gcc)
+    fatal ("environment variable COLLECT_GCC must be set");
 
+  /* Set the CFLAGS environment variable.  */
+  collect_gcc_options = getenv ("COLLECT_GCC_OPTIONS");
+  if (!collect_gcc_options)
+    fatal ("environment variable COLLECT_GCC_OPTIONS must be set");
+
+  /* Count arguments.  */
+  i = 0;
+  for (j = 0; collect_gcc_options[j] != '\0'; ++j)
+    if (collect_gcc_options[j] == '\'')
+      ++i;
+
+  if (i % 2 != 0)
+    fatal ("malformed COLLECT_GCC_OPTIONS");
+
+  /* Initalize the common arguments for the driver.  */
+  new_argv = (const char **) xmalloc ((15 + i / 2 + argc) * sizeof (char *));
   argv_ptr = new_argv;
-
-  *argv_ptr++ = argv[0];
-  *argv_ptr++ = "-combine";
-  *argv_ptr++ = "-x";
-  *argv_ptr++ = "lto";
+  *argv_ptr++ = collect_gcc;
+  *argv_ptr++ = "-xlto";
   *argv_ptr++ = "-c";
+  for (j = 0; collect_gcc_options[j] != '\0'; ++j)
+    if (collect_gcc_options[j] == '\'')
+      {
+	char *option;
+
+	++j;
+	i = j;
+	while (collect_gcc_options[j] != '\'')
+	  ++j;
+
+	obstack_init (&env_obstack);
+	obstack_grow (&env_obstack, &collect_gcc_options[i], j - i);
+	obstack_1grow (&env_obstack, 0);
+	option = XOBFINISH (&env_obstack, char *);
+	if (seen_o)
+	  {
+	    linker_output = option;
+	    seen_o = false;
+	    continue;
+	  }
+
+	/* If we see -o, skip it and skip and record its argument.  */
+	if (option[0] == '-' && option[1] == 'o')
+	  {
+	    if (option[2] == '\0')
+	      seen_o = true;
+	    else
+	      linker_output = &option[2];
+	    continue;
+	  }
+
+	if (strcmp (option, "-save-temps") == 0)
+	  debug = 1;
+	if (strcmp (option, "-v") == 0)
+	  verbose = 1;
+
+	/* We've handled these LTO options, do not pass them on.  */
+	if (strcmp (option, "-flto") == 0)
+	  lto_mode = LTO_MODE_LTO;
+	else if (strncmp (option, "-fwhopr", 7) == 0)
+	  {
+	    lto_mode = LTO_MODE_WHOPR;
+	    if (option[7] == '=')
+	      {
+		parallel = atoi (option+8);
+		if (parallel <= 1)
+		  parallel = 0;
+	      }
+	  }
+	else
+	  *argv_ptr++ = option;
+      }
+
+  if (linker_output)
+    {
+      char *output_dir, *base, *name;
+
+      output_dir = xstrdup (linker_output);
+      base = output_dir;
+      for (name = base; *name; name++)
+	if (IS_DIR_SEPARATOR (*name))
+	  base = name + 1;
+      *base = '\0';
+
+      linker_output = &linker_output[base - output_dir];
+      if (*output_dir == '\0')
+	{
+	  static char current_dir[] = { '.', DIR_SEPARATOR, '\0' };
+	  output_dir = current_dir;
+	}
+      *argv_ptr++ = "-dumpdir";
+      *argv_ptr++ = output_dir;
+
+      *argv_ptr++ = "-dumpbase";
+    }
+  else
+    argv_ptr--;
+
   if (lto_mode == LTO_MODE_LTO)
     {
       flto_out = make_temp_file (".lto.o");
-      *argv_ptr++ = "-o";
-      *argv_ptr++ = flto_out;
+      if (linker_output)
+	argv_ptr[0] = linker_output;
+      argv_ptr[1] = "-o";
+      argv_ptr[2] = flto_out;
+      argv_ptr[3] = "-combine";
     }
   else if (lto_mode == LTO_MODE_WHOPR)
     {
@@ -280,78 +422,45 @@ run_gcc (unsigned argc, char *argv[])
       size_t list_option_len = strlen (list_option);
       char *tmp;
 
-      ltrans_output_file = make_temp_file (".ltrans.out");
+      if (linker_output)
+	{
+	  char *dumpbase = (char *) xmalloc (strlen (linker_output)
+					     + sizeof (".wpa") + 1);
+	  strcpy (dumpbase, linker_output);
+	  strcat (dumpbase, ".wpa");
+	  argv_ptr[0] = dumpbase;
+	}
+
+      if (linker_output && debug)
+	{
+	  ltrans_output_file = (char *) xmalloc (strlen (linker_output)
+						 + sizeof (".ltrans.out") + 1);
+	  strcpy (ltrans_output_file, linker_output);
+	  strcat (ltrans_output_file, ".ltrans.out");
+	}
+      else
+	ltrans_output_file = make_temp_file (".ltrans.out");
       list_option_full = (char *) xmalloc (sizeof (char) *
 		         (strlen (ltrans_output_file) + list_option_len + 1));
       tmp = list_option_full;
 
-      *argv_ptr++ = tmp;
+      argv_ptr[1] = tmp;
       strcpy (tmp, list_option);
       tmp += list_option_len;
       strcpy (tmp, ltrans_output_file);
 
-      *argv_ptr++ = "-fwpa";
+      argv_ptr[2] = "-fwpa";
+      argv_ptr[3] = "-combine";
     }
   else
     fatal ("invalid LTO mode");
 
-  /* Add inherited GCC options to the LTO back end command line.
-     Filter out some obviously inappropriate options that will
-     conflict with  the options that we force above.  We pass
-     all of the remaining options on to LTO, and let it complain
-     about any it doesn't like. Note that we invoke LTO via the
-     `gcc' driver, so the usual option processing takes place.
-     Except for `-flto' and `-fwhopr', we should only filter options that
-     are meaningful to `ld', lest an option go silently unclaimed.  */
-  for (i = 1; i < argc; i++)
-    {
-      const char *s = argv[i];
-
-      if (strcmp (s, "-flto") == 0 || strcmp (s, "-fwhopr") == 0)
-	/* We've handled this LTO option, don't pass it on.  */
-	;
-      else if (*s == '-' && s[1] == 'o')
-	{
-	  /* Drop `-o' and its filename argument.  We will use a
-	     temporary file for the LTO output.  The `-o' option
-	     will be interpreted by the linker.  */
-	  if (s[2] == '\0')
-	    {
-	      char *output_dir, *base, *name;
-
-	      i++;
-	      output_dir = xstrdup (argv[i]);
-	      base = output_dir;
-	      for (name = base; *name; name++)
-		if (IS_DIR_SEPARATOR (*name))
-		  base = name + 1;
-	      *base = '\0';
-
-	      *argv_ptr++ = "-dumpbase";
-	      if (*output_dir == '\0')
-		{
-		  static char current_dir[] =
-		    { '.', DIR_SEPARATOR, '\0' };
-		  output_dir = current_dir;
-		  *argv_ptr++ = argv[i];
-		}
-	      else
-		*argv_ptr++ = &argv[i][base - output_dir];
-
-	      *argv_ptr++ = "-dumpdir";
-	      *argv_ptr++ = output_dir;
-	    }
-	}
-      else
-	/* Pass the option or argument to LTO.  */
-	*argv_ptr++ = s;
-    }
-
-  *argv_ptr = NULL;
+  /* Append the input objects and possible preceeding arguments.  */
+  for (i = 1; i < argc; ++i)
+    argv_ptr[3 + i] = argv[i];
+  argv_ptr[3 + i] = NULL;
 
   fork_execute (CONST_CAST (char **, new_argv));
-  free (new_argv);
-  new_argv = NULL;
 
   if (lto_mode == LTO_MODE_LTO)
     {
@@ -362,47 +471,140 @@ run_gcc (unsigned argc, char *argv[])
   else if (lto_mode == LTO_MODE_WHOPR)
     {
       FILE *stream = fopen (ltrans_output_file, "r");
-      int c;
+      FILE *mstream = NULL;
 
       if (!stream)
 	fatal_perror ("fopen: %s", ltrans_output_file);
 
-      while ((c = getc (stream)) != EOF)
-	putc (c, stdout);
+      /* Parse the list of LTRANS inputs from the WPA stage.  */
+      nr = 0;
+      for (;;)
+	{
+	  const unsigned piece = 32;
+	  char *output_name = NULL;
+	  char *buf, *input_name = (char *)xmalloc (piece);
+	  size_t len;
+
+	  buf = input_name;
+cont:
+	  if (!fgets (buf, piece, stream))
+	    break;
+	  len = strlen (input_name);
+	  if (input_name[len - 1] != '\n')
+	    {
+	      input_name = (char *)xrealloc (input_name, len + piece);
+	      buf = input_name + len;
+	      goto cont;
+	    }
+	  input_name[len - 1] = '\0';
+
+	  if (input_name[0] == '*')
+	    output_name = &input_name[1];
+
+	  nr++;
+	  input_names = (char **)xrealloc (input_names, nr * sizeof (char *));
+	  output_names = (char **)xrealloc (output_names, nr * sizeof (char *));
+	  input_names[nr-1] = input_name;
+	  output_names[nr-1] = output_name;
+	}
       fclose (stream);
       maybe_unlink_file (ltrans_output_file);
+      ltrans_output_file = NULL;
+
+      if (parallel)
+	{
+	  makefile = make_temp_file (".mk");
+	  mstream = fopen (makefile, "w");
+	}
+
+      /* Execute the LTRANS stage for each input file (or prepare a
+	 makefile to invoke this in parallel).  */
+      for (i = 0; i < nr; ++i)
+	{
+	  char *output_name;
+	  char *input_name = input_names[i];
+	  /* If it's a pass-through file do nothing.  */
+	  if (output_names[i])
+	    continue;
+
+	  /* Replace the .o suffix with a .ltrans.o suffix and write
+	     the resulting name to the LTRANS output list.  */
+	  obstack_init (&env_obstack);
+	  obstack_grow (&env_obstack, input_name, strlen (input_name) - 2);
+	  obstack_grow (&env_obstack, ".ltrans.o", sizeof (".ltrans.o"));
+	  output_name = XOBFINISH (&env_obstack, char *);
+
+	  /* Adjust the dumpbase if the linker output file was seen.  */
+	  if (linker_output)
+	    {
+	      char *dumpbase
+		  = (char *) xmalloc (strlen (linker_output)
+				      + sizeof(DUMPBASE_SUFFIX) + 1);
+	      snprintf (dumpbase,
+			strlen (linker_output) + sizeof(DUMPBASE_SUFFIX),
+			"%s.ltrans%u", linker_output, i);
+	      argv_ptr[0] = dumpbase;
+	    }
+
+	  argv_ptr[1] = "-fltrans";
+	  argv_ptr[2] = "-o";
+	  argv_ptr[3] = output_name;
+	  argv_ptr[4] = input_name;
+	  argv_ptr[5] = NULL;
+	  if (parallel)
+	    {
+	      fprintf (mstream, "%s:\n\t@%s ", output_name, new_argv[0]);
+	      for (j = 1; new_argv[j] != NULL; ++j)
+		fprintf (mstream, " '%s'", new_argv[j]);
+	      fprintf (mstream, "\n");
+	    }
+	  else
+	    fork_execute (CONST_CAST (char **, new_argv));
+
+	  output_names[i] = output_name;
+	}
+      if (parallel)
+	{
+	  struct pex_obj *pex;
+	  char jobs[32];
+	  fprintf (mstream, "all:");
+	  for (i = 0; i < nr; ++i)
+	    fprintf (mstream, " \\\n\t%s", output_names[i]);
+	  fprintf (mstream, "\n");
+	  fclose (mstream);
+	  /* Avoid passing --jobserver-fd= and similar flags.  */
+	  putenv (xstrdup ("MAKEFLAGS="));
+	  putenv (xstrdup ("MFLAGS="));
+	  new_argv[0] = getenv ("MAKE");
+	  if (!new_argv[0])
+	    new_argv[0] = "make";
+	  new_argv[1] = "-f";
+	  new_argv[2] = makefile;
+	  snprintf (jobs, 31, "-j%d", parallel);
+	  new_argv[3] = jobs;
+	  new_argv[4] = "all";
+	  new_argv[5] = NULL;
+	  pex = collect_execute (CONST_CAST (char **, new_argv));
+	  collect_wait (new_argv[0], pex);
+	  maybe_unlink_file (makefile);
+	  makefile = NULL;
+	}
+      for (i = 0; i < nr; ++i)
+	{
+	  fputs (output_names[i], stdout);
+	  putc ('\n', stdout);
+	  maybe_unlink_file (input_names[i]);
+	  free (input_names[i]);
+	}
+      nr = 0;
+      free (output_names);
+      free (input_names);
       free (list_option_full);
     }
   else
     fatal ("invalid LTO mode");
-}
 
-
-/* Parse the command line. Copy any unused argument to GCC_ARGV. ARGC is the
-   number of arguments. ARGV contains the arguments. */
-
-static int
-process_args (int argc, char *argv[], char *gcc_argv[])
-{
-  int i;
-  int j = 0;
-
-  for (i = 1; i < argc; i ++)
-    {
-      if (! strcmp (argv[i], "-debug"))
-	debug = 1;
-      else if (! strcmp (argv[i], "-flto"))
-	lto_mode = LTO_MODE_LTO;
-      else if (! strcmp (argv[i], "-fwhopr"))
-	lto_mode = LTO_MODE_WHOPR;
-      else
-	{
-	  gcc_argv[j] = argv[i];
-	  j++;
-	}
-    }
-
-  return j;
+  obstack_free (&env_obstack, NULL);
 }
 
 
@@ -411,18 +613,30 @@ process_args (int argc, char *argv[], char *gcc_argv[])
 int
 main (int argc, char *argv[])
 {
-  char **gcc_argv;
-  int gcc_argc;
-
   gcc_init_libintl ();
+
+  if (signal (SIGINT, SIG_IGN) != SIG_IGN)
+    signal (SIGINT, fatal_signal);
+#ifdef SIGHUP
+  if (signal (SIGHUP, SIG_IGN) != SIG_IGN)
+    signal (SIGHUP, fatal_signal);
+#endif
+  if (signal (SIGTERM, SIG_IGN) != SIG_IGN)
+    signal (SIGTERM, fatal_signal);
+#ifdef SIGPIPE
+  if (signal (SIGPIPE, SIG_IGN) != SIG_IGN)
+    signal (SIGPIPE, fatal_signal);
+#endif
+#ifdef SIGCHLD
+  /* We *MUST* set SIGCHLD to SIG_DFL so that the wait4() call will
+     receive the signal.  A different setting is inheritable */
+  signal (SIGCHLD, SIG_DFL);
+#endif
 
   /* We may be called with all the arguments stored in some file and
      passed with @file.  Expand them into argv before processing.  */
   expandargv (&argc, &argv);
-  gcc_argv = (char **) xcalloc (sizeof (char *), argc);
-  gcc_argc = process_args (argc, argv, gcc_argv);
-  run_gcc (gcc_argc, gcc_argv);
-  free (gcc_argv);
+  run_gcc (argc, argv);
 
   return 0;
 }

@@ -1,6 +1,7 @@
 // 1999-04-12 bkoz
 
-// Copyright (C) 1999, 2000, 2002, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2002, 2003, 2009, 2010
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +36,7 @@ std::stringbuf isbuf_02(str_02, std::ios_base::in);
 std::stringbuf isbuf_03(str_03, std::ios_base::in);
 std::stringbuf isbuf_04(str_04, std::ios_base::in);
 
-std::istream is_01(NULL);
+std::istream is_01(0);
 std::istream is_02(&isbuf_02);
 std::istream is_03(&isbuf_03);
 std::istream is_04(&isbuf_04);
@@ -61,11 +62,8 @@ bool test01() {
   long double 		ld1 = 0;
 
   // process alphanumeric versions of bool values
-  std::ios_base::fmtflags fmt = is_02.flags();
-  bool testfmt = fmt & std::ios_base::boolalpha;
   is_02.setf(std::ios_base::boolalpha);
-  fmt = is_02.flags();
-  testfmt = fmt & std::ios_base::boolalpha;
+  is_02.flags();
   is_02 >> b1;
   VERIFY( b1 == 1 );
   is_02 >> b1;
@@ -73,8 +71,7 @@ bool test01() {
 
   // process numeric versions of of bool values
   is_02.unsetf(std::ios_base::boolalpha);
-  fmt = is_02.flags();
-  testfmt = fmt & std::ios_base::boolalpha;
+  is_02.flags();
   is_02 >> b1;
   VERIFY( b1 == 0 );
   is_02 >> b1;

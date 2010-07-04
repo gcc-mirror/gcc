@@ -69,8 +69,8 @@ PB_DS_node_begin_imp() const
 {
   return const_node_iterator(const_cast<pointer>(mid_pointer(begin(), end())),
 			      const_cast<pointer>(begin()),
-			      const_cast<pointer>(end()),(m_a_metadata == NULL)?
-			      NULL :
+			      const_cast<pointer>(end()),(m_a_metadata == 0)?
+			      0 :
 			      mid_pointer(m_a_metadata, m_a_metadata + m_size));
 }
 
@@ -80,7 +80,7 @@ PB_DS_CLASS_C_DEC::
 PB_DS_node_end_imp() const
 {
   return const_node_iterator(end(), end(), end(),
-		     (m_a_metadata == NULL) ? NULL : m_a_metadata + m_size);
+		     (m_a_metadata == 0) ? 0 : m_a_metadata + m_size);
 }
 
 PB_DS_CLASS_T_DEC
@@ -89,7 +89,7 @@ PB_DS_CLASS_C_DEC::
 PB_DS_node_begin_imp()
 {
   return node_iterator(mid_pointer(begin(), end()), begin(), end(),
-		       (m_a_metadata == NULL) ? NULL : mid_pointer(m_a_metadata, m_a_metadata + m_size));
+		       (m_a_metadata == 0) ? 0 : mid_pointer(m_a_metadata, m_a_metadata + m_size));
 }
 
 PB_DS_CLASS_T_DEC
@@ -98,6 +98,6 @@ PB_DS_CLASS_C_DEC::
 PB_DS_node_end_imp()
 {
   return node_iterator(end(), end(),
-		  end(),(m_a_metadata == NULL) ? NULL : m_a_metadata + m_size);
+		  end(),(m_a_metadata == 0) ? 0 : m_a_metadata + m_size);
 }
 

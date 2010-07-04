@@ -19,7 +19,7 @@
 
 // TR1 2.2.2 Template class shared_ptr [tr.util.smartptr.shared]
 
-#include <tr1/memory>  // { dg-excess-errors "In file included from" }
+#include <tr1/memory>
 #include <testsuite_hooks.h>
 
 struct A { };

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2009, AdaCore                     --
+--                     Copyright (C) 1999-2010, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -106,12 +106,12 @@
 --     end loop;
 --  end;
 
---  The example above have shown how to parse the command line when the
---  arguments are read directly from Ada.Command_Line. However, these arguments
---  can also be read from a list of strings. This can be useful in several
---  contexts, either because your system does not support Ada.Command_Line, or
---  because you are manipulating other tools and creating their command line by
---  hand, or for any other reason.
+--  The examples above show how to parse the command line when the arguments
+--  are read directly from Ada.Command_Line. However, these arguments can also
+--  be read from a list of strings. This can be useful in several contexts,
+--  either because your system does not support Ada.Command_Line, or because
+--  you are manipulating other tools and creating their command lines by hand,
+--  or for any other reason.
 
 --  To create the list of strings, it is recommended to use
 --  GNAT.OS_Lib.Argument_String_To_List.
@@ -140,10 +140,10 @@
 --  adding or removing arguments from them. The resulting command line is kept
 --  as short as possible by coalescing arguments whenever possible.
 
---  Complex command lines can thus be constructed, for example from an GUI
+--  Complex command lines can thus be constructed, for example from a GUI
 --  (although this package does not by itself depend upon any specific GUI
---  toolkit). For instance, if you are configuring the command line to use
---  when spawning a tool with the following characteristics:
+--  toolkit). For instance, if you are configuring the command line to use when
+--  spawning a tool with the following characteristics:
 
 --    * Specifying -gnatwa is the same as specifying -gnatwu -gnatwv, but
 --      shorter and more readable
@@ -298,7 +298,7 @@ package GNAT.Command_Line is
    --      as a switch (returned by getopt), otherwise it will be considered
    --      as a normal argument (returned by Get_Argument).
    --
-   --  If SECTION_DELIMITERS is set, then every following subprogram
+   --  If Section_Delimiters is set, then every following subprogram
    --  (Getopt and Get_Argument) will only operate within a section, which
    --  is delimited by any of these delimiters or the end of the command line.
    --
@@ -306,9 +306,9 @@ package GNAT.Command_Line is
    --      Initialize_Option_Scan (Section_Delimiters => "largs bargs cargs");
    --
    --      Arguments on command line : my_application -c -bargs -d -e -largs -f
-   --      This line is made of three section, the first one is the default one
+   --      This line contains three sections, the first one is the default one
    --      and includes only the '-c' switch, the second one is between -bargs
-   --      and -largs and includes '-d -e' and the last one includes '-f'
+   --      and -largs and includes '-d -e' and the last one includes '-f'.
 
    procedure Free (Parser : in out Opt_Parser);
    --  Free the memory used by the parser. Calling this is not mandatory for
@@ -317,16 +317,18 @@ package GNAT.Command_Line is
    procedure Goto_Section
      (Name   : String := "";
       Parser : Opt_Parser := Command_Line_Parser);
-   --  Change the current section. The next Getopt of Get_Argument will start
+   --  Change the current section. The next Getopt or Get_Argument will start
    --  looking at the beginning of the section. An empty name ("") refers to
    --  the first section between the program name and the first section
-   --  delimiter. If the section does not exist, then Invalid_Section is
-   --  raised.
+   --  delimiter. If the section does not exist in Section_Delimiters, then
+   --  Invalid_Section is raised. If the section does not appear on the command
+   --  line, then it is treated as an empty section.
 
    function Full_Switch
      (Parser : Opt_Parser := Command_Line_Parser) return String;
-   --  Returns the full name of the last switch found (Getopt only returns
-   --  the first character)
+   --  Returns the full name of the last switch found (Getopt only returns the
+   --  first character). Does not include the Switch_Char ('-' by default),
+   --  unless the "*" option of Getopt is used (see below).
 
    function Getopt
      (Switches    : String;
@@ -336,13 +338,13 @@ package GNAT.Command_Line is
    --  switch character followed by a character within Switches, casing being
    --  significant). The result returned is the first character of the switch
    --  that is located. If there are no more switches in the current section,
-   --  returns ASCII.NUL. If Concatenate is True (by default), the switches
-   --  does not need to be separated by spaces (they can be concatenated if
-   --  they do not require an argument, e.g. -ab is the same as two separate
-   --  arguments -a -b).
+   --  returns ASCII.NUL. If Concatenate is True (the default), the switches do
+   --  not need to be separated by spaces (they can be concatenated if they do
+   --  not require an argument, e.g. -ab is the same as two separate arguments
+   --  -a -b).
    --
-   --  Switches is a string of all the possible switches, separated by a
-   --  space. A switch can be followed by one of the following characters:
+   --  Switches is a string of all the possible switches, separated by
+   --  spaces. A switch can be followed by one of the following characters:
    --
    --   ':'  The switch requires a parameter. There can optionally be a space
    --        on the command line between the switch and its parameter.
@@ -389,14 +391,14 @@ package GNAT.Command_Line is
    --    Example
    --       Getopt ("* a b")
    --       If the command line is '-a -c toto.o -b', Getopt will return
-   --       successively 'a', '*', '*' and 'b'. When '*' is returned,
-   --       Full_Switch returns the corresponding item on the command line.
+   --       successively 'a', '*', '*' and 'b', with Full_Switch returning
+   --       "a", "-c", "toto.o", and "b".
    --
    --  When Getopt encounters an invalid switch, it raises the exception
    --  Invalid_Switch and sets Full_Switch to return the invalid switch.
    --  When Getopt cannot find the parameter associated with a switch, it
    --  raises Invalid_Parameter, and sets Full_Switch to return the invalid
-   --  switch character.
+   --  switch.
    --
    --  Note: in case of ambiguity, e.g. switches a ab abc, then the longest
    --  matching switch is returned.
@@ -416,33 +418,31 @@ package GNAT.Command_Line is
    function Get_Argument
      (Do_Expansion : Boolean := False;
       Parser       : Opt_Parser := Command_Line_Parser) return String;
-   --  Returns the next element on the command line which is not a switch.
-   --  This function should not be called before Getopt has returned
-   --  ASCII.NUL.
+   --  Returns the next element on the command line that is not a switch.  This
+   --  function should not be called before Getopt has returned ASCII.NUL.
    --
-   --  If Expansion is True, then the parameter on the command line will be
-   --  considered as a filename with wild cards, and will be expanded. The
-   --  matching file names will be returned one at a time. When there are no
-   --  more arguments on the command line, this function returns an empty
-   --  string. This is useful in non-Unix systems for obtaining normal
-   --  expansion of wild card references.
+   --  If Do_Expansion is True, then the parameter on the command line will
+   --  be considered as a filename with wild cards, and will be expanded. The
+   --  matching file names will be returned one at a time. This is useful in
+   --  non-Unix systems for obtaining normal expansion of wild card references.
+   --  When there are no more arguments on the command line, this function
+   --  returns an empty string.
 
    function Parameter
      (Parser : Opt_Parser := Command_Line_Parser) return String;
-   --  Returns the parameter associated with the last switch returned by
-   --  Getopt. If no parameter was associated with the last switch, or no
-   --  previous call has been made to Get_Argument, raises Invalid_Parameter.
-   --  If the last switch was associated with an optional argument and this
-   --  argument was not found on the command line, Parameter returns an empty
-   --  string.
+   --  Returns parameter associated with the last switch returned by Getopt.
+   --  If no parameter was associated with the last switch, or no previous call
+   --  has been made to Get_Argument, raises Invalid_Parameter. If the last
+   --  switch was associated with an optional argument and this argument was
+   --  not found on the command line, Parameter returns an empty string.
 
    function Separator
      (Parser : Opt_Parser := Command_Line_Parser) return Character;
    --  The separator that was between the switch and its parameter. This is
-   --  of little use in general, only if you want to know exactly what was on
-   --  the command line. This is in general a single character, set to
-   --  ASCII.NUL if the switch and the parameter were concatenated. A space is
-   --  returned if the switch and its argument were in two separate arguments.
+   --  useful if you want to know exactly what was on the command line. This
+   --  is in general a single character, set to ASCII.NUL if the switch and
+   --  the parameter were concatenated. A space is returned if the switch and
+   --  its argument were in two separate arguments.
 
    type Expansion_Iterator is limited private;
    --  Type used during expansion of file names
@@ -462,16 +462,15 @@ package GNAT.Command_Line is
    --  Subdirectories of Directory will also be searched, up to one
    --  hundred levels deep.
    --
-   --  When Start_Expansion has been called, function Expansion should be
-   --  called repeatedly until it returns an empty string, before
+   --  When Start_Expansion has been called, function Expansion should
+   --  be called repeatedly until it returns an empty string, before
    --  Start_Expansion can be called again with the same Expansion_Iterator
    --  variable.
 
    function Expansion (Iterator : Expansion_Iterator) return String;
    --  Returns the next file in the directory matching the parameters given
    --  to Start_Expansion and updates Iterator to point to the next entry.
-   --  Returns an empty string when there is no more file in the directory
-   --  and its subdirectories.
+   --  Returns an empty string when there are no more files.
    --
    --  If Expansion is called again after an empty string has been returned,
    --  then the exception GNAT.Directory_Operations.Directory_Error is raised.
@@ -508,31 +507,31 @@ package GNAT.Command_Line is
      (Config   : in out Command_Line_Configuration;
       Prefix   : String);
    --  Indicates that all switches starting with the given prefix should be
-   --  grouped. For instance, for the GNAT compiler we would define "-gnatw"
-   --  as a prefix, so that "-gnatwu -gnatwv" can be grouped into "-gnatwuv"
-   --  It is assume that the remaining of the switch ("uv") is a set of
-   --  characters whose order is irrelevant. In fact, this package will sort
-   --  them alphabetically.
+   --  grouped. For instance, for the GNAT compiler we would define "-gnatw" as
+   --  a prefix, so that "-gnatwu -gnatwv" can be grouped into "-gnatwuv" It is
+   --  assumed that the remainder of the switch ("uv") is a set of characters
+   --  whose order is irrelevant. In fact, this package will sort them
+   --  alphabetically.
 
    procedure Define_Switch
      (Config : in out Command_Line_Configuration;
       Switch : String);
    --  Indicates a new switch. The format of this switch follows the getopt
    --  format (trailing ':', '?', etc for defining a switch with parameters).
-   --  The switches defined in the command_line_configuration object are used
+   --  The switches defined in the Command_Line_Configuration object are used
    --  when ungrouping switches with more that one character after the prefix.
 
    procedure Define_Section
      (Config  : in out Command_Line_Configuration;
       Section : String);
-   --  Indicates a new switch section. Every switch belonging to the same
+   --  Indicates a new switch section. All switches belonging to the same
    --  section are ordered together, preceded by the section. They are placed
-   --  at the end of the command line (as in 'gnatmake somefile.adb -cargs -g')
+   --  at the end of the command line (as in "gnatmake somefile.adb -cargs -g")
 
    function Get_Switches
      (Config      : Command_Line_Configuration;
       Switch_Char : Character) return String;
-   --  Get the switches list as expected by getopt. This list is built using
+   --  Get the switches list as expected by Getopt. This list is built using
    --  all switches defined previously via Define_Switch above.
 
    procedure Free (Config : in out Command_Line_Configuration);
@@ -562,7 +561,7 @@ package GNAT.Command_Line is
    --  version with Switches.
    --
    --  The parsing of Switches is done through calls to Getopt, by passing
-   --  Getopt_Description as an argument. (a "*" is automatically prepended so
+   --  Getopt_Description as an argument. (A "*" is automatically prepended so
    --  that all switches and command line arguments are accepted).
    --
    --  To properly handle switches that take parameters, you should document
@@ -571,8 +570,8 @@ package GNAT.Command_Line is
    --  Command_Line_Iterator (which might be fine depending on your
    --  application).
    --
-   --  If the command line has sections (such as -bargs -largs -cargs), then
-   --  they should be listed in the Sections parameter (as "-bargs -cargs")
+   --  If the command line has sections (such as -bargs -cargs), then they
+   --  should be listed in the Sections parameter (as "-bargs -cargs").
    --
    --  This function can be used to reset Cmd by passing an empty string.
 
@@ -600,16 +599,16 @@ package GNAT.Command_Line is
    --  to pass "--check=full" to Remove_Switch as well.
    --
    --  A Switch with a parameter will never be grouped with another switch to
-   --  avoid ambiguities as to who the parameter applies to.
+   --  avoid ambiguities as to what the parameter applies to.
    --
    --  Separator is the character that goes between the switches and its
    --  parameter on the command line. If it is set to ASCII.NUL, then no
-   --  separator is applied, and they are concatenated
+   --  separator is applied, and they are concatenated.
    --
    --  If the switch is part of a section, then it should be specified so that
    --  the switch is correctly placed in the command line, and the section
    --  added if not already present. For example, to add the -g switch into the
-   --  -cargs section, you need to call (Cmd, "-g", Section => "-cargs")
+   --  -cargs section, you need to pass (Cmd, "-g", Section => "-cargs").
    --
    --  Add_Before allows insertion of the switch at the beginning of the
    --  command line.
@@ -667,6 +666,9 @@ package GNAT.Command_Line is
    --  Remove a switch with a specific parameter. If Parameter is the empty
    --  string, then only a switch with no parameter will be removed.
 
+   procedure Free (Cmd : in out Command_Line);
+   --  Free the memory used by Cmd
+
    ---------------
    -- Iteration --
    ---------------
@@ -702,9 +704,6 @@ package GNAT.Command_Line is
 
    procedure Next (Iter : in out Command_Line_Iterator);
    --  Move to the next switch
-
-   procedure Free (Cmd : in out Command_Line);
-   --  Free the memory used by Cmd
 
 private
 

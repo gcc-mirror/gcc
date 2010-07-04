@@ -1,5 +1,5 @@
 /* Nested function decomposition for GIMPLE.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -23,7 +23,6 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"
 #include "tm_p.h"
 #include "function.h"
 #include "tree-dump.h"
@@ -32,10 +31,9 @@
 #include "tree-iterator.h"
 #include "tree-flow.h"
 #include "cgraph.h"
-#include "expr.h"
+#include "expr.h"	/* FIXME: For STACK_SAVEAREA_MODE and SAVE_NONLOCAL.  */
 #include "langhooks.h"
 #include "pointer-set.h"
-#include "ggc.h"
 
 
 /* The object of this pass is to lower the representation of a set of nested
@@ -1088,7 +1086,8 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	    {
 	      bitmap_set_bit (new_suppress, DECL_UID (decl));
 	      OMP_CLAUSE_DECL (clause) = get_nonlocal_debug_decl (info, decl);
-	      need_chain = true;
+	      if (OMP_CLAUSE_CODE (clause) != OMP_CLAUSE_PRIVATE)
+		need_chain = true;
 	    }
 	  break;
 

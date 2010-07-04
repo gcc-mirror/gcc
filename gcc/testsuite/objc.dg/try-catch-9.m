@@ -5,7 +5,6 @@
 /* { dg-options "-fobjc-exceptions" } */
 /* { dg-do compile } */
 
-
 void foo (int *arg1, int *arg2)
 {
   *arg1 = *arg2;

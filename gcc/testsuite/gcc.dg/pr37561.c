@@ -1,7 +1,7 @@
 /* PR c++/37561 */
 /* { dg-do compile } */
 
-__PTRDIFF_TYPE__ p;
+__extension__ __PTRDIFF_TYPE__ p;
 char q;
 
 void

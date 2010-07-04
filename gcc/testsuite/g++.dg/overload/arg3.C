@@ -14,10 +14,9 @@ struct B : A
   B(B&);  // { dg-message "candidates" "" }
 };
 
-void foo(B);
+void foo(B);			// { dg-error "initializing" }
 
 void bar()
 {
   foo(0); // { dg-error "no matching function" "no matching" }
-          // { dg-error "initializing" "initializing" { target *-*-* } 21 }
 }

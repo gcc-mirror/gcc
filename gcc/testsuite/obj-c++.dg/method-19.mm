@@ -3,15 +3,12 @@
    root classes must be considered.  */
 /* Author: Ziemowit Laski <zlaski@apple.com>.  */
 /* { dg-do run } */
-
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+#include "../objc-obj-c++-shared/next-mapping.h"
 #include <objc/objc.h>
 
-#ifdef __NEXT_RUNTIME__
-#include <objc/objc-runtime.h>
-#define OBJC_GETCLASS objc_getClass
-#else
+#ifndef __NEXT_RUNTIME__
 #include <objc/objc-api.h>
-#define OBJC_GETCLASS objc_get_class
 #endif
 
 #include <stdlib.h>
@@ -59,7 +56,7 @@
 
 int main(void)
 {
-  Class obj = OBJC_GETCLASS("Derived");
+  Class obj = objc_get_class("Derived");
 
   /* None of the following should elicit compiler-time warnings.  */
 
@@ -78,3 +75,4 @@ int main(void)
 
   return 0;
 }
+#include "../objc-obj-c++-shared/Object1-implementation.h"

@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *         Copyright (C) 2004-2009, Free Software Foundation, Inc.          *
+ *         Copyright (C) 2004-2010, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -71,7 +71,6 @@
 
 #elif defined (WINNT)
 #define FD_SETSIZE 1024
-#include <windows.h>
 
 #ifdef __MINGW32__
 #include <winsock2.h>
@@ -160,6 +159,8 @@
 
 #endif
 
+#include <windows.h>
+
 #elif defined(VMS)
 #define FD_SETSIZE 4096
 #ifndef IN_RTS
@@ -179,14 +180,13 @@
 #endif
 
 /*
- * RTEMS has these .h files but not until you have built RTEMS.  When
- * IN_RTS, you only have the .h files in the newlib C library.
- * Because this file is also included from gen-soccon.c which is built
- * to run on RTEMS (not IN_RTS), we must distinguish between IN_RTS
- * and using this file to compile gen-soccon.
+ * RTEMS has these .h files but not until you have built and installed
+ * RTEMS. When building a C/C++ toolset, you also build the newlib C library.
+ * So the build procedure for an RTEMS GNAT toolset requires that
+ * you build a C/C++ toolset, then build and install RTEMS with 
+ * --enable-multilib, and finally build the Ada part of the toolset.
  */
-#if !(defined (VMS) || defined (__MINGW32__) || \
-      (defined(__rtems__) && defined(IN_RTS)))
+#if !(defined (VMS) || defined (__MINGW32__))
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -194,34 +194,37 @@
 #include <netdb.h>
 #endif
 
-/*
- * Handling of gethostbyname, gethostbyaddr, getservbyname and getservbyport
- * =========================================================================
- *
- * The default implementation of GNAT.Sockets.Thin requires that these
- * operations be either thread safe, or that a reentrant version getXXXbyYYY_r
- * be provided. In both cases, socket.c provides a __gnat_safe_getXXXbyYYY
- * function with the same signature as getXXXbyYYY_r. If the operating
- * system version of getXXXbyYYY is thread safe, the provided auxiliary
- * buffer argument is unused and ignored.
- *
- * Target specific versions of GNAT.Sockets.Thin for platforms that can't
- * fulfill these requirements must provide their own protection mechanism
- * in Safe_GetXXXbyYYY, and if they require GNAT.Sockets to provide a buffer
- * to this effect, then we need to set Need_Netdb_Buffer here (case of
- * VxWorks and VMS).
- */
-
-#if defined (_AIX) || defined (__FreeBSD__) || defined (__hpux__) || defined (__osf__) || defined (_WIN32) || defined (__APPLE__)
+#if defined (_AIX) || defined (__FreeBSD__) || defined (__hpux__) || \
+    defined (__osf__) || defined (_WIN32) || defined (__APPLE__)
 # define HAVE_THREAD_SAFE_GETxxxBYyyy 1
-#elif defined (sgi) || defined (linux) || defined (__GLIBC__) || (defined (sun) && defined (__SVR4) && !defined (__vxworks)) || defined(__rtems__)
+
+#elif defined (sgi) || defined (linux) || defined (__GLIBC__) || \
+     (defined (sun) && defined (__SVR4) && !defined (__vxworks)) || \
+      defined(__rtems__)
 # define HAVE_GETxxxBYyyy_R 1
 #endif
 
-#if defined (HAVE_GETxxxBYyyy_R) || !defined (HAVE_THREAD_SAFE_GETxxxBYyyy)
+/*
+ * Properties of the unerlying NetDB library:
+ *   Need_Netdb_Buffer __gnat_getXXXbyYYY expects a caller-supplied buffer
+ *   Need_Netdb_Lock   __gnat_getXXXbyYYY expects the caller to ensure
+ *                     mutual exclusion
+ *
+ * See "Handling of gethostbyname, gethostbyaddr, getservbyname and
+ * getservbyport" in socket.c for details.
+ */
+
+#if defined (HAVE_GETxxxBYyyy_R)
 # define Need_Netdb_Buffer 1
+# define Need_Netdb_Lock 0
+
 #else
 # define Need_Netdb_Buffer 0
+# if !defined (HAVE_THREAD_SAFE_GETxxxBYyyy)
+#  define Need_Netdb_Lock 1
+# else
+#  define Need_Netdb_Lock 0
+# endif
 #endif
 
 #if defined (__FreeBSD__) || defined (__vxworks) || defined(__rtems__)

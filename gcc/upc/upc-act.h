@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #define _UPC_ACT_H_
 
 
-extern int upc_handle_option (size_t, const char *, int);
+extern int upc_handle_option (size_t, const char *, int, int);
 extern bool upc_lang_init (void);
 extern void upc_finish (void);
 extern void upc_finish_file (void);

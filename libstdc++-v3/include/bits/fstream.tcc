@@ -64,21 +64,21 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       if (_M_buf_allocated)
 	{
 	  delete [] _M_buf;
-	  _M_buf = NULL;
+	  _M_buf = 0;
 	  _M_buf_allocated = false;
 	}
       delete [] _M_ext_buf;
-      _M_ext_buf = NULL;
+      _M_ext_buf = 0;
       _M_ext_buf_size = 0;
-      _M_ext_next = NULL;
-      _M_ext_end = NULL;
+      _M_ext_next = 0;
+      _M_ext_end = 0;
     }
 
   template<typename _CharT, typename _Traits>
     basic_filebuf<_CharT, _Traits>::
     basic_filebuf() : __streambuf_type(), _M_lock(), _M_file(&_M_lock),
     _M_mode(ios_base::openmode(0)), _M_state_beg(), _M_state_cur(),
-    _M_state_last(), _M_buf(NULL), _M_buf_size(BUFSIZ),
+    _M_state_last(), _M_buf(0), _M_buf_size(BUFSIZ),
     _M_buf_allocated(false), _M_reading(false), _M_writing(false), _M_pback(), 
     _M_pback_cur_save(0), _M_pback_end_save(0), _M_pback_init(false),
     _M_codecvt(0), _M_ext_buf(0), _M_ext_buf_size(0), _M_ext_next(0),
@@ -93,7 +93,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     basic_filebuf<_CharT, _Traits>::
     open(const char* __s, ios_base::openmode __mode)
     {
-      __filebuf_type *__ret = NULL;
+      __filebuf_type *__ret = 0;
       if (!this->is_open())
 	{
 	  _M_file.open(__s, __mode);
@@ -128,7 +128,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     close()
     {
       if (!this->is_open())
-	return NULL;
+	return 0;
 
       bool __testfail = false;
       {
@@ -167,7 +167,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	__testfail = true;
 
       if (__testfail)
-	return NULL;
+	return 0;
       else
 	return this;
     }

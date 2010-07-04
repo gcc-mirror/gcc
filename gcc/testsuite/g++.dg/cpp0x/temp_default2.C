@@ -1,7 +1,7 @@
 // { dg-options "-std=c++0x" }
 
 template <class T, class U = double> 
-void f(T t = 0, U u = 0); 
+void f(T t = 0, U u = 0); 	// { dg-message "candidate" }
 
 void g() 
 { 

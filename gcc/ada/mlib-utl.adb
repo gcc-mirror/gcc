@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2008, AdaCore                     --
+--                     Copyright (C) 2002-2010, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -460,11 +460,25 @@ package body MLib.Utl is
       end loop;
 
       if not Opt.Quiet_Output then
-         Write_Str (Driver.all);
+         if Opt.Verbose_Mode then
+            Write_Str (Driver.all);
+
+         elsif Driver_Name /= No_Name then
+            Write_Str (Get_Name_String (Driver_Name));
+
+         else
+            Write_Str (Gcc_Name.all);
+         end if;
 
          for J in 1 .. A loop
-            Write_Char (' ');
-            Write_Str  (Arguments (J).all);
+            if Opt.Verbose_Mode or else J < 4 then
+               Write_Char (' ');
+               Write_Str  (Arguments (J).all);
+
+            else
+               Write_Str (" ...");
+               exit;
+            end if;
          end loop;
 
          --  Do not display all the object files if not in verbose mode, only
@@ -480,10 +494,19 @@ package body MLib.Utl is
             elsif Position = Second then
                Write_Str (" ...");
                Position := Last;
+               exit;
             end if;
          end loop;
 
          for J in Options_2'Range loop
+            if not Opt.Verbose_Mode then
+               if Position = Second then
+                  Write_Str (" ...");
+               end if;
+
+               exit;
+            end if;
+
             Write_Char (' ');
             Write_Str (Options_2 (J).all);
          end loop;

@@ -283,8 +283,17 @@ st_endfile (st_parameter_filepos *fpp)
       if (u->flags.access == ACCESS_DIRECT)
 	{
 	  generate_error (&fpp->common, LIBERROR_OPTION_CONFLICT,
-			  "Cannot perform ENDFILE on a file opened"
-			  " for DIRECT access");
+			  "Cannot perform ENDFILE on a file opened "
+			  "for DIRECT access");
+	  goto done;
+	}
+
+      if (u->flags.access == ACCESS_SEQUENTIAL
+      	  && u->endfile == AFTER_ENDFILE)
+	{
+	  generate_error (&fpp->common, LIBERROR_OPTION_CONFLICT,
+			  "Cannot perform ENDFILE on a file already "
+			  "positioned after the EOF marker");
 	  goto done;
 	}
 
@@ -309,9 +318,49 @@ st_endfile (st_parameter_filepos *fpp)
       u->endfile = AFTER_ENDFILE;
       if (0 == stell (u->s))
         u->flags.position = POSITION_REWIND;
-    done:
-      unlock_unit (u);
     }
+  else
+    {
+      if (fpp->common.unit < 0)
+	{
+	  generate_error (&fpp->common, LIBERROR_BAD_OPTION,
+			  "Bad unit number in statement");
+	  return;
+	}
+
+      u = find_or_create_unit (fpp->common.unit);
+      if (u->s == NULL)
+	{
+	  /* Open the unit with some default flags.  */
+	  st_parameter_open opp;
+	  unit_flags u_flags;
+
+	  memset (&u_flags, '\0', sizeof (u_flags));
+	  u_flags.access = ACCESS_SEQUENTIAL;
+	  u_flags.action = ACTION_READWRITE;
+	  u_flags.form = FORM_UNSPECIFIED;
+	  u_flags.delim = DELIM_UNSPECIFIED;
+	  u_flags.blank = BLANK_UNSPECIFIED;
+	  u_flags.pad = PAD_UNSPECIFIED;
+	  u_flags.decimal = DECIMAL_UNSPECIFIED;
+	  u_flags.encoding = ENCODING_UNSPECIFIED;
+	  u_flags.async = ASYNC_UNSPECIFIED;
+	  u_flags.round = ROUND_UNSPECIFIED;
+	  u_flags.sign = SIGN_UNSPECIFIED;
+	  u_flags.status = STATUS_UNKNOWN;
+	  u_flags.convert = GFC_CONVERT_NATIVE;
+
+	  opp.common = fpp->common;
+	  opp.common.flags &= IOPARM_COMMON_MASK;
+	  u = new_unit (&opp, u, &u_flags);
+	  if (u == NULL)
+	    return;
+	  u->endfile = AFTER_ENDFILE;
+	}
+    }
+
+  done:
+    unlock_unit (u);
 
   library_end ();
 }

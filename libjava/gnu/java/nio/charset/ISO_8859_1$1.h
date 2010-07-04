@@ -30,8 +30,8 @@ class gnu::java::nio::charset::ISO_8859_1$1 : public ::gnu::java::nio::charset::
 public: // actually package-private
   ISO_8859_1$1();
 public: // actually protected
-  jboolean isMappable(jbyte);
-  jchar mapToChar(jbyte);
+  virtual jboolean isMappable(jbyte);
+  virtual jchar mapToChar(jbyte);
 public:
   static ::java::lang::Class class$;
 };

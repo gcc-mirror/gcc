@@ -158,8 +158,8 @@ package body GNAT.Serial_Communications is
       Buffer : out Stream_Element_Array;
       Last   : out Stream_Element_Offset)
    is
-      Len : constant int := Buffer'Length;
-      Res : int;
+      Len : constant size_t := Buffer'Length;
+      Res : ssize_t;
 
    begin
       if Port.H = null then
@@ -264,8 +264,8 @@ package body GNAT.Serial_Communications is
      (Port   : in out Serial_Port;
       Buffer : Stream_Element_Array)
    is
-      Len : constant int := Buffer'Length;
-      Res : int;
+      Len : constant size_t := Buffer'Length;
+      Res : ssize_t;
 
    begin
       if Port.H = null then
@@ -273,11 +273,12 @@ package body GNAT.Serial_Communications is
       end if;
 
       Res := write (int (Port.H.all), Buffer'Address, Len);
-      pragma Assert (Res = Len);
 
       if Res = -1 then
          Raise_Error ("write failed");
       end if;
+
+      pragma Assert (size_t (Res) = Len);
    end Write;
 
    -----------

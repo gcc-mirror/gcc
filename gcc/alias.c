@@ -1,6 +1,6 @@
 /* Alias analysis for GNU C
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-   2007, 2008, 2009 Free Software Foundation, Inc.
+   2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by John Carr (jfc@mit.edu).
 
 This file is part of GCC.
@@ -42,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "target.h"
 #include "cgraph.h"
-#include "varray.h"
 #include "tree-pass.h"
 #include "ipa-type-escape.h"
 #include "df.h"
@@ -265,11 +264,6 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
   if (!expr)
     return false;
 
-  /* If MEM_OFFSET or MEM_SIZE are NULL punt.  */
-  if (!MEM_OFFSET (mem)
-      || !MEM_SIZE (mem))
-    return false;
-
   ao_ref_init (ref, expr);
 
   /* Get the base of the reference and see if we have to reject or
@@ -278,15 +272,15 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
   if (base == NULL_TREE)
     return false;
 
+  /* The tree oracle doesn't like to have these.  */
+  if (TREE_CODE (base) == FUNCTION_DECL
+      || TREE_CODE (base) == LABEL_DECL)
+    return false;
+
   /* If this is a pointer dereference of a non-SSA_NAME punt.
      ???  We could replace it with a pointer to anything.  */
   if (INDIRECT_REF_P (base)
       && TREE_CODE (TREE_OPERAND (base, 0)) != SSA_NAME)
-    return false;
-
-  /* The tree oracle doesn't like to have these.  */
-  if (TREE_CODE (base) == FUNCTION_DECL
-      || TREE_CODE (base) == LABEL_DECL)
     return false;
 
   /* If this is a reference based on a partitioned decl replace the
@@ -306,6 +300,18 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
     }
 
   ref->ref_alias_set = MEM_ALIAS_SET (mem);
+
+  /* If MEM_OFFSET or MEM_SIZE are NULL we have to punt.
+     Keep points-to related information though.  */
+  if (!MEM_OFFSET (mem)
+      || !MEM_SIZE (mem))
+    {
+      ref->ref = NULL_TREE;
+      ref->offset = 0;
+      ref->size = -1;
+      ref->max_size = -1;
+      return true;
+    }
 
   /* If the base decl is a parameter we can have negative MEM_OFFSET in
      case of promoted subregs on bigendian targets.  Trust the MEM_EXPR
@@ -406,7 +412,7 @@ alias_set_subset_of (alias_set_type set1, alias_set_type set2)
   /* Otherwise, check if set1 is a subset of set2.  */
   ase = get_alias_set_entry (set2);
   if (ase != 0
-      && ((ase->has_zero_child && set1 == 0)
+      && (ase->has_zero_child
 	  || splay_tree_lookup (ase->children,
 			        (splay_tree_key) set1)))
     return true;
@@ -707,7 +713,7 @@ get_alias_set (tree t)
   t = TYPE_CANONICAL (t);
   /* Canonical types shouldn't form a tree nor should the canonical
      type require structural equality checks.  */
-  gcc_assert (!TYPE_STRUCTURAL_EQUALITY_P (t) && TYPE_CANONICAL (t) == t);
+  gcc_checking_assert (!TYPE_STRUCTURAL_EQUALITY_P (t) && TYPE_CANONICAL (t) == t);
 
   /* If this is a type with a known alias set, return it.  */
   if (TYPE_ALIAS_SET_KNOWN_P (t))
@@ -817,10 +823,12 @@ record_alias_subset (alias_set_type superset, alias_set_type subset)
     {
       /* Create an entry for the SUPERSET, so that we have a place to
 	 attach the SUBSET.  */
-      superset_entry = GGC_NEW (struct alias_set_entry_d);
+      superset_entry = ggc_alloc_cleared_alias_set_entry_d ();
       superset_entry->alias_set = superset;
       superset_entry->children
-	= splay_tree_new_ggc (splay_tree_compare_ints);
+	= splay_tree_new_ggc (splay_tree_compare_ints,
+			      ggc_alloc_splay_tree_scalar_scalar_splay_tree_s,
+			      ggc_alloc_splay_tree_scalar_scalar_splay_tree_node_s);
       superset_entry->has_zero_child = 0;
       VEC_replace (alias_set_entry, alias_sets, superset, superset_entry);
     }
@@ -1128,7 +1136,7 @@ record_set (rtx dest, const_rtx set, void *data ATTRIBUTE_UNUSED)
 
   regno = REGNO (dest);
 
-  gcc_assert (regno < VEC_length (rtx, reg_base_value));
+  gcc_checking_assert (regno < VEC_length (rtx, reg_base_value));
 
   /* If this spans multiple hard registers, then we must indicate that every
      register has an unusable value.  */
@@ -1684,14 +1692,7 @@ base_alias_check (rtx x, rtx y, enum machine_mode x_mode,
       || (GET_CODE (y_base) == ADDRESS && GET_MODE (y_base) == Pmode))
     return 0;
 
-  if (! flag_argument_noalias)
-    return 1;
-
-  if (flag_argument_noalias > 1)
-    return 0;
-
-  /* Weak noalias assertion (arguments are distinct, but may match globals).  */
-  return ! (GET_MODE (x_base) == VOIDmode && GET_MODE (y_base) == VOIDmode);
+  return 1;
 }
 
 /* Convert the address X into something we can use.  This is done by returning
@@ -1789,9 +1790,41 @@ static int
 memrefs_conflict_p (int xsize, rtx x, int ysize, rtx y, HOST_WIDE_INT c)
 {
   if (GET_CODE (x) == VALUE)
-    x = get_addr (x);
+    {
+      if (REG_P (y))
+	{
+	  struct elt_loc_list *l = NULL;
+	  if (CSELIB_VAL_PTR (x))
+	    for (l = CSELIB_VAL_PTR (x)->locs; l; l = l->next)
+	      if (REG_P (l->loc) && rtx_equal_for_memref_p (l->loc, y))
+		break;
+	  if (l)
+	    x = y;
+	  else
+	    x = get_addr (x);
+	}
+      /* Don't call get_addr if y is the same VALUE.  */
+      else if (x != y)
+	x = get_addr (x);
+    }
   if (GET_CODE (y) == VALUE)
-    y = get_addr (y);
+    {
+      if (REG_P (x))
+	{
+	  struct elt_loc_list *l = NULL;
+	  if (CSELIB_VAL_PTR (y))
+	    for (l = CSELIB_VAL_PTR (y)->locs; l; l = l->next)
+	      if (REG_P (l->loc) && rtx_equal_for_memref_p (l->loc, x))
+		break;
+	  if (l)
+	    y = x;
+	  else
+	    y = get_addr (y);
+	}
+      /* Don't call get_addr if x is the same VALUE.  */
+      else if (y != x)
+	y = get_addr (y);
+    }
   if (GET_CODE (x) == HIGH)
     x = XEXP (x, 0);
   else if (GET_CODE (x) == LO_SUM)
@@ -2147,6 +2180,13 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y)
   if (exprx == 0 || expry == 0)
     return 0;
 
+  /* For spill-slot accesses make sure we have valid offsets.  */
+  if ((exprx == get_spill_slot_decl (false)
+       && ! MEM_OFFSET (x))
+      || (expry == get_spill_slot_decl (false)
+	  && ! MEM_OFFSET (y)))
+    return 0;
+
   /* If both are field references, we may be able to determine something.  */
   if (TREE_CODE (exprx) == COMPONENT_REF
       && TREE_CODE (expry) == COMPONENT_REF
@@ -2158,57 +2198,21 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y)
   moffsetx = MEM_OFFSET (x);
   if (TREE_CODE (exprx) == COMPONENT_REF)
     {
-      if (TREE_CODE (expry) == VAR_DECL
-	  && POINTER_TYPE_P (TREE_TYPE (expry)))
-	{
-	 tree field = TREE_OPERAND (exprx, 1);
-	 tree fieldcontext = DECL_FIELD_CONTEXT (field);
-	 if (ipa_type_escape_field_does_not_clobber_p (fieldcontext,
-						       TREE_TYPE (field)))
-	   return 1;
-	}
-      {
-	tree t = decl_for_component_ref (exprx);
-	if (! t)
-	  return 0;
-	moffsetx = adjust_offset_for_component_ref (exprx, moffsetx);
-	exprx = t;
-      }
-    }
-  else if (INDIRECT_REF_P (exprx))
-    {
-      exprx = TREE_OPERAND (exprx, 0);
-      if (flag_argument_noalias < 2
-	  || TREE_CODE (exprx) != PARM_DECL)
+      tree t = decl_for_component_ref (exprx);
+      if (! t)
 	return 0;
+      moffsetx = adjust_offset_for_component_ref (exprx, moffsetx);
+      exprx = t;
     }
 
   moffsety = MEM_OFFSET (y);
   if (TREE_CODE (expry) == COMPONENT_REF)
     {
-      if (TREE_CODE (exprx) == VAR_DECL
-	  && POINTER_TYPE_P (TREE_TYPE (exprx)))
-	{
-	 tree field = TREE_OPERAND (expry, 1);
-	 tree fieldcontext = DECL_FIELD_CONTEXT (field);
-	 if (ipa_type_escape_field_does_not_clobber_p (fieldcontext,
-						       TREE_TYPE (field)))
-	   return 1;
-	}
-      {
-	tree t = decl_for_component_ref (expry);
-	if (! t)
-	  return 0;
-	moffsety = adjust_offset_for_component_ref (expry, moffsety);
-	expry = t;
-      }
-    }
-  else if (INDIRECT_REF_P (expry))
-    {
-      expry = TREE_OPERAND (expry, 0);
-      if (flag_argument_noalias < 2
-	  || TREE_CODE (expry) != PARM_DECL)
+      tree t = decl_for_component_ref (expry);
+      if (! t)
 	return 0;
+      moffsety = adjust_offset_for_component_ref (expry, moffsety);
+      expry = t;
     }
 
   if (! DECL_P (exprx) || ! DECL_P (expry))
@@ -2333,8 +2337,18 @@ true_dependence (const_rtx mem, enum machine_mode mem_mode, const_rtx x,
   if (mem_mode == VOIDmode)
     mem_mode = GET_MODE (mem);
 
-  x_addr = get_addr (XEXP (x, 0));
-  mem_addr = get_addr (XEXP (mem, 0));
+  x_addr = XEXP (x, 0);
+  mem_addr = XEXP (mem, 0);
+  if (!((GET_CODE (x_addr) == VALUE
+	 && GET_CODE (mem_addr) != VALUE
+	 && reg_mentioned_p (x_addr, mem_addr))
+	|| (GET_CODE (x_addr) != VALUE
+	    && GET_CODE (mem_addr) == VALUE
+	    && reg_mentioned_p (mem_addr, x_addr))))
+    {
+      x_addr = get_addr (x_addr);
+      mem_addr = get_addr (mem_addr);
+    }
 
   base = find_base_term (x_addr);
   if (base && (GET_CODE (base) == LABEL_REF
@@ -2416,7 +2430,16 @@ canon_true_dependence (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
     return 1;
 
   if (! x_addr)
-    x_addr = get_addr (XEXP (x, 0));
+    {
+      x_addr = XEXP (x, 0);
+      if (!((GET_CODE (x_addr) == VALUE
+	     && GET_CODE (mem_addr) != VALUE
+	     && reg_mentioned_p (x_addr, mem_addr))
+	    || (GET_CODE (x_addr) != VALUE
+		&& GET_CODE (mem_addr) == VALUE
+		&& reg_mentioned_p (mem_addr, x_addr))))
+	x_addr = get_addr (x_addr);
+    }
 
   if (! base_alias_check (x_addr, mem_addr, GET_MODE (x), mem_mode))
     return 0;
@@ -2485,8 +2508,18 @@ write_dependence_p (const_rtx mem, const_rtx x, int writep)
   if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
     return 1;
 
-  x_addr = get_addr (XEXP (x, 0));
-  mem_addr = get_addr (XEXP (mem, 0));
+  x_addr = XEXP (x, 0);
+  mem_addr = XEXP (mem, 0);
+  if (!((GET_CODE (x_addr) == VALUE
+	 && GET_CODE (mem_addr) != VALUE
+	 && reg_mentioned_p (x_addr, mem_addr))
+	|| (GET_CODE (x_addr) != VALUE
+	    && GET_CODE (mem_addr) == VALUE
+	    && reg_mentioned_p (mem_addr, x_addr))))
+    {
+      x_addr = get_addr (x_addr);
+      mem_addr = get_addr (mem_addr);
+    }
 
   if (! writep)
     {
@@ -2608,7 +2641,7 @@ init_alias_analysis (void)
   timevar_push (TV_ALIAS_ANALYSIS);
 
   reg_known_value_size = maxreg - FIRST_PSEUDO_REGISTER;
-  reg_known_value = GGC_CNEWVEC (rtx, reg_known_value_size);
+  reg_known_value = ggc_alloc_cleared_vec_rtx (reg_known_value_size);
   reg_known_equiv_p = XCNEWVEC (bool, reg_known_value_size);
 
   /* If we have memory allocated from the previous run, use it.  */

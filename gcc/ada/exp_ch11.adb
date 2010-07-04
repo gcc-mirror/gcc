@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -469,9 +469,7 @@ package body Exp_Ch11 is
                Local_Expansion_Required := True;
 
                declare
-                  L : constant Entity_Id :=
-                        Make_Defining_Identifier (Sloc (H),
-                          Chars => New_Internal_Name ('L'));
+                  L : constant Entity_Id := Make_Temporary (Sloc (H), 'L');
                begin
                   Set_Exception_Label (H, L);
                   Add_Label_Declaration (L);
@@ -646,9 +644,7 @@ package body Exp_Ch11 is
          declare
             --  L3 is the label to exit the HSS
 
-            L3_Dent : constant Entity_Id :=
-                        Make_Defining_Identifier (Loc,
-                          Chars => New_Internal_Name ('L'));
+            L3_Dent : constant Entity_Id := Make_Temporary (Loc, 'L');
 
             Labl_L3 : constant Node_Id :=
                         Make_Label (Loc,
@@ -670,7 +666,8 @@ package body Exp_Ch11 is
 
             Rewrite (HSS,
               Make_Handled_Sequence_Of_Statements (Loc,
-                Statements => New_List (Blk_Stm)));
+                Statements => New_List (Blk_Stm),
+                End_Label  => Relocate_Node (End_Label (HSS))));
 
             --  Set block statement as analyzed, we don't want to actually call
             --  Analyze on this block, it would cause a recursion in exception
@@ -745,13 +742,12 @@ package body Exp_Ch11 is
                         Relmt := First_Elmt (Local_Raise_Statements (Handler));
                         while Present (Relmt) loop
                            declare
-                              Raise_S : constant Node_Id := Node (Relmt);
-
+                              Raise_S : constant Node_Id    := Node (Relmt);
+                              RLoc    : constant Source_Ptr := Sloc (Raise_S);
                               Name_L1 : constant Node_Id :=
                                           New_Occurrence_Of (L1_Dent, Loc);
-
                               Goto_L1 : constant Node_Id :=
-                                          Make_Goto_Statement (Loc,
+                                          Make_Goto_Statement (RLoc,
                                             Name => Name_L1);
 
                            begin
@@ -1516,15 +1512,6 @@ package body Exp_Ch11 is
       --  Remaining processing is for the case where no string expression
       --  is present.
 
-      --  There is no expansion needed for statement "raise <exception>;" when
-      --  compiling for the JVM since the JVM has a built-in exception
-      --  mechanism. However we need to keep the expansion for "raise;"
-      --  statements. See 4jexcept.ads for details.
-
-      if Present (Name (N)) and then VM_Target /= No_VM then
-         return;
-      end if;
-
       --  Don't expand a raise statement that does not come from source
       --  if we have already had configurable run-time violations, since
       --  most likely it will be junk cascaded nonsense.
@@ -1686,7 +1673,7 @@ package body Exp_Ch11 is
          --  be referencing this entity by normal visibility methods.
 
          if No (Choice_Parameter (Ehand)) then
-            E := Make_Defining_Identifier (Loc, New_Internal_Name ('E'));
+            E := Make_Temporary (Loc, 'E');
             Set_Choice_Parameter (Ehand, E);
             Set_Ekind (E, E_Variable);
             Set_Etype (E, RTE (RE_Exception_Occurrence));

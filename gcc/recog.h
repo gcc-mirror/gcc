@@ -1,6 +1,6 @@
 /* Declarations for interface to insn recognizer and insn-output.c.
    Copyright (C) 1987, 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004,
-   2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -111,7 +111,7 @@ extern int offsettable_address_addr_space_p (int, enum machine_mode, rtx,
 #define offsettable_address_p(strict,mode,addr) \
 	offsettable_address_addr_space_p ((strict), (mode), (addr), \
 					  ADDR_SPACE_GENERIC)
-extern int mode_dependent_address_p (rtx);
+extern bool mode_dependent_address_p (rtx);
 
 extern int recog (rtx, rtx, int *);
 #ifndef GENERATOR_FILE
@@ -194,6 +194,9 @@ struct recog_data
   /* Gives the constraint string for operand N.  */
   const char *constraints[MAX_RECOG_OPERANDS];
 
+  /* Nonzero if operand N is a match_operator or a match_parallel.  */
+  char is_operator[MAX_RECOG_OPERANDS];
+
   /* Gives the mode of operand N.  */
   enum machine_mode operand_mode[MAX_RECOG_OPERANDS];
 
@@ -226,6 +229,9 @@ struct recog_data
 
   /* The number of alternatives in the constraints for the insn.  */
   char n_alternatives;
+
+  /* True if insn is ASM_OPERANDS.  */
+  bool is_asm;
 
   /* Specifies whether an insn alternative is enabled using the
      `enabled' attribute in the insn pattern definition.  For back
@@ -260,6 +266,8 @@ struct insn_operand_data
 
   const char strict_low;
 
+  const char is_operator;
+
   const char eliminable;
 };
 
@@ -270,7 +278,7 @@ struct insn_operand_data
 #define INSN_OUTPUT_FORMAT_MULTI	2	/* const char * const * */
 #define INSN_OUTPUT_FORMAT_FUNCTION	3	/* const char * (*)(...) */
 
-struct insn_data
+struct insn_data_d
 {
   const char *const name;
 #if HAVE_DESIGNATED_INITIALIZERS
@@ -295,5 +303,5 @@ struct insn_data
   const char output_format;
 };
 
-extern const struct insn_data insn_data[];
+extern const struct insn_data_d insn_data[];
 extern int peep2_current_count;

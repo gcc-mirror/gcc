@@ -3,8 +3,8 @@
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
 #include <stdio.h>
 #include <stdlib.h>
+#import "../../objc-obj-c++-shared/Object1.h"
 #include <objc/objc.h>
-#include <objc/Object.h>
 
 int bappy (int (*blargh) (int a, int b, int c))
 {

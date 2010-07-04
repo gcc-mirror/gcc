@@ -1,7 +1,7 @@
 /* Contributed by Nicola Pero - Thu Mar  8 16:27:46 CET 2001 */
-#include <objc/objc.h>
 
-#include "next_mapping.h"
+#import "../../objc-obj-c++-shared/next-mapping.h"
+#import <objc/objc.h>
 
 /* Test that instance methods of root classes are available as class 
    methods to other classes as well */

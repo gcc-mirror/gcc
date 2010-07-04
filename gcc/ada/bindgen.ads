@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,7 +24,7 @@
 ------------------------------------------------------------------------------
 
 --  This package contains the routines to output the binder file. This is
---  a C program which contains the following:
+--  an Ada or C program which contains the following:
 
 --     initialization for main program case
 --     sequence of calls to elaboration routines in appropriate order

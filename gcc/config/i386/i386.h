@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC for IA-32.
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -240,6 +240,7 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_GENERIC64 (ix86_tune == PROCESSOR_GENERIC64)
 #define TARGET_GENERIC (TARGET_GENERIC32 || TARGET_GENERIC64)
 #define TARGET_AMDFAM10 (ix86_tune == PROCESSOR_AMDFAM10)
+#define TARGET_BDVER1 (ix86_tune == PROCESSOR_BDVER1)
 #define TARGET_ATOM (ix86_tune == PROCESSOR_ATOM)
 
 /* Feature tests against the various tunings.  */
@@ -277,7 +278,9 @@ enum ix86_tune_indices {
   X86_TUNE_INTEGER_DFMODE_MOVES,
   X86_TUNE_PARTIAL_REG_DEPENDENCY,
   X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY,
-  X86_TUNE_SSE_UNALIGNED_MOVE_OPTIMAL,
+  X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL,
+  X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL,
+  X86_TUNE_SSE_PACKED_SINGLE_INSN_OPTIMAL,
   X86_TUNE_SSE_SPLIT_REGS,
   X86_TUNE_SSE_TYPELESS_STORES,
   X86_TUNE_SSE_LOAD0_BY_PXOR,
@@ -352,8 +355,12 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_PARTIAL_REG_DEPENDENCY]
 #define TARGET_SSE_PARTIAL_REG_DEPENDENCY \
 	ix86_tune_features[X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY]
-#define TARGET_SSE_UNALIGNED_MOVE_OPTIMAL \
-	ix86_tune_features[X86_TUNE_SSE_UNALIGNED_MOVE_OPTIMAL]
+#define TARGET_SSE_UNALIGNED_LOAD_OPTIMAL \
+	ix86_tune_features[X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL]
+#define TARGET_SSE_UNALIGNED_STORE_OPTIMAL \
+	ix86_tune_features[X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL]
+#define TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL \
+	ix86_tune_features[X86_TUNE_SSE_PACKED_SINGLE_INSN_OPTIMAL]
 #define TARGET_SSE_SPLIT_REGS	ix86_tune_features[X86_TUNE_SSE_SPLIT_REGS]
 #define TARGET_SSE_TYPELESS_STORES \
 	ix86_tune_features[X86_TUNE_SSE_TYPELESS_STORES]
@@ -429,7 +436,7 @@ extern int x86_prefetch_sse;
 #define TARGET_GNU_TLS		(ix86_tls_dialect == TLS_DIALECT_GNU)
 #define TARGET_GNU2_TLS		(ix86_tls_dialect == TLS_DIALECT_GNU2)
 #define TARGET_ANY_GNU_TLS	(TARGET_GNU_TLS || TARGET_GNU2_TLS)
-#define TARGET_SUN_TLS		(ix86_tls_dialect == TLS_DIALECT_SUN)
+#define TARGET_SUN_TLS		0
 
 extern int ix86_isa_flags;
 
@@ -591,6 +598,7 @@ enum target_cpu_default
   TARGET_CPU_DEFAULT_athlon_sse,
   TARGET_CPU_DEFAULT_k8,
   TARGET_CPU_DEFAULT_amdfam10,
+  TARGET_CPU_DEFAULT_bdver1,
 
   TARGET_CPU_DEFAULT_max
 };
@@ -955,7 +963,7 @@ enum target_cpu_default
    registers listed in CALL_USED_REGISTERS, keeping the others
    available for storage of persistent values.
 
-   The ORDER_REGS_FOR_LOCAL_ALLOC actually overwrite the order,
+   The ADJUST_REG_ALLOC_ORDER actually overwrite the order,
    so this is just empty initializer for array.  */
 
 #define REG_ALLOC_ORDER 					\
@@ -964,11 +972,11 @@ enum target_cpu_default
    33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,  \
    48, 49, 50, 51, 52 }
 
-/* ORDER_REGS_FOR_LOCAL_ALLOC is a macro which permits reg_alloc_order
+/* ADJUST_REG_ALLOC_ORDER is a macro which permits reg_alloc_order
    to be rearranged based on a particular function.  When using sse math,
    we want to allocate SSE before x87 registers and vice versa.  */
 
-#define ORDER_REGS_FOR_LOCAL_ALLOC x86_order_regs_for_local_alloc ()
+#define ADJUST_REG_ALLOC_ORDER x86_order_regs_for_local_alloc ()
 
 
 #define OVERRIDE_ABI_FORMAT(FNDECL) ix86_call_abi_override (FNDECL)
@@ -1296,11 +1304,11 @@ enum reg_class
 
 #define REGNO_REG_CLASS(REGNO) (regclass_map[REGNO])
 
-/* When defined, the compiler allows registers explicitly used in the
-   rtl to be used as spill registers but prevents the compiler from
-   extending the lifetime of these registers.  */
-
-#define SMALL_REGISTER_CLASSES 1
+/* When this hook returns true for MODE, the compiler allows
+   registers explicitly used in the rtl to be used as spill registers
+   but prevents the compiler from extending the lifetime of these
+   registers.  */
+#define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
 #define QI_REG_P(X) (REG_P (X) && REGNO (X) <= BX_REG)
 
@@ -1554,8 +1562,6 @@ enum reg_class
 #define RETURN_POPS_ARGS(FUNDECL, FUNTYPE, SIZE) \
   ix86_return_pops_args ((FUNDECL), (FUNTYPE), (SIZE))
 
-#define FUNCTION_VALUE_REGNO_P(N) ix86_function_value_regno_p (N)
-
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
@@ -1580,7 +1586,8 @@ typedef struct ix86_args {
   int words;			/* # words passed so far */
   int nregs;			/* # registers available for passing */
   int regno;			/* next available register number */
-  int fastcall;			/* fastcall calling convention is used */
+  int fastcall;			/* fastcall or thiscall calling convention
+				   is used */
   int sse_words;		/* # sse words passed so far */
   int sse_nregs;		/* # sse registers available for passing */
   int warn_avx;			/* True when we want to warn about AVX ABI.  */
@@ -1626,9 +1633,6 @@ typedef struct ix86_args {
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   function_arg (&(CUM), (MODE), (TYPE), (NAMED))
-
-#define TARGET_ASM_FILE_END ix86_file_end
-#define NEED_INDICATE_EXEC_STACK 0
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
@@ -1810,7 +1814,7 @@ typedef struct ix86_args {
 #define X86_64_SSE_REGPARM_MAX 8
 #define X86_64_MS_SSE_REGPARM_MAX 4
 
-#define X86_32_SSE_REGPARM_MAX (TARGET_SSE ? 3 : 0)
+#define X86_32_SSE_REGPARM_MAX (TARGET_SSE ? (TARGET_MACHO ? 4 : 3) : 0)
 
 #define SSE_REGPARM_MAX							\
   (TARGET_64BIT ? (TARGET_64BIT_MS_ABI ? X86_64_MS_SSE_REGPARM_MAX	\
@@ -1887,28 +1891,6 @@ do {							\
    so give the MEM rtx a byte's mode.  */
 #define FUNCTION_MODE QImode
 
-/* A C expression for the cost of moving data from a register in class FROM to
-   one in class TO.  The classes are expressed using the enumeration values
-   such as `GENERAL_REGS'.  A value of 2 is the default; other values are
-   interpreted relative to that.
-
-   It is not required that the cost always equal 2 when FROM is the same as TO;
-   on some machines it is expensive to move between registers if they are not
-   general registers.  */
-
-#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2) \
-   ix86_register_move_cost ((MODE), (CLASS1), (CLASS2))
-
-/* A C expression for the cost of moving data of mode M between a
-   register and memory.  A value of 2 is the default; this cost is
-   relative to those in `REGISTER_MOVE_COST'.
-
-   If moving between registers and memory is more expensive than
-   between two registers, you should define this macro to express the
-   relative cost.  */
-
-#define MEMORY_MOVE_COST(MODE, CLASS, IN)	\
-  ix86_memory_move_cost ((MODE), (CLASS), (IN))
 
 /* A C expression for the cost of a branch instruction.  A value of 1
    is the default; other values are interpreted relative to that.  */
@@ -1992,7 +1974,8 @@ do {							\
    For non floating point regs, the following are the HImode names.
 
    For float regs, the stack top is sometimes referred to as "%st(0)"
-   instead of just "%st".  PRINT_OPERAND handles this with the "y" code.  */
+   instead of just "%st".  TARGET_PRINT_OPERAND handles this with the
+   "y" code.  */
 
 #define HI_REGISTER_NAMES						\
 {"ax","dx","cx","bx","si","di","bp","sp",				\
@@ -2154,25 +2137,14 @@ do {									\
 /* Switch to init or fini section via SECTION_OP, emit a call to FUNC,
    and switch back.  For x86 we do this only to save a few bytes that
    would otherwise be unused in the text section.  */
-#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)	\
-   asm (SECTION_OP "\n\t"				\
-	"call " USER_LABEL_PREFIX #FUNC "\n"		\
+#define CRT_MKSTR2(VAL) #VAL
+#define CRT_MKSTR(x) CRT_MKSTR2(x)
+
+#define CRT_CALL_STATIC_FUNCTION(SECTION_OP, FUNC)		\
+   asm (SECTION_OP "\n\t"					\
+	"call " CRT_MKSTR(__USER_LABEL_PREFIX__) #FUNC "\n"	\
 	TEXT_SECTION_ASM_OP);
 
-/* Print operand X (an rtx) in assembler syntax to file FILE.
-   CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
-   Effect of various CODE letters is described in i386.c near
-   print_operand function.  */
-
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE) \
-  ((CODE) == '*' || (CODE) == '+' || (CODE) == '&' || (CODE) == ';')
-
-#define PRINT_OPERAND(FILE, X, CODE)  \
-  print_operand ((FILE), (X), (CODE))
-
-#define PRINT_OPERAND_ADDRESS(FILE, ADDR)  \
-  print_operand_address ((FILE), (ADDR))
-
 #define OUTPUT_ADDR_CONST_EXTRA(FILE, X, FAIL)	\
 do {						\
   if (! output_addr_const_extra (FILE, (X)))	\
@@ -2198,6 +2170,7 @@ enum processor_type
   PROCESSOR_GENERIC32,
   PROCESSOR_GENERIC64,
   PROCESSOR_AMDFAM10,
+  PROCESSOR_BDVER1,
   PROCESSOR_ATOM,
   PROCESSOR_max
 };
@@ -2370,12 +2343,9 @@ struct GTY(()) machine_function {
      has been computed for.  */
   int use_fast_prologue_epilogue_nregs;
 
-  /* The CFA state at the end of the prologue.  */
-  struct machine_cfa_state cfa;
-
   /* This value is used for amd64 targets and specifies the current abi
      to be used. MS_ABI means ms abi. Otherwise SYSV_ABI means sysv abi.  */
-  enum calling_abi call_abi;
+  ENUM_BITFIELD(calling_abi) call_abi : 8;
 
   /* Nonzero if the function accesses a previous frame.  */
   BOOL_BITFIELD accesses_prev_frame : 1;
@@ -2401,6 +2371,9 @@ struct GTY(()) machine_function {
   /* If true, the current function has a STATIC_CHAIN is placed on the
      stack below the return address.  */
   BOOL_BITFIELD static_chain_on_stack : 1;
+
+  /* The CFA state at the end of the prologue.  */
+  struct machine_cfa_state cfa;
 };
 #endif
 
@@ -2439,62 +2412,6 @@ struct GTY(()) machine_function {
 #define SYMBOL_FLAG_DLLEXPORT		(SYMBOL_FLAG_MACH_DEP << 2)
 #define SYMBOL_REF_DLLEXPORT_P(X) \
 	((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_DLLEXPORT) != 0)
-
-/* Model costs for vectorizer.  */
-
-/* Cost of conditional branch.  */
-#undef TARG_COND_BRANCH_COST
-#define TARG_COND_BRANCH_COST           ix86_cost->branch_cost
-
-/* Enum through the target specific extra va_list types.
-   Please, do not iterate the base va_list type name.  */
-#define TARGET_ENUM_VA_LIST(IDX, PNAME, PTYPE) \
-  (TARGET_64BIT ? ix86_enum_va_list (IDX, PNAME, PTYPE) : 0)
-
-/* Cost of any scalar operation, excluding load and store.  */
-#undef TARG_SCALAR_STMT_COST
-#define TARG_SCALAR_STMT_COST           ix86_cost->scalar_stmt_cost
-
-/* Cost of scalar load.  */
-#undef TARG_SCALAR_LOAD_COST
-#define TARG_SCALAR_LOAD_COST           ix86_cost->scalar_load_cost
-
-/* Cost of scalar store.  */
-#undef TARG_SCALAR_STORE_COST
-#define TARG_SCALAR_STORE_COST          ix86_cost->scalar_store_cost
-
-/* Cost of any vector operation, excluding load, store or vector to scalar
-   operation.  */
-#undef TARG_VEC_STMT_COST
-#define TARG_VEC_STMT_COST              ix86_cost->vec_stmt_cost
-
-/* Cost of vector to scalar operation.  */
-#undef TARG_VEC_TO_SCALAR_COST
-#define TARG_VEC_TO_SCALAR_COST         ix86_cost->vec_to_scalar_cost
-
-/* Cost of scalar to vector operation.  */
-#undef TARG_SCALAR_TO_VEC_COST
-#define TARG_SCALAR_TO_VEC_COST         ix86_cost->scalar_to_vec_cost
-
-/* Cost of aligned vector load.  */
-#undef TARG_VEC_LOAD_COST
-#define TARG_VEC_LOAD_COST              ix86_cost->vec_align_load_cost
-
-/* Cost of misaligned vector load.  */
-#undef TARG_VEC_UNALIGNED_LOAD_COST
-#define TARG_VEC_UNALIGNED_LOAD_COST    ix86_cost->vec_unalign_load_cost
-
-/* Cost of vector store.  */
-#undef TARG_VEC_STORE_COST
-#define TARG_VEC_STORE_COST             ix86_cost->vec_store_cost
-
-/* Cost of conditional taken branch for vectorizer cost model.  */
-#undef TARG_COND_TAKEN_BRANCH_COST
-#define TARG_COND_TAKEN_BRANCH_COST     ix86_cost->cond_taken_branch_cost
-
-/* Cost of conditional not taken branch for vectorizer cost model.  */
-#undef TARG_COND_NOT_TAKEN_BRANCH_COST
-#define TARG_COND_NOT_TAKEN_BRANCH_COST ix86_cost->cond_not_taken_branch_cost
 
 /*
 Local variables:

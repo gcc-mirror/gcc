@@ -1,5 +1,6 @@
 /* { dg-skip-if "test SSE2 support" { ! { i?86-*-* x86_64-*-* } } } */
 /* { dg-options "-O" } */
+/* { dg-require-effective-target sse2 } */
 
 #include "cpuid.h"
 

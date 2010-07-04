@@ -1,4 +1,4 @@
-# Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+# Copyright (C) 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -83,7 +83,6 @@ proc gnat_init { args } {
     global gluefile wrap_flags
     global gnat_initialized
     global GNAT_UNDER_TEST
-    global GNAT_UNDER_TEST_ORIG
     global TOOL_EXECUTABLE
     global gnat_libgcc_s_path
     global gnat_target_current
@@ -98,7 +97,6 @@ proc gnat_init { args } {
 	} else {
 	    set GNAT_UNDER_TEST "[local_find_gnatmake]"
 	}
-        set GNAT_UNDER_TEST_ORIG "$GNAT_UNDER_TEST"
     }
 
     if ![info exists tmpdir] then {
@@ -129,22 +127,31 @@ proc gnat_target_compile { source dest type options } {
     global gluefile wrap_flags
     global srcdir
     global GNAT_UNDER_TEST
-    global GNAT_UNDER_TEST_ORIG
     global TOOL_OPTIONS
     global ld_library_path
     global gnat_libgcc_s_path
     global gnat_target_current
 
-    # If we detect a change of target we need to recompute
-    # the appropriate RTS by calling get_multilibs.
+    # If we detect a change of target, we need to recompute both
+    # GNAT_UNDER_TEST and the appropriate RTS.
     if { $gnat_target_current!="[current_target_name]" } {
 	set gnat_target_current "[current_target_name]"
 	if [info exists TOOL_OPTIONS] {
-	    set gnat_rts_opt "--RTS=[get_multilibs ${TOOL_OPTIONS}]/libada"
+	    set rtsdir "[get_multilibs ${TOOL_OPTIONS}]/libada"
 	} else {
-	    set gnat_rts_opt "--RTS=[get_multilibs]/libada"
+	    set rtsdir "[get_multilibs]/libada"
 	}
-        set GNAT_UNDER_TEST "$GNAT_UNDER_TEST_ORIG $gnat_rts_opt"
+	if [info exists TOOL_EXECUTABLE] {
+	    set GNAT_UNDER_TEST "$TOOL_EXECUTABLE"
+	} else {
+	    set GNAT_UNDER_TEST "[local_find_gnatmake]"
+	}
+        set GNAT_UNDER_TEST "$GNAT_UNDER_TEST --RTS=$rtsdir"
+
+	# gnatlink looks for system.ads itself and has no --RTS option, so
+	# specify via environment
+	setenv ADA_INCLUDE_PATH "$rtsdir/adainclude"
+	setenv ADA_OBJECTS_PATH "$rtsdir/adainclude"
     }
 
     set ld_library_path ".:${gnat_libgcc_s_path}"
@@ -263,7 +270,13 @@ proc local_find_gnatmake {} {
         }
         if { $file != "" } {
     	set root [file dirname $file]
-    	set CC "$file --GCC=$root/xgcc --GNATBIND=$root/gnatbind --GNATLINK=$root/gnatlink -cargs -B$root -largs --LINK=$root/xgcc -B$root -margs";
+	# Need to pass full --GCC, including multilib flags, to gnatlink,
+	# otherwise gcc from PATH is invoked.
+	set dest [target_info name]
+	set gnatlink_gcc "--GCC=$root/xgcc -B$root [board_info $dest multilib_flags]"
+	# Escape blanks to get them through DejaGnu's exec machinery.
+	regsub -all {\s} "$gnatlink_gcc" {\\&} gnatlink_gcc
+    	set CC "$file --GCC=$root/xgcc --GNATBIND=$root/gnatbind --GNATLINK=$root/gnatlink -cargs -B$root -largs $gnatlink_gcc -margs";
         } else {
     	set CC [transform gnatmake]
         }

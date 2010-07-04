@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for ATMEL AVR micro controllers
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2004, 2005, 2006, 2007, 2008,
-   2009 Free Software Foundation, Inc.
+   2009, 2010 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
    This file is part of GCC.
@@ -26,7 +26,6 @@
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
-#include "real.h"
 #include "insn-config.h"
 #include "conditions.h"
 #include "insn-attr.h"
@@ -244,8 +243,7 @@ static const enum reg_class reg_class_tab[]={
 static struct machine_function *
 avr_init_machine_status (void)
 {
-  return ((struct machine_function *) 
-          ggc_alloc_cleared (sizeof (struct machine_function)));
+  return ggc_alloc_cleared_machine_function ();
 }
 
 /* Return register class for register R.  */

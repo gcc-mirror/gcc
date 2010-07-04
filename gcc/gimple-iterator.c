@@ -1,5 +1,5 @@
 /* Iterator routines for GIMPLE statements.
-   Copyright (C) 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008, 2010 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez  <aldy@quesejoda.com>
 
 This file is part of GCC.
@@ -381,8 +381,12 @@ gsi_replace (gimple_stmt_iterator *gsi, gimple stmt, bool update_eh_info)
     maybe_clean_or_replace_eh_stmt (orig_stmt, stmt);
 
   gimple_duplicate_stmt_histograms (cfun, stmt, cfun, orig_stmt);
+
+  /* Free all the data flow information for ORIG_STMT.  */
+  gimple_set_bb (orig_stmt, NULL);
   gimple_remove_stmt_histograms (cfun, orig_stmt);
   delink_stmt_imm_use (orig_stmt);
+
   *gsi_stmt_ptr (gsi) = stmt;
   gimple_set_modified (stmt, true);
   update_modified_stmt (stmt);
@@ -404,7 +408,7 @@ gsi_insert_before_without_update (gimple_stmt_iterator *i, gimple stmt,
 {
   gimple_seq_node n;
 
-  n = GGC_NEW (struct gimple_seq_node_d);
+  n = ggc_alloc_gimple_seq_node_d ();
   n->prev = n->next = NULL;
   n->stmt = stmt;
   gsi_insert_seq_nodes_before (i, n, n, m);
@@ -439,7 +443,7 @@ gsi_insert_after_without_update (gimple_stmt_iterator *i, gimple stmt,
 {
   gimple_seq_node n;
 
-  n = GGC_NEW (struct gimple_seq_node_d);
+  n = ggc_alloc_gimple_seq_node_d ();
   n->prev = n->next = NULL;
   n->stmt = stmt;
   gsi_insert_seq_nodes_after (i, n, n, m);
@@ -474,7 +478,8 @@ gsi_remove (gimple_stmt_iterator *i, bool remove_permanently)
   gimple_seq_node cur, next, prev;
   gimple stmt = gsi_stmt (*i);
 
-  insert_debug_temps_for_defs (i);
+  if (gimple_code (stmt) != GIMPLE_PHI)
+    insert_debug_temps_for_defs (i);
 
   /* Free all the data flow information for STMT.  */
   gimple_set_bb (stmt, NULL);

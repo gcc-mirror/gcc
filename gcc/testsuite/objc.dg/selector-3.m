@@ -1,7 +1,8 @@
 /* Test warning for non-existent selectors.  */
 /* This is the "-fgnu-runtime" variant of objc.dg/selector-1.m.  */
-/* { dg-options "-Wselector -fgnu-runtime" } */
+/* { dg-options "-Wselector" } */
 /* { dg-do compile } */
+/* { dg-skip-if "" { *-*-* } { "-fnext-runtime" } { "" } } */
 
 typedef struct objc_object { struct objc_class *class_pointer; } *id;
 typedef const struct objc_selector    *SEL;

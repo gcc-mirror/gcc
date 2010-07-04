@@ -1,5 +1,5 @@
 /* Translation of CLAST (CLooG AST) to Gimple.
-   Copyright (C) 2009 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2010 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@amd.com>.
 
 This file is part of GCC.
@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "pointer-set.h"
 #include "gimple.h"
+#include "langhooks.h"
 #include "sese.h"
 
 #ifdef HAVE_cloog
@@ -65,8 +66,7 @@ graphite_verify (void)
   verify_loop_structure ();
   verify_dominators (CDI_DOMINATORS);
   verify_dominators (CDI_POST_DOMINATORS);
-  verify_ssa (false);
-  verify_loop_closed_ssa ();
+  verify_loop_closed_ssa (true);
 #endif
 }
 
@@ -149,7 +149,7 @@ debug_clast_name_indexes_1 (void **slot, void *s ATTRIBUTE_UNUSED)
 
 /* Print to stderr all the elements of MAP.  */
 
-void
+DEBUG_FUNCTION void
 debug_clast_name_indexes (htab_t map)
 {
   htab_traverse (map, debug_clast_name_indexes_1, NULL);
@@ -224,13 +224,46 @@ clast_name_to_gcc (const char *name, sese region, VEC (tree, heap) *newivs,
   return newivs_to_depth_to_newiv (newivs, index);
 }
 
-/* Returns the maximal precision type for expressions E1 and E2.  */
+/* Returns the signed maximal precision type for expressions TYPE1 and TYPE2.  */
 
-static inline tree
-max_precision_type (tree e1, tree e2)
+static tree
+max_signed_precision_type (tree type1, tree type2)
 {
-  tree type1 = TREE_TYPE (e1);
-  tree type2 = TREE_TYPE (e2);
+  int p1 = TYPE_PRECISION (type1);
+  int p2 = TYPE_PRECISION (type2);
+  int precision;
+  tree type;
+
+  if (p1 > p2)
+    precision = TYPE_UNSIGNED (type1) ? p1 * 2 : p1;
+  else
+    precision = TYPE_UNSIGNED (type2) ? p2 * 2 : p2;
+
+  type = lang_hooks.types.type_for_size (precision, false);
+
+  if (!type)
+    {
+      gloog_error = true;
+      return integer_type_node;
+    }
+  return type;
+}
+
+/* Returns the maximal precision type for expressions TYPE1 and TYPE2.  */
+
+static tree
+max_precision_type (tree type1, tree type2)
+{
+  if (POINTER_TYPE_P (type1))
+    return type1;
+
+  if (POINTER_TYPE_P (type2))
+    return type2;
+
+  if (!TYPE_UNSIGNED (type1)
+      || !TYPE_UNSIGNED (type2))
+    return max_signed_precision_type (type1, type2);
+
   return TYPE_PRECISION (type1) > TYPE_PRECISION (type2) ? type1 : type2;
 }
 
@@ -278,18 +311,28 @@ clast_to_gcc_expression (tree type, struct clast_expr *e,
 
 	if (t->var)
 	  {
-	    if (value_one_p (t->val))
+	    if (mpz_cmp_si (t->val, 1) == 0)
 	      {
 		tree name = clast_name_to_gcc (t->var, region, newivs,
 					       newivs_index, params_index);
-		return fold_convert (type, name);
+
+		if (POINTER_TYPE_P (TREE_TYPE (name)) != POINTER_TYPE_P (type))
+		  name = fold_convert (sizetype, name);
+
+		name = fold_convert (type, name);
+		return name;
 	      }
 
-	    else if (value_mone_p (t->val))
+	    else if (mpz_cmp_si (t->val, -1) == 0)
 	      {
 		tree name = clast_name_to_gcc (t->var, region, newivs,
 					       newivs_index, params_index);
+
+		if (POINTER_TYPE_P (TREE_TYPE (name)) != POINTER_TYPE_P (type))
+		  name = fold_convert (sizetype, name);
+
 		name = fold_convert (type, name);
+
 		return fold_build1 (NEGATE_EXPR, type, name);
 	      }
 	    else
@@ -297,7 +340,12 @@ clast_to_gcc_expression (tree type, struct clast_expr *e,
 		tree name = clast_name_to_gcc (t->var, region, newivs,
 					       newivs_index, params_index);
 		tree cst = gmp_cst_to_tree (type, t->val);
+
+		if (POINTER_TYPE_P (TREE_TYPE (name)) != POINTER_TYPE_P (type))
+		  name = fold_convert (sizetype, name);
+
 		name = fold_convert (type, name);
+
 		if (!POINTER_TYPE_P (type))
 		  return fold_build2 (MULT_EXPR, type, cst, name);
 
@@ -370,7 +418,175 @@ clast_to_gcc_expression (tree type, struct clast_expr *e,
   return NULL_TREE;
 }
 
-/* Returns the type for the expression E.  */
+/* Return the precision needed to represent the value VAL.  */
+
+static int
+precision_for_value (mpz_t val)
+{
+  mpz_t x, y, two;
+  int precision;
+
+  value_init (x);
+  value_init (y);
+  value_init (two);
+  value_set_si (x, 2);
+  value_assign (y, val);
+  value_set_si (two, 2);
+  precision = 1;
+
+  if (value_neg_p (y))
+    value_oppose (y, y);
+
+  while (value_gt (y, x))
+    {
+      value_multiply (x, x, two);
+      precision++;
+    }
+
+  value_clear (x);
+  value_clear (y);
+  value_clear (two);
+
+  return precision;
+}
+
+/* Return the precision needed to represent the values between LOW and
+   UP.  */
+
+static int
+precision_for_interval (mpz_t low, mpz_t up)
+{
+  mpz_t diff;
+  int precision;
+
+  gcc_assert (value_le (low, up));
+
+  value_init (diff);
+  value_subtract (diff, up, low);
+  precision = precision_for_value (diff);
+  value_clear (diff);
+
+  return precision;
+}
+
+/* Return a type that could represent the integer value VAL.  */
+
+static tree
+gcc_type_for_interval (mpz_t low, mpz_t up)
+{
+  bool unsigned_p = true;
+  int precision, prec_up, prec_int;
+  tree type;
+  enum machine_mode mode;
+
+  gcc_assert (value_le (low, up));
+
+  if (value_neg_p (low))
+    unsigned_p = false;
+
+  prec_up = precision_for_value (up);
+  prec_int = precision_for_interval (low, up);
+  precision = MAX (prec_up, prec_int);
+
+  if (precision > BITS_PER_WORD)
+    {
+      gloog_error = true;
+      return integer_type_node;
+    }
+
+  mode = smallest_mode_for_size (precision, MODE_INT);
+  precision = GET_MODE_PRECISION (mode);
+  type = build_nonstandard_integer_type (precision, unsigned_p);
+
+  if (!type)
+    {
+      gloog_error = true;
+      return integer_type_node;
+    }
+
+  return type;
+}
+
+/* Return a type that could represent the integer value VAL, or
+   otherwise return NULL_TREE.  */
+
+static tree
+gcc_type_for_value (mpz_t val)
+{
+  return gcc_type_for_interval (val, val);
+}
+
+/* Return the type for the clast_term T used in STMT.  */
+
+static tree
+gcc_type_for_clast_term (struct clast_term *t,
+			 sese region, VEC (tree, heap) *newivs,
+			 htab_t newivs_index, htab_t params_index)
+{
+  gcc_assert (t->expr.type == expr_term);
+
+  if (!t->var)
+    return gcc_type_for_value (t->val);
+
+  return TREE_TYPE (clast_name_to_gcc (t->var, region, newivs,
+				       newivs_index, params_index));
+}
+
+static tree
+gcc_type_for_clast_expr (struct clast_expr *, sese,
+			 VEC (tree, heap) *, htab_t, htab_t);
+
+/* Return the type for the clast_reduction R used in STMT.  */
+
+static tree
+gcc_type_for_clast_red (struct clast_reduction *r, sese region,
+			VEC (tree, heap) *newivs,
+			htab_t newivs_index, htab_t params_index)
+{
+  int i;
+  tree type = NULL_TREE;
+
+  if (r->n == 1)
+    return gcc_type_for_clast_expr (r->elts[0], region, newivs,
+				    newivs_index, params_index);
+
+  switch (r->type)
+    {
+    case clast_red_sum:
+    case clast_red_min:
+    case clast_red_max:
+      type = gcc_type_for_clast_expr (r->elts[0], region, newivs,
+				      newivs_index, params_index);
+      for (i = 1; i < r->n; i++)
+	type = max_precision_type (type, gcc_type_for_clast_expr
+				   (r->elts[i], region, newivs,
+				    newivs_index, params_index));
+
+      return type;
+
+    default:
+      break;
+    }
+
+  gcc_unreachable ();
+  return NULL_TREE;
+}
+
+/* Return the type for the clast_binary B used in STMT.  */
+
+static tree
+gcc_type_for_clast_bin (struct clast_binary *b,
+			sese region, VEC (tree, heap) *newivs,
+			htab_t newivs_index, htab_t params_index)
+{
+  tree l = gcc_type_for_clast_expr ((struct clast_expr *) b->LHS, region,
+				    newivs, newivs_index, params_index);
+  tree r = gcc_type_for_value (b->RHS);
+  return max_signed_precision_type (l, r);
+}
+
+/* Returns the type for the CLAST expression E when used in statement
+   STMT.  */
 
 static tree
 gcc_type_for_clast_expr (struct clast_expr *e,
@@ -380,45 +596,16 @@ gcc_type_for_clast_expr (struct clast_expr *e,
   switch (e->type)
     {
     case expr_term:
-      {
-	struct clast_term *t = (struct clast_term *) e;
-
-	if (t->var)
-	  return TREE_TYPE (clast_name_to_gcc (t->var, region, newivs,
-					       newivs_index, params_index));
-	else
-	  return NULL_TREE;
-      }
+      return gcc_type_for_clast_term ((struct clast_term *) e, region,
+				      newivs, newivs_index, params_index);
 
     case expr_red:
-      {
-        struct clast_reduction *r = (struct clast_reduction *) e;
-
-	if (r->n == 1)
-	  return gcc_type_for_clast_expr (r->elts[0], region, newivs,
-					  newivs_index, params_index);
-	else
-	  {
-	    int i;
-	    for (i = 0; i < r->n; i++)
-	      {
-		tree type = gcc_type_for_clast_expr (r->elts[i], region,
-						     newivs, newivs_index,
-						     params_index);
-		if (type)
-		  return type;
-	      }
-	    return NULL_TREE;
-	  }
-      }
+      return gcc_type_for_clast_red ((struct clast_reduction *) e, region,
+				     newivs, newivs_index, params_index);
 
     case expr_bin:
-      {
-	struct clast_binary *b = (struct clast_binary *) e;
-	struct clast_expr *lhs = (struct clast_expr *) b->LHS;
-	return gcc_type_for_clast_expr (lhs, region, newivs,
-					newivs_index, params_index);
-      }
+      return gcc_type_for_clast_bin ((struct clast_binary *) e, region,
+				     newivs, newivs_index, params_index);
 
     default:
       gcc_unreachable ();
@@ -434,13 +621,11 @@ gcc_type_for_clast_eq (struct clast_equation *cleq,
 		       sese region, VEC (tree, heap) *newivs,
 		       htab_t newivs_index, htab_t params_index)
 {
-  tree type = gcc_type_for_clast_expr (cleq->LHS, region, newivs,
-				       newivs_index, params_index);
-  if (type)
-    return type;
-
-  return gcc_type_for_clast_expr (cleq->RHS, region, newivs, newivs_index,
-				  params_index);
+  tree l = gcc_type_for_clast_expr (cleq->LHS, region, newivs,
+				    newivs_index, params_index);
+  tree r = gcc_type_for_clast_expr (cleq->RHS, region, newivs,
+				    newivs_index, params_index);
+  return max_precision_type (l, r);
 }
 
 /* Translates a clast equation CLEQ to a tree.  */
@@ -510,6 +695,53 @@ graphite_create_new_guard (sese region, edge entry_edge,
   return exit_edge;
 }
 
+/* Compute the lower bound LOW and upper bound UP for the induction
+   variable at LEVEL for the statement PBB, based on the transformed
+   scattering of PBB: T|I|G|Cst, with T the scattering transform, I
+   the iteration domain, and G the context parameters.  */
+
+static void
+compute_bounds_for_level (poly_bb_p pbb, int level, mpz_t low, mpz_t up)
+{
+  ppl_Pointset_Powerset_C_Polyhedron_t ps;
+  ppl_Linear_Expression_t le;
+
+  combine_context_id_scat (&ps, pbb, false);
+
+  /* Prepare the linear expression corresponding to the level that we
+     want to maximize/minimize.  */
+  {
+    ppl_dimension_type dim = pbb_nb_scattering_transform (pbb)
+      + pbb_dim_iter_domain (pbb) + pbb_nb_params (pbb);
+
+    ppl_new_Linear_Expression_with_dimension (&le, dim);
+    ppl_set_coef (le, 2 * level + 1, 1);
+  }
+
+  ppl_max_for_le_pointset (ps, le, up);
+  ppl_min_for_le_pointset (ps, le, low);
+}
+
+/* Compute the type for the induction variable at LEVEL for the
+   statement PBB, based on the transformed schedule of PBB.  */
+
+static tree
+compute_type_for_level (poly_bb_p pbb, int level)
+{
+  mpz_t low, up;
+  tree type;
+
+  value_init (low);
+  value_init (up);
+
+  compute_bounds_for_level (pbb, level, low, up);
+  type = gcc_type_for_interval (low, up);
+
+  value_clear (low);
+  value_clear (up);
+  return type;
+}
+
 /* Walks a CLAST and returns the first statement in the body of a
    loop.  */
 
@@ -532,38 +764,21 @@ clast_get_body_of_loop (struct clast_stmt *stmt)
   gcc_unreachable ();
 }
 
-/* Given a CLOOG_IV, returns the type that it should have in GCC land.
-   If the information is not available, i.e. in the case one of the
-   transforms created the loop, just return integer_type_node.  */
+/* Returns the type for the induction variable for the loop translated
+   from STMT_FOR.  */
 
 static tree
-gcc_type_for_cloog_iv (const char *cloog_iv, gimple_bb_p gbb)
-{
-  struct ivtype_map_elt_s tmp;
-  PTR *slot;
-
-  tmp.cloog_iv = cloog_iv;
-  slot = htab_find_slot (GBB_CLOOG_IV_TYPES (gbb), &tmp, NO_INSERT);
-
-  if (slot && *slot)
-    return ((ivtype_map_elt) *slot)->type;
-
-  return integer_type_node;
-}
-
-/* Returns the induction variable for the loop that gets translated to
-   STMT.  */
-
-static tree
-gcc_type_for_iv_of_clast_loop (struct clast_for *stmt_for)
+gcc_type_for_iv_of_clast_loop (struct clast_for *stmt_for, int level,
+			       tree lb_type, tree ub_type)
 {
   struct clast_stmt *stmt = (struct clast_stmt *) stmt_for;
   struct clast_user_stmt *body = clast_get_body_of_loop (stmt);
-  const char *cloog_iv = stmt_for->iterator;
   CloogStatement *cs = body->statement;
   poly_bb_p pbb = (poly_bb_p) cloog_statement_usr (cs);
 
-  return gcc_type_for_cloog_iv (cloog_iv, PBB_BLACK_BOX (pbb));
+  return max_signed_precision_type (lb_type, max_precision_type
+				    (ub_type, compute_type_for_level
+				     (pbb, level - 1)));
 }
 
 /* Creates a new LOOP corresponding to Cloog's STMT.  Inserts an
@@ -578,9 +793,13 @@ static struct loop *
 graphite_create_new_loop (sese region, edge entry_edge,
 			  struct clast_for *stmt,
 			  loop_p outer, VEC (tree, heap) **newivs,
-			  htab_t newivs_index, htab_t params_index)
+			  htab_t newivs_index, htab_t params_index, int level)
 {
-  tree type = gcc_type_for_iv_of_clast_loop (stmt);
+  tree lb_type = gcc_type_for_clast_expr (stmt->LB, region, *newivs,
+					  newivs_index, params_index);
+  tree ub_type = gcc_type_for_clast_expr (stmt->UB, region, *newivs,
+					  newivs_index, params_index);
+  tree type = gcc_type_for_iv_of_clast_loop (stmt, level, lb_type, ub_type);
   tree lb = clast_to_gcc_expression (type, stmt->LB, region, *newivs,
 				     newivs_index, params_index);
   tree ub = clast_to_gcc_expression (type, stmt->UB, region, *newivs,
@@ -770,11 +989,9 @@ translate_clast_user (sese region, struct clast_user_stmt *stmt, edge next_e,
   return next_e;
 }
 
-static tree gcc_type_for_iv_of_clast_loop (struct clast_for *);
-
-
 /* Creates a new if region protecting the loop to be executed, if the execution
    count is zero (lb > ub).  */
+
 static edge
 graphite_create_new_loop_guard (sese region, edge entry_edge,
 				struct clast_for *stmt,
@@ -783,26 +1000,29 @@ graphite_create_new_loop_guard (sese region, edge entry_edge,
 {
   tree cond_expr;
   edge exit_edge;
-  tree type = gcc_type_for_iv_of_clast_loop (stmt);
+  tree lb_type = gcc_type_for_clast_expr (stmt->LB, region, newivs,
+					  newivs_index, params_index);
+  tree ub_type = gcc_type_for_clast_expr (stmt->UB, region, newivs,
+					  newivs_index, params_index);
+  tree type = max_precision_type (lb_type, ub_type);
   tree lb = clast_to_gcc_expression (type, stmt->LB, region, newivs,
 				     newivs_index, params_index);
   tree ub = clast_to_gcc_expression (type, stmt->UB, region, newivs,
 				     newivs_index, params_index);
-
-  /* XXX: Adding +1 and using LT_EXPR helps with loop latches that have a
+  tree one = POINTER_TYPE_P (type) ? size_one_node
+    : fold_convert (type, integer_one_node);
+  /* Adding +1 and using LT_EXPR helps with loop latches that have a
      loop iteration count of "PARAMETER - 1".  For PARAMETER == 0 this becomes
      2^{32|64}, and the condition lb <= ub is true, even if we do not want this.
-     However lb < ub + 1 is false, as expected.
-     There might be a problem with cases where ub is 2^32.  */
-  tree one;
-  Value gmp_one;
-  value_init (gmp_one);
-  value_set_si (gmp_one, 1);
-  one = gmp_cst_to_tree (type, gmp_one);
-  value_clear (gmp_one);
+     However lb < ub + 1 is false, as expected.  */
+  tree ub_one = fold_build2 (POINTER_TYPE_P (type) ? POINTER_PLUS_EXPR
+			     : PLUS_EXPR, type, ub, one);
 
-  ub = fold_build2 (PLUS_EXPR, type, ub, one);
-  cond_expr = fold_build2 (LT_EXPR, boolean_type_node, lb, ub);
+  /* When ub + 1 wraps around, use lb <= ub.  */
+  if (integer_zerop (ub_one))
+    cond_expr = fold_build2 (LE_EXPR, boolean_type_node, lb, ub);
+  else
+    cond_expr = fold_build2 (LT_EXPR, boolean_type_node, lb, ub_one);
 
   exit_edge = create_empty_if_region_on_edge (entry_edge, cond_expr);
 
@@ -828,7 +1048,8 @@ translate_clast_for_loop (sese region, loop_p context_loop,
 {
   struct loop *loop = graphite_create_new_loop (region, next_e, stmt,
  						context_loop, newivs,
- 						newivs_index, params_index);
+ 						newivs_index, params_index,
+						level);
   edge last_e = single_exit (loop);
   edge to_body = single_succ_edge (loop->header);
   basic_block after = to_body->dest;
@@ -873,7 +1094,7 @@ translate_clast_for (sese region, loop_p context_loop, struct clast_for *stmt,
 		     htab_t params_index)
 {
   edge last_e = graphite_create_new_loop_guard (region, next_e, stmt, *newivs,
-					   newivs_index, params_index);
+						newivs_index, params_index);
 
   edge true_e = get_true_edge_from_guard_bb (next_e->dest);
   edge false_e = get_false_edge_from_guard_bb (next_e->dest);
@@ -952,7 +1173,7 @@ translate_clast (sese region, loop_p context_loop, struct clast_stmt *stmt,
 		 htab_t newivs_index, htab_t bb_pbb_mapping, int level,
 		 htab_t params_index)
 {
-  if (!stmt || gloog_error)
+  if (!stmt)
     return next_e;
 
   if (CLAST_STMT_IS_A (stmt, stmt_root))
@@ -989,126 +1210,6 @@ translate_clast (sese region, loop_p context_loop, struct clast_stmt *stmt,
   return translate_clast (region, context_loop, stmt->next, next_e,
 			  rename_map, newivs, newivs_index,
 			  bb_pbb_mapping, level, params_index);
-}
-
-/* Returns the first cloog name used in EXPR.  */
-
-static const char *
-find_cloog_iv_in_expr (struct clast_expr *expr)
-{
-  struct clast_term *term = (struct clast_term *) expr;
-
-  if (expr->type == expr_term
-      && !term->var)
-    return NULL;
-
-  if (expr->type == expr_term)
-    return term->var;
-
-  if (expr->type == expr_red)
-    {
-      int i;
-      struct clast_reduction *red = (struct clast_reduction *) expr;
-
-      for (i = 0; i < red->n; i++)
-	{
-	  const char *res = find_cloog_iv_in_expr ((red)->elts[i]);
-
-	  if (res)
-	    return res;
-	}
-    }
-
-  return NULL;
-}
-
-/* Build for a clast_user_stmt USER_STMT a map between the CLAST
-   induction variables and the corresponding GCC old induction
-   variables.  This information is stored on each GRAPHITE_BB.  */
-
-static void
-compute_cloog_iv_types_1 (poly_bb_p pbb, struct clast_user_stmt *user_stmt)
-{
-  gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
-  struct clast_stmt *t;
-  int index = 0;
-
-  for (t = user_stmt->substitutions; t; t = t->next, index++)
-    {
-      PTR *slot;
-      struct ivtype_map_elt_s tmp;
-      struct clast_expr *expr = (struct clast_expr *)
-	((struct clast_assignment *)t)->RHS;
-
-      /* Create an entry (clast_var, type).  */
-      tmp.cloog_iv = find_cloog_iv_in_expr (expr);
-      if (!tmp.cloog_iv)
-	continue;
-
-      slot = htab_find_slot (GBB_CLOOG_IV_TYPES (gbb), &tmp, INSERT);
-
-      if (slot && !*slot)
-	{
-	  tree oldiv = pbb_to_depth_to_oldiv (pbb, index);
-	  tree type = oldiv ? TREE_TYPE (oldiv) : integer_type_node;
-	  *slot = new_ivtype_map_elt (tmp.cloog_iv, type);
-	}
-    }
-}
-
-/* Walk the CLAST tree starting from STMT and build for each
-   clast_user_stmt a map between the CLAST induction variables and the
-   corresponding GCC old induction variables.  This information is
-   stored on each GRAPHITE_BB.  */
-
-static void
-compute_cloog_iv_types (struct clast_stmt *stmt)
-{
-  if (!stmt)
-    return;
-
-  if (CLAST_STMT_IS_A (stmt, stmt_root))
-    goto next;
-
-  if (CLAST_STMT_IS_A (stmt, stmt_user))
-    {
-      CloogStatement *cs = ((struct clast_user_stmt *) stmt)->statement;
-      poly_bb_p pbb = (poly_bb_p) cloog_statement_usr (cs);
-      gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
-
-      if (!GBB_CLOOG_IV_TYPES (gbb))
-	GBB_CLOOG_IV_TYPES (gbb) = htab_create (10, ivtype_map_elt_info,
-						eq_ivtype_map_elts, free);
-
-      compute_cloog_iv_types_1 (pbb, (struct clast_user_stmt *) stmt);
-      goto next;
-    }
-
-  if (CLAST_STMT_IS_A (stmt, stmt_for))
-    {
-      struct clast_stmt *s = ((struct clast_for *) stmt)->body;
-      compute_cloog_iv_types (s);
-      goto next;
-    }
-
-  if (CLAST_STMT_IS_A (stmt, stmt_guard))
-    {
-      struct clast_stmt *s = ((struct clast_guard *) stmt)->then;
-      compute_cloog_iv_types (s);
-      goto next;
-    }
-
-  if (CLAST_STMT_IS_A (stmt, stmt_block))
-    {
-      struct clast_stmt *s = ((struct clast_block *) stmt)->body;
-      compute_cloog_iv_types (s);
-      goto next;
-    }
-
-  gcc_unreachable ();
-
- next:
-  compute_cloog_iv_types (stmt->next);
 }
 
 /* Free the SCATTERING domain list.  */
@@ -1353,7 +1454,7 @@ print_clast_stmt (FILE *file, struct clast_stmt *stmt)
 
 /* Prints STMT to STDERR.  */
 
-void
+DEBUG_FUNCTION void
 debug_clast_stmt (struct clast_stmt *stmt)
 {
   print_clast_stmt (stderr, stmt);
@@ -1402,7 +1503,7 @@ print_generated_program (FILE *file, scop_p scop)
 
 /* Prints to STDERR the code generated by CLooG for SCOP.  */
 
-void
+DEBUG_FUNCTION void
 debug_generated_program (scop_p scop)
 {
   print_generated_program (stderr, scop);
@@ -1462,7 +1563,6 @@ gloog (scop_p scop, VEC (scop_p, heap) *scops, htab_t bb_pbb_mapping)
   graphite_verify ();
 
   context_loop = SESE_ENTRY (region)->src->loop_father;
-  compute_cloog_iv_types (pc.stmt);
   rename_map = htab_create (10, rename_map_elt_info, eq_rename_map_elts, free);
   newivs_index = htab_create (10, clast_name_index_elt_info,
 			      eq_clast_name_indexes, free);

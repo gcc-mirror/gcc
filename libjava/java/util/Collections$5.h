@@ -14,8 +14,8 @@ class java::util::Collections$5 : public ::java::util::Collections$UnmodifiableI
 public: // actually package-private
   Collections$5(::java::util::Collections$UnmodifiableMap$UnmodifiableEntrySet *, ::java::util::Iterator *);
 public:
-  ::java::util::Map$Entry * Collections$5$next();
-  ::java::lang::Object * next();
+  virtual ::java::util::Map$Entry * Collections$5$next();
+  virtual ::java::lang::Object * next();
 public: // actually package-private
   ::java::util::Collections$UnmodifiableMap$UnmodifiableEntrySet * __attribute__((aligned(__alignof__( ::java::util::Collections$UnmodifiableIterator)))) this$2;
 public:

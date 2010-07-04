@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -47,7 +47,7 @@ namespace __gnu_pbds
 
     // A list-update metadata type that moves elements to the front of
     // the list based on the counter algorithm.
-    template<typename Size_Type = size_t>
+    template<typename Size_Type = std::size_t>
     class counter_lu_metadata
     {
     public:

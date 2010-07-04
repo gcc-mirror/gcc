@@ -35,33 +35,30 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#if defined(_GLIBCXX_INCLUDE_AS_TR1)
-#  error C++0x header cannot be included from TR1 header
-#endif
-
 #include <algorithm>
 #include <bitset>
+#include <functional>
+#ifdef _GLIBCXX_DEBUG
+# include <iosfwd>
+#endif
 #include <iterator>
 #include <locale>
+#include <memory>
+#include <set>
+#include <sstream>
+#include <stack>
 #include <stdexcept>
 #include <string>
-#include <vector>
 #include <utility>
-#include <sstream>
+#include <vector>
 
-#if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
-#  include <tr1_impl/regex>
-#else
-#  define _GLIBCXX_INCLUDE_AS_CXX0X
-#  define _GLIBCXX_BEGIN_NAMESPACE_TR1
-#  define _GLIBCXX_END_NAMESPACE_TR1
-#  define _GLIBCXX_TR1
-#  include <tr1_impl/regex>
-#  undef _GLIBCXX_TR1
-#  undef _GLIBCXX_END_NAMESPACE_TR1
-#  undef _GLIBCXX_BEGIN_NAMESPACE_TR1
-#  undef _GLIBCXX_INCLUDE_AS_CXX0X
-#endif
+#include <bits/regex_constants.h>
+#include <bits/regex_error.h>
+#include <bits/regex_cursor.h>
+#include <bits/regex_nfa.h>
+#include <bits/regex_compiler.h>
+#include <bits/regex_grep_matcher.h>
+#include <bits/regex.h>
 
 #endif // __GXX_EXPERIMENTAL_CXX0X__
 

@@ -29,6 +29,6 @@ template<typename Rep>
 int main()
 {
   duration<int> d0;
-  duration<int> d1 = d0;
+  duration<int> d1 = d0;	// { dg-warning "set but not used" }
 }
 

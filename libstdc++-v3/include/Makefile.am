@@ -121,6 +121,15 @@ bits_headers = \
 	${bits_srcdir}/postypes.h \
 	${bits_srcdir}/random.h \
 	${bits_srcdir}/random.tcc \
+	${bits_srcdir}/regex.h \
+	${bits_srcdir}/regex_compiler.h \
+	${bits_srcdir}/regex_constants.h \
+	${bits_srcdir}/regex_cursor.h \
+	${bits_srcdir}/regex_error.h \
+	${bits_srcdir}/regex_grep_matcher.h \
+	${bits_srcdir}/regex_grep_matcher.tcc \
+	${bits_srcdir}/regex_nfa.h \
+	${bits_srcdir}/regex_nfa.tcc \
 	${bits_srcdir}/stream_iterator.h \
 	${bits_srcdir}/streambuf_iterator.h \
 	${bits_srcdir}/shared_ptr.h \
@@ -800,6 +809,7 @@ profile_impl_srcdir = ${glibcxx_srcdir}/include/profile/impl
 profile_impl_builddir = ./profile/impl
 profile_impl_headers = \
 	${profile_impl_srcdir}/profiler.h \
+	${profile_impl_srcdir}/profiler_algos.h \
 	${profile_impl_srcdir}/profiler_container_size.h \
 	${profile_impl_srcdir}/profiler_hash_func.h \
 	${profile_impl_srcdir}/profiler_hashtable_size.h \

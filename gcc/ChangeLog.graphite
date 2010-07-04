@@ -1,3 +1,464 @@
+2010-04-12  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+
+	* graphite-blocking.c
+	(pbb_strip_mine_profitable_p): Replace Value with mpz_t.
+	* graphite-clast-to-gimple.c
+	(clast_to_gcc_expression): Same.
+	(precision_for_value): Same.
+	(precision_for_interval): Same.
+	(gcc_type_for_interval): Same.
+	(graphite_create_new_guard): Same.
+	(compute_bounds_for_level): Same.
+	(graphite_create_new_loop_guard): Same.
+	* graphite-interchange.c
+	(build_linearized_memory_access): Same.
+	(pdr_stride_in_loop): Same.
+	(memory_strides_in_loop_1): Same.
+	(memory_strides_in_loop): Same.
+	(extend_scattering): Same.
+	(psct_scattering_dim_for_loop_depth): Same.
+	(pbb_number_of_iterations): Same.
+	* graphite-poly.h
+	(debug_iteration_domains): Same.
+	* graphite-ppl.c
+	(new_Cloog_Domain_from_ppl_Pointset_Powerset): Same.
+	(ppl_set_inhomogeneous_gmp): Same.
+	(ppl_strip_loop): Same.
+	(ppl_lexico_compare_linear_expressions): Same.
+	(ppl_read_polyhedron_matrix): Same.
+	(ppl_max_for_le_pointset): Same.
+	* graphite-ppl.h
+	(ppl_read_polyhedron_matrix): Same.
+	(tree_int_to_gmp): Same.
+	(gmp_cst_to_tree): Same.
+	(ppl_set_inhomogeneous): Same.
+	(ppl_set_inhomogeneous_tree): Same.
+	(ppl_set_coef): Same.
+	(ppl_set_coef_tree): Same.
+	* graphite-sese-to-poly.c
+	(build_pbb_scattering_polyhedrons): Same.
+	(build_scop_scattering): Same.
+	(scan_tree_for_params_right_scev): Same.
+	(scan_tree_for_params): Same.
+	(find_params_in_bb): Same.
+	(find_scop_parameters): Same.
+	(add_upper_bounds_from_estimated_nit): Same.
+	(build_loop_iteration_domains): Same.
+	(add_condition_to_domain): Same.
+	(pdr_add_memory_accesses): Same.
+
+2010-04-11  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+
+	* graphite-blocking.c (pbb_strip_mine_profitable_p): Resolve 
+	CLooG's value_* macros to their respective mpz_* counterparts.
+	* graphite-clast-to-gimple.c (clast_to_gcc_expression): Same.
+	(graphite_create_new_loop_guard): Same.
+	* graphite-interchange.c (build_linearized_memory_access): Same.
+	(pdr_stride_in_loop): Same.
+	(memory_strides_in_loop_1): Same.
+	(1st_interchange_profitable_p): Same.
+	* graphite-poly.c (extend_scattering): Same.
+	(psct_scattering_dim_for_loop_depth): Same.
+	(pbb_number_of_iterations): Same.
+	(pbb_number_of_iterations_at_time): Same.
+	* graphite-poly.h (new_1st_loop): Same.
+	* graphite-ppl.c (cloog_matrix_to_ppl_constraint): Same.
+	(oppose_constraint): Same.
+	(insert_constraint_into_matrix): Same.
+	(ppl_set_inhomogeneous_gmp): Same.
+	(ppl_set_coef_gmp): Same.
+	(ppl_strip_loop): Same.
+	(ppl_lexico_compare_linear_expressions): Same.
+	(ppl_max_for_le_pointset): Same.
+	(ppl_min_for_le_pointset): Same.
+	(ppl_build_realtion): Same.
+	* graphite-ppl.h (gmp_cst_to_tree): Same.
+	(ppl_set_inhomogeneous): Same.
+	(ppl_set_inhomogeneous_tree): Same.
+	(ppl_set_coef): Same.
+	(ppl_set_coef_tree): Same.
+	* graphite-sese-to-poly.c (build_pbb_scattering_polyhedrons): Same.
+	(build_scop_scattering): Same.
+	(add_value_to_dim): Same.
+	(scan_tree_for_params_right_scev): Same.
+	(scan_tree_for_params_int): Same.
+	(scan_tree_for_params): Same.
+	(find_params_in_bb): Same.
+	(find_scop_parameters): Same.
+	(add_upper_bounds_from_estimated_nit): Same.
+	(build_loop_iteration_domains): Same.
+	(create_linear_expr_from_tree): Same.
+	(add_condition_to_domain): Same.
+	(pdr_add_memory_accesses): Same.
+
+2010-04-05  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43519
+	* graphite-clast-to-gimple.c (max_signed_precision_type): Use
+	lang_hooks.types.type_for_size instead of build_nonstandard_integer_type.
+	When converting an unsigned type to signed, double its precision.
+	(gcc_type_for_interval): Use lang_hooks.types.type_for_size.
+	(gcc_type_for_iv_of_clast_loop): Call max_signed_precision_type.
+	(graphite_create_new_loop_guard): When ub + 1 wraps around, use lb <= ub.
+
+2010-04-05  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43519
+	* graphite-clast-to-gimple.c (max_signed_precision_type): Use
+	build_nonstandard_integer_type.
+	(gcc_type_for_interval): Same.
+
+2010-04-05  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43519
+	* graphite-clast-to-gimple.c (graphite_create_new_loop_guard): Use
+	POINTER_PLUS_EXPR for pointer types.
+
+	* gcc.dg/graphite/id-19.c: New.
+
+2010-04-04  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43519
+	* Makefile.in (graphite-clast-to-gimple.o): Depends on langhooks.h.
+	* graphite-clast-to-gimple.c: Include langhooks.h.
+	(max_signed_precision_type): New.
+	(max_precision_type): Takes two types as arguments.
+	(precision_for_value): New.
+	(precision_for_interval): New.
+	(gcc_type_for_interval): New.
+	(gcc_type_for_value): New.
+	(gcc_type_for_clast_term): New.
+	(gcc_type_for_clast_red): New.
+	(gcc_type_for_clast_bin): New.
+	(gcc_type_for_clast_expr): Split up into several functions.
+	(gcc_type_for_clast_eq): Rewritten.
+	(compute_bounds_for_level): New.
+	(compute_type_for_level_1): New.
+	(compute_type_for_level): New.
+	(gcc_type_for_cloog_iv): Removed.
+	(gcc_type_for_iv_of_clast_loop): Rewritten.
+	(graphite_create_new_loop): Compute the lower and upper bound types
+	with gcc_type_for_clast_expr.
+	(graphite_create_new_loop_guard): Same.
+	(find_cloog_iv_in_expr): Removed.
+	(compute_cloog_iv_types_1): Removed.
+	(compute_cloog_iv_types): Removed.
+	(gloog): Do not call compute_cloog_iv_types.
+	* graphite-sese-to-poly.c (new_gimple_bb): Do not initialize
+	GBB_CLOOG_IV_TYPES.
+	(free_data_refs_aux): Do not free GBB_CLOOG_IV_TYPES.
+	* sese.h (struct gimple_bb): Removed field cloog_iv_types.
+	(GBB_CLOOG_IV_TYPES): Removed.
+
+	* gcc.dg/graphite/run-id-pr42644.c: Call abort.
+
+2010-04-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	Reverted this commit: as at this point the loop closed SSA form
+	is under a canonical form respecting the single argument condition.
+	* graphite-sese-to-poly.c (scalar_close_phi_node_p): Loop
+	close phi nodes may have more than one argument.
+
+2010-04-01  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): Assert that
+	gimple_phi_num_args of the loop close SSA phi node is equal to 1.
+	(detect_commutative_reduction): Same.
+
+2010-03-31  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (scalar_close_phi_node_p): Loop
+	close phi nodes may have more than one argument.
+
+2010-03-30  Richard Guenther  <rguenther@suse.de>
+	    Zdenek Dvorak  <ook@ucw.cz>
+	    Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43464
+	* tree-ssa-copy.c (init_copy_prop): Handle loop close phi nodes
+	with multiple arguments.
+	(execute_copy_prop): Remove call to rewrite_into_loop_closed_ssa.
+
+2010-03-23  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (print_pddr): Call print_pdr with an
+	extra argument.
+	* graphite-poly.c (debug_pdr): Add an extra argument for the
+	verbosity level.
+	(print_pdr): Same.
+	(print_pbb_domain): Same.
+	(print_pbb): Same.
+	(print_scop_context): Same.
+	(print_scop): Same.
+	(print_cloog): Same.
+	(debug_pbb_domain): Same.
+	(debug_pbb): Same.
+	(print_pdrs): Same.
+	(debug_pdrs): Same.
+	(debug_scop_context): Same.
+	(debug_scop): Same.
+	(debug_cloog): Same.
+	(print_scop_params): Same.
+	(debug_scop_params): Same.
+	(print_iteration_domain): Same.
+	(print_iteration_domains): Same.
+	(debug_iteration_domain): Same.
+	(debug_iteration_domains): Same.
+	(print_scattering_function): Same.
+	(print_scattering_functions): Same.
+	(debug_scattering_function): Same.
+	(debug_scattering_functions): Same.
+	* graphite-poly.h (debug_pdr): Update declaration.
+	(print_pdr): Same.
+	(print_pbb_domain): Same.
+	(print_pbb): Same.
+	(print_scop_context): Same.
+	(print_scop): Same.
+	(print_cloog): Same.
+	(debug_pbb_domain): Same.
+	(debug_pbb): Same.
+	(print_pdrs): Same.
+	(debug_pdrs): Same.
+	(debug_scop_context): Same.
+	(debug_scop): Same.
+	(debug_cloog): Same.
+	(print_scop_params): Same.
+	(debug_scop_params): Same.
+	(print_iteration_domain): Same.
+	(print_iteration_domains): Same.
+	(debug_iteration_domain): Same.
+	(debug_iteration_domains): Same.
+	(print_scattering_function): Same.
+	(print_scattering_functions): Same.
+	(debug_scattering_function): Same.
+	(debug_scattering_functions): Same.
+
+2010-03-23  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-poly.c (print_scattering_function_1): New.
+	(print_scattering_function): Call it.
+	(print_scop_params): Remove spaces at the end of lines.
+	(print_cloog): New.
+	(debug_cloog): New.
+	* graphite-poly.h (print_cloog): Declared.
+	(debug_cloog): Declared.
+
+2010-03-23  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-ssa-copy.c: Revert this previous change:
+	(init_copy_prop): Loop closed phi nodes cancontain more than one
+	argument.
+	(execute_copy_prop): Revert the previous change: do not call
+	rewrite_into_loop_closed_ssa.
+
+2010-03-21  Sebastian Pop  <sebastian.pop@amd.com>
+	    Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/43464
+	* tree-ssa-copy.c (init_copy_prop): Loop closed phi nodes can
+	contain more than one argument.
+	(execute_copy_prop): Revert the previous change: do not call
+	rewrite_into_loop_closed_ssa.
+
+	* gcc.dg/graphite/id-pr43464.c: Remove compile warning.
+	* gcc.dg/graphite/id-pr43464-1.c: New.
+
+2010-03-21  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43464
+	* tree-ssa-copy.c (execute_copy_prop): Call rewrite_into_loop_closed_ssa
+	and verify_loop_closed_ssa when copy prop is executed in the LNO.
+
+	* gcc.dg/graphite/id-pr43464.c: New.
+
+2010-03-16  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (graphite_loop_normal_form): Add the IV bump
+	in loop->header.
+	* tree-flow.h (canonicalize_loop_ivs): Updated declaration.
+	* tree-parloops.c (gen_parallel_loop): Add the IV bump in loop->latch.
+	* tree-ssa-loop-manip.c (canonicalize_loop_ivs): Add a new parameter
+	to switch between adding the IV bump in loop->latch or in loop->header.
+
+2010-03-16  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* passes.c (init_optimization_passes): Add pass_copy_prop
+	after Graphite.
+
+2010-03-16  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-poly.c (print_scattering_function): Pretty print following
+	the scoplib format.
+	(print_pdr): Same.
+	(print_pbb_domain): Same.
+	(dump_gbb_cases): Same.
+	(dump_gbb_conditions): Same.
+	(print_pdrs): Same.
+	(print_pbb): Same.
+	(print_scop_params): Same.
+	(print_scop_context): Same.
+	(print_scop): Same.
+	(print_pbb_body): New.
+	(lst_indent_to): New.
+	(print_lst): Start new lines with a #.
+	* graphite-poly.h (pbb_bb): New.
+	(pbb_index): Use pbb_bb.
+	* graphite-ppl.c (ppl_print_powerset_matrix): Print the number of
+	disjuncts.
+	* tree-data-ref.c (dump_data_reference): Start new lines with a #.
+
+2010-03-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43351
+	* gcc.dg/graphite/id-pr43351.c
+
+2010-03-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43354
+	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): Do not
+	call insert_out_of_ssa_copy for default definitions.
+	* gfortran.dg/graphite/id-pr43354.f: New.
+
+2010-03-13  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43349
+	* gfortran.dg/graphite/pr43349.f: New.
+
+2010-03-11  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (my_long_long): Defined.
+	(gcc_type_for_cloog_iv): Use it instead of long_long_integer_type_node.
+	* graphite-sese-to-poly.c (my_long_long): Defined.
+	(scop_ivs_can_be_represented): Use it.
+
+2010-03-10  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* doc/invoke.texi: Fix documentation of graphite-max-nb-scop-params,
+	graphite-max-bbs-per-function, and loop-block-tile-size.
+	* params.def (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS): Replace "maximal"
+	with "maximum".
+	(PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION): Same.
+
+2010-03-10  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (gcc_type_for_iv_of_clast_loop): Remove
+	forward declaration.
+	* graphite-sese-to-poly.c (reduction_phi_p): Remove FIXME comment.
+	(add_upper_bounds_from_estimated_nit): New.
+	(build_loop_iteration_domains): Use it.
+
+2010-03-09  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* doc/invoke.texi (PARAM_LOOP_BLOCK_TILE_SIZE): Document.
+
+2010-03-09  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43306
+	* tree-chrec.c (evolution_function_right_is_integer_cst): CHREC_RIGHT
+	should be an INTEGER_CST.  Also handle CASE_CONVERT.
+	* gcc.dg/graphite/pr43306.c: New.
+
+2010-03-09  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite.c (graphite_initialize): To bound the number of bbs per
+	function, use PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION.
+	* params.def (PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION): Declared.
+	* doc/invoke.texi: Document it.
+
+2010-03-09  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (build_poly_scop): Do not return bool.
+	* graphite-sese-to-poly.h (build_poly_scop): Same.
+
+2010-03-09  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (build_poly_scop): Limit scops following
+	the number of parameters in the scop.  Use as an upper bound
+	PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS.
+	* params.def (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS): Declared.
+	* doc/invoke.texi: Document it.
+
+2010-03-05  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (add_param_constraints): Use
+	lower_bound_in_type and upper_bound_in_type.
+
+2010-03-05  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (add_param_constraints): Use sizetype
+	instead of unsigned_type_node.
+
+2010-03-05  Sebastian Pop  <sebastian.pop@amd.com>
+	    Reza Yazdani  <reza.yazdani@amd.com>
+
+	PR middle-end/43065
+	* graphite-sese-to-poly.c (add_param_constraints): Insert bounds
+	on pointer type parameters.
+
+	* gcc.dg/graphite/run-id-4.c: New.
+
+2010-03-05  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/43065
+	* gcc.dg/graphite/run-id-3.c: New.
+
+2010-03-05  Tobias Grosser  <grosser@fim.uni-passau.de>
+	    Ramakrishna Upadrasta <Ramakrishna.Upadrasta@inria.fr>
+
+	* graphite-clast-to-gimple.c (clast_to_gcc_expression): Also
+	handle conversions from pointer to integers.
+	(gcc_type_for_cloog_iv): Choose the smalles signed integer as an
+	induction variable, to be able to work with code generated by CLooG.
+	* graphite-sese-to-poly.c (scop_ivs_can_be_represented): New.
+	(build_poly_scop): Bail out if we cannot codegen a loop.
+
+2010-03-04  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* graphite-clast-to-gimple.c (translate_clast): Do not short-cut
+	code generation with gloog_error.
+
+2010-03-04  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* sese.c (expand_scalar_variables_ssa_name): Add new argument for type.
+	Call fold_convert on all the returned values.
+	(expand_scalar_variables_expr): Pass to expand_scalar_variables_ssa_name
+	the type of the resulting expression.
+
+2010-03-04  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-ppl.c (ppl_min_for_le_polyhedron): Renamed
+	ppl_min_for_le_pointset.  Use ppl_Pointset_Powerset_C_Polyhedron_minimize.
+	* graphite-ppl.h (ppl_min_for_le_polyhedron): Update declaration.
+
+2010-03-04  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (map_into_dep_poly): Removed.
+	(dependence_polyhedron_1): Use combine_context_id_scat.
+
+2010-03-04  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-poly.h (struct poly_scattering): Add layout documentation.
+	(struct poly_bb): Same.
+	(combine_context_id_scat): New.
+
+2010-03-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/42326
+	* sese.c (name_defined_in_loop_p): Return false for default
+	definitions.
+
+	* gcc.dg/graphite/pr42326.c: New.
+
+2010-02-23  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (find_cloog_iv_in_expr): Simplify
+	and clean up the logic.
+
+2010-02-23  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (add_param_constraints): Enabled: remove
+	early return.
+
 2010-02-22  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/43083

@@ -37,9 +37,12 @@
 package Ada.Strings.Wide_Wide_Unbounded.Aux is
    pragma Preelaborate;
 
+   subtype Big_Wide_Wide_String is Wide_Wide_String (Positive);
+   type Big_Wide_Wide_String_Access is access all Big_Wide_Wide_String;
+
    procedure Get_Wide_Wide_String
      (U : Unbounded_Wide_Wide_String;
-      S : out Wide_Wide_String_Access;
+      S : out Big_Wide_Wide_String_Access;
       L : out Natural);
    pragma Inline (Get_Wide_Wide_String);
    --  This procedure returns the internal string pointer used in the
@@ -55,9 +58,9 @@ package Ada.Strings.Wide_Wide_Unbounded.Aux is
    --  string data is always accessible as S (1 .. L).
 
    procedure Set_Wide_Wide_String
-     (UP : in out Unbounded_Wide_Wide_String;
-      S  : Wide_Wide_String);
-   pragma Inline (Set_Wide_Wide_String);
+     (UP : out Unbounded_Wide_Wide_String;
+      S  : Wide_Wide_String)
+      renames Set_Unbounded_Wide_Wide_String;
    --  This function sets the string contents of the referenced unbounded
    --  string to the given string value. It is significantly more efficient
    --  than the use of To_Unbounded_Wide_Wide_String with an assignment, since

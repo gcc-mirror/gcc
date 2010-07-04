@@ -1,6 +1,6 @@
 // 2001-06-05 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,7 @@ void test04()
   std::stringbuf b1;
   std::cout.rdbuf( &b1 );
   std::cout << "hello\n";
-  std::cout.rdbuf(NULL);
+  std::cout.rdbuf(0);
 }
 
 int main()

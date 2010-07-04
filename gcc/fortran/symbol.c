@@ -1,6 +1,7 @@
 /* Maintain binary trees of symbols.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
-   2009, 2010 Free Software Foundation, Inc.
+   2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -26,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "parse.h"
 #include "match.h"
+#include "constructor.h"
 
 
 /* Strings for all symbol attributes.  We use these for dumping the
@@ -370,7 +372,8 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
     *cray_pointee = "CRAY POINTEE", *data = "DATA", *value = "VALUE",
     *volatile_ = "VOLATILE", *is_protected = "PROTECTED",
     *is_bind_c = "BIND(C)", *procedure = "PROCEDURE",
-    *asynchronous = "ASYNCHRONOUS";
+    *asynchronous = "ASYNCHRONOUS", *codimension = "CODIMENSION",
+    *contiguous = "CONTIGUOUS";
   static const char *threadprivate = "THREADPRIVATE";
 
   const char *a1, *a2;
@@ -476,11 +479,13 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 
   conf (in_common, dummy);
   conf (in_common, allocatable);
+  conf (in_common, codimension);
   conf (in_common, result);
 
   conf (dummy, result);
 
   conf (in_equivalence, use_assoc);
+  conf (in_equivalence, codimension);
   conf (in_equivalence, dummy);
   conf (in_equivalence, target);
   conf (in_equivalence, pointer);
@@ -502,6 +507,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 
   conf (is_bind_c, cray_pointer);
   conf (is_bind_c, cray_pointee);
+  conf (is_bind_c, codimension);
   conf (is_bind_c, allocatable);
   conf (is_bind_c, elemental);
 
@@ -512,6 +518,8 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   /* Cray pointer/pointee conflicts.  */
   conf (cray_pointer, cray_pointee);
   conf (cray_pointer, dimension);
+  conf (cray_pointer, codimension);
+  conf (cray_pointer, contiguous);
   conf (cray_pointer, pointer);
   conf (cray_pointer, target);
   conf (cray_pointer, allocatable);
@@ -523,6 +531,8 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (cray_pointer, entry);
 
   conf (cray_pointee, allocatable);
+  conf (cray_pointer, contiguous);
+  conf (cray_pointer, codimension);
   conf (cray_pointee, intent);
   conf (cray_pointee, optional);
   conf (cray_pointee, dummy);
@@ -538,7 +548,6 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (data, function);
   conf (data, result);
   conf (data, allocatable);
-  conf (data, use_assoc);
 
   conf (value, pointer)
   conf (value, allocatable)
@@ -546,7 +555,10 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (value, function)
   conf (value, volatile_)
   conf (value, dimension)
+  conf (value, codimension)
   conf (value, external)
+
+  conf (codimension, result)
 
   if (attr->value
       && (attr->intent == INTENT_OUT || attr->intent == INTENT_INOUT))
@@ -557,7 +569,6 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
     }
 
   conf (is_protected, intrinsic)
-  conf (is_protected, external)
   conf (is_protected, in_common)
 
   conf (asynchronous, intrinsic)
@@ -575,8 +586,8 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 
   conf (procedure, allocatable)
   conf (procedure, dimension)
+  conf (procedure, codimension)
   conf (procedure, intrinsic)
-  conf (procedure, is_protected)
   conf (procedure, target)
   conf (procedure, value)
   conf (procedure, volatile_)
@@ -600,10 +611,12 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
     case FL_BLOCK_DATA:
     case FL_MODULE:
     case FL_LABEL:
+      conf2 (codimension);
       conf2 (dimension);
       conf2 (dummy);
       conf2 (volatile_);
       conf2 (asynchronous);
+      conf2 (contiguous);
       conf2 (pointer);
       conf2 (is_protected);
       conf2 (target);
@@ -652,6 +665,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	  conf2 (volatile_);
 	  conf2 (asynchronous);
 	  conf2 (in_namelist);
+	  conf2 (codimension);
 	  conf2 (dimension);
 	  conf2 (function);
 	  conf2 (threadprivate);
@@ -710,6 +724,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
       conf2 (function);
       conf2 (subroutine);
       conf2 (entry);
+      conf2 (contiguous);
       conf2 (pointer);
       conf2 (is_protected);
       conf2 (target);
@@ -721,6 +736,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
       conf2 (threadprivate);
       conf2 (value);
       conf2 (is_bind_c);
+      conf2 (codimension);
       conf2 (result);
       break;
 
@@ -865,6 +881,32 @@ gfc_add_allocatable (symbol_attribute *attr, locus *where)
 
 
 gfc_try
+gfc_add_codimension (symbol_attribute *attr, const char *name, locus *where)
+{
+
+  if (check_used (attr, name, where))
+    return FAILURE;
+
+  if (attr->codimension)
+    {
+      duplicate_attr ("CODIMENSION", where);
+      return FAILURE;
+    }
+
+  if (attr->flavor == FL_PROCEDURE && attr->if_source == IFSRC_IFBODY
+      && gfc_find_state (COMP_INTERFACE) == FAILURE)
+    {
+      gfc_error ("CODIMENSION specified for '%s' outside its INTERFACE body "
+		 "at %L", name, where);
+      return FAILURE;
+    }
+
+  attr->codimension = 1;
+  return check_conflict (attr, name, where);
+}
+
+
+gfc_try
 gfc_add_dimension (symbol_attribute *attr, const char *name, locus *where)
 {
 
@@ -886,6 +928,18 @@ gfc_add_dimension (symbol_attribute *attr, const char *name, locus *where)
     }
 
   attr->dimension = 1;
+  return check_conflict (attr, name, where);
+}
+
+
+gfc_try
+gfc_add_contiguous (symbol_attribute *attr, const char *name, locus *where)
+{
+
+  if (check_used (attr, name, where))
+    return FAILURE;
+
+  attr->contiguous = 1;
   return check_conflict (attr, name, where);
 }
 
@@ -1095,7 +1149,7 @@ gfc_add_volatile (symbol_attribute *attr, const char *name, locus *where)
 {
   /* No check_used needed as 11.2.1 of the F2003 standard allows
      that the local identifier made accessible by a use statement can be
-     given a VOLATILE attribute.  */
+     given a VOLATILE attribute - unless it is a coarray (F2008, C560).  */
 
   if (attr->volatile_ && attr->volatile_ns == gfc_current_ns)
     if (gfc_notify_std (GFC_STD_LEGACY, 
@@ -1675,6 +1729,10 @@ gfc_copy_attr (symbol_attribute *dest, symbol_attribute *src, locus *where)
     goto fail;
 
   if (src->dimension && gfc_add_dimension (dest, NULL, where) == FAILURE)
+    goto fail;
+  if (src->codimension && gfc_add_codimension (dest, NULL, where) == FAILURE)
+    goto fail;
+  if (src->contiguous && gfc_add_contiguous (dest, NULL, where) == FAILURE)
     goto fail;
   if (src->optional && gfc_add_optional (dest, where) == FAILURE)
     goto fail;
@@ -2473,6 +2531,7 @@ gfc_new_symbol (const char *name, gfc_namespace *ns)
   /* Clear the ptrs we may need.  */
   p->common_block = NULL;
   p->f2k_derived = NULL;
+  p->assoc = NULL;
   
   return p;
 }
@@ -3623,6 +3682,7 @@ gen_special_c_interop_ptr (int ptr_id, const char *ptr_name,
 {
   gfc_symtree *tmp_symtree;
   gfc_symbol *tmp_sym;
+  gfc_constructor *c;
 
   tmp_symtree = gfc_find_symtree (gfc_current_ns->sym_root, ptr_name);
 	 
@@ -3684,10 +3744,11 @@ gen_special_c_interop_ptr (int ptr_id, const char *ptr_name,
   tmp_sym->value->expr_type = EXPR_STRUCTURE;
   tmp_sym->value->ts.type = BT_DERIVED;
   tmp_sym->value->ts.u.derived = tmp_sym->ts.u.derived;
-  tmp_sym->value->value.constructor = gfc_get_constructor ();
-  tmp_sym->value->value.constructor->expr = gfc_get_expr ();
-  tmp_sym->value->value.constructor->expr->expr_type = EXPR_NULL;
-  tmp_sym->value->value.constructor->expr->ts.is_iso_c = 1;
+  gfc_constructor_append_expr (&tmp_sym->value->value.constructor, NULL, NULL);
+  c = gfc_constructor_first (tmp_sym->value->value.constructor);
+  c->expr = gfc_get_expr ();
+  c->expr->expr_type = EXPR_NULL;
+  c->expr->ts.is_iso_c = 1;
   /* Must declare c_null_ptr and c_null_funptr as having the
      PARAMETER attribute so they can be used in init expressions.  */
   tmp_sym->attr.flavor = FL_PARAMETER;
@@ -3893,7 +3954,8 @@ gen_shape_param (gfc_formal_arglist **head,
       param_sym->as->upper[i] = NULL;
     }
   param_sym->as->rank = 1;
-  param_sym->as->lower[0] = gfc_int_expr (1);
+  param_sym->as->lower[0] = gfc_get_int_expr (gfc_default_integer_kind,
+					      NULL, 1);
 
   /* The extent is unknown until we get it.  The length give us
      the rank the incoming pointer.  */
@@ -4236,7 +4298,8 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 #define NAMED_CHARKNDCST(a,b,c) case a :
 #include "iso-c-binding.def"
 
-	tmp_sym->value = gfc_int_expr (c_interop_kinds_table[s].value);
+	tmp_sym->value = gfc_get_int_expr (gfc_default_integer_kind, NULL,
+				 	   c_interop_kinds_table[s].value);
 
 	/* Initialize an integer constant expression node.  */
 	tmp_sym->attr.flavor = FL_PARAMETER;
@@ -4266,20 +4329,16 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
 
 	/* Initialize an integer constant expression node for the
 	   length of the character.  */
-	tmp_sym->value = gfc_get_expr (); 
-	tmp_sym->value->expr_type = EXPR_CONSTANT;
-	tmp_sym->value->ts.type = BT_CHARACTER;
-	tmp_sym->value->ts.kind = gfc_default_character_kind;
-	tmp_sym->value->where = gfc_current_locus;
+	tmp_sym->value = gfc_get_character_expr (gfc_default_character_kind,
+						 &gfc_current_locus, NULL, 1);
 	tmp_sym->value->ts.is_c_interop = 1;
 	tmp_sym->value->ts.is_iso_c = 1;
 	tmp_sym->value->value.character.length = 1;
-	tmp_sym->value->value.character.string = gfc_get_wide_string (2);
 	tmp_sym->value->value.character.string[0]
 	  = (gfc_char_t) c_interop_kinds_table[s].value;
-	tmp_sym->value->value.character.string[1] = '\0';
 	tmp_sym->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
-	tmp_sym->ts.u.cl->length = gfc_int_expr (1);
+	tmp_sym->ts.u.cl->length = gfc_get_int_expr (gfc_default_integer_kind,
+						     NULL, 1);
 
 	/* May not need this in both attr and ts, but do need in
 	   attr for writing module file.  */
@@ -4502,6 +4561,8 @@ get_iso_c_sym (gfc_symbol *old_sym, char *new_name,
   new_symtree->n.sym->module = gfc_get_string (old_sym->module);
   new_symtree->n.sym->from_intmod = old_sym->from_intmod;
   new_symtree->n.sym->intmod_sym_id = old_sym->intmod_sym_id;
+  if (old_sym->attr.function)
+    new_symtree->n.sym->result = new_symtree->n.sym;
   /* Build the formal arg list.  */
   build_formal_args (new_symtree->n.sym, old_sym, add_optional_arg);
 
@@ -4549,12 +4610,14 @@ gfc_check_symbol_typed (gfc_symbol* sym, gfc_namespace* ns,
    list and marked `error' until symbols are committed.  */
 
 gfc_typebound_proc*
-gfc_get_typebound_proc (void)
+gfc_get_typebound_proc (gfc_typebound_proc *tb0)
 {
   gfc_typebound_proc *result;
   tentative_tbp *list_node;
 
   result = XCNEW (gfc_typebound_proc);
+  if (tb0)
+    *result = *tb0;
   result->error = 1;
 
   list_node = XCNEW (tentative_tbp);
@@ -4617,8 +4680,6 @@ gfc_type_is_extension_of (gfc_symbol *t1, gfc_symbol *t2)
 bool
 gfc_type_compatible (gfc_typespec *ts1, gfc_typespec *ts2)
 {
-  gfc_component *cmp1, *cmp2;
-
   bool is_class1 = (ts1->type == BT_CLASS);
   bool is_class2 = (ts2->type == BT_CLASS);
   bool is_derived1 = (ts1->type == BT_DERIVED);
@@ -4630,368 +4691,12 @@ gfc_type_compatible (gfc_typespec *ts1, gfc_typespec *ts2)
   if (is_derived1 && is_derived2)
     return gfc_compare_derived_types (ts1->u.derived, ts2->u.derived);
 
-  cmp1 = cmp2 = NULL;
-
-  if (is_class1)
-    {
-      cmp1 = gfc_find_component (ts1->u.derived, "$data", true, false);
-      if (cmp1 == NULL)
-	return 0;
-    }
-
-  if (is_class2)
-    {
-      cmp2 = gfc_find_component (ts2->u.derived, "$data", true, false);
-      if (cmp2 == NULL)
-	return 0;
-    }
-
   if (is_class1 && is_derived2)
-    return gfc_type_is_extension_of (cmp1->ts.u.derived, ts2->u.derived);
-
+    return gfc_type_is_extension_of (ts1->u.derived->components->ts.u.derived,
+				     ts2->u.derived);
   else if (is_class1 && is_class2)
-    return gfc_type_is_extension_of (cmp1->ts.u.derived, cmp2->ts.u.derived);
-
+    return gfc_type_is_extension_of (ts1->u.derived->components->ts.u.derived,
+				     ts2->u.derived->components->ts.u.derived);
   else
     return 0;
-}
-
-
-/* Build a polymorphic CLASS entity, using the symbol that comes from
-   build_sym. A CLASS entity is represented by an encapsulating type,
-   which contains the declared type as '$data' component, plus a pointer
-   component '$vptr' which determines the dynamic type.  */
-
-gfc_try
-gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
-			gfc_array_spec **as)
-{
-  char name[GFC_MAX_SYMBOL_LEN + 5];
-  gfc_symbol *fclass;
-  gfc_symbol *vtab;
-  gfc_component *c;
-
-  /* Determine the name of the encapsulating type.  */
-  if ((*as) && (*as)->rank && attr->allocatable)
-    sprintf (name, ".class.%s.%d.a", ts->u.derived->name, (*as)->rank);
-  else if ((*as) && (*as)->rank)
-    sprintf (name, ".class.%s.%d", ts->u.derived->name, (*as)->rank);
-  else if (attr->allocatable)
-    sprintf (name, ".class.%s.a", ts->u.derived->name);
-  else
-    sprintf (name, ".class.%s", ts->u.derived->name);
-
-  gfc_find_symbol (name, ts->u.derived->ns, 0, &fclass);
-  if (fclass == NULL)
-    {
-      gfc_symtree *st;
-      /* If not there, create a new symbol.  */
-      fclass = gfc_new_symbol (name, ts->u.derived->ns);
-      st = gfc_new_symtree (&ts->u.derived->ns->sym_root, name);
-      st->n.sym = fclass;
-      gfc_set_sym_referenced (fclass);
-      fclass->refs++;
-      fclass->ts.type = BT_UNKNOWN;
-      fclass->attr.abstract = ts->u.derived->attr.abstract;
-      if (ts->u.derived->f2k_derived)
-	fclass->f2k_derived = gfc_get_namespace (NULL, 0);
-      if (gfc_add_flavor (&fclass->attr, FL_DERIVED,
-	  NULL, &gfc_current_locus) == FAILURE)
-	return FAILURE;
-
-      /* Add component '$data'.  */
-      if (gfc_add_component (fclass, "$data", &c) == FAILURE)
-	return FAILURE;
-      c->ts = *ts;
-      c->ts.type = BT_DERIVED;
-      c->attr.access = ACCESS_PRIVATE;
-      c->ts.u.derived = ts->u.derived;
-      c->attr.class_pointer = attr->pointer;
-      c->attr.pointer = attr->pointer || attr->dummy;
-      c->attr.allocatable = attr->allocatable;
-      c->attr.dimension = attr->dimension;
-      c->attr.abstract = ts->u.derived->attr.abstract;
-      c->as = (*as);
-      c->initializer = gfc_get_expr ();
-      c->initializer->expr_type = EXPR_NULL;
-
-      /* Add component '$vptr'.  */
-      if (gfc_add_component (fclass, "$vptr", &c) == FAILURE)
-	return FAILURE;
-      c->ts.type = BT_DERIVED;
-      vtab = gfc_find_derived_vtab (ts->u.derived);
-      gcc_assert (vtab);
-      c->ts.u.derived = vtab->ts.u.derived;
-      c->attr.pointer = 1;
-      c->initializer = gfc_get_expr ();
-      c->initializer->expr_type = EXPR_NULL;
-    }
-
-  /* Since the extension field is 8 bit wide, we can only have
-     up to 255 extension levels.  */
-  if (ts->u.derived->attr.extension == 255)
-    {
-      gfc_error ("Maximum extension level reached with type '%s' at %L",
-		 ts->u.derived->name, &ts->u.derived->declared_at);
-      return FAILURE;
-    }
-    
-  fclass->attr.extension = ts->u.derived->attr.extension + 1;
-  fclass->attr.is_class = 1;
-  ts->u.derived = fclass;
-  attr->allocatable = attr->pointer = attr->dimension = 0;
-  (*as) = NULL;  /* XXX */
-  return SUCCESS;
-}
-
-
-/* Find the symbol for a derived type's vtab.  */
-
-gfc_symbol *
-gfc_find_derived_vtab (gfc_symbol *derived)
-{
-  gfc_namespace *ns;
-  gfc_symbol *vtab = NULL, *vtype = NULL;
-  char name[2 * GFC_MAX_SYMBOL_LEN + 8];
-
-  ns = gfc_current_ns;
-
-  for (; ns; ns = ns->parent)
-    if (!ns->parent)
-      break;
-
-  if (ns)
-    {
-      sprintf (name, "vtab$%s", derived->name);
-      gfc_find_symbol (name, ns, 0, &vtab);
-
-      if (vtab == NULL)
-	{
-	  gfc_get_symbol (name, ns, &vtab);
-	  vtab->ts.type = BT_DERIVED;
-	  vtab->attr.flavor = FL_VARIABLE;
-	  vtab->attr.target = 1;
-	  vtab->attr.save = SAVE_EXPLICIT;
-	  vtab->attr.vtab = 1;
-	  vtab->attr.access = ACCESS_PRIVATE;
-	  vtab->refs++;
-	  gfc_set_sym_referenced (vtab);
-	  sprintf (name, "vtype$%s", derived->name);
-	  
-	  gfc_find_symbol (name, ns, 0, &vtype);
-	  if (vtype == NULL)
-	    {
-	      gfc_component *c;
-	      gfc_symbol *parent = NULL, *parent_vtab = NULL;
-
-	      gfc_get_symbol (name, ns, &vtype);
-	      if (gfc_add_flavor (&vtype->attr, FL_DERIVED,
-				  NULL, &gfc_current_locus) == FAILURE)
-		return NULL;
-	      vtype->refs++;
-	      gfc_set_sym_referenced (vtype);
-	      vtype->attr.access = ACCESS_PRIVATE;
-
-	      /* Add component '$hash'.  */
-	      if (gfc_add_component (vtype, "$hash", &c) == FAILURE)
-		return NULL;
-	      c->ts.type = BT_INTEGER;
-	      c->ts.kind = 4;
-	      c->attr.access = ACCESS_PRIVATE;
-	      c->initializer = gfc_int_expr (derived->hash_value);
-
-	      /* Add component '$size'.  */
-	      if (gfc_add_component (vtype, "$size", &c) == FAILURE)
-		return NULL;
-	      c->ts.type = BT_INTEGER;
-	      c->ts.kind = 4;
-	      c->attr.access = ACCESS_PRIVATE;
-	      /* Remember the derived type in ts.u.derived,
-		 so that the correct initializer can be set later on
-		 (in gfc_conv_structure).  */
-	      c->ts.u.derived = derived;
-	      c->initializer = gfc_int_expr (0);
-
-	      /* Add component $extends.  */
-	      if (gfc_add_component (vtype, "$extends", &c) == FAILURE)
-		return NULL;
-	      c->attr.pointer = 1;
-	      c->attr.access = ACCESS_PRIVATE;
-	      c->initializer = gfc_get_expr ();
-	      parent = gfc_get_derived_super_type (derived);
-	      if (parent)
-		{
-		  parent_vtab = gfc_find_derived_vtab (parent);
-		  c->ts.type = BT_DERIVED;
-		  c->ts.u.derived = parent_vtab->ts.u.derived;
-		  c->initializer->expr_type = EXPR_VARIABLE;
-		  gfc_find_sym_tree (parent_vtab->name, parent_vtab->ns, 0,
-				     &c->initializer->symtree);
-		}
-	      else
-		{
-		  c->ts.type = BT_DERIVED;
-		  c->ts.u.derived = vtype;
-		  c->initializer->expr_type = EXPR_NULL;
-		}
-	    }
-	  vtab->ts.u.derived = vtype;
-
-	  vtab->value = gfc_default_initializer (&vtab->ts);
-	}
-    }
-
-  return vtab;
-}
-
-
-/* General worker function to find either a type-bound procedure or a
-   type-bound user operator.  */
-
-static gfc_symtree*
-find_typebound_proc_uop (gfc_symbol* derived, gfc_try* t,
-			 const char* name, bool noaccess, bool uop,
-			 locus* where)
-{
-  gfc_symtree* res;
-  gfc_symtree* root;
-
-  /* Set correct symbol-root.  */
-  gcc_assert (derived->f2k_derived);
-  root = (uop ? derived->f2k_derived->tb_uop_root
-	      : derived->f2k_derived->tb_sym_root);
-
-  /* Set default to failure.  */
-  if (t)
-    *t = FAILURE;
-
-  /* Try to find it in the current type's namespace.  */
-  res = gfc_find_symtree (root, name);
-  if (res && res->n.tb && !res->n.tb->error)
-    {
-      /* We found one.  */
-      if (t)
-	*t = SUCCESS;
-
-      if (!noaccess && derived->attr.use_assoc
-	  && res->n.tb->access == ACCESS_PRIVATE)
-	{
-	  if (where)
-	    gfc_error ("'%s' of '%s' is PRIVATE at %L",
-		       name, derived->name, where);
-	  if (t)
-	    *t = FAILURE;
-	}
-
-      return res;
-    }
-
-  /* Otherwise, recurse on parent type if derived is an extension.  */
-  if (derived->attr.extension)
-    {
-      gfc_symbol* super_type;
-      super_type = gfc_get_derived_super_type (derived);
-      gcc_assert (super_type);
-
-      return find_typebound_proc_uop (super_type, t, name,
-				      noaccess, uop, where);
-    }
-
-  /* Nothing found.  */
-  return NULL;
-}
-
-
-/* Find a type-bound procedure or user operator by name for a derived-type
-   (looking recursively through the super-types).  */
-
-gfc_symtree*
-gfc_find_typebound_proc (gfc_symbol* derived, gfc_try* t,
-			 const char* name, bool noaccess, locus* where)
-{
-  return find_typebound_proc_uop (derived, t, name, noaccess, false, where);
-}
-
-gfc_symtree*
-gfc_find_typebound_user_op (gfc_symbol* derived, gfc_try* t,
-			    const char* name, bool noaccess, locus* where)
-{
-  return find_typebound_proc_uop (derived, t, name, noaccess, true, where);
-}
-
-
-/* Find a type-bound intrinsic operator looking recursively through the
-   super-type hierarchy.  */
-
-gfc_typebound_proc*
-gfc_find_typebound_intrinsic_op (gfc_symbol* derived, gfc_try* t,
-				 gfc_intrinsic_op op, bool noaccess,
-				 locus* where)
-{
-  gfc_typebound_proc* res;
-
-  /* Set default to failure.  */
-  if (t)
-    *t = FAILURE;
-
-  /* Try to find it in the current type's namespace.  */
-  if (derived->f2k_derived)
-    res = derived->f2k_derived->tb_op[op];
-  else  
-    res = NULL;
-
-  /* Check access.  */
-  if (res && !res->error)
-    {
-      /* We found one.  */
-      if (t)
-	*t = SUCCESS;
-
-      if (!noaccess && derived->attr.use_assoc
-	  && res->access == ACCESS_PRIVATE)
-	{
-	  if (where)
-	    gfc_error ("'%s' of '%s' is PRIVATE at %L",
-		       gfc_op2string (op), derived->name, where);
-	  if (t)
-	    *t = FAILURE;
-	}
-
-      return res;
-    }
-
-  /* Otherwise, recurse on parent type if derived is an extension.  */
-  if (derived->attr.extension)
-    {
-      gfc_symbol* super_type;
-      super_type = gfc_get_derived_super_type (derived);
-      gcc_assert (super_type);
-
-      return gfc_find_typebound_intrinsic_op (super_type, t, op,
-					      noaccess, where);
-    }
-
-  /* Nothing found.  */
-  return NULL;
-}
-
-
-/* Get a typebound-procedure symtree or create and insert it if not yet
-   present.  This is like a very simplified version of gfc_get_sym_tree for
-   tbp-symtrees rather than regular ones.  */
-
-gfc_symtree*
-gfc_get_tbp_symtree (gfc_symtree **root, const char *name)
-{
-  gfc_symtree *result;
-
-  result = gfc_find_symtree (*root, name);
-  if (!result)
-    {
-      result = gfc_new_symtree (root, name);
-      gcc_assert (result);
-      result->n.tb = NULL;
-    }
-
-  return result;
 }

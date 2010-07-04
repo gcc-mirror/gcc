@@ -475,6 +475,10 @@ template<typename _Alloc>
   {
     typedef _Bvector_base<_Alloc>			 _Base;
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    template<typename> friend class hash;
+#endif
+
   public:
     typedef bool                                         value_type;
     typedef size_t                                       size_type;
@@ -1023,5 +1027,25 @@ template<typename _Alloc>
   };
 
 _GLIBCXX_END_NESTED_NAMESPACE
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+
+#include <bits/functional_hash.h>
+
+_GLIBCXX_BEGIN_NAMESPACE(std)
+
+  // DR 1182.
+  /// std::hash specialization for vector<bool>.
+  template<typename _Alloc>
+    struct hash<_GLIBCXX_STD_D::vector<bool, _Alloc>>
+    : public std::unary_function<_GLIBCXX_STD_D::vector<bool, _Alloc>, size_t>
+    {
+      size_t
+      operator()(const _GLIBCXX_STD_D::vector<bool, _Alloc>& __b) const;
+    };
+
+_GLIBCXX_END_NAMESPACE
+
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
 #endif

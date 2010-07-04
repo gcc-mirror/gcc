@@ -1,6 +1,6 @@
-/* { dg-do compile } */ 
+/* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-pre-stats" } */
-int main(void)
+int foo(void)
 {
 	int x, c, y;
 	x = 3;

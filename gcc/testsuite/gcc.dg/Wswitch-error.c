@@ -61,3 +61,4 @@ foo (int i, int j, enum e ei, enum e ej, enum e ek, enum e el,
     }
   return 0;
 }
+/* { dg-message "some warnings being treated as errors" "" {target "*-*-*"} 0 } */

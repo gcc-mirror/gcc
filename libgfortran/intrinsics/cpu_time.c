@@ -78,7 +78,7 @@ void cpu_time_4 (GFC_REAL_4 *time)
 {
   long sec, usec;
   __cpu_time_1 (&sec, &usec);
-  *time = sec + usec * (GFC_REAL_4)1.e-6;
+  *time = sec + usec * GFC_REAL_4_LITERAL(1.e-6);
 }
 iexport(cpu_time_4);
 
@@ -89,7 +89,7 @@ void cpu_time_8 (GFC_REAL_8 *time)
 {
   long sec, usec;
   __cpu_time_1 (&sec, &usec);
-  *time = sec + usec * (GFC_REAL_8)1.e-6;
+  *time = sec + usec * GFC_REAL_8_LITERAL(1.e-6);
 }
 
 #ifdef HAVE_GFC_REAL_10
@@ -100,7 +100,7 @@ void cpu_time_10 (GFC_REAL_10 *time)
 {
   long sec, usec;
   __cpu_time_1 (&sec, &usec);
-  *time = sec + usec * (GFC_REAL_10)1.e-6;
+  *time = sec + usec * GFC_REAL_10_LITERAL(1.e-6);
 }
 #endif
 
@@ -112,7 +112,7 @@ void cpu_time_16 (GFC_REAL_16 *time)
 {
   long sec, usec;
   __cpu_time_1 (&sec, &usec);
-  *time = sec + usec * (GFC_REAL_16)1.e-6;
+  *time = sec + usec * GFC_REAL_16_LITERAL(1.e-6);
 }
 #endif
 

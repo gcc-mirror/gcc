@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 4.1.0\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2010-01-11 11:42+0000\n"
+"POT-Creation-Date: 2010-04-06 14:10+0000\n"
 "PO-Revision-Date: 2006-03-09 12:37+0800\n"
 "Last-Translator: Wei-Lun Chao <chaoweilun@pcmail.com.tw>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
@@ -36,7 +36,7 @@ msgstr "沒有實作 iconv，無法從 %s 轉換到 %s"
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr "字元 0x%lx 不在基本來源字元集中\n"
 
-#: charset.c:798 charset.c:1457
+#: charset.c:798 charset.c:1444
 msgid "converting to execution character set"
 msgstr "轉換到可執行檔案的字元集"
 
@@ -73,7 +73,7 @@ msgstr "不完整的萬國碼字元名稱 %.*s"
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s 不是一個有效的萬國碼字元"
 
-#: charset.c:1056 lex.c:486
+#: charset.c:1056 lex.c:488
 msgid "'$' in identifier or number"
 msgstr "「$」出現在識別字或數字中"
 
@@ -87,7 +87,7 @@ msgstr "萬國碼字元 %.*s 在識別字中無效"
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "萬國碼字元 %.*s 在識別字開頭無效"
 
-#: charset.c:1102 charset.c:1687
+#: charset.c:1102 charset.c:1674
 msgid "converting UCN to source character set"
 msgstr "將 UCN 轉換到來源字元集"
 
@@ -134,19 +134,19 @@ msgstr "不明的逸出序列：「\\%s」"
 msgid "converting escape sequence to execution character set"
 msgstr "將逸出序列轉換到執行字元集"
 
-#: charset.c:1522 charset.c:1586
+#: charset.c:1509 charset.c:1573
 msgid "character constant too long for its type"
 msgstr "字元常數大小超出其類型"
 
-#: charset.c:1525
+#: charset.c:1512
 msgid "multi-character character constant"
 msgstr "多位元組字元常數"
 
-#: charset.c:1625
+#: charset.c:1612
 msgid "empty character constant"
 msgstr "空的字元常數"
 
-#: charset.c:1734
+#: charset.c:1721
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr "無法從 %s 轉換到 %s"
@@ -400,7 +400,7 @@ msgstr "已再判定「%s」"
 msgid "unterminated #%s"
 msgstr "未終止的 #%s"
 
-#: directives-only.c:222 lex.c:1415 traditional.c:163
+#: directives-only.c:222 lex.c:1516 traditional.c:163
 msgid "unterminated comment"
 msgstr "未終結的註釋"
 
@@ -714,79 +714,79 @@ msgstr "三元符 ??%c 轉換為 %c"
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
 msgstr "三元符 ??%c 被忽略，請使用 -trigraphs 來啟用"
 
-#: lex.c:358
+#: lex.c:360
 msgid "\"/*\" within comment"
 msgstr "「/*」出現在註釋中"
 
-#: lex.c:416
+#: lex.c:418
 #, c-format
 msgid "%s in preprocessing directive"
 msgstr "預先處理指令中出現 %s"
 
-#: lex.c:425
+#: lex.c:427
 msgid "null character(s) ignored"
 msgstr "忽略空字元"
 
-#: lex.c:462
+#: lex.c:464
 #, c-format
 msgid "`%.*s' is not in NFKC"
 msgstr "「%.*s」不在 NFKC 中"
 
-#: lex.c:465
+#: lex.c:467
 #, c-format
 msgid "`%.*s' is not in NFC"
 msgstr "「%.*s」不在 NFC 中"
 
-#: lex.c:533 lex.c:610
+#: lex.c:535 lex.c:612
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "試圖使用已加料的「%s」"
 
-#: lex.c:541 lex.c:618
+#: lex.c:543 lex.c:620
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__ 只能出現在 C99 可變參數巨集的展開中"
 
-#: lex.c:547 lex.c:624
+#: lex.c:549 lex.c:626
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr ""
 
-#: lex.c:739
+#: lex.c:771
 msgid "raw string delimiter longer than 16 characters"
 msgstr ""
 
-#: lex.c:742
+#: lex.c:774
 #, fuzzy, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "萬國碼字元 %.*s 在識別字中無效"
 
-#: lex.c:771 lex.c:818
+#: lex.c:895 lex.c:917
 #, fuzzy
 msgid "unterminated raw string"
 msgstr "未終止的 #%s"
 
-#: lex.c:831 lex.c:930
+#: lex.c:932 lex.c:1031
 msgid "null character(s) preserved in literal"
 msgstr "空字元將保留在原文中"
 
-#: lex.c:933
+#: lex.c:1034
 #, fuzzy, c-format
 msgid "missing terminating %c character"
 msgstr "缺少結尾的 > 字元"
 
-#: lex.c:1426
+#: lex.c:1527
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "C++ 風格的註釋在 ISO C90 中不被允許"
 
-#: lex.c:1428
+#: lex.c:1529
 msgid "(this will be reported only once per input file)"
 msgstr "(此警告為每個輸入檔案只報告一次)"
 
-#: lex.c:1433
+#: lex.c:1534
 msgid "multi-line comment"
 msgstr "多列註釋"
 
-#: lex.c:1753
+#: lex.c:1854
 #, c-format
 msgid "unspellable token %s"
 msgstr "無法拼出的識別字 %s"

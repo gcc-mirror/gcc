@@ -2,7 +2,7 @@
 
 // 2001-09-17 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
 // Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -50,13 +50,12 @@ void test07()
   oss.imbue(loc_hk);
   const time_put<char>& tim_put = use_facet<time_put<char> >(oss.getloc()); 
 
-  iterator_type os_it09 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 
-				      date, date + traits::length(date));
+  tim_put.put(oss.rdbuf(), oss, '*', &time1, 
+	      date, date + traits::length(date));
   string result9 = oss.str();
   VERIFY( result9 == "Sunday, the second of April");
-  iterator_type os_it10 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 
-				      date_ex,
-				      date_ex + traits::length(date_ex));
+  tim_put.put(oss.rdbuf(), oss, '*', &time1, 
+	      date_ex, date_ex + traits::length(date_ex));
   string result10 = oss.str();
   VERIFY( result10 != result9 );
 }

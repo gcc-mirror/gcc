@@ -1,6 +1,6 @@
-/* Define control and data flow tables, and regsets.
+/* Define control flow data structures for the CFG.
    Copyright (C) 1987, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,95 +21,9 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_BASIC_BLOCK_H
 #define GCC_BASIC_BLOCK_H
 
-#include "bitmap.h"
-#include "sbitmap.h"
-#include "varray.h"
-#include "partition.h"
-#include "hard-reg-set.h"
 #include "predict.h"
 #include "vec.h"
 #include "function.h"
-
-/* Head of register set linked list.  */
-typedef bitmap_head regset_head;
-
-/* A pointer to a regset_head.  */
-typedef bitmap regset;
-
-/* Allocate a register set with oballoc.  */
-#define ALLOC_REG_SET(OBSTACK) BITMAP_ALLOC (OBSTACK)
-
-/* Do any cleanup needed on a regset when it is no longer used.  */
-#define FREE_REG_SET(REGSET) BITMAP_FREE (REGSET)
-
-/* Initialize a new regset.  */
-#define INIT_REG_SET(HEAD) bitmap_initialize (HEAD, &reg_obstack)
-
-/* Clear a register set by freeing up the linked list.  */
-#define CLEAR_REG_SET(HEAD) bitmap_clear (HEAD)
-
-/* Copy a register set to another register set.  */
-#define COPY_REG_SET(TO, FROM) bitmap_copy (TO, FROM)
-
-/* Compare two register sets.  */
-#define REG_SET_EQUAL_P(A, B) bitmap_equal_p (A, B)
-
-/* `and' a register set with a second register set.  */
-#define AND_REG_SET(TO, FROM) bitmap_and_into (TO, FROM)
-
-/* `and' the complement of a register set with a register set.  */
-#define AND_COMPL_REG_SET(TO, FROM) bitmap_and_compl_into (TO, FROM)
-
-/* Inclusive or a register set with a second register set.  */
-#define IOR_REG_SET(TO, FROM) bitmap_ior_into (TO, FROM)
-
-/* Exclusive or a register set with a second register set.  */
-#define XOR_REG_SET(TO, FROM) bitmap_xor_into (TO, FROM)
-
-/* Or into TO the register set FROM1 `and'ed with the complement of FROM2.  */
-#define IOR_AND_COMPL_REG_SET(TO, FROM1, FROM2) \
-  bitmap_ior_and_compl_into (TO, FROM1, FROM2)
-
-/* Clear a single register in a register set.  */
-#define CLEAR_REGNO_REG_SET(HEAD, REG) bitmap_clear_bit (HEAD, REG)
-
-/* Set a single register in a register set.  */
-#define SET_REGNO_REG_SET(HEAD, REG) bitmap_set_bit (HEAD, REG)
-
-/* Return true if a register is set in a register set.  */
-#define REGNO_REG_SET_P(TO, REG) bitmap_bit_p (TO, REG)
-
-/* Copy the hard registers in a register set to the hard register set.  */
-extern void reg_set_to_hard_reg_set (HARD_REG_SET *, const_bitmap);
-#define REG_SET_TO_HARD_REG_SET(TO, FROM)				\
-do {									\
-  CLEAR_HARD_REG_SET (TO);						\
-  reg_set_to_hard_reg_set (&TO, FROM);					\
-} while (0)
-
-typedef bitmap_iterator reg_set_iterator;
-
-/* Loop over all registers in REGSET, starting with MIN, setting REGNUM to the
-   register number and executing CODE for all registers that are set.  */
-#define EXECUTE_IF_SET_IN_REG_SET(REGSET, MIN, REGNUM, RSI)	\
-  EXECUTE_IF_SET_IN_BITMAP (REGSET, MIN, REGNUM, RSI)
-
-/* Loop over all registers in REGSET1 and REGSET2, starting with MIN, setting
-   REGNUM to the register number and executing CODE for all registers that are
-   set in the first regset and not set in the second.  */
-#define EXECUTE_IF_AND_COMPL_IN_REG_SET(REGSET1, REGSET2, MIN, REGNUM, RSI) \
-  EXECUTE_IF_AND_COMPL_IN_BITMAP (REGSET1, REGSET2, MIN, REGNUM, RSI)
-
-/* Loop over all registers in REGSET1 and REGSET2, starting with MIN, setting
-   REGNUM to the register number and executing CODE for all registers that are
-   set in both regsets.  */
-#define EXECUTE_IF_AND_IN_REG_SET(REGSET1, REGSET2, MIN, REGNUM, RSI) \
-  EXECUTE_IF_AND_IN_BITMAP (REGSET1, REGSET2, MIN, REGNUM, RSI)	\
-
-/* Same information as REGS_INVALIDATED_BY_CALL but in regset form to be used
-   in dataflow more conveniently.  */
-
-extern regset regs_invalidated_by_call_regset;
 
 /* Type we use to hold basic block counters.  Should be at least
    64bit.  Although a counter cannot be negative, we use a signed
@@ -389,6 +303,9 @@ struct GTY(()) control_flow_graph {
   /* The first free basic block number.  */
   int x_last_basic_block;
 
+  /* UIDs for LABEL_DECLs.  */
+  int last_label_uid;
+
   /* Mapping of labels to their associated blocks.  At present
      only used for the gimple CFG.  */
   VEC(basic_block,gc) *x_label_to_block_map;
@@ -404,9 +321,6 @@ struct GTY(()) control_flow_graph {
   /* Maximal number of entities in the single jumptable.  Used to estimate
      final flowgraph size.  */
   int max_jumptable_ents;
-
-  /* UIDs for LABEL_DECLs.  */
-  int last_label_uid;
 };
 
 /* Defines for accessing the fields of the CFG structure for function FN.  */
@@ -483,8 +397,6 @@ struct GTY(()) control_flow_graph {
 #define FOR_ALL_BB_FN(BB, FN) \
   for (BB = ENTRY_BLOCK_PTR_FOR_FUNCTION (FN); BB; BB = BB->next_bb)
 
-extern bitmap_obstack reg_obstack;
-
 
 /* Stuff for recording basic block info.  */
 
@@ -531,8 +443,8 @@ extern int pre_and_rev_post_order_compute (int *, int *, bool);
 extern int dfs_enumerate_from (basic_block, int,
 			       bool (*)(const_basic_block, const void *),
 			       basic_block *, int, const void *);
-extern void compute_dominance_frontiers (bitmap *);
-extern bitmap compute_idf (bitmap, bitmap *);
+extern void compute_dominance_frontiers (struct bitmap_head_def *);
+extern bitmap compute_idf (bitmap, struct bitmap_head_def *);
 extern void dump_bb_info (basic_block, bool, bool, int, const char *, FILE *);
 extern void dump_edge_info (FILE *, edge, int);
 extern void brief_dump_cfg (FILE *);
@@ -642,7 +554,9 @@ single_pred_p (const_basic_block bb)
 static inline edge
 single_succ_edge (const_basic_block bb)
 {
+#ifdef ENABLE_CHECKING
   gcc_assert (single_succ_p (bb));
+#endif
   return EDGE_SUCC (bb, 0);
 }
 
@@ -652,7 +566,9 @@ single_succ_edge (const_basic_block bb)
 static inline edge
 single_pred_edge (const_basic_block bb)
 {
+#ifdef ENABLE_CHECKING
   gcc_assert (single_pred_p (bb));
+#endif
   return EDGE_PRED (bb, 0);
 }
 
@@ -684,7 +600,9 @@ typedef struct {
 static inline VEC(edge,gc) *
 ei_container (edge_iterator i)
 {
+#ifdef ENABLE_CHECKING
   gcc_assert (i.container);
+#endif
   return *i.container;
 }
 
@@ -735,7 +653,9 @@ ei_one_before_end_p (edge_iterator i)
 static inline void
 ei_next (edge_iterator *i)
 {
+#ifdef ENABLE_CHECKING
   gcc_assert (i->index < EDGE_COUNT (ei_container (*i)));
+#endif
   i->index++;
 }
 
@@ -743,7 +663,9 @@ ei_next (edge_iterator *i)
 static inline void
 ei_prev (edge_iterator *i)
 {
+#ifdef ENABLE_CHECKING
   gcc_assert (i->index > 0);
+#endif
   i->index--;
 }
 
@@ -837,8 +759,6 @@ extern bool optimize_bb_for_size_p (const_basic_block);
 extern bool optimize_bb_for_speed_p (const_basic_block);
 extern bool optimize_edge_for_size_p (edge);
 extern bool optimize_edge_for_speed_p (edge);
-extern bool optimize_function_for_size_p (struct function *);
-extern bool optimize_function_for_speed_p (struct function *);
 extern bool optimize_loop_for_size_p (struct loop *);
 extern bool optimize_loop_for_speed_p (struct loop *);
 extern bool optimize_loop_nest_for_size_p (struct loop *);
@@ -858,8 +778,6 @@ extern bool predictable_edge_p (edge);
 extern void init_flow (struct function *);
 extern void debug_bb (basic_block);
 extern basic_block debug_bb_n (int);
-extern void dump_regset (regset, FILE *);
-extern void debug_regset (regset);
 extern void expunge_block (basic_block);
 extern void link_block (basic_block, basic_block);
 extern void unlink_block (basic_block);
@@ -894,6 +812,10 @@ extern void rtl_make_eh_edge (sbitmap, basic_block, rtx);
 
 /* In cfgcleanup.c.  */
 extern bool cleanup_cfg (int);
+extern int flow_find_cross_jump (basic_block, basic_block, rtx *, rtx *);
+extern int flow_find_head_matching_sequence (basic_block, basic_block,
+					     rtx *, rtx *, int);
+
 extern bool delete_unreachable_blocks (void);
 
 extern bool mark_dfs_back_edges (void);

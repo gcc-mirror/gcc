@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-// { dg-options "-Wall" }
+// { dg-options "-Wall -Wno-int-to-pointer-cast" }
 
 typedef char * charptr;
 typedef __SIZE_TYPE__ size_t;

@@ -52,12 +52,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tm_p.h"
 #include "cp-tree.h"
-#include "real.h"
 #include "obstack.h"
 #include "toplev.h"
-#include "varray.h"
 #include "flags.h"
 #include "target.h"
+#include "cgraph.h"
 
 /* Debugging support.  */
 
@@ -149,7 +148,9 @@ integer_type_codes[itk_none] =
   'l',  /* itk_long */
   'm',  /* itk_unsigned_long */
   'x',  /* itk_long_long */
-  'y'   /* itk_unsigned_long_long */
+  'y',  /* itk_unsigned_long_long */
+  'n',  /* itk_int128 */
+  'o',  /* itk_unsigned_int128  */
 };
 
 static int decl_is_template_id (const tree, tree* const);
@@ -1330,7 +1331,7 @@ write_closure_type_name (const tree type)
   MANGLE_TRACE_TREE ("closure-type-name", type);
 
   write_string ("Ul");
-  write_method_parms (parms, DECL_NONSTATIC_MEMBER_FUNCTION_P (fn), fn);
+  write_method_parms (parms, /*method_p=*/1, fn);
   write_char ('E');
   write_compact_number (LAMBDA_EXPR_DISCRIMINATOR (lambda));
 }
@@ -1759,6 +1760,7 @@ write_local_name (tree function, const tree local_entity,
      <type> ::= Dt <expression> # decltype of an id-expression or 
                                 # class member access
      <type> ::= DT <expression> # decltype of an expression
+     <type> ::= Dn              # decltype of nullptr
 
    TYPE is a type node.  */
 
@@ -1936,6 +1938,14 @@ write_type (tree type)
 	      sorry ("mangling typeof, use decltype instead");
 	      break;
 
+	    case LANG_TYPE:
+	      if (NULLPTR_TYPE_P (type))
+		{
+		  write_string ("Dn");
+		  break;
+		}
+	      /* else fall through.  */
+
 	    default:
 	      gcc_unreachable ();
 	    }
@@ -1966,18 +1976,19 @@ write_CV_qualifiers_for_type (const tree type)
      Note that we do not use cp_type_quals below; given "const
      int[3]", the "const" is emitted with the "int", not with the
      array.  */
+  cp_cv_quals quals = TYPE_QUALS (type);
 
-  if (TYPE_QUALS (type) & TYPE_QUAL_RESTRICT)
+  if (quals & TYPE_QUAL_RESTRICT)
     {
       write_char ('r');
       ++num_qualifiers;
     }
-  if (TYPE_QUALS (type) & TYPE_QUAL_VOLATILE)
+  if (quals & TYPE_QUAL_VOLATILE)
     {
       write_char ('V');
       ++num_qualifiers;
     }
-  if (TYPE_QUALS (type) & TYPE_QUAL_CONST)
+  if (quals & TYPE_QUAL_CONST)
     {
       write_char ('K');
       ++num_qualifiers;
@@ -2044,7 +2055,8 @@ write_builtin_type (tree type)
 	     it in the array of these nodes.  */
 	iagain:
 	  for (itk = 0; itk < itk_none; ++itk)
-	    if (type == integer_types[itk])
+	    if (integer_types[itk] != NULL_TREE
+		&& type == integer_types[itk])
 	      {
 		/* Print the corresponding single-letter code.  */
 		write_char (integer_type_codes[itk]);
@@ -3055,6 +3067,40 @@ mangle_decl (const tree decl)
   tree id = mangle_decl_string (decl);
   id = targetm.mangle_decl_assembler_name (decl, id);
   SET_DECL_ASSEMBLER_NAME (decl, id);
+
+  if (G.need_abi_warning)
+    {
+#ifdef ASM_OUTPUT_DEF
+      /* If the mangling will change in the future, emit an alias with the
+	 future mangled name for forward-compatibility.  */
+      int save_ver;
+      tree id2, alias;
+#endif
+
+      SET_IDENTIFIER_GLOBAL_VALUE (id, decl);
+      if (IDENTIFIER_GLOBAL_VALUE (id) != decl)
+	inform (DECL_SOURCE_LOCATION (decl), "-fabi-version=4 (or =0) "
+		"avoids this error with a change in vector mangling");
+
+#ifdef ASM_OUTPUT_DEF
+      save_ver = flag_abi_version;
+      flag_abi_version = 0;
+      id2 = mangle_decl_string (decl);
+      id2 = targetm.mangle_decl_assembler_name (decl, id2);
+      flag_abi_version = save_ver;
+
+      alias = make_alias_for (decl, id2);
+      DECL_IGNORED_P (alias) = 1;
+      TREE_PUBLIC (alias) = TREE_PUBLIC (decl);
+      DECL_VISIBILITY (alias) = DECL_VISIBILITY (decl);
+      if (vague_linkage_p (decl))
+	DECL_WEAK (alias) = 1;
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	cgraph_same_body_alias (alias, decl);
+      else
+	varpool_extra_name_alias (alias, decl);
+#endif
+    }
 }
 
 /* Generate the mangled representation of TYPE.  */

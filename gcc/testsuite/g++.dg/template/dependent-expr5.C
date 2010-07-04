@@ -4,9 +4,9 @@
 // contributed by Alexandre Oliva <aoliva@redhat.com>
 // inspired in the failure reported in Red Hat bugzilla #168260.
 
-template<class F> void bind(F f) {}
+template<class F> void bind(F f) {} // { dg-message "note" }
 
-template<class F> void bindm(F f) {}
+template<class F> void bindm(F f) {} // { dg-message "note" }
 template<class F, class T> void bindm(F (T::*f)(void)) {} // { dg-message "note" }
 
 template<class F> void bindn(F f) {}
@@ -18,7 +18,7 @@ template<class F, class T> void bindb(F (T::*f)(void)) {} // { dg-message "note"
 
 struct foo {
   static int baist;
-  int bait;
+  int bait;			// { dg-error "non-static data member" }
   void barf ();
   static void barf (int);
 
@@ -31,7 +31,7 @@ struct foo {
     bar() {
       bind (&baist);
       bind (&foo::baist);
-      bind (&bait); // { dg-error "nonstatic data member" }
+      bind (&bait); // { dg-error "from this location" }
       bind (&foo::bait);
 
       bind (&baikst);
@@ -75,7 +75,7 @@ struct foo {
     barT() {
       bind (&baist);
       bind (&foo::baist);
-      bind (&bait); // { dg-error "nonstatic data member" }
+      bind (&bait); // { dg-error "from this location" }
       bind (&foo::bait);
 
       bind (&baikst);

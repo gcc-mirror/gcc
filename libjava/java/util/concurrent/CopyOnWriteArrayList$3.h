@@ -16,15 +16,15 @@ class java::util::concurrent::CopyOnWriteArrayList$3 : public ::java::lang::Obje
 public: // actually package-private
   CopyOnWriteArrayList$3(::java::util::concurrent::CopyOnWriteArrayList *, jint);
 public:
-  void add(::java::lang::Object *);
-  jboolean hasNext();
-  jboolean hasPrevious();
-  ::java::lang::Object * next();
-  jint nextIndex();
-  ::java::lang::Object * previous();
-  jint previousIndex();
-  void remove();
-  void set(::java::lang::Object *);
+  virtual void add(::java::lang::Object *);
+  virtual jboolean hasNext();
+  virtual jboolean hasPrevious();
+  virtual ::java::lang::Object * next();
+  virtual jint nextIndex();
+  virtual ::java::lang::Object * previous();
+  virtual jint previousIndex();
+  virtual void remove();
+  virtual void set(::java::lang::Object *);
 public: // actually package-private
   JArray< ::java::lang::Object * > * __attribute__((aligned(__alignof__( ::java::lang::Object)))) iteratorData;
   jint currentElement;

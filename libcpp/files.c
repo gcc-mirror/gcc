@@ -1261,7 +1261,8 @@ report_missing_guard (void **slot, void *d)
       _cpp_file *file = entry->u.file;
 
       /* We don't want MI guard advice for the main file.  */
-      if (file->cmacro == NULL && file->stack_count == 1 && !file->main_file)
+      if (!file->once_only && file->cmacro == NULL
+	  && file->stack_count == 1 && !file->main_file)
 	{
 	  if (data->paths == NULL)
 	    {

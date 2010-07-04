@@ -1,5 +1,5 @@
 /* __builtin_object_size (ptr, object_size_type) computation
-   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
@@ -25,7 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "toplev.h"
-#include "diagnostic.h"
+#include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
 #include "tree-flow.h"
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
@@ -1203,7 +1204,8 @@ compute_object_sizes (void)
 			result = fold_convert (size_type_node,
 					       integer_minus_one_node);
 		      else if (object_size_type < 4)
-			result = size_zero_node;
+			result = fold_convert (size_type_node,
+					       integer_zero_node);
 		    }
 		}
 

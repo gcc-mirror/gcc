@@ -238,6 +238,14 @@ if test "$enable_tls $gcc_cv_have_cc_tls" = "yes yes"; then
 fi
 AC_SUBST(set_have_cc_tls)
 
+# See if we have emulated thread-local storage.
+GCC_CHECK_EMUTLS
+set_use_emutls=
+if test "$enable_tls $gcc_cv_use_emutls" = "yes yes"; then
+  set_use_emutls="-DUSE_EMUTLS"
+fi
+AC_SUBST(set_use_emutls)
+
 # Conditionalize the makefile for this target machine.
 tmake_file_=
 for f in ${tmake_file}

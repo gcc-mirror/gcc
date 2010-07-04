@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,6 +44,9 @@ with Tree_IO; use Tree_IO;
 
 package body Atree is
 
+   Reporting_Proc : Report_Proc := null;
+   --  Record argument to last call to Set_Reporting_Proc
+
    ---------------
    -- Debugging --
    ---------------
@@ -63,13 +66,15 @@ package body Atree is
 
    --  Either way, gnat1 will stop when node 12345 is created
 
-   --  The second method is faster
+   --  The second method is much faster
+
+   --  Similarly, rr and rrd allow breaking on rewriting of a given node
 
    ww : Node_Id'Base := Node_Id'First - 1;
    pragma Export (Ada, ww); --  trick the optimizer
    Watch_Node : Node_Id'Base renames ww;
-   --  Node to "watch"; that is, whenever a node is created, we check if it is
-   --  equal to Watch_Node, and if so, call New_Node_Breakpoint. You have
+   --  Node to "watch"; that is, whenever a node is created, we check if it
+   --  is equal to Watch_Node, and if so, call New_Node_Breakpoint. You have
    --  presumably set a breakpoint on New_Node_Breakpoint. Note that the
    --  initial value of Node_Id'First - 1 ensures that by default, no node
    --  will be equal to Watch_Node.
@@ -88,6 +93,25 @@ package body Atree is
    --
    --  If Node = Watch_Node, this prints out the new node and calls
    --  New_Node_Breakpoint. Otherwise, does nothing.
+
+   procedure rr;
+   pragma Export (Ada, rr);
+   procedure Rewrite_Breakpoint renames rr;
+   --  This doesn't do anything interesting; it's just for setting breakpoint
+   --  on as explained above.
+
+   procedure rrd (Old_Node, New_Node : Node_Id);
+   pragma Export (Ada, rrd);
+   procedure Rewrite_Debugging_Output
+     (Old_Node, New_Node : Node_Id) renames rrd;
+   --  For debugging. If debugging is turned on, Rewrite calls this. If debug
+   --  flag N is turned on, this prints out the new node.
+   --
+   --  If Old_Node = Watch_Node, this prints out the old and new nodes and
+   --  calls Rewrite_Breakpoint. Otherwise, does nothing.
+
+   procedure Node_Debug_Output (Op : String; N : Node_Id);
+   --  Common code for nnd and rrd, writes Op followed by information about N
 
    -----------------------------
    -- Local Objects and Types --
@@ -510,6 +534,13 @@ package body Atree is
 
       Orig_Nodes.Set_Last (Nodes.Last);
       Allocate_List_Tables (Nodes.Last);
+
+      --  Invoke the reporting procedure (if available)
+
+      if Reporting_Proc /= null then
+         Reporting_Proc.all (Target => New_Id, Source => Src);
+      end if;
+
       return New_Id;
    end Allocate_Initialize_Node;
 
@@ -765,6 +796,145 @@ package body Atree is
       pragma Assert (Nkind (E) in N_Entity);
       return N_To_E (Nodes.Table (E + 1).Nkind);
    end Ekind;
+
+   --------------
+   -- Ekind_In --
+   --------------
+
+   function Ekind_In
+     (T  : Entity_Kind;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind) return Boolean
+   is
+   begin
+      return T = V1 or else
+             T = V2;
+   end Ekind_In;
+
+   function Ekind_In
+     (T  : Entity_Kind;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind) return Boolean
+   is
+   begin
+      return T = V1 or else
+             T = V2 or else
+             T = V3;
+   end Ekind_In;
+
+   function Ekind_In
+     (T  : Entity_Kind;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind;
+      V4 : Entity_Kind) return Boolean
+   is
+   begin
+      return T = V1 or else
+             T = V2 or else
+             T = V3 or else
+             T = V4;
+   end Ekind_In;
+
+   function Ekind_In
+     (T  : Entity_Kind;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind;
+      V4 : Entity_Kind;
+      V5 : Entity_Kind) return Boolean
+   is
+   begin
+      return T = V1 or else
+             T = V2 or else
+             T = V3 or else
+             T = V4 or else
+             T = V5;
+   end Ekind_In;
+
+   function Ekind_In
+     (T  : Entity_Kind;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind;
+      V4 : Entity_Kind;
+      V5 : Entity_Kind;
+      V6 : Entity_Kind) return Boolean
+   is
+   begin
+      return T = V1 or else
+             T = V2 or else
+             T = V3 or else
+             T = V4 or else
+             T = V5 or else
+             T = V6;
+   end Ekind_In;
+
+   function Ekind_In
+     (E  : Entity_Id;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind) return Boolean
+   is
+   begin
+      return Ekind_In (Ekind (E), V1, V2);
+   end Ekind_In;
+
+   function Ekind_In
+     (E  : Entity_Id;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind) return Boolean
+   is
+   begin
+      return Ekind_In (Ekind (E), V1, V2, V3);
+   end Ekind_In;
+
+   function Ekind_In
+     (E  : Entity_Id;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind;
+      V4 : Entity_Kind) return Boolean
+   is
+   begin
+      return Ekind_In (Ekind (E), V1, V2, V3, V4);
+   end Ekind_In;
+
+   function Ekind_In
+     (E  : Entity_Id;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind;
+      V4 : Entity_Kind;
+      V5 : Entity_Kind) return Boolean
+   is
+   begin
+      return Ekind_In (Ekind (E), V1, V2, V3, V4, V5);
+   end Ekind_In;
+
+   function Ekind_In
+     (E  : Entity_Id;
+      V1 : Entity_Kind;
+      V2 : Entity_Kind;
+      V3 : Entity_Kind;
+      V4 : Entity_Kind;
+      V5 : Entity_Kind;
+      V6 : Entity_Kind) return Boolean
+   is
+   begin
+      return Ekind_In (Ekind (E), V1, V2, V3, V4, V5, V6);
+   end Ekind_In;
+
+   ------------------------
+   -- Set_Reporting_Proc --
+   ------------------------
+
+   procedure Set_Reporting_Proc (P : Report_Proc) is
+   begin
+      pragma Assert (Reporting_Proc = null);
+      Reporting_Proc := P;
+   end Set_Reporting_Proc;
 
    ------------------
    -- Error_Posted --
@@ -1108,21 +1278,7 @@ package body Atree is
 
    begin
       if Debug_Flag_N or else Node_Is_Watched then
-         Write_Str ("Allocate ");
-
-         if Nkind (N) in N_Entity then
-            Write_Str ("entity");
-         else
-            Write_Str ("node");
-         end if;
-
-         Write_Str (", Id = ");
-         Write_Int (Int (N));
-         Write_Str ("  ");
-         Write_Location (Sloc (N));
-         Write_Str ("  ");
-         Write_Str (Node_Kind'Image (Nkind (N)));
-         Write_Eol;
+         Node_Debug_Output ("Allocate", N);
 
          if Node_Is_Watched then
             New_Node_Breakpoint;
@@ -1242,6 +1398,7 @@ package body Atree is
    begin
       return Nkind_In (Nkind (N), V1, V2, V3, V4, V5, V6, V7, V8, V9);
    end Nkind_In;
+
    --------
    -- No --
    --------
@@ -1250,6 +1407,29 @@ package body Atree is
    begin
       return N = Empty;
    end No;
+
+   -----------------------
+   -- Node_Debug_Output --
+   -----------------------
+
+   procedure Node_Debug_Output (Op : String; N : Node_Id) is
+   begin
+      Write_Str (Op);
+
+      if Nkind (N) in N_Entity then
+         Write_Str (" entity");
+      else
+         Write_Str (" node");
+      end if;
+
+      Write_Str (" Id = ");
+      Write_Int (Int (N));
+      Write_Str ("  ");
+      Write_Location (Sloc (N));
+      Write_Str ("  ");
+      Write_Str (Node_Kind'Image (Nkind (N)));
+      Write_Eol;
+   end Node_Debug_Output;
 
    -------------------
    -- Nodes_Address --
@@ -1410,6 +1590,12 @@ package body Atree is
       --  to Rewrite if there were an intention to save the original node.
 
       Orig_Nodes.Table (Old_Node) := Old_Node;
+
+      --  Invoke the reporting procedure (if available)
+
+      if Reporting_Proc /= null then
+         Reporting_Proc.all (Target => Old_Node, Source => New_Node);
+      end if;
    end Replace;
 
    -------------
@@ -1435,6 +1621,7 @@ package body Atree is
         (not Has_Extension (Old_Node)
            and not Has_Extension (New_Node)
            and not Nodes.Table (New_Node).In_List);
+      pragma Debug (Rewrite_Debugging_Output (Old_Node, New_Node));
 
       if Nkind (Old_Node) in N_Subexpr then
          Old_Paren_Count     := Paren_Count (Old_Node);
@@ -1467,7 +1654,43 @@ package body Atree is
       end if;
 
       Fix_Parents (Ref_Node => New_Node, Fix_Node => Old_Node);
+
+      --  Invoke the reporting procedure (if available)
+
+      if Reporting_Proc /= null then
+         Reporting_Proc.all (Target => Old_Node, Source => New_Node);
+      end if;
    end Rewrite;
+
+   -------------------------
+   -- Rewrite_Breakpoint --
+   -------------------------
+
+   procedure rr is -- Rewrite_Breakpoint
+   begin
+      Write_Str ("Watched node ");
+      Write_Int (Int (Watch_Node));
+      Write_Str (" rewritten");
+      Write_Eol;
+   end rr;
+
+   ------------------------------
+   -- Rewrite_Debugging_Output --
+   ------------------------------
+
+   procedure rrd (Old_Node, New_Node : Node_Id) is -- Rewrite_Debugging_Output
+      Node_Is_Watched : constant Boolean := Old_Node = Watch_Node;
+
+   begin
+      if Debug_Flag_N or else Node_Is_Watched then
+         Node_Debug_Output ("Rewrite", Old_Node);
+         Node_Debug_Output ("into",    New_Node);
+
+         if Node_Is_Watched then
+            Rewrite_Breakpoint;
+         end if;
+      end if;
+   end rrd;
 
    ------------------
    -- Set_Analyzed --

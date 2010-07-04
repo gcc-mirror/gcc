@@ -16,11 +16,11 @@ static void hiphip (void (*f)())
   f ();
 }
 
-int main (int argc, int *argv[])
+int test (void)
 {
   hiphip (hooray);
   return 0;
 }
 
-/* { dg-final { scan-ipa-dump "hooray\[^\\n\]*inline copy in main"  "inline"  } } */
+/* { dg-final { scan-ipa-dump "hooray\[^\\n\]*inline copy in test"  "inline"  } } */
 /* { dg-final { cleanup-ipa-dump "inline" } } */

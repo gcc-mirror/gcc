@@ -1,5 +1,5 @@
-@c Copyright (C) 2000, 2001, 2002, 2004, 2006, 2007, 2008 Free Software Foundation,
-@c Inc.
+@c Copyright (C) 2000, 2001, 2002, 2004, 2006, 2007, 2008, 2010
+@c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -33,6 +33,8 @@ with some exceptions, and possibly with some extensions.
 @cindex C99
 @cindex ISO C9X
 @cindex C9X
+@cindex ISO C1X
+@cindex C1X
 @cindex Technical Corrigenda
 @cindex TC1
 @cindex Technical Corrigendum 1
@@ -93,14 +95,19 @@ Errors in the 1999 ISO C standard were corrected in three Technical
 Corrigenda published in 2001, 2004 and 2007.  GCC does not support the
 uncorrected version.
 
+A fourth version of the C standard, known as @dfn{C1X}, is under
+development; GCC has limited preliminary support for parts of this
+standard, enabled with @option{-std=c1x}.
+
 By default, GCC provides some extensions to the C language that on
 rare occasions conflict with the C standard.  @xref{C
 Extensions,,Extensions to the C Language Family}.  Use of the
 @option{-std} options listed above will disable these extensions where
 they conflict with the C standard version selected.  You may also
 select an extended version of the C language explicitly with
-@option{-std=gnu90} (for C90 with GNU extensions) or @option{-std=gnu99}
-(for C99 with GNU extensions).  The default, if no C language dialect
+@option{-std=gnu90} (for C90 with GNU extensions), @option{-std=gnu99}
+(for C99 with GNU extensions) or @option{-std=gnu1x} (for C1X with GNU
+extensions).  The default, if no C language dialect
 options are given, is @option{-std=gnu90}; this will change to
 @option{-std=gnu99} in some future release when the C99 support is
 complete.  Some features that are part of the C99 standard are
@@ -183,7 +190,7 @@ working paper for the C++0x standard; the latest working paper is
 available on the ISO C++ committee's web site at
 @uref{http://www.open-std.org/jtc1/sc22/wg21/}. For information
 regarding the C++0x features available in the experimental C++0x mode,
-see @uref{http://gcc.gnu.org/gcc-4.3/cxx0x_status.html}. To select this
+see @uref{http://gcc.gnu.org/projects/cxx0x.html}. To select this
 standard in GCC, use the option @option{-std=c++0x}; to obtain all the
 diagnostics required by the standard, you should also specify
 @option{-pedantic} (or @option{-pedantic-errors} if you want them to be

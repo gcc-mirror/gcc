@@ -32,7 +32,7 @@ class javax::swing::JTextField$2 : public ::java::lang::Object
 public: // actually package-private
   JTextField$2(::javax::swing::JTextField *);
 public:
-  void propertyChange(::java::beans::PropertyChangeEvent *);
+  virtual void propertyChange(::java::beans::PropertyChangeEvent *);
 public: // actually package-private
   ::javax::swing::JTextField * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 public:

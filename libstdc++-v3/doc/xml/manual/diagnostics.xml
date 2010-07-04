@@ -26,8 +26,8 @@
   <?dbhtml filename="exceptions.html"?>
   <title>Exceptions</title>
 
-  <sect2 id="std.diagnostics.exceptions.hierarchy" xreflabel="Exception Classes">
-    <title>Exception Classes</title>
+  <sect2 id="std.diagnostics.exceptions.api">
+    <title>API Reference</title>
     <para>
       All exception objects are defined in one of the standard header
       files: <filename>exception</filename>,
@@ -44,12 +44,18 @@
     <para>
       Derived from this are several classes that may have a
       <classname>string</classname> member: a full hierarchy can be
-      found in the <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00460.html">source documentation</ulink>.
+      found in the source documentation.
     </para>
-
+    
+    <para>
+      Full API details.
+    </para>
+    
+    <!-- Doxygen XML: api/group__exceptions.xml -->
+      
   </sect2>
   <sect2 id="std.diagnostics.exceptions.data" xreflabel="Adding Data to Exceptions">
-    <title>Adding Data to Exceptions</title>
+    <title>Adding Data to <classname>exception</classname></title>
     <para>
       The standard exception classes carry with them a single string as
       data (usually describing what went wrong or where the 'throw' took

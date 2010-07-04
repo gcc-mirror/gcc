@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "recog.h"
 #include "basic-block.h"
+#include "df.h"
 #include "reload.h"
 #include "function.h"
 #include "expr.h"
@@ -37,8 +38,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "addresses.h"
 #include "output.h"
-#include "df.h"
 #include "ggc.h"
+
+/* True if caller-save has been initialized.  */
+bool caller_save_initialized_p;
 
 /* Call used hard registers which can not be saved because there is no
    insn for this.  */
@@ -207,6 +210,11 @@ init_caller_save (void)
   int offset;
   rtx address;
   int i, j;
+
+  if (caller_save_initialized_p)
+    return;
+
+  caller_save_initialized_p = true;
 
   CLEAR_HARD_REG_SET (no_caller_save_reg_set);
   /* First find all the registers that we need to deal with and all
@@ -1204,7 +1212,7 @@ insert_restore (struct insn_chain *chain, int before_p, int regno,
       /* Check that insn to restore REGNO in save_mode[regno] is
 	 correct.  */
       && reg_save_code (regno, save_mode[regno]) >= 0)
-    mem = adjust_address (mem, save_mode[regno], 0);
+    mem = adjust_address_nv (mem, save_mode[regno], 0);
   else
     mem = copy_rtx (mem);
 
@@ -1285,7 +1293,7 @@ insert_save (struct insn_chain *chain, int before_p, int regno,
       /* Check that insn to save REGNO in save_mode[regno] is
 	 correct.  */
       && reg_save_code (regno, save_mode[regno]) >= 0)
-    mem = adjust_address (mem, save_mode[regno], 0);
+    mem = adjust_address_nv (mem, save_mode[regno], 0);
   else
     mem = copy_rtx (mem);
 

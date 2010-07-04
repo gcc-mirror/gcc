@@ -1,5 +1,5 @@
 /* Conditional Dead Call Elimination pass for the GNU compiler.
-   Copyright (C) 2008
+   Copyright (C) 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Xinliang David Li <davidxl@google.com>
 
@@ -23,17 +23,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "ggc.h"
-
-/* These RTL headers are needed for basic-block.h.  */
-#include "rtl.h"
-#include "tm_p.h"
-#include "hard-reg-set.h"
-#include "obstack.h"
 #include "basic-block.h"
-
 #include "tree.h"
-#include "diagnostic.h"
+#include "gimple-pretty-print.h"
 #include "tree-flow.h"
 #include "gimple.h"
 #include "tree-dump.h"

@@ -82,6 +82,12 @@ for k in $possible_real_kinds; do
     echo "#define HAVE_GFC_REAL_${k}"
     echo "#define HAVE_GFC_COMPLEX_${k}"
     echo "#define GFC_REAL_${k}_HUGE ${huge}${suffix}"
+    echo "#define GFC_REAL_${k}_LITERAL_SUFFIX ${suffix}"
+    if [ "x$suffix" = "x" ]; then
+      echo "#define GFC_REAL_${k}_LITERAL(X) (X)"
+    else
+      echo "#define GFC_REAL_${k}_LITERAL(X) (X ## ${suffix})"
+    fi
     echo "#define GFC_REAL_${k}_DIGITS ${digits}"
     echo "#define GFC_REAL_${k}_RADIX ${radix}"
     echo ""

@@ -574,7 +574,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  __c_locale __old = __uselocale(__cloc);
 #else
 	  // Switch to named locale so that mbsrtowcs will work.
-	  char* __old = setlocale(LC_ALL, NULL);
+	  char* __old = setlocale(LC_ALL, 0);
           const size_t __llen = strlen(__old) + 1;
           char* __sav = new char[__llen];
           memcpy(__sav, __old, __llen);
@@ -757,7 +757,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  __c_locale __old = __uselocale(__cloc);
 #else
 	  // Switch to named locale so that mbsrtowcs will work.
-	  char* __old = setlocale(LC_ALL, NULL);
+	  char* __old = setlocale(LC_ALL, 0);
           const size_t __llen = strlen(__old) + 1;
           char* __sav = new char[__llen];
           memcpy(__sav, __old, __llen);

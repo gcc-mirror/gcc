@@ -49,10 +49,13 @@
 #   undef GC_must_restore_redefined_dlopen
 # endif
 
-#if (defined(DYNAMIC_LOADING) || defined(MSWIN32) || defined(MSWINCE)) \
+#if (defined(DYNAMIC_LOADING) \
+	|| defined(MSWIN32)   \
+	|| defined(MSWINCE)   \
+	|| defined(CYGWIN32)) \
     && !defined(PCR)
 #if !defined(SUNOS4) && !defined(SUNOS5DL) && !defined(IRIX5) && \
-    !defined(MSWIN32) && !defined(MSWINCE) && \
+    !defined(MSWIN32) && !defined(MSWINCE) && !defined(CYGWIN32) && \
     !(defined(ALPHA) && defined(OSF1)) && \
     !defined(HPUX) && !(defined(LINUX) && defined(__ELF__)) && \
     !defined(RS6000) && !defined(SCO_ELF) && !defined(DGUX) && \
@@ -717,7 +720,7 @@ void GC_register_dynamic_libraries()
 
 # endif /* USE_PROC || IRIX5 */
 
-# if defined(MSWIN32) || defined(MSWINCE)
+# if defined(MSWIN32) || defined(MSWINCE) || defined(CYGWIN32)
 
 # define WIN32_LEAN_AND_MEAN
 # define NOSERVICE
@@ -761,7 +764,7 @@ void GC_register_dynamic_libraries()
     }
 # endif
 
-# ifdef MSWINCE
+# if defined(MSWINCE) || defined(CYGWIN32)
   /* Do we need to separately register the main static data segment? */
   GC_bool GC_register_main_static_data()
   {
@@ -868,8 +871,12 @@ void GC_register_dynamic_libraries()
   }
 # endif /* DEBUG_VIRTUALQUERY */
 
-  extern GC_bool GC_wnt;  /* Is Windows NT derivative.		*/
-  			  /* Defined and set in os_dep.c.	*/
+# ifdef CYGWIN32
+#   define GC_wnt (TRUE)
+# else
+    extern GC_bool GC_wnt;  /* Is Windows NT derivative.	*/
+  			    /* Defined and set in os_dep.c.	*/
+# endif
 
   void GC_register_dynamic_libraries()
   {
@@ -934,7 +941,7 @@ void GC_register_dynamic_libraries()
     GC_cond_add_roots(base, limit);
   }
 
-#endif /* MSWIN32 || MSWINCE */
+#endif /* MSWIN32 || MSWINCE || CYGWIN32 */
   
 #if defined(ALPHA) && defined(OSF1)
 

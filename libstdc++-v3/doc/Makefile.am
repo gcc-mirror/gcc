@@ -34,16 +34,18 @@ include $(top_srcdir)/fragment.am
 doc-man: doc-man-doxygen
 
 # PDF
-doc-pdf: doc-pdf-dblatex-docbook
+doc-pdf: doc-pdf-docbook
 
 # HTML
 doc-html: doc-html-docbook
 
 
 # Doxygen configuration
-# Assumes doxygen, graphviz (with dot) installed
+# Assumes doxygen, graphviz (with dot), pdflatex installed
 doxygen_script=${top_srcdir}/scripts/run_doxygen
 doxygen_outdir = ${glibcxx_builddir}/doc/doxygen
+doxygen_pdf = ${doxygen_outdir}/latex/refman.pdf
+
 doc-html-doxygen:
 	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
 	  builddir=`cd ..; ${PWD_COMMAND}`; \
@@ -56,7 +58,7 @@ doc-man-doxygen:
 	  ${SHELL} ${doxygen_script} \
 	  --host_alias=${host_alias} --mode=man $${srcdir} $${builddir} YES)
 
-doc-xml-doxygen: 
+doc-xml-doxygen:
 	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
 	  builddir=`cd ..; ${PWD_COMMAND}`; \
 	  ${SHELL} ${doxygen_script} \
@@ -65,77 +67,124 @@ doc-xml-doxygen:
 doc-xml-single-doxygen:
 	@echo "Generating doxygen xml single file..."
 	$(XSLTPROC) ${doxygen_outdir}/xml/combine.xslt \
-	${doxygen_outdir}/xml/spine.xml > ${doxygen_outdir}/xml/all.xml;
+	${doxygen_outdir}/xml/index.xml > ${doxygen_outdir}/xml/api-spine.xml;
 
+doc-latex-doxygen:
+	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
+	  builddir=`cd ..; ${PWD_COMMAND}`; \
+	  ${SHELL} ${doxygen_script} \
+	  --host_alias=${host_alias} --mode=latex $${srcdir} $${builddir} NO)
+
+# Chance of loooooonnggg creation time on this rule.
+doc-pdf-doxygen: stamp-latex-doxygen
+	-(cd ${doxygen_outdir}/latex && $(MAKE) -i pdf;)
+	echo "Generating doxygen pdf file...";
+	if [ -f ${doxygen_pdf} ]; then \
+	  echo "... ${doxygen_pdf}"; \
+	else \
+	  echo "... error"; \
+	  exit 12; \
+	fi
+
+stamp-pdf-doxygen:
+	@if [ ! -f stamp-pdf-doxygen ]; then \
+	  $(MAKE) doc-pdf-doxygen; \
+	fi
+	$(STAMP) stamp-pdf-doxygen
+
+stamp-xml-doxygen:
+	@if [ ! -f stamp-xml-doxygen ]; then \
+	  $(MAKE) doc-xml-doxygen; \
+	  $(MAKE) doc-xml-single-doxygen; \
+	fi
+	$(STAMP) stamp-xml-doxygen
+
+stamp-latex-doxygen:
+	@if [ ! -f stamp-latex-doxygen ]; then \
+	  $(MAKE) doc-latex-doxygen; \
+	fi
+	$(STAMP) stamp-latex-doxygen
 
 # Docbook configuration.
 # Assumes
 # libxslt
+# dblatex
+# pdflatex
 # docbook-style-xsl
-# emacs-nxml-mode 
+# emacs-nxml-mode
 # xmlto passivetex
 docbook_outdir = ${glibcxx_builddir}/doc/docbook
-xml_srcdir = ${glibcxx_srcdir}/doc/xml
-xml_sources = \
-	${xml_srcdir}/spine.xml \
-	${xml_srcdir}/authors.xml \
-	${xml_srcdir}/manual/abi.xml \
-	${xml_srcdir}/manual/algorithms.xml \
-	${xml_srcdir}/manual/allocator.xml \
-	${xml_srcdir}/manual/auto_ptr.xml \
-	${xml_srcdir}/manual/backwards_compatibility.xml \
-	${xml_srcdir}/manual/bitmap_allocator.xml \
-	${xml_srcdir}/manual/build_hacking.xml \
-	${xml_srcdir}/manual/codecvt.xml \
-	${xml_srcdir}/manual/concurrency_extensions.xml \
-	${xml_srcdir}/manual/configure.xml \
-	${xml_srcdir}/manual/containers.xml \
-	${xml_srcdir}/manual/ctype.xml \
-	${xml_srcdir}/manual/debug_mode.xml \
-	${xml_srcdir}/manual/debug.xml \
-	${xml_srcdir}/manual/diagnostics.xml \
-	${xml_srcdir}/manual/evolution.xml \
-	${xml_srcdir}/manual/extensions.xml \
-	${xml_srcdir}/manual/internals.xml \
-	${xml_srcdir}/manual/intro.xml \
-	${xml_srcdir}/manual/io.xml \
-	${xml_srcdir}/manual/iterators.xml \
-	${xml_srcdir}/manual/locale.xml \
-	${xml_srcdir}/manual/localization.xml \
-	${xml_srcdir}/manual/messages.xml \
-	${xml_srcdir}/manual/mt_allocator.xml \
-	${xml_srcdir}/manual/numerics.xml \
-	${xml_srcdir}/manual/parallel_mode.xml \
-	${xml_srcdir}/manual/prerequisites.xml \
-	${xml_srcdir}/manual/profile_mode.xml \
-	${xml_srcdir}/manual/internals.xml \
-	${xml_srcdir}/manual/shared_ptr.xml \
-	${xml_srcdir}/manual/spine.xml \
-	${xml_srcdir}/manual/status_cxx1998.xml \
-	${xml_srcdir}/manual/status_cxx200x.xml \
-	${xml_srcdir}/manual/status_cxxtr1.xml \
-	${xml_srcdir}/manual/status_cxxtr24733.xml \
-	${xml_srcdir}/manual/strings.xml \
-	${xml_srcdir}/manual/support.xml \
-	${xml_srcdir}/manual/test.xml \
-	${xml_srcdir}/manual/using.xml \
-	${xml_srcdir}/manual/using_exceptions.xml \
-	${xml_srcdir}/manual/utilities.xml \
-	${xml_srcdir}/manual/appendix_free.xml \
-	${xml_srcdir}/manual/appendix_contributing.xml \
-	${xml_srcdir}/manual/appendix_porting.xml \
-	${xml_srcdir}/api.xml \
-	${xml_srcdir}/faq.xml
+xml_dir = ${glibcxx_srcdir}/doc/xml
+
+xml_sources_basic = \
+	${xml_dir}/spine.xml \
+	${xml_dir}/authors.xml \
+	${xml_dir}/api.xml \
+	${xml_dir}/faq.xml
+
+xml_sources_manual = \
+	${xml_dir}/manual/abi.xml \
+	${xml_dir}/manual/algorithms.xml \
+	${xml_dir}/manual/allocator.xml \
+	${xml_dir}/manual/auto_ptr.xml \
+	${xml_dir}/manual/atomics.xml \
+	${xml_dir}/manual/backwards_compatibility.xml \
+	${xml_dir}/manual/bitmap_allocator.xml \
+	${xml_dir}/manual/build_hacking.xml \
+	${xml_dir}/manual/codecvt.xml \
+	${xml_dir}/manual/concurrency.xml \
+	${xml_dir}/manual/concurrency_extensions.xml \
+	${xml_dir}/manual/configure.xml \
+	${xml_dir}/manual/containers.xml \
+	${xml_dir}/manual/ctype.xml \
+	${xml_dir}/manual/debug_mode.xml \
+	${xml_dir}/manual/debug.xml \
+	${xml_dir}/manual/diagnostics.xml \
+	${xml_dir}/manual/evolution.xml \
+	${xml_dir}/manual/extensions.xml \
+	${xml_dir}/manual/internals.xml \
+	${xml_dir}/manual/intro.xml \
+	${xml_dir}/manual/io.xml \
+	${xml_dir}/manual/iterators.xml \
+	${xml_dir}/manual/locale.xml \
+	${xml_dir}/manual/localization.xml \
+	${xml_dir}/manual/messages.xml \
+	${xml_dir}/manual/mt_allocator.xml \
+	${xml_dir}/manual/numerics.xml \
+	${xml_dir}/manual/parallel_mode.xml \
+	${xml_dir}/manual/prerequisites.xml \
+	${xml_dir}/manual/profile_mode.xml \
+	${xml_dir}/manual/shared_ptr.xml \
+	${xml_dir}/manual/spine.xml \
+	${xml_dir}/manual/status_cxx1998.xml \
+	${xml_dir}/manual/status_cxx200x.xml \
+	${xml_dir}/manual/status_cxxtr1.xml \
+	${xml_dir}/manual/status_cxxtr24733.xml \
+	${xml_dir}/manual/strings.xml \
+	${xml_dir}/manual/support.xml \
+	${xml_dir}/manual/test.xml \
+	${xml_dir}/manual/using.xml \
+	${xml_dir}/manual/using_exceptions.xml \
+	${xml_dir}/manual/utilities.xml \
+	${xml_dir}/manual/appendix_free.xml \
+	${xml_dir}/manual/appendix_contributing.xml \
+	${xml_dir}/manual/appendix_porting.xml
 
 xml_sources_extra = \
-	${xml_srcdir}/gnu/fdl-1.2.xml \
-	${xml_srcdir}/gnu/gpl-2.0.xml
+	${xml_dir}/gnu/fdl-1.2.xml \
+	${xml_dir}/gnu/fdl-1.3.xml \
+	${xml_dir}/gnu/gpl-2.0.xml \
+	${xml_dir}/gnu/gpl-3.0.xml
+
+xml_sources = \
+	${xml_sources_basic} \
+	${xml_sources_manual} \
+	${xml_sources_extra}
 
 xml_noinst = \
-	${xml_srcdir}/book.txml \
-	${xml_srcdir}/chapter.txml \
-	${xml_srcdir}/class.txml
-
+	${xml_dir}/book.txml \
+	${xml_dir}/chapter.txml \
+	${xml_dir}/class.txml
 
 XSLTPROC       = xsltproc
 XSLTPROC_FLAGS = --nonet --xinclude
@@ -159,11 +208,11 @@ ${docbook_outdir}/xml:
 
 # Validate existing XML structure.
 XMLLINT = xmllint
-#LINT_FLAGS = --debug --nonet --xinclude --nsclean --postvalid --nowarning 
+#LINT_FLAGS = --debug --nonet --xinclude --nsclean --postvalid --nowarning
 #LINT_FLAGS = --noblanks --noout --xinclude --postvalid --noent
 LINT_FLAGS = --postvalid --debug --xinclude --noent --noblanks  --nonet --noout
-VALID_FLAGS = --dtdvalid http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd
-XMLLINT_FLAGS = $(LINT_FLAGS) $(VALID_FLAGS)
+DTD_FLAGS = --dtdvalid http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd
+XMLLINT_FLAGS = $(LINT_FLAGS) $(DTD_FLAGS)
 doc-xml-validate-docbook: $(xml_sources)
 	@echo "Generating XML validation log..."
 	$(XMLLINT) $(XMLLINT_FLAGS) ${top_srcdir}/doc/xml/spine.xml
@@ -196,7 +245,7 @@ doc-fo-docbook: $(xml_sources) ${docbook_outdir}/fo
 # fop
 FOP = fop
 FOP_FLAGS = -d -r
-doc-pdf-fop-xml-docbook: $(xml_sources) ${glibcxx_builddir}/doc/pdf 
+doc-pdf-fop-xml-docbook: $(xml_sources) ${glibcxx_builddir}/doc/pdf
 	@echo "Generating pdf fop files from xml..."
 	$(FOP) $(FOP_FLAGS) -xml ${top_srcdir}/doc/xml/spine.xml \
 	-xsl $(XSL_FO_STYLE) -pdf ${docbook_outdir}/pdf/spine.pdf
@@ -237,6 +286,8 @@ doc-pdf-dblatex-docbook: $(xml_sources) ${docbook_outdir}/pdf
 	@echo "Generating pdf dblatex files..."
 	dblatex $(DBLATEX_FLAGS) ${top_srcdir}/doc/xml/spine.xml
 
+doc-pdf-docbook: doc-pdf-dblatex-docbook
+
 
 # Performance doc and graph configuration.
 # Assumes pychart, beautiful soup installed.
@@ -249,6 +300,7 @@ doc-html-performance:
 	${top_srcdir}/testsuite/data/make_graph_htmls.xml \
 	${top_srcdir}/testsuite/data/make_graph_test_infos.xml local g++)
 
+
 .PHONY: doc-doxygen-html doc-doxygen-man doc-performance
 
 # By adding these files here, automake will remove them for 'make clean'
@@ -256,4 +308,4 @@ CLEANFILES = *.log
 
 # To remove directories.
 clean-local:
-	rm -rf man html pdf fo xml doxygen docbook
+	rm -rf man html pdf fo xml doxygen docbook stamp*

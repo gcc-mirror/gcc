@@ -914,6 +914,9 @@ enable_rpath
 with_libiconv_prefix
 with_x
 with_qt4dir
+with_gmp
+with_gmp_include
+with_gmp_lib
 with_javah
 with_vm_classes
 enable_maintainer_mode
@@ -1654,6 +1657,11 @@ Optional Packages:
   --with-x                use the X Window System
   --with-qt4dir=DIR       Qt4 installation directory used for OS-X. For other
                           systems use pkg-config.
+  --with-gmp=PATH         specify prefix directory for the installed GMP package.
+                          Equivalent to --with-gmp-include=PATH/include
+                          plus --with-gmp-lib=PATH/lib
+  --with-gmp-include=PATH specify directory for installed GMP include files
+  --with-gmp-lib=PATH     specify directory for the installed GMP library
   --with-javah            specify path or name of a javah-like program
   --with-vm-classes       specify path to VM override source files
   --with-ecj-jar=ABS.PATH specify jar file containing the Eclipse Java
@@ -2304,8 +2312,10 @@ $as_echo "$ac_res" >&6; }
 ac_fn_c_check_decl ()
 {
   as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $2 is declared" >&5
-$as_echo_n "checking whether $2 is declared... " >&6; }
+  as_decl_name=`echo $2|sed 's/ *(.*//'`
+  as_decl_use=`echo $2|sed -e 's/(/((/' -e 's/)/) 0&/' -e 's/,/) 0& (/g'`
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $as_decl_name is declared" >&5
+$as_echo_n "checking whether $as_decl_name is declared... " >&6; }
 if { as_var=$3; eval "test \"\${$as_var+set}\" = set"; }; then :
   $as_echo_n "(cached) " >&6
 else
@@ -2315,8 +2325,12 @@ $4
 int
 main ()
 {
-#ifndef $2
-  (void) $2;
+#ifndef $as_decl_name
+#ifdef __cplusplus
+  (void) $as_decl_use;
+#else
+  (void) $as_decl_name;
+#endif
 #endif
 
   ;
@@ -11804,7 +11818,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11807 "configure"
+#line 11821 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11910,7 +11924,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11913 "configure"
+#line 11927 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -21906,7 +21920,42 @@ $as_echo "$GTK_LIBS" >&6; }
 
   fi
 
-            if test "x${COMPILE_GMP}" = xyes; then
+
+# Check whether --with-gmp was given.
+if test "${with_gmp+set}" = set; then :
+  withval=$with_gmp;
+fi
+
+
+# Check whether --with-gmp_include was given.
+if test "${with_gmp_include+set}" = set; then :
+  withval=$with_gmp_include;
+fi
+
+
+# Check whether --with-gmp_lib was given.
+if test "${with_gmp_lib+set}" = set; then :
+  withval=$with_gmp_lib;
+fi
+
+
+  if test "x$with_gmp" != x; then
+    gmplibs=-lgmp
+    gmpinc=
+    gmplibs="-L$with_gmp/lib $gmplibs"
+    gmpinc="-I$with_gmp/include $gmpinc"
+    if test "x$with_gmp_include" != x; then
+      gmpinc="-I$with_gmp_include $gmpinc"
+    fi
+    if test "x$with_gmp_lib" != x; then
+      gmplibs="-L$with_gmp_lib $gmplibs"
+    fi
+  else
+    gmplibs="-lgmp"
+    gmpinc="-I/usr/include"
+  fi
+
+  if test "x${COMPILE_GMP}" = xyes; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for __gmpz_mul_si in -lgmp" >&5
 $as_echo_n "checking for __gmpz_mul_si in -lgmp... " >&6; }
 if test "${ac_cv_lib_gmp___gmpz_mul_si+set}" = set; then :
@@ -21947,8 +21996,8 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gmp___gmpz_mul_si" >&5
 $as_echo "$ac_cv_lib_gmp___gmpz_mul_si" >&6; }
 if test "x$ac_cv_lib_gmp___gmpz_mul_si" = x""yes; then :
-  GMP_CFLAGS=-I/usr/include
-       GMP_LIBS=-lgmp
+  GMP_CFLAGS="$gmpinc"
+       GMP_LIBS="$gmplibs"
 else
   GMP_CFLAGS=
        GMP_LIBS=
@@ -23685,7 +23734,7 @@ EOF
 if uudecode$EXEEXT Test.uue; then
         ac_cv_prog_uudecode_base64=yes
 else
-        echo "configure: 23688: uudecode had trouble decoding base 64 file 'Test.uue'" >&5
+        echo "configure: 23737: uudecode had trouble decoding base 64 file 'Test.uue'" >&5
         echo "configure: failed file was:" >&5
         cat Test.uue >&5
         ac_cv_prog_uudecode_base64=no
@@ -23830,7 +23879,7 @@ else
 JAVA_TEST=Object.java
 CLASS_TEST=Object.class
 cat << \EOF > $JAVA_TEST
-/* #line 23833 "configure" */
+/* #line 23882 "configure" */
 package java.lang;
 
 public class Object
@@ -23877,7 +23926,7 @@ JAVA_TEST=Test.java
 CLASS_TEST=Test.class
 TEST=Test
 cat << \EOF > $JAVA_TEST
-/* [#]line 23880 "configure" */
+/* [#]line 23929 "configure" */
 public class Test {
 public static void main (String args[]) {
         System.exit (0);
@@ -24203,7 +24252,7 @@ else
 JAVA_TEST=Object.java
 CLASS_TEST=Object.class
 cat << \EOF > $JAVA_TEST
-/* #line 24206 "configure" */
+/* #line 24255 "configure" */
 package java.lang;
 
 public class Object
@@ -24242,7 +24291,7 @@ fi
   JAVA_TEST=Test.java
   CLASS_TEST=Test.class
   cat << \EOF > $JAVA_TEST
-  /* #line 24245 "configure" */
+  /* #line 24294 "configure" */
   public class Test
   {
     public static void main(String args)

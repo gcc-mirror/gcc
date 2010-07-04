@@ -1,17 +1,13 @@
 /* Author:  Ziemowit Laski <zlaski@apple.com>.  */
 
 /* { dg-do run } */
-/* { dg-skip-if "" { *-*-darwin* } { "-m64" } { "" } } */
-
-#include <objc/Object.h>
+/* { dg-xfail-run-if "Needs OBJC2 ABI" { *-*-darwin* && { lp64 && { ! objc2 } } } { "-fnext-runtime" } { "" } } */
+#include "../objc-obj-c++-shared/Object1.h"
+#include "../objc-obj-c++-shared/next-mapping.h"
 #include <stdarg.h>
 #include <stdlib.h>
 
-#ifdef __NEXT_RUNTIME__
-/* The following ain't pretty, but does allow us to have just one copy
-   of next_mapping.h.  */
-#include "../objc/execute/next_mapping.h"
-#else
+#ifndef __NEXT_RUNTIME__
 #include <objc/NXConstStr.h>
 #endif
 
@@ -80,3 +76,4 @@ int main(void) {
   CHECK_IF(abc(a1, a2) * t.k == 35);
   return 0;
 }
+#include "../objc-obj-c++-shared/Object1-implementation.h"

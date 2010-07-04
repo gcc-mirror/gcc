@@ -1,6 +1,5 @@
 /* Test errors for constant strings.  */
 /* { dg-do compile } */
-/* { dg-options "-fgnu-runtime" } */
 
 #ifdef __cplusplus
 extern void baz(...);

@@ -114,11 +114,11 @@ splay_zig_zag_left(node_pointer p_nd, node_pointer p_parent,
   p_grandparent->m_p_parent = p_nd;
 
   p_parent->m_p_left = p_b;
-  if (p_b != NULL)
+  if (p_b != 0)
     p_b->m_p_parent = p_parent;
 
   p_grandparent->m_p_right = p_c;
-  if (p_c != NULL)
+  if (p_c != 0)
     p_c->m_p_parent = p_grandparent;
 
   splay_zz_end(p_nd, p_parent, p_grandparent);
@@ -150,11 +150,11 @@ splay_zig_zag_right(node_pointer p_nd, node_pointer p_parent,
   p_grandparent->m_p_parent = p_nd;
 
   p_parent->m_p_right = p_b;
-  if (p_b != NULL)
+  if (p_b != 0)
     p_b->m_p_parent = p_parent;
 
   p_grandparent->m_p_left = p_c;
-  if (p_c != NULL)
+  if (p_c != 0)
     p_c->m_p_parent = p_grandparent;
 
   splay_zz_end(p_nd, p_parent, p_grandparent);
@@ -186,11 +186,11 @@ splay_zig_zig_left(node_pointer p_nd, node_pointer p_parent,
   p_grandparent->m_p_parent = p_parent;
 
   p_parent->m_p_left = p_b;
-  if (p_b != NULL)
+  if (p_b != 0)
     p_b->m_p_parent = p_parent;
 
   p_grandparent->m_p_left = p_c;
-  if (p_c != NULL)
+  if (p_c != 0)
     p_c->m_p_parent = p_grandparent;
 
   splay_zz_end(p_nd, p_parent, p_grandparent);
@@ -220,11 +220,11 @@ splay_zig_zig_right(node_pointer p_nd, node_pointer p_parent,
   p_grandparent->m_p_parent = p_parent;
 
   p_parent->m_p_right = p_b;
-  if (p_b != NULL)
+  if (p_b != 0)
     p_b->m_p_parent = p_parent;
 
   p_grandparent->m_p_right = p_c;
-  if (p_c != NULL)
+  if (p_c != 0)
     p_c->m_p_parent = p_grandparent;
 
   base_type::update_to_top(p_grandparent, (node_update* )this);
@@ -242,9 +242,9 @@ splay_zz_start(node_pointer p_nd,
 #endif
 	       node_pointer p_grandparent)
 {
-  _GLIBCXX_DEBUG_ASSERT(p_nd != NULL);
-  _GLIBCXX_DEBUG_ASSERT(p_parent != NULL);
-  _GLIBCXX_DEBUG_ASSERT(p_grandparent != NULL);
+  _GLIBCXX_DEBUG_ASSERT(p_nd != 0);
+  _GLIBCXX_DEBUG_ASSERT(p_parent != 0);
+  _GLIBCXX_DEBUG_ASSERT(p_grandparent != 0);
 
   const bool grandparent_head = p_grandparent->m_p_parent == base_type::m_p_head;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,22 +23,25 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Unchecked_Conversion;
-
-with System.Case_Util; use System.Case_Util;
-
-with GNAT.HTable;
-
 with Alloc;
 with Debug;
-with Fmap;             use Fmap;
-with Gnatvsn;          use Gnatvsn;
+with Fmap;     use Fmap;
+with Gnatvsn;  use Gnatvsn;
 with Hostparm;
-with Opt;              use Opt;
-with Output;           use Output;
-with Sdefault;         use Sdefault;
+with Opt;      use Opt;
+with Output;   use Output;
+with Sdefault; use Sdefault;
 with Table;
-with Targparm;         use Targparm;
+with Targparm; use Targparm;
+
+with Unchecked_Conversion;
+
+pragma Warnings (Off);
+--  This package is used also by gnatcoll
+with System.Case_Util; use System.Case_Util;
+pragma Warnings (On);
+
+with GNAT.HTable;
 
 package body Osint is
 
@@ -538,7 +541,11 @@ package body Osint is
             end loop;
          end if;
 
-         if not Opt.No_Stdlib and not Opt.RTS_Switch then
+         --  Even when -nostdlib is used, we still want to have visibility on
+         --  the run-time object directory, as it is used by gnatbind to find
+         --  the run-time ALI files in "real" ZFP set up.
+
+         if not Opt.RTS_Switch then
             Search_Path :=
               Read_Default_Search_Dirs
                 (String_Access (Update_Path (Search_Dir_Prefix)),

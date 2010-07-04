@@ -14,10 +14,10 @@ class java::util::logging::LogManager$1 : public ::java::lang::Object
 public: // actually package-private
   LogManager$1();
 public:
-  ::java::lang::String * getLoggerLevel(::java::lang::String *);
-  ::java::util::List * getLoggerNames();
-  ::java::lang::String * getParentLoggerName(::java::lang::String *);
-  void setLoggerLevel(::java::lang::String *, ::java::lang::String *);
+  virtual ::java::lang::String * getLoggerLevel(::java::lang::String *);
+  virtual ::java::util::List * getLoggerNames();
+  virtual ::java::lang::String * getParentLoggerName(::java::lang::String *);
+  virtual void setLoggerLevel(::java::lang::String *, ::java::lang::String *);
   static ::java::lang::Class class$;
 };
 

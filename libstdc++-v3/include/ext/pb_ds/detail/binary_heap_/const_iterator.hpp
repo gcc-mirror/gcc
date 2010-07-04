@@ -125,7 +125,7 @@ namespace __gnu_pbds
       inline PB_DS_CLASS_C_DEC& 
       operator++()
       {
-	_GLIBCXX_DEBUG_ASSERT(base_type::m_p_e != NULL);
+	_GLIBCXX_DEBUG_ASSERT(base_type::m_p_e != 0);
 	inc();
 	return *this;
       }

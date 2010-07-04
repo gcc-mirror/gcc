@@ -36,23 +36,23 @@ rm $TMPFILE3
 
 # Write temporary ignore file.
 cat > $TMPFILE3 << EOF
--Java_gnu_java_awt_peer_gtk_GtkMenuComponentPeer_dispose
--Java_java_lang_VMSystem_arraycopy
--Java_java_lang_VMSystem_identityHashCode
+< Java_gnu_java_awt_peer_gtk_GtkMenuComponentPeer_dispose
+< Java_java_lang_VMSystem_arraycopy
+< Java_java_lang_VMSystem_identityHashCode
 EOF
 
 # Compare again silently.
 # Use fgrep and direct the output to /dev/null for compatibility with older
 # grep instead of using the non portable -q.
-if diff -U 0 $TMPFILE $TMPFILE2 | grep '^[+-]Java' | \
+if diff $TMPFILE $TMPFILE2 | grep '^[<>] Java' | \
     fgrep -v -f $TMPFILE3 > /dev/null;
 then
   PROBLEM=1
   echo "Found a problem with the JNI methods declared and implemented."
-  echo "(-) missing in implementation, (+) missing in header files"
+  echo "(<) missing in implementation, (>) missing in header files"
 
   # Compare the found method lists.
-  diff -U 0 $TMPFILE $TMPFILE2  | grep '^[+-]Java' | fgrep -v -f $TMPFILE3
+  diff $TMPFILE $TMPFILE2  | grep '^[<>] Java' | fgrep -v -f $TMPFILE3
 fi
 
 # Cleanup.

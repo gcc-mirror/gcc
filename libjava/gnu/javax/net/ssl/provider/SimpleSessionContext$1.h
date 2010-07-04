@@ -34,8 +34,8 @@ class gnu::javax::net::ssl::provider::SimpleSessionContext$1 : public ::java::la
 public: // actually package-private
   SimpleSessionContext$1(::gnu::javax::net::ssl::provider::SimpleSessionContext *);
 public:
-  jboolean hasMoreElements();
-  ::java::lang::Object * nextElement();
+  virtual jboolean hasMoreElements();
+  virtual ::java::lang::Object * nextElement();
 public: // actually package-private
   ::java::util::Iterator * __attribute__((aligned(__alignof__( ::java::lang::Object)))) it;
   ::gnu::javax::net::ssl::provider::SimpleSessionContext * this$0;

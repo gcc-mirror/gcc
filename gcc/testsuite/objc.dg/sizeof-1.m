@@ -1,10 +1,10 @@
 /* Check that the sizeof() operator works with ObjC classes and their aliases. */
 /* Contributed by Ziemowit Laski <zlaski@apple.com>.  */
-/* { dg-options "-lobjc" } */
+/* { dg-options "" } */
 /* { dg-do run } */
 
+#include "../objc-obj-c++-shared/Object1.h"
 #include <objc/objc.h>
-#include <objc/Object.h>
 
 extern void abort(void);
 #define CHECK_IF(expr) if(!(expr)) abort();
@@ -31,3 +31,4 @@ int main(void) {
   return 0;
 }
 
+#include "../objc-obj-c++-shared/Object1-implementation.h"

@@ -1,3 +1,70 @@
+2010-06-12  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config.host (mips64*-*-linux*, mips*-*-linux*): Add mips/t-crtfm
+	to tmake_file.  Add crtfastmath.o to extra_parts.
+	* config/mips/t-crtfm: New.
+
+2010-05-19  Joel Sherrill <joel.sherrill@oarcorp.com>
+
+	* config.host (sparc64-*-rtems*): New target.
+
+2010-05-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/i386/32/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Support Sun
+	assembler syntax.
+
+2010-04-15  Thomas Schwinge  <tschwinge@gnu.org>
+
+	* config.host <i[34567]86-*-gnu*>: Handle softfp as for Linux.
+
+2010-04-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.host (alpha*-dec-osf[45]*): Removed alpha*-dec-osf4*,
+	alpha-dec-osf5.0* support.
+
+2010-04-01  Ralf Corsépius <ralf.corsepius@rtems.org>
+
+	* config.host: Add lm32-*-rtems*.
+
+2010-03-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Uros Bizjak <ubizjak@gmail.com>
+
+	PR target/39048
+	* config.host (i[34567]86-*-solaris2): Handle 32-bit Solaris 2/x86
+	like other remaining 32-bit x86 OSes.
+	* config/i386/32/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Support Sun
+	assembler syntax.
+	* config/i386/libgcc-sol2.ver: New file.
+	* config/i386/t-sol2 (SHLIB_MAPFILES): Add it.
+
+2010-03-30  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR c/43553
+	* Makefile.in (INTERNAL_CFLAGS): Add @set_use_emutls@.
+	* configure.ac: Use GCC_CHECK_EMUTLS to see if emulated TLS
+	is used and substitute set_use_emutls.
+	* configure: Regenerated.
+
+2010-03-30  Tarik Graba  <tarik.graba@telecom-paristech.fr>
+
+	* config/lm32/t-lm32: Remove misplaced MULTILIB_OPTIONS.
+
+2010-03-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/38085
+	* config/i386/t-sol2 ($(T)gmon.o): Use CFLAGS instead of
+	MULTILIB_CFLAGS.
+	($(T)gcrt1.o): Likewise.
+	($(T)crt1.o): Likewise.
+	($(T)crti.o): Likewise.
+	($(T)crtn.o): Likewise.
+
+2010-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR other/42980
+	* Makefile.in (install): Use $(MAKE) string in rule, for
+	parallel make.
+
 2010-02-22  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	Migrate from broken pre-libgcc legacy support to libgcc-centric rules.

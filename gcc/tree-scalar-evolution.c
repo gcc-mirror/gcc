@@ -1,5 +1,5 @@
 /* Scalar evolution detector.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Sebastian Pop <s.pop@laposte.net>
 
@@ -260,12 +260,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "ggc.h"
 #include "tree.h"
-#include "real.h"
-
-/* These RTL headers are needed for basic-block.h.  */
-#include "rtl.h"
 #include "basic-block.h"
-#include "diagnostic.h"
+#include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
 #include "tree-flow.h"
 #include "tree-dump.h"
 #include "timevar.h"
@@ -317,7 +314,7 @@ new_scev_info_str (basic_block instantiated_below, tree var)
 {
   struct scev_info_str *res;
 
-  res = GGC_NEW (struct scev_info_str);
+  res = ggc_alloc_scev_info_str ();
   res->var = var;
   res->chrec = chrec_not_analyzed_yet;
   res->instantiated_below = instantiated_below;
@@ -899,23 +896,6 @@ add_to_evolution (unsigned loop_nb, tree chrec_before, enum tree_code code,
       fprintf (dump_file, "))\n");
     }
 
-  return res;
-}
-
-/* Helper function.  */
-
-static inline tree
-set_nb_iterations_in_loop (struct loop *loop,
-			   tree res)
-{
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "  (set_nb_iterations_in_loop = ");
-      print_generic_expr (dump_file, res, 0);
-      fprintf (dump_file, "))\n");
-    }
-
-  loop->nb_iterations = res;
   return res;
 }
 
@@ -2192,9 +2172,19 @@ instantiate_scev_name (basic_block instantiate_below,
       else
 	res = chrec;
 
-      if (res == NULL_TREE
-	  || !dominated_by_p (CDI_DOMINATORS, instantiate_below,
-			      gimple_bb (SSA_NAME_DEF_STMT (res))))
+      /* When there is no loop_closed_phi_def, it means that the
+	 variable is not used after the loop: try to still compute the
+	 value of the variable when exiting the loop.  */
+      if (res == NULL_TREE)
+	{
+	  loop_p loop = loop_containing_stmt (SSA_NAME_DEF_STMT (chrec));
+	  res = analyze_scalar_evolution (loop, chrec);
+	  res = compute_overall_effect_of_inner_loop (loop, res);
+	  res = instantiate_scev_r (instantiate_below, evolution_loop, res,
+				    fold_conversions, cache, size_expr);
+	}
+      else if (!dominated_by_p (CDI_DOMINATORS, instantiate_below,
+				gimple_bb (SSA_NAME_DEF_STMT (res))))
 	res = chrec_dont_know;
     }
 
@@ -2687,8 +2677,11 @@ resolve_mixers (struct loop *loop, tree chrec)
 /* Entry point for the analysis of the number of iterations pass.
    This function tries to safely approximate the number of iterations
    the loop will run.  When this property is not decidable at compile
-   time, the result is chrec_dont_know.  Otherwise the result is
-   a scalar or a symbolic parameter.
+   time, the result is chrec_dont_know.  Otherwise the result is a
+   scalar or a symbolic parameter.  When the number of iterations may
+   be equal to zero and the property cannot be determined at compile
+   time, the result is a COND_EXPR that represents in a symbolic form
+   the conditions under which the number of iterations is not zero.
 
    Example of analysis: suppose that the loop has an exit condition:
 
@@ -2707,37 +2700,53 @@ resolve_mixers (struct loop *loop, tree chrec)
 tree
 number_of_latch_executions (struct loop *loop)
 {
-  tree res, type;
   edge exit;
   struct tree_niter_desc niter_desc;
+  tree may_be_zero;
+  tree res;
 
-  /* Determine whether the number_of_iterations_in_loop has already
+  /* Determine whether the number of iterations in loop has already
      been computed.  */
   res = loop->nb_iterations;
   if (res)
     return res;
-  res = chrec_dont_know;
+
+  may_be_zero = NULL_TREE;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "(number_of_iterations_in_loop\n");
+    fprintf (dump_file, "(number_of_iterations_in_loop = \n");
 
+  res = chrec_dont_know;
   exit = single_exit (loop);
-  if (!exit)
-    goto end;
 
-  if (!number_of_iterations_exit (loop, exit, &niter_desc, false))
-    goto end;
+  if (exit && number_of_iterations_exit (loop, exit, &niter_desc, false))
+    {
+      may_be_zero = niter_desc.may_be_zero;
+      res = niter_desc.niter;
+    }
 
-  type = TREE_TYPE (niter_desc.niter);
-  if (integer_nonzerop (niter_desc.may_be_zero))
-    res = build_int_cst (type, 0);
-  else if (integer_zerop (niter_desc.may_be_zero))
-    res = niter_desc.niter;
+  if (res == chrec_dont_know
+      || !may_be_zero
+      || integer_zerop (may_be_zero))
+    ;
+  else if (integer_nonzerop (may_be_zero))
+    res = build_int_cst (TREE_TYPE (res), 0);
+
+  else if (COMPARISON_CLASS_P (may_be_zero))
+    res = fold_build3 (COND_EXPR, TREE_TYPE (res), may_be_zero,
+		       build_int_cst (TREE_TYPE (res), 0), res);
   else
     res = chrec_dont_know;
 
-end:
-  return set_nb_iterations_in_loop (loop, res);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "  (set_nb_iterations_in_loop = ");
+      print_generic_expr (dump_file, res, 0);
+      fprintf (dump_file, "))\n");
+    }
+
+  loop->nb_iterations = res;
+  return res;
 }
 
 /* Returns the number of executions of the exit condition of LOOP,
@@ -3018,12 +3027,9 @@ scev_initialize (void)
   loop_iterator li;
   struct loop *loop;
 
-  scalar_evolution_info = htab_create_alloc (100,
-					     hash_scev_info,
-					     eq_scev_info,
-					     del_scev_info,
-					     ggc_calloc,
-					     ggc_free);
+
+  scalar_evolution_info = htab_create_ggc (100, hash_scev_info, eq_scev_info,
+					   del_scev_info);
 
   initialize_scalar_evolutions_analyzer ();
 

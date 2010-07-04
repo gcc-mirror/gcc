@@ -1,5 +1,6 @@
 /* Language independent return value optimizations
-   Copyright (C) 2004, 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,16 +23,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "rtl.h"
 #include "function.h"
 #include "basic-block.h"
-#include "expr.h"
-#include "diagnostic.h"
+#include "tree-pretty-print.h"
 #include "tree-flow.h"
 #include "timevar.h"
 #include "tree-dump.h"
 #include "tree-pass.h"
 #include "langhooks.h"
+#include "flags.h"	/* For "optimize" in gate_pass_return_slot.
+			   FIXME: That should be up to the pass manager,
+			   but pass_nrv is not in pass_all_optimizations.  */
 
 /* This file implements return value optimizations for functions which
    return aggregate types.
@@ -291,23 +293,21 @@ struct gimple_opt_pass pass_nrv =
    optimization, where DEST is expected to be the LHS of a modify
    expression where the RHS is a function returning an aggregate.
 
-   We search for a base VAR_DECL and look to see if it is call clobbered.
-   Note that we could do better, for example, by
-   attempting to doing points-to analysis on INDIRECT_REFs.  */
+   DEST is available if it is not clobbered by the call.  */
 
 static bool
-dest_safe_for_nrv_p (tree dest)
+dest_safe_for_nrv_p (gimple call)
 {
-  while (handled_component_p (dest))
-    dest = TREE_OPERAND (dest, 0);
+  tree dest = gimple_call_lhs (call);
 
-  if (! SSA_VAR_P (dest))
+  dest = get_base_address (dest);
+  if (! dest)
     return false;
 
   if (TREE_CODE (dest) == SSA_NAME)
-    dest = SSA_NAME_VAR (dest);
+    return true;
 
-  if (is_call_used (dest))
+  if (call_may_clobber_ref_p (call, dest))
     return false;
 
   return true;
@@ -346,8 +346,8 @@ execute_return_slot_opt (void)
 	     )
 	    {
 	      /* Check if the location being assigned to is
-	         call-clobbered.  */
-	      slot_opt_p = dest_safe_for_nrv_p (gimple_call_lhs (stmt));
+	         clobbered by the call.  */
+	      slot_opt_p = dest_safe_for_nrv_p (stmt);
 	      gimple_call_set_return_slot_opt (stmt, slot_opt_p);
 	    }
 	}

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,9 +23,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Debug; use Debug;
-with Osint; use Osint;
-with Opt;   use Opt;
+with Debug;  use Debug;
+with Osint;  use Osint;
+with Opt;    use Opt;
+with Output; use Output;
 
 with System.WCh_Con; use System.WCh_Con;
 
@@ -40,9 +41,35 @@ package body Switch.B is
       Ptr : Integer          := Switch_Chars'First;
       C   : Character        := ' ';
 
+      function Get_Optional_Filename return String_Ptr;
+      --  If current character is '=', return a newly allocated string that
+      --  contains the remainder of the current switch (after the '='), else
+      --  return null.
+
       function Get_Stack_Size (S : Character) return Int;
-      --  Used for -d and -D to scan stack size including handling k/m.
-      --  S is set to 'd' or 'D' to indicate the switch being scanned.
+      --  Used for -d and -D to scan stack size including handling k/m. S is
+      --  set to 'd' or 'D' to indicate the switch being scanned.
+
+      ---------------------------
+      -- Get_Optional_Filename --
+      ---------------------------
+
+      function Get_Optional_Filename return String_Ptr is
+         Result : String_Ptr;
+
+      begin
+         if Ptr <= Max and then Switch_Chars (Ptr) = '=' then
+            if Ptr = Max then
+               Bad_Switch (Switch_Chars);
+            else
+               Result := new String'(Switch_Chars (Ptr + 1 .. Max));
+               Ptr := Max + 1;
+               return Result;
+            end if;
+         end if;
+
+         return null;
+      end Get_Optional_Filename;
 
       --------------------
       -- Get_Stack_Size --
@@ -61,11 +88,11 @@ package body Switch.B is
             pragma Unsuppress (Overflow_Check);
 
          begin
-            --  Check for additional character 'k' (for kilobytes) or 'm'
-            --  (for Megabytes), but only if we have not reached the end
-            --  of the switch string. Note that if this appears before the
-            --  end of the string we will get an error when we test to make
-            --  sure that the string is exhausted (at the end of the case).
+            --  Check for additional character 'k' (for kilobytes) or 'm' (for
+            --  Megabytes), but only if we have not reached the end of the
+            --  switch string. Note that if this appears before the end of the
+            --  string we will get an error when we test to make sure that the
+            --  string is exhausted (at the end of the case).
 
             if Ptr <= Max then
                if Switch_Chars (Ptr) = 'k' then
@@ -97,8 +124,8 @@ package body Switch.B is
          Ptr := Ptr + 1;
       end if;
 
-      --  A little check, "gnat" at the start of a switch is not allowed
-      --  except for the compiler
+      --  A little check, "gnat" at the start of a switch is not allowed except
+      --  for the compiler
 
       if Switch_Chars'Last >= Ptr + 3
         and then Switch_Chars (Ptr .. Ptr + 3) = "gnat"
@@ -124,7 +151,8 @@ package body Switch.B is
 
          when 'A' =>
             Ptr := Ptr + 1;
-            Ada_Bind_File := True;
+            Output_ALI_List := True;
+            ALI_List_Filename := Get_Optional_Filename;
 
          --  Processing for b switch
 
@@ -136,15 +164,15 @@ package body Switch.B is
 
          when 'c' =>
             Ptr := Ptr + 1;
-
             Check_Only := True;
 
          --  Processing for C switch
 
          when 'C' =>
             Ptr := Ptr + 1;
-
             Ada_Bind_File := False;
+
+            Write_Line ("warning: gnatbind switch -C is obsolescent");
 
          --  Processing for d switch
 
@@ -243,6 +271,20 @@ package body Switch.B is
             Ptr := Ptr + 1;
             Usage_Requested := True;
 
+         --  Processing for H switch
+
+         when 'H' =>
+            if Ptr = Max then
+               Bad_Switch (Switch_Chars);
+            end if;
+
+            Ptr := Ptr + 1;
+            Scan_Nat (Switch_Chars, Max, Ptr, Heap_Size, C);
+
+            if Heap_Size /= 32 and then Heap_Size /= 64 then
+               Bad_Switch (Switch_Chars);
+            end if;
+
          --  Processing for i switch
 
          when 'i' =>
@@ -253,7 +295,7 @@ package body Switch.B is
             Ptr := Ptr + 1;
             C := Switch_Chars (Ptr);
 
-            if C in  '1' .. '5'
+            if C in '1' .. '5'
               or else C = '8'
               or else C = 'p'
               or else C = 'f'
@@ -305,7 +347,6 @@ package body Switch.B is
 
             if Output_File_Name_Present then
                Osint.Fail ("duplicate -o switch");
-
             else
                Output_File_Name_Present := True;
             end if;
@@ -315,6 +356,7 @@ package body Switch.B is
          when 'O' =>
             Ptr := Ptr + 1;
             Output_Object_List := True;
+            Object_List_Filename := Get_Optional_Filename;
 
          --  Processing for p switch
 
@@ -338,7 +380,6 @@ package body Switch.B is
 
          when 'R' =>
             Ptr := Ptr + 1;
-            Check_Only   := True;
             List_Closure := True;
 
          --  Processing for s switch
@@ -400,7 +441,6 @@ package body Switch.B is
             Ptr := Ptr + 1;
 
             case Switch_Chars (Ptr) is
-
                when 'e' =>
                   Warning_Mode := Treat_As_Error;
 
@@ -433,8 +473,7 @@ package body Switch.B is
             Wide_Character_Encoding_Method_Specified := True;
 
             Upper_Half_Encoding :=
-              Wide_Character_Encoding_Method in
-                WC_Upper_Half_Encoding_Method;
+              Wide_Character_Encoding_Method in WC_Upper_Half_Encoding_Method;
 
             Ptr := Ptr + 1;
 
@@ -486,7 +525,7 @@ package body Switch.B is
                   Osint.Fail ("missing path for --RTS");
 
                else
-                  --  valid --RTS switch
+                  --  Valid --RTS switch
 
                   Opt.No_Stdinc := True;
                   Opt.RTS_Switch := True;
@@ -508,8 +547,8 @@ package body Switch.B is
                        Lib_Path_Name /= null
                      then
                         --  Set the RTS_*_Path_Name variables, so that the
-                        --  correct directories will be set when
-                        --  Osint.Add_Default_Search_Dirs will be called later.
+                        --  correct directories will be set when a subsequent
+                        --  call Osint.Add_Default_Search_Dirs is made.
 
                         RTS_Src_Path_Name := Src_Path_Name;
                         RTS_Lib_Path_Name := Lib_Path_Name;

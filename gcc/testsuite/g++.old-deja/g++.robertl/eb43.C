@@ -4,6 +4,8 @@
 // The first one should still fail because it requires an implicit conversion
 // to pointer_to_binary_function, which has an `explicit' constructor.
 
+// { dg-prune-output "note" }
+
 #include <vector>
 #include <algorithm>
 #include <functional>

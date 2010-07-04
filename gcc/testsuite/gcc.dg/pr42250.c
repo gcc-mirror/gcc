@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fipa-type-escape" } */
+/* { dg-options "-O2 -fipa-struct-reorg" } */
 
 extern double log10 (double __x);
 extern double ceil (double __x);

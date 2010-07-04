@@ -27,6 +27,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "vecprim.h"
 #include "double-int.h"
 
+#include "bitmap.h"
+#include "sbitmap.h"
+
 /* Structure to hold decision about unrolling/peeling.  */
 enum lpt_dec
 {
@@ -131,11 +134,13 @@ struct GTY ((chain_next ("%h.next"))) loop {
   /* Auxiliary info specific to a pass.  */
   PTR GTY ((skip (""))) aux;
 
-  /* The number of times the latch of the loop is executed.
-     This is an INTEGER_CST or an expression containing symbolic
-     names.  Don't access this field directly:
-     number_of_latch_executions computes and caches the computed
-     information in this field.  */
+  /* The number of times the latch of the loop is executed.  This can be an
+     INTEGER_CST, or a symbolic expression representing the number of
+     iterations like "N - 1", or a COND_EXPR containing the runtime
+     conditions under which the number of iterations is non zero.
+
+     Don't access this field directly: number_of_latch_executions
+     computes and caches the computed information in this field.  */
   tree nb_iterations;
 
   /* An integer guaranteed to bound the number of iterations of the loop
@@ -148,6 +153,9 @@ struct GTY ((chain_next ("%h.next"))) loop {
   bool any_upper_bound;
   bool any_estimate;
 
+  /* True if the loop can be parallel.  */
+  bool can_be_parallel;
+
   /* An integer estimation of the number of iterations.  Estimate_state
      describes what is the state of the estimation.  */
   enum loop_estimation estimate_state;
@@ -157,9 +165,6 @@ struct GTY ((chain_next ("%h.next"))) loop {
 
   /* Head of the cyclic list of the exits of the loop.  */
   struct loop_exit *exits;
-
-  /* True if the loop can be parallel.  */
-  bool can_be_parallel;
 
   /* The single induction variable of the loop when the loop is in
      normal form.  */

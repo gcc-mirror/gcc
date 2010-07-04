@@ -41,7 +41,7 @@ class javax::swing::plaf::basic::BasicSpinnerUI$3 : public ::java::lang::Object
 public: // actually package-private
   BasicSpinnerUI$3(::javax::swing::plaf::basic::BasicSpinnerUI$2 *);
 public:
-  void actionPerformed(::java::awt::event::ActionEvent *);
+  virtual void actionPerformed(::java::awt::event::ActionEvent *);
 public: // actually package-private
   ::javax::swing::plaf::basic::BasicSpinnerUI$2 * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$1;
 public:

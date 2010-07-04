@@ -24,8 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 
 /* In ipa-reference.c  */
-bitmap ipa_reference_get_read_global (struct cgraph_node *fn);
-bitmap ipa_reference_get_written_global (struct cgraph_node *fn);
 bitmap ipa_reference_get_not_read_global (struct cgraph_node *fn);
 bitmap ipa_reference_get_not_written_global (struct cgraph_node *fn);
 

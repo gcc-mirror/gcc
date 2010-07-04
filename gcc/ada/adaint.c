@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2009, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -132,7 +132,7 @@ UINT CurrentCodePage;
 #include <sys/wait.h>
 #endif
 
-#if defined (__EMX__) || defined (MSDOS) || defined (_WIN32)
+#if defined (_WIN32)
 #elif defined (VMS)
 
 /* Header files and definitions for __gnat_set_file_time_name.  */
@@ -183,7 +183,7 @@ struct vstring
 #include <utime.h>
 #endif
 
-#if defined (__EMX__) || defined (MSDOS) || defined (_WIN32)
+#if defined (_WIN32)
 #include <process.h>
 #endif
 
@@ -204,14 +204,6 @@ struct vstring
    whether the file is opened/created in text-translation mode (CR/LF in
    external file mapped to LF in internal file), but in Unix-like systems,
    no text translation is required, so these flags have no effect.  */
-
-#if defined (__EMX__)
-#include <os2.h>
-#endif
-
-#if defined (MSDOS)
-#include <dos.h>
-#endif
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -275,9 +267,7 @@ char __gnat_path_separator = PATH_SEPARATOR;
        as well. This is only a temporary work-around for 3.11b.  */
 
 #ifndef GNAT_LIBRARY_TEMPLATE
-#if defined (__EMX__)
-#define GNAT_LIBRARY_TEMPLATE "*.a"
-#elif defined (VMS)
+#if defined (VMS)
 #define GNAT_LIBRARY_TEMPLATE "*.olb"
 #else
 #define GNAT_LIBRARY_TEMPLATE "lib*.a"
@@ -294,10 +284,7 @@ const int __gnat_vmsp = 1;
 const int __gnat_vmsp = 0;
 #endif
 
-#ifdef __EMX__
-#define GNAT_MAX_PATH_LEN MAX_PATH
-
-#elif defined (VMS)
+#if defined (VMS)
 #define GNAT_MAX_PATH_LEN 256 /* PATH_MAX */
 
 #elif defined (__vxworks) || defined (__OPENNT) || defined(__nucleus__)
@@ -377,7 +364,7 @@ to_ptr32 (char **ptr64)
 #define MAYBE_TO_PTR32(argv) argv
 #endif
 
-const char ATTR_UNSET = 127;
+static const char ATTR_UNSET = 127;
 
 void
 __gnat_reset_attributes
@@ -478,8 +465,8 @@ __gnat_readlink (char *path ATTRIBUTE_UNUSED,
 		 char *buf ATTRIBUTE_UNUSED,
 		 size_t bufsiz ATTRIBUTE_UNUSED)
 {
-#if defined (MSDOS) || defined (_WIN32) || defined (__EMX__) \
-  || defined (VMS) || defined(__vxworks) || defined (__nucleus__)
+#if defined (_WIN32) || defined (VMS) \
+    || defined(__vxworks) || defined (__nucleus__)
   return -1;
 #else
   return readlink (path, buf, bufsiz);
@@ -494,8 +481,8 @@ int
 __gnat_symlink (char *oldpath ATTRIBUTE_UNUSED,
 		char *newpath ATTRIBUTE_UNUSED)
 {
-#if defined (MSDOS) || defined (_WIN32) || defined (__EMX__) \
-  || defined (VMS) || defined(__vxworks) || defined (__nucleus__)
+#if defined (_WIN32) || defined (VMS) \
+    || defined(__vxworks) || defined (__nucleus__)
   return -1;
 #else
   return symlink (oldpath, newpath);
@@ -504,8 +491,8 @@ __gnat_symlink (char *oldpath ATTRIBUTE_UNUSED,
 
 /* Try to lock a file, return 1 if success.  */
 
-#if defined (__vxworks) || defined (__nucleus__) || defined (MSDOS) \
-  || defined (_WIN32) || defined (__EMX__) || defined (VMS)
+#if defined (__vxworks) || defined (__nucleus__) \
+  || defined (_WIN32) || defined (VMS)
 
 /* Version that does not use link. */
 
@@ -577,9 +564,7 @@ __gnat_try_lock (char *dir, char *file)
 int
 __gnat_get_maximum_file_name_length (void)
 {
-#if defined (MSDOS)
-  return 8;
-#elif defined (VMS)
+#if defined (VMS)
   if (getenv ("GNAT$EXTENDED_FILE_SPECIFICATIONS"))
     return -1;
   else
@@ -594,7 +579,7 @@ __gnat_get_maximum_file_name_length (void)
 int
 __gnat_get_file_names_case_sensitive (void)
 {
-#if defined (__EMX__) || defined (MSDOS) || defined (VMS) || defined (WINNT)
+#if defined (VMS) || defined (WINNT)
   return 0;
 #else
   return 1;
@@ -604,11 +589,7 @@ __gnat_get_file_names_case_sensitive (void)
 char
 __gnat_get_default_identifier_character_set (void)
 {
-#if defined (__EMX__) || defined (MSDOS)
-  return 'p';
-#else
   return '1';
-#endif
 }
 
 /* Return the current working directory.  */
@@ -675,12 +656,7 @@ __gnat_get_executable_suffix_ptr (int *len, const char **value)
 void
 __gnat_get_debuggable_suffix_ptr (int *len, const char **value)
 {
-#ifndef MSDOS
   *value = HOST_EXECUTABLE_SUFFIX;
-#else
-  /* On DOS, the extensionless COFF file is what gdb likes.  */
-  *value = "";
-#endif
 
   if (*value == 0)
     *len = 0;
@@ -859,7 +835,7 @@ __gnat_open_read (char *path, int fmode)
   return fd < 0 ? -1 : fd;
 }
 
-#if defined (__EMX__) || defined (__MINGW32__)
+#if defined (__MINGW32__)
 #define PERM (S_IREAD | S_IWRITE)
 #elif defined (VMS)
 /* Excerpt from DECC C RTL Reference Manual:
@@ -1101,7 +1077,7 @@ __gnat_stat_to_attr (int fd, char* name, struct file_attributes* attr)
   attr->executable = (!ret && (statbuf.st_mode & S_IXUSR));
 #endif
 
-#if !defined (__EMX__) && !defined (MSDOS) && (!defined (_WIN32) || defined (RTX))
+#if !defined (_WIN32) || defined (RTX)
   /* on Windows requires extra system call, see __gnat_file_time_name_attr */
   if (ret != 0) {
      attr->timestamp = (OS_Time)-1;
@@ -1342,13 +1318,7 @@ OS_Time
 __gnat_file_time_name_attr (char* name, struct file_attributes* attr)
 {
    if (attr->timestamp == (OS_Time)-2) {
-#if defined (__EMX__) || defined (MSDOS)
-      int fd = open (name, O_RDONLY | O_BINARY);
-      time_t ret = __gnat_file_time_fd (fd);
-      close (fd);
-      attr->timestamp = (OS_Time)ret;
-
-#elif defined (_WIN32) && !defined (RTX)
+#if defined (_WIN32) && !defined (RTX)
       time_t ret = -1;
       TCHAR wname[GNAT_MAX_PATH_LEN];
       S2WSC (wname, name, GNAT_MAX_PATH_LEN);
@@ -1383,74 +1353,7 @@ OS_Time
 __gnat_file_time_fd_attr (int fd, struct file_attributes* attr)
 {
    if (attr->timestamp == (OS_Time)-2) {
-     /* The following workaround code is due to the fact that under EMX and
-        DJGPP fstat attempts to convert time values to GMT rather than keep the
-        actual OS timestamp of the file. By using the OS2/DOS functions directly
-        the GNAT timestamp are independent of this behavior, which is desired to
-        facilitate the distribution of GNAT compiled libraries.  */
-
-#if defined (__EMX__) || defined (MSDOS)
-#ifdef __EMX__
-
-     FILESTATUS fs;
-     int ret = DosQueryFileInfo (fd, 1, (unsigned char *) &fs,
-                                   sizeof (FILESTATUS));
-
-     unsigned file_year  = fs.fdateLastWrite.year;
-     unsigned file_month = fs.fdateLastWrite.month;
-     unsigned file_day   = fs.fdateLastWrite.day;
-     unsigned file_hour  = fs.ftimeLastWrite.hours;
-     unsigned file_min   = fs.ftimeLastWrite.minutes;
-     unsigned file_tsec  = fs.ftimeLastWrite.twosecs;
-
-#else
-     struct ftime fs;
-     int ret = getftime (fd, &fs);
-
-     unsigned file_year  = fs.ft_year;
-     unsigned file_month = fs.ft_month;
-     unsigned file_day   = fs.ft_day;
-     unsigned file_hour  = fs.ft_hour;
-     unsigned file_min   = fs.ft_min;
-     unsigned file_tsec  = fs.ft_tsec;
-#endif
-
-     /* Calculate the seconds since epoch from the time components. First count
-        the whole days passed.  The value for years returned by the DOS and OS2
-        functions count years from 1980, so to compensate for the UNIX epoch which
-        begins in 1970 start with 10 years worth of days and add days for each
-        four year period since then.  */
-
-     time_t tot_secs;
-     int cum_days[12] = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
-     int days_passed = 3652 + (file_year / 4) * 1461;
-     int years_since_leap = file_year % 4;
-
-     if (years_since_leap == 1)
-       days_passed += 366;
-     else if (years_since_leap == 2)
-       days_passed += 731;
-     else if (years_since_leap == 3)
-       days_passed += 1096;
-
-     if (file_year > 20)
-       days_passed -= 1;
-
-     days_passed += cum_days[file_month - 1];
-     if (years_since_leap == 0 && file_year != 20 && file_month > 2)
-       days_passed++;
-
-     days_passed += file_day - 1;
-
-     /* OK - have whole days.  Multiply -- then add in other parts.  */
-
-     tot_secs  = days_passed * 86400;
-     tot_secs += file_hour * 3600;
-     tot_secs += file_min * 60;
-     tot_secs += file_tsec * 2;
-     attr->timestamp = (OS_Time) tot_secs;
-
-#elif defined (_WIN32) && !defined (RTX)
+#if defined (_WIN32) && !defined (RTX)
      HANDLE h = (HANDLE) _get_osfhandle (fd);
      time_t ret = win32_filetime (h);
      attr->timestamp = (OS_Time) ret;
@@ -1476,7 +1379,7 @@ __gnat_file_time_fd (int fd)
 void
 __gnat_set_file_time_name (char *name, time_t time_stamp)
 {
-#if defined (__EMX__) || defined (MSDOS) || defined (__vxworks)
+#if defined (__vxworks)
 
 /* Code to implement __gnat_set_file_time_name for these systems.  */
 
@@ -1857,7 +1760,7 @@ __gnat_is_absolute_path (char *name, int length)
 #else
   return (length != 0) &&
      (*name == '/' || *name == DIR_SEPARATOR
-#if defined (__EMX__) || defined (MSDOS) || defined (WINNT)
+#if defined (WINNT)
       || (length > 1 && ISALPHA (name[0]) && name[1] == ':')
 #endif
 	  );
@@ -2358,7 +2261,7 @@ __gnat_portable_spawn (char *args[])
 #if defined (__vxworks) || defined(__nucleus__) || defined(RTX)
   return -1;
 
-#elif defined (MSDOS) || defined (_WIN32)
+#elif defined (_WIN32)
   /* args[0] must be quotes as it could contain a full pathname with spaces */
   char *args_0 = args[0];
   args[0] = (char *)xmalloc (strlen (args_0) + 3);
@@ -2379,12 +2282,6 @@ __gnat_portable_spawn (char *args[])
 
 #else
 
-#ifdef __EMX__
-  pid = spawnvp (P_NOWAIT, args[0], args);
-  if (pid == -1)
-    return -1;
-
-#else
   pid = fork ();
   if (pid < 0)
     return -1;
@@ -2399,7 +2296,6 @@ __gnat_portable_spawn (char *args[])
 	_exit (1);
 #endif
     }
-#endif
 
   /* The parent.  */
   finished = waitpid (pid, &status, 0);
@@ -2474,7 +2370,7 @@ static HANDLE *HANDLES_LIST = NULL;
 static int *PID_LIST = NULL, plist_length = 0, plist_max_length = 0;
 
 static void
-add_handle (HANDLE h)
+add_handle (HANDLE h, int pid)
 {
 
   /* -------------------- critical section -------------------- */
@@ -2490,7 +2386,7 @@ add_handle (HANDLE h)
     }
 
   HANDLES_LIST[plist_length] = h;
-  PID_LIST[plist_length] = GetProcessId (h);
+  PID_LIST[plist_length] = pid;
   ++plist_length;
 
   (*Unlock_Task) ();
@@ -2521,8 +2417,8 @@ __gnat_win32_remove_handle (HANDLE h, int pid)
   /* -------------------- critical section -------------------- */
 }
 
-static HANDLE
-win32_no_block_spawn (char *command, char *args[])
+static void
+win32_no_block_spawn (char *command, char *args[], HANDLE *h, int *pid)
 {
   BOOL result;
   STARTUPINFO SI;
@@ -2587,10 +2483,14 @@ win32_no_block_spawn (char *command, char *args[])
   if (result == TRUE)
     {
       CloseHandle (PI.hThread);
-      return PI.hProcess;
+      *h = PI.hProcess;
+      *pid = PI.dwProcessId;
     }
   else
-    return NULL;
+    {
+      *h = NULL;
+      *pid = 0;
+    }
 }
 
 static int
@@ -2627,7 +2527,7 @@ win32_wait (int *status)
   h = hl[res - WAIT_OBJECT_0];
 
   GetExitCodeProcess (h, &exitcode);
-  pid = GetProcessId (h);
+  pid = PID_LIST [res - WAIT_OBJECT_0];
   __gnat_win32_remove_handle (h, -1);
 
   free (hl);
@@ -2645,28 +2545,16 @@ __gnat_portable_no_block_spawn (char *args[])
 #if defined (__vxworks) || defined (__nucleus__) || defined (RTX)
   return -1;
 
-#elif defined (__EMX__) || defined (MSDOS)
-
-  /* ??? For PC machines I (Franco) don't know the system calls to implement
-     this routine. So I'll fake it as follows. This routine will behave
-     exactly like the blocking portable_spawn and will systematically return
-     a pid of 0 unless the spawned task did not complete successfully, in
-     which case we return a pid of -1.  To synchronize with this the
-     portable_wait below systematically returns a pid of 0 and reports that
-     the subprocess terminated successfully. */
-
-  if (spawnvp (P_WAIT, args[0], args) != 0)
-    return -1;
-
 #elif defined (_WIN32)
 
   HANDLE h = NULL;
+  int pid;
 
-  h = win32_no_block_spawn (args[0], args);
+  win32_no_block_spawn (args[0], args, &h, &pid);
   if (h != NULL)
     {
-      add_handle (h);
-      return GetProcessId (h);
+      add_handle (h, pid);
+      return pid;
     }
   else
     return -1;
@@ -2698,15 +2586,11 @@ __gnat_portable_wait (int *process_status)
   int pid = 0;
 
 #if defined (__vxworks) || defined (__nucleus__) || defined (RTX)
-  /* Not sure what to do here, so do same as __EMX__ case, i.e., nothing but
-     return zero.  */
+  /* Not sure what to do here, so do nothing but return zero.  */
 
 #elif defined (_WIN32)
 
   pid = win32_wait (&status);
-
-#elif defined (__EMX__) || defined (MSDOS)
-  /* ??? See corresponding comment in portable_no_block_spawn.  */
 
 #else
 
@@ -2783,12 +2667,6 @@ __gnat_locate_regular_file (char *file_name, char *path_val)
 
     for (;;)
       {
-        for (; *path_val == PATH_SEPARATOR; path_val++)
-          ;
-
-      if (*path_val == 0)
-        return 0;
-
       /* Skip the starting quote */
 
       if (*path_val == '"')
@@ -2797,7 +2675,14 @@ __gnat_locate_regular_file (char *file_name, char *path_val)
       for (ptr = file_path; *path_val && *path_val != PATH_SEPARATOR; )
 	*ptr++ = *path_val++;
 
-      ptr--;
+      /* If directory is empty, it is the current directory*/
+
+      if (ptr == file_path)
+        {
+         *ptr = '.';
+        }
+      else
+        ptr--;
 
       /* Skip the ending quote */
 
@@ -2811,6 +2696,13 @@ __gnat_locate_regular_file (char *file_name, char *path_val)
 
       if (__gnat_is_regular_file (file_path))
         return xstrdup (file_path);
+
+      if (*path_val == 0)
+        return 0;
+
+      /* Skip path separator */
+
+      path_val++;
       }
   }
 
@@ -3443,14 +3335,6 @@ __gnat_adjust_os_resource_limits (void)
 {
 }
 
-#endif
-
-/* For EMX, we cannot include dummy in libgcc, since it is too difficult
-   to coordinate this with the EMX distribution. Consequently, we put the
-   definition of dummy which is used for exception handling, here.  */
-
-#if defined (__EMX__)
-void __dummy () {}
 #endif
 
 #if defined (__mips_vxworks)

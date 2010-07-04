@@ -137,7 +137,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  }
       }
     else
-      __throw_runtime_error(__N("locale::locale NULL not valid"));
+      __throw_runtime_error(__N("locale::locale null not valid"));
   }
 
   locale::locale(const locale& __base, const char* __s, category __cat)

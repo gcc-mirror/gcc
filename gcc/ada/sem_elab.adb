@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -599,9 +599,7 @@ package body Sem_Elab is
 
       --  No checks needed for pure or preelaborated compilation units
 
-      if Is_Pure (E_Scope)
-        or else Is_Preelaborated (E_Scope)
-      then
+      if Is_Pure (E_Scope) or else Is_Preelaborated (E_Scope) then
          return;
       end if;
 
@@ -1891,6 +1889,11 @@ package body Sem_Elab is
 
       elsif In_Task_Activation then
          return;
+
+      --  Nothing to do if call is within a generic unit
+
+      elsif Inside_A_Generic then
+         return;
       end if;
 
       --  Delay this call if we are still delaying calls
@@ -2427,7 +2430,8 @@ package body Sem_Elab is
               and then not Elaboration_Checks_Suppressed (Task_Scope)
             then
                Error_Msg_Node_2 := Task_Scope;
-               Error_Msg_NE ("activation of an instance of task type&" &
+               Error_Msg_NE
+                 ("activation of an instance of task type&" &
                   " requires pragma Elaborate_All on &?", N, Ent);
             end if;
 
@@ -3008,10 +3012,7 @@ package body Sem_Elab is
       --  Check for case of body entity
       --  Why is the check for E_Void needed???
 
-      if Ekind (E) = E_Void
-        or else Ekind (E) = E_Subprogram_Body
-        or else Ekind (E) = E_Package_Body
-      then
+      if Ekind_In (E, E_Void, E_Subprogram_Body, E_Package_Body) then
          Decl := E;
 
          loop
@@ -3042,17 +3043,17 @@ package body Sem_Elab is
 
             if No (Corresponding_Body (N)) then
                declare
-                  Loc : constant Source_Ptr := Sloc (N);
-                  B : Node_Id;
-                  Formals : constant List_Id :=
-                     Copy_Parameter_List (Ent);
-                  Nam  : constant Entity_Id :=
-                    Make_Defining_Identifier (Loc, Chars (Ent));
-                  Spec : Node_Id;
-                  Stats : constant List_Id :=
-                    New_List
-                      (Make_Raise_Program_Error (Loc,
-                         Reason => PE_Access_Before_Elaboration));
+                  Loc     : constant Source_Ptr := Sloc (N);
+                  B       : Node_Id;
+                  Formals : constant List_Id := Copy_Parameter_List (Ent);
+                  Nam     : constant Entity_Id :=
+                              Make_Defining_Identifier (Loc, Chars (Ent));
+                  Spec    : Node_Id;
+                  Stats   : constant List_Id :=
+                              New_List
+                               (Make_Raise_Program_Error (Loc,
+                                  Reason => PE_Access_Before_Elaboration));
+
                begin
                   if Ekind (Ent) = E_Function then
                      Spec :=

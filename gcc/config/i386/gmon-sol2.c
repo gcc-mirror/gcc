@@ -223,7 +223,7 @@ _mcleanup (void)
 	return;
     }
 #   ifdef DEBUG
-	fprintf( stderr , "[mcleanup] sbuf 0x%x ssiz %d\n" , sbuf , ssiz );
+	fprintf( stderr , "[mcleanup] sbuf %#x ssiz %d\n" , sbuf , ssiz );
 #   endif /* DEBUG */
 
     write( fd , sbuf , ssiz );
@@ -236,7 +236,7 @@ _mcleanup (void)
 	for (toindex=froms[fromindex]; toindex!=0; toindex=tos[toindex].link) {
 #	    ifdef DEBUG
 		fprintf( stderr ,
-			"[mcleanup] frompc 0x%x selfpc 0x%x count %d\n" ,
+			"[mcleanup] frompc %#x selfpc %#x count %d\n" ,
 			frompc , tos[toindex].selfpc , tos[toindex].count );
 #	    endif /* DEBUG */
 	    rawarc.raw_frompc = (unsigned long) frompc;
@@ -268,14 +268,14 @@ asm(".globl _mcount\n"
        FROMPCINDEX (via the frame pointer.  */
     "\tmovq\t0x38(%rsp),%rdi\n"
     "\tmovq\t0x8(%rbp),%rsi\n"
-    "\tcallq\tinternal_mcount\n"
+    "\tcall\tinternal_mcount\n"
     /* Restore the saved registers.  */
     "\tmovq\t0x30(%rsp),%r9\n"
     "\tmovq\t0x28(%rsp),%r8\n"
     "\tmovq\t0x20(%rsp),%rdi\n"
     "\tmovq\t0x18(%rsp),%rsi\n"
     "\tmovq\t0x10(%rsp),%rdx\n"
-    "\tmovq\t0x08(%rsp),%rdx\n"
+    "\tmovq\t0x08(%rsp),%rcx\n"
     "\tmovq\t(%rsp),%rax\n"
     "\taddq\t$0x38,%rsp\n"
     "\tretq\n"

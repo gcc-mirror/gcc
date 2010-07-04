@@ -1,7 +1,7 @@
 /* Contributed by Nicola Pero - Fri Mar  9 21:35:47 CET 2001 */
-#include <objc/objc.h>
-#include <objc/Object.h>
-#include <objc/Protocol.h>
+
+#include <stdlib.h>
+#import "../../objc-obj-c++-shared/Protocol1.h"
 
 /* Test defining two protocols, one incorporating the other one. */
 

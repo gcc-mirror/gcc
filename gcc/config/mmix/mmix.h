@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for MMIX.
-   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 2000, 2001, 2002, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Hans-Peter Nilsson (hp@bitrange.com)
 
@@ -611,22 +611,6 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 #define FUNCTION_ARG_REGNO_P(REGNO)		\
  mmix_function_arg_regno_p (REGNO, 0)
-
-
-/* Node: Register Arguments */
-
-#define FUNCTION_VALUE(VALTYPE, FUNC)  \
- gen_rtx_REG (TYPE_MODE (VALTYPE), MMIX_RETURN_VALUE_REGNUM)
-
-/* This needs to take care of the register hole for complex return values.  */
-#define FUNCTION_OUTGOING_VALUE(VALTYPE, FUNC)  \
- mmix_function_outgoing_value (VALTYPE, FUNC)
-
-#define LIBCALL_VALUE(MODE) \
- gen_rtx_REG (MODE, MMIX_RETURN_VALUE_REGNUM)
-
-#define FUNCTION_VALUE_REGNO_P(REGNO) \
- mmix_function_value_regno_p (REGNO)
 
 
 /* Node: Caller Saves */

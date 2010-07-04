@@ -67,7 +67,7 @@ find_imp(const_key_reference r_key)
 {
   _GLIBCXX_DEBUG_ONLY(base_type::structure_only_assert_valid();)
   node_pointer p_nd = base_type::m_p_head->m_p_parent;
-  while (p_nd != NULL)
+  while (p_nd != 0)
     if (!Cmp_Fn::operator()(PB_DS_V2F(p_nd->m_value), r_key))
       {
 	if (!Cmp_Fn::operator()(r_key, PB_DS_V2F(p_nd->m_value)))
@@ -86,7 +86,7 @@ find_imp(const_key_reference r_key) const
 {
   _GLIBCXX_DEBUG_ONLY(assert_valid();)
   node_pointer p_nd = base_type::m_p_head->m_p_parent;
-  while (p_nd != NULL)
+  while (p_nd != 0)
     if (!Cmp_Fn::operator()(PB_DS_V2F(p_nd->m_value), r_key))
       {
 	if (!Cmp_Fn::operator()(r_key, PB_DS_V2F(p_nd->m_value)))

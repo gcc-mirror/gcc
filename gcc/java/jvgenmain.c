@@ -27,12 +27,12 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
 #include "obstack.h"
 #include "jcf.h"
 #include "tree.h"
 #include "java-tree.h"
 #include "intl.h"
+#include "tm.h"         /* FIXME: For gcc_obstack_init from defaults.h.  */
 
 static char * do_mangle_classname (const char *string);
 

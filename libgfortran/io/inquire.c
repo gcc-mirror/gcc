@@ -1,4 +1,5 @@
-/* Copyright (C) 2002, 2003, 2005, 2007, 2009 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2005, 2007, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -371,6 +372,14 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 
 	  cf_strcpy (iqp->round, iqp->round_len, p);
 	}
+
+      if ((cf2 & IOPARM_INQUIRE_HAS_SIZE) != 0)
+	{
+	  if (u == NULL)
+	    *iqp->size = -1;
+	  else
+	    *iqp->size = file_size (u->file, (gfc_charlen_type) u->file_len);
+	}
     }
 
   if ((cf & IOPARM_INQUIRE_HAS_POSITION) != 0)
@@ -601,6 +610,9 @@ inquire_via_filename (st_parameter_inquire *iqp)
   
       if ((cf2 & IOPARM_INQUIRE_HAS_ENCODING) != 0)
 	cf_strcpy (iqp->encoding, iqp->encoding_len, undefined);
+
+      if ((cf2 & IOPARM_INQUIRE_HAS_SIZE) != 0)
+	*iqp->size = file_size (iqp->file, iqp->file_len);
     }
 
   if ((cf & IOPARM_INQUIRE_HAS_POSITION) != 0)

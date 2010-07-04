@@ -26,7 +26,6 @@
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
-#include "real.h"
 #include "insn-config.h"
 #include "conditions.h"
 #include "insn-flags.h"
@@ -83,6 +82,9 @@ static rtx m32c_subreg (enum machine_mode, rtx, enum machine_mode, int);
 static int need_to_save (int);
 static rtx m32c_function_value (const_tree, const_tree, bool);
 static rtx m32c_libcall_value (enum machine_mode, const_rtx);
+
+/* Returns true if an address is specified, else false.  */
+static bool m32c_get_pragma_address (const char *varname, unsigned *addr);
 
 int current_function_special_page_vector (rtx);
 
@@ -436,11 +438,7 @@ m32c_override_options (void)
 static struct machine_function *
 m32c_init_machine_status (void)
 {
-  struct machine_function *machine;
-  machine =
-    (machine_function *) ggc_alloc_cleared (sizeof (machine_function));
-
-  return machine;
+  return ggc_alloc_cleared_machine_function ();
 }
 
 /* Implements INIT_EXPANDERS.  We just set up to call the above
@@ -2934,7 +2932,107 @@ static void
 m32c_insert_attributes (tree node ATTRIBUTE_UNUSED,
 			tree * attr_ptr ATTRIBUTE_UNUSED)
 {
-  /* Nothing to do here.  */
+  unsigned addr;
+  /* See if we need to make #pragma address variables volatile.  */
+
+  if (TREE_CODE (node) == VAR_DECL)
+    {
+      char *name = IDENTIFIER_POINTER (DECL_NAME (node));
+      if (m32c_get_pragma_address  (name, &addr))
+	{
+	  TREE_THIS_VOLATILE (node) = true;
+	}
+    }	
+}
+
+
+struct GTY(()) pragma_entry {
+  const char *varname;
+  unsigned address;
+};
+typedef struct pragma_entry pragma_entry;
+
+/* Hash table of pragma info.  */
+static GTY((param_is (pragma_entry))) htab_t pragma_htab;
+
+static int
+pragma_entry_eq (const void *p1, const void *p2)
+{
+  const pragma_entry *old = (const pragma_entry *) p1;
+  const char *new_name = (const char *) p2;
+
+  return strcmp (old->varname, new_name) == 0;
+}
+
+static hashval_t
+pragma_entry_hash (const void *p)
+{
+  const pragma_entry *old = (const pragma_entry *) p;
+  return htab_hash_string (old->varname);
+}
+
+void
+m32c_note_pragma_address (const char *varname, unsigned address)
+{
+  pragma_entry **slot;
+
+  if (!pragma_htab)
+    pragma_htab = htab_create_ggc (31, pragma_entry_hash,
+				    pragma_entry_eq, NULL);
+
+  slot = (pragma_entry **)
+    htab_find_slot_with_hash (pragma_htab, varname,
+			      htab_hash_string (varname), INSERT);
+
+  if (!*slot)
+    {
+      *slot = ggc_alloc_pragma_entry ();
+      (*slot)->varname = ggc_strdup (varname);
+    }
+  (*slot)->address = address;
+}
+
+static bool
+m32c_get_pragma_address (const char *varname, unsigned *address)
+{
+  pragma_entry **slot;
+
+  if (!pragma_htab)
+    return false;
+
+  slot = (pragma_entry **)
+    htab_find_slot_with_hash (pragma_htab, varname,
+			      htab_hash_string (varname), NO_INSERT);
+  if (slot && *slot)
+    {
+      *address = (*slot)->address;
+      return true;
+    }
+  return false;
+}
+
+void
+m32c_output_aligned_common (FILE *stream, tree decl, const char *name,
+			    int size, int align, int global)
+{
+  unsigned address;
+
+  if (m32c_get_pragma_address (name, &address))
+    {
+      /* We never output these as global.  */
+      assemble_name (stream, name);
+      fprintf (stream, " = 0x%04x\n", address);
+      return;
+    }
+  if (!global)
+    {
+      fprintf (stream, "\t.local\t");
+      assemble_name (stream, name);
+      fprintf (stream, "\n");
+    }
+  fprintf (stream, "\t.comm\t");
+  assemble_name (stream, name);
+  fprintf (stream, ",%u,%u\n", size, align / BITS_PER_UNIT);
 }
 
 /* Predicates */
@@ -2965,13 +3063,19 @@ static const struct {
 };
 
 /* Returns TRUE if OP is a subreg of a hard reg which we don't
-   support.  */
+   support.  We also bail on MEMs with illegal addresses.  */
 bool
 m32c_illegal_subreg_p (rtx op)
 {
   int offset;
   unsigned int i;
   int src_mode, dest_mode;
+
+  if (GET_CODE (op) == MEM
+      && ! m32c_legitimate_address_p (Pmode, XEXP (op, 0), false))
+    {
+      return true;
+    }
 
   if (GET_CODE (op) != SUBREG)
     return false;

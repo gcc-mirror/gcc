@@ -285,9 +285,9 @@ namespace __gnu_test
 	typedef typename container_type::iterator 	iterator;
 	typedef typename container_type::const_iterator const_iterator;
 
-	void (container_type::* _F_erase_point)(const_iterator);
-	void (container_type::* _F_erase_range)(const_iterator,
-						const_iterator);
+	iterator (container_type::* _F_erase_point)(const_iterator);
+	iterator (container_type::* _F_erase_range)(const_iterator,
+						    const_iterator);
 
 	erase_base()
 	: _F_erase_point(&container_type::erase),
@@ -304,9 +304,9 @@ namespace __gnu_test
 	typedef typename container_type::iterator 	iterator;
 	typedef typename container_type::const_iterator const_iterator;
 
-	void (container_type::* _F_erase_point)(const_iterator);
-	void (container_type::* _F_erase_range)(const_iterator,
-						const_iterator);
+	iterator (container_type::* _F_erase_point)(const_iterator);
+	iterator (container_type::* _F_erase_range)(const_iterator,
+						    const_iterator);
 
 	erase_base()
 	: _F_erase_point(&container_type::erase),
@@ -321,9 +321,9 @@ namespace __gnu_test
 	typedef typename container_type::iterator 	iterator;
 	typedef typename container_type::const_iterator const_iterator;
 
-	void (container_type::* _F_erase_point)(const_iterator);
-	void (container_type::* _F_erase_range)(const_iterator,
-						const_iterator);
+	iterator (container_type::* _F_erase_point)(const_iterator);
+	iterator (container_type::* _F_erase_range)(const_iterator,
+						    const_iterator);
 
 	erase_base()
 	: _F_erase_point(&container_type::erase),
@@ -338,9 +338,9 @@ namespace __gnu_test
 	typedef typename container_type::iterator 	iterator;
 	typedef typename container_type::const_iterator const_iterator;
 
-	void (container_type::* _F_erase_point)(const_iterator);
-	void (container_type::* _F_erase_range)(const_iterator,
-						const_iterator);
+	iterator (container_type::* _F_erase_point)(const_iterator);
+	iterator (container_type::* _F_erase_range)(const_iterator,
+						    const_iterator);
 
 	erase_base()
 	: _F_erase_point(&container_type::erase),
@@ -1012,7 +1012,6 @@ namespace __gnu_test
 	_M_functions.push_back(function_type(base_type::_M_clear));
 
 	// Run tests.
-	auto i = _M_functions.begin();
 	for (auto i = _M_functions.begin(); i != _M_functions.end(); ++i)
 	  {
 	    function_type& f = *i;
@@ -1096,8 +1095,13 @@ namespace __gnu_test
 	{
 	  condition_type::always_adjustor on;
 
-	  _M_erasep(_M_container);
-	  _M_eraser(_M_container);
+	  // NB: Vector and deque are special, erase can throw if the copy
+	  // constructor or assignment operator of value_type throws.
+	  if (!traits<container_type>::has_throwing_erase::value)
+	    {
+	      _M_erasep(_M_container);
+	      _M_eraser(_M_container);
+	    }
 
 	  _M_popf(_M_container);
 	  _M_popb(_M_container);
@@ -1158,7 +1162,6 @@ namespace __gnu_test
 	_M_functions.push_back(function_type(base_type::_M_rehash));
 
 	// Run tests.
-	auto i = _M_functions.begin();
 	for (auto i = _M_functions.begin(); i != _M_functions.end(); ++i)
 	  {
 	    function_type& f = *i;

@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2009, AdaCore                     --
+--                     Copyright (C) 1995-2010, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,8 @@
 -- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
+
+with System.Tasking;
 
 package body Ada.Real_Time is
 
@@ -242,4 +244,10 @@ package body Ada.Real_Time is
       return Time_Span (D);
    end To_Time_Span;
 
+begin
+   --  Ensure that the tasking run time is initialized when using clock and/or
+   --  delay operations. The initialization routine has the required machinery
+   --  to prevent multiple calls to Initialize.
+
+   System.Tasking.Initialize;
 end Ada.Real_Time;

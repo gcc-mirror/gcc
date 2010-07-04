@@ -6,7 +6,7 @@
  *                                                                          *
  *                                  Body                                    *
  *                                                                          *
- *          Copyright (C) 1992-2009, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2010, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -30,7 +30,6 @@
 #include "coretypes.h"
 #include "tree.h"
 #include "tm.h"
-#include "tm_p.h"
 
 #include "ada.h"
 #include "types.h"

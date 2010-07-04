@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "flags.h"
-#include "real.h"
 #include "insn-config.h"
 #include "recog.h"
 #include "function.h"
@@ -209,10 +208,11 @@ avoid_constant_pool_reference (rtx x)
 rtx
 delegitimize_mem_from_attrs (rtx x)
 {
+  /* MEMs without MEM_OFFSETs may have been offset, so we can't just
+     use their base addresses as equivalent.  */
   if (MEM_P (x)
       && MEM_EXPR (x)
-      && (!MEM_OFFSET (x)
-	  || GET_CODE (MEM_OFFSET (x)) == CONST_INT))
+      && MEM_OFFSET (x))
     {
       tree decl = MEM_EXPR (x);
       enum machine_mode mode = GET_MODE (x);
@@ -265,8 +265,7 @@ delegitimize_mem_from_attrs (rtx x)
 	{
 	  rtx newx;
 
-	  if (MEM_OFFSET (x))
-	    offset += INTVAL (MEM_OFFSET (x));
+	  offset += INTVAL (MEM_OFFSET (x));
 
 	  newx = DECL_RTL (decl);
 
@@ -350,15 +349,14 @@ simplify_gen_relational (enum rtx_code code, enum machine_mode mode,
   return gen_rtx_fmt_ee (code, mode, op0, op1);
 }
 
-/* Replace all occurrences of OLD_RTX in X with FN (X', DATA), where X'
-   is an expression in X that is equal to OLD_RTX.  Canonicalize and
-   simplify the result.
-
-   If FN is null, assume FN (X', DATA) == copy_rtx (DATA).  */
+/* If FN is NULL, replace all occurrences of OLD_RTX in X with copy_rtx (DATA)
+   and simplify the result.  If FN is non-NULL, call this callback on each
+   X, if it returns non-NULL, replace X with its return value and simplify the
+   result.  */
 
 rtx
 simplify_replace_fn_rtx (rtx x, const_rtx old_rtx,
-			 rtx (*fn) (rtx, void *), void *data)
+			 rtx (*fn) (rtx, const_rtx, void *), void *data)
 {
   enum rtx_code code = GET_CODE (x);
   enum machine_mode mode = GET_MODE (x);
@@ -368,17 +366,14 @@ simplify_replace_fn_rtx (rtx x, const_rtx old_rtx,
   rtvec vec, newvec;
   int i, j;
 
-  /* If X is OLD_RTX, return FN (X, DATA), with a null FN.  Otherwise,
-     if this is an expression, try to build a new expression, substituting
-     recursively.  If we can't do anything, return our input.  */
-
-  if (rtx_equal_p (x, old_rtx))
+  if (__builtin_expect (fn != NULL, 0))
     {
-      if (fn)
-	return fn (x, data);
-      else
-	return copy_rtx ((rtx) data);
+      newx = fn (x, old_rtx, data);
+      if (newx)
+	return newx;
     }
+  else if (rtx_equal_p (x, old_rtx))
+    return copy_rtx ((rtx) data);
 
   switch (GET_RTX_CLASS (code))
     {
@@ -1486,10 +1481,10 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  d = t;
 	  break;
 	case ABS:
-	  d = REAL_VALUE_ABS (d);
+	  d = real_value_abs (&d);
 	  break;
 	case NEG:
-	  d = REAL_VALUE_NEGATE (d);
+	  d = real_value_negate (&d);
 	  break;
 	case FLOAT_TRUNCATE:
 	  d = real_value_truncate (mode, d);
@@ -1774,44 +1769,42 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 
       if (SCALAR_INT_MODE_P (mode))
 	{
-	  HOST_WIDE_INT coeff0h = 0, coeff1h = 0;
-	  unsigned HOST_WIDE_INT coeff0l = 1, coeff1l = 1;
+	  double_int coeff0, coeff1;
 	  rtx lhs = op0, rhs = op1;
+
+	  coeff0 = double_int_one;
+	  coeff1 = double_int_one;
 
 	  if (GET_CODE (lhs) == NEG)
 	    {
-	      coeff0l = -1;
-	      coeff0h = -1;
+	      coeff0 = double_int_minus_one;
 	      lhs = XEXP (lhs, 0);
 	    }
 	  else if (GET_CODE (lhs) == MULT
 		   && CONST_INT_P (XEXP (lhs, 1)))
 	    {
-	      coeff0l = INTVAL (XEXP (lhs, 1));
-	      coeff0h = INTVAL (XEXP (lhs, 1)) < 0 ? -1 : 0;
+	      coeff0 = shwi_to_double_int (INTVAL (XEXP (lhs, 1)));
 	      lhs = XEXP (lhs, 0);
 	    }
 	  else if (GET_CODE (lhs) == ASHIFT
 		   && CONST_INT_P (XEXP (lhs, 1))
-		   && INTVAL (XEXP (lhs, 1)) >= 0
+                   && INTVAL (XEXP (lhs, 1)) >= 0
 		   && INTVAL (XEXP (lhs, 1)) < HOST_BITS_PER_WIDE_INT)
 	    {
-	      coeff0l = ((HOST_WIDE_INT) 1) << INTVAL (XEXP (lhs, 1));
-	      coeff0h = 0;
+	      coeff0 = double_int_setbit (double_int_zero,
+					  INTVAL (XEXP (lhs, 1)));
 	      lhs = XEXP (lhs, 0);
 	    }
 
 	  if (GET_CODE (rhs) == NEG)
 	    {
-	      coeff1l = -1;
-	      coeff1h = -1;
+	      coeff1 = double_int_minus_one;
 	      rhs = XEXP (rhs, 0);
 	    }
 	  else if (GET_CODE (rhs) == MULT
 		   && CONST_INT_P (XEXP (rhs, 1)))
 	    {
-	      coeff1l = INTVAL (XEXP (rhs, 1));
-	      coeff1h = INTVAL (XEXP (rhs, 1)) < 0 ? -1 : 0;
+	      coeff1 = shwi_to_double_int (INTVAL (XEXP (rhs, 1)));
 	      rhs = XEXP (rhs, 0);
 	    }
 	  else if (GET_CODE (rhs) == ASHIFT
@@ -1819,8 +1812,8 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 		   && INTVAL (XEXP (rhs, 1)) >= 0
 		   && INTVAL (XEXP (rhs, 1)) < HOST_BITS_PER_WIDE_INT)
 	    {
-	      coeff1l = ((HOST_WIDE_INT) 1) << INTVAL (XEXP (rhs, 1));
-	      coeff1h = 0;
+	      coeff1 = double_int_setbit (double_int_zero,
+					  INTVAL (XEXP (rhs, 1)));
 	      rhs = XEXP (rhs, 0);
 	    }
 
@@ -1828,12 +1821,11 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	    {
 	      rtx orig = gen_rtx_PLUS (mode, op0, op1);
 	      rtx coeff;
-	      unsigned HOST_WIDE_INT l;
-	      HOST_WIDE_INT h;
+	      double_int val;
 	      bool speed = optimize_function_for_speed_p (cfun);
 
-	      add_double (coeff0l, coeff0h, coeff1l, coeff1h, &l, &h);
-	      coeff = immed_double_const (l, h, mode);
+	      val = double_int_add (coeff0, coeff1);
+	      coeff = immed_double_int_const (val, mode);
 
 	      tem = simplify_gen_binary (MULT, mode, lhs, coeff);
 	      return rtx_cost (tem, SET, speed) <= rtx_cost (orig, SET, speed)
@@ -1957,21 +1949,21 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 
       if (SCALAR_INT_MODE_P (mode))
 	{
-	  HOST_WIDE_INT coeff0h = 0, negcoeff1h = -1;
-	  unsigned HOST_WIDE_INT coeff0l = 1, negcoeff1l = -1;
+	  double_int coeff0, negcoeff1;
 	  rtx lhs = op0, rhs = op1;
+
+	  coeff0 = double_int_one;
+	  negcoeff1 = double_int_minus_one;
 
 	  if (GET_CODE (lhs) == NEG)
 	    {
-	      coeff0l = -1;
-	      coeff0h = -1;
+	      coeff0 = double_int_minus_one;
 	      lhs = XEXP (lhs, 0);
 	    }
 	  else if (GET_CODE (lhs) == MULT
 		   && CONST_INT_P (XEXP (lhs, 1)))
 	    {
-	      coeff0l = INTVAL (XEXP (lhs, 1));
-	      coeff0h = INTVAL (XEXP (lhs, 1)) < 0 ? -1 : 0;
+	      coeff0 = shwi_to_double_int (INTVAL (XEXP (lhs, 1)));
 	      lhs = XEXP (lhs, 0);
 	    }
 	  else if (GET_CODE (lhs) == ASHIFT
@@ -1979,22 +1971,20 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 		   && INTVAL (XEXP (lhs, 1)) >= 0
 		   && INTVAL (XEXP (lhs, 1)) < HOST_BITS_PER_WIDE_INT)
 	    {
-	      coeff0l = ((HOST_WIDE_INT) 1) << INTVAL (XEXP (lhs, 1));
-	      coeff0h = 0;
+	      coeff0 = double_int_setbit (double_int_zero,
+					  INTVAL (XEXP (lhs, 1)));
 	      lhs = XEXP (lhs, 0);
 	    }
 
 	  if (GET_CODE (rhs) == NEG)
 	    {
-	      negcoeff1l = 1;
-	      negcoeff1h = 0;
+	      negcoeff1 = double_int_one;
 	      rhs = XEXP (rhs, 0);
 	    }
 	  else if (GET_CODE (rhs) == MULT
 		   && CONST_INT_P (XEXP (rhs, 1)))
 	    {
-	      negcoeff1l = -INTVAL (XEXP (rhs, 1));
-	      negcoeff1h = INTVAL (XEXP (rhs, 1)) <= 0 ? 0 : -1;
+	      negcoeff1 = shwi_to_double_int (-INTVAL (XEXP (rhs, 1)));
 	      rhs = XEXP (rhs, 0);
 	    }
 	  else if (GET_CODE (rhs) == ASHIFT
@@ -2002,8 +1992,9 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 		   && INTVAL (XEXP (rhs, 1)) >= 0
 		   && INTVAL (XEXP (rhs, 1)) < HOST_BITS_PER_WIDE_INT)
 	    {
-	      negcoeff1l = -(((HOST_WIDE_INT) 1) << INTVAL (XEXP (rhs, 1)));
-	      negcoeff1h = -1;
+	      negcoeff1 = double_int_setbit (double_int_zero,
+					     INTVAL (XEXP (rhs, 1)));
+	      negcoeff1 = double_int_neg (negcoeff1);
 	      rhs = XEXP (rhs, 0);
 	    }
 
@@ -2011,12 +2002,11 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	    {
 	      rtx orig = gen_rtx_MINUS (mode, op0, op1);
 	      rtx coeff;
-	      unsigned HOST_WIDE_INT l;
-	      HOST_WIDE_INT h;
+	      double_int val;
 	      bool speed = optimize_function_for_speed_p (cfun);
 
-	      add_double (coeff0l, coeff0h, negcoeff1l, negcoeff1h, &l, &h);
-	      coeff = immed_double_const (l, h, mode);
+	      val = double_int_add (coeff0, negcoeff1);
+	      coeff = immed_double_int_const (val, mode);
 
 	      tem = simplify_gen_binary (MULT, mode, lhs, coeff);
 	      return rtx_cost (tem, SET, speed) <= rtx_cost (orig, SET, speed)
@@ -3278,141 +3268,124 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 
   /* We can fold some multi-word operations.  */
   if (GET_MODE_CLASS (mode) == MODE_INT
-      && width == HOST_BITS_PER_WIDE_INT * 2
-      && (GET_CODE (op0) == CONST_DOUBLE || CONST_INT_P (op0))
-      && (GET_CODE (op1) == CONST_DOUBLE || CONST_INT_P (op1)))
+      && width == HOST_BITS_PER_DOUBLE_INT
+      && (CONST_DOUBLE_P (op0) || CONST_INT_P (op0))
+      && (CONST_DOUBLE_P (op1) || CONST_INT_P (op1)))
     {
-      unsigned HOST_WIDE_INT l1, l2, lv, lt;
-      HOST_WIDE_INT h1, h2, hv, ht;
+      double_int o0, o1, res, tmp;
 
-      if (GET_CODE (op0) == CONST_DOUBLE)
-	l1 = CONST_DOUBLE_LOW (op0), h1 = CONST_DOUBLE_HIGH (op0);
-      else
-	l1 = INTVAL (op0), h1 = HWI_SIGN_EXTEND (l1);
-
-      if (GET_CODE (op1) == CONST_DOUBLE)
-	l2 = CONST_DOUBLE_LOW (op1), h2 = CONST_DOUBLE_HIGH (op1);
-      else
-	l2 = INTVAL (op1), h2 = HWI_SIGN_EXTEND (l2);
+      o0 = rtx_to_double_int (op0);
+      o1 = rtx_to_double_int (op1);
 
       switch (code)
 	{
 	case MINUS:
 	  /* A - B == A + (-B).  */
-	  neg_double (l2, h2, &lv, &hv);
-	  l2 = lv, h2 = hv;
+	  o1 = double_int_neg (o1);
 
 	  /* Fall through....  */
 
 	case PLUS:
-	  add_double (l1, h1, l2, h2, &lv, &hv);
+	  res = double_int_add (o0, o1);
 	  break;
 
 	case MULT:
-	  mul_double (l1, h1, l2, h2, &lv, &hv);
+	  res = double_int_mul (o0, o1);
 	  break;
 
 	case DIV:
-	  if (div_and_round_double (TRUNC_DIV_EXPR, 0, l1, h1, l2, h2,
-				    &lv, &hv, &lt, &ht))
+	  if (div_and_round_double (TRUNC_DIV_EXPR, 0,
+				    o0.low, o0.high, o1.low, o1.high,
+				    &res.low, &res.high,
+				    &tmp.low, &tmp.high))
 	    return 0;
 	  break;
 
 	case MOD:
-	  if (div_and_round_double (TRUNC_DIV_EXPR, 0, l1, h1, l2, h2,
-				    &lt, &ht, &lv, &hv))
+	  if (div_and_round_double (TRUNC_DIV_EXPR, 0,
+				    o0.low, o0.high, o1.low, o1.high,
+				    &tmp.low, &tmp.high,
+				    &res.low, &res.high))
 	    return 0;
 	  break;
 
 	case UDIV:
-	  if (div_and_round_double (TRUNC_DIV_EXPR, 1, l1, h1, l2, h2,
-				    &lv, &hv, &lt, &ht))
+	  if (div_and_round_double (TRUNC_DIV_EXPR, 1,
+				    o0.low, o0.high, o1.low, o1.high,
+				    &res.low, &res.high,
+				    &tmp.low, &tmp.high))
 	    return 0;
 	  break;
 
 	case UMOD:
-	  if (div_and_round_double (TRUNC_DIV_EXPR, 1, l1, h1, l2, h2,
-				    &lt, &ht, &lv, &hv))
+	  if (div_and_round_double (TRUNC_DIV_EXPR, 1,
+				    o0.low, o0.high, o1.low, o1.high,
+				    &tmp.low, &tmp.high,
+				    &res.low, &res.high))
 	    return 0;
 	  break;
 
 	case AND:
-	  lv = l1 & l2, hv = h1 & h2;
+	  res = double_int_and (o0, o1);
 	  break;
 
 	case IOR:
-	  lv = l1 | l2, hv = h1 | h2;
+	  res = double_int_ior (o0, o1);
 	  break;
 
 	case XOR:
-	  lv = l1 ^ l2, hv = h1 ^ h2;
+	  res = double_int_xor (o0, o1);
 	  break;
 
 	case SMIN:
-	  if (h1 < h2
-	      || (h1 == h2
-		  && ((unsigned HOST_WIDE_INT) l1
-		      < (unsigned HOST_WIDE_INT) l2)))
-	    lv = l1, hv = h1;
-	  else
-	    lv = l2, hv = h2;
+	  res = double_int_smin (o0, o1);
 	  break;
 
 	case SMAX:
-	  if (h1 > h2
-	      || (h1 == h2
-		  && ((unsigned HOST_WIDE_INT) l1
-		      > (unsigned HOST_WIDE_INT) l2)))
-	    lv = l1, hv = h1;
-	  else
-	    lv = l2, hv = h2;
+	  res = double_int_smax (o0, o1);
 	  break;
 
 	case UMIN:
-	  if ((unsigned HOST_WIDE_INT) h1 < (unsigned HOST_WIDE_INT) h2
-	      || (h1 == h2
-		  && ((unsigned HOST_WIDE_INT) l1
-		      < (unsigned HOST_WIDE_INT) l2)))
-	    lv = l1, hv = h1;
-	  else
-	    lv = l2, hv = h2;
+	  res = double_int_umin (o0, o1);
 	  break;
 
 	case UMAX:
-	  if ((unsigned HOST_WIDE_INT) h1 > (unsigned HOST_WIDE_INT) h2
-	      || (h1 == h2
-		  && ((unsigned HOST_WIDE_INT) l1
-		      > (unsigned HOST_WIDE_INT) l2)))
-	    lv = l1, hv = h1;
-	  else
-	    lv = l2, hv = h2;
+	  res = double_int_umax (o0, o1);
 	  break;
 
 	case LSHIFTRT:   case ASHIFTRT:
 	case ASHIFT:
 	case ROTATE:     case ROTATERT:
-	  if (SHIFT_COUNT_TRUNCATED)
-	    l2 &= (GET_MODE_BITSIZE (mode) - 1), h2 = 0;
+	  {
+	    unsigned HOST_WIDE_INT cnt;
 
-	  if (h2 != 0 || l2 >= GET_MODE_BITSIZE (mode))
-	    return 0;
+	    if (SHIFT_COUNT_TRUNCATED)
+	      o1 = double_int_zext (o1, GET_MODE_BITSIZE (mode));
 
-	  if (code == LSHIFTRT || code == ASHIFTRT)
-	    rshift_double (l1, h1, l2, GET_MODE_BITSIZE (mode), &lv, &hv,
-			   code == ASHIFTRT);
-	  else if (code == ASHIFT)
-	    lshift_double (l1, h1, l2, GET_MODE_BITSIZE (mode), &lv, &hv, 1);
-	  else if (code == ROTATE)
-	    lrotate_double (l1, h1, l2, GET_MODE_BITSIZE (mode), &lv, &hv);
-	  else /* code == ROTATERT */
-	    rrotate_double (l1, h1, l2, GET_MODE_BITSIZE (mode), &lv, &hv);
+	    if (!double_int_fits_in_uhwi_p (o1)
+	        || double_int_to_uhwi (o1) >= GET_MODE_BITSIZE (mode))
+	      return 0;
+
+	    cnt = double_int_to_uhwi (o1);
+
+	    if (code == LSHIFTRT || code == ASHIFTRT)
+	      res = double_int_rshift (o0, cnt, GET_MODE_BITSIZE (mode),
+				       code == ASHIFTRT);
+	    else if (code == ASHIFT)
+	      res = double_int_lshift (o0, cnt, GET_MODE_BITSIZE (mode),
+				       true);
+	    else if (code == ROTATE)
+	      res = double_int_lrotate (o0, cnt, GET_MODE_BITSIZE (mode));
+	    else /* code == ROTATERT */
+	      res = double_int_rrotate (o0, cnt, GET_MODE_BITSIZE (mode));
+	  }
 	  break;
 
 	default:
 	  return 0;
 	}
 
-      return immed_double_const (lv, hv, mode);
+      return immed_double_int_const (res, mode);
     }
 
   if (CONST_INT_P (op0) && CONST_INT_P (op1)

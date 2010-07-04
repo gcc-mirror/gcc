@@ -51,4 +51,57 @@ extern rtx replace_equiv_address (rtx, rtx);
 /* Likewise, but the reference is not required to be valid.  */
 extern rtx replace_equiv_address_nv (rtx, rtx);
 
+extern rtx gen_blockage (void);
+extern rtvec gen_rtvec (int, ...);
+extern rtx copy_insn_1 (rtx);
+extern rtx copy_insn (rtx);
+extern rtx gen_int_mode (HOST_WIDE_INT, enum machine_mode);
+extern rtx emit_copy_of_insn_after (rtx, rtx);
+extern void set_reg_attrs_from_value (rtx, rtx);
+extern void set_reg_attrs_for_parm (rtx, rtx);
+extern void set_reg_attrs_for_decl_rtl (tree t, rtx x);
+extern void adjust_reg_mode (rtx, enum machine_mode);
+extern int mem_expr_equal_p (const_tree, const_tree);
+
+/* Return the first insn of the current sequence or current function.  */
+
+static inline rtx
+get_insns (void)
+{
+  return crtl->emit.x_first_insn;
+}
+
+/* Specify a new insn as the first in the chain.  */
+
+static inline void
+set_first_insn (rtx insn)
+{
+  gcc_checking_assert (!insn || !PREV_INSN (insn));
+  crtl->emit.x_first_insn = insn;
+}
+
+/* Return the last insn emitted in current sequence or current function.  */
+
+static inline rtx
+get_last_insn (void)
+{
+  return crtl->emit.x_last_insn;
+}
+
+/* Specify a new insn as the last in the chain.  */
+
+static inline void
+set_last_insn (rtx insn)
+{
+  gcc_checking_assert (!insn || !NEXT_INSN (insn));
+  crtl->emit.x_last_insn = insn;
+}
+
+/* Return a number larger than any instruction's uid in this function.  */
+
+static inline int
+get_max_uid (void)
+{
+  return crtl->emit.x_cur_insn_uid;
+}
 #endif /* GCC_EMIT_RTL_H */

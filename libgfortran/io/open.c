@@ -1,9 +1,9 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009
+/* Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <stdlib.h>
 
 
 static const st_option access_opt[] = {
@@ -623,7 +624,7 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
   test_endfile (u);
 
   if (flags->status == STATUS_SCRATCH && opp->file != NULL)
-    free_mem (opp->file);
+    free (opp->file);
     
   if (flags->form == FORM_FORMATTED)
     {
@@ -644,7 +645,7 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
   /* Free memory associated with a temporary filename.  */
 
   if (flags->status == STATUS_SCRATCH && opp->file != NULL)
-    free_mem (opp->file);
+    free (opp->file);
 
  fail:
 
@@ -689,7 +690,7 @@ already_open (st_parameter_open *opp, gfc_unit * u, unit_flags * flags)
 
       u->s = NULL;
       if (u->file)
-	free_mem (u->file);
+	free (u->file);
       u->file = NULL;
       u->file_len = 0;
 

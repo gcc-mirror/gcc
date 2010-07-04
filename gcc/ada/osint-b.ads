@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,9 +44,9 @@ package Osint.B is
    -- Binder Output --
    -------------------
 
-   --  These routines are used by the binder to generate the C source file
-   --  containing the binder output. The format of this file is described
-   --  in the package Bindfmt.
+   --  These routines are used by the binder to generate the C or Ada source
+   --  files containing the binder output. The format of these files is
+   --  described in package Bindgen.
 
    procedure Create_Binder_Output
      (Output_File_Name : String;
@@ -80,5 +80,17 @@ package Osint.B is
 
    procedure Set_Current_File_Name_Index (To : Int);
    --  Set value of Current_File_Name_Index (in private part of Osint) to To
+
+   ----------------------------------
+   -- Other binder-generated files --
+   ----------------------------------
+
+   procedure Set_List_File (Filename : String);
+   --  Create Filename as a text output file and set it as the current output
+   --  (see Output.Set_Output).
+
+   procedure Close_List_File;
+   --  If a specific output file was created by Set_List_File, close it and
+   --  reset the current output file to standard output.
 
 end Osint.B;

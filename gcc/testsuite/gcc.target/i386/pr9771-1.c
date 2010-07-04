@@ -28,7 +28,10 @@ void foo()
   *adr = save;
 }
 
-int main()
+/* This must not be inlined becuase main() requires the frame pointer
+   for stack alignment.  */
+void test(void) __attribute__((noinline));
+void test(void)
 {
   B = &x;
 
@@ -42,3 +45,9 @@ int main()
   exit(0);
 }
 
+int main()
+{
+  test();
+  return 0;
+
+}

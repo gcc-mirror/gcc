@@ -28,7 +28,7 @@ class javax::imageio::spi::ServiceRegistry$2 : public ::java::lang::Object
 public: // actually package-private
   ServiceRegistry$2(::javax::imageio::spi::ServiceRegistry *, ::java::util::Map *);
 public:
-  jint compare(::java::lang::Object *, ::java::lang::Object *);
+  virtual jint compare(::java::lang::Object *, ::java::lang::Object *);
 public: // actually package-private
   ::javax::imageio::spi::ServiceRegistry * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 private:

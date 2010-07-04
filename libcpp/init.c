@@ -84,9 +84,11 @@ static const struct lang_flags lang_defaults[] =
 { /*              c99 c++ xnum xid std  //   digr ulit */
   /* GNUC89   */  { 0,  0,  1,   0,  0,   1,   1,   0 },
   /* GNUC99   */  { 1,  0,  1,   0,  0,   1,   1,   1 },
+  /* GNUC1X   */  { 1,  0,  1,   0,  0,   1,   1,   1 },
   /* STDC89   */  { 0,  0,  0,   0,  1,   0,   0,   0 },
   /* STDC94   */  { 0,  0,  0,   0,  1,   0,   1,   0 },
   /* STDC99   */  { 1,  0,  1,   0,  1,   1,   1,   0 },
+  /* STDC1X   */  { 1,  0,  1,   0,  1,   1,   1,   0 },
   /* GNUCXX   */  { 0,  1,  1,   0,  0,   1,   1,   0 },
   /* CXX98    */  { 0,  1,  1,   0,  1,   1,   1,   0 },
   /* GNUCXX0X */  { 1,  1,  1,   0,  0,   1,   1,   1 },
@@ -154,7 +156,6 @@ cpp_create_reader (enum c_lang lang, hash_table *table,
   CPP_OPTION (pfile, warn_multichar) = 1;
   CPP_OPTION (pfile, discard_comments) = 1;
   CPP_OPTION (pfile, discard_comments_in_macro_exp) = 1;
-  CPP_OPTION (pfile, show_column) = 1;
   CPP_OPTION (pfile, tabstop) = 8;
   CPP_OPTION (pfile, operator_names) = 1;
   CPP_OPTION (pfile, warn_trigraphs) = 2;
@@ -457,6 +458,9 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
     _cpp_define_builtin (pfile, "__ASSEMBLER__ 1");
   else if (CPP_OPTION (pfile, lang) == CLK_STDC94)
     _cpp_define_builtin (pfile, "__STDC_VERSION__ 199409L");
+  else if (CPP_OPTION (pfile, lang) == CLK_STDC1X
+	   || CPP_OPTION (pfile, lang) == CLK_GNUC1X)
+    _cpp_define_builtin (pfile, "__STDC_VERSION__ 201000L");
   else if (CPP_OPTION (pfile, c99))
     _cpp_define_builtin (pfile, "__STDC_VERSION__ 199901L");
 
@@ -712,8 +716,6 @@ post_options (cpp_reader *pfile)
     {
       CPP_OPTION (pfile, cplusplus_comments) = 0;
 
-      /* Traditional CPP does not accurately track column information.  */
-      CPP_OPTION (pfile, show_column) = 0;
       CPP_OPTION (pfile, trigraphs) = 0;
       CPP_OPTION (pfile, warn_trigraphs) = 0;
     }

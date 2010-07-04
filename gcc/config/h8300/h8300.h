@@ -608,11 +608,11 @@ enum reg_class {
 
 #define FUNCTION_ARG_REGNO_P(N) (TARGET_QUICKCALL ? N < 3 : 0)
 
-/* When defined, the compiler allows registers explicitly used in the
-   rtl to be used as spill registers but prevents the compiler from
-   extending the lifetime of these registers.  */
-
-#define SMALL_REGISTER_CLASSES 1
+/* When this hook returns true for MODE, the compiler allows
+   registers explicitly used in the rtl to be used as spill registers
+   but prevents the compiler from extending the lifetime of these
+   registers.  */
+#define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
@@ -801,15 +801,12 @@ struct cum_arg
 	   || SYMBOL_REF_FLAG (XEXP (XEXP (XEXP (OP, 0), 0), 0))))	\
    || (GET_CODE (OP) == MEM						\
        && h8300_eightbit_constant_address_p (XEXP (OP, 0)))		\
-   || (GET_CODE (OP) == MEM && TARGET_H8300S				\
+   || (GET_CODE (OP) == MEM && (TARGET_H8300S || TARGET_H8300SX)	\
        && GET_CODE (XEXP (OP, 0)) == CONST_INT))
 
 /* Multi-letter constraints starting with W are to be used for
    operands that require a memory operand, i.e,. that are never used
-   along with register constraints (see EXTRA_MEMORY_CONSTRAINTS).
-   For operands that require a memory operand (or not) but that always
-   accept a register, a multi-letter constraint starting with Y should
-   be used instead.  */
+   along with register constraints (see EXTRA_MEMORY_CONSTRAINTS).  */
 
 #define OK_FOR_WU(OP)					\
   (GET_CODE (OP) == MEM && OK_FOR_U (OP))
@@ -822,15 +819,25 @@ struct cum_arg
   ((STR)[1] == 'U' ? 2					\
    : 0)
 
-/* We don't have any constraint starting with Y yet, but before
-   someone uses it for a one-letter constraint and we're left without
-   any upper-case constraints left, we reserve it for extensions
-   here.  */
-#define OK_FOR_Y(OP, STR)				\
-  (0)
+/* Multi-letter constraints starting with Y are to be used for operands
+   that are constant immediates and have single 1 or 0 in their binary
+   representation.  */
+
+#define OK_FOR_Y2(OP)                                   \
+  ((GET_CODE (OP) == CONST_INT) && (exact_log2 (INTVAL (OP) & 0xff) != -1))
+
+#define OK_FOR_Y0(OP)                                   \
+  ((GET_CODE (OP) == CONST_INT) && (exact_log2 (~INTVAL (OP) & 0xff) != -1))
+
+#define OK_FOR_Y(OP, STR)                               \
+  ((STR)[1] == '2' ? OK_FOR_Y2 (OP)                     \
+   : (STR)[1] == '0' ? OK_FOR_Y0 (OP)	\
+   : 0)
 
 #define CONSTRAINT_LEN_FOR_Y(STR)			\
-  (0)
+  ((STR)[1] == '2' ? 2                                  \
+   : (STR)[1] == '0' ? 2		\
+   : 0)
 
 #define OK_FOR_Z(OP)					\
   (TARGET_H8300SX					\

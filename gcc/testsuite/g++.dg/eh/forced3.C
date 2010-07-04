@@ -2,7 +2,7 @@
 // { dg-do run { xfail "ia64-hp-hpux11.*" } }
 
 // Test that forced unwinding calls std::unexpected going 
-// throw a nothrow function.
+// through a nothrow function.
 
 #include <unwind.h>
 #include <stdlib.h>

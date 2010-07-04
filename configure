@@ -1485,7 +1485,7 @@ Optional Features:
   --disable-option-checking  ignore unrecognized --enable/--with options
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
-  --enable-gold           use gold instead of ld
+  --enable-gold[=ARG]     build gold [ARG={both}[/{gold,ld}]]
   --enable-libada         build libada directory
   --enable-libssp         build libssp directory
   --enable-build-with-cxx build with C++ compiler instead of C compiler
@@ -2908,7 +2908,7 @@ host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl libgui zlib l
 # know that we are building the simulator.
 # binutils, gas and ld appear in that order because it makes sense to run
 # "make check" in that particular order.
-# If --enable-gold is used, "gold" will replace "ld".
+# If --enable-gold is used, "gold" may replace "ld".
 host_tools="texinfo byacc flex bison binutils gas ld fixincludes gcc cgen sid sim gdb make patch prms send-pr gprof etc expect dejagnu ash bash bzip2 m4 autoconf automake libtool diff rcs fileutils shellutils time textutils wdiff find uudecode hello tar gzip indent recode release sed utils guile perl gawk findutils gettext zip fastjar gnattools"
 
 # libgcj represents the runtime libraries only used by gcj.
@@ -3077,6 +3077,11 @@ case ${with_newlib} in
 esac
 
 # Handle --enable-gold.
+#   --enable-gold		Build only gold
+#   --disable-gold [default]	Build only ld
+#   --enable-gold=both		Build both gold and ld, ld is default
+#   --enable-gold=both/ld	Same
+#   --enable-gold=both/gold	Build both gold and ld, gold is default, ld is renamed ld.bfd
 
 # Check whether --enable-gold was given.
 if test "${enable_gold+set}" = set; then :
@@ -3085,31 +3090,46 @@ else
   ENABLE_GOLD=no
 fi
 
-if test "${ENABLE_GOLD}" = "yes"; then
-  # Check for ELF target.
-  is_elf=no
-  case "${target}" in
-    *-*-elf* | *-*-sysv4* | *-*-unixware* | *-*-eabi* | hppa*64*-*-hpux* \
-    | *-*-linux* | frv-*-uclinux* | *-*-irix5* | *-*-irix6* \
-    | *-*-netbsd* | *-*-openbsd* | *-*-freebsd* | *-*-solaris2* | *-*-nto*)
+  case "${ENABLE_GOLD}" in
+  yes|both|both/gold|both/ld)
+    # Check for ELF target.
+    is_elf=no
+    case "${target}" in
+      *-*-elf* | *-*-sysv4* | *-*-unixware* | *-*-eabi* | hppa*64*-*-hpux* \
+      | *-*-linux* | frv-*-uclinux* | *-*-irix5* | *-*-irix6* \
+      | *-*-netbsd* | *-*-openbsd* | *-*-freebsd* | *-*-solaris2* | *-*-nto*)
+        case "${target}" in
+          *-*-linux*aout* | *-*-linux*oldld*)
+            ;;
+          *)
+            is_elf=yes
+            ;;
+        esac
+    esac
+
+    if test "$is_elf" = "yes"; then
+      # Check for target supported by gold.
       case "${target}" in
-        *-*-linux*aout* | *-*-linux*oldld*)
-          ;;
-        *)
-          is_elf=yes
+        i?86-*-* | x86_64-*-* | sparc*-*-* | powerpc*-*-* | arm*-*-*)
+	  case "${ENABLE_GOLD}" in
+	  both*)
+            configdirs="$configdirs gold"
+	    ;;
+	  *)
+            configdirs="`echo " ${configdirs} " | sed -e 's/ ld / gold /'`"
+	    ;;
+	  esac
+	  ENABLE_GOLD=yes
           ;;
       esac
+    fi
+    ;;
+  no)
+    ;;
+  *)
+    as_fn_error "invalid --enable-gold argument" "$LINENO" 5
+    ;;
   esac
-
-  if test "$is_elf" = "yes"; then
-    # Check for target supported by gold.
-    case "${target}" in
-      i?86-*-* | x86_64-*-* | sparc*-*-* | powerpc*-*-* | arm*-*-*)
-        configdirs="`echo " ${configdirs} " | sed -e 's/ ld / gold /'`"
-        ;;
-    esac
-  fi
-fi
 
 # Configure extra directories which are host specific
 
@@ -3307,6 +3327,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-newlib target-libiberty target-libgloss ${libgcj} target-libmudflap"
     ;;
   *-*-rtems*)
+    skipdirs="${skipdirs} target-libiberty"
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
     # The tpf target doesn't support gdb yet.
@@ -3326,7 +3347,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs gas ld fileutils target-newlib target-libgloss"
     ;;
   alpha*-*-*vms*)
-    noconfigdirs="$noconfigdirs gdb ld target-newlib target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss ${libgcj}"
     ;;
   alpha*-*-linux*)
     # newlib is not 64 bit ready
@@ -3718,6 +3739,9 @@ case "${target}" in
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   sparc-*-solaris* | sparc64-*-solaris* | sparcv9-*-solaris*)
+    ;;
+  tic6x-*-*)
+    noconfigdirs="$noconfigdirs gdb sim ${libgcj}"
     ;;
   v810-*-*)
     noconfigdirs="$noconfigdirs bfd binutils gas gcc gdb ld target-libstdc++-v3 opcodes target-libgloss ${libgcj}"
@@ -5486,7 +5510,8 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
   # Check for the recommended and required versions of GMP.
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the correct version of gmp.h" >&5
 $as_echo_n "checking for the correct version of gmp.h... " >&6; }
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include "gmp.h"
 int
@@ -5504,8 +5529,7 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <gmp.h>
 int
@@ -5793,8 +5817,6 @@ fi
 
 
 # Check for PPL
-ppl_major_version=0
-ppl_minor_version=10
 ppllibs=" -lppl_c -lppl -lgmpxx"
 pplinc=
 
@@ -5851,8 +5873,8 @@ fi
 if test "x$with_ppl" != "xno" -a "${ENABLE_PPL_CHECK}" = "yes"; then
   saved_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $pplinc $gmpinc"
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version $ppl_major_version.$ppl_minor_version of PPL" >&5
-$as_echo_n "checking for version $ppl_major_version.$ppl_minor_version of PPL... " >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.10 (or later revision) of PPL" >&5
+$as_echo_n "checking for version 0.10 (or later revision) of PPL... " >&6; }
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include "ppl_c.h"
@@ -5860,7 +5882,7 @@ int
 main ()
 {
 
-  #if PPL_VERSION_MAJOR != $ppl_major_version || PPL_VERSION_MINOR != $ppl_minor_version
+  #if PPL_VERSION_MAJOR != 0 || PPL_VERSION_MINOR < 10
   choke me
   #endif
 
@@ -5964,8 +5986,29 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include "cloog/cloog.h"
+int
+main ()
+{
+
+  #if CLOOG_VERSION_MAJOR != 0 || CLOOG_VERSION_MINOR != 15 || CLOOG_VERSION_REVISION < 9
+  choke me
+  #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: buggy but acceptable" >&5
+$as_echo "buggy but acceptable" >&6; }
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }; clooglibs= ; clooginc=
@@ -5988,95 +6031,7 @@ fi
 
 
 
-
-
-target_elf=no
-case $target in
-  *-darwin* | *-aix* | *-cygwin* | *-mingw* | *-aout* | *-*coff* | \
-  *-msdosdjgpp* | *-netware* | *-vms* | *-wince* | *-*-pe* | \
-  alpha*-dec-osf* | *-interix*)
-    target_elf=no
-    ;;
-  *)
-    target_elf=yes
-    ;;
-esac
-
-if test $target_elf = yes; then :
-
-else
-  if test x"$default_enable_lto" = x"yes" ; then
-  enable_lto=no
-else
-  if test x"$enable_lto" = x"yes"; then
-    as_fn_error "LTO support requires an ELF target." "$LINENO" 5
-  fi
-fi
-default_enable_lto=no
-fi
-
-
-if test x"$enable_lto" = x"yes" ; then
-  # Make sure that libelf.h and gelf.h are available.
-
-# Check whether --with-libelf was given.
-if test "${with_libelf+set}" = set; then :
-  withval=$with_libelf;
-fi
-
-
-
-# Check whether --with-libelf_include was given.
-if test "${with_libelf_include+set}" = set; then :
-  withval=$with_libelf_include;
-fi
-
-
-
-# Check whether --with-libelf_lib was given.
-if test "${with_libelf_lib+set}" = set; then :
-  withval=$with_libelf_lib;
-fi
-
-
-  saved_CFLAGS="$CFLAGS"
-  saved_CPPFLAGS="$CPPFLAGS"
-  saved_LIBS="$LIBS"
-
-  case $with_libelf in
-    "")
-      libelflibs="-lelf"
-      libelfinc="-I/usr/include/libelf"
-      ;;
-    *)
-      libelflibs="-L$with_libelf/lib -lelf"
-      libelfinc="-I$with_libelf/include -I$with_libelf/include/libelf"
-      LIBS="$libelflibs $LIBS"
-      ;;
-  esac
-
-  if test "x$with_libelf_include" != x; then
-    libelfinc="-I$with_libelf_include"
-  fi
-
-  if test "x$with_libelf_lib" != x; then
-    libelflibs="-L$with_libelf_lib -lelf"
-    LIBS="$libelflibs $LIBS"
-  fi
-
-  if test "x$with_libelf$with_libelf_include$with_libelf_lib" = x \
-     && test -d ${srcdir}/libelf; then
-    libelflibs='-L$$r/$(HOST_SUBDIR)/libelf/lib -lelf '
-    libelfinc='-D__LIBELF_INTERNAL__ -I$$r/$(HOST_SUBDIR)/libelf/lib -I$$s/libelf/lib'
-    LIBS="$libelflibs $LIBS"
-
- else
-
-  CFLAGS="$CFLAGS $libelfinc"
-  CPPFLAGS="$CPPFLAGS $libelfinc"
-  LIBS="$LIBS $libelflibs"
-
-  ac_ext=c
+ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
@@ -6474,7 +6429,83 @@ fi
 done
 
 
-for ac_header in libelf.h
+
+
+
+target_elf=no
+case $target in
+  *-darwin* | *-aix* | *-cygwin* | *-mingw* | *-aout* | *-*coff* | \
+  *-msdosdjgpp* | *-netware* | *-vms* | *-wince* | *-*-pe* | \
+  alpha*-dec-osf* | *-interix* | hppa[12]*-*-hpux*)
+    target_elf=no
+    ;;
+  *)
+    target_elf=yes
+    ;;
+esac
+
+if test $target_elf = yes; then :
+  if test x"$enable_lto" = x"yes" ; then
+  # Make sure that libelf.h and gelf.h are available.
+
+# Check whether --with-libelf was given.
+if test "${with_libelf+set}" = set; then :
+  withval=$with_libelf;
+fi
+
+
+
+# Check whether --with-libelf_include was given.
+if test "${with_libelf_include+set}" = set; then :
+  withval=$with_libelf_include;
+fi
+
+
+
+# Check whether --with-libelf_lib was given.
+if test "${with_libelf_lib+set}" = set; then :
+  withval=$with_libelf_lib;
+fi
+
+
+  saved_CFLAGS="$CFLAGS"
+  saved_CPPFLAGS="$CPPFLAGS"
+  saved_LIBS="$LIBS"
+
+  case $with_libelf in
+    "")
+      libelflibs="-lelf"
+      libelfinc="-I/usr/include/libelf"
+      ;;
+    *)
+      libelflibs="-L$with_libelf/lib -lelf"
+      libelfinc="-I$with_libelf/include -I$with_libelf/include/libelf"
+      LIBS="$libelflibs $LIBS"
+      ;;
+  esac
+
+  if test "x$with_libelf_include" != x; then
+    libelfinc="-I$with_libelf_include"
+  fi
+
+  if test "x$with_libelf_lib" != x; then
+    libelflibs="-L$with_libelf_lib -lelf"
+    LIBS="$libelflibs $LIBS"
+  fi
+
+  if test "x$with_libelf$with_libelf_include$with_libelf_lib" = x \
+     && test -d ${srcdir}/libelf; then
+    libelflibs='-L$$r/$(HOST_SUBDIR)/libelf/lib -lelf '
+    libelfinc='-D__LIBELF_INTERNAL__ -I$$r/$(HOST_SUBDIR)/libelf/lib -I$$s/libelf/lib'
+    LIBS="$libelflibs $LIBS"
+
+ else
+
+  CFLAGS="$CFLAGS $libelfinc"
+  CPPFLAGS="$CPPFLAGS $libelfinc"
+  LIBS="$LIBS $libelflibs"
+
+  for ac_header in libelf.h
 do :
   ac_fn_c_check_header_mongrel "$LINENO" "libelf.h" "ac_cv_header_libelf_h" "$ac_includes_default"
 if test "x$ac_cv_header_libelf_h" = x""yes; then :
@@ -6566,7 +6597,6 @@ main ()
       elf_nextscn (0, 0);
       elf_strptr (0, 0, 0);
       elf_getident (0, 0);
-      elf_getshdrstrndx (0, 0);
       elf_begin (0, 0, 0);
       elf_ndxscn (0);
       elf_end (0);
@@ -6585,6 +6615,61 @@ $as_echo "no" >&6; }; enable_lto=no; libelflibs= ; libelfinc=
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+
+    # Check for elf_getshdrstrndx or elf_getshstrndx.  The latter's flavor
+    # is determined in gcc/configure.ac.
+    if test x"$enable_lto" = x"yes" ; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for elf_getshdrstrndx" >&5
+$as_echo_n "checking for elf_getshdrstrndx... " >&6; }
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libelf.h>
+int
+main ()
+{
+
+	elf_getshdrstrndx (0, 0);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; };
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; };
+	 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for elf_getshstrndx" >&5
+$as_echo_n "checking for elf_getshstrndx... " >&6; }
+         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <libelf.h>
+int
+main ()
+{
+
+	   elf_getshstrndx (0, 0);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; };
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }; enable_lto=no; libelflibs= ; libelfinc=
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+    fi
 
     # If we couldn't enable LTO and the user forced it, emit an error.
     if test x"$enable_lto" = x"no" \
@@ -6605,6 +6690,28 @@ to specify its location." "$LINENO" 5
 
 
 fi
+else
+  if test x"$default_enable_lto" = x"yes" ; then
+    # On non-ELF platforms, LTO must be explicitly enabled.
+    enable_lto=no
+  else
+  # Apart from ELF platforms, only Windows supports LTO so far.  It
+  # would also be nice to check the binutils support, but we don't
+  # have gcc_GAS_CHECK_FEATURE available here.  For now, we'll just
+  # warn during gcc/ subconfigure; unless you're bootstrapping with
+  # -flto it won't be needed until after installation anyway.
+    case $target in
+      *-cygwin*|*-mingw*) ;;
+      *-apple-darwin*) ;;
+      *) if test x"$enable_lto" = x"yes"; then
+	as_fn_error "LTO support is not enabled for this target." "$LINENO" 5
+        fi
+      ;;
+    esac
+  fi
+  default_enable_lto=no
+fi
+
 
 
 # By default, C is the only stage 1 language.
@@ -7331,8 +7438,8 @@ case "${target}" in
     extra_arflags_for_target=" -X32_64"
     extra_nmflags_for_target=" -B -X32_64"
     ;;
-  *-*-darwin*)
-    # ranlib from Darwin requires the -c flag to look at common symbols.
+  *-*-darwin[3-9]*)
+    # ranlib before Darwin10 requires the -c flag to look at common symbols.
     extra_ranlibflags_for_target=" -c"
     ;;
   mips*-*-pe | sh*-*-pe | *arm-wince-pe)
@@ -7625,7 +7732,7 @@ else
        mv conftest.o conftest.o.g0 &&
        ${CC} -c -g conftest.c &&
        mv conftest.o conftest.o.g &&
-       ${srcdir}/contrib/compare-debug conftest.o.g0 conftest.o.g; then
+       ${srcdir}/contrib/compare-debug conftest.o.g0 conftest.o.g > /dev/null 2>&1; then
       :
     else
       BUILD_CONFIG=
@@ -9515,7 +9622,7 @@ fi
 done
 
 if test -z "$ac_cv_prog_RANLIB" ; then
-  RANLIB=":"
+  RANLIB="true"
 fi
 
 
@@ -9651,7 +9758,7 @@ fi
 done
 
 if test -z "$ac_cv_prog_STRIP" ; then
-  STRIP=":"
+  STRIP="true"
 fi
 
 

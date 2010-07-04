@@ -20,26 +20,26 @@ It has subdirectories:<br />
 <br />
     include/std<br />
       Files meant to be found by #include &lt;name&gt; directives in<br />
-      standard-conforming user programs.  <br />
+      standard-conforming user programs.<br />
 <br />
     include/c<br />
-      Headers intended to directly include standard C headers. <br />
+      Headers intended to directly include standard C headers.<br />
       [NB: this can be enabled via --enable-cheaders=c]<br />
 <br />
-    include/c_global <br />
+    include/c_global<br />
       Headers intended to include standard C headers in<br />
       the global namespace, and put select names into the std::<br />
       namespace.  [NB: this is the default, and is the same as<br />
       --enable-cheaders=c_global]<br />
 <br />
-    include/c_std <br />
+    include/c_std<br />
       Headers intended to include standard C headers<br />
       already in namespace std, and put select names into the std::<br />
       namespace.  [NB: this is the same as --enable-cheaders=c_std]<br />
 <br />
     include/bits<br />
       Files included by standard headers and by other files in<br />
-      the bits directory. <br />
+      the bits directory.<br />
 <br />
     include/backward<br />
       Headers provided for backward compatibility, such as &lt;iostream.h&gt;.<br />
@@ -58,7 +58,7 @@ It has subdirectories:<br />
     installed.<br />
 <br />
   testsuites/[backward, demangle, ext, performance, thread, 17_* to 27_*]<br />
-    Test programs are here, and may be used to begin to exercise the <br />
+    Test programs are here, and may be used to begin to exercise the<br />
     library.  Support for "make check" and "make check-install" is<br />
     complete, and runs through all the subdirectories here when this<br />
     command is issued from the build directory.  Please note that<br />

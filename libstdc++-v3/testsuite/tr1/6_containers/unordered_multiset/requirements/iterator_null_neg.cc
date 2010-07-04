@@ -1,6 +1,6 @@
 // 2005-09-10  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2005, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2005, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,6 +22,7 @@
 
 // libstdc++/23781
 #include <tr1/unordered_set>
+#include <cstddef>
 
 std::tr1::unordered_multiset<int>::iterator it3 = NULL; // { dg-error "conversion" }
 std::tr1::unordered_multiset<int>::const_iterator cit3 = NULL; // { dg-error "conversion" }

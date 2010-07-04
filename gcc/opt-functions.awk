@@ -1,4 +1,5 @@
-#  Copyright (C) 2003, 2004, 2007, 2008 Free Software Foundation, Inc.
+#  Copyright (C) 2003, 2004, 2007, 2008, 2009, 2010
+#  Free Software Foundation, Inc.
 #  Contributed by Kelley Cook, June 2004.
 #  Original code from Neil Booth, May 2003.
 #
@@ -136,7 +137,7 @@ function var_type(flags)
 }
 
 # Return the type of variable that should be associated with the given flags
-# for use within a structure.  Simple variables are changed to unsigned char
+# for use within a structure.  Simple variables are changed to signed char
 # type instead of int to save space.
 function var_type_struct(flags)
 {
@@ -146,7 +147,7 @@ function var_type_struct(flags)
 		if (flag_set_p(".*Mask.*", flags))
 			return "int "
 		else
-			return "unsigned char "
+			return "signed char "
 	}
 	else
 		return "const char *"
@@ -192,4 +193,22 @@ function var_ref(name, flags)
 	if (opt_args("InverseMask", flags) != "")
 		return "&target_flags"
 	return "0"
+}
+
+# Given the option called NAME return a sanitized version of its name.
+function opt_sanitized_name(name)
+{
+	if (name == "finline-limit=" || name == "Wlarger-than=" \
+	    || name == "ftemplate-depth=")
+		name = name "eq"
+	if (name == "gdwarf+")
+		name = "gdwarfplus"
+	gsub ("[^A-Za-z0-9]", "_", name)
+	return name
+}
+
+# Given the option called NAME return the appropriate enum for it.
+function opt_enum(name)
+{
+	return "OPT_" opt_sanitized_name(name)
 }

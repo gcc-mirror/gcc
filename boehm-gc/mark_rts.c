@@ -22,7 +22,7 @@
 struct roots {
 	ptr_t r_start;
 	ptr_t r_end;
- #	if !defined(MSWIN32) && !defined(MSWINCE)
+ #	if !defined(MSWIN32) && !defined(MSWINCE) && !defined(CYGWIN32)
 	  struct roots * r_next;
  #	endif
 	GC_bool r_tmp;
@@ -87,7 +87,7 @@ ptr_t p;
     return(FALSE);
 }
 
-#if !defined(MSWIN32) && !defined(MSWINCE)
+#if !defined(MSWIN32) && !defined(MSWINCE) && !defined(CYGWIN32)
 /* 
 #   define LOG_RT_SIZE 6
 #   define RT_SIZE (1 << LOG_RT_SIZE)  -- Power of 2, may be != MAX_ROOT_SETS
@@ -139,7 +139,7 @@ struct roots *p;
     GC_root_index[h] = p;
 }
 
-# else /* MSWIN32 || MSWINCE */
+# else /* MSWIN32 || MSWINCE || CYGWIN32 */
 
 #   define add_roots_to_index(p)
 
@@ -175,7 +175,7 @@ GC_bool tmp;
 {
     struct roots * old;
     
-#   if defined(MSWIN32) || defined(MSWINCE)
+#   if defined(MSWIN32) || defined(MSWINCE) || defined(CYGWIN32)
       /* Spend the time to ensure that there are no overlapping	*/
       /* or adjacent intervals.					*/
       /* This could be done faster with e.g. a			*/
@@ -244,7 +244,7 @@ GC_bool tmp;
     GC_static_roots[n_root_sets].r_start = (ptr_t)b;
     GC_static_roots[n_root_sets].r_end = (ptr_t)e;
     GC_static_roots[n_root_sets].r_tmp = tmp;
-#   if !defined(MSWIN32) && !defined(MSWINCE)
+#   if !defined(MSWIN32) && !defined(MSWINCE) && !defined(CYGWIN32)
       GC_static_roots[n_root_sets].r_next = 0;
 #   endif
     add_roots_to_index(GC_static_roots + n_root_sets);
@@ -263,7 +263,7 @@ void GC_clear_roots GC_PROTO((void))
     roots_were_cleared = TRUE;
     n_root_sets = 0;
     GC_root_size = 0;
-#   if !defined(MSWIN32) && !defined(MSWINCE)
+#   if !defined(MSWIN32) && !defined(MSWINCE) && !defined(CYGWIN32)
     {
     	register int i;
     	
@@ -285,7 +285,7 @@ int i;
     n_root_sets--;
 }
 
-#if !defined(MSWIN32) && !defined(MSWINCE)
+#if !defined(MSWIN32) && !defined(MSWINCE) && !defined(CYGWIN32)
 static void GC_rebuild_root_index()
 {
     register int i;
@@ -308,12 +308,12 @@ void GC_remove_tmp_roots()
     	    i++;
     }
     }
-    #if !defined(MSWIN32) && !defined(MSWINCE)
+    #if !defined(MSWIN32) && !defined(MSWINCE) && !defined(CYGWIN32)
     GC_rebuild_root_index();
     #endif
 }
 
-#if !defined(MSWIN32) && !defined(MSWINCE)
+#if !defined(MSWIN32) && !defined(MSWINCE) && !defined(CYGWIN32)
 void GC_remove_roots(b, e)
 char * b; char * e;
 {
@@ -340,9 +340,9 @@ char * b; char * e;
     }
     GC_rebuild_root_index();
 }
-#endif /* !defined(MSWIN32) && !defined(MSWINCE) */
+#endif /* !defined(MSWIN32) && !defined(MSWINCE) && !defined(CYGWIN32) */
 
-#if defined(MSWIN32) || defined(_WIN32_WCE_EMULATION)
+#if defined(MSWIN32) || defined(_WIN32_WCE_EMULATION) || defined(CYGWIN32)
 /* Workaround for the OS mapping and unmapping behind our back:		*/
 /* Is the address p in one of the temporary static root sections?	*/
 GC_bool GC_is_tmp_root(p)
@@ -364,7 +364,7 @@ ptr_t p;
     }
     return(FALSE);
 }
-#endif /* MSWIN32 || _WIN32_WCE_EMULATION */
+#endif /* MSWIN32 || _WIN32_WCE_EMULATION || defined(CYGWIN32) */
 
 ptr_t GC_approx_sp()
 {
@@ -557,7 +557,7 @@ void GC_push_gc_structures GC_PROTO((void))
 void GC_cond_register_dynamic_libraries()
 {
 # if (defined(DYNAMIC_LOADING) || defined(MSWIN32) || defined(MSWINCE) \
-     || defined(PCR)) && !defined(SRC_M3)
+     || defined(CYGWIN32) || defined(PCR)) && !defined(SRC_M3)
     GC_remove_tmp_roots();
     if (!GC_no_dls) GC_register_dynamic_libraries();
 # else

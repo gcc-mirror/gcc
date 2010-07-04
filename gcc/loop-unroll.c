@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "hashtab.h"
 #include "recog.h"
+#include "target.h"
 
 /* This pass performs loop unrolling and peeling.  We only perform these
    optimizations on innermost loops (with single exception) because
@@ -826,6 +827,9 @@ decide_unroll_runtime_iterations (struct loop *loop, int flags)
   if (nunroll > (unsigned) PARAM_VALUE (PARAM_MAX_UNROLL_TIMES))
     nunroll = PARAM_VALUE (PARAM_MAX_UNROLL_TIMES);
 
+  if (targetm.loop_unroll_adjust)
+    nunroll = targetm.loop_unroll_adjust (nunroll, loop);
+
   /* Skip big loops.  */
   if (nunroll <= 1)
     {
@@ -1365,6 +1369,9 @@ decide_unroll_stupid (struct loop *loop, int flags)
     nunroll = nunroll_by_av;
   if (nunroll > (unsigned) PARAM_VALUE (PARAM_MAX_UNROLL_TIMES))
     nunroll = PARAM_VALUE (PARAM_MAX_UNROLL_TIMES);
+
+  if (targetm.loop_unroll_adjust)
+    nunroll = targetm.loop_unroll_adjust (nunroll, loop);
 
   /* Skip big loops.  */
   if (nunroll <= 1)

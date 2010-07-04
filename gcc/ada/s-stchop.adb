@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1999-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,28 +48,24 @@ package body System.Stack_Checking.Operations is
 
    function Set_Stack_Info
      (Stack : not null access Stack_Access) return Stack_Access;
-
    --  The function Set_Stack_Info is the actual function that updates the
    --  cache containing a pointer to the Stack_Info. It may also be used for
    --  detecting asynchronous abort in combination with Invalidate_Self_Cache.
-
+   --
    --  Set_Stack_Info should do the following things in order:
    --     1) Get the Stack_Access value for the current task
    --     2) Set Stack.all to the value obtained in 1)
    --     3) Optionally Poll to check for asynchronous abort
-
+   --
    --  This order is important because if at any time a write to the stack
    --  cache is pending, that write should be followed by a Poll to prevent
    --  loosing signals.
-
+   --
    --  Note: This function must be compiled with Polling turned off
-
-   --  Note: on systems like VxWorks and OS/2 with real thread-local storage,
-   --        Set_Stack_Info should return an access value for such local
-   --        storage. In those cases the cache will always be up-to-date.
-
-   --  The following constants should be imported from some system-specific
-   --  constants package. The constants must be static for performance reasons.
+   --
+   --  Note: on systems with real thread-local storage, Set_Stack_Info should
+   --  return an access value for such local storage. In those cases the cache
+   --  will always be up-to-date.
 
    ----------------------------
    -- Invalidate_Stack_Cache --

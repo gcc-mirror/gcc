@@ -1,6 +1,6 @@
 // 2003-05-03  Loren J. Rittle <rittle@labs.mot.com> <ljrittle@acm.org>
 //
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -90,10 +90,10 @@ main()
       foo4 += foo3;
 
       for (int i = 0; i < max_thread_count; i++)
-	pthread_create (&tid[i], NULL, thread_main, 0);
+	pthread_create (&tid[i], 0, thread_main, 0);
 
       for (int i = 0; i < max_thread_count; i++)
-	pthread_join (tid[i], NULL);
+	pthread_join (tid[i], 0);
     }
 
   VERIFY( !std::strcmp (data, "barbazbongle") );

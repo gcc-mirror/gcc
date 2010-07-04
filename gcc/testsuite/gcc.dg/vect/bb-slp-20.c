@@ -21,8 +21,7 @@ main1 (unsigned int x, unsigned int y)
   else
     y = x;
 
-  /* Two SLP instances in the basic block, only one is supported for now,
-     the second one contains type conversion.  */
+  /* Two SLP instances in the basic block.  */
   a0 = in[0] + 23;
   a1 = in[1] + 142;
   a2 = in[2] + 2;
@@ -37,6 +36,9 @@ main1 (unsigned int x, unsigned int y)
   out[1] = a1 * y;
   out[2] = a2 * x;
   out[3] = a3 * y;
+
+  if (x)
+    __asm__ volatile ("" : : : "memory");
 
   /* Check results.  */
   if (out[0] != (in[0] + 23) * x
@@ -63,6 +65,6 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "basic block vectorized using SLP" 1 "slp" { target vect_int_mult } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "slp" { target vect_int_mult } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "slp" { target vect_int_mult } } } */
 /* { dg-final { cleanup-tree-dump "slp" } } */
   

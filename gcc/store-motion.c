@@ -1,6 +1,6 @@
 /* Store motion via Lazy Code Motion on the reverse CFG.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "flags.h"
-#include "real.h"
 #include "insn-config.h"
 #include "recog.h"
 #include "basic-block.h"
@@ -561,9 +560,9 @@ find_moveable_store (rtx insn, int *regs_set_before, int *regs_set_after)
     return;
 
   /* If we are handling exceptions, we must be careful with memory references
-     that may trap. If we are not, the behavior is undefined, so we may just
+     that may trap.  If we are not, the behavior is undefined, so we may just
      continue.  */
-  if (flag_non_call_exceptions && may_trap_p (dest))
+  if (cfun->can_throw_non_call_exceptions && may_trap_p (dest))
     return;
 
   /* Even if the destination cannot trap, the source may.  In this case we'd

@@ -1,5 +1,5 @@
 /* Operations with long integers.
-   Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -57,13 +57,9 @@ typedef struct
   HOST_WIDE_INT high;
 } double_int;
 
-union tree_node;
+#define HOST_BITS_PER_DOUBLE_INT (2 * HOST_BITS_PER_WIDE_INT)
 
 /* Constructors and conversions.  */
-
-union tree_node *double_int_to_tree (union tree_node *, double_int);
-bool double_int_fits_to_tree_p (const union tree_node *, double_int);
-double_int tree_to_double_int (const union tree_node *);
 
 /* Constructs double_int from integer CST.  The bits over the precision of
    HOST_WIDE_INT are filled with the sign bit.  */
@@ -101,6 +97,35 @@ uhwi_to_double_int (unsigned HOST_WIDE_INT cst)
   return r;
 }
 
+/* Returns value of CST as a signed number.  CST must satisfy
+   double_int_fits_in_shwi_p.  */
+
+static inline HOST_WIDE_INT
+double_int_to_shwi (double_int cst)
+{
+  return (HOST_WIDE_INT) cst.low;
+}
+
+/* Returns value of CST as an unsigned number.  CST must satisfy
+   double_int_fits_in_uhwi_p.  */
+
+static inline unsigned HOST_WIDE_INT
+double_int_to_uhwi (double_int cst)
+{
+  return cst.low;
+}
+
+bool double_int_fits_in_hwi_p (double_int, bool);
+bool double_int_fits_in_shwi_p (double_int);
+
+/* Returns true if CST fits in unsigned HOST_WIDE_INT.  */
+
+static inline bool
+double_int_fits_in_uhwi_p (double_int cst)
+{
+  return cst.high == 0;
+}
+
 /* The following operations perform arithmetics modulo 2^precision,
    so you do not need to call double_int_ext between them, even if
    you are representing numbers with precision less than
@@ -113,11 +138,6 @@ double_int double_int_neg (double_int);
 /* You must ensure that double_int_ext is called on the operands
    of the following operations, if the precision of the numbers
    is less than 2 * HOST_BITS_PER_WIDE_INT bits.  */
-bool double_int_fits_in_hwi_p (double_int, bool);
-bool double_int_fits_in_shwi_p (double_int);
-bool double_int_fits_in_uhwi_p (double_int);
-HOST_WIDE_INT double_int_to_shwi (double_int);
-unsigned HOST_WIDE_INT double_int_to_uhwi (double_int);
 double_int double_int_div (double_int, double_int, bool, unsigned);
 double_int double_int_sdiv (double_int, double_int, unsigned);
 double_int double_int_udiv (double_int, double_int, unsigned);
@@ -127,10 +147,78 @@ double_int double_int_umod (double_int, double_int, unsigned);
 double_int double_int_divmod (double_int, double_int, bool, unsigned, double_int *);
 double_int double_int_sdivmod (double_int, double_int, unsigned, double_int *);
 double_int double_int_udivmod (double_int, double_int, unsigned, double_int *);
-bool double_int_negative_p (double_int);
+double_int double_int_setbit (double_int, unsigned);
+
+/* Logical operations.  */
+
+/* Returns ~A.  */
+
+static inline double_int
+double_int_not (double_int a)
+{
+  a.low = ~a.low;
+  a.high = ~ a.high;
+  return a;
+}
+
+/* Returns A | B.  */
+
+static inline double_int
+double_int_ior (double_int a, double_int b)
+{
+  a.low |= b.low;
+  a.high |= b.high;
+  return a;
+}
+
+/* Returns A & B.  */
+
+static inline double_int
+double_int_and (double_int a, double_int b)
+{
+  a.low &= b.low;
+  a.high &= b.high;
+  return a;
+}
+
+/* Returns A ^ B.  */
+
+static inline double_int
+double_int_xor (double_int a, double_int b)
+{
+  a.low ^= b.low;
+  a.high ^= b.high;
+  return a;
+}
+
+
+/* Shift operations.  */
+double_int double_int_lshift (double_int, HOST_WIDE_INT, unsigned int, bool);
+double_int double_int_rshift (double_int, HOST_WIDE_INT, unsigned int, bool);
+double_int double_int_lrotate (double_int, HOST_WIDE_INT, unsigned int);
+double_int double_int_rrotate (double_int, HOST_WIDE_INT, unsigned int);
+
+/* Returns true if CST is negative.  Of course, CST is considered to
+   be signed.  */
+
+static inline bool
+double_int_negative_p (double_int cst)
+{
+  return cst.high < 0;
+}
+
 int double_int_cmp (double_int, double_int, bool);
 int double_int_scmp (double_int, double_int);
 int double_int_ucmp (double_int, double_int);
+
+double_int double_int_max (double_int, double_int, bool);
+double_int double_int_smax (double_int, double_int);
+double_int double_int_umax (double_int, double_int);
+
+double_int double_int_min (double_int, double_int, bool);
+double_int double_int_smin (double_int, double_int);
+double_int double_int_umin (double_int, double_int);
+
 void dump_double_int (FILE *, double_int, bool);
 
 /* Zero and sign extension of numbers in smaller precisions.  */
@@ -177,6 +265,39 @@ double_int_equal_p (double_int cst1, double_int cst2)
 {
   return cst1.low == cst2.low && cst1.high == cst2.high;
 }
+
+
+/* Legacy interface with decomposed high/low parts.  */
+
+extern int fit_double_type (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+			    unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
+			    const_tree);
+extern int add_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				 unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				 unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
+				 bool);
+#define add_double(l1,h1,l2,h2,lv,hv) \
+  add_double_with_sign (l1, h1, l2, h2, lv, hv, false)
+extern int neg_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+		       unsigned HOST_WIDE_INT *, HOST_WIDE_INT *);
+extern int mul_double_with_sign (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				 unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+				 unsigned HOST_WIDE_INT *, HOST_WIDE_INT *,
+				 bool);
+#define mul_double(l1,h1,l2,h2,lv,hv) \
+  mul_double_with_sign (l1, h1, l2, h2, lv, hv, false)
+extern void lshift_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+			   HOST_WIDE_INT, unsigned int,
+			   unsigned HOST_WIDE_INT *, HOST_WIDE_INT *, bool);
+extern void rshift_double (unsigned HOST_WIDE_INT, HOST_WIDE_INT,
+			   HOST_WIDE_INT, unsigned int,
+			   unsigned HOST_WIDE_INT *, HOST_WIDE_INT *, bool);
+extern int div_and_round_double (unsigned, int, unsigned HOST_WIDE_INT,
+				 HOST_WIDE_INT, unsigned HOST_WIDE_INT,
+				 HOST_WIDE_INT, unsigned HOST_WIDE_INT *,
+				 HOST_WIDE_INT *, unsigned HOST_WIDE_INT *,
+				 HOST_WIDE_INT *);
+
 
 #ifndef GENERATOR_FILE
 /* Conversion to and from GMP integer representations.  */

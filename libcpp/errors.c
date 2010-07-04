@@ -28,15 +28,15 @@ along with this program; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "internal.h"
 
-/* Print an error at the location of the previously lexed token.  */
-bool
-cpp_error (cpp_reader * pfile, int level, const char *msgid, ...)
+/* Print a diagnostic at the location of the previously lexed token.  */
+
+ATTRIBUTE_FPTR_PRINTF(4,0)
+static bool
+cpp_diagnostic (cpp_reader * pfile, int level, int reason,
+                const char *msgid, va_list *ap)
 {
   source_location src_loc;
-  va_list ap;
   bool ret;
-
-  va_start (ap, msgid);
 
   if (CPP_OPTION (pfile, traditional))
     {
@@ -61,13 +61,95 @@ cpp_error (cpp_reader * pfile, int level, const char *msgid, ...)
 
   if (!pfile->cb.error)
     abort ();
-  ret = pfile->cb.error (pfile, level, src_loc, 0, _(msgid), &ap);
+  ret = pfile->cb.error (pfile, level, reason, src_loc, 0, _(msgid), ap);
+
+  return ret;
+}
+
+/* Print a warning or error, depending on the value of LEVEL.  */
+
+bool
+cpp_error (cpp_reader * pfile, int level, const char *msgid, ...)
+{
+  va_list ap;
+  bool ret;
+
+  va_start (ap, msgid);
+
+  ret = cpp_diagnostic (pfile, level, CPP_W_NONE, msgid, &ap);
 
   va_end (ap);
   return ret;
 }
 
-/* Print an error at a specific location.  */
+/* Print a warning.  The warning reason may be given in REASON.  */
+
+bool
+cpp_warning (cpp_reader * pfile, int reason, const char *msgid, ...)
+{
+  va_list ap;
+  bool ret;
+
+  va_start (ap, msgid);
+
+  ret = cpp_diagnostic (pfile, CPP_DL_WARNING, reason, msgid, &ap);
+
+  va_end (ap);
+  return ret;
+}
+
+/* Print a pedantic warning.  The warning reason may be given in REASON.  */
+
+bool
+cpp_pedwarning (cpp_reader * pfile, int reason, const char *msgid, ...)
+{
+  va_list ap;
+  bool ret;
+
+  va_start (ap, msgid);
+
+  ret = cpp_diagnostic (pfile, CPP_DL_PEDWARN, reason, msgid, &ap);
+
+  va_end (ap);
+  return ret;
+}
+
+/* Print a warning, including system headers.  The warning reason may be
+   given in REASON.  */
+
+bool
+cpp_warning_syshdr (cpp_reader * pfile, int reason, const char *msgid, ...)
+{
+  va_list ap;
+  bool ret;
+
+  va_start (ap, msgid);
+
+  ret = cpp_diagnostic (pfile, CPP_DL_WARNING_SYSHDR, reason, msgid, &ap);
+
+  va_end (ap);
+  return ret;
+}
+
+/* Print a diagnostic at a specific location.  */
+
+ATTRIBUTE_FPTR_PRINTF(6,0)
+static bool
+cpp_diagnostic_with_line (cpp_reader * pfile, int level, int reason,
+		          source_location src_loc, unsigned int column,
+		          const char *msgid, va_list *ap)
+{
+  bool ret;
+  
+  if (!pfile->cb.error)
+    abort ();
+  ret = pfile->cb.error (pfile, level, reason, src_loc, column, _(msgid), ap);
+
+  return ret;
+}
+
+/* Print a warning or error, depending on the value of LEVEL.  */
+
 bool
 cpp_error_with_line (cpp_reader *pfile, int level,
 		     source_location src_loc, unsigned int column,
@@ -75,16 +157,76 @@ cpp_error_with_line (cpp_reader *pfile, int level,
 {
   va_list ap;
   bool ret;
-  
+
   va_start (ap, msgid);
 
-  if (!pfile->cb.error)
-    abort ();
-  ret = pfile->cb.error (pfile, level, src_loc, column, _(msgid), &ap);
+  ret = cpp_diagnostic_with_line (pfile, level, CPP_W_NONE, src_loc,
+                                  column, msgid, &ap);
 
   va_end (ap);
   return ret;
 }
+
+/* Print a warning.  The warning reason may be given in REASON.  */
+
+bool
+cpp_warning_with_line (cpp_reader *pfile, int reason,
+		       source_location src_loc, unsigned int column,
+		       const char *msgid, ...)
+{
+  va_list ap;
+  bool ret;
+
+  va_start (ap, msgid);
+
+  ret = cpp_diagnostic_with_line (pfile, CPP_DL_WARNING, reason, src_loc,
+                                  column, msgid, &ap);
+
+  va_end (ap);
+  return ret;
+}
+
+/* Print a pedantic warning.  The warning reason may be given in REASON.  */
+
+bool
+cpp_pedwarning_with_line (cpp_reader *pfile, int reason,
+		          source_location src_loc, unsigned int column,
+		          const char *msgid, ...)
+{
+  va_list ap;
+  bool ret;
+
+  va_start (ap, msgid);
+
+  ret = cpp_diagnostic_with_line (pfile, CPP_DL_PEDWARN, reason, src_loc,
+                                  column, msgid, &ap);
+
+  va_end (ap);
+  return ret;
+}
+
+/* Print a warning, including system headers.  The warning reason may be
+   given in REASON.  */
+
+bool
+cpp_warning_with_line_syshdr (cpp_reader *pfile, int reason,
+		              source_location src_loc, unsigned int column,
+		              const char *msgid, ...)
+{
+  va_list ap;
+  bool ret;
+
+  va_start (ap, msgid);
+
+  ret = cpp_diagnostic_with_line (pfile, CPP_DL_WARNING_SYSHDR, reason, src_loc,
+                                  column, msgid, &ap);
+
+  va_end (ap);
+  return ret;
+}
+
+/* Print a warning or error, depending on the value of LEVEL.  Include
+   information from errno.  */
 
 bool
 cpp_errno (cpp_reader *pfile, int level, const char *msgid)

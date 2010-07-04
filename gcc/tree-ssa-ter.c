@@ -1,6 +1,6 @@
 /* Routines for performing Temporary Expression Replacement (TER) in SSA trees.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation,
-   Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Andrew MacLeod  <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -25,7 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "diagnostic.h"
+#include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
 #include "bitmap.h"
 #include "tree-flow.h"
 #include "tree-dump.h"
@@ -703,7 +704,7 @@ dump_replaceable_exprs (FILE *f, bitmap expr)
    exclusively to debug TER.  F is the place to send debug info and T is the
    table being debugged.  */
 
-void
+DEBUG_FUNCTION void
 debug_ter (FILE *f, temp_expr_table_p t)
 {
   unsigned x, y;

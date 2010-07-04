@@ -15,9 +15,9 @@ A::A() = default;		// { dg-error "redefinition" }
 void g() {}			// { dg-error "previous" }
 void g() = delete;		// { dg-error "redefinition" }
 
-struct B
+struct B // { dg-message "user-provided default constructor" }
 {
-  B() = default;
+    B() = default;		// { dg-message "not user-provided" }
 };
 
 const B b;			// { dg-error "uninitialized const" }

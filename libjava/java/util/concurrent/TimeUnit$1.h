@@ -14,16 +14,16 @@ class java::util::concurrent::TimeUnit$1 : public ::java::util::concurrent::Time
 public: // actually package-private
   TimeUnit$1(::java::lang::String *, jint);
 public:
-  jlong toNanos(jlong);
-  jlong toMicros(jlong);
-  jlong toMillis(jlong);
-  jlong toSeconds(jlong);
-  jlong toMinutes(jlong);
-  jlong toHours(jlong);
-  jlong toDays(jlong);
-  jlong convert(jlong, ::java::util::concurrent::TimeUnit *);
+  virtual jlong toNanos(jlong);
+  virtual jlong toMicros(jlong);
+  virtual jlong toMillis(jlong);
+  virtual jlong toSeconds(jlong);
+  virtual jlong toMinutes(jlong);
+  virtual jlong toHours(jlong);
+  virtual jlong toDays(jlong);
+  virtual jlong convert(jlong, ::java::util::concurrent::TimeUnit *);
 public: // actually package-private
-  jint excessNanos(jlong, jlong);
+  virtual jint excessNanos(jlong, jlong);
 public:
   static ::java::lang::Class class$;
 };

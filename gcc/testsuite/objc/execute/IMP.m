@@ -1,8 +1,9 @@
 /* Contributed by Nicola Pero - Fri Mar  9 19:39:15 CET 2001 */
+
+#include <stdlib.h>
+#include "../../objc-obj-c++-shared/next-mapping.h"
 #include <objc/objc.h>
 #include <objc/objc-api.h>
-
-#include "next_mapping.h"
 
 /* Test getting and calling the IMP of a method */
 
@@ -19,7 +20,6 @@
   return a + 1;
 }
 @end
-
 
 int main (void)
 {

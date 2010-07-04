@@ -204,67 +204,67 @@ which always works correctly.
     <entry><classname>std::bitset</classname></entry>
     <entry><filename class="headerfile">bitset</filename></entry>
     <entry><classname>__gnu_debug::bitset</classname></entry>
-    <entry><filename class="headerfile">bitset</filename></entry>
+    <entry><filename class="headerfile">&lt;debug/bitset&gt;</filename></entry>
   </row>
   <row>
     <entry><classname>std::deque</classname></entry>
     <entry><filename class="headerfile">deque</filename></entry>
     <entry><classname>__gnu_debug::deque</classname></entry>
-    <entry><filename class="headerfile">deque</filename></entry>
+    <entry><filename class="headerfile">&lt;debug/deque&gt;</filename></entry>
   </row>
   <row>
     <entry><classname>std::list</classname></entry>
     <entry><filename class="headerfile">list</filename></entry>
     <entry><classname>__gnu_debug::list</classname></entry>
-    <entry><filename class="headerfile">list</filename></entry>
+    <entry><filename class="headerfile">&lt;debug/list&gt;</filename></entry>
   </row>
   <row>
     <entry><classname>std::map</classname></entry>
     <entry><filename class="headerfile">map</filename></entry>
     <entry><classname>__gnu_debug::map</classname></entry>
-    <entry><filename class="headerfile">map</filename></entry>
+    <entry><filename class="headerfile">&lt;debug/map&gt;</filename></entry>
   </row>
   <row>
     <entry><classname>std::multimap</classname></entry>
     <entry><filename class="headerfile">map</filename></entry>
     <entry><classname>__gnu_debug::multimap</classname></entry>
-    <entry><filename class="headerfile">map</filename></entry>
+    <entry><filename class="headerfile">&lt;debug/map&gt;</filename></entry>
   </row>
   <row>
     <entry><classname>std::multiset</classname></entry>
     <entry><filename class="headerfile">set</filename></entry>
     <entry><classname>__gnu_debug::multiset</classname></entry>
-    <entry><filename class="headerfile">set</filename></entry>
+    <entry><filename class="headerfile">&lt;debug/set&gt;</filename></entry>
   </row>
   <row>
     <entry><classname>std::set</classname></entry>
     <entry><filename class="headerfile">set</filename></entry>
     <entry><classname>__gnu_debug::set</classname></entry>
-    <entry><filename class="headerfile">set</filename></entry>
+    <entry><filename class="headerfile">&lt;debug/set&gt;</filename></entry>
   </row>
   <row>
     <entry><classname>std::string</classname></entry>
     <entry><filename class="headerfile">string</filename></entry>
     <entry><classname>__gnu_debug::string</classname></entry>
-    <entry><filename class="headerfile">string</filename></entry>
+    <entry><filename class="headerfile">&lt;debug/string&gt;</filename></entry>
   </row>
   <row>
     <entry><classname>std::wstring</classname></entry>
     <entry><filename class="headerfile">string</filename></entry>
     <entry><classname>__gnu_debug::wstring</classname></entry>
-    <entry><filename class="headerfile">string</filename></entry>
+    <entry><filename class="headerfile">&lt;debug/string&gt;</filename></entry>
   </row>
   <row>
     <entry><classname>std::basic_string</classname></entry>
     <entry><filename class="headerfile">string</filename></entry>
     <entry><classname>__gnu_debug::basic_string</classname></entry>
-    <entry><filename class="headerfile">string</filename></entry>
+    <entry><filename class="headerfile">&lt;debug/string&gt;</filename></entry>
   </row>
   <row>
     <entry><classname>std::vector</classname></entry>
     <entry><filename class="headerfile">vector</filename></entry>
     <entry><classname>__gnu_debug::vector</classname></entry>
-    <entry><filename class="headerfile">vector</filename></entry>
+    <entry><filename class="headerfile">&lt;debug/vector&gt;</filename></entry>
   </row>
 </tbody>
 </tgroup>
@@ -295,25 +295,25 @@ containers have additional debug capability.
     <entry><classname>std::unordered_map</classname></entry>
     <entry><filename class="headerfile">unordered_map</filename></entry>
     <entry><classname>__gnu_debug::unordered_map</classname></entry>
-    <entry><filename class="headerfile">unordered_map</filename></entry>
+    <entry><filename class="headerfile">&lt;debug/unordered_map&gt;</filename></entry>
   </row>
   <row>
     <entry><classname>std::unordered_multimap</classname></entry>
     <entry><filename class="headerfile">unordered_map</filename></entry>
     <entry><classname>__gnu_debug::unordered_multimap</classname></entry>
-    <entry><filename class="headerfile">unordered_map</filename></entry>
+    <entry><filename class="headerfile">&lt;debug/unordered_map&gt;</filename></entry>
   </row>
   <row>
     <entry><classname>std::unordered_set</classname></entry>
     <entry><filename class="headerfile">unordered_set</filename></entry>
     <entry><classname>__gnu_debug::unordered_set</classname></entry>
-    <entry><filename class="headerfile">unordered_set</filename></entry>
+    <entry><filename class="headerfile">&lt;debug/unordered_set&gt;</filename></entry>
   </row>
   <row>
     <entry><classname>std::unordered_multiset</classname></entry>
     <entry><filename class="headerfile">unordered_set</filename></entry>
     <entry><classname>__gnu_debug::unordered_multiset</classname></entry>
-    <entry><filename class="headerfile">unordered_set</filename></entry>
+    <entry><filename class="headerfile">&lt;debug/unordered_set&gt;</filename></entry>
   </row>
 </tbody>
 </tgroup>

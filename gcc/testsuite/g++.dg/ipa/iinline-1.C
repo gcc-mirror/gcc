@@ -38,8 +38,9 @@ int docalling (int (String::* f)(int delim) const)
 
 int main (int argc, char *argv[])
 {
-  int i;
-  i = docalling (&String::funcOne);
+  int i = 0;
+  while (i < 1000)
+    i += docalling (&String::funcOne);
   non_existent ("done", i);
   return 0;
 }

@@ -7,7 +7,7 @@
 
 struct A {};
 
-template <typename T> T A::* Foo ();
+template <typename T> T A::* Foo (); // { dg-message "candidate" }
 
 void Baz ()
 {

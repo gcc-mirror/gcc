@@ -9,3 +9,4 @@ contains
     mat0 = 0.0d0
   end function spher_cartesians
 end module INT_MODULE
+! { dg-final { cleanup-modules "int_module" } }

@@ -11,5 +11,5 @@ main (void)
 
   len = ~(sizeof (size_t) - 1); /* { dg-bogus "truncated" "bogus truncation warning" } */
 
-  return 0;
+  return len - len;
 }

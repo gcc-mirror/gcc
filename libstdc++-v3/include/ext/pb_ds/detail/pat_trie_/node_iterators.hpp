@@ -180,8 +180,8 @@ namespace __gnu_pbds
 	pat_trie_const_node_it_()
       */
       inline
-      pat_trie_const_node_it_(node_pointer p_nd = NULL,  
-			      const_e_access_traits_pointer p_traits = NULL) 
+      pat_trie_const_node_it_(node_pointer p_nd = 0,  
+			      const_e_access_traits_pointer p_traits = 0) 
       : m_p_nd(const_cast<node_pointer>(p_nd)), m_p_traits(p_traits)
       { }
 
@@ -299,7 +299,7 @@ namespace __gnu_pbds
       */
 
       inline
-      pat_trie_node_it_(node_pointer p_nd = NULL,  const_e_access_traits_pointer p_traits = NULL) : base_type(p_nd, p_traits)
+      pat_trie_node_it_(node_pointer p_nd = 0,  const_e_access_traits_pointer p_traits = 0) : base_type(p_nd, p_traits)
       { }
 
       // Access; returns the iterator*  associated with the current leaf.

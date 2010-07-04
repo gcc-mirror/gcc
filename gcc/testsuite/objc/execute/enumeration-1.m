@@ -1,6 +1,7 @@
 /* Contributed by Nicola Pero -  Wed Dec  5 17:12:40 GMT 2001 */
+#include <stdlib.h>
+#import "../../objc-obj-c++-shared/Object1.h"
 #include <objc/objc.h>
-#include <objc/Object.h>
 
 /* Test using a bitfield enumeration ivar.  */
 

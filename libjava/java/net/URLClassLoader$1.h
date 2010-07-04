@@ -31,8 +31,8 @@ class java::net::URLClassLoader$1 : public ::java::lang::Object
 public: // actually package-private
   URLClassLoader$1(::java::net::URLClassLoader *, ::java::lang::String *, JArray< jbyte > *, ::java::security::CodeSource *);
 public:
-  ::java::lang::Class * URLClassLoader$1$run();
-  ::java::lang::Object * run();
+  virtual ::java::lang::Class * URLClassLoader$1$run();
+  virtual ::java::lang::Object * run();
 public: // actually package-private
   ::java::net::URLClassLoader * __attribute__((aligned(__alignof__( ::java::lang::Object)))) this$0;
 private:

@@ -607,7 +607,7 @@ fix = {
 fix = {
     hackname  = alpha_assert;
     files     = "assert.h";
-    select    = '(#define assert\(EX\).*)\(\(int\) \(EX\)\)';
+    select    = "(#[ \t]*" 'define assert\(EX\).*)\(\(int\) \(EX\)\)';
     c_fix     = format;
     c_fix_arg = "%1(EX)";
     test_text = '#define assert(EX) (((int) (EX)) ? (void)0 '
@@ -790,27 +790,6 @@ fix = {
     c_fix     = format;
     c_fix_arg = "void *sbrk(";
     test_text = "extern char* sbrk(ptrdiff_t increment);";
-};
-
-
-/*
- *  Change external names of wcstok/wcsftime via asm instead of macros on
- *  Tru64 UNIX V4.0.
- */
-fix = {
-    hackname = alpha_wchar;
-    files    = wchar.h;
-
-    mach     = "alpha*-dec-osf4*";
-    select   = "#define wcstok wcstok_r";
-    sed      = "s@#define wcstok wcstok_r@"
-                "extern wchar_t *wcstok __((wchar_t *, const wchar_t *, "
-                          "wchar_t **)) __asm__(\"wcstok_r\");@";
-    sed      = "s@#define wcsftime __wcsftime_isoc@"
-                "extern size_t   wcsftime __((wchar_t *, size_t, const wchar_t *"
-                          ", const struct tm *)) __asm__(\"__wcsftime_isoc\");@";
-    test_text = "#define wcstok wcstok_r\n"
-		"#define wcsftime __wcsftime_isoc";
 };
 
 
@@ -1597,6 +1576,28 @@ fix = {
     test_text = "/* This file is part of the GNU C Library.  */\n# define UINT8_C(c)\tc ## U\n# define UINT16_C(c)\tc ## U";
 };
 
+
+/* Some versions of glibc have a version of bits/string2.h that
+   produces "value computed is not used" warnings from strncpy; fix
+   this definition by using __builtin_strncpy instead as in newer
+   versions.  */
+fix = {
+    hackname  = glibc_strncpy;
+    files     = bits/string2.h;
+    bypass    = "__builtin_strncpy";
+    c_fix     = format;
+    c_fix_arg = "#  define strncpy(dest, src, n) __builtin_strncpy (dest, src, n)";
+    c_fix_arg = "#  define strncpy([^\n]*\\\\\n)*[^\n]*";
+    test_text = <<-EOT
+	#  define strncpy(dest, src, n) \
+	  (__extension__ (__builtin_constant_p (src) && __builtin_constant_p (n)      \\
+			  ? (strlen (src) + 1 >= ((size_t) (n))			      \\
+			     ? (char *) memcpy (dest, src, n)			      \\
+			     : strncpy (dest, src, n))				      \\
+			  : strncpy (dest, src, n)))
+	EOT;
+
+};
 
 /* glibc's tgmath.h relies on an expression that is not an integer
    constant expression being treated as it was by GCC 4.4 and
@@ -3248,6 +3249,23 @@ fix = {
 
 
 /*
+ *  Solaris 10+ <sys/feature_tests.h> defines _RESTRICT_KYWD as restrict
+ *  for C99.  This is wrong for C++, which needs many C99 features, but
+ *  only supports __restrict.
+ */
+fix = {
+    hackname  = solaris___restrict;
+    files     = sys/feature_tests.h;
+    select    = "#define[ \t]*_RESTRICT_KYWD[ \t]*restrict";
+    mach      = "*-*-solaris2*";
+    c_fix     = format;
+    c_fix_arg = "#ifdef __cplusplus\n#define\t_RESTRICT_KYWD\t__restrict\n"
+    	        "#else\n%0\n#endif";
+    test_text = "#define	_RESTRICT_KYWD	restrict";
+};
+
+
+/*
  * Solaris 10+ complex.h defines _Complex_I and _Imaginary_I in terms of
  * themselves, which are Sun Studio compiler intrinsics.  Remove _Imaginary_I
  * and imaginary definitions which are not supported by GCC.
@@ -3268,6 +3286,23 @@ fix = {
 		"#define	imaginary	_Imaginary\n"
 		"#undef	I\n"
 		"#define	I		_Imaginary_I";
+};
+
+
+/*
+ * Solaris 10+ <complex.h> is wrapped in #ifndef __cplusplus.  Wrap in
+ * extern "C" instead so libstdc++ can use it.
+ */
+fix = {
+    hackname  = solaris_complex_cxx;
+    mach      = "*-*-solaris2.*";
+    files     = complex.h;
+    sed	      = "/#if[ \t]*!defined(__cplusplus)/c"
+    		"#ifdef\t__cplusplus\\\nextern \"C\" {\\\n#endif";
+    sed	      = "/#endif[ \t]*\\/\\* !defined(__cplusplus) \\*\\//c"
+		"#ifdef\t__cplusplus\\\n}\\\n#endif";
+    test_text = "#if !defined(__cplusplus)\n"
+		"#endif	/* !defined(__cplusplus) */";
 };
 
 
@@ -3339,7 +3374,7 @@ fix = {
 
 fix = {
     hackname = solaris_math_8;
-    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    select = '@\(#\)math_c99\.h' "[ \t]+1\\.[0-9]+[ \t]+[0-9/]+ SMI";
     bypass = "__GNUC__";
     files = iso/math_c99.h;
     c_fix = format;
@@ -3349,10 +3384,11 @@ fix = {
                 "\t\t\t     ? __builtin_signbitl(x) \\\n"
                 "\t\t\t     : __builtin_signbit(x))";
     c_fix_arg = "^#define[ \t]+signbit\\(x\\)[ \t]+__builtin_signbit\\(x\\)";
-    test_text =
-    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
-    "#undef	signbit\n"
-    "#define	signbit(x)	__builtin_signbit(x)";
+    test_text = <<- _EOText_
+	#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"
+	#undef	signbit
+	#define	signbit(x)	__builtin_signbit(x)
+	_EOText_;
 };
 
 fix = {

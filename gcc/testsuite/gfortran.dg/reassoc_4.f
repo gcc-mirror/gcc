@@ -1,5 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-O3 -ffast-math -fdump-tree-reassoc1" }
+! { dg-options "-O3 -ffast-math -fdump-tree-reassoc1 --param max-completely-peel-times=16" { target spu-*-* } }
       subroutine anisonl(w,vo,anisox,s,ii1,jj1,weight)
       integer ii1,jj1,i1,iii1,j1,jjj1,k1,l1,m1,n1
       real*8 w(3,3),vo(3,3),anisox(3,3,3,3),s(60,60),weight

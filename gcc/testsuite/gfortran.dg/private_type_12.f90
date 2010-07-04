@@ -21,3 +21,4 @@ CONTAINS
   TYPE(T1) FUNCTION F2() ! { dg-error "Fortran 2003: PUBLIC variable 'f2'" }
   END FUNCTION F2
 END MODULE M1
+! { dg-final { cleanup-modules "m1" } }

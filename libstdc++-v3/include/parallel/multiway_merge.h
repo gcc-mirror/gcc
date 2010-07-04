@@ -502,11 +502,11 @@ namespace __gnu_parallel
       _LT __lt(__k, __comp);
 
       // Default value for potentially non-default-constructible types.
-      _ValueType* __arbitrary_element = NULL;
+      _ValueType* __arbitrary_element = 0;
 
       for (_SeqNumber __t = 0; __t < __k; ++__t)
 	{
-          if(__arbitrary_element == NULL
+          if(!__arbitrary_element
 	     && _GLIBCXX_PARALLEL_LENGTH(__seqs_begin[__t]) > 0)
             __arbitrary_element = &(*__seqs_begin[__t].first);
 	}

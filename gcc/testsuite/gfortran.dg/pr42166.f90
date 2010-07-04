@@ -18,3 +18,4 @@ CONTAINS
   END SUBROUTINE newuob
 END MODULE powell
 
+! { dg-final { cleanup-modules "powell" } }

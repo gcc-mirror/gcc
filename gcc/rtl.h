@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "input.h"
 #include "real.h"
 #include "vec.h"
+#include "vecir.h"
 #include "fixed-value.h"
 #include "alias.h"
 
@@ -173,7 +174,6 @@ union rtunion_def
   enum machine_mode rt_type;
   addr_diff_vec_flags rt_addr_diff_vec_flags;
   struct cselib_val_struct *rt_cselib;
-  struct bitmap_head_def *rt_bit;
   tree rt_tree;
   struct basic_block_def *rt_bb;
   mem_attrs *rt_mem;
@@ -196,10 +196,6 @@ struct GTY(()) block_symbol {
      if the symbol has not yet been assigned an offset.  */
   HOST_WIDE_INT offset;
 };
-
-DEF_VEC_P(rtx);
-DEF_VEC_ALLOC_P(rtx,heap);
-DEF_VEC_ALLOC_P(rtx,gc);
 
 /* Describes a group of objects that are to be placed together in such
    a way that their relative positions are known.  */
@@ -237,7 +233,7 @@ struct GTY(()) object_block {
 /* RTL expression ("rtx").  */
 
 struct GTY((chain_next ("RTX_NEXT (&%h)"),
-		    chain_prev ("RTX_PREV (&%h)"))) rtx_def {
+	    chain_prev ("RTX_PREV (&%h)"), variable_size)) rtx_def {
   /* The kind of expression this is.  */
   ENUM_BITFIELD(rtx_code) code: 16;
 
@@ -356,7 +352,7 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
    for a variable number of things.  The principle use is inside
    PARALLEL expressions.  */
 
-struct GTY(()) rtvec_def {
+struct GTY((variable_size)) rtvec_def {
   int num_elem;		/* number of elements */
   rtx GTY ((length ("%h.num_elem"))) elem[1];
 };
@@ -374,6 +370,10 @@ struct GTY(()) rtvec_def {
 
 /* Predicate yielding nonzero iff X is an rtx for a constant integer.  */
 #define CONST_INT_P(X) (GET_CODE (X) == CONST_INT)
+
+/* Predicate yielding true iff X is an rtx for a double-int
+   or floating point constant.  */
+#define CONST_DOUBLE_P(X) (GET_CODE (X) == CONST_DOUBLE)
 
 /* Predicate yielding nonzero iff X is a label insn.  */
 #define LABEL_P(X) (GET_CODE (X) == CODE_LABEL)
@@ -704,7 +704,6 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 #define XEXP(RTX, N)	(RTL_CHECK2 (RTX, N, 'e', 'u').rt_rtx)
 #define XVEC(RTX, N)	(RTL_CHECK2 (RTX, N, 'E', 'V').rt_rtvec)
 #define XMODE(RTX, N)	(RTL_CHECK1 (RTX, N, 'M').rt_type)
-#define XBITMAP(RTX, N) (RTL_CHECK1 (RTX, N, 'b').rt_bit)
 #define XTREE(RTX, N)   (RTL_CHECK1 (RTX, N, 't').rt_tree)
 #define XBBDEF(RTX, N)	(RTL_CHECK1 (RTX, N, 'B').rt_bb)
 #define XTMPL(RTX, N)	(RTL_CHECK1 (RTX, N, 'T').rt_str)
@@ -721,7 +720,6 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 #define X0EXP(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').rt_rtx)
 #define X0VEC(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').rt_rtvec)
 #define X0MODE(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').rt_type)
-#define X0BITMAP(RTX, N)   (RTL_CHECK1 (RTX, N, '0').rt_bit)
 #define X0TREE(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').rt_tree)
 #define X0BBDEF(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').rt_bb)
 #define X0ADVFLAGS(RTX, N) (RTL_CHECK1 (RTX, N, '0').rt_addr_diff_vec_flags)
@@ -739,7 +737,6 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 #define XCEXP(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rt_rtx)
 #define XCVEC(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rt_rtvec)
 #define XCMODE(RTX, N, C)     (RTL_CHECKC1 (RTX, N, C).rt_type)
-#define XCBITMAP(RTX, N, C)   (RTL_CHECKC1 (RTX, N, C).rt_bit)
 #define XCTREE(RTX, N, C)     (RTL_CHECKC1 (RTX, N, C).rt_tree)
 #define XCBBDEF(RTX, N, C)    (RTL_CHECKC1 (RTX, N, C).rt_bb)
 #define XCCSELIB(RTX, N, C)   (RTL_CHECKC1 (RTX, N, C).rt_cselib)
@@ -1052,7 +1049,6 @@ rhs_regno (const_rtx x)
 {
   return XCUINT (x, 0, REG);
 }
-
 
 
 /* 1 if RTX is a reg or parallel that is the current function's return
@@ -1551,22 +1547,8 @@ extern int currently_expanding_to_rtl;
 extern int ceil_log2 (unsigned HOST_WIDE_INT);
 
 /* In explow.c */
-extern void set_stack_check_libfunc (rtx);
 extern HOST_WIDE_INT trunc_int_for_mode	(HOST_WIDE_INT, enum machine_mode);
 extern rtx plus_constant (rtx, HOST_WIDE_INT);
-
-/* In emit-rtl.c */
-extern rtx gen_blockage (void);
-extern rtvec gen_rtvec (int, ...);
-extern rtx copy_insn_1 (rtx);
-extern rtx copy_insn (rtx);
-extern rtx gen_int_mode (HOST_WIDE_INT, enum machine_mode);
-extern rtx emit_copy_of_insn_after (rtx, rtx);
-extern void set_reg_attrs_from_value (rtx, rtx);
-extern void set_reg_attrs_for_parm (rtx, rtx);
-extern void set_reg_attrs_for_decl_rtl (tree t, rtx x);
-extern void adjust_reg_mode (rtx, enum machine_mode);
-extern int mem_expr_equal_p (const_tree, const_tree);
 
 /* In rtl.c */
 extern rtx rtx_alloc_stat (RTX_CODE MEM_STAT_DECL);
@@ -1617,9 +1599,7 @@ extern rtx convert_memory_address_addr_space (enum machine_mode, rtx,
 					      addr_space_t);
 #define convert_memory_address(to_mode,x) \
 	convert_memory_address_addr_space ((to_mode), (x), ADDR_SPACE_GENERIC)
-extern rtx get_insns (void);
 extern const char *get_insn_name (int);
-extern rtx get_last_insn (void);
 extern rtx get_last_insn_anywhere (void);
 extern rtx get_first_nonnote_insn (void);
 extern rtx get_last_nonnote_insn (void);
@@ -1627,6 +1607,8 @@ extern void start_sequence (void);
 extern void push_to_sequence (rtx);
 extern void push_to_sequence2 (rtx, rtx);
 extern void end_sequence (void);
+extern double_int rtx_to_double_int (const_rtx);
+extern rtx immed_double_int_const (double_int, enum machine_mode);
 extern rtx immed_double_const (HOST_WIDE_INT, HOST_WIDE_INT,
 			       enum machine_mode);
 
@@ -1778,7 +1760,7 @@ extern rtx simplify_subreg (enum machine_mode, rtx, enum machine_mode,
 extern rtx simplify_gen_subreg (enum machine_mode, rtx, enum machine_mode,
 				unsigned int);
 extern rtx simplify_replace_fn_rtx (rtx, const_rtx,
-				    rtx (*fn) (rtx, void *), void *);
+				    rtx (*fn) (rtx, const_rtx, void *), void *);
 extern rtx simplify_replace_rtx (rtx, const_rtx, rtx);
 extern rtx simplify_rtx (const_rtx);
 extern rtx avoid_constant_pool_reference (rtx);
@@ -2218,7 +2200,6 @@ extern void reset_used_flags (rtx);
 extern void set_used_flags (rtx);
 extern void reorder_insns (rtx, rtx, rtx);
 extern void reorder_insns_nobb (rtx, rtx, rtx);
-extern int get_max_uid (void);
 extern int get_max_insn_count (void);
 extern int in_sequence_p (void);
 extern void force_next_line_note (void);
@@ -2232,8 +2213,6 @@ extern unsigned int unshare_all_rtl (void);
 extern void unshare_all_rtl_again (rtx);
 extern void unshare_all_rtl_in_chain (rtx);
 extern void verify_rtl_sharing (void);
-extern void set_first_insn (rtx);
-extern void set_last_insn (rtx);
 extern void link_cc0_insns (rtx);
 extern void add_insn (rtx);
 extern void add_insn_before (rtx, rtx, struct basic_block_def *);
@@ -2374,21 +2353,11 @@ extern rtx emit_library_call_value (rtx, rtx, enum libcall_type,
 
 /* In varasm.c */
 extern void init_varasm_once (void);
-extern enum tls_model decl_default_tls_model (const_tree);
 
-/* In rtl.c */
-extern void traverse_md_constants (int (*) (void **, void *), void *);
-struct md_constant { char *name, *value; };
+extern rtx make_debug_expr_from_rtl (const_rtx);
 
 /* In read-rtl.c */
-extern int read_skip_spaces (FILE *);
-extern bool read_rtx (FILE *, rtx *, int *);
-extern void copy_rtx_ptr_loc (const void *, const void *);
-extern void print_rtx_ptr_loc (const void *);
-extern const char *join_c_conditions (const char *, const char *);
-extern void print_c_condition (const char *);
-extern const char *read_rtx_filename;
-extern int read_rtx_lineno;
+extern bool read_rtx (const char *, rtx *);
 
 /* In alias.c */
 extern rtx canon_rtx (rtx);

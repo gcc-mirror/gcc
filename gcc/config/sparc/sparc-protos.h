@@ -1,5 +1,5 @@
 /* Prototypes of target machine for SPARC.
-   Copyright (C) 1999, 2000, 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 1999, 2000, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #define __SPARC_PROTOS_H__
 
 #ifdef TREE_CODE
-extern struct rtx_def *function_value (const_tree, enum machine_mode, int);
 extern void function_arg_advance (CUMULATIVE_ARGS *,
 				  enum machine_mode, tree, int);
 extern struct rtx_def *function_arg (const CUMULATIVE_ARGS *,
@@ -67,8 +66,6 @@ extern bool legitimate_pic_operand_p (rtx);
 extern void sparc_emit_call_insn (rtx, rtx);
 extern void sparc_defer_case_vector (rtx, rtx, int);
 extern bool sparc_expand_move (enum machine_mode, rtx *);
-extern void sparc_emit_set_const32 (rtx, rtx);
-extern void sparc_emit_set_const64 (rtx, rtx);
 extern void sparc_emit_set_symbolic_const64 (rtx, rtx, rtx);
 extern int sparc_splitdi_legitimate (rtx, rtx);
 extern int sparc_absnegfloat_split_legitimate (rtx, rtx);

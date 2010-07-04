@@ -12,7 +12,7 @@ int FLAG=0;
 
 extern "C" int printf( const char *, ...);
 
-void * operator new(size_t, const std::nothrow_t&) throw()         { FLAG=1; return 0; }
+void * operator new(std::size_t, const std::nothrow_t&) throw()         { FLAG=1; return 0; }
 
 class K {
 private:

@@ -2,7 +2,8 @@
 
 // 2001-08-27 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2009 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2009, 2010
+// Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -63,12 +64,12 @@ void test02()
 
   // test sign of more than one digit, say hong kong.
   oss.str(empty);
-  iterator_type os_it05 = mon_put.put(oss.rdbuf(), false, oss, ' ', digits1);
+  mon_put.put(oss.rdbuf(), false, oss, ' ', digits1);
   string result5 = oss.str();
   VERIFY( result5 == "HK$7,200,000,000.00");
 
   oss.str(empty);
-  iterator_type os_it06 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits2);
+  mon_put.put(oss.rdbuf(), true, oss, ' ', digits2);
   string result6 = oss.str();
   VERIFY( result6 == "(HKD 100,000,000,000.00)");
 
@@ -76,7 +77,7 @@ void test02()
   oss.imbue(loc_c);
   oss.str(empty);
   const money_put<char>& mon_put2 = use_facet<money_put<char> >(oss.getloc()); 
-  iterator_type os_it07 = mon_put2.put(oss.rdbuf(), true, oss, ' ', digits4);
+  mon_put2.put(oss.rdbuf(), true, oss, ' ', digits4);
   string result7 = oss.str();
   VERIFY( result7 == "1");
 
@@ -84,7 +85,7 @@ void test02()
   oss.imbue(loc_hk);
   oss.str(empty);
   const money_put<char>& mon_put3 = use_facet<money_put<char> >(oss.getloc()); 
-  iterator_type os_it08 = mon_put3.put(oss.rdbuf(), true, oss, ' ', digits4);
+  mon_put3.put(oss.rdbuf(), true, oss, ' ', digits4);
   string result8 = oss.str();
   VERIFY( result8 == "(HKD .01)");
 
@@ -92,7 +93,7 @@ void test02()
 
   // test bunk input
   oss.str(empty);
-  iterator_type os_it09 = mon_put.put(oss.rdbuf(), true, oss, ' ', digits3);
+  mon_put.put(oss.rdbuf(), true, oss, ' ', digits3);
   string result9 = oss.str();
   VERIFY( result9 == "");
 }

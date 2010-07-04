@@ -1,7 +1,8 @@
 // -*- C++ -*-
 // Utility subroutines for the C++ library testsuite. 
 //
-// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+// 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -59,7 +60,7 @@
 # include <cassert>
 # define VERIFY(fn) assert(fn)
 #else
-# define VERIFY(fn) test &= (fn)
+# define VERIFY(fn) test &= bool(fn)
 #endif
 
 #ifdef _GLIBCXX_HAVE_UNISTD_H

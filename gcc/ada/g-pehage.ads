@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2002-2008, AdaCore                     --
+--                     Copyright (C) 2002-2010, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,8 +86,9 @@ package GNAT.Perfect_Hash_Generators is
    --  number of tries.
 
    type Optimization is (Memory_Space, CPU_Time);
-   Default_Optimization : constant Optimization := CPU_Time;
-   --  Optimize either the memory space or the execution time
+   --  Optimize either the memory space or the execution time. Note: in
+   --  practice, the optimization mode has little effect on speed. The tables
+   --  are somewhat smaller with Memory_Space.
 
    Verbose : Boolean := False;
    --  Output the status of the algorithm. For instance, the tables, the random
@@ -97,7 +98,7 @@ package GNAT.Perfect_Hash_Generators is
    procedure Initialize
      (Seed   : Natural;
       K_To_V : Float        := Default_K_To_V;
-      Optim  : Optimization := CPU_Time;
+      Optim  : Optimization := Memory_Space;
       Tries  : Positive     := Default_Tries);
    --  Initialize the generator and its internal structures. Set the ratio of
    --  vertices over keys in the random graphs. This value has to be greater
@@ -116,7 +117,7 @@ package GNAT.Perfect_Hash_Generators is
    --  Deallocate the internal structures and the words table
 
    procedure Insert (Value : String);
-   --  Insert a new word in the table
+   --  Insert a new word into the table. ASCII.NUL characters are not allowed.
 
    Too_Many_Tries : exception;
    --  Raised after Tries unsuccessful runs
@@ -124,15 +125,19 @@ package GNAT.Perfect_Hash_Generators is
    procedure Compute (Position : String := Default_Position);
    --  Compute the hash function. Position allows to define selection of
    --  character positions used in the word hash function. Positions can be
-   --  separated by commas and range like x-y may be used. Character '$'
+   --  separated by commas and ranges like x-y may be used. Character '$'
    --  represents the final character of a word. With an empty position, the
    --  generator automatically produces positions to reduce the memory usage.
-   --  Raise Too_Many_Tries in case that the algorithm does not succeed in less
-   --  than Tries attempts (see Initialize).
+   --  Raise Too_Many_Tries if the algorithm does not succeed within Tries
+   --  attempts (see Initialize).
 
-   procedure Produce (Pkg_Name  : String := Default_Pkg_Name);
+   procedure Produce (Pkg_Name : String := Default_Pkg_Name);
    --  Generate the hash function package Pkg_Name. This package includes the
-   --  minimal perfect Hash function.
+   --  minimal perfect Hash function. The output is placed in the current
+   --  directory, in files X.ads and X.adb, where X is the standard GNAT file
+   --  name for a package named Pkg_Name.
+
+   ----------------------------------------------------------------
 
    --  The routines and structures defined below allow producing the hash
    --  function using a different way from the procedure above. The procedure

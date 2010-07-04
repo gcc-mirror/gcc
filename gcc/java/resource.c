@@ -25,21 +25,15 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
 #include "tree.h"
-#include "rtl.h"
-#include "flags.h"
 #include "java-tree.h"
 #include "jcf.h"
-#include "obstack.h"
 #include "toplev.h"
 #include "output.h"
 #include "parse.h"
 #include "function.h"
 #include "ggc.h"
 #include "stdio.h"
-#include "target.h"
-#include "expr.h"
 #include "tree-iterator.h"
 #include "cgraph.h"
 
@@ -49,12 +43,13 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #endif
 
 /* A list of all the resources files.  */
-static GTY(()) tree resources = NULL;
+static GTY(()) VEC(tree,gc) *resources;
 
 void
 compile_resource_data (const char *name, const char *buffer, int length)
 {
   tree rtype, field = NULL_TREE, data_type, rinit, data, decl;
+  VEC(constructor_elt,gc) *v = NULL;
 
   data_type = build_prim_array_type (unsigned_byte_type_node,
 				     strlen (name) + length);
@@ -65,15 +60,15 @@ compile_resource_data (const char *name, const char *buffer, int length)
 	      rtype, field, "resource_length", unsigned_int_type_node);
   PUSH_FIELD (input_location, rtype, field, "data", data_type);
   FINISH_RECORD (rtype);
-  START_RECORD_CONSTRUCTOR (rinit, rtype);
-  PUSH_FIELD_VALUE (rinit, "name_length", 
+  START_RECORD_CONSTRUCTOR (v, rtype);
+  PUSH_FIELD_VALUE (v, "name_length", 
 		    build_int_cst (NULL_TREE, strlen (name)));
-  PUSH_FIELD_VALUE (rinit, "resource_length", 
+  PUSH_FIELD_VALUE (v, "resource_length", 
 		    build_int_cst (NULL_TREE, length));
   data = build_string (strlen(name) + length, buffer);
   TREE_TYPE (data) = data_type;
-  PUSH_FIELD_VALUE (rinit, "data", data);
-  FINISH_RECORD_CONSTRUCTOR (rinit);
+  PUSH_FIELD_VALUE (v, "data", data);
+  FINISH_RECORD_CONSTRUCTOR (rinit, v, rtype);
   TREE_CONSTANT (rinit) = 1;
 
   decl = build_decl (input_location,
@@ -91,13 +86,14 @@ compile_resource_data (const char *name, const char *buffer, int length)
   rest_of_decl_compilation (decl, global_bindings_p (), 0);
   varpool_finalize_decl (decl);
 
-  resources = tree_cons (NULL_TREE, decl, resources);
+  VEC_safe_push (tree, gc, resources, decl);
 }
 
 void
 write_resource_constructor (tree *list_p)
 {
-  tree iter, t, register_resource_fn;
+  tree decl, t, register_resource_fn;
+  unsigned ix;
 
   if (resources == NULL)
     return;
@@ -110,9 +106,9 @@ write_resource_constructor (tree *list_p)
   register_resource_fn = t;
 
   /* Write out entries in the same order in which they were defined.  */
-  for (iter = nreverse (resources); iter ; iter = TREE_CHAIN (iter))
+  for (ix = 0; VEC_iterate (tree, resources, ix, decl); ix++)
     {
-      t = build_fold_addr_expr (TREE_VALUE (iter));
+      t = build_fold_addr_expr (decl);
       t = build_call_expr (register_resource_fn, 1, t);
       append_to_statement_list (t, list_p);
     }

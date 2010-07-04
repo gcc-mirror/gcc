@@ -45,9 +45,9 @@ void
 PB_DS_CLASS_C_DEC::
 assert_valid() const
 {
-  _GLIBCXX_DEBUG_ASSERT(m_p_root == NULL || m_p_root->m_p_prev_or_parent == NULL);
+  _GLIBCXX_DEBUG_ASSERT(m_p_root == 0 || m_p_root->m_p_prev_or_parent == 0);
 
-  if (m_p_root != NULL)
+  if (m_p_root != 0)
     assert_node_consistent(m_p_root, Single_Link_Roots);
   assert_size();
   assert_iterators();
@@ -58,22 +58,22 @@ void
 PB_DS_CLASS_C_DEC::
 assert_node_consistent(const_node_pointer p_nd, bool single_link) const
 {
-  if (p_nd == NULL)
+  if (p_nd == 0)
     return;
 
   assert_node_consistent(p_nd->m_p_l_child, false);
   assert_node_consistent(p_nd->m_p_next_sibling, single_link);
 
   if (single_link)
-    _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_prev_or_parent == NULL);
-  else if (p_nd->m_p_next_sibling != NULL)
+    _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_prev_or_parent == 0);
+  else if (p_nd->m_p_next_sibling != 0)
     _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_next_sibling->m_p_prev_or_parent == p_nd);
 
-  if (p_nd->m_p_l_child == NULL)
+  if (p_nd->m_p_l_child == 0)
     return;
 
   const_node_pointer p_child = p_nd->m_p_l_child;
-  while (p_child != NULL)
+  while (p_child != 0)
     {
       const_node_pointer p_next_child = p_child->m_p_next_sibling;
       _GLIBCXX_DEBUG_ASSERT(!Cmp_Fn::operator()(p_nd->m_value, p_child->m_value));
@@ -115,7 +115,7 @@ PB_DS_CLASS_C_DEC::
 size_from_node(const_node_pointer p_nd)
 {
   size_type ret = 0;
-  while (p_nd != NULL)
+  while (p_nd != 0)
     {
       ret += 1 + size_from_node(p_nd->m_p_l_child);
       p_nd = p_nd->m_p_next_sibling;
@@ -130,7 +130,7 @@ degree(const_node_pointer p_nd)
 {
   size_type ret = 0;
   const_node_pointer p_child = p_nd->m_p_l_child;
-  while (p_child != NULL)
+  while (p_child != 0)
     {
       ++ret;
       p_child = p_child->m_p_next_sibling;
