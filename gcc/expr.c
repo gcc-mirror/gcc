@@ -434,7 +434,7 @@ convert_move (rtx to, rtx from, int unsignedp)
 
       /* Try converting directly if the insn is supported.  */
 
-      code = convert_optab_handler (tab, to_mode, from_mode)->insn_code;
+      code = convert_optab_handler (tab, to_mode, from_mode);
       if (code != CODE_FOR_nothing)
 	{
 	  emit_unop_insn (code, to, from,
@@ -468,12 +468,12 @@ convert_move (rtx to, rtx from, int unsignedp)
       enum machine_mode full_mode
 	= smallest_mode_for_size (GET_MODE_BITSIZE (to_mode), MODE_INT);
 
-      gcc_assert (convert_optab_handler (trunc_optab, to_mode, full_mode)->insn_code
+      gcc_assert (convert_optab_handler (trunc_optab, to_mode, full_mode)
 		  != CODE_FOR_nothing);
 
       if (full_mode != from_mode)
 	from = convert_to_mode (full_mode, from, unsignedp);
-      emit_unop_insn (convert_optab_handler (trunc_optab, to_mode, full_mode)->insn_code,
+      emit_unop_insn (convert_optab_handler (trunc_optab, to_mode, full_mode),
 		      to, from, UNKNOWN);
       return;
     }
@@ -483,18 +483,19 @@ convert_move (rtx to, rtx from, int unsignedp)
       enum machine_mode full_mode
 	= smallest_mode_for_size (GET_MODE_BITSIZE (from_mode), MODE_INT);
 
-      gcc_assert (convert_optab_handler (sext_optab, full_mode, from_mode)->insn_code
+      gcc_assert (convert_optab_handler (sext_optab, full_mode, from_mode)
 		  != CODE_FOR_nothing);
 
       if (to_mode == full_mode)
 	{
-	  emit_unop_insn (convert_optab_handler (sext_optab, full_mode, from_mode)->insn_code,
+	  emit_unop_insn (convert_optab_handler (sext_optab, full_mode,
+						 from_mode),
 			  to, from, UNKNOWN);
 	  return;
 	}
 
       new_from = gen_reg_rtx (full_mode);
-      emit_unop_insn (convert_optab_handler (sext_optab, full_mode, from_mode)->insn_code,
+      emit_unop_insn (convert_optab_handler (sext_optab, full_mode, from_mode),
 		      new_from, from, UNKNOWN);
 
       /* else proceed to integer conversions below.  */
@@ -695,9 +696,10 @@ convert_move (rtx to, rtx from, int unsignedp)
     }
 
   /* Support special truncate insns for certain modes.  */
-  if (convert_optab_handler (trunc_optab, to_mode, from_mode)->insn_code != CODE_FOR_nothing)
+  if (convert_optab_handler (trunc_optab, to_mode,
+			     from_mode) != CODE_FOR_nothing)
     {
-      emit_unop_insn (convert_optab_handler (trunc_optab, to_mode, from_mode)->insn_code,
+      emit_unop_insn (convert_optab_handler (trunc_optab, to_mode, from_mode),
 		      to, from, UNKNOWN);
       return;
     }
@@ -990,7 +992,7 @@ move_by_pieces (rtx to, rtx from, unsigned HOST_WIDE_INT len,
       if (mode == VOIDmode)
 	break;
 
-      icode = optab_handler (mov_optab, mode)->insn_code;
+      icode = optab_handler (mov_optab, mode);
       if (icode != CODE_FOR_nothing && align >= GET_MODE_ALIGNMENT (mode))
 	move_by_pieces_1 (GEN_FCN (icode), mode, &data);
 
@@ -1071,7 +1073,7 @@ move_by_pieces_ninsns (unsigned HOST_WIDE_INT l, unsigned int align,
       if (mode == VOIDmode)
 	break;
 
-      icode = optab_handler (mov_optab, mode)->insn_code;
+      icode = optab_handler (mov_optab, mode);
       if (icode != CODE_FOR_nothing && align >= GET_MODE_ALIGNMENT (mode))
 	n_insns += l / GET_MODE_SIZE (mode), l %= GET_MODE_SIZE (mode);
 
@@ -2352,7 +2354,7 @@ can_store_by_pieces (unsigned HOST_WIDE_INT len,
 	  if (mode == VOIDmode)
 	    break;
 
-	  icode = optab_handler (mov_optab, mode)->insn_code;
+	  icode = optab_handler (mov_optab, mode);
 	  if (icode != CODE_FOR_nothing
 	      && align >= GET_MODE_ALIGNMENT (mode))
 	    {
@@ -2565,7 +2567,7 @@ store_by_pieces_1 (struct store_by_pieces_d *data ATTRIBUTE_UNUSED,
       if (mode == VOIDmode)
 	break;
 
-      icode = optab_handler (mov_optab, mode)->insn_code;
+      icode = optab_handler (mov_optab, mode);
       if (icode != CODE_FOR_nothing && align >= GET_MODE_ALIGNMENT (mode))
 	store_by_pieces_2 (GEN_FCN (icode), mode, data);
 
@@ -3034,7 +3036,7 @@ emit_move_via_integer (enum machine_mode mode, rtx x, rtx y, bool force)
     return NULL_RTX;
 
   /* The target must support moves in this mode.  */
-  code = optab_handler (mov_optab, imode)->insn_code;
+  code = optab_handler (mov_optab, imode);
   if (code == CODE_FOR_nothing)
     return NULL_RTX;
 
@@ -3184,7 +3186,7 @@ emit_move_complex (enum machine_mode mode, rtx x, rtx y)
 
   /* Move floating point as parts.  */
   if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
-      && optab_handler (mov_optab, GET_MODE_INNER (mode))->insn_code != CODE_FOR_nothing)
+      && optab_handler (mov_optab, GET_MODE_INNER (mode)) != CODE_FOR_nothing)
     try_int = false;
   /* Not possible if the values are inherently not adjacent.  */
   else if (GET_CODE (x) == CONCAT || GET_CODE (y) == CONCAT)
@@ -3235,7 +3237,7 @@ emit_move_ccmode (enum machine_mode mode, rtx x, rtx y)
   /* Assume all MODE_CC modes are equivalent; if we have movcc, use it.  */
   if (mode != CCmode)
     {
-      enum insn_code code = optab_handler (mov_optab, CCmode)->insn_code;
+      enum insn_code code = optab_handler (mov_optab, CCmode);
       if (code != CODE_FOR_nothing)
 	{
 	  x = emit_move_change_mode (CCmode, mode, x, true);
@@ -3375,7 +3377,7 @@ emit_move_insn_1 (rtx x, rtx y)
 
   gcc_assert ((unsigned int) mode < (unsigned int) MAX_MACHINE_MODE);
 
-  code = optab_handler (mov_optab, mode)->insn_code;
+  code = optab_handler (mov_optab, mode);
   if (code != CODE_FOR_nothing)
     return emit_insn (GEN_FCN (code) (x, y));
 
@@ -3627,7 +3629,7 @@ emit_single_push_insn (enum machine_mode mode, rtx x, tree type)
   stack_pointer_delta += PUSH_ROUNDING (GET_MODE_SIZE (mode));
   /* If there is push pattern, use it.  Otherwise try old way of throwing
      MEM representing push operation to move expander.  */
-  icode = optab_handler (push_optab, mode)->insn_code;
+  icode = optab_handler (push_optab, mode);
   if (icode != CODE_FOR_nothing)
     {
       if (((pred = insn_data[(int) icode].operand[0].predicate)
@@ -4363,7 +4365,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
        set_mem_attributes (mem, to, 0);
        set_mem_addr_space (mem, as);
 
-       icode = movmisalign_optab->handlers[mode].insn_code;
+       icode = optab_handler (movmisalign_optab, mode);
        gcc_assert (icode != CODE_FOR_nothing);
 
        op_mode1 = insn_data[icode].operand[1].mode;
@@ -4496,7 +4498,7 @@ bool
 emit_storent_insn (rtx to, rtx from)
 {
   enum machine_mode mode = GET_MODE (to), imode;
-  enum insn_code code = optab_handler (storent_optab, mode)->insn_code;
+  enum insn_code code = optab_handler (storent_optab, mode);
   rtx pattern;
 
   if (code == CODE_FOR_nothing)
@@ -5703,7 +5705,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	  {
 	    enum machine_mode mode = GET_MODE (target);
 
-	    icode = (int) optab_handler (vec_init_optab, mode)->insn_code;
+	    icode = (int) optab_handler (vec_init_optab, mode);
 	    if (icode != CODE_FOR_nothing)
 	      {
 		unsigned int i;
@@ -7704,7 +7706,7 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	  this_optab = usmul_widen_optab;
 	  if (mode == GET_MODE_2XWIDER_MODE (innermode))
 	    {
-	      if (optab_handler (this_optab, mode)->insn_code != CODE_FOR_nothing)
+	      if (optab_handler (this_optab, mode) != CODE_FOR_nothing)
 		{
 		  if (TYPE_UNSIGNED (TREE_TYPE (treeop0)))
 		    expand_operands (treeop0, treeop1, subtarget, &op0, &op1,
@@ -7730,7 +7732,7 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 
 	  if (mode == GET_MODE_2XWIDER_MODE (innermode))
 	    {
-	      if (optab_handler (this_optab, mode)->insn_code != CODE_FOR_nothing)
+	      if (optab_handler (this_optab, mode) != CODE_FOR_nothing)
 		{
 		  expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1,
 				   EXPAND_NORMAL);
@@ -7738,7 +7740,7 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 					       unsignedp, this_optab);
 		  return REDUCE_BIT_FIELD (temp);
 		}
-	      if (optab_handler (other_optab, mode)->insn_code != CODE_FOR_nothing
+	      if (optab_handler (other_optab, mode) != CODE_FOR_nothing
 		  && innermode == word_mode)
 		{
 		  rtx htem, hipart;
@@ -8727,7 +8729,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 			|| modifier == EXPAND_STACK_PARM);
 
 	    /* The vectorizer should have already checked the mode.  */
-	    icode = optab_handler (movmisalign_optab, mode)->insn_code;
+	    icode = optab_handler (movmisalign_optab, mode);
 	    gcc_assert (icode != CODE_FOR_nothing);
 
 	    /* We've already validated the memory, and we're creating a

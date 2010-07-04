@@ -714,8 +714,7 @@ vect_pattern_recog_1 (
       optab = optab_for_tree_code (code, type_in, optab_default);
       vec_mode = TYPE_MODE (type_in);
       if (!optab
-          || (icode = optab_handler (optab, vec_mode)->insn_code) ==
-              CODE_FOR_nothing
+          || (icode = optab_handler (optab, vec_mode)) == CODE_FOR_nothing
           || (insn_data[icode].operand[0].mode != TYPE_MODE (type_out)))
 	return;
     }

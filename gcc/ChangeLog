@@ -1,3 +1,19 @@
+2010-07-04  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* optabs.h (optab_handler, convert_optab_handler): Turn into
+	inline functions that return an insn code.
+	(set_optab_handler, set_convert_optab_handler): New functions.
+	* builtins.c: Replace optab_handler(X)->insn_code with
+	optab_handler or set_optab_handler thoughout.  Likewise
+	convert_optab_handler(X)->insn_code with convert_optab_handler
+	and set_convert_optab_handler.
+	* expmed.c, expr.c, genopinit.c, ifcvt.c, optabs.c, reload.c,
+	reload1.c, stmt.c, targhooks.c, tree-ssa-loop-prefetch.c,
+	tree-ssa-math-opts.c, tree-vect-data-refs.c, tree-vect-generic.c,
+	tree-vect-loop.c, tree-vect-patterns.c, tree-vect-slp.c,
+	tree-vect-stmts.c, config/m32c/m32c.c, config/rs6000/rs6000.c,
+	config/spu/spu.c: Likewise.
+
 2010-07-04  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/44531

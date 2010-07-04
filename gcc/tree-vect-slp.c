@@ -421,8 +421,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 					   optab_vector);
 
 	      if (!optab
-		  || (optab->handlers[(int) vec_mode].insn_code
-		      == CODE_FOR_nothing))
+		  || optab_handler (optab, vec_mode) == CODE_FOR_nothing)
 		{
 		  /* No vector/vector shift, try for a vector/scalar shift.  */
 		  optab = optab_for_tree_code (rhs_code, vectype,
@@ -434,7 +433,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 			fprintf (vect_dump, "Build SLP failed: no optab.");
 		      return false;
 		    }
-		  icode = (int) optab->handlers[(int) vec_mode].insn_code;
+		  icode = (int) optab_handler (optab, vec_mode);
 		  if (icode == CODE_FOR_nothing)
 		    {
 		      if (vect_print_dump_info (REPORT_SLP))

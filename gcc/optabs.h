@@ -782,9 +782,43 @@ extern rtx expand_vec_cond_expr (tree, tree, tree, tree, rtx);
 /* Generate code for VEC_LSHIFT_EXPR and VEC_RSHIFT_EXPR.  */
 extern rtx expand_vec_shift_expr (sepops, rtx);
 
-#define optab_handler(optab,mode) (&(optab)->handlers[(int) (mode)])
-#define convert_optab_handler(optab,mode,mode2) \
-	(&(optab)->handlers[(int) (mode)][(int) (mode2)])
+/* Return the insn used to implement mode MODE of OP, or CODE_FOR_nothing
+   if the target does not have such an insn.  */
+
+static inline enum insn_code
+optab_handler (optab op, enum machine_mode mode)
+{
+  return op->handlers[(int) mode].insn_code;
+}
+
+/* Record that insn CODE should be used to implement mode MODE of OP.  */
+
+static inline void
+set_optab_handler (optab op, enum machine_mode mode, enum insn_code code)
+{
+  op->handlers[(int) mode].insn_code = code;
+}
+
+/* Return the insn used to perform conversion OP from mode FROM_MODE
+   to mode TO_MODE; return CODE_FOR_nothing if the target does not have
+   such an insn.  */
+
+static inline enum insn_code
+convert_optab_handler (convert_optab op, enum machine_mode to_mode,
+		       enum machine_mode from_mode)
+{
+  return op->handlers[(int) to_mode][(int) from_mode].insn_code;
+}
+
+/* Record that insn CODE should be used to perform conversion OP
+   from mode FROM_MODE to mode TO_MODE.  */
+
+static inline void
+set_convert_optab_handler (convert_optab op, enum machine_mode to_mode,
+			   enum machine_mode from_mode, enum insn_code code)
+{
+  op->handlers[(int) to_mode][(int) from_mode].insn_code = code;
+}
 
 extern rtx optab_libfunc (optab optab, enum machine_mode mode);
 extern rtx convert_optab_libfunc (convert_optab optab, enum machine_mode mode1,

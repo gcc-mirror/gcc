@@ -3243,9 +3243,9 @@ bool
 vect_strided_store_supported (tree vectype)
 {
   optab interleave_high_optab, interleave_low_optab;
-  int mode;
+  enum machine_mode mode;
 
-  mode = (int) TYPE_MODE (vectype);
+  mode = TYPE_MODE (vectype);
 
   /* Check that the operation is supported.  */
   interleave_high_optab = optab_for_tree_code (VEC_INTERLEAVE_HIGH_EXPR,
@@ -3259,10 +3259,8 @@ vect_strided_store_supported (tree vectype)
       return false;
     }
 
-  if (optab_handler (interleave_high_optab, mode)->insn_code
-      == CODE_FOR_nothing
-      || optab_handler (interleave_low_optab, mode)->insn_code
-      == CODE_FOR_nothing)
+  if (optab_handler (interleave_high_optab, mode) == CODE_FOR_nothing
+      || optab_handler (interleave_low_optab, mode) == CODE_FOR_nothing)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "interleave op not supported by target.");
@@ -3655,9 +3653,9 @@ bool
 vect_strided_load_supported (tree vectype)
 {
   optab perm_even_optab, perm_odd_optab;
-  int mode;
+  enum machine_mode mode;
 
-  mode = (int) TYPE_MODE (vectype);
+  mode = TYPE_MODE (vectype);
 
   perm_even_optab = optab_for_tree_code (VEC_EXTRACT_EVEN_EXPR, vectype,
 					 optab_default);
@@ -3668,7 +3666,7 @@ vect_strided_load_supported (tree vectype)
       return false;
     }
 
-  if (optab_handler (perm_even_optab, mode)->insn_code == CODE_FOR_nothing)
+  if (optab_handler (perm_even_optab, mode) == CODE_FOR_nothing)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "perm_even op not supported by target.");
@@ -3684,7 +3682,7 @@ vect_strided_load_supported (tree vectype)
       return false;
     }
 
-  if (optab_handler (perm_odd_optab, mode)->insn_code == CODE_FOR_nothing)
+  if (optab_handler (perm_odd_optab, mode) == CODE_FOR_nothing)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "perm_odd op not supported by target.");
@@ -4044,8 +4042,7 @@ vect_supportable_dr_alignment (struct data_reference *dr,
       bool is_packed = false;
       tree type = (TREE_TYPE (DR_REF (dr)));
 
-      if (optab_handler (vec_realign_load_optab, mode)->insn_code !=
-						   	     CODE_FOR_nothing
+      if (optab_handler (vec_realign_load_optab, mode) != CODE_FOR_nothing
 	  && (!targetm.vectorize.builtin_mask_for_load
 	      || targetm.vectorize.builtin_mask_for_load ()))
 	{

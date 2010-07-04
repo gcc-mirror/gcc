@@ -3332,8 +3332,7 @@ rs6000_builtin_support_vector_misalignment (enum machine_mode mode,
   if (TARGET_VSX)
     {
       /* Return if movmisalign pattern is not supported for this mode.  */
-      if (optab_handler (movmisalign_optab, mode)->insn_code ==
-          CODE_FOR_nothing)
+      if (optab_handler (movmisalign_optab, mode) == CODE_FOR_nothing)
         return false;
 
       if (misalignment == -1)
@@ -16355,7 +16354,7 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
 	if (rev_code == UNKNOWN)
 	  return NULL_RTX;
 
-	nor_code = optab_handler (one_cmpl_optab, (int)dmode)->insn_code;
+	nor_code = optab_handler (one_cmpl_optab, dmode);
 	if (nor_code == CODE_FOR_nothing)
 	  return NULL_RTX;
 
@@ -16400,7 +16399,7 @@ rs6000_emit_vector_compare (enum rtx_code rcode,
 	    gcc_unreachable ();
 	  }
 
-	ior_code = optab_handler (ior_optab, (int)dmode)->insn_code;
+	ior_code = optab_handler (ior_optab, dmode);
 	if (ior_code == CODE_FOR_nothing)
 	  return NULL_RTX;
 
@@ -25753,8 +25752,8 @@ rs6000_emit_madd (rtx dst, rtx m1, rtx m2, rtx a)
     {
       /* For the simple ops, use the generator function, rather than assuming
 	 that the RTL is standard.  */
-      enum insn_code mcode = optab_handler (smul_optab, mode)->insn_code;
-      enum insn_code acode = optab_handler (add_optab, mode)->insn_code;
+      enum insn_code mcode = optab_handler (smul_optab, mode);
+      enum insn_code acode = optab_handler (add_optab, mode);
       gen_2arg_fn_t gen_mul = (gen_2arg_fn_t) GEN_FCN (mcode);
       gen_2arg_fn_t gen_add = (gen_2arg_fn_t) GEN_FCN (acode);
       rtx mreg = gen_reg_rtx (mode);
@@ -25786,8 +25785,8 @@ rs6000_emit_msub (rtx dst, rtx m1, rtx m2, rtx a)
     {
       /* For the simple ops, use the generator function, rather than assuming
 	 that the RTL is standard.  */
-      enum insn_code mcode = optab_handler (smul_optab, mode)->insn_code;
-      enum insn_code scode = optab_handler (add_optab, mode)->insn_code;
+      enum insn_code mcode = optab_handler (smul_optab, mode);
+      enum insn_code scode = optab_handler (add_optab, mode);
       gen_2arg_fn_t gen_mul = (gen_2arg_fn_t) GEN_FCN (mcode);
       gen_2arg_fn_t gen_sub = (gen_2arg_fn_t) GEN_FCN (scode);
       rtx mreg = gen_reg_rtx (mode);
@@ -25822,8 +25821,8 @@ rs6000_emit_nmsub (rtx dst, rtx m1, rtx m2, rtx a)
     {
       /* For the simple ops, use the generator function, rather than assuming
 	 that the RTL is standard.  */
-      enum insn_code mcode = optab_handler (smul_optab, mode)->insn_code;
-      enum insn_code scode = optab_handler (sub_optab, mode)->insn_code;
+      enum insn_code mcode = optab_handler (smul_optab, mode);
+      enum insn_code scode = optab_handler (sub_optab, mode);
       gen_2arg_fn_t gen_mul = (gen_2arg_fn_t) GEN_FCN (mcode);
       gen_2arg_fn_t gen_sub = (gen_2arg_fn_t) GEN_FCN (scode);
       rtx mreg = gen_reg_rtx (mode);
@@ -25857,7 +25856,7 @@ rs6000_emit_swdiv_high_precision (rtx dst, rtx n, rtx d)
 {
   enum machine_mode mode = GET_MODE (dst);
   rtx x0, e0, e1, y1, u0, v0;
-  enum insn_code code = optab_handler (smul_optab, mode)->insn_code;
+  enum insn_code code = optab_handler (smul_optab, mode);
   gen_2arg_fn_t gen_mul = (gen_2arg_fn_t) GEN_FCN (code);
   rtx one = rs6000_load_constant_and_splat (mode, dconst1);
 
@@ -25895,7 +25894,7 @@ rs6000_emit_swdiv_low_precision (rtx dst, rtx n, rtx d)
 {
   enum machine_mode mode = GET_MODE (dst);
   rtx x0, e0, e1, e2, y1, y2, y3, u0, v0, one;
-  enum insn_code code = optab_handler (smul_optab, mode)->insn_code;
+  enum insn_code code = optab_handler (smul_optab, mode);
   gen_2arg_fn_t gen_mul = (gen_2arg_fn_t) GEN_FCN (code);
 
   gcc_assert (code != CODE_FOR_nothing);
@@ -25966,7 +25965,7 @@ rs6000_emit_swrsqrt (rtx dst, rtx src)
   REAL_VALUE_TYPE dconst3_2;
   int i;
   rtx halfthree;
-  enum insn_code code = optab_handler (smul_optab, mode)->insn_code;
+  enum insn_code code = optab_handler (smul_optab, mode);
   gen_2arg_fn_t gen_mul = (gen_2arg_fn_t) GEN_FCN (code);
 
   gcc_assert (code != CODE_FOR_nothing);

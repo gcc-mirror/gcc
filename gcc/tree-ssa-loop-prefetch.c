@@ -1136,7 +1136,7 @@ nontemporal_store_p (struct mem_ref *ref)
   if (mode == BLKmode)
     return false;
 
-  code = optab_handler (storent_optab, mode)->insn_code;
+  code = optab_handler (storent_optab, mode);
   return code != CODE_FOR_nothing;
 }
 
