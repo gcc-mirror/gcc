@@ -1,3 +1,74 @@
+2010-07-04  Ira Rosen  <irar@il.ibm.com>
+	    Revital Eres  <eres@il.ibm.com>
+
+	* doc/tm.texi.in (TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST): 
+	Document new arguments.
+	* doc/tm.texi: Regenerate.
+	* targhooks.c (default_builtin_vectorization_cost): Add new arguments.
+	Handle unaligned store.
+	* targhooks.h (default_builtin_vectorization_cost): Add new arguments.
+	* target.def (builtin_vectorization_cost): Add new arguments.
+	* target.h (enum vect_cost_for_stmt): Add unaligned_store.
+	* tree-vect-loop-manip.c (vect_gen_niters_for_prolog_loop): Take number
+	of iterations of prolog loop directly from LOOP_PEELING_FOR_ALIGNMENT.
+	(vect_vfa_segment_size): Fix indentation.
+	* tree-vectorizer.h (struct _vect_peel_info): New.
+	(struct _vect_peel_extended_info): New.
+	(struct _loop_vec_info): Add new field for peeling hash table and a
+	macro for its access.
+	(VECT_MAX_COST): Define.
+	(vect_get_load_cost): Declare.
+	(vect_get_store_cost, vect_get_known_peeling_cost, 
+	vect_get_single_scalar_iteraion_cost): Likewise.
+	(vect_supportable_dr_alignment): Add new argument.
+	* tree-vect-loop.c (new_loop_vec_info): Initialize peeling hash table
+	field.
+	(destroy_loop_vec_info): Free peeling hash table.
+	(vect_analyze_loop_form): Update call to builtin_vectorization_cost.
+	(vect_analyze_loop): Move vect_enhance_data_refs_alignment before
+	vect_analyze_slp. Fix indentation.
+	(vect_get_single_scalar_iteraion_cost): New function.
+	(vect_get_known_peeling_cost): Likewise.
+	(vect_estimate_min_profitable_iters): Rename byte_misalign to npeel. 
+	Call vect_get_single_scalar_iteraion_cost instead of cost_for_stmt per 
+	statement. Move outside cost calculation inside unknown peeling case.
+	Call vect_get_known_peeling_cost for known amount of peeling.
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Add data
+	reference to the print message of forced alignment.
+	(vect_verify_datarefs_alignment): Update call to 
+	vect_supportable_dr_alignment.
+	(vect_get_data_access_cost): New function.
+	(vect_peeling_hash, vect_peeling_hash_eq, vect_peeling_hash_insert,
+	vect_peeling_hash_get_most_frequent, vect_peeling_hash_get_lowest_cost,
+	vect_peeling_hash_choose_best_peeling): Likewise.
+	(vect_enhance_data_refs_alignment): Fix documentation. Use hash table
+	to store all the accesses in the loop and find best possible access to
+	align using peeling for known alignment case. For unknown alignment
+	check if stores are preferred or if peeling is worthy.
+	(vect_find_same_alignment_drs): Analyze pairs of loads too.
+	(vect_supportable_dr_alignment): Add new argument and check aligned
+	accesses according to it. 
+	* tree-vect-stmts.c (vect_get_stmt_cost): New function.
+	(cost_for_stmt): Call vect_get_stmt_cost. 
+	(vect_model_simple_cost): Likewise.
+	(vect_model_store_cost): Call vect_get_stmt_cost. Call 
+	vect_get_store_cost to calculate the cost of the statement.
+	(vect_get_store_cost): New function.
+	(vect_model_load_cost): Call vect_get_stmt_cost. Call 
+	vect_get_load_cost to calculate the cost of the statement.
+	(vect_get_load_cost): New function.
+	(vectorizable_store): Update call to vect_supportable_dr_alignment.
+	(vectorizable_load): Likewise.
+	* config/spu/spu.c (spu_builtin_vectorization_cost): Add new
+	arguments. 
+	* config/i386/i386.c (ix86_builtin_vectorization_cost): Add new
+	arguments. Handle unaligned store.
+	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost): New.
+	(rs6000_builtin_support_vector_misalignment): Return true for word and
+	double word alignments for VSX.
+	* tree-vect-slp.c (vect_build_slp_tree): Update calls to 
+	vect_supportable_dr_alignment and builtin_vectorization_cost.
+
 2010-07-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/44597

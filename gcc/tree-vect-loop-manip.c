@@ -1976,25 +1976,18 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters,
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   int vectype_align = TYPE_ALIGN (vectype) / BITS_PER_UNIT;
   tree niters_type = TREE_TYPE (loop_niters);
-  int step = 1;
-  int element_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr))));
   int nelements = TYPE_VECTOR_SUBPARTS (vectype);
-
-  if (STMT_VINFO_STRIDED_ACCESS (stmt_info))
-    step = DR_GROUP_SIZE (vinfo_for_stmt (DR_GROUP_FIRST_DR (stmt_info)));
 
   pe = loop_preheader_edge (loop);
 
   if (LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo) > 0)
     {
-      int byte_misalign = LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo);
-      int elem_misalign = byte_misalign / element_size;
+      int npeel = LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo);
 
       if (vect_print_dump_info (REPORT_DETAILS))
-        fprintf (vect_dump, "known alignment = %d.", byte_misalign);
+        fprintf (vect_dump, "known peeling = %d.", npeel);
 
-      iters = build_int_cst (niters_type,
-                     (((nelements - elem_misalign) & (nelements - 1)) / step));
+      iters = build_int_cst (niters_type, npeel);
     }
   else
     {
@@ -2017,7 +2010,8 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters,
 
       /* Create:  byte_misalign = addr & (vectype_size - 1)  */
       byte_misalign =
-        fold_build2 (BIT_AND_EXPR, type, fold_convert (type, start_addr), vectype_size_minus_1);
+        fold_build2 (BIT_AND_EXPR, type, fold_convert (type, start_addr), 
+                     vectype_size_minus_1);
 
       /* Create:  elem_misalign = byte_misalign / element_size  */
       elem_misalign =
@@ -2323,7 +2317,8 @@ vect_vfa_segment_size (struct data_reference *dr, tree vect_factor)
   tree segment_length = fold_build2 (MULT_EXPR, integer_type_node,
 			             DR_STEP (dr), vect_factor);
 
-  if (vect_supportable_dr_alignment (dr) == dr_explicit_realign_optimized)
+  if (vect_supportable_dr_alignment (dr, false)
+        == dr_explicit_realign_optimized)
     {
       tree vector_size = TYPE_SIZE_UNIT
 			  (STMT_VINFO_VECTYPE (vinfo_for_stmt (DR_STMT (dr))));

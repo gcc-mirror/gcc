@@ -479,7 +479,9 @@ default_builtin_vectorized_conversion (unsigned int code ATTRIBUTE_UNUSED,
 /* Default vectorizer cost model values.  */
 
 int
-default_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost)
+default_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
+                                    tree vectype ATTRIBUTE_UNUSED,
+                                    int misalign ATTRIBUTE_UNUSED)
 {
   switch (type_of_cost)
     {
@@ -496,6 +498,7 @@ default_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost)
         return 1;
 
       case unaligned_load:
+      case unaligned_store:
         return 2;
 
       case cond_branch_taken:

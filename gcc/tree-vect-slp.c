@@ -560,7 +560,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
               if (first_load == stmt)
                 {
                   first_dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt));
-                  if (vect_supportable_dr_alignment (first_dr)
+                  if (vect_supportable_dr_alignment (first_dr, false)
                       == dr_unaligned_unsupported)
                     {
                       if (vect_print_dump_info (REPORT_SLP))
@@ -646,7 +646,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
         {
           VEC_safe_push (slp_tree, heap, *loads, *node);
           *inside_cost 
-            += targetm.vectorize.builtin_vectorization_cost (vec_perm) 
+            += targetm.vectorize.builtin_vectorization_cost (vec_perm, NULL, 0) 
                * group_size;
         }
 

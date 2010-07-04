@@ -5708,6 +5708,8 @@ preserved (e.g.@: used only by a reduction computation). Otherwise, the
 
 @hook TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 Returns cost of different scalar or vector statements for vectorization cost model.
+For vector memory operations the cost may depend on type (@var{vectype}) and 
+misalignment value (@var{misalign}).
 @end deftypefn
 
 @hook TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE

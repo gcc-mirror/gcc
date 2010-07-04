@@ -27,13 +27,13 @@ __attribute__ ((noinline)) int main1 (int n)
   for (i = 0; i < n; i++)
     {
       sa[i+7] = sb[i];
-      ia[i+3] = ib[i];
+      ia[i+3] = ib[i+1];
     }
 
   /* check results:  */
   for (i = 0; i < n; i++)
     {
-      if (sa[i+7] != sb[i] || ia[i+3] != ib[i])
+      if (sa[i+7] != sb[i] || ia[i+3] != ib[i+1])
 	abort ();
     }
 
@@ -44,7 +44,9 @@ __attribute__ ((noinline)) int main1 (int n)
    access for peeling, and therefore will examine the option of
    using a peeling factor = (V-3)%V = 1 for V=2,4. 
    This will not align the access 'sa[i+3]' (for which we need to
-   peel 5 iterations), so the loop can not be vectorized.  */
+   peel 5 iterations). However, 'ia[i+3]' also gets aligned if we peel 5
+   iterations, so the loop is vectorizable on all targets that support
+   unaligned loads.  */
 
 __attribute__ ((noinline)) int main2 (int n)
 {
@@ -55,13 +57,13 @@ __attribute__ ((noinline)) int main2 (int n)
   for (i = 0; i < n; i++)
     {
       ia[i+3] = ib[i];
-      sa[i+3] = sb[i];
+      sa[i+3] = sb[i+1];
     }
 
   /* check results:  */
   for (i = 0; i < n; i++)
     {
-      if (sa[i+3] != sb[i] || ia[i+3] != ib[i])
+      if (sa[i+3] != sb[i+1] || ia[i+3] != ib[i])
         abort ();
     }
 
@@ -78,11 +80,8 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { xfail {! vect_hw_misalign} } } } */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail { vect_no_align || vect_hw_misalign } } } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { xfail {! vect_hw_misalign} } } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" { xfail { vect_no_align || vect_hw_misalign } } } } */
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 4 "vect" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 2 "vect" { xfail { vect_no_align || vect_hw_misalign } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 2 "vect" { xfail { vect_no_align } } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { xfail { vect_no_align } } } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 4 "vect" { xfail { vect_no_align } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
 

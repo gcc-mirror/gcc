@@ -29376,7 +29376,9 @@ static const struct attribute_spec ix86_attribute_table[] =
 
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */
 static int
-ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost)
+ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
+                                 tree vectype ATTRIBUTE_UNUSED,
+                                 int misalign ATTRIBUTE_UNUSED)
 {
   switch (type_of_cost)
     {
@@ -29405,6 +29407,7 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost)
         return ix86_cost->scalar_to_vec_cost;
 
       case unaligned_load:
+      case unaligned_store:
         return ix86_cost->vec_unalign_load_cost;
 
       case cond_branch_taken:
