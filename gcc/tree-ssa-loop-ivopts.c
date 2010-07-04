@@ -89,6 +89,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tree-affine.h"
 #include "target.h"
+#include "tree-ssa-propagate.h"
 
 /* FIXME: Expressions are expanded to RTL in this pass to determine the
    cost of different addressing modes.  This should be moved to a TBD
@@ -5481,12 +5482,18 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
       gcc_unreachable ();
     }
 
-  op = force_gimple_operand_gsi (&bsi, comp, false, SSA_NAME_VAR (tgt),
-				 true, GSI_SAME_STMT);
+  if (!valid_gimple_rhs_p (comp)
+      || (gimple_code (use->stmt) != GIMPLE_PHI
+	  /* We can't allow re-allocating the stmt as it might be pointed
+	     to still.  */
+	  && (get_gimple_rhs_num_ops (TREE_CODE (comp))
+	      >= gimple_num_ops (gsi_stmt (bsi)))))
+    comp = force_gimple_operand_gsi (&bsi, comp, false, SSA_NAME_VAR (tgt),
+				     true, GSI_SAME_STMT);
 
   if (gimple_code (use->stmt) == GIMPLE_PHI)
     {
-      ass = gimple_build_assign (tgt, op);
+      ass = gimple_build_assign (tgt, comp);
       gsi_insert_before (&bsi, ass, GSI_SAME_STMT);
 
       bsi = gsi_for_stmt (use->stmt);
@@ -5494,7 +5501,7 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
     }
   else
     {
-      gimple_assign_set_rhs_from_tree (&bsi, op);
+      gimple_assign_set_rhs_from_tree (&bsi, comp);
       use->stmt = gsi_stmt (bsi);
     }
 }

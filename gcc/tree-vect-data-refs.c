@@ -2787,7 +2787,7 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
   vect_ptr_type = build_pointer_type (STMT_VINFO_VECTYPE (stmt_info));
   base = get_base_address (DR_REF (dr));
   if (base
-      && INDIRECT_REF_P (base))
+      && TREE_CODE (base) == MEM_REF)
     vect_ptr_type
       = build_qualified_type (vect_ptr_type,
 			      TYPE_QUALS (TREE_TYPE (TREE_OPERAND (base, 0))));
@@ -2798,6 +2798,10 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
   add_referenced_var (addr_expr);
   vec_stmt = force_gimple_operand (vec_stmt, &seq, false, addr_expr);
   gimple_seq_add_seq (new_stmt_list, seq);
+
+  if (DR_PTR_INFO (dr)
+      && TREE_CODE (vec_stmt) == SSA_NAME)
+    duplicate_ssa_name_ptr_info (vec_stmt, DR_PTR_INFO (dr));
 
   if (vect_print_dump_info (REPORT_DETAILS))
     {
@@ -2934,7 +2938,7 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
   vect_ptr_type = build_pointer_type (vectype);
   base = get_base_address (DR_REF (dr));
   if (base
-      && INDIRECT_REF_P (base))
+      && TREE_CODE (base) == MEM_REF)
     vect_ptr_type
       = build_qualified_type (vect_ptr_type,
 			      TYPE_QUALS (TREE_TYPE (TREE_OPERAND (base, 0))));
@@ -3032,17 +3036,26 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
   *initial_address = new_temp;
 
   /* Create: p = (vectype *) initial_base  */
-  vec_stmt = gimple_build_assign (vect_ptr,
-				  fold_convert (vect_ptr_type, new_temp));
-  vect_ptr_init = make_ssa_name (vect_ptr, vec_stmt);
-  gimple_assign_set_lhs (vec_stmt, vect_ptr_init);
-  if (pe)
+  if (TREE_CODE (new_temp) != SSA_NAME
+      || !useless_type_conversion_p (vect_ptr_type, TREE_TYPE (new_temp)))
     {
-      new_bb = gsi_insert_on_edge_immediate (pe, vec_stmt);
-      gcc_assert (!new_bb);
+      vec_stmt = gimple_build_assign (vect_ptr,
+				      fold_convert (vect_ptr_type, new_temp));
+      vect_ptr_init = make_ssa_name (vect_ptr, vec_stmt);
+      /* Copy the points-to information if it exists. */
+      if (DR_PTR_INFO (dr))
+	duplicate_ssa_name_ptr_info (vect_ptr_init, DR_PTR_INFO (dr));
+      gimple_assign_set_lhs (vec_stmt, vect_ptr_init);
+      if (pe)
+	{
+	  new_bb = gsi_insert_on_edge_immediate (pe, vec_stmt);
+	  gcc_assert (!new_bb);
+	}
+      else
+	gsi_insert_before (&gsi, vec_stmt, GSI_SAME_STMT);
     }
   else
-    gsi_insert_before (&gsi, vec_stmt, GSI_SAME_STMT);
+    vect_ptr_init = new_temp;
 
   /** (4) Handle the updating of the vector-pointer inside the loop.
 	  This is needed when ONLY_INIT is false, and also when AT_LOOP
@@ -3051,12 +3064,7 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
 
   /* No update in loop is required.  */
   if (only_init && (!loop_vinfo || at_loop == loop))
-    {
-      /* Copy the points-to information if it exists. */
-      if (DR_PTR_INFO (dr))
-        duplicate_ssa_name_ptr_info (vect_ptr_init, DR_PTR_INFO (dr));
-      vptr = vect_ptr_init;
-    }
+    vptr = vect_ptr_init;
   else
     {
       /* The step of the vector pointer is the Vector Size.  */

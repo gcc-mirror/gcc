@@ -2566,7 +2566,7 @@ tree-ssa-loop-ivopts.o : tree-ssa-loop-ivopts.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(TREE_PASS_H) $(GGC_H) $(RECOG_H) insn-config.h $(HASHTAB_H) $(SCEV_H) \
    $(CFGLOOP_H) $(PARAMS_H) langhooks.h $(BASIC_BLOCK_H) \
    tree-affine.h pointer-set.h $(TARGET_H) tree-pretty-print.h \
-   gimple-pretty-print.h
+   gimple-pretty-print.h tree-ssa-propagate.h
 tree-affine.o : tree-affine.c tree-affine.h $(CONFIG_H) pointer-set.h \
    $(SYSTEM_H) $(TREE_H) $(GIMPLE_H) \
    output.h $(DIAGNOSTIC_H) coretypes.h $(TREE_DUMP_H) $(FLAGS_H) \
