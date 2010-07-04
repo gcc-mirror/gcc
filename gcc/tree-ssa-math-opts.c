@@ -1113,11 +1113,9 @@ execute_optimize_bswap (void)
     return 0;
 
   bswap32_p = (built_in_decls[BUILT_IN_BSWAP32]
-	       && optab_handler (bswap_optab, SImode)->insn_code !=
-	       CODE_FOR_nothing);
+	       && optab_handler (bswap_optab, SImode) != CODE_FOR_nothing);
   bswap64_p = (built_in_decls[BUILT_IN_BSWAP64]
-	       && (optab_handler (bswap_optab, DImode)->insn_code !=
-		   CODE_FOR_nothing
+	       && (optab_handler (bswap_optab, DImode) != CODE_FOR_nothing
 		   || (bswap32_p && word_mode == SImode)));
 
   if (!bswap32_p && !bswap64_p)
@@ -1324,17 +1322,17 @@ convert_mult_to_widen (gimple stmt)
   if ((rhs1_stmt == NULL || TYPE_UNSIGNED (type1))
       && (rhs2_stmt == NULL || TYPE_UNSIGNED (type2))
       && (optab_handler (umul_widen_optab, TYPE_MODE (type))
-	  ->insn_code == CODE_FOR_nothing))
+	  == CODE_FOR_nothing))
     return false;
   else if ((rhs1_stmt == NULL || !TYPE_UNSIGNED (type1))
 	   && (rhs2_stmt == NULL || !TYPE_UNSIGNED (type2))
 	   && (optab_handler (smul_widen_optab, TYPE_MODE (type))
-	       ->insn_code == CODE_FOR_nothing))
+	       == CODE_FOR_nothing))
     return false;
   else if (rhs1_stmt != NULL && rhs2_stmt != NULL
 	   && (TYPE_UNSIGNED (type1) != TYPE_UNSIGNED (type2))
 	   && (optab_handler (usmul_widen_optab, TYPE_MODE (type))
-	       ->insn_code == CODE_FOR_nothing))
+	       == CODE_FOR_nothing))
     return false;
 
   if ((rhs1_stmt == NULL && !int_fits_type_p (rhs1, type2))
@@ -1385,8 +1383,7 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
      accumulate in this mode/signedness combination, otherwise
      this transformation is likely to pessimize code.  */
   this_optab = optab_for_tree_code (wmult_code, type, optab_default);
-  if (optab_handler (this_optab, TYPE_MODE (type))->insn_code
-      == CODE_FOR_nothing)
+  if (optab_handler (this_optab, TYPE_MODE (type)) == CODE_FOR_nothing)
     return false;
 
   rhs1 = gimple_assign_rhs1 (stmt);

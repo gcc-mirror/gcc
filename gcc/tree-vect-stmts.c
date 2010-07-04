@@ -2181,8 +2181,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
 	{
 	  optab = optab_for_tree_code (code, vectype, optab_scalar);
 	  if (optab
-	      && (optab_handler (optab, TYPE_MODE (vectype))->insn_code
-		  != CODE_FOR_nothing))
+	      && optab_handler (optab, TYPE_MODE (vectype)) != CODE_FOR_nothing)
 	    {
 	      scalar_shift_arg = true;
 	      if (vect_print_dump_info (REPORT_DETAILS))
@@ -2192,7 +2191,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
 	    {
 	      optab = optab_for_tree_code (code, vectype, optab_vector);
 	      if (optab
-		  && (optab_handler (optab, TYPE_MODE (vectype))->insn_code
+		  && (optab_handler (optab, TYPE_MODE (vectype))
 		      != CODE_FOR_nothing))
 		{
 		  if (vect_print_dump_info (REPORT_DETAILS))
@@ -2226,7 +2225,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
       return false;
     }
   vec_mode = TYPE_MODE (vectype);
-  icode = (int) optab_handler (optab, vec_mode)->insn_code;
+  icode = (int) optab_handler (optab, vec_mode);
   if (icode == CODE_FOR_nothing)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -3128,7 +3127,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   vec_mode = TYPE_MODE (vectype);
   /* FORNOW. In some cases can vectorize even if data-type not supported
      (e.g. - array initialization with 0).  */
-  if (optab_handler (mov_optab, (int)vec_mode)->insn_code == CODE_FOR_nothing)
+  if (optab_handler (mov_optab, vec_mode) == CODE_FOR_nothing)
     return false;
 
   if (!STMT_VINFO_DATA_REF (stmt_info))
@@ -3426,7 +3425,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info), *first_dr;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   tree new_temp;
-  int mode;
+  enum machine_mode mode;
   gimple new_stmt = NULL;
   tree dummy;
   enum dr_alignment_support alignment_support_scheme;
@@ -3507,11 +3506,11 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     return false;
 
   scalar_type = TREE_TYPE (DR_REF (dr));
-  mode = (int) TYPE_MODE (vectype);
+  mode = TYPE_MODE (vectype);
 
   /* FORNOW. In some cases can vectorize even if data-type not supported
     (e.g. - data copies).  */
-  if (optab_handler (mov_optab, mode)->insn_code == CODE_FOR_nothing)
+  if (optab_handler (mov_optab, mode) == CODE_FOR_nothing)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
 	fprintf (vect_dump, "Aligned load, but unsupported type.");
@@ -4963,9 +4962,8 @@ supportable_widening_operation (enum tree_code code, gimple stmt,
     return false;
 
   vec_mode = TYPE_MODE (vectype);
-  if ((icode1 = optab_handler (optab1, vec_mode)->insn_code) == CODE_FOR_nothing
-       || (icode2 = optab_handler (optab2, vec_mode)->insn_code)
-                                                       == CODE_FOR_nothing)
+  if ((icode1 = optab_handler (optab1, vec_mode)) == CODE_FOR_nothing
+       || (icode2 = optab_handler (optab2, vec_mode)) == CODE_FOR_nothing)
     return false;
 
   /* Check if it's a multi-step conversion that can be done using intermediate
@@ -4997,16 +4995,16 @@ supportable_widening_operation (enum tree_code code, gimple stmt,
           optab4 = optab_for_tree_code (c2, intermediate_type, optab_default);
 
           if (!optab3 || !optab4
-              || (icode1 = optab1->handlers[(int) prev_mode].insn_code)
-                                                        == CODE_FOR_nothing
+              || ((icode1 = optab_handler (optab1, prev_mode))
+		  == CODE_FOR_nothing)
               || insn_data[icode1].operand[0].mode != intermediate_mode
-              || (icode2 = optab2->handlers[(int) prev_mode].insn_code)
-                                                        == CODE_FOR_nothing
+              || ((icode2 = optab_handler (optab2, prev_mode))
+		  == CODE_FOR_nothing)
               || insn_data[icode2].operand[0].mode != intermediate_mode
-              || (icode1 = optab3->handlers[(int) intermediate_mode].insn_code)
-                                                        == CODE_FOR_nothing
-              || (icode2 = optab4->handlers[(int) intermediate_mode].insn_code)
-                                                        == CODE_FOR_nothing)
+              || ((icode1 = optab_handler (optab3, intermediate_mode))
+		  == CODE_FOR_nothing)
+              || ((icode2 = optab_handler (optab4, intermediate_mode))
+		  == CODE_FOR_nothing))
             return false;
 
           VEC_quick_push (tree, *interm_types, intermediate_type);
@@ -5093,8 +5091,7 @@ supportable_narrowing_operation (enum tree_code code,
     return false;
 
   vec_mode = TYPE_MODE (vectype);
-  if ((icode1 = optab_handler (optab1, vec_mode)->insn_code)
-       == CODE_FOR_nothing)
+  if ((icode1 = optab_handler (optab1, vec_mode)) == CODE_FOR_nothing)
     return false;
 
   /* Check if it's a multi-step conversion that can be done using intermediate
@@ -5117,12 +5114,11 @@ supportable_narrowing_operation (enum tree_code code,
           interm_optab = optab_for_tree_code (c1, intermediate_type,
                                               optab_default);
           if (!interm_optab
-              || (icode1 = optab1->handlers[(int) prev_mode].insn_code)
-                                                        == CODE_FOR_nothing
+              || ((icode1 = optab_handler (optab1, prev_mode))
+		  == CODE_FOR_nothing)
               || insn_data[icode1].operand[0].mode != intermediate_mode
-              || (icode1
-                  = interm_optab->handlers[(int) intermediate_mode].insn_code)
-                 == CODE_FOR_nothing)
+              || ((icode1 = optab_handler (interm_optab, intermediate_mode))
+		  == CODE_FOR_nothing))
             return false;
 
           VEC_quick_push (tree, *interm_types, intermediate_type);

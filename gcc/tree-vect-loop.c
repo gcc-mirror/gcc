@@ -132,7 +132,7 @@ along with GCC; see the file COPYING3.  If not see
         Since we only vectorize operations which vector form can be
    expressed using existing tree codes, to verify that an operation is
    supported, the vectorizer checks the relevant optab at the relevant
-   machine_mode (e.g, optab_handler (add_optab, V8HImode)->insn_code). If
+   machine_mode (e.g, optab_handler (add_optab, V8HImode)). If
    the value found is CODE_FOR_nothing, then there's no target support, and
    we can't vectorize the stmt.
 
@@ -2490,8 +2490,8 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
 
 	  /* We have a whole vector shift available.  */
 	  if (VECTOR_MODE_P (mode)
-	      && optab_handler (optab, mode)->insn_code != CODE_FOR_nothing
-	      && optab_handler (vec_shr_optab, mode)->insn_code != CODE_FOR_nothing)
+	      && optab_handler (optab, mode) != CODE_FOR_nothing
+	      && optab_handler (vec_shr_optab, mode) != CODE_FOR_nothing)
 	    /* Final reduction via vector shifts and the reduction operator. Also
 	       requires scalar extract.  */
 	    outer_cost += ((exact_log2(nelements) * 2) 
@@ -3333,7 +3333,7 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
       int vec_size_in_bits = tree_low_cst (TYPE_SIZE (vectype), 1);
       tree vec_temp;
 
-      if (optab_handler (vec_shr_optab, mode)->insn_code != CODE_FOR_nothing)
+      if (optab_handler (vec_shr_optab, mode) != CODE_FOR_nothing)
         shift_code = VEC_RSHIFT_EXPR;
       else
         have_whole_vector_shift = false;
@@ -3349,7 +3349,7 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
       else
         {
           optab optab = optab_for_tree_code (code, vectype, optab_default);
-          if (optab_handler (optab, mode)->insn_code == CODE_FOR_nothing)
+          if (optab_handler (optab, mode) == CODE_FOR_nothing)
             have_whole_vector_shift = false;
         }
 
@@ -4008,7 +4008,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
           return false;
         }
 
-      if (optab_handler (optab, vec_mode)->insn_code == CODE_FOR_nothing)
+      if (optab_handler (optab, vec_mode) == CODE_FOR_nothing)
         {
           if (vect_print_dump_info (REPORT_DETAILS))
             fprintf (vect_dump, "op not supported by target.");
@@ -4056,11 +4056,12 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
           2. The type (mode) we use to check available target support
              for the vector operation to be created in the *epilog*, is
              determined by the type of the reduction variable (in the example
-             above we'd check this: plus_optab[vect_int_mode]).
+             above we'd check this: optab_handler (plus_optab, vect_int_mode])).
              However the type (mode) we use to check available target support
              for the vector operation to be created *inside the loop*, is
              determined by the type of the other arguments to STMT (in the
-             example we'd check this: widen_sum_optab[vect_short_mode]).
+             example we'd check this: optab_handler (widen_sum_optab,
+	     vect_short_mode)).
 
           This is contrary to "regular" reductions, in which the types of all
           the arguments are the same as the type of the reduction variable.
@@ -4113,8 +4114,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
         }
 
       if (reduc_optab
-          && optab_handler (reduc_optab, vec_mode)->insn_code
-              == CODE_FOR_nothing)
+          && optab_handler (reduc_optab, vec_mode) == CODE_FOR_nothing)
         {
           if (vect_print_dump_info (REPORT_DETAILS))
             fprintf (vect_dump, "reduc op not supported by target.");

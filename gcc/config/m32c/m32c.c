@@ -1789,9 +1789,9 @@ m32c_init_libfuncs (void)
      the right modes are found. */
   if (TARGET_A24)
     {
-      optab_handler (cstore_optab, QImode)->insn_code = CODE_FOR_cstoreqi4_24;
-      optab_handler (cstore_optab, HImode)->insn_code = CODE_FOR_cstorehi4_24;
-      optab_handler (cstore_optab, PSImode)->insn_code = CODE_FOR_cstorepsi4_24;
+      set_optab_handler (cstore_optab, QImode, CODE_FOR_cstoreqi4_24);
+      set_optab_handler (cstore_optab, HImode, CODE_FOR_cstorehi4_24);
+      set_optab_handler (cstore_optab, PSImode, CODE_FOR_cstorepsi4_24);
     }
 }
 
