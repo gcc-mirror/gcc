@@ -1,3 +1,8 @@
+2010-07-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44656
+	* gcc.dg/tree-ssa/loadpre6.c: Remove XFAIL.
+
 2010-07-04  Ira Rosen  <irar@il.ibm.com>
 	    Revital Eres  <eres@il.ibm.com>
 
