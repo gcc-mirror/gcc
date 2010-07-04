@@ -1,5 +1,9 @@
 2010-07-04  Jan Hubicka  <jh@suse.cz>
 
+	* lto-cgraph.c (input_edge): Do not care about resolution decisions.
+
+2010-07-04  Jan Hubicka  <jh@suse.cz>
+
         * cgraphunit.c (init_cgraph): Only initialize dump file if it is not already
         initialized.
 
