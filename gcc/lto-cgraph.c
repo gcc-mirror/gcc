@@ -1158,7 +1158,6 @@ input_edge (struct lto_input_block *ib, VEC(cgraph_node_ptr, heap) *nodes,
   unsigned int nest;
   cgraph_inline_failed_t inline_failed;
   struct bitpack_d bp;
-  enum ld_plugin_symbol_resolution caller_resolution;
   int ecf_flags = 0;
 
   caller = VEC_index (cgraph_node_ptr, nodes, lto_input_sleb128 (ib));
@@ -1182,13 +1181,6 @@ input_edge (struct lto_input_block *ib, VEC(cgraph_node_ptr, heap) *nodes,
 							    HOST_BITS_PER_INT);
   freq = (int) bp_unpack_value (&bp, HOST_BITS_PER_INT);
   nest = (unsigned) bp_unpack_value (&bp, 30);
-
-  /* If the caller was preempted, don't create the edge.
-     ???  Should we ever have edges from a preempted caller?  */
-  caller_resolution = lto_symtab_get_resolution (caller->decl);
-  if (caller_resolution == LDPR_PREEMPTED_REG
-      || caller_resolution == LDPR_PREEMPTED_IR)
-    return;
 
   if (indirect)
     edge = cgraph_create_indirect_edge (caller, NULL, 0, count, freq, nest);
