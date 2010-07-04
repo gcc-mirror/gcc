@@ -406,6 +406,33 @@ case-block, and @code{extx.case_list} contains the case-values this block
 corresponds to.  The @code{block} member links to the next case in the list.
 
 
+@subsection @code{BLOCK} and @code{ASSOCIATE}
+
+The code related to a @code{BLOCK} statement is stored inside an
+@code{gfc_code} structure (say @var{c})
+with @code{c.op} set to @code{EXEC_BLOCK}.  The
+@code{gfc_namespace} holding the locally defined variables of the
+@code{BLOCK} is stored in @code{c.ext.block.ns}.  The code inside the
+construct is in @code{c.code}.
+
+@code{ASSOCIATE} constructs are based on @code{BLOCK} and thus also have
+the internal storage structure described above (including @code{EXEC_BLOCK}).
+However, for them @code{c.ext.block.assoc} is set additionally and points
+to a linked list of @code{gfc_association_list} structures.  Those
+structures basically store a link of associate-names to target expressions.
+The associate-names themselves are still also added to the @code{BLOCK}'s
+namespace as ordinary symbols, but they have their @code{gfc_symbol}'s
+member @code{assoc} set also pointing to the association-list structure.
+This way associate-names can be distinguished from ordinary variables
+and their target expressions identified.
+
+For association to expressions (as opposed to variables), at the very beginning
+of the @code{BLOCK} construct assignments are automatically generated to
+set the corresponding variables to their target expressions' values, and
+later on the compiler simply disallows using such associate-names in contexts
+that may change the value.
+
+
 @c gfc_expr
 @c --------
 
