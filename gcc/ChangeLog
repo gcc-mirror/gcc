@@ -1,5 +1,15 @@
 2010-07-04  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* optabs.h (optab_handlers): Change type of insn_code to int.
+	(optab_handler, set_optab_handler, convert_optab_handler)
+	(set_convert_optab_handler): Treat the insn_code field as "insn_code -
+	CODE_FOR_nothing".
+	* optabs.c (optab_table, convert_optab_table): Always zero-initialize.
+	(init_insn_codes): Zero both the above arrays.
+	(init_optabs): Never call init_insn_codes first time around.
+
+2010-07-04  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* optabs.h (optab_handler, convert_optab_handler): Turn into
 	inline functions that return an insn code.
 	(set_optab_handler, set_convert_optab_handler): New functions.
