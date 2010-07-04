@@ -323,7 +323,8 @@ compareAndSwapInt_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 			   tree orig_call)
 {
   enum machine_mode mode = TYPE_MODE (int_type_node);
-  if (sync_compare_and_swap[mode] != CODE_FOR_nothing
+  if (direct_optab_handler (sync_compare_and_swap_optab, mode)
+      != CODE_FOR_nothing
       || flag_use_atomic_builtins)
     {
       tree addr, stmt;
@@ -344,7 +345,8 @@ compareAndSwapLong_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 			    tree orig_call)
 {
   enum machine_mode mode = TYPE_MODE (long_type_node);
-  if (sync_compare_and_swap[mode] != CODE_FOR_nothing
+  if (direct_optab_handler (sync_compare_and_swap_optab, mode)
+      != CODE_FOR_nothing
       || (GET_MODE_SIZE (mode) <= GET_MODE_SIZE (word_mode)
 	  && flag_use_atomic_builtins))
     /* We don't trust flag_use_atomic_builtins for multi-word
@@ -368,7 +370,8 @@ compareAndSwapObject_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 			      tree orig_call)
 {
   enum machine_mode mode = TYPE_MODE (ptr_type_node);
-  if (sync_compare_and_swap[mode] != CODE_FOR_nothing
+  if (direct_optab_handler (sync_compare_and_swap_optab, mode)
+      != CODE_FOR_nothing
       || flag_use_atomic_builtins)
   {
     tree addr, stmt;
@@ -448,7 +451,8 @@ VMSupportsCS8_builtin (tree method_return_type,
 {
   enum machine_mode mode = TYPE_MODE (long_type_node);
   gcc_assert (method_return_type == boolean_type_node);
-  if (sync_compare_and_swap[mode] != CODE_FOR_nothing)
+  if (direct_optab_handler (sync_compare_and_swap_optab, mode)
+      != CODE_FOR_nothing)
     return boolean_true_node;
   else
     return boolean_false_node;

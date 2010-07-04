@@ -201,41 +201,6 @@ static bool float_extend_from_mem[NUM_MACHINE_MODES][NUM_MACHINE_MODES];
    < (unsigned int) MOVE_RATIO (optimize_insn_for_speed_p ()))
 #endif
 
-/* This array records the insn_code of insns to perform block moves.  */
-enum insn_code movmem_optab[NUM_MACHINE_MODES];
-
-/* This array records the insn_code of insns to perform block sets.  */
-enum insn_code setmem_optab[NUM_MACHINE_MODES];
-
-/* These arrays record the insn_code of three different kinds of insns
-   to perform block compares.  */
-enum insn_code cmpstr_optab[NUM_MACHINE_MODES];
-enum insn_code cmpstrn_optab[NUM_MACHINE_MODES];
-enum insn_code cmpmem_optab[NUM_MACHINE_MODES];
-
-/* Synchronization primitives.  */
-enum insn_code sync_add_optab[NUM_MACHINE_MODES];
-enum insn_code sync_sub_optab[NUM_MACHINE_MODES];
-enum insn_code sync_ior_optab[NUM_MACHINE_MODES];
-enum insn_code sync_and_optab[NUM_MACHINE_MODES];
-enum insn_code sync_xor_optab[NUM_MACHINE_MODES];
-enum insn_code sync_nand_optab[NUM_MACHINE_MODES];
-enum insn_code sync_old_add_optab[NUM_MACHINE_MODES];
-enum insn_code sync_old_sub_optab[NUM_MACHINE_MODES];
-enum insn_code sync_old_ior_optab[NUM_MACHINE_MODES];
-enum insn_code sync_old_and_optab[NUM_MACHINE_MODES];
-enum insn_code sync_old_xor_optab[NUM_MACHINE_MODES];
-enum insn_code sync_old_nand_optab[NUM_MACHINE_MODES];
-enum insn_code sync_new_add_optab[NUM_MACHINE_MODES];
-enum insn_code sync_new_sub_optab[NUM_MACHINE_MODES];
-enum insn_code sync_new_ior_optab[NUM_MACHINE_MODES];
-enum insn_code sync_new_and_optab[NUM_MACHINE_MODES];
-enum insn_code sync_new_xor_optab[NUM_MACHINE_MODES];
-enum insn_code sync_new_nand_optab[NUM_MACHINE_MODES];
-enum insn_code sync_compare_and_swap[NUM_MACHINE_MODES];
-enum insn_code sync_lock_test_and_set[NUM_MACHINE_MODES];
-enum insn_code sync_lock_release[NUM_MACHINE_MODES];
-
 /* SLOW_UNALIGNED_ACCESS is nonzero if unaligned accesses are very slow.  */
 
 #ifndef SLOW_UNALIGNED_ACCESS
@@ -1315,7 +1280,7 @@ emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     {
-      enum insn_code code = movmem_optab[(int) mode];
+      enum insn_code code = direct_optab_handler (movmem_optab, mode);
       insn_operand_predicate_fn pred;
 
       if (code != CODE_FOR_nothing
@@ -2791,7 +2756,7 @@ set_storage_via_setmem (rtx object, rtx size, rtx val, unsigned int align,
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     {
-      enum insn_code code = setmem_optab[(int) mode];
+      enum insn_code code = direct_optab_handler (setmem_optab, mode);
       insn_operand_predicate_fn pred;
 
       if (code != CODE_FOR_nothing

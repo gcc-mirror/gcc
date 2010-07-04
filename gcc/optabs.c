@@ -60,23 +60,12 @@ rtx libfunc_table[LTI_MAX];
 /* Tables of patterns for converting one mode to another.  */
 struct convert_optab_d convert_optab_table[COI_MAX];
 
+/* Tables of patterns for direct optabs (i.e. those which cannot be
+   implemented using a libcall).  */
+struct direct_optab_d direct_optab_table[(int) DOI_MAX];
+
 /* Contains the optab used for each rtx code.  */
 optab code_to_optab[NUM_RTX_CODE + 1];
-
-#ifdef HAVE_conditional_move
-/* Indexed by the machine mode, gives the insn code to make a conditional
-   move insn.  This is not indexed by the rtx-code like bcc_gen_fctn and
-   setcc_gen_code to cut down on the number of named patterns.  Consider a day
-   when a lot more rtx codes are conditional (eg: for the ARM).  */
-
-enum insn_code movcc_gen_code[NUM_MACHINE_MODES];
-#endif
-
-/* Indexed by the machine mode, gives the insn code for vector conditional
-   operation.  */
-
-enum insn_code vcond_gen_code[NUM_MACHINE_MODES];
-enum insn_code vcondu_gen_code[NUM_MACHINE_MODES];
 
 static void prepare_float_lib_cmp (rtx, rtx, enum rtx_code, rtx *,
 				   enum machine_mode *);
@@ -4071,11 +4060,11 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
 	   cmp_mode != VOIDmode;
 	   cmp_mode = GET_MODE_WIDER_MODE (cmp_mode))
 	{
-	  cmp_code = cmpmem_optab[cmp_mode];
+	  cmp_code = direct_optab_handler (cmpmem_optab, cmp_mode);
 	  if (cmp_code == CODE_FOR_nothing)
-	    cmp_code = cmpstr_optab[cmp_mode];
+	    cmp_code = direct_optab_handler (cmpstr_optab, cmp_mode);
 	  if (cmp_code == CODE_FOR_nothing)
-	    cmp_code = cmpstrn_optab[cmp_mode];
+	    cmp_code = direct_optab_handler (cmpstrn_optab, cmp_mode);
 	  if (cmp_code == CODE_FOR_nothing)
 	    continue;
 
@@ -4520,7 +4509,7 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
   if (mode == VOIDmode)
     mode = GET_MODE (op2);
 
-  icode = movcc_gen_code[mode];
+  icode = direct_optab_handler (movcc_optab, mode);
 
   if (icode == CODE_FOR_nothing)
     return 0;
@@ -4593,7 +4582,7 @@ emit_conditional_move (rtx target, enum rtx_code code, rtx op0, rtx op1,
 int
 can_conditionally_move_p (enum machine_mode mode)
 {
-  if (movcc_gen_code[mode] != CODE_FOR_nothing)
+  if (direct_optab_handler (movcc_optab, mode) != CODE_FOR_nothing)
     return 1;
 
   return 0;
@@ -5439,6 +5428,7 @@ init_insn_codes (void)
 {
   memset (optab_table, 0, sizeof (optab_table));
   memset (convert_optab_table, 0, sizeof (convert_optab_table));
+  memset (direct_optab_table, 0, sizeof (direct_optab_table));
 }
 
 /* Initialize OP's code to CODE, and write it into the code_to_optab table.  */
@@ -6146,25 +6136,12 @@ set_conv_libfunc (convert_optab optable, enum machine_mode tmode,
 void
 init_optabs (void)
 {
-  unsigned int i;
   static bool reinit;
 
   libfunc_hash = htab_create_ggc (10, hash_libfunc, eq_libfunc, NULL);
-  /* Start by initializing all tables to contain CODE_FOR_nothing.  */
-
-#ifdef HAVE_conditional_move
-  for (i = 0; i < NUM_MACHINE_MODES; i++)
-    movcc_gen_code[i] = CODE_FOR_nothing;
-#endif
-
-  for (i = 0; i < NUM_MACHINE_MODES; i++)
-    {
-      vcond_gen_code[i] = CODE_FOR_nothing;
-      vcondu_gen_code[i] = CODE_FOR_nothing;
-    }
 
   /* We statically initialize the insn_codes with the equivalent of
-     CODE_FOR_nothing.  */
+     CODE_FOR_nothing.  Repeat the process if reinitialising.  */
   if (reinit)
     init_insn_codes ();
 
@@ -6356,39 +6333,6 @@ init_optabs (void)
   init_convert_optab (fractuns_optab, UNSIGNED_FRACT_CONVERT);
   init_convert_optab (satfract_optab, SAT_FRACT);
   init_convert_optab (satfractuns_optab, UNSIGNED_SAT_FRACT);
-
-  for (i = 0; i < NUM_MACHINE_MODES; i++)
-    {
-      movmem_optab[i] = CODE_FOR_nothing;
-      cmpstr_optab[i] = CODE_FOR_nothing;
-      cmpstrn_optab[i] = CODE_FOR_nothing;
-      cmpmem_optab[i] = CODE_FOR_nothing;
-      setmem_optab[i] = CODE_FOR_nothing;
-
-      sync_add_optab[i] = CODE_FOR_nothing;
-      sync_sub_optab[i] = CODE_FOR_nothing;
-      sync_ior_optab[i] = CODE_FOR_nothing;
-      sync_and_optab[i] = CODE_FOR_nothing;
-      sync_xor_optab[i] = CODE_FOR_nothing;
-      sync_nand_optab[i] = CODE_FOR_nothing;
-      sync_old_add_optab[i] = CODE_FOR_nothing;
-      sync_old_sub_optab[i] = CODE_FOR_nothing;
-      sync_old_ior_optab[i] = CODE_FOR_nothing;
-      sync_old_and_optab[i] = CODE_FOR_nothing;
-      sync_old_xor_optab[i] = CODE_FOR_nothing;
-      sync_old_nand_optab[i] = CODE_FOR_nothing;
-      sync_new_add_optab[i] = CODE_FOR_nothing;
-      sync_new_sub_optab[i] = CODE_FOR_nothing;
-      sync_new_ior_optab[i] = CODE_FOR_nothing;
-      sync_new_and_optab[i] = CODE_FOR_nothing;
-      sync_new_xor_optab[i] = CODE_FOR_nothing;
-      sync_new_nand_optab[i] = CODE_FOR_nothing;
-      sync_compare_and_swap[i] = CODE_FOR_nothing;
-      sync_lock_test_and_set[i] = CODE_FOR_nothing;
-      sync_lock_release[i] = CODE_FOR_nothing;
-
-      reload_in_optab[i] = reload_out_optab[i] = CODE_FOR_nothing;
-    }
 
   /* Fill in the optabs with the insns we support.  */
   init_all_optabs ();
@@ -6845,9 +6789,9 @@ get_vcond_icode (tree type, enum machine_mode mode)
   enum insn_code icode = CODE_FOR_nothing;
 
   if (TYPE_UNSIGNED (type))
-    icode = vcondu_gen_code[mode];
+    icode = direct_optab_handler (vcondu_optab, mode);
   else
-    icode = vcond_gen_code[mode];
+    icode = direct_optab_handler (vcond_optab, mode);
   return icode;
 }
 
@@ -6945,7 +6889,8 @@ rtx
 expand_val_compare_and_swap (rtx mem, rtx old_val, rtx new_val, rtx target)
 {
   enum machine_mode mode = GET_MODE (mem);
-  enum insn_code icode = sync_compare_and_swap[mode];
+  enum insn_code icode
+    = direct_optab_handler (sync_compare_and_swap_optab, mode);
 
   if (icode == CODE_FOR_nothing)
     return NULL_RTX;
@@ -6982,7 +6927,7 @@ expand_bool_compare_and_swap (rtx mem, rtx old_val, rtx new_val, rtx target)
   /* If the target supports a compare-and-swap pattern that simultaneously
      sets some flag for success, then use it.  Otherwise use the regular
      compare-and-swap and follow that immediately with a compare insn.  */
-  icode = sync_compare_and_swap[mode];
+  icode = direct_optab_handler (sync_compare_and_swap_optab, mode);
   if (icode == CODE_FOR_nothing)
     return NULL_RTX;
 
@@ -7060,7 +7005,7 @@ expand_compare_and_swap_loop (rtx mem, rtx old_reg, rtx new_reg, rtx seq)
   /* If the target supports a compare-and-swap pattern that simultaneously
      sets some flag for success, then use it.  Otherwise use the regular
      compare-and-swap and follow that immediately with a compare insn.  */
-  icode = sync_compare_and_swap[mode];
+  icode = direct_optab_handler (sync_compare_and_swap_optab, mode);
   if (icode == CODE_FOR_nothing)
     return false;
 
@@ -7104,26 +7049,26 @@ expand_sync_operation (rtx mem, rtx val, enum rtx_code code)
   switch (code)
     {
     case PLUS:
-      icode = sync_add_optab[mode];
+      icode = direct_optab_handler (sync_add_optab, mode);
       break;
     case IOR:
-      icode = sync_ior_optab[mode];
+      icode = direct_optab_handler (sync_ior_optab, mode);
       break;
     case XOR:
-      icode = sync_xor_optab[mode];
+      icode = direct_optab_handler (sync_xor_optab, mode);
       break;
     case AND:
-      icode = sync_and_optab[mode];
+      icode = direct_optab_handler (sync_and_optab, mode);
       break;
     case NOT:
-      icode = sync_nand_optab[mode];
+      icode = direct_optab_handler (sync_nand_optab, mode);
       break;
 
     case MINUS:
-      icode = sync_sub_optab[mode];
+      icode = direct_optab_handler (sync_sub_optab, mode);
       if (icode == CODE_FOR_nothing || CONST_INT_P (val))
 	{
-	  icode = sync_add_optab[mode];
+	  icode = direct_optab_handler (sync_add_optab, mode);
 	  if (icode != CODE_FOR_nothing)
 	    {
 	      val = expand_simple_unop (mode, NEG, val, NULL_RTX, 1);
@@ -7154,7 +7099,8 @@ expand_sync_operation (rtx mem, rtx val, enum rtx_code code)
 
   /* Failing that, generate a compare-and-swap loop in which we perform the
      operation with normal arithmetic instructions.  */
-  if (sync_compare_and_swap[mode] != CODE_FOR_nothing)
+  if (direct_optab_handler (sync_compare_and_swap_optab, mode)
+      != CODE_FOR_nothing)
     {
       rtx t0 = gen_reg_rtx (mode), t1;
 
@@ -7199,34 +7145,34 @@ expand_sync_fetch_operation (rtx mem, rtx val, enum rtx_code code,
   switch (code)
     {
     case PLUS:
-      old_code = sync_old_add_optab[mode];
-      new_code = sync_new_add_optab[mode];
+      old_code = direct_optab_handler (sync_old_add_optab, mode);
+      new_code = direct_optab_handler (sync_new_add_optab, mode);
       break;
     case IOR:
-      old_code = sync_old_ior_optab[mode];
-      new_code = sync_new_ior_optab[mode];
+      old_code = direct_optab_handler (sync_old_ior_optab, mode);
+      new_code = direct_optab_handler (sync_new_ior_optab, mode);
       break;
     case XOR:
-      old_code = sync_old_xor_optab[mode];
-      new_code = sync_new_xor_optab[mode];
+      old_code = direct_optab_handler (sync_old_xor_optab, mode);
+      new_code = direct_optab_handler (sync_new_xor_optab, mode);
       break;
     case AND:
-      old_code = sync_old_and_optab[mode];
-      new_code = sync_new_and_optab[mode];
+      old_code = direct_optab_handler (sync_old_and_optab, mode);
+      new_code = direct_optab_handler (sync_new_and_optab, mode);
       break;
     case NOT:
-      old_code = sync_old_nand_optab[mode];
-      new_code = sync_new_nand_optab[mode];
+      old_code = direct_optab_handler (sync_old_nand_optab, mode);
+      new_code = direct_optab_handler (sync_new_nand_optab, mode);
       break;
 
     case MINUS:
-      old_code = sync_old_sub_optab[mode];
-      new_code = sync_new_sub_optab[mode];
+      old_code = direct_optab_handler (sync_old_sub_optab, mode);
+      new_code = direct_optab_handler (sync_new_sub_optab, mode);
       if ((old_code == CODE_FOR_nothing && new_code == CODE_FOR_nothing)
           || CONST_INT_P (val))
 	{
-	  old_code = sync_old_add_optab[mode];
-	  new_code = sync_new_add_optab[mode];
+	  old_code = direct_optab_handler (sync_old_add_optab, mode);
+	  new_code = direct_optab_handler (sync_new_add_optab, mode);
 	  if (old_code != CODE_FOR_nothing || new_code != CODE_FOR_nothing)
 	    {
 	      val = expand_simple_unop (mode, NEG, val, NULL_RTX, 1);
@@ -7316,7 +7262,8 @@ expand_sync_fetch_operation (rtx mem, rtx val, enum rtx_code code,
 
   /* Failing that, generate a compare-and-swap loop in which we perform the
      operation with normal arithmetic instructions.  */
-  if (sync_compare_and_swap[mode] != CODE_FOR_nothing)
+  if (direct_optab_handler (sync_compare_and_swap_optab, mode)
+      != CODE_FOR_nothing)
     {
       rtx t0 = gen_reg_rtx (mode), t1;
 
@@ -7365,7 +7312,7 @@ expand_sync_lock_test_and_set (rtx mem, rtx val, rtx target)
   rtx insn;
 
   /* If the target supports the test-and-set directly, great.  */
-  icode = sync_lock_test_and_set[mode];
+  icode = direct_optab_handler (sync_lock_test_and_set_optab, mode);
   if (icode != CODE_FOR_nothing)
     {
       if (!target || !insn_data[icode].operand[0].predicate (target, mode))
@@ -7385,7 +7332,8 @@ expand_sync_lock_test_and_set (rtx mem, rtx val, rtx target)
     }
 
   /* Otherwise, use a compare-and-swap loop for the exchange.  */
-  if (sync_compare_and_swap[mode] != CODE_FOR_nothing)
+  if (direct_optab_handler (sync_compare_and_swap_optab, mode)
+      != CODE_FOR_nothing)
     {
       if (!target || !register_operand (target, mode))
 	target = gen_reg_rtx (mode);

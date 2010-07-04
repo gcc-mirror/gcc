@@ -275,12 +275,6 @@ int caller_save_needed;
    Required by some machines to handle any generated moves differently.  */
 int reload_in_progress = 0;
 
-/* These arrays record the insn_code of insns that may be needed to
-   perform input and output reloads of special objects.  They provide a
-   place to pass a scratch register.  */
-enum insn_code reload_in_optab[NUM_MACHINE_MODES];
-enum insn_code reload_out_optab[NUM_MACHINE_MODES];
-
 /* This obstack is used for allocation of rtl during register elimination.
    The allocated storage can be freed once find_reloads has processed the
    insn.  */

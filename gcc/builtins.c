@@ -4109,8 +4109,8 @@ expand_builtin_strcmp (tree exp, ATTRIBUTE_UNUSED rtx target)
     return NULL_RTX;
 
 #if defined HAVE_cmpstrsi || defined HAVE_cmpstrnsi
-  if (cmpstr_optab[SImode] != CODE_FOR_nothing
-      || cmpstrn_optab[SImode] != CODE_FOR_nothing)
+  if (direct_optab_handler (cmpstr_optab, SImode) != CODE_FOR_nothing
+      || direct_optab_handler (cmpstrn_optab, SImode) != CODE_FOR_nothing)
     {
       rtx arg1_rtx, arg2_rtx;
       rtx result, insn = NULL_RTX;
@@ -5677,7 +5677,7 @@ expand_builtin_lock_release (enum machine_mode mode, tree exp)
   mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
 
   /* If there is an explicit operation in the md file, use it.  */
-  icode = sync_lock_release[mode];
+  icode = direct_optab_handler (sync_lock_release_optab, mode);
   if (icode != CODE_FOR_nothing)
     {
       if (!insn_data[icode].operand[1].predicate (val, mode))
