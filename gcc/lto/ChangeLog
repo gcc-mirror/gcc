@@ -1,3 +1,7 @@
+2010-07-04  Jan Hubicka  <jh@suse.cz>
+
+        * lto.c (read_cgraph_and_symbols): Dump cgraph before merging.
+
 2010-06-13  Richard Guenther  <rguenther@suse.de>
 
 	* lto.c (lto_fixup_type): Do not register or fixup TYPE_CANONICAL.

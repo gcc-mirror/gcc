@@ -1435,6 +1435,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   struct cgraph_node *node;
 
   lto_stats.num_input_files = nfiles;
+  init_cgraph ();
 
   timevar_push (TV_IPA_LTO_DECL_IN);
 
@@ -1534,6 +1535,12 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 
   /* Finally merge the cgraph according to the decl merging decisions.  */
   timevar_push (TV_IPA_LTO_CGRAPH_MERGE);
+  if (cgraph_dump_file)
+    {
+      fprintf (cgraph_dump_file, "Before merging:\n");
+      dump_cgraph (cgraph_dump_file);
+      dump_varpool (cgraph_dump_file);
+    }
   lto_symtab_merge_cgraph_nodes ();
   ggc_collect ();
 

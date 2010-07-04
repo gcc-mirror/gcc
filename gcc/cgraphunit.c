@@ -2070,7 +2070,8 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
 void
 init_cgraph (void)
 {
-  cgraph_dump_file = dump_begin (TDI_cgraph, NULL);
+  if (!cgraph_dump_file)
+    cgraph_dump_file = dump_begin (TDI_cgraph, NULL);
 }
 
 /* The edges representing the callers of the NEW_VERSION node were
