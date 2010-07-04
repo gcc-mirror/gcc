@@ -1,5 +1,11 @@
 2010-07-04  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/44809
+	* gimplify.c (gimplify_expr): Properly build a MEM_REF instead
+	of an INDIRECT_REF.
+
+2010-07-04  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/44479
 	* tree-ssa-loop-ivopts.c (rewrite_use_nonlinear_expr): Avoid
 	extra SSA name copy statements which preserves points-to
