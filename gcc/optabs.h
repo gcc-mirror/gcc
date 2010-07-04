@@ -594,79 +594,127 @@ extern struct convert_optab_d convert_optab_table[COI_MAX];
 #define satfract_optab (&convert_optab_table[COI_satfract])
 #define satfractuns_optab (&convert_optab_table[COI_satfractuns])
 
-/* These arrays record the insn_code of insns that may be needed to
-   perform input and output reloads of special objects.  They provide a
-   place to pass a scratch register.  */
-extern enum insn_code reload_in_optab[NUM_MACHINE_MODES];
-extern enum insn_code reload_out_optab[NUM_MACHINE_MODES];
-
 /* Contains the optab used for each rtx code.  */
 extern optab code_to_optab[NUM_RTX_CODE + 1];
 
 
 typedef rtx (*rtxfun) (rtx);
 
+/* Enumerates operations that have a named .md pattern associated
+   with them, but which are not implemented as library functions.  */
+enum direct_optab_index
+{
 #ifdef HAVE_conditional_move
-/* Indexed by the machine mode, gives the insn code to make a conditional
-   move insn.  */
-
-extern enum insn_code movcc_gen_code[NUM_MACHINE_MODES];
+  /* Conditional move operations.  */
+  DOI_movcc,
 #endif
 
-/* Indexed by the machine mode, gives the insn code for vector conditional
-   operation.  */
+  /* Operations that use a scratch register to perform input and output
+     reloads of special objects.  */
+  DOI_reload_in,
+  DOI_reload_out,
 
-extern enum insn_code vcond_gen_code[NUM_MACHINE_MODES];
-extern enum insn_code vcondu_gen_code[NUM_MACHINE_MODES];
+  /* Vector conditional operations.  */
+  DOI_vcond,
+  DOI_vcondu,
 
-/* This array records the insn_code of insns to perform block moves.  */
-extern enum insn_code movmem_optab[NUM_MACHINE_MODES];
+  /* Block move operation.  */
+  DOI_movmem,
 
-/* This array records the insn_code of insns to perform block sets.  */
-extern enum insn_code setmem_optab[NUM_MACHINE_MODES];
+  /* Block set operation.  */
+  DOI_setmem,
 
-/* These arrays record the insn_code of two different kinds of insns
-   to perform block compares.  */
-extern enum insn_code cmpstr_optab[NUM_MACHINE_MODES];
-extern enum insn_code cmpstrn_optab[NUM_MACHINE_MODES];
-extern enum insn_code cmpmem_optab[NUM_MACHINE_MODES];
+  /* Various types of block compare operation.  */
+  DOI_cmpstr,
+  DOI_cmpstrn,
+  DOI_cmpmem,
 
-/* Synchronization primitives.  This first set is atomic operation for
-   which we don't care about the resulting value.  */
-extern enum insn_code sync_add_optab[NUM_MACHINE_MODES];
-extern enum insn_code sync_sub_optab[NUM_MACHINE_MODES];
-extern enum insn_code sync_ior_optab[NUM_MACHINE_MODES];
-extern enum insn_code sync_and_optab[NUM_MACHINE_MODES];
-extern enum insn_code sync_xor_optab[NUM_MACHINE_MODES];
-extern enum insn_code sync_nand_optab[NUM_MACHINE_MODES];
+  /* Synchronization primitives.  This first set is atomic operation for
+     which we don't care about the resulting value.  */
+  DOI_sync_add,
+  DOI_sync_sub,
+  DOI_sync_ior,
+  DOI_sync_and,
+  DOI_sync_xor,
+  DOI_sync_nand,
 
-/* This second set is atomic operations in which we return the value
-   that existed in memory before the operation.  */
-extern enum insn_code sync_old_add_optab[NUM_MACHINE_MODES];
-extern enum insn_code sync_old_sub_optab[NUM_MACHINE_MODES];
-extern enum insn_code sync_old_ior_optab[NUM_MACHINE_MODES];
-extern enum insn_code sync_old_and_optab[NUM_MACHINE_MODES];
-extern enum insn_code sync_old_xor_optab[NUM_MACHINE_MODES];
-extern enum insn_code sync_old_nand_optab[NUM_MACHINE_MODES];
+  /* This second set is atomic operations in which we return the value
+     that existed in memory before the operation.  */
+  DOI_sync_old_add,
+  DOI_sync_old_sub,
+  DOI_sync_old_ior,
+  DOI_sync_old_and,
+  DOI_sync_old_xor,
+  DOI_sync_old_nand,
 
-/* This third set is atomic operations in which we return the value
-   that resulted after performing the operation.  */
-extern enum insn_code sync_new_add_optab[NUM_MACHINE_MODES];
-extern enum insn_code sync_new_sub_optab[NUM_MACHINE_MODES];
-extern enum insn_code sync_new_ior_optab[NUM_MACHINE_MODES];
-extern enum insn_code sync_new_and_optab[NUM_MACHINE_MODES];
-extern enum insn_code sync_new_xor_optab[NUM_MACHINE_MODES];
-extern enum insn_code sync_new_nand_optab[NUM_MACHINE_MODES];
+  /* This third set is atomic operations in which we return the value
+     that resulted after performing the operation.  */
+  DOI_sync_new_add,
+  DOI_sync_new_sub,
+  DOI_sync_new_ior,
+  DOI_sync_new_and,
+  DOI_sync_new_xor,
+  DOI_sync_new_nand,
 
-/* Atomic compare and swap.  */
-extern enum insn_code sync_compare_and_swap[NUM_MACHINE_MODES];
+  /* Atomic compare and swap.  */
+  DOI_sync_compare_and_swap,
 
-/* Atomic exchange with acquire semantics.  */
-extern enum insn_code sync_lock_test_and_set[NUM_MACHINE_MODES];
+  /* Atomic exchange with acquire semantics.  */
+  DOI_sync_lock_test_and_set,
 
-/* Atomic clear with release semantics.  */
-extern enum insn_code sync_lock_release[NUM_MACHINE_MODES];
+  /* Atomic clear with release semantics.  */
+  DOI_sync_lock_release,
 
+  DOI_MAX
+};
+
+/* A structure that says which insn should be used to perform an operation
+   in a particular mode.  */
+struct direct_optab_d
+{
+  struct optab_handlers handlers[NUM_MACHINE_MODES];
+};
+typedef struct direct_optab_d *direct_optab;
+
+extern struct direct_optab_d direct_optab_table[(int) DOI_MAX];
+
+#ifdef HAVE_conditional_move
+#define movcc_optab (&direct_optab_table[(int) DOI_movcc])
+#endif
+#define reload_in_optab (&direct_optab_table[(int) DOI_reload_in])
+#define reload_out_optab (&direct_optab_table[(int) DOI_reload_out])
+#define vcond_optab (&direct_optab_table[(int) DOI_vcond])
+#define vcondu_optab (&direct_optab_table[(int) DOI_vcondu])
+#define movmem_optab (&direct_optab_table[(int) DOI_movmem])
+#define setmem_optab (&direct_optab_table[(int) DOI_setmem])
+#define cmpstr_optab (&direct_optab_table[(int) DOI_cmpstr])
+#define cmpstrn_optab (&direct_optab_table[(int) DOI_cmpstrn])
+#define cmpmem_optab (&direct_optab_table[(int) DOI_cmpmem])
+#define sync_add_optab (&direct_optab_table[(int) DOI_sync_add])
+#define sync_sub_optab (&direct_optab_table[(int) DOI_sync_sub])
+#define sync_ior_optab (&direct_optab_table[(int) DOI_sync_ior])
+#define sync_and_optab (&direct_optab_table[(int) DOI_sync_and])
+#define sync_xor_optab (&direct_optab_table[(int) DOI_sync_xor])
+#define sync_nand_optab (&direct_optab_table[(int) DOI_sync_nand])
+#define sync_old_add_optab (&direct_optab_table[(int) DOI_sync_old_add])
+#define sync_old_sub_optab (&direct_optab_table[(int) DOI_sync_old_sub])
+#define sync_old_ior_optab (&direct_optab_table[(int) DOI_sync_old_ior])
+#define sync_old_and_optab (&direct_optab_table[(int) DOI_sync_old_and])
+#define sync_old_xor_optab (&direct_optab_table[(int) DOI_sync_old_xor])
+#define sync_old_nand_optab (&direct_optab_table[(int) DOI_sync_old_nand])
+#define sync_new_add_optab (&direct_optab_table[(int) DOI_sync_new_add])
+#define sync_new_sub_optab (&direct_optab_table[(int) DOI_sync_new_sub])
+#define sync_new_ior_optab (&direct_optab_table[(int) DOI_sync_new_ior])
+#define sync_new_and_optab (&direct_optab_table[(int) DOI_sync_new_and])
+#define sync_new_xor_optab (&direct_optab_table[(int) DOI_sync_new_xor])
+#define sync_new_nand_optab (&direct_optab_table[(int) DOI_sync_new_nand])
+#define sync_compare_and_swap_optab \
+  (&direct_optab_table[(int) DOI_sync_compare_and_swap])
+#define sync_lock_test_and_set_optab \
+  (&direct_optab_table[(int) DOI_sync_lock_test_and_set])
+#define sync_lock_release_optab \
+  (&direct_optab_table[(int) DOI_sync_lock_release])
+
 /* Define functions given in optabs.c.  */
 
 extern rtx expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
@@ -821,6 +869,25 @@ set_convert_optab_handler (convert_optab op, enum machine_mode to_mode,
 {
   op->handlers[(int) to_mode][(int) from_mode].insn_code
     = (int) code - (int) CODE_FOR_nothing;
+}
+
+/* Return the insn used to implement mode MODE of OP, or CODE_FOR_nothing
+   if the target does not have such an insn.  */
+
+static inline enum insn_code
+direct_optab_handler (direct_optab op, enum machine_mode mode)
+{
+  return (enum insn_code) (op->handlers[(int) mode].insn_code
+			   + (int) CODE_FOR_nothing);
+}
+
+/* Record that insn CODE should be used to implement mode MODE of OP.  */
+
+static inline void
+set_direct_optab_handler (direct_optab op, enum machine_mode mode,
+			  enum insn_code code)
+{
+  op->handlers[(int) mode].insn_code = (int) code - (int) CODE_FOR_nothing;
 }
 
 extern rtx optab_libfunc (optab optab, enum machine_mode mode);

@@ -1584,10 +1584,10 @@ alpha_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 	  if (in_p)
 	    {
 	      if (!aligned_memory_operand (x, mode))
-		sri->icode = reload_in_optab[mode];
+		sri->icode = direct_optab_handler (reload_in_optab, mode);
 	    }
 	  else
-	    sri->icode = reload_out_optab[mode];
+	    sri->icode = direct_optab_handler (reload_out_optab, mode);
 	  return NO_REGS;
 	}
     }

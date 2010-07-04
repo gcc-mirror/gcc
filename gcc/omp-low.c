@@ -4918,7 +4918,7 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
 {
   enum built_in_function base;
   tree decl, itype, call;
-  enum insn_code *optab;
+  direct_optab optab;
   tree rhs;
   basic_block store_bb = single_succ (load_bb);
   gimple_stmt_iterator gsi;
@@ -4990,7 +4990,7 @@ expand_omp_atomic_fetch_op (basic_block load_bb,
   decl = built_in_decls[base + index + 1];
   itype = TREE_TYPE (TREE_TYPE (decl));
 
-  if (optab[TYPE_MODE (itype)] == CODE_FOR_nothing)
+  if (direct_optab_handler (optab, TYPE_MODE (itype)) == CODE_FOR_nothing)
     return false;
 
   gsi = gsi_last_bb (load_bb);
@@ -5042,7 +5042,8 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
   type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (addr)));
   itype = TREE_TYPE (TREE_TYPE (cmpxchg));
 
-  if (sync_compare_and_swap[TYPE_MODE (itype)] == CODE_FOR_nothing)
+  if (direct_optab_handler (sync_compare_and_swap_optab, TYPE_MODE (itype))
+      == CODE_FOR_nothing)
     return false;
 
   /* Load the initial value, replacing the GIMPLE_OMP_ATOMIC_LOAD.  */

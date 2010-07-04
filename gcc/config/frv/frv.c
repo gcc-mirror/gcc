@@ -6510,8 +6510,9 @@ frv_secondary_reload (bool in_p, rtx x, reg_class_t reload_class_i,
 
   if (rclass != NO_REGS)
     {
-      enum insn_code icode = (in_p ? reload_in_optab[(int) reload_mode]
-			      : reload_out_optab[(int) reload_mode]);
+      enum insn_code icode
+	= direct_optab_handler (in_p ? reload_in_optab : reload_out_optab,
+				reload_mode);
       if (icode == 0)
 	{
 	  /* This happens when then the reload_[in|out]_optabs have

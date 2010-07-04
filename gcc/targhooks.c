@@ -849,8 +849,9 @@ default_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
 #endif
   if (rclass != NO_REGS)
     {
-      enum insn_code icode = (in_p ? reload_in_optab[(int) reload_mode]
-			      : reload_out_optab[(int) reload_mode]);
+      enum insn_code icode
+	= direct_optab_handler (in_p ? reload_in_optab : reload_out_optab,
+				reload_mode);
 
       if (icode != CODE_FOR_nothing
 	  && insn_data[(int) icode].operand[in_p].predicate

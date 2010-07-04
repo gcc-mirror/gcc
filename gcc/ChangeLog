@@ -1,5 +1,73 @@
 2010-07-04  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* optabs.h (reload_in_optab, reload_out_optab, code_to_optab)
+	(vcond_gen_code, vcondu_gen_code, movmem_optab, setmem_optab)
+	(cmpstr_optab, cmpstrn_optab, cmpmem_optab, sync_add_optab)
+	(sync_sub_optab, sync_ior_optab, sync_and_optab, sync_xor_optab)
+	(sync_nand_optab, sync_old_add_optab, sync_old_sub_optab)
+	(sync_old_ior_optab, sync_old_and_optab, sync_old_xor_optab)
+	(sync_old_nand_optab, sync_new_add_optab, sync_new_sub_optab)
+	(sync_new_ior_optab, sync_new_and_optab, sync_new_xor_optab)
+	(sync_new_nand_optab): Redefine as macros.
+	(sync_compare_and_swap, sync_lock_test_and_set, sync_lock_release):
+	Delete.
+	(direct_optab_index): New enum.
+	(direct_optab_d): New structure.
+	(direct_optab): New typedef.
+	(direct_optab_table): Declare.
+	(direct_optab_handler, set_direct_optab_handler): New functions.
+	(sync_compare_and_swap_optab, sync_lock_test_and_set_optab)
+	(sync_lock_release_optab): New macros.
+	* optabs.c (direct_optab_table): New variable.
+	(movcc_gen_code, vcond_gen_code, vcondu_gen_code): Delete.
+	(prepare_cmp_insn): Use direct_optab_handler for cmpmem_optab,
+	cmpstr_optab and cmpstrn_optab.
+	(emit_conditional_move): Likewise for movcc_optab.
+	(can_conditionally_move_p): Likewise for movcc_gen_code.
+	(init_insn_codes): Clear direct_optab_table.
+	(init_optabs): Don't initialize the new "direct optabs" here.
+	(get_vcond_icode): Use direct_optab_handler for vcondu_gen_code and
+	vcond_gen_code.
+	(expand_val_compare_and_swap): Likewise sync_compare_and_swap_optab.
+	(expand_bool_compare_and_swap): Likewise sync_compare_and_swap_optab.
+	(expand_compare_and_swap_loop): Likewise sync_compare_and_swap_optab.
+	(expand_sync_operation): Likewise other sync_*_optabs.
+	(expand_sync_fetch_operation): Likewise.  Rename sync_compare_and_swap
+	to sync_compare_and_swap_optab.
+	(expand_sync_lock_test_and_set): Use direct_optab_handler for
+	sync_lock_test_and_set and sync_compare_and_swap, adding "_optab"
+	to the names of both.
+	* builtins.c (expand_builtin_strcmp): Use direct_optab_handler for
+	cmpstr_optab and cmpstrn_optab.
+	(expand_builtin_lock_release): Likewise sync_lock_release.
+	* expr.c (movmem_optab, setmem_optab, cmpstr_optab, cmpstrn_optab)
+	(cmpmem_optab, sync_add_optab, sync_sub_optab, sync_ior_optab)
+	(sync_and_optab, sync_xor_optab, sync_nand_optab, sync_old_add_optab)
+	(sync_old_sub_optab, sync_old_ior_optab, sync_old_and_optab)
+	(sync_old_xor_optab, sync_old_nand_optab, sync_new_add_optab)
+	(sync_new_sub_optab, sync_new_ior_optab, sync_new_and_optab)
+	(sync_new_xor_optab, sync_new_nand_optab, sync_compare_and_swap)
+	(sync_lock_test_and_set, sync_lock_release): Delete.
+	(emit_block_move_via_movmem): Use direct_optab_handler for movmem_optab.
+	(emit_block_move_via_setmem): Use direct_optab_handler for setmem_optab.
+	* genopinit.c (optabs): Use set_direct_optab_handler for the new
+	macro optabs.
+	* omp-low.c (expand_omp_atomic_fetch_op): Update the type of
+	the "optab" local variable.  Use direct_optab_handler for optab and
+	sync_compare_and_swap_optab.
+	* reload1.c (reload_in_optab, reload_out_optab): Delete.
+	* targhooks.c (default_secondary_reload): Use direct_optab_handler for
+	reload_in_optab and reload_out_optab.
+	* config/alpha/alpha.c (alpha_secondary_reload): Likewise.
+	* config/frv/frv.c (frv_alloc_temp_reg): Likewise.
+	* config/pa/pa.c (pa_secondary_reload): Likewise.
+	* java/builtins.c (compareAndSwapInt_builtin): Use direct_optab_handler
+	for sync_compare_and_swap, renaming it to sync_compare_and_swap_optab.
+	(compareAndSwapLong_builtin, compareAndSwapObject_builtin): Likewise.
+	(VMSupportsCS8_builtin): Likewise.
+
+2010-07-04  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* optabs.h (optab_handlers): Change type of insn_code to int.
 	(optab_handler, set_optab_handler, convert_optab_handler)
 	(set_convert_optab_handler): Treat the insn_code field as "insn_code -

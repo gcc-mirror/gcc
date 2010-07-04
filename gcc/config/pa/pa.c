@@ -5767,7 +5767,9 @@ pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
       /* Request a secondary reload with a general scratch register
 	 for everthing else.  ??? Could symbolic operands be handled
 	 directly when generating non-pic PA 2.0 code?  */
-      sri->icode = in_p ? reload_in_optab[mode] : reload_out_optab[mode];
+      sri->icode = (in_p
+		    ? direct_optab_handler (reload_in_optab, mode)
+		    : direct_optab_handler (reload_out_optab, mode));
       return NO_REGS;
     }
 
@@ -5775,7 +5777,9 @@ pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
      and anything other than a general register.  */
   if (rclass == SHIFT_REGS && (regno <= 0 || regno >= 32))
     {
-      sri->icode = in_p ? reload_in_optab[mode] : reload_out_optab[mode];
+      sri->icode = (in_p
+		    ? direct_optab_handler (reload_in_optab, mode)
+		    : direct_optab_handler (reload_out_optab, mode));
       return NO_REGS;
     }
 
@@ -5785,7 +5789,9 @@ pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
       && (REGNO_REG_CLASS (regno) == SHIFT_REGS
       && FP_REG_CLASS_P (rclass)))
     {
-      sri->icode = in_p ? reload_in_optab[mode] : reload_out_optab[mode];
+      sri->icode = (in_p
+		    ? direct_optab_handler (reload_in_optab, mode)
+		    : direct_optab_handler (reload_out_optab, mode));
       return NO_REGS;
     }
 
