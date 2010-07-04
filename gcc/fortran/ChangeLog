@@ -1,3 +1,7 @@
+2010-07-04  Daniel Kraft  <d@domob.eu>
+
+	* gfc-internals.texi (gfc_code): Document BLOCK and ASSOCIATE.
+
 2010-07-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/44596
