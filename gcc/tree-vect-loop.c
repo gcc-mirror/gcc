@@ -2046,8 +2046,16 @@ vect_get_single_scalar_iteraion_cost (loop_vec_info loop_vinfo)
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
         {
           gimple stmt = gsi_stmt (si);
+          stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
 
           if (!is_gimple_assign (stmt) && !is_gimple_call (stmt))
+            continue;
+
+          /* Skip stmts that are not vectorized inside the loop.  */
+          if (stmt_info
+              && !STMT_VINFO_RELEVANT_P (stmt_info)
+              && (!STMT_VINFO_LIVE_P (stmt_info)
+                  || STMT_VINFO_DEF_TYPE (stmt_info) != vect_reduction_def))
             continue;
 
           if (STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt)))

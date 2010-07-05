@@ -826,7 +826,7 @@ vect_get_load_cost (struct data_reference *dr, int ncopies,
     {
     case dr_aligned:
       {
-        inside_cost += ncopies * vect_get_stmt_cost (vector_load); 
+        *inside_cost += ncopies * vect_get_stmt_cost (vector_load); 
 
         if (vect_print_dump_info (REPORT_COST))
           fprintf (vect_dump, "vect_model_load_cost: aligned.");
