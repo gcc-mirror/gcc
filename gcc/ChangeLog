@@ -1,3 +1,13 @@
+2010-07-05  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/ia64/ia64.h (MEMORY_MOVE_COST): Remove macro.
+	* config/ia64/t-ia64 (ia64.o): Depend on reload.h.
+	* config/ia64/ia64.c Include reload.h.
+	(ia64_memory_move_cost): New function.
+	(TARGET_MEMORY_MOVE_COST): Define.
+	(ia64_register_move_cost): Replace MEMORY_MOVE_COST with
+	memory_move_cost.
+
 2010-07-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR middle-end/42505
