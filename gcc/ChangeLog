@@ -1,3 +1,17 @@
+2010-07-05  Anatoly Sokolov  <aesok@post.ru>
+
+	* double-int.h (fit_double_type): Remove declaration.
+	* double-int.c (fit_double_type): Remove function.
+	* tree.h (int_fits_type_p): Adjust prototype.
+	* tree.c (int_fits_type_p): Return bool. Use double_int_fits_to_tree_p
+	instead of fit_double_type.
+	(build_int_cst_type): Use double_int_to_tree and shwi_to_double_int
+	instead of fit_double_type and build_int_cst_wide.
+	* builtins.c (): Use double_int_fits_to_tree_p and double_int_to_tree
+	instead of fit_double_type and build_int_cst_wide.
+	(fold_builtin_object_size): Use double_int_fits_to_tree_p instead
+	of fit_double_type.
+
 2010-07-05  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h (cgraph_node, cgraph_varpool_node): Update docmentation of

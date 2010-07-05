@@ -7626,8 +7626,7 @@ fold_builtin_int_roundingfn (location_t loc, tree fndecl, tree arg)
 	{
 	  tree itype = TREE_TYPE (TREE_TYPE (fndecl));
 	  tree ftype = TREE_TYPE (arg);
-	  unsigned HOST_WIDE_INT lo2;
-	  HOST_WIDE_INT hi, lo;
+	  double_int val;
 	  REAL_VALUE_TYPE r;
 
 	  switch (DECL_FUNCTION_CODE (fndecl))
@@ -7651,9 +7650,9 @@ fold_builtin_int_roundingfn (location_t loc, tree fndecl, tree arg)
 	      gcc_unreachable ();
 	    }
 
-	  REAL_VALUE_TO_INT (&lo, &hi, r);
-	  if (!fit_double_type (lo, hi, &lo2, &hi, itype))
-	    return build_int_cst_wide (itype, lo2, hi);
+	  real_to_integer2 ((HOST_WIDE_INT *)&val.low, &val.high, &r);
+	  if (double_int_fits_to_tree_p (itype, val))
+	    return double_int_to_tree (itype, val);
 	}
     }
 
@@ -12036,7 +12035,7 @@ maybe_emit_free_warning (tree exp)
 tree
 fold_builtin_object_size (tree ptr, tree ost)
 {
-  tree ret = NULL_TREE;
+  unsigned HOST_WIDE_INT bytes;
   int object_size_type;
 
   if (!validate_arg (ptr, POINTER_TYPE)
@@ -12059,31 +12058,25 @@ fold_builtin_object_size (tree ptr, tree ost)
     return build_int_cst_type (size_type_node, object_size_type < 2 ? -1 : 0);
 
   if (TREE_CODE (ptr) == ADDR_EXPR)
-    ret = build_int_cstu (size_type_node,
-			  compute_builtin_object_size (ptr, object_size_type));
-
+    {
+      bytes = compute_builtin_object_size (ptr, object_size_type);
+      if (double_int_fits_to_tree_p (size_type_node,
+				     uhwi_to_double_int (bytes)))
+	return build_int_cstu (size_type_node, bytes);
+    }
   else if (TREE_CODE (ptr) == SSA_NAME)
     {
-      unsigned HOST_WIDE_INT bytes;
-
       /* If object size is not known yet, delay folding until
        later.  Maybe subsequent passes will help determining
        it.  */
       bytes = compute_builtin_object_size (ptr, object_size_type);
-      if (bytes != (unsigned HOST_WIDE_INT) (object_size_type < 2
-					     ? -1 : 0))
-	ret = build_int_cstu (size_type_node, bytes);
+      if (bytes != (unsigned HOST_WIDE_INT) (object_size_type < 2 ? -1 : 0)
+          && double_int_fits_to_tree_p (size_type_node,
+					uhwi_to_double_int (bytes)))
+	return build_int_cstu (size_type_node, bytes);
     }
 
-  if (ret)
-    {
-      unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (ret);
-      HOST_WIDE_INT high = TREE_INT_CST_HIGH (ret);
-      if (fit_double_type (low, high, &low, &high, TREE_TYPE (ret)))
-	ret = NULL_TREE;
-    }
-
-  return ret;
+  return NULL_TREE;
 }
 
 /* Fold a call to the __mem{cpy,pcpy,move,set}_chk builtin.
