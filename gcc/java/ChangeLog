@@ -1,5 +1,10 @@
 2010-07-05  Nathan Froyd  <froydnj@codesourcery.com>
 
+	PR bootstrap/44825
+	* class.c (make_class_data): Cast result of VEC_length calls to int.
+
+2010-07-05  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* constants.c (build_constants_constructor): Use build_constructor
 	instead of build_constructor_from_list.
 	* class.c (make_method_value): Likewise.
