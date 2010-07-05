@@ -1,3 +1,9 @@
+2010-07-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/44808
+	* gimplify.c (gimplify_modify_expr): Only SET_DECL_DEBUG_EXPR if
+	*from_p is VAR_DECL.
+
 2010-07-05  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree.h (build_call_list): Remove.

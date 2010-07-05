@@ -4559,7 +4559,7 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   /* Try to alleviate the effects of the gimplification creating artificial
      temporaries (see for example is_gimple_reg_rhs) on the debug info.  */
   if (!gimplify_ctxp->into_ssa
-      && DECL_P (*from_p)
+      && TREE_CODE (*from_p) == VAR_DECL
       && DECL_IGNORED_P (*from_p)
       && DECL_P (*to_p)
       && !DECL_IGNORED_P (*to_p))
