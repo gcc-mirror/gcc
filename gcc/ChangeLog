@@ -1,3 +1,12 @@
+2010-07-05  Jie Zhang  <jie@codesourcery.com>
+
+	* config/arm/vfp.md (*push_multi_vfp): Use vfp_register_operand
+	as predicate for operand 1 and remove its constraint.
+	* config/arm/predicates.md (vfp_register_operand): New.
+	* config/arm/arm.md (*push_multi): Remove the constraint of
+	operand 1.
+	(*push_fp_multi): Likewise.
+
 2010-07-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/44597

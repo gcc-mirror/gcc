@@ -73,6 +73,21 @@
 	      || REGNO_REG_CLASS (REGNO (op)) == FPA_REGS));
 })
 
+(define_predicate "vfp_register_operand"
+  (match_code "reg,subreg")
+{
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  /* We don't consider registers whose class is NO_REGS
+     to be a register operand.  */
+  return (GET_CODE (op) == REG
+	  && (REGNO (op) >= FIRST_PSEUDO_REGISTER
+	      || REGNO_REG_CLASS (REGNO (op)) == VFP_LO_REGS
+	      || (TARGET_VFPD32
+		  && REGNO_REG_CLASS (REGNO (op)) == VFP_REGS)));
+})
+
 (define_special_predicate "subreg_lowpart_operator"
   (and (match_code "subreg")
        (match_test "subreg_lowpart_p (op)")))

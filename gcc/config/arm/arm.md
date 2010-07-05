@@ -10826,7 +10826,7 @@
 (define_insn "*push_multi"
   [(match_parallel 2 "multi_register_push"
     [(set (match_operand:BLK 0 "memory_operand" "=m")
-	  (unspec:BLK [(match_operand:SI 1 "s_register_operand" "r")]
+	  (unspec:BLK [(match_operand:SI 1 "s_register_operand" "")]
 		      UNSPEC_PUSH_MULT))])]
   "TARGET_32BIT"
   "*
@@ -10879,7 +10879,7 @@
 (define_insn "*push_fp_multi"
   [(match_parallel 2 "multi_register_push"
     [(set (match_operand:BLK 0 "memory_operand" "=m")
-	  (unspec:BLK [(match_operand:XF 1 "f_register_operand" "f")]
+	  (unspec:BLK [(match_operand:XF 1 "f_register_operand" "")]
 		      UNSPEC_PUSH_MULT))])]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FPA"
   "*

@@ -1128,7 +1128,7 @@
 (define_insn "*push_multi_vfp"
   [(match_parallel 2 "multi_register_push"
     [(set (match_operand:BLK 0 "memory_operand" "=m")
-	  (unspec:BLK [(match_operand:DF 1 "s_register_operand" "w")]
+	  (unspec:BLK [(match_operand:DF 1 "vfp_register_operand" "")]
 		      UNSPEC_PUSH_MULT))])]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP"
   "* return vfp_output_fstmd (operands);"
