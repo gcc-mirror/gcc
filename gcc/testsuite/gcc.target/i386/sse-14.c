@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mxop -msse4a -maes -mpclmul -mpopcnt -mabm -mlwp" } */
+/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mxop -msse4a -maes -mpclmul -mpopcnt -mabm -mlwp -mfsgsbase -mrdrnd -mf16c" } */
 
 #include <mm_malloc.h>
 
@@ -89,6 +89,9 @@ test_2 (_mm256_insert_epi64, __m256i, __m256i, long long, 1)
 #endif
 test_1 (_mm256_round_pd, __m256d, __m256d, 1)
 test_1 (_mm256_round_ps, __m256, __m256, 1)
+test_1 (_cvtss_sh, unsigned short, float, 1)
+test_1 (_mm_cvtps_ph, __m128i, __m128, 1)
+test_1 (_mm256_cvtps_ph, __m128i, __m256, 1)
 
 /* wmmintrin.h */
 test_1 (_mm_aeskeygenassist_si128, __m128i, __m128i, 1)

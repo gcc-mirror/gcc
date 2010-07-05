@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mxop -maes -mpclmul -mpopcnt -mabm -mlwp" } */
+/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mxop -maes -mpclmul -mpopcnt -mabm -mlwp -mfsgsbase -mrdrnd -mf16c" } */
 
 #include <mm_malloc.h>
 
@@ -50,6 +50,8 @@
 #define __builtin_ia32_vinsertf128_si256(X, Y, C) __builtin_ia32_vinsertf128_si256(X, Y, 1)
 #define __builtin_ia32_roundpd256(V, M) __builtin_ia32_roundpd256(V, 1)
 #define __builtin_ia32_roundps256(V, M) __builtin_ia32_roundps256(V, 1)
+#define __builtin_ia32_vcvtps2ph(A, I) __builtin_ia32_vcvtps2ph(A, 1)
+#define __builtin_ia32_vcvtps2ph256(A, I) __builtin_ia32_vcvtps2ph256(A, 1)
 
 /* wmmintrin.h */
 #define __builtin_ia32_aeskeygenassist128(X, C) __builtin_ia32_aeskeygenassist128(X, 1)

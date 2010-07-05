@@ -3273,6 +3273,19 @@ proc check_effective_target_sse2 { } {
     } "-O2 -msse2" ]
 }
 
+# Return 1 if F16C instructions can be compiled.
+
+proc check_effective_target_f16c { } {
+    return [check_no_compiler_messages f16c object {
+	#include "immintrin.h"
+	float
+	foo (unsigned short val)
+	{
+	  return _cvtsh_ss (val);
+	}
+    } "-O2 -mf16c" ]
+}
+
 # Return 1 if C wchar_t type is compatible with char16_t.
 
 proc check_effective_target_wchar_t_char16_t_compatible { } {

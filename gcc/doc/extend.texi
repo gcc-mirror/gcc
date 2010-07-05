@@ -8958,6 +8958,31 @@ used.
 Generates the @code{pclmulqdq} machine instruction.
 @end table
 
+The following built-in function is available when @option{-mfsgsbase} is
+used.  All of them generate the machine instruction that is part of the
+name.
+
+@smallexample
+unsigned int __builtin_ia32_rdfsbase32 (void)
+unsigned long long __builtin_ia32_rdfsbase64 (void)
+unsigned int __builtin_ia32_rdgsbase32 (void)
+unsigned long long __builtin_ia32_rdgsbase64 (void)
+void _writefsbase_u32 (unsigned int)
+void _writefsbase_u64 (unsigned long long)
+void _writegsbase_u32 (unsigned int)
+void _writegsbase_u64 (unsigned long long)
+@end smallexample
+
+The following built-in function is available when @option{-mrdrnd} is
+used.  All of them generate the machine instruction that is part of the
+name.
+
+@smallexample
+unsigned short __builtin_ia32_rdrand16 (void)
+unsigned int __builtin_ia32_rdrand32 (void)
+unsigned long long __builtin_ia32_rdrand64 (void)
+@end smallexample
+
 The following built-in functions are available when @option{-msse4a} is used.
 All of them generate the machine instruction that is part of the name.
 
