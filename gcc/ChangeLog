@@ -1,3 +1,12 @@
+2010-07-05  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (cgraph_node, cgraph_varpool_node): Update docmentation of
+	in_other_partition.
+	* lto-cgraph.c (referenced_from_other_partition_p,
+	reachable_from_other_partition_p): Use in_other_partition flags.
+	(output_node, output_varpool_node): COMDAT nodes always have private
+	copies and thus are never used from other partition.
+
 2010-07-05  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/ia64/ia64.h (MEMORY_MOVE_COST): Remove macro.
