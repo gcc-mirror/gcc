@@ -501,11 +501,23 @@ build_constants_constructor (void)
   CPool *outgoing_cpool = cpool_for_class (current_class);
   tree tags_value, data_value;
   tree cons;
-  tree tags_list = NULL_TREE;
-  tree data_list = NULL_TREE;
   VEC(constructor_elt,gc) *v = NULL;
   int i;
+  VEC(constructor_elt,gc) *tags = NULL;
+  VEC(constructor_elt,gc) *data = NULL;
+  constructor_elt *t = NULL;
+  constructor_elt *d = NULL;
 
+  if (outgoing_cpool->count > 0)
+    {
+      int c = outgoing_cpool->count;
+      VEC_safe_grow_cleared (constructor_elt, gc, tags, c);
+      VEC_safe_grow_cleared (constructor_elt, gc, data, c);
+      t = VEC_index (constructor_elt, tags, c-1);
+      d = VEC_index (constructor_elt, data, c-1);
+    }
+
+#define CONSTRUCTOR_PREPEND_VALUE(E, V) E->value = V, E--
   for (i = outgoing_cpool->count;  --i > 0; )
     switch (outgoing_cpool->tags[i] & ~CONSTANT_LazyFlag)
       {
@@ -530,14 +542,11 @@ build_constants_constructor (void)
 	  if (BYTES_BIG_ENDIAN && POINTER_SIZE > 32)
 	    temp <<= POINTER_SIZE - 32;
 
-	  tags_list
-	    = tree_cons (NULL_TREE, get_tag_node (outgoing_cpool->tags[i]),
-			 tags_list);
-	  data_list
-	    = tree_cons (NULL_TREE, 
-			 fold_convert (ptr_type_node, 
-				       (build_int_cst (NULL_TREE, temp))),
-			 data_list);
+          CONSTRUCTOR_PREPEND_VALUE (t, get_tag_node (outgoing_cpool->tags[i]));
+          CONSTRUCTOR_PREPEND_VALUE (d,
+                                     fold_convert (ptr_type_node, 
+                                                   (build_int_cst (NULL_TREE,
+                                                                   temp))));
 	}
 	break;
 
@@ -545,17 +554,15 @@ build_constants_constructor (void)
       case CONSTANT_String:
       case CONSTANT_Unicode:
       case CONSTANT_Utf8:
-	tags_list
-	  = tree_cons (NULL_TREE, get_tag_node (outgoing_cpool->tags[i]),
-		       tags_list);
-	data_list
-	  = tree_cons (NULL_TREE, build_utf8_ref (outgoing_cpool->data[i].t),
-		       data_list);
+        CONSTRUCTOR_PREPEND_VALUE (t, get_tag_node (outgoing_cpool->tags[i]));
+        CONSTRUCTOR_PREPEND_VALUE (d, build_utf8_ref (outgoing_cpool->data[i].t));
 	break;
 
       default:
 	gcc_assert (false);
       }
+#undef CONSTRUCTOR_PREPEND_VALUE
+
   if (outgoing_cpool->count > 0)
     {
       tree data_decl, tags_decl, tags_type;
@@ -564,8 +571,10 @@ build_constants_constructor (void)
       tree tem;
 
       /* Add dummy 0'th element of constant pool. */
-      tags_list = tree_cons (NULL_TREE, get_tag_node (0), tags_list);
-      data_list = tree_cons (NULL_TREE, null_pointer_node, data_list);
+      gcc_assert (t == VEC_address (constructor_elt, tags));
+      gcc_assert (d == VEC_address (constructor_elt, data));
+      t->value = get_tag_node (0);
+      d->value = null_pointer_node;
   
       /* Change the type of the decl to have the proper array size.
          ???  Make sure to transition the old type-pointer-to list to this
@@ -577,8 +586,7 @@ build_constants_constructor (void)
       TYPE_POINTER_TO (TREE_TYPE (data_decl)) = NULL_TREE;
       TREE_TYPE (data_decl) = build_array_type (ptr_type_node, index_type);
       TYPE_POINTER_TO (TREE_TYPE (data_decl)) = tem;
-      DECL_INITIAL (data_decl) = build_constructor_from_list
-				  (TREE_TYPE (data_decl), data_list);
+      DECL_INITIAL (data_decl) = build_constructor (TREE_TYPE (data_decl), data);
       DECL_SIZE (data_decl) = TYPE_SIZE (TREE_TYPE (data_decl));
       DECL_SIZE_UNIT (data_decl) = TYPE_SIZE_UNIT (TREE_TYPE (data_decl));
       rest_of_decl_compilation (data_decl, 1, 0);
@@ -590,8 +598,7 @@ build_constants_constructor (void)
 							   current_class),
 			      tags_type);
       TREE_STATIC (tags_decl) = 1;
-      DECL_INITIAL (tags_decl) = build_constructor_from_list
-				 (tags_type, tags_list);
+      DECL_INITIAL (tags_decl) = build_constructor (tags_type, tags);
       rest_of_decl_compilation (tags_decl, 1, 0);
       tags_value = build_address_of (tags_decl);
     }

@@ -1453,20 +1453,21 @@ make_field_value (tree fdecl)
 
   {
     tree field_address = integer_zero_node;
+    tree index, value;
     if ((DECL_INITIAL (fdecl) || ! flag_indirect_classes) 
 	&& FIELD_STATIC (fdecl))
       field_address = build_address_of (fdecl);
 
+    index = (FIELD_STATIC (fdecl)
+	     ? TREE_CHAIN (TYPE_FIELDS (field_info_union_node))
+	     : TYPE_FIELDS (field_info_union_node));
+    value = (FIELD_STATIC (fdecl)
+	     ? field_address
+	     : byte_position (fdecl));
+
     PUSH_FIELD_VALUE
       (v, "info",
-       build_constructor_from_list (field_info_union_node,
-	 build_tree_list
-	   ((FIELD_STATIC (fdecl)
-	     ? TREE_CHAIN (TYPE_FIELDS (field_info_union_node))
-	     : TYPE_FIELDS (field_info_union_node)),
-	    (FIELD_STATIC (fdecl)
-	     ? field_address
-	     : byte_position (fdecl)))));
+       build_constructor_single (field_info_union_node, index, value));
   }
 
   FINISH_RECORD_CONSTRUCTOR (finit, v, field_type_node);
@@ -1524,14 +1525,23 @@ make_method_value (tree mdecl)
   {
     /* Compute the `throws' information for the method.  */
     tree table = null_pointer_node;
-    if (DECL_FUNCTION_THROWS (mdecl) != NULL)
+
+    if (!VEC_empty (tree, DECL_FUNCTION_THROWS (mdecl)))
       {
 	int length = 1 + VEC_length (tree, DECL_FUNCTION_THROWS (mdecl));
 	tree t, type, array;
 	char buf[60];
-        unsigned ix;
+	VEC(constructor_elt,gc) *v = NULL;
+	int idx = length - 1;
+	unsigned ix;
+	constructor_elt *e;
 
-	table = tree_cons (NULL_TREE, table, NULL_TREE);
+	v = VEC_alloc (constructor_elt, gc, length);
+	VEC_safe_grow_cleared (constructor_elt, gc, v, length);
+
+	e = VEC_index (constructor_elt, v, idx--);
+	e->value = null_pointer_node;
+
 	for (ix = 0;
 	     VEC_iterate (tree, DECL_FUNCTION_THROWS (mdecl), ix, t);
 	     ix++)
@@ -1540,10 +1550,12 @@ make_method_value (tree mdecl)
 	    tree utf8
 	      = build_utf8_ref (unmangle_classname (IDENTIFIER_POINTER (sig),
 						    IDENTIFIER_LENGTH (sig)));
-	    table = tree_cons (NULL_TREE, utf8, table);
+	    e = VEC_index (constructor_elt, v, idx--);
+	    e->value = utf8;
 	  }
+	gcc_assert (idx == -1);
 	type = build_prim_array_type (ptr_type_node, length);
-	table = build_constructor_from_list (type, table);
+	table = build_constructor (type, v);
 	/* Compute something unique enough.  */
 	sprintf (buf, "_methods%d", method_name_count++);
 	array = build_decl (input_location,
@@ -1604,11 +1616,22 @@ get_dispatch_table (tree type, tree this_class_addr)
   int abstract_p = CLASS_ABSTRACT (TYPE_NAME (type));
   tree vtable = get_dispatch_vector (type);
   int i, j;
-  tree list = NULL_TREE;
   int nvirtuals = TREE_VEC_LENGTH (vtable);
   int arraysize;
   tree gc_descr;
+  VEC(constructor_elt,gc) *v = NULL;
+  constructor_elt *e;
+  tree arraytype;
 
+  arraysize = (TARGET_VTABLE_USES_DESCRIPTORS? nvirtuals + 1 : nvirtuals + 2);
+  if (TARGET_VTABLE_USES_DESCRIPTORS)
+    arraysize *= TARGET_VTABLE_USES_DESCRIPTORS;
+  arraysize += 2;
+
+  VEC_safe_grow_cleared (constructor_elt, gc, v, arraysize);
+  e = VEC_index (constructor_elt, v, arraysize - 1);
+
+#define CONSTRUCTOR_PREPEND_VALUE(E, V) E->value = V, E--
   for (i = nvirtuals;  --i >= 0; )
     {
       tree method = TREE_VEC_ELT (vtable, i);
@@ -1620,9 +1643,9 @@ get_dispatch_table (tree type, tree this_class_addr)
 
 	  if (TARGET_VTABLE_USES_DESCRIPTORS)
 	    for (j = 0; j < TARGET_VTABLE_USES_DESCRIPTORS; ++j)
-	      list = tree_cons (NULL_TREE, null_pointer_node, list);
+	      CONSTRUCTOR_PREPEND_VALUE (e, null_pointer_node);
 	  else
-	    list = tree_cons (NULL_TREE, null_pointer_node, list);
+	    CONSTRUCTOR_PREPEND_VALUE (e, null_pointer_node);
 	}
       else
 	{
@@ -1632,13 +1655,13 @@ get_dispatch_table (tree type, tree this_class_addr)
 		tree fdesc = build2 (FDESC_EXPR, nativecode_ptr_type_node, 
 				     method, build_int_cst (NULL_TREE, j));
 		TREE_CONSTANT (fdesc) = 1;
-	        list = tree_cons (NULL_TREE, fdesc, list);
+		CONSTRUCTOR_PREPEND_VALUE (e, fdesc);
 	      }
 	  else
-	    list = tree_cons (NULL_TREE,
-			      build1 (ADDR_EXPR, nativecode_ptr_type_node,
-				      method),
-			      list);
+	    CONSTRUCTOR_PREPEND_VALUE (e,
+				       build1 (ADDR_EXPR,
+					       nativecode_ptr_type_node,
+					       method));
 	}
     }
 
@@ -1651,23 +1674,21 @@ get_dispatch_table (tree type, tree this_class_addr)
      pointer, and subsequent words (usually one) contain the GC descriptor.
      In all other cases, we reserve two extra vtable slots. */
   gc_descr =  get_boehm_type_descriptor (type);
-  list = tree_cons (NULL_TREE, gc_descr, list);
+  CONSTRUCTOR_PREPEND_VALUE (e, gc_descr);
   for (j = 1; j < TARGET_VTABLE_USES_DESCRIPTORS-1; ++j)
-    list = tree_cons (NULL_TREE, gc_descr, list);
-  list = tree_cons (NULL_TREE, this_class_addr, list);
+    CONSTRUCTOR_PREPEND_VALUE (e, gc_descr);
+  CONSTRUCTOR_PREPEND_VALUE (e, this_class_addr);
 
   /** Pointer to type_info object (to be implemented), according to g++ ABI. */
-  list = tree_cons (NULL_TREE, null_pointer_node, list);
+  CONSTRUCTOR_PREPEND_VALUE (e, null_pointer_node);
   /** Offset to start of whole object.  Always (ptrdiff_t)0 for Java. */
-  list = tree_cons (integer_zero_node, null_pointer_node, list);
+  gcc_assert (e == VEC_address (constructor_elt, v));
+  e->index = integer_zero_node;
+  e->value = null_pointer_node;
+#undef CONSTRUCTOR_PREPEND_VALUE
 
-  arraysize = (TARGET_VTABLE_USES_DESCRIPTORS? nvirtuals + 1 : nvirtuals + 2);
-  if (TARGET_VTABLE_USES_DESCRIPTORS)
-    arraysize *= TARGET_VTABLE_USES_DESCRIPTORS;
-  arraysize += 2;
-  return build_constructor_from_list
-	  (build_prim_array_type (nativecode_ptr_type_node,
-				  arraysize), list);
+  arraytype = build_prim_array_type (nativecode_ptr_type_node, arraysize);
+  return build_constructor (arraytype, v);
 }
 
 
@@ -1751,14 +1772,11 @@ make_class_data (tree type)
 {
   tree decl, cons, temp;
   tree field, fields_decl;
-  tree static_fields = NULL_TREE;
-  tree instance_fields = NULL_TREE;
   HOST_WIDE_INT static_field_count = 0;
   HOST_WIDE_INT instance_field_count = 0;
   HOST_WIDE_INT field_count;
   tree field_array_type;
   tree method;
-  tree methods = NULL_TREE;
   tree dtable_decl = NULL_TREE;
   HOST_WIDE_INT method_count = 0;
   tree method_array_type;
@@ -1779,6 +1797,9 @@ make_class_data (tree type)
   tree first_real_field;
   VEC(constructor_elt,gc) *v1 = NULL, *v2 = NULL;
   tree reflection_data;
+  VEC(constructor_elt,gc) *static_fields = NULL;
+  VEC(constructor_elt,gc) *instance_fields = NULL;
+  VEC(constructor_elt,gc) *methods = NULL;
 
   this_class_addr = build_static_class_ref (type);
   decl = TREE_OPERAND (this_class_addr, 0);
@@ -1882,7 +1903,7 @@ make_class_data (tree type)
                  as it is used in the creation of the field itself. */
               tree init = make_field_value (field);
 	      tree initial = DECL_INITIAL (field);
-	      static_fields = tree_cons (NULL_TREE, init, static_fields);
+              CONSTRUCTOR_APPEND_ELT (static_fields, NULL_TREE, init);
 	      /* If the initial value is a string constant,
 		 prevent output_constant from trying to assemble the value. */
 	      if (initial != NULL_TREE
@@ -1894,22 +1915,25 @@ make_class_data (tree type)
 	  else if (uses_jv_markobj || !flag_reduced_reflection)
 	    {
               tree init = make_field_value (field);
-	      instance_fields = tree_cons (NULL_TREE, init, instance_fields);
+              CONSTRUCTOR_APPEND_ELT (instance_fields, NULL_TREE, init);
 	    }
 	}
     }
 
+  gcc_assert (static_field_count
+              == VEC_length (constructor_elt, static_fields));
+  gcc_assert (instance_field_count
+              == VEC_length (constructor_elt, instance_fields));
+
   if (field_count > 0)
     {
-      static_fields = nreverse (static_fields);
-      instance_fields = nreverse (instance_fields);
-      static_fields = chainon (static_fields, instance_fields);
+      VEC_safe_splice (constructor_elt, gc, static_fields, instance_fields);
       field_array_type = build_prim_array_type (field_type_node, field_count);
       fields_decl = build_decl (input_location,
 				VAR_DECL, mangled_classname ("_FL_", type),
 				field_array_type);
-      DECL_INITIAL (fields_decl) = build_constructor_from_list
-				    (field_array_type, static_fields);
+      DECL_INITIAL (fields_decl)
+        = build_constructor (field_array_type, static_fields);
       TREE_STATIC (fields_decl) = 1;
       DECL_ARTIFICIAL (fields_decl) = 1;
       DECL_IGNORED_P (fields_decl) = 1;
@@ -1958,15 +1982,14 @@ make_class_data (tree type)
         {
           init = make_method_value (method);
           method_count++;
-          methods = tree_cons (NULL_TREE, init, methods);
+          CONSTRUCTOR_APPEND_ELT (methods, NULL_TREE, init);
         }
     }
   method_array_type = build_prim_array_type (method_type_node, method_count);
   methods_decl = build_decl (input_location,
 			     VAR_DECL, mangled_classname ("_MT_", type),
 			     method_array_type);
-  DECL_INITIAL (methods_decl) = build_constructor_from_list
-				 (method_array_type, nreverse (methods));
+  DECL_INITIAL (methods_decl) = build_constructor (method_array_type, methods);
   TREE_STATIC (methods_decl) = 1;
   DECL_ARTIFICIAL (methods_decl) = 1;
   DECL_IGNORED_P (methods_decl) = 1;
@@ -2004,16 +2027,17 @@ make_class_data (tree type)
   
   if (interface_len > 0)
     {
-      tree init = NULL_TREE;
       int i;
       tree interface_array_type, idecl;
+      VEC(constructor_elt,gc) *init = VEC_alloc (constructor_elt, gc,
+						 interface_len);
       interface_array_type
 	= build_prim_array_type (class_ptr_type, interface_len);
       idecl = build_decl (input_location,
 			  VAR_DECL, mangled_classname ("_IF_", type),
 			  interface_array_type);
       
-      for (i = interface_len;  i > 0; i--)
+      for (i = 1; i <= interface_len; i++)
 	{
 	  tree child = BINFO_BASE_BINFO (TYPE_BINFO (type), i);
 	  tree iclass = BINFO_TYPE (child);
@@ -2027,10 +2051,9 @@ make_class_data (tree type)
 	      int int_index = alloc_class_constant (iclass);
 	      index = build_int_cst (ptr_type_node, int_index);
 	    }
-	  init = tree_cons (NULL_TREE, index, init); 
+	  CONSTRUCTOR_APPEND_ELT (init, NULL_TREE, index);
 	}
-      DECL_INITIAL (idecl) = build_constructor_from_list (interface_array_type,
-							  init);
+      DECL_INITIAL (idecl) = build_constructor (interface_array_type, init);
       TREE_STATIC (idecl) = 1;
       DECL_ARTIFICIAL (idecl) = 1;
       DECL_IGNORED_P (idecl) = 1;
@@ -2729,8 +2752,8 @@ emit_indirect_register_classes (tree *list_p)
   tree klass, t, register_class_fn;
   int i;
 
-  tree init = NULL_TREE;
   int size = VEC_length (tree, registered_class) * 2 + 1;
+  VEC(constructor_elt,gc) *init = VEC_alloc (constructor_elt, gc, size);
   tree class_array_type
     = build_prim_array_type (ptr_type_node, size);
   tree cdecl = build_decl (input_location,
@@ -2739,18 +2762,14 @@ emit_indirect_register_classes (tree *list_p)
   tree reg_class_list;
   for (i = 0; VEC_iterate (tree, registered_class, i, klass); ++i)
     {
-      init = tree_cons (NULL_TREE, 
-			fold_convert (ptr_type_node, 
-				      build_static_class_ref (klass)), init);
-      init = tree_cons 
-	(NULL_TREE, 
-	 fold_convert (ptr_type_node, 
-		       build_address_of (build_classdollar_field (klass))),
-	 init);
+      t = fold_convert (ptr_type_node, build_static_class_ref (klass));
+      CONSTRUCTOR_APPEND_ELT (init, NULL_TREE, t);
+      t = fold_convert (ptr_type_node,
+                        build_address_of (build_classdollar_field (klass)));
+      CONSTRUCTOR_APPEND_ELT (init, NULL_TREE, t);
     }
-  init = tree_cons (NULL_TREE, integer_zero_node, init); 
-  DECL_INITIAL (cdecl) = build_constructor_from_list (class_array_type,
-						      nreverse (init));
+  CONSTRUCTOR_APPEND_ELT (init, NULL_TREE, integer_zero_node);
+  DECL_INITIAL (cdecl) = build_constructor (class_array_type, init);
   TREE_CONSTANT (DECL_INITIAL (cdecl)) = 1;
   TREE_STATIC (cdecl) = 1;
   DECL_ARTIFICIAL (cdecl) = 1;
@@ -2896,10 +2915,10 @@ emit_symbol_table (tree name, tree the_table,
                    tree the_syms_decl, tree the_array_element_type,
 		   int element_size)
 {
-  tree table, list, null_symbol;
-  tree table_size, the_array_type;
+  tree table, null_symbol, table_size, the_array_type;
   unsigned index;
   method_entry *e;
+  VEC(constructor_elt,gc) *v = NULL;
   
   /* Only emit a table if this translation unit actually made any
      references via it. */
@@ -2907,21 +2926,17 @@ emit_symbol_table (tree name, tree the_table,
     return the_table;
 
   /* Build a list of _Jv_MethodSymbols for each entry in otable_methods. */
-  list = NULL_TREE;
   for (index = 0; VEC_iterate (method_entry, decl_table, index, e); index++)
-    list = tree_cons (NULL_TREE,
-		      build_symbol_entry (e->method, e->special),
-		      list);
+    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
+			    build_symbol_entry (e->method, e->special));
 
   /* Terminate the list with a "null" entry. */
   null_symbol = build_symbol_table_entry (null_pointer_node,
                                           null_pointer_node,
                                           null_pointer_node);
-  list = tree_cons (NULL_TREE, null_symbol, list);
+  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, null_symbol);
 
-  /* Put the list in the right order and make it a constructor. */
-  list = nreverse (list);
-  table = build_constructor_from_list (symbols_array_type, list);  
+  table = build_constructor (symbols_array_type, v);
 
   /* Make it the initial value for otable_syms and emit the decl. */
   DECL_INITIAL (the_syms_decl) = table;
@@ -3033,7 +3048,7 @@ add_assertion_table_entry (void **htab_entry, void *ptr)
 {
   tree entry;
   tree code_val, op1_utf8, op2_utf8;
-  tree *list = (tree *) ptr;
+  VEC(constructor_elt,gc) **v = (VEC(constructor_elt,gc) **) ptr;
   type_assertion *as = (type_assertion *) *htab_entry;
 
   code_val = build_int_cst (NULL_TREE, as->assertion_code);
@@ -3050,7 +3065,7 @@ add_assertion_table_entry (void **htab_entry, void *ptr)
 
   entry = build_assertion_table_entry (code_val, op1_utf8, op2_utf8);
   
-  *list = tree_cons (NULL_TREE, entry, *list);
+  CONSTRUCTOR_APPEND_ELT (*v, NULL_TREE, entry);
   return true;
 }
 
@@ -3060,22 +3075,20 @@ static tree
 emit_assertion_table (tree klass)
 {
   tree null_entry, ctor, table_decl;
-  tree list = NULL_TREE;
   htab_t assertions_htab = TYPE_ASSERTIONS (klass);
+  VEC(constructor_elt,gc) *v = NULL;
 
   /* Iterate through the hash table.  */
-  htab_traverse (assertions_htab, add_assertion_table_entry, &list);
+  htab_traverse (assertions_htab, add_assertion_table_entry, &v);
 
   /* Finish with a null entry.  */
   null_entry = build_assertion_table_entry (integer_zero_node,
                                             null_pointer_node,
                                             null_pointer_node);
   
-  list = tree_cons (NULL_TREE, null_entry, list);
+  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, null_entry);
   
-  /* Put the list in the right order and make it a constructor. */
-  list = nreverse (list);
-  ctor = build_constructor_from_list (assertion_table_type, list);
+  ctor = build_constructor (assertion_table_type, v);
 
   table_decl = build_decl (input_location,
 			   VAR_DECL, mangled_classname ("_type_assert_", klass),
