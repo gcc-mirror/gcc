@@ -3826,12 +3826,14 @@ verify_gimple_return (gimple stmt)
       return true;
     }
 
-  if (!useless_type_conversion_p (restype, TREE_TYPE (op))
-      /* ???  With C++ we can have the situation that the result
-	 decl is a reference type while the return type is an aggregate.  */
-      && !(TREE_CODE (op) == RESULT_DECL
-	   && TREE_CODE (TREE_TYPE (op)) == REFERENCE_TYPE
-	   && useless_type_conversion_p (restype, TREE_TYPE (TREE_TYPE (op)))))
+  if ((TREE_CODE (op) == RESULT_DECL
+       && DECL_BY_REFERENCE (op))
+      || (TREE_CODE (op) == SSA_NAME
+	  && TREE_CODE (SSA_NAME_VAR (op)) == RESULT_DECL
+	  && DECL_BY_REFERENCE (SSA_NAME_VAR (op))))
+    op = TREE_TYPE (op);
+
+  if (!useless_type_conversion_p (restype, TREE_TYPE (op)))
     {
       error ("invalid conversion in return statement");
       debug_generic_stmt (restype);
