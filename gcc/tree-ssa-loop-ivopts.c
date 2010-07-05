@@ -4446,26 +4446,6 @@ determine_set_costs (struct ivopts_data *data)
   struct loop *loop = data->current_loop;
   bitmap_iterator bi;
 
-  /* We use the following model (definitely improvable, especially the
-     cost function -- TODO):
-
-     We estimate the number of registers available (using MD data), name it A.
-
-     We estimate the number of registers used by the loop, name it U.  This
-     number is obtained as the number of loop phi nodes (not counting virtual
-     registers and bivs) + the number of variables from outside of the loop.
-
-     We set a reserve R (free regs that are used for temporary computations,
-     etc.).  For now the reserve is a constant 3.
-
-     Let I be the number of induction variables.
-
-     -- if U + I + R <= A, the cost is I * SMALL_COST (just not to encourage
-	make a lot of ivs without a reason).
-     -- if A - R < U + I <= A, the cost is I * PRES_COST
-     -- if U + I > A, the cost is I * PRES_COST and
-        number of uses * SPILL_COST * (U + I - A) / (U + I) is added.  */
-
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Global costs:\n");
@@ -5089,11 +5069,13 @@ iv_ca_prune (struct ivopts_data *data, struct iv_ca *ivs,
 }
 
 /* Tries to extend the sets IVS in the best possible way in order
-   to express the USE.  */
+   to express the USE.  If ORIGINALP is true, prefer candidates from
+   the original set of IVs, otherwise favor important candidates not
+   based on any memory object.  */
 
 static bool
 try_add_cand_for (struct ivopts_data *data, struct iv_ca *ivs,
-		  struct iv_use *use)
+		  struct iv_use *use, bool originalp)
 {
   comp_cost best_cost, act_cost;
   unsigned i;
@@ -5112,7 +5094,8 @@ try_add_cand_for (struct ivopts_data *data, struct iv_ca *ivs,
       iv_ca_set_no_cp (data, ivs, use);
     }
 
-  /* First try important candidates not based on any memory object.  Only if
+  /* If ORIGINALP is true, try to find the original IV for the use.  Otherwise
+     first try important candidates not based on any memory object.  Only if
      this fails, try the specific ones.  Rationale -- in loops with many
      variables the best choice often is to use just one generic biv.  If we
      added here many ivs specific to the uses, the optimization algorithm later
@@ -5124,7 +5107,10 @@ try_add_cand_for (struct ivopts_data *data, struct iv_ca *ivs,
     {
       cand = iv_cand (data, i);
 
-      if (cand->iv->base_object != NULL_TREE)
+      if (originalp && cand->pos !=IP_ORIGINAL)
+	continue;
+
+      if (!originalp && cand->iv->base_object != NULL_TREE)
 	continue;
 
       if (iv_ca_cand_used_p (ivs, cand))
@@ -5160,8 +5146,13 @@ try_add_cand_for (struct ivopts_data *data, struct iv_ca *ivs,
 	    continue;
 
 	  /* Already tried this.  */
-	  if (cand->important && cand->iv->base_object == NULL_TREE)
-	    continue;
+	  if (cand->important)
+	    {
+	      if (originalp && cand->pos == IP_ORIGINAL)
+		continue;
+	      if (!originalp && cand->iv->base_object == NULL_TREE)
+		continue;
+	    }
 
 	  if (iv_ca_cand_used_p (ivs, cand))
 	    continue;
@@ -5195,13 +5186,13 @@ try_add_cand_for (struct ivopts_data *data, struct iv_ca *ivs,
 /* Finds an initial assignment of candidates to uses.  */
 
 static struct iv_ca *
-get_initial_solution (struct ivopts_data *data)
+get_initial_solution (struct ivopts_data *data, bool originalp)
 {
   struct iv_ca *ivs = iv_ca_new (data);
   unsigned i;
 
   for (i = 0; i < n_iv_uses (data); i++)
-    if (!try_add_cand_for (data, ivs, iv_use (data, i)))
+    if (!try_add_cand_for (data, ivs, iv_use (data, i), originalp))
       {
 	iv_ca_free (&ivs);
 	return NULL;
@@ -5273,14 +5264,12 @@ try_improve_iv_set (struct ivopts_data *data, struct iv_ca *ivs)
    solution and remove the unused ivs while this improves the cost.  */
 
 static struct iv_ca *
-find_optimal_iv_set (struct ivopts_data *data)
+find_optimal_iv_set_1 (struct ivopts_data *data, bool originalp)
 {
-  unsigned i;
   struct iv_ca *set;
-  struct iv_use *use;
 
   /* Get the initial solution.  */
-  set = get_initial_solution (data);
+  set = get_initial_solution (data, originalp);
   if (!set)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -5303,11 +5292,46 @@ find_optimal_iv_set (struct ivopts_data *data)
 	}
     }
 
+  return set;
+}
+
+static struct iv_ca *
+find_optimal_iv_set (struct ivopts_data *data)
+{
+  unsigned i;
+  struct iv_ca *set, *origset;
+  struct iv_use *use;
+  comp_cost cost, origcost;
+
+  /* Determine the cost based on a strategy that starts with original IVs,
+     and try again using a strategy that prefers candidates not based
+     on any IVs.  */
+  origset = find_optimal_iv_set_1 (data, true);
+  set = find_optimal_iv_set_1 (data, false);
+
+  if (!origset && !set)
+    return NULL;
+
+  origcost = origset ? iv_ca_cost (origset) : infinite_cost;
+  cost = set ? iv_ca_cost (set) : infinite_cost;
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      comp_cost cost = iv_ca_cost (set);
-      fprintf (dump_file, "Final cost %d (complexity %d)\n\n", cost.cost, cost.complexity);
+      fprintf (dump_file, "Original cost %d (complexity %d)\n\n",
+	       origcost.cost, origcost.complexity);
+      fprintf (dump_file, "Final cost %d (complexity %d)\n\n",
+	       cost.cost, cost.complexity);
     }
+
+  /* Choose the one with the best cost.  */
+  if (compare_costs (origcost, cost) <= 0)
+    {
+      if (set)
+	iv_ca_free (&set);
+      set = origset;
+    }
+  else if (origset)
+    iv_ca_free (&origset);
 
   for (i = 0; i < n_iv_uses (data); i++)
     {

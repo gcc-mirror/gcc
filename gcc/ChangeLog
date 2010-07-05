@@ -1,3 +1,16 @@
+2010-07-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/42505
+
+	* tree-ssa-loop-ivopts.c (determine_set_costs): Delete obsolete
+	comments about cost model.
+	(try_add_cand_for):  Add second strategy for choosing initial set
+	based on original IVs, controlled by ORIGINALP argument.
+	(get_initial_solution): Add ORIGINALP argument.
+	(find_optimal_iv_set_1): New function, split from find_optimal_iv_set.
+	(find_optimal_iv_set): Try two different strategies for choosing
+	the IV set, and return the one with lower cost.
+
 2010-07-05  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-loop-ivopts.c (rewrite_use_nonlinear_expr): Copy
