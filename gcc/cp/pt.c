@@ -9958,6 +9958,7 @@ tsubst_exception_specification (tree fntype,
 tree
 tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 {
+  enum tree_code code;
   tree type, r;
 
   if (t == NULL_TREE || t == error_mark_node
@@ -9974,7 +9975,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   if (args == NULL_TREE)
     return t;
 
-  if (TREE_CODE (t) == IDENTIFIER_NODE)
+  code = TREE_CODE (t);
+
+  if (code == IDENTIFIER_NODE)
     type = IDENTIFIER_TYPE_VALUE (t);
   else
     type = TREE_TYPE (t);
@@ -10017,16 +10020,16 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     }
 
   if (type
-      && TREE_CODE (t) != TYPENAME_TYPE
-      && TREE_CODE (t) != TEMPLATE_TYPE_PARM
-      && TREE_CODE (t) != IDENTIFIER_NODE
-      && TREE_CODE (t) != FUNCTION_TYPE
-      && TREE_CODE (t) != METHOD_TYPE)
+      && code != TYPENAME_TYPE
+      && code != TEMPLATE_TYPE_PARM
+      && code != IDENTIFIER_NODE
+      && code != FUNCTION_TYPE
+      && code != METHOD_TYPE)
     type = tsubst (type, args, complain, in_decl);
   if (type == error_mark_node)
     return error_mark_node;
 
-  switch (TREE_CODE (t))
+  switch (code)
     {
     case RECORD_TYPE:
     case UNION_TYPE:
@@ -10156,7 +10159,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
                  };  */
 	      return t;
 
-	    if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
+	    if (code == TEMPLATE_TYPE_PARM)
 	      {
 		int quals;
 		gcc_assert (TYPE_P (arg));
@@ -10166,7 +10169,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		return cp_build_qualified_type_real
 		  (arg, quals, complain | tf_ignore_bad_quals);
 	      }
-	    else if (TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM)
+	    else if (code == BOUND_TEMPLATE_TEMPLATE_PARM)
 	      {
 		/* We are processing a type constructed from a
 		   template template parameter.  */
@@ -10205,7 +10208,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	/* If we get here, we must have been looking at a parm for a
 	   more deeply nested template.  Make a new version of this
 	   template parameter, but with a lower level.  */
-	switch (TREE_CODE (t))
+	switch (code)
 	  {
 	  case TEMPLATE_TYPE_PARM:
 	  case TEMPLATE_TEMPLATE_PARM:
@@ -10215,7 +10218,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		r = tsubst (TYPE_MAIN_VARIANT (t), args, complain, in_decl);
 		r = cp_build_qualified_type_real
 		  (r, cp_type_quals (t),
-		   complain | (TREE_CODE (t) == TEMPLATE_TYPE_PARM
+		   complain | (code == TEMPLATE_TYPE_PARM
 			       ? tf_ignore_bad_quals : 0));
 	      }
 	    else
@@ -10243,7 +10246,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		else
 		  TYPE_CANONICAL (r) = canonical_type_parameter (r);
 
-		if (TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM)
+		if (code == BOUND_TEMPLATE_TEMPLATE_PARM)
 		  {
 		    tree argvec = tsubst (TYPE_TI_ARGS (t), args,
 					  complain, in_decl);
@@ -10314,13 +10317,8 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       {
-	enum tree_code code;
-
 	if (type == TREE_TYPE (t) && TREE_CODE (type) != METHOD_TYPE)
 	  return t;
-
-	code = TREE_CODE (t);
-
 
 	/* [temp.deduct]
 
@@ -10506,7 +10504,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  return error_mark_node;
 
 	return fold_build2_loc (input_location,
-			    TREE_CODE (t), TREE_TYPE (t), e1, e2);
+				code, TREE_TYPE (t), e1, e2);
       }
 
     case NEGATE_EXPR:
@@ -10516,7 +10514,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (e == error_mark_node)
 	  return error_mark_node;
 
-	return fold_build1_loc (input_location, TREE_CODE (t), TREE_TYPE (t), e);
+	return fold_build1_loc (input_location, code, TREE_TYPE (t), e);
       }
 
     case TYPENAME_TYPE:
@@ -10672,9 +10670,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case TYPE_ARGUMENT_PACK:
     case NONTYPE_ARGUMENT_PACK:
       {
-        tree r = TYPE_P (t)
-          ? cxx_make_type (TREE_CODE (t))
-          : make_node (TREE_CODE (t));
+        tree r = TYPE_P (t) ? cxx_make_type (code) : make_node (code);
         tree packed_out = 
           tsubst_template_args (ARGUMENT_PACK_ARGS (t), 
                                 args,
@@ -10684,7 +10680,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
         /* For template nontype argument packs, also substitute into
            the type.  */
-        if (TREE_CODE (t) == NONTYPE_ARGUMENT_PACK)
+        if (code == NONTYPE_ARGUMENT_PACK)
           TREE_TYPE (r) = tsubst (TREE_TYPE (t), args, complain, in_decl);
 
         return r;
@@ -10692,8 +10688,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       break;
 
     default:
-      sorry ("use of %qs in template",
-	     tree_code_name [(int) TREE_CODE (t)]);
+      sorry ("use of %qs in template", tree_code_name [(int) code]);
       return error_mark_node;
     }
 }
