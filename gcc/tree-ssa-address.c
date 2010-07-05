@@ -338,7 +338,7 @@ valid_mem_ref_p (enum machine_mode mode, addr_space_t as,
    TARGET_MEM_REF.  */
 
 static tree
-create_mem_ref_raw (tree type, struct mem_address *addr)
+create_mem_ref_raw (tree type, tree alias_ptr_type, struct mem_address *addr)
 {
   if (!valid_mem_ref_p (TYPE_MODE (type), TYPE_ADDR_SPACE (type), addr))
     return NULL_TREE;
@@ -348,6 +348,24 @@ create_mem_ref_raw (tree type, struct mem_address *addr)
 
   if (addr->offset && integer_zerop (addr->offset))
     addr->offset = NULL_TREE;
+
+  /* If possible use a plain MEM_REF instead of a TARGET_MEM_REF.  */
+  if (alias_ptr_type
+      && !addr->index
+      && !addr->step)
+    {
+      tree base, offset;
+      gcc_assert (!addr->symbol ^ !addr->base);
+      if (addr->symbol)
+	base = build_fold_addr_expr (addr->symbol);
+      else
+	base = addr->base;
+      if (addr->offset)
+	offset = fold_convert (alias_ptr_type, addr->offset);
+      else
+	offset = build_int_cst (alias_ptr_type, 0);
+      return fold_build2 (MEM_REF, type, base, offset);
+    }
 
   return build6 (TARGET_MEM_REF, type,
 		 addr->symbol, addr->base, addr->index,
@@ -628,8 +646,8 @@ gimplify_mem_ref_parts (gimple_stmt_iterator *gsi, struct mem_address *parts)
    of created memory reference.  */
 
 tree
-create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
-		tree base_hint, bool speed)
+create_mem_ref (gimple_stmt_iterator *gsi, tree type, tree alias_ptr_type,
+		aff_tree *addr, tree base_hint, bool speed)
 {
   tree mem_ref, tmp;
   tree atype;
@@ -637,7 +655,7 @@ create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
 
   addr_to_parts (type, addr, base_hint, &parts, speed);
   gimplify_mem_ref_parts (gsi, &parts);
-  mem_ref = create_mem_ref_raw (type, &parts);
+  mem_ref = create_mem_ref_raw (type, alias_ptr_type, &parts);
   if (mem_ref)
     return mem_ref;
 
@@ -653,7 +671,7 @@ create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
 				true, NULL_TREE, true, GSI_SAME_STMT);
       parts.step = NULL_TREE;
 
-      mem_ref = create_mem_ref_raw (type, &parts);
+      mem_ref = create_mem_ref_raw (type, alias_ptr_type, &parts);
       if (mem_ref)
 	return mem_ref;
     }
@@ -688,7 +706,7 @@ create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
 	parts.base = tmp;
       parts.symbol = NULL_TREE;
 
-      mem_ref = create_mem_ref_raw (type, &parts);
+      mem_ref = create_mem_ref_raw (type, alias_ptr_type, &parts);
       if (mem_ref)
 	return mem_ref;
     }
@@ -709,7 +727,7 @@ create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
 	parts.base = parts.index;
       parts.index = NULL_TREE;
 
-      mem_ref = create_mem_ref_raw (type, &parts);
+      mem_ref = create_mem_ref_raw (type, alias_ptr_type, &parts);
       if (mem_ref)
 	return mem_ref;
     }
@@ -731,7 +749,7 @@ create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
 
       parts.offset = NULL_TREE;
 
-      mem_ref = create_mem_ref_raw (type, &parts);
+      mem_ref = create_mem_ref_raw (type, alias_ptr_type, &parts);
       if (mem_ref)
 	return mem_ref;
     }
@@ -819,7 +837,7 @@ maybe_fold_tmr (tree ref)
   if (!changed)
     return NULL_TREE;
 
-  ret = create_mem_ref_raw (TREE_TYPE (ref), &addr);
+  ret = create_mem_ref_raw (TREE_TYPE (ref), NULL_TREE, &addr);
   if (!ret)
     return NULL_TREE;
 

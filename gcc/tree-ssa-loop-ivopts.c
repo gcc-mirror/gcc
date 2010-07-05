@@ -5547,33 +5547,41 @@ unshare_and_remove_ssa_names (tree ref)
 static void
 copy_ref_info (tree new_ref, tree old_ref)
 {
-  if (TREE_CODE (old_ref) == TARGET_MEM_REF)
-    copy_mem_ref_info (new_ref, old_ref);
-  else
+  tree new_ptr_base = NULL_TREE;
+
+  if (TREE_CODE (old_ref) == TARGET_MEM_REF
+      && TREE_CODE (new_ref) == TARGET_MEM_REF)
+    TMR_ORIGINAL (new_ref) = TMR_ORIGINAL (old_ref);
+  else if (TREE_CODE (new_ref) == TARGET_MEM_REF)
+    TMR_ORIGINAL (new_ref) = unshare_and_remove_ssa_names (old_ref);
+
+  TREE_SIDE_EFFECTS (new_ref) = TREE_SIDE_EFFECTS (old_ref);
+  TREE_THIS_VOLATILE (new_ref) = TREE_THIS_VOLATILE (old_ref);
+
+  if (TREE_CODE (new_ref) == TARGET_MEM_REF)
+    new_ptr_base = TMR_BASE (new_ref);
+  else if (TREE_CODE (new_ref) == MEM_REF)
+    new_ptr_base = TREE_OPERAND (new_ref, 0);
+
+  /* We can transfer points-to information from an old pointer
+     or decl base to the new one.  */
+  if (new_ptr_base
+      && TREE_CODE (new_ptr_base) == SSA_NAME
+      && POINTER_TYPE_P (TREE_TYPE (new_ptr_base))
+      && !SSA_NAME_PTR_INFO (new_ptr_base))
     {
-      TMR_ORIGINAL (new_ref) = unshare_and_remove_ssa_names (old_ref);
-      TREE_SIDE_EFFECTS (new_ref) = TREE_SIDE_EFFECTS (old_ref);
-      TREE_THIS_VOLATILE (new_ref) = TREE_THIS_VOLATILE (old_ref);
-      /* We can transfer points-to information from an old pointer
-         or decl base to the new one.  */
-      if (TMR_BASE (new_ref)
-	  && TREE_CODE (TMR_BASE (new_ref)) == SSA_NAME
-	  && POINTER_TYPE_P (TREE_TYPE (TMR_BASE (new_ref)))
-	  && !SSA_NAME_PTR_INFO (TMR_BASE (new_ref)))
+      tree base = get_base_address (old_ref);
+      if ((INDIRECT_REF_P (base)
+	   || TREE_CODE (base) == MEM_REF)
+	  && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
+	duplicate_ssa_name_ptr_info
+	    (new_ptr_base, SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0)));
+      else if (TREE_CODE (base) == VAR_DECL
+	       || TREE_CODE (base) == PARM_DECL
+	       || TREE_CODE (base) == RESULT_DECL)
 	{
-	  tree base = get_base_address (old_ref);
-	  if ((INDIRECT_REF_P (base)
-	       || TREE_CODE (base) == MEM_REF)
-	      && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
-	    duplicate_ssa_name_ptr_info
-	      (TMR_BASE (new_ref), SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0)));
-	  else if (TREE_CODE (base) == VAR_DECL
-		   || TREE_CODE (base) == PARM_DECL
-		   || TREE_CODE (base) == RESULT_DECL)
-	    {
-	      struct ptr_info_def *pi = get_ptr_info (TMR_BASE (new_ref));
-	      pt_solution_set_var (&pi->pt, base);
-	    }
+	  struct ptr_info_def *pi = get_ptr_info (new_ptr_base);
+	  pt_solution_set_var (&pi->pt, base);
 	}
     }
 }
@@ -5608,8 +5616,9 @@ rewrite_use_address (struct ivopts_data *data,
   if (cand->iv->base_object)
     base_hint = var_at_stmt (data->current_loop, cand, use->stmt);
 
-  ref = create_mem_ref (&bsi, TREE_TYPE (*use->op_p), &aff, base_hint,
-			data->speed);
+  ref = create_mem_ref (&bsi, TREE_TYPE (*use->op_p),
+			reference_alias_ptr_type (*use->op_p),
+			&aff, base_hint, data->speed);
   copy_ref_info (ref, *use->op_p);
   *use->op_p = ref;
 }
