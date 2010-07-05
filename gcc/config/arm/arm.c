@@ -12865,7 +12865,7 @@ int
 arm_attr_length_move_neon (rtx insn)
 {
   rtx reg, mem, addr;
-  int regno, load;
+  int load;
   enum machine_mode mode;
 
   extract_insn_cached (insn);
@@ -12894,7 +12894,6 @@ arm_attr_length_move_neon (rtx insn)
   gcc_assert (MEM_P (mem));
 
   mode = GET_MODE (reg);
-  regno = REGNO (reg);
   addr = XEXP (mem, 0);
 
   /* Strip off const from addresses like (const (plus (...))).  */
