@@ -15745,7 +15745,7 @@ field_byte_offset (const_tree decl)
 	 where the lowest addressed bit of the containing object must
 	 be.  */
       object_offset_in_bits
-	= double_int_add (deepest_bitpos, double_int_neg (type_size_in_bits));
+	= double_int_sub (deepest_bitpos, type_size_in_bits);
 
       /* Round up to type_align by default.  This works best for
 	 bitfields.  */
@@ -15755,8 +15755,7 @@ field_byte_offset (const_tree decl)
       if (double_int_ucmp (object_offset_in_bits, bitpos_int) > 0)
 	{
 	  object_offset_in_bits
-	    = double_int_add (deepest_bitpos,
-			      double_int_neg (type_size_in_bits));
+	    = double_int_sub (deepest_bitpos, type_size_in_bits);
 
 	  /* Round up to decl_align instead.  */
 	  object_offset_in_bits
