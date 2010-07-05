@@ -1497,6 +1497,14 @@ resolve_tag (const io_tag *tag, gfc_expr *e)
 	return FAILURE;
     }
 
+  if (tag == &tag_exist && e->ts.kind != gfc_default_logical_kind)
+    {
+      if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Nondefault LOGICAL "
+			  "in %s tag at %L", tag->name, &e->where)
+	  == FAILURE)
+	return FAILURE;
+    }
+
   if (tag == &tag_convert)
     {
       if (gfc_notify_std (GFC_STD_GNU, "Extension: CONVERT tag at %L",
