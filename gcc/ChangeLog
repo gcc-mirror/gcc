@@ -1,3 +1,97 @@
+2010-07-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	AVX Programming Reference (June, 2010)
+	* config/i386/cpuid.h (bit_F16C): New.
+	(bit_RDRND): Likewise.
+	(bit_FSGSBASE): Likewise.
+
+	* config/i386/i386-builtin-types.def: Add
+	"DEF_FUNCTION_TYPE (UINT16)", function types for
+	float16 <-> float conversions and
+	"DEF_FUNCTION_TYPE (VOID, UINT64)".
+
+	* config/i386/i386-c.c (ix86_target_macros_internal): Support
+	OPTION_MASK_ISA_FSGSBASE, OPTION_MASK_ISA_RDRND and
+	OPTION_MASK_ISA_F16C.
+
+	* config/i386/i386.c (OPTION_MASK_ISA_FSGSBASE_SET): New.
+	(OPTION_MASK_ISA_RDRND_SET): Likewise.
+	(OPTION_MASK_ISA_F16C_SET): Likewise.
+	(OPTION_MASK_ISA_FSGSBASE_UNSET): Likewise.
+	(OPTION_MASK_ISA_RDRND_UNSET): Likewise.
+	(OPTION_MASK_ISA_F16C_UNSET): Likewise.
+	(OPTION_MASK_ISA_AVX_UNSET): Add OPTION_MASK_ISA_F16C_UNSET.
+	(ix86_handle_option): Handle OPT_mfsgsbase, OPT_mrdrnd and
+	OPT_mf16c.
+	(ix86_target_string): Support -mfsgsbase, -mrdrnd and -mf16c.
+	(pta_flags): Add PTA_FSGSBASE, PTA_RDRND and PTA_F16C.
+	(override_options): Handle them.
+	(ix86_valid_target_attribute_inner_p): Handle fsgsbase, rdrnd
+	and f16c.
+	(ix86_builtins): Add IX86_BUILTIN_RDFSBASE32,
+	IX86_BUILTIN_RDFSBASE64, IX86_BUILTIN_RDGSBASE32,
+	IX86_BUILTIN_RDGSBASE64, IX86_BUILTIN_WRFSBASE32,
+	IX86_BUILTIN_WRFSBASE64, IX86_BUILTIN_WRGSBASE32,
+	IX86_BUILTIN_WRGSBASE64, IX86_BUILTIN_RDRAND16,
+	IX86_BUILTIN_RDRAND32, IX86_BUILTIN_RDRAND64,
+	IX86_BUILTIN_CVTPH2PS, IX86_BUILTIN_CVTPH2PS256,
+	IX86_BUILTIN_CVTPS2PH and IX86_BUILTIN_CVTPS2PH256.
+	(bdesc_args): Likewise.
+	(ix86_expand_args_builtin): Handle V8SF_FTYPE_V8HI,
+	V4SF_FTYPE_V8HI, V8HI_FTYPE_V8SF_INT and V8HI_FTYPE_V4SF_INT.
+	(ix86_expand_special_args_builtin): Handle VOID_FTYPE_UINT64,
+	VOID_FTYPE_UNSIGNED, UNSIGNED_FTYPE_VOID and UINT16_FTYPE_VOID.
+	Handle non-memory store.
+
+	* config/i386/i386.h (TARGET_FSGSBASE): New.
+	(TARGET_RDRND): Likewise.
+	(TARGET_F12C): Likewise.
+
+	* config/i386/i386.md (UNSPEC_VCVTPH2PS): New.
+	(UNSPEC_VCVTPS2PH): Likewise.
+	(UNSPECV_RDFSBASE): Likewise.
+	(UNSPECV_RDGSBASE): Likewise.
+	(UNSPECV_WRFSBASE): Likewise.
+	(UNSPECV_WRGSBASE): Likewise.
+	(UNSPECV_RDRAND): Likewise.
+	(rdfsbase<mode>): Likewise.
+	(rdgsbase<mode>): Likewise.
+	(wrfsbase<mode>): Likewise.
+	(wrgsbase<mode>): Likewise.
+	(rdrand<mode>): Likewise.
+
+	* config/i386/i386.opt: Add -mfsgsbase, -mrdrnd and -mf16c.
+
+	* config/i386/immintrin.h (_rdrand_u16): New.
+	(_rdrand_u32): Likewise.
+	(_readfsbase_u32): Likewise.
+	(_readfsbase_u64): Likewise.
+	(_readgsbase_u32): Likewise.
+	(_readgsbase_u64): Likewise.
+	(_writefsbase_u32): Likewise.
+	(_writefsbase_u64): Likewise.
+	(_writegsbase_u32): Likewise.
+	(_writegsbase_u64): Likewise.
+	(_rdrand_u64): Likewise.
+	(_cvtsh_ss): Likewise.
+	(_mm_cvtph_ps): Likewise.
+	(_mm256_cvtph_ps): Likewise.
+	(_cvtss_sh): Likewise.
+	(_mm_cvtps_ph): Likewise.
+	(_mm256_cvtps_ph): Likewise.
+
+	* config/i386/sse.md (vcvtph2ps): New.
+	(*vcvtph2ps_load): Likewise.
+	(vcvtph2ps256): Likewise.
+	(vcvtps2ph): Likewise.
+	(*vcvtps2ph): Likewise.
+	(*vcvtps2ph_store): Likewise.
+	(vcvtps2ph256): Likewise.
+
+	* doc/extend.texi: Document FSGSBASE and RDRND built-in functions.
+
+	* doc/invoke.texi: Document -mfsgsbase, -mrdrnd and -mf16c.
+
 2010-07-05  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR bootstrap/44512

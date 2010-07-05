@@ -126,6 +126,8 @@
 #define __builtin_ia32_vinsertf128_si256(X, Y, C) __builtin_ia32_vinsertf128_si256(X, Y, 1)
 #define __builtin_ia32_roundpd256(V, M) __builtin_ia32_roundpd256(V, 1)
 #define __builtin_ia32_roundps256(V, M) __builtin_ia32_roundps256(V, 1)
+#define __builtin_ia32_vcvtps2ph(A, I) __builtin_ia32_vcvtps2ph(A, 1)
+#define __builtin_ia32_vcvtps2ph256(A, I) __builtin_ia32_vcvtps2ph256(A, 1)
 
 /* xopintrin.h */
 #define __builtin_ia32_vprotbi(A, B) __builtin_ia32_vprotbi(A,1)
@@ -139,7 +141,7 @@
 #define __builtin_ia32_lwpins32(D2, D1, F) __builtin_ia32_lwpins32 (D2, D1, 1)
 #define __builtin_ia32_lwpins64(D2, D1, F) __builtin_ia32_lwpins64 (D2, D1, 1)
 
-#pragma GCC target ("3dnow,sse4,sse4a,aes,pclmul,xop,abm,popcnt,lwp")
+#pragma GCC target ("3dnow,sse4,sse4a,aes,pclmul,xop,abm,popcnt,lwp,fsgsbase,rdrnd,f16c")
 #include <wmmintrin.h>
 #include <smmintrin.h>
 #include <mm3dnow.h>

@@ -12322,3 +12322,81 @@
    (set_attr "length_immediate" "1,*")
    (set_attr "prefix" "vex")
    (set_attr "mode" "<avxvecmode>")])
+
+(define_insn "vcvtph2ps"
+  [(set (match_operand:V4SF 0 "register_operand" "=x")
+	(vec_select:V4SF
+	  (unspec:V8SF [(match_operand:V8HI 1 "register_operand" "x")]
+		       UNSPEC_VCVTPH2PS)
+	  (parallel [(const_int 0) (const_int 1)
+		     (const_int 1) (const_int 2)])))]
+  "TARGET_F16C"
+  "vcvtph2ps\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "V4SF")])
+
+(define_insn "*vcvtph2ps_load"
+  [(set (match_operand:V4SF 0 "register_operand" "=x")
+	(unspec:V4SF [(match_operand:V4HI 1 "memory_operand" "m")]
+		     UNSPEC_VCVTPH2PS))]
+  "TARGET_F16C"
+  "vcvtph2ps\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "V8SF")])
+
+(define_insn "vcvtph2ps256"
+  [(set (match_operand:V8SF 0 "register_operand" "=x")
+	(unspec:V8SF [(match_operand:V8HI 1 "nonimmediate_operand" "xm")]
+		     UNSPEC_VCVTPH2PS))]
+  "TARGET_F16C"
+  "vcvtph2ps\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "V8SF")])
+
+(define_expand "vcvtps2ph"
+  [(set (match_operand:V8HI 0 "register_operand" "")
+	(vec_concat:V8HI
+	  (unspec:V4HI [(match_operand:V4SF 1 "register_operand" "")
+			(match_operand:SI 2 "immediate_operand" "")]
+		       UNSPEC_VCVTPS2PH)
+	  (match_dup 3)))]
+  "TARGET_F16C"
+  "operands[3] = CONST0_RTX (V4HImode);")
+
+(define_insn "*vcvtps2ph"
+  [(set (match_operand:V8HI 0 "register_operand" "=x")
+	(vec_concat:V8HI
+	  (unspec:V4HI [(match_operand:V4SF 1 "register_operand" "x")
+			(match_operand:SI 2 "immediate_operand" "N")]
+		       UNSPEC_VCVTPS2PH)
+	  (match_operand:V4HI 3 "const0_operand" "")))]
+  "TARGET_F16C"
+  "vcvtps2ph\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "V4SF")])
+
+(define_insn "*vcvtps2ph_store"
+  [(set (match_operand:V4HI 0 "memory_operand" "=m")
+	(unspec:V4HI [(match_operand:V4SF 1 "register_operand" "x")
+		      (match_operand:SI 2 "immediate_operand" "N")]
+		     UNSPEC_VCVTPS2PH))]
+  "TARGET_F16C"
+  "vcvtps2ph\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "V4SF")])
+
+(define_insn "vcvtps2ph256"
+  [(set (match_operand:V8HI 0 "nonimmediate_operand" "=xm")
+	(unspec:V8HI [(match_operand:V8SF 1 "register_operand" "x")
+		      (match_operand:SI 2 "immediate_operand" "N")]
+		     UNSPEC_VCVTPS2PH))]
+  "TARGET_F16C"
+  "vcvtps2ph\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "ssecvt")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "V8SF")])

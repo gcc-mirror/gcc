@@ -39,7 +39,7 @@
 
 
 #ifndef DIFFERENT_PRAGMAS
-#pragma GCC target ("mmx,3dnow,sse,sse2,sse3,ssse3,sse4.1,sse4.2,sse4a,aes,pclmul,xop,popcnt,abm,lwp")
+#pragma GCC target ("mmx,3dnow,sse,sse2,sse3,ssse3,sse4.1,sse4.2,sse4a,aes,pclmul,xop,popcnt,abm,lwp,fsgsbase,rdrnd,f16c")
 #endif
 
 /* Following intrinsics require immediate arguments.  They
@@ -179,3 +179,12 @@ test_2 ( __lwpins32, unsigned char, unsigned int, unsigned int, 1)
 test_2 ( __lwpval64, void, unsigned long long, unsigned int, 1)
 test_2 ( __lwpins64, unsigned char, unsigned long long, unsigned int, 1)
 #endif
+
+/* immintrin.h (F16C).  */
+#ifdef DIFFERENT_PRAGMAS
+#pragma GCC target ("f16c")
+#endif
+#include <x86intrin.h>
+test_1 (_cvtss_sh, unsigned short, float, 1)
+test_1 (_mm_cvtps_ph, __m128i, __m128, 1)
+test_1 (_mm256_cvtps_ph, __m128i, __m256, 1)

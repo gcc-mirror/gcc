@@ -1,3 +1,45 @@
+2010-07-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	AVX Programming Reference (June, 2010)
+	* g++.dg/other/i386-2.C: Add -mfsgsbase -mrdrnd -mf16c.
+	* g++.dg/other/i386-3.C: Likewise.
+	* gcc.target/i386/sse-12.c: Likewise.
+
+	* gcc.target/i386/f16c-check.h: New.
+	* gcc.target/i386/rdfsbase-1.c: Likewise.
+	* gcc.target/i386/rdfsbase-2.c: Likewise.
+	* gcc.target/i386/rdgsbase-1.c: Likewise.
+	* gcc.target/i386/rdgsbase-2.c: Likewise.
+	* gcc.target/i386/rdrand-1.c: Likewise.
+	* gcc.target/i386/rdrand-2.c: Likewise.
+	* gcc.target/i386/rdrand-3.c: Likewise.
+	* gcc.target/i386/vcvtph2ps-1.c: Likewise.
+	* gcc.target/i386/vcvtph2ps-2.c: Likewise.
+	* gcc.target/i386/vcvtph2ps-3.c: Likewise.
+	* gcc.target/i386/vcvtps2ph-1.c: Likewise.
+	* gcc.target/i386/vcvtps2ph-2.c: Likewise.
+	* gcc.target/i386/vcvtps2ph-3.c: Likewise.
+	* gcc.target/i386/wrfsbase-1.c: Likewise.
+	* gcc.target/i386/wrfsbase-2.c: Likewise.
+	* gcc.target/i386/wrgsbase-1.c: Likewise.
+	* gcc.target/i386/wrgsbase-2.c: Likewise.
+
+	* gcc.target/i386/sse-13.c: Add -mfsgsbase -mrdrnd -mf16c.
+	(__builtin_ia32_vcvtps2ph): New.
+	(__builtin_ia32_vcvtps2ph256): Likewise.
+
+	* gcc.target/i386/sse-14.c: Add -mfsgsbase -mrdrnd -mf16c.
+	Test _cvtss_sh, _mm_cvtps_ph and _mm256_cvtps_ph.
+
+	* gcc.target/i386/sse-22.c: Add fsgsbase,rdrnd,f16c.
+	Test _cvtss_sh, _mm_cvtps_ph and _mm256_cvtps_ph.
+
+	* gcc.target/i386/sse-23.c (__builtin_ia32_vcvtps2ph): New.
+	(__builtin_ia32_vcvtps2ph256): Likewise.
+	Add fsgsbase,rdrnd,f16c.
+
+	* lib/target-supports.exp (check_effective_target_f16c): New.
+
 2010-07-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/guality/nrv-1.c: New test.

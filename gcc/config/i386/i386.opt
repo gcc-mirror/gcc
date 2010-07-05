@@ -363,3 +363,15 @@ Support PCLMUL built-in functions and code generation
 msse2avx
 Target Report Var(ix86_sse2avx)
 Encode SSE instructions with VEX prefix
+
+mfsgsbase
+Target Report Mask(ISA_FSGSBASE) Var(ix86_isa_flags) VarExists Save
+Support FSGSBASE built-in functions and code generation
+
+mrdrnd
+Target Report Mask(ISA_RDRND) Var(ix86_isa_flags) VarExists Save
+Support RDRND built-in functions and code generation
+
+mf16c
+Target Report Mask(ISA_F16C) Var(ix86_isa_flags) VarExists Save
+Support F16C built-in functions and code generation

@@ -246,6 +246,12 @@ ix86_target_macros_internal (int isa_flag,
     def_or_undef (parse_in, "__ABM__");
   if (isa_flag & OPTION_MASK_ISA_POPCNT)
     def_or_undef (parse_in, "__POPCNT__");
+  if (isa_flag & OPTION_MASK_ISA_FSGSBASE)
+    def_or_undef (parse_in, "__FSGSBASE__");
+  if (isa_flag & OPTION_MASK_ISA_RDRND)
+    def_or_undef (parse_in, "__RDRND__");
+  if (isa_flag & OPTION_MASK_ISA_F16C)
+    def_or_undef (parse_in, "__F16C__");
   if ((fpmath & FPMATH_SSE) && (isa_flag & OPTION_MASK_ISA_SSE))
     def_or_undef (parse_in, "__SSE_MATH__");
   if ((fpmath & FPMATH_SSE) && (isa_flag & OPTION_MASK_ISA_SSE2))
