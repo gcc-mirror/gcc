@@ -1,3 +1,17 @@
+2010-07-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* constants.c (build_constants_constructor): Use build_constructor
+	instead of build_constructor_from_list.
+	* class.c (make_method_value): Likewise.
+	(get_dispatch_table): Likewise.
+	(make_class_data): Likewise.
+	(emit_indirect_register_classes): Likewise.
+	(emit_symbol_table): Likewise.
+	(add_assertion_table_entry): Likewise.
+	(emit_assertion_table): Likewise.
+	(make_field_value): Use build_constructor_single instead of
+	build_constructor_from_list.
+
 2010-06-28  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* java-tree.h (struct lang_type) [catch_classes]: Change type to a
