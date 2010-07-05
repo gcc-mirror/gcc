@@ -1,3 +1,10 @@
+2010-07-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/44596
+	* trans-types.c (gfc_get_derived_type): Derived type fields
+	with the vtype attribute must have TYPE_REF_CAN_ALIAS_ALL set
+	but build_pointer_type_for_mode must be used for this.
+
 2010-07-05  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* trans.h (gfc_conv_procedure_call): Take a VEC instead of a tree.

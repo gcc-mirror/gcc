@@ -2154,7 +2154,8 @@ gfc_get_derived_type (gfc_symbol * derived)
 
       /* vtype fields can point to different types to the base type.  */
       if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.vtype)
-	TYPE_REF_CAN_ALIAS_ALL (field_type) = true;
+	  field_type = build_pointer_type_for_mode (TREE_TYPE (field_type),
+						    ptr_mode, true);
 
       field = gfc_add_field_to_struct (&fieldlist, typenode,
 				       get_identifier (c->name),
