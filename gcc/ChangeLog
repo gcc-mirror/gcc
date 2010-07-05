@@ -1,3 +1,10 @@
+2010-07-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44784
+	* tree-ssa-pre.c (bitmap_find_leader): Fix dominance check
+	for inserted stmts.
+	(find_or_generate_expression): Fix SCCVN insertion check.
+
 2010-07-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/rs6000/e500crtsavg64gprctr.asm: Correct done label name.
