@@ -10,6 +10,10 @@ OMP_1.0 {
 	omp_get_dynamic;
 	omp_set_nested;
 	omp_get_nested;
+#ifdef HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT
+        # If the assembler used lacks the .symver directive or the linker
+	# doesn't support GNU symbol versioning, we have the same symbol in
+	# two versions, which Sun ld chokes on. 
 	omp_init_lock;
 	omp_init_nest_lock;
 	omp_destroy_lock;
@@ -22,6 +26,15 @@ OMP_1.0 {
 	omp_test_nest_lock;
 	omp_destroy_lock_;
 	omp_destroy_nest_lock_;
+	omp_init_lock_;
+	omp_init_nest_lock_;
+	omp_set_lock_;
+	omp_set_nest_lock_;
+	omp_test_lock_;
+	omp_test_nest_lock_;
+	omp_unset_lock_;
+	omp_unset_nest_lock_;
+#endif
 	omp_get_dynamic_;
 	omp_get_max_threads_;
 	omp_get_nested_;
@@ -29,20 +42,12 @@ OMP_1.0 {
 	omp_get_num_threads_;
 	omp_get_thread_num_;
 	omp_in_parallel_;
-	omp_init_lock_;
-	omp_init_nest_lock_;
 	omp_set_dynamic_;
 	omp_set_dynamic_8_;
-	omp_set_lock_;
-	omp_set_nest_lock_;
 	omp_set_nested_;
 	omp_set_nested_8_;
 	omp_set_num_threads_;
 	omp_set_num_threads_8_;
-	omp_test_lock_;
-	omp_test_nest_lock_;
-	omp_unset_lock_;
-	omp_unset_nest_lock_;
   local:
 	*;
 };
