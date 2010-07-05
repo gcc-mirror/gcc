@@ -1,3 +1,15 @@
+2010-07-05  Richard Guenther  <rguenther@suse.de>
+
+	* double-int.h (double_int_sub): Declare.
+	* double-int.c (double_int_sub): New function.
+	* dwarf2out.c (field_byte_offset): Use it.
+	* fixed-value.c (do_fixed_add): Likewise.
+	(do_fixed_multiply): Likewise.
+	(do_fixed_divide): Likewise.
+	* tree-predcom.c (add_ref_to_chain): Likewise.
+	(determine_roots_comp): Likewise.
+	* tree-ssa-loop-niter.c (derive_constant_upper_bound_ops): Likewise.
+
 2010-07-05  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* vec.h (VEC_splice, VEC_safe_splice): New macros.  Add function
