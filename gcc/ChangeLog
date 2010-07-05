@@ -1,3 +1,18 @@
+2010-07-05  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (reference_alias_ptr_type): New function.
+	* tree.h (reference_alias_ptr_type): Declare.
+	* tree-ssa-loop-ivopts.c (copy_ref_info): Restructure to
+	allow non-TARGET_MEM_REF new refs.
+	(rewrite_use_address): Pass old alias pointer type to
+	create_mem_ref.
+	* tree-ssa-address.c (create_mem_ref_raw): Get alias pointer type.
+	Build a MEM_REF instead of a TARGET_MEM_REF if possible.
+	(create_mem_ref): Get alias pointer type.  Adjust calls to
+	create_mem_ref_raw.
+	(maybe_fold_tmr): Likewise.
+	* tree-flow.h (create_mem_ref): Adjust prototype.
+
 2010-07-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/44808
