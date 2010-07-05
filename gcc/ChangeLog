@@ -1,5 +1,10 @@
 2010-07-05  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-loop-ivopts.c (rewrite_use_nonlinear_expr): Copy
+	alias info.
+
+2010-07-05  Richard Guenther  <rguenther@suse.de>
+
 	* tree.c (reference_alias_ptr_type): New function.
 	* tree.h (reference_alias_ptr_type): Declare.
 	* tree-ssa-loop-ivopts.c (copy_ref_info): Restructure to

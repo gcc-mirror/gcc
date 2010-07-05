@@ -5486,8 +5486,12 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
 	     to still.  */
 	  && (get_gimple_rhs_num_ops (TREE_CODE (comp))
 	      >= gimple_num_ops (gsi_stmt (bsi)))))
-    comp = force_gimple_operand_gsi (&bsi, comp, false, SSA_NAME_VAR (tgt),
-				     true, GSI_SAME_STMT);
+    {
+      comp = force_gimple_operand_gsi (&bsi, comp, true, NULL_TREE,
+				       true, GSI_SAME_STMT);
+      if (POINTER_TYPE_P (TREE_TYPE (tgt)))
+	duplicate_ssa_name_ptr_info (comp, SSA_NAME_PTR_INFO (tgt));
+    }
 
   if (gimple_code (use->stmt) == GIMPLE_PHI)
     {
