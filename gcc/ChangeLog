@@ -58,8 +58,7 @@
 	* tree.h (reference_alias_ptr_type): Declare.
 	* tree-ssa-loop-ivopts.c (copy_ref_info): Restructure to
 	allow non-TARGET_MEM_REF new refs.
-	(rewrite_use_address): Pass old alias pointer type to
-	create_mem_ref.
+	(rewrite_use_address): Pass old alias pointer type to create_mem_ref.
 	* tree-ssa-address.c (create_mem_ref_raw): Get alias pointer type.
 	Build a MEM_REF instead of a TARGET_MEM_REF if possible.
 	(create_mem_ref): Get alias pointer type.  Adjust calls to
@@ -110,8 +109,8 @@
 	(addsi3_carryin_alt2_<optab>): Renamed from addsi3_carryin_alt2.
 	Operands 1 and 2 are commutative.  Parametrize using LTUGEU.
 	(addsi3_carryin_alt1, addsi3_carryin_alt3): Remove.
-	(subsi3_compare): Renamed from subsi3_compare0_c.  Change CC_NOTB to
-	CC.
+	(subsi3_compare): Renamed from subsi3_compare0_c.
+	Change CC_NOTB to CC.
 	(arm_subsi3_insn): Allow constants for operand 0.
 	(compare_scc peephole for eq case): New.
 	(compare_scc splitters): Change CC_NOTB to CC.
@@ -170,7 +169,7 @@
 	* tree-vect-loop.c (vect_get_single_scalar_iteraion_cost): Skip
 	statements that are not vectorized.
 	* tree-vect-stmts.c (vect_get_load_cost): Update the value stored
-	in INSIDE_COST.	
+	in INSIDE_COST.
 
 2010-07-05  Mikael Pettersson  <mikpe@it.uu.se>
 
@@ -189,8 +188,7 @@
 	(<u>divmodqi4): Likewise.
 	(divmodqi4): New.
 	(udivmodqi4): Likewise.
-	(divmodhiqi3): Change div/mod to HImode and extend operand 2 to
-	HImode.
+	(divmodhiqi3): Change div/mod to HImode and extend operand 2 to HImode.
 	(udivmodhiqi3): Likewise.
 
 2010-07-04  Jan Hubicka  <jh@suse.cz>
@@ -199,8 +197,8 @@
 
 2010-07-04  Jan Hubicka  <jh@suse.cz>
 
-        * cgraphunit.c (init_cgraph): Only initialize dump file if it is not
-	already initialized.
+	* cgraphunit.c (init_cgraph): Only initialize dump file if it
+	is not already initialized.
 
 2010-07-04  Richard Sandiford  <rdsandiford@googlemail.com>
 
@@ -345,7 +343,7 @@
 2010-07-04  Ira Rosen  <irar@il.ibm.com>
 	    Revital Eres  <eres@il.ibm.com>
 
-	* doc/tm.texi.in (TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST): 
+	* doc/tm.texi.in (TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST):
 	Document new arguments.
 	* doc/tm.texi: Regenerate.
 	* targhooks.c (default_builtin_vectorization_cost): Add new arguments.
@@ -362,7 +360,7 @@
 	macro for its access.
 	(VECT_MAX_COST): Define.
 	(vect_get_load_cost): Declare.
-	(vect_get_store_cost, vect_get_known_peeling_cost, 
+	(vect_get_store_cost, vect_get_known_peeling_cost,
 	vect_get_single_scalar_iteraion_cost): Likewise.
 	(vect_supportable_dr_alignment): Add new argument.
 	* tree-vect-loop.c (new_loop_vec_info): Initialize peeling hash table
@@ -373,13 +371,13 @@
 	vect_analyze_slp. Fix indentation.
 	(vect_get_single_scalar_iteraion_cost): New function.
 	(vect_get_known_peeling_cost): Likewise.
-	(vect_estimate_min_profitable_iters): Rename byte_misalign to npeel. 
-	Call vect_get_single_scalar_iteraion_cost instead of cost_for_stmt per 
+	(vect_estimate_min_profitable_iters): Rename byte_misalign to npeel.
+	Call vect_get_single_scalar_iteraion_cost instead of cost_for_stmt per
 	statement. Move outside cost calculation inside unknown peeling case.
 	Call vect_get_known_peeling_cost for known amount of peeling.
 	* tree-vect-data-refs.c (vect_compute_data_ref_alignment): Add data
 	reference to the print message of forced alignment.
-	(vect_verify_datarefs_alignment): Update call to 
+	(vect_verify_datarefs_alignment): Update call to
 	vect_supportable_dr_alignment.
 	(vect_get_data_access_cost): New function.
 	(vect_peeling_hash, vect_peeling_hash_eq, vect_peeling_hash_insert,
@@ -391,26 +389,25 @@
 	check if stores are preferred or if peeling is worthy.
 	(vect_find_same_alignment_drs): Analyze pairs of loads too.
 	(vect_supportable_dr_alignment): Add new argument and check aligned
-	accesses according to it. 
+	accesses according to it.
 	* tree-vect-stmts.c (vect_get_stmt_cost): New function.
-	(cost_for_stmt): Call vect_get_stmt_cost. 
+	(cost_for_stmt): Call vect_get_stmt_cost.
 	(vect_model_simple_cost): Likewise.
-	(vect_model_store_cost): Call vect_get_stmt_cost. Call 
+	(vect_model_store_cost): Call vect_get_stmt_cost. Call
 	vect_get_store_cost to calculate the cost of the statement.
 	(vect_get_store_cost): New function.
-	(vect_model_load_cost): Call vect_get_stmt_cost. Call 
+	(vect_model_load_cost): Call vect_get_stmt_cost. Call
 	vect_get_load_cost to calculate the cost of the statement.
 	(vect_get_load_cost): New function.
 	(vectorizable_store): Update call to vect_supportable_dr_alignment.
 	(vectorizable_load): Likewise.
-	* config/spu/spu.c (spu_builtin_vectorization_cost): Add new
-	arguments. 
+	* config/spu/spu.c (spu_builtin_vectorization_cost): Add new arguments.
 	* config/i386/i386.c (ix86_builtin_vectorization_cost): Add new
 	arguments. Handle unaligned store.
 	* config/rs6000/rs6000.c (rs6000_builtin_vectorization_cost): New.
 	(rs6000_builtin_support_vector_misalignment): Return true for word and
 	double word alignments for VSX.
-	* tree-vect-slp.c (vect_build_slp_tree): Update calls to 
+	* tree-vect-slp.c (vect_build_slp_tree): Update calls to
 	vect_supportable_dr_alignment and builtin_vectorization_cost.
 
 2010-07-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
@@ -472,8 +469,7 @@
 	* config/arm/vfp.md (*push_multi_vfp): Use vfp_register_operand
 	as predicate for operand 1 and remove its constraint.
 	* config/arm/predicates.md (vfp_register_operand): New.
-	* config/arm/arm.md (*push_multi): Remove the constraint of
-	operand 1.
+	* config/arm/arm.md (*push_multi): Remove the constraint of operand 1.
 	(*push_fp_multi): Likewise.
 
 2010-07-03  Eric Botcazou  <ebotcazou@adacore.com>
@@ -527,8 +523,8 @@
 	(mul<mode>3add<mode>_neon, mul<mode>3neg<mode>add<mode>_neon)
 	(reduc_splus_<mode>, reduc_smin_<mode>, reduc_smax_<mode>): Disable
 	for NEON float modes when flag_unsafe_math_optimizations is false.
-	(quad_halves_<code>v4sf): Only enable if flag_unsafe_math_optimizations
-	is true.
+	(quad_halves_<code>v4sf): Only enable if
+	flag_unsafe_math_optimizations is true.
 	* doc/invoke.texi (ARM Options): Add note about floating point
 	vectorization requiring -funsafe-math-optimizations.
 
@@ -563,7 +559,7 @@
 
 	* ipa-split.c (split_function): For aggregate values, set the return
 	slot optimization bit.  When passing DECL_BY_REFERENCE, produce
- 	*<retval> = fncall.part ()
+ 	*<retval> = fncall.part ().
 	(execute_split_functions): Do not care about DECL_BY_REFERENCE.
 
 2010-07-02  Sandra Loosemore  <sandra@codesourcery.com>
@@ -587,7 +583,7 @@
 	* config/arm/predicates.md (imm_for_neon_logic_operand):
 	Require TARGET_NEON.
 	(imm_for_neon_inv_logic_operand): Likewise.
-	* config/arm/arm.md (define_split for logical_binary_operator): 
+	* config/arm/arm.md (define_split for logical_binary_operator):
 	Disable for NEON registers.
 	(anddi3): Add new define_expand, and rename the insn.  Disable
 	this insn for NEON, where anddi3_neon now applies.
@@ -847,8 +843,7 @@
 
 	PR target/44732
 	* config/ia64/ia64.c (ia64_register_move_cost): Remove stray '{'.
-
-	* config/ia64/ia64.c (ia64_register_move_cost): Fix argument types.
+	Fix argument types.
 
 2010-07-01  Bernd Schmidt  <bernds@codesourcery.com>
 
@@ -1009,8 +1004,7 @@
 	Remove old union trick.  Initialize constant offsets.
 	(ao_ref_init_from_vn_reference): Likewise.  Do not handle
 	INDIRECT_REF.  Init base_alias_set properly.
-	(vn_reference_lookup_3): Replace INDIRECT_REF handling with
-	MEM_REF.
+	(vn_reference_lookup_3): Replace INDIRECT_REF handling with MEM_REF.
 	(vn_reference_fold_indirect): Adjust for MEM_REFs.
 	(valueize_refs): Fold MEM_REFs.  Re-evaluate constant offset
 	for ARRAY_REFs.
@@ -1026,8 +1020,7 @@
 	bother about volatile qualifiers on pointers.
 	(fold_const_aggregate_ref): Handle MEM_REF, do not handle INDIRECT_REF.
 	* tree-ssa-loop-ivopts.c
-	* tree-ssa-loop-ivopts.c (determine_base_object): Adjust
-	for MEM_REF.
+	* tree-ssa-loop-ivopts.c (determine_base_object): Adjust for MEM_REF.
 	(strip_offset_1): Likewise.
 	(find_interesting_uses_address): Replace INDIRECT_REF handling with
 	MEM_REF handling.
@@ -1062,7 +1055,6 @@
 	for ARRAY_REFs.  Properly handle reference lookups that
 	require a bit re-interpretation.
 	(can_PRE_operation): Do not handle INDIRECT_REF.  Handle MEM_REF.
-	* tree-sra.c
 	* tree-sra.c (build_access_from_expr_1): Handle MEM_REF.
 	(build_ref_for_offset_1): Remove.
 	(build_ref_for_offset): Build MEM_REFs.
@@ -1076,8 +1068,7 @@
 	MEM_REF handling.
 	(sra_ipa_modify_expr): Remove INDIRECT_REF handling.
 	Use mem_ref_offset.  Remove bogus folding.
-	(build_access_from_expr_1): Properly handle MEM_REF for
-	non IPA-SRA.
+	(build_access_from_expr_1): Properly handle MEM_REF for non IPA-SRA.
 	(make_fancy_name_1): Add support for MEM_REF.
 	* tree-predcom.c (ref_at_iteration): Handle MEM_REFs.
 	* tree-mudflap.c (mf_xform_derefs_1): Adjust for MEM_REF.
@@ -1100,7 +1091,7 @@
 	(create_nesting_tree): Allocate it.
 	(convert_local_reference_op): Insert to be folded mem-refs.
 	(fold_mem_refs): New function.
-	(finalize_nesting_tree_1): Perform defered folding of mem-refs 
+	(finalize_nesting_tree_1): Perform defered folding of mem-refs
 	(free_nesting_tree): Free the pointer-set.
 	* tree-vect-stmts.c (vectorizable_store): Adjust for MEM_REF.
 	(vectorizable_load): Likewise.
@@ -1235,8 +1226,7 @@
 	* toplev.h (_fatal_insn_not_found, _fatal_insn): Move declarations
 	to rtl.h.
 	(error_for_asm,	warning_for_asm): Move declarations to rtl-error.h.
-	* rtl.h (_fatal_insn_not_found, _fatal_insn): Move declarations
-	here.
+	* rtl.h (_fatal_insn_not_found, _fatal_insn): Move declarations here.
 	* rtl-error.h: New.
 	* regrename.c: Do not include toplev.h. Include rtl-error.h.
 	* rtl-error.c: Likewise.
@@ -1319,15 +1309,13 @@
 	(flags_needed_for_conditional): New function.
 	(flags_from_mode): New function.
 	(rx_compare_redundant): New function - scans backwards through
-	insn list to find out if condition flags are already set
-	correctly.
+	insn list to find out if condition flags are already set correctly.
 	(TARGET_CC_MODES_COMPATIBLE): Define.
 	* config/rx/rx-protos.h (rx_compare_redundant): Prototype.
 
 	* config/rx/rx.h (BRANCH_COST): Define.
 	(REGISTER_MOVE_COST): Define.
-	* config/rx/predicates (rx_source_operand): Allow all constant
-	types.
+	* config/rx/predicates (rx_source_operand): Allow all constant types.
 	* config/rx/rx.md (addsi3): Add alternative for swapped operands.
 	(tstsi4): New pattern.
 	* config/rx/rx.c (rx_memory_move_cost): Define.
@@ -1517,8 +1505,8 @@
 	* predict.h (rebuild_frequencies): Declare.
 	* tree-inline.c (copy_cfg_body): Compute properly count & frequency of
 	entry block and edge reaching new_entry.
-	(tree_function_versioning): When doing partial cloning, rebuild frequencies
-	when done.
+	(tree_function_versioning): When doing partial cloning, rebuild
+	frequencies when done.
 	* passes.c (execute_function_todo): Use rebild_frequencies.
 
 2010-06-29  Richard Guenther  <rguenther@suse.de>
@@ -1704,8 +1692,8 @@
 2010-06-28  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/44357
-	* ipa-inline.c (add_new_edges_to_heap): Do not add edges to uninlinable
-	functions.
+	* ipa-inline.c (add_new_edges_to_heap): Do not add edges to
+	uninlinable functions.
 
 2010-06-28  Philipp Tomsich  <philipp.tomsich@theobroma-systems.com>
 
@@ -1717,7 +1705,7 @@
 	* config/rs6000/rs6000.md (cpu): Add titan.  Include "titan.md".
 	* config/rs6000/titan.md: New file.
 	* doc/invoke.texi (RS/6000 and PowerPC Options): Document -mcpu=titan.
-	
+
 2010-06-28  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree-browser.c (TB_history_stack): Convert to a VEC.
@@ -1751,22 +1739,22 @@
 
 2010-06-28  Bingfeng Mei  <bmei@broadcom.com>
 
-        * cgraph.h (struct varpool_node): new used_from_object_file flag.
-        (struct cgraph_local_info): new used_from_object_file flag.
-        * cgraph.c (dump_cgraph_node): dump used_from_object_file flag.
-        (cgraph_clone_node): initialize used_from_object_file.
-        (cgraph_create_virtual_clone): initialize used_from_object_file.
-        * lto-symbtab.c (lto_symtab_merge_decls_1): Set
-        used_from_object_file flags for symbols of LDPR_PREVAILING_DEF
-        when compiling with -fwhole-program.
-        (lto_symtab_resolve_symbols) Use LDPR_PREVAILING_DEF_IRONLY for
+	* cgraph.h (struct varpool_node): new used_from_object_file flag.
+	(struct cgraph_local_info): new used_from_object_file flag.
+	* cgraph.c (dump_cgraph_node): dump used_from_object_file flag.
+	(cgraph_clone_node): initialize used_from_object_file.
+	(cgraph_create_virtual_clone): initialize used_from_object_file.
+	* lto-symbtab.c (lto_symtab_merge_decls_1): Set
+	used_from_object_file flags for symbols of LDPR_PREVAILING_DEF
+	when compiling with -fwhole-program.
+	(lto_symtab_resolve_symbols) Use LDPR_PREVAILING_DEF_IRONLY for
 	internal resolver.
-        * ipa.c (function_and_variable_visibility): Set externally_visible
-        flag of varpool_node if used_from_object_file flag is set.
-        (cgraph_externally_visible_p): check used_from_object_file flag.
-        * doc/invoke.texi (-fwhole-program option): Change description of
-        externally_visible attribute accordingly.
-        * doc/extend.texi (externally_visible): Ditto.
+	* ipa.c (function_and_variable_visibility): Set externally_visible
+	flag of varpool_node if used_from_object_file flag is set.
+	(cgraph_externally_visible_p): check used_from_object_file flag.
+	* doc/invoke.texi (-fwhole-program option): Change description of
+	externally_visible attribute accordingly.
+	* doc/extend.texi (externally_visible): Ditto.
 
 2010-06-27  Jan Hubicka  <jh@suse.cz>
 
@@ -1878,8 +1866,7 @@
 	(visit_bb): Handle PHIs correctly.
 	* tree-inline.c (copy_phis_for_bb): Be able to copy
 	PHI from entry edge.
-	(copy_cfg_body): Produce edge from entry BB before copying
-	PHIs.
+	(copy_cfg_body): Produce edge from entry BB before copying PHIs.
 
 2010-06-26  Richard Guenther  <rguenther@suse.de>
 
@@ -2082,8 +2069,7 @@
 
 	* config/pa/pa.h (MODIFY_TARGET_NAME): Remove.
 	* doc/tm.texi (MODIFY_TARGET_NAME): Don't document.
-	* gcc.c (enum add_del, struct modify_target, modify_target):
-	Remove.
+	* gcc.c (enum add_del, struct modify_target, modify_target): Remove.
 	(process_command): Remove code conditional on MODIFY_TARGET_NAME.
 	* system.h (MODIFY_TARGET_NAME): Poison.
 
