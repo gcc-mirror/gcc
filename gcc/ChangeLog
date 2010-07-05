@@ -1,3 +1,10 @@
+2010-07-05  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from mainline:
+	PR target/44531
+	* config.gcc (sh*-*-*): Use regular expressions instead of
+	the 'i' modifier for sed substitutions.
+
 2010-07-05  Mikael Pettersson  <mikpe@it.uu.se>
 
 	PR bootstrap/44820

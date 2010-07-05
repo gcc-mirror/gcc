@@ -2338,7 +2338,7 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 	target_cpu_default=SELECT_`echo ${sh_cpu_default}|tr abcdefghijklmnopqrstuvwxyz- ABCDEFGHIJKLMNOPQRSTUVWXYZ_`
 	tm_defines=${tm_defines}' SH_MULTILIB_CPU_DEFAULT=\"'`echo $sh_cpu_default|sed s/sh/m/`'\"'
 	tm_defines="$tm_defines SUPPORT_`echo $sh_cpu_default | sed 's/^m/sh/' | tr abcdefghijklmnopqrstuvwxyz- ABCDEFGHIJKLMNOPQRSTUVWXYZ_`=1"
-	sh_multilibs=`echo $sh_multilibs | sed -e 's/,/ /g' -e 's/^sh/m/i' -e 's/ sh/ m/gi' | tr ABCDEFGHIJKLMNOPQRSTUVWXYZ_ abcdefghijklmnopqrstuvwxyz-`
+	sh_multilibs=`echo $sh_multilibs | sed -e 's/,/ /g' -e 's/^[Ss][Hh]/m/' -e 's/ [Ss][Hh]/ m/g' | tr ABCDEFGHIJKLMNOPQRSTUVWXYZ_ abcdefghijklmnopqrstuvwxyz-`
 	for sh_multilib in ${sh_multilibs}; do
 		case ${sh_multilib} in
 		m1 | m2 | m2e | m3 | m3e | \
