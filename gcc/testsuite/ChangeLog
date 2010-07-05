@@ -1,3 +1,11 @@
+2010-07-05  Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-31d.c: Remove.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-76a.c: Increase loop bound.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-76b.c: Likewise.
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-68d.c: Remove.
+	* gcc.dg/vect/pr35821-altivec.c, gcc.dg/vect/pr35821-spu.c: Likewise.
+
 2010-07-05  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	PR c++/22138
