@@ -1921,9 +1921,9 @@ make_class_data (tree type)
     }
 
   gcc_assert (static_field_count
-              == VEC_length (constructor_elt, static_fields));
+              == (int) VEC_length (constructor_elt, static_fields));
   gcc_assert (instance_field_count
-              == VEC_length (constructor_elt, instance_fields));
+              == (int) VEC_length (constructor_elt, instance_fields));
 
   if (field_count > 0)
     {
