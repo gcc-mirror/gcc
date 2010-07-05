@@ -1,8 +1,13 @@
+2010-07-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* pt.c (tsubst): Early declare code = TREE_CODE (t) and use it
+	throughout.
+
 2010-07-05  Shujing Zhao  <pearly.zhao@oracle.com>
 
-	 PR c++/22138
-	 * parser.c (cp_parser_primary_expression): Error if local template is
-	 declared.
+	PR c++/22138
+	* parser.c (cp_parser_primary_expression): Error if local template is
+	declared.
 
 2010-07-02  Le-Chun Wu  <lcwu@google.com>
 
