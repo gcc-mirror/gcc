@@ -9578,27 +9578,6 @@ build_vl_exp_stat (enum tree_code code, int len MEM_STAT_DECL)
   return t;
 }
 
-
-/* Build a CALL_EXPR of class tcc_vl_exp with the indicated RETURN_TYPE
-   and FN and a null static chain slot.  ARGLIST is a TREE_LIST of the
-   arguments.  */
-
-tree
-build_call_list (tree return_type, tree fn, tree arglist)
-{
-  tree t;
-  int i;
-
-  t = build_vl_exp (CALL_EXPR, list_length (arglist) + 3);
-  TREE_TYPE (t) = return_type;
-  CALL_EXPR_FN (t) = fn;
-  CALL_EXPR_STATIC_CHAIN (t) = NULL_TREE;
-  for (i = 0; arglist; arglist = TREE_CHAIN (arglist), i++)
-    CALL_EXPR_ARG (t, i) = TREE_VALUE (arglist);
-  process_call_operands (t);
-  return t;
-}
-
 /* Build a CALL_EXPR of class tcc_vl_exp with the indicated RETURN_TYPE and
    FN and a null static chain slot.  NARGS is the number of call arguments
    which are specified as "..." arguments.  */
