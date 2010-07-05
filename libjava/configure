@@ -632,6 +632,10 @@ python_mod_dir
 here
 LD_FINISH_STATIC_SPEC
 LD_START_STATIC_SPEC
+ANONVERSCRIPT_SUN_FALSE
+ANONVERSCRIPT_SUN_TRUE
+ANONVERSCRIPT_GNU_FALSE
+ANONVERSCRIPT_GNU_TRUE
 ANONVERSCRIPT_FALSE
 ANONVERSCRIPT_TRUE
 SYSDEP_SOURCES
@@ -13345,7 +13349,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13348 "configure"
+#line 13352 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13451,7 +13455,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13454 "configure"
+#line 13458 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19430,7 +19434,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then :
   enableval=$enable_sjlj_exceptions; :
 else
   cat > conftest.$ac_ext << EOF
-#line 19433 "configure"
+#line 19437 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -24380,7 +24384,7 @@ rm -f core conftest.err conftest.$ac_objext \
 	CFLAGS="$chktls_save_CFLAGS"
 	if test "X$thread_CFLAGS" != Xfailed; then
 	  CFLAGS="$thread_CFLAGS $chktls_save_CFLAGS"
-	  if test "$cross_compiling" = yes; then :
+ 	  	  	  	  	  	  if test "$cross_compiling" = yes; then :
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
 as_fn_error "cannot run test program while cross compiling
@@ -24488,7 +24492,8 @@ if test "${libjava_cv_anon_version_script+set}" = set; then :
 else
   save_CFLAGS="$CFLAGS"; save_LDFLAGS="$LDFLAGS"
    libjava_cv_anon_version_script=no
-   CFLAGS="$CFLAGS -fPIC"; LDFLAGS="$LDFLAGS -shared -Wl,--version-script,conftest.map"
+   CFLAGS="$CFLAGS -fPIC";
+   LDFLAGS="$LDFLAGS -shared -Wl,--version-script,conftest.map"
    echo '{ global: globalsymb*; local: *; };' > conftest.map
    if test x$gcc_no_link = xyes; then
   as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
@@ -24505,21 +24510,66 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  libjava_cv_anon_version_script=yes
+  libjava_cv_anon_version_script=gnu
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+   if test x$libjava_cv_anon_version_script = xno; then
+     case "$target_os" in
+       solaris2*)
+         LDFLAGS="$save_LDFLAGS"
+         LDFLAGS="$LDFLAGS -shared -Wl,-M,conftest.map"
+         # Sun ld doesn't understand wildcards here.
+         echo '{ global: globalsymbol; local: *; };' > conftest.map
+         if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+void globalsymbol (void) {} void localsymbol (void) {}
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libjava_cv_anon_version_script=sun
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+         ;;
+     esac
+   fi
    CFLAGS="$save_CFLAGS"; LDFLAGS="$save_LDFLAGS"
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libjava_cv_anon_version_script" >&5
 $as_echo "$libjava_cv_anon_version_script" >&6; }
- if test "$libjava_cv_anon_version_script" = yes; then
+ if test "$libjava_cv_anon_version_script" != no; then
   ANONVERSCRIPT_TRUE=
   ANONVERSCRIPT_FALSE='#'
 else
   ANONVERSCRIPT_TRUE='#'
   ANONVERSCRIPT_FALSE=
+fi
+
+ if test "$libjava_cv_anon_version_script" = gnu; then
+  ANONVERSCRIPT_GNU_TRUE=
+  ANONVERSCRIPT_GNU_FALSE='#'
+else
+  ANONVERSCRIPT_GNU_TRUE='#'
+  ANONVERSCRIPT_GNU_FALSE=
+fi
+
+ if test "$libjava_cv_anon_version_script" = sun; then
+  ANONVERSCRIPT_SUN_TRUE=
+  ANONVERSCRIPT_SUN_FALSE='#'
+else
+  ANONVERSCRIPT_SUN_TRUE='#'
+  ANONVERSCRIPT_SUN_FALSE=
 fi
 
 
@@ -25059,6 +25109,14 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ANONVERSCRIPT_TRUE}" && test -z "${ANONVERSCRIPT_FALSE}"; then
   as_fn_error "conditional \"ANONVERSCRIPT\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ANONVERSCRIPT_GNU_TRUE}" && test -z "${ANONVERSCRIPT_GNU_FALSE}"; then
+  as_fn_error "conditional \"ANONVERSCRIPT_GNU\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ANONVERSCRIPT_SUN_TRUE}" && test -z "${ANONVERSCRIPT_SUN_FALSE}"; then
+  as_fn_error "conditional \"ANONVERSCRIPT_SUN\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${INSTALL_AOT_RPM_TRUE}" && test -z "${INSTALL_AOT_RPM_FALSE}"; then
