@@ -1906,6 +1906,7 @@ static rtx (*ix86_gen_sub3_carry) (rtx, rtx, rtx, rtx, rtx);
 static rtx (*ix86_gen_one_cmpl2) (rtx, rtx);
 static rtx (*ix86_gen_monitor) (rtx, rtx, rtx);
 static rtx (*ix86_gen_andsp) (rtx, rtx, rtx);
+static rtx (*ix86_gen_allocate_stack_worker) (rtx, rtx);
 
 /* Preferred alignment for stack boundary in bits.  */
 unsigned int ix86_preferred_stack_boundary;
@@ -3577,6 +3578,7 @@ override_options (bool main_args_p)
       ix86_gen_one_cmpl2 = gen_one_cmpldi2;
       ix86_gen_monitor = gen_sse3_monitor64;
       ix86_gen_andsp = gen_anddi3;
+      ix86_gen_allocate_stack_worker = gen_allocate_stack_worker_64;
     }
   else
     {
@@ -3588,6 +3590,7 @@ override_options (bool main_args_p)
       ix86_gen_one_cmpl2 = gen_one_cmplsi2;
       ix86_gen_monitor = gen_sse3_monitor;
       ix86_gen_andsp = gen_andsi3;
+      ix86_gen_allocate_stack_worker = gen_allocate_stack_worker_32;
     }
 
 #ifdef USE_IX86_CLD
@@ -8868,11 +8871,7 @@ ix86_expand_prologue (void)
 
       emit_move_insn (eax, GEN_INT (allocate));
 
-      if (TARGET_64BIT)
-	insn = gen_allocate_stack_worker_64 (eax, eax);
-      else
-	insn = gen_allocate_stack_worker_32 (eax, eax);
-      insn = emit_insn (insn);
+      insn = emit_insn ((*ix86_gen_allocate_stack_worker) (eax, eax));
 
       if (ix86_cfa_state->reg == stack_pointer_rtx)
 	{
