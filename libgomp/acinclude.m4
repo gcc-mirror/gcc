@@ -223,16 +223,42 @@ AC_DEFUN([LIBGOMP_ENABLE_SYMVERS], [
 
 LIBGOMP_ENABLE(symvers,yes,[=STYLE],
   [enables symbol versioning of the shared library],
-  [permit yes|no|gnu])
+  [permit yes|no|gnu|sun])
 
 # If we never went through the LIBGOMP_CHECK_LINKER_FEATURES macro, then we
 # don't know enough about $LD to do tricks...
 AC_REQUIRE([LIBGOMP_CHECK_LINKER_FEATURES])
 # FIXME  The following test is too strict, in theory.
-if test $enable_shared = no ||
-        test "x$LD" = x ||
-        test x$libgomp_gnu_ld_version = x; then
+if test $enable_shared = no || test "x$LD" = x; then
   enable_symvers=no
+else
+  if test $with_gnu_ld = yes ; then
+    enable_symvers=gnu
+  else
+    case ${target_os} in
+      # Sun symbol versioning exists since Solaris 2.5.
+      solaris2.[[5-9]]* | solaris2.1[[0-9]]*)
+        enable_symvers=sun ;;
+      *)
+        enable_symvers=no ;;
+    esac
+  fi
+fi
+
+# Check if 'sun' was requested on non-Solaris 2 platforms.
+if test x$enable_symvers = xsun ; then
+  case ${target_os} in
+    solaris2*)
+      # All fine.
+      ;;
+    *)
+      # Unlikely to work.
+      AC_MSG_WARN([=== You have requested Sun symbol versioning, but])
+      AC_MSG_WARN([=== you are not targetting Solaris 2.])
+      AC_MSG_WARN([=== Symbol versioning will be disabled.])
+      enable_symvers=no
+      ;;
+  esac
 fi
 
 # Check to see if libgcc_s exists, indicating that shared libgcc is possible.
@@ -269,10 +295,8 @@ libgomp_min_gnu_ld_version=21400
 
 # Check to see if unspecified "yes" value can win, given results above.
 # Change "yes" into either "no" or a style name.
-if test $enable_symvers = yes; then
-  if test $with_gnu_ld = yes &&
-     test $libgomp_shared_libgcc = yes;
-  then
+if test $enable_symvers != no && test $libgomp_shared_libgcc = yes; then
+  if test $with_gnu_ld = yes; then
     if test $libgomp_gnu_ld_version -ge $libgomp_min_gnu_ld_version ; then
       enable_symvers=gnu
     elif test $libgomp_ld_is_gold = yes ; then
@@ -295,6 +319,8 @@ if test $enable_symvers = yes; then
         enable_symvers=no
       fi
     fi
+  elif test $enable_symvers = sun; then
+    : All interesting versions of Sun ld support sun style symbol versioning.
   else
     # just fail for now
     AC_MSG_WARN([=== You have requested some kind of symbol versioning, but])
@@ -316,5 +342,22 @@ if test $libgomp_cv_have_as_symver_directive = yes; then
 fi
 
 AM_CONDITIONAL(LIBGOMP_BUILD_VERSIONED_SHLIB, test $enable_symvers != no)
+AM_CONDITIONAL(LIBGOMP_BUILD_VERSIONED_SHLIB_GNU, test $enable_symvers = gnu)
+AM_CONDITIONAL(LIBGOMP_BUILD_VERSIONED_SHLIB_SUN, test $enable_symvers = sun)
 AC_MSG_NOTICE(versioning on shared library symbols is $enable_symvers)
+
+if test $enable_symvers != no ; then
+   case ${target_os} in
+     # The Solaris 2 runtime linker doesn't support the GNU extension of
+     # binding the same symbol to different versions
+     solaris2*)
+       symvers_renaming=no ;;
+     # Other platforms with GNU symbol versioning (GNU/Linux, more?) do.
+     *)
+       AC_DEFINE(HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT, 1,
+         [Define to 1 if the target runtime linker supports binding the same symbol to different versions.])
+       symvers_renaming=yes ;;
+    esac
+fi
+AM_CONDITIONAL(LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2, test $symvers_renaming = no)
 ])

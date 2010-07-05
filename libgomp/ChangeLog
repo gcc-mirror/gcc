@@ -1,3 +1,28 @@
+2010-07-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (LIBGOMP_ENABLE_SYMVERS): Handle sun style.
+	Define LIBGOMP_BUILD_VERSIONED_SHLIB_GNU,
+	LIBGOMP_BUILD_VERSIONED_SHLIB_SUN automake conditionals.
+	(HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT): Define unless
+	targetting solaris2*.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+	* Makefile.am [LIBGOMP_BUILD_VERSIONED_SHLIB]: Protect
+	libgomp_version_script with LIBGOMP_BUILD_VERSIONED_SHLIB_GNU.
+	Add libgomp_version_dep.
+	[LIBGOMP_BUILD_VERSIONED_SHLIB_SUN]: Handle Sun symbol
+	versioning.
+	[!LIBGOMP_BUILD_VERSIONED_SHLIB]: Add libgomp_version_dep.
+	(libgomp_la_DEPENDENCIES): Set to $(libgomp_version_dep).
+	* Makefile.in: Regenerate.
+
+	* libgomp.h (LIBGOMP_GNU_SYMBOL_VERSIONING): Undef unless
+	HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT.
+	* libgomp.map (OMP_1.0): Move symbols both in OMP_1.0 and OMP_3.0
+	to common block, protected by
+	HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT.
+
 2010-06-10  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* libgomp.texi: Move to GFDL version 1.3.  Update copyright years.

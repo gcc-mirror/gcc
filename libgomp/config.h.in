@@ -54,6 +54,10 @@
 /* Define to 1 if you have the `strtoull' function. */
 #undef HAVE_STRTOULL
 
+/* Define to 1 if the target runtime linker supports binding the same symbol
+   to different versions. */
+#undef HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT
+
 /* Define to 1 if the target supports __sync_*_compare_and_swap */
 #undef HAVE_SYNC_BUILTINS
 

@@ -514,7 +514,8 @@ gomp_work_share_init_done (void)
 #if !defined (HAVE_ATTRIBUTE_VISIBILITY) \
     || !defined (HAVE_ATTRIBUTE_ALIAS) \
     || !defined (HAVE_AS_SYMVER_DIRECTIVE) \
-    || !defined (PIC)
+    || !defined (PIC) \
+    || !defined (HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT)
 # undef LIBGOMP_GNU_SYMBOL_VERSIONING
 #endif
 

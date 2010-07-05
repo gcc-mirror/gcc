@@ -619,6 +619,12 @@ link_gomp
 XLDFLAGS
 XCFLAGS
 config_path
+LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2_FALSE
+LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2_TRUE
+LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_FALSE
+LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE
+LIBGOMP_BUILD_VERSIONED_SHLIB_GNU_FALSE
+LIBGOMP_BUILD_VERSIONED_SHLIB_GNU_TRUE
 LIBGOMP_BUILD_VERSIONED_SHLIB_FALSE
 LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE
 OPT_LDFLAGS
@@ -11083,7 +11089,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11086 "configure"
+#line 11092 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11189,7 +11195,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11192 "configure"
+#line 11198 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15754,7 +15760,7 @@ $as_echo "$ac_sectionLDflags" >&6; }
 if test "${enable_symvers+set}" = set; then :
   enableval=$enable_symvers;
       case "$enableval" in
-       yes|no|gnu) ;;
+       yes|no|gnu|sun) ;;
        *) as_fn_error "Unknown argument to enable/disable symvers" "$LINENO" 5 ;;
                           esac
 
@@ -15768,10 +15774,39 @@ fi
 # don't know enough about $LD to do tricks...
 
 # FIXME  The following test is too strict, in theory.
-if test $enable_shared = no ||
-        test "x$LD" = x ||
-        test x$libgomp_gnu_ld_version = x; then
+if test $enable_shared = no || test "x$LD" = x; then
   enable_symvers=no
+else
+  if test $with_gnu_ld = yes ; then
+    enable_symvers=gnu
+  else
+    case ${target_os} in
+      # Sun symbol versioning exists since Solaris 2.5.
+      solaris2.[5-9]* | solaris2.1[0-9]*)
+        enable_symvers=sun ;;
+      *)
+        enable_symvers=no ;;
+    esac
+  fi
+fi
+
+# Check if 'sun' was requested on non-Solaris 2 platforms.
+if test x$enable_symvers = xsun ; then
+  case ${target_os} in
+    solaris2*)
+      # All fine.
+      ;;
+    *)
+      # Unlikely to work.
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === You have requested Sun symbol versioning, but" >&5
+$as_echo "$as_me: WARNING: === You have requested Sun symbol versioning, but" >&2;}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === you are not targetting Solaris 2." >&5
+$as_echo "$as_me: WARNING: === you are not targetting Solaris 2." >&2;}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === Symbol versioning will be disabled." >&5
+$as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
+      enable_symvers=no
+      ;;
+  esac
 fi
 
 # Check to see if libgcc_s exists, indicating that shared libgcc is possible.
@@ -15840,10 +15875,8 @@ libgomp_min_gnu_ld_version=21400
 
 # Check to see if unspecified "yes" value can win, given results above.
 # Change "yes" into either "no" or a style name.
-if test $enable_symvers = yes; then
-  if test $with_gnu_ld = yes &&
-     test $libgomp_shared_libgcc = yes;
-  then
+if test $enable_symvers != no && test $libgomp_shared_libgcc = yes; then
+  if test $with_gnu_ld = yes; then
     if test $libgomp_gnu_ld_version -ge $libgomp_min_gnu_ld_version ; then
       enable_symvers=gnu
     elif test $libgomp_ld_is_gold = yes ; then
@@ -15870,6 +15903,8 @@ $as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
         enable_symvers=no
       fi
     fi
+  elif test $enable_symvers = sun; then
+    : All interesting versions of Sun ld support sun style symbol versioning.
   else
     # just fail for now
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === You have requested some kind of symbol versioning, but" >&5
@@ -15924,8 +15959,47 @@ else
   LIBGOMP_BUILD_VERSIONED_SHLIB_FALSE=
 fi
 
+ if test $enable_symvers = gnu; then
+  LIBGOMP_BUILD_VERSIONED_SHLIB_GNU_TRUE=
+  LIBGOMP_BUILD_VERSIONED_SHLIB_GNU_FALSE='#'
+else
+  LIBGOMP_BUILD_VERSIONED_SHLIB_GNU_TRUE='#'
+  LIBGOMP_BUILD_VERSIONED_SHLIB_GNU_FALSE=
+fi
+
+ if test $enable_symvers = sun; then
+  LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE=
+  LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_FALSE='#'
+else
+  LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE='#'
+  LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_FALSE=
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: versioning on shared library symbols is $enable_symvers" >&5
 $as_echo "$as_me: versioning on shared library symbols is $enable_symvers" >&6;}
+
+if test $enable_symvers != no ; then
+   case ${target_os} in
+     # The Solaris 2 runtime linker doesn't support the GNU extension of
+     # binding the same symbol to different versions
+     solaris2*)
+       symvers_renaming=no ;;
+     # Other platforms with GNU symbol versioning (GNU/Linux, more?) do.
+     *)
+
+$as_echo "#define HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT 1" >>confdefs.h
+
+       symvers_renaming=yes ;;
+    esac
+fi
+ if test $symvers_renaming = no; then
+  LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2_TRUE=
+  LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2_FALSE='#'
+else
+  LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2_TRUE='#'
+  LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2_FALSE=
+fi
+
 
 
 if test $enable_symvers = gnu; then
@@ -16307,6 +16381,18 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE}" && test -z "${LIBGOMP_BUILD_VERSIONED_SHLIB_FALSE}"; then
   as_fn_error "conditional \"LIBGOMP_BUILD_VERSIONED_SHLIB\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGOMP_BUILD_VERSIONED_SHLIB_GNU_TRUE}" && test -z "${LIBGOMP_BUILD_VERSIONED_SHLIB_GNU_FALSE}"; then
+  as_fn_error "conditional \"LIBGOMP_BUILD_VERSIONED_SHLIB_GNU\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE}" && test -z "${LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_FALSE}"; then
+  as_fn_error "conditional \"LIBGOMP_BUILD_VERSIONED_SHLIB_SUN\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2_TRUE}" && test -z "${LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2_FALSE}"; then
+  as_fn_error "conditional \"LIBGOMP_BUILD_VERSIONED_SHLIB_SOL2\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USE_FORTRAN_TRUE}" && test -z "${USE_FORTRAN_FALSE}"; then
