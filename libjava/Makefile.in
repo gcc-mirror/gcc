@@ -49,22 +49,19 @@ target_triplet = @target@
 @INSTALL_BINARIES_FALSE@@NATIVE_TRUE@am__append_7 = $(bin_programs)
 @INSTALL_AOT_RPM_TRUE@am__append_8 = contrib/aot-compile-rpm
 @BUILD_ECJ1_TRUE@libexecsub_PROGRAMS = ecjx$(EXEEXT)
-@ANONVERSCRIPT_TRUE@am__append_9 = -Wl,--version-script=$(srcdir)/libgcj.ver
-@USING_GCC_TRUE@am__append_10 = $(WARNINGS)
-@BUILD_SUBLIBS_TRUE@am__append_11 = libgcj-noncore.la
-@USING_BOEHMGC_TRUE@am__append_12 = boehm.cc
-@USING_NOGC_TRUE@am__append_13 = nogc.cc
-@USING_POSIX_PLATFORM_TRUE@am__append_14 = posix.cc
-@USING_WIN32_PLATFORM_TRUE@am__append_15 = win32.cc
-@USING_DARWIN_CRT_TRUE@am__append_16 = darwin.cc
-@USING_POSIX_THREADS_TRUE@am__append_17 = posix-threads.cc
-@USING_WIN32_THREADS_TRUE@am__append_18 = win32-threads.cc
-@USING_NO_THREADS_TRUE@am__append_19 = no-threads.cc
-@ANONVERSCRIPT_TRUE@am__append_20 = $(srcdir)/libgcj.ver
-@ANONVERSCRIPT_TRUE@@BUILD_SUBLIBS_TRUE@am__append_21 = $(srcdir)/libgcj.ver
-@BUILD_SUBLIBS_TRUE@am__append_22 = libgcj-noncore.la
-@BUILD_SUBLIBS_TRUE@am__append_23 = libgcj-noncore.la
-@BUILD_SUBLIBS_TRUE@am__append_24 = libgcj-noncore.la
+@USING_GCC_TRUE@am__append_9 = $(WARNINGS)
+@BUILD_SUBLIBS_TRUE@am__append_10 = libgcj-noncore.la
+@USING_BOEHMGC_TRUE@am__append_11 = boehm.cc
+@USING_NOGC_TRUE@am__append_12 = nogc.cc
+@USING_POSIX_PLATFORM_TRUE@am__append_13 = posix.cc
+@USING_WIN32_PLATFORM_TRUE@am__append_14 = win32.cc
+@USING_DARWIN_CRT_TRUE@am__append_15 = darwin.cc
+@USING_POSIX_THREADS_TRUE@am__append_16 = posix-threads.cc
+@USING_WIN32_THREADS_TRUE@am__append_17 = win32-threads.cc
+@USING_NO_THREADS_TRUE@am__append_18 = no-threads.cc
+@BUILD_SUBLIBS_TRUE@am__append_19 = libgcj-noncore.la
+@BUILD_SUBLIBS_TRUE@am__append_20 = libgcj-noncore.la
+@BUILD_SUBLIBS_TRUE@am__append_21 = libgcj-noncore.la
 DIST_COMMON = $(srcdir)/sources.am NEWS README ChangeLog THANKS \
 	$(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
@@ -80,14 +77,14 @@ DIST_COMMON = $(srcdir)/sources.am NEWS README ChangeLog THANKS \
 	$(top_srcdir)/gnu/java/nio/natVMPipe${PLATFORM}.cc \
 	$(top_srcdir)/gnu/java/nio/natVMSelector${PLATFORM}.cc \
 	$(srcdir)/../depcomp
-@MAINTAINER_MODE_TRUE@@NATIVE_TRUE@am__append_25 = gen-from-JIS
-@BUILD_SUBLIBS_TRUE@am__append_26 = libgcj-noncore.la
-@BUILD_SUBLIBS_TRUE@am__append_27 = libgcj-noncore.la
-@BUILD_SUBLIBS_TRUE@am__append_28 = libgcj-noncore.la
-@BUILD_SUBLIBS_TRUE@@NATIVE_TRUE@am__append_29 = libgcj-noncore.la
-@NATIVE_TRUE@@USE_LIBGCJ_BC_TRUE@am__append_30 = libgcj_bc.la
-@NATIVE_TRUE@@USE_LIBGCJ_BC_FALSE@am__append_31 = libgcj.la
-@XLIB_AWT_TRUE@am__append_32 = $(xlib_nat_headers)
+@MAINTAINER_MODE_TRUE@@NATIVE_TRUE@am__append_22 = gen-from-JIS
+@BUILD_SUBLIBS_TRUE@am__append_23 = libgcj-noncore.la
+@BUILD_SUBLIBS_TRUE@am__append_24 = libgcj-noncore.la
+@BUILD_SUBLIBS_TRUE@am__append_25 = libgcj-noncore.la
+@BUILD_SUBLIBS_TRUE@@NATIVE_TRUE@am__append_26 = libgcj-noncore.la
+@NATIVE_TRUE@@USE_LIBGCJ_BC_TRUE@am__append_27 = libgcj_bc.la
+@NATIVE_TRUE@@USE_LIBGCJ_BC_FALSE@am__append_28 = libgcj.la
+@XLIB_AWT_TRUE@am__append_29 = $(xlib_nat_headers)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/libltdl/acinclude.m4 \
@@ -704,7 +701,7 @@ docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
 extra_ldflags = @extra_ldflags@
-extra_ldflags_libjava = @extra_ldflags_libjava@ $(am__append_9)
+extra_ldflags_libjava = @extra_ldflags_libjava@
 gcc_suffix = @gcc_suffix@
 gcjsubdir = @gcjsubdir@
 gxx_include_dir = @gxx_include_dir@
@@ -952,6 +949,37 @@ db_pathtail = $(gcjsubdir)/$(db_name)
 bin_SCRIPTS = contrib/rebuild-gcj-db contrib/aot-compile \
 	$(am__append_8)
 GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated
+
+# The pattern rule necessary to build the *.ver-sun mapfiles is at the end
+# of the file, see below.
+@ANONVERSCRIPT_FALSE@version_arg = 
+@ANONVERSCRIPT_GNU_TRUE@@ANONVERSCRIPT_TRUE@version_arg = -Wl,--version-script=$(srcdir)/libgcj.ver
+@ANONVERSCRIPT_FALSE@libgcj_la_version_arg = $(version_arg)
+@ANONVERSCRIPT_GNU_TRUE@@ANONVERSCRIPT_TRUE@libgcj_la_version_arg = $(version_arg)
+@ANONVERSCRIPT_SUN_TRUE@@ANONVERSCRIPT_TRUE@libgcj_la_version_arg = -Wl,-M,libgcj.ver-sun
+@ANONVERSCRIPT_FALSE@libgcj_tools_la_version_arg = $(version_arg)
+@ANONVERSCRIPT_GNU_TRUE@@ANONVERSCRIPT_TRUE@libgcj_tools_la_version_arg = $(version_arg)
+@ANONVERSCRIPT_SUN_TRUE@@ANONVERSCRIPT_TRUE@libgcj_tools_la_version_arg = -Wl,-M,libgcj_tools.ver-sun
+@ANONVERSCRIPT_FALSE@lib_gnu_awt_xlib_la_version_arg = $(version_arg)
+@ANONVERSCRIPT_GNU_TRUE@@ANONVERSCRIPT_TRUE@lib_gnu_awt_xlib_la_version_arg = $(version_arg)
+@ANONVERSCRIPT_SUN_TRUE@@ANONVERSCRIPT_TRUE@lib_gnu_awt_xlib_la_version_arg = -Wl,-M,lib_gnu_awt_xlib.ver-sun
+@ANONVERSCRIPT_FALSE@libgcj_bc_la_version_arg = $(version_arg)
+@ANONVERSCRIPT_GNU_TRUE@@ANONVERSCRIPT_TRUE@libgcj_bc_la_version_arg = $(version_arg)
+@ANONVERSCRIPT_SUN_TRUE@@ANONVERSCRIPT_TRUE@libgcj_bc_la_version_arg = -Wl,-M,libgcj_bc.ver-sun
+@ANONVERSCRIPT_FALSE@version_dep = 
+@ANONVERSCRIPT_GNU_TRUE@@ANONVERSCRIPT_TRUE@version_dep = $(srcdir)/libgcj.ver
+@ANONVERSCRIPT_FALSE@libgcj_la_version_dep = $(version_dep)
+@ANONVERSCRIPT_GNU_TRUE@@ANONVERSCRIPT_TRUE@libgcj_la_version_dep = $(version_dep)
+@ANONVERSCRIPT_SUN_TRUE@@ANONVERSCRIPT_TRUE@libgcj_la_version_dep = libgcj.ver-sun
+@ANONVERSCRIPT_FALSE@libgcj_tools_la_version_dep = $(version_dep)
+@ANONVERSCRIPT_GNU_TRUE@@ANONVERSCRIPT_TRUE@libgcj_tools_la_version_dep = $(version_dep)
+@ANONVERSCRIPT_SUN_TRUE@@ANONVERSCRIPT_TRUE@libgcj_tools_la_version_dep = libgcj_tools.ver-sun
+@ANONVERSCRIPT_FALSE@lib_gnu_awt_xlib_la_version_dep = $(version_dep)
+@ANONVERSCRIPT_GNU_TRUE@@ANONVERSCRIPT_TRUE@lib_gnu_awt_xlib_la_version_dep = $(version_dep)
+@ANONVERSCRIPT_SUN_TRUE@@ANONVERSCRIPT_TRUE@lib_gnu_awt_xlib_la_version_dep = lib_gnu_awt_xlib.ver-sun
+@ANONVERSCRIPT_FALSE@libgcj_bc_la_version_dep = $(version_dep)
+@ANONVERSCRIPT_GNU_TRUE@@ANONVERSCRIPT_TRUE@libgcj_bc_la_version_dep = $(version_dep)
+@ANONVERSCRIPT_SUN_TRUE@@ANONVERSCRIPT_TRUE@libgcj_bc_la_version_dep = libgcj_bc.ver-sun
 LTLDFLAGS = $(shell $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 GCJLINK = $(LIBTOOL) --tag=GCJ $(LIBTOOLFLAGS) --mode=link $(GCJ) -L$(here) \
 	  $(JC1FLAGS) $(LTLDFLAGS) -o $@
@@ -992,7 +1020,7 @@ AM_GCJFLAGS = \
 	--encoding=UTF-8 \
 	-Wno-deprecated -fbootstrap-classes
 
-AM_CFLAGS = @LIBGCJ_CFLAGS@ $(am__append_10)
+AM_CFLAGS = @LIBGCJ_CFLAGS@ $(am__append_9)
 @SUPPRESS_LIBGCJ_BC_FALSE@LIBGCJ_BC_FLAGS = -findirect-dispatch -fno-indirect-classes
 @SUPPRESS_LIBGCJ_BC_TRUE@LIBGCJ_BC_FLAGS = 
 @BUILD_LIBGCJ_REDUCED_REFLECTION_FALSE@LIBGCJ_REDUCED_REFLECTION_FLAGS = 
@@ -1010,7 +1038,7 @@ AM_CPPFLAGS = -I$(top_srcdir) \
 
 BOOTCLASSPATH = $(srcdir)/classpath/lib
 libgij_la_SOURCES = gij.cc
-libgij_la_DEPENDENCIES = libgcj.la libgcj.spec $(am__append_11)
+libgij_la_DEPENDENCIES = libgcj.la libgcj.spec $(am__append_10)
 libgij_la_LIBADD = -L$(here)/.libs libgcj.la
 libgij_la_LDFLAGS = -rpath $(toolexeclibdir) $(LIBJAVA_LDFLAGS_NOUNDEF) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
@@ -1020,9 +1048,9 @@ libgij_la_LINK = $(CXXLINK) $(libgij_la_LDFLAGS)
 @INTERPRETER_TRUE@libgcj_interpret_source_files = jvmti.cc interpret.cc
 libgcj_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc link.cc \
 	defineclass.cc verify.cc $(libgcj_interpret_source_files) \
-	$(nat_source_files) $(am__append_12) $(am__append_13) \
-	$(am__append_14) $(am__append_15) $(am__append_16) \
-	$(am__append_17) $(am__append_18) $(am__append_19)
+	$(nat_source_files) $(am__append_11) $(am__append_12) \
+	$(am__append_13) $(am__append_14) $(am__append_15) \
+	$(am__append_16) $(am__append_17) $(am__append_18)
 nat_files = $(nat_source_files:.cc=.lo)
 xlib_nat_files = $(xlib_nat_source_files:.cc=.lo)
 
@@ -1041,20 +1069,24 @@ libgcj_la_LIBADD = \
 	$(libgcj_la_LIBADD_SUBOBJECTS) \
 	$(LIBFFI) $(ZLIBS) $(GCLIBS)
 
-libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar java/lang/Object.lo \
-	java/lang/Class.lo java/process-$(PLATFORM).lo \
-	$(ALL_PACKAGE_SOURCE_FILES_LO) $(LIBLTDL) $(libgcj_la_LIBADD) \
-	$(LIBJAVA_CORE_EXTRA) $(am__append_20)
-libgcj_la_LINK = $(LIBLINK) $(libgcj_la_LDFLAGS)
+libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar \
+	java/lang/Object.lo \
+	java/lang/Class.lo \
+	java/process-$(PLATFORM).lo \
+	$(ALL_PACKAGE_SOURCE_FILES_LO) \
+	$(LIBLTDL) $(libgcj_la_LIBADD) \
+	$(LIBJAVA_CORE_EXTRA) \
+	$(libgcj_la_version_dep)
+
+libgcj_la_LINK = $(LIBLINK) $(libgcj_la_LDFLAGS) $(libgcj_la_version_arg)
 EXTRA_libgcj_la_SOURCES = java/lang/Object.java
 @BUILD_SUBLIBS_TRUE@DLL_VERSION = `expr \`grep -v '^\#' $(srcdir)/libtool-version | sed -e 's/\(.*\):\(.*\):.*/\1 + \2/'\``
 @BUILD_SUBLIBS_TRUE@libgcj_noncore_la_SOURCES = 
 @BUILD_SUBLIBS_TRUE@libgcj_noncore_la_LDFLAGS = $(libgcj_la_LDFLAGS)
 @BUILD_SUBLIBS_TRUE@libgcj_noncore_la_LIBADD = $(libgcj_noncore_la_LIBADD_SUBOBJECTS) libgcj.la
-@BUILD_SUBLIBS_TRUE@libgcj_noncore_la_DEPENDENCIES =  \
-@BUILD_SUBLIBS_TRUE@	libgcj-$(gcc_version).jar $(LIBLTDL) \
-@BUILD_SUBLIBS_TRUE@	$(libgcj_noncore_la_LIBADD) libgcj.la \
-@BUILD_SUBLIBS_TRUE@	$(am__append_21)
+@BUILD_SUBLIBS_TRUE@libgcj_noncore_la_DEPENDENCIES = libgcj-$(gcc_version).jar $(LIBLTDL) \
+@BUILD_SUBLIBS_TRUE@		$(libgcj_noncore_la_LIBADD) libgcj.la $(libgcj_la_version_dep)
+
 @BUILD_SUBLIBS_TRUE@libgcj_noncore_la_LINK = $(libgcj_la_LINK)
 
 # We compile libgcj_tools with -findirect-dispatch so that they can
@@ -1069,13 +1101,16 @@ libgcj_tools_la_GCJFLAGS = $(AM_GCJFLAGS) -findirect-dispatch \
 
 libgcj_tools_la_LDFLAGS = -rpath $(toolexeclibdir) \
  -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
- $(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) $(LIBJAVA_LDFLAGS_NOUNDEF)
+ $(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) $(LIBJAVA_LDFLAGS_NOUNDEF) -lm
 
-libgcj_tools_la_LIBADD = libgcj.la -lm
-libgcj_tools_la_DEPENDENCIES = libgcj.la libgcj.spec $(am__append_22)
-libgcj_tools_la_LINK = $(LIBLINK) $(libgcj_tools_la_LDFLAGS)
+libgcj_tools_la_LIBADD = libgcj.la
+libgcj_tools_la_DEPENDENCIES = libgcj.la libgcj.spec \
+	$(libgcj_tools_la_version_dep) $(am__append_19)
+libgcj_tools_la_LINK = $(LIBLINK) $(libgcj_tools_la_LDFLAGS) \
+ $(libgcj_tools_la_version_arg)
+
 libjvm_la_SOURCES = jni-libjvm.cc
-libjvm_la_DEPENDENCIES = libgcj.la libgcj.spec $(am__append_23)
+libjvm_la_DEPENDENCIES = libgcj.la libgcj.spec $(am__append_20)
 libjvm_la_LIBADD = -L$(here)/.libs libgcj.la
 libjvm_la_LDFLAGS = -avoid-version $(LIBGCJ_LD_SYMBOLIC) \
  $(LIBJAVA_LDFLAGS_NOUNDEF)
@@ -1084,7 +1119,8 @@ libjvm_la_LINK = $(CXXLINK) $(libjvm_la_LDFLAGS)
 lib_gnu_awt_xlib_la_SOURCES = $(xlib_nat_source_files)
 lib_gnu_awt_xlib_la_LIBADD = gnu/awt/xlib.lo gnu/gcj/xlib.lo
 lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-$(gcc_version).jar libgcj.la \
-	libgcj.spec $(lib_gnu_awt_xlib_la_LIBADD) $(am__append_24)
+	libgcj.spec $(lib_gnu_awt_xlib_la_version_dep) \
+	$(lib_gnu_awt_xlib_la_LIBADD) $(am__append_21)
 lib_gnu_awt_xlib_la_CPPFLAGS = \
 	$(AM_CPPFLAGS) \
 	-I../libstdc++-v3/include \
@@ -1096,13 +1132,17 @@ lib_gnu_awt_xlib_la_LDFLAGS = ../libstdc++-v3/src/libstdc++.la \
         -rpath $(toolexeclibdir) $(LIBJAVA_LDFLAGS_NOUNDEF) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
-lib_gnu_awt_xlib_la_LINK = $(LIBLINK) $(lib_gnu_awt_xlib_la_LDFLAGS)
+lib_gnu_awt_xlib_la_LINK = $(LIBLINK) $(lib_gnu_awt_xlib_la_LDFLAGS) \
+	$(lib_gnu_awt_xlib_la_version_arg)
+
 libgcj_bc_la_SOURCES = libgcj_bc.c
 libgcj_bc_la_LDFLAGS = -rpath $(toolexeclibdir) -no-static -version-info 1:0:0 \
 	$(LIBGCJ_LD_SYMBOLIC_FUNCTIONS) $(LIBJAVA_LDFLAGS_NOUNDEF)
 
-libgcj_bc_la_DEPENDENCIES = libgcj.la
-libgcj_bc_la_LINK = $(LIBLINK) $(libgcj_bc_la_LDFLAGS)
+libgcj_bc_la_DEPENDENCIES = libgcj.la $(libgcj_bc_la_version_dep)
+libgcj_bc_la_LINK = $(LIBLINK) $(libgcj_bc_la_LDFLAGS) \
+	$(libgcj_bc_la_version_arg)
+
 libgcj_bc_dummy_LINK = $(CC) -L$(here)/.libs $(CFLAGS) $(LDFLAGS) -shared \
 	-fPIC -nostdlib
 
@@ -8362,7 +8402,7 @@ jv_convert_LDFLAGS = --main=gnu.gcj.convert.Convert \
 
 jv_convert_LINK = $(GCJLINK) $(jv_convert_LDFLAGS)
 jv_convert_LDADD = -L$(here)/.libs libgcj.la
-jv_convert_DEPENDENCIES = libgcj.la libgcj.spec $(am__append_26)
+jv_convert_DEPENDENCIES = libgcj.la libgcj.spec $(am__append_23)
 gcj_dbtool_SOURCES = \
 gnu/gcj/tools/gcj_dbtool/natMain.cc
 
@@ -8372,7 +8412,7 @@ gcj_dbtool_LDFLAGS = --main=gnu.gcj.tools.gcj_dbtool.Main \
 gcj_dbtool_LINK = $(GCJLINK) $(gcj_dbtool_LDFLAGS)
 gcj_dbtool_LDADD = gnu/gcj/tools/gcj_dbtool.lo -L$(here)/.libs libgcj.la
 gcj_dbtool_DEPENDENCIES = gnu/gcj/tools/gcj_dbtool.lo libgcj.la \
-	libgcj.spec $(am__append_27)
+	libgcj.spec $(am__append_24)
 gc_analyze_SOURCES = 
 gc_analyze_LDFLAGS = --main=gnu.gcj.tools.gc_analyze.MemoryAnalyze \
         -rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
@@ -8380,7 +8420,7 @@ gc_analyze_LDFLAGS = --main=gnu.gcj.tools.gc_analyze.MemoryAnalyze \
 gc_analyze_LINK = $(GCJLINK) $(gc_analyze_LDFLAGS)
 gc_analyze_LDADD = -L$(here)/.libs libgcj-tools.la libgcj.la
 gc_analyze_DEPENDENCIES = libgcj-tools.la libgcj.la libgcj.spec \
-	$(am__append_28)
+	$(am__append_25)
 gij_SOURCES = 
 gij_LDFLAGS = -rpath $(dbexecdir) -rpath $(toolexeclibdir) \
 	-shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
@@ -8399,10 +8439,10 @@ ECJX_BASE_FLAGS = -findirect-dispatch \
 @NATIVE_FALSE@ecjx_LDFLAGS = $(ECJX_BASE_FLAGS) $(ECJ_BUILD_JAR)
 @NATIVE_FALSE@ecjx_LDADD = 
 @NATIVE_TRUE@ecjx_LDADD = -L$(here)/.libs $(extra_ldflags) \
-@NATIVE_TRUE@	$(am__append_31)
+@NATIVE_TRUE@	$(am__append_28)
 @NATIVE_FALSE@ecjx_DEPENDENCIES = 
 @NATIVE_TRUE@ecjx_DEPENDENCIES = libgcj.la libgcj.spec \
-@NATIVE_TRUE@	$(am__append_29) $(am__append_30)
+@NATIVE_TRUE@	$(am__append_26) $(am__append_27)
 gappletviewer_SOURCES = 
 gappletviewer_LDFLAGS = --main=gnu.classpath.tools.appletviewer.Main \
 	-rpath $(toolexeclibdir) -shared-libgcc $(THREADLDFLAGS) $(extra_ldflags)
@@ -8619,7 +8659,7 @@ gnu/gcj/xlib/natXImage.cc \
 gnu/gcj/xlib/natXUnmapEvent.cc
 
 sourcesdir = $(jardir)
-headers_to_make = $(nat_headers) $(am__append_32)
+headers_to_make = $(nat_headers) $(am__append_29)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -12680,6 +12720,21 @@ distclean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=distclean multi-clean
 maintainer-clean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean
+
+# This must be at the end of the Makefile, otherwise .SECONDEXPANSION
+# causes expansion of filenames with $ in their names, which breaks the build.
+# .SECONDEXPANSION is necessary to allow the use of automatic variables ($@
+# in this case) in the requisites of pattern rules.
+@ANONVERSCRIPT_SUN_TRUE@@ANONVERSCRIPT_TRUE@.SECONDEXPANSION:
+
+@ANONVERSCRIPT_SUN_TRUE@@ANONVERSCRIPT_TRUE@%.ver-sun : $(srcdir)/libgcj.ver \
+@ANONVERSCRIPT_SUN_TRUE@@ANONVERSCRIPT_TRUE@		$(top_srcdir)/../contrib/make_sunver.pl \
+@ANONVERSCRIPT_SUN_TRUE@@ANONVERSCRIPT_TRUE@		$$($$(basename $$@)_la_OBJECTS) $$($$(basename $$@)_la_LIBADD)
+@ANONVERSCRIPT_SUN_TRUE@@ANONVERSCRIPT_TRUE@	perl $(top_srcdir)/../contrib/make_sunver.pl \
+@ANONVERSCRIPT_SUN_TRUE@@ANONVERSCRIPT_TRUE@	  $(srcdir)/libgcj.ver \
+@ANONVERSCRIPT_SUN_TRUE@@ANONVERSCRIPT_TRUE@	 `echo $($(basename $@)_la_OBJECTS) $($(basename $@)_la_LIBADD) | \
+@ANONVERSCRIPT_SUN_TRUE@@ANONVERSCRIPT_TRUE@	    sed 's,\([^/ 	]*\)\.l\([ao]\),.libs/\1.\2,g'` \
+@ANONVERSCRIPT_SUN_TRUE@@ANONVERSCRIPT_TRUE@	 > $@ || (rm -f $@ ; exit 1)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

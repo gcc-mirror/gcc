@@ -1767,13 +1767,28 @@ AC_CACHE_CHECK([whether ld supports anonymous version scripts],
   [libjava_cv_anon_version_script],
   [save_CFLAGS="$CFLAGS"; save_LDFLAGS="$LDFLAGS"
    libjava_cv_anon_version_script=no
-   CFLAGS="$CFLAGS -fPIC"; LDFLAGS="$LDFLAGS -shared -Wl,--version-script,conftest.map"
+   CFLAGS="$CFLAGS -fPIC";
+   LDFLAGS="$LDFLAGS -shared -Wl,--version-script,conftest.map"
    echo '{ global: globalsymb*; local: *; };' > conftest.map
    AC_TRY_LINK(void globalsymbol (void) {} void localsymbol (void) {},,
-	       [libjava_cv_anon_version_script=yes], [])
+	       [libjava_cv_anon_version_script=gnu], [])
+   if test x$libjava_cv_anon_version_script = xno; then
+     case "$target_os" in
+       solaris2*)
+         LDFLAGS="$save_LDFLAGS"
+         LDFLAGS="$LDFLAGS -shared -Wl,-M,conftest.map"
+         # Sun ld doesn't understand wildcards here.
+         echo '{ global: globalsymbol; local: *; };' > conftest.map
+         AC_TRY_LINK(void globalsymbol (void) {} void localsymbol (void) {},,
+	 	     [libjava_cv_anon_version_script=sun], [])
+         ;;
+     esac
+   fi
    CFLAGS="$save_CFLAGS"; LDFLAGS="$save_LDFLAGS"
   ])
-AM_CONDITIONAL(ANONVERSCRIPT, test "$libjava_cv_anon_version_script" = yes)
+AM_CONDITIONAL(ANONVERSCRIPT, test "$libjava_cv_anon_version_script" != no)
+AM_CONDITIONAL(ANONVERSCRIPT_GNU, test "$libjava_cv_anon_version_script" = gnu)
+AM_CONDITIONAL(ANONVERSCRIPT_SUN, test "$libjava_cv_anon_version_script" = sun)
 
 # Check if linker supports static linking on a per library basis
 LD_START_STATIC_SPEC=

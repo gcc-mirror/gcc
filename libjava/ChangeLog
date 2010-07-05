@@ -1,3 +1,39 @@
+2010-07-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (ANONVERSCRIPT): Handle sun style.
+	Define ANONVERSCRIPT_GNU, ANONVERSCRIPT_SUN automake conditionals.
+	* configure: Regenerate.
+
+	* Makefile.am [ANONVERSCRIPT]: Protect GNU section with
+	ANONVERSCRIPT_GNU.
+	Introduce per-library $(lib)_la_version_arg, $(lib)_la_version_dep
+	variables.
+	[ANONVERSCRIPT_GNU] (version_arg): Default ld arg for version map.
+	(version_dep): Likewise for dependency.
+	Use them to set the per-library variables.
+	[!ANONVERSCRIPT]: Provide them vor the unversioned case.
+	[ANONVERSCRIPT_SUN]: Handle Sun symbol versioning.
+	(libgcj_la_DEPENDENCIES): Unconditionally use
+	$(libgcj_la_version_dep).
+	(libgcj_la_LINK): Add $(libgcj_la_version_arg).
+	(libgcj_noncore_la_DEPENDENCIES): Unconditionally use
+	$(libgcj_la_version_dep).
+	(libgcj_tools_la_LIBADD): Move -lm ...
+	(libgcj_tools_la_LDFLAGS): ... here.
+	(libgcj_tools_la_DEPENDENCIES): Add
+	$(libgcj_tools_la_version_dep).
+	(libgcj_tools_la_LINK): Add $(libgcj_tools_la_version_arg).
+	(lib_gnu_awt_xlib_la_DEPENDENCIES): Add
+	$(lib_gnu_awt_xlib_la_version_dep).
+	(lib_gnu_awt_xlib_la_LINK): Add
+	$(lib_gnu_awt_xlib_la_version_arg).
+	(libgcj_bc_la_DEPENDENCIES): Add $(libgcj_bc_la_version_dep).
+	(libgcj_bc_la_LINK): $(libgcj_bc_la_version_arg).
+	[ANONVERSCRIPT && ANONVERSCRIPT_SUN] (%.ver-sun): New pattern rule.
+	* Makefile.in: Regenerate.
+
+	* libgcj.ver: Reformat.
+
 2010-06-10  Peter O'Gorman  <peter@pogma.com>
 
 	* configure.ac: Set SYSTEMSPEC so that -allow_stack_execute is not
