@@ -185,9 +185,6 @@
 ;; Opaque structure types wider than TImode.
 (define_mode_iterator VSTRUCT [EI OI CI XI])
 
-;; Number of instructions needed to load/store struct elements. FIXME!
-(define_mode_attr V_slen [(EI "2") (OI "2") (CI "3") (XI "4")])
-
 ;; Opaque structure types used in table lookups (except vtbl1/vtbx1).
 (define_mode_iterator VTAB [TI EI OI])
 
@@ -587,7 +584,7 @@
     }
 }
   [(set_attr "neon_type" "neon_int_1,neon_stm_2,neon_ldm_2")
-   (set_attr "length" "<V_slen>,<V_slen>,<V_slen>")])
+   (set (attr "length") (symbol_ref "arm_attr_length_move_neon (insn)"))])
 
 (define_split
   [(set (match_operand:EI 0 "s_register_operand" "")

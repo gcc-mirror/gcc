@@ -12498,6 +12498,56 @@ output_move_neon (rtx *operands)
   return "";
 }
 
+/* Compute and return the length of neon_mov<mode>, where <mode> is
+   one of VSTRUCT modes: EI, OI, CI or XI.  */
+int
+arm_attr_length_move_neon (rtx insn)
+{
+  rtx reg, mem, addr;
+  int load;
+  enum machine_mode mode;
+
+  extract_insn_cached (insn);
+
+  if (REG_P (recog_data.operand[0]) && REG_P (recog_data.operand[1]))
+    {
+      mode = GET_MODE (recog_data.operand[0]);
+      switch (mode)
+	{
+	case EImode:
+	case OImode:
+	  return 8;
+	case CImode:
+	  return 12;
+	case XImode:
+	  return 16;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
+  load = REG_P (recog_data.operand[0]);
+  reg = recog_data.operand[!load];
+  mem = recog_data.operand[load];
+
+  gcc_assert (MEM_P (mem));
+
+  mode = GET_MODE (reg);
+  addr = XEXP (mem, 0);
+
+  /* Strip off const from addresses like (const (plus (...))).  */
+  if (GET_CODE (addr) == CONST && GET_CODE (XEXP (addr, 0)) == PLUS)
+    addr = XEXP (addr, 0);
+
+  if (GET_CODE (addr) == LABEL_REF || GET_CODE (addr) == PLUS)
+    {
+      int insns = HARD_REGNO_NREGS (REGNO (reg), mode) / 2;
+      return insns * 4;
+    }
+  else
+    return 4;
+}
+
 /* Output an ADD r, s, #n where n may be too big for one instruction.
    If adding zero to one register, output nothing.  */
 const char *

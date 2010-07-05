@@ -130,6 +130,7 @@ extern const char *output_move_double (rtx *);
 extern const char *output_move_quad (rtx *);
 extern const char *output_move_vfp (rtx *operands);
 extern const char *output_move_neon (rtx *operands);
+extern int arm_attr_length_move_neon (rtx);
 extern const char *output_add_immediate (rtx *);
 extern const char *arithmetic_instr (rtx, int);
 extern void output_ascii_pseudo_op (FILE *, const unsigned char *, int);

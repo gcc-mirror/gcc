@@ -1,3 +1,16 @@
+2010-07-05  Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR bootstrap/44820
+	* config/arm/arm.c (arm_attr_length_move_neon): Delete regno.
+
+2010-07-05  Jie Zhang  <jie@codesourcery.com>
+
+	* config/arm/arm.c (arm_attr_length_move_neon): New.
+	* config/arm/arm-protos.h (arm_attr_length_move_neon): Declare.
+	* config/arm/neon.md (define_mode_attr V_slen): Remove.
+	(neon_mov<mode> for VSTRUCT): Use arm_attr_length_move_neon
+	to compute length attribute.
+
 2010-07-05  Jie Zhang  <jie@codesourcery.com>
 
 	* config/arm/vfp.md (*push_multi_vfp): Use vfp_register_operand
