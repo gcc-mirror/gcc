@@ -1,3 +1,8 @@
+2010-07-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44784
+	* gcc.c-torture/compile/pr44784.c: New testcase.
+
 2010-07-05  Ira Rosen  <irar@il.ibm.com>
 
 	* gcc.dg/vect/costmodel/i386/costmodel-fast-math-vect-pr29925.c:
