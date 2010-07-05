@@ -1,3 +1,8 @@
+2010-07-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.h (build_call_list): Remove.
+	* tree.c (build_call_list): Remove.
+
 2010-07-05  Richard Guenther  <rguenther@suse.de>
 
 	* double-int.h (double_int_sub): Declare.
