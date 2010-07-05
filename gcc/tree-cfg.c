@@ -2850,8 +2850,7 @@ verify_types_in_gimple_min_lval (tree expr)
   if (is_gimple_id (expr))
     return false;
 
-  if (TREE_CODE (expr) != ALIGN_INDIRECT_REF
-      && TREE_CODE (expr) != MISALIGNED_INDIRECT_REF
+  if (TREE_CODE (expr) != MISALIGNED_INDIRECT_REF
       && TREE_CODE (expr) != TARGET_MEM_REF
       && TREE_CODE (expr) != MEM_REF)
     {
@@ -3702,7 +3701,6 @@ verify_gimple_assign_single (gimple stmt)
 
     case COMPONENT_REF:
     case BIT_FIELD_REF:
-    case ALIGN_INDIRECT_REF:
     case MISALIGNED_INDIRECT_REF:
     case ARRAY_REF:
     case ARRAY_RANGE_REF:

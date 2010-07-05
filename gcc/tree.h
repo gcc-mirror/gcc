@@ -118,7 +118,6 @@ extern const enum tree_code_class tree_code_type[];
 
 #define INDIRECT_REF_P(CODE)\
   (TREE_CODE (CODE) == INDIRECT_REF \
-   || TREE_CODE (CODE) == ALIGN_INDIRECT_REF \
    || TREE_CODE (CODE) == MISALIGNED_INDIRECT_REF)
 
 /* Nonzero if CODE represents a reference.  */
@@ -1251,7 +1250,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    accessing the memory pointed to won't generate a trap.  However,
    this only applies to an object when used appropriately: it doesn't
    mean that writing a READONLY mem won't trap. Similarly for
-   ALIGN_INDIRECT_REF and MISALIGNED_INDIRECT_REF.
+   MISALIGNED_INDIRECT_REF.
 
    In ARRAY_REF and ARRAY_RANGE_REF means that we know that the index
    (or slice of the array) always belongs to the range of the array.

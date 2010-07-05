@@ -2239,7 +2239,6 @@ expand_debug_expr (tree exp)
   enum machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
   int unsignedp = TYPE_UNSIGNED (TREE_TYPE (exp));
   addr_space_t as;
-  enum machine_mode address_mode;
 
   switch (TREE_CODE_CLASS (TREE_CODE (exp)))
     {
@@ -2444,28 +2443,15 @@ expand_debug_expr (tree exp)
 	return NULL;
       /* Fallthru.  */
     case INDIRECT_REF:
-    case ALIGN_INDIRECT_REF:
     case MISALIGNED_INDIRECT_REF:
       op0 = expand_debug_expr (TREE_OPERAND (exp, 0));
       if (!op0)
 	return NULL;
 
       if (POINTER_TYPE_P (TREE_TYPE (exp)))
-	{
-	  as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp)));
-	  address_mode = targetm.addr_space.address_mode (as);
-	}
+	as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp)));
       else
-	{
-	  as = ADDR_SPACE_GENERIC;
-	  address_mode = Pmode;
-	}
-
-      if (TREE_CODE (exp) == ALIGN_INDIRECT_REF)
-	{
-	  int align = TYPE_ALIGN_UNIT (TREE_TYPE (exp));
-	  op0 = gen_rtx_AND (address_mode, op0, GEN_INT (-align));
-	}
+	as = ADDR_SPACE_GENERIC;
 
       op0 = gen_rtx_MEM (mode, op0);
 

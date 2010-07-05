@@ -6769,7 +6769,6 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  recalculate_side_effects (*expr_p);
 	  break;
 
-	case ALIGN_INDIRECT_REF:
 	case MISALIGNED_INDIRECT_REF:
 	  /* We can only reach this through re-gimplification from
 	     tree optimizers.  */

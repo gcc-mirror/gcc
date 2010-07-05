@@ -3565,7 +3565,15 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
       vec_dest = vect_create_destination_var (scalar_dest, vectype);
       ptr = vect_create_data_ref_ptr (stmt, loop_for_initial_load, NULL_TREE,
 				      &init_addr, &inc, true, &inv_p);
-      data_ref = build1 (ALIGN_INDIRECT_REF, vectype, ptr);
+      new_stmt = gimple_build_assign_with_ops
+		   (BIT_AND_EXPR, NULL_TREE, ptr,
+		    build_int_cst (TREE_TYPE (ptr),
+				   -(HOST_WIDE_INT)TYPE_ALIGN_UNIT (vectype)));
+      new_temp = make_ssa_name (SSA_NAME_VAR (ptr), new_stmt);
+      gimple_assign_set_lhs (new_stmt, new_temp);
+      new_bb = gsi_insert_on_edge_immediate (pe, new_stmt);
+      gcc_assert (!new_bb);
+      data_ref = build_simple_mem_ref (new_temp);
       new_stmt = gimple_build_assign (vec_dest, data_ref);
       new_temp = make_ssa_name (vec_dest, new_stmt);
       gimple_assign_set_lhs (new_stmt, new_temp);

@@ -1611,7 +1611,6 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
   /* We can set the alignment from the type if we are making an object,
      this is an INDIRECT_REF, or if TYPE_ALIGN_OK.  */
   if (objectp || TREE_CODE (t) == INDIRECT_REF
-      || TREE_CODE (t) == ALIGN_INDIRECT_REF
       || TYPE_ALIGN_OK (type))
     align = MAX (align, TYPE_ALIGN (type));
   else if (TREE_CODE (t) == MEM_REF)
@@ -1840,14 +1839,6 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
       offset = plus_constant (offset, -(apply_bitpos / BITS_PER_UNIT));
       if (size)
 	size = plus_constant (size, apply_bitpos / BITS_PER_UNIT);
-    }
-
-  if (TREE_CODE (t) == ALIGN_INDIRECT_REF)
-    {
-      /* Force EXPR and OFFSET to NULL, since we don't know exactly what
-	 we're overlapping.  */
-      offset = NULL;
-      expr = NULL;
     }
 
   /* Now set the attributes we computed above.  */

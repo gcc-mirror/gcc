@@ -1586,7 +1586,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case ADDR_EXPR:
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
-    case ALIGN_INDIRECT_REF:
     case MISALIGNED_INDIRECT_REF:
     case INDIRECT_REF:
       if (TREE_CODE (node) == ADDR_EXPR
@@ -2549,7 +2548,6 @@ op_code_prio (enum tree_code code)
     case PREINCREMENT_EXPR:
     case PREDECREMENT_EXPR:
     case NEGATE_EXPR:
-    case ALIGN_INDIRECT_REF:
     case MISALIGNED_INDIRECT_REF:
     case INDIRECT_REF:
     case ADDR_EXPR:
@@ -2719,9 +2717,6 @@ op_symbol_code (enum tree_code code)
     case MULT_EXPR:
     case INDIRECT_REF:
       return "*";
-
-    case ALIGN_INDIRECT_REF:
-      return "A*";
 
     case MISALIGNED_INDIRECT_REF:
       return "M*";
