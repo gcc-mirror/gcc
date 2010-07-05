@@ -792,6 +792,17 @@ double_int_add (double_int a, double_int b)
   return ret;
 }
 
+/* Returns A - B.  */
+
+double_int
+double_int_sub (double_int a, double_int b)
+{
+  double_int ret;
+  neg_double (b.low, b.high, &b.low, &b.high);
+  add_double (a.low, a.high, b.low, b.high, &ret.low, &ret.high);
+  return ret;
+}
+
 /* Returns -A.  */
 
 double_int

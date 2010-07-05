@@ -133,6 +133,7 @@ double_int_fits_in_uhwi_p (double_int cst)
 
 double_int double_int_mul (double_int, double_int);
 double_int double_int_add (double_int, double_int);
+double_int double_int_sub (double_int, double_int);
 double_int double_int_neg (double_int);
 
 /* You must ensure that double_int_ext is called on the operands
