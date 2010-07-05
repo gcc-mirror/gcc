@@ -1,3 +1,9 @@
+2010-07-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_gen_allocate_stack_worker): New.
+	(override_options): Initialize it.
+	(ix86_expand_prologue): Use it.
+
 2010-07-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-nrv.c (tree_nrv): Set DECL_VALUE_EXPR on found to result.
