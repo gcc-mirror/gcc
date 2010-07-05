@@ -3754,6 +3754,16 @@ cp_parser_primary_expression (cp_parser *parser,
 	case RID_AT_SELECTOR:
 	  return cp_parser_objc_expression (parser);
 
+	case RID_TEMPLATE:
+	  if (parser->in_function_body
+	      && (cp_lexer_peek_nth_token (parser->lexer, 2)->type
+	      	  == CPP_LESS))
+	    {
+	      error_at (token->location,
+			"a template declaration cannot appear at block scope");
+	      cp_parser_skip_to_end_of_block_or_statement (parser);
+	      return error_mark_node;
+	    }
 	default:
 	  cp_parser_error (parser, "expected primary-expression");
 	  return error_mark_node;
