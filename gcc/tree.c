@@ -1049,14 +1049,9 @@ build_int_cst (tree type, HOST_WIDE_INT low)
 tree
 build_int_cst_type (tree type, HOST_WIDE_INT low)
 {
-  unsigned HOST_WIDE_INT low1;
-  HOST_WIDE_INT hi;
-
   gcc_assert (type);
 
-  fit_double_type (low, low < 0 ? -1 : 0, &low1, &hi, type);
-
-  return build_int_cst_wide (type, low1, hi);
+  return double_int_to_tree (type, shwi_to_double_int (low));
 }
 
 /* Constructs tree in type TYPE from with value given by CST.  Signedness
@@ -7900,10 +7895,10 @@ get_narrower (tree op, int *unsignedp_ptr)
   return win;
 }
 
-/* Nonzero if integer constant C has a value that is permissible
+/* Returns true if integer constant C has a value that is permissible
    for type TYPE (an INTEGER_TYPE).  */
 
-int
+bool
 int_fits_type_p (const_tree c, const_tree type)
 {
   tree type_low_bound, type_high_bound;
@@ -7932,7 +7927,7 @@ retry:
   /* If at least one bound of the type is a constant integer, we can check
      ourselves and maybe make a decision. If no such decision is possible, but
      this type is a subtype, try checking against that.  Otherwise, use
-     fit_double_type, which checks against the precision.
+     double_int_fits_to_tree_p, which checks against the precision.
 
      Compute the status for each possibly constant bound, and return if we see
      one does not match. Use ok_for_xxx_bound for this purpose, assigning -1
@@ -7953,12 +7948,12 @@ retry:
 	  int t_neg = (unsc && double_int_negative_p (dd));
 
 	  if (c_neg && !t_neg)
-	    return 0;
+	    return false;
 	  if ((c_neg || !t_neg) && double_int_ucmp (dc, dd) < 0)
-	    return 0;
+	    return false;
 	}
       else if (double_int_cmp (dc, dd, unsc) < 0)
-	return 0;
+	return false;
       ok_for_low_bound = true;
     }
   else
@@ -7978,12 +7973,12 @@ retry:
 	  int t_neg = (unsc && double_int_negative_p (dd));
 
 	  if (t_neg && !c_neg)
-	    return 0;
+	    return false;
 	  if ((t_neg || !c_neg) && double_int_ucmp (dc, dd) > 0)
-	    return 0;
+	    return false;
 	}
       else if (double_int_cmp (dc, dd, unsc) > 0)
-	return 0;
+	return false;
       ok_for_high_bound = true;
     }
   else
@@ -7991,17 +7986,17 @@ retry:
 
   /* If the constant fits both bounds, the result is known.  */
   if (ok_for_low_bound && ok_for_high_bound)
-    return 1;
+    return true;
 
   /* Perform some generic filtering which may allow making a decision
      even if the bounds are not constant.  First, negative integers
      never fit in unsigned types, */
   if (TYPE_UNSIGNED (type) && !unsc && double_int_negative_p (dc))
-    return 0;
+    return false;
 
   /* Second, narrower types always fit in wider ones.  */
   if (TYPE_PRECISION (type) > TYPE_PRECISION (TREE_TYPE (c)))
-    return 1;
+    return true;
 
   /* Third, unsigned integers with top bit set never fit signed types.  */
   if (! TYPE_UNSIGNED (type) && unsc)
@@ -8010,11 +8005,11 @@ retry:
       if (prec < HOST_BITS_PER_WIDE_INT)
 	{
 	  if (((((unsigned HOST_WIDE_INT) 1) << prec) & dc.low) != 0)
-	    return 0;
+	    return false;
         }
       else if (((((unsigned HOST_WIDE_INT) 1)
 		 << (prec - HOST_BITS_PER_WIDE_INT)) & dc.high) != 0)
-	return 0;
+	return false;
     }
 
   /* If we haven't been able to decide at this point, there nothing more we
@@ -8028,8 +8023,8 @@ retry:
       goto retry;
     }
 
-  /* Or to fit_double_type, if nothing else.  */
-  return !fit_double_type (dc.low, dc.high, &dc.low, &dc.high, type);
+  /* Or to double_int_fits_to_tree_p, if nothing else.  */
+  return double_int_fits_to_tree_p (type, dc);
 }
 
 /* Stores bounds of an integer TYPE in MIN and MAX.  If TYPE has non-constant
