@@ -319,13 +319,15 @@ referenced_from_other_partition_p (struct ipa_ref_list *list, cgraph_node_set se
     {
       if (ref->refering_type == IPA_REF_CGRAPH)
 	{
-	  if (!cgraph_node_in_set_p (ipa_ref_refering_node (ref), set))
+	  if (ipa_ref_refering_node (ref)->in_other_partition
+	      || !cgraph_node_in_set_p (ipa_ref_refering_node (ref), set))
 	    return true;
 	}
       else
 	{
-	  if (!varpool_node_in_set_p (ipa_ref_refering_varpool_node (ref),
-				      vset))
+	  if (ipa_ref_refering_varpool_node (ref)->in_other_partition
+	      || !varpool_node_in_set_p (ipa_ref_refering_varpool_node (ref),
+				         vset))
 	    return true;
 	}
     }
@@ -343,7 +345,8 @@ reachable_from_other_partition_p (struct cgraph_node *node, cgraph_node_set set)
   if (node->global.inlined_to)
     return false;
   for (e = node->callers; e; e = e->next_caller)
-    if (!cgraph_node_in_set_p (e->caller, set))
+    if (e->caller->in_other_partition
+	|| !cgraph_node_in_set_p (e->caller, set))
       return true;
   return false;
 }
@@ -503,6 +506,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->abstract_and_needed, 1);
   bp_pack_value (&bp, tag == LTO_cgraph_analyzed_node
 		 && !DECL_EXTERNAL (node->decl)
+		 && !DECL_COMDAT (node->decl)
 		 && (reachable_from_other_partition_p (node, set)
 		     || referenced_from_other_partition_p (&node->ref_list, set, vset)), 1);
   bp_pack_value (&bp, node->lowered, 1);
@@ -576,7 +580,8 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
   /* Constant pool initializers can be de-unified into individual ltrans units.
      FIXME: Alternatively at -Os we may want to avoid generating for them the local
      labels and share them across LTRANS partitions.  */
-  if (DECL_IN_CONSTANT_POOL (node->decl))
+  if (DECL_IN_CONSTANT_POOL (node->decl)
+      && !DECL_COMDAT (node->decl))
     {
       bp_pack_value (&bp, 0, 1);  /* used_from_other_parition.  */
       bp_pack_value (&bp, 0, 1);  /* in_other_partition.  */

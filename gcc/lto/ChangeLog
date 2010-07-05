@@ -1,3 +1,14 @@
+2010-07-05  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (add_cgraph_node_to_partition): Forward declare; walk also
+	nodes from same comdat group as well as all comdat functions referenced
+	here.
+	(add_varpool_node_to_partition, add_references_to_partition): New function.
+	(lto_1_1_map): Skip COMDAT fnctions/variables; use add_varpool_node_to_partition;
+	clear aux flags when done.
+	(lto_promote_cross_file_statics): Do not promote stuff that gets duplicated to
+	each ltrans.
+
 2010-07-04  Jan Hubicka  <jh@suse.cz>
 
         * lto.c (read_cgraph_and_symbols): Dump cgraph before merging.
