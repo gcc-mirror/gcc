@@ -1,3 +1,7 @@
+2010-07-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-nrv.c (tree_nrv): Set DECL_VALUE_EXPR on found to result.
+
 2010-07-05  Anatoly Sokolov  <aesok@post.ru>
 
 	* double-int.h (fit_double_type): Remove declaration.
@@ -34,7 +38,6 @@
 2010-07-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR middle-end/42505
-
 	* tree-ssa-loop-ivopts.c (determine_set_costs): Delete obsolete
 	comments about cost model.
 	(try_add_cand_for):  Add second strategy for choosing initial set

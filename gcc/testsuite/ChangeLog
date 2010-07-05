@@ -1,7 +1,10 @@
+2010-07-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/guality/nrv-1.c: New test.
+
 2010-07-05  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR middle-end/42505
-
 	* gcc.target/arm/pr42505.c: New test case.
 
 2010-07-05  Jakub Jelinek  <jakub@redhat.com>
