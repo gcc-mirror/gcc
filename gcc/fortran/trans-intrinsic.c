@@ -1570,7 +1570,7 @@ static void
 gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
 {
   gfc_symbol *sym;
-  tree append_args;
+  VEC(tree,gc) *append_args;
 
   gcc_assert (!se->ss || se->ss->expr == expr);
 
@@ -1583,7 +1583,7 @@ gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
 
   /* Calls to libgfortran_matmul need to be appended special arguments,
      to be able to call the BLAS ?gemm functions if required and possible.  */
-  append_args = NULL_TREE;
+  append_args = NULL;
   if (expr->value.function.isym->id == GFC_ISYM_MATMUL
       && sym->ts.type != BT_LOGICAL)
     {
@@ -1611,19 +1611,19 @@ gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
 		gemm_fndecl = gfor_fndecl_zgemm;
 	    }
 
-	  append_args = gfc_chainon_list (NULL_TREE, build_int_cst (cint, 1));
-	  append_args = gfc_chainon_list
-			  (append_args, build_int_cst
-					  (cint, gfc_option.blas_matmul_limit));
-	  append_args = gfc_chainon_list (append_args,
-					  gfc_build_addr_expr (NULL_TREE,
-							       gemm_fndecl));
+	  append_args = VEC_alloc (tree, gc, 3);
+	  VEC_quick_push (tree, append_args, build_int_cst (cint, 1));
+	  VEC_quick_push (tree, append_args,
+			  build_int_cst (cint, gfc_option.blas_matmul_limit));
+	  VEC_quick_push (tree, append_args,
+			  gfc_build_addr_expr (NULL_TREE, gemm_fndecl));
 	}
       else
 	{
-	  append_args = gfc_chainon_list (NULL_TREE, build_int_cst (cint, 0));
-	  append_args = gfc_chainon_list (append_args, build_int_cst (cint, 0));
-	  append_args = gfc_chainon_list (append_args, null_pointer_node);
+	  append_args = VEC_alloc (tree, gc, 3);
+	  VEC_quick_push (tree, append_args, build_int_cst (cint, 0));
+	  VEC_quick_push (tree, append_args, build_int_cst (cint, 0));
+	  VEC_quick_push (tree, append_args, null_pointer_node);
 	}
     }
 
@@ -3285,7 +3285,7 @@ conv_generic_with_optional_char_arg (gfc_se* se, gfc_expr* expr,
   unsigned cur_pos;
   gfc_actual_arglist* arg;
   gfc_symbol* sym;
-  tree append_args;
+  VEC(tree,gc) *append_args;
 
   /* Find the two arguments given as position.  */
   cur_pos = 0;
@@ -3309,13 +3309,14 @@ conv_generic_with_optional_char_arg (gfc_se* se, gfc_expr* expr,
 
   /* If we do have type CHARACTER and the optional argument is really absent,
      append a dummy 0 as string length.  */
-  append_args = NULL_TREE;
+  append_args = NULL;
   if (prim_arg->expr->ts.type == BT_CHARACTER && !opt_arg->expr)
     {
       tree dummy;
 
       dummy = build_int_cst (gfc_charlen_type_node, 0);
-      append_args = gfc_chainon_list (append_args, dummy);
+      append_args = VEC_alloc (tree, gc, 1);
+      VEC_quick_push (tree, append_args, dummy);
     }
 
   /* Build the call itself.  */

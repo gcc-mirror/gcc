@@ -373,7 +373,7 @@ gfc_trans_call (gfc_code * code, bool dependency_check,
       /* Translate the call.  */
       has_alternate_specifier
 	= gfc_conv_procedure_call (&se, code->resolved_sym, code->ext.actual,
-				  code->expr1, NULL_TREE);
+				  code->expr1, NULL);
 
       /* A subroutine without side-effect, by definition, does nothing!  */
       TREE_SIDE_EFFECTS (se.expr) = 1;
@@ -457,8 +457,7 @@ gfc_trans_call (gfc_code * code, bool dependency_check,
 
       /* Add the subroutine call to the block.  */
       gfc_conv_procedure_call (&loopse, code->resolved_sym,
-			       code->ext.actual, code->expr1,
-			       NULL_TREE);
+			       code->ext.actual, code->expr1, NULL);
 
       if (mask && count1)
 	{
