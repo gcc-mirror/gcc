@@ -1,6 +1,6 @@
 2010-07-05  Steven G. Kargl  <kargl@gcc.gnu.org>
 
-	fortran/44797
+	PR fortran/44797
 	* fortran/io.c (resolve_tag): Check EXIST tag is a default logical.
 
 2010-07-05  Paul Thomas  <pault@gcc.gnu.org>
