@@ -2041,8 +2041,8 @@ maybe_lvalue_p (const_tree x)
   case SSA_NAME:
 
   case COMPONENT_REF:
+  case MEM_REF:
   case INDIRECT_REF:
-  case ALIGN_INDIRECT_REF:
   case MISALIGNED_INDIRECT_REF:
   case ARRAY_REF:
   case ARRAY_RANGE_REF:
@@ -2586,7 +2586,6 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
       switch (TREE_CODE (arg0))
 	{
 	case INDIRECT_REF:
-	case ALIGN_INDIRECT_REF:
 	case MISALIGNED_INDIRECT_REF:
 	case REALPART_EXPR:
 	case IMAGPART_EXPR:
@@ -7596,7 +7595,6 @@ build_fold_addr_expr_with_type_loc (location_t loc, tree t, tree ptrtype)
   if (TREE_CODE (t) == WITH_SIZE_EXPR)
     t = TREE_OPERAND (t, 0);
 
-  /* Note: doesn't apply to ALIGN_INDIRECT_REF */
   if (TREE_CODE (t) == INDIRECT_REF
       || TREE_CODE (t) == MISALIGNED_INDIRECT_REF)
     {

@@ -3760,7 +3760,15 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 						dr_explicit_realign,
 						dataref_ptr, NULL);
 
-		data_ref = build1 (ALIGN_INDIRECT_REF, vectype, dataref_ptr);
+		new_stmt = gimple_build_assign_with_ops
+			     (BIT_AND_EXPR, NULL_TREE, dataref_ptr,
+			      build_int_cst
+			        (TREE_TYPE (dataref_ptr),
+				 -(HOST_WIDE_INT)TYPE_ALIGN_UNIT (vectype)));
+		ptr = make_ssa_name (SSA_NAME_VAR (dataref_ptr), new_stmt);
+		gimple_assign_set_lhs (new_stmt, ptr);
+		vect_finish_stmt_generation (stmt, new_stmt, gsi);
+		data_ref = build_simple_mem_ref (ptr);
 		vec_dest = vect_create_destination_var (scalar_dest, vectype);
 		new_stmt = gimple_build_assign (vec_dest, data_ref);
 		new_temp = make_ssa_name (vec_dest, new_stmt);
@@ -3773,11 +3781,27 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		bump = size_binop (MULT_EXPR, vs_minus_1,
 				   TYPE_SIZE_UNIT (scalar_type));
 		ptr = bump_vector_ptr (dataref_ptr, NULL, gsi, stmt, bump);
-	        data_ref = build1 (ALIGN_INDIRECT_REF, vectype, ptr);
+		new_stmt = gimple_build_assign_with_ops
+			     (BIT_AND_EXPR, NULL_TREE, ptr,
+			      build_int_cst
+			        (TREE_TYPE (ptr),
+				 -(HOST_WIDE_INT)TYPE_ALIGN_UNIT (vectype)));
+		ptr = make_ssa_name (SSA_NAME_VAR (dataref_ptr), new_stmt);
+		gimple_assign_set_lhs (new_stmt, ptr);
+		vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	        data_ref = build_simple_mem_ref (ptr);
 	        break;
 	      }
 	    case dr_explicit_realign_optimized:
-	      data_ref = build1 (ALIGN_INDIRECT_REF, vectype, dataref_ptr);
+	      new_stmt = gimple_build_assign_with_ops
+			   (BIT_AND_EXPR, NULL_TREE, dataref_ptr,
+			    build_int_cst
+			      (TREE_TYPE (dataref_ptr),
+			       -(HOST_WIDE_INT)TYPE_ALIGN_UNIT (vectype)));
+	      new_temp = make_ssa_name (SSA_NAME_VAR (dataref_ptr), new_stmt);
+	      gimple_assign_set_lhs (new_stmt, new_temp);
+	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	      data_ref = build_simple_mem_ref (new_temp);
 	      break;
 	    default:
 	      gcc_unreachable ();

@@ -600,10 +600,6 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 
       switch (temp.opcode)
 	{
-	case ALIGN_INDIRECT_REF:
-	  /* The only operand is the address, which gets its own
-	     vn_reference_op_s structure.  */
-	  break;
 	case MISALIGNED_INDIRECT_REF:
 	  temp.op0 = TREE_OPERAND (ref, 1);
 	  break;
@@ -789,11 +785,6 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	  return false;
 
 	/* Record the base objects.  */
-	case ALIGN_INDIRECT_REF:
-	  *op0_p = build1 (op->opcode, op->type, NULL_TREE);
-	  op0_p = &TREE_OPERAND (*op0_p, 0);
-	  break;
-
 	case MISALIGNED_INDIRECT_REF:
 	  *op0_p = build2 (MISALIGNED_INDIRECT_REF, op->type,
 			   NULL_TREE, op->op0);

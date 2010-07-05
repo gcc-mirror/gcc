@@ -1360,8 +1360,7 @@ idx_find_step (tree base, tree *idx, void *data)
   tree step, iv_base, iv_step, lbound, off;
   struct loop *loop = dta->ivopts_data->current_loop;
 
-  if (TREE_CODE (base) == MISALIGNED_INDIRECT_REF
-      || TREE_CODE (base) == ALIGN_INDIRECT_REF)
+  if (TREE_CODE (base) == MISALIGNED_INDIRECT_REF)
     return false;
 
   /* If base is a component ref, require that the offset of the reference
@@ -1673,7 +1672,6 @@ find_interesting_uses_address (struct ivopts_data *data, gimple stmt, tree *op_p
 	goto fail;
       step = ifs_ivopts_data.step;
 
-      gcc_assert (TREE_CODE (base) != ALIGN_INDIRECT_REF);
       gcc_assert (TREE_CODE (base) != MISALIGNED_INDIRECT_REF);
 
       /* Check that the base expression is addressable.  This needs

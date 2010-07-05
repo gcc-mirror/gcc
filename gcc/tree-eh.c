@@ -2442,7 +2442,6 @@ tree_could_trap_p (tree expr)
 	return false;
       /* Fallthru.  */
     case INDIRECT_REF:
-    case ALIGN_INDIRECT_REF:
     case MISALIGNED_INDIRECT_REF:
       return !TREE_THIS_NOTRAP (expr);
 

@@ -1,5 +1,40 @@
 2010-07-05  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-loop-im.c (for_each_index): Do not handle
+	ALIGN_INDIRECT_REF.
+	(gen_lsm_tmp_name): Likewise.
+	* tree-dump.c (dequeue_and_dump): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	(op_code_prio): Likewise.
+	(op_symbol_code): Likewise.
+	* tree.c (staticp): Likewise.
+	(build1_stat): Likewise.
+	* tree.h (INDIRECT_REF_P): Likewise.
+	* fold-const.c (maybe_lvalue_p): Likewise.
+	(operand_equal_p): Likewise.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Likewise.
+	(ao_ref_init_from_vn_reference): Likewise.
+	* tree-ssa-loop-ivopts.c (idx_find_step): Likewise.
+	(find_interesting_uses_address): Likewise.
+	* dwarf2out.c (loc_list_from_tree): Likewise.
+	* gimplify.c (gimplify_expr): Likewise.
+	* tree-eh.c (tree_could_trap_p): Likewise.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Likewise.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Likewise.
+	* tree-ssa-loop-prefetch.c (idx_analyze_ref): Likewise.
+	* tree-cfg.c (verify_types_in_gimple_min_lval): Likewise.
+	* config/rs6000/rs6000 (rs6000_check_sdmode): Likewise.
+	* tree-ssa-operands.c (get_expr_operands): Likewise.
+	* expr.c (safe_from_p): Likewise.
+	(expand_expr_real_1): Likewise.  TER BIT_AND_EXPRs into MEM_REFs.
+	* tree-vect-data-refs.c (vect_setup_realignment): Build
+	BIT_AND_EXPR and MEM_REF instead of ALIGN_INDIRECT_REF.
+	* tree-vect-stmts.c (vectorizable_load): Likewise.
+	* tree.def (ALIGN_INDIRECT_REF): Remove.
+
+2010-07-05  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/44784
 	* tree-ssa-pre.c (bitmap_find_leader): Fix dominance check
 	for inserted stmts.

@@ -6670,7 +6670,6 @@ safe_from_p (const_rtx x, tree exp, int top_p)
 	  break;
 
 	case MISALIGNED_INDIRECT_REF:
-	case ALIGN_INDIRECT_REF:
 	case INDIRECT_REF:
 	  if (MEM_P (x)
 	      && alias_sets_conflict_p (MEM_ALIAS_SET (x),
@@ -8646,12 +8645,10 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       return expand_constructor (exp, target, modifier, false);
 
     case MISALIGNED_INDIRECT_REF:
-    case ALIGN_INDIRECT_REF:
     case INDIRECT_REF:
       {
 	tree exp1 = treeop0;
 	addr_space_t as = ADDR_SPACE_GENERIC;
-	enum machine_mode address_mode = Pmode;
 
 	if (modifier != EXPAND_WRITE)
 	  {
@@ -8663,20 +8660,10 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  }
 
 	if (POINTER_TYPE_P (TREE_TYPE (exp1)))
-	  {
-	    as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp1)));
-	    address_mode = targetm.addr_space.address_mode (as);
-	  }
+	  as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp1)));
 
 	op0 = expand_expr (exp1, NULL_RTX, VOIDmode, EXPAND_SUM);
 	op0 = memory_address_addr_space (mode, op0, as);
-
-	if (code == ALIGN_INDIRECT_REF)
-	  {
-	    int align = TYPE_ALIGN_UNIT (type);
-	    op0 = gen_rtx_AND (address_mode, op0, GEN_INT (-align));
-	    op0 = memory_address_addr_space (mode, op0, as);
-	  }
 
 	temp = gen_rtx_MEM (mode, op0);
 
@@ -8742,6 +8729,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 1))));
 	enum machine_mode address_mode;
 	tree base = TREE_OPERAND (exp, 0);
+	gimple def_stmt;
 	/* Handle expansion of non-aliased memory with non-BLKmode.  That
 	   might end up in a register.  */
 	if (TREE_CODE (base) == ADDR_EXPR)
@@ -8784,8 +8772,12 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      }
 	  }
 	address_mode = targetm.addr_space.address_mode (as);
-	op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, address_mode,
-			   EXPAND_NORMAL);
+	base = TREE_OPERAND (exp, 0);
+	if ((def_stmt = get_def_for_expr (base, BIT_AND_EXPR)))
+	  base = build2 (BIT_AND_EXPR, TREE_TYPE (base),
+			 gimple_assign_rhs1 (def_stmt),
+			 gimple_assign_rhs2 (def_stmt));
+	op0 = expand_expr (base, NULL_RTX, address_mode, EXPAND_NORMAL);
 	if (!integer_zerop (TREE_OPERAND (exp, 1)))
 	  {
 	    rtx off;

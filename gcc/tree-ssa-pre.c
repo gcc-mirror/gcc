@@ -2823,7 +2823,6 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	return folded;
       }
       break;
-    case ALIGN_INDIRECT_REF:
     case MISALIGNED_INDIRECT_REF:
       {
 	tree folded;
