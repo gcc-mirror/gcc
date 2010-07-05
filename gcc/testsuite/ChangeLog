@@ -1,3 +1,8 @@
+2010-07-05  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	PR c++/22138
+	* g++.dg/parse/template25.C: New.
+
 2010-07-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/44695
