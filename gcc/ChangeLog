@@ -1,3 +1,24 @@
+2010-07-05  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/arm/arm.c (get_arm_condition_code): Remove CC_NOTBmode case.
+	* arm-modes.def (CC_NOTB): Don't define.
+	* config/arm/arm.md (arm_adddi3): Generate canonical RTL.
+	(adddi_sesidi_di, adddi_zesidi_di): Likewise.
+	(LTUGEU): New code_iterator.
+	(cnb, optab): New corresponding code_attrs.
+	(addsi3_carryin_<optab>): Renamed from addsi3_carryin.  Change pattern
+	to canonical form.  Operands 1 and 2 are commutative.  Parametrize
+	using LTUGEU.
+	(addsi3_carryin_shift_<optab>): Likewise.
+	(addsi3_carryin_alt2_<optab>): Renamed from addsi3_carryin_alt2.
+	Operands 1 and 2 are commutative.  Parametrize using LTUGEU.
+	(addsi3_carryin_alt1, addsi3_carryin_alt3): Remove.
+	(subsi3_compare): Renamed from subsi3_compare0_c.  Change CC_NOTB to
+	CC.
+	(arm_subsi3_insn): Allow constants for operand 0.
+	(compare_scc peephole for eq case): New.
+	(compare_scc splitters): Change CC_NOTB to CC.
+
 2010-07-05  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-loop-im.c (for_each_index): Do not handle
