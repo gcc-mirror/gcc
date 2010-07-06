@@ -27,8 +27,7 @@ load_lib gcc-dg.exp
 
 # Return 1 if attribute ms_hook_prologue is supported.
 proc check_effective_target_ms_hook_prologue { } {
-    if { [check_effective_target_ilp32]
-	 && [check_no_compiler_messages ms_hook_prologue object {
+    if { [check_no_compiler_messages ms_hook_prologue object {
 	     void __attribute__ ((__ms_hook_prologue__)) foo ();
 	 } ""] } {
 	return 1
