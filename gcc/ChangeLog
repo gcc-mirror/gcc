@@ -1,3 +1,18 @@
+2010-07-06  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/i386.c (ix86_function_ms_hook_prologue): Enable x64
+	support.
+	(ix86_expand_prologue): Likewise.
+	(ix86_handle_fndecl_attribute): Likewise.
+	(ix86_asm_declare_function_name): New function for
+	ASM_DECLARE_FUNCTION_NAME.
+	* config/i386/i386.h (ASM_DECLARE_FUNCTION_NAME): New macro.
+	* config/i386/cygming.h (ASM_DECLARE_FUNCTION_NAME): Removed.
+	(SUBTARGET_ASM_DECLARE_FUNCTION_NAME): New macro.
+	* config/i386/i386-protos.h (ix86_asm_declare_function_name): New.
+	* doc/extend.texi: Adjust documentation about ms_hook_prologue
+	attribute.
+
 2010-07-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (immediate_operand): New mode attribute.
