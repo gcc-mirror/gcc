@@ -28,7 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"		/* For UNITS_PER_WORD.  */
 #include "tree.h"
 #include "ggc.h"
-#include "toplev.h"	/* For rest_of_decl_compilation/internal_error.  */
+#include "diagnostic-core.h"	/* For internal_error.  */
+#include "toplev.h"	/* For rest_of_decl_compilation.  */
 #include "flags.h"
 #include "gfortran.h"
 #include "arith.h"
