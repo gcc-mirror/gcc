@@ -1894,7 +1894,7 @@ gfc_simplify_expr (gfc_expr *p, int type)
 
       if (p->expr_type == EXPR_ARRAY && p->ref && p->ref->type == REF_ARRAY
 	  && p->ref->u.ar.type == AR_FULL)
-	  gfc_expand_constructor (p);
+	  gfc_expand_constructor (p, false);
 
       if (simplify_const_ref (p) == FAILURE)
 	return FAILURE;
@@ -2573,7 +2573,7 @@ check_init_expr (gfc_expr *e)
       if (t == FAILURE)
 	break;
 
-      t = gfc_expand_constructor (e);
+      t = gfc_expand_constructor (e, true);
       if (t == FAILURE)
 	break;
 
@@ -2609,7 +2609,7 @@ gfc_reduce_init_expr (gfc_expr *expr)
     {
       if (gfc_check_constructor_type (expr) == FAILURE)
 	return FAILURE;
-      if (gfc_expand_constructor (expr) == FAILURE)
+      if (gfc_expand_constructor (expr, true) == FAILURE)
 	return FAILURE;
     }
 

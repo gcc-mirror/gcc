@@ -1,5 +1,14 @@
 2010-07-06  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/44742
+	* array.c (gfc_expand_constructor): Add optional diagnostic.
+	* gfortran.h (gfc_expand_constructor): Update prototype.
+	* expr.c (gfc_simplify_expr, check_init_expr,
+	gfc_reduce_init_expr): Update gfc_expand_constructor call.
+	* resolve.c (gfc_resolve_expr): Ditto.
+
+2010-07-06  Tobias Burnus  <burnus@net-b.de>
+
 	* trans-decl.c: Include diagnostic-core.h besides toplev.h.
 	* trans-intrinsic.c: Ditto.
 	* trans-types.c: Ditto.
