@@ -1,3 +1,10 @@
+2010-07-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/44742
+	* gfortran.dg/parameter_array_init_6.f90: New.
+	* gfortran.dg/initialization_20.f90: Update dg-error.
+	* gfortran.dg/initialization_24.f90: Ditto.
+
 2010-07-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	PR fortran/PR44693
 	* gfortran.dg/dim_range_1.f90:  New test.

@@ -2715,7 +2715,7 @@ gfc_try gfc_resolve_array_spec (gfc_array_spec *, int);
 int gfc_compare_array_spec (gfc_array_spec *, gfc_array_spec *);
 
 void gfc_simplify_iterator_var (gfc_expr *);
-gfc_try gfc_expand_constructor (gfc_expr *);
+gfc_try gfc_expand_constructor (gfc_expr *, bool);
 int gfc_constant_ac (gfc_expr *);
 int gfc_expanded_ac (gfc_expr *);
 gfc_try gfc_resolve_character_array_constructor (gfc_expr *);
