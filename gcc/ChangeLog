@@ -1,3 +1,8 @@
+2010-07-05  Jan Hubicka  <jh@suse.cz>
+
+	* gimple-fold.c (gimple_fold_obj_type_ref_known_binfo): Check that
+	function is still available to fold into.
+
 2010-07-05  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* vec.h (FOR_EACH_VEC_ELT_REVERSE): New macro.

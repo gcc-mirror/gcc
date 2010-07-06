@@ -1156,7 +1156,7 @@ gimple_fold_builtin (gimple stmt)
               fold_convert (TREE_TYPE (gimple_call_lhs (stmt)), val[0]);
 
 	  /* If the result is not a valid gimple value, or not a cast
-	     of a valid gimple value, then we can not use the result.  */
+	     of a valid gimple value, then we cannot use the result.  */
 	  if (is_gimple_val (new_val)
 	      || (is_gimple_cast (new_val)
 		  && is_gimple_val (TREE_OPERAND (new_val, 0))))
@@ -1351,6 +1351,7 @@ gimple_fold_obj_type_ref_known_binfo (HOST_WIDE_INT token, tree known_binfo)
 {
   HOST_WIDE_INT i;
   tree v, fndecl;
+  struct cgraph_node *node;
 
   v = BINFO_VIRTUALS (known_binfo);
   i = 0;
@@ -1362,6 +1363,14 @@ gimple_fold_obj_type_ref_known_binfo (HOST_WIDE_INT token, tree known_binfo)
     }
 
   fndecl = TREE_VALUE (v);
+  node = cgraph_get_node (fndecl);
+  /* When cgraph node is missing and function is not public, we cannot
+     devirtualize.  This can happen in WHOPR when the actual method
+     ends up in other partition, because we found devirtualization
+     possibility too late.  */
+  if ((!node || !node->analyzed)
+      && (!TREE_PUBLIC (fndecl) || DECL_COMDAT (fndecl)))
+    return NULL;
   return build_fold_addr_expr (fndecl);
 }
 
