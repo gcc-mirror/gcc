@@ -607,10 +607,10 @@ finish_expr_stmt (tree expr)
 	{
 	  if (warn_sequence_point)
 	    verify_sequence_points (expr);
-	  expr = convert_to_void (expr, "statement", tf_warning_or_error);
+	  expr = convert_to_void (expr, ICV_STATEMENT, tf_warning_or_error);
 	}
       else if (!type_dependent_expression_p (expr))
-	convert_to_void (build_non_dependent_expr (expr), "statement", 
+	convert_to_void (build_non_dependent_expr (expr), ICV_STATEMENT, 
                          tf_warning_or_error);
 
       if (check_for_bare_parameter_packs (expr))
@@ -868,11 +868,11 @@ finish_for_expr (tree expr, tree for_stmt)
     {
       if (warn_sequence_point)
 	verify_sequence_points (expr);
-      expr = convert_to_void (expr, "3rd expression in for",
+      expr = convert_to_void (expr, ICV_THIRD_IN_FOR,
                               tf_warning_or_error);
     }
   else if (!type_dependent_expression_p (expr))
-    convert_to_void (build_non_dependent_expr (expr), "3rd expression in for",
+    convert_to_void (build_non_dependent_expr (expr), ICV_THIRD_IN_FOR,
                      tf_warning_or_error);
   expr = maybe_cleanup_point_expr_void (expr);
   if (check_for_bare_parameter_packs (expr))

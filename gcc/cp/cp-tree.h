@@ -435,6 +435,17 @@ typedef enum impl_conv_rhs {
   ICR_ASSIGN            /* assignment */
 } impl_conv_rhs;
 
+/* Possible cases of implicit or explicit bad conversions to void. */
+typedef enum impl_conv_void {
+  ICV_CAST,            /* (explicit) conversion to void */
+  ICV_SECOND_OF_COND,  /* second operand of conditional expression */
+  ICV_THIRD_OF_COND,   /* third operand of conditional expression */
+  ICV_RIGHT_OF_COMMA,  /* right operand of comma operator */
+  ICV_LEFT_OF_COMMA,   /* left operand of comma operator */
+  ICV_STATEMENT,       /* statement */
+  ICV_THIRD_IN_FOR     /* for increment expression */
+} impl_conv_void;
+
 /* Macros for access to language-specific slots in an identifier.  */
 
 #define IDENTIFIER_NAMESPACE_BINDINGS(NODE)	\
@@ -4697,8 +4708,8 @@ extern tree ocp_convert				(tree, tree, int, int);
 extern tree cp_convert				(tree, tree);
 extern tree cp_convert_and_check                (tree, tree);
 extern tree cp_fold_convert			(tree, tree);
-extern tree convert_to_void	(tree, const char */*implicit context*/,
-                                 tsubst_flags_t);
+extern tree convert_to_void			(tree, impl_conv_void,
+                                 		 tsubst_flags_t);
 extern tree convert_force			(tree, tree, int);
 extern tree build_expr_type_conversion		(int, tree, bool);
 extern tree type_promotes_to			(tree);

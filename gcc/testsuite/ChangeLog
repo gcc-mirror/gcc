@@ -1,3 +1,9 @@
+2010-07-06  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* g++.dg/warn/noeffect2.C: Adjust expected warning.
+	* g++.dg/warn/volatile1.C: Likewise.
+	* g++.dg/template/warn1.C: Likewise.
+
 2010-07-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	AVX Programming Reference (June, 2010)
