@@ -1,5 +1,17 @@
 2010-07-05  Jan Hubicka  <jh@suse.cz>
 
+	* lto-streamer.c (write_symbol_vec): Rename to ...
+	(write_symbol) ... this one; write only symbol given and when
+	present in cache. Sanity check that what is defined is present
+	in cgraph/varpool with body/finalized decl.
+	(write_symbols_of_kind): Remove.
+	(produce_symtab): Take outputblock and sets; use cgraph/varpool/alias
+	pairs to produce symtab.
+	(produce_asm_for_decls): Update call of produce_symtab; don't do so
+	when doing WPA streaming.
+
+2010-07-05  Jan Hubicka  <jh@suse.cz>
+
 	* gimple-fold.c (gimple_fold_obj_type_ref_known_binfo): Check that
 	function is still available to fold into.
 
