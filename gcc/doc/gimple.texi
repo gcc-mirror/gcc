@@ -340,6 +340,7 @@ The following table briefly describes the GIMPLE instruction set.
 @item @code{GIMPLE_CALL}		@tab x			@tab x
 @item @code{GIMPLE_CATCH}		@tab x			@tab
 @item @code{GIMPLE_COND}		@tab x			@tab x
+@item @code{GIMPLE_DEBUG}		@tab x			@tab x
 @item @code{GIMPLE_EH_FILTER}		@tab x			@tab
 @item @code{GIMPLE_GOTO}		@tab x			@tab x
 @item @code{GIMPLE_LABEL}		@tab x			@tab x
@@ -905,6 +906,7 @@ Return a deep copy of statement @code{STMT}.
 * @code{GIMPLE_CALL}::
 * @code{GIMPLE_CATCH}::
 * @code{GIMPLE_COND}::
+* @code{GIMPLE_DEBUG}::
 * @code{GIMPLE_EH_FILTER}::
 * @code{GIMPLE_LABEL}::
 * @code{GIMPLE_NOP}::
@@ -1388,6 +1390,83 @@ Set the conditional @code{COND_STMT} to be of the form 'if (1 == 0)'.
 
 @deftypefn {GIMPLE function} void gimple_cond_make_true (gimple g)
 Set the conditional @code{COND_STMT} to be of the form 'if (1 == 1)'. 
+@end deftypefn
+
+@node @code{GIMPLE_DEBUG}
+@subsection @code{GIMPLE_DEBUG}
+@cindex @code{GIMPLE_DEBUG}
+@cindex @code{GIMPLE_DEBUG_BIND}
+
+@deftypefn {GIMPLE function} gimple gimple_build_debug_bind (tree var, tree value, gimple stmt)
+Build a @code{GIMPLE_DEBUG} statement with @code{GIMPLE_DEBUG_BIND} of
+@code{subcode}.  The effect of this statement is to tell debug
+information generation machinery that the value of user variable
+@code{var} is given by @code{value} at that point, and to remain with
+that value until @code{var} runs out of scope, a
+dynamically-subsequent debug bind statement overrides the binding, or
+conflicting values reach a control flow merge point.  Even if
+components of the @code{value} expression change afterwards, the
+variable is supposed to retain the same value, though not necessarily
+the same location.
+
+It is expected that @code{var} be most often a tree for automatic user
+variables (@code{VAR_DECL} or @code{PARM_DECL}) that satisfy the
+requirements for gimple registers, but it may also be a tree for a
+scalarized component of a user variable (@code{ARRAY_REF},
+@code{COMPONENT_REF}), or a debug temporary (@code{DEBUG_EXPR_DECL}).
+
+As for @code{value}, it can be an arbitrary tree expression, but it is
+recommended that it be in a suitable form for a gimple assignment
+@code{RHS}.  It is not expected that user variables that could appear
+as @code{var} ever appear in @code{value}, because in the latter we'd
+have their @code{SSA_NAME}s instead, but even if they were not in SSA
+form, user variables appearing in @code{value} are to be regarded as
+part of the executable code space, whereas those in @code{var} are to
+be regarded as part of the source code space.  There is no way to
+refer to the value bound to a user variable within a @code{value}
+expression.
+
+If @code{value} is @code{GIMPLE_DEBUG_BIND_NOVALUE}, debug information
+generation machinery is informed that the variable @code{var} is
+unbound, i.e., that its value is indeterminate, which sometimes means
+it is really unavailable, and other times that the compiler could not
+keep track of it.
+
+Block and location information for the newly-created stmt are
+taken from @code{stmt}, if given.
+@end deftypefn
+
+@deftypefn {GIMPLE function} tree gimple_debug_bind_get_var (gimple stmt)
+Return the user variable @var{var} that is bound at @code{stmt}.
+@end deftypefn
+
+@deftypefn {GIMPLE function} tree gimple_debug_bind_get_value (gimple stmt)
+Return the value expression that is bound to a user variable at
+@code{stmt}.
+@end deftypefn
+
+@deftypefn {GIMPLE function} tree *gimple_debug_bind_get_value_ptr (gimple stmt)
+Return a pointer to the value expression that is bound to a user
+variable at @code{stmt}.
+@end deftypefn
+
+@deftypefn {GIMPLE function} void gimple_debug_bind_set_var (gimple stmt, tree var)
+Modify the user variable bound at @code{stmt} to @var{var}.
+@end deftypefn
+
+@deftypefn {GIMPLE function} void gimple_debug_bind_set_value (gimple stmt, tree var)
+Modify the value bound to the user variable bound at @code{stmt} to
+@var{value}.
+@end deftypefn
+
+@deftypefn {GIMPLE function} void gimple_debug_bind_reset_value (gimple stmt)
+Modify the value bound to the user variable bound at @code{stmt} so
+that the variable becomes unbound.
+@end deftypefn
+
+@deftypefn {GIMPLE function} bool gimple_debug_bind_has_value_p (gimple stmt)
+Return @code{TRUE} if @code{stmt} binds a user variable to a value,
+and @code{FALSE} if it unbinds the variable.
 @end deftypefn
 
 @node @code{GIMPLE_EH_FILTER}

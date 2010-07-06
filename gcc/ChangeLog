@@ -1,3 +1,11 @@
+2010-07-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	* doc/gimple.texi (GIMPLE_DEBUG): Document.
+	* doc/rtl.texi (Debug Information): New node.
+	(NOTE_INSN_VAR_LOCATION): Document.
+	(debug_insn): Likewise.
+	* doc/generic.texi (DEBUG_EXPR_DECL): Document.
+
 2010-07-05  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	Backport from mainline:

@@ -601,6 +601,7 @@ in hand, using @code{same_type_p}.
 @tindex TYPE_DECL
 @tindex VAR_DECL
 @tindex PARM_DECL
+@tindex DEBUG_EXPR_DECL
 @tindex FIELD_DECL
 @tindex NAMESPACE_DECL
 @tindex RESULT_DECL
@@ -725,6 +726,11 @@ actually be used when a value is passed to this function.  It may be a
 wider type than the @code{TREE_TYPE} of the parameter; for example, the
 ordinary type might be @code{short} while the @code{DECL_ARG_TYPE} is
 @code{int}.
+
+@item DEBUG_EXPR_DECL
+Used to represent an anonymous debug-information temporary created to
+hold an expression as it is optimized away, so that its value can be
+referenced in debug bind statements.
 
 @item FIELD_DECL
 These nodes represent non-static data members.  The @code{DECL_SIZE} and
