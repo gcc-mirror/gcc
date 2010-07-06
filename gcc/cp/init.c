@@ -1374,7 +1374,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
     release_tree_vector (parms);
 
   if (TREE_SIDE_EFFECTS (rval))
-    finish_expr_stmt (convert_to_void (rval, NULL, complain));
+    finish_expr_stmt (convert_to_void (rval, ICV_CAST, complain));
 }
 
 /* This function is responsible for initializing EXP with INIT
@@ -2726,7 +2726,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
     /* Pre-evaluate the SAVE_EXPR outside of the BIND_EXPR.  */
     body = build2 (COMPOUND_EXPR, void_type_node, base, body);
 
-  return convert_to_void (body, /*implicit=*/NULL, tf_warning_or_error);
+  return convert_to_void (body, ICV_CAST, tf_warning_or_error);
 }
 
 /* Create an unnamed variable of the indicated TYPE.  */

@@ -1,3 +1,13 @@
+2010-07-06  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* cp-tree.h (impl_conv_void): New type.
+	(convert_to_void): Adjust prototype.
+	* cvt.c (convert_to_void): Use impl_conv_void, emit and adjust the
+	diagnostic for easy translation. Change caller.
+	* typeck.c: Update call to convert_to_void.
+	* semantics.c: Likewise.
+	* init.c: Likewise.
+
 2010-07-05  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* decl.c (cp_finish_decl): Call add_local_decl.

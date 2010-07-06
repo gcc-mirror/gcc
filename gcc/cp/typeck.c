@@ -5591,7 +5591,7 @@ build_compound_expr (location_t loc ATTRIBUTE_UNUSED, tree lhs, tree rhs)
 tree
 cp_build_compound_expr (tree lhs, tree rhs, tsubst_flags_t complain)
 {
-  lhs = convert_to_void (lhs, "left-hand operand of comma", complain);
+  lhs = convert_to_void (lhs, ICV_LEFT_OF_COMMA, complain);
 
   if (lhs == error_mark_node || rhs == error_mark_node)
     return error_mark_node;
@@ -5858,7 +5858,7 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
 
      Any expression can be explicitly converted to type cv void.  */
   if (TREE_CODE (type) == VOID_TYPE)
-    return convert_to_void (expr, /*implicit=*/NULL, complain);
+    return convert_to_void (expr, ICV_CAST, complain);
 
   /* [expr.static.cast]
 

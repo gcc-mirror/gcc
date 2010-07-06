@@ -651,7 +651,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 
   if (code == VOID_TYPE && (convtype & CONV_STATIC))
     {
-      e = convert_to_void (e, /*implicit=*/NULL, tf_warning_or_error);
+      e = convert_to_void (e, ICV_CAST, tf_warning_or_error);
       return e;
     }
 
@@ -814,19 +814,18 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
    make it impossible to ignore the reference return value from functions. We
    issue warnings in the confusing cases.
 
-   IMPLICIT is non-NULL iff an expression is being implicitly converted; it
-   is NULL when the user is explicitly converting an expression to void via
-   a cast.  When non-NULL, IMPLICIT is a string indicating the context of
-   the implicit conversion.  */
+   The IMPLICIT is ICV_CAST when the user is explicitly converting an expression
+   to void via a cast. If an expression is being implicitly converted, IMPLICIT
+   indicates the context of the implicit conversion.  */
 
 tree
-convert_to_void (tree expr, const char *implicit, tsubst_flags_t complain)
+convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 {
   if (expr == error_mark_node
       || TREE_TYPE (expr) == error_mark_node)
     return error_mark_node;
 
-  if (implicit == NULL)
+  if (implicit == ICV_CAST)
     mark_exp_read (expr);
   else
     {
@@ -865,12 +864,17 @@ convert_to_void (tree expr, const char *implicit, tsubst_flags_t complain)
 	tree op1 = TREE_OPERAND (expr,1);
 	tree op2 = TREE_OPERAND (expr,2);
 	bool side_effects = TREE_SIDE_EFFECTS (op1) || TREE_SIDE_EFFECTS (op2);
-	tree new_op1 = convert_to_void
-	  (op1, (implicit && !side_effects
-		 ? "second operand of conditional" : NULL), complain);
-	tree new_op2 = convert_to_void
-	  (op2, (implicit && !side_effects
-		 ? "third operand of conditional" : NULL), complain);
+	tree new_op1, new_op2;
+	if (implicit != ICV_CAST && !side_effects)
+	  {
+	    new_op1 = convert_to_void (op1, ICV_SECOND_OF_COND, complain);
+	    new_op2 = convert_to_void (op2, ICV_THIRD_OF_COND, complain);
+	  }
+	else
+	  {
+	    new_op1 = convert_to_void (op1, ICV_CAST, complain);
+	    new_op2 = convert_to_void (op2, ICV_CAST, complain);
+	  }
 
 	expr = build3 (COND_EXPR, TREE_TYPE (new_op1),
 		       TREE_OPERAND (expr, 0), new_op1, new_op2);
@@ -881,9 +885,11 @@ convert_to_void (tree expr, const char *implicit, tsubst_flags_t complain)
       {
 	/* The second part of a compound expr contains the value.  */
 	tree op1 = TREE_OPERAND (expr,1);
-	tree new_op1 = convert_to_void
-	  (op1, (implicit && !TREE_NO_WARNING (expr)
-		 ? "right-hand operand of comma" : NULL), complain);
+	tree new_op1;
+	if (implicit != ICV_CAST && !TREE_NO_WARNING (expr))
+	  new_op1 = convert_to_void (op1, ICV_RIGHT_OF_COMMA, complain);
+	else
+	  new_op1 = convert_to_void (op1, ICV_CAST, complain);
 
 	if (new_op1 != op1)
 	  {
@@ -915,18 +921,133 @@ convert_to_void (tree expr, const char *implicit, tsubst_flags_t complain)
 	if (is_volatile && !is_complete)
           {
             if (complain & tf_warning)
-              warning (0, "object of incomplete type %qT will not be accessed in %s",
-                       type, implicit ? implicit : "void context");
+	      switch (implicit)
+		{
+	      	  case ICV_CAST:
+		    warning (0, "conversion to void will not access "
+				"object of incomplete type %qT", type);
+		    break;
+		  case ICV_SECOND_OF_COND:
+		    warning (0, "indirection will not access object of "
+				"incomplete type %qT in second operand "
+				"of conditional expression", type);
+		    break;
+		  case ICV_THIRD_OF_COND:
+		    warning (0, "indirection will not access object of "
+				"incomplete type %qT in third operand "
+				"of conditional expression", type);
+		    break;
+		  case ICV_RIGHT_OF_COMMA:
+		    warning (0, "indirection will not access object of "
+				"incomplete type %qT in right operand of "
+				"comma operator", type);
+		    break;
+		  case ICV_LEFT_OF_COMMA:
+		    warning (0, "indirection will not access object of "
+				"incomplete type %qT in left operand of "
+				"comma operator", type);
+		    break;
+		  case ICV_STATEMENT:
+		    warning (0, "indirection will not access object of "
+				"incomplete type %qT in statement", type);
+		     break;
+		  case ICV_THIRD_IN_FOR:
+		    warning (0, "indirection will not access object of "
+				"incomplete type %qT in for increment "
+				"expression", type);
+		    break;
+		  default:
+		    gcc_unreachable ();
+		}
           }
 	/* Don't load the value if this is an implicit dereference, or if
 	   the type needs to be handled by ctors/dtors.  */
-	else if (is_volatile && (is_reference || TREE_ADDRESSABLE (type)))
+	else if (is_volatile && is_reference)
           {
             if (complain & tf_warning)
-              warning (0, "object of type %qT will not be accessed in %s",
-                       TREE_TYPE (TREE_OPERAND (expr, 0)),
-                       implicit ? implicit : "void context");
+	      switch (implicit)
+		{
+	      	  case ICV_CAST:
+		    warning (0, "conversion to void will not access "
+				"object of type %qT", type);
+		    break;
+		  case ICV_SECOND_OF_COND:
+		    warning (0, "implicit dereference will not access object "
+				"of type %qT in second operand of "
+				"conditional expression", type);
+		    break;
+		  case ICV_THIRD_OF_COND:
+		    warning (0, "implicit dereference will not access object "
+		  	      	"of type %qT in third operand of "
+				"conditional expression", type);
+		    break;
+		  case ICV_RIGHT_OF_COMMA:
+		    warning (0, "implicit dereference will not access object "
+		    		"of type %qT in right operand of "
+				"comma operator", type);
+		    break;
+		  case ICV_LEFT_OF_COMMA:
+		    warning (0, "implicit dereference will not access object "
+		    		"of type %qT in left operand of comma operator",
+			     type);
+		    break;
+		  case ICV_STATEMENT:
+		    warning (0, "implicit dereference will not access object "
+		     		"of type %qT in statement",  type);
+		     break;
+		  case ICV_THIRD_IN_FOR:
+		    warning (0, "implicit dereference will not access object "
+		    		"of type %qT in for increment expression",
+			     type);
+		    break;
+		  default:
+		    gcc_unreachable ();
+		}
           }
+	else if (is_volatile && TREE_ADDRESSABLE (type))
+	  {
+	    if (complain & tf_warning)
+	      switch (implicit)
+		{
+	      	  case ICV_CAST:
+		    warning (0, "conversion to void will not access "
+				"object of non-trivially-copyable type %qT",
+			     type);
+		    break;
+		  case ICV_SECOND_OF_COND:
+		    warning (0, "indirection will not access object of "
+				"non-trivially-copyable type %qT in second "
+				"operand of conditional expression", type);
+		    break;
+		  case ICV_THIRD_OF_COND:
+		    warning (0, "indirection will not access object of "
+		  	      	"non-trivially-copyable type %qT in third "
+				"operand of conditional expression", type);
+		    break;
+		  case ICV_RIGHT_OF_COMMA:
+		    warning (0, "indirection will not access object of "
+		    		"non-trivially-copyable type %qT in right "
+				"operand of comma operator", type);
+		    break;
+		  case ICV_LEFT_OF_COMMA:
+		    warning (0, "indirection will not access object of "
+		    		"non-trivially-copyable type %qT in left "
+				"operand of comma operator", type);
+		    break;
+		  case ICV_STATEMENT:
+		    warning (0, "indirection will not access object of "
+		     		"non-trivially-copyable type %qT in statement",
+			      type);
+		     break;
+		  case ICV_THIRD_IN_FOR:
+		    warning (0, "indirection will not access object of "
+		    		"non-trivially-copyable type %qT in for "
+				"increment expression", type);
+		    break;
+		  default:
+		    gcc_unreachable ();
+		}
+	  }
 	if (is_reference || !is_volatile || !is_complete || TREE_ADDRESSABLE (type))
           {
             /* Emit a warning (if enabled) when the "effect-less" INDIRECT_REF
@@ -936,7 +1057,7 @@ convert_to_void (tree expr, const char *implicit, tsubst_flags_t complain)
                - automatic dereferencing of references, since the user cannot
                  control it. (See also warn_if_unused_value() in stmt.c.)  */
             if (warn_unused_value
-		&& implicit
+		&& implicit != ICV_CAST
                 && (complain & tf_warning)
                 && !TREE_NO_WARNING (expr)
                 && !is_reference)
@@ -954,8 +1075,45 @@ convert_to_void (tree expr, const char *implicit, tsubst_flags_t complain)
 	int is_complete = COMPLETE_TYPE_P (complete_type (type));
 
 	if (TYPE_VOLATILE (type) && !is_complete && (complain & tf_warning))
-	  warning (0, "object %qE of incomplete type %qT will not be accessed in %s",
-		   expr, type, implicit ? implicit : "void context");
+	  switch (implicit)
+	    {
+	      case ICV_CAST:
+		warning (0, "conversion to void will not access "
+			    "object %qE of incomplete type %qT", expr, type);
+		break;
+	      case ICV_SECOND_OF_COND:
+	        warning (0, "variable %qE of incomplete type %qT will not "
+			    "be accessed in second operand of "
+			    "conditional expression", expr, type);
+		break;
+	      case ICV_THIRD_OF_COND:
+	        warning (0, "variable %qE of incomplete type %qT will not "
+			    "be accessed in third operand of "
+			    "conditional expression", expr, type);
+		break;
+	      case ICV_RIGHT_OF_COMMA:
+	        warning (0, "variable %qE of incomplete type %qT will not "
+			    "be accessed in right operand of comma operator",
+			 expr, type);
+		break;
+	      case ICV_LEFT_OF_COMMA:
+	        warning (0, "variable %qE of incomplete type %qT will not "
+			    "be accessed in left operand of comma operator",
+			 expr, type);
+		break;
+	      case ICV_STATEMENT:
+	        warning (0, "variable %qE of incomplete type %qT will not "
+		            "be accessed in statement", expr, type);
+		break;
+	      case ICV_THIRD_IN_FOR:
+	        warning (0, "variable %qE of incomplete type %qT will not "
+			    "be accessed in for increment expression",
+		         expr, type);
+		break;
+	      default:
+	        gcc_unreachable ();
+	    }
+
 	break;
       }
 
@@ -994,18 +1152,81 @@ convert_to_void (tree expr, const char *implicit, tsubst_flags_t complain)
 	/* [over.over] enumerates the places where we can take the address
 	   of an overloaded function, and this is not one of them.  */
 	if (complain & tf_error)
-	  error ("%s cannot resolve address of overloaded function",
-		 implicit ? implicit : "void cast");
+	  switch (implicit)
+	    {
+	      case ICV_CAST:
+		error ("conversion to void "
+		       "cannot resolve address of overloaded function");
+		break;
+	      case ICV_SECOND_OF_COND:
+		error ("second operand of conditional expression "
+		       "cannot resolve address of overloaded function");
+		break;
+	      case ICV_THIRD_OF_COND:
+		error ("third operand of conditional expression "
+		       "cannot resolve address of overloaded function");
+		break;
+	      case ICV_RIGHT_OF_COMMA:
+		error ("right operand of comma operator "
+		       "cannot resolve address of overloaded function");
+		break;
+	      case ICV_LEFT_OF_COMMA:
+		error ("left operand of comma operator "
+		       "cannot resolve address of overloaded function");
+		break;
+	      case ICV_STATEMENT:
+		error ("statement "
+		       "cannot resolve address of overloaded function");
+		break;
+	      case ICV_THIRD_IN_FOR:
+		error ("for increment expression "
+		       "cannot resolve address of overloaded function");
+		break;
+	    }
 	else
 	  return error_mark_node;
 	expr = void_zero_node;
       }
-    else if (implicit && probe == expr && is_overloaded_fn (probe))
+    else if (implicit != ICV_CAST && probe == expr && is_overloaded_fn (probe))
       {
 	/* Only warn when there is no &.  */
 	if (complain & tf_warning)
-	  warning (OPT_Waddress, "%s is a reference, not call, to function %qE",
-		   implicit, expr);
+	  switch (implicit)
+	    {
+	      case ICV_SECOND_OF_COND:
+	        warning (OPT_Waddress,
+			 "second operand of conditional expression "
+			 "is a reference, not call, to function %qE", expr);
+		break;
+	      case ICV_THIRD_OF_COND:
+	        warning (OPT_Waddress,
+			 "third operand of conditional expression "
+			 "is a reference, not call, to function %qE", expr);
+		break;
+	      case ICV_RIGHT_OF_COMMA:
+	        warning (OPT_Waddress,
+			 "right operand of comma operator "
+			 "is a reference, not call, to function %qE", expr);
+		break;
+	      case ICV_LEFT_OF_COMMA:
+	        warning (OPT_Waddress,
+			 "left operand of comma operator "
+			 "is a reference, not call, to function %qE", expr);
+		break;
+	      case ICV_STATEMENT:
+	        warning (OPT_Waddress,
+			 "statement is a reference, not call, to function %qE",
+			 expr);
+		break;
+	      case ICV_THIRD_IN_FOR:
+	        warning (OPT_Waddress,
+			 "for increment expression "
+			 "is a reference, not call, to function %qE", expr);
+		break;
+	      default:
+	        gcc_unreachable ();
+	    }
+
 	if (TREE_CODE (expr) == COMPONENT_REF)
 	  expr = TREE_OPERAND (expr, 0);
       }
@@ -1013,7 +1234,7 @@ convert_to_void (tree expr, const char *implicit, tsubst_flags_t complain)
 
   if (expr != error_mark_node && !VOID_TYPE_P (TREE_TYPE (expr)))
     {
-      if (implicit
+      if (implicit != ICV_CAST
 	  && warn_unused_value
 	  && !TREE_NO_WARNING (expr)
 	  && !processing_template_decl)
@@ -1022,7 +1243,35 @@ convert_to_void (tree expr, const char *implicit, tsubst_flags_t complain)
 	     been explicitly cast to void, so we must do so here.  */
 	  if (!TREE_SIDE_EFFECTS (expr)) {
             if (complain & tf_warning)
-              warning (OPT_Wunused_value, "%s has no effect", implicit);
+	      switch (implicit)
+		{
+		  case ICV_SECOND_OF_COND:
+		    warning (OPT_Wunused_value,
+			     "second operand of conditional expression has no effect");
+		    break;
+		  case ICV_THIRD_OF_COND:
+		    warning (OPT_Wunused_value,
+		    	     "third operand of conditional expression has no effect");
+		    break;
+		  case ICV_RIGHT_OF_COMMA:
+		    warning (OPT_Wunused_value,
+		    	     "right operand of comma operator has no effect");
+		    break;
+		  case ICV_LEFT_OF_COMMA:
+		    warning (OPT_Wunused_value,
+		    	     "left operand of comma operator has no effect");
+		    break;
+		  case ICV_STATEMENT:
+		    warning (OPT_Wunused_value,
+		    	     "statement has no effect");
+		    break;
+		  case ICV_THIRD_IN_FOR:
+		    warning (OPT_Wunused_value,
+		    	     "for increment expression has no effect");
+		    break;
+		  default:
+		    gcc_unreachable ();
+		}
           }
 	  else
 	    {
