@@ -604,6 +604,29 @@ cgraph_add_thunk (tree alias, tree decl, bool this_adjusting,
    is assigned.  */
 
 struct cgraph_node *
+cgraph_get_node_or_alias (tree decl)
+{
+  struct cgraph_node key, *node = NULL, **slot;
+
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
+
+  if (!cgraph_hash)
+    return NULL;
+
+  key.decl = decl;
+
+  slot = (struct cgraph_node **) htab_find_slot (cgraph_hash, &key,
+						 NO_INSERT);
+
+  if (slot && *slot)
+    node = *slot;
+  return node;
+}
+
+/* Returns the cgraph node assigned to DECL or NULL if no cgraph node
+   is assigned.  */
+
+struct cgraph_node *
 cgraph_get_node (tree decl)
 {
   struct cgraph_node key, *node = NULL, **slot;
