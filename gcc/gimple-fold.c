@@ -1368,7 +1368,7 @@ gimple_fold_obj_type_ref_known_binfo (HOST_WIDE_INT token, tree known_binfo)
      devirtualize.  This can happen in WHOPR when the actual method
      ends up in other partition, because we found devirtualization
      possibility too late.  */
-  if ((!node || !node->analyzed)
+  if ((!node || (!node->analyzed && !node->in_other_partition))
       && (!TREE_PUBLIC (fndecl) || DECL_COMDAT (fndecl)))
     return NULL;
   return build_fold_addr_expr (fndecl);
