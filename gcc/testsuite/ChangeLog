@@ -1,3 +1,11 @@
+2010-07-06  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2010-07-06  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR testsuite/44195
+	* gcc.dg/lto/20100518_0.c: Limit to x86.
+
 2010-07-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
