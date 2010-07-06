@@ -1840,6 +1840,8 @@ output_function (struct cgraph_node *node)
   struct function *fn;
   basic_block bb;
   struct output_block *ob;
+  unsigned i;
+  tree t;
 
   function = node->decl;
   fn = DECL_STRUCT_FUNCTION (function);
@@ -1886,7 +1888,9 @@ output_function (struct cgraph_node *node)
   lto_output_tree_ref (ob, fn->nonlocal_goto_save_area);
 
   /* Output all the local variables in the function.  */
-  lto_output_tree_ref (ob, fn->local_decls);
+  output_sleb128 (ob, VEC_length (tree, fn->local_decls));
+  for (i = 0; VEC_iterate (tree, fn->local_decls, i, t); i++)
+    lto_output_tree_ref (ob, t);
 
   /* Output the head of the arguments list.  */
   lto_output_tree_ref (ob, DECL_ARGUMENTS (function));

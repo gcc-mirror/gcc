@@ -5596,7 +5596,7 @@ replace_by_duplicate_decl (tree *tp, struct pointer_map_t *vars_map,
       if (SSA_VAR_P (t))
 	{
 	  new_t = copy_var_decl (t, DECL_NAME (t), TREE_TYPE (t));
-	  f->local_decls = tree_cons (NULL_TREE, new_t, f->local_decls);
+	  add_local_decl (f, new_t);
 	}
       else
 	{
@@ -6316,7 +6316,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 void
 dump_function_to_file (tree fn, FILE *file, int flags)
 {
-  tree arg, vars, var;
+  tree arg, var;
   struct function *dsf;
   bool ignore_topmost_bind = false, any_var = false;
   basic_block bb;
@@ -6356,15 +6356,14 @@ dump_function_to_file (tree fn, FILE *file, int flags)
 
   /* When GIMPLE is lowered, the variables are no longer available in
      BIND_EXPRs, so display them separately.  */
-  if (cfun && cfun->decl == fn && cfun->local_decls)
+  if (cfun && cfun->decl == fn && !VEC_empty (tree, cfun->local_decls))
     {
+      unsigned ix;
       ignore_topmost_bind = true;
 
       fprintf (file, "{\n");
-      for (vars = cfun->local_decls; vars; vars = TREE_CHAIN (vars))
+      FOR_EACH_LOCAL_DECL (cfun, ix, var)
 	{
-	  var = TREE_VALUE (vars);
-
 	  print_generic_decl (file, var, flags);
 	  if (flags & TDF_VERBOSE)
 	    print_node (file, "", var, 4);

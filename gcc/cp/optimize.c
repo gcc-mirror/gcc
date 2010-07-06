@@ -107,12 +107,11 @@ clone_body (tree clone, tree fn, void *arg_map)
   if (DECL_NAME (clone) == base_dtor_identifier
       || DECL_NAME (clone) == base_ctor_identifier)
     {
-      tree decls = DECL_STRUCT_FUNCTION (fn)->local_decls;
-      for (; decls; decls = TREE_CHAIN (decls))
-	{
-	  tree decl = TREE_VALUE (decls);
-	  walk_tree (&DECL_INITIAL (decl), copy_tree_body_r, &id, NULL);
-	}
+      unsigned ix;
+      tree decl;
+
+      FOR_EACH_LOCAL_DECL (DECL_STRUCT_FUNCTION (fn), ix, decl)
+        walk_tree (&DECL_INITIAL (decl), copy_tree_body_r, &id, NULL);
     }
 
   append_to_statement_list_force (stmts, &DECL_SAVED_TREE (clone));

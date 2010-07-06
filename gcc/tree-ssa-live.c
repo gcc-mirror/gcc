@@ -663,10 +663,11 @@ void
 remove_unused_locals (void)
 {
   basic_block bb;
-  tree t, *cell;
+  tree var, t;
   referenced_var_iterator rvi;
   var_ann_t ann;
   bitmap global_unused_vars = NULL;
+  unsigned ix;
 
   /* Removing declarations from lexical blocks when not optimizing is
      not only a waste of time, it actually causes differences in stack
@@ -733,10 +734,8 @@ remove_unused_locals (void)
   cfun->has_local_explicit_reg_vars = false;
 
   /* Remove unmarked local vars from local_decls.  */
-  for (cell = &cfun->local_decls; *cell; )
+  for (ix = 0; VEC_iterate (tree, cfun->local_decls, ix, var); )
     {
-      tree var = TREE_VALUE (*cell);
-
       if (TREE_CODE (var) != FUNCTION_DECL
 	  && (!(ann = var_ann (var))
 	      || !ann->used))
@@ -749,7 +748,7 @@ remove_unused_locals (void)
 	    }
 	  else
 	    {
-	      *cell = TREE_CHAIN (*cell);
+	      VEC_unordered_remove (tree, cfun->local_decls, ix);
 	      continue;
 	    }
 	}
@@ -757,34 +756,29 @@ remove_unused_locals (void)
 	       && DECL_HARD_REGISTER (var)
 	       && !is_global_var (var))
 	cfun->has_local_explicit_reg_vars = true;
-      cell = &TREE_CHAIN (*cell);
+
+      ix++;
     }
 
   /* Remove unmarked global vars from local_decls.  */
   if (global_unused_vars != NULL)
     {
-      for (t = cfun->local_decls; t; t = TREE_CHAIN (t))
-	{
-	  tree var = TREE_VALUE (t);
+      tree var;
+      unsigned ix;
+      FOR_EACH_LOCAL_DECL (cfun, ix, var)
+	if (TREE_CODE (var) == VAR_DECL
+	    && is_global_var (var)
+	    && (ann = var_ann (var)) != NULL
+	    && ann->used)
+	  mark_all_vars_used (&DECL_INITIAL (var), global_unused_vars);
 
-	  if (TREE_CODE (var) == VAR_DECL
-	      && is_global_var (var)
-	      && (ann = var_ann (var)) != NULL
-	      && ann->used)
-	    mark_all_vars_used (&DECL_INITIAL (var), global_unused_vars);
-	}
-
-      for (cell = &cfun->local_decls; *cell; )
-	{
-	  tree var = TREE_VALUE (*cell);
-
-	  if (TREE_CODE (var) == VAR_DECL
-	      && is_global_var (var)
-	      && bitmap_bit_p (global_unused_vars, DECL_UID (var)))
-	    *cell = TREE_CHAIN (*cell);
-	  else
-	    cell = &TREE_CHAIN (*cell);
-	}
+      for (ix = 0; VEC_iterate (tree, cfun->local_decls, ix, var); )
+	if (TREE_CODE (var) == VAR_DECL
+	    && is_global_var (var)
+	    && bitmap_bit_p (global_unused_vars, DECL_UID (var)))
+	  VEC_unordered_remove (tree, cfun->local_decls, ix);
+	else
+	  ix++;
       BITMAP_FREE (global_unused_vars);
     }
 

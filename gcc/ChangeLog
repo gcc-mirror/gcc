@@ -1,3 +1,38 @@
+2010-07-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* vec.h (FOR_EACH_VEC_ELT_REVERSE): New macro.
+	* function.h (struct_function): Change type of local_decls field
+	to a VEC.
+	(add_local_decl): New function.
+	(FOR_EACH_LOCAL_DECL): New macro.
+	* cfgexpand.c (init_vars_expansion): Adjust for new type of
+	cfun->local_decls.
+	(estimated_stack_frame_size): Likewise.
+	(expand_used_vars): Likewise.
+	* cgraphbuild.c (build_cgraph_edges): Likewise.
+	* function.c (instantiate_decls_1): Likewise.
+	* ipa-struct-reorg.c (build_data_structure): Likewise.
+	* ipa-type-escape.c (analyze_function): Likewise.
+	* lto-streamer-in.c (input_function): Likewise.
+	* lto-streamer-out.c (output_function): Likewise.
+	* tree-ssa-live.c (remove_unused_locals): Likewise.
+	* tree.c (free_lang_data_in_decl): Likewise.
+	(find_decls_types_in_node): Likewise.
+	* omp-low.c (remove_exit_barrier): Likewise.
+	(expand_omp_taskreg): Likewise.
+	(list2chain): Rename to...
+	(vec2chain): ...this.  Adjust.
+	* cgraphunit.c (assemble_thunk): Call add_local_decl.
+	* tree-cfg.c (replace_by_duplicate_decl): Likewise.
+	* gimple-low.c (record_vars_into): Likewise.
+	* tree-inline.c (remap_decls): Likewise.
+	(declare_return_variable): Likewise.
+	(declare_inline_vars): Likewise.
+	(copy_forbidden): Adjust for new type of cfun->local_decls.
+	(add_local_variables): New function.
+	(expand_call_inline): Call it.
+	(tree_function_versioning): Likewise.
+
 2010-07-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	AVX Programming Reference (June, 2010)

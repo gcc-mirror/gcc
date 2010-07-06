@@ -1,3 +1,8 @@
+2010-07-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* decl.c (cp_finish_decl): Call add_local_decl.
+	* optimize.c (clone_body): Adjust for new type of cfun->local_decls.
+
 2010-07-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* pt.c (tsubst): Early declare code = TREE_CODE (t) and use it

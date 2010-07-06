@@ -4498,6 +4498,7 @@ free_lang_data_in_decl (tree decl)
       if (gimple_has_body_p (decl))
 	{
 	  tree t;
+	  unsigned ix;
 	  struct pointer_set_t *locals;
 
 	  /* If DECL has a gimple body, then the context for its
@@ -4514,14 +4515,13 @@ free_lang_data_in_decl (tree decl)
 
 	  /* Collect all the symbols declared in DECL.  */
 	  locals = pointer_set_create ();
-	  t = DECL_STRUCT_FUNCTION (decl)->local_decls;
-	  for (; t; t = TREE_CHAIN (t))
+	  FOR_EACH_LOCAL_DECL (DECL_STRUCT_FUNCTION (decl), ix, t)
 	    {
-	      pointer_set_insert (locals, TREE_VALUE (t));
+	      pointer_set_insert (locals, t);
 
 	      /* All the local symbols should have DECL as their
 		 context.  */
-	      DECL_CONTEXT (TREE_VALUE (t)) = decl;
+	      DECL_CONTEXT (t) = decl;
 	    }
 
 	  /* Get rid of any decl not in local_decls.  */
@@ -4873,6 +4873,7 @@ find_decls_types_in_node (struct cgraph_node *n, struct free_lang_data_d *fld)
 {
   basic_block bb;
   struct function *fn;
+  unsigned ix;
   tree t;
 
   find_decls_types (n->decl, fld);
@@ -4885,8 +4886,8 @@ find_decls_types_in_node (struct cgraph_node *n, struct free_lang_data_d *fld)
   fn = DECL_STRUCT_FUNCTION (n->decl);
 
   /* Traverse locals. */
-  for (t = fn->local_decls; t; t = TREE_CHAIN (t))
-    find_decls_types (TREE_VALUE (t), fld);
+  FOR_EACH_LOCAL_DECL (fn, ix, t)
+    find_decls_types (t, fld);
 
   /* Traverse EH regions in FN.  */
   {

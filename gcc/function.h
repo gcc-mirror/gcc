@@ -503,8 +503,8 @@ struct GTY(()) function {
      pointer.  */
   tree nonlocal_goto_save_area;
 
-  /* List of function local variables, functions, types and constants.  */
-  tree local_decls;
+  /* Vector of function local variables, functions, types and constants.  */
+  VEC(tree,gc) *local_decls;
 
   /* For md files.  */
 
@@ -608,6 +608,17 @@ struct GTY(()) function {
      function.  */
   unsigned int is_thunk : 1;
 };
+
+/* Add the decl D to the local_decls list of FUN.  */
+
+static inline void
+add_local_decl (struct function *fun, tree d)
+{
+  VEC_safe_push (tree, gc, fun->local_decls, d);
+}
+
+#define FOR_EACH_LOCAL_DECL(FUN, I, D)		\
+  FOR_EACH_VEC_ELT_REVERSE (tree, (FUN)->local_decls, I, D)
 
 /* If va_list_[gf]pr_size is set to this, it means we don't know how
    many units need to be saved.  */

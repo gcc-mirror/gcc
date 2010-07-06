@@ -1226,9 +1226,10 @@ static void
 init_vars_expansion (void)
 {
   tree t;
+  unsigned ix;
   /* Set TREE_USED on all variables in the local_decls.  */
-  for (t = cfun->local_decls; t; t = TREE_CHAIN (t))
-    TREE_USED (TREE_VALUE (t)) = 1;
+  FOR_EACH_LOCAL_DECL (cfun, ix, t)
+    TREE_USED (t) = 1;
 
   /* Clear TREE_USED on all variables associated with a block scope.  */
   clear_tree_used (DECL_INITIAL (current_function_decl));
@@ -1264,14 +1265,13 @@ estimated_stack_frame_size (void)
 {
   HOST_WIDE_INT size = 0;
   size_t i;
-  tree t, outer_block = DECL_INITIAL (current_function_decl);
+  tree var, outer_block = DECL_INITIAL (current_function_decl);
+  unsigned ix;
 
   init_vars_expansion ();
 
-  for (t = cfun->local_decls; t; t = TREE_CHAIN (t))
+  FOR_EACH_LOCAL_DECL (cfun, ix, var)
     {
-      tree var = TREE_VALUE (t);
-
       if (TREE_USED (var))
         size += expand_one_var (var, true, false);
       TREE_USED (var) = 1;
@@ -1296,9 +1296,10 @@ estimated_stack_frame_size (void)
 static void
 expand_used_vars (void)
 {
-  tree t, next, outer_block = DECL_INITIAL (current_function_decl);
-  tree maybe_local_decls = NULL_TREE;
+  tree var, outer_block = DECL_INITIAL (current_function_decl);
+  VEC(tree,heap) *maybe_local_decls = NULL;
   unsigned i;
+  unsigned len;
 
   /* Compute the phase of the stack frame for this function.  */
   {
@@ -1333,14 +1334,11 @@ expand_used_vars (void)
 
   /* At this point all variables on the local_decls with TREE_USED
      set are not associated with any block scope.  Lay them out.  */
-  t = cfun->local_decls;
-  cfun->local_decls = NULL_TREE;
-  for (; t; t = next)
-    {
-      tree var = TREE_VALUE (t);
-      bool expand_now = false;
 
-      next = TREE_CHAIN (t);
+  len = VEC_length (tree, cfun->local_decls);
+  FOR_EACH_LOCAL_DECL (cfun, i, var)
+    {
+      bool expand_now = false;
 
       /* Expanded above already.  */
       if (is_gimple_reg (var))
@@ -1377,24 +1375,28 @@ expand_used_vars (void)
 	  /* Keep artificial non-ignored vars in cfun->local_decls
 	     chain until instantiate_decls.  */
 	  if (rtl && (MEM_P (rtl) || GET_CODE (rtl) == CONCAT))
-	    {
-	      TREE_CHAIN (t) = cfun->local_decls;
-	      cfun->local_decls = t;
-	      continue;
-	    }
+	    add_local_decl (cfun, var);
 	  else if (rtl == NULL_RTX)
-	    {
-	      /* If rtl isn't set yet, which can happen e.g. with
-		 -fstack-protector, retry before returning from this
-		 function.  */
-	      TREE_CHAIN (t) = maybe_local_decls;
-	      maybe_local_decls = t;
-	      continue;
-	    }
+	    /* If rtl isn't set yet, which can happen e.g. with
+	       -fstack-protector, retry before returning from this
+	       function.  */
+	    VEC_safe_push (tree, heap, maybe_local_decls, var);
 	}
-
-      ggc_free (t);
     }
+
+  /* We duplicated some of the decls in CFUN->LOCAL_DECLS.
+
+     +-----------------+-----------------+
+     | ...processed... | ...duplicates...|
+     +-----------------+-----------------+
+                       ^
+		       +-- LEN points here.
+
+     We just want the duplicates, as those are the artificial
+     non-ignored vars that we want to keep until instantiate_decls.
+     Move them down and truncate the array.  */
+  if (!VEC_empty (tree, cfun->local_decls))
+    VEC_block_remove (tree, cfun->local_decls, 0, len);
 
   /* At this point, all variables within the block tree with TREE_USED
      set are actually used by the optimized function.  Lay them out.  */
@@ -1452,24 +1454,16 @@ expand_used_vars (void)
   /* If there were any artificial non-ignored vars without rtl
      found earlier, see if deferred stack allocation hasn't assigned
      rtl to them.  */
-  for (t = maybe_local_decls; t; t = next)
+  FOR_EACH_VEC_ELT_REVERSE (tree, maybe_local_decls, i, var)
     {
-      tree var = TREE_VALUE (t);
       rtx rtl = DECL_RTL_IF_SET (var);
-
-      next = TREE_CHAIN (t);
 
       /* Keep artificial non-ignored vars in cfun->local_decls
 	 chain until instantiate_decls.  */
       if (rtl && (MEM_P (rtl) || GET_CODE (rtl) == CONCAT))
-	{
-	  TREE_CHAIN (t) = cfun->local_decls;
-	  cfun->local_decls = t;
-	  continue;
-	}
-
-      ggc_free (t);
+	add_local_decl (cfun, var);
     }
+  VEC_free (tree, heap, maybe_local_decls);
 
   /* If the target requires that FRAME_OFFSET be aligned, do it.  */
   if (STACK_ALIGNMENT_NEEDED)

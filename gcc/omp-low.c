@@ -3138,20 +3138,18 @@ maybe_catch_exception (gimple_seq body)
 /* Chain all the DECLs in LIST by their TREE_CHAIN fields.  */
 
 static tree
-list2chain (tree list)
+vec2chain (VEC(tree,gc) *v)
 {
-  tree t;
+  tree chain = NULL_TREE, t;
+  unsigned ix;
 
-  for (t = list; t; t = TREE_CHAIN (t))
+  FOR_EACH_VEC_ELT_REVERSE (tree, v, ix, t)
     {
-      tree var = TREE_VALUE (t);
-      if (TREE_CHAIN (t))
-	TREE_CHAIN (var) = TREE_VALUE (TREE_CHAIN (t));
-      else
-	TREE_CHAIN (var) = NULL_TREE;
+      TREE_CHAIN (t) = chain;
+      chain = t;
     }
 
-  return list ? TREE_VALUE (list) : NULL_TREE;
+  return chain;
 }
 
 
@@ -3210,12 +3208,12 @@ remove_exit_barrier (struct omp_region *region)
 	    {
 	      gimple parallel_stmt = last_stmt (region->entry);
 	      tree child_fun = gimple_omp_parallel_child_fn (parallel_stmt);
-	      tree local_decls = DECL_STRUCT_FUNCTION (child_fun)->local_decls;
-	      tree block;
+	      tree local_decls, block, decl;
+	      unsigned ix;
 
 	      any_addressable_vars = 0;
-	      for (; local_decls; local_decls = TREE_CHAIN (local_decls))
-		if (TREE_ADDRESSABLE (TREE_VALUE (local_decls)))
+	      FOR_EACH_LOCAL_DECL (DECL_STRUCT_FUNCTION (child_fun), ix, decl)
+		if (TREE_ADDRESSABLE (decl))
 		  {
 		    any_addressable_vars = 1;
 		    break;
@@ -3334,7 +3332,7 @@ expand_omp_taskreg (struct omp_region *region)
 {
   basic_block entry_bb, exit_bb, new_bb;
   struct function *child_cfun;
-  tree child_fn, block, t, ws_args, *tp;
+  tree child_fn, block, t, ws_args;
   tree save_current;
   gimple_stmt_iterator gsi;
   gimple entry_stmt, stmt;
@@ -3380,6 +3378,8 @@ expand_omp_taskreg (struct omp_region *region)
     }
   else
     {
+      unsigned ix;
+
       /* If the parallel region needs data sent from the parent
 	 function, then the very first statement (except possible
 	 tree profile counter updates) of the parallel body
@@ -3457,7 +3457,7 @@ expand_omp_taskreg (struct omp_region *region)
 
       /* Declare local variables needed in CHILD_CFUN.  */
       block = DECL_INITIAL (child_fn);
-      BLOCK_VARS (block) = list2chain (child_cfun->local_decls);
+      BLOCK_VARS (block) = vec2chain (child_cfun->local_decls);
       /* The gimplifier could record temporaries in parallel/task block
 	 rather than in containing function's local_decls chain,
 	 which would mean cgraph missed finalizing them.  Do it now.  */
@@ -3515,11 +3515,11 @@ expand_omp_taskreg (struct omp_region *region)
 	single_succ_edge (new_bb)->flags = EDGE_FALLTHRU;
 
       /* Remove non-local VAR_DECLs from child_cfun->local_decls list.  */
-      for (tp = &child_cfun->local_decls; *tp; )
-	if (DECL_CONTEXT (TREE_VALUE (*tp)) != cfun->decl)
-	  tp = &TREE_CHAIN (*tp);
+      for (ix = 0; VEC_iterate (tree, child_cfun->local_decls, ix, t); )
+	if (DECL_CONTEXT (t) != cfun->decl)
+	  ix++;
 	else
-	  *tp = TREE_CHAIN (*tp);
+	  VEC_unordered_remove (tree, child_cfun->local_decls, ix);
 
       /* Inform the callgraph about the new function.  */
       DECL_STRUCT_FUNCTION (child_fn)->curr_properties

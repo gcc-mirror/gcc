@@ -1676,12 +1676,11 @@ analyze_function (struct cgraph_node *fn)
   /* There may be const decls with interesting right hand sides.  */
   if (DECL_STRUCT_FUNCTION (decl))
     {
-      tree step;
-      for (step = DECL_STRUCT_FUNCTION (decl)->local_decls;
-	   step;
-	   step = TREE_CHAIN (step))
+      tree var;
+      unsigned ix;
+
+      FOR_EACH_LOCAL_DECL (DECL_STRUCT_FUNCTION (decl), ix, var)
 	{
-	  tree var = TREE_VALUE (step);
 	  if (TREE_CODE (var) == VAR_DECL
 	      && DECL_INITIAL (var)
 	      && !TREE_STATIC (var))
