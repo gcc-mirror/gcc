@@ -8509,9 +8509,9 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
   rtx insn;
 
   if (! TARGET_64BIT)
-    insn = emit_insn (gen_pro_epilogue_adjust_stack_1 (dest, src, offset));
+    insn = emit_insn (gen_pro_epilogue_adjust_stack_si_1 (dest, src, offset));
   else if (x86_64_immediate_operand (offset, DImode))
-    insn = emit_insn (gen_pro_epilogue_adjust_stack_rex64 (dest, src, offset));
+    insn = emit_insn (gen_pro_epilogue_adjust_stack_di_1 (dest, src, offset));
   else
     {
       rtx tmp;
@@ -8528,8 +8528,8 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
       insn = emit_insn (gen_rtx_SET (DImode, tmp, offset));
       if (style < 0)
 	RTX_FRAME_RELATED_P (insn) = 1;
-      insn = emit_insn (gen_pro_epilogue_adjust_stack_rex64_2 (dest, src, tmp,
-							       offset));
+      insn = emit_insn (gen_pro_epilogue_adjust_stack_di_2 (dest, src, tmp,
+							    offset));
     }
 
   if (style >= 0)

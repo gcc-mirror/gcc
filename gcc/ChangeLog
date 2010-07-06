@@ -1,3 +1,34 @@
+2010-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (immediate_operand): New mode attribute.
+	
+	(pro_epilogue_adjust_stack_<mode>_1): Macroize insn from
+	pro_epilogue_adjust_stack  and pro_epilogue_adjust_stack_rex64
+	using P mode iterator.
+	(pro_epilogue_adjust_stack_di_2): Rename from
+	pro_epilogue_adjust_stack_rex64_2.
+
+	* config/i386/i386.c (pro_epilogue_adjust_stack): Update for rename.
+
+2010-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (insv): Call gen_movdi_insv1 or gen_movsi_insv1
+	through gen_mov_insv_1 function pointer.
+	(fmod<mode>3): Call gen_truncxf<mode>2_i387_noop_unspec or
+	gen_truncxf<mode>2 through gen_truncxf function pointer.
+	(remainder<mode>3): Ditto.
+	(cmpstrnsi): Rename cmp_insn function pointer to gen_cmp.
+	(allocate_stack): Call gen_allocate_stack_worker_64 or
+	gen_allocate_stack_worker_32 through gen_allocate_stack_worker
+	function pointer.
+	(probe_stack): Call gen_iordi3 or gen_iorsi3 through gen_ior3
+	function pointer.
+
+2010-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*add<mode>3_cconly_overflow): Use <g>
+	operand constraint instead of <r><i>m.
+
 2010-07-06  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/44828
@@ -79,13 +110,11 @@
 	(OPTION_MASK_ISA_RDRND_UNSET): Likewise.
 	(OPTION_MASK_ISA_F16C_UNSET): Likewise.
 	(OPTION_MASK_ISA_AVX_UNSET): Add OPTION_MASK_ISA_F16C_UNSET.
-	(ix86_handle_option): Handle OPT_mfsgsbase, OPT_mrdrnd and
-	OPT_mf16c.
+	(ix86_handle_option): Handle OPT_mfsgsbase, OPT_mrdrnd and OPT_mf16c.
 	(ix86_target_string): Support -mfsgsbase, -mrdrnd and -mf16c.
 	(pta_flags): Add PTA_FSGSBASE, PTA_RDRND and PTA_F16C.
 	(override_options): Handle them.
-	(ix86_valid_target_attribute_inner_p): Handle fsgsbase, rdrnd
-	and f16c.
+	(ix86_valid_target_attribute_inner_p): Handle fsgsbase, rdrnd and f16c.
 	(ix86_builtins): Add IX86_BUILTIN_RDFSBASE32,
 	IX86_BUILTIN_RDFSBASE64, IX86_BUILTIN_RDGSBASE32,
 	IX86_BUILTIN_RDGSBASE64, IX86_BUILTIN_WRFSBASE32,
@@ -213,8 +242,7 @@
 
 2010-07-05  Richard Guenther  <rguenther@suse.de>
 
-	* tree-ssa-loop-ivopts.c (rewrite_use_nonlinear_expr): Copy
-	alias info.
+	* tree-ssa-loop-ivopts.c (rewrite_use_nonlinear_expr): Copy alias info.
 
 2010-07-05  Richard Guenther  <rguenther@suse.de>
 
