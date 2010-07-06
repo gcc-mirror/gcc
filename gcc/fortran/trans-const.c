@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "realmpfr.h"
-#include "toplev.h"	/* For fatal_error.  */
+#include "diagnostic-core.h"	/* For fatal_error.  */
 #include "double-int.h"
 #include "gfortran.h"
 #include "trans.h"

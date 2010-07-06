@@ -1,3 +1,17 @@
+2010-07-06  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-decl.c: Include diagnostic-core.h besides toplev.h.
+	* trans-intrinsic.c: Ditto.
+	* trans-types.c: Ditto.
+	* convert.c: Include diagnostic-core.h instead of toplev.h.
+	* options.c: Ditto.
+	* trans-array.c: Ditto.
+	* trans-const.c: Ditto.
+	* trans-expr.c: Ditto.
+	* trans-io.c: Ditto.
+	* trans-openmp.c: Ditto.
+	* trans.c: Ditto.
+
 2010-07-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/PR44693

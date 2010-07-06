@@ -30,7 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"	/* For iso-c-bindings.def.  */
 #include "target.h"
 #include "ggc.h"
-#include "toplev.h"	/* For rest_of_decl_compilation/fatal_error.  */
+#include "diagnostic-core.h"  /* For fatal_error.  */
+#include "toplev.h"	/* For rest_of_decl_compilation.  */
 #include "gfortran.h"
 #include "trans.h"
 #include "trans-types.h"
