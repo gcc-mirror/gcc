@@ -1,3 +1,8 @@
+2010-07-06  Ken Werner  <ken.werner@de.ibm.com>
+
+	* floatformat.h (floatformat_ieee_half_big): Add declaration.
+	(floatformat_ieee_half_little): Likewise.
+
 2010-06-21  Rafael Espindola  <espindola@google.com>
 
 	* plugin-api.h (ld_plugin_set_extra_library_path): New.

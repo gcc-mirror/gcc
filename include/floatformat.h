@@ -96,6 +96,8 @@ struct floatformat
 
 /* floatformats for IEEE single and double, big and little endian.  */
 
+extern const struct floatformat floatformat_ieee_half_big;
+extern const struct floatformat floatformat_ieee_half_little;
 extern const struct floatformat floatformat_ieee_single_big;
 extern const struct floatformat floatformat_ieee_single_little;
 extern const struct floatformat floatformat_ieee_double_big;
