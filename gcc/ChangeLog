@@ -1,3 +1,13 @@
+2010-07-06  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_cgraph_replace_node): Handle aliases.
+	(lto_symtab_resolve_can_prevail_p): Also alias of cgraph node
+	with body can prevail.
+	(lto_symtab_resolve_symbols): Use cgraph_get_node_or_alias.
+	(lto_symtab_merge_cgraph_nodes_1): Do not remove nodes from aliases.
+	* cgraph.c (cgraph_get_node_or_alias): New function.
+	* cgraph.h (cgraph_get_node_or_alias): Declare.
+
 2010-07-06  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/i386.c (ix86_function_ms_hook_prologue): Enable x64
