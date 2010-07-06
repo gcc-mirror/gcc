@@ -1,3 +1,8 @@
+2010-07-06  Ken Werner  <ken.werner@de.ibm.com>
+
+	* floatformat.c (floatformat_ieee_half_big): New variable.
+	(floatformat_ieee_half_little): Likewise.
+
 2010-06-14  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* libiberty.texi: Remove reference to GCC 3 and 2001 (thrice).
