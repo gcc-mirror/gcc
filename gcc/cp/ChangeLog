@@ -1,3 +1,7 @@
+2010-07-06  Jason Merrill  <jason@redhat.com>
+
+	* error.c (dump_function_decl): Don't crash on null DECL_NAME.
+
 2010-07-06  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* cp-tree.h (impl_conv_void): New type.

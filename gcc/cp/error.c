@@ -1247,7 +1247,7 @@ dump_function_decl (tree t, int flags)
   tree exceptions;
   VEC(tree,gc) *typenames = NULL;
 
-  if (LAMBDA_FUNCTION_P (t))
+  if (DECL_NAME (t) && LAMBDA_FUNCTION_P (t))
     {
       /* A lambda's signature is essentially its "type", so defer.  */
       gcc_assert (LAMBDA_TYPE_P (DECL_CONTEXT (t)));
