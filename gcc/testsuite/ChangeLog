@@ -1,5 +1,9 @@
 2010-07-06  Peter Bergner  <bergner@vnet.ibm.com>
 
+	* gcc.target/powerpc/altivec-volatile.c: Adjust expected warning.
+
+2010-07-06  Peter Bergner  <bergner@vnet.ibm.com>
+
 	* gcc.target/powerpc/ppu-intrinsics.c: Add -Wno-unused-but-set-variable
 	to dg-options.
 
