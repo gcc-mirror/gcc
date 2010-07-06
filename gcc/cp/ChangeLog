@@ -1,5 +1,8 @@
 2010-07-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/44703
+	* call.c (is_std_init_list): Look through typedefs.
+
 	PR c++/44778
 	* init.c (build_offset_ref): If scope isn't dependent,
 	don't exit early.  Look at TYPE_MAIN_VARIANT.

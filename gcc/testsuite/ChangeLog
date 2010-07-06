@@ -1,5 +1,8 @@
 2010-07-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/44703
+	* g++.dg/cpp0x/initlist41.C: New.
+
 	PR c++/44778
 	* g++.dg/template/ptrmem22.C: New.
 
