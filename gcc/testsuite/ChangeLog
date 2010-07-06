@@ -1,3 +1,8 @@
+2010-07-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/44778
+	* g++.dg/template/ptrmem22.C: New.
+
 2010-07-06  Kai Tietz  <kai.tietz@onevision.com>
 
 	* gcc.target/i386/ms_hook_prologue.c: Add x64 ms_hook_prologue

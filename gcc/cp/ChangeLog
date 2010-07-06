@@ -1,5 +1,10 @@
 2010-07-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/44778
+	* init.c (build_offset_ref): If scope isn't dependent,
+	don't exit early.  Look at TYPE_MAIN_VARIANT.
+	* pt.c (tsubst_copy) [OFFSET_REF]: Do substitution.
+
 	* error.c (dump_function_decl): Don't crash on null DECL_NAME.
 
 2010-07-06  Shujing Zhao  <pearly.zhao@oracle.com>
