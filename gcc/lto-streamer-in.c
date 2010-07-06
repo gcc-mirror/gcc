@@ -1286,6 +1286,7 @@ input_function (tree fn_decl, struct data_in *data_in,
   struct bitpack_d bp;
   struct cgraph_node *node;
   tree args, narg, oarg;
+  int len;
 
   fn = DECL_STRUCT_FUNCTION (fn_decl);
   tag = input_record_start (ib);
@@ -1320,7 +1321,17 @@ input_function (tree fn_decl, struct data_in *data_in,
   fn->nonlocal_goto_save_area = lto_input_tree (ib, data_in);
 
   /* Read all the local symbols.  */
-  fn->local_decls = lto_input_tree (ib, data_in);
+  len = lto_input_sleb128 (ib);
+  if (len > 0)
+    {
+      int i;
+      VEC_safe_grow (tree, gc, fn->local_decls, len);
+      for (i = 0; i < len; i++)
+	{
+	  tree t = lto_input_tree (ib, data_in);
+	  VEC_replace (tree, fn->local_decls, i, t);
+	}
+    }
 
   /* Read all function arguments.  We need to re-map them here to the
      arguments of the merged function declaration.  */

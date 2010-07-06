@@ -5838,8 +5838,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	       but [cd]tors are never actually compiled directly.  We need
 	       to put statics on the list so we can deal with the label
 	       address extension.  */
-	    cfun->local_decls = tree_cons (NULL_TREE, decl,
-					   cfun->local_decls);
+	    add_local_decl (cfun, decl);
 	}
 
       /* Convert the initializer to the type of DECL, if we have not

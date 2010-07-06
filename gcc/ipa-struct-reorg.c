@@ -3418,7 +3418,6 @@ static void
 build_data_structure (VEC (tree, heap) **unsuitable_types)
 {
   tree var, type;
-  tree var_list;
   struct varpool_node *current_varpool;
   struct cgraph_node *c_node;
 
@@ -3441,6 +3440,7 @@ build_data_structure (VEC (tree, heap) **unsuitable_types)
       if (avail == AVAIL_LOCAL || avail == AVAIL_AVAILABLE)
 	{
 	  struct function *fn = DECL_STRUCT_FUNCTION (c_node->decl);
+	  unsigned ix;
 
 	  for (var = DECL_ARGUMENTS (c_node->decl); var;
 	       var = TREE_CHAIN (var))
@@ -3456,14 +3456,9 @@ build_data_structure (VEC (tree, heap) **unsuitable_types)
 	    }
 
 	  /* Check function local variables.  */
-	  for (var_list = fn->local_decls; var_list;
-	       var_list = TREE_CHAIN (var_list))
-	    {
-	      var = TREE_VALUE (var_list);
-
-	      if (is_candidate (var, &type, unsuitable_types))
-		add_structure (type);
-	    }
+	  FOR_EACH_LOCAL_DECL (fn, ix, var)
+	    if (is_candidate (var, &type, unsuitable_types))
+	      add_structure (type);
 	}
     }
 }

@@ -1520,7 +1520,7 @@ assemble_thunk (struct cgraph_node *node)
 	  if (!is_gimple_reg_type (restype))
 	    {
 	      restmp = resdecl;
-	      cfun->local_decls = tree_cons (NULL_TREE, restmp, cfun->local_decls);
+	      add_local_decl (cfun, restmp);
 	      BLOCK_VARS (DECL_INITIAL (current_function_decl)) = restmp;
 	    }
 	  else
