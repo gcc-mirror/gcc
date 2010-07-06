@@ -1,3 +1,9 @@
+2010-07-07  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/44787
+	* gcc.c-torture/compile/pr44788.c: New test.
+	* gcc.target/arm/pr44788.c: New test.
+
 2010-07-06  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/altivec-volatile.c: Adjust expected warning.
