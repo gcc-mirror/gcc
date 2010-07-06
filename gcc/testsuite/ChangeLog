@@ -1,3 +1,9 @@
+2010-07-06  Kai Tietz  <kai.tietz@onevision.com>
+
+	* gcc.target/i386/ms_hook_prologue.c: Add x64 ms_hook_prologue
+	support.
+	* gcc.target/i386/i386.exp: Likewise.
+
 2010-07-06  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR testsuite/44195
