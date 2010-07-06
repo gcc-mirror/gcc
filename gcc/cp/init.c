@@ -1507,18 +1507,9 @@ build_offset_ref (tree type, tree member, bool address_p)
   if (TREE_CODE (member) == TEMPLATE_DECL)
     return member;
 
-  if (dependent_type_p (type) || type_dependent_expression_p (member))
-    {
-      tree ref, mem_type = NULL_TREE;
-      if (!dependent_scope_p (type))
-	mem_type = TREE_TYPE (member);
-      ref = build_qualified_name (mem_type, type, member,
+  if (dependent_scope_p (type) || type_dependent_expression_p (member))
+    return build_qualified_name (NULL_TREE, type, member,
 				  /*template_p=*/false);
-      /* Undo convert_from_reference.  */
-      if (TREE_CODE (ref) == INDIRECT_REF)
-	ref = TREE_OPERAND (ref, 0);
-      return ref;
-    }
 
   gcc_assert (TYPE_P (type));
   if (! is_class_type (type, 1))
@@ -1528,6 +1519,7 @@ build_offset_ref (tree type, tree member, bool address_p)
   /* Callers should call mark_used before this point.  */
   gcc_assert (!DECL_P (member) || TREE_USED (member));
 
+  type = TYPE_MAIN_VARIANT (type);
   if (!COMPLETE_OR_OPEN_TYPE_P (complete_type (type)))
     {
       error ("incomplete type %qT does not have member %qD", type, member);

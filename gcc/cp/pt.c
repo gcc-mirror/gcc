@@ -11309,8 +11309,13 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       gcc_unreachable ();
 
     case OFFSET_REF:
-      mark_used (TREE_OPERAND (t, 1));
-      return t;
+      r = build2
+	(code, tsubst (TREE_TYPE (t), args, complain, in_decl),
+	 tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl),
+	 tsubst_copy (TREE_OPERAND (t, 1), args, complain, in_decl));
+      PTRMEM_OK_P (r) = PTRMEM_OK_P (t);
+      mark_used (TREE_OPERAND (r, 1));
+      return r;
 
     case EXPR_PACK_EXPANSION:
       error ("invalid use of pack expansion expression");
