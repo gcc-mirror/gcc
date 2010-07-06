@@ -1,3 +1,11 @@
+2010-07-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/PR44693
+	* check.c (dim_rank_check):  Also check intrinsic functions.
+	Adjust permissible rank for functions which reduce the rank of
+	their argument.  Spread is an exception, where DIM can
+	be one larger than the rank of array.
+
 2010-07-05  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/44797

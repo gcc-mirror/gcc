@@ -473,12 +473,15 @@ dim_rank_check (gfc_expr *dim, gfc_expr *array, int allow_assumed)
   if (dim == NULL)
     return SUCCESS;
 
-  if (dim->expr_type != EXPR_CONSTANT
-      || (array->expr_type != EXPR_VARIABLE
-	  && array->expr_type != EXPR_ARRAY))
+  if (dim->expr_type != EXPR_CONSTANT)
     return SUCCESS;
 
-  rank = array->rank;
+  if (array->expr_type == EXPR_FUNCTION && array->value.function.isym
+      && array->value.function.isym->id == GFC_ISYM_SPREAD)
+    rank = array->rank + 1;
+  else
+    rank = array->rank;
+
   if (array->expr_type == EXPR_VARIABLE)
     {
       ar = gfc_find_array_ref (array);
