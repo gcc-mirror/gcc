@@ -5,9 +5,9 @@
   
 </th><td width="20%" align="right"> <a accesskey="n" href="api.html">Next</a></td></tr></table><hr /></div><div class="sect1" title="ABI Policy and Guidelines"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="appendix.porting.abi"></a>ABI Policy and Guidelines</h2></div></div></div><p>
 </p><div class="sect2" title="The C++ Interface"><div class="titlepage"><div><div><h3 class="title"><a id="abi.cxx_interface"></a>The C++ Interface</h3></div></div></div><p>
-  C++ applications often dependent on specific language support
+  C++ applications often depend on specific language support
   routines, say for throwing exceptions, or catching exceptions, and
-  perhaps also dependent on features in the C++ Standard Library.
+  perhaps also depend on features in the C++ Standard Library.
 </p><p>
   The C++ Standard Library has many include files, types defined in
   those include files, specific named functions, and other
@@ -65,7 +65,7 @@ as to give distinct versions to the C++ interface.
 releases of library binaries the ability to add new symbols and add
 functionality, all the while retaining compatibility with the previous
 releases in the series. Thus, program binaries linked with the initial
-release of a library binary will still link correctly if the library
+release of a library binary will still run correctly if the library
 binary is replaced by carefully-managed subsequent library
 binaries. This is called forward compatibility.
 </p><p>
@@ -99,7 +99,7 @@ compatible.
    is not listed, it has the same version labels as the preceding
    release.</p><p>This corresponds to the mapfile: gcc/libgcc-std.ver</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p>gcc-3.0.0: GCC_3.0</p></li><li class="listitem"><p>gcc-3.3.0: GCC_3.3</p></li><li class="listitem"><p>gcc-3.3.1: GCC_3.3.1</p></li><li class="listitem"><p>gcc-3.3.2: GCC_3.3.2</p></li><li class="listitem"><p>gcc-3.3.4: GCC_3.3.4</p></li><li class="listitem"><p>gcc-3.4.0: GCC_3.4</p></li><li class="listitem"><p>gcc-3.4.2: GCC_3.4.2</p></li><li class="listitem"><p>gcc-3.4.4: GCC_3.4.4</p></li><li class="listitem"><p>gcc-4.0.0: GCC_4.0.0</p></li><li class="listitem"><p>gcc-4.1.0: GCC_4.1.0</p></li><li class="listitem"><p>gcc-4.2.0: GCC_4.2.0</p></li><li class="listitem"><p>gcc-4.3.0: GCC_4.3.0</p></li><li class="listitem"><p>gcc-4.4.0: GCC_4.4.0</p></li></ul></div></li><li class="listitem"><p>
 	Release versioning on the libstdc++.so binary, implemented in
-	the same was as the libgcc_s.so binary above. Listed is the
+	the same way as the libgcc_s.so binary above. Listed is the
 	filename: <code class="constant">DT_SONAME</code> can be deduced from
 	the filename by removing the last two period-delimited numbers. For
 	example, filename <code class="filename">libstdc++.so.5.0.4</code>
@@ -117,9 +117,9 @@ compatible.
       Note 3: This release (but not previous or subsequent) has one
       known incompatibility, see <a class="ulink" href="http://gcc.gnu.org/bugzilla/show_bug.cgi?id=33678" target="_top">33678</a>
       in the GCC bug database.
-    </p></li><li class="listitem"><p>Symbol versioning on the libstdc++.so binary.</p><p>mapfile: libstdc++/config/linker-map.gnu</p><p>It is versioned with the following labels and version
+    </p></li><li class="listitem"><p>Symbol versioning on the libstdc++.so binary.</p><p>mapfile: libstdc++-v3/config/abi/pre/gnu.ver</p><p>It is versioned with the following labels and version
    definitions, where the version definition is the maximum for a
-   particular release. Note, only symbol which are newly introduced
+   particular release. Note, only symbols which are newly introduced
    will use the maximum version definition. Thus, for release series
    with the same label, but incremented version definitions, the later
    release has both versions. (An example of this would be the
@@ -151,7 +151,7 @@ compatible.
     was released, in compressed ISO date format, as an unsigned long.
     </p><p>
     This macro is defined in the file "c++config" in the
-    "libstdc++/include/bits" directory. (Up to gcc-4.1.0, it was
+    "libstdc++-v3/include/bits" directory. (Up to gcc-4.1.0, it was
     changed every night by an automated script. Since gcc-4.1.0, it is
     the same value as gcc/DATESTAMP.)
     </p><p>
@@ -164,7 +164,7 @@ compatible.
     is called _GLIBCXX_VERSION).
     </p><p>
     This macro is defined in the file "c++config" in the
-    "libstdc++/include/bits" directory and is generated
+    "libstdc++-v3/include/bits" directory and is generated
     automatically by autoconf as part of the configure-time generation
     of config.h.
     </p><p>
@@ -177,7 +177,7 @@ compatible.
     All C++ includes are installed in include/c++, then nest in a
     directory hierarchy corresponding to the C++ compiler's released
     version. This version corresponds to the variable "gcc_version" in
-    "libstdc++/acinclude.m4," and more details can be found in that
+    "libstdc++-v3/acinclude.m4," and more details can be found in that
     file's macro GLIBCXX_CONFIGURE (GLIBCPP_CONFIGURE before gcc-3.4.0).
     </p><p>
     C++ includes are versioned as follows:
@@ -190,7 +190,8 @@ compatible.
 </p></div><div class="sect3" title="Prerequisites"><div class="titlepage"><div><div><h4 class="title"><a id="abi.versioning.prereq"></a>Prerequisites</h4></div></div></div><p>
       Minimum environment that supports a versioned ABI: A supported
       dynamic linker, a GNU linker of sufficient vintage to understand
-      demangled C++ name globbing (ld), a shared executable compiled
+      demangled C++ name globbing (ld) or the Sun linker, a shared
+      executable compiled
       with g++, and shared libraries (libgcc_s, libstdc++) compiled by
       a compiler (g++) with a compatible ABI. Phew.
     </p><p>
@@ -200,7 +201,7 @@ compatible.
     </p><p>
       Most modern Linux and BSD versions, particularly ones using
       gcc-3.1.x tools and more recent vintages, will meet the
-      requirements above.
+      requirements above, as does Solaris 2.5 and up.
     </p></div><div class="sect3" title="Configuring"><div class="titlepage"><div><div><h4 class="title"><a id="abi.versioning.config"></a>Configuring</h4></div></div></div><p>
       It turns out that most of the configure options that change
       default behavior will impact the mangled names of exported
@@ -208,12 +209,12 @@ compatible.
     </p><p>
       For more information on configure options, including ABI
       impacts, see:
-      http://gcc.gnu.org/onlinedocs/libstdc++/configopts.html
+      <a class="link" href="configure.html" title="Configure">here</a>
     </p><p>
       There is one flag that explicitly deals with symbol versioning:
       --enable-symvers.
     </p><p>
-      In particular, libstdc++/acinclude.m4 has a macro called
+      In particular, libstdc++-v3/acinclude.m4 has a macro called
       GLIBCXX_ENABLE_SYMVERS that defaults to yes (or the argument
       passed in via --enable-symvers=foo). At that point, the macro
       attempts to make sure that all the requirement for symbol
@@ -228,6 +229,7 @@ compatible.
   checking versioning on shared library symbols... gnu
 </code>
 </pre><p>
+  or another of the supported styles.
   If you don't see this line in the configure output, or if this line
   appears but the last word is 'no', then you are out of luck.
 </p><p>
@@ -255,6 +257,17 @@ If you see symbols in the resulting output with "GLIBCXX_3" as part
 of the name, then the executable is versioned. Here's an example:
 </p><p>
    <code class="code">U _ZNSt8ios_base4InitC1Ev@@GLIBCXX_3.4</code>
+</p><p>
+On Solaris 2, you can use <code class="code">pvs -r</code> instead:
+</p><pre class="programlisting">
+%g++ hello.cc -o hello.out
+
+%pvs -r hello.out
+        libstdc++.so.6 (GLIBCXX_3.4, GLIBCXX_3.4.12);
+        libgcc_s.so.1 (GCC_3.0);
+        libc.so.1 (SUNWprivate_1.1, SYSVABI_1.3);
+</pre><p>
+<code class="code">ldd -v</code> works too, but is very verbose.
 </p></div></div><div class="sect2" title="Allowed Changes"><div class="titlepage"><div><div><h3 class="title"><a id="abi.changes_allowed"></a>Allowed Changes</h3></div></div></div><p>
 The following will cause the library minor version number to
 increase, say from "libstdc++.so.3.0.4" to "libstdc++.so.3.0.5".
@@ -274,7 +287,7 @@ number to increase, say from "libstdc++.so.3.0.4" to
 </p></li><li class="listitem"><p> Adding an explicit copy constructor or destructor to a
 class that would otherwise have implicit versions. This will change
 the way the compiler deals with this class in by-value return
-statements or parameters: instead of being passing instances of this
+statements or parameters: instead of passing instances of this
 class in registers, the compiler will be forced to use memory. See <a class="ulink" href="http://www.codesourcery.com/cxx-abi/abi.html#calls" target="_top"> this part</a>
  of the C++ ABI documentation for further details.
  </p></li></ol></div></div><div class="sect2" title="Implementation"><div class="titlepage"><div><div><h3 class="title"><a id="abi.impl"></a>Implementation</h3></div></div></div><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
@@ -358,7 +371,7 @@ http://gcc.gnu.org/ml/gcc/2002-08/msg00142.html
 Two.
 Use the 'make check-abi' rule in the libstdc++ Makefile.
 </p><p>
-This is a proactive check the library ABI. Currently, exported symbol
+This is a proactive check of the library ABI. Currently, exported symbol
 names that are either weak or defined are checked against a last known
 good baseline. Currently, this baseline is keyed off of 3.4.0
 binaries, as this was the last time the .so number was incremented. In
@@ -387,13 +400,13 @@ Another approach might be to use the -fdump-class-hierarchy flag to
 get information. However, currently this approach gives insufficient
 data for use in library testing, as class data members, their offsets,
 and other detailed data is not displayed with this flag.
-(See g++/7470 on how this was used to find bugs.)
+(See PR g++/7470 on how this was used to find bugs.)
 </p><p>
 Perhaps there are other C++ ABI checkers. If so, please notify
 us. We'd like to know about them!
 </p></div><div class="sect3" title="Multiple ABI Testing"><div class="titlepage"><div><div><h4 class="title"><a id="abi.testing.multi"></a>Multiple ABI Testing</h4></div></div></div><p>
 A "C" application, dynamically linked to two shared libraries, liba,
-libb. The dependent library liba is C++ shared library compiled with
+libb. The dependent library liba is a C++ shared library compiled with
 gcc-3.3.x, and uses io, exceptions, locale, etc. The dependent library
 libb is a C++ shared library compiled with gcc-3.4.x, and also uses io,
 exceptions, locale, etc.
@@ -467,49 +480,49 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
 <a class="ulink" href="http://gcc.gnu.org/PR24660" target="_top">24660: versioning weak symbols in libstdc++</a>
 </p><p>
 <a class="ulink" href="http://gcc.gnu.org/PR19664" target="_top">19664: libstdc++ headers should have pop/push of the visibility around the declarations</a>
-</p></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="abi.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id528502"></a><p><span class="biblioid">
+</p></div><div class="bibliography" title="Bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="abi.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id619029"></a><p><span class="biblioid">
       <a class="ulink" href="http://abicheck.sourceforge.net/" target="_top">
 	<em class="citetitle">
 	  ABIcheck, a vague idea of checking ABI compatibility
 	</em>
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id528522"></a><p><span class="biblioid">
+    . </span></p></div><div class="biblioentry"><a id="id619049"></a><p><span class="biblioid">
       <a class="ulink" href="http://www.codesourcery.com/public/cxx-abi/" target="_top">
 	<em class="citetitle">
 	  C++ ABI Reference
 	</em>
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id528541"></a><p><span class="biblioid">
+    . </span></p></div><div class="biblioentry"><a id="id619068"></a><p><span class="biblioid">
       <a class="ulink" href="http://www.intel.com/cd/software/products/asmo-na/eng/284736.htm" target="_top">
 	<em class="citetitle">
 	  Intel Compilers for Linux Compatibility with the GNU Compilers
 	</em>
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id528561"></a><p><span class="biblioid">
-      <a class="ulink" href="http://docs.sun.com/app/docs/doc/817-1984" target="_top">
+    . </span></p></div><div class="biblioentry"><a id="id619088"></a><p><span class="biblioid">
+      <a class="ulink" href="http://docs.sun.com/app/docs/doc/819-0690" target="_top">
 	<em class="citetitle">
-	  Sun Solaris 2.9 : Linker and Libraries Guide (document 816-1386)
+	  Linker and Libraries Guide (document 819-0690)
 	</em>
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id528581"></a><p><span class="biblioid">
-      <a class="ulink" href="http://docs.sun.com/app/docs/doc/819-5266" target="_top">
+    . </span></p></div><div class="biblioentry"><a id="id619107"></a><p><span class="biblioid">
+      <a class="ulink" href="http://docs.sun.com/app/docs/doc/819-3689" target="_top">
 	<em class="citetitle">
-	  Sun Solaris 2.9 : C++ Migration Guide (document 816-2459)
+	  Sun Studio 11: C++ Migration Guide (document 819-3689)
 	</em>
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id528600"></a><p><span class="biblioid">
+    . </span></p></div><div class="biblioentry"><a id="id619127"></a><p><span class="biblioid">
       <a class="ulink" href="http://people.redhat.com/drepper/dsohowto.pdf" target="_top">
 	<em class="citetitle">
 	  How to Write Shared Libraries
 	</em>
       </a>
-    . </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span></p></div><div class="biblioentry"><a id="id528631"></a><p><span class="biblioid">
+    . </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span></p></div><div class="biblioentry"><a id="id619157"></a><p><span class="biblioid">
       <a class="ulink" href="http://www.arm.com/miscPDFs/8033.pdf" target="_top">
 	<em class="citetitle">
 	  C++ ABI for the ARM Architecture
 	</em>
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id528651"></a><p><span class="biblioid">
+    . </span></p></div><div class="biblioentry"><a id="id619177"></a><p><span class="biblioid">
       <a class="ulink" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1976.html" target="_top">
 	<em class="citetitle">
 	  Dynamic Shared Objects: Survey and Issues
@@ -517,7 +530,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
       </a>
     . </span><span class="subtitle">
       ISO C++ J16/06-0046
-    . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span></p></div><div class="biblioentry"><a id="id528685"></a><p><span class="biblioid">
+    . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span></p></div><div class="biblioentry"><a id="id619212"></a><p><span class="biblioid">
       <a class="ulink" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n2013.html" target="_top">
 	<em class="citetitle">
 	  Versioning With Namespaces
@@ -525,7 +538,7 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
       </a>
     . </span><span class="subtitle">
       ISO C++ J16/06-0083
-    . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span></p></div><div class="biblioentry"><a id="id639657"></a><p><span class="biblioid">
+    . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span></p></div><div class="biblioentry"><a id="id619247"></a><p><span class="biblioid">
       <a class="ulink" href="http://syrcose.ispras.ru/2009/files/SYRCoSE2009-CfP.pdf" target="_top">
 	<em class="citetitle">
 	  Binary Compatibility of Shared Libraries Implemented in C++
