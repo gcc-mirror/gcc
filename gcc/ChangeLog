@@ -1,3 +1,9 @@
+2010-07-07  Duncan Sands  <baldrick@free.fr>
+
+	PR middle-end/41355
+	* tree.c (build_function_type_skip_args): Copy the original type using
+	build_distinct_type_copy rather than copy_node.
+
 2010-07-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* doc/gimple.texi (GIMPLE_DEBUG): Document.

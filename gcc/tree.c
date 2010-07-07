@@ -7216,7 +7216,7 @@ build_function_type_skip_args (tree orig_type, bitmap args_to_skip)
   if (TREE_CODE (orig_type) != METHOD_TYPE
       || !bitmap_bit_p (args_to_skip, 0))
     {
-      new_type = copy_node (orig_type);
+      new_type = build_distinct_type_copy (orig_type);
       TYPE_ARG_TYPES (new_type) = new_reversed;
     }
   else
