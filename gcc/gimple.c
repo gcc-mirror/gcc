@@ -1383,7 +1383,10 @@ walk_gimple_op (gimple stmt, walk_tree_fn callback_op,
 
     case GIMPLE_CALL:
       if (wi)
-	wi->is_lhs = false;
+	{
+	  wi->is_lhs = false;
+	  wi->val_only = true;
+	}
 
       ret = walk_tree (gimple_call_chain_ptr (stmt), callback_op, wi, pset);
       if (ret)
@@ -1395,21 +1398,32 @@ walk_gimple_op (gimple stmt, walk_tree_fn callback_op,
 
       for (i = 0; i < gimple_call_num_args (stmt); i++)
 	{
+	  if (wi)
+	    wi->val_only = is_gimple_reg_type (gimple_call_arg (stmt, i));
 	  ret = walk_tree (gimple_call_arg_ptr (stmt, i), callback_op, wi,
 			   pset);
 	  if (ret)
 	    return ret;
 	}
 
-      if (wi)
-	wi->is_lhs = true;
+      if (gimple_call_lhs (stmt))
+	{
+	  if (wi)
+	    {
+	      wi->is_lhs = true;
+	      wi->val_only = is_gimple_reg_type (gimple_call_lhs (stmt));
+	    }
 
-      ret = walk_tree (gimple_call_lhs_ptr (stmt), callback_op, wi, pset);
-      if (ret)
-	return ret;
+	  ret = walk_tree (gimple_call_lhs_ptr (stmt), callback_op, wi, pset);
+	  if (ret)
+	    return ret;
+	}
 
       if (wi)
-	wi->is_lhs = false;
+	{
+	  wi->is_lhs = false;
+	  wi->val_only = true;
+	}
       break;
 
     case GIMPLE_CATCH:
@@ -2537,15 +2551,6 @@ const unsigned char gimple_rhs_class_table[] = {
 /* For the definitive definition of GIMPLE, see doc/tree-ssa.texi.  */
 
 /* Validation of GIMPLE expressions.  */
-
-/* Return true if OP is an acceptable tree node to be used as a GIMPLE
-   operand.  */
-
-bool
-is_gimple_operand (const_tree op)
-{
-  return op && get_gimple_rhs_class (TREE_CODE (op)) == GIMPLE_SINGLE_RHS;
-}
 
 /* Returns true iff T is a valid RHS for an assignment to a renamed
    user -- or front-end generated artificial -- variable.  */
