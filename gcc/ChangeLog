@@ -1,3 +1,8 @@
+2010-07-06  Jan Hubicka  <jh@suse.cz>
+
+	* lto-cgraph.c (output_cgraph): Output toplevel asms only into first
+	partition.
+
 2010-07-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* doc/gimple.texi (GIMPLE_DEBUG): Document.
