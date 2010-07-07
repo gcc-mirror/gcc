@@ -269,13 +269,14 @@ do {						\
 /* Write the extra assembler code needed to declare a function
    properly.  If we are generating SDB debugging information, this
    will happen automatically, so we only need to handle other cases.  */
-#undef SUBTARGET_ASM_DECLARE_FUNCTION_NAME
-#define SUBTARGET_ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)		\
+#undef ASM_DECLARE_FUNCTION_NAME
+#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
   do									\
     {									\
       i386_pe_maybe_record_exported_symbol (DECL, NAME, 0);		\
       if (write_symbols != SDB_DEBUG)					\
 	i386_pe_declare_function_type (FILE, NAME, TREE_PUBLIC (DECL));	\
+      ASM_OUTPUT_LABEL (FILE, NAME);					\
     }									\
   while (0)
 

@@ -1,5 +1,20 @@
 2010-07-07  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/44850
+	* config/i386/i386.c (ix86_function_ms_hook_prologue): Revert
+	revision 161876.
+	(ix86_expand_prologue): Likewise.
+	(ix86_handle_fndecl_attribute): Likewise.
+	(ix86_asm_declare_function_name): Likewise.
+	* config/i386/i386.h (ASM_DECLARE_FUNCTION_NAME): Likewise.
+	* config/i386/cygming.h (ASM_DECLARE_FUNCTION_NAME): Likewise.
+	(SUBTARGET_ASM_DECLARE_FUNCTION_NAME): Likewise.
+	* config/i386/i386-protos.h (ix86_asm_declare_function_name):
+	Likewise.
+	* doc/extend.texi: Likewise.
+
+2010-07-07  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/44844
 	* config/i386/i386.md (rdrand<mode>): Changed to expand to
 	retry if the carry flag isn't valid.
