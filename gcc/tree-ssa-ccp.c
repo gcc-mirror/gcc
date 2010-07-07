@@ -300,7 +300,8 @@ get_default_value (tree var)
 	 before being initialized.  If VAR is a local variable, we
 	 can assume initially that it is UNDEFINED, otherwise we must
 	 consider it VARYING.  */
-      if (is_gimple_reg (sym) && TREE_CODE (sym) != PARM_DECL)
+      if (is_gimple_reg (sym)
+	  && TREE_CODE (sym) == VAR_DECL)
 	val.lattice_val = UNDEFINED;
       else
 	val.lattice_val = VARYING;

@@ -92,6 +92,12 @@ ssa_undefined_value_p (tree t)
   if (TREE_CODE (var) == PARM_DECL)
     return false;
 
+  /* When returning by reference the return address is actually a hidden
+     parameter.  */
+  if (TREE_CODE (SSA_NAME_VAR (t)) == RESULT_DECL
+      && DECL_BY_REFERENCE (SSA_NAME_VAR (t)))
+    return false;
+
   /* Hard register variables get their initial value from the ether.  */
   if (TREE_CODE (var) == VAR_DECL && DECL_HARD_REGISTER (var))
     return false;

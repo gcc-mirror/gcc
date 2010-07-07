@@ -1,3 +1,25 @@
+2010-07-07  Jan Hubicka  <jh@suse.cz>
+
+	With parts by Richard Guenther
+
+	PR middle-end/44813
+	* tree-ssa-uninit.c (ssa_undefined_value_p): Result decl is defined
+	for functions passed by reference.
+	* tree.c (needs_to_live_in_memory): RESULT_DECL don't need to live
+	in memory when passed by reference.
+	* tree-ssa-ccp.c (get_default_value): Only VAR_DECL is undefined at
+	beggining.
+	* ipa-split.c (split_function): Cleanup way return value is passed;
+	handle SSA DECL_BY_REFERENCE retvals.
+	* tree-ssa.c (verify_def): Verify that RESULT_DECL is read only when
+	DECL_BY_REFERENCE is set.
+	* tree-ssa-structalias.c (get_constraint_for_ssa_var, get_fi_for_callee,
+	find_what_p_points_to): Handle RESULT_DECL.
+	* tree-inline.c (declare_return_variable): Get new entry_block argument;
+	when passing by reference ensure that RESULT_DECL is gimple_val.
+	(remap_gimple_op_r): Remap RESULT_DECL ssa name.
+	(remap_gimple_stmt): Handle SSA DECL_BY_REFERENCE returns.
+
 2010-07-07  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR rtl-optimization/44787
