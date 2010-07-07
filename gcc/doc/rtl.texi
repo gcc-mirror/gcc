@@ -38,6 +38,7 @@ form uses nested parentheses to indicate the pointers in the internal form.
 * Side Effects::      Expressions for storing in registers, etc.
 * Incdec::            Embedded side-effects for autoincrement addressing.
 * Assembler::         Representing @code{asm} with operands.
+* Debug Information:: Expressions representing debugging information.
 * Insns::             Expression types for entire insns.
 * Calls::             RTL representation of function call insns.
 * Sharing::           Some expressions are unique; others *must* be copied.
@@ -3285,6 +3286,38 @@ template and vectors, but each contains the constraint for the respective
 output operand.  They are also distinguished by the output-operand index
 number, which is 0, 1, @dots{} for successive output operands.
 
+@node Debug Information
+@section Variable Location Debug Information in RTL
+@cindex Variable Location Debug Information in RTL
+
+Variable tracking relies on @code{MEM_EXPR} and @code{REG_EXPR}
+annotations to determine what user variables memory and register
+references refer to.
+
+Variable tracking at assignments uses these notes only when they refer
+to variables that live at fixed locations (e.g., addressable
+variables, global non-automatic variables).  For variables whose
+location may vary, it relies on the following types of notes.
+
+@table @code
+@findex var_location
+@item (var_location:@var{mode} @var{var} @var{exp} @var{stat})
+Binds variable @code{var}, a tree, to value @var{exp}, an RTL
+expression.  It appears only in @code{NOTE_INSN_VAR_LOCATION} and
+@code{DEBUG_INSN}s, with slightly different meanings.  @var{mode}, if
+present, represents the mode of @var{exp}, which is useful if it is a
+modeless expression.  @var{stat} is only meaningful in notes,
+indicating whether the variable is known to be initialized or
+uninitialized.
+
+@findex debug_expr
+@item (debug_expr:@var{mode} @var{decl})
+Stands for the value bound to the @code{DEBUG_EXPR_DECL} @var{decl},
+that points back to it, within value expressions in
+@code{VAR_LOCATION} nodes.
+
+@end table
+
 @node Insns
 @section Insns
 @cindex insns
@@ -3360,7 +3393,7 @@ of @code{PREV_INSN (NEXT_INSN (@var{insn}))} if @var{insn} is the last
 insn in the @code{sequence} expression.  You can use these expressions
 to find the containing @code{sequence} expression.
 
-Every insn has one of the following six expression codes:
+Every insn has one of the following expression codes:
 
 @table @code
 @findex insn
@@ -3551,9 +3584,54 @@ invariants.
 Appears at the start of the function body, after the function
 prologue.
 
+@findex NOTE_INSN_VAR_LOCATION
+@findex NOTE_VAR_LOCATION
+@item NOTE_INSN_VAR_LOCATION
+This note is used to generate variable location debugging information.
+It indicates that the user variable in its @code{VAR_LOCATION} operand
+is at the location given in the RTL expression, or holds a value that
+can be computed by evaluating the RTL expression from that static
+point in the program up to the next such note for the same user
+variable.
+
 @end table
 
 These codes are printed symbolically when they appear in debugging dumps.
+
+@findex debug_insn
+@findex INSN_VAR_LOCATION
+@item debug_insn
+The expression code @code{debug_insn} is used for pseudo-instructions
+that hold debugging information for variable tracking at assignments
+(see @option{-fvar-tracking-assignments} option).  They are the RTL
+representation of @code{GIMPLE_DEBUG} statements
+(@ref{@code{GIMPLE_DEBUG}}), with a @code{VAR_LOCATION} operand that
+binds a user variable tree to an RTL representation of the
+@code{value} in the corresponding statement.  A @code{DEBUG_EXPR} in
+it stands for the value bound to the corresponding
+@code{DEBUG_EXPR_DECL}.
+
+Throughout optimization passes, binding information is kept in
+pseudo-instruction form, so that, unlike notes, it gets the same
+treatment and adjustments that regular instructions would.  It is the
+variable tracking pass that turns these pseudo-instructions into var
+location notes, analyzing control flow, value equivalences and changes
+to registers and memory referenced in value expressions, propagating
+the values of debug temporaries and determining expressions that can
+be used to compute the value of each user variable at as many points
+(ranges, actually) in the program as possible.
+
+Unlike @code{NOTE_INSN_VAR_LOCATION}, the value expression in an
+@code{INSN_VAR_LOCATION} denotes a value at that specific point in the
+program, rather than an expression that can be evaluated at any later
+point before an overriding @code{VAR_LOCATION} is encountered.  E.g.,
+if a user variable is bound to a @code{REG} and then a subsequent insn
+modifies the @code{REG}, the note location would keep mapping the user
+variable to the register across the insn, whereas the insn location
+would keep the variable bound to the value, so that the variable
+tracking pass would emit another location note for the variable at the
+point in which the register is modified.
+
 @end table
 
 @cindex @code{TImode}, in @code{insn}
