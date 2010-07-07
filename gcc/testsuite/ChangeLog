@@ -1,3 +1,10 @@
+2010-07-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/44844
+	* gcc.target/i386/rdrand-1.c: Scan "jnc".
+	* gcc.target/i386/rdrand-2.c: Likewise.
+	* gcc.target/i386/rdrand-3.c: Likewise.
+
 2010-07-07  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/44813
