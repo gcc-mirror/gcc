@@ -3174,6 +3174,37 @@ finish_root_table (struct flist *flp, const char *pfx, const char *lastname,
   }
 }
 
+/* A subroutine of write_root for writing the roots for field FIELD_NAME,
+   which has type FIELD_TYPE.  Parameters F to EMIT_PCH are the parameters
+   of the caller.  */
+
+static void
+write_field_root (outf_p f, pair_p v, type_p type, const char *name,
+		  int has_length, struct fileloc *line, const char *if_marked,
+		  bool emit_pch, type_p field_type, const char *field_name)
+{
+  /* If the field reference is relative to V, rather than to some
+     subcomponent of V, we can mark any subarrays with a single stride.
+     We're effectively treating the field as a global variable in its
+     own right.  */
+  if (type == v->type)
+    {
+      struct pair newv;
+
+      newv = *v;
+      newv.type = field_type;
+      newv.name = ACONCAT ((v->name, ".", field_name, NULL));
+      v = &newv;
+    }
+  /* Otherwise, any arrays nested in the structure are too complex to
+     handle.  */
+  else if (field_type->kind == TYPE_ARRAY)
+    error_at_line (line, "nested array `%s.%s' is too complex to be a root",
+		   name, field_name);
+  write_root (f, v, field_type, ACONCAT ((name, ".", field_name, NULL)),
+	      has_length, line, if_marked, emit_pch);
+}
+
 /* Write out to F the table entry and any marker routines needed to
    mark NAME as TYPE.  The original variable is V, at LINE.
    HAS_LENGTH is nonzero iff V was a variable-length array.  IF_MARKED
@@ -3232,27 +3263,18 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
 		    validf = ufld;
 		  }
 		if (validf != NULL)
-		  {
-		    char *newname;
-		    newname = xasprintf ("%s.%s.%s",
-					 name, fld->name, validf->name);
-		    write_root (f, v, validf->type, newname, 0, line,
-				if_marked, emit_pch);
-		    free (newname);
-		  }
+		  write_field_root (f, v, type, name, 0, line, if_marked,
+				    emit_pch, validf->type,
+				    ACONCAT ((fld->name, ".",
+					      validf->name, NULL)));
 	      }
 	    else if (desc)
 	      error_at_line (line,
 		     "global `%s.%s' has `desc' option but is not union",
 			     name, fld->name);
 	    else
-	      {
-		char *newname;
-		newname = xasprintf ("%s.%s", name, fld->name);
-		write_root (f, v, fld->type, newname, 0, line, if_marked,
-			    emit_pch);
-		free (newname);
-	      }
+	      write_field_root (f, v, type, name, 0, line, if_marked,
+				emit_pch, fld->type, fld->name);
 	  }
       }
       break;
