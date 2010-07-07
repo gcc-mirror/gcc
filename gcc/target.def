@@ -2337,6 +2337,13 @@ DEFHOOKPOD
  "",
  bool, false)
 
+DEFHOOKPOD
+(want_debug_pub_sections,
+ "True if the @code{.debug_pubtypes} and @code{.debug_pubnames} sections\
+ should be emitted.  These sections are not used on most platforms, and\
+ in particular GDB does not use them.",
+ bool, false)
+
 /* Leave the boolean fields at the end.  */
 
 /* Empty macro arguments are undefined in C90, so use an empty macro.  */

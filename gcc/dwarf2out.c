@@ -11238,17 +11238,20 @@ dwarf2_name (tree decl, int scope)
 static void
 add_pubname_string (const char *str, dw_die_ref die)
 {
-  pubname_entry e;
+  if (targetm.want_debug_pub_sections)
+    {
+      pubname_entry e;
 
-  e.die = die;
-  e.name = xstrdup (str);
-  VEC_safe_push (pubname_entry, gc, pubname_table, &e);
+      e.die = die;
+      e.name = xstrdup (str);
+      VEC_safe_push (pubname_entry, gc, pubname_table, &e);
+    }
 }
 
 static void
 add_pubname (tree decl, dw_die_ref die)
 {
-  if (TREE_PUBLIC (decl))
+  if (targetm.want_debug_pub_sections && TREE_PUBLIC (decl))
     {
       const char *name = dwarf2_name (decl, 1);
       if (name)
@@ -11262,6 +11265,9 @@ static void
 add_pubtype (tree decl, dw_die_ref die)
 {
   pubname_entry e;
+
+  if (!targetm.want_debug_pub_sections)
+    return;
 
   e.name = NULL;
   if ((TREE_PUBLIC (decl)

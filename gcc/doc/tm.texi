@@ -9278,6 +9278,10 @@ line debug info sections.  This will result in much more compact line number
 tables, and hence is desirable if it works.
 @end defmac
 
+@deftypevr {Target Hook} bool TARGET_WANT_DEBUG_PUB_SECTIONS
+True if the @code{.debug_pubtypes} and @code{.debug_pubnames} sections should be emitted.  These sections are not used on most platforms, and in particular GDB does not use them.
+@end deftypevr
+
 @defmac ASM_OUTPUT_DWARF_DELTA (@var{stream}, @var{size}, @var{label1}, @var{label2})
 A C statement to issue assembly directives that create a difference
 @var{lab1} minus @var{lab2}, using an integer of the given @var{size}.

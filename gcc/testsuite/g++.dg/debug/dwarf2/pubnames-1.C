@@ -1,7 +1,7 @@
 // Contributed by Dodji Seketeli <dodji@redhat.com>
 // Origin PR debug/39706
+// { dg-do compile { target *-*-darwin* } }
 // { dg-options "-g -dA -fno-merge-debug-strings" }
-// { dg-do compile }
 //
 // There should be one debug_pubnames section generated.
 // On Darwin though, there is also a label pointing at the begining of the
