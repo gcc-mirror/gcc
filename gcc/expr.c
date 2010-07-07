@@ -8777,13 +8777,11 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  base = build2 (BIT_AND_EXPR, TREE_TYPE (base),
 			 gimple_assign_rhs1 (def_stmt),
 			 gimple_assign_rhs2 (def_stmt));
-	op0 = expand_expr (base, NULL_RTX, address_mode, EXPAND_NORMAL);
 	if (!integer_zerop (TREE_OPERAND (exp, 1)))
-	  {
-	    rtx off;
-	    off = immed_double_int_const (mem_ref_offset (exp), address_mode);
-	    op0 = simplify_gen_binary (PLUS, address_mode, op0, off);
-	  }
+	  base = build2 (POINTER_PLUS_EXPR, TREE_TYPE (base),
+			 base, double_int_to_tree (sizetype,
+						   mem_ref_offset (exp)));
+	op0 = expand_expr (base, NULL_RTX, address_mode, EXPAND_SUM);
 	op0 = memory_address_addr_space (mode, op0, as);
 	temp = gen_rtx_MEM (mode, op0);
 	set_mem_attributes (temp, exp, 0);
