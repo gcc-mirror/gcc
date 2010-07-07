@@ -1,3 +1,9 @@
+2010-07-07  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* g++.dg/ext/altivec-2.C: Add -Wno-unused-but-set-variable to
+	dg-options.
+	* g++.dg/ext/altivec-17.C: Adjust error message.
+
 2010-07-07  Tom Tromey  <tromey@redhat.com>
 
 	* g++.dg/debug/dwarf2/pubnames-1.C: Make darwin-specific.
