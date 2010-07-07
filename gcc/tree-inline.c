@@ -113,7 +113,7 @@ eni_weights eni_time_weights;
 
 /* Prototypes.  */
 
-static tree declare_return_variable (copy_body_data *, tree, tree);
+static tree declare_return_variable (copy_body_data *, tree, tree, basic_block);
 static void remap_block (tree *, copy_body_data *);
 static void copy_bind_expr (tree *, int *, copy_body_data *);
 static tree mark_local_for_remap_r (tree *, int *, void *);
@@ -817,6 +817,12 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 	  tree decl = TREE_OPERAND (*tp, 0);
 	  tree *n;
 
+          /* See remap_ssa_name.  */
+          if (TREE_CODE (decl) == SSA_NAME
+              && TREE_CODE (SSA_NAME_VAR (decl)) == RESULT_DECL
+              && id->transform_return_to_modify)
+            decl = SSA_NAME_VAR (decl);
+
 	  n = (tree *) pointer_map_contains (id->decl_map, decl);
 	  if (n)
 	    {
@@ -1235,7 +1241,10 @@ remap_gimple_stmt (gimple stmt, copy_body_data *id)
 	 If RETVAL is just the result decl, the result decl has
 	 already been set (e.g. a recent "foo (&result_decl, ...)");
 	 just toss the entire GIMPLE_RETURN.  */
-      if (retval && TREE_CODE (retval) != RESULT_DECL)
+      if (retval
+	  && (TREE_CODE (retval) != RESULT_DECL
+	      && (TREE_CODE (retval) != SSA_NAME
+		  || TREE_CODE (SSA_NAME_VAR (retval)) != RESULT_DECL)))
         {
 	  copy = gimple_build_assign (id->retvar, retval);
 	  /* id->retvar is already substituted.  Skip it on later remapping.  */
@@ -2735,7 +2744,8 @@ initialize_inlined_parameters (copy_body_data *id, gimple stmt,
    as seen by the caller.  */
 
 static tree
-declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest)
+declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
+			 basic_block entry_bb)
 {
   tree callee = id->src_fn;
   tree caller = id->dst_fn;
@@ -2878,8 +2888,20 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest)
  done:
   /* Register the VAR_DECL as the equivalent for the RESULT_DECL; that
      way, when the RESULT_DECL is encountered, it will be
-     automatically replaced by the VAR_DECL.  */
-  insert_decl_map (id, result, var);
+     automatically replaced by the VAR_DECL.  
+
+     When returning by reference, ensure that RESULT_DECL remaps to
+     gimple_val.  */
+  if (DECL_BY_REFERENCE (result)
+      && !is_gimple_val (var))
+    {
+      tree temp = create_tmp_var (TREE_TYPE (result), "retvalptr");
+      insert_decl_map (id, result, temp);
+      temp = remap_ssa_name (gimple_default_def (id->src_cfun, result), id);
+      insert_init_stmt (id, entry_bb, gimple_build_assign (temp, var));
+    }
+  else
+    insert_decl_map (id, result, var);
 
   /* Remember this so we can ignore it in remap_decls.  */
   id->retvar = var;
@@ -3983,7 +4005,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
     }
 
   /* Declare the return variable for the function.  */
-  use_retvar = declare_return_variable (id, return_slot, modify_dest);
+  use_retvar = declare_return_variable (id, return_slot, modify_dest, bb);
 
   /* Add local vars in this inlined callee to caller.  */
   add_local_variables (id->src_cfun, cfun, id, true);

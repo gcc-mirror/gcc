@@ -967,31 +967,47 @@ split_function (struct split_point *split_point)
 		     return_bb == EXIT_BLOCK_PTR ? 0 : EDGE_FALLTHRU);
       e->count = call_bb->count;
       e->probability = REG_BR_PROB_BASE;
+
+      /* If there is return basic block, see what value we need to store
+         return value into and put call just before it.  */
       if (return_bb != EXIT_BLOCK_PTR)
 	{
 	  real_retval = retval = find_retval (return_bb);
+
+	  /* See if return value is computed by split part;
+	     function might just return its argument, invariant or undefined
+	     value.  In this case we don't need to do any updating.  */
 	  if (real_retval
 	      && !is_gimple_min_invariant (retval)
 	      && (TREE_CODE (retval) != SSA_NAME
-		  || !SSA_NAME_IS_DEFAULT_DEF (retval)))
+		  || (!SSA_NAME_IS_DEFAULT_DEF (retval)
+		      || DECL_BY_REFERENCE
+			   (DECL_RESULT (current_function_decl)))))
 	    {
 	      gimple_stmt_iterator psi;
 
-	      /* See if there is PHI defining return value.  */
-	      for (psi = gsi_start_phis (return_bb);
-		   !gsi_end_p (psi); gsi_next (&psi))
-		if (is_gimple_reg (gimple_phi_result (gsi_stmt (psi))))
-		  break;
-
-	      /* When we have PHI, update PHI.  When there is no PHI,
-		 update the return statement itself.  */
-	      if (TREE_CODE (retval) == SSA_NAME)
+	      /* See if we need new SSA_NAME for the result.
+		 When DECL_BY_REFERENCE is true, retval is actually pointer to
+		 return value and it is constant in whole function.  */
+	      if (TREE_CODE (retval) == SSA_NAME
+		  && !DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
 		{
 		  retval = make_ssa_name (SSA_NAME_VAR (retval), call);
+
+		  /* See if there is PHI defining return value.  */
+		  for (psi = gsi_start_phis (return_bb);
+		       !gsi_end_p (psi); gsi_next (&psi))
+		    if (is_gimple_reg (gimple_phi_result (gsi_stmt (psi))))
+		      break;
+
+		  /* When there is PHI, just update its value.  */
 		  if (TREE_CODE (retval) == SSA_NAME
 		      && !gsi_end_p (psi))
 		    add_phi_arg (gsi_stmt (psi), retval, e, UNKNOWN_LOCATION);
-		  else if (TREE_CODE (retval) == SSA_NAME)
+		  /* Otherwise update the return BB itself.
+		     find_return_bb allows at most one assignment to return value,
+		     so update first statement.  */
+		  else
 		    {
 		      gimple_stmt_iterator bsi;
 		      for (bsi = gsi_start_bb (return_bb); !gsi_end_p (bsi);
@@ -1016,6 +1032,9 @@ split_function (struct split_point *split_point)
 	    }
           gsi_insert_after (&gsi, call, GSI_NEW_STMT);
 	}
+      /* We don't use return block (there is either no return in function or
+	 multiple of them).  So create new basic block with return statement.
+	 */
       else
 	{
 	  gimple ret;
@@ -1030,7 +1049,28 @@ split_function (struct split_point *split_point)
 		  && !DECL_BY_REFERENCE (retval))
 		retval = create_tmp_reg (TREE_TYPE (retval), NULL);
 	      if (is_gimple_reg (retval))
-		retval = make_ssa_name (retval, call);
+		{
+		  /* When returning by reference, there is only one SSA name
+		     assigned to RESULT_DECL (that is pointer to return value).
+		     Look it up or create new one if it is missing.  */
+		  if (DECL_BY_REFERENCE (retval))
+		    {
+		      tree retval_name;
+		      if ((retval_name = gimple_default_def (cfun, retval))
+			  != NULL)
+			retval = retval_name;
+		      else
+			{
+		          retval_name = make_ssa_name (retval,
+						       gimple_build_nop ());
+			  set_default_def (retval, retval_name);
+			  retval = retval_name;
+			}
+		    }
+		  /* Otherwise produce new SSA name for return value.  */
+		  else
+		    retval = make_ssa_name (retval, call);
+		}
 	      if (DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
 	        gimple_call_set_lhs (call, build_simple_mem_ref (retval));
 	      else

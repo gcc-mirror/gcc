@@ -638,6 +638,13 @@ verify_def (basic_block bb, basic_block *definition_block, tree ssa_name,
   if (verify_ssa_name (ssa_name, is_virtual))
     goto err;
 
+  if (TREE_CODE (SSA_NAME_VAR (ssa_name)) == RESULT_DECL
+      && DECL_BY_REFERENCE (SSA_NAME_VAR (ssa_name)))
+    {
+      error ("RESULT_DECL should be read only when DECL_BY_REFERENCE is set.");
+      goto err;
+    }
+
   if (definition_block[SSA_NAME_VERSION (ssa_name)])
     {
       error ("SSA_NAME created in two different blocks %i and %i",
