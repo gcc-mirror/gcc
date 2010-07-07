@@ -1,5 +1,11 @@
 2010-07-07  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/44790
+	* expr.c (expand_expr_real_1): Go the POINTER_PLUS_EXPR path
+	for expanding the constant offset for MEM_REFs.
+
+2010-07-07  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-propagate.h (valid_gimple_call_p): Remove.
 	* tree-ssa-propagate.c (valid_gimple_call_p): Make static.  Fix.
 	* gimple.h (is_gimple_operand): Remove.
