@@ -1,3 +1,8 @@
+2010-07-07  Wei Guozhi  <carrot@google.com>
+
+	* config/arm/thumb2.md (peephole2 to convert zero_extract/compare
+	of lowest bits to lshift/compare): New.
+
 2010-07-07  Tom Tromey  <tromey@redhat.com>
 
 	* doc/tm.texi: Update.
