@@ -28,6 +28,12 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "c-tree.h"
 #include "upc/upc-act.h"
 
+int compiling_upc;
+int flag_upc;
+int flag_upc_instrument;
+int flag_upc_instrument_functions;
+int use_upc_dwarf2_extensions;
+
 int
 count_upc_threads_refs (tree expr ATTRIBUTE_UNUSED)
 {

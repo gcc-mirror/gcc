@@ -1,7 +1,6 @@
 2010-07-03  Gary Funck  <gary@intrepid.com>
 
 	Merge trunk version 161517 into gupc branch.
-	* gcc/stub-upc.c: Move to gcc/c-family/.
 	* config-lang.in: Update references to files
 	  moved into c-family/.
 	* Make-lang.in: Likewise.
@@ -19,11 +18,6 @@
 	  to mark_decl_referenced(), to ensure that UPC shared
 	  variable initializer function is not removed from
 	  the call tree graph.
-        * libupc/testsuite/libupc.upc/intrepid/test19.upc:
-	  Add 'unused' attributes to avoid "set, but
-	  not referenced" warnings.
-        * libupc/testsuite/libupc.upc/intrepid/test18.upc:
-	  Likewise.
 
 2010-02-28  Gary Funck  <gary@intrepid.com>
 

@@ -83,7 +83,7 @@ CXX_AND_OBJCXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
  cp/cp-gimplify.o tree-mudflap.o $(CXX_C_OBJS)
 
 # Language-specific object files for C++.
-CXX_OBJS = cp/cp-lang.o c-family/stub-objc.o $(CXX_AND_OBJCXX_OBJS)
+CXX_OBJS = cp/cp-lang.o $(C_STUB_OBJS) $(CXX_AND_OBJCXX_OBJS)
 
 c++_OBJS = $(CXX_OBJS) dummy-checksum.o cc1plus-checksum.o cp/g++spec.o
 

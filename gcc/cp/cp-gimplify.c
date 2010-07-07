@@ -680,7 +680,8 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       break;
 
     default:
-      ret = (enum gimplify_status) c_gimplify_expr (expr_p, pre_p, post_p);
+      ret = (enum gimplify_status) c_gimplify_expr (expr_p, pre_p, post_p,
+                                                    NULL, fb_none);
       break;
     }
 

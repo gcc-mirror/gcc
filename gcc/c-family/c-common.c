@@ -203,16 +203,6 @@ int flag_iso;
 /* FIXME: Convert the UPC switch values below to use
    the Var() definitions in c.opts, where applicable.  */
 
-/* Non-zero if the current compilation context is UPC */
-int compiling_upc;
-
-/* Non-zero if dwarf2 debugging info. should
-   encode UPC specific information. */
-int use_upc_dwarf2_extensions;
-
-/* Nonzero whenever UPC functionality is being used.  */
-int flag_upc;
-
 /* Nonzero whenever UPC -fupc-threads-N is asserted.
    The value N gives the number of UPC threads to be
    defined at compile-time. */
@@ -229,14 +219,6 @@ int flag_upc_pthreads_per_process;
 /* The -fupc-inline-lib switch tells the UPC compiler to
    inline shared access routines. */
 int flag_upc_inline_lib;
-
-/* The -fupc-instrument switch tells the UPC compiler to
-   instrument UPC shared accesses and library calls, using GASP tool support.  */
-int flag_upc_instrument;
-
-/* The -fupc-instrument-functions switch tells the UPC compiler to
-   instrument function entry/exit, using GASP tool support.  */
-int flag_upc_instrument_functions;
  
 /* The implementation model for UPC threads that
    are mapped to POSIX threads, specified at compilation

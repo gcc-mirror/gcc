@@ -40,6 +40,27 @@ Boston, MA 02111-1307, USA.  */
 #include "c-family/c-pragma.h"
 #include "flags.h"
 
+/* FIXME: Convert the UPC switch values below to use
+   the Var() definitions in c.opt, where applicable.  */
+
+/* Non-zero if the current compilation context is UPC */
+int compiling_upc;
+
+/* Non-zero if dwarf2 debugging info. should
+   encode UPC specific information. */
+int use_upc_dwarf2_extensions;
+
+/* Nonzero whenever UPC functionality is being used.  */
+int flag_upc;
+
+/* The -fupc-instrument switch tells the UPC compiler to
+   instrument UPC shared accesses and library calls, using GASP tool support.  */
+int flag_upc_instrument;
+
+/* The -fupc-instrument-functions switch tells the UPC compiler to
+   instrument function entry/exit, using GASP tool support.  */
+int flag_upc_instrument_functions;
+
 enum c_language_kind c_language = clk_upc;
 
 static void upc_initialize_diagnostics (diagnostic_context *);

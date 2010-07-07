@@ -98,10 +98,12 @@ java-warn = $(STRICT_WARN)
 # String length warnings
 jvspec.o-warn = -Wno-error
 
-jc1$(exeext): $(JAVA_OBJS) $(BACKEND) $(LIBDEPS) attribs.o
+jc1$(exeext): $(JAVA_OBJS) $(BACKEND) $(C_STUB_OBJS) \
+                $(LIBDEPS) attribs.o
 	rm -f $@
 	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-		$(JAVA_OBJS) $(BACKEND) $(ZLIB) $(LIBICONV) $(LIBS) attribs.o $(BACKENDLIBS)
+		$(JAVA_OBJS) $(C_STUB_OBJS) \
+		$(BACKEND) $(ZLIB) $(LIBICONV) $(LIBS) attribs.o $(BACKENDLIBS)
 
 jcf-dump$(exeext): $(JCFDUMP_OBJS) $(LIBDEPS)
 	rm -f $@

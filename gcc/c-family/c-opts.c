@@ -338,7 +338,7 @@ c_common_init_options (unsigned int argc, const char **argv)
       for (i = 1; i < argc; i++)
 	if (! strcmp (argv[i], "-lang-asm"))
 	  {
-	    result |= CL_C | CL_ObjC | CL_CXX | CL_ObjCXX;
+	    result |= CL_C | CL_ObjC | CL_CXX | CL_ObjCXX | CL_UPC;
 	    break;
 	  }
     }
@@ -843,7 +843,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       break;
  
     case OPT_lang_upc:
-      cpp_set_lang (parse_in, CLK_UPC);
+      set_std_c99 (true /* ISO */);
       break;
 
     case OPT_fupc_instrument:

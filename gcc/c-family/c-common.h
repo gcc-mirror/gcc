@@ -530,6 +530,10 @@ extern int flag_iso;
 /* Non-zero if the current compilation context is UPC */
 extern int compiling_upc;
 
+/* Non-zero if dwarf2 debugging info. should
+   encode UPC specific information. */
+extern int use_upc_dwarf2_extensions;
+
 /* Nonzero whenever UPC functionality is being used.  */
 extern int flag_upc;
 
@@ -537,6 +541,9 @@ extern int flag_upc;
    The value N gives the number of UPC threads to be
    defined at compile-time. */
 extern int flag_upc_threads;
+
+/* Non-zero if the current compilation context is UPC */
+extern int compiling_upc;
 
 /* Nonzero whenever UPC -fupc-pthreads-model-* is asserted. */
 extern int flag_upc_pthreads;

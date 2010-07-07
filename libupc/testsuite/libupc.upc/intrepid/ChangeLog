@@ -1,0 +1,8 @@
+2010-07-03  Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 161517 into gupc branch.
+        * test18.upc:
+	  Add 'unused' attributes to avoid "set, but
+	  not referenced" warnings.
+        * test19.upc:
+	  Likewise.

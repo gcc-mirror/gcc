@@ -38,92 +38,93 @@ Language
 ObjC++
 
 -output-pch=
-C UPC Objc C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate
 
 A
-C UPC Objc C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate
 -A<question>=<answer>	Assert the <answer> to <question>.  Putting '-' before <question> disables the <answer> to <question>
 
+
 C
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 Do not discard comments
 
 CC
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 Do not discard comments in macro expansions
 
 D
-C UPC Objc C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate
 -D<macro>[=<val>]	Define a <macro> with <val> as its value.  If just <macro> is given, <val> is taken to be 1
 
 E
 C UPC ObjC C++ ObjC++ Undocumented Var(flag_preprocess_only)
 
 F
-C UPC Objc C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate
 -F <dir>	Add <dir> to the end of the main framework include path
 
 H
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 Print the name of header files as they are used
 
 I
-C UPC Objc C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate
 -I <dir>	Add <dir> to the end of the main include path
 
 M
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 Generate make dependencies
 
 MD
-C UPC Objc C++ ObjC++ Separate
+C UPC ObjC C++ ObjC++ Separate
 Generate make dependencies and compile
 
 MF
-C UPC Objc C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate
 -MF <file>	Write dependency output to the given file
 
 MG
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 Treat missing header files as generated files
 
 MM
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 Like -M but ignore system header files
 
 MMD
-C UPC Objc C++ ObjC++ Separate
+C UPC ObjC C++ ObjC++ Separate
 Like -MD but ignore system header files
 
 MP
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 Generate phony targets for all headers
 
 MQ
-C UPC Objc C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate
 -MQ <target>	Add a MAKE-quoted target
 
 MT
-C UPC Objc C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate
 -MT <target>	Add an unquoted target
 
 P
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 Do not generate #line directives
 
 U
-C UPC Objc C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate
 -U<macro>	Undefine <macro>
 
 Wabi
-C ObjC C++ ObjC++ LTO Var(warn_abi) Warning
+C UPC ObjC C++ ObjC++ LTO Var(warn_abi) Warning
 Warn about things that will change when compiling with an ABI-compliant compiler
 
 Wpsabi
-C ObjC C++ ObjC++ LTO Var(warn_psabi) Init(1) Undocumented
+C UPC ObjC C++ ObjC++ LTO Var(warn_psabi) Init(1) Undocumented
 
 Waddress
-C ObjC C++ ObjC++ Var(warn_address) Warning
+C UPC ObjC C++ ObjC++ Var(warn_address) Warning
 Warn about suspicious uses of memory addresses
 
 Wall
@@ -139,11 +140,11 @@ C UPC ObjC Var(warn_bad_function_cast) Warning
 Warn about casting functions to incompatible types
 
 Wbuiltin-macro-redefined
-C ObjC C++ ObjC++ Warning
+C UPC ObjC C++ ObjC++ Warning
 Warn when a built-in preprocessor macro is undefined or redefined
 
 Wc++-compat
-C ObjC Var(warn_cxx_compat) Warning
+C UPC ObjC Var(warn_cxx_compat) Warning
 Warn about C constructs that are not in the common subset of C and C++
 
 Wc++0x-compat
@@ -159,7 +160,7 @@ C UPC ObjC C++ ObjC++ Var(warn_char_subscripts) Warning
 Warn about subscripts whose type is \"char\"
 
 Wclobbered
-C ObjC C++ ObjC++ Var(warn_clobbered) Init(-1) Warning
+C UPC ObjC C++ ObjC++ Var(warn_clobbered) Init(-1) Warning
 Warn about variables that might be changed by \"longjmp\" or \"vfork\"
 
 Wcomment
@@ -203,7 +204,7 @@ C++ ObjC++ Var(warn_ecpp) Warning
 Warn about violations of Effective C++ style rules
 
 Wempty-body
-C ObjC C++ ObjC++ Var(warn_empty_body) Init(-1) Warning
+C UPC ObjC C++ ObjC++ Var(warn_empty_body) Init(-1) Warning
 Warn about an empty body in an if or else statement
 
 Wendif-labels
@@ -211,11 +212,11 @@ C UPC ObjC C++ ObjC++ Warning
 Warn about stray tokens after #elif and #endif
 
 Wenum-compare
-C ObjC C++ ObjC++ Var(warn_enum_compare) Init(-1) Warning
+C UPC ObjC C++ ObjC++ Var(warn_enum_compare) Init(-1) Warning
 Warn about comparison of different enum types
 
 Werror
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 ; Documented in common.opt
 
 Werror-implicit-function-declaration
@@ -239,7 +240,7 @@ C UPC ObjC C++ ObjC++ Var(warn_format_nonliteral) Warning
 Warn about format strings that are not literals
 
 Wformat-contains-nul
-C ObjC C++ ObjC++ Var(warn_format_contains_nul) Warning
+C UPC ObjC C++ ObjC++ Var(warn_format_contains_nul) Warning
 Warn about format strings that contain NUL bytes
 
 Wformat-security
@@ -281,7 +282,7 @@ Wimport
 C UPC ObjC C++ ObjC++ Undocumented
 
 Wint-to-pointer-cast
-C ObjC C++ ObjC++ Var(warn_int_to_pointer_cast) Init(1) Warning
+C UPC ObjC C++ ObjC++ Var(warn_int_to_pointer_cast) Init(1) Warning
 Warn when there is a cast to a pointer from an integer of a different size
 
 Winvalid-offsetof
@@ -293,11 +294,11 @@ C UPC ObjC C++ ObjC++ Warning
 Warn about PCH files that are found but not used
 
 Wjump-misses-init
-C ObjC Var(warn_jump_misses_init) Init(-1) Warning
+C UPC ObjC Var(warn_jump_misses_init) Init(-1) Warning
 Warn when a jump misses a variable initialization
 
 Wlogical-op
-C ObjC C++ ObjC++ Var(warn_logical_op) Init(0) Warning 
+C UPC ObjC C++ ObjC++ Var(warn_logical_op) Init(0) Warning 
 Warn when a logical operator is suspiciously always evaluating to true or false
 
 Wlong-long
@@ -329,7 +330,7 @@ C UPC ObjC C++ ObjC++ Warning
 Warn about user-specified include directories that do not exist
 
 Wmissing-parameter-type
-C ObjC Var(warn_missing_parameter_type) Init(-1) Warning
+C UPC ObjC Var(warn_missing_parameter_type) Init(-1) Warning
 Warn about function parameters declared without a type specifier in K&R-style functions
 
 Wmissing-prototypes
@@ -361,7 +362,7 @@ C UPC ObjC Var(warn_nonnull) Warning
 Warn about NULL being passed to argument slots marked as requiring non-NULL
 
 Wnormalized=
-C ObjC C++ ObjC++ Joined Warning
+C UPC ObjC C++ ObjC++ Joined Warning
 -Wnormalized=<id|nfc|nfkc>	Warn about non-normalised Unicode strings
 
 Wold-style-cast
@@ -369,7 +370,7 @@ C++ ObjC++ Var(warn_old_style_cast) Warning
 Warn if a C-style cast is used in a program
 
 Wold-style-declaration
-C ObjC Var(warn_old_style_declaration) Init(-1) Warning
+C UPC ObjC Var(warn_old_style_declaration) Init(-1) Warning
 Warn for obsolescent usage in a declaration
 
 Wold-style-definition
@@ -377,7 +378,7 @@ C UPC ObjC Var(warn_old_style_definition) Warning
 Warn if an old-style parameter definition is used
 
 Woverlength-strings
-C ObjC C++ ObjC++ Var(warn_overlength_strings) Init(-1) Warning
+C UPC ObjC C++ ObjC++ Var(warn_overlength_strings) Init(-1) Warning
 Warn if a string is longer than the maximum portable length specified by the standard
 
 Woverloaded-virtual
@@ -385,11 +386,11 @@ C++ ObjC++ Var(warn_overloaded_virtual) Warning
 Warn about overloaded virtual function names
 
 Woverride-init
-C ObjC Var(warn_override_init) Init(-1) Warning
+C UPC ObjC Var(warn_override_init) Init(-1) Warning
 Warn about overriding initializers without side effects
 
 Wpacked-bitfield-compat
-C ObjC C++ ObjC++ Var(warn_packed_bitfield_compat) Init(-1) Warning
+C UPC ObjC C++ ObjC++ Var(warn_packed_bitfield_compat) Init(-1) Warning
 Warn about packed bit-fields whose offset changed in GCC 4.4
 
 Wparentheses
@@ -405,11 +406,11 @@ C UPC ObjC C++ ObjC++ Var(warn_pointer_arith) Warning
 Warn about function pointer arithmetic
 
 Wpointer-to-int-cast
-C ObjC Var(warn_pointer_to_int_cast) Init(1) Warning
+C UPC ObjC Var(warn_pointer_to_int_cast) Init(1) Warning
 Warn when a pointer is cast to an integer of a different size
 
 Wpragmas
-C ObjC C++ ObjC++ Var(warn_pragmas) Init(1) Warning
+C UPC ObjC C++ ObjC++ Var(warn_pragmas) Init(1) Warning
 Warn about misuses of pragmas
 
 Wprotocol
@@ -473,7 +474,7 @@ C UPC ObjC Var(warn_traditional) Warning
 Warn about features not present in traditional C
 
 Wtraditional-conversion
-C ObjC Var(warn_traditional_conversion) Warning
+C UPC ObjC Var(warn_traditional_conversion) Warning
 Warn of prototypes causing type conversions different from what would happen in the absence of prototype
 
 Wtrigraphs
@@ -493,7 +494,7 @@ C UPC ObjC C++ ObjC++ Warning
 Warn about unrecognized pragmas
 
 Wunsuffixed-float-constants
-C ObjC Var(warn_unsuffixed_float_constants) Warning
+C UPC ObjC Var(warn_unsuffixed_float_constants) Warning
 Warn about unsuffixed float constants
 
 Wunused-macros
@@ -501,7 +502,7 @@ C UPC ObjC C++ ObjC++ Warning
 Warn about macros defined in the main file that are not used
 
 Wunused-result
-C ObjC C++ ObjC++ Var(warn_unused_result) Init(1) Warning
+C UPC ObjC C++ ObjC++ Var(warn_unused_result) Init(1) Warning
 Warn if a caller of a function, marked with attribute warn_unused_result, does not use its return value
 
 Wvariadic-macros
@@ -509,11 +510,11 @@ C UPC ObjC C++ ObjC++ Warning
 Do not warn about using variadic macros when -pedantic
 
 Wvla
-C ObjC C++ ObjC++ Var(warn_vla) Init(-1) Warning
+C UPC ObjC C++ ObjC++ Var(warn_vla) Init(-1) Warning
 Warn if a variable length array is used
 
 Wvolatile-register-var
-C ObjC C++ ObjC++ Var(warn_volatile_register_var) Warning
+C UPC ObjC C++ ObjC++ Var(warn_volatile_register_var) Warning
 Warn when a register variable is declared volatile
 
 Wwrite-strings
@@ -529,7 +530,7 @@ C UPC ObjC C++ ObjC++
 A synonym for -std=c89 (for C) or -std=c++98 (for C++)
 
 d
-C UPC Objc C++ ObjC++ Joined
+C UPC ObjC C++ ObjC++ Joined
 ; Documented in common.opt.  FIXME - what about -dI, -dD, -dN and -dD?
 
 dwarf-2-upc
@@ -556,14 +557,14 @@ C UPC ObjC C++ ObjC++ Var(flag_no_builtin, 0)
 Recognize built-in functions
 
 fbuiltin-
-C UPC Objc C++ ObjC++ Joined
+C UPC ObjC C++ ObjC++ Joined
 
 fcheck-new
 C++ ObjC++ Var(flag_check_new)
 Check the return value of new
 
 fcond-mismatch
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 Allow the arguments of the '?' operator to have different types
 
 fconserve-space
@@ -583,11 +584,11 @@ C++ ObjC++
 Does nothing.  Preserved for backward compatibility.
 
 fdirectives-only
-C ObjC C++ ObjC++
+C UPC ObjC C++ ObjC++
 Preprocess directives only.
 
 fdollars-in-identifiers
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 Permit '$' as an identifier character
 
 felide-constructors
@@ -601,11 +602,11 @@ fenum-int-equiv
 C++ ObjC++
 
 fexec-charset=
-C UPC Objc C++ ObjC++ Joined RejectNegative
+C UPC ObjC C++ ObjC++ Joined RejectNegative
 -fexec-charset=<cset>	Convert all strings and character constants to character set <cset>
 
 fextended-identifiers
-C ObjC C++ ObjC++
+C UPC ObjC C++ ObjC++
 Permit universal character names (\\u and \\U) in identifiers
 
 finput-charset=
@@ -632,7 +633,7 @@ ObjC ObjC++
 Generate code for GNU runtime environment
 
 fgnu89-inline
-C ObjC Var(flag_gnu89_inline) Init(-1)
+C UPC ObjC Var(flag_gnu89_inline) Init(-1)
 Use traditional GNU semantics for inline functions
 
 fguiding-decls
@@ -645,7 +646,7 @@ fhonor-std
 C++ ObjC++
 
 fhosted
-C UPC Objc
+C UPC ObjC
 Assume normal C execution environment
 
 fhuge-objects
@@ -672,7 +673,7 @@ flabels-ok
 C++ ObjC++
 
 flax-vector-conversions
-C ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
+C UPC ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
 Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types.
 
 fms-extensions
@@ -729,7 +730,7 @@ ObjC ObjC++ Var(flag_objc_sjlj_exceptions) Init(-1)
 Enable Objective-C setjmp exception handling runtime
 
 fopenmp
-C ObjC C++ ObjC++ Var(flag_openmp)
+C UPC ObjC C++ ObjC++ Var(flag_openmp)
 Enable OpenMP (implies -frecursive in Fortran)
 
 foperator-names
@@ -741,10 +742,10 @@ C++ ObjC++
 Does nothing.  Preserved for backward compatibility.
 
 fpch-deps
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 
 fpch-preprocess
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 Look for and use PCH files even when preprocessing
 
 fpermissive
@@ -752,7 +753,7 @@ C++ ObjC++
 Downgrade conformance errors to warnings
 
 fpreprocessed
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 Treat the input file as already preprocessed
 
 fpretty-templates
@@ -806,7 +807,7 @@ fstrict-prototype
 C++ ObjC++
 
 ftabstop=
-C UPC Objc C++ ObjC++ Joined RejectNegative UInteger
+C UPC ObjC C++ ObjC++ Joined RejectNegative UInteger
 -ftabstop=<number>	Distance between tab stops for column reporting
 
 ftemplate-depth-
@@ -886,7 +887,7 @@ C++ ObjC++ Var(flag_weak) Init(1)
 Emit common-like symbols as weak symbols
 
 fwide-exec-charset=
-C UPC Objc C++ ObjC++ Joined RejectNegative
+C UPC ObjC C++ ObjC++ Joined RejectNegative
 -fwide-exec-charset=<cset>	Convert all wide strings and character constants to character set <cset>
 
 fworking-directory
@@ -906,23 +907,23 @@ ObjC ObjC++ Var(flag_gen_declaration)
 Dump declarations to a .decl file
 
 femit-struct-debug-baseonly
-C ObjC C++ ObjC++
+C UPC ObjC C++ ObjC++
 -femit-struct-debug-baseonly	Aggressive reduced debug info for structs
 
 femit-struct-debug-reduced
-C ObjC C++ ObjC++
+C UPC ObjC C++ ObjC++
 -femit-struct-debug-reduced	Conservative reduced debug info for structs
 
 femit-struct-debug-detailed=
-C ObjC C++ ObjC++ Joined
+C UPC ObjC C++ ObjC++ Joined
 -femit-struct-debug-detailed=<spec-list>	Detailed reduced debug info for structs
 
 idirafter
-C UPC Objc C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate
 -idirafter <dir>	Add <dir> to the end of the system include path
 
 imacros
-C UPC Objc C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate
 -imacros <file>	Accept definition of macros in <file>
 
 imultilib
@@ -930,31 +931,31 @@ C UPC ObjC C++ ObjC++ Joined Separate
 -imultilib <dir>	Set <dir> to be the multilib include subdirectory
 
 include
-C UPC Objc C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate
 -include <file>	Include the contents of <file> before other files
 
 iprefix
-C UPC Objc C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate
 -iprefix <path>	Specify <path> as a prefix for next two options
 
 isysroot
-C UPC Objc C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate
 -isysroot <dir>	Set <dir> to be the system root directory
 
 isystem
-C UPC Objc C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate
 -isystem <dir>	Add <dir> to the start of the system include path
 
 iquote
-C UPC Objc C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate
 -iquote <dir>	Add <dir> to the end of the quote include path
 
 iwithprefix
-C UPC Objc C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate
 -iwithprefix <dir>	Add <dir> to the end of the system include path
 
 iwithprefixbefore
-C UPC Objc C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate
 -iwithprefixbefore <dir>	Add <dir> to the end of the main include path
 
 lang-asm
@@ -964,7 +965,7 @@ lang-upc
 C UPC Undocumented
 
 nostdinc
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 Do not search standard system include directories (those specified with -isystem will still be used)
 
 nostdinc++
@@ -972,15 +973,15 @@ C++ ObjC++
 Do not search standard system include directories for C++
 
 o
-C UPC Objc C++ ObjC++ Joined Separate
+C UPC ObjC C++ ObjC++ Joined Separate
 ; Documented in common.opt
 
 pedantic
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 ; Documented in common.opt
 
 pedantic-errors
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 ; Documented in common.opt
 
 print-objc-runtime-info
@@ -988,11 +989,11 @@ ObjC ObjC++
 Generate C header of platform-specific features
 
 print-pch-checksum
-C ObjC C++ ObjC++
+C UPC ObjC C++ ObjC++
 Print a checksum of the executable for PCH validity checking, and stop
 
 remap
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 Remap file names when including files
 
 std=c++98
@@ -1011,7 +1012,7 @@ C ObjC
 Conform to the ISO 201X C standard draft (experimental and incomplete support)
 
 std=c89
-C UPC Objc
+C UPC ObjC
 Conform to the ISO 1990 C standard
 
 std=c90
@@ -1019,11 +1020,11 @@ C ObjC
 Conform to the ISO 1990 C standard
 
 std=c99
-C UPC Objc
+C UPC ObjC
 Conform to the ISO 1999 C standard
 
 std=c9x
-C UPC Objc
+C UPC ObjC
 Deprecated in favor of -std=c99
 
 std=gnu++98
@@ -1042,7 +1043,7 @@ C ObjC
 Conform to the ISO 201X C standard draft with GNU extensions (experimental and incomplete support)
 
 std=gnu89
-C UPC Objc
+C UPC ObjC
 Conform to the ISO 1990 C standard with GNU extensions
 
 std=gnu90
@@ -1050,35 +1051,35 @@ C ObjC
 Conform to the ISO 1990 C standard with GNU extensions
 
 std=gnu99
-C UPC Objc
+C UPC ObjC
 Conform to the ISO 1999 C standard with GNU extensions
 
 std=gnu9x
-C UPC Objc
+C UPC ObjC
 Deprecated in favor of -std=gnu99
 
 std=iso9899:1990
-C UPC Objc
+C UPC ObjC
 Conform to the ISO 1990 C standard
 
 std=iso9899:199409
-C UPC Objc
+C UPC ObjC
 Conform to the ISO 1990 C standard as amended in 1994
 
 std=iso9899:1999
-C UPC Objc
+C UPC ObjC
 Conform to the ISO 1999 C standard
 
 std=iso9899:199x
-C UPC Objc
+C UPC ObjC
 Deprecated in favor of -std=iso9899:1999
 
 traditional-cpp
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 Enable traditional preprocessing
 
 trigraphs
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 -trigraphs	Support ISO C trigraphs
 
 undef
@@ -1090,7 +1091,7 @@ Common C UPC ObjC C++ ObjC++
 Enable verbose output
 
 w
-C UPC Objc C++ ObjC++
+C UPC ObjC C++ ObjC++
 ; Documented in common.opt
 
 ; This comment is to ensure we retain the blank line above.
