@@ -1523,4 +1523,6 @@
    (set (pc)
 	(if_then_else (match_op_dup 4 [(match_dup 0) (const_int 0)])
 		      (match_dup 5) (match_dup 6)))]
+  "
+  operands[2] = GEN_INT (32 - INTVAL (operands[2]));
   ")
