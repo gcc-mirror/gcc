@@ -2082,14 +2082,6 @@ do {									\
     }
 #endif
 
-/* Write the extra assembler code needed to declare a function
-   properly.  Target can add additional code by the sub-target
-   macro SUBTARGET_ASM_DECLARE_FUNCTION_NAME.  */
-
-#undef ASM_DECLARE_FUNCTION_NAME
-#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
-  ix86_asm_declare_function_name (FILE, NAME, DECL)
-
 /* Under some conditions we need jump tables in the text section,
    because the assembler cannot handle label differences between
    sections.  This is the case for x86_64 on Mach-O for example.  */
