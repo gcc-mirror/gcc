@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mrdrnd " } */
 /* { dg-final { scan-assembler "rdrand\[ \t]+(%|)ax" } } */
+/* { dg-final { scan-assembler "jnc\[ \t]+" } } */
 
 #include <immintrin.h>
 

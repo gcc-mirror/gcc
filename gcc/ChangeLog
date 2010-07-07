@@ -1,3 +1,10 @@
+2010-07-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/44844
+	* config/i386/i386.md (rdrand<mode>): Changed to expand to
+	retry if the carry flag isn't valid.
+	(rdrand<mode>_1): New.
+
 2010-07-07  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/44790
