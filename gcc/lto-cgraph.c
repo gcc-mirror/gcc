@@ -881,14 +881,21 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
 
   lto_output_uleb128_stream (ob->main_stream, 0);
 
-  /* Emit toplevel asms.  */
-  for (can = cgraph_asm_nodes; can; can = can->next)
+  /* Emit toplevel asms.
+     When doing WPA we must output every asm just once.  Since we do not partition asm
+     nodes at all, output them to first output.  This is kind of hack, but should work
+     well.  */
+  if (!asm_nodes_output)
     {
-      int len = TREE_STRING_LENGTH (can->asm_str);
-      lto_output_uleb128_stream (ob->main_stream, len);
-      for (i = 0; i < len; ++i)
-	lto_output_1_stream (ob->main_stream,
-			     TREE_STRING_POINTER (can->asm_str)[i]);
+      asm_nodes_output = true;
+      for (can = cgraph_asm_nodes; can; can = can->next)
+	{
+	  int len = TREE_STRING_LENGTH (can->asm_str);
+	  lto_output_uleb128_stream (ob->main_stream, len);
+	  for (i = 0; i < len; ++i)
+	    lto_output_1_stream (ob->main_stream,
+				 TREE_STRING_POINTER (can->asm_str)[i]);
+	}
     }
 
   lto_output_uleb128_stream (ob->main_stream, 0);
