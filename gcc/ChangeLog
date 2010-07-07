@@ -1,3 +1,14 @@
+2010-07-07  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-propagate.h (valid_gimple_call_p): Remove.
+	* tree-ssa-propagate.c (valid_gimple_call_p): Make static.  Fix.
+	* gimple.h (is_gimple_operand): Remove.
+	* gimple.c (is_gimple_operand): Likewise.
+	(walk_gimple_op): Fix wi->val_only setting for calls.
+	* tree-cfg.c (verify_gimple_call): Fix argument validation.
+	* tree-profile.c (tree_gen_ic_func_profiler): Do not create
+	invalid gimple calls.
+
 2010-07-06  Jan Hubicka  <jh@suse.cz>
 
 	* lto-cgraph.c (output_cgraph): Output toplevel asms only into first

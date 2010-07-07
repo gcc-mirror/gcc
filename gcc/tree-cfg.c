@@ -3114,7 +3114,10 @@ verify_gimple_call (gimple stmt)
   for (i = 0; i < gimple_call_num_args (stmt); ++i)
     {
       tree arg = gimple_call_arg (stmt, i);
-      if (!is_gimple_operand (arg))
+      if ((is_gimple_reg_type (TREE_TYPE (arg))
+	   && !is_gimple_val (arg))
+	  || (!is_gimple_reg_type (TREE_TYPE (arg))
+	      && !is_gimple_lvalue (arg)))
 	{
 	  error ("invalid argument to gimple call");
 	  debug_generic_expr (arg);

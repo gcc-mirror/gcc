@@ -639,7 +639,7 @@ valid_gimple_rhs_p (tree expr)
    as a single GIMPLE_CALL statement.  If the arguments require
    further gimplification, return false.  */
 
-bool
+static bool
 valid_gimple_call_p (tree expr)
 {
   unsigned i, nargs;
@@ -649,8 +649,17 @@ valid_gimple_call_p (tree expr)
 
   nargs = call_expr_nargs (expr);
   for (i = 0; i < nargs; i++)
-    if (! is_gimple_operand (CALL_EXPR_ARG (expr, i)))
-      return false;
+    {
+      tree arg = CALL_EXPR_ARG (expr, i);
+      if (is_gimple_reg_type (arg))
+	{
+	  if (!is_gimple_val (arg))
+	    return false;
+	}
+      else
+	if (!is_gimple_lvalue (arg))
+	  return false;
+    }
 
   return true;
 }
