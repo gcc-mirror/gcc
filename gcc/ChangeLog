@@ -11,6 +11,10 @@
 
 2010-07-06  Jan Hubicka  <jh@suse.cz>
 
+	* lto-cgraph.c (output_cgraph): Add missing declaration.
+
+2010-07-06  Jan Hubicka  <jh@suse.cz>
+
 	* lto-cgraph.c (output_cgraph): Output toplevel asms only into first
 	partition.
 

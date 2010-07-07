@@ -846,6 +846,7 @@ output_cgraph (cgraph_node_set set, varpool_node_set vset)
   lto_cgraph_encoder_t encoder;
   lto_varpool_encoder_t varpool_encoder;
   struct cgraph_asm_node *can;
+  static bool asm_nodes_output = false;
 
   if (flag_wpa)
     output_cgraph_opt_summary ();
