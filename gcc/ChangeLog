@@ -1,3 +1,9 @@
+2010-07-07  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/44404
+	* auto-inc-dec.c (find_inc): Avoid calling count_occurrences if
+	possible, use reg_overlap_mentioned_p instead.
+
 2010-07-07  Duncan Sands  <baldrick@free.fr>
 
 	PR middle-end/41355

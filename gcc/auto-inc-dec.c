@@ -1068,14 +1068,7 @@ find_inc (bool first_try)
       /* For the post_add to work, the result_reg of the inc must not be
 	 used in the mem insn since this will become the new index
 	 register.  */
-      if (count_occurrences (PATTERN (mem_insn.insn), inc_insn.reg_res, 1) == 0
-	  && reg_overlap_mentioned_p (inc_insn.reg_res, PATTERN (mem_insn.insn)))
-	{
-	  debug_rtx (mem_insn.insn);
-	  debug_rtx (inc_insn.reg_res);
-	  gcc_unreachable ();
-	}
-      if (count_occurrences (PATTERN (mem_insn.insn), inc_insn.reg_res, 1) != 0)
+      if (reg_overlap_mentioned_p (inc_insn.reg_res, PATTERN (mem_insn.insn)))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "base reg replacement failure.\n");
