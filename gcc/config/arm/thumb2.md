@@ -1501,3 +1501,26 @@
 				VOIDmode, operands[0], const0_rtx);
   ")
 
+(define_peephole2
+  [(set (match_operand:CC_NOOV 0 "cc_register" "")
+	(compare:CC_NOOV (zero_extract:SI
+			  (match_operand:SI 1 "low_register_operand" "")
+			  (match_operand:SI 2 "const_int_operand" "")
+			  (const_int 0))
+			 (const_int 0)))
+   (match_scratch:SI 3 "l")
+   (set (pc)
+	(if_then_else (match_operator:CC_NOOV 4 "equality_operator"
+		       [(match_dup 0) (const_int 0)])
+		      (match_operand 5 "" "")
+		      (match_operand 6 "" "")))]
+  "TARGET_THUMB2
+   && (INTVAL (operands[2]) > 0 && INTVAL (operands[2]) < 32)"
+  [(parallel [(set (match_dup 0)
+		   (compare:CC_NOOV (ashift:SI (match_dup 1) (match_dup 2))
+				    (const_int 0)))
+	      (clobber (match_dup 3))])
+   (set (pc)
+	(if_then_else (match_op_dup 4 [(match_dup 0) (const_int 0)])
+		      (match_dup 5) (match_dup 6)))]
+  ")
