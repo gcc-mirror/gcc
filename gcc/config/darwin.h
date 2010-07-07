@@ -471,6 +471,8 @@ extern GTY(()) int darwin_ms_struct;
 #define DEBUG_STR_SECTION	"__DWARF,__debug_str,regular,debug"
 #define DEBUG_RANGES_SECTION	"__DWARF,__debug_ranges,regular,debug"
 
+#define TARGET_WANT_DEBUG_PUB_SECTIONS true
+
 /* When generating stabs debugging, use N_BINCL entries.  */
 
 #define DBX_USE_BINCL

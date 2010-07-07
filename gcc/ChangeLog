@@ -1,3 +1,15 @@
+2010-07-07  Tom Tromey  <tromey@redhat.com>
+
+	* doc/tm.texi: Update.
+	* doc/tm.texi.in (SDB and DWARF) <TARGET_WANT_DEBUG_PUB_SECTIONS>:
+	Add @hook.
+	* target.def (want_debug_pub_sections): New hook.
+	* config/darwin.h (TARGET_WANT_DEBUG_PUB_SECTIONS): Define.
+	* dwarf2out.c (add_pubname_string): Check
+	targetm.want_debug_pub_sections.
+	(add_pubname): Likewise.
+	(add_pubtype): Likewise.
+
 2010-07-07  Jie Zhang  <jie@codesourcery.com>
 
 	* genautomata.c (output_automata_list_min_issue_delay_code):

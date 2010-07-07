@@ -9277,6 +9277,8 @@ line debug info sections.  This will result in much more compact line number
 tables, and hence is desirable if it works.
 @end defmac
 
+@hook TARGET_WANT_DEBUG_PUB_SECTIONS
+
 @defmac ASM_OUTPUT_DWARF_DELTA (@var{stream}, @var{size}, @var{label1}, @var{label2})
 A C statement to issue assembly directives that create a difference
 @var{lab1} minus @var{lab2}, using an integer of the given @var{size}.
