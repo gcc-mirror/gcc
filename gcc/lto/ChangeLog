@@ -1,3 +1,9 @@
+2010-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* lto-elf.c (ELFOSABI_NONE, ELFOSABI_LINUX): Define if not defined.
+	(validate_file): Allow merging of ELFOSABI_NONE with ELFOSABI_LINUX
+	objects.
+
 2010-07-05  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (add_cgraph_node_to_partition): Forward declare; walk also
