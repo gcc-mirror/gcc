@@ -1,3 +1,9 @@
+2010-07-07  Duncan Sands  <baldrick@free.fr>
+
+	PR middle-end/41355
+	* tree.c (build_function_type_skip_args): Copy the original type using
+        build_distinct_type_copy rather than copy_node.
+
 2010-07-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/44850
