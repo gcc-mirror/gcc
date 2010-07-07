@@ -12,5 +12,5 @@ typedef vector__ bool__ int bool_simd_type;
 
 void Foo (bool_simd_type const &a)
 {
-  simd_type const &v = a; // { dg-error "'const __vector.4. unsigned int&' from expression of type 'const __vector.4. __bool int'" }
+  simd_type const &v = a; // { dg-error "'const simd_type&' from expression of type 'const bool_simd_type'" }
 }
