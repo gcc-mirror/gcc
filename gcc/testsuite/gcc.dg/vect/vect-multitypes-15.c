@@ -38,6 +38,7 @@ int main (void)
     X[i] = i;
     Y[i] = 64-i;
     CX[i] = i;
+    __asm__ volatile ("");
   }
 
   foo1 (N);

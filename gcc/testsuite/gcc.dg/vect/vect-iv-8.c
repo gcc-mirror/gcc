@@ -39,9 +39,5 @@ int main (void)
   return main1 (3);
 } 
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail *-*-* } } } */
-/* Fails to get vectorized due to a redundant cast. Once this is fixed, 
-   should be vectorized as follows:
-   dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_pack_trunc && vect_unpack } } } 
-*/
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_pack_trunc && vect_unpack } } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

@@ -53,8 +53,7 @@ int main (void)
       arr[i] = i;
       iarr[i].a = i;
       iarr[i].b = i * 3;
-      if (arr[i] == 178)
-         abort();
+      __asm__ volatile ("");
     }
   main1 (arr, iarr); 
     
