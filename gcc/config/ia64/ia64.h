@@ -116,13 +116,6 @@ enum processor_type
 
 extern enum processor_type ia64_tune;
 
-/* Sometimes certain combinations of command options do not make sense on a
-   particular target machine.  You can define a macro `OVERRIDE_OPTIONS' to
-   take account of this.  This macro, if defined, is executed once just after
-   all the command options have been parsed.  */
-
-#define OVERRIDE_OPTIONS ia64_override_options ()
-
 /* Some machines may desire to change what optimizations are performed for
    various optimization levels.  This macro, if defined, is executed once just
    after the optimization level is determined and before the remainder of the
