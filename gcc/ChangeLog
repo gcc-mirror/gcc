@@ -1,5 +1,12 @@
 2010-07-08  Kai Tietz  <kai.tietz@onevision.com>
 
+	* final.c (final_scan_insn): Replace
+	TARGET_UNWIND_INFO macro check by unwind_emit
+	hook NULL check.
+	* targhooks.c (default_unwind_emit): Removed.
+	* targhooks.h (default_unwind_emit): Likewise.
+	* target.def (unwind_emit): Set default value to NULL.
+
 	* config/i386/i386-protos.h (ix86_asm_output_function_label):
 	New prototype.
 	* config/i386/i386.c (ix86_function_ms_hook_prologue): Check

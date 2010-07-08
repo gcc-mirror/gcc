@@ -316,16 +316,6 @@ hook_callee_copies_named (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
   return named;
 }
 
-/* Emit any directives required to unwind this instruction.  */
-
-void
-default_unwind_emit (FILE * stream ATTRIBUTE_UNUSED,
-		     rtx insn ATTRIBUTE_UNUSED)
-{
-  /* Should never happen.  */
-  gcc_unreachable ();
-}
-
 /* Emit to STREAM the assembler syntax for insn operand X.  */
 
 void

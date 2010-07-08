@@ -62,7 +62,6 @@ extern bool hook_pass_by_reference_must_pass_in_stack
 extern bool hook_callee_copies_named
   (CUMULATIVE_ARGS *ca, enum machine_mode, const_tree, bool);
 
-extern void default_unwind_emit (FILE *, rtx);
 extern void default_print_operand (FILE *, rtx, int);
 extern void default_print_operand_address (FILE *, rtx);
 extern bool default_print_operand_punct_valid_p (unsigned char);

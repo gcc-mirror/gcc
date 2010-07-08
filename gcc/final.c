@@ -1850,9 +1850,8 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	  break;
 
 	case NOTE_INSN_BASIC_BLOCK:
-#ifdef TARGET_UNWIND_INFO
-	  targetm.asm_out.unwind_emit (asm_out_file, insn);
-#endif
+	  if (targetm.asm_out.unwind_emit)
+	    targetm.asm_out.unwind_emit (asm_out_file, insn);
 
 	  if (flag_debug_asm)
 	    fprintf (asm_out_file, "\t%s basic block %d\n",
@@ -2659,12 +2658,11 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	    return new_rtx;
 	  }
 
-#ifdef TARGET_UNWIND_INFO
 	/* ??? This will put the directives in the wrong place if
 	   get_insn_template outputs assembly directly.  However calling it
 	   before get_insn_template breaks if the insns is split.  */
-	targetm.asm_out.unwind_emit (asm_out_file, insn);
-#endif
+	if (targetm.asm_out.unwind_emit)
+	  targetm.asm_out.unwind_emit (asm_out_file, insn);
 
 	if (CALL_P (insn))
 	  {

@@ -150,7 +150,7 @@ DEFHOOK
 (unwind_emit,
  "",
  void, (FILE *stream, rtx insn),
- default_unwind_emit)
+ NULL)
 
 /* Output an internal label.  */
 DEFHOOK
