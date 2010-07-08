@@ -986,7 +986,7 @@ vn_reference_maybe_forwprop_address (VEC (vn_reference_op_s, heap) **ops,
   double_int off;
 
   def_stmt = SSA_NAME_DEF_STMT (op->op0);
-  if (!gimple_assign_single_p (def_stmt))
+  if (!is_gimple_assign (def_stmt))
     return;
 
   code = gimple_assign_rhs_code (def_stmt);
@@ -1026,7 +1026,7 @@ vn_reference_maybe_forwprop_address (VEC (vn_reference_op_s, heap) **ops,
 	return;
 
       off = double_int_add (off, tree_to_double_int (ptroff));
-      op->op0 = TREE_OPERAND (ptr, 0);
+      op->op0 = ptr;
     }
 
   mem_op->op0 = double_int_to_tree (TREE_TYPE (mem_op->op0), off);
