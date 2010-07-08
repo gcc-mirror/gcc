@@ -801,7 +801,8 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   /* If both bases are based on pointers they cannot alias if they may not
      point to the same memory object or if they point to the same object
      and the accesses do not overlap.  */
-  if (operand_equal_p (ptr1, ptr2, 0))
+  if ((!cfun || gimple_in_ssa_p (cfun))
+      && operand_equal_p (ptr1, ptr2, 0))
     {
       if (TREE_CODE (base1) == MEM_REF)
 	offset1 += mem_ref_offset (base1).low * BITS_PER_UNIT;
