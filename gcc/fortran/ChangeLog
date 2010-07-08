@@ -1,3 +1,16 @@
+2010-07-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* array.c (gfc_match_array_ref): Better error message for
+	coarrays with too few ranks.
+	(match_subscript): Move one diagnostic to caller.
+	* gfortran.h (gfc_get_corank): Add prottype.
+	* expr.c (gfc_get_corank): New function.
+	* iresolve.c (resolve_bound): Fix rank for cobounds.
+	(gfc_resolve_lbound,gfc_resolve_lcobound, gfc_resolve_ubound,
+	gfc_resolve_ucobound, gfc_resolve_this_image): Update
+	resolve_bound call.
+
 2010-07-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44742

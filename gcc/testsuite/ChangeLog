@@ -1,3 +1,8 @@
+2010-07-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/18918
+	* gfortran.dg/coarray_10.f90: Add an additional test.
+
 2010-07-08  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR middle-end/44828

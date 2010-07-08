@@ -24,5 +24,23 @@ subroutine this_image_check()
   j = this_image(dim=3) ! { dg-error "DIM argument without ARRAY argument" }
   i = image_index(i, [ 1 ]) ! { dg-error "Expected coarray variable" }
   i = image_index(z, 2) ! { dg-error "must be a rank one array" }
-
 end subroutine this_image_check
+
+
+subroutine rank_mismatch()
+  implicit none
+  integer,allocatable :: A(:)[:,:,:,:]
+  allocate(A(1)[1,1,1:*])     ! { dg-error "Unexpected ... for codimension" }
+  allocate(A(1)[1,1,1,1,1,*]) ! { dg-error "Invalid codimension 5" }
+  allocate(A(1)[1,1,1,*])
+  allocate(A(1)[1,1])     ! { dg-error "Too few codimensions" }
+  allocate(A(1)[1,*])     ! { dg-error "Too few codimensions" }
+  allocate(A(1)[1,1:*])   ! { dg-error "Unexpected ... for codimension" }
+
+  A(1)[1,1,1] = 1       ! { dg-error "Too few codimensions" }
+  A(1)[1,1,1,1,1,1] = 1 ! { dg-error "Invalid codimension 5" }
+  A(1)[1,1,1,1] = 1
+  A(1)[1,1] = 1         ! { dg-error "Too few codimensions" }
+  A(1)[1,1] = 1         ! { dg-error "Too few codimensions" }
+  A(1)[1,1:1] = 1       ! { dg-error "Too few codimensions" }
+end subroutine rank_mismatch
