@@ -1,3 +1,9 @@
+2010-07-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c: Use short syntax for function calls
+	through function pointers.
+	* config/i386/i386.md: Ditto.
+
 2010-07-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Fix formatting issues.
@@ -441,7 +447,7 @@
 2010-07-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (immediate_operand): New mode attribute.
-	
+
 	(pro_epilogue_adjust_stack_<mode>_1): Macroize insn from
 	pro_epilogue_adjust_stack  and pro_epilogue_adjust_stack_rex64
 	using P mode iterator.
