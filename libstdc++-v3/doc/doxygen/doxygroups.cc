@@ -1,5 +1,6 @@
 /*
-   Copyright (C) 2001, 2002, 2005, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2005, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    See license.html for license.
 
    This just provides documentation for stuff that doesn't need to be in the
@@ -47,7 +48,7 @@
  * Components generally useful that are not part of any standard.
  */
 
-/** @defgroup SGIextensions SGI STL extensions
+/** @defgroup SGIextensions SGI
  * @ingroup extensions
 Because libstdc++ based its implementation of the STL subsections of
 the library on the SGI 3.3 implementation, we inherited their extensions
@@ -115,7 +116,7 @@ All sequences must meet certain requirements, summarized in
 <a href="tables.html">tables</a>.
 */
 
-/** @defgroup associative_containers Associative Containers
+/** @defgroup associative_containers Associative
  * @ingroup containers
 Associative containers allow fast retrieval of data based on keys.
 
@@ -126,7 +127,7 @@ All associative containers must meet certain requirements, summarized in
 <a href="tables.html">tables</a>.
 */
 
-/** @defgroup unordered_associative_containers Unordered Associative Containers
+/** @defgroup unordered_associative_containers Unordered Associative
  * @ingroup containers
 Unordered associative containers allow fast retrieval of data based on keys.
 
