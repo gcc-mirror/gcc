@@ -2455,15 +2455,16 @@ cgraph_make_decl_local (tree decl)
 
   if (TREE_CODE (decl) == VAR_DECL)
     DECL_COMMON (decl) = 0;
-  else if (TREE_CODE (decl) == FUNCTION_DECL)
+  else gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
+
+  if (DECL_COMDAT (decl))
     {
+      DECL_SECTION_NAME (decl) = 0;
       DECL_COMDAT (decl) = 0;
-      DECL_COMDAT_GROUP (decl) = 0;
-      DECL_WEAK (decl) = 0;
-      DECL_EXTERNAL (decl) = 0;
     }
-  else
-    gcc_unreachable ();
+  DECL_COMDAT_GROUP (decl) = 0;
+  DECL_WEAK (decl) = 0;
+  DECL_EXTERNAL (decl) = 0;
   TREE_PUBLIC (decl) = 0;
   if (!DECL_RTL_SET_P (decl))
     return;

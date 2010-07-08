@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "ggc.h"
 #include "flags.h"
+#include "pointer-set.h"
 
 /* Fill array order with all nodes with output flag set in the reverse
    topological order.  */
@@ -567,23 +568,28 @@ ipa_discover_readonly_nonaddressable_vars (void)
 /* Return true when function NODE should be considered externally visible.  */
 
 static bool
-cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program)
+cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program, bool aliased)
 {
   if (!node->local.finalized)
     return false;
   if (!DECL_COMDAT (node->decl)
       && (!TREE_PUBLIC (node->decl) || DECL_EXTERNAL (node->decl)))
     return false;
-  if (!whole_program)
+
+  /* Do not even try to be smart about aliased nodes.  Until we properly
+     represent everything by same body alias, these are just evil.  */
+  if (aliased)
     return true;
-  if (node->local.used_from_object_file)
-    return true;
-  if (DECL_PRESERVE_P (node->decl))
+
+  /* When doing link time optimizations, hidden symbols become local.  */
+  if (in_lto_p && DECL_VISIBILITY (node->decl) == VISIBILITY_HIDDEN)
+    ;
+  else if (!whole_program)
     return true;
   /* COMDAT functions must be shared only if they have address taken,
      otherwise we can produce our own private implementation with
      -fwhole-program.  */
-  if (DECL_COMDAT (node->decl))
+  else if (DECL_COMDAT (node->decl))
     {
       if (node->address_taken || !node->analyzed)
 	return true;
@@ -601,6 +607,10 @@ cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program)
 	      return true;
 	}
     }
+  if (node->local.used_from_object_file)
+    return true;
+  if (DECL_PRESERVE_P (node->decl))
+    return true;
   if (MAIN_NAME_P (DECL_NAME (node->decl)))
     return true;
   if (lookup_attribute ("externally_visible", DECL_ATTRIBUTES (node->decl)))
@@ -639,6 +649,38 @@ function_and_variable_visibility (bool whole_program)
 {
   struct cgraph_node *node;
   struct varpool_node *vnode;
+  struct pointer_set_t *aliased_nodes = pointer_set_create ();
+  struct pointer_set_t *aliased_vnodes = pointer_set_create ();
+  unsigned i;
+  alias_pair *p;
+
+  /* Discover aliased nodes.  */
+  for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p); i++)
+    {
+      if (dump_file)
+       fprintf (dump_file, "Alias %s->%s",
+		IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (p->decl)),
+		IDENTIFIER_POINTER (p->target));
+		
+      if ((node = cgraph_node_for_asm (p->target)) != NULL)
+        {
+	  gcc_assert (node->needed);
+	  pointer_set_insert (aliased_nodes, node);
+	  if (dump_file)
+	    fprintf (dump_file, "  node %s/%i",
+		     cgraph_node_name (node), node->uid);
+        }
+      else if ((vnode = varpool_node_for_asm (p->target)) != NULL)
+        {
+	  gcc_assert (vnode->needed);
+	  pointer_set_insert (aliased_vnodes, vnode);
+	  if (dump_file)
+	    fprintf (dump_file, "  varpool node %s",
+		     varpool_node_name (vnode));
+        }
+      if (dump_file)
+       fprintf (dump_file, "\n");
+    }
 
   for (node = cgraph_nodes; node; node = node->next)
     {
@@ -667,7 +709,9 @@ function_and_variable_visibility (bool whole_program)
 	}
       gcc_assert ((!DECL_WEAK (node->decl) && !DECL_COMDAT (node->decl))
       	          || TREE_PUBLIC (node->decl) || DECL_EXTERNAL (node->decl));
-      if (cgraph_externally_visible_p (node, whole_program))
+      if (cgraph_externally_visible_p (node, whole_program,
+				       pointer_set_contains (aliased_nodes,
+							     node)))
         {
 	  gcc_assert (!node->global.inlined_to);
 	  node->local.externally_visible = true;
@@ -678,7 +722,7 @@ function_and_variable_visibility (bool whole_program)
 	  && !DECL_EXTERNAL (node->decl))
 	{
           struct cgraph_node *alias;
-	  gcc_assert (whole_program || !TREE_PUBLIC (node->decl));
+	  gcc_assert (whole_program || in_lto_p || !TREE_PUBLIC (node->decl));
 	  cgraph_make_decl_local (node->decl);
 	  for (alias = node->same_body; alias; alias = alias->next)
 	    cgraph_make_decl_local (alias->decl);
@@ -725,13 +769,19 @@ function_and_variable_visibility (bool whole_program)
         continue;
       if (vnode->needed
 	  && (DECL_COMDAT (vnode->decl) || TREE_PUBLIC (vnode->decl))
-	  && (!whole_program
-	      /* We can privatize comdat readonly variables whose address is not taken,
-	         but doing so is not going to bring us optimization oppurtunities until
-	         we start reordering datastructures.  */
-	      || DECL_COMDAT (vnode->decl)
-	      || DECL_WEAK (vnode->decl)
+	  && (((!whole_program
+	        /* We can privatize comdat readonly variables whose address is
+		   not taken, but doing so is not going to bring us
+		   optimization oppurtunities until we start reordering
+		   datastructures.  */
+		|| DECL_COMDAT (vnode->decl)
+		|| DECL_WEAK (vnode->decl))
+	       /* When doing linktime optimizations, all hidden symbols will
+		  become local.  */
+	       && (!in_lto_p
+		   || DECL_VISIBILITY (vnode->decl) != VISIBILITY_HIDDEN))
               || vnode->used_from_object_file
+	      || pointer_set_contains (aliased_vnodes, vnode)
 	      || lookup_attribute ("externally_visible",
 				   DECL_ATTRIBUTES (vnode->decl))))
 	vnode->externally_visible = true;
@@ -739,11 +789,13 @@ function_and_variable_visibility (bool whole_program)
         vnode->externally_visible = false;
       if (!vnode->externally_visible)
 	{
-	  gcc_assert (whole_program || !TREE_PUBLIC (vnode->decl));
+	  gcc_assert (in_lto_p || whole_program || !TREE_PUBLIC (vnode->decl));
 	  cgraph_make_decl_local (vnode->decl);
 	}
      gcc_assert (TREE_STATIC (vnode->decl));
     }
+  pointer_set_destroy (aliased_nodes);
+  pointer_set_destroy (aliased_vnodes);
 
   if (dump_file)
     {
