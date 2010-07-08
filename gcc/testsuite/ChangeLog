@@ -1,3 +1,9 @@
+2010-07-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43120
+	* g++.dg/inherit/covariant17.C: New.
+	* g++.dg/abi/covariant1.C: Actually test for the bug.
+
 2010-07-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/44838
