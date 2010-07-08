@@ -1,7 +1,7 @@
 extern void abort (void);
 
-static char
-foo (char si1, char si2)
+static signed char
+foo (signed char si1, signed char si2)
 {
   return si1 * si2;
 }
