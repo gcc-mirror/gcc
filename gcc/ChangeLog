@@ -1,3 +1,11 @@
+2010-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (AT_linkage_name): Delete.
+	(add_linkage_attr): New function.
+	(add_linkage_name): Call it to emit the linkage attribute.
+	(dwarf2out_finish): Likewise.
+	(move_linkage_attr): Explicitly accept both attribute variants.
+
 2010-07-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* toplev.h: Do not include diagnostic-core.h.
