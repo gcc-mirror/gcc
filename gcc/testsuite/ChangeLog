@@ -1,3 +1,9 @@
+2010-07-08  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR tree-optimization/44710
+	* gcc.dg/tree-ssa/ifc-6.c: New.
+	* gcc.dg/tree-ssa/ifc-pr44710.c: New.
+
 2010-07-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/18918
