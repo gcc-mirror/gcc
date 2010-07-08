@@ -3046,6 +3046,20 @@ gfc_check_sizeof (gfc_expr *arg ATTRIBUTE_UNUSED)
 
 
 gfc_try
+gfc_check_c_sizeof (gfc_expr *arg)
+{
+  if (verify_c_interop (&arg->ts) != SUCCESS)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L must be be an "
+		 "interoperable data entity", gfc_current_intrinsic_arg[0],
+		 gfc_current_intrinsic, &arg->where);
+      return FAILURE;
+    }
+  return SUCCESS;
+}
+
+
+gfc_try
 gfc_check_sleep_sub (gfc_expr *seconds)
 {
   if (type_check (seconds, 0, BT_INTEGER) == FAILURE)
@@ -4556,6 +4570,30 @@ gfc_check_and (gfc_expr *i, gfc_expr *j)
 
   if (scalar_check (j, 1) == FAILURE)
     return FAILURE;
+
+  return SUCCESS;
+}
+
+
+gfc_try
+gfc_check_storage_size (gfc_expr *a ATTRIBUTE_UNUSED, gfc_expr *kind)
+{
+  if (kind == NULL)
+    return SUCCESS;
+
+  if (type_check (kind, 1, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (scalar_check (kind, 1) == FAILURE)
+    return FAILURE;
+
+  if (kind->expr_type != EXPR_CONSTANT)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L must be a constant",
+		 gfc_current_intrinsic_arg[1], gfc_current_intrinsic,
+		 &kind->where);
+      return FAILURE;
+    }
 
   return SUCCESS;
 }

@@ -3885,6 +3885,9 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
 
   if (ss == gfc_ss_terminator)
     {
+      if (arg->ts.type == BT_CLASS)
+	gfc_add_component_ref (arg, "$data");
+
       gfc_conv_expr_reference (&argse, arg);
 
       type = TREE_TYPE (build_fold_indirect_ref_loc (input_location,
@@ -3930,6 +3933,56 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
       se->expr = source_bytes;
     }
 
+  gfc_add_block_to_block (&se->pre, &argse.pre);
+}
+
+
+static void
+gfc_conv_intrinsic_storage_size (gfc_se *se, gfc_expr *expr)
+{
+  gfc_expr *arg;
+  gfc_ss *ss;
+  gfc_se argse,eight;
+  tree type, result_type, tmp;
+
+  arg = expr->value.function.actual->expr;
+  gfc_init_se (&eight, NULL);
+  gfc_conv_expr (&eight, gfc_get_int_expr (expr->ts.kind, NULL, 8));
+  
+  gfc_init_se (&argse, NULL);
+  ss = gfc_walk_expr (arg);
+  result_type = gfc_get_int_type (expr->ts.kind);
+
+  if (ss == gfc_ss_terminator)
+    {
+      if (arg->ts.type == BT_CLASS)
+      {
+	gfc_add_component_ref (arg, "$vptr");
+	gfc_add_component_ref (arg, "$size");
+	gfc_conv_expr (&argse, arg);
+	tmp = fold_convert (result_type, argse.expr);
+	goto done;
+      }
+
+      gfc_conv_expr_reference (&argse, arg);
+      type = TREE_TYPE (build_fold_indirect_ref_loc (input_location, 
+						     argse.expr));
+    }
+  else
+    {
+      argse.want_pointer = 0;
+      gfc_conv_expr_descriptor (&argse, arg, ss);
+      type = gfc_get_element_type (TREE_TYPE (argse.expr));
+    }
+    
+  /* Obtain the argument's word length.  */
+  if (arg->ts.type == BT_CHARACTER)
+    tmp = size_of_string_in_bytes (arg->ts.kind, argse.string_length);
+  else
+    tmp = fold_convert (result_type, size_in_bytes (type)); 
+
+done:
+  se->expr = fold_build2 (MULT_EXPR, result_type, tmp, eight.expr);
   gfc_add_block_to_block (&se->pre, &argse.pre);
 }
 
@@ -5270,7 +5323,12 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_SIZEOF:
+    case GFC_ISYM_C_SIZEOF:
       gfc_conv_intrinsic_sizeof (se, expr);
+      break;
+
+    case GFC_ISYM_STORAGE_SIZE:
+      gfc_conv_intrinsic_storage_size (se, expr);
       break;
 
     case GFC_ISYM_SPACING:

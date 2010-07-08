@@ -2459,7 +2459,10 @@ add_functions (void)
 	     x, BT_UNKNOWN, 0, REQUIRED);
 
   make_generic ("sizeof", GFC_ISYM_SIZEOF, GFC_STD_GNU);
-  make_alias ("c_sizeof", GFC_STD_F2008);
+  
+  add_sym_1 ("c_sizeof", GFC_ISYM_C_SIZEOF, CLASS_INQUIRY, ACTUAL_NO,
+	     BT_INTEGER, ii, GFC_STD_F2008, gfc_check_c_sizeof, NULL, NULL,
+	     x, BT_UNKNOWN, 0, REQUIRED);
 
   add_sym_1 ("spacing", GFC_ISYM_SPACING, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
 	     gfc_check_x, gfc_simplify_spacing, gfc_resolve_spacing,
@@ -2500,6 +2503,12 @@ add_functions (void)
 
   make_generic ("stat", GFC_ISYM_STAT, GFC_STD_GNU);
 
+  add_sym_2 ("storage_size", GFC_ISYM_STORAGE_SIZE, CLASS_INQUIRY, ACTUAL_NO,
+	     BT_INTEGER, di, GFC_STD_F2008,
+	     gfc_check_storage_size, NULL, gfc_resolve_storage_size,
+	     a, BT_UNKNOWN, 0, REQUIRED,
+	     kind, BT_INTEGER, di, OPTIONAL);
+  
   add_sym_3red ("sum", GFC_ISYM_SUM, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
 		gfc_check_product_sum, gfc_simplify_sum, gfc_resolve_sum,
 		ar, BT_REAL, dr, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL,

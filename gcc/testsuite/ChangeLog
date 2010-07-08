@@ -1,3 +1,10 @@
+2010-07-08  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44649
+	* gfortran.dg/c_sizeof_1.f90: Modified.
+	* gfortran.dg/storage_size_1.f08: New.
+	* gfortran.dg/storage_size_2.f08: New.
+
 2010-07-08  Mikael Pettersson  <mikpe@it.uu.se>
 
 	* gcc.c-torture/execute/20100708-1.c: New test.
