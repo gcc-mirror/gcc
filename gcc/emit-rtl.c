@@ -1611,27 +1611,26 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 
   /* We can set the alignment from the type if we are making an object,
      this is an INDIRECT_REF, or if TYPE_ALIGN_OK.  */
-  if (objectp || TREE_CODE (t) == INDIRECT_REF
-      || TYPE_ALIGN_OK (type))
+  if (objectp || TREE_CODE (t) == INDIRECT_REF || TYPE_ALIGN_OK (type))
     align = MAX (align, TYPE_ALIGN (type));
+
   else if (TREE_CODE (t) == MEM_REF)
     {
+      tree op0 = TREE_OPERAND (t, 0);
       unsigned HOST_WIDE_INT aoff = BITS_PER_UNIT;
       if (host_integerp (TREE_OPERAND (t, 1), 1))
 	{
 	  unsigned HOST_WIDE_INT ioff = TREE_INT_CST_LOW (TREE_OPERAND (t, 1));
 	  aoff = (ioff & -ioff) * BITS_PER_UNIT;
 	}
-      if (TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR
-	  && DECL_P (TREE_OPERAND (TREE_OPERAND (t, 0), 0)))
-	align = MAX (align,
-		     DECL_ALIGN (TREE_OPERAND (TREE_OPERAND (t, 0), 0)));
-      else if (TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR
-	       && CONSTANT_CLASS_P (TREE_OPERAND (TREE_OPERAND (t, 0), 0)))
+      if (TREE_CODE (op0) == ADDR_EXPR && DECL_P (TREE_OPERAND (op0, 0)))
+	align = MAX (align, DECL_ALIGN (TREE_OPERAND (op0, 0)));
+      else if (TREE_CODE (op0) == ADDR_EXPR
+	       && CONSTANT_CLASS_P (TREE_OPERAND (op0, 0)))
 	{
-	  align = TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0)));
+	  align = TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (op0, 0)));
 #ifdef CONSTANT_ALIGNMENT
-	  align = CONSTANT_ALIGNMENT (TREE_OPERAND (TREE_OPERAND (t, 0), 0), align);
+	  align = CONSTANT_ALIGNMENT (TREE_OPERAND (op0, 0), align);
 #endif
 	}
       else
@@ -1639,19 +1638,19 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	   alignment information from types.  */
 	align = MAX (align,
 		     TYPE_ALIGN (TREE_TYPE (TREE_TYPE (TREE_OPERAND (t, 1)))));
-      if (!integer_zerop (TREE_OPERAND (t, 1))
-	  && aoff < align)
+
+      if (!integer_zerop (TREE_OPERAND (t, 1)) && aoff < align)
 	align = aoff;
     }
-  else
-    if (TREE_CODE (t) == MISALIGNED_INDIRECT_REF)
-      {
-	if (integer_zerop (TREE_OPERAND (t, 1)))
-	  /* We don't know anything about the alignment.  */
-	  align = BITS_PER_UNIT;
-	else
-	  align = tree_low_cst (TREE_OPERAND (t, 1), 1);
-      }
+
+  else if (TREE_CODE (t) == MISALIGNED_INDIRECT_REF)
+    {
+      if (integer_zerop (TREE_OPERAND (t, 1)))
+	/* We don't know anything about the alignment.  */
+	align = BITS_PER_UNIT;
+      else
+	align = tree_low_cst (TREE_OPERAND (t, 1), 1);
+    }
 
   /* If the size is known, we can set that.  */
   if (TYPE_SIZE_UNIT (type) && host_integerp (TYPE_SIZE_UNIT (type), 1))
