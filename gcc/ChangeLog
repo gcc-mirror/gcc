@@ -1,3 +1,28 @@
+2010-07-08  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/i386-protos.h (ix86_asm_output_function_label):
+	New prototype.
+	* config/i386/i386.c (ix86_function_ms_hook_prologue): Check
+	for NULL fntype argument and allow 64-bit targets.
+	(ix86_asm_output_function_label): New function.
+	(ix86_expand_prologue): Handle 64-bit ms hook prologue.
+	(ix86_handle_fndecl_attribute): Likewise.
+	* doc/extend.texi (ms_hook_prologue): Adjust documentation.
+	* doc/doc/tm.texi: Regenerated.
+	* doc/doc/doc/tm.texi.in (ASM_OUTPUT_FUNCTION_LABEL): New.
+	(ASM_DECLARE_FUNCTION_NAME): Adjust documentation.
+	* defaults.h (ASM_OUTPUT_FUNCTION_LABEL): New macro.
+	* config/darwin.h (ASM_DECLARE_FUNCTION_NAME): Use
+	ASM_OUTPUT_FUNCTION_LABEL instead of ASM_OUTPUT_LABEL.
+	* config/elfos.h: Likewise.
+	* config/i386/cygming.h: Likewise.
+	* config/netbsd-aout.h: Likewise.
+	* config/openbsd.h: Likewise.
+	* config/i386/i386.h (ASM_OUTPUT_FUNCTION_LABEL): Override
+	by ix86_asm_output_function_label function call.
+	* varasm.c (assemble_start_function): Use
+	ASM_OUTPUT_FUNCTION_LABEL instead of ASM_OUTPUT_LABEL.
+
 2010-07-08  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_will_be_removed_from_program_if_no_direct_calls):

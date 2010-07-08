@@ -2082,6 +2082,13 @@ do {									\
     }
 #endif
 
+/* Write the extra assembler code needed to declare a function
+   properly.  */
+
+#undef ASM_OUTPUT_FUNCTION_LABEL
+#define ASM_OUTPUT_FUNCTION_LABEL(FILE, NAME, DECL) \
+  ix86_asm_output_function_label (FILE, NAME, DECL)
+
 /* Under some conditions we need jump tables in the text section,
    because the assembler cannot handle label differences between
    sections.  This is the case for x86_64 on Mach-O for example.  */

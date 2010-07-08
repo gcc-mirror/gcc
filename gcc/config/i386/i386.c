@@ -5099,18 +5099,15 @@ ix86_function_type_abi (const_tree fntype)
 static bool
 ix86_function_ms_hook_prologue (const_tree fntype)
 {
-  if (!TARGET_64BIT)
+  if (fntype && lookup_attribute ("ms_hook_prologue", DECL_ATTRIBUTES (fntype)))
     {
-      if (lookup_attribute ("ms_hook_prologue", DECL_ATTRIBUTES (fntype)))
-        {
-          if (decl_function_context (fntype) != NULL_TREE)
-          {
-            error_at (DECL_SOURCE_LOCATION (fntype),
-                "ms_hook_prologue is not compatible with nested function");
-          }
+      if (decl_function_context (fntype) != NULL_TREE)
+      {
+	error_at (DECL_SOURCE_LOCATION (fntype),
+	    "ms_hook_prologue is not compatible with nested function");
+      }
 
-          return true;
-        }
+      return true;
     }
   return false;
 }
@@ -5131,6 +5128,40 @@ ix86_cfun_abi (void)
   if (! cfun || ! TARGET_64BIT)
     return ix86_abi;
   return cfun->machine->call_abi;
+}
+
+/* Write the extra assembler code needed to declare a function properly.  */
+
+void
+ix86_asm_output_function_label (FILE *asm_out_file, const char *fname,
+				tree decl)
+{
+  bool is_ms_hook = ix86_function_ms_hook_prologue (decl);
+
+  if (is_ms_hook)
+    {
+      int i, filler_count = (TARGET_64BIT ? 32 : 16);
+      unsigned int filler_cc = 0xcccccccc;
+
+      for (i = 0; i < filler_count; i += 4)
+        fprintf (asm_out_file, ASM_LONG " 0x%x\n", filler_cc);
+    }
+
+  ASM_OUTPUT_LABEL (asm_out_file, fname);
+
+  /* Output magic byte marker, if hot-patch attribute is set.
+     For x86 case frame-pointer prologue will be emitted in
+     expand_prologue.  */
+  if (is_ms_hook)
+    {
+      if (TARGET_64BIT)
+	/* leaq [%rsp + 0], %rsp  */
+	asm_fprintf (asm_out_file, ASM_BYTE
+		     "0x48, 0x8d, 0xa4, 0x24, 0x00, 0x00, 0x00, 0x00\n");
+      else
+        /* movl.s %edi, %edi.  */
+	asm_fprintf (asm_out_file, ASM_BYTE "0x8b, 0xff\n");
+    }
 }
 
 /* regclass.c  */
@@ -9154,12 +9185,12 @@ ix86_expand_prologue (void)
 
   ix86_compute_frame_layout (&frame);
 
-  if (ix86_function_ms_hook_prologue (current_function_decl))
+  if (!TARGET_64BIT && ix86_function_ms_hook_prologue (current_function_decl))
     {
       rtx push, mov;
 
       /* Make sure the function starts with
-	 8b ff     movl.s %edi,%edi
+	 8b ff     movl.s %edi,%edi (emited by ix86_asm_output_function_label)
 	 55        push   %ebp
 	 8b ec     movl.s %esp,%ebp
 
@@ -9167,8 +9198,6 @@ ix86_expand_prologue (void)
 	 functions in Microsoft Windows XP Service Pack 2 and newer.
 	 Wine uses this to enable Windows apps to hook the Win32 API
 	 functions provided by Wine.  */
-      insn = emit_insn (gen_vswapmov (gen_rtx_REG (SImode, DI_REG),
-				      gen_rtx_REG (SImode, DI_REG)));
       push = emit_insn (gen_push (hard_frame_pointer_rtx));
       mov = emit_insn (gen_vswapmov (hard_frame_pointer_rtx,
 				     stack_pointer_rtx));
@@ -26976,15 +27005,9 @@ ix86_handle_fndecl_attribute (tree *node, tree name,
       return NULL_TREE;
     }
 
-  if (TARGET_64BIT)
-    {
-      warning (OPT_Wattributes, "%qE attribute only available for 32-bit",
-               name);
-      return NULL_TREE;
-    }
-
 #ifndef HAVE_AS_IX86_SWAP
-  sorry ("ms_hook_prologue attribute needs assembler swap suffix support");
+  if (!TARGET_64BIT)
+    sorry ("ms_hook_prologue attribute needs assembler swap suffix support");
 #endif
 
     return NULL_TREE;

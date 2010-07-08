@@ -651,7 +651,7 @@ extern GTY(()) int darwin_ms_struct;
 	 && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))		\
         || DECL_INITIAL (DECL))						\
       (* targetm.encode_section_info) (DECL, DECL_RTL (DECL), false);	\
-    ASM_OUTPUT_LABEL (FILE, xname);					\
+    ASM_OUTPUT_FUNCTION_LABEL (FILE, xname, DECL);			\
   } while (0)
 
 #undef TARGET_ASM_DECLARE_CONSTANT_NAME
