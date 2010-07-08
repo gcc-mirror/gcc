@@ -1,3 +1,7 @@
+2010-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Fix formatting issues.
+
 2010-07-08  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (vn_reference_maybe_forwprop_address): Fix
