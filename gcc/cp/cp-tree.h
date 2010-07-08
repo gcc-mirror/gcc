@@ -30,19 +30,18 @@ along with GCC; see the file COPYING3.  If not see
 
 /* In order for the format checking to accept the C++ front end
    diagnostic framework extensions, you must include this file before
-   toplev.h, not after.  We override the definition of GCC_DIAG_STYLE
+   diagnostic-core.h, not after.  We override the definition of GCC_DIAG_STYLE
    in c-common.h.  */
 #undef GCC_DIAG_STYLE
 #define GCC_DIAG_STYLE __gcc_cxxdiag__
-#if defined(GCC_TOPLEV_H) || defined (GCC_C_COMMON_H)
+#if defined(GCC_DIAGNOSTIC_CORE_H) || defined (GCC_C_COMMON_H)
 #error \
 In order for the format checking to accept the C++ front end diagnostic \
-framework extensions, you must include this file before toplev.h and \
+framework extensions, you must include this file before diagnostic-core.h and \
 c-common.h, not after.
 #endif
-#include "toplev.h"
-#include "diagnostic.h"
 #include "c-family/c-common.h"
+#include "diagnostic.h"
 
 #include "name-lookup.h"
 

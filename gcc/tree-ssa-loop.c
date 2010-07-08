@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "tree-inline.h"
 #include "tree-scalar-evolution.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "tree-vectorizer.h"
 

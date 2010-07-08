@@ -82,7 +82,8 @@
 #include "obstack.h"
 #include "expr.h"
 #include "params.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
+#include "toplev.h" /* user_defined_section_attribute */
 #include "tree-pass.h"
 #include "df.h"
 

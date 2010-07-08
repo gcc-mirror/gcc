@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "function.h"
 #include "basic-block.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "coverage.h"
 #include "tree.h"

@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "tree-dump.h"
 #include "tree-pass.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 
 /* Pointer map of variable mappings, keyed by edge.  */
 static struct pointer_map_t *edge_var_maps;

@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "tree-dump.h"
 #include "tree-pass.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "except.h"
 #include "cfgloop.h"

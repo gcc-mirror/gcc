@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "expr.h"
 #include "output.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "function.h"
 #include "target.h"

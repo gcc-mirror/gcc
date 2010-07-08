@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TOPLEV_H
 #include "input.h"
 #include "bversion.h"
-#include "diagnostic-core.h"
 
 /* If non-NULL, return one past-the-end of the matching SUBPART of
    the WHOLE string.  */

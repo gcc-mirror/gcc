@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "incpath.h"
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "flags.h"
 #include "tm_p.h"

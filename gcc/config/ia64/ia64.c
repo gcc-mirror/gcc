@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "basic-block.h"
 #include "libfuncs.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "sched-int.h"
 #include "timevar.h"

@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "tree-dump.h"
 #include "tree-ssa-live.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 
 

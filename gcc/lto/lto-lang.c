@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto.h"
 #include "tree-inline.h"
 #include "gimple.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 
 static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);

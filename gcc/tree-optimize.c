@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "function.h"
 #include "langhooks.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "flags.h"
 #include "cgraph.h"

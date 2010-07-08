@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "tree-flow.h"
 #include "timevar.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "cfgloop.h"
 
 /* A pointer to one of the hooks containers.  */

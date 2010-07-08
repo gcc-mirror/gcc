@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "libfuncs.h"
 #include "recog.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "reload.h"
 #include "ggc.h"

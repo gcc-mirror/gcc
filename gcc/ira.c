@@ -319,7 +319,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "except.h"
 #include "reload.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "integrate.h"
 #include "ggc.h"
 #include "ira-int.h"

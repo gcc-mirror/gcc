@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "except.h"
 #include "tm_p.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "tree-pass.h"
 #include "recog.h"
 #include "df.h"

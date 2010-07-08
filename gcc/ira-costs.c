@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "recog.h"
 #include "reload.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "target.h"
 #include "params.h"

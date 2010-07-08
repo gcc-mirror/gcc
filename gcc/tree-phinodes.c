@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "basic-block.h"
 #include "tree-flow.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "gimple.h"
 

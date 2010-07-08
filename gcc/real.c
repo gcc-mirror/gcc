@@ -25,6 +25,7 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "real.h"
 #include "realmpfr.h"

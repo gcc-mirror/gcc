@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tm.h"
 #include "tm_p.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 
 #include "c-family/c-format.h"

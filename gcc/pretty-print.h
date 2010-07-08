@@ -303,7 +303,7 @@ extern const char *pp_base_last_position_in_text (const pretty_printer *);
 extern void pp_base_emit_prefix (pretty_printer *);
 extern void pp_base_append_text (pretty_printer *, const char *, const char *);
 
-/* This header may be included before toplev.h, hence the duplicate
+/* This header may be included before diagnostics-core.h, hence the duplicate
    definitions to allow for GCC-specific formats.  */
 #if GCC_VERSION >= 3005
 #define ATTRIBUTE_GCC_PPDIAG(m, n) __attribute__ ((__format__ (__gcc_diag__, m ,n))) ATTRIBUTE_NONNULL(m)

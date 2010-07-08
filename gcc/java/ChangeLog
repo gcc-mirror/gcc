@@ -1,3 +1,19 @@
+2010-07-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* boehm.c: Include diagnostic-core.h in every file that includes
+	toplev.h.
+	* class.c: Likewise.
+	* constants.c: Likewise.
+	* decl.c: Likewise.
+	* except.c: Likewise.
+	* expr.c: Likewise.
+	* jcf-parse.c: Likewise.
+	* mangle.c: Likewise.
+	* mangle_name.c: Likewise.
+	* resource.c: Likewise.
+	* typeck.c: Likewise.
+	* verify-glue.c: Likewise.
+
 2010-07-05  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR bootstrap/44825

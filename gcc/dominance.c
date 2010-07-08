@@ -41,6 +41,7 @@
 #include "hard-reg-set.h"
 #include "obstack.h"
 #include "basic-block.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "et-forest.h"
 #include "timevar.h"
