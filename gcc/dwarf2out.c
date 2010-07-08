@@ -6385,11 +6385,6 @@ static void gen_remaining_tmpl_value_param_die_attribute (void);
 #define DEBUG_MACINFO_SECTION_LABEL     "Ldebug_macinfo"
 #endif
 
-/* Mangled name attribute to use.  This used to be a vendor extension
-   until DWARF 4 standardized it.  */
-#define AT_linkage_name \
-  (dwarf_version >= 4 ? DW_AT_linkage_name : DW_AT_MIPS_linkage_name)
-
 
 /* Definitions of defaults for formats and names of various special
    (artificial) labels which may be generated within this file (when the -g
@@ -17384,6 +17379,25 @@ add_pure_or_virtual_attribute (dw_die_ref die, tree func_decl)
     }
 }
 
+/* Add a DW_AT_linkage_name or DW_AT_MIPS_linkage_name attribute for the
+   given decl.  This used to be a vendor extension until after DWARF 4
+   standardized it.  */
+
+static void
+add_linkage_attr (dw_die_ref die, tree decl)
+{
+  const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+
+  /* Mimic what assemble_name_raw does with a leading '*'.  */
+  if (name[0] == '*')
+    name = &name[1];
+
+  if (dwarf_version >= 4)
+    add_AT_string (die, DW_AT_linkage_name, name);
+  else
+    add_AT_string (die, DW_AT_MIPS_linkage_name, name);
+}
+
 /* Add source coordinate attributes for the given decl.  */
 
 static void
@@ -17418,8 +17432,7 @@ add_linkage_name (dw_die_ref die, tree decl)
 	  deferred_asm_name = asm_name;
 	}
       else if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
-	add_AT_string (die, AT_linkage_name,
-		       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+	add_linkage_attr (die, decl);
     }
 }
 
@@ -22017,7 +22030,8 @@ move_linkage_attr (dw_die_ref die)
   unsigned ix = VEC_length (dw_attr_node, die->die_attr);
   dw_attr_node linkage = *VEC_index (dw_attr_node, die->die_attr, ix - 1);
 
-  gcc_assert (linkage.dw_attr == AT_linkage_name);
+  gcc_assert (linkage.dw_attr == DW_AT_linkage_name
+	      || linkage.dw_attr == DW_AT_MIPS_linkage_name);
 
   while (--ix > 0)
     {
@@ -22250,8 +22264,7 @@ dwarf2out_finish (const char *filename)
       tree decl = node->created_for;
       if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
 	{
-	  add_AT_string (node->die, AT_linkage_name,
-			 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+	  add_linkage_attr (node->die, decl);
 	  move_linkage_attr (node->die);
 	}
     }
