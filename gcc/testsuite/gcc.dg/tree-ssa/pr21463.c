@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-phiprop" } */
+/* { dg-options "-O -fdump-tree-phiprop-details" } */
 
 struct f
 {
@@ -16,5 +16,5 @@ int g(int i, int c, struct f *ff, int g)
   return *t;
 }
 
-/* { dg-final { scan-tree-dump-not "\\*t" "phiprop" } } */
+/* { dg-final { scan-tree-dump-times "Inserting PHI for result of load" 1 "phiprop" } } */
 /* { dg-final { cleanup-tree-dump "phiprop" } } */

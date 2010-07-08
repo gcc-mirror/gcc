@@ -1,5 +1,15 @@
 2010-07-08  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/44831
+	* tree-ssa-phiprop.c (phiprop_insert_phi): Properly build
+	a MEM_REF preserving TBAA info of the original dereference.
+	Dereference the original pointer if the address is not
+	invariant.
+	(propagate_with_phi): Fixup type checks wrt MEM_REFs.  Require
+	at least one invariant address that we are going to dereference.
+
+2010-07-08  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/44861
 	* tree-vect-stmts.c (vectorizable_store): Preserve TBAA
 	information when building MEM_REFs.
