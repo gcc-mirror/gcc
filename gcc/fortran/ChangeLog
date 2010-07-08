@@ -1,3 +1,17 @@
+2010-07-08  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44649
+	* gfortran.h (gfc_isym_id): Add GFC_ISYM_C_SIZEOF,GFC_ISYM_STORAGE_SIZE.
+	* intrinsic.h (gfc_check_c_sizeof,gfc_check_storage_size,
+	gfc_resolve_storage_size): New prototypes.
+	* check.c (gfc_check_c_sizeof,gfc_check_storage_size): New functions.
+	* intrinsic.c (add_functions): Add STORAGE_SIZE.
+	* iresolve.c (gfc_resolve_storage_size): New function.
+	* trans-intrinsic.c (gfc_conv_intrinsic_sizeof): Handle polymorphic
+	arguments.
+	(gfc_conv_intrinsic_storage_size): New function.
+	(gfc_conv_intrinsic_function): Handle STORAGE_SIZE.
+
 2010-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/44847
