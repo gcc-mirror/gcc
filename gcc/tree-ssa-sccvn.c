@@ -972,6 +972,82 @@ vn_reference_fold_indirect (VEC (vn_reference_op_s, heap) **ops,
     }
 }
 
+/* Fold *& at position *I_P in a vn_reference_op_s vector *OPS.  Updates
+   *I_P to point to the last element of the replacement.  */
+static void
+vn_reference_maybe_forwprop_address (VEC (vn_reference_op_s, heap) **ops,
+				     unsigned int *i_p)
+{
+  unsigned int i = *i_p;
+  vn_reference_op_t op = VEC_index (vn_reference_op_s, *ops, i);
+  vn_reference_op_t mem_op = VEC_index (vn_reference_op_s, *ops, i - 1);
+  gimple def_stmt;
+  enum tree_code code;
+  double_int off;
+
+  def_stmt = SSA_NAME_DEF_STMT (op->op0);
+  if (!gimple_assign_single_p (def_stmt))
+    return;
+
+  code = gimple_assign_rhs_code (def_stmt);
+  if (code != ADDR_EXPR
+      && code != POINTER_PLUS_EXPR)
+    return;
+
+  off = tree_to_double_int (mem_op->op0);
+  off = double_int_sext (off, TYPE_PRECISION (TREE_TYPE (mem_op->op0)));
+
+  /* The only thing we have to do is from &OBJ.foo.bar add the offset
+     from .foo.bar to the preceeding MEM_REF offset and replace the
+     address with &OBJ.  */
+  if (code == ADDR_EXPR)
+    {
+      tree addr, addr_base;
+      HOST_WIDE_INT addr_offset;
+
+      addr = gimple_assign_rhs1 (def_stmt);
+      addr_base = get_addr_base_and_unit_offset (TREE_OPERAND (addr, 0),
+						 &addr_offset);
+      if (!addr_base
+	  || TREE_CODE (addr_base) != MEM_REF)
+	return;
+
+      off = double_int_add (off, shwi_to_double_int (addr_offset));
+      off = double_int_add (off, mem_ref_offset (addr_base));
+      op->op0 = TREE_OPERAND (addr_base, 0);
+    }
+  else
+    {
+      tree ptr, ptroff;
+      ptr = gimple_assign_rhs1 (def_stmt);
+      ptroff = gimple_assign_rhs2 (def_stmt);
+      if (TREE_CODE (ptr) != SSA_NAME
+	  || TREE_CODE (ptroff) != INTEGER_CST)
+	return;
+
+      off = double_int_add (off, tree_to_double_int (ptroff));
+      op->op0 = TREE_OPERAND (ptr, 0);
+    }
+
+  mem_op->op0 = double_int_to_tree (TREE_TYPE (mem_op->op0), off);
+  if (host_integerp (mem_op->op0, 0))
+    mem_op->off = TREE_INT_CST_LOW (mem_op->op0);
+  else
+    mem_op->off = -1;
+  if (TREE_CODE (op->op0) == SSA_NAME)
+    {
+      op->op0 = SSA_VAL (op->op0);
+      if (TREE_CODE (op->op0) != SSA_NAME)
+	op->opcode = TREE_CODE (op->op0);
+    }
+
+  /* And recurse.  */
+  if (TREE_CODE (op->op0) == SSA_NAME)
+    vn_reference_maybe_forwprop_address (ops, i_p);
+  else if (TREE_CODE (op->op0) == ADDR_EXPR)
+    vn_reference_fold_indirect (ops, i_p);
+}
+
 /* Optimize the reference REF to a constant if possible or return
    NULL_TREE if not.  */
 
@@ -1075,6 +1151,11 @@ valueize_refs (VEC (vn_reference_op_s, heap) *orig)
 	  && VEC_index (vn_reference_op_s,
 			orig, i - 1)->opcode == MEM_REF)
 	vn_reference_fold_indirect (&orig, &i);
+      else if (i > 0
+	       && vro->opcode == SSA_NAME
+	       && VEC_index (vn_reference_op_s,
+			     orig, i - 1)->opcode == MEM_REF)
+	vn_reference_maybe_forwprop_address (&orig, &i);
       /* If it transforms a non-constant ARRAY_REF into a constant
 	 one, adjust the constant offset.  */
       else if (vro->opcode == ARRAY_REF

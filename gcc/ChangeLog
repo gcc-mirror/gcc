@@ -1,5 +1,11 @@
 2010-07-08  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-sccvn.c (vn_reference_maybe_forwprop_address):
+	New function.
+	(valueize_refs): Call it.
+
+2010-07-08  Richard Guenther  <rguenther@suse.de>
+
 	PR rtl-optimization/44838
 	* tree-ssa-alias.c (indirect_refs_may_alias_p): When not in
 	SSA form do not use pointer equivalence.
