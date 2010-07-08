@@ -3466,6 +3466,7 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
+  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   edge pe;
   tree scalar_dest = gimple_assign_lhs (stmt);
@@ -3574,7 +3575,9 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
       gimple_assign_set_lhs (new_stmt, new_temp);
       new_bb = gsi_insert_on_edge_immediate (pe, new_stmt);
       gcc_assert (!new_bb);
-      data_ref = build_simple_mem_ref (new_temp);
+      data_ref
+	= build2 (MEM_REF, TREE_TYPE (vec_dest), new_temp,
+		  build_int_cst (reference_alias_ptr_type (DR_REF (dr)), 0));
       new_stmt = gimple_build_assign (vec_dest, data_ref);
       new_temp = make_ssa_name (vec_dest, new_stmt);
       gimple_assign_set_lhs (new_stmt, new_temp);

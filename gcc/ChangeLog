@@ -1,3 +1,11 @@
+2010-07-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44861
+	* tree-vect-stmts.c (vectorizable_store): Preserve TBAA
+	information when building MEM_REFs.
+	(vectorizable_load): Likewise.
+	* tree-vect-data-refs.c (vect_setup_realignment): Likewise.
+
 2010-07-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sol2-c.c: Do not include diagnostic-core.h.
