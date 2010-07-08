@@ -1,3 +1,7 @@
+2010-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sol2-c.c: Do not include diagnostic-core.h.
+
 2010-07-08  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
         PR bootstrap/44768
