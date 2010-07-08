@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dump.h"
 #include "cfgloop.h"
 #include "cfglayout.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "tree-scalar-evolution.h"
 #include "tree-vectorizer.h"

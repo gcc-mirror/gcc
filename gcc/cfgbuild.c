@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "except.h"
 #include "expr.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "timevar.h"
 #include "sbitmap.h"

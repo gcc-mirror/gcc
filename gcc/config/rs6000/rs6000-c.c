@@ -29,6 +29,7 @@
 #include "tree.h"
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "tm_p.h"
 #include "target.h"

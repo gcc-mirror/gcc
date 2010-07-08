@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "ggc.h"
 #include "ggc-internal.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "params.h"
 #include "hosthooks.h"

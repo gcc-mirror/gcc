@@ -30,6 +30,7 @@
 #include "tree.h"
 #include "flags.h"
 #include "toplev.h"
+#include "diagnostic-core.h"
 #include "output.h"
 #include "ggc.h"
 #include "debug.h"

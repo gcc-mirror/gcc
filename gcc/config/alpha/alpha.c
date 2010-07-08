@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "obstack.h"
 #include "except.h"
 #include "function.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "ggc.h"
 #include "integrate.h"

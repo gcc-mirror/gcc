@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "options.h"
 #include "target.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "lto-streamer.h"
 

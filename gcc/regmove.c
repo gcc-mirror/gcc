@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "basic-block.h"
 #include "except.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "reload.h"
 #include "timevar.h"

@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "integrate.h"
 #include "except.h"
 #include "function.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "intl.h"
 #include "params.h"

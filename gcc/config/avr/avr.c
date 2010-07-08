@@ -34,6 +34,7 @@
 #include "tree.h"
 #include "output.h"
 #include "expr.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "obstack.h"
 #include "function.h"

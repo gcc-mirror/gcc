@@ -30,6 +30,7 @@
 #include "tree.h"
 #include "expr.h"
 #include "tm_p.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "sh-symbian.h"
 

@@ -1,3 +1,11 @@
+2010-07-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* lto-coff.c: Include diagnostic-core.h in every file that
+	includes toplev.h.
+	* lto-elf.c: Likewise.
+	* lto-lang.c: Likewise.
+	* lto-macho.c: Likewise.
+
 2010-07-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* lto-elf.c (ELFOSABI_NONE, ELFOSABI_LINUX): Define if not defined.

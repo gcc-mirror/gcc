@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-data-ref.h"
 #include "params.h"
 #include "flags.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "tree-inline.h"
 #include "gmp.h"

@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "integrate.h"
 #include "function.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "ggc.h"
 #include "recog.h"

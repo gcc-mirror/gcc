@@ -27,10 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "splay-tree.h"
 #include "c-common.h"
-/* In order for the format checking to accept the C frontend
-   diagnostic framework extensions, you must define this token before
-   including toplev.h.  */
-#define GCC_DIAG_STYLE __gcc_cdiag__
 #include "toplev.h"
 #include "flags.h"
 #include "output.h"

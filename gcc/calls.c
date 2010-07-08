@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "libfuncs.h"
 #include "function.h"
 #include "regs.h"
-#include "toplev.h"
+#include "diagnostic-core.h"
 #include "output.h"
 #include "tm_p.h"
 #include "timevar.h"

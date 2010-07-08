@@ -21,6 +21,7 @@
 #include "system.h"
 #include "coretypes.h"
 #include <sys/mman.h>
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "config/host-darwin.h"
 

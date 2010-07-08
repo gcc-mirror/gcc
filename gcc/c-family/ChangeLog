@@ -1,3 +1,9 @@
+2010-07-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c-common.h: Include diagnostic-core.h. Error if already
+	included.
+	* c-semantics.c: Do not define GCC_DIAG_STYLE here.
+
 2010-07-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* c-family/c-common.c (IN_GCC_FRONTEND): Do not undef.

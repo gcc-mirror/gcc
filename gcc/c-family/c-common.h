@@ -28,9 +28,15 @@ along with GCC; see the file COPYING3.  If not see
 
 /* In order for the format checking to accept the C frontend
    diagnostic framework extensions, you must include this file before
-   toplev.h, not after.  The C front end formats are a subset of those
+   diagnostic-core.h, not after.  The C front end formats are a subset of those
    for C++, so they are the appropriate set to use in common code;
    cp-tree.h overrides this for C++.  */
+#if defined(GCC_DIAGNOSTIC_CORE_H)
+#error \
+In order for the format checking to accept the C front end diagnostic \
+framework extensions, you must include this file before diagnostic-core.h \
+never after.
+#endif
 #ifndef GCC_DIAG_STYLE
 #define GCC_DIAG_STYLE __gcc_cdiag__
 #endif

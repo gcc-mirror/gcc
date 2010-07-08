@@ -40,6 +40,7 @@
 #include "function.h"
 #include "expr.h"
 #include "optabs.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "recog.h"
 #include "cgraph.h"

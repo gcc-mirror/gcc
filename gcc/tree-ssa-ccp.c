@@ -205,6 +205,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "langhooks.h"
 #include "target.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "dbgcnt.h"
 

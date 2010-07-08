@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_C_TREE_H
 
 #include "c-family/c-common.h"
-#include "toplev.h"
 #include "diagnostic.h"
 
 /* struct lang_identifier is private to c-decl.c, but langhooks.c needs to

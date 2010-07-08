@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifdef GENERATOR_FILE
 # include "errors.h"
 #else
-# include "toplev.h"
+# include "diagnostic-core.h"
 #endif
 
 

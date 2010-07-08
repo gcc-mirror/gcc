@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #include "coretypes.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "tree.h"
 #include "tree-pass.h"

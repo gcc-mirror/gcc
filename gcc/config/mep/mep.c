@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "reload.h"
 #include "tm_p.h"
 #include "ggc.h"
+#include "diagnostic-core.h"
 #include "toplev.h"
 #include "integrate.h"
 #include "target.h"
