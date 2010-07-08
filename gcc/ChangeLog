@@ -1,3 +1,13 @@
+2010-07-08  Jan Hubicka  <jh@suse.cz>
+
+	* ipa.c: Include pointer-set.h
+	(cgraph_externally_visible_p): New attribute ALIASED;
+	when in LTO, hidden symbols are local unless they are aliased.
+	(function_and_variable_visibility): Compute aliased nodes;
+	handle LTO and hidden symbol on functions and vars.
+	* cgraph.c (cgraph_make_decl_local): Clear NAMED_SECTION
+	for COMDAT symbols; handle COMDAT_GROUPS also at vars.
+
 2010-07-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/cygming.h (STACK_CHECK_STATIC_BUILTIN): Define to 1.
