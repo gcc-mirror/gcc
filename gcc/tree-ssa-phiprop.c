@@ -187,10 +187,17 @@ phiprop_insert_phi (basic_block bb, gimple phi, gimple use_stmt,
 	}
       else
 	{
+	  tree rhs = gimple_assign_rhs1 (use_stmt);
 	  gcc_assert (TREE_CODE (old_arg) == ADDR_EXPR);
-	  old_arg = TREE_OPERAND (old_arg, 0);
-	  new_var = create_tmp_reg (TREE_TYPE (old_arg), NULL);
-	  tmp = gimple_build_assign (new_var, unshare_expr (old_arg));
+	  new_var = create_tmp_reg (TREE_TYPE (rhs), NULL);
+	  if (!is_gimple_min_invariant (old_arg))
+	    old_arg = PHI_ARG_DEF_FROM_EDGE (phi, e);
+	  else
+	    old_arg = unshare_expr (old_arg);
+	  tmp = gimple_build_assign (new_var,
+				     fold_build2 (MEM_REF, TREE_TYPE (rhs),
+						  old_arg,
+						  TREE_OPERAND (rhs, 1)));
 	  gcc_assert (is_gimple_reg (new_var));
 	  add_referenced_var (new_var);
 	  new_var = make_ssa_name (new_var, tmp);
@@ -246,6 +253,8 @@ propagate_with_phi (basic_block bb, gimple phi, struct phiprop_d *phivn,
   use_operand_p arg_p, use;
   ssa_op_iter i;
   bool phi_inserted;
+  tree type = NULL_TREE;
+  bool one_invariant = false;
 
   if (!POINTER_TYPE_P (TREE_TYPE (ptr))
       || !is_gimple_reg_type (TREE_TYPE (TREE_TYPE (ptr))))
@@ -268,15 +277,28 @@ propagate_with_phi (basic_block bb, gimple phi, struct phiprop_d *phivn,
 	    return false;
 	  arg = gimple_assign_rhs1 (def_stmt);
 	}
-      if ((TREE_CODE (arg) != ADDR_EXPR
-	   /* Avoid to have to decay *&a to a[0] later.  */
-	   || !is_gimple_reg_type (TREE_TYPE (TREE_OPERAND (arg, 0))))
+      if (TREE_CODE (arg) != ADDR_EXPR
 	  && !(TREE_CODE (arg) == SSA_NAME
 	       && SSA_NAME_VERSION (arg) < n
 	       && phivn[SSA_NAME_VERSION (arg)].value != NULL_TREE
+	       && (!type
+		   || types_compatible_p
+		       (type, TREE_TYPE (phivn[SSA_NAME_VERSION (arg)].value)))
 	       && phivn_valid_p (phivn, arg, bb)))
 	return false;
+      if (!type
+	  && TREE_CODE (arg) == SSA_NAME)
+	type = TREE_TYPE (phivn[SSA_NAME_VERSION (arg)].value);
+      if (TREE_CODE (arg) == ADDR_EXPR
+	  && is_gimple_min_invariant (arg))
+	one_invariant = true;
     }
+
+  /* If we neither have an address of a decl nor can reuse a previously
+     inserted load, do not hoist anything.  */
+  if (!one_invariant
+      && !type)
+    return false;
 
   /* Find a dereferencing use.  First follow (single use) ssa
      copy chains for ptr.  */
@@ -298,8 +320,9 @@ propagate_with_phi (basic_block bb, gimple phi, struct phiprop_d *phivn,
 	    && gimple_assign_rhs_code (use_stmt) == MEM_REF
 	    && TREE_OPERAND (gimple_assign_rhs1 (use_stmt), 0) == ptr
 	    && integer_zerop (TREE_OPERAND (gimple_assign_rhs1 (use_stmt), 1))
-	    && types_compatible_p (TREE_TYPE (gimple_assign_rhs1 (use_stmt)),
-				   TREE_TYPE (TREE_TYPE (ptr)))
+	    && (!type
+		|| types_compatible_p
+		     (TREE_TYPE (gimple_assign_lhs (use_stmt)), type))
 	    /* We cannot replace a load that may throw or is volatile.  */
 	    && !stmt_can_throw_internal (use_stmt)))
 	continue;
@@ -319,6 +342,7 @@ propagate_with_phi (basic_block bb, gimple phi, struct phiprop_d *phivn,
       if (!phi_inserted)
 	{
 	  res = phiprop_insert_phi (bb, phi, use_stmt, phivn, n);
+	  type = TREE_TYPE (res);
 
 	  /* Remember the value we created for *ptr.  */
 	  phivn[SSA_NAME_VERSION (ptr)].value = res;

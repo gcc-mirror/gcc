@@ -1,5 +1,11 @@
 2010-07-08  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/44831
+	* gcc.c-torture/compile/pr44831.c: New testcase.
+	* gcc.dg/tree-ssa/pr21463.c: Adjust.
+
+2010-07-08  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/44861
 	* g++.dg/vect/pr44861.cc: New testcase.
 
