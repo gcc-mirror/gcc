@@ -2897,6 +2897,11 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
       && !is_gimple_val (var))
     {
       tree temp = create_tmp_var (TREE_TYPE (result), "retvalptr");
+      if (gimple_in_ssa_p (id->src_cfun))
+	{
+	  get_var_ann (temp);
+	  add_referenced_var (temp);
+	}
       insert_decl_map (id, result, temp);
       temp = remap_ssa_name (gimple_default_def (id->src_cfun, result), id);
       insert_init_stmt (id, entry_bb, gimple_build_assign (temp, var));
