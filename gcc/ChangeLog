@@ -1,3 +1,12 @@
+2010-07-08  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+        PR bootstrap/44768
+	* cfgexpand.c (estimated_stack_frame_size): Make self-contained
+	with respect to current_function_decl. Pass decl of the function.
+	* tree-inline.h (estimated_stack_frame_size): Adjust prototype.
+	* ipa-inline.c (compute_inline_parameters): Pass decl to
+	estimated_stack_frame_size.
+
 2010-07-08  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (vn_reference_maybe_forwprop_address):
