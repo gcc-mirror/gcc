@@ -1239,10 +1239,13 @@ main_tree_if_conversion (void)
   return changed ? TODO_cleanup_cfg : 0;
 }
 
+/* Returns true when the if-conversion pass is enabled.  */
+
 static bool
 gate_tree_if_conversion (void)
 {
-  return flag_tree_vectorize != 0;
+  return ((flag_tree_vectorize && flag_tree_loop_if_convert != 0)
+	  || flag_tree_loop_if_convert == 1);
 }
 
 struct gimple_opt_pass pass_if_conversion =
