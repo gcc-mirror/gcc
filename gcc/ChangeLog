@@ -1,3 +1,9 @@
+2010-07-08  Richard Guenther  <rguenther@suse.de>
+
+	PR rtl-optimization/44838
+	* tree-ssa-alias.c (indirect_refs_may_alias_p): When not in
+	SSA form do not use pointer equivalence.
+
 2010-07-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2out.c (AT_linkage_name): Delete.
