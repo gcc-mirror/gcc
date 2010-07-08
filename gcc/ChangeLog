@@ -1,3 +1,36 @@
+2010-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/cygming.h (STACK_CHECK_STATIC_BUILTIN): Define to 1.
+	* config/i386/freebsd.h (STACK_CHECK_STATIC_BUILTIN): Likewise.
+	* config/i386/linux.h (STACK_CHECK_STATIC_BUILTIN): Likewise.
+	* config/i386/linux64.h (STACK_CHECK_STATIC_BUILTIN): Likewise.
+	* config/i386/sol2.h (STACK_CHECK_STATIC_BUILTIN): Likewise.
+	* config/i386/i386.c (ix86_gen_adjust_stack_and_probe): New variable.
+	(ix86_gen_probe_stack_range): Likewise.
+	(override_options): Set them.
+	(ix86_target_stack_probe): New function.
+	(ix86_compute_frame_layout): Force use of push instructions to
+	save registers if stack checking with probes is enabled.
+	(get_scratch_register_on_entry): New function.
+	(release_scratch_register_on_entry): Likewise.
+	(ix86_adjust_stack_and_probe): Likewise.
+	(output_adjust_stack_and_probe): Likewise.
+	(ix86_emit_probe_stack_range): Likewise.
+	(output_probe_stack_range): Likewise.
+	(ix86_expand_prologue): Emit stack checking code if static built-in
+	stack checking is enabled.
+	Test ix86_target_stack_probe instead of TARGET_STACK_PROBE.
+	* config/i386/i386-protos.h (ix86_target_stack_probe): Declare.
+	(output_adjust_stack_and_probe): Likewise.
+	(output_probe_stack_range): Likewise.
+	* config/i386/i386.md (UNSPECV_PROBE_STACK_RANGE): New constant.
+	(allocate_stack_worker_32): Test ix86_target_stack_probe instead of
+	TARGET_STACK_PROBE.
+	(allocate_stack_worker_64): Likewise.
+	(allocate_stack): Likewise.
+	(adjust_stack_and_probe): New insn.
+	(probe_stack_range): Likewise.
+
 2010-07-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44831
