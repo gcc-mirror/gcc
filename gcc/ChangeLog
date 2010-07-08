@@ -1,3 +1,9 @@
+2010-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/44843
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Do not rely on the
+	pointed-to type of the offset in a MEM_REF to compute the alignment.
+
 2010-07-08  Kai Tietz  <kai.tietz@onevision.com>
 
 	* final.c (final_scan_insn): Replace

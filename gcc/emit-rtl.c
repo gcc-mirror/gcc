@@ -1634,10 +1634,9 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 #endif
 	}
       else
-	/* This technically isn't correct.  We can't really derive
-	   alignment information from types.  */
-	align = MAX (align,
-		     TYPE_ALIGN (TREE_TYPE (TREE_TYPE (TREE_OPERAND (t, 1)))));
+	/* ??? This isn't fully correct, we can't set the alignment from the
+	   type in all cases.  */
+	align = MAX (align, TYPE_ALIGN (type));
 
       if (!integer_zerop (TREE_OPERAND (t, 1)) && aoff < align)
 	align = aoff;
