@@ -1,3 +1,9 @@
+2010-07-08  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR middle-end/44828
+	* gcc.c-torture/execute/pr44828.c (foo): Use signed char.
+	* gcc.c-torture/execute/pr44828.x: Revert.
+
 2010-07-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43120
