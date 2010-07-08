@@ -1,3 +1,8 @@
+2010-07-08  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (vn_reference_maybe_forwprop_address): Fix
+	stmt check for POINTER_PLUS_EXPRs, fix the pointer assignment.
+
 2010-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (mem_loc_descriptor): Use DW_OP_const[48]u
