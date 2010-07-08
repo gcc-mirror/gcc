@@ -1,3 +1,8 @@
+2010-07-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR rtl-optimization/44838
+	* gcc.dg/pr44838.c: New.
+
 2010-07-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44831
