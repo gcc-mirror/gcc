@@ -2736,10 +2736,10 @@ the @option{-maccumulate-outgoing-args} option.
 @item ms_hook_prologue
 @cindex @code{ms_hook_prologue} attribute
 
-On 32 bit i[34567]86-*-* targets, you can use this function attribute to make
-gcc generate the "hot-patching" function prologue used in Win32 API
-functions in Microsoft Windows XP Service Pack 2 and newer. This requires
-support for the swap suffix in the assembler. (GNU Binutils 2.19.51 or later)
+On 32 bit i[34567]86-*-* targets and 64 bit x86_64-*-* targets, you can use
+this function attribute to make gcc generate the "hot-patching" function
+prologue used in Win32 API functions in Microsoft Windows XP Service Pack 2
+and newer.
 
 @item naked
 @cindex function without a prologue/epilogue code

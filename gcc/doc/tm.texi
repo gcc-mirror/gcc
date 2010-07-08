@@ -7661,6 +7661,19 @@ assembler syntax for defining the name, and a newline.  A default
 definition of this macro is provided which is correct for most systems.
 @end defmac
 
+@defmac ASM_OUTPUT_FUNCTION_LABEL (@var{stream}, @var{name}, @var{decl})
+A C statement (sans semicolon) to output to the stdio stream
+@var{stream} the assembler definition of a label named @var{name} of
+a function.
+Use the expression @code{assemble_name (@var{stream}, @var{name})} to
+output the name itself; before and after that, output the additional
+assembler syntax for defining the name, and a newline.  A default
+definition of this macro is provided which is correct for most systems.
+
+If this macro is not defined, then the function name is defined in the
+usual manner as a label (by means of @code{ASM_OUTPUT_LABEL}).
+@end defmac
+
 @findex assemble_name_raw
 @defmac ASM_OUTPUT_INTERNAL_LABEL (@var{stream}, @var{name})
 Identical to @code{ASM_OUTPUT_LABEL}, except that @var{name} is known
@@ -7744,11 +7757,11 @@ A C statement (sans semicolon) to output to the stdio stream
 @var{stream} any text necessary for declaring the name @var{name} of a
 function which is being defined.  This macro is responsible for
 outputting the label definition (perhaps using
-@code{ASM_OUTPUT_LABEL}).  The argument @var{decl} is the
+@code{ASM_OUTPUT_FUNCTION_LABEL}).  The argument @var{decl} is the
 @code{FUNCTION_DECL} tree node representing the function.
 
 If this macro is not defined, then the function name is defined in the
-usual manner as a label (by means of @code{ASM_OUTPUT_LABEL}).
+usual manner as a label (by means of @code{ASM_OUTPUT_FUNCTION_LABEL}).
 
 You may wish to use @code{ASM_OUTPUT_TYPE_DIRECTIVE} in the definition
 of this macro.

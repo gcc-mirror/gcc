@@ -133,11 +133,19 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 /* This is how to output the definition of a user-level label named
-   NAME, such as the label on a static function or variable NAME.  */
+   NAME, such as the label on variable NAME.  */
 
 #ifndef ASM_OUTPUT_LABEL
 #define ASM_OUTPUT_LABEL(FILE,NAME) \
   do { assemble_name ((FILE), (NAME)); fputs (":\n", (FILE)); } while (0)
+#endif
+
+/* This is how to output the definition of a user-level label named
+   NAME, such as the label on a function.  */
+
+#ifndef ASM_OUTPUT_FUNCTION_LABEL
+#define ASM_OUTPUT_FUNCTION_LABEL(FILE, NAME, DECL) \
+  ASM_OUTPUT_LABEL ((FILE), (NAME))
 #endif
 
 /* Output the definition of a compiler-generated label named NAME.  */
