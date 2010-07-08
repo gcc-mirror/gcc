@@ -389,7 +389,7 @@ cgraph_estimate_growth (struct cgraph_node *node)
      we decide to not inline for different reasons, but it is not big deal
      as in that case we will keep the body around, but we will also avoid
      some inlining.  */
-  if (cgraph_only_called_directly_p (node)
+  if (cgraph_will_be_removed_from_program_if_no_direct_calls (node)
       && !DECL_EXTERNAL (node->decl) && !self_recursive)
     growth -= node->global.size;
 
@@ -1496,14 +1496,13 @@ cgraph_decide_inlining (void)
 
 	  if (node->callers
 	      && !node->callers->next_caller
-	      && cgraph_only_called_directly_p (node)
+	      && cgraph_will_be_removed_from_program_if_no_direct_calls (node)
 	      && node->local.inlinable
 	      && node->callers->inline_failed
 	      && node->callers->caller != node
 	      && node->callers->caller->global.inlined_to != node
 	      && !node->callers->call_stmt_cannot_inline_p
-	      && !DECL_EXTERNAL (node->decl)
-	      && !DECL_COMDAT (node->decl))
+	      && !DECL_EXTERNAL (node->decl))
 	    {
 	      cgraph_inline_failed_t reason;
 	      old_size = overall_size;
