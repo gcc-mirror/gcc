@@ -7842,6 +7842,10 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup,
 bool
 is_std_init_list (tree type)
 {
+  /* Look through typedefs.  */
+  if (!TYPE_P (type))
+    return false;
+  type = TYPE_MAIN_VARIANT (type);
   return (CLASS_TYPE_P (type)
 	  && CP_TYPE_CONTEXT (type) == std_node
 	  && strcmp (TYPE_NAME_STRING (type), "initializer_list") == 0);
