@@ -4928,10 +4928,28 @@ output_loc_operands (dw_loc_descr_ref loc)
       dw2_asm_output_data (2, val1->v.val_int, NULL);
       break;
     case DW_OP_const4u:
+      if (loc->dtprel)
+	{
+	  gcc_assert (targetm.asm_out.output_dwarf_dtprel);
+	  targetm.asm_out.output_dwarf_dtprel (asm_out_file, 4,
+					       val1->v.val_addr);
+	  fputc ('\n', asm_out_file);
+	  break;
+	}
+      /* FALLTHRU */
     case DW_OP_const4s:
       dw2_asm_output_data (4, val1->v.val_int, NULL);
       break;
     case DW_OP_const8u:
+      if (loc->dtprel)
+	{
+	  gcc_assert (targetm.asm_out.output_dwarf_dtprel);
+	  targetm.asm_out.output_dwarf_dtprel (asm_out_file, 8,
+					       val1->v.val_addr);
+	  fputc ('\n', asm_out_file);
+	  break;
+	}
+      /* FALLTHRU */
     case DW_OP_const8s:
       gcc_assert (HOST_BITS_PER_WIDE_INT >= 64);
       dw2_asm_output_data (8, val1->v.val_int, NULL);
@@ -13586,7 +13604,11 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
 	  if (!targetm.have_tls || !targetm.asm_out.output_dwarf_dtprel)
 	    break;
 
-	  temp = new_loc_descr (DW_OP_addr, 0, 0);
+	  /* We used to emit DW_OP_addr here, but that's wrong, since
+	     DW_OP_addr should be relocated by the debug info consumer,
+	     while DW_OP_GNU_push_tls_address operand should not.  */
+	  temp = new_loc_descr (DWARF2_ADDR_SIZE == 4
+				? DW_OP_const4u : DW_OP_const8u, 0, 0);
 	  temp->dw_loc_oprnd1.val_class = dw_val_class_addr;
 	  temp->dw_loc_oprnd1.v.val_addr = rtl;
 	  temp->dtprel = true;
@@ -15071,10 +15093,13 @@ loc_list_from_tree (tree loc, int want_address)
 
 	       /* The way DW_OP_GNU_push_tls_address is specified, we
 	     	  can only look up addresses of objects in the current
-	     	  module.  */
+	     	  module.  We used DW_OP_addr as first op, but that's
+		  wrong, because DW_OP_addr is relocated by the debug
+		  info consumer, while DW_OP_GNU_push_tls_address
+		  operand shouldn't be.  */
 	      if (DECL_EXTERNAL (loc) && !targetm.binds_local_p (loc))
 		return 0;
-	      first_op = DW_OP_addr;
+	      first_op = DWARF2_ADDR_SIZE == 4 ? DW_OP_const4u : DW_OP_const8u;
 	      dtprel = true;
 	      second_op = DW_OP_GNU_push_tls_address;
 	    }
@@ -22093,7 +22118,7 @@ static bool
 resolve_addr_in_expr (dw_loc_descr_ref loc)
 {
   for (; loc; loc = loc->dw_loc_next)
-    if ((loc->dw_loc_opc == DW_OP_addr
+    if (((loc->dw_loc_opc == DW_OP_addr || loc->dtprel)
 	 && resolve_one_addr (&loc->dw_loc_oprnd1.v.val_addr, NULL))
 	|| (loc->dw_loc_opc == DW_OP_implicit_value
 	    && loc->dw_loc_oprnd2.val_class == dw_val_class_addr

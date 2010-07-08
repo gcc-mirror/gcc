@@ -1,3 +1,12 @@
+2010-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (mem_loc_descriptor): Use DW_OP_const[48]u
+	instead of DW_OP_addr for DW_OP_GNU_push_tls_address operand.
+	(loc_list_from_tree): Likewise.
+	(output_loc_operands): Handle outputting DW_OP_const[48]u
+	with loc->dtprel set.
+	(resolve_addr_in_expr): Handle loc->dtprel like DW_OP_addr.
+
 2010-07-08  Jan Hubicka  <jh@suse.cz>
 
 	* ipa.c: Include pointer-set.h
