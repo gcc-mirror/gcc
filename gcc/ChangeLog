@@ -1,5 +1,12 @@
 2010-07-08  Sebastian Pop  <sebastian.pop@amd.com>
 
+	PR tree-optimization/44710
+	* tree-if-conv.c (parse_predicate): New.
+	(add_to_predicate_list): Call it, call maybe_fold_or_comparisons.
+	Make sure that the predicates are either SSA_NAMEs or gimple_condexpr.
+
+2010-07-08  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* common.opt (ftree-loop-if-convert): New flag.
 	* doc/invoke.texi (ftree-loop-if-convert): Documented.
 	* tree-if-conv.c (gate_tree_if_conversion): Enable if-conversion

@@ -259,17 +259,93 @@ is_predicated (basic_block bb)
   return !is_true_predicate (bb_predicate (bb));
 }
 
-/* Add condition NEW_COND to the predicate list of basic block BB.  */
+/* Parses the predicate COND and returns its comparison code and
+   operands OP0 and OP1.  */
+
+static enum tree_code
+parse_predicate (tree cond, tree *op0, tree *op1)
+{
+  gimple s;
+
+  if (TREE_CODE (cond) == SSA_NAME
+      && is_gimple_assign (s = SSA_NAME_DEF_STMT (cond)))
+    {
+      if (TREE_CODE_CLASS (gimple_assign_rhs_code (s)) == tcc_comparison)
+	{
+	  *op0 = gimple_assign_rhs1 (s);
+	  *op1 = gimple_assign_rhs2 (s);
+	  return gimple_assign_rhs_code (s);
+	}
+
+      else if (gimple_assign_rhs_code (s) == TRUTH_NOT_EXPR)
+	{
+	  tree op = gimple_assign_rhs1 (s);
+	  tree type = TREE_TYPE (op);
+	  enum tree_code code = parse_predicate (op, op0, op1);
+
+	  return code == ERROR_MARK ? ERROR_MARK
+	    : invert_tree_comparison (code, HONOR_NANS (TYPE_MODE (type)));
+	}
+
+      return ERROR_MARK;
+    }
+
+  if (TREE_CODE_CLASS (TREE_CODE (cond)) == tcc_comparison)
+    {
+      *op0 = TREE_OPERAND (cond, 0);
+      *op1 = TREE_OPERAND (cond, 1);
+      return TREE_CODE (cond);
+    }
+
+  return ERROR_MARK;
+}
+
+/* Add condition NC to the predicate list of basic block BB.  */
 
 static inline void
-add_to_predicate_list (basic_block bb, tree new_cond)
+add_to_predicate_list (basic_block bb, tree nc)
 {
-  tree cond = bb_predicate (bb);
+  tree bc;
 
-  set_bb_predicate (bb, is_true_predicate (cond) ? new_cond :
-		    fold_build2_loc (EXPR_LOCATION (cond),
-				     TRUTH_OR_EXPR, boolean_type_node,
-				     cond, new_cond));
+  if (is_true_predicate (nc))
+    return;
+
+  if (!is_predicated (bb))
+    bc = nc;
+  else
+    {
+      enum tree_code code1, code2;
+      tree op1a, op1b, op2a, op2b;
+
+      bc = bb_predicate (bb);
+      code1 = parse_predicate (bc, &op1a, &op1b);
+      code2 = parse_predicate (nc, &op2a, &op2b);
+
+      if (code1 != ERROR_MARK && code2 != ERROR_MARK)
+	{
+	  tree t = maybe_fold_or_comparisons (code1, op1a, op1b,
+					      code2, op2a, op2b);
+	  if (!t)
+	    t = fold_build2_loc (EXPR_LOCATION (bc), TRUTH_OR_EXPR,
+				 boolean_type_node, bc, nc);
+	  bc = t;
+	}
+      else
+	bc = fold_build2_loc (EXPR_LOCATION (bc), TRUTH_OR_EXPR,
+			      boolean_type_node, bc, nc);
+    }
+
+  if (!is_gimple_condexpr (bc))
+    {
+      gimple_seq stmts;
+      bc = force_gimple_operand (bc, &stmts, true, NULL_TREE);
+      add_bb_predicate_gimplified_stmts (bb, stmts);
+    }
+
+  if (is_true_predicate (bc))
+    reset_bb_predicate (bb);
+  else
+    set_bb_predicate (bb, bc);
 }
 
 /* Add the condition COND to the previous condition PREV_COND, and add
