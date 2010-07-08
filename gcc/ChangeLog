@@ -1,3 +1,11 @@
+2010-07-08  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/ia64/ia64.h (OVERRIDE_OPTIONS): Remove macros.
+	* config/ia64/ia64-protos.h (ia64_override_options): Remove.
+	* config/ia64/ia64.c (TARGET_OPTION_OVERRIDE): Define.
+	(ia64_override_options): Rename to...
+	(ia64_option_override): ... this one. Make static.
+
 2010-07-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/44843
