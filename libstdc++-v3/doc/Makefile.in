@@ -267,7 +267,14 @@ AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 # Assumes doxygen, graphviz (with dot), pdflatex installed
 doxygen_script = ${top_srcdir}/scripts/run_doxygen
 doxygen_outdir = ${glibcxx_builddir}/doc/doxygen
+
+# Chance of loooooonnggg creation time on this rule.  Iff this fails,
+# look at refman.log and see if TeX's memory is exhausted. Symptoms
+# include asking a wizard to enlarge capacity. If this is the case,
+# find texmf.cnf and add a zero for pool_size, string_vacancies,
+# max_strings, and pool_free values.
 doxygen_pdf = ${doxygen_outdir}/latex/refman.pdf
+api_pdf = ${doxygen_outdir}/pdf/libstdc++-api.pdf
 
 # Docbook configuration.
 # Assumes
@@ -597,12 +604,15 @@ doc-latex-doxygen:
 	  ${SHELL} ${doxygen_script} \
 	  --host_alias=${host_alias} --mode=latex $${srcdir} $${builddir} NO)
 
-# Chance of loooooonnggg creation time on this rule.
-doc-pdf-doxygen: stamp-latex-doxygen
+${doxygen_outdir}/pdf:
+	mkdir -p ${doxygen_outdir}/pdf
+
+doc-pdf-doxygen: stamp-latex-doxygen ${doxygen_outdir}/pdf
 	-(cd ${doxygen_outdir}/latex && $(MAKE) -i pdf;)
 	echo "Generating doxygen pdf file...";
 	if [ -f ${doxygen_pdf} ]; then \
-	  echo "... ${doxygen_pdf}"; \
+	  mv ${doxygen_pdf} ${api_pdf} ; \
+	  echo ":: PDF file is ${api_pdf}"; \
 	else \
 	  echo "... error"; \
 	  exit 12; \

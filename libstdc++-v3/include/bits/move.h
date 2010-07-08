@@ -93,7 +93,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     move(_Tp&& __t)
     { return static_cast<typename std::remove_reference<_Tp>::type&&>(__t); }
 
-  /// declval, defined in <type_traits>.
+  /// declval, from type_traits.
 
   /**
    *  @brief Returns the actual address of the object or function

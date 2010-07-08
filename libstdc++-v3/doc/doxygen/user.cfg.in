@@ -721,7 +721,6 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
 			 include/tr1_impl/cstdlib \
 			 include/tr1_impl/cwchar \
 			 include/tr1_impl/cwctype \
-			 include/tr1_impl/regex \
 			 include/tr1_impl/type_traits \
 			 include/tr1_impl/utility \
 			 include/tr1_impl \
