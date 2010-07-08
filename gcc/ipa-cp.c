@@ -951,7 +951,8 @@ ipcp_estimate_growth (struct cgraph_node *node)
   struct cgraph_edge *cs;
   int redirectable_node_callers = 0;
   int removable_args = 0;
-  bool need_original = !cgraph_only_called_directly_p (node);
+  bool need_original
+     = !cgraph_will_be_removed_from_program_if_no_direct_calls (node);
   struct ipa_node_params *info;
   int i, count;
   int growth;
@@ -1134,7 +1135,7 @@ ipcp_insert_stage (void)
       for (cs = node->callers; cs != NULL; cs = cs->next_caller)
 	if (cs->caller == node || ipcp_need_redirect_p (cs))
 	  break;
-      if (!cs && cgraph_only_called_directly_p (node))
+      if (!cs && cgraph_will_be_removed_from_program_if_no_direct_calls (node))
 	bitmap_set_bit (dead_nodes, node->uid);
 
       info = IPA_NODE_REF (node);

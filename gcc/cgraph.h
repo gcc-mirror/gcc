@@ -664,6 +664,8 @@ void cgraph_remove_node_duplication_hook (struct cgraph_2node_hook_list *);
 void cgraph_materialize_all_clones (void);
 gimple cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *);
 bool cgraph_propagate_frequency (struct cgraph_node *node);
+bool cgraph_will_be_removed_from_program_if_no_direct_calls
+  (struct cgraph_node *node);
 /* In cgraphbuild.c  */
 unsigned int rebuild_cgraph_edges (void);
 void cgraph_rebuild_references (void);

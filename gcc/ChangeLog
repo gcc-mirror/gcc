@@ -1,5 +1,15 @@
 2010-07-08  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (cgraph_will_be_removed_from_program_if_no_direct_calls):
+	New function.
+	* cgraph.h (cgraph_will_be_removed_from_program_if_no_direct_calls):
+	Declare.
+	* ipa-cp.c (ipcp_estimate_growth): Use it.
+	* ipa-inline.c (cgraph_estimate_growth, cgraph_decide_inlining):
+	Likewise.
+
+2010-07-08  Jan Hubicka  <jh@suse.cz>
+
 	* tree-inline.c (declare_return_variable): Allocate annotation for new
 	temporary.
 
