@@ -1,3 +1,7 @@
+2010-07-08  Andi Kleen <ak@linux.intel.com>
+
+	* lto-section-in.c (lto_section_name): Add missing comma.
+
 2010-07-08  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/ia64/ia64.h (OVERRIDE_OPTIONS): Remove macros.
@@ -164,7 +168,7 @@
 
 2010-07-08  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        PR bootstrap/44768
+	PR bootstrap/44768
 	* cfgexpand.c (estimated_stack_frame_size): Make self-contained
 	with respect to current_function_decl. Pass decl of the function.
 	* tree-inline.h (estimated_stack_frame_size): Adjust prototype.
@@ -408,7 +412,7 @@
 
 	PR middle-end/41355
 	* tree.c (build_function_type_skip_args): Copy the original type using
-        build_distinct_type_copy rather than copy_node.
+	build_distinct_type_copy rather than copy_node.
 
 2010-07-07  H.J. Lu  <hongjiu.lu@intel.com>
 
