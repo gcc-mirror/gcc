@@ -1,3 +1,8 @@
+2010-07-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44861
+	* g++.dg/vect/pr44861.cc: New testcase.
+
 2010-07-07  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR middle-end/44828
