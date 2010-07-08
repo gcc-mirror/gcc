@@ -122,7 +122,7 @@ resolve_mask_arg (gfc_expr *mask)
 
 static void
 resolve_bound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind,
-	       const char *name)
+	       const char *name, bool coarray)
 {
   f->ts.type = BT_INTEGER;
   if (kind)
@@ -134,7 +134,8 @@ resolve_bound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind,
     {
       f->rank = 1;
       f->shape = gfc_get_shape (1);
-      mpz_init_set_ui (f->shape[0], array->rank);
+      mpz_init_set_ui (f->shape[0], coarray ? gfc_get_corank (array)
+					    : array->rank);
     }
 
   f->value.function.name = xstrdup (name);
@@ -1268,14 +1269,14 @@ gfc_resolve_kill (gfc_expr *f, gfc_expr *p ATTRIBUTE_UNUSED,
 void
 gfc_resolve_lbound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 {
-  resolve_bound (f, array, dim, kind, "__lbound");
+  resolve_bound (f, array, dim, kind, "__lbound", false);
 }
 
 
 void
 gfc_resolve_lcobound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 {
-  resolve_bound (f, array, dim, kind, "__lcobound");
+  resolve_bound (f, array, dim, kind, "__lcobound", true);
 }
 
 
@@ -2401,7 +2402,7 @@ gfc_resolve_image_index (gfc_expr *f, gfc_expr *array ATTRIBUTE_UNUSED,
 void
 gfc_resolve_this_image (gfc_expr *f, gfc_expr *array, gfc_expr *dim)
 {
-  resolve_bound (f, array, dim, NULL, "__this_image");
+  resolve_bound (f, array, dim, NULL, "__this_image", true);
 }
 
 
@@ -2540,14 +2541,14 @@ gfc_resolve_trim (gfc_expr *f, gfc_expr *string)
 void
 gfc_resolve_ubound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 {
-  resolve_bound (f, array, dim, kind, "__ubound");
+  resolve_bound (f, array, dim, kind, "__ubound", false);
 }
 
 
 void
 gfc_resolve_ucobound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 {
-  resolve_bound (f, array, dim, kind, "__ucobound");
+  resolve_bound (f, array, dim, kind, "__ucobound", true);
 }
 
 
