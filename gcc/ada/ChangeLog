@@ -1,3 +1,8 @@
+2010-07-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_gimplify_expr) <ADDR_EXPR>: Deal with
+	CALL_EXPR.
+
 2010-07-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* gcc-interface/utils.c: Include diagnostic-core.h in every file

@@ -5988,33 +5988,31 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
     case ADDR_EXPR:
       op = TREE_OPERAND (expr, 0);
 
-      if (TREE_CODE (op) == CONSTRUCTOR)
+      /* If we are taking the address of a constant CONSTRUCTOR, make sure it
+	 is put into static memory.  We know that it's going to be read-only
+	 given the semantics we have and it must be in static memory when the
+	 reference is in an elaboration procedure.  */
+      if (TREE_CODE (op) == CONSTRUCTOR && TREE_CONSTANT (op))
 	{
-	  /* If we are taking the address of a constant CONSTRUCTOR, make sure
-	     it is put into static memory.  We know it's going to be read-only
-	     given the semantics we have and it must be in static memory when
-	     the reference is in an elaboration procedure.  */
-	  if (TREE_CONSTANT (op))
-	    {
-	      tree addr = build_fold_addr_expr (tree_output_constant_def (op));
-	      *expr_p = fold_convert (TREE_TYPE (expr), addr);
-	    }
+	  tree addr = build_fold_addr_expr (tree_output_constant_def (op));
+	  *expr_p = fold_convert (TREE_TYPE (expr), addr);
+	  return GS_ALL_DONE;
+	}
 
-	  /* Otherwise explicitly create the local temporary.  That's required
-	     if the type is passed by reference.  */
-	  else
-	    {
-	      tree mod, new_var = create_tmp_var_raw (TREE_TYPE (op), "C");
-	      TREE_ADDRESSABLE (new_var) = 1;
-	      gimple_add_tmp_var (new_var);
+      /* Otherwise, if we are taking the address of a non-constant CONSTRUCTOR
+	 or of a call, explicitly create the local temporary.  That's required
+	 if the type is passed by reference.  */
+      if (TREE_CODE (op) == CONSTRUCTOR || TREE_CODE (op) == CALL_EXPR)
+	{
+	  tree mod, new_var = create_tmp_var_raw (TREE_TYPE (op), "C");
+	  TREE_ADDRESSABLE (new_var) = 1;
+	  gimple_add_tmp_var (new_var);
 
-	      mod = build2 (INIT_EXPR, TREE_TYPE (new_var), new_var, op);
-	      gimplify_and_add (mod, pre_p);
+	  mod = build2 (INIT_EXPR, TREE_TYPE (new_var), new_var, op);
+	  gimplify_and_add (mod, pre_p);
 
-	      TREE_OPERAND (expr, 0) = new_var;
-	      recompute_tree_invariant_for_addr_expr (expr);
-	    }
-
+	  TREE_OPERAND (expr, 0) = new_var;
+	  recompute_tree_invariant_for_addr_expr (expr);
 	  return GS_ALL_DONE;
 	}
 
