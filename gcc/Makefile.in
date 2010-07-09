@@ -2592,7 +2592,7 @@ tree-ssa-alias.o : tree-ssa-alias.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_DUMP_H) $(TREE_PASS_H) $(PARAMS_H) $(BASIC_BLOCK_H) $(DIAGNOSTIC_H) \
    $(GIMPLE_H) $(VEC_H) \
    $(IPA_TYPE_ESCAPE_H) vecprim.h pointer-set.h alloc-pool.h \
-   tree-pretty-print.h
+   tree-pretty-print.h $(TOPLEV_H)
 tree-ssa-reassoc.o : tree-ssa-reassoc.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(DIAGNOSTIC_H) $(TIMEVAR_H) \
    $(TM_H) coretypes.h $(TREE_DUMP_H) $(TREE_PASS_H) $(FLAGS_H) \
