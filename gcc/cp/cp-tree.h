@@ -168,6 +168,9 @@ c-common.h, not after.
 
      The BV_FN is the declaration for the virtual function itself.
 
+     If BV_LOST_PRIMARY is set, it means that this entry is for a lost
+     primary virtual base and can be left null in the vtable.
+
    BINFO_VTABLE
      This is an expression with POINTER_TYPE that gives the value
      to which the vptr should be initialized.  Use get_vtbl_decl_for_binfo
@@ -1767,6 +1770,8 @@ struct GTY((variable_size)) lang_type {
 /* The function to call.  */
 #define BV_FN(NODE) (TREE_VALUE (NODE))
 
+/* Whether or not this entry is for a lost primary virtual base.  */
+#define BV_LOST_PRIMARY(NODE) (TREE_LANG_FLAG_0 (NODE))
 
 /* For FUNCTION_TYPE or METHOD_TYPE, a list of the exceptions that
    this type can raise.  Each TREE_VALUE is a _TYPE.  The TREE_VALUE

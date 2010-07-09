@@ -1,3 +1,11 @@
+2010-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43120
+	* cp-tree.h (BV_LOST_PRIMARY): New macro.
+	* class.c (update_vtable_entry_for_fn): Fix covariant thunk logic.
+	Set BV_LOST_PRIMARY.
+	(build_vtbl_initializer): Check BV_LOST_PRIMARY.
+
 2010-07-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43120

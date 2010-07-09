@@ -18,7 +18,7 @@ struct B {
 };
 
 struct C : public virtual B {
-  virtual B *clone() const = 0;
+  virtual C *clone() const = 0;
 };
 
 struct E* ep;
@@ -28,13 +28,16 @@ struct E : public A, public C {
   virtual E *clone() const {
     if (this != ep)
       abort();
-    return new E(*this);
+    return 0;
   }
 };
 
 int main() {
   E *a = new E(123);
-  B *c = a;
-  B *d = c->clone();
+  C *c = a;
+  B *b = a;
+  c->clone();
+  b->clone();
+  delete a;
   return 0;
 }
