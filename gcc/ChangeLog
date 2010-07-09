@@ -1,5 +1,11 @@
 2010-07-09  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/44886
+	* tree-vect-stmts.c (vectorizable_assignment): Fixup backport
+	of the fix for PR44284.
+
+2010-07-09  Richard Guenther  <rguenther@suse.de>
+
 	Backport from mainline
 	2010-05-28  Nathan Froyd  <froydnj@codesourcery.com>
 

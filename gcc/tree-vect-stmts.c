@@ -1814,7 +1814,7 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
   gimple new_stmt = NULL;
   stmt_vec_info prev_stmt_info = NULL;
   enum tree_code code;
-  tree vectype_in;
+  tree vectype_in, vectype_out;
 
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node. Hence, NCOPIES is always 1 in
@@ -1858,10 +1858,13 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
   /* We can handle NOP_EXPR conversions that do not change the number
      of elements or the vector size.  */
   vectype_in = get_vectype_for_scalar_type (TREE_TYPE (op));
+  vectype_out
+    = get_vectype_for_scalar_type (TREE_TYPE (gimple_assign_lhs (stmt)));
   if (CONVERT_EXPR_CODE_P (code)
       && (!vectype_in
-	  || TYPE_VECTOR_SUBPARTS (vectype_in) != nunits
-	  || (GET_MODE_SIZE (TYPE_MODE (vectype))
+	  || (TYPE_VECTOR_SUBPARTS (vectype_out)
+	      != TYPE_VECTOR_SUBPARTS (vectype_in))
+	  || (GET_MODE_SIZE (TYPE_MODE (vectype_out))
 	      != GET_MODE_SIZE (TYPE_MODE (vectype_in)))))
     return false;
 
@@ -1894,7 +1897,7 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
       for (i = 0; VEC_iterate (tree, vec_oprnds, i, vop); i++)
        {
 	 if (CONVERT_EXPR_CODE_P (code))
-	   vop = build1 (VIEW_CONVERT_EXPR, vectype, vop);
+	   vop = build1 (VIEW_CONVERT_EXPR, vectype_out, vop);
          new_stmt = gimple_build_assign (vec_dest, vop);
          new_temp = make_ssa_name (vec_dest, new_stmt);
          gimple_assign_set_lhs (new_stmt, new_temp);
