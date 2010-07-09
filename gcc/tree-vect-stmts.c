@@ -3372,11 +3372,6 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
             data_ref = build2 (MISALIGNED_INDIRECT_REF, vectype, dataref_ptr, tmis);
            }
 
-	  /* If accesses through a pointer to vectype do not alias the original
-	     memory reference we have a problem.  This should never happen.  */
-	  gcc_assert (alias_sets_conflict_p (get_alias_set (data_ref),
-		      get_alias_set (gimple_assign_lhs (stmt))));
-
 	  /* Arguments are ready. Create the new vector stmt.  */
 	  new_stmt = gimple_build_assign (data_ref, vec_oprnd);
 	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
@@ -3822,10 +3817,6 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	    default:
 	      gcc_unreachable ();
 	    }
-	  /* If accesses through a pointer to vectype do not alias the original
-	     memory reference we have a problem.  This should never happen. */
-	  gcc_assert (alias_sets_conflict_p (get_alias_set (data_ref),
-		      get_alias_set (gimple_assign_rhs1 (stmt))));
 	  vec_dest = vect_create_destination_var (scalar_dest, vectype);
 	  new_stmt = gimple_build_assign (vec_dest, data_ref);
 	  new_temp = make_ssa_name (vec_dest, new_stmt);

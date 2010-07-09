@@ -1,3 +1,8 @@
+2010-07-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44882
+	* gfortran.dg/pr44882.f90: New testcase.
+
 2010-07-09  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR target/40657
