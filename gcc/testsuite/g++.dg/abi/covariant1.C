@@ -16,6 +16,11 @@ struct c12 : c11 { };
 
 struct c14 : 
   virtual c12,
-  virtual c11 { virtual c12* f17(); };
+  virtual c11 { virtual void f(); c12* f17(); };
 
-// { dg-final { scan-assembler-not "\n_ZTch0_v0_n16_N3c143f17Ev\[: \t\n\]" } }
+void c14::f() { }
+
+// { dg-final { scan-assembler "_ZTcv0_n12_v0_n16_N3c143f17Ev" { target ilp32 } } }
+// { dg-final { scan-assembler-not "_ZTch0_v0_n16_N3c143f17Ev" } }
+// { dg-final { scan-assembler "_ZTcv0_n24_v0_n32_N3c143f17Ev" { target lp64 } } }
+// { dg-final { scan-assembler-not "_ZTch0_v0_n32_N3c143f17Ev" } }
