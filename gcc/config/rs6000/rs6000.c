@@ -11523,7 +11523,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	gcc_assert (TARGET_ALTIVEC);
 
 	arg = CALL_EXPR_ARG (exp, 0);
-	gcc_assert (TREE_CODE (TREE_TYPE (arg)) == POINTER_TYPE);
+	gcc_assert (POINTER_TYPE_P (TREE_TYPE (arg)));
 	op = expand_expr (arg, NULL_RTX, Pmode, EXPAND_NORMAL);
 	addr = memory_address (mode, op);
 	if (fcode == ALTIVEC_BUILTIN_MASK_FOR_STORE)
