@@ -3470,7 +3470,8 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 
 	  /* If this operand could be handled with a reg,
 	     and some reg is allowed, then this operand can be handled.  */
-	  if (winreg && this_alternative[i] != NO_REGS)
+	  if (winreg && this_alternative[i] != NO_REGS
+	      && (win || !class_only_fixed_regs[this_alternative[i]]))
 	    badop = 0;
 
 	  /* Record which operands fit this alternative.  */

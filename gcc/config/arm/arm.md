@@ -610,9 +610,9 @@
 ;;  (plus (reg rN) (reg sp)) into (reg rN).  In this case reload will
 ;; put the duplicated register first, and not try the commutative version.
 (define_insn_and_split "*arm_addsi3"
-  [(set (match_operand:SI          0 "s_register_operand" "=r, !k, r,r, !k,r")
-	(plus:SI (match_operand:SI 1 "s_register_operand" "%rk,!k, r,rk,!k,rk")
-		 (match_operand:SI 2 "reg_or_int_operand" "rI, rI,!k,L, L,?n")))]
+  [(set (match_operand:SI          0 "s_register_operand" "=r, k,r,r, k,r")
+	(plus:SI (match_operand:SI 1 "s_register_operand" "%rk,k,r,rk,k,rk")
+		 (match_operand:SI 2 "reg_or_int_operand" "rI,rI,k,L, L,?n")))]
   "TARGET_32BIT"
   "@
    add%?\\t%0, %1, %2
@@ -637,14 +637,10 @@
    (set_attr "predicable" "yes")]
 )
 
-;; Register group 'k' is a single register group containing only the stack
-;; register.  Trying to reload it will always fail catastrophically,
-;; so never allow those alternatives to match if reloading is needed.
-
 (define_insn_and_split "*thumb1_addsi3"
-  [(set (match_operand:SI          0 "register_operand" "=l,l,l,*rk,*hk,l,!k,l,l")
-	(plus:SI (match_operand:SI 1 "register_operand" "%0,0,l,*0,*0,!k,!k,0,l")
-		 (match_operand:SI 2 "nonmemory_operand" "I,J,lL,*hk,*rk,!M,!O,Pa,Pb")))]
+  [(set (match_operand:SI          0 "register_operand" "=l,l,l,*rk,*hk,l,k,l,l")
+	(plus:SI (match_operand:SI 1 "register_operand" "%0,0,l,*0,*0,k,k,0,l")
+		 (match_operand:SI 2 "nonmemory_operand" "I,J,lL,*hk,*rk,M,O,Pa,Pb")))]
   "TARGET_THUMB1"
   "*
    static const char * const asms[] = 
@@ -1089,8 +1085,8 @@
 ; ??? Check Thumb-2 split length
 (define_insn_and_split "*arm_subsi3_insn"
   [(set (match_operand:SI           0 "s_register_operand" "=r,r,rk,r,r")
-	(minus:SI (match_operand:SI 1 "reg_or_int_operand" "rI,r,!k,?n,r")
-		  (match_operand:SI 2 "reg_or_int_operand" "r,rI, r, r,?n")))]
+	(minus:SI (match_operand:SI 1 "reg_or_int_operand" "rI,r,k,?n,r")
+		  (match_operand:SI 2 "reg_or_int_operand" "r,rI,r, r,?n")))]
   "TARGET_32BIT"
   "@
    rsb%?\\t%0, %2, %1

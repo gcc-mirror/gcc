@@ -1,3 +1,14 @@
+2010-07-09  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* reload.c (find_reloads): Don't clear badop if we have a
+	winreg alternative, but not win, and the class only has fixed
+	regs.
+	* hard-reg-set.h (class_only_fixed_regs): Declare.
+	* reginfo.c (class_only_fixed_regs): New array.
+	(init_reg_sets_1): Initialize it.
+	* config/arm/arm.md (arm_addsi3, thumb1_addsi3, arm_subsi3_insn): Don't
+	discourage alternatives using the stack pointer.
+
 2010-07-09  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (struct type_fixup_s): New struct and VEC type.

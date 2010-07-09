@@ -141,6 +141,10 @@ int inv_reg_alloc_order[FIRST_PSEUDO_REGISTER];
 /* For each reg class, a HARD_REG_SET saying which registers are in it.  */
 HARD_REG_SET reg_class_contents[N_REG_CLASSES];
 
+/* For each reg class, a boolean saying whether the class contains only
+   fixed registers.  */
+bool class_only_fixed_regs[N_REG_CLASSES];
+
 /* The same information, but as an array of unsigned ints.  We copy from
    these unsigned ints to the table above.  We do this so the tm.h files
    do not have to be aware of the wordsize for machines with <= 64 regs.
@@ -421,9 +425,17 @@ init_reg_sets_1 (void)
 
   memset (reg_class_size, 0, sizeof reg_class_size);
   for (i = 0; i < N_REG_CLASSES; i++)
-    for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
-      if (TEST_HARD_REG_BIT (reg_class_contents[i], j))
-	reg_class_size[i]++;
+    {
+      bool any_nonfixed = false;
+      for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)	
+	if (TEST_HARD_REG_BIT (reg_class_contents[i], j))
+	  {
+	    reg_class_size[i]++;
+	    if (!fixed_regs[j])
+	      any_nonfixed = true;
+	  }
+      class_only_fixed_regs[i] = !any_nonfixed;
+    }
 
   /* Initialize the table of subunions.
      reg_class_subunion[I][J] gets the largest-numbered reg-class
