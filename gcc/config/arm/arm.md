@@ -7455,8 +7455,8 @@
 	(if_then_else
 	 (match_operator 4 "arm_comparison_operator"
 	  [(plus:SI
-	    (match_operand:SI 2 "s_register_operand" "%l,0,*l,1,1,1")
-	    (match_operand:SI 3 "reg_or_int_operand" "lL,IJ,*l,lIJ,lIJ,lIJ"))
+	    (match_operand:SI 2 "s_register_operand" "%0,l,*l,1,1,1")
+	    (match_operand:SI 3 "reg_or_int_operand" "IJ,lL,*l,lIJ,lIJ,lIJ"))
 	   (const_int 0)])
 	 (label_ref (match_operand 5 "" ""))
 	 (pc)))
