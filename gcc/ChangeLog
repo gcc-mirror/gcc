@@ -1,3 +1,7 @@
+2010-07-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_veclib_handler): Make static.
+
 2010-07-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44852
@@ -41,7 +45,7 @@
 	* genconditions.c: Likewise.
 	* genpreds.c: Likewise.
 
-2010-07-08  Andi Kleen <ak@linux.intel.com>
+2010-07-08  Andi Kleen  <ak@linux.intel.com>
 
 	* lto-section-in.c (lto_section_name): Add missing comma.
 
