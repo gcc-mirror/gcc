@@ -1,3 +1,12 @@
+2010-07-09  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	Backport from mainline
+	2010-05-06  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR target/43888
+	* config/i386/winnt.c (i386_pe_binds_local_p): Tweak weak symbol
+	handling to still return true for x64 targets.
+
 2010-07-08  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
