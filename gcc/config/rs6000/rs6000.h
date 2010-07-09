@@ -160,6 +160,7 @@
 %{mcpu=e500mc: -me500mc} \
 %{mcpu=e500mc64: -me500mc64} \
 %{maltivec: -maltivec} \
+%{mvsx: -mvsx %{!maltivec: -maltivec} %{!mcpu*: %(asm_cpu_power7)}} \
 -many"
 
 #define CPP_DEFAULT_SPEC ""
