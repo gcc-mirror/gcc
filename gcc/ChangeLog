@@ -1,3 +1,8 @@
+2010-07-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* configure.ac (gcc_cv_as_ix86_rep_lock_prefix): Fix test.
+	* configure: Regenerate.
+
 2010-07-09  Jakub Jelinek  <jakub@redhat.com>
 	    Denys Vlasenko  <dvlasenk@redhat.com>
 	    Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
@@ -44,7 +49,7 @@
 
 	* tree.c (type_hash_if_marked_p): Removed non-ggc_marked_p clause.
 
-2010-07-09  Hariharan Sandanagobalane <hariharan@picochip.com>
+2010-07-09  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.md (commsTestPort): Emit more
 	efficient sequence for tstport instruction.
