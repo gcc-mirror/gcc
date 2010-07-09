@@ -4615,6 +4615,27 @@
   operands[3] = change_address (operands[1], QImode, addr);
 })
 
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand" "")
+	(plus:SI (match_dup 0) (match_operand 1 "const_int_operand")))
+   (set (match_operand:SI 2 "register_operand" "") (const_int 0))
+   (set (match_operand:SI 3 "register_operand" "")
+	(sign_extend:SI (match_operand:QI 4 "memory_operand" "")))]
+  "TARGET_THUMB1
+   && GET_CODE (XEXP (operands[4], 0)) == PLUS
+   && rtx_equal_p (operands[0], XEXP (XEXP (operands[4], 0), 0))
+   && rtx_equal_p (operands[2], XEXP (XEXP (operands[4], 0), 1))
+   && (peep2_reg_dead_p (3, operands[0])
+       || rtx_equal_p (operands[0], operands[3]))
+   && (peep2_reg_dead_p (3, operands[2])
+       || rtx_equal_p (operands[2], operands[3]))"
+  [(set (match_dup 2) (match_dup 1))
+   (set (match_dup 3) (sign_extend:SI (match_dup 4)))]
+{
+  rtx addr = gen_rtx_PLUS (Pmode, operands[0], operands[2]);
+  operands[4] = change_address (operands[4], QImode, addr);
+})
+
 (define_insn "thumb1_extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "=l,l,l")
 	(sign_extend:SI (match_operand:QI 1 "nonimmediate_operand" "l,V,m")))]

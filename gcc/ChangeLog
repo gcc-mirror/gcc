@@ -11,6 +11,8 @@
 
 	* config/arm/arm.md (addsi3_cbranch): Switch alternatives 0 and 1.
 
+	* config/arm/arm.md (Thumb-1 ldrsb peephole): New.
+
 2010-07-09  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (struct type_fixup_s): New struct and VEC type.
