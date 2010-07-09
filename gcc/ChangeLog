@@ -1,3 +1,9 @@
+2010-07-09  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_override_options): Fix setting of
+	default ISA flags.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Add -mvsx.
+
 2010-07-09  Tom de Vries  <tjvries@xs4all.nl>
 
 	* tree.c (type_hash_if_marked_p): Removed non-ggc_marked_p clause.

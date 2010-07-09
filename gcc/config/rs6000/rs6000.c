@@ -2683,11 +2683,11 @@ rs6000_override_options (const char *default_cpu)
   /* For the newer switches (vsx, dfp, etc.) set some of the older options,
      unless the user explicitly used the -mno-<option> to disable the code.  */
   if (TARGET_VSX)
-    target_flags |= (ISA_2_6_MASKS & (target_flags_explicit & ~ISA_2_6_MASKS));
+    target_flags |= (ISA_2_6_MASKS & ~target_flags_explicit);
   else if (TARGET_DFP)
-    target_flags |= (ISA_2_5_MASKS & (target_flags_explicit & ~ISA_2_5_MASKS));
+    target_flags |= (ISA_2_5_MASKS & ~target_flags_explicit);
   else if (TARGET_ALTIVEC)
-    target_flags |= (MASK_PPC_GFXOPT & (target_flags_explicit & ~MASK_PPC_GFXOPT));
+    target_flags |= (MASK_PPC_GFXOPT & ~target_flags_explicit);
 
   /* Set debug flags */
   if (rs6000_debug_name)
