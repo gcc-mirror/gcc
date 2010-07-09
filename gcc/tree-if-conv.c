@@ -300,6 +300,26 @@ parse_predicate (tree cond, tree *op0, tree *op1)
   return ERROR_MARK;
 }
 
+/* Returns the fold of predicate C1 OR C2 at location LOC.  */
+
+static tree
+fold_or_predicates (location_t loc, tree c1, tree c2)
+{
+  tree op1a, op1b, op2a, op2b;
+  enum tree_code code1 = parse_predicate (c1, &op1a, &op1b);
+  enum tree_code code2 = parse_predicate (c2, &op2a, &op2b);
+
+  if (code1 != ERROR_MARK && code2 != ERROR_MARK)
+    {
+      tree t = maybe_fold_or_comparisons (code1, op1a, op1b,
+					  code2, op2a, op2b);
+      if (t)
+	return t;
+    }
+
+  return fold_build2_loc (loc, TRUTH_OR_EXPR, boolean_type_node, c1, c2);
+}
+
 /* Add condition NC to the predicate list of basic block BB.  */
 
 static inline void
@@ -314,25 +334,8 @@ add_to_predicate_list (basic_block bb, tree nc)
     bc = nc;
   else
     {
-      enum tree_code code1, code2;
-      tree op1a, op1b, op2a, op2b;
-
       bc = bb_predicate (bb);
-      code1 = parse_predicate (bc, &op1a, &op1b);
-      code2 = parse_predicate (nc, &op2a, &op2b);
-
-      if (code1 != ERROR_MARK && code2 != ERROR_MARK)
-	{
-	  tree t = maybe_fold_or_comparisons (code1, op1a, op1b,
-					      code2, op2a, op2b);
-	  if (!t)
-	    t = fold_build2_loc (EXPR_LOCATION (bc), TRUTH_OR_EXPR,
-				 boolean_type_node, bc, nc);
-	  bc = t;
-	}
-      else
-	bc = fold_build2_loc (EXPR_LOCATION (bc), TRUTH_OR_EXPR,
-			      boolean_type_node, bc, nc);
+      bc = fold_or_predicates (EXPR_LOCATION (bc), nc, bc);
     }
 
   if (!is_gimple_condexpr (bc))
