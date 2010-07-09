@@ -1,3 +1,9 @@
+2010-07-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/44875
+	* doc/xml/manual/status_cxx200x.xml: Corrections to status.
+	* doc/html/*: Regenerate.
+
 2010-07-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/stl_heap.h: Update markup.

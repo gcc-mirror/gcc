@@ -2007,10 +2007,11 @@ particular release.
       <entry></entry>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>27.5</entry>
       <entry>Iostreams base classes</entry>
-      <entry>Y</entry>
-      <entry></entry>
+      <entry>Partial</entry>
+      <entry>Missing move and swap operations</entry>
     </row>
     <row>
       <entry>27.6</entry>
@@ -2019,22 +2020,25 @@ particular release.
       <entry></entry>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>27.7</entry>
       <entry>Formatting and manipulators</entry>
-      <entry>Y</entry>
-      <entry></entry>
+      <entry>Partial</entry>
+      <entry>Missing move and swap operations</entry>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>27.8</entry>
       <entry>String-based streams</entry>
-      <entry>Y</entry>
-      <entry></entry>
+      <entry>Partial</entry>
+      <entry>Missing move and swap operations</entry>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>27.9</entry>
       <entry>File-based streams</entry>
-      <entry>Y</entry>
-      <entry></entry>
+      <entry>Partial</entry>
+      <entry>Missing move and swap operations</entry>
     </row>
     <row>
       <entry>
@@ -2333,17 +2337,17 @@ particular release.
       <entry></entry>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>30.5</entry>
       <entry>Condition variables</entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
-      <entry>30.5.1</entry>
-      <entry>Class <code>condition_variable</code></entry>
       <entry>Partial</entry>
       <entry>Missing notify_all_at_thread_exit</entry>
+    </row>
+    <row>
+      <entry>30.5.1</entry>
+      <entry>Class <code>condition_variable</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
     </row>
     <row>
       <entry>30.5.2</entry>
