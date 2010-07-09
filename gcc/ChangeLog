@@ -1,3 +1,11 @@
+2010-07-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* configure.ac (gcc_cv_as_ix86_rep_lock_prefix): Also check
+	for "lock addl".
+	* configure: Regenerate.
+	* config/i386/i386.c (ix86_print_operand) <case ';'>:
+	Remove TARGET_MACHO.
+
 2010-07-09  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_override_options): Fix setting of
@@ -211,8 +219,7 @@
 	PR tree-optimization/44831
 	* tree-ssa-phiprop.c (phiprop_insert_phi): Properly build
 	a MEM_REF preserving TBAA info of the original dereference.
-	Dereference the original pointer if the address is not
-	invariant.
+	Dereference the original pointer if the address is not invariant.
 	(propagate_with_phi): Fixup type checks wrt MEM_REFs.  Require
 	at least one invariant address that we are going to dereference.
 
@@ -487,8 +494,7 @@
 	* config/i386/i386.h (ASM_DECLARE_FUNCTION_NAME): Likewise.
 	* config/i386/cygming.h (ASM_DECLARE_FUNCTION_NAME): Likewise.
 	(SUBTARGET_ASM_DECLARE_FUNCTION_NAME): Likewise.
-	* config/i386/i386-protos.h (ix86_asm_declare_function_name):
-	Likewise.
+	* config/i386/i386-protos.h (ix86_asm_declare_function_name): Likewise.
 	* doc/extend.texi: Likewise.
 
 2010-07-07  H.J. Lu  <hongjiu.lu@intel.com>
@@ -534,7 +540,7 @@
 
 2010-07-07  Jan Hubicka  <jh@suse.cz>
 
-	With parts by Richard Guenther
+	With parts by Richard Guenther.
 
 	PR middle-end/44813
 	* tree-ssa-uninit.c (ssa_undefined_value_p): Result decl is defined
