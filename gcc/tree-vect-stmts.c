@@ -1894,7 +1894,7 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
       for (i = 0; VEC_iterate (tree, vec_oprnds, i, vop); i++)
        {
 	 if (CONVERT_EXPR_CODE_P (code))
-	   vop = build1_stat (VIEW_CONVERT_EXPR, vectype, vop);
+	   vop = build1 (VIEW_CONVERT_EXPR, vectype, vop);
          new_stmt = gimple_build_assign (vec_dest, vop);
          new_temp = make_ssa_name (vec_dest, new_stmt);
          gimple_assign_set_lhs (new_stmt, new_temp);

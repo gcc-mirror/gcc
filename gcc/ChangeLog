@@ -1,3 +1,11 @@
+2010-07-09  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2010-05-28  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree-vect-stmts.c (vectorizable_assignment): Call build1 instead of
+	build1_stat.
+
 2010-07-09  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	Backport from mainline
