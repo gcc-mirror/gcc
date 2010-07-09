@@ -1,3 +1,13 @@
+2010-07-09  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (struct type_fixup_s): New struct and VEC type.
+	(gimple_register_type_fixups): New static global.
+	(gimple_queue_type_fixup): New function.
+	(gimple_types_compatible_p): Queue type fixups instead of
+	applying them here.
+	(gimple_register_type): Apply queued fixups for the
+	canonical type.  Empty the type fixup queue.
+
 2010-07-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* configure.ac (gcc_cv_as_ix86_rep_lock_prefix): Fix test.

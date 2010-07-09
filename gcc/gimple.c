@@ -3323,6 +3323,26 @@ gimple_compare_field_offset (tree f1, tree f2)
   return false;
 }
 
+typedef struct type_fixup_s {
+    tree context;
+    tree *incomplete;
+    tree complete;
+} type_fixup;
+DEF_VEC_O(type_fixup);
+DEF_VEC_ALLOC_O(type_fixup,heap);
+
+static VEC(type_fixup, heap) *gimple_register_type_fixups = NULL;
+
+static void
+gimple_queue_type_fixup (tree context, tree *incomplete, tree complete)
+{
+  type_fixup f;
+  f.context = context;
+  f.incomplete = incomplete;
+  f.complete = complete;
+  VEC_safe_push (type_fixup, heap, gimple_register_type_fixups, &f);
+}
+
 /* Return 1 iff T1 and T2 are structurally identical.
    Otherwise, return 0.  */
 
@@ -3555,9 +3575,9 @@ gimple_types_compatible_p (tree t1, tree t2)
 	       in one unit and to complete ones in another.  So we
 	       probably should merge these types only with more context.  */
 	    if (COMPLETE_TYPE_P (TREE_TYPE (t2)))
-	      TREE_TYPE (t1) = TREE_TYPE (t2);
+	      gimple_queue_type_fixup (t1, &TREE_TYPE (t1), TREE_TYPE (t2));
 	    else
-	      TREE_TYPE (t2) = TREE_TYPE (t1);
+	      gimple_queue_type_fixup (t2, &TREE_TYPE (t2), TREE_TYPE (t1));
 	    goto same_types;
 	  }
 
@@ -4014,11 +4034,14 @@ gimple_register_type (tree t)
   if (gimple_types == NULL)
     gimple_types = htab_create (16381, gimple_type_hash, gimple_type_eq, 0);
 
+  gcc_assert (VEC_empty (type_fixup, gimple_register_type_fixups));
   slot = htab_find_slot (gimple_types, t, INSERT);
   if (*slot
       && *(tree *)slot != t)
     {
       tree new_type = (tree) *((tree *) slot);
+      unsigned i;
+      type_fixup *f;
 
       /* Do not merge types with different addressability.  */
       gcc_assert (TREE_ADDRESSABLE (t) == TREE_ADDRESSABLE (new_type));
@@ -4070,6 +4093,11 @@ gimple_register_type (tree t)
 
       TYPE_CANONICAL (t) = new_type;
       t = new_type;
+
+      for (i = 0;
+	   VEC_iterate (type_fixup, gimple_register_type_fixups, i, f); ++i)
+	if (f->context == t)
+	  *(f->incomplete) = f->complete;
     }
   else
     {
@@ -4077,6 +4105,7 @@ gimple_register_type (tree t)
       *slot = (void *) t;
     }
 
+  VEC_truncate (type_fixup, gimple_register_type_fixups, 0);
   return t;
 }
 
