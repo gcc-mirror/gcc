@@ -1,5 +1,14 @@
 2010-07-09  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/44852
+	* tree-ssa-alias.c: Include toplev.h for exact_log2.
+	(indirect_ref_may_alias_decl_p): Properly handle negative offsets
+	in MEM_REF.
+	(indirect_refs_may_alias_p): Likewise.
+	* Makefile.in (tree-ssa-alias.o): Add $(TOPLEV_H).
+
+2010-07-09  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/44882
 	* tree-vect-stmts.c (vectorizable_store): Do not assert alias
 	sets do conflict.

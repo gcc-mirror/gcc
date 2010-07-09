@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "langhooks.h"
 #include "flags.h"
+#include "toplev.h"
 #include "function.h"
 #include "tree-pretty-print.h"
 #include "tree-dump.h"
@@ -688,17 +689,29 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 {
   tree ptr1 = TREE_OPERAND (base1, 0);
   tree ptrtype1;
-  HOST_WIDE_INT offset1p = offset1;
+  HOST_WIDE_INT offset1p = offset1, offset2p = offset2;
 
+  /* The offset embedded in MEM_REFs can be negative.  Bias them
+     so that the resulting offset adjustment is positive.  */
   if (TREE_CODE (base1) == MEM_REF)
-    offset1p = offset1 + mem_ref_offset (base1).low * BITS_PER_UNIT;
+    {
+      double_int moff = mem_ref_offset (base1);
+      moff = double_int_lshift (moff,
+				BITS_PER_UNIT == 8
+				? 3 : exact_log2 (BITS_PER_UNIT),
+				HOST_BITS_PER_DOUBLE_INT, true);
+      if (double_int_negative_p (moff))
+	offset2p += double_int_neg (moff).low;
+      else
+	offset1p += moff.low;
+    }
 
   /* If only one reference is based on a variable, they cannot alias if
      the pointer access is beyond the extent of the variable access.
      (the pointer base cannot validly point to an offset less than zero
      of the variable).
      They also cannot alias if the pointer may not point to the decl.  */
-  if (!ranges_overlap_p (MAX (0, offset1p), -1, offset2, max_size2))
+  if (!ranges_overlap_p (MAX (0, offset1p), -1, offset2p, max_size2))
     return false;
   if (!ptr_deref_may_alias_decl_p (ptr1, base2))
     return false;
@@ -804,10 +817,32 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   if ((!cfun || gimple_in_ssa_p (cfun))
       && operand_equal_p (ptr1, ptr2, 0))
     {
+      /* The offset embedded in MEM_REFs can be negative.  Bias them
+	 so that the resulting offset adjustment is positive.  */
       if (TREE_CODE (base1) == MEM_REF)
-	offset1 += mem_ref_offset (base1).low * BITS_PER_UNIT;
+	{
+	  double_int moff = mem_ref_offset (base1);
+	  moff = double_int_lshift (moff,
+				    BITS_PER_UNIT == 8
+				    ? 3 : exact_log2 (BITS_PER_UNIT),
+				    HOST_BITS_PER_DOUBLE_INT, true);
+	  if (double_int_negative_p (moff))
+	    offset2 += double_int_neg (moff).low;
+	  else
+	    offset1 += moff.low;
+	}
       if (TREE_CODE (base2) == MEM_REF)
-	offset2 += mem_ref_offset (base2).low * BITS_PER_UNIT;
+	{
+	  double_int moff = mem_ref_offset (base2);
+	  moff = double_int_lshift (moff,
+				    BITS_PER_UNIT == 8
+				    ? 3 : exact_log2 (BITS_PER_UNIT),
+				    HOST_BITS_PER_DOUBLE_INT, true);
+	  if (double_int_negative_p (moff))
+	    offset1 += double_int_neg (moff).low;
+	  else
+	    offset2 += moff.low;
+	}
       return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
     }
   if (!ptr_derefs_may_alias_p (ptr1, ptr2))
