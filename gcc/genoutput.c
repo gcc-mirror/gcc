@@ -240,6 +240,7 @@ output_prologue (void)
   printf ("#include \"conditions.h\"\n");
   printf ("#include \"insn-attr.h\"\n\n");
   printf ("#include \"recog.h\"\n\n");
+  printf ("#include \"diagnostic-core.h\"\n");
   printf ("#include \"toplev.h\"\n");
   printf ("#include \"output.h\"\n");
   printf ("#include \"target.h\"\n");

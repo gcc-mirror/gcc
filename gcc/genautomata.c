@@ -9559,7 +9559,7 @@ main (int argc, char **argv)
 		"#include \"regs.h\"\n"
 		"#include \"output.h\"\n"
 		"#include \"insn-attr.h\"\n"
-		"#include \"toplev.h\"\n"
+                "#include \"diagnostic-core.h\"\n"
 		"#include \"flags.h\"\n"
 		"#include \"function.h\"\n"
 		"#include \"emit-rtl.h\"\n");

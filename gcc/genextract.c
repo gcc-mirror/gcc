@@ -365,6 +365,7 @@ print_header (void)
 #include \"rtl.h\"\n\
 #include \"insn-config.h\"\n\
 #include \"recog.h\"\n\
+#include \"diagnostic-core.h\"\n\
 #include \"toplev.h\"\n\
 \n\
 /* This variable is used as the \"location\" of any missing operand\n\
