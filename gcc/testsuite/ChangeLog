@@ -1,3 +1,11 @@
+2010-07-09  Jakub Jelinek  <jakub@redhat.com>
+	    Denys Vlasenko  <dvlasenk@redhat.com>
+	    Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR tree-optimization/28632
+	* gcc.dg/tree-ssa/vrp51.c: New test.
+	* gcc.dg/tree-ssa/vrp52.c: New test.
+
 2010-07-09  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/abi/covariant6.C: New.

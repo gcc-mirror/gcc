@@ -1,3 +1,12 @@
+2010-07-09  Jakub Jelinek  <jakub@redhat.com>
+	    Denys Vlasenko  <dvlasenk@redhat.com>
+	    Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR tree-optimization/28632
+	* tree-vrp.c (zero_nonzero_bits_from_vr): New function.
+	(extract_range_from_binary_expr): Further optimize
+	BIT_AND_EXPR and BIT_IOR_EXPR.
+
 2010-07-09  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* tree-if-conv.c (fold_or_predicates): New.
