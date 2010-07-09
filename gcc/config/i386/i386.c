@@ -12651,7 +12651,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	  return;
 
 	case ';':
-#if TARGET_MACHO || !HAVE_AS_IX86_REP_LOCK_PREFIX
+#ifndef HAVE_AS_IX86_REP_LOCK_PREFIX
 	  fputs (";", file);
 #endif
 	  return;
