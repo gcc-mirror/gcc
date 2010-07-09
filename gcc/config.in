@@ -315,7 +315,7 @@
 #endif
 
 
-/* Define true if the assembler supports 'rep <insn>, lock <insn>'. */
+/* Define if the assembler supports 'rep <insn>, lock <insn>'. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_IX86_REP_LOCK_PREFIX
 #endif

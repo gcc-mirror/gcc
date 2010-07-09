@@ -2,6 +2,7 @@
 
 	* configure.ac (gcc_cv_as_ix86_rep_lock_prefix): Fix test.
 	* configure: Regenerate.
+	* config.in: Ditto.
 
 2010-07-09  Jakub Jelinek  <jakub@redhat.com>
 	    Denys Vlasenko  <dvlasenk@redhat.com>
