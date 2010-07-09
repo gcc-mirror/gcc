@@ -1,3 +1,9 @@
+2010-07-09  Janus Weil  <janus@gcc.gnu.org>
+
+	* intrinsic.texi: Add documentation for SAME_TYPE_AS, EXTENDS_TYPE_OF,
+	STORAGE_SIZE, C_NULL_PTR and C_NULL_FUNPTR. Modify documentation of
+	SIZEOF and C_SIZEOF.
+
 2010-07-08  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44649
