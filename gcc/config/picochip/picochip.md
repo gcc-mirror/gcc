@@ -2372,7 +2372,7 @@
 		   UNSPEC_TESTPORT))
    (clobber (reg:CC CC_REGNUM))]
   ""
-  "// %0 := TestPort(%1)\;TSTPORT %1\;COPYSW.0 %0\;AND.0 %0,8,%0"
+  "// %0 := TestPort(%1)\;COPY.1 0,%0 \\\ TSTPORT %1\;COPYEQ 1,%0"
   [(set_attr "length" "9")])
 
 ; Entry point for array tstport (the actual port index is computed as the
