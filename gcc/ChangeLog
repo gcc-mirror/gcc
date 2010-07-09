@@ -1,3 +1,25 @@
+2010-07-09  Changpeng Fang  <changpeng.fang@amd.com>
+
+	PR tree-optimization/44576
+	* tree-ssa-loop-prefetch.c (trip_count_to_ahead_ratio_too_small_p):
+	New.  Pull out from is_loop_prefetching_profitable to implement
+	the trip count to ahead ratio heuristic.
+	(mem_ref_count_reasonable_p): New.  Pull out from
+	is_loop_prefetching_profitable to implement the instruction to
+	memory reference ratio heuristic.  Also consider not reasonable if
+	the memory reference count is above a threshold (to avoid
+	explosive compilation time.
+	(insn_to_prefetch_ratio_too_small_p): New.  Pull out from
+	is_loop_prefetching_profitable to implement the instruction to
+	prefetch ratio heuristic.
+	(is_loop_prefetching_profitable): Removed.
+	(loop_prefetch_arrays): Distribute the cost analysis across the
+	function to allow early exit of the prefetch analysis.
+	is_loop_prefetching_profitable is splitted into three functions,
+	with each one called as early as possible.
+	(PREFETCH_MAX_MEM_REFS_PER_LOOP): New.  Threshold above which the
+	number of memory references in a loop is considered too many.
+
 2010-07-09  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* reload.c (find_reloads): Don't clear badop if we have a
