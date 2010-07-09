@@ -1997,9 +1997,8 @@ get_vcall_index (tree fn, tree type)
 }
 
 /* Update an entry in the vtable for BINFO, which is in the hierarchy
-   dominated by T.  FN is the old function; VIRTUALS points to the
-   corresponding position in the new BINFO_VIRTUALS list.  IX is the index
-   of that entry in the list.  */
+   dominated by T.  FN has been overridden in BINFO; VIRTUALS points to the
+   corresponding position in the BINFO_VIRTUALS list.  */
 
 static void
 update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
@@ -2191,11 +2190,9 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
 	  virtual_base = probe;
 
       if (virtual_base)
-	/* OK, first_defn got this function from a (possibly lost) primary
-	   virtual base, so we're going to use the vcall offset for that
-	   primary virtual base.  But the caller is passing a first_defn*,
-	   not a virtual_base*, so the correct delta is the delta between
-	   first_defn* and itself, i.e. zero.  */
+	/* Even if we find a virtual base, the correct delta is
+	   between the overrider and the binfo we're building a vtable
+	   for.  */
 	goto virtual_covariant;
     }
 
@@ -2212,12 +2209,12 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
        entry in our vtable.  Except possibly in a constructor vtable,
        if we happen to get our primary back.  In that case, the offset
        will be zero, as it will be a primary base.  */
-   virtual_covariant:
     delta = size_zero_node;
   else
     /* The `this' pointer needs to be adjusted from pointing to
        BINFO to pointing at the base where the final overrider
        appears.  */
+    virtual_covariant:
     delta = size_diffop (convert (ssizetype,
 				  BINFO_OFFSET (TREE_VALUE (overrider))),
 			 convert (ssizetype, BINFO_OFFSET (binfo)));
