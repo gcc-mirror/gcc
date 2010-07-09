@@ -19565,6 +19565,81 @@ is_called_in_ARM_mode (tree func)
 #endif
 }
 
+/* Given the stack offsets and register mask in OFFSETS, decide how
+   many additional registers to push instead of subtracting a constant
+   from SP.  For epilogues the principle is the same except we use pop.
+   FOR_PROLOGUE indicates which we're generating.  */
+static int
+thumb1_extra_regs_pushed (arm_stack_offsets *offsets, bool for_prologue)
+{
+  HOST_WIDE_INT amount;
+  unsigned long live_regs_mask = offsets->saved_regs_mask;
+  /* Extract a mask of the ones we can give to the Thumb's push/pop
+     instruction.  */
+  unsigned long l_mask = live_regs_mask & (for_prologue ? 0x40ff : 0xff);
+  /* Then count how many other high registers will need to be pushed.  */
+  unsigned long high_regs_pushed = bit_count (live_regs_mask & 0x0f00);
+  int n_free, reg_base;
+
+  if (!for_prologue && frame_pointer_needed)
+    amount = offsets->locals_base - offsets->saved_regs;
+  else
+    amount = offsets->outgoing_args - offsets->saved_regs;
+
+  /* If the stack frame size is 512 exactly, we can save one load
+     instruction, which should make this a win even when optimizing
+     for speed.  */
+  if (!optimize_size && amount != 512)
+    return 0;
+
+  /* Can't do this if there are high registers to push.  */
+  if (high_regs_pushed != 0)
+    return 0;
+
+  /* Shouldn't do it in the prologue if no registers would normally
+     be pushed at all.  In the epilogue, also allow it if we'll have
+     a pop insn for the PC.  */
+  if  (l_mask == 0
+       && (for_prologue
+	   || TARGET_BACKTRACE
+	   || (live_regs_mask & 1 << LR_REGNUM) == 0
+	   || TARGET_INTERWORK
+	   || crtl->args.pretend_args_size != 0))
+    return 0;
+
+  /* Don't do this if thumb_expand_prologue wants to emit instructions
+     between the push and the stack frame allocation.  */
+  if (for_prologue
+      && ((flag_pic && arm_pic_register != INVALID_REGNUM)
+	  || (!frame_pointer_needed && CALLER_INTERWORKING_SLOT_SIZE > 0)))
+    return 0;
+
+  reg_base = 0;
+  n_free = 0;
+  if (!for_prologue)
+    {
+      reg_base = arm_size_return_regs () / UNITS_PER_WORD;
+      live_regs_mask >>= reg_base;
+    }
+
+  while (reg_base + n_free < 8 && !(live_regs_mask & 1)
+	 && (for_prologue || call_used_regs[reg_base + n_free]))
+    {
+      live_regs_mask >>= 1;
+      n_free++;
+    }
+
+  if (n_free == 0)
+    return 0;
+  gcc_assert (amount / 4 * 4 == amount);
+
+  if (amount >= 512 && (amount - n_free * 4) < 512)
+    return (amount - 508) / 4;
+  if (amount <= n_free * 4)
+    return amount / 4;
+  return 0;
+}
+
 /* The bits which aren't usefully expanded as rtl.  */
 const char *
 thumb_unexpanded_epilogue (void)
@@ -19573,6 +19648,7 @@ thumb_unexpanded_epilogue (void)
   int regno;
   unsigned long live_regs_mask = 0;
   int high_regs_pushed = 0;
+  int extra_pop;
   int had_to_push_lr;
   int size;
 
@@ -19591,6 +19667,13 @@ thumb_unexpanded_epilogue (void)
      will be set if the register is ever used in the function, not just if
      the register is used to hold a return value.  */
   size = arm_size_return_regs ();
+
+  extra_pop = thumb1_extra_regs_pushed (offsets, false);
+  if (extra_pop > 0)
+    {
+      unsigned long extra_mask = (1 << extra_pop) - 1;
+      live_regs_mask |= extra_mask << (size / UNITS_PER_WORD);
+    }
 
   /* The prolog may have pushed some high registers to use as
      work registers.  e.g. the testsuite file:
@@ -19675,7 +19758,9 @@ thumb_unexpanded_epilogue (void)
 		       live_regs_mask);
 
       /* We have either just popped the return address into the
-	 PC or it is was kept in LR for the entire function.  */
+	 PC or it is was kept in LR for the entire function.
+	 Note that thumb_pushpop has already called thumb_exit if the
+	 PC was in the list.  */
       if (!had_to_push_lr)
 	thumb_exit (asm_out_file, LR_REGNUM);
     }
@@ -19821,51 +19906,6 @@ thumb_compute_initial_elimination_offset (unsigned int from, unsigned int to)
     }
 }
 
-/* Given the stack offsets and register mask in OFFSETS, decide
-   how many additional registers to push instead of subtracting
-   a constant from SP.  */
-static int
-thumb1_extra_regs_pushed (arm_stack_offsets *offsets)
-{
-  HOST_WIDE_INT amount = offsets->outgoing_args - offsets->saved_regs;
-  unsigned long live_regs_mask = offsets->saved_regs_mask;
-  /* Extract a mask of the ones we can give to the Thumb's push instruction.  */
-  unsigned long l_mask = live_regs_mask & 0x40ff;
-  /* Then count how many other high registers will need to be pushed.  */
-  unsigned long high_regs_pushed = bit_count (live_regs_mask & 0x0f00);
-  int n_free;
-
-  /* If the stack frame size is 512 exactly, we can save one load
-     instruction, which should make this a win even when optimizing
-     for speed.  */
-  if (!optimize_size && amount != 512)
-    return 0;
-
-  /* Can't do this if there are high registers to push, or if we
-     are not going to do a push at all.  */
-  if (high_regs_pushed != 0 || l_mask == 0)
-    return 0;
-
-  /* Don't do this if thumb1_expand_prologue wants to emit instructions
-     between the push and the stack frame allocation.  */
-  if ((flag_pic && arm_pic_register != INVALID_REGNUM)
-      || (!frame_pointer_needed && CALLER_INTERWORKING_SLOT_SIZE > 0))
-    return 0;
-
-  for (n_free = 0; n_free < 8 && !(live_regs_mask & 1); live_regs_mask >>= 1)
-    n_free++;
-
-  if (n_free == 0)
-    return 0;
-  gcc_assert (amount / 4 * 4 == amount);
-
-  if (amount >= 512 && (amount - n_free * 4) < 512)
-    return (amount - 508) / 4;
-  if (amount <= n_free * 4)
-    return amount / 4;
-  return 0;
-}
-
 /* Generate the rest of a function's prologue.  */
 void
 thumb1_expand_prologue (void)
@@ -19902,7 +19942,7 @@ thumb1_expand_prologue (void)
 		    stack_pointer_rtx);
 
   amount = offsets->outgoing_args - offsets->saved_regs;
-  amount -= 4 * thumb1_extra_regs_pushed (offsets);
+  amount -= 4 * thumb1_extra_regs_pushed (offsets, true);
   if (amount)
     {
       if (amount < 512)
@@ -19987,6 +20027,7 @@ thumb1_expand_epilogue (void)
       emit_insn (gen_movsi (stack_pointer_rtx, hard_frame_pointer_rtx));
       amount = offsets->locals_base - offsets->saved_regs;
     }
+  amount -= 4 * thumb1_extra_regs_pushed (offsets, false);
 
   gcc_assert (amount >= 0);
   if (amount)
@@ -20209,7 +20250,7 @@ thumb1_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	   || (high_regs_pushed == 0 && l_mask))
     {
       unsigned long mask = l_mask;
-      mask |= (1 << thumb1_extra_regs_pushed (offsets)) - 1;
+      mask |= (1 << thumb1_extra_regs_pushed (offsets, true)) - 1;
       thumb_pushpop (f, mask, 1, &cfa_offset, mask);
     }
 

@@ -1,3 +1,12 @@
+2010-07-09  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR target/40657
+	* config/arm/arm.c (thumb1_extra_regs_pushed): New arg FOR_PROLOGUE.
+	All callers changed.
+	Handle the case when we're called for the epilogue.
+	(thumb_unexpanded_epilogue): Use it.
+	(thumb1_expand_epilogue): Likewise.
+
 2010-07-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vrp.c (extract_range_from_binary_expr) <BIT_AND_EXPR>: If

@@ -1,3 +1,10 @@
+2010-07-09  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR target/40657
+	* gcc.target/arm/pr40657-1.c: New test.
+	* gcc.target/arm/pr40657-2.c: New test.
+	* gcc.c-torture/execute/pr40657.c: New test.
+
 2010-07-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/tree-ssa/vrp50.c: New test.
