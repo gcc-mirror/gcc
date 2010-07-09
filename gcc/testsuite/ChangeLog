@@ -1,3 +1,10 @@
+2010-07-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/x86_64/abi/asm-support.S (snapshot): Replace
+	multiplication by values.
+	* gcc.target/x86_64/abi/asm-support-darwin.s (_snapshot): Likewise.
+	* gcc.target/x86_64/abi/avx/asm-support.S (snapshot): Likewise.
+
 2010-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/44847
