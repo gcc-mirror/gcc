@@ -1,3 +1,10 @@
+2010-07-09  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/44890
+	* tree-ssa-address.c (create_mem_ref_raw): Only build a MEM_REF
+	if base is a pointer.
+	* tree-cfg.c (verify_expr): Update MEM_REF checking.
+
 2010-07-08  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/44877

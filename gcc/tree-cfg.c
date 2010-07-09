@@ -2610,7 +2610,8 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 
     case MEM_REF:
       x = TREE_OPERAND (t, 0);
-      if (!is_gimple_mem_ref_addr (x))
+      if (!POINTER_TYPE_P (TREE_TYPE (x))
+	  || !is_gimple_mem_ref_addr (x))
 	{
 	  error ("Invalid first operand of MEM_REF.");
 	  return x;

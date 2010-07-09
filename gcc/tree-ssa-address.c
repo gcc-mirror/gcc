@@ -352,7 +352,8 @@ create_mem_ref_raw (tree type, tree alias_ptr_type, struct mem_address *addr)
   /* If possible use a plain MEM_REF instead of a TARGET_MEM_REF.  */
   if (alias_ptr_type
       && !addr->index
-      && !addr->step)
+      && !addr->step
+      && (!addr->base || POINTER_TYPE_P (TREE_TYPE (addr->base))))
     {
       tree base, offset;
       gcc_assert (!addr->symbol ^ !addr->base);
