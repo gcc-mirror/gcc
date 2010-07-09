@@ -1,3 +1,9 @@
+2010-07-09  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/abi/covariant6.C: New.
+	* g++.dg/inherit/covariant17.C: Test both bases.
+	* g++.dg/inherit/covariant7.C: Check vtable layout.
+
 2010-07-09  Tom de Vries  <tjvries@xs4all.nl>
 
 	* gcc.dg/debug/dwarf2/pr31230.c: New testcase.

@@ -1,8 +1,8 @@
 // { dg-do compile }
 // { dg-options "-w" }
 
-// We don't want to use a covariant thunk to have a virtual
-// primary base
+// If a covariant thunk is overriding a virtual primary base, we have to
+// use the vcall offset even though we know it will be 0.
 
 struct c4 {};
 
