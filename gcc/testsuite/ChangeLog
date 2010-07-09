@@ -1,3 +1,7 @@
+2010-07-09  Tom de Vries  <tjvries@xs4all.nl>
+
+	* gcc.dg/debug/dwarf2/pr31230.c: New testcase.
+
 2010-07-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44852

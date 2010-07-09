@@ -6072,16 +6072,14 @@ type_hash_canon (unsigned int hashcode, tree type)
 
 /* See if the data pointed to by the type hash table is marked.  We consider
    it marked if the type is marked or if a debug type number or symbol
-   table entry has been made for the type.  This reduces the amount of
-   debugging output and eliminates that dependency of the debug output on
-   the number of garbage collections.  */
+   table entry has been made for the type.  */
 
 static int
 type_hash_marked_p (const void *p)
 {
   const_tree const type = ((const struct type_hash *) p)->type;
 
-  return ggc_marked_p (type) || TYPE_SYMTAB_POINTER (type);
+  return ggc_marked_p (type);
 }
 
 static void
