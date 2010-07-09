@@ -1,9 +1,5 @@
 2010-07-08  Jason Merrill  <jason@redhat.com>
 
-	PR c++/43120
-	* class.c (update_vtable_entry_for_fn): Fix handling of dummy
-	virtual bases for covariant thunks.
-
 	PR c++/44703
 	* call.c (is_std_init_list): Look through typedefs.
 
