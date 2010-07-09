@@ -1,3 +1,15 @@
+2010-07-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* genrecog.c: Include diagnostic-core.h before toplev.h.
+	* genoutput.c: Likewise.
+	* genextract.c: Likewise.
+	* genautomata.c: Likewise.
+	* genemit.c: Likewise.
+	* genpeep.c: Likewise.
+	* genattrtab.c: Likewise.
+	* genconditions.c: Likewise.
+	* genpreds.c: Likewise.
+
 2010-07-08  Andi Kleen <ak@linux.intel.com>
 
 	* lto-section-in.c (lto_section_name): Add missing comma.

@@ -86,6 +86,7 @@ write_header (void)
 #include \"flags.h\"\n\
 #include \"hard-reg-set.h\"\n\
 #include \"resource.h\"\n\
+#include \"diagnostic-core.h\"\n\
 #include \"toplev.h\"\n\
 #include \"reload.h\"\n\
 #include \"tm-constrs.h\"\n");
