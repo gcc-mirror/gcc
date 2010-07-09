@@ -19,7 +19,7 @@ unsigned int
 foo (TYPE port)
 {
   unsigned int v;
-  __asm__ __volatile__ ("" : C (v) : "Nd" (port));	/* { dg-error "while reloading\|has impossible" } */
+  __asm__ __volatile__ ("" : C (v) : "Nd" (port));	/* { dg-error "while reloading\|has impossible\|inconsistent operand constraints" } */
   return v;
 }
 

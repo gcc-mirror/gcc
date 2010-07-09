@@ -643,6 +643,10 @@ extern int inv_reg_alloc_order[FIRST_PSEUDO_REGISTER];
 
 extern HARD_REG_SET reg_class_contents[N_REG_CLASSES];
 
+/* For each reg class, a boolean saying whether the class contains only
+   fixed registers.  */
+extern bool class_only_fixed_regs[N_REG_CLASSES];
+
 /* For each reg class, number of regs it contains.  */
 
 extern unsigned int reg_class_size[N_REG_CLASSES];

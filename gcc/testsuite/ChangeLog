@@ -1,3 +1,7 @@
+2010-07-09  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* gcc.dg/pr32370.c: Allow another kind of error message.
+
 2010-07-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/atomic3.adb: New test.
