@@ -13,6 +13,10 @@
 
 	* config/arm/arm.md (Thumb-1 ldrsb peephole): New.
 
+	* config/arm/arm.md (cbranchqi4): Fix array size.
+	(addsi3_cbranch): Also andle alternative 2 like alternative 3 when
+	calculating length.
+
 2010-07-09  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (struct type_fixup_s): New struct and VEC type.
