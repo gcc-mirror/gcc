@@ -1,3 +1,10 @@
+2010-07-09  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44882
+	* tree-vect-stmts.c (vectorizable_store): Do not assert alias
+	sets do conflict.
+	(vectorizable_load): Likewise.
+
 2010-07-09  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR target/40657
