@@ -2578,6 +2578,58 @@ extract_range_from_binary_expr (value_range_t *vr,
 
       if (vr0_int_cst_singleton_p && vr1_int_cst_singleton_p)
 	min = max = int_const_binop (code, vr0.max, vr1.max, 0);
+      else if (range_int_cst_p (&vr0)
+	       && range_int_cst_p (&vr1)
+	       && tree_int_cst_sgn (vr0.min) >= 0
+	       && tree_int_cst_sgn (vr1.min) >= 0)
+	{
+	  double_int vr0_mask = tree_to_double_int (vr0.min);
+	  double_int vr1_mask = tree_to_double_int (vr1.min);
+	  double_int maxd, diff;
+	  tree mask;
+
+	  min = build_int_cst (expr_type, 0);
+	  /* Compute non-zero bits mask from both ranges.  */
+	  if (!vr0_int_cst_singleton_p)
+	    {
+	      maxd = tree_to_double_int (vr0.max);
+	      diff = double_int_sub (maxd, vr0_mask);
+	      if (diff.high)
+		{
+		  diff.low = ~(unsigned HOST_WIDE_INT)0;
+		  diff.high = ((HOST_WIDE_INT) 2
+			       << floor_log2 (diff.high)) - 1;
+		}
+	      else
+		diff.low = ((HOST_WIDE_INT) 2 << floor_log2 (diff.low)) - 1;
+	      vr0_mask = double_int_ior (vr0_mask,
+					 double_int_ior (maxd, diff));
+	    }
+	  if (!vr1_int_cst_singleton_p)
+	    {
+	      maxd = tree_to_double_int (vr1.max);
+	      diff = double_int_sub (maxd, vr1_mask);
+	      if (diff.high)
+		{
+		  diff.low = ~(unsigned HOST_WIDE_INT)0;
+		  diff.high = ((HOST_WIDE_INT) 2
+			       << floor_log2 (diff.high)) - 1;
+		}
+	      else
+		diff.low = ((HOST_WIDE_INT) 2 << floor_log2 (diff.low)) - 1;
+	      vr1_mask = double_int_ior (vr1_mask,
+					 double_int_ior (maxd, diff));
+	    }
+	  mask = double_int_to_tree (expr_type,
+				     double_int_and (vr0_mask, vr1_mask));
+	  max = vr0.max;
+	  if (tree_int_cst_lt (vr1.max, max))
+	    max = vr1.max;
+	  if (!TREE_OVERFLOW (mask)
+	      && tree_int_cst_lt (mask, max)
+	      && tree_int_cst_sgn (mask) >= 0)
+	    max = mask;
+	}
       else if (vr0_int_cst_singleton_p
 	       && tree_int_cst_sgn (vr0.max) >= 0)
 	{

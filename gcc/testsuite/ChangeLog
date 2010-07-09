@@ -1,3 +1,8 @@
+2010-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp50.c: New test.
+	* gcc.dg/vect/slp-perm-4.c (main): Make sure loop isn't vectorized.
+
 2010-07-08  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44649
