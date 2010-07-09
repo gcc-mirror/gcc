@@ -6562,7 +6562,7 @@
 	      (pc)))]
   "TARGET_THUMB1"
 {
-  rtx xops[3];
+  rtx xops[4];
   xops[1] = gen_reg_rtx (SImode);
   emit_insn (gen_zero_extendqisi2 (xops[1], operands[1]));
   xops[2] = GEN_INT (127);
@@ -7509,7 +7509,7 @@
      else if (which_alternative >= 4)
        output_asm_insn (\"str\\t%1, %0\", operands);
 
-     switch (get_attr_length (insn) - ((which_alternative >= 3) ? 2 : 0))
+     switch (get_attr_length (insn) - ((which_alternative >= 2) ? 2 : 0))
        {
 	 case 4:
 	   return \"b%d4\\t%l5\";
@@ -7523,7 +7523,7 @@
   [(set (attr "far_jump")
         (if_then_else
 	    (ior (and (lt (symbol_ref ("which_alternative"))
-	                  (const_int 3))
+	                  (const_int 2))
 		      (eq_attr "length" "8"))
 		 (eq_attr "length" "10"))
 	    (const_string "yes")
@@ -7531,7 +7531,7 @@
    (set (attr "length")
      (if_then_else
        (lt (symbol_ref ("which_alternative"))
-		       (const_int 3))
+		       (const_int 2))
        (if_then_else
 	 (and (ge (minus (match_dup 5) (pc)) (const_int -250))
 	      (le (minus (match_dup 5) (pc)) (const_int 256)))
