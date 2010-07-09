@@ -1,3 +1,8 @@
+2010-07-09  Hariharan Sandanagobalane <hariharan@picochip.com>
+
+	* config/picochip/picochip.md (commsTestPort): Emit more
+	efficient sequence for tstport instruction.
+
 2010-07-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_veclib_handler): Make static.
