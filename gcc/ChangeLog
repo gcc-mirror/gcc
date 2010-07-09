@@ -1,3 +1,9 @@
+2010-07-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vrp.c (extract_range_from_binary_expr) <BIT_AND_EXPR>: If
+	both ranges are range_int_cst_p with non-negative minimum,
+	try harder to derive smaller range.
+
 2010-07-09  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* genrecog.c: Include diagnostic-core.h before toplev.h.
