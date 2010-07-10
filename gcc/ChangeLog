@@ -1,3 +1,30 @@
+2010-07-10  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/42505
+	* tree-inline.c (estimate_num_insns): Refactor builtin complexity
+	lookup code into....
+	* builtins.c (is_simple_builtin, is_inexpensive_builtin): ...these
+	new functions.
+	* tree.h (is_simple_builtin, is_inexpensive_builtin): Declare.
+	* cfgloopanal.c (target_clobbered_regs): Define.
+	(init_set_costs): Initialize target_clobbered_regs.
+	(estimate_reg_pressure_cost): Add call_p argument.  When true,
+	adjust the number of available registers to exclude the
+	call-clobbered registers.
+	* cfgloop.h (target_clobbered_regs): Declare.
+	(estimate_reg_pressure_cost): Adjust declaration.
+	* tree-ssa-loop-ivopts.c (struct ivopts_data): Add body_includes_call.
+	(ivopts_global_cost_for_size): Pass it to estimate_reg_pressure_cost.
+	(determine_set_costs): Dump target_clobbered_regs.
+	(loop_body_includes_call): New function.
+	(tree_ssa_iv_optimize_loop): Use it to initialize new field.
+	* loop-invariant.c (gain_for_invariant): Adjust arguments to pass
+	call_p flag through.
+	(best_gain_for_invariant): Likewise.
+	(find_invariants_to_move): Likewise.
+	(move_single_loop_invariants): Likewise, using already-computed
+	has_call field.
+
 2010-07-10  Richard Guenther  <rguenther@suse.de>
 	    Joern Rennecke  <joern.rennecke@embecosm.com>
 
