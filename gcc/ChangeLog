@@ -1,3 +1,20 @@
+2010-07-10  Anatoly Sokolov  <aesok@post.ru>
+
+	* reginfo.h (reg_classes_intersect_p): Change arguments type to
+	reg_class_t.
+	* rtl.h (reg_classes_intersect_p): Adjust prototype.
+
+	* config/rs6000/rs6000.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST):
+	Remove macros.
+	* config/rs6000/rs6000-protos.h (rs6000_register_move_cost,
+	rs6000_memory_move_cost): Remove
+	* config/rs6000/rs6000.c (TARGET_REGISTER_MOVE_COST,
+	TARGET_MEMORY_MOVE_COST): Define.
+	(rs6000_register_move_cost): Make static. Change arguments type from
+	enum reg_class to reg_class_t. Adjust rs6000_memory_move_cost calls.
+	(rs6000_memory_move_cost): Make static. Change arguments type from
+	'enum reg_class' to reg_class_t.
+
 2010-07-10  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR middle-end/42505

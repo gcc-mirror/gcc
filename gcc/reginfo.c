@@ -1256,7 +1256,7 @@ reg_class_subset_p (enum reg_class c1, enum reg_class c2)
 
 /* Return nonzero if there is a register that is in both C1 and C2.  */
 int
-reg_classes_intersect_p (enum reg_class c1, enum reg_class c2)
+reg_classes_intersect_p (reg_class_t c1, reg_class_t c2)
 {
   return (c1 == c2
 	  || c1 == ALL_REGS

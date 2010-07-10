@@ -170,9 +170,6 @@ extern unsigned int rs6000_dbx_register_number (unsigned int);
 extern void rs6000_emit_epilogue (int);
 extern void rs6000_emit_eh_reg_restore (rtx, rtx);
 extern const char * output_isel (rtx *);
-extern int rs6000_register_move_cost (enum machine_mode,
-				      enum reg_class, enum reg_class);
-extern int rs6000_memory_move_cost (enum machine_mode, enum reg_class, int);
 extern bool rs6000_tls_referenced_p (rtx);
 extern void rs6000_conditional_register_usage (void);
 
