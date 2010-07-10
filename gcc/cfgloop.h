@@ -627,13 +627,14 @@ fel_init (loop_iterator *li, loop_p *loop, unsigned flags)
 /* The properties of the target.  */
 
 extern unsigned target_avail_regs;
+extern unsigned target_clobbered_regs;
 extern unsigned target_res_regs;
 extern unsigned target_reg_cost [2];
 extern unsigned target_spill_cost [2];
 
 /* Register pressure estimation for induction variable optimizations & loop
    invariant motion.  */
-extern unsigned estimate_reg_pressure_cost (unsigned, unsigned, bool);
+extern unsigned estimate_reg_pressure_cost (unsigned, unsigned, bool, bool);
 extern void init_set_costs (void);
 
 /* Loop optimizer initialization.  */

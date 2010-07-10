@@ -1173,11 +1173,13 @@ get_inv_cost (struct invariant *inv, int *comp_cost, unsigned *regs_needed)
 /* Calculates gain for eliminating invariant INV.  REGS_USED is the number
    of registers used in the loop, NEW_REGS is the number of new variables
    already added due to the invariant motion.  The number of registers needed
-   for it is stored in *REGS_NEEDED.  */
+   for it is stored in *REGS_NEEDED.  SPEED and CALL_P are flags passed
+   through to estimate_reg_pressure_cost. */
 
 static int
 gain_for_invariant (struct invariant *inv, unsigned *regs_needed,
-		    unsigned *new_regs, unsigned regs_used, bool speed)
+		    unsigned *new_regs, unsigned regs_used,
+		    bool speed, bool call_p)
 {
   int comp_cost, size_cost;
 
@@ -1188,9 +1190,9 @@ gain_for_invariant (struct invariant *inv, unsigned *regs_needed,
   if (! flag_ira_loop_pressure)
     {
       size_cost = (estimate_reg_pressure_cost (new_regs[0] + regs_needed[0],
-					       regs_used, speed)
+					       regs_used, speed, call_p)
 		   - estimate_reg_pressure_cost (new_regs[0],
-						 regs_used, speed));
+						 regs_used, speed, call_p));
     }
   else
     {
@@ -1245,7 +1247,8 @@ gain_for_invariant (struct invariant *inv, unsigned *regs_needed,
 
 static int
 best_gain_for_invariant (struct invariant **best, unsigned *regs_needed,
-			 unsigned *new_regs, unsigned regs_used, bool speed)
+			 unsigned *new_regs, unsigned regs_used,
+			 bool speed, bool call_p)
 {
   struct invariant *inv;
   int i, gain = 0, again;
@@ -1261,7 +1264,7 @@ best_gain_for_invariant (struct invariant **best, unsigned *regs_needed,
 	continue;
 
       again = gain_for_invariant (inv, aregs_needed, new_regs, regs_used,
-      				  speed);
+      				  speed, call_p);
       if (again > gain)
 	{
 	  gain = again;
@@ -1314,7 +1317,7 @@ set_move_mark (unsigned invno, int gain)
 /* Determines which invariants to move.  */
 
 static void
-find_invariants_to_move (bool speed)
+find_invariants_to_move (bool speed, bool call_p)
 {
   int gain;
   unsigned i, regs_used, regs_needed[N_REG_CLASSES], new_regs[N_REG_CLASSES];
@@ -1353,7 +1356,8 @@ find_invariants_to_move (bool speed)
 	new_regs[ira_reg_class_cover[i]] = 0;
     }
   while ((gain = best_gain_for_invariant (&inv, regs_needed,
-					  new_regs, regs_used, speed)) > 0)
+					  new_regs, regs_used,
+					  speed, call_p)) > 0)
     {
       set_move_mark (inv->invno, gain);
       if (! flag_ira_loop_pressure)
@@ -1573,7 +1577,8 @@ move_single_loop_invariants (struct loop *loop)
   init_inv_motion_data ();
 
   find_invariants (loop);
-  find_invariants_to_move (optimize_loop_for_speed_p (loop));
+  find_invariants_to_move (optimize_loop_for_speed_p (loop),
+			   LOOP_DATA (loop)->has_call);
   move_invariants (loop);
 
   free_inv_motion_data ();

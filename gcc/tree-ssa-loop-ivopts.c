@@ -260,6 +260,9 @@ struct ivopts_data
 
   /* Are we optimizing for speed?  */
   bool speed;
+
+  /* Whether the loop body includes any function calls.  */
+  bool body_includes_call;
 };
 
 /* An assignment of iv candidates to uses.  */
@@ -4431,7 +4434,8 @@ ivopts_global_cost_for_size (struct ivopts_data *data, unsigned size)
 {
   /* We add size to the cost, so that we prefer eliminating ivs
      if possible.  */
-  return size + estimate_reg_pressure_cost (size, data->regs_used, data->speed);
+  return size + estimate_reg_pressure_cost (size, data->regs_used, data->speed,
+					    data->body_includes_call);
 }
 
 /* For each size of the induction variable set determine the penalty.  */
@@ -4450,6 +4454,7 @@ determine_set_costs (struct ivopts_data *data)
     {
       fprintf (dump_file, "Global costs:\n");
       fprintf (dump_file, "  target_avail_regs %d\n", target_avail_regs);
+      fprintf (dump_file, "  target_clobbered_regs %d\n", target_clobbered_regs);
       fprintf (dump_file, "  target_reg_cost %d\n", target_reg_cost[data->speed]);
       fprintf (dump_file, "  target_spill_cost %d\n", target_spill_cost[data->speed]);
     }
@@ -5859,6 +5864,25 @@ tree_ssa_iv_optimize_finalize (struct ivopts_data *data)
   VEC_free (iv_cand_p, heap, data->iv_candidates);
 }
 
+/* Returns true if the loop body BODY includes any function calls.  */
+
+static bool
+loop_body_includes_call (basic_block *body, unsigned num_nodes)
+{
+  gimple_stmt_iterator gsi;
+  unsigned i;
+
+  for (i = 0; i < num_nodes; i++)
+    for (gsi = gsi_start_bb (body[i]); !gsi_end_p (gsi); gsi_next (&gsi))
+      {
+	gimple stmt = gsi_stmt (gsi);
+	if (is_gimple_call (stmt)
+	    && !is_inexpensive_builtin (gimple_call_fndecl (stmt)))
+	  return true;
+      }
+  return false;
+}
+
 /* Optimizes the LOOP.  Returns true if anything changed.  */
 
 static bool
@@ -5890,6 +5914,7 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, struct loop *loop)
     }
 
   body = get_loop_body (loop);
+  data->body_includes_call = loop_body_includes_call (body, loop->num_nodes);
   renumber_gimple_stmt_uids_in_blocks (body, loop->num_nodes);
   free (body);
 
