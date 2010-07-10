@@ -1,3 +1,42 @@
+2010-07-10  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR objc/44140
+	* objc-act.c: build_objc_string_decl() remove declaration.
+	(finish_var_decl): Remove forcing of var output and marking
+	as "Used". 
+	(init_def_list): Use integer_zero_node. 
+	(init_objc_symtab): Use integer_zero_node, make the short
+	integer type specific on relevant nodes.
+	(generate_objc_symtab_decl): Remove call to 
+	forward_declare_categories().  Use null_pointer_node where
+	appropriate.  
+	(build_module_descriptor): Comment and mark this item as 
+	DECL_PRESERVE_P. 
+	(generate_static_references): Use gcc_unreachable instead of
+	abort (). 
+	(diagnose_missing_method): New.
+	(build_next_selector_translation_table): New.
+	(build_gnu_selector_translation_table): New.
+	(add_objc_string): Merge code from build_objc_string_decl...
+	... and delete build_objc_string_decl().
+	(generate_dispatch_table): Make integer types explicit.
+	(generate_category): Pass implent and arrange for the data
+	to be extracted within the routine.  Do not start new vars, 
+	but finish the ones collcted during parsing.
+	(generate_shared_structures): Likewise.
+	(finish_objc):  Reorder code so that we finish variables before
+	referencing them.  Save the global data before calling meta-data
+	creation routines, and pass the current reference to the two 
+	main routines.  Only call generate_objc_image_info () for the 
+	NeXT runtime.
+	(generate_classref_translation_entry): Comment on and make this
+	item DECL_PRESERVE_P.
+	(handle_class_ref): Use varpool interfaces, comment on and make
+	this item DECL_PRESERVE_P.
+	(handle_impent): Likewise.
+	(generate_objc_image_info): Only generate when the content is 
+	non-zero.  Make integer types explict.
+
 2010-07-03  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR objc/24867
