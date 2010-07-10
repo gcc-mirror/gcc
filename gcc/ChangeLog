@@ -1,3 +1,13 @@
+2010-07-10  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/44889
+	* gimple.c (gimple_fixup_complete_and_incomplete_subtype_p): New
+	helper function.
+	(gimple_types_compatible_p): Similar to pointed-to
+	types allow and merge a mix of complete and incomplete aggregate.
+	Use gimple_fixup_complete_and_incomplete_subtype_p for that.
+	(iterative_hash_gimple_type): Adjust for that.
+
 2010-07-10  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
 	* tree.h (DECL_REPLACEABLE_P): Strengthen check for weak symbols.

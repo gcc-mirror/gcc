@@ -1,3 +1,9 @@
+2010-07-10  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/44889
+	* gcc.dg/lto/20100709-1_0.c: New testcase.
+	* gcc.dg/lto/20100709-1_1.c: Likewise.
+
 2010-07-10  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
 	* gcc.dg/attr-weak-hidden-1.c, gcc.dg/attr-weak-hidden-1a.c: New test.
