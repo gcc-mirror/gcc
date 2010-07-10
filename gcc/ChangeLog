@@ -1,3 +1,7 @@
+2010-07-10  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
+	* tree.h (DECL_REPLACEABLE_P): Strengthen check for weak symbols.
+
 2010-07-10  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR objc/44140

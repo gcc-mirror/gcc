@@ -3012,6 +3012,11 @@ struct GTY(()) tree_parm_decl {
    not be treated as replaceable so that use of C++ template
    instantiations is not penalized.
 
+   In other respects, the condition is usually equivalent to whether
+   the function binds to the current module (shared library or executable).
+   However, weak functions can always be overridden by earlier TUs
+   in the same module, even if they bind locally to that module.
+
    For example, DECL_REPLACEABLE is used to determine whether or not a
    function (including a template instantiation) which is not
    explicitly declared "inline" can be inlined.  If the function is
@@ -3020,7 +3025,7 @@ struct GTY(()) tree_parm_decl {
    function that is not DECL_REPLACEABLE can be inlined, since all
    versions of the function will be functionally identical.  */
 #define DECL_REPLACEABLE_P(NODE) \
-  (!DECL_COMDAT (NODE) && !targetm.binds_local_p (NODE))
+  (!DECL_COMDAT (NODE) && (DECL_WEAK (NODE) || !targetm.binds_local_p (NODE)))
 
 /* The name of the object as the assembler will see it (but before any
    translations made by ASM_OUTPUT_LABELREF).  Often this is the same
