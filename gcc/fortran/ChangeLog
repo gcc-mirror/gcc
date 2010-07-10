@@ -1,3 +1,20 @@
+2010-07-10  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-io.c (gfc_build_st_parameter): Update calls to
+	gfc_add_field_to_struct.
+	* trans-stmt.c (ADD_FIELD): Ditto.
+	* trans-types.c
+	(gfc_get_derived_type): Ditto. Don't create backend_decl for C_PTR's
+	C_ADDRESS field. 
+	(gfc_add_field_to_struct_1): Set TYPE_FIELDS(context) instead of
+	fieldlist, remove fieldlist from argument list.
+	(gfc_add_field_to_struct): Update call to gfc_add_field_to_struct_1
+	and remove fieldlist from argument list. 
+	(gfc_get_desc_dim_type, gfc_get_array_descriptor_base,
+	gfc_get_mixed_entry_union): Move setting
+	TYPE_FIELDS to gfc_add_field_to_struct_1 and update calls to it.
+	* trans-types.h (gfc_add_field_to_struct): Update prototype.
+
 2010-07-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/44773

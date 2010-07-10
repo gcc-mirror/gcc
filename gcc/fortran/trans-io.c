@@ -176,13 +176,11 @@ gfc_build_st_parameter (enum ioparam_type ptype, tree *types)
 	case IOPARM_type_parray:
 	case IOPARM_type_pchar:
 	case IOPARM_type_pad:
-	  p->field = gfc_add_field_to_struct (&TYPE_FIELDS (t), t,
-					      get_identifier (p->name),
+	  p->field = gfc_add_field_to_struct (t, get_identifier (p->name),
 					      types[p->type], &chain);
 	  break;
 	case IOPARM_type_char1:
-	  p->field = gfc_add_field_to_struct (&TYPE_FIELDS (t), t,
-					      get_identifier (p->name),
+	  p->field = gfc_add_field_to_struct (t, get_identifier (p->name),
 					      pchar_type_node, &chain);
 	  /* FALLTHROUGH */
 	case IOPARM_type_char2:
@@ -190,18 +188,16 @@ gfc_build_st_parameter (enum ioparam_type ptype, tree *types)
 	  gcc_assert (len <= sizeof (name) - sizeof ("_len"));
 	  memcpy (name, p->name, len);
 	  memcpy (name + len, "_len", sizeof ("_len"));
-	  p->field_len = gfc_add_field_to_struct (&TYPE_FIELDS (t), t,
-						  get_identifier (name),
+	  p->field_len = gfc_add_field_to_struct (t, get_identifier (name),
 						  gfc_charlen_type_node,
 						  &chain);
 	  if (p->type == IOPARM_type_char2)
-	    p->field = gfc_add_field_to_struct (&TYPE_FIELDS (t), t,
-						get_identifier (p->name),
+	    p->field = gfc_add_field_to_struct (t, get_identifier (p->name),
 						pchar_type_node, &chain);
 	  break;
 	case IOPARM_type_common:
 	  p->field
-	    = gfc_add_field_to_struct (&TYPE_FIELDS (t), t,
+	    = gfc_add_field_to_struct (t,
 				       get_identifier (p->name),
 				       st_parameter[IOPARM_ptype_common].type,
 				       &chain);
