@@ -99,6 +99,7 @@ output_objc_section_asm_op (const void *directive)
      section is requested.  */
   if (! been_here)
     {
+      section *saved_in_section = in_section;
       static const enum darwin_section_enum tomark[] =
 	{
 	  /* written, cold -> hot */
@@ -129,6 +130,7 @@ output_objc_section_asm_op (const void *directive)
       been_here = true;
       for (i = 0; i < ARRAY_SIZE (tomark); i++)
 	switch_to_section (darwin_sections[tomark[i]]);
+      switch_to_section (saved_in_section);
     }
   output_section_asm_op (directive);
 }

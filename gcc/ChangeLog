@@ -1,3 +1,9 @@
+2010-07-10  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR objc/44140
+	* config/darwin.c (output_objc_section_asm_op): Save and restore
+	section when outputting ObjC section list.
+
 2010-07-09  Jan Hubicka  <jh@suse.cz>
 
 	* lto-streamer-out.c (produce_symtab): Do not write alias cgraph/varpool
