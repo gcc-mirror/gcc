@@ -1031,6 +1031,9 @@ static void rs6000_xcoff_file_start (void);
 static void rs6000_xcoff_file_end (void);
 #endif
 static int rs6000_variable_issue (FILE *, int, rtx, int);
+static int rs6000_register_move_cost (enum machine_mode,
+				      reg_class_t, reg_class_t);
+static int rs6000_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static bool rs6000_rtx_costs (rtx, int, int, int *, bool);
 static bool rs6000_debug_rtx_costs (rtx, int, int, int *, bool);
 static int rs6000_debug_address_cost (rtx, bool);
@@ -1508,6 +1511,10 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_INVALID_WITHIN_DOLOOP
 #define TARGET_INVALID_WITHIN_DOLOOP rs6000_invalid_within_doloop
 
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST rs6000_register_move_cost
+#undef TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST rs6000_memory_move_cost
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS rs6000_rtx_costs
 #undef TARGET_ADDRESS_COST
@@ -25573,9 +25580,9 @@ rs6000_debug_address_cost (rtx x, bool speed)
 /* A C expression returning the cost of moving data from a register of class
    CLASS1 to one of CLASS2.  */
 
-int
+static int
 rs6000_register_move_cost (enum machine_mode mode,
-			   enum reg_class from, enum reg_class to)
+			   reg_class_t from, reg_class_t to)
 {
   int ret;
 
@@ -25587,8 +25594,8 @@ rs6000_register_move_cost (enum machine_mode mode,
 	from = to;
 
       if (from == FLOAT_REGS || from == ALTIVEC_REGS || from == VSX_REGS)
-	ret = (rs6000_memory_move_cost (mode, from, 0)
-	       + rs6000_memory_move_cost (mode, GENERAL_REGS, 0));
+	ret = (rs6000_memory_move_cost (mode, from, false)
+	       + rs6000_memory_move_cost (mode, GENERAL_REGS, false));
 
       /* It's more expensive to move CR_REGS than CR0_REGS because of the
 	 shift.  */
@@ -25633,9 +25640,9 @@ rs6000_register_move_cost (enum machine_mode mode,
 /* A C expressions returning the cost of moving data of MODE from a register to
    or from memory.  */
 
-int
-rs6000_memory_move_cost (enum machine_mode mode, enum reg_class rclass,
-			 int in ATTRIBUTE_UNUSED)
+static int
+rs6000_memory_move_cost (enum machine_mode mode, reg_class_t rclass,
+			 bool in ATTRIBUTE_UNUSED)
 {
   int ret;
 
