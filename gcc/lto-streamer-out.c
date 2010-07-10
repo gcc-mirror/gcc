@@ -2399,6 +2399,8 @@ produce_symtab (struct output_block *ob,
   for (i = 0; i < lto_cgraph_encoder_size (encoder); i++)
     {
       node = lto_cgraph_encoder_deref (encoder, i);
+      if (node->alias)
+	continue;
       write_symbol (cache, &stream, node->decl, seen, false);
       for (alias = node->same_body; alias; alias = alias->next)
         write_symbol (cache, &stream, alias->decl, seen, true);
@@ -2408,6 +2410,8 @@ produce_symtab (struct output_block *ob,
   for (i = 0; i < lto_varpool_encoder_size (varpool_encoder); i++)
     {
       vnode = lto_varpool_encoder_deref (varpool_encoder, i);
+      if (vnode->alias)
+	continue;
       write_symbol (cache, &stream, vnode->decl, seen, false);
       for (valias = vnode->extra_name; valias; valias = valias->next)
         write_symbol (cache, &stream, valias->decl, seen, true);
