@@ -1,4 +1,13 @@
 2010-07-10  Richard Guenther  <rguenther@suse.de>
+	    Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR debug/44832
+	* tree-ssa-live.c (mark_all_vars_used_1): Set TREE_USED for
+	LABEL_DECL.
+	(remove_unused_scope_block_p): Don't drop TREE_USED LABEL_DECLs
+	unless they have DECL_IGNORED_P set.
+
+2010-07-10  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44889
 	* gimple.c (gimple_fixup_complete_and_incomplete_subtype_p): New
