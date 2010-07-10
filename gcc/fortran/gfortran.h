@@ -631,7 +631,8 @@ typedef struct
     use_assoc:1,		/* Symbol has been use-associated.  */
     use_only:1,			/* Symbol has been use-associated, with ONLY.  */
     use_rename:1,		/* Symbol has been use-associated and renamed.  */
-    imported:1;			/* Symbol has been associated by IMPORT.  */
+    imported:1,			/* Symbol has been associated by IMPORT.  */
+    host_assoc:1;		/* Symbol has been host associated.  */ 
 
   unsigned in_namelist:1, in_common:1, in_equivalence:1;
   unsigned function:1, subroutine:1, procedure:1;

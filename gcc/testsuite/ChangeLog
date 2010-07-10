@@ -1,3 +1,8 @@
+2010-07-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/44582
+	* gfortran.dg/aliasing_array_result_1.f90 : New test.
+
 2010-07-09  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/x86_64/abi/asm-support.S (snapshot): Replace
