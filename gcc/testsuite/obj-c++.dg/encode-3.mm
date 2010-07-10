@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-do run { xfail { "*-*-*" } } } PR44518 */
+
 extern "C" {
 extern void abort (void);
 extern int strcmp (const char *, const char *);
@@ -18,7 +18,7 @@ typedef struct {
   int iscalar;
   long z;
   long long zz;
-  Vec<const char> cv;
+  Vec<const signed char> cv;
 } anonymous;
 
 //Vec<double> dd;
@@ -44,7 +44,7 @@ int main(void) {
   if (strcmp (enc2, "{Vec<double>=dd" L "q}"))
     abort();
 
-  if (strcmp (enc3, "{?=f[10d]i" L "q{Vec<const char>=rcrc" L "q}}"))
+  if (strcmp (enc3, "{?=f[10d]i" L "q{Vec<const signed char>=rcrc" L "q}}"))
     abort();
 
   return 0;
