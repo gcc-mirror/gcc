@@ -1,3 +1,14 @@
+2010-07-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/44773
+	* trans-expr.c (arrayfunc_assign_needs_temporary): No temporary
+	if the lhs has never been host associated, as well as not being
+	use associated, a pointer or a target.
+	* resolve.c (resolve_variable): Mark variables that are host
+	associated.
+	* gfortran.h: Add the host_assoc bit to the symbol_attribute
+	structure.
+
 2010-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/44847

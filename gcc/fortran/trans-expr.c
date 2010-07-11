@@ -5103,6 +5103,11 @@ arrayfunc_assign_needs_temporary (gfc_expr * expr1, gfc_expr * expr2)
       if (!expr2->value.function.esym->attr.contained)
 	return false;
 
+      /* A temporary is not needed if the lhs has never been host
+	 associated and the procedure is contained.  */
+      else if (!sym->attr.host_assoc)
+	return false;
+
       /* A temporary is not needed if the variable is local and not
 	 a pointer, a target or a result.  */
       if (sym->ns->parent
