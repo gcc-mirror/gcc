@@ -260,6 +260,8 @@ gfc_arith_done_1 (void)
 
   for (rp = gfc_real_kinds; rp->kind; rp++)
     mpfr_clears (rp->epsilon, rp->huge, rp->tiny, rp->subnormal, NULL);
+
+  mpfr_free_cache ();
 }
 
 
