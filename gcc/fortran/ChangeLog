@@ -1,6 +1,6 @@
 2010-07-11  Janus Weil  <janus@gcc.gnu.org>
 
-	PR fortran/44689
+	PR fortran/44869
 	* decl.c (build_sym,attr_decl1): Only build the class container if the
 	symbol has sufficient attributes.
 	* expr.c (gfc_check_pointer_assign): Use class_pointer instead of
