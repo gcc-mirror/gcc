@@ -1,3 +1,10 @@
+2010-07-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/44702
+	* module.c (sort_iso_c_rename_list): Remove.
+	(import_iso_c_binding_module,use_iso_fortran_env_module):
+	Allow multiple imports of the same symbol.
+
 2010-07-11  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* arith.c (gfc_arith_done_1): Release mpfr internal caches.
