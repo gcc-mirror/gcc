@@ -1999,7 +1999,7 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
   if (sym->ts.type == BT_CLASS)
     {
       dimension = CLASS_DATA (sym)->attr.dimension;
-      pointer = CLASS_DATA (sym)->attr.pointer;
+      pointer = CLASS_DATA (sym)->attr.class_pointer;
       allocatable = CLASS_DATA (sym)->attr.allocatable;
     }
   else
@@ -2059,7 +2059,7 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 
 	if (comp->ts.type == BT_CLASS)
 	  {
-	    pointer = CLASS_DATA (comp)->attr.pointer;
+	    pointer = CLASS_DATA (comp)->attr.class_pointer;
 	    allocatable = CLASS_DATA (comp)->attr.allocatable;
 	  }
 	else
@@ -2109,7 +2109,7 @@ gfc_expr_attr (gfc_expr *e)
 	  if (sym->ts.type == BT_CLASS)
 	    {
 	      attr.dimension = CLASS_DATA (sym)->attr.dimension;
-	      attr.pointer = CLASS_DATA (sym)->attr.pointer;
+	      attr.pointer = CLASS_DATA (sym)->attr.class_pointer;
 	      attr.allocatable = CLASS_DATA (sym)->attr.allocatable;
 	    }
 	}

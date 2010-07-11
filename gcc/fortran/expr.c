@@ -3306,7 +3306,8 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
     }
 
   if (!pointer && !proc_pointer
-	&& !(lvalue->ts.type == BT_CLASS && CLASS_DATA (lvalue)->attr.pointer))
+      && !(lvalue->ts.type == BT_CLASS
+	   && CLASS_DATA (lvalue)->attr.class_pointer))
     {
       gfc_error ("Pointer assignment to non-POINTER at %L", &lvalue->where);
       return FAILURE;
@@ -3543,7 +3544,7 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_expr *rvalue)
   lvalue.where = sym->declared_at;
 
   if (sym->attr.pointer || sym->attr.proc_pointer
-      || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->attr.pointer
+      || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->attr.class_pointer
 	  && rvalue->expr_type == EXPR_NULL))
     r = gfc_check_pointer_assign (&lvalue, rvalue);
   else

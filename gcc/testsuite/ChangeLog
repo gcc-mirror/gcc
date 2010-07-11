@@ -1,3 +1,8 @@
+2010-07-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44689
+	* gfortran.dg/class_24.f03: New.
+
 2010-07-10  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44889

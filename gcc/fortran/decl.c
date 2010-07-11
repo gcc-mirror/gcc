@@ -1155,13 +1155,10 @@ build_sym (const char *name, gfc_charlen *cl,
 
   sym->attr.implied_index = 0;
 
-  if (sym->ts.type == BT_CLASS)
-    {
-      sym->attr.class_ok = (sym->attr.dummy
-			      || sym->attr.pointer
-			      || sym->attr.allocatable) ? 1 : 0;
-      gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as, false);
-    }
+  if (sym->ts.type == BT_CLASS
+      && (sym->attr.class_ok = sym->attr.dummy || sym->attr.pointer
+			       || sym->attr.allocatable))
+    gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as, false);
 
   return SUCCESS;
 }
@@ -5874,7 +5871,7 @@ attr_decl1 (void)
   /* Update symbol table.  DIMENSION attribute is set in
      gfc_set_array_spec().  For CLASS variables, this must be applied
      to the first component, or '$data' field.  */
-  if (sym->ts.type == BT_CLASS)
+  if (sym->ts.type == BT_CLASS && sym->ts.u.derived->attr.is_class)
     {
       if (gfc_copy_attr (&CLASS_DATA (sym)->attr, &current_attr,&var_locus)
 	  == FAILURE)
@@ -5882,8 +5879,6 @@ attr_decl1 (void)
 	  m = MATCH_ERROR;
 	  goto cleanup;
 	}
-      sym->attr.class_ok = (sym->attr.class_ok || current_attr.allocatable
-			    || current_attr.pointer);
     }
   else
     {
@@ -5894,6 +5889,11 @@ attr_decl1 (void)
 	  goto cleanup;
 	}
     }
+    
+  if (sym->ts.type == BT_CLASS && !sym->attr.class_ok
+      && (sym->attr.class_ok = sym->attr.class_ok || current_attr.allocatable
+			       || current_attr.pointer))
+    gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as, false);
 
   if (gfc_set_array_spec (sym, as, &var_locus) == FAILURE)
     {
