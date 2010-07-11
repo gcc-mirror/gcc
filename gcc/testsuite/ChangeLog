@@ -1,3 +1,21 @@
+2010-07-11  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	Backport from mainline
+	2010-05-27  Jack Howarth  <howarth@bromo.med.uc.edu>
+	* g++.dg/lto/20100302_0.C: Skip on darwin.
+
+	2009-04-30  Steven Bosscher  <steven@gcc.gnu.org>
+	* gcc.dg/lto/20091216-1_0.c: Adjust test case to avoid
+	conflict with darwin crt1.o 'start' symbol.
+
+	2010-05-22  Iain Sandoe  <iains@gcc.gnu.org>
+	* gcc.dg/lto/20090914-2_0.c: XFAIL *-*-darwin*.
+
+	2010-05-25  Jack Howarth <howarth@bromo.med.uc.edu>
+		    Iain Sandoe  <iains@gcc.gnu.org>
+	* g++.dg/abi/mangle40.C: Adjust dg-require-alias syntax.
+	* gcc.dg/lto/20081222_0.c: Require alias support.
+
 2010-07-10  Mikael Pettersson  <mikpe@it.uu.se>
 
 	PR testsuite/44325
