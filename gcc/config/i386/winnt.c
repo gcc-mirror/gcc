@@ -722,7 +722,7 @@ i386_pe_file_end (void)
       drectve_section ();
       for (q = export_head; q != NULL; q = q->next)
 	{
-	  fprintf (asm_out_file, "\t.ascii \" -export:%s%s\"\n",
+	  fprintf (asm_out_file, "\t.ascii \" -export:\\\"%s\\\"%s\"\n",
 		   default_strip_name_encoding (q->name),
 		   (q->is_data ? ",data" : ""));
 	}

@@ -1646,11 +1646,21 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
     s-taprop.adb<s-taprop-mingw.adb
 
     ifeq ($(strip $(filter-out x86_64%,$(arch))),)
-      LIBGNAT_TARGET_PAIRS += \
-        system.ads<system-mingw-x86_64.ads
+      ifeq ($(strip $(MULTISUBDIR)),/32)
+	LIBGNAT_TARGET_PAIRS += \
+	  system.ads<system-mingw.ads
+      else
+	LIBGNAT_TARGET_PAIRS += \
+	  system.ads<system-mingw-x86_64.ads
+      endif
     else
-      LIBGNAT_TARGET_PAIRS += \
-        system.ads<system-mingw.ads
+      ifeq ($(strip $(MULTISUBDIR)),/64)
+	LIBGNAT_TARGET_PAIRS += \
+	  system.ads<system-mingw-x86_64.ads
+      else
+	LIBGNAT_TARGET_PAIRS += \
+	  system.ads<system-mingw.ads
+      endif
     endif
 
     EXTRA_GNATRTL_NONTASKING_OBJS = \

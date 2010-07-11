@@ -1,3 +1,9 @@
+2010-07-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	Merged back from trunk
+	* config/i386/winnt.c (i386_pe_file_end): Quote symbol name
+	in directive -export.
+
 2010-07-09  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44886

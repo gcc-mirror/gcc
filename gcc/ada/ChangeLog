@@ -1,3 +1,10 @@
+2010-07-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	Merged back from trunk
+        PR ada/43731
+        * gcc-interface/Makefile.in: Add rules for multilib x86/x64
+        mingw targets.
+
 2010-04-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (gnat_to_gnu) <N_Assignment_Statement>: Do not
