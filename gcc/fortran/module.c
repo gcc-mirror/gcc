@@ -80,7 +80,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Don't put any single quote (') in MOD_VERSION, 
    if yout want it to be recognized.  */
-#define MOD_VERSION "5"
+#define MOD_VERSION "6"
 
 
 /* Structure that describes a position within a module file.  */
@@ -1675,7 +1675,7 @@ typedef enum
   AB_POINTER_COMP, AB_PRIVATE_COMP, AB_VALUE, AB_VOLATILE, AB_PROTECTED,
   AB_IS_BIND_C, AB_IS_C_INTEROP, AB_IS_ISO_C, AB_ABSTRACT, AB_ZERO_COMP,
   AB_IS_CLASS, AB_PROCEDURE, AB_PROC_POINTER, AB_ASYNCHRONOUS, AB_CODIMENSION,
-  AB_COARRAY_COMP, AB_VTYPE, AB_VTAB, AB_CONTIGUOUS
+  AB_COARRAY_COMP, AB_VTYPE, AB_VTAB, AB_CONTIGUOUS, AB_CLASS_POINTER
 }
 ab_attribute;
 
@@ -1724,6 +1724,7 @@ static const mstring attr_bits[] =
     minit ("PROC_POINTER", AB_PROC_POINTER),
     minit ("VTYPE", AB_VTYPE),
     minit ("VTAB", AB_VTAB),
+    minit ("CLASS_POINTER", AB_CLASS_POINTER),
     minit (NULL, -1)
 };
 
@@ -1818,6 +1819,8 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_OPTIONAL, attr_bits);
       if (attr->pointer)
 	MIO_NAME (ab_attribute) (AB_POINTER, attr_bits);
+      if (attr->class_pointer)
+	MIO_NAME (ab_attribute) (AB_CLASS_POINTER, attr_bits);
       if (attr->is_protected)
 	MIO_NAME (ab_attribute) (AB_PROTECTED, attr_bits);
       if (attr->value)
@@ -1932,6 +1935,9 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      break;
 	    case AB_POINTER:
 	      attr->pointer = 1;
+	      break;
+	    case AB_CLASS_POINTER:
+	      attr->class_pointer = 1;
 	      break;
 	    case AB_PROTECTED:
 	      attr->is_protected = 1;

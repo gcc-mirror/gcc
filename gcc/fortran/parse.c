@@ -2103,7 +2103,7 @@ endType:
 
       /* Look for pointer components.  */
       if (c->attr.pointer
-	  || (c->ts.type == BT_CLASS && CLASS_DATA (c)->attr.pointer)
+	  || (c->ts.type == BT_CLASS && CLASS_DATA (c)->attr.class_pointer)
 	  || (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.pointer_comp))
 	sym->attr.pointer_comp = 1;
 

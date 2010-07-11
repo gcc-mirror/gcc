@@ -1,3 +1,21 @@
+2010-07-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44689
+	* decl.c (build_sym,attr_decl1): Only build the class container if the
+	symbol has sufficient attributes.
+	* expr.c (gfc_check_pointer_assign): Use class_pointer instead of
+	pointer attribute for classes.
+	* match.c (gfc_match_allocate,gfc_match_deallocate): Ditto.
+	* module.c (MOD_VERSION): Bump.
+	(enum ab_attribute,attr_bits): Add AB_CLASS_POINTER.
+	(mio_symbol_attribute): Handle class_pointer attribute.
+	* parse.c (parse_derived): Use class_pointer instead of pointer
+	attribute for classes.
+	* primary.c (gfc_variable_attr,gfc_expr_attr): Ditto.
+	* resolve.c (resolve_structure_cons,resolve_deallocate_expr,
+	resolve_allocate_expr,resolve_fl_derived): Ditto.
+	(resolve_fl_var_and_proc): Check for class_ok attribute.
+
 2010-07-10  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans-io.c (gfc_build_st_parameter): Update calls to

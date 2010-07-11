@@ -905,7 +905,7 @@ resolve_structure_cons (gfc_expr *expr)
 	  && !(comp->attr.pointer || comp->attr.allocatable
 	       || comp->attr.proc_pointer
 	       || (comp->ts.type == BT_CLASS
-		   && (CLASS_DATA (comp)->attr.pointer
+		   && (CLASS_DATA (comp)->attr.class_pointer
 		       || CLASS_DATA (comp)->attr.allocatable))))
 	{
 	  t = FAILURE;
@@ -6096,7 +6096,7 @@ resolve_deallocate_expr (gfc_expr *e)
   if (sym->ts.type == BT_CLASS)
     {
       allocatable = CLASS_DATA (sym)->attr.allocatable;
-      pointer = CLASS_DATA (sym)->attr.pointer;
+      pointer = CLASS_DATA (sym)->attr.class_pointer;
     }
   else
     {
@@ -6120,7 +6120,7 @@ resolve_deallocate_expr (gfc_expr *e)
 	  if (c->ts.type == BT_CLASS)
 	    {
 	      allocatable = CLASS_DATA (c)->attr.allocatable;
-	      pointer = CLASS_DATA (c)->attr.pointer;
+	      pointer = CLASS_DATA (c)->attr.class_pointer;
 	    }
 	  else
 	    {
@@ -6319,7 +6319,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
       if (sym->ts.type == BT_CLASS)
 	{
 	  allocatable = CLASS_DATA (sym)->attr.allocatable;
-	  pointer = CLASS_DATA (sym)->attr.pointer;
+	  pointer = CLASS_DATA (sym)->attr.class_pointer;
 	  dimension = CLASS_DATA (sym)->attr.dimension;
 	  codimension = CLASS_DATA (sym)->attr.codimension;
 	  is_abstract = CLASS_DATA (sym)->attr.abstract;
@@ -6357,7 +6357,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 		if (c->ts.type == BT_CLASS)
 		  {
 		    allocatable = CLASS_DATA (c)->attr.allocatable;
-		    pointer = CLASS_DATA (c)->attr.pointer;
+		    pointer = CLASS_DATA (c)->attr.class_pointer;
 		    dimension = CLASS_DATA (c)->attr.dimension;
 		    codimension = CLASS_DATA (c)->attr.codimension;
 		    is_abstract = CLASS_DATA (c)->attr.abstract;
@@ -9327,7 +9327,8 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
   if (sym->ts.type == BT_CLASS && !(sym->result && sym->result != sym))
     {
       /* F03:C502.  */
-      if (!gfc_type_is_extensible (CLASS_DATA (sym)->ts.u.derived))
+      if (sym->attr.class_ok
+	  && !gfc_type_is_extensible (CLASS_DATA (sym)->ts.u.derived))
 	{
 	  gfc_error ("Type '%s' of CLASS variable '%s' at %L is not extensible",
 		     CLASS_DATA (sym)->ts.u.derived->name, sym->name,
@@ -11093,7 +11094,7 @@ resolve_fl_derived (gfc_symbol *sym)
 	  return FAILURE;
 	}
 
-      if (c->ts.type == BT_CLASS && CLASS_DATA (c)->attr.pointer
+      if (c->ts.type == BT_CLASS && CLASS_DATA (c)->attr.class_pointer
 	  && CLASS_DATA (c)->ts.u.derived->components == NULL
 	  && !CLASS_DATA (c)->ts.u.derived->attr.zero_comp)
 	{
@@ -11105,7 +11106,8 @@ resolve_fl_derived (gfc_symbol *sym)
 
       /* C437.  */
       if (c->ts.type == BT_CLASS
-	  && !(CLASS_DATA (c)->attr.pointer || CLASS_DATA (c)->attr.allocatable))
+	  && !(CLASS_DATA (c)->attr.class_pointer
+	       || CLASS_DATA (c)->attr.allocatable))
 	{
 	  gfc_error ("Component '%s' with CLASS at %L must be allocatable "
 		     "or pointer", c->name, &c->loc);
