@@ -1,3 +1,8 @@
+2010-07-11  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR libfortran/44698
+	* io/unix.c (flush_buf): Add _commit for WIN32.
+
 2010-06-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43298

@@ -405,6 +405,10 @@ buf_flush (unix_stream * s)
   if (s->ndirty != 0)
     return -1;
 
+#ifdef _WIN32
+  _commit (s->fd);
+#endif
+
   return 0;
 }
 
