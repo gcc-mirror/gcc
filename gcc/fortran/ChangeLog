@@ -1,3 +1,7 @@
+2010-07-11  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* arith.c (gfc_arith_done_1): Release mpfr internal caches.
+
 2010-07-11  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44869
