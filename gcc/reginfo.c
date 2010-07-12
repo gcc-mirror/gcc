@@ -142,8 +142,9 @@ reg_set_to_hard_reg_set (HARD_REG_SET *to, const_bitmap from)
     }
 }
 
-/* Function called only once to initialize the above data on reg usage.
-   Once this is done, various switches may override.  */
+/* Function called only once per target_globals to initialize the
+   target_hard_regs structure.  Once this is done, various switches
+   may override.  */
 void
 init_reg_sets (void)
 {
@@ -186,7 +187,6 @@ init_reg_sets (void)
   memcpy (reg_alloc_order, initial_reg_alloc_order, sizeof reg_alloc_order);
 #endif
   memcpy (reg_names, initial_reg_names, sizeof reg_names);
-  memset (global_regs, 0, sizeof global_regs);
 }
 
 /* Initialize may_move_cost and friends for mode M.  */

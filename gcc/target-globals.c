@@ -80,6 +80,7 @@ save_target_globals (void)
   g->gcse = XCNEW (struct target_gcse);
   g->bb_reorder = XCNEW (struct target_bb_reorder);
   restore_target_globals (g);
+  init_reg_sets ();
   target_reinit ();
   return g;
 }
