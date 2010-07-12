@@ -29,12 +29,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "regs.h"
 #include "rtl.h"
+#include "hard-reg-set.h"
 
 #if SWITCHABLE_TARGET
 struct target_globals default_target_globals = {
   &default_target_flag_state,
   &default_target_regs,
-  &default_target_rtl
+  &default_target_rtl,
+  &default_target_hard_regs
 };
 
 struct target_globals *
@@ -46,6 +48,7 @@ save_target_globals (void)
   g->flag_state = XCNEW (struct target_flag_state);
   g->regs = XCNEW (struct target_regs);
   g->rtl = ggc_alloc_cleared_target_rtl ();
+  g->hard_regs = XCNEW (struct target_hard_regs);
   restore_target_globals (g);
   target_reinit ();
   return g;
