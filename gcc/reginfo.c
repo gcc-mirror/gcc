@@ -118,26 +118,8 @@ static const char *const initial_reg_names[] = REGISTER_NAMES;
 /* Array containing all of the register class names.  */
 const char * reg_class_names[] = REG_CLASS_NAMES;
 
-/* 1 if there is a register of given mode.  */
-bool have_regs_of_mode [MAX_MACHINE_MODE];
-
-/* 1 if class does contain register of given mode.  */
-char contains_reg_of_mode [N_REG_CLASSES] [MAX_MACHINE_MODE];
-
-/* Maximum cost of moving from a register in one class to a register in
-   another class.  Based on TARGET_REGISTER_MOVE_COST.  */
-move_table *move_cost[MAX_MACHINE_MODE];
-
-/* Similar, but here we don't have to move if the first index is a subset
-   of the second so in that case the cost is zero.  */
-move_table *may_move_in_cost[MAX_MACHINE_MODE];
-
-/* Similar, but here we don't have to move if the first index is a superset
-   of the second so in that case the cost is zero.  */
-move_table *may_move_out_cost[MAX_MACHINE_MODE];
-
-/* Keep track of the last mode we initialized move costs for.  */
-static int last_mode_for_init_move_cost;
+#define last_mode_for_init_move_cost \
+  (this_target_regs->x_last_mode_for_init_move_cost)
 
 /* Sample MEM values for use by memory_move_secondary_cost.  */
 static GTY(()) rtx top_of_stack[MAX_MACHINE_MODE];
