@@ -68,31 +68,24 @@ struct costs
   int cost[1];
 };
 
-/* Initialized once.  It is a maximal possible size of the allocated
-   struct costs.  */
-static int max_struct_costs_size;
-
-/* Allocated and initialized once, and used to initialize cost values
-   for each insn.  */
-static struct costs *init_cost;
-
-/* Allocated once, and used for temporary purposes.  */
-static struct costs *temp_costs;
-
-/* Allocated once, and used for the cost calculation.  */
-static struct costs *op_costs[MAX_RECOG_OPERANDS];
-static struct costs *this_op_costs[MAX_RECOG_OPERANDS];
+#define max_struct_costs_size \
+  (this_target_ira_int->x_max_struct_costs_size)
+#define init_cost \
+  (this_target_ira_int->x_init_cost)
+#define temp_costs \
+  (this_target_ira_int->x_temp_costs)
+#define op_costs \
+  (this_target_ira_int->x_op_costs)
+#define this_op_costs \
+  (this_target_ira_int->x_this_op_costs)
+#define cost_classes \
+  (this_target_ira_int->x_cost_classes)
 
 /* Costs of each class for each allocno or pseudo.  */
 static struct costs *costs;
 
 /* Accumulated costs of each class for each allocno.  */
 static struct costs *total_allocno_costs;
-
-/* Classes used for cost calculation.  They may be different on
-   different iterations of the cost calculations or in different
-   optimization modes.  */
-static enum reg_class *cost_classes;
 
 /* The size of the previous array.  */
 static int cost_classes_num;
@@ -210,8 +203,7 @@ copy_cost (rtx x, enum machine_mode mode, enum reg_class rclass, bool to_p,
 static void
 record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		    enum machine_mode *modes, const char **constraints,
-		    rtx insn, struct costs **op_costs,
-		    enum reg_class *pref)
+		    rtx insn, enum reg_class *pref)
 {
   int alt;
   int i, j, k;
@@ -945,7 +937,7 @@ record_address_regs (enum machine_mode mode, rtx x, int context,
 
 /* Calculate the costs of insn operands.  */
 static void
-record_operand_costs (rtx insn, struct costs **op_costs, enum reg_class *pref)
+record_operand_costs (rtx insn, enum reg_class *pref)
 {
   const char *constraints[MAX_RECOG_OPERANDS];
   enum machine_mode modes[MAX_RECOG_OPERANDS];
@@ -998,11 +990,11 @@ record_operand_costs (rtx insn, struct costs **op_costs, enum reg_class *pref)
 	xconstraints[i+1] = constraints[i];
 	record_reg_classes (recog_data.n_alternatives, recog_data.n_operands,
 			    recog_data.operand, modes,
-			    xconstraints, insn, op_costs, pref);
+			    xconstraints, insn, pref);
       }
   record_reg_classes (recog_data.n_alternatives, recog_data.n_operands,
 		      recog_data.operand, modes,
-		      constraints, insn, op_costs, pref);
+		      constraints, insn, pref);
 }
 
 
@@ -1047,7 +1039,7 @@ scan_one_insn (rtx insn)
 			   0, MEM, SCRATCH, frequency * 2);
     }
 
-  record_operand_costs (insn, op_costs, pref);
+  record_operand_costs (insn, pref);
 
   /* Now add the cost for each operand to the total costs for its
      allocno.  */
