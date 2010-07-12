@@ -1,5 +1,11 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* reginfo.c (init_reg_sets): Don't zero globals here.  Update comment
+	to say that the function can be called more than once.
+	* target-globals.c (save_target_globals): Call init_reg_sets.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* Makefile.in (bb-reorder.o, target-globals.o): Depend on bb-reorder.h
 	* bb-reorder.h: New file.
 	* bb-reorder.c (default_target_bb_reorder): New variable.
