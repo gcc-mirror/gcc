@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "value-prof.h"
 #include "diagnostic-core.h"
+#include "builtins.h"
 
 #ifndef SLOW_UNALIGNED_ACCESS
 #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) STRICT_ALIGNMENT
@@ -59,6 +60,11 @@ along with GCC; see the file COPYING3.  If not see
 #define PAD_VARARGS_DOWN BYTES_BIG_ENDIAN
 #endif
 static tree do_mpc_arg1 (tree, tree, int (*)(mpc_ptr, mpc_srcptr, mpc_rnd_t));
+
+struct target_builtins default_target_builtins;
+#if SWITCHABLE_TARGET
+struct target_builtins *this_target_builtins = &default_target_builtins;
+#endif
 
 /* Define the names of the builtin function types and codes.  */
 const char *const built_in_class_names[4]
@@ -1249,19 +1255,10 @@ get_memory_rtx (tree exp, tree len)
 
 /* Built-in functions to perform an untyped call and return.  */
 
-/* For each register that may be used for calling a function, this
-   gives a mode used to copy the register's value.  VOIDmode indicates
-   the register is not used for calling a function.  If the machine
-   has register windows, this gives only the outbound registers.
-   INCOMING_REGNO gives the corresponding inbound register.  */
-static enum machine_mode apply_args_mode[FIRST_PSEUDO_REGISTER];
-
-/* For each register that may be used for returning values, this gives
-   a mode used to copy the register's value.  VOIDmode indicates the
-   register is not used for returning values.  If the machine has
-   register windows, this gives only the outbound registers.
-   INCOMING_REGNO gives the corresponding inbound register.  */
-static enum machine_mode apply_result_mode[FIRST_PSEUDO_REGISTER];
+#define apply_args_mode \
+  (this_target_builtins->x_apply_args_mode)
+#define apply_result_mode \
+  (this_target_builtins->x_apply_result_mode)
 
 /* Return the size required for the block returned by __builtin_apply_args,
    and initialize apply_args_mode.  */
