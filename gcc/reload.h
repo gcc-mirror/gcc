@@ -182,6 +182,14 @@ struct target_reload {
   enum machine_mode (x_regno_save_mode
 		     [FIRST_PSEUDO_REGISTER]
 		     [MAX_MOVE_MAX / MIN_UNITS_PER_WORD + 1]);
+
+  /* We will only make a register eligible for caller-save if it can be
+     saved in its widest mode with a simple SET insn as long as the memory
+     address is valid.  We record the INSN_CODE is those insns here since
+     when we emit them, the addresses might not be valid, so they might not
+     be recognized.  */
+  int x_cached_reg_save_code[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
+  int x_cached_reg_restore_code[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
 };
 
 extern struct target_reload default_target_reload;

@@ -45,6 +45,10 @@ along with GCC; see the file COPYING3.  If not see
 
 #define regno_save_mode \
   (this_target_reload->x_regno_save_mode)
+#define cached_reg_save_code \
+  (this_target_reload->x_cached_reg_save_code)
+#define cached_reg_restore_code \
+  (this_target_reload->x_cached_reg_restore_code)
 
 /* For each hard register, a place on the stack where it can be saved,
    if needed.  */
@@ -57,17 +61,6 @@ static int save_slots_num;
 
 /* Allocated slots so far.  */
 static rtx save_slots[FIRST_PSEUDO_REGISTER];
-
-/* We will only make a register eligible for caller-save if it can be
-   saved in its widest mode with a simple SET insn as long as the memory
-   address is valid.  We record the INSN_CODE is those insns here since
-   when we emit them, the addresses might not be valid, so they might not
-   be recognized.  */
-
-static int
-  cached_reg_save_code[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
-static int
-  cached_reg_restore_code[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
 
 /* Set of hard regs currently residing in save area (during insn scan).  */
 
