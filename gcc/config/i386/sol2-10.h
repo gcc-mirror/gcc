@@ -145,7 +145,3 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION i386_solaris_elf_named_section
-
-#undef SUBTARGET_RETURN_IN_MEMORY
-#define SUBTARGET_RETURN_IN_MEMORY(TYPE, FNTYPE) \
-	ix86_sol10_return_in_memory (TYPE, FNTYPE)
