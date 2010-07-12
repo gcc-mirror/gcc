@@ -2006,8 +2006,53 @@ enum global_rtl_index
   GR_MAX
 };
 
-/* Pointers to standard pieces of rtx are stored here.  */
-extern GTY(()) rtx global_rtl[GR_MAX];
+/* Target-dependent globals.  */
+struct GTY(()) target_rtl {
+  /* All references to the hard registers in global_rtl_index go through
+     these unique rtl objects.  On machines where the frame-pointer and
+     arg-pointer are the same register, they use the same unique object.
+
+     After register allocation, other rtl objects which used to be pseudo-regs
+     may be clobbered to refer to the frame-pointer register.
+     But references that were originally to the frame-pointer can be
+     distinguished from the others because they contain frame_pointer_rtx.
+
+     When to use frame_pointer_rtx and hard_frame_pointer_rtx is a little
+     tricky: until register elimination has taken place hard_frame_pointer_rtx
+     should be used if it is being set, and frame_pointer_rtx otherwise.  After
+     register elimination hard_frame_pointer_rtx should always be used.
+     On machines where the two registers are same (most) then these are the
+     same.  */
+  rtx x_global_rtl[GR_MAX];
+
+  /* A unique representation of (REG:Pmode PIC_OFFSET_TABLE_REGNUM).  */
+  rtx x_pic_offset_table_rtx;
+
+  /* A unique representation of (REG:Pmode RETURN_ADDRESS_POINTER_REGNUM).
+     This is used to implement __builtin_return_address for some machines;
+     see for instance the MIPS port.  */
+  rtx x_return_address_pointer_rtx;
+
+  /* Commonly used RTL for hard registers.  These objects are not
+     necessarily unique, so we allocate them separately from global_rtl.
+     They are initialized once per compilation unit, then copied into
+     regno_reg_rtx at the beginning of each function.  */
+  rtx x_initial_regno_reg_rtx[FIRST_PSEUDO_REGISTER];
+};
+
+extern GTY(()) struct target_rtl default_target_rtl;
+#if SWITCHABLE_TARGET
+extern struct target_rtl *this_target_rtl;
+#else
+#define this_target_rtl (&default_target_rtl)
+#endif
+
+#define global_rtl				\
+  (this_target_rtl->x_global_rtl)
+#define pic_offset_table_rtx \
+  (this_target_rtl->x_pic_offset_table_rtx)
+#define return_address_pointer_rtx \
+  (this_target_rtl->x_return_address_pointer_rtx)
 
 /* Standard pieces of rtx, to be substituted directly into things.  */
 #define pc_rtx                  (global_rtl[GR_PC])
@@ -2020,9 +2065,6 @@ extern GTY(()) rtx global_rtl[GR_MAX];
 #define frame_pointer_rtx       (global_rtl[GR_FRAME_POINTER])
 #define hard_frame_pointer_rtx	(global_rtl[GR_HARD_FRAME_POINTER])
 #define arg_pointer_rtx		(global_rtl[GR_ARG_POINTER])
-
-extern GTY(()) rtx pic_offset_table_rtx;
-extern GTY(()) rtx return_address_pointer_rtx;
 
 /* Include the RTL generation functions.  */
 
