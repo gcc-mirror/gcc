@@ -1,3 +1,8 @@
+2010-07-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* expr.c (gfc_get_int_expr): Don't initialize mpfr data twice.
+	* resolve.c (build_default_init_expr): Ditto.
+
 2010-07-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44702

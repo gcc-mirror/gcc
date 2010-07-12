@@ -215,7 +215,7 @@ gfc_get_int_expr (int kind, locus *where, int value)
   p = gfc_get_constant_expr (BT_INTEGER, kind,
 			     where ? where : &gfc_current_locus);
 
-  mpz_init_set_si (p->value.integer, value);
+  mpz_set_si (p->value.integer, value);
 
   return p;
 }
