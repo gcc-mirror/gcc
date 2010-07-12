@@ -1,5 +1,25 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* Makefile.in (target-globals.o): Depend on $(CFGLOOP_H).
+	* cfgloop.h (target_cfgloop): New structure.
+	(default_target_cfgloop): Declare.
+	(this_target_cfgloop): Declare as a variable or define as a macro.
+	(target_avail_regs, target_clobbered_regs, target_res_regs)
+	(target_reg_cost, target_spill_cost): Redefine as macros.
+	* cfgloopanal.c (default_target_cfgloop): New variable.
+	(this_target_cfgloop): New conditional variable.
+	(target_avail_regs, target_clobbered_regs, target_res_regs)
+	(target_reg_cost, target_spill_cost): Delete.
+	* target-globals.h (this_target_cfgloop): Declare.
+	(target_globals): Add a cfgloop field.
+	(restore_target_globals): Copy the cfgloop field to
+	this_target_cfgloop.
+	* target-globals.c: Include cfgloop.h.
+	(default_target_globals): Initialize the cfgloop field.
+	(save_target_globals): Likewise.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* regs.h (target_regs): Add x_direct_load, x_direct_store and
 	x_float_extend_from_mem.
 	(direct_load, direct_store, float_extend_from_mem): New macros.
