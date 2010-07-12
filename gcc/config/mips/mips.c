@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "bitmap.h"
 #include "diagnostic.h"
+#include "target-globals.h"
 
 /* True if X is an UNSPEC wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
@@ -567,6 +568,9 @@ static const char *mips_lo_relocs[NUM_SYMBOL_TYPES];
 
 /* Likewise for HIGHs.  */
 static const char *mips_hi_relocs[NUM_SYMBOL_TYPES];
+
+/* Target state for MIPS16.  */
+struct target_globals *mips16_globals;
 
 /* Index R is the smallest register class that contains register R.  */
 const enum reg_class mips_regno_to_class[FIRST_PSEUDO_REGISTER] = {
@@ -15200,9 +15204,15 @@ mips_set_mips16_mode (int mips16_p)
   /* (Re)initialize MIPS target internals for new ISA.  */
   mips_init_relocs ();
 
-  if (was_mips16_p >= 0 || was_mips16_pch_p >= 0)
-    /* Reinitialize target-dependent state.  */
-    target_reinit ();
+  if (mips16_p)
+    {
+      if (!mips16_globals)
+	mips16_globals = save_target_globals ();
+      else
+	restore_target_globals (mips16_globals);
+    }
+  else
+    restore_target_globals (&default_target_globals);
 
   was_mips16_p = mips16_p;
   was_mips16_pch_p = mips16_p;

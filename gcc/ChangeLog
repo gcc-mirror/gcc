@@ -1,5 +1,14 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips.h (mips16_globals): Declare.
+	(SWITCHABLE_TARGET): Define.
+	* config/mips/mips.c: Include target-globals.h.
+	(mips16_globals): New variable.
+	(mips_set_mips16_mode): Use save_target_globals and
+	restore_target_globals instead of target_reinit.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* reginfo.c (init_reg_sets): Don't zero globals here.  Update comment
 	to say that the function can be called more than once.
 	* target-globals.c (save_target_globals): Call init_reg_sets.
