@@ -1,5 +1,14 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* Makefile.in (reginfo.o): Don't depend on $(GGC_H) or gt-reginfo.h.
+	(GTFILES): Remove reginfo.c.
+	* rtl.h (target_rtl): Add x_top_of_stack.
+	(top_of_stack): New macro.
+	* reginfo.c: Don't include ggc.h or gt-reginfo.h.
+	(top_of_stack): Delete.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* regs.h (target_regs): Add x_hard_regs_of_mode, x_contains_reg_of_mode,
 	x_move_cost, x_may_move_in_cost, x_may_move_out_cost and
 	x_last_mode_for_init_move_cost.

@@ -46,7 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "diagnostic-core.h"
 #include "output.h"
-#include "ggc.h"
 #include "timevar.h"
 #include "hashtab.h"
 #include "target.h"
@@ -120,9 +119,6 @@ const char * reg_class_names[] = REG_CLASS_NAMES;
 
 #define last_mode_for_init_move_cost \
   (this_target_regs->x_last_mode_for_init_move_cost)
-
-/* Sample MEM values for use by memory_move_secondary_cost.  */
-static GTY(()) rtx top_of_stack[MAX_MACHINE_MODE];
 
 /* No more global register variables may be declared; true once
    reginfo has been initialized.  */
@@ -1347,5 +1343,3 @@ finish_subregs_of_mode (void)
 }
 
 #endif /* CANNOT_CHANGE_MODE_CLASS */
-
-#include "gt-reginfo.h"
