@@ -232,10 +232,6 @@ enum excess_precision
 /* The excess precision specified on the command line, or defaulted by
    the front end.  */
 extern enum excess_precision flag_excess_precision_cmdline;
-
-/* The excess precision currently in effect.  */
-extern enum excess_precision flag_excess_precision;
-
 
 /* Other basic status info about current function.  */
 
@@ -252,6 +248,9 @@ struct target_flag_state {
   int x_align_labels_log;
   int x_align_labels_max_skip;
   int x_align_functions_log;
+
+  /* The excess precision currently in effect.  */
+  enum excess_precision x_flag_excess_precision;
 };
 
 extern struct target_flag_state default_target_flag_state;
@@ -275,6 +274,8 @@ extern struct target_flag_state *this_target_flag_state;
   (this_target_flag_state->x_align_labels_max_skip)
 #define align_functions_log \
   (this_target_flag_state->x_align_functions_log)
+#define flag_excess_precision \
+  (this_target_flag_state->x_flag_excess_precision)
 
 /* Nonzero if subexpressions must be evaluated from left-to-right.  */
 extern int flag_evaluation_order;
