@@ -1,5 +1,20 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* Makefile.in (bb-reorder.o, target-globals.o): Depend on bb-reorder.h
+	* bb-reorder.h: New file.
+	* bb-reorder.c (default_target_bb_reorder): New variable.
+	(this_target_bb_reorder): New conditional variable.
+	(uncond_jump_length): Redefine as a macro.
+	* target-globals.h (this_target_bb_reorder): Declare.
+	(target_globals): Add a bb_reorder field.
+	(restore_target_globals): Copy the bb_reorder field to
+	this_target_bb-reorder.
+	* target-globals.c: Include bb-reorder.h.
+	(default_target_globals): Initialize the bb_reorder field.
+	(save_target_globals): Likewise.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* Makefile.in (gcse.o, target-globals.o): Depend on gcse.h..
 	* gcse.h: New file.
 	* gcse.c: Include gcse.h.
