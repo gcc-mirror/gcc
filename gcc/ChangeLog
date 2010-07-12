@@ -1,5 +1,22 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* Makefile.in (expmed.o, target-globals.o): Depend on expmed.h.
+	* expmed.h: New file.
+	* expmed.c (default_target_costs): New variable.
+	(this_target_costs): New conditional variable.
+	(sdiv_pow2_cheap, smod_pow2_cheap, zero_cost, add_cost, neg_cost)
+	(shift_cost, shiftadd_cost, shiftsub0_cost, shiftsub1_cost, mul_cost)
+	(sdiv_cost, udiv_cost, mul_widen_cost, mul_highpart_cost): Delete.
+	* target-globals.h (this_target_expmed): Declare.
+	(target_globals): Add a expmed field.
+	(restore_target_globals): Copy the expmed field to
+	this_target_expmed.
+	* target-globals.c: Include expmed.h.
+	(default_target_globals): Initialize the expmed field.
+	(save_target_globals): Likewise.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* Makefile.in (target-globals.o): Depend on reload.h.
 	* reload.h (target_reload): New structure.
 	(default_target_reload): Declare.

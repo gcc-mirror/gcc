@@ -38,6 +38,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "df.h"
 #include "target.h"
+#include "expmed.h"
+
+struct target_expmed default_target_expmed;
+#if SWITCHABLE_TARGET
+struct target_expmed *this_target_expmed = &default_target_expmed;
+#endif
 
 static void store_fixed_bit_field (rtx, unsigned HOST_WIDE_INT,
 				   unsigned HOST_WIDE_INT,
@@ -58,14 +64,6 @@ static rtx expand_sdiv_pow2 (enum machine_mode, rtx, HOST_WIDE_INT);
 
 /* Test whether a value is zero of a power of two.  */
 #define EXACT_POWER_OF_2_OR_ZERO_P(x) (((x) & ((x) - 1)) == 0)
-
-/* Nonzero means divides or modulus operations are relatively cheap for
-   powers of two, so don't use branches; emit the operation instead.
-   Usually, this will mean that the MD file will emit non-branch
-   sequences.  */
-
-static bool sdiv_pow2_cheap[2][NUM_MACHINE_MODES];
-static bool smod_pow2_cheap[2][NUM_MACHINE_MODES];
 
 #ifndef SLOW_UNALIGNED_ACCESS
 #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) STRICT_ALIGNMENT
@@ -95,21 +93,6 @@ static bool smod_pow2_cheap[2][NUM_MACHINE_MODES];
 #define CODE_FOR_extzv	CODE_FOR_nothing
 #define gen_extzv(a,b,c,d) NULL_RTX
 #endif
-
-/* Cost of various pieces of RTL.  Note that some of these are indexed by
-   shift count and some by mode.  */
-static int zero_cost[2];
-static int add_cost[2][NUM_MACHINE_MODES];
-static int neg_cost[2][NUM_MACHINE_MODES];
-static int shift_cost[2][NUM_MACHINE_MODES][MAX_BITS_PER_WORD];
-static int shiftadd_cost[2][NUM_MACHINE_MODES][MAX_BITS_PER_WORD];
-static int shiftsub0_cost[2][NUM_MACHINE_MODES][MAX_BITS_PER_WORD];
-static int shiftsub1_cost[2][NUM_MACHINE_MODES][MAX_BITS_PER_WORD];
-static int mul_cost[2][NUM_MACHINE_MODES];
-static int sdiv_cost[2][NUM_MACHINE_MODES];
-static int udiv_cost[2][NUM_MACHINE_MODES];
-static int mul_widen_cost[2][NUM_MACHINE_MODES];
-static int mul_highpart_cost[2][NUM_MACHINE_MODES];
 
 void
 init_expmed (void)
