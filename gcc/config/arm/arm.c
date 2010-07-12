@@ -14329,7 +14329,8 @@ arm_get_frame_offsets (void)
 	     generates better code on Thumb-2 by avoiding the need to
 	     use 32-bit push/pop instructions.  */
 	  if (!crtl->tail_call_emit
-	      && arm_size_return_regs () <= 12)
+	      && arm_size_return_regs () <= 12
+	      && (offsets->saved_regs_mask & (1 << 3)) == 0)
 	    {
 	      reg = 3;
 	    }
