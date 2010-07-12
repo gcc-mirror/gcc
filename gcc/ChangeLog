@@ -1,3 +1,9 @@
+2010-07-12  Andi Kleen  <ak@linux.intel.com>
+
+	* lto-symtab.c (lto_symtab_merge_decls_1): Use fatal_error
+	instead of gcc_assert to print better error message for multiple
+	prevailing defs.
+
 2010-07-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_asm_output_function_label): Change format
