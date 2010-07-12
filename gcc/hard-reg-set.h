@@ -582,11 +582,6 @@ hard_reg_set_iter_next (hard_reg_set_iterator *iter, unsigned *regno)
 
 extern char global_regs[FIRST_PSEUDO_REGISTER];
 
-/* Call used hard registers which can not be saved because there is no
-   insn for this.  */
-
-extern HARD_REG_SET no_caller_save_reg_set;
-
 struct target_hard_regs {
   /* Indexed by hard register number, contains 1 for registers
      that are fixed use (stack pointer, pc, frame pointer, etc.;.
@@ -621,6 +616,10 @@ struct target_hard_regs {
      that are actually preserved.  We know for sure that those associated
      with the local stack frame are safe, but scant others.  */
   HARD_REG_SET x_regs_invalidated_by_call;
+
+  /* Call used hard registers which can not be saved because there is no
+     insn for this.  */
+  HARD_REG_SET x_no_caller_save_reg_set;
 
   /* Table of register numbers in the order in which to try to use them.  */
   int x_reg_alloc_order[FIRST_PSEUDO_REGISTER];
@@ -674,6 +673,8 @@ extern struct target_hard_regs *this_target_hard_regs;
   (this_target_hard_regs->x_call_fixed_reg_set)
 #define regs_invalidated_by_call \
   (this_target_hard_regs->x_regs_invalidated_by_call)
+#define no_caller_save_reg_set \
+  (this_target_hard_regs->x_no_caller_save_reg_set)
 #define reg_alloc_order \
   (this_target_hard_regs->x_reg_alloc_order)
 #define inv_reg_alloc_order \

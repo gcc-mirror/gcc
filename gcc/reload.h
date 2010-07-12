@@ -171,6 +171,17 @@ struct target_reload {
      means that (MEM (MEM (REG n))) is also valid if (REG n) does not get
      a hard register.  */
   bool x_spill_indirect_levels;
+
+  /* True if caller-save has been reinitialized.  */
+  bool x_caller_save_initialized_p;
+
+  /* Modes for each hard register that we can save.  The smallest mode is wide
+     enough to save the entire contents of the register.  When saving the
+     register because it is live we first try to save in multi-register modes.
+     If that is not possible the save is done one register at a time.  */
+  enum machine_mode (x_regno_save_mode
+		     [FIRST_PSEUDO_REGISTER]
+		     [MAX_MOVE_MAX / MIN_UNITS_PER_WORD + 1]);
 };
 
 extern struct target_reload default_target_reload;
@@ -184,6 +195,8 @@ extern struct target_reload *this_target_reload;
   (this_target_reload->x_indirect_symref_ok)
 #define double_reg_address_ok \
   (this_target_reload->x_double_reg_address_ok)
+#define caller_save_initialized_p \
+  (this_target_reload->x_caller_save_initialized_p)
 
 extern GTY (()) VEC(rtx,gc) *reg_equiv_memory_loc_vec;
 extern rtx *reg_equiv_constant;
@@ -376,9 +389,6 @@ extern void calculate_elim_costs_all_insns (void);
 
 /* Deallocate the reload register used by reload number R.  */
 extern void deallocate_reload_reg (int r);
-
-/* True if caller-save has been reinitialized.  */
-extern bool caller_save_initialized_p;
 
 /* Functions in caller-save.c:  */
 

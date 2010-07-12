@@ -1,5 +1,18 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* defaults.h (MAX_MOVE_MAX, MIN_UNITS_PER_WORD): Define if not defined.
+	* libgcc2.c (MIN_UNITS_PER_WORD): Delete.
+	* hard-reg-set.h (target_hard_regs): Add x_no_caller_save_reg_set.
+	(no_caller_save_reg_set): Redefine as a macro.
+	* reload.h (target_reload): Add x_caller_save_initialized_p and
+	x_regno_save_mode.
+	(caller_save_initialized_p): Redefine as a macro.
+	* caller-save.c (caller_save_initialized_p, no_caller_save_reg_set)
+	(MAX_MOVE_MAX, MIN_UNITS_PER_WORD): Delete.
+	(regno_save_mode): Redefine as a macro.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* Makefile.in (expmed.o, target-globals.o): Depend on expmed.h.
 	* expmed.h: New file.
 	* expmed.c (default_target_costs): New variable.
