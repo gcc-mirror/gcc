@@ -45,25 +45,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "target.h"
 
-/* Each optab contains info on how this target machine
-   can perform a particular operation
-   for all sizes and kinds of operands.
-
-   The operation to be performed is often specified
-   by passing one of these optabs as an argument.
-
-   See expr.h for documentation of these optabs.  */
-
-struct optab_d optab_table[OTI_MAX];
+struct target_optabs default_target_optabs;
+#if SWITCHABLE_TARGET
+struct target_optabs *this_target_optabs = &default_target_optabs;
+#endif
 
 rtx libfunc_table[LTI_MAX];
-
-/* Tables of patterns for converting one mode to another.  */
-struct convert_optab_d convert_optab_table[COI_MAX];
-
-/* Tables of patterns for direct optabs (i.e. those which cannot be
-   implemented using a libcall).  */
-struct direct_optab_d direct_optab_table[(int) DOI_MAX];
 
 /* Contains the optab used for each rtx code.  */
 optab code_to_optab[NUM_RTX_CODE + 1];

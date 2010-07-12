@@ -371,8 +371,6 @@ enum optab_index
   OTI_MAX
 };
 
-extern struct optab_d optab_table[OTI_MAX];
-
 #define ssadd_optab (&optab_table[OTI_ssadd])
 #define usadd_optab (&optab_table[OTI_usadd])
 #define sssub_optab (&optab_table[OTI_sssub])
@@ -574,8 +572,6 @@ enum convert_optab_index
   COI_MAX
 };
 
-extern struct convert_optab_d convert_optab_table[COI_MAX];
-
 #define sext_optab (&convert_optab_table[COI_sext])
 #define zext_optab (&convert_optab_table[COI_zext])
 #define trunc_optab (&convert_optab_table[COI_trunc])
@@ -676,8 +672,6 @@ struct direct_optab_d
 };
 typedef struct direct_optab_d *direct_optab;
 
-extern struct direct_optab_d direct_optab_table[(int) DOI_MAX];
-
 #ifdef HAVE_conditional_move
 #define movcc_optab (&direct_optab_table[(int) DOI_movcc])
 #endif
@@ -714,6 +708,33 @@ extern struct direct_optab_d direct_optab_table[(int) DOI_MAX];
   (&direct_optab_table[(int) DOI_sync_lock_test_and_set])
 #define sync_lock_release_optab \
   (&direct_optab_table[(int) DOI_sync_lock_release])
+
+/* Target-dependent globals.  */
+struct target_optabs {
+  /* Tables of patterns that may have an associated libcall.  */
+  struct optab_d x_optab_table[(int) OTI_MAX];
+
+  /* Tables of patterns for converting one mode to another.  */
+  struct convert_optab_d x_convert_optab_table[(int) COI_MAX];
+
+  /* Tables of patterns for direct optabs (i.e. those which cannot be
+     implemented using a libcall).  */
+  struct direct_optab_d x_direct_optab_table[(int) DOI_MAX];
+};
+
+extern struct target_optabs default_target_optabs;
+#if SWITCHABLE_TARGET
+extern struct target_optabs *this_target_optabs;
+#else
+#define this_target_optabs (&default_target_optabs)
+#endif
+
+#define optab_table \
+  (this_target_optabs->x_optab_table)
+#define convert_optab_table \
+  (this_target_optabs->x_convert_optab_table)
+#define direct_optab_table \
+  (this_target_optabs->x_direct_optab_table)
 
 /* Define functions given in optabs.c.  */
 
