@@ -83,21 +83,21 @@ struct processor_costs ix86_size_cost = {/* costs for tuning for size */
   COSTS_N_BYTES (2),			/* variable shift costs */
   COSTS_N_BYTES (3),			/* constant shift costs */
   {COSTS_N_BYTES (3),			/* cost of starting multiply for QI */
-   COSTS_N_BYTES (3),			/*                               HI */
-   COSTS_N_BYTES (3),			/*                               SI */
-   COSTS_N_BYTES (3),			/*                               DI */
-   COSTS_N_BYTES (5)},			/*                            other */
+   COSTS_N_BYTES (3),			/*				 HI */
+   COSTS_N_BYTES (3),			/*				 SI */
+   COSTS_N_BYTES (3),			/*				 DI */
+   COSTS_N_BYTES (5)},			/*			      other */
   0,					/* cost of multiply per each bit set */
   {COSTS_N_BYTES (3),			/* cost of a divide/mod for QI */
-   COSTS_N_BYTES (3),			/*                          HI */
-   COSTS_N_BYTES (3),			/*                          SI */
-   COSTS_N_BYTES (3),			/*                          DI */
-   COSTS_N_BYTES (5)},			/*                       other */
+   COSTS_N_BYTES (3),			/*			    HI */
+   COSTS_N_BYTES (3),			/*			    SI */
+   COSTS_N_BYTES (3),			/*			    DI */
+   COSTS_N_BYTES (5)},			/*			    other */
   COSTS_N_BYTES (3),			/* cost of movsx */
   COSTS_N_BYTES (3),			/* cost of movzx */
   0,					/* "large" insn */
   2,					/* MOVE_RATIO */
-  2,					/* cost for loading QImode using movzbl */
+  2,				     /* cost for loading QImode using movzbl */
   {2, 2, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -133,17 +133,17 @@ struct processor_costs ix86_size_cost = {/* costs for tuning for size */
    {rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}}},
   {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
    {rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}}},
-  1,                                    /* scalar_stmt_cost.  */
-  1,                                    /* scalar load_cost.  */
-  1,                                    /* scalar_store_cost.  */
-  1,                                    /* vec_stmt_cost.  */
-  1,                                    /* vec_to_scalar_cost.  */
-  1,                                    /* scalar_to_vec_cost.  */
-  1,                                    /* vec_align_load_cost.  */
-  1,                                    /* vec_unalign_load_cost.  */
-  1,                                    /* vec_store_cost.  */
-  1,                                    /* cond_taken_branch_cost.  */
-  1,                                    /* cond_not_taken_branch_cost.  */
+  1,					/* scalar_stmt_cost.  */
+  1,					/* scalar load_cost.  */
+  1,					/* scalar_store_cost.  */
+  1,					/* vec_stmt_cost.  */
+  1,					/* vec_to_scalar_cost.  */
+  1,					/* scalar_to_vec_cost.  */
+  1,					/* vec_align_load_cost.  */
+  1,					/* vec_unalign_load_cost.  */
+  1,					/* vec_store_cost.  */
+  1,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
 };
 
 /* Processor costs (relative to an add) */
@@ -154,21 +154,21 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   COSTS_N_INSNS (3),			/* variable shift costs */
   COSTS_N_INSNS (2),			/* constant shift costs */
   {COSTS_N_INSNS (6),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (6),			/*                               HI */
-   COSTS_N_INSNS (6),			/*                               SI */
-   COSTS_N_INSNS (6),			/*                               DI */
-   COSTS_N_INSNS (6)},			/*                               other */
+   COSTS_N_INSNS (6),			/*				 HI */
+   COSTS_N_INSNS (6),			/*				 SI */
+   COSTS_N_INSNS (6),			/*				 DI */
+   COSTS_N_INSNS (6)},			/*			      other */
   COSTS_N_INSNS (1),			/* cost of multiply per each bit set */
   {COSTS_N_INSNS (23),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (23),			/*                          HI */
-   COSTS_N_INSNS (23),			/*                          SI */
-   COSTS_N_INSNS (23),			/*                          DI */
-   COSTS_N_INSNS (23)},			/*                          other */
+   COSTS_N_INSNS (23),			/*			    HI */
+   COSTS_N_INSNS (23),			/*			    SI */
+   COSTS_N_INSNS (23),			/*			    DI */
+   COSTS_N_INSNS (23)},			/*			    other */
   COSTS_N_INSNS (3),			/* cost of movsx */
   COSTS_N_INSNS (2),			/* cost of movzx */
   15,					/* "large" insn */
   3,					/* MOVE_RATIO */
-  4,					/* cost for loading QImode using movzbl */
+  4,				     /* cost for loading QImode using movzbl */
   {2, 4, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -204,17 +204,17 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
    DUMMY_STRINGOP_ALGS},
   {{rep_prefix_1_byte, {{-1, rep_prefix_1_byte}}},
    DUMMY_STRINGOP_ALGS},
-  1,                                    /* scalar_stmt_cost.  */
-  1,                                    /* scalar load_cost.  */
-  1,                                    /* scalar_store_cost.  */
-  1,                                    /* vec_stmt_cost.  */
-  1,                                    /* vec_to_scalar_cost.  */
-  1,                                    /* scalar_to_vec_cost.  */
-  1,                                    /* vec_align_load_cost.  */
-  2,                                    /* vec_unalign_load_cost.  */
-  1,                                    /* vec_store_cost.  */
-  3,                                    /* cond_taken_branch_cost.  */
-  1,                                    /* cond_not_taken_branch_cost.  */
+  1,					/* scalar_stmt_cost.  */
+  1,					/* scalar load_cost.  */
+  1,					/* scalar_store_cost.  */
+  1,					/* vec_stmt_cost.  */
+  1,					/* vec_to_scalar_cost.  */
+  1,					/* scalar_to_vec_cost.  */
+  1,					/* vec_align_load_cost.  */
+  2,					/* vec_unalign_load_cost.  */
+  1,					/* vec_store_cost.  */
+  3,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -224,21 +224,21 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   COSTS_N_INSNS (3),			/* variable shift costs */
   COSTS_N_INSNS (2),			/* constant shift costs */
   {COSTS_N_INSNS (12),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (12),			/*                               HI */
-   COSTS_N_INSNS (12),			/*                               SI */
-   COSTS_N_INSNS (12),			/*                               DI */
-   COSTS_N_INSNS (12)},			/*                               other */
+   COSTS_N_INSNS (12),			/*				 HI */
+   COSTS_N_INSNS (12),			/*				 SI */
+   COSTS_N_INSNS (12),			/*				 DI */
+   COSTS_N_INSNS (12)},			/*			      other */
   1,					/* cost of multiply per each bit set */
   {COSTS_N_INSNS (40),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (40),			/*                          HI */
-   COSTS_N_INSNS (40),			/*                          SI */
-   COSTS_N_INSNS (40),			/*                          DI */
-   COSTS_N_INSNS (40)},			/*                          other */
+   COSTS_N_INSNS (40),			/*			    HI */
+   COSTS_N_INSNS (40),			/*			    SI */
+   COSTS_N_INSNS (40),			/*			    DI */
+   COSTS_N_INSNS (40)},			/*			    other */
   COSTS_N_INSNS (3),			/* cost of movsx */
   COSTS_N_INSNS (2),			/* cost of movzx */
   15,					/* "large" insn */
   3,					/* MOVE_RATIO */
-  4,					/* cost for loading QImode using movzbl */
+  4,				     /* cost for loading QImode using movzbl */
   {2, 4, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -276,17 +276,17 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
    DUMMY_STRINGOP_ALGS},
   {{rep_prefix_4_byte, {{-1, rep_prefix_4_byte}}},
    DUMMY_STRINGOP_ALGS},
-  1,                                    /* scalar_stmt_cost.  */
-  1,                                    /* scalar load_cost.  */
-  1,                                    /* scalar_store_cost.  */
-  1,                                    /* vec_stmt_cost.  */
-  1,                                    /* vec_to_scalar_cost.  */
-  1,                                    /* scalar_to_vec_cost.  */
-  1,                                    /* vec_align_load_cost.  */
-  2,                                    /* vec_unalign_load_cost.  */
-  1,                                    /* vec_store_cost.  */
-  3,                                    /* cond_taken_branch_cost.  */
-  1,                                    /* cond_not_taken_branch_cost.  */
+  1,					/* scalar_stmt_cost.  */
+  1,					/* scalar load_cost.  */
+  1,					/* scalar_store_cost.  */
+  1,					/* vec_stmt_cost.  */
+  1,					/* vec_to_scalar_cost.  */
+  1,					/* scalar_to_vec_cost.  */
+  1,					/* vec_align_load_cost.  */
+  2,					/* vec_unalign_load_cost.  */
+  1,					/* vec_store_cost.  */
+  3,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -296,21 +296,21 @@ struct processor_costs pentium_cost = {
   COSTS_N_INSNS (4),			/* variable shift costs */
   COSTS_N_INSNS (1),			/* constant shift costs */
   {COSTS_N_INSNS (11),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (11),			/*                               HI */
-   COSTS_N_INSNS (11),			/*                               SI */
-   COSTS_N_INSNS (11),			/*                               DI */
-   COSTS_N_INSNS (11)},			/*                               other */
+   COSTS_N_INSNS (11),			/*				 HI */
+   COSTS_N_INSNS (11),			/*				 SI */
+   COSTS_N_INSNS (11),			/*				 DI */
+   COSTS_N_INSNS (11)},			/*			      other */
   0,					/* cost of multiply per each bit set */
   {COSTS_N_INSNS (25),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (25),			/*                          HI */
-   COSTS_N_INSNS (25),			/*                          SI */
-   COSTS_N_INSNS (25),			/*                          DI */
-   COSTS_N_INSNS (25)},			/*                          other */
+   COSTS_N_INSNS (25),			/*			    HI */
+   COSTS_N_INSNS (25),			/*			    SI */
+   COSTS_N_INSNS (25),			/*			    DI */
+   COSTS_N_INSNS (25)},			/*			    other */
   COSTS_N_INSNS (3),			/* cost of movsx */
   COSTS_N_INSNS (2),			/* cost of movzx */
   8,					/* "large" insn */
   6,					/* MOVE_RATIO */
-  6,					/* cost for loading QImode using movzbl */
+  6,				     /* cost for loading QImode using movzbl */
   {2, 4, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -346,17 +346,17 @@ struct processor_costs pentium_cost = {
    DUMMY_STRINGOP_ALGS},
   {{libcall, {{-1, rep_prefix_4_byte}}},
    DUMMY_STRINGOP_ALGS},
-  1,                                    /* scalar_stmt_cost.  */
-  1,                                    /* scalar load_cost.  */
-  1,                                    /* scalar_store_cost.  */
-  1,                                    /* vec_stmt_cost.  */
-  1,                                    /* vec_to_scalar_cost.  */
-  1,                                    /* scalar_to_vec_cost.  */
-  1,                                    /* vec_align_load_cost.  */
-  2,                                    /* vec_unalign_load_cost.  */
-  1,                                    /* vec_store_cost.  */
-  3,                                    /* cond_taken_branch_cost.  */
-  1,                                    /* cond_not_taken_branch_cost.  */
+  1,					/* scalar_stmt_cost.  */
+  1,					/* scalar load_cost.  */
+  1,					/* scalar_store_cost.  */
+  1,					/* vec_stmt_cost.  */
+  1,					/* vec_to_scalar_cost.  */
+  1,					/* scalar_to_vec_cost.  */
+  1,					/* vec_align_load_cost.  */
+  2,					/* vec_unalign_load_cost.  */
+  1,					/* vec_store_cost.  */
+  3,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -366,21 +366,21 @@ struct processor_costs pentiumpro_cost = {
   COSTS_N_INSNS (1),			/* variable shift costs */
   COSTS_N_INSNS (1),			/* constant shift costs */
   {COSTS_N_INSNS (4),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*                               HI */
-   COSTS_N_INSNS (4),			/*                               SI */
-   COSTS_N_INSNS (4),			/*                               DI */
-   COSTS_N_INSNS (4)},			/*                               other */
+   COSTS_N_INSNS (4),			/*				 HI */
+   COSTS_N_INSNS (4),			/*				 SI */
+   COSTS_N_INSNS (4),			/*				 DI */
+   COSTS_N_INSNS (4)},			/*			      other */
   0,					/* cost of multiply per each bit set */
   {COSTS_N_INSNS (17),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (17),			/*                          HI */
-   COSTS_N_INSNS (17),			/*                          SI */
-   COSTS_N_INSNS (17),			/*                          DI */
-   COSTS_N_INSNS (17)},			/*                          other */
+   COSTS_N_INSNS (17),			/*			    HI */
+   COSTS_N_INSNS (17),			/*			    SI */
+   COSTS_N_INSNS (17),			/*			    DI */
+   COSTS_N_INSNS (17)},			/*			    other */
   COSTS_N_INSNS (1),			/* cost of movsx */
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   6,					/* MOVE_RATIO */
-  2,					/* cost for loading QImode using movzbl */
+  2,				     /* cost for loading QImode using movzbl */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -412,28 +412,28 @@ struct processor_costs pentiumpro_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (56),			/* cost of FSQRT instruction.  */
-  /* PentiumPro has optimized rep instructions for blocks aligned by 8 bytes (we ensure
-     the alignment).  For small blocks inline loop is still a noticeable win, for bigger
-     blocks either rep movsl or rep movsb is way to go.  Rep movsb has apparently
-     more expensive startup time in CPU, but after 4K the difference is down in the noise.
-   */
+  /* PentiumPro has optimized rep instructions for blocks aligned by 8 bytes
+     (we ensure the alignment).  For small blocks inline loop is still a
+     noticeable win, for bigger blocks either rep movsl or rep movsb is
+     way to go.  Rep movsb has apparently more expensive startup time in CPU,
+     but after 4K the difference is down in the noise.  */
   {{rep_prefix_4_byte, {{128, loop}, {1024, unrolled_loop},
 			{8192, rep_prefix_4_byte}, {-1, rep_prefix_1_byte}}},
    DUMMY_STRINGOP_ALGS},
   {{rep_prefix_4_byte, {{1024, unrolled_loop},
-  		        {8192, rep_prefix_4_byte}, {-1, libcall}}},
+  			{8192, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
-  1,                                    /* scalar_stmt_cost.  */
-  1,                                    /* scalar load_cost.  */
-  1,                                    /* scalar_store_cost.  */
-  1,                                    /* vec_stmt_cost.  */
-  1,                                    /* vec_to_scalar_cost.  */
-  1,                                    /* scalar_to_vec_cost.  */
-  1,                                    /* vec_align_load_cost.  */
-  2,                                    /* vec_unalign_load_cost.  */
-  1,                                    /* vec_store_cost.  */
-  3,                                    /* cond_taken_branch_cost.  */
-  1,                                    /* cond_not_taken_branch_cost.  */
+  1,					/* scalar_stmt_cost.  */
+  1,					/* scalar load_cost.  */
+  1,					/* scalar_store_cost.  */
+  1,					/* vec_stmt_cost.  */
+  1,					/* vec_to_scalar_cost.  */
+  1,					/* scalar_to_vec_cost.  */
+  1,					/* vec_align_load_cost.  */
+  2,					/* vec_unalign_load_cost.  */
+  1,					/* vec_store_cost.  */
+  3,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -443,21 +443,21 @@ struct processor_costs geode_cost = {
   COSTS_N_INSNS (2),			/* variable shift costs */
   COSTS_N_INSNS (1),			/* constant shift costs */
   {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*                               HI */
-   COSTS_N_INSNS (7),			/*                               SI */
-   COSTS_N_INSNS (7),			/*                               DI */
-   COSTS_N_INSNS (7)},			/*                               other */
+   COSTS_N_INSNS (4),			/*				 HI */
+   COSTS_N_INSNS (7),			/*				 SI */
+   COSTS_N_INSNS (7),			/*				 DI */
+   COSTS_N_INSNS (7)},			/*			      other */
   0,					/* cost of multiply per each bit set */
   {COSTS_N_INSNS (15),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (23),			/*                          HI */
-   COSTS_N_INSNS (39),			/*                          SI */
-   COSTS_N_INSNS (39),			/*                          DI */
-   COSTS_N_INSNS (39)},			/*                          other */
+   COSTS_N_INSNS (23),			/*			    HI */
+   COSTS_N_INSNS (39),			/*			    SI */
+   COSTS_N_INSNS (39),			/*			    DI */
+   COSTS_N_INSNS (39)},			/*			    other */
   COSTS_N_INSNS (1),			/* cost of movsx */
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   4,					/* MOVE_RATIO */
-  1,					/* cost for loading QImode using movzbl */
+  1,				     /* cost for loading QImode using movzbl */
   {1, 1, 1},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -494,17 +494,17 @@ struct processor_costs geode_cost = {
    DUMMY_STRINGOP_ALGS},
   {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
-  1,                                    /* scalar_stmt_cost.  */
-  1,                                    /* scalar load_cost.  */
-  1,                                    /* scalar_store_cost.  */
-  1,                                    /* vec_stmt_cost.  */
-  1,                                    /* vec_to_scalar_cost.  */
-  1,                                    /* scalar_to_vec_cost.  */
-  1,                                    /* vec_align_load_cost.  */
-  2,                                    /* vec_unalign_load_cost.  */
-  1,                                    /* vec_store_cost.  */
-  3,                                    /* cond_taken_branch_cost.  */
-  1,                                    /* cond_not_taken_branch_cost.  */
+  1,					/* scalar_stmt_cost.  */
+  1,					/* scalar load_cost.  */
+  1,					/* scalar_store_cost.  */
+  1,					/* vec_stmt_cost.  */
+  1,					/* vec_to_scalar_cost.  */
+  1,					/* scalar_to_vec_cost.  */
+  1,					/* vec_align_load_cost.  */
+  2,					/* vec_unalign_load_cost.  */
+  1,					/* vec_store_cost.  */
+  3,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -514,21 +514,21 @@ struct processor_costs k6_cost = {
   COSTS_N_INSNS (1),			/* variable shift costs */
   COSTS_N_INSNS (1),			/* constant shift costs */
   {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (3),			/*                               HI */
-   COSTS_N_INSNS (3),			/*                               SI */
-   COSTS_N_INSNS (3),			/*                               DI */
-   COSTS_N_INSNS (3)},			/*                               other */
+   COSTS_N_INSNS (3),			/*				 HI */
+   COSTS_N_INSNS (3),			/*				 SI */
+   COSTS_N_INSNS (3),			/*				 DI */
+   COSTS_N_INSNS (3)},			/*			      other */
   0,					/* cost of multiply per each bit set */
   {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (18),			/*                          HI */
-   COSTS_N_INSNS (18),			/*                          SI */
-   COSTS_N_INSNS (18),			/*                          DI */
-   COSTS_N_INSNS (18)},			/*                          other */
+   COSTS_N_INSNS (18),			/*			    HI */
+   COSTS_N_INSNS (18),			/*			    SI */
+   COSTS_N_INSNS (18),			/*			    DI */
+   COSTS_N_INSNS (18)},			/*			    other */
   COSTS_N_INSNS (2),			/* cost of movsx */
   COSTS_N_INSNS (2),			/* cost of movzx */
   8,					/* "large" insn */
   4,					/* MOVE_RATIO */
-  3,					/* cost for loading QImode using movzbl */
+  3,				     /* cost for loading QImode using movzbl */
   {4, 5, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -567,17 +567,17 @@ struct processor_costs k6_cost = {
    DUMMY_STRINGOP_ALGS},
   {{libcall, {{256, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
-  1,                                    /* scalar_stmt_cost.  */
-  1,                                    /* scalar load_cost.  */
-  1,                                    /* scalar_store_cost.  */
-  1,                                    /* vec_stmt_cost.  */
-  1,                                    /* vec_to_scalar_cost.  */
-  1,                                    /* scalar_to_vec_cost.  */
-  1,                                    /* vec_align_load_cost.  */
-  2,                                    /* vec_unalign_load_cost.  */
-  1,                                    /* vec_store_cost.  */
-  3,                                    /* cond_taken_branch_cost.  */
-  1,                                    /* cond_not_taken_branch_cost.  */
+  1,					/* scalar_stmt_cost.  */
+  1,					/* scalar load_cost.  */
+  1,					/* scalar_store_cost.  */
+  1,					/* vec_stmt_cost.  */
+  1,					/* vec_to_scalar_cost.  */
+  1,					/* scalar_to_vec_cost.  */
+  1,					/* vec_align_load_cost.  */
+  2,					/* vec_unalign_load_cost.  */
+  1,					/* vec_store_cost.  */
+  3,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -587,21 +587,21 @@ struct processor_costs athlon_cost = {
   COSTS_N_INSNS (1),			/* variable shift costs */
   COSTS_N_INSNS (1),			/* constant shift costs */
   {COSTS_N_INSNS (5),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (5),			/*                               HI */
-   COSTS_N_INSNS (5),			/*                               SI */
-   COSTS_N_INSNS (5),			/*                               DI */
-   COSTS_N_INSNS (5)},			/*                               other */
+   COSTS_N_INSNS (5),			/*				 HI */
+   COSTS_N_INSNS (5),			/*				 SI */
+   COSTS_N_INSNS (5),			/*				 DI */
+   COSTS_N_INSNS (5)},			/*			      other */
   0,					/* cost of multiply per each bit set */
   {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (26),			/*                          HI */
-   COSTS_N_INSNS (42),			/*                          SI */
-   COSTS_N_INSNS (74),			/*                          DI */
-   COSTS_N_INSNS (74)},			/*                          other */
+   COSTS_N_INSNS (26),			/*			    HI */
+   COSTS_N_INSNS (42),			/*			    SI */
+   COSTS_N_INSNS (74),			/*			    DI */
+   COSTS_N_INSNS (74)},			/*			    other */
   COSTS_N_INSNS (1),			/* cost of movsx */
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
-  4,					/* cost for loading QImode using movzbl */
+  4,				     /* cost for loading QImode using movzbl */
   {3, 4, 3},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -640,17 +640,17 @@ struct processor_costs athlon_cost = {
    DUMMY_STRINGOP_ALGS},
   {{libcall, {{2048, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
-  1,                                    /* scalar_stmt_cost.  */
-  1,                                    /* scalar load_cost.  */
-  1,                                    /* scalar_store_cost.  */
-  1,                                    /* vec_stmt_cost.  */
-  1,                                    /* vec_to_scalar_cost.  */
-  1,                                    /* scalar_to_vec_cost.  */
-  1,                                    /* vec_align_load_cost.  */
-  2,                                    /* vec_unalign_load_cost.  */
-  1,                                    /* vec_store_cost.  */
-  3,                                    /* cond_taken_branch_cost.  */
-  1,                                    /* cond_not_taken_branch_cost.  */
+  1,					/* scalar_stmt_cost.  */
+  1,					/* scalar load_cost.  */
+  1,					/* scalar_store_cost.  */
+  1,					/* vec_stmt_cost.  */
+  1,					/* vec_to_scalar_cost.  */
+  1,					/* scalar_to_vec_cost.  */
+  1,					/* vec_align_load_cost.  */
+  2,					/* vec_unalign_load_cost.  */
+  1,					/* vec_store_cost.  */
+  3,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -660,21 +660,21 @@ struct processor_costs k8_cost = {
   COSTS_N_INSNS (1),			/* variable shift costs */
   COSTS_N_INSNS (1),			/* constant shift costs */
   {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*                               HI */
-   COSTS_N_INSNS (3),			/*                               SI */
-   COSTS_N_INSNS (4),			/*                               DI */
-   COSTS_N_INSNS (5)},			/*                               other */
+   COSTS_N_INSNS (4),			/*				 HI */
+   COSTS_N_INSNS (3),			/*				 SI */
+   COSTS_N_INSNS (4),			/*				 DI */
+   COSTS_N_INSNS (5)},			/*			      other */
   0,					/* cost of multiply per each bit set */
   {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (26),			/*                          HI */
-   COSTS_N_INSNS (42),			/*                          SI */
-   COSTS_N_INSNS (74),			/*                          DI */
-   COSTS_N_INSNS (74)},			/*                          other */
+   COSTS_N_INSNS (26),			/*			    HI */
+   COSTS_N_INSNS (42),			/*			    SI */
+   COSTS_N_INSNS (74),			/*			    DI */
+   COSTS_N_INSNS (74)},			/*			    other */
   COSTS_N_INSNS (1),			/* cost of movsx */
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
-  4,					/* cost for loading QImode using movzbl */
+  4,				     /* cost for loading QImode using movzbl */
   {3, 4, 3},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -711,48 +711,48 @@ struct processor_costs k8_cost = {
   COSTS_N_INSNS (2),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (2),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
-  /* K8 has optimized REP instruction for medium sized blocks, but for very small
-     blocks it is better to use loop. For large blocks, libcall can do
-     nontemporary accesses and beat inline considerably.  */
+  /* K8 has optimized REP instruction for medium sized blocks, but for very
+     small blocks it is better to use loop. For large blocks, libcall can
+     do nontemporary accesses and beat inline considerably.  */
   {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
    {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
   {{libcall, {{8, loop}, {24, unrolled_loop},
 	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
    {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  4,                                    /* scalar_stmt_cost.  */
-  2,                                    /* scalar load_cost.  */
-  2,                                    /* scalar_store_cost.  */
-  5,                                    /* vec_stmt_cost.  */
-  0,                                    /* vec_to_scalar_cost.  */
-  2,                                    /* scalar_to_vec_cost.  */
-  2,                                    /* vec_align_load_cost.  */
-  3,                                    /* vec_unalign_load_cost.  */
-  3,                                    /* vec_store_cost.  */
-  3,                                    /* cond_taken_branch_cost.  */
-  2,                                    /* cond_not_taken_branch_cost.  */
+  4,					/* scalar_stmt_cost.  */
+  2,					/* scalar load_cost.  */
+  2,					/* scalar_store_cost.  */
+  5,					/* vec_stmt_cost.  */
+  0,					/* vec_to_scalar_cost.  */
+  2,					/* scalar_to_vec_cost.  */
+  2,					/* vec_align_load_cost.  */
+  3,					/* vec_unalign_load_cost.  */
+  3,					/* vec_store_cost.  */
+  3,					/* cond_taken_branch_cost.  */
+  2,					/* cond_not_taken_branch_cost.  */
 };
 
 struct processor_costs amdfam10_cost = {
-  COSTS_N_INSNS (1),                    /* cost of an add instruction */
-  COSTS_N_INSNS (2),                    /* cost of a lea instruction */
-  COSTS_N_INSNS (1),                    /* variable shift costs */
-  COSTS_N_INSNS (1),                    /* constant shift costs */
-  {COSTS_N_INSNS (3),                   /* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),                   /*                               HI */
-   COSTS_N_INSNS (3),                   /*                               SI */
-   COSTS_N_INSNS (4),                   /*                               DI */
-   COSTS_N_INSNS (5)},                  /*                               other */
-  0,                                    /* cost of multiply per each bit set */
-  {COSTS_N_INSNS (19),                  /* cost of a divide/mod for QI */
-   COSTS_N_INSNS (35),                  /*                          HI */
-   COSTS_N_INSNS (51),                  /*                          SI */
-   COSTS_N_INSNS (83),                  /*                          DI */
-   COSTS_N_INSNS (83)},                 /*                          other */
+  COSTS_N_INSNS (1),			/* cost of an add instruction */
+  COSTS_N_INSNS (2),			/* cost of a lea instruction */
+  COSTS_N_INSNS (1),			/* variable shift costs */
+  COSTS_N_INSNS (1),			/* constant shift costs */
+  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
+   COSTS_N_INSNS (4),			/*				 HI */
+   COSTS_N_INSNS (3),			/*				 SI */
+   COSTS_N_INSNS (4),			/*				 DI */
+   COSTS_N_INSNS (5)},			/*			      other */
+  0,					/* cost of multiply per each bit set */
+  {COSTS_N_INSNS (19),			/* cost of a divide/mod for QI */
+   COSTS_N_INSNS (35),			/*			    HI */
+   COSTS_N_INSNS (51),			/*			    SI */
+   COSTS_N_INSNS (83),			/*			    DI */
+   COSTS_N_INSNS (83)},			/*			    other */
   COSTS_N_INSNS (1),			/* cost of movsx */
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
-  4,					/* cost for loading QImode using movzbl */
+  4,				     /* cost for loading QImode using movzbl */
   {3, 4, 3},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -773,14 +773,14 @@ struct processor_costs amdfam10_cost = {
   {4, 4, 5},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
   3,					/* MMX or SSE register to integer */
-  					/* On K8
-  					    MOVD reg64, xmmreg 	Double	FSTORE 4
-					    MOVD reg32, xmmreg 	Double	FSTORE 4
-					   On AMDFAM10
-					    MOVD reg64, xmmreg 	Double	FADD 3
-                                                                1/1  1/1
-					    MOVD reg32, xmmreg 	Double	FADD 3
-                                                                1/1  1/1 */
+  					/* On K8:
+  					    MOVD reg64, xmmreg Double FSTORE 4
+					    MOVD reg32, xmmreg Double FSTORE 4
+					   On AMDFAM10:
+					    MOVD reg64, xmmreg Double FADD 3
+							       1/1  1/1
+					    MOVD reg32, xmmreg Double FADD 3
+							       1/1  1/1 */
   64,					/* size of l1 cache.  */
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -806,40 +806,40 @@ struct processor_costs amdfam10_cost = {
   {{libcall, {{8, loop}, {24, unrolled_loop},
 	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
    {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  4,                                    /* scalar_stmt_cost.  */
-  2,                                    /* scalar load_cost.  */
-  2,                                    /* scalar_store_cost.  */
-  6,                                    /* vec_stmt_cost.  */
-  0,                                    /* vec_to_scalar_cost.  */
-  2,                                    /* scalar_to_vec_cost.  */
-  2,                                    /* vec_align_load_cost.  */
-  2,                                    /* vec_unalign_load_cost.  */
-  2,                                    /* vec_store_cost.  */
-  2,                                    /* cond_taken_branch_cost.  */
-  1,                                    /* cond_not_taken_branch_cost.  */
+  4,					/* scalar_stmt_cost.  */
+  2,					/* scalar load_cost.  */
+  2,					/* scalar_store_cost.  */
+  6,					/* vec_stmt_cost.  */
+  0,					/* vec_to_scalar_cost.  */
+  2,					/* scalar_to_vec_cost.  */
+  2,					/* vec_align_load_cost.  */
+  2,					/* vec_unalign_load_cost.  */
+  2,					/* vec_store_cost.  */
+  2,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
 };
 
 struct processor_costs bdver1_cost = {
-  COSTS_N_INSNS (1),                    /* cost of an add instruction */
-  COSTS_N_INSNS (2),                    /* cost of a lea instruction */
-  COSTS_N_INSNS (1),                    /* variable shift costs */
-  COSTS_N_INSNS (1),                    /* constant shift costs */
-  {COSTS_N_INSNS (3),                   /* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),                   /*                               HI */
-   COSTS_N_INSNS (3),                   /*                               SI */
-   COSTS_N_INSNS (4),                   /*                               DI */
-   COSTS_N_INSNS (5)},                  /*                               other */
-  0,                                    /* cost of multiply per each bit set */
-  {COSTS_N_INSNS (19),                  /* cost of a divide/mod for QI */
-   COSTS_N_INSNS (35),                  /*                          HI */
-   COSTS_N_INSNS (51),                  /*                          SI */
-   COSTS_N_INSNS (83),                  /*                          DI */
-   COSTS_N_INSNS (83)},                 /*                          other */
+  COSTS_N_INSNS (1),			/* cost of an add instruction */
+  COSTS_N_INSNS (2),			/* cost of a lea instruction */
+  COSTS_N_INSNS (1),			/* variable shift costs */
+  COSTS_N_INSNS (1),			/* constant shift costs */
+  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
+   COSTS_N_INSNS (4),			/*				 HI */
+   COSTS_N_INSNS (3),			/*				 SI */
+   COSTS_N_INSNS (4),			/*				 DI */
+   COSTS_N_INSNS (5)},			/*			      other */
+  0,					/* cost of multiply per each bit set */
+  {COSTS_N_INSNS (19),			/* cost of a divide/mod for QI */
+   COSTS_N_INSNS (35),			/*			    HI */
+   COSTS_N_INSNS (51),			/*			    SI */
+   COSTS_N_INSNS (83),			/*			    DI */
+   COSTS_N_INSNS (83)},			/*			    other */
   COSTS_N_INSNS (1),			/* cost of movsx */
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
-  4,					/* cost for loading QImode using movzbl */
+  4,				     /* cost for loading QImode using movzbl */
   {3, 4, 3},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -860,14 +860,14 @@ struct processor_costs bdver1_cost = {
   {4, 4, 5},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
   3,					/* MMX or SSE register to integer */
-  					/* On K8
-  					    MOVD reg64, xmmreg 	Double	FSTORE 4
-					    MOVD reg32, xmmreg 	Double	FSTORE 4
-					   On AMDFAM10
-					    MOVD reg64, xmmreg 	Double	FADD 3
-                                                                1/1  1/1
-					    MOVD reg32, xmmreg 	Double	FADD 3
-                                                                1/1  1/1 */
+  					/* On K8:
+					    MOVD reg64, xmmreg Double FSTORE 4
+					    MOVD reg32, xmmreg Double FSTORE 4
+					   On AMDFAM10:
+					    MOVD reg64, xmmreg Double FADD 3
+							       1/1  1/1
+					    MOVD reg32, xmmreg Double FADD 3
+							       1/1  1/1 */
   64,					/* size of l1 cache.  */
   1024,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
@@ -886,24 +886,24 @@ struct processor_costs bdver1_cost = {
   COSTS_N_INSNS (35),			/* cost of FSQRT instruction.  */
 
   /*  BDVER1 has optimized REP instruction for medium sized blocks, but for
-      very small blocks it is better to use loop. For large blocks, libcall can
-      do nontemporary accesses and beat inline considerably.  */
+      very small blocks it is better to use loop. For large blocks, libcall
+      can do nontemporary accesses and beat inline considerably.  */
   {{libcall, {{6, loop}, {14, unrolled_loop}, {-1, rep_prefix_4_byte}}},
    {libcall, {{16, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
   {{libcall, {{8, loop}, {24, unrolled_loop},
 	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
    {libcall, {{48, unrolled_loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  4,                                    /* scalar_stmt_cost.  */
-  2,                                    /* scalar load_cost.  */
-  2,                                    /* scalar_store_cost.  */
-  6,                                    /* vec_stmt_cost.  */
-  0,                                    /* vec_to_scalar_cost.  */
-  2,                                    /* scalar_to_vec_cost.  */
-  2,                                    /* vec_align_load_cost.  */
-  2,                                    /* vec_unalign_load_cost.  */
-  2,                                    /* vec_store_cost.  */
-  2,                                    /* cond_taken_branch_cost.  */
-  1,                                    /* cond_not_taken_branch_cost.  */
+  4,					/* scalar_stmt_cost.  */
+  2,					/* scalar load_cost.  */
+  2,					/* scalar_store_cost.  */
+  6,					/* vec_stmt_cost.  */
+  0,					/* vec_to_scalar_cost.  */
+  2,					/* scalar_to_vec_cost.  */
+  2,					/* vec_align_load_cost.  */
+  2,					/* vec_unalign_load_cost.  */
+  2,					/* vec_store_cost.  */
+  2,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -913,21 +913,21 @@ struct processor_costs pentium4_cost = {
   COSTS_N_INSNS (4),			/* variable shift costs */
   COSTS_N_INSNS (4),			/* constant shift costs */
   {COSTS_N_INSNS (15),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (15),			/*                               HI */
-   COSTS_N_INSNS (15),			/*                               SI */
-   COSTS_N_INSNS (15),			/*                               DI */
-   COSTS_N_INSNS (15)},			/*                               other */
+   COSTS_N_INSNS (15),			/*				 HI */
+   COSTS_N_INSNS (15),			/*				 SI */
+   COSTS_N_INSNS (15),			/*				 DI */
+   COSTS_N_INSNS (15)},			/*			      other */
   0,					/* cost of multiply per each bit set */
   {COSTS_N_INSNS (56),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (56),			/*                          HI */
-   COSTS_N_INSNS (56),			/*                          SI */
-   COSTS_N_INSNS (56),			/*                          DI */
-   COSTS_N_INSNS (56)},			/*                          other */
+   COSTS_N_INSNS (56),			/*			    HI */
+   COSTS_N_INSNS (56),			/*			    SI */
+   COSTS_N_INSNS (56),			/*			    DI */
+   COSTS_N_INSNS (56)},			/*			    other */
   COSTS_N_INSNS (1),			/* cost of movsx */
   COSTS_N_INSNS (1),			/* cost of movzx */
   16,					/* "large" insn */
   6,					/* MOVE_RATIO */
-  2,					/* cost for loading QImode using movzbl */
+  2,				     /* cost for loading QImode using movzbl */
   {4, 5, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -964,17 +964,17 @@ struct processor_costs pentium4_cost = {
   {{libcall, {{6, loop_1_byte}, {48, loop}, {20480, rep_prefix_4_byte},
    {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
-  1,                                    /* scalar_stmt_cost.  */
-  1,                                    /* scalar load_cost.  */
-  1,                                    /* scalar_store_cost.  */
-  1,                                    /* vec_stmt_cost.  */
-  1,                                    /* vec_to_scalar_cost.  */
-  1,                                    /* scalar_to_vec_cost.  */
-  1,                                    /* vec_align_load_cost.  */
-  2,                                    /* vec_unalign_load_cost.  */
-  1,                                    /* vec_store_cost.  */
-  3,                                    /* cond_taken_branch_cost.  */
-  1,                                    /* cond_not_taken_branch_cost.  */
+  1,					/* scalar_stmt_cost.  */
+  1,					/* scalar load_cost.  */
+  1,					/* scalar_store_cost.  */
+  1,					/* vec_stmt_cost.  */
+  1,					/* vec_to_scalar_cost.  */
+  1,					/* scalar_to_vec_cost.  */
+  1,					/* vec_align_load_cost.  */
+  2,					/* vec_unalign_load_cost.  */
+  1,					/* vec_store_cost.  */
+  3,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -984,21 +984,21 @@ struct processor_costs nocona_cost = {
   COSTS_N_INSNS (1),			/* variable shift costs */
   COSTS_N_INSNS (1),			/* constant shift costs */
   {COSTS_N_INSNS (10),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (10),			/*                               HI */
-   COSTS_N_INSNS (10),			/*                               SI */
-   COSTS_N_INSNS (10),			/*                               DI */
-   COSTS_N_INSNS (10)},			/*                               other */
+   COSTS_N_INSNS (10),			/*				 HI */
+   COSTS_N_INSNS (10),			/*				 SI */
+   COSTS_N_INSNS (10),			/*				 DI */
+   COSTS_N_INSNS (10)},			/*			      other */
   0,					/* cost of multiply per each bit set */
   {COSTS_N_INSNS (66),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (66),			/*                          HI */
-   COSTS_N_INSNS (66),			/*                          SI */
-   COSTS_N_INSNS (66),			/*                          DI */
-   COSTS_N_INSNS (66)},			/*                          other */
+   COSTS_N_INSNS (66),			/*			    HI */
+   COSTS_N_INSNS (66),			/*			    SI */
+   COSTS_N_INSNS (66),			/*			    DI */
+   COSTS_N_INSNS (66)},			/*			    other */
   COSTS_N_INSNS (1),			/* cost of movsx */
   COSTS_N_INSNS (1),			/* cost of movzx */
   16,					/* "large" insn */
   17,					/* MOVE_RATIO */
-  4,					/* cost for loading QImode using movzbl */
+  4,				     /* cost for loading QImode using movzbl */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -1037,17 +1037,17 @@ struct processor_costs nocona_cost = {
    {-1, libcall}}},
    {libcall, {{24, loop}, {64, unrolled_loop},
 	      {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  1,                                    /* scalar_stmt_cost.  */
-  1,                                    /* scalar load_cost.  */
-  1,                                    /* scalar_store_cost.  */
-  1,                                    /* vec_stmt_cost.  */
-  1,                                    /* vec_to_scalar_cost.  */
-  1,                                    /* scalar_to_vec_cost.  */
-  1,                                    /* vec_align_load_cost.  */
-  2,                                    /* vec_unalign_load_cost.  */
-  1,                                    /* vec_store_cost.  */
-  3,                                    /* cond_taken_branch_cost.  */
-  1,                                    /* cond_not_taken_branch_cost.  */
+  1,					/* scalar_stmt_cost.  */
+  1,					/* scalar load_cost.  */
+  1,					/* scalar_store_cost.  */
+  1,					/* vec_stmt_cost.  */
+  1,					/* vec_to_scalar_cost.  */
+  1,					/* scalar_to_vec_cost.  */
+  1,					/* vec_align_load_cost.  */
+  2,					/* vec_unalign_load_cost.  */
+  1,					/* vec_store_cost.  */
+  3,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -1057,21 +1057,21 @@ struct processor_costs core2_cost = {
   COSTS_N_INSNS (1),			/* variable shift costs */
   COSTS_N_INSNS (1),			/* constant shift costs */
   {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (3),			/*                               HI */
-   COSTS_N_INSNS (3),			/*                               SI */
-   COSTS_N_INSNS (3),			/*                               DI */
-   COSTS_N_INSNS (3)},			/*                               other */
+   COSTS_N_INSNS (3),			/*				 HI */
+   COSTS_N_INSNS (3),			/*				 SI */
+   COSTS_N_INSNS (3),			/*				 DI */
+   COSTS_N_INSNS (3)},			/*			      other */
   0,					/* cost of multiply per each bit set */
   {COSTS_N_INSNS (22),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (22),			/*                          HI */
-   COSTS_N_INSNS (22),			/*                          SI */
-   COSTS_N_INSNS (22),			/*                          DI */
-   COSTS_N_INSNS (22)},			/*                          other */
+   COSTS_N_INSNS (22),			/*			    HI */
+   COSTS_N_INSNS (22),			/*			    SI */
+   COSTS_N_INSNS (22),			/*			    DI */
+   COSTS_N_INSNS (22)},			/*			    other */
   COSTS_N_INSNS (1),			/* cost of movsx */
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   16,					/* MOVE_RATIO */
-  2,					/* cost for loading QImode using movzbl */
+  2,				     /* cost for loading QImode using movzbl */
   {6, 6, 6},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -1110,17 +1110,17 @@ struct processor_costs core2_cost = {
 	      {2048, rep_prefix_4_byte}, {-1, libcall}}},
    {libcall, {{24, loop}, {32, unrolled_loop},
 	      {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  1,                                    /* scalar_stmt_cost.  */
-  1,                                    /* scalar load_cost.  */
-  1,                                    /* scalar_store_cost.  */
-  1,                                    /* vec_stmt_cost.  */
-  1,                                    /* vec_to_scalar_cost.  */
-  1,                                    /* scalar_to_vec_cost.  */
-  1,                                    /* vec_align_load_cost.  */
-  2,                                    /* vec_unalign_load_cost.  */
-  1,                                    /* vec_store_cost.  */
-  3,                                    /* cond_taken_branch_cost.  */
-  1,                                    /* cond_not_taken_branch_cost.  */
+  1,					/* scalar_stmt_cost.  */
+  1,					/* scalar load_cost.  */
+  1,					/* scalar_store_cost.  */
+  1,					/* vec_stmt_cost.  */
+  1,					/* vec_to_scalar_cost.  */
+  1,					/* scalar_to_vec_cost.  */
+  1,					/* vec_align_load_cost.  */
+  2,					/* vec_unalign_load_cost.  */
+  1,					/* vec_store_cost.  */
+  3,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
 };
 
 static const
@@ -1130,21 +1130,21 @@ struct processor_costs atom_cost = {
   COSTS_N_INSNS (1),			/* variable shift costs */
   COSTS_N_INSNS (1),			/* constant shift costs */
   {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*                               HI */
-   COSTS_N_INSNS (3),			/*                               SI */
-   COSTS_N_INSNS (4),			/*                               DI */
-   COSTS_N_INSNS (2)},			/*                               other */
+   COSTS_N_INSNS (4),			/*				 HI */
+   COSTS_N_INSNS (3),			/*				 SI */
+   COSTS_N_INSNS (4),			/*				 DI */
+   COSTS_N_INSNS (2)},			/*			      other */
   0,					/* cost of multiply per each bit set */
   {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (26),			/*                          HI */
-   COSTS_N_INSNS (42),			/*                          SI */
-   COSTS_N_INSNS (74),			/*                          DI */
-   COSTS_N_INSNS (74)},			/*                          other */
+   COSTS_N_INSNS (26),			/*			    HI */
+   COSTS_N_INSNS (42),			/*			    SI */
+   COSTS_N_INSNS (74),			/*			    DI */
+   COSTS_N_INSNS (74)},			/*			    other */
   COSTS_N_INSNS (1),			/* cost of movsx */
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
-  2,					/* cost for loading QImode using movzbl */
+  2,				     /* cost for loading QImode using movzbl */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -1178,22 +1178,22 @@ struct processor_costs atom_cost = {
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
   {{libcall, {{11, loop}, {-1, rep_prefix_4_byte}}},
    {libcall, {{32, loop}, {64, rep_prefix_4_byte},
-          {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+	  {8192, rep_prefix_8_byte}, {-1, libcall}}}},
   {{libcall, {{8, loop}, {15, unrolled_loop},
-          {2048, rep_prefix_4_byte}, {-1, libcall}}},
+	  {2048, rep_prefix_4_byte}, {-1, libcall}}},
    {libcall, {{24, loop}, {32, unrolled_loop},
-          {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  1,                                    /* scalar_stmt_cost.  */
-  1,                                    /* scalar load_cost.  */
-  1,                                    /* scalar_store_cost.  */
-  1,                                    /* vec_stmt_cost.  */
-  1,                                    /* vec_to_scalar_cost.  */
-  1,                                    /* scalar_to_vec_cost.  */
-  1,                                    /* vec_align_load_cost.  */
-  2,                                    /* vec_unalign_load_cost.  */
-  1,                                    /* vec_store_cost.  */
-  3,                                    /* cond_taken_branch_cost.  */
-  1,                                    /* cond_not_taken_branch_cost.  */
+	  {8192, rep_prefix_8_byte}, {-1, libcall}}}},
+  1,					/* scalar_stmt_cost.  */
+  1,					/* scalar load_cost.  */
+  1,					/* scalar_store_cost.  */
+  1,					/* vec_stmt_cost.  */
+  1,					/* vec_to_scalar_cost.  */
+  1,					/* scalar_to_vec_cost.  */
+  1,					/* vec_align_load_cost.  */
+  2,					/* vec_unalign_load_cost.  */
+  1,					/* vec_store_cost.  */
+  3,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
 };
 
 /* Generic64 should produce code tuned for Nocona and K8.  */
@@ -1208,21 +1208,21 @@ struct processor_costs generic64_cost = {
   COSTS_N_INSNS (1),			/* variable shift costs */
   COSTS_N_INSNS (1),			/* constant shift costs */
   {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*                               HI */
-   COSTS_N_INSNS (3),			/*                               SI */
-   COSTS_N_INSNS (4),			/*                               DI */
-   COSTS_N_INSNS (2)},			/*                               other */
+   COSTS_N_INSNS (4),			/*				 HI */
+   COSTS_N_INSNS (3),			/*				 SI */
+   COSTS_N_INSNS (4),			/*				 DI */
+   COSTS_N_INSNS (2)},			/*			      other */
   0,					/* cost of multiply per each bit set */
   {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (26),			/*                          HI */
-   COSTS_N_INSNS (42),			/*                          SI */
-   COSTS_N_INSNS (74),			/*                          DI */
-   COSTS_N_INSNS (74)},			/*                          other */
+   COSTS_N_INSNS (26),			/*			    HI */
+   COSTS_N_INSNS (42),			/*			    SI */
+   COSTS_N_INSNS (74),			/*			    DI */
+   COSTS_N_INSNS (74)},			/*			    other */
   COSTS_N_INSNS (1),			/* cost of movsx */
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
-  4,					/* cost for loading QImode using movzbl */
+  4,				     /* cost for loading QImode using movzbl */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -1247,8 +1247,8 @@ struct processor_costs generic64_cost = {
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block */
   6,					/* number of parallel prefetches */
-  /* Benchmarks shows large regressions on K8 sixtrack benchmark when this value
-     is increased to perhaps more appropriate value of 5.  */
+  /* Benchmarks shows large regressions on K8 sixtrack benchmark when this
+     value is increased to perhaps more appropriate value of 5.  */
   3,					/* Branch cost */
   COSTS_N_INSNS (8),			/* cost of FADD and FSUB insns.  */
   COSTS_N_INSNS (8),			/* cost of FMUL instruction.  */
@@ -1260,20 +1260,21 @@ struct processor_costs generic64_cost = {
    {libcall, {{32, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
   {DUMMY_STRINGOP_ALGS,
    {libcall, {{32, loop}, {8192, rep_prefix_8_byte}, {-1, libcall}}}},
-  1,                                    /* scalar_stmt_cost.  */
-  1,                                    /* scalar load_cost.  */
-  1,                                    /* scalar_store_cost.  */
-  1,                                    /* vec_stmt_cost.  */
-  1,                                    /* vec_to_scalar_cost.  */
-  1,                                    /* scalar_to_vec_cost.  */
-  1,                                    /* vec_align_load_cost.  */
-  2,                                    /* vec_unalign_load_cost.  */
-  1,                                    /* vec_store_cost.  */
-  3,                                    /* cond_taken_branch_cost.  */
-  1,                                    /* cond_not_taken_branch_cost.  */
+  1,					/* scalar_stmt_cost.  */
+  1,					/* scalar load_cost.  */
+  1,					/* scalar_store_cost.  */
+  1,					/* vec_stmt_cost.  */
+  1,					/* vec_to_scalar_cost.  */
+  1,					/* scalar_to_vec_cost.  */
+  1,					/* vec_align_load_cost.  */
+  2,					/* vec_unalign_load_cost.  */
+  1,					/* vec_store_cost.  */
+  3,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
 };
 
-/* Generic32 should produce code tuned for Athlon, PPro, Pentium4, Nocona and K8.  */
+/* Generic32 should produce code tuned for PPro, Pentium4, Nocona,
+   Athlon and K8.  */
 static const
 struct processor_costs generic32_cost = {
   COSTS_N_INSNS (1),			/* cost of an add instruction */
@@ -1281,21 +1282,21 @@ struct processor_costs generic32_cost = {
   COSTS_N_INSNS (1),			/* variable shift costs */
   COSTS_N_INSNS (1),			/* constant shift costs */
   {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*                               HI */
-   COSTS_N_INSNS (3),			/*                               SI */
-   COSTS_N_INSNS (4),			/*                               DI */
-   COSTS_N_INSNS (2)},			/*                               other */
+   COSTS_N_INSNS (4),			/*				 HI */
+   COSTS_N_INSNS (3),			/*				 SI */
+   COSTS_N_INSNS (4),			/*				 DI */
+   COSTS_N_INSNS (2)},			/*			      other */
   0,					/* cost of multiply per each bit set */
   {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (26),			/*                          HI */
-   COSTS_N_INSNS (42),			/*                          SI */
-   COSTS_N_INSNS (74),			/*                          DI */
-   COSTS_N_INSNS (74)},			/*                          other */
+   COSTS_N_INSNS (26),			/*			    HI */
+   COSTS_N_INSNS (42),			/*			    SI */
+   COSTS_N_INSNS (74),			/*			    DI */
+   COSTS_N_INSNS (74)},			/*			    other */
   COSTS_N_INSNS (1),			/* cost of movsx */
   COSTS_N_INSNS (1),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
-  4,					/* cost for loading QImode using movzbl */
+  4,				     /* cost for loading QImode using movzbl */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
@@ -1331,17 +1332,17 @@ struct processor_costs generic32_cost = {
    DUMMY_STRINGOP_ALGS},
   {{libcall, {{32, loop}, {8192, rep_prefix_4_byte}, {-1, libcall}}},
    DUMMY_STRINGOP_ALGS},
-  1,                                    /* scalar_stmt_cost.  */
-  1,                                    /* scalar load_cost.  */
-  1,                                    /* scalar_store_cost.  */
-  1,                                    /* vec_stmt_cost.  */
-  1,                                    /* vec_to_scalar_cost.  */
-  1,                                    /* scalar_to_vec_cost.  */
-  1,                                    /* vec_align_load_cost.  */
-  2,                                    /* vec_unalign_load_cost.  */
-  1,                                    /* vec_store_cost.  */
-  3,                                    /* cond_taken_branch_cost.  */
-  1,                                    /* cond_not_taken_branch_cost.  */
+  1,					/* scalar_stmt_cost.  */
+  1,					/* scalar load_cost.  */
+  1,					/* scalar_store_cost.  */
+  1,					/* vec_stmt_cost.  */
+  1,					/* vec_to_scalar_cost.  */
+  1,					/* scalar_to_vec_cost.  */
+  1,					/* vec_align_load_cost.  */
+  2,					/* vec_unalign_load_cost.  */
+  1,					/* vec_store_cost.  */
+  3,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
 };
 
 const struct processor_costs *ix86_cost = &pentium_cost;
@@ -5145,7 +5146,7 @@ ix86_asm_output_function_label (FILE *asm_out_file, const char *fname,
       unsigned int filler_cc = 0xcccccccc;
 
       for (i = 0; i < filler_count; i += 4)
-        fprintf (asm_out_file, ASM_LONG " 0x%x\n", filler_cc);
+        fprintf (asm_out_file, ASM_LONG " %#x\n", filler_cc);
     }
 
   ASM_OUTPUT_LABEL (asm_out_file, fname);
@@ -7948,7 +7949,7 @@ ix86_code_end (void)
 	  assemble_name (asm_out_file, name);
 	  fputs ("\n\t.private_extern\t", asm_out_file);
 	  assemble_name (asm_out_file, name);
-	  fputs ("\n", asm_out_file);
+	  putc ('\n', asm_out_file);
 	  ASM_OUTPUT_LABEL (asm_out_file, name);
 	  DECL_WEAK (decl) = 1;
 	}
@@ -12652,7 +12653,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 
 	case ';':
 #ifndef HAVE_AS_IX86_REP_LOCK_PREFIX
-	  fputs (";", file);
+	  putc (';', file);
 #endif
 	  return;
 

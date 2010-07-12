@@ -1,3 +1,10 @@
+2010-07-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_asm_output_function_label): Change format
+	string placeholder from 0x%x to %#x.
+	(ix86_code_end): Use putc to output '\n'.
+	(ix86_print_operand) <case ';'>: Use putc to output ';'.
+
 2010-07-11  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/winnt.c (i386_pe_file_end): Quote symbol name
@@ -51,8 +58,7 @@
 	    Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR debug/44832
-	* tree-ssa-live.c (mark_all_vars_used_1): Set TREE_USED for
-	LABEL_DECL.
+	* tree-ssa-live.c (mark_all_vars_used_1): Set TREE_USED for LABEL_DECL.
 	(remove_unused_scope_block_p): Don't drop TREE_USED LABEL_DECLs
 	unless they have DECL_IGNORED_P set.
 
@@ -78,8 +84,8 @@
 
 2010-07-09  Jan Hubicka  <jh@suse.cz>
 
-	* lto-streamer-out.c (produce_symtab): Do not write alias cgraph/varpool
-	nodes.
+	* lto-streamer-out.c (produce_symtab): Do not write alias
+	cgraph/varpool nodes.
 
 2010-07-09  Jan Hubicka  <jh@suse.cz>
 
@@ -110,9 +116,8 @@
 
 2010-07-09  Bernd Schmidt  <bernds@codesourcery.com>
 
-	* reload.c (find_reloads): Don't clear badop if we have a
-	winreg alternative, but not win, and the class only has fixed
-	regs.
+	* reload.c (find_reloads): Don't clear badop if we have a winreg
+	alternative, but not win, and the class only has fixed regs.
 	* hard-reg-set.h (class_only_fixed_regs): Declare.
 	* reginfo.c (class_only_fixed_regs): New array.
 	(init_reg_sets_1): Initialize it.
