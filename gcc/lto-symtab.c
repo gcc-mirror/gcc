@@ -649,8 +649,12 @@ lto_symtab_merge_decls_1 (void **slot, void *data ATTRIBUTE_UNUSED)
   /* Assert it's the only one.  */
   if (prevailing)
     for (e = prevailing->next; e; e = e->next)
-      gcc_assert (e->resolution != LDPR_PREVAILING_DEF_IRONLY
-		  && e->resolution != LDPR_PREVAILING_DEF);
+      {
+	if (e->resolution == LDPR_PREVAILING_DEF_IRONLY
+	    || e->resolution == LDPR_PREVAILING_DEF)
+	  fatal_error ("multiple prevailing defs for %qE",
+		       DECL_NAME (prevailing->decl));
+      }
 
   /* If there's not a prevailing symbol yet it's an external reference.
      Happens a lot during ltrans.  Choose the first symbol with a
