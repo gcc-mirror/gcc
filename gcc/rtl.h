@@ -2038,6 +2038,9 @@ struct GTY(()) target_rtl {
      They are initialized once per compilation unit, then copied into
      regno_reg_rtx at the beginning of each function.  */
   rtx x_initial_regno_reg_rtx[FIRST_PSEUDO_REGISTER];
+
+  /* A sample (mem:M stack_pointer_rtx) rtx for each mode M.  */
+  rtx x_top_of_stack[MAX_MACHINE_MODE];
 };
 
 extern GTY(()) struct target_rtl default_target_rtl;
@@ -2053,6 +2056,8 @@ extern struct target_rtl *this_target_rtl;
   (this_target_rtl->x_pic_offset_table_rtx)
 #define return_address_pointer_rtx \
   (this_target_rtl->x_return_address_pointer_rtx)
+#define top_of_stack \
+  (this_target_rtl->x_top_of_stack)
 
 /* Standard pieces of rtx, to be substituted directly into things.  */
 #define pc_rtx                  (global_rtl[GR_PC])
