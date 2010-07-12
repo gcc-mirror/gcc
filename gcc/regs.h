@@ -280,6 +280,15 @@ struct target_regs {
 
   /* Keep track of the last mode we initialized move costs for.  */
   int x_last_mode_for_init_move_cost;
+
+  /* Record for each mode whether we can move a register directly to or
+     from an object of that mode in memory.  If we can't, we won't try
+     to use that mode directly when accessing a field of that mode.  */
+  char x_direct_load[NUM_MACHINE_MODES];
+  char x_direct_store[NUM_MACHINE_MODES];
+
+  /* Record for each mode whether we can float-extend from memory.  */
+  bool x_float_extend_from_mem[NUM_MACHINE_MODES][NUM_MACHINE_MODES];
 };
 
 extern struct target_regs default_target_regs;
@@ -303,6 +312,12 @@ extern struct target_regs *this_target_regs;
   (this_target_regs->x_may_move_in_cost)
 #define may_move_out_cost \
   (this_target_regs->x_may_move_out_cost)
+#define direct_load \
+  (this_target_regs->x_direct_load)
+#define direct_store \
+  (this_target_regs->x_direct_store)
+#define float_extend_from_mem \
+  (this_target_regs->x_float_extend_from_mem)
 
 /* Return an exclusive upper bound on the registers occupied by hard
    register (reg:MODE REGNO).  */
