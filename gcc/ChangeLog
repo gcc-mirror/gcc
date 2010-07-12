@@ -1,3 +1,40 @@
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* doc/tm.texi.in (SWITCHABLE_TARGET): Document.
+	* doc/tm.texi: Regenerate.
+	* Makefile.in (OBJS-common): Add target-globals.o.
+	(gtype-desc.o): Depend on $(IPA_PROP_H), $(LTO_STREAMER_H)
+	and target-globals.h.
+	(target-globals.o): New rule.
+	(GTFILES): Include $(srcdir)/target-globals.h.
+	* defaults.h (SWITCHABLE_TARGET): Define.
+	* gengtype.c (open_base_files): Add target-globals.h to the
+	list of includes.
+	* target-globals.h: New file.
+	* target-globals.c: Likewise.
+
+	* Makefile.in (target-globals.o): Depend on $(FLAGS_H).
+	* flags.h (target_flag_state): New structure.
+	(default_target_flag_state): Declare.
+	(this_target_flag_state): Declare as a variable or define as a macro.
+	(align_loops_log): Redefine as a macro.
+	(align_loops_max_skip, align_jumps_log): Likewise.
+	(align_jumps_max_skip, align_labels_log): Likewise.
+	(align_labels_max_skip, align_functions_log): Likewise.
+	* toplev.c (default_target_flag_state): New variable.
+	(this_target_flag_state): New conditional variable.
+	(align_loops_log): Delete.
+	(align_loops_max_skip, align_jumps_log): Likewise.
+	(align_jumps_max_skip, align_labels_log): Likewise.
+	(align_labels_max_skip, align_functions_log): Likewise.
+	* target-globals.h (this_target_flag_state): Declare.
+	(target_globals): Add a flag_state field.
+	(restore_target_globals): Copy the flag_state field to
+	this_target_flag_state.
+	* target-globals.c: Include flags.h.
+	(default_target_globals): Initialize the flag_state field.
+	(save_target_globals): Likewise.
+
 2010-07-12  Jie Zhang  <jie@codesourcery.com>
 
 	* postreload.c (reg_symbol_ref[]): New.

@@ -239,6 +239,43 @@ extern enum excess_precision flag_excess_precision;
 
 /* Other basic status info about current function.  */
 
+/* Target-dependent global state.  */
+struct target_flag_state {
+  /* Values of the -falign-* flags: how much to align labels in code.
+     0 means `use default', 1 means `don't align'.
+     For each variable, there is an _log variant which is the power
+     of two not less than the variable, for .align output.  */
+  int x_align_loops_log;
+  int x_align_loops_max_skip;
+  int x_align_jumps_log;
+  int x_align_jumps_max_skip;
+  int x_align_labels_log;
+  int x_align_labels_max_skip;
+  int x_align_functions_log;
+};
+
+extern struct target_flag_state default_target_flag_state;
+#if SWITCHABLE_TARGET
+extern struct target_flag_state *this_target_flag_state;
+#else
+#define this_target_flag_state (&default_target_flag_state)
+#endif
+
+#define align_loops_log \
+  (this_target_flag_state->x_align_loops_log)
+#define align_loops_max_skip \
+  (this_target_flag_state->x_align_loops_max_skip)
+#define align_jumps_log \
+  (this_target_flag_state->x_align_jumps_log)
+#define align_jumps_max_skip \
+  (this_target_flag_state->x_align_jumps_max_skip)
+#define align_labels_log \
+  (this_target_flag_state->x_align_labels_log)
+#define align_labels_max_skip \
+  (this_target_flag_state->x_align_labels_max_skip)
+#define align_functions_log \
+  (this_target_flag_state->x_align_functions_log)
+
 /* Nonzero if subexpressions must be evaluated from left-to-right.  */
 extern int flag_evaluation_order;
 
@@ -251,19 +288,6 @@ extern bool sel_sched_switch_set;
 
 /* Whether to run the warn_unused_result attribute pass.  */
 extern bool flag_warn_unused_result;
-
-/* Values of the -falign-* flags: how much to align labels in code.
-   0 means `use default', 1 means `don't align'.
-   For each variable, there is an _log variant which is the power
-   of two not less than the variable, for .align output.  */
-
-extern int align_loops_log;
-extern int align_loops_max_skip;
-extern int align_jumps_log;
-extern int align_jumps_max_skip;
-extern int align_labels_log;
-extern int align_labels_max_skip;
-extern int align_functions_log;
 
 /* Nonzero if we dump in VCG format, not plain text.  */
 extern int dump_for_graph;

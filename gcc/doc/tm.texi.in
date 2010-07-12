@@ -842,6 +842,25 @@ pointer.  If this macro is defined, GCC will turn on the
 @option{-fomit-frame-pointer} option whenever @option{-O} is specified.
 @end defmac
 
+@defmac SWITCHABLE_TARGET
+Some targets need to switch between substantially different subtargets
+during compilation.  For example, the MIPS target has one subtarget for
+the traditional MIPS architecture and another for MIPS16.  Source code
+can switch between these two subarchitectures using the @code{mips16}
+and @code{nomips16} attributes.
+
+Such subtargets can differ in things like the set of available
+registers, the set of available instructions, the costs of various
+operations, and so on.  GCC caches a lot of this type of information
+in global variables, and recomputing them for each subtarget takes a
+significant amount of time.  The compiler therefore provides a facility
+for maintaining several versions of the global variables and quickly
+switching between them; see @file{target-globals.h} for details.
+
+Define this macro to 1 if your target needs this facility.  The default
+is 0.
+@end defmac
+
 @node Per-Function Data
 @section Defining data structures for per-function information.
 @cindex per-function data
