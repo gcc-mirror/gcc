@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "libfuncs.h"
 #include "cfgloop.h"
+#include "ira-int.h"
 
 #if SWITCHABLE_TARGET
 struct target_globals default_target_globals = {
@@ -47,7 +48,9 @@ struct target_globals default_target_globals = {
   &default_target_expmed,
   &default_target_optabs,
   &default_target_libfuncs,
-  &default_target_cfgloop
+  &default_target_cfgloop,
+  &default_target_ira,
+  &default_target_ira_int
 };
 
 struct target_globals *
@@ -65,6 +68,8 @@ save_target_globals (void)
   g->optabs = XCNEW (struct target_optabs);
   g->libfuncs = ggc_alloc_cleared_target_libfuncs ();
   g->cfgloop = XCNEW (struct target_cfgloop);
+  g->ira = XCNEW (struct target_ira);
+  g->ira_int = XCNEW (struct target_ira_int);
   restore_target_globals (g);
   target_reinit ();
   return g;

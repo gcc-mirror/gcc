@@ -564,9 +564,6 @@ extern int ira_overall_cost;
 extern int ira_reg_cost, ira_mem_cost;
 extern int ira_load_cost, ira_store_cost, ira_shuffle_cost;
 extern int ira_move_loops_num, ira_additional_jumps_num;
-
-/* Maximal value of element of array ira_reg_class_nregs.  */
-extern int ira_max_nregs;
 
 /* This page contains a bitset implementation called 'min/max sets' used to
    record conflicts in IRA.
@@ -717,97 +714,139 @@ minmax_set_iter_next (minmax_set_iterator *i)
        minmax_set_iter_cond (&(ITER), &(N));			\
        minmax_set_iter_next (&(ITER)))
 
+struct target_ira_int {
+  /* Hard registers that can not be used for the register allocator for
+     all functions of the current compilation unit.  */
+  HARD_REG_SET x_no_unit_alloc_regs;
+
+  /* Map: hard regs X modes -> set of hard registers for storing value
+     of given mode starting with given hard register.  */
+  HARD_REG_SET (x_ira_reg_mode_hard_regset
+		[FIRST_PSEUDO_REGISTER][NUM_MACHINE_MODES]);
+
+  /* Array based on TARGET_REGISTER_MOVE_COST.  Don't use
+     ira_register_move_cost directly.  Use function of
+     ira_get_may_move_cost instead.  */
+  move_table *x_ira_register_move_cost[MAX_MACHINE_MODE];
+
+  /* Similar to may_move_in_cost but it is calculated in IRA instead of
+     regclass.  Another difference we take only available hard registers
+     into account to figure out that one register class is a subset of
+     the another one.  Don't use it directly.  Use function of
+     ira_get_may_move_cost instead.  */
+  move_table *x_ira_may_move_in_cost[MAX_MACHINE_MODE];
+
+  /* Similar to may_move_out_cost but it is calculated in IRA instead of
+     regclass.  Another difference we take only available hard registers
+     into account to figure out that one register class is a subset of
+     the another one.  Don't use it directly.  Use function of
+     ira_get_may_move_cost instead.  */
+  move_table *x_ira_may_move_out_cost[MAX_MACHINE_MODE];
+
+  /* Register class subset relation: TRUE if the first class is a subset
+     of the second one considering only hard registers available for the
+     allocation.  */
+  int x_ira_class_subset_p[N_REG_CLASSES][N_REG_CLASSES];
+
+  /* Array of the number of hard registers of given class which are
+     available for allocation.  The order is defined by the the hard
+     register numbers.  */
+  short x_ira_non_ordered_class_hard_regs[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
+
+  /* Index (in ira_class_hard_regs; for given register class and hard
+     register (in general case a hard register can belong to several
+     register classes;.  The index is negative for hard registers
+     unavailable for the allocation.  */
+  short x_ira_class_hard_reg_index[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
+
+  /* Array whose values are hard regset of hard registers available for
+     the allocation of given register class whose HARD_REGNO_MODE_OK
+     values for given mode are zero.  */
+  HARD_REG_SET x_prohibited_class_mode_regs[N_REG_CLASSES][NUM_MACHINE_MODES];
+
+  /* The value is number of elements in the subsequent array.  */
+  int x_ira_important_classes_num;
+
+  /* The array containing non-empty classes (including non-empty cover
+     classes; which are subclasses of cover classes.  Such classes is
+     important for calculation of the hard register usage costs.  */
+  enum reg_class x_ira_important_classes[N_REG_CLASSES];
+
+  /* The biggest important class inside of intersection of the two
+     classes (that is calculated taking only hard registers available
+     for allocation into account;.  If the both classes contain no hard
+     registers available for allocation, the value is calculated with
+     taking all hard-registers including fixed ones into account.  */
+  enum reg_class x_ira_reg_class_intersect[N_REG_CLASSES][N_REG_CLASSES];
+
+  /* True if the two classes (that is calculated taking only hard
+     registers available for allocation into account; are
+     intersected.  */
+  bool x_ira_reg_classes_intersect_p[N_REG_CLASSES][N_REG_CLASSES];
+
+  /* Classes with end marker LIM_REG_CLASSES which are intersected with
+     given class (the first index;.  That includes given class itself.
+     This is calculated taking only hard registers available for
+     allocation into account.  */
+  enum reg_class x_ira_reg_class_super_classes[N_REG_CLASSES][N_REG_CLASSES];
+
+  /* The biggest important class inside of union of the two classes
+     (that is calculated taking only hard registers available for
+     allocation into account;.  If the both classes contain no hard
+     registers available for allocation, the value is calculated with
+     taking all hard-registers including fixed ones into account.  In
+     other words, the value is the corresponding reg_class_subunion
+     value.  */
+  enum reg_class x_ira_reg_class_union[N_REG_CLASSES][N_REG_CLASSES];
+
+  /* For each reg class, table listing all the classes contained in it
+     (excluding the class itself.  Non-allocatable registers are
+     excluded from the consideration;.  */
+  enum reg_class x_alloc_reg_class_subclasses[N_REG_CLASSES][N_REG_CLASSES];
+};
+
+extern struct target_ira_int default_target_ira_int;
+#if SWITCHABLE_TARGET
+extern struct target_ira_int *this_target_ira_int;
+#else
+#define this_target_ira_int (&default_target_ira_int)
+#endif
+
+#define ira_reg_mode_hard_regset \
+  (this_target_ira_int->x_ira_reg_mode_hard_regset)
+#define ira_register_move_cost \
+  (this_target_ira_int->x_ira_register_move_cost)
+#define ira_may_move_in_cost \
+  (this_target_ira_int->x_ira_may_move_in_cost)
+#define ira_may_move_out_cost \
+  (this_target_ira_int->x_ira_may_move_out_cost)
+#define ira_class_subset_p \
+  (this_target_ira_int->x_ira_class_subset_p)
+#define ira_non_ordered_class_hard_regs \
+  (this_target_ira_int->x_ira_non_ordered_class_hard_regs)
+#define ira_class_hard_reg_index \
+  (this_target_ira_int->x_ira_class_hard_reg_index)
+#define prohibited_class_mode_regs \
+  (this_target_ira_int->x_prohibited_class_mode_regs)
+#define ira_important_classes_num \
+  (this_target_ira_int->x_ira_important_classes_num)
+#define ira_important_classes \
+  (this_target_ira_int->x_ira_important_classes)
+#define ira_reg_class_intersect \
+  (this_target_ira_int->x_ira_reg_class_intersect)
+#define ira_reg_classes_intersect_p \
+  (this_target_ira_int->x_ira_reg_classes_intersect_p)
+#define ira_reg_class_super_classes \
+  (this_target_ira_int->x_ira_reg_class_super_classes)
+#define ira_reg_class_union \
+  (this_target_ira_int->x_ira_reg_class_union)
+
 /* ira.c: */
-
-/* Map: hard regs X modes -> set of hard registers for storing value
-   of given mode starting with given hard register.  */
-extern HARD_REG_SET ira_reg_mode_hard_regset
-                    [FIRST_PSEUDO_REGISTER][NUM_MACHINE_MODES];
-
-/* Array based on TARGET_REGISTER_MOVE_COST.  Don't use
-   ira_register_move_cost directly.  Use function of
-   ira_get_may_move_cost instead.  */
-extern move_table *ira_register_move_cost[MAX_MACHINE_MODE];
-
-/* Similar to may_move_in_cost but it is calculated in IRA instead of
-   regclass.  Another difference we take only available hard registers
-   into account to figure out that one register class is a subset of
-   the another one.  Don't use it directly.  Use function of
-   ira_get_may_move_cost instead.  */
-extern move_table *ira_may_move_in_cost[MAX_MACHINE_MODE];
-
-/* Similar to may_move_out_cost but it is calculated in IRA instead of
-   regclass.  Another difference we take only available hard registers
-   into account to figure out that one register class is a subset of
-   the another one.  Don't use it directly.  Use function of
-   ira_get_may_move_cost instead.  */
-extern move_table *ira_may_move_out_cost[MAX_MACHINE_MODE];
-
-/* Register class subset relation: TRUE if the first class is a subset
-   of the second one considering only hard registers available for the
-   allocation.  */
-extern int ira_class_subset_p[N_REG_CLASSES][N_REG_CLASSES];
-
-/* Array of the number of hard registers of given class which are
-   available for allocation.  The order is defined by the the hard
-   register numbers.  */
-extern short ira_non_ordered_class_hard_regs[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
-
-/* Index (in ira_class_hard_regs) for given register class and hard
-   register (in general case a hard register can belong to several
-   register classes).  The index is negative for hard registers
-   unavailable for the allocation. */
-extern short ira_class_hard_reg_index[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
-
-/* Array whose values are hard regset of hard registers available for
-   the allocation of given register class whose HARD_REGNO_MODE_OK
-   values for given mode are zero.  */
-extern HARD_REG_SET prohibited_class_mode_regs
-                    [N_REG_CLASSES][NUM_MACHINE_MODES];
 
 /* Array whose values are hard regset of hard registers for which
    move of the hard register in given mode into itself is
    prohibited.  */
 extern HARD_REG_SET ira_prohibited_mode_move_regs[NUM_MACHINE_MODES];
-
-/* The value is number of elements in the subsequent array.  */
-extern int ira_important_classes_num;
-
-/* The array containing non-empty classes (including non-empty cover
-   classes) which are subclasses of cover classes.  Such classes is
-   important for calculation of the hard register usage costs.  */
-extern enum reg_class ira_important_classes[N_REG_CLASSES];
-
-/* The array containing indexes of important classes in the previous
-   array.  The array elements are defined only for important
-   classes.  */
-extern int ira_important_class_nums[N_REG_CLASSES];
-
-/* The biggest important class inside of intersection of the two
-   classes (that is calculated taking only hard registers available
-   for allocation into account).  If the both classes contain no hard
-   registers available for allocation, the value is calculated with
-   taking all hard-registers including fixed ones into account.  */
-extern enum reg_class ira_reg_class_intersect[N_REG_CLASSES][N_REG_CLASSES];
-
-/* True if the two classes (that is calculated taking only hard
-   registers available for allocation into account) are
-   intersected.  */
-extern bool ira_reg_classes_intersect_p[N_REG_CLASSES][N_REG_CLASSES];
-
-/* Classes with end marker LIM_REG_CLASSES which are intersected with
-   given class (the first index).  That includes given class itself.
-   This is calculated taking only hard registers available for
-   allocation into account.  */
-extern enum reg_class ira_reg_class_super_classes[N_REG_CLASSES][N_REG_CLASSES];
-/* The biggest important class inside of union of the two classes
-   (that is calculated taking only hard registers available for
-   allocation into account).  If the both classes contain no hard
-   registers available for allocation, the value is calculated with
-   taking all hard-registers including fixed ones into account.  In
-   other words, the value is the corresponding reg_class_subunion
-   value.  */
-extern enum reg_class ira_reg_class_union[N_REG_CLASSES][N_REG_CLASSES];
 
 extern void *ira_allocate (size_t);
 extern void *ira_reallocate (void *, size_t);
