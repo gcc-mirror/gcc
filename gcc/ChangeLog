@@ -1,5 +1,10 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* Makefile.in (LIBFUNCS_H): New variable.  Use instead of libfuncs.h
+	in all dependency lists.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* Makefile.in (target-globals.o): Depend on $(EXPR_H) and $(OPTABS_H).
 	* optabs.h (target_optabs): New structure.
 	(default_target_optabs): Declare.
