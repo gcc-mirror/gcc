@@ -9568,6 +9568,16 @@ main (int argc, char **argv)
 	  write_automata ();
 	}
     }
+  else
+    {
+      puts ("/* Generated automatically by the program `genautomata'\n"
+	    "   from the machine description file `md'.  */\n\n"
+	    "/* There is no automaton, but ISO C forbids empty\n"
+	    "   translation units, so include a header file with some\n"
+	    "   declarations, and the its pre-requisite header file.  */\n"
+	    "#include \"config.h\"\n"
+	    "#include \"system.h\"\n");
+    }
 
   fflush (stdout);
   return (ferror (stdout) != 0 || have_error
