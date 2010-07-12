@@ -86,6 +86,7 @@
 #include "toplev.h" /* user_defined_section_attribute */
 #include "tree-pass.h"
 #include "df.h"
+#include "bb-reorder.h"
 
 /* The number of rounds.  In most cases there will only be 4 rounds, but
    when partitioning hot and cold basic blocks into separate sections of
@@ -101,6 +102,14 @@
 #endif
 
 
+struct target_bb_reorder default_target_bb_reorder;
+#if SWITCHABLE_TARGET
+struct target_bb_reorder *this_target_bb_reorder = &default_target_bb_reorder;
+#endif
+
+#define uncond_jump_length \
+  (this_target_bb_reorder->x_uncond_jump_length)
+
 /* Branch thresholds in thousandths (per mille) of the REG_BR_PROB_BASE.  */
 static int branch_threshold[N_ROUNDS] = {400, 200, 100, 0, 0};
 
@@ -110,9 +119,6 @@ static int exec_threshold[N_ROUNDS] = {500, 200, 50, 0, 0};
 /* If edge frequency is lower than DUPLICATION_THRESHOLD per mille of entry
    block the edge destination is not duplicated while connecting traces.  */
 #define DUPLICATION_THRESHOLD 100
-
-/* Length of unconditional jump instruction.  */
-static int uncond_jump_length;
 
 /* Structure to hold needed information for each basic block.  */
 typedef struct bbro_basic_block_data_def
