@@ -1,5 +1,15 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* ira-int.h (target_ira_int): Add x_max_struct_costs_size, x_init_cost,
+	x_temp_costs, x_op_costs, x_this_op_costs and x_cost_classes.
+	* ira-costs.c (max_struct_costs_size, init_cost, temp_costs, op_costs)
+	(this_op_costs, costs_classes): Redefine as macros.
+	(record_reg_classes): Don't take op_costs as a parameter.
+	(record_operand_costs): Likewise.  Update calls to record_reg_classes.
+	(scan_one_insn): Update call to record_operand_costs.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* Makefile.in (target-globals.o): Depend on $(IRA_INT_H).
 	* ira-int.h (ira_max_nregs, ira_important_class_nums): Delete.
 	(target_ira_int): New structure.
