@@ -1,3 +1,9 @@
+2010-07-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/44907
+	* g++.dg/template/sfinae19.C: New.
+	* g++.dg/template/sfinae20.C: Likewise.
+
 2010-07-12  Jie Zhang  <jie@codesourcery.com>
 
 	* gcc.target/arm/interrupt-1.c: New test.
