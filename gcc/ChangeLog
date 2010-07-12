@@ -1,5 +1,24 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* Makefile.in (target-globals.o): Depend on $(EXPR_H) and $(OPTABS_H).
+	* optabs.h (target_optabs): New structure.
+	(default_target_optabs): Declare.
+	(this_target_optabs): Declare as a variable or define as a macro.
+	(optab_table, convert_optab_table, direct_optab_table): Redefine
+	as macros.
+	* optabs.c (default_target_optabs): New variable.
+	(this_target_optabs): New conditional variable.
+	(optab_table, convert_optab_table, direct_optab_table): Delete.
+	* target-globals.h (this_target_optabs): Declare.
+	(target_globals): Add a optabs field.
+	(restore_target_globals): Copy the optabs field to
+	this_target_optabs.
+	* target-globals.c: Include expr.h and optabs.h.
+	(default_target_globals): Initialize the optabs field.
+	(save_target_globals): Likewise.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* flags.h (target_flagstate): Add x_flag_excess_precision.
 	(flag_excess_precision): Redefine as a macro.
 	* toplev.c (flag_excess_precision): Delete.

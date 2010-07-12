@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "hard-reg-set.h"
 #include "reload.h"
 #include "expmed.h"
+#include "expr.h"
+#include "optabs.h"
 
 #if SWITCHABLE_TARGET
 struct target_globals default_target_globals = {
@@ -40,7 +42,8 @@ struct target_globals default_target_globals = {
   &default_target_rtl,
   &default_target_hard_regs,
   &default_target_reload,
-  &default_target_expmed
+  &default_target_expmed,
+  &default_target_optabs
 };
 
 struct target_globals *
@@ -55,6 +58,7 @@ save_target_globals (void)
   g->hard_regs = XCNEW (struct target_hard_regs);
   g->reload = XCNEW (struct target_reload);
   g->expmed = XCNEW (struct target_expmed);
+  g->optabs = XCNEW (struct target_optabs);
   restore_target_globals (g);
   target_reinit ();
   return g;
