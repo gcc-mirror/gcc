@@ -1,6 +1,7 @@
 // PR c++/35758
 // { dg-do compile }
-// { dg-options "-msse" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+// { dg-options "-msse" { target { { i?86-*-* x86_64-*-* } && ilp32 } } }
+// { dg-require-effective-target sse }
 // Ignore warning on some powerpc-linux configurations.
 // { dg-prune-output "non-standard ABI extension" }
 // { dg-prune-output "mangled name" }

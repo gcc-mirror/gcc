@@ -1,3 +1,11 @@
+2010-07-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc (i[34567]86-*-solaris2*): Default with_arch_32 to
+	pentiumpro on Solaris 8 and 9/x86.
+	* doc/install.texi (Specific, i?86-*-solaris2.[89]): Recommend GNU as.
+	Document SSE/SSE2 support.
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document sse.
+
 2010-07-12  Andi Kleen  <ak@linux.intel.com>
 
 	* lto-symtab.c (lto_symtab_merge_decls_1): Use fatal_error

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target dfp } */
+/* { dg-require-effective-target sse } */
 /* { dg-options "-msse -std=gnu99" } */
 
 _Decimal128 test (void)

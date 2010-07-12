@@ -1,6 +1,7 @@
 -- { dg-do compile }
 -- { dg-options "-O3" }
 -- { dg-options "-O3 -msse" { target i?86-*-* x86_64-*-* } }
+-- { dg-require-effective-target sse } 
 
 package body Loop_Optimization7 is
 

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -ffast-math -ftree-vectorize -msse -mfpmath=sse -mrecip" } */
+/* { dg-require-effective-target sse } */
 
 float a[16];
 float b[16];

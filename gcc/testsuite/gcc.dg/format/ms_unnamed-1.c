@@ -3,6 +3,7 @@
 /* { dg-do compile { target { *-*-mingw* } } } */
 /* { dg-options "-Wformat" } */
 /* { dg-options "-Wformat -msse" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-require-effective-target sse { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 #define USE_SYSTEM_FORMATS
 #include "format.h"

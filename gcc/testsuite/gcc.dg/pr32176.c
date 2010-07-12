@@ -3,6 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fprefetch-loop-arrays -w" } */
 /* { dg-options "-O2 -fprefetch-loop-arrays -march=i686 -msse" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-require-effective-target sse { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 void foo (void)
 {

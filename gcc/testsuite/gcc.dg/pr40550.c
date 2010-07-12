@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-msse" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
+/* { dg-require-effective-target sse { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 #ifdef __i386__
 #include "cpuid.h"
