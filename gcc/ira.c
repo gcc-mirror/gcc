@@ -325,6 +325,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "ira-int.h"
 
 
+struct target_ira default_target_ira;
+struct target_ira_int default_target_ira_int;
+#if SWITCHABLE_TARGET
+struct target_ira *this_target_ira = &default_target_ira;
+struct target_ira_int *this_target_ira_int = &default_target_ira_int;
+#endif
+
 /* A modified value of flag `-fira-verbose' used internally.  */
 int internal_flag_ira_verbose;
 
@@ -351,33 +358,6 @@ int ira_move_loops_num, ira_additional_jumps_num;
 
 HARD_REG_SET eliminable_regset;
 
-/* Map: hard regs X modes -> set of hard registers for storing value
-   of given mode starting with given hard register.  */
-HARD_REG_SET ira_reg_mode_hard_regset[FIRST_PSEUDO_REGISTER][NUM_MACHINE_MODES];
-
-/* Array analogous to target hook TARGET_MEMORY_MOVE_COST.  */
-short int ira_memory_move_cost[MAX_MACHINE_MODE][N_REG_CLASSES][2];
-
-/* Array based on TARGET_REGISTER_MOVE_COST.  */
-move_table *ira_register_move_cost[MAX_MACHINE_MODE];
-
-/* Similar to may_move_in_cost but it is calculated in IRA instead of
-   regclass.  Another difference is that we take only available hard
-   registers into account to figure out that one register class is a
-   subset of the another one.  */
-move_table *ira_may_move_in_cost[MAX_MACHINE_MODE];
-
-/* Similar to may_move_out_cost but it is calculated in IRA instead of
-   regclass.  Another difference is that we take only available hard
-   registers into account to figure out that one register class is a
-   subset of the another one.  */
-move_table *ira_may_move_out_cost[MAX_MACHINE_MODE];
-
-/* Register class subset relation: TRUE if the first class is a subset
-   of the second one considering only hard registers available for the
-   allocation.  */
-int ira_class_subset_p[N_REG_CLASSES][N_REG_CLASSES];
-
 /* Temporary hard reg set used for a different calculation.  */
 static HARD_REG_SET temp_hard_regset;
 
@@ -401,30 +381,8 @@ setup_reg_mode_hard_regset (void)
 }
 
 
-
-/* Hard registers that can not be used for the register allocator for
-   all functions of the current compilation unit.  */
-static HARD_REG_SET no_unit_alloc_regs;
-
-/* Array of the number of hard registers of given class which are
-   available for allocation.  The order is defined by the
-   allocation order.  */
-short ira_class_hard_regs[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
-
-/* Array of the number of hard registers of given class which are
-   available for allocation.  The order is defined by the
-   the hard register numbers.  */
-short ira_non_ordered_class_hard_regs[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
-
-/* The number of elements of the above array for given register
-   class.  */
-int ira_class_hard_regs_num[N_REG_CLASSES];
-
-/* Index (in ira_class_hard_regs) for given register class and hard
-   register (in general case a hard register can belong to several
-   register classes).  The index is negative for hard registers
-   unavailable for the allocation. */
-short ira_class_hard_reg_index[N_REG_CLASSES][FIRST_PSEUDO_REGISTER];
+#define no_unit_alloc_regs \
+  (this_target_ira_int->x_no_unit_alloc_regs)
 
 /* The function sets up the three arrays declared above.  */
 static void
@@ -469,10 +427,6 @@ setup_class_hard_regs (void)
       ira_assert (ira_class_hard_regs_num[cl] == n);
     }
 }
-
-/* Number of given class hard registers available for the register
-   allocation for given classes.  */
-int ira_available_class_regs[N_REG_CLASSES];
 
 /* Set up IRA_AVAILABLE_CLASS_REGS.  */
 static void
@@ -666,11 +620,8 @@ ira_debug_disposition (void)
 }
 
 
-
-/* For each reg class, table listing all the classes contained in it
-   (excluding the class itself.  Non-allocatable registers are
-   excluded from the consideration).  */
-static enum reg_class alloc_reg_class_subclasses[N_REG_CLASSES][N_REG_CLASSES];
+#define alloc_reg_class_subclasses \
+  (this_target_ira_int->x_alloc_reg_class_subclasses)
 
 /* Initialize the table of subclasses of each reg class.  */
 static void
@@ -710,29 +661,6 @@ setup_reg_subclasses (void)
 }
 
 
-
-/* Number of cover classes.  Cover classes is non-intersected register
-   classes containing all hard-registers available for the
-   allocation.  */
-int ira_reg_class_cover_size;
-
-/* The array containing cover classes (see also comments for macro
-   IRA_COVER_CLASSES).  Only first IRA_REG_CLASS_COVER_SIZE elements are
-   used for this.  */
-enum reg_class ira_reg_class_cover[N_REG_CLASSES];
-
-/* The number of elements in the subsequent array.  */
-int ira_important_classes_num;
-
-/* The array containing non-empty classes (including non-empty cover
-   classes) which are subclasses of cover classes.  Such classes is
-   important for calculation of the hard register usage costs.  */
-enum reg_class ira_important_classes[N_REG_CLASSES];
-
-/* The array containing indexes of important classes in the previous
-   array.  The array elements are defined only for important
-   classes.  */
-int ira_important_class_nums[N_REG_CLASSES];
 
 /* Set the four global variables defined above.  */
 static void
@@ -838,11 +766,6 @@ setup_cover_and_important_classes (void)
       = ira_reg_class_cover[j];
 }
 
-/* Map of all register classes to corresponding cover class containing
-   the given class.  If given class is not a subset of a cover class,
-   we translate it into the cheapest cover class.  */
-enum reg_class ira_class_translate[N_REG_CLASSES];
-
 /* Set up array IRA_CLASS_TRANSLATE.  */
 static void
 setup_class_translate (void)
@@ -931,7 +854,8 @@ setup_class_translate (void)
 }
 
 /* Order numbers of cover classes in original target cover class
-   array, -1 for non-cover classes.  */
+   array, -1 for non-cover classes.  This is only live during
+   reorder_important_classes.  */
 static int cover_class_order[N_REG_CLASSES];
 
 /* The function used to sort the important classes.  */
@@ -951,7 +875,7 @@ comp_reg_classes_func (const void *v1p, const void *v2p)
 }
 
 /* Reorder important classes according to the order of their cover
-   classes.  Set up array ira_important_class_nums too.  */
+   classes.  */
 static void
 reorder_important_classes (void)
 {
@@ -963,37 +887,7 @@ reorder_important_classes (void)
     cover_class_order[ira_reg_class_cover[i]] = i;
   qsort (ira_important_classes, ira_important_classes_num,
 	 sizeof (enum reg_class), comp_reg_classes_func);
-  for (i = 0; i < ira_important_classes_num; i++)
-    ira_important_class_nums[ira_important_classes[i]] = i;
 }
-
-/* The biggest important reg_class inside of intersection of the two
-   reg_classes (that is calculated taking only hard registers
-   available for allocation into account).  If the both reg_classes
-   contain no hard registers available for allocation, the value is
-   calculated by taking all hard-registers including fixed ones into
-   account.  */
-enum reg_class ira_reg_class_intersect[N_REG_CLASSES][N_REG_CLASSES];
-
-/* True if the two classes (that is calculated taking only hard
-   registers available for allocation into account) are
-   intersected.  */
-bool ira_reg_classes_intersect_p[N_REG_CLASSES][N_REG_CLASSES];
-
-/* Important classes with end marker LIM_REG_CLASSES which are
-   supersets with given important class (the first index).  That
-   includes given class itself.  This is calculated taking only hard
-   registers available for allocation into account.  */
-enum reg_class ira_reg_class_super_classes[N_REG_CLASSES][N_REG_CLASSES];
-
-/* The biggest important reg_class inside of union of the two
-   reg_classes (that is calculated taking only hard registers
-   available for allocation into account).  If the both reg_classes
-   contain no hard registers available for allocation, the value is
-   calculated by taking all hard-registers including fixed ones into
-   account.  In other words, the value is the corresponding
-   reg_class_subunion value.  */
-enum reg_class ira_reg_class_union[N_REG_CLASSES][N_REG_CLASSES];
 
 /* Set up the above reg class relations.  */
 static void
@@ -1137,11 +1031,6 @@ find_reg_class_closure (void)
 
 
 
-/* Map: hard register number -> cover class it belongs to.  If the
-   corresponding class is NO_REGS, the hard register is not available
-   for allocation.  */
-enum reg_class ira_hard_regno_cover_class[FIRST_PSEUDO_REGISTER];
-
 /* Set up the array above.  */
 static void
 setup_hard_regno_cover_class (void)
@@ -1167,37 +1056,19 @@ setup_hard_regno_cover_class (void)
 
 
 
-/* Map: register class x machine mode -> number of hard registers of
-   given class needed to store value of given mode.  If the number is
-   different, the size will be negative.  */
-int ira_reg_class_nregs[N_REG_CLASSES][MAX_MACHINE_MODE];
-
-/* Maximal value of the previous array elements.  */
-int ira_max_nregs;
-
 /* Form IRA_REG_CLASS_NREGS map.  */
 static void
 setup_reg_class_nregs (void)
 {
   int cl, m;
 
-  ira_max_nregs = -1;
   for (cl = 0; cl < N_REG_CLASSES; cl++)
     for (m = 0; m < MAX_MACHINE_MODE; m++)
-      {
-	ira_reg_class_nregs[cl][m] = CLASS_MAX_NREGS ((enum reg_class) cl,
-						      (enum machine_mode) m);
-	if (ira_max_nregs < ira_reg_class_nregs[cl][m])
-	  ira_max_nregs = ira_reg_class_nregs[cl][m];
-      }
+      ira_reg_class_nregs[cl][m] = CLASS_MAX_NREGS ((enum reg_class) cl,
+						    (enum machine_mode) m);
 }
 
 
-
-/* Array whose values are hard regset of hard registers available for
-   the allocation of given register class whose HARD_REGNO_MODE_OK
-   values for given mode are zero.  */
-HARD_REG_SET prohibited_class_mode_regs[N_REG_CLASSES][NUM_MACHINE_MODES];
 
 /* Set up PROHIBITED_CLASS_MODE_REGS.  */
 static void

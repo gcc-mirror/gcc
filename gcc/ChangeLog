@@ -1,5 +1,55 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* Makefile.in (target-globals.o): Depend on $(IRA_INT_H).
+	* ira-int.h (ira_max_nregs, ira_important_class_nums): Delete.
+	(target_ira_int): New structure.
+	(default_target_ira_int): Declare.
+	(this_target_ira_int): Declare as a variable or define as a macro.
+	(ira_reg_mode_hard_regset, ira_register_move_cost)
+	(ira_may_move_in_cost, ira_may_move_out_cost, ira_class_subset_p)
+	(ira_non_ordered_class_hard_regs, ira_class_hard_reg_index)
+	(prohibited_class_mode_regs, ira_important_classes_num)
+	(ira_important_classes, ira_reg_class_intersect)
+	(ira_reg_classes_intersect_p, ira_reg_class_super_classes)
+	(ira_reg_class_union): Redefine as macros.
+	* ira.h (target_ira): New structure.
+	(default_target_ira): Declare.
+	(this_target_ira): Declare as a variable or define as a macro.
+	(ira_available_class_regs, ira_hard_regno_cover_class)
+	(ira_reg_class_cover_size, ira_reg_class_cover, ira_class_translate)
+	(ira_reg_class_nregs, ira_memory_move_cost, ira_class_hard_regs)
+	(ira_class_hard_regs_num): Redefine as macros.
+	* ira.c (default_target_ira, default_target_ira_int): New variables.
+	(this_target_ira, this_target_ira_int): New conditional variables.
+	(ira_reg_mode_hard_regset, ira_memory_move_cost)
+	(ira_register_move_cost, ira_may_move_in_cost, ira_may_move_out_cost)
+	(ira_class_subset_p): Delete.
+	(no_unit_alloc_regs): Redefine as a macro.
+	(ira_class_hard_regs, ira_non_ordered_class_hard_regs)
+	(ira_class_hard_regs_num, ira_class_hard_reg_index)
+	(ira_available_class_regs): Delete.
+	(alloc_reg_class_subclasses): Redefine as a macro.
+	(ira_reg_class_cover_size, ira_reg_class_cover)
+	(ira_important_classes_num, ira_important_classes)
+	(ira_important_class_nums, ira_class_translate): Delete.
+	(cover_class_order): Document the variable's lifetime.
+	(reorder_important_classes): Don't set ira_important_class_nums.
+	(ira_reg_class_intersect, ira_reg_classes_intersect_p)
+	(ira_reg_class_super_classes, ira_reg_class_union)
+	(ira_hard_regno_cover_class, ira_reg_class_nregs, ira_max_nregs):
+	Delete.
+	(setup_reg_class_nregs): Don't set ira_max_regs.
+	(prohibited_class_mode_regs): Delete.
+	* target-globals.h (this_target_ira, this_target_ira_int): Declare.
+	(target_globals): Add ira and ira_int fields.
+	(restore_target_globals): Copy the ira field to this_target_ira
+	and the ira_int field to this_target_ira_int.
+	* target-globals.c: Include ira-int.h.
+	(default_target_globals): Initialize the ira and ira_int fields.
+	(save_target_globals): Likewise.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* Makefile.in (target-globals.o): Depend on $(CFGLOOP_H).
 	* cfgloop.h (target_cfgloop): New structure.
 	(default_target_cfgloop): Declare.
