@@ -204,7 +204,7 @@ static void add_candidates (tree, tree, const VEC(tree,gc) *, tree, tree, bool,
 			    tree, tree, int, struct z_candidate **);
 static conversion *merge_conversion_sequences (conversion *, conversion *);
 static bool magic_varargs_p (tree);
-static tree build_temp (tree, tree, int, diagnostic_t *);
+static tree build_temp (tree, tree, int, diagnostic_t *, tsubst_flags_t);
 
 /* Returns nonzero iff the destructor name specified in NAME matches BASETYPE.
    NAME can take many forms...  */
@@ -4851,7 +4851,7 @@ enforce_access (tree basetype_path, tree decl, tree diag_decl)
 
 static tree
 build_temp (tree expr, tree type, int flags,
-	    diagnostic_t *diagnostic_kind)
+	    diagnostic_t *diagnostic_kind, tsubst_flags_t complain)
 {
   int savew, savee;
   VEC(tree,gc) *args;
@@ -4859,7 +4859,7 @@ build_temp (tree expr, tree type, int flags,
   savew = warningcount, savee = errorcount;
   args = make_tree_vector_single (expr);
   expr = build_special_member_call (NULL_TREE, complete_ctor_identifier,
-				    &args, type, flags, tf_warning_or_error);
+				    &args, type, flags, complain);
   release_tree_vector (args);
   if (warningcount > savew)
     *diagnostic_kind = DK_WARNING;
@@ -5132,7 +5132,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	   conversion (i.e. the second step of copy-initialization), so
 	   don't allow any more.  */
 	flags |= LOOKUP_NO_CONVERSION;
-      expr = build_temp (expr, totype, flags, &diag_kind);
+      expr = build_temp (expr, totype, flags, &diag_kind, complain);
       if (diag_kind && fn)
 	{
 	  if ((complain & tf_error))

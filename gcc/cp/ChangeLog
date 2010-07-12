@@ -1,3 +1,10 @@
+2010-07-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/44907
+	* call.c (build_temp): Add tsubst_flags_t complain parameter;
+	adjust build_special_member_call call, pass complain.
+	(convert_like_real): Adjust build_temp call, pass complain.
+
 2010-07-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/43120
