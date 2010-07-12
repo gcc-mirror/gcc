@@ -1160,17 +1160,19 @@ reload_combine_note_use (rtx *xp, rtx insn)
    information about register contents we have would be costly, so we
    use move2add_last_label_luid to note where the label is and then
    later disable any optimization that would cross it.
-   reg_offset[n] / reg_base_reg[n] / reg_mode[n] are only valid if
-   reg_set_luid[n] is greater than move2add_last_label_luid.  */
+   reg_offset[n] / reg_base_reg[n] / reg_symbol_ref[n] / reg_mode[n]
+   are only valid if reg_set_luid[n] is greater than
+   move2add_last_label_luid.  */
 static int reg_set_luid[FIRST_PSEUDO_REGISTER];
 
 /* If reg_base_reg[n] is negative, register n has been set to
-   reg_offset[n] in mode reg_mode[n] .
+   reg_offset[n] or reg_symbol_ref[n] + reg_offset[n] in mode reg_mode[n].
    If reg_base_reg[n] is non-negative, register n has been set to the
    sum of reg_offset[n] and the value of register reg_base_reg[n]
    before reg_set_luid[n], calculated in mode reg_mode[n] .  */
 static HOST_WIDE_INT reg_offset[FIRST_PSEUDO_REGISTER];
 static int reg_base_reg[FIRST_PSEUDO_REGISTER];
+static rtx reg_symbol_ref[FIRST_PSEUDO_REGISTER];
 static enum machine_mode reg_mode[FIRST_PSEUDO_REGISTER];
 
 /* move2add_luid is linearly increased while scanning the instructions
@@ -1190,6 +1192,151 @@ static int move2add_last_label_luid;
        && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (OUTMODE), \
 				 GET_MODE_BITSIZE (INMODE))))
 
+/* This function is called with INSN that sets REG to (SYM + OFF),
+   while REG is known to already have value (SYM + offset).
+   This function tries to change INSN into an add instruction
+   (set (REG) (plus (REG) (OFF - offset))) using the known value.
+   It also updates the information about REG's known value.  */
+
+static void
+move2add_use_add2_insn (rtx reg, rtx sym, rtx off, rtx insn)
+{
+  rtx pat = PATTERN (insn);
+  rtx src = SET_SRC (pat);
+  int regno = REGNO (reg);
+  rtx new_src = gen_int_mode (INTVAL (off) - reg_offset[regno],
+			      GET_MODE (reg));
+  bool speed = optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn));
+
+  /* (set (reg) (plus (reg) (const_int 0))) is not canonical;
+     use (set (reg) (reg)) instead.
+     We don't delete this insn, nor do we convert it into a
+     note, to avoid losing register notes or the return
+     value flag.  jump2 already knows how to get rid of
+     no-op moves.  */
+  if (new_src == const0_rtx)
+    {
+      /* If the constants are different, this is a
+	 truncation, that, if turned into (set (reg)
+	 (reg)), would be discarded.  Maybe we should
+	 try a truncMN pattern?  */
+      if (INTVAL (off) == reg_offset [regno])
+	validate_change (insn, &SET_SRC (pat), reg, 0);
+    }
+  else if (rtx_cost (new_src, PLUS, speed) < rtx_cost (src, SET, speed)
+	   && have_add2_insn (reg, new_src))
+    {
+      rtx tem = gen_rtx_PLUS (GET_MODE (reg), reg, new_src);
+      validate_change (insn, &SET_SRC (pat), tem, 0);
+    }
+  else if (sym == NULL_RTX && GET_MODE (reg) != BImode)
+    {
+      enum machine_mode narrow_mode;
+      for (narrow_mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+	   narrow_mode != VOIDmode
+	     && narrow_mode != GET_MODE (reg);
+	   narrow_mode = GET_MODE_WIDER_MODE (narrow_mode))
+	{
+	  if (have_insn_for (STRICT_LOW_PART, narrow_mode)
+	      && ((reg_offset[regno]
+		   & ~GET_MODE_MASK (narrow_mode))
+		  == (INTVAL (off)
+		      & ~GET_MODE_MASK (narrow_mode))))
+	    {
+	      rtx narrow_reg = gen_rtx_REG (narrow_mode,
+					    REGNO (reg));
+	      rtx narrow_src = gen_int_mode (INTVAL (off),
+					     narrow_mode);
+	      rtx new_set =
+		gen_rtx_SET (VOIDmode,
+			     gen_rtx_STRICT_LOW_PART (VOIDmode,
+						      narrow_reg),
+			     narrow_src);
+	      if (validate_change (insn, &PATTERN (insn),
+				   new_set, 0))
+		break;
+	    }
+	}
+    }
+  reg_set_luid[regno] = move2add_luid;
+  reg_base_reg[regno] = -1;
+  reg_mode[regno] = GET_MODE (reg);
+  reg_symbol_ref[regno] = sym;
+  reg_offset[regno] = INTVAL (off);
+}
+
+
+/* This function is called with INSN that sets REG to (SYM + OFF),
+   but REG doesn't have known value (SYM + offset).  This function
+   tries to find another register which is known to already have
+   value (SYM + offset) and change INSN into an add instruction
+   (set (REG) (plus (the found register) (OFF - offset))) if such
+   a register is found.  It also updates the information about
+   REG's known value.  */
+
+static void
+move2add_use_add3_insn (rtx reg, rtx sym, rtx off, rtx insn)
+{
+  rtx pat = PATTERN (insn);
+  rtx src = SET_SRC (pat);
+  int regno = REGNO (reg);
+  int min_cost = INT_MAX;
+  int min_regno;
+  bool speed = optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn));
+  int i;
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    if (reg_set_luid[i] > move2add_last_label_luid
+	&& reg_mode[i] == GET_MODE (reg)
+	&& reg_base_reg[i] < 0
+	&& reg_symbol_ref[i] != NULL_RTX
+	&& rtx_equal_p (sym, reg_symbol_ref[i]))
+      {
+	rtx new_src = gen_int_mode (INTVAL (off) - reg_offset[i],
+				    GET_MODE (reg));
+	/* (set (reg) (plus (reg) (const_int 0))) is not canonical;
+	   use (set (reg) (reg)) instead.
+	   We don't delete this insn, nor do we convert it into a
+	   note, to avoid losing register notes or the return
+	   value flag.  jump2 already knows how to get rid of
+	   no-op moves.  */
+	if (new_src == const0_rtx)
+	  {
+	    min_cost = 0;
+	    min_regno = i;
+	    break;
+	  }
+	else
+	  {
+	    int cost = rtx_cost (new_src, PLUS, speed);
+	    if (cost < min_cost)
+	      {
+		min_cost = cost;
+		min_regno = i;
+	      }
+	  }
+      }
+
+  if (min_cost < rtx_cost (src, SET, speed))
+    {
+      rtx tem;
+
+      tem = gen_rtx_REG (GET_MODE (reg), min_regno);
+      if (i != min_regno)
+	{
+	  rtx new_src = gen_int_mode (INTVAL (off) - reg_offset[min_regno],
+				      GET_MODE (reg));
+	  tem = gen_rtx_PLUS (GET_MODE (reg), tem, new_src);
+	}
+      validate_change (insn, &SET_SRC (pat), tem, 0);
+    }
+  reg_set_luid[regno] = move2add_luid;
+  reg_base_reg[regno] = -1;
+  reg_mode[regno] = GET_MODE (reg);
+  reg_symbol_ref[regno] = sym;
+  reg_offset[regno] = INTVAL (off);
+}
+
 static void
 reload_cse_move2add (rtx first)
 {
@@ -1197,7 +1344,13 @@ reload_cse_move2add (rtx first)
   rtx insn;
 
   for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; i--)
-    reg_set_luid[i] = 0;
+    {
+      reg_set_luid[i] = 0;
+      reg_offset[i] = 0;
+      reg_base_reg[i] = 0;
+      reg_symbol_ref[i] = NULL_RTX;
+      reg_mode[i] = VOIDmode;
+    }
 
   move2add_last_label_luid = 0;
   move2add_luid = 2;
@@ -1245,65 +1398,11 @@ reload_cse_move2add (rtx first)
 				  (set (STRICT_LOW_PART (REGX)) (CONST_INT B))
 	      */
 
-	      if (CONST_INT_P (src) && reg_base_reg[regno] < 0)
+	      if (CONST_INT_P (src)
+		  && reg_base_reg[regno] < 0
+		  && reg_symbol_ref[regno] == NULL_RTX)
 		{
-		  rtx new_src = gen_int_mode (INTVAL (src) - reg_offset[regno],
-					      GET_MODE (reg));
-		  bool speed = optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn));
-
-		  /* (set (reg) (plus (reg) (const_int 0))) is not canonical;
-		     use (set (reg) (reg)) instead.
-		     We don't delete this insn, nor do we convert it into a
-		     note, to avoid losing register notes or the return
-		     value flag.  jump2 already knows how to get rid of
-		     no-op moves.  */
-		  if (new_src == const0_rtx)
-		    {
-		      /* If the constants are different, this is a
-			 truncation, that, if turned into (set (reg)
-			 (reg)), would be discarded.  Maybe we should
-			 try a truncMN pattern?  */
-		      if (INTVAL (src) == reg_offset [regno])
-			validate_change (insn, &SET_SRC (pat), reg, 0);
-		    }
-		  else if (rtx_cost (new_src, PLUS, speed) < rtx_cost (src, SET, speed)
-			   && have_add2_insn (reg, new_src))
-		    {
-		      rtx tem = gen_rtx_PLUS (GET_MODE (reg), reg, new_src);
-		      validate_change (insn, &SET_SRC (pat), tem, 0);
-		    }
-		  else if (GET_MODE (reg) != BImode)
-		    {
-		      enum machine_mode narrow_mode;
-		      for (narrow_mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-			   narrow_mode != VOIDmode
-			   && narrow_mode != GET_MODE (reg);
-			   narrow_mode = GET_MODE_WIDER_MODE (narrow_mode))
-			{
-			  if (have_insn_for (STRICT_LOW_PART, narrow_mode)
-			      && ((reg_offset[regno]
-				   & ~GET_MODE_MASK (narrow_mode))
-				  == (INTVAL (src)
-				      & ~GET_MODE_MASK (narrow_mode))))
-			    {
-			      rtx narrow_reg = gen_rtx_REG (narrow_mode,
-							    REGNO (reg));
-			      rtx narrow_src = gen_int_mode (INTVAL (src),
-							     narrow_mode);
-			      rtx new_set =
-				gen_rtx_SET (VOIDmode,
-					     gen_rtx_STRICT_LOW_PART (VOIDmode,
-								      narrow_reg),
-					     narrow_src);
-			      if (validate_change (insn, &PATTERN (insn),
-						   new_set, 0))
-				break;
-			    }
-			}
-		    }
-		  reg_set_luid[regno] = move2add_luid;
-		  reg_mode[regno] = GET_MODE (reg);
-		  reg_offset[regno] = INTVAL (src);
+		  move2add_use_add2_insn (reg, NULL_RTX, src, insn);
 		  continue;
 		}
 
@@ -1373,6 +1472,51 @@ reload_cse_move2add (rtx first)
 		    }
 		}
 	    }
+
+	  /* Try to transform
+	     (set (REGX) (CONST (PLUS (SYMBOL_REF) (CONST_INT A))))
+	     ...
+	     (set (REGY) (CONST (PLUS (SYMBOL_REF) (CONST_INT B))))
+	     to
+	     (set (REGX) (CONST (PLUS (SYMBOL_REF) (CONST_INT A))))
+	     ...
+	     (set (REGY) (CONST (PLUS (REGX) (CONST_INT B-A))))  */
+	  if ((GET_CODE (src) == SYMBOL_REF
+	       || (GET_CODE (src) == CONST
+		   && GET_CODE (XEXP (src, 0)) == PLUS
+		   && GET_CODE (XEXP (XEXP (src, 0), 0)) == SYMBOL_REF
+		   && CONST_INT_P (XEXP (XEXP (src, 0), 1))))
+	      && dbg_cnt (cse2_move2add))
+	    {
+	      rtx sym, off;
+
+	      if (GET_CODE (src) == SYMBOL_REF)
+		{
+		  sym = src;
+		  off = const0_rtx;
+		}
+	      else
+		{
+		  sym = XEXP (XEXP (src, 0), 0);
+		  off = XEXP (XEXP (src, 0), 1);
+		}
+
+	      /* If the reg already contains the value which is sum of
+		 sym and some constant value, we can use an add2 insn.  */
+	      if (reg_set_luid[regno] > move2add_last_label_luid
+		  && MODES_OK_FOR_MOVE2ADD (GET_MODE (reg), reg_mode[regno])
+		  && reg_base_reg[regno] < 0
+		  && reg_symbol_ref[regno] != NULL_RTX
+		  && rtx_equal_p (sym, reg_symbol_ref[regno]))
+		move2add_use_add2_insn (reg, sym, off, insn);
+
+	      /* Otherwise, we have to find a register whose value is sum
+		 of sym and some constant value.  */
+	      else
+		move2add_use_add3_insn (reg, sym, off, insn);
+
+	      continue;
+	    }
 	}
 
       for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
@@ -1386,7 +1530,7 @@ reload_cse_move2add (rtx first)
 		reg_set_luid[regno] = 0;
 	    }
 	}
-      note_stores (PATTERN (insn), move2add_note_store, NULL);
+      note_stores (PATTERN (insn), move2add_note_store, insn);
 
       /* If INSN is a conditional branch, we try to extract an
 	 implicit set out of it.  */
@@ -1408,7 +1552,7 @@ reload_cse_move2add (rtx first)
 	    {
 	      rtx implicit_set =
 		gen_rtx_SET (VOIDmode, XEXP (cnd, 0), XEXP (cnd, 1));
-	      move2add_note_store (SET_DEST (implicit_set), implicit_set, 0);
+	      move2add_note_store (SET_DEST (implicit_set), implicit_set, insn);
 	    }
 	}
 
@@ -1426,13 +1570,15 @@ reload_cse_move2add (rtx first)
     }
 }
 
-/* SET is a SET or CLOBBER that sets DST.
+/* SET is a SET or CLOBBER that sets DST.  DATA is the insn which
+   contains SET.
    Update reg_set_luid, reg_offset and reg_base_reg accordingly.
    Called from reload_cse_move2add via note_stores.  */
 
 static void
-move2add_note_store (rtx dst, const_rtx set, void *data ATTRIBUTE_UNUSED)
+move2add_note_store (rtx dst, const_rtx set, void *data)
 {
+  rtx insn = (rtx) data;
   unsigned int regno = 0;
   unsigned int nregs = 0;
   unsigned int i;
@@ -1464,6 +1610,38 @@ move2add_note_store (rtx dst, const_rtx set, void *data ATTRIBUTE_UNUSED)
   regno += REGNO (dst);
   if (!nregs)
     nregs = hard_regno_nregs[regno][mode];
+
+  if (SCALAR_INT_MODE_P (GET_MODE (dst))
+      && nregs == 1 && GET_CODE (set) == SET)
+    {
+      rtx note, sym = NULL_RTX;
+      HOST_WIDE_INT off;
+
+      note = find_reg_equal_equiv_note (insn);
+      if (note && GET_CODE (XEXP (note, 0)) == SYMBOL_REF)
+	{
+	  sym = XEXP (note, 0);
+	  off = 0;
+	}
+      else if (note && GET_CODE (XEXP (note, 0)) == CONST
+	       && GET_CODE (XEXP (XEXP (note, 0), 0)) == PLUS
+	       && GET_CODE (XEXP (XEXP (XEXP (note, 0), 0), 0)) == SYMBOL_REF
+	       && CONST_INT_P (XEXP (XEXP (XEXP (note, 0), 0), 1)))
+	{
+	  sym = XEXP (XEXP (XEXP (note, 0), 0), 0);
+	  off = INTVAL (XEXP (XEXP (XEXP (note, 0), 0), 1));
+	}
+
+      if (sym != NULL_RTX)
+	{
+	  reg_base_reg[regno] = -1;
+	  reg_symbol_ref[regno] = sym;
+	  reg_offset[regno] = off;
+	  reg_mode[regno] = mode;
+	  reg_set_luid[regno] = move2add_luid;
+	  return;
+	}
+    }
 
   if (SCALAR_INT_MODE_P (GET_MODE (dst))
       && nregs == 1 && GET_CODE (set) == SET
@@ -1525,6 +1703,7 @@ move2add_note_store (rtx dst, const_rtx set, void *data ATTRIBUTE_UNUSED)
 	case CONST_INT:
 	  /* Start tracking the register as a constant.  */
 	  reg_base_reg[regno] = -1;
+	  reg_symbol_ref[regno] = NULL_RTX;
 	  reg_offset[regno] = INTVAL (SET_SRC (set));
 	  /* We assign the same luid to all registers set to constants.  */
 	  reg_set_luid[regno] = move2add_last_label_luid + 1;
@@ -1545,6 +1724,7 @@ move2add_note_store (rtx dst, const_rtx set, void *data ATTRIBUTE_UNUSED)
       if (reg_set_luid[base_regno] <= move2add_last_label_luid)
 	{
 	  reg_base_reg[base_regno] = base_regno;
+	  reg_symbol_ref[base_regno] = NULL_RTX;
 	  reg_offset[base_regno] = 0;
 	  reg_set_luid[base_regno] = move2add_luid;
 	  reg_mode[base_regno] = mode;
@@ -1558,6 +1738,7 @@ move2add_note_store (rtx dst, const_rtx set, void *data ATTRIBUTE_UNUSED)
       /* Copy base information from our base register.  */
       reg_set_luid[regno] = reg_set_luid[base_regno];
       reg_base_reg[regno] = reg_base_reg[base_regno];
+      reg_symbol_ref[regno] = reg_symbol_ref[base_regno];
 
       /* Compute the sum of the offsets or constants.  */
       reg_offset[regno] = trunc_int_for_mode (offset

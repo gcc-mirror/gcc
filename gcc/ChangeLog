@@ -1,3 +1,11 @@
+2010-07-12  Jie Zhang  <jie@codesourcery.com>
+
+	* postreload.c (reg_symbol_ref[]): New.
+	(move2add_use_add2_insn): New.
+	(move2add_use_add3_insn): New.
+	(reload_cse_move2add): Handle SYMBOL + OFFSET case.
+	(move2add_note_store): Likewise.
+
 2010-07-12  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR rtl-optimization/44752
