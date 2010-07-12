@@ -1,5 +1,21 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* Makefile.in (target-globals.o): Depend on builtins.h.
+	* builtins.h: New file.
+	* builtins.c: Include builtins.h.
+	(default_target_builtins): New variable.
+	(this_target_builtins): New conditional variable.
+	(apply_args_mode, apply_result_mode): Redefine as macros.
+	* target-globals.h (this_target_builtins): Declare.
+	(target_globals): Add a builtins field.
+	(restore_target_globals): Copy the builtins field to
+	this_target_builtins.
+	* target-globals.c: Include builtins.h.
+	(default_target_globals): Initialize the builtins field.
+	(save_target_globals): Likewise.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* expmed.h (alg_code, mult_cost, MULT_COST_LESS, CHEAPER_MULT_COST)
 	(algorithm, alg_hash_entry, NUM_ALG_HASH_ENTRIES, alg_hash): Moved
 	from expmed.c.
