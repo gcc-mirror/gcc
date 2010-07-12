@@ -9574,7 +9574,7 @@ main (int argc, char **argv)
 	    "   from the machine description file `md'.  */\n\n"
 	    "/* There is no automaton, but ISO C forbids empty\n"
 	    "   translation units, so include a header file with some\n"
-	    "   declarations, and the its pre-requisite header file.  */\n"
+	    "   declarations, and its pre-requisite header file.  */\n"
 	    "#include \"config.h\"\n"
 	    "#include \"system.h\"\n");
     }
