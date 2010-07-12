@@ -1372,6 +1372,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define STACK_CHECK_MAX_VAR_SIZE (STACK_CHECK_MAX_FRAME_SIZE / 100)
 #endif
 
+#ifndef SWITCHABLE_TARGET
+#define SWITCHABLE_TARGET 0
+#endif
+
 #endif /* GCC_INSN_FLAGS_H  */
 
 #endif  /* ! GCC_DEFAULTS_H */

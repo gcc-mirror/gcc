@@ -1337,6 +1337,7 @@ OBJS-common = \
 	stor-layout.o \
 	store-motion.o \
 	stringpool.o \
+	target-globals.o \
 	targhooks.o \
 	timevar.o \
 	toplev.o \
@@ -2249,7 +2250,8 @@ gtype-desc.o: gtype-desc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	hard-reg-set.h $(BASIC_BLOCK_H) cselib.h $(INSN_ADDR_H) $(OPTABS_H) \
 	libfuncs.h debug.h $(GGC_H) $(CGRAPH_H) $(TREE_FLOW_H) reload.h \
 	$(CPP_ID_DATA_H) tree-chrec.h $(CFGLAYOUT_H) $(EXCEPT_H) output.h \
-	$(CFGLOOP_H) $(TARGET_H)
+	$(CFGLOOP_H) $(TARGET_H) $(IPA_PROP_H) $(LTO_STREAMER_H) \
+	target-globals.h
 
 ggc-common.o: ggc-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h		\
 	$(GGC_H) $(HASHTAB_H) $(TOPLEV_H) $(DIAGNOSTIC_CORE_H) $(PARAMS_H) hosthooks.h	\
@@ -3473,6 +3475,9 @@ lower-subreg.o : lower-subreg.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(MACHMODE_H) $(TM_H) $(RTL_H) $(TM_P_H) $(TIMEVAR_H) $(FLAGS_H) \
    insn-config.h $(BASIC_BLOCK_H) $(RECOG_H) $(OBSTACK_H) $(BITMAP_H) \
    $(EXPR_H) $(EXCEPT_H) $(REGS_H) $(TREE_PASS_H) $(DF_H)
+target-globals.o : target-globals.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+   $(TM_H) insn-config.h $(MACHMODE_H) $(GGC_H) $(TOPLEV_H) target-globals.h \
+   $(FLAGS_H)
 
 $(out_object_file): $(out_file) $(CONFIG_H) coretypes.h $(TM_H) $(TREE_H) \
    $(RTL_H) $(REGS_H) hard-reg-set.h insn-config.h conditions.h \
@@ -3750,6 +3755,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-ssa-alias.h \
   $(srcdir)/ipa-prop.h \
   $(srcdir)/lto-streamer.h \
+  $(srcdir)/target-globals.h \
   @all_gtfiles@
 
 # Compute the list of GT header files from the corresponding C sources,

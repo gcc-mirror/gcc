@@ -317,18 +317,12 @@ enum stack_check_type flag_stack_check = NO_STACK_CHECK;
 
 bool user_defined_section_attribute = false;
 
-/* Values of the -falign-* flags: how much to align labels in code.
-   0 means `use default', 1 means `don't align'.
-   For each variable, there is an _log variant which is the power
-   of two not less than the variable, for .align output.  */
-
-int align_loops_log;
-int align_loops_max_skip;
-int align_jumps_log;
-int align_jumps_max_skip;
-int align_labels_log;
-int align_labels_max_skip;
-int align_functions_log;
+struct target_flag_state default_target_flag_state;
+#if SWITCHABLE_TARGET
+struct target_flag_state *this_target_flag_state = &default_target_flag_state;
+#else
+#define this_target_flag_state (&default_target_flag_state)
+#endif
 
 typedef struct
 {
