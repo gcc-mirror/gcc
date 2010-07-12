@@ -1,5 +1,12 @@
 2010-07-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	PR pch/14940
+	* config/host-solaris.c (mmap_fixed): New function.
+	(sol_gt_pch_get_address): Use it.
+	(sol_gt_pch_use_address): Likewise.
+
+2010-07-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* config.gcc (i[34567]86-*-solaris2*): Default with_arch_32 to
 	pentiumpro on Solaris 8 and 9/x86.
 	* doc/install.texi (Specific, i?86-*-solaris2.[89]): Recommend GNU as.
