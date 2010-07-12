@@ -1,3 +1,8 @@
+2010-07-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vrp.c (simplify_bit_ops_using_ranges): New function.
+	(simplify_stmt_using_ranges): Use it.
+
 2010-07-12  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.h (struct spu_builtin_description): Remove FNDECL
