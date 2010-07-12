@@ -1,5 +1,23 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* Makefile.in (gcse.o, target-globals.o): Depend on gcse.h..
+	* gcse.h: New file.
+	* gcse.c: Include gcse.h.
+	(default_target_gcse): New variable.
+	(this_target_gcse): New conditional variable.
+	(can_copy): Redefine as a macro.
+	(can_copy_init_p): New macro.
+	(can_copy_p): Remove can_copy_init_p.
+	* target-globals.h (this_target_gcse): Declare.
+	(target_globals): Add a gcse field.
+	(restore_target_globals): Copy the gcse field to
+	this_target_gcse.
+	* target-globals.c: Include gcse.h.
+	(default_target_globals): Initialize the gcse field.
+	(save_target_globals): Likewise.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* ira-int.h (target_ira_int): Add x_ira_prohibited_mode_move_regs
 	and x_ira_prohibited_mode_move_regs_initialized_p.
 	(ira_prohibited_mode_move_regs): Redefine as a macro.

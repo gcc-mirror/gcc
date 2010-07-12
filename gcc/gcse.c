@@ -170,6 +170,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "dbgcnt.h"
 #include "target.h"
+#include "gcse.h"
 
 /* We support GCSE via Partial Redundancy Elimination.  PRE optimizations
    are a superset of those done by classic GCSE.
@@ -262,6 +263,11 @@ along with GCC; see the file COPYING3.  If not see
    register.  */
 
 /* GCSE global vars.  */
+
+struct target_gcse default_target_gcse;
+#if SWITCHABLE_TARGET
+struct target_gcse *this_target_gcse = &default_target_gcse;
+#endif
 
 /* Set to non-zero if CSE should run after all GCSE optimizations are done.  */
 int flag_rerun_cse_after_global_opts;
@@ -539,10 +545,10 @@ static bool is_too_expensive (const char *);
 
 /* Misc. utilities.  */
 
-/* Nonzero for each mode that supports (set (reg) (reg)).
-   This is trivially true for integer and floating point values.
-   It may or may not be true for condition codes.  */
-static char can_copy[(int) NUM_MACHINE_MODES];
+#define can_copy \
+  (this_target_gcse->x_can_copy)
+#define can_copy_init_p \
+  (this_target_gcse->x_can_copy_init_p)
 
 /* Compute which modes support reg/reg copy operations.  */
 
@@ -579,8 +585,6 @@ compute_can_copy (void)
 bool
 can_copy_p (enum machine_mode mode)
 {
-  static bool can_copy_init_p = false;
-
   if (! can_copy_init_p)
     {
       compute_can_copy ();

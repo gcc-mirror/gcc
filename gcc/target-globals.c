@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "ira-int.h"
 #include "builtins.h"
+#include "gcse.h"
 
 #if SWITCHABLE_TARGET
 struct target_globals default_target_globals = {
@@ -52,7 +53,8 @@ struct target_globals default_target_globals = {
   &default_target_cfgloop,
   &default_target_ira,
   &default_target_ira_int,
-  &default_target_builtins
+  &default_target_builtins,
+  &default_target_gcse
 };
 
 struct target_globals *
@@ -73,6 +75,7 @@ save_target_globals (void)
   g->ira = XCNEW (struct target_ira);
   g->ira_int = XCNEW (struct target_ira_int);
   g->builtins = XCNEW (struct target_builtins);
+  g->gcse = XCNEW (struct target_gcse);
   restore_target_globals (g);
   target_reinit ();
   return g;
