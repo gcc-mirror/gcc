@@ -1,5 +1,22 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* Makefile.in (target-globals.o): Depend on $(REGS_H).
+	* regs.h (target_reg_modes): New structure.
+	(default_target_reg_modes): Declare.
+	(this_target_reg_modes): Declare as a variable or define as a macro.
+	(hard_regno_nregs, reg_raw_mode): Redefine as macros.
+	* reginfo.c (default_target_reg_modes): New variable.
+	(this_target_reg_modes): New conditional variable.
+	(hard_regno_nregs, reg_raw_mode): Delete.
+	* target-globals.h (this_target_regs): Declare.
+	(target_globals): Add a regs field.
+	(restore_target_globals): Copy the regs field to this_target_regs.
+	* target-globals.c: Include regs.h.
+	(default_target_globals): Initialize the regs field.
+	(save_target_globals): Likewise.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* doc/tm.texi.in (SWITCHABLE_TARGET): Document.
 	* doc/tm.texi: Regenerate.
 	* Makefile.in (OBJS-common): Add target-globals.o.

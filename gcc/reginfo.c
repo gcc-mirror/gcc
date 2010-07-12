@@ -59,6 +59,11 @@ along with GCC; see the file COPYING3.  If not see
 int max_regno;
 
 
+struct target_regs default_target_regs;
+#if SWITCHABLE_TARGET
+struct target_regs *this_target_regs = &default_target_regs;
+#endif
+
 /* Register tables used by many passes.  */
 
 /* Indexed by hard register number, contains 1 for registers
@@ -175,12 +180,6 @@ const char * reg_names[] = REGISTER_NAMES;
 /* Array containing all of the register class names.  */
 const char * reg_class_names[] = REG_CLASS_NAMES;
 
-/* For each hard register, the widest mode object that it can contain.
-   This will be a MODE_INT mode if the register can hold integers.  Otherwise
-   it will be a MODE_FLOAT or a MODE_CC mode, whichever is valid for the
-   register.  */
-enum machine_mode reg_raw_mode[FIRST_PSEUDO_REGISTER];
-
 /* 1 if there is a register of given mode.  */
 bool have_regs_of_mode [MAX_MACHINE_MODE];
 
@@ -208,9 +207,6 @@ static GTY(()) rtx top_of_stack[MAX_MACHINE_MODE];
 /* No more global register variables may be declared; true once
    reginfo has been initialized.  */
 static int no_global_reg_vars = 0;
-
-/* Specify number of hard registers given machine mode occupy.  */
-unsigned char hard_regno_nregs[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
 
 /* Given a register bitmap, turn on the bits in a HARD_REG_SET that
    correspond to the hard registers, if any, set in that map.  This

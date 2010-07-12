@@ -218,13 +218,6 @@ extern short *reg_renumber;
 
 extern bool have_regs_of_mode [MAX_MACHINE_MODE];
 
-/* For each hard register, the widest mode object that it can contain.
-   This will be a MODE_INT mode if the register can hold integers.  Otherwise
-   it will be a MODE_FLOAT or a MODE_CC mode, whichever is valid for the
-   register.  */
-
-extern enum machine_mode reg_raw_mode[FIRST_PSEUDO_REGISTER];
-
 /* Flag set by local-alloc or global-alloc if they decide to allocate
    something in a call-clobbered register.  */
 
@@ -266,9 +259,6 @@ typedef unsigned short move_table[N_REG_CLASSES];
    in another class.  */
 extern move_table *move_cost[MAX_MACHINE_MODE];
 
-/* Specify number of hard registers given machine mode occupy.  */
-extern unsigned char hard_regno_nregs[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
-
 /* Similar, but here we don't have to move if the first index is a
    subset of the second so in that case the cost is zero.  */
 extern move_table *may_move_in_cost[MAX_MACHINE_MODE];
@@ -276,6 +266,31 @@ extern move_table *may_move_in_cost[MAX_MACHINE_MODE];
 /* Similar, but here we don't have to move if the first index is a
    superset of the second so in that case the cost is zero.  */
 extern move_table *may_move_out_cost[MAX_MACHINE_MODE];
+
+/* Target-dependent globals.  */
+struct target_regs {
+  /* For each starting hard register, the number of consecutive hard
+     registers that a given machine mode occupies.  */
+  unsigned char x_hard_regno_nregs[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
+
+  /* For each hard register, the widest mode object that it can contain.
+     This will be a MODE_INT mode if the register can hold integers.  Otherwise
+     it will be a MODE_FLOAT or a MODE_CC mode, whichever is valid for the
+     register.  */
+  enum machine_mode x_reg_raw_mode[FIRST_PSEUDO_REGISTER];
+};
+
+extern struct target_regs default_target_regs;
+#if SWITCHABLE_TARGET
+extern struct target_regs *this_target_regs;
+#else
+#define this_target_regs (&default_target_regs)
+#endif
+
+#define hard_regno_nregs \
+  (this_target_regs->x_hard_regno_nregs)
+#define reg_raw_mode \
+  (this_target_regs->x_reg_raw_mode)
 
 /* Return an exclusive upper bound on the registers occupied by hard
    register (reg:MODE REGNO).  */

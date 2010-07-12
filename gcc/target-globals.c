@@ -27,10 +27,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "target-globals.h"
 #include "flags.h"
+#include "regs.h"
 
 #if SWITCHABLE_TARGET
 struct target_globals default_target_globals = {
-  &default_target_flag_state
+  &default_target_flag_state,
+  &default_target_regs
 };
 
 struct target_globals *
@@ -40,6 +42,7 @@ save_target_globals (void)
 
   g = ggc_alloc_target_globals ();
   g->flag_state = XCNEW (struct target_flag_state);
+  g->regs = XCNEW (struct target_regs);
   restore_target_globals (g);
   target_reinit ();
   return g;
