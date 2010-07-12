@@ -1,5 +1,27 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* Makefile.in (target-globals.o): Depend on $(RTL_H).
+	* rtl.h: (target_rtl): New structure.
+	(default_target_rtl): Declare.
+	(this_target_rtl): Declare as a variable or define as a macro.
+	(global_rtl, pic_offset_table_rtx, return_address_pointer_rtx):
+	Redefine as macros.
+	* emit-rtl.c (default_target_rtl): New variable.
+	(this_target_rtl): New conditional variable.
+	(global_rtl, static_regno_reg_rtx, pic_offset_table_rtx)
+	(return_address_pointer_rtx): Delete.
+	(initial_regno_reg_rtx): New macro.
+	(init_emit): Use initial_regno_reg_rtx instead of static_regno_reg_rtx.
+	(init_emit_regs): Likewise.
+	* target-globals.h (this_target_rtl): Declare.
+	(target_globals): Add a rtl field.
+	(restore_target_globals): Copy the rtl field to this_target_rtl.
+	* target-globals.c: Include rtl.h.
+	(default_target_globals): Initialize the rtl field.
+	(save_target_globals): Likewise.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* Makefile.in (target-globals.o): Depend on $(REGS_H).
 	* regs.h (target_reg_modes): New structure.
 	(default_target_reg_modes): Declare.

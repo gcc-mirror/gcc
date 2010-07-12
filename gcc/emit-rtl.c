@@ -61,6 +61,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "target.h"
 
+struct target_rtl default_target_rtl;
+#if SWITCHABLE_TARGET
+struct target_rtl *this_target_rtl = &default_target_rtl;
+#endif
+
+#define initial_regno_reg_rtx (this_target_rtl->x_initial_regno_reg_rtx)
+
 /* Commonly used modes.  */
 
 enum machine_mode byte_mode;	/* Mode whose width is BITS_PER_UNIT.  */
@@ -84,19 +91,6 @@ rtx * regno_reg_rtx;
 
 static GTY(()) int label_num = 1;
 
-/* Commonly used rtx's, so that we only need space for one copy.
-   These are initialized once for the entire compilation.
-   All of these are unique; no other rtx-object will be equal to any
-   of these.  */
-
-rtx global_rtl[GR_MAX];
-
-/* Commonly used RTL for hard registers.  These objects are not necessarily
-   unique, so we allocate them separately from global_rtl.  They are
-   initialized once per compilation unit, then copied into regno_reg_rtx
-   at the beginning of each function.  */
-static GTY(()) rtx static_regno_reg_rtx[FIRST_PSEUDO_REGISTER];
-
 /* We record floating-point CONST_DOUBLEs in each floating-point mode for
    the values of 0, 1, and 2.  For the integer entries and VOIDmode, we
    record a copy of const[012]_rtx.  */
@@ -114,30 +108,6 @@ REAL_VALUE_TYPE dconsthalf;
 /* Record fixed-point constant 0 and 1.  */
 FIXED_VALUE_TYPE fconst0[MAX_FCONST0];
 FIXED_VALUE_TYPE fconst1[MAX_FCONST1];
-
-/* All references to the following fixed hard registers go through
-   these unique rtl objects.  On machines where the frame-pointer and
-   arg-pointer are the same register, they use the same unique object.
-
-   After register allocation, other rtl objects which used to be pseudo-regs
-   may be clobbered to refer to the frame-pointer register.
-   But references that were originally to the frame-pointer can be
-   distinguished from the others because they contain frame_pointer_rtx.
-
-   When to use frame_pointer_rtx and hard_frame_pointer_rtx is a little
-   tricky: until register elimination has taken place hard_frame_pointer_rtx
-   should be used if it is being set, and frame_pointer_rtx otherwise.  After
-   register elimination hard_frame_pointer_rtx should always be used.
-   On machines where the two registers are same (most) then these are the
-   same.
-
-   In an inline procedure, the stack and frame pointer rtxs may not be
-   used for anything else.  */
-rtx pic_offset_table_rtx;	/* (REG:Pmode PIC_OFFSET_TABLE_REGNUM) */
-
-/* This is used to implement __builtin_return_address for some machines.
-   See for instance the MIPS port.  */
-rtx return_address_pointer_rtx;	/* (REG:Pmode RETURN_ADDRESS_POINTER_REGNUM) */
 
 /* We make one copy of (const_int C) where C is in
    [- MAX_SAVED_CONST_INT, MAX_SAVED_CONST_INT]
@@ -5576,7 +5546,7 @@ init_emit (void)
 
   /* Put copies of all the hard registers into regno_reg_rtx.  */
   memcpy (regno_reg_rtx,
-	  static_regno_reg_rtx,
+	  initial_regno_reg_rtx,
 	  FIRST_PSEUDO_REGISTER * sizeof (rtx));
 
   /* Put copies of all the virtual register rtx into regno_reg_rtx.  */
@@ -5703,7 +5673,7 @@ init_emit_regs (void)
   /* Initialize RTL for commonly used hard registers.  These are
      copied into regno_reg_rtx as we begin to compile each function.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    static_regno_reg_rtx[i] = gen_raw_REG (reg_raw_mode[i], i);
+    initial_regno_reg_rtx[i] = gen_raw_REG (reg_raw_mode[i], i);
 
 #ifdef RETURN_ADDRESS_POINTER_REGNUM
   return_address_pointer_rtx
