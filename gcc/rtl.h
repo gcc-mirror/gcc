@@ -2041,6 +2041,10 @@ struct GTY(()) target_rtl {
 
   /* A sample (mem:M stack_pointer_rtx) rtx for each mode M.  */
   rtx x_top_of_stack[MAX_MACHINE_MODE];
+
+  /* Static hunks of RTL used by the aliasing code; these are treated
+     as persistent to avoid unnecessary RTL allocations.  */
+  rtx x_static_reg_base_value[FIRST_PSEUDO_REGISTER];
 };
 
 extern GTY(()) struct target_rtl default_target_rtl;
