@@ -1,5 +1,16 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* expmed.h (alg_code, mult_cost, MULT_COST_LESS, CHEAPER_MULT_COST)
+	(algorithm, alg_hash_entry, NUM_ALG_HASH_ENTRIES, alg_hash): Moved
+	from expmed.c.
+	(target_expmed): Add x_alg_hash and x_alg_hash_used_p.
+	(alg_hash, alg_hash_used_p): New macros.
+	* expmed.c (init_expmed): Clear alg_hash if reinitializing.
+	(alg_code, mult_cost, MULT_COST_LESS, CHEAPER_MULT_COST, algorithm)
+	(alg_hash_entry, NUM_ALG_HASH_ENTRIES, alg_hash): Moved to expmed.h.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* ira-int.h (target_ira_int): Add x_max_struct_costs_size, x_init_cost,
 	x_temp_costs, x_op_costs, x_this_op_costs and x_cost_classes.
 	* ira-costs.c (max_struct_costs_size, init_cost, temp_costs, op_costs)
