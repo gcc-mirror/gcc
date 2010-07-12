@@ -29,6 +29,7 @@ extern struct target_reload *this_target_reload;
 extern struct target_expmed *this_target_expmed;
 extern struct target_optabs *this_target_optabs;
 extern struct target_libfuncs *this_target_libfuncs;
+extern struct target_cfgloop *this_target_cfgloop;
 
 struct GTY(()) target_globals {
   struct target_flag_state *GTY((skip)) flag_state;
@@ -39,6 +40,7 @@ struct GTY(()) target_globals {
   struct target_expmed *GTY((skip)) expmed;
   struct target_optabs *GTY((skip)) optabs;
   struct target_libfuncs *libfuncs;
+  struct target_cfgloop *GTY((skip)) cfgloop;
 };
 
 extern struct target_globals default_target_globals;
@@ -56,6 +58,7 @@ restore_target_globals (struct target_globals *g)
   this_target_expmed = g->expmed;
   this_target_optabs = g->optabs;
   this_target_libfuncs = g->libfuncs;
+  this_target_cfgloop = g->cfgloop;
 }
 #endif
 

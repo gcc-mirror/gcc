@@ -32,6 +32,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphds.h"
 #include "params.h"
 
+struct target_cfgloop default_target_cfgloop;
+#if SWITCHABLE_TARGET
+struct target_cfgloop *this_target_cfgloop = &default_target_cfgloop;
+#endif
+
 /* Checks whether BB is executed exactly once in each LOOP iteration.  */
 
 bool
@@ -316,19 +321,6 @@ seq_cost (const_rtx seq, bool speed)
 
   return cost;
 }
-
-/* The properties of the target.  */
-
-unsigned target_avail_regs;	/* Number of available registers.  */
-unsigned target_clobbered_regs; /* Number of available registers that are
-				   call-clobbered.  */
-unsigned target_res_regs;	/* Number of registers reserved for temporary
-				   expressions.  */
-unsigned target_reg_cost[2];	/* The cost for register when there still
-				   is some reserve, but we are approaching
-				   the number of available registers.  */
-unsigned target_spill_cost[2];	/* The cost for register when we need
-				   to spill.  */
 
 /* Initialize the constants for computing set costs.  */
 

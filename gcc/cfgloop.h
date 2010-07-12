@@ -625,12 +625,41 @@ fel_init (loop_iterator *li, loop_p *loop, unsigned flags)
   }
 
 /* The properties of the target.  */
+struct target_cfgloop {
+  /* Number of available registers.  */
+  unsigned x_target_avail_regs;
 
-extern unsigned target_avail_regs;
-extern unsigned target_clobbered_regs;
-extern unsigned target_res_regs;
-extern unsigned target_reg_cost [2];
-extern unsigned target_spill_cost [2];
+  /* Number of available registers that are call-clobbered.  */
+  unsigned x_target_clobbered_regs;
+
+  /* Number of registers reserved for temporary expressions.  */
+  unsigned x_target_res_regs;
+
+  /* The cost for register when there still is some reserve, but we are
+     approaching the number of available registers.  */
+  unsigned x_target_reg_cost[2];
+
+  /* The cost for register when we need to spill.  */
+  unsigned x_target_spill_cost[2];
+};
+
+extern struct target_cfgloop default_target_cfgloop;
+#if SWITCHABLE_TARGET
+extern struct target_cfgloop *this_target_cfgloop;
+#else
+#define this_target_cfgloop (&default_target_cfgloop)
+#endif
+
+#define target_avail_regs \
+  (this_target_cfgloop->x_target_avail_regs)
+#define target_clobbered_regs \
+  (this_target_cfgloop->x_target_clobbered_regs)
+#define target_res_regs \
+  (this_target_cfgloop->x_target_res_regs)
+#define target_reg_cost \
+  (this_target_cfgloop->x_target_reg_cost)
+#define target_spill_cost \
+  (this_target_cfgloop->x_target_spill_cost)
 
 /* Register pressure estimation for induction variable optimizations & loop
    invariant motion.  */
