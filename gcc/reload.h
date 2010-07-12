@@ -154,6 +154,37 @@ extern struct reload rld[MAX_RELOADS];
 extern int n_reloads;
 #endif
 
+/* Target-dependent globals.  */
+struct target_reload {
+  /* Nonzero if indirect addressing is supported when the innermost MEM is
+     of the form (MEM (SYMBOL_REF sym)).  It is assumed that the level to
+     which these are valid is the same as spill_indirect_levels, above.  */
+  bool x_indirect_symref_ok;
+
+  /* Nonzero if an address (plus (reg frame_pointer) (reg ...)) is valid.  */
+  bool x_double_reg_address_ok;
+
+  /* Nonzero if indirect addressing is supported on the machine; this means
+     that spilling (REG n) does not require reloading it into a register in
+     order to do (MEM (REG n)) or (MEM (PLUS (REG n) (CONST_INT c))).  The
+     value indicates the level of indirect addressing supported, e.g., two
+     means that (MEM (MEM (REG n))) is also valid if (REG n) does not get
+     a hard register.  */
+  bool x_spill_indirect_levels;
+};
+
+extern struct target_reload default_target_reload;
+#if SWITCHABLE_TARGET
+extern struct target_reload *this_target_reload;
+#else
+#define this_target_reload (&default_target_reload)
+#endif
+
+#define indirect_symref_ok \
+  (this_target_reload->x_indirect_symref_ok)
+#define double_reg_address_ok \
+  (this_target_reload->x_double_reg_address_ok)
+
 extern GTY (()) VEC(rtx,gc) *reg_equiv_memory_loc_vec;
 extern rtx *reg_equiv_constant;
 extern rtx *reg_equiv_invariant;
@@ -180,15 +211,6 @@ extern int reload_n_operands;
 /* First uid used by insns created by reload in this function.
    Used in find_equiv_reg.  */
 extern int reload_first_uid;
-
-/* Nonzero if indirect addressing is supported when the innermost MEM is
-   of the form (MEM (SYMBOL_REF sym)).  It is assumed that the level to
-   which these are valid is the same as spill_indirect_levels, above.  */
-
-extern char indirect_symref_ok;
-
-/* Nonzero if an address (plus (reg frame_pointer) (reg ...)) is valid.  */
-extern char double_reg_address_ok;
 
 extern int num_not_at_initial_offset;
 
