@@ -41,30 +41,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "ggc.h"
 
-/* True if caller-save has been initialized.  */
-bool caller_save_initialized_p;
-
-/* Call used hard registers which can not be saved because there is no
-   insn for this.  */
-HARD_REG_SET no_caller_save_reg_set;
-
-#ifndef MAX_MOVE_MAX
-#define MAX_MOVE_MAX MOVE_MAX
-#endif
-
-#ifndef MIN_UNITS_PER_WORD
-#define MIN_UNITS_PER_WORD UNITS_PER_WORD
-#endif
-
 #define MOVE_MAX_WORDS (MOVE_MAX / UNITS_PER_WORD)
 
-/* Modes for each hard register that we can save.  The smallest mode is wide
-   enough to save the entire contents of the register.  When saving the
-   register because it is live we first try to save in multi-register modes.
-   If that is not possible the save is done one register at a time.  */
-
-static enum machine_mode
-  regno_save_mode[FIRST_PSEUDO_REGISTER][MAX_MOVE_MAX / MIN_UNITS_PER_WORD + 1];
+#define regno_save_mode \
+  (this_target_reload->x_regno_save_mode)
 
 /* For each hard register, a place on the stack where it can be saved,
    if needed.  */

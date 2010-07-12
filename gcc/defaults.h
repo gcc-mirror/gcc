@@ -1025,6 +1025,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define MOVE_MAX_PIECES   MOVE_MAX
 #endif
 
+#ifndef MAX_MOVE_MAX
+#define MAX_MOVE_MAX MOVE_MAX
+#endif
+
+#ifndef MIN_UNITS_PER_WORD
+#define MIN_UNITS_PER_WORD UNITS_PER_WORD
+#endif
+
 #ifndef STACK_POINTER_OFFSET
 #define STACK_POINTER_OFFSET    0
 #endif
