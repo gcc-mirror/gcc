@@ -1,3 +1,11 @@
+2010-07-11  Gary Funck  <gary@intrepid.com>
+
+	Fix a bug where a statement in c_build_qualified_type()
+	in the trunk had been inadverntently deleted.
+	This bug showed up in the IA64 port, because jmpbuf's
+	on that arehitecture must be 16 byte aligned, and they were not.
+	c-typeck.c (c_build_qualified_type): Revive the deleted line.
+
 2010-07-08  Gary Funck  <gary@intrepid.com>
 
 	Make changes so that other language compilers

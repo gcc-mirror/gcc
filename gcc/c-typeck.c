@@ -10758,8 +10758,9 @@ c_build_qualified_type (tree type, int type_quals)
 	     so that identical integer constant values are represented
 	     by a single tree node.  */
 	  if (TYPE_QUALS (t_elem_type) == type_quals
-	      && t_elem_block_factor == elem_block_factor
+	      && TYPE_NAME (t) == TYPE_NAME (type)
 	      && TYPE_CONTEXT (t) == TYPE_CONTEXT (type)
+	      && t_elem_block_factor == elem_block_factor
 	      && attribute_list_equal (TYPE_ATTRIBUTES (t),
 				       TYPE_ATTRIBUTES (type)))
 	    break;
