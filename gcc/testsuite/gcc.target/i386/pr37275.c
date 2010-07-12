@@ -1,6 +1,7 @@
 /* PR middle-end/37275 */
 /* { dg-do compile { target ilp32 } } */
 /* { dg-options "-g -dA -O2 -march=i686 -fstack-protector" } */
+/* { dg-require-visibility "" } */
 
 typedef __SIZE_TYPE__ size_t;
 extern void *memcpy (void *, const void *, size_t);
