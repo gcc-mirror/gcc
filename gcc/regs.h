@@ -214,10 +214,6 @@ extern size_t reg_info_p_size;
 
 extern short *reg_renumber;
 
-/* Vector indexed by machine mode saying whether there are regs of that mode.  */
-
-extern bool have_regs_of_mode [MAX_MACHINE_MODE];
-
 /* Flag set by local-alloc or global-alloc if they decide to allocate
    something in a call-clobbered register.  */
 
@@ -249,23 +245,7 @@ extern int caller_save_needed;
 #define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE) 0
 #endif
 
-/* 1 if the corresponding class does contain register of given
-   mode.  */
-extern char contains_reg_of_mode [N_REG_CLASSES] [MAX_MACHINE_MODE];
-
 typedef unsigned short move_table[N_REG_CLASSES];
-
-/* Maximum cost of moving from a register in one class to a register
-   in another class.  */
-extern move_table *move_cost[MAX_MACHINE_MODE];
-
-/* Similar, but here we don't have to move if the first index is a
-   subset of the second so in that case the cost is zero.  */
-extern move_table *may_move_in_cost[MAX_MACHINE_MODE];
-
-/* Similar, but here we don't have to move if the first index is a
-   superset of the second so in that case the cost is zero.  */
-extern move_table *may_move_out_cost[MAX_MACHINE_MODE];
 
 /* Target-dependent globals.  */
 struct target_regs {
@@ -278,6 +258,28 @@ struct target_regs {
      it will be a MODE_FLOAT or a MODE_CC mode, whichever is valid for the
      register.  */
   enum machine_mode x_reg_raw_mode[FIRST_PSEUDO_REGISTER];
+
+  /* Vector indexed by machine mode saying whether there are regs of
+     that mode.  */
+  bool x_have_regs_of_mode[MAX_MACHINE_MODE];
+
+  /* 1 if the corresponding class contains a register of the given mode.  */
+  char x_contains_reg_of_mode[N_REG_CLASSES][MAX_MACHINE_MODE];
+
+  /* Maximum cost of moving from a register in one class to a register
+     in another class.  Based on TARGET_REGISTER_MOVE_COST.  */
+  move_table *x_move_cost[MAX_MACHINE_MODE];
+
+  /* Similar, but here we don't have to move if the first index is a
+     subset of the second so in that case the cost is zero.  */
+  move_table *x_may_move_in_cost[MAX_MACHINE_MODE];
+
+  /* Similar, but here we don't have to move if the first index is a
+     superset of the second so in that case the cost is zero.  */
+  move_table *x_may_move_out_cost[MAX_MACHINE_MODE];
+
+  /* Keep track of the last mode we initialized move costs for.  */
+  int x_last_mode_for_init_move_cost;
 };
 
 extern struct target_regs default_target_regs;
@@ -291,6 +293,16 @@ extern struct target_regs *this_target_regs;
   (this_target_regs->x_hard_regno_nregs)
 #define reg_raw_mode \
   (this_target_regs->x_reg_raw_mode)
+#define have_regs_of_mode \
+  (this_target_regs->x_have_regs_of_mode)
+#define contains_reg_of_mode \
+  (this_target_regs->x_contains_reg_of_mode)
+#define move_cost \
+  (this_target_regs->x_move_cost)
+#define may_move_in_cost \
+  (this_target_regs->x_may_move_in_cost)
+#define may_move_out_cost \
+  (this_target_regs->x_may_move_out_cost)
 
 /* Return an exclusive upper bound on the registers occupied by hard
    register (reg:MODE REGNO).  */
