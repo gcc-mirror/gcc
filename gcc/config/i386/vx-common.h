@@ -1,5 +1,5 @@
 /* IA32 VxWorks and VxWorks AE target definitions.
-   Copyright (C) 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2008, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,7 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
 
-/* VxWorks uses the same ABI as Solaris 10.  */
+/* VxWorks uses the same ABI as Solaris 2.  */
 
 #define SUBTARGET_RETURN_IN_MEMORY(TYPE, FNTYPE) \
-	ix86_sol10_return_in_memory (TYPE, FNTYPE)
+	ix86_solaris_return_in_memory (TYPE, FNTYPE)
