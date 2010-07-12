@@ -15446,6 +15446,9 @@ mips_override_options (void)
       target_flags_explicit |= MASK_SOFT_FLOAT_ABI;
     }
 
+  if (TARGET_FLIP_MIPS16)
+    TARGET_INTERLINK_MIPS16 = 1;
+
   /* Set the small data limit.  */
   mips_small_data_threshold = (g_switch_set
 			       ? g_switch_value

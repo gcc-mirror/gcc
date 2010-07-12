@@ -1,5 +1,10 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips.c (mips_override_options): Make -mflip-mips16
+	imply -minterlink-mips16.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mips/mips.h (mips16_globals): Declare.
 	(SWITCHABLE_TARGET): Define.
 	* config/mips/mips.c: Include target-globals.h.
