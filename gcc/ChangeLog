@@ -1,5 +1,24 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* Makefile.in (target-globals.o): Depend on reload.h.
+	* reload.h (target_reload): New structure.
+	(default_target_reload): Declare.
+	(this_target_reload): Declare as a variable or define as a macro.
+	(indirect_symref_ok, double_reg_address_ok): Redefine as macros.
+	* reload1.c (default_target_reload): New variable
+	(this_target_reload): New conditional variable.
+	(indirect_symref_ok, double_reg_address_ok): Delete.
+	(spill_indirect_levels): Redefine as a macro.
+	* target-globals.h (this_target_reload): Declare.
+	(target_globals): Add a reload field.
+	(restore_target_globals): Copy the reload field to
+	this_target_reload.
+	* target-globals.c: Include hard-reg-set.h.
+	(default_target_globals): Initialize the reload field.
+	(save_target_globals): Likewise.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* rtl.h (target_rtl): Add x_static_reg_base_value.
 	* alias.c (static_reg_base_value): Redefine as a macro.
 
