@@ -1,3 +1,19 @@
+2010-07-12  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.h (struct spu_builtin_description): Remove FNDECL
+	member.  Do not mark as GTY(()).
+	* config/spu/spu.c (spu_builtins): Remove FNDECL initializer elements.
+	(spu_builtin_decls): New static variable.
+	(spu_builtin_decl): Use it instead of spu_builtins[].fndecl.
+	(spu_init_builtins): Likewise.
+	(spu_builtin_mul_widen_even): Likewise.
+	(spu_builtin_mul_widen_odd): Likewise.
+	(spu_builtin_mask_for_load): Likewise.
+	(spu_builtin_vec_perm): Likewise.
+	* config/spu/spu-c.c: Include "target.h".
+	(spu_resolve_overloaded_builtin): Call targetm.builtin_decl instead
+	of using spu_builtins[].fndecl.
+
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_override_options): Make -mflip-mips16

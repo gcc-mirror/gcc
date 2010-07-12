@@ -570,7 +570,7 @@ enum spu_builtin_type
   B_INTERNAL
 };
 
-struct GTY(()) spu_builtin_description
+struct spu_builtin_description
 {
   int fcode;
   int icode;
@@ -580,8 +580,6 @@ struct GTY(()) spu_builtin_description
   /* The first element of parm is always the return type.  The rest
      are a zero terminated list of parameters.  */
   int parm[5];
-
-  tree fndecl;
 };
 
 extern struct spu_builtin_description spu_builtins[];
