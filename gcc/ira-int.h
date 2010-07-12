@@ -823,6 +823,14 @@ struct target_ira_int {
      (excluding the class itself.  Non-allocatable registers are
      excluded from the consideration;.  */
   enum reg_class x_alloc_reg_class_subclasses[N_REG_CLASSES][N_REG_CLASSES];
+
+  /* Array whose values are hard regset of hard registers for which
+     move of the hard register in given mode into itself is
+     prohibited.  */
+  HARD_REG_SET x_ira_prohibited_mode_move_regs[NUM_MACHINE_MODES];
+
+  /* Flag of that the above array has been initialized.  */
+  bool x_ira_prohibited_mode_move_regs_initialized_p;
 };
 
 extern struct target_ira_int default_target_ira_int;
@@ -860,13 +868,10 @@ extern struct target_ira_int *this_target_ira_int;
   (this_target_ira_int->x_ira_reg_class_super_classes)
 #define ira_reg_class_union \
   (this_target_ira_int->x_ira_reg_class_union)
+#define ira_prohibited_mode_move_regs \
+  (this_target_ira_int->x_ira_prohibited_mode_move_regs)
 
 /* ira.c: */
-
-/* Array whose values are hard regset of hard registers for which
-   move of the hard register in given mode into itself is
-   prohibited.  */
-extern HARD_REG_SET ira_prohibited_mode_move_regs[NUM_MACHINE_MODES];
 
 extern void *ira_allocate (size_t);
 extern void *ira_reallocate (void *, size_t);

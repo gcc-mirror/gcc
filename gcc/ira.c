@@ -1195,14 +1195,8 @@ ira_finish_once (void)
 }
 
 
-
-/* Array whose values are hard regset of hard registers for which
-   move of the hard register in given mode into itself is
-   prohibited.  */
-HARD_REG_SET ira_prohibited_mode_move_regs[NUM_MACHINE_MODES];
-
-/* Flag of that the above array has been initialized.  */
-static bool ira_prohibited_mode_move_regs_initialized_p = false;
+#define ira_prohibited_mode_move_regs_initialized_p \
+  (this_target_ira_int->x_ira_prohibited_mode_move_regs_initialized_p)
 
 /* Set up IRA_PROHIBITED_MODE_MOVE_REGS.  */
 static void
