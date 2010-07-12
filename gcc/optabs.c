@@ -46,11 +46,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 
 struct target_optabs default_target_optabs;
+struct target_libfuncs default_target_libfuncs;
 #if SWITCHABLE_TARGET
 struct target_optabs *this_target_optabs = &default_target_optabs;
+struct target_libfuncs *this_target_libfuncs = &default_target_libfuncs;
 #endif
 
-rtx libfunc_table[LTI_MAX];
+#define libfunc_hash \
+  (this_target_libfuncs->x_libfunc_hash)
 
 /* Contains the optab used for each rtx code.  */
 optab code_to_optab[NUM_RTX_CODE + 1];
@@ -69,19 +72,7 @@ void debug_optab_libfuncs (void);
 #define DECIMAL_PREFIX "dpd_"
 #endif
 
-
-/* Info about libfunc.  We use same hashtable for normal optabs and conversion
-   optab.  In the first case mode2 is unused.  */
-struct GTY(()) libfunc_entry {
-  size_t optab;
-  enum machine_mode mode1, mode2;
-  rtx libfunc;
-};
-
-/* Hash table used to convert declarations into nodes.  */
-static GTY((param_is (struct libfunc_entry))) htab_t libfunc_hash;
-
-/* Used for attribute_hash.  */
+/* Used for libfunc_hash.  */
 
 static hashval_t
 hash_libfunc (const void *p)
@@ -92,7 +83,7 @@ hash_libfunc (const void *p)
 	  ^ e->optab);
 }
 
-/* Used for optab_hash.  */
+/* Used for libfunc_hash.  */
 
 static int
 eq_libfunc (const void *p, const void *q)
@@ -6124,14 +6115,15 @@ set_conv_libfunc (convert_optab optable, enum machine_mode tmode,
 void
 init_optabs (void)
 {
-  static bool reinit;
-
-  libfunc_hash = htab_create_ggc (10, hash_libfunc, eq_libfunc, NULL);
-
-  /* We statically initialize the insn_codes with the equivalent of
-     CODE_FOR_nothing.  Repeat the process if reinitialising.  */
-  if (reinit)
-    init_insn_codes ();
+  if (libfunc_hash)
+    {
+      htab_empty (libfunc_hash);
+      /* We statically initialize the insn_codes with the equivalent of
+	 CODE_FOR_nothing.  Repeat the process if reinitialising.  */
+      init_insn_codes ();
+    }
+  else
+    libfunc_hash = htab_create_ggc (10, hash_libfunc, eq_libfunc, NULL);
 
   init_optab (add_optab, PLUS);
   init_optabv (addv_optab, PLUS);
@@ -6572,8 +6564,6 @@ init_optabs (void)
 
   /* Allow the target to add more libcalls or rename some, etc.  */
   targetm.init_libfuncs ();
-
-  reinit = true;
 }
 
 /* Print information about the current contents of the optabs on
