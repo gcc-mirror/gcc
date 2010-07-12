@@ -1,5 +1,12 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* regs.h (target_regs): Add x_direct_load, x_direct_store and
+	x_float_extend_from_mem.
+	(direct_load, direct_store, float_extend_from_mem): New macros.
+	* expr.c (direct_load, direct_store, float_extend_from_mem): Delete.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* Makefile.in (LIBFUNCS_H): Add $(HASHTAB_H).
 	(target-globals.o): Depend on $(LIBFUNCS_H).
 	* libfuncs.h: Include hashtab.h.
