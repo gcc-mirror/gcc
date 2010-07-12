@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target dfp } */
+/* { dg-require-effective-target sse } */
 /* { dg-options "-Os -msse -std=gnu99" } */
 
 #include "sse-check.h"

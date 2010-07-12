@@ -28,19 +28,23 @@ if { ![istarget i?86*-*-*] && ![istarget x86_64-*-*] } then {
 set MATH_TORTURE_OPTIONS [list \
         { -O0 } \
         { -O0 -mfpmath=387 } \
-        { -O0 -msse -mno-sse2 -mfpmath=sse } \
-        { -O0 -msse -mno-sse2 -mfpmath=sse,387 } \
         { -O0 -mfpmath=387 -ffast-math } \
-        { -O0 -msse -mno-sse2 -mfpmath=sse -ffast-math } \
-        { -O0 -msse -mno-sse2 -mfpmath=sse,387 -ffast-math } \
         { -O2 } \
         { -O2 -mfpmath=387 } \
+        { -O2 -mfpmath=387 -ffast-math } \
+]
+
+if { [check_effective_target_sse] } {
+    lappend MATH_TORTURE_OPTIONS \
+        { -O0 -msse -mno-sse2 -mfpmath=sse } \
+        { -O0 -msse -mno-sse2 -mfpmath=sse,387 } \
+        { -O0 -msse -mno-sse2 -mfpmath=sse -ffast-math } \
+        { -O0 -msse -mno-sse2 -mfpmath=sse,387 -ffast-math } \
         { -O2 -msse -mno-sse2 -mfpmath=sse } \
         { -O2 -msse -mno-sse2 -mfpmath=sse,387 } \
-        { -O2 -mfpmath=387 -ffast-math } \
         { -O2 -msse -mno-sse2 -mfpmath=sse -ffast-math } \
         { -O2 -msse -mno-sse2 -mfpmath=sse,387 -ffast-math } \
-]
+}
 
 if { [check_effective_target_sse2] } {
     lappend MATH_TORTURE_OPTIONS \

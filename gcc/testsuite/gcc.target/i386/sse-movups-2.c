@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -msse" } */
+/* { dg-require-effective-target sse } */
 
 #ifndef CHECK_H
 #define CHECK_H "sse-check.h"

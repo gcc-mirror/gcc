@@ -2,6 +2,7 @@
    39592.  */
 /* { dg-do compile } */
 /* { dg-options "-ansi -msse" } */
+/* { dg-require-effective-target sse } */
 
 double
 foo (unsigned long var)
