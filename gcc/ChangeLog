@@ -1,5 +1,12 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* reload.h (target_reload): Add x_cached_reg_save_code and
+	x_cached_reg_restore_code.
+	* caller-save.c (cached_reg_save_code, cached_reg_restore_code):
+	Redefine as macros.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* Makefile.in (target-globals.o): Depend on builtins.h.
 	* builtins.h: New file.
 	* builtins.c: Include builtins.h.
