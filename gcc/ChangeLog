@@ -1,5 +1,32 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* Makefile.in (LIBFUNCS_H): Add $(HASHTAB_H).
+	(target-globals.o): Depend on $(LIBFUNCS_H).
+	* libfuncs.h: Include hashtab.h.
+	(libfunc_entry): Moved from optabs.c.
+	(target_libfuncs): New structure.
+	(default_target_libfuncs): Declare.
+	(this_target_libfuncs): Declare as a variable or define as a macro.
+	(libfunc_table): Redefine as a macro.
+	* optabs.c (default_target_libfuncs): New variable.
+	(this_target_libfuncs): New conditional variable.
+	(libfunc_table): Delete.
+	(libfunc_entry): Moved to optabs.h.
+	(libfunc_hash): Redefine as a macro.
+	(hash_libfunc, eq_libfunc): Fix comments.
+	(init_optabs): Use libfunc_hash to detect cases where the function
+	has already been called.  Clear the hash table instead of
+	recreating it.
+	* target-globals.h (this_target_libfuncs): Declare.
+	(target_globals): Add a libfuncs field.
+	(restore_target_globals): Copy the libfuncs field to
+	this_target_libfuncs.
+	* target-globals.c: Include libfuncs.h.
+	(default_target_globals): Initialize the libfuncs field.
+	(save_target_globals): Likewise.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* Makefile.in (LIBFUNCS_H): New variable.  Use instead of libfuncs.h
 	in all dependency lists.
 
