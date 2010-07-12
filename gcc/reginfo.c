@@ -59,44 +59,22 @@ along with GCC; see the file COPYING3.  If not see
 int max_regno;
 
 
+struct target_hard_regs default_target_hard_regs;
 struct target_regs default_target_regs;
 #if SWITCHABLE_TARGET
+struct target_hard_regs *this_target_hard_regs = &default_target_hard_regs;
 struct target_regs *this_target_regs = &default_target_regs;
 #endif
 
-/* Register tables used by many passes.  */
-
-/* Indexed by hard register number, contains 1 for registers
-   that are fixed use (stack pointer, pc, frame pointer, etc.).
-   These are the registers that cannot be used to allocate
-   a pseudo reg for general use.  */
-char fixed_regs[FIRST_PSEUDO_REGISTER];
-
-/* Same info as a HARD_REG_SET.  */
-HARD_REG_SET fixed_reg_set;
-
-/* Data for initializing the above.  */
+/* Data for initializing fixed_regs.  */
 static const char initial_fixed_regs[] = FIXED_REGISTERS;
 
-/* Indexed by hard register number, contains 1 for registers
-   that are fixed use or are clobbered by function calls.
-   These are the registers that cannot be used to allocate
-   a pseudo reg whose life crosses calls unless we are able
-   to save/restore them across the calls.  */
-char call_used_regs[FIRST_PSEUDO_REGISTER];
-
-/* Same info as a HARD_REG_SET.  */
-HARD_REG_SET call_used_reg_set;
-
-/* Data for initializing the above.  */
+/* Data for initializing call_used_regs.  */
 static const char initial_call_used_regs[] = CALL_USED_REGISTERS;
 
-/* This is much like call_used_regs, except it doesn't have to
-   be a superset of FIXED_REGISTERS. This vector indicates
-   what is really call clobbered, and is used when defining
-   regs_invalidated_by_call.  */
 #ifdef CALL_REALLY_USED_REGISTERS
-char call_really_used_regs[] = CALL_REALLY_USED_REGISTERS;
+/* Data for initializing call_really_used_regs.  */
+static const char initial_call_really_used_regs[] = CALL_REALLY_USED_REGISTERS;
 #endif
 
 #ifdef CALL_REALLY_USED_REGISTERS
@@ -105,27 +83,11 @@ char call_really_used_regs[] = CALL_REALLY_USED_REGISTERS;
 #define CALL_REALLY_USED_REGNO_P(X)  call_used_regs[X]
 #endif
 
-
-/* Contains registers that are fixed use -- i.e. in fixed_reg_set -- or
-   a function value return register or TARGET_STRUCT_VALUE_RTX or
-   STATIC_CHAIN_REGNUM.  These are the registers that cannot hold quantities
-   across calls even if we are willing to save and restore them.  */
-
-HARD_REG_SET call_fixed_reg_set;
-
 /* Indexed by hard register number, contains 1 for registers
    that are being used for global register decls.
    These must be exempt from ordinary flow analysis
    and are also considered fixed.  */
 char global_regs[FIRST_PSEUDO_REGISTER];
-
-/* Contains 1 for registers that are set or clobbered by calls.  */
-/* ??? Ideally, this would be just call_used_regs plus global_regs, but
-   for someone's bright idea to have call_used_regs strictly include
-   fixed_regs.  Which leaves us guessing as to the set of fixed_regs
-   that are actually preserved.  We know for sure that those associated
-   with the local stack frame are safe, but scant others.  */
-HARD_REG_SET regs_invalidated_by_call;
 
 /* Same information as REGS_INVALIDATED_BY_CALL but in regset form to be used
    in dataflow more conveniently.  */
@@ -135,20 +97,10 @@ regset regs_invalidated_by_call_regset;
    should not be reset after each function is compiled.  */
 static bitmap_obstack persistent_obstack;
 
-/* Table of register numbers in the order in which to try to use them.  */
+/* Used to initialize reg_alloc_order.  */
 #ifdef REG_ALLOC_ORDER
-int reg_alloc_order[FIRST_PSEUDO_REGISTER] = REG_ALLOC_ORDER;
-
-/* The inverse of reg_alloc_order.  */
-int inv_reg_alloc_order[FIRST_PSEUDO_REGISTER];
+static int initial_reg_alloc_order[FIRST_PSEUDO_REGISTER] = REG_ALLOC_ORDER;
 #endif
-
-/* For each reg class, a HARD_REG_SET saying which registers are in it.  */
-HARD_REG_SET reg_class_contents[N_REG_CLASSES];
-
-/* For each reg class, a boolean saying whether the class contains only
-   fixed registers.  */
-bool class_only_fixed_regs[N_REG_CLASSES];
 
 /* The same information, but as an array of unsigned ints.  We copy from
    these unsigned ints to the table above.  We do this so the tm.h files
@@ -160,22 +112,8 @@ bool class_only_fixed_regs[N_REG_CLASSES];
 static const unsigned int_reg_class_contents[N_REG_CLASSES][N_REG_INTS]
   = REG_CLASS_CONTENTS;
 
-/* For each reg class, number of regs it contains.  */
-unsigned int reg_class_size[N_REG_CLASSES];
-
-/* For each reg class, table listing all the classes contained in it.  */
-enum reg_class reg_class_subclasses[N_REG_CLASSES][N_REG_CLASSES];
-
-/* For each pair of reg classes,
-   a largest reg class contained in their union.  */
-enum reg_class reg_class_subunion[N_REG_CLASSES][N_REG_CLASSES];
-
-/* For each pair of reg classes,
-   the smallest reg class containing their union.  */
-enum reg_class reg_class_superunion[N_REG_CLASSES][N_REG_CLASSES];
-
 /* Array containing all of the register names.  */
-const char * reg_names[] = REGISTER_NAMES;
+static const char *const initial_reg_names[] = REGISTER_NAMES;
 
 /* Array containing all of the register class names.  */
 const char * reg_class_names[] = REG_CLASS_NAMES;
@@ -251,9 +189,25 @@ init_reg_sets (void)
      CALL_USED_REGISTERS had the right number of initializers.  */
   gcc_assert (sizeof fixed_regs == sizeof initial_fixed_regs);
   gcc_assert (sizeof call_used_regs == sizeof initial_call_used_regs);
+#ifdef CALL_REALLY_USED_REGISTERS
+  gcc_assert (sizeof call_really_used_regs
+	      == sizeof initial_call_really_used_regs);
+#endif
+#ifdef REG_ALLOC_ORDER
+  gcc_assert (sizeof reg_alloc_order == sizeof initial_reg_alloc_order);
+#endif
+  gcc_assert (sizeof reg_names == sizeof initial_reg_names);
 
   memcpy (fixed_regs, initial_fixed_regs, sizeof fixed_regs);
   memcpy (call_used_regs, initial_call_used_regs, sizeof call_used_regs);
+#ifdef CALL_REALLY_USED_REGISTERS
+  memcpy (call_really_used_regs, initial_call_really_used_regs,
+	  sizeof call_really_used_regs);
+#endif
+#ifdef REG_ALLOC_ORDER
+  memcpy (reg_alloc_order, initial_reg_alloc_order, sizeof reg_alloc_order);
+#endif
+  memcpy (reg_names, initial_reg_names, sizeof reg_names);
   memset (global_regs, 0, sizeof global_regs);
 }
 

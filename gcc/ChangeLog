@@ -1,5 +1,36 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* hard-reg-set.h (target_hard_regs): New structure.
+	(default_target_hard_regs): Declare.
+	(this_target_hard_regs): Declare as a variable or define as a macro.
+	(fixed_regs, fixed_reg_set, call_used_regs, call_really_used_regs)
+	(call_used_reg_set, call_fixed_reg_set, regs_invalidated_by_call)
+	(reg_alloc_order, inv_reg_alloc_order, reg_class_contents)
+	(reg_class_size, reg_class_subclasses, reg_class_subunion)
+	(reg_class_superunion, reg_names): Redefine as macros.
+	* reginfo.c (fixed_regs, fixed_reg_set, call_used_regs)
+	(call_used_reg_set, call_really_used_regs, call_fixed_reg_set)
+	(regs_invalidated_by_call, reg_alloc_order, inv_reg_alloc_order)
+	(reg_class_contents, reg_class_size, reg_class_subclasses)
+	(reg_class_subunion, reg_class_superunion, reg_names): Delete.
+	(default_target_hard_regs): New variable
+	(this_target_hard_regs, initial_call_really_used_regs)
+	(initial_reg_alloc_order): New conditional variables.
+	(initial_reg_names): New variable.
+	(init_reg_sets): Assert that initial_call_really_used_regs,
+	initial_reg_alloc_order and initial_reg_names
+	are all the same size as their variable counterparts.  Use them to
+	initialize those counterparts.
+	* target-globals.h (this_target_hard_regs): Declare.
+	(target_globals): Add a hard_regs field.
+	(restore_target_globals): Copy the hard_regs field to
+	this_target_hard_regs.
+	* target-globals.c: Include hard-reg-set.h.
+	(default_target_globals): Initialize the hard_regs field.
+	(save_target_globals): Likewise.
+
+2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* Makefile.in (target-globals.o): Depend on $(RTL_H).
 	* rtl.h: (target_rtl): New structure.
 	(default_target_rtl): Declare.

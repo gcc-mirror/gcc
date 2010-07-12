@@ -24,11 +24,13 @@ along with GCC; see the file COPYING3.  If not see
 extern struct target_flag_state *this_target_flag_state;
 extern struct target_regs *this_target_regs;
 extern struct target_rtl *this_target_rtl;
+extern struct target_hard_regs *this_target_hard_regs;
 
 struct GTY(()) target_globals {
   struct target_flag_state *GTY((skip)) flag_state;
   struct target_regs *GTY((skip)) regs;
   struct target_rtl *rtl;
+  struct target_hard_regs *GTY((skip)) hard_regs;
 };
 
 extern struct target_globals default_target_globals;
@@ -41,6 +43,7 @@ restore_target_globals (struct target_globals *g)
   this_target_flag_state = g->flag_state;
   this_target_regs = g->regs;
   this_target_rtl = g->rtl;
+  this_target_hard_regs = g->hard_regs;
 }
 #endif
 
