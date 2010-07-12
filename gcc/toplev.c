@@ -259,7 +259,6 @@ enum ira_region flag_ira_region = IRA_REGION_MIXED;
 /* Set the default for excess precision.  */
 
 enum excess_precision flag_excess_precision_cmdline = EXCESS_PRECISION_DEFAULT;
-enum excess_precision flag_excess_precision = EXCESS_PRECISION_DEFAULT;
 
 /* Nonzero means change certain warnings into errors.
    Usually these are warnings about failure to conform to some standard.  */
