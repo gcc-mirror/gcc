@@ -127,6 +127,14 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	  out = write_block (dtp, w);
 	  if (out == NULL)
 	    return;
+
+	  if (unlikely (is_char4_unit (dtp)))
+	    {
+	      gfc_char4_t *out4 = (gfc_char4_t *) out;
+	      *out4 = '0';
+	      return;
+	    }
+
 	  *out = '0';
 	  return;
 	}
@@ -430,6 +438,11 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
   /* Check the value fits in the specified field width.  */
   if (nblanks < 0 || edigits == -1)
     {
+      if (unlikely (is_char4_unit (dtp)))
+	{
+	  memset4 (out, 0, '*', w);
+	  return;
+	}
       star_fill (out, w);
       return;
     }
@@ -442,6 +455,105 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
     }
   else
     leadzero = 0;
+
+  /* For internal character(kind=4) units, we duplicate the code used for
+     regular output slightly modified.  This needs to be maintained
+     consistent with the regular code that follows this block.  */
+  if (unlikely (is_char4_unit (dtp)))
+    {
+      gfc_char4_t *out4 = (gfc_char4_t *) out;
+      /* Pad to full field width.  */
+
+      if ( ( nblanks > 0 ) && !dtp->u.p.no_leading_blank)
+	{
+	  memset4 (out, 0, ' ', nblanks);
+	  out4 += nblanks;
+	}
+
+      /* Output the initial sign (if any).  */
+      if (sign == S_PLUS)
+	*(out4++) = '+';
+      else if (sign == S_MINUS)
+	*(out4++) = '-';
+
+      /* Output an optional leading zero.  */
+      if (leadzero)
+	*(out4++) = '0';
+
+      /* Output the part before the decimal point, padding with zeros.  */
+      if (nbefore > 0)
+	{
+	  if (nbefore > ndigits)
+	    {
+	      i = ndigits;
+	      memcpy4 (out4, 0, digits, i);
+	      ndigits = 0;
+	      while (i < nbefore)
+		out4[i++] = '0';
+	    }
+	  else
+	    {
+	      i = nbefore;
+	      memcpy4 (out4, 0, digits, i);
+	      ndigits -= i;
+	    }
+
+	  digits += i;
+	  out4 += nbefore;
+	}
+
+      /* Output the decimal point.  */
+      *(out4++) = dtp->u.p.current_unit->decimal_status
+		    == DECIMAL_POINT ? '.' : ',';
+
+      /* Output leading zeros after the decimal point.  */
+      if (nzero > 0)
+	{
+	  for (i = 0; i < nzero; i++)
+	    *(out4++) = '0';
+	}
+
+      /* Output digits after the decimal point, padding with zeros.  */
+      if (nafter > 0)
+	{
+	  if (nafter > ndigits)
+	    i = ndigits;
+	  else
+	    i = nafter;
+
+	  memcpy4 (out4, 0, digits, i);
+	  while (i < nafter)
+	    out4[i++] = '0';
+
+	  digits += i;
+	  ndigits -= i;
+	  out4 += nafter;
+	}
+
+      /* Output the exponent.  */
+      if (expchar)
+	{
+	  if (expchar != ' ')
+	    {
+	      *(out4++) = expchar;
+	      edigits--;
+	    }
+#if HAVE_SNPRINTF
+	  snprintf (buffer, size, "%+0*d", edigits, e);
+#else
+	  sprintf (buffer, "%+0*d", edigits, e);
+#endif
+	  memcpy4 (out4, 0, buffer, edigits);
+	}
+
+      if (dtp->u.p.no_leading_blank)
+	{
+	  out4 += edigits;
+	  memset4 (out4 , 0, ' ' , nblanks);
+	  dtp->u.p.no_leading_blank = 0;
+	}
+      return;
+    } /* End of character(kind=4) internal unit code.  */
 
   /* Pad to full field width.  */
 
@@ -549,66 +661,94 @@ write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit
 
   if (f->format != FMT_B && f->format != FMT_O && f->format != FMT_Z)
     {
-	  nb =  f->u.real.w;
-	  
-	  /* If the field width is zero, the processor must select a width 
-	     not zero.  4 is chosen to allow output of '-Inf' or '+Inf' */
-	     
-	  if (nb == 0) nb = 4;
-	  p = write_block (dtp, nb);
-          if (p == NULL)
-            return;
-	  if (nb < 3)
+      nb =  f->u.real.w;
+  
+      /* If the field width is zero, the processor must select a width 
+	 not zero.  4 is chosen to allow output of '-Inf' or '+Inf' */
+     
+      if (nb == 0) nb = 4;
+      p = write_block (dtp, nb);
+      if (p == NULL)
+	return;
+      if (nb < 3)
+	{
+	  if (unlikely (is_char4_unit (dtp)))
+	    memset4 (p, 0, '*', nb);
+	  else
+	    memset (p, '*', nb);
+	  return;
+	}
+
+      if (unlikely (is_char4_unit (dtp)))
+        memset4 (p, 0, ' ', nb);
+      else
+	memset(p, ' ', nb);
+
+      if (!isnan_flag)
+	{
+	  if (sign_bit)
 	    {
-	      memset (p, '*',nb);
+	      /* If the sign is negative and the width is 3, there is
+		 insufficient room to output '-Inf', so output asterisks */
+	      if (nb == 3)
+		{
+		  if (unlikely (is_char4_unit (dtp)))
+		    memset4 (p, 0, '*', nb);
+		  else
+		    memset (p, '*', nb);
+		  return;
+		}
+	      /* The negative sign is mandatory */
+	      fin = '-';
+	    }    
+	  else
+	    /* The positive sign is optional, but we output it for
+	       consistency */
+	    fin = '+';
+	    
+	  if (unlikely (is_char4_unit (dtp)))
+	    {
+	      gfc_char4_t *p4 = (gfc_char4_t *) p;
+	      if (nb > 8)
+		/* We have room, so output 'Infinity' */
+		memcpy4 (p4, nb - 8, "Infinity", 8);
+	      else
+		/* For the case of width equals 8, there is not enough room
+		   for the sign and 'Infinity' so we go with 'Inf' */
+		memcpy4 (p4, nb - 3, "Inf", 3);
+
+	      if (nb < 9 && nb > 3)
+	        /* Put the sign in front of Inf */
+		p4[nb - 4] = (gfc_char4_t) fin;
+	      else if (nb > 8)
+	        /* Put the sign in front of Infinity */
+		p4[nb - 9] = (gfc_char4_t) fin;
 	      return;
 	    }
 
-	  memset(p, ' ', nb);
-	  if (!isnan_flag)
-	    {
-	      if (sign_bit)
-	        {
-	        
-	          /* If the sign is negative and the width is 3, there is
-	             insufficient room to output '-Inf', so output asterisks */
-	             
-	          if (nb == 3)
-	            {
-	              memset (p, '*',nb);
-	              return;
-	            }
-	            
-	          /* The negative sign is mandatory */
-	            
-	          fin = '-';
-		}    
-	      else
-	      
-	          /* The positive sign is optional, but we output it for
-	             consistency */
-		  fin = '+';
+	  if (nb > 8)
+	    /* We have room, so output 'Infinity' */
+	    memcpy(p + nb - 8, "Infinity", 8);
+	  else
+	    /* For the case of width equals 8, there is not enough room
+	       for the sign and 'Infinity' so we go with 'Inf' */
+	    memcpy(p + nb - 3, "Inf", 3);
 
-	      if (nb > 8)
-	      
-	        /* We have room, so output 'Infinity' */
-		memcpy(p + nb - 8, "Infinity", 8);
-	      else
-	      
-	        /* For the case of width equals 8, there is not enough room
-	           for the sign and 'Infinity' so we go with 'Inf' */
-		memcpy(p + nb - 3, "Inf", 3);
-
-	      if (nb < 9 && nb > 3)
-		p[nb - 4] = fin;  /* Put the sign in front of Inf */
-	      else if (nb > 8)
-		p[nb - 9] = fin;  /* Put the sign in front of Infinity */
-	    }
+	  if (nb < 9 && nb > 3)
+	    p[nb - 4] = fin;  /* Put the sign in front of Inf */
+	  else if (nb > 8)
+	    p[nb - 9] = fin;  /* Put the sign in front of Infinity */
+	}
+      else
+        {
+	  if (unlikely (is_char4_unit (dtp)))
+	    memcpy4 (p, nb - 3, "NaN", 3);
 	  else
 	    memcpy(p + nb - 3, "NaN", 3);
-	  return;
 	}
+      return;
     }
+}
 
 
 /* Returns the value of 10**d.  */
@@ -750,7 +890,10 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
       p = write_block (dtp, nb);\
       if (p == NULL)\
 	return;\
-      memset (p, ' ', nb);\
+      if (unlikely (is_char4_unit (dtp)))\
+	memset4 (p, 0, ' ', nb);\
+      else\
+	memset (p, ' ', nb);\
     }\
 }\
 

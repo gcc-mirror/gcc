@@ -94,11 +94,20 @@ internal_proto(open_external);
 extern stream *open_internal (char *, int, gfc_offset);
 internal_proto(open_internal);
 
+extern stream *open_internal4 (char *, int, gfc_offset);
+internal_proto(open_internal4);
+
 extern char * mem_alloc_w (stream *, int *);
 internal_proto(mem_alloc_w);
 
 extern char * mem_alloc_r (stream *, int *);
 internal_proto(mem_alloc_r);
+
+extern char * mem_alloc_w4 (stream *, int *);
+internal_proto(mem_alloc_w4);
+
+extern char * mem_alloc_r4 (stream *, int *);
+internal_proto(mem_alloc_r4);
 
 extern stream *input_stream (void);
 internal_proto(input_stream);

@@ -36,9 +36,33 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <errno.h>
 #define star_fill(p, n) memset(p, '*', n)
 
-#include "write_float.def"
-
 typedef unsigned char uchar;
+
+/* Helper functions for character(kind=4) internal units.  These are needed
+   by write_float.def.  */
+
+static inline void
+memset4 (void *p,  int offs, uchar c, int k)
+{
+  int j;
+  gfc_char4_t *q = (gfc_char4_t *) (p + offs * 4);
+  for (j = 0; j < k; j++)
+    *q++ = c;
+}
+
+static inline void
+memcpy4 (void *dest,  int offs, const char *source, int k)
+{
+  int j;
+  
+  const char *p = source;
+  gfc_char4_t *q = (gfc_char4_t *) (dest + offs * 4);
+  for (j = 0; j < k; j++)
+    *q++ = (gfc_char4_t) *p++;
+}
+
+/* This include contains the heart and soul of formatted floating point.  */
+#include "write_float.def"
 
 /* Write out default char4.  */
 
@@ -58,7 +82,10 @@ write_default_char4 (st_parameter_dt *dtp, gfc_char4_t *source,
       p = write_block (dtp, k);
       if (p == NULL)
 	return;
-      memset (p, ' ', k);
+      if (is_char4_unit (dtp))
+	memset4 (p, 0, ' ', k);
+      else
+	memset (p, ' ', k);
     }
 
   /* Get ready to handle delimiters if needed.  */
@@ -76,25 +103,48 @@ write_default_char4 (st_parameter_dt *dtp, gfc_char4_t *source,
     }
 
   /* Now process the remaining characters, one at a time.  */
-  for (j = k; j < src_len; j++)
+  for (j = 0; j < src_len; j++)
     {
       c = source[j];
-    
-      /* Handle delimiters if any.  */
-      if (c == d && d != ' ')
+      if (is_char4_unit (dtp))
 	{
-	  p = write_block (dtp, 2);
-	  if (p == NULL)
-	    return;
-	  *p++ = (uchar) c;
+	  gfc_char4_t *q;
+	  /* Handle delimiters if any.  */
+	  if (c == d && d != ' ')
+	    {
+	      p = write_block (dtp, 2);
+	      if (p == NULL)
+		return;
+	      q = (gfc_char4_t *) p;
+	      *q++ = c;
+	    }
+	  else
+	    {
+	      p = write_block (dtp, 1);
+	      if (p == NULL)
+		return;
+	      q = (gfc_char4_t *) p;
+	    }
+	  *q = c;
 	}
       else
 	{
-	  p = write_block (dtp, 1);
-	  if (p == NULL)
-	    return;
+	  /* Handle delimiters if any.  */
+	  if (c == d && d != ' ')
+	    {
+	      p = write_block (dtp, 2);
+	      if (p == NULL)
+		return;
+	      *p++ = (uchar) c;
+	    }
+          else
+	    {
+	      p = write_block (dtp, 1);
+	      if (p == NULL)
+		return;
+	    }
+	    *p = c > 255 ? '?' : (uchar) c;
 	}
-      *p = c > 255 ? '?' : (uchar) c;
     }
 }
 
@@ -257,6 +307,18 @@ write_a (st_parameter_dt *dtp, const fnode *f, const char *source, int len)
       p = write_block (dtp, wlen);
       if (p == NULL)
 	return;
+
+      if (unlikely (is_char4_unit (dtp)))
+	{
+	  if (wlen < len)
+	    memcpy4 (p, 0, source, wlen);
+	  else
+	    {
+	      memset4 (p, 0, ' ', wlen - len);
+	      memcpy4 (p, wlen - len, source, len);
+	    }
+	  return;
+	}
 
       if (wlen < len)
 	memcpy (p, source, wlen);
@@ -478,8 +540,17 @@ write_l (st_parameter_dt *dtp, const fnode *f, char *source, int len)
   if (p == NULL)
     return;
 
-  memset (p, ' ', wlen - 1);
   n = extract_int (source, len);
+
+  if (unlikely (is_char4_unit (dtp)))
+    {
+      gfc_char4_t *p4 = (gfc_char4_t *) p;
+      memset4 (p, 0, ' ', wlen -1);
+      p4[wlen - 1] = (n) ? 'T' : 'F';
+      return;
+    }
+
+  memset (p, ' ', wlen -1);
   p[wlen - 1] = (n) ? 'T' : 'F';
 }
 
@@ -503,8 +574,10 @@ write_boz (st_parameter_dt *dtp, const fnode *f, const char *q, int n)
       p = write_block (dtp, w);
       if (p == NULL)
         return;
-
-      memset (p, ' ', w);
+      if (unlikely (is_char4_unit (dtp)))
+	memset4 (p, 0, ' ', w);
+      else
+	memset (p, ' ', w);
       goto done;
     }
 
@@ -527,6 +600,35 @@ write_boz (st_parameter_dt *dtp, const fnode *f, const char *q, int n)
   /* See if things will work.  */
 
   nblank = w - (nzero + digits);
+
+  if (unlikely (is_char4_unit (dtp)))
+    {
+      gfc_char4_t *p4 = (gfc_char4_t *) p;
+      if (nblank < 0)
+	{
+	  memset4 (p4, 0, '*', w);
+	  return;
+	}
+
+      if (!dtp->u.p.no_leading_blank)
+	{
+	  memset4 (p4, 0, ' ', nblank);
+	  q += nblank;
+	  memset4 (p4, 0, '0', nzero);
+	  q += nzero;
+	  memcpy4 (p4, 0, q, digits);
+	}
+      else
+	{
+	  memset4 (p4, 0, '0', nzero);
+	  q += nzero;
+	  memcpy4 (p4, 0, q, digits);
+	  q += digits;
+	  memset4 (p4, 0, ' ', nblank);
+	  dtp->u.p.no_leading_blank = 0;
+	}
+      return;
+    }
 
   if (nblank < 0)
     {
@@ -582,8 +684,10 @@ write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
       p = write_block (dtp, w);
       if (p == NULL)
         return;
-
-      memset (p, ' ', w);
+      if (unlikely (is_char4_unit (dtp)))
+	memset4 (p, 0, ' ', w);
+      else
+	memset (p, ' ', w);
       goto done;
     }
 
@@ -620,6 +724,37 @@ write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
   /* See if things will work.  */
 
   nblank = w - (nsign + nzero + digits);
+
+  if (unlikely (is_char4_unit (dtp)))
+    {
+      gfc_char4_t * p4 = (gfc_char4_t *) p;
+      if (nblank < 0)
+	{
+	  memset4 (p4, 0, '*', w);
+	  goto done;
+	}
+
+      memset4 (p4, 0, ' ', nblank);
+      p4 += nblank;
+
+      switch (sign)
+	{
+	case S_PLUS:
+	  *p4++ = '+';
+	  break;
+	case S_MINUS:
+	  *p4++ = '-';
+	  break;
+	case S_NONE:
+	  break;
+	}
+
+      memset4 (p4, 0, '0', nzero);
+      p4 += nzero;
+
+      memcpy4 (p4, 0, q, digits);
+      return;
+    }
 
   if (nblank < 0)
     {
@@ -1055,7 +1190,12 @@ write_x (st_parameter_dt *dtp, int len, int nspaces)
   if (p == NULL)
     return;
   if (nspaces > 0 && len - nspaces >= 0)
-    memset (&p[len - nspaces], ' ', nspaces);
+    {
+      if (unlikely (is_char4_unit (dtp)))
+	memset4 (p, len - nspaces, ' ', nspaces);
+      else
+	memset (&p[len - nspaces], ' ', nspaces);
+    }
 }
 
 
@@ -1132,6 +1272,22 @@ write_integer (st_parameter_dt *dtp, const char *source, int length)
   p = write_block (dtp, width);
   if (p == NULL)
     return;
+
+  if (unlikely (is_char4_unit (dtp)))
+    {
+      if (dtp->u.p.no_leading_blank)
+	{
+	  memcpy4 (p, 0, q, digits);
+	  memset4 (p, digits, ' ', width - digits);
+	}
+      else
+	{
+	  memset4 (p, 0, ' ', width - digits);
+	  memcpy4 (p, width - digits, q, digits);
+	}
+      return;
+    }
+
   if (dtp->u.p.no_leading_blank)
     {
       memcpy (p, q, digits);

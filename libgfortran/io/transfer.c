@@ -177,18 +177,6 @@ current_mode (st_parameter_dt *dtp)
 
 /* Mid level data transfer statements.  */
 
-/* When reading sequential formatted records we have a problem.  We
-   don't know how long the line is until we read the trailing newline,
-   and we don't want to read too much.  If we read too much, we might
-   have to do a physical seek backwards depending on how much data is
-   present, and devices like terminals aren't seekable and would cause
-   an I/O error.
-
-   Given this, the solution is to read a byte at a time, stopping if
-   we hit the newline.  For small allocations, we use a static buffer.
-   For larger allocations, we are forced to allocate memory on the
-   heap.  Hopefully this won't happen very often.  */
-   
 /* Read sequential file - internal unit  */
 
 static char *
@@ -215,6 +203,7 @@ read_sf_internal (st_parameter_dt *dtp, int * length)
 
   lorig = *length;
   base = mem_alloc_r (dtp->u.p.current_unit->s, length);
+
   if (unlikely (lorig > *length))
     {
       hit_eof (dtp);
@@ -229,6 +218,18 @@ read_sf_internal (st_parameter_dt *dtp, int * length)
   return base;
 
 }
+
+/* When reading sequential formatted records we have a problem.  We
+   don't know how long the line is until we read the trailing newline,
+   and we don't want to read too much.  If we read too much, we might
+   have to do a physical seek backwards depending on how much data is
+   present, and devices like terminals aren't seekable and would cause
+   an I/O error.
+
+   Given this, the solution is to read a byte at a time, stopping if
+   we hit the newline.  For small allocations, we use a static buffer.
+   For larger allocations, we are forced to allocate memory on the
+   heap.  Hopefully this won't happen very often.  */
 
 /* Read sequential file - external unit */
 
@@ -639,16 +640,19 @@ write_block (st_parameter_dt *dtp, int length)
 
   if (is_internal_unit (dtp))
     {
-    dest = mem_alloc_w (dtp->u.p.current_unit->s, &length);
+      if (dtp->common.unit) /* char4 internal unit.  */
+	dest = mem_alloc_w4 (dtp->u.p.current_unit->s, &length);
+      else
+	dest = mem_alloc_w (dtp->u.p.current_unit->s, &length);
 
-    if (dest == NULL)
-      {
-        generate_error (&dtp->common, LIBERROR_END, NULL);
-        return NULL;
-      }
+      if (dest == NULL)
+	{
+          generate_error (&dtp->common, LIBERROR_END, NULL);
+          return NULL;
+	}
 
-    if (unlikely (dtp->u.p.current_unit->endfile == AT_ENDFILE))
-      generate_error (&dtp->common, LIBERROR_END, NULL);
+      if (unlikely (dtp->u.p.current_unit->endfile == AT_ENDFILE))
+	generate_error (&dtp->common, LIBERROR_END, NULL);
     }
   else
     {

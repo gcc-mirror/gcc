@@ -1,3 +1,26 @@
+2010-07-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/37077
+	* io/read.c: Fix comment.
+	* io/io.h (is_char4_unit): New macro.
+	* io/unit.c (get_internal_unit): Call new function open_internal4.
+	* io/unix.c (mem_alloc_r4): New function. (mem_alloc_w4): New function.
+	(mem_read4): New function, temporary stub. (mem_write4): New function.
+	(open_internal4): New function to set stream pointers to use the new
+	mem functions.
+	* io/transfer.c (write_block): Use new mem_alloc_w4 to access internal
+	units of kind=4.
+	* io/unix.h: Add prototypes for open_internal4, mem_alloc_w4, and
+	mem_alloc_r4.
+	* io/write.c (memset4): New helper function. (memcpy4): New helper
+	function. (write_default_char4): Use new helper functions.
+	(write_a): Likewise. (write_l): Likewise. (write_boz): Likewise.
+	(write_decimal): Likewise. (write_x): Likewise.
+	(write_integer): Likewise.
+	* io/write_float.def (output_float): Add code blocks to handle internal
+	unit kind=4 output utilizing gfc_char4_t pointers. (write_infnan): Use
+	new helper functions. (OUTPUT_FLOAT_FMT_G): Update this macro likewise.
+
 2010-07-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/fpu-387.h [__sun__ && __svr4__] Include <signal.h>,
