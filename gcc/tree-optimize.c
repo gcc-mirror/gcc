@@ -191,6 +191,35 @@ execute_cleanup_cfg_post_optimizing (void)
   cleanup_tree_cfg ();
   cleanup_dead_labels ();
   group_case_labels ();
+  if ((flag_compare_debug_opt || flag_compare_debug)
+      && flag_dump_final_insns)
+    {
+      FILE *final_output = fopen (flag_dump_final_insns, "a");
+
+      if (!final_output)
+	{
+	  error ("could not open final insn dump file %qs: %m",
+		 flag_dump_final_insns);
+	  flag_dump_final_insns = NULL;
+	}
+      else
+	{
+	  int save_unnumbered = flag_dump_unnumbered;
+	  int save_noaddr = flag_dump_noaddr;
+
+	  flag_dump_noaddr = flag_dump_unnumbered = 1;
+	  fprintf (final_output, "\n");
+	  dump_enumerated_decls (final_output, dump_flags | TDF_NOUID);
+	  flag_dump_noaddr = save_noaddr;
+	  flag_dump_unnumbered = save_unnumbered;
+	  if (fclose (final_output))
+	    {
+	      error ("could not close final insn dump file %qs: %m",
+		     flag_dump_final_insns);
+	      flag_dump_final_insns = NULL;
+	    }
+	}
+    }
   return 0;
 }
 

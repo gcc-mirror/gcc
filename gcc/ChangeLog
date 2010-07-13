@@ -1,3 +1,25 @@
+2010-07-13  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR other/44874
+	* tree-dump.c (dump_options): Add enumerate_locals entry.
+	Add TDF_NOID exclusion to all entry.
+	* tree-dump.h (dump_enumerated_decls): Declare.
+	* tree-pretty-print.c (dump_generic_node): For TDF_NOID,
+	Don't display type uid.
+	(print_declaration): Don't crash on TREE_TYPE (t) == 0.
+	* tree-pass.h (TDF_ENUMERATE_LOCALS): Define.
+	* tree-ssa-live.c: Include gimple.h.
+	(numbered_tree_d): New struct.
+	(numbered_tree): New typedef.
+	(DEF_VEC_O (numbered_tree): New.
+	(DEF_VEC_ALLOC_O (numbered_tree, heap)): Likewise.
+	(compare_decls_by_uid, dump_enumerated_decls_push): New functions.
+	(dump_enumerated_decls): Likewise.
+	* tree-optimize.c (execute_cleanup_cfg_post_optimizing): If comparing
+	debug info and flag_dump_final_insns, call dump_enumerated_decls.
+	* tree-cfg.c (dump_function_to_file): Call dump_enumerated_decls.
+	* Makefile.in (tree-ssa-live.o): Depend on $(GIMPLE_H).
+
 2010-07-13  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* expmed.h (MAX_BITS_PER_WORD): Move to...

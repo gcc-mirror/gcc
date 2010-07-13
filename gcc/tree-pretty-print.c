@@ -757,6 +757,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  pp_string (buffer, str);
 	  if (TYPE_NAME (node) && DECL_NAME (TYPE_NAME (node)))
 	    dump_decl_name (buffer, TYPE_NAME (node), flags);
+	  else if (flags & TDF_NOUID)
+	    pp_printf (buffer, "<Txxxx>");
 	  else
 	    pp_printf (buffer, "<T%x>", TYPE_UID (node));
 
@@ -1081,6 +1083,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	}
       if (TYPE_NAME (node) && DECL_NAME (TYPE_NAME (node)))
 	dump_decl_name (buffer, TYPE_NAME (node), flags);
+      else if (flags & TDF_NOUID)
+	pp_printf (buffer, "<Txxxx>");
       else
 	pp_printf (buffer, "<T%x>", TYPE_UID (node));
       dump_function_declaration (buffer, node, spc, flags);
@@ -2312,7 +2316,7 @@ print_declaration (pretty_printer *buffer, tree t, int spc, int flags)
     pp_string (buffer, "static ");
 
   /* Print the type and name.  */
-  if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
+  if (TREE_TYPE (t) && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
     {
       tree tmp;
 
