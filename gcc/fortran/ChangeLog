@@ -1,3 +1,35 @@
+2010-07-13  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44434
+	PR fortran/44565
+	PR fortran/43945
+	PR fortran/44869
+	* gfortran.h (gfc_find_derived_vtab): Modified prototype.
+	* class.c (gfc_build_class_symbol): Modified call to
+	'gfc_find_derived_vtab'.
+	(add_proc_component): Removed, moved code into 'add_proc_comp'.
+	(add_proc_comps): Renamed to 'add_proc_comp', removed treatment of
+	generics.
+	(add_procs_to_declared_vtab1): Removed unnecessary argument 'resolved'.
+	Removed treatment of generics.
+	(copy_vtab_proc_comps): Removed unnecessary argument 'resolved'.
+	Call 'add_proc_comp' instead of duplicating code.
+	(add_procs_to_declared_vtab): Removed unnecessary arguments 'resolved'
+	and 'declared'.
+	(add_generic_specifics,add_generics_to_declared_vtab): Removed.
+	(gfc_find_derived_vtab): Removed unnecessary argument 'resolved'.
+	Removed treatment of generics.
+	* iresolve.c (gfc_resolve_extends_type_of): Modified call to
+	'gfc_find_derived_vtab'.
+	* resolve.c (resolve_typebound_function,resolve_typebound_subroutine):
+	Removed treatment of generics.
+	(resolve_select_type,resolve_fl_derived): Modified call to
+	'gfc_find_derived_vtab'.
+	* trans-decl.c (gfc_get_symbol_decl): Ditto.
+	* trans-expr.c (gfc_conv_derived_to_class,gfc_trans_class_assign):
+	Ditto.
+	* trans-stmt.c (gfc_trans_allocate): Ditto.
+
 2010-07-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/37077

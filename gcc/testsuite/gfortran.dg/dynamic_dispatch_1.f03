@@ -12,16 +12,14 @@ module m
     procedure, pass :: make_integer
     procedure, pass :: prod => i_m_j
     generic, public :: extract => real, make_integer
-    generic, public :: base_extract => real, make_integer
   end type t1
 
   type, extends(t1) :: t2
     integer :: j = 99
   contains
     procedure, pass :: real => make_real2
-    procedure, pass :: make_integer_2
+    procedure, pass :: make_integer => make_integer_2
     procedure, pass :: prod => i_m_j_2
-    generic, public :: extract => real, make_integer_2
   end type t2
 contains
   real function make_real (arg)
@@ -69,16 +67,13 @@ end module m
   if (a%real() .ne. real (42)) call abort
   if (a%prod() .ne. 42) call abort
   if (a%extract (2) .ne. 84) call abort
-  if (a%base_extract (2) .ne. 84) call abort
   a => c                                   ! extension in module
   if (a%real() .ne. real (99)) call abort
   if (a%prod() .ne. 99) call abort
   if (a%extract (3) .ne. 297) call abort
-  if (a%base_extract (3) .ne. 126) call abort
   a => d                                   ! extension in main
   if (a%real() .ne. real (42)) call abort
   if (a%prod() .ne. 42) call abort
   if (a%extract (4) .ne. 168) call abort
-  if (a%base_extract (4) .ne. 168) call abort
 end
 ! { dg-final { cleanup-modules "m" } }
