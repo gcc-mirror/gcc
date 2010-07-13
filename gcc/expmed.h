@@ -65,6 +65,14 @@ struct mult_cost {
 				 || ((X)->cost == (Y)->cost	\
 				     && (X)->latency < (Y)->latency))
 
+/* For compilers that support multiple targets with different word sizes,
+   MAX_BITS_PER_WORD contains the biggest value of BITS_PER_WORD.  An example
+   is the H8/300(H) compiler.  */
+
+#ifndef MAX_BITS_PER_WORD
+#define MAX_BITS_PER_WORD BITS_PER_WORD
+#endif
+
 /* This structure records a sequence of operations.
    `ops' is the number of operations recorded.
    `cost' is their total cost.
