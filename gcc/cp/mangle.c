@@ -346,11 +346,19 @@ canonicalize_for_substitution (tree node)
   if (TYPE_P (node)
       && TYPE_CANONICAL (node) != node
       && TYPE_MAIN_VARIANT (node) != node)
+    {
       /* Here we want to strip the topmost typedef only.
          We need to do that so is_std_substitution can do proper
          name matching.  */
-    node = cp_build_qualified_type (TYPE_MAIN_VARIANT (node),
-                                    cp_type_quals (node));
+      if (TREE_CODE (node) == FUNCTION_TYPE)
+	/* Use build_qualified_type and TYPE_QUALS here to preserve
+	   the old buggy mangling of attribute noreturn with abi<5.  */
+	node = build_qualified_type (TYPE_MAIN_VARIANT (node),
+				     TYPE_QUALS (node));
+      else
+	node = cp_build_qualified_type (TYPE_MAIN_VARIANT (node),
+					cp_type_quals (node));
+    }
   return node;
 }
 
@@ -1776,6 +1784,7 @@ write_type (tree type)
   if (type == error_mark_node)
     return;
 
+  type = canonicalize_for_substitution (type);
   if (find_substitution (type))
     return;
 
@@ -1977,6 +1986,12 @@ write_CV_qualifiers_for_type (const tree type)
      int[3]", the "const" is emitted with the "int", not with the
      array.  */
   cp_cv_quals quals = TYPE_QUALS (type);
+
+  /* Attribute const/noreturn are not reflected in mangling.  */
+  if (abi_version_at_least (5)
+      && (TREE_CODE (type) == FUNCTION_TYPE
+	  || TREE_CODE (type) == METHOD_TYPE))
+    return 0;
 
   if (quals & TYPE_QUAL_RESTRICT)
     {

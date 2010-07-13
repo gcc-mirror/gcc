@@ -1,3 +1,9 @@
+2010-07-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/44540
+	* g++.dg/abi/noreturn1.C: New.
+	* g++.dg/abi/noreturn2.C: New.
+
 2010-07-13  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR other/44874
