@@ -1,3 +1,10 @@
+2010-07-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/44701
+	* recog.c (constrain_operands): Allow side-effects in memory
+	operands if either < or > constraint is used, rather than if
+	both < and > is used.
+
 2010-07-13  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/44911
