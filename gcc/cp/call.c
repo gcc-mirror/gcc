@@ -5246,7 +5246,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 
     case ck_pmem:
       return convert_ptrmem (totype, expr, /*allow_inverse_p=*/false,
-			     c_cast_p);
+			     c_cast_p, complain);
 
     default:
       break;

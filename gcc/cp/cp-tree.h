@@ -5488,7 +5488,8 @@ extern int comp_ptr_ttypes			(tree, tree);
 extern bool comp_ptr_ttypes_const		(tree, tree);
 extern bool error_type_p			(const_tree);
 extern int ptr_reasonably_similar		(const_tree, const_tree);
-extern tree build_ptrmemfunc			(tree, tree, int, bool);
+extern tree build_ptrmemfunc			(tree, tree, int, bool,
+						 tsubst_flags_t);
 extern int cp_type_quals			(const_tree);
 extern int type_memfn_quals			(const_tree);
 extern tree apply_memfn_quals			(tree, cp_cv_quals);
@@ -5517,7 +5518,8 @@ extern tree non_reference			(tree);
 extern tree lookup_anon_field			(tree, tree);
 extern bool invalid_nonstatic_memfn_p		(const_tree, tsubst_flags_t);
 extern tree convert_member_func_to_ptr		(tree, tree);
-extern tree convert_ptrmem			(tree, tree, bool, bool);
+extern tree convert_ptrmem			(tree, tree, bool, bool,
+						 tsubst_flags_t);
 extern int lvalue_or_else			(tree, enum lvalue_use,
                                                  tsubst_flags_t);
 extern void check_template_keyword		(tree);
