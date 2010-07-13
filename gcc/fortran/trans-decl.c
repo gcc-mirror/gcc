@@ -1981,8 +1981,6 @@ build_entry_thunks (gfc_namespace * ns)
   gfc_symbol *thunk_sym;
   stmtblock_t body;
   tree thunk_fndecl;
-  tree args;
-  tree string_args;
   tree tmp;
   locus old_loc;
 
@@ -1992,6 +1990,9 @@ build_entry_thunks (gfc_namespace * ns)
   gfc_get_backend_locus (&old_loc);
   for (el = ns->entries; el; el = el->next)
     {
+      VEC(tree,gc) *args = NULL;
+      VEC(tree,gc) *string_args = NULL;
+
       thunk_sym = el->sym;
       
       build_function_decl (thunk_sym);
@@ -2005,18 +2006,16 @@ build_entry_thunks (gfc_namespace * ns)
 
       /* Pass extra parameter identifying this entry point.  */
       tmp = build_int_cst (gfc_array_index_type, el->id);
-      args = tree_cons (NULL_TREE, tmp, NULL_TREE);
-      string_args = NULL_TREE;
+      VEC_safe_push (tree, gc, args, tmp);
 
       if (thunk_sym->attr.function)
 	{
 	  if (gfc_return_by_reference (ns->proc_name))
 	    {
 	      tree ref = DECL_ARGUMENTS (current_function_decl);
-	      args = tree_cons (NULL_TREE, ref, args);
+	      VEC_safe_push (tree, gc, args, ref);
 	      if (ns->proc_name->ts.type == BT_CHARACTER)
-		args = tree_cons (NULL_TREE, TREE_CHAIN (ref),
-				  args);
+		VEC_safe_push (tree, gc, args, TREE_CHAIN (ref));
 	    }
 	}
 
@@ -2040,31 +2039,29 @@ build_entry_thunks (gfc_namespace * ns)
 	    {
 	      /* Pass the argument.  */
 	      DECL_ARTIFICIAL (thunk_formal->sym->backend_decl) = 1;
-	      args = tree_cons (NULL_TREE, thunk_formal->sym->backend_decl,
-				args);
+	      VEC_safe_push (tree, gc, args, thunk_formal->sym->backend_decl);
 	      if (formal->sym->ts.type == BT_CHARACTER)
 		{
 		  tmp = thunk_formal->sym->ts.u.cl->backend_decl;
-		  string_args = tree_cons (NULL_TREE, tmp, string_args);
+		  VEC_safe_push (tree, gc, string_args, tmp);
 		}
 	    }
 	  else
 	    {
 	      /* Pass NULL for a missing argument.  */
-	      args = tree_cons (NULL_TREE, null_pointer_node, args);
+	      VEC_safe_push (tree, gc, args, null_pointer_node);
 	      if (formal->sym->ts.type == BT_CHARACTER)
 		{
 		  tmp = build_int_cst (gfc_charlen_type_node, 0);
-		  string_args = tree_cons (NULL_TREE, tmp, string_args);
+		  VEC_safe_push (tree, gc, string_args, tmp);
 		}
 	    }
 	}
 
       /* Call the master function.  */
-      args = nreverse (args);
-      args = chainon (args, nreverse (string_args));
+      VEC_safe_splice (tree, gc, args, string_args);
       tmp = ns->proc_name->backend_decl;
-      tmp = build_function_call_expr (input_location, tmp, args);
+      tmp = build_call_expr_loc_vec (input_location, tmp, args);
       if (ns->proc_name->attr.mixed_entry_master)
 	{
 	  tree union_decl, field;

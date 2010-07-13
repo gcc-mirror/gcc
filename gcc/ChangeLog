@@ -1,3 +1,26 @@
+2010-07-13  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.h (build_function_call_expr): Delete.
+	(build_call_expr_loc_array): New function.
+	(build_call_expr_loc_vec): New function.
+	* tree-flow.h (struct omp_region): Change type of ws_args field
+	to a VEC.
+	* builtins.c (build_function_call_expr): Delete.
+	(build_call_expr_loc_array): New function.
+	(build_call_expr_loc): Call it.  Use XALLOCAVEC.
+	(build_call_expr): Likewise.
+	(build_call_expr_loc_vec): New function.
+	* cgraphunit.c (build_cdtor): Call build_call_expr instead of
+	build_function_call_expr.
+	* expr.c (emutls_var_address): Likewise.
+	* varasm.c (emutls_common_1): Likewise.
+	* omp-low.c (expand_omp_atomic_mutex): Likewise.
+	(expand_omp_taskreg): Adjust for new type of region->ws_args.
+	(get_ws_args_for): Return a VEC instead of a tree.
+	(expand_parallel_call): Call build_call_expr_loc_vec instead of
+	build_function_call_expr.
+	* stor-layout.c (self_referential_size): Likewise.
+
 2010-07-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/44701

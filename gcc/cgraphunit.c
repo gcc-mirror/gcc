@@ -210,15 +210,15 @@ build_cdtor (bool ctor_p, tree *cdtors, size_t len)
       do
 	{
 	  priority_type p;
+	  tree call;
 	  fn = cdtors[i];
 	  p = ctor_p ? DECL_INIT_PRIORITY (fn) : DECL_FINI_PRIORITY (fn);
 	  if (!body)
 	    priority = p;
 	  else if (p != priority)
 	    break;
-	  append_to_statement_list (build_function_call_expr (UNKNOWN_LOCATION,
-							      fn, 0),
-				    &body);
+	  call = build_call_expr (fn, 0);
+	  append_to_statement_list (call, &body);
 	  ++i;
 	}
       while (i < len);

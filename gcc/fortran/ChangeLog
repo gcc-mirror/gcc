@@ -1,3 +1,9 @@
+2010-07-13  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* trans-decl.c (build_entry_thunks): Call build_call_expr_loc_vec
+	instead of build_function_call_expr.
+	* trans-intrinsic.c (gfc_conv_intrinsic_sr_kind): Likewise.
+
 2010-07-13  Tobias Burnus  <burnus@net-b.de>
 	    Daniel Franke  <franke.daniel@gmail.com>
 

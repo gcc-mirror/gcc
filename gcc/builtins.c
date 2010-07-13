@@ -10673,21 +10673,29 @@ fold_call_expr (location_t loc, tree exp, bool ignore)
 }
 
 /* Conveniently construct a function call expression.  FNDECL names the
-    function to be called and ARGLIST is a TREE_LIST of arguments.  */
+   function to be called and N arguments are passed in the array
+   ARGARRAY.  */
 
 tree
-build_function_call_expr (location_t loc, tree fndecl, tree arglist)
+build_call_expr_loc_array (location_t loc, tree fndecl, int n, tree *argarray)
 {
   tree fntype = TREE_TYPE (fndecl);
   tree fn = build1 (ADDR_EXPR, build_pointer_type (fntype), fndecl);
-  int n = list_length (arglist);
-  tree *argarray = (tree *) alloca (n * sizeof (tree));
-  int i;
-
-  for (i = 0; i < n; i++, arglist = TREE_CHAIN (arglist))
-    argarray[i] = TREE_VALUE (arglist);
+ 
   return fold_builtin_call_array (loc, TREE_TYPE (fntype), fn, n, argarray);
 }
+
+/* Conveniently construct a function call expression.  FNDECL names the
+   function to be called and the arguments are passed in the vector
+   VEC.  */
+
+tree
+build_call_expr_loc_vec (location_t loc, tree fndecl, VEC(tree,gc) *vec)
+{
+  return build_call_expr_loc_array (loc, fndecl, VEC_length (tree, vec),
+				    VEC_address (tree, vec));
+}
+
 
 /* Conveniently construct a function call expression.  FNDECL names the
    function to be called, N is the number of arguments, and the "..."
@@ -10697,16 +10705,14 @@ tree
 build_call_expr_loc (location_t loc, tree fndecl, int n, ...)
 {
   va_list ap;
-  tree fntype = TREE_TYPE (fndecl);
-  tree fn = build1 (ADDR_EXPR, build_pointer_type (fntype), fndecl);
-  tree *argarray = (tree *) alloca (n * sizeof (tree));
+  tree *argarray = XALLOCAVEC (tree, n);
   int i;
 
   va_start (ap, n);
   for (i = 0; i < n; i++)
     argarray[i] = va_arg (ap, tree);
   va_end (ap);
-  return fold_builtin_call_array (loc, TREE_TYPE (fntype), fn, n, argarray);
+  return build_call_expr_loc_array (loc, fndecl, n, argarray);
 }
 
 /* Like build_call_expr_loc (UNKNOWN_LOCATION, ...).  Duplicated because
@@ -10716,17 +10722,14 @@ tree
 build_call_expr (tree fndecl, int n, ...)
 {
   va_list ap;
-  tree fntype = TREE_TYPE (fndecl);
-  tree fn = build1 (ADDR_EXPR, build_pointer_type (fntype), fndecl);
-  tree *argarray = (tree *) alloca (n * sizeof (tree));
+  tree *argarray = XALLOCAVEC (tree, n);
   int i;
 
   va_start (ap, n);
   for (i = 0; i < n; i++)
     argarray[i] = va_arg (ap, tree);
   va_end (ap);
-  return fold_builtin_call_array (UNKNOWN_LOCATION, TREE_TYPE (fntype),
-				  fn, n, argarray);
+  return build_call_expr_loc_array (UNKNOWN_LOCATION, fndecl, n, argarray);
 }
 
 /* Construct a CALL_EXPR with type TYPE with FN as the function expression.
