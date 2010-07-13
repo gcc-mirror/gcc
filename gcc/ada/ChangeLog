@@ -1,3 +1,9 @@
+2010-07-13  Laurent GUERBY  <laurent@guerby.net>
+
+        PR bootstrap/44458
+        * gcc-interface/targtyps.c: Include tm_p.h.
+        * gcc-interface/Make-lang.in: Update dependencies.
+	
 2010-07-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (gnat_gimplify_expr) <ADDR_EXPR>: Deal with
