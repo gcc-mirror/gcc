@@ -40,7 +40,7 @@ typedef unsigned char uchar;
 
 
 /* set_integer()-- All of the integer assignments come here to
- * actually place the value into memory.  */
+   actually place the value into memory.  */
 
 void
 set_integer (void *dest, GFC_INTEGER_LARGEST value, int length)

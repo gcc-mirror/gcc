@@ -598,7 +598,6 @@ buf_init (unix_stream * s)
 
 *********************************************************************/
 
-
 char *
 mem_alloc_r (stream * strm, int * len)
 {
@@ -616,6 +615,26 @@ mem_alloc_r (stream * strm, int * len)
   s->logical_offset = where + *len;
 
   return s->buffer + (where - s->buffer_offset);
+}
+
+
+char *
+mem_alloc_r4 (stream * strm, int * len)
+{
+  unix_stream * s = (unix_stream *) strm;
+  gfc_offset n;
+  gfc_offset where = s->logical_offset;
+
+  if (where < s->buffer_offset || where > s->buffer_offset + s->active)
+    return NULL;
+
+  n = s->buffer_offset + s->active - where;
+  if (*len > n)
+    *len = n;
+
+  s->logical_offset = where + *len;
+
+  return s->buffer + (where - s->buffer_offset) * 4;
 }
 
 
@@ -640,7 +659,27 @@ mem_alloc_w (stream * strm, int * len)
 }
 
 
-/* Stream read function for internal units.  */
+char *
+mem_alloc_w4 (stream * strm, int * len)
+{
+  unix_stream * s = (unix_stream *) strm;
+  gfc_offset m;
+  gfc_offset where = s->logical_offset;
+
+  m = where + *len;
+
+  if (where < s->buffer_offset)
+    return NULL;
+
+  if (m > s->file_length)
+    return NULL;
+
+  s->logical_offset = m;
+  return s->buffer + (where - s->buffer_offset) * 4;
+}
+
+
+/* Stream read function for character(kine=1) internal units.  */
 
 static ssize_t
 mem_read (stream * s, void * buf, ssize_t nbytes)
@@ -659,9 +698,26 @@ mem_read (stream * s, void * buf, ssize_t nbytes)
 }
 
 
-/* Stream write function for internal units. This is not actually used
-   at the moment, as all internal IO is formatted and the formatted IO
-   routines use mem_alloc_w_at.  */
+/* Stream read function for chracter(kind=4) internal units.  */
+
+static ssize_t
+mem_read4 (stream * s, void * buf, ssize_t nbytes)
+{
+  void *p;
+  int nb = nbytes;
+
+  p = mem_alloc_r (s, &nb);
+  if (p)
+    {
+      memcpy (buf, p, nb);
+      return (ssize_t) nb;
+    }
+  else
+    return 0;
+}
+
+
+/* Stream write function for character(kind=1) internal units.  */
 
 static ssize_t
 mem_write (stream * s, const void * buf, ssize_t nbytes)
@@ -674,6 +730,26 @@ mem_write (stream * s, const void * buf, ssize_t nbytes)
     {
       memcpy (p, buf, nb);
       return (ssize_t) nb;
+    }
+  else
+    return 0;
+}
+
+
+/* Stream write function for character(kind=4) internal units.  */
+
+static ssize_t
+mem_write4 (stream * s, const void * buf, ssize_t nwords)
+{
+  gfc_char4_t *p;
+  int nw = nwords;
+
+  p = (gfc_char4_t *) mem_alloc_w4 (s, &nw);
+  if (p)
+    {
+      while (nw--)
+	*p++ = (gfc_char4_t) *((char *) buf);
+      return nwords;
     }
   else
     return 0;
@@ -763,7 +839,8 @@ empty_internal_buffer(stream *strm)
   memset(s->buffer, ' ', s->file_length);
 }
 
-/* open_internal()-- Returns a stream structure from an internal file */
+/* open_internal()-- Returns a stream structure from a character(kind=1)
+   internal file */
 
 stream *
 open_internal (char *base, int length, gfc_offset offset)
@@ -785,6 +862,34 @@ open_internal (char *base, int length, gfc_offset offset)
   s->st.trunc = (void *) mem_truncate;
   s->st.read = (void *) mem_read;
   s->st.write = (void *) mem_write;
+  s->st.flush = (void *) mem_flush;
+
+  return (stream *) s;
+}
+
+/* open_internal4()-- Returns a stream structure from a character(kind=4)
+   internal file */
+
+stream *
+open_internal4 (char *base, int length, gfc_offset offset)
+{
+  unix_stream *s;
+
+  s = get_mem (sizeof (unix_stream));
+  memset (s, '\0', sizeof (unix_stream));
+
+  s->buffer = base;
+  s->buffer_offset = offset;
+
+  s->logical_offset = 0;
+  s->active = s->file_length = length;
+
+  s->st.close = (void *) mem_close;
+  s->st.seek = (void *) mem_seek;
+  s->st.tell = (void *) mem_tell;
+  s->st.trunc = (void *) mem_truncate;
+  s->st.read = (void *) mem_read4;
+  s->st.write = (void *) mem_write4;
   s->st.flush = (void *) mem_flush;
 
   return (stream *) s;

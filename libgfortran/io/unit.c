@@ -423,9 +423,13 @@ get_internal_unit (st_parameter_dt *dtp)
     }
 
   /* Set initial values for unit parameters.  */
+  if (dtp->common.unit)
+    iunit->s = open_internal4 (dtp->internal_unit - start_record,
+			       dtp->internal_unit_len, -start_record);
+  else
+    iunit->s = open_internal (dtp->internal_unit - start_record,
+			      dtp->internal_unit_len, -start_record);
 
-  iunit->s = open_internal (dtp->internal_unit - start_record,
-			    dtp->internal_unit_len, -start_record);
   iunit->bytes_left = iunit->recl;
   iunit->last_record=0;
   iunit->maxrec=0;
