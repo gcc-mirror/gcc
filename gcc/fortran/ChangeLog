@@ -1,3 +1,11 @@
+2010-07-13  Daniel Franke  <franke.daniel@gmail.com>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43665
+	* trans-decl.c (gfc_build_intrinsic_function_decls): Add
+	noclobber/noescape annotations to function calls.
+	(gfc_build_builtin_function_decls): Likewise.
+
 2010-07-13  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44434
