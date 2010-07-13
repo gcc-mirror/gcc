@@ -1,3 +1,8 @@
+2010-07-13  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* gcc.c-torture/execute/pr44683.x: New.
+	* gcc.dg/torture/builtin-cproj-1.c: Add dg-add-options ieee.
+
 2010-07-13  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44434
