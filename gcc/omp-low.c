@@ -555,34 +555,35 @@ workshare_safe_to_combine_p (basic_block ws_entry_bb)
    parallel+workshare call.  WS_STMT is the workshare directive being
    expanded.  */
 
-static tree
+static VEC(tree,gc) *
 get_ws_args_for (gimple ws_stmt)
 {
   tree t;
   location_t loc = gimple_location (ws_stmt);
+  VEC(tree,gc) *ws_args;
 
   if (gimple_code (ws_stmt) == GIMPLE_OMP_FOR)
     {
       struct omp_for_data fd;
-      tree ws_args;
 
       extract_omp_for_data (ws_stmt, &fd, NULL);
 
-      ws_args = NULL_TREE;
+      ws_args = VEC_alloc (tree, gc, 3 + (fd.chunk_size != 0));
+
+      t = fold_convert_loc (loc, long_integer_type_node, fd.loop.n1);
+      VEC_quick_push (tree, ws_args, t);
+
+      t = fold_convert_loc (loc, long_integer_type_node, fd.loop.n2);
+      VEC_quick_push (tree, ws_args, t);
+
+      t = fold_convert_loc (loc, long_integer_type_node, fd.loop.step);
+      VEC_quick_push (tree, ws_args, t);
+
       if (fd.chunk_size)
 	{
 	  t = fold_convert_loc (loc, long_integer_type_node, fd.chunk_size);
-	  ws_args = tree_cons (NULL, t, ws_args);
+	  VEC_quick_push (tree, ws_args, t);
 	}
-
-      t = fold_convert_loc (loc, long_integer_type_node, fd.loop.step);
-      ws_args = tree_cons (NULL, t, ws_args);
-
-      t = fold_convert_loc (loc, long_integer_type_node, fd.loop.n2);
-      ws_args = tree_cons (NULL, t, ws_args);
-
-      t = fold_convert_loc (loc, long_integer_type_node, fd.loop.n1);
-      ws_args = tree_cons (NULL, t, ws_args);
 
       return ws_args;
     }
@@ -593,8 +594,9 @@ get_ws_args_for (gimple ws_stmt)
 	 the exit of the sections region.  */
       basic_block bb = single_succ (gimple_bb (ws_stmt));
       t = build_int_cst (unsigned_type_node, EDGE_COUNT (bb->succs) - 1);
-      t = tree_cons (NULL, t, NULL);
-      return t;
+      ws_args = VEC_alloc (tree, gc, 1);
+      VEC_quick_push (tree, ws_args, t);
+      return ws_args;
     }
 
   gcc_unreachable ();
@@ -2899,13 +2901,14 @@ gimple_build_cond_empty (tree cond)
 
 static void
 expand_parallel_call (struct omp_region *region, basic_block bb,
-		      gimple entry_stmt, tree ws_args)
+		      gimple entry_stmt, VEC(tree,gc) *ws_args)
 {
   tree t, t1, t2, val, cond, c, clauses;
   gimple_stmt_iterator gsi;
   gimple stmt;
   int start_ix;
   location_t clause_loc;
+  VEC(tree,gc) *args;
 
   clauses = gimple_omp_parallel_clauses (entry_stmt);
 
@@ -3036,16 +3039,14 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
     t1 = build_fold_addr_expr (t);
   t2 = build_fold_addr_expr (gimple_omp_parallel_child_fn (entry_stmt));
 
-  if (ws_args)
-    {
-      tree args = tree_cons (NULL, t2,
-			     tree_cons (NULL, t1,
-					tree_cons (NULL, val, ws_args)));
-      t = build_function_call_expr (UNKNOWN_LOCATION,
-				    built_in_decls[start_ix], args);
-    }
-  else
-    t = build_call_expr (built_in_decls[start_ix], 3, t2, t1, val);
+  args = VEC_alloc (tree, gc, 3 + VEC_length (tree, ws_args));
+  VEC_quick_push (tree, args, t2);
+  VEC_quick_push (tree, args, t1);
+  VEC_quick_push (tree, args, val);
+  VEC_splice (tree, args, ws_args);
+
+  t = build_call_expr_loc_vec (UNKNOWN_LOCATION,
+			       built_in_decls[start_ix], args);
 
   force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
 			    false, GSI_CONTINUE_LINKING);
@@ -3332,11 +3333,12 @@ expand_omp_taskreg (struct omp_region *region)
 {
   basic_block entry_bb, exit_bb, new_bb;
   struct function *child_cfun;
-  tree child_fn, block, t, ws_args;
+  tree child_fn, block, t;
   tree save_current;
   gimple_stmt_iterator gsi;
   gimple entry_stmt, stmt;
   edge e;
+  VEC(tree,gc) *ws_args;
 
   entry_stmt = last_stmt (region->entry);
   child_fn = gimple_omp_taskreg_child_fn (entry_stmt);
@@ -3351,7 +3353,7 @@ expand_omp_taskreg (struct omp_region *region)
   if (is_combined_parallel (region))
     ws_args = region->ws_args;
   else
-    ws_args = NULL_TREE;
+    ws_args = NULL;
 
   if (child_cfun->cfg)
     {
@@ -5232,7 +5234,7 @@ expand_omp_atomic_mutex (basic_block load_bb, basic_block store_bb,
   gcc_assert (gimple_code (gsi_stmt (si)) == GIMPLE_OMP_ATOMIC_LOAD);
 
   t = built_in_decls[BUILT_IN_GOMP_ATOMIC_START];
-  t = build_function_call_expr (UNKNOWN_LOCATION, t, 0);
+  t = build_call_expr (t, 0);
   force_gimple_operand_gsi (&si, t, true, NULL_TREE, true, GSI_SAME_STMT);
 
   stmt = gimple_build_assign (loaded_val, build_simple_mem_ref (addr));
@@ -5247,7 +5249,7 @@ expand_omp_atomic_mutex (basic_block load_bb, basic_block store_bb,
   gsi_insert_before (&si, stmt, GSI_SAME_STMT);
 
   t = built_in_decls[BUILT_IN_GOMP_ATOMIC_END];
-  t = build_function_call_expr (UNKNOWN_LOCATION, t, 0);
+  t = build_call_expr (t, 0);
   force_gimple_operand_gsi (&si, t, true, NULL_TREE, true, GSI_SAME_STMT);
   gsi_remove (&si, true);
 

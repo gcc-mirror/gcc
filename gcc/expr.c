@@ -6827,8 +6827,7 @@ emutls_var_address (tree var)
   tree emuvar = emutls_decl (var);
   tree fn = built_in_decls [BUILT_IN_EMUTLS_GET_ADDRESS];
   tree arg = build_fold_addr_expr_with_type (emuvar, ptr_type_node);
-  tree arglist = build_tree_list (NULL_TREE, arg);
-  tree call = build_function_call_expr (UNKNOWN_LOCATION, fn, arglist);
+  tree call = build_call_expr (fn, 1, arg);
   return fold_convert (build_pointer_type (TREE_TYPE (var)), call);
 }
 

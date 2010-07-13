@@ -234,10 +234,11 @@ self_referential_size (tree size)
 {
   static unsigned HOST_WIDE_INT fnno = 0;
   VEC (tree, heap) *self_refs = NULL;
-  tree param_type_list = NULL, param_decl_list = NULL, arg_list = NULL;
+  tree param_type_list = NULL, param_decl_list = NULL;
   tree t, ref, return_type, fntype, fnname, fndecl;
   unsigned int i;
   char buf[128];
+  VEC(tree,gc) *args = NULL;
 
   /* Do not factor out simple operations.  */
   t = skip_simple_arithmetic (size);
@@ -256,6 +257,7 @@ self_referential_size (tree size)
 
   /* Build the parameter and argument lists in parallel; also
      substitute the former for the latter in the expression.  */
+  args = VEC_alloc (tree, gc, VEC_length (tree, self_refs));
   for (i = 0; VEC_iterate (tree, self_refs, i, ref); i++)
     {
       tree subst, param_name, param_type, param_decl;
@@ -291,7 +293,7 @@ self_referential_size (tree size)
 
       param_type_list = tree_cons (NULL_TREE, param_type, param_type_list);
       param_decl_list = chainon (param_decl, param_decl_list);
-      arg_list = tree_cons (NULL_TREE, ref, arg_list);
+      VEC_quick_push (tree, args, ref);
     }
 
   VEC_free (tree, heap, self_refs);
@@ -302,7 +304,6 @@ self_referential_size (tree size)
   /* The 3 lists have been created in reverse order.  */
   param_type_list = nreverse (param_type_list);
   param_decl_list = nreverse (param_decl_list);
-  arg_list = nreverse (arg_list);
 
   /* Build the function type.  */
   return_type = TREE_TYPE (size);
@@ -343,7 +344,7 @@ self_referential_size (tree size)
   VEC_safe_push (tree, gc, size_functions, fndecl);
 
   /* Replace the original expression with a call to the size function.  */
-  return build_function_call_expr (UNKNOWN_LOCATION, fndecl, arg_list);
+  return build_call_expr_loc_vec (input_location, fndecl, args);
 }
 
 /* Take, queue and compile all the size functions.  It is essential that
