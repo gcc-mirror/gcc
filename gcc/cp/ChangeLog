@@ -1,3 +1,26 @@
+2010-07-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/44908
+	* call.c (convert_like_real): Adjust convert_ptrmem call, pass
+	complain argument.
+	* typeck.c (get_delta_difference): Update prototype, add a
+	tsubst_flags_t parameter; update get_delta_difference_1 calls and
+	add checks for error_mark_node.
+	(get_delta_difference_1): Update prototype, add a tsubst_flags_t
+	parameter; update lookup_base call.
+	(build_ptrmemfunc): Update prototype, add a tsubst_flags_t
+	parameter; update get_delta_difference call and add check for
+	error_mark_node.
+	(convert_ptrmem): Update prototype, add a tsubst_flags_t
+	parameter; update get_delta_difference call and add check for
+	error_mark_node;  update build_ptrmemfunc call.
+	(build_static_cast_1): Adjust convert_ptrmem call.
+	(expand_ptrmemfunc_cst): Adjust get_delta_difference call.
+	(cp_build_unary_op): Adjust build_ptrmemfunc call.
+	* cvt.c (cp_convert_to_pointer, convert_force): Adjust convert_ptrmem
+	and build_ptrmemfunc calls.
+	* cp-tree.h: Update build_ptrmemfunc and convert_ptrmem prototypes.
+
 2010-07-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/44907
