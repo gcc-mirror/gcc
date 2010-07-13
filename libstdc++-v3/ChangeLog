@@ -1,3 +1,10 @@
+2010-07-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/Makefile.am: Edit pdf rules.
+	(doc-man, doc-pdf, doc-html): Expand default rules.
+	* doc/Makefile.in: Regenerate.
+	* doc/doxygen/user.cfg.in: Update to Doxygen 1.7.1.
+
 2010-07-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/type_traits (is_convertible): Use SFINAE.
