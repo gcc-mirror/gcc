@@ -1,3 +1,9 @@
+2010-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-decl.c (gfc_build_intrinsic_function_decls,
+	gfc_build_builtin_function_decls): Mark functions as
+	DECL_PURE_P or TREE_READONLY.
+
 2010-07-13  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* trans-decl.c (build_entry_thunks): Call build_call_expr_loc_vec
