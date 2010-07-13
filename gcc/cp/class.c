@@ -130,7 +130,7 @@ static void finish_struct_methods (tree);
 static void maybe_warn_about_overly_private_class (tree);
 static int method_name_cmp (const void *, const void *);
 static int resort_method_name_cmp (const void *, const void *);
-static void add_implicitly_declared_members (tree, int, int);
+static void add_implicitly_declared_members (tree, int, int, int, int);
 static tree fixed_type_or_null (tree, int *, int *);
 static tree build_simple_base_path (tree expr, tree binfo);
 static tree build_vtbl_ref_1 (tree, tree);
@@ -139,13 +139,13 @@ static void build_vtbl_initializer (tree, tree, tree, tree, int *,
 static int count_fields (tree);
 static int add_fields_to_record_type (tree, struct sorted_fields_type*, int);
 static bool check_bitfield_decl (tree);
-static void check_field_decl (tree, tree, int *, int *, int *);
-static void check_field_decls (tree, tree *, int *, int *);
+static void check_field_decl (tree, tree, int *, int *, int *, int *, int *);
+static void check_field_decls (tree, tree *, int *, int *, int *, int *);
 static tree *build_base_field (record_layout_info, tree, splay_tree, tree *);
 static void build_base_fields (record_layout_info, splay_tree, tree *);
 static void check_methods (tree);
 static void remove_zero_width_bit_fields (tree);
-static void check_bases (tree, int *, int *);
+static void check_bases (tree, int *, int *, int *, int *);
 static void check_bases_and_members (tree);
 static tree create_vtable_ptr (tree, tree *);
 static void include_empty_classes (record_layout_info);
@@ -1249,7 +1249,9 @@ handle_using_decl (tree using_decl, tree t)
 static void
 check_bases (tree t,
 	     int* cant_have_const_ctor_p,
-	     int* no_const_asn_ref_p)
+	     int* no_const_asn_ref_p,
+	     int* cant_have_lazy_ctor,
+	     int* cant_have_lazy_opeq)
 {
   int i;
   int seen_non_virtual_nearly_empty_base_p;
@@ -1288,6 +1290,10 @@ check_bases (tree t,
       if (TYPE_HAS_COPY_ASSIGN (basetype)
 	  && !TYPE_HAS_CONST_COPY_ASSIGN (basetype))
 	*no_const_asn_ref_p = 1;
+      if (TYPE_HAS_USER_CONSTRUCTOR (basetype))
+	*cant_have_lazy_ctor = 1;
+      if (TYPE_HAS_USER_OPEQ (basetype))
+	*cant_have_lazy_opeq = 1;
 
       if (BINFO_VIRTUAL_P (base_binfo))
 	/* A virtual base does not effect nearly emptiness.  */
@@ -2628,7 +2634,9 @@ maybe_add_class_template_decl_list (tree type, tree t, int friend_p)
 static void
 add_implicitly_declared_members (tree t,
 				 int cant_have_const_cctor,
-				 int cant_have_const_assignment)
+				 int cant_have_const_assignment,
+				 int cant_have_lazy_ctor,
+				 int cant_have_lazy_opeq)
 {
   /* Destructor.  */
   if (!CLASSTYPE_DESTRUCTORS (t))
@@ -2680,6 +2688,26 @@ add_implicitly_declared_members (tree t,
       CLASSTYPE_LAZY_COPY_ASSIGN (t) = 1;
       if (cxx_dialect >= cxx0x)
 	CLASSTYPE_LAZY_MOVE_ASSIGN (t) = 1;
+    }
+
+  /* If a base or member type has a user-declared constructor or operator=,
+     we need to declare ours now to avoid issues with circular lazy
+     declarations (cpp0x/implicit6.C).  */
+  if (cant_have_lazy_ctor)
+    {
+      if (CLASSTYPE_LAZY_DEFAULT_CTOR (t))
+	lazily_declare_fn (sfk_constructor, t);
+      if (CLASSTYPE_LAZY_COPY_CTOR (t))
+	lazily_declare_fn (sfk_copy_constructor, t);
+      if (CLASSTYPE_LAZY_MOVE_CTOR (t))
+	lazily_declare_fn (sfk_move_constructor, t);
+    }
+  if (cant_have_lazy_opeq)
+    {
+      if (CLASSTYPE_LAZY_COPY_ASSIGN (t))
+	lazily_declare_fn (sfk_copy_assignment, t);
+      if (CLASSTYPE_LAZY_MOVE_ASSIGN (t))
+	lazily_declare_fn (sfk_move_assignment, t);
     }
 
   /* We can't be lazy about declaring functions that might override
@@ -2830,7 +2858,9 @@ check_field_decl (tree field,
 		  tree t,
 		  int* cant_have_const_ctor,
 		  int* no_const_asn_ref,
-		  int* any_default_members)
+		  int* any_default_members,
+		  int* cant_have_lazy_ctor,
+		  int* cant_have_lazy_opeq)
 {
   tree type = strip_array_types (TREE_TYPE (field));
 
@@ -2847,7 +2877,8 @@ check_field_decl (tree field,
       for (fields = TYPE_FIELDS (type); fields; fields = TREE_CHAIN (fields))
 	if (TREE_CODE (fields) == FIELD_DECL && !DECL_C_BIT_FIELD (field))
 	  check_field_decl (fields, t, cant_have_const_ctor,
-			    no_const_asn_ref, any_default_members);
+			    no_const_asn_ref, any_default_members,
+			    cant_have_lazy_ctor, cant_have_lazy_opeq);
     }
   /* Check members with class type for constructors, destructors,
      etc.  */
@@ -2893,6 +2924,11 @@ check_field_decl (tree field,
       if (TYPE_HAS_COPY_ASSIGN (type)
 	  && !TYPE_HAS_CONST_COPY_ASSIGN (type))
 	*no_const_asn_ref = 1;
+
+      if (TYPE_HAS_USER_CONSTRUCTOR (type))
+	*cant_have_lazy_ctor = 1;
+      if (TYPE_HAS_USER_OPEQ (type))
+	*cant_have_lazy_opeq = 1;
     }
   if (DECL_INITIAL (field) != NULL_TREE)
     {
@@ -2932,7 +2968,9 @@ check_field_decl (tree field,
 static void
 check_field_decls (tree t, tree *access_decls,
 		   int *cant_have_const_ctor_p,
-		   int *no_const_asn_ref_p)
+		   int *no_const_asn_ref_p,
+		   int *cant_have_lazy_ctor_p,
+		   int *cant_have_lazy_opeq_p)
 {
   tree *field;
   tree *next;
@@ -3124,7 +3162,9 @@ check_field_decls (tree t, tree *access_decls,
 	check_field_decl (x, t,
 			  cant_have_const_ctor_p,
 			  no_const_asn_ref_p,
-			  &any_default_members);
+			  &any_default_members,
+			  cant_have_lazy_ctor_p,
+			  cant_have_lazy_opeq_p);
 
       /* If any field is const, the structure type is pseudo-const.  */
       if (CP_TYPE_CONST_P (type))
@@ -4447,6 +4487,8 @@ check_bases_and_members (tree t)
   /* Nonzero if the implicitly generated assignment operator
      should take a non-const reference argument.  */
   int no_const_asn_ref;
+  int cant_have_lazy_ctor = 0;
+  int cant_have_lazy_opeq = 0;
   tree access_decls;
   bool saved_complex_asn_ref;
   bool saved_nontrivial_dtor;
@@ -4459,7 +4501,8 @@ check_bases_and_members (tree t)
 
   /* Check all the base-classes.  */
   check_bases (t, &cant_have_const_ctor,
-	       &no_const_asn_ref);
+	       &no_const_asn_ref, &cant_have_lazy_ctor,
+	       &cant_have_lazy_opeq);
 
   /* Check all the method declarations.  */
   check_methods (t);
@@ -4476,7 +4519,9 @@ check_bases_and_members (tree t)
      being set appropriately.  */
   check_field_decls (t, &access_decls,
 		     &cant_have_const_ctor,
-		     &no_const_asn_ref);
+		     &no_const_asn_ref,
+		     &cant_have_lazy_ctor,
+		     &cant_have_lazy_opeq);
 
   /* A nearly-empty class has to be vptr-containing; a nearly empty
      class contains just a vptr.  */
@@ -4548,7 +4593,9 @@ check_bases_and_members (tree t)
   /* Synthesize any needed methods.  */
   add_implicitly_declared_members (t,
 				   cant_have_const_ctor,
-				   no_const_asn_ref);
+				   no_const_asn_ref,
+				   cant_have_lazy_ctor,
+				   cant_have_lazy_opeq);
 
   /* Check defaulted declarations here so we have cant_have_const_ctor
      and don't need to worry about clones.  */
