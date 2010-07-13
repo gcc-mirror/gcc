@@ -2388,7 +2388,7 @@ gfc_build_library_function_decl (tree name, tree rettype, int nargs, ...)
    The SPEC parameter specifies the function argument and return type
    specification according to the fnspec function type attribute.  */
 
-static tree
+tree
 gfc_build_library_function_decl_with_spec (tree name, const char *spec,
 					   tree rettype, int nargs, ...)
 {
