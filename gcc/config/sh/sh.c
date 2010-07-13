@@ -6861,13 +6861,12 @@ sh_expand_prologue (void)
 	  for (i = 0; i < NPARM_REGS(SImode); i++)
 	    {
 	      int rn = NPARM_REGS(SImode) + FIRST_PARM_REG - i - 1;
-	      rtx insn;
 
 	      if (i >= (NPARM_REGS(SImode)
 			- crtl->args.info.arg_count[(int) SH_ARG_INT]
 			))
 		break;
-	      insn = push (rn);
+	      push (rn);
 	    }
 	}
     }
@@ -7232,7 +7231,7 @@ sh_expand_epilogue (bool sibcall_p)
 	{
 	  enum machine_mode mode = (enum machine_mode) entry->mode;
 	  int reg = entry->reg;
-	  rtx reg_rtx, mem_rtx, post_inc = NULL_RTX, insn;
+	  rtx reg_rtx, mem_rtx, post_inc = NULL_RTX;
 
 	  offset = offset_base + entry->offset;
 	  reg_rtx = gen_rtx_REG (mode, reg);
@@ -7305,7 +7304,7 @@ sh_expand_epilogue (bool sibcall_p)
 	  if ((reg == PR_REG || SPECIAL_REGISTER_P (reg))
 	      && mem_rtx != post_inc)
 	    {
-	      insn = emit_move_insn (r0, mem_rtx);
+	      emit_move_insn (r0, mem_rtx);
 	      mem_rtx = r0;
 	    }
 	  else if (TARGET_REGISTER_P (reg))
@@ -7314,13 +7313,13 @@ sh_expand_epilogue (bool sibcall_p)
 
 	      /* Give the scheduler a bit of freedom by using up to
 		 MAX_TEMPS registers in a round-robin fashion.  */
-	      insn = emit_move_insn (tmp_reg, mem_rtx);
+	      emit_move_insn (tmp_reg, mem_rtx);
 	      mem_rtx = tmp_reg;
 	      if (*++tmp_pnt < 0)
 		tmp_pnt = schedule.temps;
 	    }
 
-	  insn = emit_move_insn (reg_rtx, mem_rtx);
+	  emit_move_insn (reg_rtx, mem_rtx);
 	}
 
       gcc_assert (entry->offset + offset_base == d + d_rounding);

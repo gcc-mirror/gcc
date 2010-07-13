@@ -1,6 +1,6 @@
 /* CPU mode switching
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008,
-   2009 Free Software Foundation, Inc.
+   2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -445,7 +445,7 @@ optimize_mode_switching (void)
   int i, j;
   int n_entities;
   int max_num_modes = 0;
-  bool emited = false;
+  bool emited ATTRIBUTE_UNUSED = false;
   basic_block post_entry ATTRIBUTE_UNUSED, pre_exit ATTRIBUTE_UNUSED;
 
   for (e = N_ENTITIES - 1, n_entities = 0; e >= 0; e--)
