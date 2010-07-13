@@ -1,3 +1,9 @@
+2010-07-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/44921
+	* postreload.c (move2add_use_add3_insn): Silence gcc warning
+	on min_regno.
+
 2010-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vrp.c (simplify_bit_ops_using_ranges): New function.
