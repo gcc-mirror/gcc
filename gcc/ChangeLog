@@ -1,3 +1,7 @@
+2010-07-13  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c-decl.c (finish_function): Fix typo in comment.
+	
 2010-07-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/44921

@@ -8054,7 +8054,7 @@ store_parm_decls (void)
 
 
 /* Finish up a function declaration and compile that function
-   all the way to assembler language output.  The free the storage
+   all the way to assembler language output.  Then free the storage
    for the function definition.
 
    This is called after parsing the body of the function definition.  */
