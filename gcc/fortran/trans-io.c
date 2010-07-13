@@ -1669,7 +1669,8 @@ build_dt (tree function, gfc_code * code)
 	{
 	  mask |= set_internal_unit (&block, &post_iu_block,
 				     var, dt->io_unit);
-	  set_parameter_const (&block, var, IOPARM_common_unit, 0);
+	  set_parameter_const (&block, var, IOPARM_common_unit,
+			       dt->io_unit->ts.kind == 1 ? 0 : -1);
 	}
     }
   else
