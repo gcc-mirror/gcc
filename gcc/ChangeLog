@@ -1,5 +1,13 @@
 2010-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* config/i386/sol2-unwind.h (x86_64_fallback_frame_state): Correct
+	explanation.
+	Find ucontext_t * on Solaris 11.
+	(x86_fallback_frame_state): Handle Solaris 9 multi-threaded pattern.
+	Handle new Solaris 11 __sighndlr patterns.
+
+2010-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	Backport from mainline:
 	2010-07-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
