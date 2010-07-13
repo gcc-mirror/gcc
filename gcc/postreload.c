@@ -1281,7 +1281,7 @@ move2add_use_add3_insn (rtx reg, rtx sym, rtx off, rtx insn)
   rtx src = SET_SRC (pat);
   int regno = REGNO (reg);
   int min_cost = INT_MAX;
-  int min_regno;
+  int min_regno = 0;
   bool speed = optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn));
   int i;
 
