@@ -1,3 +1,8 @@
+2010-07-13  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* expmed.h (MAX_BITS_PER_WORD): Move to...
+	* defaults.h (MAX_BITS_PER_WORD): ...here.
+
 2010-07-13  DJ Delorie  <dj@redhat.com>
 
 	* config/h8300/h8300.c (h8300_init_once): Default to

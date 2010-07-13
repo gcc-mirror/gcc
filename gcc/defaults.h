@@ -1033,6 +1033,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define MIN_UNITS_PER_WORD UNITS_PER_WORD
 #endif
 
+#ifndef MAX_BITS_PER_WORD
+#define MAX_BITS_PER_WORD BITS_PER_WORD
+#endif
+
 #ifndef STACK_POINTER_OFFSET
 #define STACK_POINTER_OFFSET    0
 #endif
