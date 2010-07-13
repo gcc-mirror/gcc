@@ -1,3 +1,13 @@
+2010-07-13  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/44761
+	* mode-switching.c (optimize_mode_switching): Add ATTRIBUTE_UNUSED
+	to variable emited.
+	* config/sh/sh.c (sh_expand_epilogue): Remove unused variable.
+	* config/sh/sh.md (symGOT_load): Likewise.
+	(symDTPOFF2reg): Likewise.
+	(symTPOFF2reg): Likewise.
+
 2010-07-13  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* expmed.c (MAX_BITS_PER_WORD): Moved to expmed.h.

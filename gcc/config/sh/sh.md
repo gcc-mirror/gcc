@@ -8469,7 +8469,7 @@ label:
   ""
   "
 {
-  rtx insn, mem;
+  rtx mem;
 
   operands[2] = !can_create_pseudo_p () ? operands[0] : gen_reg_rtx (Pmode);
   operands[3] = !can_create_pseudo_p () ? operands[0] : gen_reg_rtx (Pmode);
@@ -8518,7 +8518,7 @@ label:
   mem = gen_rtx_MEM (Pmode, operands[3]);
   MEM_NOTRAP_P (mem) = 1;
   /* ??? Should we have a special alias set for the GOT?  */
-  insn = emit_move_insn (operands[0], mem);
+  emit_move_insn (operands[0], mem);
 
   DONE;
 }")
@@ -8685,7 +8685,7 @@ mov.l\\t1f,r4\\n\\
   ""
   "
 {
-  rtx dtpoffsym, insn;
+  rtx dtpoffsym;
   rtx t = (!can_create_pseudo_p ()
 	   ? operands[0]
 	   : gen_reg_rtx (GET_MODE (operands[0])));
@@ -8693,8 +8693,7 @@ mov.l\\t1f,r4\\n\\
   dtpoffsym = gen_sym2DTPOFF (operands[1]);
   PUT_MODE (dtpoffsym, Pmode);
   emit_move_insn (t, dtpoffsym);
-  insn = emit_move_insn (operands[0],
-			 gen_rtx_PLUS (Pmode, t, operands[2]));
+  emit_move_insn (operands[0], gen_rtx_PLUS (Pmode, t, operands[2]));
   DONE;
 }")
 
@@ -8736,11 +8735,11 @@ mov.l\\t1f,r0\\n\\
   ""
   "
 {
-  rtx tpoffsym, insn;
+  rtx tpoffsym;
 
   tpoffsym = gen_sym2TPOFF (operands[1]);
   PUT_MODE (tpoffsym, Pmode);
-  insn = emit_move_insn (operands[0], tpoffsym);
+  emit_move_insn (operands[0], tpoffsym);
   DONE;
 }")
 
