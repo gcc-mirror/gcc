@@ -1,5 +1,10 @@
 2010-07-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* trans-expr.c (string_to_single_character): Also optimize
+	string literals containing a single char followed only by spaces.
+	(gfc_trans_string_copy): Remove redundant string_to_single_character
+	calls.
+
 	* trans-decl.c (gfc_build_intrinsic_function_decls,
 	gfc_build_builtin_function_decls): Mark functions as
 	DECL_PURE_P or TREE_READONLY.
