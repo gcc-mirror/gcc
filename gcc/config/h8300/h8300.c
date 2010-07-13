@@ -403,6 +403,10 @@ h8300_init_once (void)
 	 restore er6 though, so bump up the cost.  */
       h8300_move_ratio = 6;
     }
+
+  /* This target defaults to strict volatile bitfields.  */
+  if (flag_strict_volatile_bitfields < 0)
+    flag_strict_volatile_bitfields = 1;
 }
 
 /* Implement REG_CLASS_FROM_LETTER.

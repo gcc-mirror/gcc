@@ -431,6 +431,10 @@ m32c_override_options (void)
 
   if (TARGET_A24)
     flag_ivopts = 0;
+
+  /* This target defaults to strict volatile bitfields.  */
+  if (flag_strict_volatile_bitfields < 0)
+    flag_strict_volatile_bitfields = 1;
 }
 
 /* Defining data structures for per-function information */

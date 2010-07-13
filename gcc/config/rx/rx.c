@@ -2190,6 +2190,14 @@ rx_set_optimization_options (void)
     }
 }
 
+static void
+rx_option_override (void)
+{
+  /* This target defaults to strict volatile bitfields.  */
+  if (flag_strict_volatile_bitfields < 0)
+    flag_strict_volatile_bitfields = 1;
+}
+
 
 static bool
 rx_allocate_stack_slots_for_args (void)
@@ -2777,6 +2785,9 @@ rx_memory_move_cost (enum machine_mode mode, enum reg_class regclass, bool in)
 
 #undef  TARGET_MEMORY_MOVE_COST
 #define TARGET_MEMORY_MOVE_COST			rx_memory_move_cost
+
+#undef  TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE			rx_option_override
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
