@@ -4295,7 +4295,7 @@ gfc_trans_allocate (gfc_code * code)
 
 	      if (ts->type == BT_DERIVED)
 		{
-		  vtab = gfc_find_derived_vtab (ts->u.derived, true);
+		  vtab = gfc_find_derived_vtab (ts->u.derived);
 		  gcc_assert (vtab);
 		  gfc_trans_assign_vtab_procs (&block, ts->u.derived, vtab);
 		  gfc_init_se (&lse, NULL);

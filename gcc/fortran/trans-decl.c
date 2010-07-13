@@ -1077,7 +1077,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
     {
       gfc_component *c = CLASS_DATA (sym);
       if (!c->ts.u.derived->backend_decl)
-	gfc_find_derived_vtab (c->ts.u.derived, true);
+	gfc_find_derived_vtab (c->ts.u.derived);
     }
 
   if ((sym->attr.dummy && ! sym->attr.function) || (sym->attr.result && byref))

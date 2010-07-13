@@ -2478,8 +2478,8 @@ gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e,
 		       var, cmp->backend_decl, NULL_TREE);
 
   /* Remember the vtab corresponds to the derived type
-    not to the class declared type.  */
-  vtab = gfc_find_derived_vtab (e->ts.u.derived, true);
+     not to the class declared type.  */
+  vtab = gfc_find_derived_vtab (e->ts.u.derived);
   gcc_assert (vtab);
   gfc_trans_assign_vtab_procs (&parmse->pre, e->ts.u.derived, vtab);
   tmp = gfc_build_addr_expr (NULL_TREE, gfc_get_symbol_decl (vtab));
@@ -5641,7 +5641,7 @@ gfc_trans_class_assign (gfc_code *code)
 	{
 	  gfc_symbol *vtab;
 	  gfc_symtree *st;
-	  vtab = gfc_find_derived_vtab (code->expr2->ts.u.derived, true);
+	  vtab = gfc_find_derived_vtab (code->expr2->ts.u.derived);
 	  gcc_assert (vtab);
 	  gfc_trans_assign_vtab_procs (&block, code->expr2->ts.u.derived, vtab);
 	  rhs = gfc_get_expr ();
