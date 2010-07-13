@@ -23,17 +23,24 @@ load_lib target-supports.exp
 # Make sure that the runtime list is re-evaluated for each multilib.
 proc objc-set-runtime-options { dowhat args } {
     global OBJC_RUNTIME_OPTIONS
-    if ![info exists OBJC_RUNTIME_OPTIONS] {
-	set rtlist [list "-fgnu-runtime" "-fnext-runtime" ]
-    } else {
-	set rtlist [list "-fgnu-runtime" "-fnext-runtime" ]
-	foreach other $OBJC_RUNTIME_OPTIONS {
-	    # Don't do tests twice...
-	    if { ( $other == "-fnext-runtime"  || $other == "-fgnu-runtime" ) } {
-		continue
-	    }
-	    lappend rtlist $other
+    set rtlist [list "-fgnu-runtime" ]
+    # At present (4.6), the only NeXT runtime target is Darwin.
+    # The previously used approach of testing trivial compiles is not reliable
+    # for determining the absence of the NeXT runtime, since a non-Darwin
+    # installation can have the objc headers present in the same locations 
+    # that Darwin uses.  If NeXT is ported to another target, then it should
+    # be listed here.
+    if [istarget "*-*-darwin*" ] {
+      lappend rtlist "-fnext-runtime" 
+    }
+    if [info exists OBJC_RUNTIME_OPTIONS] {
+      foreach other $OBJC_RUNTIME_OPTIONS {
+	# Don't do tests twice...
+	if { ( $other == "-fnext-runtime"  || $other == "-fgnu-runtime" ) } {
+	  continue
 	}
+	lappend rtlist $other
+      }
     }
 
     set OBJC_RUNTIME_OPTIONS ""
@@ -49,8 +56,10 @@ proc objc-set-runtime-options { dowhat args } {
 	if [info exists dowhat] {
           switch $dowhat {
 	    "compile" {
-	      set compile_type "assembly"
-	      set output_file "trivial.s"
+              # We should check that the generated asm is sensible, so do 
+              # the equivalent of -c.
+	      set compile_type "object"
+	      set output_file "trivial.o"
 	      set comp_output [objc_target_compile \
 	        "$srcdir/$subdir/trivial.m" "$output_file" "$compile_type" $options]
 
