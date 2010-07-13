@@ -1,3 +1,13 @@
+2010-07-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2010-07-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR pch/14940
+	* config/host-solaris.c (mmap_fixed): New function.
+	(sol_gt_pch_get_address): Use it.
+	(sol_gt_pch_use_address): Likewise.
+
 2010-07-12  Jie Zhang  <jie@codesourcery.com>
 
 	* config/arm/arm.c (arm_get_frame_offsets): Don't use r3 to
