@@ -81,6 +81,7 @@ enum tree_dump_index
 					   holding this gimple statement.  */
 #define TDF_NOUID	(1 << 20)	/* omit UIDs from dumps.  */
 #define TDF_ALIAS	(1 << 21)	/* display alias information  */
+#define TDF_ENUMERATE_LOCALS (1 << 22)	/* Enumerate locals by uid.  */
 
 
 /* In tree-dump.c */

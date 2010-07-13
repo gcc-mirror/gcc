@@ -6449,6 +6449,8 @@ dump_function_to_file (tree fn, FILE *file, int flags)
 	fprintf (file, "}\n");
     }
 
+  if (flags & TDF_ENUMERATE_LOCALS)
+    dump_enumerated_decls (file, flags);
   fprintf (file, "\n\n");
 
   /* Restore CFUN.  */

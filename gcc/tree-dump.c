@@ -821,9 +821,10 @@ static const struct dump_option_value_info dump_options[] =
   {"eh", TDF_EH},
   {"alias", TDF_ALIAS},
   {"nouid", TDF_NOUID},
+  {"enumerate_locals", TDF_ENUMERATE_LOCALS},
   {"all", ~(TDF_RAW | TDF_SLIM | TDF_LINENO | TDF_TREE | TDF_RTL | TDF_IPA
 	    | TDF_STMTADDR | TDF_GRAPH | TDF_DIAGNOSTIC | TDF_VERBOSE
-	    | TDF_RHS_ONLY | TDF_NOUID)},
+	    | TDF_RHS_ONLY | TDF_NOUID | TDF_ENUMERATE_LOCALS)},
   {NULL, 0}
 };
 
