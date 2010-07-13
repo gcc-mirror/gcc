@@ -1004,6 +1004,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 #endif
 
   assign_p = false;
+  check_vdtor = false;
   switch (sfk)
     {
     case sfk_move_assignment:

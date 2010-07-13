@@ -3,7 +3,7 @@
 
 struct virt { virt () {} virt (int i) {} };
 struct der : public virtual virt { // { dg-message "8:der::der" }
-  der (int i) : virt(i) {} // { dg-message "3:candidates are: der" }
+  der (int i) : virt(i) {} // { dg-message "3:der::der" }
 };
 struct top : public der { 
   top () {} // { dg-bogus "der\\(const" }

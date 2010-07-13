@@ -1326,6 +1326,7 @@ struct GTY(()) lang_type_class {
   unsigned lazy_move_assign : 1;
   unsigned has_complex_move_ctor : 1;
   unsigned has_complex_move_assign : 1;
+  unsigned has_user_opeq : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -1334,7 +1335,7 @@ struct GTY(()) lang_type_class {
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 4;
+  unsigned dummy : 3;
 
   tree primary_base;
   VEC(tree_pair_s,gc) *vcall_indices;
@@ -3141,6 +3142,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* Nonzero for a class type means that the class type has a
    user-declared constructor.  */
 #define TYPE_HAS_USER_CONSTRUCTOR(NODE) (TYPE_LANG_FLAG_1 (NODE))
+
+/* ...or a user-declared operator=.  */
+#define TYPE_HAS_USER_OPEQ(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->has_user_opeq)
 
 /* When appearing in an INDIRECT_REF, it means that the tree structure
    underneath is actually a call to a constructor.  This is needed

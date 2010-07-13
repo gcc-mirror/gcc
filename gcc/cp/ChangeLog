@@ -1,5 +1,15 @@
 2010-07-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/44909
+	* cp-tree.h (struct lang_type_class): Add has_user_opeq.
+	(TYPE_HAS_USER_OPEQ): New.
+	* decl.c (grok_special_member_properties): Set it.
+	* class.c (add_implicitly_declared_members): Don't lazily declare
+	constructors/operator= if a base or member has a user-declared one.
+	(check_bases_and_members, check_bases): Adjust.
+	(check_field_decls, check_field_decl): Adjust.
+	* method.c (synthesized_method_walk): Initialize check_vdtor.
+
 	PR c++/44540
 	* mangle.c (write_type): Canonicalize.
 	(canonicalize_for_substitution): Retain cv-quals on FUNCTION_TYPE.
