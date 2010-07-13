@@ -1,3 +1,16 @@
+2010-07-13  DJ Delorie  <dj@redhat.com>
+
+	* config/h8300/h8300.c (h8300_init_once): Default to
+	-fstrict_volatile_bitfields.
+
+	* config/sh/sh.c (sh_override_options): Default to
+	-fstrict_volatile_bitfields.
+
+	* config/rx/rx.c (rx_option_override): New.
+
+	* config/m32c/m32c.c (m32c_override_options): Default to
+	-fstrict_volatile_bitfields.
+
 2010-07-13  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree.h (build_function_call_expr): Delete.
