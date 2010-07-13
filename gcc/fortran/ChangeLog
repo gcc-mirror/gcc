@@ -1,3 +1,12 @@
+2010-07-13  Tobias Burnus  <burnus@net-b.de>
+	    Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/43665
+	* trans.h (gfc_build_library_function_decl_with_spec): New prototype.
+	* trans-decl.c (gfc_build_library_function_decl_with_spec): Removed
+	static.
+	* trans-io (gfc_build_io_library_fndecls): Add "fn spec" annotations.
+
 2010-07-13  Daniel Franke  <franke.daniel@gmail.com>
 	    Tobias Burnus  <burnus@net-b.de>
 
