@@ -1,3 +1,10 @@
+2010-07-13  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR objc/44488
+	* lib/objc-torture.exp (objc-set-runtime-options): Base runtime list
+	on the target.  Make sure that we can assemble the emitted asm when 
+	the test type is 'compile'.
+	
 2010-07-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36960
