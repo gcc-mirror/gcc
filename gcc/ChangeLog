@@ -1,3 +1,13 @@
+2010-07-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/44901
+	* vec.h (VEC_block_remove): Fix comment.
+	* tree-ssa-live.c (remove_unused_locals): Don't use
+	VEC_unordered_remove on local_decls, instead replace a single
+	vector element in each iteration if at least one element had
+	to be removed and VEC_truncate at the end.
+	* omp-low.c (expand_omp_taskreg): Likewise.
+
 2010-07-13  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* c-decl.c (finish_function): Fix typo in comment.

@@ -3378,7 +3378,7 @@ expand_omp_taskreg (struct omp_region *region)
     }
   else
     {
-      unsigned ix;
+      unsigned srcidx, dstidx, num;
 
       /* If the parallel region needs data sent from the parent
 	 function, then the very first statement (except possible
@@ -3515,11 +3515,18 @@ expand_omp_taskreg (struct omp_region *region)
 	single_succ_edge (new_bb)->flags = EDGE_FALLTHRU;
 
       /* Remove non-local VAR_DECLs from child_cfun->local_decls list.  */
-      for (ix = 0; VEC_iterate (tree, child_cfun->local_decls, ix, t); )
-	if (DECL_CONTEXT (t) != cfun->decl)
-	  ix++;
-	else
-	  VEC_unordered_remove (tree, child_cfun->local_decls, ix);
+      num = VEC_length (tree, child_cfun->local_decls);
+      for (srcidx = 0, dstidx = 0; srcidx < num; srcidx++)
+	{
+	  t = VEC_index (tree, child_cfun->local_decls, srcidx);
+	  if (DECL_CONTEXT (t) == cfun->decl)
+	    continue;
+	  if (srcidx != dstidx)
+	    VEC_replace (tree, child_cfun->local_decls, dstidx, t);
+	  dstidx++;
+	}
+      if (dstidx != num)
+	VEC_truncate (tree, child_cfun->local_decls, dstidx);
 
       /* Inform the callgraph about the new function.  */
       DECL_STRUCT_FUNCTION (child_fn)->curr_properties
