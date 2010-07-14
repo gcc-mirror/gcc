@@ -1,3 +1,8 @@
+2010-07-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/shared_ptr.xml: Update.
+	* doc/html/*: Regenerate.
+
 2010-07-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/Makefile.am: Edit pdf rules.
