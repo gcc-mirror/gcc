@@ -1609,33 +1609,40 @@ calculate_allocation_cost (void)
 static void
 check_allocation (void)
 {
-  ira_allocno_t a, conflict_a;
-  int hard_regno, conflict_hard_regno, nregs, conflict_nregs;
-  ira_allocno_conflict_iterator aci;
+  ira_allocno_t a;
+  int hard_regno, nregs;
   ira_allocno_iterator ai;
 
   FOR_EACH_ALLOCNO (a, ai)
     {
+      ira_object_t obj, conflict_obj;
+      ira_object_conflict_iterator oci;
+
       if (ALLOCNO_CAP_MEMBER (a) != NULL
 	  || (hard_regno = ALLOCNO_HARD_REGNO (a)) < 0)
 	continue;
       nregs = hard_regno_nregs[hard_regno][ALLOCNO_MODE (a)];
-      FOR_EACH_ALLOCNO_CONFLICT (a, conflict_a, aci)
-	if ((conflict_hard_regno = ALLOCNO_HARD_REGNO (conflict_a)) >= 0)
-	  {
-	    conflict_nregs
-	      = (hard_regno_nregs
-		 [conflict_hard_regno][ALLOCNO_MODE (conflict_a)]);
-	    if ((conflict_hard_regno <= hard_regno
-		 && hard_regno < conflict_hard_regno + conflict_nregs)
-		|| (hard_regno <= conflict_hard_regno
-		    && conflict_hard_regno < hard_regno + nregs))
-	      {
-		fprintf (stderr, "bad allocation for %d and %d\n",
-			 ALLOCNO_REGNO (a), ALLOCNO_REGNO (conflict_a));
-		gcc_unreachable ();
-	      }
-	  }
+      obj = ALLOCNO_OBJECT (a);
+      FOR_EACH_OBJECT_CONFLICT (obj, conflict_obj, oci)
+	{
+	  ira_allocno_t conflict_a = OBJECT_ALLOCNO (conflict_obj);
+	  int conflict_hard_regno = ALLOCNO_HARD_REGNO (conflict_a);
+	  if (conflict_hard_regno >= 0)
+	    {
+	      int conflict_nregs
+		= (hard_regno_nregs
+		   [conflict_hard_regno][ALLOCNO_MODE (conflict_a)]);
+	      if ((conflict_hard_regno <= hard_regno
+		   && hard_regno < conflict_hard_regno + conflict_nregs)
+		  || (hard_regno <= conflict_hard_regno
+		      && conflict_hard_regno < hard_regno + nregs))
+		{
+		  fprintf (stderr, "bad allocation for %d and %d\n",
+			   ALLOCNO_REGNO (a), ALLOCNO_REGNO (conflict_a));
+		  gcc_unreachable ();
+		}
+	    }
+	}
     }
 }
 #endif

@@ -700,9 +700,8 @@ static void
 print_allocno_conflicts (FILE * file, bool reg_p, ira_allocno_t a)
 {
   HARD_REG_SET conflicting_hard_regs;
-  ira_object_t obj;
-  ira_allocno_t conflict_a;
-  ira_allocno_conflict_iterator aci;
+  ira_object_t obj, conflict_obj;
+  ira_object_conflict_iterator oci;
   basic_block bb;
 
   if (reg_p)
@@ -720,8 +719,9 @@ print_allocno_conflicts (FILE * file, bool reg_p, ira_allocno_t a)
   fputs (" conflicts:", file);
   obj = ALLOCNO_OBJECT (a);
   if (OBJECT_CONFLICT_ARRAY (obj) != NULL)
-    FOR_EACH_ALLOCNO_CONFLICT (a, conflict_a, aci)
+    FOR_EACH_OBJECT_CONFLICT (obj, conflict_obj, oci)
       {
+	ira_allocno_t conflict_a = OBJECT_ALLOCNO (conflict_obj);
         if (reg_p)
           fprintf (file, " r%d,", ALLOCNO_REGNO (conflict_a));
         else
