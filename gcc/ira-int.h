@@ -62,10 +62,13 @@ extern FILE *ira_dump_file;
 typedef struct live_range *live_range_t;
 typedef struct ira_allocno *ira_allocno_t;
 typedef struct ira_allocno_copy *ira_copy_t;
+typedef struct ira_object *ira_object_t;
 
 /* Definition of vector of allocnos and copies.  */
 DEF_VEC_P(ira_allocno_t);
 DEF_VEC_ALLOC_P(ira_allocno_t, heap);
+DEF_VEC_P(ira_object_t);
+DEF_VEC_ALLOC_P(ira_object_t, heap);
 DEF_VEC_P(ira_copy_t);
 DEF_VEC_ALLOC_P(ira_copy_t, heap);
 
@@ -222,6 +225,43 @@ extern int ira_max_point;
    live ranges with given start/finish point.  */
 extern live_range_t *ira_start_point_ranges, *ira_finish_point_ranges;
 
+/* A structure representing conflict information for an allocno
+   (or one of its subwords).  */
+struct ira_object
+{
+  /* The allocno associated with this record.  */
+  ira_allocno_t allocno;
+  /* Vector of accumulated conflicting conflict_redords with NULL end
+     marker (if OBJECT_CONFLICT_VEC_P is true) or conflict bit vector
+     otherwise.  Only objects belonging to allocnos with the
+     same cover class are in the vector or in the bit vector.  */
+  void *conflicts_array;
+  /* Allocated size of the previous array.  */
+  unsigned int conflicts_array_size;
+  /* A unique number for every instance of this structure which is used
+     to represent it in conflict bit vectors.  */
+  int id;
+  /* Before building conflicts, MIN and MAX are initialized to
+     correspondingly minimal and maximal points of the accumulated
+     allocno live ranges.  Afterwards, they hold the minimal and
+     maximal ids of other objects that this one can conflict
+     with.  */
+  int min, max;
+  /* Initial and accumulated hard registers conflicting with this
+     conflict record and as a consequences can not be assigned to the
+     allocno.  All non-allocatable hard regs and hard regs of cover
+     classes different from given allocno one are included in the
+     sets.  */
+  HARD_REG_SET conflict_hard_regs, total_conflict_hard_regs;
+  /* Number of accumulated conflicts in the vector of conflicting
+     conflict records.  */
+  int num_accumulated_conflicts;
+  /* TRUE if conflicts are represented by a vector of pointers to
+     ira_object structures.  Otherwise, we use a bit vector indexed
+     by conflict ID numbers.  */
+  unsigned int conflict_vec_p : 1;
+};
+
 /* A structure representing an allocno (allocation entity).  Allocno
    represents a pseudo-register in an allocation region.  If
    pseudo-register does not live in a region but it lives in the
@@ -306,30 +346,9 @@ struct ira_allocno
      ranges in the list are not intersected and ordered by decreasing
      their program points*.  */
   live_range_t live_ranges;
-  /* Before building conflicts the two member values are
-     correspondingly minimal and maximal points of the accumulated
-     allocno live ranges.  After building conflicts the values are
-     correspondingly minimal and maximal conflict ids of allocnos with
-     which given allocno can conflict.  */
-  int min, max;
-  /* Vector of accumulated conflicting allocnos with NULL end marker
-     (if CONFLICT_VEC_P is true) or conflict bit vector otherwise.
-     Only allocnos with the same cover class are in the vector or in
-     the bit vector.  */
-  void *conflict_allocno_array;
-  /* The unique member value represents given allocno in conflict bit
-     vectors.  */
-  int conflict_id;
-  /* Allocated size of the previous array.  */
-  unsigned int conflict_allocno_array_size;
-  /* Initial and accumulated hard registers conflicting with this
-     allocno and as a consequences can not be assigned to the allocno.
-     All non-allocatable hard regs and hard regs of cover classes
-     different from given allocno one are included in the sets.  */
-  HARD_REG_SET conflict_hard_regs, total_conflict_hard_regs;
-  /* Number of accumulated conflicts in the vector of conflicting
-     allocnos.  */
-  int conflict_allocnos_num;
+  /* Pointer to a structure describing conflict information about this
+     allocno.  */
+  ira_object_t object;
   /* Accumulated frequency of calls which given allocno
      intersects.  */
   int call_freq;
@@ -374,11 +393,6 @@ struct ira_allocno
   /* TRUE if the allocno was removed from the splay tree used to
      choose allocn for spilling (see ira-color.c::.  */
   unsigned int splay_removed_p : 1;
-  /* TRUE if conflicts for given allocno are represented by vector of
-     pointers to the conflicting allocnos.  Otherwise, we use a bit
-     vector where a bit with given index represents allocno with the
-     same number.  */
-  unsigned int conflict_vec_p : 1;
   /* Non NULL if we remove restoring value from given allocno to
      MEM_OPTIMIZED_DEST at loop exit (see ira-emit.c) because the
      allocno value is not changed inside the loop.  */
@@ -429,13 +443,6 @@ struct ira_allocno
 #define ALLOCNO_LOOP_TREE_NODE(A) ((A)->loop_tree_node)
 #define ALLOCNO_CAP(A) ((A)->cap)
 #define ALLOCNO_CAP_MEMBER(A) ((A)->cap_member)
-#define ALLOCNO_CONFLICT_ALLOCNO_ARRAY(A) ((A)->conflict_allocno_array)
-#define ALLOCNO_CONFLICT_ALLOCNO_ARRAY_SIZE(A) \
-  ((A)->conflict_allocno_array_size)
-#define ALLOCNO_CONFLICT_ALLOCNOS_NUM(A) \
-  ((A)->conflict_allocnos_num)
-#define ALLOCNO_CONFLICT_HARD_REGS(A) ((A)->conflict_hard_regs)
-#define ALLOCNO_TOTAL_CONFLICT_HARD_REGS(A) ((A)->total_conflict_hard_regs)
 #define ALLOCNO_NREFS(A) ((A)->nrefs)
 #define ALLOCNO_FREQ(A) ((A)->freq)
 #define ALLOCNO_HARD_REGNO(A) ((A)->hard_regno)
@@ -455,7 +462,6 @@ struct ira_allocno
 #define ALLOCNO_ASSIGNED_P(A) ((A)->assigned_p)
 #define ALLOCNO_MAY_BE_SPILLED_P(A) ((A)->may_be_spilled_p)
 #define ALLOCNO_SPLAY_REMOVED_P(A) ((A)->splay_removed_p)
-#define ALLOCNO_CONFLICT_VEC_P(A) ((A)->conflict_vec_p)
 #define ALLOCNO_MODE(A) ((A)->mode)
 #define ALLOCNO_COPIES(A) ((A)->allocno_copies)
 #define ALLOCNO_HARD_REG_COSTS(A) ((A)->hard_reg_costs)
@@ -478,9 +484,20 @@ struct ira_allocno
 #define ALLOCNO_FIRST_COALESCED_ALLOCNO(A) ((A)->first_coalesced_allocno)
 #define ALLOCNO_NEXT_COALESCED_ALLOCNO(A) ((A)->next_coalesced_allocno)
 #define ALLOCNO_LIVE_RANGES(A) ((A)->live_ranges)
-#define ALLOCNO_MIN(A) ((A)->min)
-#define ALLOCNO_MAX(A) ((A)->max)
-#define ALLOCNO_CONFLICT_ID(A) ((A)->conflict_id)
+#define ALLOCNO_OBJECT(A) ((A)->object)
+
+#define OBJECT_ALLOCNO(C) ((C)->allocno)
+#define OBJECT_CONFLICT_ARRAY(C) ((C)->conflicts_array)
+#define OBJECT_CONFLICT_VEC(C) ((ira_object_t *)(C)->conflicts_array)
+#define OBJECT_CONFLICT_BITVEC(C) ((IRA_INT_TYPE *)(C)->conflicts_array)
+#define OBJECT_CONFLICT_ARRAY_SIZE(C) ((C)->conflicts_array_size)
+#define OBJECT_CONFLICT_VEC_P(C) ((C)->conflict_vec_p)
+#define OBJECT_NUM_CONFLICTS(C) ((C)->num_accumulated_conflicts)
+#define OBJECT_CONFLICT_HARD_REGS(C) ((C)->conflict_hard_regs)
+#define OBJECT_TOTAL_CONFLICT_HARD_REGS(C) ((C)->total_conflict_hard_regs)
+#define OBJECT_MIN(C) ((C)->min)
+#define OBJECT_MAX(C) ((C)->max)
+#define OBJECT_CONFLICT_ID(C) ((C)->id)
 
 /* Map regno -> allocnos with given regno (see comments for
    allocno member `next_regno_allocno').  */
@@ -491,12 +508,14 @@ extern ira_allocno_t *ira_regno_allocno_map;
    have NULL element value.  */
 extern ira_allocno_t *ira_allocnos;
 
-/* Sizes of the previous array.  */
+/* The size of the previous array.  */
 extern int ira_allocnos_num;
 
-/* Map conflict id -> allocno with given conflict id (see comments for
-   allocno member `conflict_id').  */
-extern ira_allocno_t *ira_conflict_id_allocno_map;
+/* Map a conflict id to its corresponding ira_object structure.  */
+extern ira_object_t *ira_object_id_map;
+
+/* The size of the previous array.  */
+extern int ira_objects_num;
 
 /* The following structure represents a copy of two allocnos.  The
    copies represent move insns or potential move insns usually because
@@ -910,11 +929,11 @@ extern void ira_traverse_loop_tree (bool, ira_loop_tree_node_t,
 extern ira_allocno_t ira_parent_allocno (ira_allocno_t);
 extern ira_allocno_t ira_parent_or_cap_allocno (ira_allocno_t);
 extern ira_allocno_t ira_create_allocno (int, bool, ira_loop_tree_node_t);
+extern void ira_create_allocno_object (ira_allocno_t);
 extern void ira_set_allocno_cover_class (ira_allocno_t, enum reg_class);
-extern bool ira_conflict_vector_profitable_p (ira_allocno_t, int);
-extern void ira_allocate_allocno_conflict_vec (ira_allocno_t, int);
-extern void ira_allocate_allocno_conflicts (ira_allocno_t, int);
-extern void ira_add_allocno_conflict (ira_allocno_t, ira_allocno_t);
+extern bool ira_conflict_vector_profitable_p (ira_object_t, int);
+extern void ira_allocate_conflict_vec (ira_object_t, int);
+extern void ira_allocate_object_conflicts (ira_object_t, int);
 extern void ira_print_expanded_allocno (ira_allocno_t);
 extern live_range_t ira_create_allocno_live_range (ira_allocno_t, int, int,
 						   live_range_t);
@@ -1037,8 +1056,43 @@ ira_allocno_iter_cond (ira_allocno_iterator *i, ira_allocno_t *a)
 #define FOR_EACH_ALLOCNO(A, ITER)			\
   for (ira_allocno_iter_init (&(ITER));			\
        ira_allocno_iter_cond (&(ITER), &(A));)
+
+/* The iterator for all objects.  */
+typedef struct {
+  /* The number of the current element in IRA_OBJECT_ID_MAP.  */
+  int n;
+} ira_object_iterator;
 
+/* Initialize the iterator I.  */
+static inline void
+ira_object_iter_init (ira_object_iterator *i)
+{
+  i->n = 0;
+}
 
+/* Return TRUE if we have more objects to visit, in which case *OBJ is
+   set to the object to be visited.  Otherwise, return FALSE.  */
+static inline bool
+ira_object_iter_cond (ira_object_iterator *i, ira_object_t *obj)
+{
+  int n;
+
+  for (n = i->n; n < ira_objects_num; n++)
+    if (ira_object_id_map[n] != NULL)
+      {
+	*obj = ira_object_id_map[n];
+	i->n = n + 1;
+	return true;
+      }
+  return false;
+}
+
+/* Loop over all objects.  In each iteration, A is set to the next
+   conflict.  ITER is an instance of ira_object_iterator used to iterate
+   the objects.  */
+#define FOR_EACH_OBJECT(OBJ, ITER)			\
+  for (ira_object_iter_init (&(ITER));			\
+       ira_object_iter_cond (&(ITER), &(OBJ));)
 
 
 /* The iterator for copies.  */
@@ -1077,38 +1131,33 @@ ira_copy_iter_cond (ira_copy_iterator *i, ira_copy_t *cp)
 #define FOR_EACH_COPY(C, ITER)				\
   for (ira_copy_iter_init (&(ITER));			\
        ira_copy_iter_cond (&(ITER), &(C));)
-
-
 
-
 /* The iterator for allocno conflicts.  */
 typedef struct {
-
-  /* TRUE if the conflicts are represented by vector of allocnos.  */
-  bool allocno_conflict_vec_p;
+  /* TRUE if the conflicts are represented by vector of objects.  */
+  bool conflict_vec_p;
 
   /* The conflict vector or conflict bit vector.  */
   void *vec;
 
   /* The number of the current element in the vector (of type
-     ira_allocno_t or IRA_INT_TYPE).  */
+     ira_object_t or IRA_INT_TYPE).  */
   unsigned int word_num;
 
   /* The bit vector size.  It is defined only if
-     ALLOCNO_CONFLICT_VEC_P is FALSE.  */
+     OBJECT_CONFLICT_VEC_P is FALSE.  */
   unsigned int size;
 
   /* The current bit index of bit vector.  It is defined only if
-     ALLOCNO_CONFLICT_VEC_P is FALSE.  */
+     OBJECT_CONFLICT_VEC_P is FALSE.  */
   unsigned int bit_num;
 
-  /* Allocno conflict id corresponding to the 1st bit of the bit
-     vector.  It is defined only if ALLOCNO_CONFLICT_VEC_P is
-     FALSE.  */
+  /* The object id corresponding to the 1st bit of the bit vector.  It
+     is defined only if OBJECT_CONFLICT_VEC_P is FALSE.  */
   int base_conflict_id;
 
   /* The word of bit vector currently visited.  It is defined only if
-     ALLOCNO_CONFLICT_VEC_P is FALSE.  */
+     OBJECT_CONFLICT_VEC_P is FALSE.  */
   unsigned IRA_INT_TYPE word;
 } ira_allocno_conflict_iterator;
 
@@ -1117,21 +1166,22 @@ static inline void
 ira_allocno_conflict_iter_init (ira_allocno_conflict_iterator *i,
 				ira_allocno_t allocno)
 {
-  i->allocno_conflict_vec_p = ALLOCNO_CONFLICT_VEC_P (allocno);
-  i->vec = ALLOCNO_CONFLICT_ALLOCNO_ARRAY (allocno);
+  ira_object_t obj = ALLOCNO_OBJECT (allocno);
+  i->conflict_vec_p = OBJECT_CONFLICT_VEC_P (obj);
+  i->vec = OBJECT_CONFLICT_ARRAY (obj);
   i->word_num = 0;
-  if (i->allocno_conflict_vec_p)
+  if (i->conflict_vec_p)
     i->size = i->bit_num = i->base_conflict_id = i->word = 0;
   else
     {
-      if (ALLOCNO_MIN (allocno) > ALLOCNO_MAX (allocno))
+      if (OBJECT_MIN (obj) > OBJECT_MAX (obj))
 	i->size = 0;
       else
-	i->size = ((ALLOCNO_MAX (allocno) - ALLOCNO_MIN (allocno)
+	i->size = ((OBJECT_MAX (obj) - OBJECT_MIN (obj)
 		    + IRA_INT_BITS)
 		   / IRA_INT_BITS) * sizeof (IRA_INT_TYPE);
       i->bit_num = 0;
-      i->base_conflict_id = ALLOCNO_MIN (allocno);
+      i->base_conflict_id = OBJECT_MIN (obj);
       i->word = (i->size == 0 ? 0 : ((IRA_INT_TYPE *) i->vec)[0]);
     }
 }
@@ -1143,15 +1193,13 @@ static inline bool
 ira_allocno_conflict_iter_cond (ira_allocno_conflict_iterator *i,
 				ira_allocno_t *a)
 {
-  ira_allocno_t conflict_allocno;
+  ira_object_t obj;
 
-  if (i->allocno_conflict_vec_p)
+  if (i->conflict_vec_p)
     {
-      conflict_allocno = ((ira_allocno_t *) i->vec)[i->word_num];
-      if (conflict_allocno == NULL)
+      obj = ((ira_object_t *) i->vec)[i->word_num];
+      if (obj == NULL)
 	return false;
-      *a = conflict_allocno;
-      return true;
     }
   else
     {
@@ -1171,17 +1219,18 @@ ira_allocno_conflict_iter_cond (ira_allocno_conflict_iterator *i,
       for (; (i->word & 1) == 0; i->word >>= 1)
 	i->bit_num++;
 
-      *a = ira_conflict_id_allocno_map[i->bit_num + i->base_conflict_id];
-
-      return true;
+      obj = ira_object_id_map[i->bit_num + i->base_conflict_id];
     }
+
+  *a = OBJECT_ALLOCNO (obj);
+  return true;
 }
 
 /* Advance to the next conflicting allocno.  */
 static inline void
 ira_allocno_conflict_iter_next (ira_allocno_conflict_iterator *i)
 {
-  if (i->allocno_conflict_vec_p)
+  if (i->conflict_vec_p)
     i->word_num++;
   else
     {

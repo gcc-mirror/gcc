@@ -1,3 +1,90 @@
+2010-07-14  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* ira-int.h (struct ira_object): New.
+	(ira_object_t): New typedef.  Add DEF_VEC_P and DEF_VEC_ALLOC_P
+	for it.
+	(struct ira_allocno): Remove members min, max,
+	conflict_allocno_array, conflict_id, conflict_allocno_array_size,
+	conflict_allocnos_num and conflict_vec_p.  Add new member object.
+	(OBJECT_CONFLICT_ARRAY, OBJECT_CONFLICT_VEC_P,
+	OBJECT_NUM_CONFLICTS, OBJECT_CONFLICT_ARRAY_SIZE,
+	OBJECT_CONFLICT_HARD_REGS, OBJECT_TOTAL_CONFLICT_HARD_REGS,
+	OBJECT_MIN, OBJECT_MAX, OBJECT_CONFLICT_ID): Renamed from
+	ALLOCNO_CONFLICT_ALLOCNO_ARRAY, ALLOCNO_CONFLICT_VEC_P,
+	ALLOCNO_CONFLICT_ALLOCNOS_NUM, ALLOCNO_CONFLICT_ALLOCNO_ARRAY_SIZE,
+	ALLOCNO_CONFLICT_HARD_REGS, ALLOCNO_TOTAL_CONFLICT_HARD_REGS)
+	ALLOCNO_MIN, ALLOCNO_MAX, and ALLOCNO_CONFLICT_ID; now operate on
+	an ira_object_t rather than ira_allocno_t.  All uses changed.
+	(ira_object_id_map): Renamed from ira_conflict_id_allocno_map; now
+	contains a vector of ira_object_t; all uses changed.
+	(ira_objects_num): Declare variable.
+	(ira_create_allocno_object): Declare function.
+	(ira_conflict_vector_profitable_p): Adjust prototype.
+	(ira_allocate_conflict_vec): Renamed from
+	ira_allocate_allocno_conflict_vec; first arg now ira_object_t.
+	(ira_allocate_object_conflicts): Renamed from
+	ira_allocate_allocno_conflicts; first arg now ira_object_t.
+	(struct ira_object_iterator): New.
+	(ira_object_iter_init, ira_object_iter_cond, FOR_EACH_OBJECT): New.
+	(ira_allocno_conflict_iterator): Renamed member allocno_conflict_vec_p
+	to conflict_vec_p.  All uses changed.
+	(ira_allocno_conflict_iter_init, ira_allocno_conflict_iter_cond):
+	Changed to take into account that conflicts are now tracked for
+	objects.
+	* ira-conflicts.c (OBJECTS_CONFLICT_P): Renamed from
+	CONFLICT_ALLOCNO_P.  Args changed to accept ira_object_t.  All
+	uses changed.
+	(allocnos_conflict_p): New static function.
+	(collected_conflict_objects): Renamed from collected_allocno_objects;
+	now a vector of ira_object_t.  All uses changed.
+	(build_conflict_bit_table): Changed to take into account that
+	conflicts are now tracked for objects.
+	(process_regs_for_copy, propagate_copies, build_allocno_conflicts)
+	(print_allocno_conflicts, ira_build_conflicts): Likewise.
+	* ira-color.c (assign_hard_reg, setup_allocno_available_regs_num)
+	setup_allocno_left_conflicts_size, allocno_reload_assign,
+	fast_allocation): Likewise.
+	* ira-lives.c (make_hard_regno_born, make_allocno_born)
+	process_single_reg_class_operands, process_bb_node_lives): Likewise.
+	* ira-emit.c (modify_move_list, add_range_and_copies_from_move_list):
+	Likewise.
+	* ira-build.c (ira_objects_num): New variable.
+	(ira_object_id_map): Renamed from ira_conflict_id_allocno_map; now
+	contains a vector of ira_object_t; all uses changed.
+	(ira_object_id_map_vec): Corresponding change.
+	(object_pool): New static variable.
+	(initiate_allocnos): Initialize it.
+	(finish_allocnos): Free it.
+	(ira_create_object, ira_create_allocno_object, create_allocno_objects):
+	New functions.
+	(ira_create_allocno): Don't set members that were removed.
+	(ira_set_allocno_cover_class): Don't change conflict hard regs.
+	(merge_hard_reg_conflicts): Changed to take into account that
+	conflicts are now tracked for objects.
+	(ira_conflict_vector_profitable_p, ira_allocate_conflict_vec,
+	allocate_conflict_bit_vec, ira_allocate_object_conflicts,
+	compress_conflict_vecs, remove_low_level_allocnos, ira_flattening,
+	setup_min_max_allocno_live_range_point, allocno_range_compare_func,
+	setup_min_max_conflict_allocno_ids, ):  Likewise.
+	((add_to_conflicts): Renamed from add_to_allocno_conflicts, args changed
+	to ira_object_t; all callers changed.
+	(ira_add_conflict): Renamed from ira_add_allocno_conflict, args changed
+	to ira_object_t, all callers changed.
+	(clear_conflicts): Renamed from clear_allocno_conflicts, arg changed
+	to ira_object_t, all callers changed.
+	(conflict_check, curr_conflict_check_tick): Renamed from
+	allocno_conflict_check and curr_allocno_conflict_check_tick; all uses
+	changed.
+	(compress_conflict_vec): Renamed from compress_allocno_conflict_vec,
+	arg changed to ira_object_t, all callers changed.
+	(create_cap_allocno): Call ira_create_allocno_object.
+	(finish_allocno): Free the corresponding object.
+	(sort_conflict_id_map): Renamed from sort_conflict_id_allocno_map; all
+	callers changed.  Adjusted for dealing with objects.
+	(ira_build): Call create_allocno_objects after ira_costs.  Adjusted for
+	dealing with objects.
+	* ira.c (ira_bad_reload_regno_1): Adjusted for dealing with objects.
+
 2010-07-13  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR other/44874

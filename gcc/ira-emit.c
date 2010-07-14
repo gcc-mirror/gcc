@@ -646,7 +646,7 @@ static move_t
 modify_move_list (move_t list)
 {
   int i, n, nregs, hard_regno;
-  ira_allocno_t to, from, new_allocno;
+  ira_allocno_t to, from;
   move_t move, new_move, set_move, first, last;
 
   if (list == NULL)
@@ -715,6 +715,9 @@ modify_move_list (move_t list)
 		&& ALLOCNO_HARD_REGNO
 		   (hard_regno_last_set[hard_regno + i]->to) >= 0)
 	      {
+		ira_allocno_t new_allocno;
+		ira_object_t new_obj;
+
 		set_move = hard_regno_last_set[hard_regno + i];
 		/* It does not matter what loop_tree_node (of TO or
 		   FROM) to use for the new allocno because of
@@ -726,16 +729,19 @@ modify_move_list (move_t list)
 		ALLOCNO_MODE (new_allocno) = ALLOCNO_MODE (set_move->to);
 		ira_set_allocno_cover_class
 		  (new_allocno, ALLOCNO_COVER_CLASS (set_move->to));
+		ira_create_allocno_object (new_allocno);
 		ALLOCNO_ASSIGNED_P (new_allocno) = true;
 		ALLOCNO_HARD_REGNO (new_allocno) = -1;
 		ALLOCNO_REG (new_allocno)
 		  = create_new_reg (ALLOCNO_REG (set_move->to));
-		ALLOCNO_CONFLICT_ID (new_allocno) = ALLOCNO_NUM (new_allocno);
+
+		new_obj = ALLOCNO_OBJECT (new_allocno);
+
 		/* Make it possibly conflicting with all earlier
 		   created allocnos.  Cases where temporary allocnos
 		   created to remove the cycles are quite rare.  */
-		ALLOCNO_MIN (new_allocno) = 0;
-		ALLOCNO_MAX (new_allocno) = ira_allocnos_num - 1;
+		OBJECT_MIN (new_obj) = 0;
+		OBJECT_MAX (new_obj) = ira_objects_num - 1;
 		new_move = create_move (set_move->to, new_allocno);
 		set_move->to = new_allocno;
 		VEC_safe_push (move_t, heap, move_vec, new_move);
@@ -911,7 +917,7 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
   int start, n;
   unsigned int regno;
   move_t move;
-  ira_allocno_t to, from, a;
+  ira_allocno_t a;
   ira_copy_t cp;
   live_range_t r;
   bitmap_iterator bi;
@@ -929,22 +935,23 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
   start = ira_max_point;
   for (move = list; move != NULL; move = move->next)
     {
-      from = move->from;
-      to = move->to;
-      if (ALLOCNO_CONFLICT_ALLOCNO_ARRAY (to) == NULL)
+      ira_allocno_t from = move->from;
+      ira_allocno_t to = move->to;
+      ira_object_t from_obj = ALLOCNO_OBJECT (from);
+      ira_object_t to_obj = ALLOCNO_OBJECT (to);
+      if (OBJECT_CONFLICT_ARRAY (to_obj) == NULL)
 	{
 	  if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
 	    fprintf (ira_dump_file, "    Allocate conflicts for a%dr%d\n",
 		     ALLOCNO_NUM (to), REGNO (ALLOCNO_REG (to)));
-	  ira_allocate_allocno_conflicts (to, n);
+	  ira_allocate_object_conflicts (to_obj, n);
 	}
       bitmap_clear_bit (live_through, ALLOCNO_REGNO (from));
       bitmap_clear_bit (live_through, ALLOCNO_REGNO (to));
-      IOR_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (from), hard_regs_live);
-      IOR_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (to), hard_regs_live);
-      IOR_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (from),
-			hard_regs_live);
-      IOR_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (to), hard_regs_live);
+      IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (from_obj), hard_regs_live);
+      IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (to_obj), hard_regs_live);
+      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (from_obj), hard_regs_live);
+      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (to_obj), hard_regs_live);
       update_costs (from, true, freq);
       update_costs (to, false, freq);
       cp = ira_add_allocno_copy (from, to, freq, false, move->insn, NULL);
@@ -994,6 +1001,7 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
     }
   EXECUTE_IF_SET_IN_BITMAP (live_through, FIRST_PSEUDO_REGISTER, regno, bi)
     {
+      ira_allocno_t to;
       a = node->regno_allocno_map[regno];
       if ((to = ALLOCNO_MEM_OPTIMIZED_DEST (a)) != NULL)
 	a = to;

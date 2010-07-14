@@ -1243,6 +1243,7 @@ ira_bad_reload_regno_1 (int regno, rtx x)
 {
   int x_regno;
   ira_allocno_t a;
+  ira_object_t obj;
   enum reg_class pref;
 
   /* We only deal with pseudo regs.  */
@@ -1262,7 +1263,8 @@ ira_bad_reload_regno_1 (int regno, rtx x)
   /* If the pseudo conflicts with REGNO, then we consider REGNO a
      poor choice for a reload regno.  */
   a = ira_regno_allocno_map[x_regno];
-  if (TEST_HARD_REG_BIT (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a), regno))
+  obj = ALLOCNO_OBJECT (a);
+  if (TEST_HARD_REG_BIT (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj), regno))
     return true;
 
   return false;
