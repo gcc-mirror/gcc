@@ -1159,14 +1159,13 @@ typedef struct {
   /* The word of bit vector currently visited.  It is defined only if
      OBJECT_CONFLICT_VEC_P is FALSE.  */
   unsigned IRA_INT_TYPE word;
-} ira_allocno_conflict_iterator;
+} ira_object_conflict_iterator;
 
 /* Initialize the iterator I with ALLOCNO conflicts.  */
 static inline void
-ira_allocno_conflict_iter_init (ira_allocno_conflict_iterator *i,
-				ira_allocno_t allocno)
+ira_object_conflict_iter_init (ira_object_conflict_iterator *i,
+			       ira_object_t obj)
 {
-  ira_object_t obj = ALLOCNO_OBJECT (allocno);
   i->conflict_vec_p = OBJECT_CONFLICT_VEC_P (obj);
   i->vec = OBJECT_CONFLICT_ARRAY (obj);
   i->word_num = 0;
@@ -1190,8 +1189,8 @@ ira_allocno_conflict_iter_init (ira_allocno_conflict_iterator *i,
    case *A is set to the allocno to be visited.  Otherwise, return
    FALSE.  */
 static inline bool
-ira_allocno_conflict_iter_cond (ira_allocno_conflict_iterator *i,
-				ira_allocno_t *a)
+ira_object_conflict_iter_cond (ira_object_conflict_iterator *i,
+			       ira_object_t *pobj)
 {
   ira_object_t obj;
 
@@ -1222,13 +1221,13 @@ ira_allocno_conflict_iter_cond (ira_allocno_conflict_iterator *i,
       obj = ira_object_id_map[i->bit_num + i->base_conflict_id];
     }
 
-  *a = OBJECT_ALLOCNO (obj);
+  *pobj = obj;
   return true;
 }
 
 /* Advance to the next conflicting allocno.  */
 static inline void
-ira_allocno_conflict_iter_next (ira_allocno_conflict_iterator *i)
+ira_object_conflict_iter_next (ira_object_conflict_iterator *i)
 {
   if (i->conflict_vec_p)
     i->word_num++;
@@ -1239,14 +1238,13 @@ ira_allocno_conflict_iter_next (ira_allocno_conflict_iterator *i)
     }
 }
 
-/* Loop over all allocnos conflicting with ALLOCNO.  In each
-   iteration, A is set to the next conflicting allocno.  ITER is an
-   instance of ira_allocno_conflict_iterator used to iterate the
-   conflicts.  */
-#define FOR_EACH_ALLOCNO_CONFLICT(ALLOCNO, A, ITER)			\
-  for (ira_allocno_conflict_iter_init (&(ITER), (ALLOCNO));		\
-       ira_allocno_conflict_iter_cond (&(ITER), &(A));			\
-       ira_allocno_conflict_iter_next (&(ITER)))
+/* Loop over all objects conflicting with OBJ.  In each iteration,
+   CONF is set to the next conflicting object.  ITER is an instance
+   of ira_object_conflict_iterator used to iterate the conflicts.  */
+#define FOR_EACH_OBJECT_CONFLICT(OBJ, CONF, ITER)			\
+  for (ira_object_conflict_iter_init (&(ITER), (OBJ));			\
+       ira_object_conflict_iter_cond (&(ITER), &(CONF));		\
+       ira_object_conflict_iter_next (&(ITER)))
 
 
 

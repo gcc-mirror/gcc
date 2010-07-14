@@ -126,6 +126,17 @@
 	remove_some_program_points_and_update_live_ranges,
 	ira_debug_live_range_list): Likewise.
 
+	* ira-int.h (ira_object_conflict_iterator): Rename from
+	ira_allocno_conflict_iterator.
+	(ira_object_conflict_iter_init): Rename from
+	ira_allocno_conflict_iter_init, second arg changed to
+	* ira.c (check_allocation): Use FOR_EACH_OBJECT_CONFLICT rather than
+	FOR_EACH_ALLOCNO_CONFLICT.
+	* ira-color.c (assign_hard_reg, push_allocno_to_stack)
+	setup_allocno_left_conflicts_size, coalesced_allocno_conflict_p,
+	ira_reassign_conflict_allocnos, ira_reassign_pseudos): Likewise.
+	* ira-conflicts.c (print_allocno_conflicts): Likewise.
+
 2010-07-13  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR other/44874
