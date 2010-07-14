@@ -1,3 +1,8 @@
+2010-07-14  Jie Zhang  <jie@codesourcery.com>
+
+	* config/arm/cortex-a8.md (cortex_a8_alu): Don't use
+	cortex_a8_default when neon_type is not none.
+
 2010-07-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
