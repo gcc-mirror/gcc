@@ -87,8 +87,9 @@
 ;; (source read in E2 and destination available at the end of that cycle).
 (define_insn_reservation "cortex_a8_alu" 2
   (and (eq_attr "tune" "cortexa8")
-       (ior (and (eq_attr "type" "alu")
-                (not (eq_attr "insn" "mov,mvn")))
+       (ior (and (and (eq_attr "type" "alu")
+		      (eq_attr "neon_type" "none"))
+		 (not (eq_attr "insn" "mov,mvn")))
             (eq_attr "insn" "clz")))
   "cortex_a8_default")
 
