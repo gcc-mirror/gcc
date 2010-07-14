@@ -3294,6 +3294,26 @@ fix = {
 
 
 /*
+ * Solaris 8 PTHREAD_COND_INITIALIZER lacks the __pthread_cond_magic field.
+ * COND_MAGIC is only defined in <synch.h> and pollutes the namespace, so
+ * use the value literally instead.
+ */
+fix = {
+    hackname = solaris_cond_init;
+    select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    files = pthread.h;
+    mach = '*-*-solaris2.8';
+    c_fix = format;
+    c_fix_arg = "%1, 0x4356%2";
+    c_fix_arg = "^(#define[ \t]+PTHREAD_COND_INITIALIZER[ \t]+"
+                "\\{.*0)(\\},[ \t]*0\\}.*)$";
+    test_text =
+    '#pragma ident	"@(#)pthread.h	1.29	01/07/07 SMI"'"\n"
+    '#define	PTHREAD_COND_INITIALIZER	{{{0}, 0}, 0}	/* = DEFAULTCV */';
+};
+
+
+/*
  * Sun Solaris 10 defines several C99 math macros in terms of
  * builtins specific to the Studio compiler, in particular not
  * compatible with the GNU compiler.
