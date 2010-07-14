@@ -2142,9 +2142,9 @@ Inquiry function
 @code{RESULT = C_LOC(X)}
 
 @item @emph{Arguments}:
-@multitable @columnfractions .15 .70
-@item @var{X} @tab Associated scalar pointer or interoperable scalar
-or allocated allocatable variable with @code{TARGET} attribute.
+@multitable @columnfractions .10 .75
+@item @var{X} @tab  Shall have either the POINTER or TARGET attribute. It shall not be a coindexed object. It shall either be a variable with interoperable type and kind type parameters, or be a scalar, nonpolymorphic variable with no length type parameters.
+
 @end multitable
 
 @item @emph{Return value}:

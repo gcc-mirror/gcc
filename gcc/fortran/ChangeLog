@@ -1,3 +1,12 @@
+2010-07-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44925
+	* gfortran.h (gfc_is_data_pointer): Remove prototype.
+	* dependency.c (gfc_is_data_pointer): Make it static.
+	* intrinsic.texi: Update documentation on C_LOC.
+	* resolve.c (gfc_iso_c_func_interface): Fix pointer and target checks
+	and add a check for polymorphic variables.
+
 2010-07-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-expr.c (string_to_single_character): Also optimize
