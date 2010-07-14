@@ -85,6 +85,47 @@
 	dealing with objects.
 	* ira.c (ira_bad_reload_regno_1): Adjusted for dealing with objects.
 
+	* ira-int.h (struct live_range): Rename allocno member to object and change
+	type to ira_object_t.
+	(struct ira_object): New member live_ranges.
+	(struct ira_allocno): Remove member live_ranges.
+	(ALLOCNO_LIVE_RANGES): Remove.
+	(OBJECT_LIVE_RANGES): New macro.
+	(ira_create_live_range, ira_copy_live_range_list,
+	ira_merge_live_range_list, ira_live_ranges_intersect_p,
+	ira_finish_live_range, ira_finish_live_range_list): Adjust declarations.
+	* ira-build.c (ira_create_object): Initialize live ranges here.
+	(ira_create_allocno): Not here.
+	(ira_create_live_range): Rename from ira_create_allocno_live_range, arg
+	changed to ira_object_t, all callers changed.
+	(copy_live_range): Rename from copy_allocno_live_range, all callers
+	changed.
+	(ira_copy_live_range_list): Rename from ira_copy_allocno_live_range_list,
+	all callers changed.
+	(ira_merge_live_ranges): Rename from ira_merge_allocno_live_range_list,
+	all callers changed.
+	(ira_live_ranges_intersect_p): Rename from
+	ira_allocno_live_ranges_intersect_p, all callers changed.
+	(ira_finish_live_range): Rename from ira_finish_allocno_live_range, all
+	callers changed.
+	(ira_finish_live_range_list): Rename from
+	ira_finish_allocno_live_range_list, all callers changed.
+	(change_object_in_range_list): Rename from change_allocno_in_range_list,
+	last arg changed to ira_object_t, all callers changed.
+	(finish_allocno): Changed to expect live ranges in the allocno's object.
+	(move_allocno_live_ranges, copy_allocno_live_ranges,
+	update_bad_spill_attribute, setup_min_max_allocno_live_range_point,
+	ira_flattening, ira_build): Likewise.
+	* ira-color.c (allocnos_have_intersected_live_ranges_p,
+	slot_coalesced_allocno_live_ranges_intersect,
+	setup_slot_coalesced_allocno_live_ranges, fast_allocation): Likewise.
+	* ira-conflicts.c (build_conflict_bit_table): Likewise.
+	* ira-emit.c (add_range_and_copies_from_move_list): Likewise.
+	* ira-lives.c (make_allocno_born, update_allocno_pressure_excess_length,
+	make_allocno_dead, create_start_finish_chains,
+	remove_some_program_points_and_update_live_ranges,
+	ira_debug_live_range_list): Likewise.
+
 2010-07-13  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR other/44874

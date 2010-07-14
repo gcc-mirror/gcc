@@ -960,11 +960,11 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
 		 cp->num, ALLOCNO_NUM (cp->first),
 		 REGNO (ALLOCNO_REG (cp->first)), ALLOCNO_NUM (cp->second),
 		 REGNO (ALLOCNO_REG (cp->second)));
-      r = ALLOCNO_LIVE_RANGES (from);
+      r = OBJECT_LIVE_RANGES (from_obj);
       if (r == NULL || r->finish >= 0)
 	{
-	  ALLOCNO_LIVE_RANGES (from)
-	    = ira_create_allocno_live_range (from, start, ira_max_point, r);
+	  OBJECT_LIVE_RANGES (from_obj)
+	    = ira_create_live_range (from_obj, start, ira_max_point, r);
 	  if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
 	    fprintf (ira_dump_file,
 		     "    Adding range [%d..%d] to allocno a%dr%d\n",
@@ -981,14 +981,15 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
 		     REGNO (ALLOCNO_REG (from)));
 	}
       ira_max_point++;
-      ALLOCNO_LIVE_RANGES (to)
-	= ira_create_allocno_live_range (to, ira_max_point, -1,
-					 ALLOCNO_LIVE_RANGES (to));
+      OBJECT_LIVE_RANGES (to_obj)
+	= ira_create_live_range (to_obj, ira_max_point, -1,
+				 OBJECT_LIVE_RANGES (to_obj));
       ira_max_point++;
     }
   for (move = list; move != NULL; move = move->next)
     {
-      r = ALLOCNO_LIVE_RANGES (move->to);
+      ira_object_t to_obj = ALLOCNO_OBJECT (move->to);
+      r = OBJECT_LIVE_RANGES (to_obj);
       if (r->finish < 0)
 	{
 	  r->finish = ira_max_point - 1;
@@ -1002,12 +1003,15 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
   EXECUTE_IF_SET_IN_BITMAP (live_through, FIRST_PSEUDO_REGISTER, regno, bi)
     {
       ira_allocno_t to;
+      ira_object_t obj;
       a = node->regno_allocno_map[regno];
-      if ((to = ALLOCNO_MEM_OPTIMIZED_DEST (a)) != NULL)
+      to = ALLOCNO_MEM_OPTIMIZED_DEST (a);
+      if (to != NULL)
 	a = to;
-      ALLOCNO_LIVE_RANGES (a)
-	= ira_create_allocno_live_range (a, start, ira_max_point - 1,
-					 ALLOCNO_LIVE_RANGES (a));
+      obj = ALLOCNO_OBJECT (a);
+      OBJECT_LIVE_RANGES (obj)
+	= ira_create_live_range (obj, start, ira_max_point - 1,
+				 OBJECT_LIVE_RANGES (obj));
       if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
 	fprintf
 	  (ira_dump_file,

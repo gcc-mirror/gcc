@@ -113,8 +113,8 @@ make_hard_regno_dead (int regno)
 static void
 make_allocno_born (ira_allocno_t a)
 {
-  live_range_t p = ALLOCNO_LIVE_RANGES (a);
   ira_object_t obj = ALLOCNO_OBJECT (a);
+  live_range_t p = OBJECT_LIVE_RANGES (obj);
 
   sparseset_set_bit (allocnos_live, ALLOCNO_NUM (a));
   IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj), hard_regs_live);
@@ -122,9 +122,8 @@ make_allocno_born (ira_allocno_t a)
 
   if (p == NULL
       || (p->finish != curr_point && p->finish + 1 != curr_point))
-    ALLOCNO_LIVE_RANGES (a)
-      = ira_create_allocno_live_range (a, curr_point, -1,
-				       ALLOCNO_LIVE_RANGES (a));
+    OBJECT_LIVE_RANGES (obj)
+      = ira_create_live_range (obj, curr_point, -1, p);
 }
 
 /* Update ALLOCNO_EXCESS_PRESSURE_POINTS_NUM for allocno A.  */
@@ -140,9 +139,10 @@ update_allocno_pressure_excess_length (ira_allocno_t a)
        (cl = ira_reg_class_super_classes[cover_class][i]) != LIM_REG_CLASSES;
        i++)
     {
+      ira_object_t obj = ALLOCNO_OBJECT (a);
       if (high_pressure_start_point[cl] < 0)
 	continue;
-      p = ALLOCNO_LIVE_RANGES (a);
+      p = OBJECT_LIVE_RANGES (obj);
       ira_assert (p != NULL);
       start = (high_pressure_start_point[cl] > p->start
 	       ? high_pressure_start_point[cl] : p->start);
@@ -155,9 +155,9 @@ update_allocno_pressure_excess_length (ira_allocno_t a)
 static void
 make_allocno_dead (ira_allocno_t a)
 {
-  live_range_t p;
+  ira_object_t obj = ALLOCNO_OBJECT (a);
+  live_range_t p = OBJECT_LIVE_RANGES (obj);
 
-  p = ALLOCNO_LIVE_RANGES (a);
   ira_assert (p != NULL);
   p->finish = curr_point;
   update_allocno_pressure_excess_length (a);
@@ -1160,7 +1160,8 @@ create_start_finish_chains (void)
 	  ira_max_point * sizeof (live_range_t));
   FOR_EACH_ALLOCNO (a, ai)
     {
-      for (r = ALLOCNO_LIVE_RANGES (a); r != NULL; r = r->next)
+      ira_object_t obj = ALLOCNO_OBJECT (a);
+      for (r = OBJECT_LIVE_RANGES (obj); r != NULL; r = r->next)
 	{
 	  r->start_next = ira_start_point_ranges[r->start];
 	  ira_start_point_ranges[r->start] = r;
@@ -1189,22 +1190,21 @@ remove_some_program_points_and_update_live_ranges (void)
   unsigned i;
   int n;
   int *map;
-  ira_allocno_t a;
-  ira_allocno_iterator ai;
+  ira_object_t obj;
+  ira_object_iterator oi;
   live_range_t r;
   bitmap born_or_died;
   bitmap_iterator bi;
 
   born_or_died = ira_allocate_bitmap ();
-  FOR_EACH_ALLOCNO (a, ai)
-    {
-      for (r = ALLOCNO_LIVE_RANGES (a); r != NULL; r = r->next)
-	{
-	  ira_assert (r->start <= r->finish);
-	  bitmap_set_bit (born_or_died, r->start);
+  FOR_EACH_OBJECT (obj, oi)
+    for (r = OBJECT_LIVE_RANGES (obj); r != NULL; r = r->next)
+      {
+	ira_assert (r->start <= r->finish);
+	bitmap_set_bit (born_or_died, r->start);
 	  bitmap_set_bit (born_or_died, r->finish);
-	}
-    }
+      }
+
   map = (int *) ira_allocate (sizeof (int) * ira_max_point);
   n = 0;
   EXECUTE_IF_SET_IN_BITMAP(born_or_died, 0, i, bi)
@@ -1216,14 +1216,13 @@ remove_some_program_points_and_update_live_ranges (void)
     fprintf (ira_dump_file, "Compressing live ranges: from %d to %d - %d%%\n",
 	     ira_max_point, n, 100 * n / ira_max_point);
   ira_max_point = n;
-  FOR_EACH_ALLOCNO (a, ai)
-    {
-      for (r = ALLOCNO_LIVE_RANGES (a); r != NULL; r = r->next)
-	{
-	  r->start = map[r->start];
-	  r->finish = map[r->finish];
-	}
-    }
+
+  FOR_EACH_OBJECT (obj, oi)
+    for (r = OBJECT_LIVE_RANGES (obj); r != NULL; r = r->next)
+      {
+	r->start = map[r->start];
+	r->finish = map[r->finish];
+      }
   ira_free (map);
 }
 
@@ -1247,8 +1246,9 @@ ira_debug_live_range_list (live_range_t r)
 static void
 print_allocno_live_ranges (FILE *f, ira_allocno_t a)
 {
+  ira_object_t obj = ALLOCNO_OBJECT (a);
   fprintf (f, " a%d(r%d):", ALLOCNO_NUM (a), ALLOCNO_REGNO (a));
-  ira_print_live_range_list (f, ALLOCNO_LIVE_RANGES (a));
+  ira_print_live_range_list (f, OBJECT_LIVE_RANGES (obj));
 }
 
 /* Print live ranges of allocno A to stderr.  */

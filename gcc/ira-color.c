@@ -94,14 +94,16 @@ static VEC(ira_allocno_t,heap) *removed_splay_allocno_vec;
 static bool
 allocnos_have_intersected_live_ranges_p (ira_allocno_t a1, ira_allocno_t a2)
 {
+  ira_object_t obj1 = ALLOCNO_OBJECT (a1);
+  ira_object_t obj2 = ALLOCNO_OBJECT (a2);
   if (a1 == a2)
     return false;
   if (ALLOCNO_REG (a1) != NULL && ALLOCNO_REG (a2) != NULL
       && (ORIGINAL_REGNO (ALLOCNO_REG (a1))
 	  == ORIGINAL_REGNO (ALLOCNO_REG (a2))))
     return false;
-  return ira_allocno_live_ranges_intersect_p (ALLOCNO_LIVE_RANGES (a1),
-					      ALLOCNO_LIVE_RANGES (a2));
+  return ira_live_ranges_intersect_p (OBJECT_LIVE_RANGES (obj1),
+				      OBJECT_LIVE_RANGES (obj2));
 }
 
 #ifdef ENABLE_IRA_CHECKING
@@ -2511,8 +2513,9 @@ slot_coalesced_allocno_live_ranges_intersect_p (ira_allocno_t allocno, int n)
   for (a = ALLOCNO_NEXT_COALESCED_ALLOCNO (allocno);;
        a = ALLOCNO_NEXT_COALESCED_ALLOCNO (a))
     {
-      if (ira_allocno_live_ranges_intersect_p
-	  (slot_coalesced_allocnos_live_ranges[n], ALLOCNO_LIVE_RANGES (a)))
+      ira_object_t obj = ALLOCNO_OBJECT (a);
+      if (ira_live_ranges_intersect_p
+	  (slot_coalesced_allocnos_live_ranges[n], OBJECT_LIVE_RANGES (obj)))
 	return true;
       if (a == allocno)
 	break;
@@ -2533,9 +2536,10 @@ setup_slot_coalesced_allocno_live_ranges (ira_allocno_t allocno)
   for (a = ALLOCNO_NEXT_COALESCED_ALLOCNO (allocno);;
        a = ALLOCNO_NEXT_COALESCED_ALLOCNO (a))
     {
-      r = ira_copy_allocno_live_range_list (ALLOCNO_LIVE_RANGES (a));
+      ira_object_t obj = ALLOCNO_OBJECT (a);
+      r = ira_copy_live_range_list (OBJECT_LIVE_RANGES (obj));
       slot_coalesced_allocnos_live_ranges[n]
-	= ira_merge_allocno_live_ranges
+	= ira_merge_live_ranges
 	  (slot_coalesced_allocnos_live_ranges[n], r);
       if (a == allocno)
 	break;
@@ -2606,8 +2610,7 @@ coalesce_spill_slots (ira_allocno_t *spilled_coalesced_allocnos, int num)
 	}
     }
   for (i = 0; i < ira_allocnos_num; i++)
-    ira_finish_allocno_live_range_list
-      (slot_coalesced_allocnos_live_ranges[i]);
+    ira_finish_live_range_list (slot_coalesced_allocnos_live_ranges[i]);
   ira_free (slot_coalesced_allocnos_live_ranges);
   return merged_p;
 }
@@ -3271,7 +3274,7 @@ fast_allocation (void)
       a = sorted_allocnos[i];
       obj = ALLOCNO_OBJECT (a);
       COPY_HARD_REG_SET (conflict_hard_regs, OBJECT_CONFLICT_HARD_REGS (obj));
-      for (r = ALLOCNO_LIVE_RANGES (a); r != NULL; r = r->next)
+      for (r = OBJECT_LIVE_RANGES (obj); r != NULL; r = r->next)
 	for (j =  r->start; j <= r->finish; j++)
 	  IOR_HARD_REG_SET (conflict_hard_regs, used_hard_regs[j]);
       cover_class = ALLOCNO_COVER_CLASS (a);
@@ -3298,7 +3301,7 @@ fast_allocation (void)
 		  (prohibited_class_mode_regs[cover_class][mode], hard_regno)))
 	    continue;
 	  ALLOCNO_HARD_REGNO (a) = hard_regno;
-	  for (r = ALLOCNO_LIVE_RANGES (a); r != NULL; r = r->next)
+	  for (r = OBJECT_LIVE_RANGES (obj); r != NULL; r = r->next)
 	    for (k = r->start; k <= r->finish; k++)
 	      IOR_HARD_REG_SET (used_hard_regs[k],
 				ira_reg_mode_hard_regset[hard_regno][mode]);
