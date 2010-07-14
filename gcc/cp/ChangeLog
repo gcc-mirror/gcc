@@ -1,5 +1,8 @@
 2010-07-14  Jason Merrill  <jason@redhat.com>
 
+	* init.c (sort_mem_initializers): Rename "field_type" to "ctx".
+	(build_field_list): Cache field type.
+
 	Implement C++0x unrestricted unions (N2544)
 	* class.c (check_field_decl): Loosen union handling in C++0x.
 	* method.c (walk_field_subobs): Split out from...
