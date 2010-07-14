@@ -804,9 +804,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 				 fold_convert (ptr_type_node,
 					       gimple_assign_rhs2 (use_stmt)));
       if (TREE_CODE (new_def_rhs) == MEM_REF
-	  && TREE_CODE (TREE_OPERAND (new_def_rhs, 0)) == ADDR_EXPR
-	  && !DECL_P (TREE_OPERAND (TREE_OPERAND (new_def_rhs, 0), 0))
-	  && !CONSTANT_CLASS_P (TREE_OPERAND (TREE_OPERAND (new_def_rhs, 0), 0)))
+	  && !is_gimple_mem_ref_addr (TREE_OPERAND (new_def_rhs, 0)))
 	return false;
       new_def_rhs = build_fold_addr_expr_with_type (new_def_rhs,
 						    TREE_TYPE (rhs));
@@ -1398,8 +1396,11 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		      && TREE_CODE (rhs) == ADDR_EXPR
 		      && POINTER_TYPE_P (TREE_TYPE (lhs))))
 		{
-		  STRIP_NOPS (rhs);
-		  if (!stmt_references_abnormal_ssa_name (stmt)
+		  tree base = get_base_address (TREE_OPERAND (rhs, 0));
+		  if ((!base
+		       || !DECL_P (base)
+		       || decl_address_invariant_p (base))
+		      && !stmt_references_abnormal_ssa_name (stmt)
 		      && forward_propagate_addr_expr (lhs, rhs))
 		    {
 		      release_defs (stmt);
