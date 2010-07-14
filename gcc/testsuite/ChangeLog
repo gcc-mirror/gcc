@@ -1,3 +1,14 @@
+2010-07-14  Jason Merrill  <jason@redhat.com>
+
+	Implement C++0x unrestricted unions (N2544)
+	* g++.dg/cpp0x/union1.C: New.
+	* g++.dg/cpp0x/union2.C: New.
+	* g++.dg/cpp0x/union3.C: New.
+	* g++.dg/cpp0x/defaulted2.C: Adjust.
+	* g++.old-deja/g++.bugs/900121_02.C: Adjust.
+	* g++.old-deja/g++.ext/anon2.C: Adjust.
+	* g++.old-deja/g++.mike/misc6.C: Adjust.
+
 2010-07-14  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44925

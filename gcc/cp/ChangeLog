@@ -1,3 +1,15 @@
+2010-07-14  Jason Merrill  <jason@redhat.com>
+
+	Implement C++0x unrestricted unions (N2544)
+	* class.c (check_field_decl): Loosen union handling in C++0x.
+	* method.c (walk_field_subobs): Split out from...
+	(synthesized_method_walk): ...here.  Set msg before loops.
+	(process_subob_fn): Check for triviality in union members.
+	* init.c (sort_mem_initializers): Splice out uninitialized
+	anonymous unions and union members.
+	(push_base_cleanups): Don't automatically destroy anonymous unions
+	and union members.
+
 2010-07-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44909
