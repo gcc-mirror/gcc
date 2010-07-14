@@ -1,3 +1,11 @@
+2010-07-14  Richard Guenther  <rguenther@suse.de>
+
+	* lto-streamer-in.c (maybe_fixup_handled_component): Remove.
+	(maybe_fixup_decls): Likewise.
+	(input_gimple_stmt): Do not fixup anything.
+	* lto-streamer-out.c (output_gimple_stmt): Make sure all
+	non-automatic variable uses are wrapped inside a MEM_REF.
+
 2010-07-14  Richard Henderson  <rth@redhat.com>
 
 	* passes.c (rest_of_decl_compilation): Do not call assemble_variable
