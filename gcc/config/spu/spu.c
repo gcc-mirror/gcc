@@ -225,8 +225,6 @@ static void spu_unique_section (tree, int);
 static rtx spu_expand_load (rtx, rtx, rtx, int);
 static void spu_trampoline_init (rtx, tree, rtx);
 
-extern const char *reg_names[];
-
 /* Which instruction set architecture to use.  */
 int spu_arch;
 /* Which cpu are we tuning for.  */
@@ -1696,8 +1694,6 @@ print_operand (FILE * file, rtx x, int code)
     }
   gcc_unreachable ();
 }
-
-extern char call_used_regs[];
 
 /* For PIC mode we've reserved PIC_OFFSET_TABLE_REGNUM, which is a
    caller saved register.  For leaf functions it is more efficient to
