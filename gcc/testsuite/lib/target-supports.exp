@@ -3133,6 +3133,17 @@ proc check_effective_target_avx { } {
     } "-O2 -mavx" ]
 }
 
+# Return 1 if sse instructions can be compiled.
+proc check_effective_target_sse { } {
+    return [check_no_compiler_messages sse object {
+	int main ()
+	{
+	    __builtin_ia32_stmxcsr ();
+	    return 0;
+	}
+    } "-O2 -msse" ]
+}
+
 # Return 1 if sse2 instructions can be compiled.
 proc check_effective_target_sse2 { } {
     return [check_no_compiler_messages sse2 object {

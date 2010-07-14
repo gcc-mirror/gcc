@@ -1598,6 +1598,9 @@ Target uses a ColdFire FPU.
 @item hard_float
 Target supports FPU instructions.
 
+@item sse
+Target supports compiling @code{sse} instructions.
+
 @item sse2
 Target supports compiling @code{sse2} instructions.
 

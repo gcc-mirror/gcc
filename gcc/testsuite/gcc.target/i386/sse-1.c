@@ -1,6 +1,7 @@
 /* PR 12902 */
 /* { dg-do compile } */
 /* { dg-options "-O1 -msse" } */
+/* { dg-require-effective-target sse } */
 
 #include <xmmintrin.h>
 

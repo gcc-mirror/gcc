@@ -2,6 +2,12 @@
 #include "cpuid.h"
 #include "m128-check.h"
 
+/* We need a single SSE2 instruction here so the handler can safely skip
+   over it.  */
+#define ILL_INSN __asm__ volatile ("unpcklpd %xmm0,%xmm2")
+#define ILL_INSN_LEN 4
+#include "sol2-check.h"
+
 static void sse2_test (void);
 
 static void
@@ -20,7 +26,7 @@ main ()
     return 0;
 
   /* Run SSE2 test only if host has SSE2 support.  */
-  if (edx & bit_SSE2)
+  if ((edx & bit_SSE2) && sol2_check ())
     do_test ();
 
   return 0;

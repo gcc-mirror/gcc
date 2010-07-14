@@ -2888,6 +2888,8 @@ information are.
 @item
 @uref{#ix86-x-linux,,i?86-*-linux*}
 @item
+@uref{#ix86-x-solaris289,,i?86-*-solaris2.[89]}
+@item
 @uref{#ix86-x-solaris210,,i?86-*-solaris2.10}
 @item
 @uref{#ia64-x-linux,,ia64-*-linux}
@@ -3462,6 +3464,26 @@ See @uref{http://gcc.gnu.org/PR10877,,bug 10877} for more information.
 If you receive Signal 11 errors when building on GNU/Linux, then it is
 possible you have a hardware problem.  Further information on this can be
 found on @uref{http://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
+
+@html
+<hr />
+@end html
+@heading @anchor{ix86-x-solaris289}i?86-*-solaris2.[89]
+The Sun assembler in Solaris 8 and 9 has several bugs and limitations.
+While GCC works around them, several features are missing, so it is
+@c FIXME: which ones?
+recommended to use the GNU assembler instead.  There is no bundled
+version, but the current version, from GNU binutils 2.20.1, is known to
+work.
+
+Solaris~2/x86 doesn't support the execution of SSE/SSE2 instructions
+before Solaris~9 4/04, even if the CPU supports them.  Programs will
+receive @code{SIGILL} if they try.  The fix is available both in
+Solaris~9 Update~6 and kernel patch 112234-12 or newer.  There is no
+corresponding patch for Solaris 8.  To avoid this problem,
+@option{-march} defaults to @samp{pentiumpro} on Solaris 8 and 9.  If
+you have the patch installed, you can configure GCC with an appropriate
+@option{--with-arch} option, but need GNU @command{as} for SSE2 support.
 
 @html
 <hr />
