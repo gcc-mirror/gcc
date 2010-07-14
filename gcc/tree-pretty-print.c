@@ -71,7 +71,7 @@ do_niy (pretty_printer *buffer, const_tree node)
 	}
     }
 
-  pp_string (buffer, " >>>\n");
+  pp_string (buffer, " >>>");
 }
 
 /* Debugging function to print out a generic expression.  */

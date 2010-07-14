@@ -1,3 +1,8 @@
+2010-07-14  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/44930
+	* tree-pretty-print.c (do_niy): Do not print a newline.
+
 2010-07-14  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* ira-int.h (struct ira_object): New.
