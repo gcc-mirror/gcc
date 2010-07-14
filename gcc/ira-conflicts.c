@@ -133,8 +133,8 @@ build_conflict_bit_table (void)
     {
       for (r = ira_start_point_ranges[i]; r != NULL; r = r->start_next)
 	{
-	  ira_allocno_t allocno = r->allocno;
-	  ira_object_t obj = ALLOCNO_OBJECT (allocno);
+	  ira_object_t obj = r->object;
+	  ira_allocno_t allocno = OBJECT_ALLOCNO (obj);
 	  int id = OBJECT_CONFLICT_ID (obj);
 
 	  cover_class = ALLOCNO_COVER_CLASS (allocno);
@@ -161,8 +161,7 @@ build_conflict_bit_table (void)
 
       for (r = ira_finish_point_ranges[i]; r != NULL; r = r->finish_next)
 	{
-	  ira_allocno_t allocno = r->allocno;
-	  ira_object_t obj = ALLOCNO_OBJECT (allocno);
+	  ira_object_t obj = r->object;
 	  sparseset_clear_bit (objects_live, OBJECT_CONFLICT_ID (obj));
 	}
     }

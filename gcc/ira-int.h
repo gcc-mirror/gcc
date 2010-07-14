@@ -202,7 +202,7 @@ extern ira_loop_tree_node_t ira_loop_nodes;
 struct live_range
 {
   /* Allocno whose live range is described by given structure.  */
-  ira_allocno_t allocno;
+  ira_object_t object;
   /* Program point range.  */
   int start, finish;
   /* Next structure describing program points where the allocno
@@ -236,7 +236,12 @@ struct ira_object
      otherwise.  Only objects belonging to allocnos with the
      same cover class are in the vector or in the bit vector.  */
   void *conflicts_array;
-  /* Allocated size of the previous array.  */
+  /* Pointer to structures describing at what program point the
+     object lives.  We always maintain the list in such way that *the
+     ranges in the list are not intersected and ordered by decreasing
+     their program points*.  */
+  live_range_t live_ranges;
+  /* Allocated size of the conflicts array.  */
   unsigned int conflicts_array_size;
   /* A unique number for every instance of this structure which is used
      to represent it in conflict bit vectors.  */
@@ -341,11 +346,6 @@ struct ira_allocno
      list is chained by NEXT_COALESCED_ALLOCNO.  */
   ira_allocno_t first_coalesced_allocno;
   ira_allocno_t next_coalesced_allocno;
-  /* Pointer to structures describing at what program point the
-     allocno lives.  We always maintain the list in such way that *the
-     ranges in the list are not intersected and ordered by decreasing
-     their program points*.  */
-  live_range_t live_ranges;
   /* Pointer to a structure describing conflict information about this
      allocno.  */
   ira_object_t object;
@@ -483,7 +483,6 @@ struct ira_allocno
 #define ALLOCNO_TEMP(A) ((A)->temp)
 #define ALLOCNO_FIRST_COALESCED_ALLOCNO(A) ((A)->first_coalesced_allocno)
 #define ALLOCNO_NEXT_COALESCED_ALLOCNO(A) ((A)->next_coalesced_allocno)
-#define ALLOCNO_LIVE_RANGES(A) ((A)->live_ranges)
 #define ALLOCNO_OBJECT(A) ((A)->object)
 
 #define OBJECT_ALLOCNO(C) ((C)->allocno)
@@ -498,6 +497,7 @@ struct ira_allocno
 #define OBJECT_MIN(C) ((C)->min)
 #define OBJECT_MAX(C) ((C)->max)
 #define OBJECT_CONFLICT_ID(C) ((C)->id)
+#define OBJECT_LIVE_RANGES(C) ((C)->live_ranges)
 
 /* Map regno -> allocnos with given regno (see comments for
    allocno member `next_regno_allocno').  */
@@ -935,13 +935,13 @@ extern bool ira_conflict_vector_profitable_p (ira_object_t, int);
 extern void ira_allocate_conflict_vec (ira_object_t, int);
 extern void ira_allocate_object_conflicts (ira_object_t, int);
 extern void ira_print_expanded_allocno (ira_allocno_t);
-extern live_range_t ira_create_allocno_live_range (ira_allocno_t, int, int,
-						   live_range_t);
-extern live_range_t ira_copy_allocno_live_range_list (live_range_t);
-extern live_range_t ira_merge_allocno_live_ranges (live_range_t, live_range_t);
-extern bool ira_allocno_live_ranges_intersect_p (live_range_t, live_range_t);
-extern void ira_finish_allocno_live_range (live_range_t);
-extern void ira_finish_allocno_live_range_list (live_range_t);
+extern live_range_t ira_create_live_range (ira_object_t, int, int,
+					   live_range_t);
+extern live_range_t ira_copy_live_range_list (live_range_t);
+extern live_range_t ira_merge_live_ranges (live_range_t, live_range_t);
+extern bool ira_live_ranges_intersect_p (live_range_t, live_range_t);
+extern void ira_finish_live_range (live_range_t);
+extern void ira_finish_live_range_list (live_range_t);
 extern void ira_free_allocno_updated_costs (ira_allocno_t);
 extern ira_copy_t ira_create_copy (ira_allocno_t, ira_allocno_t,
 				   int, bool, rtx, ira_loop_tree_node_t);
