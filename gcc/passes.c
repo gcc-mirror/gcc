@@ -194,8 +194,6 @@ rest_of_decl_compilation (tree decl,
 	    ;
 	  else if (TREE_CODE (decl) != FUNCTION_DECL)
 	    varpool_finalize_decl (decl);
-	  else
-	    assemble_variable (decl, top_level, at_end, 0);
 	}
 
 #ifdef ASM_FINISH_DECLARE_OBJECT

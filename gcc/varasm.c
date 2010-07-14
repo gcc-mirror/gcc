@@ -2150,6 +2150,9 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   rtx decl_rtl, symbol;
   section *sect;
 
+  /* This function is supposed to handle VARIABLES.  Ensure we have one.  */
+  gcc_assert (TREE_CODE (decl) == VAR_DECL);
+
   if (! targetm.have_tls
       && TREE_CODE (decl) == VAR_DECL
       && DECL_THREAD_LOCAL_P (decl))
@@ -2186,12 +2189,6 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
      when a declaration is first seen.  */
 
   if (DECL_EXTERNAL (decl))
-    return;
-
-  /* Output no assembler code for a function declaration.
-     Only definitions of functions output anything.  */
-
-  if (TREE_CODE (decl) == FUNCTION_DECL)
     return;
 
   /* Do nothing for global register variables.  */

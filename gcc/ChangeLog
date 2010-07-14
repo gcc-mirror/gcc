@@ -1,3 +1,10 @@
+2010-07-14  Richard Henderson  <rth@redhat.com>
+
+	* passes.c (rest_of_decl_compilation): Do not call assemble_variable
+	for functions.
+	* varasm.c (assemble_variable): Remove early exit for functions;
+	assert that we're given a variable.
+
 2010-07-14  Jie Zhang  <jie@codesourcery.com>
 
 	* config/arm/cortex-a8.md (cortex_a8_alu): Don't use
