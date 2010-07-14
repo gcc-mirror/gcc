@@ -1,4 +1,6 @@
 // { dg-do assemble  }
+// { dg-prune-output "note" }
+
 // GROUPS uncaught
 // Cfront bug A.4 (See Language System Release Notes for the
 // SPARCompiler C++ version 3.0)

@@ -2864,9 +2864,9 @@ check_field_decl (tree field,
 {
   tree type = strip_array_types (TREE_TYPE (field));
 
-  /* An anonymous union cannot contain any fields which would change
+  /* In C++98 an anonymous union cannot contain any fields which would change
      the settings of CANT_HAVE_CONST_CTOR and friends.  */
-  if (ANON_UNION_TYPE_P (type))
+  if (ANON_UNION_TYPE_P (type) && cxx_dialect < cxx0x)
     ;
   /* And, we don't set TYPE_HAS_CONST_COPY_CTOR, etc., for anonymous
      structs.  So, we recurse through their fields here.  */
@@ -2888,8 +2888,10 @@ check_field_decl (tree field,
 	 make it through without complaint.  */
       abstract_virtuals_error (field, type);
 
-      if (TREE_CODE (t) == UNION_TYPE)
+      if (TREE_CODE (t) == UNION_TYPE && cxx_dialect < cxx0x)
 	{
+	  static bool warned;
+	  int oldcount = errorcount;
 	  if (TYPE_NEEDS_CONSTRUCTING (type))
 	    error ("member %q+#D with constructor not allowed in union",
 		   field);
@@ -2898,8 +2900,12 @@ check_field_decl (tree field,
 	  if (TYPE_HAS_COMPLEX_COPY_ASSIGN (type))
 	    error ("member %q+#D with copy assignment operator not allowed in union",
 		   field);
-	  /* Don't bother diagnosing move assop now; C++0x has more
-	     flexible unions.  */
+	  if (!warned && errorcount > oldcount)
+	    {
+	      inform (DECL_SOURCE_LOCATION (field), "unrestricted unions "
+		      "only available with -std=c++0x or -std=gnu++0x");
+	      warned = true;
+	    }
 	}
       else
 	{

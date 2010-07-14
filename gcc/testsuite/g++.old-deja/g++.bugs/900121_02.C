@@ -1,4 +1,6 @@
 // { dg-do assemble  }
+// { dg-prune-output "note" }
+
 // g++ 1.36.1 bug 900121_02
 
 // Assignment of structs is defined as memberwise assignment,

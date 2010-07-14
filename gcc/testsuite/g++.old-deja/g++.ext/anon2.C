@@ -1,5 +1,6 @@
 // { dg-do assemble  }
 // { dg-options "" }
+// { dg-prune-output "note" }
 
 struct S 
 {
