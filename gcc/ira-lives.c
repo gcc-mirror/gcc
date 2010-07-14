@@ -92,10 +92,10 @@ make_hard_regno_born (int regno)
   SET_HARD_REG_BIT (hard_regs_live, regno);
   EXECUTE_IF_SET_IN_SPARSESET (allocnos_live, i)
     {
-      SET_HARD_REG_BIT (ALLOCNO_CONFLICT_HARD_REGS (ira_allocnos[i]),
-			regno);
-      SET_HARD_REG_BIT (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (ira_allocnos[i]),
-			regno);
+      ira_allocno_t allocno = ira_allocnos[i];
+      ira_object_t obj = ALLOCNO_OBJECT (allocno);
+      SET_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS (obj), regno);
+      SET_HARD_REG_BIT (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj), regno);
     }
 }
 
@@ -114,10 +114,11 @@ static void
 make_allocno_born (ira_allocno_t a)
 {
   live_range_t p = ALLOCNO_LIVE_RANGES (a);
+  ira_object_t obj = ALLOCNO_OBJECT (a);
 
   sparseset_set_bit (allocnos_live, ALLOCNO_NUM (a));
-  IOR_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (a), hard_regs_live);
-  IOR_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a), hard_regs_live);
+  IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj), hard_regs_live);
+  IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj), hard_regs_live);
 
   if (p == NULL
       || (p->finish != curr_point && p->finish + 1 != curr_point))
@@ -840,12 +841,14 @@ process_single_reg_class_operands (bool in_p, int freq)
 	  a = ira_allocnos[px];
 	  if (a != operand_a)
 	    {
+	      ira_object_t obj = ALLOCNO_OBJECT (a);
+
 	      /* We could increase costs of A instead of making it
 		 conflicting with the hard register.  But it works worse
 		 because it will be spilled in reload in anyway.  */
-	      IOR_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (a),
+	      IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
 				reg_class_contents[cl]);
-	      IOR_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a),
+	      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
 				reg_class_contents[cl]);
 	    }
 	}
@@ -1030,14 +1033,16 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		      || find_reg_note (insn, REG_SETJMP,
 					NULL_RTX) != NULL_RTX)
 		    {
-		      SET_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (a));
-		      SET_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a));
+		      ira_object_t obj = ALLOCNO_OBJECT (a);
+		      SET_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj));
+		      SET_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj));
 		    }
 		  if (can_throw_internal (insn))
 		    {
-		      IOR_HARD_REG_SET (ALLOCNO_TOTAL_CONFLICT_HARD_REGS (a),
+		      ira_object_t obj = ALLOCNO_OBJECT (a);
+		      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
 					call_used_reg_set);
-		      IOR_HARD_REG_SET (ALLOCNO_CONFLICT_HARD_REGS (a),
+		      IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
 					call_used_reg_set);
 		    }
 		}
