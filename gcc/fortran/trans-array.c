@@ -2964,50 +2964,6 @@ gfc_trans_scalarized_loop_boundary (gfc_loopinfo * loop, stmtblock_t * body)
 }
 
 
-/* Calculate the upper bound of an array section.  */
-
-static tree
-gfc_conv_section_upper_bound (gfc_ss * ss, int n, stmtblock_t * pblock)
-{
-  int dim;
-  gfc_expr *end;
-  tree desc;
-  tree bound;
-  gfc_se se;
-  gfc_ss_info *info;
-
-  gcc_assert (ss->type == GFC_SS_SECTION);
-
-  info = &ss->data.info;
-  dim = info->dim[n];
-
-  if (info->ref->u.ar.dimen_type[dim] == DIMEN_VECTOR)
-    /* We'll calculate the upper bound once we have access to the
-       vector's descriptor.  */
-    return NULL;
-
-  gcc_assert (info->ref->u.ar.dimen_type[dim] == DIMEN_RANGE);
-  desc = info->descriptor;
-  end = info->ref->u.ar.end[dim];
-
-  if (end)
-    {
-      /* The upper bound was specified.  */
-      gfc_init_se (&se, NULL);
-      gfc_conv_expr_type (&se, end, gfc_array_index_type);
-      gfc_add_block_to_block (pblock, &se.pre);
-      bound = se.expr;
-    }
-  else
-    {
-      /* No upper bound was specified, so use the bound of the array.  */
-      bound = gfc_conv_array_ubound (desc, dim);
-    }
-
-  return bound;
-}
-
-
 /* Calculate the lower bound of an array section.  */
 
 static void
@@ -3030,8 +2986,8 @@ gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int n)
     {
       /* We use a zero-based index to access the vector.  */
       info->start[n] = gfc_index_zero_node;
-      info->end[n] = gfc_index_zero_node;
       info->stride[n] = gfc_index_one_node;
+      info->end[n] = NULL;
       return;
     }
 
@@ -3688,17 +3644,13 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 	    case GFC_SS_SECTION:
 	      /* Use the end expression if it exists and is not constant,
 		 so that it is only evaluated once.  */
-	      if (info->end[n] && !INTEGER_CST_P (info->end[n]))
-		loop->to[n] = info->end[n];
-	      else
-		loop->to[n] = gfc_conv_section_upper_bound (loopspec[n], n,
-							    &loop->pre);
+	      loop->to[n] = info->end[n];
 	      break;
 
-            case GFC_SS_FUNCTION:
+	    case GFC_SS_FUNCTION:
 	      /* The loop bound will be set when we generate the call.  */
-              gcc_assert (loop->to[n] == NULL_TREE);
-              break;
+	      gcc_assert (loop->to[n] == NULL_TREE);
+	      break;
 
 	    default:
 	      gcc_unreachable ();
