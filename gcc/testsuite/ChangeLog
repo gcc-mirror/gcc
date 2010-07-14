@@ -1,5 +1,8 @@
 2010-07-14  Jason Merrill  <jason@redhat.com>
 
+	PR c++/44810
+	* g++.dg/torture/pr36745.C: Avoid undefined behavior.
+
 	Implement C++0x unrestricted unions (N2544)
 	* g++.dg/cpp0x/union1.C: New.
 	* g++.dg/cpp0x/union2.C: New.
