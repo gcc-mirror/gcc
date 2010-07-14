@@ -1164,6 +1164,16 @@ fold_const_aggregate_ref (tree t)
       base = TREE_OPERAND (t, 0);
       switch (TREE_CODE (base))
 	{
+	case MEM_REF:
+	  /* ???  We could handle this case.  */
+	  if (!integer_zerop (TREE_OPERAND (base, 1)))
+	    return NULL_TREE;
+	  base = get_base_address (base);
+	  if (!base
+	      || TREE_CODE (base) != VAR_DECL)
+	    return NULL_TREE;
+
+	  /* Fallthru.  */
 	case VAR_DECL:
 	  if (!TREE_READONLY (base)
 	      || TREE_CODE (TREE_TYPE (base)) != ARRAY_TYPE
