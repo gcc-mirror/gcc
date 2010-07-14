@@ -1,3 +1,11 @@
+2010-07-14  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44824
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Use
+	is_gimple_mem_ref_addr.
+	(tree_ssa_forward_propagate_single_use_vars): Do not propagate
+	non-decl_address_invariant_p addresses.
+
 2010-07-14  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* reload.c (find_reloads): Revert code to penalize small register
