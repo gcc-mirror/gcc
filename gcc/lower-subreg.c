@@ -63,6 +63,12 @@ static bitmap decomposable_context;
    which it can not be decomposed.  */
 static bitmap non_decomposable_context;
 
+/* Bit N in this bitmap is set if regno N is used in a subreg
+   which changes the mode but not the size.  This typically happens
+   when the register accessed as a floating-point value; we want to
+   avoid generating accesses to its subwords in integer modes.  */
+static bitmap subreg_context;
+
 /* Bit N in the bitmap in element M of this array is set if there is a
    copy from reg M to reg N.  */
 static VEC(bitmap,heap) *reg_copy_graph;
@@ -289,6 +295,7 @@ find_decomposable_subregs (rtx *px, void *data)
 	  && !MODES_TIEABLE_P (GET_MODE (x), GET_MODE (inner)))
 	{
 	  bitmap_set_bit (non_decomposable_context, regno);
+	  bitmap_set_bit (subreg_context, regno);
 	  return -1;
 	}
     }
@@ -616,7 +623,7 @@ can_decompose_p (rtx x)
 	return (validate_subreg (word_mode, GET_MODE (x), x, UNITS_PER_WORD)
 		&& HARD_REGNO_MODE_OK (regno, word_mode));
       else
-	return !bitmap_bit_p (non_decomposable_context, regno);
+	return !bitmap_bit_p (subreg_context, regno);
     }
 
   return true;
@@ -1091,6 +1098,7 @@ decompose_multiword_subregs (void)
 
   decomposable_context = BITMAP_ALLOC (NULL);
   non_decomposable_context = BITMAP_ALLOC (NULL);
+  subreg_context = BITMAP_ALLOC (NULL);
 
   reg_copy_graph = VEC_alloc (bitmap, heap, max);
   VEC_safe_grow (bitmap, heap, reg_copy_graph, max);
@@ -1309,6 +1317,7 @@ decompose_multiword_subregs (void)
 
   BITMAP_FREE (decomposable_context);
   BITMAP_FREE (non_decomposable_context);
+  BITMAP_FREE (subreg_context);
 }
 
 /* Gate function for lower subreg pass.  */
