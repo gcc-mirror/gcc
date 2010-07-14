@@ -1,5 +1,10 @@
 2010-07-14  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-ccp.c (fold_const_aggregate_ref): Handle MEM_REF
+	as base of ARRAY_REFs.
+
+2010-07-14  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/44930
 	* tree-pretty-print.c (do_niy): Do not print a newline.
 
