@@ -424,7 +424,7 @@ gfc_ref_needs_temporary_p (gfc_ref *ref)
 }
 
 
-int
+static int
 gfc_is_data_pointer (gfc_expr *e)
 {
   gfc_ref *ref;

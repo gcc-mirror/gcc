@@ -2440,10 +2440,11 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
   char binding_label[GFC_MAX_BINDING_LABEL_LEN + 1];
-  int optional_arg = 0, is_pointer = 0;
+  int optional_arg = 0;
   gfc_try retval = SUCCESS;
   gfc_symbol *args_sym;
   gfc_typespec *arg_ts;
+  symbol_attribute arg_attr;
 
   if (args->expr->expr_type == EXPR_CONSTANT
       || args->expr->expr_type == EXPR_OP
@@ -2460,8 +2461,7 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
      and not necessarily that of the expr symbol (args_sym), because
      the actual expression could be a part-ref of the expr symbol.  */
   arg_ts = &(args->expr->ts);
-
-  is_pointer = gfc_is_data_pointer (args->expr);
+  arg_attr = gfc_expr_attr (args->expr);
     
   if (sym->intmod_sym_id == ISOCBINDING_ASSOCIATED)
     {
@@ -2504,7 +2504,7 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
       else if (sym->intmod_sym_id == ISOCBINDING_LOC)
         {
           /* Make sure we have either the target or pointer attribute.  */
-	  if (!args_sym->attr.target && !is_pointer)
+	  if (!arg_attr.target && !arg_attr.pointer)
             {
               gfc_error_now ("Parameter '%s' to '%s' at %L must be either "
                              "a TARGET or an associated pointer",
@@ -2587,7 +2587,7 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
 			  }
                     }
                 }
-              else if (is_pointer
+              else if (arg_attr.pointer
 		       && is_scalar_expr_ptr (args->expr) != SUCCESS)
                 {
                   /* Case 1c, section 15.1.2.5, J3/04-007: an associated
@@ -2622,6 +2622,13 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
                                  &(args->expr->where));
                   retval = FAILURE;
                 }
+	      else if (arg_ts->type == BT_CLASS)
+		{
+		  gfc_error_now ("Parameter '%s' to '%s' at %L must not be "
+				 "polymorphic", args_sym->name, sym->name,
+				 &(args->expr->where));
+		  retval = FAILURE;
+		}
             }
         }
       else if (sym->intmod_sym_id == ISOCBINDING_FUNLOC)
