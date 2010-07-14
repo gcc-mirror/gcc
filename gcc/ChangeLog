@@ -1,3 +1,11 @@
+2010-07-14  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* lower-subreg.c (subreg_context): New static bitmap.
+	(decompose_multiword_subregs): Allocate and free it.
+	(find_decomposable_subregs): Set a bit in it for a register that
+	occurs in a subreg that changes mode but not size.
+	(can_decompose_p): Test it instead of non_decomposable_context.
+
 2010-07-14  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44824
