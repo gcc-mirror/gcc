@@ -1,3 +1,8 @@
+2010-07-15  Jie Zhang  <jie@codesourcery.com>
+
+	* config/arm/cortex-a8.md (cortex_a8_load_store_2): Reserve
+	cortex_a8_issue_ls.
+
 2010-07-14  Jie Zhang  <jie@codesourcery.com>
 
 	* config/arm/cortex-a8.md (cortex_a8_alu): Don't use
