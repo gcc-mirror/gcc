@@ -258,6 +258,29 @@ typedef struct
 gfc_saved_var;
 
 
+/* Store information about a block of code together with special
+   initialization and clean-up code.  This can be used to incrementally add
+   init and cleanup, and in the end put everything together to a
+   try-finally expression.  */
+typedef struct
+{
+  tree init;
+  tree cleanup;
+  tree code;
+}
+gfc_wrapped_block;
+
+
+/* Initialize an init/cleanup block.  */
+void gfc_start_wrapped_block (gfc_wrapped_block* block, tree code);
+/* Add a pair of init/cleanup code to the block.  Each one might be a
+   NULL_TREE if not required.  */
+void gfc_add_init_cleanup (gfc_wrapped_block* block, tree init, tree cleanup);
+/* Finalize the block, that is, create a single expression encapsulating the
+   original code together with init and clean-up code.  */
+tree gfc_finish_wrapped_block (gfc_wrapped_block* block);
+
+
 /* Advance the SS chain to the next term.  */
 void gfc_advance_se_ss_chain (gfc_se *);
 
@@ -403,7 +426,7 @@ tree gfc_get_symbol_decl (gfc_symbol *);
 tree gfc_conv_initializer (gfc_expr *, gfc_typespec *, tree, bool, bool);
 
 /* Assign a default initializer to a derived type.  */
-tree gfc_init_default_dt (gfc_symbol *, tree, bool);
+void gfc_init_default_dt (gfc_symbol *, stmtblock_t *, bool);
 
 /* Substitute a temporary variable in place of the real one.  */
 void gfc_shadow_sym (gfc_symbol *, tree, gfc_saved_var *);

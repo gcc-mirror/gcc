@@ -1,3 +1,30 @@
+2010-07-15  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/44709
+	* trans.h (struct gfc_wrapped_block): New struct.
+	(gfc_start_wrapped_block), (gfc_add_init_cleanup): New methods.
+	(gfc_finish_wrapped_block): New method.
+	(gfc_init_default_dt): Add new init code to block rather than
+	returning it.
+	* trans-array.h (gfc_trans_auto_array_allocation): Use gfc_wrapped_block
+	(gfc_trans_dummy_array_bias): Ditto.
+	(gfc_trans_g77_array): Ditto.
+	(gfc_trans_deferred_array): Ditto.
+	* trans.c (gfc_add_expr_to_block): Call add_expr_to_chain.
+	(add_expr_to_chain): New method based on old gfc_add_expr_to_block.
+	(gfc_start_wrapped_block), (gfc_add_init_cleanup): New methods.
+	(gfc_finish_wrapped_block): New method.
+	* trans-array.c (gfc_trans_auto_array_allocation): use gfc_wrapped_block
+	(gfc_trans_g77_array), (gfc_trans_dummy_array_bias): Ditto.
+	(gfc_trans_deferred_array): Ditto.
+	* trans-decl.c (gfc_trans_dummy_character): Ditto.
+	(gfc_trans_auto_character_variable), (gfc_trans_assign_aux_var): Ditto.
+	(init_intent_out_dt): Ditto.
+	(gfc_init_default_dt): Add new init code to block rather than
+	returning it.
+	(gfc_trans_deferred_vars): Use gfc_wrapped_block to collect all init
+	and cleanup code and put it all together.
+
 2010-07-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans.h (gfc_build_compare_string): Add CODE argument.

@@ -977,31 +977,47 @@ gfc_call_realloc (stmtblock_t * block, tree mem, tree size)
   return res;
 }
 
+
+/* Add an expression to another one, either at the front or the back.  */
+
+static void
+add_expr_to_chain (tree* chain, tree expr, bool front)
+{
+  if (expr == NULL_TREE || IS_EMPTY_STMT (expr))
+    return;
+
+  if (*chain)
+    {
+      if (TREE_CODE (*chain) != STATEMENT_LIST)
+	{
+	  tree tmp;
+
+	  tmp = *chain;
+	  *chain = NULL_TREE;
+	  append_to_statement_list (tmp, chain);
+	}
+
+      if (front)
+	{
+	  tree_stmt_iterator i;
+
+	  i = tsi_start (*chain);
+	  tsi_link_before (&i, expr, TSI_CONTINUE_LINKING);
+	}
+      else
+	append_to_statement_list (expr, chain);
+    }
+  else
+    *chain = expr;
+}
+
 /* Add a statement to a block.  */
 
 void
 gfc_add_expr_to_block (stmtblock_t * block, tree expr)
 {
   gcc_assert (block);
-
-  if (expr == NULL_TREE || IS_EMPTY_STMT (expr))
-    return;
-
-  if (block->head)
-    {
-      if (TREE_CODE (block->head) != STATEMENT_LIST)
-	{
-	  tree tmp;
-
-	  tmp = block->head;
-	  block->head = NULL_TREE;
-	  append_to_statement_list (tmp, &block->head);
-	}
-      append_to_statement_list (expr, &block->head);
-    }
-  else
-    /* Don't bother creating a list if we only have a single statement.  */
-    block->head = expr;
+  add_expr_to_chain (&block->head, expr, false);
 }
 
 
@@ -1393,3 +1409,55 @@ gfc_generate_module_code (gfc_namespace * ns)
     }
 }
 
+
+/* Initialize an init/cleanup block with existing code.  */
+
+void
+gfc_start_wrapped_block (gfc_wrapped_block* block, tree code)
+{
+  gcc_assert (block);
+
+  block->init = NULL_TREE;
+  block->code = code;
+  block->cleanup = NULL_TREE;
+}
+
+
+/* Add a new pair of initializers/clean-up code.  */
+
+void
+gfc_add_init_cleanup (gfc_wrapped_block* block, tree init, tree cleanup)
+{
+  gcc_assert (block);
+
+  /* The new pair of init/cleanup should be "wrapped around" the existing
+     block of code, thus the initialization is added to the front and the
+     cleanup to the back.  */
+  add_expr_to_chain (&block->init, init, true);
+  add_expr_to_chain (&block->cleanup, cleanup, false);
+}
+
+
+/* Finish up a wrapped block by building a corresponding try-finally expr.  */
+
+tree
+gfc_finish_wrapped_block (gfc_wrapped_block* block)
+{
+  tree result;
+
+  gcc_assert (block);
+
+  /* Build the final expression.  For this, just add init and body together,
+     and put clean-up with that into a TRY_FINALLY_EXPR.  */
+  result = block->init;
+  add_expr_to_chain (&result, block->code, false);
+  if (block->cleanup)
+    result = build2 (TRY_FINALLY_EXPR, void_type_node, result, block->cleanup);
+  
+  /* Clear the block.  */
+  block->init = NULL_TREE;
+  block->code = NULL_TREE;
+  block->cleanup = NULL_TREE;
+
+  return result;
+}

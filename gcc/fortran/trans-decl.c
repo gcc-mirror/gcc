@@ -2838,72 +2838,70 @@ gfc_build_builtin_function_decls (void)
 
 /* Evaluate the length of dummy character variables.  */
 
-static tree
-gfc_trans_dummy_character (gfc_symbol *sym, gfc_charlen *cl, tree fnbody)
+static void
+gfc_trans_dummy_character (gfc_symbol *sym, gfc_charlen *cl,
+			   gfc_wrapped_block *block)
 {
-  stmtblock_t body;
+  stmtblock_t init;
 
   gfc_finish_decl (cl->backend_decl);
 
-  gfc_start_block (&body);
+  gfc_start_block (&init);
 
   /* Evaluate the string length expression.  */
-  gfc_conv_string_length (cl, NULL, &body);
+  gfc_conv_string_length (cl, NULL, &init);
 
-  gfc_trans_vla_type_sizes (sym, &body);
+  gfc_trans_vla_type_sizes (sym, &init);
 
-  gfc_add_expr_to_block (&body, fnbody);
-  return gfc_finish_block (&body);
+  gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
 }
 
 
 /* Allocate and cleanup an automatic character variable.  */
 
-static tree
-gfc_trans_auto_character_variable (gfc_symbol * sym, tree fnbody)
+static void
+gfc_trans_auto_character_variable (gfc_symbol * sym, gfc_wrapped_block * block)
 {
-  stmtblock_t body;
+  stmtblock_t init;
   tree decl;
   tree tmp;
 
   gcc_assert (sym->backend_decl);
   gcc_assert (sym->ts.u.cl && sym->ts.u.cl->length);
 
-  gfc_start_block (&body);
+  gfc_start_block (&init);
 
   /* Evaluate the string length expression.  */
-  gfc_conv_string_length (sym->ts.u.cl, NULL, &body);
+  gfc_conv_string_length (sym->ts.u.cl, NULL, &init);
 
-  gfc_trans_vla_type_sizes (sym, &body);
+  gfc_trans_vla_type_sizes (sym, &init);
 
   decl = sym->backend_decl;
 
   /* Emit a DECL_EXPR for this variable, which will cause the
      gimplifier to allocate storage, and all that good stuff.  */
   tmp = fold_build1 (DECL_EXPR, TREE_TYPE (decl), decl);
-  gfc_add_expr_to_block (&body, tmp);
+  gfc_add_expr_to_block (&init, tmp);
 
-  gfc_add_expr_to_block (&body, fnbody);
-  return gfc_finish_block (&body);
+  gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
 }
 
 /* Set the initial value of ASSIGN statement auxiliary variable explicitly.  */
 
-static tree
-gfc_trans_assign_aux_var (gfc_symbol * sym, tree fnbody)
+static void
+gfc_trans_assign_aux_var (gfc_symbol * sym, gfc_wrapped_block * block)
 {
-  stmtblock_t body;
+  stmtblock_t init;
 
   gcc_assert (sym->backend_decl);
-  gfc_start_block (&body);
+  gfc_start_block (&init);
 
   /* Set the initial value to length. See the comments in
      function gfc_add_assign_aux_vars in this file.  */
-  gfc_add_modify (&body, GFC_DECL_STRING_LEN (sym->backend_decl),
-		       build_int_cst (NULL_TREE, -2));
+  gfc_add_modify (&init, GFC_DECL_STRING_LEN (sym->backend_decl),
+		  build_int_cst (NULL_TREE, -2));
 
-  gfc_add_expr_to_block (&body, fnbody);
-  return gfc_finish_block (&body);
+  gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
 }
 
 static void
@@ -3016,15 +3014,15 @@ gfc_trans_vla_type_sizes (gfc_symbol *sym, stmtblock_t *body)
 /* Initialize a derived type by building an lvalue from the symbol
    and using trans_assignment to do the work. Set dealloc to false
    if no deallocation prior the assignment is needed.  */
-tree
-gfc_init_default_dt (gfc_symbol * sym, tree body, bool dealloc)
+void
+gfc_init_default_dt (gfc_symbol * sym, stmtblock_t * block, bool dealloc)
 {
-  stmtblock_t fnblock;
   gfc_expr *e;
   tree tmp;
   tree present;
 
-  gfc_init_block (&fnblock);
+  gcc_assert (block);
+
   gcc_assert (!sym->attr.allocatable);
   gfc_set_sym_referenced (sym);
   e = gfc_lval_expr_from_sym (sym);
@@ -3036,11 +3034,8 @@ gfc_init_default_dt (gfc_symbol * sym, tree body, bool dealloc)
       tmp = build3 (COND_EXPR, TREE_TYPE (tmp), present,
 		    tmp, build_empty_stmt (input_location));
     }
-  gfc_add_expr_to_block (&fnblock, tmp);
+  gfc_add_expr_to_block (block, tmp);
   gfc_free_expr (e);
-  if (body)
-    gfc_add_expr_to_block (&fnblock, body);
-  return gfc_finish_block (&fnblock);
 }
 
 
@@ -3048,15 +3043,15 @@ gfc_init_default_dt (gfc_symbol * sym, tree body, bool dealloc)
    them their default initializer, if they do not have allocatable
    components, they have their allocatable components deallocated. */
 
-static tree
-init_intent_out_dt (gfc_symbol * proc_sym, tree body)
+static void
+init_intent_out_dt (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 {
-  stmtblock_t fnblock;
+  stmtblock_t init;
   gfc_formal_arglist *f;
   tree tmp;
   tree present;
 
-  gfc_init_block (&fnblock);
+  gfc_init_block (&init);
   for (f = proc_sym->formal; f; f = f->next)
     if (f->sym && f->sym->attr.intent == INTENT_OUT
 	&& !f->sym->attr.pointer
@@ -3076,14 +3071,13 @@ init_intent_out_dt (gfc_symbol * proc_sym, tree body)
 			      tmp, build_empty_stmt (input_location));
 	      }
 
-	    gfc_add_expr_to_block (&fnblock, tmp);
+	    gfc_add_expr_to_block (&init, tmp);
 	  }
        else if (f->sym->value)
-	  body = gfc_init_default_dt (f->sym, body, true);
+	  gfc_init_default_dt (f->sym, &init, true);
       }
 
-  gfc_add_expr_to_block (&fnblock, body);
-  return gfc_finish_block (&fnblock);
+  gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
 }
 
 
@@ -3101,8 +3095,11 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
   locus loc;
   gfc_symbol *sym;
   gfc_formal_arglist *f;
-  stmtblock_t body;
+  stmtblock_t tmpblock;
+  gfc_wrapped_block try_block;
   bool seen_trans_deferred_array = false;
+
+  gfc_start_wrapped_block (&try_block, fnbody);
 
   /* Deal with implicit return variables.  Explicit return variables will
      already have been added.  */
@@ -3125,19 +3122,17 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
       else if (proc_sym->as)
 	{
 	  tree result = TREE_VALUE (current_fake_result_decl);
-	  fnbody = gfc_trans_dummy_array_bias (proc_sym, result, fnbody);
+	  gfc_trans_dummy_array_bias (proc_sym, result, &try_block);
 
 	  /* An automatic character length, pointer array result.  */
 	  if (proc_sym->ts.type == BT_CHARACTER
 		&& TREE_CODE (proc_sym->ts.u.cl->backend_decl) == VAR_DECL)
-	    fnbody = gfc_trans_dummy_character (proc_sym, proc_sym->ts.u.cl,
-						fnbody);
+	    gfc_trans_dummy_character (proc_sym, proc_sym->ts.u.cl, &try_block);
 	}
       else if (proc_sym->ts.type == BT_CHARACTER)
 	{
 	  if (TREE_CODE (proc_sym->ts.u.cl->backend_decl) == VAR_DECL)
-	    fnbody = gfc_trans_dummy_character (proc_sym, proc_sym->ts.u.cl,
-						fnbody);
+	    gfc_trans_dummy_character (proc_sym, proc_sym->ts.u.cl, &try_block);
 	}
       else
 	gcc_assert (gfc_option.flag_f2c
@@ -3147,7 +3142,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
   /* Initialize the INTENT(OUT) derived type dummy arguments.  This
      should be done here so that the offsets and lbounds of arrays
      are available.  */
-  fnbody = init_intent_out_dt (proc_sym, fnbody);
+  init_intent_out_dt (proc_sym, &try_block);
 
   for (sym = proc_sym->tlink; sym != proc_sym; sym = sym->tlink)
     {
@@ -3159,8 +3154,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	    {
 	    case AS_EXPLICIT:
 	      if (sym->attr.dummy || sym->attr.result)
-		fnbody =
-		  gfc_trans_dummy_array_bias (sym, sym->backend_decl, fnbody);
+		gfc_trans_dummy_array_bias (sym, sym->backend_decl, &try_block);
 	      else if (sym->attr.pointer || sym->attr.allocatable)
 		{
 		  if (TREE_STATIC (sym->backend_decl))
@@ -3168,7 +3162,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 		  else
 		    {
 		      seen_trans_deferred_array = true;
-		      fnbody = gfc_trans_deferred_array (sym, fnbody);
+		      gfc_trans_deferred_array (sym, &try_block);
 		    }
 		}
 	      else
@@ -3176,18 +3170,24 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 		  if (sym_has_alloc_comp)
 		    {
 		      seen_trans_deferred_array = true;
-		      fnbody = gfc_trans_deferred_array (sym, fnbody);
+		      gfc_trans_deferred_array (sym, &try_block);
 		    }
 		  else if (sym->ts.type == BT_DERIVED
 			     && sym->value
 			     && !sym->attr.data
 			     && sym->attr.save == SAVE_NONE)
-		    fnbody = gfc_init_default_dt (sym, fnbody, false);
+		    {
+		      gfc_start_block (&tmpblock);
+		      gfc_init_default_dt (sym, &tmpblock, false);
+		      gfc_add_init_cleanup (&try_block,
+					    gfc_finish_block (&tmpblock),
+					    NULL_TREE);
+		    }
 
 		  gfc_get_backend_locus (&loc);
 		  gfc_set_backend_locus (&sym->declared_at);
-		  fnbody = gfc_trans_auto_array_allocation (sym->backend_decl,
-		      sym, fnbody);
+		  gfc_trans_auto_array_allocation (sym->backend_decl,
+						   sym, &try_block);
 		  gfc_set_backend_locus (&loc);
 		}
 	      break;
@@ -3198,27 +3198,26 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 
 	      /* We should always pass assumed size arrays the g77 way.  */
 	      if (sym->attr.dummy)
-		fnbody = gfc_trans_g77_array (sym, fnbody);
-              break;
+		gfc_trans_g77_array (sym, &try_block);
+	      break;
 
 	    case AS_ASSUMED_SHAPE:
 	      /* Must be a dummy parameter.  */
 	      gcc_assert (sym->attr.dummy);
 
-	      fnbody = gfc_trans_dummy_array_bias (sym, sym->backend_decl,
-						   fnbody);
+	      gfc_trans_dummy_array_bias (sym, sym->backend_decl, &try_block);
 	      break;
 
 	    case AS_DEFERRED:
 	      seen_trans_deferred_array = true;
-	      fnbody = gfc_trans_deferred_array (sym, fnbody);
+	      gfc_trans_deferred_array (sym, &try_block);
 	      break;
 
 	    default:
 	      gcc_unreachable ();
 	    }
 	  if (sym_has_alloc_comp && !seen_trans_deferred_array)
-	    fnbody = gfc_trans_deferred_array (sym, fnbody);
+	    gfc_trans_deferred_array (sym, &try_block);
 	}
       else if (sym->attr.allocatable
 	       || (sym->ts.type == BT_CLASS
@@ -3231,7 +3230,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	      tree tmp;
 	      gfc_expr *e;
 	      gfc_se se;
-	      stmtblock_t block;
+	      stmtblock_t init;
 
 	      e = gfc_lval_expr_from_sym (sym);
 	      if (sym->ts.type == BT_CLASS)
@@ -3243,49 +3242,53 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	      gfc_free_expr (e);
 
 	      /* Nullify when entering the scope.  */
-	      gfc_start_block (&block);
-	      gfc_add_modify (&block, se.expr,
+	      gfc_start_block (&init);
+	      gfc_add_modify (&init, se.expr,
 			      fold_convert (TREE_TYPE (se.expr),
 					    null_pointer_node));
-	      gfc_add_expr_to_block (&block, fnbody);
 
 	      /* Deallocate when leaving the scope. Nullifying is not
 		 needed.  */
 	      tmp = gfc_deallocate_with_status (se.expr, NULL_TREE, true,
 						NULL);
-	      gfc_add_expr_to_block (&block, tmp);
-	      fnbody = gfc_finish_block (&block);
+
+	      gfc_add_init_cleanup (&try_block, gfc_finish_block (&init), tmp);
 	    }
 	}
       else if (sym_has_alloc_comp)
-	fnbody = gfc_trans_deferred_array (sym, fnbody);
+	gfc_trans_deferred_array (sym, &try_block);
       else if (sym->ts.type == BT_CHARACTER)
 	{
 	  gfc_get_backend_locus (&loc);
 	  gfc_set_backend_locus (&sym->declared_at);
 	  if (sym->attr.dummy || sym->attr.result)
-	    fnbody = gfc_trans_dummy_character (sym, sym->ts.u.cl, fnbody);
+	    gfc_trans_dummy_character (sym, sym->ts.u.cl, &try_block);
 	  else
-	    fnbody = gfc_trans_auto_character_variable (sym, fnbody);
+	    gfc_trans_auto_character_variable (sym, &try_block);
 	  gfc_set_backend_locus (&loc);
 	}
       else if (sym->attr.assign)
 	{
 	  gfc_get_backend_locus (&loc);
 	  gfc_set_backend_locus (&sym->declared_at);
-	  fnbody = gfc_trans_assign_aux_var (sym, fnbody);
+	  gfc_trans_assign_aux_var (sym, &try_block);
 	  gfc_set_backend_locus (&loc);
 	}
       else if (sym->ts.type == BT_DERIVED
 		 && sym->value
 		 && !sym->attr.data
 		 && sym->attr.save == SAVE_NONE)
-	fnbody = gfc_init_default_dt (sym, fnbody, false);
+	{
+	  gfc_start_block (&tmpblock);
+	  gfc_init_default_dt (sym, &tmpblock, false);
+	  gfc_add_init_cleanup (&try_block, gfc_finish_block (&tmpblock),
+				NULL_TREE);
+	}
       else
 	gcc_unreachable ();
     }
 
-  gfc_init_block (&body);
+  gfc_init_block (&tmpblock);
 
   for (f = proc_sym->formal; f; f = f->next)
     {
@@ -3293,7 +3296,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 	{
 	  gcc_assert (f->sym->ts.u.cl->backend_decl != NULL);
 	  if (TREE_CODE (f->sym->ts.u.cl->backend_decl) == PARM_DECL)
-	    gfc_trans_vla_type_sizes (f->sym, &body);
+	    gfc_trans_vla_type_sizes (f->sym, &tmpblock);
 	}
     }
 
@@ -3302,11 +3305,12 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
     {
       gcc_assert (proc_sym->ts.u.cl->backend_decl != NULL);
       if (TREE_CODE (proc_sym->ts.u.cl->backend_decl) == PARM_DECL)
-	gfc_trans_vla_type_sizes (proc_sym, &body);
+	gfc_trans_vla_type_sizes (proc_sym, &tmpblock);
     }
 
-  gfc_add_expr_to_block (&body, fnbody);
-  return gfc_finish_block (&body);
+  gfc_add_init_cleanup (&try_block, gfc_finish_block (&tmpblock), NULL_TREE);
+
+  return gfc_finish_wrapped_block (&try_block);
 }
 
 static GTY ((param_is (struct module_htab_entry))) htab_t module_htab;
