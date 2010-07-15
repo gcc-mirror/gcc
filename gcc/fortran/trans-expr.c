@@ -1389,8 +1389,8 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
 
 /* If a string's length is one, we convert it to a single character.  */
 
-static tree
-string_to_single_character (tree len, tree str, int kind)
+tree
+gfc_string_to_single_character (tree len, tree str, int kind)
 {
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (str)));
 
@@ -1475,7 +1475,7 @@ gfc_conv_scalar_char_value (gfc_symbol *sym, gfc_se *se, gfc_expr **expr)
         {
 	  if ((*expr)->ref == NULL)
 	    {
-	      se->expr = string_to_single_character
+	      se->expr = gfc_string_to_single_character
 		(build_int_cst (integer_type_node, 1),
 		 gfc_build_addr_expr (gfc_get_pchar_type ((*expr)->ts.kind),
 				      gfc_get_symbol_decl
@@ -1485,7 +1485,7 @@ gfc_conv_scalar_char_value (gfc_symbol *sym, gfc_se *se, gfc_expr **expr)
 	  else
 	    {
 	      gfc_conv_variable (se, *expr);
-	      se->expr = string_to_single_character
+	      se->expr = gfc_string_to_single_character
 		(build_int_cst (integer_type_node, 1),
 		 gfc_build_addr_expr (gfc_get_pchar_type ((*expr)->ts.kind),
 				      se->expr),
@@ -1544,8 +1544,8 @@ gfc_build_compare_string (tree len1, tree str1, tree len2, tree str2, int kind,
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (str1)));
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (str2)));
 
-  sc1 = string_to_single_character (len1, str1, kind);
-  sc2 = string_to_single_character (len2, str2, kind);
+  sc1 = gfc_string_to_single_character (len1, str1, kind);
+  sc2 = gfc_string_to_single_character (len2, str2, kind);
 
   if (sc1 != NULL_TREE && sc2 != NULL_TREE)
     {
@@ -3618,7 +3618,7 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
   if (slength != NULL_TREE)
     {
       slen = fold_convert (size_type_node, gfc_evaluate_now (slength, block));
-      ssc = string_to_single_character (slen, src, skind);
+      ssc = gfc_string_to_single_character (slen, src, skind);
     }
   else
     {
@@ -3629,7 +3629,7 @@ gfc_trans_string_copy (stmtblock_t * block, tree dlength, tree dest,
   if (dlength != NULL_TREE)
     {
       dlen = fold_convert (size_type_node, gfc_evaluate_now (dlength, block));
-      dsc = string_to_single_character (dlen, dest, dkind);
+      dsc = gfc_string_to_single_character (dlen, dest, dkind);
     }
   else
     {

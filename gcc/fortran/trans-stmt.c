@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-const.h"
 #include "arith.h"
 #include "dependency.h"
+#include "ggc.h"
 
 typedef struct iter_info
 {
@@ -1594,6 +1595,10 @@ gfc_trans_logical_select (gfc_code * code)
 }
 
 
+/* The jump table types are stored in static variables to avoid
+   constructing them from scratch every single time.  */
+static GTY(()) tree select_struct[2];
+
 /* Translate the SELECT CASE construct for CHARACTER case expressions.
    Instead of generating compares and jumps, it is far simpler to
    generate a data structure describing the cases in order and call a
@@ -1610,18 +1615,171 @@ gfc_trans_character_select (gfc_code *code)
   stmtblock_t block, body;
   gfc_case *cp, *d;
   gfc_code *c;
-  gfc_se se;
+  gfc_se se, expr1se;
   int n, k;
   VEC(constructor_elt,gc) *inits = NULL;
 
+  tree pchartype = gfc_get_pchar_type (code->expr1->ts.kind);
+
   /* The jump table types are stored in static variables to avoid
      constructing them from scratch every single time.  */
-  static tree select_struct[2];
   static tree ss_string1[2], ss_string1_len[2];
   static tree ss_string2[2], ss_string2_len[2];
   static tree ss_target[2];
 
-  tree pchartype = gfc_get_pchar_type (code->expr1->ts.kind);
+  cp = code->block->ext.case_list;
+  while (cp->left != NULL)
+    cp = cp->left;
+
+  /* Generate the body */
+  gfc_start_block (&block);
+  gfc_init_se (&expr1se, NULL);
+  gfc_conv_expr_reference (&expr1se, code->expr1);
+
+  gfc_add_block_to_block (&block, &expr1se.pre);
+
+  end_label = gfc_build_label_decl (NULL_TREE);
+
+  gfc_init_block (&body);
+
+  /* Attempt to optimize length 1 selects.  */
+  if (expr1se.string_length == integer_one_node)
+    {
+      for (d = cp; d; d = d->right)
+	{
+	  int i;
+	  if (d->low)
+	    {
+	      gcc_assert (d->low->expr_type == EXPR_CONSTANT
+			  && d->low->ts.type == BT_CHARACTER);
+	      if (d->low->value.character.length > 1)
+		{
+		  for (i = 1; i < d->low->value.character.length; i++)
+		    if (d->low->value.character.string[i] != ' ')
+		      break;
+		  if (i != d->low->value.character.length)
+		    {
+		      if (optimize && d->high && i == 1)
+			{
+			  gcc_assert (d->high->expr_type == EXPR_CONSTANT
+				      && d->high->ts.type == BT_CHARACTER);
+			  if (d->high->value.character.length > 1
+			      && (d->low->value.character.string[0]
+				  == d->high->value.character.string[0])
+			      && d->high->value.character.string[1] != ' '
+			      && ((d->low->value.character.string[1] < ' ')
+				  == (d->high->value.character.string[1]
+				      < ' ')))
+			    continue;
+			}
+		      break;
+		    }
+		}
+	    }
+	  if (d->high)
+	    {
+	      gcc_assert (d->high->expr_type == EXPR_CONSTANT
+			  && d->high->ts.type == BT_CHARACTER);
+	      if (d->high->value.character.length > 1)
+		{
+		  for (i = 1; i < d->high->value.character.length; i++)
+		    if (d->high->value.character.string[i] != ' ')
+		      break;
+		  if (i != d->high->value.character.length)
+		    break;
+		}
+	    }
+	}
+      if (d == NULL)
+	{
+	  tree ctype = gfc_get_char_type (code->expr1->ts.kind);
+
+	  for (c = code->block; c; c = c->block)
+	    {
+	      for (cp = c->ext.case_list; cp; cp = cp->next)
+		{
+		  tree low, high;
+		  tree label;
+		  gfc_char_t r;
+
+		  /* Assume it's the default case.  */
+		  low = high = NULL_TREE;
+
+		  if (cp->low)
+		    {
+		      /* CASE ('ab') or CASE ('ab':'az') will never match
+			 any length 1 character.  */
+		      if (cp->low->value.character.length > 1
+			  && cp->low->value.character.string[1] != ' ')
+			continue;
+
+		      if (cp->low->value.character.length > 0)
+			r = cp->low->value.character.string[0];
+		      else
+			r = ' ';
+		      low = build_int_cst (ctype, r);
+
+		      /* If there's only a lower bound, set the high bound
+			 to the maximum value of the case expression.  */
+		      if (!cp->high)
+			high = TYPE_MAX_VALUE (ctype);
+		    }
+
+		  if (cp->high)
+		    {
+		      if (!cp->low
+			  || (cp->low->value.character.string[0]
+			      != cp->high->value.character.string[0]))
+			{
+			  if (cp->high->value.character.length > 0)
+			    r = cp->high->value.character.string[0];
+			  else
+			    r = ' ';
+			  high = build_int_cst (ctype, r);
+			}
+
+		      /* Unbounded case.  */
+		      if (!cp->low)
+			low = TYPE_MIN_VALUE (ctype);
+		    }
+
+		  /* Build a label.  */
+		  label = gfc_build_label_decl (NULL_TREE);
+
+		  /* Add this case label.
+		     Add parameter 'label', make it match GCC backend.  */
+		  tmp = fold_build3 (CASE_LABEL_EXPR, void_type_node,
+				     low, high, label);
+		  gfc_add_expr_to_block (&body, tmp);
+		}
+
+	      /* Add the statements for this case.  */
+	      tmp = gfc_trans_code (c->next);
+	      gfc_add_expr_to_block (&body, tmp);
+
+	      /* Break to the end of the construct.  */
+	      tmp = build1_v (GOTO_EXPR, end_label);
+	      gfc_add_expr_to_block (&body, tmp);
+	    }
+
+	  tmp = gfc_string_to_single_character (expr1se.string_length,
+						expr1se.expr,
+						code->expr1->ts.kind);
+	  case_num = gfc_create_var (ctype, "case_num");
+	  gfc_add_modify (&block, case_num, tmp);
+
+	  gfc_add_block_to_block (&block, &expr1se.post);
+
+	  tmp = gfc_finish_block (&body);
+	  tmp = build3_v (SWITCH_EXPR, case_num, tmp, NULL_TREE);
+	  gfc_add_expr_to_block (&block, tmp);
+
+	  tmp = build1_v (LABEL_EXPR, end_label);
+	  gfc_add_expr_to_block (&block, tmp);
+
+	  return gfc_finish_block (&block);
+	}
+    }
 
   if (code->expr1->ts.kind == 1)
     k = 0;
@@ -1661,19 +1819,9 @@ gfc_trans_character_select (gfc_code *code)
       gfc_finish_type (select_struct[k]);
     }
 
-  cp = code->block->ext.case_list;
-  while (cp->left != NULL)
-    cp = cp->left;
-
   n = 0;
   for (d = cp; d; d = d->right)
     d->n = n++;
-
-  end_label = gfc_build_label_decl (NULL_TREE);
-
-  /* Generate the body */
-  gfc_start_block (&block);
-  gfc_init_block (&body);
 
   for (c = code->block; c; c = c->block)
     {
@@ -1695,7 +1843,7 @@ gfc_trans_character_select (gfc_code *code)
     }
 
   /* Generate the structure describing the branches */
-  for(d = cp; d; d = d->right)
+  for (d = cp; d; d = d->right)
     {
       VEC(constructor_elt,gc) *node = NULL;
 
@@ -1752,11 +1900,6 @@ gfc_trans_character_select (gfc_code *code)
   /* Build the library call */
   init = gfc_build_addr_expr (pvoid_type_node, init);
 
-  gfc_init_se (&se, NULL);
-  gfc_conv_expr_reference (&se, code->expr1);
-
-  gfc_add_block_to_block (&block, &se.pre);
-
   if (code->expr1->ts.kind == 1)
     fndecl = gfor_fndecl_select_string;
   else if (code->expr1->ts.kind == 4)
@@ -1766,11 +1909,11 @@ gfc_trans_character_select (gfc_code *code)
 
   tmp = build_call_expr_loc (input_location,
 			 fndecl, 4, init, build_int_cst (NULL_TREE, n),
-			 se.expr, se.string_length);
+			 expr1se.expr, expr1se.string_length);
   case_num = gfc_create_var (integer_type_node, "case_num");
   gfc_add_modify (&block, case_num, tmp);
 
-  gfc_add_block_to_block (&block, &se.post);
+  gfc_add_block_to_block (&block, &expr1se.post);
 
   tmp = gfc_finish_block (&body);
   tmp = build3_v (SWITCH_EXPR, case_num, tmp, NULL_TREE);
@@ -4494,3 +4637,4 @@ gfc_trans_deallocate (gfc_code *code)
   return gfc_finish_block (&block);
 }
 
+#include "gt-fortran-trans-stmt.h"
