@@ -1,3 +1,9 @@
+2010-07-15  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	PR target/44877
+	* config/spu/spu.c (spu_expand_builtin_1): Allow references
+	(as well as pointers) as argument to mask_for_load builtins.
+
 2010-07-15  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44946
