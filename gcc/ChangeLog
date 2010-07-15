@@ -1,7 +1,13 @@
+2010-07-15  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44946
+	* tree-ssa-structalias.c (get_constraint_for_component_ref): Deal
+	with accessing only padding properly.
+
 2010-07-15  Jan Hubicka  <jh@suse.cz>
 
-	* ipa.c (function_and_variable_visibility): Variables marked as used should
-	not be localized.
+	* ipa.c (function_and_variable_visibility): Variables marked as used
+	should not be localized.
 
 2010-07-15  Jan Hubicka  <jh@suse.cz>
 

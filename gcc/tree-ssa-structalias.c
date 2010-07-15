@@ -3177,13 +3177,19 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results,
 	      cexpr.var = curr->id;
 	      VEC_safe_push (ce_s, heap, *results, &cexpr);
 	    }
-	  else
+	  else if (VEC_length (ce_s, *results) == 0)
 	    /* Assert that we found *some* field there. The user couldn't be
 	       accessing *only* padding.  */
 	    /* Still the user could access one past the end of an array
 	       embedded in a struct resulting in accessing *only* padding.  */
-	    gcc_assert (VEC_length (ce_s, *results) >= 1
-			|| ref_contains_array_ref (orig_t));
+	    /* Or accessing only padding via type-punning to a type
+	       that has a filed just in padding space.  */
+	    {
+	      cexpr.type = SCALAR;
+	      cexpr.var = anything_id;
+	      cexpr.offset = 0;
+	      VEC_safe_push (ce_s, heap, *results, &cexpr);
+	    }
 	}
       else if (bitmaxsize == 0)
 	{
