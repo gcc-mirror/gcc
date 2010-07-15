@@ -432,7 +432,7 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
 	     what C will do.  */
 	  tree field = NULL_TREE;
 	  field = TYPE_FIELDS (TREE_TYPE (decl));
-	  if (TREE_CHAIN (field) == NULL_TREE)
+	  if (DECL_CHAIN (field) == NULL_TREE)
 	    DECL_ALIGN (decl) = TYPE_ALIGN (TREE_TYPE (field));
 	}
       DECL_USER_ALIGN (decl) = 0;
@@ -608,7 +608,7 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
     {
       is_init = true;
       *field_link = field;
-      field_link = &TREE_CHAIN (field);
+      field_link = &DECL_CHAIN (field);
     }
 
   for (s = head; s; s = s->next)
@@ -617,7 +617,7 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
 
       /* Link the field into the type.  */
       *field_link = s->field;
-      field_link = &TREE_CHAIN (s->field);
+      field_link = &DECL_CHAIN (s->field);
 
       /* Has initial value.  */
       if (s->sym->value)

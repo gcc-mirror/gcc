@@ -2925,7 +2925,7 @@ exclude_types_passed_to_local_func (VEC (tree, heap) **unsuitable_types)
 	tree fn = c_node->decl;
 	tree arg;
 
-	for (arg = DECL_ARGUMENTS (fn); arg; arg = TREE_CHAIN (arg))
+	for (arg = DECL_ARGUMENTS (fn); arg; arg = DECL_CHAIN (arg))
 	  {
 	    tree type = TREE_TYPE (arg);
 

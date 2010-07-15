@@ -5475,7 +5475,7 @@ classify_argument (enum machine_mode mode, const_tree type,
 	{
 	case RECORD_TYPE:
 	  /* And now merge the fields of structure.  */
-	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	    {
 	      if (TREE_CODE (field) == FIELD_DECL)
 		{
@@ -5563,7 +5563,7 @@ classify_argument (enum machine_mode mode, const_tree type,
 	case QUAL_UNION_TYPE:
 	  /* Unions are similar to RECORD_TYPE but offset is always 0.
 	     */
-	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	    {
 	      if (TREE_CODE (field) == FIELD_DECL)
 		{
@@ -6532,7 +6532,7 @@ contains_aligned_value_p (tree type)
 	    tree field;
 
 	    /* Walk all the structure fields.  */
-	    for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	    for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	      {
 		if (TREE_CODE (field) == FIELD_DECL
 		    && contains_aligned_value_p (TREE_TYPE (field)))
@@ -6998,9 +6998,9 @@ ix86_build_builtin_va_list_abi (enum calling_abi abi)
   TREE_CHAIN (record) = type_decl;
   TYPE_NAME (record) = type_decl;
   TYPE_FIELDS (record) = f_gpr;
-  TREE_CHAIN (f_gpr) = f_fpr;
-  TREE_CHAIN (f_fpr) = f_ovf;
-  TREE_CHAIN (f_ovf) = f_sav;
+  DECL_CHAIN (f_gpr) = f_fpr;
+  DECL_CHAIN (f_fpr) = f_ovf;
+  DECL_CHAIN (f_ovf) = f_sav;
 
   layout_type (record);
 
@@ -7212,9 +7212,9 @@ ix86_va_start (tree valist, rtx nextarg)
     }
 
   f_gpr = TYPE_FIELDS (TREE_TYPE (sysv_va_list_type_node));
-  f_fpr = TREE_CHAIN (f_gpr);
-  f_ovf = TREE_CHAIN (f_fpr);
-  f_sav = TREE_CHAIN (f_ovf);
+  f_fpr = DECL_CHAIN (f_gpr);
+  f_ovf = DECL_CHAIN (f_fpr);
+  f_sav = DECL_CHAIN (f_ovf);
 
   valist = build_simple_mem_ref (valist);
   TREE_TYPE (valist) = TREE_TYPE (sysv_va_list_type_node);
@@ -7299,9 +7299,9 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
     return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 
   f_gpr = TYPE_FIELDS (TREE_TYPE (sysv_va_list_type_node));
-  f_fpr = TREE_CHAIN (f_gpr);
-  f_ovf = TREE_CHAIN (f_fpr);
-  f_sav = TREE_CHAIN (f_ovf);
+  f_fpr = DECL_CHAIN (f_gpr);
+  f_ovf = DECL_CHAIN (f_fpr);
+  f_sav = DECL_CHAIN (f_ovf);
 
   gpr = build3 (COMPONENT_REF, TREE_TYPE (f_gpr),
 		build_va_arg_indirect_ref (valist), f_gpr, NULL_TREE);

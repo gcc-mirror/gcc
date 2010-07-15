@@ -825,7 +825,7 @@ java_init_decl_processing (void)
   if (! flag_hash_synchronization)
     PUSH_FIELD (input_location, object_type_node, field, "sync_info",
 		build_pointer_type (object_type_node));
-  for (t = TYPE_FIELDS (object_type_node); t != NULL_TREE; t = TREE_CHAIN (t))
+  for (t = TYPE_FIELDS (object_type_node); t != NULL_TREE; t = DECL_CHAIN (t))
     FIELD_PRIVATE (t) = 1;
   FINISH_RECORD (object_type_node);
 
@@ -907,7 +907,7 @@ java_init_decl_processing (void)
   PUSH_FIELD (input_location, class_type_node, field, "engine", ptr_type_node);
   PUSH_FIELD (input_location,
 	      class_type_node, field, "reflection_data", ptr_type_node);
-  for (t = TYPE_FIELDS (class_type_node);  t != NULL_TREE;  t = TREE_CHAIN (t))
+  for (t = TYPE_FIELDS (class_type_node);  t != NULL_TREE;  t = DECL_CHAIN (t))
     FIELD_PRIVATE (t) = 1;
   push_super_field (class_type_node, object_type_node);
 
@@ -1215,7 +1215,7 @@ lookup_name_current_level (tree name)
   if (IDENTIFIER_LOCAL_VALUE (name) == 0)
     return 0;
 
-  for (t = current_binding_level->names; t; t = TREE_CHAIN (t))
+  for (t = current_binding_level->names; t; t = DECL_CHAIN (t))
     if (DECL_NAME (t) == name)
       break;
 
@@ -1284,7 +1284,7 @@ pushdecl (tree x)
 
   /* Put decls on list in reverse order.
      We will reverse them later if necessary.  */
-  TREE_CHAIN (x) = b->names;
+  DECL_CHAIN (x) = b->names;
   b->names = x;
 
   return x;
@@ -1435,7 +1435,7 @@ poplevel (int keep, int reverse, int functionbody)
   else
     decls = current_binding_level->names;
 
-  for (decl = decls; decl; decl = TREE_CHAIN (decl))
+  for (decl = decls; decl; decl = DECL_CHAIN (decl))
     if (TREE_CODE (decl) == VAR_DECL
 	&& DECL_LANG_SPECIFIC (decl) != NULL
 	&& DECL_LOCAL_SLOT_NUMBER (decl))
@@ -1468,11 +1468,11 @@ poplevel (int keep, int reverse, int functionbody)
 	  /* Copy decls from names list, ignoring labels.  */
 	  while (decl)
 	    {
-	      tree next = TREE_CHAIN (decl);
+	      tree next = DECL_CHAIN (decl);
 	      if (TREE_CODE (decl) != LABEL_DECL)
 		{
 		  *var = decl;
-		  var = &TREE_CHAIN (decl);
+		  var = &DECL_CHAIN (decl);
 		}
 	      decl = next;
 	    }
@@ -1508,7 +1508,7 @@ poplevel (int keep, int reverse, int functionbody)
 
   /* Clear out the meanings of the local variables of this level.  */
 
-  for (link = decls; link; link = TREE_CHAIN (link))
+  for (link = decls; link; link = DECL_CHAIN (link))
     {
       tree name = DECL_NAME (link);
       if (name != 0 && IDENTIFIER_LOCAL_VALUE (name) == link)
@@ -1604,7 +1604,7 @@ maybe_pushlevels (int pc)
       while (*ptr != NULL_TREE
 	     && DECL_LOCAL_START_PC (*ptr) <= pc
 	     && DECL_LOCAL_END_PC (*ptr) == end_pc)
-	ptr = &TREE_CHAIN (*ptr);
+	ptr = &DECL_CHAIN (*ptr);
       pending_local_decls = *ptr;
       *ptr = NULL_TREE;
 
@@ -1614,7 +1614,7 @@ maybe_pushlevels (int pc)
 	{
 	  tree t;
 	  end_pc = current_binding_level->end_pc;
-	  for (t = decl; t != NULL_TREE; t = TREE_CHAIN (t))
+	  for (t = decl; t != NULL_TREE; t = DECL_CHAIN (t))
 	    DECL_LOCAL_END_PC (t) = end_pc;
 	}
 
@@ -1629,7 +1629,7 @@ maybe_pushlevels (int pc)
 	{
 	  int index = DECL_LOCAL_SLOT_NUMBER (decl);
 	  tree base_decl;
-	  next = TREE_CHAIN (decl);
+	  next = DECL_CHAIN (decl);
 	  push_jvm_slot (index, decl);
 	  pushdecl (decl);
 	  base_decl
@@ -1757,8 +1757,8 @@ give_name_to_locals (JCF *jcf)
 		 && (DECL_LOCAL_START_PC (*ptr) > start_pc
 		     || (DECL_LOCAL_START_PC (*ptr) == start_pc
 			 && DECL_LOCAL_END_PC (*ptr) < end_pc)))
-	    ptr = &TREE_CHAIN (*ptr);
-	  TREE_CHAIN (decl) = *ptr;
+	    ptr = &DECL_CHAIN (*ptr);
+	  DECL_CHAIN (decl) = *ptr;
 	  *ptr = decl;
 	}
     }
@@ -1767,7 +1767,7 @@ give_name_to_locals (JCF *jcf)
 
   /* Fill in default names for the parameters. */ 
   for (parm = DECL_ARGUMENTS (current_function_decl), i = 0;
-       parm != NULL_TREE;  parm = TREE_CHAIN (parm), i++)
+       parm != NULL_TREE;  parm = DECL_CHAIN (parm), i++)
     {
       if (DECL_NAME (parm) == NULL_TREE)
 	{
@@ -1840,7 +1840,7 @@ start_java_method (tree fndecl)
       DECL_ARG_TYPE (parm_decl) = parm_type;
 
       *ptr = parm_decl;
-      ptr = &TREE_CHAIN (parm_decl);
+      ptr = &DECL_CHAIN (parm_decl);
 
       /* Add parm_decl to the decl_map. */
       push_jvm_slot (i, parm_decl);
@@ -1993,7 +1993,7 @@ java_mark_class_local (tree klass)
 {
   tree t;
 
-  for (t = TYPE_FIELDS (klass); t ; t = TREE_CHAIN (t))
+  for (t = TYPE_FIELDS (klass); t ; t = DECL_CHAIN (t))
     if (FIELD_STATIC (t))
       {
 	if (DECL_EXTERNAL (t))
@@ -2001,7 +2001,7 @@ java_mark_class_local (tree klass)
 	java_mark_decl_local (t);
       }
 
-  for (t = TYPE_METHODS (klass); t ; t = TREE_CHAIN (t))
+  for (t = TYPE_METHODS (klass); t ; t = DECL_CHAIN (t))
     if (!METHOD_ABSTRACT (t))
       {
 	if (METHOD_NATIVE (t) && !flag_jni)
@@ -2089,7 +2089,7 @@ java_add_local_var (tree decl)
 {
   tree *vars = &current_binding_level->names;
   tree next = *vars;
-  TREE_CHAIN (decl) = next;
+  DECL_CHAIN (decl) = next;
   *vars = decl;
   DECL_CONTEXT (decl) = current_function_decl;
   MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (decl);

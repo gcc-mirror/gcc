@@ -370,8 +370,8 @@ dequeue_and_dump (dump_info_p di)
       if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_COMMON)
 	  && DECL_ARTIFICIAL (t))
 	dump_string_field (di, "note", "artificial");
-      if (TREE_CHAIN (t) && !dump_flag (di, TDF_SLIM, NULL))
-	dump_child ("chan", TREE_CHAIN (t));
+      if (DECL_CHAIN (t) && !dump_flag (di, TDF_SLIM, NULL))
+	dump_child ("chain", DECL_CHAIN (t));
     }
   else if (code_class == tcc_type)
     {

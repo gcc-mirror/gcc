@@ -164,7 +164,7 @@ suitable_for_tail_call_opt_p (void)
      but not in all cases.  See PR15387 and PR19616.  Revisit for 4.1.  */
   for (param = DECL_ARGUMENTS (current_function_decl);
        param;
-       param = TREE_CHAIN (param))
+       param = DECL_CHAIN (param))
     if (TREE_ADDRESSABLE (param))
       return false;
 
@@ -423,7 +423,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
 
       for (param = DECL_ARGUMENTS (func), idx = 0;
 	   param && idx < gimple_call_num_args (call);
-	   param = TREE_CHAIN (param), idx ++)
+	   param = DECL_CHAIN (param), idx ++)
 	{
 	  arg = gimple_call_arg (call, idx);
 	  if (param != arg)
@@ -808,7 +808,7 @@ eliminate_tail_call (struct tailcall *t)
   for (param = DECL_ARGUMENTS (current_function_decl),
 	 idx = 0, gsi = gsi_start_phis (first);
        param;
-       param = TREE_CHAIN (param), idx++)
+       param = DECL_CHAIN (param), idx++)
     {
       if (!arg_needs_copy_p (param))
 	continue;
@@ -965,7 +965,7 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
 	  /* Copy the args if needed.  */
 	  for (param = DECL_ARGUMENTS (current_function_decl);
 	       param;
-	       param = TREE_CHAIN (param))
+	       param = DECL_CHAIN (param))
 	    if (arg_needs_copy_p (param))
 	      {
 		tree name = gimple_default_def (cfun, param);

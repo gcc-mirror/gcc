@@ -7362,7 +7362,7 @@ extract_values (tree values, tree record_type)
   tree field, tem;
   VEC(constructor_elt,gc) *v = NULL;
 
-  for (field = TYPE_FIELDS (record_type); field; field = TREE_CHAIN (field))
+  for (field = TYPE_FIELDS (record_type); field; field = DECL_CHAIN (field))
     {
       tree value = 0;
 

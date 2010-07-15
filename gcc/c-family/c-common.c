@@ -4022,7 +4022,7 @@ c_type_hash (const void *p)
     default:
       gcc_unreachable ();
     }
-  for (; t2; t2 = TREE_CHAIN (t2))
+  for (; t2; t2 = DECL_CHAIN (t2))
     i++;
   /* We might have a VLA here.  */
   if (TREE_CODE (TYPE_SIZE (t)) != INTEGER_CST)
@@ -8390,8 +8390,8 @@ fold_offsetof_1 (tree expr, tree stop_ref)
 		    if (TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))
 			== RECORD_TYPE)
 		      {
-			tree fld_chain = TREE_CHAIN (TREE_OPERAND (v, 1));
-			for (; fld_chain; fld_chain = TREE_CHAIN (fld_chain))
+			tree fld_chain = DECL_CHAIN (TREE_OPERAND (v, 1));
+			for (; fld_chain; fld_chain = DECL_CHAIN (fld_chain))
 			  if (TREE_CODE (fld_chain) == FIELD_DECL)
 			    break;
 

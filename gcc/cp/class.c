@@ -469,7 +469,7 @@ build_simple_base_path (tree expr, tree binfo)
   expr = build_simple_base_path (expr, d_binfo);
 
   for (field = TYPE_FIELDS (BINFO_TYPE (d_binfo));
-       field; field = TREE_CHAIN (field))
+       field; field = DECL_CHAIN (field))
     /* Is this the base field created by build_base_field?  */
     if (TREE_CODE (field) == FIELD_DECL
 	&& DECL_FIELD_IS_BASE (field)
@@ -1262,7 +1262,7 @@ check_bases (tree t,
   seen_non_virtual_nearly_empty_base_p = 0;
 
   if (!CLASSTYPE_NON_STD_LAYOUT (t))
-    for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
+    for (field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
       if (TREE_CODE (field) == FIELD_DECL)
 	break;
 
@@ -1351,7 +1351,7 @@ check_bases (tree t,
 	       members, or has no base classes with non-static data
 	       members */
 	    for (basefield = TYPE_FIELDS (basetype); basefield;
-		 basefield = TREE_CHAIN (basefield))
+		 basefield = DECL_CHAIN (basefield))
 	      if (TREE_CODE (basefield) == FIELD_DECL)
 		{
 		  if (field)
@@ -1609,7 +1609,7 @@ maybe_warn_about_overly_private_class (tree t)
      functions are private.  (Since there are no friends or
      non-private statics, we can't ever call any of the private member
      functions.)  */
-  for (fn = TYPE_METHODS (t); fn; fn = TREE_CHAIN (fn))
+  for (fn = TYPE_METHODS (t); fn; fn = DECL_CHAIN (fn))
     /* We're not interested in compiler-generated methods; they don't
        provide any way to call private members.  */
     if (!DECL_ARTIFICIAL (fn))
@@ -1814,7 +1814,7 @@ finish_struct_methods (tree t)
 
   /* Clear DECL_IN_AGGR_P for all functions.  */
   for (fn_fields = TYPE_METHODS (t); fn_fields;
-       fn_fields = TREE_CHAIN (fn_fields))
+       fn_fields = DECL_CHAIN (fn_fields))
     DECL_IN_AGGR_P (fn_fields) = 0;
 
   /* Issue warnings about private constructors and such.  If there are
@@ -2545,7 +2545,7 @@ finish_struct_anon (tree t)
 {
   tree field;
 
-  for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
+  for (field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
     {
       if (TREE_STATIC (field))
 	continue;
@@ -2557,7 +2557,7 @@ finish_struct_anon (tree t)
 	{
 	  bool is_union = TREE_CODE (TREE_TYPE (field)) == UNION_TYPE;
 	  tree elt = TYPE_FIELDS (TREE_TYPE (field));
-	  for (; elt; elt = TREE_CHAIN (elt))
+	  for (; elt; elt = DECL_CHAIN (elt))
 	    {
 	      /* We're generally only interested in entities the user
 		 declared, but we also find nested classes by noticing
@@ -2750,7 +2750,7 @@ count_fields (tree fields)
 {
   tree x;
   int n_fields = 0;
-  for (x = fields; x; x = TREE_CHAIN (x))
+  for (x = fields; x; x = DECL_CHAIN (x))
     {
       if (TREE_CODE (x) == FIELD_DECL && ANON_AGGR_TYPE_P (TREE_TYPE (x)))
 	n_fields += count_fields (TYPE_FIELDS (TREE_TYPE (x)));
@@ -2767,7 +2767,7 @@ static int
 add_fields_to_record_type (tree fields, struct sorted_fields_type *field_vec, int idx)
 {
   tree x;
-  for (x = fields; x; x = TREE_CHAIN (x))
+  for (x = fields; x; x = DECL_CHAIN (x))
     {
       if (TREE_CODE (x) == FIELD_DECL && ANON_AGGR_TYPE_P (TREE_TYPE (x)))
 	idx = add_fields_to_record_type (TYPE_FIELDS (TREE_TYPE (x)), field_vec, idx);
@@ -2874,7 +2874,7 @@ check_field_decl (tree field,
     {
       tree fields;
 
-      for (fields = TYPE_FIELDS (type); fields; fields = TREE_CHAIN (fields))
+      for (fields = TYPE_FIELDS (type); fields; fields = DECL_CHAIN (fields))
 	if (TREE_CODE (fields) == FIELD_DECL && !DECL_C_BIT_FIELD (field))
 	  check_field_decl (fields, t, cant_have_const_ctor,
 			    no_const_asn_ref, any_default_members,
@@ -2999,12 +2999,12 @@ check_field_decls (tree t, tree *access_decls,
       tree type = TREE_TYPE (x);
       int this_field_access;
 
-      next = &TREE_CHAIN (x);
+      next = &DECL_CHAIN (x);
 
       if (TREE_CODE (x) == USING_DECL)
 	{
 	  /* Prune the access declaration from the list of fields.  */
-	  *field = TREE_CHAIN (x);
+	  *field = DECL_CHAIN (x);
 
 	  /* Save the access declarations for our caller.  */
 	  *access_decls = tree_cons (NULL_TREE, x, *access_decls);
@@ -3439,7 +3439,7 @@ walk_subobject_offsets (tree type,
 	}
 
       /* Iterate through the fields of TYPE.  */
-      for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+      for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL && !DECL_ARTIFICIAL (field))
 	  {
 	    tree field_offset;
@@ -3788,9 +3788,9 @@ build_base_field (record_layout_info rli, tree binfo,
 	     objects of the same type at the same address.  */
 	  layout_nonempty_base_or_field (rli, decl, binfo, offsets);
 	  /* Add the new FIELD_DECL to the list of fields for T.  */
-	  TREE_CHAIN (decl) = *next_field;
+	  DECL_CHAIN (decl) = *next_field;
 	  *next_field = decl;
-	  next_field = &TREE_CHAIN (decl);
+	  next_field = &DECL_CHAIN (decl);
 	}
     }
   else
@@ -3902,7 +3902,7 @@ check_methods (tree t)
 {
   tree x;
 
-  for (x = TYPE_METHODS (t); x; x = TREE_CHAIN (x))
+  for (x = TYPE_METHODS (t); x; x = DECL_CHAIN (x))
     {
       check_for_override (x, t);
       if (DECL_PURE_VIRTUAL_P (x) && ! DECL_VINDEX (x))
@@ -3941,8 +3941,8 @@ build_clone (tree fn, tree name)
   /* Remember where this function came from.  */
   DECL_ABSTRACT_ORIGIN (clone) = fn;
   /* Make it easy to find the CLONE given the FN.  */
-  TREE_CHAIN (clone) = TREE_CHAIN (fn);
-  TREE_CHAIN (fn) = clone;
+  DECL_CHAIN (clone) = DECL_CHAIN (fn);
+  DECL_CHAIN (fn) = clone;
 
   /* If this is a template, do the rest on the DECL_TEMPLATE_RESULT.  */
   if (TREE_CODE (clone) == TEMPLATE_DECL)
@@ -4006,8 +4006,8 @@ build_clone (tree fn, tree name)
   /* Remove the in-charge parameter.  */
   if (DECL_HAS_IN_CHARGE_PARM_P (clone))
     {
-      TREE_CHAIN (DECL_ARGUMENTS (clone))
-	= TREE_CHAIN (TREE_CHAIN (DECL_ARGUMENTS (clone)));
+      DECL_CHAIN (DECL_ARGUMENTS (clone))
+	= DECL_CHAIN (DECL_CHAIN (DECL_ARGUMENTS (clone)));
       DECL_HAS_IN_CHARGE_PARM_P (clone) = 0;
     }
   /* And the VTT parm, in a complete [cd]tor.  */
@@ -4017,13 +4017,13 @@ build_clone (tree fn, tree name)
 	DECL_HAS_VTT_PARM_P (clone) = 1;
       else
 	{
-	  TREE_CHAIN (DECL_ARGUMENTS (clone))
-	    = TREE_CHAIN (TREE_CHAIN (DECL_ARGUMENTS (clone)));
+	  DECL_CHAIN (DECL_ARGUMENTS (clone))
+	    = DECL_CHAIN (DECL_CHAIN (DECL_ARGUMENTS (clone)));
 	  DECL_HAS_VTT_PARM_P (clone) = 0;
 	}
     }
 
-  for (parms = DECL_ARGUMENTS (clone); parms; parms = TREE_CHAIN (parms))
+  for (parms = DECL_ARGUMENTS (clone); parms; parms = DECL_CHAIN (parms))
     {
       DECL_CONTEXT (parms) = clone;
       cxx_dup_lang_specific_decl (parms);
@@ -4086,8 +4086,8 @@ clone_function_decl (tree fn, int update_method_vec_p)
   tree clone;
 
   /* Avoid inappropriate cloning.  */
-  if (TREE_CHAIN (fn)
-      && DECL_CLONED_FUNCTION_P (TREE_CHAIN (fn)))
+  if (DECL_CHAIN (fn)
+      && DECL_CLONED_FUNCTION_P (DECL_CHAIN (fn)))
     return;
 
   if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (fn))
@@ -4144,8 +4144,8 @@ adjust_clone_args (tree decl)
 {
   tree clone;
 
-  for (clone = TREE_CHAIN (decl); clone && DECL_CLONED_FUNCTION_P (clone);
-       clone = TREE_CHAIN (clone))
+  for (clone = DECL_CHAIN (decl); clone && DECL_CLONED_FUNCTION_P (clone);
+       clone = DECL_CHAIN (clone))
     {
       tree orig_clone_parms = TYPE_ARG_TYPES (TREE_TYPE (clone));
       tree orig_decl_parms = TYPE_ARG_TYPES (TREE_TYPE (decl));
@@ -4416,9 +4416,9 @@ remove_zero_width_bit_fields (tree t)
 	     check_bitfield_decl eventually sets DECL_SIZE (*fieldsp)
 	     to that width.  */
 	  && integer_zerop (DECL_SIZE (*fieldsp)))
-	*fieldsp = TREE_CHAIN (*fieldsp);
+	*fieldsp = DECL_CHAIN (*fieldsp);
       else
-	fieldsp = &TREE_CHAIN (*fieldsp);
+	fieldsp = &DECL_CHAIN (*fieldsp);
     }
 }
 
@@ -4577,7 +4577,7 @@ check_bases_and_members (tree t)
     {
       tree field;
 
-      for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
+      for (field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
 	{
 	  tree type;
 
@@ -4605,7 +4605,7 @@ check_bases_and_members (tree t)
 
   /* Check defaulted declarations here so we have cant_have_const_ctor
      and don't need to worry about clones.  */
-  for (fn = TYPE_METHODS (t); fn; fn = TREE_CHAIN (fn))
+  for (fn = TYPE_METHODS (t); fn; fn = DECL_CHAIN (fn))
     if (DECL_DEFAULTED_IN_CLASS_P (fn))
       {
 	int copy = copy_fn_p (fn);
@@ -4671,7 +4671,7 @@ create_vtable_ptr (tree t, tree* virtuals_p)
   tree fn;
 
   /* Collect the virtual functions declared in T.  */
-  for (fn = TYPE_METHODS (t); fn; fn = TREE_CHAIN (fn))
+  for (fn = TYPE_METHODS (t); fn; fn = DECL_CHAIN (fn))
     if (DECL_VINDEX (fn) && !DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (fn)
 	&& TREE_CODE (DECL_VINDEX (fn)) != INTEGER_CST)
       {
@@ -4806,7 +4806,7 @@ layout_virtual_bases (record_layout_info rli, splay_tree offsets)
      bases will go after the last extant field to date.  */
   next_field = &TYPE_FIELDS (t);
   while (*next_field)
-    next_field = &TREE_CHAIN (*next_field);
+    next_field = &DECL_CHAIN (*next_field);
 
   /* Go through the virtual bases, allocating space for each virtual
      base that is not already a primary base class.  These are
@@ -5047,9 +5047,9 @@ layout_class_type (tree t, tree *virtuals_p)
   /* The vptr is always the first thing in the class.  */
   if (vptr)
     {
-      TREE_CHAIN (vptr) = TYPE_FIELDS (t);
+      DECL_CHAIN (vptr) = TYPE_FIELDS (t);
       TYPE_FIELDS (t) = vptr;
-      next_field = &TREE_CHAIN (vptr);
+      next_field = &DECL_CHAIN (vptr);
       place_field (rli, vptr);
     }
   else
@@ -5061,7 +5061,7 @@ layout_class_type (tree t, tree *virtuals_p)
   build_base_fields (rli, empty_base_offsets, next_field);
 
   /* Layout the non-static data members.  */
-  for (field = non_static_data_members; field; field = TREE_CHAIN (field))
+  for (field = non_static_data_members; field; field = DECL_CHAIN (field))
     {
       tree type;
       tree padding;
@@ -5342,7 +5342,7 @@ layout_class_type (tree t, tree *virtuals_p)
 
       /* Copy the fields from T.  */
       next_field = &TYPE_FIELDS (base_t);
-      for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
+      for (field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL)
 	  {
 	    *next_field = build_decl (input_location,
@@ -5355,7 +5355,7 @@ layout_class_type (tree t, tree *virtuals_p)
 	      = DECL_FIELD_BIT_OFFSET (field);
 	    DECL_SIZE (*next_field) = DECL_SIZE (field);
 	    DECL_MODE (*next_field) = DECL_MODE (field);
-	    next_field = &TREE_CHAIN (*next_field);
+	    next_field = &DECL_CHAIN (*next_field);
 	  }
 
       /* Record the base version of the type.  */
@@ -5402,7 +5402,7 @@ layout_class_type (tree t, tree *virtuals_p)
   warn_about_ambiguous_bases (t);
 
   /* Now that we're done with layout, give the base fields the real types.  */
-  for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
+  for (field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
     if (DECL_ARTIFICIAL (field) && IS_FAKE_BASE_TYPE (TREE_TYPE (field)))
       TREE_TYPE (field) = TYPE_CONTEXT (TREE_TYPE (field));
 
@@ -5434,7 +5434,7 @@ determine_key_method (tree type)
      key function may not be inline; those targets should not call
      this function until the end of the translation unit.  */
   for (method = TYPE_METHODS (type); method != NULL_TREE;
-       method = TREE_CHAIN (method))
+       method = DECL_CHAIN (method))
     if (DECL_VINDEX (method) != NULL_TREE
 	&& ! DECL_DECLARED_INLINE_P (method)
 	&& ! DECL_PURE_VIRTUAL_P (method))
@@ -5558,7 +5558,7 @@ finish_struct_1 (tree t)
 
   /* Complete the rtl for any static member objects of the type we're
      working on.  */
-  for (x = TYPE_FIELDS (t); x; x = TREE_CHAIN (x))
+  for (x = TYPE_FIELDS (t); x; x = DECL_CHAIN (x))
     if (TREE_CODE (x) == VAR_DECL && TREE_STATIC (x)
         && TREE_TYPE (x) != error_mark_node
 	&& same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (x)), t))
@@ -5655,13 +5655,13 @@ unreverse_member_declarations (tree t)
        x && TREE_CODE (x) != TYPE_DECL;
        x = next)
     {
-      next = TREE_CHAIN (x);
-      TREE_CHAIN (x) = prev;
+      next = DECL_CHAIN (x);
+      DECL_CHAIN (x) = prev;
       prev = x;
     }
   if (prev)
     {
-      TREE_CHAIN (TYPE_FIELDS (t)) = x;
+      DECL_CHAIN (TYPE_FIELDS (t)) = x;
       if (prev)
 	TYPE_FIELDS (t) = prev;
     }
@@ -5698,7 +5698,7 @@ finish_struct (tree t, tree attributes)
 	 CLASSTYPE_PURE_VIRTUALS contains the list of the inline friends
 	 (see CLASSTYPE_INLINE_FRIENDS) so we need to clear it.  */
       CLASSTYPE_PURE_VIRTUALS (t) = NULL;
-      for (x = TYPE_METHODS (t); x; x = TREE_CHAIN (x))
+      for (x = TYPE_METHODS (t); x; x = DECL_CHAIN (x))
 	if (DECL_PURE_VIRTUAL_P (x))
 	  VEC_safe_push (tree, gc, CLASSTYPE_PURE_VIRTUALS (t), x);
       complete_vars (t);
@@ -6798,7 +6798,7 @@ is_really_empty_class (tree type)
 	   BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
 	if (!is_really_empty_class (BINFO_TYPE (base_binfo)))
 	  return false;
-      for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+      for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL
 	    && !DECL_ARTIFICIAL (field)
 	    && !is_really_empty_class (TREE_TYPE (field)))
@@ -7251,8 +7251,8 @@ build_vtt (tree t)
   vtt = build_vtable (t, mangle_vtt_for_type (t), type);
   initialize_artificial_var (vtt, inits);
   /* Add the VTT to the vtables list.  */
-  TREE_CHAIN (vtt) = TREE_CHAIN (CLASSTYPE_VTABLES (t));
-  TREE_CHAIN (CLASSTYPE_VTABLES (t)) = vtt;
+  DECL_CHAIN (vtt) = DECL_CHAIN (CLASSTYPE_VTABLES (t));
+  DECL_CHAIN (CLASSTYPE_VTABLES (t)) = vtt;
 
   dump_vtt (t, vtt);
 }
@@ -8082,7 +8082,7 @@ add_vcall_offset_vtbl_entries_1 (tree binfo, vtbl_init_data* vid)
 	 order.  G++ 3.2 used the order in the vtable.  */
       for (orig_fn = TYPE_METHODS (BINFO_TYPE (binfo));
 	   orig_fn;
-	   orig_fn = TREE_CHAIN (orig_fn))
+	   orig_fn = DECL_CHAIN (orig_fn))
 	if (DECL_VINDEX (orig_fn))
 	  add_vcall_offset (orig_fn, binfo, vid);
     }

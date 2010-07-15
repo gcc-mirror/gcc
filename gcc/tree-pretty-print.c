@@ -1432,7 +1432,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	    {
 	      pp_newline (buffer);
 
-	      for (op0 = BIND_EXPR_VARS (node); op0; op0 = TREE_CHAIN (op0))
+	      for (op0 = BIND_EXPR_VARS (node); op0; op0 = DECL_CHAIN (op0))
 		{
 		  print_declaration (buffer, op0, spc+2, flags);
 		  pp_newline (buffer);
@@ -2432,7 +2432,7 @@ print_struct_decl (pretty_printer *buffer, const_tree node, int spc, int flags)
 	    print_declaration (buffer, tmp, spc+2, flags);
 	    pp_newline (buffer);
 	  }
-	tmp = TREE_CHAIN (tmp);
+	tmp = DECL_CHAIN (tmp);
       }
   }
   INDENT (spc);

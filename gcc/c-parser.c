@@ -2229,7 +2229,7 @@ c_parser_struct_declaration (c_parser *parser)
 			 declarator, specs, width, &all_prefix_attrs);
 	  decl_attributes (&d, chainon (postfix_attrs,
 					all_prefix_attrs), 0);
-	  TREE_CHAIN (d) = decls;
+	  DECL_CHAIN (d) = decls;
 	  decls = d;
 	  if (c_parser_next_token_is_keyword (parser, RID_ATTRIBUTE))
 	    all_prefix_attrs = chainon (c_parser_attributes (parser),
@@ -6431,7 +6431,7 @@ c_parser_objc_class_instance_variables (c_parser *parser)
 	/* Comma-separated instance variables are chained together in
 	   reverse order; add them one by one.  */
 	tree ivar = nreverse (decls);
-	for (; ivar; ivar = TREE_CHAIN (ivar))
+	for (; ivar; ivar = DECL_CHAIN (ivar))
 	  objc_add_instance_variable (copy_node (ivar));
       }
       c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");

@@ -1571,7 +1571,7 @@ parse_class_file (void)
   gen_indirect_dispatch_tables (current_class);
 
   for (method = TYPE_METHODS (current_class);
-       method != NULL_TREE; method = TREE_CHAIN (method))
+       method != NULL_TREE; method = DECL_CHAIN (method))
     {
       JCF *jcf = current_jcf;
 

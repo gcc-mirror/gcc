@@ -2375,7 +2375,7 @@ unshare_all_rtl_again (rtx insn)
   set_used_decls (DECL_INITIAL (cfun->decl));
 
   /* Make sure that virtual parameters are not shared.  */
-  for (decl = DECL_ARGUMENTS (cfun->decl); decl; decl = TREE_CHAIN (decl))
+  for (decl = DECL_ARGUMENTS (cfun->decl); decl; decl = DECL_CHAIN (decl))
     set_used_flags (DECL_RTL (decl));
 
   reset_used_flags (stack_slot_list);
@@ -2585,7 +2585,7 @@ set_used_decls (tree blk)
   tree t;
 
   /* Mark decls.  */
-  for (t = BLOCK_VARS (blk); t; t = TREE_CHAIN (t))
+  for (t = BLOCK_VARS (blk); t; t = DECL_CHAIN (t))
     if (DECL_RTL_SET_P (t))
       set_used_flags (DECL_RTL (t));
 

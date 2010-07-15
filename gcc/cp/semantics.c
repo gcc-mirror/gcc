@@ -2418,7 +2418,7 @@ finish_member_declaration (tree decl)
     return;
 
   /* We should see only one DECL at a time.  */
-  gcc_assert (TREE_CHAIN (decl) == NULL_TREE);
+  gcc_assert (DECL_CHAIN (decl) == NULL_TREE);
 
   /* Set up access control for DECL.  */
   TREE_PRIVATE (decl)
@@ -2460,7 +2460,7 @@ finish_member_declaration (tree decl)
 	 CLASSTYPE_METHOD_VEC.  */
       if (add_method (current_class_type, decl, NULL_TREE))
 	{
-	  TREE_CHAIN (decl) = TYPE_METHODS (current_class_type);
+	  DECL_CHAIN (decl) = TYPE_METHODS (current_class_type);
 	  TYPE_METHODS (current_class_type) = decl;
 
 	  maybe_add_class_template_decl_list (current_class_type, decl,
@@ -2493,7 +2493,7 @@ finish_member_declaration (tree decl)
 	  = chainon (TYPE_FIELDS (current_class_type), decl);
       else
 	{
-	  TREE_CHAIN (decl) = TYPE_FIELDS (current_class_type);
+	  DECL_CHAIN (decl) = TYPE_FIELDS (current_class_type);
 	  TYPE_FIELDS (current_class_type) = decl;
 	}
 
@@ -3319,7 +3319,7 @@ emit_associated_thunks (tree fn)
     {
       tree thunk;
 
-      for (thunk = DECL_THUNKS (fn); thunk; thunk = TREE_CHAIN (thunk))
+      for (thunk = DECL_THUNKS (fn); thunk; thunk = DECL_CHAIN (thunk))
 	{
 	  if (!THUNK_ALIAS (thunk))
 	    {
@@ -3329,7 +3329,7 @@ emit_associated_thunks (tree fn)
 		  tree probe;
 
 		  for (probe = DECL_THUNKS (thunk);
-		       probe; probe = TREE_CHAIN (probe))
+		       probe; probe = DECL_CHAIN (probe))
 		    use_thunk (probe, /*emit_p=*/1);
 		}
 	    }
@@ -5850,8 +5850,8 @@ maybe_add_lambda_conv_op (tree type)
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
   DECL_STATIC_FUNCTION_P (fn) = 1;
-  DECL_ARGUMENTS (fn) = copy_list (TREE_CHAIN (DECL_ARGUMENTS (callop)));
-  for (arg = DECL_ARGUMENTS (fn); arg; arg = TREE_CHAIN (arg))
+  DECL_ARGUMENTS (fn) = copy_list (DECL_CHAIN (DECL_ARGUMENTS (callop)));
+  for (arg = DECL_ARGUMENTS (fn); arg; arg = DECL_CHAIN (arg))
     DECL_CONTEXT (arg) = fn;
   if (nested)
     DECL_INTERFACE_KNOWN (fn) = 1;
@@ -5884,7 +5884,7 @@ maybe_add_lambda_conv_op (tree type)
 		null_pointer_node);
   argvec = make_tree_vector ();
   VEC_quick_push (tree, argvec, arg);
-  for (arg = DECL_ARGUMENTS (statfn); arg; arg = TREE_CHAIN (arg))
+  for (arg = DECL_ARGUMENTS (statfn); arg; arg = DECL_CHAIN (arg))
     VEC_safe_push (tree, gc, argvec, arg);
   call = build_call_a (callop, VEC_length (tree, argvec),
 		       VEC_address (tree, argvec));

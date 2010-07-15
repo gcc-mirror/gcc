@@ -1049,7 +1049,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		: TYPE_FIELDS (gnu_type);
 	    VEC(constructor_elt,gc) *v = VEC_alloc (constructor_elt, gc, 1);
 	    tree t = build_template (TREE_TYPE (template_field),
-				     TREE_TYPE (TREE_CHAIN (template_field)),
+				     TREE_TYPE (DECL_CHAIN (template_field)),
 				     NULL_TREE);
 	    CONSTRUCTOR_APPEND_ELT (v, template_field, t);
 	    gnu_expr = gnat_build_constructor (gnu_type, v);
@@ -1207,7 +1207,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    && TYPE_CONTAINS_TEMPLATE_P (gnu_alloc_type))
 		  {
 		    gnu_alloc_type
-		      = TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (gnu_alloc_type)));
+		      = TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (gnu_alloc_type)));
 
 		    if (TREE_CODE (gnu_expr) == CONSTRUCTOR
 			&& 1 == VEC_length (constructor_elt,
@@ -1217,7 +1217,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		      gnu_expr
 			= build_component_ref
 			    (gnu_expr, NULL_TREE,
-			     TREE_CHAIN (TYPE_FIELDS (TREE_TYPE (gnu_expr))),
+			     DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (gnu_expr))),
 			     false);
 		  }
 
@@ -1896,7 +1896,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   fields once we build them.  */
 	tem = build3 (COMPONENT_REF, gnu_ptr_template,
 		      build0 (PLACEHOLDER_EXPR, gnu_fat_type),
-		      TREE_CHAIN (TYPE_FIELDS (gnu_fat_type)), NULL_TREE);
+		      DECL_CHAIN (TYPE_FIELDS (gnu_fat_type)), NULL_TREE);
 	gnu_template_reference
 	  = build_unary_op (INDIRECT_REF, gnu_template_type, tem);
 	TREE_READONLY (gnu_template_reference) = 1;
@@ -2435,7 +2435,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  gnu_field = create_field_decl (gnu_index_name, gnu_index,
 						 gnu_bound_rec, NULL_TREE,
 						 NULL_TREE, 0, 0);
-		  TREE_CHAIN (gnu_field) = gnu_field_list;
+		  DECL_CHAIN (gnu_field) = gnu_field_list;
 		  gnu_field_list = gnu_field;
 		}
 
@@ -2905,7 +2905,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	      if (!is_unchecked_union)
 		{
-		  TREE_CHAIN (gnu_field) = gnu_field_list;
+		  DECL_CHAIN (gnu_field) = gnu_field_list;
 		  gnu_field_list = gnu_field;
 		}
 	    }
@@ -2950,8 +2950,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    for (gnu_field = TYPE_FIELDS (gnu_type),
 		 gnu_std_field = TYPE_FIELDS (except_type_node);
 		 gnu_field;
-		 gnu_field = TREE_CHAIN (gnu_field),
-		 gnu_std_field = TREE_CHAIN (gnu_std_field))
+		 gnu_field = DECL_CHAIN (gnu_field),
+		 gnu_std_field = DECL_CHAIN (gnu_std_field))
 	      SET_DECL_ORIGINAL_FIELD_TO_FIELD (gnu_field, gnu_std_field);
 	    gcc_assert (!gnu_std_field);
 	  }
@@ -3207,7 +3207,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    /* Put it in one of the new variants directly.  */
 		    if (gnu_cont_type != gnu_type)
 		      {
-			TREE_CHAIN (gnu_field) = TYPE_FIELDS (gnu_cont_type);
+			DECL_CHAIN (gnu_field) = TYPE_FIELDS (gnu_cont_type);
 			TYPE_FIELDS (gnu_cont_type) = gnu_field;
 		      }
 
@@ -3231,7 +3231,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		       the other fields.  */
 		    else
 		      {
-			TREE_CHAIN (gnu_field) = gnu_field_list;
+			DECL_CHAIN (gnu_field) = gnu_field_list;
 			gnu_field_list = gnu_field;
 			if (!gnu_last)
 			  gnu_last = gnu_field;
@@ -3248,7 +3248,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    = create_variant_part_from (gnu_variant_part,
 						gnu_variant_list, gnu_type,
 						gnu_pos_list, gnu_subst_list);
-		  TREE_CHAIN (new_variant_part) = gnu_field_list;
+		  DECL_CHAIN (new_variant_part) = gnu_field_list;
 		  gnu_field_list = new_variant_part;
 		}
 
@@ -3520,7 +3520,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  = create_field_decl (get_identifier ("P_ARRAY"),
 				       gnu_ptr_array, gnu_type,
 				       NULL_TREE, NULL_TREE, 0, 0);
-		TREE_CHAIN (fields)
+		DECL_CHAIN (fields)
 		  = create_field_decl (get_identifier ("P_BOUNDS"),
 				       gnu_ptr_template, gnu_type,
 				       NULL_TREE, NULL_TREE, 0, 0);
@@ -4141,7 +4141,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				       0, 0);
 		Sloc_to_locus (Sloc (gnat_param),
 			       &DECL_SOURCE_LOCATION (gnu_field));
-		TREE_CHAIN (gnu_field) = gnu_field_list;
+		DECL_CHAIN (gnu_field) = gnu_field_list;
 		gnu_field_list = gnu_field;
 		gnu_cico_list
 		  = tree_cons (gnu_field, gnu_param, gnu_cico_list);
@@ -6140,7 +6140,7 @@ make_packable_type (tree type, bool in_record)
   /* Now copy the fields, keeping the position and size as we don't want
      to change the layout by propagating the packedness downwards.  */
   for (old_field = TYPE_FIELDS (type); old_field;
-       old_field = TREE_CHAIN (old_field))
+       old_field = DECL_CHAIN (old_field))
     {
       tree new_field_type = TREE_TYPE (old_field);
       tree new_field, new_size;
@@ -6155,7 +6155,7 @@ make_packable_type (tree type, bool in_record)
       /* However, for the last field in a not already packed record type
 	 that is of an aggregate type, we need to use the RM size in the
 	 packable version of the record type, see finish_record_type.  */
-      if (!TREE_CHAIN (old_field)
+      if (!DECL_CHAIN (old_field)
 	  && !TYPE_PACKED (type)
 	  && (TREE_CODE (new_field_type) == RECORD_TYPE
 	      || TREE_CODE (new_field_type) == UNION_TYPE
@@ -6178,7 +6178,7 @@ make_packable_type (tree type, bool in_record)
       if (TREE_CODE (new_type) == QUAL_UNION_TYPE)
 	DECL_QUALIFIER (new_field) = DECL_QUALIFIER (old_field);
 
-      TREE_CHAIN (new_field) = field_list;
+      DECL_CHAIN (new_field) = field_list;
       field_list = new_field;
     }
 
@@ -6831,7 +6831,7 @@ is_variable_size (tree type)
       && TREE_CODE (type) != QUAL_UNION_TYPE)
     return false;
 
-  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     if (is_variable_size (TREE_TYPE (field)))
       return true;
 
@@ -6929,14 +6929,14 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	       fields except for the _Tag or _Parent field.  */
 	    else if (gnat_name == Name_uController && gnu_last)
 	      {
-		TREE_CHAIN (gnu_field) = TREE_CHAIN (gnu_last);
-		TREE_CHAIN (gnu_last) = gnu_field;
+		DECL_CHAIN (gnu_field) = DECL_CHAIN (gnu_last);
+		DECL_CHAIN (gnu_last) = gnu_field;
 	      }
 
 	    /* If this is a regular field, put it after the other fields.  */
 	    else
 	      {
-		TREE_CHAIN (gnu_field) = gnu_field_list;
+		DECL_CHAIN (gnu_field) = gnu_field_list;
 		gnu_field_list = gnu_field;
 		if (!gnu_last)
 		  gnu_last = gnu_field;
@@ -7035,7 +7035,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	     use this field directly to match the layout of C unions.  */
 	  if (unchecked_union
 	      && TYPE_FIELDS (gnu_variant_type)
-	      && !TREE_CHAIN (TYPE_FIELDS (gnu_variant_type)))
+	      && !DECL_CHAIN (TYPE_FIELDS (gnu_variant_type)))
 	    gnu_field = TYPE_FIELDS (gnu_variant_type);
 	  else
 	    {
@@ -7067,7 +7067,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 		DECL_QUALIFIER (gnu_field) = gnu_qual;
 	    }
 
-	  TREE_CHAIN (gnu_field) = gnu_variant_list;
+	  DECL_CHAIN (gnu_field) = gnu_variant_list;
 	  gnu_variant_list = gnu_field;
 	}
 
@@ -7111,7 +7111,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 				 union_field_packed, 0);
 
 	  DECL_INTERNAL_P (gnu_union_field) = 1;
-	  TREE_CHAIN (gnu_union_field) = gnu_field_list;
+	  DECL_CHAIN (gnu_union_field) = gnu_field_list;
 	  gnu_field_list = gnu_union_field;
 	}
     }
@@ -7126,16 +7126,16 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
   gnu_last = NULL_TREE;
   for (gnu_field = gnu_field_list; gnu_field; gnu_field = gnu_next)
     {
-      gnu_next = TREE_CHAIN (gnu_field);
+      gnu_next = DECL_CHAIN (gnu_field);
 
       if (DECL_FIELD_OFFSET (gnu_field))
 	{
 	  if (!gnu_last)
 	    gnu_field_list = gnu_next;
 	  else
-	    TREE_CHAIN (gnu_last) = gnu_next;
+	    DECL_CHAIN (gnu_last) = gnu_next;
 
-	  TREE_CHAIN (gnu_field) = gnu_our_rep_list;
+	  DECL_CHAIN (gnu_field) = gnu_our_rep_list;
 	  gnu_our_rep_list = gnu_field;
 	}
       else
@@ -7159,7 +7159,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 
       for (gnu_field = gnu_our_rep_list, i = 0;
 	   gnu_field;
-	   gnu_field = TREE_CHAIN (gnu_field), i++)
+	   gnu_field = DECL_CHAIN (gnu_field), i++)
 	gnu_arr[i] = gnu_field;
 
       qsort (gnu_arr, len, sizeof (tree), compare_field_bitpos);
@@ -7169,7 +7169,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
       gnu_our_rep_list = NULL_TREE;
       for (i = len - 1; i >= 0; i--)
 	{
-	  TREE_CHAIN (gnu_arr[i]) = gnu_our_rep_list;
+	  DECL_CHAIN (gnu_arr[i]) = gnu_our_rep_list;
 	  gnu_our_rep_list = gnu_arr[i];
 	  DECL_CONTEXT (gnu_arr[i]) = gnu_rep_type;
 	}
@@ -7353,7 +7353,7 @@ annotate_object (Entity_Id gnat_entity, tree gnu_type, tree size, bool by_ref)
     {
       if (TREE_CODE (gnu_type) == RECORD_TYPE
 	  && TYPE_CONTAINS_TEMPLATE_P (gnu_type))
-	size = TYPE_SIZE (TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (gnu_type))));
+	size = TYPE_SIZE (TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (gnu_type))));
       else if (!size)
 	size = TYPE_SIZE (gnu_type);
 
@@ -7469,7 +7469,7 @@ build_position_list (tree gnu_type, bool do_not_flatten_variant, tree gnu_pos,
 
   for (gnu_field = TYPE_FIELDS (gnu_type);
        gnu_field;
-       gnu_field = TREE_CHAIN (gnu_field))
+       gnu_field = DECL_CHAIN (gnu_field))
     {
       tree gnu_our_bitpos = size_binop (PLUS_EXPR, gnu_bitpos,
 					DECL_FIELD_BIT_OFFSET (gnu_field));
@@ -7555,7 +7555,7 @@ build_variant_list (tree qual_union_type, tree subst_list, tree gnu_list)
 
   for (gnu_field = TYPE_FIELDS (qual_union_type);
        gnu_field;
-       gnu_field = TREE_CHAIN (gnu_field))
+       gnu_field = DECL_CHAIN (gnu_field))
     {
       tree t, qual = DECL_QUALIFIER (gnu_field);
 
@@ -8292,7 +8292,7 @@ get_variant_part (tree record_type)
   tree field;
 
   /* The variant part is the only internal field that is a qualified union.  */
-  for (field = TYPE_FIELDS (record_type); field; field = TREE_CHAIN (field))
+  for (field = TYPE_FIELDS (record_type); field; field = DECL_CHAIN (field))
     if (DECL_INTERNAL_P (field)
 	&& TREE_CODE (TREE_TYPE (field)) == QUAL_UNION_TYPE)
       return field;
@@ -8363,7 +8363,7 @@ create_variant_part_from (tree old_variant_part, tree variant_list,
 	  tree new_variant_subpart
 	    = create_variant_part_from (old_variant_subpart, variant_list,
 					new_variant, pos_list, subst_list);
-	  TREE_CHAIN (new_variant_subpart) = field_list;
+	  DECL_CHAIN (new_variant_subpart) = field_list;
 	  field_list = new_variant_subpart;
 	}
 
@@ -8380,7 +8380,7 @@ create_variant_part_from (tree old_variant_part, tree variant_list,
 				  pos_list, subst_list);
       DECL_QUALIFIER (new_field) = TREE_VEC_ELT (TREE_VALUE (t), 1);
       DECL_INTERNAL_P (new_field) = 1;
-      TREE_CHAIN (new_field) = union_field_list;
+      DECL_CHAIN (new_field) = union_field_list;
       union_field_list = new_field;
     }
 
@@ -8401,7 +8401,7 @@ create_variant_part_from (tree old_variant_part, tree variant_list,
      statically selected while outer ones are not; in this case, the list
      of fields of the inner variant is not flattened and we end up with a
      qualified union with a single member.  Drop the useless container.  */
-  if (!TREE_CHAIN (union_field_list))
+  if (!DECL_CHAIN (union_field_list))
     {
       DECL_CONTEXT (union_field_list) = record_type;
       DECL_FIELD_OFFSET (union_field_list)
@@ -8566,7 +8566,7 @@ substitute_in_type (tree t, tree f, tree r)
 	nt = copy_type (t);
 	TYPE_FIELDS (nt) = NULL_TREE;
 
-	for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
+	for (field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
 	  {
 	    tree new_field = copy_node (field), new_n;
 
@@ -8598,7 +8598,7 @@ substitute_in_type (tree t, tree f, tree r)
 	    DECL_CONTEXT (new_field) = nt;
 	    SET_DECL_ORIGINAL_FIELD_TO_FIELD (new_field, field);
 
-	    TREE_CHAIN (new_field) = TYPE_FIELDS (nt);
+	    DECL_CHAIN (new_field) = TYPE_FIELDS (nt);
 	    TYPE_FIELDS (nt) = new_field;
 	  }
 
@@ -8632,7 +8632,7 @@ rm_size (tree gnu_type)
       && TYPE_CONTAINS_TEMPLATE_P (gnu_type))
     return
       size_binop (PLUS_EXPR,
-		  rm_size (TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (gnu_type)))),
+		  rm_size (TREE_TYPE (DECL_CHAIN (TYPE_FIELDS (gnu_type)))),
 		  DECL_SIZE (TYPE_FIELDS (gnu_type)));
 
   /* For record types, we store the size explicitly.  */

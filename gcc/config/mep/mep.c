@@ -3611,9 +3611,9 @@ mep_build_builtin_va_list (void)
   DECL_FIELD_CONTEXT (f_next_stack) = record;
 
   TYPE_FIELDS (record) = f_next_gp;
-  TREE_CHAIN (f_next_gp) = f_next_gp_limit;
-  TREE_CHAIN (f_next_gp_limit) = f_next_cop;
-  TREE_CHAIN (f_next_cop) = f_next_stack;
+  DECL_CHAIN (f_next_gp) = f_next_gp_limit;
+  DECL_CHAIN (f_next_gp_limit) = f_next_cop;
+  DECL_CHAIN (f_next_cop) = f_next_stack;
 
   layout_type (record);
 
@@ -3631,9 +3631,9 @@ mep_expand_va_start (tree valist, rtx nextarg)
   ns = cfun->machine->arg_regs_to_save;
 
   f_next_gp = TYPE_FIELDS (va_list_type_node);
-  f_next_gp_limit = TREE_CHAIN (f_next_gp);
-  f_next_cop = TREE_CHAIN (f_next_gp_limit);
-  f_next_stack = TREE_CHAIN (f_next_cop);
+  f_next_gp_limit = DECL_CHAIN (f_next_gp);
+  f_next_cop = DECL_CHAIN (f_next_gp_limit);
+  f_next_stack = DECL_CHAIN (f_next_cop);
 
   next_gp = build3 (COMPONENT_REF, TREE_TYPE (f_next_gp), valist, f_next_gp,
 		    NULL_TREE);
@@ -3697,9 +3697,9 @@ mep_gimplify_va_arg_expr (tree valist, tree type,
   rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
 
   f_next_gp = TYPE_FIELDS (va_list_type_node);
-  f_next_gp_limit = TREE_CHAIN (f_next_gp);
-  f_next_cop = TREE_CHAIN (f_next_gp_limit);
-  f_next_stack = TREE_CHAIN (f_next_cop);
+  f_next_gp_limit = DECL_CHAIN (f_next_gp);
+  f_next_cop = DECL_CHAIN (f_next_gp_limit);
+  f_next_stack = DECL_CHAIN (f_next_cop);
 
   next_gp = build3 (COMPONENT_REF, TREE_TYPE (f_next_gp), valist, f_next_gp,
 		    NULL_TREE);

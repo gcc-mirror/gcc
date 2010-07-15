@@ -1,3 +1,10 @@
+2010-07-15  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc-interface/decl.c: Carefully replace TREE_CHAIN with DECL_CHAIN.
+	* gcc-interface/trans.c: Likewise.
+	* gcc-interface/utils.c: Likewise.
+	* gcc-interface/utils2.c: Likewise.
+
 2010-07-13  Laurent GUERBY  <laurent@guerby.net>
 
         PR bootstrap/44458

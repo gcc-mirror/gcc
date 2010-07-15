@@ -436,7 +436,7 @@ remove_unused_scope_block_p (tree scope)
 
   for (t = &BLOCK_VARS (scope); *t; t = next)
     {
-      next = &TREE_CHAIN (*t);
+      next = &DECL_CHAIN (*t);
 
       /* Debug info of nested function refers to the block of the
 	 function.  We might stil call it even if all statements
@@ -460,7 +460,7 @@ remove_unused_scope_block_p (tree scope)
       /* Remove everything we don't generate debug info for.  */
       else if (DECL_IGNORED_P (*t))
 	{
-	  *t = TREE_CHAIN (*t);
+	  *t = DECL_CHAIN (*t);
 	  next = t;
 	}
 
@@ -503,7 +503,7 @@ remove_unused_scope_block_p (tree scope)
 	;
       else
 	{
-	  *t = TREE_CHAIN (*t);
+	  *t = DECL_CHAIN (*t);
 	  next = t;
 	}
     }
@@ -626,7 +626,7 @@ dump_scope_block (FILE *file, int indent, tree scope, int flags)
 	}
     }
   fprintf (file, " \n");
-  for (var = BLOCK_VARS (scope); var; var = TREE_CHAIN (var))
+  for (var = BLOCK_VARS (scope); var; var = DECL_CHAIN (var))
     {
       bool used = false;
       var_ann_t ann;

@@ -1076,7 +1076,7 @@ pop_scope (void)
     {
       tree file_decl = build_decl (UNKNOWN_LOCATION,
 	  			   TRANSLATION_UNIT_DECL, 0, 0);
-      TREE_CHAIN (file_decl) = all_translation_units;
+      DECL_CHAIN (file_decl) = all_translation_units;
       all_translation_units = file_decl;
       context = file_decl;
     }
@@ -1100,7 +1100,7 @@ pop_scope (void)
 	    warn_for_unused_label (p);
 
 	  /* Labels go in BLOCK_VARS.  */
-	  TREE_CHAIN (p) = BLOCK_VARS (block);
+	  DECL_CHAIN (p) = BLOCK_VARS (block);
 	  BLOCK_VARS (block) = p;
 	  gcc_assert (I_LABEL_BINDING (b->id) == b);
 	  I_LABEL_BINDING (b->id) = b->shadowed;
@@ -1188,7 +1188,7 @@ pop_scope (void)
 	     binding in the home scope.  */
 	  if (!b->nested)
 	    {
-	      TREE_CHAIN (p) = BLOCK_VARS (block);
+	      DECL_CHAIN (p) = BLOCK_VARS (block);
 	      BLOCK_VARS (block) = p;
 	    }
 	  else if (VAR_OR_FUNCTION_DECL_P (p))
@@ -1211,7 +1211,7 @@ pop_scope (void)
 		}
 	      if (b->locus != UNKNOWN_LOCATION)
 		DECL_SOURCE_LOCATION (extp) = b->locus;
-	      TREE_CHAIN (extp) = BLOCK_VARS (block);
+	      DECL_CHAIN (extp) = BLOCK_VARS (block);
 	      BLOCK_VARS (block) = extp;
 	    }
 	  /* If this is the file scope, and we are processing more
@@ -1293,7 +1293,7 @@ push_file_scope (void)
 
   start_fname_decls ();
 
-  for (decl = visible_builtins; decl; decl = TREE_CHAIN (decl))
+  for (decl = visible_builtins; decl; decl = DECL_CHAIN (decl))
     bind (DECL_NAME (decl), decl, file_scope,
 	  /*invisible=*/false, /*nested=*/true, DECL_SOURCE_LOCATION (decl));
 }
@@ -2400,7 +2400,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	  DECL_STRUCT_FUNCTION (newdecl) = DECL_STRUCT_FUNCTION (olddecl);
 	  DECL_SAVED_TREE (newdecl) = DECL_SAVED_TREE (olddecl);
 	  DECL_ARGUMENTS (newdecl) = copy_list (DECL_ARGUMENTS (olddecl));
-	  for (t = DECL_ARGUMENTS (newdecl); t ; t = TREE_CHAIN (t))
+	  for (t = DECL_ARGUMENTS (newdecl); t ; t = DECL_CHAIN (t))
 	    DECL_CONTEXT (t) = newdecl;
 
 	  /* See if we've got a function to instantiate from.  */
@@ -3567,7 +3567,7 @@ c_builtin_function (tree decl)
      needing to be explicitly declared.  See push_file_scope.  */
   if (name[0] == '_' && (name[1] == '_' || ISUPPER (name[1])))
     {
-      TREE_CHAIN (decl) = visible_builtins;
+      DECL_CHAIN (decl) = visible_builtins;
       visible_builtins = decl;
     }
 
@@ -3593,7 +3593,7 @@ c_builtin_function_ext_scope (tree decl)
      needing to be explicitly declared.  See push_file_scope.  */
   if (name[0] == '_' && (name[1] == '_' || ISUPPER (name[1])))
     {
-      TREE_CHAIN (decl) = visible_builtins;
+      DECL_CHAIN (decl) = visible_builtins;
       visible_builtins = decl;
     }
 
@@ -4061,7 +4061,7 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
       if (ce->kind == cdk_function)
 	{
 	  tree args = ce->u.arg_info->parms;
-	  for (; args; args = TREE_CHAIN (args))
+	  for (; args; args = DECL_CHAIN (args))
 	    {
 	      tree type = TREE_TYPE (args);
 	      if (type && INTEGRAL_TYPE_P (type)
@@ -4574,8 +4574,8 @@ flexible_array_type_p (tree type)
       x = TYPE_FIELDS (type);
       if (x == NULL_TREE)
 	return false;
-      while (TREE_CHAIN (x) != NULL_TREE)
-	x = TREE_CHAIN (x);
+      while (DECL_CHAIN (x) != NULL_TREE)
+	x = DECL_CHAIN (x);
       if (TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE
 	  && TYPE_SIZE (TREE_TYPE (x)) == NULL_TREE
 	  && TYPE_DOMAIN (TREE_TYPE (x)) != NULL_TREE
@@ -4583,7 +4583,7 @@ flexible_array_type_p (tree type)
 	return true;
       return false;
     case UNION_TYPE:
-      for (x = TYPE_FIELDS (type); x != NULL_TREE; x = TREE_CHAIN (x))
+      for (x = TYPE_FIELDS (type); x != NULL_TREE; x = DECL_CHAIN (x))
 	{
 	  if (flexible_array_type_p (TREE_TYPE (x)))
 	    return true;
@@ -6125,7 +6125,7 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
 
       for (parm = arg_info->parms, typelt = arg_types, parmno = 1;
 	   parm;
-	   parm = TREE_CHAIN (parm), typelt = TREE_CHAIN (typelt), parmno++)
+	   parm = DECL_CHAIN (parm), typelt = TREE_CHAIN (typelt), parmno++)
 	{
 	  type = TREE_VALUE (typelt);
 	  if (type == error_mark_node)
@@ -6272,7 +6272,7 @@ get_parm_info (bool ellipsis)
 	  else
 	    {
 	      /* Valid parameter, add it to the list.  */
-	      TREE_CHAIN (decl) = parms;
+	      DECL_CHAIN (decl) = parms;
 	      parms = decl;
 
 	      /* Since there is a prototype, args are passed in their
@@ -6336,7 +6336,7 @@ get_parm_info (bool ellipsis)
 	  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
 		      ? b->nested
 		      : !b->nested);
-	  TREE_CHAIN (decl) = others;
+	  DECL_CHAIN (decl) = others;
 	  others = decl;
 	  /* fall through */
 
@@ -6659,7 +6659,7 @@ detect_field_duplicates_hash (tree fieldlist, htab_t htab)
   tree x, y;
   void **slot;
 
-  for (x = fieldlist; x ; x = TREE_CHAIN (x))
+  for (x = fieldlist; x ; x = DECL_CHAIN (x))
     if ((y = DECL_NAME (x)) != 0)
       {
 	slot = htab_find_slot (htab, y, INSERT);
@@ -6688,7 +6688,7 @@ detect_field_duplicates (tree fieldlist)
      This is trivially true if there are zero or one fields.  */
   if (!fieldlist)
     return;
-  x = TREE_CHAIN (fieldlist);
+  x = DECL_CHAIN (fieldlist);
   if (!x)
     return;
   do {
@@ -6697,7 +6697,7 @@ detect_field_duplicates (tree fieldlist)
 	&& (TREE_CODE (TREE_TYPE (x)) == RECORD_TYPE
 	    || TREE_CODE (TREE_TYPE (x)) == UNION_TYPE))
       timeout = 0;
-    x = TREE_CHAIN (x);
+    x = DECL_CHAIN (x);
   } while (timeout > 0 && x);
 
   /* If there were "few" fields and no anonymous structures or unions,
@@ -6705,7 +6705,8 @@ detect_field_duplicates (tree fieldlist)
      the nested traversal thing.  */
   if (timeout > 0)
     {
-      for (x = TREE_CHAIN (fieldlist); x ; x = TREE_CHAIN (x))
+      for (x = TREE_CHAIN (fieldlist); x ;
+	   x = TREE_CHAIN (x))
 	if (DECL_NAME (x))
 	  {
 	    for (y = fieldlist; y != x; y = TREE_CHAIN (y))
@@ -6760,7 +6761,7 @@ warn_cxx_compat_finish_struct (tree fieldlist)
 	   ++ix)
 	pointer_set_insert (tset, DECL_NAME (x));
 
-      for (x = fieldlist; x != NULL_TREE; x = TREE_CHAIN (x))
+      for (x = fieldlist; x != NULL_TREE; x = DECL_CHAIN (x))
 	{
 	  if (pointer_set_contains (tset, DECL_NAME (x)))
 	    {
@@ -6809,7 +6810,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 
   if (pedantic)
     {
-      for (x = fieldlist; x; x = TREE_CHAIN (x))
+      for (x = fieldlist; x; x = DECL_CHAIN (x))
 	{
 	  if (DECL_NAME (x) != 0)
 	    break;
@@ -6846,7 +6847,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
      until now.)  */
 
   saw_named_field = 0;
-  for (x = fieldlist; x; x = TREE_CHAIN (x))
+  for (x = fieldlist; x; x = DECL_CHAIN (x))
     {
       if (TREE_TYPE (x) == error_mark_node)
 	continue;
@@ -6901,7 +6902,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 			"flexible array member in union");
 	      TREE_TYPE (x) = error_mark_node;
 	    }
-	  else if (TREE_CHAIN (x) != NULL_TREE)
+	  else if (DECL_CHAIN (x) != NULL_TREE)
 	    {
 	      error_at (DECL_SOURCE_LOCATION (x),
 			"flexible array member not at end of struct");
@@ -6954,7 +6955,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	  DECL_INITIAL (*fieldlistp) = 0;
 	}
       else
-	fieldlistp = &TREE_CHAIN (*fieldlistp);
+	fieldlistp = &DECL_CHAIN (*fieldlistp);
   }
 
   /* Now we have the truly final field list.
@@ -6968,7 +6969,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
   {
     int len = 0;
 
-    for (x = fieldlist; x; x = TREE_CHAIN (x))
+    for (x = fieldlist; x; x = DECL_CHAIN (x))
       {
 	if (len > 15 || DECL_NAME (x) == NULL)
 	  break;
@@ -6994,7 +6995,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	len = 0;
 	space->s = space2;
 	field_array = &space2->elts[0];
-	for (x = fieldlist; x; x = TREE_CHAIN (x))
+	for (x = fieldlist; x; x = DECL_CHAIN (x))
 	  {
 	    field_array[len++] = x;
 
@@ -7666,7 +7667,7 @@ store_parm_decls_newstyle (tree fndecl, const struct c_arg_info *arg_info)
 
   /* Now make all the parameter declarations visible in the function body.
      We can bypass most of the grunt work of pushdecl.  */
-  for (decl = arg_info->parms; decl; decl = TREE_CHAIN (decl))
+  for (decl = arg_info->parms; decl; decl = DECL_CHAIN (decl))
     {
       DECL_CONTEXT (decl) = current_function_decl;
       if (DECL_NAME (decl))
@@ -7685,7 +7686,7 @@ store_parm_decls_newstyle (tree fndecl, const struct c_arg_info *arg_info)
   DECL_ARGUMENTS (fndecl) = arg_info->parms;
 
   /* Now make all the ancillary declarations visible, likewise.  */
-  for (decl = arg_info->others; decl; decl = TREE_CHAIN (decl))
+  for (decl = arg_info->others; decl; decl = DECL_CHAIN (decl))
     {
       DECL_CONTEXT (decl) = current_function_decl;
       if (DECL_NAME (decl))
@@ -7837,10 +7838,10 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
       for (parm = TREE_CHAIN (parm); parm; parm = TREE_CHAIN (parm))
 	if (TREE_PURPOSE (parm))
 	  {
-	    TREE_CHAIN (last) = TREE_PURPOSE (parm);
+	    DECL_CHAIN (last) = TREE_PURPOSE (parm);
 	    last = TREE_PURPOSE (parm);
 	  }
-      TREE_CHAIN (last) = 0;
+      DECL_CHAIN (last) = 0;
     }
 
   pointer_set_destroy (seen_args);
@@ -7856,7 +7857,7 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
 	     type = current_function_prototype_arg_types;
 	   parm || (type && TREE_VALUE (type) != error_mark_node
                    && (TYPE_MAIN_VARIANT (TREE_VALUE (type)) != void_type_node));
-	   parm = TREE_CHAIN (parm), type = TREE_CHAIN (type))
+	   parm = DECL_CHAIN (parm), type = TREE_CHAIN (type))
 	{
 	  if (parm == 0 || type == 0
 	      || TYPE_MAIN_VARIANT (TREE_VALUE (type)) == void_type_node)
@@ -7947,7 +7948,7 @@ store_parm_decls_oldstyle (tree fndecl, const struct c_arg_info *arg_info)
     {
       tree actual = 0, last = 0, type;
 
-      for (parm = DECL_ARGUMENTS (fndecl); parm; parm = TREE_CHAIN (parm))
+      for (parm = DECL_ARGUMENTS (fndecl); parm; parm = DECL_CHAIN (parm))
 	{
 	  type = tree_cons (NULL_TREE, DECL_ARG_TYPE (parm), NULL_TREE);
 	  if (last)
@@ -8068,7 +8069,7 @@ finish_function (void)
       && targetm.calls.promote_prototypes (TREE_TYPE (fndecl)))
     {
       tree args = DECL_ARGUMENTS (fndecl);
-      for (; args; args = TREE_CHAIN (args))
+      for (; args; args = DECL_CHAIN (args))
 	{
 	  tree type = TREE_TYPE (args);
 	  if (INTEGRAL_TYPE_P (type)
@@ -8131,7 +8132,7 @@ finish_function (void)
 
       for (decl = DECL_ARGUMENTS (fndecl);
 	   decl;
-	   decl = TREE_CHAIN (decl))
+	   decl = DECL_CHAIN (decl))
 	if (TREE_USED (decl)
 	    && TREE_CODE (decl) == PARM_DECL
 	    && !DECL_READ_P (decl)
@@ -9567,7 +9568,7 @@ c_write_global_declarations_1 (tree globals)
   bool reconsider;
 
   /* Process the decls in the order they were written.  */
-  for (decl = globals; decl; decl = TREE_CHAIN (decl))
+  for (decl = globals; decl; decl = DECL_CHAIN (decl))
     {
       /* Check for used but undefined static functions using the C
 	 standard's definition of "used", and set TREE_NO_WARNING so
@@ -9588,12 +9589,12 @@ c_write_global_declarations_1 (tree globals)
   do
     {
       reconsider = false;
-      for (decl = globals; decl; decl = TREE_CHAIN (decl))
+      for (decl = globals; decl; decl = DECL_CHAIN (decl))
 	reconsider |= wrapup_global_declaration_2 (decl);
     }
   while (reconsider);
 
-  for (decl = globals; decl; decl = TREE_CHAIN (decl))
+  for (decl = globals; decl; decl = DECL_CHAIN (decl))
     check_global_declaration_1 (decl);
 }
 
@@ -9605,7 +9606,7 @@ c_write_global_declarations_2 (tree globals)
 {
   tree decl;
 
-  for (decl = globals; decl ; decl = TREE_CHAIN (decl))
+  for (decl = globals; decl ; decl = DECL_CHAIN (decl))
     debug_hooks->global_decl (decl);
 }
 
@@ -9689,7 +9690,7 @@ c_write_global_declarations (void)
 
   /* Process all file scopes in this compilation, and the external_scope,
      through wrapup_global_declarations and check_global_declarations.  */
-  for (t = all_translation_units; t; t = TREE_CHAIN (t))
+  for (t = all_translation_units; t; t = DECL_CHAIN (t))
     c_write_global_declarations_1 (BLOCK_VARS (DECL_INITIAL (t)));
   c_write_global_declarations_1 (BLOCK_VARS (ext_block));
 
@@ -9702,7 +9703,7 @@ c_write_global_declarations (void)
   if (!seen_error ())
     {
       timevar_push (TV_SYMOUT);
-      for (t = all_translation_units; t; t = TREE_CHAIN (t))
+      for (t = all_translation_units; t; t = DECL_CHAIN (t))
 	c_write_global_declarations_2 (BLOCK_VARS (DECL_INITIAL (t)));
       c_write_global_declarations_2 (BLOCK_VARS (ext_block));
       timevar_pop (TV_SYMOUT);

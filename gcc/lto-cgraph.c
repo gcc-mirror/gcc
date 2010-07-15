@@ -1487,7 +1487,7 @@ output_node_opt_summary (struct output_block *ob,
       tree parm;
 
       for (parm_num = 0, parm = DECL_ARGUMENTS (node->decl); parm;
-	   parm = TREE_CHAIN (parm), parm_num++)
+	   parm = DECL_CHAIN (parm), parm_num++)
 	if (map->old_tree == parm)
 	  break;
       /* At the moment we assume all old trees to be PARM_DECLs, because we have no
@@ -1571,7 +1571,7 @@ input_node_opt_summary (struct cgraph_node *node,
 
       VEC_safe_push (ipa_replace_map_p, gc, node->clone.tree_map, map);
       for (parm_num = 0, parm = DECL_ARGUMENTS (node->decl); parm_num;
-	   parm = TREE_CHAIN (parm))
+	   parm = DECL_CHAIN (parm))
 	parm_num --;
       map->parm_num = lto_input_uleb128 (ib_main);
       map->old_tree = NULL;

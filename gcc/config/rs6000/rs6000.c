@@ -5093,7 +5093,7 @@ rs6000_special_round_type_align (tree type, unsigned int computed,
 
   /* Skip all non field decls */
   while (field != NULL && TREE_CODE (field) != FIELD_DECL)
-    field = TREE_CHAIN (field);
+    field = DECL_CHAIN (field);
 
   if (field != NULL && field != type)
     {
@@ -5125,7 +5125,7 @@ darwin_rs6000_special_round_type_align (tree type, unsigned int computed,
     tree field = TYPE_FIELDS (type);
     /* Skip all non field decls */
     while (field != NULL && TREE_CODE (field) != FIELD_DECL)
-      field = TREE_CHAIN (field);
+      field = DECL_CHAIN (field);
     if (! field)
       break;
     /* A packed field does not contribute any extra alignment.  */
@@ -7574,7 +7574,7 @@ rs6000_darwin64_record_arg_advance_recurse (CUMULATIVE_ARGS *cum,
 {
   tree f;
 
-  for (f = TYPE_FIELDS (type); f ; f = TREE_CHAIN (f))
+  for (f = TYPE_FIELDS (type); f ; f = DECL_CHAIN (f))
     if (TREE_CODE (f) == FIELD_DECL)
       {
 	HOST_WIDE_INT bitpos = startbitpos;
@@ -7974,7 +7974,7 @@ rs6000_darwin64_record_arg_recurse (CUMULATIVE_ARGS *cum, const_tree type,
 {
   tree f;
 
-  for (f = TYPE_FIELDS (type); f ; f = TREE_CHAIN (f))
+  for (f = TYPE_FIELDS (type); f ; f = DECL_CHAIN (f))
     if (TREE_CODE (f) == FIELD_DECL)
       {
 	HOST_WIDE_INT bitpos = startbitpos;
@@ -8801,10 +8801,10 @@ rs6000_build_builtin_va_list (void)
   TREE_CHAIN (record) = type_decl;
   TYPE_NAME (record) = type_decl;
   TYPE_FIELDS (record) = f_gpr;
-  TREE_CHAIN (f_gpr) = f_fpr;
-  TREE_CHAIN (f_fpr) = f_res;
-  TREE_CHAIN (f_res) = f_ovf;
-  TREE_CHAIN (f_ovf) = f_sav;
+  DECL_CHAIN (f_gpr) = f_fpr;
+  DECL_CHAIN (f_fpr) = f_res;
+  DECL_CHAIN (f_res) = f_ovf;
+  DECL_CHAIN (f_ovf) = f_sav;
 
   layout_type (record);
 
@@ -8829,10 +8829,10 @@ rs6000_va_start (tree valist, rtx nextarg)
     }
 
   f_gpr = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
-  f_fpr = TREE_CHAIN (f_gpr);
-  f_res = TREE_CHAIN (f_fpr);
-  f_ovf = TREE_CHAIN (f_res);
-  f_sav = TREE_CHAIN (f_ovf);
+  f_fpr = DECL_CHAIN (f_gpr);
+  f_res = DECL_CHAIN (f_fpr);
+  f_ovf = DECL_CHAIN (f_res);
+  f_sav = DECL_CHAIN (f_ovf);
 
   valist = build_va_arg_indirect_ref (valist);
   gpr = build3 (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
@@ -8950,10 +8950,10 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
     }
 
   f_gpr = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
-  f_fpr = TREE_CHAIN (f_gpr);
-  f_res = TREE_CHAIN (f_fpr);
-  f_ovf = TREE_CHAIN (f_res);
-  f_sav = TREE_CHAIN (f_ovf);
+  f_fpr = DECL_CHAIN (f_gpr);
+  f_res = DECL_CHAIN (f_fpr);
+  f_ovf = DECL_CHAIN (f_res);
+  f_sav = DECL_CHAIN (f_ovf);
 
   valist = build_va_arg_indirect_ref (valist);
   gpr = build3 (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
@@ -14292,7 +14292,7 @@ rs6000_alloc_sdmode_stack_slot (void)
       }
 
   /* Check for any SDmode parameters of the function.  */
-  for (t = DECL_ARGUMENTS (cfun->decl); t; t = TREE_CHAIN (t))
+  for (t = DECL_ARGUMENTS (cfun->decl); t; t = DECL_CHAIN (t))
     {
       if (TREE_TYPE (t) == error_mark_node)
 	continue;
@@ -21002,7 +21002,7 @@ rs6000_output_function_epilogue (FILE *file,
 	  int next_parm_info_bit = 31;
 
 	  for (decl = DECL_ARGUMENTS (current_function_decl);
-	       decl; decl = TREE_CHAIN (decl))
+	       decl; decl = DECL_CHAIN (decl))
 	    {
 	      rtx parameter = DECL_INCOMING_RTL (decl);
 	      enum machine_mode mode = GET_MODE (parameter);

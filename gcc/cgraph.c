@@ -2302,7 +2302,7 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
       struct cgraph_node *orig_node;
       for (orig_node = old_node; orig_node->clone_of; orig_node = orig_node->clone_of)
         ;
-      for (arg = DECL_ARGUMENTS (orig_node->decl); arg; arg = TREE_CHAIN (arg), oldi++)
+      for (arg = DECL_ARGUMENTS (orig_node->decl); arg; arg = DECL_CHAIN (arg), oldi++)
 	{
 	  if (bitmap_bit_p (old_node->clone.combined_args_to_skip, oldi))
 	    {

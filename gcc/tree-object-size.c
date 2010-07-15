@@ -290,8 +290,8 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 			&& TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))
 			   == RECORD_TYPE)
 		      {
-			tree fld_chain = TREE_CHAIN (TREE_OPERAND (v, 1));
-			for (; fld_chain; fld_chain = TREE_CHAIN (fld_chain))
+			tree fld_chain = DECL_CHAIN (TREE_OPERAND (v, 1));
+			for (; fld_chain; fld_chain = DECL_CHAIN (fld_chain))
 			  if (TREE_CODE (fld_chain) == FIELD_DECL)
 			    break;
 

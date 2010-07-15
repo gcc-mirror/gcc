@@ -365,7 +365,7 @@ vfy_class_has_field (vfy_jclass klass, vfy_string name,
       if (DECL_NAME (field) == name
 	  && build_java_signature (TREE_TYPE (field)) == signature)
 	return true;
-      field = TREE_CHAIN (field);
+      field = DECL_CHAIN (field);
     }
   return false;
 }

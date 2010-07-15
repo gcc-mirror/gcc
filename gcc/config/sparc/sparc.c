@@ -4873,7 +4873,7 @@ scan_record_type (tree type, int *intregs_p, int *fpregs_p, int *packed_p)
 {
   tree field;
 
-  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     {
       if (TREE_CODE (field) == FIELD_DECL)
 	{
@@ -5093,7 +5093,7 @@ function_arg_record_value_1 (const_tree type, HOST_WIDE_INT startbitpos,
       }
 
   /* Compute how many registers we need.  */
-  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     {
       if (TREE_CODE (field) == FIELD_DECL)
 	{
@@ -5232,7 +5232,7 @@ function_arg_record_value_2 (const_tree type, HOST_WIDE_INT startbitpos,
   tree field;
 
   if (! packed_p)
-    for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+    for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
       {
 	if (TREE_CODE (field) == FIELD_DECL && DECL_PACKED (field))
 	  {
@@ -5241,7 +5241,7 @@ function_arg_record_value_2 (const_tree type, HOST_WIDE_INT startbitpos,
 	  }
       }
 
-  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     {
       if (TREE_CODE (field) == FIELD_DECL)
 	{

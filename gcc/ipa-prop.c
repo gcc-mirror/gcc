@@ -154,7 +154,7 @@ ipa_populate_param_decls (struct cgraph_node *node,
   fndecl = node->decl;
   fnargs = DECL_ARGUMENTS (fndecl);
   param_num = 0;
-  for (parm = fnargs; parm; parm = TREE_CHAIN (parm))
+  for (parm = fnargs; parm; parm = DECL_CHAIN (parm))
     {
       info->params[param_num].decl = parm;
       param_num++;
@@ -169,7 +169,7 @@ count_formal_params_1 (tree fndecl)
   tree parm;
   int count = 0;
 
-  for (parm = DECL_ARGUMENTS (fndecl); parm; parm = TREE_CHAIN (parm))
+  for (parm = DECL_ARGUMENTS (fndecl); parm; parm = DECL_CHAIN (parm))
     count++;
 
   return count;
@@ -616,13 +616,13 @@ type_like_member_ptr_p (tree type, tree *method_ptr, tree *delta)
   if (method_ptr)
     *method_ptr = fld;
 
-  fld = TREE_CHAIN (fld);
+  fld = DECL_CHAIN (fld);
   if (!fld || INTEGRAL_TYPE_P (fld))
     return false;
   if (delta)
     *delta = fld;
 
-  if (TREE_CHAIN (fld))
+  if (DECL_CHAIN (fld))
     return false;
 
   return true;
@@ -1932,7 +1932,7 @@ ipa_get_vector_of_formal_parms (tree fndecl)
 
   count = count_formal_params_1 (fndecl);
   args = VEC_alloc (tree, heap, count);
-  for (parm = DECL_ARGUMENTS (fndecl); parm; parm = TREE_CHAIN (parm))
+  for (parm = DECL_ARGUMENTS (fndecl); parm; parm = DECL_CHAIN (parm))
     VEC_quick_push (tree, args, parm);
 
   return args;
@@ -2017,7 +2017,7 @@ ipa_modify_formal_parameters (tree fndecl, ipa_parm_adjustment_vec adjustments,
 							     adj->base_index),
 				       new_arg_types);
 	  *link = parm;
-	  link = &TREE_CHAIN (parm);
+	  link = &DECL_CHAIN (parm);
 	}
       else if (!adj->remove_param)
 	{
@@ -2050,7 +2050,7 @@ ipa_modify_formal_parameters (tree fndecl, ipa_parm_adjustment_vec adjustments,
 
 	  *link = new_parm;
 
-	  link = &TREE_CHAIN (new_parm);
+	  link = &DECL_CHAIN (new_parm);
 	}
     }
 

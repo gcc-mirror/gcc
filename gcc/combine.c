@@ -1341,7 +1341,7 @@ setup_incoming_promotions (rtx first)
   bool strictly_local = false;
 
   for (arg = DECL_ARGUMENTS (current_function_decl); arg;
-       arg = TREE_CHAIN (arg))
+       arg = DECL_CHAIN (arg))
     {
       rtx x, reg = DECL_INCOMING_RTL (arg);
       int uns1, uns3;

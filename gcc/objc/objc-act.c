@@ -455,7 +455,7 @@ add_field_decl (tree type, const char *name, tree **chain)
 
   if (*chain != NULL)
     **chain = field;
-  *chain = &TREE_CHAIN (field);
+  *chain = &DECL_CHAIN (field);
 
   return field;
 }
@@ -851,9 +851,9 @@ objc_build_struct (tree klass, tree fields, tree super_name)
 			      FIELD_DECL, NULL_TREE, super);
       tree field = TYPE_FIELDS (super);
 
-      while (field && TREE_CHAIN (field)
-	     && TREE_CODE (TREE_CHAIN (field)) == FIELD_DECL)
-	field = TREE_CHAIN (field);
+      while (field && DECL_CHAIN (field)
+	     && TREE_CODE (DECL_CHAIN (field)) == FIELD_DECL)
+	field = DECL_CHAIN (field);
 
       /* For ObjC ABI purposes, the "packed" size of a base class is
 	 the sum of the offset and the size (in bits) of the last field
@@ -882,7 +882,7 @@ objc_build_struct (tree klass, tree fields, tree super_name)
       if (fields)
 	TREE_NO_WARNING (fields) = 1;	/* Suppress C++ ABI warnings -- we   */
 #endif					/* are following the ObjC ABI here.  */
-      TREE_CHAIN (base) = fields;
+      DECL_CHAIN (base) = fields;
       fields = base;
     }
 
@@ -1848,11 +1848,11 @@ check_string_class_template (void)
   if (!AT_LEAST_AS_LARGE_AS (field_decl, ptr_type_node))
     return 0;
 
-  field_decl = TREE_CHAIN (field_decl);
+  field_decl = DECL_CHAIN (field_decl);
   if (!AT_LEAST_AS_LARGE_AS (field_decl, ptr_type_node))
     return 0;
 
-  field_decl = TREE_CHAIN (field_decl);
+  field_decl = DECL_CHAIN (field_decl);
   return AT_LEAST_AS_LARGE_AS (field_decl, unsigned_type_node);
 
 #undef AT_LEAST_AS_LARGE_AS
@@ -1873,10 +1873,10 @@ objc_build_internal_const_str_type (void)
   tree field = build_decl (input_location,
 			   FIELD_DECL, NULL_TREE, ptr_type_node);
 
-  TREE_CHAIN (field) = fields; fields = field;
+  DECL_CHAIN (field) = fields; fields = field;
   field = build_decl (input_location,
 		      FIELD_DECL, NULL_TREE, unsigned_type_node);
-  TREE_CHAIN (field) = fields; fields = field;
+  DECL_CHAIN (field) = fields; fields = field;
   /* NB: The finish_builtin_struct() routine expects FIELD_DECLs in
      reverse order!  */
   finish_builtin_struct (type, "__builtin_ObjCString",
@@ -2003,11 +2003,11 @@ objc_build_string_object (tree string)
 			      ? build_unary_op (input_location,
 						ADDR_EXPR, string_class_decl, 0)
 			      : build_int_cst (NULL_TREE, 0));
-      fields = TREE_CHAIN (fields);
+      fields = DECL_CHAIN (fields);
       CONSTRUCTOR_APPEND_ELT (v, fields,
 			      build_unary_op (input_location,
 					      ADDR_EXPR, string, 1));
-      fields = TREE_CHAIN (fields);
+      fields = DECL_CHAIN (fields);
       CONSTRUCTOR_APPEND_ELT (v, fields, build_int_cst (NULL_TREE, length));
       constructor = objc_build_constructor (internal_const_str_type, v);
 
@@ -2231,7 +2231,7 @@ init_objc_symtab (tree type)
     {
 
       tree field = TYPE_FIELDS (type);
-      field = TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (field))));
+      field = DECL_CHAIN (DECL_CHAIN (DECL_CHAIN (DECL_CHAIN (field))));
 
       CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, init_def_list (TREE_TYPE (field)));
     }
@@ -4253,7 +4253,7 @@ build_descriptor_table_initializer (tree type, tree entries)
       CONSTRUCTOR_APPEND_ELT (inits, NULL_TREE,
 			      objc_build_constructor (type, elts));
 
-      entries = TREE_CHAIN (entries);
+      entries = DECL_CHAIN (entries);
     }
   while (entries);
 
@@ -4356,7 +4356,7 @@ encode_method_prototype (tree method_decl)
   i = int_size_in_bytes (ptr_type_node);
   parm_offset = 2 * i;
   for (parms = METHOD_SEL_ARGS (method_decl); parms;
-       parms = TREE_CHAIN (parms))
+       parms = DECL_CHAIN (parms))
     {
       tree type = objc_method_parm_type (parms);
       int sz = objc_encoded_type_size (type);
@@ -4379,7 +4379,7 @@ encode_method_prototype (tree method_decl)
   /* Argument types.  */
   parm_offset = 2 * i;
   for (parms = METHOD_SEL_ARGS (method_decl); parms;
-       parms = TREE_CHAIN (parms))
+       parms = DECL_CHAIN (parms))
     {
       tree type = objc_method_parm_type (parms);
 
@@ -4695,7 +4695,7 @@ generate_protocols (void)
 	      encoding = encode_method_prototype (nst_methods);
 	      METHOD_ENCODING (nst_methods) = encoding;
 	    }
-	  nst_methods = TREE_CHAIN (nst_methods);
+	  nst_methods = DECL_CHAIN (nst_methods);
 	}
 
       while (cls_methods)
@@ -4706,7 +4706,7 @@ generate_protocols (void)
 	      METHOD_ENCODING (cls_methods) = encoding;
 	    }
 
-	  cls_methods = TREE_CHAIN (cls_methods);
+	  cls_methods = DECL_CHAIN (cls_methods);
 	}
       generate_method_descriptors (p);
 
@@ -5016,8 +5016,8 @@ check_ivars (tree inter, tree imp)
 			   intdecls);
 	}
 
-      intdecls = TREE_CHAIN (intdecls);
-      impdecls = TREE_CHAIN (impdecls);
+      intdecls = DECL_CHAIN (intdecls);
+      impdecls = DECL_CHAIN (impdecls);
     }
 }
 
@@ -5165,7 +5165,7 @@ build_ivar_list_initializer (tree type, tree field_decl)
       CONSTRUCTOR_APPEND_ELT (inits, NULL_TREE,
 			      objc_build_constructor (type, ivar));
       do
-	field_decl = TREE_CHAIN (field_decl);
+	field_decl = DECL_CHAIN (field_decl);
       while (field_decl && TREE_CODE (field_decl) != FIELD_DECL);
     }
   while (field_decl);
@@ -5198,7 +5198,7 @@ ivar_list_length (tree t)
 {
   int count = 0;
 
-  for (; t; t = TREE_CHAIN (t))
+  for (; t; t = DECL_CHAIN (t))
     if (TREE_CODE (t) == FIELD_DECL)
       ++count;
 
@@ -5281,7 +5281,7 @@ build_dispatch_table_initializer (tree type, tree entries)
       CONSTRUCTOR_APPEND_ELT (inits, NULL_TREE,
 			      objc_build_constructor (type, elems));
 
-      entries = TREE_CHAIN (entries);
+      entries = DECL_CHAIN (entries);
     }
   while (entries);
 
@@ -5350,14 +5350,14 @@ mark_referenced_methods (void)
       while (chain)
 	{
 	  cgraph_mark_needed_node (cgraph_node (METHOD_DEFINITION (chain)));
-	  chain = TREE_CHAIN (chain);
+	  chain = DECL_CHAIN (chain);
 	}
 
       chain = CLASS_NST_METHODS (impent->imp_context);
       while (chain)
 	{
 	  cgraph_mark_needed_node (cgraph_node (METHOD_DEFINITION (chain)));
-	  chain = TREE_CHAIN (chain);
+	  chain = DECL_CHAIN (chain);
 	}
     }
 }
@@ -5990,7 +5990,7 @@ get_arg_type_list (tree meth, int context, int superflag)
     return arglist;
 
   /* Build a list of argument types.  */
-  for (akey = METHOD_SEL_ARGS (meth); akey; akey = TREE_CHAIN (akey))
+  for (akey = METHOD_SEL_ARGS (meth); akey; akey = DECL_CHAIN (akey))
     {
       tree arg_type = TREE_VALUE (TREE_TYPE (akey));
 
@@ -6822,7 +6822,7 @@ lookup_method (tree mchain, tree method)
       if (METHOD_SEL_NAME (mchain) == key)
 	return mchain;
 
-      mchain = TREE_CHAIN (mchain);
+      mchain = DECL_CHAIN (mchain);
     }
   return NULL_TREE;
 }
@@ -6934,12 +6934,12 @@ objc_add_method (tree klass, tree method, int is_class)
       /* put method on list in reverse order */
       if (is_class)
 	{
-	  TREE_CHAIN (method) = CLASS_CLS_METHODS (klass);
+	  DECL_CHAIN (method) = CLASS_CLS_METHODS (klass);
 	  CLASS_CLS_METHODS (klass) = method;
 	}
       else
 	{
-	  TREE_CHAIN (method) = CLASS_NST_METHODS (klass);
+	  DECL_CHAIN (method) = CLASS_NST_METHODS (klass);
 	  CLASS_NST_METHODS (klass) = method;
 	}
     }
@@ -7151,7 +7151,7 @@ add_instance_variable (tree klass, int visibility, tree field_decl)
 static tree
 is_ivar (tree decl_chain, tree ident)
 {
-  for ( ; decl_chain; decl_chain = TREE_CHAIN (decl_chain))
+  for ( ; decl_chain; decl_chain = DECL_CHAIN (decl_chain))
     if (DECL_NAME (decl_chain) == ident)
       return decl_chain;
   return NULL_TREE;
@@ -7278,7 +7278,7 @@ check_methods (tree chain, tree list, int mtype)
 		   mtype, METHOD_SEL_NAME (chain));
 	}
 
-      chain = TREE_CHAIN (chain);
+      chain = DECL_CHAIN (chain);
     }
 
     return first;
@@ -7952,7 +7952,7 @@ encode_aggregate_fields (tree type, int pointed_to, int curtype, int format)
 {
   tree field = TYPE_FIELDS (type);
 
-  for (; field; field = TREE_CHAIN (field))
+  for (; field; field = DECL_CHAIN (field))
     {
 #ifdef OBJCPLUS
       /* C++ static members, and things that are not field at all,
@@ -8301,9 +8301,9 @@ objc_get_parm_info (int have_ellipsis)
   declare_parm_level ();
   while (parm_info)
     {
-      tree next = TREE_CHAIN (parm_info);
+      tree next = DECL_CHAIN (parm_info);
 
-      TREE_CHAIN (parm_info) = NULL_TREE;
+      DECL_CHAIN (parm_info) = NULL_TREE;
       parm_info = pushdecl (parm_info);
       finish_decl (parm_info, input_location, NULL_TREE, NULL_TREE, NULL_TREE);
       parm_info = next;
@@ -8381,7 +8381,7 @@ start_method_def (tree method)
       parm = build_decl (input_location,
 			 PARM_DECL, KEYWORD_ARG_NAME (parmlist), type);
       objc_push_parm (parm);
-      parmlist = TREE_CHAIN (parmlist);
+      parmlist = DECL_CHAIN (parmlist);
     }
 
   if (METHOD_ADD_ARGS (method))
@@ -8614,8 +8614,8 @@ really_start_method (tree method,
   /* Suppress unused warnings.  */
   TREE_USED (self_decl) = 1;
   DECL_READ_P (self_decl) = 1;
-  TREE_USED (TREE_CHAIN (self_decl)) = 1;
-  DECL_READ_P (TREE_CHAIN (self_decl)) = 1;
+  TREE_USED (DECL_CHAIN (self_decl)) = 1;
+  DECL_READ_P (DECL_CHAIN (self_decl)) = 1;
 #ifdef OBJCPLUS
   pop_lang_context ();
 #endif
@@ -8973,7 +8973,7 @@ gen_method_decl (tree method)
 	  strcat (errbuf, ")");
 
 	  strcat (errbuf, IDENTIFIER_POINTER (KEYWORD_ARG_NAME (chain)));
-	  if ((chain = TREE_CHAIN (chain)))
+	  if ((chain = DECL_CHAIN (chain)))
 	    strcat (errbuf, " ");
         }
       while (chain);

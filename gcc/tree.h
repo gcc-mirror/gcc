@@ -2494,6 +2494,7 @@ enum symbol_visibility
 
 struct function;
 
+#define DECL_CHAIN(NODE) (TREE_CHAIN (DECL_MINIMAL_CHECK (NODE)))
 
 /* This is the name of the object as written by the user.
    It is an IDENTIFIER_NODE.  */

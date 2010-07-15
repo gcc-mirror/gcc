@@ -246,7 +246,7 @@ default_emutls_var_fields (tree type, tree *name ATTRIBUTE_UNUSED)
 		      FIELD_DECL, get_identifier ("__offset"),
 		      ptr_type_node);
   DECL_CONTEXT (field) = type;
-  TREE_CHAIN (field) = next_field;
+  DECL_CHAIN (field) = next_field;
   next_field = field;
 
   word_type_node = lang_hooks.types.type_for_mode (word_mode, 1);
@@ -254,13 +254,13 @@ default_emutls_var_fields (tree type, tree *name ATTRIBUTE_UNUSED)
 		      FIELD_DECL, get_identifier ("__align"),
 		      word_type_node);
   DECL_CONTEXT (field) = type;
-  TREE_CHAIN (field) = next_field;
+  DECL_CHAIN (field) = next_field;
   next_field = field;
 
   field = build_decl (UNKNOWN_LOCATION,
 		      FIELD_DECL, get_identifier ("__size"), word_type_node);
   DECL_CONTEXT (field) = type;
-  TREE_CHAIN (field) = next_field;
+  DECL_CHAIN (field) = next_field;
 
   return field;
 }
@@ -2114,18 +2114,18 @@ default_emutls_var_init (tree to, tree decl, tree proxy)
   elt->value = fold_convert (TREE_TYPE (field), DECL_SIZE_UNIT (decl));
 
   elt = VEC_quick_push (constructor_elt, v, NULL);
-  field = TREE_CHAIN (field);
+  field = DECL_CHAIN (field);
   elt->index = field;
   elt->value = build_int_cst (TREE_TYPE (field),
 			      DECL_ALIGN_UNIT (decl));
 
   elt = VEC_quick_push (constructor_elt, v, NULL);
-  field = TREE_CHAIN (field);
+  field = DECL_CHAIN (field);
   elt->index = field;
   elt->value = null_pointer_node;
 
   elt = VEC_quick_push (constructor_elt, v, NULL);
-  field = TREE_CHAIN (field);
+  field = DECL_CHAIN (field);
   elt->index = field;
   elt->value = proxy;
 
@@ -2323,7 +2323,7 @@ contains_pointers_p (tree type)
       {
 	tree fields;
 	/* For a type that has fields, see if the fields have pointers.  */
-	for (fields = TYPE_FIELDS (type); fields; fields = TREE_CHAIN (fields))
+	for (fields = TYPE_FIELDS (type); fields; fields = DECL_CHAIN (fields))
 	  if (TREE_CODE (fields) == FIELD_DECL
 	      && contains_pointers_p (TREE_TYPE (fields)))
 	    return 1;
@@ -5038,7 +5038,7 @@ output_constructor_regular_field (oc_local_state *local)
 	  fieldsize = array_size_for_constructor (local->val);
 	  /* Given a non-empty initialization, this field had
 	     better be last.  */
-	  gcc_assert (!fieldsize || !TREE_CHAIN (local->field));
+	  gcc_assert (!fieldsize || !DECL_CHAIN (local->field));
 	}
       else if (DECL_SIZE_UNIT (local->field))
 	{
@@ -5303,7 +5303,7 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
 
   for (cnt = 0;
        VEC_iterate (constructor_elt, CONSTRUCTOR_ELTS (exp), cnt, ce);
-       cnt++, local.field = local.field ? TREE_CHAIN (local.field) : 0)
+       cnt++, local.field = local.field ? DECL_CHAIN (local.field) : 0)
     {
       local.val = ce->value;
       local.index = NULL_TREE;

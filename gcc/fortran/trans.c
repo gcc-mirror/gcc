@@ -57,7 +57,7 @@ gfc_advance_chain (tree t, int n)
   for (; n > 0; n--)
     {
       gcc_assert (t != NULL_TREE);
-      t = TREE_CHAIN (t);
+      t = DECL_CHAIN (t);
     }
   return t;
 }
@@ -218,8 +218,8 @@ gfc_merge_block_scope (stmtblock_t * block)
   /* Add them to the parent scope.  */
   while (decl != NULL_TREE)
     {
-      next = TREE_CHAIN (decl);
-      TREE_CHAIN (decl) = NULL_TREE;
+      next = DECL_CHAIN (decl);
+      DECL_CHAIN (decl) = NULL_TREE;
 
       pushdecl (decl);
       decl = next;

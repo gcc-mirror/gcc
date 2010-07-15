@@ -2092,9 +2092,9 @@ struct GTY((variable_size)) lang_decl {
   if (TREE_CODE (FN) == FUNCTION_DECL			\
       && (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (FN)	\
 	  || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (FN)))	\
-     for (CLONE = TREE_CHAIN (FN);			\
+     for (CLONE = DECL_CHAIN (FN);			\
 	  CLONE && DECL_CLONED_FUNCTION_P (CLONE);	\
-	  CLONE = TREE_CHAIN (CLONE))
+	  CLONE = DECL_CHAIN (CLONE))
 
 /* Nonzero if NODE has DECL_DISCRIMINATOR and not DECL_ACCESS.  */
 #define DECL_DISCRIMINATOR_P(NODE)	\

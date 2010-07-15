@@ -344,7 +344,7 @@ aggregate_contains_union_type (tree type)
   if (TREE_CODE (type) != RECORD_TYPE)
     return false;
 
-  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     if (TREE_CODE (field) == FIELD_DECL)
       if (aggregate_contains_union_type (TREE_TYPE (field)))
 	return true;
@@ -1019,7 +1019,7 @@ expand_used_vars_for_block (tree block, bool toplevel)
   old_sv_num = toplevel ? 0 : stack_vars_num;
 
   /* Expand all variables at this level.  */
-  for (t = BLOCK_VARS (block); t ; t = TREE_CHAIN (t))
+  for (t = BLOCK_VARS (block); t ; t = DECL_CHAIN (t))
     if (TREE_USED (t))
       expand_one_var (t, toplevel, true);
 
@@ -1051,7 +1051,7 @@ clear_tree_used (tree block)
 {
   tree t;
 
-  for (t = BLOCK_VARS (block); t ; t = TREE_CHAIN (t))
+  for (t = BLOCK_VARS (block); t ; t = DECL_CHAIN (t))
     /* if (!TREE_STATIC (t) && !DECL_EXTERNAL (t)) */
       TREE_USED (t) = 0;
 
@@ -1210,7 +1210,7 @@ account_used_vars_for_block (tree block, bool toplevel)
   HOST_WIDE_INT size = 0;
 
   /* Expand all variables at this level.  */
-  for (t = BLOCK_VARS (block); t ; t = TREE_CHAIN (t))
+  for (t = BLOCK_VARS (block); t ; t = DECL_CHAIN (t))
     if (TREE_USED (t))
       size += expand_one_var (t, toplevel, false);
 

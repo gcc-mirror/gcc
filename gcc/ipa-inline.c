@@ -1987,7 +1987,7 @@ estimate_function_body_sizes (struct cgraph_node *node)
       time_inlining_benefit += cost;
       size_inlining_benefit += cost;
     }
-  for (arg = DECL_ARGUMENTS (node->decl); arg; arg = TREE_CHAIN (arg))
+  for (arg = DECL_ARGUMENTS (node->decl); arg; arg = DECL_CHAIN (arg))
     if (!VOID_TYPE_P (TREE_TYPE (arg)))
       {
         int cost = estimate_move_cost (TREE_TYPE (arg));

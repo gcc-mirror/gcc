@@ -630,7 +630,7 @@ sh_symbian_handle_dll_attribute (tree *pnode, tree name, tree args,
 	  sh_symbian_add_attribute (function, attr);
 
 	  /* Propagate the attribute to any function thunks as well.  */
-	  for (thunk = DECL_THUNKS (function); thunk; thunk = TREE_CHAIN (thunk))
+	  for (thunk = DECL_THUNKS (function); thunk; thunk = DECL_CHAIN (thunk))
 	    if (TREE_CODE (thunk) == FUNCTION_DECL)
 	      sh_symbian_add_attribute (thunk, attr);
 	}
@@ -639,7 +639,7 @@ sh_symbian_handle_dll_attribute (tree *pnode, tree name, tree args,
   if (TREE_CODE (node) == FUNCTION_DECL && DECL_VIRTUAL_P (node))
     {
       /* Propagate the attribute to any thunks of this function.  */
-      for (thunk = DECL_THUNKS (node); thunk; thunk = TREE_CHAIN (thunk))
+      for (thunk = DECL_THUNKS (node); thunk; thunk = DECL_CHAIN (thunk))
 	if (TREE_CODE (thunk) == FUNCTION_DECL)
 	  sh_symbian_add_attribute (thunk, attr);
     }

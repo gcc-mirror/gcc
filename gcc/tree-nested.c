@@ -148,7 +148,7 @@ create_tmp_var_for (struct nesting_info *info, tree type, const char *prefix)
 
   tmp_var = create_tmp_var_raw (type, prefix);
   DECL_CONTEXT (tmp_var) = info->context;
-  TREE_CHAIN (tmp_var) = info->new_local_var_chain;
+  DECL_CHAIN (tmp_var) = info->new_local_var_chain;
   DECL_SEEN_IN_BIND_EXPR_P (tmp_var) = 1;
   if (TREE_CODE (type) == COMPLEX_TYPE
       || TREE_CODE (type) == VECTOR_TYPE)
@@ -198,11 +198,11 @@ insert_field_into_struct (tree type, tree field)
 
   DECL_CONTEXT (field) = type;
 
-  for (p = &TYPE_FIELDS (type); *p ; p = &TREE_CHAIN (*p))
+  for (p = &TYPE_FIELDS (type); *p ; p = &DECL_CHAIN (*p))
     if (DECL_ALIGN (field) >= DECL_ALIGN (*p))
       break;
 
-  TREE_CHAIN (field) = *p;
+  DECL_CHAIN (field) = *p;
   *p = field;
 
   /* Set correct alignment for frame struct type.  */
@@ -698,7 +698,7 @@ check_for_nested_with_variably_modified (tree fndecl, tree orig_fndecl)
 
   for (cgn = cgn->nested; cgn ; cgn = cgn->next_nested)
     {
-      for (arg = DECL_ARGUMENTS (cgn->decl); arg; arg = TREE_CHAIN (arg))
+      for (arg = DECL_ARGUMENTS (cgn->decl); arg; arg = DECL_CHAIN (arg))
 	if (variably_modified_type_p (TREE_TYPE (arg), orig_fndecl))
 	  return true;
 
@@ -875,7 +875,7 @@ get_nonlocal_debug_decl (struct nesting_info *info, tree decl)
   DECL_HAS_VALUE_EXPR_P (new_decl) = 1;
 
   *slot = new_decl;
-  TREE_CHAIN (new_decl) = info->debug_var_chain;
+  DECL_CHAIN (new_decl) = info->debug_var_chain;
   info->debug_var_chain = new_decl;
 
   if (!optimize
@@ -1202,7 +1202,7 @@ note_nonlocal_block_vlas (struct nesting_info *info, tree block)
 {
   tree var;
 
-  for (var = BLOCK_VARS (block); var; var = TREE_CHAIN (var))
+  for (var = BLOCK_VARS (block); var; var = DECL_CHAIN (var))
     if (TREE_CODE (var) == VAR_DECL
 	&& variably_modified_type_p (TREE_TYPE (var), NULL)
 	&& DECL_HAS_VALUE_EXPR_P (var)
@@ -1367,7 +1367,7 @@ get_local_debug_decl (struct nesting_info *info, tree decl, tree field)
   DECL_HAS_VALUE_EXPR_P (new_decl) = 1;
   *slot = new_decl;
 
-  TREE_CHAIN (new_decl) = info->debug_var_chain;
+  DECL_CHAIN (new_decl) = info->debug_var_chain;
   info->debug_var_chain = new_decl;
 
   /* Do not emit debug info twice.  */
@@ -2196,7 +2196,7 @@ remap_vla_decls (tree block, struct nesting_info *root)
        subblock = BLOCK_CHAIN (subblock))
     remap_vla_decls (subblock, root);
 
-  for (var = BLOCK_VARS (block); var; var = TREE_CHAIN (var))
+  for (var = BLOCK_VARS (block); var; var = DECL_CHAIN (var))
     {
       if (TREE_CODE (var) == VAR_DECL
 	  && variably_modified_type_p (TREE_TYPE (var), NULL)
@@ -2217,7 +2217,7 @@ remap_vla_decls (tree block, struct nesting_info *root)
   id.cb.decl_map = pointer_map_create ();
   id.root = root;
 
-  for (; var; var = TREE_CHAIN (var))
+  for (; var; var = DECL_CHAIN (var))
     if (TREE_CODE (var) == VAR_DECL
 	&& variably_modified_type_p (TREE_TYPE (var), NULL)
 	&& DECL_HAS_VALUE_EXPR_P (var))
@@ -2308,11 +2308,11 @@ finalize_nesting_tree_1 (struct nesting_info *root)
 	 expression get substituted in instantiate_virtual_regs().  */
       for (adjust = &root->new_local_var_chain;
 	   *adjust != root->frame_decl;
-	   adjust = &TREE_CHAIN (*adjust))
-	gcc_assert (TREE_CHAIN (*adjust));
-      *adjust = TREE_CHAIN (*adjust);
+	   adjust = &DECL_CHAIN (*adjust))
+	gcc_assert (DECL_CHAIN (*adjust));
+      *adjust = DECL_CHAIN (*adjust);
 
-      TREE_CHAIN (root->frame_decl) = NULL_TREE;
+      DECL_CHAIN (root->frame_decl) = NULL_TREE;
       declare_vars (root->frame_decl,
 		    gimple_seq_first_stmt (gimple_body (context)), true);
     }
@@ -2323,7 +2323,7 @@ finalize_nesting_tree_1 (struct nesting_info *root)
   if (root->any_parm_remapped)
     {
       tree p;
-      for (p = DECL_ARGUMENTS (context); p ; p = TREE_CHAIN (p))
+      for (p = DECL_ARGUMENTS (context); p ; p = DECL_CHAIN (p))
 	{
 	  tree field, x, y;
 
@@ -2428,7 +2428,7 @@ finalize_nesting_tree_1 (struct nesting_info *root)
       remap_vla_decls (DECL_INITIAL (root->context), root);
 
       for (debug_var = root->debug_var_chain; debug_var;
-	   debug_var = TREE_CHAIN (debug_var))
+	   debug_var = DECL_CHAIN (debug_var))
 	if (variably_modified_type_p (TREE_TYPE (debug_var), NULL))
 	  break;
 
@@ -2443,7 +2443,7 @@ finalize_nesting_tree_1 (struct nesting_info *root)
 	  id.cb.decl_map = pointer_map_create ();
 	  id.root = root;
 
-	  for (; debug_var; debug_var = TREE_CHAIN (debug_var))
+	  for (; debug_var; debug_var = DECL_CHAIN (debug_var))
 	    if (variably_modified_type_p (TREE_TYPE (debug_var), NULL))
 	      {
 		tree type = TREE_TYPE (debug_var);
