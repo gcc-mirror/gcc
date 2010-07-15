@@ -279,7 +279,7 @@ void gfc_make_safe_expr (gfc_se * se);
 void gfc_conv_string_parameter (gfc_se * se);
 
 /* Compare two strings.  */
-tree gfc_build_compare_string (tree, tree, tree, tree, int);
+tree gfc_build_compare_string (tree, tree, tree, tree, int, enum tree_code);
 
 /* Add an item to the end of TREE_LIST.  */
 tree gfc_chainon_list (tree, tree);

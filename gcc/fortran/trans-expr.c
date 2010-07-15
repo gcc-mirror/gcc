@@ -1365,7 +1365,8 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
 
       lse.expr = gfc_build_compare_string (lse.string_length, lse.expr,
 					   rse.string_length, rse.expr,
-					   expr->value.op.op1->ts.kind);
+					   expr->value.op.op1->ts.kind,
+					   code);
       rse.expr = build_int_cst (TREE_TYPE (lse.expr), 0);
       gfc_add_block_to_block (&lse.post, &rse.post);
     }
@@ -1418,10 +1419,10 @@ string_to_single_character (tree len, tree str, int kind)
       if (TREE_CODE (ret) == INTEGER_CST)
 	{
 	  tree string_cst = TREE_OPERAND (TREE_OPERAND (str, 0), 0);
-	  int i, len = TREE_STRING_LENGTH (string_cst);
+	  int i, length = TREE_STRING_LENGTH (string_cst);
 	  const char *ptr = TREE_STRING_POINTER (string_cst);
 
-	  for (i = 1; i < len; i++)
+	  for (i = 1; i < length; i++)
 	    if (ptr[i] != ' ')
 	      return NULL_TREE;
 
@@ -1494,16 +1495,51 @@ gfc_conv_scalar_char_value (gfc_symbol *sym, gfc_se *se, gfc_expr **expr)
     }
 }
 
+/* Helper function for gfc_build_compare_string.  Return LEN_TRIM value
+   if STR is a string literal, otherwise return -1.  */
+
+static int
+gfc_optimize_len_trim (tree len, tree str, int kind)
+{
+  if (kind == 1
+      && TREE_CODE (str) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (str, 0)) == ARRAY_REF
+      && TREE_CODE (TREE_OPERAND (TREE_OPERAND (str, 0), 0)) == STRING_CST
+      && array_ref_low_bound (TREE_OPERAND (str, 0))
+	 == TREE_OPERAND (TREE_OPERAND (str, 0), 1)
+      && TREE_INT_CST_LOW (len) >= 1
+      && TREE_INT_CST_LOW (len)
+	 == (unsigned HOST_WIDE_INT)
+	    TREE_STRING_LENGTH (TREE_OPERAND (TREE_OPERAND (str, 0), 0)))
+    {
+      tree folded = fold_convert (gfc_get_pchar_type (kind), str);
+      folded = build_fold_indirect_ref_loc (input_location, folded);
+      if (TREE_CODE (folded) == INTEGER_CST)
+	{
+	  tree string_cst = TREE_OPERAND (TREE_OPERAND (str, 0), 0);
+	  int length = TREE_STRING_LENGTH (string_cst);
+	  const char *ptr = TREE_STRING_POINTER (string_cst);
+
+	  for (; length > 0; length--)
+	    if (ptr[length - 1] != ' ')
+	      break;
+
+	  return length;
+	}
+    }
+  return -1;
+}
 
 /* Compare two strings. If they are all single characters, the result is the
    subtraction of them. Otherwise, we build a library call.  */
 
 tree
-gfc_build_compare_string (tree len1, tree str1, tree len2, tree str2, int kind)
+gfc_build_compare_string (tree len1, tree str1, tree len2, tree str2, int kind,
+			  enum tree_code code)
 {
   tree sc1;
   tree sc2;
-  tree tmp;
+  tree fndecl;
 
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (str1)));
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (str2)));
@@ -1516,25 +1552,34 @@ gfc_build_compare_string (tree len1, tree str1, tree len2, tree str2, int kind)
       /* Deal with single character specially.  */
       sc1 = fold_convert (integer_type_node, sc1);
       sc2 = fold_convert (integer_type_node, sc2);
-      tmp = fold_build2 (MINUS_EXPR, integer_type_node, sc1, sc2);
+      return fold_build2 (MINUS_EXPR, integer_type_node, sc1, sc2);
     }
-  else
+
+  if ((code == EQ_EXPR || code == NE_EXPR)
+      && optimize
+      && INTEGER_CST_P (len1) && INTEGER_CST_P (len2))
     {
-      /* Build a call for the comparison.  */
-      tree fndecl;
-
-      if (kind == 1)
-	fndecl = gfor_fndecl_compare_string;
-      else if (kind == 4)
-	fndecl = gfor_fndecl_compare_string_char4;
-      else
-	gcc_unreachable ();
-
-      tmp = build_call_expr_loc (input_location,
-			     fndecl, 4, len1, str1, len2, str2);
+      /* If one string is a string literal with LEN_TRIM longer
+	 than the length of the second string, the strings
+	 compare unequal.  */
+      int len = gfc_optimize_len_trim (len1, str1, kind);
+      if (len > 0 && compare_tree_int (len2, len) < 0)
+	return integer_one_node;
+      len = gfc_optimize_len_trim (len2, str2, kind);
+      if (len > 0 && compare_tree_int (len1, len) < 0)
+	return integer_one_node;
     }
 
-  return tmp;
+  /* Build a call for the comparison.  */
+  if (kind == 1)
+    fndecl = gfor_fndecl_compare_string;
+  else if (kind == 4)
+    fndecl = gfor_fndecl_compare_string_char4;
+  else
+    gcc_unreachable ();
+
+  return build_call_expr_loc (input_location, fndecl, 4,
+			      len1, str1, len2, str2);
 }
 
 
