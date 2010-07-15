@@ -1596,6 +1596,27 @@ add_function_candidate (struct z_candidate **candidates,
   else if (!sufficient_parms_p (parmnode))
     viable = 0;
 
+  /* Kludge: When looking for a function from a subobject while generating
+     an implicit copy/move constructor/operator=, don't consider anything
+     that takes (a reference to) a different type.  See c++/44909.  */
+  else if (flags & LOOKUP_SPECULATIVE)
+    {
+      if (DECL_CONSTRUCTOR_P (fn))
+	i = 1;
+      else if (DECL_ASSIGNMENT_OPERATOR_P (fn)
+	       && DECL_OVERLOADED_OPERATOR_P (fn) == NOP_EXPR)
+	i = 2;
+      else
+	i = 0;
+      if (i && len == i)
+	{
+	  parmnode = chain_index (i-1, parmlist);
+	  if (!(same_type_ignoring_top_level_qualifiers_p
+		(non_reference (TREE_VALUE (parmnode)), ctype)))
+	    viable = 0;
+	}
+    }
+
   if (! viable)
     goto out;
 
