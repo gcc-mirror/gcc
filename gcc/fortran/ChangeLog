@@ -1,3 +1,11 @@
+2010-07-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44936
+	* resolve.c (resolve_typebound_generic_call): Resolve generic
+	non-polymorphic type-bound procedure calls to the correct specific
+	procedure.
+	(resolve_typebound_subroutine): Remove superfluous code.
+
 2010-07-15  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/44709
