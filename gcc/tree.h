@@ -838,17 +838,6 @@ enum tree_node_structure_enum {
 				 __FILE__, __LINE__, __FUNCTION__);	\
     &__t->exp.operands[__i]; }))
 
-#define TREE_RTL_OPERAND_CHECK(T, CODE, I) __extension__		\
-(*(rtx *)								\
- ({__typeof (T) const __t = (T);					\
-    const int __i = (I);						\
-    if (TREE_CODE (__t) != (CODE))					\
-      tree_check_failed (__t, __FILE__, __LINE__, __FUNCTION__, (CODE), 0); \
-    if (__i < 0 || __i >= TREE_OPERAND_LENGTH (__t))			\
-      tree_operand_check_failed (__i, __t,				\
-				 __FILE__, __LINE__, __FUNCTION__);	\
-    &__t->exp.operands[__i]; }))
-
 /* Nodes are chained together for many purposes.
    Types are chained together to record them for being output to the debugger
    (see the function `chain_type').
@@ -930,7 +919,6 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define TREE_VEC_ELT_CHECK(T, I)		((T)->vec.a[I])
 #define TREE_OPERAND_CHECK(T, I)		((T)->exp.operands[I])
 #define TREE_OPERAND_CHECK_CODE(T, CODE, I)	((T)->exp.operands[I])
-#define TREE_RTL_OPERAND_CHECK(T, CODE, I)  (*(rtx *) &((T)->exp.operands[I]))
 #define OMP_CLAUSE_ELT_CHECK(T, i)	        ((T)->omp_clause.ops[i])
 #define OMP_CLAUSE_RANGE_CHECK(T, CODE1, CODE2)	(T)
 #define OMP_CLAUSE_SUBCODE_CHECK(T, CODE)	(T)

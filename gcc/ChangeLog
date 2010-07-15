@@ -1,5 +1,9 @@
 2010-07-15  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* tree.h (TREE_RTL_OPERAND_CHECK): Delete.
+
+2010-07-15  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* tree.h (DECL_CHAIN): Define.
 	* alias.c: Carefully replace TREE_CHAIN with DECL_CHAIN.
 	* c-decl.c: Likewise.
