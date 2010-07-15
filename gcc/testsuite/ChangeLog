@@ -1,3 +1,8 @@
+2010-07-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/44934
+	* gfortran.dg/endfile_2.f90: Fix to unformatted file type.
+
 2010-07-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44810
