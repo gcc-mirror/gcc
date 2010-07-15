@@ -5336,10 +5336,11 @@ resolve_typebound_generic_call (gfc_expr* e, const char **name)
 	  if (matches)
 	    {
 	      e->value.compcall.tbp = g->specific;
+	      genname = g->specific_st->name;
 	      /* Pass along the name for CLASS methods, where the vtab
 		 procedure pointer component has to be referenced.  */
 	      if (name)
-		*name = g->specific_st->name;
+		*name = genname;
 	      goto success;
 	    }
 	}
@@ -5352,12 +5353,6 @@ resolve_typebound_generic_call (gfc_expr* e, const char **name)
 
 success:
   /* Make sure that we have the right specific instance for the name.  */
-  genname = e->value.compcall.tbp->u.specific->name;
-
-  /* Is the symtree name a "unique name".  */
-  if (*genname == '@')
-    genname = e->value.compcall.tbp->u.specific->n.sym->name;
-
   derived = get_declared_from_expr (NULL, NULL, e);
 
   st = gfc_find_typebound_proc (derived, NULL, genname, false, &e->where);
@@ -5539,8 +5534,6 @@ resolve_typebound_function (gfc_expr* e)
 static gfc_try
 resolve_typebound_subroutine (gfc_code *code)
 {
-  gfc_symbol *declared;
-  gfc_component *c;
   gfc_ref *new_ref;
   gfc_ref *class_ref;
   gfc_symtree *st;
@@ -5555,7 +5548,7 @@ resolve_typebound_subroutine (gfc_code *code)
     return FAILURE;
 
   /* Get the CLASS declared type.  */
-  declared = get_declared_from_expr (&class_ref, &new_ref, code->expr1);
+  get_declared_from_expr (&class_ref, &new_ref, code->expr1);
 
   /* Weed out cases of the ultimate component being a derived type.  */
   if ((class_ref && class_ref->u.c.component->ts.type == BT_DERIVED)
@@ -5563,10 +5556,7 @@ resolve_typebound_subroutine (gfc_code *code)
     {
       gfc_free_ref_list (new_ref);
       return resolve_typebound_call (code, NULL);
-    } 
-
-  c = gfc_find_component (declared, "$data", true, true);
-  declared = c->ts.u.derived;
+    }
 
   if (resolve_typebound_call (code, &name) == FAILURE)
     return FAILURE;

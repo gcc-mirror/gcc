@@ -1,3 +1,8 @@
+2010-07-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44936
+	* gfortran.dg/typebound_generic_9.f03: New.
+
 2010-07-15  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44946
