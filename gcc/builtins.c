@@ -5250,6 +5250,10 @@ expand_builtin_init_trampoline (tree exp)
   targetm.calls.trampoline_init (m_tramp, t_func, r_chain);
 
   trampolines_created = 1;
+
+  warning_at (DECL_SOURCE_LOCATION (t_func), OPT_Wtrampolines,
+              "trampoline generated for nested function %qD", t_func);
+
   return const0_rtx;
 }
 

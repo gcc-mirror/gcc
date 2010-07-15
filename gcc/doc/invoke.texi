@@ -260,8 +260,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wstrict-overflow -Wstrict-overflow=@var{n} @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{]} @gol
 -Wswitch  -Wswitch-default  -Wswitch-enum -Wsync-nand @gol
--Wsystem-headers  -Wtrigraphs  -Wtype-limits  -Wundef  -Wuninitialized @gol
--Wunknown-pragmas  -Wno-pragmas @gol
+-Wsystem-headers  -Wtrampolines  -Wtrigraphs  -Wtype-limits  -Wundef @gol
+-Wuninitialized  -Wunknown-pragmas  -Wno-pragmas @gol
 -Wunsuffixed-float-constants  -Wunused  -Wunused-function @gol
 -Wunused-label  -Wunused-parameter -Wno-unused-result -Wunused-value  -Wunused-variable @gol
 -Wunused-but-set-parameter -Wunused-but-set-variable -Wvariadic-macros -Wvla @gol
@@ -3723,6 +3723,18 @@ GCC to emit warnings from system headers as if they occurred in user
 code.  However, note that using @option{-Wall} in conjunction with this
 option will @emph{not} warn about unknown pragmas in system
 headers---for that, @option{-Wunknown-pragmas} must also be used.
+
+@item -Wtrampolines
+@opindex Wtrampolines
+@opindex Wno-trampolines
+ Warn about trampolines generated for pointers to nested functions.
+ 
+ A trampoline is a small piece of data or code that is created at run
+ time on the stack when the address of a nested function is taken, and
+ is used to call the nested function indirectly.  For some targets, it
+ is made up of data only and thus requires no special treatment.  But,
+ for most targets, it is made up of code and thus requires the stack
+ to be made executable in order for the program to work properly.
 
 @item -Wfloat-equal
 @opindex Wfloat-equal
