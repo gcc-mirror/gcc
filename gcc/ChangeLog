@@ -1,3 +1,8 @@
+2010-07-15  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* config/i386/cygwin.h (LIBGCJ_SONAME): Update.
+	* config/i386/mingw32.h (LIBGCJ_SONAME): Likewise.
+
 2010-07-14  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.c (reg_names): Remove prototype.
