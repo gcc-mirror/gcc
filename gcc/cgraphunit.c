@@ -2064,7 +2064,9 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
 
   cgraph_add_new_function (decl, false);
   cgraph_mark_needed_node (cgraph_node (decl));
+
   set_cfun (NULL);
+  current_function_decl = NULL;
 }
 
 void
