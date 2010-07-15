@@ -691,41 +691,200 @@ static struct
    and the store_ruid / use_ruid fields in reg_state.  */
 static int reload_combine_ruid;
 
+/* The RUID of the last label we encountered in reload_combine.  */
+static int last_label_ruid;
+
+/* The register numbers of the first and last index register.  A value of
+   -1 in LAST_INDEX_REG indicates that we've previously computed these
+   values and found no suitable index registers.  */
+static int first_index_reg = -1;
+static int last_index_reg;
+
 #define LABEL_LIVE(LABEL) \
   (label_live[CODE_LABEL_NUMBER (LABEL) - min_labelno])
+
+/* Called by reload_combine when scanning INSN.  Try to detect a pattern we
+   can handle and improve.  Return true if no further processing is needed on
+   INSN; false if it wasn't recognized and should be handled normally.  */
+
+static bool
+reload_combine_recognize_pattern (rtx insn)
+{
+  rtx set, reg, src;
+  unsigned int regno;
+
+  /* Look for (set (REGX) (CONST_INT))
+     (set (REGX) (PLUS (REGX) (REGY)))
+     ...
+     ... (MEM (REGX)) ...
+     and convert it to
+     (set (REGZ) (CONST_INT))
+     ...
+     ... (MEM (PLUS (REGZ) (REGY)))... .
+
+     First, check that we have (set (REGX) (PLUS (REGX) (REGY)))
+     and that we know all uses of REGX before it dies.
+     Also, explicitly check that REGX != REGY; our life information
+     does not yet show whether REGY changes in this insn.  */
+  set = single_set (insn);
+  if (set == NULL_RTX)
+    return false;
+
+  reg = SET_DEST (set);
+  src = SET_SRC (set);
+  if (!REG_P (reg)
+      || hard_regno_nregs[REGNO (reg)][GET_MODE (reg)] != 1)
+    return false;
+
+  regno = REGNO (reg);
+
+  if (GET_CODE (src) == PLUS
+      && REG_P (XEXP (src, 1))
+      && rtx_equal_p (XEXP (src, 0), reg)
+      && !rtx_equal_p (XEXP (src, 1), reg)
+      && last_label_ruid < reg_state[regno].use_ruid)
+    {
+      rtx base = XEXP (src, 1);
+      rtx prev = prev_nonnote_insn (insn);
+      rtx prev_set = prev ? single_set (prev) : NULL_RTX;
+      rtx index_reg = NULL_RTX;
+      rtx reg_sum = NULL_RTX;
+      int i;
+
+      /* Now we need to set INDEX_REG to an index register (denoted as
+	 REGZ in the illustration above) and REG_SUM to the expression
+	 register+register that we want to use to substitute uses of REG
+	 (typically in MEMs) with.  First check REG and BASE for being
+	 index registers; we can use them even if they are not dead.  */
+      if (TEST_HARD_REG_BIT (reg_class_contents[INDEX_REG_CLASS], regno)
+	  || TEST_HARD_REG_BIT (reg_class_contents[INDEX_REG_CLASS],
+				REGNO (base)))
+	{
+	  index_reg = reg;
+	  reg_sum = src;
+	}
+      else
+	{
+	  /* Otherwise, look for a free index register.  Since we have
+	     checked above that neither REG nor BASE are index registers,
+	     if we find anything at all, it will be different from these
+	     two registers.  */
+	  for (i = first_index_reg; i <= last_index_reg; i++)
+	    {
+	      if (TEST_HARD_REG_BIT (reg_class_contents[INDEX_REG_CLASS], i)
+		  && reg_state[i].use_index == RELOAD_COMBINE_MAX_USES
+		  && reg_state[i].store_ruid <= reg_state[regno].use_ruid
+		  && hard_regno_nregs[i][GET_MODE (reg)] == 1)
+		{
+		  index_reg = gen_rtx_REG (GET_MODE (reg), i);
+		  reg_sum = gen_rtx_PLUS (GET_MODE (reg), index_reg, base);
+		  break;
+		}
+	    }
+	}
+
+      /* Check that PREV_SET is indeed (set (REGX) (CONST_INT)) and that
+	 (REGY), i.e. BASE, is not clobbered before the last use we'll
+	 create.  */
+      if (reg_sum
+	  && prev_set
+	  && CONST_INT_P (SET_SRC (prev_set))
+	  && rtx_equal_p (SET_DEST (prev_set), reg)
+	  && reg_state[regno].use_index >= 0
+	  && (reg_state[REGNO (base)].store_ruid
+	      <= reg_state[regno].use_ruid))
+	{
+	  /* Change destination register and, if necessary, the constant
+	     value in PREV, the constant loading instruction.  */
+	  validate_change (prev, &SET_DEST (prev_set), index_reg, 1);
+	  if (reg_state[regno].offset != const0_rtx)
+	    validate_change (prev,
+			     &SET_SRC (prev_set),
+			     GEN_INT (INTVAL (SET_SRC (prev_set))
+				      + INTVAL (reg_state[regno].offset)),
+			     1);
+
+	  /* Now for every use of REG that we have recorded, replace REG
+	     with REG_SUM.  */
+	  for (i = reg_state[regno].use_index;
+	       i < RELOAD_COMBINE_MAX_USES; i++)
+	    validate_unshare_change (reg_state[regno].reg_use[i].insn,
+				     reg_state[regno].reg_use[i].usep,
+				     /* Each change must have its own
+					replacement.  */
+				     reg_sum, 1);
+
+	  if (apply_change_group ())
+	    {
+	      /* For every new use of REG_SUM, we have to record the use
+		 of BASE therein, i.e. operand 1.  */
+	      for (i = reg_state[regno].use_index;
+		   i < RELOAD_COMBINE_MAX_USES; i++)
+		reload_combine_note_use
+		  (&XEXP (*reg_state[regno].reg_use[i].usep, 1),
+		   reg_state[regno].reg_use[i].insn);
+
+	      if (reg_state[REGNO (base)].use_ruid
+		  > reg_state[regno].use_ruid)
+		reg_state[REGNO (base)].use_ruid
+		  = reg_state[regno].use_ruid;
+
+	      /* Delete the reg-reg addition.  */
+	      delete_insn (insn);
+
+	      if (reg_state[regno].offset != const0_rtx)
+		/* Previous REG_EQUIV / REG_EQUAL notes for PREV
+		   are now invalid.  */
+		remove_reg_equal_equiv_notes (prev);
+
+	      reg_state[regno].use_index = RELOAD_COMBINE_MAX_USES;
+	      reg_state[REGNO (index_reg)].store_ruid
+		= reload_combine_ruid;
+	      return true;
+	    }
+	}
+    }
+  return false;
+}
 
 static void
 reload_combine (void)
 {
-  rtx insn, set;
-  int first_index_reg = -1;
-  int last_index_reg = 0;
+  rtx insn;
   int i;
   basic_block bb;
   unsigned int r;
-  int last_label_ruid;
   int min_labelno, n_labels;
   HARD_REG_SET ever_live_at_start, *label_live;
+
+  /* To avoid wasting too much time later searching for an index register,
+     determine the minimum and maximum index register numbers.  */
+  if (INDEX_REG_CLASS == NO_REGS)
+    last_index_reg = -1;
+  else if (first_index_reg == -1 && last_index_reg == 0)
+    {
+      for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
+	if (TEST_HARD_REG_BIT (reg_class_contents[INDEX_REG_CLASS], r))
+	  {
+	    if (first_index_reg == -1)
+	      first_index_reg = r;
+
+	    last_index_reg = r;
+	  }
+
+      /* If no index register is available, we can quit now.  Set LAST_INDEX_REG
+	 to -1 so we'll know to quit early the next time we get here.  */
+      if (first_index_reg == -1)
+	{
+	  last_index_reg = -1;
+	  return;
+	}
+    }
 
   /* If reg+reg can be used in offsetable memory addresses, the main chunk of
      reload has already used it where appropriate, so there is no use in
      trying to generate it now.  */
-  if (double_reg_address_ok && INDEX_REG_CLASS != NO_REGS)
-    return;
-
-  /* To avoid wasting too much time later searching for an index register,
-     determine the minimum and maximum index register numbers.  */
-  for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
-    if (TEST_HARD_REG_BIT (reg_class_contents[INDEX_REG_CLASS], r))
-      {
-	if (first_index_reg == -1)
-	  first_index_reg = r;
-
-	last_index_reg = r;
-      }
-
-  /* If no index register is available, we can quit now.  */
-  if (first_index_reg == -1)
+  if (double_reg_address_ok || last_index_reg == -1)
     return;
 
   /* Set up LABEL_LIVE and EVER_LIVE_AT_START.  The register lifetime
@@ -782,136 +941,8 @@ reload_combine (void)
 
       reload_combine_ruid++;
 
-      /* Look for (set (REGX) (CONST_INT))
-	 (set (REGX) (PLUS (REGX) (REGY)))
-	 ...
-	 ... (MEM (REGX)) ...
-	 and convert it to
-	 (set (REGZ) (CONST_INT))
-	 ...
-	 ... (MEM (PLUS (REGZ) (REGY)))... .
-
-	 First, check that we have (set (REGX) (PLUS (REGX) (REGY)))
-	 and that we know all uses of REGX before it dies.
-	 Also, explicitly check that REGX != REGY; our life information
-	 does not yet show whether REGY changes in this insn.  */
-      set = single_set (insn);
-      if (set != NULL_RTX
-	  && REG_P (SET_DEST (set))
-	  && (hard_regno_nregs[REGNO (SET_DEST (set))]
-			      [GET_MODE (SET_DEST (set))]
-	      == 1)
-	  && GET_CODE (SET_SRC (set)) == PLUS
-	  && REG_P (XEXP (SET_SRC (set), 1))
-	  && rtx_equal_p (XEXP (SET_SRC (set), 0), SET_DEST (set))
-	  && !rtx_equal_p (XEXP (SET_SRC (set), 1), SET_DEST (set))
-	  && last_label_ruid < reg_state[REGNO (SET_DEST (set))].use_ruid)
-	{
-	  rtx reg = SET_DEST (set);
-	  rtx plus = SET_SRC (set);
-	  rtx base = XEXP (plus, 1);
-	  rtx prev = prev_nonnote_insn (insn);
-	  rtx prev_set = prev ? single_set (prev) : NULL_RTX;
-	  unsigned int regno = REGNO (reg);
-	  rtx index_reg = NULL_RTX;
-	  rtx reg_sum = NULL_RTX;
-
-	  /* Now we need to set INDEX_REG to an index register (denoted as
-	     REGZ in the illustration above) and REG_SUM to the expression
-	     register+register that we want to use to substitute uses of REG
-	     (typically in MEMs) with.  First check REG and BASE for being
-	     index registers; we can use them even if they are not dead.  */
-	  if (TEST_HARD_REG_BIT (reg_class_contents[INDEX_REG_CLASS], regno)
-	      || TEST_HARD_REG_BIT (reg_class_contents[INDEX_REG_CLASS],
-				    REGNO (base)))
-	    {
-	      index_reg = reg;
-	      reg_sum = plus;
-	    }
-	  else
-	    {
-	      /* Otherwise, look for a free index register.  Since we have
-		 checked above that neither REG nor BASE are index registers,
-		 if we find anything at all, it will be different from these
-		 two registers.  */
-	      for (i = first_index_reg; i <= last_index_reg; i++)
-		{
-		  if (TEST_HARD_REG_BIT (reg_class_contents[INDEX_REG_CLASS],
-					 i)
-		      && reg_state[i].use_index == RELOAD_COMBINE_MAX_USES
-		      && reg_state[i].store_ruid <= reg_state[regno].use_ruid
-		      && hard_regno_nregs[i][GET_MODE (reg)] == 1)
-		    {
-		      index_reg = gen_rtx_REG (GET_MODE (reg), i);
-		      reg_sum = gen_rtx_PLUS (GET_MODE (reg), index_reg, base);
-		      break;
-		    }
-		}
-	    }
-
-	  /* Check that PREV_SET is indeed (set (REGX) (CONST_INT)) and that
-	     (REGY), i.e. BASE, is not clobbered before the last use we'll
-	     create.  */
-	  if (reg_sum
-	      && prev_set
-	      && CONST_INT_P (SET_SRC (prev_set))
-	      && rtx_equal_p (SET_DEST (prev_set), reg)
-	      && reg_state[regno].use_index >= 0
-	      && (reg_state[REGNO (base)].store_ruid
-		  <= reg_state[regno].use_ruid))
-	    {
-	      int i;
-
-	      /* Change destination register and, if necessary, the constant
-		 value in PREV, the constant loading instruction.  */
-	      validate_change (prev, &SET_DEST (prev_set), index_reg, 1);
-	      if (reg_state[regno].offset != const0_rtx)
-		validate_change (prev,
-				 &SET_SRC (prev_set),
-				 GEN_INT (INTVAL (SET_SRC (prev_set))
-					  + INTVAL (reg_state[regno].offset)),
-				 1);
-
-	      /* Now for every use of REG that we have recorded, replace REG
-		 with REG_SUM.  */
-	      for (i = reg_state[regno].use_index;
-		   i < RELOAD_COMBINE_MAX_USES; i++)
-		validate_unshare_change (reg_state[regno].reg_use[i].insn,
-				 	 reg_state[regno].reg_use[i].usep,
-				 	 /* Each change must have its own
-				    	    replacement.  */
-				 	 reg_sum, 1);
-
-	      if (apply_change_group ())
-		{
-		  /* For every new use of REG_SUM, we have to record the use
-		     of BASE therein, i.e. operand 1.  */
-		  for (i = reg_state[regno].use_index;
-		       i < RELOAD_COMBINE_MAX_USES; i++)
-		    reload_combine_note_use
-		      (&XEXP (*reg_state[regno].reg_use[i].usep, 1),
-		       reg_state[regno].reg_use[i].insn);
-
-		  if (reg_state[REGNO (base)].use_ruid
-		      > reg_state[regno].use_ruid)
-		    reg_state[REGNO (base)].use_ruid
-		      = reg_state[regno].use_ruid;
-
-		  /* Delete the reg-reg addition.  */
-		  delete_insn (insn);
-
-		  if (reg_state[regno].offset != const0_rtx)
-		    /* Previous REG_EQUIV / REG_EQUAL notes for PREV
-		       are now invalid.  */
-		    remove_reg_equal_equiv_notes (prev);
-
-		  reg_state[regno].use_index = RELOAD_COMBINE_MAX_USES;
-		  reg_state[REGNO (index_reg)].store_ruid
-		    = reload_combine_ruid;
-		  continue;
-		}
-	    }
-	}
+      if (reload_combine_recognize_pattern (insn))
+	continue;
 
       note_stores (PATTERN (insn), reload_combine_note_store, NULL);
 
