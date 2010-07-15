@@ -322,6 +322,7 @@ void gfc_conv_expr_type (gfc_se * se, gfc_expr *, tree);
 
 /* trans-expr.c */
 void gfc_conv_scalar_char_value (gfc_symbol *sym, gfc_se *se, gfc_expr **expr);
+tree gfc_string_to_single_character (tree len, tree str, int kind);
 
 /* Find the decl containing the auxiliary variables for assigned variables.  */
 void gfc_conv_label_variable (gfc_se * se, gfc_expr * expr);
