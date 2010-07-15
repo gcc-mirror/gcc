@@ -1,3 +1,9 @@
+2010-07-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/44909
+	* g++.dg/cpp0x/implicit7.C: New.
+	* g++.dg/cpp0x/implicit8.C: New.
+
 2010-07-15  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	Disable float tests for __SPU__ targets due to lack of signed zero:

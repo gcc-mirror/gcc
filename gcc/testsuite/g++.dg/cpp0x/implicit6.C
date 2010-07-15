@@ -6,7 +6,6 @@ struct Ray;
 struct Vector
 {
   virtual void f();		// make non-trivially-copyable
-  Vector();
   Vector(const Ray &) ;
 };
 
@@ -18,7 +17,6 @@ struct array
 struct Ray
 {
   array a;
-  operator Vector();
 };
 
 extern Ray r1;

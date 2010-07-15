@@ -10292,8 +10292,6 @@ grok_special_member_properties (tree decl)
 
       int assop = copy_fn_p (decl);
 
-      if (!DECL_ARTIFICIAL (decl))
-	TYPE_HAS_USER_OPEQ (class_type) = 1;
       if (assop)
 	{
 	  TYPE_HAS_COPY_ASSIGN (class_type) = 1;

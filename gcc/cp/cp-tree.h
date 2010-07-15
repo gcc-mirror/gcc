@@ -289,11 +289,6 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define same_type_p(TYPE1, TYPE2) \
   comptypes ((TYPE1), (TYPE2), COMPARE_STRICT)
 
-/* Returns nonzero iff TYPE1 and TYPE2 are the same type, ignoring
-   top-level qualifiers.  */
-#define same_type_ignoring_top_level_qualifiers_p(TYPE1, TYPE2) \
-  same_type_p (TYPE_MAIN_VARIANT (TYPE1), TYPE_MAIN_VARIANT (TYPE2))
-
 /* Nonzero if we are presently building a statement tree, rather
    than expanding each statement as we encounter it.  */
 #define building_stmt_tree()  (cur_stmt_list != NULL_TREE)
@@ -1326,7 +1321,6 @@ struct GTY(()) lang_type_class {
   unsigned lazy_move_assign : 1;
   unsigned has_complex_move_ctor : 1;
   unsigned has_complex_move_assign : 1;
-  unsigned has_user_opeq : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -1335,7 +1329,7 @@ struct GTY(()) lang_type_class {
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 3;
+  unsigned dummy : 4;
 
   tree primary_base;
   VEC(tree_pair_s,gc) *vcall_indices;
@@ -3142,10 +3136,6 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* Nonzero for a class type means that the class type has a
    user-declared constructor.  */
 #define TYPE_HAS_USER_CONSTRUCTOR(NODE) (TYPE_LANG_FLAG_1 (NODE))
-
-/* ...or a user-declared operator=.  */
-#define TYPE_HAS_USER_OPEQ(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->has_user_opeq)
 
 /* When appearing in an INDIRECT_REF, it means that the tree structure
    underneath is actually a call to a constructor.  This is needed
@@ -5433,6 +5423,7 @@ extern int type_unknown_p			(const_tree);
 enum { ce_derived, ce_normal, ce_exact };
 extern bool comp_except_specs			(const_tree, const_tree, int);
 extern bool comptypes				(tree, tree, int);
+extern bool same_type_ignoring_top_level_qualifiers_p (tree, tree);
 extern bool compparms				(const_tree, const_tree);
 extern int comp_cv_qualification		(const_tree, const_tree);
 extern int comp_cv_qual_signature		(tree, tree);
