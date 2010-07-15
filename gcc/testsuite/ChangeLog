@@ -1,3 +1,122 @@
+2010-07-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2010-07-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp (check_effective_target_sse): New proc.
+	* gcc.target/i386/sol2-check.h: New file.
+	* gcc.target/i386/sse-check.h (ILL_INSN, ILL_INSN_LEN): Define.
+	Include sol2-check.h.
+	(main) Only run sse_test () if sol2_check ().
+	* gcc.target/i386/sse2-check.h: Likewise.
+	* gcc.target/i386/sse3-check.h: Likewise.
+	* gcc.target/i386/math-torture/math-torture.exp: Only add options
+	with -msse to MATH_TORTURE_OPTIONS if check_effective_target_sse.
+	* g++.dg/debug/dwarf2/const2b.C: Use dg-require-effective-target sse.
+	* g++.dg/ext/vector14.C: Likewise.
+	* g++.dg/other/mmintrin.C: Likewise.
+	* gcc.dg/20020418-1.c: Likewise.
+	* gcc.dg/debug/dwarf2/const-2b.c: Likewise.
+	* gcc.dg/format/ms_unnamed-1.c: Likewise.
+	* gcc.dg/format/unnamed-1.c: Likewise.
+	Adapt dg-warning line number.
+	* gcc.dg/graphite/pr40281.c: Likewise.
+	* gcc.dg/pr32176.c: Likewise.
+	* gcc.dg/pr40550.c: Likewise.
+	* gcc.dg/prefetch-loop-arrays-1.c: Likewise.
+	* gcc.dg/torture/pr36891.c: Likewise.
+	* gcc.target/i386/20020218-1.c: Likewise.
+	* gcc.target/i386/20020523.c: Likewise.
+	* gcc.target/i386/abi-1.c: Likewise.
+	* gcc.target/i386/fastcall-sseregparm.c: Likewise.
+	* gcc.target/i386/pr13366.c: Likewise.
+	* gcc.target/i386/pr13685.c: Likewise.
+	* gcc.target/i386/pr24306.c: Likewise.
+	* gcc.target/i386/pr31486.c: Likewise.
+	* gcc.target/i386/pr32065-1.c: Likewise.
+	* gcc.target/i386/pr32065-2.c: Likewise.
+	* gcc.target/i386/pr32389.c: Likewise.
+	* gcc.target/i386/pr38824.c: Likewise.
+	* gcc.target/i386/pr38931.c: Likewise.
+	* gcc.target/i386/pr39592-1.c: Likewise.
+	* gcc.target/i386/recip-divf.c: Likewise.
+	* gcc.target/i386/recip-sqrtf.c: Likewise.
+	* gcc.target/i386/recip-vec-divf.c: Likewise.
+	* gcc.target/i386/recip-vec-sqrtf.c: Likewise.
+	* gcc.target/i386/sse-1.c: Likewise.
+	* gcc.target/i386/sse-16.c: Likewise.
+	* gcc.target/i386/sse-2.c: Likewise.
+	* gcc.target/i386/sse-20.c: Likewise.
+	* gcc.target/i386/sse-3.c: Likewise.
+	* gcc.target/i386/sse-7.c: Likewise.
+	* gcc.target/i386/sse-9.c: Likewise.
+	* gcc.target/i386/sse-addps-1.c: Likewise.
+	* gcc.target/i386/sse-addss-1.c: Likewise.
+	* gcc.target/i386/sse-andnps-1.c: Likewise.
+	* gcc.target/i386/sse-andps-1.c: Likewise.
+	* gcc.target/i386/sse-comiss-1.c: Likewise.
+	* gcc.target/i386/sse-comiss-2.c: Likewise.
+	* gcc.target/i386/sse-comiss-3.c: Likewise.
+	* gcc.target/i386/sse-comiss-4.c: Likewise.
+	* gcc.target/i386/sse-comiss-5.c: Likewise.
+	* gcc.target/i386/sse-comiss-6.c: Likewise.
+	* gcc.target/i386/sse-cvtsi2ss-1.c: Likewise.
+	* gcc.target/i386/sse-cvtsi2ss-2.c: Likewise.
+	* gcc.target/i386/sse-cvtss2si-1.c: Likewise.
+	* gcc.target/i386/sse-cvtss2si-2.c: Likewise.
+	* gcc.target/i386/sse-cvttss2si-1.c: Likewise.
+	* gcc.target/i386/sse-cvttss2si-2.c: Likewise.
+	* gcc.target/i386/sse-divps-1.c: Likewise.
+	* gcc.target/i386/sse-divss-1.c: Likewise.
+	* gcc.target/i386/sse-init-v4hi-1.c: Likewise.
+	* gcc.target/i386/sse-init-v4sf-1.c: Likewise.
+	* gcc.target/i386/sse-maxps-1.c: Likewise.
+	* gcc.target/i386/sse-maxss-1.c: Likewise.
+	* gcc.target/i386/sse-minps-1.c: Likewise.
+	* gcc.target/i386/sse-minss-1.c: Likewise.
+	* gcc.target/i386/sse-movaps-1.c: Likewise.
+	* gcc.target/i386/sse-movaps-2.c: Likewise.
+	* gcc.target/i386/sse-movhlps-1.c: Likewise.
+	* gcc.target/i386/sse-movhps-1.c: Likewise.
+	* gcc.target/i386/sse-movhps-2.c: Likewise.
+	* gcc.target/i386/sse-movlhps-1.c: Likewise.
+	* gcc.target/i386/sse-movmskps-1.c: Likewise.
+	* gcc.target/i386/sse-movntps-1.c: Likewise.
+	* gcc.target/i386/sse-movss-1.c: Likewise.
+	* gcc.target/i386/sse-movss-2.c: Likewise.
+	* gcc.target/i386/sse-movss-3.c: Likewise.
+	* gcc.target/i386/sse-movups-1.c: Likewise.
+	* gcc.target/i386/sse-movups-2.c: Likewise.
+	* gcc.target/i386/sse-mulps-1.c: Likewise.
+	* gcc.target/i386/sse-mulss-1.c: Likewise.
+	* gcc.target/i386/sse-orps-1.c: Likewise.
+	* gcc.target/i386/sse-rcpps-1.c: Likewise.
+	* gcc.target/i386/sse-recip-vec.c: Likewise.
+	* gcc.target/i386/sse-recip.c: Likewise.
+	* gcc.target/i386/sse-rsqrtps-1.c: Likewise.
+	* gcc.target/i386/sse-set-ps-1.c: Likewise.
+	* gcc.target/i386/sse-sqrtps-1.c: Likewise.
+	* gcc.target/i386/sse-subps-1.c: Likewise.
+	* gcc.target/i386/sse-subss-1.c: Likewise.
+	* gcc.target/i386/sse-ucomiss-1.c: Likewise.
+	* gcc.target/i386/sse-ucomiss-2.c: Likewise.
+	* gcc.target/i386/sse-ucomiss-3.c: Likewise.
+	* gcc.target/i386/sse-ucomiss-4.c: Likewise.
+	* gcc.target/i386/sse-ucomiss-5.c: Likewise.
+	* gcc.target/i386/sse-ucomiss-6.c: Likewise.
+	* gcc.target/i386/sse-unpckhps-1.c: Likewise.
+	* gcc.target/i386/sse-unpcklps-1.c: Likewise.
+	* gcc.target/i386/sse-xorps-1.c: Likewise.
+	* gcc.target/i386/ssefn-1.c: Likewise.
+	* gcc.target/i386/ssefn-3.c: Likewise.
+	* gcc.target/i386/sseregparm-1.c: Likewise.
+	* gcc.target/i386/stackalign/return-3.c: Likewise.
+	* gcc.target/i386/vectorize1.c: Likewise.
+	* gcc.target/i386/vperm-v4sf-1.c: Likewise.
+	* gcc.target/i386/xorps-sse.c: Likewise.
+	* gfortran.dg/pr28158.f90: Likewise.
+	* gfortran.dg/pr30667.f: Likewise.
+
 2010-07-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/44582

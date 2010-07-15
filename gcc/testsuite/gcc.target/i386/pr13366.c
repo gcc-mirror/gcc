@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -msse" } */
+/* { dg-require-effective-target sse } */
 
 #include <xmmintrin.h>
 

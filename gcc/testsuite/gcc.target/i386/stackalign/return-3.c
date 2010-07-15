@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { ! { ilp32 && dfp } } { "*" } { "" } } */
 /* { dg-options "-msse -std=gnu99 -mpreferred-stack-boundary=2" } */
+/* { dg-require-effective-target sse } */
 
 /* This compile only test is to detect an assertion failure in stack branch
    development.  */

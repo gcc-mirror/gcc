@@ -1,6 +1,7 @@
 /* PR target/13685 */
 /* { dg-do run } */
 /* { dg-options "-Os -msse" } */
+/* { dg-require-effective-target sse } */
 
 #include "sse-check.h"
 

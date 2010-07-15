@@ -2,6 +2,7 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target ilp32 } */
+/* { dg-require-effective-target sse } */
 /* { dg-options "-msse" } */
 
 double f1();
