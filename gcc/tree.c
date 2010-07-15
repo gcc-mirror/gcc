@@ -8969,9 +8969,10 @@ void
 build_common_tree_nodes_2 (int short_double)
 {
   /* Define these next since types below may used them.  */
-  integer_zero_node = build_int_cst (NULL_TREE, 0);
-  integer_one_node = build_int_cst (NULL_TREE, 1);
-  integer_minus_one_node = build_int_cst (NULL_TREE, -1);
+  integer_zero_node = build_int_cst (integer_type_node, 0);
+  integer_one_node = build_int_cst (integer_type_node, 1);
+  integer_three_node = build_int_cst (integer_type_node, 3);
+  integer_minus_one_node = build_int_cst (integer_type_node, -1);
 
   size_zero_node = size_int (0);
   size_one_node = size_int (1);

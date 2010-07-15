@@ -4006,7 +4006,6 @@ typedef enum base_kind {
 
 /* For building calls to `delete'.  */
 extern GTY(()) tree integer_two_node;
-extern GTY(()) tree integer_three_node;
 
 /* The number of function bodies which we are currently processing.
    (Zero if we are at namespace scope, one inside the body of a

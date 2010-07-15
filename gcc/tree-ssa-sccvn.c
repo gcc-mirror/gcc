@@ -564,7 +564,7 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 
       base = TMR_SYMBOL (ref) ? TMR_SYMBOL (ref) : TMR_BASE (ref);
       if (!base)
-	base = build_int_cst (ptr_type_node, 0);
+	base = null_pointer_node;
 
       memset (&temp, 0, sizeof (temp));
       /* We do not care for spurious type qualifications.  */

@@ -1877,7 +1877,7 @@ lower_eh_constructs_2 (struct leh_state *state, gimple_stmt_iterator *gsi)
 	      else
 		{
 		  /* The user has dome something silly.  Remove it.  */
-		  rhs = build_int_cst (ptr_type_node, 0);
+		  rhs = null_pointer_node;
 		  goto do_replace;
 		}
 	      break;
