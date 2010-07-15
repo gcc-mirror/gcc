@@ -103,6 +103,10 @@ along with GCC; see the file COPYING3.  If not see
 /* Register the Solaris-specific #pragma directives.  */
 #define REGISTER_SUBTARGET_PRAGMAS() solaris_register_pragmas ()
 
+#undef SUBTARGET_RETURN_IN_MEMORY
+#define SUBTARGET_RETURN_IN_MEMORY(TYPE, FNTYPE) \
+	ix86_solaris_return_in_memory (TYPE, FNTYPE)
+
 /* Output a simple call for .init/.fini.  */
 #define ASM_OUTPUT_CALL(FILE, FN)				\
   do								\

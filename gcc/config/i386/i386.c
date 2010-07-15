@@ -6362,12 +6362,12 @@ ix86_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 }
 
 /* Return false iff TYPE is returned in memory.  This version is used
-   on Solaris 10.  It is similar to the generic ix86_return_in_memory,
+   on Solaris 2.  It is similar to the generic ix86_return_in_memory,
    but differs notably in that when MMX is available, 8-byte vectors
    are returned in memory, rather than in MMX registers.  */
 
 bool
-ix86_sol10_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
+ix86_solaris_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   int size;
   enum machine_mode mode = type_natural_mode (type, NULL);
