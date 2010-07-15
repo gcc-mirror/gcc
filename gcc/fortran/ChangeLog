@@ -11,6 +11,10 @@
 	or NE_EXPR and one of the strings is string literal with LEN_TRIM
 	bigger than the length of the other string, they compare unequal.
 
+	PR fortran/40206
+	* trans-stmt.c (gfc_trans_character_select): Always use NULL for high
+	in CASE_LABEL_EXPR and use NULL for low for the default case.
+
 2010-07-14  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans-array.c (gfc_conv_section_upper_bound): Remove

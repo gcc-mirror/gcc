@@ -1,3 +1,8 @@
+2010-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/40206
+	* gfortran.dg/select_char_3.f90: New test.
+
 2010-07-15  Magnus Granberg  <zorry@gentoo.org>
 	    Kevin F. Quinn  <kevquinn@gentoo.org>
 
