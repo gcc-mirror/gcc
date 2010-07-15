@@ -2136,49 +2136,49 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 
   dtp->u.p.current_unit = get_unit (dtp, 1);
   if (dtp->u.p.current_unit->s == NULL)
-  {  /* Open the unit with some default flags.  */
-     st_parameter_open opp;
-     unit_convert conv;
+    {  /* Open the unit with some default flags.  */
+       st_parameter_open opp;
+       unit_convert conv;
 
-    if (dtp->common.unit < 0)
-      {
-	close_unit (dtp->u.p.current_unit);
-	dtp->u.p.current_unit = NULL;
-	generate_error (&dtp->common, LIBERROR_BAD_OPTION,
-			"Bad unit number in statement");
-	return;
-      }
-    memset (&u_flags, '\0', sizeof (u_flags));
-    u_flags.access = ACCESS_SEQUENTIAL;
-    u_flags.action = ACTION_READWRITE;
+      if (dtp->common.unit < 0)
+	{
+	  close_unit (dtp->u.p.current_unit);
+	  dtp->u.p.current_unit = NULL;
+	  generate_error (&dtp->common, LIBERROR_BAD_OPTION,
+			  "Bad unit number in statement");
+	  return;
+	}
+      memset (&u_flags, '\0', sizeof (u_flags));
+      u_flags.access = ACCESS_SEQUENTIAL;
+      u_flags.action = ACTION_READWRITE;
 
-    /* Is it unformatted?  */
-    if (!(cf & (IOPARM_DT_HAS_FORMAT | IOPARM_DT_LIST_FORMAT
-		| IOPARM_DT_IONML_SET)))
-      u_flags.form = FORM_UNFORMATTED;
-    else
-      u_flags.form = FORM_UNSPECIFIED;
+      /* Is it unformatted?  */
+      if (!(cf & (IOPARM_DT_HAS_FORMAT | IOPARM_DT_LIST_FORMAT
+		  | IOPARM_DT_IONML_SET)))
+	u_flags.form = FORM_UNFORMATTED;
+      else
+	u_flags.form = FORM_UNSPECIFIED;
 
-    u_flags.delim = DELIM_UNSPECIFIED;
-    u_flags.blank = BLANK_UNSPECIFIED;
-    u_flags.pad = PAD_UNSPECIFIED;
-    u_flags.decimal = DECIMAL_UNSPECIFIED;
-    u_flags.encoding = ENCODING_UNSPECIFIED;
-    u_flags.async = ASYNC_UNSPECIFIED;
-    u_flags.round = ROUND_UNSPECIFIED;
-    u_flags.sign = SIGN_UNSPECIFIED;
+      u_flags.delim = DELIM_UNSPECIFIED;
+      u_flags.blank = BLANK_UNSPECIFIED;
+      u_flags.pad = PAD_UNSPECIFIED;
+      u_flags.decimal = DECIMAL_UNSPECIFIED;
+      u_flags.encoding = ENCODING_UNSPECIFIED;
+      u_flags.async = ASYNC_UNSPECIFIED;
+      u_flags.round = ROUND_UNSPECIFIED;
+      u_flags.sign = SIGN_UNSPECIFIED;
 
-    u_flags.status = STATUS_UNKNOWN;
+      u_flags.status = STATUS_UNKNOWN;
 
-    conv = get_unformatted_convert (dtp->common.unit);
+      conv = get_unformatted_convert (dtp->common.unit);
 
-    if (conv == GFC_CONVERT_NONE)
-      conv = compile_options.convert;
+      if (conv == GFC_CONVERT_NONE)
+	conv = compile_options.convert;
 
-    /* We use big_endian, which is 0 on little-endian machines
-       and 1 on big-endian machines.  */
-    switch (conv)
-      {
+      /* We use big_endian, which is 0 on little-endian machines
+	 and 1 on big-endian machines.  */
+      switch (conv)
+	{
 	case GFC_CONVERT_NATIVE:
 	case GFC_CONVERT_SWAP:
 	  break;
@@ -2194,18 +2194,18 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	default:
 	  internal_error (&opp.common, "Illegal value for CONVERT");
 	  break;
-      }
+	}
 
-     u_flags.convert = conv;
+      u_flags.convert = conv;
 
-     opp.common = dtp->common;
-     opp.common.flags &= IOPARM_COMMON_MASK;
-     dtp->u.p.current_unit = new_unit (&opp, dtp->u.p.current_unit, &u_flags);
-     dtp->common.flags &= ~IOPARM_COMMON_MASK;
-     dtp->common.flags |= (opp.common.flags & IOPARM_COMMON_MASK);
-     if (dtp->u.p.current_unit == NULL)
-       return;
-  }
+      opp.common = dtp->common;
+      opp.common.flags &= IOPARM_COMMON_MASK;
+      dtp->u.p.current_unit = new_unit (&opp, dtp->u.p.current_unit, &u_flags);
+      dtp->common.flags &= ~IOPARM_COMMON_MASK;
+      dtp->common.flags |= (opp.common.flags & IOPARM_COMMON_MASK);
+      if (dtp->u.p.current_unit == NULL)
+	return;
+    }
 
   /* Check the action.  */
 
