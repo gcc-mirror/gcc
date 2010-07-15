@@ -582,7 +582,10 @@ cgraph_externally_visible_p (struct cgraph_node *node, bool whole_program, bool 
     return true;
 
   /* When doing link time optimizations, hidden symbols become local.  */
-  if (in_lto_p && DECL_VISIBILITY (node->decl) == VISIBILITY_HIDDEN)
+  if (in_lto_p && DECL_VISIBILITY (node->decl) == VISIBILITY_HIDDEN
+      /* Be sure that node is defined in IR file, not in other object
+	 file.  In that case we don't set used_from_other_object_file.  */
+      && node->analyzed)
     ;
   else if (!whole_program)
     return true;
@@ -779,7 +782,10 @@ function_and_variable_visibility (bool whole_program)
 	       /* When doing linktime optimizations, all hidden symbols will
 		  become local.  */
 	       && (!in_lto_p
-		   || DECL_VISIBILITY (vnode->decl) != VISIBILITY_HIDDEN))
+		   || DECL_VISIBILITY (vnode->decl) != VISIBILITY_HIDDEN
+		   /* We can get prevailing decision in other object file.
+		      In this case we do not sed used_from_object_file.  */
+		   || !vnode->finalized))
               || vnode->used_from_object_file
 	      || pointer_set_contains (aliased_vnodes, vnode)
 	      || lookup_attribute ("externally_visible",
