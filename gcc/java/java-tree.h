@@ -1461,7 +1461,7 @@ extern tree *type_map;
   if (TYPE_FIELDS (RTYPE) == NULL_TREE)	\
     TYPE_FIELDS (RTYPE) = _field; 	\
   else					\
-    TREE_CHAIN(FIELD) = _field;		\
+    DECL_CHAIN(FIELD) = _field;		\
   DECL_CONTEXT (_field) = (RTYPE);	\
   DECL_ARTIFICIAL (_field) = 1;		\
   FIELD = _field; }
@@ -1485,7 +1485,7 @@ extern tree *type_map;
   do \
     { \
       constructor_elt *_elt___ = VEC_last (constructor_elt, V); \
-      tree _next___ = TREE_CHAIN (_elt___->index); \
+      tree _next___ = DECL_CHAIN (_elt___->index); \
       gcc_assert (!DECL_NAME (_elt___->index)); \
       _elt___->value = VALUE; \
       CONSTRUCTOR_APPEND_ELT (V, _next___, NULL); \
@@ -1499,7 +1499,7 @@ extern tree *type_map;
   do \
     { \
       constructor_elt *_elt___ = VEC_last (constructor_elt, V); \
-      tree _next___ = TREE_CHAIN (_elt___->index); \
+      tree _next___ = DECL_CHAIN (_elt___->index); \
       gcc_assert (strcmp (IDENTIFIER_POINTER (DECL_NAME (_elt___->index)), \
 			  NAME) == 0); \
       _elt___->value = VALUE; \

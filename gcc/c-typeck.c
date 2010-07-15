@@ -555,7 +555,7 @@ composite_type (tree t1, tree t2)
 		    && TREE_CODE (mv2) != ARRAY_TYPE)
 		  mv2 = TYPE_MAIN_VARIANT (mv2);
 		for (memb = TYPE_FIELDS (TREE_VALUE (p1));
-		     memb; memb = TREE_CHAIN (memb))
+		     memb; memb = DECL_CHAIN (memb))
 		  {
 		    tree mv3 = TREE_TYPE (memb);
 		    if (mv3 && mv3 != error_mark_node
@@ -580,7 +580,7 @@ composite_type (tree t1, tree t2)
 		    && TREE_CODE (mv1) != ARRAY_TYPE)
 		  mv1 = TYPE_MAIN_VARIANT (mv1);
 		for (memb = TYPE_FIELDS (TREE_VALUE (p2));
-		     memb; memb = TREE_CHAIN (memb))
+		     memb; memb = DECL_CHAIN (memb))
 		  {
 		    tree mv3 = TREE_TYPE (memb);
 		    if (mv3 && mv3 != error_mark_node
@@ -1434,7 +1434,7 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
 
 	/*  Speed up the common case where the fields are in the same order. */
 	for (s1 = TYPE_FIELDS (t1), s2 = TYPE_FIELDS (t2); s1 && s2;
-	     s1 = TREE_CHAIN (s1), s2 = TREE_CHAIN (s2))
+	     s1 = DECL_CHAIN (s1), s2 = DECL_CHAIN (s2))
 	  {
 	    int result;
 
@@ -1467,11 +1467,11 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
 	    return tu->val;
 	  }
 
-	for (s1 = TYPE_FIELDS (t1); s1; s1 = TREE_CHAIN (s1))
+	for (s1 = TYPE_FIELDS (t1); s1; s1 = DECL_CHAIN (s1))
 	  {
 	    bool ok = false;
 
-	    for (s2 = TYPE_FIELDS (t2); s2; s2 = TREE_CHAIN (s2))
+	    for (s2 = TYPE_FIELDS (t2); s2; s2 = DECL_CHAIN (s2))
 	      if (DECL_NAME (s1) == DECL_NAME (s2))
 		{
 		  int result;
@@ -1514,7 +1514,7 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
 
 	for (s1 = TYPE_FIELDS (t1), s2 = TYPE_FIELDS (t2);
 	     s1 && s2;
-	     s1 = TREE_CHAIN (s1), s2 = TREE_CHAIN (s2))
+	     s1 = DECL_CHAIN (s1), s2 = DECL_CHAIN (s2))
 	  {
 	    int result;
 	    if (TREE_CODE (s1) != TREE_CODE (s2)
@@ -1684,7 +1684,7 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
 	    {
 	      tree memb;
 	      for (memb = TYPE_FIELDS (a1);
-		   memb; memb = TREE_CHAIN (memb))
+		   memb; memb = DECL_CHAIN (memb))
 		{
 		  tree mv3 = TREE_TYPE (memb);
 		  if (mv3 && mv3 != error_mark_node
@@ -1706,7 +1706,7 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
 	    {
 	      tree memb;
 	      for (memb = TYPE_FIELDS (a2);
-		   memb; memb = TREE_CHAIN (memb))
+		   memb; memb = DECL_CHAIN (memb))
 		{
 		  tree mv3 = TREE_TYPE (memb);
 		  if (mv3 && mv3 != error_mark_node
@@ -2081,7 +2081,7 @@ lookup_field (tree type, tree component)
     }
   else
     {
-      for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+      for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	{
 	  if (DECL_NAME (field) == NULL_TREE
 	      && (TREE_CODE (TREE_TYPE (field)) == RECORD_TYPE
@@ -4560,7 +4560,7 @@ build_c_cast (location_t loc, tree type, tree expr)
     {
       tree field;
 
-      for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+      for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	if (TREE_TYPE (field) != error_mark_node
 	    && comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (field)),
 			  TYPE_MAIN_VARIANT (TREE_TYPE (value))))
@@ -5192,7 +5192,7 @@ convert_for_assignment (location_t location, tree type, tree rhs,
     {
       tree memb, marginal_memb = NULL_TREE;
 
-      for (memb = TYPE_FIELDS (type); memb ; memb = TREE_CHAIN (memb))
+      for (memb = TYPE_FIELDS (type); memb ; memb = DECL_CHAIN (memb))
 	{
 	  tree memb_type = TREE_TYPE (memb);
 
@@ -6483,7 +6483,7 @@ really_start_incremental_init (tree type)
       /* Skip any nameless bit fields at the beginning.  */
       while (constructor_fields != 0 && DECL_C_BIT_FIELD (constructor_fields)
 	     && DECL_NAME (constructor_fields) == 0)
-	constructor_fields = TREE_CHAIN (constructor_fields);
+	constructor_fields = DECL_CHAIN (constructor_fields);
 
       constructor_unfilled_fields = constructor_fields;
       constructor_bit_index = bitsize_zero_node;
@@ -6802,7 +6802,7 @@ pop_init_level (int implicit, struct obstack * braced_init_obstack)
 	  /* We have already issued an error message for the existence
 	     of a flexible array member not at the end of the structure.
 	     Discard the initializer so that we do not die later.  */
-	  if (TREE_CHAIN (constructor_fields) != NULL_TREE)
+	  if (DECL_CHAIN (constructor_fields) != NULL_TREE)
 	    constructor_type = NULL_TREE;
 	}
     }
@@ -6817,7 +6817,7 @@ pop_init_level (int implicit, struct obstack * braced_init_obstack)
 	while (constructor_unfilled_fields
 	       && (!DECL_SIZE (constructor_unfilled_fields)
 		   || integer_zerop (DECL_SIZE (constructor_unfilled_fields))))
-	  constructor_unfilled_fields = TREE_CHAIN (constructor_unfilled_fields);
+	  constructor_unfilled_fields = DECL_CHAIN (constructor_unfilled_fields);
 
 	/* Do not warn if this level of the initializer uses member
 	   designators; it is likely to be deliberate.  */
@@ -7650,7 +7650,7 @@ output_init_element (tree value, tree origtype, bool strict_string, tree type,
 	  || (COMPLETE_TYPE_P (TREE_TYPE (field))
 	      && integer_zerop (TYPE_SIZE (TREE_TYPE (field)))
 	      && (TREE_CODE (constructor_type) == ARRAY_TYPE
-		  || TREE_CHAIN (field)))))
+		  || DECL_CHAIN (field)))))
     return;
 
   if (semantic_type)
@@ -7738,14 +7738,14 @@ output_init_element (tree value, tree origtype, bool strict_string, tree type,
   else if (TREE_CODE (constructor_type) == RECORD_TYPE)
     {
       constructor_unfilled_fields
-	= TREE_CHAIN (constructor_unfilled_fields);
+	= DECL_CHAIN (constructor_unfilled_fields);
 
       /* Skip any nameless bit fields.  */
       while (constructor_unfilled_fields != 0
 	     && DECL_C_BIT_FIELD (constructor_unfilled_fields)
 	     && DECL_NAME (constructor_unfilled_fields) == 0)
 	constructor_unfilled_fields =
-	  TREE_CHAIN (constructor_unfilled_fields);
+	  DECL_CHAIN (constructor_unfilled_fields);
     }
   else if (TREE_CODE (constructor_type) == UNION_TYPE)
     constructor_unfilled_fields = 0;
@@ -8062,22 +8062,22 @@ process_init_element (struct c_expr value, bool implicit,
 		 it isn't now, so update.  */
 	      if (constructor_unfilled_fields == constructor_fields)
 		{
-		  constructor_unfilled_fields = TREE_CHAIN (constructor_fields);
+		  constructor_unfilled_fields = DECL_CHAIN (constructor_fields);
 		  /* Skip any nameless bit fields.  */
 		  while (constructor_unfilled_fields != 0
 			 && DECL_C_BIT_FIELD (constructor_unfilled_fields)
 			 && DECL_NAME (constructor_unfilled_fields) == 0)
 		    constructor_unfilled_fields =
-		      TREE_CHAIN (constructor_unfilled_fields);
+		      DECL_CHAIN (constructor_unfilled_fields);
 		}
 	    }
 
-	  constructor_fields = TREE_CHAIN (constructor_fields);
+	  constructor_fields = DECL_CHAIN (constructor_fields);
 	  /* Skip any nameless bit fields at the beginning.  */
 	  while (constructor_fields != 0
 		 && DECL_C_BIT_FIELD (constructor_fields)
 		 && DECL_NAME (constructor_fields) == 0)
-	    constructor_fields = TREE_CHAIN (constructor_fields);
+	    constructor_fields = DECL_CHAIN (constructor_fields);
 	}
       else if (TREE_CODE (constructor_type) == UNION_TYPE)
 	{

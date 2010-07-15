@@ -2641,7 +2641,7 @@ array_at_struct_end_p (tree ref)
 
 	  /* Unless the field is at the end of the struct, we are done.  */
 	  field = TREE_OPERAND (ref, 1);
-	  if (TREE_CHAIN (field))
+	  if (DECL_CHAIN (field))
 	    return false;
 	}
 

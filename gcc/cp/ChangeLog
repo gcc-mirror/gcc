@@ -1,3 +1,23 @@
+2010-07-15  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* cp-tree.h: Carefully replace TREE_CHAIN with DECL_CHAIN.
+	* call.c: Likewise.
+	* class.c: Likewise.
+	* cp-gimplify.c: Likewise.
+	* decl.c: Likewise.
+	* decl2.c: Likewise.
+	* init.c: Likewise.
+	* mangle.c: Likewise.
+	* name-lookup.c: Likewise.
+	* optimize.c: Likewise.
+	* parser.c: Likewise.
+	* pt.c: Likewise.
+	* rtti.c: Likewise.
+	* search.c: Likewise.
+	* semantics.c: Likewise.
+	* typeck.c: Likewise.
+	* typeck2.c: Likewise.
+
 2010-07-14  Jason Merrill  <jason@redhat.com>
 
 	* init.c (sort_mem_initializers): Rename "field_type" to "ctx".

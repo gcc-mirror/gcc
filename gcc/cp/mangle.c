@@ -1289,7 +1289,7 @@ nested_anon_class_index (tree type)
 {
   int index = 0;
   tree member = TYPE_FIELDS (TYPE_CONTEXT (type));
-  for (; member; member = TREE_CHAIN (member))
+  for (; member; member = DECL_CHAIN (member))
     if (DECL_IMPLICIT_TYPEDEF_P (member))
       {
 	tree memtype = TREE_TYPE (member);
@@ -1719,7 +1719,7 @@ write_local_name (tree function, const tree local_entity,
     {
       tree t;
       int i = 0;
-      for (t = DECL_ARGUMENTS (function); t; t = TREE_CHAIN (t))
+      for (t = DECL_ARGUMENTS (function); t; t = DECL_CHAIN (t))
 	{
 	  if (t == parm)
 	    i = 1;
@@ -2303,12 +2303,12 @@ write_method_parms (tree parm_types, const int method_p, const tree decl)
   if (method_p)
     {
       parm_types = TREE_CHAIN (parm_types);
-      parm_decl = parm_decl ? TREE_CHAIN (parm_decl) : NULL_TREE;
+      parm_decl = parm_decl ? DECL_CHAIN (parm_decl) : NULL_TREE;
 
       while (parm_decl && DECL_ARTIFICIAL (parm_decl))
 	{
 	  parm_types = TREE_CHAIN (parm_types);
-	  parm_decl = TREE_CHAIN (parm_decl);
+	  parm_decl = DECL_CHAIN (parm_decl);
 	}
     }
 

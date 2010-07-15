@@ -174,7 +174,7 @@ gfc_add_decl_to_parent_function (tree decl)
   gcc_assert (decl);
   DECL_CONTEXT (decl) = DECL_CONTEXT (current_function_decl);
   DECL_NONLOCAL (decl) = 1;
-  TREE_CHAIN (decl) = saved_parent_function_decls;
+  DECL_CHAIN (decl) = saved_parent_function_decls;
   saved_parent_function_decls = decl;
 }
 
@@ -184,7 +184,7 @@ gfc_add_decl_to_function (tree decl)
   gcc_assert (decl);
   TREE_USED (decl) = 1;
   DECL_CONTEXT (decl) = current_function_decl;
-  TREE_CHAIN (decl) = saved_function_decls;
+  DECL_CHAIN (decl) = saved_function_decls;
   saved_function_decls = decl;
 }
 
@@ -194,7 +194,7 @@ add_decl_as_local (tree decl)
   gcc_assert (decl);
   TREE_USED (decl) = 1;
   DECL_CONTEXT (decl) = current_function_decl;
-  TREE_CHAIN (decl) = saved_local_decls;
+  DECL_CHAIN (decl) = saved_local_decls;
   saved_local_decls = decl;
 }
 
@@ -960,7 +960,7 @@ gfc_nonlocal_dummy_array_decl (gfc_symbol *sym)
   SET_DECL_VALUE_EXPR (decl, sym->backend_decl);
   DECL_HAS_VALUE_EXPR_P (decl) = 1;
   DECL_CONTEXT (decl) = DECL_CONTEXT (sym->backend_decl);
-  TREE_CHAIN (decl) = nonlocal_dummy_decls;
+  DECL_CHAIN (decl) = nonlocal_dummy_decls;
   nonlocal_dummy_decls = decl;
 }
 
@@ -1091,7 +1091,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	  /* For entry master function skip over the __entry
 	     argument.  */
 	  if (sym->ns->proc_name->attr.entry_master)
-	    sym->backend_decl = TREE_CHAIN (sym->backend_decl);
+	    sym->backend_decl = DECL_CHAIN (sym->backend_decl);
 	}
 
       /* Dummy variables should already have been created.  */
@@ -2015,7 +2015,7 @@ build_entry_thunks (gfc_namespace * ns)
 	      tree ref = DECL_ARGUMENTS (current_function_decl);
 	      VEC_safe_push (tree, gc, args, ref);
 	      if (ns->proc_name->ts.type == BT_CHARACTER)
-		VEC_safe_push (tree, gc, args, TREE_CHAIN (ref));
+		VEC_safe_push (tree, gc, args, DECL_CHAIN (ref));
 	    }
 	}
 
@@ -2083,7 +2083,7 @@ build_entry_thunks (gfc_namespace * ns)
 	  gfc_add_expr_to_block (&body, tmp);
 
 	  for (field = TYPE_FIELDS (TREE_TYPE (union_decl));
-	       field; field = TREE_CHAIN (field))
+	       field; field = DECL_CHAIN (field))
 	    if (strcmp (IDENTIFIER_POINTER (DECL_NAME (field)),
 		thunk_sym->result->name) == 0)
 	      break;
@@ -2219,7 +2219,7 @@ gfc_get_fake_result_decl (gfc_symbol * sym, int parent_flag)
 	  tree field;
 
 	  for (field = TYPE_FIELDS (TREE_TYPE (decl));
-	       field; field = TREE_CHAIN (field))
+	       field; field = DECL_CHAIN (field))
 	    if (strcmp (IDENTIFIER_POINTER (DECL_NAME (field)),
 		sym->name) == 0)
 	      break;
@@ -2270,7 +2270,7 @@ gfc_get_fake_result_decl (gfc_symbol * sym, int parent_flag)
 
       if (sym->ns->proc_name->backend_decl == this_function_decl
 	  && sym->ns->proc_name->attr.entry_master)
-	decl = TREE_CHAIN (decl);
+	decl = DECL_CHAIN (decl);
 
       TREE_USED (decl) = 1;
       if (sym->as)
@@ -4531,8 +4531,8 @@ gfc_generate_function_code (gfc_namespace * ns)
     {
       tree next;
 
-      next = TREE_CHAIN (decl);
-      TREE_CHAIN (decl) = NULL_TREE;
+      next = DECL_CHAIN (decl);
+      DECL_CHAIN (decl) = NULL_TREE;
       pushdecl (decl);
       decl = next;
     }
@@ -4710,8 +4710,8 @@ gfc_process_block_locals (gfc_namespace* ns)
     {
       tree next;
 
-      next = TREE_CHAIN (decl);
-      TREE_CHAIN (decl) = NULL_TREE;
+      next = DECL_CHAIN (decl);
+      DECL_CHAIN (decl) = NULL_TREE;
       pushdecl (decl);
       decl = next;
     }

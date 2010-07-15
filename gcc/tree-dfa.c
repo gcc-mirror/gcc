@@ -770,9 +770,9 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		    && maxsize != -1)
 		  {
 		    tree stype = TREE_TYPE (TREE_OPERAND (exp, 0));
-		    tree next = TREE_CHAIN (field);
+		    tree next = DECL_CHAIN (field);
 		    while (next && TREE_CODE (next) != FIELD_DECL)
-		      next = TREE_CHAIN (next);
+		      next = DECL_CHAIN (next);
 		    if (!next
 			|| TREE_CODE (stype) != RECORD_TYPE)
 		      {

@@ -1634,7 +1634,7 @@ lookup_field (tree *typep, tree name)
       tree save_field;
       int i;
 
-      for (field = TYPE_FIELDS (*typep); field; field = TREE_CHAIN (field))
+      for (field = TYPE_FIELDS (*typep); field; field = DECL_CHAIN (field))
 	if (DECL_NAME (field) == name)
 	  return field;
 
@@ -1952,7 +1952,7 @@ attach_init_test_initialization_flags (void **entry, void *ptr)
       if (TREE_CODE (block) == BIND_EXPR)
         {
 	  tree body = BIND_EXPR_BODY (block);
-	  TREE_CHAIN (ite->value) = BIND_EXPR_VARS (block);
+	  DECL_CHAIN (ite->value) = BIND_EXPR_VARS (block);
 	  BIND_EXPR_VARS (block) = ite->value;
 	  body = build2 (COMPOUND_EXPR, void_type_node,
 			 build1 (DECL_EXPR, void_type_node, ite->value), body);
@@ -2239,7 +2239,7 @@ build_known_method_ref (tree method, tree method_type ATTRIBUTE_UNUSED,
 		    lookup_field (&class_type_node, methods_ident),
 		    NULL_TREE);
       for (meth = TYPE_METHODS (self_type);
-	   ; meth = TREE_CHAIN (meth))
+	   ; meth = DECL_CHAIN (meth))
 	{
 	  if (method == meth)
 	    break;
@@ -2643,7 +2643,7 @@ build_jni_stub (tree method)
       res_var = build_decl (input_location, VAR_DECL, get_identifier ("res"),
 			    TREE_TYPE (TREE_TYPE (method)));
       DECL_CONTEXT (res_var) = method;
-      TREE_CHAIN (env_var) = res_var;
+      DECL_CHAIN (env_var) = res_var;
     }
 
   method_args = DECL_ARGUMENTS (method);
@@ -2673,7 +2673,7 @@ build_jni_stub (tree method)
   /* All the arguments to this method become arguments to the
      underlying JNI function.  If we had to wrap object arguments in a
      special way, we would do that here.  */
-  for (tem = method_args; tem != NULL_TREE; tem = TREE_CHAIN (tem))
+  for (tem = method_args; tem != NULL_TREE; tem = DECL_CHAIN (tem))
     {
       int arg_bits = TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (tem)));
 #ifdef PARM_BOUNDARY
@@ -3779,7 +3779,7 @@ promote_arguments (void)
   int i;
   tree arg;
   for (arg = DECL_ARGUMENTS (current_function_decl), i = 0;
-       arg != NULL_TREE;  arg = TREE_CHAIN (arg), i++)
+       arg != NULL_TREE;  arg = DECL_CHAIN (arg), i++)
     {
       tree arg_type = TREE_TYPE (arg);
       if (INTEGRAL_TYPE_P (arg_type)

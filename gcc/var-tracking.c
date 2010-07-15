@@ -8002,7 +8002,7 @@ vt_add_function_parameters (void)
   tree parm;
 
   for (parm = DECL_ARGUMENTS (current_function_decl);
-       parm; parm = TREE_CHAIN (parm))
+       parm; parm = DECL_CHAIN (parm))
     {
       rtx decl_rtl = DECL_RTL_IF_SET (parm);
       rtx incoming = DECL_INCOMING_RTL (parm);

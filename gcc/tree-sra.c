@@ -634,7 +634,7 @@ type_internals_preclude_sra_p (tree type)
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
-      for (fld = TYPE_FIELDS (type); fld; fld = TREE_CHAIN (fld))
+      for (fld = TYPE_FIELDS (type); fld; fld = DECL_CHAIN (fld))
 	if (TREE_CODE (fld) == FIELD_DECL)
 	  {
 	    tree ft = TREE_TYPE (fld);
@@ -697,7 +697,7 @@ mark_parm_dereference (tree base, HOST_WIDE_INT dist, gimple stmt)
 
   for (parm = DECL_ARGUMENTS (current_function_decl);
        parm && parm != base;
-       parm = TREE_CHAIN (parm))
+       parm = DECL_CHAIN (parm))
     parm_index++;
 
   gcc_assert (parm_index < func_param_count);
@@ -821,7 +821,7 @@ type_consists_of_records_p (tree type)
   if (TREE_CODE (type) != RECORD_TYPE)
     return false;
 
-  for (fld = TYPE_FIELDS (type); fld; fld = TREE_CHAIN (fld))
+  for (fld = TYPE_FIELDS (type); fld; fld = DECL_CHAIN (fld))
     if (TREE_CODE (fld) == FIELD_DECL)
       {
 	tree ft = TREE_TYPE (fld);
@@ -849,7 +849,7 @@ completely_scalarize_record (tree base, tree decl, HOST_WIDE_INT offset)
 {
   tree fld, decl_type = TREE_TYPE (decl);
 
-  for (fld = TYPE_FIELDS (decl_type); fld; fld = TREE_CHAIN (fld))
+  for (fld = TYPE_FIELDS (decl_type); fld; fld = DECL_CHAIN (fld))
     if (TREE_CODE (fld) == FIELD_DECL)
       {
 	HOST_WIDE_INT pos = offset + int_bit_position (fld);
@@ -1344,7 +1344,7 @@ build_ref_for_offset_1 (tree *res, tree type, HOST_WIDE_INT offset,
 	case UNION_TYPE:
 	case QUAL_UNION_TYPE:
 	case RECORD_TYPE:
-	  for (fld = TYPE_FIELDS (type); fld; fld = TREE_CHAIN (fld))
+	  for (fld = TYPE_FIELDS (type); fld; fld = DECL_CHAIN (fld))
 	    {
 	      HOST_WIDE_INT pos, size;
 	      tree expr, *expr_ptr;
@@ -2862,7 +2862,7 @@ initialize_parameter_reductions (void)
 
   for (parm = DECL_ARGUMENTS (current_function_decl);
        parm;
-       parm = TREE_CHAIN (parm))
+       parm = DECL_CHAIN (parm))
     {
       VEC (access_p, heap) *access_vec;
       struct access *access;
@@ -3101,7 +3101,7 @@ find_param_candidates (void)
 
   for (parm = DECL_ARGUMENTS (current_function_decl);
        parm;
-       parm = TREE_CHAIN (parm))
+       parm = DECL_CHAIN (parm))
     {
       tree type = TREE_TYPE (parm);
 
@@ -3593,7 +3593,7 @@ splice_all_param_accesses (VEC (access_p, heap) **representatives)
 
   for (parm = DECL_ARGUMENTS (current_function_decl);
        parm;
-       parm = TREE_CHAIN (parm))
+       parm = DECL_CHAIN (parm))
     {
       if (is_unused_scalar_param (parm))
 	{
@@ -3678,7 +3678,7 @@ turn_representatives_into_adjustments (VEC (access_p, heap) *representatives,
   parms = ipa_get_vector_of_formal_parms (current_function_decl);
   adjustments = VEC_alloc (ipa_parm_adjustment_t, heap, adjustments_count);
   parm = DECL_ARGUMENTS (current_function_decl);
-  for (i = 0; i < func_param_count; i++, parm = TREE_CHAIN (parm))
+  for (i = 0; i < func_param_count; i++, parm = DECL_CHAIN (parm))
     {
       struct access *repr = VEC_index (access_p, representatives, i);
 

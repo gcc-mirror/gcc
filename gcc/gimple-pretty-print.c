@@ -765,7 +765,7 @@ dump_gimple_bind (pretty_printer *buffer, gimple gs, int spc, int flags)
     {
       tree var;
 
-      for (var = gimple_bind_vars (gs); var; var = TREE_CHAIN (var))
+      for (var = gimple_bind_vars (gs); var; var = DECL_CHAIN (var))
 	{
           newline_and_indent (buffer, 2);
 	  print_declaration (buffer, var, spc, flags);

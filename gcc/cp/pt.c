@@ -2553,7 +2553,7 @@ check_explicit_specialization (tree declarator,
 		     definition, not in the original declaration.  */
 		  DECL_ARGUMENTS (result) = DECL_ARGUMENTS (decl);
 		  for (parm = DECL_ARGUMENTS (result); parm;
-		       parm = TREE_CHAIN (parm))
+		       parm = DECL_CHAIN (parm))
 		    DECL_CONTEXT (parm) = result;
 		}
 	      return register_specialization (tmpl, gen_tmpl, targs,
@@ -4417,7 +4417,7 @@ push_template_decl_real (tree decl, bool is_friend)
               TREE_VALUE (argtype) = error_mark_node;
             }
 
-          arg = TREE_CHAIN (arg);
+          arg = DECL_CHAIN (arg);
           argtype = TREE_CHAIN (argtype);
         }
 
@@ -8196,7 +8196,7 @@ instantiate_class_template (tree type)
      any member functions.  We don't do this earlier because the
      default arguments may reference members of the class.  */
   if (!PRIMARY_TEMPLATE_P (templ))
-    for (t = TYPE_METHODS (type); t; t = TREE_CHAIN (t))
+    for (t = TYPE_METHODS (type); t; t = DECL_CHAIN (t))
       if (TREE_CODE (t) == FUNCTION_DECL
 	  /* Implicitly generated member functions will not have template
 	     information; they are not instantiations, but instead are
@@ -8261,7 +8261,7 @@ make_fnparm_pack (tree spec_parm)
   /* Fill in PARMVEC and PARMTYPEVEC with all of the parameters.  */
   parmvec = make_tree_vec (len);
   parmtypevec = make_tree_vec (len);
-  for (i = 0; i < len; i++, spec_parm = TREE_CHAIN (spec_parm))
+  for (i = 0; i < len; i++, spec_parm = DECL_CHAIN (spec_parm))
     {
       TREE_VEC_ELT (parmvec, i) = spec_parm;
       TREE_VEC_ELT (parmtypevec, i) = TREE_TYPE (spec_parm);
@@ -8541,7 +8541,7 @@ get_pattern_parm (tree parm, tree tmpl)
   if (DECL_ARTIFICIAL (parm))
     {
       for (patparm = DECL_ARGUMENTS (pattern);
-	   patparm; patparm = TREE_CHAIN (patparm))
+	   patparm; patparm = DECL_CHAIN (patparm))
 	if (DECL_ARTIFICIAL (patparm)
 	    && DECL_NAME (parm) == DECL_NAME (patparm))
 	  break;
@@ -8936,7 +8936,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	      RETURN (error_mark_node);
 
 	    r = copy_decl (t);
-	    TREE_CHAIN (r) = NULL_TREE;
+	    DECL_CHAIN (r) = NULL_TREE;
 	    TREE_TYPE (r) = new_type;
 	    DECL_TEMPLATE_RESULT (r)
 	      = build_decl (DECL_SOURCE_LOCATION (decl),
@@ -8986,7 +8986,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	   than the old one.  */
 	r = copy_decl (t);
 	gcc_assert (DECL_LANG_SPECIFIC (r) != 0);
-	TREE_CHAIN (r) = NULL_TREE;
+	DECL_CHAIN (r) = NULL_TREE;
 
 	DECL_TEMPLATE_INFO (r) = build_template_info (t, args);
 
@@ -9196,7 +9196,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	   assigned to the instantiation.  */
 	DECL_INTERFACE_KNOWN (r) = !TREE_PUBLIC (r);
 	DECL_DEFER_OUTPUT (r) = 0;
-	TREE_CHAIN (r) = NULL_TREE;
+	DECL_CHAIN (r) = NULL_TREE;
 	DECL_PENDING_INLINE_INFO (r) = 0;
 	DECL_PENDING_INLINE_P (r) = 0;
 	DECL_SAVED_TREE (r) = NULL_TREE;
@@ -9395,12 +9395,12 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
             /* Build a proper chain of parameters when substituting
                into a function parameter pack.  */
             if (prev_r)
-              TREE_CHAIN (prev_r) = r;
+              DECL_CHAIN (prev_r) = r;
           }
 
-	if (TREE_CHAIN (t))
-	  TREE_CHAIN (r) = tsubst (TREE_CHAIN (t), args,
-				   complain, TREE_CHAIN (t));
+	if (DECL_CHAIN (t))
+	  DECL_CHAIN (r) = tsubst (DECL_CHAIN (t), args,
+				   complain, DECL_CHAIN (t));
 
         /* FIRST_R contains the start of the chain we've built.  */
         r = first_r;
@@ -9425,7 +9425,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 			 /*integral_constant_expression_p=*/true);
 	/* We don't have to set DECL_CONTEXT here; it is set by
 	   finish_member_declaration.  */
-	TREE_CHAIN (r) = NULL_TREE;
+	DECL_CHAIN (r) = NULL_TREE;
 	if (VOID_TYPE_P (type))
 	  error ("instantiation of %q+D as type %qT", r, type);
 
@@ -9452,7 +9452,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
       else
 	{
 	  r = copy_node (t);
-	  TREE_CHAIN (r) = NULL_TREE;
+	  DECL_CHAIN (r) = NULL_TREE;
 	}
       break;
 
@@ -9652,7 +9652,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	else
 	  register_local_specialization (r, t);
 
-	TREE_CHAIN (r) = NULL_TREE;
+	DECL_CHAIN (r) = NULL_TREE;
 
 	apply_late_template_attributes (&r, DECL_ATTRIBUTES (r),
 					/*flags=*/0,
@@ -13123,7 +13123,7 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
      instantiate all the alternate entry points as well.  We do this
      by cloning the instantiation of the main entry point, not by
      instantiating the template clones.  */
-  if (TREE_CHAIN (gen_tmpl) && DECL_CLONED_FUNCTION_P (TREE_CHAIN (gen_tmpl)))
+  if (DECL_CHAIN (gen_tmpl) && DECL_CLONED_FUNCTION_P (DECL_CHAIN (gen_tmpl)))
     clone_function_decl (fndecl, /*update_method_vec_p=*/0);
 
   return fndecl;
@@ -16392,12 +16392,12 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
        interpretation is that it should be an explicit instantiation.  */
 
     if (! static_p)
-      for (tmp = TYPE_METHODS (t); tmp; tmp = TREE_CHAIN (tmp))
+      for (tmp = TYPE_METHODS (t); tmp; tmp = DECL_CHAIN (tmp))
 	if (TREE_CODE (tmp) == FUNCTION_DECL
 	    && DECL_TEMPLATE_INSTANTIATION (tmp))
 	  instantiate_class_member (tmp, extern_p);
 
-    for (tmp = TYPE_FIELDS (t); tmp; tmp = TREE_CHAIN (tmp))
+    for (tmp = TYPE_FIELDS (t); tmp; tmp = DECL_CHAIN (tmp))
       if (TREE_CODE (tmp) == VAR_DECL && DECL_TEMPLATE_INSTANTIATION (tmp))
 	instantiate_class_member (tmp, extern_p);
 
@@ -16485,8 +16485,8 @@ regenerate_decl_from_template (tree decl, tree tmpl)
 	      DECL_ATTRIBUTES (decl_parm) = attributes;
 	      cplus_decl_attributes (&decl_parm, attributes, /*flags=*/0);
 	    }
-	  decl_parm = TREE_CHAIN (decl_parm);
-	  pattern_parm = TREE_CHAIN (pattern_parm);
+	  decl_parm = DECL_CHAIN (decl_parm);
+	  pattern_parm = DECL_CHAIN (pattern_parm);
 	}
       /* Merge any parameters that match with the function parameter
          pack.  */
@@ -16518,7 +16518,7 @@ regenerate_decl_from_template (tree decl, tree tmpl)
                   DECL_ATTRIBUTES (decl_parm) = attributes;
                   cplus_decl_attributes (&decl_parm, attributes, /*flags=*/0);
                 }
-              decl_parm = TREE_CHAIN (decl_parm);
+              decl_parm = DECL_CHAIN (decl_parm);
             }
         }
       /* Merge additional specifiers from the CODE_PATTERN.  */
@@ -16928,8 +16928,8 @@ instantiate_decl (tree d, int defer_ok,
       while (tmpl_parm && !FUNCTION_PARAMETER_PACK_P (tmpl_parm))
 	{
 	  register_local_specialization (spec_parm, tmpl_parm);
-	  tmpl_parm = TREE_CHAIN (tmpl_parm);
-	  spec_parm = TREE_CHAIN (spec_parm);
+	  tmpl_parm = DECL_CHAIN (tmpl_parm);
+	  spec_parm = DECL_CHAIN (spec_parm);
 	}
       if (tmpl_parm && FUNCTION_PARAMETER_PACK_P (tmpl_parm))
         {
@@ -16937,7 +16937,7 @@ instantiate_decl (tree d, int defer_ok,
              TMPL_PARM, then move on.  */
 	  tree argpack = make_fnparm_pack (spec_parm);
           register_local_specialization (argpack, tmpl_parm);
-          tmpl_parm = TREE_CHAIN (tmpl_parm);
+          tmpl_parm = DECL_CHAIN (tmpl_parm);
 	  spec_parm = NULL_TREE;
         }
       gcc_assert (!spec_parm);

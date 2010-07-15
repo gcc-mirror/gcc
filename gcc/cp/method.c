@@ -103,7 +103,7 @@ make_thunk (tree function, bool this_adjusting,
   /* See if we already have the thunk in question.  For this_adjusting
      thunks VIRTUAL_OFFSET will be an INTEGER_CST, for covariant thunks it
      will be a BINFO.  */
-  for (thunk = DECL_THUNKS (function); thunk; thunk = TREE_CHAIN (thunk))
+  for (thunk = DECL_THUNKS (function); thunk; thunk = DECL_CHAIN (thunk))
     if (DECL_THIS_THUNK_P (thunk) == this_adjusting
 	&& THUNK_FIXED_OFFSET (thunk) == d
 	&& !virtual_offset == !THUNK_VIRTUAL_OFFSET (thunk)
@@ -156,7 +156,7 @@ make_thunk (tree function, bool this_adjusting,
   DECL_TEMPLATE_INFO (thunk) = NULL;
 
   /* Add it to the list of thunks associated with FUNCTION.  */
-  TREE_CHAIN (thunk) = DECL_THUNKS (function);
+  DECL_CHAIN (thunk) = DECL_THUNKS (function);
   DECL_THUNKS (function) = thunk;
 
   return thunk;
@@ -188,7 +188,7 @@ finish_thunk (tree thunk)
       tree cov_probe;
 
       for (cov_probe = DECL_THUNKS (function);
-	   cov_probe; cov_probe = TREE_CHAIN (cov_probe))
+	   cov_probe; cov_probe = DECL_CHAIN (cov_probe))
 	if (DECL_NAME (cov_probe) == name)
 	  {
 	    gcc_assert (!DECL_THUNKS (thunk));
@@ -364,10 +364,10 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 
   /* Set up cloned argument trees for the thunk.  */
   t = NULL_TREE;
-  for (a = DECL_ARGUMENTS (function); a; a = TREE_CHAIN (a))
+  for (a = DECL_ARGUMENTS (function); a; a = DECL_CHAIN (a))
     {
       tree x = copy_node (a);
-      TREE_CHAIN (x) = t;
+      DECL_CHAIN (x) = t;
       DECL_CONTEXT (x) = thunk_fndecl;
       SET_DECL_RTL (x, NULL);
       DECL_HAS_VALUE_EXPR_P (x) = 0;
@@ -529,7 +529,7 @@ do_build_copy_constructor (tree fndecl)
 			 member_init_list);
 	}
 
-      for (; fields; fields = TREE_CHAIN (fields))
+      for (; fields; fields = DECL_CHAIN (fields))
 	{
 	  tree field = fields;
 	  tree expr_type;
@@ -579,7 +579,7 @@ do_build_copy_constructor (tree fndecl)
 static void
 do_build_copy_assign (tree fndecl)
 {
-  tree parm = TREE_CHAIN (DECL_ARGUMENTS (fndecl));
+  tree parm = DECL_CHAIN (DECL_ARGUMENTS (fndecl));
   tree compound_stmt;
   bool move_p = move_fn_p (fndecl);
   bool trivial = trivial_fn_p (fndecl);
@@ -630,7 +630,7 @@ do_build_copy_assign (tree fndecl)
       /* Assign to each of the non-static data members.  */
       for (fields = TYPE_FIELDS (current_class_type);
 	   fields;
-	   fields = TREE_CHAIN (fields))
+	   fields = DECL_CHAIN (fields))
 	{
 	  tree comp = current_class_ref;
 	  tree init = parm;
@@ -953,7 +953,7 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 		   int flags, tsubst_flags_t complain)
 {
   tree field;
-  for (field = fields; field; field = TREE_CHAIN (field))
+  for (field = fields; field; field = DECL_CHAIN (field))
     {
       tree mem_type, argtype, rval;
 
@@ -1432,7 +1432,7 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
     }
   /* Add the "this" parameter.  */
   this_parm = build_this_parm (fn_type, TYPE_UNQUALIFIED);
-  TREE_CHAIN (this_parm) = DECL_ARGUMENTS (fn);
+  DECL_CHAIN (this_parm) = DECL_ARGUMENTS (fn);
   DECL_ARGUMENTS (fn) = this_parm;
 
   grokclassfn (type, fn, kind == sfk_destructor ? DTOR_FLAG : NO_SPECIAL);
@@ -1625,7 +1625,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
 		 "and may change in a future version of GCC due to "
 		 "implicit virtual destructor",
 		 type);
-      TREE_CHAIN (fn) = TYPE_METHODS (type);
+      DECL_CHAIN (fn) = TYPE_METHODS (type);
       TYPE_METHODS (type) = fn;
     }
   maybe_add_class_template_decl_list (type, fn, /*friend_p=*/0);

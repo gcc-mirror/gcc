@@ -3536,7 +3536,7 @@ arm_return_in_memory (const_tree type, const_tree fntype)
 	 have been created by C++.  */
       for (field = TYPE_FIELDS (type);
 	   field && TREE_CODE (field) != FIELD_DECL;
-	   field = TREE_CHAIN (field))
+	   field = DECL_CHAIN (field))
 	continue;
 
       if (field == NULL)
@@ -3555,9 +3555,9 @@ arm_return_in_memory (const_tree type, const_tree fntype)
 
       /* Now check the remaining fields, if any.  Only bitfields are allowed,
 	 since they are not addressable.  */
-      for (field = TREE_CHAIN (field);
+      for (field = DECL_CHAIN (field);
 	   field;
-	   field = TREE_CHAIN (field))
+	   field = DECL_CHAIN (field))
 	{
 	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
@@ -3577,7 +3577,7 @@ arm_return_in_memory (const_tree type, const_tree fntype)
 	 integral, or can be returned in an integer register.  */
       for (field = TYPE_FIELDS (type);
 	   field;
-	   field = TREE_CHAIN (field))
+	   field = DECL_CHAIN (field))
 	{
 	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
@@ -3837,7 +3837,7 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	if (!COMPLETE_TYPE_P(type))
 	  return -1;
 
-	for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	  {
 	    if (TREE_CODE (field) != FIELD_DECL)
 	      continue;
@@ -3869,7 +3869,7 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	if (!COMPLETE_TYPE_P(type))
 	  return -1;
 
-	for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	  {
 	    if (TREE_CODE (field) != FIELD_DECL)
 	      continue;

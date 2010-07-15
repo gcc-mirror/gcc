@@ -422,11 +422,11 @@ remap_type_1 (tree type, copy_body_data *id)
       {
 	tree f, nf = NULL;
 
-	for (f = TYPE_FIELDS (new_tree); f ; f = TREE_CHAIN (f))
+	for (f = TYPE_FIELDS (new_tree); f ; f = DECL_CHAIN (f))
 	  {
 	    t = remap_decl (f, id);
 	    DECL_CONTEXT (t) = new_tree;
-	    TREE_CHAIN (t) = nf;
+	    DECL_CHAIN (t) = nf;
 	    nf = t;
 	  }
 	TYPE_FIELDS (new_tree) = nreverse (nf);
@@ -537,7 +537,7 @@ remap_decls (tree decls, VEC(tree,gc) **nonlocalized_list, copy_body_data *id)
   tree new_decls = NULL_TREE;
 
   /* Remap its variables.  */
-  for (old_var = decls; old_var; old_var = TREE_CHAIN (old_var))
+  for (old_var = decls; old_var; old_var = DECL_CHAIN (old_var))
     {
       tree new_var;
 
@@ -573,7 +573,7 @@ remap_decls (tree decls, VEC(tree,gc) **nonlocalized_list, copy_body_data *id)
       else
 	{
 	  gcc_assert (DECL_P (new_var));
-	  TREE_CHAIN (new_var) = new_decls;
+	  DECL_CHAIN (new_var) = new_decls;
 	  new_decls = new_var;
  
 	  /* Also copy value-expressions.  */
@@ -1595,7 +1595,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 	      size_t nargs = gimple_call_num_args (id->gimple_call);
 	      size_t n;
 
-	      for (p = DECL_ARGUMENTS (id->src_fn); p; p = TREE_CHAIN (p))
+	      for (p = DECL_ARGUMENTS (id->src_fn); p; p = DECL_CHAIN (p))
 		nargs--;
 
 	      /* Create the new array of arguments.  */
@@ -1642,7 +1642,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 	      tree count, p;
 	      gimple new_stmt;
 
-	      for (p = DECL_ARGUMENTS (id->src_fn); p; p = TREE_CHAIN (p))
+	      for (p = DECL_ARGUMENTS (id->src_fn); p; p = DECL_CHAIN (p))
 		nargs--;
 
 	      count = build_int_cst (integer_type_node, nargs);
@@ -2553,7 +2553,7 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
     }
 
   /* Declare this new variable.  */
-  TREE_CHAIN (var) = *vars;
+  DECL_CHAIN (var) = *vars;
   *vars = var;
 
   /* Make gimplifier happy about this variable.  */
@@ -2683,7 +2683,7 @@ initialize_inlined_parameters (copy_body_data *id, gimple stmt,
 
   /* Loop through the parameter declarations, replacing each with an
      equivalent VAR_DECL, appropriately initialized.  */
-  for (p = parms, i = 0; p; p = TREE_CHAIN (p), i++)
+  for (p = parms, i = 0; p; p = DECL_CHAIN (p), i++)
     {
       tree val;
       val = i < gimple_call_num_args (stmt) ? gimple_call_arg (stmt, i) : NULL;
@@ -2693,7 +2693,7 @@ initialize_inlined_parameters (copy_body_data *id, gimple stmt,
      in a second loop over all parameters to appropriately remap
      variable sized arrays when the size is specified in a
      parameter following the array.  */
-  for (p = parms, i = 0; p; p = TREE_CHAIN (p), i++)
+  for (p = parms, i = 0; p; p = DECL_CHAIN (p), i++)
     {
       tree *varp = (tree *) pointer_map_contains (id->decl_map, p);
       if (varp
@@ -3505,7 +3505,7 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 	if (decl && DECL_ARGUMENTS (decl) && !stdarg)
 	  {
 	    tree arg;
-	    for (arg = DECL_ARGUMENTS (decl); arg; arg = TREE_CHAIN (arg))
+	    for (arg = DECL_ARGUMENTS (decl); arg; arg = DECL_CHAIN (arg))
 	      if (!VOID_TYPE_P (TREE_TYPE (arg)))
 	        cost += estimate_move_cost (TREE_TYPE (arg));
 	  }
@@ -4663,7 +4663,7 @@ static void
 declare_inline_vars (tree block, tree vars)
 {
   tree t;
-  for (t = vars; t; t = TREE_CHAIN (t))
+  for (t = vars; t; t = DECL_CHAIN (t))
     {
       DECL_SEEN_IN_BIND_EXPR_P (t) = 1;
       gcc_assert (!TREE_STATIC (t) && !TREE_ASM_WRITTEN (t));
@@ -4812,13 +4812,13 @@ copy_arguments_for_versioning (tree orig_parm, copy_body_data * id,
 
   parg = &new_parm;
 
-  for (arg = orig_parm; arg; arg = TREE_CHAIN (arg), i++)
+  for (arg = orig_parm; arg; arg = DECL_CHAIN (arg), i++)
     if (!args_to_skip || !bitmap_bit_p (args_to_skip, i))
       {
         tree new_tree = remap_decl (arg, id);
         lang_hooks.dup_lang_specific_decl (new_tree);
         *parg = new_tree;
-	parg = &TREE_CHAIN (new_tree);
+	parg = &DECL_CHAIN (new_tree);
       }
     else if (!pointer_map_contains (id->decl_map, arg))
       {
@@ -4830,7 +4830,7 @@ copy_arguments_for_versioning (tree orig_parm, copy_body_data * id,
 	add_referenced_var (var);
 	insert_decl_map (id, arg, var);
         /* Declare this new variable.  */
-        TREE_CHAIN (var) = *vars;
+        DECL_CHAIN (var) = *vars;
         *vars = var;
       }
   return new_parm;
@@ -4843,11 +4843,11 @@ copy_static_chain (tree static_chain, copy_body_data * id)
   tree *chain_copy, *pvar;
 
   chain_copy = &static_chain;
-  for (pvar = chain_copy; *pvar; pvar = &TREE_CHAIN (*pvar))
+  for (pvar = chain_copy; *pvar; pvar = &DECL_CHAIN (*pvar))
     {
       tree new_tree = remap_decl (*pvar, id);
       lang_hooks.dup_lang_specific_decl (new_tree);
-      TREE_CHAIN (new_tree) = TREE_CHAIN (*pvar);
+      DECL_CHAIN (new_tree) = DECL_CHAIN (*pvar);
       *pvar = new_tree;
     }
   return static_chain;
@@ -5081,7 +5081,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	      {
 		int i = replace_info->parm_num;
 		tree parm;
-		for (parm = DECL_ARGUMENTS (old_decl); i; parm = TREE_CHAIN (parm))
+		for (parm = DECL_ARGUMENTS (old_decl); i; parm = DECL_CHAIN (parm))
 		  i --;
 		replace_info->old_tree = parm;
 	      }
@@ -5220,7 +5220,7 @@ maybe_inline_call_in_expr (tree exp)
       /* Remap the parameters.  */
       for (param = DECL_ARGUMENTS (fn), arg = first_call_expr_arg (exp, &iter);
 	   param;
-	   param = TREE_CHAIN (param), arg = next_call_expr_arg (&iter))
+	   param = DECL_CHAIN (param), arg = next_call_expr_arg (&iter))
 	*pointer_map_insert (decl_map, param) = arg;
 
       memset (&id, 0, sizeof (id));

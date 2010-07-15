@@ -319,7 +319,7 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
      call overhead.  */
   call_overhead = eni_size_weights.call_cost;
   for (parm = DECL_ARGUMENTS (current_function_decl); parm;
-       parm = TREE_CHAIN (parm))
+       parm = DECL_CHAIN (parm))
     {
       if (!is_gimple_reg (parm))
 	{
@@ -889,7 +889,7 @@ split_function (struct split_point *split_point)
 
   /* Collect the parameters of new function and args_to_skip bitmap.  */
   for (parm = DECL_ARGUMENTS (current_function_decl);
-       parm; parm = TREE_CHAIN (parm), num++)
+       parm; parm = DECL_CHAIN (parm), num++)
     if (!is_gimple_reg (parm)
 	|| !gimple_default_def (cfun, parm)
 	|| !bitmap_bit_p (split_point->ssa_names_to_pass,

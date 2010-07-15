@@ -1849,14 +1849,14 @@ gfc_add_field_to_struct_1 (tree context, tree name, tree type, tree **chain)
   tree decl = build_decl (input_location, FIELD_DECL, name, type);
 
   DECL_CONTEXT (decl) = context;
-  TREE_CHAIN (decl) = NULL_TREE;
+  DECL_CHAIN (decl) = NULL_TREE;
   if (TYPE_FIELDS (context) == NULL_TREE)
     TYPE_FIELDS (context) = decl;
   if (chain != NULL)
     {
       if (*chain != NULL)
 	**chain = decl;
-      *chain = &TREE_CHAIN (decl);
+      *chain = &DECL_CHAIN (decl);
     }
 
   return decl;
@@ -2539,16 +2539,16 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
     elem_size = fold_convert (gfc_array_index_type, TYPE_SIZE_UNIT (etype));
   field = TYPE_FIELDS (TYPE_MAIN_VARIANT (type));
   data_off = byte_position (field);
-  field = TREE_CHAIN (field);
-  field = TREE_CHAIN (field);
-  field = TREE_CHAIN (field);
+  field = DECL_CHAIN (field);
+  field = DECL_CHAIN (field);
+  field = DECL_CHAIN (field);
   dim_off = byte_position (field);
   dim_size = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (field)));
   field = TYPE_FIELDS (TREE_TYPE (TREE_TYPE (field)));
   stride_suboff = byte_position (field);
-  field = TREE_CHAIN (field);
+  field = DECL_CHAIN (field);
   lower_suboff = byte_position (field);
-  field = TREE_CHAIN (field);
+  field = DECL_CHAIN (field);
   upper_suboff = byte_position (field);
 
   t = base_decl;

@@ -911,7 +911,7 @@ check_function_format (tree attrs, int nargs, tree *argarray)
 		  tree args;
 		  for (args = DECL_ARGUMENTS (current_function_decl);
 		       args != 0;
-		       args = TREE_CHAIN (args))
+		       args = DECL_CHAIN (args))
 		    {
 		      if (TREE_CODE (TREE_TYPE (args)) == POINTER_TYPE
 			  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (args)))

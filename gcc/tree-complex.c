@@ -174,7 +174,7 @@ init_parameter_lattice_values (void)
 {
   tree parm, ssa_name;
 
-  for (parm = DECL_ARGUMENTS (cfun->decl); parm ; parm = TREE_CHAIN (parm))
+  for (parm = DECL_ARGUMENTS (cfun->decl); parm ; parm = DECL_CHAIN (parm))
     if (is_complex_reg (parm)
 	&& var_ann (parm) != NULL
 	&& (ssa_name = gimple_default_def (cfun, parm)) != NULL_TREE)
@@ -680,7 +680,7 @@ update_parameter_components (void)
   edge entry_edge = single_succ_edge (ENTRY_BLOCK_PTR);
   tree parm;
 
-  for (parm = DECL_ARGUMENTS (cfun->decl); parm ; parm = TREE_CHAIN (parm))
+  for (parm = DECL_ARGUMENTS (cfun->decl); parm ; parm = DECL_CHAIN (parm))
     {
       tree type = TREE_TYPE (parm);
       tree ssa_name, r, i;

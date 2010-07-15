@@ -2685,8 +2685,8 @@ xtensa_build_builtin_va_list (void)
   TREE_CHAIN (record) = type_decl;
   TYPE_NAME (record) = type_decl;
   TYPE_FIELDS (record) = f_stk;
-  TREE_CHAIN (f_stk) = f_reg;
-  TREE_CHAIN (f_reg) = f_ndx;
+  DECL_CHAIN (f_stk) = f_reg;
+  DECL_CHAIN (f_reg) = f_ndx;
 
   layout_type (record);
   return record;
@@ -2740,8 +2740,8 @@ xtensa_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   arg_words = crtl->args.info.arg_words;
 
   f_stk = TYPE_FIELDS (va_list_type_node);
-  f_reg = TREE_CHAIN (f_stk);
-  f_ndx = TREE_CHAIN (f_reg);
+  f_reg = DECL_CHAIN (f_stk);
+  f_ndx = DECL_CHAIN (f_reg);
 
   stk = build3 (COMPONENT_REF, TREE_TYPE (f_stk), valist, f_stk, NULL_TREE);
   reg = build3 (COMPONENT_REF, TREE_TYPE (f_reg), unshare_expr (valist),
@@ -2810,8 +2810,8 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
     }
 
   f_stk = TYPE_FIELDS (va_list_type_node);
-  f_reg = TREE_CHAIN (f_stk);
-  f_ndx = TREE_CHAIN (f_reg);
+  f_reg = DECL_CHAIN (f_stk);
+  f_ndx = DECL_CHAIN (f_reg);
 
   stk = build3 (COMPONENT_REF, TREE_TYPE (f_stk), valist,
 		f_stk, NULL_TREE);

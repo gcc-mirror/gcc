@@ -99,12 +99,12 @@ i386_pe_adjust_class_at_definition (tree t)
   if (lookup_attribute ("dllexport", TYPE_ATTRIBUTES (t)) != NULL_TREE)
     {
       /* Check static VAR_DECL's.  */
-      for (member = TYPE_FIELDS (t); member; member = TREE_CHAIN (member))
+      for (member = TYPE_FIELDS (t); member; member = DECL_CHAIN (member))
 	if (TREE_CODE (member) == VAR_DECL)     
 	  maybe_add_dllexport (member);
     
       /* Check FUNCTION_DECL's.  */
-      for (member = TYPE_METHODS (t); member;  member = TREE_CHAIN (member))
+      for (member = TYPE_METHODS (t); member;  member = DECL_CHAIN (member))
 	if (TREE_CODE (member) == FUNCTION_DECL)
 	  {
 	    tree thunk;
@@ -116,7 +116,7 @@ i386_pe_adjust_class_at_definition (tree t)
 	      maybe_add_dllexport (thunk);
 	}
       /* Check vtables  */
-      for (member = CLASSTYPE_VTABLES (t); member;  member = TREE_CHAIN (member))
+      for (member = CLASSTYPE_VTABLES (t); member;  member = DECL_CHAIN (member))
 	if (TREE_CODE (member) == VAR_DECL) 
 	  maybe_add_dllexport (member);
     }
@@ -132,12 +132,12 @@ i386_pe_adjust_class_at_definition (tree t)
 	 definition.   */
 
       /* Check static VAR_DECL's.  */
-      for (member = TYPE_FIELDS (t); member; member = TREE_CHAIN (member))
+      for (member = TYPE_FIELDS (t); member; member = DECL_CHAIN (member))
 	if (TREE_CODE (member) == VAR_DECL)     
 	  maybe_add_dllimport (member);
     
       /* Check FUNCTION_DECL's.  */
-      for (member = TYPE_METHODS (t); member;  member = TREE_CHAIN (member))
+      for (member = TYPE_METHODS (t); member;  member = DECL_CHAIN (member))
 	if (TREE_CODE (member) == FUNCTION_DECL)
 	  {
 	    tree thunk;
@@ -145,12 +145,12 @@ i386_pe_adjust_class_at_definition (tree t)
 	  
 	    /* Also add the attribute to its thunks.  */
 	    for (thunk = DECL_THUNKS (member); thunk;
-		 thunk = TREE_CHAIN (thunk))
+		 thunk = DECL_CHAIN (thunk))
 	      maybe_add_dllimport (thunk);
 	 }
  
       /* Check vtables  */
-      for (member = CLASSTYPE_VTABLES (t); member;  member = TREE_CHAIN (member))
+      for (member = CLASSTYPE_VTABLES (t); member;  member = DECL_CHAIN (member))
 	if (TREE_CODE (member) == VAR_DECL) 
 	  maybe_add_dllimport (member);
 

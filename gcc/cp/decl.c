@@ -393,7 +393,7 @@ pop_labels_1 (void **slot, void *data)
 
   /* Put the labels into the "variables" of the top-level block,
      so debugger can see them.  */
-  TREE_CHAIN (ent->label_decl) = BLOCK_VARS (block);
+  DECL_CHAIN (ent->label_decl) = BLOCK_VARS (block);
   BLOCK_VARS (block) = ent->label_decl;
 
   htab_clear_slot (named_labels, slot);
@@ -474,7 +474,7 @@ poplevel_named_label_1 (void **slot, void *data)
     {
       tree decl;
 
-      for (decl = ent->names_in_scope; decl; decl = TREE_CHAIN (decl))
+      for (decl = ent->names_in_scope; decl; decl = DECL_CHAIN (decl))
 	if (decl_jump_unsafe (decl))
 	  VEC_safe_push (tree, gc, ent->bad_decls, decl);
 
@@ -749,7 +749,7 @@ poplevel (int keep, int reverse, int functionbody)
 	  if (TREE_CODE (*d) == TREE_LIST)
 	    *d = TREE_CHAIN (*d);
 	  else
-	    d = &TREE_CHAIN (*d);
+	    d = &DECL_CHAIN (*d);
 	}
     }
 
@@ -822,7 +822,7 @@ walk_namespaces_r (tree name_space, walk_namespaces_fn f, void* data)
 
   result |= (*f) (name_space, data);
 
-  for (; current; current = TREE_CHAIN (current))
+  for (; current; current = DECL_CHAIN (current))
     result |= walk_namespaces_r (current, f, data);
 
   return result;
@@ -1726,7 +1726,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	      DECL_ARGUMENTS (old_result)
 		= DECL_ARGUMENTS (new_result);
 	      for (parm = DECL_ARGUMENTS (old_result); parm;
-		   parm = TREE_CHAIN (parm))
+		   parm = DECL_CHAIN (parm))
 		DECL_CONTEXT (parm) = old_result;
 	    }
 	}
@@ -1976,7 +1976,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       for (oldarg = DECL_ARGUMENTS(olddecl), 
                newarg = DECL_ARGUMENTS(newdecl);
            oldarg && newarg;
-           oldarg = TREE_CHAIN(oldarg), newarg = TREE_CHAIN(newarg)) {
+           oldarg = DECL_CHAIN(oldarg), newarg = DECL_CHAIN(newarg)) {
           DECL_ATTRIBUTES (newarg)
               = (*targetm.merge_decl_attributes) (oldarg, newarg);
           DECL_ATTRIBUTES (oldarg) = DECL_ATTRIBUTES (newarg);
@@ -2040,7 +2040,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
       /* Update newdecl's parms to point at olddecl.  */
       for (parm = DECL_ARGUMENTS (newdecl); parm;
-	   parm = TREE_CHAIN (parm))
+	   parm = DECL_CHAIN (parm))
 	DECL_CONTEXT (parm) = olddecl;
 
       if (! types_match)
@@ -2586,7 +2586,7 @@ check_previous_goto_1 (tree decl, struct cp_binding_level* level, tree names,
       tree new_decls, old_decls = (b == level ? names : NULL_TREE);
 
       for (new_decls = b->names; new_decls != old_decls;
-	   new_decls = TREE_CHAIN (new_decls))
+	   new_decls = DECL_CHAIN (new_decls))
 	{
 	  int problem = decl_jump_unsafe (new_decls);
 	  if (! problem)
@@ -3885,7 +3885,7 @@ fixup_anonymous_aggr (tree t)
       if (DECL_ARTIFICIAL (*q))
 	*q = TREE_CHAIN (*q);
       else
-	q = &TREE_CHAIN (*q);
+	q = &DECL_CHAIN (*q);
     }
 
   /* ISO C++ 9.5.3.  Anonymous unions may not have function members.  */
@@ -3909,7 +3909,7 @@ fixup_anonymous_aggr (tree t)
     {
       tree field, type;
 
-      for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
+      for (field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL)
 	  {
 	    type = TREE_TYPE (field);
@@ -4811,7 +4811,7 @@ next_initializable_field (tree field)
 	 && (TREE_CODE (field) != FIELD_DECL
 	     || (DECL_C_BIT_FIELD (field) && !DECL_NAME (field))
 	     || DECL_ARTIFICIAL (field)))
-    field = TREE_CHAIN (field);
+    field = DECL_CHAIN (field);
 
   return field;
 }
@@ -4981,7 +4981,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p)
       if (TREE_CODE (type) == UNION_TYPE)
 	break;
 
-      field = next_initializable_field (TREE_CHAIN (field));
+      field = next_initializable_field (DECL_CHAIN (field));
     }
 
   return new_init;
@@ -6776,11 +6776,11 @@ grokfndecl (tree ctype,
     {
       tree parm;
       parm = build_this_parm (type, quals);
-      TREE_CHAIN (parm) = parms;
+      DECL_CHAIN (parm) = parms;
       parms = parm;
     }
   DECL_ARGUMENTS (decl) = parms;
-  for (t = parms; t; t = TREE_CHAIN (t))
+  for (t = parms; t; t = DECL_CHAIN (t))
     DECL_CONTEXT (t) = decl;
   /* Propagate volatile out from type to decl.  */
   if (TYPE_VOLATILE (type))
@@ -7280,7 +7280,7 @@ build_ptrmemfunc_type (tree type)
 
   field = build_decl (input_location, FIELD_DECL, delta_identifier, 
 		      delta_type_node);
-  TREE_CHAIN (field) = fields;
+  DECL_CHAIN (field) = fields;
   fields = field;
 
   finish_builtin_struct (t, "__ptrmemfunc_type", fields, ptr_type_node);
@@ -9204,7 +9204,7 @@ grokdeclarator (const cp_declarator *declarator,
 	{
 	  tree decl = cp_build_parm_decl (NULL_TREE, TREE_VALUE (args));
 
-	  TREE_CHAIN (decl) = decls;
+	  DECL_CHAIN (decl) = decls;
 	  decls = decl;
 	}
 
@@ -9836,7 +9836,7 @@ grokdeclarator (const cp_declarator *declarator,
 static void
 require_complete_types_for_parms (tree parms)
 {
-  for (; parms; parms = TREE_CHAIN (parms))
+  for (; parms; parms = DECL_CHAIN (parms))
     {
       if (dependent_type_p (TREE_TYPE (parms)))
 	continue;
@@ -10106,7 +10106,7 @@ grokparms (tree parmlist, tree *parms)
           && TREE_CHAIN (parm) != void_list_node)
         error ("parameter packs must be at the end of the parameter list");
 
-      TREE_CHAIN (decl) = decls;
+      DECL_CHAIN (decl) = decls;
       decls = decl;
       result = tree_cons (init, type, result);
     }
@@ -12111,11 +12111,11 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 
       /* Constructors and destructors need to know whether they're "in
 	 charge" of initializing virtual base classes.  */
-      t = TREE_CHAIN (t);
+      t = DECL_CHAIN (t);
       if (DECL_HAS_IN_CHARGE_PARM_P (decl1))
 	{
 	  current_in_charge_parm = t;
-	  t = TREE_CHAIN (t);
+	  t = DECL_CHAIN (t);
 	}
       if (DECL_HAS_VTT_PARM_P (decl1))
 	{
@@ -12326,7 +12326,7 @@ store_parm_decls (tree current_function_parms)
 
       for (parm = specparms; parm; parm = next)
 	{
-	  next = TREE_CHAIN (parm);
+	  next = DECL_CHAIN (parm);
 	  if (TREE_CODE (parm) == PARM_DECL)
 	    {
 	      if (DECL_NAME (parm) == NULL_TREE
@@ -12762,7 +12762,7 @@ finish_function (int flags)
 
       for (decl = DECL_ARGUMENTS (fndecl);
 	   decl;
-	   decl = TREE_CHAIN (decl))
+	   decl = DECL_CHAIN (decl))
 	if (TREE_USED (decl)
 	    && TREE_CODE (decl) == PARM_DECL
 	    && !DECL_READ_P (decl)
@@ -12905,7 +12905,7 @@ grokmethod (cp_decl_specifier_seq *declspecs,
 
   if (! DECL_FRIEND_P (fndecl))
     {
-      if (TREE_CHAIN (fndecl))
+      if (DECL_CHAIN (fndecl))
 	{
 	  fndecl = copy_node (fndecl);
 	  TREE_CHAIN (fndecl) = NULL_TREE;
@@ -13101,7 +13101,7 @@ revert_static_member_fn (tree decl)
     error ("static member function %q#D declared with type qualifiers", decl);
 
   if (DECL_ARGUMENTS (decl))
-    DECL_ARGUMENTS (decl) = TREE_CHAIN (DECL_ARGUMENTS (decl));
+    DECL_ARGUMENTS (decl) = DECL_CHAIN (DECL_ARGUMENTS (decl));
   DECL_STATIC_FUNCTION_P (decl) = 1;
 }
 

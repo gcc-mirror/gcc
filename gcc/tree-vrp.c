@@ -337,7 +337,7 @@ nonnull_arg_p (const_tree arg)
   /* Get the position number for ARG in the function signature.  */
   for (arg_num = 1, t = DECL_ARGUMENTS (current_function_decl);
        t;
-       t = TREE_CHAIN (t), arg_num++)
+       t = DECL_CHAIN (t), arg_num++)
     {
       if (t == arg)
 	break;
@@ -5165,9 +5165,9 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
 
       cref = TREE_OPERAND (ref, 0);
       if (TREE_CODE (TREE_TYPE (TREE_OPERAND (cref, 0))) == RECORD_TYPE)
-	for (next = TREE_CHAIN (TREE_OPERAND (cref, 1));
+	for (next = DECL_CHAIN (TREE_OPERAND (cref, 1));
 	     next && TREE_CODE (next) != FIELD_DECL;
-	     next = TREE_CHAIN (next))
+	     next = DECL_CHAIN (next))
 	  ;
 
       /* If this is the last field in a struct type or a field in a

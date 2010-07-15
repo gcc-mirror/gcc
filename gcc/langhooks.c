@@ -320,7 +320,7 @@ write_global_declarations (void)
   /* Process the decls in reverse order--earliest first.
      Put them into VEC from back to front, then take out from front.  */
 
-  for (i = 0, decl = globals; i < len; i++, decl = TREE_CHAIN (decl))
+  for (i = 0, decl = globals; i < len; i++, decl = DECL_CHAIN (decl))
     vec[len - i - 1] = decl;
 
   wrapup_global_declarations (vec, len);

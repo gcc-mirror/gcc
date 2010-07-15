@@ -282,16 +282,16 @@ maybe_clone_body (tree fn)
       clone_parm = DECL_ARGUMENTS (clone);
       /* Update the `this' parameter, which is always first.  */
       update_cloned_parm (parm, clone_parm, first);
-      parm = TREE_CHAIN (parm);
-      clone_parm = TREE_CHAIN (clone_parm);
+      parm = DECL_CHAIN (parm);
+      clone_parm = DECL_CHAIN (clone_parm);
       if (DECL_HAS_IN_CHARGE_PARM_P (fn))
-	parm = TREE_CHAIN (parm);
+	parm = DECL_CHAIN (parm);
       if (DECL_HAS_VTT_PARM_P (fn))
-	parm = TREE_CHAIN (parm);
+	parm = DECL_CHAIN (parm);
       if (DECL_HAS_VTT_PARM_P (clone))
-	clone_parm = TREE_CHAIN (clone_parm);
+	clone_parm = DECL_CHAIN (clone_parm);
       for (; parm;
-	   parm = TREE_CHAIN (parm), clone_parm = TREE_CHAIN (clone_parm))
+	   parm = DECL_CHAIN (parm), clone_parm = DECL_CHAIN (clone_parm))
 	/* Update this parameter.  */
 	update_cloned_parm (parm, clone_parm, first);
 
@@ -348,7 +348,7 @@ maybe_clone_body (tree fn)
                 clone_parm = DECL_ARGUMENTS (clone);
               parm;
               ++parmno,
-                parm = TREE_CHAIN (parm))
+                parm = DECL_CHAIN (parm))
             {
               /* Map the in-charge parameter to an appropriate constant.  */
               if (DECL_HAS_IN_CHARGE_PARM_P (fn) && parmno == 1)
@@ -367,7 +367,7 @@ maybe_clone_body (tree fn)
                     {
                       DECL_ABSTRACT_ORIGIN (clone_parm) = parm;
                       *pointer_map_insert (decl_map, parm) = clone_parm;
-                      clone_parm = TREE_CHAIN (clone_parm);
+                      clone_parm = DECL_CHAIN (clone_parm);
                     }
                   /* Otherwise, map the VTT parameter to `NULL'.  */
                   else
@@ -379,7 +379,7 @@ maybe_clone_body (tree fn)
               else
                 {
                   *pointer_map_insert (decl_map, parm) = clone_parm;
-                  clone_parm = TREE_CHAIN (clone_parm);
+                  clone_parm = DECL_CHAIN (clone_parm);
                 }
             }
 

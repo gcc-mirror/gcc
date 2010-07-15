@@ -310,7 +310,7 @@ struct GTY(())
 binding_level {
   /* A chain of ..._DECL nodes for all variables, constants, functions,
      parameters and type declarations.  These ..._DECL nodes are chained
-     through the TREE_CHAIN field. Note that these ..._DECL nodes are stored
+     through the DECL_CHAIN field. Note that these ..._DECL nodes are stored
      in the reverse of the order supplied to be compatible with the
      back-end.  */
   tree names;
@@ -409,7 +409,7 @@ poplevel (int keep, int reverse, int functionbody)
   /* Clear out the meanings of the local variables of this level.  */
 
   for (subblock_node = decl_chain; subblock_node;
-       subblock_node = TREE_CHAIN (subblock_node))
+       subblock_node = DECL_CHAIN (subblock_node))
     if (DECL_NAME (subblock_node) != 0)
       /* If the identifier was used or addressed via a local extern decl,
          don't forget that fact.  */
@@ -467,7 +467,7 @@ pushdecl (tree decl)
      order. The list will be reversed later if necessary.  This needs to be
      this way for compatibility with the back-end.  */
 
-  TREE_CHAIN (decl) = current_binding_level->names;
+  DECL_CHAIN (decl) = current_binding_level->names;
   current_binding_level->names = decl;
 
   /* For the declaration of a type, set its name if it is not already set.  */

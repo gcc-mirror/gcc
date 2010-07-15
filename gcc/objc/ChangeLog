@@ -1,3 +1,7 @@
+2010-07-15  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* objc-act.c: Carefully replace TREE_CHAIN with DECL_CHAIN.
+
 2010-07-10  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR objc/44140

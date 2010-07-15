@@ -184,7 +184,7 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
       VEC(constructor_elt,gc) *v = NULL;
 
       /* Iterate over the fields, building initializations.  */
-      for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+      for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	{
 	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
@@ -337,7 +337,7 @@ build_value_init_noctor (tree type)
 	  VEC(constructor_elt,gc) *v = NULL;
 
 	  /* Iterate over the fields, building initializations.  */
-	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	    {
 	      tree ftype, value;
 
@@ -562,7 +562,7 @@ build_field_list (tree t, tree list, int *uses_unions_p)
   if (TREE_CODE (t) == UNION_TYPE)
     *uses_unions_p = 1;
 
-  for (fields = TYPE_FIELDS (t); fields; fields = TREE_CHAIN (fields))
+  for (fields = TYPE_FIELDS (t); fields; fields = DECL_CHAIN (fields))
     {
       tree fieldtype;
 
@@ -1030,7 +1030,7 @@ construct_virtual_base (tree vbase, tree arguments)
      in the outer block.)  We trust the back end to figure out
      that the FLAG will not change across initializations, and
      avoid doing multiple tests.  */
-  flag = TREE_CHAIN (DECL_ARGUMENTS (current_function_decl));
+  flag = DECL_CHAIN (DECL_ARGUMENTS (current_function_decl));
   inner_if_stmt = begin_if_stmt ();
   finish_if_stmt_cond (flag, inner_if_stmt);
 
@@ -1815,7 +1815,7 @@ diagnose_uninitialized_cst_or_ref_member_1 (tree type, tree origin,
   if (type_has_user_provided_constructor (type))
     return 0;
 
-  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     {
       tree field_type;
 
@@ -2578,7 +2578,7 @@ build_java_class_ref (tree type)
   /* Mangle the class$ field.  */
   {
     tree field;
-    for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+    for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
       if (DECL_NAME (field) == CL_suffix)
 	{
 	  mangle_decl (field);
@@ -3383,7 +3383,7 @@ push_base_cleanups (void)
     return;
 
   for (member = TYPE_FIELDS (current_class_type); member;
-       member = TREE_CHAIN (member))
+       member = DECL_CHAIN (member))
     {
       tree this_type = TREE_TYPE (member);
       if (this_type == error_mark_node

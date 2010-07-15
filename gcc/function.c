@@ -1793,7 +1793,7 @@ instantiate_decls_1 (tree let)
 {
   tree t;
 
-  for (t = BLOCK_VARS (let); t; t = TREE_CHAIN (t))
+  for (t = BLOCK_VARS (let); t; t = DECL_CHAIN (t))
     {
       if (DECL_RTL_SET_P (t))
 	instantiate_decl_rtl (DECL_RTL (t));
@@ -1819,7 +1819,7 @@ instantiate_decls (tree fndecl)
   unsigned ix;
 
   /* Process all parameters of the function.  */
-  for (decl = DECL_ARGUMENTS (fndecl); decl; decl = TREE_CHAIN (decl))
+  for (decl = DECL_ARGUMENTS (fndecl); decl; decl = DECL_CHAIN (decl))
     {
       instantiate_decl_rtl (DECL_RTL (decl));
       instantiate_decl_rtl (DECL_INCOMING_RTL (decl));
@@ -2222,7 +2222,7 @@ assign_parms_augmented_arg_list (struct assign_parm_data_all *all)
   VEC(tree, heap) *fnargs = NULL;
   tree arg;
 
-  for (arg = DECL_ARGUMENTS (fndecl); arg; arg = TREE_CHAIN (arg))
+  for (arg = DECL_ARGUMENTS (fndecl); arg; arg = DECL_CHAIN (arg))
     VEC_safe_push (tree, heap, fnargs, arg);
 
   all->orig_fnargs = DECL_ARGUMENTS (fndecl);
@@ -2241,7 +2241,7 @@ assign_parms_augmented_arg_list (struct assign_parm_data_all *all)
       DECL_ARTIFICIAL (decl) = 1;
       DECL_IGNORED_P (decl) = 1;
 
-      TREE_CHAIN (decl) = all->orig_fnargs;
+      DECL_CHAIN (decl) = all->orig_fnargs;
       all->orig_fnargs = decl;
       VEC_safe_insert (tree, heap, fnargs, 0, decl);
 
@@ -2272,7 +2272,7 @@ assign_parm_find_data_types (struct assign_parm_data_all *all, tree parm,
   /* NAMED_ARG is a misnomer.  We really mean 'non-variadic'. */
   if (!cfun->stdarg)
     data->named_arg = 1;  /* No variadic parms.  */
-  else if (TREE_CHAIN (parm))
+  else if (DECL_CHAIN (parm))
     data->named_arg = 1;  /* Not the last non-variadic parm. */
   else if (targetm.calls.strict_argument_naming (&all->args_so_far))
     data->named_arg = 1;  /* Only variadic ones are unnamed.  */
@@ -3245,7 +3245,7 @@ assign_parms (tree fndecl)
 	    }
 	}
 
-      if (cfun->stdarg && !TREE_CHAIN (parm))
+      if (cfun->stdarg && !DECL_CHAIN (parm))
 	assign_parms_setup_varargs (&all, &data, false);
 
       /* Find out where the parameter arrives in this function.  */
@@ -3825,7 +3825,7 @@ setjmp_vars_warning (bitmap setjmp_crosses, tree block)
 {
   tree decl, sub;
 
-  for (decl = BLOCK_VARS (block); decl; decl = TREE_CHAIN (decl))
+  for (decl = BLOCK_VARS (block); decl; decl = DECL_CHAIN (decl))
     {
       if (TREE_CODE (decl) == VAR_DECL
 	  && DECL_RTL_SET_P (decl)
@@ -3847,7 +3847,7 @@ setjmp_args_warning (bitmap setjmp_crosses)
 {
   tree decl;
   for (decl = DECL_ARGUMENTS (current_function_decl);
-       decl; decl = TREE_CHAIN (decl))
+       decl; decl = DECL_CHAIN (decl))
     if (DECL_RTL (decl) != 0
 	&& REG_P (DECL_RTL (decl))
 	&& regno_clobbered_at_setjmp (setjmp_crosses, REGNO (DECL_RTL (decl))))
@@ -4689,7 +4689,7 @@ do_warn_unused_parameter (tree fn)
   tree decl;
 
   for (decl = DECL_ARGUMENTS (fn);
-       decl; decl = TREE_CHAIN (decl))
+       decl; decl = DECL_CHAIN (decl))
     if (!TREE_USED (decl) && TREE_CODE (decl) == PARM_DECL
 	&& DECL_NAME (decl) && !DECL_ARTIFICIAL (decl)
 	&& !TREE_NO_WARNING (decl))

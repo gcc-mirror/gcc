@@ -322,7 +322,7 @@ mf_make_mf_cache_struct_type (tree field_type)
   tree struct_type = make_node (RECORD_TYPE);
   DECL_CONTEXT (fieldlo) = struct_type;
   DECL_CONTEXT (fieldhi) = struct_type;
-  TREE_CHAIN (fieldlo) = fieldhi;
+  DECL_CHAIN (fieldlo) = fieldhi;
   TYPE_FIELDS (struct_type) = fieldlo;
   TYPE_NAME (struct_type) = get_identifier ("__mf_cache");
   layout_type (struct_type);
@@ -622,7 +622,7 @@ mf_build_check_statement_for (tree base, tree limit,
 
   u = build3 (COMPONENT_REF, mf_uintptr_type,
               build1 (INDIRECT_REF, mf_cache_struct_type, mf_elem),
-              TREE_CHAIN (TYPE_FIELDS (mf_cache_struct_type)), NULL_TREE);
+              DECL_CHAIN (TYPE_FIELDS (mf_cache_struct_type)), NULL_TREE);
 
   v = mf_limit;
 
@@ -1114,7 +1114,7 @@ mx_register_decls (tree decl, gimple_seq seq, location_t location)
           mf_mark (decl);
         }
 
-      decl = TREE_CHAIN (decl);
+      decl = DECL_CHAIN (decl);
     }
 
   /* Actually, (initially_stmts!=NULL) <=> (finally_stmts!=NULL) */

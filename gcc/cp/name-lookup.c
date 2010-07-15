@@ -542,7 +542,7 @@ add_decl_to_level (tree decl, cxx_scope *b)
   if (TREE_CODE (decl) == NAMESPACE_DECL
       && !DECL_NAMESPACE_ALIAS (decl))
     {
-      TREE_CHAIN (decl) = b->namespaces;
+      DECL_CHAIN (decl) = b->namespaces;
       b->namespaces = decl;
     }
   else
@@ -1993,7 +1993,7 @@ push_using_decl (tree scope, tree name)
   timevar_push (TV_NAME_LOOKUP);
   gcc_assert (TREE_CODE (scope) == NAMESPACE_DECL);
   gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
-  for (decl = current_binding_level->usings; decl; decl = TREE_CHAIN (decl))
+  for (decl = current_binding_level->usings; decl; decl = DECL_CHAIN (decl))
     if (USING_DECL_SCOPE (decl) == scope && DECL_NAME (decl) == name)
       break;
   if (decl)
@@ -2001,7 +2001,7 @@ push_using_decl (tree scope, tree name)
 			    namespace_bindings_p () ? decl : NULL_TREE);
   decl = build_lang_decl (USING_DECL, name, NULL_TREE);
   USING_DECL_SCOPE (decl) = scope;
-  TREE_CHAIN (decl) = current_binding_level->usings;
+  DECL_CHAIN (decl) = current_binding_level->usings;
   current_binding_level->usings = decl;
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, decl);
 }
@@ -2157,7 +2157,7 @@ push_overloaded_decl (tree decl, int flags, bool is_friend)
 
 	  for (d = &IDENTIFIER_BINDING (name)->scope->names;
 	       *d;
-	       d = &TREE_CHAIN (*d))
+	       d = &DECL_CHAIN (*d))
 	    if (*d == old
 		|| (TREE_CODE (*d) == TREE_LIST
 		    && TREE_VALUE (*d) == old))
@@ -2168,7 +2168,7 @@ push_overloaded_decl (tree decl, int flags, bool is_friend)
 		else
 		  /* Build a TREE_LIST to wrap the OVERLOAD.  */
 		  *d = tree_cons (NULL_TREE, new_binding,
-				  TREE_CHAIN (*d));
+				  DECL_CHAIN (*d));
 
 		/* And update the cxx_binding node.  */
 		IDENTIFIER_BINDING (name)->value = new_binding;
@@ -2726,7 +2726,7 @@ pushdecl_class_level (tree x)
 	 aggregate, for naming purposes.  */
       tree f;
 
-      for (f = TYPE_FIELDS (TREE_TYPE (x)); f; f = TREE_CHAIN (f))
+      for (f = TYPE_FIELDS (TREE_TYPE (x)); f; f = DECL_CHAIN (f))
 	{
 	  location_t save_location = input_location;
 	  input_location = DECL_SOURCE_LOCATION (f);

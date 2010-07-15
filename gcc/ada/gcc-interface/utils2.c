@@ -1612,7 +1612,7 @@ build_simple_component_ref (tree record_variable, tree component,
 
       /* First loop thru normal components.  */
       for (new_field = TYPE_FIELDS (record_type); new_field;
-	   new_field = TREE_CHAIN (new_field))
+	   new_field = DECL_CHAIN (new_field))
 	if (SAME_FIELD_P (field, new_field))
 	  break;
 
@@ -1622,7 +1622,7 @@ build_simple_component_ref (tree record_variable, tree component,
          _Parent field.  */
       if (!new_field)
 	for (new_field = TYPE_FIELDS (record_type); new_field;
-	     new_field = TREE_CHAIN (new_field))
+	     new_field = DECL_CHAIN (new_field))
 	  if (DECL_INTERNAL_P (new_field))
 	    {
 	      tree field_ref
@@ -1996,7 +1996,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
 
 	  CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (storage_type),
 				  build_template (template_type, type, init));
-	  CONSTRUCTOR_APPEND_ELT (v, TREE_CHAIN (TYPE_FIELDS (storage_type)),
+	  CONSTRUCTOR_APPEND_ELT (v, DECL_CHAIN (TYPE_FIELDS (storage_type)),
 				  init);
 
 	  return convert
@@ -2088,7 +2088,7 @@ fill_vms_descriptor (tree expr, Entity_Id gnat_formal, Node_Id gnat_actual)
   expr = maybe_unconstrained_array (expr);
   gnat_mark_addressable (expr);
 
-  for (field = TYPE_FIELDS (record_type); field; field = TREE_CHAIN (field))
+  for (field = TYPE_FIELDS (record_type); field; field = DECL_CHAIN (field))
     {
       tree conexpr = convert (TREE_TYPE (field),
 			      SUBSTITUTE_PLACEHOLDER_IN_EXPR

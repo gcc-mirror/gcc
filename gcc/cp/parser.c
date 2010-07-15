@@ -2650,7 +2650,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser,
 		  base_type = CLASSTYPE_PRIMARY_TEMPLATE_TYPE (base_type);
 		  for (field = TYPE_FIELDS (base_type);
 		       field;
-		       field = TREE_CHAIN (field))
+		       field = DECL_CHAIN (field))
 		    if (TREE_CODE (field) == TYPE_DECL
 			&& DECL_NAME (field) == id)
 		      {
@@ -7706,7 +7706,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 
       /* The function parameters must be in scope all the way until after the
          trailing-return-type in case of decltype.  */
-      for (t = current_binding_level->names; t; t = TREE_CHAIN (t))
+      for (t = current_binding_level->names; t; t = DECL_CHAIN (t))
 	pop_binding (DECL_NAME (t), t);
 
       leave_scope ();
@@ -14378,7 +14378,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		}
 
 	      /* Remove the function parms from scope.  */
-	      for (t = current_binding_level->names; t; t = TREE_CHAIN (t))
+	      for (t = current_binding_level->names; t; t = DECL_CHAIN (t))
 		pop_binding (DECL_NAME (t), t);
 	      leave_scope();
 
@@ -19676,7 +19676,7 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
 	 parmdecl = DECL_ARGUMENTS (fn);
        parm && parm != void_list_node;
        parm = TREE_CHAIN (parm),
-	 parmdecl = TREE_CHAIN (parmdecl))
+	 parmdecl = DECL_CHAIN (parmdecl))
     {
       cp_token_cache *tokens;
       tree default_arg = TREE_PURPOSE (parm);

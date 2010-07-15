@@ -1527,7 +1527,7 @@ assemble_thunk (struct cgraph_node *node)
             restmp = create_tmp_var_raw (restype, "retval");
 	}
 
-      for (arg = a; arg; arg = TREE_CHAIN (arg))
+      for (arg = a; arg; arg = DECL_CHAIN (arg))
         nargs++;
       vargs = VEC_alloc (tree, heap, nargs);
       if (this_adjusting)
@@ -1537,7 +1537,7 @@ assemble_thunk (struct cgraph_node *node)
 				      virtual_offset));
       else
         VEC_quick_push (tree, vargs, a);
-      for (i = 1, arg = TREE_CHAIN (a); i < nargs; i++, arg = TREE_CHAIN (arg))
+      for (i = 1, arg = DECL_CHAIN (a); i < nargs; i++, arg = DECL_CHAIN (arg))
         VEC_quick_push (tree, vargs, arg);
       call = gimple_build_call_vec (build_fold_addr_expr_loc (0, alias), vargs);
       VEC_free (tree, heap, vargs);
