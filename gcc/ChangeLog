@@ -1,3 +1,12 @@
+2010-07-15  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c: Include lto-streamer.h
+	(change_decl_assembler_name): Work when assembler name hash is at place.
+	(cgraph_make_decl_local): When localizing COMDAT symbol at WPA stage, be
+	sure to rename it to avoid name clash.
+	* ipa.c (cgraph_externally_visible_p, function_and_variable_visibility):
+	Localize hidden symbols only when locally defined.
+
 2010-07-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (SHIFT_COUNT_TRUNCATED): Expand comment.
