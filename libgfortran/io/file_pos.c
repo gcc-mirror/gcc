@@ -338,7 +338,14 @@ st_endfile (st_parameter_filepos *fpp)
 	  memset (&u_flags, '\0', sizeof (u_flags));
 	  u_flags.access = ACCESS_SEQUENTIAL;
 	  u_flags.action = ACTION_READWRITE;
-	  u_flags.form = FORM_UNSPECIFIED;
+
+	  /* Is it unformatted?  */
+	  if (!(fpp->common.flags & (IOPARM_DT_HAS_FORMAT | IOPARM_DT_LIST_FORMAT
+				     | IOPARM_DT_IONML_SET)))
+	    u_flags.form = FORM_UNFORMATTED;
+	  else
+	    u_flags.form = FORM_UNSPECIFIED;
+
 	  u_flags.delim = DELIM_UNSPECIFIED;
 	  u_flags.blank = BLANK_UNSPECIFIED;
 	  u_flags.pad = PAD_UNSPECIFIED;
