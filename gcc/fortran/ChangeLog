@@ -1,3 +1,16 @@
+2010-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans.h (gfc_build_compare_string): Add CODE argument.
+	* trans-intrinsic.c (gfc_conv_intrinsic_strcmp): Pass OP to
+	gfc_build_compare_string.
+	* trans-expr.c (gfc_conv_expr_op): Pass CODE to
+	gfc_build_compare_string.
+	(string_to_single_character): Rename len variable to length.
+	(gfc_optimize_len_trim): New function.
+	(gfc_build_compare_string): Add CODE argument.  If it is EQ_EXPR
+	or NE_EXPR and one of the strings is string literal with LEN_TRIM
+	bigger than the length of the other string, they compare unequal.
+
 2010-07-14  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans-array.c (gfc_conv_section_upper_bound): Remove

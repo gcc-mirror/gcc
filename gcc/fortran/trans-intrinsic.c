@@ -3998,7 +3998,8 @@ gfc_conv_intrinsic_strcmp (gfc_se * se, gfc_expr * expr, enum tree_code op)
 
   se->expr
     = gfc_build_compare_string (args[0], args[1], args[2], args[3],
-				expr->value.function.actual->expr->ts.kind);
+				expr->value.function.actual->expr->ts.kind,
+				op);
   se->expr = fold_build2 (op, gfc_typenode_for_spec (&expr->ts), se->expr,
 			  build_int_cst (TREE_TYPE (se->expr), 0));
 }
