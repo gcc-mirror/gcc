@@ -1,3 +1,13 @@
+2010-07-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* include/sparc-signal.h: Renamed to ...
+	* include/solaris-signal.h: ... this.
+	* configure.ac: Use it on any *-*-solaris2* target.
+	* configure: Regenerate.
+	* configure.host (i?86-*-solaris2*): Set can_unwind_signal=yes.
+	* Makefile.am (prims.lo): Add -fno-omit-frame-pointer to AM_CXXFLAGS.
+	* Makefile.in: Regenerate.
+
 2010-06-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:

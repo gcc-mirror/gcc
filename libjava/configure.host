@@ -318,6 +318,9 @@ EOF
 	DIVIDESPEC=-fuse-divide-subroutine
 	CHECKREFSPEC=-fcheck-references
 	;;
+  i?86-*-solaris2*)
+	can_unwind_signal=yes
+	;;
   *-*-freebsd*)
 	slow_pthread_self=
 	;;

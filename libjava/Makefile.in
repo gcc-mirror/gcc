@@ -10793,6 +10793,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
 
 
 interpret.lo:  AM_CXXFLAGS += -fwrapv
+prims.lo: AM_CXXFLAGS += -fno-omit-frame-pointer
 @BUILD_SUBLIBS_TRUE@libgcj-noncore-dummy.dll.a : $(srcdir)/libgcj-noncore-dummy.def
 @BUILD_SUBLIBS_TRUE@	$(DLLTOOL) -d $^ -l $@ --dllname cyggcj-noncore-$(DLL_VERSION).dll 
 

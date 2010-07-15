@@ -406,6 +406,8 @@ libgcj_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc \
 
 ## We need to compile at least the interpreter this way.
 interpret.lo:  AM_CXXFLAGS += -fwrapv
+## Necessary so EH works on 64-bit Solaris 2.
+prims.lo: AM_CXXFLAGS += -fno-omit-frame-pointer
 
 if USING_BOEHMGC
 libgcj_la_SOURCES += boehm.cc
