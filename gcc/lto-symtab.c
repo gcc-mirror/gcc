@@ -494,13 +494,7 @@ lto_symtab_resolve_symbols (void **slot)
       if (TREE_CODE (e->decl) == FUNCTION_DECL)
 	e->node = cgraph_get_node_or_alias (e->decl);
       else if (TREE_CODE (e->decl) == VAR_DECL)
-	{
-	  e->vnode = varpool_get_node (e->decl);
-	  /* The LTO plugin for gold doesn't handle common symbols
-	     properly.  Let us choose manually.  */
-	  if (DECL_COMMON (e->decl))
-	    e->resolution = LDPR_UNKNOWN;
-	}
+	e->vnode = varpool_get_node (e->decl);
     }
 
   e = (lto_symtab_entry_t) *slot;
@@ -742,23 +736,26 @@ lto_symtab_merge_decls_1 (void **slot, void *data ATTRIBUTE_UNUSED)
       && TREE_CODE (prevailing->decl) != VAR_DECL)
     prevailing->next = NULL;
 
-  /* Set externally_visible flags for declaration of LDPR_PREVAILING_DEF */
-  if (flag_whole_program)
+  /* Set used_from_object_file flags.  */
+  if (prevailing->resolution == LDPR_PREVAILING_DEF
+      || prevailing->resolution == LDPR_PREEMPTED_REG
+      || prevailing->resolution == LDPR_RESOLVED_EXEC
+      || prevailing->resolution == LDPR_RESOLVED_DYN)
     {
-      if (prevailing->resolution == LDPR_PREVAILING_DEF)
-        {
-          if (TREE_CODE (prevailing->decl) == FUNCTION_DECL)
-            prevailing->node->local.used_from_object_file = true;
-          else
-            prevailing->vnode->used_from_object_file = true;
-        }
-      else if (prevailing->resolution == LDPR_PREVAILING_DEF_IRONLY)
-        {
-          if (TREE_CODE (prevailing->decl) == FUNCTION_DECL)
-            prevailing->node->local.used_from_object_file = false;
-          else
-            prevailing->vnode->used_from_object_file = false;
-        }
+      if (TREE_CODE (prevailing->decl) == FUNCTION_DECL)
+	{
+	  if (prevailing->node->same_body_alias)
+	    prevailing->node->same_body->local.used_from_object_file = true;
+	  else
+	    prevailing->node->local.used_from_object_file = true;
+	}
+      else
+	{
+	  if (prevailing->vnode->alias)
+	    prevailing->vnode->extra_name->used_from_object_file = true;
+	  else
+	    prevailing->vnode->used_from_object_file = true;
+	}
     }
   return 1;
 }
