@@ -2,6 +2,7 @@
 
 	PR libfortran/44934
 	* io/file_pos.c (st_endfile): Correctly set unit flags for form.
+	* io/transfer.c (data_transfer_init): Fix indentation of whitespace.
 
 2010-07-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
