@@ -786,6 +786,7 @@ function_and_variable_visibility (bool whole_program)
 		   /* We can get prevailing decision in other object file.
 		      In this case we do not sed used_from_object_file.  */
 		   || !vnode->finalized))
+	      || DECL_PRESERVE_P (vnode->decl)
               || vnode->used_from_object_file
 	      || pointer_set_contains (aliased_vnodes, vnode)
 	      || lookup_attribute ("externally_visible",

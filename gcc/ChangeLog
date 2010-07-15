@@ -1,5 +1,10 @@
 2010-07-15  Jan Hubicka  <jh@suse.cz>
 
+	* ipa.c (function_and_variable_visibility): Variables marked as used should
+	not be localized.
+
+2010-07-15  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c: Include lto-streamer.h
 	(change_decl_assembler_name): Work when assembler name hash is at place.
 	(cgraph_make_decl_local): When localizing COMDAT symbol at WPA stage, be
