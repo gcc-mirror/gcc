@@ -1,3 +1,16 @@
+2010-07-15  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	Disable float tests for __SPU__ targets due to lack of signed zero:
+	* c-c++-common/torture/complex-sign-add.c (check_add_float).
+	* c-c++-common/torture/complex-sign-sub.c (check_sub_float).
+	* c-c++-common/torture/complex-sign-mul.c (check_mul_float).
+	* c-c++-common/torture/complex-sign-mul-one.c (check_mul_float).
+	* c-c++-common/torture/complex-sign-mul-minus-one.c (check_mul_float).
+	* c-c++-common/torture/complex-sign-mixed-add.c (check_add_float).
+	* c-c++-common/torture/complex-sign-mixed-sub.c (check_sub_float).
+	* c-c++-common/torture/complex-sign-mixed-mul.c (check_mul_float).
+	* c-c++-common/torture/complex-sign-mixed-div.c (check_div_float).
+
 2010-07-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.dg/select_char_2.f90: New test.
