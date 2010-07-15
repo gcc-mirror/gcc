@@ -6514,7 +6514,7 @@ spu_expand_builtin_1 (struct spu_builtin_description *d,
 
       /* get addr */
       arg = CALL_EXPR_ARG (exp, 0);
-      gcc_assert (TREE_CODE (TREE_TYPE (arg)) == POINTER_TYPE);
+      gcc_assert (POINTER_TYPE_P (TREE_TYPE (arg)));
       op = expand_expr (arg, NULL_RTX, Pmode, EXPAND_NORMAL);
       addr = memory_address (mode, op);
 
