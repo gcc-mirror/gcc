@@ -1,3 +1,11 @@
+2010-07-15  Magnus Granberg  <zorry@gentoo.org>
+	    Kevin F. Quinn  <kevquinn@gentoo.org>
+
+        * builtins.c (expand_builtin_init_trampoline): If
+	-Wtrampolines make a warning.
+	* common.opt:   Add -Wtrampolines.
+        * doc/invoke.texi:      Add -Wtrampolines.
+
 2010-07-15  Jie Zhang  <jie@codesourcery.com>
 
 	* config/arm/cortex-a8.md (cortex_a8_load_store_2): Reserve

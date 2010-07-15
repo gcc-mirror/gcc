@@ -1,3 +1,8 @@
+2010-07-15  Magnus Granberg  <zorry@gentoo.org>
+	    Kevin F. Quinn  <kevquinn@gentoo.org>
+
+        * gcc.dg/Wtrampolines.c: New.
+
 2010-07-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/44934
