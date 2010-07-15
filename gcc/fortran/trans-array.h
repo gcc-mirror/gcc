@@ -37,11 +37,11 @@ tree gfc_trans_create_temp_array (stmtblock_t *, stmtblock_t *, gfc_loopinfo *,
 
 /* Generate function entry code for allocation of compiler allocated array
    variables.  */
-tree gfc_trans_auto_array_allocation (tree, gfc_symbol *, tree);
+void gfc_trans_auto_array_allocation (tree, gfc_symbol *, gfc_wrapped_block *);
 /* Generate entry and exit code for dummy array parameters.  */
-tree gfc_trans_dummy_array_bias (gfc_symbol *, tree, tree);
+void gfc_trans_dummy_array_bias (gfc_symbol *, tree, gfc_wrapped_block *);
 /* Generate entry and exit code for g77 calling convention arrays.  */
-tree gfc_trans_g77_array (gfc_symbol *, tree);
+void gfc_trans_g77_array (gfc_symbol *, gfc_wrapped_block *);
 /* Generate code to deallocate an array, if it is allocated.  */
 tree gfc_trans_dealloc_allocated (tree);
 
@@ -58,7 +58,7 @@ tree gfc_copy_alloc_comp (gfc_symbol *, tree, tree, int);
 tree gfc_copy_only_alloc_comp (gfc_symbol *, tree, tree, int);
 
 /* Add initialization for deferred arrays.  */
-tree gfc_trans_deferred_array (gfc_symbol *, tree);
+void gfc_trans_deferred_array (gfc_symbol *, gfc_wrapped_block *);
 /* Generate an initializer for a static pointer or allocatable array.  */
 void gfc_trans_static_array_pointer (gfc_symbol *);
 
