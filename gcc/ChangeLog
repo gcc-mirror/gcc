@@ -1,3 +1,24 @@
+2010-07-15  Anatoly Sokolov  <aesok@post.ru>
+
+	* tree.h (enum tree_index): Add TI_INTEGER_THREE.
+	(integer_three_node): Add.
+	* tree.c (build_common_tree_nodes_2): Use integer_type_node insead of
+	NULL_TREE in build_int_cst calls. Initialize the integer_three_node.
+	* builtins.c (expand_builtin_prefetch): Use common tree nodes instead
+	of call build_int_cst.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Ditto.
+	* tree-ssa-loop-ivopts.c (idx_find_step): Ditto.
+	(find_interesting_uses_address): Ditto.
+	* tree-ssa-alias.c (ao_ref_init_from_ptr_and_size): Ditto.
+	* tree-eh.c (lower_eh_constructs_2): Ditto.
+	* tree-vect-loop.c (get_initial_def_for_induction): Ditto.
+	* c-typeck.c (really_start_incremental_init, push_init_level): Ditto.
+	* expmed.c (expand_divmod): Ditto.
+	* tree-mudflap.c (mx_register_decls): Ditto.
+	* varasm.c (array_size_for_constructor): Ditto.
+	* tree-ssa-loop-prefetch.c (issue_prefetch_ref): Ditto.
+	* c-parser.c (c_parser_postfix_expression): Ditto.
+
 2010-07-15  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* postreload.c (last_label_ruid, first_index_reg, last_index_reg):

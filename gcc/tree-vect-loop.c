@@ -2608,7 +2608,7 @@ get_initial_def_for_induction (gimple iv_phi)
   if (INTEGRAL_TYPE_P (scalar_type))
     step_expr = build_int_cst (scalar_type, 0);
   else if (POINTER_TYPE_P (scalar_type))
-    step_expr = build_int_cst (sizetype, 0);
+    step_expr = size_zero_node;
   else
     step_expr = build_real (scalar_type, dconst0);
 

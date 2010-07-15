@@ -5847,9 +5847,8 @@ c_parser_postfix_expression (c_parser *parser)
 	    e1 = TYPE_MAIN_VARIANT (groktypename (t1, NULL, NULL));
 	    e2 = TYPE_MAIN_VARIANT (groktypename (t2, NULL, NULL));
 
-	    expr.value = comptypes (e1, e2)
-	      ? build_int_cst (NULL_TREE, 1)
-	      : build_int_cst (NULL_TREE, 0);
+	    expr.value
+	      = comptypes (e1, e2) ? integer_one_node : integer_zero_node;
 	  }
 	  break;
 	case RID_AT_SELECTOR:

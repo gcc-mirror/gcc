@@ -1062,7 +1062,7 @@ expand_builtin_prefetch (tree exp)
   if (nargs > 2)
     arg2 = CALL_EXPR_ARG (exp, 2);
   else
-    arg2 = build_int_cst (NULL_TREE, 3);
+    arg2 = integer_three_node;
 
   /* Argument 0 is an address.  */
   op0 = expand_expr (arg0, NULL_RTX, Pmode, EXPAND_NORMAL);

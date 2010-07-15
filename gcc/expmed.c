@@ -4064,10 +4064,8 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 			    t2 = force_operand (gen_rtx_MINUS (compute_mode,
 							       op0, t1),
 						NULL_RTX);
-			    t3 = expand_shift
-			      (RSHIFT_EXPR, compute_mode, t2,
-			       build_int_cst (NULL_TREE, 1),
-			       NULL_RTX,1);
+			    t3 = expand_shift (RSHIFT_EXPR, compute_mode, t2,
+					       integer_one_node, NULL_RTX, 1);
 			    t4 = force_operand (gen_rtx_PLUS (compute_mode,
 							      t1, t3),
 						NULL_RTX);
@@ -4751,8 +4749,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 	      }
 	    tem = plus_constant (op1, -1);
 	    tem = expand_shift (RSHIFT_EXPR, compute_mode, tem,
-				build_int_cst (NULL_TREE, 1),
-				NULL_RTX, 1);
+				integer_one_node, NULL_RTX, 1);
 	    do_cmp_and_jump (remainder, tem, LEU, compute_mode, label);
 	    expand_inc (quotient, const1_rtx);
 	    expand_dec (remainder, op1);
@@ -4777,8 +4774,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 	    abs_rem = expand_abs (compute_mode, remainder, NULL_RTX, 1, 0);
 	    abs_op1 = expand_abs (compute_mode, op1, NULL_RTX, 1, 0);
 	    tem = expand_shift (LSHIFT_EXPR, compute_mode, abs_rem,
-				build_int_cst (NULL_TREE, 1),
-				NULL_RTX, 1);
+				integer_one_node, NULL_RTX, 1);
 	    do_cmp_and_jump (tem, abs_op1, LTU, compute_mode, label);
 	    tem = expand_binop (compute_mode, xor_optab, op0, op1,
 				NULL_RTX, 0, OPTAB_WIDEN);

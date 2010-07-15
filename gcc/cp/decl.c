@@ -169,9 +169,9 @@ tree static_aggregates;
 
 /* -- end of C++ */
 
-/* A node for the integer constants 2, and 3.  */
+/* A node for the integer constant 2.  */
 
-tree integer_two_node, integer_three_node;
+tree integer_two_node;
 
 /* Used only for jumps to as-yet undefined labels, since jumps to
    defined labels can have their validity checked immediately.  */
@@ -3439,7 +3439,6 @@ cxx_init_decl_processing (void)
   java_boolean_type_node = record_builtin_java_type ("__java_boolean", -1);
 
   integer_two_node = build_int_cst (NULL_TREE, 2);
-  integer_three_node = build_int_cst (NULL_TREE, 3);
 
   record_builtin_type (RID_BOOL, "bool", boolean_type_node);
   truthvalue_type_node = boolean_type_node;

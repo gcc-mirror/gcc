@@ -517,7 +517,7 @@ ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
   else
     {
       ref->base = build2 (MEM_REF, char_type_node,
-			  ptr, build_int_cst (ptr_type_node, 0));
+			  ptr, null_pointer_node);
       ref->offset = 0;
     }
   if (size

@@ -6498,14 +6498,14 @@ really_start_incremental_init (tree type)
 	  /* Detect non-empty initializations of zero-length arrays.  */
 	  if (constructor_max_index == NULL_TREE
 	      && TYPE_SIZE (constructor_type))
-	    constructor_max_index = build_int_cst (NULL_TREE, -1);
+	    constructor_max_index = integer_minus_one_node;
 
 	  /* constructor_max_index needs to be an INTEGER_CST.  Attempts
 	     to initialize VLAs will cause a proper error; avoid tree
 	     checking errors as well by setting a safe value.  */
 	  if (constructor_max_index
 	      && TREE_CODE (constructor_max_index) != INTEGER_CST)
-	    constructor_max_index = build_int_cst (NULL_TREE, -1);
+	    constructor_max_index = integer_minus_one_node;
 
 	  constructor_index
 	    = convert (bitsizetype,
@@ -6706,14 +6706,14 @@ push_init_level (int implicit, struct obstack * braced_init_obstack)
 	  /* Detect non-empty initializations of zero-length arrays.  */
 	  if (constructor_max_index == NULL_TREE
 	      && TYPE_SIZE (constructor_type))
-	    constructor_max_index = build_int_cst (NULL_TREE, -1);
+	    constructor_max_index = integer_minus_one_node;
 
 	  /* constructor_max_index needs to be an INTEGER_CST.  Attempts
 	     to initialize VLAs will cause a proper error; avoid tree
 	     checking errors as well by setting a safe value.  */
 	  if (constructor_max_index
 	      && TREE_CODE (constructor_max_index) != INTEGER_CST)
-	    constructor_max_index = build_int_cst (NULL_TREE, -1);
+	    constructor_max_index = integer_minus_one_node;
 
 	  constructor_index
 	    = convert (bitsizetype,

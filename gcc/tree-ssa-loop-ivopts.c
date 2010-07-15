@@ -1418,7 +1418,7 @@ idx_find_step (tree base, tree *idx, void *data)
     }
   else
     /* The step for pointer arithmetics already is 1 byte.  */
-    step = build_int_cst (sizetype, 1);
+    step = size_one_node;
 
   iv_base = iv->base;
   iv_step = iv->step;
@@ -1611,7 +1611,7 @@ may_be_nonaddressable_p (tree expr)
 static void
 find_interesting_uses_address (struct ivopts_data *data, gimple stmt, tree *op_p)
 {
-  tree base = *op_p, step = build_int_cst (sizetype, 0);
+  tree base = *op_p, step = size_zero_node;
   struct iv *civ;
   struct ifs_ivopts_data ifs_ivopts_data;
 
@@ -1669,7 +1669,7 @@ find_interesting_uses_address (struct ivopts_data *data, gimple stmt, tree *op_p
     {
       ifs_ivopts_data.ivopts_data = data;
       ifs_ivopts_data.stmt = stmt;
-      ifs_ivopts_data.step = build_int_cst (sizetype, 0);
+      ifs_ivopts_data.step = size_zero_node;
       if (!for_each_index (&base, idx_find_step, &ifs_ivopts_data)
 	  || integer_zerop (ifs_ivopts_data.step))
 	goto fail;

@@ -1074,7 +1074,7 @@ mx_register_decls (tree decl, gimple_seq seq, location_t location)
           unregister_fncall = gimple_build_call (mf_unregister_fndecl, 3,
 						 unregister_fncall_param,
 						 size,
-						 build_int_cst (NULL_TREE, 3));
+						 integer_three_node);
 
 
           variable_name = mf_varname_tree (decl);
@@ -1087,7 +1087,7 @@ mx_register_decls (tree decl, gimple_seq seq, location_t location)
 	  register_fncall = gimple_build_call (mf_register_fndecl, 4,
 					       register_fncall_param,
 					       size,
-					       build_int_cst (NULL_TREE, 3),
+					       integer_three_node,
 					       variable_name);
 
 
