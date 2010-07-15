@@ -1681,8 +1681,9 @@ gfc_trans_character_select (gfc_code *code)
         {
 	  label = gfc_build_label_decl (NULL_TREE);
 	  tmp = fold_build3 (CASE_LABEL_EXPR, void_type_node,
-			     build_int_cst (NULL_TREE, d->n),
-			     build_int_cst (NULL_TREE, d->n), label);
+			     (d->low == NULL && d->high == NULL)
+			     ? NULL : build_int_cst (NULL_TREE, d->n),
+			     NULL, label);
           gfc_add_expr_to_block (&body, tmp);
         }
 
