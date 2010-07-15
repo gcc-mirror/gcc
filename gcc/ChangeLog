@@ -1,10 +1,13 @@
+2010-07-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (SHIFT_COUNT_TRUNCATED): Expand comment.
+
 2010-07-15  Magnus Granberg  <zorry@gentoo.org>
 	    Kevin F. Quinn  <kevquinn@gentoo.org>
 
-        * builtins.c (expand_builtin_init_trampoline): If
-	-Wtrampolines make a warning.
-	* common.opt:   Add -Wtrampolines.
-        * doc/invoke.texi:      Add -Wtrampolines.
+	* builtins.c (expand_builtin_init_trampoline): Warn for -Wtrampolines.
+	* common.opt: Add -Wtrampolines.
+	* doc/invoke.texi: Add -Wtrampolines.
 
 2010-07-15  Jie Zhang  <jie@codesourcery.com>
 
@@ -84,8 +87,7 @@
 2010-07-14  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* ira-int.h (struct ira_object): New.
-	(ira_object_t): New typedef.  Add DEF_VEC_P and DEF_VEC_ALLOC_P
-	for it.
+	(ira_object_t): New typedef.  Add DEF_VEC_P and DEF_VEC_ALLOC_P for it.
 	(struct ira_allocno): Remove members min, max,
 	conflict_allocno_array, conflict_id, conflict_allocno_array_size,
 	conflict_allocnos_num and conflict_vec_p.  Add new member object.
@@ -114,9 +116,8 @@
 	(ira_allocno_conflict_iter_init, ira_allocno_conflict_iter_cond):
 	Changed to take into account that conflicts are now tracked for
 	objects.
-	* ira-conflicts.c (OBJECTS_CONFLICT_P): Renamed from
-	CONFLICT_ALLOCNO_P.  Args changed to accept ira_object_t.  All
-	uses changed.
+	* ira-conflicts.c (OBJECTS_CONFLICT_P): Renamed from CONFLICT_ALLOCNO_P.
+	Args changed to accept ira_object_t.  All uses changed.
 	(allocnos_conflict_p): New static function.
 	(collected_conflict_objects): Renamed from collected_allocno_objects;
 	now a vector of ira_object_t.  All uses changed.
@@ -149,7 +150,7 @@
 	compress_conflict_vecs, remove_low_level_allocnos, ira_flattening,
 	setup_min_max_allocno_live_range_point, allocno_range_compare_func,
 	setup_min_max_conflict_allocno_ids, ):  Likewise.
-	((add_to_conflicts): Renamed from add_to_allocno_conflicts, args changed
+	(add_to_conflicts): Renamed from add_to_allocno_conflicts, args changed
 	to ira_object_t; all callers changed.
 	(ira_add_conflict): Renamed from ira_add_allocno_conflict, args changed
 	to ira_object_t, all callers changed.
@@ -168,8 +169,8 @@
 	dealing with objects.
 	* ira.c (ira_bad_reload_regno_1): Adjusted for dealing with objects.
 
-	* ira-int.h (struct live_range): Rename allocno member to object and change
-	type to ira_object_t.
+	* ira-int.h (struct live_range): Rename allocno member to object
+	and change type to ira_object_t.
 	(struct ira_object): New member live_ranges.
 	(struct ira_allocno): Remove member live_ranges.
 	(ALLOCNO_LIVE_RANGES): Remove.
@@ -183,8 +184,8 @@
 	changed to ira_object_t, all callers changed.
 	(copy_live_range): Rename from copy_allocno_live_range, all callers
 	changed.
-	(ira_copy_live_range_list): Rename from ira_copy_allocno_live_range_list,
-	all callers changed.
+	(ira_copy_live_range_list): Rename from
+	ira_copy_allocno_live_range_list, all callers changed.
 	(ira_merge_live_ranges): Rename from ira_merge_allocno_live_range_list,
 	all callers changed.
 	(ira_live_ranges_intersect_p): Rename from
@@ -408,8 +409,7 @@
 	(can_copy_p): Remove can_copy_init_p.
 	* target-globals.h (this_target_gcse): Declare.
 	(target_globals): Add a gcse field.
-	(restore_target_globals): Copy the gcse field to
-	this_target_gcse.
+	(restore_target_globals): Copy the gcse field to this_target_gcse.
 	* target-globals.c: Include gcse.h.
 	(default_target_globals): Initialize the gcse field.
 	(save_target_globals): Likewise.
@@ -665,9 +665,9 @@
 
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
-	* regs.h (target_regs): Add x_hard_regs_of_mode, x_contains_reg_of_mode,
-	x_move_cost, x_may_move_in_cost, x_may_move_out_cost and
-	x_last_mode_for_init_move_cost.
+	* regs.h (target_regs): Add x_hard_regs_of_mode,
+	x_contains_reg_of_mode, x_move_cost, x_may_move_in_cost,
+	x_may_move_out_cost and x_last_mode_for_init_move_cost.
 	(have_regs_of_mode, contains_reg_of_mode, move_cost)
 	(may_move_in_cost, may_move_out_cost): Redefine as macros.
 	* reginfo.c (have_regs_of_mode, contains_reg_of_mode, move_cost)

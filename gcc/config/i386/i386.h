@@ -1815,10 +1815,11 @@ typedef struct ix86_args {
 
 #define CLEAR_RATIO(speed) ((speed) ? MIN (6, ix86_cost->move_ratio) : 2)
 
-/* Define if shifts truncate the shift count
-   which implies one can omit a sign-extension or zero-extension
-   of a shift count.  */
-/* On i386, shifts do truncate the count.  But bit opcodes don't.  */
+/* Define if shifts truncate the shift count which implies one can
+   omit a sign-extension or zero-extension of a shift count.
+
+   On i386, shifts do truncate the count.  But bit test instructions
+   take the modulo of the bit offset operand.  */
 
 /* #define SHIFT_COUNT_TRUNCATED */
 
