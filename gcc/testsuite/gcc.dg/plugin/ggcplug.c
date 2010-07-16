@@ -13,6 +13,7 @@
 #include "intl.h"
 #include "gcc-plugin.h"
 #include "plugin-version.h"
+#include "diagnostic.h"
 
 int plugin_is_GPL_compatible;
 

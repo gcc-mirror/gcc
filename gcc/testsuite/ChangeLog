@@ -105,6 +105,16 @@
 	* g++.dg/template/sfinae21.C: New.
 	* g++.dg/template/sfinae22.C: Likewise.
 
+2010-07-16  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR testsuite/42843
+	* gcc.dg/plugin/selfassign.c: Include diagnostic.h.
+	* gcc.dg/plugin/ggcplug.c: Likewise.
+	* g++.dg/plugin/selfassign.c: Likewise.
+	* g++.dg/plugin/attribute_plugin.c: Likewise.
+	* g++.dg/plugin/dumb_plugin.c: Likewise.
+	* g++.dg/plugin/pragma_plugin.c: Likewise.
+
 2010-07-13  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* gcc.c-torture/execute/pr44683.x: New.
