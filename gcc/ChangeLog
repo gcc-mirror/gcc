@@ -1,3 +1,16 @@
+2010-07-16  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_sISEL): Let rs6000_emit_int_cmove
+	do all the work.
+	(rs6000_emit_int_cmove): Use function pointers for insn generation.
+	Don't force values into registers unnecessarily.
+	(output_isel): Assert that we're not given conditions we can't handle.
+	Delete corresponding code.
+	* config/rs6000/rs6000.md (isel_signed_<mode>): Use
+	scc_comparison_operator constraint.  Permit 0 for the consequent
+	operand.  Permit any GPR for the alternative operand.
+	(isel_unsigned_<mode>): Likewise.
+
 2010-07-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/44942
