@@ -84,7 +84,7 @@ proc plugin-test-execute { plugin_src plugin_tests } {
     set gcc_objdir "$objdir/../../.."
     set includes "-I. -I${srcdir} -I${gcc_srcdir}/gcc -I${gcc_objdir}/gcc \
                   -I${gcc_srcdir}/include -I${gcc_srcdir}/libcpp/include \
-                  $GMPINC"
+                  $GMPINC -I${gcc_objdir}/intl"
 
     set optstr "$includes $extra_flags -DIN_GCC -fPIC -shared"
 
