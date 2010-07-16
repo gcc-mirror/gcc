@@ -1,3 +1,17 @@
+2010-07-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/guality/guality.exp: Run also c-c++-common/guality/ tests.
+	* gcc.dg/guality/guality.h: Include unistd.h.  Make the header usable
+	in C++.
+	(gualcvt): New overloaded inline.
+	(GUALCVT): Use it for C++.
+	* g++.dg/guality/guality.exp: New.
+	* g++.dg/guality/guality.h: New.
+	* g++.dg/guality/redeclaration1.C: New test.
+	* g++.dg/dg.exp: Prune also guality/* tests.
+	* gcc.dg/guality/pr43141.c: Moved to...
+	* c-c++-common/guality/pr43141.c: ... here.
+
 2010-07-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/37077

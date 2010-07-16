@@ -1,6 +1,6 @@
 # This harness is for tests that should be run at all optimisation levels.
 
-load_lib gcc-dg.exp
+load_lib g++-dg.exp
 load_lib gcc-gdb-test.exp
 
 # Disable on darwin until radr://7264615 is resolved.
@@ -14,7 +14,7 @@ proc check_guality {args} {
     set output [lindex $result 1]
     set ret 0
     if {[string match "" $lines]} {
-      set execout [gcc_load "./$output"]
+      set execout [g++_load "./$output"]
       set ret [string match "*1 PASS, 0 FAIL, 0 UNRESOLVED*" $execout]
     }
     remote_file build delete $output
@@ -42,8 +42,8 @@ if {[check_guality "
     return 0;
   }
 "]} {
-  gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] ""
-  gcc-dg-runtest [lsort [glob $srcdir/c-c++-common/guality/*.c]] "-Wc++-compat"
+  gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.C]] ""
+  gcc-dg-runtest [lsort [glob $srcdir/c-c++-common/guality/*.c]] ""
 }
 
 if [info exists guality_gdb_name] {
