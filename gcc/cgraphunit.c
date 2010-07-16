@@ -2017,7 +2017,7 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
   name = get_file_function_name (which_buf);
 
   decl = build_decl (input_location, FUNCTION_DECL, name,
-		     build_function_type (void_type_node, void_list_node));
+		     build_function_type_list (void_type_node, NULL_TREE));
   current_function_decl = decl;
 
   resdecl = build_decl (input_location,

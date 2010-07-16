@@ -1903,10 +1903,8 @@ tree_ssa_prefetch_arrays (void)
 
   if (!built_in_decls[BUILT_IN_PREFETCH])
     {
-      tree type = build_function_type (void_type_node,
-				       tree_cons (NULL_TREE,
-						  const_ptr_type_node,
-						  NULL_TREE));
+      tree type = build_function_type_list (void_type_node,
+					    const_ptr_type_node, NULL_TREE);
       tree decl = add_builtin_function ("__builtin_prefetch", type,
 					BUILT_IN_PREFETCH, BUILT_IN_NORMAL,
 					NULL, NULL_TREE);
