@@ -1,3 +1,10 @@
+2010-07-15  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-decl.c (detect_field_duplicates): Use DECL_CHAIN insted of
+	TREE_CHAIN.
+	* c-typeck.c (push_init_level): Likewise.
+	(process_init_element): Likewise.
+
 2010-07-15  Anatoly Sokolov  <aesok@post.ru>
 
 	* tree.h (enum tree_index): Add TI_INTEGER_THREE.

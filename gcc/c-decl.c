@@ -6705,8 +6705,7 @@ detect_field_duplicates (tree fieldlist)
      the nested traversal thing.  */
   if (timeout > 0)
     {
-      for (x = TREE_CHAIN (fieldlist); x ;
-	   x = TREE_CHAIN (x))
+      for (x = DECL_CHAIN (fieldlist); x; x = DECL_CHAIN (x))
 	if (DECL_NAME (x))
 	  {
 	    for (y = fieldlist; y != x; y = TREE_CHAIN (y))
