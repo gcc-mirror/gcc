@@ -6683,7 +6683,7 @@ push_init_level (int implicit, struct obstack * braced_init_obstack)
       /* Skip any nameless bit fields at the beginning.  */
       while (constructor_fields != 0 && DECL_C_BIT_FIELD (constructor_fields)
 	     && DECL_NAME (constructor_fields) == 0)
-	constructor_fields = TREE_CHAIN (constructor_fields);
+	constructor_fields = DECL_CHAIN (constructor_fields);
 
       constructor_unfilled_fields = constructor_fields;
       constructor_bit_index = bitsize_zero_node;
@@ -8014,7 +8014,7 @@ process_init_element (struct c_expr value, bool implicit,
 	  if (fieldcode == ARRAY_TYPE
 	      && !require_constant_value
 	      && TYPE_SIZE (fieldtype) == NULL_TREE
-	      && TREE_CHAIN (constructor_fields) == NULL_TREE)
+	      && DECL_CHAIN (constructor_fields) == NULL_TREE)
 	    {
 	      error_init ("non-static initialization of a flexible array member");
 	      break;
@@ -8144,7 +8144,7 @@ process_init_element (struct c_expr value, bool implicit,
 	       directly output as a constructor.  */
 	    {
 	      constructor_bit_index = DECL_SIZE (constructor_fields);
-	      constructor_unfilled_fields = TREE_CHAIN (constructor_fields);
+	      constructor_unfilled_fields = DECL_CHAIN (constructor_fields);
 	    }
 
 	  constructor_fields = 0;
