@@ -1,5 +1,10 @@
 2010-07-16  Jason Merrill  <jason@redhat.com>
 
+	PR c++/32505
+	* pt.c (process_partial_specialization): Diagnose partial
+	specialization after instantiation.
+	(most_specialized_class): Add complain parm.
+
 	* ptree.c (cxx_print_xnode): Handle TEMPLATE_INFO.
 
 2010-07-15  Nathan Froyd  <froydnj@codesourcery.com>

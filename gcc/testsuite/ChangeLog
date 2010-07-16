@@ -1,3 +1,8 @@
+2010-07-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/32505
+	* g++.dg/template/partial8.C: New.
+
 2010-07-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/guality/guality.exp: Run also c-c++-common/guality/ tests.
