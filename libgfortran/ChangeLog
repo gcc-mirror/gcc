@@ -1,3 +1,22 @@
+2010-07-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/37077
+	* io/read.c (read_default_char4): Add support for reading into a
+	kind-4 character variable from a character(kind=4) internal unit.
+	* io/io.h (read_block_form4): Add prototype.
+	* io/unit.c (get_internal_unit): Add call to fbuf_init.
+	(free_internal_unit): Add call to fbuf_destroy. (get_unit): Fix
+	whitespace.
+	* io/transfer.c (read_sf_internal): Use fbuf_alloc to allocate a string
+	to recieve the wide characters translated to single byte chracters.
+	(read_block_form): Fix whitespace. (read_block_form4): New function to
+	read from a character(kind=4) internal unit into a character(kind=4)
+	variable. (read_block_direct): Fix whitespace. (write_block): Fix
+	whitespace. (formatted_transfer_scalar_read): Likewise.
+	(formatted_transfer_scalar_write): Likewise.
+	* io/write.c (write_character): Add support for list directed write of
+	a kind=1 character string to a character(kind=4) internal unit.
+
 2010-07-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/44934

@@ -202,7 +202,17 @@ read_sf_internal (st_parameter_dt *dtp, int * length)
     }
 
   lorig = *length;
-  base = mem_alloc_r (dtp->u.p.current_unit->s, length);
+  if (is_char4_unit(dtp))
+    {
+      int i;
+      gfc_char4_t *p = (gfc_char4_t *) mem_alloc_r4 (dtp->u.p.current_unit->s,
+			length);
+      base = fbuf_alloc (dtp->u.p.current_unit, lorig);
+      for (i = 0; i < *length; i++, p++)
+	base[i] = *p > 255 ? '?' : (unsigned char) *p;
+    }
+  else
+    base = mem_alloc_r (dtp->u.p.current_unit->s, length);
 
   if (unlikely (lorig > *length))
     {
@@ -430,7 +440,7 @@ read_block_form (st_parameter_dt *dtp, int * nbytes)
     dtp->u.p.size_used += (GFC_IO_INT) *nbytes;
 
   if (norig != *nbytes)
-    {				
+    {
       /* Short read, this shouldn't happen.  */
       if (!dtp->u.p.current_unit->pad_status == PAD_YES)
 	{
@@ -440,6 +450,52 @@ read_block_form (st_parameter_dt *dtp, int * nbytes)
     }
 
   dtp->u.p.current_unit->strm_pos += (gfc_offset) *nbytes;
+
+  return source;
+}
+
+
+/* Read a block from a character(kind=4) internal unit, to be transferred into
+   a character(kind=4) variable.  Note: Portions of this code borrowed from
+   read_sf_internal.  */
+void *
+read_block_form4 (st_parameter_dt *dtp, int * nbytes)
+{
+  static gfc_char4_t *empty_string[0];
+  gfc_char4_t *source;
+  int lorig;
+
+  if (dtp->u.p.current_unit->bytes_left < (gfc_offset) *nbytes)
+    *nbytes = dtp->u.p.current_unit->bytes_left;
+
+  /* Zero size array gives internal unit len of 0.  Nothing to read. */
+  if (dtp->internal_unit_len == 0
+      && dtp->u.p.current_unit->pad_status == PAD_NO)
+    hit_eof (dtp);
+
+  /* If we have seen an eor previously, return a length of 0.  The
+     caller is responsible for correctly padding the input field.  */
+  if (dtp->u.p.sf_seen_eor)
+    {
+      *nbytes = 0;
+      /* Just return something that isn't a NULL pointer, otherwise the
+         caller thinks an error occured.  */
+      return empty_string;
+    }
+
+  lorig = *nbytes;
+  source = (gfc_char4_t *) mem_alloc_r4 (dtp->u.p.current_unit->s, nbytes);
+
+  if (unlikely (lorig > *nbytes))
+    {
+      hit_eof (dtp);
+      return NULL;
+    }
+
+  dtp->u.p.current_unit->bytes_left -= *nbytes;
+
+  if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
+    dtp->u.p.size_used += (GFC_IO_INT) *nbytes;
 
   return source;
 }
@@ -561,7 +617,6 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t nbytes)
       have_read_record += have_read_subrecord;
 
       if (unlikely (to_read_subrecord != have_read_subrecord))
-			
 	{
 	  /* Short read, e.g. if we hit EOF.  This means the record
 	     structure has been corrupted, or the trailing record
@@ -640,7 +695,7 @@ write_block (st_parameter_dt *dtp, int length)
 
   if (is_internal_unit (dtp))
     {
-      if (dtp->common.unit) /* char4 internal unit.  */
+      if (dtp->common.unit) /* char4 internel unit.  */
 	dest = mem_alloc_w4 (dtp->u.p.current_unit->s, &length);
       else
 	dest = mem_alloc_w (dtp->u.p.current_unit->s, &length);
@@ -658,10 +713,10 @@ write_block (st_parameter_dt *dtp, int length)
     {
       dest = fbuf_alloc (dtp->u.p.current_unit, length);
       if (dest == NULL)
-        {
-          generate_error (&dtp->common, LIBERROR_OS, NULL);
-          return NULL;
-        }
+	{
+	  generate_error (&dtp->common, LIBERROR_OS, NULL);
+	  return NULL;
+	}
     }
     
   if ((dtp->common.flags & IOPARM_DT_HAS_SIZE) != 0)
@@ -1258,7 +1313,7 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 	  consume_data_flag = 0;
 	  dtp->u.p.current_unit->decimal_status = DECIMAL_POINT;
 	  break;
-	
+
 	case FMT_RC:
 	  consume_data_flag = 0;
 	  dtp->u.p.current_unit->round_status = ROUND_COMPATIBLE;
@@ -1539,7 +1594,7 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 		write_i (dtp, f, p, kind);
 		break;
 	      case BT_LOGICAL:
-		write_l (dtp, f, p, kind);	
+		write_l (dtp, f, p, kind);
 		break;
 	      case BT_CHARACTER:
 		if (kind == 4)

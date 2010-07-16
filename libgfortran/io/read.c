@@ -383,26 +383,51 @@ read_utf8_char4 (st_parameter_dt *dtp, void *p, int len, int width)
 static void
 read_default_char4 (st_parameter_dt *dtp, char *p, int len, int width)
 {
-  char *s;
-  gfc_char4_t *dest;
   int m, n;
+  gfc_char4_t *dest;
 
-  s = read_block_form (dtp, &width);
-  
-  if (s == NULL)
-    return;
-  if (width > len)
-     s += (width - len);
+  if (is_char4_unit(dtp))
+    {
+      gfc_char4_t *s4;
 
-  m = ((int) width > len) ? len : (int) width;
-  
-  dest = (gfc_char4_t *) p;
-  
-  for (n = 0; n < m; n++, dest++, s++)
-    *dest = (unsigned char ) *s;
+      s4 = (gfc_char4_t *) read_block_form4 (dtp, &width);
 
-  for (n = 0; n < len - (int) width; n++, dest++)
-    *dest = (unsigned char) ' ';
+      if (s4 == NULL)
+	return;
+      if (width > len)
+	 s4 += (width - len);
+
+      m = ((int) width > len) ? len : (int) width;
+
+      dest = (gfc_char4_t *) p;
+
+      for (n = 0; n < m; n++)
+	*dest++ = *s4++;
+
+      for (n = 0; n < len - (int) width; n++)
+	*dest++ = (gfc_char4_t) ' ';
+    }
+  else
+    {
+      char *s;
+
+      s = read_block_form (dtp, &width);
+
+      if (s == NULL)
+	return;
+      if (width > len)
+	 s += (width - len);
+
+      m = ((int) width > len) ? len : (int) width;
+
+      dest = (gfc_char4_t *) p;
+
+      for (n = 0; n < m; n++, dest++, s++)
+	*dest = (unsigned char ) *s;
+
+      for (n = 0; n < len - (int) width; n++, dest++)
+	*dest = (unsigned char) ' ';
+    }
 }
 
 
