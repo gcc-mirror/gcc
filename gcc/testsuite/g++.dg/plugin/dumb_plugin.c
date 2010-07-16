@@ -10,6 +10,7 @@
 #include "tree-pass.h"
 #include "intl.h"
 #include "toplev.h"
+#include "diagnostic.h"
 
 int plugin_is_GPL_compatible;
 
