@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <unistd.h>
 
 /* This is a first cut at checking that debug information matches
    run-time.  The idea is to annotate programs with GUALCHK* macros
@@ -61,6 +62,7 @@ typedef intmax_t gualchk_t;
 /* Convert a pointer or integral type to the widest integral type,
    as expected by guality_check.  */
 
+#ifndef __cplusplus
 #define GUALCVT(val)						\
   ((gualchk_t)__builtin_choose_expr				\
    (__builtin_types_compatible_p (__typeof (val), gualchk_t),	\
@@ -69,6 +71,30 @@ typedef intmax_t gualchk_t;
     (__builtin_classify_type (val)				\
      == __builtin_classify_type (&guality_skip),		\
      (uintptr_t)(val),(intptr_t)(val))))
+#else
+template <typename T>
+inline __attribute__((always_inline)) gualchk_t
+gualcvt (T *val)
+{
+  return (uintptr_t) val;
+}
+
+template <typename T>
+inline __attribute__((always_inline)) gualchk_t
+gualcvt (T val)
+{
+  return (intptr_t) val;
+}
+
+template <>
+inline __attribute__((always_inline)) gualchk_t
+gualcvt<gualchk_t> (gualchk_t val)
+{
+  return val;
+}
+
+#define GUALCVT(val) gualcvt (val)
+#endif
 
 /* Attach a debugger to the current process and verify that the string
    EXPR, evaluated by the debugger, yields the gualchk_t number VAL.
@@ -195,7 +221,7 @@ main (int argc, char *argv[])
       else
 	{
 	  int len = strlen (guality_gdb_command) + sizeof (GUALITY_GDB_ARGS);
-	  char *buf = __builtin_alloca (len);
+	  char *buf = (char *) __builtin_alloca (len);
 	  strcpy (buf, guality_gdb_command);
 	  strcat (buf, GUALITY_GDB_ARGS);
 	  guality_gdb_command = buf;
