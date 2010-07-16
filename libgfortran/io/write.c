@@ -1340,6 +1340,29 @@ write_character (st_parameter_dt *dtp, const char *source, int kind, int length)
       if (p == NULL)
 	return;
 
+      if (unlikely (is_char4_unit (dtp)))
+	{
+	  gfc_char4_t d4 = (gfc_char4_t) d;
+	  gfc_char4_t *p4 = (gfc_char4_t *) p;
+
+	  if (d4 == ' ')
+	    memcpy4 (p4, 0, source, length);
+	  else
+	    {
+	      *p4++ = d4;
+
+	      for (i = 0; i < length; i++)
+		{
+		  *p4++ = (gfc_char4_t) source[i];
+		  if (source[i] == d)
+		    *p4++ = d4;
+		}
+
+	      *p4 = d4;
+	    }
+	  return;
+	}
+
       if (d == ' ')
 	memcpy (p, source, length);
       else

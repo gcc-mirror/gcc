@@ -424,8 +424,11 @@ get_internal_unit (st_parameter_dt *dtp)
 
   /* Set initial values for unit parameters.  */
   if (dtp->common.unit)
-    iunit->s = open_internal4 (dtp->internal_unit - start_record,
-			       dtp->internal_unit_len, -start_record);
+    {
+      iunit->s = open_internal4 (dtp->internal_unit - start_record,
+				 dtp->internal_unit_len, -start_record);
+      fbuf_init (iunit, 256);
+    }
   else
     iunit->s = open_internal (dtp->internal_unit - start_record,
 			      dtp->internal_unit_len, -start_record);
@@ -475,6 +478,9 @@ free_internal_unit (st_parameter_dt *dtp)
   if (!is_internal_unit (dtp))
     return;
 
+  if (unlikely (is_char4_unit (dtp)))
+    fbuf_destroy (dtp->u.p.current_unit);
+
   if (dtp->u.p.current_unit != NULL)
     {
       if (dtp->u.p.current_unit->ls != NULL)
@@ -497,7 +503,7 @@ get_unit (st_parameter_dt *dtp, int do_create)
 {
 
   if ((dtp->common.flags & IOPARM_DT_HAS_INTERNAL_UNIT) != 0)
-    return get_internal_unit(dtp);
+    return get_internal_unit (dtp);
 
   /* Has to be an external unit.  */
 
