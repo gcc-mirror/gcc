@@ -207,6 +207,15 @@ cxx_print_xnode (FILE *file, tree node, int indent)
 	       TEMPLATE_PARM_IDX (node), TEMPLATE_PARM_LEVEL (node),
 	       TEMPLATE_PARM_ORIG_LEVEL (node));
       break;
+    case TEMPLATE_INFO:
+      print_node (file, "template", TI_TEMPLATE (node), indent+4);
+      print_node (file, "args", TI_ARGS (node), indent+4);
+      if (TI_PENDING_TEMPLATE_FLAG (node))
+	{
+	  indent_to (file, indent + 3);
+	  fprintf (file, "pending_template");
+	}
+      break;
     default:
       break;
     }
