@@ -2033,10 +2033,8 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	}
       alloc_fn = OVL_CURRENT (alloc_fn);
       class_addr = build1 (ADDR_EXPR, jclass_node, class_decl);
-      alloc_call = (cp_build_function_call
-		    (alloc_fn,
-		     build_tree_list (NULL_TREE, class_addr),
-		     complain));
+      alloc_call = cp_build_function_call_nary (alloc_fn, complain,
+						class_addr, NULL_TREE);
     }
   else if (TYPE_FOR_JAVA (elt_type) && MAYBE_CLASS_TYPE_P (elt_type))
     {
