@@ -1,3 +1,11 @@
+2010-07-16  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR target/42235
+	* function.c (record_hard_reg_sets): New static function.
+	(assign_parm_setup_reg): If an optab for extending exists and the
+	generated code clobbbers no hard regs, emit the insn directly and
+	create a REG_EQUIV note.
+
 2010-07-15  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* c-decl.c (detect_field_duplicates): Use DECL_CHAIN insted of
