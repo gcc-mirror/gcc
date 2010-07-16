@@ -158,7 +158,7 @@ static tree tsubst_template_arg (tree, tree, tsubst_flags_t, tree);
 static tree tsubst_template_args (tree, tree, tsubst_flags_t, tree);
 static tree tsubst_template_parms (tree, tree, tsubst_flags_t);
 static void regenerate_decl_from_template (tree, tree);
-static tree most_specialized_class (tree, tree);
+static tree most_specialized_class (tree, tree, tsubst_flags_t);
 static tree tsubst_aggr_type (tree, tree, tsubst_flags_t, tree, int);
 static tree tsubst_arg_types (tree, tree, tsubst_flags_t, tree);
 static tree tsubst_function_type (tree, tree, tsubst_flags_t, tree);
@@ -3831,6 +3831,7 @@ process_partial_specialization (tree decl)
   tree inner_args = INNERMOST_TEMPLATE_ARGS (specargs);
   tree main_inner_parms = DECL_INNERMOST_TEMPLATE_PARMS (maintmpl);
   tree inner_parms;
+  tree inst;
   int nargs = TREE_VEC_LENGTH (inner_args);
   int ntparms;
   int  i;
@@ -4045,6 +4046,22 @@ process_partial_specialization (tree decl)
     = tree_cons (specargs, inner_parms,
                  DECL_TEMPLATE_SPECIALIZATIONS (maintmpl));
   TREE_TYPE (DECL_TEMPLATE_SPECIALIZATIONS (maintmpl)) = type;
+
+  for (inst = DECL_TEMPLATE_INSTANTIATIONS (maintmpl); inst;
+       inst = TREE_CHAIN (inst))
+    {
+      tree inst_type = TREE_VALUE (inst);
+      if (COMPLETE_TYPE_P (inst_type)
+	  && CLASSTYPE_IMPLICIT_INSTANTIATION (inst_type))
+	{
+	  tree spec = most_specialized_class (inst_type, maintmpl, tf_none);
+	  if (spec && TREE_TYPE (spec) == type)
+	    permerror (input_location,
+		       "partial specialization of %qT after instantiation "
+		       "of %qT", type, inst_type);
+	}
+    }
+
   return decl;
 }
 
@@ -7749,7 +7766,7 @@ instantiate_class_template (tree type)
 
   /* Determine what specialization of the original template to
      instantiate.  */
-  t = most_specialized_class (type, templ);
+  t = most_specialized_class (type, templ, tf_warning_or_error);
   if (t == error_mark_node)
     {
       TYPE_BEING_DEFINED (type) = 1;
@@ -15974,7 +15991,7 @@ most_general_template (tree decl)
    returned.  */
 
 static tree
-most_specialized_class (tree type, tree tmpl)
+most_specialized_class (tree type, tree tmpl, tsubst_flags_t complain)
 {
   tree list = NULL_TREE;
   tree t;
@@ -16094,6 +16111,8 @@ most_specialized_class (tree type, tree tmpl)
     {
       const char *str;
       char *spaces = NULL;
+      if (!(complain & tf_error))
+	return error_mark_node;
       error ("ambiguous class template instantiation for %q#T", type);
       str = TREE_CHAIN (list) ? _("candidates are:") : _("candidate is:");
       for (t = list; t; t = TREE_CHAIN (t))
