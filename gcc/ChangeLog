@@ -1,3 +1,29 @@
+2010-07-17  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR target/42235
+	* postreload.c (reload_cse_move2add): Return bool, true if anything.
+	changed.  All callers changed.
+	(move2add_use_add2_insn): Likewise.
+	(move2add_use_add3_insn): Likewise.
+	(reload_cse_regs): If reload_cse_move2add changed anything, rerun
+	reload_combine.
+	(RELOAD_COMBINE_MAX_USES): Bump to 16.
+	(last_jump_ruid): New static variable.
+	(struct reg_use): New members CONTAINING_MEM and RUID.
+	(reg_state): New members ALL_OFFSETS_MATCH and REAL_STORE_RUID.
+	(reload_combine_split_one_ruid, reload_combine_split_ruids,
+	reload_combine_purge_insn_uses, reload_combine_closest_single_use
+	reload_combine_purge_reg_uses_after_ruid,
+	reload_combine_recognize_const_pattern): New static functions.
+	(reload_combine_recognize_pattern): Verify that ALL_OFFSETS_MATCH
+	is true for our reg and that we have available index regs.
+	(reload_combine_note_use): New args RUID and CONTAINING_MEM.  All
+	callers changed.  Use them to initialize fields in struct reg_use.
+	(reload_combine): Initialize last_jump_ruid.  Be careful when to
+	take PREV_INSN of the scanned insn.  Update REAL_STORE_RUID fields.
+	Call reload_combine_recognize_const_pattern.
+	(reload_combine_note_store): Update REAL_STORE_RUID field.
+
 2010-07-16  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.in (opts-common.o): Depend on options.h.
