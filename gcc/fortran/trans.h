@@ -114,8 +114,8 @@ typedef struct gfc_ss_info
   tree stride[GFC_MAX_DIMENSIONS];
   tree delta[GFC_MAX_DIMENSIONS];
 
-  /* Translation from scalarizer dimensions to actual dimensions.
-     actual = dim[scalarizer]  */
+  /* Translation from loop dimensions to actual dimensions.
+     actual_dim = dim[loop_dim]  */
   int dim[GFC_MAX_DIMENSIONS];
 }
 gfc_ss_info;
