@@ -1,3 +1,11 @@
+2010-07-17  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR target/44862
+	* Makefile.tpl (POSTSTAGE1_CXX_EXPORT):
+	Provide -B option to allow for link spec %s substitutions for
+	libstdc++.a on darwin.
+	* Makefile.in: Regenerate.
+
 2010-07-10  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* MAINTAINERS (Reviewers): Update my e-mail address
