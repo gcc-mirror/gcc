@@ -434,10 +434,10 @@ gfc_free_ss (gfc_ss * ss)
   switch (ss->type)
     {
     case GFC_SS_SECTION:
-      for (n = 0; n < GFC_MAX_DIMENSIONS; n++)
+      for (n = 0; n < ss->data.info.dimen; n++)
 	{
-	  if (ss->data.info.subscript[n])
-	    gfc_free_ss_chain (ss->data.info.subscript[n]);
+	  if (ss->data.info.subscript[ss->data.info.dim[n]])
+	    gfc_free_ss_chain (ss->data.info.subscript[ss->data.info.dim[n]]);
 	}
       break;
 
@@ -762,25 +762,28 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 
   for (n = 0; n < info->dimen; n++)
      {
+      dim = info->dim[n];
+
       if (size == NULL_TREE)
 	{
 	  /* For a callee allocated array express the loop bounds in terms
 	     of the descriptor fields.  */
-	  tmp =
-	    fold_build2 (MINUS_EXPR, gfc_array_index_type,
-			 gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[n]),
-			 gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[n]));
+	  tmp = fold_build2 (
+		MINUS_EXPR, gfc_array_index_type,
+		gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[dim]),
+		gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[dim]));
 	  loop->to[n] = tmp;
 	  continue;
 	}
 	
       /* Store the stride and bound components in the descriptor.  */
-      gfc_conv_descriptor_stride_set (pre, desc, gfc_rank_cst[n], size);
+      gfc_conv_descriptor_stride_set (pre, desc, gfc_rank_cst[dim], size);
 
-      gfc_conv_descriptor_lbound_set (pre, desc, gfc_rank_cst[n],
+      gfc_conv_descriptor_lbound_set (pre, desc, gfc_rank_cst[dim],
 				      gfc_index_zero_node);
 
-      gfc_conv_descriptor_ubound_set (pre, desc, gfc_rank_cst[n], loop->to[n]);
+      gfc_conv_descriptor_ubound_set (pre, desc, gfc_rank_cst[dim],
+				      loop->to[n]);
 
       tmp = fold_build2 (PLUS_EXPR, gfc_array_index_type,
 			 loop->to[n], gfc_index_one_node);
@@ -2387,7 +2390,8 @@ gfc_trans_array_bound_check (gfc_se * se, tree descriptor, tree index, int n,
 
 
 /* Return the offset for an index.  Performs bound checking for elemental
-   dimensions.  Single element references are processed separately.  */
+   dimensions.  Single element references are processed separately.
+   DIM is the array dimension, I is the loop dimension.  */
 
 static tree
 gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
@@ -2448,14 +2452,14 @@ gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
 	  /* Scalarized dimension.  */
 	  gcc_assert (info && se->loop);
 
-          /* Multiply the loop variable by the stride and delta.  */
+	  /* Multiply the loop variable by the stride and delta.  */
 	  index = se->loop->loopvar[i];
-	  if (!integer_onep (info->stride[i]))
+	  if (!integer_onep (info->stride[dim]))
 	    index = fold_build2 (MULT_EXPR, gfc_array_index_type, index,
-				 info->stride[i]);
-	  if (!integer_zerop (info->delta[i]))
+				 info->stride[dim]);
+	  if (!integer_zerop (info->delta[dim]))
 	    index = fold_build2 (PLUS_EXPR, gfc_array_index_type, index,
-				 info->delta[i]);
+				 info->delta[dim]);
 	  break;
 
 	default:
@@ -2467,9 +2471,9 @@ gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
       /* Temporary array or derived type component.  */
       gcc_assert (se->loop);
       index = se->loop->loopvar[se->loop->order[i]];
-      if (!integer_zerop (info->delta[i]))
+      if (!integer_zerop (info->delta[dim]))
 	index = fold_build2 (PLUS_EXPR, gfc_array_index_type,
-			     index, info->delta[i]);
+			     index, info->delta[dim]);
     }
 
   /* Multiply by the stride.  */
@@ -2967,7 +2971,7 @@ gfc_trans_scalarized_loop_boundary (gfc_loopinfo * loop, stmtblock_t * body)
 /* Calculate the lower bound of an array section.  */
 
 static void
-gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int n)
+gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int dim)
 {
   gfc_expr *start;
   gfc_expr *end;
@@ -2975,19 +2979,17 @@ gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int n)
   tree desc;
   gfc_se se;
   gfc_ss_info *info;
-  int dim;
 
   gcc_assert (ss->type == GFC_SS_SECTION);
 
   info = &ss->data.info;
-  dim = info->dim[n];
 
   if (info->ref->u.ar.dimen_type[dim] == DIMEN_VECTOR)
     {
       /* We use a zero-based index to access the vector.  */
-      info->start[n] = gfc_index_zero_node;
-      info->stride[n] = gfc_index_one_node;
-      info->end[n] = NULL;
+      info->start[dim] = gfc_index_zero_node;
+      info->stride[dim] = gfc_index_one_node;
+      info->end[dim] = NULL;
       return;
     }
 
@@ -3005,14 +3007,14 @@ gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int n)
       gfc_init_se (&se, NULL);
       gfc_conv_expr_type (&se, start, gfc_array_index_type);
       gfc_add_block_to_block (&loop->pre, &se.pre);
-      info->start[n] = se.expr;
+      info->start[dim] = se.expr;
     }
   else
     {
       /* No lower bound specified so use the bound of the array.  */
-      info->start[n] = gfc_conv_array_lbound (desc, dim);
+      info->start[dim] = gfc_conv_array_lbound (desc, dim);
     }
-  info->start[n] = gfc_evaluate_now (info->start[n], &loop->pre);
+  info->start[dim] = gfc_evaluate_now (info->start[dim], &loop->pre);
 
   /* Similarly calculate the end.  Although this is not used in the
      scalarizer, it is needed when checking bounds and where the end
@@ -3023,24 +3025,24 @@ gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int n)
       gfc_init_se (&se, NULL);
       gfc_conv_expr_type (&se, end, gfc_array_index_type);
       gfc_add_block_to_block (&loop->pre, &se.pre);
-      info->end[n] = se.expr;
+      info->end[dim] = se.expr;
     }
   else
     {
       /* No upper bound specified so use the bound of the array.  */
-      info->end[n] = gfc_conv_array_ubound (desc, dim);
+      info->end[dim] = gfc_conv_array_ubound (desc, dim);
     }
-  info->end[n] = gfc_evaluate_now (info->end[n], &loop->pre);
+  info->end[dim] = gfc_evaluate_now (info->end[dim], &loop->pre);
 
   /* Calculate the stride.  */
   if (stride == NULL)
-    info->stride[n] = gfc_index_one_node;
+    info->stride[dim] = gfc_index_one_node;
   else
     {
       gfc_init_se (&se, NULL);
       gfc_conv_expr_type (&se, stride, gfc_array_index_type);
       gfc_add_block_to_block (&loop->pre, &se.pre);
-      info->stride[n] = gfc_evaluate_now (se.expr, &loop->pre);
+      info->stride[dim] = gfc_evaluate_now (se.expr, &loop->pre);
     }
 }
 
@@ -3105,7 +3107,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	  gfc_conv_ss_descriptor (&loop->pre, ss, !loop->array_parameter);
 
 	  for (n = 0; n < ss->data.info.dimen; n++)
-	    gfc_conv_section_startstride (loop, ss, n);
+	    gfc_conv_section_startstride (loop, ss, ss->data.info.dim[n]);
 	  break;
 
 	case GFC_SS_INTRINSIC:
@@ -3180,11 +3182,10 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 		check_upper = true;
 
 	      /* Zero stride is not allowed.  */
-	      tmp = fold_build2 (EQ_EXPR, boolean_type_node, info->stride[n],
+	      tmp = fold_build2 (EQ_EXPR, boolean_type_node, info->stride[dim],
 				 gfc_index_zero_node);
 	      asprintf (&msg, "Zero stride is not allowed, for dimension %d "
-			"of array '%s'", info->dim[n]+1,
-			ss->expr->symtree->name);
+			"of array '%s'", dim + 1, ss->expr->symtree->name);
 	      gfc_trans_runtime_check (true, false, tmp, &inner,
 				       &ss->expr->where, msg);
 	      gfc_free (msg);
@@ -3192,27 +3193,27 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	      desc = ss->data.info.descriptor;
 
 	      /* This is the run-time equivalent of resolve.c's
-	         check_dimension().  The logical is more readable there
-	         than it is here, with all the trees.  */
+		 check_dimension().  The logical is more readable there
+		 than it is here, with all the trees.  */
 	      lbound = gfc_conv_array_lbound (desc, dim);
-	      end = info->end[n];
+	      end = info->end[dim];
 	      if (check_upper)
 		ubound = gfc_conv_array_ubound (desc, dim);
 	      else
 		ubound = NULL;
 
 	      /* non_zerosized is true when the selected range is not
-	         empty.  */
+		 empty.  */
 	      stride_pos = fold_build2 (GT_EXPR, boolean_type_node,
-					info->stride[n], gfc_index_zero_node);
-	      tmp = fold_build2 (LE_EXPR, boolean_type_node, info->start[n],
+					info->stride[dim], gfc_index_zero_node);
+	      tmp = fold_build2 (LE_EXPR, boolean_type_node, info->start[dim],
 				 end);
 	      stride_pos = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
 					stride_pos, tmp);
 
 	      stride_neg = fold_build2 (LT_EXPR, boolean_type_node,
-					info->stride[n], gfc_index_zero_node);
-	      tmp = fold_build2 (GE_EXPR, boolean_type_node, info->start[n],
+					info->stride[dim], gfc_index_zero_node);
+	      tmp = fold_build2 (GE_EXPR, boolean_type_node, info->start[dim],
 				 end);
 	      stride_neg = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
 					stride_neg, tmp);
@@ -3225,41 +3226,41 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 		 error message.  */
 	      if (check_upper)
 		{
-		  tmp = fold_build2 (LT_EXPR, boolean_type_node, 
-				     info->start[n], lbound);
+		  tmp = fold_build2 (LT_EXPR, boolean_type_node,
+				     info->start[dim], lbound);
 		  tmp = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
 				     non_zerosized, tmp);
 		  tmp2 = fold_build2 (GT_EXPR, boolean_type_node,
-				      info->start[n], ubound);
+				      info->start[dim], ubound);
 		  tmp2 = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
 				      non_zerosized, tmp2);
 		  asprintf (&msg, "Index '%%ld' of dimension %d of array '%s' "
-			    "outside of expected range (%%ld:%%ld)", 
-			    info->dim[n]+1, ss->expr->symtree->name);
-		  gfc_trans_runtime_check (true, false, tmp, &inner, 
+			    "outside of expected range (%%ld:%%ld)",
+			    dim + 1, ss->expr->symtree->name);
+		  gfc_trans_runtime_check (true, false, tmp, &inner,
 					   &ss->expr->where, msg,
-		     fold_convert (long_integer_type_node, info->start[n]),
-		     fold_convert (long_integer_type_node, lbound), 
+		     fold_convert (long_integer_type_node, info->start[dim]),
+		     fold_convert (long_integer_type_node, lbound),
 		     fold_convert (long_integer_type_node, ubound));
-		  gfc_trans_runtime_check (true, false, tmp2, &inner, 
+		  gfc_trans_runtime_check (true, false, tmp2, &inner,
 					   &ss->expr->where, msg,
-		     fold_convert (long_integer_type_node, info->start[n]),
-		     fold_convert (long_integer_type_node, lbound), 
+		     fold_convert (long_integer_type_node, info->start[dim]),
+		     fold_convert (long_integer_type_node, lbound),
 		     fold_convert (long_integer_type_node, ubound));
 		  gfc_free (msg);
 		}
 	      else
 		{
-		  tmp = fold_build2 (LT_EXPR, boolean_type_node, 
-				     info->start[n], lbound);
+		  tmp = fold_build2 (LT_EXPR, boolean_type_node,
+				     info->start[dim], lbound);
 		  tmp = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
 				     non_zerosized, tmp);
 		  asprintf (&msg, "Index '%%ld' of dimension %d of array '%s' "
-			    "below lower bound of %%ld", 
-			    info->dim[n]+1, ss->expr->symtree->name);
-		  gfc_trans_runtime_check (true, false, tmp, &inner, 
+			    "below lower bound of %%ld",
+			    dim + 1, ss->expr->symtree->name);
+		  gfc_trans_runtime_check (true, false, tmp, &inner,
 					   &ss->expr->where, msg,
-		     fold_convert (long_integer_type_node, info->start[n]),
+		     fold_convert (long_integer_type_node, info->start[dim]),
 		     fold_convert (long_integer_type_node, lbound));
 		  gfc_free (msg);
 		}
@@ -3269,9 +3270,9 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 		 and check it against both lower and upper bounds.  */
 
 	      tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type, end,
-				  info->start[n]);
+				  info->start[dim]);
 	      tmp = fold_build2 (TRUNC_MOD_EXPR, gfc_array_index_type, tmp,
-				  info->stride[n]);
+				  info->stride[dim]);
 	      tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type, end,
 				  tmp);
 	      tmp2 = fold_build2 (LT_EXPR, boolean_type_node, tmp, lbound);
@@ -3283,8 +3284,8 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 		  tmp3 = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
 				      non_zerosized, tmp3);
 		  asprintf (&msg, "Index '%%ld' of dimension %d of array '%s' "
-			    "outside of expected range (%%ld:%%ld)", 
-			    info->dim[n]+1, ss->expr->symtree->name);
+			    "outside of expected range (%%ld:%%ld)",
+			    dim + 1, ss->expr->symtree->name);
 		  gfc_trans_runtime_check (true, false, tmp2, &inner,
 					   &ss->expr->where, msg,
 		     fold_convert (long_integer_type_node, tmp),
@@ -3300,32 +3301,32 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	      else
 		{
 		  asprintf (&msg, "Index '%%ld' of dimension %d of array '%s' "
-			    "below lower bound of %%ld", 
-			    info->dim[n]+1, ss->expr->symtree->name);
+			    "below lower bound of %%ld",
+			    dim + 1, ss->expr->symtree->name);
 		  gfc_trans_runtime_check (true, false, tmp2, &inner,
 					   &ss->expr->where, msg,
 		     fold_convert (long_integer_type_node, tmp),
 		     fold_convert (long_integer_type_node, lbound));
 		  gfc_free (msg);
 		}
-	      
+
 	      /* Check the section sizes match.  */
 	      tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type, end,
-				 info->start[n]);
+				 info->start[dim]);
 	      tmp = fold_build2 (FLOOR_DIV_EXPR, gfc_array_index_type, tmp,
-				 info->stride[n]);
+				 info->stride[dim]);
 	      tmp = fold_build2 (PLUS_EXPR, gfc_array_index_type,
 				 gfc_index_one_node, tmp);
 	      tmp = fold_build2 (MAX_EXPR, gfc_array_index_type, tmp,
 				 build_int_cst (gfc_array_index_type, 0));
 	      /* We remember the size of the first section, and check all the
-	         others against this.  */
+		 others against this.  */
 	      if (size[n])
 		{
 		  tmp3 = fold_build2 (NE_EXPR, boolean_type_node, tmp, size[n]);
 		  asprintf (&msg, "Array bound mismatch for dimension %d "
 			    "of array '%s' (%%ld/%%ld)",
-			    info->dim[n]+1, ss->expr->symtree->name);
+			    dim + 1, ss->expr->symtree->name);
 
 		  gfc_trans_runtime_check (true, false, tmp3, &inner,
 					   &ss->expr->where, msg,
@@ -3517,7 +3518,7 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
 void
 gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 {
-  int n;
+  int n, dim, spec_dim;
   gfc_ss_info *info;
   gfc_ss_info *specinfo;
   gfc_ss *ss;
@@ -3533,14 +3534,34 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
       loopspec[n] = NULL;
       dynamic[n] = false;
       /* We use one SS term, and use that to determine the bounds of the
-         loop for this dimension.  We try to pick the simplest term.  */
+	 loop for this dimension.  We try to pick the simplest term.  */
       for (ss = loop->ss; ss != gfc_ss_terminator; ss = ss->loop_chain)
 	{
+	  if (ss->type == GFC_SS_SCALAR || ss->type == GFC_SS_REFERENCE)
+	    continue;
+
+	  info = &ss->data.info;
+	  dim = info->dim[n];
+
+	  if (loopspec[n] != NULL)
+	    {
+	      specinfo = &loopspec[n]->data.info;
+	      spec_dim = specinfo->dim[n];
+	    }
+	  else
+	    {
+	      /* Silence unitialized warnings.  */
+	      specinfo = NULL;
+	      spec_dim = 0;
+	    }
+
 	  if (ss->shape)
 	    {
+	      gcc_assert (ss->shape[dim]);
 	      /* The frontend has worked out the size for us.  */
-	      if (!loopspec[n] || !loopspec[n]->shape
-		    || !integer_zerop (loopspec[n]->data.info.start[n]))
+	      if (!loopspec[n]
+		  || !loopspec[n]->shape
+		  || !integer_zerop (specinfo->start[spec_dim]))
 		/* Prefer zero-based descriptors if possible.  */
 		loopspec[n] = ss;
 	      continue;
@@ -3567,22 +3588,16 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 
 	  /* TODO: Pick the best bound if we have a choice between a
 	     function and something else.  */
-          if (ss->type == GFC_SS_FUNCTION)
-            {
-              loopspec[n] = ss;
-              continue;
-            }
+	  if (ss->type == GFC_SS_FUNCTION)
+	    {
+	      loopspec[n] = ss;
+	      continue;
+	    }
 
 	  if (ss->type != GFC_SS_SECTION)
 	    continue;
 
-	  if (loopspec[n])
-	    specinfo = &loopspec[n]->data.info;
-	  else
-	    specinfo = NULL;
-	  info = &ss->data.info;
-
-	  if (!specinfo)
+	  if (!loopspec[n])
 	    loopspec[n] = ss;
 	  /* Criteria for choosing a loop specifier (most important first):
 	     doesn't need realloc
@@ -3593,14 +3608,14 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 	   */
 	  else if (loopspec[n]->type == GFC_SS_CONSTRUCTOR && dynamic[n])
 	    loopspec[n] = ss;
-	  else if (integer_onep (info->stride[n])
-		   && !integer_onep (specinfo->stride[n]))
+	  else if (integer_onep (info->stride[dim])
+		   && !integer_onep (specinfo->stride[spec_dim]))
 	    loopspec[n] = ss;
-	  else if (INTEGER_CST_P (info->stride[n])
-		   && !INTEGER_CST_P (specinfo->stride[n]))
+	  else if (INTEGER_CST_P (info->stride[dim])
+		   && !INTEGER_CST_P (specinfo->stride[spec_dim]))
 	    loopspec[n] = ss;
-	  else if (INTEGER_CST_P (info->start[n])
-		   && !INTEGER_CST_P (specinfo->start[n]))
+	  else if (INTEGER_CST_P (info->start[dim])
+		   && !INTEGER_CST_P (specinfo->start[spec_dim]))
 	    loopspec[n] = ss;
 	  /* We don't work out the upper bound.
 	     else if (INTEGER_CST_P (info->finish[n])
@@ -3613,26 +3628,27 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
       gcc_assert (loopspec[n]);
 
       info = &loopspec[n]->data.info;
+      dim = info->dim[n];
 
       /* Set the extents of this range.  */
       cshape = loopspec[n]->shape;
-      if (cshape && INTEGER_CST_P (info->start[n])
-	  && INTEGER_CST_P (info->stride[n]))
+      if (cshape && INTEGER_CST_P (info->start[dim])
+	  && INTEGER_CST_P (info->stride[dim]))
 	{
-	  loop->from[n] = info->start[n];
+	  loop->from[n] = info->start[dim];
 	  mpz_set (i, cshape[n]);
 	  mpz_sub_ui (i, i, 1);
 	  /* To = from + (size - 1) * stride.  */
 	  tmp = gfc_conv_mpz_to_tree (i, gfc_index_integer_kind);
-	  if (!integer_onep (info->stride[n]))
+	  if (!integer_onep (info->stride[dim]))
 	    tmp = fold_build2 (MULT_EXPR, gfc_array_index_type,
-			       tmp, info->stride[n]);
+			       tmp, info->stride[dim]);
 	  loop->to[n] = fold_build2 (PLUS_EXPR, gfc_array_index_type,
 				     loop->from[n], tmp);
 	}
       else
 	{
-	  loop->from[n] = info->start[n];
+	  loop->from[n] = info->start[dim];
 	  switch (loopspec[n]->type)
 	    {
 	    case GFC_SS_CONSTRUCTOR:
@@ -3644,7 +3660,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 	    case GFC_SS_SECTION:
 	      /* Use the end expression if it exists and is not constant,
 		 so that it is only evaluated once.  */
-	      loop->to[n] = info->end[n];
+	      loop->to[n] = info->end[dim];
 	      break;
 
 	    case GFC_SS_FUNCTION:
@@ -3658,20 +3674,20 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 	}
 
       /* Transform everything so we have a simple incrementing variable.  */
-      if (integer_onep (info->stride[n]))
-	info->delta[n] = gfc_index_zero_node;
+      if (integer_onep (info->stride[dim]))
+	info->delta[dim] = gfc_index_zero_node;
       else
 	{
 	  /* Set the delta for this section.  */
-	  info->delta[n] = gfc_evaluate_now (loop->from[n], &loop->pre);
+	  info->delta[dim] = gfc_evaluate_now (loop->from[n], &loop->pre);
 	  /* Number of iterations is (end - start + step) / step.
 	     with start = 0, this simplifies to
 	     last = end / step;
 	     for (i = 0; i<=last; i++){...};  */
 	  tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
 			     loop->to[n], loop->from[n]);
-	  tmp = fold_build2 (FLOOR_DIV_EXPR, gfc_array_index_type, 
-			     tmp, info->stride[n]);
+	  tmp = fold_build2 (FLOOR_DIV_EXPR, gfc_array_index_type,
+			     tmp, info->stride[dim]);
 	  tmp = fold_build2 (MAX_EXPR, gfc_array_index_type, tmp,
 			     build_int_cst (gfc_array_index_type, -1));
 	  loop->to[n] = gfc_evaluate_now (tmp, &loop->pre);
@@ -3732,18 +3748,20 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 	  /* If we are specifying the range the delta is already set.  */
 	  if (loopspec[n] != ss)
 	    {
+	      dim = ss->data.info.dim[n];
+
 	      /* Calculate the offset relative to the loop variable.
-	         First multiply by the stride.  */
+		 First multiply by the stride.  */
 	      tmp = loop->from[n];
-	      if (!integer_onep (info->stride[n]))
+	      if (!integer_onep (info->stride[dim]))
 		tmp = fold_build2 (MULT_EXPR, gfc_array_index_type,
-				   tmp, info->stride[n]);
+				   tmp, info->stride[dim]);
 
 	      /* Then subtract this from our starting value.  */
 	      tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
-				 info->start[n], tmp);
+				 info->start[dim], tmp);
 
-	      info->delta[n] = gfc_evaluate_now (tmp, &loop->pre);
+	      info->delta[dim] = gfc_evaluate_now (tmp, &loop->pre);
 	    }
 	}
     }
@@ -5296,7 +5314,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	      gcc_assert (info->dim[dim] == n);
 
 	      /* Evaluate and remember the start of the section.  */
-	      start = info->start[dim];
+	      start = info->start[n];
 	      stride = gfc_evaluate_now (stride, &loop.pre);
 	    }
 
@@ -5343,11 +5361,11 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	  /* Multiply the stride by the section stride to get the
 	     total stride.  */
 	  stride = fold_build2 (MULT_EXPR, gfc_array_index_type,
-				stride, info->stride[dim]);
+				stride, info->stride[n]);
 
 	  if (se->direct_byref
-		&& info->ref
-		&& info->ref->u.ar.type != AR_FULL)
+	      && info->ref
+	      && info->ref->u.ar.type != AR_FULL)
 	    {
 	      base = fold_build2 (MINUS_EXPR, TREE_TYPE (base),
 				  base, stride);
