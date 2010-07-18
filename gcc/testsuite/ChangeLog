@@ -1,3 +1,18 @@
+2010-07-18  Daniel Franke  <franke.daniel@gmail.com>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30668
+	PR fortran/31346
+	PR fortran/34260
+	PR fortran/40011
+	* gfortran.dg/pr40999.f: Fix function type.
+	* gfortran.dg/whole_file_5.f90: Likewise.
+	* gfortran.dg/whole_file_6.f90: Likewise.
+	* gfortran.dg/whole_file_16.f90: New.
+	* gfortran.dg/whole_file_17.f90: New.
+	* gfortran.dg/whole_file_18.f90: New.
+	* gfortran.dg/whole_file_19.f90: New.
+
 2010-07-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:

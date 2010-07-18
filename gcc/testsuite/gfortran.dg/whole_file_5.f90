@@ -11,9 +11,9 @@ INTEGER FUNCTION f()
 END FUNCTION
 
 PROGRAM main
-  INTEGER :: a
+  INTEGER :: a, f
   a = f()
-  print *, a
+  print *, a, f()
 END PROGRAM
 
 ! { dg-final { scan-tree-dump-times "= f \\(\\)" 0 "optimized" } }

@@ -1,3 +1,16 @@
+2010-07-18  Daniel Franke  <franke.daniel@gmail.com>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/30668
+	PR fortran/31346
+	PR fortran/34260
+        * resolve.c (resolve_global_procedure): Improved checking if an
+        explicit interface is required.
+
+	PR fortran/40011
+	* resolve.c (resolve_global_procedure): Resolve the gsymbol's
+	namespace before trying to reorder the gsymbols.
+
 2010-07-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/44773

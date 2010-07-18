@@ -7,13 +7,13 @@
 !
 
 PROGRAM main
-  INTEGER :: a(3)
+  INTEGER :: a(3), f
   a = f()
   print *, a
 END PROGRAM
 
 INTEGER FUNCTION f()
-  f = 42.0
+  f = 42
 END FUNCTION
 
 ! { dg-final { scan-tree-dump-times "= f \\(\\)" 0 "optimized" } }
