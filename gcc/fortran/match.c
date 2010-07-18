@@ -978,13 +978,6 @@ gfc_match_iterator (gfc_iterator *iter, int init_flag)
       goto cleanup;
     }
 
-  if (var->symtree->n.sym->attr.intent == INTENT_IN)
-    {
-      gfc_error ("Loop variable '%s' at %C cannot be INTENT(IN)",
-		 var->symtree->n.sym->name);
-      goto cleanup;
-    }
-
   gfc_match_char ('=');
 
   var->symtree->n.sym->attr.implied_index = 1;

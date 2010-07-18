@@ -1,3 +1,9 @@
+2010-07-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/44353
+	* match.c (gfc_match_iterator): Remove error that iterator
+	cannot be INTENT(IN).
+
 2010-07-17  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans-array.c (gfc_free_ss): Don't free beyond ss rank.

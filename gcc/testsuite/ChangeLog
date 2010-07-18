@@ -1,3 +1,8 @@
+2010-07-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/44353
+	* gfortran.dg/data_implied_do_2.f03 : New test.
+
 2010-07-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/mips/cache-1.c: Allow 0 instead of 0x0.
