@@ -1,3 +1,7 @@
+2010-07-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/mips16-attributes-4.c: New test.
+
 2010-07-17  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR testsuite/44418
