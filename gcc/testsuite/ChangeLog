@@ -1,5 +1,9 @@
 2010-07-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* gcc.target/mips/cache-1.c: Allow 0 instead of 0x0.
+
+2010-07-18  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* gcc.target/mips/mips.exp (mips_option_groups): Add -mflip-mips16
 	to the "mips16" group.
 	(mips_using_mips16_p): New procedure.
