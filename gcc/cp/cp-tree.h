@@ -5462,7 +5462,8 @@ extern tree cp_build_unary_op                   (enum tree_code, tree, int,
 extern tree unary_complex_lvalue		(enum tree_code, tree);
 extern tree build_x_conditional_expr		(tree, tree, tree, 
                                                  tsubst_flags_t);
-extern tree build_x_compound_expr_from_list	(tree, expr_list_kind);
+extern tree build_x_compound_expr_from_list	(tree, expr_list_kind,
+						 tsubst_flags_t);
 extern tree build_x_compound_expr_from_vec	(VEC(tree,gc) *, const char *);
 extern tree build_x_compound_expr		(tree, tree, tsubst_flags_t);
 extern tree build_compound_expr                 (location_t, tree, tree);

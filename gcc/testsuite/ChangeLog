@@ -1,3 +1,8 @@
+2010-07-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/44969
+	* g++.dg/template/sfinae23.C: New.
+
 2010-07-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/target-supports.exp (check_sse_os_support_available): New

@@ -4462,7 +4462,8 @@ grok_reference_init (tree decl, tree type, tree init, tree *cleanup)
     }
 
   if (TREE_CODE (init) == TREE_LIST)
-    init = build_x_compound_expr_from_list (init, ELK_INIT);
+    init = build_x_compound_expr_from_list (init, ELK_INIT,
+					    tf_warning_or_error);
 
   if (TREE_CODE (TREE_TYPE (type)) != ARRAY_TYPE
       && TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE)
@@ -5683,7 +5684,8 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  return;
 	}
       if (TREE_CODE (init) == TREE_LIST)
-	init = build_x_compound_expr_from_list (init, ELK_INIT);
+	init = build_x_compound_expr_from_list (init, ELK_INIT,
+						tf_warning_or_error);
       if (describable_type (init))
 	{
 	  type = TREE_TYPE (decl) = do_auto_deduction (type, init, auto_node);
