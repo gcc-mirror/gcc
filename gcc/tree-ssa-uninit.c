@@ -490,17 +490,33 @@ collect_phi_def_edges (gimple phi, basic_block cd_root,
       opnd_edge = gimple_phi_arg_edge (phi, i);
       opnd = gimple_phi_arg_def (phi, i);
 
-      if (TREE_CODE (opnd) != SSA_NAME
-          || !ssa_undefined_value_p (opnd))
-        VEC_safe_push (edge, heap, *edges, opnd_edge);
+      if (TREE_CODE (opnd) != SSA_NAME)
+        {
+          if (dump_file && (dump_flags & TDF_DETAILS))
+            {
+              fprintf (dump_file, "\n[CHECK] Found def edge %d in ", (int)i);
+              print_gimple_stmt (dump_file, phi, 0, 0);
+            }
+          VEC_safe_push (edge, heap, *edges, opnd_edge);
+        }
       else
         {
           gimple def = SSA_NAME_DEF_STMT (opnd);
+
           if (gimple_code (def) == GIMPLE_PHI
               && dominated_by_p (CDI_DOMINATORS,
                                  gimple_bb (def), cd_root))
             collect_phi_def_edges (def, cd_root, edges,
                                    visited_phis);
+          else if (!ssa_undefined_value_p (opnd))
+            {
+              if (dump_file && (dump_flags & TDF_DETAILS))
+                {
+                  fprintf (dump_file, "\n[CHECK] Found def edge %d in ", (int)i);
+                  print_gimple_stmt (dump_file, phi, 0, 0);
+                }
+              VEC_safe_push (edge, heap, *edges, opnd_edge);
+            }
         }
     }
 }
@@ -1530,7 +1546,7 @@ is_use_properly_guarded (gimple use_stmt,
 
   if (dump_file)
     dump_predicates (use_stmt, num_preds, preds,
-                     "Use in stmt ");
+                     "\nUse in stmt ");
 
   has_valid_preds = find_def_preds (&def_preds,
                                     &num_def_preds, phi);
@@ -1615,15 +1631,26 @@ find_uninit_use (gimple phi, unsigned uninit_opnds,
         }
       pointer_set_destroy (visited_phis);
 
+      if (dump_file && (dump_flags & TDF_DETAILS))
+        {
+          fprintf (dump_file, "[CHECK]: Found unguarded use: ");
+          print_gimple_stmt (dump_file, use_stmt, 0, 0);
+        }
       /* Found one real use, return.  */
       if (gimple_code (use_stmt) != GIMPLE_PHI)
-         return use_stmt;
+        return use_stmt;
 
       /* Found a phi use that is not guarded,
          add the phi to the worklist.  */
       if (!pointer_set_insert (added_to_worklist,
                                use_stmt))
         {
+          if (dump_file && (dump_flags & TDF_DETAILS))
+            {
+              fprintf (dump_file, "[WORKLIST]: Update worklist with phi: ");
+              print_gimple_stmt (dump_file, use_stmt, 0, 0);
+            }
+
           VEC_safe_push (gimple, heap, *worklist, use_stmt);
           pointer_set_insert (possibly_undefined_names,
 	                      phi_result);
@@ -1657,6 +1684,12 @@ warn_uninitialized_phi (gimple phi, VEC(gimple, heap) **worklist,
 
   if  (MASK_EMPTY (uninit_opnds))
     return;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "[CHECK]: examining phi: ");
+      print_gimple_stmt (dump_file, phi, 0, 0);
+    }
 
   /* Now check if we have any use of the value without proper guard.  */
   uninit_use_stmt = find_uninit_use (phi, uninit_opnds,
@@ -1717,6 +1750,11 @@ execute_late_warn_uninitialized (void)
               {
                 VEC_safe_push (gimple, heap, worklist, phi);
 		pointer_set_insert (added_to_worklist, phi);
+                if (dump_file && (dump_flags & TDF_DETAILS))
+                  {
+                    fprintf (dump_file, "[WORKLIST]: add to initial list: ");
+                    print_gimple_stmt (dump_file, phi, 0, 0);
+                  }
                 break;
               }
           }
@@ -1728,7 +1766,7 @@ execute_late_warn_uninitialized (void)
       cur_phi = VEC_pop (gimple, worklist);
       warn_uninitialized_phi (cur_phi, &worklist, added_to_worklist);
     }
-  
+
   VEC_free (gimple, heap, worklist);
   pointer_set_destroy (added_to_worklist);
   pointer_set_destroy (possibly_undefined_names);
