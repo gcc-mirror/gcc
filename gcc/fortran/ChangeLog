@@ -1,3 +1,8 @@
+2010-07-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/44353
+	* match.c (gfc_match_iterator): Reverted.
+
 2010-07-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/44353
