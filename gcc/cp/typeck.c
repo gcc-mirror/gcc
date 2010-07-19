@@ -5502,14 +5502,16 @@ build_x_conditional_expr (tree ifexp, tree op1, tree op2,
    that performs them all and returns the value of the last of them.  */
 
 tree
-build_x_compound_expr_from_list (tree list, expr_list_kind exp)
+build_x_compound_expr_from_list (tree list, expr_list_kind exp,
+				 tsubst_flags_t complain)
 {
   tree expr = TREE_VALUE (list);
 
   if (TREE_CHAIN (list))
     {
-      switch (exp)
-	{
+      if (complain & tf_error)
+	switch (exp)
+	  {
 	  case ELK_INIT:
 	    permerror (input_location, "expression list treated as compound "
 				       "expression in initializer");
@@ -5524,11 +5526,11 @@ build_x_compound_expr_from_list (tree list, expr_list_kind exp)
 	    break;
 	  default:
 	    gcc_unreachable ();
-	}
+	  }
 
       for (list = TREE_CHAIN (list); list; list = TREE_CHAIN (list))
 	expr = build_x_compound_expr (expr, TREE_VALUE (list), 
-                                      tf_warning_or_error);
+                                      complain);
     }
 
   return expr;

@@ -1,3 +1,15 @@
+2010-07-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/44969
+	* typeck.c (build_x_compound_expr_from_list): Add tsubst_flags_t
+	parameter.
+	* cp-tree.h: Adjust declaration.
+	* init.c (perform_member_init): Adjust caller.
+	* decl.c (grok_reference_init, cp_finish_decl): Likewise.
+	* typeck2.c (store_init_value): Likewise.
+	(build_functional_cast): Pass complain argument to
+	build_x_compound_expr_from_list.
+
 2010-07-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/32505

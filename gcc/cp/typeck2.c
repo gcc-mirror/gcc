@@ -737,7 +737,8 @@ store_init_value (tree decl, tree init, int flags)
 	}
       else
 	/* We get here with code like `int a (2);' */
-	init = build_x_compound_expr_from_list (init, ELK_INIT);
+	init = build_x_compound_expr_from_list (init, ELK_INIT,
+						tf_warning_or_error);
     }
 
   /* End of special C++ code.  */
@@ -1594,7 +1595,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
 	return cp_convert (type, integer_zero_node);
 
       /* This must build a C cast.  */
-      parms = build_x_compound_expr_from_list (parms, ELK_FUNC_CAST);
+      parms = build_x_compound_expr_from_list (parms, ELK_FUNC_CAST, complain);
       return cp_build_c_cast (type, parms, complain);
     }
 
