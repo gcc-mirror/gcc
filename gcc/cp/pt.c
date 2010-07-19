@@ -1566,31 +1566,43 @@ iterative_hash_template_arg (tree arg, hashval_t val)
       gcc_assert (seen_error ());
       return val;
 
+    case CAST_EXPR:
+    case STATIC_CAST_EXPR:
+    case REINTERPRET_CAST_EXPR:
+    case CONST_CAST_EXPR:
+    case DYNAMIC_CAST_EXPR:
+    case NEW_EXPR:
+      val = iterative_hash_template_arg (TREE_TYPE (arg), val);
+      /* Now hash operands as usual.  */
+      break;
+
     default:
-      switch (tclass)
-	{
-	case tcc_type:
-	  if (TYPE_CANONICAL (arg))
-	    return iterative_hash_object (TYPE_HASH (TYPE_CANONICAL (arg)),
-					  val);
-	  else if (TREE_CODE (arg) == DECLTYPE_TYPE)
-	    return iterative_hash_template_arg (DECLTYPE_TYPE_EXPR (arg), val);
-	  /* Otherwise just compare the types during lookup.  */
-	  return val;
+      break;
+    }
 
-	case tcc_declaration:
-	case tcc_constant:
-	  return iterative_hash_expr (arg, val);
+  switch (tclass)
+    {
+    case tcc_type:
+      if (TYPE_CANONICAL (arg))
+	return iterative_hash_object (TYPE_HASH (TYPE_CANONICAL (arg)),
+				      val);
+      else if (TREE_CODE (arg) == DECLTYPE_TYPE)
+	return iterative_hash_template_arg (DECLTYPE_TYPE_EXPR (arg), val);
+      /* Otherwise just compare the types during lookup.  */
+      return val;
 
-	default:
-	  gcc_assert (IS_EXPR_CODE_CLASS (tclass));
-	  {
-	    unsigned n = TREE_OPERAND_LENGTH (arg);
-	    for (i = 0; i < n; ++i)
-	      val = iterative_hash_template_arg (TREE_OPERAND (arg, i), val);
-	    return val;
-	  }
-	}
+    case tcc_declaration:
+    case tcc_constant:
+      return iterative_hash_expr (arg, val);
+
+    default:
+      gcc_assert (IS_EXPR_CODE_CLASS (tclass));
+      {
+	unsigned n = TREE_OPERAND_LENGTH (arg);
+	for (i = 0; i < n; ++i)
+	  val = iterative_hash_template_arg (TREE_OPERAND (arg, i), val);
+	return val;
+      }
     }
   gcc_unreachable ();
   return 0;
