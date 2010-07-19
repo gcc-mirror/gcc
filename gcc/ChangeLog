@@ -1,3 +1,15 @@
+2010-07-19  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* postreload.c (reload_combine_closest_single_use): Ignore the
+	number of uses for DEBUG_INSNs.
+	(fixup_debug_insns): New static function.
+	(reload_combine_recognize_const_pattern): Use it.  Don't let the
+	main loop be affected by DEBUG_INSNs.
+	Really disallow moving adds past a jump insn.
+	(reload_combine_recognize_pattern): Don't update use_ruid here.
+	(reload_combine_note_use): Do it here.
+	(reload_combine): Use control_flow_insn_p rather than JUMP_P.
+
 2010-07-19  Bingfeng Mei  <bmei@broadcom.com>
 	* ddg.c (create_ddg): Exclude nodes of debug_insn in counting nodes
         of a loop.
