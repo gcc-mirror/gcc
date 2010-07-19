@@ -44,9 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 /* libSystem contains unwind information for signal frames.  */
 #define DARWIN_LIBSYSTEM_HAS_UNWIND
 
-/* The linker can generate branch islands.  */
-#define DARWIN_LINKER_GENERATES_ISLANDS 1
-
 #undef  ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
   do {									\
