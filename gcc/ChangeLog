@@ -1,3 +1,8 @@
+2010-07-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	sse_runtime, sse2_runtime.
+
 2010-07-18  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips16_build_call_stub): Zero-extend the
@@ -11,22 +16,6 @@
 	* config/pa/pa.h (CONSTANT_ALIGNMENT): Align strings to BITS_PER_WORD
 	on all targets.
 
-Index: config/pa/pa.h
-===================================================================
---- config/pa/pa.h	(revision 162277)
-+++ config/pa/pa.h	(working copy)
-@@ -316,8 +316,9 @@
- #define BIGGEST_ALIGNMENT (2 * BITS_PER_WORD)
- 
- /* Get around hp-ux assembler bug, and make strcpy of constants fast.  */
--#define CONSTANT_ALIGNMENT(CODE, TYPEALIGN) \
--  ((TYPEALIGN) < 32 ? 32 : (TYPEALIGN))
-+#define CONSTANT_ALIGNMENT(EXP, ALIGN)		\
-+  (TREE_CODE (EXP) == STRING_CST		\
-+   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
- 
- /* Make arrays of chars word-aligned for the same reasons.  */
- #define DATA_ALIGNMENT(TYPE, ALIGN)		\
 2010-07-17  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR target/42235

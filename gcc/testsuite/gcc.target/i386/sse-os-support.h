@@ -14,18 +14,23 @@ sigill_hdlr (int sig __attribute((unused)),
   sigill_caught = 1;
   /* Set PC to the instruction after the faulting one to skip over it,
      otherwise we enter an infinite loop.  */
-  ucp->uc_mcontext.gregs[EIP] += ILL_INSN_LEN;
+  ucp->uc_mcontext.gregs[EIP] += 4;
   setcontext (ucp);
 }
 #endif
 
-/* Solaris 2 before Solaris 9 4/04 cannot execute SSE/SSE2 instructions
-   even if the CPU supports them.  Programs receive SIGILL instead, so
-   check for that at runtime.  */
+/* Check if the OS supports executing SSE instructions.  This function is
+   only used in sse-check.h, sse2-check.h, and sse3-check.h so far since
+   Solaris 8 and 9 won't run on newer CPUs anyway.  */
+
 static int
-sol2_check (void)
+sse_os_support (void)
 {
 #if defined(__sun__) && defined(__svr4__)
+  /* Solaris 2 before Solaris 9 4/04 cannot execute SSE instructions
+     even if the CPU supports them.  Programs receive SIGILL instead, so
+     check for that at runtime.  */
+
   struct sigaction act, oact;
 
   act.sa_handler = sigill_hdlr;
@@ -34,7 +39,9 @@ sol2_check (void)
   act.sa_flags = SA_SIGINFO;
   sigaction (SIGILL, &act, &oact);
 
-  ILL_INSN;
+  /* We need a single SSE instruction here so the handler can safely skip
+     over it.  */
+  __asm__ volatile ("movss %xmm2,%xmm1");
 
   sigaction (SIGILL, &oact, NULL);
 

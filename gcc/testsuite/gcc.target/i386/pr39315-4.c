@@ -2,6 +2,7 @@
 /* { dg-do run } */
 /* { dg-options "-O -msse2 -mtune=generic" } */
 /* { dg-require-effective-target sse2 } */
+/* { dg-require-effective-target sse2_runtime } */
 /* { dg-additional-sources pr39315-check.c } */
 
 typedef float __m128 __attribute__ ((__vector_size__ (16)));
