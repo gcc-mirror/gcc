@@ -3174,6 +3174,39 @@ finish_root_table (struct flist *flp, const char *pfx, const char *lastname,
   }
 }
 
+/* Write the first three fields (pointer, count and stride) for
+   root NAME to F.  V and LINE are as for write_root.
+
+   Return true if the entry could be written; return false on error.  */
+
+static bool
+start_root_entry (outf_p f, pair_p v, const char *name, struct fileloc *line)
+{
+  type_p ap;
+
+  if (!v)
+    {
+      error_at_line (line, "`%s' is too complex to be a root", name);
+      return false;
+    }
+
+  oprintf (f, "  {\n");
+  oprintf (f, "    &%s,\n", name);
+  oprintf (f, "    1");
+
+  for (ap = v->type; ap->kind == TYPE_ARRAY; ap = ap->u.a.p)
+    if (ap->u.a.len[0])
+      oprintf (f, " * (%s)", ap->u.a.len);
+    else if (ap == v->type)
+      oprintf (f, " * ARRAY_SIZE (%s)", v->name);
+  oprintf (f, ",\n");
+  oprintf (f, "    sizeof (%s", v->name);
+  for (ap = v->type; ap->kind == TYPE_ARRAY; ap = ap->u.a.p)
+    oprintf (f, "[0]");
+  oprintf (f, "),\n");
+  return true;
+}
+
 /* A subroutine of write_root for writing the roots for field FIELD_NAME,
    which has type FIELD_TYPE.  Parameters F to EMIT_PCH are the parameters
    of the caller.  */
@@ -3187,7 +3220,7 @@ write_field_root (outf_p f, pair_p v, type_p type, const char *name,
      subcomponent of V, we can mark any subarrays with a single stride.
      We're effectively treating the field as a global variable in its
      own right.  */
-  if (type == v->type)
+  if (v && type == v->type)
     {
       struct pair newv;
 
@@ -3199,14 +3232,23 @@ write_field_root (outf_p f, pair_p v, type_p type, const char *name,
   /* Otherwise, any arrays nested in the structure are too complex to
      handle.  */
   else if (field_type->kind == TYPE_ARRAY)
-    error_at_line (line, "nested array `%s.%s' is too complex to be a root",
-		   name, field_name);
+    v = NULL;
   write_root (f, v, field_type, ACONCAT ((name, ".", field_name, NULL)),
 	      has_length, line, if_marked, emit_pch);
 }
 
 /* Write out to F the table entry and any marker routines needed to
-   mark NAME as TYPE.  The original variable is V, at LINE.
+   mark NAME as TYPE.  V can be one of three values:
+
+     - null, if NAME is too complex to represent using a single
+       count and stride.  In this case, it is an error for NAME to
+       contain any gc-ed data.
+
+     - the outermost array that contains NAME, if NAME is part of an array.
+
+     - the C variable that contains NAME, if NAME is not part of an array.
+
+   LINE is the line of the C source that declares the root variable.
    HAS_LENGTH is nonzero iff V was a variable-length array.  IF_MARKED
    is nonzero iff we are building the root table for hash table caches.  */
 
@@ -3291,22 +3333,10 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
 
     case TYPE_POINTER:
       {
-	type_p ap, tp;
+	type_p tp;
 
-	oprintf (f, "  {\n");
-	oprintf (f, "    &%s,\n", name);
-	oprintf (f, "    1");
-
-	for (ap = v->type; ap->kind == TYPE_ARRAY; ap = ap->u.a.p)
-	  if (ap->u.a.len[0])
-	    oprintf (f, " * (%s)", ap->u.a.len);
-	  else if (ap == v->type)
-	    oprintf (f, " * ARRAY_SIZE (%s)", v->name);
-	oprintf (f, ",\n");
-	oprintf (f, "    sizeof (%s", v->name);
-	for (ap = v->type; ap->kind == TYPE_ARRAY; ap = ap->u.a.p)
-	  oprintf (f, "[0]");
-	oprintf (f, "),\n");
+	if (!start_root_entry (f, v, name, line))
+	  return;
 
 	tp = type->u.p;
 
@@ -3353,10 +3383,9 @@ write_root (outf_p f, pair_p v, type_p type, const char *name, int has_length,
 
     case TYPE_STRING:
       {
-	oprintf (f, "  {\n");
-	oprintf (f, "    &%s,\n", name);
-	oprintf (f, "    1, \n");
-	oprintf (f, "    sizeof (%s),\n", v->name);
+	if (!start_root_entry (f, v, name, line))
+	  return;
+
 	oprintf (f, "    (gt_pointer_walker) &gt_ggc_m_S,\n");
 	oprintf (f, "    (gt_pointer_walker) &gt_pch_n_S\n");
 	oprintf (f, "  },\n");
