@@ -816,7 +816,8 @@ reload_combine_purge_reg_uses_after_ruid (unsigned regno, int ruid)
 
 /* Find the use of REGNO with the ruid that is highest among those
    lower than RUID_LIMIT, and return it if it is the only use of this
-   reg in the insn.  Return NULL otherwise.  */
+   reg in the insn (or if the insn is a debug insn).  Return NULL
+   otherwise.  */
 
 static struct reg_use *
 reload_combine_closest_single_use (unsigned regno, int ruid_limit)
@@ -830,7 +831,8 @@ reload_combine_closest_single_use (unsigned regno, int ruid_limit)
   retval = NULL;
   for (i = use_idx; i < RELOAD_COMBINE_MAX_USES; i++)
     {
-      int this_ruid = reg_state[regno].reg_use[i].ruid;
+      struct reg_use *use = reg_state[regno].reg_use + i; 
+      int this_ruid = use->ruid;
       if (this_ruid >= ruid_limit)
 	continue;
       if (this_ruid > best_ruid)
@@ -838,12 +840,50 @@ reload_combine_closest_single_use (unsigned regno, int ruid_limit)
 	  best_ruid = this_ruid;
 	  retval = reg_state[regno].reg_use + i;
 	}
-      else if (this_ruid == best_ruid)
+      else if (this_ruid == best_ruid && !DEBUG_INSN_P (use->insn))
 	retval = NULL;
     }
   if (last_label_ruid >= best_ruid)
     return NULL;
   return retval;
+}
+
+/* After we've moved an add insn, fix up any debug insns that occur between
+   the old location of the add and the new location.  REGNO is the destination
+   register of the add insn; REG is the corresponding RTX.  REPLACEMENT is
+   the SET_SRC of the add.  MIN_RUID specifies the ruid of the insn after
+   which we've placed the add, we ignore any debug insns after it.  */
+
+static void
+fixup_debug_insns (unsigned regno, rtx reg, rtx replacement, int min_ruid)
+{
+  struct reg_use *use;
+  int from = reload_combine_ruid;
+  for (;;)
+    {
+      rtx t;
+      rtx use_insn = NULL_RTX;
+      if (from < min_ruid)
+	break;
+      use = reload_combine_closest_single_use (regno, from);
+      if (use)
+	{
+	  from = use->ruid;
+	  use_insn = use->insn;
+	}
+      else
+	break;
+      
+      if (NONDEBUG_INSN_P (use->insn))
+	continue;
+      t = INSN_VAR_LOCATION_LOC (use_insn);
+      t = simplify_replace_rtx (t, reg, copy_rtx (replacement));
+      validate_change (use->insn,
+		       &INSN_VAR_LOCATION_LOC (use->insn), t, 0);
+      reload_combine_purge_insn_uses (use_insn);
+      reload_combine_note_use (&PATTERN (use_insn), use_insn,
+			       use->ruid, NULL_RTX);
+    }
 }
 
 /* Called by reload_combine when scanning INSN.  This function tries to detect
@@ -913,6 +953,10 @@ reload_combine_recognize_const_pattern (rtx insn)
 	/* Start the search for the next use from here.  */
 	from_ruid = use->ruid;
 
+      /* We'll fix up DEBUG_INSNs after we're done.  */
+      if (use && DEBUG_INSN_P (use->insn))
+	continue;
+
       if (use && GET_MODE (*use->usep) == Pmode)
 	{
 	  rtx use_insn = use->insn;
@@ -921,7 +965,7 @@ reload_combine_recognize_const_pattern (rtx insn)
 	  bool speed = optimize_bb_for_speed_p (BLOCK_FOR_INSN (use_insn));
 
 	  /* Avoid moving the add insn past a jump.  */
-	  if (must_move_add && use_ruid < last_jump_ruid)
+	  if (must_move_add && use_ruid <= last_jump_ruid)
 	    break;
 
 	  /* If the add clobbers another hard reg in parallel, don't move
@@ -1019,6 +1063,8 @@ reload_combine_recognize_const_pattern (rtx insn)
     /* Process the add normally.  */
     return false;
 
+  fixup_debug_insns (regno, reg, src, add_moved_after_ruid);
+  
   reorder_insns (insn, insn, add_moved_after_insn);
   reload_combine_purge_reg_uses_after_ruid (regno, add_moved_after_ruid);
   reload_combine_split_ruids (add_moved_after_ruid - 1);
@@ -1155,11 +1201,6 @@ reload_combine_recognize_pattern (rtx insn)
 		   reg_state[regno].reg_use[i].ruid,
 		   reg_state[regno].reg_use[i].containing_mem);
 
-	      if (reg_state[REGNO (base)].use_ruid
-		  > reg_state[regno].use_ruid)
-		reg_state[REGNO (base)].use_ruid
-		  = reg_state[regno].use_ruid;
-
 	      /* Delete the reg-reg addition.  */
 	      delete_insn (insn);
 
@@ -1277,7 +1318,7 @@ reload_combine (void)
 
       reload_combine_ruid++;
 
-      if (JUMP_P (insn))
+      if (control_flow_insn_p (insn))
 	last_jump_ruid = reload_combine_ruid;
 
       if (reload_combine_recognize_const_pattern (insn)
@@ -1495,8 +1536,14 @@ reload_combine_note_use (rtx *xp, rtx insn, int ruid, rtx containing_mem)
 	    reg_state[regno].all_offsets_match = true;
 	    reg_state[regno].use_ruid = ruid;
 	  }
-	else if (! rtx_equal_p (offset, reg_state[regno].offset))
-	  reg_state[regno].all_offsets_match = false;
+	else
+	  {
+	    if (reg_state[regno].use_ruid > ruid)
+	      reg_state[regno].use_ruid = ruid;
+
+	    if (! rtx_equal_p (offset, reg_state[regno].offset))
+	      reg_state[regno].all_offsets_match = false;
+	  }
 
 	reg_state[regno].reg_use[use_index].insn = insn;
 	reg_state[regno].reg_use[use_index].ruid = ruid;
