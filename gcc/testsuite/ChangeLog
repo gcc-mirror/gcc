@@ -1,3 +1,8 @@
+2010-07-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/44353
+	* gfortran.dg/data_implied_do_2.f03 : Removed.
+
 2010-07-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/44353
