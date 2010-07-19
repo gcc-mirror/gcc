@@ -1,3 +1,8 @@
+2010-07-19  Bingfeng Mei  <bmei@broadcom.com>
+	* ddg.c (create_ddg): Exclude nodes of debug_insn in counting nodes
+        of a loop.
+        * loop-doloop.c (doloop_condition_get): Skip possible debug_insn.
+
 2010-07-19  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/i386/darwin.h: Define darwin_emit_branch_islands.
