@@ -74,7 +74,7 @@ int main (int argc, const char* argv[])
 
   foo (input, output);
 
-  for (i = 0; i < N - N; i++)
+  for (i = 0; i < N; i++)
     if (output[i] != check_results[i])
       abort ();
 
