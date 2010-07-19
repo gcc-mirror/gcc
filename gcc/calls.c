@@ -1668,7 +1668,8 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	      emit_move_insn (gen_rtx_REG (word_mode, REGNO (reg) + j),
 			      args[i].aligned_regs[j]);
 
-	  else if (partial == 0 || args[i].pass_on_stack)
+	  else if ((partial == 0 || args[i].pass_on_stack)
+		   && size != 0)
 	    {
 	      rtx mem = validize_mem (args[i].value);
 
