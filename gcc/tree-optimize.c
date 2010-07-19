@@ -87,13 +87,27 @@ gate_all_early_local_passes (void)
   return (!seen_error () && !in_lto_p);
 }
 
+static unsigned int
+execute_all_early_local_passes (void)
+{
+  /* Once this pass (and its sub-passes) are complete, all functions
+     will be in SSA form.  Technically this state change is happening
+     a tad early, since the sub-passes have not yet run, but since
+     none of the sub-passes are IPA passes and do not create new
+     functions, this is ok.  We're setting this value for the benefit
+     of IPA passes that follow.  */
+  if (cgraph_state < CGRAPH_STATE_IPA_SSA)
+    cgraph_state = CGRAPH_STATE_IPA_SSA;
+  return 0;
+}
+
 struct simple_ipa_opt_pass pass_early_local_passes =
 {
  {
   SIMPLE_IPA_PASS,
   "early_local_cleanups",		/* name */
   gate_all_early_local_passes,		/* gate */
-  NULL,					/* execute */
+  execute_all_early_local_passes,	/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
@@ -105,18 +119,6 @@ struct simple_ipa_opt_pass pass_early_local_passes =
   TODO_remove_functions	 		/* todo_flags_finish */
  }
 };
-
-static unsigned int
-execute_early_local_optimizations (void)
-{
-  /* First time we start with early optimization we need to advance
-     cgraph state so newly inserted functions are also early optimized.
-     However we execute early local optimizations for lately inserted
-     functions, in that case don't reset cgraph state back to IPA_SSA.  */
-  if (cgraph_state < CGRAPH_STATE_IPA_SSA)
-    cgraph_state = CGRAPH_STATE_IPA_SSA;
-  return 0;
-}
 
 /* Gate: execute, or not, all of the non-trivial optimizations.  */
 
@@ -134,7 +136,7 @@ struct gimple_opt_pass pass_all_early_optimizations =
   GIMPLE_PASS,
   "early_optimizations",		/* name */
   gate_all_early_optimizations,		/* gate */
-  execute_early_local_optimizations,	/* execute */
+  NULL,					/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */

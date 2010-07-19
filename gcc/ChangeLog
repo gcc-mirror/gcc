@@ -1,3 +1,10 @@
+2010-07-19  Richard Henderson  <rth@redhat.com>
+
+	* tree-optimize.c (execute_all_early_local_passes): New.  Change
+	cgraph_state here ...
+	(execute_early_local_optimizations): ... not here.  Remove.
+	(pass_early_local_passes, pass_all_early_optimizations): Update.
+
 2010-07-19  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* postreload.c (reload_combine_closest_single_use): Ignore the
@@ -11,6 +18,7 @@
 	(reload_combine): Use control_flow_insn_p rather than JUMP_P.
 
 2010-07-19  Bingfeng Mei  <bmei@broadcom.com>
+
 	* ddg.c (create_ddg): Exclude nodes of debug_insn in counting nodes
         of a loop.
         * loop-doloop.c (doloop_condition_get): Skip possible debug_insn.
