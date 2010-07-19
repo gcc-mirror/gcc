@@ -440,7 +440,8 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
     {
       if (unlikely (is_char4_unit (dtp)))
 	{
-	  memset4 (out, 0, '*', w);
+	  gfc_char4_t *out4 = (gfc_char4_t *) out;
+	  memset4 (out4, '*', w);
 	  return;
 	}
       star_fill (out, w);
@@ -466,7 +467,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 
       if ( ( nblanks > 0 ) && !dtp->u.p.no_leading_blank)
 	{
-	  memset4 (out, 0, ' ', nblanks);
+	  memset4 (out4, ' ', nblanks);
 	  out4 += nblanks;
 	}
 
@@ -486,7 +487,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	  if (nbefore > ndigits)
 	    {
 	      i = ndigits;
-	      memcpy4 (out4, 0, digits, i);
+	      memcpy4 (out4, digits, i);
 	      ndigits = 0;
 	      while (i < nbefore)
 		out4[i++] = '0';
@@ -494,7 +495,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	  else
 	    {
 	      i = nbefore;
-	      memcpy4 (out4, 0, digits, i);
+	      memcpy4 (out4, digits, i);
 	      ndigits -= i;
 	    }
 
@@ -521,7 +522,7 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 	  else
 	    i = nafter;
 
-	  memcpy4 (out4, 0, digits, i);
+	  memcpy4 (out4, digits, i);
 	  while (i < nafter)
 	    out4[i++] = '0';
 
@@ -543,13 +544,13 @@ output_float (st_parameter_dt *dtp, const fnode *f, char *buffer, size_t size,
 #else
 	  sprintf (buffer, "%+0*d", edigits, e);
 #endif
-	  memcpy4 (out4, 0, buffer, edigits);
+	  memcpy4 (out4, buffer, edigits);
 	}
 
       if (dtp->u.p.no_leading_blank)
 	{
 	  out4 += edigits;
-	  memset4 (out4 , 0, ' ' , nblanks);
+	  memset4 (out4, ' ' , nblanks);
 	  dtp->u.p.no_leading_blank = 0;
 	}
       return;
@@ -673,14 +674,20 @@ write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit
       if (nb < 3)
 	{
 	  if (unlikely (is_char4_unit (dtp)))
-	    memset4 (p, 0, '*', nb);
+	    {
+	      gfc_char4_t *p4 = (gfc_char4_t *) p;
+	      memset4 (p4, '*', nb);
+	    }
 	  else
 	    memset (p, '*', nb);
 	  return;
 	}
 
       if (unlikely (is_char4_unit (dtp)))
-        memset4 (p, 0, ' ', nb);
+	{
+	  gfc_char4_t *p4 = (gfc_char4_t *) p;
+	  memset4 (p4, ' ', nb);
+	}
       else
 	memset(p, ' ', nb);
 
@@ -693,7 +700,10 @@ write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit
 	      if (nb == 3)
 		{
 		  if (unlikely (is_char4_unit (dtp)))
-		    memset4 (p, 0, '*', nb);
+		    {
+		      gfc_char4_t *p4 = (gfc_char4_t *) p;
+		      memset4 (p4, '*', nb);
+		    }
 		  else
 		    memset (p, '*', nb);
 		  return;
@@ -711,11 +721,11 @@ write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit
 	      gfc_char4_t *p4 = (gfc_char4_t *) p;
 	      if (nb > 8)
 		/* We have room, so output 'Infinity' */
-		memcpy4 (p4, nb - 8, "Infinity", 8);
+		memcpy4 (p4 + nb - 8, "Infinity", 8);
 	      else
 		/* For the case of width equals 8, there is not enough room
 		   for the sign and 'Infinity' so we go with 'Inf' */
-		memcpy4 (p4, nb - 3, "Inf", 3);
+		memcpy4 (p4 + nb - 3, "Inf", 3);
 
 	      if (nb < 9 && nb > 3)
 	        /* Put the sign in front of Inf */
@@ -742,7 +752,10 @@ write_infnan (st_parameter_dt *dtp, const fnode *f, int isnan_flag, int sign_bit
       else
         {
 	  if (unlikely (is_char4_unit (dtp)))
-	    memcpy4 (p, nb - 3, "NaN", 3);
+	    {
+	      gfc_char4_t *p4 = (gfc_char4_t *) p;
+	      memcpy4 (p4 + nb - 3, "NaN", 3);
+	    }
 	  else
 	    memcpy(p + nb - 3, "NaN", 3);
 	}
@@ -886,12 +899,15 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
   free (newf);\
 \
   if (nb > 0 && !dtp->u.p.g0_no_blanks)\
-    { \
+    {\
       p = write_block (dtp, nb);\
       if (p == NULL)\
 	return;\
       if (unlikely (is_char4_unit (dtp)))\
-	memset4 (p, 0, ' ', nb);\
+	{\
+	  gfc_char4_t *p4 = (gfc_char4_t *) p;\
+	  memset4 (p4, ' ', nb);\
+	}\
       else\
 	memset (p, ' ', nb);\
     }\

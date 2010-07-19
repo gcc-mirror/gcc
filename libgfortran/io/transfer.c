@@ -696,7 +696,16 @@ write_block (st_parameter_dt *dtp, int length)
   if (is_internal_unit (dtp))
     {
       if (dtp->common.unit) /* char4 internel unit.  */
-	dest = mem_alloc_w4 (dtp->u.p.current_unit->s, &length);
+	{
+	  gfc_char4_t *dest4;
+	  dest4 = mem_alloc_w4 (dtp->u.p.current_unit->s, &length);
+	  if (dest4 == NULL)
+	  {
+            generate_error (&dtp->common, LIBERROR_END, NULL);
+            return NULL;
+	  }
+	  return dest4;
+	}
       else
 	dest = mem_alloc_w (dtp->u.p.current_unit->s, &length);
 
@@ -3086,6 +3095,14 @@ sset (stream * s, int c, ssize_t nbyte)
   return nbyte - bytes_left;
 }
 
+static inline void
+memset4 (gfc_char4_t *p, gfc_char4_t c, int k)
+{
+  int j;
+  for (j = 0; j < k; j++)
+    *p++ = c;
+}
+
 /* Position to the next record in write mode.  */
 
 static void
@@ -3136,6 +3153,7 @@ next_record_w (st_parameter_dt *dtp, int done)
 
       if (is_internal_unit (dtp))
 	{
+	  char *p;
 	  if (is_array_io (dtp))
 	    {
 	      int finished;
@@ -3160,11 +3178,17 @@ next_record_w (st_parameter_dt *dtp, int done)
 		  length = (int) (dtp->u.p.current_unit->recl - max_pos);
 		}
 
-	      if (sset (dtp->u.p.current_unit->s, ' ', length) != length)
-		{
-		  generate_error (&dtp->common, LIBERROR_END, NULL);
-		  return;
+	      p = write_block (dtp, length);
+	      if (p == NULL)
+		return;
+
+	      if (unlikely (is_char4_unit (dtp)))
+	        {
+		  gfc_char4_t *p4 = (gfc_char4_t *) p;
+		  memset4 (p4, ' ', length);
 		}
+	      else
+		memset (p, ' ', length);
 
 	      /* Now that the current record has been padded out,
 		 determine where the next record in the array is. */
@@ -3209,11 +3233,19 @@ next_record_w (st_parameter_dt *dtp, int done)
 		  else
 		    length = (int) dtp->u.p.current_unit->bytes_left;
 		}
-
-	      if (sset (dtp->u.p.current_unit->s, ' ', length) != length)
+	      if (length > 0)
 		{
-		  generate_error (&dtp->common, LIBERROR_END, NULL);
-		  return;
+		  p = write_block (dtp, length);
+		  if (p == NULL)
+		    return;
+
+		  if (unlikely (is_char4_unit (dtp)))
+		    {
+		      gfc_char4_t *p4 = (gfc_char4_t *) p;
+		      memset4 (p4, (gfc_char4_t) ' ', length);
+		    }
+		  else
+		    memset (p, ' ', length);
 		}
 	    }
 	}
