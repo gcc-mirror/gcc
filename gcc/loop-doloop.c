@@ -103,11 +103,11 @@ doloop_condition_get (rtx doloop_pat)
   if (GET_CODE (pattern) != PARALLEL)
     {
       rtx cond;
+      rtx prev_insn = prev_nondebug_insn (doloop_pat);
 
       /* We expect the decrement to immediately precede the branch.  */
 
-      if ((PREV_INSN (doloop_pat) == NULL_RTX)
-          || !INSN_P (PREV_INSN (doloop_pat)))
+      if (prev_insn == NULL_RTX || !INSN_P (prev_insn))
         return 0;
 
       cmp = pattern;

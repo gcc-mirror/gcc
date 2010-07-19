@@ -487,7 +487,7 @@ create_ddg (basic_block bb, int closing_branch_deps)
     }
 
   /* There is nothing to do for this BB.  */
-  if (num_nodes <= 1)
+  if ((num_nodes - g->num_debug) <= 1)
     {
       free (g);
       return NULL;
