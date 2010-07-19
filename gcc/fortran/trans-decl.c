@@ -3249,9 +3249,10 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, tree fnbody)
 
 	      /* Deallocate when leaving the scope. Nullifying is not
 		 needed.  */
-	      tmp = gfc_deallocate_with_status (se.expr, NULL_TREE, true,
-						NULL);
-
+	      tmp = NULL;
+	      if (!sym->attr.result)
+		tmp = gfc_deallocate_with_status (se.expr, NULL_TREE,
+						  true, NULL);
 	      gfc_add_init_cleanup (&try_block, gfc_finish_block (&init), tmp);
 	    }
 	}

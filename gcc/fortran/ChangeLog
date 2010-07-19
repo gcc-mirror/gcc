@@ -1,5 +1,22 @@
 2010-07-19  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/42385
+	* interface.c (matching_typebound_op): Add argument for the
+	return of the generic name for the procedure.
+	(build_compcall_for_operator): Add an argument for the generic
+	name of an operator procedure and supply it to the expression.
+	(gfc_extend_expr, gfc_extend_assign): Use the generic name in
+	calls to the above procedures.
+	* resolve.c (resolve_typebound_function): Catch procedure
+	component calls for CLASS objects, check that the vtable is
+	complete and insert the $vptr and procedure components, to make
+	the call.
+	(resolve_typebound_function): The same.
+	* trans-decl.c (gfc_trans_deferred_vars): Do not deallocate
+	an allocatable scalar if it is a result.
+
+2010-07-19  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/44353
 	* match.c (gfc_match_iterator): Reverted.
 

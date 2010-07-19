@@ -5480,8 +5480,37 @@ resolve_typebound_function (gfc_expr* e)
   gfc_symtree *st;
   const char *name;
   gfc_typespec ts;
+  gfc_expr *expr;
 
   st = e->symtree;
+
+  /* Deal with typebound operators for CLASS objects.  */
+  expr = e->value.compcall.base_object;
+  if (expr && expr->symtree->n.sym->ts.type == BT_CLASS
+	&& e->value.compcall.name)
+    {
+      /* Since the typebound operators are generic, we have to ensure
+	 that any delays in resolution are corrected and that the vtab
+	 is present.  */
+      ts = expr->symtree->n.sym->ts;
+      declared = ts.u.derived;
+      c = gfc_find_component (declared, "$vptr", true, true);
+      if (c->ts.u.derived == NULL)
+	c->ts.u.derived = gfc_find_derived_vtab (declared);
+
+      if (resolve_compcall (e, &name) == FAILURE)
+	return FAILURE;
+
+      /* Use the generic name if it is there.  */
+      name = name ? name : e->value.function.esym->name;
+      e->symtree = expr->symtree;
+      expr->symtree->n.sym->ts.u.derived = declared;
+      gfc_add_component_ref (e, "$vptr");
+      gfc_add_component_ref (e, name);
+      e->value.function.esym = NULL;
+      return SUCCESS;
+    }
+
   if (st == NULL)
     return resolve_compcall (e, NULL);
 
@@ -5534,13 +5563,44 @@ resolve_typebound_function (gfc_expr* e)
 static gfc_try
 resolve_typebound_subroutine (gfc_code *code)
 {
+  gfc_symbol *declared;
+  gfc_component *c;
   gfc_ref *new_ref;
   gfc_ref *class_ref;
   gfc_symtree *st;
   const char *name;
   gfc_typespec ts;
+  gfc_expr *expr;
 
   st = code->expr1->symtree;
+
+  /* Deal with typebound operators for CLASS objects.  */
+  expr = code->expr1->value.compcall.base_object;
+  if (expr && expr->symtree->n.sym->ts.type == BT_CLASS
+	&& code->expr1->value.compcall.name)
+    {
+      /* Since the typebound operators are generic, we have to ensure
+	 that any delays in resolution are corrected and that the vtab
+	 is present.  */
+      ts = expr->symtree->n.sym->ts;
+      declared = ts.u.derived;
+      c = gfc_find_component (declared, "$vptr", true, true);
+      if (c->ts.u.derived == NULL)
+	c->ts.u.derived = gfc_find_derived_vtab (declared);
+
+      if (resolve_typebound_call (code, &name) == FAILURE)
+	return FAILURE;
+
+      /* Use the generic name if it is there.  */
+      name = name ? name : code->expr1->value.function.esym->name;
+      code->expr1->symtree = expr->symtree;
+      expr->symtree->n.sym->ts.u.derived = declared;
+      gfc_add_component_ref (code->expr1, "$vptr");
+      gfc_add_component_ref (code->expr1, name);
+      code->expr1->value.function.esym = NULL;
+      return SUCCESS;
+    }
+
   if (st == NULL)
     return resolve_typebound_call (code, NULL);
 
