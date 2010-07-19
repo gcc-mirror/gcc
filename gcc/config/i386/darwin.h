@@ -60,6 +60,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 
+/* Generate branch islands stubs if this is true.  */
+extern int darwin_emit_branch_islands;
+
+#undef TARGET_MACHO_BRANCH_ISLANDS
+#define TARGET_MACHO_BRANCH_ISLANDS darwin_emit_branch_islands
+
 #undef MAX_BITS_PER_WORD
 #define MAX_BITS_PER_WORD 64
 
@@ -225,7 +231,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)				\
     do {								\
-      if (MACHOPIC_INDIRECT && !TARGET_64BIT)				\
+      if (TARGET_MACHO_BRANCH_ISLANDS && MACHOPIC_INDIRECT && !TARGET_64BIT)		\
 	{								\
 	  const char *name = machopic_mcount_stub_name ();		\
 	  fprintf (FILE, "\tcall %s\n", name+1);  /*  skip '&'  */	\

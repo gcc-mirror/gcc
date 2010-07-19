@@ -1,3 +1,28 @@
+2010-07-19  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/i386/darwin.h: Define darwin_emit_branch_islands.
+	(TARGET_MACHO_BRANCH_ISLANDS): New.
+	(FUNCTION_PROFILER): Use TARGET_MACHO_BRANCH_ISLANDS.
+	* config/i386/i386.h (TARGET_MACHO_BRANCH_ISLANDS): Define a
+	default value.
+	* config/i386/i386.c (output_pic_addr_const): Do not emit
+	branch islands unless TARGET_MACHO_BRANCH_ISLANDS is set.
+	(x86_output_mi_thunk): Adjust symbol creation.
+	* config/rs6000/darwin.h: Define darwin_emit_branch_islands.
+	Remove out of date comment.
+	* config/rs6000/rs6000.c (print_operand): Adjust symbol.
+	DARWIN_LINKER_GENERATES_ISLANDS: Remove.
+	DARWIN_GENERATE_ISLANDS: Ditto.
+	(output_call):  Do not emit branch islands unless
+	darwin_emit_branch_islands is set.
+	* config/darwin.c: Declare darwin_emit_branch_islands.
+	(machopic_indirect_data_reference): Do not emit unless
+	darwin_emit_branch_islands is set.
+	(darwin_override_options): Set darwin_emit_branch_islands
+	where it is needed.
+	* config/darwin9.h
+	DARWIN_LINKER_GENERATES_ISLANDS: Remove.
+
 2010-07-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/sourcebuild.texi (Effective-Target Keywords): Document

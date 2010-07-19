@@ -65,6 +65,9 @@
     }							\
   while (0)
 
+/* Generate branch islands stubs if this is true.  */
+extern int darwin_emit_branch_islands;
+
 #define SUBTARGET_OVERRIDE_OPTIONS darwin_rs6000_override_options ()
 
 #define C_COMMON_OVERRIDE_OPTIONS do {					\
@@ -385,8 +388,6 @@
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
   (!(FIRST) ? upward : FUNCTION_ARG_PADDING (MODE, TYPE))
 
-/* XXX: Darwin supports neither .quad, or .llong, but it also doesn't
-   support 64 bit PowerPC either, so this just keeps things happy.  */
 #define DOUBLE_INT_ASM_OP "\t.quad\t"
 
 /* For binary compatibility with 2.95; Darwin C APIs use bool from

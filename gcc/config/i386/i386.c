@@ -11513,7 +11513,7 @@ output_pic_addr_const (FILE *file, rtx x, int code)
       break;
 
     case SYMBOL_REF:
-      if (! TARGET_MACHO || TARGET_64BIT)
+      if (TARGET_64BIT || ! TARGET_MACHO_BRANCH_ISLANDS)
 	output_addr_const (file, x);
       else
 	{
@@ -27233,10 +27233,11 @@ x86_output_mi_thunk (FILE *file,
 	if (TARGET_MACHO)
 	  {
 	    rtx sym_ref = XEXP (DECL_RTL (function), 0);
-	    tmp = (gen_rtx_SYMBOL_REF
+	    if (TARGET_MACHO_BRANCH_ISLANDS)
+	      sym_ref = (gen_rtx_SYMBOL_REF
 		   (Pmode,
 		    machopic_indirection_name (sym_ref, /*stub_p=*/true)));
-	    tmp = gen_rtx_MEM (QImode, tmp);
+	    tmp = gen_rtx_MEM (QImode, sym_ref);
 	    xops[0] = tmp;
 	    output_asm_insn ("jmp\t%0", xops);
 	  }
