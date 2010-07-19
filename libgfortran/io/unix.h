@@ -103,7 +103,7 @@ internal_proto(mem_alloc_w);
 extern char * mem_alloc_r (stream *, int *);
 internal_proto(mem_alloc_r);
 
-extern char * mem_alloc_w4 (stream *, int *);
+extern gfc_char4_t * mem_alloc_w4 (stream *, int *);
 internal_proto(mem_alloc_w4);
 
 extern char * mem_alloc_r4 (stream *, int *);

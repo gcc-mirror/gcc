@@ -659,12 +659,13 @@ mem_alloc_w (stream * strm, int * len)
 }
 
 
-char *
+gfc_char4_t *
 mem_alloc_w4 (stream * strm, int * len)
 {
   unix_stream * s = (unix_stream *) strm;
   gfc_offset m;
   gfc_offset where = s->logical_offset;
+  gfc_char4_t *result = (gfc_char4_t *) s->buffer;
 
   m = where + *len;
 
@@ -675,7 +676,7 @@ mem_alloc_w4 (stream * strm, int * len)
     return NULL;
 
   s->logical_offset = m;
-  return s->buffer + (where - s->buffer_offset) * 4;
+  return &result[where - s->buffer_offset];
 }
 
 
@@ -744,7 +745,7 @@ mem_write4 (stream * s, const void * buf, ssize_t nwords)
   gfc_char4_t *p;
   int nw = nwords;
 
-  p = (gfc_char4_t *) mem_alloc_w4 (s, &nw);
+  p = mem_alloc_w4 (s, &nw);
   if (p)
     {
       while (nw--)

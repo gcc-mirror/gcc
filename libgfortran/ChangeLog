@@ -1,3 +1,27 @@
+2010-07-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/44953
+	* io/unix.c (mem_alloc_w4): Return gfc_char4_t instead of char type
+	pointer. (mem_write4): Remove cast to gfc_char4_t.
+	* io/transfer.c (write_block): Use a gfc_char4_t pointer.
+	(memset4): New helper function. (next_record_w): Use new helper
+	function rather than sset for internal units.  Don't attempt to pad
+	with spaces if it is not needed.
+	* io/unix.h: Update prototype for mem_alloc_w4.
+	* io/write.c (memset4): Use gfc_char4_t pointer and chracter type.
+	Don't use multiply by 4 to compute offset. (memcpy4): Likewise.
+	(write_default_char4): Use a gfc_char4_t pointer and update memset4
+	and memcpy calls. (write_a): Likewise. (write_l): Likewise.
+	(write_boz): Likewise. (write_decimal): Likewise. (write_x): Likewise.
+	(write_char): Add support for character(kind=4) internal units that
+	was previously missed. (write_integer): Use a gfc_char4_t pointer and
+	update memset4 and memcpy calls. (write_character): Likewise.
+	(write_separator): Add support for character(kind=4) internal units
+	that was previously missed.
+	* write_float.def (output_float): Use a gfc_char4_t pointer and
+	update memset4 and memcpy calls. (write_infnan): Likewise.
+	(output_float_FMT_G_): Likewise.
+	
 2010-07-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/37077
