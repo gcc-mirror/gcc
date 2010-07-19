@@ -1,3 +1,10 @@
+2010-07-19  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/44941
+	* expr.c (emit_block_move_hints): Move zero size check first.
+	Move asserts to more useful places.
+	* calls.c (load_register_parameters): Check for zero size.
+
 2010-07-19  Richard Henderson  <rth@redhat.com>
 
 	* tree-optimize.c (execute_all_early_local_passes): New.  Change
