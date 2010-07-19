@@ -1,3 +1,13 @@
+2010-07-20  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config.gcc (LIBC_GLIBC, LIBC_UCLIBC, LIBC_BIONIC): Move constants
+	to top level.
+	* config/linux.h (LINUX_TARGET_OS_CPP_BUILTINS): Move Android-specific
+	definitions ...
+	* config/linux-android.h (ANDROID_TARGET_OS_CPP_BUILTINS): ... here.
+	New macro.
+	* config/arm/linux-eabi.h (TARGET_OS_CPP_BUILTINS): Use it.
+
 2010-07-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gengtype.c (start_root_entry): New function, split out from
