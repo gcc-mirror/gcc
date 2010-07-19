@@ -1,3 +1,10 @@
+2010-07-19  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.dg/vect/slp-perm-1.c (main): Make sure loops aren't vectorized.
+	* gcc.dg/vect/slp-perm-2.c (main): Likewise.
+	* gcc.dg/vect/slp-perm-3.c (main): Likewise.  Fix loop limit.
+	* gcc.dg/vect/slp-perm-4.c (main): Fix loop limit.
+
 2010-07-19  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/44941
