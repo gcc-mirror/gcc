@@ -20,6 +20,12 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define ANDROID_TARGET_OS_CPP_BUILTINS()			\
+    do {							\
+	if (OPTION_ANDROID)					\
+	  builtin_define ("__ANDROID__");			\
+    } while (0)
+
 #if ANDROID_DEFAULT
 # define NOANDROID "mno-android"
 #else
