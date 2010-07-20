@@ -1,5 +1,10 @@
 2010-07-20  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/rs6000/rs6000.md (abs<mode>2_isel, nabs<mode>2_isel):
+	Reverse sense of if_then_else condition.
+
+2010-07-20  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/rs6000/rs6000.opt (mblock-move-inline-limit): New option.
 	* config/rs6000/rs6000.c (rs6000_override_options): Set
 	rs6000_block_move_inline_limit appropriately.
