@@ -1,3 +1,10 @@
+2010-07-20  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/44971
+	PR middle-end/44988
+	* gcc.dg/pr44971.c: New testcase.
+	* gcc.c-torture/compile/pr44988.c: Likewise.
+
 2010-07-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/44929
