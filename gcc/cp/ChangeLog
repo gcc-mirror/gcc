@@ -1,6 +1,9 @@
 2010-07-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44967
+	* pt.c (tsubst_copy_and_build): Rework last change.
+
+	PR c++/44967
 	* pt.c (tsubst_copy_and_build): Handle partial substitution of
 	CALL_EXPR.
 

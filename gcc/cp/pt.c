@@ -12500,15 +12500,6 @@ tsubst_copy_and_build (tree t,
 	      }
 	  }
 
-	if (processing_template_decl
-	    && (type_dependent_expression_p (function)
-		|| any_type_dependent_arguments_p (call_args)))
-	  {
-	    ret = build_nt_call_vec (function, call_args);
-	    KOENIG_LOOKUP_P (ret) = koenig_p;
-	    goto call_out;
-	  }
-
 	/* We do not perform argument-dependent lookup if normal
 	   lookup finds a non-function, in accordance with the
 	   expected resolution of DR 218.  */
@@ -12521,14 +12512,15 @@ tsubst_copy_and_build (tree t,
 		|| TREE_CODE (function) == IDENTIFIER_NODE)
 	    /* Only do this when substitution turns a dependent call
 	       into a non-dependent call.  */
-	    && type_dependent_expression_p_push (t))
+	    && type_dependent_expression_p_push (t)
+	    && !any_type_dependent_arguments_p (call_args))
 	  function = perform_koenig_lookup (function, call_args);
 
 	if (TREE_CODE (function) == IDENTIFIER_NODE)
 	  {
 	    unqualified_name_lookup_error (function);
-	    ret = error_mark_node;
-	    goto call_out;
+	    release_tree_vector (call_args);
+	    return error_mark_node;
 	  }
 
 	/* Remember that there was a reference to this entity.  */
@@ -12539,15 +12531,24 @@ tsubst_copy_and_build (tree t,
 	  ret = build_offset_ref_call_from_tree (function, &call_args);
 	else if (TREE_CODE (function) == COMPONENT_REF)
 	  {
-	    if (!BASELINK_P (TREE_OPERAND (function, 1)))
+	    tree instance = TREE_OPERAND (function, 0);
+	    tree fn = TREE_OPERAND (function, 1);
+
+	    if (processing_template_decl
+		&& (type_dependent_expression_p (instance)
+		    || (!BASELINK_P (fn)
+			&& TREE_CODE (fn) != FIELD_DECL)
+		    || type_dependent_expression_p (fn)
+		    || any_type_dependent_arguments_p (call_args)))
+	      ret = build_nt_call_vec (function, call_args);
+	    else if (!BASELINK_P (fn))
 	      ret = finish_call_expr (function, &call_args,
 				       /*disallow_virtual=*/false,
 				       /*koenig_p=*/false,
 				       complain);
 	    else
 	      ret = (build_new_method_call
-		      (TREE_OPERAND (function, 0),
-		       TREE_OPERAND (function, 1),
+		      (instance, fn,
 		       &call_args, NULL_TREE,
 		       qualified_p ? LOOKUP_NONVIRTUAL : LOOKUP_NORMAL,
 		       /*fn_p=*/NULL,
@@ -12559,7 +12560,6 @@ tsubst_copy_and_build (tree t,
 				  koenig_p,
 				  complain);
 
-      call_out:
 	release_tree_vector (call_args);
 
 	return ret;
