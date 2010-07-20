@@ -1,3 +1,11 @@
+2010-07-19  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/Makefile.am (doc-texinfo): New rule.
+	(doc-texinfo-docbook): New rule.
+	(DB2TEXI_FLAGS): New.
+	(doc-xml-single-docbook): Just the manual, not the set. Tweak flags.
+	* doc/Makefile.in: Regenerate.
+
 2010-07-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* doc/xml/manual/shared_ptr.xml: Update.

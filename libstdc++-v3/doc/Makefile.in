@@ -371,7 +371,11 @@ XMLLINT = xmllint
 LINT_FLAGS = --postvalid --debug --xinclude --noent --noblanks  --nonet --noout
 DTD_FLAGS = --dtdvalid http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd
 XMLLINT_FLAGS = $(LINT_FLAGS) $(DTD_FLAGS)
-manual_xml = ${docbook_outdir}/xml/libstdc++-manual.xml
+
+# XML, all one page
+# Some info on canonicalization
+# http://www.mail-archive.com/help-texinfo@gnu.org/msg00864.html
+manual_xml = ${docbook_outdir}/xml/libstdc++-manual-single.xml
 
 # HTML, all one page
 manual_html = ${docbook_outdir}/html/libstdc++-manual-single.html
@@ -379,6 +383,14 @@ manual_html = ${docbook_outdir}/html/libstdc++-manual-single.html
 # PDF, via dblatex
 manual_pdf = ${docbook_outdir}/pdf/libstdc++-manual.pdf
 DBLATEX_FLAGS = --dump --verbose --pdf -o ${manual_pdf}
+
+# Texinfo, via docbook2X
+DB2TEXI_FLAGS = \
+	--encoding=utf-8//TRANSLIT \
+	--string-param output-file="libstdc++-manual" \
+	--string-param directory-category="GNU C++ Library" \
+	--string-param explicit-node-names=true 
+
 
 # Performance doc and graph configuration.
 # Assumes pychart, beautiful soup installed.
@@ -572,6 +584,9 @@ doc-html: doc-html-docbook doc-html-doxygen
 	cp -R ${docbook_outdir}/html ./libstdc++-manual.html
 	cp -R ${doxygen_outdir}/html ./libstdc++-api.html
 
+# TEXINFO
+doc-texinfo: doc-texinfo-docbook
+
 doc-html-doxygen:
 	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
 	  builddir=`cd ..; ${PWD_COMMAND}`; \
@@ -634,14 +649,17 @@ stamp-latex-doxygen:
 	fi
 	$(STAMP) stamp-latex-doxygen
 
+${docbook_outdir}/fo:
+	mkdir -p ${docbook_outdir}/fo
+
 ${docbook_outdir}/html:
 	mkdir -p ${docbook_outdir}/html
 
 ${docbook_outdir}/pdf:
 	mkdir -p ${docbook_outdir}/pdf
 
-${docbook_outdir}/fo:
-	mkdir -p ${docbook_outdir}/fo
+${docbook_outdir}/texinfo:
+	mkdir -p ${docbook_outdir}/texinfo
 
 ${docbook_outdir}/xml:
 	mkdir -p ${docbook_outdir}/xml
@@ -650,8 +668,8 @@ doc-xml-validate-docbook: $(xml_sources)
 	$(XMLLINT) $(XMLLINT_FLAGS) ${top_srcdir}/doc/xml/spine.xml
 doc-xml-single-docbook: $(xml_sources) ${docbook_outdir}/xml
 	@echo "Generating XML single..."
-	$(XMLLINT) --xinclude --noent --noblanks \
-	-o ${manual_xml} ${top_srcdir}/doc/xml/spine.xml
+	$(XMLLINT) --xinclude --noent --noblanks --nocdata --nsclean --c14n \
+	${top_srcdir}/doc/xml/manual/spine.xml > ${manual_xml}
 
 # HTML, index plus chapters
 doc-html-docbook: $(xml_sources) ${docbook_outdir}/html
@@ -668,12 +686,14 @@ doc-fo-docbook: $(xml_sources) ${docbook_outdir}/fo
 	@echo "Generating FO files..."
 	$(XSLTPROC) $(XSLTPROC_FLAGS) -o ${docbook_outdir}/fo/spine.fo \
 	$(XSL_FO_STYLE) ${top_srcdir}/doc/xml/spine.xml
-
 doc-pdf-docbook: doc-pdf-dblatex-docbook
 
 doc-pdf-dblatex-docbook: $(xml_sources) ${docbook_outdir}/pdf
 	@echo "Generating pdf dblatex files..."
 	dblatex $(DBLATEX_FLAGS) ${top_srcdir}/doc/xml/spine.xml
+doc-texinfo-docbook: doc-xml-single-docbook ${docbook_outdir}/texinfo
+	@echo "Generating texinfo files..."
+	db2x_docbook2texi $(DB2TEXI_FLAGS) ${manual_xml}
 doc-html-performance:
 	-@(chmod + ${doc_performance_script}; \
 	${doc_performance_script} ${top_srcdir} \

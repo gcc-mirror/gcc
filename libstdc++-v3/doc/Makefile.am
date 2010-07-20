@@ -52,6 +52,9 @@ doc-html: doc-html-docbook doc-html-doxygen
 	cp -R ${docbook_outdir}/html ./libstdc++-manual.html
 	cp -R ${doxygen_outdir}/html ./libstdc++-api.html
 
+# TEXINFO
+doc-texinfo: doc-texinfo-docbook
+
 # Doxygen configuration
 # Assumes doxygen, graphviz (with dot), pdflatex installed
 doxygen_script=${top_srcdir}/scripts/run_doxygen
@@ -216,14 +219,17 @@ XSL_HTML_STYLE = $(XSL_STYLE_DIR)/xhtml/chunk.xsl
 #XSL_HTML_SINGLE_STYLE = $(XSL_STYLE_DIR)/xhtml/onechunk.xsl
 XSL_HTML_SINGLE_STYLE = $(XSL_STYLE_DIR)/xhtml/docbook.xsl
 
+${docbook_outdir}/fo:
+	mkdir -p ${docbook_outdir}/fo
+
 ${docbook_outdir}/html:
 	mkdir -p ${docbook_outdir}/html
 
 ${docbook_outdir}/pdf:
 	mkdir -p ${docbook_outdir}/pdf
 
-${docbook_outdir}/fo:
-	mkdir -p ${docbook_outdir}/fo
+${docbook_outdir}/texinfo:
+	mkdir -p ${docbook_outdir}/texinfo
 
 ${docbook_outdir}/xml:
 	mkdir -p ${docbook_outdir}/xml
@@ -239,11 +245,14 @@ doc-xml-validate-docbook: $(xml_sources)
 	@echo "Generating XML validation log..."
 	$(XMLLINT) $(XMLLINT_FLAGS) ${top_srcdir}/doc/xml/spine.xml
 
-manual_xml = ${docbook_outdir}/xml/libstdc++-manual.xml
+# XML, all one page
+# Some info on canonicalization
+# http://www.mail-archive.com/help-texinfo@gnu.org/msg00864.html
+manual_xml = ${docbook_outdir}/xml/libstdc++-manual-single.xml
 doc-xml-single-docbook: $(xml_sources) ${docbook_outdir}/xml
 	@echo "Generating XML single..."
-	$(XMLLINT) --xinclude --noent --noblanks \
-	-o ${manual_xml} ${top_srcdir}/doc/xml/spine.xml
+	$(XMLLINT) --xinclude --noent --noblanks --nocdata --nsclean --c14n \
+	${top_srcdir}/doc/xml/manual/spine.xml > ${manual_xml}
 
 # HTML, index plus chapters
 doc-html-docbook: $(xml_sources) ${docbook_outdir}/html
@@ -267,12 +276,21 @@ doc-fo-docbook: $(xml_sources) ${docbook_outdir}/fo
 # PDF, via dblatex
 manual_pdf = ${docbook_outdir}/pdf/libstdc++-manual.pdf
 DBLATEX_FLAGS = --dump --verbose --pdf -o ${manual_pdf}
-
 doc-pdf-docbook: doc-pdf-dblatex-docbook
 
 doc-pdf-dblatex-docbook: $(xml_sources) ${docbook_outdir}/pdf
 	@echo "Generating pdf dblatex files..."
 	dblatex $(DBLATEX_FLAGS) ${top_srcdir}/doc/xml/spine.xml
+
+# Texinfo, via docbook2X
+DB2TEXI_FLAGS = \
+	--encoding=utf-8//TRANSLIT \
+	--string-param output-file="libstdc++-manual" \
+	--string-param directory-category="GNU C++ Library" \
+	--string-param explicit-node-names=true 
+doc-texinfo-docbook: doc-xml-single-docbook ${docbook_outdir}/texinfo
+	@echo "Generating texinfo files..."
+	db2x_docbook2texi $(DB2TEXI_FLAGS) ${manual_xml}
 
 
 # Performance doc and graph configuration.
