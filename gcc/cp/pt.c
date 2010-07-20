@@ -7832,7 +7832,8 @@ instantiate_class_template (tree type)
   /* Set the input location to the most specialized template definition.
      This is needed if tsubsting causes an error.  */
   typedecl = TYPE_MAIN_DECL (pattern);
-  input_location = DECL_SOURCE_LOCATION (typedecl);
+  input_location = DECL_SOURCE_LOCATION (TYPE_NAME (type)) =
+    DECL_SOURCE_LOCATION (typedecl);
 
   TYPE_HAS_USER_CONSTRUCTOR (type) = TYPE_HAS_USER_CONSTRUCTOR (pattern);
   TYPE_HAS_NEW_OPERATOR (type) = TYPE_HAS_NEW_OPERATOR (pattern);
