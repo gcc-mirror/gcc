@@ -960,7 +960,9 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
 		  for (tem = TYPE_FIELDS (type); tem; tem = TREE_CHAIN (tem))
 		    {
 		      if (tem == field
-			  || (TREE_TYPE (tem) == TREE_TYPE (field)
+			  || (gimple_types_compatible_p (TREE_TYPE (tem),
+							 TREE_TYPE (field),
+							 false)
 			      && DECL_NONADDRESSABLE_P (tem)
 				 == DECL_NONADDRESSABLE_P (field)
 			      && gimple_compare_field_offset (tem, field)))

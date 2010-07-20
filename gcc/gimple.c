@@ -47,6 +47,8 @@ static struct pointer_map_t *type_hash_cache;
 /* Global type comparison cache.  */
 static htab_t gtc_visited;
 static struct obstack gtc_ob;
+static htab_t gtc_visited2;
+static struct obstack gtc_ob2;
 
 /* All the tuples have their operand vector (if present) at the very bottom
    of the structure.  Therefore, the offset required to find the
@@ -3323,37 +3325,12 @@ gimple_compare_field_offset (tree f1, tree f2)
   return false;
 }
 
-typedef struct type_fixup_s {
-    tree context;
-    tree *incomplete;
-    tree complete;
-} type_fixup;
-DEF_VEC_O(type_fixup);
-DEF_VEC_ALLOC_O(type_fixup,heap);
-
-static VEC(type_fixup, heap) *gimple_register_type_fixups = NULL;
-
-static void
-gimple_queue_type_fixup (tree context, tree *incomplete, tree complete)
-{
-  type_fixup f;
-  f.context = context;
-  f.incomplete = incomplete;
-  f.complete = complete;
-  VEC_safe_push (type_fixup, heap, gimple_register_type_fixups, &f);
-}
-
-/* If the type *T1P and the type *T2P are a complete and an incomplete
-   variant of the same type return true and queue a fixup for the
-   incomplete one and its CONTEXT.  Return false otherwise.  */
+/* If the type T1 and the type T2 are a complete and an incomplete
+   variant of the same type return true.  */
 
 static bool
-gimple_fixup_complete_and_incomplete_subtype_p (tree context1, tree *t1p,
-						tree context2, tree *t2p)
+gimple_compatible_complete_and_incomplete_subtype_p (tree t1, tree t2)
 {
-  tree t1 = *t1p;
-  tree t2 = *t2p;
-
   /* If one pointer points to an incomplete type variant of
      the other pointed-to type they are the same.  */
   if (TREE_CODE (t1) == TREE_CODE (t2)
@@ -3363,30 +3340,15 @@ gimple_fixup_complete_and_incomplete_subtype_p (tree context1, tree *t1p,
       && TYPE_QUALS (t1) == TYPE_QUALS (t2)
       && compare_type_names_p (TYPE_MAIN_VARIANT (t1),
 			       TYPE_MAIN_VARIANT (t2), true))
-    {
-      /* Replace the pointed-to incomplete type with the complete one.
-	 ???  This simple name-based merging causes at least some
-	 of the ICEs in canonicalizing FIELD_DECLs during stmt
-	 read.  For example in GCC we have two different struct deps
-	 and we mismatch the use in struct cpp_reader in sched-int.h
-	 vs. mkdeps.c.  Of course the whole exercise is for TBAA
-	 with structs which contain pointers to incomplete types
-	 in one unit and to complete ones in another.  So we
-	 probably should merge these types only with more context.  */
-      if (COMPLETE_TYPE_P (t2))
-	gimple_queue_type_fixup (context1, t1p, t2);
-      else
-	gimple_queue_type_fixup (context2, t2p, t1);
-      return true;
-    }
+    return true;
   return false;
 }
 
 /* Return 1 iff T1 and T2 are structurally identical.
    Otherwise, return 0.  */
 
-static int
-gimple_types_compatible_p (tree t1, tree t2)
+bool
+gimple_types_compatible_p (tree t1, tree t2, bool for_merging_p)
 {
   type_pair_t p = NULL;
 
@@ -3439,7 +3401,8 @@ gimple_types_compatible_p (tree t1, tree t2)
       /* Perform cheap tail-recursion for vector and complex types.  */
       if (TREE_CODE (t1) == VECTOR_TYPE
 	  || TREE_CODE (t1) == COMPLEX_TYPE)
-	return gimple_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2));
+	return gimple_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2),
+					  for_merging_p);
 
       /* For integral types fall thru to more complex checks.  */
     }
@@ -3460,7 +3423,9 @@ gimple_types_compatible_p (tree t1, tree t2)
 
   /* If we've visited this type pair before (in the case of aggregates
      with self-referential types), and we made a decision, return it.  */
-  p = lookup_type_pair (t1, t2, &gtc_visited, &gtc_ob);
+  p = lookup_type_pair (t1, t2,
+			for_merging_p ? &gtc_visited : &gtc_visited2,
+			for_merging_p ? &gtc_ob : &gtc_ob2);
   if (p->same_p == 0 || p->same_p == 1)
     {
       /* We have already decided whether T1 and T2 are the
@@ -3489,7 +3454,8 @@ gimple_types_compatible_p (tree t1, tree t2)
     case ARRAY_TYPE:
       /* Array types are the same if the element types are the same and
 	 the number of elements are the same.  */
-      if (!gimple_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2))
+      if (!gimple_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2),
+				      for_merging_p)
 	  || TYPE_STRING_FLAG (t1) != TYPE_STRING_FLAG (t2)
 	  || TYPE_NONALIASED_COMPONENT (t1) != TYPE_NONALIASED_COMPONENT (t2))
 	goto different_types;
@@ -3538,7 +3504,7 @@ gimple_types_compatible_p (tree t1, tree t2)
     case METHOD_TYPE:
       /* Method types should belong to the same class.  */
       if (!gimple_types_compatible_p (TYPE_METHOD_BASETYPE (t1),
-				 TYPE_METHOD_BASETYPE (t2)))
+				      TYPE_METHOD_BASETYPE (t2), for_merging_p))
 	goto different_types;
 
       /* Fallthru  */
@@ -3546,9 +3512,11 @@ gimple_types_compatible_p (tree t1, tree t2)
     case FUNCTION_TYPE:
       /* Function types are the same if the return type and arguments types
 	 are the same.  */
-      if (!gimple_fixup_complete_and_incomplete_subtype_p
-	     (t1, &TREE_TYPE (t1), t2, &TREE_TYPE (t2))
-	  && !gimple_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+      if ((for_merging_p
+	   || !gimple_compatible_complete_and_incomplete_subtype_p
+	         (TREE_TYPE (t1), TREE_TYPE (t2)))
+	  && !gimple_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2),
+					 for_merging_p))
 	goto different_types;
 
       if (!targetm.comp_type_attributes (t1, t2))
@@ -3564,10 +3532,12 @@ gimple_types_compatible_p (tree t1, tree t2)
 	       parms1 && parms2;
 	       parms1 = TREE_CHAIN (parms1), parms2 = TREE_CHAIN (parms2))
 	    {
-	      if (!gimple_fixup_complete_and_incomplete_subtype_p
-		    (t1, &TREE_VALUE (parms1), t2, &TREE_VALUE (parms2))
+	      if ((for_merging_p
+		   || !gimple_compatible_complete_and_incomplete_subtype_p
+		         (TREE_VALUE (parms1), TREE_VALUE (parms2)))
 		  && !gimple_types_compatible_p (TREE_VALUE (parms1),
-						 TREE_VALUE (parms2)))
+						 TREE_VALUE (parms2),
+						 for_merging_p))
 		goto different_types;
 	    }
 
@@ -3579,9 +3549,11 @@ gimple_types_compatible_p (tree t1, tree t2)
 
     case OFFSET_TYPE:
       {
-	if (!gimple_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2))
+	if (!gimple_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2),
+					for_merging_p)
 	    || !gimple_types_compatible_p (TYPE_OFFSET_BASETYPE (t1),
-					   TYPE_OFFSET_BASETYPE (t2)))
+					   TYPE_OFFSET_BASETYPE (t2),
+					   for_merging_p))
 	  goto different_types;
 
 	goto same_types;
@@ -3597,13 +3569,15 @@ gimple_types_compatible_p (tree t1, tree t2)
 
 	/* If one pointer points to an incomplete type variant of
 	   the other pointed-to type they are the same.  */
-	if (gimple_fixup_complete_and_incomplete_subtype_p
-	      (t1, &TREE_TYPE (t1), t2, &TREE_TYPE (t2)))
+	if (!for_merging_p
+	    && gimple_compatible_complete_and_incomplete_subtype_p
+	         (TREE_TYPE (t1), TREE_TYPE (t2)))
 	  goto same_types;
 
 	/* Otherwise, pointer and reference types are the same if the
 	   pointed-to types are the same.  */
-	if (gimple_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+	if (gimple_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2),
+				       for_merging_p))
 	  goto same_types;
 
 	goto different_types;
@@ -3699,7 +3673,7 @@ gimple_types_compatible_p (tree t1, tree t2)
 		|| DECL_NONADDRESSABLE_P (f1) != DECL_NONADDRESSABLE_P (f2)
 		|| !gimple_compare_field_offset (f1, f2)
 		|| !gimple_types_compatible_p (TREE_TYPE (f1),
-					       TREE_TYPE (f2)))
+					       TREE_TYPE (f2), for_merging_p))
 	      goto different_types;
 	  }
 
@@ -4040,7 +4014,8 @@ gimple_type_eq (const void *p1, const void *p2)
 {
   const_tree t1 = (const_tree) p1;
   const_tree t2 = (const_tree) p2;
-  return gimple_types_compatible_p (CONST_CAST_TREE (t1), CONST_CAST_TREE (t2));
+  return gimple_types_compatible_p (CONST_CAST_TREE (t1),
+				    CONST_CAST_TREE (t2), true);
 }
 
 
@@ -4070,14 +4045,11 @@ gimple_register_type (tree t)
   if (gimple_types == NULL)
     gimple_types = htab_create (16381, gimple_type_hash, gimple_type_eq, 0);
 
-  gcc_assert (VEC_empty (type_fixup, gimple_register_type_fixups));
   slot = htab_find_slot (gimple_types, t, INSERT);
   if (*slot
       && *(tree *)slot != t)
     {
       tree new_type = (tree) *((tree *) slot);
-      unsigned i;
-      type_fixup *f;
 
       /* Do not merge types with different addressability.  */
       gcc_assert (TREE_ADDRESSABLE (t) == TREE_ADDRESSABLE (new_type));
@@ -4129,11 +4101,6 @@ gimple_register_type (tree t)
 
       TYPE_CANONICAL (t) = new_type;
       t = new_type;
-
-      for (i = 0;
-	   VEC_iterate (type_fixup, gimple_register_type_fixups, i, f); ++i)
-	if (f->context == t)
-	  *(f->incomplete) = f->complete;
     }
   else
     {
@@ -4141,7 +4108,6 @@ gimple_register_type (tree t)
       *slot = (void *) t;
     }
 
-  VEC_truncate (type_fixup, gimple_register_type_fixups, 0);
   return t;
 }
 
@@ -4162,13 +4128,23 @@ print_gimple_types_stats (void)
   else
     fprintf (stderr, "GIMPLE type table is empty\n");
   if (gtc_visited)
-    fprintf (stderr, "GIMPLE type comparison table: size %ld, %ld "
+    fprintf (stderr, "GIMPLE type merging comparison table: size %ld, %ld "
 	     "elements, %ld searches, %ld collisions (ratio: %f)\n",
 	     (long) htab_size (gtc_visited),
 	     (long) htab_elements (gtc_visited),
 	     (long) gtc_visited->searches,
 	     (long) gtc_visited->collisions,
 	     htab_collisions (gtc_visited));
+  else
+    fprintf (stderr, "GIMPLE type merging comparison table is empty\n");
+  if (gtc_visited2)
+    fprintf (stderr, "GIMPLE type comparison table: size %ld, %ld "
+	     "elements, %ld searches, %ld collisions (ratio: %f)\n",
+	     (long) htab_size (gtc_visited2),
+	     (long) htab_elements (gtc_visited2),
+	     (long) gtc_visited2->searches,
+	     (long) gtc_visited2->collisions,
+	     htab_collisions (gtc_visited2));
   else
     fprintf (stderr, "GIMPLE type comparison table is empty\n");
 }
@@ -4197,6 +4173,12 @@ free_gimple_type_tables (void)
       htab_delete (gtc_visited);
       obstack_free (&gtc_ob, NULL);
       gtc_visited = NULL;
+    }
+  if (gtc_visited2)
+    {
+      htab_delete (gtc_visited2);
+      obstack_free (&gtc_ob2, NULL);
+      gtc_visited2 = NULL;
     }
 }
 

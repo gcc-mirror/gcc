@@ -348,7 +348,8 @@ lto_symtab_merge (lto_symtab_entry_t prevailing, lto_symtab_entry_t entry)
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
-      if (TREE_TYPE (prevailing_decl) != TREE_TYPE (decl))
+      if (!gimple_types_compatible_p (TREE_TYPE (prevailing_decl),
+				      TREE_TYPE (decl), false))
 	/* If we don't have a merged type yet...sigh.  The linker
 	   wouldn't complain if the types were mismatched, so we
 	   probably shouldn't either.  Just use the type from
@@ -381,7 +382,7 @@ lto_symtab_merge (lto_symtab_entry_t prevailing, lto_symtab_entry_t entry)
      fixup process didn't yet run.  */
   prevailing_type = gimple_register_type (prevailing_type);
   type = gimple_register_type (type);
-  if (prevailing_type != type)
+  if (!gimple_types_compatible_p (prevailing_type, type, false))
     {
       if (COMPLETE_TYPE_P (type))
 	return false;
@@ -406,7 +407,8 @@ lto_symtab_merge (lto_symtab_entry_t prevailing, lto_symtab_entry_t entry)
 	  if (TREE_CODE (tem1) != TREE_CODE (tem2))
 	    return false;
 
-	  if (gimple_register_type (tem1) != gimple_register_type (tem2))
+	  if (!gimple_types_compatible_p (gimple_register_type (tem1),
+					  gimple_register_type (tem2), false))
 	    return false;
 	}
 
@@ -600,7 +602,8 @@ lto_symtab_merge_decls_2 (void **slot)
   /* Diagnose all mismatched re-declarations.  */
   for (i = 0; VEC_iterate (tree, mismatches, i, decl); ++i)
     {
-      if (TREE_TYPE (prevailing->decl) != TREE_TYPE (decl))
+      if (!gimple_types_compatible_p (TREE_TYPE (prevailing->decl),
+				      TREE_TYPE (decl), false))
 	diagnosed_p |= warning_at (DECL_SOURCE_LOCATION (decl), 0,
 				   "type of %qD does not match original "
 				   "declaration", decl);
