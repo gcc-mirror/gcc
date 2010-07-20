@@ -291,3 +291,40 @@ proc scan-assembler-dem-not { args } {
 	fail "$testcase scan-assembler-dem-not $pp_pattern"
     }
 }
+
+# Utility for testing that a function is defined on the current line.
+# Call pass if so, otherwise fail.  Invoked directly; the file must
+# have been compiled with -g -dA.
+#
+# Argument 0 is the current line, passed implicitly by dejagnu
+# Argument 1 is the function to check
+# Argument 2 handles expected failures and the like
+# Argument 3 is "." to match the current line, or an integer to match
+# an explicit line.
+proc dg-function-on-line { args } {
+    # Upvar from dg-final:
+    upvar dg-final-code final-code
+
+    set line [lindex $args 0]
+    set symbol [lindex $args 1]
+    set failures [lindex $args 2]
+
+    if { [llength $args] >= 4 } {
+	switch [lindex $args 3] {
+	    "." { }
+	    "default" { set line [lindex $args 3] }
+	}
+    }
+
+    set pattern [format {%s:[^\t]*(\t.file[^\t]*)?\t# \S*:%d\n} \
+                 $symbol $line]
+
+    # The lack of spaces around $pattern is important, since they'd
+    # become part of the regex scan-assembler tries to match.
+    set cmd "scan-assembler {$pattern}"
+    if { [llength $args] >= 3 } {
+        set cmd "$cmd {$failures}"
+    }
+
+    append final-code "$cmd\n"
+}

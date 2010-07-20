@@ -1,3 +1,10 @@
+2010-07-20  Jeffrey Yasskin  <jyasskin@google.com>
+
+	* lib/scanasm.exp (dg-function-on-line): Test that a function is
+	defined on the current line.
+	* g++.dg/debug/dwarf2/lineno-simple1.C: New. Line number sanity test.
+	* g++.dg/debug/dwarf2/pr44641.C: New.
+
 2010-07-20  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* gcc.target/powerpc/block-move-1.c: New test.
