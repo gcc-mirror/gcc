@@ -1,3 +1,14 @@
+2010-07-20  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/44971
+	PR middle-end/44988
+	* tree-ssa.c (maybe_optimize_var): New function split out from ...
+	(execute_update_addresses_taken): ... here.
+	(non_rewritable_mem_ref_base): Likewise.
+	(execute_update_addresses_taken): Do not iterate over all referenced
+	vars but just all local decls and parms.
+	Properly check call and asm arguments and rewrite call arguments.
+
 2010-07-20  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config.gcc (LIBC_GLIBC, LIBC_UCLIBC, LIBC_BIONIC): Move constants
