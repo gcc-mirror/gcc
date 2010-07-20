@@ -1,5 +1,5 @@
 // -*- C++ -*- Exception handling and frame unwind runtime interface routines.
-// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+// Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of GCC.
@@ -148,8 +148,10 @@ struct __cxa_eh_globals
 // either of the following functions.  The "fast" version assumes at least
 // one prior call of __cxa_get_globals has been made from the current
 // thread, so no initialization is necessary.
-extern "C" __cxa_eh_globals *__cxa_get_globals () throw() __attribute__ ((__const__));
-extern "C" __cxa_eh_globals *__cxa_get_globals_fast () throw() __attribute__ ((__const__));
+extern "C" __cxa_eh_globals *__cxa_get_globals () throw() 
+  __attribute__ ((__const__));
+extern "C" __cxa_eh_globals *__cxa_get_globals_fast () throw() 
+  __attribute__ ((__const__));
 
 // Allocate memory for the primary exception plus the thrown object.
 extern "C" void *__cxa_allocate_exception(std::size_t thrown_size) throw();
@@ -169,13 +171,14 @@ __cxa_free_dependent_exception(__cxa_dependent_exception *ex) throw();
 extern "C" void __cxa_throw (void *thrown_exception,
 			     std::type_info *tinfo,
 			     void (*dest) (void *))
-     __attribute__((noreturn));
+  __attribute__((__noreturn__));
 
 // Used to implement exception handlers.
-extern "C" void *__cxa_get_exception_ptr (void *) throw() __attribute__ ((__pure__));
+extern "C" void *__cxa_get_exception_ptr (void *) throw()
+  __attribute__ ((__pure__));
 extern "C" void *__cxa_begin_catch (void *) throw();
 extern "C" void __cxa_end_catch ();
-extern "C" void __cxa_rethrow () __attribute__((noreturn));
+extern "C" void __cxa_rethrow () __attribute__((__noreturn__));
 
 // These facilitate code generation for recurring situations.
 extern "C" void __cxa_bad_cast () __attribute__((__noreturn__));
@@ -186,8 +189,9 @@ extern "C" void __cxa_bad_typeid () __attribute__((__noreturn__));
 // Handles re-checking the exception specification if unexpectedHandler
 // throws, and if bad_exception needs to be thrown.  Called from the
 // compiler.
-extern "C" void __cxa_call_unexpected (void *) __attribute__((noreturn));
-extern "C" void __cxa_call_terminate (_Unwind_Exception*) throw () __attribute__((noreturn));
+extern "C" void __cxa_call_unexpected (void *) __attribute__((__noreturn__));
+extern "C" void __cxa_call_terminate (_Unwind_Exception*) throw ()
+  __attribute__((__noreturn__));
 
 #ifdef __ARM_EABI_UNWINDER__
 // Arm EABI specified routines.
@@ -196,16 +200,19 @@ typedef enum {
   ctm_succeeded = 1,
   ctm_succeeded_with_ptr_to_base = 2
 } __cxa_type_match_result;
-extern "C" bool __cxa_type_match(_Unwind_Exception*, const std::type_info*,
-				 bool, void**);
-extern "C" void __cxa_begin_cleanup (_Unwind_Exception*);
+extern "C" __cxa_type_match_result __cxa_type_match(_Unwind_Exception*,
+						    const std::type_info*,
+						    bool, void**);
+extern "C" bool __cxa_begin_cleanup (_Unwind_Exception*);
 extern "C" void __cxa_end_cleanup (void);
 #endif
 
 // Invokes given handler, dying appropriately if the user handler was
 // so inconsiderate as to return.
-extern void __terminate(std::terminate_handler) throw () __attribute__((__noreturn__));
-extern void __unexpected(std::unexpected_handler) __attribute__((noreturn));
+extern void __terminate(std::terminate_handler) throw () 
+  __attribute__((__noreturn__));
+extern void __unexpected(std::unexpected_handler)
+  __attribute__((__noreturn__));
 
 // The current installed user handlers.
 extern std::terminate_handler __terminate_handler;
