@@ -5013,8 +5013,9 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
                 type = TYPE_MAIN_VARIANT (type);
               else if (real_lvalue_p (expr))
                 {
-                  if (TREE_CODE (type) != REFERENCE_TYPE)
-                    type = build_reference_type (type);
+                  if (TREE_CODE (type) != REFERENCE_TYPE
+		      || TYPE_REF_IS_RVALUE (type))
+                    type = build_reference_type (non_reference (type));
                 }
               else
                 type = non_reference (type);

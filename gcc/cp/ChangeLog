@@ -1,3 +1,9 @@
+2010-07-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/44996
+	* semantics.c (finish_decltype_type): Correct decltype
+	of parenthesized rvalue reference variable.
+
 2010-07-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44703
