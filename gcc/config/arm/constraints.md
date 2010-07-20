@@ -30,7 +30,7 @@
 
 ;; The following multi-letter normal constraints have been used:
 ;; in ARM/Thumb-2 state: Da, Db, Dc, Dn, Dl, DL, Dv, Dy, Di
-;; in Thumb-1 state: Pa, Pb
+;; in Thumb-1 state: Pa, Pb, Pc
 ;; in Thumb-2 state: Ps, Pt, Pu, Pv, Pw, Px
 
 ;; The following memory constraints have been used:
@@ -122,7 +122,7 @@
  (and (match_code "const_int")
       (match_test "TARGET_32BIT ? ((ival >= 0 && ival <= 32)
 				 || ((ival & (ival - 1)) == 0))
-		   : ((ival >= 0 && ival <= 1020) && ((ival & 3) == 0))")))
+		   : ival >= 0 && ival <= 1020 && (ival & 3) == 0")))
 
 (define_constraint "N"
  "Thumb-1 state a constant in the range 0-31."
@@ -147,6 +147,12 @@
   (and (match_code "const_int")
        (match_test "TARGET_THUMB1 && ival >= -262 && ival <= 262
 		    && (ival > 255 || ival < -255)")))
+
+(define_constraint "Pc"
+  "@internal In Thumb-1 state a constant that is in the range 1021 to 1275"
+  (and (match_code "const_int")
+       (match_test "TARGET_THUMB1
+  		    && ival > 1020 && ival <= 1275")))
 
 (define_constraint "Ps"
   "@internal In Thumb-2 state a constant in the range -255 to +255"
