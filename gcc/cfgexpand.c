@@ -2427,7 +2427,9 @@ expand_debug_expr (tree exp)
 	  op0 = simplify_gen_subreg (mode, op0, inner_mode,
 				     subreg_lowpart_offset (mode,
 							    inner_mode));
-	else if (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0))))
+	else if (TREE_CODE_CLASS (TREE_CODE (exp)) == tcc_unary
+		 ? TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0)))
+		 : unsignedp)
 	  op0 = gen_rtx_ZERO_EXTEND (mode, op0);
 	else
 	  op0 = gen_rtx_SIGN_EXTEND (mode, op0);
