@@ -70,19 +70,19 @@ vxworks_emutls_var_fields (tree type, tree *name)
   
   *name = get_identifier ("__tls_var");
   
-  field = build_decl (FIELD_DECL, get_identifier ("size"),
-		      unsigned_type_node);
+  field = build_decl (BUILTINS_LOCATION, FIELD_DECL,
+		      get_identifier ("size"), unsigned_type_node);
   DECL_CONTEXT (field) = type;
   next_field = field;
 
-  field = build_decl (FIELD_DECL, get_identifier ("module_id"),
-		      unsigned_type_node);
+  field = build_decl (BUILTINS_LOCATION, FIELD_DECL,
+		      get_identifier ("module_id"), unsigned_type_node);
   DECL_CONTEXT (field) = type;
   DECL_CHAIN (field) = next_field;
   next_field = field;
 
-  field = build_decl (FIELD_DECL, get_identifier ("offset"),
-		      unsigned_type_node);
+  field = build_decl (BUILTINS_LOCATION, FIELD_DECL,
+		      get_identifier ("offset"), unsigned_type_node);
   DECL_CONTEXT (field) = type;
   DECL_CHAIN (field) = next_field;
 
