@@ -1,3 +1,8 @@
+2010-07-20  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc.target/powerpc/block-move-1.c: New test.
+	* gcc.target/powerpc/block-move-2.c: New test.
+
 2010-07-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44967

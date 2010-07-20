@@ -1,3 +1,11 @@
+2010-07-20  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/rs6000/rs6000.opt (mblock-move-inline-limit): New option.
+	* config/rs6000/rs6000.c (rs6000_override_options): Set
+	rs6000_block_move_inline_limit appropriately.
+	(expand_block_move): Use rs6000_block_move_inline_limit.
+	* doc/invoke.texi (mblock-move-inline-limit): Document.
+
 2010-07-20  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* postreload.c (fixup_debug_insns): Remove arg REGNO.  New args
