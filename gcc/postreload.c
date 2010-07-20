@@ -848,41 +848,26 @@ reload_combine_closest_single_use (unsigned regno, int ruid_limit)
   return retval;
 }
 
-/* After we've moved an add insn, fix up any debug insns that occur between
-   the old location of the add and the new location.  REGNO is the destination
-   register of the add insn; REG is the corresponding RTX.  REPLACEMENT is
-   the SET_SRC of the add.  MIN_RUID specifies the ruid of the insn after
-   which we've placed the add, we ignore any debug insns after it.  */
+/* After we've moved an add insn, fix up any debug insns that occur
+   between the old location of the add and the new location.  REG is
+   the destination register of the add insn; REPLACEMENT is the
+   SET_SRC of the add.  FROM and TO specify the range in which we
+   should make this change on debug insns.  */
 
 static void
-fixup_debug_insns (unsigned regno, rtx reg, rtx replacement, int min_ruid)
+fixup_debug_insns (rtx reg, rtx replacement, rtx from, rtx to)
 {
-  struct reg_use *use;
-  int from = reload_combine_ruid;
-  for (;;)
+  rtx insn;
+  for (insn = from; insn != to; insn = NEXT_INSN (insn))
     {
       rtx t;
-      rtx use_insn = NULL_RTX;
-      if (from < min_ruid)
-	break;
-      use = reload_combine_closest_single_use (regno, from);
-      if (use)
-	{
-	  from = use->ruid;
-	  use_insn = use->insn;
-	}
-      else
-	break;
-      
-      if (NONDEBUG_INSN_P (use->insn))
+
+      if (!DEBUG_INSN_P (insn))
 	continue;
-      t = INSN_VAR_LOCATION_LOC (use_insn);
+      
+      t = INSN_VAR_LOCATION_LOC (insn);
       t = simplify_replace_rtx (t, reg, copy_rtx (replacement));
-      validate_change (use->insn,
-		       &INSN_VAR_LOCATION_LOC (use->insn), t, 0);
-      reload_combine_purge_insn_uses (use_insn);
-      reload_combine_note_use (&PATTERN (use_insn), use_insn,
-			       use->ruid, NULL_RTX);
+      validate_change (insn, &INSN_VAR_LOCATION_LOC (insn), t, 0);
     }
 }
 
@@ -1063,8 +1048,8 @@ reload_combine_recognize_const_pattern (rtx insn)
     /* Process the add normally.  */
     return false;
 
-  fixup_debug_insns (regno, reg, src, add_moved_after_ruid);
-  
+  fixup_debug_insns (reg, src, insn, add_moved_after_insn);
+
   reorder_insns (insn, insn, add_moved_after_insn);
   reload_combine_purge_reg_uses_after_ruid (regno, add_moved_after_ruid);
   reload_combine_split_ruids (add_moved_after_ruid - 1);
@@ -1191,15 +1176,21 @@ reload_combine_recognize_pattern (rtx insn)
 
 	  if (apply_change_group ())
 	    {
+	      struct reg_use *lowest_ruid = NULL;
+
 	      /* For every new use of REG_SUM, we have to record the use
 		 of BASE therein, i.e. operand 1.  */
 	      for (i = reg_state[regno].use_index;
 		   i < RELOAD_COMBINE_MAX_USES; i++)
-		reload_combine_note_use
-		  (&XEXP (*reg_state[regno].reg_use[i].usep, 1),
-		   reg_state[regno].reg_use[i].insn,
-		   reg_state[regno].reg_use[i].ruid,
-		   reg_state[regno].reg_use[i].containing_mem);
+		{
+		  struct reg_use *use = reg_state[regno].reg_use + i;
+		  reload_combine_note_use (&XEXP (*use->usep, 1), use->insn,
+					   use->ruid, use->containing_mem);
+		  if (lowest_ruid == NULL || use->ruid < lowest_ruid->ruid)
+		    lowest_ruid = use;
+		}
+
+	      fixup_debug_insns (reg, reg_sum, insn, lowest_ruid->insn);
 
 	      /* Delete the reg-reg addition.  */
 	      delete_insn (insn);
@@ -1313,7 +1304,7 @@ reload_combine (void)
 	  if (! fixed_regs[r])
 	      reg_state[r].use_index = RELOAD_COMBINE_MAX_USES;
 
-      if (! INSN_P (insn))
+      if (! NONDEBUG_INSN_P (insn))
 	continue;
 
       reload_combine_ruid++;

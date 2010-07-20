@@ -1,3 +1,11 @@
+2010-07-20  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* postreload.c (fixup_debug_insns): Remove arg REGNO.  New args
+	FROM and TO.  All callers changed.  Don't look for tracked uses,
+	just scan the RTL for DEBUG_INSNs and substitute.
+	(reload_combine_recognize_pattern): Call fixup_debug_insns.
+	(reload_combine): Ignore DEBUG_INSNs.
+
 2010-07-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* var-tracking.c (vt_expand_loc, vt_expand_loc_dummy): Bump maximum
