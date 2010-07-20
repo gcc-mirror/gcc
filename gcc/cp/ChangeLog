@@ -1,5 +1,9 @@
 2010-07-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/44996
+	* semantics.c (finish_decltype_type): Correct decltype
+	of parenthesized rvalue reference variable.
+
 	PR c++/44969
 	* tree.c (cp_tree_equal): Compare type of *CAST_EXPR.
 	* pt.c (iterative_hash_template_arg): Hash type of *CAST_EXPR.
