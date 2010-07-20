@@ -1,3 +1,13 @@
+2010-07-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* libsupc++/unwind-cxx.h: Minor formatting / stylistic tweaks.
+
+2010-07-20  Mikael Pettersson  <mikpe@it.uu.se>
+
+	PR libstdc++/44902
+	* libsupc++/unwind-cxx.h (__cxa_type_match): Correct prototype.
+	(__cxa_begin_cleanup): Likewise.
+
 2010-07-19  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/Makefile.am (doc-texinfo): New rule.
