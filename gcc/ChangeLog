@@ -1,5 +1,11 @@
 2010-07-20  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/44977
+	* tree-ssa-dom.c (propagate_rhs_into_lhs): Do not create invalid
+	SSA form.
+
+2010-07-20  Richard Guenther  <rguenther@suse.de>
+
 	* lto-symtab.c (lto_symtab_merge): Use gimple_types_compatible_p.
 	(lto_symtab_merge_decls_2): Likewise.
 	* gimple.h (gimple_types_compatible_p): Declare.
