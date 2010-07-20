@@ -1,3 +1,8 @@
+2010-07-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/44967
+	* g++.dg/cpp0x/sfinae2.C: New.
+
 2010-07-20  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/42696
