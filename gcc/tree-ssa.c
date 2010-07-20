@@ -1426,7 +1426,7 @@ useless_type_conversion_p (tree outer_type, tree inner_type)
      compared types.  */
   else if (AGGREGATE_TYPE_P (inner_type)
 	   && TREE_CODE (inner_type) == TREE_CODE (outer_type))
-    return false;
+    return gimple_types_compatible_p (outer_type, inner_type, false);
 
   return false;
 }

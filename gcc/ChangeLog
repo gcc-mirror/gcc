@@ -1,5 +1,21 @@
 2010-07-20  Richard Guenther  <rguenther@suse.de>
 
+	* lto-symtab.c (lto_symtab_merge): Use gimple_types_compatible_p.
+	(lto_symtab_merge_decls_2): Likewise.
+	* gimple.h (gimple_types_compatible_p): Declare.
+	* gimple.c (gimple_queue_type_fixup): Remove.
+	(gimple_fixup_complete_and_incomplete_subtype_p): Likewise.
+	(gimple_compatible_complete_and_incomplete_type_p): New
+	function.
+	(gimple_types_compatible_p): Adjust.
+	(gimple_register_type): Remove type fixup code.
+	(print_gimple_types_stats): Adjust.
+	(free_gimple_type_tables): Likewise.
+	* lto-streamer-in.c (input_gimple_stmt): Use gimple_types_compatible_p.
+	* tree-ssa.c (useless_type_conversion_p): Likewise.
+
+2010-07-20  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/44971
 	PR middle-end/44988
 	* tree-ssa.c (maybe_optimize_var): New function split out from ...
