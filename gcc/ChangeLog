@@ -1,3 +1,10 @@
+2010-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/45003
+	* cfgexpand.c (expand_debug_expr) <case NOP_EXPR>: Use ZERO_EXTEND
+	or SIGN_EXTEND depending on TYPE_UNSIGNED of the operand's type
+	instead of the result's type.
+
 2010-07-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44977
