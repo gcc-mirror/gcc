@@ -1,5 +1,8 @@
 2010-07-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* var-tracking.c (vt_expand_loc, vt_expand_loc_dummy): Bump maximum
+	depth to 8 from 5.
+
 	PR debug/45003
 	* cfgexpand.c (expand_debug_expr) <case NOP_EXPR>: Use ZERO_EXTEND
 	or SIGN_EXTEND depending on TYPE_UNSIGNED of the operand's type
