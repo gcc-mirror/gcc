@@ -638,9 +638,9 @@
 )
 
 (define_insn_and_split "*thumb1_addsi3"
-  [(set (match_operand:SI          0 "register_operand" "=l,l,l,*rk,*hk,l,k,l,l")
-	(plus:SI (match_operand:SI 1 "register_operand" "%0,0,l,*0,*0,k,k,0,l")
-		 (match_operand:SI 2 "nonmemory_operand" "I,J,lL,*hk,*rk,M,O,Pa,Pb")))]
+  [(set (match_operand:SI          0 "register_operand" "=l,l,l,*rk,*hk,l,k,l,l,l")
+	(plus:SI (match_operand:SI 1 "register_operand" "%0,0,l,*0,*0,k,k,0,l,k")
+		 (match_operand:SI 2 "nonmemory_operand" "I,J,lL,*hk,*rk,M,O,Pa,Pb,Pc")))]
   "TARGET_THUMB1"
   "*
    static const char * const asms[] = 
@@ -653,6 +653,7 @@
      \"add\\t%0, %1, %2\",
      \"add\\t%0, %1, %2\",
      \"#\",
+     \"#\",
      \"#\"
    };
    if ((which_alternative == 2 || which_alternative == 6)
@@ -662,21 +663,27 @@
    return asms[which_alternative];
   "
   "&& reload_completed && CONST_INT_P (operands[2])
-   && operands[1] != stack_pointer_rtx
-   && (INTVAL (operands[2]) > 255 || INTVAL (operands[2]) < -255)"
+   && ((operands[1] != stack_pointer_rtx
+        && (INTVAL (operands[2]) > 255 || INTVAL (operands[2]) < -255))
+       || (operands[1] == stack_pointer_rtx
+ 	   && INTVAL (operands[2]) > 1020))"
   [(set (match_dup 0) (plus:SI (match_dup 1) (match_dup 2)))
    (set (match_dup 0) (plus:SI (match_dup 0) (match_dup 3)))]
   {
     HOST_WIDE_INT offset = INTVAL (operands[2]);
-    if (offset > 255)
-      offset = 255;
-    else if (offset < -255)
-      offset = -255;
-    
+    if (operands[1] == stack_pointer_rtx)
+      offset -= 1020;
+    else
+      {
+        if (offset > 255)
+	  offset = 255;
+	else if (offset < -255)
+	  offset = -255;
+      }
     operands[3] = GEN_INT (offset);
     operands[2] = GEN_INT (INTVAL (operands[2]) - offset);
   }
-  [(set_attr "length" "2,2,2,2,2,2,2,4,4")]
+  [(set_attr "length" "2,2,2,2,2,2,2,4,4,4")]
 )
 
 ;; Reloading and elimination of the frame pointer can
