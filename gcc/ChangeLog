@@ -1,3 +1,9 @@
+2010-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/45006
+	* cfgexpand.c (expand_debug_expr): Only look at TYPE_UNSIGNED of
+	operand's type if exp is tcc_unary class tree.
+
 2010-07-20  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/rs6000/rs6000.md (abs<mode>2_isel, nabs<mode>2_isel):
