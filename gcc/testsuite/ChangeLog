@@ -1,5 +1,10 @@
 2010-07-20  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/42696
+	* gcc.dg/lto/20100720-4_0.c: New testcase.
+
+2010-07-20  Richard Guenther  <rguenther@suse.de>
+
 	PR lto/43221
 	* gcc.dg/lto/20100720-2_0.c: New testcase.
 	* gcc.dg/lto/20100720-2_1.c: Likewise.
