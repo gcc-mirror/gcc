@@ -1,4 +1,11 @@
+2010-07-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44977
+	* tree-ssa-dom.c (propagate_rhs_into_lhs): Do not create invalid
+	SSA form.
+
 2010-07-19  Bingfeng Mei  <bmei@broadcom.com>
+
 	* ddg.c (create_ddg): Exclude nodes of debug_insn in counting nodes
         of a loop.
         * loop-doloop.c (doloop_condition_get): Skip possible debug_insn.
