@@ -1,3 +1,9 @@
+2010-07-21  Changpeng Fang  <changpeng.fang@amd.com>
+
+	* tree-ssa-loop-prefetch.c (analyze_ref): Strip off the real
+	and imagine parts of a complex, so that they can have the same
+	base and fall into the same group.
+
 2010-07-21  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/45018
