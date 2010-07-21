@@ -1,3 +1,9 @@
+2010-07-21  Jeffrey Yasskin  <jyasskin@google.com>
+
+	PR c++/44641
+	* lib/scanasm.exp (dg-function-on-line): Fix regex for IA64's
+	comments.
+
 2010-07-21  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/45018
