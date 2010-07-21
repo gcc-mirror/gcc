@@ -1,3 +1,12 @@
+2010-07-19  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Update for new reality.
+	* doc/Makefile.am (doc-xml): New default rule for XML output.
+	(doc-xml-single-doxygen): Standardize output names.
+	* doc/Makefile.in: Regenerate.
+
+	* doc/doxygen/user.cfg.in: Tweak.
+
 2010-07-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* libsupc++/unwind-cxx.h: Minor formatting / stylistic tweaks.

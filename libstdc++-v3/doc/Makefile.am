@@ -28,7 +28,7 @@ include $(top_srcdir)/fragment.am
 # The first is the doxygen markup in libstdc++ sources, which is a
 # reference to the API. And the second is the docbook markup in
 # doc/xml/.
-# 
+#
 # A third and more obscure option deals with charting
 # performance tests, and should be considered experimental.
 
@@ -38,22 +38,28 @@ include $(top_srcdir)/fragment.am
 # create, and then copy into toplevel directory with standardized names
 # and layouts.
 
+# HTML
+doc-html: doc-html-docbook doc-html-doxygen
+	cp -R ${docbook_outdir}/html ./libstdc++-manual.html
+	cp -R ${doxygen_outdir}/html ./libstdc++-api.html
+
 # MAN
 doc-man: doc-man-doxygen
 	cp -R ${doxygen_outdir}/man ./libstdc++-api.man
 
 # PDF
 doc-pdf: doc-pdf-docbook doc-pdf-doxygen
-	cp  ${docbook_outdir}/pdf/libstdc++-manual.pdf .
+	cp ${docbook_outdir}/pdf/libstdc++-manual.pdf .
 	cp ${doxygen_outdir}/pdf/libstdc++-api.pdf .
-
-# HTML
-doc-html: doc-html-docbook doc-html-doxygen
-	cp -R ${docbook_outdir}/html ./libstdc++-manual.html
-	cp -R ${doxygen_outdir}/html ./libstdc++-api.html
 
 # TEXINFO
 doc-texinfo: doc-texinfo-docbook
+
+# XML
+doc-xml: doc-xml-single-docbook doc-xml-single-doxygen
+	cp ${manual_xml} .
+	cp ${api_xml} .
+
 
 # Doxygen configuration
 # Assumes doxygen, graphviz (with dot), pdflatex installed
@@ -78,10 +84,11 @@ doc-xml-doxygen:
 	  ${SHELL} ${doxygen_script} \
 	  --host_alias=${host_alias} --mode=xml $${srcdir} $${builddir} NO)
 
-doc-xml-single-doxygen:
+api_xml = ${doxygen_outdir}/xml/libstdc++-api-single.xml
+doc-xml-single-doxygen: doc-xml-doxygen
 	@echo "Generating doxygen xml single file..."
 	$(XSLTPROC) ${doxygen_outdir}/xml/combine.xslt \
-	${doxygen_outdir}/xml/index.xml > ${doxygen_outdir}/xml/api-spine.xml;
+	${doxygen_outdir}/xml/index.xml > ${api_xml};
 
 doc-latex-doxygen:
 	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
@@ -287,7 +294,7 @@ DB2TEXI_FLAGS = \
 	--encoding=utf-8//TRANSLIT \
 	--string-param output-file="libstdc++-manual" \
 	--string-param directory-category="GNU C++ Library" \
-	--string-param explicit-node-names=true 
+	--string-param explicit-node-names=true
 doc-texinfo-docbook: doc-xml-single-docbook ${docbook_outdir}/texinfo
 	@echo "Generating texinfo files..."
 	db2x_docbook2texi $(DB2TEXI_FLAGS) ${manual_xml}
