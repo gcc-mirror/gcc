@@ -95,6 +95,11 @@ struct funct_state_d
   bool can_throw;
 };
 
+/* State used when we know nothing about function.  */
+static struct funct_state_d varying_state
+   = { IPA_NEITHER, IPA_NEITHER, true, true, true };
+
+
 typedef struct funct_state_d * funct_state;
 
 /* The storage of the funct_state is abstracted because there is the
@@ -212,13 +217,12 @@ has_function_state (struct cgraph_node *node)
 static inline funct_state
 get_function_state (struct cgraph_node *node)
 {
-  static struct funct_state_d varying
-    = { IPA_NEITHER, IPA_NEITHER, true, true, true };
   if (!funct_state_vec
-      || VEC_length (funct_state, funct_state_vec) <= (unsigned int)node->uid)
+      || VEC_length (funct_state, funct_state_vec) <= (unsigned int)node->uid
+      || !VEC_index (funct_state, funct_state_vec, node->uid))
     /* We might want to put correct previously_known state into varying.  */
-    return &varying;
-  return VEC_index (funct_state, funct_state_vec, node->uid);
+    return &varying_state;
+ return VEC_index (funct_state, funct_state_vec, node->uid);
 }
 
 /* Set the function state S for NODE.  */
@@ -860,7 +864,9 @@ remove_node_data (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 {
   if (has_function_state (node))
     {
-      free (get_function_state (node));
+      funct_state l = get_function_state (node);
+      if (l != &varying_state)
+        free (l);
       set_function_state (node, NULL);
     }
 }
