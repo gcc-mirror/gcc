@@ -46,7 +46,8 @@ proc get-fortran-torture-options { } {
 	set test_tree_vectorize 1
     } elseif { ( [istarget "i?86-*-*"] || [istarget "x86_64-*-*"] )
 	       && [check_effective_target_sse2]
-	       && [check_sse2_hw_available] } {
+	       && [check_sse2_hw_available]
+	       && [check_sse_os_support_available] } {
 	lappend vectorizer_options "-msse2"
 	set test_tree_vectorize 1
     } elseif { [istarget "mips*-*-*"]

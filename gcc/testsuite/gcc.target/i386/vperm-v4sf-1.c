@@ -1,5 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O -msse" } */
+/* { dg-require-effective-target sse } */
+/* { dg-require-effective-target sse_runtime } */
 
 #include "isa-check.h"
 

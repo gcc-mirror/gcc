@@ -1601,8 +1601,14 @@ Target supports FPU instructions.
 @item sse
 Target supports compiling @code{sse} instructions.
 
+@item sse_runtime
+Target supports the execution of @code{sse} instructions.
+
 @item sse2
 Target supports compiling @code{sse2} instructions.
+
+@item sse2_runtime
+Target supports the execution of @code{sse2} instructions.
 
 @item sync_char_short
 Target supports atomic operations on @code{char} and @code{short}.

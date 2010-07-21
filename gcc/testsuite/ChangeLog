@@ -1,3 +1,56 @@
+2010-07-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2010-07-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp (check_sse_os_support_available): New
+	proc.
+	(check_sse_hw_available): New proc.
+	(check_effective_target_sse_runtime): New proc.
+	(check_effective_target_sse2_runtime): New proc.
+	* lib/fortran-torture.exp (get-fortran-torture-options): Only add
+	-msse2 if check_sse_os_support_available.
+	* g++.dg/vect/vect.exp: Only run -msse2 tests if
+	check_sse_os_support_available.
+	* gcc.dg/vect/vect.exp: Likewise.
+	* gfortran.dg/vect/vect.exp: Likewise.
+	* gcc.target/i386/sol2-check: Renamed to ...
+	* gcc.target/i386/sse-os-support.h: ... this.
+	(sol2_check): Renamed to ...
+	(sse_os_support): ... this.
+	Only test movss with xmm registers.
+	* gcc.target/i386/sse-check.h: Reflect new header and function names.
+	Removed ILL_INSN, ILL_INSN_LEN.
+	* gcc.target/i386/sse2-check.h: Likewise.
+	* gcc.target/i386/sse3-check.h: Likewise.
+	* gcc.dg/pr40550.c: Use dg-require-effective-target sse_runtime.
+	Removed cpuid.h, __get_cpuid test.
+	* g++.dg/other/i386-1.C: Use dg-require-effective-target sse2_runtime.
+	Removed cpuid.h, __get_cpuid test.
+	* g++.dg/other/pr40446.C: Likewise.
+	* gcc.dg/compat/union-m128-1_main.c: Likewise.
+	* gcc.dg/compat/vector-1a_main.c: Likewise.
+	* gcc.dg/compat/vector-2a_main.c: Likewise.
+	* gcc.dg/pr36584.c: Likewise.
+	* gcc.dg/pr37544.c: Likewise.
+	* gcc.dg/torture/pr16104-1.c: Likewise.
+	* gcc.dg/torture/stackalign/alloca-2.c: Likewise.
+	* gcc.dg/torture/stackalign/alloca-3.c: Likewise.
+	* gcc.dg/torture/stackalign/push-1.c: Likewise.
+	* gcc.dg/torture/stackalign/vararg-3.c: Likewise.
+	* gcc.dg/torture/pr35771.h: Removed cpuid.h, __get_cpuid test.
+	* gcc.dg/torture/pr35771-1.c: Use dg-require-effective-target
+	sse2_runtime.
+	* gcc.dg/torture/pr35771-2.c: Likewise.
+	* gcc.dg/torture/pr35771-3.c: Likewise.
+	* gcc.target/i386/pr39315-2.c: Likewise.
+	* gcc.target/i386/pr39315-4.c: Likewise.
+	* gcc.target/i386/vperm-v2df.c: Likewise.
+	* gcc.target/i386/vperm-v2di.c: Likewise.
+	* gcc.target/i386/vperm-v4si-1.c: Likewise.
+	* gcc.target/i386/vperm-v4sf-1.c: Use dg-require-effective-target
+	sse_runtime.
+
 2010-07-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44977

@@ -1,10 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-msse" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 /* { dg-require-effective-target sse { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
-
-#ifdef __i386__
-#include "cpuid.h"
-#endif
+/* { dg-require-effective-target sse_runtime { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 typedef float v2sf __attribute__ ((vector_size (2 * sizeof(float))));
 
@@ -18,18 +15,6 @@ static void test (void)
 
 int main ()
 {
-
-#ifdef __i386__
-  unsigned int eax, ebx, ecx, edx;
-
-  if (!__get_cpuid (1, &eax, &ebx, &ecx, &edx))
-    return 0;
-
-  if (!(edx & bit_SSE))
-    return 0;
-#endif
-
   test ();
-
   return 0;
 }

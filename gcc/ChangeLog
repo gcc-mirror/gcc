@@ -1,3 +1,11 @@
+2010-07-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2010-07-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	sse_runtime, sse2_runtime.
+
 2010-07-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44977
