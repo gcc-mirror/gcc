@@ -1,3 +1,22 @@
+2010-07-21  Daniel Kraft  <d@domob.eu>
+
+	* trans.h (gfc_get_return_label): Removed.
+	(gfc_generate_return): New method.
+	(gfc_trans_deferred_vars): Update gfc_wrapped_block rather than
+	returning a tree directly.
+	* trans-stmt.c (gfc_trans_return): Use `gfc_generate_return'.
+	(gfc_trans_block_construct): Update for new interface to
+	`gfc_trans_deferred_vars'.
+	* trans-decl.c (current_function_return_label): Removed.
+	(current_procedure_symbol): New variable.
+	(gfc_get_return_label): Removed.
+	(gfc_trans_deferred_vars): Update gfc_wrapped_block rather than
+	returning a tree directly.
+	(get_proc_result), (gfc_generate_return): New methods.
+	(gfc_generate_function_code): Clean up and do init/cleanup here
+	also with gfc_wrapped_block.  Remove return-label but rather
+	return directly.
+
 2010-07-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/44929

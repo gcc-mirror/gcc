@@ -491,7 +491,7 @@ gfc_trans_call (gfc_code * code, bool dependency_check,
 /* Translate the RETURN statement.  */
 
 tree
-gfc_trans_return (gfc_code * code ATTRIBUTE_UNUSED)
+gfc_trans_return (gfc_code * code)
 {
   if (code->expr1)
     {
@@ -500,16 +500,16 @@ gfc_trans_return (gfc_code * code ATTRIBUTE_UNUSED)
       tree result;
 
       /* If code->expr is not NULL, this return statement must appear
-         in a subroutine and current_fake_result_decl has already
+	 in a subroutine and current_fake_result_decl has already
 	 been generated.  */
 
       result = gfc_get_fake_result_decl (NULL, 0);
       if (!result)
-        {
-          gfc_warning ("An alternate return at %L without a * dummy argument",
-                        &code->expr1->where);
-          return build1_v (GOTO_EXPR, gfc_get_return_label ());
-        }
+	{
+	  gfc_warning ("An alternate return at %L without a * dummy argument",
+			&code->expr1->where);
+	  return gfc_generate_return ();
+	}
 
       /* Start a new block for this statement.  */
       gfc_init_se (&se, NULL);
@@ -521,13 +521,12 @@ gfc_trans_return (gfc_code * code ATTRIBUTE_UNUSED)
 			 fold_convert (TREE_TYPE (result), se.expr));
       gfc_add_expr_to_block (&se.pre, tmp);
 
-      tmp = build1_v (GOTO_EXPR, gfc_get_return_label ());
+      tmp = gfc_generate_return ();
       gfc_add_expr_to_block (&se.pre, tmp);
-      gfc_add_block_to_block (&se.pre, &se.post);
       return gfc_finish_block (&se.pre);
     }
-  else
-    return build1_v (GOTO_EXPR, gfc_get_return_label ());
+
+  return gfc_generate_return ();
 }
 
 
@@ -847,8 +846,7 @@ gfc_trans_block_construct (gfc_code* code)
 {
   gfc_namespace* ns;
   gfc_symbol* sym;
-  stmtblock_t body;
-  tree tmp;
+  gfc_wrapped_block body;
 
   ns = code->ext.block.ns;
   gcc_assert (ns);
@@ -858,14 +856,12 @@ gfc_trans_block_construct (gfc_code* code)
   gcc_assert (!sym->tlink);
   sym->tlink = sym;
 
-  gfc_start_block (&body);
   gfc_process_block_locals (ns);
 
-  tmp = gfc_trans_code (ns->code);
-  tmp = gfc_trans_deferred_vars (sym, tmp);
+  gfc_start_wrapped_block (&body, gfc_trans_code (ns->code));
+  gfc_trans_deferred_vars (sym, &body);
 
-  gfc_add_expr_to_block (&body, tmp);
-  return gfc_finish_block (&body);
+  return gfc_finish_wrapped_block (&body);
 }
 
 
