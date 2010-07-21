@@ -1,3 +1,12 @@
+2010-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/45015
+	* var-tracking.c (adjust_mems): Ignore ASM_OPERANDS with non-zero
+	ASM_OPERANDS_OUTPUT_IDX.
+	(adjust_insn): For inline asm with multiple sets ensure first
+	ASM_OPERANDS vectors are used by all following ASM_OPERANDS in
+	the insn.
+
 2010-07-21  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (setup_incoming_varargs_64): Emit a simple
