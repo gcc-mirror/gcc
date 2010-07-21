@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "except.h"
 #include "tree.h"
+#include "target.h"
 #include "timevar.h"
 #include "tree-pass.h"
 #include "df.h"
@@ -816,8 +817,7 @@ reload_combine_purge_reg_uses_after_ruid (unsigned regno, int ruid)
 
 /* Find the use of REGNO with the ruid that is highest among those
    lower than RUID_LIMIT, and return it if it is the only use of this
-   reg in the insn (or if the insn is a debug insn).  Return NULL
-   otherwise.  */
+   reg in the insn.  Return NULL otherwise.  */
 
 static struct reg_use *
 reload_combine_closest_single_use (unsigned regno, int ruid_limit)
@@ -838,9 +838,9 @@ reload_combine_closest_single_use (unsigned regno, int ruid_limit)
       if (this_ruid > best_ruid)
 	{
 	  best_ruid = this_ruid;
-	  retval = reg_state[regno].reg_use + i;
+	  retval = use;
 	}
-      else if (this_ruid == best_ruid && !DEBUG_INSN_P (use->insn))
+      else if (this_ruid == best_ruid)
 	retval = NULL;
     }
   if (last_label_ruid >= best_ruid)
@@ -866,7 +866,7 @@ fixup_debug_insns (rtx reg, rtx replacement, rtx from, rtx to)
 	continue;
       
       t = INSN_VAR_LOCATION_LOC (insn);
-      t = simplify_replace_rtx (t, reg, copy_rtx (replacement));
+      t = simplify_replace_rtx (t, reg, replacement);
       validate_change (insn, &INSN_VAR_LOCATION_LOC (insn), t, 0);
     }
 }
@@ -938,10 +938,6 @@ reload_combine_recognize_const_pattern (rtx insn)
 	/* Start the search for the next use from here.  */
 	from_ruid = use->ruid;
 
-      /* We'll fix up DEBUG_INSNs after we're done.  */
-      if (use && DEBUG_INSN_P (use->insn))
-	continue;
-
       if (use && GET_MODE (*use->usep) == Pmode)
 	{
 	  rtx use_insn = use->insn;
@@ -972,7 +968,7 @@ reload_combine_recognize_const_pattern (rtx insn)
 	      int old_cost = address_cost (oldaddr, GET_MODE (mem), as, speed);
 	      int new_cost;
 
-	      newaddr = simplify_replace_rtx (oldaddr, reg, copy_rtx (src));
+	      newaddr = simplify_replace_rtx (oldaddr, reg, src);
 	      if (memory_address_addr_space_p (GET_MODE (mem), newaddr, as))
 		{
 		  XEXP (mem, 0) = newaddr;
@@ -1008,8 +1004,7 @@ reload_combine_recognize_const_pattern (rtx insn)
 		  int old_cost = rtx_cost (SET_SRC (new_set), SET, speed);
 
 		  gcc_assert (rtx_equal_p (XEXP (SET_SRC (new_set), 0), reg));
-		  new_src = simplify_replace_rtx (SET_SRC (new_set), reg,
-						  copy_rtx (src));
+		  new_src = simplify_replace_rtx (SET_SRC (new_set), reg, src);
 
 		  if (rtx_cost (new_src, SET, speed) <= old_cost
 		      && validate_change (use_insn, &SET_SRC (new_set),
@@ -1024,6 +1019,7 @@ reload_combine_recognize_const_pattern (rtx insn)
 			  /* See if that took care of the add insn.  */
 			  if (rtx_equal_p (SET_DEST (new_set), reg))
 			    {
+			      fixup_debug_insns (reg, src, insn, use_insn);
 			      delete_insn (insn);
 			      return true;
 			    }
@@ -1102,6 +1098,8 @@ reload_combine_recognize_pattern (rtx insn)
       && REG_P (XEXP (src, 1))
       && rtx_equal_p (XEXP (src, 0), reg)
       && !rtx_equal_p (XEXP (src, 1), reg)
+      && reg_state[regno].use_index >= 0
+      && reg_state[regno].use_index < RELOAD_COMBINE_MAX_USES
       && last_label_ruid < reg_state[regno].use_ruid)
     {
       rtx base = XEXP (src, 1);
@@ -1134,7 +1132,11 @@ reload_combine_recognize_pattern (rtx insn)
 	      if (TEST_HARD_REG_BIT (reg_class_contents[INDEX_REG_CLASS], i)
 		  && reg_state[i].use_index == RELOAD_COMBINE_MAX_USES
 		  && reg_state[i].store_ruid <= reg_state[regno].use_ruid
-		  && hard_regno_nregs[i][GET_MODE (reg)] == 1)
+		  && (call_used_regs[i] || df_regs_ever_live_p (i))
+		  && (!frame_pointer_needed || i != HARD_FRAME_POINTER_REGNUM)
+		  && !fixed_regs[i] && !global_regs[i]
+		  && hard_regno_nregs[i][GET_MODE (reg)] == 1
+		  && targetm.hard_regno_scratch_ok (i))
 		{
 		  index_reg = gen_rtx_REG (GET_MODE (reg), i);
 		  reg_sum = gen_rtx_PLUS (GET_MODE (reg), index_reg, base);
@@ -1150,7 +1152,6 @@ reload_combine_recognize_pattern (rtx insn)
 	  && prev_set
 	  && CONST_INT_P (SET_SRC (prev_set))
 	  && rtx_equal_p (SET_DEST (prev_set), reg)
-	  && reg_state[regno].use_index >= 0
 	  && (reg_state[REGNO (base)].store_ruid
 	      <= reg_state[regno].use_ruid))
 	{
@@ -1201,8 +1202,6 @@ reload_combine_recognize_pattern (rtx insn)
 		remove_reg_equal_equiv_notes (prev);
 
 	      reg_state[regno].use_index = RELOAD_COMBINE_MAX_USES;
-	      reg_state[REGNO (index_reg)].store_ruid
-		= reload_combine_ruid;
 	      return true;
 	    }
 	}
@@ -1243,14 +1242,6 @@ reload_combine (void)
 	  return;
 	}
     }
-
-#if 0
-  /* If reg+reg can be used in offsetable memory addresses, the main chunk of
-     reload has already used it where appropriate, so there is no use in
-     trying to generate it now.  */
-  if (double_reg_address_ok || last_index_reg == -1)
-    return;
-#endif
 
   /* Set up LABEL_LIVE and EVER_LIVE_AT_START.  The register lifetime
      information is a bit fuzzy immediately after reload, but it's
@@ -1510,6 +1501,11 @@ reload_combine_note_use (rtx *xp, rtx insn, int ruid, rtx containing_mem)
 	      reg_state[regno + nregs].use_index = -1;
 	    return;
 	  }
+
+	/* We may be called to update uses in previously seen insns.
+	   Don't add uses beyond the last store we saw.  */
+	if (ruid < reg_state[regno].store_ruid)
+	  return;
 
 	/* If this register is already used in some unknown fashion, we
 	   can't do anything.

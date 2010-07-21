@@ -1,3 +1,23 @@
+2010-07-22  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR bootstrap/44970
+	PR middle-end/45009
+	* postreload.c: Include "target.h".
+	(reload_combine_closest_single_use): Don't take DEBUG_INSNs
+	into account.
+	(fixup_debug_insns): Don't copy the rtx.
+	(reload_combine_recognize_const_pattern): DEBUG_INSNs can't
+	have uses.  Don't copy when replacing.  Call fixup_debug_insns
+	in the case where we merged one add with another.
+	(reload_combine_recognize_pattern): Fail if there aren't any
+	uses.  Try harder to determine whether we're picking a valid
+	index register.  Don't set store_ruid for an insn we're going
+	to scan in the next iteration.
+	(reload_combine): Remove unused code.
+	(reload_combine_note_use): When updating use information for
+	an old insn, ignore a use that occurs after store_ruid.
+	* Makefile.in (postreload.o): Update dependencies.
+
 2010-07-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/45015
