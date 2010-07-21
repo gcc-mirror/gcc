@@ -3360,6 +3360,12 @@ gimple_types_compatible_p (tree t1, tree t2, bool for_merging_p)
   if (t1 == NULL_TREE || t2 == NULL_TREE)
     return 0;
 
+  /* If the types have been previously registered and found equal
+     they still are.  */
+  if (TYPE_CANONICAL (t1)
+      && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2))
+    return 1;
+
   /* Can't be the same type if the types don't have the same code.  */
   if (TREE_CODE (t1) != TREE_CODE (t2))
     return 0;

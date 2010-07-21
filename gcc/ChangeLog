@@ -1,5 +1,13 @@
 2010-07-21  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/45013
+	* tree-ssa.c (useless_type_conversion_p): Dispatch to
+	gimple_types_compatible_p only when in lto.
+	* gimple.c (gimple_types_compatible_p): Use canonical types
+	to speed up comparison.
+
+2010-07-21  Richard Guenther  <rguenther@suse.de>
+
 	* tree-flow.h (referenced_var): Move define ...
 	* tree-flow-inline.h (referenced_var): ... here as an inline
 	function.  Assert here ...
