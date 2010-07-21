@@ -486,10 +486,18 @@ analyze_ref (struct loop *loop, tree *ref_p, tree *base,
   *step = NULL_TREE;
   *delta = 0;
 
-  /* First strip off the component references.  Ignore bitfields.  */
-  if (TREE_CODE (ref) == COMPONENT_REF
-      && DECL_NONADDRESSABLE_P (TREE_OPERAND (ref, 1)))
-    ref = TREE_OPERAND (ref, 0);
+  /* First strip off the component references.  Ignore bitfields.
+     Also strip off the real and imagine parts of a complex, so that
+     they can have the same base.  */
+  if (TREE_CODE (ref) == REALPART_EXPR
+      || TREE_CODE (ref) == IMAGPART_EXPR
+      || (TREE_CODE (ref) == COMPONENT_REF
+          && DECL_NONADDRESSABLE_P (TREE_OPERAND (ref, 1))))
+    {
+      if (TREE_CODE (ref) == IMAGPART_EXPR)
+        *delta += int_size_in_bytes (TREE_TYPE (ref));
+      ref = TREE_OPERAND (ref, 0);
+    }
 
   *ref_p = ref;
 
