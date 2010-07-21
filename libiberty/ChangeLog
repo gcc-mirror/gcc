@@ -1,3 +1,7 @@
+2010-07-21  Pascal Obry  <obry@adacore.com>
+
+	* make-temp-file.c (choose_tmpdir): Append a dot to P_tmpdir if needed.
+
 2010-07-06  Ken Werner  <ken.werner@de.ibm.com>
 
 	* floatformat.c (floatformat_ieee_half_big): New variable.
