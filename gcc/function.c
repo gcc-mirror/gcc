@@ -2918,7 +2918,10 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 		     || promoted_nominal_mode != data->promoted_mode);
   moved = false;
 
-  if (need_conversion)
+  if (need_conversion
+      && GET_MODE_CLASS (data->nominal_mode) == MODE_INT
+      && data->nominal_mode == data->passed_mode
+      && data->nominal_mode == GET_MODE (data->entry_parm))
     {
       /* ENTRY_PARM has been converted to PROMOTED_MODE, its
 	 mode, by the caller.  We now have to convert it to
@@ -2979,8 +2982,9 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 	  if (moved)
 	    {
 	      emit_insn (insns);
-	      equiv_stack_parm = gen_rtx_fmt_e (code, GET_MODE (parmreg),
-						equiv_stack_parm);
+	      if (equiv_stack_parm != NULL_RTX)
+		equiv_stack_parm = gen_rtx_fmt_e (code, GET_MODE (parmreg),
+						  equiv_stack_parm);
 	    }
 	}
     }

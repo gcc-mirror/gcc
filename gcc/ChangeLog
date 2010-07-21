@@ -18,6 +18,10 @@
 	an old insn, ignore a use that occurs after store_ruid.
 	* Makefile.in (postreload.o): Update dependencies.
 
+	* function.c (record_hard_reg_sets): Restrict the previous change
+	to cases where the incoming nominal mode is the same as the
+	incoming promoted mode and everything happens in MODE_INT.
+
 2010-07-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/45015
