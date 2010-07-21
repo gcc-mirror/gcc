@@ -1,3 +1,8 @@
+2010-07-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/44929
+	* Revert my commit r162325 for this PR.
+
 2010-07-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/44900
