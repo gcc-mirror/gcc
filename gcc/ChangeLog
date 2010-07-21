@@ -1,3 +1,9 @@
+2010-07-21  Steve Ellcey  <sje@cup.hp.com>
+
+	Backport from mainline:
+	PR target/42869
+	* config/ia64/sync.md (sync_compare_and_swap): Move memory fence.
+
 2010-07-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
