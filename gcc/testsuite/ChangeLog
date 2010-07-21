@@ -2,6 +2,10 @@
 
 	* gcc.dg/guality/asm-1.c: New test.
 
+	PR debug/45003
+	* gcc.dg/guality/pr45003-2.c: New test.
+	* gcc.dg/guality/pr45003-3.c: New test.
+
 2010-07-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/44697

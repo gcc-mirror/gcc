@@ -14254,11 +14254,6 @@ loc_descriptor (rtx rtl, enum machine_mode mode,
       loc_result = reg_loc_descriptor (rtl, initialized);
       break;
 
-    case SIGN_EXTEND:
-    case ZERO_EXTEND:
-      loc_result = loc_descriptor (XEXP (rtl, 0), mode, initialized);
-      break;
-
     case MEM:
       loc_result = mem_loc_descriptor (XEXP (rtl, 0), GET_MODE (rtl),
 				       initialized);
