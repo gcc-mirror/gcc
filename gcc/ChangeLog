@@ -1,3 +1,13 @@
+2010-07-21  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (setup_incoming_varargs_64): Emit a simple
+	comparison for avoiding xmm register saves.  Emit the xmm register
+	saves explicitly.
+	* config/i386/i386.md (UNSPEC_SSE_PROLOGUE_SAVE): Remove.
+	(UNSPEC_SSE_PROLOGUE_SAVE_LOW): Remove.
+	(sse_prologue_save, sse_prologue_save_insn1, sse_prologue_save_insn):
+	Remove patterns and the associated splitters.
+
 2010-07-21  Changpeng Fang  <changpeng.fang@amd.com>
 
 	* tree-ssa-loop-prefetch.c (analyze_ref): Strip off the real
