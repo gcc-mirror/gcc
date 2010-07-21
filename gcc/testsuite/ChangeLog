@@ -1,6 +1,15 @@
 2010-07-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
+	2010-06-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR testsuite/38946
+	* gfortran.dg/array_constructor_23.f: Update test to allow for small
+	error in comparing reals.
+
+2010-07-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
 	2010-07-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/target-supports.exp (check_sse_os_support_available): New
