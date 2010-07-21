@@ -5187,16 +5187,19 @@ reverse_op (rtx val, const_rtx expr)
     case XOR:
     case NOT:
     case NEG:
+      if (!REG_P (XEXP (src, 0)))
+	return NULL_RTX;
+      break;
     case SIGN_EXTEND:
     case ZERO_EXTEND:
+      if (!REG_P (XEXP (src, 0)) && !MEM_P (XEXP (src, 0)))
+	return NULL_RTX;
       break;
     default:
       return NULL_RTX;
     }
 
-  if (!REG_P (XEXP (src, 0))
-      || !SCALAR_INT_MODE_P (GET_MODE (src))
-      || XEXP (src, 0) == cfa_base_rtx)
+  if (!SCALAR_INT_MODE_P (GET_MODE (src)) || XEXP (src, 0) == cfa_base_rtx)
     return NULL_RTX;
 
   v = cselib_lookup (XEXP (src, 0), GET_MODE (XEXP (src, 0)), 0);
