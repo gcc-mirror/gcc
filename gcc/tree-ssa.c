@@ -1881,6 +1881,11 @@ maybe_optimize_var (tree var, bitmap addresses_taken, bitmap not_reg_needs)
       || bitmap_bit_p (addresses_taken, DECL_UID (var)))
     return false;
 
+  /* If the variable is not in the list of referenced vars then we
+     do not need to touch it nor can we rename it.  */
+  if (!referenced_var_lookup (DECL_UID (var)))
+    return false;
+
   if (TREE_ADDRESSABLE (var)
       /* Do not change TREE_ADDRESSABLE if we need to preserve var as
 	 a non-register.  Otherwise we are confused and forget to
@@ -2031,13 +2036,7 @@ execute_update_addresses_taken (bool do_optimize)
 	 unused vars from BLOCK trees which cause code generation
 	 differences for -g vs. -g0.  */
       for (var = DECL_ARGUMENTS (cfun->decl); var; var = DECL_CHAIN (var))
-	{
-	  /* ???  Not all arguments are in referenced vars.  */
-	  if (!var_ann (var))
-	    continue;
-	  update_vops
-	    |= maybe_optimize_var (var, addresses_taken, not_reg_needs);
-	}
+	update_vops |= maybe_optimize_var (var, addresses_taken, not_reg_needs);
       for (i = 0; VEC_iterate (tree, cfun->local_decls, i, var); ++i)
 	update_vops |= maybe_optimize_var (var, addresses_taken, not_reg_needs);
     }

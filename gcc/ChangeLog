@@ -1,3 +1,16 @@
+2010-07-21  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (referenced_var): Move define ...
+	* tree-flow-inline.h (referenced_var): ... here as an inline
+	function.  Assert here ...
+	* tree-dfa.c (referenced_var_lookup): ... instead of here.
+	* tree-ssa.c (maybe_optimize_var): Check if the variable
+	is in referenced vars.
+	(execute_update_addresses_taken): Remove old broken check.
+	* gimple-pretty-print.c (pp_points_to_solution): Use
+	referenced_var_lookup.
+	* tree-into-ssa.c (dump_decl_set): Likewise.
+
 2010-07-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/45003
