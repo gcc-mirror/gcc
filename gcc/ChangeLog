@@ -1,3 +1,8 @@
+2010-07-21  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR middle-end/44738
+	* tree-ssa.c (warn_uninit): Avoid emitting an unnecessary message.
+
 2010-07-21  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/45013
