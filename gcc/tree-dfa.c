@@ -495,7 +495,6 @@ referenced_var_lookup (unsigned int uid)
   struct tree_decl_minimal in;
   in.uid = uid;
   h = (tree) htab_find_with_hash (gimple_referenced_vars (cfun), &in, uid);
-  gcc_assert (h || uid == 0);
   return h;
 }
 

@@ -98,6 +98,16 @@ next_htab_element (htab_iterator *hti)
   return NULL;
 }
 
+/* Get the variable with uid UID from the list of referenced vars.  */
+
+static inline tree
+referenced_var (unsigned int uid)
+{
+  tree var = referenced_var_lookup (uid);
+  gcc_assert (var || uid == 0);
+  return var;
+}
+
 /* Initialize ITER to point to the first referenced variable in the
    referenced_vars hashtable, and return that variable.  */
 
