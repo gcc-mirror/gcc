@@ -1,3 +1,9 @@
+2010-07-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/44900
+	* tree-sra.c (load_assign_lhs_subreplacements): Updated comments.
+	(sra_modify_assign): Move gsi to the next statmenent unconditionally.
+
 2010-07-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:

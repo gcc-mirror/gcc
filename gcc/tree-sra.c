@@ -2445,9 +2445,11 @@ handle_unscalarized_data_in_subtree (struct access *top_racc, tree lhs,
    (sub)tree.  If that is not possible, refresh the TOP_RACC base aggregate and
    load the accesses from it.  LEFT_OFFSET is the offset of the left whole
    subtree being copied, RIGHT_OFFSET is the same thing for the right subtree.
-   GSI is stmt iterator used for statement insertions.  *REFRESHED is true iff
-   the rhs top aggregate has already been refreshed by contents of its scalar
-   reductions and is set to true if this function has to do it.  */
+   NEW_GSI is stmt iterator used for statement insertions after the original
+   assignment, OLD_GSI is used to insert statements before the assignment.
+   *REFRESHED keeps the information whether we have needed to refresh
+   replacements of the LHS and from which side of the assignments this takes
+   place.  */
 
 static void
 load_assign_lhs_subreplacements (struct access *lacc, struct access *top_racc,
@@ -2747,9 +2749,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi,
 					   &orig_gsi, gsi, &refreshed, lhs);
 	  if (refreshed != SRA_UDH_RIGHT)
 	    {
-	      if (*stmt == gsi_stmt (*gsi))
-		gsi_next (gsi);
-
+	      gsi_next (gsi);
 	      unlink_stmt_vdef (*stmt);
 	      gsi_remove (&orig_gsi, true);
 	      sra_stats.deleted++;

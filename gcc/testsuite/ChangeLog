@@ -1,3 +1,8 @@
+2010-07-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/44900
+	* g++.dg/torture/pr44900.C: New test.
+
 2010-07-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
