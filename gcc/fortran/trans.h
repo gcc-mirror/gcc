@@ -408,9 +408,6 @@ tree gfc_build_label_decl (tree);
    Do not use if the function has an explicit result variable.  */
 tree gfc_get_fake_result_decl (gfc_symbol *, int);
 
-/* Get the return label for the current function.  */
-tree gfc_get_return_label (void);
-
 /* Add a decl to the binding level for the current function.  */
 void gfc_add_decl_to_function (tree);
 
@@ -456,6 +453,8 @@ void gfc_generate_function_code (gfc_namespace *);
 void gfc_generate_block_data (gfc_namespace *);
 /* Output a decl for a module variable.  */
 void gfc_generate_module_vars (gfc_namespace *);
+/* Get the appropriate return statement for a procedure.  */
+tree gfc_generate_return (void);
 
 struct GTY(()) module_htab_entry {
   const char *name;
@@ -533,7 +532,7 @@ tree gfc_build_library_function_decl_with_spec (tree name, const char *spec,
 void gfc_process_block_locals (gfc_namespace*);
 
 /* Output initialization/clean-up code that was deferred.  */
-tree gfc_trans_deferred_vars (gfc_symbol*, tree);
+void gfc_trans_deferred_vars (gfc_symbol*, gfc_wrapped_block *);
 
 /* somewhere! */
 tree pushdecl (tree);
