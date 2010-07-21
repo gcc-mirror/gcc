@@ -1632,6 +1632,8 @@ warn_uninit (tree t, const char *gmsgid, void *data)
     {
       TREE_NO_WARNING (var) = 1;
 
+      if (location == DECL_SOURCE_LOCATION (var))
+	return;
       if (xloc.file != floc.file
 	  || xloc.line < floc.line
 	  || xloc.line > LOCATION_LINE (cfun->function_end_locus))
