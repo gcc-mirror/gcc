@@ -1,3 +1,10 @@
+2010-07-22  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-pure-const.c (varying_state): Break out from ...
+	(get_function_state): ... here; always return varying_state
+	when state would be NULL otherwise.
+	(remove_node_data): Do not free varying state.
+
 2010-07-22  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR bootstrap/44970
