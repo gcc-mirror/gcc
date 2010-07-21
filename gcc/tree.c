@@ -4704,7 +4704,8 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	  && DECL_HAS_VALUE_EXPR_P (t))
 	fld_worklist_push (DECL_VALUE_EXPR (t), fld);
 
-      if (TREE_CODE (t) != FIELD_DECL)
+      if (TREE_CODE (t) != FIELD_DECL
+	  && TREE_CODE (t) != TYPE_DECL)
 	fld_worklist_push (TREE_CHAIN (t), fld);
       *ws = 0;
     }
@@ -4722,13 +4723,19 @@ find_decls_types_r (tree *tp, int *ws, void *data)
       fld_worklist_push (TYPE_POINTER_TO (t), fld);
       fld_worklist_push (TYPE_REFERENCE_TO (t), fld);
       fld_worklist_push (TYPE_NAME (t), fld);
-      fld_worklist_push (TYPE_MINVAL (t), fld);
+      /* Do not walk TYPE_NEXT_PTR_TO or TYPE_NEXT_REF_TO.  We do not stream
+	 them and thus do not and want not to reach unused pointer types
+	 this way.  */
+      if (!POINTER_TYPE_P (t))
+	fld_worklist_push (TYPE_MINVAL (t), fld);
       if (!RECORD_OR_UNION_TYPE_P (t))
 	fld_worklist_push (TYPE_MAXVAL (t), fld);
       fld_worklist_push (TYPE_MAIN_VARIANT (t), fld);
-      fld_worklist_push (TYPE_NEXT_VARIANT (t), fld);
+      /* Do not walk TYPE_NEXT_VARIANT.  We do not stream it and thus
+         do not and want not to reach unused variants this way.  */
       fld_worklist_push (TYPE_CONTEXT (t), fld);
-      fld_worklist_push (TYPE_CANONICAL (t), fld);
+      /* Do not walk TYPE_CANONICAL.  We do not stream it and thus do not
+	 and want not to reach unused types this way.  */
 
       if (RECORD_OR_UNION_TYPE_P (t) && TYPE_BINFO (t))
 	{

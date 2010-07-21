@@ -1,3 +1,10 @@
+2010-07-21  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/45018
+	* tree.c (find_decls_types_r): Do not follow TREE_CHAIN
+	of TYPE_DECLs.  Do not follow TYPE_NEXT_VARIANT,
+	TYPE_NEXT_PTR_TO, nor TYPE_NEXT_REF_TO or TYPE_CANONICAL.
+
 2010-07-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/44900
