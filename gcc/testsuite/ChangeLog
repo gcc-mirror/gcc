@@ -1,3 +1,7 @@
+2010-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/guality/asm-1.c: New test.
+
 2010-07-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/44697
