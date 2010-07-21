@@ -1,5 +1,7 @@
 2010-07-21  Jason Merrill  <jason@redhat.com>
 
+	* tree.c (cp_tree_equal): Fix CONSTRUCTOR handling.
+
 	* parser.c (cp_parser_init_declarator): Pass LOOKUP_NORMAL
 	to cp_finish_decl.
 
