@@ -909,6 +909,16 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
 	return use_narrower_mode (SUBREG_REG (tem), GET_MODE (tem),
 				  GET_MODE (SUBREG_REG (tem)));
       return tem;
+    case ASM_OPERANDS:
+      /* Don't do any replacements in second and following
+	 ASM_OPERANDS of inline-asm with multiple sets.
+	 ASM_OPERANDS_INPUT_VEC, ASM_OPERANDS_INPUT_CONSTRAINT_VEC
+	 and ASM_OPERANDS_LABEL_VEC need to be equal between
+	 all the ASM_OPERANDs in the insn and adjust_insn will
+	 fix this up.  */
+      if (ASM_OPERANDS_OUTPUT_IDX (loc) != 0)
+	return loc;
+      break;
     default:
       break;
     }
@@ -959,7 +969,57 @@ adjust_insn (basic_block bb, rtx insn)
   note_stores (PATTERN (insn), adjust_mem_stores, &amd);
 
   amd.store = false;
-  note_uses (&PATTERN (insn), adjust_mem_uses, &amd);
+  if (GET_CODE (PATTERN (insn)) == PARALLEL
+      && asm_noperands (PATTERN (insn)) > 0
+      && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == SET)
+    {
+      rtx body, set0;
+      int i;
+
+      /* inline-asm with multiple sets is tiny bit more complicated,
+	 because the 3 vectors in ASM_OPERANDS need to be shared between
+	 all ASM_OPERANDS in the instruction.  adjust_mems will
+	 not touch ASM_OPERANDS other than the first one, asm_noperands
+	 test above needs to be called before that (otherwise it would fail)
+	 and afterwards this code fixes it up.  */
+      note_uses (&PATTERN (insn), adjust_mem_uses, &amd);
+      body = PATTERN (insn);
+      set0 = XVECEXP (body, 0, 0);
+#ifdef ENABLE_CHECKING
+      gcc_assert (GET_CODE (set0) == SET
+		  && GET_CODE (SET_SRC (set0)) == ASM_OPERANDS
+		  && ASM_OPERANDS_OUTPUT_IDX (SET_SRC (set0)) == 0);
+#endif
+      for (i = 1; i < XVECLEN (body, 0); i++)
+	if (GET_CODE (XVECEXP (body, 0, i)) != SET)
+	  break;
+	else
+	  {
+	    set = XVECEXP (body, 0, i);
+#ifdef ENABLE_CHECKING
+	    gcc_assert (GET_CODE (SET_SRC (set)) == ASM_OPERANDS
+			&& ASM_OPERANDS_OUTPUT_IDX (SET_SRC (set)) == i);
+#endif
+	    if (ASM_OPERANDS_INPUT_VEC (SET_SRC (set))
+		!= ASM_OPERANDS_INPUT_VEC (SET_SRC (set0))
+		|| ASM_OPERANDS_INPUT_CONSTRAINT_VEC (SET_SRC (set))
+		   != ASM_OPERANDS_INPUT_CONSTRAINT_VEC (SET_SRC (set0))
+		|| ASM_OPERANDS_LABEL_VEC (SET_SRC (set))
+		   != ASM_OPERANDS_LABEL_VEC (SET_SRC (set0)))
+	      {
+		rtx newsrc = shallow_copy_rtx (SET_SRC (set));
+		ASM_OPERANDS_INPUT_VEC (newsrc)
+		  = ASM_OPERANDS_INPUT_VEC (SET_SRC (set0));
+		ASM_OPERANDS_INPUT_CONSTRAINT_VEC (newsrc)
+		  = ASM_OPERANDS_INPUT_CONSTRAINT_VEC (SET_SRC (set0));
+		ASM_OPERANDS_LABEL_VEC (newsrc)
+		  = ASM_OPERANDS_LABEL_VEC (SET_SRC (set0));
+		validate_change (NULL_RTX, &SET_SRC (set), newsrc, true);
+	      }
+	  }
+    }
+  else
+    note_uses (&PATTERN (insn), adjust_mem_uses, &amd);
 
   /* For read-only MEMs containing some constant, prefer those
      constants.  */

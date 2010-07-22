@@ -1,3 +1,8 @@
+2010-07-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/45015
+	* gcc.target/m68k/pr45015.c: New test.
+
 2010-07-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/44929
