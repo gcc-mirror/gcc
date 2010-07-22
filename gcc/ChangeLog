@@ -1,3 +1,10 @@
+2010-07-22  Richard Henderson  <rth@redhat.com>
+
+	PR target/45027
+	* config/i386/i386.c (setup_incoming_varargs_64): Force the use
+	of V4SFmode for the SSE saves; increase stack alignment if needed.
+	(ix86_gimplify_va_arg): Don't increase stack alignment here.
+
 2010-07-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/45028
