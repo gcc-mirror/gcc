@@ -1,3 +1,11 @@
+2010-07-22  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* tree-ssa-math-opts.c (is_widening_mult_rhs_p): New function.
+	(is_widening_mult_p): Likewise.
+	(convert_to_widen): Use them.
+	(convert_plusminus_to_widen): Likewise.  Handle fixed-point types as
+	well as integer ones.
+
 2010-07-22  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* alias.c (true_dependence_1): New function, merged version of
