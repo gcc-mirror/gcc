@@ -1,3 +1,8 @@
+2010-07-22  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/44891
+	* testsuite/gcc.c-torture/compile/pr44891.c: New test.
+
 2010-07-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45017
