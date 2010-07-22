@@ -299,7 +299,7 @@
 
 	* lib/plugin-support.exp (plugin-test-execute):
 	Add ${gcc_objdir}/intl to includes.
-	
+
 2010-07-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/44942
@@ -352,7 +352,7 @@
 2010-07-15  Magnus Granberg  <zorry@gentoo.org>
 	    Kevin F. Quinn  <kevquinn@gentoo.org>
 
-        * gcc.dg/Wtrampolines.c: New.
+	* gcc.dg/Wtrampolines.c: New.
 
 2010-07-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
@@ -399,9 +399,9 @@
 
 	PR objc/44488
 	* lib/objc-torture.exp (objc-set-runtime-options): Base runtime list
-	on the target.  Make sure that we can assemble the emitted asm when 
+	on the target.  Make sure that we can assemble the emitted asm when
 	the test type is 'compile'.
-	
+
 2010-07-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36960
