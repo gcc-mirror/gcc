@@ -1,3 +1,9 @@
+2010-07-22  Steve Ellcey  <sje@cup.hp.com>
+
+	PR middle-end/44878
+	* stmt.c (expand_value_return):  Call promote_function_mode with
+	a for_return argument of 2 when returning by reference.
+
 2010-07-22  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/45024
