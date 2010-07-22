@@ -498,6 +498,21 @@ vn_reference_eq (const void *p1, const void *p2)
   if (!expressions_equal_p (TYPE_SIZE (vr1->type), TYPE_SIZE (vr2->type)))
     return false;
 
+  if (INTEGRAL_TYPE_P (vr1->type)
+      && INTEGRAL_TYPE_P (vr2->type))
+    {
+      if (TYPE_PRECISION (vr1->type) != TYPE_PRECISION (vr2->type))
+	return false;
+    }
+  else if (INTEGRAL_TYPE_P (vr1->type)
+	   && (TYPE_PRECISION (vr1->type)
+	       != TREE_INT_CST_LOW (TYPE_SIZE (vr1->type))))
+    return false;
+  else if (INTEGRAL_TYPE_P (vr2->type)
+	   && (TYPE_PRECISION (vr2->type)
+	       != TREE_INT_CST_LOW (TYPE_SIZE (vr2->type))))
+    return false;
+
   i = 0;
   j = 0;
   do
