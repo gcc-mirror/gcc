@@ -207,6 +207,14 @@ proc dg-require-host-local { args } {
     }
 }
 
+proc dg-require-linker-plugin { args } {
+    set linker_plugin_available [ check_linker_plugin_available ]
+    if { $linker_plugin_available == 0 } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+    }
+}
+
 # Add any target-specific flags needed for accessing the given list
 # of features.  This must come after all dg-options.
 

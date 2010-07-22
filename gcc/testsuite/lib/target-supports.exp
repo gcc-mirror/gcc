@@ -886,6 +886,12 @@ proc check_effective_target_static_libgfortran { } {
     } "-static"]
 }
 
+proc check_linker_plugin_available { } {
+  return [check_no_compiler_messages_nocache linker_plugin executable {
+     int main() { return 0; }
+  } "-flto -fuse-linker-plugin"]
+}
+
 # Return 1 if the target supports executing 750CL paired-single instructions, 0
 # otherwise.  Cache the result.
 

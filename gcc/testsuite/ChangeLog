@@ -1,3 +1,11 @@
+2010-07-22  Richard Guenther  <rguenther@suse.de>
+
+	* lib/target-supports-dg.exp (dg-require-linker-plugin): New proc.
+	* lib/target-supports.exp (check_linker_plugin_available): Likewise.
+
+	PR lto/43373
+	* gcc.dg/lto/20100722-1_0.c: New testcase.
+
 2010-07-22  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/44891
