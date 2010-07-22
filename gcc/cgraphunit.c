@@ -570,6 +570,42 @@ clone_of_p (struct cgraph_node *node, struct cgraph_node *node2)
 }
 #endif
 
+/* Verify edge E count and frequency.  */
+
+static bool
+verify_edge_count_and_frequency (struct cgraph_edge *e)
+{
+  bool error_found = false;
+  if (e->count < 0)
+    {
+      error ("caller edge count is negative");
+      error_found = true;
+    }
+  if (e->frequency < 0)
+    {
+      error ("caller edge frequency is negative");
+      error_found = true;
+    }
+  if (e->frequency > CGRAPH_FREQ_MAX)
+    {
+      error ("caller edge frequency is too large");
+      error_found = true;
+    }
+  if (gimple_has_body_p (e->caller->decl)
+      && !e->caller->global.inlined_to
+      && (e->frequency
+	  != compute_call_stmt_bb_frequency (e->caller->decl,
+					     gimple_bb (e->call_stmt))))
+    {
+      error ("caller edge frequency %i does not match BB freqency %i",
+	     e->frequency,
+	     compute_call_stmt_bb_frequency (e->caller->decl,
+					     gimple_bb (e->call_stmt)));
+      error_found = true;
+    }
+  return error_found;
+}
+
 /* Verify cgraph nodes of given cgraph node.  */
 DEBUG_FUNCTION void
 verify_cgraph_node (struct cgraph_node *node)
@@ -635,33 +671,8 @@ verify_cgraph_node (struct cgraph_node *node)
     }
   for (e = node->callers; e; e = e->next_caller)
     {
-      if (e->count < 0)
-	{
-	  error ("caller edge count is negative");
-	  error_found = true;
-	}
-      if (e->frequency < 0)
-	{
-	  error ("caller edge frequency is negative");
-	  error_found = true;
-	}
-      if (e->frequency > CGRAPH_FREQ_MAX)
-	{
-	  error ("caller edge frequency is too large");
-	  error_found = true;
-	}
-      if (gimple_has_body_p (e->caller->decl)
-          && !e->caller->global.inlined_to
-          && (e->frequency
-	      != compute_call_stmt_bb_frequency (e->caller->decl,
-						 gimple_bb (e->call_stmt))))
-	{
-	  error ("caller edge frequency %i does not match BB freqency %i",
-	  	 e->frequency,
-		 compute_call_stmt_bb_frequency (e->caller->decl,
-						 gimple_bb (e->call_stmt)));
-	  error_found = true;
-	}
+      if (verify_edge_count_and_frequency (e))
+	error_found = true;
       if (!e->inline_failed)
 	{
 	  if (node->global.inlined_to
@@ -684,6 +695,9 @@ verify_cgraph_node (struct cgraph_node *node)
 	    error_found = true;
 	  }
     }
+  for (e = node->indirect_calls; e; e = e->next_callee)
+    if (verify_edge_count_and_frequency (e))
+      error_found = true;
   if (!node->callers && node->global.inlined_to)
     {
       error ("inlined_to pointer is set but no predecessors found");

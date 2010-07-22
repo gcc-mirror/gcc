@@ -5184,7 +5184,15 @@ tree_function_versioning (tree old_decl, tree new_decl,
       for (e = new_version_node->callees; e; e = e->next_callee)
 	{
 	  basic_block bb = gimple_bb (e->call_stmt);
-	  e->frequency = compute_call_stmt_bb_frequency (current_function_decl, bb);
+	  e->frequency = compute_call_stmt_bb_frequency (current_function_decl,
+							 bb);
+	  e->count = bb->count;
+	}
+      for (e = new_version_node->indirect_calls; e; e = e->next_callee)
+	{
+	  basic_block bb = gimple_bb (e->call_stmt);
+	  e->frequency = compute_call_stmt_bb_frequency (current_function_decl,
+							 bb);
 	  e->count = bb->count;
 	}
     }
