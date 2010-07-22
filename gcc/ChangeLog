@@ -6,8 +6,8 @@
 
 2010-07-22  Bernd Schmidt  <bernds@codesourcery.com>
 
-	* ira-build.c (ira_create_object): New arg SUBWORD; all callers changed.
-	Initialize OBJECT_SUBWORD.
+	* ira-build.c (ira_create_object): New arg SUBWORD; all callers
+	changed.  Initialize OBJECT_SUBWORD.
 	(ira_create_allocno): Clear ALLOCNO_NUM_OBJECTS.
 	(ira_create_allocno_objects): Renamed from ira_create_allocno_object;
 	all callers changed.
@@ -61,8 +61,8 @@
 	(build_object_conflicts): Renamed from build_allocno_conflicts.  All
 	callers changed.  Iterate over allocno subobjects.
 	* ira-emit.c (modify_move_list): Iterate over allocno subobjects.
-	* ira-int.h (struct ira_allocno): New member. num_objects.  Rename object
-	to objects and change it into an array.
+	* ira-int.h (struct ira_allocno): New member: num_objects.
+	Rename object to objects and change it into an array.
 	(ALLOCNO_OBJECT): Add new argument N.
 	(ALLOCNO_NUM_OBJECTS, OBJECT_SUBWORD): New macros.
 	(ira_create_allocno_objects): Renamed from ira_create_allocno_object.
@@ -71,12 +71,13 @@
 	(ira_allocno_object_iterator): New.
 	(ira_allocno_object_iter_init, ira_allocno_object_iter_cond): New.
 	(FOR_EACH_ALLOCNO_OBJECT): New macro.
-	* ira-lives.c (objects_live): Renamed from allocnos_live; all uses changed.
+	* ira-lives.c (objects_live): Renamed from allocnos_live; all
+	uses changed.
 	(allocnos_processed): New sparseset.
-	(make_object_born): Renamed from make_allocno_born; take an ira_object_t
-	argument.  All callers changed.
-	(make_object_dead): Renamed from make_allocno_dead; take an ira_object t
-	argument.  All callers changed.
+	(make_object_born): Renamed from make_allocno_born; take an
+	ira_object_t argument.  All callers changed.
+	(make_object_dead): Renamed from make_allocno_dead; take an
+	ira_object_t argument.  All callers changed.
 	(update_allocno_pressure_excess_length): Take an ira_obejct_t argument.
 	All callers changed.
 	(mark_pseudo_regno_live): Iterate over allocno subobjects.
@@ -159,7 +160,7 @@
 2010-07-22  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* calls.c (load_register_parameters): Move check for zero
-	sized items so that only the call to 
+	sized items so that only the call to
 	mem_overlaps_already_clobbered_arg_p () is protected.
 
 2010-07-22  Jan Hubicka  <jh@suse.cz>
@@ -326,8 +327,7 @@
 	* gimple.h (gimple_types_compatible_p): Declare.
 	* gimple.c (gimple_queue_type_fixup): Remove.
 	(gimple_fixup_complete_and_incomplete_subtype_p): Likewise.
-	(gimple_compatible_complete_and_incomplete_type_p): New
-	function.
+	(gimple_compatible_complete_and_incomplete_type_p): New function.
 	(gimple_types_compatible_p): Adjust.
 	(gimple_register_type): Remove type fixup code.
 	(print_gimple_types_stats): Adjust.
@@ -367,7 +367,8 @@
 2010-07-19  Xinliang David Li  <davidxl@google.com>
 
 	PR testsuite/44932
-	* tree-ssa-uninit.c (collect_phi_def_edges): Fix bug collecting def edges.
+	* tree-ssa-uninit.c (collect_phi_def_edges): Fix bug collecting
+	def edges.
 	(find_uninit_use): Add dump.
 	(is_use_properly_guarded): Ditto.
 	(warn_uninitialized_phi): Ditto.
@@ -402,8 +403,8 @@
 2010-07-19  Bingfeng Mei  <bmei@broadcom.com>
 
 	* ddg.c (create_ddg): Exclude nodes of debug_insn in counting nodes
-        of a loop.
-        * loop-doloop.c (doloop_condition_get): Skip possible debug_insn.
+	of a loop.
+	* loop-doloop.c (doloop_condition_get): Skip possible debug_insn.
 
 2010-07-19  Iain Sandoe  <iains@gcc.gnu.org>
 
@@ -418,8 +419,8 @@
 	* config/rs6000/darwin.h: Define darwin_emit_branch_islands.
 	Remove out of date comment.
 	* config/rs6000/rs6000.c (print_operand): Adjust symbol.
-	DARWIN_LINKER_GENERATES_ISLANDS: Remove.
-	DARWIN_GENERATE_ISLANDS: Ditto.
+	(DARWIN_LINKER_GENERATES_ISLANDS): Remove.
+	(DARWIN_GENERATE_ISLANDS): Ditto.
 	(output_call):  Do not emit branch islands unless
 	darwin_emit_branch_islands is set.
 	* config/darwin.c: Declare darwin_emit_branch_islands.
@@ -427,8 +428,7 @@
 	darwin_emit_branch_islands is set.
 	(darwin_override_options): Set darwin_emit_branch_islands
 	where it is needed.
-	* config/darwin9.h
-	DARWIN_LINKER_GENERATES_ISLANDS: Remove.
+	* config/darwin9.h (DARWIN_LINKER_GENERATES_ISLANDS): Remove.
 
 2010-07-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
@@ -561,9 +561,9 @@
 
 2010-07-15  Jan Hubicka  <jh@suse.cz>
 
-	* lto-symtab.c (lto_symtab_resolve_symbols): Remove hack handling comdats
-	for broken gold.
-	(lto_sy	mtab_merge_decls_1): Set used_from_object_file correctly. 
+	* lto-symtab.c (lto_symtab_resolve_symbols): Remove hack handling
+	comdats for broken gold.
+	(lto_sy	mtab_merge_decls_1): Set used_from_object_file correctly.
 
 2010-07-15  Nathan Froyd  <froydnj@codesourcery.com>
 
@@ -661,8 +661,8 @@
 
 	* cgraph.c: Include lto-streamer.h
 	(change_decl_assembler_name): Work when assembler name hash is at place.
-	(cgraph_make_decl_local): When localizing COMDAT symbol at WPA stage, be
-	sure to rename it to avoid name clash.
+	(cgraph_make_decl_local): When localizing COMDAT symbol at WPA stage,
+	be sure to rename it to avoid name clash.
 	* ipa.c (cgraph_externally_visible_p, function_and_variable_visibility):
 	Localize hidden symbols only when locally defined.
 
@@ -1376,7 +1376,7 @@
 2010-07-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* Makefile.in (target-globals.o): Depend on $(RTL_H).
-	* rtl.h: (target_rtl): New structure.
+	* rtl.h (target_rtl): New structure.
 	(default_target_rtl): Declare.
 	(this_target_rtl): Declare as a variable or define as a macro.
 	(global_rtl, pic_offset_table_rtx, return_address_pointer_rtx):
@@ -3429,7 +3429,7 @@
 	(get_asm_expr_operands): Pass opf_not_non_addressable.
 	(get_expr_operands): Handle opf_[not_]non_addressable.
 	Handle MEM_REF.  Remove INDIRECT_REF handling.
-	* tree-vrp.c: (check_array_ref): Handle MEM_REF.
+	* tree-vrp.c (check_array_ref): Handle MEM_REF.
 	(search_for_addr_array): Likewise.
 	(check_array_bounds): Likewise.
 	(vrp_stmt_computes_nonzero): Adjust for MEM_REF.
@@ -4243,7 +4243,7 @@
 	* targhooks.h (default_register_move_cost): Declare function.
 	* defaults.h (REGISTER_MOVE_COST): Delete.
 	* ira-int.h (ira_register_move_cost): Update comment.
-	* ira.c: (ira_register_move_cost): Update comment.
+	* ira.c (ira_register_move_cost): Update comment.
 	* reload.h (register_move_cost): Declare.
 	* reginfo.c (register_move_cost): New function.
 	(move_cost): Update comment.
@@ -4757,10 +4757,10 @@
 
 2010-06-23  Basile Starynkevitch  <basile@starynkevitch.net>
 
-	* coretypes.h: (gimple_seq_node_d, gimple_seq_node)
+	* coretypes.h (gimple_seq_node_d, gimple_seq_node)
 	(const_gimple_seq_node): Removed typedefs.
 
-	* gimple.h: (gimple_seq_node_d, gimple_seq_node)
+	* gimple.h (gimple_seq_node_d, gimple_seq_node)
 	(const_gimple_seq_node): Added typedefs moved from coretypes.h.
 
 2010-06-23  H.J. Lu  <hongjiu.lu@intel.com>
@@ -7449,7 +7449,7 @@
 	* reginfo.c (memory_move_cost): New function.
 	(memory_move_secondary_cost): Change type of 'in' argument to bool.
 	* ira.h (ira_memory_move_cost): Update comment.
-	* ira.c: (ira_memory_move_cost): Update comment.
+	* ira.c (ira_memory_move_cost): Update comment.
 	(setup_class_subset_and_memory_move_costs): Replace MEMORY_MOVE_COST
 	with memory_move_cost.
 	* postreload.c (reload_cse_simplify_set): (Ditto.).
@@ -8229,7 +8229,7 @@
 	* sel-sched.c: Include emit-rtl.h.
 	* sel-sched-ir.c: Include emit-rtl.h.
 	* ira-build.c: Include emit-rtl.h.
-	* emit-rtl.c: (first_insn, last_insn): Remove defines.
+	* emit-rtl.c (first_insn, last_insn): Remove defines.
 	(get_insns, set_first_insn, get_last_insn, set_last_insn, get_max_uid):
 	Move to emit-rtl.h.
 	(set_new_first_and_last_insn, get_last_insn_anywhere,
