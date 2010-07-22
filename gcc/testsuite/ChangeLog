@@ -1,3 +1,8 @@
+2010-07-22  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/45024
+	* g++.dg/debug/dwarf2/nested-2.C: New test case.
+
 2010-07-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/lto/20100722-1_0.c: Replace dg-require-lto-plugin
