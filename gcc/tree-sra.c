@@ -90,6 +90,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "dbgcnt.h"
 #include "tree-inline.h"
+#include "gimple-pretty-print.h"
 
 /* Enumeration of all aggregate reductions we can do.  */
 enum sra_mode { SRA_MODE_EARLY_IPA,   /* early call regularization */
@@ -2542,12 +2543,12 @@ sra_modify_constructor_assign (gimple *stmt, gimple_stmt_iterator *gsi)
     }
 }
 
-/* Create a new suitable default definition SSA_NAME and replace all uses of
-   SSA with it, RACC is access describing the uninitialized part of an
-   aggregate that is being loaded.  */
+/* Create and return a new suitable default definition SSA_NAME for RACC which
+   is an access describing an uninitialized part of an aggregate that is being
+   loaded.  */
 
-static void
-replace_uses_with_default_def_ssa_name (tree ssa, struct access *racc)
+static tree
+get_repl_default_def_ssa_name (struct access *racc)
 {
   tree repl, decl;
 
@@ -2560,7 +2561,7 @@ replace_uses_with_default_def_ssa_name (tree ssa, struct access *racc)
       set_default_def (decl, repl);
     }
 
-  replace_uses_by (ssa, repl);
+  return repl;
 }
 
 /* Examine both sides of the assignment statement pointed to by STMT, replace
@@ -2737,18 +2738,33 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	    {
 	      if (!racc->grp_to_be_replaced && !racc->grp_unscalarized_data)
 		{
-		  if (racc->first_child)
-		    generate_subtree_copies (racc->first_child, lhs,
-					     racc->offset, 0, 0, gsi,
-					     false, false);
-		  gcc_assert (*stmt == gsi_stmt (*gsi));
-		  if (TREE_CODE (lhs) == SSA_NAME)
-		    replace_uses_with_default_def_ssa_name (lhs, racc);
+		  if (dump_file)
+		    {
+		      fprintf (dump_file, "Removing load: ");
+		      print_gimple_stmt (dump_file, *stmt, 0, 0);
+		    }
 
-		  unlink_stmt_vdef (*stmt);
-		  gsi_remove (gsi, true);
-		  sra_stats.deleted++;
-		  return SRA_AM_REMOVED;
+		  if (TREE_CODE (lhs) == SSA_NAME)
+		    {
+		      rhs = get_repl_default_def_ssa_name (racc);
+		      if (!useless_type_conversion_p (TREE_TYPE (lhs),
+						      TREE_TYPE (rhs)))
+			rhs = fold_build1_loc (loc, VIEW_CONVERT_EXPR,
+					       TREE_TYPE (lhs), rhs);
+		    }
+		  else
+		    {
+		      if (racc->first_child)
+			generate_subtree_copies (racc->first_child, lhs,
+						 racc->offset, 0, 0, gsi,
+						 false, false);
+
+		      gcc_assert (*stmt == gsi_stmt (*gsi));
+		      unlink_stmt_vdef (*stmt);
+		      gsi_remove (gsi, true);
+		      sra_stats.deleted++;
+		      return SRA_AM_REMOVED;
+		    }
 		}
 	      else if (racc->first_child)
 		generate_subtree_copies (racc->first_child, lhs,

@@ -1,3 +1,15 @@
+2010-07-22  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/44891
+	* tree-sra.c: Include gimple-pretty-print.h.
+	(replace_uses_with_default_def_ssa_name): Renamed to
+	get_repl_default_def_ssa_name, return the new SSA name instead of
+	replacing the old one.
+	(sra_modify_assign): Dump a message when removing a load, if the LHS
+	is an SSA_NAME, do not do any propagation, just set the RHS to a
+	default definition SSA NAME, type convert if necessary.
+	* Makefile.in (tree-sra.o): Add gimple-pretty-print.h to dependencies.
+
 2010-07-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45017
