@@ -1,3 +1,8 @@
+2010-07-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.dg/lto/20100722-1_0.c: Replace dg-require-lto-plugin
+	with dg-require-linker-plugin.
+
 2010-07-22  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/43850
