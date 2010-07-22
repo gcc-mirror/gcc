@@ -2318,15 +2318,29 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y)
   return sizex >= 0 && offsety >= offsetx + sizex;
 }
 
-/* True dependence: X is read after store in MEM takes place.  */
+/* Helper for true_dependence and canon_true_dependence.
+   Checks for true dependence: X is read after store in MEM takes place.
 
-int
-true_dependence (const_rtx mem, enum machine_mode mem_mode, const_rtx x,
-		 bool (*varies) (const_rtx, bool))
+   VARIES is the function that should be used as rtx_varies function.
+
+   If MEM_CANONICALIZED is FALSE, then X_ADDR and MEM_ADDR should be
+   NULL_RTX, and the canonical addresses of MEM and X are both computed
+   here.  If MEM_CANONICALIZED, then MEM must be already canonicalized.
+
+   If X_ADDR is non-NULL, it is used in preference of XEXP (x, 0).
+
+   Returns 1 if there is a true dependence, 0 otherwise.  */
+
+static int
+true_dependence_1 (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
+		   const_rtx x, rtx x_addr, bool (*varies) (const_rtx, bool),
+		   bool mem_canonicalized)
 {
-  rtx x_addr, mem_addr;
   rtx base;
   int ret;
+
+  gcc_checking_assert (mem_canonicalized ? (mem_addr != NULL_RTX)
+		       : (mem_addr == NULL_RTX && x_addr == NULL_RTX));
 
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
     return 1;
@@ -2353,11 +2367,16 @@ true_dependence (const_rtx mem, enum machine_mode mem_mode, const_rtx x,
   if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
     return 1;
 
-  if (mem_mode == VOIDmode)
-    mem_mode = GET_MODE (mem);
+  if (! mem_addr)
+    {
+      mem_addr = XEXP (mem, 0);
+      if (mem_mode == VOIDmode)
+	mem_mode = GET_MODE (mem);
+    }
 
-  x_addr = XEXP (x, 0);
-  mem_addr = XEXP (mem, 0);
+  if (! x_addr)
+    x_addr = XEXP (x, 0);
+
   if (!((GET_CODE (x_addr) == VALUE
 	 && GET_CODE (mem_addr) != VALUE
 	 && reg_mentioned_p (x_addr, mem_addr))
@@ -2366,7 +2385,8 @@ true_dependence (const_rtx mem, enum machine_mode mem_mode, const_rtx x,
 	    && reg_mentioned_p (mem_addr, x_addr))))
     {
       x_addr = get_addr (x_addr);
-      mem_addr = get_addr (mem_addr);
+      if (!mem_canonicalized)
+	mem_addr = get_addr (mem_addr);
     }
 
   base = find_base_term (x_addr);
@@ -2379,7 +2399,8 @@ true_dependence (const_rtx mem, enum machine_mode mem_mode, const_rtx x,
     return 0;
 
   x_addr = canon_rtx (x_addr);
-  mem_addr = canon_rtx (mem_addr);
+  if (!mem_canonicalized)
+    mem_addr = canon_rtx (mem_addr);
 
   if ((ret = memrefs_conflict_p (GET_MODE_SIZE (mem_mode), mem_addr,
 				 SIZE_FOR_MODE (x), x_addr, 0)) != -1)
@@ -2395,11 +2416,11 @@ true_dependence (const_rtx mem, enum machine_mode mem_mode, const_rtx x,
     return 1;
 
   /* We cannot use aliases_everything_p to test MEM, since we must look
-     at MEM_MODE, rather than GET_MODE (MEM).  */
+     at MEM_ADDR, rather than XEXP (mem, 0).  */
   if (mem_mode == QImode || GET_CODE (mem_addr) == AND)
     return 1;
 
-  /* In true_dependence we also allow BLKmode to alias anything.  Why
+  /* ??? In true_dependence we also allow BLKmode to alias anything.  Why
      don't we do this in anti_dependence and output_dependence?  */
   if (mem_mode == BLKmode || GET_MODE (x) == BLKmode)
     return 1;
@@ -2410,87 +2431,30 @@ true_dependence (const_rtx mem, enum machine_mode mem_mode, const_rtx x,
   return rtx_refs_may_alias_p (x, mem, true);
 }
 
+/* True dependence: X is read after store in MEM takes place.  */
+
+int
+true_dependence (const_rtx mem, enum machine_mode mem_mode, const_rtx x,
+		 bool (*varies) (const_rtx, bool))
+{
+  return true_dependence_1 (mem, mem_mode, NULL_RTX,
+			    x, NULL_RTX, varies,
+			    /*mem_canonicalized=*/false);
+}
+
 /* Canonical true dependence: X is read after store in MEM takes place.
    Variant of true_dependence which assumes MEM has already been
    canonicalized (hence we no longer do that here).
-   The mem_addr argument has been added, since true_dependence computed
-   this value prior to canonicalizing.
-   If x_addr is non-NULL, it is used in preference of XEXP (x, 0).  */
+   The mem_addr argument has been added, since true_dependence_1 computed
+   this value prior to canonicalizing.  */
 
 int
 canon_true_dependence (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
 		       const_rtx x, rtx x_addr, bool (*varies) (const_rtx, bool))
 {
-  int ret;
-
-  if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
-    return 1;
-
-  /* (mem:BLK (scratch)) is a special mechanism to conflict with everything.
-     This is used in epilogue deallocation functions.  */
-  if (GET_MODE (x) == BLKmode && GET_CODE (XEXP (x, 0)) == SCRATCH)
-    return 1;
-  if (GET_MODE (mem) == BLKmode && GET_CODE (XEXP (mem, 0)) == SCRATCH)
-    return 1;
-  if (MEM_ALIAS_SET (x) == ALIAS_SET_MEMORY_BARRIER
-      || MEM_ALIAS_SET (mem) == ALIAS_SET_MEMORY_BARRIER)
-    return 1;
-
-  /* Read-only memory is by definition never modified, and therefore can't
-     conflict with anything.  We don't expect to find read-only set on MEM,
-     but stupid user tricks can produce them, so don't die.  */
-  if (MEM_READONLY_P (x))
-    return 0;
-
-  /* If we have MEMs refering to different address spaces (which can
-     potentially overlap), we cannot easily tell from the addresses
-     whether the references overlap.  */
-  if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
-    return 1;
-
-  if (! x_addr)
-    {
-      x_addr = XEXP (x, 0);
-      if (!((GET_CODE (x_addr) == VALUE
-	     && GET_CODE (mem_addr) != VALUE
-	     && reg_mentioned_p (x_addr, mem_addr))
-	    || (GET_CODE (x_addr) != VALUE
-		&& GET_CODE (mem_addr) == VALUE
-		&& reg_mentioned_p (mem_addr, x_addr))))
-	x_addr = get_addr (x_addr);
-    }
-
-  if (! base_alias_check (x_addr, mem_addr, GET_MODE (x), mem_mode))
-    return 0;
-
-  x_addr = canon_rtx (x_addr);
-  if ((ret = memrefs_conflict_p (GET_MODE_SIZE (mem_mode), mem_addr,
-				 SIZE_FOR_MODE (x), x_addr, 0)) != -1)
-    return ret;
-
-  if (DIFFERENT_ALIAS_SETS_P (x, mem))
-    return 0;
-
-  if (nonoverlapping_memrefs_p (x, mem))
-    return 0;
-
-  if (aliases_everything_p (x))
-    return 1;
-
-  /* We cannot use aliases_everything_p to test MEM, since we must look
-     at MEM_MODE, rather than GET_MODE (MEM).  */
-  if (mem_mode == QImode || GET_CODE (mem_addr) == AND)
-    return 1;
-
-  /* In true_dependence we also allow BLKmode to alias anything.  Why
-     don't we do this in anti_dependence and output_dependence?  */
-  if (mem_mode == BLKmode || GET_MODE (x) == BLKmode)
-    return 1;
-
-  if (fixed_scalar_and_varying_struct_p (mem, x, mem_addr, x_addr, varies))
-    return 0;
-
-  return rtx_refs_may_alias_p (x, mem, true);
+  return true_dependence_1 (mem, mem_mode, mem_addr,
+			    x, x_addr, varies,
+			    /*mem_canonicalized=*/true);
 }
 
 /* Returns nonzero if a write to X might alias a previous read from

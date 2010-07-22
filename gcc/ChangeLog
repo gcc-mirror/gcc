@@ -1,3 +1,10 @@
+2010-07-22  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* alias.c (true_dependence_1): New function, merged version of
+	true_dependence and canon_true_dependence.
+	(true_dependence): Simplify.
+	(canon_true_dependence): Simplify.
+
 2010-07-22  Richard Henderson  <rth@redhat.com>
 
 	PR target/45027
