@@ -517,9 +517,13 @@ gfc_trans_return (gfc_code * code)
 
       gfc_conv_expr (&se, code->expr1);
 
+      /* Note that the actually returned expression is a simple value and
+	 does not depend on any pointers or such; thus we can clean-up with
+	 se.post before returning.  */
       tmp = fold_build2 (MODIFY_EXPR, TREE_TYPE (result), result,
 			 fold_convert (TREE_TYPE (result), se.expr));
       gfc_add_expr_to_block (&se.pre, tmp);
+      gfc_add_block_to_block (&se.pre, &se.post);
 
       tmp = gfc_generate_return ();
       gfc_add_expr_to_block (&se.pre, tmp);
