@@ -1,12 +1,11 @@
-<?xml version='1.0'?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
-[ ]>
-
-<chapter id="std.containers" xreflabel="Containers">
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="std.containers" xreflabel="Containers">
 <?dbhtml filename="containers.html"?>
 
-<chapterinfo>
+<info><title>
+  Containers
+  <indexterm><primary>Containers</primary></indexterm>
+</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -15,28 +14,24 @@
       library
     </keyword>
   </keywordset>
-</chapterinfo>
+</info>
 
-<title>
-  Containers
-  <indexterm><primary>Containers</primary></indexterm>
-</title>
+
 
 <!-- Sect1 01 : Sequences -->
-<sect1 id="std.containers.sequences" xreflabel="Sequences">
+<section xml:id="std.containers.sequences" xreflabel="Sequences"><info><title>Sequences</title></info>
 <?dbhtml filename="sequences.html"?>
-  <title>Sequences</title>
+  
 
-<sect2 id="containers.sequences.list" xreflabel="list">
+<section xml:id="containers.sequences.list" xreflabel="list"><info><title>list</title></info>
 <?dbhtml filename="list.html"?>
-  <title>list</title>
-  <sect3 id="sequences.list.size" xreflabel="list::size() is O(n)">
-    <title>list::size() is O(n)</title>
+  
+  <section xml:id="sequences.list.size" xreflabel="list::size() is O(n)"><info><title>list::size() is O(n)</title></info>
+    
    <para>
      Yes it is, and that's okay.  This is a decision that we preserved
      when we imported SGI's STL implementation.  The following is
-     quoted from <ulink
-     url="http://www.sgi.com/tech/stl/FAQ.html">their FAQ</ulink>:
+     quoted from <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/FAQ.html">their FAQ</link>:
    </para>
    <blockquote>
      <para>
@@ -78,41 +73,38 @@
 	     ...
 	 </programlisting>
    </blockquote>
-  </sect3>
-</sect2>
+  </section>
+</section>
 
-<sect2 id="containers.sequences.vector" xreflabel="vector">
+<section xml:id="containers.sequences.vector" xreflabel="vector"><info><title>vector</title></info>
 <?dbhtml filename="vector.html"?>
-  <title>vector</title>
+  
   <para>
   </para>
-  <sect3 id="sequences.vector.management" xreflabel="Space Overhead Management">
-    <title>Space Overhead Management</title>
+  <section xml:id="sequences.vector.management" xreflabel="Space Overhead Management"><info><title>Space Overhead Management</title></info>
+    
    <para>
-     In <ulink
-     url="http://gcc.gnu.org/ml/libstdc++/2002-04/msg00105.html">this
-     message to the list</ulink>, Daniel Kostecky announced work on an
+     In <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2002-04/msg00105.html">this
+     message to the list</link>, Daniel Kostecky announced work on an
      alternate form of <code>std::vector</code> that would support
      hints on the number of elements to be over-allocated.  The design
      was also described, along with possible implementation choices.
    </para>
    <para>
-     The first two alpha releases were announced <ulink
-     url="http://gcc.gnu.org/ml/libstdc++/2002-07/msg00048.html">here</ulink>
-     and <ulink
-     url="http://gcc.gnu.org/ml/libstdc++/2002-07/msg00111.html">here</ulink>.
+     The first two alpha releases were announced <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2002-07/msg00048.html">here</link>
+     and <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2002-07/msg00111.html">here</link>.
    </para>
 
-  </sect3></sect2>
-</sect1>
+  </section></section>
+</section>
 
 <!-- Sect1 02 : Associative -->
-<sect1 id="std.containers.associative" xreflabel="Associative">
+<section xml:id="std.containers.associative" xreflabel="Associative"><info><title>Associative</title></info>
 <?dbhtml filename="associative.html"?>
-  <title>Associative</title>
+  
 
-  <sect2 id="containers.associative.insert_hints" xreflabel="Insertion Hints">
-    <title>Insertion Hints</title>
+  <section xml:id="containers.associative.insert_hints" xreflabel="Insertion Hints"><info><title>Insertion Hints</title></info>
+    
    <para>
      Section [23.1.2], Table 69, of the C++ standard lists this
      function for all of the associative containers (map, set, etc):
@@ -125,8 +117,7 @@
      item to insert.  The standard says that <quote><code>t</code> is
      inserted as close as possible to the position just prior to
      <code>p</code>.</quote> (Library DR #233 addresses this topic,
-     referring to <ulink
-     url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1780.html">N1780</ulink>.
+     referring to <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1780.html">N1780</link>.
      Since version 4.2 GCC implements the resolution to DR 233, so
      that insertions happen as close as possible to the hint. For
      earlier releases the hint was only used as described below.
@@ -216,14 +207,14 @@
      point to the correct place, then no further local searching is
      done; the search begins from scratch in logarithmic time.
    </para>
-  </sect2>
+  </section>
 
 
-  <sect2 id="containers.associative.bitset" xreflabel="bitset">
+  <section xml:id="containers.associative.bitset" xreflabel="bitset"><info><title>bitset</title></info>
     <?dbhtml filename="bitset.html"?>
-    <title>bitset</title>
-    <sect3 id="associative.bitset.size_variable" xreflabel="Variable">
-      <title>Size Variable</title>
+    
+    <section xml:id="associative.bitset.size_variable" xreflabel="Variable"><info><title>Size Variable</title></info>
+      
       <para>
 	No, you cannot write code of the form
       </para>
@@ -254,7 +245,7 @@
       </itemizedlist>
    <para>
      <emphasis>A very large N in
-     <code>bitset&lt;N&gt;</code>.&nbsp;&nbsp;</emphasis> It has been
+     <code>bitset&lt;N&gt;</code>.  </emphasis> It has been
      pointed out a few times in newsgroups that N bits only takes up
      (N/8) bytes on most systems, and division by a factor of eight is
      pretty impressive when speaking of memory.  Half a megabyte given
@@ -276,7 +267,7 @@
      space overhead, but it's all allocated inside the object.)
    </para>
    <para>
-     <emphasis>A container&lt;bool&gt;.&nbsp;&nbsp;</emphasis> The
+     <emphasis>A container&lt;bool&gt;.  </emphasis> The
      Committee made provision for the space savings possible with that
      (N/8) usage previously mentioned, so that you don't have to do
      wasteful things like <code>Container&lt;char&gt;</code> or
@@ -297,7 +288,7 @@
      than that of vector).
    </para>
    <para>
-     <emphasis>Extremely weird solutions.&nbsp;&nbsp;</emphasis> If
+     <emphasis>Extremely weird solutions.  </emphasis> If
      you have access to the compiler and linker at runtime, you can do
      something insane, like figuring out just how many bits you need,
      then writing a temporary source code file.  That file contains an
@@ -329,9 +320,9 @@
      <link linkend="manual.ext.containers.sgi">some extensions</link>.
    </para>
 
-    </sect3>
-    <sect3 id="associative.bitset.type_string" xreflabel="Type String">
-      <title>Type String</title>
+    </section>
+    <section xml:id="associative.bitset.type_string" xreflabel="Type String"><info><title>Type String</title></info>
+      
       <para>
       </para>
    <para>
@@ -357,18 +348,18 @@
     <programlisting>
       std::bitset&lt;5&gt; b ( <quote>10110</quote> );    // invalid
     </programlisting>
-    </sect3>
-  </sect2>
+    </section>
+  </section>
 
-</sect1>
+</section>
 
 <!-- Sect1 03 : Interacting with C -->
-<sect1 id="std.containers.c" xreflabel="Interacting with C">
+<section xml:id="std.containers.c" xreflabel="Interacting with C"><info><title>Interacting with C</title></info>
 <?dbhtml filename="containers_and_c.html"?>
-  <title>Interacting with C</title>
+  
 
-  <sect2 id="containers.c.vs_array" xreflabel="Containers vs. Arrays">
-    <title>Containers vs. Arrays</title>
+  <section xml:id="containers.c.vs_array" xreflabel="Containers vs. Arrays"><info><title>Containers vs. Arrays</title></info>
+    
    <para>
      You're writing some code and can't decide whether to use builtin
      arrays or some kind of container.  There are compelling reasons
@@ -464,8 +455,8 @@ template&lt;typename T, unsigned int sz&gt;
    <para>
      looks just weird!  Hint:  unused parameters can be left nameless.
    </para>
-  </sect2>
+  </section>
 
-</sect1>
+</section>
 
 </chapter>

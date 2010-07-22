@@ -1,15 +1,13 @@
-<?xml version='1.0' encoding='ISO-8859-1'?>
-<!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-  "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<appendix id="appendix.gpl-2.0">
-  <appendixinfo>
-    <title>GNU General Public License</title>
+<appendix xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	  xml:id="appendix.gpl-2.0">
+  <info><title>GNU General Public License</title>
+    
     <pubdate>Version 2, June 1991</pubdate>
     <copyright>
       <year>1989, 1991</year>
       <holder>Free Software Foundation, Inc.</holder>
     </copyright>
-    <legalnotice id="gpl-legalnotice">
+    <legalnotice xml:id="gpl-legalnotice">
       <para>
 	<address>Free Software Foundation, Inc. 
 	  <street>51 Franklin Street, Fifth Floor</street>, 
@@ -20,16 +18,16 @@
       <para>Everyone is permitted to copy and distribute verbatim copies of this license document, but changing it is not allowed.</para>
     </legalnotice>
     <releaseinfo>Version 2, June 1991</releaseinfo>
-  </appendixinfo>
-  <title>GNU General Public License</title>
-  <section id="gpl-1">
-    <title>Preamble</title>
+  </info>
+  
+  <section xml:id="gpl-1"><info><title>Preamble</title></info>
+    
     <para>The licenses for most software are designed to take away your 
       freedom to share and change it. By contrast, the GNU General Public License is 
       intended to guarantee your freedom to share and change 
       free software - to make sure the software is free for all its users. 
       This General Public License applies to most of the Free Software 
-      Foundation&apos;s software and to any other program whose authors commit 
+      Foundation's software and to any other program whose authors commit 
       to using it. (Some other Free Software Foundation software is covered 
       by the GNU Library General Public License instead.) You can apply it 
       to your programs, too.</para>
@@ -52,7 +50,7 @@
       must show them these terms so they know their rights.</para>
 
     <para>We protect your rights with two steps:
-      <orderedlist>
+      <orderedlist inheritnum="ignore" continuation="restarts">
 	<listitem>
 	  <para>copyright the software, and</para>
 	</listitem>
@@ -63,26 +61,26 @@
       </orderedlist>
     </para>
 
-    <para>Also, for each author&apos;s protection and ours, we want to make certain that 
+    <para>Also, for each author's protection and ours, we want to make certain that 
       everyone understands that there is no warranty for this free software. If 
       the software is modified by someone else and passed on, we want its 
       recipients to know that what they have is not the original, so that any 
-      problems introduced by others will not reflect on the original authors&apos; 
+      problems introduced by others will not reflect on the original authors' 
       reputations.</para>
 
     <para>Finally, any free program is threatened constantly by software patents. 
       We wish to avoid the danger that redistributors of a free program will 
       individually obtain patent licenses, in effect making the program 
       proprietary. To prevent this, we have made it clear that any patent must be 
-      licensed for everyone&apos;s free use or not licensed at all.</para>
+      licensed for everyone's free use or not licensed at all.</para>
 
     <para>The precise terms and conditions for copying, distribution and modification 
       follow.</para>
   </section>
-  <section id="gpl-2">
-    <title>TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION</title>
-    <section id="gpl-2-0">
-      <title>Section 0</title>
+  <section xml:id="gpl-2"><info><title>TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION</title></info>
+    
+    <section xml:id="gpl-2-0"><info><title>Section 0</title></info>
+      
       <para>This License applies to any program or other work which contains a notice 
 	placed by the copyright holder saying it may be distributed under the terms 
 	of this General Public License. The <quote>Program</quote>, below, refers to any such 
@@ -100,9 +98,9 @@
 	constitute a work based on the Program (independent of having been made by running 
 	the Program). Whether that is true depends on what the Program does.</para>
     </section>
-    <section id="gpl-2-1">
-      <title>Section 1</title>
-      <para>You may copy and distribute verbatim copies of the Program&apos;s source code as you 
+    <section xml:id="gpl-2-1"><info><title>Section 1</title></info>
+      
+      <para>You may copy and distribute verbatim copies of the Program's source code as you 
 	receive it, in any medium, provided that you conspicuously and appropriately 
 	publish on each copy an appropriate copyright notice and disclaimer of warranty; 
 	keep intact all the notices that refer to this License and to the absence of any 
@@ -112,14 +110,14 @@
       <para>You may charge a fee for the physical act of transferring a copy, and you may at 
 	your option offer warranty protection in exchange for a fee.</para>
     </section>
-    <section id="gpl-2-2">
-      <title>Section 2</title>
+    <section xml:id="gpl-2-2"><info><title>Section 2</title></info>
+      
       <para>You may modify your copy or copies of the Program or any portion of it, thus 
 	forming a work based on the Program, and copy and distribute such modifications 
 	or work under the terms of 
 	<link linkend="gpl-2-1">Section 1</link> above, provided 
 	that you also meet all of these conditions:
-	<orderedlist numeration="loweralpha">
+	<orderedlist numeration="loweralpha" inheritnum="ignore" continuation="restarts">
 	  <listitem>
 	    <para>You must cause the modified files to carry prominent notices stating that 
 	      you changed the files and the date of any change.</para>
@@ -161,13 +159,13 @@
 	(or with a work based on the Program) on a volume of a storage or distribution medium 
 	does not bring the other work under the scope of this License.</para>
     </section>
-    <section id="gpl-2-3">
-      <title>Section 3</title>
+    <section xml:id="gpl-2-3"><info><title>Section 3</title></info>
+      
       <para>You may copy and distribute the Program (or a work based on it, under 
 	<link linkend="gpl-2-2">Section 2</link> in object code or executable form under the terms of 
 	<link linkend="gpl-2-1">Sections 1</link> and 
 	<link linkend="gpl-2-2">2</link> above provided that you also do one of the following:
-	<orderedlist numeration="loweralpha">
+	<orderedlist numeration="loweralpha" inheritnum="ignore" continuation="restarts">
 	  <listitem>
 	    <para>Accompany it with the complete corresponding machine-readable source code, which 
 	      must be distributed under the terms of Sections 1 and 2 above on a medium 
@@ -202,16 +200,16 @@
 	counts as distribution of the source code, even though third parties are not compelled to 
 	copy the source along with the object code.</para>
     </section>
-    <section id="gpl-2-4">
-      <title>Section 4</title>
+    <section xml:id="gpl-2-4"><info><title>Section 4</title></info>
+      
       <para>You may not copy, modify, sublicense, or distribute the Program except as expressly provided 
 	under this License. Any attempt otherwise to copy, modify, sublicense or distribute the 
 	Program is void, and will automatically terminate your rights under this License. However, 
 	parties who have received copies, or rights, from you under this License will not have their 
 	licenses terminated so long as such parties remain in full compliance.</para>
     </section>
-    <section id="gpl-2-5">
-      <title>Section 5</title>
+    <section xml:id="gpl-2-5"><info><title>Section 5</title></info>
+      
       <para>You are not required to accept this License, since you have not signed it. However, nothing 
 	else grants you permission to modify or distribute the Program or its derivative works. 
 	These actions are prohibited by law if you do not accept this License. Therefore, by modifying 
@@ -219,16 +217,16 @@
 	of this License to do so, and all its terms and conditions for copying, distributing or 
 	modifying the Program or works based on it.</para>
     </section>
-    <section id="gpl-2-6">
-      <title>Section 6</title>
+    <section xml:id="gpl-2-6"><info><title>Section 6</title></info>
+      
       <para>Each time you redistribute the Program (or any work based on the Program), the recipient 
 	automatically receives a license from the original licensor to copy, distribute or modify 
 	the Program subject to these terms and conditions. You may not impose any further restrictions 
-	on the recipients&apos; exercise of the rights granted herein. You are not responsible for enforcing 
+	on the recipients' exercise of the rights granted herein. You are not responsible for enforcing 
 	compliance by third parties to this License.</para>
     </section>
-    <section id="gpl-2-7">
-      <title>Section 7</title>
+    <section xml:id="gpl-2-7"><info><title>Section 7</title></info>
+      
       <para>If, as a consequence of a court judgment or allegation of patent infringement or for any other 
 	reason (not limited to patent issues), conditions are imposed on you (whether by court order, 
 	agreement or otherwise) that contradict the conditions of this License, they do not excuse you 
@@ -254,16 +252,16 @@
       <para>This section is intended to make thoroughly clear what is believed to be a consequence of the 
 	rest of this License.</para>
     </section>
-    <section id="gpl-2-8">
-      <title>Section 8</title>
+    <section xml:id="gpl-2-8"><info><title>Section 8</title></info>
+      
       <para>If the distribution and/or use of the Program is restricted in certain countries either by patents 
 	or by copyrighted interfaces, the original copyright holder who places the Program under this License 
 	may add an explicit geographical distribution limitation excluding those countries, so that 
 	distribution is permitted only in or among countries not thus excluded. In such case, this License 
 	incorporates the limitation as if written in the body of this License.</para>
     </section>
-    <section id="gpl-2-9">
-      <title>Section 9</title>
+    <section xml:id="gpl-2-9"><info><title>Section 9</title></info>
+      
       <para>The Free Software Foundation may publish revised and/or new versions of the General Public License 
 	from time to time. Such new versions will be similar in spirit to the present version, but may differ 
 	in detail to address new problems or concerns.</para>
@@ -274,16 +272,16 @@
 	Foundation. If the Program does not specify a version number of this License, you may choose any 
 	version ever published by the Free Software Foundation.</para>
     </section>
-    <section id="gpl-2-10">
-      <title>Section 10</title>
+    <section xml:id="gpl-2-10"><info><title>Section 10</title></info>
+      
       <para>If you wish to incorporate parts of the Program into other free programs whose distribution 
 	conditions are different, write to the author to ask for permission. For software which is copyrighted 
 	by the Free Software Foundation, write to the Free Software Foundation; we sometimes make exceptions 
 	for this. Our decision will be guided by the two goals of preserving the free status of all 
 	derivatives of our free software and of promoting the sharing and reuse of software generally.</para>
     </section>
-    <section id="gpl-2-11">
-      <title>NO WARRANTY Section 11</title>
+    <section xml:id="gpl-2-11"><info><title>NO WARRANTY Section 11</title></info>
+      
       <para>BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT 
 	PERMITTED BY APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR 
 	OTHER PARTIES PROVIDE THE PROGRAM <quote>AS IS</quote> WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, 
@@ -291,8 +289,8 @@
 	PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH YOU. SHOULD THE 
 	PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.</para>
     </section>
-    <section id="gpl-2-12">
-      <title>Section 12</title>
+    <section xml:id="gpl-2-12"><info><title>Section 12</title></info>
+      
       <para>IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL ANY COPYRIGHT HOLDER, OR 
 	ANY OTHER PARTY WHO MAY MODIFY AND/OR REDISTRIBUTE THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU 
 	FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
@@ -304,8 +302,8 @@
       <para>END OF TERMS AND CONDITIONS</para>
     </section>
   </section>
-  <section id="gpl-3">
-    <title>How to Apply These Terms to Your New Programs</title>
+  <section xml:id="gpl-3"><info><title>How to Apply These Terms to Your New Programs</title></info>
+    
     <para>If you develop a new program, and you want it to be of the greatest
       possible use to the public, the best way to achieve this is to make it
       free software which everyone can redistribute and change under these terms.</para>
@@ -315,7 +313,7 @@
       convey the exclusion of warranty; and each file should have at least
       the <quote>copyright</quote> line and a pointer to where the full notice is found.</para>
 
-    <para>&lt;one line to give the program&apos;s name and a brief idea of what it does.&gt;
+    <para>&lt;one line to give the program's name and a brief idea of what it does.&gt;
       Copyright (C) &lt;year&gt;    &lt;name of author&gt;</para>
 
     <para>This program is free software; you can redistribute it and/or modify

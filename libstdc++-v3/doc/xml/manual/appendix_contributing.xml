@@ -1,12 +1,14 @@
-<?xml version='1.0'?>
-<!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
-[ ]>
-
-<appendix id="appendix.contrib" xreflabel="Contributing">
+<appendix xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	  xml:id="appendix.contrib" xreflabel="Contributing">
 <?dbhtml filename="appendix_contributing.html"?>
 
-<appendixinfo>
+<info><title>
+  Contributing
+  <indexterm>
+    <primary>Appendix</primary>
+    <secondary>Contributing</secondary>
+  </indexterm>
+</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -15,15 +17,9 @@
       library
     </keyword>
   </keywordset>
-</appendixinfo>
+</info>
 
-<title>
-  Contributing
-  <indexterm>
-    <primary>Appendix</primary>
-    <secondary>Contributing</secondary>
-  </indexterm>
-</title>
+
 
 <para>
   The GNU C++ Library follows an open development model. Active
@@ -32,11 +28,11 @@
   should follow this procedure:
 </para>
 
-<sect1 id="contrib.list" xreflabel="Contributor Checklist">
-  <title>Contributor Checklist</title>
+<section xml:id="contrib.list" xreflabel="Contributor Checklist"><info><title>Contributor Checklist</title></info>
+  
 
-  <sect2 id="list.reading">
-    <title>Reading</title>
+  <section xml:id="list.reading"><info><title>Reading</title></info>
+    
 
     <itemizedlist>
       <listitem>
@@ -50,9 +46,9 @@
 	  the standard from their respective national standards
 	  organization. In the USA, this national standards
 	  organization is ANSI and their web-site is right
-	  <ulink url="http://www.ansi.org">here.</ulink>
+	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.ansi.org">here.</link>
 	  (And if you've already registered with them, clicking this link will take you to directly to the place where you can
-	  <ulink url="http://webstore.ansi.org/RecordDetail.aspx?sku=ISO%2FIEC+14882:2003">buy the standard on-line</ulink>.)
+	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://webstore.ansi.org/RecordDetail.aspx?sku=ISO%2FIEC+14882:2003">buy the standard on-line</link>.)
 	</para>
       </listitem>
 
@@ -60,7 +56,7 @@
 	<para>
 	  The library working group bugs, and known defects, can
 	  be obtained here:
-	  <ulink url="http://www.open-std.org/jtc1/sc22/wg21/">http://www.open-std.org/jtc1/sc22/wg21 </ulink>
+	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/">http://www.open-std.org/jtc1/sc22/wg21 </link>
 	</para>
       </listitem>
 
@@ -69,16 +65,16 @@
 	  The newsgroup dedicated to standardization issues is
 	  comp.std.c++: this FAQ for this group is quite useful and
 	  can be
-	  found <ulink url="http://www.comeaucomputing.com/csc/faq.html">
-	  here </ulink>.
+	  found <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.comeaucomputing.com/csc/faq.html">
+	  here </link>.
       </para>
       </listitem>
 
       <listitem>
 	<para>
 	  Peruse
-	  the <ulink url="http://www.gnu.org/prep/standards">GNU
-	  Coding Standards</ulink>, and chuckle when you hit the part
+	  the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/prep/standards">GNU
+	  Coding Standards</link>, and chuckle when you hit the part
 	  about <quote>Using Languages Other Than C</quote>.
 	</para>
       </listitem>
@@ -100,9 +96,9 @@
       </listitem>
     </itemizedlist>
 
-  </sect2>
-  <sect2 id="list.copyright">
-    <title>Assignment</title>
+  </section>
+  <section xml:id="list.copyright"><info><title>Assignment</title></info>
+    
     <para>
       Small changes can be accepted without a copyright assignment form on
       file. New code and additions to the library need completed copyright
@@ -129,8 +125,8 @@
 
     <para>
       For more information about getting a copyright assignment, please see
-      <ulink url="http://www.gnu.org/prep/maintain/html_node/Legal-Matters.html">Legal
-	Matters</ulink>.
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/prep/maintain/html_node/Legal-Matters.html">Legal
+	Matters</link>.
     </para>
 
     <para>
@@ -141,18 +137,18 @@
       <email>mailto:assign@gnu.org</email>, please cc the libstdc++
       maintainer above so that progress can be monitored.
     </para>
-  </sect2>
+  </section>
 
-  <sect2 id="list.getting">
-    <title>Getting Sources</title>
+  <section xml:id="list.getting"><info><title>Getting Sources</title></info>
+    
     <para>
-      <ulink url="http://gcc.gnu.org/svnwrite.html">Getting write access
-	(look for &quot;Write after approval&quot;)</ulink>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/svnwrite.html">Getting write access
+	(look for "Write after approval")</link>
     </para>
-  </sect2>
+  </section>
 
-  <sect2 id="list.patches">
-    <title>Submitting Patches</title>
+  <section xml:id="list.patches"><info><title>Submitting Patches</title></info>
+    
 
     <para>
       Every patch must have several pieces of information before it can be
@@ -195,8 +191,8 @@
 	  else, use <command>diff -cp OLD NEW</command> ... If your
 	  version of diff does not support these options, then get the
 	  latest version of GNU
-	  diff. The <ulink url="http://gcc.gnu.org/wiki/SvnTricks">SVN
-	  Tricks</ulink> wiki page has information on customising the
+	  diff. The <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/wiki/SvnTricks">SVN
+	  Tricks</link> wiki page has information on customising the
 	  output of <code>svn diff</code>.
 	</para>
       </listitem>
@@ -211,20 +207,20 @@
       </listitem>
     </itemizedlist>
 
-  </sect2>
+  </section>
 
-</sect1>
+</section>
 
-<sect1 id="contrib.organization" xreflabel="Source Organization">
+<section xml:id="contrib.organization" xreflabel="Source Organization"><info><title>Directory Layout and Source Conventions</title></info>
   <?dbhtml filename="source_organization.html"?>
-  <title>Directory Layout and Source Conventions</title>
+  
 
   <para>
     The unpacked source directory of libstdc++ contains the files
     needed to create the GNU C++ Library.
   </para>
 
-  <literallayout>
+  <literallayout class="normal">
 It has subdirectories:
 
   doc
@@ -311,20 +307,20 @@ a bug or incompletely-implemented feature.  Lines marked "XXX MT"
 indicate a place that may require attention for multi-thread safety.
   </literallayout>
 
-</sect1>
+</section>
 
-<sect1 id="contrib.coding_style" xreflabel="Coding Style">
+<section xml:id="contrib.coding_style" xreflabel="Coding Style"><info><title>Coding Style</title></info>
   <?dbhtml filename="source_code_style.html"?>
-  <title>Coding Style</title>
+  
   <para>
   </para>
-  <sect2 id="coding_style.bad_identifiers">
-    <title>Bad Identifiers</title>
+  <section xml:id="coding_style.bad_identifiers"><info><title>Bad Identifiers</title></info>
+    
     <para>
       Identifiers that conflict and should be avoided.
     </para>
 
-    <literallayout>
+    <literallayout class="normal">
       This is the list of names <quote>reserved to the
       implementation</quote> that have been claimed by certain
       compilers and system headers of interest, and should not be used
@@ -511,22 +507,22 @@ indicate a place that may require attention for multi-thread safety.
       // http://gcc.gnu.org/ml/libstdc++/1999-q4/msg00060.html
       __opr
     </literallayout>
-  </sect2>
+  </section>
 
-  <sect2 id="coding_style.example">
-    <title>By Example</title>
-    <literallayout>
+  <section xml:id="coding_style.example"><info><title>By Example</title></info>
+    
+    <literallayout class="normal">
       This library is written to appropriate C++ coding standards. As such,
       it is intended to precede the recommendations of the GNU Coding
       Standard, which can be referenced in full here:
 
-      <ulink url="http://www.gnu.org/prep/standards/standards.html#Formatting">http://www.gnu.org/prep/standards/standards.html#Formatting</ulink>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/prep/standards/standards.html#Formatting">http://www.gnu.org/prep/standards/standards.html#Formatting</link>
 
       The rest of this is also interesting reading, but skip the "Design
       Advice" part.
 
       The GCC coding conventions are here, and are also useful:
-      <ulink url="http://gcc.gnu.org/codingconventions.html">http://gcc.gnu.org/codingconventions.html</ulink>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/codingconventions.html">http://gcc.gnu.org/codingconventions.html</link>
 
       In addition, because it doesn't seem to be stated explicitly anywhere
       else, there is an 80 column source limit.
@@ -941,21 +937,21 @@ indicate a place that may require attention for multi-thread safety.
       } // namespace std
       </code>
     </literallayout>
-  </sect2>
-</sect1>
+  </section>
+</section>
 
-<sect1 id="contrib.doc_style" xreflabel="Documentation Style">
+<section xml:id="contrib.doc_style" xreflabel="Documentation Style"><info><title>Documentation Style</title></info>
   <?dbhtml filename="documentation_style.html"?>
-  <title>Documentation Style</title>
-  <sect2 id="doc_style.doxygen">
-    <title>Doxygen</title>
-    <sect3 id="doxygen.prereq">
-      <title>Prerequisites</title>
+  
+  <section xml:id="doc_style.doxygen"><info><title>Doxygen</title></info>
+    
+    <section xml:id="doxygen.prereq"><info><title>Prerequisites</title></info>
+      
       <para>
 	Prerequisite tools are Bash 2.0 or later,
-	<ulink url="http://www.doxygen.org/">Doxygen</ulink>, and
-	the <ulink url="http://www.gnu.org/software/coreutils/">GNU
-	coreutils</ulink>. (GNU versions of find, xargs, and possibly
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.doxygen.org/">Doxygen</link>, and
+	the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/software/coreutils/">GNU
+	coreutils</link>. (GNU versions of find, xargs, and possibly
 	sed and grep are used, just because the GNU versions make
 	things very easy.) 
       </para>
@@ -963,26 +959,18 @@ indicate a place that may require attention for multi-thread safety.
       <para>
 	To generate the pretty pictures and hierarchy
 	graphs, the
-	<ulink url="http://www.graphviz.org">Graphviz</ulink> package
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.graphviz.org">Graphviz</link> package
 	will need to be installed. For PDF
-	output, <ulink url="http://www.tug.org/applications/pdftex/">
-	pdflatex</ulink> is required.
+	output, <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.tug.org/applications/pdftex/">
+	pdflatex</link> is required.
       </para>
-    </sect3>
+    </section>
 
-    <sect3 id="doxygen.rules">
-      <title>Generating the Doxygen Files</title>
+    <section xml:id="doxygen.rules"><info><title>Generating the Doxygen Files</title></info>
+      
       <para>
 	The following Makefile rules run Doxygen to generate HTML
 	docs, XML docs, XML docs as a single file, PDF docs, and the man pages.
-      </para>
-
-      <para>
-	Generated files are output into separate sub directores of
-	<filename class="directory">doc/doxygen/</filename> in the
-	build directory, based on the output format. For instance, the
-	HTML docs will be in <filename
-	class="directory">doc/doxygen/html</filename>.
       </para>
 
       <para>
@@ -1006,6 +994,13 @@ indicate a place that may require attention for multi-thread safety.
       </para>
 
       <para>
+	Generated files are output into separate sub directores of
+	<filename class="directory">doc/doxygen/</filename> in the
+	build directory, based on the output format. For instance, the
+	HTML docs will be in <filename class="directory">doc/doxygen/html</filename>.
+      </para>
+
+      <para>
 	Careful observers will see that the Makefile rules simply call
 	a script from the source tree, <filename>run_doxygen</filename>, which
 	does the actual work of running Doxygen and then (most
@@ -1020,10 +1015,10 @@ indicate a place that may require attention for multi-thread safety.
 	library hackers are written in triple-# comments.
       </para>
 
-    </sect3>
+    </section>
 
-    <sect3 id="doxygen.markup">
-      <title>Markup</title>
+    <section xml:id="doxygen.markup"><info><title>Markup</title></info>
+      
 
       <para>
 	In general, libstdc++ files should be formatted according to
@@ -1037,7 +1032,7 @@ indicate a place that may require attention for multi-thread safety.
 	Adding Doxygen markup to a file (informally called
 	<quote>doxygenating</quote>) is very simple. The Doxygen manual can be
 	found
-	<ulink url="http://www.stack.nl/~dimitri/doxygen/download.html#latestman">here</ulink>.
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.stack.nl/~dimitri/doxygen/download.html#latestman">here</link>.
 	We try to use a very-recent version of Doxygen.
       </para>
 
@@ -1053,12 +1048,12 @@ indicate a place that may require attention for multi-thread safety.
 
       <para>
 	Some commentary to accompany
-	the first list in the <ulink url="http://www.stack.nl/~dimitri/doxygen/docblocks.html">Special
-	Documentation Blocks</ulink> section of
+	the first list in the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.stack.nl/~dimitri/doxygen/docblocks.html">Special
+	Documentation Blocks</link> section of
 	the Doxygen manual:
       </para>
 
-      <orderedlist>
+      <orderedlist inheritnum="ignore" continuation="restarts">
 	<listitem>
 	  <para>For longer comments, use the Javadoc style...</para>
 	</listitem>
@@ -1116,7 +1111,7 @@ indicate a place that may require attention for multi-thread safety.
       </para>
 
       <para>
-<literallayout>
+<literallayout class="normal">
   /**
    * @brief A model of a linear congruential random number generator.
    *
@@ -1134,11 +1129,12 @@ indicate a place that may require attention for multi-thread safety.
 	doubt, consult the following table.
       </para>
 
-<table frame='all'>
+<table frame="all">
 <title>HTML to Doxygen Markup Comparison</title>
-<tgroup cols='2' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
+
+<tgroup cols="2" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
 
   <thead>
     <row>
@@ -1154,12 +1150,12 @@ indicate a place that may require attention for multi-thread safety.
     </row>
 
     <row>
-      <entry>&quot;</entry>
+      <entry>"</entry>
       <entry>\"</entry>
     </row>
 
     <row>
-      <entry>&apos;</entry>
+      <entry>'</entry>
       <entry>\'</entry>
     </row>
 
@@ -1193,15 +1189,15 @@ indicate a place that may require attention for multi-thread safety.
 </table>
 
 
-    </sect3>
+    </section>
 
-  </sect2>
+  </section>
 
-  <sect2 id="doc_style.docbook">
-    <title>Docbook</title>
+  <section xml:id="doc_style.docbook"><info><title>Docbook</title></info>
+    
 
-    <sect3 id="docbook.prereq">
-      <title>Prerequisites</title>
+    <section xml:id="docbook.prereq"><info><title>Prerequisites</title></info>
+      
       <para>
 	Editing the DocBook sources requires an XML editor. Many
 	exist: some notable options
@@ -1222,16 +1218,16 @@ indicate a place that may require attention for multi-thread safety.
       </para>
 
       <para>
-	Access to the DocBook stylesheets and DTD is required. The
+	Access to the DocBook 5.0 stylesheets and schema is required. The
 	stylesheets are usually packaged by vendor, in something
-	like <filename>docbook-style-xsl</filename>. To exactly match
+	like <filename>docbook5-style-xsl</filename>. To exactly match
 	generated output, please use a version of the stylesheets
 	equivalent
-	to <filename>docbook-style-xsl-1.74.0-5</filename>. The
+	to <filename>docbook5-style-xsl-1.75.2-3</filename>. The
 	installation directory for this package corresponds to
 	the <literal>XSL_STYLE_DIR</literal>
 	in <filename>doc/Makefile.am</filename> and defaults
-	to <filename class="directory">/usr/share/sgml/docbook/xsl-stylesheets</filename>.
+	to <filename class="directory">/usr/share/sgml/docbook/xsl-ns-stylesheets</filename>.
       </para>
 
       <para>
@@ -1243,18 +1239,16 @@ indicate a place that may require attention for multi-thread safety.
       <para>
 	For validating the XML document, you'll need
 	something like <command>xmllint</command> and access to the
-	DocBook DTD. These are provided
-	by a vendor package like <filename>libxml2</filename>.
+	relevant DocBook schema. These are provided
+	by a vendor package like <filename>libxml2</filename> and <filename>docbook5-schemas-5.0-4</filename>
       </para>
 
       <para>
 	For PDF output, something that transforms valid Docbook XML to PDF is
-	required. Possible solutions include <ulink
-	url="http://dblatex.sourceforge.net">dblatex</ulink>,
+	required. Possible solutions include <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://dblatex.sourceforge.net">dblatex</link>,
 	<command>xmlto</command>, or <command>prince</command>. Of
 	these, <command>dblatex</command> is the default. Other
-	options are listed on the DocBook web <ulink
-	url="http://wiki.docbook.org/topic/DocBookPublishingTools">pages</ulink>. Please
+	options are listed on the DocBook web <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://wiki.docbook.org/topic/DocBookPublishingTools">pages</link>. Please
 	consult the <email>libstdc++@gcc.gnu.org</email> list when
 	preparing printed manuals for current best practice and
 	suggestions.
@@ -1262,8 +1256,7 @@ indicate a place that may require attention for multi-thread safety.
 
       <para>
 	For Texinfo output, something that transforms valid Docbook
-	XML to Texinfo is required. The default choice is <ulink
-	url="http://docbook2x.sourceforge.net/">docbook2X</ulink>.
+	XML to Texinfo is required. The default choice is <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://docbook2x.sourceforge.net/">docbook2X</link>.
       </para>
 
       <para>
@@ -1277,24 +1270,16 @@ indicate a place that may require attention for multi-thread safety.
 xmllint --noout --valid <filename>xml/index.xml</filename>
 	  </userinput>
 	</screen>
-    </sect3>
+    </section>
 
-    <sect3 id="docbook.rules">
-      <title>Generating the DocBook Files</title>
+    <section xml:id="docbook.rules"><info><title>Generating the DocBook Files</title></info>
+      
 
       <para>
 	The following Makefile rules generate (in order): an HTML
 	version of all the DocBook documentation, a PDF version of the same, a
 	single XML document, and the result of validating the entire XML
 	document.
-      </para>
-
-      <para>
-	Generated files are output into separate sub directores of
-	<filename class="directory">doc/docbook/</filename> in the
-	build directory, based on the output format. For instance, the
-	HTML docs will be in <filename
-	class="directory">doc/docbook/html</filename>.
       </para>
 
       <para>
@@ -1313,12 +1298,18 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
       <screen><userinput>make doc-xml-validate-docbook</userinput></screen>
       </para>
 
-    </sect3>
+      <para>
+	Generated files are output into separate sub directores of
+	<filename class="directory">doc/docbook/</filename> in the
+	build directory, based on the output format. For instance, the
+	HTML docs will be in <filename class="directory">doc/docbook/html</filename>.
+      </para>
+    </section>
 
-    <sect3 id="docbook.examples">
-      <title>File Organization and Basics</title>
+    <section xml:id="docbook.examples"><info><title>File Organization and Basics</title></info>
+      
 
-    <literallayout>
+    <literallayout class="normal">
       <emphasis>Which files are important</emphasis>
 
       All Docbook files are in the directory
@@ -1379,24 +1370,25 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
 
       &lt;/set&gt;
     </literallayout>
-    </sect3>
+    </section>
 
-    <sect3 id="docbook.markup">
-      <title>Markup By Example</title>
+    <section xml:id="docbook.markup"><info><title>Markup By Example</title></info>
+      
 
       <para>
 	Complete details on Docbook markup can be found in the DocBook
 	Element Reference,
-	<ulink url="http://www.docbook.org/tdg/en/html/part2.html">online</ulink>.
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.docbook.org/tdg/en/html/part2.html">online</link>.
 	An incomplete reference for HTML to Docbook conversion is
 	detailed in the table below.
       </para>
 
-<table frame='all'>
+<table frame="all">
 <title>HTML to Docbook XML Markup Comparison</title>
-<tgroup cols='2' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
+
+<tgroup cols="2" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
 
   <thead>
     <row>
@@ -1457,7 +1449,7 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
       <entry>&lt;emphasis&gt;</entry>
     </row>
     <row>
-      <entry>&quot;</entry>
+      <entry>"</entry>
       <entry>&lt;quote&gt;</entry>
     </row>
    </tbody>
@@ -1469,11 +1461,12 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
   equivalents are listed in the table below.
 </para>
 
-<table frame='all'>
+<table frame="all">
 <title>Docbook XML Element Use</title>
-<tgroup cols='2' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
+
+<tgroup cols="2" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
 
   <thead>
     <row>
@@ -1540,14 +1533,14 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
 </tgroup>
 </table>
 
-    </sect3>
-  </sect2>
+    </section>
+  </section>
 
-  <sect2 id="doc_style.combines">
-    <title>Combines</title>
+  <section xml:id="doc_style.combines"><info><title>Combines</title></info>
+    
 
-    <sect3 id="combines.rules">
-      <title>Generating Combines and Assemblages</title>
+    <section xml:id="combines.rules"><info><title>Generating Combines and Assemblages</title></info>
+      
 
       <para>
 	The following Makefile rules are defaults, and are usually
@@ -1635,17 +1628,17 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
 </variablelist>
 
 
-  </sect3>
-  </sect2>
-</sect1>
+  </section>
+  </section>
+</section>
 
-<sect1 id="contrib.design_notes" xreflabel="Design Notes">
+<section xml:id="contrib.design_notes" xreflabel="Design Notes"><info><title>Design Notes</title></info>
   <?dbhtml filename="source_design_notes.html"?>
-  <title>Design Notes</title>
+  
   <para>
   </para>
 
-  <literallayout>
+  <literallayout class="normal">
 
     The Library
     -----------
@@ -2499,6 +2492,6 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
     include them via "&lt;backward/hash_map.h&gt;" or "&lt;ext/hash_map&gt;" than
     to search the subdirectory itself via a "-I" directive.
   </literallayout>
-</sect1>
+</section>
 
 </appendix>

@@ -1,7 +1,8 @@
-<section id="manual.localization.facet.messages" xreflabel="Messages">
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="manual.localization.facet.messages" xreflabel="Messages">
 <?dbhtml filename="messages.html"?>
 
-<sectioninfo>
+<info><title>messages</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -10,9 +11,9 @@
       messages
     </keyword>
   </keywordset>
-</sectioninfo>
+</info>
 
-<title>messages</title>
+
 
 <para>
 The std::messages facet implements message retrieval functionality
@@ -20,8 +21,8 @@ equivalent to Java's java.text.MessageFormat .using either GNU gettext
 or IEEE 1003.1-200 functions.
 </para>
 
-<section id="facet.messages.req">
-<title>Requirements</title>
+<section xml:id="facet.messages.req"><info><title>Requirements</title></info>
+
 
 <para>
 The std::messages facet is probably the most vaguely defined facet in
@@ -108,8 +109,8 @@ be found, returns dfault.
 
 </section>
 
-<section id="facet.messages.design">
-<title>Design</title>
+<section xml:id="facet.messages.design"><info><title>Design</title></info>
+
 
 <para>
 A couple of notes on the standard.
@@ -157,11 +158,11 @@ other, explicitly named locales.
 
 </section>
 
-<section id="facet.messages.impl">
-<title>Implementation</title>
+<section xml:id="facet.messages.impl"><info><title>Implementation</title></info>
 
-  <section id="messages.impl.models">
-  <title>Models</title>
+
+  <section xml:id="messages.impl.models"><info><title>Models</title></info>
+  
   <para>
     This is a relatively simple class, on the face of it. The standard
     specifies very little in concrete terms, so generic
@@ -228,8 +229,8 @@ model.
 
   </section>
 
-  <section id="messages.impl.gnu">
-  <title>The GNU Model</title>
+  <section xml:id="messages.impl.gnu"><info><title>The GNU Model</title></info>
+  
 
   <para>
     The messages facet, because it is retrieving and converting
@@ -321,8 +322,8 @@ model.
   </section>
 </section>
 
-<section id="facet.messages.use">
-<title>Use</title>
+<section xml:id="facet.messages.use"><info><title>Use</title></info>
+
  <para>
    A simple example using the GNU model of message conversion.
  </para>
@@ -351,8 +352,8 @@ void test01()
 
 </section>
 
-<section id="facet.messages.future">
-<title>Future</title>
+<section xml:id="facet.messages.future"><info><title>Future</title></info>
+
 
 <itemizedlist>
 <listitem>
@@ -438,21 +439,15 @@ void test01()
 
 </section>
 
-<bibliography id="facet.messages.biblio">
-<title>Bibliography</title>
+<bibliography xml:id="facet.messages.biblio"><info><title>Bibliography</title></info>
+
 
   <biblioentry>
-    <title>
+    <citetitle>
       The GNU C Library
-    </title>
-    <author>
-      <surname>McGrath</surname>
-      <firstname>Roland</firstname>
-    </author>
-    <author>
-      <surname>Drepper</surname>
-      <firstname>Ulrich</firstname>
-    </author>
+    </citetitle>
+    <author><personname><surname>McGrath</surname><firstname>Roland</firstname></personname></author>
+    <author><personname><surname>Drepper</surname><firstname>Ulrich</firstname></personname></author>
     <copyright>
       <year>2007</year>
       <holder>FSF</holder>
@@ -462,23 +457,20 @@ void test01()
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       Correspondence
-    </title>
-    <author>
-      <surname>Drepper</surname>
-      <firstname>Ulrich</firstname>
-    </author>
+    </citetitle>
+    <author><personname><surname>Drepper</surname><firstname>Ulrich</firstname></personname></author>
     <copyright>
       <year>2002</year>
-      <holder></holder>
+      <holder/>
     </copyright>
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       ISO/IEC 14882:1998 Programming languages - C++
-    </title>
+    </citetitle>
     <copyright>
       <year>1998</year>
       <holder>ISO</holder>
@@ -486,9 +478,9 @@ void test01()
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       ISO/IEC 9899:1999 Programming languages - C
-    </title>
+    </citetitle>
 
     <copyright>
       <year>1999</year>
@@ -497,13 +489,11 @@ void test01()
   </biblioentry>
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://www.opengroup.org/austin">
-	<citetitle>
-	  System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
-	</citetitle>
-      </ulink>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.opengroup.org/austin" class="uri">
     </biblioid>
+    <citetitle>
+      System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
+    </citetitle>
     <copyright>
       <year>2008</year>
       <holder>
@@ -514,13 +504,10 @@ void test01()
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       The C++ Programming Language, Special Edition
-    </title>
-    <author>
-      <surname>Stroustrup</surname>
-      <firstname>Bjarne</firstname>
-    </author>
+    </citetitle>
+    <author><personname><surname>Stroustrup</surname><firstname>Bjarne</firstname></personname></author>
     <copyright>
       <year>2000</year>
       <holder>Addison Wesley, Inc.</holder>
@@ -534,20 +521,14 @@ void test01()
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       Standard C++ IOStreams and Locales
-    </title>
+    </citetitle>
     <subtitle>
       Advanced Programmer's Guide and Reference
     </subtitle>
-    <author>
-      <surname>Langer</surname>
-      <firstname>Angelika</firstname>
-    </author>
-    <author>
-      <surname>Kreft</surname>
-      <firstname>Klaus</firstname>
-    </author>
+    <author><personname><surname>Langer</surname><firstname>Angelika</firstname></personname></author>
+    <author><personname><surname>Kreft</surname><firstname>Klaus</firstname></personname></author>
     <copyright>
       <year>2000</year>
       <holder>Addison Wesley Longman, Inc.</holder>
@@ -560,27 +541,24 @@ void test01()
   </biblioentry>
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://java.sun.com/reference/api/index.html">
-	<citetitle>
-	  API Specifications, Java Platform
-	</citetitle>
-      </ulink>
-    </biblioid>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://java.sun.com/reference/api/index.html" class="uri">
+      </biblioid>
+      <citetitle>
+	API Specifications, Java Platform
+      </citetitle>
+
     <pagenums>java.util.Properties, java.text.MessageFormat,
 java.util.Locale, java.util.ResourceBundle
     </pagenums>
   </biblioentry>
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://www.gnu.org/software/gettext/">
-	<citetitle>
-	  GNU gettext tools, version 0.10.38, Native Language Support
-Library and Tools.
-	</citetitle>
-      </ulink>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/software/gettext/" class="uri">
     </biblioid>
+    <citetitle>
+      GNU gettext tools, version 0.10.38, Native Language Support
+      Library and Tools.
+    </citetitle>
   </biblioentry>
 
 </bibliography>

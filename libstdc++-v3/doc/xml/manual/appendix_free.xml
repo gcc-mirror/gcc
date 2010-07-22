@@ -1,12 +1,14 @@
-<?xml version='1.0'?>
-<!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
-[ ]>
-
-<appendix id="appendix.free" xreflabel="Free">
+<appendix xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	  xml:id="appendix.free" xreflabel="Free">
 <?dbhtml filename="appendix_free.html"?>
 
-<appendixinfo>
+<info><title>
+  Free Software Needs Free Documentation
+  <indexterm>
+    <primary>Appendix</primary>
+    <secondary>Free Documentation</secondary>
+  </indexterm>
+</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -15,15 +17,9 @@
       library
     </keyword>
   </keywordset>
-</appendixinfo>
+</info>
 
-<title>
-  Free Software Needs Free Documentation
-  <indexterm>
-    <primary>Appendix</primary>
-    <secondary>Free Documentation</secondary>
-  </indexterm>
-</title>
+
 
 <para>
 The biggest deficiency in free operating systems is not in the
@@ -68,7 +64,7 @@ can ill afford to lose manuals this way.
   Free documentation, like free software, is a matter of freedom,
 not price.  The problem with these manuals was not that O'Reilly
 Associates charged a price for printed copies--that in itself is fine.
-(The Free Software Foundation <ulink url="http://www.gnu.org/doc/doc.html">sells printed copies</ulink> of
+(The Free Software Foundation <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/doc/doc.html">sells printed copies</link> of
 free GNU manuals, too.)  But GNU manuals are available in source code
 form, while these manuals are available only on paper.  GNU manuals
 come with permission to copy and modify; the Perl manuals do not.
@@ -167,8 +163,8 @@ check the distribution terms of a manual before you buy it, and
 prefer copylefted manuals to non-copylefted ones.
 </para>
 <para>
-[Note: We now maintain a <ulink url="http://www.fsf.org/licensing/doc/other-free-books.html">web page
-that lists free books available from other publishers</ulink>].
+[Note: We now maintain a <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.fsf.org/licensing/doc/other-free-books.html">web page
+that lists free books available from other publishers</link>].
 </para>
 
 <para>Copyright © 2004, 2005, 2006, 2007 Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA</para>

@@ -1,12 +1,8 @@
-<?xml version='1.0'?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
-[ ]>
-
-<chapter id="manual.ext.profile_mode" xreflabel="Profile Mode">
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="manual.ext.profile_mode" xreflabel="Profile Mode">
 <?dbhtml filename="profile_mode.html"?>
 
-<chapterinfo>
+<info><title>Profile Mode</title>
   <keywordset>
     <keyword>
       C++
@@ -18,13 +14,13 @@
       profile
     </keyword>
   </keywordset>
-</chapterinfo>
-
-<title>Profile Mode</title>
+</info>
 
 
-<sect1 id="manual.ext.profile_mode.intro" xreflabel="Intro">
-  <title>Intro</title>
+
+
+<section xml:id="manual.ext.profile_mode.intro" xreflabel="Intro"><info><title>Intro</title></info>
+  
   <para>
   <emphasis>Goal: </emphasis>Give performance improvement advice based on
   recognition of suboptimal usage patterns of the standard library.
@@ -36,8 +32,8 @@
   various components at interesting entry/exit points to/from the standard
   library.  Process trace, recognize suboptimal patterns, give advice.
   For details, see
-  <ulink url="http://dx.doi.org/10.1109/CGO.2009.36">paper presented at
-   CGO 2009</ulink>.
+  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://dx.doi.org/10.1109/CGO.2009.36">paper presented at
+   CGO 2009</link>.
   </para>
   <para>
   <emphasis>Strengths: </emphasis>
@@ -71,8 +67,8 @@
   </para>
 
 
-<sect2 id="manual.ext.profile_mode.using" xreflabel="Using">
-  <title>Using the Profile Mode</title>
+<section xml:id="manual.ext.profile_mode.using" xreflabel="Using"><info><title>Using the Profile Mode</title></info>
+  
 
   <para>
   This is the anticipated common workflow for program <code>foo.cc</code>:
@@ -155,10 +151,10 @@ vector-size: improvement = 3: call stack = 0x804842c ...
   at a higher abstraction level.
   </para>
 
-</sect2>
+</section>
 
-<sect2 id="manual.ext.profile_mode.tuning" xreflabel="Tuning">
-  <title>Tuning the Profile Mode</title>
+<section xml:id="manual.ext.profile_mode.tuning" xreflabel="Tuning"><info><title>Tuning the Profile Mode</title></info>
+  
 
   <para>Compile time switches and environment variables (see also file
    profiler.h).  Unless specified otherwise, they can be set at compile time
@@ -214,21 +210,22 @@ vector-size: improvement = 3: call stack = 0x804842c ...
   </itemizedlist>
   </para>
 
-</sect2>
+</section>
 
-</sect1>
+</section>
 
 
-<sect1 id="manual.ext.profile_mode.design" xreflabel="Design">
-  <title>Design</title>
+<section xml:id="manual.ext.profile_mode.design" xreflabel="Design"><info><title>Design</title></info>
+  
 
 <para>
 </para>
-<table frame='all'>
+<table frame="all">
 <title>Profile Code Location</title>
-<tgroup cols='2' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
+
+<tgroup cols="2" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
 
 <thead>
   <row>
@@ -258,9 +255,8 @@ vector-size: improvement = 3: call stack = 0x804842c ...
 <para>
 </para>
 
-<sect2 id="manual.ext.profile_mode.design.wrapper"
- xreflabel="Wrapper">
-<title>Wrapper Model</title>
+<section xml:id="manual.ext.profile_mode.design.wrapper" xreflabel="Wrapper"><info><title>Wrapper Model</title></info>
+
   <para>
   In order to get our instrumented library version included instead of the
   release one,
@@ -285,12 +281,11 @@ vector-size: improvement = 3: call stack = 0x804842c ...
   not allowed.  Mixing them at compile time will result in preprocessor errors.
   Mixing them at link time is undefined.
   </para>
-</sect2>
+</section>
 
 
-<sect2 id="manual.ext.profile_mode.design.instrumentation"
- xreflabel="Instrumentation">
-<title>Instrumentation</title>
+<section xml:id="manual.ext.profile_mode.design.instrumentation" xreflabel="Instrumentation"><info><title>Instrumentation</title></info>
+
   <para>
   Instead of instrumenting every public entry and exit point,
   we chose to add instrumentation on demand, as needed
@@ -313,12 +308,11 @@ vector-size: improvement = 3: call stack = 0x804842c ...
   All the instrumentation on/off compile time switches live in
   <code>include/profile/profiler.h</code>.
   </para>
-</sect2>
+</section>
 
 
-<sect2 id="manual.ext.profile_mode.design.rtlib"
- xreflabel="Run Time Behavior">
-<title>Run Time Behavior</title>
+<section xml:id="manual.ext.profile_mode.design.rtlib" xreflabel="Run Time Behavior"><info><title>Run Time Behavior</title></info>
+
   <para>
   For practical reasons, the instrumentation library processes the trace
   partially
@@ -339,15 +333,14 @@ vector-size: improvement = 3: call stack = 0x804842c ...
 
   <para>
   For details, see
-   <ulink url="http://dx.doi.org/10.1109/CGO.2009.36">paper presented at
-   CGO 2009</ulink>.
+   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://dx.doi.org/10.1109/CGO.2009.36">paper presented at
+   CGO 2009</link>.
   </para>
-</sect2>
+</section>
 
 
-<sect2 id="manual.ext.profile_mode.design.analysis"
- xreflabel="Analysis and Diagnostics">
-<title>Analysis and Diagnostics</title>
+<section xml:id="manual.ext.profile_mode.design.analysis" xreflabel="Analysis and Diagnostics"><info><title>Analysis and Diagnostics</title></info>
+
   <para>
   Final analysis takes place offline, and it is based entirely on the
   generated trace and debugging info in the application binary.
@@ -357,12 +350,11 @@ vector-size: improvement = 3: call stack = 0x804842c ...
   The input to the analysis is a table indexed by profile type and call stack.
   The data type for each entry depends on the profile type.
   </para>
-</sect2>
+</section>
 
 
-<sect2 id="manual.ext.profile_mode.design.cost-model"
- xreflabel="Cost Model">
-<title>Cost Model</title>
+<section xml:id="manual.ext.profile_mode.design.cost-model" xreflabel="Cost Model"><info><title>Cost Model</title></info>
+
   <para>
   While it is likely that cost models become complex as we get into
   more sophisticated analysis, we will try to follow a simple set of rules
@@ -399,12 +391,11 @@ vector-size: improvement = 3: call stack = 0x804842c ...
   care require a sorted container.</para></listitem>
 </itemizedlist>
 
-</sect2>
+</section>
 
 
-<sect2 id="manual.ext.profile_mode.design.reports"
- xreflabel="Reports">
-<title>Reports</title>
+<section xml:id="manual.ext.profile_mode.design.reports" xreflabel="Reports"><info><title>Reports</title></info>
+
   <para>
 There are two types of reports.  First, if we recognize a pattern for which
 we have a substitute that is likely to give better performance, we print
@@ -419,12 +410,11 @@ which have the worst data locality in actual traversals.
 Although this does not offer a solution,
 it helps the user focus on the key problems and ignore the uninteresting ones.
   </para>
-</sect2>
+</section>
 
 
-<sect2 id="manual.ext.profile_mode.design.testing"
- xreflabel="Testing">
-<title>Testing</title>
+<section xml:id="manual.ext.profile_mode.design.testing" xreflabel="Testing"><info><title>Testing</title></info>
+
   <para>
   First, we want to make sure we preserve the behavior of the release mode.
   You can just type <code>"make check-profile"</code>, which
@@ -436,13 +426,12 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
   Each diagnostic must come with at least two tests, one for false positives
   and one for false negatives.
   </para>
-</sect2>
+</section>
 
-</sect1>
+</section>
 
-<sect1 id="manual.ext.profile_mode.api"
- xreflabel="API">
-<title>Extensions for Custom Containers</title>
+<section xml:id="manual.ext.profile_mode.api" xreflabel="API"><info><title>Extensions for Custom Containers</title></info>
+
 
   <para>
   Many large projects use their own data structures instead of the ones in the
@@ -453,12 +442,11 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
   <code>profiler.h</code> (look for "Instrumentation hooks").
   </para>
 
-</sect1>
+</section>
 
 
-<sect1 id="manual.ext.profile_mode.cost_model"
- xreflabel="Cost Model">
-<title>Empirical Cost Model</title>
+<section xml:id="manual.ext.profile_mode.cost_model" xreflabel="Cost Model"><info><title>Empirical Cost Model</title></info>
+
 
   <para>
   Currently, the cost model uses formulas with predefined relative weights
@@ -479,17 +467,15 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
   generic parameters.
   </para>
 
-</sect1>
+</section>
 
 
-<sect1 id="manual.ext.profile_mode.implementation"
- xreflabel="Implementation">
-<title>Implementation Issues</title>
+<section xml:id="manual.ext.profile_mode.implementation" xreflabel="Implementation"><info><title>Implementation Issues</title></info>
 
 
-<sect2 id="manual.ext.profile_mode.implementation.stack"
- xreflabel="Stack Traces">
-<title>Stack Traces</title>
+
+<section xml:id="manual.ext.profile_mode.implementation.stack" xreflabel="Stack Traces"><info><title>Stack Traces</title></info>
+
   <para>
   Accurate stack traces are needed during profiling since we group events by
   call context and dynamic instance.  Without accurate traces, diagnostics
@@ -503,12 +489,11 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
   to 0 if you are willing to give up call context information, or to a small
   positive value to reduce run time overhead.
   </para>
-</sect2>
+</section>
 
 
-<sect2 id="manual.ext.profile_mode.implementation.symbols"
- xreflabel="Symbolization">
-<title>Symbolization of Instruction Addresses</title>
+<section xml:id="manual.ext.profile_mode.implementation.symbols" xreflabel="Symbolization"><info><title>Symbolization of Instruction Addresses</title></info>
+
   <para>
   The profiling and analysis phases use only instruction addresses.
   An external utility such as addr2line is needed to postprocess the result.
@@ -516,12 +501,11 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
   This would require access to symbol tables, debug information tables,
   external programs or libraries and other system dependent information.
   </para>
-</sect2>
+</section>
 
 
-<sect2 id="manual.ext.profile_mode.implementation.concurrency"
- xreflabel="Concurrency">
-<title>Concurrency</title>
+<section xml:id="manual.ext.profile_mode.implementation.concurrency" xreflabel="Concurrency"><info><title>Concurrency</title></info>
+
   <para>
   Our current model is simplistic, but precise.
   We cannot afford to approximate because some of our diagnostics require
@@ -529,24 +513,22 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
   During profiling, we keep a single information table per diagnostic.
   There is a single lock per information table.
   </para>
-</sect2>
+</section>
 
 
-<sect2 id="manual.ext.profile_mode.implementation.stdlib-in-proflib"
- xreflabel="Using the Standard Library in the Runtime Library">
-<title>Using the Standard Library in the Instrumentation Implementation</title>
+<section xml:id="manual.ext.profile_mode.implementation.stdlib-in-proflib" xreflabel="Using the Standard Library in the Runtime Library"><info><title>Using the Standard Library in the Instrumentation Implementation</title></info>
+
   <para>
   As much as we would like to avoid uses of libstdc++ within our
   instrumentation library, containers such as unordered_map are very
   appealing.  We plan to use them as long as they are named properly
   to avoid ambiguity.
   </para>
-</sect2>
+</section>
 
 
-<sect2 id="manual.ext.profile_mode.implementation.malloc-hooks"
- xreflabel="Malloc Hooks">
-<title>Malloc Hooks</title>
+<section xml:id="manual.ext.profile_mode.implementation.malloc-hooks" xreflabel="Malloc Hooks"><info><title>Malloc Hooks</title></info>
+
   <para>
   User applications/libraries can provide malloc hooks.
   When the implementation of the malloc hooks uses stdlibc++, there can
@@ -563,12 +545,11 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
   XXX: A definitive solution to this problem would be for the profile extension
   to use a custom allocator internally, and perhaps not to use libstdc++.
   </para>
-</sect2>
+</section>
 
 
-<sect2 id="manual.ext.profile_mode.implementation.construction-destruction"
- xreflabel="Construction and Destruction of Global Objects">
-<title>Construction and Destruction of Global Objects</title>
+<section xml:id="manual.ext.profile_mode.implementation.construction-destruction" xreflabel="Construction and Destruction of Global Objects"><info><title>Construction and Destruction of Global Objects</title></info>
+
   <para>
   The profiling library state is initialized at the first call to a profiling
   method.  This allows us to record the construction of all global objects.
@@ -576,18 +557,16 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
   by a function registered by <code>atexit</code>, thus invoked by
   <code>exit</code>.
   </para>
-</sect2>
+</section>
 
-</sect1>
+</section>
 
 
-<sect1 id="manual.ext.profile_mode.developer"
- xreflabel="Developer Information">
-<title>Developer Information</title>
+<section xml:id="manual.ext.profile_mode.developer" xreflabel="Developer Information"><info><title>Developer Information</title></info>
 
-<sect2 id="manual.ext.profile_mode.developer.bigpic"
- xreflabel="Big Picture">
-<title>Big Picture</title>
+
+<section xml:id="manual.ext.profile_mode.developer.bigpic" xreflabel="Big Picture"><info><title>Big Picture</title></info>
+
 
   <para>The profile mode headers are included with
    <code>-D_GLIBCXX_PROFILE</code> through preprocessor directives in
@@ -609,11 +588,10 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
    <code>-D_GLIBCXX_PROFILE_...</code> compiler option.
   </para>
 
-</sect2>
+</section>
 
-<sect2 id="manual.ext.profile_mode.developer.howto"
- xreflabel="How To Add A Diagnostic">
-<title>How To Add A Diagnostic</title>
+<section xml:id="manual.ext.profile_mode.developer.howto" xreflabel="How To Add A Diagnostic"><info><title>How To Add A Diagnostic</title></info>
+
 
   <para>Let's say the diagnostic name is "magic".
   </para>
@@ -684,11 +662,11 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
 
   <para>Add documentation in file <code>doc/xml/manual/profile_mode.xml</code>.
   </para>
-</sect2>
-</sect1>
+</section>
+</section>
 
-<sect1 id="manual.ext.profile_mode.diagnostics">
-<title>Diagnostics</title>
+<section xml:id="manual.ext.profile_mode.diagnostics"><info><title>Diagnostics</title></info>
+
 
   <para>
   The table below presents all the diagnostics we intend to implement.
@@ -712,16 +690,17 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
   specific needs or time budgets.
   </para>
 
-<table frame='all'>
+<table frame="all">
 <title>Profile Diagnostics</title>
-<tgroup cols='7' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
-<colspec colname='c3'></colspec>
-<colspec colname='c4'></colspec>
-<colspec colname='c5'></colspec>
-<colspec colname='c6'></colspec>
-<colspec colname='c7'></colspec>
+
+<tgroup cols="7" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+<colspec colname="c5"/>
+<colspec colname="c6"/>
+<colspec colname="c7"/>
 
 <thead>
   <row>
@@ -735,145 +714,145 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
 </thead>
 <tbody>
   <row>
-    <entry><ulink url="#manual.ext.profile_mode.analysis.containers">
-    CONTAINERS</ulink></entry>
-    <entry><ulink url="#manual.ext.profile_mode.analysis.hashtable_too_small">
-    HASHTABLE_TOO_SMALL</ulink></entry>
+    <entry><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#manual.ext.profile_mode.analysis.containers">
+    CONTAINERS</link></entry>
+    <entry><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#manual.ext.profile_mode.analysis.hashtable_too_small">
+    HASHTABLE_TOO_SMALL</link></entry>
     <entry>10</entry>
     <entry>1</entry>
-    <entry></entry>
+    <entry/>
     <entry>10</entry>
     <entry>yes</entry>
   </row>
   <row>
-    <entry></entry>
-    <entry><ulink url="#manual.ext.profile_mode.analysis.hashtable_too_large">
-    HASHTABLE_TOO_LARGE</ulink></entry>
+    <entry/>
+    <entry><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#manual.ext.profile_mode.analysis.hashtable_too_large">
+    HASHTABLE_TOO_LARGE</link></entry>
     <entry>5</entry>
     <entry>1</entry>
-    <entry></entry>
+    <entry/>
     <entry>10</entry>
     <entry>yes</entry>
   </row>
   <row>
-    <entry></entry>
-    <entry><ulink url="#manual.ext.profile_mode.analysis.inefficient_hash">
-    INEFFICIENT_HASH</ulink></entry>
+    <entry/>
+    <entry><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#manual.ext.profile_mode.analysis.inefficient_hash">
+    INEFFICIENT_HASH</link></entry>
     <entry>7</entry>
     <entry>3</entry>
-    <entry></entry>
+    <entry/>
     <entry>10</entry>
     <entry>yes</entry>
   </row>
   <row>
-    <entry></entry>
-    <entry><ulink url="#manual.ext.profile_mode.analysis.vector_too_small">
-    VECTOR_TOO_SMALL</ulink></entry>
+    <entry/>
+    <entry><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#manual.ext.profile_mode.analysis.vector_too_small">
+    VECTOR_TOO_SMALL</link></entry>
     <entry>8</entry>
     <entry>1</entry>
-    <entry></entry>
+    <entry/>
     <entry>10</entry>
     <entry>yes</entry>
   </row>
   <row>
-    <entry></entry>
-    <entry><ulink url="#manual.ext.profile_mode.analysis.vector_too_large">
-    VECTOR_TOO_LARGE</ulink></entry>
+    <entry/>
+    <entry><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#manual.ext.profile_mode.analysis.vector_too_large">
+    VECTOR_TOO_LARGE</link></entry>
     <entry>5</entry>
     <entry>1</entry>
-    <entry></entry>
+    <entry/>
     <entry>10</entry>
     <entry>yes</entry>
   </row>
   <row>
-    <entry></entry>
-    <entry><ulink url="#manual.ext.profile_mode.analysis.vector_to_hashtable">
-    VECTOR_TO_HASHTABLE</ulink></entry>
+    <entry/>
+    <entry><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#manual.ext.profile_mode.analysis.vector_to_hashtable">
+    VECTOR_TO_HASHTABLE</link></entry>
     <entry>7</entry>
     <entry>7</entry>
-    <entry></entry>
+    <entry/>
     <entry>10</entry>
     <entry>no</entry>
   </row>
   <row>
-    <entry></entry>
-    <entry><ulink url="#manual.ext.profile_mode.analysis.hashtable_to_vector">
-    HASHTABLE_TO_VECTOR</ulink></entry>
+    <entry/>
+    <entry><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#manual.ext.profile_mode.analysis.hashtable_to_vector">
+    HASHTABLE_TO_VECTOR</link></entry>
     <entry>7</entry>
     <entry>7</entry>
-    <entry></entry>
+    <entry/>
     <entry>10</entry>
     <entry>no</entry>
   </row>
   <row>
-    <entry></entry>
-    <entry><ulink url="#manual.ext.profile_mode.analysis.vector_to_list">
-    VECTOR_TO_LIST</ulink></entry>
+    <entry/>
+    <entry><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#manual.ext.profile_mode.analysis.vector_to_list">
+    VECTOR_TO_LIST</link></entry>
     <entry>8</entry>
     <entry>5</entry>
-    <entry></entry>
+    <entry/>
     <entry>10</entry>
     <entry>yes</entry>
   </row>
   <row>
-    <entry></entry>
-    <entry><ulink url="#manual.ext.profile_mode.analysis.list_to_vector">
-    LIST_TO_VECTOR</ulink></entry>
+    <entry/>
+    <entry><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#manual.ext.profile_mode.analysis.list_to_vector">
+    LIST_TO_VECTOR</link></entry>
     <entry>10</entry>
     <entry>5</entry>
-    <entry></entry>
+    <entry/>
     <entry>10</entry>
     <entry>no</entry>
   </row>
   <row>
-    <entry></entry>
-    <entry><ulink url="#manual.ext.profile_mode.analysis.assoc_ord_to_unord">
-    ORDERED_TO_UNORDERED</ulink></entry>
+    <entry/>
+    <entry><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#manual.ext.profile_mode.analysis.assoc_ord_to_unord">
+    ORDERED_TO_UNORDERED</link></entry>
     <entry>10</entry>
     <entry>5</entry>
-    <entry></entry>
+    <entry/>
     <entry>10</entry>
     <entry>only map/unordered_map</entry>
   </row>
   <row>
-    <entry><ulink url="#manual.ext.profile_mode.analysis.algorithms">
-    ALGORITHMS</ulink></entry>
-    <entry><ulink url="#manual.ext.profile_mode.analysis.algorithms.sort">
-    SORT</ulink></entry>
+    <entry><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#manual.ext.profile_mode.analysis.algorithms">
+    ALGORITHMS</link></entry>
+    <entry><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#manual.ext.profile_mode.analysis.algorithms.sort">
+    SORT</link></entry>
     <entry>7</entry>
     <entry>8</entry>
-    <entry></entry>
+    <entry/>
     <entry>7</entry>
     <entry>no</entry>
   </row>
   <row>
-    <entry><ulink url="#manual.ext.profile_mode.analysis.locality">
-    LOCALITY</ulink></entry>
-    <entry><ulink url="#manual.ext.profile_mode.analysis.locality.sw_prefetch">
-    SOFTWARE_PREFETCH</ulink></entry>
+    <entry><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#manual.ext.profile_mode.analysis.locality">
+    LOCALITY</link></entry>
+    <entry><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#manual.ext.profile_mode.analysis.locality.sw_prefetch">
+    SOFTWARE_PREFETCH</link></entry>
     <entry>8</entry>
     <entry>8</entry>
-    <entry></entry>
+    <entry/>
     <entry>5</entry>
     <entry>no</entry>
   </row>
   <row>
-    <entry></entry>
-    <entry><ulink url="#manual.ext.profile_mode.analysis.locality.linked">
-    RBTREE_LOCALITY</ulink></entry>
+    <entry/>
+    <entry><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#manual.ext.profile_mode.analysis.locality.linked">
+    RBTREE_LOCALITY</link></entry>
     <entry>4</entry>
     <entry>8</entry>
-    <entry></entry>
+    <entry/>
     <entry>5</entry>
     <entry>no</entry>
   </row>
   <row>
-    <entry></entry>
-    <entry><ulink url="#manual.ext.profile_mode.analysis.mthread.false_share">
-    FALSE_SHARING</ulink></entry>
+    <entry/>
+    <entry><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#manual.ext.profile_mode.analysis.mthread.false_share">
+    FALSE_SHARING</link></entry>
     <entry>8</entry>
     <entry>10</entry>
-    <entry></entry>
+    <entry/>
     <entry>10</entry>
     <entry>no</entry>
   </row>
@@ -881,9 +860,8 @@ it helps the user focus on the key problems and ignore the uninteresting ones.
 </tgroup>
 </table>
 
-<sect2 id="manual.ext.profile_mode.analysis.template"
- xreflabel="Template">
-<title>Diagnostic Template</title>
+<section xml:id="manual.ext.profile_mode.analysis.template" xreflabel="Template"><info><title>Diagnostic Template</title></info>
+
 <itemizedlist>
   <listitem><para><emphasis>Switch:</emphasis>
   <code>_GLIBCXX_PROFILE_&lt;diagnostic&gt;</code>.
@@ -912,21 +890,19 @@ advice sample
 </programlisting>
 </para></listitem>
 </itemizedlist>
-</sect2>
+</section>
 
 
-<sect2 id="manual.ext.profile_mode.analysis.containers"
- xreflabel="Containers">
-<title>Containers</title>
+<section xml:id="manual.ext.profile_mode.analysis.containers" xreflabel="Containers"><info><title>Containers</title></info>
+
 
 <para>
 <emphasis>Switch:</emphasis>
   <code>_GLIBCXX_PROFILE_CONTAINERS</code>.
 </para>
 
-<sect3 id="manual.ext.profile_mode.analysis.hashtable_too_small"
- xreflabel="Hashtable Too Small">
-<title>Hashtable Too Small</title>
+<section xml:id="manual.ext.profile_mode.analysis.hashtable_too_small" xreflabel="Hashtable Too Small"><info><title>Hashtable Too Small</title></info>
+
 <itemizedlist>
   <listitem><para><emphasis>Switch:</emphasis>
   <code>_GLIBCXX_PROFILE_HASHTABLE_TOO_SMALL</code>.
@@ -964,12 +940,11 @@ foo.cc:1: advice: Changing initial unordered_set size from 10 to 1000000 saves 1
 </programlisting>
 </para></listitem>
 </itemizedlist>
-</sect3>
+</section>
 
 
-<sect3 id="manual.ext.profile_mode.analysis.hashtable_too_large"
- xreflabel="Hashtable Too Large">
-<title>Hashtable Too Large</title>
+<section xml:id="manual.ext.profile_mode.analysis.hashtable_too_large" xreflabel="Hashtable Too Large"><info><title>Hashtable Too Large</title></info>
+
 <itemizedlist>
   <listitem><para><emphasis>Switch:</emphasis>
   <code>_GLIBCXX_PROFILE_HASHTABLE_TOO_LARGE</code>.
@@ -1010,11 +985,10 @@ bytes of memory and M iteration steps.
 </programlisting>
 </para></listitem>
 </itemizedlist>
-</sect3>
+</section>
 
-<sect3 id="manual.ext.profile_mode.analysis.inefficient_hash"
- xreflabel="Inefficient Hash">
-<title>Inefficient Hash</title>
+<section xml:id="manual.ext.profile_mode.analysis.inefficient_hash" xreflabel="Inefficient Hash"><info><title>Inefficient Hash</title></info>
+
 <itemizedlist>
   <listitem><para><emphasis>Switch:</emphasis>
   <code>_GLIBCXX_PROFILE_INEFFICIENT_HASH</code>.
@@ -1057,11 +1031,10 @@ class dumb_hash {
 </programlisting>
 </para></listitem>
 </itemizedlist>
-</sect3>
+</section>
 
-<sect3 id="manual.ext.profile_mode.analysis.vector_too_small"
- xreflabel="Vector Too Small">
-<title>Vector Too Small</title>
+<section xml:id="manual.ext.profile_mode.analysis.vector_too_small" xreflabel="Vector Too Small"><info><title>Vector Too Small</title></info>
+
 <itemizedlist>
   <listitem><para><emphasis>Switch:</emphasis>
   <code>_GLIBCXX_PROFILE_VECTOR_TOO_SMALL</code>.
@@ -1098,11 +1071,10 @@ copying 4000000 bytes and 20 memory allocations and deallocations.
 </programlisting>
 </para></listitem>
 </itemizedlist>
-</sect3>
+</section>
 
-<sect3 id="manual.ext.profile_mode.analysis.vector_too_large"
- xreflabel="Vector Too Large">
-<title>Vector Too Large</title>
+<section xml:id="manual.ext.profile_mode.analysis.vector_too_large" xreflabel="Vector Too Large"><info><title>Vector Too Large</title></info>
+
 <itemizedlist>
   <listitem><para><emphasis>Switch:</emphasis>
   <code>_GLIBCXX_PROFILE_VECTOR_TOO_LARGE</code>
@@ -1140,11 +1112,10 @@ bytes of memory and may reduce the number of cache and TLB misses.
 </programlisting>
 </para></listitem>
 </itemizedlist>
-</sect3>
+</section>
 
-<sect3 id="manual.ext.profile_mode.analysis.vector_to_hashtable"
- xreflabel="Vector to Hashtable">
-<title>Vector to Hashtable</title>
+<section xml:id="manual.ext.profile_mode.analysis.vector_to_hashtable" xreflabel="Vector to Hashtable"><info><title>Vector to Hashtable</title></info>
+
 <itemizedlist>
   <listitem><para><emphasis>Switch:</emphasis>
   <code>_GLIBCXX_PROFILE_VECTOR_TO_HASHTABLE</code>.
@@ -1187,11 +1158,10 @@ comparisons.
 </programlisting>
 </para></listitem>
 </itemizedlist>
-</sect3>
+</section>
 
-<sect3 id="manual.ext.profile_mode.analysis.hashtable_to_vector"
- xreflabel="Hashtable to Vector">
-<title>Hashtable to Vector</title>
+<section xml:id="manual.ext.profile_mode.analysis.hashtable_to_vector" xreflabel="Hashtable to Vector"><info><title>Hashtable to Vector</title></info>
+
 <itemizedlist>
   <listitem><para><emphasis>Switch:</emphasis>
   <code>_GLIBCXX_PROFILE_HASHTABLE_TO_VECTOR</code>.
@@ -1232,11 +1202,10 @@ indirections and may achieve better data locality.
 </programlisting>
 </para></listitem>
 </itemizedlist>
-</sect3>
+</section>
 
-<sect3 id="manual.ext.profile_mode.analysis.vector_to_list"
- xreflabel="Vector to List">
-<title>Vector to List</title>
+<section xml:id="manual.ext.profile_mode.analysis.vector_to_list" xreflabel="Vector to List"><info><title>Vector to List</title></info>
+
 <itemizedlist>
   <listitem><para><emphasis>Switch:</emphasis>
   <code>_GLIBCXX_PROFILE_VECTOR_TO_LIST</code>.
@@ -1278,11 +1247,10 @@ operations.
 </programlisting>
 </para></listitem>
 </itemizedlist>
-</sect3>
+</section>
 
-<sect3 id="manual.ext.profile_mode.analysis.list_to_vector"
- xreflabel="List to Vector">
-<title>List to Vector</title>
+<section xml:id="manual.ext.profile_mode.analysis.list_to_vector" xreflabel="List to Vector"><info><title>List to Vector</title></info>
+
 <itemizedlist>
   <listitem><para><emphasis>Switch:</emphasis>
   <code>_GLIBCXX_PROFILE_LIST_TO_VECTOR</code>.
@@ -1321,11 +1289,10 @@ memory references.
 </programlisting>
 </para></listitem>
 </itemizedlist>
-</sect3>
+</section>
 
-<sect3 id="manual.ext.profile_mode.analysis.list_to_slist"
- xreflabel="List to Forward List">
-<title>List to Forward List (Slist)</title>
+<section xml:id="manual.ext.profile_mode.analysis.list_to_slist" xreflabel="List to Forward List"><info><title>List to Forward List (Slist)</title></info>
+
 <itemizedlist>
   <listitem><para><emphasis>Switch:</emphasis>
   <code>_GLIBCXX_PROFILE_LIST_TO_SLIST</code>.
@@ -1367,11 +1334,10 @@ foo.cc:1: advice: Change "list" to "forward_list".
 </programlisting>
 </para></listitem>
 </itemizedlist>
-</sect3>
+</section>
 
-<sect3 id="manual.ext.profile_mode.analysis.assoc_ord_to_unord"
- xreflabel="Ordered to Unordered Associative Container">
-<title>Ordered to Unordered Associative Container</title>
+<section xml:id="manual.ext.profile_mode.analysis.assoc_ord_to_unord" xreflabel="Ordered to Unordered Associative Container"><info><title>Ordered to Unordered Associative Container</title></info>
+
 <itemizedlist>
   <listitem><para><emphasis>Switch:</emphasis>
   <code>_GLIBCXX_PROFILE_ORDERED_TO_UNORDERED</code>.
@@ -1410,23 +1376,21 @@ foo.cc:1: advice: Change "list" to "forward_list".
 </programlisting>
 </para></listitem>
 </itemizedlist>
-</sect3>
+</section>
 
-</sect2>
+</section>
 
 
 
-<sect2 id="manual.ext.profile_mode.analysis.algorithms"
- xreflabel="Algorithms">
-<title>Algorithms</title>
+<section xml:id="manual.ext.profile_mode.analysis.algorithms" xreflabel="Algorithms"><info><title>Algorithms</title></info>
+
 
   <para><emphasis>Switch:</emphasis>
   <code>_GLIBCXX_PROFILE_ALGORITHMS</code>.
   </para>
 
-<sect3 id="manual.ext.profile_mode.analysis.algorithms.sort"
- xreflabel="Sorting">
-<title>Sort Algorithm Performance</title>
+<section xml:id="manual.ext.profile_mode.analysis.algorithms.sort" xreflabel="Sorting"><info><title>Sort Algorithm Performance</title></info>
+
 <itemizedlist>
   <listitem><para><emphasis>Switch:</emphasis>
   <code>_GLIBCXX_PROFILE_SORT</code>.
@@ -1437,10 +1401,10 @@ foo.cc:1: advice: Change "list" to "forward_list".
   </para></listitem>
   <listitem><para><emphasis>Fundamentals:</emphasis>
   See papers:
-  <ulink url="http://portal.acm.org/citation.cfm?doid=1065944.1065981">
-  A framework for adaptive algorithm selection in STAPL</ulink> and
-  <ulink url="http://ieeexplore.ieee.org/search/wrapper.jsp?arnumber=4228227">
-  Optimizing Sorting with Machine Learning Algorithms</ulink>.
+  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://portal.acm.org/citation.cfm?doid=1065944.1065981">
+  A framework for adaptive algorithm selection in STAPL</link> and
+  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ieeexplore.ieee.org/search/wrapper.jsp?arnumber=4228227">
+  Optimizing Sorting with Machine Learning Algorithms</link>.
   </para></listitem>
   <listitem><para><emphasis>Sample runtime reduction:</emphasis>60%.
   </para></listitem>
@@ -1459,22 +1423,20 @@ foo.cc:1: advice: Change "list" to "forward_list".
 </programlisting>
 </para></listitem>
 </itemizedlist>
-</sect3>
+</section>
 
-</sect2>
+</section>
 
 
-<sect2 id="manual.ext.profile_mode.analysis.locality"
- xreflabel="Data Locality">
-<title>Data Locality</title>
+<section xml:id="manual.ext.profile_mode.analysis.locality" xreflabel="Data Locality"><info><title>Data Locality</title></info>
+
 
   <para><emphasis>Switch:</emphasis>
   <code>_GLIBCXX_PROFILE_LOCALITY</code>.
   </para>
 
-<sect3 id="manual.ext.profile_mode.analysis.locality.sw_prefetch"
- xreflabel="Need Software Prefetch">
-<title>Need Software Prefetch</title>
+<section xml:id="manual.ext.profile_mode.analysis.locality.sw_prefetch" xreflabel="Need Software Prefetch"><info><title>Need Software Prefetch</title></info>
+
 <itemizedlist>
   <listitem><para><emphasis>Switch:</emphasis>
   <code>_GLIBCXX_PROFILE_SOFTWARE_PREFETCH</code>.
@@ -1532,11 +1494,10 @@ foo.cc:7: advice: Insert prefetch instruction.
 </programlisting>
 </para></listitem>
 </itemizedlist>
-</sect3>
+</section>
 
-<sect3 id="manual.ext.profile_mode.analysis.locality.linked"
- xreflabel="Linked Structure Locality">
-<title>Linked Structure Locality</title>
+<section xml:id="manual.ext.profile_mode.analysis.locality.linked" xreflabel="Linked Structure Locality"><info><title>Linked Structure Locality</title></info>
+
 <itemizedlist>
   <listitem><para><emphasis>Switch:</emphasis>
   <code>_GLIBCXX_PROFILE_RBTREE_LOCALITY</code>.
@@ -1548,8 +1509,8 @@ foo.cc:7: advice: Insert prefetch instruction.
   <listitem><para><emphasis>Fundamentals:</emphasis>Allocation can be tuned
   to a specific traversal pattern, to result in better data locality.
   See paper:
-  <ulink url="http://www.springerlink.com/content/8085744l00x72662/">
-  Custom Memory Allocation for Free</ulink>.
+  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.springerlink.com/content/8085744l00x72662/">
+  Custom Memory Allocation for Free</link>.
   </para></listitem>
   <listitem><para><emphasis>Sample runtime reduction:</emphasis>30%.
   </para></listitem>
@@ -1593,14 +1554,13 @@ the allocation sequence or switching to a structure conscious allocator.
 </programlisting>
 </para></listitem>
 </itemizedlist>
-</sect3>
+</section>
 
-</sect2>
+</section>
 
 
-<sect2 id="manual.ext.profile_mode.analysis.mthread"
- xreflabel="Multithreaded Data Access">
-<title>Multithreaded Data Access</title>
+<section xml:id="manual.ext.profile_mode.analysis.mthread" xreflabel="Multithreaded Data Access"><info><title>Multithreaded Data Access</title></info>
+
 
   <para>
   The diagnostics in this group are not meant to be implemented short term.
@@ -1612,9 +1572,8 @@ the allocation sequence or switching to a structure conscious allocator.
   <code>_GLIBCXX_PROFILE_MULTITHREADED</code>.
   </para>
 
-<sect3 id="manual.ext.profile_mode.analysis.mthread.ddtest"
- xreflabel="Dependence Violations at Container Level">
-<title>Data Dependence Violations at Container Level</title>
+<section xml:id="manual.ext.profile_mode.analysis.mthread.ddtest" xreflabel="Dependence Violations at Container Level"><info><title>Data Dependence Violations at Container Level</title></info>
+
 <itemizedlist>
   <listitem><para><emphasis>Switch:</emphasis>
   <code>_GLIBCXX_PROFILE_DDTEST</code>.
@@ -1638,9 +1597,9 @@ the allocation sequence or switching to a structure conscious allocator.
   Keep a shadow for each container.  Record iterator dereferences and
   container member accesses.  Issue advice for elements referenced by
   multiple threads.
-  See paper: <ulink url="http://portal.acm.org/citation.cfm?id=207110.207148">
+  See paper: <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://portal.acm.org/citation.cfm?id=207110.207148">
   The LRPD test: speculative run-time parallelization of loops with
-  privatization and reduction parallelization</ulink>.
+  privatization and reduction parallelization</link>.
   </para></listitem>
   <listitem><para><emphasis>Cost model:</emphasis>
   Number of accesses to elements referenced from multiple threads
@@ -1650,11 +1609,10 @@ the allocation sequence or switching to a structure conscious allocator.
 </programlisting>
 </para></listitem>
 </itemizedlist>
-</sect3>
+</section>
 
-<sect3 id="manual.ext.profile_mode.analysis.mthread.false_share"
- xreflabel="False Sharing">
-<title>False Sharing</title>
+<section xml:id="manual.ext.profile_mode.analysis.mthread.false_share" xreflabel="False Sharing"><info><title>False Sharing</title></info>
+
 <itemizedlist>
   <listitem><para><emphasis>Switch:</emphasis>
   <code>_GLIBCXX_PROFILE_FALSE_SHARING</code>.
@@ -1699,14 +1657,13 @@ sharing in multithreaded access at foo.cc:4.  Detected N shared cache lines.
 </programlisting>
 </para></listitem>
 </itemizedlist>
-</sect3>
+</section>
 
-</sect2>
+</section>
 
 
-<sect2 id="manual.ext.profile_mode.analysis.statistics"
- xreflabel="Statistics">
-<title>Statistics</title>
+<section xml:id="manual.ext.profile_mode.analysis.statistics" xreflabel="Statistics"><info><title>Statistics</title></info>
+
 
 <para>
 <emphasis>Switch:</emphasis>
@@ -1726,32 +1683,26 @@ sharing in multithreaded access at foo.cc:4.  Detected N shared cache lines.
   of each operation actually performed on the container.
 </para>
 
-</sect2>
+</section>
 
 
-</sect1>
+</section>
 
 
-<bibliography id="profile_mode.biblio">
-<title>Bibliography</title>
+<bibliography xml:id="profile_mode.biblio"><info><title>Bibliography</title></info>
+
 
   <biblioentry>
-    <title>
+    <citetitle>
       Perflint: A Context Sensitive Performance Advisor for C++ Programs
-    </title>
+    </citetitle>
 
-    <author>
-      <firstname>Lixia</firstname>
-      <surname>Liu</surname>
-    </author>
-    <author>
-      <firstname>Silvius</firstname>
-      <surname>Rus</surname>
-    </author>
+    <author><personname><firstname>Lixia</firstname><surname>Liu</surname></personname></author>
+    <author><personname><firstname>Silvius</firstname><surname>Rus</surname></personname></author>
 
     <copyright>
       <year>2009</year>
-      <holder></holder>
+      <holder/>
     </copyright>
 
     <publisher>

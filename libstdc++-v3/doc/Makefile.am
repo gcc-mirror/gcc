@@ -220,7 +220,7 @@ xml_noinst = \
 
 XSLTPROC       = xsltproc
 XSLTPROC_FLAGS = --nonet --xinclude
-XSL_STYLE_DIR = /usr/share/sgml/docbook/xsl-stylesheets
+XSL_STYLE_DIR = /usr/share/sgml/docbook/xsl-ns-stylesheets
 XSL_FO_STYLE = $(XSL_STYLE_DIR)/fo/docbook.xsl
 XSL_HTML_STYLE = $(XSL_STYLE_DIR)/xhtml/chunk.xsl
 #XSL_HTML_SINGLE_STYLE = $(XSL_STYLE_DIR)/xhtml/onechunk.xsl
@@ -245,9 +245,10 @@ ${docbook_outdir}/xml:
 XMLLINT = xmllint
 #LINT_FLAGS = --debug --nonet --xinclude --nsclean --postvalid --nowarning
 #LINT_FLAGS = --noblanks --noout --xinclude --postvalid --noent
-LINT_FLAGS = --postvalid --debug --xinclude --noent --noblanks  --nonet --noout
-DTD_FLAGS = --dtdvalid http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd
-XMLLINT_FLAGS = $(LINT_FLAGS) $(DTD_FLAGS)
+LINT_FLAGS = --debug --xinclude --noent --noblanks  --nonet --noout
+#SCHEMA_FLAGS = --relaxng /usr/share/xml/docbook5/schema/rng/5.0/docbookxi.rng
+SCHEMA_FLAGS = --dtdvalid /usr/share/xml/docbook5/schema/dtd/5.0/docbook.dtd
+XMLLINT_FLAGS = $(LINT_FLAGS) $(SCHEMA_FLAGS)
 doc-xml-validate-docbook: $(xml_sources)
 	@echo "Generating XML validation log..."
 	$(XMLLINT) $(XMLLINT_FLAGS) ${top_srcdir}/doc/xml/spine.xml

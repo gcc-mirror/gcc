@@ -1,12 +1,8 @@
-<?xml version='1.0'?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
-[ ]>
-
-<chapter id="manual.ext.debug_mode" xreflabel="Debug Mode">
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="manual.ext.debug_mode" xreflabel="Debug Mode">
 <?dbhtml filename="debug_mode.html"?>
 
-<chapterinfo>
+<info><title>Debug Mode</title>
   <keywordset>
     <keyword>
       C++
@@ -18,12 +14,12 @@
       debug
     </keyword>
   </keywordset>
-</chapterinfo>
+</info>
 
-<title>Debug Mode</title>
 
-<sect1 id="manual.ext.debug_mode.intro" xreflabel="Intro">
-  <title>Intro</title>
+
+<section xml:id="manual.ext.debug_mode.intro" xreflabel="Intro"><info><title>Intro</title></info>
+  
   <para>
     By default, libstdc++ is built with efficiency in mind, and
     therefore performs little or no error checking that is not
@@ -65,10 +61,10 @@
     different predicate.</para></listitem>
   </itemizedlist>
 
-</sect1>
+</section>
 
-<sect1 id="manual.ext.debug_mode.semantics" xreflabel="Semantics">
-  <title>Semantics</title>
+<section xml:id="manual.ext.debug_mode.semantics" xreflabel="Semantics"><info><title>Semantics</title></info>
+  
   <para>
   </para>
 
@@ -146,14 +142,14 @@ guaranteed to work.  For full debug-mode support you can use the
 which always works correctly.
 </para>
 
-</sect1>
+</section>
 
-<sect1 id="manual.ext.debug_mode.using" xreflabel="Using">
-  <title>Using</title>
+<section xml:id="manual.ext.debug_mode.using" xreflabel="Using"><info><title>Using</title></info>
+  
   <para>
   </para>
-<sect2 id="debug_mode.using.mode" xreflabel="Using Mode">
-  <title>Using the Debug Mode</title>
+<section xml:id="debug_mode.using.mode" xreflabel="Using Mode"><info><title>Using the Debug Mode</title></info>
+  
 
 <para>To use the libstdc++ debug mode, compile your application with the
   compiler flag <code>-D_GLIBCXX_DEBUG</code>. Note that this flag
@@ -168,10 +164,10 @@ which always works correctly.
   <code>GLIBCXX_DEBUG_MESSAGE_LENGTH</code> can be used to request a
   different length.</para>
 
-</sect2>
+</section>
 
-<sect2 id="debug_mode.using.specific" xreflabel="Using Specific">
-  <title>Using a Specific Debug Container</title>
+<section xml:id="debug_mode.using.specific" xreflabel="Using Specific"><info><title>Using a Specific Debug Container</title></info>
+  
 <para>When it is not feasible to recompile your entire application, or
   only specific containers need checking, debugging containers are
   available as GNU extensions. These debugging containers are
@@ -183,13 +179,14 @@ which always works correctly.
   containers:
 </para>
 
-<table frame='all'>
+<table frame="all">
 <title>Debugging Containers</title>
-<tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
-<colspec colname='c3'></colspec>
-<colspec colname='c4'></colspec>
+
+<tgroup cols="4" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
 
 <thead>
   <row>
@@ -274,13 +271,14 @@ which always works correctly.
 containers have additional debug capability.
 </para>
 
-<table frame='all'>
+<table frame="all">
 <title>Debugging Containers C++0x</title>
-<tgroup cols='4' align='left' colsep='1' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
-<colspec colname='c3'></colspec>
-<colspec colname='c4'></colspec>
+
+<tgroup cols="4" align="left" colsep="1" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
 
 <thead>
   <row>
@@ -318,15 +316,15 @@ containers have additional debug capability.
 </tbody>
 </tgroup>
 </table>
-</sect2>
-</sect1>
+</section>
+</section>
 
-<sect1 id="manual.ext.debug_mode.design" xreflabel="Design">
-  <title>Design</title>
+<section xml:id="manual.ext.debug_mode.design" xreflabel="Design"><info><title>Design</title></info>
+  
   <para>
   </para>
-  <sect2 id="debug_mode.design.goals" xreflabel="Goals">
-    <title>Goals</title>
+  <section xml:id="debug_mode.design.goals" xreflabel="Goals"><info><title>Goals</title></info>
+    
     <para>
     </para>
 <para> The libstdc++ debug mode replaces unsafe (but efficient) standard
@@ -376,7 +374,7 @@ containers have additional debug capability.
     higher-numbered conformance levels are more usable (i.e., require
     less recompilation) but are more complicated to implement than
     the lower-numbered conformance levels.
-      <orderedlist>
+      <orderedlist inheritnum="ignore" continuation="restarts">
 	<listitem><para><emphasis>Full recompilation</emphasis>: The user must recompile his or
 	her entire application and all C++ libraries it depends on,
 	including the C++ standard library that ships with the
@@ -438,18 +436,18 @@ containers have additional debug capability.
       </orderedlist>
     </para></listitem>
   </itemizedlist>
-  </sect2>
+  </section>
 
-  <sect2 id="debug_mode.design.methods" xreflabel="Methods">
-    <title>Methods</title>
+  <section xml:id="debug_mode.design.methods" xreflabel="Methods"><info><title>Methods</title></info>
+    
     <para>
     </para>
 <para>This section provides an overall view of the design of the
   libstdc++ debug mode and details the relationship between design
   decisions and the stated design goals.</para>
 
-  <sect3 id="debug_mode.design.methods.wrappers" xreflabel="Method Wrapper">
-    <title>The Wrapper Model</title>
+  <section xml:id="debug_mode.design.methods.wrappers" xreflabel="Method Wrapper"><info><title>The Wrapper Model</title></info>
+    
 <para>The libstdc++ debug mode uses a wrapper model where the
   debugging versions of library components (e.g., iterators and
   containers) form a layer on top of the release versions of the
@@ -471,8 +469,8 @@ containers have additional debug capability.
   past-the-end iterators or inserting into a container using an
   iterator from a different container.</para>
 
-  <sect4 id="debug_mode.design.methods.safe_iter" xreflabel="Method Safe Iter">
-    <title>Safe Iterators</title>
+  <section xml:id="debug_mode.design.methods.safe_iter" xreflabel="Method Safe Iter"><info><title>Safe Iterators</title></info>
+    
 <para>Iterator wrappers provide a debugging layer over any iterator that
   is attached to a particular container, and will manage the
   information detailing the iterator's state (singular,
@@ -492,10 +490,10 @@ containers have additional debug capability.
   whose <code>iterator</code> or <code>const_iterator</code> typedef
   is the type of the safe iterator.</para></listitem>
 </itemizedlist>
-  </sect4>
+  </section>
 
-  <sect4 id="debug_mode.design.methods.safe_seq" xreflabel="Method Safe Seq">
-    <title>Safe Sequences (Containers)</title>
+  <section xml:id="debug_mode.design.methods.safe_seq" xreflabel="Method Safe Seq"><info><title>Safe Sequences (Containers)</title></info>
+    
 
 <para>Container wrappers provide a debugging layer over a particular
   container type. Because containers vary greatly in the member
@@ -540,11 +538,11 @@ template&lt;typename _Tp, typename _Allocator = allocator&lt;_Tp&gt;
     // duplicate std::list interface with debugging semantics
   };
 </programlisting>
-  </sect4>
-  </sect3>
+  </section>
+  </section>
 
-  <sect3 id="debug_mode.design.methods.precond" xreflabel="Precondition check">
-    <title>Precondition Checking</title>
+  <section xml:id="debug_mode.design.methods.precond" xreflabel="Precondition check"><info><title>Precondition Checking</title></info>
+    
 <para>The debug mode operates primarily by checking the preconditions of
   all standard library operations that it supports. Preconditions that
   are always checked (regardless of whether or not we are in debug
@@ -575,10 +573,10 @@ template&lt;typename _Tp, typename _Allocator = allocator&lt;_Tp&gt;
   check macro that supports more advance formulation of error
   messages, <code>_GLIBCXX_DEBUG_VERIFY</code>. These macros are
   documented more thoroughly in the debug mode source code.</para>
-  </sect3>
+  </section>
 
-  <sect3 id="debug_mode.design.methods.coexistence" xreflabel="Coexistence">
-    <title>Release- and debug-mode coexistence</title>
+  <section xml:id="debug_mode.design.methods.coexistence" xreflabel="Coexistence"><info><title>Release- and debug-mode coexistence</title></info>
+    
 <para>The libstdc++ debug mode is the first debug mode we know of that
   is able to provide the "Per-use recompilation" (4) guarantee, that
   allows release-compiled and debug-compiled code to be linked and
@@ -591,16 +589,16 @@ template&lt;typename _Tp, typename _Allocator = allocator&lt;_Tp&gt;
 <para>Achieving link- and run-time coexistence is not a trivial
   implementation task. To achieve this goal we required a small
   extension to the GNU C++ compiler (since incorporated into the C++0x language specification, described in the GCC Manual for the C++ language as
-  <ulink url="http://gcc.gnu.org/onlinedocs/gcc/Namespace-Association.html#Namespace-Association">namespace
-  association</ulink>), and a complex organization of debug- and
+  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/Namespace-Association.html#Namespace-Association">namespace
+  association</link>), and a complex organization of debug- and
   release-modes. The end result is that we have achieved per-use
   recompilation but have had to give up some checking of the
   <code>std::basic_string</code> class template (namely, safe
   iterators).
 </para>
 
- <sect4 id="methods.coexistence.compile" xreflabel="Compile">
-   <title>Compile-time coexistence of release- and debug-mode components</title>
+ <section xml:id="methods.coexistence.compile" xreflabel="Compile"><info><title>Compile-time coexistence of release- and debug-mode components</title></info>
+   
 
 <para>Both the release-mode components and the debug-mode
   components need to exist within a single translation unit so that
@@ -665,11 +663,11 @@ namespace std
   inline namespace __debug { }
 }
 </programlisting>
- </sect4>
+ </section>
 
- <sect4 id="methods.coexistence.link" xreflabel="Link">
-   <title>Link- and run-time coexistence of release- and
-    debug-mode components</title>
+ <section xml:id="methods.coexistence.link" xreflabel="Link"><info><title>Link- and run-time coexistence of release- and
+    debug-mode components</title></info>
+   
 
 <para>Because each component has a distinct and separate release and
 debug implementation, there is no issue with link-time
@@ -730,7 +728,7 @@ test02()
   debug/release containers, we must note two things about locale
   facets:</para>
 
-<orderedlist>
+<orderedlist inheritnum="ignore" continuation="restarts">
   <listitem><para>They exist as shared state: one can create a facet in one
   translation unit and access the facet via the same type name in a
   different translation unit. This means that we cannot have two
@@ -752,10 +750,10 @@ test02()
   simple alternatives (e.g., <code>__gnu_debug::basic_string</code>),
   and the usability benefit we gain from the ability to mix debug- and
   release-compiled translation units is enormous.</para>
- </sect4>
+ </section>
 
- <sect4 id="methods.coexistence.alt" xreflabel="Alternatives">
-<title>Alternatives for Coexistence</title>
+ <section xml:id="methods.coexistence.alt" xreflabel="Alternatives"><info><title>Alternatives for Coexistence</title></info>
+
 
 <para>The coexistence scheme above was chosen over many alternatives,
   including language-only solutions and solutions that also required
@@ -805,8 +803,8 @@ test02()
 
   <listitem><para><emphasis> Use implementation-specific properties of anonymous
     namespaces. </emphasis>
-    See <ulink url="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00004.html"> this post
-    </ulink>
+    See <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00004.html"> this post
+    </link>
     This method fails the <emphasis>correctness</emphasis> criteria.</para></listitem>
 
   <listitem><para><emphasis>Extension: allow reopening on namespaces</emphasis>: This would
@@ -832,8 +830,8 @@ test02()
     functions taking no arguments in mixed-mode settings resulting in
     equivalent link names, <code> vector::push_back() </code> being
     one example.
-    See <ulink url="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00177.html">link
-    name</ulink> </para></listitem>
+    See <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2003-08/msg00177.html">link
+    name</link> </para></listitem>
 </itemizedlist>
 
 <para>Other options may exist for implementing the debug mode, many of
@@ -848,12 +846,12 @@ test02()
   added as we are able to identify other typical problem cases. These
   test cases will serve as a benchmark by which we can compare debug
   mode implementations.</para>
- </sect4>
-  </sect3>
-  </sect2>
+ </section>
+  </section>
+  </section>
 
-  <sect2 id="debug_mode.design.other" xreflabel="Other">
-    <title>Other Implementations</title>
+  <section xml:id="debug_mode.design.other" xreflabel="Other"><info><title>Other Implementations</title></info>
+    
     <para>
     </para>
 <para> There are several existing implementations of debug modes for C++
@@ -861,15 +859,15 @@ test02()
   supports debugging for programs using libstdc++. The existing
   implementations include:</para>
 <itemizedlist>
-  <listitem><para><ulink url="http://www.mathcs.sjsu.edu/faculty/horstman/safestl.html">SafeSTL</ulink>:
+  <listitem><para><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.mathcs.sjsu.edu/faculty/horstman/safestl.html">SafeSTL</link>:
   SafeSTL was the original debugging version of the Standard Template
   Library (STL), implemented by Cay S. Horstmann on top of the
   Hewlett-Packard STL. Though it inspired much work in this area, it
   has not been kept up-to-date for use with modern compilers or C++
   standard library implementations.</para></listitem>
 
-  <listitem><para><ulink url="http://www.stlport.org/">STLport</ulink>: STLport is a free
-  implementation of the C++ standard library derived from the <ulink url="http://www.sgi.com/tech/stl/">SGI implementation</ulink>, and
+  <listitem><para><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.stlport.org/">STLport</link>: STLport is a free
+  implementation of the C++ standard library derived from the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/">SGI implementation</link>, and
   ported to many other platforms. It includes a debug mode that uses a
   wrapper model (that in some ways inspired the libstdc++ debug mode
   design), although at the time of this writing the debug mode is
@@ -885,7 +883,7 @@ test02()
   guarantee.</para></listitem>
 </itemizedlist>
 
-  </sect2>
-</sect1>
+  </section>
+</section>
 
 </chapter>

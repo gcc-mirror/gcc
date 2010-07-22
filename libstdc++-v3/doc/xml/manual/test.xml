@@ -1,7 +1,8 @@
-<sect1 id="manual.intro.setup.test" xreflabel="Testing">
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="manual.intro.setup.test" xreflabel="Testing">
 <?dbhtml filename="test.html"?>
 
-<sect1info>
+<info><title>Test</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -25,20 +26,18 @@
       exception safety
     </keyword>
   </keywordset>
-</sect1info>
-
-<title>Test</title>
+</info>
 
 <para>
 The libstdc++ testsuite includes testing for standard conformance,
 regressions, ABI, and performance.
 </para>
 
-<sect2 id="test.organization" xreflabel="Test Organization">
-<title>Organization</title>
+<section xml:id="test.organization" xreflabel="Test Organization"><info><title>Organization</title></info>
 
-<sect3 id="test.organization.layout" xreflabel="Directory Layout">
-<title>Directory Layout</title>
+
+<section xml:id="test.organization.layout" xreflabel="Directory Layout"><info><title>Directory Layout</title></info>
+
 
 <para>
   The directory <emphasis>libsrcdir/testsuite</emphasis> contains the
@@ -131,11 +130,11 @@ util		  Files for libtestc++, utilities and testing routines.
       All new tests should be written with the policy of one test
       case, one file in mind.
    </para>
-</sect3>
+</section>
 
 
-<sect3 id="test.organization.naming" xreflabel="Naming Conventions">
-<title>Naming Conventions</title>
+<section xml:id="test.organization.naming" xreflabel="Naming Conventions"><info><title>Naming Conventions</title></info>
+
 
    <para>
       In addition, there are some special names and suffixes that are
@@ -225,15 +224,15 @@ cat 27_io/objects/char/3_xin.in | a.out
 </listitem>
 </itemizedlist>
 
-</sect3>
-</sect2>
+</section>
+</section>
 
 
-<sect2 id="test.run" xreflabel="Running the Testsuite">
-<title>Running the Testsuite</title>
+<section xml:id="test.run" xreflabel="Running the Testsuite"><info><title>Running the Testsuite</title></info>
 
-  <sect3 id="test.run.basic">
-    <title>Basic</title>
+
+  <section xml:id="test.run.basic"><info><title>Basic</title></info>
+    
 
     <para>
       You can check the status of the build without installing it
@@ -259,18 +258,16 @@ cat 27_io/objects/char/3_xin.in | a.out
 
      <para>
        Archives of test results for various versions and platforms are
-       available on the GCC website in the <ulink
-       url="http://gcc.gnu.org/gcc-4.3/buildstat.html">build
-       status</ulink> section of each individual release, and are also
-       archived on a daily basis on the <ulink
-       url="http://gcc.gnu.org/ml/gcc-testresults/current">gcc-testresults</ulink>
+       available on the GCC website in the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/gcc-4.3/buildstat.html">build
+       status</link> section of each individual release, and are also
+       archived on a daily basis on the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/gcc-testresults/current">gcc-testresults</link>
        mailing list. Please check either of these places for a similar
        combination of source version, operating system, and host CPU.
      </para>
-  </sect3>
+  </section>
 
-  <sect3 id="test.run.variations">
-    <title>Variations</title>
+  <section xml:id="test.run.variations"><info><title>Variations</title></info>
+    
     <para>
       There are several options for running tests, including testing
       the regression tests, testing a subset of the regression tests,
@@ -470,13 +467,12 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
       please email the main libstdc++ mailing list if you see
       something odd or have questions.
    </para>
-  </sect3>
+  </section>
 
-  <sect3 id="test.run.permutations">
-    <title>Permutations</title>
+  <section xml:id="test.run.permutations"><info><title>Permutations</title></info>
+    
     <para>
-      To run the libstdc++ test suite under the <link
-      linkend="manual.ext.debug_mode">debug mode</link>, edit
+      To run the libstdc++ test suite under the <link linkend="manual.ext.debug_mode">debug mode</link>, edit
       <filename>libstdc++-v3/scripts/testsuite_flags</filename> to add the
       compile-time flag <constant>-D_GLIBCXX_DEBUG</constant> to the
       result printed by the <literal>--build-cxx</literal>
@@ -500,11 +496,11 @@ runtest --tool libstdc++ --srcdir=/path/to/gcc/libstdc++-v3/testsuite
       set to <constant>-D_GLIBCXX_DEBUG</constant> or
       <constant>-D_GLIBCXX_PARALLEL</constant>.
     </para>
-  </sect3>
-</sect2>
+  </section>
+</section>
 
-<sect2 id="test.new_tests">
-<title>Writing a new test case</title>
+<section xml:id="test.new_tests"><info><title>Writing a new test case</title></info>
+
 
    <para>
     The first step in making a new test case is to choose the correct
@@ -632,14 +628,14 @@ up in the normal.exp file.
    <para>
     More examples can be found in the libstdc++-v3/testsuite/*/*.cc files.
    </para>
-</sect2>
+</section>
 
 
-<sect2 id="test.harness" xreflabel="Test Harness and Utilities">
-<title>Test Harness and Utilities</title>
+<section xml:id="test.harness" xreflabel="Test Harness and Utilities"><info><title>Test Harness and Utilities</title></info>
 
-<sect3 id="test.harness.dejagnu">
-<title>Dejagnu Harness Details</title>
+
+<section xml:id="test.harness.dejagnu"><info><title>Dejagnu Harness Details</title></info>
+
   <para>
     Underlying details of testing for conformance and regressions are
     abstracted via the GNU Dejagnu package. This is similar to the
@@ -682,10 +678,10 @@ board" information unique to this library.  This is currently unused and sets
 only default variables.
 </para>
 
-</sect3>
+</section>
 
-<sect3 id="test.harness.utils">
-<title>Utilities</title>
+<section xml:id="test.harness.utils"><info><title>Utilities</title></info>
+
   <para>
   </para>
   <para>
@@ -800,24 +796,24 @@ only default variables.
       </itemizedlist>
      </listitem>
   </itemizedlist>
-</sect3>
+</section>
 
-</sect2>
+</section>
 
-<sect2 id="test.special">
-<title>Special Topics</title>
+<section xml:id="test.special"><info><title>Special Topics</title></info>
 
-<sect3 id="test.exception.safety">
-<title>
+
+<section xml:id="test.exception.safety"><info><title>
   Qualifying Exception Safety Guarantees
   <indexterm>
     <primary>Test</primary>
     <secondary>Exception Safety</secondary>
   </indexterm>
-</title>
+</title></info>
 
-<sect4 id="test.exception.safety.overview">
-<title>Overview</title>
+
+<section xml:id="test.exception.safety.overview"><info><title>Overview</title></info>
+
 
        <para>
 	 Testing is composed of running a particular test sequence,
@@ -856,13 +852,13 @@ only default variables.
 	 potential error paths have been exercised in a sequential
 	 manner.
        </para>
-</sect4>
+</section>
 
 
-<sect4 id="test.exception.safety.status">
-<title>
+<section xml:id="test.exception.safety.status"><info><title>
     Existing tests
-</title>
+</title></info>
+
 
   <itemizedlist>
      <listitem>
@@ -924,13 +920,13 @@ as the allocator type.
        </para>
      </listitem>
   </itemizedlist>
-</sect4>
+</section>
 
 
-<sect4 id="test.exception.safety.containers">
-<title>
+<section xml:id="test.exception.safety.containers"><info><title>
 C++0x Requirements Test Sequence Descriptions
-</title>
+</title></info>
+
 
   <itemizedlist>
      <listitem>
@@ -1030,10 +1026,10 @@ C++0x Requirements Test Sequence Descriptions
      </listitem>
   </itemizedlist>
 
-</sect4>
+</section>
 
-</sect3>
+</section>
 
-</sect2>
+</section>
 
-</sect1>
+</section>

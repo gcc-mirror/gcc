@@ -1,7 +1,8 @@
-<sect1 id="manual.appendix.porting.backwards" xreflabel="backwards">
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="manual.appendix.porting.backwards" xreflabel="backwards">
 <?dbhtml filename="backwards.html"?>
 
-<sect1info>
+<info><title>Backwards Compatibility</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -10,12 +11,12 @@
       backwards
     </keyword>
   </keywordset>
-</sect1info>
+</info>
 
-<title>Backwards Compatibility</title>
 
-<sect2 id="backwards.first">
-<title>First</title>
+
+<section xml:id="backwards.first"><info><title>First</title></info>
+
 
 <para>The first generation GNU C++ library was called libg++.  It was a
 separate GNU project, although reliably paired with GCC. Rumors imply
@@ -41,15 +42,15 @@ Committee couldn't include everything, and so a lot of those
 
 <para>Portability notes and known implementation limitations are as follows.</para>
 
-<sect3>
-  <title>No <code>ios_base</code></title>
+<section><info><title>No <code>ios_base</code></title></info>
+  
 
 <para> At least some older implementations don't have <code>std::ios_base</code>, so you should use <code>std::ios::badbit</code>, <code>std::ios::failbit</code> and <code>std::ios::eofbit</code> and <code>std::ios::goodbit</code>.
 </para>
-</sect3>
+</section>
 
-<sect3>
-<title>No <code>cout</code> in <code>ostream.h</code>, no <code>cin</code> in <code>istream.h</code></title>
+<section><info><title>No <code>cout</code> in <code>ostream.h</code>, no <code>cin</code> in <code>istream.h</code></title></info>
+
 
 <para>
 	In earlier versions of the standard,
@@ -65,15 +66,15 @@ Committee couldn't include everything, and so a lot of those
 
 <para>This project is no longer maintained or supported, and the sources
 archived. For the desperate,
-the <ulink url="http://gcc.gnu.org/extensions.html">GCC extensions
-page</ulink> describes where to find the last libg++ source. The code is
+the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/extensions.html">GCC extensions
+page</link> describes where to find the last libg++ source. The code is
 considered replaced and rewritten.
 </para>
-</sect3>
-</sect2>
+</section>
+</section>
 
-<sect2 id="backwards.second">
-<title>Second</title>
+<section xml:id="backwards.second"><info><title>Second</title></info>
+
 
 <para>
   The second generation GNU C++ library was called libstdc++, or
@@ -95,8 +96,8 @@ considered replaced and rewritten.
   Portability notes and known implementation limitations are as follows.
 </para>
 
-<sect3>
-  <title>Namespace <code>std::</code> not supported</title>
+<section><info><title>Namespace <code>std::</code> not supported</title></info>
+  
 
   <para>
     Some care is required to support C++ compiler and or library
@@ -179,10 +180,10 @@ AC_DEFUN([AC_CXX_NAMESPACE_STD], [
   fi
 ])
 </programlisting>
-</sect3>
+</section>
 
-<sect3>
-<title>Illegal iterator usage</title>
+<section><info><title>Illegal iterator usage</title></info>
+
 <para>
   The following illustrate implementation-allowed illegal iterator
   use, and then correct use.
@@ -209,15 +210,14 @@ AC_DEFUN([AC_CXX_NAMESPACE_STD], [
     </para>
   </listitem>
 </itemizedlist>
-</sect3>
+</section>
 
-<sect3>
-  <title><code>isspace</code> from <filename class="headerfile">cctype</filename> is a macro
-  </title>
+<section><info><title><code>isspace</code> from <filename class="headerfile">cctype</filename> is a macro
+  </title></info>
+  
 
   <para>
-    Glibc 2.0.x and 2.1.x define <filename
-    class="headerfile">ctype.h</filename> functionality as macros
+    Glibc 2.0.x and 2.1.x define <filename class="headerfile">ctype.h</filename> functionality as macros
     (isspace, isalpha etc.).
   </para>
 
@@ -259,17 +259,16 @@ std:: (__ctype_b[(int) ( ( 'X' ) )] &amp; (unsigned short int) _ISspace ) ;
 
 <para>
   Another problem arises if you put a <code>using namespace
-  std;</code> declaration at the top, and include <filename
-  class="headerfile">ctype.h</filename>. This will result in
+  std;</code> declaration at the top, and include <filename class="headerfile">ctype.h</filename>. This will result in
   ambiguities between the definitions in the global namespace
   (<filename class="headerfile">ctype.h</filename>) and the
   definitions in namespace <code>std::</code>
   (<code>&lt;cctype&gt;</code>).
 </para>
-</sect3>
+</section>
 
-<sect3>
-<title>No <code>vector::at</code>, <code>deque::at</code>, <code>string::at</code></title>
+<section><info><title>No <code>vector::at</code>, <code>deque::at</code>, <code>string::at</code></title></info>
+
 
 <para>
   One solution is to add an autoconf-test for this:
@@ -303,10 +302,10 @@ AC_DEFINE(HAVE_CONTAINER_AT)],
   to check for <code>string::at</code> separately.
 </para>
 
-</sect3>
+</section>
 
-<sect3>
-<title>No <code>std::char_traits&lt;char&gt;::eof</code></title>
+<section><info><title>No <code>std::char_traits&lt;char&gt;::eof</code></title></info>
+
 
 <para>
   Use some kind of autoconf test, plus this:
@@ -320,10 +319,10 @@ AC_DEFINE(HAVE_CONTAINER_AT)],
 #endif
 </programlisting>
 
-</sect3>
+</section>
 
-<sect3>
-<title>No <code>string::clear</code></title>
+<section><info><title>No <code>string::clear</code></title></info>
+
 
 <para>
   There are two functions for deleting the contents of a string:
@@ -350,28 +349,27 @@ erase(size_type __pos = 0, size_type __n = npos)
   version, so you should use <code>erase</code> (which is probably
   faster than <code>operator=(charT*)</code>).
 </para>
-</sect3>
+</section>
 
-<sect3>
-<title>
+<section><info><title>
   Removal of <code>ostream::form</code> and <code>istream::scan</code>
   extensions
-</title>
+</title></info>
+
 
 <para>
   These are no longer supported. Please use stringstreams instead.
 </para>
-</sect3>
+</section>
 
-<sect3>
-<title>No <code>basic_stringbuf</code>, <code>basic_stringstream</code></title>
+<section><info><title>No <code>basic_stringbuf</code>, <code>basic_stringstream</code></title></info>
+
 
 <para>
   Although the ISO standard <code>i/ostringstream</code>-classes are
   provided, (<filename class="headerfile">sstream</filename>), for
   compatibility with older implementations the pre-ISO
-  <code>i/ostrstream</code> (<filename
-  class="headerfile">strstream</filename>) interface is also provided,
+  <code>i/ostrstream</code> (<filename class="headerfile">strstream</filename>) interface is also provided,
   with these caveats:
 </para>
 
@@ -484,34 +482,33 @@ any = temp;
 </programlisting>
 
 <para>
-  Another example of using stringstreams is in <link
-  linkend="strings.string.shrink">this howto</link>.
+  Another example of using stringstreams is in <link linkend="strings.string.shrink">this howto</link>.
 </para>
 
 <para> There is additional information in the libstdc++-v2 info files, in
 particular <quote>info iostream</quote>.
 </para>
-</sect3>
+</section>
 
-<sect3>
-  <title>Little or no wide character support</title>
+<section><info><title>Little or no wide character support</title></info>
+  
   <para>
     Classes <classname>wstring</classname> and
     <classname>char_traits&lt;wchar_t&gt;</classname> are
     not supported.
   </para>
-</sect3>
+</section>
 
-<sect3>
-  <title>No templatized iostreams</title>
+<section><info><title>No templatized iostreams</title></info>
+  
   <para>
     Classes <classname>wfilebuf</classname> and
     <classname>wstringstream</classname> are not supported.
   </para>
-</sect3>
+</section>
 
-<sect3>
-<title>Thread safety issues</title>
+<section><info><title>Thread safety issues</title></info>
+
 
   <para>
     Earlier GCC releases had a somewhat different approach to
@@ -541,10 +538,9 @@ particular <quote>info iostream</quote>.
      written against per-CPU-architecture spinlocks and other parts
      against the gthr.h abstraction layer which is provided by gcc.  A
      minor problem that pops up every so often is different
-     interpretations of what &quot;thread-safe&quot; means for a
-     library (not a general program).  We currently use the <ulink
-     url="http://www.sgi.com/tech/stl/thread_safety.html">same
-     definition that SGI</ulink> uses for their STL subset.  However,
+     interpretations of what "thread-safe" means for a
+     library (not a general program).  We currently use the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/thread_safety.html">same
+     definition that SGI</link> uses for their STL subset.  However,
      the exception for read-only containers only applies to the STL
      components. This definition is widely-used and something similar
      will be used in the next version of the C++ standard library.
@@ -554,23 +550,22 @@ particular <quote>info iostream</quote>.
      Here is a small link farm to threads (no pun) in the mail
      archives that discuss the threading problem.  Each link is to the
      first relevant message in the thread; from there you can use
-     &quot;Thread Next&quot; to move down the thread.  This farm is in
+     "Thread Next" to move down the thread.  This farm is in
      latest-to-oldest order.
    </para>
 
       <itemizedlist>
 	<listitem>
 	  <para>
-	    Our threading expert Loren gives a breakdown of <ulink
-	    url="http://gcc.gnu.org/ml/libstdc++/2001-10/msg00024.html">the
-	    six situations involving threads</ulink> for the 3.0
+	    Our threading expert Loren gives a breakdown of <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2001-10/msg00024.html">the
+	    six situations involving threads</link> for the 3.0
 	    release series.
 	  </para>
       </listitem>
 	<listitem>
 	  <para>
-	    <ulink url="http://gcc.gnu.org/ml/libstdc++/2001-05/msg00384.html">
-	This message</ulink> inspired a recent updating of issues with
+	    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2001-05/msg00384.html">
+	This message</link> inspired a recent updating of issues with
 	threading and the SGI STL library.  It also contains some
 	example POSIX-multithreaded STL code.
 	  </para>
@@ -584,12 +579,12 @@ particular <quote>info iostream</quote>.
      with work to restore them.  Many of the points have been
      superseded anyhow.)
    </para>
-</sect3>
+</section>
 
-</sect2>
+</section>
 
-<sect2 id="backwards.third">
-<title>Third</title>
+<section xml:id="backwards.third"><info><title>Third</title></info>
+
 
 <para> The third generation GNU C++ library is called libstdc++, or
 libstdc++-v3.
@@ -606,8 +601,8 @@ libstdc++-v3.
 
 <para>Portability notes and known implementation limitations are as follows.</para>
 
-<sect3>
-<title>Pre-ISO headers moved to backwards or removed</title>
+<section><info><title>Pre-ISO headers moved to backwards or removed</title></info>
+
 
 <para> The pre-ISO C++ headers
       (<code>iostream.h</code>, <code>defalloc.h</code> etc.) are
@@ -621,8 +616,8 @@ libstdc++-v3.
    </para>
    <para>For those of you new to ISO C++ (welcome, time travelers!), no,
       that isn't a typo. Yes, the headers really have new names.
-      Marshall Cline's C++ FAQ Lite has a good explanation in <ulink url="http://www.parashift.com/c++-faq-lite/coding-standards.html#faq-27.4">item
-      [27.4]</ulink>.
+      Marshall Cline's C++ FAQ Lite has a good explanation in <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.parashift.com/c++-faq-lite/coding-standards.html#faq-27.4">item
+      [27.4]</link>.
    </para>
 
 <para> Some include adjustment may be required. What follows is an
@@ -691,10 +686,10 @@ directive <code>using namespace std;</code> can be put at the global
 scope. This should be enough to get this code compiling, assuming the
 other usage is correct.
 </para>
-</sect3>
+</section>
 
-<sect3>
-<title>Extension headers hash_map, hash_set moved to ext or backwards</title>
+<section><info><title>Extension headers hash_map, hash_set moved to ext or backwards</title></info>
+
 
       <para>At this time most of the features of the SGI STL extension have been
 	 replaced by standardized libraries.
@@ -781,11 +776,11 @@ AC_DEFUN([AC_HEADER_EXT_HASH_SET], [
   fi
 ])
 </programlisting>
-</sect3>
+</section>
 
-<sect3>
-<title>No <code>ios::nocreate/ios::noreplace</code>.
-</title>
+<section><info><title>No <code>ios::nocreate/ios::noreplace</code>.
+</title></info>
+
 
 <para> The existence of <code>ios::nocreate</code> being used for
 input-streams has been confirmed, most probably because the author
@@ -800,12 +795,12 @@ decide whether you want to create/replace or not. To my knowledge,
 even older implementations support <code>app</code>, <code>ate</code>
 and <code>trunc</code> (except for <code>app</code> ?).
 </para>
-</sect3>
+</section>
 
-<sect3>
-<title>
+<section><info><title>
 No <code>stream::attach(int fd)</code>
-</title>
+</title></info>
+
 
 <para>
       Phil Edwards writes: It was considered and rejected for the ISO
@@ -825,22 +820,22 @@ No <code>stream::attach(int fd)</code>
 <para>
       An extension is available that implements this.
       <filename class="headerfile">ext/stdio_filebuf.h</filename> contains a derived class called
-      <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00074.html"><code>__gnu_cxx::stdio_filebuf</code></ulink>.
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00074.html"><code>__gnu_cxx::stdio_filebuf</code></link>.
       This class can be constructed from a C <code>FILE*</code> or a file
       descriptor, and provides the <code>fd()</code> function.
     </para>
 
 <para>
  For another example of this, refer to
-      <ulink url="http://www.josuttis.com/cppcode/fdstream.html">fdstream example</ulink>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.josuttis.com/cppcode/fdstream.html">fdstream example</link>
       by Nicolai Josuttis.
 </para>
-</sect3>
+</section>
 
-<sect3>
-<title>
+<section><info><title>
 Support for C++98 dialect.
-</title>
+</title></info>
+
 
 <para>Check for complete library coverage of the C++1998/2003 standard.
 </para>
@@ -911,12 +906,12 @@ AC_DEFUN([AC_HEADER_STDCXX_98], [
   fi
 ])
 </programlisting>
-</sect3>
+</section>
 
-<sect3>
-<title>
+<section><info><title>
 Support for C++TR1 dialect.
-</title>
+</title></info>
+
 
 <para>Check for library coverage of the TR1 standard.
 </para>
@@ -1002,13 +997,13 @@ AC_DEFUN([AC_HEADER_TR1_UNORDERED_SET], [
   fi
 ])
 </programlisting>
-</sect3>
+</section>
 
 
-<sect3>
-<title>
+<section><info><title>
 Support for C++0x dialect.
-</title>
+</title></info>
+
 
 <para>Check for baseline language coverage in the compiler for the C++0xstandard.
 </para>
@@ -1234,63 +1229,54 @@ AC_DEFUN([AC_HEADER_UNORDERED_SET], [
   fi
 ])
 </programlisting>
-</sect3>
+</section>
 
-<sect3>
-<title>
+<section><info><title>
   Container::iterator_type is not necessarily Container::value_type*
-</title>
+</title></info>
+
 
 <para>
   This is a change in behavior from the previous version. Now, most
   <type>iterator_type</type> typedefs in container classes are POD
   objects, not <type>value_type</type> pointers.
 </para>
-</sect3>
+</section>
 
-</sect2>
+</section>
 
-<bibliography id="backwards.biblio">
-<title>Bibliography</title>
+<bibliography xml:id="backwards.biblio"><info><title>Bibliography</title></info>
+
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://www.kegel.com/gcc/gcc4.html">
-	<citetitle>
-	  Migrating to GCC 4.1
-	</citetitle>
-	</ulink>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.kegel.com/gcc/gcc4.html" class="uri">
     </biblioid>
-    <author>
-      <firstname>Dan</firstname>
-      <surname>Kegel</surname>
-    </author>
+    <citetitle>
+      Migrating to GCC 4.1
+    </citetitle>
+
+    <author><personname><firstname>Dan</firstname><surname>Kegel</surname></personname></author>
   </biblioentry>
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://lists.debian.org/debian-gcc/2006/03/msg00405.html">
-	<citetitle>
-	  Building the Whole Debian Archive with GCC 4.1: A Summary
-	</citetitle>
-      </ulink>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://lists.debian.org/debian-gcc/2006/03/msg00405.html" class="uri">
     </biblioid>
-    <author>
-      <firstname>Martin</firstname>
-      <surname>Michlmayr</surname>
-    </author>
+    <citetitle>
+      Building the Whole Debian Archive with GCC 4.1: A Summary
+    </citetitle>
+
+    <author><personname><firstname>Martin</firstname><surname>Michlmayr</surname></personname></author>
   </biblioentry>
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://annwm.lbl.gov/~leggett/Atlas/gcc-3.2.html">
-	<citetitle>
-	  Migration guide for GCC-3.2
-	</citetitle>
-      </ulink>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://annwm.lbl.gov/~leggett/Atlas/gcc-3.2.html" class="uri">
     </biblioid>
+    <citetitle>
+      Migration guide for GCC-3.2
+    </citetitle>
+
   </biblioentry>
 
 </bibliography>
 
-</sect1>
+</section>

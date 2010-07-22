@@ -1,12 +1,11 @@
-<?xml version='1.0'?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
-[ ]>
-
-<chapter id="std.strings" xreflabel="Strings">
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="std.strings" xreflabel="Strings">
 <?dbhtml filename="strings.html"?>
 
-<chapterinfo>
+<info><title>
+  Strings
+  <indexterm><primary>Strings</primary></indexterm>
+</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -15,25 +14,20 @@
       library
     </keyword>
   </keywordset>
-</chapterinfo>
-
-<title>
-  Strings
-  <indexterm><primary>Strings</primary></indexterm>
-</title>
+</info>
 
 <!-- Sect1 01 : Character Traits -->
 
 <!-- Sect1 02 : String Classes -->
-<sect1 id="std.strings.string" xreflabel="string">
-  <title>String Classes</title>
+<section xml:id="std.strings.string" xreflabel="string"><info><title>String Classes</title></info>
+  
 
-  <sect2 id="strings.string.simple" xreflabel="Simple Transformations">
-    <title>Simple Transformations</title>
+  <section xml:id="strings.string.simple" xreflabel="Simple Transformations"><info><title>Simple Transformations</title></info>
+    
     <para>
       Here are Standard, simple, and portable ways to perform common
       transformations on a <code>string</code> instance, such as
-      &quot;convert to all upper case.&quot; The word transformations
+      "convert to all upper case." The word transformations
       is especially apt, because the standard template function
       <code>transform&lt;&gt;</code> is used.
    </para>
@@ -90,8 +84,8 @@
       are overloaded names (declared in <code>&lt;cctype&gt;</code> and
       <code>&lt;locale&gt;</code>) so the template-arguments for
       <code>transform&lt;&gt;</code> cannot be deduced, as explained in
-      <ulink url="http://gcc.gnu.org/ml/libstdc++/2002-11/msg00180.html">this
-      message</ulink>.
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2002-11/msg00180.html">this
+      message</link>.
       <!-- section 14.8.2.4 clause 16 in ISO 14882:1998  -->
       At minimum, you can write short wrappers like
    </para>
@@ -122,14 +116,14 @@
       optimize named temporaries out of existence.
    </para>
 
-  </sect2>
-  <sect2 id="strings.string.case" xreflabel="Case Sensitivity">
-    <title>Case Sensitivity</title>
+  </section>
+  <section xml:id="strings.string.case" xreflabel="Case Sensitivity"><info><title>Case Sensitivity</title></info>
+    
     <para>
     </para>
 
    <para>The well-known-and-if-it-isn't-well-known-it-ought-to-be
-      <ulink url="http://www.gotw.ca/gotw/">Guru of the Week</ulink>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gotw.ca/gotw/">Guru of the Week</link>
       discussions held on Usenet covered this topic in January of 1998.
       Briefly, the challenge was, <quote>write a 'ci_string' class which
       is identical to the standard 'string' class, but is
@@ -149,34 +143,33 @@
 
    <para>The solution is surprisingly easy.  The original answer was
    posted on Usenet, and a revised version appears in Herb Sutter's
-   book <emphasis>Exceptional C++</emphasis> and on his website as <ulink url="http://www.gotw.ca/gotw/029.htm">GotW 29</ulink>.
+   book <emphasis>Exceptional C++</emphasis> and on his website as <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gotw.ca/gotw/029.htm">GotW 29</link>.
    </para>
    <para>See?  Told you it was easy!</para>
    <para>
      <emphasis>Added June 2000:</emphasis> The May 2000 issue of C++
-     Report contains a fascinating <ulink
-     url="http://lafstern.org/matt/col2_new.pdf"> article</ulink> by
+     Report contains a fascinating <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://lafstern.org/matt/col2_new.pdf"> article</link> by
      Matt Austern (yes, <emphasis>the</emphasis> Matt Austern) on why
      case-insensitive comparisons are not as easy as they seem, and
      why creating a class is the <emphasis>wrong</emphasis> way to go
      about it in production code.  (The GotW answer mentions one of
      the principle difficulties; his article mentions more.)
    </para>
-   <para>Basically, this is &quot;easy&quot; only if you ignore some things,
+   <para>Basically, this is "easy" only if you ignore some things,
       things which may be too important to your program to ignore.  (I chose
       to ignore them when originally writing this entry, and am surprised
       that nobody ever called me on it...)  The GotW question and answer
       remain useful instructional tools, however.
    </para>
    <para><emphasis>Added September 2000:</emphasis>  James Kanze provided a link to a
-      <ulink url="http://www.unicode.org/reports/tr21/tr21-5.html">Unicode
-      Technical Report discussing case handling</ulink>, which provides some
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.unicode.org/reports/tr21/tr21-5.html">Unicode
+      Technical Report discussing case handling</link>, which provides some
       very good information.
    </para>
 
-  </sect2>
-  <sect2 id="strings.string.character_types" xreflabel="Arbitrary Characters">
-    <title>Arbitrary Character Types</title>
+  </section>
+  <section xml:id="strings.string.character_types" xreflabel="Arbitrary Characters"><info><title>Arbitrary Character Types</title></info>
+    
     <para>
     </para>
 
@@ -231,24 +224,24 @@
       built-in types.
    </para>
    <para>If you want to use your own special character class, then you have
-      <ulink url="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00163.html">a lot
-      of work to do</ulink>, especially if you with to use i18n features
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00163.html">a lot
+      of work to do</link>, especially if you with to use i18n features
       (facets require traits information but don't have a traits argument).
    </para>
-   <para>Another example of how to specialize char_traits was given <ulink url="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00260.html">on the
-      mailing list</ulink> and at a later date was put into the file <code>
+   <para>Another example of how to specialize char_traits was given <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00260.html">on the
+      mailing list</link> and at a later date was put into the file <code>
       include/ext/pod_char_traits.h</code>.  We agree
       that the way it's used with basic_string (scroll down to main())
-      doesn't look nice, but that's because <ulink url="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00236.html">the
-      nice-looking first attempt</ulink> turned out to <ulink url="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00242.html">not
-      be conforming C++</ulink>, due to the rule that CharT must be a POD.
+      doesn't look nice, but that's because <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00236.html">the
+      nice-looking first attempt</link> turned out to <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00242.html">not
+      be conforming C++</link>, due to the rule that CharT must be a POD.
       (See how tricky this is?)
    </para>
 
-  </sect2>
+  </section>
 
-  <sect2 id="strings.string.token" xreflabel="Tokenizing">
-    <title>Tokenizing</title>
+  <section xml:id="strings.string.token" xreflabel="Tokenizing"><info><title>Tokenizing</title></info>
+    
     <para>
     </para>
    <para>The Standard C (and C++) function <code>strtok()</code> leaves a lot to
@@ -256,7 +249,7 @@
       destroys the character string on which it operates, and it requires
       you to handle all the memory problems.  But it does let the client
       code decide what to use to break the string into pieces; it allows
-      you to choose the &quot;whitespace,&quot; so to speak.
+      you to choose the "whitespace," so to speak.
    </para>
    <para>A C++ implementation lets us keep the good things and fix those
       annoyances.  The implementation here is more intuitive (you only
@@ -345,9 +338,9 @@ stringtok(Container &amp;container, string const &amp;in,
    </para>
 
 
-  </sect2>
-  <sect2 id="strings.string.shrink" xreflabel="Shrink to Fit">
-    <title>Shrink to Fit</title>
+  </section>
+  <section xml:id="strings.string.shrink" xreflabel="Shrink to Fit"><info><title>Shrink to Fit</title></info>
+    
     <para>
     </para>
    <para>From GCC 3.4 calling <code>s.reserve(res)</code> on a
@@ -372,10 +365,10 @@ stringtok(Container &amp;container, string const &amp;in,
    </para>
 
 
-  </sect2>
+  </section>
 
-  <sect2 id="strings.string.Cstring" xreflabel="CString (MFC)">
-    <title>CString (MFC)</title>
+  <section xml:id="strings.string.Cstring" xreflabel="CString (MFC)"><info><title>CString (MFC)</title></info>
+    
     <para>
     </para>
 
@@ -387,8 +380,8 @@ stringtok(Container &amp;container, string const &amp;in,
       are relying on special functions offered by the CString class.
    </para>
    <para>Things are not as bad as they seem.  In
-      <ulink url="http://gcc.gnu.org/ml/gcc/1999-04n/msg00236.html">this
-      message</ulink>, Joe Buck points out a few very important things:
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/gcc/1999-04n/msg00236.html">this
+      message</link>, Joe Buck points out a few very important things:
    </para>
       <itemizedlist>
 	 <listitem><para>The Standard <code>string</code> supports all the operations
@@ -485,8 +478,8 @@ stringtok(Container &amp;container, string const &amp;in,
 	 </para></listitem>
       </itemizedlist>
 
-  </sect2>
-</sect1>
+  </section>
+</section>
 
 <!-- Sect1 03 : Interacting with C -->
 

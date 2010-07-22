@@ -1,7 +1,8 @@
-<section id="std.localization.facet.codecvt" xreflabel="codecvt">
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="std.localization.facet.codecvt" xreflabel="codecvt">
 <?dbhtml filename="codecvt.html"?>
 
-<sectioninfo>
+<info><title>codecvt</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -10,9 +11,9 @@
       codecvt
     </keyword>
   </keywordset>
-</sectioninfo>
+</info>
 
-<title>codecvt</title>
+
 
 <para>
 The standard class codecvt attempts to address conversions between
@@ -30,8 +31,8 @@ specializations for wide and narrow characters and the
 implementation-provided extended functionality are given.
 </para>
 
-<section id="facet.codecvt.req">
-<title>Requirements</title>
+<section xml:id="facet.codecvt.req"><info><title>Requirements</title></info>
+
 
 <para>
 Around page 425 of the C++ Standard, this charming heading comes into view:
@@ -110,11 +111,11 @@ template parameter, imply an implementation strategy that is mostly
 mcsrtombs and wcsrtombs in particular.</para>
 </section>
 
-<section id="facet.codecvt.design">
-<title>Design</title>
+<section xml:id="facet.codecvt.design"><info><title>Design</title></info>
 
-<section id="codecvt.design.wchar_t_size">
-    <title><type>wchar_t</type> Size</title>
+
+<section xml:id="codecvt.design.wchar_t_size"><info><title><type>wchar_t</type> Size</title></info>
+    
 
     <para>
       The simple implementation detail of wchar_t's size seems to
@@ -133,11 +134,11 @@ mcsrtombs and wcsrtombs in particular.</para>
     </para>
   </section>
 
-<section id="codecvt.design.unicode">
-  <title>Support for Unicode</title>
+<section xml:id="codecvt.design.unicode"><info><title>Support for Unicode</title></info>
+  
   <para>
     Probably the most frequently asked question about code conversion
-    is: &quot;So dudes, what's the deal with Unicode strings?&quot;
+    is: "So dudes, what's the deal with Unicode strings?"
     The dude part is optional, but apparently the usefulness of
     Unicode strings is pretty widely appreciated. Sadly, this specific
     encoding (And other useful encodings like UTF8, UCS4, ISO 8859-10,
@@ -190,7 +191,7 @@ UTF-16, UTF8, UTF16).
 
 <para>
 For iconv-based implementations, string literals for each of the
-encodings (i.e. &quot;UCS-2&quot; and &quot;UTF-8&quot;) are necessary,
+encodings (i.e. "UCS-2" and "UTF-8") are necessary,
 although for other,
 non-iconv implementations a table of enumerated values or some other
 mechanism may be required.
@@ -204,14 +205,14 @@ mechanism may be required.
 <listitem><para>
  Some encodings require explicit endian-ness. As such, some kind
   of endian marker or other byte-order marker will be necessary. See
-  &quot;Footnotes for C/C++ developers&quot; in Haible for more information on
+  "Footnotes for C/C++ developers" in Haible for more information on
   UCS-2/Unicode endian issues. (Summary: big endian seems most likely,
   however implementations, most notably Microsoft, vary.)
 </para></listitem>
 
 <listitem><para>
  Types representing the conversion state, for conversions involving
-  the machinery in the &quot;C&quot; library, or the conversion descriptor, for
+  the machinery in the "C" library, or the conversion descriptor, for
   conversions using iconv (such as the type iconv_t.)  Note that the
   conversion descriptor encodes more information than a simple encoding
   state type.
@@ -238,13 +239,13 @@ mechanism may be required.
 </itemizedlist>
 </section>
 
-<section id="codecvt.design.issues">
-  <title>Other Issues</title>
+<section xml:id="codecvt.design.issues"><info><title>Other Issues</title></info>
+  
 <para>
 In addition, multi-threaded and multi-locale environments also impact
 the design and requirements for code conversions. In particular, they
 affect the required specialization codecvt&lt;wchar_t, char, mbstate_t&gt;
-when implemented using standard &quot;C&quot; functions.
+when implemented using standard "C" functions.
 </para>
 
 <para>
@@ -267,7 +268,7 @@ incorrect. Yikes!
 
 <para>
 The last, and fundamental problem, is the assumption of a global
-locale for all the &quot;C&quot; functions referenced above. For something like
+locale for all the "C" functions referenced above. For something like
 C++ iostreams (where codecvt is explicitly used) the notion of
 multiple locales is fundamental. In practice, most users may not run
 into this limitation. However, as a quality of implementation issue,
@@ -288,8 +289,8 @@ LC_CTYPE category implements.
 
 </section>
 
-<section id="facet.codecvt.impl">
-<title>Implementation</title>
+<section xml:id="facet.codecvt.impl"><info><title>Implementation</title></info>
+
 
 <para>
 The two required specializations are implemented as follows:
@@ -434,8 +435,8 @@ codecvt usage.
 
 </section>
 
-<section id="facet.codecvt.use">
-<title>Use</title>
+<section xml:id="facet.codecvt.use"><info><title>Use</title></info>
+
 <para>A conversions involving string literal.</para>
 
 <programlisting>
@@ -479,8 +480,8 @@ codecvt usage.
 
 </section>
 
-<section id="facet.codecvt.future">
-<title>Future</title>
+<section xml:id="facet.codecvt.future"><info><title>Future</title></info>
+
 <itemizedlist>
 <listitem>
   <para>
@@ -521,7 +522,7 @@ codecvt usage.
       </para></listitem>
 
 		<listitem><para>
-      how to synchronize the &quot;C&quot; and &quot;C++&quot;
+      how to synchronize the "C" and "C++"
       conversion information?
       </para></listitem>
 
@@ -535,21 +536,15 @@ codecvt usage.
 </section>
 
 
-<bibliography id="facet.codecvt.biblio">
-<title>Bibliography</title>
+<bibliography xml:id="facet.codecvt.biblio"><info><title>Bibliography</title></info>
+
 
   <biblioentry>
-    <title>
+    <citetitle>
       The GNU C Library
-    </title>
-    <author>
-      <surname>McGrath</surname>
-      <firstname>Roland</firstname>
-    </author>
-    <author>
-      <surname>Drepper</surname>
-      <firstname>Ulrich</firstname>
-    </author>
+    </citetitle>
+    <author><personname><surname>McGrath</surname><firstname>Roland</firstname></personname></author>
+    <author><personname><surname>Drepper</surname><firstname>Ulrich</firstname></personname></author>
     <copyright>
       <year>2007</year>
       <holder>FSF</holder>
@@ -560,23 +555,20 @@ codecvt usage.
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       Correspondence
-    </title>
-    <author>
-      <surname>Drepper</surname>
-      <firstname>Ulrich</firstname>
-    </author>
+    </citetitle>
+    <author><personname><surname>Drepper</surname><firstname>Ulrich</firstname></personname></author>
     <copyright>
       <year>2002</year>
-      <holder></holder>
+      <holder/>
     </copyright>
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       ISO/IEC 14882:1998 Programming languages - C++
-    </title>
+    </citetitle>
     <copyright>
       <year>1998</year>
       <holder>ISO</holder>
@@ -584,9 +576,9 @@ codecvt usage.
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       ISO/IEC 9899:1999 Programming languages - C
-    </title>
+    </citetitle>
     <copyright>
       <year>1999</year>
       <holder>ISO</holder>
@@ -594,13 +586,11 @@ codecvt usage.
   </biblioentry>
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://www.opengroup.org/austin">
-	<citetitle>
-	  System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
-	</citetitle>
-      </ulink>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.opengroup.org/austin" class="uri">
     </biblioid>
+    <citetitle>
+      System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
+    </citetitle>
     <copyright>
       <year>2008</year>
       <holder>
@@ -611,13 +601,10 @@ codecvt usage.
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       The C++ Programming Language, Special Edition
-    </title>
-    <author>
-      <surname>Stroustrup</surname>
-      <firstname>Bjarne</firstname>
-    </author>
+    </citetitle>
+    <author><personname><surname>Stroustrup</surname><firstname>Bjarne</firstname></personname></author>
     <copyright>
       <year>2000</year>
       <holder>Addison Wesley, Inc.</holder>
@@ -632,20 +619,14 @@ codecvt usage.
 
 
   <biblioentry>
-    <title>
+    <citetitle>
       Standard C++ IOStreams and Locales
-    </title>
+    </citetitle>
     <subtitle>
       Advanced Programmer's Guide and Reference
     </subtitle>
-    <author>
-      <surname>Langer</surname>
-      <firstname>Angelika</firstname>
-    </author>
-    <author>
-      <surname>Kreft</surname>
-      <firstname>Klaus</firstname>
-    </author>
+    <author><personname><surname>Langer</surname><firstname>Angelika</firstname></personname></author>
+    <author><personname><surname>Kreft</surname><firstname>Klaus</firstname></personname></author>
     <copyright>
       <year>2000</year>
       <holder>Addison Wesley Longman, Inc.</holder>
@@ -658,46 +639,34 @@ codecvt usage.
   </biblioentry>
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://www.lysator.liu.se/c/na1.html">
-	<citetitle>
-	  A brief description of Normative Addendum 1
-	</citetitle>
-      </ulink>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.lysator.liu.se/c/na1.html" class="uri">
     </biblioid>
-    <author>
-      <surname>Feather</surname>
-      <firstname>Clive</firstname>
-    </author>
+    <citetitle>
+      A brief description of Normative Addendum 1
+    </citetitle>
+
+    <author><personname><surname>Feather</surname><firstname>Clive</firstname></personname></author>
     <pagenums>Extended Character Sets</pagenums>
   </biblioentry>
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://tldp.org/HOWTO/Unicode-HOWTO.html">
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://tldp.org/HOWTO/Unicode-HOWTO.html" class="uri">
+	</biblioid>
 	<citetitle>
 	  The Unicode HOWTO
 	</citetitle>
-	</ulink>
-    </biblioid>
-    <author>
-      <surname>Haible</surname>
-      <firstname>Bruno</firstname>
-    </author>
+
+    <author><personname><surname>Haible</surname><firstname>Bruno</firstname></personname></author>
   </biblioentry>
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://www.cl.cam.ac.uk/~mgk25/unicode.html">
-	<citetitle>
-	  UTF-8 and Unicode FAQ for Unix/Linux
-	</citetitle>
-      </ulink>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.cl.cam.ac.uk/~mgk25/unicode.html" class="uri">
     </biblioid>
-    <author>
-      <surname>Khun</surname>
-      <firstname>Markus</firstname>
-    </author>
+    <citetitle>
+      UTF-8 and Unicode FAQ for Unix/Linux
+    </citetitle>
+
+    <author><personname><surname>Khun</surname><firstname>Markus</firstname></personname></author>
   </biblioentry>
 
 </bibliography>

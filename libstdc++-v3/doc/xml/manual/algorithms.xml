@@ -1,12 +1,11 @@
-<?xml version='1.0'?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
-[ ]>
-
-<chapter id="std.algorithms" xreflabel="Algorithms">
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="std.algorithms" xreflabel="Algorithms">
 <?dbhtml filename="algorithms.html"?>
 
-<chapterinfo>
+<info><title>
+  Algorithms
+  <indexterm><primary>Algorithms</primary></indexterm>
+</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -18,19 +17,16 @@
       algorithm
     </keyword>
   </keywordset>
-</chapterinfo>
+</info>
 
-<title>
-  Algorithms
-  <indexterm><primary>Algorithms</primary></indexterm>
-</title>
+
 
 <para>
   The neatest accomplishment of the algorithms sect1 is that all the
   work is done via iterators, not containers directly.  This means two
   important things:
 </para>
-<orderedlist>
+<orderedlist inheritnum="ignore" continuation="restarts">
   <listitem>
     <para>
       Anything that behaves like an iterator can be used in one of
@@ -63,7 +59,7 @@
 <para>
   The single thing that trips people up the most is the definition
   of <emphasis>range</emphasis> used with iterators; the famous
-  &quot;past-the-end&quot; rule that everybody loves to hate.  The
+  "past-the-end" rule that everybody loves to hate.  The
   <link linkend="std.iterators">iterators sect1</link> of this
     document has a complete explanation of this simple rule that seems
     to cause so much confusion.  Once you
@@ -74,14 +70,14 @@
 <!-- Sect1 01 : Non Modifying -->
 
 <!-- Sect1 02 : Mutating -->
-<sect1 id="std.algorithms.mutating" xreflabel="Mutating">
-  <title>Mutating</title>
+<section xml:id="std.algorithms.mutating" xreflabel="Mutating"><info><title>Mutating</title></info>
+  
 
-  <sect2 id="algorithms.mutating.swap" xreflabel="swap">
-    <title><function>swap</function></title>
+  <section xml:id="algorithms.mutating.swap" xreflabel="swap"><info><title><function>swap</function></title></info>
+    
 
-    <sect3 id="algorithms.swap.specializations" xreflabel="Specializations">
-    <title>Specializations</title>
+    <section xml:id="algorithms.swap.specializations" xreflabel="Specializations"><info><title>Specializations</title></info>
+    
 
    <para>If you call <code> std::swap(x,y); </code> where x and y are standard
       containers, then the call will automatically be replaced by a call to
@@ -89,16 +85,16 @@
    </para>
    <para>This allows member functions of each container class to take over, and
       containers' swap functions should have O(1) complexity according to
-      the standard.  (And while &quot;should&quot; allows implementations to
+      the standard.  (And while "should" allows implementations to
       behave otherwise and remain compliant, this implementation does in
       fact use constant-time swaps.)  This should not be surprising, since
       for two containers of the same type to swap contents, only some
       internal pointers to storage need to be exchanged.
    </para>
 
-    </sect3>
-  </sect2>
-</sect1>
+    </section>
+  </section>
+</section>
 
 <!-- Sect1 03 : Sorting -->
 

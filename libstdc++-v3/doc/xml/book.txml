@@ -1,32 +1,29 @@
-<?xml version='1.0'?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" 
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
-[ ]>
+<!-- Converted by db4-upgrade version 1.0 -->
 
-<book id="api" xreflabel="Source Level Documentation">
-<title>Source Level Documentation</title>
+<book xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="api" xreflabel="Source Level Documentation">
+
  
-<bookinfo>
+<info>
   <copyright>
     <year>2007</year>
     <holder>
-      <ulink url="www.fsf.org">FSF
-      </ulink>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="www.fsf.org">FSF
+      </link>
     </holder>
   </copyright>
   <legalnotice>
     <para>
-      <ulink url="17_intro/license.html">License 
-      </ulink>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="17_intro/license.html">License 
+      </link>
     </para>
   </legalnotice>
-</bookinfo>
+</info>
 
-<part>
-<title></title>
-  <chapter>
-    <title></title>
-    <para></para>
+<part><info><title/></info>
+
+  <chapter><info><title/></info>
+    
+    <para/>
   </chapter>
 </part>
 
