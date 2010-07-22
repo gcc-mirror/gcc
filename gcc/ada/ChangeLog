@@ -1,5 +1,12 @@
 2010-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/44892
+	* gcc-interface/utils.c (convert): Fix thinko in test.
+	(unchecked_convert): When converting from a scalar type to a type with
+	a different size, pad to have the same size on both sides.
+
+2010-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (gnat_types_compatible_p): Don't require strict
 	equality for the component type of array types.
 
