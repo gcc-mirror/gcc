@@ -688,9 +688,9 @@ get_alias_set (tree t)
 	 conversion embedded treat it like a VIEW_CONVERT_EXPR above,
 	 using the memory access type for determining the alias-set.  */
      if (TREE_CODE (inner) == MEM_REF
-	 && (TYPE_MAIN_VARIANT (TREE_TYPE (inner))
-	     != TYPE_MAIN_VARIANT
-	          (TREE_TYPE (TREE_TYPE (TREE_OPERAND (inner, 1))))))
+	 && TYPE_MAIN_VARIANT (TREE_TYPE (inner))
+	    != TYPE_MAIN_VARIANT
+	       (TREE_TYPE (TREE_TYPE (TREE_OPERAND (inner, 1)))))
        return get_deref_alias_set (TREE_OPERAND (inner, 1));
 
       /* Otherwise, pick up the outermost object that we could have a pointer
@@ -728,10 +728,13 @@ get_alias_set (tree t)
 	return set;
       return 0;
     }
+
   t = TYPE_CANONICAL (t);
+
   /* Canonical types shouldn't form a tree nor should the canonical
      type require structural equality checks.  */
-  gcc_checking_assert (!TYPE_STRUCTURAL_EQUALITY_P (t) && TYPE_CANONICAL (t) == t);
+  gcc_checking_assert (TYPE_CANONICAL (t) == t
+		       && !TYPE_STRUCTURAL_EQUALITY_P (t));
 
   /* If this is a type with a known alias set, return it.  */
   if (TYPE_ALIAS_SET_KNOWN_P (t))
@@ -757,8 +760,7 @@ get_alias_set (tree t)
   /* There are no objects of FUNCTION_TYPE, so there's no point in
      using up an alias set for them.  (There are, of course, pointers
      and references to functions, but that's different.)  */
-  else if (TREE_CODE (t) == FUNCTION_TYPE
-	   || TREE_CODE (t) == METHOD_TYPE)
+  else if (TREE_CODE (t) == FUNCTION_TYPE || TREE_CODE (t) == METHOD_TYPE)
     set = 0;
 
   /* Unless the language specifies otherwise, let vector types alias
@@ -776,18 +778,17 @@ get_alias_set (tree t)
      integer(kind=4)[4] the same alias set or not.
      Just be pragmatic here and make sure the array and its element
      type get the same alias set assigned.  */
-  else if (TREE_CODE (t) == ARRAY_TYPE
-	   && !TYPE_NONALIASED_COMPONENT (t))
+  else if (TREE_CODE (t) == ARRAY_TYPE && !TYPE_NONALIASED_COMPONENT (t))
     set = get_alias_set (TREE_TYPE (t));
 
+  /* Otherwise make a new alias set for this type.  */
   else
-    /* Otherwise make a new alias set for this type.  */
     set = new_alias_set ();
 
   TYPE_ALIAS_SET (t) = set;
 
-  /* If this is an aggregate type, we must record any component aliasing
-     information.  */
+  /* If this is an aggregate type or a complex type, we must record any
+     component aliasing information.  */
   if (AGGREGATE_TYPE_P (t) || TREE_CODE (t) == COMPLEX_TYPE)
     record_component_aliases (t);
 
