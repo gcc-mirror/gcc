@@ -7,6 +7,18 @@
 	ASM_OPERANDS vectors are used by all following ASM_OPERANDS in
 	the insn.
 
+	Backport from mainline
+	2010-07-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/44942
+	* config/i386/i386-protos.h (ix86_function_arg_boundary): Change second
+	argument to const_tree.
+	* config/i386/i386.c (function_arg_advance): If padding needs to be
+	inserted before argument, increment cum->words by number of padding
+	words as well.
+	(contains_aligned_value_p): Change argument to const_tree.
+	(ix86_function_arg_boundary): Change second argument to const_tree.
+
 2010-07-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/44900
