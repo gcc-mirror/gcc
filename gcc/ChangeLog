@@ -1,3 +1,9 @@
+2010-07-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/45028
+	* recgprop.c (copyprop_hardreg_forward_1): If changed is true,
+	call cprop_find_used_regs again via note_uses.
+
 2010-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* alias.c (get_alias_set): Fix formatting issues.
