@@ -1,3 +1,9 @@
+2010-07-22  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* calls.c (load_register_parameters): Move check for zero
+	sized items so that only the call to 
+	mem_overlaps_already_clobbered_arg_p () is protected.
+
 2010-07-22  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-pure-const.c (varying_state): Break out from ...
