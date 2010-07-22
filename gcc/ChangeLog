@@ -1,3 +1,8 @@
+2010-07-22  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* ira.c (check_allocation): Correctly handle the case where an allocno
+	with two objects was allocated to a single reg.
+
 2010-07-22  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* tree-ssa-math-opts.c (is_widening_mult_rhs_p): New function.

@@ -1624,11 +1624,14 @@ check_allocation (void)
 	  || (hard_regno = ALLOCNO_HARD_REGNO (a)) < 0)
 	continue;
       nregs = hard_regno_nregs[hard_regno][ALLOCNO_MODE (a)];
-      if (n > 1)
-	{
-	  gcc_assert (n == nregs);
-	  nregs = 1;
-	}
+      if (nregs == 1)
+	/* We allocated a single hard register.  */
+	n = 1;
+      else if (n > 1)
+	/* We allocated multiple hard registers, and we will test
+	   conflicts in a granularity of single hard regs.  */
+	nregs = 1;
+
       for (i = 0; i < n; i++)
 	{
 	  ira_object_t obj = ALLOCNO_OBJECT (a, i);
@@ -1648,7 +1651,13 @@ check_allocation (void)
 	      int conflict_hard_regno = ALLOCNO_HARD_REGNO (conflict_a);
 	      if (conflict_hard_regno < 0)
 		continue;
-	      if (ALLOCNO_NUM_OBJECTS (conflict_a) > 1)
+
+	      conflict_nregs
+		= (hard_regno_nregs
+		   [conflict_hard_regno][ALLOCNO_MODE (conflict_a)]);
+
+	      if (ALLOCNO_NUM_OBJECTS (conflict_a) > 1
+		  && conflict_nregs == ALLOCNO_NUM_OBJECTS (conflict_a))
 		{
 		  if (WORDS_BIG_ENDIAN)
 		    conflict_hard_regno += (ALLOCNO_NUM_OBJECTS (conflict_a)
@@ -1657,10 +1666,6 @@ check_allocation (void)
 		    conflict_hard_regno += OBJECT_SUBWORD (conflict_obj);
 		  conflict_nregs = 1;
 		}
-	      else
-		conflict_nregs
-		  = (hard_regno_nregs
-		     [conflict_hard_regno][ALLOCNO_MODE (conflict_a)]);
 
 	      if ((conflict_hard_regno <= this_regno
 		 && this_regno < conflict_hard_regno + conflict_nregs)
