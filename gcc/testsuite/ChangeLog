@@ -1,5 +1,11 @@
 2010-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/unchecked_convert5b.adb: New test.
+	* gnat.dg/unchecked_convert6.adb: Likewise.
+	* gnat.dg/unchecked_convert6b.adb: Likewise.
+
+2010-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/aggr15.ad[sb]: New test.
 
 2010-07-22  Dodji Seketeli  <dodji@redhat.com>

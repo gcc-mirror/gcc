@@ -3702,9 +3702,10 @@ convert (tree type, tree expr)
       if (ecode == RECORD_TYPE
 	  && CONTAINS_PLACEHOLDER_P (DECL_SIZE (TYPE_FIELDS (type))))
 	{
-	  if (TREE_CONSTANT (TYPE_SIZE (etype)))
+	  if (TREE_CODE (TYPE_SIZE (etype)) == INTEGER_CST)
 	    expr = convert (maybe_pad_type (etype, TYPE_SIZE (type), 0, Empty,
-			    false, false, false, true), expr);
+					    false, false, false, true),
+			    expr);
 	  return unchecked_convert (type, expr, false);
 	}
 
@@ -4353,6 +4354,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
   tree etype = TREE_TYPE (expr);
   enum tree_code ecode = TREE_CODE (etype);
   enum tree_code code = TREE_CODE (type);
+  int c;
 
   /* If the expression is already of the right type, we are done.  */
   if (etype == type)
@@ -4393,7 +4395,8 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
   /* If we are converting to an integral type whose precision is not equal
      to its size, first unchecked convert to a record that contains an
      object of the output type.  Then extract the field. */
-  else if (INTEGRAL_TYPE_P (type) && TYPE_RM_SIZE (type)
+  else if (INTEGRAL_TYPE_P (type)
+	   && TYPE_RM_SIZE (type)
 	   && 0 != compare_tree_int (TYPE_RM_SIZE (type),
 				     GET_MODE_BITSIZE (TYPE_MODE (type))))
     {
@@ -4410,9 +4413,10 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 
   /* Similarly if we are converting from an integral type whose precision
      is not equal to its size.  */
-  else if (INTEGRAL_TYPE_P (etype) && TYPE_RM_SIZE (etype)
-      && 0 != compare_tree_int (TYPE_RM_SIZE (etype),
-				GET_MODE_BITSIZE (TYPE_MODE (etype))))
+  else if (INTEGRAL_TYPE_P (etype)
+	   && TYPE_RM_SIZE (etype)
+	   && 0 != compare_tree_int (TYPE_RM_SIZE (etype),
+				     GET_MODE_BITSIZE (TYPE_MODE (etype))))
     {
       tree rec_type = make_node (RECORD_TYPE);
       tree field = create_field_decl (get_identifier ("OBJ"), etype, rec_type,
@@ -4425,6 +4429,38 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
       CONSTRUCTOR_APPEND_ELT (v, field, expr);
       expr = gnat_build_constructor (rec_type, v);
       expr = unchecked_convert (type, expr, notrunc_p);
+    }
+
+  /* If we are converting from a scalar type to a type with a different size,
+     we need to pad to have the same size on both sides.
+
+     ??? We cannot do it unconditionally because unchecked conversions are
+     used liberally by the front-end to implement polymorphism, e.g. in:
+
+       S191s : constant ada__tags__addr_ptr := ada__tags__addr_ptr!(S190s);
+       return p___size__4 (p__object!(S191s.all));
+
+     so we skip all expressions that are references.  */
+  else if (!REFERENCE_CLASS_P (expr)
+	   && !AGGREGATE_TYPE_P (etype)
+	   && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+	   && (c = tree_int_cst_compare (TYPE_SIZE (etype), TYPE_SIZE (type))))
+    {
+      if (c < 0)
+	{
+	  expr = convert (maybe_pad_type (etype, TYPE_SIZE (type), 0, Empty,
+					  false, false, false, true),
+			  expr);
+	  expr = unchecked_convert (type, expr, notrunc_p);
+	}
+      else
+	{
+	  tree rec_type = maybe_pad_type (type, TYPE_SIZE (etype), 0, Empty,
+					  false, false, false, true);
+	  expr = unchecked_convert (rec_type, expr, notrunc_p);
+	  expr = build_component_ref (expr, NULL_TREE, TYPE_FIELDS (rec_type),
+				      false);
+	}
     }
 
   /* We have a special case when we are converting between two unconstrained
