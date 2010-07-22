@@ -1,3 +1,8 @@
+2010-07-22  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/rs6000/sysv4.h (CHOOSE_DYNAMIC_LINKER): Default to GLIBC
+	when no C library is specified.
+
 2010-07-22  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.h (struct ipa_node_params): Updated comment.
