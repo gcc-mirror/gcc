@@ -1,12 +1,11 @@
-<?xml version='1.0'?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
-[ ]>
-
-<chapter id="std.support" xreflabel="Support">
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="std.support" xreflabel="Support">
 <?dbhtml filename="support.html"?>
 
-<chapterinfo>
+<info><title>
+  Support
+  <indexterm><primary>Support</primary></indexterm>
+</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -15,12 +14,7 @@
       library
     </keyword>
   </keywordset>
-</chapterinfo>
-
-<title>
-  Support
-  <indexterm><primary>Support</primary></indexterm>
-</title>
+</info>
 
   <para>
     This part deals with the functions called and objects created
@@ -34,11 +28,11 @@
     kind of support a C++ program gets from the Standard Library.
   </para>
 
-<sect1 id="std.support.types" xreflabel="Types">
+<section xml:id="std.support.types" xreflabel="Types"><info><title>Types</title></info>
   <?dbhtml filename="fundamental_types.html"?>
-  <title>Types</title>
-  <sect2 id="std.support.types.fundamental" xreflabel="Fundamental Types">
-    <title>Fundamental Types</title>
+  
+  <section xml:id="std.support.types.fundamental" xreflabel="Fundamental Types"><info><title>Fundamental Types</title></info>
+    
     <para>
       C++ has the following builtin types:
     </para>
@@ -98,9 +92,9 @@
       instead, use a POD.
     </para>
 
-  </sect2>
-  <sect2 id="std.support.types.numeric_limits" xreflabel="Numeric Properties">
-    <title>Numeric Properties</title>
+  </section>
+  <section xml:id="std.support.types.numeric_limits" xreflabel="Numeric Properties"><info><title>Numeric Properties</title></info>
+    
 
 
     <para>
@@ -108,8 +102,7 @@
     traits classes to give access to various implementation
     defined-aspects of the fundamental types. The traits classes --
     fourteen in total -- are all specializations of the template class
-    <classname>numeric_limits</classname>, documented <ulink
-    url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00593.html">here</ulink>
+    <classname>numeric_limits</classname>, documented <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00593.html">here</link>
     and defined as follows:
     </para>
 
@@ -153,10 +146,10 @@
        static const float_round_style round_style;
      };
    </programlisting>
-  </sect2>
+  </section>
 
-  <sect2 id="std.support.types.null" xreflabel="NULL">
-    <title>NULL</title>
+  <section xml:id="std.support.types.null" xreflabel="NULL"><info><title>NULL</title></info>
+    
     <para>
      The only change that might affect people is the type of
      <constant>NULL</constant>: while it is required to be a macro,
@@ -180,25 +173,24 @@
      <constant>NULL</constant> is always a pointer.)
     </para>
 
-    <para>In his book <ulink
-    url="http://www.awprofessional.com/titles/0-201-92488-9/"><emphasis>Effective
-    C++</emphasis></ulink>, Scott Meyers points out that the best way
+    <para>In his book <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.awprofessional.com/titles/0-201-92488-9/"><emphasis>Effective
+    C++</emphasis></link>, Scott Meyers points out that the best way
     to solve this problem is to not overload on pointer-vs-integer
     types to begin with.  He also offers a way to make your own magic
     <constant>NULL</constant> that will match pointers before it
     matches integers.
     </para>
     <para>See
-      <ulink url="http://www.awprofessional.com/titles/0-201-31015-5/">the
-      Effective C++ CD example</ulink>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.awprofessional.com/titles/0-201-31015-5/">the
+      Effective C++ CD example</link>
     </para>
-  </sect2>
+  </section>
 
-</sect1>
+</section>
 
-<sect1 id="std.support.memory" xreflabel="Dynamic Memory">
+<section xml:id="std.support.memory" xreflabel="Dynamic Memory"><info><title>Dynamic Memory</title></info>
   <?dbhtml filename="dynamic_memory.html"?>
-  <title>Dynamic Memory</title>
+  
   <para>
     There are six flavors each of <function>new</function> and
     <function>delete</function>, so make certain that you're using the right
@@ -211,7 +203,7 @@
 	people are used to using
       </para></listitem>
       <listitem><para>
-	Single object &quot;nothrow&quot; form, returning NULL on errors
+	Single object "nothrow" form, returning NULL on errors
       </para></listitem>
       <listitem><para>
 	Array <function>new</function>, throwing
@@ -276,16 +268,15 @@
      <classname>bad_alloc</classname> is derived from the base <classname>exception</classname>
      class defined in Sect1 19.
    </para>
-</sect1>
+</section>
 
-<sect1 id="std.support.termination" xreflabel="Termination">
+<section xml:id="std.support.termination" xreflabel="Termination"><info><title>Termination</title></info>
   <?dbhtml filename="termination.html"?>
-  <title>Termination</title>
-  <sect2 id="support.termination.handlers" xreflabel="Termination Handlers">
-    <title>Termination Handlers</title>
+  
+  <section xml:id="support.termination.handlers" xreflabel="Termination Handlers"><info><title>Termination Handlers</title></info>
+    
     <para>
-      Not many changes here to <filename
-      class="headerfile">cstdlib</filename>.  You should note that the
+      Not many changes here to <filename class="headerfile">cstdlib</filename>.  You should note that the
       <function>abort()</function> function does not call the
       destructors of automatic nor static objects, so if you're
       depending on those to do cleanup, it isn't going to happen.
@@ -298,7 +289,7 @@
       funky, too, until you look closer.  Basically, three points to
       remember are:
     </para>
-    <orderedlist>
+    <orderedlist inheritnum="ignore" continuation="restarts">
       <listitem>
 	<para>
 	Static objects are destroyed in reverse order of their creation.
@@ -342,11 +333,11 @@
       those slots.  If you think you may run out, we recommend using
       the <function>xatexit</function>/<function>xexit</function> combination from <literal>libiberty</literal>, which has no such limit.
     </para>
-  </sect2>
+  </section>
 
-  <sect2 id="support.termination.verbose" xreflabel="Verbose Terminate Handler">
+  <section xml:id="support.termination.verbose" xreflabel="Verbose Terminate Handler"><info><title>Verbose Terminate Handler</title></info>
   <?dbhtml filename="verbose_termination.html"?>
-    <title>Verbose Terminate Handler</title>
+    
     <para>
       If you are having difficulty with uncaught exceptions and want a
       little bit of help debugging the causes of the core dumps, you can
@@ -446,7 +437,7 @@ int main(int argc)
      an unspecified manner.
    </para>
 
-  </sect2>
-</sect1>
+  </section>
+</section>
 
 </chapter>

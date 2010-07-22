@@ -1,12 +1,11 @@
-<?xml version='1.0'?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
-[ ]>
-
-<chapter id="std.iterators" xreflabel="Iterators">
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="std.iterators" xreflabel="Iterators">
 <?dbhtml filename="iterators.html"?>
 
-<chapterinfo>
+<info><title>
+  Iterators
+  <indexterm><primary>Iterators</primary></indexterm>
+</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -15,19 +14,16 @@
       library
     </keyword>
   </keywordset>
-</chapterinfo>
+</info>
 
-<title>
-  Iterators
-  <indexterm><primary>Iterators</primary></indexterm>
-</title>
+
 
 <!-- Sect1 01 : Predefined -->
-<sect1 id="std.iterators.predefined" xreflabel="Predefined">
-  <title>Predefined</title>
+<section xml:id="std.iterators.predefined" xreflabel="Predefined"><info><title>Predefined</title></info>
+  
 
-  <sect2 id="iterators.predefined.vs_pointers" xreflabel="Versus Pointers">
-    <title>Iterators vs. Pointers</title>
+  <section xml:id="iterators.predefined.vs_pointers" xreflabel="Versus Pointers"><info><title>Iterators vs. Pointers</title></info>
+    
    <para>
      The following
 FAQ <link linkend="faq.iterator_as_pod">entry</link> points out that
@@ -63,7 +59,7 @@ classes.
      How much overhead <emphasis>is</emphasis> there when using an
       iterator class?  Very little.  Most of the layering classes
       contain nothing but typedefs, and typedefs are
-      &quot;meta-information&quot; that simply tell the compiler some
+      "meta-information" that simply tell the compiler some
       nicknames; they don't create code.  That information gets passed
       down through inheritance, so while the compiler has to do work
       looking up all the names, your runtime code does not.  (This has
@@ -71,10 +67,10 @@ classes.
    </para>
 
 
-  </sect2>
+  </section>
 
-  <sect2 id="iterators.predefined.end" xreflabel="end() Is One Past the End">
-    <title>One Past the End</title>
+  <section xml:id="iterators.predefined.end" xreflabel="end() Is One Past the End"><info><title>One Past the End</title></info>
+    
 
    <para>This starts off sounding complicated, but is actually very easy,
       especially towards the end.  Trust me.
@@ -88,7 +84,7 @@ classes.
       C and C++ for builtin arrays.  The following rules have always been
       true for both languages:
    </para>
-   <orderedlist>
+   <orderedlist inheritnum="ignore" continuation="restarts">
       <listitem>
 	<para>You can point anywhere in the array, <emphasis>or to the first element
 	  past the end of the array</emphasis>.  A pointer that points to one
@@ -145,9 +141,9 @@ classes.
    </para>
    <para>Now think back to your junior-high school algebra course, when you
       were learning how to draw graphs.  Remember that a graph terminating
-      with a solid dot meant, &quot;Everything up through this point,&quot;
-      and a graph terminating with an open dot meant, &quot;Everything up
-      to, but not including, this point,&quot; respectively called closed
+      with a solid dot meant, "Everything up through this point,"
+      and a graph terminating with an open dot meant, "Everything up
+      to, but not including, this point," respectively called closed
       and open ranges?  Remember how closed ranges were written with
       brackets, <emphasis>[a,b]</emphasis>, and open ranges were written with parentheses,
       <emphasis>(a,b)</emphasis>?
@@ -181,8 +177,8 @@ classes.
    <para>Just don't dereference <code>end()</code>.
    </para>
 
-  </sect2>
-</sect1>
+  </section>
+</section>
 
 <!-- Sect1 02 : Stream -->
 

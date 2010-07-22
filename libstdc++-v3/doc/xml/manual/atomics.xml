@@ -1,12 +1,11 @@
-<?xml version='1.0'?>
-<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
-[ ]>
-
-<chapter id="std.atomics" xreflabel="Atomics">
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="std.atomics" xreflabel="Atomics">
 <?dbhtml filename="atomics.html"?>
 
-<chapterinfo>
+<info><title>
+  Atomics
+  <indexterm><primary>Atomics</primary></indexterm>
+</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -18,20 +17,17 @@
       atomic
     </keyword>
   </keywordset>
-</chapterinfo>
+</info>
 
-<title>
-  Atomics
-  <indexterm><primary>Atomics</primary></indexterm>
-</title>
+
 
 <para>
   Facilities for atomic operations.
 </para>
 
 <!-- Sect1 01 : API -->
-<sect1 id="std.atomics.api">
-  <title>API Reference</title>
+<section xml:id="std.atomics.api"><info><title>API Reference</title></info>
+  
 
   <para>
     All items are declared in the standard header
@@ -56,6 +52,6 @@
 
   <!-- Doxygen XML: api/group__atomics.xml -->
 
-</sect1>
+</section>
 
 </chapter>

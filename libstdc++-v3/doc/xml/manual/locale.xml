@@ -1,6 +1,7 @@
-<section id="std.localization.locales.locale" xreflabel="Locale">
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="std.localization.locales.locale" xreflabel="Locale">
 
-<sectioninfo>
+<info><title>locale</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -9,9 +10,9 @@
       locale
     </keyword>
   </keywordset>
-</sectioninfo>
+</info>
 
-<title>locale</title>
+
 
 <para>
 Describes the basic locale object, including nested
@@ -19,8 +20,8 @@ classes id, facet, and the reference-counted implementation object,
 class _Impl.
 </para>
 
-<section id="locales.locale.req">
-<title>Requirements</title>
+<section xml:id="locales.locale.req"><info><title>Requirements</title></info>
+
 
 <para>
 Class locale is non-templatized and has two distinct types nested
@@ -89,8 +90,8 @@ Provides an index for looking up specific facets.
 </para>
 </section>
 
-<section id="locales.locale.design">
-<title>Design</title>
+<section xml:id="locales.locale.design"><info><title>Design</title></info>
+
 
 <para>
 The major design challenge is fitting an object-orientated and
@@ -105,11 +106,11 @@ portability is an issue.
 
 </section>
 
-<section id="locales.locale.impl">
-<title>Implementation</title>
+<section xml:id="locales.locale.impl"><info><title>Implementation</title></info>
 
-  <section id="locale.impl.c">
-    <title>Interacting with &quot;C&quot; locales</title>
+
+  <section xml:id="locale.impl.c"><info><title>Interacting with "C" locales</title></info>
+    
 
 <itemizedlist>
    <listitem>
@@ -470,8 +471,8 @@ global locale" (emphasis Paolo), that is:
   </section>
 </section>
 
-<section id="locales.locale.future">
-<title>Future</title>
+<section xml:id="locales.locale.future"><info><title>Future</title></info>
+
 
 <itemizedlist>
    <listitem>
@@ -510,21 +511,15 @@ global locale" (emphasis Paolo), that is:
 </itemizedlist>
 </section>
 
-<bibliography id="locales.locale.biblio">
-<title>Bibliography</title>
+<bibliography xml:id="locales.locale.biblio"><info><title>Bibliography</title></info>
+
 
   <biblioentry>
-    <title>
+    <citetitle>
       The GNU C Library
-    </title>
-    <author>
-      <surname>McGrath</surname>
-      <firstname>Roland</firstname>
-    </author>
-    <author>
-      <surname>Drepper</surname>
-      <firstname>Ulrich</firstname>
-    </author>
+    </citetitle>
+    <author><personname><surname>McGrath</surname><firstname>Roland</firstname></personname></author>
+    <author><personname><surname>Drepper</surname><firstname>Ulrich</firstname></personname></author>
     <copyright>
       <year>2007</year>
       <holder>FSF</holder>
@@ -536,23 +531,20 @@ global locale" (emphasis Paolo), that is:
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       Correspondence
-    </title>
-    <author>
-      <surname>Drepper</surname>
-      <firstname>Ulrich</firstname>
-    </author>
+    </citetitle>
+    <author><personname><surname>Drepper</surname><firstname>Ulrich</firstname></personname></author>
     <copyright>
       <year>2002</year>
-      <holder></holder>
+      <holder/>
     </copyright>
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       ISO/IEC 14882:1998 Programming languages - C++
-    </title>
+    </citetitle>
     <copyright>
       <year>1998</year>
       <holder>ISO</holder>
@@ -560,9 +552,9 @@ global locale" (emphasis Paolo), that is:
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       ISO/IEC 9899:1999 Programming languages - C
-    </title>
+    </citetitle>
     <copyright>
       <year>1999</year>
       <holder>ISO</holder>
@@ -570,13 +562,11 @@ global locale" (emphasis Paolo), that is:
   </biblioentry>
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://www.opengroup.org/austin">
-	<citetitle>
-	  System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
-	</citetitle>
-      </ulink>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.opengroup.org/austin" class="uri">
     </biblioid>
+    <citetitle>
+      System Interface Definitions, Issue 7 (IEEE Std. 1003.1-2008)
+    </citetitle>
     <copyright>
       <year>2008</year>
       <holder>
@@ -587,13 +577,10 @@ global locale" (emphasis Paolo), that is:
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       The C++ Programming Language, Special Edition
-    </title>
-    <author>
-      <surname>Stroustrup</surname>
-      <firstname>Bjarne</firstname>
-    </author>
+    </citetitle>
+    <author><personname><surname>Stroustrup</surname><firstname>Bjarne</firstname></personname></author>
     <copyright>
       <year>2000</year>
       <holder>Addison Wesley, Inc.</holder>
@@ -607,20 +594,14 @@ global locale" (emphasis Paolo), that is:
   </biblioentry>
 
   <biblioentry>
-    <title>
+    <citetitle>
       Standard C++ IOStreams and Locales
-    </title>
+    </citetitle>
     <subtitle>
       Advanced Programmer's Guide and Reference
     </subtitle>
-    <author>
-      <surname>Langer</surname>
-      <firstname>Angelika</firstname>
-    </author>
-    <author>
-      <surname>Kreft</surname>
-      <firstname>Klaus</firstname>
-    </author>
+    <author><personname><surname>Langer</surname><firstname>Angelika</firstname></personname></author>
+    <author><personname><surname>Kreft</surname><firstname>Klaus</firstname></personname></author>
     <copyright>
       <year>2000</year>
       <holder>Addison Wesley Longman, Inc.</holder>

@@ -1,7 +1,8 @@
-<section id="std.util.memory.shared_ptr" xreflabel="shared_ptr">
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="std.util.memory.shared_ptr" xreflabel="shared_ptr">
 <?dbhtml filename="shared_ptr.html"?>
 
-<sectioninfo>
+<info><title>shared_ptr</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -10,17 +11,17 @@
       shared_ptr
     </keyword>
   </keywordset>
-</sectioninfo>
+</info>
 
-<title>shared_ptr</title>
+
 
 <para>
 The shared_ptr class template stores a pointer, usually obtained via new,
 and implements shared ownership semantics.
 </para>
 
-<section id="shared_ptr.req">
-<title>Requirements</title>
+<section xml:id="shared_ptr.req"><info><title>Requirements</title></info>
+
 
   <para>
   </para>
@@ -43,8 +44,8 @@ and implements shared ownership semantics.
   </para>
 </section>
 
-<section id="shared_ptr.design_issues">
-<title>Design Issues</title>
+<section xml:id="shared_ptr.design_issues"><info><title>Design Issues</title></info>
+
 
 
   <para>
@@ -67,11 +68,11 @@ technique known as type erasure.
 
 </section>
 
-<section id="shared_ptr.impl">
-<title>Implementation</title>
+<section xml:id="shared_ptr.impl"><info><title>Implementation</title></info>
 
-  <section>
-    <title>Class Hierarchy</title>
+
+  <section><info><title>Class Hierarchy</title></info>
+    
 
     <para>
 A <classname>shared_ptr&lt;T&gt;</classname> contains a pointer of
@@ -158,8 +159,8 @@ that simplifies the implementation slightly.
 
   </section>
 
-  <section>
-    <title>Thread Safety</title>
+  <section><info><title>Thread Safety</title></info>
+    
 
     <para>
 C++0x-only features are: rvalue-ref/move support, allocator support,
@@ -170,8 +171,8 @@ deprecated in C++0x mode.
 
 <para>
 The
-<ulink url="http://boost.org/libs/smart_ptr/shared_ptr.htm#ThreadSafety">Thread
-Safety</ulink> section of the Boost shared_ptr documentation says "shared_ptr
+<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://boost.org/libs/smart_ptr/shared_ptr.htm#ThreadSafety">Thread
+Safety</link> section of the Boost shared_ptr documentation says "shared_ptr
 objects offer the same level of thread safety as built-in types."
 The implementation must ensure that concurrent updates to separate shared_ptr
 instances are correct even when those instances share a reference count e.g.
@@ -224,8 +225,8 @@ Policy below for details.
 
   </section>
 
-  <section>
-    <title>Selecting Lock Policy</title>
+  <section><info><title>Selecting Lock Policy</title></info>
+    
 
     <para>
     </para>
@@ -254,8 +255,8 @@ available policies are:
        </para>
        <para>
 Selected when GCC supports a builtin atomic compare-and-swap operation
-on the target processor (see <ulink url="http://gcc.gnu.org/onlinedocs/gcc/Atomic-Builtins.html">Atomic
-Builtins</ulink>.)  The reference counts are maintained using a lock-free
+on the target processor (see <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/Atomic-Builtins.html">Atomic
+Builtins</link>.)  The reference counts are maintained using a lock-free
 algorithm and GCC's atomic builtins, which provide the required memory
 synchronisation.
        </para>
@@ -292,8 +293,8 @@ used when libstdc++ is built without <literal>--enable-threads</literal>.
      </para>
   </section>
 
-  <section>
-    <title>Dual C++0x and TR1 Implementation</title>
+  <section><info><title>Dual C++0x and TR1 Implementation</title></info>
+    
 
 <para>
 The interface of <classname>tr1::shared_ptr</classname> was extended for C++0x
@@ -319,8 +320,8 @@ the C++0x version.
 </para>
 </section>
 
-<section>
-<title>Related functions and classes</title>
+<section><info><title>Related functions and classes</title></info>
+
 
 <variablelist>
 
@@ -412,11 +413,11 @@ the following types, depending on how the shared_ptr is constructed.
      </listitem>
 -->
 
-<section id="shared_ptr.using">
-<title>Use</title>
+<section xml:id="shared_ptr.using"><info><title>Use</title></info>
 
-  <section>
-    <title>Examples</title>
+
+  <section><info><title>Examples</title></info>
+    
     <para>
       Examples of use can be found in the testsuite, under
       <filename class="directory">testsuite/tr1/2_general_utilities/shared_ptr</filename>,
@@ -426,8 +427,8 @@ the following types, depending on how the shared_ptr is constructed.
     </para>
   </section>
 
-  <section>
-    <title>Unresolved Issues</title>
+  <section><info><title>Unresolved Issues</title></info>
+    
     <para>
       The <emphasis><classname>shared_ptr</classname> atomic access</emphasis>
       clause in the C++0x working draft is not implemented in GCC.
@@ -478,8 +479,8 @@ the following types, depending on how the shared_ptr is constructed.
 
 </section>
 
-<section id="shared_ptr.ack">
-<title>Acknowledgments</title>
+<section xml:id="shared_ptr.ack"><info><title>Acknowledgments</title></info>
+
 
   <para>
     The original authors of the Boost shared_ptr, which is really nice
@@ -490,56 +491,48 @@ the following types, depending on how the shared_ptr is constructed.
 
 </section>
 
-<bibliography id="shared_ptr.biblio">
-<title>Bibliography</title>
+<bibliography xml:id="shared_ptr.biblio"><info><title>Bibliography</title></info>
+
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2351.htm">
-	<citetitle>
-	  Improving shared_ptr for C++0x, Revision 2
-	</citetitle>
-      </ulink>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2351.htm" class="uri">
     </biblioid>
+    <citetitle>
+      Improving shared_ptr for C++0x, Revision 2
+    </citetitle>    
     <subtitle>
       N2351
     </subtitle>
   </biblioentry>
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2456.html">
-	<citetitle>
-	  C++ Standard Library Active Issues List
-	</citetitle>
-      </ulink>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2456.html" class="uri">
     </biblioid>
+    <citetitle>
+      C++ Standard Library Active Issues List
+    </citetitle>
     <subtitle>
       N2456
     </subtitle>
   </biblioentry>
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2461.pdf">
-	<citetitle>
-	  Working Draft, Standard for Programming Language C++
-	</citetitle>
-      </ulink>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2461.pdf" class="uri">
     </biblioid>
+    <citetitle>
+      Working Draft, Standard for Programming Language C++
+    </citetitle>
     <subtitle>
       N2461
     </subtitle>
   </biblioentry>
 
   <biblioentry>
-    <biblioid class="uri">
-      <ulink url="http://boost.org/libs/smart_ptr/shared_ptr.htm">shared_ptr
-	<citetitle>
-	  Boost C++ Libraries documentation, shared_ptr
-	</citetitle>
-      </ulink>
+    <biblioid xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://boost.org/libs/smart_ptr/shared_ptr.htm" class="uri">shared_ptr
     </biblioid>
+    <citetitle>
+      Boost C++ Libraries documentation, shared_ptr
+    </citetitle>
     <subtitle>
       N2461
     </subtitle>

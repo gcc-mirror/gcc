@@ -1,12 +1,11 @@
-<?xml version='1.0'?>
-<!DOCTYPE part PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
- "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd"
-[ ]>
-
-<part id="manual.ext" xreflabel="Extensions">
+<part xmlns="http://docbook.org/ns/docbook" version="5.0" 
+      xml:id="manual.ext" xreflabel="Extensions">
 <?dbhtml filename="extensions.html"?>
 
-<partinfo>
+<info><title>
+  Extensions
+  <indexterm><primary>Extensions</primary></indexterm>
+</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -15,15 +14,12 @@
       library
     </keyword>
   </keywordset>
-</partinfo>
+</info>
 
-<title>
-  Extensions
-  <indexterm><primary>Extensions</primary></indexterm>
-</title>
 
-<preface>
-  <title></title>
+
+<preface><info><title/></info>
+  
 <para>
   Here we will make an attempt at describing the non-Standard extensions to
   the library.  Some of these are from SGI's STL, some of these are GNU's,
@@ -32,7 +28,7 @@
 <para><emphasis>Before</emphasis> you leap in and use any of these
 extensions, be aware of two things:
 </para>
-<orderedlist>
+<orderedlist inheritnum="ignore" continuation="restarts">
    <listitem>
      <para>
      Non-Standard means exactly that.
@@ -55,9 +51,9 @@ extensions, be aware of two things:
 </preface>
 
 <!-- Chapter 01 : Compile Time Checks -->
-<chapter id="manual.ext.compile_checks" xreflabel="Compile Time Checks">
+<chapter xml:id="manual.ext.compile_checks" xreflabel="Compile Time Checks"><info><title>Compile Time Checks</title></info>
 <?dbhtml filename="ext_compile_checks.html"?>
-  <title>Compile Time Checks</title>
+  
   <para>
     Also known as concept checking.
   </para>
@@ -77,8 +73,8 @@ extensions, be aware of two things:
    <para>The primary author of the checking code, Jeremy Siek, had already
       started work on a replacement implementation.  The new code has been
       formally reviewed and accepted into
-      <ulink url="http://www.boost.org/libs/concept_check/concept_check.htm">the
-      Boost libraries</ulink>, and we are pleased to incorporate it into the
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.boost.org/libs/concept_check/concept_check.htm">the
+      Boost libraries</link>, and we are pleased to incorporate it into the
       GNU C++ library.
    </para>
    <para>The new version imposes a much smaller space overhead on the generated
@@ -104,54 +100,48 @@ extensions, be aware of two things:
 </chapter>
 
 <!-- Chapter 02 : Debug Mode -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="debug_mode.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="debug_mode.xml">
 </xi:include>
 
 <!-- Chapter 03 : Parallel Mode -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="parallel_mode.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="parallel_mode.xml">
 </xi:include>
 
 <!-- Chapter 04 : Profile Mode -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="profile_mode.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="profile_mode.xml">
 </xi:include>
 
 
 <!-- Chapter 05 : Allocators -->
-<chapter id="manual.ext.allocator" xreflabel="Allocators">
+<chapter xml:id="manual.ext.allocator" xreflabel="Allocators"><info><title>Allocators</title></info>
 <?dbhtml filename="ext_allocators.html"?>
-  <title>Allocators</title>
+  
 
   <!-- Section 01 : __mt_alloc -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	      parse="xml" href="mt_allocator.xml">
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="mt_allocator.xml">
   </xi:include>
 
   <!-- Section 02 : bitmap_allocator -->
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	      parse="xml" href="bitmap_allocator.xml">
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="bitmap_allocator.xml">
   </xi:include>
 
 </chapter>
 
 <!-- Chapter 06 : Containers -->
-<chapter id="manual.ext.containers" xreflabel="Containers">
+<chapter xml:id="manual.ext.containers" xreflabel="Containers"><info><title>Containers</title></info>
 <?dbhtml filename="ext_containers.html"?>
-  <title>Containers</title>
+  
   <para>
   </para>
-  <sect1 id="manual.ext.containers.pbds" xreflabel="Policy Based Data Structures">
-    <title>Policy Based Data Structures</title>
+  <section xml:id="manual.ext.containers.pbds" xreflabel="Policy Based Data Structures"><info><title>Policy Based Data Structures</title></info>
+    
     <para>
-      <ulink
-      url="http://gcc.gnu.org/onlinedocs/libstdc++/ext/pb_ds/index.html">More details here</ulink>.
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/ext/pb_ds/index.html">More details here</link>.
     </para>
-  </sect1>
+  </section>
 
-  <sect1 id="manual.ext.containers.sgi" xreflabel="SGI ext">
-    <title>HP/SGI</title>
+  <section xml:id="manual.ext.containers.sgi" xreflabel="SGI ext"><info><title>HP/SGI</title></info>
+    
     <para>
     </para>
 
@@ -173,7 +163,7 @@ extensions, be aware of two things:
 <para>There are
    versions of single-bit test, set, reset, and flip member functions which
    do no range-checking.  If we call them member functions of an instantiation
-   of &quot;bitset&lt;N&gt;,&quot; then their names and signatures are:
+   of "bitset&lt;N&gt;," then their names and signatures are:
 </para>
    <programlisting>
    bitset&lt;N&gt;&amp;   _Unchecked_set   (size_t pos);
@@ -196,19 +186,19 @@ extensions, be aware of two things:
    resolution calls for range-checking to be done.  We'll just wait and see...
 </para>
 <para>Finally, two additional searching functions have been added.  They return
-   the index of the first &quot;on&quot; bit, and the index of the first
-   &quot;on&quot; bit that is after <code>prev</code>, respectively:
+   the index of the first "on" bit, and the index of the first
+   "on" bit that is after <code>prev</code>, respectively:
 </para>
    <programlisting>
    size_t _Find_first() const;
    size_t _Find_next (size_t prev) const;</programlisting>
 <para>The same caveat given for the _Unchecked_* functions applies here also.
 </para>
-  </sect1>
+  </section>
 
 
-  <sect1 id="manual.ext.containers.deprecated_sgi" xreflabel="SGI ext dep">
-    <title>Deprecated HP/SGI</title>
+  <section xml:id="manual.ext.containers.deprecated_sgi" xreflabel="SGI ext dep"><info><title>Deprecated HP/SGI</title></info>
+    
 
    <para>
      The SGI hashing classes <classname>hash_set</classname> and
@@ -230,8 +220,8 @@ extensions, be aware of two things:
       <code>&lt;hash_map&gt;</code> and <code>&lt;hash_set&gt;</code>
       are deprecated but available as backwards-compatible extensions,
       as discussed further below.  <code>&lt;rope&gt;</code> is the
-      SGI specialization for large strings (&quot;rope,&quot;
-      &quot;large strings,&quot; get it? Love that geeky humor.)
+      SGI specialization for large strings ("rope,"
+      "large strings," get it? Love that geeky humor.)
       <code>&lt;slist&gt;</code> is a singly-linked list, for when the
       doubly-linked <code>list&lt;&gt;</code> is too much space
       overhead, and <code>&lt;rb_tree&gt;</code> exposes the red-black
@@ -240,12 +230,12 @@ extensions, be aware of two things:
    </para>
    <para>Each of the associative containers map, multimap, set, and multiset
       have a counterpart which uses a
-      <ulink url="http://www.sgi.com/tech/stl/HashFunction.html">hashing
-      function</ulink> to do the arranging, instead of a strict weak ordering
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/HashFunction.html">hashing
+      function</link> to do the arranging, instead of a strict weak ordering
       function.  The classes take as one of their template parameters a
       function object that will return the hash value; by default, an
       instantiation of
-      <ulink url="http://www.sgi.com/tech/stl/hash.html">hash</ulink>.
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/hash.html">hash</link>.
       You should specialize this functor for your class, or define your own,
       before trying to use one of the hashing classes.
    </para>
@@ -269,13 +259,13 @@ extensions, be aware of two things:
      </para>
    </blockquote>
 
-  </sect1>
+  </section>
 </chapter>
 
 <!-- Chapter 07 : Utilities -->
-<chapter id="manual.ext.util" xreflabel="Utilities">
+<chapter xml:id="manual.ext.util" xreflabel="Utilities"><info><title>Utilities</title></info>
 <?dbhtml filename="ext_utilities.html"?>
-  <title>Utilities</title>
+  
   <para>
     The &lt;functional&gt; header contains many additional functors
     and helper functions, extending section 20.3.  They are
@@ -343,9 +333,9 @@ get_temporary_buffer(5, (int*)0);
 </chapter>
 
 <!-- Chapter 08 : Algorithms -->
-<chapter id="manual.ext.algorithms" xreflabel="Algorithms">
+<chapter xml:id="manual.ext.algorithms" xreflabel="Algorithms"><info><title>Algorithms</title></info>
 <?dbhtml filename="ext_algorithms.html"?>
-  <title>Algorithms</title>
+  
 <para>25.1.6 (count, count_if) is extended with two more versions of count
    and count_if.  The standard versions return their results.  The
    additional signatures return void, but take a final parameter by
@@ -381,34 +371,34 @@ get_temporary_buffer(5, (int*)0);
 </chapter>
 
 <!-- Chapter 09 : Numerics -->
-<chapter id="manual.ext.numerics" xreflabel="Numerics">
+<chapter xml:id="manual.ext.numerics" xreflabel="Numerics"><info><title>Numerics</title></info>
 <?dbhtml filename="ext_numerics.html"?>
-  <title>Numerics</title>
+  
 <para>26.4, the generalized numeric operations such as accumulate, are extended
    with the following functions:
 </para>
    <programlisting>
    power (x, n);
    power (x, n, moniod_operation);</programlisting>
-<para>Returns, in FORTRAN syntax, &quot;x ** n&quot; where n&gt;=0.  In the
+<para>Returns, in FORTRAN syntax, "x ** n" where n&gt;=0.  In the
    case of n == 0, returns the identity element for the
    monoid operation.  The two-argument signature uses multiplication (for
-   a true &quot;power&quot; implementation), but addition is supported as well.
+   a true "power" implementation), but addition is supported as well.
    The operation functor must be associative.
 </para>
 <para>The <code>iota</code> function wins the award for Extension With the
-   Coolest Name.  It &quot;assigns sequentially increasing values to a range.
+   Coolest Name.  It "assigns sequentially increasing values to a range.
    That is, it assigns value to *first, value + 1 to *(first + 1) and so
-   on.&quot;  Quoted from SGI documentation.
+   on."  Quoted from SGI documentation.
 </para>
    <programlisting>
    void iota(_ForwardIter first, _ForwardIter last, _Tp value);</programlisting>
 </chapter>
 
 <!-- Chapter 10 : Iterators -->
-<chapter id="manual.ext.iterators" xreflabel="Iterators">
+<chapter xml:id="manual.ext.iterators" xreflabel="Iterators"><info><title>Iterators</title></info>
 <?dbhtml filename="ext_iterators.html"?>
-  <title>Iterators</title>
+  
 <para>24.3.2 describes <code>struct iterator</code>, which didn't exist in the
    original HP STL implementation (the language wasn't rich enough at the
    time).  For backwards compatibility, base classes are provided which
@@ -430,17 +420,17 @@ get_temporary_buffer(5, (int*)0);
 </chapter>
 
 <!-- Chapter 11 : IO -->
-<chapter id="manual.ext.io" xreflabel="IO">
+<chapter xml:id="manual.ext.io" xreflabel="IO"><info><title>Input and Output</title></info>
 <?dbhtml filename="ext_io.html"?>
-  <title>Input and Output</title>
+  
 
   <para>
     Extensions allowing <code>filebuf</code>s to be constructed from
     "C" types like  FILE*s and file descriptors.
   </para>
 
-  <sect1 id="manual.ext.io.filebuf_derived" xreflabel="Derived filebufs">
-    <title>Derived filebufs</title>
+  <section xml:id="manual.ext.io.filebuf_derived" xreflabel="Derived filebufs"><info><title>Derived filebufs</title></info>
+    
 
    <para>The v2 library included non-standard extensions to construct
       <code>std::filebuf</code>s from C stdio types such as
@@ -483,7 +473,7 @@ get_temporary_buffer(5, (int*)0);
 	 the <code>fd()</code> function were removed from the standard
 	 filebuf.  Instead, <code>&lt;ext/stdio_filebuf.h&gt;</code> contains
 	 a derived class called
-	 <ulink url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00074.html"><code>__gnu_cxx::stdio_filebuf</code></ulink>.
+	 <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a00074.html"><code>__gnu_cxx::stdio_filebuf</code></link>.
 	 This class can be constructed from a C <code>FILE*</code> or a file
 	 descriptor, and provides the <code>fd()</code> function.
      </para></listitem>
@@ -496,22 +486,21 @@ get_temporary_buffer(5, (int*)0);
 
     <para>
     </para>
-  </sect1>
+  </section>
 </chapter>
 
 <!-- Chapter 12 : Demangling -->
-<chapter id="manual.ext.demangle" xreflabel="Demangling">
+<chapter xml:id="manual.ext.demangle" xreflabel="Demangling"><info><title>Demangling</title></info>
 <?dbhtml filename="ext_demangling.html"?>
-  <title>Demangling</title>
+  
   <para>
     Transforming C++ ABI identifiers (like RTTI symbols) into the
     original C++ source identifiers is called
     <quote>demangling.</quote>
   </para>
   <para>
-    If you have read the <ulink
-    url="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01115.html">source
-    documentation for <code>namespace abi</code></ulink> then you are
+    If you have read the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01115.html">source
+    documentation for <code>namespace abi</code></link> then you are
     aware of the cross-vendor C++ ABI in use by GCC.  One of the
     exposed functions is used for demangling,
     <code>abi::__cxa_demangle</code>.
@@ -586,8 +575,7 @@ int main()
 </chapter>
 
 <!-- Chapter 13 : Concurrency -->
-<xi:include xmlns:xi="http://www.w3.org/2001/XInclude"
-	    parse="xml" href="concurrency_extensions.xml">
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="concurrency_extensions.xml">
 </xi:include>
 
 </part>

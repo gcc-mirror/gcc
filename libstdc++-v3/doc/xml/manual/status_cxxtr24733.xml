@@ -1,15 +1,14 @@
-<sect2 id="status.iso.tr24733" xreflabel="Status C++ TR24733">
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="status.iso.tr24733" xreflabel="Status C++ TR24733">
 <?dbhtml filename="status_iso_cxxtr24733.html"?>
 
-<sect2info>
+<info><title>C++ TR 24733</title>
   <keywordset>
     <keyword>
       TR 24733
     </keyword>
   </keywordset>
-</sect2info>
-
-<title>C++ TR 24733</title>
+</info>
 
 <para>
 This table is based on the table of contents of
@@ -32,13 +31,14 @@ particular release.
    Broken/Partial
       <?dbhtml bgcolor="#B0B0B0" ?>
 -->
-<table frame='all'>
+<table frame="all">
 <title>C++ TR 24733 Implementation Status</title>
-<tgroup cols='4' align='left' colsep='0' rowsep='1'>
-<colspec colname='c1'></colspec>
-<colspec colname='c2'></colspec>
-<colspec colname='c3'></colspec>
-<colspec colname='c4'></colspec>
+
+<tgroup cols="4" align="left" colsep="0" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
   <thead>
     <row>
       <entry>Section</entry>
@@ -88,14 +88,14 @@ particular release.
     <row>
       <entry>3.1</entry>
       <entry>Characteristics of decimal floating-point types</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>3.2</entry>
       <entry>Decimal Types</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <?dbhtml bgcolor="#B0B0B0" ?>
@@ -129,157 +129,157 @@ particular release.
       <entry>3.2.5</entry>
       <entry>Initialization from coefficient and exponent</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>3.2.6</entry>
       <entry>Conversion to generic floating-point type</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>3.2.7</entry>
       <entry>Unary arithmetic operators</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>3.2.8</entry>
       <entry>Binary arithmetic operators</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>3.2.9</entry>
       <entry>Comparison operators</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>3.2.10</entry>
       <entry>Formatted input</entry>
       <entry>N</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>3.2.11</entry>
       <entry>Formatted output</entry>
       <entry>N</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>3.3</entry>
       <entry>Additions to header <code>limits</code></entry>
       <entry>N</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>3.4</entry>
       <entry>Headers <code>cfloat</code> and <code>float.h</code></entry>
-      <entry></entry>
-      <entry></entry>
+      <entry/>
+      <entry/>
     </row>
     <row>
       <entry>3.4.2</entry>
       <entry>Additions to header <code>cfloat</code> synopsis</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>3.4.3</entry>
       <entry>Additions to header <code>float.h</code> synopsis</entry>
       <entry>N</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>3.4.4</entry>
       <entry>Maximum finite value</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>3.4.5</entry>
       <entry>Epsilon</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>3.4.6</entry>
       <entry>Minimum positive normal value</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>3.4.7</entry>
       <entry>Minimum positive subnormal value</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <entry>3.4.8</entry>
       <entry>Evaluation format</entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>3.5</entry>
       <entry>Additions to <code>cfenv</code> and <code>fenv.h</code></entry>
       <entry>Outside the scope of GCC</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>3.6</entry>
       <entry>Additions to <code>cmath</code> and <code>math.h</code></entry>
       <entry>Outside the scope of GCC</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>3.7</entry>
       <entry>Additions to <code>cstdio</code> and <code>stdio.h</code></entry>
       <entry>Outside the scope of GCC</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>3.8</entry>
       <entry>Additions to <code>cstdlib</code> and <code>stdlib.h</code></entry>
       <entry>Outside the scope of GCC</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>3.9</entry>
       <entry>Additions to <code>cwchar</code> and <code>wchar.h</code></entry>
       <entry>Outside the scope of GCC</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>3.10</entry>
       <entry>Facets</entry>
       <entry>N</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>3.11</entry>
       <entry>Type traits</entry>
       <entry>N</entry>
-      <entry></entry>
+      <entry/>
     </row>
     <row>
       <?dbhtml bgcolor="#C8B0B0" ?>
       <entry>3.12</entry>
       <entry>Hash functions</entry>
       <entry>N</entry>
-      <entry></entry>
+      <entry/>
     </row>
 
     <row>
@@ -296,4 +296,4 @@ particular release.
 </table>
 
 
-</sect2>
+</section>

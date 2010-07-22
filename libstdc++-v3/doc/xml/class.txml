@@ -1,7 +1,9 @@
-<sect1 id="manual.util.memory.allocator" xreflabel="allocator">
+<!-- Converted by db4-upgrade version 1.0 -->
+
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xml:id="manual.util.memory.allocator" xreflabel="allocator">
 <?dbhtml filename="allocator.html"?>
  
-<sect1info>
+<info><title>allocator</title>
   <keywordset>
     <keyword>
       ISO C++
@@ -10,15 +12,15 @@
       allocator
     </keyword>
   </keywordset>
-</sect1info>
+</info>
 
-<title>allocator</title>
+
 
 <para>
 </para>
 
-<sect2 id="allocator.req" xreflabel="allocator.req">
-<title>Requirements</title>
+<section xml:id="allocator.req" xreflabel="allocator.req"><info><title>Requirements</title></info>
+
 
   <para>
   </para>
@@ -35,33 +37,33 @@
 
   <para> 
   </para>
-</sect2>
+</section>
 
-<sect2 id="allocator.design_issues" xreflabel="allocator.design_issues">
-<title>Design Issues</title>
+<section xml:id="allocator.design_issues" xreflabel="allocator.design_issues"><info><title>Design Issues</title></info>
+
 
   <para>
   </para>
 
   <para> 
   </para>
-</sect2>
+</section>
 
-<sect2 id="allocator.impl" xreflabel="allocator.impl">
-<title>Implementation</title>
+<section xml:id="allocator.impl" xreflabel="allocator.impl"><info><title>Implementation</title></info>
 
-  <sect3>
-    <title>Interface Design</title>
+
+  <section><info><title>Interface Design</title></info>
+    
 
     <para>
     </para>
     
     <para> 
     </para>
-  </sect3>
+  </section>
 
-  <sect3>
-    <title>Selecting Default Allocation Strategy</title>
+  <section><info><title>Selecting Default Allocation Strategy</title></info>
+    
 
     <para> 
     </para>
@@ -76,38 +78,38 @@
      <listitem>
      </listitem>
    </orderedlist>
-  </sect3>
+  </section>
 
-  <sect3>
-    <title>Disabling Memory Caching</title>
+  <section><info><title>Disabling Memory Caching</title></info>
+    
 
     <para> 
     </para>
 
    <para> 
    </para>
-  </sect3>
-</sect2>
+  </section>
+</section>
 
-<sect2 id="allocator.using" xreflabel="allocator.using">
-<title>Using</title>
+<section xml:id="allocator.using" xreflabel="allocator.using"><info><title>Using</title></info>
+
 
    <para>
    </para>
-</sect2>
+</section>
 
-<sect2 id="allocator.custom" xreflabel="allocator.custom">
-<title>Custom Allocators</title>
+<section xml:id="allocator.custom" xreflabel="allocator.custom"><info><title>Custom Allocators</title></info>
+
 
   <para> 
   </para>
 
    <para> 
    </para>
-</sect2>
+</section>
 
-<bibliography id="allocator.biblio" xreflabel="allocator.biblio">
-<title>Bibliography</title>
+<bibliography xml:id="allocator.biblio" xreflabel="allocator.biblio"><info><title>Bibliography</title></info>
+
 
 <!-- 
   <biblioentry>
@@ -116,11 +118,11 @@
 
     <biblioid class="uri">
       <ulink url="http://about:blank">
-        <citetitle>
-        The Title
-        </citetitle>
       </ulink>
     </biblioid>
+    <citetitle>
+    The Title
+    </citetitle>
 
     <editor>
       <firstname></firstname>
@@ -151,4 +153,4 @@
 
 </bibliography>
 
-</sect1>
+</section>
