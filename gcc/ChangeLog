@@ -1,3 +1,10 @@
+2010-07-22  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraphunit.c (verify_edge_count_and_frequency): New function.
+	(verify_cgraph_node): Verify frequencies of indirect edges.
+	* tree-inline.c (tree_function_versioning): Update frequencies of
+	indirect edges.
+
 2010-07-22  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
  	PR target/43698
