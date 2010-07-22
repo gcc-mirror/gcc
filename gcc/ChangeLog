@@ -1,3 +1,94 @@
+2010-07-22  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* ira-build.c (ira_create_object): New arg SUBWORD; all callers changed.
+	Initialize OBJECT_SUBWORD.
+	(ira_create_allocno): Clear ALLOCNO_NUM_OBJECTS.
+	(ira_create_allocno_objects): Renamed from ira_create_allocno_object;
+	all callers changed.
+	(merge_hard_reg_conflicts): Iterate over allocno subobjects.
+	(finish_allocno): Likewise.
+	(move_allocno_live_ranges, copy_allocno_live_ranges): Likewise.
+	(remove_low_level_allocnos): Likewise.
+	(update_bad_spill_attribute): Likewise.
+	(setup_min_max_allocno_live_range_point): Likewise.
+	(sort_conflict_id_map): Likewise.
+	(ira_flattening): Likewise.  Use ior_hard_reg_conflicts.
+	(ior_hard_reg_conflicts): New function.
+	(ior_allocate_object_conflicts): Renamed first argument to OBJ.
+	(compress_conflict_vecs): Iterate over objects, not allocnos.
+	(ira_add_live_range_to_object): New function.
+	(object_range_compare_func): Renamed from allocno_range_compare_func.
+	All callers changed.
+	(setup_min_max_conflict_allocno_ids): For allocnos with multiple
+	subobjects, widen the min/max range of the lowest-order object to
+	potentially include all other such low-order objects.
+	* ira.c (ira_bad_reload_regno_1): Iterate over allocno subobjects.
+	(check_allocation): Likewise.  Use more fine-grained tests for register
+	conflicts.
+	* ira-color.c (allocnos_have_intersected_live_ranges_p): Iterate over
+	allocno subobjects.
+	(assign_hard_reg): Keep multiple sets of conflicts.  Make finer-grained
+	choices about which bits to set in each set.  Don't use
+	ira_hard_reg_not_in_set_p, perform a more elaborate test for conflicts
+	using the multiple sets we computed.
+	(push_allocno_to_stack): Iterate over allocno subobjects.
+	(all_conflicting_hard_regs_coalesced): New static function.
+	(setup_allocno_available_regs_num): Use it.
+	(setup_allocno_left_conflicts_size): Likewise.  Iterate over allocno
+	subobjects.
+	(coalesced_allocno_conflict): Test subobject 0 in each allocno.
+	(setup_allocno_priorities): Divide ALLOCNO_EXCESS_PRESSURE_POINTS_NUM
+	by ALLOCNO_NUM_OBJECTS.
+	(calculate_spill_cost): Likewise.
+	(color_pass): Express if statement in a more normal way.
+	(ira_reassign_conflict_allocnos): Iterate over allocno subobjects.
+	(slot_coalesced_allocno_live_ranges_intersect_p): Likewise.
+	(setup_slot_coalesced_allocno_live_ranges): Likewise.
+	(allocno_reload_assign): Likewise.
+	(ira_reassign_pseudos): Likewise.
+	(fast_allocation): Likewise.
+	* ira-conflicts.c (build_conflict_bit_table): Likewise.
+	(print_allocno_conflicts): Likewise.
+	(ira_build_conflicts): Likewise.
+	(allocnos_conflict_for_copy_p): Renamed from allocnos_conflict_p.  All
+	callers changed.  Test subword 0 of each allocno for conflicts.
+	(build_object_conflicts): Renamed from build_allocno_conflicts.  All
+	callers changed.  Iterate over allocno subobjects.
+	* ira-emit.c (modify_move_list): Iterate over allocno subobjects.
+	* ira-int.h (struct ira_allocno): New member. num_objects.  Rename object
+	to objects and change it into an array.
+	(ALLOCNO_OBJECT): Add new argument N.
+	(ALLOCNO_NUM_OBJECTS, OBJECT_SUBWORD): New macros.
+	(ira_create_allocno_objects): Renamed from ira_create_allocno_object.
+	(ior_hard_reg_conflicts): Declare.
+	(ira_add_live_range_to_object): Declare.
+	(ira_allocno_object_iterator): New.
+	(ira_allocno_object_iter_init, ira_allocno_object_iter_cond): New.
+	(FOR_EACH_ALLOCNO_OBJECT): New macro.
+	* ira-lives.c (objects_live): Renamed from allocnos_live; all uses changed.
+	(allocnos_processed): New sparseset.
+	(make_object_born): Renamed from make_allocno_born; take an ira_object_t
+	argument.  All callers changed.
+	(make_object_dead): Renamed from make_allocno_dead; take an ira_object t
+	argument.  All callers changed.
+	(update_allocno_pressure_excess_length): Take an ira_obejct_t argument.
+	All callers changed.
+	(mark_pseudo_regno_live): Iterate over allocno subobjects.
+	(mark_pseudo_regno_dead): Likewise.
+	(mark_pseudo_regno_subword_live, mark_pseudo_regno_subword_dead): New
+	functions.
+	(mark_ref_live): Detect subword accesses and call
+	mark_pseudo_regno_subword_live as appropriate.
+	(mark_ref_dead): Likewise for mark_pseudo_regno_subword_dead.
+	(process_bb_nodes_live): Deal with object-related updates first; set
+	and test bits in allocnos_processed to avoid computing allocno
+	statistics more than once.
+	(create_start_finish_chains): Iterate over objects, not allocnos.
+	(print_object_live_ranges): New function.
+	(print_allocno_live_ranges): Use it.
+	(ira_create_allocno_live_ranges): Allocate and free allocnos_processed
+	and objects_live.
+
 2010-07-22  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/42451

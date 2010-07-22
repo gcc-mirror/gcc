@@ -192,7 +192,6 @@ extern ira_loop_tree_node_t ira_loop_nodes;
 #define IRA_LOOP_NODE(loop) IRA_LOOP_NODE_BY_INDEX ((loop)->num)
 
 
-
 /* The structure describes program points where a given allocno lives.
    To save memory we store allocno conflicts only for the same cover
    class allocnos which is enough to assign hard registers.  To find
@@ -201,7 +200,7 @@ extern ira_loop_tree_node_t ira_loop_nodes;
    intersected, the allocnos are in conflict.  */
 struct live_range
 {
-  /* Allocno whose live range is described by given structure.  */
+  /* Object whose live range is described by given structure.  */
   ira_object_t object;
   /* Program point range.  */
   int start, finish;
@@ -233,7 +232,7 @@ struct ira_object
   ira_allocno_t allocno;
   /* Vector of accumulated conflicting conflict_redords with NULL end
      marker (if OBJECT_CONFLICT_VEC_P is true) or conflict bit vector
-     otherwise.  Only objects belonging to allocnos with the
+     otherwise.  Only ira_objects belonging to allocnos with the
      same cover class are in the vector or in the bit vector.  */
   void *conflicts_array;
   /* Pointer to structures describing at what program point the
@@ -241,25 +240,27 @@ struct ira_object
      ranges in the list are not intersected and ordered by decreasing
      their program points*.  */
   live_range_t live_ranges;
+  /* The subword within ALLOCNO which is represented by this object.
+     Zero means the lowest-order subword (or the entire allocno in case
+     it is not being tracked in subwords).  */
+  int subword;
   /* Allocated size of the conflicts array.  */
   unsigned int conflicts_array_size;
-  /* A unique number for every instance of this structure which is used
+  /* A unique number for every instance of this structure, which is used
      to represent it in conflict bit vectors.  */
   int id;
   /* Before building conflicts, MIN and MAX are initialized to
      correspondingly minimal and maximal points of the accumulated
-     allocno live ranges.  Afterwards, they hold the minimal and
-     maximal ids of other objects that this one can conflict
-     with.  */
+     live ranges.  Afterwards, they hold the minimal and maximal ids
+     of other ira_objects that this one can conflict with.  */
   int min, max;
   /* Initial and accumulated hard registers conflicting with this
-     conflict record and as a consequences can not be assigned to the
-     allocno.  All non-allocatable hard regs and hard regs of cover
-     classes different from given allocno one are included in the
-     sets.  */
+     object and as a consequences can not be assigned to the allocno.
+     All non-allocatable hard regs and hard regs of cover classes
+     different from given allocno one are included in the sets.  */
   HARD_REG_SET conflict_hard_regs, total_conflict_hard_regs;
   /* Number of accumulated conflicts in the vector of conflicting
-     conflict records.  */
+     objects.  */
   int num_accumulated_conflicts;
   /* TRUE if conflicts are represented by a vector of pointers to
      ira_object structures.  Otherwise, we use a bit vector indexed
@@ -346,9 +347,13 @@ struct ira_allocno
      list is chained by NEXT_COALESCED_ALLOCNO.  */
   ira_allocno_t first_coalesced_allocno;
   ira_allocno_t next_coalesced_allocno;
-  /* Pointer to a structure describing conflict information about this
-     allocno.  */
-  ira_object_t object;
+  /* The number of objects tracked in the following array.  */
+  int num_objects;
+  /* An array of structures describing conflict information and live
+     ranges for each object associated with the allocno.  There may be
+     more than one such object in cases where the allocno represents a
+     multi-word register.  */
+  ira_object_t objects[2];
   /* Accumulated frequency of calls which given allocno
      intersects.  */
   int call_freq;
@@ -483,9 +488,11 @@ struct ira_allocno
 #define ALLOCNO_TEMP(A) ((A)->temp)
 #define ALLOCNO_FIRST_COALESCED_ALLOCNO(A) ((A)->first_coalesced_allocno)
 #define ALLOCNO_NEXT_COALESCED_ALLOCNO(A) ((A)->next_coalesced_allocno)
-#define ALLOCNO_OBJECT(A) ((A)->object)
+#define ALLOCNO_OBJECT(A,N) ((A)->objects[N])
+#define ALLOCNO_NUM_OBJECTS(A) ((A)->num_objects)
 
 #define OBJECT_ALLOCNO(C) ((C)->allocno)
+#define OBJECT_SUBWORD(C) ((C)->subword)
 #define OBJECT_CONFLICT_ARRAY(C) ((C)->conflicts_array)
 #define OBJECT_CONFLICT_VEC(C) ((ira_object_t *)(C)->conflicts_array)
 #define OBJECT_CONFLICT_BITVEC(C) ((IRA_INT_TYPE *)(C)->conflicts_array)
@@ -497,7 +504,7 @@ struct ira_allocno
 #define OBJECT_MIN(C) ((C)->min)
 #define OBJECT_MAX(C) ((C)->max)
 #define OBJECT_CONFLICT_ID(C) ((C)->id)
-#define OBJECT_LIVE_RANGES(C) ((C)->live_ranges)
+#define OBJECT_LIVE_RANGES(A) ((A)->live_ranges)
 
 /* Map regno -> allocnos with given regno (see comments for
    allocno member `next_regno_allocno').  */
@@ -593,6 +600,7 @@ extern int ira_move_loops_num, ira_additional_jumps_num;
 
 /* The type used as elements in the array, and the number of bits in
    this type.  */
+
 #define IRA_INT_BITS HOST_BITS_PER_WIDE_INT
 #define IRA_INT_TYPE HOST_WIDE_INT
 
@@ -690,7 +698,7 @@ minmax_set_iter_init (minmax_set_iterator *i, IRA_INT_TYPE *vec, int min,
   i->word = i->nel == 0 ? 0 : vec[0];
 }
 
-/* Return TRUE if we have more elements to visit, in which case *N is
+/* Return TRUE if we have more allocnos to visit, in which case *N is
    set to the number of the element to be visited.  Otherwise, return
    FALSE.  */
 static inline bool
@@ -929,12 +937,14 @@ extern void ira_traverse_loop_tree (bool, ira_loop_tree_node_t,
 extern ira_allocno_t ira_parent_allocno (ira_allocno_t);
 extern ira_allocno_t ira_parent_or_cap_allocno (ira_allocno_t);
 extern ira_allocno_t ira_create_allocno (int, bool, ira_loop_tree_node_t);
-extern void ira_create_allocno_object (ira_allocno_t);
+extern void ira_create_allocno_objects (ira_allocno_t);
 extern void ira_set_allocno_cover_class (ira_allocno_t, enum reg_class);
 extern bool ira_conflict_vector_profitable_p (ira_object_t, int);
 extern void ira_allocate_conflict_vec (ira_object_t, int);
 extern void ira_allocate_object_conflicts (ira_object_t, int);
+extern void ior_hard_reg_conflicts (ira_allocno_t, HARD_REG_SET *);
 extern void ira_print_expanded_allocno (ira_allocno_t);
+extern void ira_add_live_range_to_object (ira_object_t, int, int);
 extern live_range_t ira_create_live_range (ira_object_t, int, int,
 					   live_range_t);
 extern live_range_t ira_copy_live_range_list (live_range_t);
@@ -1059,7 +1069,7 @@ ira_allocno_iter_cond (ira_allocno_iterator *i, ira_allocno_t *a)
 
 /* The iterator for all objects.  */
 typedef struct {
-  /* The number of the current element in IRA_OBJECT_ID_MAP.  */
+  /* The number of the current element in ira_object_id_map.  */
   int n;
 } ira_object_iterator;
 
@@ -1087,12 +1097,43 @@ ira_object_iter_cond (ira_object_iterator *i, ira_object_t *obj)
   return false;
 }
 
-/* Loop over all objects.  In each iteration, A is set to the next
-   conflict.  ITER is an instance of ira_object_iterator used to iterate
+/* Loop over all objects.  In each iteration, OBJ is set to the next
+   object.  ITER is an instance of ira_object_iterator used to iterate
    the objects.  */
 #define FOR_EACH_OBJECT(OBJ, ITER)			\
   for (ira_object_iter_init (&(ITER));			\
        ira_object_iter_cond (&(ITER), &(OBJ));)
+
+/* The iterator for objects associated with an allocno.  */
+typedef struct {
+  /* The number of the element the allocno's object array.  */
+  int n;
+} ira_allocno_object_iterator;
+
+/* Initialize the iterator I.  */
+static inline void
+ira_allocno_object_iter_init (ira_allocno_object_iterator *i)
+{
+  i->n = 0;
+}
+
+/* Return TRUE if we have more objects to visit in allocno A, in which
+   case *O is set to the object to be visited.  Otherwise, return
+   FALSE.  */
+static inline bool
+ira_allocno_object_iter_cond (ira_allocno_object_iterator *i, ira_allocno_t a,
+			      ira_object_t *o)
+{
+  *o = ALLOCNO_OBJECT (a, i->n);
+  return i->n++ < ALLOCNO_NUM_OBJECTS (a);
+}
+
+/* Loop over all objects associated with allocno A.  In each
+   iteration, O is set to the next object.  ITER is an instance of
+   ira_allocno_object_iterator used to iterate the conflicts.  */
+#define FOR_EACH_ALLOCNO_OBJECT(A, O, ITER)			\
+  for (ira_allocno_object_iter_init (&(ITER));			\
+       ira_allocno_object_iter_cond (&(ITER), (A), &(O));)
 
 
 /* The iterator for copies.  */
@@ -1132,9 +1173,10 @@ ira_copy_iter_cond (ira_copy_iterator *i, ira_copy_t *cp)
   for (ira_copy_iter_init (&(ITER));			\
        ira_copy_iter_cond (&(ITER), &(C));)
 
-/* The iterator for allocno conflicts.  */
+/* The iterator for object conflicts.  */
 typedef struct {
-  /* TRUE if the conflicts are represented by vector of objects.  */
+
+  /* TRUE if the conflicts are represented by vector of allocnos.  */
   bool conflict_vec_p;
 
   /* The conflict vector or conflict bit vector.  */
