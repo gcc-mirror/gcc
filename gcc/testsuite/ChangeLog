@@ -1,5 +1,11 @@
 2010-07-22  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/42451
+	* gcc.dg/lto/20100720-3_0.c: New testcase.
+	* gcc.dg/lto/20100720-3_1.c: Likewise.
+
+2010-07-22  Richard Guenther  <rguenther@suse.de>
+
 	* lib/target-supports-dg.exp (dg-require-linker-plugin): New proc.
 	* lib/target-supports.exp (check_linker_plugin_available): Likewise.
 

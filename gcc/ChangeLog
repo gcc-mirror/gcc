@@ -1,3 +1,13 @@
+2010-07-22  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/42451
+	* gimple.c (gtc_next_dfs_num): New global.
+	(struct sccs): Make value a union, add integer same_p member.
+	(gtc_visit): New function.
+	(gimple_types_compatible_p_1): New function, split out from ...
+	(gimple_types_compatible_p): ... here.  Start a DFS walk here.
+	(iterative_hash_gimple_type): Adjust for sccs change.
+
 2010-07-22  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/44891
