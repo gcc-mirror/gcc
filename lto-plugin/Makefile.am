@@ -18,3 +18,9 @@ libexecsub_LTLIBRARIES = liblto_plugin.la
 
 liblto_plugin_la_SOURCES = lto-plugin.c
 liblto_plugin_la_LIBADD = $(LIBELFLIBS) ../libiberty/pic/libiberty.a
+
+all: copy_lto_plugin
+
+copy_lto_plugin: all-am
+	$(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $(libexecsub_LTLIBRARIES) `pwd`/../gcc/
+

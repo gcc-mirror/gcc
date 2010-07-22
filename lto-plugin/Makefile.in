@@ -495,6 +495,11 @@ uninstall-am: uninstall-libexecsubLTLIBRARIES
 	tags uninstall uninstall-am uninstall-libexecsubLTLIBRARIES
 
 
+all: copy_lto_plugin
+
+copy_lto_plugin: all-am
+	$(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $(libexecsub_LTLIBRARIES) `pwd`/../gcc/
+
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

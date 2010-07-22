@@ -1,3 +1,9 @@
+2010-07-22  Richard Guenther  <rguenther@suse.de>
+
+	* Makefile.am: New copy_lto_plugin rule to install the plugin
+	into ../gcc.
+	* Makefile.in: Regenerated.
+
 2010-05-21  Richard Guenther  <rguenther@suse.de>
 
 	* lto-plugin.c (write_resolution): Do not assert syms is non-NULL.
