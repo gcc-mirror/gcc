@@ -170,9 +170,8 @@ struct ipa_param_descriptor
    parameters (such as ipa-cp).  */
 struct ipa_node_params
 {
-  /* Number of formal parameters of this function.  When set to 0,
-     this function's parameters would not be analyzed by the different
-     stages of IPA CP.  */
+  /* Number of formal parameters of this function.  When set to 0, this
+     function's parameters would not be analyzed by IPA CP.  */
   int param_count;
   /* Whether this function is called with variable number of actual
      arguments.  */
@@ -251,9 +250,8 @@ ipa_is_called_with_var_arguments (struct ipa_node_params *info)
 
 
 
-/* ipa_edge_args stores information related to a callsite and particularly
-   its arguments. It is pointed to by a field in the
-   callsite's corresponding cgraph_edge.  */
+/* ipa_edge_args stores information related to a callsite and particularly its
+   arguments.  It can be accessed by the IPA_EDGE_REF macro.  */
 typedef struct GTY(()) ipa_edge_args
 {
   /* Number of actual arguments in this callsite.  When set to 0,

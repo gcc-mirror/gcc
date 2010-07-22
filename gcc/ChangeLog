@@ -1,5 +1,11 @@
 2010-07-22  Martin Jambor  <mjambor@suse.cz>
 
+	* ipa-prop.h (struct ipa_node_params): Updated comment.
+	(struct ipa_edge_args): Likewise.
+	* Makefile.in (ipa-prop.o): Remove bogus $(GIMPLE_FOLD_H) dependency.
+
+2010-07-22  Martin Jambor  <mjambor@suse.cz>
+
 	* cgraphunit.c (verify_edge_count_and_frequency): New function.
 	(verify_cgraph_node): Verify frequencies of indirect edges.
 	* tree-inline.c (tree_function_versioning): Update frequencies of
