@@ -422,12 +422,13 @@ initiate_allocnos (void)
 
 /* Create and return an object corresponding to a new allocno A.  */
 static ira_object_t
-ira_create_object (ira_allocno_t a)
+ira_create_object (ira_allocno_t a, int subword)
 {
   enum reg_class cover_class = ALLOCNO_COVER_CLASS (a);
   ira_object_t obj = (ira_object_t) pool_alloc (object_pool);
 
   OBJECT_ALLOCNO (obj) = a;
+  OBJECT_SUBWORD (obj) = subword;
   OBJECT_CONFLICT_ID (obj) = ira_objects_num;
   OBJECT_CONFLICT_VEC_P (obj) = false;
   OBJECT_CONFLICT_ARRAY (obj) = NULL;
@@ -446,6 +447,7 @@ ira_create_object (ira_allocno_t a)
   ira_object_id_map
     = VEC_address (ira_object_t, ira_object_id_map_vec);
   ira_objects_num = VEC_length (ira_object_t, ira_object_id_map_vec);
+
   return obj;
 }
 
@@ -510,10 +512,12 @@ ira_create_allocno (int regno, bool cap_p, ira_loop_tree_node_t loop_tree_node)
   ALLOCNO_PREV_BUCKET_ALLOCNO (a) = NULL;
   ALLOCNO_FIRST_COALESCED_ALLOCNO (a) = a;
   ALLOCNO_NEXT_COALESCED_ALLOCNO (a) = a;
+  ALLOCNO_NUM_OBJECTS (a) = 0;
 
   VEC_safe_push (ira_allocno_t, heap, allocno_vec, a);
   ira_allocnos = VEC_address (ira_allocno_t, allocno_vec);
   ira_allocnos_num = VEC_length (ira_allocno_t, allocno_vec);
+
   return a;
 }
 
@@ -524,14 +528,27 @@ ira_set_allocno_cover_class (ira_allocno_t a, enum reg_class cover_class)
   ALLOCNO_COVER_CLASS (a) = cover_class;
 }
 
-/* Allocate an object for allocno A and set ALLOCNO_OBJECT.  */
+/* Determine the number of objects we should associate with allocno A
+   and allocate them.  */
 void
-ira_create_allocno_object (ira_allocno_t a)
+ira_create_allocno_objects (ira_allocno_t a)
 {
-  ALLOCNO_OBJECT (a) = ira_create_object (a);
+  enum machine_mode mode = ALLOCNO_MODE (a);
+  enum reg_class cover_class = ALLOCNO_COVER_CLASS (a);
+  int n = ira_reg_class_nregs[cover_class][mode];
+  int i;
+
+  if (GET_MODE_SIZE (mode) != 2 * UNITS_PER_WORD || n != 2)
+    n = 1;
+
+  ALLOCNO_NUM_OBJECTS (a) = n;
+  for (i = 0; i < n; i++)
+    ALLOCNO_OBJECT (a, i) = ira_create_object (a, i);
 }
 
-/* For each allocno, create the corresponding ALLOCNO_OBJECT structure.  */
+/* For each allocno, set ALLOCNO_NUM_OBJECTS and create the
+   ALLOCNO_OBJECT structures.  This must be called after the cover
+   classes are known.  */
 static void
 create_allocno_objects (void)
 {
@@ -539,28 +556,48 @@ create_allocno_objects (void)
   ira_allocno_iterator ai;
 
   FOR_EACH_ALLOCNO (a, ai)
-    ira_create_allocno_object (a);
+    ira_create_allocno_objects (a);
 }
 
-/* Merge hard register conflicts from allocno FROM into allocno TO.  If
-   TOTAL_ONLY is true, we ignore ALLOCNO_CONFLICT_HARD_REGS.  */
+/* Merge hard register conflict information for all objects associated with
+   allocno TO into the corresponding objects associated with FROM.
+   If TOTAL_ONLY is true, we only merge OBJECT_TOTAL_CONFLICT_HARD_REGS.  */
 static void
 merge_hard_reg_conflicts (ira_allocno_t from, ira_allocno_t to,
 			  bool total_only)
 {
-  ira_object_t from_obj = ALLOCNO_OBJECT (from);
-  ira_object_t to_obj = ALLOCNO_OBJECT (to);
-  if (!total_only)
-    IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (to_obj),
-		      OBJECT_CONFLICT_HARD_REGS (from_obj));
-  IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (to_obj),
-		    OBJECT_TOTAL_CONFLICT_HARD_REGS (from_obj));
+  int i;
+  gcc_assert (ALLOCNO_NUM_OBJECTS (to) == ALLOCNO_NUM_OBJECTS (from));
+  for (i = 0; i < ALLOCNO_NUM_OBJECTS (to); i++)
+    {
+      ira_object_t from_obj = ALLOCNO_OBJECT (from, i);
+      ira_object_t to_obj = ALLOCNO_OBJECT (to, i);
+      if (!total_only)
+	IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (to_obj),
+			  OBJECT_CONFLICT_HARD_REGS (from_obj));
+      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (to_obj),
+			OBJECT_TOTAL_CONFLICT_HARD_REGS (from_obj));
+    }
 #ifdef STACK_REGS
   if (!total_only && ALLOCNO_NO_STACK_REG_P (from))
     ALLOCNO_NO_STACK_REG_P (to) = true;
   if (ALLOCNO_TOTAL_NO_STACK_REG_P (from))
     ALLOCNO_TOTAL_NO_STACK_REG_P (to) = true;
 #endif
+}
+
+/* Update hard register conflict information for all objects associated with
+   A to include the regs in SET.  */
+void
+ior_hard_reg_conflicts (ira_allocno_t a, HARD_REG_SET *set)
+{
+  ira_allocno_object_iterator i;
+  ira_object_t obj;
+  FOR_EACH_ALLOCNO_OBJECT (a, obj, i)
+    {
+      IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj), *set);
+      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj), *set);
+    }
 }
 
 /* Return TRUE if a conflict vector with NUM elements is more
@@ -617,14 +654,14 @@ allocate_conflict_bit_vec (ira_object_t obj)
 }
 
 /* Allocate and initialize the conflict vector or conflict bit vector
-   of A for NUM conflicting allocnos whatever is more profitable.  */
+   of OBJ for NUM conflicting allocnos whatever is more profitable.  */
 void
-ira_allocate_object_conflicts (ira_object_t a, int num)
+ira_allocate_object_conflicts (ira_object_t obj, int num)
 {
-  if (ira_conflict_vector_profitable_p (a, num))
-    ira_allocate_conflict_vec (a, num);
+  if (ira_conflict_vector_profitable_p (obj, num))
+    ira_allocate_conflict_vec (obj, num);
   else
-    allocate_conflict_bit_vec (a);
+    allocate_conflict_bit_vec (obj);
 }
 
 /* Add OBJ2 to the conflicts of OBJ1.  */
@@ -772,15 +809,14 @@ compress_conflict_vec (ira_object_t obj)
 static void
 compress_conflict_vecs (void)
 {
-  ira_allocno_t a;
-  ira_allocno_iterator ai;
+  ira_object_t obj;
+  ira_object_iterator oi;
 
   conflict_check = (int *) ira_allocate (sizeof (int) * ira_objects_num);
   memset (conflict_check, 0, sizeof (int) * ira_objects_num);
   curr_conflict_check_tick = 0;
-  FOR_EACH_ALLOCNO (a, ai)
+  FOR_EACH_OBJECT (obj, oi)
     {
-      ira_object_t obj = ALLOCNO_OBJECT (a);
       if (OBJECT_CONFLICT_VEC_P (obj))
 	compress_conflict_vec (obj);
     }
@@ -823,7 +859,7 @@ create_cap_allocno (ira_allocno_t a)
   ALLOCNO_MODE (cap) = ALLOCNO_MODE (a);
   cover_class = ALLOCNO_COVER_CLASS (a);
   ira_set_allocno_cover_class (cap, cover_class);
-  ira_create_allocno_object (cap);
+  ira_create_allocno_objects (cap);
   ALLOCNO_AVAILABLE_REGS_NUM (cap) = ALLOCNO_AVAILABLE_REGS_NUM (a);
   ALLOCNO_CAP_MEMBER (cap) = a;
   ALLOCNO_CAP (a) = cap;
@@ -838,7 +874,9 @@ create_cap_allocno (ira_allocno_t a)
   ALLOCNO_NREFS (cap) = ALLOCNO_NREFS (a);
   ALLOCNO_FREQ (cap) = ALLOCNO_FREQ (a);
   ALLOCNO_CALL_FREQ (cap) = ALLOCNO_CALL_FREQ (a);
+
   merge_hard_reg_conflicts (a, cap, false);
+
   ALLOCNO_CALLS_CROSSED_NUM (cap) = ALLOCNO_CALLS_CROSSED_NUM (a);
   if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
     {
@@ -849,7 +887,7 @@ create_cap_allocno (ira_allocno_t a)
   return cap;
 }
 
-/* Create and return allocno live range with given attributes.  */
+/* Create and return a live range for OBJECT with given attributes.  */
 live_range_t
 ira_create_live_range (ira_object_t obj, int start, int finish,
 		       live_range_t next)
@@ -862,6 +900,17 @@ ira_create_live_range (ira_object_t obj, int start, int finish,
   p->finish = finish;
   p->next = next;
   return p;
+}
+
+/* Create a new live range for OBJECT and queue it at the head of its
+   live range list.  */
+void
+ira_add_live_range_to_object (ira_object_t object, int start, int finish)
+{
+  live_range_t p;
+  p = ira_create_live_range (object, start, finish,
+			     OBJECT_LIVE_RANGES (object));
+  OBJECT_LIVE_RANGES (object) = p;
 }
 
 /* Copy allocno live range R and return the result.  */
@@ -1032,13 +1081,17 @@ static void
 finish_allocno (ira_allocno_t a)
 {
   enum reg_class cover_class = ALLOCNO_COVER_CLASS (a);
-  ira_object_t obj = ALLOCNO_OBJECT (a);
+  ira_object_t obj;
+  ira_allocno_object_iterator oi;
 
-  ira_finish_live_range_list (OBJECT_LIVE_RANGES (obj));
-  ira_object_id_map[OBJECT_CONFLICT_ID (obj)] = NULL;
-  if (OBJECT_CONFLICT_ARRAY (obj) != NULL)
-    ira_free (OBJECT_CONFLICT_ARRAY (obj));
-  pool_free (object_pool, obj);
+  FOR_EACH_ALLOCNO_OBJECT (a, obj, oi)
+    {
+      ira_finish_live_range_list (OBJECT_LIVE_RANGES (obj));
+      ira_object_id_map[OBJECT_CONFLICT_ID (obj)] = NULL;
+      if (OBJECT_CONFLICT_ARRAY (obj) != NULL)
+	ira_free (OBJECT_CONFLICT_ARRAY (obj));
+      pool_free (object_pool, obj);
+    }
 
   ira_allocnos[ALLOCNO_NUM (a)] = NULL;
   if (ALLOCNO_HARD_REG_COSTS (a) != NULL)
@@ -1708,44 +1761,58 @@ change_object_in_range_list (live_range_t r, ira_object_t obj)
 static void
 move_allocno_live_ranges (ira_allocno_t from, ira_allocno_t to)
 {
-  ira_object_t from_obj = ALLOCNO_OBJECT (from);
-  ira_object_t to_obj = ALLOCNO_OBJECT (to);
-  live_range_t lr = OBJECT_LIVE_RANGES (from_obj);
+  int i;
+  int n = ALLOCNO_NUM_OBJECTS (from);
 
-  if (internal_flag_ira_verbose > 4 && ira_dump_file != NULL)
+  gcc_assert (n == ALLOCNO_NUM_OBJECTS (to));
+
+  for (i = 0; i < n; i++)
     {
-      fprintf (ira_dump_file,
-	       "      Moving ranges of a%dr%d to a%dr%d: ",
-	       ALLOCNO_NUM (from), ALLOCNO_REGNO (from),
-	       ALLOCNO_NUM (to), ALLOCNO_REGNO (to));
-      ira_print_live_range_list (ira_dump_file, lr);
+      ira_object_t from_obj = ALLOCNO_OBJECT (from, i);
+      ira_object_t to_obj = ALLOCNO_OBJECT (to, i);
+      live_range_t lr = OBJECT_LIVE_RANGES (from_obj);
+
+      if (internal_flag_ira_verbose > 4 && ira_dump_file != NULL)
+	{
+	  fprintf (ira_dump_file,
+		   "      Moving ranges of a%dr%d to a%dr%d: ",
+		   ALLOCNO_NUM (from), ALLOCNO_REGNO (from),
+		   ALLOCNO_NUM (to), ALLOCNO_REGNO (to));
+	  ira_print_live_range_list (ira_dump_file, lr);
+	}
+      change_object_in_range_list (lr, to_obj);
+      OBJECT_LIVE_RANGES (to_obj)
+	= ira_merge_live_ranges (lr, OBJECT_LIVE_RANGES (to_obj));
+      OBJECT_LIVE_RANGES (from_obj) = NULL;
     }
-  change_object_in_range_list (lr, to_obj);
-  OBJECT_LIVE_RANGES (to_obj)
-    = ira_merge_live_ranges (lr, OBJECT_LIVE_RANGES (to_obj));
-  OBJECT_LIVE_RANGES (from_obj) = NULL;
 }
 
-/* Copy all live ranges associated with allocno FROM to allocno TO.  */
 static void
 copy_allocno_live_ranges (ira_allocno_t from, ira_allocno_t to)
 {
-  ira_object_t from_obj = ALLOCNO_OBJECT (from);
-  ira_object_t to_obj = ALLOCNO_OBJECT (to);
-  live_range_t lr = OBJECT_LIVE_RANGES (from_obj);
+  int i;
+  int n = ALLOCNO_NUM_OBJECTS (from);
 
-  if (internal_flag_ira_verbose > 4 && ira_dump_file != NULL)
+  gcc_assert (n == ALLOCNO_NUM_OBJECTS (to));
+
+  for (i = 0; i < n; i++)
     {
-      fprintf (ira_dump_file,
-	       "      Copying ranges of a%dr%d to a%dr%d: ",
-	       ALLOCNO_NUM (from), ALLOCNO_REGNO (from),
-	       ALLOCNO_NUM (to), ALLOCNO_REGNO (to));
-      ira_print_live_range_list (ira_dump_file, lr);
+      ira_object_t from_obj = ALLOCNO_OBJECT (from, i);
+      ira_object_t to_obj = ALLOCNO_OBJECT (to, i);
+      live_range_t lr = OBJECT_LIVE_RANGES (from_obj);
+
+      if (internal_flag_ira_verbose > 4 && ira_dump_file != NULL)
+	{
+	  fprintf (ira_dump_file, "      Copying ranges of a%dr%d to a%dr%d: ",
+		   ALLOCNO_NUM (from), ALLOCNO_REGNO (from),
+		   ALLOCNO_NUM (to), ALLOCNO_REGNO (to));
+	  ira_print_live_range_list (ira_dump_file, lr);
+	}
+      lr = ira_copy_live_range_list (lr);
+      change_object_in_range_list (lr, to_obj);
+      OBJECT_LIVE_RANGES (to_obj)
+	= ira_merge_live_ranges (lr, OBJECT_LIVE_RANGES (to_obj));
     }
-  lr = ira_copy_live_range_list (lr);
-  change_object_in_range_list (lr, to_obj);
-  OBJECT_LIVE_RANGES (to_obj)
-    = ira_merge_live_ranges (lr, OBJECT_LIVE_RANGES (to_obj));
 }
 
 /* Return TRUE if NODE represents a loop with low register
@@ -2125,13 +2192,15 @@ remove_low_level_allocnos (void)
       regno = ALLOCNO_REGNO (a);
       if (ira_loop_tree_root->regno_allocno_map[regno] == a)
 	{
-	  ira_object_t obj = ALLOCNO_OBJECT (a);
+	  ira_object_t obj;
+	  ira_allocno_object_iterator oi;
 
 	  ira_regno_allocno_map[regno] = a;
 	  ALLOCNO_NEXT_REGNO_ALLOCNO (a) = NULL;
 	  ALLOCNO_CAP_MEMBER (a) = NULL;
-	  COPY_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
-			     OBJECT_TOTAL_CONFLICT_HARD_REGS (obj));
+	  FOR_EACH_ALLOCNO_OBJECT (a, obj, oi)
+	    COPY_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
+			       OBJECT_TOTAL_CONFLICT_HARD_REGS (obj));
 #ifdef STACK_REGS
 	  if (ALLOCNO_TOTAL_NO_STACK_REG_P (a))
 	    ALLOCNO_NO_STACK_REG_P (a) = true;
@@ -2194,6 +2263,8 @@ update_bad_spill_attribute (void)
   int i;
   ira_allocno_t a;
   ira_allocno_iterator ai;
+  ira_allocno_object_iterator aoi;
+  ira_object_t obj;
   live_range_t r;
   enum reg_class cover_class;
   bitmap_head dead_points[N_REG_CLASSES];
@@ -2205,31 +2276,36 @@ update_bad_spill_attribute (void)
     }
   FOR_EACH_ALLOCNO (a, ai)
     {
-      ira_object_t obj = ALLOCNO_OBJECT (a);
       cover_class = ALLOCNO_COVER_CLASS (a);
       if (cover_class == NO_REGS)
 	continue;
-      for (r = OBJECT_LIVE_RANGES (obj); r != NULL; r = r->next)
-	bitmap_set_bit (&dead_points[cover_class], r->finish);
+      FOR_EACH_ALLOCNO_OBJECT (a, obj, aoi)
+	for (r = OBJECT_LIVE_RANGES (obj); r != NULL; r = r->next)
+	  bitmap_set_bit (&dead_points[cover_class], r->finish);
     }
   FOR_EACH_ALLOCNO (a, ai)
     {
-      ira_object_t obj = ALLOCNO_OBJECT (a);
       cover_class = ALLOCNO_COVER_CLASS (a);
       if (cover_class == NO_REGS)
 	continue;
       if (! ALLOCNO_BAD_SPILL_P (a))
 	continue;
-      for (r = OBJECT_LIVE_RANGES (obj); r != NULL; r = r->next)
+      FOR_EACH_ALLOCNO_OBJECT (a, obj, aoi)
 	{
-	  for (i = r->start + 1; i < r->finish; i++)
-	    if (bitmap_bit_p (&dead_points[cover_class], i))
+	  for (r = OBJECT_LIVE_RANGES (obj); r != NULL; r = r->next)
+	    {
+	      for (i = r->start + 1; i < r->finish; i++)
+		if (bitmap_bit_p (&dead_points[cover_class], i))
+		  break;
+	      if (i < r->finish)
+		break;
+	    }
+	  if (r != NULL)
+	    {
+	      ALLOCNO_BAD_SPILL_P (a) = false;
 	      break;
-	  if (i < r->finish)
-	    break;
+	    }
 	}
-      if (r != NULL)
-	ALLOCNO_BAD_SPILL_P (a) = false;
     }
   for (i = 0; i < ira_reg_class_cover_size; i++)
     {
@@ -2247,57 +2323,69 @@ setup_min_max_allocno_live_range_point (void)
   int i;
   ira_allocno_t a, parent_a, cap;
   ira_allocno_iterator ai;
+#ifdef ENABLE_IRA_CHECKING
+  ira_object_iterator oi;
+  ira_object_t obj;
+#endif
   live_range_t r;
   ira_loop_tree_node_t parent;
 
   FOR_EACH_ALLOCNO (a, ai)
     {
-      ira_object_t obj = ALLOCNO_OBJECT (a);
-      r = OBJECT_LIVE_RANGES (obj);
-      if (r == NULL)
-	continue;
-      OBJECT_MAX (obj) = r->finish;
-      for (; r->next != NULL; r = r->next)
-	;
-      OBJECT_MIN (obj) = r->start;
+      int n = ALLOCNO_NUM_OBJECTS (a);
+      for (i = 0; i < n; i++)
+	{
+	  ira_object_t obj = ALLOCNO_OBJECT (a, i);
+	  r = OBJECT_LIVE_RANGES (obj);
+	  if (r == NULL)
+	    continue;
+	  OBJECT_MAX (obj) = r->finish;
+	  for (; r->next != NULL; r = r->next)
+	    ;
+	  OBJECT_MIN (obj) = r->start;
+	}
     }
   for (i = max_reg_num () - 1; i >= FIRST_PSEUDO_REGISTER; i--)
     for (a = ira_regno_allocno_map[i];
 	 a != NULL;
 	 a = ALLOCNO_NEXT_REGNO_ALLOCNO (a))
       {
-	ira_object_t obj = ALLOCNO_OBJECT (a);
-	ira_object_t parent_obj;
-
-	if (OBJECT_MAX (obj) < 0)
-	  continue;
-	ira_assert (ALLOCNO_CAP_MEMBER (a) == NULL);
-	/* Accumulation of range info.  */
-	if (ALLOCNO_CAP (a) != NULL)
+	int j;
+	int n = ALLOCNO_NUM_OBJECTS (a);
+	for (j = 0; j < n; j++)
 	  {
-	    for (cap = ALLOCNO_CAP (a); cap != NULL; cap = ALLOCNO_CAP (cap))
+	    ira_object_t obj = ALLOCNO_OBJECT (a, j);
+	    ira_object_t parent_obj;
+
+	    if (OBJECT_MAX (obj) < 0)
+	      continue;
+	    ira_assert (ALLOCNO_CAP_MEMBER (a) == NULL);
+	    /* Accumulation of range info.  */
+	    if (ALLOCNO_CAP (a) != NULL)
 	      {
-		ira_object_t cap_obj = ALLOCNO_OBJECT (cap);
-		if (OBJECT_MAX (cap_obj) < OBJECT_MAX (obj))
-		  OBJECT_MAX (cap_obj) = OBJECT_MAX (obj);
-		if (OBJECT_MIN (cap_obj) > OBJECT_MIN (obj))
-		  OBJECT_MIN (cap_obj) = OBJECT_MIN (obj);
+		for (cap = ALLOCNO_CAP (a); cap != NULL; cap = ALLOCNO_CAP (cap))
+		  {
+		    ira_object_t cap_obj = ALLOCNO_OBJECT (cap, j);
+		    if (OBJECT_MAX (cap_obj) < OBJECT_MAX (obj))
+		      OBJECT_MAX (cap_obj) = OBJECT_MAX (obj);
+		    if (OBJECT_MIN (cap_obj) > OBJECT_MIN (obj))
+		      OBJECT_MIN (cap_obj) = OBJECT_MIN (obj);
+		  }
+		continue;
 	      }
-	    continue;
+	    if ((parent = ALLOCNO_LOOP_TREE_NODE (a)->parent) == NULL)
+	      continue;
+	    parent_a = parent->regno_allocno_map[i];
+	    parent_obj = ALLOCNO_OBJECT (parent_a, j);
+	    if (OBJECT_MAX (parent_obj) < OBJECT_MAX (obj))
+	      OBJECT_MAX (parent_obj) = OBJECT_MAX (obj);
+	    if (OBJECT_MIN (parent_obj) > OBJECT_MIN (obj))
+	      OBJECT_MIN (parent_obj) = OBJECT_MIN (obj);
 	  }
-	if ((parent = ALLOCNO_LOOP_TREE_NODE (a)->parent) == NULL)
-	  continue;
-	parent_a = parent->regno_allocno_map[i];
-	parent_obj = ALLOCNO_OBJECT (parent_a);
-	if (OBJECT_MAX (parent_obj) < OBJECT_MAX (obj))
-	  OBJECT_MAX (parent_obj) = OBJECT_MAX (obj);
-	if (OBJECT_MIN (parent_obj) > OBJECT_MIN (obj))
-	  OBJECT_MIN (parent_obj) = OBJECT_MIN (obj);
       }
 #ifdef ENABLE_IRA_CHECKING
-  FOR_EACH_ALLOCNO (a, ai)
+  FOR_EACH_OBJECT (obj, oi)
     {
-      ira_object_t obj = ALLOCNO_OBJECT (a);
       if ((0 <= OBJECT_MIN (obj) && OBJECT_MIN (obj) <= ira_max_point)
 	  && (0 <= OBJECT_MAX (obj) && OBJECT_MAX (obj) <= ira_max_point))
 	continue;
@@ -2312,7 +2400,7 @@ setup_min_max_allocno_live_range_point (void)
    (min).  Allocnos with the same start are ordered according their
    finish (max).  */
 static int
-allocno_range_compare_func (const void *v1p, const void *v2p)
+object_range_compare_func (const void *v1p, const void *v2p)
 {
   int diff;
   ira_object_t obj1 = *(const ira_object_t *) v1p;
@@ -2340,9 +2428,15 @@ sort_conflict_id_map (void)
 
   num = 0;
   FOR_EACH_ALLOCNO (a, ai)
-    ira_object_id_map[num++] = ALLOCNO_OBJECT (a);
+    {
+      ira_allocno_object_iterator oi;
+      ira_object_t obj;
+
+      FOR_EACH_ALLOCNO_OBJECT (a, obj, oi)
+	ira_object_id_map[num++] = obj;
+    }
   qsort (ira_object_id_map, num, sizeof (ira_object_t),
-	 allocno_range_compare_func);
+	 object_range_compare_func);
   for (i = 0; i < num; i++)
     {
       ira_object_t obj = ira_object_id_map[i];
@@ -2361,7 +2455,9 @@ setup_min_max_conflict_allocno_ids (void)
   int cover_class;
   int i, j, min, max, start, finish, first_not_finished, filled_area_start;
   int *live_range_min, *last_lived;
+  int word0_min, word0_max;
   ira_allocno_t a;
+  ira_allocno_iterator ai;
 
   live_range_min = (int *) ira_allocate (sizeof (int) * ira_objects_num);
   cover_class = -1;
@@ -2388,10 +2484,10 @@ setup_min_max_conflict_allocno_ids (void)
 	  /* If we skip an allocno, the allocno with smaller ids will
 	     be also skipped because of the secondary sorting the
 	     range finishes (see function
-	     allocno_range_compare_func).  */
+	     object_range_compare_func).  */
 	  while (first_not_finished < i
 		 && start > OBJECT_MAX (ira_object_id_map
-					 [first_not_finished]))
+					[first_not_finished]))
 	    first_not_finished++;
 	  min = first_not_finished;
 	}
@@ -2442,6 +2538,38 @@ setup_min_max_conflict_allocno_ids (void)
     }
   ira_free (last_lived);
   ira_free (live_range_min);
+
+  /* For allocnos with more than one object, we may later record extra conflicts in
+     subobject 0 that we cannot really know about here.
+     For now, simply widen the min/max range of these subobjects.  */
+
+  word0_min = INT_MAX;
+  word0_max = INT_MIN;
+
+  FOR_EACH_ALLOCNO (a, ai)
+    {
+      int n = ALLOCNO_NUM_OBJECTS (a);
+      ira_object_t obj0;
+      if (n < 2)
+	continue;
+      obj0 = ALLOCNO_OBJECT (a, 0);
+      if (OBJECT_CONFLICT_ID (obj0) < word0_min)
+	word0_min = OBJECT_CONFLICT_ID (obj0);
+      if (OBJECT_CONFLICT_ID (obj0) > word0_max)
+	word0_max = OBJECT_CONFLICT_ID (obj0);
+    }
+  FOR_EACH_ALLOCNO (a, ai)
+    {
+      int n = ALLOCNO_NUM_OBJECTS (a);
+      ira_object_t obj0;
+      if (n < 2)
+	continue;
+      obj0 = ALLOCNO_OBJECT (a, 0);
+      if (OBJECT_MIN (obj0) > word0_min)
+	OBJECT_MIN (obj0) = word0_min;
+      if (OBJECT_MAX (obj0) < word0_max)
+	OBJECT_MAX (obj0) = word0_max;
+    }
 }
 
 
@@ -2529,6 +2657,7 @@ copy_info_to_removed_store_destinations (int regno)
       if (a != regno_top_level_allocno_map[REGNO (ALLOCNO_REG (a))])
 	/* This allocno will be removed.  */
 	continue;
+
       /* Caps will be removed.  */
       ira_assert (ALLOCNO_CAP_MEMBER (a) == NULL);
       for (parent = ALLOCNO_LOOP_TREE_NODE (a)->parent;
@@ -2541,8 +2670,10 @@ copy_info_to_removed_store_destinations (int regno)
 	  break;
       if (parent == NULL || parent_a == NULL)
 	continue;
+
       copy_allocno_live_ranges (a, parent_a);
       merge_hard_reg_conflicts (a, parent_a, true);
+
       ALLOCNO_CALL_FREQ (parent_a) += ALLOCNO_CALL_FREQ (a);
       ALLOCNO_CALLS_CROSSED_NUM (parent_a)
 	+= ALLOCNO_CALLS_CROSSED_NUM (a);
@@ -2582,14 +2713,16 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
   new_pseudos_p = merged_p = false;
   FOR_EACH_ALLOCNO (a, ai)
     {
-      ira_object_t obj = ALLOCNO_OBJECT (a);
+      ira_allocno_object_iterator oi;
+      ira_object_t obj;
       if (ALLOCNO_CAP_MEMBER (a) != NULL)
 	/* Caps are not in the regno allocno maps and they are never
 	   will be transformed into allocnos existing after IR
 	   flattening.  */
 	continue;
-      COPY_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-			 OBJECT_CONFLICT_HARD_REGS (obj));
+      FOR_EACH_ALLOCNO_OBJECT (a, obj, oi)
+	COPY_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
+			   OBJECT_CONFLICT_HARD_REGS (obj));
 #ifdef STACK_REGS
       ALLOCNO_TOTAL_NO_STACK_REG_P (a) = ALLOCNO_NO_STACK_REG_P (a);
 #endif
@@ -2674,13 +2807,17 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
       /* Rebuild conflicts.  */
       FOR_EACH_ALLOCNO (a, ai)
 	{
-	  ira_object_t obj = ALLOCNO_OBJECT (a);
+	  ira_allocno_object_iterator oi;
+	  ira_object_t obj;
 	  if (a != regno_top_level_allocno_map[REGNO (ALLOCNO_REG (a))]
 	      || ALLOCNO_CAP_MEMBER (a) != NULL)
 	    continue;
-	  for (r = OBJECT_LIVE_RANGES (obj); r != NULL; r = r->next)
-	    ira_assert (r->object == obj);
-	  clear_conflicts (obj);
+	  FOR_EACH_ALLOCNO_OBJECT (a, obj, oi)
+	    {
+	      for (r = OBJECT_LIVE_RANGES (obj); r != NULL; r = r->next)
+		ira_assert (r->object == obj);
+	      clear_conflicts (obj);
+	    }
 	}
       objects_live = sparseset_alloc (ira_objects_num);
       for (i = 0; i < ira_max_point; i++)
@@ -2692,6 +2829,7 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
 	      if (a != regno_top_level_allocno_map[REGNO (ALLOCNO_REG (a))]
 		  || ALLOCNO_CAP_MEMBER (a) != NULL)
 		continue;
+
 	      cover_class = ALLOCNO_COVER_CLASS (a);
 	      sparseset_set_bit (objects_live, OBJECT_CONFLICT_ID (obj));
 	      EXECUTE_IF_SET_IN_SPARSESET (objects_live, n)
@@ -2699,7 +2837,6 @@ ira_flattening (int max_regno_before_emit, int ira_max_point_before_emit)
 		  ira_object_t live_obj = ira_object_id_map[n];
 		  ira_allocno_t live_a = OBJECT_ALLOCNO (live_obj);
 		  enum reg_class live_cover = ALLOCNO_COVER_CLASS (live_a);
-
 		  if (ira_reg_classes_intersect_p[cover_class][live_cover]
 		      /* Don't set up conflict for the allocno with itself.  */
 		      && live_a != a)
@@ -2931,40 +3068,39 @@ ira_build (bool loops_p)
 	 allocno crossing calls.  */
       FOR_EACH_ALLOCNO (a, ai)
 	if (ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
-	  {
-	    ira_object_t obj = ALLOCNO_OBJECT (a);
-	    IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),
-			      call_used_reg_set);
-	    IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj),
-			      call_used_reg_set);
-	  }
+	  ior_hard_reg_conflicts (a, &call_used_reg_set);
     }
   if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
     print_copies (ira_dump_file);
   if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)
     {
-      int n, nr;
+      int n, nr, nr_big;
       ira_allocno_t a;
       live_range_t r;
       ira_allocno_iterator ai;
 
       n = 0;
+      nr = 0;
+      nr_big = 0;
       FOR_EACH_ALLOCNO (a, ai)
 	{
-	  ira_object_t obj = ALLOCNO_OBJECT (a);
-	  n += OBJECT_NUM_CONFLICTS (obj);
+	  int j, nobj = ALLOCNO_NUM_OBJECTS (a);
+	  if (nobj > 1)
+	    nr_big++;
+	  for (j = 0; j < nobj; j++)
+	    {
+	      ira_object_t obj = ALLOCNO_OBJECT (a, j);
+	      n += OBJECT_NUM_CONFLICTS (obj);
+	      for (r = OBJECT_LIVE_RANGES (obj); r != NULL; r = r->next)
+		nr++;
+	    }
 	}
-      nr = 0;
-      FOR_EACH_ALLOCNO (a, ai)
-	for (r = OBJECT_LIVE_RANGES (ALLOCNO_OBJECT (a)); r != NULL;
-	     r = r->next)
-	  nr++;
       fprintf (ira_dump_file, "  regions=%d, blocks=%d, points=%d\n",
 	       VEC_length (loop_p, ira_loops.larray), n_basic_blocks,
 	       ira_max_point);
       fprintf (ira_dump_file,
-	       "    allocnos=%d, copies=%d, conflicts=%d, ranges=%d\n",
-	       ira_allocnos_num, ira_copies_num, n, nr);
+	       "    allocnos=%d (big %d), copies=%d, conflicts=%d, ranges=%d\n",
+	       ira_allocnos_num, nr_big, ira_copies_num, n, nr);
     }
   return loops_p;
 }

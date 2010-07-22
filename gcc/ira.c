@@ -1241,9 +1241,8 @@ setup_prohibited_mode_move_regs (void)
 static bool
 ira_bad_reload_regno_1 (int regno, rtx x)
 {
-  int x_regno;
+  int x_regno, n, i;
   ira_allocno_t a;
-  ira_object_t obj;
   enum reg_class pref;
 
   /* We only deal with pseudo regs.  */
@@ -1263,10 +1262,13 @@ ira_bad_reload_regno_1 (int regno, rtx x)
   /* If the pseudo conflicts with REGNO, then we consider REGNO a
      poor choice for a reload regno.  */
   a = ira_regno_allocno_map[x_regno];
-  obj = ALLOCNO_OBJECT (a);
-  if (TEST_HARD_REG_BIT (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj), regno))
-    return true;
-
+  n = ALLOCNO_NUM_OBJECTS (a);
+  for (i = 0; i < n; i++)
+    {
+      ira_object_t obj = ALLOCNO_OBJECT (a, i);
+      if (TEST_HARD_REG_BIT (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj), regno))
+	return true;
+    }
   return false;
 }
 
@@ -1610,32 +1612,60 @@ static void
 check_allocation (void)
 {
   ira_allocno_t a;
-  int hard_regno, nregs;
+  int hard_regno, nregs, conflict_nregs;
   ira_allocno_iterator ai;
 
   FOR_EACH_ALLOCNO (a, ai)
     {
-      ira_object_t obj, conflict_obj;
-      ira_object_conflict_iterator oci;
+      int n = ALLOCNO_NUM_OBJECTS (a);
+      int i;
 
       if (ALLOCNO_CAP_MEMBER (a) != NULL
 	  || (hard_regno = ALLOCNO_HARD_REGNO (a)) < 0)
 	continue;
       nregs = hard_regno_nregs[hard_regno][ALLOCNO_MODE (a)];
-      obj = ALLOCNO_OBJECT (a);
-      FOR_EACH_OBJECT_CONFLICT (obj, conflict_obj, oci)
+      if (n > 1)
 	{
-	  ira_allocno_t conflict_a = OBJECT_ALLOCNO (conflict_obj);
-	  int conflict_hard_regno = ALLOCNO_HARD_REGNO (conflict_a);
-	  if (conflict_hard_regno >= 0)
+	  gcc_assert (n == nregs);
+	  nregs = 1;
+	}
+      for (i = 0; i < n; i++)
+	{
+	  ira_object_t obj = ALLOCNO_OBJECT (a, i);
+	  ira_object_t conflict_obj;
+	  ira_object_conflict_iterator oci;
+	  int this_regno = hard_regno;
+	  if (n > 1)
 	    {
-	      int conflict_nregs
-		= (hard_regno_nregs
-		   [conflict_hard_regno][ALLOCNO_MODE (conflict_a)]);
-	      if ((conflict_hard_regno <= hard_regno
-		   && hard_regno < conflict_hard_regno + conflict_nregs)
-		  || (hard_regno <= conflict_hard_regno
-		      && conflict_hard_regno < hard_regno + nregs))
+	      if (WORDS_BIG_ENDIAN)
+		this_regno += n - i - 1;
+	      else
+		this_regno += i;
+	    }
+	  FOR_EACH_OBJECT_CONFLICT (obj, conflict_obj, oci)
+	    {
+	      ira_allocno_t conflict_a = OBJECT_ALLOCNO (conflict_obj);
+	      int conflict_hard_regno = ALLOCNO_HARD_REGNO (conflict_a);
+	      if (conflict_hard_regno < 0)
+		continue;
+	      if (ALLOCNO_NUM_OBJECTS (conflict_a) > 1)
+		{
+		  if (WORDS_BIG_ENDIAN)
+		    conflict_hard_regno += (ALLOCNO_NUM_OBJECTS (conflict_a)
+					    - OBJECT_SUBWORD (conflict_obj) - 1);
+		  else
+		    conflict_hard_regno += OBJECT_SUBWORD (conflict_obj);
+		  conflict_nregs = 1;
+		}
+	      else
+		conflict_nregs
+		  = (hard_regno_nregs
+		     [conflict_hard_regno][ALLOCNO_MODE (conflict_a)]);
+
+	      if ((conflict_hard_regno <= this_regno
+		 && this_regno < conflict_hard_regno + conflict_nregs)
+		|| (this_regno <= conflict_hard_regno
+		    && conflict_hard_regno < this_regno + nregs))
 		{
 		  fprintf (stderr, "bad allocation for %d and %d\n",
 			   ALLOCNO_REGNO (a), ALLOCNO_REGNO (conflict_a));

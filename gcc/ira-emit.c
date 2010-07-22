@@ -715,8 +715,8 @@ modify_move_list (move_t list)
 		&& ALLOCNO_HARD_REGNO
 		   (hard_regno_last_set[hard_regno + i]->to) >= 0)
 	      {
+		int n, j;
 		ira_allocno_t new_allocno;
-		ira_object_t new_obj;
 
 		set_move = hard_regno_last_set[hard_regno + i];
 		/* It does not matter what loop_tree_node (of TO or
@@ -729,19 +729,25 @@ modify_move_list (move_t list)
 		ALLOCNO_MODE (new_allocno) = ALLOCNO_MODE (set_move->to);
 		ira_set_allocno_cover_class
 		  (new_allocno, ALLOCNO_COVER_CLASS (set_move->to));
-		ira_create_allocno_object (new_allocno);
+		ira_create_allocno_objects (new_allocno);
 		ALLOCNO_ASSIGNED_P (new_allocno) = true;
 		ALLOCNO_HARD_REGNO (new_allocno) = -1;
 		ALLOCNO_REG (new_allocno)
 		  = create_new_reg (ALLOCNO_REG (set_move->to));
 
-		new_obj = ALLOCNO_OBJECT (new_allocno);
-
 		/* Make it possibly conflicting with all earlier
 		   created allocnos.  Cases where temporary allocnos
 		   created to remove the cycles are quite rare.  */
-		OBJECT_MIN (new_obj) = 0;
-		OBJECT_MAX (new_obj) = ira_objects_num - 1;
+		n = ALLOCNO_NUM_OBJECTS (new_allocno);
+		gcc_assert (n == ALLOCNO_NUM_OBJECTS (set_move->to));
+		for (j = 0; j < n; j++)
+		  {
+		    ira_object_t new_obj = ALLOCNO_OBJECT (new_allocno, j);
+
+		    OBJECT_MIN (new_obj) = 0;
+		    OBJECT_MAX (new_obj) = ira_objects_num - 1;
+		  }
+
 		new_move = create_move (set_move->to, new_allocno);
 		set_move->to = new_allocno;
 		VEC_safe_push (move_t, heap, move_vec, new_move);
@@ -937,21 +943,26 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
     {
       ira_allocno_t from = move->from;
       ira_allocno_t to = move->to;
-      ira_object_t from_obj = ALLOCNO_OBJECT (from);
-      ira_object_t to_obj = ALLOCNO_OBJECT (to);
-      if (OBJECT_CONFLICT_ARRAY (to_obj) == NULL)
-	{
-	  if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
-	    fprintf (ira_dump_file, "    Allocate conflicts for a%dr%d\n",
-		     ALLOCNO_NUM (to), REGNO (ALLOCNO_REG (to)));
-	  ira_allocate_object_conflicts (to_obj, n);
-	}
+      int nr, i;
+
       bitmap_clear_bit (live_through, ALLOCNO_REGNO (from));
       bitmap_clear_bit (live_through, ALLOCNO_REGNO (to));
-      IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (from_obj), hard_regs_live);
-      IOR_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (to_obj), hard_regs_live);
-      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (from_obj), hard_regs_live);
-      IOR_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (to_obj), hard_regs_live);
+
+      nr = ALLOCNO_NUM_OBJECTS (to);
+      for (i = 0; i < nr; i++)
+	{
+	  ira_object_t to_obj = ALLOCNO_OBJECT (to, i);
+	  if (OBJECT_CONFLICT_ARRAY (to_obj) == NULL)
+	    {
+	      if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
+		fprintf (ira_dump_file, "    Allocate conflicts for a%dr%d\n",
+			 ALLOCNO_NUM (to), REGNO (ALLOCNO_REG (to)));
+	      ira_allocate_object_conflicts (to_obj, n);
+	    }
+	}
+      ior_hard_reg_conflicts (from, &hard_regs_live);
+      ior_hard_reg_conflicts (to, &hard_regs_live);
+
       update_costs (from, true, freq);
       update_costs (to, false, freq);
       cp = ira_add_allocno_copy (from, to, freq, false, move->insn, NULL);
@@ -960,58 +971,73 @@ add_range_and_copies_from_move_list (move_t list, ira_loop_tree_node_t node,
 		 cp->num, ALLOCNO_NUM (cp->first),
 		 REGNO (ALLOCNO_REG (cp->first)), ALLOCNO_NUM (cp->second),
 		 REGNO (ALLOCNO_REG (cp->second)));
-      r = OBJECT_LIVE_RANGES (from_obj);
-      if (r == NULL || r->finish >= 0)
+
+      nr = ALLOCNO_NUM_OBJECTS (from);
+      for (i = 0; i < nr; i++)
 	{
-	  OBJECT_LIVE_RANGES (from_obj)
-	    = ira_create_live_range (from_obj, start, ira_max_point, r);
-	  if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
-	    fprintf (ira_dump_file,
-		     "    Adding range [%d..%d] to allocno a%dr%d\n",
-		     start, ira_max_point, ALLOCNO_NUM (from),
-		     REGNO (ALLOCNO_REG (from)));
-	}
-      else
-	{
-	  r->finish = ira_max_point;
-	  if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
-	    fprintf (ira_dump_file,
-		     "    Adding range [%d..%d] to allocno a%dr%d\n",
-		     r->start, ira_max_point, ALLOCNO_NUM (from),
-		     REGNO (ALLOCNO_REG (from)));
+	  ira_object_t from_obj = ALLOCNO_OBJECT (from, i);
+	  r = OBJECT_LIVE_RANGES (from_obj);
+	  if (r == NULL || r->finish >= 0)
+	    {
+	      ira_add_live_range_to_object (from_obj, start, ira_max_point);
+	      if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
+		fprintf (ira_dump_file,
+			 "    Adding range [%d..%d] to allocno a%dr%d\n",
+			 start, ira_max_point, ALLOCNO_NUM (from),
+			 REGNO (ALLOCNO_REG (from)));
+	    }
+	  else
+	    {
+	      r->finish = ira_max_point;
+	      if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
+		fprintf (ira_dump_file,
+			 "    Adding range [%d..%d] to allocno a%dr%d\n",
+			 r->start, ira_max_point, ALLOCNO_NUM (from),
+			 REGNO (ALLOCNO_REG (from)));
+	    }
 	}
       ira_max_point++;
-      OBJECT_LIVE_RANGES (to_obj)
-	= ira_create_live_range (to_obj, ira_max_point, -1,
-				 OBJECT_LIVE_RANGES (to_obj));
+      nr = ALLOCNO_NUM_OBJECTS (to);
+      for (i = 0; i < nr; i++)
+	{
+	  ira_object_t to_obj = ALLOCNO_OBJECT (to, i);
+	  ira_add_live_range_to_object (to_obj, ira_max_point, -1);
+	}
       ira_max_point++;
     }
   for (move = list; move != NULL; move = move->next)
     {
-      ira_object_t to_obj = ALLOCNO_OBJECT (move->to);
-      r = OBJECT_LIVE_RANGES (to_obj);
-      if (r->finish < 0)
+      int nr, i;
+      nr = ALLOCNO_NUM_OBJECTS (move->to);
+      for (i = 0; i < nr; i++)
 	{
-	  r->finish = ira_max_point - 1;
-	  if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
-	    fprintf (ira_dump_file,
-		     "    Adding range [%d..%d] to allocno a%dr%d\n",
-		     r->start, r->finish, ALLOCNO_NUM (move->to),
-		     REGNO (ALLOCNO_REG (move->to)));
+	  ira_object_t to_obj = ALLOCNO_OBJECT (move->to, i);
+	  r = OBJECT_LIVE_RANGES (to_obj);
+	  if (r->finish < 0)
+	    {
+	      r->finish = ira_max_point - 1;
+	      if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
+		fprintf (ira_dump_file,
+			 "    Adding range [%d..%d] to allocno a%dr%d\n",
+			 r->start, r->finish, ALLOCNO_NUM (move->to),
+			 REGNO (ALLOCNO_REG (move->to)));
+	    }
 	}
     }
   EXECUTE_IF_SET_IN_BITMAP (live_through, FIRST_PSEUDO_REGISTER, regno, bi)
     {
       ira_allocno_t to;
-      ira_object_t obj;
+      int nr, i;
+
       a = node->regno_allocno_map[regno];
-      to = ALLOCNO_MEM_OPTIMIZED_DEST (a);
-      if (to != NULL)
+      if ((to = ALLOCNO_MEM_OPTIMIZED_DEST (a)) != NULL)
 	a = to;
-      obj = ALLOCNO_OBJECT (a);
-      OBJECT_LIVE_RANGES (obj)
-	= ira_create_live_range (obj, start, ira_max_point - 1,
-				 OBJECT_LIVE_RANGES (obj));
+      nr = ALLOCNO_NUM_OBJECTS (a);
+      for (i = 0; i < nr; i++)
+	{
+	  ira_object_t obj = ALLOCNO_OBJECT (a, i);
+	  ira_add_live_range_to_object (obj, start, ira_max_point - 1);
+	}
       if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
 	fprintf
 	  (ira_dump_file,
