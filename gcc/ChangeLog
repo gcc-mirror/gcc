@@ -1,5 +1,14 @@
 2010-07-22  Iain Sandoe  <iains@gcc.gnu.org>
 
+	* config/darwin.h (LINK_COMMAND_SPEC): Split into...
+	(LINK_COMMAND_SPEC_A): New.
+	(DSYMUTIL): New.
+	(DSYMUTIL_SPEC): New.
+	* config/darwin9.h (LINK_COMMAND_SPEC): Remove.
+	(DSYMUTIL_SPEC): Update for darwin >= 9 requirements.
+
+2010-07-22  Iain Sandoe  <iains@gcc.gnu.org>
+
 	* calls.c (load_register_parameters): Move check for zero
 	sized items so that only the call to 
 	mem_overlaps_already_clobbered_arg_p () is protected.
