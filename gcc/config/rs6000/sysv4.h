@@ -905,7 +905,7 @@ SVR4_ASM_SPEC \
 #define UCLIBC_DYNAMIC_LINKER "/lib/ld-uClibc.so.0"
 #if DEFAULT_LIBC == LIBC_UCLIBC
 #define CHOOSE_DYNAMIC_LINKER(G, U) "%{mglibc:" G ";:" U "}"
-#elif DEFAULT_LIBC == LIBC_GLIBC
+#elif !defined (DEFAULT_LIBC) || DEFAULT_LIBC == LIBC_GLIBC
 #define CHOOSE_DYNAMIC_LINKER(G, U) "%{muclibc:" U ";:" G "}"
 #else
 #error "Unsupported DEFAULT_LIBC"
