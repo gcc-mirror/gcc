@@ -1,3 +1,9 @@
+2010-07-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45017
+	* tree-ssa-sccvn.c (vn_reference_eq): Make sure we honor
+	TYPE_PRECISION of integral types in addition to size.
+
 2010-07-22  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/rs6000/sysv4.h (CHOOSE_DYNAMIC_LINKER): Default to GLIBC
