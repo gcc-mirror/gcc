@@ -1,3 +1,9 @@
+2010-07-22  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/45024
+	* dwarf2out.c (scope_die_for): Don't fall back to the compilation
+	unit DIE if we can find the scope DIE.
+
 2010-07-22  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* ira-build.c (ira_create_object): New arg SUBWORD; all callers changed.

@@ -17585,9 +17585,13 @@ scope_die_for (tree t, dw_die_ref context_die)
 	{
 	  gcc_assert (debug_info_level <= DINFO_LEVEL_TERSE
 		      || TREE_ASM_WRITTEN (containing_scope));
+	  /*We are not in the middle of emitting the type
+	    CONTAINING_SCOPE. Let's see if it's emitted already.  */
+	  scope_die = lookup_type_die (containing_scope);
 
 	  /* If none of the current dies are suitable, we get file scope.  */
-	  scope_die = comp_unit_die;
+	  if (scope_die == NULL)
+	    scope_die = comp_unit_die;
 	}
       else
 	scope_die = lookup_type_die (containing_scope);
