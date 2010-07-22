@@ -1,3 +1,7 @@
+2010-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aggr15.ad[sb]: New test.
+
 2010-07-22  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/45024
