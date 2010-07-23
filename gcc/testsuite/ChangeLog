@@ -1,3 +1,8 @@
+2010-07-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aggr16.ad[sb]: New test.
+	* gnat.dg/aggr16_pkg.ads: New helper.
+
 2010-07-23  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/43071
