@@ -4311,7 +4311,7 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
   if (!tree_versionable_function_p (node->decl))
     {
       if (dump_file)
-	fprintf (dump_file, "Function not local to this compilation unit.\n");
+	fprintf (dump_file, "Function is not versionable.\n");
       return false;
     }
 
