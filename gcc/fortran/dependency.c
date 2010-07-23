@@ -39,7 +39,8 @@ typedef enum
 {
   GFC_DEP_ERROR,
   GFC_DEP_EQUAL,	/* Identical Ranges.  */
-  GFC_DEP_FORWARD,	/* e.g., a(1:3), a(2:4).  */
+  GFC_DEP_FORWARD,	/* e.g., a(1:3) = a(2:4).  */
+  GFC_DEP_BACKWARD,	/* e.g. a(2:4) = a(1:3).  */
   GFC_DEP_OVERLAP,	/* May overlap in some other way.  */
   GFC_DEP_NODEP		/* Distinct ranges.  */
 }
@@ -831,7 +832,7 @@ gfc_check_dependency (gfc_expr *expr1, gfc_expr *expr2, bool identical)
       /* Identical and disjoint ranges return 0,
 	 overlapping ranges return 1.  */
       if (expr1->ref && expr2->ref)
-	return gfc_dep_resolver (expr1->ref, expr2->ref);
+	return gfc_dep_resolver (expr1->ref, expr2->ref, NULL);
 
       return 1;
 
@@ -1072,6 +1073,30 @@ gfc_check_section_vs_section (gfc_ref *lref, gfc_ref *rref, int n)
       if (l_stride && r_stride
 	  && gfc_dep_compare_expr (l_stride, r_stride) == 0)
 	return GFC_DEP_FORWARD;
+    }
+
+  /* Check for backward dependencies:
+     Are the strides the same?.  */
+  if ((!l_stride && !r_stride)
+	||
+      (l_stride && r_stride
+	&& gfc_dep_compare_expr (l_stride, r_stride) == 0))
+    {
+      /* x:y vs. x+1:z.  */
+      if (l_dir == 1 && r_dir == 1
+	    && l_start && r_start
+	    && gfc_dep_compare_expr (l_start, r_start) == 1
+	    && l_end && r_end
+	    && gfc_dep_compare_expr (l_end, r_end) == 1)
+	return GFC_DEP_BACKWARD;
+
+      /* x:y:-1 vs. x-1:z:-1.  */
+      if (l_dir == -1 && r_dir == -1
+	    && l_start && r_start
+	    && gfc_dep_compare_expr (l_start, r_start) == -1
+	    && l_end && r_end
+	    && gfc_dep_compare_expr (l_end, r_end) == -1)
+	return GFC_DEP_BACKWARD;
     }
 
   return GFC_DEP_OVERLAP;
@@ -1481,16 +1506,19 @@ ref_same_as_full_array (gfc_ref *full_ref, gfc_ref *ref)
 
 /* Finds if two array references are overlapping or not.
    Return value
+   	2 : array references are overlapping but reversal of one or
+	    more dimensions will clear the dependency.
    	1 : array references are overlapping.
    	0 : array references are identical or not overlapping.  */
 
 int
-gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref)
+gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse)
 {
   int n;
   gfc_dependency fin_dep;
   gfc_dependency this_dep;
 
+  this_dep = GFC_DEP_ERROR;
   fin_dep = GFC_DEP_ERROR;
   /* Dependencies due to pointers should already have been identified.
      We only need to check for overlapping array references.  */
@@ -1543,6 +1571,7 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref)
 	      if (lref->u.ar.dimen_type[n] == DIMEN_VECTOR
 		  || rref->u.ar.dimen_type[n] == DIMEN_VECTOR)
 		return 1;
+
 	      if (lref->u.ar.dimen_type[n] == DIMEN_RANGE
 		  && rref->u.ar.dimen_type[n] == DIMEN_RANGE)
 		this_dep = gfc_check_section_vs_section (lref, rref, n);
@@ -1563,6 +1592,38 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref)
 	      if (this_dep == GFC_DEP_NODEP)
 		return 0;
 
+	      /* Now deal with the loop reversal logic:  This only works on
+		 ranges and is activated by setting
+				reverse[n] == GFC_CAN_REVERSE
+		 The ability to reverse or not is set by previous conditions
+		 in this dimension.  If reversal is not activated, the
+		 value GFC_DEP_BACKWARD is reset to GFC_DEP_OVERLAP.  */
+	      if (rref->u.ar.dimen_type[n] == DIMEN_RANGE
+		    && lref->u.ar.dimen_type[n] == DIMEN_RANGE)
+		{
+		  /* Set reverse if backward dependence and not inhibited.  */
+		  if (reverse && reverse[n] != GFC_CANNOT_REVERSE)
+		    reverse[n] = (this_dep == GFC_DEP_BACKWARD) ?
+			         GFC_REVERSE_SET : reverse[n];
+
+		  /* Inhibit loop reversal if dependence not compatible.  */
+		  if (reverse && reverse[n] != GFC_REVERSE_NOT_SET
+		        && this_dep != GFC_DEP_EQUAL
+		        && this_dep != GFC_DEP_BACKWARD
+		        && this_dep != GFC_DEP_NODEP)
+		    {
+	              reverse[n] = GFC_CANNOT_REVERSE;
+		      if (this_dep != GFC_DEP_FORWARD)
+			this_dep = GFC_DEP_OVERLAP;
+		    }
+
+		  /* If no intention of reversing or reversing is explicitly
+		     inhibited, convert backward dependence to overlap.  */
+		  if ((reverse == NULL && this_dep == GFC_DEP_BACKWARD)
+			|| (reverse && reverse[n] == GFC_CANNOT_REVERSE))
+		    this_dep = GFC_DEP_OVERLAP;
+		}
+
 	      /* Overlap codes are in order of priority.  We only need to
 		 know the worst one.*/
 	      if (this_dep > fin_dep)
@@ -1578,7 +1639,7 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref)
 
 	  /* Exactly matching and forward overlapping ranges don't cause a
 	     dependency.  */
-	  if (fin_dep < GFC_DEP_OVERLAP)
+	  if (fin_dep < GFC_DEP_BACKWARD)
 	    return 0;
 
 	  /* Keep checking.  We only have a dependency if

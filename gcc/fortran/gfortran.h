@@ -576,6 +576,15 @@ typedef enum
 }
 gfc_fcoarray;
 
+typedef enum
+{
+  GFC_REVERSE_NOT_SET,
+  GFC_REVERSE_SET,
+  GFC_CAN_REVERSE,
+  GFC_CANNOT_REVERSE
+}
+gfc_reverse;
+
 /************************* Structures *****************************/
 
 /* Used for keeping things in balanced binary trees.  */

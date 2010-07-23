@@ -1,3 +1,24 @@
+2009-07-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/24524
+	* trans-array.c (gfc_init_loopinfo): Initialize the reverse
+	field.
+	gfc_trans_scalarized_loop_end: If reverse set in dimension n,
+	reverse the scalarization loop.
+	gfc_conv_resolve_dependencies: Pass the reverse field of the
+	loopinfo to gfc_dep_resolver.
+	trans-expr.c (gfc_trans_assignment_1): Enable loop reversal for
+	assignment by resetting loop.reverse.
+	gfortran.h : Add the gfc_reverse enum.
+	trans.h : Add the reverse field to gfc_loopinfo.
+	dependency.c (gfc_check_dependency): Pass null to the new arg
+	of gfc_dep_resolver.
+	(gfc_check_section_vs_section): Check for reverse dependencies.
+	(gfc_dep_resolver): Add reverse argument and deal with the loop
+	reversal logic.
+	dependency.h : Modify prototype for gfc_dep_resolver to include
+	gfc_reverse *.
+
 2010-07-23  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/44709

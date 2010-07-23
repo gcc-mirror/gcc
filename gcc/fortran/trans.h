@@ -240,6 +240,9 @@ typedef struct gfc_loopinfo
   /* Order in which the dimensions should be looped, innermost first.  */
   int order[GFC_MAX_DIMENSIONS];
 
+  /* Enum to control loop reversal.  */
+  gfc_reverse reverse[GFC_MAX_DIMENSIONS];
+
   /* The number of dimensions for which a temporary is used.  */
   int temp_dim;
 

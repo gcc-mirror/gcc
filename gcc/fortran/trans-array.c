@@ -2180,9 +2180,12 @@ gfc_init_loopinfo (gfc_loopinfo * loop)
   gfc_init_block (&loop->pre);
   gfc_init_block (&loop->post);
 
-  /* Initially scalarize in order.  */
+  /* Initially scalarize in order and default to no loop reversal.  */
   for (n = 0; n < GFC_MAX_DIMENSIONS; n++)
-    loop->order[n] = n;
+    {
+      loop->order[n] = n;
+      loop->reverse[n] = GFC_CANNOT_REVERSE;
+    }
 
   loop->ss = gfc_ss_terminator;
 }
@@ -2842,7 +2845,17 @@ gfc_trans_scalarized_loop_end (gfc_loopinfo * loop, int n,
     }
   else
     {
+      bool reverse_loop = (loop->reverse[n] == GFC_REVERSE_SET)
+			     && (loop->temp_ss == NULL);
+
       loopbody = gfc_finish_block (pbody);
+
+      if (reverse_loop)
+	{
+	  tmp = loop->from[n];
+	  loop->from[n] = loop->to[n];
+	  loop->to[n] = tmp;
+	}
 
       /* Initialize the loopvar.  */
       if (loop->loopvar[n] != loop->from[n])
@@ -2854,8 +2867,8 @@ gfc_trans_scalarized_loop_end (gfc_loopinfo * loop, int n,
       gfc_init_block (&block);
 
       /* The exit condition.  */
-      cond = fold_build2 (GT_EXPR, boolean_type_node,
-			 loop->loopvar[n], loop->to[n]);
+      cond = fold_build2 (reverse_loop ? LT_EXPR : GT_EXPR,
+			  boolean_type_node, loop->loopvar[n], loop->to[n]);
       tmp = build1_v (GOTO_EXPR, exit_label);
       TREE_USED (exit_label) = 1;
       tmp = build3_v (COND_EXPR, cond, tmp, build_empty_stmt (input_location));
@@ -2865,8 +2878,10 @@ gfc_trans_scalarized_loop_end (gfc_loopinfo * loop, int n,
       gfc_add_expr_to_block (&block, loopbody);
 
       /* Increment the loopvar.  */
-      tmp = fold_build2 (PLUS_EXPR, gfc_array_index_type,
-			 loop->loopvar[n], gfc_index_one_node);
+      tmp = fold_build2 (reverse_loop ? MINUS_EXPR : PLUS_EXPR,
+			 gfc_array_index_type, loop->loopvar[n],
+			 gfc_index_one_node);
+
       gfc_add_modify (&block, loop->loopvar[n], tmp);
 
       /* Build the loop.  */
@@ -3449,7 +3464,8 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
 	  lref = dest->expr->ref;
 	  rref = ss->expr->ref;
 
-	  nDepend = gfc_dep_resolver (lref, rref);
+	  nDepend = gfc_dep_resolver (lref, rref, &loop->reverse[0]);
+
 	  if (nDepend == 1)
 	    break;
 #if 0
