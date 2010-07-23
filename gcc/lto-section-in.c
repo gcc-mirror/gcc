@@ -50,13 +50,13 @@ const char *lto_section_name[LTO_N_SECTION_TYPES] =
 {
   "decls",
   "function_body",
-  "static_initializer",
+  "statics",
   "cgraph",
-  "varpool",
+  "vars",
   "refs",
-  "jump_funcs",
-  "ipa_pure_const",
-  "ipa_reference",
+  "jmpfuncs",
+  "pureconst",
+  "reference",
   "symtab",
   "opts",
   "cgraphopt"
