@@ -14,6 +14,18 @@
 	(lto_flatten_file): Add.
 	(read_cgraph_and_symbols): Handle linked lists of file_datas.
 
+2010-07-10  Andi Kleen <ak@linux.intel.com>
+
+	* lto-coff.c (hash_name, eq_name): Move.
+	(lto_obj_build_section_table): Call lto_obj_create_section_hash_table.
+	* lto-elf.c: (hash_name, eq_name): Move.
+	(lto_obj_build_section_table): Call lto_obj_create_section_hash_table.
+	* lto-macho.c: (hash_name, eq_name): Move.
+	(lto_obj_build_section_table): Call lto_obj_create_section_hash_table.
+	* lto.c: (hash_name, eq_name): Move from lto-*.c
+	(lto_obj_create_section_hash_table): Add.
+	(free_with_string): Add.
+
 2010-07-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* lto-coff.c: Include diagnostic-core.h in every file that
