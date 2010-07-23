@@ -1,3 +1,10 @@
+2010-07-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/aes-avx-check.h (main): Require OSXSAVE for
+	AVX support.
+	* gcc.target/i386/pclmul-avx-check.h (main): Likewise.
+	* gcc.target/x86_64/abi/avx/avx-check.h (main): Likewise.
+
 2010-07-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/target-supports.exp (add_options_for_tls): New proc.

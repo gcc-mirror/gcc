@@ -22,7 +22,8 @@ main ()
     return 0;
 
   /* Run AES + AVX test only if host has AES + AVX support.  */
-  if ((ecx & (bit_AVX | bit_AES)) == (bit_AVX | bit_AES))
+  if ((ecx & (bit_AVX | bit_OSXSAVE | bit_AES))
+      == (bit_AVX | bit_OSXSAVE | bit_AES))
     {
       do_test ();
 #ifdef DEBUG

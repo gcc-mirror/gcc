@@ -22,7 +22,8 @@ main ()
     return 0;
 
   /* Run PCLMUL + AVX test only if host has PCLMUL + AVX support.  */
-  if ((ecx & (bit_AVX | bit_PCLMUL)) == (bit_AVX | bit_PCLMUL))
+  if ((ecx & (bit_AVX | bit_OSXSAVE | bit_PCLMUL))
+      == (bit_AVX | bit_OSXSAVE | bit_PCLMUL))
     {
       do_test ();
 #ifdef DEBUG
