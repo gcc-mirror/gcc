@@ -1,3 +1,21 @@
+2010-07-23  Richard Guenther  <rguenther@suse.de>
+
+	* lto-symtab.c (lto_symtab_merge): Use gtc_mode enum
+	values.
+	(lto_symtab_merge_decls_2): Likewise.
+	* tree-ssa.c (useless_type_conversion_p): Likewise.
+	* lto-streamer-in.c (input_gimple_stmt): Likewise.
+	* gimple.c (gtc_visited2, gtc_ob2): Remove.
+	(struct type_pair_d): Make same_p an array indexed by mode.
+	Update comment.
+	(lookup_type_pair): Update initialization.
+	(struct sccs): Adjust same_p type.
+	(gimple_types_compatible_p_1, gtc_visit, gimple_types_compatible_p):
+	Adjust.
+	(print_gimple_types_stats): Likewise.
+	* gimple.h (enum gtc_mode): New.
+	(gimple_types_compatible_p): Adjust prototype.
+
 2010-07-23  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* dwarf2out.c (dwarf2out_frame_debug): Check for queued saves
