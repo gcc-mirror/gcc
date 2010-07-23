@@ -1,3 +1,13 @@
+2010-07-23  Le-Chun Wu  <lcwu@google.com>
+
+	* omega.c (omega_eliminate_redundant): Remove a self-assign statement.
+	* tree-ssa-ccp.c (ccp_lattice_meet): Remove a self-assign statement
+	and an unnecessary assignment.
+	* dbxout.c (DEBUGGER_ARG_OFFSET): Change OFFSET to OFFSET+0 to avoid
+	self-assign warning.
+	* config/i386/i386.c (ix86_vectorize_builtin_vec_perm): Remove
+	unnecessary self-init.
+
 2010-07-23  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/43071

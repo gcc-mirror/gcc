@@ -289,9 +289,12 @@ static const char *base_input_file;
 #endif
 
 /* A C expression for the integer offset value of an argument (N_PSYM)
-   having address X (an RTX).  The nominal offset is OFFSET.  */
+   having address X (an RTX).  The nominal offset is OFFSET.
+   Note that we use OFFSET + 0 here to avoid the self-assign warning
+   when the macro is called in a context like
+   number = DEBUGGER_ARG_OFFSET(number, X)  */
 #ifndef DEBUGGER_ARG_OFFSET
-#define DEBUGGER_ARG_OFFSET(OFFSET, X) (OFFSET)
+#define DEBUGGER_ARG_OFFSET(OFFSET, X) (OFFSET + 0)
 #endif
 
 /* This obstack holds the stab string currently being constructed.  We

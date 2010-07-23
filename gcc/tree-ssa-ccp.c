@@ -730,9 +730,8 @@ ccp_lattice_meet (prop_value_t *val1, prop_value_t *val2)
 	 Ci M Cj = VARYING	if (i != j)
 
          If these two values come from memory stores, make sure that
-	 they come from the same memory reference.  */
-      val1->lattice_val = CONSTANT;
-      val1->value = val1->value;
+	 they come from the same memory reference.
+         Nothing to do.  VAL1 already contains the value we want.  */
     }
   else
     {
