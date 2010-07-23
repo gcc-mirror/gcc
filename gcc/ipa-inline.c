@@ -334,7 +334,9 @@ cgraph_mark_inline_edge (struct cgraph_edge *e, bool update_original,
     overall_size += new_size - old_size;
   ncalls_inlined++;
 
-  if (flag_indirect_inlining)
+  /* FIXME: We should remove the optimize check after we ensure we never run
+     IPA passes when not optimizng.  */
+  if (flag_indirect_inlining && optimize)
     return ipa_propagate_indirect_call_infos (curr, new_edges);
   else
     return false;
@@ -2085,7 +2087,9 @@ analyze_function (struct cgraph_node *node)
   current_function_decl = node->decl;
 
   compute_inline_parameters (node);
-  if (flag_indirect_inlining)
+  /* FIXME: We should remove the optimize check after we ensure we never run
+     IPA passes when not optimizng.  */
+  if (flag_indirect_inlining && optimize)
     inline_indirect_intraprocedural_analysis (node);
 
   current_function_decl = NULL;

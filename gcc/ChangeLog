@@ -1,5 +1,12 @@
 2010-07-23  Martin Jambor  <mjambor@suse.cz>
 
+	PR tree-optimization/44915
+	* ipa-cp.c (cgraph_gate_cp): Also check that optimize is true.
+	* ipa-inline.c (cgraph_mark_inline_edge): Likewise.
+	(analyze_function): Likewise.
+
+2010-07-23  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/44914
 	* tree-sra.c (sra_modify_function_body): Return true if CFG was
 	changed, add purging dead eh edges.

@@ -1,5 +1,10 @@
 2010-07-23  Martin Jambor  <mjambor@suse.cz>
 
+	PR tree-optimization/44915
+	* g++.dg/torture/pr44915.C: New test.
+
+2010-07-23  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/44914
 	* g++.dg/tree-ssa/pr44914.C: New test.
 
