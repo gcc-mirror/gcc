@@ -1,3 +1,19 @@
+2010-07-10   Andi Kleen <ak@linux.intel.com>
+
+	PR lto/44992
+        * lto.c: Include splay-tree.h
+	(lto_resolution_read): Change to walk file_ids tree and parse
+	extra file_id in resolution file.
+	(lto_section_with_id): Add.
+	(create_subid_section_table): Add.
+	(lwstate): Add.
+	(lto_create_files_from_ids): Add.
+	(lto_file_read): Change to handle sub file ids and create list
+	of file_datas. Add output argument for count.
+	(get_section_data): Pass file_data to lto_get_section_name.
+	(lto_flatten_file): Add.
+	(read_cgraph_and_symbols): Handle linked lists of file_datas.
+
 2010-07-08  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* lto-coff.c: Include diagnostic-core.h in every file that

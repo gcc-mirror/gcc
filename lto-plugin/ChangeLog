@@ -1,3 +1,20 @@
+2010-07-10   Andi Kleen <ak@linux.intel.com>
+
+	PR lto/44992
+	* lto-plugin.c (sym_aux): Add.
+	(plugin_symtab): Remove slots. Add aux and id.
+	(parse_table_entry): Change to use aux instead of slots.
+	(LTO_SECTION_PREFIX): Add.
+	(translate): Improve buffer allocation. Change to append
+	symbols to existing out buffer.
+	(get_section): Remove.
+	(process_symtab): Add.
+	(free_2): Free symtab->aux.
+	(write_resolution): Handle aux instead of slots.
+	Print sub id to resolution file.
+	(claim_file_handler): Clear lto_file. Replace get_symtab/translate
+	calls with call to process_symtab.
+
 2010-07-22  Richard Guenther  <rguenther@suse.de>
 
 	* Makefile.am: New copy_lto_plugin rule to install the plugin

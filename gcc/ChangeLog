@@ -1,5 +1,20 @@
 2010-07-10   Andi Kleen <ak@linux.intel.com>
 
+	PR lto/44992
+        * lto-opts.c (lto_write_options): Add NULL file_data argument to
+	lto_get_section_name.
+	* lto-section-out.c (lto_destroy_simple_output_block): Likewise.
+	* lto-streamer-out.c (produce_asm): Likewise.
+	(copy_function): Likewise.
+	(produce_symtab): Likewise.
+	(produce_asm_for_decls): Likewise.
+	* lto-streamer.c (lto_get_section_name): Add file_data argument.
+	Rewrite to add random postfix to LTO sections.
+	* lto-streamer.h (lto_file_decl_data): Add next, id, resolutions.
+	(lto_get_section_name): Add file_data argument to prototype.
+
+2010-07-10   Andi Kleen <ak@linux.intel.com>
+
 	* lto-opts.c (lto_read_file_options): Check for missing section.
 
 2010-07-22  Bernd Schmidt  <bernds@codesourcery.com>

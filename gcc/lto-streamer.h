@@ -600,6 +600,15 @@ struct GTY(()) lto_file_decl_data
 
   /* Hash new name of renamed global declaration to its original name.  */
   htab_t GTY((skip)) renaming_hash_table;
+
+  /* Linked list used temporarily in reader */
+  struct lto_file_decl_data *next;
+
+  /* Sub ID for merged objects. */
+  unsigned id;
+
+  /* Symbol resolutions for this file */
+  VEC(ld_plugin_symbol_resolution_t,heap) *resolutions;
 };
 
 typedef struct lto_file_decl_data *lto_file_decl_data_ptr;
@@ -815,7 +824,7 @@ extern void lto_record_function_out_decl_state (tree,
 extern const char *lto_tag_name (enum LTO_tags);
 extern bitmap lto_bitmap_alloc (void);
 extern void lto_bitmap_free (bitmap);
-extern char *lto_get_section_name (int, const char *);
+extern char *lto_get_section_name (int, const char *, struct lto_file_decl_data *);
 extern void print_lto_report (void);
 extern bool lto_streamer_cache_insert (struct lto_streamer_cache_d *, tree,
 				       int *, unsigned *);
