@@ -2791,11 +2791,13 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 }
 
 /* Traverse the function body and all modifications as decided in
-   analyze_all_variable_accesses.  */
+   analyze_all_variable_accesses.  Return true iff the CFG has been
+   changed.  */
 
-static void
+static bool
 sra_modify_function_body (void)
 {
+  bool cfg_changed = false;
   basic_block bb;
 
   FOR_EACH_BB (bb)
@@ -2858,12 +2860,16 @@ sra_modify_function_body (void)
 	  if (modified)
 	    {
 	      update_stmt (stmt);
-	      maybe_clean_eh_stmt (stmt);
+	      if (maybe_clean_eh_stmt (stmt)
+		  && gimple_purge_dead_eh_edges (gimple_bb (stmt)))
+		cfg_changed = true;
 	    }
 	  if (!deleted)
 	    gsi_next (&gsi);
 	}
     }
+
+  return cfg_changed;
 }
 
 /* Generate statements initializing scalar replacements of parts of function
@@ -2923,7 +2929,10 @@ perform_intra_sra (void)
   if (!analyze_all_variable_accesses ())
     goto out;
 
-  sra_modify_function_body ();
+  if (sra_modify_function_body ())
+    ret = TODO_update_ssa | TODO_cleanup_cfg;
+  else
+    ret = TODO_update_ssa;
   initialize_parameter_reductions ();
 
   statistics_counter_event (cfun, "Scalar replacements created",
@@ -2936,8 +2945,6 @@ perform_intra_sra (void)
   statistics_counter_event (cfun, "Deleted stmts", sra_stats.deleted);
   statistics_counter_event (cfun, "Separate LHS and RHS handling",
 			    sra_stats.separate_lhs_rhs_handling);
-
-  ret = TODO_update_ssa;
 
  out:
   sra_deinitialize ();
@@ -4064,17 +4071,17 @@ sra_ipa_modify_assign (gimple *stmt_ptr, gimple_stmt_iterator *gsi,
 }
 
 /* Traverse the function body and all modifications as described in
-   ADJUSTMENTS.  */
+   ADJUSTMENTS.  Return true iff the CFG has been changed.  */
 
-static void
+static bool
 ipa_sra_modify_function_body (ipa_parm_adjustment_vec adjustments)
 {
+  bool cfg_changed = false;
   basic_block bb;
 
   FOR_EACH_BB (bb)
     {
       gimple_stmt_iterator gsi;
-      bool bb_changed = false;
 
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	replace_removed_params_ssa_names (gsi_stmt (gsi), adjustments);
@@ -4136,15 +4143,16 @@ ipa_sra_modify_function_body (ipa_parm_adjustment_vec adjustments)
 
 	  if (modified)
 	    {
-	      bb_changed = true;
 	      update_stmt (stmt);
-	      maybe_clean_eh_stmt (stmt);
+	      if (maybe_clean_eh_stmt (stmt)
+		  && gimple_purge_dead_eh_edges (gimple_bb (stmt)))
+		cfg_changed = true;
 	    }
 	  gsi_next (&gsi);
 	}
-      if (bb_changed)
-	gimple_purge_dead_eh_edges (bb);
     }
+
+  return cfg_changed;
 }
 
 /* Call gimple_debug_bind_reset_value on all debug statements describing
@@ -4260,13 +4268,14 @@ convert_callers (struct cgraph_node *node, tree old_decl,
 }
 
 /* Perform all the modification required in IPA-SRA for NODE to have parameters
-   as given in ADJUSTMENTS.  */
+   as given in ADJUSTMENTS.  Return true iff the CFG has been changed.  */
 
-static void
+static bool
 modify_function (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
 {
   struct cgraph_node *new_node;
   struct cgraph_edge *cs;
+  bool cfg_changed;
   VEC (cgraph_edge_p, heap) * redirect_callers;
   int node_callers;
 
@@ -4287,11 +4296,11 @@ modify_function (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
   push_cfun (DECL_STRUCT_FUNCTION (new_node->decl));
 
   ipa_modify_formal_parameters (current_function_decl, adjustments, "ISRA");
-  ipa_sra_modify_function_body (adjustments);
+  cfg_changed = ipa_sra_modify_function_body (adjustments);
   sra_ipa_reset_debug_stmts (adjustments);
   convert_callers (new_node, node->decl, adjustments);
   cgraph_make_node_local (new_node);
-  return;
+  return cfg_changed;
 }
 
 /* Return false the function is apparently unsuitable for IPA-SRA based on it's
@@ -4415,9 +4424,11 @@ ipa_early_sra (void)
   if (dump_file)
     ipa_dump_param_adjustments (dump_file, adjustments, current_function_decl);
 
-  modify_function (node, adjustments);
+  if (modify_function (node, adjustments))
+    ret = TODO_update_ssa | TODO_cleanup_cfg;
+  else
+    ret = TODO_update_ssa;
   VEC_free (ipa_parm_adjustment_t, heap, adjustments);
-  ret = TODO_update_ssa;
 
   statistics_counter_event (cfun, "Unused parameters deleted",
 			    sra_stats.deleted_unused_parameters);

@@ -1,3 +1,15 @@
+2010-07-23  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/44914
+	* tree-sra.c (sra_modify_function_body): Return true if CFG was
+	changed, add purging dead eh edges.
+	(ipa_sra_modify_function_body): Return true if CFG was changed,
+	simplify purging dead eh edges.
+	(modify_function): Return true if CFG was changed.
+	(perform_intra_sra): Add TODO_cleanup_cfg to the return value if CFG
+	was changed.
+	(ipa_early_sra): Likewise.
+
 2010-07-23  Jie Zhang  <jie@codesourcery.com>
 
 	PR target/44290
