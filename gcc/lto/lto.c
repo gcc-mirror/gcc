@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto.h"
 #include "lto-tree.h"
 #include "lto-streamer.h"
+#include "splay-tree.h"
 
 /* This needs to be included after config.h.  Otherwise, _GNU_SOURCE will not
    be defined in time to set __USE_GNU in the system headers, and strsignal
@@ -309,11 +310,10 @@ lto_parse_hex (const char *p) {
 }
 
 /* Read resolution for file named FILE_NAME. The resolution is read from
-   RESOLUTION. An array with the symbol resolution is returned. The array
-   size is written to SIZE. */
+   RESOLUTION. */
 
-static VEC(ld_plugin_symbol_resolution_t,heap) *
-lto_resolution_read (FILE *resolution, lto_file *file)
+static void
+lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
 {
   /* We require that objects in the resolution file are in the same
      order as the lto1 command line. */
@@ -321,11 +321,12 @@ lto_resolution_read (FILE *resolution, lto_file *file)
   char *obj_name;
   unsigned int num_symbols;
   unsigned int i;
-  VEC(ld_plugin_symbol_resolution_t,heap) *ret = NULL;
+  struct lto_file_decl_data *file_data;
   unsigned max_index = 0;
+  splay_tree_node nd = NULL; 
 
   if (!resolution)
-    return NULL;
+    return;
 
   name_len = strlen (file->filename);
   obj_name = XNEWVEC (char, name_len + 1);
@@ -356,15 +357,15 @@ lto_resolution_read (FILE *resolution, lto_file *file)
   for (i = 0; i < num_symbols; i++)
     {
       int t;
-      unsigned index;
+      unsigned index, id;
       char r_str[27];
       enum ld_plugin_symbol_resolution r = (enum ld_plugin_symbol_resolution) 0;
       unsigned int j;
       unsigned int lto_resolution_str_len =
 	sizeof (lto_resolution_str) / sizeof (char *);
 
-      t = fscanf (resolution, "%u %26s %*[^\n]\n", &index, r_str);
-      if (t != 2)
+      t = fscanf (resolution, "%u %x %26s %*[^\n]\n", &index, &id, r_str);
+      if (t != 3)
         internal_error ("Invalid line in the resolution file.");
       if (index > max_index)
 	max_index = index;
@@ -380,12 +381,120 @@ lto_resolution_read (FILE *resolution, lto_file *file)
       if (j == lto_resolution_str_len)
 	internal_error ("Invalid resolution in the resolution file.");
 
-      VEC_safe_grow_cleared (ld_plugin_symbol_resolution_t, heap, ret,
+      if (!(nd && nd->key == id))
+	{
+	  nd = splay_tree_lookup (file_ids, id);
+	  if (nd == NULL)
+	    internal_error ("Resolution sub id %x not in object file", id);
+	}
+
+      file_data = (struct lto_file_decl_data *)nd->value;
+      if (cgraph_dump_file)
+	fprintf (cgraph_dump_file, "Adding resolution %u %u to id %x\n",
+		 index, r, file_data->id);
+      VEC_safe_grow_cleared (ld_plugin_symbol_resolution_t, heap, 
+			     file_data->resolutions,
 			     max_index + 1);
-      VEC_replace (ld_plugin_symbol_resolution_t, ret, index, r);
+      VEC_replace (ld_plugin_symbol_resolution_t, 
+		   file_data->resolutions, index, r);
+    }
+}
+
+/* Is the name for a id'ed LTO section? */
+
+static int 
+lto_section_with_id (const char *name, unsigned *id)
+{
+  char *s;
+
+  if (strncmp (name, LTO_SECTION_NAME_PREFIX, strlen (LTO_SECTION_NAME_PREFIX)))
+    return 0;
+  s = strrchr (name, '.');
+  return s && sscanf (s, ".%x", id) == 1;
+}
+
+/* Create file_data of each sub file id */
+
+static int 
+create_subid_section_table (void **slot, void *data)
+{
+  struct lto_section_slot s_slot, *new_slot;
+  struct lto_section_slot *ls = *(struct lto_section_slot **)slot;
+  splay_tree file_ids = (splay_tree)data;
+  unsigned id;
+  splay_tree_node nd;
+  void **hash_slot;
+  char *new_name;
+  struct lto_file_decl_data *file_data;
+
+  if (!lto_section_with_id (ls->name, &id))
+    return 1;
+  
+  /* Find hash table of sub module id */
+  nd = splay_tree_lookup (file_ids, id);
+  if (nd != NULL)
+    {
+      file_data = (struct lto_file_decl_data *)nd->value;
+    }
+  else
+    {
+      file_data = ggc_alloc_lto_file_decl_data ();
+      memset(file_data, 0, sizeof (struct lto_file_decl_data));
+      file_data->id = id;
+      file_data->section_hash_table = lto_obj_create_section_hash_table ();;
+      splay_tree_insert (file_ids, id, (splay_tree_value)file_data);
     }
 
-  return ret;
+  /* Copy section into sub module hash table */
+  new_name = XDUPVEC (char, ls->name, strlen (ls->name) + 1);
+  s_slot.name = new_name;
+  hash_slot = htab_find_slot (file_data->section_hash_table, &s_slot, INSERT);
+  gcc_assert (*hash_slot == NULL);
+
+  new_slot = XDUP (struct lto_section_slot, ls);
+  new_slot->name = new_name;
+  *hash_slot = new_slot;
+  return 1;
+}
+
+/* Read declarations and other initializations for a FILE_DATA. */
+
+static void
+lto_file_finalize (struct lto_file_decl_data *file_data, lto_file *file)
+{
+  const char *data;
+  size_t len;
+
+  file_data->renaming_hash_table = lto_create_renaming_table ();
+  file_data->file_name = file->filename;
+  data = lto_get_section_data (file_data, LTO_section_decls, NULL, &len);
+  gcc_assert (data != NULL);
+  lto_read_decls (file_data, data, file_data->resolutions);
+  lto_free_section_data (file_data, LTO_section_decls, NULL, data, len);
+}
+
+struct lwstate
+{
+  lto_file *file;
+  struct lto_file_decl_data **file_data;
+  int *count;
+};
+
+/* Traverse ids and create a list of file_datas out of it. */      
+
+static int lto_create_files_from_ids (splay_tree_node node, void *data)
+{
+  struct lwstate *lw = (struct lwstate *)data;
+  struct lto_file_decl_data *file_data = (struct lto_file_decl_data *)node->value;
+
+  lto_file_finalize (file_data, lw->file);
+  if (cgraph_dump_file)
+    fprintf (cgraph_dump_file, "Creating file %s with sub id %x\n", 
+	     file_data->file_name, file_data->id);
+  file_data->next = *lw->file_data;
+  *lw->file_data = file_data;
+  (*lw->count)++;
+  return 0;
 }
 
 /* Generate a TREE representation for all types and external decls
@@ -396,23 +505,32 @@ lto_resolution_read (FILE *resolution, lto_file *file)
    the .o file to load the functions and ipa information.   */
 
 static struct lto_file_decl_data *
-lto_file_read (lto_file *file, FILE *resolution_file)
+lto_file_read (lto_file *file, FILE *resolution_file, int *count)
 {
-  struct lto_file_decl_data *file_data;
-  const char *data;
-  size_t len;
-  VEC(ld_plugin_symbol_resolution_t,heap) *resolutions;
+  struct lto_file_decl_data *file_data = NULL;
+  splay_tree file_ids;
+  htab_t section_hash_table;
+  struct lwstate state;
   
-  resolutions = lto_resolution_read (resolution_file, file);
+  section_hash_table = lto_obj_build_section_table (file);
 
-  file_data = ggc_alloc_lto_file_decl_data ();
-  file_data->file_name = file->filename;
-  file_data->section_hash_table = lto_obj_build_section_table (file);
-  file_data->renaming_hash_table = lto_create_renaming_table ();
+  /* Find all sub modules in the object and put their sections into new hash
+     tables in a splay tree. */
+  file_ids = splay_tree_new (splay_tree_compare_ints, NULL, NULL);
+  htab_traverse (section_hash_table, create_subid_section_table, file_ids);
+  
+  /* Add resolutions to file ids */
+  lto_resolution_read (file_ids, resolution_file, file);
 
-  data = lto_get_section_data (file_data, LTO_section_decls, NULL, &len);
-  lto_read_decls (file_data, data, resolutions);
-  lto_free_section_data (file_data, LTO_section_decls, NULL, data, len);
+  /* Finalize each lto file for each submodule in the merged object
+     and create list for returning. */
+  state.file = file;
+  state.file_data = &file_data;
+  state.count = count;
+  splay_tree_foreach (file_ids, lto_create_files_from_ids, &state);
+    
+  splay_tree_delete (file_ids);
+  htab_delete (section_hash_table);
 
   return file_data;
 }
@@ -507,7 +625,7 @@ get_section_data (struct lto_file_decl_data *file_data,
   htab_t section_hash_table = file_data->section_hash_table;
   struct lto_section_slot *f_slot;
   struct lto_section_slot s_slot;
-  const char *section_name = lto_get_section_name (section_type, name);
+  const char *section_name = lto_get_section_name (section_type, name, file_data);
   char *data = NULL;
 
   *len = 0;
@@ -1538,6 +1656,33 @@ lto_read_all_file_options (void)
 
 static GTY((length ("lto_stats.num_input_files + 1"))) struct lto_file_decl_data **all_file_decl_data;
 
+/* Turn file datas for sub files into a single array, so that they look
+   like separate files for further passes. */
+
+static void
+lto_flatten_files (struct lto_file_decl_data **orig, int count, int last_file_ix)
+{
+  struct lto_file_decl_data *n, *next;
+  int i, k;
+
+  lto_stats.num_input_files = count;
+  all_file_decl_data
+    = ggc_alloc_cleared_vec_lto_file_decl_data_ptr (count + 1);
+  /* Set the hooks so that all of the ipa passes can read in their data.  */
+  lto_set_in_hooks (all_file_decl_data, get_section_data, free_section_data);
+  for (i = 0, k = 0; i < last_file_ix; i++) 
+    {
+      for (n = orig[i]; n != NULL; n = next)
+	{
+	  all_file_decl_data[k++] = n;
+	  next = n->next;
+	  n->next = NULL;
+	}
+    }
+  all_file_decl_data[k] = NULL;
+  gcc_assert (k == count);
+}
+
 /* Read all the symbols from the input files FNAMES.  NFILES is the
    number of files requested in the command line.  Instantiate a
    global call graph by aggregating all the sub-graphs found in each
@@ -1549,16 +1694,14 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   unsigned int i, last_file_ix;
   FILE *resolution;
   struct cgraph_node *node;
+  int count = 0;
+  struct lto_file_decl_data **decl_data;
 
-  lto_stats.num_input_files = nfiles;
   init_cgraph ();
 
   timevar_push (TV_IPA_LTO_DECL_IN);
 
-  /* Set the hooks so that all of the ipa passes can read in their data.  */
-  all_file_decl_data
-    = ggc_alloc_cleared_vec_lto_file_decl_data_ptr (nfiles + 1);
-  lto_set_in_hooks (all_file_decl_data, get_section_data, free_section_data);
+  decl_data = (struct lto_file_decl_data **)xmalloc (sizeof(*decl_data) * (nfiles+1));
 
   /* Read the resolution file.  */
   resolution = NULL;
@@ -1595,11 +1738,11 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
       if (!current_lto_file)
 	break;
 
-      file_data = lto_file_read (current_lto_file, resolution);
+      file_data = lto_file_read (current_lto_file, resolution, &count);
       if (!file_data)
 	break;
 
-      all_file_decl_data[last_file_ix++] = file_data;
+      decl_data[last_file_ix++] = file_data;
 
       lto_obj_file_close (current_lto_file);
       current_lto_file = NULL;
@@ -1607,10 +1750,12 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
          code in gimple.c uses hashtables that are not ggc aware.  */
     }
 
+  lto_flatten_files (decl_data, count, last_file_ix);
+  lto_stats.num_input_files = count;
+  free(decl_data);
+
   if (resolution_file_name)
     fclose (resolution);
-
-  all_file_decl_data[last_file_ix] = NULL;
 
   /* Set the hooks so that all of the ipa passes can read in their data.  */
   lto_set_in_hooks (all_file_decl_data, get_section_data, free_section_data);

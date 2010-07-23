@@ -133,57 +133,45 @@ lto_bitmap_free (bitmap b)
 
 
 /* Get a section name for a particular type or name.  The NAME field
-   is only used if SECTION_TYPE is LTO_section_function_body or
-   LTO_static_initializer.  For all others it is ignored.  The callee
-   of this function is responcible to free the returned name.  */
+   is only used if SECTION_TYPE is LTO_section_function_body. For all
+   others it is ignored.  The callee of this function is responsible
+   to free the returned name.  */
 
 char *
-lto_get_section_name (int section_type, const char *name)
+lto_get_section_name (int section_type, const char *name, struct lto_file_decl_data *f)
 {
-  switch (section_type)
+  const char *add;
+  char post[32];
+  const char *sep;
+
+  if (section_type == LTO_section_function_body)
     {
-    case LTO_section_function_body:
       gcc_assert (name != NULL);
       if (name[0] == '*')
 	name++;
-      return concat (LTO_SECTION_NAME_PREFIX, name, NULL);
-
-    case LTO_section_static_initializer:
-      return concat (LTO_SECTION_NAME_PREFIX, ".statics", NULL);
-
-    case LTO_section_symtab:
-      return concat (LTO_SECTION_NAME_PREFIX, ".symtab", NULL);
-
-    case LTO_section_decls:
-      return concat (LTO_SECTION_NAME_PREFIX, ".decls", NULL);
-
-    case LTO_section_cgraph:
-      return concat (LTO_SECTION_NAME_PREFIX, ".cgraph", NULL);
-
-    case LTO_section_varpool:
-      return concat (LTO_SECTION_NAME_PREFIX, ".vars", NULL);
-
-    case LTO_section_refs:
-      return concat (LTO_SECTION_NAME_PREFIX, ".refs", NULL);
-
-    case LTO_section_jump_functions:
-      return concat (LTO_SECTION_NAME_PREFIX, ".jmpfuncs", NULL);
-
-    case LTO_section_ipa_pure_const:
-      return concat (LTO_SECTION_NAME_PREFIX, ".pureconst", NULL);
-
-    case LTO_section_ipa_reference:
-      return concat (LTO_SECTION_NAME_PREFIX, ".reference", NULL);
-
-    case LTO_section_opts:
-      return concat (LTO_SECTION_NAME_PREFIX, ".opts", NULL);
-
-    case LTO_section_cgraph_opt_sum:
-      return concat (LTO_SECTION_NAME_PREFIX, ".cgraphopt", NULL);
-
-    default:
-      internal_error ("bytecode stream: unexpected LTO section %s", name);
+      add = name;
+      sep = "";
     }
+  else if (section_type < LTO_N_SECTION_TYPES)
+    {
+      add = lto_section_name[section_type];
+      sep = ".";
+    }
+  else
+    internal_error ("bytecode stream: unexpected LTO section %s", name);
+
+  /* Make the section name unique so that ld -r combining sections
+     doesn't confuse the reader with merged sections.
+
+     For options don't add a ID, the option reader cannot deal with them
+     and merging should be ok here.
+
+     XXX: use crc64 to minimize collisions? */
+  if (section_type == LTO_section_opts)
+    strcpy (post, "");
+  else
+    sprintf (post, ".%x", f ? f->id : crc32_string(0, get_random_seed (false)));
+  return concat (LTO_SECTION_NAME_PREFIX, sep, add, post, NULL);
 }
 
 

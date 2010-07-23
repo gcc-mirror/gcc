@@ -1810,10 +1810,10 @@ produce_asm (struct output_block *ob, tree fn)
   if (section_type == LTO_section_function_body)
     {
       const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fn));
-      section_name = lto_get_section_name (section_type, name);
+      section_name = lto_get_section_name (section_type, name, NULL);
     }
   else
-    section_name = lto_get_section_name (section_type, NULL);
+    section_name = lto_get_section_name (section_type, NULL, NULL);
 
   lto_begin_section (section_name, !flag_wpa);
   free (section_name);
@@ -2041,7 +2041,7 @@ copy_function (struct cgraph_node *node)
   size_t len;
   const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (function));
   char *section_name =
-    lto_get_section_name (LTO_section_function_body, name);
+    lto_get_section_name (LTO_section_function_body, name, NULL);
   size_t i, j;
   struct lto_in_decl_state *in_state;
   struct lto_out_decl_state *out_state = lto_get_out_decl_state ();
@@ -2398,7 +2398,7 @@ produce_symtab (struct output_block *ob,
 	        cgraph_node_set set, varpool_node_set vset)
 {
   struct lto_streamer_cache_d *cache = ob->writer_cache;
-  char *section_name = lto_get_section_name (LTO_section_symtab, NULL);
+  char *section_name = lto_get_section_name (LTO_section_symtab, NULL, NULL);
   bitmap seen;
   struct cgraph_node *node, *alias;
   struct varpool_node *vnode, *valias;
@@ -2477,7 +2477,7 @@ produce_asm_for_decls (cgraph_node_set set, varpool_node_set vset)
 
   memset (&header, 0, sizeof (struct lto_decl_header));
 
-  section_name = lto_get_section_name (LTO_section_decls, NULL);
+  section_name = lto_get_section_name (LTO_section_decls, NULL, NULL);
   lto_begin_section (section_name, !flag_wpa);
   free (section_name);
 
