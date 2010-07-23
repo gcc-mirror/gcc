@@ -73,6 +73,7 @@ contains
     USE xmod, ONLY: xfoobar_renamed => xfoobar
     USE ymod, ONLY: yfoobar_renamed => yfoobar
     USE ymod
+    implicit integer(4) (a-z)
     if (xfoobar_renamed (42) == xfoobar ()) call abort ()
     if (yfoobar_renamed (42) == yfoobar ()) call abort ()
   end subroutine

@@ -139,16 +139,16 @@ subroutine foo(a)
   call gee_i(i**(-huge(0_4)))
   call gee_i(i**(-huge(0_4)-1_4))
 
-  call gee_i(i**0_8)
-  call gee_i(i**1_8)
-  call gee_i(i**2_8)
-  call gee_i(i**3_8)
-  call gee_i(i**(-1_8))
-  call gee_i(i**(-2_8))
-  call gee_i(i**(-3_8))
-  call gee_i(i**huge(0_8))
-  call gee_i(i**(-huge(0_8)))
-  call gee_i(i**(-huge(0_8)-1_8))
+  call gee_i(i**0_8) ! { dg-warning "Type mismatch in argument" }
+  call gee_i(i**1_8) ! { dg-warning "Type mismatch in argument" }
+  call gee_i(i**2_8) ! { dg-warning "Type mismatch in argument" }
+  call gee_i(i**3_8) ! { dg-warning "Type mismatch in argument" }
+  call gee_i(i**(-1_8)) ! { dg-warning "Type mismatch in argument" }
+  call gee_i(i**(-2_8)) ! { dg-warning "Type mismatch in argument" }
+  call gee_i(i**(-3_8)) ! { dg-warning "Type mismatch in argument" }
+  call gee_i(i**huge(0_8)) ! { dg-warning "Type mismatch in argument" }
+  call gee_i(i**(-huge(0_8))) ! { dg-warning "Type mismatch in argument" }
+  call gee_i(i**(-huge(0_8)-1_8)) ! { dg-warning "Type mismatch in argument" }
 
   ! Real
   call gee_r(a**0_1)

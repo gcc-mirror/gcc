@@ -1470,6 +1470,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
     }
 
   if ((actual->expr_type != EXPR_NULL || actual->ts.type != BT_UNKNOWN)
+      && actual->ts.type != BT_HOLLERITH
       && !gfc_compare_types (&formal->ts, &actual->ts))
     {
       if (where)
