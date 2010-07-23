@@ -3510,6 +3510,7 @@ update_pointer_to (tree old_type, tree new_type)
       DECL_FIELD_CONTEXT (bounds_field) = new_ptr;
       for (t = new_ptr; t; last = t, t = TYPE_NEXT_VARIANT (t))
 	TYPE_FIELDS (t) = TYPE_FIELDS (ptr);
+      TYPE_ALIAS_SET (new_ptr) = TYPE_ALIAS_SET (ptr);
 
       /* Chain PTR and its variants at the end.  */
       TYPE_NEXT_VARIANT (last) = TYPE_MAIN_VARIANT (ptr);

@@ -1,5 +1,10 @@
 2010-07-23  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interfaces/utils.c (update_pointer_to): In the unconstrained
+	array case, merge the alias set of the old pointer type.
+
+2010-07-23  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (gnat_types_compatible_p): Revert latest change
 	and recurse only for multidimensional array types instead.
 
