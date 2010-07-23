@@ -1278,7 +1278,9 @@ ipcp_read_summary (void)
 static bool
 cgraph_gate_cp (void)
 {
-  return flag_ipa_cp;
+  /* FIXME: We should remove the optimize check after we ensure we never run
+     IPA passes when not optimizng.  */
+  return flag_ipa_cp && optimize;
 }
 
 struct ipa_opt_pass_d pass_ipa_cp =
