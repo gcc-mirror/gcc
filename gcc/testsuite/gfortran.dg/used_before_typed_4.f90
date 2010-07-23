@@ -22,5 +22,5 @@ END SUBROUTINE test
 PROGRAM main
   IMPLICIT NONE
   INTEGER :: arr1(42), arr2(42)
-  CALL test (3, arr1, 2, arr2)
+  CALL test (3, arr1, 2, arr2) ! { dg-warning "Type mismatch in argument" }
 END PROGRAM main

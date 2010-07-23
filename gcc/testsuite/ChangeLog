@@ -1,3 +1,26 @@
+2010-07-24  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/func_decl_4.f90: Split test into two ...
+	* gfortran.dg/func_decl_5.f90: ... parts.
+	* gfortran.dg/common_resize_1.f: xfail two warnings (cf. PR 45045).
+	* gfortran.dg/bounds_temporaries_1.f90: Add new dg-warning.
+	* gfortran.dg/global_references_1.f90: Add new dg-warning.
+	* gfortran.dg/generic_actual_arg.f90: Add new dg-warning.
+	* gfortran.dg/entry_17.f90: Remove no-longer needed dg-warning.
+	* gfortran.dg/used_before_typed_4.f90: Add new dg-warning.
+	* gfortran.dg/bounds_check_strlen_1.f90: Add new dg-warning.
+	* gfortran.dg/intrinsic_std_1.f90: Split by remove tree dump ...
+	* gfortran.dg/intrinsic_std_6.f90: ... and create a dump test.
+	* gfortran.dg/sizeof.f90: Make test valid.
+	* gfortran.dg/pr20865.f90: Add new dg-error.
+	* gfortran.dg/integer_exponentiation_2.f90: Add new dg-warnings.
+	* gfortran.dg/g77/19990218-0.f: Ditto.
+	* gfortran.dg/g77/19990218-1.f: Ditto.
+	* gfortran.dg/g77/970625-2.f: Ditto.
+	* gfortran.dg/pr37243.f: Fix function declaration.
+	* gfortran.dg/use_only_1.f90: Fix implicit typing.
+	* gfortran.dg/loc_1.f90: Fix pointer datatype.
+
 2010-07-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44945

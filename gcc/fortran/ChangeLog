@@ -1,3 +1,9 @@
+2010-07-24  Tobias Burnus  <burnus@net-b.de>
+
+	* options.c (gfc_init_options): Enable -fwhole-file by default.
+	* interface.c (compare_parameter): Assume a Hollerith constant is
+	compatible with all other argument types.
+
 2010-07-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44945

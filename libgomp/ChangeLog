@@ -1,3 +1,8 @@
+2010-07-24  Tobias Burnus  <burnus@net-b.de>
+
+	* testsuite/libgomp.fortran/appendix-a/a.28.5.f90: Add -w to
+	silence -fwhole-file warning.
+
 2010-07-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.tgt (*-*-solaris2.[56]*): Removed.
