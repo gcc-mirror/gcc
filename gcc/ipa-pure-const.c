@@ -446,7 +446,6 @@ special_builtlin_state (enum pure_const_state_e *state, bool *looping,
 	case BUILT_IN_FRAME_ADDRESS:
 	case BUILT_IN_APPLY:
 	case BUILT_IN_APPLY_ARGS:
-	case BUILT_IN_ARGS_INFO:
 	  *looping = false;
 	  *state = IPA_CONST;
 	  return true;

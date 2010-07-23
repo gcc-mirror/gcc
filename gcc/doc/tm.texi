@@ -5007,33 +5007,8 @@ to use them for its own purposes.
 @c 10feb93
 @end defmac
 
-@defmac __builtin_args_info (@var{category})
-Use this built-in function to find the first anonymous arguments in
-registers.
-
-In general, a machine may have several categories of registers used for
-arguments, each for a particular category of data types.  (For example,
-on some machines, floating-point registers are used for floating-point
-arguments while other arguments are passed in the general registers.)
-To make non-varargs functions use the proper calling convention, you
-have defined the @code{CUMULATIVE_ARGS} data type to record how many
-registers in each category have been used so far
-
-@code{__builtin_args_info} accesses the same data structure of type
-@code{CUMULATIVE_ARGS} after the ordinary argument layout is finished
-with it, with @var{category} specifying which word to access.  Thus, the
-value indicates the first unused register in a given category.
-
-Normally, you would use @code{__builtin_args_info} in the implementation
-of @code{va_start}, accessing each category just once and storing the
-value in the @code{va_list} object.  This is because @code{va_list} will
-have to update the values, and there is no way to alter the
-values accessed by @code{__builtin_args_info}.
-@end defmac
-
 @defmac __builtin_next_arg (@var{lastarg})
-This is the equivalent of @code{__builtin_args_info}, for stack
-arguments.  It returns the address of the first anonymous stack
+This builtin returns the address of the first anonymous stack
 argument, as type @code{void *}.  If @code{ARGS_GROW_DOWNWARD}, it
 returns the address of the location above the first anonymous stack
 argument.  Use it in @code{va_start} to initialize the pointer for
