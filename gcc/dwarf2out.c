@@ -2791,6 +2791,12 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
   insn = PATTERN (insn);
  found:
   dwarf2out_frame_debug_expr (insn, label);
+
+  /* Check again.  A parallel can save and update the same register.
+     We could probably check just once, here, but this is safer than
+     removing the check above.  */
+  if (clobbers_queued_reg_save (insn))
+    flush_queued_reg_saves ();
 }
 
 /* Determine if we need to save and restore CFI information around this
