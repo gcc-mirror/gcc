@@ -1,5 +1,5 @@
 /* PR 19952 */
-/* { dg-compile } */
+/* { dg-do compile } */
 /* { dg-options "-ftree-vectorize -O2" } */
 
 int i;

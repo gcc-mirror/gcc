@@ -1,4 +1,4 @@
-/* { dg-compile } */
+/* { dg-do compile } */
 /* { dg-skip-if "consts are shorts, not longs" { "m32c-*-*" "avr-*-*" } { "*" } { "" } } */
 /* { dg-skip-if "No Inf support" { spu-*-* } } */
 /* { dg-options "-O -ftrapping-math" } */

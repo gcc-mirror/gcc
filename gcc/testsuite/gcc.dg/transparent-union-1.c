@@ -1,5 +1,5 @@
 /* PR c/20043 */
-/* { dg-compile } */
+/* { dg-do compile } */
 /* { dg-options "-std=gnu99" } */
 
 extern void f0 (int *);

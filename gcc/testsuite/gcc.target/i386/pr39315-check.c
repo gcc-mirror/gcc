@@ -1,4 +1,5 @@
-/* { dg-compile } */
+/* { dg-do compile } */
+
 typedef float __m128 __attribute__ ((__vector_size__ (16)));
 __extension__ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 

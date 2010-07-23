@@ -1,3 +1,23 @@
+2010-07-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/float-range-3.c: Use "dg-do compile" dejagnu directive
+	instead of dg-compile.
+	* gcc.dg/float-range-4.c: Ditto.
+	* gcc.dg/float-range-5.c: Ditto.
+	* gcc.dg/fold-overflow-1.c: Ditto.
+	* gcc.dg/gomp/sections-4.c: Ditto.
+	* gcc.dg/transparent-union-1.c: Ditto.
+	* gcc.dg/transparent-union-2.c: Ditto.
+	* gcc.target/i386/pr39315-check.c: Ditto.
+	* g++.dg/gomp/sections-4.C: Ditto.
+	* g++.dg/template/dtor7.C: Ditto.
+	* g++.dg/tree-ssa/pr19952.C: Ditto.
+	* gfortran.dg/derived_constructor_comps_3.f90: Ditto.
+	* gfortran.dg/graphite/pr42185.f90: Ditto.
+	* gfortran.dg/namelist_36.f90: Ditto.
+	* gnat.dg/noreturn1.adb: Ditto.
+	* gnat.dg/specs/small_alignment.ads: Ditto.
+
 2010-07-23  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/44915
@@ -19,7 +39,7 @@
 	PR c++/45008
 	* g++.dg/abi/mangle44.C: New.
 
-2010-06-23  Uros Bizjak  <ubizjak@gmail.com>
+2010-07-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/*.c: Do not require sse{,2,3,4} effective target
 	for compile-time only tests.
@@ -37,7 +57,7 @@
 	(main): Call check_isa and sse_os_support.
 	* gcc.target/i386/vperm-v2df.c: Ditto.
 
-2010-06-23  Uros Bizjak  <ubizjak@gmail.com>
+2010-07-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/target-supports.exp (check_avx_hw_available): New procedure.
 	(check_effective_target_avx_runtime): New procedure.
