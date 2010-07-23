@@ -1,5 +1,23 @@
 2010-06-23  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.target/i386/*.c: Do not require sse{,2,3,4} effective target
+	for compile-time only tests.
+	* gcc.target/i386/pr39315-2.c: Remove redundant sse2 effective
+	target check.
+	* gcc.target/i386/pr39315-4.c: Ditto.
+	* gcc.target/i386/vperm-v4si-1.c: Remove sse_runtime effective
+	target check.  Include sse-os-support.h.
+	(main): Call check_isa and sse_os_support.
+	* gcc.target/i386/vperm-v4sf-1.c: Ditto.
+	* gcc.target/i386/vperm-v4si-2.c (main): Call check_isa.
+	* gcc.target/i386/vperm-v4sf-2.c: Ditto.
+	* gcc.target/i386/vperm-v2di.c: Remove sse2_runtime effective
+	target check.  Include sse-os-support.h.
+	(main): Call check_isa and sse_os_support.
+	* gcc.target/i386/vperm-v2df.c: Ditto.
+
+2010-06-23  Uros Bizjak  <ubizjak@gmail.com>
+
 	* lib/target-supports.exp (check_avx_hw_available): New procedure.
 	(check_effective_target_avx_runtime): New procedure.
 	(check_effective_target_sse2_runtime): Add check_effective_target_sse2.
@@ -12,7 +30,7 @@
 
 	* gcc.target/i386/avx-check.h (main): Also check bit_OSXSAVE.
 
-	* gcc.dg/20020418-1.c: Do not require sse2 effective target
+	* gcc.dg/20020418-1.c: Do not require sse{,2} effective target
 	for compile-time only test.
 	* gcc.dg/pr32716.c: Ditto.
 	* gcc.dg/pr34856.c: Ditto.
@@ -27,7 +45,7 @@
 	* g++.dg/vect/vect.exp: Ditto.
 	* gfortran.dg/vect/vect.exp: Ditto.
 
-	* gcc.dg/pr36584.c: Remove now redundant sse2 effective target check.
+	* gcc.dg/pr36584.c: Remove redundant sse{,2} effective target check.
 	* gcc.dg/pr37544.c: Ditto.
 	* gcc.dg/pr40550.c: Ditto.
 	* gcc.dg/compat/union-m128-1_main.c: Ditto.

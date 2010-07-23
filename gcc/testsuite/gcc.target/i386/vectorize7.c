@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -ftree-vectorize -msse2" } */
-/* { dg-require-effective-target sse2 } */
 
 unsigned int a[256];
 float b[256];

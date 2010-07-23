@@ -1,7 +1,6 @@
 /* This testcase caused a buffer overflow in simplify_immed_subreg.  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse2" } */
-/* { dg-require-effective-target sse2 } */
 
 #include <emmintrin.h>
 

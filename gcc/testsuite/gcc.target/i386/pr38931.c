@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse" } */
-/* { dg-require-effective-target sse } */
 
 typedef int __m64 __attribute__ ((__vector_size__ (8)));
 

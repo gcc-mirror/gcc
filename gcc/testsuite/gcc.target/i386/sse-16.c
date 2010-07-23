@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O0 -msse" } */
-/* { dg-require-effective-target sse } */
 
 typedef float __vr __attribute__ ((vector_size (16)));
 

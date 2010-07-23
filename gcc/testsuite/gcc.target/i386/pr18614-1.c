@@ -1,7 +1,6 @@
 /* PR rtl-optimization/18614 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse2" } */
-/* { dg-require-effective-target sse2 } */
 
 typedef double v2df __attribute__ ((vector_size (16)));
 

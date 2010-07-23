@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-msse2 -O2" } */
-/* { dg-require-effective-target sse2 } */
 
 /* We used to ICE because of a bogous pattern.  */
 

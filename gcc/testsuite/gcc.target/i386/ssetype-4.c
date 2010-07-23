@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse2 -march=k8" } */
-/* { dg-require-effective-target sse2 } */
 /* { dg-final { scan-assembler "andps" } } */
 /* { dg-final { scan-assembler "andnps" } } */
 /* { dg-final { scan-assembler "xorps" } } */

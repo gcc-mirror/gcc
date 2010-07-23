@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -msse2" } */
-/* { dg-require-effective-target sse2 } */
 /* { dg-final { scan-assembler "punpcklbw" } } */
 extern void abort();
 #include <emmintrin.h>

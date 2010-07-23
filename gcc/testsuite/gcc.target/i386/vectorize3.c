@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ilp32 } */
-/* { dg-require-effective-target sse2 } */
 /* { dg-options "-O2 -ffast-math -ftree-vectorize -msse2 -mfpmath=sse" } */
 
 float a[256];
