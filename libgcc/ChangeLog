@@ -1,3 +1,10 @@
+2010-07-23  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config.host (powerpc*-eabispe*): Set tmake_file.
+	(powerpc*-eabi*): Likewise.
+	* config/rs6000/t-ppccomm (EXTRA_PARTS): Add crtbegin, crtend,
+	crtbeginS, crtendS, crtbeginT.
+
 2010-06-12  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config.host (mips64*-*-linux*, mips*-*-linux*): Add mips/t-crtfm
