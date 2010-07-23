@@ -1,3 +1,10 @@
+2010-07-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (*-*-solaris2.8): Use alternate thread library.
+	Add libthread.
+	(*-*-solaris2.9): Use libthread.
+	* configure: Regenerate.
+
 2010-07-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* include/sparc-signal.h: Renamed to ...

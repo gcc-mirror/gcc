@@ -1879,6 +1879,16 @@ The supported values of @var{feature} for directive @code{dg-add-options}
 are:
 
 @table @code
+@item arm_neon
+NEON support.  Only ARM targets support this feature, and only then
+in certain modes; see the @ref{arm_neon_ok,,arm_neon_ok effective target
+keyword}.
+
+@item arm_neon_fp16
+NEON and half-precision floating point support.  Only ARM targets
+support this feature, and only then in certain modes; see
+the @ref{arm_neon_ok,,arm_neon_fp16_ok effective target keyword}.
+
 @item bind_pic_locally
 Add the target-specific flags needed to enable functions to bind
 locally when using pic/PIC passes in the testsuite.
@@ -1894,15 +1904,8 @@ compliance mode.
 @code{mips16} function attributes.
 Only MIPS targets support this feature, and only then in certain modes.
 
-@item arm_neon
-NEON support.  Only ARM targets support this feature, and only then
-in certain modes; see the @ref{arm_neon_ok,,arm_neon_ok effective target
-keyword}.
-
-@item arm_neon_fp16
-NEON and half-precision floating point support.  Only ARM targets
-support this feature, and only then in certain modes; see
-the @ref{arm_neon_ok,,arm_neon_fp16_ok effective target keyword}.
+@item tls
+Add the target-specific flags needed to use thread-local storage.
 @end table
 
 @node Require Support
