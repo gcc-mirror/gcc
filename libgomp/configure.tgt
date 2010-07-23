@@ -116,11 +116,6 @@ case "${target}" in
 	config_path="mingw32 posix"
 	;;
 
-  *-*-solaris2.[56]*)
-	config_path="posix95 posix"
-	XLDFLAGS="${XLDFLAGS} -lposix4"
-	;;
-
   *-*-darwin*)
 	config_path="bsd posix"
 	;;

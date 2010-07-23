@@ -124,11 +124,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef LIB_SPEC
 #define LIB_SPEC \
   "%{compat-bsd:-lucb -lsocket -lnsl -lelf -laio} \
-   %{!shared:\
-     %{!symbolic:\
-       %{pthreads|pthread:-lpthread} \
-       %{!pthreads:%{!pthread:%{threads:-lthread}}} \
-       %{p|pg:-ldl} -lc}}"
+   %{!symbolic:\
+     %{pthreads|pthread:" \
+        LIB_THREAD_LDFLAGS_SPEC " -lpthread " LIB_TLS_SPEC "} \
+     %{!pthreads:%{!pthread:%{threads:" \
+	LIB_THREAD_LDFLAGS_SPEC " -lthread}}} \
+     %{p|pg:-ldl} -lc}"
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend.o%s crtn.o%s"

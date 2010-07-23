@@ -1,3 +1,25 @@
+2010-07-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Don't disable TLS on Solaris 8/9 by default
+	Set tga_func for Solaris 2/x86 resp. SPARC.
+	Remove duplicate parts of sparc*-sun-solaris2.* TLS check.
+	(LIB_THREAD_LDFLAGS_SPEC): Define.
+	(LIB_TLS_SPEC): Define.
+	Check for required Sun ld version.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/sol2.h (LIB_SPEC): Use LIB_THREAD_LDFLAGS_SPEC with
+	-pthread, -threads, LIB_TLS_SPEC with -pthread.
+	* doc/install.texi (Specific, *-*-solaris2*): Document use of
+	alternate thread libraries on Solaris 8.
+	Document TLS patch requirements.
+	* doc/sourcebuild.texi (Add Options): Sort alphabetically.
+	Document tls.
+
+	PR target/18788
+	* config/sol2.h (LIB_SPEC): Link with thread libraries even with
+	-shared.
+
 2010-07-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h (struct tree_base): Add nameless_flag bitfield.

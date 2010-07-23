@@ -2687,17 +2687,9 @@ foo:	.long	25
 	;;
   i[34567]86-*-*)
     case "$target" in
-      i[34567]86-*-solaris2.[89]*)
-	# TLS was introduced in the Solaris 9 4/04 release but
-	# we do not enable it by default on Solaris 9 either.
-	if test "x$enable_tls" = xyes ; then
-	  on_solaris=yes
-	else
-	  enable_tls=no;
-	fi
-	;;
       i[34567]86-*-solaris2.*)
 	on_solaris=yes
+	tga_func=___tls_get_addr
 	;;
       *)
 	on_solaris=no
@@ -2913,17 +2905,9 @@ foo:	.long	25
 	;;
   sparc*-*-*)
     case "$target" in
-      sparc*-sun-solaris2.[89]*)
-	# TLS was introduced in the Solaris 9 4/04 release but
-	# we do not enable it by default on Solaris 9 either.
-	if test "x$enable_tls" = xyes ; then
-	  on_solaris=yes
-	else
-	  enable_tls=no;
-	fi
-	;;
       sparc*-sun-solaris2.*)
 	on_solaris=yes
+	tga_func=__tls_get_addr
 	;;
       *)
 	on_solaris=no
@@ -2931,32 +2915,17 @@ foo:	.long	25
     esac
     if test x$on_solaris = xyes && test x$gas_flag = xno; then
       conftest_s='
-	.section ".tdata",#alloc,#write,#tls
-foo:	.long	25
-	.text
-	sethi	%tgd_hi22(foo), %o0
-	add	%o0, %tgd_lo10(foo), %o1
-	add	%l7, %o1, %o0, %tgd_add(foo)
-	call	__tls_get_addr, %tgd_call(foo)
-	sethi	%tldm_hi22(foo), %l1
-	add	%l1, %tldm_lo10(foo), %l2
-	add	%l7, %l2, %o0, %tldm_add(foo)
-	call	__tls_get_addr, %tldm_call(foo)
-	sethi	%tldo_hix22(foo), %l3
-	xor	%l3, %tldo_lox10(foo), %l4
-	add	%o0, %l4, %l5, %tldo_add(foo)
-	sethi	%tie_hi22(foo), %o3
-	add	%o3, %tie_lo10(foo), %o3
-	ld	[%l7 + %o3], %o2, %tie_ld(foo)
-	add	%g7, %o2, %o4, %tie_add(foo)
-	sethi	%tle_hix22(foo), %l1
-	xor	%l1, %tle_lox10(foo), %o5
-	ld	[%g7 + %o5], %o1'
+	.section ".tdata",#alloc,#write,#tls'
 	tls_first_major=0
 	tls_first_minor=0
     else
       conftest_s='
-	.section ".tdata","awT",@progbits
+	.section ".tdata","awT",@progbits'
+	tls_first_major=2
+	tls_first_minor=14
+	tls_as_opt="-32 --fatal-warnings"
+    fi
+    conftest_s="$conftest_s
 foo:	.long	25
 	.text
 	sethi	%tgd_hi22(foo), %o0
@@ -2976,11 +2945,7 @@ foo:	.long	25
 	add	%g7, %o2, %o4, %tie_add(foo)
 	sethi	%tle_hix22(foo), %l1
 	xor	%l1, %tle_lox10(foo), %o5
-	ld	[%g7 + %o5], %o1'
-	tls_first_major=2
-	tls_first_minor=14
-	tls_as_opt="-32 --fatal-warnings"
-      fi
+	ld	[%g7 + %o5], %o1"
 	;;
   xtensa*-*-*)
     conftest_s='
@@ -3007,9 +2972,95 @@ else
   [$tls_first_major,$tls_first_minor,0], [$tls_as_opt], [$conftest_s],,
   [set_have_as_tls=yes])
 fi
+case "$target" in
+  # TLS was introduced in the Solaris 9 FCS release and backported to
+  # Solaris 8 patches.  Support for GNU-style TLS on x86 was only
+  # introduced in Solaris 9 4/04, replacing the earlier Sun style that Sun
+  # ld and GCC don't support any longer.
+  *-*-solaris2.*)
+    AC_MSG_CHECKING(linker and ld.so.1 TLS support)
+    ld_tls_support=no
+    # Check ld and ld.so.1 TLS support.
+    if echo "$ld_ver" | grep GNU > /dev/null; then
+      # Assume all interesting versions of GNU ld have TLS support.
+      # FIXME: still need ld.so.1 support, i.e. ld version checks below.
+      ld_tls_support=yes
+    else
+      case "$target" in
+        # Solaris 8/x86 ld has GNU style TLS support since version 1.280.
+        i?86-*-solaris2.8)
+          min_tls_ld_vers_minor=280
+          ;;
+        # Solaris 8/SPARC ld has TLS support since version 1.272.
+        sparc*-*-solaris2.8)
+          min_tls_ld_vers_minor=272
+          ;;
+	# Solaris 9/x86 ld has GNU style TLS support since version 1.374.
+        i?86-*-solaris2.9)
+          min_tls_ld_vers_minor=374
+          ;;
+	# Solaris 9/SPARC and Solaris 10+ ld have TLS support since FCS.
+        sparc*-*-solaris2.9 | *-*-solaris2.1[[0-9]]*)
+	  min_tls_ld_vers_minor=343
+          ;;
+      esac
+      if test "$ls_vers_major" -gt 1 || \
+        test "$ld_vers_minor" -ge "$min_tls_ld_vers_minor"; then
+ 	ld_tls_support=yes
+      else
+        set_have_as_tls=no
+      fi
+    fi
+    AC_MSG_RESULT($ld_tls_support)
+
+    save_LIBS="$LIBS"
+    save_LDFLAGS="$LDFLAGS"
+    LIBS=
+    LDFLAGS=
+
+    AC_MSG_CHECKING(alternate thread library)
+    case "$target" in
+      # TLS support was backported to Solaris 8 patches, but only lives in
+      # the alternate thread library which became the default in Solaris 9. 
+      # We want to always use that, irrespective of TLS support.
+      *-*-solaris2.8)
+        # Take multilib subdir into account.  There's no spec to handle
+	# this.  The 64 symlink exists since Solaris 8.
+        lwp_dir=/usr/lib/lwp
+	lwp_spec="-L$lwp_dir%{m64:/64} -R$lwp_dir%{m64:/64}"
+        LDFLAGS="-L$lwp_dir -R$lwp_dir"
+        ;;
+      *-*-solaris2*)
+        lwp_dir="none"
+	lwp_spec=""
+	;;
+    esac    
+    # Always define LIB_THREAD_LDFLAGS_SPEC, even without TLS support.
+    AC_DEFINE_UNQUOTED(LIB_THREAD_LDFLAGS_SPEC, "$lwp_spec",
+        [Define to the linker flags to use for -pthread.])
+    AC_MSG_RESULT($lwp_dir)
+
+    AC_MSG_CHECKING(library containing $tga_func)
+    # Before Solaris 10, __tls_get_addr (SPARC/x64) resp. ___tls_get_addr
+    # (32-bit x86) only lived in libthread, so check for that.  Keep
+    # set_have_as_tls if found, disable if not.
+    AC_SEARCH_LIBS([$tga_func], [thread],, [set_have_as_tls=no])
+    # Clear LIBS if we cannot support TLS.
+    if test $set_have_as_tls = no; then
+      LIBS=
+    fi
+    # Always define LIB_TLS_SPEC, even without TLS support.
+    AC_DEFINE_UNQUOTED(LIB_TLS_SPEC, "$LIBS",
+        [Define to the library containing __tls_get_addr/___tls_get_addr.])
+    AC_MSG_RESULT($LIBS)
+
+    LIBS="$save_LIBS"
+    LDFLAGS="$save_LDFLAGS"
+    ;;
+esac
 if test $set_have_as_tls = yes ; then
   AC_DEFINE(HAVE_AS_TLS, 1,
-	    [Define if your assembler supports thread-local storage.])
+	    [Define if your assembler and linker support thread-local storage.])
 fi
 
 # Target-specific assembler checks.

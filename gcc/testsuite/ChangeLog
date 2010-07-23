@@ -1,3 +1,22 @@
+2010-07-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp (add_options_for_tls): New proc.
+	* g++.dg/tls/static-1.C: Use dg-add-options tls.
+	* g++.dg/tls/static-1a.cc: Likewise.
+	* gcc.dg/tls/emutls-1.c: Likewise.
+	* gcc.dg/tls/opt-11.c: Likewise.
+	* gcc.dg/tls/opt-12.c: Likewise.
+	* gcc.dg/tls/pr24428-2.c: Likewise.
+	* gcc.dg/tls/pr24428.c: Likewise.
+	* obj-c++.dg/tls/static-1.mm: Likewise.
+	* obj-c++.dg/torture/tls/thr-init-1.mm: Likewise.
+	* obj-c++.dg/torture/tls/thr-init-2.mm: Likewise.
+	* obj-c++.dg/torture/tls/thr-init-3.mm: Likewise.
+	* objc.dg/torture/tls/thr-init-2.m: Likewise.
+	* objc.dg/torture/tls/thr-init-3.m: Likewise.
+	* objc.dg/torture/tls/thr-init.m: Likewise.
+	* gcc.dg/lto/20090210_0.c: Add -pthread for *-*-solaris2.[89].
+
 2010-07-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/tree-ssa/loadpre6.c: Cleanup fre dump file.
