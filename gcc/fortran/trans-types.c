@@ -1546,6 +1546,7 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted)
 
   sprintf (name, "array_descriptor" GFC_RANK_PRINTF_FORMAT, dimen + codimen);
   TYPE_NAME (fat_type) = get_identifier (name);
+  TYPE_NAMELESS (fat_type) = 1;
 
   /* Add the data member as the first element of the descriptor.  */
   decl = gfc_add_field_to_struct_1 (fat_type,
@@ -1616,6 +1617,7 @@ gfc_get_array_type_bounds (tree etype, int dimen, int codimen, tree * lbound,
   sprintf (name, "array" GFC_RANK_PRINTF_FORMAT "_%.*s", dimen + codimen,
 	   GFC_MAX_SYMBOL_LEN, type_name);
   TYPE_NAME (fat_type) = get_identifier (name);
+  TYPE_NAMELESS (fat_type) = 1;
 
   GFC_DESCRIPTOR_TYPE_P (fat_type) = 1;
   TYPE_LANG_SPECIFIC (fat_type)
