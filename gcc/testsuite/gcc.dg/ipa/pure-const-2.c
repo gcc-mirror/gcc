@@ -26,3 +26,5 @@ main(void)
 }
 /* { dg-final { scan-tree-dump "found to be pure: i_am_pure" "local-pure-const1"} } */
 /* { dg-final { scan-tree-dump-not "i_am_pure" "optimized"} } */
+/* { dg-final { cleanup-tree-dump "local-pure-const1" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */
