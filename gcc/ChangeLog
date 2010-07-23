@@ -1,3 +1,7 @@
+2010-07-10   Andi Kleen <ak@linux.intel.com>
+
+	* lto-opts.c (lto_read_file_options): Check for missing section.
+
 2010-07-22  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* ira.c (check_allocation): Correctly handle the case where an allocno
