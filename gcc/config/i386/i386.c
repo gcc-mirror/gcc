@@ -30012,7 +30012,7 @@ ix86_vectorize_builtin_vec_perm (tree vec_type, tree *mask_type)
   tree itype = TREE_TYPE (vec_type);
   bool u = TYPE_UNSIGNED (itype);
   enum machine_mode vmode = TYPE_MODE (vec_type);
-  enum ix86_builtins fcode = fcode; /* Silence bogus warning.  */
+  enum ix86_builtins fcode;
   bool ok = TARGET_SSE2;
 
   switch (vmode)
