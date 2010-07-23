@@ -2081,7 +2081,7 @@ gnat_types_compatible_p (tree t1, tree t2)
     return 1;
 
   /* Array types are also compatible if they are constrained and have the same
-     domain and compatible component types.  */
+     domain(s) and the same component type.  */
   if (code == ARRAY_TYPE
       && (TYPE_DOMAIN (t1) == TYPE_DOMAIN (t2)
 	  || (TYPE_DOMAIN (t1)
@@ -2090,7 +2090,9 @@ gnat_types_compatible_p (tree t1, tree t2)
 				     TYPE_MIN_VALUE (TYPE_DOMAIN (t2)))
 	      && tree_int_cst_equal (TYPE_MAX_VALUE (TYPE_DOMAIN (t1)),
 				     TYPE_MAX_VALUE (TYPE_DOMAIN (t2)))))
-      && gnat_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+      && (TREE_TYPE (t1) == TREE_TYPE (t2)
+	  || (TREE_CODE (TREE_TYPE (t1)) == ARRAY_TYPE
+	      && gnat_types_compatible_p (TREE_TYPE (t1), TREE_TYPE (t2)))))
     return 1;
 
   /* Padding record types are also compatible if they pad the same

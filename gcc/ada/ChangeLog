@@ -1,3 +1,8 @@
+2010-07-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (gnat_types_compatible_p): Revert latest change
+	and recurse only for multidimensional array types instead.
+
 2010-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/44892
