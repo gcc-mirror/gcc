@@ -1862,6 +1862,7 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
     = get_vectype_for_scalar_type (TREE_TYPE (gimple_assign_lhs (stmt)));
   if (CONVERT_EXPR_CODE_P (code)
       && (!vectype_in
+	  || !vectype_out      
 	  || (TYPE_VECTOR_SUBPARTS (vectype_out)
 	      != TYPE_VECTOR_SUBPARTS (vectype_in))
 	  || (GET_MODE_SIZE (TYPE_MODE (vectype_out))

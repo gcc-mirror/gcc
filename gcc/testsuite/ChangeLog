@@ -1,3 +1,8 @@
+2010-07-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/45047
+	* gcc.c-torture/compile/pr45047.c: New test.
+
 2010-07-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/45008
