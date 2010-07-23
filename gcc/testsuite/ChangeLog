@@ -1,3 +1,9 @@
+2010-07-23  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/44709
+	* gfortran.dg/exit_1.f08: New test.
+	* gfortran.dg/exit_2.f08: New test.
+
 2010-07-22  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR tree-optimization/39839
