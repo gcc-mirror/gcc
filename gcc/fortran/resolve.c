@@ -1824,6 +1824,8 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 	&& not_in_recursive (sym, gsym->ns)
 	&& not_entry_self_reference (sym, gsym->ns))
     {
+      gfc_symbol *def_sym;
+
       /* Resolve the gsymbol namespace if needed.  */
       if (!gsym->ns->resolved)
 	{
@@ -1858,12 +1860,24 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 	    }
 	}
 
+      def_sym = gsym->ns->proc_name;
+      if (def_sym->attr.entry_master)
+	{
+	  gfc_entry_list *entry;
+	  for (entry = gsym->ns->entries; entry; entry = entry->next)
+	    if (strcmp (entry->sym->name, sym->name) == 0)
+	      {
+		def_sym = entry->sym;
+		break;
+	      }
+	}
+
       /* Differences in constant character lengths.  */
       if (sym->attr.function && sym->ts.type == BT_CHARACTER)
 	{
 	  long int l1 = 0, l2 = 0;
 	  gfc_charlen *cl1 = sym->ts.u.cl;
-	  gfc_charlen *cl2 = gsym->ns->proc_name->ts.u.cl;
+	  gfc_charlen *cl2 = def_sym->ts.u.cl;
 
 	  if (cl1 != NULL
 	      && cl1->length != NULL
@@ -1883,14 +1897,14 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 
      /* Type mismatch of function return type and expected type.  */
      if (sym->attr.function
-	 && !gfc_compare_types (&sym->ts, &gsym->ns->proc_name->ts))
+	 && !gfc_compare_types (&sym->ts, &def_sym->ts))
 	gfc_error ("Return type mismatch of function '%s' at %L (%s/%s)",
 		   sym->name, &sym->declared_at, gfc_typename (&sym->ts),
-		   gfc_typename (&gsym->ns->proc_name->ts));
+		   gfc_typename (&def_sym->ts));
 
-      if (gsym->ns->proc_name->formal)
+      if (def_sym->formal)
 	{
-	  gfc_formal_arglist *arg = gsym->ns->proc_name->formal;
+	  gfc_formal_arglist *arg = def_sym->formal;
 	  for ( ; arg; arg = arg->next)
 	    if (!arg->sym)
 	      continue;
@@ -1945,26 +1959,25 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 	      }
 	}
 
-      if (gsym->ns->proc_name->attr.function)
+      if (def_sym->attr.function)
 	{
 	  /* F2003, 12.3.1.1 (3a); F2008, 12.4.2.2 (3a) */
-	  if (gsym->ns->proc_name->as
-	      && gsym->ns->proc_name->as->rank
-	      && (!sym->as || sym->as->rank != gsym->ns->proc_name->as->rank))
+	  if (def_sym->as && def_sym->as->rank
+	      && (!sym->as || sym->as->rank != def_sym->as->rank))
 	    gfc_error ("The reference to function '%s' at %L either needs an "
 		       "explicit INTERFACE or the rank is incorrect", sym->name,
 		       where);
 
 	  /* F2003, 12.3.1.1 (3b); F2008, 12.4.2.2 (3b) */
-	  if (gsym->ns->proc_name->result->attr.pointer
-	      || gsym->ns->proc_name->result->attr.allocatable)
+	  if (def_sym->result->attr.pointer
+	      || def_sym->result->attr.allocatable)
 	    gfc_error ("Function '%s' at %L with a POINTER or ALLOCATABLE "
 		       "result must have an explicit interface", sym->name,
 		       where);
 
 	  /* F2003, 12.3.1.1 (3c); F2008, 12.4.2.2 (3c)  */
 	  if (sym->ts.type == BT_CHARACTER
-	      && gsym->ns->proc_name->ts.u.cl->length != NULL)
+	      && def_sym->ts.u.cl->length != NULL)
 	    {
 	      gfc_charlen *cl = sym->ts.u.cl;
 
@@ -1979,14 +1992,14 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 	}
 
       /* F2003, 12.3.1.1 (4); F2008, 12.4.2.2 (4) */
-      if (gsym->ns->proc_name->attr.elemental)
+      if (def_sym->attr.elemental)
 	{
 	  gfc_error ("ELEMENTAL procedure '%s' at %L must have an explicit "
 		     "interface", sym->name, &sym->declared_at);
 	}
 
       /* F2003, 12.3.1.1 (5); F2008, 12.4.2.2 (5) */
-      if (gsym->ns->proc_name->attr.is_bind_c)
+      if (def_sym->attr.is_bind_c)
 	{
 	  gfc_error ("Procedure '%s' at %L with BIND(C) attribute must have "
 		     "an explicit interface", sym->name, &sym->declared_at);
@@ -1997,7 +2010,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 	      && !(gfc_option.warn_std & GFC_STD_GNU)))
 	gfc_errors_to_warnings (1);
 
-      gfc_procedure_use (gsym->ns->proc_name, actual, where);
+      gfc_procedure_use (def_sym, actual, where);
 
       gfc_errors_to_warnings (0);
     }
