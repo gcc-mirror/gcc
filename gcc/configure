@@ -646,6 +646,8 @@ extra_passes
 extra_parts
 extra_objs
 extra_headers_list
+user_headers_inc_next_post
+user_headers_inc_next_pre
 extra_gcc_objs
 TM_MULTILIB_EXCEPTIONS_CONFIG
 TM_MULTILIB_CONFIG
@@ -17107,7 +17109,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17110 "configure"
+#line 17112 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17213,7 +17215,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17216 "configure"
+#line 17218 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -25513,6 +25515,8 @@ fi
 
 
 # Substitute configuration variables
+
+
 
 
 

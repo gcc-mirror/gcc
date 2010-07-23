@@ -1,3 +1,17 @@
+2010-07-23  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR target/41943
+	* Makefile.in (USER_H_INC_NEXT_PRE,
+	USER_H_INC_NEXT_POST): New.
+	(stmp-int-hdrs): Prefix/postfix headers by include_next.
+	* config.gcc (user_headers_inc_next_pre): New.
+	(user_headers_inc_next_post): Likewise.
+	(*-w64-mingw*): Use for float.h post-fixing, and for
+	stddef.h/stdarg.h pre-fixing by include_next.
+	* configure.ac (user_headers_inc_next_post): New.
+	(user_headers_inc_next_pre): New.
+	* configure: Regenerated.
+
 2010-07-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac: Don't disable TLS on Solaris 8/9 by default
