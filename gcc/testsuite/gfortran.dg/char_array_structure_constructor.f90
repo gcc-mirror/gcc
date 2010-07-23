@@ -1,4 +1,9 @@
 ! { dg-do run }
+! { dg-options "-fwhole-file" }
+!
+! PR fortran/19107
+! -fwhole-file flag added for PR fortran/44945
+!
 ! This test the fix of PR19107, where character array actual
 ! arguments in derived type constructors caused an ICE.
 ! It also checks that the scalar counterparts are OK.

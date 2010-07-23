@@ -1884,8 +1884,8 @@ gfc_add_field_to_struct (tree context, tree name, tree type, tree **chain)
    the two derived type symbols are "equal", as described
    in 4.4.2 and resolved by gfc_compare_derived_types.  */
 
-static int
-copy_dt_decls_ifequal (gfc_symbol *from, gfc_symbol *to,
+int
+gfc_copy_dt_decls_ifequal (gfc_symbol *from, gfc_symbol *to,
 		       bool from_gsym)
 {
   gfc_component *to_cm;
@@ -1996,7 +1996,7 @@ gfc_get_derived_type (gfc_symbol * derived)
 	  gfc_find_symbol (derived->name, gsym->ns, 0, &s);
 	  if (s && s->backend_decl)
 	    {
-	      copy_dt_decls_ifequal (s, derived, true);
+	      gfc_copy_dt_decls_ifequal (s, derived, true);
 	      goto copy_derived_types;
 	    }
 	}
@@ -2016,7 +2016,7 @@ gfc_get_derived_type (gfc_symbol * derived)
 	  dt = ns->derived_types;
 	  for (; dt && !canonical; dt = dt->next)
 	    {
-	      copy_dt_decls_ifequal (dt->derived, derived, true);
+	      gfc_copy_dt_decls_ifequal (dt->derived, derived, true);
 	      if (derived->backend_decl)
 		got_canonical = true;
 	    }
@@ -2183,7 +2183,7 @@ gfc_get_derived_type (gfc_symbol * derived)
 copy_derived_types:
 
   for (dt = gfc_derived_types; dt; dt = dt->next)
-    copy_dt_decls_ifequal (derived, dt->derived, false);
+    gfc_copy_dt_decls_ifequal (derived, dt->derived, false);
 
   return derived->backend_decl;
 }
