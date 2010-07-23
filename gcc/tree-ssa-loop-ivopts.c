@@ -5604,11 +5604,13 @@ copy_ref_info (tree new_ref, tree old_ref)
       && !SSA_NAME_PTR_INFO (new_ptr_base))
     {
       tree base = get_base_address (old_ref);
-      if ((INDIRECT_REF_P (base)
-	   || TREE_CODE (base) == MEM_REF)
-	  && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
+      if (!base)
+	;
+      else if ((INDIRECT_REF_P (base)
+		|| TREE_CODE (base) == MEM_REF)
+	       && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
 	duplicate_ssa_name_ptr_info
-	    (new_ptr_base, SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0)));
+	  (new_ptr_base, SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0)));
       else if (TREE_CODE (base) == VAR_DECL
 	       || TREE_CODE (base) == PARM_DECL
 	       || TREE_CODE (base) == RESULT_DECL)

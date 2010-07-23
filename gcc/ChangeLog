@@ -1,3 +1,8 @@
+2010-07-23  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45037
+	* tree-ssa-loop-ivopts.c (copy_ref_info): Handle NULL base.
+
 2010-07-23  Jie Zhang  <jie@codesourcery.com>
 
 	* doc/extend.texi: Remove IP2K from the description of naked
