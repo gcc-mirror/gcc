@@ -158,31 +158,6 @@ lto_elf_free_shdr (Elf64_Shdr *shdr)
     free (shdr);
 }
 
-
-/* Returns a hash code for P.  */
-
-static hashval_t
-hash_name (const void *p)
-{
-  const struct lto_section_slot *ds = (const struct lto_section_slot *) p;
-  return (hashval_t) htab_hash_string (ds->name);
-}
-
-
-/* Returns nonzero if P1 and P2 are equal.  */
-
-static int
-eq_name (const void *p1, const void *p2)
-{
-  const struct lto_section_slot *s1 =
-    (const struct lto_section_slot *) p1;
-  const struct lto_section_slot *s2 =
-    (const struct lto_section_slot *) p2;
-
-  return strcmp (s1->name, s2->name) == 0;
-}
-
-
 /* Build a hash table whose key is the section names and whose data is
    the start and size of each section in the .o file.  */
 
@@ -194,7 +169,7 @@ lto_obj_build_section_table (lto_file *lto_file)
   Elf_Scn *section;
   size_t base_offset;
 
-  section_hash_table = htab_create (37, hash_name, eq_name, free);
+  section_hash_table = lto_obj_create_section_hash_table ();
 
   base_offset = elf_getbase (elf_file->elf);
   /* We are reasonably sure that elf_getbase does not fail at this

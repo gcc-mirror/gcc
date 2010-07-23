@@ -60,6 +60,47 @@ along with GCC; see the file COPYING3.  If not see
 
 static GTY(()) tree first_personality_decl;
 
+/* Returns a hash code for P.  */
+
+static hashval_t
+hash_name (const void *p)
+{
+  const struct lto_section_slot *ds = (const struct lto_section_slot *) p;
+  return (hashval_t) htab_hash_string (ds->name);
+}
+
+
+/* Returns nonzero if P1 and P2 are equal.  */
+
+static int
+eq_name (const void *p1, const void *p2)
+{
+  const struct lto_section_slot *s1 =
+    (const struct lto_section_slot *) p1;
+  const struct lto_section_slot *s2 =
+    (const struct lto_section_slot *) p2;
+
+  return strcmp (s1->name, s2->name) == 0;
+}
+
+/* Free lto_section_slot */
+
+static void
+free_with_string (void *arg)
+{
+  struct lto_section_slot *s = (struct lto_section_slot *)arg;
+
+  free (CONST_CAST (char *, s->name));
+  free (arg);
+}
+
+/* Create section hash table */
+
+htab_t 
+lto_obj_create_section_hash_table (void)
+{
+  return htab_create (37, hash_name, eq_name, free_with_string);
+}
 
 /* Read the constructors and inits.  */
 

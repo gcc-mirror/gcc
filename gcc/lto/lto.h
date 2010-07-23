@@ -44,6 +44,7 @@ extern void lto_read_all_file_options (void);
 extern lto_file *lto_obj_file_open (const char *filename, bool writable);
 extern void lto_obj_file_close (lto_file *file);
 extern htab_t lto_obj_build_section_table (lto_file *file);
+extern htab_t lto_obj_create_section_hash_table (void);
 extern void lto_obj_begin_section (const char *name);
 extern void lto_obj_append_data (const void *data, size_t len, void *block);
 extern void lto_obj_end_section (void);
