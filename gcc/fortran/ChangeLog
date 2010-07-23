@@ -1,3 +1,11 @@
+2010-07-23  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/44709
+	* gfortran.h (gfc_find_symtree_in_proc): New method.
+	* symbol.c (gfc_find_symtree_in_proc): New method.
+	* match.c (match_exit_cycle): Look for loop name also in parent
+	namespaces within current procedure.
+
 2010-07-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45019

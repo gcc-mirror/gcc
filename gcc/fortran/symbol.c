@@ -2565,6 +2565,27 @@ select_type_insert_tmp (gfc_symtree **st)
 }
 
 
+/* Look for a symtree in the current procedure -- that is, go up to
+   parent namespaces but only if inside a BLOCK.  Returns NULL if not found.  */
+
+gfc_symtree*
+gfc_find_symtree_in_proc (const char* name, gfc_namespace* ns)
+{
+  while (ns)
+    {
+      gfc_symtree* st = gfc_find_symtree (ns->sym_root, name);
+      if (st)
+	return st;
+
+      if (!ns->construct_entities)
+	break;
+      ns = ns->parent;
+    }
+
+  return NULL;
+}
+
+
 /* Search for a symtree starting in the current namespace, resorting to
    any parent namespaces if requested by a nonzero parent_flag.
    Returns nonzero if the name is ambiguous.  */

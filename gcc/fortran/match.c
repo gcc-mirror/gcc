@@ -2006,7 +2006,10 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
     sym = NULL;
   else
     {
-      m = gfc_match ("% %s%t", &sym);
+      char name[GFC_MAX_SYMBOL_LEN + 1];
+      gfc_symtree* stree;
+
+      m = gfc_match ("% %n%t", name);
       if (m == MATCH_ERROR)
 	return MATCH_ERROR;
       if (m == MATCH_NO)
@@ -2015,10 +2018,22 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 	  return MATCH_ERROR;
 	}
 
+      /* Find the corresponding symbol.  If there's a BLOCK statement
+	 between here and the label, it is not in gfc_current_ns but a parent
+	 namespace!  */
+      stree = gfc_find_symtree_in_proc (name, gfc_current_ns);
+      if (!stree)
+	{
+	  gfc_error ("Name '%s' in %s statement at %C is unknown",
+		     name, gfc_ascii_statement (st));
+	  return MATCH_ERROR;
+	}
+
+      sym = stree->n.sym;
       if (sym->attr.flavor != FL_LABEL)
 	{
 	  gfc_error ("Name '%s' in %s statement at %C is not a loop name",
-		     sym->name, gfc_ascii_statement (st));
+		     name, gfc_ascii_statement (st));
 	  return MATCH_ERROR;
 	}
     }
