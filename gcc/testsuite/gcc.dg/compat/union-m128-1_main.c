@@ -1,6 +1,5 @@
 /* { dg-skip-if "test SSE2 support" { ! { i?86-*-* x86_64-*-* } } } */
 /* { dg-options "-O" } */
-/* { dg-require-effective-target sse2 } */
 /* { dg-require-effective-target sse2_runtime } */
 
 /* Test function argument passing.  PR target/15301.  */

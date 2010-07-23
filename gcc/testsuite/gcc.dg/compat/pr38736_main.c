@@ -1,6 +1,6 @@
 /* PR target/38736 */
 /* { dg-skip-if "attribute ((aligned))" { ! { i?86-*-* x86_64-*-* } } } */
-/* { dg-require-effective-target avx } */
+/* { dg-require-effective-target avx_runtime } */
 
 /* Test compatibility of attribute ((aligned)) with and without -mavx.  */
 

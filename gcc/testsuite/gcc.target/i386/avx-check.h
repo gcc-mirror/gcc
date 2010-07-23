@@ -20,7 +20,7 @@ main ()
     return 0;
 
   /* Run AVX test only if host has AVX support.  */
-  if (ecx & bit_AVX)
+  if ((ecx & (bit_AVX | bit_OSXSAVE)) == (bit_AVX | bit_OSXSAVE))
     {
       do_test ();
 #ifdef DEBUG
