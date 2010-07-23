@@ -366,6 +366,9 @@ USER_H = $(srcdir)/ginclude/float.h \
 	 $(srcdir)/ginclude/stdfix.h \
 	 $(EXTRA_HEADERS)
 
+USER_H_INC_NEXT_PRE = @user_headers_inc_next_pre@
+USER_H_INC_NEXT_POST = @user_headers_inc_next_post@
+
 UNWIND_H = $(srcdir)/unwind-generic.h
 
 # The GCC to use for compiling crt*.o.
@@ -4012,6 +4015,21 @@ stmp-int-hdrs: $(STMP_FIXINC) $(USER_H) $(UNWIND_H) fixinc_list
 	    rm -f include/$$realfile; \
 	    cp $$file include; \
 	    chmod a+r include/$$realfile; \
+	  fi; \
+	done
+	for file in .. $(USER_H_INC_NEXT_PRE); do \
+	  if [ X$$file != X.. ]; then \
+            mv include/$$file include/x_$$file; \
+            echo "#include_next <$$file>" >include/$$file; \
+            cat include/x_$$file >>include/$$file; \
+            rm -f include/x_$$file; \
+	    chmod a+r include/$$file; \
+	  fi; \
+	done
+	for file in .. $(USER_H_INC_NEXT_POST); do \
+	  if [ X$$file != X.. ]; then \
+	    echo "#include_next <$$file>" >>include/$$file; \
+	    chmod a+r include/$$file; \
 	  fi; \
 	done
 	rm -f include/unwind.h
