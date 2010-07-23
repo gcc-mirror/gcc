@@ -1,5 +1,5 @@
 // PR c++/40373
-// { dg-compile }
+// { dg-do compile }
 
 struct A;
 namespace

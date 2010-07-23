@@ -1,4 +1,4 @@
-! { dg-compile }
+! { dg-do compile }
 ! { dg-options "-fgraphite -O -ffast-math" }
 
 MODULE powell

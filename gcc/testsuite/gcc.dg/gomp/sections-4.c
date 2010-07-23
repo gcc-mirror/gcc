@@ -1,5 +1,5 @@
 /* PR c++/24613 */
-/* { dg-compile } */
+/* { dg-do compile } */
 
 #pragma omp section	/* { dg-error "may only be used in" } */
 
