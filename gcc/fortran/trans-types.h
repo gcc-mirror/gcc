@@ -64,6 +64,7 @@ tree gfc_get_character_type_len_for_eltype (tree, tree);
 
 tree gfc_sym_type (gfc_symbol *);
 tree gfc_typenode_for_spec (gfc_typespec *);
+int gfc_copy_dt_decls_ifequal (gfc_symbol *, gfc_symbol *, bool);
 
 tree gfc_get_function_type (gfc_symbol *);
 

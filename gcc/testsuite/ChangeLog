@@ -1,3 +1,10 @@
+2010-07-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/44945
+	* gfortran.dg/char_array_structure_constructor.f90: Add
+	-fwhole-file as dg-option as it otherwise fails on some
+	systems.
+
 2010-07-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/aggr16.ad[sb]: New test.

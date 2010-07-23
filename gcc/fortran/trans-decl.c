@@ -1129,11 +1129,9 @@ gfc_get_symbol_decl (gfc_symbol * sym)
     return sym->backend_decl;
 
   /* If use associated and whole file compilation, use the module
-     declaration.  This is only needed for intrinsic types because
-     they are substituted for one another during optimization.  */
+     declaration.  */
   if (gfc_option.flag_whole_file
 	&& sym->attr.flavor == FL_VARIABLE
-	&& sym->ts.type != BT_DERIVED
 	&& sym->attr.use_assoc
 	&& sym->module)
     {
@@ -1147,6 +1145,9 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	  gfc_find_symbol (sym->name, gsym->ns, 0, &s);
 	  if (s && s->backend_decl)
 	    {
+	      if (sym->ts.type == BT_DERIVED)
+		gfc_copy_dt_decls_ifequal (s->ts.u.derived, sym->ts.u.derived,
+					   true);
 	      if (sym->ts.type == BT_CHARACTER)
 		sym->ts.u.cl->backend_decl = s->ts.u.cl->backend_decl;
 	      return s->backend_decl;
