@@ -727,6 +727,19 @@ gfc_check_dependency (gfc_expr *expr1, gfc_expr *expr2, bool identical)
 	  /* TODO: -fassume-no-pointer-aliasing */
 	  if (gfc_is_data_pointer (expr1) || gfc_is_data_pointer (expr2))
 	    return 1;
+	  else
+	    {
+	      gfc_symbol *sym1 = expr1->symtree->n.sym;
+	      gfc_symbol *sym2 = expr2->symtree->n.sym;
+	      if (sym1->attr.target && sym2->attr.target
+		  && ((sym1->attr.dummy
+		       && (!sym1->attr.dimension
+		           || sym2->as->type == AS_ASSUMED_SHAPE))
+		      || (sym2->attr.dummy
+			  && (!sym2->attr.dimension
+			      || sym2->as->type == AS_ASSUMED_SHAPE))))
+		return 1;
+	    }
 
 	  /* Otherwise distinct symbols have no dependencies.  */
 	  return 0;

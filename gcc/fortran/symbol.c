@@ -2673,6 +2673,17 @@ gfc_symbols_could_alias (gfc_symbol *lsym, gfc_symbol *rsym)
   if (lsym->attr.allocatable && rsym->attr.pointer)
     return 1;
 
+  /* Special case: Argument association, cf. F90 12.4.1.6, F2003 12.4.1.7
+     and F2008 12.5.2.13 items 3b and 4b. The pointer case (a) is already
+     checked above.  */
+  if (lsym->attr.target && rsym->attr.target
+      && ((lsym->attr.dummy
+	   && (!lsym->attr.dimension || lsym->as->type == AS_ASSUMED_SHAPE))
+	  || (rsym->attr.dummy
+	      && (!rsym->attr.dimension
+		  || rsym->as->type == AS_ASSUMED_SHAPE))))
+    return 1;
+
   return 0;
 }
 
