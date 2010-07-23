@@ -1,3 +1,15 @@
+2010-07-23  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* builtins.def (BUILT_IN_ARGS_INFO): Remove.
+	* ipa-pure-const.c (special_builtlin_state): Remove
+	BUILT_IN_ARGS_INFO case.
+	* tree-stdarg.c (execute_optimize_stdarg): Likewise.
+	* builtins.c (expand_builtin): Likewise.
+	(expand_builtin_args_info): Remove.
+	* doc/tm.texi (__builtin_args_info): Remove.
+	(__builtin_next_arg): Adjust to not refer to __builtin_args_info.
+	* doc/tm.text.in: Likewise.
+
 2010-07-23  Richard Guenther  <rguenther@suse.de>
 
 	* lto-symtab.c (lto_symtab_merge): Use gtc_mode enum

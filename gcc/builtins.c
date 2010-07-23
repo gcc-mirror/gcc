@@ -111,7 +111,6 @@ static rtx expand_builtin_sincos (tree);
 static rtx expand_builtin_cexpi (tree, rtx, rtx);
 static rtx expand_builtin_int_roundingfn (tree, rtx);
 static rtx expand_builtin_int_roundingfn_2 (tree, rtx);
-static rtx expand_builtin_args_info (tree);
 static rtx expand_builtin_next_arg (void);
 static rtx expand_builtin_va_start (tree);
 static rtx expand_builtin_va_end (tree);
@@ -4398,38 +4397,6 @@ expand_builtin_saveregs (void)
   return val;
 }
 
-/* __builtin_args_info (N) returns word N of the arg space info
-   for the current function.  The number and meanings of words
-   is controlled by the definition of CUMULATIVE_ARGS.  */
-
-static rtx
-expand_builtin_args_info (tree exp)
-{
-  int nwords = sizeof (CUMULATIVE_ARGS) / sizeof (int);
-  int *word_ptr = (int *) &crtl->args.info;
-
-  gcc_assert (sizeof (CUMULATIVE_ARGS) % sizeof (int) == 0);
-
-  if (call_expr_nargs (exp) != 0)
-    {
-      if (!host_integerp (CALL_EXPR_ARG (exp, 0), 0))
-	error ("argument of %<__builtin_args_info%> must be constant");
-      else
-	{
-	  HOST_WIDE_INT wordnum = tree_low_cst (CALL_EXPR_ARG (exp, 0), 0);
-
-	  if (wordnum < 0 || wordnum >= nwords)
-	    error ("argument of %<__builtin_args_info%> out of range");
-	  else
-	    return GEN_INT (word_ptr[wordnum]);
-	}
-    }
-  else
-    error ("missing argument in %<__builtin_args_info%>");
-
-  return const0_rtx;
-}
-
 /* Expand a call to __builtin_next_arg.  */
 
 static rtx
@@ -5924,9 +5891,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 
     case BUILT_IN_SAVEREGS:
       return expand_builtin_saveregs ();
-
-    case BUILT_IN_ARGS_INFO:
-      return expand_builtin_args_info (exp);
 
     case BUILT_IN_VA_ARG_PACK:
       /* All valid uses of __builtin_va_arg_pack () are removed during
