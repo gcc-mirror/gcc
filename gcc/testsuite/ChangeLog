@@ -1,3 +1,8 @@
+2010-07-23  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/43071
+	* g++.dg/lto/20100723-1_0.C: New testcase.
+
 2010-07-23  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/aes-avx-check.h (main): Require OSXSAVE for

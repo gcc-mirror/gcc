@@ -752,6 +752,7 @@ proper position among the other output files.  */
     %{static|static-libgcc:-plugin-opt=-pass-through=%(lto_libgcc)}	\
     %{static:-plugin-opt=-pass-through=-lc}	\
     } \
+    %{flto:%<fcompare-debug*} %{fwhopr*:%<fcompare-debug*} \
     %{flto} %{fwhopr*} %l " LINK_PIE_SPEC \
    "%X %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} %{r}\
     %{s} %{t} %{u*} %{x} %{z} %{Z} %{!A:%{!nostdlib:%{!nostartfiles:%S}}}\
