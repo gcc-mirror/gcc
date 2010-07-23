@@ -1563,6 +1563,7 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
   TREE_STATIC (decl) = 1;
   TREE_USED (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
+  DECL_NAMELESS (decl) = 1;
   DECL_IGNORED_P (decl) = 0;
   TREE_PUBLIC (decl) = 0;
   DECL_UNINLINABLE (decl) = 1;
@@ -1580,6 +1581,7 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
   t = build_decl (DECL_SOURCE_LOCATION (decl),
 		  PARM_DECL, get_identifier (".omp_data_i"), ptr_type_node);
   DECL_ARTIFICIAL (t) = 1;
+  DECL_NAMELESS (t) = 1;
   DECL_ARG_TYPE (t) = ptr_type_node;
   DECL_CONTEXT (t) = current_function_decl;
   TREE_USED (t) = 1;
@@ -1592,6 +1594,7 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
 		      PARM_DECL, get_identifier (".omp_data_o"),
 		      ptr_type_node);
       DECL_ARTIFICIAL (t) = 1;
+      DECL_NAMELESS (t) = 1;
       DECL_ARG_TYPE (t) = ptr_type_node;
       DECL_CONTEXT (t) = current_function_decl;
       TREE_USED (t) = 1;
@@ -1638,6 +1641,8 @@ scan_omp_parallel (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
   name = create_tmp_var_name (".omp_data_s");
   name = build_decl (gimple_location (stmt),
 		     TYPE_DECL, name, ctx->record_type);
+  DECL_ARTIFICIAL (name) = 1;
+  DECL_NAMELESS (name) = 1;
   TYPE_NAME (ctx->record_type) = name;
   create_omp_child_function (ctx, false);
   gimple_omp_parallel_set_child_fn (stmt, ctx->cb.dst_fn);
@@ -1681,6 +1686,8 @@ scan_omp_task (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
   name = create_tmp_var_name (".omp_data_s");
   name = build_decl (gimple_location (stmt),
 		     TYPE_DECL, name, ctx->record_type);
+  DECL_ARTIFICIAL (name) = 1;
+  DECL_NAMELESS (name) = 1;
   TYPE_NAME (ctx->record_type) = name;
   create_omp_child_function (ctx, false);
   gimple_omp_task_set_child_fn (stmt, ctx->cb.dst_fn);
@@ -1692,6 +1699,8 @@ scan_omp_task (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
       name = create_tmp_var_name (".omp_data_a");
       name = build_decl (gimple_location (stmt),
 			 TYPE_DECL, name, ctx->srecord_type);
+      DECL_ARTIFICIAL (name) = 1;
+      DECL_NAMELESS (name) = 1;
       TYPE_NAME (ctx->srecord_type) = name;
       create_omp_child_function (ctx, true);
     }
@@ -6487,6 +6496,7 @@ lower_omp_taskreg (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       ctx->sender_decl
 	= create_tmp_var (ctx->srecord_type ? ctx->srecord_type
 			  : ctx->record_type, ".omp_data_o");
+      DECL_NAMELESS (ctx->sender_decl) = 1;
       TREE_ADDRESSABLE (ctx->sender_decl) = 1;
       gimple_omp_taskreg_set_data_arg (stmt, ctx->sender_decl);
     }

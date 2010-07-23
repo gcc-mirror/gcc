@@ -1,3 +1,14 @@
+2010-07-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (struct tree_base): Add nameless_flag bitfield.
+	(TYPE_NAMELESS, DECL_NAMELESS): Define.
+	* omp-low.c (create_omp_child_function, scan_omp_parallel,
+	scan_omp_task, lower_omp_taskreg): Set DECL_NAMELESS and/or
+	DECL_ARTIFICIAL where needed.
+	* dwarf2out.c (dwarf2_name): Return NULL if DECL_NAMELESS.
+	(type_tag): Return NULL if TYPE_NAMELESS or if TYPE_DECL
+	has DECL_NAMELESS set.
+
 2010-07-23  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/44915

@@ -387,8 +387,9 @@ struct GTY(()) tree_base {
   unsigned visited : 1;
   unsigned packed_flag : 1;
   unsigned user_align : 1;
+  unsigned nameless_flag : 1;
 
-  unsigned spare : 13;
+  unsigned spare : 12;
 
   /* This field is only used with type nodes; the only reason it is present
      in tree_base instead of tree_type is to save space.  The size of the
@@ -2180,6 +2181,9 @@ extern enum machine_mode vector_type_mode (const_tree);
    the term.  */
 #define TYPE_RESTRICT(NODE) (TYPE_CHECK (NODE)->type.restrict_flag)
 
+/* If nonzero, type's name shouldn't be emitted into debug info.  */
+#define TYPE_NAMELESS(NODE) (TYPE_CHECK (NODE)->base.nameless_flag)
+
 /* The address space the type is in.  */
 #define TYPE_ADDR_SPACE(NODE) (TYPE_CHECK (NODE)->base.address_space)
 
@@ -2529,6 +2533,10 @@ struct function;
 #define DECL_CONTEXT(NODE) (DECL_MINIMAL_CHECK (NODE)->decl_minimal.context)
 #define DECL_FIELD_CONTEXT(NODE) \
   (FIELD_DECL_CHECK (NODE)->decl_minimal.context)
+
+/* If nonzero, decl's name shouldn't be emitted into debug info.  */
+#define DECL_NAMELESS(NODE) (DECL_MINIMAL_CHECK (NODE)->base.nameless_flag)
+
 struct GTY(()) tree_decl_minimal {
   struct tree_common common;
   location_t locus;

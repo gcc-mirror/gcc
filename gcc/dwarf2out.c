@@ -11249,6 +11249,8 @@ output_comdat_type_unit (comdat_type_node *node)
 static const char *
 dwarf2_name (tree decl, int scope)
 {
+  if (DECL_NAMELESS (decl))
+    return NULL;
   return lang_hooks.dwarf_name (decl, scope ? 1 : 0);
 }
 
@@ -17717,7 +17719,8 @@ type_tag (const_tree type)
       tree t = 0;
 
       /* Find the IDENTIFIER_NODE for the type name.  */
-      if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
+      if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE
+	  && !TYPE_NAMELESS (type))
 	t = TYPE_NAME (type);
 
       /* The g++ front end makes the TYPE_NAME of *each* tagged type point to
@@ -17730,7 +17733,8 @@ type_tag (const_tree type)
 	     DECL_NAME isn't set.  The default hook for decl_printable_name
 	     doesn't like that, and in this context it's correct to return
 	     0, instead of "<anonymous>" or the like.  */
-	  if (DECL_NAME (TYPE_NAME (type)))
+	  if (DECL_NAME (TYPE_NAME (type))
+	      && !DECL_NAMELESS (TYPE_NAME (type)))
 	    name = lang_hooks.dwarf_name (TYPE_NAME (type), 2);
 	}
 
