@@ -1,4 +1,9 @@
-2010-07-10   Andi Kleen <ak@linux.intel.com>
+2010-07-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/45042
+	* lto-plugin.c (translate): Cast to unsigned long.
+
+2010-07-23   Andi Kleen <ak@linux.intel.com>
 
 	PR lto/44992
 	* lto-plugin.c (sym_aux): Add.
