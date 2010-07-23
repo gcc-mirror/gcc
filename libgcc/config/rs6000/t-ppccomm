@@ -15,7 +15,9 @@ LIB2ADD_ST += crtsavfpr.S crtresfpr.S \
   e500crtsavg64gpr.S \
   e500crtsavg64gprctr.S
 
-EXTRA_PARTS += ecrti$(objext) ecrtn$(objext) ncrti$(objext) ncrtn$(objext)
+EXTRA_PARTS += crtbegin$(objext) crtend$(objext) \
+  crtbeginS$(objext) crtendS$(objext) crtbeginT$(objext) \
+  ecrti$(objext) ecrtn$(objext) ncrti$(objext) ncrtn$(objext)
 
 # We build {e,n}crti.o and {e,n}crtn.o, which serve to add begin and
 # end labels to all of the special sections used when we link using gcc.
