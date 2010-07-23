@@ -1,3 +1,8 @@
+2010-07-22  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR tree-optimization/39839
+	* gcc.target/arm/pr39839.c: New test case.
+
 2010-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/unchecked_convert5b.adb: New test.
