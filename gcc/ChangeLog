@@ -1,3 +1,8 @@
+2010-07-23  Jie Zhang  <jie@codesourcery.com>
+
+	* doc/extend.texi: Remove IP2K from the description of naked
+	attribute.  Add MCORE instead.
+
 2010-07-10   Andi Kleen <ak@linux.intel.com>
 
 	PR lto/44992
