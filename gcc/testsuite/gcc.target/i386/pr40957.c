@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target avx } */
 /* { dg-options "-O2 -mavx" } */
 
 typedef int __v8si __attribute__((__vector_size__(32)));

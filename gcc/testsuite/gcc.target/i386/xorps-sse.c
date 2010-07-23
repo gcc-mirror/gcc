@@ -1,7 +1,6 @@
 /* Test that we generate xorps instruction when pxor is not available.  */
 /* { dg-do compile } */
 /* { dg-options "-O -msse -mno-sse2" } */
-/* { dg-require-effective-target sse } */
 /* { dg-final { scan-assembler "xorps\[ \t\]" } } */
 
 #define vector __attribute__ ((vector_size (16)))

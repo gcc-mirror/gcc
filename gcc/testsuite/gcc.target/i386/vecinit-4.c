@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse2" } */
-/* { dg-require-effective-target sse2 } */
+
 #define vector __attribute__((vector_size(16)))
 
 short a;

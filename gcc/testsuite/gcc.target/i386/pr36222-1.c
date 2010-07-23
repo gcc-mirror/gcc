@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse2" } */
-/* { dg-require-effective-target sse2 } */
 
 typedef long long __m128i __attribute__ ((__vector_size__ (16), __may_alias__));
 typedef int __v4si __attribute__ ((__vector_size__ (16)));

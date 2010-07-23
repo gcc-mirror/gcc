@@ -1,7 +1,6 @@
 /* PR middle-end/37009 */
 /* { dg-do compile { target { { ! *-*-darwin* } && ilp32 } } } */
 /* { dg-options "-w -msse2 -mpreferred-stack-boundary=2" } */
-/* { dg-require-effective-target sse2 } */
 
 #include <stdarg.h>
 #include <emmintrin.h>

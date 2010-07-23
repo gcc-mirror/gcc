@@ -1,6 +1,5 @@
 /* { dg-do compile }
 /* { dg-options "-msse2 -O2 -ftree-vectorize" } */
-/* { dg-require-effective-target sse2 } */
 
 #define N 256
 int b[N];

@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse2" } */
-/* { dg-require-effective-target sse2 } */
 /* { dg-final { scan-assembler "cmpunordss" } } */
 /* { dg-final { scan-assembler "cmpunordps" } } */
 /* { dg-final { scan-assembler "cmpunordsd" } } */

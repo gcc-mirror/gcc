@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O -ftree-vectorize -msse2" } */
-/* { dg-require-effective-target sse2 } */
 
 void foo(int *p, int N)
 {

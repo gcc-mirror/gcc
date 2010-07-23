@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target sse4 } */
 /* { dg-options "-O2 -msse4.1" } */
 
 typedef char __v16qi __attribute__ ((__vector_size__ (16)));

@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse -msse2" } */
-/* { dg-require-effective-target sse2 } */
 
 /* Test that the intrinsics compile with optimization.  These were not
    tested in i386-sse-[12].c because these builtins require immediate

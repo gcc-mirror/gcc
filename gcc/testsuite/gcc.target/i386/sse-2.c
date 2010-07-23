@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -msse" } */
-/* { dg-require-effective-target sse } */
+
 #include <xmmintrin.h>
 static const __m128 v_sign = {-.0f, -.0f, -.0f, -.0f};
 static const __m128 v_half = {0.5f, 0.5f, 0.5f, 0.5f};

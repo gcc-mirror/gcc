@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-msse -mno-sse2" } */
-/* { dg-require-effective-target sse } */
 
 typedef double __v2df __attribute__ ((vector_size (16)));
 

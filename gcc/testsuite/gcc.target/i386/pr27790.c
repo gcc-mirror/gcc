@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O -ftree-vectorize -msse2" } */
-/* { dg-require-effective-target sse2 } */
 
 void binarize (int npixels, unsigned char *b)
 {

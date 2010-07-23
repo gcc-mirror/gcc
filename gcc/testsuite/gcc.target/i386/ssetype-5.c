@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* This test checks for absolute memory operands.  */
 /* { dg-require-effective-target nonpic } */
-/* { dg-require-effective-target sse2 } */
 /* { dg-options "-O2 -msse2 -march=k8" } */
 /* { dg-final { scan-assembler "pand\[^\\n\]*magic" } } */
 /* { dg-final { scan-assembler "pandn\[^\\n\]*magic" } } */
