@@ -2,7 +2,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 /* { dg-options "-O2 -msse -ffast-math" { target i?86-*-* x86_64-*-* } } */
-/* { dg-require-effective-target sse { target i?86-*-* x86_64-*-* } } */
 
 void bar (float *a, float *b);
 

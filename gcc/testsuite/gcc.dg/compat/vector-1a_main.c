@@ -1,5 +1,4 @@
 /* { dg-skip-if "test SSE2 vector" { ! { i?86-*-* x86_64-*-* } } } */
-/* { dg-require-effective-target sse2 } */
 /* { dg-require-effective-target sse2_runtime } */
 
 /* Test compatibility of vector types: layout between separately-compiled

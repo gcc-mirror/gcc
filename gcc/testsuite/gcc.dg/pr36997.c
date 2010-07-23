@@ -1,6 +1,5 @@
 /* { dg-do compile { target x86_64-*-* i?86-*-* } } */
 /* { dg-options "-std=c99 -msse2" } */
-/* { dg-require-effective-target sse2 } */
 
 typedef int __m64 __attribute__ ((__vector_size__ (8), __may_alias__));
 __m64 _mm_add_si64 (__m64 __m1, __m64 __m2)
