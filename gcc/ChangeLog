@@ -1,3 +1,9 @@
+2010-07-23  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/43071
+	* gcc.c (LINK_COMMAND_SPEC): Filter out -fcompare-debug
+	for -flto and -fwhopr.
+
 2010-07-23  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR target/41943
