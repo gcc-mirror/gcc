@@ -276,6 +276,19 @@ decl_attributes (tree *node, tree attributes, int flags)
 	TREE_VALUE (cur_attr) = chainon (opts, TREE_VALUE (cur_attr));
     }
 
+  /* A "naked" function attribute implies "noinline" and "noclone" for
+     those targets that support it.  */
+  if (TREE_CODE (*node) == FUNCTION_DECL
+      && lookup_attribute_spec (get_identifier ("naked"))
+      && lookup_attribute ("naked", attributes) != NULL)
+    {
+      if (lookup_attribute ("noinline", attributes) == NULL)
+	attributes = tree_cons (get_identifier ("noinline"), NULL, attributes);
+
+      if (lookup_attribute ("noclone", attributes) == NULL)
+	attributes = tree_cons (get_identifier ("noclone"),  NULL, attributes);
+    }
+
   targetm.insert_attributes (*node, &attributes);
 
   for (a = attributes; a; a = TREE_CHAIN (a))

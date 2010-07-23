@@ -1,3 +1,11 @@
+2010-07-23  Jie Zhang  <jie@codesourcery.com>
+
+	PR target/44290
+	* attribs.c (decl_attributes): Insert "noinline" and "noclone"
+	if "naked".
+	* tree-sra.c (ipa_sra_preliminary_function_checks): Return
+	false if ! tree_versionable_function_p.
+
 2010-07-23  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* builtins.def (BUILT_IN_ARGS_INFO): Remove.

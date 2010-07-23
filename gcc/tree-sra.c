@@ -4301,6 +4301,13 @@ modify_function (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
 static bool
 ipa_sra_preliminary_function_checks (struct cgraph_node *node)
 {
+  if (!tree_versionable_function_p (current_function_decl))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Function isn't allowed to be versioned.\n");
+      return false;
+    }
+
   if (!cgraph_node_can_be_local_p (node))
     {
       if (dump_file)
