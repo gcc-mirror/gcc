@@ -1,3 +1,10 @@
+2010-07-23  Marc Glisse <marc.glisse@normalesup.org>
+
+	PR bootstrap/44455
+	* configure.ac (extra_mpfr_configure_flags): Copy from
+	extra_mpc_gmp_configure_flags.
+	* configure: Re-generated.
+
 2010-07-22  Andi Kleen  <ak@linux.intel.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
