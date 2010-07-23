@@ -1,3 +1,9 @@
+2010-07-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/43016
+	PR c++/45008
+	* decl.c (start_preparsed_function): Do defer nested functions.
+
 2010-07-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44996

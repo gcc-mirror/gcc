@@ -12043,9 +12043,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 
       if ((DECL_DECLARED_INLINE_P (decl1)
 	   || DECL_TEMPLATE_INSTANTIATION (decl1))
-	  && ! DECL_INTERFACE_KNOWN (decl1)
-	  /* Don't try to defer nested functions for now.  */
-	  && ! decl_function_context (decl1))
+	  && ! DECL_INTERFACE_KNOWN (decl1))
 	DECL_DEFER_OUTPUT (decl1) = 1;
       else
 	DECL_INTERFACE_KNOWN (decl1) = 1;

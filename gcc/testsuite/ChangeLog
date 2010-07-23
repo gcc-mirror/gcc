@@ -1,3 +1,8 @@
+2010-07-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/45008
+	* g++.dg/abi/mangle44.C: New.
+
 2010-07-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/45015
