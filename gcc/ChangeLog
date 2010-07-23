@@ -1,3 +1,8 @@
+2010-07-23  Jie Zhang  <jie@codesourcery.com>
+
+	* tree-sra.c (ipa_sra_preliminary_function_checks): Dump
+	proper words when !tree_versionable_function_p.
+
 2010-07-23  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45037
