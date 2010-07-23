@@ -1,3 +1,8 @@
+2010-07-10   Andi Kleen <ak@linux.intel.com>
+
+	* lto-section-in.c (lto_section_name): Synchronize names
+	with lto_get_section_name.
+
 2010-07-22  Andi Kleen  <ak@linux.intel.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
