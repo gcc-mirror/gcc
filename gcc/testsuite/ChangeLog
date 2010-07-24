@@ -1,5 +1,10 @@
 2010-07-24  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.dg/entry_13.f90: Use abs() > eps instead of "/=".
+	* gfortran.dg/integer_exponentiation_3.F90: Use -ffloat-store.
+
+2010-07-24  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/func_decl_4.f90: Split test into two ...
 	* gfortran.dg/func_decl_5.f90: ... parts.
 	* gfortran.dg/common_resize_1.f: xfail two warnings (cf. PR 45045).
