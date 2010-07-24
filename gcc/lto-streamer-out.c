@@ -2352,21 +2352,32 @@ write_symbol (struct lto_streamer_cache_d *cache,
 		      && cgraph_get_node (t)->analyzed));
     }
 
-  switch (DECL_VISIBILITY(t))
-    {
-    case VISIBILITY_DEFAULT:
-      visibility = GCCPV_DEFAULT;
-      break;
-    case VISIBILITY_PROTECTED:
-      visibility = GCCPV_PROTECTED;
-      break;
-    case VISIBILITY_HIDDEN:
-      visibility = GCCPV_HIDDEN;
-      break;
-    case VISIBILITY_INTERNAL:
-      visibility = GCCPV_INTERNAL;
-      break;
-    }
+  /* Imitate what default_elf_asm_output_external do.
+     When symbol is external, we need to output it with DEFAULT visibility
+     when compiling with -fvisibility=default, while with HIDDEN visibility
+     when symbol has attribute (visibility("hidden")) specified.
+     targetm.binds_local_p check DECL_VISIBILITY_SPECIFIED and gets this
+     right. */
+     
+  if (DECL_EXTERNAL (t)
+      && !targetm.binds_local_p (t))
+    visibility = GCCPV_DEFAULT;
+  else
+    switch (DECL_VISIBILITY(t))
+      {
+      case VISIBILITY_DEFAULT:
+	visibility = GCCPV_DEFAULT;
+	break;
+      case VISIBILITY_PROTECTED:
+	visibility = GCCPV_PROTECTED;
+	break;
+      case VISIBILITY_HIDDEN:
+	visibility = GCCPV_HIDDEN;
+	break;
+      case VISIBILITY_INTERNAL:
+	visibility = GCCPV_INTERNAL;
+	break;
+      }
 
   if (kind == GCCPK_COMMON
       && DECL_SIZE (t)

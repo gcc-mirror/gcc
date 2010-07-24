@@ -1,3 +1,8 @@
+2010-07-23  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer-out.c (write_symbol): Fix visibilities of external
+	references.
+
 2010-07-23  Le-Chun Wu  <lcwu@google.com>
 
 	* omega.c (omega_eliminate_redundant): Remove a self-assign statement.
