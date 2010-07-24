@@ -1,3 +1,9 @@
+2010-07-24  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific, *-*-freebsd*): Adjust to recent
+	changes.  Streamline paragraph on compatibility with the system
+	compiler.
+
 2010-07-24  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR middle-end/45035

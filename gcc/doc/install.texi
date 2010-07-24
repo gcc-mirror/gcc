@@ -3219,12 +3219,13 @@ Support for FreeBSD 1 was discontinued in GCC 3.2.  Support for
 FreeBSD 2 (and any mutant a.out variants of FreeBSD 3) was
 discontinued in GCC 4.0.
 
-In GCC 4.5, we enabled the use of @code{dl_iterate_phdr} inside boehm-gc on
-FreeBSD 7 or later.  In order to better match the configuration of the
-FreeBSD system compiler: We also enabled the check to see if libc
-provides SSP support (which it does on FreeBSD 7), the use of
-@code{dl_iterate_phdr} inside @file{libgcc_s.so.1} (on FreeBSD 7 or later)
-and the use of @code{__cxa_atexit} by default (on FreeBSD 6 or later).
+In order to better utilize FreeBSD base system functionality and match
+the configuration of the system compiler, GCC 4.5 and above as well as
+GCC 4.4 past 2010-06-20 leverage SSP support in libc (which is present
+on FreeBSD 7 or later) and the use of @code{__cxa_atexit} by default
+(on FreeBSD 6 or later).  The use of @code{dl_iterate_phdr} inside
+@file{libgcc_s.so.1} and boehm-gc (on FreeBSD 7 or later) is enabled
+by GCC 4.5 and above.
 
 We support FreeBSD using the ELF file format with DWARF 2 debugging
 for all CPU architectures.  You may use @option{-gstabs} instead of
