@@ -1,5 +1,11 @@
 2010-07-24  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/40011
+	* parse.c (gfc_parse_file): Do not override
+	gfc_global_ns_list items.
+
+2010-07-24  Tobias Burnus  <burnus@net-b.de>
+
 	* options.c (gfc_init_options): Enable -fwhole-file by default.
 	* interface.c (compare_parameter): Assume a Hollerith constant is
 	compatible with all other argument types.

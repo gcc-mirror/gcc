@@ -1,5 +1,13 @@
 2010-07-24  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/40011
+	* gfortran.dg/whole_file_21.f90: New.
+
+	* gfortran.dg/integer_exponentiation_3.F90: Use
+	-ffloat-store only for i?86/x86-64 -m32.
+
+2010-07-24  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/entry_13.f90: Use abs() > eps instead of "/=".
 	* gfortran.dg/integer_exponentiation_3.F90: Use -ffloat-store.
 
