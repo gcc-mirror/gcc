@@ -67,14 +67,14 @@ program test
   type(z) z1
 
   z1 = x1//y1
-  if (z1%x .ne. 19.0_4 + 7.0_4) call abort ()
+  if (abs(z1%x - (19.0_4 + 7.0_4)) > epsilon(x1%x)) call abort ()
   z1 = y1//x1
-  if (z1%x .ne. 19.0_4 - 7.0_4) call abort ()
+  if (abs(z1%x - (19.0_4 - 7.0_4)) > epsilon(x1%x)) call abort ()
 
   z1 = x1==y1
-  if (z1%x .ne. 19.0_4/7.0_4) call abort ()
+  if (abs(z1%x - 19.0_4/7.0_4) > epsilon(x1%x)) call abort ()
   z1 = y1==x1
-  if (z1%x .ne. 19.0_4/7.0_4) call abort ()
+  if (abs(z1%x - 19.0_4/7.0_4) > epsilon(x1%x)) call abort ()
 end program test
 ! { dg-final { cleanup-modules "type_mod" } }
 
