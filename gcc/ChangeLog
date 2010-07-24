@@ -1,3 +1,9 @@
+2010-07-24  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR middle-end/45035
+	* alias.c (true_dependence_1): Fix thinko in merge of old
+	true_dependence and canon_true_dependence.
+
 2010-07-23  Jan Hubicka  <jh@suse.cz>
 
 	* lto-streamer-out.c (write_symbol): Fix visibilities of external
