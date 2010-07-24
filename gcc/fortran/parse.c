@@ -4414,7 +4414,11 @@ prog_units:
      later and all their interfaces resolved.  */
   gfc_current_ns->code = s.head;
   if (next)
-    next->sibling = gfc_current_ns;
+    {
+      for (; next->sibling; next = next->sibling)
+	;
+      next->sibling = gfc_current_ns;
+    }
   else
     gfc_global_ns_list = gfc_current_ns;
 

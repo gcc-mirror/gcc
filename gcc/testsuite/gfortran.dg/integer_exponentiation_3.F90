@@ -1,8 +1,8 @@
 ! { dg-do run { xfail spu-*-* } }
 ! FAILs on SPU because of wrong compile-time rounding mode
-! { dg-options "-ffloat-store" }
+! { dg-options "" }
+! { dg-options "-ffloat-store" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } 
 !
-! -ffloat-store needed for x87
 !
 module mod_check
   implicit none
