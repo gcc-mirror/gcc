@@ -1581,7 +1581,8 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 	      if (!trunc_warn && c != '!')
 		trunc_warn = true;
 
-	      if (trunc_warn && (c == '&' || c == '!'))
+	      if (trunc_warn && ((gfc_current_form == FORM_FIXED && c == '&')
+		  || c == '!'))
 		trunc_warn = false;
 
 	      if (c == '!')
