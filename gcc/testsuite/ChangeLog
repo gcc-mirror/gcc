@@ -1,3 +1,9 @@
+2010-07-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/40628
+	* trim_optimize_1.f90:  New test.
+	* character_comparision_1.f90:  New test.
+
 2010-07-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/42852

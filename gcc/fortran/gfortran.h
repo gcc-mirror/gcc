@@ -2842,4 +2842,8 @@ gfc_symtree* gfc_get_tbp_symtree (gfc_symtree**, const char*);
 
 #define CLASS_DATA(sym) sym->ts.u.derived->components
 
+/* frontend-passes.c */
+
+void gfc_run_passes (gfc_namespace *);
+
 #endif /* GCC_GFORTRAN_H  */

@@ -13081,4 +13081,6 @@ gfc_resolve (gfc_namespace *ns)
   gfc_current_ns = old_ns;
   cs_base = old_cs_base;
   ns->resolved = 1;
+
+  gfc_run_passes (ns);
 }
