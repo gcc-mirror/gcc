@@ -651,10 +651,10 @@ namespace std
 				_H1, _H2, _Hash, __chc>(__ht),
       __detail::_Map_base<_Key, _Value, _ExtractKey, __uk, _Hashtable>(__ht),
       _M_node_allocator(__ht._M_node_allocator),
+      _M_buckets(__ht._M_buckets),
       _M_bucket_count(__ht._M_bucket_count),
       _M_element_count(__ht._M_element_count),
-      _M_rehash_policy(__ht._M_rehash_policy),
-      _M_buckets(__ht._M_buckets)
+      _M_rehash_policy(__ht._M_rehash_policy)
     {
       size_type __n_bkt = __ht._M_rehash_policy._M_next_bkt(0);
       __ht._M_buckets = __ht._M_allocate_buckets(__n_bkt);
