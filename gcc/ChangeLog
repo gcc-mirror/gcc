@@ -1,3 +1,11 @@
+2010-07-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/44484
+	* config/sparc/predicates.md (memory_reg_operand): Delete.
+	* config/sparc/sync.md (sync_compare_and_swap): Minor tweaks.
+	(*sync_compare_and_swap): Encode the address form in the pattern.
+	(*sync_compare_and_swapdi_v8plus): Likewise.
+
 2010-07-24  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific, *-*-freebsd*): Adjust to recent
