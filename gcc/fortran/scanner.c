@@ -1044,6 +1044,17 @@ restart:
 	  goto done;
 	}
 
+      /* Check to see if the continuation line was truncated.  */
+      if (gfc_option.warn_line_truncation && gfc_current_locus.lb != NULL
+	  && gfc_current_locus.lb->truncated)
+	{
+	  int maxlen = gfc_option.free_line_length;
+	  gfc_current_locus.lb->truncated = 0;
+	  gfc_current_locus.nextc += maxlen;
+	  gfc_warning_now ("Line truncated at %L", &gfc_current_locus);
+	  gfc_current_locus.nextc -= maxlen;
+	}
+
       if (c != '&')
 	goto done;
 
@@ -1093,17 +1104,6 @@ restart:
 		gfc_warning ("Limit of %d continuations exceeded in "
 			     "statement at %C", gfc_option.max_continue_free);
 	    }
-	}
-
-      /* Check to see if the continuation line was truncated.  */
-      if (gfc_option.warn_line_truncation && gfc_current_locus.lb != NULL
-	  && gfc_current_locus.lb->truncated)
-	{
-	  int maxlen = gfc_option.free_line_length;
-	  gfc_current_locus.lb->truncated = 0;
-	  gfc_current_locus.nextc += maxlen;
-	  gfc_warning_now ("Line truncated at %L", &gfc_current_locus);
-	  gfc_current_locus.nextc -= maxlen;
 	}
 
       /* Now find where it continues. First eat any comment lines.  */
@@ -1420,7 +1420,7 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
   static int linenum = 0, current_line = 1;
   int c, maxlen, i, preprocessor_flag, buflen = *pbuflen;
   int trunc_flag = 0, seen_comment = 0;
-  int seen_printable = 0, seen_ampersand = 0;
+  int seen_printable = 0, seen_ampersand = 0, quoted = ' ';
   gfc_char_t *buffer;
   bool found_tab = false;
 
@@ -1502,6 +1502,18 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 	  && (c == '*' || c == 'c' || c == 'd'))
 	seen_comment = 1;
 
+      if (quoted == ' ')
+	{
+	  if (c == '\'' || c == '"')
+	    quoted = c;
+	}
+      else if (c == quoted)
+	quoted = ' ';
+
+      /* Is this a free-form comment?  */
+      if (c == '!' && quoted == ' ')
+        seen_comment = 1;
+
       /* Vendor extension: "<tab>1" marks a continuation line.  */
       if (found_tab)
 	{
@@ -1550,17 +1562,33 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 	}
       else if (i >= maxlen)
 	{
+	  bool trunc_warn = true;
+
+	  /* Enhancement, if the very next non-space character is an ampersand
+	     or comment that we would otherwise warn about, don't mark as
+	     truncated.  */
+
 	  /* Truncate the rest of the line.  */
 	  for (;;)
 	    {
 	      c = getc (input);
-	      if (c == '\r')
+	      if (c == '\r' || c == ' ')
 	        continue;
 
 	      if (c == '\n' || c == EOF)
 		break;
 
-	      trunc_flag = 1;
+	      if (!trunc_warn && c != '!')
+		trunc_warn = true;
+
+	      if (trunc_warn && (c == '&' || c == '!'))
+		trunc_warn = false;
+
+	      if (c == '!')
+		seen_comment = 1;
+
+	      if (trunc_warn && !seen_comment)
+		trunc_flag = 1;
 	    }
 
 	  c = '\n';
