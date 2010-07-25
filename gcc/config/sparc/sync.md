@@ -1,5 +1,5 @@
 ;; GCC machine description for SPARC synchronization instructions.
-;; Copyright (C) 2005, 2007, 2009
+;; Copyright (C) 2005, 2007, 2009, 2010
 ;; Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
@@ -62,7 +62,7 @@
 
 (define_expand "sync_compare_and_swap<mode>"
   [(parallel
-     [(set (match_operand:I48MODE 0 "register_operand" "=r")
+     [(set (match_operand:I48MODE 0 "register_operand" "")
 	   (match_operand:I48MODE 1 "memory_operand" ""))
       (set (match_dup 1)
 	   (unspec_volatile:I48MODE
@@ -71,7 +71,7 @@
 	     UNSPECV_CAS))])]
   "TARGET_V9"
 {
-  if (! REG_P (XEXP (operands[1], 0)))
+  if (!REG_P (XEXP (operands[1], 0)))
     {
       rtx addr = force_reg (Pmode, XEXP (operands[1], 0));
       operands[1] = replace_equiv_address (operands[1], addr);
@@ -81,20 +81,20 @@
 
 (define_insn "*sync_compare_and_swap<mode>"
   [(set (match_operand:I48MODE 0 "register_operand" "=r")
-	(match_operand:I48MODE 1 "memory_reg_operand" "+m"))
-   (set (match_dup 1)
+	(mem:I48MODE (match_operand 1 "register_operand" "r")))
+   (set (mem:I48MODE (match_dup 1))
 	(unspec_volatile:I48MODE
 	  [(match_operand:I48MODE 2 "register_operand" "r")
 	   (match_operand:I48MODE 3 "register_operand" "0")]
 	  UNSPECV_CAS))]
   "TARGET_V9 && (<MODE>mode == SImode || TARGET_ARCH64)"
-  "cas<modesuffix>\t%1, %2, %0"
+  "cas<modesuffix>\t[%1], %2, %0"
   [(set_attr "type" "multi")])
 
 (define_insn "*sync_compare_and_swapdi_v8plus"
   [(set (match_operand:DI 0 "register_operand" "=h")
-	(match_operand:DI 1 "memory_reg_operand" "+m"))
-   (set (match_dup 1)
+	(mem:DI (match_operand 1 "register_operand" "r")))
+   (set (mem:DI (match_dup 1))
 	(unspec_volatile:DI
 	  [(match_operand:DI 2 "register_operand" "h")
 	   (match_operand:DI 3 "register_operand" "0")]
@@ -109,7 +109,7 @@
     output_asm_insn ("srl\t%L2, 0, %L2", operands);
   output_asm_insn ("sllx\t%H2, 32, %H3", operands);
   output_asm_insn ("or\t%L2, %H3, %H3", operands);
-  output_asm_insn ("casx\t%1, %H3, %L3", operands);
+  output_asm_insn ("casx\t[%1], %H3, %L3", operands);
   return "srlx\t%L3, 32, %H3";
 }
   [(set_attr "type" "multi")
