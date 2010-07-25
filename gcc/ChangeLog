@@ -1,3 +1,10 @@
+2010-07-23  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45047
+	* tree-vect-stmts.c (vectorizable_assignment): Return false
+	if vectype_out is NULL for conversion statement.
+
 2010-07-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/45015
