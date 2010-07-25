@@ -1,3 +1,9 @@
+2010-07-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/45060
+	* include/bits/hashtable.h (_Hashtable::_Hashtable(_Hashtable&&)):
+	Reorder mem-initializers.
+
 2010-07-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	DocBook 4.5 to 5.0 transition.
