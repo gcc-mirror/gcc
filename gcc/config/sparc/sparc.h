@@ -1801,36 +1801,14 @@ do {									\
 
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and jump to WIN.  This
-   macro is used in only one place: `find_reloads_address' in reload.c.
-
-   For SPARC 32, we wish to handle addresses by splitting them into
-   HIGH+LO_SUM pairs, retaining the LO_SUM in the memory reference.
-   This cuts the number of extra insns by one.
-
-   Do nothing when generating PIC code and the address is a
-   symbolic operand or requires a scratch register.  */
-
-#define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)     \
-do {                                                                    \
-  /* Decompose SImode constants into hi+lo_sum.  We do have to 		\
-     rerecognize what we produce, so be careful.  */			\
-  if (CONSTANT_P (X)							\
-      && (MODE != TFmode || TARGET_ARCH64)				\
-      && GET_MODE (X) == SImode						\
-      && GET_CODE (X) != LO_SUM && GET_CODE (X) != HIGH			\
-      && ! (flag_pic							\
-	    && (symbolic_operand (X, Pmode)				\
-		|| pic_address_needs_scratch (X)))			\
-      && sparc_cmodel <= CM_MEDLOW)					\
-    {									\
-      X = gen_rtx_LO_SUM (GET_MODE (X),					\
-			  gen_rtx_HIGH (GET_MODE (X), X), X);		\
-      push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL,		\
-                   BASE_REG_CLASS, GET_MODE (X), VOIDmode, 0, 0,	\
-                   OPNUM, TYPE);					\
-      goto WIN;								\
-    }									\
-  /* ??? 64-bit reloads.  */						\
+   macro is used in only one place: `find_reloads_address' in reload.c.  */
+#define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)	   \
+do {									   \
+  int win;								   \
+  (X) = sparc_legitimize_reload_address ((X), (MODE), (OPNUM),		   \
+					 (int)(TYPE), (IND_LEVELS), &win); \
+  if (win)								   \
+    goto WIN;								   \
 } while (0)
 
 /* Specify the machine mode that this machine uses
