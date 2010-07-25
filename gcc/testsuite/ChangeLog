@@ -1,3 +1,8 @@
+2010-07-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/45068
+	* g++.dg/debug/dwarf2/nested-2.C: Support "//" as comments.
+
 2010-07-24  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/43788
