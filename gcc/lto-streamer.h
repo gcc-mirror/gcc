@@ -608,7 +608,7 @@ struct GTY(()) lto_file_decl_data
   unsigned id;
 
   /* Symbol resolutions for this file */
-  VEC(ld_plugin_symbol_resolution_t,heap) *resolutions;
+  VEC(ld_plugin_symbol_resolution_t,heap) * GTY((skip)) resolutions;
 };
 
 typedef struct lto_file_decl_data *lto_file_decl_data_ptr;
