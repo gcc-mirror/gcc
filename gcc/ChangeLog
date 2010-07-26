@@ -1,5 +1,11 @@
 2010-07-26  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/43784
+	* tree-nrv.c (dest_safe_for_nrv_p): It's not safe to NRV
+	if the destination is used by the call.
+
+2010-07-26  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/45073
 	* gimple-fold.c (gimplify_and_update_call_from_tree): Conditionalize
 	SSA updating on being in SSA form.
