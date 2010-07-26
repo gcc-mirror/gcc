@@ -1,3 +1,8 @@
+2010-07-26  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer.h (struct lto_file_decl_data): Mark resolutions with
+	GTY((skip)).
+
 2010-07-26  Anatoly Sokolov  <aesok@post.ru>
 
 	* target.def (output_source_filename): New hook.
