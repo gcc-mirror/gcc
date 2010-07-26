@@ -1,3 +1,8 @@
+2010-07-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45052
+	* ipa-pure-const.c (check_stmt): Check volatileness.
+
 2010-07-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/44707
