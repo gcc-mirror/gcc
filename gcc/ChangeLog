@@ -1,5 +1,11 @@
 2010-07-26  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/45056
+	* gimple-fold.c (fold_stmt_1): Also fold references in
+	debug stmts.
+
+2010-07-26  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/45071
 	* tree-ssa-sccvn.c  (vn_reference_maybe_forwprop_address): Always
 	adjust op->opcode.

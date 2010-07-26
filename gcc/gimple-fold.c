@@ -1530,6 +1530,23 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace)
 	}
       break;
 
+    case GIMPLE_DEBUG:
+      if (gimple_debug_bind_p (stmt))
+	{
+	  tree val = gimple_debug_bind_get_value (stmt);
+	  if (val
+	      && REFERENCE_CLASS_P (val))
+	    {
+	      tree tem = maybe_fold_reference (val, false);
+	      if (tem)
+		{
+		  gimple_debug_bind_set_value (stmt, tem);
+		  changed = true;
+		}
+	    }
+	}
+      break;
+
     default:;
     }
 
