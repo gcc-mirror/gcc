@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-fopenmp -fmax-errors=100" }
-! { dg-require-effective-target tls_native }
+! { dg-require-effective-target tls }
 
 subroutine foo (ia1)
 integer :: i1, i2, i3

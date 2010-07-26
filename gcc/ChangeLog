@@ -1,3 +1,40 @@
+2010-07-26  Richard Henderson  <rth@redhat.com>
+
+	PR target/44132
+	* tree-emutls.c: New file.
+	* Makefile.in (OBJS-common): Add it.
+	* tree-pass.h (pass_ipa_lower_emutls): Declare.
+	* passes.c (init_optimization_passes): Add it.
+
+	* dwarf2out.c (loc_list_from_tree): If emutls.debug_form_tls_address,
+	pull the control variable from DECL_VALUE_EXPR, not emutls_decl.
+	* expr.c (emutls_var_address): Delete.
+	(expand_expr_addr_expr_1, expand_expr_real_1): Don't use it.
+	* output.h (SECCAT_EMUTLS_VAR, SECCAT_EMUTLS_TMPL): Delete.
+	(emutls_finish): Delete.
+	* toplev.c (compile_file): Don't call it.
+	* tree.h (emutls_decl): Delete.
+	* varasm.c (emutls_htab, DECL_EMUTLS_VAR_P): Delete.
+	(emutls_finish, emutls_finalize_control_var): Delete.
+	(emutls_object_type): Move to tree-emutls.c.
+	(EMUTLS_SEPARATOR, prefix_name, get_emutls_object_name,
+	default_emutls_var_fields, get_emutls_object_type,
+	get_emutls_init_templ_addr, emutls_decl, emutls_common_1
+	default_emutls_var_init): Likewise.
+	(get_variable_section): Don't special case emutls.
+	(assemble_variable, do_assemble_alias, categorize_decl_for_section,
+	default_elf_select_section, default_unique_section,
+	default_encode_section_info): Likewise.
+	* varpool.c (decide_is_variable_needed): Likewise.
+	* gimple-iterator.c (update_call_edge_frequencies): New
+	(gsi_insert_on_edge_immediate): Use it.
+	(gsi_insert_seq_on_edge_immediate): Likewise.
+	(gsi_commit_one_edge_insert): Likewise.
+
+	* config/i386/i386.c (x86_64_elf_select_section): Don't handle
+	SECCAT_EMUTLS_VAR, SECCAT_EMUTLS_TMPL.
+	(x86_64_elf_unique_section): Likewise.
+
 2010-07-26  Jan Hubicka  <jh@suse.cz>
 
 	* lto-streamer.h (struct lto_file_decl_data): Mark resolutions with

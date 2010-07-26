@@ -1,3 +1,43 @@
+2010-07-19  Iain Sandoe  <iains@gcc.gnu.org>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
+	    Richard Henderson  <rth@redhat.com>
+
+	PR target/44132
+	* gcc.dg/tls/thr-init-1.c: New.
+	* gcc.dg/tls/thr-init-2.c: New.
+	* gcc.dg/torture/tls New.
+	* gcc.dg/torture/tls/tls-test.c: New.
+	* gcc.dg/torture/tls/thr-init-1.c: New.
+	* gcc.dg/torture/tls/tls.exp: New.
+	* gcc.dg/torture/tls/thr-init-2.c: New.
+	* gcc.dg/tls/emutls-2.c: New test
+
+	* g++.dg/gomp/clause-3.C: Require tls, not tls_native.
+	* g++.dg/gomp/copyin-1.C, g++.dg/gomp/pr35244.C,
+	g++.dg/gomp/sharing-1.C, g++.dg/gomp/tls-1.C, g++.dg/gomp/tls-2.C,
+	g++.dg/gomp/tls-3.C, g++.dg/gomp/tls-4.C, g++.dg/tls/diag-1.C,
+	g++.dg/tls/diag-2.C, g++.dg/tls/diag-3.C, g++.dg/tls/diag-4.C,
+	g++.dg/tls/diag-5.C, g++.dg/tls/init-1.C, g++.dg/tls/init-2.C,
+	g++.dg/tls/trivial.C, gcc.dg/gomp/appendix-a/a.22.1.c,
+	gcc.dg/gomp/appendix-a/a.22.2.c, gcc.dg/gomp/appendix-a/a.24.1.c,
+	gcc.dg/gomp/appendix-a/a.32.1.c, gcc.dg/gomp/appendix-a/a.33.1.c,
+	gcc.dg/gomp/clause-1.c, gcc.dg/gomp/copyin-1.c, gcc.dg/gomp/pr35244.c,
+	gcc.dg/gomp/sharing-1.c, gcc.dg/gomp/tls-1.c, gcc.dg/gomp/tls-2.c,
+	gcc.dg/tls/opt-1.c, gcc.dg/tls/opt-13.c, gcc.dg/tls/opt-14.c,
+	gcc.dg/tls/opt-15.c, gcc.dg/tls/opt-2.c, gcc.dg/tls/opt-3.c,
+	gcc.dg/tls/opt-7.c, gfortran.dg/gomp/appendix-a/a.22.1.f90,
+	gfortran.dg/gomp/appendix-a/a.22.4.f90,
+	gfortran.dg/gomp/appendix-a/a.22.5.f90,
+	gfortran.dg/gomp/appendix-a/a.22.6.f90,
+	gfortran.dg/gomp/appendix-a/a.24.1.f90,
+	gfortran.dg/gomp/appendix-a/a.32.1.f90,
+	gfortran.dg/gomp/appendix-a/a.33.1.f90, gfortran.dg/gomp/crayptr2.f90,
+	gfortran.dg/gomp/fixed-1.f, gfortran.dg/gomp/free-1.f90,
+	gfortran.dg/gomp/omp_threadprivate1.f90,
+	gfortran.dg/gomp/omp_threadprivate2.f90,
+	gfortran.dg/gomp/reduction1.f90,
+	gfortran.dg/gomp/sharing-1.f90: Likewise.
+
 2010-07-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/torture/pr44900.C: Use dg-require-effective-target
