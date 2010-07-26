@@ -1050,11 +1050,9 @@ vn_reference_maybe_forwprop_address (VEC (vn_reference_op_s, heap) **ops,
   else
     mem_op->off = -1;
   if (TREE_CODE (op->op0) == SSA_NAME)
-    {
-      op->op0 = SSA_VAL (op->op0);
-      if (TREE_CODE (op->op0) != SSA_NAME)
-	op->opcode = TREE_CODE (op->op0);
-    }
+    op->op0 = SSA_VAL (op->op0);
+  if (TREE_CODE (op->op0) != SSA_NAME)
+    op->opcode = TREE_CODE (op->op0);
 
   /* And recurse.  */
   if (TREE_CODE (op->op0) == SSA_NAME)
