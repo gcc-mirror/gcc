@@ -1,3 +1,11 @@
+2010-07-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45066
+	* trans-io.c (build_dt): Use NULL_TREE rather than NULL
+	for call to transfer_namelist_element.
+	* trans-decl.c (gfc_get_symbol_decl): Also set sym->backend_decl
+	for -fwhole-file.
+
 2010-07-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/40628

@@ -1150,7 +1150,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 					   true);
 	      if (sym->ts.type == BT_CHARACTER)
 		sym->ts.u.cl->backend_decl = s->ts.u.cl->backend_decl;
-	      return s->backend_decl;
+	      sym->backend_decl = s->backend_decl;
+	      return sym->backend_decl;
 	    }
 	}
     }
