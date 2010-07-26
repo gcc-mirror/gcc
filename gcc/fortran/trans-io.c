@@ -1760,7 +1760,7 @@ build_dt (tree function, gfc_code * code)
 
 	  for (nml = dt->namelist->namelist; nml; nml = nml->next)
 	    transfer_namelist_element (&block, nml->sym->name, nml->sym,
-				       NULL, NULL);
+				       NULL, NULL_TREE);
 	}
       else
 	set_parameter_const (&block, var, IOPARM_common_flags, mask);
