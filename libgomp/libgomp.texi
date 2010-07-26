@@ -192,7 +192,7 @@ which enclose the calling call.
 
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer omp_get_active_level()}
+@item @emph{Interface}: @tab @code{integer function omp_get_active_level()}
 @end multitable
 
 @item @emph{See also}:
@@ -220,7 +220,7 @@ zero to @code{omp_get_level} -1 is returned; if @var{level} is
 
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer omp_get_ancestor_thread_num(level)}
+@item @emph{Interface}: @tab @code{integer function omp_get_ancestor_thread_num(level)}
 @item                   @tab @code{integer level}
 @end multitable
 
@@ -279,7 +279,7 @@ which enclose the calling call.
 
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{integer omp_level()}
+@item @emph{Interface}: @tab @code{integer function omp_level()}
 @end multitable
 
 @item @emph{See also}:
@@ -304,7 +304,7 @@ This function obtains the maximum allowed number of nested, active parallel regi
 
 @item @emph{Fortran}:
 @multitable @columnfractions .20 .80
-@item @emph{Interface}: @tab @code{int omp_get_max_active_levels()}
+@item @emph{Interface}: @tab @code{integer function omp_get_max_active_levels()}
 @end multitable
 
 @item @emph{See also}:
