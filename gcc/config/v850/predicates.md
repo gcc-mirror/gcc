@@ -68,6 +68,17 @@
   return register_operand (op, mode);
 })
 
+;; Return true if OP is a even number register.
+
+(define_predicate "even_reg_operand"
+  (match_code "reg")
+{
+  return (GET_CODE (op) == REG
+	  && (REGNO (op) >= FIRST_PSEUDO_REGISTER
+	      || ((REGNO (op) > 0) && (REGNO (op) < 32)
+		   && ((REGNO (op) & 1)==0))));
+})
+
 ;; Return true if OP is a valid call operand.
 
 (define_predicate "call_address_operand"
@@ -79,7 +90,7 @@
   return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == REG);
 })
 
-;; TODO: Add a comment here.
+;; Return true if OP is a valid source operand for SImode move.
 
 (define_predicate "movsi_source_operand"
   (match_code "label_ref,symbol_ref,const_int,const_double,const,high,mem,reg,subreg")
@@ -97,7 +108,21 @@
     return general_operand (op, mode);
 })
 
-;; TODO: Add a comment here.
+;; Return true if OP is a valid operand for 23 bit displacement
+;; operations.
+
+(define_predicate "disp23_operand"
+  (match_code "const_int")
+{
+  if (GET_CODE (op) == CONST_INT
+      && ((unsigned)(INTVAL (op)) >= 0x8000)
+      && ((unsigned)(INTVAL (op)) < 0x400000))
+    return 1;
+  else
+    return 0;
+})
+
+;; Return true if OP is a symbol ref with 16-bit signed value.
 
 (define_predicate "special_symbolref_operand"
   (match_code "symbol_ref")
@@ -115,7 +140,8 @@
   return FALSE;
 })
 
-;; TODO: Add a comment here.
+;; Return true if OP is a valid operand for bit related operations
+;; containing only single 1 in its binary representation.
 
 (define_predicate "power_of_two_operand"
   (match_code "const_int")
@@ -140,7 +166,7 @@
 
   /* If there are no registers to save then the function prologue
      is not suitable.  */
-  if (count <= 2)
+  if (count <= (TARGET_LONG_CALLS ? 3 : 2))
     return 0;
 
   /* The pattern matching has already established that we are adjusting the
@@ -198,18 +224,24 @@
     }
 
   /* Make sure that the last entries in the vector are clobbers.  */
-  for (; i < count; i++)
+  vector_element = XVECEXP (op, 0, i++);
+
+  if (GET_CODE (vector_element) != CLOBBER
+      || GET_CODE (XEXP (vector_element, 0)) != REG
+      || REGNO (XEXP (vector_element, 0)) != 10)
+    return 0;
+
+  if (TARGET_LONG_CALLS)
     {
-      vector_element = XVECEXP (op, 0, i);
+      vector_element = XVECEXP (op, 0, i++);
 
       if (GET_CODE (vector_element) != CLOBBER
 	  || GET_CODE (XEXP (vector_element, 0)) != REG
-	  || !(REGNO (XEXP (vector_element, 0)) == 10
-	       || (TARGET_LONG_CALLS ? (REGNO (XEXP (vector_element, 0)) == 11) : 0 )))
+	  || REGNO (XEXP (vector_element, 0)) != 11)
 	return 0;
     }
 
-  return 1;
+  return i == count;
 })
 
 ;; Return nonzero if the given RTX is suitable for collapsing into
@@ -239,7 +271,7 @@
 	  (mem:SI (plus:SI (reg:SI 3) (match_operand:SI n "immediate_operand" "i"))))
      */
 
-  for (i = 3; i < count; i++)
+  for (i = 2; i < count; i++)
     {
       rtx vector_element = XVECEXP (op, 0, i);
       rtx dest;
@@ -372,12 +404,15 @@
 
      */
 
-  for (i = 2; i < count; i++)
+  for (i = 1; i < count; i++)
     {
       rtx vector_element = XVECEXP (op, 0, i);
       rtx dest;
       rtx src;
       rtx plus;
+
+      if (GET_CODE (vector_element) == CLOBBER)
+	continue;
 
       if (GET_CODE (vector_element) != SET)
 	return 0;
@@ -406,14 +441,15 @@
 	 space just acquired by the first operand then abandon this quest.
 	 Note: the test is <= because both values are negative.	 */
       if (INTVAL (XEXP (plus, 1))
-	  <= INTVAL (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 1)))
+	  < INTVAL (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 1)))
 	return 0;
     }
 
   return 1;
 })
 
-;; TODO: Add a comment here.
+;; Return true if OP is a valid operand for bit related operations
+;; containing only single 0 in its binary representation.
 
 (define_predicate "not_power_of_two_operand"
   (match_code "const_int")
@@ -436,3 +472,31 @@
     return 0;
   return 1;
 })
+
+;; Return true if OP is a float value operand with value as 1.
+
+(define_predicate "const_float_1_operand"
+  (match_code "const_int")
+{
+  if (GET_CODE (op) != CONST_DOUBLE
+      || mode != GET_MODE (op)
+      || (mode != DFmode && mode != SFmode))
+    return 0;
+
+  return op == CONST1_RTX(mode);
+})
+
+;; Return true if OP is a float value operand with value as 0.
+
+(define_predicate "const_float_0_operand"
+  (match_code "const_int")
+{
+  if (GET_CODE (op) != CONST_DOUBLE
+      || mode != GET_MODE (op)
+      || (mode != DFmode && mode != SFmode))
+    return 0;
+
+  return op == CONST0_RTX(mode);
+})
+
+

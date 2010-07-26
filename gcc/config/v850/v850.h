@@ -22,8 +22,13 @@
 #ifndef GCC_V850_H
 #define GCC_V850_H
 
+extern GTY(()) rtx v850_compare_op0;
+extern GTY(()) rtx v850_compare_op1;
+
 /* These are defined in svr4.h but we want to override them.  */
 #undef LIB_SPEC
+#define LIB_SPEC "%{!shared:%{!symbolic:--start-group -lc -lgcc --end-group}}"
+
 #undef ENDFILE_SPEC
 #undef LINK_SPEC
 #undef STARTFILE_SPEC
@@ -31,7 +36,10 @@
 
 #define TARGET_CPU_generic 	1
 #define TARGET_CPU_v850e   	2
-#define TARGET_CPU_v850e1  	3
+#define TARGET_CPU_v850e1	3
+#define TARGET_CPU_v850e2	4
+#define TARGET_CPU_v850e2v3	5
+
 
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT	TARGET_CPU_generic
@@ -58,17 +66,42 @@
 
 #if TARGET_CPU_DEFAULT == TARGET_CPU_v850e1
 #undef  MASK_DEFAULT
-#define MASK_DEFAULT            MASK_V850E	/* No practical difference.  */
+#define MASK_DEFAULT            MASK_V850E     /* No practical difference.  */     
 #undef  SUBTARGET_ASM_SPEC
-#define SUBTARGET_ASM_SPEC 	"%{!mv*:-mv850e1}"
+#define SUBTARGET_ASM_SPEC	"%{!mv*:-mv850e1}"
 #undef  SUBTARGET_CPP_SPEC
-#define SUBTARGET_CPP_SPEC 	"%{!mv*:-D__v850e1__} %{mv850e1:-D__v850e1__}"
+#define SUBTARGET_CPP_SPEC	"%{!mv*:-D__v850e1__} %{mv850e1:-D__v850e1__}"
 #undef  TARGET_VERSION
-#define TARGET_VERSION 		fprintf (stderr, " (NEC V850E1)");
+#define TARGET_VERSION		fprintf (stderr, " (NEC V850E1)");
 #endif
 
+#if TARGET_CPU_DEFAULT == TARGET_CPU_v850e2
+#undef  MASK_DEFAULT
+#define MASK_DEFAULT            MASK_V850E2	
+#undef  SUBTARGET_ASM_SPEC
+#define SUBTARGET_ASM_SPEC 	"%{!mv*:-mv850e2}"
+#undef  SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC 	"%{!mv*:-D__v850e2__} %{mv850e2:-D__v850e2__}"
+#undef  TARGET_VERSION
+#define TARGET_VERSION 		fprintf (stderr, " (NEC V850E2)");
+#endif
+
+#if TARGET_CPU_DEFAULT == TARGET_CPU_v850e2v3
+#undef  MASK_DEFAULT
+#define MASK_DEFAULT            MASK_V850E2V3
+#undef  SUBTARGET_ASM_SPEC
+#define SUBTARGET_ASM_SPEC	"%{!mv*:-mv850e2v3}"
+#undef  SUBTARGET_CPP_SPEC
+#define SUBTARGET_CPP_SPEC	"%{!mv*:-D__v850e2v3__} %{mv850e2v3:-D__v850e2v3__}"
+#undef  TARGET_VERSION
+#define TARGET_VERSION		fprintf (stderr, " (NEC V850E2V3)");
+#endif
+
+#define TARGET_V850E2_ALL      (TARGET_V850E2 || TARGET_V850E2V3) 
+
 #define ASM_SPEC "%{mv*:-mv%*}"
-#define CPP_SPEC		"%{mv850e:-D__v850e__} %{mv850:-D__v850__} %(subtarget_cpp_spec)"
+#define CPP_SPEC               "%{mv850e2v3:-D__v850e2v3__} %{mv850e2:-D__v850e2__} %{mv850e:-D__v850e__} %{mv850:-D__v850__} %(subtarget_cpp_spec)" \
+                               " %{mep:-D__EP__}"
 
 #define EXTRA_SPECS \
  { "subtarget_asm_spec", SUBTARGET_ASM_SPEC }, \
@@ -76,7 +109,7 @@
 
 /* Names to predefine in the preprocessor for this target machine.  */
 #define TARGET_CPU_CPP_BUILTINS() do {		\
-  builtin_define( "__v851__" );			\
+  builtin_define( "__v851__" );                        \
   builtin_define( "__v850" );			\
   builtin_assert( "machine=v850" );		\
   builtin_assert( "cpu=v850" );			\
@@ -130,7 +163,6 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
 
 #define OPTIMIZATION_OPTIONS(LEVEL,SIZE)				\
 {									\
-  target_flags |= MASK_STRICT_ALIGN;					\
   if (LEVEL)								\
     /* Note - we no longer enable MASK_EP when optimizing.  This is	\
        because of a hardware bug which stops the SLD and SST instructions\
@@ -196,7 +228,7 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
 
 /* Define this if move instructions will actually fail to work
    when given unaligned data.  */
-#define STRICT_ALIGNMENT  TARGET_STRICT_ALIGN
+#define STRICT_ALIGNMENT  (!TARGET_NO_STRICT_ALIGN)
 
 /* Define this as 1 if `char' should by default be signed; else as 0.
 
@@ -212,16 +244,17 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
    All registers that the compiler knows about must be given numbers,
    even those that are not normally considered general registers.  */
 
-#define FIRST_PSEUDO_REGISTER 34
+#define FIRST_PSEUDO_REGISTER 36
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.  */
 
 #define FIXED_REGISTERS \
-  { 1, 1, 0, 1, 1, 0, 0, 0, \
+  { 1, 1, 1, 1, 1, 1, 0, 0, \
     0, 0, 0, 0, 0, 0, 0, 0, \
     0, 0, 0, 0, 0, 0, 0, 0, \
     0, 0, 0, 0, 0, 0, 1, 0, \
+    1, 1,	\
     1, 1}
 
 /* 1 for registers not available across function calls.
@@ -233,10 +266,11 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
    like.  */
 
 #define CALL_USED_REGISTERS \
-  { 1, 1, 0, 1, 1, 1, 1, 1, \
+  { 1, 1, 1, 1, 1, 1, 1, 1, \
     1, 1, 1, 1, 1, 1, 1, 1, \
     1, 1, 1, 1, 0, 0, 0, 0, \
     0, 0, 0, 0, 0, 0, 1, 1, \
+    1, 1,	\
     1, 1}
 
 /* List the order in which to allocate registers.  Each register must be
@@ -254,19 +288,21 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
    6,  7,  8,  9, 31,			/* argument registers */	\
   29, 28, 27, 26, 25, 24, 23, 22,	/* saved registers */		\
   21, 20,  2,								\
-   0,  1,  3,  4,  5, 30, 32, 33	/* fixed registers */		\
+   0,  1,  3,  4,  5, 30, 32, 33,      /* fixed registers */           \
+  34, 35								\
 }
 
 /* If TARGET_APP_REGS is not defined then add r2 and r5 to
    the pool of fixed registers. See PR 14505.  */
-#define CONDITIONAL_REGISTER_USAGE  \
-{                                                       \
-  if (!TARGET_APP_REGS)                                 \
-    {                                                   \
-      fixed_regs[2] = 1;  call_used_regs[2] = 1;        \
-      fixed_regs[5] = 1;  call_used_regs[5] = 1;        \
-    }                                                   \
-}
+#define CONDITIONAL_REGISTER_USAGE             \
+{                                              \
+  if (TARGET_APP_REGS)                         \
+    {                                          \
+     fixed_regs[2] = 0;  call_used_regs[2] = 0;        \
+     fixed_regs[5] = 0;  call_used_regs[5] = 1;        \
+    }                                          \
+ }
+
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
@@ -281,7 +317,7 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
    MODE.  */
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
- ((((REGNO) & 1) == 0) || (GET_MODE_SIZE (MODE) <= 4))
+ ((GET_MODE_SIZE (MODE) <= 4) || (((REGNO) & 1) == 0 && (REGNO) != 0))
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
@@ -313,7 +349,7 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
    
 enum reg_class
 {
-  NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES
+  NO_REGS, GENERAL_REGS, EVEN_REGS, ALL_REGS, LIM_REG_CLASSES
 };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
@@ -326,17 +362,18 @@ enum reg_class
 /* Give names of register classes as strings for dump file.  */
 
 #define REG_CLASS_NAMES \
-{ "NO_REGS", "GENERAL_REGS", "ALL_REGS", "LIM_REGS" }
+{ "NO_REGS", "GENERAL_REGS", "EVEN_REGS", "ALL_REGS", "LIM_REGS" }
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS  		\
-{					\
-  { 0x00000000 }, /* NO_REGS      */	\
-  { 0xffffffff }, /* GENERAL_REGS */   	\
-  { 0xffffffff }, /* ALL_REGS 	*/	\
+#define REG_CLASS_CONTENTS                     \
+{                                              \
+  { 0x00000000,0x0 }, /* NO_REGS      */       \
+  { 0xffffffff,0x0 }, /* GENERAL_REGS */       \
+  { 0x55555554,0x0 }, /* EVEN_REGS */          \
+  { 0xffffffff,0x0 }, /* ALL_REGS      */      \
 }
 
 /* The same information, inverted:
@@ -344,7 +381,7 @@ enum reg_class
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-#define REGNO_REG_CLASS(REGNO)  GENERAL_REGS
+#define REGNO_REG_CLASS(REGNO)  ((REGNO == CC_REGNUM || REGNO == FCC_REGNUM) ? NO_REGS : GENERAL_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
 
@@ -353,7 +390,8 @@ enum reg_class
 
 /* Get reg_class from a letter such as appears in the machine description.  */
 
-#define REG_CLASS_FROM_LETTER(C) (NO_REGS)
+#define REG_CLASS_FROM_LETTER(C) \
+       (C == 'e' ? EVEN_REGS : (NO_REGS))
 
 /* Macros to check register numbers against specific register classes.  */
 
@@ -363,8 +401,11 @@ enum reg_class
    Since they use reg_renumber, they are safe only once reg_renumber
    has been allocated, which happens in local-alloc.c.  */
  
-#define REGNO_OK_FOR_BASE_P(regno) \
-  ((regno) < FIRST_PSEUDO_REGISTER || reg_renumber[regno] >= 0)
+#define REGNO_OK_FOR_BASE_P(regno)             \
+  (((regno) < FIRST_PSEUDO_REGISTER            \
+    && (regno) != CC_REGNUM                    \
+    && (regno) != FCC_REGNUM)                  \
+   || reg_renumber[regno] >= 0)
 
 #define REGNO_OK_FOR_INDEX_P(regno) 0
 
@@ -470,13 +511,13 @@ enum reg_class
    The values of these macros are register numbers.  */
 
 /* Register to use for pushing function arguments.  */
-#define STACK_POINTER_REGNUM 3
+#define STACK_POINTER_REGNUM SP_REGNUM
 
 /* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM 32
+#define FRAME_POINTER_REGNUM 34
 
 /* Register containing return address from latest function call.  */
-#define LINK_POINTER_REGNUM 31
+#define LINK_POINTER_REGNUM LP_REGNUM
      
 /* On some machines the offset between the frame pointer and starting
    offset of the automatic variables is not known until after register
@@ -501,7 +542,7 @@ enum reg_class
 #define HARD_FRAME_POINTER_REGNUM 29
 
 /* Base register for access to arguments of the function.  */
-#define ARG_POINTER_REGNUM 33
+#define ARG_POINTER_REGNUM 35
 
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM 20
@@ -593,19 +634,18 @@ struct cum_arg { int nbytes; int anonymous_args; };
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
    (TYPE is null for libcalls where that information may not be available.)  */
-
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
- ((CUM).nbytes += ((MODE) != BLKmode			\
-  ? (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) & -UNITS_PER_WORD	\
-  : (int_size_in_bytes (TYPE) + UNITS_PER_WORD - 1) & -UNITS_PER_WORD))
+#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
+ ((CUM).nbytes +=							\
+  ((((TYPE) && int_size_in_bytes (TYPE) > 8)				\
+   ? GET_MODE_SIZE (Pmode)						\
+   : ((MODE) != BLKmode							\
+      ? GET_MODE_SIZE ((MODE))						\
+      : int_size_in_bytes ((TYPE))))					\
+   + UNITS_PER_WORD - 1) & -UNITS_PER_WORD)
 
 /* When a parameter is passed in a register, stack space is still
    allocated for it.  */
-#define REG_PARM_STACK_SPACE(DECL) (!TARGET_GHS ? 16 : 0)
-
-/* Define this if the above stack space is to be considered part of the
-   space allocated by the caller.  */
-#define OUTGOING_REG_PARM_STACK_SPACE(FNTYPE) 1
+#define REG_PARM_STACK_SPACE(DECL) 0
 
 /* 1 if N is a possible register number for function argument passing.  */
 
@@ -723,8 +763,11 @@ struct cum_arg { int nbytes; int anonymous_args; };
 		   && SYMBOL_REF_ZDA_P (OP))				\
 		  || (GET_CODE (OP) == CONST				\
 		      && GET_CODE (XEXP (OP, 0)) == PLUS		\
-		      && GET_CODE (XEXP (XEXP (OP, 0), 0)) == SYMBOL_REF \
+		      && GET_CODE (XEXP (XEXP (OP, 0), 0)) == SYMBOL_REF\
 		      && SYMBOL_REF_ZDA_P (XEXP (XEXP (OP, 0), 0))))	\
+  : (C) == 'W' ? (GET_CODE (OP) == CONST_INT                            \
+		  && ((unsigned)(INTVAL (OP)) >= 0x8000)               \
+		  && ((unsigned)(INTVAL (OP)) < 0x400000))              \
   : 0)
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
@@ -765,7 +808,7 @@ do {									\
      goto ADDR;								\
   if (GET_CODE (X) == PLUS						\
       && RTX_OK_FOR_BASE_P (XEXP (X, 0)) 				\
-      && CONSTANT_ADDRESS_P (XEXP (X, 1))				\
+      && (GET_CODE (XEXP (X,1)) == CONST_INT && CONST_OK_FOR_K (INTVAL(XEXP (X,1)) + GET_MODE_NUNITS(MODE) * UNITS_PER_WORD)) \
       && ((MODE == QImode || INTVAL (XEXP (X, 1)) % 2 == 0)		\
 	   && CONST_OK_FOR_K (INTVAL (XEXP (X, 1)) 			\
                               + (GET_MODE_NUNITS (MODE) * UNITS_PER_WORD)))) \
@@ -783,7 +826,18 @@ do {									\
 	&& GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF		\
 	&& GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT		\
 	&& ! CONST_OK_FOR_K (INTVAL (XEXP (XEXP (X, 0), 1)))))
-
+
+/* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
+   return the mode to be used for the comparison.
+
+   For floating-point equality comparisons, CCFPEQmode should be used.
+   VOIDmode should be used in all other cases.
+
+   For integer comparisons against zero, reduce to CCNOmode or CCZmode if
+   possible, to allow for more combinations.  */
+
+#define SELECT_CC_MODE(OP, X, Y)       v850_select_cc_mode (OP, X, Y)
+
 /* Tell final.c how to eliminate redundant test instructions.  */
 
 /* Here we define machine-dependent flags and fields in cc_status
@@ -889,22 +943,25 @@ typedef enum
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
-#define REGISTER_NAMES							\
-{  "r0",  "r1",  "r2",  "sp",  "gp",  "r5",  "r6" , "r7",		\
-   "r8",  "r9", "r10", "r11", "r12", "r13", "r14", "r15",		\
-  "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23",		\
-  "r24", "r25", "r26", "r27", "r28", "r29",  "ep", "r31",		\
+#define REGISTER_NAMES                                         \
+{  "r0",  "r1",  "r2",  "sp",  "gp",  "r5",  "r6" , "r7",      \
+   "r8",  "r9", "r10", "r11", "r12", "r13", "r14", "r15",      \
+  "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23",      \
+  "r24", "r25", "r26", "r27", "r28", "r29",  "ep", "r31",      \
+  "psw", "fcc",      \
   ".fp", ".ap"}
 
-#define ADDITIONAL_REGISTER_NAMES					\
-{ { "zero",	0 },							\
-  { "hp",	2 },							\
-  { "r3",	3 },							\
-  { "r4",	4 },							\
-  { "tp",	5 },							\
-  { "fp",	29 },							\
-  { "r30",	30 },							\
-  { "lp",	31} }
+/* Register numbers */
+
+#define ADDITIONAL_REGISTER_NAMES              \
+{ { "zero",    ZERO_REGNUM },                  \
+  { "hp",      2 },                            \
+  { "r3",      3 },                            \
+  { "r4",      4 },                            \
+  { "tp",      5 },                            \
+  { "fp",      29 },                           \
+  { "r30",     30 },                           \
+  { "lp",      LP_REGNUM} }
 
 #define ASM_OUTPUT_REG_PUSH(FILE,REGNO)
 #define ASM_OUTPUT_REG_POP(FILE,REGNO)
@@ -919,12 +976,13 @@ typedef enum
 
 /* Disable the shift, which is for the currently disabled "switch"
    opcode.  Se casesi in v850.md.  */
+
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) 		\
   fprintf (FILE, "\t%s %s.L%d-.L%d%s\n",				\
 	   (TARGET_BIG_SWITCH ? ".long" : ".short"),			\
-	   (0 && ! TARGET_BIG_SWITCH && TARGET_V850E ? "(" : ""),		\
+	   (0 && ! TARGET_BIG_SWITCH && (TARGET_V850E || TARGET_V850E2_ALL) ? "(" : ""),             \
 	   VALUE, REL,							\
-	   (0 && ! TARGET_BIG_SWITCH && TARGET_V850E ? ")>>1" : ""))
+	   (0 && ! TARGET_BIG_SWITCH && (TARGET_V850E || TARGET_V850E2_ALL) ? ")>>1" : ""))
 
 #define ASM_OUTPUT_ALIGN(FILE, LOG)	\
   if ((LOG) != 0)			\
@@ -949,7 +1007,7 @@ typedef enum
 
 /* The switch instruction requires that the jump table immediately follow
    it.  */
-#define JUMP_TABLES_IN_TEXT_SECTION 1
+#define JUMP_TABLES_IN_TEXT_SECTION (!TARGET_JUMP_TABLES_IN_DATA_SECTION)
 
 /* svr4.h defines this assuming that 4 byte alignment is required.  */
 #undef ASM_OUTPUT_BEFORE_CASE_LABEL
@@ -1075,3 +1133,5 @@ extern union tree_node * GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_K
 #define TARGET_ASM_INIT_SECTIONS v850_asm_init_sections
 
 #endif /* ! GCC_V850_H */
+
+

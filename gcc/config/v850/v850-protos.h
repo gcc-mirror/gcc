@@ -43,6 +43,11 @@ extern char * construct_restore_jr          (rtx);
 extern char * construct_dispose_instruction (rtx);
 extern char * construct_prepare_instruction (rtx);
 extern int    ep_memory_operand             (rtx, Mmode, int);
+extern int    v850_float_z_comparison_operator (rtx, Mmode);
+extern int    v850_float_nz_comparison_operator (rtx, Mmode);
+extern rtx    v850_gen_compare              (enum rtx_code, Mmode, rtx, rtx);
+extern Mmode  v850_gen_float_compare (enum rtx_code, Mmode, rtx, rtx);
+extern Mmode  v850_select_cc_mode (RTX_CODE, rtx, rtx);
 #ifdef TREE_CODE
 extern rtx    function_arg                  (CUMULATIVE_ARGS *, Mmode, tree, int);
 #endif

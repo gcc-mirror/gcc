@@ -45,7 +45,6 @@ LIB1ASMFUNCS	= _mulsi3 \
 		  _save_28c \
 		  _save_29c \
 		  _save_31c \
-		  _save_varargs \
 		  _save_interrupt \
 		  _save_all_interrupt \
                   _callt_save_20 \
@@ -69,12 +68,10 @@ LIB1ASMFUNCS	= _mulsi3 \
 		  _callt_save_28c \
 		  _callt_save_29c \
 		  _callt_save_31c \
-		  _callt_save_varargs \
 		  _callt_save_interrupt \
 		  _callt_save_all_interrupt \
 		  _callt_save_r2_r29 \
 		  _callt_save_r2_r31 \
-		  _callt_save_r6_r9 \
 		  _negdi2 \
 		  _cmpdi2 \
 		  _ucmpdi2 \
