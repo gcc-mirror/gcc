@@ -1,5 +1,10 @@
 2010-07-26  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/45056
+	* g++.dg/pr45056.C: New testcase.
+
+2010-07-26  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/45071
 	* gcc.dg/pr45071.c: New testcase.
 
