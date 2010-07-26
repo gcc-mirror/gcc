@@ -1,3 +1,9 @@
+2010-07-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45071
+	* tree-ssa-sccvn.c  (vn_reference_maybe_forwprop_address): Always
+	adjust op->opcode.
+
 2010-07-26  Naveen.H.S  <naveen.S@kpitcummins.com>
 
 	* config/v850/lib1funcs.asm (save_r2_r31, return_r2_r31,
