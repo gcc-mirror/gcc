@@ -50,7 +50,6 @@ extern bool parse_optimize_options (tree, bool);
 
 #ifdef BUFSIZ
 extern void output_quoted_string	(FILE *, const char *);
-extern void output_file_directive	(FILE *, const char *);
 #endif
 
 extern void wrapup_global_declaration_1 (tree);

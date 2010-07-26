@@ -2666,9 +2666,6 @@ do									\
   }									\
 while (0)
 
-/* How to tell the debugger about changes of source files.  */
-#define ASM_OUTPUT_SOURCE_FILENAME mips_output_filename
-
 /* mips-tfile does not understand .stabd directives.  */
 #define DBX_OUTPUT_SOURCE_LINE(STREAM, LINE, COUNTER) do {	\
   dbxout_begin_stabn_sline (LINE);				\

@@ -7247,6 +7247,47 @@ default_elf_asm_output_external (FILE *file ATTRIBUTE_UNUSED,
     maybe_assemble_visibility (decl);
 }
 
+/* The default hook for TARGET_ASM_OUTPUT_SOURCE_FILENAME.  */
+
+void
+default_asm_output_source_filename (FILE *file, const char *name)
+{
+#ifdef ASM_OUTPUT_SOURCE_FILENAME
+  ASM_OUTPUT_SOURCE_FILENAME (file, name);
+#else
+  fprintf (file, "\t.file\t");
+  output_quoted_string (file, name);
+  putc ('\n', file);
+#endif
+}
+
+/* Output a file name in the form wanted by System V.  */
+
+void
+output_file_directive (FILE *asm_file, const char *input_name)
+{
+  int len;
+  const char *na;
+
+  if (input_name == NULL)
+    input_name = "<stdin>";
+  else
+    input_name = remap_debug_filename (input_name);
+
+  len = strlen (input_name);
+  na = input_name + len;
+
+  /* NA gets INPUT_NAME sans directory names.  */
+  while (na > input_name)
+    {
+      if (IS_DIR_SEPARATOR (na[-1]))
+	break;
+      na--;
+    }
+
+  targetm.asm_out.output_source_filename (asm_file, na);
+}
+
 /* Create a DEBUG_EXPR_DECL / DEBUG_EXPR pair from RTL expression
    EXP.  */
 rtx
