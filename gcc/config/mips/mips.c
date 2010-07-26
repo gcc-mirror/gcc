@@ -7892,9 +7892,9 @@ mips_output_external (FILE *file, tree decl, const char *name)
     }
 }
 
-/* Implement ASM_OUTPUT_SOURCE_FILENAME.  */
+/* Implement TARGET_ASM_OUTPUT_SOURCE_FILENAME.  */
 
-void
+static void
 mips_output_filename (FILE *stream, const char *name)
 {
   /* If we are emitting DWARF-2, let dwarf2out handle the ".file"
@@ -16496,6 +16496,9 @@ void mips_function_profiler (FILE *file)
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT mips_trampoline_init
+
+#undef TARGET_ASM_OUTPUT_SOURCE_FILENAME
+#define TARGET_ASM_OUTPUT_SOURCE_FILENAME mips_output_filename
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -7262,6 +7262,8 @@ This macro need not be defined if the standard form of output
 for the file format in use is appropriate.
 @end defmac
 
+@hook TARGET_ASM_OUTPUT_SOURCE_FILENAME
+
 @defmac OUTPUT_QUOTED_STRING (@var{stream}, @var{string})
 A C statement to output the string @var{string} to the stdio stream
 @var{stream}.  If you do not call the function @code{output_quoted_string}

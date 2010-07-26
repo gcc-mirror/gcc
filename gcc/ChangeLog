@@ -1,3 +1,20 @@
+2010-07-26  Anatoly Sokolov  <aesok@post.ru>
+
+	* target.def (output_source_filename): New hook.
+	* doc/tm.texi.in (TARGET_ASM_OUTPUT_SOURCE_FILENAME): Document.
+	* doc/tm.texi: Regenerate.
+	* toplev.c (output_file_directive) Remove function.
+	* toplev.h (output_file_directive) Remove.
+	* output.h (default_asm_output_source_filename,
+	output_file_directive): Declare.
+	* varasm.h (default_asm_output_source_filename,
+	output_file_directive): New functions.
+
+	* config/mips/mips.h (ASM_OUTPUT_SOURCE_FILENAME): Remove macro.
+	* config/mips/mips-protos.h (mips_output_filename): Remove.
+	* config/mips/mips.c (mips_output_filename): Make Static.
+	(TARGET_ASM_OUTPUT_SOURCE_FILENAME): Define.
+
 2010-07-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43784

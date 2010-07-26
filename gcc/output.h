@@ -595,6 +595,9 @@ extern bool unlikely_text_section_p (section *);
 extern void switch_to_section (section *);
 extern void output_section_asm_op (const void *);
 
+extern void default_asm_output_source_filename (FILE *, const char *);
+extern void output_file_directive (FILE *, const char *);
+
 extern unsigned int default_section_type_flags (tree, const char *, int);
 
 extern bool have_global_bss_p (void);
