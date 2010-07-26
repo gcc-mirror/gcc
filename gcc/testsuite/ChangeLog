@@ -1,3 +1,10 @@
+2010-07-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/torture/pr44900.C: Use dg-require-effective-target
+	sse_runtime.
+	* gcc.dg/attr-weak-hidden-1a.c: Use dg-require-weak,
+	dg-require-visibility.
+
 2010-07-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/43784
