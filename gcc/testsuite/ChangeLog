@@ -1,3 +1,8 @@
+2010-07-26  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.c-torture/execute/pr45017.c: Move ...
+	* gcc.dg/torture/pr45017.c: ... here.  Restrict to i?86 and x86_64.
+
 2010-07-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/40628

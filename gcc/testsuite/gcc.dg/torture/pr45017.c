@@ -1,3 +1,5 @@
+/* { dg-do run { target i?86-*-* x86_64-*-* } } */
+
 int tester(char *bytes)
 {
   union {
