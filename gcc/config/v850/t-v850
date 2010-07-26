@@ -46,7 +46,6 @@ LIB1ASMFUNCS	= _mulsi3 \
 		  _save_28c \
 		  _save_29c \
 		  _save_31c \
-		  _save_varargs \
 		  _save_interrupt \
 		  _save_all_interrupt \
                   _callt_save_20 \
@@ -70,12 +69,10 @@ LIB1ASMFUNCS	= _mulsi3 \
 		  _callt_save_28c \
 		  _callt_save_29c \
 		  _callt_save_31c \
-		  _callt_save_varargs \
 		  _callt_save_interrupt \
 		  _callt_save_all_interrupt \
 		  _callt_save_r2_r29 \
 		  _callt_save_r2_r31 \
-		  _callt_save_r6_r9 \
 		  _negdi2 \
 		  _cmpdi2 \
 		  _ucmpdi2 \
@@ -100,10 +97,10 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
 # Create target-specific versions of the libraries
-MULTILIB_OPTIONS  = mv850e
-MULTILIB_DIRNAMES = v850e
+MULTILIB_OPTIONS  = mv850/mv850e/mv850e2/mv850e2v3
+MULTILIB_DIRNAMES = v850 v850e v850e2 v850e2v3
 INSTALL_LIBGCC    = install-multilib
-MULTILIB_MATCHES  = mv850e=mv850e1
+MULTILIB_MATCHES  = mv850e=mv850e1 
 
 TCFLAGS = -mno-app-regs -msmall-sld -Wa,-mwarn-signed-overflow -Wa,-mwarn-unsigned-overflow
 

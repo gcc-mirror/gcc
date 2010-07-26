@@ -66,9 +66,13 @@ mtda
 Target RejectNegative Joined
 Set the max size of data eligible for the TDA area
 
-mstrict-align
-Target Report Mask(STRICT_ALIGN)
+mno-strict-align
+Target Report Mask(NO_STRICT_ALIGN)
 Enforce strict alignment
+
+mjump-tables-in-data-section
+Target Report Mask(JUMP_TABLES_IN_DATA_SECTION)
+Enforce table jump
 
 mUS-bit-set
 Target Report Mask(US_BIT_SET)
@@ -82,8 +86,16 @@ Target Report RejectNegative Mask(V850E)
 Compile for the v850e processor
 
 mv850e1
-Target RejectNegative Mask(V850E) MaskExists
+Target RejectNegative Mask(V850E1)
 Compile for the v850e1 processor
+
+mv850e2
+Target Report RejectNegative Mask(V850E2)
+Compile for the v850e2 processor
+
+mv850e2v3
+Target Report RejectNegative Mask(V850E2V3)
+Compile for the v850e2v3 processor
 
 mzda
 Target RejectNegative Joined

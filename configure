@@ -3730,13 +3730,7 @@ case "${target}" in
   v810-*-*)
     noconfigdirs="$noconfigdirs bfd binutils gas gcc gdb ld target-libstdc++-v3 opcodes target-libgloss ${libgcj}"
     ;;
-  v850-*-*)
-    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
-    ;;
-  v850e-*-*)
-    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
-    ;;
-  v850ea-*-*)
+  v850*-*-*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   vax-*-vms)
