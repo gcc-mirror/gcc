@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-require-effective-target tls_native }
+! { dg-require-effective-target tls }
 
   integer :: thrpriv, thr, i, j, s, g1, g2, m
   integer, dimension (6) :: p

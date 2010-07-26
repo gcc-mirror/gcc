@@ -65,6 +65,35 @@ update_bb_for_stmts (gimple_seq_node first, basic_block bb)
     gimple_set_bb (n->stmt, bb);
 }
 
+/* Set the frequencies for the cgraph_edges for each of the calls
+   starting at FIRST for their new position within BB.  */
+
+static void
+update_call_edge_frequencies (gimple_seq_node first, basic_block bb)
+{
+  struct cgraph_node *cfun_node = NULL;
+  int bb_freq = 0;
+  gimple_seq_node n;
+
+  for (n = first; n ; n = n->next)
+    if (is_gimple_call (n->stmt))
+      {
+	struct cgraph_edge *e;
+
+	/* These function calls are expensive enough that we want
+	   to avoid calling them if we never see any calls.  */
+	if (cfun_node == NULL)
+	  {
+	    cfun_node = cgraph_node (current_function_decl);
+	    bb_freq = (compute_call_stmt_bb_frequency
+		       (current_function_decl, bb));
+	  }
+
+	e = cgraph_edge (cfun_node, n->stmt);
+	if (e != NULL)
+	  e->frequency = bb_freq;
+      }
+}
 
 /* Insert the sequence delimited by nodes FIRST and LAST before
    iterator I.  M specifies how to update iterator I after insertion
@@ -696,11 +725,19 @@ basic_block
 gsi_insert_on_edge_immediate (edge e, gimple stmt)
 {
   gimple_stmt_iterator gsi;
+  struct gimple_seq_node_d node;
   basic_block new_bb = NULL;
+  bool ins_after;
 
   gcc_assert (!PENDING_STMT (e));
 
-  if (gimple_find_edge_insert_loc (e, &gsi, &new_bb))
+  ins_after = gimple_find_edge_insert_loc (e, &gsi, &new_bb);
+
+  node.stmt = stmt;
+  node.prev = node.next = NULL;
+  update_call_edge_frequencies (&node, gsi.bb);
+
+  if (ins_after)
     gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
   else
     gsi_insert_before (&gsi, stmt, GSI_NEW_STMT);
@@ -716,10 +753,14 @@ gsi_insert_seq_on_edge_immediate (edge e, gimple_seq stmts)
 {
   gimple_stmt_iterator gsi;
   basic_block new_bb = NULL;
+  bool ins_after;
 
   gcc_assert (!PENDING_STMT (e));
 
-  if (gimple_find_edge_insert_loc (e, &gsi, &new_bb))
+  ins_after = gimple_find_edge_insert_loc (e, &gsi, &new_bb);
+  update_call_edge_frequencies (gimple_seq_first (stmts), gsi.bb);
+
+  if (ins_after)
     gsi_insert_seq_after (&gsi, stmts, GSI_NEW_STMT);
   else
     gsi_insert_seq_before (&gsi, stmts, GSI_NEW_STMT);
@@ -758,10 +799,14 @@ gsi_commit_one_edge_insert (edge e, basic_block *new_bb)
     {
       gimple_stmt_iterator gsi;
       gimple_seq seq = PENDING_STMT (e);
+      bool ins_after;
 
       PENDING_STMT (e) = NULL;
 
-      if (gimple_find_edge_insert_loc (e, &gsi, new_bb))
+      ins_after = gimple_find_edge_insert_loc (e, &gsi, new_bb);
+      update_call_edge_frequencies (gimple_seq_first (seq), gsi.bb);
+
+      if (ins_after)
 	gsi_insert_seq_after (&gsi, seq, GSI_NEW_STMT);
       else
 	gsi_insert_seq_before (&gsi, seq, GSI_NEW_STMT);

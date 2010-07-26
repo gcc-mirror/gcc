@@ -5,7 +5,7 @@
 /* { dg-do link } */
 /* { dg-options "-O2 -ftls-model=initial-exec" } */
 /* { dg-options "-O2 -ftls-model=initial-exec -march=i686" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
-/* { dg-require-effective-target tls_native } */
+/* { dg-require-effective-target tls } */
 /* { dg-require-effective-target tls_runtime  } */
 
 __thread int thr;

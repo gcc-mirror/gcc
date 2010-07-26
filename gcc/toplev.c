@@ -959,11 +959,6 @@ compile_file (void)
   if (seen_error ())
     return;
 
-  /* Ensure that emulated TLS control vars are finalized and build 
-     a static constructor for them, when it is required.  */
-  if (!targetm.have_tls)
-    emutls_finish ();
-
   varpool_assemble_pending_decls ();
   finish_aliases_2 ();
 

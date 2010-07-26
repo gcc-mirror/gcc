@@ -165,9 +165,6 @@ extern void merge_weak (tree, tree);
 /* Emit any pending weak declarations.  */
 extern void weak_finish (void);
 
-/* Emit any pending emutls declarations and initializations.  */
-extern void emutls_finish (void);
-
 /* Return the default TLS model for a given variable.  */
 extern enum tls_model decl_default_tls_model (const_tree);
 
@@ -479,10 +476,7 @@ enum section_category
 
   SECCAT_BSS,
   SECCAT_SBSS,
-  SECCAT_TBSS,
-
-  SECCAT_EMUTLS_VAR,
-  SECCAT_EMUTLS_TMPL
+  SECCAT_TBSS
 };
 
 /* Information that is provided by all instances of the section type.  */

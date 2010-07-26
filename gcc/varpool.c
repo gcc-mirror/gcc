@@ -346,17 +346,6 @@ decide_is_variable_needed (struct varpool_node *node, tree decl)
       && !DECL_EXTERNAL (decl))
     return true;
 
-  /* When emulating tls, we actually see references to the control
-     variable, rather than the user-level variable.  */
-  if (!targetm.have_tls
-      && TREE_CODE (decl) == VAR_DECL
-      && DECL_THREAD_LOCAL_P (decl))
-    {
-      tree control = emutls_decl (decl);
-      if (decide_is_variable_needed (varpool_node (control), control))
-	return true;
-    }
-
   /* When not reordering top level variables, we have to assume that
      we are going to keep everything.  */
   if (flag_toplevel_reorder)
