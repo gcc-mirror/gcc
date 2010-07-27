@@ -1,3 +1,11 @@
+2010-07-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* lto-lang.c (lto_option_lang_mask, lto_complain_wrong_lang_p):
+	New.
+	(lto_init_options): Update prototype.
+	(LANG_HOOKS_OPTION_LANG_MASK, LANG_HOOKS_COMPLAIN_WRONG_LANG_P):
+	Define.
+
 2010-07-10   Andi Kleen <ak@linux.intel.com>
 
 	PR lto/44992

@@ -1,5 +1,5 @@
 /* General-purpose hooks.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
@@ -73,7 +73,7 @@ extern tree hook_tree_tree_tree_tree_null (tree, tree, tree);
 extern tree hook_tree_tree_tree_tree_3rd_identity (tree, tree, tree);
 extern tree hook_tree_tree_int_treep_bool_null (tree, int, tree *, bool);
 
-extern unsigned hook_uint_uint_constcharptrptr_0 (unsigned, const char **);
+extern unsigned hook_uint_void_0 (void);
 
 extern bool default_can_output_mi_thunk_no_vcall (const_tree, HOST_WIDE_INT,
 						  HOST_WIDE_INT, const_tree);

@@ -1,5 +1,5 @@
 /* General-purpose hooks.
-   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
@@ -176,8 +176,7 @@ hook_int_size_t_constcharptr_int_0 (size_t a ATTRIBUTE_UNUSED,
 }
 
 unsigned int
-hook_uint_uint_constcharptrptr_0 (unsigned int a ATTRIBUTE_UNUSED,
-				  const char **b ATTRIBUTE_UNUSED)
+hook_uint_void_0 (void)
 {
   return 0;
 }

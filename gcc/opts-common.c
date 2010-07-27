@@ -245,10 +245,14 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
     {
     case 1:
       decoded->orig_option_with_args_text = argv[0];
+      decoded->canonical_option[0] = argv[0];
+      decoded->canonical_option[1] = NULL;
       break;
     case 2:
       decoded->orig_option_with_args_text = concat (argv[0], " ",
 						    argv[1], NULL);
+      decoded->canonical_option[0] = argv[0];
+      decoded->canonical_option[1] = argv[1];
       break;
     default:
       gcc_unreachable ();
@@ -279,6 +283,8 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
   opt_array[0].opt_index = OPT_SPECIAL_program_name;
   opt_array[0].arg = argv[0];
   opt_array[0].orig_option_with_args_text = argv[0];
+  opt_array[0].canonical_option[0] = argv[0];
+  opt_array[0].canonical_option[1] = NULL;
   opt_array[0].value = 1;
   opt_array[0].errors = 0;
   num_decoded_options = 1;
@@ -293,6 +299,8 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
 	  opt_array[num_decoded_options].opt_index = OPT_SPECIAL_input_file;
 	  opt_array[num_decoded_options].arg = opt;
 	  opt_array[num_decoded_options].orig_option_with_args_text = opt;
+	  opt_array[num_decoded_options].canonical_option[0] = opt;
+	  opt_array[num_decoded_options].canonical_option[1] = NULL;
 	  opt_array[num_decoded_options].value = 1;
 	  opt_array[num_decoded_options].errors = 0;
 	  num_decoded_options++;

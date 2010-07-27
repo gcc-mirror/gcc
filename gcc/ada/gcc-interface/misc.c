@@ -61,7 +61,9 @@
 #include "gigi.h"
 
 static bool gnat_init			(void);
-static unsigned int gnat_init_options	(unsigned int, const char **);
+static unsigned int gnat_option_lang_mask (void);
+static void gnat_init_options		(unsigned int,
+					 struct cl_decoded_option *);
 static int gnat_handle_option		(size_t, const char *, int, int);
 static bool gnat_post_options		(const char **);
 static alias_set_type gnat_get_alias_set (tree);
@@ -85,6 +87,8 @@ static tree gnat_eh_personality		(void);
 #define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct tree_identifier)
 #undef  LANG_HOOKS_INIT
 #define LANG_HOOKS_INIT			gnat_init
+#undef  LANG_HOOKS_OPTION_LANG_MASK
+#define LANG_HOOKS_OPTION_LANG_MASK	gnat_option_lang_mask
 #undef  LANG_HOOKS_INIT_OPTIONS
 #define LANG_HOOKS_INIT_OPTIONS		gnat_init_options
 #undef  LANG_HOOKS_HANDLE_OPTION
@@ -249,22 +253,43 @@ gnat_handle_option (size_t scode, const char *arg, int value,
   return 1;
 }
 
-/* Initialize for option processing.  */
+/* Return language mask for option processing.  */
 
 static unsigned int
-gnat_init_options (unsigned int argc, const char **argv)
+gnat_option_lang_mask (void)
 {
-  gnat_argv = (char **) xmalloc (sizeof (argv[0]));
-  gnat_argv[0] = xstrdup (argv[0]);     /* name of the command */
-  gnat_argc = 1;
+  return CL_Ada;
+}
 
-  save_argc = argc;
-  save_argv = argv;
+/* Initialize for option processing.  */
+
+static void
+gnat_init_options (unsigned int decoded_options_count,
+		   struct cl_decoded_option *decoded_options)
+{
+  /* Reconstruct an argv array for use of back_end.adb.
+
+     ??? back_end.adb should not rely on this; instead, it should work
+     with decoded options without such reparsing, to ensure
+     consistency in how options are decoded.  */
+  unsigned int i;
+
+  save_argv = XNEWVEC (const char *, 2 * decoded_options_count + 1);
+  save_argc = 0;
+  for (i = 0; i < decoded_options_count; i++)
+    {
+      save_argv[save_argc++] = decoded_options[i].canonical_option[0];
+      if (decoded_options[i].canonical_option[1] != NULL)
+	save_argv[save_argc++] = decoded_options[i].canonical_option[1];
+    }
+  save_argv[save_argc] = NULL;
+
+  gnat_argv = (char **) xmalloc (sizeof (save_argv[0]));
+  gnat_argv[0] = xstrdup (save_argv[0]);     /* name of the command */
+  gnat_argc = 1;
 
   /* Uninitialized really means uninitialized in Ada.  */
   flag_zero_initialized_in_bss = 0;
-
-  return CL_Ada;
 }
 
 /* Post-switch processing.  */

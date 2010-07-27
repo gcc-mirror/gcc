@@ -1,5 +1,6 @@
 /* GCC core type declarations.
-   Copyright (C) 2002, 2004, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -65,6 +66,8 @@ union section;
 typedef union section section;
 struct cl_target_option;
 struct cl_optimization;
+struct cl_option;
+struct cl_decoded_option;
 struct gimple_seq_d;
 typedef struct gimple_seq_d *gimple_seq;
 typedef const struct gimple_seq_d *const_gimple_seq;

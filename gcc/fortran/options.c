@@ -53,11 +53,21 @@ set_default_std_flags (void)
 }
 
 
+/* Return language mask for Fortran options.  */
+
+unsigned int
+gfc_option_lang_mask (void)
+{
+  return CL_Fortran;
+}
+
+
 /* Get ready for options handling. Keep in sync with
    libgfortran/runtime/compile_options.c (init_compile_options). */
 
-unsigned int
-gfc_init_options (unsigned int argc, const char **argv)
+void
+gfc_init_options (unsigned int decoded_options_count,
+		  struct cl_decoded_option *decoded_options)
 {
   gfc_source_file = NULL;
   gfc_option.module_dir = NULL;
@@ -143,9 +153,7 @@ gfc_init_options (unsigned int argc, const char **argv)
   flag_short_enums = targetm.default_short_enums ();
 
   /* Initialize cpp-related options.  */
-  gfc_cpp_init_options(argc, argv);
-
-  return CL_Fortran;
+  gfc_cpp_init_options (decoded_options_count, decoded_options);
 }
 
 

@@ -1,3 +1,31 @@
+2010-07-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* langhooks-def.h (lhd_init_options, LANG_HOOKS_OPTION_LANG_MASK,
+	LANG_HOOKS_COMPLAIN_WRONG_LANG_P): New.
+	(LANG_HOOKS_INIT_OPTIONS): Update default definition.
+	(LANG_HOOKS_INITIALIZER): Add new hooks.
+	* langhooks.c (lhd_init_options, lhd_complain_wrong_lang_p): New.
+	* langhooks.h (struct lang_hooks): Add new hooks option_lang_mask
+	and complain_wrong_lang_p.  Update init_options prototype.
+	* c-objc-common.c (c_initialize_diagnostics): First call
+	c_common_initialize_diagnostics.
+	* c-objc-common.h (LANG_HOOKS_OPTION_LANG_MASK,
+	LANG_HOOKS_COMPLAIN_WRONG_LANG_P): Define.
+	* coretypes.h (struct cl_option, struct cl_decoded_option):
+	Declare.
+	* hooks.c (hook_uint_uint_constcharptrptr_0): Remove.
+	(hook_uint_void_0): New.
+	* hooks.h (hook_uint_uint_constcharptrptr_0): Remove.
+	(hook_uint_void_0): New.
+	* opts-common.c (decode_cmdline_option,
+	decode_cmdline_options_to_array): Also fill in canonical_option
+	field.
+	* opts.c (complain_wrong_lang): Use langhook to determine whether
+	to complain instead of special-casing LTO.
+	(decode_options): Separate lang_mask determination with
+	option_lang_mask hook from call of init_options hook.
+	* opts.h (struct cl_decoded_option): Add canonical_option.
+
 2010-07-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/45083

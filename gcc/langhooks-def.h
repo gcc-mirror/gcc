@@ -1,5 +1,5 @@
 /* Default macros to initialize the lang_hooks data structure.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
@@ -66,6 +66,9 @@ extern tree lhd_builtin_function (tree);
 
 /* Declarations of default tree inlining hooks.  */
 extern void lhd_initialize_diagnostics (struct diagnostic_context *);
+extern void lhd_init_options (unsigned int,
+			      struct cl_decoded_option *);
+extern bool lhd_complain_wrong_lang_p (const struct cl_option *);
 extern tree lhd_callgraph_analyze_expr (tree *, int *);
 
 
@@ -82,8 +85,10 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 #define LANG_HOOKS_INIT			hook_bool_void_false
 #define LANG_HOOKS_FINISH		lhd_do_nothing
 #define LANG_HOOKS_PARSE_FILE		lhd_do_nothing_i
-#define LANG_HOOKS_INIT_OPTIONS		hook_uint_uint_constcharptrptr_0
+#define LANG_HOOKS_OPTION_LANG_MASK	hook_uint_void_0
+#define LANG_HOOKS_INIT_OPTIONS		lhd_init_options
 #define LANG_HOOKS_INITIALIZE_DIAGNOSTICS lhd_initialize_diagnostics
+#define LANG_HOOKS_COMPLAIN_WRONG_LANG_P lhd_complain_wrong_lang_p
 #define LANG_HOOKS_HANDLE_OPTION	hook_int_size_t_constcharptr_int_0
 #define LANG_HOOKS_MISSING_ARGUMENT	hook_bool_constcharptr_size_t_false
 #define LANG_HOOKS_POST_OPTIONS		lhd_post_options
@@ -258,8 +263,10 @@ extern void lhd_end_section (void);
   LANG_HOOKS_IDENTIFIER_SIZE, \
   LANG_HOOKS_FREE_LANG_DATA, \
   LANG_HOOKS_TREE_SIZE, \
+  LANG_HOOKS_OPTION_LANG_MASK, \
   LANG_HOOKS_INIT_OPTIONS, \
   LANG_HOOKS_INITIALIZE_DIAGNOSTICS, \
+  LANG_HOOKS_COMPLAIN_WRONG_LANG_P, \
   LANG_HOOKS_HANDLE_OPTION, \
   LANG_HOOKS_MISSING_ARGUMENT, \
   LANG_HOOKS_POST_OPTIONS, \

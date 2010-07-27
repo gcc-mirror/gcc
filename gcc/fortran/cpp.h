@@ -1,4 +1,4 @@
-/* Copyright (C) 2008 Free Software Foundation, Inc.
+/* Copyright (C) 2008, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -36,7 +36,8 @@ const char *gfc_cpp_temporary_file (void);
 void gfc_cpp_init_0 (void);
 void gfc_cpp_init (void);
 
-void gfc_cpp_init_options (unsigned int argc, const char **argv);
+void gfc_cpp_init_options (unsigned int decoded_options_count,
+			   struct cl_decoded_option *decoded_options);
 
 int gfc_cpp_handle_option(size_t scode, const char *arg, int value);
 

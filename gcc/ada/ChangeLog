@@ -1,3 +1,9 @@
+2010-07-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc-interface/misc.c (gnat_option_lang_mask): New.
+	(gnat_init_options): Update prototype.  Reconstruct argv array
+	from decoded options.
+
 2010-07-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interfaces/utils.c (update_pointer_to): In the unconstrained
