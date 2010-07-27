@@ -500,7 +500,7 @@ static void free_pre_mem (void);
 static void compute_pre_data (void);
 static int pre_expr_reaches_here_p (basic_block, struct expr *,
 				    basic_block);
-static void insert_insn_end_basic_block (struct expr *, basic_block, int);
+static void insert_insn_end_basic_block (struct expr *, basic_block);
 static void pre_insert_copy_insn (struct expr *, rtx);
 static void pre_insert_copies (void);
 static int pre_delete (void);
@@ -3535,14 +3535,10 @@ process_insert_insn (struct expr *expr)
 
 /* Add EXPR to the end of basic block BB.
 
-   This is used by both the PRE and code hoisting.
-
-   For PRE, we want to verify that the expr is either transparent
-   or locally anticipatable in the target block.  This check makes
-   no sense for code hoisting.  */
+   This is used by both the PRE and code hoisting.  */
 
 static void
-insert_insn_end_basic_block (struct expr *expr, basic_block bb, int pre)
+insert_insn_end_basic_block (struct expr *expr, basic_block bb)
 {
   rtx insn = BB_END (bb);
   rtx new_insn;
@@ -3569,12 +3565,6 @@ insert_insn_end_basic_block (struct expr *expr, basic_block bb, int pre)
 #ifdef HAVE_cc0
       rtx note;
 #endif
-      /* It should always be the case that we can put these instructions
-	 anywhere in the basic block with performing PRE optimizations.
-	 Check this.  */
-      gcc_assert (!NONJUMP_INSN_P (insn) || !pre
-		  || TEST_BIT (antloc[bb->index], expr->bitmap_index)
-		  || TEST_BIT (transp[bb->index], expr->bitmap_index));
 
       /* If this is a jump table, then we can't insert stuff here.  Since
 	 we know the previous real insn must be the tablejump, we insert
@@ -3611,15 +3601,7 @@ insert_insn_end_basic_block (struct expr *expr, basic_block bb, int pre)
       /* Keeping in mind targets with small register classes and parameters
          in registers, we search backward and place the instructions before
 	 the first parameter is loaded.  Do this for everyone for consistency
-	 and a presumption that we'll get better code elsewhere as well.
-
-	 It should always be the case that we can put these instructions
-	 anywhere in the basic block with performing PRE optimizations.
-	 Check this.  */
-
-      gcc_assert (!pre
-		  || TEST_BIT (antloc[bb->index], expr->bitmap_index)
-		  || TEST_BIT (transp[bb->index], expr->bitmap_index));
+	 and a presumption that we'll get better code elsewhere as well.  */
 
       /* Since different machines initialize their parameter registers
 	 in different orders, assume nothing.  Collect the set of all
@@ -3716,7 +3698,7 @@ pre_edge_insert (struct edge_list *edge_list, struct expr **index_map)
 			   now.  */
 
 			if (eg->flags & EDGE_ABNORMAL)
-			  insert_insn_end_basic_block (index_map[j], bb, 0);
+			  insert_insn_end_basic_block (index_map[j], bb);
 			else
 			  {
 			    insn = process_insert_insn (index_map[j]);
@@ -4595,7 +4577,7 @@ hoist_code (void)
 
 		      if (!insn_inserted_p)
 			{
-			  insert_insn_end_basic_block (index_map[i], bb, 0);
+			  insert_insn_end_basic_block (index_map[i], bb);
 			  insn_inserted_p = 1;
 			}
 		    }
