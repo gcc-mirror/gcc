@@ -11697,14 +11697,18 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 			tree t = RECUR (init);
 
 			if (init && !t)
-			  /* If we had an initializer but it
-			     instantiated to nothing,
-			     value-initialize the object.  This will
-			     only occur when the initializer was a
-			     pack expansion where the parameter packs
-			     used in that expansion were of length
-			     zero.  */
-			  init = build_value_init (TREE_TYPE (decl));
+			  {
+			    /* If we had an initializer but it
+			       instantiated to nothing,
+			       value-initialize the object.  This will
+			       only occur when the initializer was a
+			       pack expansion where the parameter packs
+			       used in that expansion were of length
+			       zero.  */
+			    init = build_value_init (TREE_TYPE (decl));
+			    if (TREE_CODE (init) == AGGR_INIT_EXPR)
+			      init = get_target_expr (init);
+			  }
 			else
 			  init = t;
 		      }

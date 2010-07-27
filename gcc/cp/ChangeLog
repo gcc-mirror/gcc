@@ -1,3 +1,10 @@
+2010-07-27  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (tsubst_expr) [DECL_EXPR]: Handle getting an AGGR_INIT_EXPR
+	from build_value_init.
+	* init.c (build_value_init_noctor): Give error for unknown array
+	bound.
+
 2010-07-27  Joseph Myers  <joseph@codesourcery.com>
 
 	* cp-objcp-common.h (LANG_HOOKS_MISSING_ARGUMENT): Remove.
