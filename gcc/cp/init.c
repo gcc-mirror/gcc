@@ -379,7 +379,10 @@ build_value_init_noctor (tree type)
       /* If we have an error_mark here, we should just return error mark
 	 as we don't know the size of the array yet.  */
       if (max_index == error_mark_node)
-	return error_mark_node;
+	{
+	  error ("cannot value-initialize array of unknown bound %qT", type);
+	  return error_mark_node;
+	}
       gcc_assert (TREE_CODE (max_index) == INTEGER_CST);
 
       /* A zero-sized array, which is accepted as an extension, will
