@@ -2,6 +2,17 @@
 
 	PR target/42495
 	PR middle-end/42574
+	* config/arm/arm.c (legitimize_pic_address): Use
+	gen_calculate_pic_address pattern to emit calculation of PIC address.
+	(will_be_in_index_register): New function.
+	(arm_legitimate_address_outer_p, thumb2_legitimate_address_p,)
+	(thumb1_legitimate_address_p): Use it provided !strict_p.
+	* config/arm/arm.md (calculate_pic_address): New expand and split.
+
+2010-07-27  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	PR target/42495
+	PR middle-end/42574
 	* config/arm/arm.c (thumb1_size_rtx_costs): Add cost for "J" constants.
 	* config/arm/arm.md (define_split "J", define_split "K"): Make
 	IRA/reload friendly.

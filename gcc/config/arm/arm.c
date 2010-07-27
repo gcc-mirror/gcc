@@ -4977,17 +4977,13 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
   if (GET_CODE (orig) == SYMBOL_REF
       || GET_CODE (orig) == LABEL_REF)
     {
-      rtx pic_ref, address;
       rtx insn;
 
       if (reg == 0)
 	{
 	  gcc_assert (can_create_pseudo_p ());
 	  reg = gen_reg_rtx (Pmode);
-	  address = gen_reg_rtx (Pmode);
 	}
-      else
-	address = reg;
 
       /* VxWorks does not impose a fixed gap between segments; the run-time
 	 gap can be different from the object-file gap.  We therefore can't
@@ -5003,18 +4999,21 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	insn = arm_pic_static_addr (orig, reg);
       else
 	{
+	  rtx pat;
+	  rtx mem;
+
 	  /* If this function doesn't have a pic register, create one now.  */
 	  require_pic_register ();
 
-	  if (TARGET_32BIT)
-	    emit_insn (gen_pic_load_addr_32bit (address, orig));
-	  else /* TARGET_THUMB1 */
-	    emit_insn (gen_pic_load_addr_thumb1 (address, orig));
+	  pat = gen_calculate_pic_address (reg, cfun->machine->pic_reg, orig);
 
-	  pic_ref = gen_const_mem (Pmode,
-				   gen_rtx_PLUS (Pmode, cfun->machine->pic_reg,
-					         address));
-	  insn = emit_move_insn (reg, pic_ref);
+	  /* Make the MEM as close to a constant as possible.  */
+	  mem = SET_SRC (pat);
+	  gcc_assert (MEM_P (mem) && !MEM_VOLATILE_P (mem));
+	  MEM_READONLY_P (mem) = 1;
+	  MEM_NOTRAP_P (mem) = 1;
+
+	  insn = emit_insn (pat);
 	}
 
       /* Put a REG_EQUAL note on this insn, so that it can be optimized
@@ -5294,6 +5293,15 @@ pcrel_constant_p (rtx x)
   return FALSE;
 }
 
+/* Return true if X will surely end up in an index register after next
+   splitting pass.  */
+static bool
+will_be_in_index_register (const_rtx x)
+{
+  /* arm.md: calculate_pic_address will split this into a register.  */
+  return GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_PIC_SYM;
+}
+
 /* Return nonzero if X is a valid ARM state address operand.  */
 int
 arm_legitimate_address_outer_p (enum machine_mode mode, rtx x, RTX_CODE outer,
@@ -5351,8 +5359,9 @@ arm_legitimate_address_outer_p (enum machine_mode mode, rtx x, RTX_CODE outer,
       rtx xop1 = XEXP (x, 1);
 
       return ((arm_address_register_rtx_p (xop0, strict_p)
-	       && GET_CODE(xop1) == CONST_INT
-	       && arm_legitimate_index_p (mode, xop1, outer, strict_p))
+	       && ((GET_CODE(xop1) == CONST_INT
+		    && arm_legitimate_index_p (mode, xop1, outer, strict_p))
+		   || (!strict_p && will_be_in_index_register (xop1))))
 	      || (arm_address_register_rtx_p (xop1, strict_p)
 		  && arm_legitimate_index_p (mode, xop0, outer, strict_p)));
     }
@@ -5438,7 +5447,8 @@ thumb2_legitimate_address_p (enum machine_mode mode, rtx x, int strict_p)
       rtx xop1 = XEXP (x, 1);
 
       return ((arm_address_register_rtx_p (xop0, strict_p)
-	       && thumb2_legitimate_index_p (mode, xop1, strict_p))
+	       && (thumb2_legitimate_index_p (mode, xop1, strict_p)
+		   || (!strict_p && will_be_in_index_register (xop1))))
 	      || (arm_address_register_rtx_p (xop1, strict_p)
 		  && thumb2_legitimate_index_p (mode, xop0, strict_p)));
     }
@@ -5741,7 +5751,8 @@ thumb1_legitimate_address_p (enum machine_mode mode, rtx x, int strict_p)
 	  && XEXP (x, 0) != frame_pointer_rtx
 	  && XEXP (x, 1) != frame_pointer_rtx
 	  && thumb1_index_register_rtx_p (XEXP (x, 0), strict_p)
-	  && thumb1_index_register_rtx_p (XEXP (x, 1), strict_p))
+	  && (thumb1_index_register_rtx_p (XEXP (x, 1), strict_p)
+	      || (!strict_p && will_be_in_index_register (XEXP (x, 1)))))
 	return 1;
 
       /* REG+const has 5-7 bit offset for non-SP registers.  */
@@ -7110,6 +7121,12 @@ arm_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	 a single register, otherwise it costs one insn per word.  */
       if (REG_P (XEXP (x, 0)))
 	*total = COSTS_N_INSNS (1);
+      else if (flag_pic
+	       && GET_CODE (XEXP (x, 0)) == PLUS
+	       && will_be_in_index_register (XEXP (XEXP (x, 0), 1)))
+	/* This will be split into two instructions.
+	   See arm.md:calculate_pic_address.  */
+	*total = COSTS_N_INSNS (2);
       else
 	*total = COSTS_N_INSNS (ARM_NUM_REGS (mode));
       return true;

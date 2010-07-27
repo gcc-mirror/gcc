@@ -5133,6 +5133,34 @@
 ;; we use an unspec.  The offset will be loaded from a constant pool entry,
 ;; since that is the only type of relocation we can use.
 
+;; Wrap calculation of the whole PIC address in a single pattern for the
+;; benefit of optimizers, particularly, PRE and HOIST.  Calculation of
+;; a PIC address involves two loads from memory, so we want to CSE it
+;; as often as possible.
+;; This pattern will be split into one of the pic_load_addr_* patterns
+;; and a move after GCSE optimizations.
+;;
+;; Note: Update arm.c: legitimize_pic_address() when changing this pattern.
+(define_expand "calculate_pic_address"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(mem:SI (plus:SI (match_operand:SI 1 "register_operand" "")
+			 (unspec:SI [(match_operand:SI 2 "" "")]
+				    UNSPEC_PIC_SYM))))]
+  "flag_pic"
+)
+
+;; Split calculate_pic_address into pic_load_addr_* and a move.
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(mem:SI (plus:SI (match_operand:SI 1 "register_operand" "")
+			 (unspec:SI [(match_operand:SI 2 "" "")]
+				    UNSPEC_PIC_SYM))))]
+  "flag_pic"
+  [(set (match_dup 3) (unspec:SI [(match_dup 2)] UNSPEC_PIC_SYM))
+   (set (match_dup 0) (mem:SI (plus:SI (match_dup 1) (match_dup 3))))]
+  "operands[3] = can_create_pseudo_p () ? gen_reg_rtx (SImode) : operands[0];"
+)
+
 ;; The rather odd constraints on the following are to force reload to leave
 ;; the insn alone, and to force the minipool generation pass to then move
 ;; the GOT symbol to memory.
