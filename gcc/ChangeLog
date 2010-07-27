@@ -1,3 +1,17 @@
+2010-07-27  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR target/35491
+	PR target/29090
+
+	Merge from Apple local 4.2.1.
+	2005-05-11  Stan Shebs  <shebs@apple.com>
+	Fix 64-bit varargs for Darwin (Radar 4028089).
+	* config/rs6000/rs6000.h (rs6000_args): New field floats_in_gpr.
+	* config/rs6000/rs6000.c (rs6000_darwin64_record_arg_advance_flush):
+	Add argument, add case for 8-byte register half-filled with a float.
+	(rs6000_darwin64_record_arg_advance_recurse): Detect and handle
+	single-precision floats specially.
+
 2010-07-27  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/44152
