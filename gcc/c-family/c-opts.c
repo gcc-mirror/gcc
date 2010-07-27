@@ -319,16 +319,15 @@ c_common_init_options (unsigned int decoded_options_count,
 }
 
 /* Handle switch SCODE with argument ARG.  VALUE is true, unless no-
-   form of an -f or -W option was given.  Returns 0 if the switch was
-   invalid, a negative number to prevent language-independent
-   processing in toplev.c (a hack necessary for the short-term).  */
-int
+   form of an -f or -W option was given.  Returns false if the switch was
+   invalid, true if valid.  Use HANDLERS in recursive handle_option calls.  */
+bool
 c_common_handle_option (size_t scode, const char *arg, int value,
-			int kind)
+			int kind, const struct cl_option_handlers *handlers)
 {
   const struct cl_option *option = &cl_options[scode];
   enum opt_code code = (enum opt_code) scode;
-  int result = 1;
+  bool result = true;
 
   /* Prevent resetting the language standard to a C dialect when the driver
      has already determined that we're looking at assembler input.  */
@@ -341,10 +340,10 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	{
 	  if ((option->flags & CL_TARGET)
 	      && ! targetcm.handle_c_option (scode, arg, value))
-	    result = 0;
+	    result = false;
 	  break;
 	}
-      result = 0;
+      result = false;
       break;
 
     case OPT__output_pch_:
@@ -438,7 +437,8 @@ c_common_handle_option (size_t scode, const char *arg, int value,
     case OPT_Wall:
       warn_unused = value;
       set_Wformat (value);
-      handle_option (OPT_Wimplicit, value, NULL, c_family_lang_mask, kind);
+      handle_option (OPT_Wimplicit, NULL, value, c_family_lang_mask, kind,
+		     handlers);
       warn_char_subscripts = value;
       warn_missing_braces = value;
       warn_parentheses = value;
@@ -524,7 +524,8 @@ c_common_handle_option (size_t scode, const char *arg, int value,
     case OPT_Werror_implicit_function_declaration:
       /* For backward compatibility, this is the same as
 	 -Werror=implicit-function-declaration.  */
-      enable_warning_as_error ("implicit-function-declaration", value, CL_C | CL_ObjC);
+      enable_warning_as_error ("implicit-function-declaration", value,
+			       CL_C | CL_ObjC, handlers);
       break;
 
     case OPT_Wformat:
@@ -538,11 +539,11 @@ c_common_handle_option (size_t scode, const char *arg, int value,
     case OPT_Wimplicit:
       gcc_assert (value == 0 || value == 1);
       if (warn_implicit_int == -1)
-	handle_option (OPT_Wimplicit_int, value, NULL,
-		       c_family_lang_mask, kind);
+	handle_option (OPT_Wimplicit_int, NULL, value,
+		       c_family_lang_mask, kind, handlers);
       if (warn_implicit_function_declaration == -1)
-	handle_option (OPT_Wimplicit_function_declaration, value, NULL,
-		       c_family_lang_mask, kind);
+	handle_option (OPT_Wimplicit_function_declaration, NULL, value,
+		       c_family_lang_mask, kind, handlers);
       break;
 
     case OPT_Wimport:
@@ -655,7 +656,7 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_fbuiltin_:
       if (value)
-	result = 0;
+	result = false;
       else
 	disable_builtin_function (arg);
       break;

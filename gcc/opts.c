@@ -372,8 +372,9 @@ bool flag_warn_unused_result = false;
 const char **in_fnames;
 unsigned num_in_fnames;
 
-static int common_handle_option (size_t scode, const char *arg, int value,
-				 unsigned int lang_mask, int kind);
+static bool common_handle_option (size_t scode, const char *arg, int value,
+				  unsigned int lang_mask, int kind,
+				  const struct cl_option_handlers *handlers);
 static void handle_param (const char *);
 static char *write_langs (unsigned int lang_mask);
 static void complain_wrong_lang (const char *, const struct cl_option *,
@@ -460,112 +461,58 @@ void print_ignored_options (void)
   input_location = saved_loc;
 }
 
+/* Handle an unknown option ARG, returning true if an error should be
+   given.  */
 
-/* Handle option OPT_INDEX, and argument ARG, for the language
-   indicated by LANG_MASK.  VALUE is true, unless no- form of an -f or
-   -W option was given.  KIND is the diagnostic_t if this is a
-   diagnostics option, DK_UNSPECIFIED otherwise.  Returns false if the
-   switch was invalid.  */
-bool
-handle_option (int opt_index, int value, const char *arg,
-		unsigned int lang_mask, int kind)
+static bool
+unknown_option_callback (const char *opt)
 {
-  const struct cl_option *option = &cl_options[opt_index];
-
-  if (option->flag_var)
-    set_option (opt_index, value, arg, kind);
-  
-  if (option->flags & lang_mask)
+  if (opt[1] == 'W' && opt[2] == 'n' && opt[3] == 'o' && opt[4] == '-')
     {
-      if (lang_hooks.handle_option (opt_index, arg, value, kind) == 0)
-	return false;
-#ifdef ENABLE_LTO
-      else
-	lto_register_user_option (opt_index, arg, value, lang_mask);
- #endif
+      /* We don't generate warnings for unknown -Wno-* options unless
+	 we issue diagnostics.  */
+      postpone_unknown_option_warning (opt);
+      return false;
     }
-
-  if (option->flags & CL_COMMON)
-    {
-      if (common_handle_option (opt_index, arg, value, lang_mask, kind) == 0)
-	return false;
-#ifdef ENABLE_LTO
-      else
-	lto_register_user_option (opt_index, arg, value, CL_COMMON);
-#endif
-    }
-
-  if (option->flags & CL_TARGET)
-    {
-      if (!targetm.handle_option (opt_index, arg, value))
-	return false;
-#ifdef ENABLE_LTO
-      else
-	lto_register_user_option (opt_index, arg, value, CL_TARGET);
-#endif
-    }
-  return true;
+  else
+    return true;
 }
 
-/* Handle the switch DECODED for the language indicated by
-   LANG_MASK.  */
+/* Note that an option (index OPT_INDEX, argument ARG, value VALUE)
+   has been successfully handled with a handler for mask MASK.  */
+
 static void
-read_cmdline_option (struct cl_decoded_option *decoded,
-		     unsigned int lang_mask)
+post_handling_callback (size_t opt_index ATTRIBUTE_UNUSED,
+			const char *arg ATTRIBUTE_UNUSED,
+			int value ATTRIBUTE_UNUSED,
+			unsigned int mask ATTRIBUTE_UNUSED)
 {
-  const struct cl_option *option;
-  const char *opt;
+#ifdef ENABLE_LTO
+  lto_register_user_option (opt_index, arg, value, mask);
+#endif
+}
 
-  if (decoded->opt_index == OPT_SPECIAL_unknown)
-    {
-      opt = decoded->arg;
+/* Handle a front-end option; arguments and return value as for
+   handle_option.  */
 
-      if (opt[1] == 'W' && opt[2] == 'n' && opt[3] == 'o' && opt[4] == '-')
-	/* We don't generate warnings for unknown -Wno-* options
-	   unless we issue diagnostics.  */
-	  postpone_unknown_option_warning (opt);
-      else
-	error ("unrecognized command line option %qs", opt);
-      return;
-    }
+static bool
+lang_handle_option (size_t opt_index, const char *arg, int value,
+		    unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
+		    const struct cl_option_handlers *handlers)
+{
+  return lang_hooks.handle_option (opt_index, arg, value, kind, handlers);
+}
 
-  option = &cl_options[decoded->opt_index];
-  opt = decoded->orig_option_with_args_text;
+/* Handle a back-end option; arguments and return value as for
+   handle_option.  */
 
-  if (decoded->errors & CL_ERR_DISABLED)
-    {
-      error ("command line option %qs"
-	     " is not supported by this configuration", opt);
-      return;
-    }
-
-  if (decoded->errors & CL_ERR_WRONG_LANG)
-    {
-      complain_wrong_lang (opt, option, lang_mask);
-      return;
-    }
-
-  if (decoded->errors & CL_ERR_MISSING_ARG)
-    {
-      if (option->missing_argument_error)
-	error (option->missing_argument_error, opt);
-      else
-	error ("missing argument to %qs", opt);
-      return;
-    }
-
-  if (decoded->errors & CL_ERR_UINT_ARG)
-    {
-      error ("argument to %qs should be a non-negative integer",
-	     option->opt_text);
-      return;
-    }
-
-  gcc_assert (!decoded->errors);
-
-  if (!handle_option (decoded->opt_index, decoded->value, decoded->arg,
-		      lang_mask, DK_UNSPECIFIED))
-    error ("unrecognized command line option %qs", opt);
+static bool
+target_handle_option (size_t opt_index, const char *arg, int value,
+		    unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
+		    const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
+{
+  gcc_assert (kind == DK_UNSPECIFIED);
+  return targetm.handle_option (opt_index, arg, value);
 }
 
 /* Handle FILENAME from the command line.  */
@@ -659,11 +606,12 @@ flag_instrument_functions_exclude_p (tree fndecl)
 
 /* Handle the vector of command line options.  LANG_MASK
    contains has a single bit set representing the current
-   language.  */
+   language.  HANDLERS describes what functions to call for the options.  */
 static void
 read_cmdline_options (struct cl_decoded_option *decoded_options,
 		      unsigned int decoded_options_count,
-		      unsigned int lang_mask)
+		      unsigned int lang_mask,
+		      const struct cl_option_handlers *handlers)
 {
   unsigned int i;
 
@@ -681,7 +629,7 @@ read_cmdline_options (struct cl_decoded_option *decoded_options,
 	  continue;
 	}
 
-      read_cmdline_option (decoded_options + i, lang_mask);
+      read_cmdline_option (decoded_options + i, lang_mask, handlers);
     }
 }
 
@@ -698,6 +646,7 @@ decode_options (unsigned int argc, const char **argv,
   static int initial_max_fields_for_field_sensitive;
   static int initial_loop_invariant_max_bbs_in_loop;
   static unsigned int initial_lang_mask;
+  struct cl_option_handlers handlers;
 
   unsigned int i, lang_mask;
   int opt1;
@@ -729,6 +678,17 @@ decode_options (unsigned int argc, const char **argv,
   if (first_time_p)
     /* Perform language-specific options initialization.  */
     lang_hooks.init_options (*decoded_options_count, *decoded_options);
+
+  handlers.unknown_option_callback = unknown_option_callback;
+  handlers.wrong_lang_callback = complain_wrong_lang;
+  handlers.post_handling_callback = post_handling_callback;
+  handlers.num_handlers = 3;
+  handlers.handlers[0].handler = lang_handle_option;
+  handlers.handlers[0].mask = lang_mask;
+  handlers.handlers[1].handler = common_handle_option;
+  handlers.handlers[1].mask = CL_COMMON;
+  handlers.handlers[2].handler = target_handle_option;
+  handlers.handlers[2].mask = CL_TARGET;
 
   /* Scan to see what optimization level has been specified.  That will
      determine the default value of many flags.  */
@@ -904,7 +864,7 @@ decode_options (unsigned int argc, const char **argv,
     }
 
   /* Enable -Werror=coverage-mismatch by default */
-  enable_warning_as_error("coverage-mismatch", 1, lang_mask);
+  enable_warning_as_error ("coverage-mismatch", 1, lang_mask, &handlers);
 
   if (first_time_p)
     {
@@ -932,7 +892,8 @@ decode_options (unsigned int argc, const char **argv,
   OPTIMIZATION_OPTIONS (optimize, optimize_size);
 #endif
 
-  read_cmdline_options (*decoded_options, *decoded_options_count, lang_mask);
+  read_cmdline_options (*decoded_options, *decoded_options_count, lang_mask,
+			&handlers);
 
   if (dump_base_name && ! IS_ABSOLUTE_PATH (dump_base_name))
     {
@@ -1426,9 +1387,10 @@ print_specific_help (unsigned int include_flags,
    extra handling need to be listed here; if you simply want
    VALUE assigned to a variable, it happens automatically.  */
 
-static int
+static bool
 common_handle_option (size_t scode, const char *arg, int value,
-		      unsigned int lang_mask, int kind ATTRIBUTE_UNUSED)
+		      unsigned int lang_mask, int kind ATTRIBUTE_UNUSED,
+		      const struct cl_option_handlers *handlers)
 {
   static bool verbose = false;
   enum opt_code code = (enum opt_code) scode;
@@ -1610,7 +1572,7 @@ common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_Werror_:
-      enable_warning_as_error (arg, value, lang_mask);
+      enable_warning_as_error (arg, value, lang_mask, handlers);
       break;
 
     case OPT_Wlarger_than_:
@@ -1736,7 +1698,7 @@ common_handle_option (size_t scode, const char *arg, int value,
 	diagnostic_prefixing_rule (global_dc)
 	  = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
       else
-	return 0;
+	return false;
       break;
 
     case OPT_fdiagnostics_show_option:
@@ -1745,7 +1707,7 @@ common_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_fdump_:
       if (!dump_switch_p (arg))
-	return 0;
+	return false;
       break;
 
     case OPT_fexcess_precision_:
@@ -1909,7 +1871,7 @@ common_handle_option (size_t scode, const char *arg, int value,
     case OPT_frandom_seed:
       /* The real switch is -fno-random-seed.  */
       if (value)
-	return 0;
+	return false;
       set_random_seed (NULL);
       break;
 
@@ -1927,7 +1889,7 @@ common_handle_option (size_t scode, const char *arg, int value,
       fix_sched_param ("verbose", arg);
       break;
 #else
-      return 0;
+      return false;
 #endif
 
     case OPT_fsched_stalled_insns_:
@@ -1974,7 +1936,7 @@ common_handle_option (size_t scode, const char *arg, int value,
     case OPT_fstack_limit:
       /* The real switch is -fno-stack-limit.  */
       if (value)
-	return 0;
+	return false;
       stack_limit_rtx = NULL_RTX;
       break;
 
@@ -2141,7 +2103,7 @@ common_handle_option (size_t scode, const char *arg, int value,
       break;
     }
 
-  return 1;
+  return true;
 }
 
 /* Handle --param NAME=VALUE.  */
@@ -2356,49 +2318,6 @@ get_option_state (int option, struct cl_option_state *state)
   return true;
 }
 
-/* Set *OPTION according to VALUE and ARG.  */
-
-void
-set_option (int opt_index, int value, const char *arg, int kind)
-{
-  const struct cl_option *option = &cl_options[opt_index];
-
-  if (!option->flag_var)
-    return;
-
-  switch (option->var_type)
-    {
-    case CLVC_BOOLEAN:
-	*(int *) option->flag_var = value;
-	break;
-
-    case CLVC_EQUAL:
-	*(int *) option->flag_var = (value
-				     ? option->var_value
-				     : !option->var_value);
-	break;
-
-    case CLVC_BIT_CLEAR:
-    case CLVC_BIT_SET:
-	if ((value != 0) == (option->var_type == CLVC_BIT_SET))
-	  *(int *) option->flag_var |= option->var_value;
-	else
-	  *(int *) option->flag_var &= ~option->var_value;
-	if (option->flag_var == &target_flags)
-	  target_flags_explicit |= option->var_value;
-	break;
-
-    case CLVC_STRING:
-	*(const char **) option->flag_var = arg;
-	break;
-    }
-
-  if ((diagnostic_t)kind != DK_UNSPECIFIED)
-    diagnostic_classify_diagnostic (global_dc, opt_index, (diagnostic_t)kind,
-				    UNKNOWN_LOCATION);
-}
-
-
 /* Callback function, called when -Werror= enables a warning.  */
 
 static void (*warning_as_error_callback) (int) = NULL;
@@ -2416,7 +2335,8 @@ register_warning_as_error_callback (void (*callback) (int))
    also by legacy Werror-implicit-function-declaration.  */
 
 void
-enable_warning_as_error (const char *arg, int value, unsigned int lang_mask)
+enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
+			 const struct cl_option_handlers *handlers)
 {
   char *new_option;
   int option_index;
@@ -2441,7 +2361,8 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask)
 
 	  /* -Werror=foo implies -Wfoo.  */
 	  if (option->var_type == CLVC_BOOLEAN)
-	    handle_option (option_index, value, arg, lang_mask, (int)kind);
+	    handle_option (option_index, arg, value, lang_mask, (int)kind,
+			   handlers);
 
 	  if (warning_as_error_callback)
 	    warning_as_error_callback (option_index);

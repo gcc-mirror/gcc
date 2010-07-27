@@ -1,5 +1,12 @@
 2010-07-27  Joseph Myers  <joseph@codesourcery.com>
 
+	* gfortran.h (gfc_handle_option): Update prototype and return
+	value type.
+	* options.c (gfc_handle_option): Update prototype and return value
+	type.
+
+2010-07-27  Joseph Myers  <joseph@codesourcery.com>
+
 	* cpp.c (gfc_cpp_init_options): Update prototype.  Use number of
 	decoded options in allocating deferred_opt.
 	* cpp.h (gfc_cpp_init_options): Update prototype.

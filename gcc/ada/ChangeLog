@@ -1,5 +1,10 @@
 2010-07-27  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc-interface/misc.c (gnat_handle_option): Update prototype and
+	return value type.  Don't check for missing arguments here.
+
+2010-07-27  Joseph Myers  <joseph@codesourcery.com>
+
 	* gcc-interface/misc.c (gnat_option_lang_mask): New.
 	(gnat_init_options): Update prototype.  Reconstruct argv array
 	from decoded options.

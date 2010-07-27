@@ -69,6 +69,8 @@ extern void lhd_initialize_diagnostics (struct diagnostic_context *);
 extern void lhd_init_options (unsigned int,
 			      struct cl_decoded_option *);
 extern bool lhd_complain_wrong_lang_p (const struct cl_option *);
+extern bool lhd_handle_option (size_t, const char *, int, int,
+			       const struct cl_option_handlers *);
 extern tree lhd_callgraph_analyze_expr (tree *, int *);
 
 
@@ -89,7 +91,7 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 #define LANG_HOOKS_INIT_OPTIONS		lhd_init_options
 #define LANG_HOOKS_INITIALIZE_DIAGNOSTICS lhd_initialize_diagnostics
 #define LANG_HOOKS_COMPLAIN_WRONG_LANG_P lhd_complain_wrong_lang_p
-#define LANG_HOOKS_HANDLE_OPTION	hook_int_size_t_constcharptr_int_0
+#define LANG_HOOKS_HANDLE_OPTION	lhd_handle_option
 #define LANG_HOOKS_POST_OPTIONS		lhd_post_options
 #define LANG_HOOKS_MISSING_NORETURN_OK_P hook_bool_tree_true
 #define LANG_HOOKS_GET_ALIAS_SET	lhd_get_alias_set

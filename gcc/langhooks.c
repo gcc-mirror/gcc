@@ -351,6 +351,16 @@ lhd_complain_wrong_lang_p (const struct cl_option *option ATTRIBUTE_UNUSED)
   return true;
 }
 
+/* By default, no language-specific options are valid.  */
+bool
+lhd_handle_option (size_t code ATTRIBUTE_UNUSED,
+		   const char *arg ATTRIBUTE_UNUSED,
+		   int value ATTRIBUTE_UNUSED, int kind ATTRIBUTE_UNUSED,
+		   const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
 /* The default function to print out name of current function that caused
    an error.  */
 void

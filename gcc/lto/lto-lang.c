@@ -631,18 +631,18 @@ lto_init_options (unsigned int decoded_options_count ATTRIBUTE_UNUSED,
    of the option was supplied.  */
 
 const char *resolution_file_name;
-static int
+static bool
 lto_handle_option (size_t scode, const char *arg,
-		   int value ATTRIBUTE_UNUSED, int kind ATTRIBUTE_UNUSED)
+		   int value ATTRIBUTE_UNUSED, int kind ATTRIBUTE_UNUSED,
+		   const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
 {
   enum opt_code code = (enum opt_code) scode;
-  int result = 1;
+  bool result = true;
 
   switch (code)
     {
     case OPT_fresolution_:
       resolution_file_name = arg;
-      result = 1;
       break;
 
     case OPT_Wabi:

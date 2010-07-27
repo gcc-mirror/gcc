@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "opts.h"
 #include "options.h"
+#include "diagnostic.h"
 
 /* Perform a binary search to find which option the command-line INPUT
    matches.  Returns its index in the option array, and
@@ -452,4 +453,137 @@ done:
     }
 
   free (options);
+}
+
+/* Handle option OPT_INDEX, and argument ARG, for the language
+   indicated by LANG_MASK, using the handlers in HANDLERS.  VALUE is
+   the option value as for the value field of cl_decoded_option.  KIND
+   is the diagnostic_t if this is a diagnostics option, DK_UNSPECIFIED
+   otherwise.  Returns false if the switch was invalid.  */
+
+bool
+handle_option (size_t opt_index, const char *arg, int value,
+	       unsigned int lang_mask, int kind,
+	       const struct cl_option_handlers *handlers)
+{
+  const struct cl_option *option = &cl_options[opt_index];
+  size_t i;
+
+  if (option->flag_var)
+    set_option (opt_index, value, arg, kind);
+
+  for (i = 0; i < handlers->num_handlers; i++)
+    if (option->flags & handlers->handlers[i].mask)
+      {
+	if (!handlers->handlers[i].handler (opt_index, arg, value,
+					    lang_mask, kind, handlers))
+	  return false;
+	else
+	  handlers->post_handling_callback (opt_index, arg, value,
+					    handlers->handlers[i].mask);
+      }
+  
+  return true;
+}
+
+/* Handle the switch DECODED for the language indicated by LANG_MASK,
+   using the handlers in *HANDLERS.  */
+
+void
+read_cmdline_option (struct cl_decoded_option *decoded,
+		     unsigned int lang_mask,
+		     const struct cl_option_handlers *handlers)
+{
+  const struct cl_option *option;
+  const char *opt;
+
+  if (decoded->opt_index == OPT_SPECIAL_unknown)
+    {
+      opt = decoded->arg;
+
+      if (handlers->unknown_option_callback (opt))
+	error ("unrecognized command line option %qs", opt);
+      return;
+    }
+
+  option = &cl_options[decoded->opt_index];
+  opt = decoded->orig_option_with_args_text;
+
+  if (decoded->errors & CL_ERR_DISABLED)
+    {
+      error ("command line option %qs"
+	     " is not supported by this configuration", opt);
+      return;
+    }
+
+  if (decoded->errors & CL_ERR_WRONG_LANG)
+    {
+      handlers->wrong_lang_callback (opt, option, lang_mask);
+      return;
+    }
+
+  if (decoded->errors & CL_ERR_MISSING_ARG)
+    {
+      if (option->missing_argument_error)
+	error (option->missing_argument_error, opt);
+      else
+	error ("missing argument to %qs", opt);
+      return;
+    }
+
+  if (decoded->errors & CL_ERR_UINT_ARG)
+    {
+      error ("argument to %qs should be a non-negative integer",
+	     option->opt_text);
+      return;
+    }
+
+  gcc_assert (!decoded->errors);
+
+  if (!handle_option (decoded->opt_index, decoded->arg, decoded->value,
+		      lang_mask, DK_UNSPECIFIED, handlers))
+    error ("unrecognized command line option %qs", opt);
+}
+
+/* Set any variable for option OPT_INDEX according to VALUE and ARG,
+   diagnostic kind KIND.  */
+
+void
+set_option (int opt_index, int value, const char *arg, int kind)
+{
+  const struct cl_option *option = &cl_options[opt_index];
+
+  if (!option->flag_var)
+    return;
+
+  switch (option->var_type)
+    {
+    case CLVC_BOOLEAN:
+	*(int *) option->flag_var = value;
+	break;
+
+    case CLVC_EQUAL:
+	*(int *) option->flag_var = (value
+				     ? option->var_value
+				     : !option->var_value);
+	break;
+
+    case CLVC_BIT_CLEAR:
+    case CLVC_BIT_SET:
+	if ((value != 0) == (option->var_type == CLVC_BIT_SET))
+	  *(int *) option->flag_var |= option->var_value;
+	else
+	  *(int *) option->flag_var &= ~option->var_value;
+	if (option->flag_var == &target_flags)
+	  target_flags_explicit |= option->var_value;
+	break;
+
+    case CLVC_STRING:
+	*(const char **) option->flag_var = arg;
+	break;
+    }
+
+  if ((diagnostic_t) kind != DK_UNSPECIFIED)
+    diagnostic_classify_diagnostic (global_dc, opt_index, (diagnostic_t) kind,
+				    UNKNOWN_LOCATION);
 }

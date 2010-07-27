@@ -73,6 +73,7 @@ print "#include " quote "intl.h" quote
 print ""
 print "#ifdef GCC_DRIVER"
 print "int target_flags;"
+print "int target_flags_explicit;"
 print "#else"
 print "#include " quote "flags.h" quote
 print "#include " quote "target.h" quote

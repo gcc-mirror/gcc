@@ -1,5 +1,10 @@
 2010-07-27  Joseph Myers  <joseph@codesourcery.com>
 
+	* lto-lang.c (lto_handle_option): Update prototype and return
+	value type.  Remove duplicate assignment to result.
+
+2010-07-27  Joseph Myers  <joseph@codesourcery.com>
+
 	* lto-lang.c (lto_option_lang_mask, lto_complain_wrong_lang_p):
 	New.
 	(lto_init_options): Update prototype.

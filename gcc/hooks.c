@@ -160,14 +160,6 @@ hook_int_rtx_bool_0 (rtx a ATTRIBUTE_UNUSED, bool b ATTRIBUTE_UNUSED)
   return 0;
 }
 
-int
-hook_int_size_t_constcharptr_int_0 (size_t a ATTRIBUTE_UNUSED,
-				    const char *b ATTRIBUTE_UNUSED,
-				    int c ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
-
 unsigned int
 hook_uint_void_0 (void)
 {
