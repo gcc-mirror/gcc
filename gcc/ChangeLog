@@ -1,3 +1,12 @@
+2010-07-27  Xinliang David Li  <davidxl@google.com>
+
+	* tree-ssa-loop-ivopts.c (niter_for_exit): New parameter.
+	(niter_for_single_dom_exit): Passes additional parameter.
+	(iv_period): Fix comments.
+	(may_eliminate_iv): Handles multiple exit loops properly.
+	(free_tree_niter_desc): New function.
+	(free_loop_data): Frees up loop iteration descriptors.
+
 2010-07-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/44542
