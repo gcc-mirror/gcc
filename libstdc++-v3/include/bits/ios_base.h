@@ -42,15 +42,6 @@
 #include <bits/localefwd.h>
 #include <bits/locale_classes.h>
 
-#ifndef _GLIBCXX_STDIO_MACROS
-# include <cstdio>   // For SEEK_CUR, SEEK_END
-# define _IOS_BASE_SEEK_CUR SEEK_CUR
-# define _IOS_BASE_SEEK_END SEEK_END
-#else
-# define _IOS_BASE_SEEK_CUR 1
-# define _IOS_BASE_SEEK_END 2
-#endif
-
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   // The following definitions of bitmask types are enums, not ints,
@@ -189,8 +180,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   enum _Ios_Seekdir 
     { 
       _S_beg = 0,
-      _S_cur = _IOS_BASE_SEEK_CUR,
-      _S_end = _IOS_BASE_SEEK_END,
+      _S_cur = _GLIBCXX_STDIO_SEEK_CUR,
+      _S_end = _GLIBCXX_STDIO_SEEK_END,
       _S_ios_seekdir_end = 1L << 16 
     };
 
@@ -969,9 +960,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   }
 
 _GLIBCXX_END_NAMESPACE
-
-#undef _IOS_BASE_SEEK_CUR
-#undef _IOS_BASE_SEEK_END
 
 #endif /* _IOS_BASE_H */
 

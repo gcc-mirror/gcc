@@ -1619,26 +1619,38 @@ AC_DEFUN([GLIBCXX_CHECK_RANDOM_TR1], [
 ])
 
 dnl
-dnl Check whether EOF, SEEK_CUR, and SEEK_END have the most common values:
-dnl in that case including <cstdio> in some C++ headers can be avoided.
+dnl Compute the EOF, SEEK_CUR, and SEEK_END integer constants.
 dnl
-AC_DEFUN([GLIBCXX_CHECK_STDIO_MACROS], [
+AC_DEFUN([GLIBCXX_COMPUTE_STDIO_INTEGER_CONSTANTS], [
 
-  AC_MSG_CHECKING([for EOF == -1, SEEK_CUR == 1, SEEK_END == 2])
-  AC_CACHE_VAL(glibcxx_cv_stdio_macros, [
-  AC_TRY_COMPILE([#include <stdio.h>],
-                 [#if ((EOF != -1) || (SEEK_CUR != 1) || (SEEK_END != 2))
-	            unusual values...
-	          #endif
-	         ], [glibcxx_cv_stdio_macros=yes],
-		    [glibcxx_cv_stdio_macros=no])
+  AC_MSG_CHECKING([For some <stdio.h> integer constants.])
+
+  AC_CACHE_VAL(glibcxx_cv_stdio_eof, [
+  AC_COMPUTE_INT([glibcxx_cv_stdio_eof], [[EOF]],
+                 [#include <stdio.h>],
+                 [AC_MSG_ERROR([computing EOF failed])])
   ])
-  AC_MSG_RESULT($glibcxx_cv_stdio_macros)
-  if test x"$glibcxx_cv_stdio_macros" = x"yes"; then
-    AC_DEFINE(_GLIBCXX_STDIO_MACROS, 1,
-              [Define if EOF == -1, SEEK_CUR == 1, SEEK_END == 2.])
-  fi
+  AC_MSG_RESULT($glibcxx_cv_stdio_eof)
+  AC_DEFINE_UNQUOTED(_GLIBCXX_STDIO_EOF, $glibcxx_cv_stdio_eof,
+                     [Define to the value of the EOF integer constant.])
 
+  AC_CACHE_VAL(glibcxx_cv_stdio_seek_cur, [
+  AC_COMPUTE_INT([glibcxx_cv_stdio_seek_cur], [[SEEK_CUR]],
+                 [#include <stdio.h>],
+                 [AC_MSG_ERROR([computing SEEK_CUR failed])])
+  ])
+  AC_MSG_RESULT($glibcxx_cv_stdio_seek_cur)
+  AC_DEFINE_UNQUOTED(_GLIBCXX_STDIO_SEEK_CUR, $glibcxx_cv_stdio_seek_cur,
+                     [Define to the value of the SEEK_CUR integer constant.])
+
+  AC_CACHE_VAL(glibcxx_cv_stdio_seek_end, [
+  AC_COMPUTE_INT([glibcxx_cv_stdio_seek_end], [[SEEK_END]],
+                 [#include <stdio.h>],
+                 [AC_MSG_ERROR([computing SEEK_END failed])])
+  ])
+  AC_MSG_RESULT($glibcxx_cv_stdio_seek_end)
+  AC_DEFINE_UNQUOTED(_GLIBCXX_STDIO_SEEK_END, $glibcxx_cv_stdio_seek_end,
+                     [Define to the value of the SEEK_END integer constant.])
 ])
 
 dnl
