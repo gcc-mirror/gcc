@@ -1,3 +1,25 @@
+2010-07-27  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* gcse.c (struct expr:max_distance): New field.
+	(doing_code_hoisting_p): New static variable.
+	(want_to_gcse_p): Change signature.  Allow constrained hoisting of
+	simple expressions, don't change behavior for PRE.  Set max_distance.
+	(insert_expr_in_table): Set new max_distance field.
+	(hash_scan_set): Update.
+	(hoist_expr_reaches_here_p): Stop search after max_distance
+	instructions.
+	(find_occr_in_bb): New static function.  Use it in ...
+	(hoist_code): Calculate sizes of basic block before any changes are
+	done.  Pass max_distance to hoist_expr_reaches_here_p.
+	(one_code_hoisting_pass): Set doing_code_hoisting_p.
+
+	* params.def (PARAM_GCSE_COST_DISTANCE_RATIO,)
+	(PARAM_GCSE_UNRESTRICTED_COST): New parameters.
+	* params.h (GCSE_COST_DISTANCE_RATIO, GCSE_UNRESTRICTED_COST): New
+	macros.
+	* doc/invoke.texi (gcse-cost-distance-ratio, gcse-unrestricted-cost):
+	Document.
+
 2010-07-27  Jeff Law  <law@redhat.com>
 	    Maxim Kuvyrkov  <maxim@codesourcery.com>
 

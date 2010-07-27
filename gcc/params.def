@@ -225,6 +225,21 @@ DEFPARAM(PARAM_GCSE_AFTER_RELOAD_CRITICAL_FRACTION,
 	"gcse-after-reload-critical-fraction",
 	"The threshold ratio of critical edges execution count that permit performing redundancy elimination after reload",
         10, 0, 0)
+
+/* GCSE will use GCSE_COST_DISTANCE_RATION as a scaling factor
+   to calculate maximum distance for which an expression is allowed to move
+   from its rtx_cost.  */
+DEFPARAM(PARAM_GCSE_COST_DISTANCE_RATIO,
+	 "gcse-cost-distance-ratio",
+	 "Scaling factor in calculation of maximum distance an expression can be moved by GCSE optimizations",
+	 10, 0, 0)
+/* GCSE won't restrict distance for which an expression with rtx_cost greater
+   than COSTS_N_INSN(GCSE_UNRESTRICTED_COST) is allowed to move.  */
+DEFPARAM(PARAM_GCSE_UNRESTRICTED_COST,
+	 "gcse-unrestricted-cost",
+	 "Cost at which GCSE optimizations will not constraint the distance an expression can travel",
+	 3, 0, 0)
+
 /* This parameter limits the number of insns in a loop that will be unrolled,
    and by how much the loop is unrolled.
 
