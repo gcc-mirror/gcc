@@ -11,15 +11,13 @@
 	c_common_initialize_diagnostics.
 	* c-objc-common.h (LANG_HOOKS_OPTION_LANG_MASK,
 	LANG_HOOKS_COMPLAIN_WRONG_LANG_P): Define.
-	* coretypes.h (struct cl_option, struct cl_decoded_option):
-	Declare.
+	* coretypes.h (struct cl_option, struct cl_decoded_option): Declare.
 	* hooks.c (hook_uint_uint_constcharptrptr_0): Remove.
 	(hook_uint_void_0): New.
 	* hooks.h (hook_uint_uint_constcharptrptr_0): Remove.
 	(hook_uint_void_0): New.
 	* opts-common.c (decode_cmdline_option,
-	decode_cmdline_options_to_array): Also fill in canonical_option
-	field.
+	decode_cmdline_options_to_array): Also fill in canonical_option field.
 	* opts.c (complain_wrong_lang): Use langhook to determine whether
 	to complain instead of special-casing LTO.
 	(decode_options): Separate lang_mask determination with
@@ -114,13 +112,12 @@
 2010-07-26  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/45056
-	* gimple-fold.c (fold_stmt_1): Also fold references in
-	debug stmts.
+	* gimple-fold.c (fold_stmt_1): Also fold references in debug stmts.
 
 2010-07-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45071
-	* tree-ssa-sccvn.c  (vn_reference_maybe_forwprop_address): Always
+	* tree-ssa-sccvn.c (vn_reference_maybe_forwprop_address): Always
 	adjust op->opcode.
 
 2010-07-26  Naveen.H.S  <naveen.S@kpitcummins.com>
@@ -134,9 +131,9 @@
 	save_r31, return_r31, save_interrupt, return_interrupt,
 	save_all_interrupt, return_all_interrupt, L_save_r2_r31,
 	L_return_interrupt, callt_return_interrupt, L_restore_all_interrupt,
-	L_save_##START##_r31c, L_callt_save_r31c: Updated as per the
+	L_save_##START##_r31c, L_callt_save_r31c): Updated as per the
 	new ABI requirements.
-	save_r6_r9, L_callt_save_r6_r9: Remove.
+	(save_r6_r9, L_callt_save_r6_r9): Remove.
 	* config/v850/predicates.md (even_reg_operand, disp23_operand,
 	const_float_1_operand const_float_0_operand): New Predicates.
 	(pattern_is_ok_for_prepare, pattern_is_ok_for_prologue,
@@ -152,13 +149,11 @@
 	assembly.
 	(v850_float_z_comparison_operator, v850_select_cc_mode,
 	v850_float_nz_comparison_operator,  v850_gen_float_compare,
-	v850_gen_compare): New functions to support comparison of
-	float values.
+	v850_gen_compare): New functions to support comparison of float values.
 	(ep_memory_offset): Add support for V850E2 targets.
 	(INTERRUPT_FIXED_NUM, INTERRUPT_ALL_SAVE_NUM): Update.
 	(INTERRUPT_REGPARM_NUM): Remove.
-	(compute_register_save_size): Add extra case to save/restore
-	long call.
+	(compute_register_save_size): Add extra case to save/restore long call.
 	(use_prolog_function): New function to support prologue.
 	(expand_prologue): Add support for V850E2 targets and modified
 	as per the current ABI requirements.
@@ -168,7 +163,7 @@
 	(construct_dispose_instruction): Update as per the current ABI
 	requirements.
 	(construct_prepare_instruction): Likewise.
-	* config/v850/v850.h(TARGET_CPU_DEFAULT): Add target predefines.
+	* config/v850/v850.h (TARGET_CPU_DEFAULT): Add target predefines.
 	(TARGET_CPU_v850e2, TARGET_CPU_v850e2v3): Define
 	(CPP_SPEC): Updated to support v850e2 targets.
 	(STRICT_ALIGNMENT): Modified.
@@ -201,8 +196,7 @@
 	(cc): Add set_z attribute.
 	(unsign23byte_load, sign23byte_load, unsign23hword_load,
 	sign23hword_load, 23word_load, 23byte_store, 23hword_store,
-	23word_store): New instructions for 23-bit displacement load and
-	store.
+	23word_store): New instructions for 23-bit displacement load and store.
 	(movqi_internal, movhi_internal): Update the attributes.
 	(movsi, movsi_internal_v850e): Updated to support v850e2 targets.
 	(movsi_internal_v850e, movsi_internal, movsf_internal): Update
@@ -217,8 +211,7 @@
 	one_cmplsi2): Clobber the CC_REGNUM register.
 	(v850_clr1_1, v850_clr1_2, v850_clr1_3, andsi3, v850_set1_1,
 	v850_set1_2, v850_set1_3, iorsi3, v850_not1_1, v850_not1_2,
-	v850_not1_3, xorsi3, one_cmplsi2): Update the attributes
-	accordingly.
+	v850_not1_3, xorsi3, one_cmplsi2): Update the attributes accordingly.
 	(setf_insn, set_z_insn, set_nz_insn): New instructions for
 	v850e2v3 target.
 	(movsicc_normal_cc, movsicc_reversed_cc): New instructions.
@@ -301,9 +294,8 @@
 
 2010-07-24  Gerald Pfeifer  <gerald@pfeifer.com>
 
-	* doc/install.texi (Specific, *-*-freebsd*): Adjust to recent
-	changes.  Streamline paragraph on compatibility with the system
-	compiler.
+	* doc/install.texi (Specific, *-*-freebsd*): Adjust to recent changes.
+	Streamline paragraph on compatibility with the system compiler.
 
 2010-07-24  Steven Bosscher  <steven@gcc.gnu.org>
 
@@ -335,8 +327,7 @@
 2010-07-23  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR target/41943
-	* Makefile.in (USER_H_INC_NEXT_PRE,
-	USER_H_INC_NEXT_POST): New.
+	* Makefile.in (USER_H_INC_NEXT_PRE, USER_H_INC_NEXT_POST): New.
 	(stmp-int-hdrs): Prefix/postfix headers by include_next.
 	* config.gcc (user_headers_inc_next_pre): New.
 	(user_headers_inc_next_post): Likewise.
@@ -352,8 +343,7 @@
 	Set tga_func for Solaris 2/x86 resp. SPARC.
 	Remove duplicate parts of sparc*-sun-solaris2.* TLS check.
 	(LIB_THREAD_LDFLAGS_SPEC): Define.
-	(LIB_TLS_SPEC): Define.
-	Check for required Sun ld version.
+	(LIB_TLS_SPEC): Define.  Check for required Sun ld version.
 	* configure: Regenerate.
 	* config.in: Regenerate.
 	* config/sol2.h (LIB_SPEC): Use LIB_THREAD_LDFLAGS_SPEC with
@@ -420,8 +410,7 @@
 
 2010-07-23  Richard Guenther  <rguenther@suse.de>
 
-	* lto-symtab.c (lto_symtab_merge): Use gtc_mode enum
-	values.
+	* lto-symtab.c (lto_symtab_merge): Use gtc_mode enum values.
 	(lto_symtab_merge_decls_2): Likewise.
 	* tree-ssa.c (useless_type_conversion_p): Likewise.
 	* lto-streamer-in.c (input_gimple_stmt): Likewise.
@@ -453,13 +442,13 @@
 
 2010-07-23  Jie Zhang  <jie@codesourcery.com>
 
-	* doc/extend.texi: Remove IP2K from the description of naked
-	attribute.  Add MCORE instead.
+	* doc/extend.texi: Remove IP2K from the description of naked attribute.
+	Add MCORE instead.
 
-2010-07-10   Andi Kleen <ak@linux.intel.com>
+2010-07-10  Andi Kleen  <ak@linux.intel.com>
 
 	PR lto/44992
-        * lto-opts.c (lto_write_options): Add NULL file_data argument to
+	* lto-opts.c (lto_write_options): Add NULL file_data argument to
 	lto_get_section_name.
 	* lto-section-out.c (lto_destroy_simple_output_block): Likewise.
 	* lto-streamer-out.c (produce_asm): Likewise.
@@ -471,12 +460,12 @@
 	* lto-streamer.h (lto_file_decl_data): Add next, id, resolutions.
 	(lto_get_section_name): Add file_data argument to prototype.
 
-2010-07-10   Andi Kleen <ak@linux.intel.com>
+2010-07-10  Andi Kleen  <ak@linux.intel.com>
 
 	* lto-section-in.c (lto_section_name): Synchronize names
 	with lto_get_section_name.
 
-2010-07-10   Andi Kleen <ak@linux.intel.com>
+2010-07-10  Andi Kleen  <ak@linux.intel.com>
 
 	* lto-opts.c (lto_read_file_options): Check for missing section.
 
@@ -670,8 +659,8 @@
 2010-07-22  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
  	PR target/43698
-	* config/arm/arm.md: Split arm_rev into *arm_rev
-	and *thumb1_rev. Set *arm_rev to be predicable.
+	* config/arm/arm.md: Split arm_rev into *arm_rev and *thumb1_rev.
+	Set *arm_rev to be predicable.
 
 2010-07-22  Iain Sandoe  <iains@gcc.gnu.org>
 
@@ -703,13 +692,13 @@
 	(reload_combine_closest_single_use): Don't take DEBUG_INSNs
 	into account.
 	(fixup_debug_insns): Don't copy the rtx.
-	(reload_combine_recognize_const_pattern): DEBUG_INSNs can't
-	have uses.  Don't copy when replacing.  Call fixup_debug_insns
-	in the case where we merged one add with another.
-	(reload_combine_recognize_pattern): Fail if there aren't any
-	uses.  Try harder to determine whether we're picking a valid
-	index register.  Don't set store_ruid for an insn we're going
-	to scan in the next iteration.
+	(reload_combine_recognize_const_pattern): DEBUG_INSNs can't have uses.
+	Don't copy when replacing.  Call fixup_debug_insns in the case where
+	we merged one add with another.
+	(reload_combine_recognize_pattern): Fail if there aren't any uses.
+	Try harder to determine whether we're picking a valid index register.
+	Don't set store_ruid for an insn we're going to scan in the
+	next iteration.
 	(reload_combine): Remove unused code.
 	(reload_combine_note_use): When updating use information for
 	an old insn, ignore a use that occurs after store_ruid.
@@ -786,8 +775,7 @@
 2010-07-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/45003
-	* var-tracking.c (reverse_op): Also handle {SIGN,ZERO}_EXTEND of
-	a MEM.
+	* var-tracking.c (reverse_op): Also handle {SIGN,ZERO}_EXTEND of a MEM.
 	* dwarf2out.c (loc_descriptor): Don't handle SIGN_EXTEND nor
 	ZERO_EXTEND here.
 
@@ -1527,7 +1515,7 @@
 2010-07-13  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* c-decl.c (finish_function): Fix typo in comment.
-	
+
 2010-07-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/44921
@@ -9030,7 +9018,7 @@
 	debug_tree_chain): Likewise.
 	* tree-loop-distribution.c (debug_rdg_partitions): Likewise.
 	* cgraph.c (debug_cgraph_node, debug_cgraph): Likewise.
-	* optabs.c  (debug_optab_libfuncs): Likewise.
+	* optabs.c (debug_optab_libfuncs): Likewise.
 	(verify_loop_closed_ssa): Likewise.
 	* value-prof.c (verify_histograms): Likewise.
 	* reload.c (debug_reload_to_stream, debug_reload): Likewise.
@@ -10168,7 +10156,7 @@
 	* toplev.c (general_init): Set global_dc->internal_error.
 	* Makefile.in (diagnostic.o): Update dependencies.
 
-2010-05-25 Iain Sandoe  <iains@gcc.gnu.org>
+2010-05-25  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/rs6000/darwin64.h: Update DARWIN_ARCH_SPEC.
 	* config/rs6000/t-darwin64: New.
@@ -14345,7 +14333,7 @@
 	* builtins.c (expand_builtin_signbit): Clean up, use double_int_*
 	and immed_double_int_const functions.
 	* optabs.c (expand_absneg_bit, expand_copysign_absneg,
-	expand_copysign_bit):  (Ditto.).
+	expand_copysign_bit): (Ditto.).
 	* simplify-rtx.c (simplify_binary_operation_1): (Ditto.).
 	* tree-ssa-address.c (addr_for_mem_ref): (Ditto.).
 	* dojump.c (prefer_and_bit_test): (Ditto.).
@@ -18793,7 +18781,7 @@
 2010-02-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/41043
-	* tree-vrp.c  (vrp_var_may_overflow): Only ask SCEV for real loops.
+	* tree-vrp.c (vrp_var_may_overflow): Only ask SCEV for real loops.
 	(vrp_visit_assignment_or_call): Do not ask SCEV for regular
 	statements ...
 	(vrp_visit_phi_node): ... but only for loop PHI nodes.
