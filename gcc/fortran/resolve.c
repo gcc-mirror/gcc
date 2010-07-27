@@ -1816,7 +1816,8 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
     gfc_global_used (gsym, where);
 
   if (gfc_option.flag_whole_file
-	&& sym->attr.if_source == IFSRC_UNKNOWN
+	&& (sym->attr.if_source == IFSRC_UNKNOWN
+	    || sym->attr.if_source == IFSRC_IFBODY)
 	&& gsym->type != GSYM_UNKNOWN
 	&& gsym->ns
 	&& gsym->ns->resolved != -1
@@ -1902,7 +1903,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 		   sym->name, &sym->declared_at, gfc_typename (&sym->ts),
 		   gfc_typename (&def_sym->ts));
 
-      if (def_sym->formal)
+      if (def_sym->formal && sym->attr.if_source != IFSRC_IFBODY)
 	{
 	  gfc_formal_arglist *arg = def_sym->formal;
 	  for ( ; arg; arg = arg->next)
@@ -1969,14 +1970,19 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 		       where);
 
 	  /* F2003, 12.3.1.1 (3b); F2008, 12.4.2.2 (3b) */
-	  if (def_sym->result->attr.pointer
-	      || def_sym->result->attr.allocatable)
+	  if ((def_sym->result->attr.pointer
+	       || def_sym->result->attr.allocatable)
+	       && (sym->attr.if_source != IFSRC_IFBODY
+		   || def_sym->result->attr.pointer
+			!= sym->result->attr.pointer
+		   || def_sym->result->attr.allocatable
+			!= sym->result->attr.allocatable))
 	    gfc_error ("Function '%s' at %L with a POINTER or ALLOCATABLE "
 		       "result must have an explicit interface", sym->name,
 		       where);
 
 	  /* F2003, 12.3.1.1 (3c); F2008, 12.4.2.2 (3c)  */
-	  if (sym->ts.type == BT_CHARACTER
+	  if (sym->ts.type == BT_CHARACTER && sym->attr.if_source != IFSRC_IFBODY
 	      && def_sym->ts.u.cl->length != NULL)
 	    {
 	      gfc_charlen *cl = sym->ts.u.cl;
@@ -1992,14 +1998,14 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 	}
 
       /* F2003, 12.3.1.1 (4); F2008, 12.4.2.2 (4) */
-      if (def_sym->attr.elemental)
+      if (def_sym->attr.elemental && !sym->attr.elemental)
 	{
 	  gfc_error ("ELEMENTAL procedure '%s' at %L must have an explicit "
 		     "interface", sym->name, &sym->declared_at);
 	}
 
       /* F2003, 12.3.1.1 (5); F2008, 12.4.2.2 (5) */
-      if (def_sym->attr.is_bind_c)
+      if (def_sym->attr.is_bind_c && !sym->attr.is_bind_c)
 	{
 	  gfc_error ("Procedure '%s' at %L with BIND(C) attribute must have "
 		     "an explicit interface", sym->name, &sym->declared_at);
@@ -2010,7 +2016,8 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 	      && !(gfc_option.warn_std & GFC_STD_GNU)))
 	gfc_errors_to_warnings (1);
 
-      gfc_procedure_use (def_sym, actual, where);
+      if (sym->attr.if_source != IFSRC_IFBODY)  
+	gfc_procedure_use (def_sym, actual, where);
 
       gfc_errors_to_warnings (0);
     }

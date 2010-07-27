@@ -1,4 +1,10 @@
-2010-07-19  Iain Sandoe  <iains@gcc.gnu.org>
+2010-07-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/40873
+	* gfortran.dg/whole_file_22.f90: New test.
+	* gfortran.dg/whole_file_23.f90: New test.
+
+2010-07-26  Iain Sandoe  <iains@gcc.gnu.org>
 	    Jack Howarth  <howarth@bromo.med.uc.edu>
 	    Richard Henderson  <rth@redhat.com>
 

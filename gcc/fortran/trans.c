@@ -1388,7 +1388,7 @@ gfc_generate_module_code (gfc_namespace * ns)
       if (!n->proc_name)
         continue;
 
-      gfc_create_function_decl (n);
+      gfc_create_function_decl (n, false);
       gcc_assert (DECL_CONTEXT (n->proc_name->backend_decl) == NULL_TREE);
       DECL_CONTEXT (n->proc_name->backend_decl) = ns->proc_name->backend_decl;
       gfc_module_add_decl (entry, n->proc_name->backend_decl);
