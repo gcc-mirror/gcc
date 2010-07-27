@@ -302,6 +302,12 @@ struct expr
      The value is the newly created pseudo-reg to record a copy of the
      expression in all the places that reach the redundant copy.  */
   rtx reaching_reg;
+  /* Maximum distance in instructions this expression can travel.
+     We avoid moving simple expressions for more than a few instructions
+     to keep register pressure under control.
+     A value of "0" removes restrictions on how far the expression can
+     travel.  */
+  int max_distance;
 };
 
 /* Occurrence of an expression.
@@ -425,6 +431,9 @@ static int global_const_prop_count;
 /* Number of global copies propagated.  */
 static int global_copy_prop_count;
 
+/* Doing code hoisting.  */
+static bool doing_code_hoisting_p = false;
+
 /* For available exprs */
 static sbitmap *ae_kill;
 
@@ -438,12 +447,12 @@ static void hash_scan_insn (rtx, struct hash_table_d *);
 static void hash_scan_set (rtx, rtx, struct hash_table_d *);
 static void hash_scan_clobber (rtx, rtx, struct hash_table_d *);
 static void hash_scan_call (rtx, rtx, struct hash_table_d *);
-static int want_to_gcse_p (rtx);
+static int want_to_gcse_p (rtx, int *);
 static bool gcse_constant_p (const_rtx);
 static int oprs_unchanged_p (const_rtx, const_rtx, int);
 static int oprs_anticipatable_p (const_rtx, const_rtx);
 static int oprs_available_p (const_rtx, const_rtx);
-static void insert_expr_in_table (rtx, enum machine_mode, rtx, int, int,
+static void insert_expr_in_table (rtx, enum machine_mode, rtx, int, int, int,
 				  struct hash_table_d *);
 static void insert_set_in_table (rtx, rtx, struct hash_table_d *);
 static unsigned int hash_expr (const_rtx, enum machine_mode, int *, int);
@@ -502,7 +511,8 @@ static void alloc_code_hoist_mem (int, int);
 static void free_code_hoist_mem (void);
 static void compute_code_hoist_vbeinout (void);
 static void compute_code_hoist_data (void);
-static int hoist_expr_reaches_here_p (basic_block, int, basic_block, char *);
+static int hoist_expr_reaches_here_p (basic_block, int, basic_block, char *,
+				      int, int *);
 static int hoist_code (void);
 static int one_code_hoisting_pass (void);
 static rtx process_insert_insn (struct expr *);
@@ -758,7 +768,7 @@ static basic_block current_bb;
    GCSE.  */
 
 static int
-want_to_gcse_p (rtx x)
+want_to_gcse_p (rtx x, int *max_distance_ptr)
 {
 #ifdef STACK_REGS
   /* On register stack architectures, don't GCSE constants from the
@@ -768,18 +778,67 @@ want_to_gcse_p (rtx x)
     x = avoid_constant_pool_reference (x);
 #endif
 
+  /* GCSE'ing constants:
+
+     We do not specifically distinguish between constant and non-constant
+     expressions in PRE and Hoist.  We use rtx_cost below to limit
+     the maximum distance simple expressions can travel.
+
+     Nevertheless, constants are much easier to GCSE, and, hence,
+     it is easy to overdo the optimizations.  Usually, excessive PRE and
+     Hoisting of constant leads to increased register pressure.
+
+     RA can deal with this by rematerialing some of the constants.
+     Therefore, it is important that the back-end generates sets of constants
+     in a way that allows reload rematerialize them under high register
+     pressure, i.e., a pseudo register with REG_EQUAL to constant
+     is set only once.  Failing to do so will result in IRA/reload
+     spilling such constants under high register pressure instead of
+     rematerializing them.  */
+
   switch (GET_CODE (x))
     {
     case REG:
     case SUBREG:
+    case CALL:
+      return 0;
+
     case CONST_INT:
     case CONST_DOUBLE:
     case CONST_FIXED:
     case CONST_VECTOR:
-    case CALL:
-      return 0;
+      if (!doing_code_hoisting_p)
+	/* Do not PRE constants.  */
+	return 0;
+
+      /* FALLTHRU */
 
     default:
+      if (doing_code_hoisting_p)
+	/* PRE doesn't implement max_distance restriction.  */
+	{
+	  int cost;
+	  int max_distance;
+
+	  gcc_assert (!optimize_function_for_speed_p (cfun)
+		      && optimize_function_for_size_p (cfun));
+	  cost = rtx_cost (x, SET, 0);
+
+	  if (cost < COSTS_N_INSNS (GCSE_UNRESTRICTED_COST))
+	    {
+	      max_distance = (GCSE_COST_DISTANCE_RATIO * cost) / 10;
+	      if (max_distance == 0)
+		return 0;
+
+	      gcc_assert (max_distance > 0);
+	    }
+	  else
+	    max_distance = 0;
+
+	  if (max_distance_ptr)
+	    *max_distance_ptr = max_distance;
+	}
+
       return can_assign_to_reg_without_clobbers_p (x);
     }
 }
@@ -1093,11 +1152,14 @@ expr_equiv_p (const_rtx x, const_rtx y)
    It is only used if X is a CONST_INT.
 
    ANTIC_P is nonzero if X is an anticipatable expression.
-   AVAIL_P is nonzero if X is an available expression.  */
+   AVAIL_P is nonzero if X is an available expression.
+
+   MAX_DISTANCE is the maximum distance in instructions this expression can
+   be moved.  */
 
 static void
 insert_expr_in_table (rtx x, enum machine_mode mode, rtx insn, int antic_p,
-		      int avail_p, struct hash_table_d *table)
+		      int avail_p, int max_distance, struct hash_table_d *table)
 {
   int found, do_not_record_p;
   unsigned int hash;
@@ -1140,7 +1202,11 @@ insert_expr_in_table (rtx x, enum machine_mode mode, rtx insn, int antic_p,
       cur_expr->next_same_hash = NULL;
       cur_expr->antic_occr = NULL;
       cur_expr->avail_occr = NULL;
+      gcc_assert (max_distance >= 0);
+      cur_expr->max_distance = max_distance;
     }
+  else
+    gcc_assert (cur_expr->max_distance == max_distance);
 
   /* Now record the occurrence(s).  */
   if (antic_p)
@@ -1241,6 +1307,8 @@ insert_set_in_table (rtx x, rtx insn, struct hash_table_d *table)
       cur_expr->next_same_hash = NULL;
       cur_expr->antic_occr = NULL;
       cur_expr->avail_occr = NULL;
+      /* Not used for set_p tables.  */
+      cur_expr->max_distance = 0;
     }
 
   /* Now record the occurrence.  */
@@ -1310,6 +1378,7 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
     {
       unsigned int regno = REGNO (dest);
       rtx tmp;
+      int max_distance = 0;
 
       /* See if a REG_EQUAL note shows this equivalent to a simpler expression.
 
@@ -1332,7 +1401,7 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
 	  && !REG_P (src)
 	  && (table->set_p
 	      ? gcse_constant_p (XEXP (note, 0))
-	      : want_to_gcse_p (XEXP (note, 0))))
+	      : want_to_gcse_p (XEXP (note, 0), NULL)))
 	src = XEXP (note, 0), pat = gen_rtx_SET (VOIDmode, dest, src);
 
       /* Only record sets of pseudo-regs in the hash table.  */
@@ -1347,7 +1416,7 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
 	     can't do the same thing at the rtl level.  */
 	  && !can_throw_internal (insn)
 	  /* Is SET_SRC something we want to gcse?  */
-	  && want_to_gcse_p (src)
+	  && want_to_gcse_p (src, &max_distance)
 	  /* Don't CSE a nop.  */
 	  && ! set_noop_p (pat)
 	  /* Don't GCSE if it has attached REG_EQUIV note.
@@ -1371,7 +1440,8 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
 	  int avail_p = (oprs_available_p (src, insn)
 			 && ! JUMP_P (insn));
 
-	  insert_expr_in_table (src, GET_MODE (dest), insn, antic_p, avail_p, table);
+	  insert_expr_in_table (src, GET_MODE (dest), insn, antic_p, avail_p,
+				max_distance, table);
 	}
 
       /* Record sets for constant/copy propagation.  */
@@ -1408,7 +1478,7 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
 	      do that easily for EH edges so disable GCSE on these for now.  */
 	   && !can_throw_internal (insn)
 	   /* Is SET_DEST something we want to gcse?  */
-	   && want_to_gcse_p (dest)
+	   && want_to_gcse_p (dest, NULL)
 	   /* Don't CSE a nop.  */
 	   && ! set_noop_p (pat)
 	   /* Don't GCSE if it has attached REG_EQUIV note.
@@ -1429,7 +1499,7 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
 			     && ! JUMP_P (insn);
 
 	       /* Record the memory expression (DEST) in the hash table.  */
-	       insert_expr_in_table (dest, GET_MODE (dest), insn,
+	       insert_expr_in_table (dest, GET_MODE (dest), insn, 0,
 				     antic_p, avail_p, table);
              }
       }
@@ -1516,8 +1586,8 @@ dump_hash_table (FILE *file, const char *name, struct hash_table_d *table)
     if (flat_table[i] != 0)
       {
 	expr = flat_table[i];
-	fprintf (file, "Index %d (hash value %d)\n  ",
-		 expr->bitmap_index, hash_val[i]);
+	fprintf (file, "Index %d (hash value %d; max distance %d)\n  ",
+		 expr->bitmap_index, hash_val[i], expr->max_distance);
 	print_rtl (file, expr->expr);
 	fprintf (file, "\n");
       }
@@ -4208,6 +4278,8 @@ compute_code_hoist_data (void)
 
 /* Determine if the expression identified by EXPR_INDEX would
    reach BB unimpared if it was placed at the end of EXPR_BB.
+   Stop the search if the expression would need to be moved more
+   than DISTANCE instructions.
 
    It's unclear exactly what Muchnick meant by "unimpared".  It seems
    to me that the expression must either be computed or transparent in
@@ -4220,12 +4292,24 @@ compute_code_hoist_data (void)
    paths.  */
 
 static int
-hoist_expr_reaches_here_p (basic_block expr_bb, int expr_index, basic_block bb, char *visited)
+hoist_expr_reaches_here_p (basic_block expr_bb, int expr_index, basic_block bb,
+			   char *visited, int distance, int *bb_size)
 {
   edge pred;
   edge_iterator ei;
   int visited_allocated_locally = 0;
 
+  /* Terminate the search if distance, for which EXPR is allowed to move,
+     is exhausted.  */
+  if (distance > 0)
+    {
+      distance -= bb_size[bb->index];
+
+      if (distance <= 0)
+	return 0;
+    }
+  else
+    gcc_assert (distance == 0);
 
   if (visited == NULL)
     {
@@ -4254,8 +4338,8 @@ hoist_expr_reaches_here_p (basic_block expr_bb, int expr_index, basic_block bb, 
       else
 	{
 	  visited[pred_bb->index] = 1;
-	  if (! hoist_expr_reaches_here_p (expr_bb, expr_index,
-					   pred_bb, visited))
+	  if (! hoist_expr_reaches_here_p (expr_bb, expr_index, pred_bb,
+					   visited, distance, bb_size))
 	    break;
 	}
     }
@@ -4265,6 +4349,17 @@ hoist_expr_reaches_here_p (basic_block expr_bb, int expr_index, basic_block bb, 
   return (pred == NULL);
 }
 
+/* Find occurence in BB.  */
+static struct occr *
+find_occr_in_bb (struct occr *occr, basic_block bb)
+{
+  /* Find the right occurrence of this expression.  */
+  while (occr && BLOCK_FOR_INSN (occr->insn) != bb)
+    occr = occr->next;
+
+  return occr;
+}
+
 /* Actually perform code hoisting.  */
 
 static int
@@ -4275,6 +4370,8 @@ hoist_code (void)
   unsigned int i,j;
   struct expr **index_map;
   struct expr *expr;
+  int *to_bb_head;
+  int *bb_size;
   int changed = 0;
 
   sbitmap_vector_zero (hoist_exprs, last_basic_block);
@@ -4286,6 +4383,36 @@ hoist_code (void)
   for (i = 0; i < expr_hash_table.size; i++)
     for (expr = expr_hash_table.table[i]; expr != NULL; expr = expr->next_same_hash)
       index_map[expr->bitmap_index] = expr;
+
+  /* Calculate sizes of basic blocks and note how far
+     each instruction is from the start of its block.  We then use this
+     data to restrict distance an expression can travel.  */
+
+  to_bb_head = XCNEWVEC (int, get_max_uid ());
+  bb_size = XCNEWVEC (int, last_basic_block);
+
+  FOR_EACH_BB (bb)
+    {
+      rtx insn;
+      rtx bb_end;
+      int to_head;
+
+      insn = BB_HEAD (bb);
+      bb_end = BB_END (bb);
+      to_head = 0;
+
+      while (insn != bb_end)
+	{
+	  /* Don't count debug instructions to avoid them affecting
+	     decision choices.  */
+	  if (NONDEBUG_INSN_P (insn))
+	    to_bb_head[INSN_UID (insn)] = to_head++;
+
+	  insn = NEXT_INSN (insn);
+	}
+
+      bb_size[bb->index] = to_head;
+    }
 
   /* Walk over each basic block looking for potentially hoistable
      expressions, nothing gets hoisted from the entry block.  */
@@ -4308,6 +4435,10 @@ hoist_code (void)
 		 computes the expression.  */
 	      for (j = 0; VEC_iterate (basic_block, domby, j, dominated); j++)
 		{
+		  struct expr *expr = index_map[i];
+		  struct occr *occr = NULL;
+		  int max_distance;
+
 		  /* Ignore self dominance.  */
 		  if (bb == dominated)
 		    continue;
@@ -4317,12 +4448,30 @@ hoist_code (void)
 		  if (!TEST_BIT (antloc[dominated->index], i))
 		    continue;
 
+		  max_distance = expr->max_distance;
+		  if (max_distance > 0)
+		    {
+		      struct occr *occr;
+
+		      occr = find_occr_in_bb (expr->antic_occr, dominated);
+		      gcc_assert (occr);
+
+		      gcc_assert (NONDEBUG_INSN_P (occr->insn));
+
+		      /* Adjust MAX_DISTANCE to account for the fact that
+			 OCCR won't have to travel all of DOMINATED, but
+			 only part of it.  */
+		      max_distance += (bb_size[dominated->index]
+				       - to_bb_head[INSN_UID (occr->insn)]);
+		    }
+
 		  /* Note if the expression would reach the dominated block
 		     unimpared if it was placed at the end of BB.
 
 		     Keep track of how many times this expression is hoistable
 		     from a dominated block into BB.  */
-		  if (hoist_expr_reaches_here_p (bb, i, dominated, NULL))
+		  if (hoist_expr_reaches_here_p (bb, i, dominated, NULL,
+						 max_distance, bb_size))
 		    hoistable++;
 		}
 
@@ -4365,6 +4514,9 @@ hoist_code (void)
 		 computes the expression.  */
 	      for (j = 0; VEC_iterate (basic_block, domby, j, dominated); j++)
 		{
+		  struct expr *expr = index_map[i];
+		  int max_distance;
+
 		  /* Ignore self dominance.  */
 		  if (bb == dominated)
 		    continue;
@@ -4375,23 +4527,42 @@ hoist_code (void)
 		  if (!TEST_BIT (antloc[dominated->index], i))
 		    continue;
 
+		  max_distance = expr->max_distance;
+		  if (max_distance > 0)
+		    {
+		      occr = find_occr_in_bb (expr->antic_occr, dominated);
+		      gcc_assert (occr);
+
+		      gcc_assert (NONDEBUG_INSN_P (occr->insn));
+
+		      /* Adjust MAX_DISTANCE to account for the fact that
+			 OCCR won't have to travel all of DOMINATED, but
+			 only part of it.  */
+		      max_distance += (bb_size[dominated->index]
+				       - to_bb_head[INSN_UID (occr->insn)]);
+		    }
+
 		  /* The expression is computed in the dominated block and
 		     it would be safe to compute it at the start of the
 		     dominated block.  Now we have to determine if the
 		     expression would reach the dominated block if it was
-		     placed at the end of BB.  */
-		  if (hoist_expr_reaches_here_p (bb, i, dominated, NULL))
+		     placed at the end of BB.
+		     Note: the fact that hoist_exprs has i-th bit set means
+		     that /some/, not necesserilly all, occurences from
+		     the dominated blocks can be hoisted to BB.  Here we check
+		     if a specific occurence can be hoisted to BB.  */
+		  if (hoist_expr_reaches_here_p (bb, i, dominated, NULL,
+						 max_distance, bb_size))
 		    {
-		      struct expr *expr = index_map[i];
-		      struct occr *occr = expr->antic_occr;
 		      rtx insn;
 		      rtx set;
 
-		      /* Find the right occurrence of this expression.  */
-		      while (BLOCK_FOR_INSN (occr->insn) != dominated && occr)
-			occr = occr->next;
+		      if (!occr)
+			{
+			  occr = find_occr_in_bb (expr->antic_occr, dominated);
+			  gcc_assert (occr);
+			}
 
-		      gcc_assert (occr);
 		      insn = occr->insn;
 		      set = single_set (insn);
 		      gcc_assert (set);
@@ -4421,6 +4592,8 @@ hoist_code (void)
       VEC_free (basic_block, heap, domby);
     }
 
+  free (bb_size);
+  free (to_bb_head);
   free (index_map);
 
   return changed;
@@ -4442,6 +4615,8 @@ one_code_hoisting_pass (void)
   if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1
       || is_too_expensive (_("GCSE disabled")))
     return 0;
+
+  doing_code_hoisting_p = true;
 
   /* We need alias.  */
   init_alias_analysis ();
@@ -4477,6 +4652,8 @@ one_code_hoisting_pass (void)
       fprintf (dump_file, "%d substs, %d insns created\n",
 	       gcse_subst_count, gcse_create_count);
     }
+
+  doing_code_hoisting_p = false;
 
   return changed;
 }

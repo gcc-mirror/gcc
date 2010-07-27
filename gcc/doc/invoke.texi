@@ -8243,6 +8243,23 @@ when @option{-ftree-vectorize} is used.  The number of iterations after
 vectorization needs to be greater than the value specified by this option
 to allow vectorization.  The default value is 0.
 
+@item gcse-cost-distance-ratio
+Scaling factor in calculation of maximum distance an expression
+can be moved by GCSE optimizations.  This is currently supported only in
+code hoisting pass.  The bigger the ratio, the more agressive code hoisting
+will be with simple expressions, i.e., the expressions which have cost
+less than @option{gcse-unrestricted-cost}.  Specifying 0 will disable
+hoisting of simple expressions.  The default value is 10.
+
+@item gcse-unrestricted-cost
+Cost, roughly measured as the cost of a single typical machine
+instruction, at which GCSE optimizations will not constrain
+the distance an expression can travel.  This is currently
+supported only in code hoisting pass.  The lesser the cost,
+the more aggressive code hoisting will be.  Specifying 0 will
+allow all expressions to travel unrestricted distances.
+The default value is 3.
+
 @item max-unrolled-insns
 The maximum number of instructions that a loop should have if that loop
 is unrolled, and if the loop is unrolled, it determines how many times
