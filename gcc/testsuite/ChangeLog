@@ -1,5 +1,8 @@
 2010-07-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR testsuite/44701
+	* gcc.target/powerpc/asm-es-2.c (f2): Add <> constraints.
+
 	PR c/45079
 	* gcc.dg/pr45079.c: New test.
 

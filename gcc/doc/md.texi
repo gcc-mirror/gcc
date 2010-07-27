@@ -1998,31 +1998,33 @@ Integer/Floating point constant that can be loaded into a register using
 three instructions
 
 @item m
-Memory operand.  Note that on PowerPC targets, @code{m} can include
-addresses that update the base register.  It is therefore only safe
-to use @samp{m} in an @code{asm} statement if that @code{asm} statement
+Memory operand.  
+Normally, @code{m} does not allow addresses that update the base register.
+If @samp{<} or @samp{>} constraint is also used, they are allowed and
+therefore on PowerPC targets in that case it is only safe
+to use @samp{m<>} in an @code{asm} statement if that @code{asm} statement
 accesses the operand exactly once.  The @code{asm} statement must also
 use @samp{%U@var{<opno>}} as a placeholder for the ``update'' flag in the
 corresponding load or store instruction.  For example:
 
 @smallexample
-asm ("st%U0 %1,%0" : "=m" (mem) : "r" (val));
+asm ("st%U0 %1,%0" : "=m<>" (mem) : "r" (val));
 @end smallexample
 
 is correct but:
 
 @smallexample
-asm ("st %1,%0" : "=m" (mem) : "r" (val));
+asm ("st %1,%0" : "=m<>" (mem) : "r" (val));
 @end smallexample
 
-is not.  Use @code{es} rather than @code{m} if you don't want the
-base register to be updated.
+is not.
 
 @item es
 A ``stable'' memory operand; that is, one which does not include any
-automodification of the base register.  Unlike @samp{m}, this constraint
-can be used in @code{asm} statements that might access the operand
-several times, or that might not access it at all.
+automodification of the base register.  This used to be useful when
+@samp{m} allowed automodification of the base register, but as those are now only
+allowed when @samp{<} or @samp{>} is used, @samp{es} is basically the same
+as @samp{m} without @samp{<} and @samp{>}.
 
 @item Q
 Memory operand that is an offset from a register (it is usually better
@@ -2194,10 +2196,9 @@ Application register residing in I-unit
 Floating-point register
 
 @item m
-Memory operand.
-Remember that @samp{m} allows postincrement and postdecrement which
+Memory operand.  If used together with @samp{<} or @samp{>},
+the operand can have postincrement and postdecrement which
 require printing with @samp{%Pn} on IA-64.
-Use @samp{S} to disallow postincrement and postdecrement.
 
 @item G
 Floating-point constant 0.0 or 1.0
@@ -2233,7 +2234,9 @@ Non-volatile memory for floating-point loads and stores
 Integer constant in the range 1 to 4 for @code{shladd} instruction
 
 @item S
-Memory operand except postincrement and postdecrement
+Memory operand except postincrement and postdecrement.  This is
+now roughly the same as @samp{m} when not used together with @samp{<}
+or @samp{>}.
 @end table
 
 @item FRV---@file{config/frv/frv.h}

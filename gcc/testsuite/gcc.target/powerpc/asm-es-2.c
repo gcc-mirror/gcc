@@ -11,7 +11,7 @@ f2 (int *p)
   while (1)
     {
       p += 4;
-      asm ("asm2%U0 %0" : "=m" (*p));
+      asm ("asm2%U0 %0" : "=m<>" (*p));
     }
 }
 
