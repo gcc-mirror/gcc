@@ -1,5 +1,11 @@
 2010-07-27  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
+	PR rtl-optimization/40956
+	* config/arm/arm.c (thumb1_size_rtx_costs): Fix cost of simple
+	constants.
+
+2010-07-27  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
 	PR target/42495
 	PR middle-end/42574
 	* config/arm/arm.c (legitimize_pic_address): Use
