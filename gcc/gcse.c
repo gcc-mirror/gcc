@@ -4247,8 +4247,15 @@ compute_code_hoist_vbeinout (void)
       FOR_EACH_BB_REVERSE (bb)
 	{
 	  if (bb->next_bb != EXIT_BLOCK_PTR)
-	    sbitmap_intersection_of_succs (hoist_vbeout[bb->index],
-					   hoist_vbein, bb->index);
+	    {
+	      sbitmap_intersection_of_succs (hoist_vbeout[bb->index],
+					     hoist_vbein, bb->index);
+
+	      /* Include expressions in VBEout that are calculated
+		 in BB and available at its end.  */
+	      sbitmap_a_or_b (hoist_vbeout[bb->index],
+			      hoist_vbeout[bb->index], comp[bb->index]);
+	    }
 
 	  changed |= sbitmap_a_or_b_and_c_cg (hoist_vbein[bb->index],
 					      antloc[bb->index],
@@ -4430,6 +4437,11 @@ hoist_code (void)
 
 	  if (TEST_BIT (hoist_vbeout[bb->index], i))
 	    {
+	      /* If an expression is computed in BB and is available at end of
+		 BB, hoist all occurences dominated by BB to BB.  */
+	      if (TEST_BIT (comp[bb->index], i))
+		hoistable++;
+
 	      /* We've found a potentially hoistable expression, now
 		 we look at every block BB dominates to see if it
 		 computes the expression.  */
