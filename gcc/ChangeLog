@@ -1,5 +1,11 @@
 2010-07-27  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
+	* config/arm/arm.c (params.h): Include.
+	(arm_override_options): Tune gcse-unrestricted-cost.
+	* config/arm/t-arm (arm.o): Define dependencies.
+
+2010-07-27  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
 	PR target/42495
 	PR middle-end/42574
 	* basic-block.h (get_dominated_to_depth): Declare.
