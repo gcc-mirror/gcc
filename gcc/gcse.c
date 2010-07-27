@@ -4330,7 +4330,7 @@ hoist_code (void)
 		 the vast majority of hoistable expressions are only movable
 		 from two successors, so raising this threshold is likely
 		 to nullify any benefit we get from code hoisting.  */
-	      if (hoistable > 1)
+	      if (hoistable > 1 && dbg_cnt (hoist_insn))
 		{
 		  SET_BIT (hoist_exprs[bb->index], i);
 		  found = 1;
