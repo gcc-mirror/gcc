@@ -18679,10 +18679,9 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 # For the EOF, SEEK_CUR, and SEEK_END integer constants.
 
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking For some <stdio.h> integer constants." >&5
-$as_echo_n "checking For some <stdio.h> integer constants.... " >&6; }
-
-  if test "${glibcxx_cv_stdio_eof+set}" = set; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the value of EOF" >&5
+$as_echo_n "checking for the value of EOF... " >&6; }
+if test "${glibcxx_cv_stdio_eof+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
@@ -18694,8 +18693,7 @@ fi
 
 
 fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_stdio_eof" >&5
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_stdio_eof" >&5
 $as_echo "$glibcxx_cv_stdio_eof" >&6; }
 
 cat >>confdefs.h <<_ACEOF
@@ -18703,7 +18701,9 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
-  if test "${glibcxx_cv_stdio_seek_cur+set}" = set; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the value of SEEK_CUR" >&5
+$as_echo_n "checking for the value of SEEK_CUR... " >&6; }
+if test "${glibcxx_cv_stdio_seek_cur+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
@@ -18715,8 +18715,7 @@ fi
 
 
 fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_stdio_seek_cur" >&5
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_stdio_seek_cur" >&5
 $as_echo "$glibcxx_cv_stdio_seek_cur" >&6; }
 
 cat >>confdefs.h <<_ACEOF
@@ -18724,7 +18723,9 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
-  if test "${glibcxx_cv_stdio_seek_end+set}" = set; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for the value of SEEK_END" >&5
+$as_echo_n "checking for the value of SEEK_END... " >&6; }
+if test "${glibcxx_cv_stdio_seek_end+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
@@ -18736,8 +18737,7 @@ fi
 
 
 fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_stdio_seek_end" >&5
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_stdio_seek_end" >&5
 $as_echo "$glibcxx_cv_stdio_seek_end" >&6; }
 
 cat >>confdefs.h <<_ACEOF
