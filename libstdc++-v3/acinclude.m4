@@ -1623,32 +1623,27 @@ dnl Compute the EOF, SEEK_CUR, and SEEK_END integer constants.
 dnl
 AC_DEFUN([GLIBCXX_COMPUTE_STDIO_INTEGER_CONSTANTS], [
 
-  AC_MSG_CHECKING([For some <stdio.h> integer constants.])
-
-  AC_CACHE_VAL(glibcxx_cv_stdio_eof, [
+  AC_CACHE_CHECK([for the value of EOF], glibcxx_cv_stdio_eof, [
   AC_COMPUTE_INT([glibcxx_cv_stdio_eof], [[EOF]],
                  [#include <stdio.h>],
                  [AC_MSG_ERROR([computing EOF failed])])
   ])
-  AC_MSG_RESULT($glibcxx_cv_stdio_eof)
   AC_DEFINE_UNQUOTED(_GLIBCXX_STDIO_EOF, $glibcxx_cv_stdio_eof,
                      [Define to the value of the EOF integer constant.])
 
-  AC_CACHE_VAL(glibcxx_cv_stdio_seek_cur, [
+  AC_CACHE_CHECK([for the value of SEEK_CUR], glibcxx_cv_stdio_seek_cur, [
   AC_COMPUTE_INT([glibcxx_cv_stdio_seek_cur], [[SEEK_CUR]],
                  [#include <stdio.h>],
                  [AC_MSG_ERROR([computing SEEK_CUR failed])])
   ])
-  AC_MSG_RESULT($glibcxx_cv_stdio_seek_cur)
   AC_DEFINE_UNQUOTED(_GLIBCXX_STDIO_SEEK_CUR, $glibcxx_cv_stdio_seek_cur,
                      [Define to the value of the SEEK_CUR integer constant.])
 
-  AC_CACHE_VAL(glibcxx_cv_stdio_seek_end, [
+  AC_CACHE_CHECK([for the value of SEEK_END], glibcxx_cv_stdio_seek_end, [
   AC_COMPUTE_INT([glibcxx_cv_stdio_seek_end], [[SEEK_END]],
                  [#include <stdio.h>],
                  [AC_MSG_ERROR([computing SEEK_END failed])])
   ])
-  AC_MSG_RESULT($glibcxx_cv_stdio_seek_end)
   AC_DEFINE_UNQUOTED(_GLIBCXX_STDIO_SEEK_END, $glibcxx_cv_stdio_seek_end,
                      [Define to the value of the SEEK_END integer constant.])
 ])
