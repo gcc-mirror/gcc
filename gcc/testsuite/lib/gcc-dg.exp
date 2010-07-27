@@ -408,7 +408,7 @@ proc cleanup-coverage-files { } {
     # A cleaner solution would require a new DejaGnu release.
     upvar 2 name testcase
     # The name might include a list of options; extract the file name.
-    set testcase [lindex $testcase 0]]
+    set testcase [lindex $testcase 0]
     remove-build-file "[file rootname [file tail $testcase]].gc??"
 
     # Clean up coverage files for additional source files.
@@ -426,7 +426,7 @@ proc cleanup-repo-files { } {
     # A cleaner solution would require a new DejaGnu release.
     upvar 2 name testcase
     # The name might include a list of options; extract the file name.
-    set testcase [lindex $testcase 0]]
+    set testcase [lindex $testcase 0]
     remove-build-file "[file rootname [file tail $testcase]].o"
     remove-build-file "[file rootname [file tail $testcase]].rpo"
 
@@ -503,7 +503,7 @@ proc cleanup-saved-temps { args } {
     # A cleaner solution would require a new DejaGnu release.
     upvar 2 name testcase
     # The name might include a list of options; extract the file name.
-    set testcase [lindex $testcase 0]]
+    set testcase [lindex $testcase 0]
     foreach suffix $suffixes {
 	remove-build-file "[file rootname [file tail $testcase]]$suffix"
 	# -fcompare-debug dumps
