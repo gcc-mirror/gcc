@@ -1,3 +1,11 @@
+2010-07-27  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	PR rtl-optimization/40956
+	PR target/42495
+	PR middle-end/42574
+	* gcc.target/arm/pr40956.c, gcc.target/arm/pr42495.c,
+	* gcc.target/arm/pr42574.c: Add tests.
+
 2010-07-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/gcc-dg.exp (cleanup-coverage-files): Remove options from
