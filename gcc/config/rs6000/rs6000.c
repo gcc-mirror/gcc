@@ -8995,6 +8995,50 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
       return build_va_arg_indirect_ref (t);
     }
 
+  /* We need to deal with the fact that the darwin ppc64 ABI is defined by an
+     earlier version of gcc, with the property that it always applied alignment
+     adjustments to the va-args (even for zero-sized types).  The cheapest way
+     to deal with this is to replicate the effect of the part of 
+     std_gimplify_va_arg_expr that carries out the align adjust, for the case 
+     of relevance.  
+     We don't need to check for pass-by-reference because of the test above.
+     We can return a simplifed answer, since we know there's no offset to add.  */
+
+  if (TARGET_MACHO
+      && rs6000_darwin64_abi 
+      && integer_zerop (TYPE_SIZE (type)))
+    {
+      unsigned HOST_WIDE_INT align, boundary;
+      tree valist_tmp = get_initialized_tmp_var (valist, pre_p, NULL);
+      align = PARM_BOUNDARY / BITS_PER_UNIT;
+      boundary = FUNCTION_ARG_BOUNDARY (TYPE_MODE (type), type);
+      if (boundary > MAX_SUPPORTED_STACK_ALIGNMENT)
+	boundary = MAX_SUPPORTED_STACK_ALIGNMENT;
+      boundary /= BITS_PER_UNIT;
+      if (boundary > align)
+	{
+	  tree t ;
+	  /* This updates arg ptr by the amount that would be necessary
+	     to align the zero-sized (but not zero-alignment) item.  */
+	  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
+		  fold_build2 (POINTER_PLUS_EXPR,
+			       TREE_TYPE (valist),
+			       valist_tmp, size_int (boundary - 1)));
+	  gimplify_and_add (t, pre_p);
+
+	  t = fold_convert (sizetype, valist_tmp);
+	  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
+		  fold_convert (TREE_TYPE (valist),
+				fold_build2 (BIT_AND_EXPR, sizetype, t,
+					     size_int (-boundary))));
+	  t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
+	  gimplify_and_add (t, pre_p);
+	}
+      /* Since it is zero-sized there's no increment for the item itself. */
+      valist_tmp = fold_convert (build_pointer_type (type), valist_tmp);
+      return build_va_arg_indirect_ref (valist_tmp);
+    }
+
   if (DEFAULT_ABI != ABI_V4)
     {
       if (targetm.calls.split_complex_arg && TREE_CODE (type) == COMPLEX_TYPE)
