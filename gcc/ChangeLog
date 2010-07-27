@@ -1,3 +1,38 @@
+2010-07-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* coretypes.h (struct cl_option_handlers): Declare.
+	* hooks.c (hook_int_size_t_constcharptr_int_0): Remove.
+	* hooks.h (hook_int_size_t_constcharptr_int_0): Remove.
+	* langhooks-def.h (lhd_handle_option): Declare.
+	(LANG_HOOKS_HANDLE_OPTION): Use lhd_handle_option.
+	* langhooks.c (lhd_handle_option): New.
+	* langhooks.h (struct lang_hooks): Update prototype and return
+	value type of handle_option hook.
+	* optc-gen.awk: Generate target_flags_explicit definition for the
+	driver.
+	* opts-common.c: Include diagnostic.h.
+	(handle_option): Move from opts.c.  Update prototype and return
+	value type.  Use handlers structure.
+	(read_cmdline_option): Move from opts.c.  Update prototype.  Use
+	handlers structure.
+	(set_option): Move from opts.c.
+	* opts.c (common_handle_option): Update prototype and return value
+	type.  Update calls to handle_option and enable_warning_as_error.
+	(unknown_option_callback, post_handling_callback,
+	lang_handle_option, target_handle_option): New.
+	(handle_option, read_cmdline_option): Move to opts-common.c.
+	(read_cmdline_options): Update prototype.  Update call to
+	read_cmdline_option.
+	(decode_options): Initialize and use handlers structure.
+	(set_option): Move to opts-common.c.
+	(enable_warning_as_error): Update prototype.  Update call to
+	handle_option.
+	* opts.h (struct cl_option_handler_func, struct
+	cl_option_handlers): New.
+	(handle_option, enable_warning_as_error): Update prototypes.
+	(read_cmdline_option): Declare.
+	* Makefile.in (opts-common.o): Update dependencies.
+
 2010-07-27  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/arm/arm.c (params.h): Include.

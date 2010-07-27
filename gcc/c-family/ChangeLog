@@ -1,3 +1,11 @@
+2010-07-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.h (c_common_handle_option): Update prototype and return
+	value type.
+	* c-opts.c (c_common_handle_option): Update prototype and return
+	value type.  Update calls to handle_option and
+	enable_warning_as_error.
+
 2010-07-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/45079

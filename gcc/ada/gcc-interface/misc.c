@@ -64,7 +64,8 @@ static bool gnat_init			(void);
 static unsigned int gnat_option_lang_mask (void);
 static void gnat_init_options		(unsigned int,
 					 struct cl_decoded_option *);
-static int gnat_handle_option		(size_t, const char *, int, int);
+static bool gnat_handle_option		(size_t, const char *, int, int,
+					 const struct cl_option_handlers *);
 static bool gnat_post_options		(const char **);
 static alias_set_type gnat_get_alias_set (tree);
 static void gnat_print_decl		(FILE *, tree, int);
@@ -186,21 +187,14 @@ gnat_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 
 /* Decode all the language specific options that cannot be decoded by GCC.
    The option decoding phase of GCC calls this routine on the flags that
-   it cannot decode.  Return the number of consecutive arguments from ARGV
-   that have been successfully decoded or 0 on failure.  */
+   are marked as Ada-specific.  Return true on success or false on failure.  */
 
-static int
-gnat_handle_option (size_t scode, const char *arg, int value,
-		    int kind ATTRIBUTE_UNUSED)
+static bool
+gnat_handle_option (size_t scode, const char *arg ATTRIBUTE_UNUSED, int value,
+		    int kind ATTRIBUTE_UNUSED,
+		    const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
 {
-  const struct cl_option *option = &cl_options[scode];
   enum opt_code code = (enum opt_code) scode;
-
-  if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
-    {
-      error ("missing argument to \"-%s\"", option->opt_text);
-      return 1;
-    }
 
   switch (code)
     {
@@ -250,7 +244,7 @@ gnat_handle_option (size_t scode, const char *arg, int value,
       gcc_unreachable ();
     }
 
-  return 1;
+  return true;
 }
 
 /* Return language mask for option processing.  */

@@ -542,20 +542,21 @@ gfc_handle_runtime_check_option (const char *arg)
 /* Handle command-line options.  Returns 0 if unrecognized, 1 if
    recognized and handled.  */
 
-int
+bool
 gfc_handle_option (size_t scode, const char *arg, int value,
-		   int kind ATTRIBUTE_UNUSED)
+		   int kind ATTRIBUTE_UNUSED,
+		   const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
 {
-  int result = 1;
+  bool result = true;
   enum opt_code code = (enum opt_code) scode;
 
   if (gfc_cpp_handle_option (scode, arg, value) == 1)
-    return 1;
+    return true;
 
   switch (code)
     {
     default:
-      result = 0;
+      result = false;
       break;
 
     case OPT_Wall:

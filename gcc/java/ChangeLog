@@ -1,5 +1,10 @@
 2010-07-27  Joseph Myers  <joseph@codesourcery.com>
 
+	* lang.c (java_handle_option): Update prototype and return value
+	type.
+
+2010-07-27  Joseph Myers  <joseph@codesourcery.com>
+
 	* lang.c (java_option_lang_mask): New.
 	(java_init_options): Update prototype.
 	(LANG_HOOKS_OPTION_LANG_MASK): Define.

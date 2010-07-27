@@ -50,7 +50,8 @@ static unsigned int java_option_lang_mask (void);
 static void java_init_options (unsigned int, struct cl_decoded_option *);
 static bool java_post_options (const char **);
 
-static int java_handle_option (size_t scode, const char *arg, int value, int kind);
+static bool java_handle_option (size_t, const char *, int, int,
+				const struct cl_option_handlers *);
 static void put_decl_string (const char *, int);
 static void put_decl_node (tree, int);
 static void java_print_error_function (diagnostic_context *, const char *,
@@ -174,11 +175,12 @@ struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
 /*
  * process java-specific compiler command-line options
- * return 0, but do not complain if the option is not recognized.
+ * return false, but do not complain if the option is not recognized.
  */
-static int
+static bool
 java_handle_option (size_t scode, const char *arg, int value,
-		    int kind ATTRIBUTE_UNUSED)
+		    int kind ATTRIBUTE_UNUSED,
+		    const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
 {
   enum opt_code code = (enum opt_code) scode;
 
@@ -269,7 +271,7 @@ java_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_fdump_:
       if (!dump_switch_p (arg))
-	return 0;
+	return false;
       break;
 
     case OPT_fencoding_:
@@ -298,7 +300,7 @@ java_handle_option (size_t scode, const char *arg, int value,
       gcc_unreachable ();
     }
 
-  return 1;
+  return true;
 }
 
 /* Global open file.  */
