@@ -1,3 +1,8 @@
+2010-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/45083
+	* tree-inline.c (add_local_variables): Also remap DECL_DEBUG_EXPR.
+
 2010-07-27  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* postreload.c (reload_combine_recognize_const_pattern): Move test
