@@ -36,6 +36,7 @@
 #else
 
 #include <bits/forward_list.h>
+#include <bits/range_access.h>
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE
 # include <bits/forward_list.tcc>

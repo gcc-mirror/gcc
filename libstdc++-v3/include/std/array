@@ -40,6 +40,7 @@
 #endif
 
 #include <bits/stl_algobase.h>
+#include <bits/range_access.h>
 
 #if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
 #  include <tr1_impl/array>
