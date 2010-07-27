@@ -1,3 +1,8 @@
+2010-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (add_data_member_location_attribute): Use
+	add_AT_unsigned instead of add_AT_int if offset is non-negative.
+
 2010-07-27  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* postreload.c (try_replace_in_use): New static function.

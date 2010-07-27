@@ -15915,7 +15915,10 @@ add_data_member_location_attribute (dw_die_ref die, tree decl)
       if (dwarf_version > 2)
 	{
 	  /* Don't need to output a location expression, just the constant. */
-	  add_AT_int (die, DW_AT_data_member_location, offset);
+	  if (offset < 0)
+	    add_AT_int (die, DW_AT_data_member_location, offset);
+	  else
+	    add_AT_unsigned (die, DW_AT_data_member_location, offset);
 	  return;
 	}
       else
