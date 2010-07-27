@@ -4335,9 +4335,6 @@ hoist_expr_reaches_here_p (basic_block expr_bb, int expr_index, basic_block bb,
       else if (visited[pred_bb->index])
 	continue;
 
-      /* Does this predecessor generate this expression?  */
-      else if (TEST_BIT (comp[pred_bb->index], expr_index))
-	break;
       else if (! TEST_BIT (transp[pred_bb->index], expr_index))
 	break;
 

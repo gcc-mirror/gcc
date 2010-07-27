@@ -1,5 +1,11 @@
 2010-07-27  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
+	PR target/42495
+	PR middle-end/42574
+	* gcse.c (hoist_expr_reaches_here_p): Remove excessive check.
+
+2010-07-27  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
 	* gcse.c (hoist_code): Generate new pseudo for every new set insn.
 
 2010-07-27  Maxim Kuvyrkov  <maxim@codesourcery.com>
