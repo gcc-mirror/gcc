@@ -7013,7 +7013,7 @@ thumb1_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
       if (outer == SET)
         {
           if ((unsigned HOST_WIDE_INT) INTVAL (x) < 256)
-            return 0;
+            return COSTS_N_INSNS (1);
 	  /* See split "TARGET_THUMB1 && satisfies_constraint_J".  */
 	  if (INTVAL (x) >= -255 && INTVAL (x) <= -1)
             return COSTS_N_INSNS (2);
