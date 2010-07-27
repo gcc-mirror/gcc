@@ -2600,6 +2600,20 @@ propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs, bitmap interesting_name
 	      continue;
 	    }
 
+	  /* It's not ok to propagate into the definition stmt of RHS.
+		<bb 9>:
+		  # prephitmp.12_36 = PHI <g_67.1_6(9)>
+		  g_67.1_6 = prephitmp.12_36;
+		  goto <bb 9>;
+	     While this is strictly all dead code we do not want to
+	     deal with this here.  */
+	  if (TREE_CODE (rhs) == SSA_NAME
+	      && SSA_NAME_DEF_STMT (rhs) == use_stmt)
+	    {
+	      all = false;
+	      continue;
+	    }
+
 	  /* Dump details.  */
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {

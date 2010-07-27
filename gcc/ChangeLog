@@ -1,3 +1,9 @@
+2010-07-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44977
+	* tree-ssa-dom.c (propagate_rhs_into_lhs): Do not create invalid
+	SSA form.
+
 2010-07-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
