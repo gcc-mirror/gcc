@@ -142,6 +142,8 @@ extern enum rx_cpu_types  rx_cpu_type;
 #define POINTER_SIZE			32
 #undef  SIZE_TYPE
 #define SIZE_TYPE			"long unsigned int"
+#undef  PTRDIFF_TYPE
+#define PTRDIFF_TYPE			"long int"
 #define POINTERS_EXTEND_UNSIGNED	1
 #define FUNCTION_MODE 			QImode
 #define CASE_VECTOR_MODE		Pmode
@@ -206,7 +208,7 @@ enum reg_class
 #define BASE_REG_CLASS  		GR_REGS
 #define INDEX_REG_CLASS			GR_REGS
 
-#define FIRST_PSEUDO_REGISTER 		16
+#define FIRST_PSEUDO_REGISTER 		17
 
 #define REGNO_REG_CLASS(REGNO)          ((REGNO) < FIRST_PSEUDO_REGISTER \
 					 ? GR_REGS : NO_REGS)
@@ -218,6 +220,7 @@ enum reg_class
 #define STATIC_CHAIN_REGNUM 		8
 #define TRAMPOLINE_TEMP_REGNUM		9
 #define STRUCT_VAL_REGNUM		15
+#define CC_REGNUM                       16
 
 /* This is the register which is used to hold the address of the start
    of the small data area, if that feature is being used.  Note - this
@@ -244,12 +247,12 @@ enum reg_class
 
 #define FIXED_REGISTERS					\
 {							\
-  1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0	\
+  1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1	\
 }
 
 #define CALL_USED_REGISTERS				\
 {							\
-  1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1	\
+  1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1	\
 }
 
 #define CONDITIONAL_REGISTER_USAGE			\
@@ -350,7 +353,7 @@ typedef unsigned int CUMULATIVE_ARGS;
 #define REGISTER_NAMES						\
   {								\
     "r0",  "r1",  "r2",   "r3",   "r4",   "r5",   "r6",   "r7",	\
-    "r8",  "r9",  "r10",  "r11",  "r12",  "r13",  "r14",  "r15" \
+      "r8",  "r9",  "r10",  "r11",  "r12",  "r13",  "r14",  "r15", "cc"	\
   };
 
 #define ADDITIONAL_REGISTER_NAMES	\
@@ -613,9 +616,6 @@ typedef unsigned int CUMULATIVE_ARGS;
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR)	\
   rx_print_operand_address (FILE, ADDR)
 
-#define CC_NO_CARRY			0400
-#define NOTICE_UPDATE_CC(EXP, INSN)	rx_notice_update_cc (EXP, INSN)
-
 extern int rx_float_compare_mode;
 
 /* This is a version of REG_P that also returns TRUE for SUBREGs.  */
@@ -650,3 +650,17 @@ extern int rx_float_compare_mode;
 
 /* This macro is used to decide when RX FPU instructions can be used.  */
 #define ALLOW_RX_FPU_INSNS	(TARGET_USE_FPU)
+
+#define BRANCH_COST(SPEED, PREDICT)           1
+#define REGISTER_MOVE_COST(MODE, FROM, TO)    2
+#define MEMORY_MOVE_COST(MODE, REGCLASS, IN) (2 + memory_move_secondary_cost (MODE, REGCLASS, IN))
+  
+#define SELECT_CC_MODE(OP,X,Y)						\
+  (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT ? CC_ZSmode :		\
+    (GET_CODE (X) == PLUS || GET_CODE (X) == MINUS ? CC_ZSCmode :	\
+    (GET_CODE (X) == ABS ? CC_ZSOmode :					\
+    (GET_CODE (X) == AND || GET_CODE (X) == NOT || GET_CODE (X) == IOR	\
+     || GET_CODE (X) == XOR || GET_CODE (X) == ROTATE			\
+     || GET_CODE (X) == ROTATERT || GET_CODE (X) == ASHIFTRT		\
+     || GET_CODE (X) == LSHIFTRT || GET_CODE (X) == ASHIFT ? CC_ZSmode : \
+     CCmode))))

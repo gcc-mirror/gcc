@@ -1,3 +1,46 @@
+2010-07-27  Nick Clifton  <nickc@redhat.com>
+
+	* Import this patch from the mainline:
+
+	2010-06-30  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx-modes.def: New file.
+	* config/rx/rx.h (FIRST_PSEUDO_REGISTER): Increase to 17.
+	(CC_REGNUM): Define.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS, REGISTER_NAMES): Add cc
+	register.
+	(CC_NO_CARRY, NOTICE_UPDATE_CC): Delete.
+	(SELECT_CC_MODE): Define.
+	* config/rx/rx.md (CC_REG): Define.  Update all patterns to use
+	(reg:CC CC_REG) instead of (cc0).
+	(attr "cc"): Delete.
+	(cbranchsi4): Do not split compare and branch here. Instead move
+	it to...
+	(cbranchsi4_<code>): ... here.  New patterns.
+	(cmpsi): Call rx-compare_redundant to find out if it is necessary
+	to emit the compare instruction.
+	* config/rx/rx.c (rx_gen-cond_branch_template): Remove tests of
+	cc_status flags.
+	(rx_get_stack_layout): Iterate up to before CC_REGNUM not
+	FIRST_PSEUDO_REGNUM.
+	(rx_expand_prologue, rx_expand_epilogue): Likewise.
+	(rx_notice_update_cc): Delete.
+	(rx_cc_modes_compatible): New function.
+	(flags_needed_for_conditional): New function.
+	(flags_from_mode): New function.
+	(rx_compare_redundant): New function - scans backwards through
+	insn list to find out if condition flags are already set correctly.
+	(TARGET_CC_MODES_COMPATIBLE): Define.
+	* config/rx/rx-protos.h (rx_compare_redundant): Prototype.
+
+	* config/rx/rx.h (BRANCH_COST): Define.
+	(REGISTER_MOVE_COST): Define.
+	* config/rx/predicates (rx_source_operand): Allow all constant types.
+	* config/rx/rx.md (addsi3): Add alternative for swapped operands.
+	(tstsi4): New pattern.
+	* config/rx/rx.c (rx_memory_move_cost): Define.
+	(TARGET_MEMORY_MOVE_COST): Define.
+
 2010-07-23  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Guenther  <rguenther@suse.de>
 
