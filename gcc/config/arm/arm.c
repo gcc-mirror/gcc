@@ -56,6 +56,7 @@
 #include "df.h"
 #include "intl.h"
 #include "libfuncs.h"
+#include "params.h"
 
 /* Forward definitions of types.  */
 typedef struct minipool_node    Mnode;
@@ -1871,6 +1872,14 @@ arm_override_options (void)
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }
+
+  if (!PARAM_SET_P (PARAM_GCSE_UNRESTRICTED_COST)
+      && flag_pic)
+    /* Hoisting PIC address calculations more aggressively provides a small,
+       but measurable, size reduction for PIC code.  Therefore, we decrease
+       the bar for unrestricted expression hoisting to the cost of PIC address
+       calculation, which is 2 instructions.  */
+    set_param_value ("gcse-unrestricted-cost", 2);
 
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();
