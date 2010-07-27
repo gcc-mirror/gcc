@@ -955,8 +955,8 @@ reload_combine_recognize_const_pattern (rtx insn)
 	      && reg_state[clobbered_regno].real_store_ruid >= use_ruid)
 	    break;
 
-	  /* Avoid moving a use of ADDREG past a point where it
-	     is stored.  */
+	  gcc_assert (reg_state[regno].store_ruid <= use_ruid);
+	  /* Avoid moving a use of ADDREG past a point where it is stored.  */
 	  if (reg_state[REGNO (addreg)].store_ruid >= use_ruid)
 	    break;
 
@@ -1033,10 +1033,10 @@ reload_combine_recognize_const_pattern (rtx insn)
 		    }
 		}
 	    }
-	  /* If we get here, we couldn't handle this use.  */
-	  if (must_move_add)
-	    break;
 	}
+      /* If we get here, we couldn't handle this use.  */
+      if (must_move_add)
+	break;
     }
   while (use);
 
