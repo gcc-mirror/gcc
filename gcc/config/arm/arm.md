@@ -5093,17 +5093,21 @@
   [(set (match_operand:SI 0 "register_operand" "")
 	(match_operand:SI 1 "const_int_operand" ""))]
   "TARGET_THUMB1 && satisfies_constraint_J (operands[1])"
-  [(set (match_dup 0) (match_dup 1))
-   (set (match_dup 0) (neg:SI (match_dup 0)))]
-  "operands[1] = GEN_INT (- INTVAL (operands[1]));"
+  [(set (match_dup 2) (match_dup 1))
+   (set (match_dup 0) (neg:SI (match_dup 2)))]
+  "
+  {
+    operands[1] = GEN_INT (- INTVAL (operands[1]));
+    operands[2] = can_create_pseudo_p () ? gen_reg_rtx (SImode) : operands[0];
+  }"
 )
 
 (define_split 
   [(set (match_operand:SI 0 "register_operand" "")
 	(match_operand:SI 1 "const_int_operand" ""))]
   "TARGET_THUMB1 && satisfies_constraint_K (operands[1])"
-  [(set (match_dup 0) (match_dup 1))
-   (set (match_dup 0) (ashift:SI (match_dup 0) (match_dup 2)))]
+  [(set (match_dup 2) (match_dup 1))
+   (set (match_dup 0) (ashift:SI (match_dup 2) (match_dup 3)))]
   "
   {
     unsigned HOST_WIDE_INT val = INTVAL (operands[1]) & 0xffffffffu;
@@ -5114,12 +5118,13 @@
       if ((val & (mask << i)) == val)
         break;
 
-    /* Shouldn't happen, but we don't want to split if the shift is zero.  */
+    /* Don't split if the shift is zero.  */
     if (i == 0)
       FAIL;
 
     operands[1] = GEN_INT (val >> i);
-    operands[2] = GEN_INT (i);
+    operands[2] = can_create_pseudo_p () ? gen_reg_rtx (SImode) : operands[0];
+    operands[3] = GEN_INT (i);
   }"
 )
 
