@@ -3687,7 +3687,24 @@ add_local_variables (struct function *callee, struct function *caller,
 	  add_local_decl (caller, var);
       }
     else if (!can_be_nonlocal (var, id))
-      add_local_decl (caller, remap_decl (var, id));
+      {
+        tree new_var = remap_decl (var, id);
+
+        /* Remap debug-expressions.  */
+	if (TREE_CODE (new_var) == VAR_DECL
+	    && DECL_DEBUG_EXPR_IS_FROM (new_var)
+	    && new_var != var)
+	  {
+	    tree tem = DECL_DEBUG_EXPR (var);
+	    bool old_regimplify = id->regimplify;
+	    id->remapping_type_depth++;
+	    walk_tree (&tem, copy_tree_body_r, id, NULL);
+	    id->remapping_type_depth--;
+	    id->regimplify = old_regimplify;
+	    SET_DECL_DEBUG_EXPR (new_var, tem);
+	  }
+	add_local_decl (caller, new_var);
+      }
 }
 
 /* Fetch callee declaration from the call graph edge going from NODE and

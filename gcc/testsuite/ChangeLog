@@ -1,3 +1,8 @@
+2010-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/45083
+	* gcc.dg/pr45083.c: New test.
+
 2010-07-26  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40873
