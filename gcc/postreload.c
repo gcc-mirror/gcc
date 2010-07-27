@@ -871,6 +871,61 @@ fixup_debug_insns (rtx reg, rtx replacement, rtx from, rtx to)
     }
 }
 
+/* Subroutine of reload_combine_recognize_const_pattern.  Try to replace REG
+   with SRC in the insn described by USE, taking costs into account.  Return
+   true if we made the replacement.  */
+
+static bool
+try_replace_in_use (struct reg_use *use, rtx reg, rtx src)
+{
+  rtx use_insn = use->insn;
+  rtx mem = use->containing_mem;
+  bool speed = optimize_bb_for_speed_p (BLOCK_FOR_INSN (use_insn));
+
+  if (mem != NULL_RTX)
+    {
+      addr_space_t as = MEM_ADDR_SPACE (mem);
+      rtx oldaddr = XEXP (mem, 0);
+      rtx newaddr = NULL_RTX;
+      int old_cost = address_cost (oldaddr, GET_MODE (mem), as, speed);
+      int new_cost;
+
+      newaddr = simplify_replace_rtx (oldaddr, reg, src);
+      if (memory_address_addr_space_p (GET_MODE (mem), newaddr, as))
+	{
+	  XEXP (mem, 0) = newaddr;
+	  new_cost = address_cost (newaddr, GET_MODE (mem), as, speed);
+	  XEXP (mem, 0) = oldaddr;
+	  if (new_cost <= old_cost
+	      && validate_change (use_insn,
+				  &XEXP (mem, 0), newaddr, 0))
+	    return true;
+	}
+    }
+  else
+    {
+      rtx new_set = single_set (use_insn);
+      if (new_set
+	  && REG_P (SET_DEST (new_set))
+	  && GET_CODE (SET_SRC (new_set)) == PLUS
+	  && REG_P (XEXP (SET_SRC (new_set), 0))
+	  && CONSTANT_P (XEXP (SET_SRC (new_set), 1)))
+	{
+	  rtx new_src;
+	  int old_cost = rtx_cost (SET_SRC (new_set), SET, speed);
+
+	  gcc_assert (rtx_equal_p (XEXP (SET_SRC (new_set), 0), reg));
+	  new_src = simplify_replace_rtx (SET_SRC (new_set), reg, src);
+
+	  if (rtx_cost (new_src, SET, speed) <= old_cost
+	      && validate_change (use_insn, &SET_SRC (new_set),
+				  new_src, 0))
+	    return true;
+	}
+    }
+  return false;
+}
+
 /* Called by reload_combine when scanning INSN.  This function tries to detect
    patterns where a constant is added to a register, and the result is used
    in an address.
@@ -940,10 +995,9 @@ reload_combine_recognize_const_pattern (rtx insn)
 
       if (use && GET_MODE (*use->usep) == Pmode)
 	{
+	  bool delete_add = false;
 	  rtx use_insn = use->insn;
 	  int use_ruid = use->ruid;
-	  rtx mem = use->containing_mem;
-	  bool speed = optimize_bb_for_speed_p (BLOCK_FOR_INSN (use_insn));
 
 	  /* Avoid moving the add insn past a jump.  */
 	  if (must_move_add && use_ruid <= last_jump_ruid)
@@ -957,81 +1011,37 @@ reload_combine_recognize_const_pattern (rtx insn)
 
 	  gcc_assert (reg_state[regno].store_ruid <= use_ruid);
 	  /* Avoid moving a use of ADDREG past a point where it is stored.  */
-	  if (reg_state[REGNO (addreg)].store_ruid >= use_ruid)
+	  if (reg_state[REGNO (addreg)].store_ruid > use_ruid)
 	    break;
 
-	  if (mem != NULL_RTX)
+	  /* We also must not move the addition past an insn that sets
+	     the same register, unless we can combine two add insns.  */
+	  if (must_move_add && reg_state[regno].store_ruid == use_ruid)
 	    {
-	      addr_space_t as = MEM_ADDR_SPACE (mem);
-	      rtx oldaddr = XEXP (mem, 0);
-	      rtx newaddr = NULL_RTX;
-	      int old_cost = address_cost (oldaddr, GET_MODE (mem), as, speed);
-	      int new_cost;
-
-	      newaddr = simplify_replace_rtx (oldaddr, reg, src);
-	      if (memory_address_addr_space_p (GET_MODE (mem), newaddr, as))
-		{
-		  XEXP (mem, 0) = newaddr;
-		  new_cost = address_cost (newaddr, GET_MODE (mem), as, speed);
-		  XEXP (mem, 0) = oldaddr;
-		  if (new_cost <= old_cost
-		      && validate_change (use_insn,
-					  &XEXP (mem, 0), newaddr, 0))
-		    {
-		      reload_combine_purge_insn_uses (use_insn);
-		      reload_combine_note_use (&PATTERN (use_insn), use_insn,
-					       use_ruid, NULL_RTX);
-
-		      if (must_move_add)
-			{
-			  add_moved_after_insn = use_insn;
-			  add_moved_after_ruid = use_ruid;
-			}
-		      continue;
-		    }
-		}
+	      if (use->containing_mem == NULL_RTX)
+		delete_add = true;
+	      else
+		break;
 	    }
-	  else
+
+	  if (try_replace_in_use (use, reg, src))
 	    {
-	      rtx new_set = single_set (use_insn);
-	      if (new_set
-		  && REG_P (SET_DEST (new_set))
-		  && GET_CODE (SET_SRC (new_set)) == PLUS
-		  && REG_P (XEXP (SET_SRC (new_set), 0))
-		  && CONSTANT_P (XEXP (SET_SRC (new_set), 1)))
+	      reload_combine_purge_insn_uses (use_insn);
+	      reload_combine_note_use (&PATTERN (use_insn), use_insn,
+				       use_ruid, NULL_RTX);
+
+	      if (delete_add)
 		{
-		  rtx new_src;
-		  int old_cost = rtx_cost (SET_SRC (new_set), SET, speed);
-
-		  gcc_assert (rtx_equal_p (XEXP (SET_SRC (new_set), 0), reg));
-		  new_src = simplify_replace_rtx (SET_SRC (new_set), reg, src);
-
-		  if (rtx_cost (new_src, SET, speed) <= old_cost
-		      && validate_change (use_insn, &SET_SRC (new_set),
-					  new_src, 0))
-		    {
-		      reload_combine_purge_insn_uses (use_insn);
-		      reload_combine_note_use (&SET_SRC (new_set), use_insn,
-					       use_ruid, NULL_RTX);
-
-		      if (must_move_add)
-			{
-			  /* See if that took care of the add insn.  */
-			  if (rtx_equal_p (SET_DEST (new_set), reg))
-			    {
-			      fixup_debug_insns (reg, src, insn, use_insn);
-			      delete_insn (insn);
-			      return true;
-			    }
-			  else
-			    {
-			      add_moved_after_insn = use_insn;
-			      add_moved_after_ruid = use_ruid;
-			    }
-			}
-		      continue;
-		    }
+		  fixup_debug_insns (reg, src, insn, use_insn);
+		  delete_insn (insn);
+		  return true;
 		}
+	      if (must_move_add)
+		{
+		  add_moved_after_insn = use_insn;
+		  add_moved_after_ruid = use_ruid;
+		}
+	      continue;
 	    }
 	}
       /* If we get here, we couldn't handle this use.  */
