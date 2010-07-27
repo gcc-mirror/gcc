@@ -4581,8 +4581,12 @@ hoist_code (void)
 
 		      /* Create a pseudo-reg to store the result of reaching
 			 expressions into.  Get the mode for the new pseudo
-			 from the mode of the original destination pseudo.  */
-		      if (expr->reaching_reg == NULL)
+			 from the mode of the original destination pseudo.
+
+			 It is important to use new pseudos whenever we
+			 emit a set.  This will allow reload to use
+			 rematerialization for such registers.  */
+		      if (!insn_inserted_p)
 			expr->reaching_reg
 			  = gen_reg_rtx_and_attrs (SET_DEST (set));
 
