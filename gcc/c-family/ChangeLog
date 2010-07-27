@@ -1,5 +1,14 @@
 2010-07-27  Joseph Myers  <joseph@codesourcery.com>
 
+	* c-common.h (c_common_missing_argument): Remove.
+	* c-opts.c (c_common_missing_argument): Remove.
+	* c.opt (A, D, F, I, MD, MMD, MQ, MT, U, fconstant-string-class=,
+	idirafter, imacros, include, isysroot, isystem, iquote): Add
+	MissingArgError.
+	* c-objc-common.h (LANG_HOOKS_MISSING_ARGUMENT): Remove.
+
+2010-07-27  Joseph Myers  <joseph@codesourcery.com>
+
 	* c-common.h (c_common_option_lang_mask,
 	c_common_initialize_diagnostics, c_common_complain_wrong_lang_p):
 	New.

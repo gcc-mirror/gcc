@@ -39,8 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #define LANG_HOOKS_INITIALIZE_DIAGNOSTICS c_initialize_diagnostics
 #undef LANG_HOOKS_HANDLE_OPTION
 #define LANG_HOOKS_HANDLE_OPTION c_common_handle_option
-#undef LANG_HOOKS_MISSING_ARGUMENT
-#define LANG_HOOKS_MISSING_ARGUMENT c_common_missing_argument
 #undef LANG_HOOKS_POST_OPTIONS
 #define LANG_HOOKS_POST_OPTIONS c_common_post_options
 #undef LANG_HOOKS_GET_ALIAS_SET

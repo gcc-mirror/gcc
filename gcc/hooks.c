@@ -119,13 +119,6 @@ hook_bool_const_tree_hwi_hwi_const_tree_true (const_tree a ATTRIBUTE_UNUSED,
 }
 
 bool
-hook_bool_constcharptr_size_t_false (const char *a ATTRIBUTE_UNUSED,
-				     size_t b ATTRIBUTE_UNUSED)
-{
-  return false;
-}
-
-bool
 hook_bool_size_t_constcharptr_int_true (size_t a ATTRIBUTE_UNUSED,
 					const char *b ATTRIBUTE_UNUSED,
 					int c ATTRIBUTE_UNUSED)

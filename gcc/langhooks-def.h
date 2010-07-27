@@ -90,7 +90,6 @@ extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 #define LANG_HOOKS_INITIALIZE_DIAGNOSTICS lhd_initialize_diagnostics
 #define LANG_HOOKS_COMPLAIN_WRONG_LANG_P lhd_complain_wrong_lang_p
 #define LANG_HOOKS_HANDLE_OPTION	hook_int_size_t_constcharptr_int_0
-#define LANG_HOOKS_MISSING_ARGUMENT	hook_bool_constcharptr_size_t_false
 #define LANG_HOOKS_POST_OPTIONS		lhd_post_options
 #define LANG_HOOKS_MISSING_NORETURN_OK_P hook_bool_tree_true
 #define LANG_HOOKS_GET_ALIAS_SET	lhd_get_alias_set
@@ -268,7 +267,6 @@ extern void lhd_end_section (void);
   LANG_HOOKS_INITIALIZE_DIAGNOSTICS, \
   LANG_HOOKS_COMPLAIN_WRONG_LANG_P, \
   LANG_HOOKS_HANDLE_OPTION, \
-  LANG_HOOKS_MISSING_ARGUMENT, \
   LANG_HOOKS_POST_OPTIONS, \
   LANG_HOOKS_INIT, \
   LANG_HOOKS_FINISH, \

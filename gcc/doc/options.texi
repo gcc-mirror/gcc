@@ -1,4 +1,4 @@
-@c Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+@c Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -134,6 +134,14 @@ The option takes an optional argument.  If the argument is given,
 it will be part of the same @code{argv} entry as the option itself.
 
 This property cannot be used alongside @code{Joined} or @code{Separate}.
+
+@item MissingArgError(@var{message})
+For an option marked @code{Joined} or @code{Separate}, the message
+@var{message} will be used as an error message if the mandatory
+argument is missing; for options without @code{MissingArgError}, a
+generic error message is used.  @var{message} should contain a single
+@samp{%qs} format, which will be used to format the name of the option
+passed.
 
 @item UInteger
 The option's argument is a non-negative integer.  The option parser
