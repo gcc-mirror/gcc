@@ -44,6 +44,7 @@ struct cl_option
 {
   const char *opt_text;
   const char *help;
+  const char *missing_argument_error;
   unsigned short back_chain;
   unsigned char opt_len;
   int neg_index;

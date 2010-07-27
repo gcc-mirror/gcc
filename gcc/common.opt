@@ -1584,7 +1584,7 @@ Common Joined Var(plugindir_string) Init(0)
 -iplugindir=<dir>	Set <dir> to be the default plugin directory
 
 o
-Common Joined Separate
+Common Joined Separate MissingArgError(missing filename after %qs)
 -o <file>	Place output into <file>
 
 p

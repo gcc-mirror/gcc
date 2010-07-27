@@ -1,6 +1,6 @@
 #! /bin/sh
 # Wrapper around gettext for programs using the msgid convention.
-# Copyright 1998, 2001, 2002, 2003, 2009 Free Software Foundation, Inc.
+# Copyright 1998, 2001, 2002, 2003, 2009, 2010 Free Software Foundation, Inc.
 
 # Written by Paul Eggert <eggert@twinsun.com>.
 # Revised by Zack Weinberg <zackw@stanford.edu> for no-POTFILES operation.
@@ -223,6 +223,13 @@ echo "scanning option files..." >&2
 	if (/^[ \t]*(;|$)/ || !/^[^ \t]/) {
 	    field = 0
 	} else {
+	    if ((field == 1) && /MissingArgError/) {
+		line = $0
+		sub(".*MissingArgError\\(", "", line)
+		sub("\\).*", "", line)
+		printf("#line %d \"%s\"\n", lineno, file)
+		printf("_(\"%s\")\n", line)
+	    }
 	    if (field == 2) {
 		line = $0
 		printf("#line %d \"%s\"\n", lineno, file)

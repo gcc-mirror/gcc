@@ -547,7 +547,9 @@ read_cmdline_option (struct cl_decoded_option *decoded,
 
   if (decoded->errors & CL_ERR_MISSING_ARG)
     {
-      if (!lang_hooks.missing_argument (opt, decoded->opt_index))
+      if (option->missing_argument_error)
+	error (option->missing_argument_error, opt);
+      else
 	error ("missing argument to %qs", opt);
       return;
     }

@@ -1,3 +1,20 @@
+2010-07-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* common.opt (o): Add MissingArgError.
+	* doc/options.texi (MissingArgError): Document.
+	* hooks.c (hook_bool_constcharptr_size_t_false): Remove.
+	* hooks.h (hook_bool_constcharptr_size_t_false): Remove.
+	* langhooks-def.h (LANG_HOOKS_MISSING_ARGUMENT): Remove.
+	(LANG_HOOKS_INITIALIZER): Remove missing_argument hook
+	initializer.
+	* langhooks.h (struct lang_hooks): Remove missing_argument.
+	* optc-gen.awk: Handle MissingArgError and output new structure
+	field initializers.
+	* opts.c (read_cmdline_option): Use missing_argument_error field
+	instead of missing_argument langhook.
+	* opts.h (struct cl_option): Add missing_argument_error field.
+	* system.h (LANG_HOOKS_MISSING_ARGUMENT): Poison.
+
 2010-07-27  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/29090

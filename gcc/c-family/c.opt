@@ -38,7 +38,7 @@ ObjC++
 C ObjC C++ ObjC++ Joined Separate
 
 A
-C ObjC C++ ObjC++ Joined Separate
+C ObjC C++ ObjC++ Joined Separate MissingArgError(assertion missing after %qs)
 -A<question>=<answer>	Assert the <answer> to <question>.  Putting '-' before <question> disables the <answer> to <question>
 
 C
@@ -50,14 +50,14 @@ C ObjC C++ ObjC++
 Do not discard comments in macro expansions
 
 D
-C ObjC C++ ObjC++ Joined Separate
+C ObjC C++ ObjC++ Joined Separate MissingArgError(macro name missing after %qs)
 -D<macro>[=<val>]	Define a <macro> with <val> as its value.  If just <macro> is given, <val> is taken to be 1
 
 E
 C ObjC C++ ObjC++ Undocumented Var(flag_preprocess_only)
 
 F
-C ObjC C++ ObjC++ Joined Separate
+C ObjC C++ ObjC++ Joined Separate MissingArgError(missing path after %qs)
 -F <dir>	Add <dir> to the end of the main framework include path
 
 H
@@ -65,7 +65,7 @@ C ObjC C++ ObjC++
 Print the name of header files as they are used
 
 I
-C ObjC C++ ObjC++ Joined Separate
+C ObjC C++ ObjC++ Joined Separate MissingArgError(missing path after %qs)
 -I <dir>	Add <dir> to the end of the main include path
 
 M
@@ -73,11 +73,11 @@ C ObjC C++ ObjC++
 Generate make dependencies
 
 MD
-C ObjC C++ ObjC++ Separate
+C ObjC C++ ObjC++ Separate MissingArgError(missing filename after %qs)
 Generate make dependencies and compile
 
 MF
-C ObjC C++ ObjC++ Joined Separate
+C ObjC C++ ObjC++ Joined Separate MissingArgError(missing filename after %qs)
 -MF <file>	Write dependency output to the given file
 
 MG
@@ -89,7 +89,7 @@ C ObjC C++ ObjC++
 Like -M but ignore system header files
 
 MMD
-C ObjC C++ ObjC++ Separate
+C ObjC C++ ObjC++ Separate MissingArgError(missing filename after %qs)
 Like -MD but ignore system header files
 
 MP
@@ -97,11 +97,11 @@ C ObjC C++ ObjC++
 Generate phony targets for all headers
 
 MQ
-C ObjC C++ ObjC++ Joined Separate
+C ObjC C++ ObjC++ Joined Separate MissingArgError(missing makefile target after %qs)
 -MQ <target>	Add a MAKE-quoted target
 
 MT
-C ObjC C++ ObjC++ Joined Separate
+C ObjC C++ ObjC++ Joined Separate MissingArgError(missing makefile target after %qs)
 -MT <target>	Add an unquoted target
 
 P
@@ -109,7 +109,7 @@ C ObjC C++ ObjC++
 Do not generate #line directives
 
 U
-C ObjC C++ ObjC++ Joined Separate
+C ObjC C++ ObjC++ Joined Separate MissingArgError(macro name missing after %qs)
 -U<macro>	Undefine <macro>
 
 Wabi
@@ -564,7 +564,7 @@ C++ ObjC++ Var(flag_conserve_space)
 Reduce the size of object files
 
 fconstant-string-class=
-ObjC ObjC++ Joined
+ObjC ObjC++ Joined MissingArgError(no class name specified with %qs)
 -fconst-string-class=<name>	Use class <name> for constant strings
 
 fdeduce-init-list
@@ -886,11 +886,11 @@ C ObjC C++ ObjC++ Joined
 -femit-struct-debug-detailed=<spec-list>	Detailed reduced debug info for structs
 
 idirafter
-C ObjC C++ ObjC++ Joined Separate
+C ObjC C++ ObjC++ Joined Separate MissingArgError(missing path after %qs)
 -idirafter <dir>	Add <dir> to the end of the system include path
 
 imacros
-C ObjC C++ ObjC++ Joined Separate
+C ObjC C++ ObjC++ Joined Separate MissingArgError(missing filename after %qs)
 -imacros <file>	Accept definition of macros in <file>
 
 imultilib
@@ -898,7 +898,7 @@ C ObjC C++ ObjC++ Joined Separate
 -imultilib <dir>	Set <dir> to be the multilib include subdirectory
 
 include
-C ObjC C++ ObjC++ Joined Separate
+C ObjC C++ ObjC++ Joined Separate MissingArgError(missing filename after %qs)
 -include <file>	Include the contents of <file> before other files
 
 iprefix
@@ -906,15 +906,15 @@ C ObjC C++ ObjC++ Joined Separate
 -iprefix <path>	Specify <path> as a prefix for next two options
 
 isysroot
-C ObjC C++ ObjC++ Joined Separate
+C ObjC C++ ObjC++ Joined Separate MissingArgError(missing path after %qs)
 -isysroot <dir>	Set <dir> to be the system root directory
 
 isystem
-C ObjC C++ ObjC++ Joined Separate
+C ObjC C++ ObjC++ Joined Separate MissingArgError(missing path after %qs)
 -isystem <dir>	Add <dir> to the start of the system include path
 
 iquote
-C ObjC C++ ObjC++ Joined Separate
+C ObjC C++ ObjC++ Joined Separate MissingArgError(missing path after %qs)
 -iquote <dir>	Add <dir> to the end of the quote include path
 
 iwithprefix

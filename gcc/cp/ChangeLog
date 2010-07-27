@@ -1,5 +1,9 @@
 2010-07-27  Joseph Myers  <joseph@codesourcery.com>
 
+	* cp-objcp-common.h (LANG_HOOKS_MISSING_ARGUMENT): Remove.
+
+2010-07-27  Joseph Myers  <joseph@codesourcery.com>
+
 	* cp-objcp-common.c (cxx_initialize_diagnostics): First call
 	c_common_initialize_diagnostics.
 	* cp-objcp-common.h (LANG_HOOKS_OPTION_LANG_MASK,

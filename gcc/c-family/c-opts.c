@@ -135,59 +135,6 @@ static struct deferred_opt
 static const unsigned int 
 c_family_lang_mask = (CL_C | CL_CXX | CL_ObjC | CL_ObjCXX);
 
-/* Complain that switch CODE expects an argument but none was
-   provided.  OPT was the command-line option.  Return FALSE to get
-   the default message in opts.c, TRUE if we provide a specialized
-   one.  */
-bool
-c_common_missing_argument (const char *opt, size_t code)
-{
-  switch (code)
-    {
-    default:
-      /* Pick up the default message.  */
-      return false;
-
-    case OPT_fconstant_string_class_:
-      error ("no class name specified with %qs", opt);
-      break;
-
-    case OPT_A:
-      error ("assertion missing after %qs", opt);
-      break;
-
-    case OPT_D:
-    case OPT_U:
-      error ("macro name missing after %qs", opt);
-      break;
-
-    case OPT_F:
-    case OPT_I:
-    case OPT_idirafter:
-    case OPT_isysroot:
-    case OPT_isystem:
-    case OPT_iquote:
-      error ("missing path after %qs", opt);
-      break;
-
-    case OPT_MF:
-    case OPT_MD:
-    case OPT_MMD:
-    case OPT_include:
-    case OPT_imacros:
-    case OPT_o:
-      error ("missing filename after %qs", opt);
-      break;
-
-    case OPT_MQ:
-    case OPT_MT:
-      error ("missing makefile target after %qs", opt);
-      break;
-    }
-
-  return true;
-}
-
 /* Defer option CODE with argument ARG.  */
 static void
 defer_opt (enum opt_code code, const char *arg)
