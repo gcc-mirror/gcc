@@ -713,7 +713,7 @@ static void
 expand_one_stack_var_at (tree decl, HOST_WIDE_INT offset)
 {
   /* Alignment is unsigned.   */
-  unsigned HOST_WIDE_INT align;
+  unsigned HOST_WIDE_INT align, max_align;
   rtx x;
 
   /* If this fails, we've overflowed the stack frame.  Error nicely?  */
@@ -730,10 +730,10 @@ expand_one_stack_var_at (tree decl, HOST_WIDE_INT offset)
       offset -= frame_phase;
       align = offset & -offset;
       align *= BITS_PER_UNIT;
-      if (align == 0)
-	align = STACK_BOUNDARY;
-      else if (align > MAX_SUPPORTED_STACK_ALIGNMENT)
-	align = MAX_SUPPORTED_STACK_ALIGNMENT;
+      max_align = MAX (crtl->max_used_stack_slot_alignment,
+		       PREFERRED_STACK_BOUNDARY);
+      if (align == 0 || align > max_align)
+	align = max_align;
 
       DECL_ALIGN (decl) = align;
       DECL_USER_ALIGN (decl) = 0;
@@ -938,6 +938,13 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
 	align = MINIMUM_ALIGNMENT (TREE_TYPE (var),
 				   TYPE_MODE (TREE_TYPE (var)),
 				   TYPE_ALIGN (TREE_TYPE (var)));
+      else if (DECL_HAS_VALUE_EXPR_P (var)
+	       || (DECL_RTL_SET_P (var) && MEM_P (DECL_RTL (var))))
+	/* Don't consider debug only variables with DECL_HAS_VALUE_EXPR_P set
+	   or variables which were assigned a stack slot already by
+	   expand_one_stack_var_at - in the latter case DECL_ALIGN has been
+	   changed from the offset chosen to it.  */
+	align = crtl->stack_alignment_estimated;
       else
 	align = MINIMUM_ALIGNMENT (var, DECL_MODE (var), DECL_ALIGN (var));
 
