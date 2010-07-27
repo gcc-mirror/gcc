@@ -1,5 +1,6 @@
 /* Language hooks common to C++ and ObjC++ front ends.
-   Copyright (C) 2004, 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -40,6 +41,10 @@ extern bool cp_function_decl_explicit_p (tree decl);
 #define LANG_HOOKS_FINISH cxx_finish
 #undef LANG_HOOKS_CLEAR_BINDING_STACK
 #define LANG_HOOKS_CLEAR_BINDING_STACK pop_everything
+#undef LANG_HOOKS_OPTION_LANG_MASK
+#define LANG_HOOKS_OPTION_LANG_MASK c_common_option_lang_mask
+#undef LANG_HOOKS_COMPLAIN_WRONG_LANG_P
+#define LANG_HOOKS_COMPLAIN_WRONG_LANG_P c_common_complain_wrong_lang_p
 #undef LANG_HOOKS_INIT_OPTIONS
 #define LANG_HOOKS_INIT_OPTIONS c_common_init_options
 #undef LANG_HOOKS_INITIALIZE_DIAGNOSTICS

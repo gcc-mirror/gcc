@@ -416,15 +416,7 @@ complain_wrong_lang (const char *text, const struct cl_option *option,
 {
   char *ok_langs, *bad_lang;
 
-  /* The LTO front end inherits all the options from the first front
-     end that was used.  However, not all the original front end
-     options make sense in LTO.
-
-     A real solution would be to filter this in collect2, but collect2
-     does not have access to all the option attributes to know what to
-     filter.  So, in lto1 we silently accept inherited flags and do
-     nothing about it.  */
-  if (lang_mask & CL_LTO)
+  if (!lang_hooks.complain_wrong_lang_p (option))
     return;
 
   ok_langs = write_langs (option->flags);
@@ -715,7 +707,7 @@ decode_options (unsigned int argc, const char **argv,
   if (first_time_p)
     {
       /* Perform language-specific options initialization.  */
-      initial_lang_mask = lang_mask = lang_hooks.init_options (argc, argv);
+      initial_lang_mask = lang_mask = lang_hooks.option_lang_mask ();
 
       lang_hooks.initialize_diagnostics (global_dc);
 
@@ -732,6 +724,9 @@ decode_options (unsigned int argc, const char **argv,
 
   decode_cmdline_options_to_array (argc, argv, lang_mask,
 				   decoded_options, decoded_options_count);
+  if (first_time_p)
+    /* Perform language-specific options initialization.  */
+    lang_hooks.init_options (*decoded_options_count, *decoded_options);
 
   /* Scan to see what optimization level has been specified.  That will
      determine the default value of many flags.  */

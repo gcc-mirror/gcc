@@ -595,16 +595,34 @@ static GTY(()) tree registered_builtin_fndecls;
 /* Language hooks.  */
 
 static unsigned int
-lto_init_options (unsigned int argc ATTRIBUTE_UNUSED,
-		  const char **argv ATTRIBUTE_UNUSED)
+lto_option_lang_mask (void)
+{
+  return CL_LTO;
+}
+
+static bool
+lto_complain_wrong_lang_p (const struct cl_option *option ATTRIBUTE_UNUSED)
+{
+  /* The LTO front end inherits all the options from the first front
+     end that was used.  However, not all the original front end
+     options make sense in LTO.
+
+     A real solution would be to filter this in collect2, but collect2
+     does not have access to all the option attributes to know what to
+     filter.  So, in lto1 we silently accept inherited flags and do
+     nothing about it.  */
+  return false;
+}
+
+static void
+lto_init_options (unsigned int decoded_options_count ATTRIBUTE_UNUSED,
+		  struct cl_decoded_option *decoded_options ATTRIBUTE_UNUSED)
 {
   /* By default, C99-like requirements for complex multiply and divide.
      ???  Until the complex method is encoded in the IL this is the only
      safe choice.  This will pessimize Fortran code with LTO unless
      people specify a complex method manually or use -ffast-math.  */
   flag_complex_method = 2;
-
-  return CL_LTO;
 }
 
 /* Handle command-line option SCODE.  If the option takes an argument, it is
@@ -1116,6 +1134,10 @@ static void lto_init_ts (void)
 
 #undef LANG_HOOKS_NAME
 #define LANG_HOOKS_NAME "GNU GIMPLE"
+#undef LANG_HOOKS_OPTION_LANG_MASK
+#define LANG_HOOKS_OPTION_LANG_MASK lto_option_lang_mask
+#undef LANG_HOOKS_COMPLAIN_WRONG_LANG_P
+#define LANG_HOOKS_COMPLAIN_WRONG_LANG_P lto_complain_wrong_lang_p
 #undef LANG_HOOKS_INIT_OPTIONS
 #define LANG_HOOKS_INIT_OPTIONS lto_init_options
 #undef LANG_HOOKS_HANDLE_OPTION

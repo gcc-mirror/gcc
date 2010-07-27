@@ -281,14 +281,19 @@ warning_as_error_callback (int option_index)
     }
 }
 
-/* Common initialization before parsing options.  */
+/* Return language mask for option parsing.  */
 unsigned int
-c_common_init_options (unsigned int argc, const char **argv)
+c_common_option_lang_mask (void)
 {
   static const unsigned int lang_flags[] = {CL_C, CL_ObjC, CL_CXX, CL_ObjCXX};
-  unsigned int i, result;
-  struct cpp_callbacks *cb;
 
+  return lang_flags[c_language];
+}
+
+/* Common diagnostics initialization.  */
+void
+c_common_initialize_diagnostics (diagnostic_context *context)
+{
   /* Register callback for warnings enabled by -Werror=.  */
   register_warning_as_error_callback (warning_as_error_callback);
 
@@ -298,13 +303,37 @@ c_common_init_options (unsigned int argc, const char **argv)
     {
       /* By default wrap lines at 80 characters.  Is getenv
 	 ("COLUMNS") preferable?  */
-      diagnostic_line_cutoff (global_dc) = 80;
+      diagnostic_line_cutoff (context) = 80;
       /* By default, emit location information once for every
 	 diagnostic message.  */
-      diagnostic_prefixing_rule (global_dc) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
+      diagnostic_prefixing_rule (context) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
     }
 
-  global_dc->opt_permissive = OPT_fpermissive;
+  context->opt_permissive = OPT_fpermissive;
+}
+
+/* Whether options from all C-family languages should be accepted
+   quietly.  */
+static bool accept_all_c_family_options = false;
+
+/* Return whether to complain about a wrong-language option.  */
+bool
+c_common_complain_wrong_lang_p (const struct cl_option *option)
+{
+  if (accept_all_c_family_options
+      && (option->flags & c_family_lang_mask))
+    return false;
+
+  return true;
+}
+
+/* Common initialization before calling option handlers.  */
+void
+c_common_init_options (unsigned int decoded_options_count,
+		       struct cl_decoded_option *decoded_options)
+{
+  unsigned int i;
+  struct cpp_callbacks *cb;
 
   parse_in = cpp_create_reader (c_dialect_cxx () ? CLK_GNUCXX: CLK_GNUC89,
 				ident_hash, line_table);
@@ -327,23 +356,19 @@ c_common_init_options (unsigned int argc, const char **argv)
   /* By default, C99-like requirements for complex multiply and divide.  */
   flag_complex_method = 2;
 
-  deferred_opts = XNEWVEC (struct deferred_opt, argc);
-
-  result = lang_flags[c_language];
+  deferred_opts = XNEWVEC (struct deferred_opt, decoded_options_count);
 
   if (c_language == clk_c)
     {
       /* If preprocessing assembly language, accept any of the C-family
 	 front end options since the driver may pass them through.  */
-      for (i = 1; i < argc; i++)
-	if (! strcmp (argv[i], "-lang-asm"))
+      for (i = 1; i < decoded_options_count; i++)
+	if (decoded_options[i].opt_index == OPT_lang_asm)
 	  {
-	    result |= CL_C | CL_ObjC | CL_CXX | CL_ObjCXX;
+	    accept_all_c_family_options = true;
 	    break;
 	  }
     }
-
-  return result;
 }
 
 /* Handle switch SCODE with argument ARG.  VALUE is true, unless no-

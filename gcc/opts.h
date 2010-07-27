@@ -117,6 +117,14 @@ struct cl_decoded_option
      -frecord-gcc-switches.  */
   const char *orig_option_with_args_text;
 
+  /* The canonical form of the option and its argument, for when it is
+     necessary to reconstruct argv elements (in particular, for
+     processing specs and passing options to subprocesses from the
+     driver).  The first element of this array is non-NULL; the second
+     is NULL if the canonical form uses only one argv element,
+     non-NULL otherwise.  */
+  const char *canonical_option[2];
+
   /* For a boolean option, 1 for the true case and 0 for the "no-"
      case.  For an unsigned integer option, the value of the
      argument.  1 in all other cases.  */

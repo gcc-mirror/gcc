@@ -1,6 +1,6 @@
 /* Definitions for c-common.c.
    Copyright (C) 1987, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -724,7 +724,12 @@ extern void set_compound_literal_name (tree decl);
 
 extern tree build_va_arg (location_t, tree, tree);
 
-extern unsigned int c_common_init_options (unsigned int, const char **);
+struct diagnostic_context;
+
+extern unsigned int c_common_option_lang_mask (void);
+extern void c_common_initialize_diagnostics (struct diagnostic_context *);
+extern bool c_common_complain_wrong_lang_p (const struct cl_option *);
+extern void c_common_init_options (unsigned int, struct cl_decoded_option *);
 extern bool c_common_post_options (const char **);
 extern bool c_common_init (void);
 extern void c_common_finish (void);

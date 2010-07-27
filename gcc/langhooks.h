@@ -1,5 +1,5 @@
 /* The lang_hooks data structure.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -269,14 +269,23 @@ struct lang_hooks
      on unrecognized codes.  */
   size_t (*tree_size) (enum tree_code);
 
-  /* The first callback made to the front end, for simple
-     initialization needed before any calls to handle_option.  Return
-     the language mask to filter the switch array with.  */
-  unsigned int (*init_options) (unsigned int argc, const char **argv);
+  /* Return the language mask used for converting argv into a sequence
+     of options.  */
+  unsigned int (*option_lang_mask) (void);
+
+  /* After the initialize_diagnostics hook is called, do any simple
+     initialization needed before any calls to handle_option.  */
+  void (*init_options) (unsigned int decoded_options_count,
+			struct cl_decoded_option *decoded_options);
 
   /* Callback used to perform language-specific initialization for the
      global diagnostic context structure.  */
   void (*initialize_diagnostics) (struct diagnostic_context *);
+
+  /* Return true if a warning should be given about option OPTION,
+     which is for the wrong language, false if it should be quietly
+     ignored.  */
+  bool (*complain_wrong_lang_p) (const struct cl_option *option);
 
   /* Handle the switch CODE, which has real type enum opt_code from
      options.h.  If the switch takes an argument, it is passed in ARG

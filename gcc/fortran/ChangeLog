@@ -1,3 +1,15 @@
+2010-07-27  Joseph Myers  <joseph@codesourcery.com>
+
+	* cpp.c (gfc_cpp_init_options): Update prototype.  Use number of
+	decoded options in allocating deferred_opt.
+	* cpp.h (gfc_cpp_init_options): Update prototype.
+	* f95-lang.c (LANG_HOOKS_OPTION_LANG_MASK): Define.
+	* gfortran.h (gfc_option_lang_mask): New.
+	(gfc_init_options): Update prototype.
+	* options.c (gfc_option_lang_mask): New.
+	(gfc_init_options): Update prototype.  Pass new arguments to
+	gfc_cpp_init_options.
+
 2010-07-26  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40873

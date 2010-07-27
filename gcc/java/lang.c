@@ -46,7 +46,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 static bool java_init (void);
 static void java_finish (void);
-static unsigned int java_init_options (unsigned int, const char **);
+static unsigned int java_option_lang_mask (void);
+static void java_init_options (unsigned int, struct cl_decoded_option *);
 static bool java_post_options (const char **);
 
 static int java_handle_option (size_t scode, const char *arg, int value, int kind);
@@ -121,6 +122,8 @@ struct GTY(()) language_function {
 #define LANG_HOOKS_INIT java_init
 #undef LANG_HOOKS_FINISH
 #define LANG_HOOKS_FINISH java_finish
+#undef LANG_HOOKS_OPTION_LANG_MASK
+#define LANG_HOOKS_OPTION_LANG_MASK java_option_lang_mask
 #undef LANG_HOOKS_INIT_OPTIONS
 #define LANG_HOOKS_INIT_OPTIONS java_init_options
 #undef LANG_HOOKS_HANDLE_OPTION
@@ -525,8 +528,14 @@ lang_init_source (int level)
 }
 
 static unsigned int
-java_init_options (unsigned int argc ATTRIBUTE_UNUSED,
-		   const char **argv ATTRIBUTE_UNUSED)
+java_option_lang_mask (void)
+{
+  return CL_Java;
+}
+
+static void
+java_init_options (unsigned int decoded_options_count ATTRIBUTE_UNUSED,
+		   struct cl_decoded_option *decoded_options ATTRIBUTE_UNUSED)
 {
   flag_bounds_check = 1;
   flag_exceptions = 1;
@@ -542,8 +551,6 @@ java_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   flag_evaluation_order = 1;
 
   jcf_path_init ();
-
-  return CL_Java;
 }
 
 /* Post-switch processing.  */
