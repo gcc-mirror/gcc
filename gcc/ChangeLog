@@ -1,3 +1,13 @@
+2010-07-27  Jeff Law  <law@redhat.com>
+	    Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* gcse.c (compute_transpout, transpout): Remove, move logic
+	to prune_expressions.
+	(compute_pre_data): Move pruning of trapping expressions ...
+	(prune_expressions): ... here.  New static function.
+	(compute_code_hoist_data): Use it.
+	(alloc_code_hoist_mem, free_code_hoist_mem, hoist_code): Update.
+
 2010-07-27  Xinliang David Li  <davidxl@google.com>
 
 	* tree-ssa-loop-ivopts.c (adjust_iv_update_pos): New function.
