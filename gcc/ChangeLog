@@ -1,3 +1,17 @@
+2010-07-27  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* rtl.def (DEBUG_INSN, INSN, JUMP_INSN, CALL_INSN, NOTE): Swap operands
+	4 and 5.
+	* rtl.h (PATTERN, INSN_LOCATOR, NOTE_DATA, NOTE_DELETED_LABEL_NAME,
+	NOTE_BLOCK, NOTE_EH_HANDLER, NOTE_BASIC_BLOCK, NOTE_VAR_LOCATION,
+	NOTE_KIND, LABEL_NUSES, LABEL_REFS): Adjust accordingly.
+	* gengtype.c (adjust_field_rtx_def): Swap operands 4 and 5 of
+	CODE_LABELs and NOTEs.
+	* caller-save.c (init_caller_save): Fix up gen_rtx_INSN call.
+	* combine.c (try_combine): Likewise.
+	* ira.c (setup_prohibited_mode_move_regs): Likewise.
+	* print-rtl.c (print_rtx): Start REG_NOTES on a new line.
+
 2010-07-27  Joseph Myers  <joseph@codesourcery.com>
 
 	* coretypes.h (struct cl_option_handlers): Declare.

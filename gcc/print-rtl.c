@@ -333,6 +333,10 @@ print_rtx (const_rtx in_rtx)
       case 'e':
       do_e:
 	indent += 2;
+	if (i == 7 && INSN_P (in_rtx))
+	  /* Put REG_NOTES on their own line.  */
+	  fprintf (outfile, "\n%s%*s",
+		   print_rtx_head, indent * 2, "");
 	if (!sawclose)
 	  fprintf (outfile, " ");
 	print_rtx (XEXP (in_rtx, i));
@@ -378,7 +382,7 @@ print_rtx (const_rtx in_rtx)
 	break;
 
       case 'i':
-	if (i == 4 && INSN_P (in_rtx))
+	if (i == 5 && INSN_P (in_rtx))
 	  {
 #ifndef GENERATOR_FILE
 	    /*  Pretty-print insn locators.  Ignore scoping as it is mostly
