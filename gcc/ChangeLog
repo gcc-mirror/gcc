@@ -1,5 +1,11 @@
 2010-07-27  Iain Sandoe  <iains@gcc.gnu.org>
 
+	PR target/29090
+	* config/rs6000/rs6000.c (rs6000_gimplify_va_arg): Special-case the
+	Darwin64 ABI, for zero-sized objects.
+
+2010-07-27  Iain Sandoe  <iains@gcc.gnu.org>
+
 	PR target/35491
 	PR target/29090
 
