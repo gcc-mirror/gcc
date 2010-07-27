@@ -1,3 +1,10 @@
+2010-07-27  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* postreload.c (try_replace_in_use): New static function.
+	(reload_combine_recognize_const_pattern): Use it here.  Allow
+	substituting into a final add insn, and substituting into a memory
+	reference in an insn that sets the reg.
+
 2010-07-27  Joseph Myers  <joseph@codesourcery.com>
 
 	* common.opt (o): Add MissingArgError.
