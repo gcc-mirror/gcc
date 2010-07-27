@@ -1,5 +1,11 @@
 2010-07-27  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
+	* gcse.c (insert_insn_end_basic_block): Update signature, remove
+	unused checks.
+	(pre_edge_insert, hoist_code): Update.
+
+2010-07-27  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
 	PR target/42495
 	PR middle-end/42574
 	* gcse.c (hoist_expr_reaches_here_p): Remove excessive check.
