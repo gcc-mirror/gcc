@@ -2201,60 +2201,6 @@ fi
 
 } # ac_fn_cxx_check_header_mongrel
 
-# ac_fn_c_check_type LINENO TYPE VAR INCLUDES
-# -------------------------------------------
-# Tests whether TYPE exists after having included INCLUDES, setting cache
-# variable VAR accordingly.
-ac_fn_c_check_type ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
-$as_echo_n "checking for $2... " >&6; }
-if { as_var=$3; eval "test \"\${$as_var+set}\" = set"; }; then :
-  $as_echo_n "(cached) " >&6
-else
-  eval "$3=no"
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$4
-int
-main ()
-{
-if (sizeof ($2))
-	 return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$4
-int
-main ()
-{
-if (sizeof (($2)))
-	    return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-
-else
-  eval "$3=yes"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-eval ac_res=\$$3
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-  eval $as_lineno_stack; test "x$as_lineno_stack" = x && { as_lineno=; unset as_lineno;}
-
-} # ac_fn_c_check_type
-
 # ac_fn_c_compute_int LINENO EXPR VAR INCLUDES
 # --------------------------------------------
 # Tries to find the compile-time value of EXPR in a program that includes
@@ -2432,6 +2378,60 @@ rm -f conftest.val
   return $ac_retval
 
 } # ac_fn_c_compute_int
+
+# ac_fn_c_check_type LINENO TYPE VAR INCLUDES
+# -------------------------------------------
+# Tests whether TYPE exists after having included INCLUDES, setting cache
+# variable VAR accordingly.
+ac_fn_c_check_type ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
+$as_echo_n "checking for $2... " >&6; }
+if { as_var=$3; eval "test \"\${$as_var+set}\" = set"; }; then :
+  $as_echo_n "(cached) " >&6
+else
+  eval "$3=no"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+int
+main ()
+{
+if (sizeof ($2))
+	 return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+int
+main ()
+{
+if (sizeof (($2)))
+	    return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+else
+  eval "$3=yes"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; test "x$as_lineno_stack" = x && { as_lineno=; unset as_lineno;}
+
+} # ac_fn_c_check_type
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -18676,45 +18676,73 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-# For common values of EOF, SEEK_CUR, SEEK_END.
+# For the EOF, SEEK_CUR, and SEEK_END integer constants.
 
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for EOF == -1, SEEK_CUR == 1, SEEK_END == 2" >&5
-$as_echo_n "checking for EOF == -1, SEEK_CUR == 1, SEEK_END == 2... " >&6; }
-  if test "${glibcxx_cv_stdio_macros+set}" = set; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking For some <stdio.h> integer constants." >&5
+$as_echo_n "checking For some <stdio.h> integer constants.... " >&6; }
+
+  if test "${glibcxx_cv_stdio_eof+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdio.h>
-int
-main ()
-{
-#if ((EOF != -1) || (SEEK_CUR != 1) || (SEEK_END != 2))
-	            unusual values...
-	          #endif
+  if ac_fn_c_compute_int "$LINENO" "EOF" "glibcxx_cv_stdio_eof"        "#include <stdio.h>"; then :
 
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  glibcxx_cv_stdio_macros=yes
 else
-  glibcxx_cv_stdio_macros=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-
+  as_fn_error "computing EOF failed" "$LINENO" 5
 fi
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_stdio_macros" >&5
-$as_echo "$glibcxx_cv_stdio_macros" >&6; }
-  if test x"$glibcxx_cv_stdio_macros" = x"yes"; then
 
-$as_echo "#define _GLIBCXX_STDIO_MACROS 1" >>confdefs.h
+fi
 
-  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_stdio_eof" >&5
+$as_echo "$glibcxx_cv_stdio_eof" >&6; }
+
+cat >>confdefs.h <<_ACEOF
+#define _GLIBCXX_STDIO_EOF $glibcxx_cv_stdio_eof
+_ACEOF
+
+
+  if test "${glibcxx_cv_stdio_seek_cur+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  if ac_fn_c_compute_int "$LINENO" "SEEK_CUR" "glibcxx_cv_stdio_seek_cur"        "#include <stdio.h>"; then :
+
+else
+  as_fn_error "computing SEEK_CUR failed" "$LINENO" 5
+fi
+
+
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_stdio_seek_cur" >&5
+$as_echo "$glibcxx_cv_stdio_seek_cur" >&6; }
+
+cat >>confdefs.h <<_ACEOF
+#define _GLIBCXX_STDIO_SEEK_CUR $glibcxx_cv_stdio_seek_cur
+_ACEOF
+
+
+  if test "${glibcxx_cv_stdio_seek_end+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  if ac_fn_c_compute_int "$LINENO" "SEEK_END" "glibcxx_cv_stdio_seek_end"        "#include <stdio.h>"; then :
+
+else
+  as_fn_error "computing SEEK_END failed" "$LINENO" 5
+fi
+
+
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_stdio_seek_end" >&5
+$as_echo "$glibcxx_cv_stdio_seek_end" >&6; }
+
+cat >>confdefs.h <<_ACEOF
+#define _GLIBCXX_STDIO_SEEK_END $glibcxx_cv_stdio_seek_end
+_ACEOF
 
 
 
