@@ -240,6 +240,14 @@ DEFPARAM(PARAM_GCSE_UNRESTRICTED_COST,
 	 "Cost at which GCSE optimizations will not constraint the distance an expression can travel",
 	 3, 0, 0)
 
+/* How deep from a given basic block the dominator tree should be searched
+   for expressions to hoist to the block.  The value of 0 will avoid limiting
+   the search.  */
+DEFPARAM(PARAM_MAX_HOIST_DEPTH,
+	 "max-hoist-depth",
+	 "Maximum depth of search in the dominator tree for expressions to hoist",
+	 30, 0, 0)
+
 /* This parameter limits the number of insns in a loop that will be unrolled,
    and by how much the loop is unrolled.
 

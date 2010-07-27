@@ -329,6 +329,10 @@ struct occr
   char copied_p;
 };
 
+typedef struct occr *occr_t;
+DEF_VEC_P (occr_t);
+DEF_VEC_ALLOC_P (occr_t, heap);
+
 /* Expression and copy propagation hash tables.
    Each hash table is an array of buckets.
    ??? It is known that if it were an array of entries, structure elements
@@ -4163,9 +4167,6 @@ add_label_notes (rtx x, rtx insn)
 static sbitmap *hoist_vbein;
 static sbitmap *hoist_vbeout;
 
-/* Hoistable expressions.  */
-static sbitmap *hoist_exprs;
-
 /* ??? We could compute post dominators and run this algorithm in
    reverse to perform tail merging, doing so would probably be
    more effective than the tail merging code in jump.c.
@@ -4184,7 +4185,6 @@ alloc_code_hoist_mem (int n_blocks, int n_exprs)
 
   hoist_vbein = sbitmap_vector_alloc (n_blocks, n_exprs);
   hoist_vbeout = sbitmap_vector_alloc (n_blocks, n_exprs);
-  hoist_exprs = sbitmap_vector_alloc (n_blocks, n_exprs);
 }
 
 /* Free vars used for code hoisting analysis.  */
@@ -4198,7 +4198,6 @@ free_code_hoist_mem (void)
 
   sbitmap_vector_free (hoist_vbein);
   sbitmap_vector_free (hoist_vbeout);
-  sbitmap_vector_free (hoist_exprs);
 
   free_dominance_info (CDI_DOMINATORS);
 }
@@ -4249,7 +4248,17 @@ compute_code_hoist_vbeinout (void)
     }
 
   if (dump_file)
-    fprintf (dump_file, "hoisting vbeinout computation: %d passes\n", passes);
+    {
+      fprintf (dump_file, "hoisting vbeinout computation: %d passes\n", passes);
+
+      FOR_EACH_BB (bb)
+        {
+	  fprintf (dump_file, "vbein (%d): ", bb->index);
+	  dump_sbitmap_file (dump_file, hoist_vbein[bb->index]);
+	  fprintf (dump_file, "vbeout(%d): ", bb->index);
+	  dump_sbitmap_file (dump_file, hoist_vbeout[bb->index]);
+	}
+    }
 }
 
 /* Top level routine to do the dataflow analysis needed by code hoisting.  */
@@ -4352,6 +4361,8 @@ static int
 hoist_code (void)
 {
   basic_block bb, dominated;
+  VEC (basic_block, heap) *dom_tree_walk;
+  unsigned int dom_tree_walk_index;
   VEC (basic_block, heap) *domby;
   unsigned int i,j;
   struct expr **index_map;
@@ -4359,8 +4370,6 @@ hoist_code (void)
   int *to_bb_head;
   int *bb_size;
   int changed = 0;
-
-  sbitmap_vector_zero (hoist_exprs, last_basic_block);
 
   /* Compute a mapping from expression number (`bitmap_index') to
      hash table entry.  */
@@ -4400,34 +4409,72 @@ hoist_code (void)
       bb_size[bb->index] = to_head;
     }
 
+  gcc_assert (EDGE_COUNT (ENTRY_BLOCK_PTR->succs) == 1
+	      && (EDGE_SUCC (ENTRY_BLOCK_PTR, 0)->dest
+		  == ENTRY_BLOCK_PTR->next_bb));
+
+  dom_tree_walk = get_all_dominated_blocks (CDI_DOMINATORS,
+					    ENTRY_BLOCK_PTR->next_bb);
+
   /* Walk over each basic block looking for potentially hoistable
      expressions, nothing gets hoisted from the entry block.  */
-  FOR_EACH_BB (bb)
+  for (dom_tree_walk_index = 0;
+       VEC_iterate (basic_block, dom_tree_walk, dom_tree_walk_index, bb);
+       dom_tree_walk_index++)
     {
-      int found = 0;
-      int insn_inserted_p;
+      domby = get_dominated_to_depth (CDI_DOMINATORS, bb, MAX_HOIST_DEPTH);
 
-      domby = get_dominated_by (CDI_DOMINATORS, bb);
+      if (VEC_length (basic_block, domby) == 0)
+	continue;
+
       /* Examine each expression that is very busy at the exit of this
 	 block.  These are the potentially hoistable expressions.  */
       for (i = 0; i < hoist_vbeout[bb->index]->n_bits; i++)
 	{
-	  int hoistable = 0;
-
 	  if (TEST_BIT (hoist_vbeout[bb->index], i))
 	    {
+	      /* Current expression.  */
+	      struct expr *expr = index_map[i];
+	      /* Number of occurences of EXPR that can be hoisted to BB.  */
+	      int hoistable = 0;
+	      /* Basic blocks that have occurences reachable from BB.  */
+	      bitmap_head _from_bbs, *from_bbs = &_from_bbs;
+	      /* Occurences reachable from BB.  */
+	      VEC (occr_t, heap) *occrs_to_hoist = NULL;
+	      /* We want to insert the expression into BB only once, so
+		 note when we've inserted it.  */
+	      int insn_inserted_p;
+	      occr_t occr;
+
+	      bitmap_initialize (from_bbs, 0);
+
 	      /* If an expression is computed in BB and is available at end of
 		 BB, hoist all occurences dominated by BB to BB.  */
 	      if (TEST_BIT (comp[bb->index], i))
-		hoistable++;
+		{
+		  occr = find_occr_in_bb (expr->antic_occr, bb);
+
+		  if (occr)
+		    {
+		      /* An occurence might've been already deleted
+			 while processing a dominator of BB.  */
+		      if (occr->deleted_p)
+			gcc_assert (MAX_HOIST_DEPTH > 1);
+		      else
+			{
+			  gcc_assert (NONDEBUG_INSN_P (occr->insn));
+			  hoistable++;
+			}
+		    }
+		  else
+		    hoistable++;
+		}
 
 	      /* We've found a potentially hoistable expression, now
 		 we look at every block BB dominates to see if it
 		 computes the expression.  */
 	      for (j = 0; VEC_iterate (basic_block, domby, j, dominated); j++)
 		{
-		  struct expr *expr = index_map[i];
-		  struct occr *occr = NULL;
 		  int max_distance;
 
 		  /* Ignore self dominance.  */
@@ -4439,22 +4486,25 @@ hoist_code (void)
 		  if (!TEST_BIT (antloc[dominated->index], i))
 		    continue;
 
+		  occr = find_occr_in_bb (expr->antic_occr, dominated);
+		  gcc_assert (occr);
+
+		  /* An occurence might've been already deleted
+		     while processing a dominator of BB.  */
+		  if (occr->deleted_p)
+		    {
+		      gcc_assert (MAX_HOIST_DEPTH > 1);
+		      continue;
+		    }
+		  gcc_assert (NONDEBUG_INSN_P (occr->insn));
+
 		  max_distance = expr->max_distance;
 		  if (max_distance > 0)
-		    {
-		      struct occr *occr;
-
-		      occr = find_occr_in_bb (expr->antic_occr, dominated);
-		      gcc_assert (occr);
-
-		      gcc_assert (NONDEBUG_INSN_P (occr->insn));
-
-		      /* Adjust MAX_DISTANCE to account for the fact that
-			 OCCR won't have to travel all of DOMINATED, but
-			 only part of it.  */
-		      max_distance += (bb_size[dominated->index]
-				       - to_bb_head[INSN_UID (occr->insn)]);
-		    }
+		    /* Adjust MAX_DISTANCE to account for the fact that
+		       OCCR won't have to travel all of DOMINATED, but
+		       only part of it.  */
+		    max_distance += (bb_size[dominated->index]
+				     - to_bb_head[INSN_UID (occr->insn)]);
 
 		  /* Note if the expression would reach the dominated block
 		     unimpared if it was placed at the end of BB.
@@ -4463,11 +4513,16 @@ hoist_code (void)
 		     from a dominated block into BB.  */
 		  if (hoist_expr_reaches_here_p (bb, i, dominated, NULL,
 						 max_distance, bb_size))
-		    hoistable++;
+		    {
+		      hoistable++;
+		      VEC_safe_push (occr_t, heap,
+				     occrs_to_hoist, occr);
+		      bitmap_set_bit (from_bbs, dominated->index);
+		    }
 		}
 
 	      /* If we found more than one hoistable occurrence of this
-		 expression, then note it in the bitmap of expressions to
+		 expression, then note it in the vector of expressions to
 		 hoist.  It makes no sense to hoist things which are computed
 		 in only one BB, and doing so tends to pessimize register
 		 allocation.  One could increase this value to try harder
@@ -4478,115 +4533,76 @@ hoist_code (void)
 		 to nullify any benefit we get from code hoisting.  */
 	      if (hoistable > 1 && dbg_cnt (hoist_insn))
 		{
-		  SET_BIT (hoist_exprs[bb->index], i);
-		  found = 1;
+		  /* If (hoistable != VEC_length), then there is
+		     an occurence of EXPR in BB itself.  Don't waste
+		     time looking for LCA in this case.  */
+		  if ((unsigned) hoistable
+		      == VEC_length (occr_t, occrs_to_hoist))
+		    {
+		      basic_block lca;
+
+		      lca = nearest_common_dominator_for_set (CDI_DOMINATORS,
+							      from_bbs);
+		      if (lca != bb)
+			/* Punt, it's better to hoist these occurences to
+			   LCA.  */
+			VEC_free (occr_t, heap, occrs_to_hoist);
+		    }
 		}
-	    }
-	}
-      /* If we found nothing to hoist, then quit now.  */
-      if (! found)
-        {
-	  VEC_free (basic_block, heap, domby);
-	  continue;
-	}
+	      else
+		/* Punt, no point hoisting a single occurence.  */
+		VEC_free (occr_t, heap, occrs_to_hoist);
 
-      /* Loop over all the hoistable expressions.  */
-      for (i = 0; i < hoist_exprs[bb->index]->n_bits; i++)
-	{
-	  /* We want to insert the expression into BB only once, so
-	     note when we've inserted it.  */
-	  insn_inserted_p = 0;
+	      insn_inserted_p = 0;
 
-	  /* These tests should be the same as the tests above.  */
-	  if (TEST_BIT (hoist_exprs[bb->index], i))
-	    {
-	      /* We've found a potentially hoistable expression, now
-		 we look at every block BB dominates to see if it
-		 computes the expression.  */
-	      for (j = 0; VEC_iterate (basic_block, domby, j, dominated); j++)
+	      /* Walk through occurences of I'th expressions we want
+		 to hoist to BB and make the transformations.  */
+	      for (j = 0;
+		   VEC_iterate (occr_t, occrs_to_hoist, j, occr);
+		   j++)
 		{
-		  struct expr *expr = index_map[i];
-		  int max_distance;
+		  rtx insn;
+		  rtx set;
 
-		  /* Ignore self dominance.  */
-		  if (bb == dominated)
-		    continue;
+		  gcc_assert (!occr->deleted_p);
 
-		  /* We've found a dominated block, now see if it computes
-		     the busy expression and whether or not moving that
-		     expression to the "beginning" of that block is safe.  */
-		  if (!TEST_BIT (antloc[dominated->index], i))
-		    continue;
+		  insn = occr->insn;
+		  set = single_set (insn);
+		  gcc_assert (set);
 
-		  max_distance = expr->max_distance;
-		  if (max_distance > 0)
+		  /* Create a pseudo-reg to store the result of reaching
+		     expressions into.  Get the mode for the new pseudo
+		     from the mode of the original destination pseudo.
+
+		     It is important to use new pseudos whenever we
+		     emit a set.  This will allow reload to use
+		     rematerialization for such registers.  */
+		  if (!insn_inserted_p)
+		    expr->reaching_reg
+		      = gen_reg_rtx_and_attrs (SET_DEST (set));
+
+		  gcse_emit_move_after (expr->reaching_reg, SET_DEST (set),
+					insn);
+		  delete_insn (insn);
+		  occr->deleted_p = 1;
+		  changed = 1;
+		  gcse_subst_count++;
+
+		  if (!insn_inserted_p)
 		    {
-		      occr = find_occr_in_bb (expr->antic_occr, dominated);
-		      gcc_assert (occr);
-
-		      gcc_assert (NONDEBUG_INSN_P (occr->insn));
-
-		      /* Adjust MAX_DISTANCE to account for the fact that
-			 OCCR won't have to travel all of DOMINATED, but
-			 only part of it.  */
-		      max_distance += (bb_size[dominated->index]
-				       - to_bb_head[INSN_UID (occr->insn)]);
-		    }
-
-		  /* The expression is computed in the dominated block and
-		     it would be safe to compute it at the start of the
-		     dominated block.  Now we have to determine if the
-		     expression would reach the dominated block if it was
-		     placed at the end of BB.
-		     Note: the fact that hoist_exprs has i-th bit set means
-		     that /some/, not necesserilly all, occurences from
-		     the dominated blocks can be hoisted to BB.  Here we check
-		     if a specific occurence can be hoisted to BB.  */
-		  if (hoist_expr_reaches_here_p (bb, i, dominated, NULL,
-						 max_distance, bb_size))
-		    {
-		      rtx insn;
-		      rtx set;
-
-		      if (!occr)
-			{
-			  occr = find_occr_in_bb (expr->antic_occr, dominated);
-			  gcc_assert (occr);
-			}
-
-		      insn = occr->insn;
-		      set = single_set (insn);
-		      gcc_assert (set);
-
-		      /* Create a pseudo-reg to store the result of reaching
-			 expressions into.  Get the mode for the new pseudo
-			 from the mode of the original destination pseudo.
-
-			 It is important to use new pseudos whenever we
-			 emit a set.  This will allow reload to use
-			 rematerialization for such registers.  */
-		      if (!insn_inserted_p)
-			expr->reaching_reg
-			  = gen_reg_rtx_and_attrs (SET_DEST (set));
-
-		      gcse_emit_move_after (expr->reaching_reg, SET_DEST (set), insn);
-		      delete_insn (insn);
-		      occr->deleted_p = 1;
-		      changed = 1;
-		      gcse_subst_count++;
-
-		      if (!insn_inserted_p)
-			{
-			  insert_insn_end_basic_block (index_map[i], bb);
-			  insn_inserted_p = 1;
-			}
+		      insert_insn_end_basic_block (expr, bb);
+		      insn_inserted_p = 1;
 		    }
 		}
+
+	      VEC_free (occr_t, heap, occrs_to_hoist);
+	      bitmap_clear (from_bbs);
 	    }
 	}
       VEC_free (basic_block, heap, domby);
     }
 
+  VEC_free (basic_block, heap, dom_tree_walk);
   free (bb_size);
   free (to_bb_head);
   free (index_map);

@@ -854,6 +854,8 @@ extern VEC (basic_block, heap) *get_dominated_by (enum cdi_direction, basic_bloc
 extern VEC (basic_block, heap) *get_dominated_by_region (enum cdi_direction,
 							 basic_block *,
 							 unsigned);
+extern VEC (basic_block, heap) *get_dominated_to_depth (enum cdi_direction,
+							basic_block, int);
 extern VEC (basic_block, heap) *get_all_dominated_blocks (enum cdi_direction,
 							  basic_block);
 extern void add_to_dominance_info (enum cdi_direction, basic_block);
