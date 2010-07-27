@@ -318,7 +318,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   gimple stmt = VEC_index (gimple, stmts, 0);
   enum vect_def_type first_stmt_dt0 = vect_uninitialized_def;
   enum vect_def_type first_stmt_dt1 = vect_uninitialized_def;
-  enum tree_code first_stmt_code = ERROR_MARK, rhs_code;
+  enum tree_code first_stmt_code = ERROR_MARK, rhs_code = ERROR_MARK;
   tree first_stmt_def1_type = NULL_TREE, first_stmt_def0_type = NULL_TREE;
   tree lhs;
   bool stop_recursion = false, need_same_oprnds = false;
@@ -648,6 +648,13 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
             += targetm.vectorize.builtin_vectorization_cost (vec_perm, NULL, 0) 
                * group_size;
         }
+      else
+        { 
+          /* We don't check here complex numbers chains, so we keep them in
+	     LOADS for further check in vect_supported_load_permutation_p.  */ 
+          if (rhs_code == REALPART_EXPR || rhs_code == IMAGPART_EXPR)
+            VEC_safe_push (slp_tree, heap, *loads, *node);
+        }
 
       return true;
     }
@@ -868,8 +875,9 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
   int i = 0, j, prev = -1, next, k, number_of_groups;
   bool supported, bad_permutation = false;
   sbitmap load_index;
-  slp_tree node;
-  gimple stmt;
+  slp_tree node, other_complex_node;
+  gimple stmt, first = NULL, other_node_first;
+  unsigned complex_numbers = 0;
 
   /* FORNOW: permutations are only supported in SLP.  */
   if (!slp_instn)
@@ -893,10 +901,71 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
   for (i = 0;
        VEC_iterate (slp_tree, SLP_INSTANCE_LOADS (slp_instn), i, node);
        i++)
-    if (VEC_length (gimple, SLP_TREE_SCALAR_STMTS (node))
-        != (unsigned) group_size)
-      return false;
-     
+    {
+      if (VEC_length (gimple, SLP_TREE_SCALAR_STMTS (node))
+          != (unsigned) group_size)
+        return false;
+
+      stmt = VEC_index (gimple, SLP_TREE_SCALAR_STMTS (node), 0);
+      if (is_gimple_assign (stmt) 
+          && (gimple_assign_rhs_code (stmt) == REALPART_EXPR
+              || gimple_assign_rhs_code (stmt) == IMAGPART_EXPR))
+        complex_numbers++;
+    }
+
+  /* Complex operands can be swapped as following:
+      real_c = real_b + real_a;
+      imag_c = imag_a + imag_b;
+     i.e., we have {real_b, imag_a} and {real_a, imag_b} instead of 
+     {real_a, imag_a} and {real_b, imag_b}. We check here that if interleaving
+     chains are mixed, they match the above pattern.  */
+  if (complex_numbers)
+    {
+      for (i = 0;
+           VEC_iterate (slp_tree, SLP_INSTANCE_LOADS (slp_instn), i, node);
+           i++)
+        {
+          for (j = 0;
+               VEC_iterate (gimple, SLP_TREE_SCALAR_STMTS (node), j, stmt);
+               j++)
+            {
+              if (j == 0)
+                first = stmt;
+              else
+                {
+                  if (DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt)) != first)
+                    {
+                      if (complex_numbers != 2)
+                        return false;
+
+                      if (i == 0)
+                        k = 1;
+                      else
+                        k = 0;
+ 
+                      other_complex_node = VEC_index (slp_tree, 
+                                            SLP_INSTANCE_LOADS (slp_instn), k);
+                      other_node_first = VEC_index (gimple, 
+                                SLP_TREE_SCALAR_STMTS (other_complex_node), 0);
+
+                      if (DR_GROUP_FIRST_DR (vinfo_for_stmt (stmt)) 
+                          != other_node_first)
+                       return false;
+                    }
+                }
+            }
+        }
+    }
+
+  /* We checked that this case ok, so there is no need to proceed with 
+     permutation tests.  */
+  if (complex_numbers == 2)
+    {
+      VEC_free (slp_tree, heap, SLP_INSTANCE_LOADS (slp_instn));
+      VEC_free (int, heap, SLP_INSTANCE_LOAD_PERMUTATION (slp_instn));
+      return true;
+    }
+                   
   node = SLP_INSTANCE_TREE (slp_instn);
   stmt = VEC_index (gimple, SLP_TREE_SCALAR_STMTS (node), 0);
   /* LOAD_PERMUTATION is a list of indices of all the loads of the SLP

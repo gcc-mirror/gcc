@@ -1,3 +1,11 @@
+2010-07-27  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/44152
+	* tree-vect-slp.c (vect_build_slp_tree): Collect nodes with
+	complex numbers for further check.
+	(vect_supported_load_permutation_p): Check nodes with 
+	complex numbers.
+
 2010-07-27  Joseph Myers  <joseph@codesourcery.com>
 
 	* langhooks-def.h (lhd_init_options, LANG_HOOKS_OPTION_LANG_MASK,
