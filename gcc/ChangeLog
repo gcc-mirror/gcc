@@ -1,5 +1,25 @@
 2010-07-27  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
+	PR target/42495
+	PR middle-end/42574
+	* basic-block.h (get_dominated_to_depth): Declare.
+	* dominance.c (get_dominated_to_depth): New function, use
+	get_all_dominated_blocks as a base.
+	(get_all_dominated_blocks): Use get_dominated_to_depth.
+
+	* gcse.c (occr_t, VEC (occr_t, heap)): Define.
+	(hoist_exprs): Remove.
+	(alloc_code_hoist_mem, free_code_hoist_mem): Update.
+	(compute_code_hoist_vbeinout): Add debug print outs.
+	(hoist_code): Partially rewrite, simplify.  Use get_dominated_to_depth.
+
+	* params.def (PARAM_MAX_HOIST_DEPTH): New parameter to avoid
+	quadratic behavior.
+	* params.h (MAX_HOIST_DEPTH): New macro.
+	* doc/invoke.texi (max-hoist-depth): Document.
+
+2010-07-27  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
 	PR rtl-optimization/40956
 	* config/arm/arm.c (thumb1_size_rtx_costs): Fix cost of simple
 	constants.
