@@ -468,7 +468,6 @@ static void mark_oprs_set (rtx);
 static void alloc_cprop_mem (int, int);
 static void free_cprop_mem (void);
 static void compute_transp (const_rtx, int, sbitmap *, int);
-static void compute_transpout (void);
 static void compute_local_properties (sbitmap *, sbitmap *, sbitmap *,
 				      struct hash_table_d *);
 static void compute_cprop_data (void);
@@ -3172,11 +3171,6 @@ bypass_conditional_jumps (void)
 /* Nonzero for expressions that are transparent in the block.  */
 static sbitmap *transp;
 
-/* Nonzero for expressions that are transparent at the end of the block.
-   This is only zero for expressions killed by abnormal critical edge
-   created by a calls.  */
-static sbitmap *transpout;
-
 /* Nonzero for expressions that are computed (available) in the block.  */
 static sbitmap *comp;
 
@@ -3240,28 +3234,105 @@ free_pre_mem (void)
   pre_optimal = pre_redundant = pre_insert_map = pre_delete_map = NULL;
 }
 
+/* Remove certain expressions from anticipatable and transparent
+   sets of basic blocks that have incoming abnormal edge.
+   For PRE remove potentially trapping expressions to avoid placing
+   them on abnormal edges.  For hoisting remove memory references that
+   can be clobbered by calls.  */
+
+static void
+prune_expressions (bool pre_p)
+{
+  sbitmap prune_exprs;
+  unsigned int ui;
+  basic_block bb;
+
+  prune_exprs = sbitmap_alloc (expr_hash_table.n_elems);
+  sbitmap_zero (prune_exprs);
+  for (ui = 0; ui < expr_hash_table.size; ui++)
+    {
+      struct expr *e;
+      for (e = expr_hash_table.table[ui]; e != NULL; e = e->next_same_hash)
+	{
+	  /* Note potentially trapping expressions.  */
+	  if (may_trap_p (e->expr))
+	    {
+	      SET_BIT (prune_exprs, e->bitmap_index);
+	      continue;
+	    }
+
+	  if (!pre_p && MEM_P (e->expr))
+	    /* Note memory references that can be clobbered by a call.
+	       We do not split abnormal edges in hoisting, so would
+	       a memory reference get hoisted along an abnormal edge,
+	       it would be placed /before/ the call.  Therefore, only
+	       constant memory references can be hoisted along abnormal
+	       edges.  */
+	    {
+	      if (GET_CODE (XEXP (e->expr, 0)) == SYMBOL_REF
+		  && CONSTANT_POOL_ADDRESS_P (XEXP (e->expr, 0)))
+		continue;
+
+	      if (MEM_READONLY_P (e->expr)
+		  && !MEM_VOLATILE_P (e->expr)
+		  && MEM_NOTRAP_P (e->expr))
+		/* Constant memory reference, e.g., a PIC address.  */
+		continue;
+
+	      /* ??? Optimally, we would use interprocedural alias
+		 analysis to determine if this mem is actually killed
+		 by this call.  */
+
+	      SET_BIT (prune_exprs, e->bitmap_index);
+	    }
+	}
+    }
+
+  FOR_EACH_BB (bb)
+    {
+      edge e;
+      edge_iterator ei;
+
+      /* If the current block is the destination of an abnormal edge, we
+	 kill all trapping (for PRE) and memory (for hoist) expressions
+	 because we won't be able to properly place the instruction on
+	 the edge.  So make them neither anticipatable nor transparent.
+	 This is fairly conservative.
+
+	 ??? For hoisting it may be necessary to check for set-and-jump
+	 instructions here, not just for abnormal edges.  The general problem
+	 is that when an expression cannot not be placed right at the end of
+	 a basic block we should account for any side-effects of a subsequent
+	 jump instructions that could clobber the expression.  It would
+	 be best to implement this check along the lines of
+	 hoist_expr_reaches_here_p where the target block is already known
+	 and, hence, there's no need to conservatively prune expressions on
+	 "intermediate" set-and-jump instructions.  */
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	if ((e->flags & EDGE_ABNORMAL)
+	    && (pre_p || CALL_P (BB_END (e->src))))
+	  {
+	    sbitmap_difference (antloc[bb->index],
+				antloc[bb->index], prune_exprs);
+	    sbitmap_difference (transp[bb->index],
+				transp[bb->index], prune_exprs);
+	    break;
+	  }
+    }
+
+  sbitmap_free (prune_exprs);
+}
+
 /* Top level routine to do the dataflow analysis needed by PRE.  */
 
 static void
 compute_pre_data (void)
 {
-  sbitmap trapping_expr;
   basic_block bb;
-  unsigned int ui;
 
   compute_local_properties (transp, comp, antloc, &expr_hash_table);
+  prune_expressions (true);
   sbitmap_vector_zero (ae_kill, last_basic_block);
-
-  /* Collect expressions which might trap.  */
-  trapping_expr = sbitmap_alloc (expr_hash_table.n_elems);
-  sbitmap_zero (trapping_expr);
-  for (ui = 0; ui < expr_hash_table.size; ui++)
-    {
-      struct expr *e;
-      for (e = expr_hash_table.table[ui]; e != NULL; e = e->next_same_hash)
-	if (may_trap_p (e->expr))
-	  SET_BIT (trapping_expr, e->bitmap_index);
-    }
 
   /* Compute ae_kill for each basic block using:
 
@@ -3270,21 +3341,6 @@ compute_pre_data (void)
 
   FOR_EACH_BB (bb)
     {
-      edge e;
-      edge_iterator ei;
-
-      /* If the current block is the destination of an abnormal edge, we
-	 kill all trapping expressions because we won't be able to properly
-	 place the instruction on the edge.  So make them neither
-	 anticipatable nor transparent.  This is fairly conservative.  */
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	if (e->flags & EDGE_ABNORMAL)
-	  {
-	    sbitmap_difference (antloc[bb->index], antloc[bb->index], trapping_expr);
-	    sbitmap_difference (transp[bb->index], transp[bb->index], trapping_expr);
-	    break;
-	  }
-
       sbitmap_a_or_b (ae_kill[bb->index], transp[bb->index], comp[bb->index]);
       sbitmap_not (ae_kill[bb->index], ae_kill[bb->index]);
     }
@@ -3295,7 +3351,6 @@ compute_pre_data (void)
   antloc = NULL;
   sbitmap_vector_free (ae_kill);
   ae_kill = NULL;
-  sbitmap_free (trapping_expr);
 }
 
 /* PRE utilities */
@@ -4050,52 +4105,6 @@ add_label_notes (rtx x, rtx insn)
     }
 }
 
-/* Compute transparent outgoing information for each block.
-
-   An expression is transparent to an edge unless it is killed by
-   the edge itself.  This can only happen with abnormal control flow,
-   when the edge is traversed through a call.  This happens with
-   non-local labels and exceptions.
-
-   This would not be necessary if we split the edge.  While this is
-   normally impossible for abnormal critical edges, with some effort
-   it should be possible with exception handling, since we still have
-   control over which handler should be invoked.  But due to increased
-   EH table sizes, this may not be worthwhile.  */
-
-static void
-compute_transpout (void)
-{
-  basic_block bb;
-  unsigned int i;
-  struct expr *expr;
-
-  sbitmap_vector_ones (transpout, last_basic_block);
-
-  FOR_EACH_BB (bb)
-    {
-      /* Note that flow inserted a nop at the end of basic blocks that
-	 end in call instructions for reasons other than abnormal
-	 control flow.  */
-      if (! CALL_P (BB_END (bb)))
-	continue;
-
-      for (i = 0; i < expr_hash_table.size; i++)
-	for (expr = expr_hash_table.table[i]; expr ; expr = expr->next_same_hash)
-	  if (MEM_P (expr->expr))
-	    {
-	      if (GET_CODE (XEXP (expr->expr, 0)) == SYMBOL_REF
-		  && CONSTANT_POOL_ADDRESS_P (XEXP (expr->expr, 0)))
-		continue;
-
-	      /* ??? Optimally, we would use interprocedural alias
-		 analysis to determine if this mem is actually killed
-		 by this call.  */
-	      RESET_BIT (transpout[bb->index], expr->bitmap_index);
-	    }
-    }
-}
-
 /* Code Hoisting variables and subroutines.  */
 
 /* Very busy expressions.  */
@@ -4124,7 +4133,6 @@ alloc_code_hoist_mem (int n_blocks, int n_exprs)
   hoist_vbein = sbitmap_vector_alloc (n_blocks, n_exprs);
   hoist_vbeout = sbitmap_vector_alloc (n_blocks, n_exprs);
   hoist_exprs = sbitmap_vector_alloc (n_blocks, n_exprs);
-  transpout = sbitmap_vector_alloc (n_blocks, n_exprs);
 }
 
 /* Free vars used for code hoisting analysis.  */
@@ -4139,7 +4147,6 @@ free_code_hoist_mem (void)
   sbitmap_vector_free (hoist_vbein);
   sbitmap_vector_free (hoist_vbeout);
   sbitmap_vector_free (hoist_exprs);
-  sbitmap_vector_free (transpout);
 
   free_dominance_info (CDI_DOMINATORS);
 }
@@ -4192,7 +4199,7 @@ static void
 compute_code_hoist_data (void)
 {
   compute_local_properties (transp, comp, antloc, &expr_hash_table);
-  compute_transpout ();
+  prune_expressions (false);
   compute_code_hoist_vbeinout ();
   calculate_dominance_info (CDI_DOMINATORS);
   if (dump_file)
@@ -4294,8 +4301,7 @@ hoist_code (void)
 	{
 	  int hoistable = 0;
 
-	  if (TEST_BIT (hoist_vbeout[bb->index], i)
-	      && TEST_BIT (transpout[bb->index], i))
+	  if (TEST_BIT (hoist_vbeout[bb->index], i))
 	    {
 	      /* We've found a potentially hoistable expression, now
 		 we look at every block BB dominates to see if it
