@@ -1,4 +1,52 @@
 2010-07-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/vstring_util.h: Include bits/range_access.h.
+	* testsuite/ext/vstring/range_access.cc: New test.
+
+2010-07-27  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/bits/range_access.h: New.
+	* include/Makefile.in: Add bits/range_access.h.
+	* include/Makefile.am: Regenerate.
+	* include/std/array: Include bits/range_access.h.
+	* include/std/deque: Ditto.
+	* include/std/forward_list: Ditto.
+	* include/std/iterator: Ditto.
+	* include/std/list: Ditto.
+	* include/std/map: Ditto.
+	* include/std/regex: Ditto.
+	* include/std/set: Ditto.
+	* include/std/string: Ditto.
+	* include/std/unordered_map: Ditto.
+	* include/std/unordered_set: Ditto.
+	* include/std/vector: Ditto.
+	* include/std/valarray: Add begin() and end().
+	* libsupc++/initializer_list: Ditto.
+	* include/tr1_impl/utility: Add begin() and end().
+	* include/std/tuple: Ditto.
+	* testsuite/24_iterators/headers/iterator/range_access.cc: New test.
+	* testsuite/24_iterators/range_access.cc: Ditto.
+	* testsuite/28_regex/range_access.cc: Ditto.
+	* testsuite/18_support/initializer_list/range_access.cc: Ditto.
+	* testsuite/21_strings/basic_string/range_access.cc: Ditto.
+	* testsuite/26_numerics/valarray/range_access.cc: Ditto.
+	* testsuite/23_containers/unordered_map/range_access.cc: Ditto.
+	* testsuite/23_containers/multimap/range_access.cc: Ditto.
+	* testsuite/23_containers/set/range_access.cc: Ditto.
+	* testsuite/23_containers/unordered_multimap/range_access.cc: Ditto.
+	* testsuite/23_containers/forward_list/range_access.cc: Ditto.
+	* testsuite/23_containers/unordered_set/range_access.cc: Ditto.
+	* testsuite/23_containers/vector/range_access.cc: Ditto.
+	* testsuite/23_containers/deque/range_access.cc: Ditto.
+	* testsuite/23_containers/multiset/range_access.cc: Ditto.
+	* testsuite/23_containers/list/range_access.cc: Ditto.
+	* testsuite/23_containers/unordered_multiset/range_access.cc: Ditto.
+	* testsuite/23_containers/map/range_access.cc: Ditto.
+	* testsuite/23_containers/array/range_access.cc: Ditto.
+	* testsuite/20_util/tuple/range_access.cc: Ditto.
+	* testsuite/20_util/pair/range_access.cc: Ditto.
+
+2010-07-27  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* acinclude.m4 ([GLIBCXX_CHECK_STDIO_MACROS]): Remove.

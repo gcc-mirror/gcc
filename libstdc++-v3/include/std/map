@@ -60,6 +60,7 @@
 #include <bits/stl_tree.h>
 #include <bits/stl_map.h>
 #include <bits/stl_multimap.h>
+#include <bits/range_access.h>
 
 #ifdef _GLIBCXX_DEBUG
 # include <debug/map>

@@ -121,6 +121,7 @@ bits_headers = \
 	${bits_srcdir}/postypes.h \
 	${bits_srcdir}/random.h \
 	${bits_srcdir}/random.tcc \
+	${bits_srcdir}/range_access.h \
 	${bits_srcdir}/regex.h \
 	${bits_srcdir}/regex_compiler.h \
 	${bits_srcdir}/regex_constants.h \

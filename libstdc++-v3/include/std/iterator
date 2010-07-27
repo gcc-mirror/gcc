@@ -65,5 +65,6 @@
 #include <istream>
 #include <bits/stream_iterator.h>
 #include <bits/streambuf_iterator.h>
+#include <bits/range_access.h>
 
 #endif /* _GLIBCXX_ITERATOR */

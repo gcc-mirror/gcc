@@ -51,6 +51,7 @@
 #include <ext/numeric_traits.h> 
 #include <bits/stl_algobase.h> 
 #include <bits/basic_string.h>
+#include <bits/range_access.h>
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE
 # include <bits/basic_string.tcc> 
