@@ -5653,6 +5653,89 @@ copy_ref_info (tree new_ref, tree old_ref)
     }
 }
 
+/* Performs a peephole optimization to reorder the iv update statement with
+   a mem ref to enable instruction combining in later phases. The mem ref uses
+   the iv value before the update, so the reordering transformation requires
+   adjustment of the offset. CAND is the selected IV_CAND.
+
+   Example:
+
+   t = MEM_REF (base, iv1, 8, 16);  // base, index, stride, offset
+   iv2 = iv1 + 1;
+
+   if (t < val)      (1)
+     goto L;
+   goto Head;
+
+
+   directly propagating t over to (1) will introduce overlapping live range
+   thus increase register pressure. This peephole transform it into:
+
+
+   iv2 = iv1 + 1;
+   t = MEM_REF (base, iv2, 8, 8);
+   if (t < val)
+     goto L;
+   goto Head;
+*/
+
+static void
+adjust_iv_update_pos (struct iv_cand *cand, struct iv_use *use)
+{
+  tree var_after;
+  gimple iv_update, stmt;
+  basic_block bb;
+  gimple_stmt_iterator gsi, gsi_iv;
+
+  if (cand->pos != IP_NORMAL)
+    return;
+
+  var_after = cand->var_after;
+  iv_update = SSA_NAME_DEF_STMT (var_after);
+
+  bb = gimple_bb (iv_update);
+  gsi = gsi_last_nondebug_bb (bb);
+  stmt = gsi_stmt (gsi);
+
+  /* Only handle conditional statement for now.  */
+  if (gimple_code (stmt) != GIMPLE_COND)
+    return;
+
+  gsi_prev_nondebug (&gsi);
+  stmt = gsi_stmt (gsi);
+  if (stmt != iv_update)
+    return;
+
+  gsi_prev_nondebug (&gsi);
+  if (gsi_end_p (gsi))
+    return;
+
+  stmt = gsi_stmt (gsi);
+  if (gimple_code (stmt) != GIMPLE_ASSIGN)
+    return;
+
+  if (stmt != use->stmt)
+    return;
+
+  if (TREE_CODE (gimple_assign_lhs (stmt)) != SSA_NAME)
+    return;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Reordering \n");
+      print_gimple_stmt (dump_file, iv_update, 0, 0);
+      print_gimple_stmt (dump_file, use->stmt, 0, 0);
+      fprintf (dump_file, "\n");
+    }
+
+  gsi = gsi_for_stmt (use->stmt);
+  gsi_iv = gsi_for_stmt (iv_update);
+  gsi_move_before (&gsi_iv, &gsi);
+
+  cand->pos = IP_BEFORE_USE;
+  cand->incremented_at = use->stmt;
+}
+
 /* Rewrites USE (address that is an iv) using candidate CAND.  */
 
 static void
@@ -5665,6 +5748,7 @@ rewrite_use_address (struct ivopts_data *data,
   tree ref;
   bool ok;
 
+  adjust_iv_update_pos (cand, use);
   ok = get_computation_aff (data->current_loop, use, cand, use->stmt, &aff);
   gcc_assert (ok);
   unshare_aff_combination (&aff);
