@@ -1,5 +1,12 @@
 2010-07-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/44542
+	* cfgexpand.c (expand_one_stack_var_at): Limit align to maximum
+	of max_used_stack_slot_alignment and PREFERRED_STACK_BOUNDARY
+	instead of MAX_SUPPORTED_STACK_ALIGNMENT.
+	(expand_one_var): Don't consider DECL_ALIGN for variables for
+	which expand_one_stack_var_at has been already called.
+
 	PR testsuite/44701
 	* doc/md.texi: Clarify m and es constraints on PowerPC and m and S
 	constraints on IA-64.
