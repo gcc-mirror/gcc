@@ -5745,7 +5745,7 @@ rewrite_use_address (struct ivopts_data *data,
   aff_tree aff;
   gimple_stmt_iterator bsi = gsi_for_stmt (use->stmt);
   tree base_hint = NULL_TREE;
-  tree ref;
+  tree ref, iv;
   bool ok;
 
   adjust_iv_update_pos (cand, use);
@@ -5767,9 +5767,10 @@ rewrite_use_address (struct ivopts_data *data,
   if (cand->iv->base_object)
     base_hint = var_at_stmt (data->current_loop, cand, use->stmt);
 
-  ref = create_mem_ref (&bsi, TREE_TYPE (*use->op_p),
+  iv = var_at_stmt (data->current_loop, cand, use->stmt);
+  ref = create_mem_ref (&bsi, TREE_TYPE (*use->op_p), &aff,
 			reference_alias_ptr_type (*use->op_p),
-			&aff, base_hint, data->speed);
+			iv, base_hint, data->speed);
   copy_ref_info (ref, *use->op_p);
   *use->op_p = ref;
 }

@@ -1,3 +1,10 @@
+2010-07-27  Xinliang David Li <davidxl@google.com>
+	* tree-flow.h (create_mem_ref): Add one new parameter.
+	* tree-ssa-address.c (create_mem_ref): New parameter.
+	(addr_to_parts): Ditto.
+	(move_variant_to_index): New function.
+	* tree-ssa-loop-ivopts.c (rewrite_use_address): Pass new argument.
+
 2010-07-27  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* rtl.def (DEBUG_INSN, INSN, JUMP_INSN, CALL_INSN, NOTE): Swap operands

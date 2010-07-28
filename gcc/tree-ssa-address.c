@@ -470,6 +470,31 @@ move_pointer_to_base (struct mem_address *parts, aff_tree *addr)
   aff_combination_remove_elt (addr, i);
 }
 
+/* Moves the loop variant part V in linear address ADDR to be the index
+   of PARTS.  */
+
+static void
+move_variant_to_index (struct mem_address *parts, aff_tree *addr, tree v)
+{
+  unsigned i;
+  tree val = NULL_TREE;
+
+  gcc_assert (!parts->index);
+  for (i = 0; i < addr->n; i++)
+    {
+      val = addr->elts[i].val;
+      if (operand_equal_p (val, v, 0))
+	break;
+    }
+
+  if (i == addr->n)
+    return;
+
+  parts->index = fold_convert (sizetype, val);
+  parts->step = double_int_to_tree (sizetype, addr->elts[i].coef);
+  aff_combination_remove_elt (addr, i);
+}
+
 /* Adds ELT to PARTS.  */
 
 static void
@@ -573,7 +598,8 @@ most_expensive_mult_to_index (tree type, struct mem_address *parts,
 
 /* Splits address ADDR for a memory access of type TYPE into PARTS.
    If BASE_HINT is non-NULL, it specifies an SSA name to be used
-   preferentially as base of the reference.
+   preferentially as base of the reference, and IV_CAND is the selected
+   iv candidate used in ADDR.
 
    TODO -- be more clever about the distribution of the elements of ADDR
    to PARTS.  Some architectures do not support anything but single
@@ -583,8 +609,9 @@ most_expensive_mult_to_index (tree type, struct mem_address *parts,
    addressing modes is useless.  */
 
 static void
-addr_to_parts (tree type, aff_tree *addr, tree base_hint,
-	       struct mem_address *parts, bool speed)
+addr_to_parts (tree type, aff_tree *addr, tree iv_cand,
+	       tree base_hint, struct mem_address *parts,
+               bool speed)
 {
   tree part;
   unsigned i;
@@ -602,9 +629,17 @@ addr_to_parts (tree type, aff_tree *addr, tree base_hint,
   /* Try to find a symbol.  */
   move_fixed_address_to_symbol (parts, addr);
 
+  /* No need to do address parts reassociation if the number of parts
+     is <= 2 -- in that case, no loop invariant code motion can be
+     exposed.  */
+
+  if (!base_hint && (addr->n > 2))
+    move_variant_to_index (parts, addr, iv_cand);
+
   /* First move the most expensive feasible multiplication
      to index.  */
-  most_expensive_mult_to_index (type, parts, addr, speed);
+  if (!parts->index)
+    most_expensive_mult_to_index (type, parts, addr, speed);
 
   /* Try to find a base of the reference.  Since at the moment
      there is no reliable way how to distinguish between pointer and its
@@ -644,17 +679,19 @@ gimplify_mem_ref_parts (gimple_stmt_iterator *gsi, struct mem_address *parts)
 
 /* Creates and returns a TARGET_MEM_REF for address ADDR.  If necessary
    computations are emitted in front of GSI.  TYPE is the mode
-   of created memory reference.  */
+   of created memory reference. IV_CAND is the selected iv candidate in ADDR,
+   and BASE_HINT is non NULL if IV_CAND comes from a base address
+   object.  */
 
 tree
-create_mem_ref (gimple_stmt_iterator *gsi, tree type, tree alias_ptr_type,
-		aff_tree *addr, tree base_hint, bool speed)
+create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
+		tree alias_ptr_type, tree iv_cand, tree base_hint, bool speed)
 {
   tree mem_ref, tmp;
   tree atype;
   struct mem_address parts;
 
-  addr_to_parts (type, addr, base_hint, &parts, speed);
+  addr_to_parts (type, addr, iv_cand, base_hint, &parts, speed);
   gimplify_mem_ref_parts (gsi, &parts);
   mem_ref = create_mem_ref_raw (type, alias_ptr_type, &parts);
   if (mem_ref)
