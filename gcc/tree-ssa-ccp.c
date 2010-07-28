@@ -99,81 +99,6 @@ along with GCC; see the file COPYING3.  If not see
    array CONST_VAL[i].VALUE.  That is fed into substitute_and_fold for
    final substitution and folding.
 
-
-   Constant propagation in stores and loads (STORE-CCP)
-   ----------------------------------------------------
-
-   While CCP has all the logic to propagate constants in GIMPLE
-   registers, it is missing the ability to associate constants with
-   stores and loads (i.e., pointer dereferences, structures and
-   global/aliased variables).  We don't keep loads and stores in
-   SSA, but we do build a factored use-def web for them (in the
-   virtual operands).
-
-   For instance, consider the following code fragment:
-
-	  struct A a;
-	  const int B = 42;
-
-	  void foo (int i)
-	  {
-	    if (i > 10)
-	      a.a = 42;
-	    else
-	      {
-		a.b = 21;
-		a.a = a.b + 21;
-	      }
-
-	    if (a.a != B)
-	      never_executed ();
-	  }
-
-   We should be able to deduce that the predicate 'a.a != B' is always
-   false.  To achieve this, we associate constant values to the SSA
-   names in the VDEF operands for each store.  Additionally,
-   since we also glob partial loads/stores with the base symbol, we
-   also keep track of the memory reference where the constant value
-   was stored (in the MEM_REF field of PROP_VALUE_T).  For instance,
-
-        # a_5 = VDEF <a_4>
-        a.a = 2;
-
-        # VUSE <a_5>
-        x_3 = a.b;
-
-   In the example above, CCP will associate value '2' with 'a_5', but
-   it would be wrong to replace the load from 'a.b' with '2', because
-   '2' had been stored into a.a.
-
-   Note that the initial value of virtual operands is VARYING, not
-   UNDEFINED.  Consider, for instance global variables:
-
-   	int A;
-
-   	foo (int i)
-  	{
-	  if (i_3 > 10)
-	    A_4 = 3;
-          # A_5 = PHI (A_4, A_2);
-
-	  # VUSE <A_5>
-	  A.0_6 = A;
-
-	  return A.0_6;
-	}
-
-   The value of A_2 cannot be assumed to be UNDEFINED, as it may have
-   been defined outside of foo.  If we were to assume it UNDEFINED, we
-   would erroneously optimize the above into 'return 3;'.
-
-   Though STORE-CCP is not too expensive, it does have to do more work
-   than regular CCP, so it is only enabled at -O2.  Both regular CCP
-   and STORE-CCP use the exact same algorithm.  The only distinction
-   is that when doing STORE-CCP, the boolean variable DO_STORE_CCP is
-   set to true.  This affects the evaluation of statements and PHI
-   nodes.
-
    References:
 
      Constant propagation with conditional branches,
@@ -420,7 +345,8 @@ canonicalize_float_value (prop_value_t *val)
 static bool
 set_lattice_value (tree var, prop_value_t new_val)
 {
-  prop_value_t *old_val = get_value (var);
+  /* We can deal with old UNINITIALIZED values just fine here.  */
+  prop_value_t *old_val = &const_val[SSA_NAME_VERSION (var)];
 
   canonicalize_float_value (&new_val);
 
@@ -443,11 +369,35 @@ set_lattice_value (tree var, prop_value_t new_val)
 
       *old_val = new_val;
 
-      gcc_assert (new_val.lattice_val != UNDEFINED);
+      gcc_assert (new_val.lattice_val != UNINITIALIZED);
       return true;
     }
 
   return false;
+}
+
+/* Return the value for the tree operand EXPR.  */
+
+static prop_value_t
+get_value_for_expr (tree expr)
+{
+  prop_value_t val;
+
+  if (TREE_CODE (expr) == SSA_NAME)
+    val = *(get_value (expr));
+  else if (is_gimple_min_invariant (expr))
+    {
+      val.lattice_val = CONSTANT;
+      val.value = expr;
+      canonicalize_float_value (&val);
+    }
+  else
+    {
+      val.lattice_val = VARYING;
+      val.value = NULL_TREE;
+    }
+
+  return val;
 }
 
 
@@ -797,15 +747,7 @@ ccp_visit_phi_node (gimple phi)
       if (e->flags & EDGE_EXECUTABLE)
 	{
 	  tree arg = gimple_phi_arg (phi, i)->def;
-	  prop_value_t arg_val;
-
-	  if (is_gimple_min_invariant (arg))
-	    {
-	      arg_val.lattice_val = CONSTANT;
-	      arg_val.value = arg;
-	    }
-	  else
-	    arg_val = *(get_value (arg));
+	  prop_value_t arg_val = get_value_for_expr (arg);
 
 	  ccp_lattice_meet (&new_val, &arg_val);
 
@@ -1136,7 +1078,6 @@ ccp_fold (gimple stmt)
       gcc_unreachable ();
     }
 }
-
 
 /* Return the tree representing the element referenced by T if T is an
    ARRAY_REF or COMPONENT_REF into constant aggregates.  Return
