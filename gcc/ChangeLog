@@ -1,3 +1,9 @@
+2010-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/45103
+	* dwarf2out.c (dwarf2out_var_location): Always consider
+	NOTE_DURING_CALL_P notes, even when not followed by real instructions.
+
 2010-07-28  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	PR rtl-optimization/45107
