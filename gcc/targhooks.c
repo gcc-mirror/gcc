@@ -1197,4 +1197,14 @@ default_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
 #endif
 }
 
+bool
+default_profile_before_prologue (void)
+{
+#ifdef PROFILE_BEFORE_PROLOGUE
+  return true;
+#else
+  return false;
+#endif
+}
+
 #include "gt-targhooks.h"

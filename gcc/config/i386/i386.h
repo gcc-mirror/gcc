@@ -1607,6 +1607,8 @@ typedef struct ix86_args {
 
 #define MCOUNT_NAME "_mcount"
 
+#define MCOUNT_NAME_BEFORE_PROLOGUE "__fentry__"
+
 #define PROFILE_COUNT_REGISTER "edx"
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,

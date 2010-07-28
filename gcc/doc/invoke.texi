@@ -601,7 +601,7 @@ Objective-C and Objective-C++ Dialects}.
 -momit-leaf-frame-pointer  -mno-red-zone -mno-tls-direct-seg-refs @gol
 -mcmodel=@var{code-model} -mabi=@var{name} @gol
 -m32  -m64 -mlarge-data-threshold=@var{num} @gol
--msse2avx}
+-msse2avx -mfentry}
 
 @emph{IA-64 Options}
 @gccoptlist{-mbig-endian  -mlittle-endian  -mgnu-as  -mgnu-ld  -mno-pic @gol
@@ -12492,6 +12492,14 @@ For systems that use GNU libc, the default is on.
 @opindex msse2avx
 Specify that the assembler should encode SSE instructions with VEX
 prefix.  The option @option{-mavx} turns this on by default.
+
+@item -mfentry
+@itemx -mno-fentry
+@opindex mfentry
+If profiling is active @option{-pg} put the profiling
+counter call before prologue.
+Note: On x86 architectures the attribute @code{ms_hook_prologue}
+isn't possible at the moment for @option{-mfentry} and @option{-pg}.
 @end table
 
 These @samp{-m} switches are supported in addition to the above

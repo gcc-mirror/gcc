@@ -375,3 +375,7 @@ Support RDRND built-in functions and code generation
 mf16c
 Target Report Mask(ISA_F16C) Var(ix86_isa_flags) VarExists Save
 Support F16C built-in functions and code generation
+
+mfentry
+Target Report Var(flag_fentry) Init(-1)
+Emit profiling counter call at function entry before prologue.

@@ -1,3 +1,25 @@
+2010-07-28  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/i386.h (MCOUNT_NAME_BEFORE_PROLOGUE): New.
+	* config/i386/i386.c (ix86_profile_before_prologue): New.
+	(override_options): Add special handling for -mfentry.
+	(ix86_function_regparm): Likewise.
+	(ix86_function_sseregparm): Likewise.
+	(ix86_frame_pointer_required): Likewise.
+	(ix86_expand_prologue): Check for ms_hook_prologue.
+	(x86_function_profiler): Adjust mcount output.
+	(TARGET_PROFILE_BEFORE_PROLOGUE): Define hook.
+	* config/i386/i386.opt (mfentry): New.
+	* doc/invoke.texi (mfentry): Add documentation.
+	* doc/tm.texi: Regenerated..
+	* doc/tm.texi.in (TARGET_PROFILE_BEFORE_PROLOGUE): New.
+	* final.c (final_start_function): Replace macro
+	PROFILE_BEFORE_PROLOGUE by target hook.
+	* function.c (thread_prologue_and_epilogue_insns): Likewise.
+	* target.def (profile_before_prologue): New hook.
+	* targhooks.c (default_profile_before_prologue): New.
+	* targhooks.h (default_profile_before_prologue): New.
+
 2010-07-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/45105
