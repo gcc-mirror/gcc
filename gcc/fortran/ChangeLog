@@ -1,3 +1,8 @@
+2010-07-28  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* decl.c (free_value): Also free repeat field.
+	* data.c (gfc_assign_data_value): Always free offset before returning.
+
 2010-07-28  Daniel Kraft  <d@domob.eu>
 
 	* gfortran.h (gfc_build_intrinsic_call): New method.
