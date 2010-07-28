@@ -1,3 +1,10 @@
+2010-07-28  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/arm/arm.c (arm_pcs_default): Remove static.
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Define __ARM_PCS or
+	__ARM_PCS_VFP to indicate soft/hard-float calling convention.
+	(arm_pcs_default): Declare.
+
 2010-07-28  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_override_options): 
