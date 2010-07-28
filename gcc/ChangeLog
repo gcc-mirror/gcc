@@ -1,3 +1,16 @@
+2010-07-28  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_override_options): 
+	Use TARGET_MACHO inline, move darwin_one_byte_bool from here...
+	... to darwin_rs6000_override_options.
+	(rs6000_return_in_memory): Update preceding comment for darwin
+	64 bit ABI.  Use TARGET_MACHO inline.
+	(rs6000_darwin64_struct_check_p): New.
+	(function_arg_advance): Use rs6000_darwin64_struct_check_p.
+	(function_arg): Likewise.
+	(rs6000_arg_partial_bytes): Likewise.
+	(rs6000_function_value): Likewise.
+
 2010-07-28  Andi Kleen <ak@linux.intel.com>
 
 	* lto-opts.c (lto_file_read_options): Add loop over all inputs.
