@@ -11,8 +11,8 @@
 
 2010-07-23  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* gcc-interfaces/utils.c (update_pointer_to): In the unconstrained
-	array case, merge the alias set of the old pointer type.
+	* gcc-interface/utils.c (update_pointer_to): In the unconstrained array
+	case, merge the alias set of the old pointer type.
 
 2010-07-23  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -3367,7 +3367,7 @@
 	(gnat_to_gnu): Likewise.
 	* gcc-interface/utils2.c (build_allocator): Likewise.
 
-2010-05-07 Eric Botcazou  <ebotcazou@adacore.com>
+2010-05-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR 40989
 	* gcc-interface/misc.c (gnat_handle_option): Fix long line.
