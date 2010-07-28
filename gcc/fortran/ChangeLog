@@ -1,3 +1,9 @@
+2010-07-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45077
+	* trans-types.c (gfc_get_derived_type): Fix DT declaration
+	from modules for whole-file mode.
+
 2010-07-27  Joseph Myers  <joseph@codesourcery.com>
 
 	* gfortran.h (gfc_handle_option): Update prototype and return

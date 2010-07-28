@@ -1994,8 +1994,10 @@ gfc_get_derived_type (gfc_symbol * derived)
 	  gfc_symbol *s;
 	  s = NULL;
 	  gfc_find_symbol (derived->name, gsym->ns, 0, &s);
-	  if (s && s->backend_decl)
+	  if (s)
 	    {
+	      if (!s->backend_decl)
+		s->backend_decl = gfc_get_derived_type (s);
 	      gfc_copy_dt_decls_ifequal (s, derived, true);
 	      goto copy_derived_types;
 	    }
