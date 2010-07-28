@@ -1,3 +1,9 @@
+2010-07-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/44885
+	* tree-sra.c (find_param_candidates): Skip pointer types to arrays
+	with non-aliased component.
+
 2010-07-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/darwin-driver.c (SWITCH_TAKES_ARG,
