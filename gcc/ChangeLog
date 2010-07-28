@@ -1,3 +1,8 @@
+2010-07-28  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	PR rtl-optimization/45107
+	* gcse.c (hash_scan_set): Use max_distance for gcse-las.
+
 2010-07-28  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-ccp.c: Remove comment regarding STORE-CCP.
