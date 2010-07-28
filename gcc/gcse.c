@@ -4390,21 +4390,15 @@ hoist_code (void)
   FOR_EACH_BB (bb)
     {
       rtx insn;
-      rtx bb_end;
       int to_head;
 
-      insn = BB_HEAD (bb);
-      bb_end = BB_END (bb);
       to_head = 0;
-
-      while (insn != bb_end)
+      FOR_BB_INSNS (bb, insn)
 	{
 	  /* Don't count debug instructions to avoid them affecting
 	     decision choices.  */
 	  if (NONDEBUG_INSN_P (insn))
 	    to_bb_head[INSN_UID (insn)] = to_head++;
-
-	  insn = NEXT_INSN (insn);
 	}
 
       bb_size[bb->index] = to_head;
