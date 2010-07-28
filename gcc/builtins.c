@@ -8474,7 +8474,10 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
       STRIP_NOPS (srcvar);
       if (TREE_CODE (srcvar) == ADDR_EXPR
 	  && var_decl_component_p (TREE_OPERAND (srcvar, 0))
-	  && tree_int_cst_equal (TYPE_SIZE_UNIT (srctype), len))
+	  && tree_int_cst_equal (TYPE_SIZE_UNIT (srctype), len)
+	  && (!STRICT_ALIGNMENT
+	      || !destvar
+	      || src_align >= (int) TYPE_ALIGN (desttype)))
 	srcvar = fold_build2 (MEM_REF, destvar ? desttype : srctype,
 			      srcvar, off0);
       else
@@ -8485,11 +8488,17 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 
       if (srcvar == NULL_TREE)
 	{
+	  if (STRICT_ALIGNMENT
+	      && src_align < (int) TYPE_ALIGN (desttype))
+	    return NULL_TREE;
 	  STRIP_NOPS (src);
 	  srcvar = fold_build2 (MEM_REF, desttype, src, off0);
 	}
       else if (destvar == NULL_TREE)
 	{
+	  if (STRICT_ALIGNMENT
+	      && dest_align < (int) TYPE_ALIGN (srctype))
+	    return NULL_TREE;
 	  STRIP_NOPS (dest);
 	  destvar = fold_build2 (MEM_REF, srctype, dest, off0);
 	}

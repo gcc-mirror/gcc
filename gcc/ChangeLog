@@ -1,3 +1,9 @@
+2010-07-28  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/44903
+	* builtins.c (fold_builtin_memory_op): On STRICT_ALIGNMENT
+	targets try harder to not generate unaligned accesses.
+
 2010-07-28  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	PR rtl-optimization/45101
