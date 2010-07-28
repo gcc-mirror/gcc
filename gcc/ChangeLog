@@ -1,3 +1,7 @@
+2010-07-28  Andi Kleen <ak@linux.intel.com>
+
+	* lto-opts.c (lto_file_read_options): Add loop over all inputs.
+
 2010-07-28  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/44903
