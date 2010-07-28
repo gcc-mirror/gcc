@@ -5183,13 +5183,11 @@ thread_prologue_and_epilogue_insns (void)
       record_insns (seq, NULL, &prologue_insn_hash);
       emit_note (NOTE_INSN_PROLOGUE_END);
 
-#ifndef PROFILE_BEFORE_PROLOGUE
       /* Ensure that instructions are not moved into the prologue when
 	 profiling is on.  The call to the profiling routine can be
 	 emitted within the live range of a call-clobbered register.  */
-      if (crtl->profile)
+      if (!targetm.profile_before_prologue () && crtl->profile)
         emit_insn (gen_blockage ());
-#endif
 
       seq = get_insns ();
       end_sequence ();

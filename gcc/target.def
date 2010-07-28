@@ -1229,6 +1229,15 @@ DEFHOOK
  bool, (const_tree exp),
  default_binds_local_p)
 
+/* Check if profiling code is before or after prologue.  */
+DEFHOOK
+(profile_before_prologue,
+ "It returns true if target wants profile code emitted before prologue.\n\n\
+The default version of this hook use the target macro\n\
+@code{PROFILE_BEFORE_PROLOGUE}.",
+ bool, (void),
+ default_profile_before_prologue)
+
 /* Modify and return the identifier of a DECL's external name,
    originally identified by ID, as required by the target,
    (eg, append @nn to windows32 stdcall function names).

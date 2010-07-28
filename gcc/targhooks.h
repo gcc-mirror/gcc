@@ -150,3 +150,4 @@ extern int default_memory_move_cost (enum machine_mode, reg_class_t, bool);
 extern int default_register_move_cost (enum machine_mode, reg_class_t,
 				       reg_class_t);
 
+extern bool default_profile_before_prologue (void);

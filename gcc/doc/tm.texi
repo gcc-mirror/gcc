@@ -7076,6 +7076,13 @@ Contains the value true if the target places read-only
 ``small data'' into a separate section.  The default value is false.
 @end deftypevr
 
+@deftypefn {Target Hook} bool TARGET_PROFILE_BEFORE_PROLOGUE (void)
+It returns true if target wants profile code emitted before prologue.
+
+The default version of this hook use the target macro
+@code{PROFILE_BEFORE_PROLOGUE}.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_BINDS_LOCAL_P (const_tree @var{exp})
 Returns true if @var{exp} names an object for which name resolution
 rules must resolve to the current ``module'' (dynamic shared library
