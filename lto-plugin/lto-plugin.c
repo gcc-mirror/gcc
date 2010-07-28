@@ -212,8 +212,6 @@ translate (Elf_Data *symtab, struct plugin_symtab *out)
       data = parse_table_entry (data, &syms[n], &aux[n]);
     }
 
-  fprintf (stderr, "n = %d len = %d end-data=%lu\n", n, len,
-	   (unsigned long) (end - data));
   assert(n < len);
 
   out->nsyms = n;
