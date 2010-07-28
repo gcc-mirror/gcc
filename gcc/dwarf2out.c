@@ -21278,7 +21278,7 @@ dwarf2out_var_location (rtx loc_note)
   next_real = next_real_insn (loc_note);
   /* If there are no instructions which would be affected by this note,
      don't do anything.  */
-  if (next_real == NULL_RTX)
+  if (next_real == NULL_RTX && !NOTE_DURING_CALL_P (loc_note))
     return;
 
   /* If there were any real insns between note we processed last time
