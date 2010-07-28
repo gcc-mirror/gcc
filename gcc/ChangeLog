@@ -1,3 +1,36 @@
+2010-07-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_rtx_costs): Update costs for
+	popcount on power7 and parity on power6 systems.
+	(rs6000_emit_popcount): Rename gen_popcntwsi2 to gen_popcntddi2.
+	(rs6000_emit_parity): Add support for power6 prtyd/prtyw
+	instructions.
+
+	* config/rs6000/rs6000.md (UNSPEC_COPYSIGN): New unspec.
+	(UNSPEC_PARITY): Ditto.
+	(SFDF): New iterator for SF/DF.
+	(rreg2): New mode attribute for floating register constraint.
+	(TARGET_FLOAT): New mode attribute for whether single/double float
+	is supported.
+	(popcntd<mode>2): Combine popcntwsi2 and popcntddi2 into one
+	pattern.
+	(parity<mode>2_cmpb): New insn for parity on power6 and newer
+	machines.
+	(copysign<mode>3): Combine copysignsf3, copysigndf3 into one
+	pattern.  Add support for fcpsgn instruction added in power6.
+	(copysignsf3): Delete.
+	(copysigndf3): Delete.
+	(copysign<mode>3_fcpsgn): New insn to generate fcpsgn.  Use UNSPEC
+	instead of if_then_else in RTL to avoid problems with -0.
+
+	* config/rs6000/vsx.md (vsx_copysign<mode>3): Use UNSPEC instead
+	of if_then_else to mirror scalar code.
+	(vsx_copysignsf3): Delete, use copysign<mode>3_fcpsgn in
+	rs6000.md.
+
+	* config/rs6000/vector.md (vector_copysign<mode>3): Use UNSPEC
+	instead of if_then_else.
+
 2010-07-28  Xinliang David Li  <davidxl@google.com>
 
 	* tree-ssa-loop-ivopts.c (avg_loop_niter): New function.
