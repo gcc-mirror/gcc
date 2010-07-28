@@ -94,7 +94,13 @@ extern char arm_arch_name[];
 	if (arm_arch_iwmmxt)				\
 	  builtin_define ("__IWMMXT__");		\
 	if (TARGET_AAPCS_BASED)				\
-	  builtin_define ("__ARM_EABI__");		\
+	  {						\
+	    if (arm_pcs_default == ARM_PCS_AAPCS_VFP)	\
+	      builtin_define ("__ARM_PCS_VFP");		\
+	    else if (arm_pcs_default == ARM_PCS_AAPCS)	\
+	      builtin_define ("__ARM_PCS");		\
+	    builtin_define ("__ARM_EABI__");		\
+	  }						\
     } while (0)
 
 /* The various ARM cores.  */
@@ -1640,6 +1646,9 @@ enum arm_pcs
   ARM_PCS_APCS,		/* APCS (legacy Linux etc).  */
   ARM_PCS_UNKNOWN
 };
+
+/* Default procedure calling standard of current compilation unit. */
+extern enum arm_pcs arm_pcs_default;
 
 /* A C type for declaring a variable that is used as the first argument of
    `FUNCTION_ARG' and other related values.  */
