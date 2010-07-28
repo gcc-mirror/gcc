@@ -1,4 +1,12 @@
+2010-07-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/44790
+	PR middle-end/44993
+	* expr.c (expand_expr_real_1) <MEM_REF>: Revert latest change.  Make
+	sure the base has address_mode before adding the offset.
+
 2010-07-27  Xinliang David Li <davidxl@google.com>
+
 	* tree-flow.h (create_mem_ref): Add one new parameter.
 	* tree-ssa-address.c (create_mem_ref): New parameter.
 	(addr_to_parts): Ditto.
