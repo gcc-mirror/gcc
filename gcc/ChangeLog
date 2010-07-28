@@ -1,3 +1,37 @@
+2010-07-28  Xinliang David Li  <davidxl@google.com>
+
+	* tree-ssa-loop-ivopts.c (avg_loop_niter): New function.
+	(dump_cand): Dump var_before/after.
+	(htab_inv_expr_eq): New function.
+	(htab_inv_expr_hash): New function.
+	(tree_ssa_iv_optimize_init): Support pseudo invariants.
+	(add_candidate_1): consider base type precision.
+	(set_use_iv_cost): New parameter.
+	(adjust_setup_cost): Use profile information.
+	(get_address_cost): Do not hard code width in computing address
+	offset limits.
+	(compare_aff_trees): New function.
+	(get_loop_invariant_expr_id): New function.
+	(get_computation_cost_at): New parameter and use profile information.
+	(get_computation_cost): New parameter.
+	(determine_use_iv_cost_generic): Pass new parameter.
+	(determine_use_iv_cost_address): Ditto.
+	(determine_use_iv_cost_condition): Ditto.
+	(autoinc_possible_for_pair): Ditto.
+	(determine_use_iv_costs): More dumps.
+	(iv_ca_get_num_inv_exprs): New function.
+	(iv_ca_recount_cost): Consider loop invariants in register pressure
+	cost.
+	(iv_ca_add_use): New parameter.
+	(iv_ca_dump): Better dumping.
+	(iv_ca_extend): New parameter.
+	(try_add_cand_for): Attempt to get better partial solution.
+	(try_improve_iv_set): Pass new parameter to iv_ca_extend.
+	(create_new-ivs): More dumps.
+	(rewrite_use_compare): Ditto.
+	(free_loop_data): More cleanup.
+	(treee_ssa_iv_optimize_finalize): Ditto.
+
 2010-07-28  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/i386.h (MCOUNT_NAME_BEFORE_PROLOGUE): New.
