@@ -2691,6 +2691,8 @@ bool gfc_get_corank (gfc_expr *);
 bool gfc_has_ultimate_allocatable (gfc_expr *);
 bool gfc_has_ultimate_pointer (gfc_expr *);
 
+gfc_expr* gfc_build_intrinsic_call (const char*, locus, unsigned, ...);
+
 
 /* st.c */
 extern gfc_code new_st;

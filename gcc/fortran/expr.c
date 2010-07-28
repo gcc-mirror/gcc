@@ -4199,3 +4199,47 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict)
   
   return true;
 }
+
+
+/* Build call to an intrinsic procedure.  The number of arguments has to be
+   passed (rather than ending the list with a NULL value) because we may
+   want to add arguments but with a NULL-expression.  */
+
+gfc_expr*
+gfc_build_intrinsic_call (const char* name, locus where, unsigned numarg, ...)
+{
+  gfc_expr* result;
+  gfc_actual_arglist* atail;
+  gfc_intrinsic_sym* isym;
+  va_list ap;
+  unsigned i;
+
+  isym = gfc_find_function (name);
+  gcc_assert (isym);
+  
+  result = gfc_get_expr ();
+  result->expr_type = EXPR_FUNCTION;
+  result->ts = isym->ts;
+  result->where = where;
+  gfc_get_ha_sym_tree (isym->name, &result->symtree);
+  result->value.function.name = name;
+  result->value.function.isym = isym;
+
+  va_start (ap, numarg);
+  atail = NULL;
+  for (i = 0; i < numarg; ++i)
+    {
+      if (atail)
+	{
+	  atail->next = gfc_get_actual_arglist ();
+	  atail = atail->next;
+	}
+      else
+	atail = result->value.function.actual = gfc_get_actual_arglist ();
+
+      atail->expr = va_arg (ap, gfc_expr*);
+    }
+  va_end (ap);
+
+  return result;
+}

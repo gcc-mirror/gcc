@@ -73,6 +73,9 @@ range_check (gfc_expr *result, const char *name)
   if (result == NULL)
     return &gfc_bad_expr;
 
+  if (result->expr_type != EXPR_CONSTANT)
+    return result;
+
   switch (gfc_range_check (result))
     {
       case ARITH_OK:
@@ -2727,16 +2730,6 @@ simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
   gfc_expr *l, *u, *result;
   int k;
 
-  /* The last dimension of an assumed-size array is special.  */
-  if ((!coarray && d == as->rank && as->type == AS_ASSUMED_SIZE && !upper)
-      || (coarray && d == as->rank + as->corank))
-    {
-      if (as->lower[d-1]->expr_type == EXPR_CONSTANT)
-	return gfc_copy_expr (as->lower[d-1]);
-      else
-	return NULL;
-    }
-
   k = get_kind (BT_INTEGER, kind, upper ? "UBOUND" : "LBOUND",
 		gfc_default_integer_kind); 
   if (k == -1)
@@ -2744,6 +2737,44 @@ simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
 
   result = gfc_get_constant_expr (BT_INTEGER, k, &array->where);
 
+  /* For non-variables, LBOUND(expr, DIM=n) = 1 and
+     UBOUND(expr, DIM=n) = SIZE(expr, DIM=n).  */
+  if (!coarray && array->expr_type != EXPR_VARIABLE)
+    {
+      if (upper)
+	{
+	  gfc_expr* dim = result;
+	  mpz_set_si (dim->value.integer, d);
+
+	  result = gfc_simplify_size (array, dim, kind);
+	  gfc_free_expr (dim);
+	  if (!result)
+	    goto returnNull;
+	}
+      else
+	mpz_set_si (result->value.integer, 1);
+
+      goto done;
+    }
+
+  /* Otherwise, we have a variable expression.  */
+  gcc_assert (array->expr_type == EXPR_VARIABLE);
+  gcc_assert (as);
+
+  /* The last dimension of an assumed-size array is special.  */
+  if ((!coarray && d == as->rank && as->type == AS_ASSUMED_SIZE && !upper)
+      || (coarray && d == as->rank + as->corank))
+    {
+      if (as->lower[d-1]->expr_type == EXPR_CONSTANT)
+	{
+	  gfc_free_expr (result);
+	  return gfc_copy_expr (as->lower[d-1]);
+	}
+
+      goto returnNull;
+    }
+
+  result = gfc_get_constant_expr (BT_INTEGER, k, &array->where);
 
   /* Then, we need to know the extent of the given dimension.  */
   if (coarray || ref->u.ar.type == AR_FULL)
@@ -2753,7 +2784,7 @@ simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
 
       if (l->expr_type != EXPR_CONSTANT || u == NULL
 	  || u->expr_type != EXPR_CONSTANT)
-	return NULL;
+	goto returnNull;
 
       if (mpz_cmp (l->value.integer, u->value.integer) > 0)
 	{
@@ -2778,13 +2809,18 @@ simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
 	{
 	  if (gfc_ref_dimen_size (&ref->u.ar, d-1, &result->value.integer)
 	      != SUCCESS)
-	    return NULL;
+	    goto returnNull;
 	}
       else
 	mpz_set_si (result->value.integer, (long int) 1);
     }
 
+done:
   return range_check (result, upper ? "UBOUND" : "LBOUND");
+
+returnNull:
+  gfc_free_expr (result);
+  return NULL;
 }
 
 
@@ -2796,7 +2832,11 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
   int d;
 
   if (array->expr_type != EXPR_VARIABLE)
-    return NULL;
+    {
+      as = NULL;
+      ref = NULL;
+      goto done;
+    }
 
   /* Follow any component references.  */
   as = array->symtree->n.sym->as;
@@ -2815,7 +2855,7 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 	      /* We're done because 'as' has already been set in the
 		 previous iteration.  */
 	      if (!ref->next)
-	        goto done;
+		goto done;
 
 	    /* Fall through.  */
 
@@ -2842,7 +2882,7 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 
  done:
 
-  if (as->type == AS_DEFERRED || as->type == AS_ASSUMED_SHAPE)
+  if (as && (as->type == AS_DEFERRED || as->type == AS_ASSUMED_SHAPE))
     return NULL;
 
   if (dim == NULL)
@@ -2853,7 +2893,7 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
       int k;
 
       /* UBOUND(ARRAY) is not valid for an assumed-size array.  */
-      if (upper && as->type == AS_ASSUMED_SIZE)
+      if (upper && as && as->type == AS_ASSUMED_SIZE)
 	{
 	  /* An error message will be emitted in
 	     check_assumed_size_reference (resolve.c).  */
@@ -2904,8 +2944,8 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 
       d = mpz_get_si (dim->value.integer);
 
-      if (d < 1 || d > as->rank
-	  || (d == as->rank && as->type == AS_ASSUMED_SIZE && upper))
+      if (d < 1 || d > array->rank
+	  || (d == array->rank && as && as->type == AS_ASSUMED_SIZE && upper))
 	{
 	  gfc_error ("DIM argument at %L is out of bounds", &dim->where);
 	  return &gfc_bad_expr;
@@ -4728,15 +4768,25 @@ gfc_simplify_shape (gfc_expr *source)
     return gfc_get_array_expr (BT_INTEGER, gfc_default_integer_kind,
 			       &source->where);
 
-  if (source->expr_type != EXPR_VARIABLE)
-    return NULL;
-
   result = gfc_get_array_expr (BT_INTEGER, gfc_default_integer_kind,
 			       &source->where);
 
-  ar = gfc_find_array_ref (source);
-
-  t = gfc_array_ref_shape (ar, shape);
+  if (source->expr_type == EXPR_VARIABLE)
+    {
+      ar = gfc_find_array_ref (source);
+      t = gfc_array_ref_shape (ar, shape);
+    }
+  else if (source->shape)
+    {
+      t = SUCCESS;
+      for (n = 0; n < source->rank; n++)
+	{
+	  mpz_init (shape[n]);
+	  mpz_set (shape[n], source->shape[n]);
+	}
+    }
+  else
+    t = FAILURE;
 
   for (n = 0; n < source->rank; n++)
     {
@@ -4760,9 +4810,7 @@ gfc_simplify_shape (gfc_expr *source)
 	      return NULL;
 	    }
 	  else
-	    {
-	      e = f;
-	    }
+	    e = f;
 	}
 
       gfc_constructor_append_expr (&result->value.constructor, e, NULL);
@@ -4781,6 +4829,56 @@ gfc_simplify_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 
   if (k == -1)
     return &gfc_bad_expr;
+
+  /* For unary operations, the size of the result is given by the size
+     of the operand.  For binary ones, it's the size of the first operand
+     unless it is scalar, then it is the size of the second.  */
+  if (array->expr_type == EXPR_OP && !array->value.op.uop)
+    {
+      gfc_expr* replacement;
+      gfc_expr* simplified;
+
+      switch (array->value.op.op)
+	{
+	  /* Unary operations.  */
+	  case INTRINSIC_NOT:
+	  case INTRINSIC_UPLUS:
+	  case INTRINSIC_UMINUS:
+	    replacement = array->value.op.op1;
+	    break;
+
+	  /* Binary operations.  If any one of the operands is scalar, take
+	     the other one's size.  If both of them are arrays, it does not
+	     matter -- try to find one with known shape, if possible.  */
+	  default:
+	    if (array->value.op.op1->rank == 0)
+	      replacement = array->value.op.op2;
+	    else if (array->value.op.op2->rank == 0)
+	      replacement = array->value.op.op1;
+	    else
+	      {
+		simplified = gfc_simplify_size (array->value.op.op1, dim, kind);
+		if (simplified)
+		  return simplified;
+
+		replacement = array->value.op.op2;
+	      }
+	    break;
+	}
+
+      /* Try to reduce it directly if possible.  */
+      simplified = gfc_simplify_size (replacement, dim, kind);
+
+      /* Otherwise, we build a new SIZE call.  This is hopefully at least
+	 simpler than the original one.  */
+      if (!simplified)
+	simplified = gfc_build_intrinsic_call ("size", array->where, 3,
+					       gfc_copy_expr (replacement),
+					       gfc_copy_expr (dim),
+					       gfc_copy_expr (kind));
+
+      return simplified;
+    }
 
   if (dim == NULL)
     {
