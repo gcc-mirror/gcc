@@ -8,5 +8,5 @@ void main (void)
     f2 ();
 }
 
-/* { dg-final { scan-tree-dump-times "!= 0" 4 "ivopts" } }  */
+/* { dg-final { scan-tree-dump-times "!= 0" 5 "ivopts" } }  */
 /* { dg-final { cleanup-tree-dump "ivopts" } }  */
