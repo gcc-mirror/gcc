@@ -272,8 +272,13 @@ gnat_init_options (unsigned int decoded_options_count,
   save_argc = 0;
   for (i = 0; i < decoded_options_count; i++)
     {
+      if (decoded_options[i].errors
+	  || decoded_options[i].opt_index == OPT_SPECIAL_unknown)
+	continue;
+      gcc_assert (decoded_options[i].canonical_option_num_elements >= 1
+		  && decoded_options[i].canonical_option_num_elements <= 2);
       save_argv[save_argc++] = decoded_options[i].canonical_option[0];
-      if (decoded_options[i].canonical_option[1] != NULL)
+      if (decoded_options[i].canonical_option_num_elements >= 2)
 	save_argv[save_argc++] = decoded_options[i].canonical_option[1];
     }
   save_argv[save_argc] = NULL;

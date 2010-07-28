@@ -121,10 +121,12 @@ struct cl_decoded_option
   /* The canonical form of the option and its argument, for when it is
      necessary to reconstruct argv elements (in particular, for
      processing specs and passing options to subprocesses from the
-     driver).  The first element of this array is non-NULL; the second
-     is NULL if the canonical form uses only one argv element,
-     non-NULL otherwise.  */
-  const char *canonical_option[2];
+     driver).  */
+  const char *canonical_option[4];
+
+  /* The number of elements in the canonical form of the option and
+     arguments; always at least 1.  */
+  size_t canonical_option_num_elements;
 
   /* For a boolean option, 1 for the true case and 0 for the "no-"
      case.  For an unsigned integer option, the value of the

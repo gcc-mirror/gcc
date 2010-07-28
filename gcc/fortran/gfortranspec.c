@@ -113,22 +113,6 @@ static void append_arg (const char *);
 static int g77_newargc;
 static const char **g77_newargv;
 
-/* --- This comes from gcc.c (2.8.1) verbatim: */
-
-/* This defines which switch letters take arguments.  */
-
-#ifndef SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR) DEFAULT_SWITCH_TAKES_ARG(CHAR)
-#endif
-
-/* This defines which multi-letter switches take arguments.  */
-
-#ifndef WORD_SWITCH_TAKES_ARG
-#define WORD_SWITCH_TAKES_ARG(STR) DEFAULT_WORD_SWITCH_TAKES_ARG (STR)
-#endif
-
-/* --- End of verbatim.  */
-
 /* Assumes text[0] == '-'.  Returns number of argv items that belong to
    (and follow) this one, an option id for options important to the
    caller, and a pointer to the first char of the arg, if embedded (else
