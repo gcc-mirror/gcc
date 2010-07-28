@@ -244,7 +244,7 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
 	      gfc_error ("'%s' at %L already is initialized at %L",
 			 lvalue->symtree->n.sym->name, &lvalue->where,
 			 &init->where);
-	      return FAILURE;
+	      goto abort;
 	    }
 
 	  if (init == NULL)
@@ -267,7 +267,7 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
 	    {
 	      gfc_error ("Data element below array lower bound at %L",
 			 &lvalue->where);
-	      return FAILURE;
+	      goto abort;
 	    }
 	  else
 	    {
@@ -275,12 +275,12 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
 	      if (spec_size (ref->u.ar.as, &size) == SUCCESS)
 		{
 		  if (mpz_cmp (offset, size) >= 0)
-		  {
-		    mpz_clear (size);
-		    gfc_error ("Data element above array upper bound at %L",
-			       &lvalue->where);
-		    return FAILURE;
-		  }
+		    {
+		      mpz_clear (size);
+		      gfc_error ("Data element above array upper bound at %L",
+		                 &lvalue->where);
+		      goto abort;
+		    }
 		  mpz_clear (size);
 		}
 	    }
@@ -336,6 +336,8 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
       last_con = con;
     }
 
+  mpz_clear (offset);
+
   if (ref || last_ts->type == BT_CHARACTER)
     {
       if (lvalue->ts.u.cl->length == NULL && !(ref && ref->u.ss.length != NULL))
@@ -371,6 +373,10 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
     last_con->expr = expr;
 
   return SUCCESS;
+
+abort:
+  mpz_clear (offset);
+  return FAILURE;
 }
 
 
