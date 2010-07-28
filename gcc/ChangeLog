@@ -1,3 +1,27 @@
+2010-07-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/darwin-driver.c (SWITCH_TAKES_ARG,
+	WORD_SWITCH_TAKES_ARG): Remove.
+	* cppspec.c (SWITCH_TAKES_ARG, WORD_SWITCH_TAKES_ARG): Remove.
+	* defaults.h (DEFAULT_SWITCH_TAKES_ARG,
+	DEFAULT_WORD_SWITCH_TAKES_ARG): Move from gcc.h.
+	(SWITCH_TAKES_ARG, WORD_SWITCH_TAKES_ARG): Move default
+	definitions from gcc.c.
+	* gcc.c (SWITCH_TAKES_ARG, WORD_SWITCH_TAKES_ARG): Move to
+	defaults.h.
+	* gcc.h (DEFAULT_SWITCH_TAKES_ARG, DEFAULT_WORD_SWITCH_TAKES_ARG):
+	Move to defaults.h.
+	* opts-common.c: Include tm.h.
+	(decode_cmdline_option): Use SWITCH_TAKES_ARG and
+	WORD_SWITCH_TAKES_ARG to count arguments to unknown options.
+	Handle more than one argument.  Set canonical_option_num_elements.
+	(decode_cmdline_options_to_array): Set
+	canonical_option_num_elements and trailing elements of
+	canonical_option.
+	* opts.h (struct cl_decoded_option): Allow four elements in
+	canonical_option.  Add field canonical_option_num_elements.
+	* Makefile.in (opts-common.o): Update dependencies.
+
 2010-07-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/44790

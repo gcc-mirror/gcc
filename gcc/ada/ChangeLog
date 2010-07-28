@@ -1,3 +1,8 @@
+2010-07-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc-interface/misc.c (gnat_init_options): Ignore erroneous
+	options.  Check canonical_option_num_elements on options copied.
+
 2010-07-27  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc-interface/misc.c (gnat_handle_option): Update prototype and

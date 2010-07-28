@@ -1,3 +1,8 @@
+2010-07-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* gfortranspec.c (SWITCH_TAKES_ARG, WORD_SWITCH_TAKES_ARG):
+	Remove.
+
 2010-07-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45077

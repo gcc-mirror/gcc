@@ -27,14 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include <sys/sysctl.h>
 #include "xregex.h"
 
-#ifndef SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR) DEFAULT_SWITCH_TAKES_ARG(CHAR)
-#endif
-
-#ifndef WORD_SWITCH_TAKES_ARG
-#define WORD_SWITCH_TAKES_ARG(STR) DEFAULT_WORD_SWITCH_TAKES_ARG (STR)
-#endif
-
 /* When running on a Darwin system and using that system's headers and
    libraries, default the -mmacosx-version-min flag to be the version
    of the system on which the compiler is running.  */

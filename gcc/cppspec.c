@@ -30,14 +30,6 @@ along with GCC; see the file COPYING3.  If not see
    assume the user knows what they're doing.  If no explicit input is
    mentioned, it will read stdin.  */
 
-#ifndef SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR) DEFAULT_SWITCH_TAKES_ARG(CHAR)
-#endif
-
-#ifndef WORD_SWITCH_TAKES_ARG
-#define WORD_SWITCH_TAKES_ARG(STR) DEFAULT_WORD_SWITCH_TAKES_ARG (STR)
-#endif
-
 /* Suffixes for known sorts of input files.  Note that we do not list
    files which are normally considered to have been preprocessed already,
    since the user's expectation is that `cpp' always preprocesses.  */

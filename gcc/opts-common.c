@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "options.h"
 #include "diagnostic.h"
+#include "tm.h" /* For SWITCH_TAKES_ARG and WORD_SWITCH_TAKES_ARG.  */
 
 /* Perform a binary search to find which option the command-line INPUT
    matches.  Returns its index in the option array, and
@@ -138,7 +139,9 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
   const char *opt, *arg = 0;
   char *dup = 0;
   int value = 1;
-  unsigned int result = 1;
+  unsigned int result = 1, i;
+  size_t total_len;
+  char *p;
   const struct cl_option *option;
   int errors = 0;
 
@@ -242,22 +245,54 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
   decoded->arg = arg;
   decoded->value = value;
   decoded->errors = errors;
-  switch (result)
+
+  if (opt_index == OPT_SPECIAL_unknown)
     {
-    case 1:
-      decoded->orig_option_with_args_text = argv[0];
-      decoded->canonical_option[0] = argv[0];
-      decoded->canonical_option[1] = NULL;
-      break;
-    case 2:
-      decoded->orig_option_with_args_text = concat (argv[0], " ",
-						    argv[1], NULL);
-      decoded->canonical_option[0] = argv[0];
-      decoded->canonical_option[1] = argv[1];
-      break;
-    default:
-      gcc_unreachable ();
+      /* Skip the correct number of arguments for options handled
+	 through specs.  */
+      const char *popt = argv[0] + 1;
+      int c = *popt;
+
+      gcc_assert (result == 1);
+      if (SWITCH_TAKES_ARG (c) > (popt[1] != 0))
+	result += SWITCH_TAKES_ARG (c) - (popt[1] != 0);
+      else if (WORD_SWITCH_TAKES_ARG (popt))
+	result += WORD_SWITCH_TAKES_ARG (popt);
+      if (result > 1)
+	for (i = 1; i < result; i++)
+	  if (argv[i] == NULL)
+	    {
+	      result = i;
+	      break;
+	    }
     }
+
+  gcc_assert (result >= 1 && result <= ARRAY_SIZE (decoded->canonical_option));
+  decoded->canonical_option_num_elements = result;
+  total_len = 0;
+  for (i = 0; i < ARRAY_SIZE (decoded->canonical_option); i++)
+    {
+      if (i < result)
+	{
+	  decoded->canonical_option[i] = argv[i];
+	  total_len += strlen (argv[i]) + 1;
+	}
+      else
+	decoded->canonical_option[i] = NULL;
+    }
+  decoded->orig_option_with_args_text = p = XNEWVEC (char, total_len);
+  for (i = 0; i < result; i++)
+    {
+      size_t len = strlen (argv[i]);
+
+      memcpy (p, argv[i], len);
+      p += len;
+      if (i == result - 1)
+	*p++ = 0;
+      else
+	*p++ = ' ';
+    }
+
   return result;
 }
 
@@ -284,8 +319,11 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
   opt_array[0].opt_index = OPT_SPECIAL_program_name;
   opt_array[0].arg = argv[0];
   opt_array[0].orig_option_with_args_text = argv[0];
+  opt_array[0].canonical_option_num_elements = 1;
   opt_array[0].canonical_option[0] = argv[0];
   opt_array[0].canonical_option[1] = NULL;
+  opt_array[0].canonical_option[2] = NULL;
+  opt_array[0].canonical_option[3] = NULL;
   opt_array[0].value = 1;
   opt_array[0].errors = 0;
   num_decoded_options = 1;
@@ -300,8 +338,11 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
 	  opt_array[num_decoded_options].opt_index = OPT_SPECIAL_input_file;
 	  opt_array[num_decoded_options].arg = opt;
 	  opt_array[num_decoded_options].orig_option_with_args_text = opt;
+	  opt_array[num_decoded_options].canonical_option_num_elements = 1;
 	  opt_array[num_decoded_options].canonical_option[0] = opt;
 	  opt_array[num_decoded_options].canonical_option[1] = NULL;
+	  opt_array[num_decoded_options].canonical_option[2] = NULL;
+	  opt_array[num_decoded_options].canonical_option[3] = NULL;
 	  opt_array[num_decoded_options].value = 1;
 	  opt_array[num_decoded_options].errors = 0;
 	  num_decoded_options++;
