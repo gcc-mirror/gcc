@@ -1,3 +1,9 @@
+2010-07-28  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	PR rtl-optimization/45101
+	* gcse.c (hash_scan_set): Fix argument ordering of insert_expr_in_table
+	for gcse-las.
+
 2010-07-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/44885

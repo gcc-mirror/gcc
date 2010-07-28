@@ -1503,8 +1503,8 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
 			     && ! JUMP_P (insn);
 
 	       /* Record the memory expression (DEST) in the hash table.  */
-	       insert_expr_in_table (dest, GET_MODE (dest), insn, 0,
-				     antic_p, avail_p, table);
+	       insert_expr_in_table (dest, GET_MODE (dest), insn,
+				     antic_p, avail_p, 0, table);
              }
       }
 }
