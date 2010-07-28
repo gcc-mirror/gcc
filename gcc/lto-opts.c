@@ -349,8 +349,8 @@ input_options (struct lto_input_block *ib)
 void
 lto_read_file_options (struct lto_file_decl_data *file_data)
 {
-  size_t len;
-  const char *data;
+  size_t len, l, skip;
+  const char *data, *p;
   const struct lto_simple_header *header;
   int32_t opts_offset;
   struct lto_input_block ib;
@@ -358,14 +358,30 @@ lto_read_file_options (struct lto_file_decl_data *file_data)
   data = lto_get_section_data (file_data, LTO_section_opts, NULL, &len);
   if (!data)
 	  return;
-  header = (const struct lto_simple_header *) data;
-  opts_offset = sizeof (*header);
 
-  lto_check_version (header->lto_header.major_version,
-		     header->lto_header.minor_version);
+  /* Option could be multiple sections merged (through ld -r) 
+     Keep reading all options.  This is ok right now because
+     the options just get mashed together anyways.
+     This will have to be done differently once lto-opts knows
+     how to associate options with different files. */
+  l = len;
+  p = data;
+  do 
+    { 
+      header = (const struct lto_simple_header *) p;
+      opts_offset = sizeof (*header);
 
-  LTO_INIT_INPUT_BLOCK (ib, data + opts_offset, 0, header->main_size);
-  input_options (&ib);
+      lto_check_version (header->lto_header.major_version,
+			 header->lto_header.minor_version);
+      
+      LTO_INIT_INPUT_BLOCK (ib, p + opts_offset, 0, header->main_size);
+      input_options (&ib);
+      
+      skip = header->main_size + opts_offset;
+      l -= skip;
+      p += skip;
+    } 
+  while (l > 0);
 
   lto_free_section_data (file_data, LTO_section_opts, 0, data, len);
 }
