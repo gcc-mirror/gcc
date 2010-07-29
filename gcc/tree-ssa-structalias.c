@@ -3208,10 +3208,11 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results,
 	 at most one subfiled of any variable.  */
       if (bitpos == -1
 	  || bitsize != bitmaxsize
-	  || AGGREGATE_TYPE_P (TREE_TYPE (orig_t)))
+	  || AGGREGATE_TYPE_P (TREE_TYPE (orig_t))
+	  || result->offset == UNKNOWN_OFFSET)
 	result->offset = UNKNOWN_OFFSET;
       else
-	result->offset = bitpos;
+	result->offset += bitpos;
     }
   else if (result->type == ADDRESSOF)
     {
@@ -3345,8 +3346,8 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p)
 	  {
 	  case MEM_REF:
 	    {
-	      get_constraint_for_ptr_offset (TREE_OPERAND (t, 0),
-					     TREE_OPERAND (t, 1), results);
+	      tree off = double_int_to_tree (sizetype, mem_ref_offset (t));
+	      get_constraint_for_ptr_offset (TREE_OPERAND (t, 0), off, results);
 	      do_deref (results);
 	      return;
 	    }
