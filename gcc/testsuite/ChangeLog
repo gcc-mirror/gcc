@@ -1,3 +1,8 @@
+2010-07-29  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/45034
+	* gcc.c-torture/execute/pr45034.c: New testcase.
+
 2010-07-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/45096
