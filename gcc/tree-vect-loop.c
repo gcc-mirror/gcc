@@ -3101,8 +3101,8 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
   tree vec_initial_def = NULL;
   tree reduction_op, expr, def;
   tree orig_name, scalar_result;
-  imm_use_iterator imm_iter;
-  use_operand_p use_p;
+  imm_use_iterator imm_iter, phi_imm_iter;
+  use_operand_p use_p, phi_use_p;
   bool extract_scalar_result = false;
   gimple use_stmt, orig_stmt, reduction_phi = NULL;
   bool nested_in_vect_loop = false;
@@ -3262,6 +3262,14 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
           SET_PHI_ARG_DEF (phi, single_exit (loop)->dest_idx, def);
           prev_phi_info = vinfo_for_stmt (phi);
         }
+    }
+
+  /* The epilogue is created for the outer-loop, i.e., for the loop being
+     vectorized.  */
+  if (double_reduc)
+    {
+      loop = outer_loop;
+      exit_bb = single_exit (loop)->dest;
     }
 
   exit_gsi = gsi_after_labels (exit_bb);
@@ -3519,6 +3527,9 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
   
 vect_finalize_reduction:
 
+  if (double_reduc)
+    loop = loop->inner;
+
   /* 2.5 Adjust the final result by the initial value of the reduction
 	 variable. (When such adjustment is not needed, then
 	 'adjustment_def' is zero).  For example, if code is PLUS we create:
@@ -3738,7 +3749,45 @@ vect_finalize_reduction:
                     }
                 }
             }
+        }
 
+      VEC_free (gimple, heap, phis);
+      if (nested_in_vect_loop)
+        {
+          if (double_reduc)
+            loop = outer_loop;
+          else
+            continue;
+        }
+
+      phis = VEC_alloc (gimple, heap, 3);
+      /* Find the loop-closed-use at the loop exit of the original scalar
+         result. (The reduction result is expected to have two immediate uses -
+         one at the latch block, and one at the loop exit). For double 
+         reductions we are looking for exit phis of the outer loop.  */
+      FOR_EACH_IMM_USE_FAST (use_p, imm_iter, scalar_dest)
+        {
+          if (!flow_bb_inside_loop_p (loop, gimple_bb (USE_STMT (use_p))))
+            VEC_safe_push (gimple, heap, phis, USE_STMT (use_p));
+          else
+            {
+              if (double_reduc && gimple_code (USE_STMT (use_p)) == GIMPLE_PHI)
+                {
+                  tree phi_res = PHI_RESULT (USE_STMT (use_p));
+
+                  FOR_EACH_IMM_USE_FAST (phi_use_p, phi_imm_iter, phi_res)
+                    {
+                      if (!flow_bb_inside_loop_p (loop,
+                                             gimple_bb (USE_STMT (phi_use_p))))
+                        VEC_safe_push (gimple, heap, phis,
+                                       USE_STMT (phi_use_p));
+                    }
+                }
+            }
+        }
+
+      for (i = 0; VEC_iterate (gimple, phis, i, exit_phi); i++)
+        {
           /* Replace the uses:  */
           orig_name = PHI_RESULT (exit_phi);
           scalar_result = VEC_index (tree, scalar_results, k);
