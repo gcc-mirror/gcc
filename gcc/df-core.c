@@ -1919,58 +1919,33 @@ df_print_regset (FILE *file, bitmap r)
    debugging dump.  */
 
 void
-df_print_byte_regset (FILE *file, bitmap r)
+df_print_word_regset (FILE *file, bitmap r)
 {
   unsigned int max_reg = max_reg_num ();
-  bitmap_iterator bi;
 
   if (r == NULL)
     fputs (" (nil)", file);
   else
     {
       unsigned int i;
-      for (i = 0; i < max_reg; i++)
+      for (i = FIRST_PSEUDO_REGISTER; i < max_reg; i++)
 	{
-	  unsigned int first = df_byte_lr_get_regno_start (i);
-	  unsigned int len = df_byte_lr_get_regno_len (i);
-
-	  if (len > 1)
+	  bool found = (bitmap_bit_p (r, 2 * i)
+			|| bitmap_bit_p (r, 2 * i + 1));
+	  if (found)
 	    {
-	      bool found = false;
-	      unsigned int j;
-
-	      EXECUTE_IF_SET_IN_BITMAP (r, first, j, bi)
-		{
-		  found = j < first + len;
-		  break;
-		}
-	      if (found)
-		{
-		  const char * sep = "";
-		  fprintf (file, " %d", i);
-		  if (i < FIRST_PSEUDO_REGISTER)
-		    fprintf (file, " [%s]", reg_names[i]);
-		  fprintf (file, "(");
-		  EXECUTE_IF_SET_IN_BITMAP (r, first, j, bi)
-		    {
-		      if (j > first + len - 1)
-			break;
-		      fprintf (file, "%s%d", sep, j-first);
-		      sep = ", ";
-		    }
-		  fprintf (file, ")");
-		}
+	      int word;
+	      const char * sep = "";
+	      fprintf (file, " %d", i);
+	      fprintf (file, "(");
+	      for (word = 0; word < 2; word++)
+		if (bitmap_bit_p (r, 2 * i + word))
+		  {
+		    fprintf (file, "%s%d", sep, word);
+		    sep = ", ";
+		  }
+	      fprintf (file, ")");
 	    }
-	  else
-	    {
-	      if (bitmap_bit_p (r, first))
-		{
-		  fprintf (file, " %d", i);
-		  if (i < FIRST_PSEUDO_REGISTER)
-		    fprintf (file, " [%s]", reg_names[i]);
-		}
-	    }
-
 	}
     }
   fprintf (file, "\n");

@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "recog.h"
 #include "bitmap.h"
+#include "dce.h"
 #include "expr.h"
 #include "except.h"
 #include "regs.h"
@@ -1090,6 +1091,9 @@ decompose_multiword_subregs (void)
     if (i == max)
       return;
   }
+
+  if (df)
+    run_word_dce ();
 
   /* FIXME: When the dataflow branch is merged, we can change this
      code to look for each multi-word pseudo-register and to find each
