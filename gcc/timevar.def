@@ -91,7 +91,7 @@ DEFTIMEVAR (TV_DF_LR		     , "df live regs")
 DEFTIMEVAR (TV_DF_LIVE		     , "df live&initialized regs")
 DEFTIMEVAR (TV_DF_UREC		     , "df uninitialized regs 2")
 DEFTIMEVAR (TV_DF_CHAIN		     , "df use-def / def-use chains")
-DEFTIMEVAR (TV_DF_BYTE_LR	     , "df live byte regs")
+DEFTIMEVAR (TV_DF_WORD_LR	     , "df live reg subwords")
 DEFTIMEVAR (TV_DF_NOTE		     , "df reg dead/unused notes")
 DEFTIMEVAR (TV_REG_STATS	     , "register information")
 

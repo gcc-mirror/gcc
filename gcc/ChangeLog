@@ -1,3 +1,77 @@
+2010-07-29  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/42575
+	* dce.c (word_dce_process_block): Renamed from byte_dce_process_block.
+	Argument AU removed.  All callers changed.  Ignore artificial refs.
+	Use return value of df_word_lr_simulate_defs to decide whether an insn
+	is necessary.
+	(fast_dce): Rename arg to WORD_LEVEL.
+	(run_word_dce): Renamed from rest_of_handle_fast_byte_dce.  No longer
+	static.
+	(pass_fast_rtl_byte_dce): Delete.
+	* dce.h (run_word_dce): Declare.
+	* df-core.c (df_print_word_regset): Renamed from df_print_byteregset.
+	All callers changed.  Simplify code to only deal with two-word regs.
+	* df.h (DF_WORD_LR): Renamed from DF_BYTE_LR.
+	(DF_WORD_LR_BB_INFO): Renamed from DF_BYTE_LR_BB_INFO.
+	(DF_WORD_LR_IN): Renamed from DF_BYTE_LR_IN.
+	(DF_WORD_LR_OUT): Renamed from DF_BYTE_LR_OUT.
+	(struct df_word_lr_bb_info): Renamed from df_byte_lr_bb_info.
+	(df_word_lr_mark_ref): Declare.
+	(df_word_lr_add_problem, df_word_lr_mark_ref, df_word_lr_simulate_defs,
+	df_word_lr_simulate_uses): Declare or rename from byte variants.
+	(df_byte_lr_simulate_artificial_refs_at_top,
+	df_byte_lr_simulate_artificial_refs_at_end, df_byte_lr_get_regno_start,
+	df_byte_lr_get_regno_len, df_compute_accessed_bytes): Delete
+	declarations.
+	(df_word_lr_get_bb_info): Rename from df_byte_lr_get_bb_info.
+	(enum df_mm): Delete.
+	* df-byte-scan.c: Delete file.
+	* df-problems.c (df_word_lr_problem_data): Renamed from
+	df_byte_lr_problem_data, all members deleted except for
+	WORD_LR_BITMAPS, which is renamed from BYTE_LR_BITMAPS.  Uses changed.
+	(df_word_lr_expand_bitmap, df_byte_lr_simulate_artificial_refs_at_top,
+	df_byte_lr_simulate_artificial_refs_at_end, df_byte_lr_get_regno_start,
+	df_byte_lr_get_regno_len, df_byte_lr_check_regs,
+	df_byte_lr_confluence_0): Delete functions.
+	(df_word_lr_free_bb_info): Renamed from df_byte_lr_free_bb_info; all
+	callers changed.
+	(df_word_lr_alloc): Renamed from df_byte_lr_alloc; all callers changed.
+	Don't initialize members that were deleted, don't try to discover data
+	about registers.  Ignore hard regs.
+	(df_word_lr_reset): Renamed from df_byte_lr_reset; all callers changed.
+	(df_word_lr_mark_ref): New function.
+	(df_word_lr_bb_local_compute): Renamed from
+	df_byte_bb_lr_local_compute; all callers changed.  Use
+	df_word_lr_mark_ref.  Assert that artificial refs don't include
+	pseudos.  Ignore hard registers.
+	(df_word_lr_local_compute): Renamed from df_byte_lr_local_compute.
+	Assert that exit block uses don't contain pseudos.
+	(df_word_lr_init): Renamed from df_byte_lr_init; all callers changed.
+	(df_word_lr_confluence_n): Renamed from df_byte_lr_confluence_n; all
+	callers changed.  Ignore hard regs.
+	(df_word_lr_transfer_function): Renamed from
+	df_byte_lr_transfer_function; all callers changed.
+	(df_word_lr_free): Renamed from df_byte_lr_free; all callers changed.
+	(df_word_lr_top_dump): Renamed from df_byte_lr_top_dump; all callers
+	changed.
+	(df_word_lr_bottom_dump): Renamed from df_byte_lr_bottom_dump; all
+	callers changed.
+	(problem_WORD_LR): Renamed from problem_BYTE_LR; uses changed;
+	confluence operator 0 set to NULL.
+	(df_word_lr_add_problem): Renamed from df_byte_lr_add_problem; all
+	callers changed.
+	(df_word_lr_simulate_defs): Renamed from df_byte_lr_simulate_defs.
+	Return bool, true if bitmap changed or insn otherwise necessary.
+	All callers changed.  Simplify using df_word_lr_mark_ref.
+	(df_word_lr_simulate_uses): Renamed from df_byte_lr_simulate_uses;
+	all callers changed.  Simplify using df_word_lr_mark_ref.
+	* lower-subreg.c: Include "dce.h"
+	(decompose_multiword_subregs): Call run_word_dce if df available.
+	* Makefile.in (lower-subreg.o): Adjust dependencies.
+	(df-byte-scan.o): Delete.
+	* timevar.def (TV_DF_WORD_LR): Renamed from TV_DF_BYTE_LR.
+
 2010-07-29  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (build_vector): Assert that the vector constant
