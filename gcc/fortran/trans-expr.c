@@ -5671,11 +5671,38 @@ void gfc_trans_assign_vtab_procs (stmtblock_t *block, gfc_symbol *dt,
 }
 
 
+/* Special case for initializing a CLASS variable on allocation.
+   A MEMCPY is needed to copy the full data of the dynamic type,
+   which may be different from the declared type.  */
+
+tree
+gfc_trans_class_init_assign (gfc_code *code)
+{
+  stmtblock_t block;
+  tree tmp, memsz;
+  gfc_se dst,src;
+  
+  gfc_start_block (&block);
+  
+  gfc_init_se (&dst, NULL);
+  gfc_init_se (&src, NULL);
+  gfc_add_component_ref (code->expr1, "$data");
+  gfc_conv_expr (&dst, code->expr1);
+  gfc_conv_expr (&src, code->expr2);
+  gfc_add_block_to_block (&block, &src.pre);
+  memsz = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&code->expr2->ts));
+  tmp = gfc_build_memcpy_call (dst.expr, src.expr, memsz);
+  gfc_add_expr_to_block (&block, tmp);
+  
+  return gfc_finish_block (&block);
+}
+
+
 /* Translate an assignment to a CLASS object
    (pointer or ordinary assignment).  */
 
 tree
-gfc_trans_class_assign (gfc_code *code)
+gfc_trans_class_assign (gfc_expr *expr1, gfc_expr *expr2, gfc_exec_op op)
 {
   stmtblock_t block;
   tree tmp;
@@ -5683,45 +5710,26 @@ gfc_trans_class_assign (gfc_code *code)
   gfc_expr *rhs;
 
   gfc_start_block (&block);
-  
-  if (code->op == EXEC_INIT_ASSIGN)
-    {
-      /* Special case for initializing a CLASS variable on allocation.
-	 A MEMCPY is needed to copy the full data of the dynamic type,
-	 which may be different from the declared type.  */
-      gfc_se dst,src;
-      tree memsz;
-      gfc_init_se (&dst, NULL);
-      gfc_init_se (&src, NULL);
-      gfc_add_component_ref (code->expr1, "$data");
-      gfc_conv_expr (&dst, code->expr1);
-      gfc_conv_expr (&src, code->expr2);
-      gfc_add_block_to_block (&block, &src.pre);
-      memsz = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&code->expr2->ts));
-      tmp = gfc_build_memcpy_call (dst.expr, src.expr, memsz);
-      gfc_add_expr_to_block (&block, tmp);
-      return gfc_finish_block (&block);
-    }
 
-  if (code->expr2->ts.type != BT_CLASS)
+  if (expr2->ts.type != BT_CLASS)
     {
       /* Insert an additional assignment which sets the '$vptr' field.  */
-      lhs = gfc_copy_expr (code->expr1);
+      lhs = gfc_copy_expr (expr1);
       gfc_add_component_ref (lhs, "$vptr");
-      if (code->expr2->ts.type == BT_DERIVED)
+      if (expr2->ts.type == BT_DERIVED)
 	{
 	  gfc_symbol *vtab;
 	  gfc_symtree *st;
-	  vtab = gfc_find_derived_vtab (code->expr2->ts.u.derived);
+	  vtab = gfc_find_derived_vtab (expr2->ts.u.derived);
 	  gcc_assert (vtab);
-	  gfc_trans_assign_vtab_procs (&block, code->expr2->ts.u.derived, vtab);
+	  gfc_trans_assign_vtab_procs (&block, expr2->ts.u.derived, vtab);
 	  rhs = gfc_get_expr ();
 	  rhs->expr_type = EXPR_VARIABLE;
 	  gfc_find_sym_tree (vtab->name, NULL, 1, &st);
 	  rhs->symtree = st;
 	  rhs->ts = vtab->ts;
 	}
-      else if (code->expr2->expr_type == EXPR_NULL)
+      else if (expr2->expr_type == EXPR_NULL)
 	rhs = gfc_get_int_expr (gfc_default_integer_kind, NULL, 0);
       else
 	gcc_unreachable ();
@@ -5734,15 +5742,15 @@ gfc_trans_class_assign (gfc_code *code)
     }
 
   /* Do the actual CLASS assignment.  */
-  if (code->expr2->ts.type == BT_CLASS)
-    code->op = EXEC_ASSIGN;
+  if (expr2->ts.type == BT_CLASS)
+    op = EXEC_ASSIGN;
   else
-    gfc_add_component_ref (code->expr1, "$data");
+    gfc_add_component_ref (expr1, "$data");
 
-  if (code->op == EXEC_ASSIGN)
-    tmp = gfc_trans_assign (code);
-  else if (code->op == EXEC_POINTER_ASSIGN)
-    tmp = gfc_trans_pointer_assign (code);
+  if (op == EXEC_ASSIGN)
+    tmp = gfc_trans_assignment (expr1, expr2, false, true);
+  else if (op == EXEC_POINTER_ASSIGN)
+    tmp = gfc_trans_pointer_assignment (expr1, expr2);
   else
     gcc_unreachable();
 
