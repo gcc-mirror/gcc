@@ -1025,11 +1025,18 @@ rest_of_handle_fast_dce (void)
 void
 run_word_dce (void)
 {
+  int old_flags;
+
+  if (!flag_dce)
+    return;
+
   timevar_push (TV_DCE);
+  old_flags = df_clear_flags (DF_DEFER_INSN_RESCAN + DF_NO_INSN_RESCAN);
   df_word_lr_add_problem ();
   init_dce (true);
   fast_dce (true);
   fini_dce (true);
+  df_set_flags (old_flags);
   timevar_pop (TV_DCE);
 }
 

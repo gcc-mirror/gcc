@@ -1,3 +1,8 @@
+2010-07-29  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* dce.c (run_word_dce): Take flag_dce into account.  Clear and restore
+	df flags as in run_fast_df_dce.
+
 2010-07-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Revert:
