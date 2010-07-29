@@ -1,3 +1,10 @@
+2010-07-29  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/42051
+	PR fortran/44064
+	* class.c (gfc_find_derived_vtab): Accept or discard newly created
+	symbols before returning.
+
 2010-07-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* lang.opt (cpp): Remove Joined and Separate markers.
