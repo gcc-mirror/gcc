@@ -2601,7 +2601,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	  i = double_int_and (i, m);
 	  m = double_int_lshift (m, offset, HOST_BITS_PER_DOUBLE_INT, false);
 	  i = double_int_lshift (i, offset, HOST_BITS_PER_DOUBLE_INT, false);
-	  o = double_int_ior (double_int_and (o, double_int_not (m)), i);
+	  o = double_int_ior (double_int_and_not (o, m), i);
 
 	  combine_merges++;
 	  subst_insn = i3;

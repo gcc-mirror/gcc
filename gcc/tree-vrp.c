@@ -6953,15 +6953,13 @@ simplify_bit_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
   switch (gimple_assign_rhs_code (stmt))
     {
     case BIT_AND_EXPR:
-      mask = double_int_and (may_be_nonzero0,
-			     double_int_not (must_be_nonzero1));
+      mask = double_int_and_not (may_be_nonzero0, must_be_nonzero1);
       if (double_int_zero_p (mask))
 	{
 	  op = op0;
 	  break;
 	}
-      mask = double_int_and (may_be_nonzero1,
-			     double_int_not (must_be_nonzero0));
+      mask = double_int_and_not (may_be_nonzero1, must_be_nonzero0);
       if (double_int_zero_p (mask))
 	{
 	  op = op1;
@@ -6969,15 +6967,13 @@ simplify_bit_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
 	}
       break;
     case BIT_IOR_EXPR:
-      mask = double_int_and (may_be_nonzero0,
-			     double_int_not (must_be_nonzero1));
+      mask = double_int_and_not (may_be_nonzero0, must_be_nonzero1);
       if (double_int_zero_p (mask))
 	{
 	  op = op1;
 	  break;
 	}
-      mask = double_int_and (may_be_nonzero1,
-			     double_int_not (must_be_nonzero0));
+      mask = double_int_and_not (may_be_nonzero1, must_be_nonzero0);
       if (double_int_zero_p (mask))
 	{
 	  op = op0;

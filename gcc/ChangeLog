@@ -1,3 +1,9 @@
+2010-07-28  Richard Guenther  <rguenther@suse.de>
+
+	* double-int.h (double_int_and_not): New function.
+	* combine.c (try_combine): Use it.
+	* tree-vrp.c (simplify_bit_ops_using_ranges): Likewise.
+
 2010-07-29  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR rtl-optimization/42575
