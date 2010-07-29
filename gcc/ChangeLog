@@ -1,3 +1,8 @@
+2010-07-29  Martin Jambor  <mjambor@suse.cz>
+
+	* dbgcnt.def (eipa_sra): New counter.
+	* tree-sra.c (ipa_early_sra_gate): Also check eipa_sra debug counter.
+
 2010-07-29  Xinliang David Li  <davidxl@google.com>
 
 	PR bootstrap/45119

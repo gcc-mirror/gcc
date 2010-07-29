@@ -4446,7 +4446,7 @@ ipa_early_sra (void)
 static bool
 ipa_early_sra_gate (void)
 {
-  return flag_ipa_sra;
+  return flag_ipa_sra && dbg_cnt (eipa_sra);
 }
 
 struct gimple_opt_pass pass_early_ipa_sra =
