@@ -1,3 +1,9 @@
+2010-07-29  Xinliang David Li  <davidxl@google.com>
+
+	PR bootstrap/45119
+	* tree-ssa-loop-ivopts.c (get_address_cost): Revert change
+	in revision 162652.
+
 2010-07-29  Richard Guenther  <rguenther@suse.de>
 
 	* timevar.def (TV_TREE_STORE_COPY_PROP): Remove.
