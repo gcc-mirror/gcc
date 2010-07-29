@@ -1045,7 +1045,9 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 
   gcc_assert (sym->attr.referenced
 		|| sym->attr.use_assoc
-		|| sym->ns->proc_name->attr.if_source == IFSRC_IFBODY);
+		|| sym->ns->proc_name->attr.if_source == IFSRC_IFBODY
+		|| (sym->module && sym->attr.if_source != IFSRC_DECL
+		    && sym->backend_decl));
 
   if (sym->ns && sym->ns->proc_name && sym->ns->proc_name->attr.function)
     byref = gfc_return_by_reference (sym->ns->proc_name);
@@ -1409,7 +1411,7 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
   gsym =  gfc_find_gsymbol (gfc_gsym_root, sym->name);
 
   if (gfc_option.flag_whole_file
-	&& !sym->attr.use_assoc
+	&& (!sym->attr.use_assoc || sym->attr.if_source != IFSRC_DECL)
 	&& !sym->backend_decl
 	&& gsym && gsym->ns
 	&& ((gsym->type == GSYM_SUBROUTINE) || (gsym->type == GSYM_FUNCTION))
@@ -1450,12 +1452,17 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
 	    }
 	}
       else
-	{
-	  sym->backend_decl = gsym->ns->proc_name->backend_decl;
-	}
+	sym->backend_decl = gsym->ns->proc_name->backend_decl;
 
       if (sym->backend_decl)
-	return sym->backend_decl;
+	{
+	  /* Avoid problems of double deallocation of the backend declaration
+	     later in gfc_trans_use_stmts; cf. PR 45087.  */
+	  if (sym->attr.if_source != IFSRC_DECL && sym->attr.use_assoc)
+	    sym->attr.use_assoc = 0;
+
+	  return sym->backend_decl;
+	}
     }
 
   /* See if this is a module procedure from the same file.  If so,
