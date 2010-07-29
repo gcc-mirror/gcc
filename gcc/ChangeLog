@@ -1,4 +1,10 @@
-2010-07-28  Richard Guenther  <rguenther@suse.de>
+2010-07-29  Richard Guenther  <rguenther@suse.de>
+
+	* timevar.def (TV_TREE_STORE_COPY_PROP): Remove.
+	(TV_TREE_STORE_CCP): Likewise.
+	(TV_TREE_REDPHI): Likewise.
+
+2010-07-29  Richard Guenther  <rguenther@suse.de>
 
 	* double-int.h (double_int_and_not): New function.
 	* combine.c (try_combine): Use it.
