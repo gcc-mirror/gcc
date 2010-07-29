@@ -871,17 +871,17 @@ extern const char * const reg_note_name[];
    */
 
 /* Opaque data.  */
-#define NOTE_DATA(INSN)	        RTL_CHECKC1 (INSN, 5, NOTE)
-#define NOTE_DELETED_LABEL_NAME(INSN) XCSTR (INSN, 5, NOTE)
+#define NOTE_DATA(INSN)	        RTL_CHECKC1 (INSN, 4, NOTE)
+#define NOTE_DELETED_LABEL_NAME(INSN) XCSTR (INSN, 4, NOTE)
 #define SET_INSN_DELETED(INSN) set_insn_deleted (INSN);
-#define NOTE_BLOCK(INSN)	XCTREE (INSN, 5, NOTE)
-#define NOTE_EH_HANDLER(INSN)	XCINT (INSN, 5, NOTE)
-#define NOTE_BASIC_BLOCK(INSN)	XCBBDEF (INSN, 5, NOTE)
-#define NOTE_VAR_LOCATION(INSN)	XCEXP (INSN, 5, NOTE)
+#define NOTE_BLOCK(INSN)	XCTREE (INSN, 4, NOTE)
+#define NOTE_EH_HANDLER(INSN)	XCINT (INSN, 4, NOTE)
+#define NOTE_BASIC_BLOCK(INSN)	XCBBDEF (INSN, 4, NOTE)
+#define NOTE_VAR_LOCATION(INSN)	XCEXP (INSN, 4, NOTE)
 
 /* In a NOTE that is a line number, this is the line number.
    Other kinds of NOTEs are identified by negative numbers here.  */
-#define NOTE_KIND(INSN) XCINT (INSN, 4, NOTE)
+#define NOTE_KIND(INSN) XCINT (INSN, 5, NOTE)
 
 /* Nonzero if INSN is a note marking the beginning of a basic block.  */
 #define NOTE_INSN_BASIC_BLOCK_P(INSN)			\
