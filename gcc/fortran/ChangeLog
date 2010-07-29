@@ -1,3 +1,11 @@
+2010-07-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang.opt (cpp): Remove Joined and Separate markers.
+	(cpp=): New internal option.
+	* lang-specs.h (F951_CPP_OPTIONS): Generate -cpp= option.
+	* cpp.c (gfc_cpp_handle_option): Handle OPT_cpp_ instead of
+	OPT_cpp.
+
 2010-07-29  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/45117
