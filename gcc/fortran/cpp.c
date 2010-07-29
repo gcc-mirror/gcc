@@ -354,7 +354,7 @@ gfc_cpp_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED
       result = 0;
       break;
 
-    case OPT_cpp:
+    case OPT_cpp_:
       gfc_cpp_option.temporary_filename = arg;
       break;
 
