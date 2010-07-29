@@ -155,7 +155,7 @@ DEF_RTL_EXPR(CODE_LABEL, "code_label", "iuuB00is", RTX_EXTRA)
    4: note-specific data
    5: enum insn_note
    6: unique number if insn_note == note_insn_deleted_label.  */
-DEF_RTL_EXPR(NOTE, "note", "iuuBn0i", RTX_EXTRA)
+DEF_RTL_EXPR(NOTE, "note", "iuuB0ni", RTX_EXTRA)
 
 /* ----------------------------------------------------------------------
    Top level constituents of INSN, JUMP_INSN and CALL_INSN.

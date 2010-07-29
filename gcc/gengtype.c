@@ -1112,9 +1112,9 @@ adjust_field_rtx_def (type_p t, options_p ARG_UNUSED (opt))
 	      else if (i == LABEL_REF
 		       && (aindex == 1 || aindex == 2))
 		t = rtx_tp, subname = "rt_rtx";
-	      else if (i == NOTE && aindex == 5)
-		t = note_union_tp, subname = "";
 	      else if (i == NOTE && aindex == 4)
+		t = note_union_tp, subname = "";
+	      else if (i == NOTE && aindex == 5)
 		t = scalar_tp, subname = "rt_int";
 	      else if (i == NOTE && aindex >= 7)
 		t = scalar_tp, subname = "rt_int";

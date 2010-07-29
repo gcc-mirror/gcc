@@ -1,5 +1,14 @@
 2010-07-29  Jakub Jelinek  <jakub@redhat.com>
 
+	Revert:
+	* rtl.def (NOTE): Swap operands 4 and 5.
+        * rtl.h (NOTE_DATA, NOTE_DELETED_LABEL_NAME, NOTE_BLOCK,
+	NOTE_EH_HANDLER, NOTE_BASIC_BLOCK, NOTE_VAR_LOCATION, NOTE_KIND):
+	Adjust accordingly.
+        * gengtype.c (adjust_field_rtx_def): Swap operands 4 and 5 of NOTEs.
+
+2010-07-29  Jakub Jelinek  <jakub@redhat.com>
+
 	PR debug/45110
 	* dwarf2out.c (dwarf_attr_name): Handle DW_AT_object_pointer.
 	(gen_formal_types_die): Add DW_AT_object_pointer in methods.
