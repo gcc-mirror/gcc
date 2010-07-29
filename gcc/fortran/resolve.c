@@ -10813,7 +10813,6 @@ resolve_fl_derived (gfc_symbol *sym)
 {
   gfc_symbol* super_type;
   gfc_component *c;
-  int i;
 
   super_type = gfc_get_derived_super_type (sym);
   
@@ -11169,25 +11168,10 @@ resolve_fl_derived (gfc_symbol *sym)
 	    && sym != c->ts.u.derived)
 	add_dt_to_dt_list (c->ts.u.derived);
 
-      if (c->attr.pointer || c->attr.proc_pointer || c->attr.allocatable
-	  || c->as == NULL)
-	continue;
-
-      for (i = 0; i < c->as->rank; i++)
-	{
-	  if (c->as->lower[i] == NULL
-	      || (resolve_index_expr (c->as->lower[i]) == FAILURE)
-	      || !gfc_is_constant_expr (c->as->lower[i])
-	      || c->as->upper[i] == NULL
-	      || (resolve_index_expr (c->as->upper[i]) == FAILURE)
-	      || !gfc_is_constant_expr (c->as->upper[i]))
-	    {
-	      gfc_error ("Component '%s' of '%s' at %L must have "
-			 "constant array bounds",
-			 c->name, sym->name, &c->loc);
-	      return FAILURE;
-	    }
-	}
+      if (gfc_resolve_array_spec (c->as, !(c->attr.pointer
+					   || c->attr.proc_pointer
+					   || c->attr.allocatable)) == FAILURE)
+	return FAILURE;
     }
 
   /* Resolve the type-bound procedures.  */

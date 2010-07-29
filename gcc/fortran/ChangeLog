@@ -1,5 +1,10 @@
 2010-07-29  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/44962
+	* resolve.c (resolve_fl_derived): Call gfc_resolve_array_spec.
+
+2010-07-29  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/45004
 	* trans-stmt.h (gfc_trans_class_init_assign): New prototype.
 	(gfc_trans_class_assign): Modified prototype.
