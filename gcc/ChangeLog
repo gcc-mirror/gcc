@@ -1,3 +1,13 @@
+2010-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/45110
+	* dwarf2out.c (dwarf_attr_name): Handle DW_AT_object_pointer.
+	(gen_formal_types_die): Add DW_AT_object_pointer in methods.
+	(gen_subprogram_die): Likewise.  Remove it when removing declaration's
+	formal parameters.
+	(gen_decl_die): Change return type to dw_die_ref, return what
+	gen_formal_parameter_die returned.
+
 2010-07-29  Martin Jambor  <mjambor@suse.cz>
 
 	* dbgcnt.def (eipa_sra): New counter.
