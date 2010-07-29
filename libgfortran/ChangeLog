@@ -1,3 +1,14 @@
+2010-07-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/44931
+	* io/inquire.c (inquire_via_unit): Use ttyname to return actual device
+	file name for stdin, stdout, and stderr.  If ttyname does not succeed
+	fall back to default names for these units. Include string.h to allow
+	using strlen function.
+	* unix.c: Remove typedef of unix_stream structure, move to unix.h.
+	* unix.h: Add typedef of unix_stream structure so that it is
+	accessible to inquire.c.
+
 2010-07-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/44953

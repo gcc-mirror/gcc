@@ -26,6 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Implement the non-IOLENGTH variant of the INQUIRY statement */
 
+#include <string.h>
 #include "io.h"
 #include "unix.h"
 
@@ -66,7 +67,25 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 
   if ((cf & IOPARM_INQUIRE_HAS_NAME) != 0
       && u != NULL && u->flags.status != STATUS_SCRATCH)
-    fstrcpy (iqp->name, iqp->name_len, u->file, u->file_len);
+    {
+#ifdef HAVE_TTYNAME
+      if (u->unit_number == options.stdin_unit
+	  || u->unit_number == options.stdout_unit
+	  || u->unit_number == options.stderr_unit)
+	{
+	  char * tmp = ttyname (((unix_stream *) u->s)->fd);
+	  if (tmp != NULL)
+	    {
+	      int tmplen = strlen (tmp);
+	      fstrcpy (iqp->name, iqp->name_len, tmp, tmplen);
+	    }
+	  else /* If ttyname does not work, go with the default.  */
+	    fstrcpy (iqp->name, iqp->name_len, u->file, u->file_len);
+	}
+      else
+#endif
+	fstrcpy (iqp->name, iqp->name_len, u->file, u->file_len);
+    }
 
   if ((cf & IOPARM_INQUIRE_HAS_ACCESS) != 0)
     {
