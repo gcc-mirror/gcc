@@ -1,3 +1,8 @@
+2010-07-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45004
+	* gfortran.dg/move_alloc_2.f90: New.
+
 2010-07-29  Xinliang David Li  <davidxl@google.com>
 	PR tree-optimization/45121
 	* c-c++-common/uninit-17.c: Fix expected output.

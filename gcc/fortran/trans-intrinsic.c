@@ -5559,4 +5559,42 @@ gfc_walk_intrinsic_function (gfc_ss * ss, gfc_expr * expr,
     }
 }
 
+
+tree
+gfc_conv_intrinsic_move_alloc (gfc_code *code)
+{
+  if (code->ext.actual->expr->rank == 0)
+    {
+      /* Scalar arguments: Generate pointer assignments.  */
+      gfc_expr *from, *to;
+      stmtblock_t block;
+      tree tmp;
+
+      from = code->ext.actual->expr;
+      to = code->ext.actual->next->expr;
+
+      gfc_start_block (&block);
+
+      if (to->ts.type == BT_CLASS)
+	tmp = gfc_trans_class_assign (to, from, EXEC_POINTER_ASSIGN);
+      else
+	tmp = gfc_trans_pointer_assignment (to, from);
+      gfc_add_expr_to_block (&block, tmp);
+
+      if (from->ts.type == BT_CLASS)
+	tmp = gfc_trans_class_assign (from, gfc_get_null_expr (NULL),
+				      EXEC_POINTER_ASSIGN);
+      else
+	tmp = gfc_trans_pointer_assignment (from,
+					    gfc_get_null_expr (NULL));
+      gfc_add_expr_to_block (&block, tmp);
+
+      return gfc_finish_block (&block);
+    }
+  else
+    /* Array arguments: Generate library code.  */
+    return gfc_trans_call (code, false, NULL_TREE, NULL_TREE, false);
+}
+
+
 #include "gt-fortran-trans-intrinsic.h"

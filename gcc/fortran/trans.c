@@ -1093,7 +1093,7 @@ trans_code (gfc_code * code, tree cond)
 
 	case EXEC_ASSIGN:
 	  if (code->expr1->ts.type == BT_CLASS)
-	    res = gfc_trans_class_assign (code);
+	    res = gfc_trans_class_assign (code->expr1, code->expr2, code->op);
 	  else
 	    res = gfc_trans_assign (code);
 	  break;
@@ -1104,14 +1104,14 @@ trans_code (gfc_code * code, tree cond)
 
 	case EXEC_POINTER_ASSIGN:
 	  if (code->expr1->ts.type == BT_CLASS)
-	    res = gfc_trans_class_assign (code);
+	    res = gfc_trans_class_assign (code->expr1, code->expr2, code->op);
 	  else
 	    res = gfc_trans_pointer_assign (code);
 	  break;
 
 	case EXEC_INIT_ASSIGN:
 	  if (code->expr1->ts.type == BT_CLASS)
-	    res = gfc_trans_class_assign (code);
+	    res = gfc_trans_class_init_assign (code);
 	  else
 	    res = gfc_trans_init_assign (code);
 	  break;
@@ -1157,8 +1157,12 @@ trans_code (gfc_code * code, tree cond)
 	    if (code->resolved_isym
 		&& code->resolved_isym->id == GFC_ISYM_MVBITS)
 	      is_mvbits = true;
-	    res = gfc_trans_call (code, is_mvbits, NULL_TREE,
-				  NULL_TREE, false);
+	    if (code->resolved_isym
+		&& code->resolved_isym->id == GFC_ISYM_MOVE_ALLOC)
+	      res = gfc_conv_intrinsic_move_alloc (code);
+	    else
+	      res = gfc_trans_call (code, is_mvbits, NULL_TREE,
+				    NULL_TREE, false);
 	  }
 	  break;
 

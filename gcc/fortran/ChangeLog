@@ -1,3 +1,15 @@
+2010-07-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45004
+	* trans-stmt.h (gfc_trans_class_init_assign): New prototype.
+	(gfc_trans_class_assign): Modified prototype.
+	* trans.h (gfc_conv_intrinsic_move_alloc): New prototype.
+	* trans-expr.c (gfc_trans_class_init_assign): Split off from ...
+	(gfc_trans_class_assign): ... here. Modified actual arguments.
+	* trans-intrinsic.c (gfc_conv_intrinsic_move_alloc): New function to
+	handle the MOVE_ALLOC intrinsic with scalar and class arguments.
+	* trans.c (trans_code): Call 'gfc_conv_intrinsic_move_alloc'.
+
 2010-07-29  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/42051
