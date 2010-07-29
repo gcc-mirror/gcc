@@ -1318,6 +1318,7 @@ build_vector (tree type, tree vals)
   tree v = make_node (VECTOR_CST);
   int over = 0;
   tree link;
+  unsigned cnt = 0;
 
   TREE_VECTOR_CST_ELTS (v) = vals;
   TREE_TYPE (v) = type;
@@ -1326,6 +1327,7 @@ build_vector (tree type, tree vals)
   for (link = vals; link; link = TREE_CHAIN (link))
     {
       tree value = TREE_VALUE (link);
+      cnt++;
 
       /* Don't crash if we get an address constant.  */
       if (!CONSTANT_CLASS_P (value))
@@ -1333,6 +1335,8 @@ build_vector (tree type, tree vals)
 
       over |= TREE_OVERFLOW (value);
     }
+
+  gcc_assert (cnt == TYPE_VECTOR_SUBPARTS (type));
 
   TREE_OVERFLOW (v) = over;
   return v;
@@ -1350,6 +1354,9 @@ build_vector_from_ctor (tree type, VEC(constructor_elt,gc) *v)
 
   FOR_EACH_CONSTRUCTOR_VALUE (v, idx, value)
     list = tree_cons (NULL_TREE, value, list);
+  for (; idx < TYPE_VECTOR_SUBPARTS (type); ++idx)
+    list = tree_cons (NULL_TREE,
+		      fold_convert (TREE_TYPE (type), integer_zero_node), list);
   return build_vector (type, nreverse (list));
 }
 

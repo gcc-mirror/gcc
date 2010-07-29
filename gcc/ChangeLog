@@ -1,5 +1,11 @@
 2010-07-29  Richard Guenther  <rguenther@suse.de>
 
+	* tree.c (build_vector): Assert that the vector constant
+	has enough elements.
+	(build_vector_from_ctor): Pad with trailing zeros.
+
+2010-07-29  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/45120
 	* tree-ssa-structalias.c (get_constraint_for_component_ref):
 	Handle offset in DEREFs properly.
