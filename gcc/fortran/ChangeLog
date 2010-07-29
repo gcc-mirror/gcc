@@ -1,3 +1,9 @@
+2010-07-29  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/45117
+	* array.c (resolve_array_bound): Fix error message to properly handle
+	non-variable expressions.
+
 2010-07-28  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* decl.c (free_value): Also free repeat field.

@@ -300,10 +300,14 @@ resolve_array_bound (gfc_expr *e, int check_constant)
       || gfc_specification_expr (e) == FAILURE)
     return FAILURE;
 
-  if (check_constant && gfc_is_constant_expr (e) == 0)
+  if (check_constant && !gfc_is_constant_expr (e))
     {
-      gfc_error ("Variable '%s' at %L in this context must be constant",
-		 e->symtree->n.sym->name, &e->where);
+      if (e->expr_type == EXPR_VARIABLE)
+	gfc_error ("Variable '%s' at %L in this context must be constant",
+		   e->symtree->n.sym->name, &e->where);
+      else
+	gfc_error ("Expression at %L in this context must be constant",
+		   &e->where);
       return FAILURE;
     }
 
