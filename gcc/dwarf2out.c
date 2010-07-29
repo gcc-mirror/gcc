@@ -6300,7 +6300,7 @@ static int is_redundant_typedef (const_tree);
 static bool is_naming_typedef_decl (const_tree);
 static inline dw_die_ref get_context_die (tree);
 static void gen_namespace_die (tree, dw_die_ref);
-static void gen_decl_die (tree, tree, dw_die_ref);
+static dw_die_ref gen_decl_die (tree, tree, dw_die_ref);
 static dw_die_ref force_decl_die (tree);
 static dw_die_ref force_type_die (tree);
 static dw_die_ref setup_namespace_context (tree, dw_die_ref);
@@ -6809,6 +6809,8 @@ dwarf_attr_name (unsigned int attr)
       return "DW_AT_call_file";
     case DW_AT_call_line:
       return "DW_AT_call_line";
+    case DW_AT_object_pointer:
+      return "DW_AT_object_pointer";
 
     case DW_AT_signature:
       return "DW_AT_signature";
@@ -18371,9 +18373,14 @@ gen_formal_types_die (tree function_or_method_type, dw_die_ref context_die)
       parm_die = gen_formal_parameter_die (formal_type, NULL,
 					   true /* Emit name attribute.  */,
 					   context_die);
-      if ((TREE_CODE (function_or_method_type) == METHOD_TYPE
-	   && link == first_parm_type)
-	  || (arg && DECL_ARTIFICIAL (arg)))
+      if (TREE_CODE (function_or_method_type) == METHOD_TYPE
+	  && link == first_parm_type)
+	{
+	  add_AT_flag (parm_die, DW_AT_artificial, 1);
+	  if (dwarf_version >= 3 || !dwarf_strict)
+	    add_AT_die_ref (context_die, DW_AT_object_pointer, parm_die);
+	}
+      else if (arg && DECL_ARTIFICIAL (arg))
 	add_AT_flag (parm_die, DW_AT_artificial, 1);
 
       link = TREE_CHAIN (link);
@@ -18648,6 +18655,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	     cases die that forced declaration die (e.g. TAG_imported_module)
 	     is one of the children that we do not want to remove.  */
 	  remove_AT (subr_die, DW_AT_declaration);
+	  remove_AT (subr_die, DW_AT_object_pointer);
 	  remove_child_TAG (subr_die, DW_TAG_formal_parameter);
 	}
       else
@@ -18886,7 +18894,14 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 					   &parm);
 	  else if (parm)
 	    {
-	      gen_decl_die (parm, NULL, subr_die);
+	      dw_die_ref parm_die = gen_decl_die (parm, NULL, subr_die);
+
+	      if (parm == DECL_ARGUMENTS (decl)
+		  && TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE
+		  && parm_die
+		  && (dwarf_version >= 3 || !dwarf_strict))
+		add_AT_die_ref (subr_die, DW_AT_object_pointer, parm_die);
+
 	      parm = DECL_CHAIN (parm);
 	    }
 
@@ -20433,16 +20448,18 @@ gen_namespace_die (tree decl, dw_die_ref context_die)
     }
 }
 
-/* Generate Dwarf debug information for a decl described by DECL.  */
+/* Generate Dwarf debug information for a decl described by DECL.
+   The return value is currently only meaningful for PARM_DECLs,
+   for all other decls it returns NULL.  */
 
-static void
+static dw_die_ref
 gen_decl_die (tree decl, tree origin, dw_die_ref context_die)
 {
   tree decl_or_origin = decl ? decl : origin;
   tree class_origin = NULL, ultimate_origin;
 
   if (DECL_P (decl_or_origin) && DECL_IGNORED_P (decl_or_origin))
-    return;
+    return NULL;
 
   switch (TREE_CODE (decl_or_origin))
     {
@@ -20613,10 +20630,9 @@ gen_decl_die (tree decl, tree origin, dw_die_ref context_die)
 	gen_type_die (TREE_TYPE (TREE_TYPE (decl_or_origin)), context_die);
       else
 	gen_type_die (TREE_TYPE (decl_or_origin), context_die);
-      gen_formal_parameter_die (decl, origin,
-				true /* Emit name attribute.  */,
-				context_die);
-      break;
+      return gen_formal_parameter_die (decl, origin,
+				       true /* Emit name attribute.  */,
+				       context_die);
 
     case NAMESPACE_DECL:
     case IMPORTED_DECL:
@@ -20629,6 +20645,8 @@ gen_decl_die (tree decl, tree origin, dw_die_ref context_die)
       gcc_assert ((int)TREE_CODE (decl) > NUM_TREE_CODES);
       break;
     }
+
+  return NULL;
 }
 
 /* Output debug information for global decl DECL.  Called from toplev.c after
