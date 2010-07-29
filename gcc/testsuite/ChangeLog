@@ -1,3 +1,9 @@
+2010-07-29  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/42051
+	PR fortran/44064
+	* gfortran.dg/pr42051.f03: New testcase.
+
 2010-07-29  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/45034
