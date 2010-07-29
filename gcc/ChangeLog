@@ -1,5 +1,12 @@
 2010-07-29  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/45120
+	* tree-ssa-structalias.c (get_constraint_for_component_ref):
+	Handle offset in DEREFs properly.
+	(get_constraint_for_1): Handle MEM_REF offset properly.
+
+2010-07-29  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/45034
 	* convert.c (convert_to_integer): Always use an unsigned
 	type for narrowed negate and bitwise not.
