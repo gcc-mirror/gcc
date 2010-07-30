@@ -12654,29 +12654,6 @@ reg_bitfield_target_p (rtx x, rtx body)
 
   return 0;
 }
-
-/* Return the next insn after INSN that is neither a NOTE nor a
-   DEBUG_INSN.  This routine does not look inside SEQUENCEs.  */
-
-static rtx
-next_nonnote_nondebug_insn (rtx insn)
-{
-  while (insn)
-    {
-      insn = NEXT_INSN (insn);
-      if (insn == 0)
-	break;
-      if (NOTE_P (insn))
-	continue;
-      if (DEBUG_INSN_P (insn))
-	continue;
-      break;
-    }
-
-  return insn;
-}
-
-
 
 /* Given a chain of REG_NOTES originally from FROM_INSN, try to place them
    as appropriate.  I3 and I2 are the insns resulting from the combination

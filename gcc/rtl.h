@@ -1693,6 +1693,8 @@ extern rtx next_nonnote_insn (rtx);
 extern rtx next_nonnote_insn_bb (rtx);
 extern rtx prev_nondebug_insn (rtx);
 extern rtx next_nondebug_insn (rtx);
+extern rtx prev_nonnote_nondebug_insn (rtx);
+extern rtx next_nonnote_nondebug_insn (rtx);
 extern rtx prev_real_insn (rtx);
 extern rtx next_real_insn (rtx);
 extern rtx prev_active_insn (rtx);

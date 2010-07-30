@@ -1521,9 +1521,7 @@ fixup_sched_groups (rtx insn)
 
   delete_all_dependences (insn);
 
-  prev_nonnote = prev_nonnote_insn (insn);
-  while (DEBUG_INSN_P (prev_nonnote))
-    prev_nonnote = prev_nonnote_insn (prev_nonnote);
+  prev_nonnote = prev_nonnote_nondebug_insn (insn);
   if (BLOCK_FOR_INSN (insn) == BLOCK_FOR_INSN (prev_nonnote)
       && ! sched_insns_conditions_mutex_p (insn, prev_nonnote))
     add_dependence (insn, prev_nonnote, REG_DEP_ANTI);
@@ -2699,9 +2697,7 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
   if (JUMP_P (insn))
     {
       rtx next;
-      next = next_nonnote_insn (insn);
-      while (next && DEBUG_INSN_P (next))
-	next = next_nonnote_insn (next);
+      next = next_nonnote_nondebug_insn (insn);
       if (next && BARRIER_P (next))
 	reg_pending_barrier = MOVE_BARRIER;
       else
@@ -3370,10 +3366,8 @@ deps_start_bb (struct deps_desc *deps, rtx head)
      hard registers correct.  */
   if (! reload_completed && !LABEL_P (head))
     {
-      rtx insn = prev_nonnote_insn (head);
+      rtx insn = prev_nonnote_nondebug_insn (head);
 
-      while (insn && DEBUG_INSN_P (insn))
-	insn = prev_nonnote_insn (insn);
       if (insn && CALL_P (insn))
 	deps->in_post_call_group_p = post_call_initial;
     }
