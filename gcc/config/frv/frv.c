@@ -589,10 +589,15 @@ frv_cannot_force_const_mem (rtx x ATTRIBUTE_UNUSED)
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
-frv_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+frv_handle_option (size_t code, const char *arg, int value)
 {
   switch (code)
     {
+    case OPT_G:
+      g_switch_value = value;
+      g_switch_set = true;
+      return true;
+
     case OPT_mcpu_:
       if (strcmp (arg, "simple") == 0)
 	frv_cpu_type = FRV_CPU_SIMPLE;

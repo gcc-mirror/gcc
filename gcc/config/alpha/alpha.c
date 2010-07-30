@@ -215,6 +215,11 @@ alpha_handle_option (size_t code, const char *arg, int value)
 {
   switch (code)
     {
+    case OPT_G:
+      g_switch_value = value;
+      g_switch_set = true;
+      break;
+
     case OPT_mfp_regs:
       if (value == 0)
 	target_flags |= MASK_SOFT_FP;

@@ -1560,11 +1560,6 @@ common_handle_option (size_t scode, const char *arg, int value,
       exit_after_options = true;
       break;
 
-    case OPT_G:
-      g_switch_value = value;
-      g_switch_set = true;
-      break;
-
     case OPT_O:
     case OPT_Os:
     case OPT_Ofast:
