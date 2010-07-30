@@ -2709,7 +2709,7 @@ match_derived_type_spec (gfc_typespec *ts)
    gfc_match_decl_type_spec() from decl.c, with the following exceptions:
    It only includes the intrinsic types from the Fortran 2003 standard
    (thus, neither BYTE nor forms like REAL*4 are allowed). Additionally,
-   the implicit_flag is not needed, so it was removed.  Derived types are
+   the implicit_flag is not needed, so it was removed. Derived types are
    identified by their name alone.  */
 
 static match
@@ -2719,7 +2719,29 @@ match_type_spec (gfc_typespec *ts)
   locus old_locus;
 
   gfc_clear_ts (ts);
+  gfc_gobble_whitespace();
   old_locus = gfc_current_locus;
+
+  m = match_derived_type_spec (ts);
+  if (m == MATCH_YES)
+    {
+      old_locus = gfc_current_locus;
+      if (gfc_match (" :: ") != MATCH_YES)
+	return MATCH_ERROR;
+      gfc_current_locus = old_locus;
+      /* Enfore F03:C401.  */
+      if (ts->u.derived->attr.abstract)
+	{
+	  gfc_error ("Derived type '%s' at %L may not be ABSTRACT",
+		     ts->u.derived->name, &old_locus);
+	  return MATCH_ERROR;
+	}
+      return MATCH_YES;
+    }
+  else if (m == MATCH_ERROR && gfc_match (" :: ") == MATCH_YES)
+    return MATCH_ERROR;
+
+  gfc_current_locus = old_locus;
 
   if (gfc_match ("integer") == MATCH_YES)
     {
@@ -2761,25 +2783,6 @@ match_type_spec (gfc_typespec *ts)
       ts->kind = gfc_default_logical_kind;
       goto kind_selector;
     }
-
-  m = match_derived_type_spec (ts);
-  if (m == MATCH_YES)
-    {
-      old_locus = gfc_current_locus;
-      if (gfc_match (" :: ") != MATCH_YES)
-	return MATCH_ERROR;
-      gfc_current_locus = old_locus;
-      /* Enfore F03:C401.  */
-      if (ts->u.derived->attr.abstract)
-	{
-	  gfc_error ("Derived type '%s' at %L may not be ABSTRACT",
-		     ts->u.derived->name, &old_locus);
-	  return MATCH_ERROR;
-	}
-      return MATCH_YES;
-    }
-  else if (m == MATCH_ERROR && gfc_match (" :: ") == MATCH_YES)
-    return MATCH_ERROR;
 
   /* If a type is not matched, simply return MATCH_NO.  */
   gfc_current_locus = old_locus;
