@@ -3792,10 +3792,7 @@ gfc_fixup_sibling_symbols (gfc_symbol *sym, gfc_namespace *siblings)
 	  st->n.sym = sym;
 	  sym->refs++;
 
-	  /* Free the old (local) symbol.  */
-	  old_sym->refs--;
-	  if (old_sym->refs == 0)
-	    gfc_free_symbol (old_sym);
+	  gfc_release_symbol (old_sym);
 	}
 
 fixup_contained:

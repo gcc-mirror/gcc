@@ -2502,6 +2502,31 @@ gfc_free_symbol (gfc_symbol *sym)
 }
 
 
+/* Decrease the reference counter and free memory when we reach zero.  */
+void
+gfc_release_symbol (gfc_symbol *sym)
+{
+  if (sym == NULL)
+    return;
+
+  if (sym->formal_ns != NULL && sym->refs == 2)
+    {
+      /* As formal_ns contains a reference to sym, delete formal_ns just
+	 before the deletion of sym.  */
+      gfc_namespace *ns = sym->formal_ns;
+      sym->formal_ns = NULL;
+      gfc_free_namespace (ns);
+    }
+
+  sym->refs--;
+  if (sym->refs > 0)
+    return;
+
+  gcc_assert (sym->refs == 0);
+  gfc_free_symbol (sym);
+}
+
+
 /* Allocate and initialize a new symbol node.  */
 
 gfc_symbol *
@@ -2893,11 +2918,7 @@ gfc_undo_symbols (void)
 
 	  gfc_delete_symtree (&p->ns->sym_root, p->name);
 
-	  p->refs--;
-	  if (p->refs < 0)
-	    gfc_internal_error ("gfc_undo_symbols(): Negative refs");
-	  if (p->refs == 0)
-	    gfc_free_symbol (p);
+	  gfc_release_symbol (p);
 	  continue;
 	}
 
@@ -3107,35 +3128,13 @@ free_uop_tree (gfc_symtree *uop_tree)
 static void
 free_sym_tree (gfc_symtree *sym_tree)
 {
-  gfc_namespace *ns;
-  gfc_symbol *sym;
-
   if (sym_tree == NULL)
     return;
 
   free_sym_tree (sym_tree->left);
   free_sym_tree (sym_tree->right);
 
-  sym = sym_tree->n.sym;
-
-  sym->refs--;
-  if (sym->refs < 0)
-    gfc_internal_error ("free_sym_tree(): Negative refs");
-
-  if (sym->formal_ns != NULL && sym->refs == 1)
-    {
-      /* As formal_ns contains a reference to sym, delete formal_ns just
-         before the deletion of sym.  */
-      ns = sym->formal_ns;
-      sym->formal_ns = NULL;
-      gfc_free_namespace (ns);
-    }
-  else if (sym->refs == 0)
-    {
-      /* Go ahead and delete the symbol.  */
-      gfc_free_symbol (sym);
-    }
-
+  gfc_release_symbol (sym_tree->n.sym);
   gfc_free (sym_tree);
 }
 
@@ -3189,13 +3188,7 @@ gfc_free_finalizer (gfc_finalizer* el)
 {
   if (el)
     {
-      if (el->proc_sym)
-	{
-	  --el->proc_sym->refs;
-	  if (!el->proc_sym->refs)
-	    gfc_free_symbol (el->proc_sym);
-	}
-
+      gfc_release_symbol (el->proc_sym);
       gfc_free (el);
     }
 }
