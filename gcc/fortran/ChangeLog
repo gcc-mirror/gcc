@@ -1,3 +1,12 @@
+2010-07-30  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.h (gfc_release_symbol): New prototype.
+	* symbol.c (gfc_release_symbol): New. Code taken from free_sym_tree.
+	(gfc_undo_symbols, free_sym_tree, gfc_free_finalizer):
+	Use gfc_release_symbol.
+	* parse.c (gfc_fixup_sibling_symbols): Ditto.
+	* resolve.c (resolve_symbol): Ditto.
+
 2010-07-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45087
