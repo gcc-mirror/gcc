@@ -1,3 +1,20 @@
+2010-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/45055
+	PR rtl-optimization/45137
+	* rtl.h (prev_nonnote_nondebug_insn, next_nonnote_nondebug_insn): New
+	prototypes.
+	* emit-rtl.c (prev_nonnote_nondebug_insn, next_nonnote_nondebug_insn):
+	New functions.
+	* combine.c (next_nonnote_nondebug_insn): Removed.
+	* ifcvt.c (noce_process_if_block): Use prev_nonnote_nondebug_insn.
+	* haifa-sched.c (queue_to_ready): Use next_nonnote_nondebug_insn.
+	* sched-deps.c (sched_analyze_insn): Likewise.
+	(fixup_sched_groups, deps_start_bb): Use prev_nonnote_nondebug_insn.
+	* rtlanal.c (canonicalize_condition): Likewise.
+	* postreload.c (reload_combine_recognize_pattern): Likewise.
+	(reload_cse_move2add): Use next_nonnote_nondebug_insn.
+
 2010-07-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (int_cond): Remove code iterator.

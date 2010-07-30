@@ -1,3 +1,9 @@
+2010-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/45055
+	PR rtl-optimization/45137
+	* gcc.dg/pr45055.c: New test.
+
 2010-07-30  Alan Modra  <amodra@gmail.com>
 
 	* gfortran.dg/ltime_gmtime_1.f90: Tolerate half-hour timezones.
