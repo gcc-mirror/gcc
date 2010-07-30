@@ -1,3 +1,12 @@
+2010-07-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (int_cond): Remove code iterator.
+	(fp_cond): Ditto.
+	(cbranch<mode>4): Use ordered_comparison_operator predicate
+	for operator0.
+	(cstore<mode>4): Ditto for operator1.
+	(mov<SWIM:mode>cc): Ditto.
+
 2010-07-30  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/45141
@@ -21,11 +30,13 @@
 2010-07-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Revert:
+	2010-07-27  Bernd Schmidt  <bernds@codesourcery.com>
+
 	* rtl.def (NOTE): Swap operands 4 and 5.
-        * rtl.h (NOTE_DATA, NOTE_DELETED_LABEL_NAME, NOTE_BLOCK,
+	* rtl.h (NOTE_DATA, NOTE_DELETED_LABEL_NAME, NOTE_BLOCK,
 	NOTE_EH_HANDLER, NOTE_BASIC_BLOCK, NOTE_VAR_LOCATION, NOTE_KIND):
 	Adjust accordingly.
-        * gengtype.c (adjust_field_rtx_def): Swap operands 4 and 5 of NOTEs.
+	* gengtype.c (adjust_field_rtx_def): Swap operands 4 and 5 of NOTEs.
 
 2010-07-29  Jakub Jelinek  <jakub@redhat.com>
 
@@ -156,7 +167,7 @@
 2010-07-29  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): Switch
-	to outer loop when creating reduction epilogue for double reduction, 
+	to outer loop when creating reduction epilogue for double reduction,
 	and switch back to the inner loop when updating the phi nodes.
 	Update uses of outer loop exit phi nodes in double reduction (instead
 	of uses of reduction).
@@ -281,7 +292,7 @@
 
 2010-07-28  Iain Sandoe  <iains@gcc.gnu.org>
 
-	* config/rs6000/rs6000.c (rs6000_override_options): 
+	* config/rs6000/rs6000.c (rs6000_override_options):
 	Use TARGET_MACHO inline, move darwin_one_byte_bool from here...
 	... to darwin_rs6000_override_options.
 	(rs6000_return_in_memory): Update preceding comment for darwin
@@ -545,8 +556,9 @@
 2010-07-27  Jie Zhang  <jie@codesourcery.com>
 
 	PR target/44290
-	Revert
+	Revert:
 	2010-07-23  Jie Zhang  <jie@codesourcery.com>
+
 	* tree-sra.c (ipa_sra_preliminary_function_checks): Return
 	false if ! tree_versionable_function_p.
 
@@ -569,8 +581,7 @@
 	* hooks.c (hook_bool_constcharptr_size_t_false): Remove.
 	* hooks.h (hook_bool_constcharptr_size_t_false): Remove.
 	* langhooks-def.h (LANG_HOOKS_MISSING_ARGUMENT): Remove.
-	(LANG_HOOKS_INITIALIZER): Remove missing_argument hook
-	initializer.
+	(LANG_HOOKS_INITIALIZER): Remove missing_argument hook initializer.
 	* langhooks.h (struct lang_hooks): Remove missing_argument.
 	* optc-gen.awk: Handle MissingArgError and output new structure
 	field initializers.
@@ -604,7 +615,7 @@
 	PR tree-optimization/44152
 	* tree-vect-slp.c (vect_build_slp_tree): Collect nodes with
 	complex numbers for further check.
-	(vect_supported_load_permutation_p): Check nodes with 
+	(vect_supported_load_permutation_p): Check nodes with
 	complex numbers.
 
 2010-07-27  Joseph Myers  <joseph@codesourcery.com>
