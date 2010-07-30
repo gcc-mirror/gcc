@@ -1,3 +1,12 @@
+2010-07-30  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	Backport from mainline.
+	2010-07-22  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+ 	PR target/43698
+	* config/arm/arm.md: Split arm_rev into *arm_rev and *thumb1_rev.
+	Set *arm_rev to be predicable.
+
 2010-07-27  Nick Clifton  <nickc@redhat.com>
 
 	* Import this patch from the mainline:

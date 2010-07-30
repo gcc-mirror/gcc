@@ -1,3 +1,11 @@
+2010-07-30  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	Backport from mainline
+	2010-07-22  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/43698
+	* gcc.target/arm/pr43698.c: New test.
+
 2010-07-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/45047
