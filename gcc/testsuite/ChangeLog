@@ -1,3 +1,8 @@
+2010-07-30  Alan Modra  <amodra@gmail.com>
+
+	* gfortran.dg/ltime_gmtime_1.f90: Tolerate half-hour timezones.
+	* gfortran.dg/ltime_gmtime_2.f90: Likewise.
+
 2010-07-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45087
