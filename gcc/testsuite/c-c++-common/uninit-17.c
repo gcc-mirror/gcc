@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wuninitialized" } */
+/* { dg-options "-O2 -Wuninitialized -fno-ivopts" } */
 
 inline int foo(int x)
 {

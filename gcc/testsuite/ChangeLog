@@ -1,3 +1,7 @@
+2010-07-30  Xinliang David Li  <davidxl@google.com>
+	PR tree-optimization/45121
+	* c-c++-common/uninit-17.c: Add -fno-ivops option.
+
 2010-07-30  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR c++/45112
