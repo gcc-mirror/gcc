@@ -1,3 +1,7 @@
+2010-07-30  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/mmix/mmix.c: Include basic-block.h.
+
 2010-07-30  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR c++/45112
