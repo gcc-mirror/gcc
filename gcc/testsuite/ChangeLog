@@ -1,3 +1,8 @@
+2010-07-30  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	PR c++/45112
+	* testsuite/g++.dg/pr45112.C: New test.
+
 2010-07-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/45055
