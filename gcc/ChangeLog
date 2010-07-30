@@ -1,5 +1,10 @@
 2010-07-30  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/45141
+	* expr.c (expand_expr_real_1): Check for not handled base address.
+
+2010-07-30  Richard Guenther  <rguenther@suse.de>
+
 	* ipa-prop.c (ipa_modify_formal_parameters): Use
 	build_distinct_type_copy.
 
