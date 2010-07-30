@@ -1,5 +1,5 @@
 /* Output routines for Sunplus S+CORE processor
-   Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Sunnorth.
 
    This file is part of GCC.
@@ -287,10 +287,15 @@ score_asm_file_end (void)
 
 /* Implement TARGET_HANDLE_OPTION.  */
 static bool
-score_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+score_handle_option (size_t code, const char *arg, int value)
 {
   switch (code)
     {
+    case OPT_G:
+      g_switch_value = value;
+      g_switch_set = true;
+      return true;
+
     case OPT_mscore7d:
       target_flags &= ~(MASK_ALL_CPU_BITS);
       target_flags |= MASK_SCORE7 | MASK_SCORE7D;

@@ -267,6 +267,7 @@ m32c*-*-*)
 alpha*-*-*)
 	cpu_type=alpha
 	need_64bit_hwint=yes
+	extra_options="${extra_options} g.opt"
 	;;
 am33_2.0-*-linux*)
 	cpu_type=mn10300
@@ -289,6 +290,7 @@ crisv32-*)
 	cpu_type=cris
 	;;
 frv*)	cpu_type=frv
+	extra_options="${extra_options} g.opt"
 	;;
 moxie*)	cpu_type=moxie
 	;;
@@ -322,12 +324,17 @@ x86_64-*-*)
 ia64-*-*)
 	extra_headers=ia64intrin.h
 	need_64bit_hwint=yes
+	extra_options="${extra_options} g.opt"
 	;;
 hppa*-*-*)
 	cpu_type=pa
 	;;
+lm32*)
+	extra_options="${extra_options} g.opt"
+	;;
 m32r*-*-*)
         cpu_type=m32r
+	extra_options="${extra_options} g.opt"
         ;;
 m68k-*-*)
 	extra_headers=math-68881.h
@@ -336,6 +343,7 @@ mips*-*-*)
 	cpu_type=mips
 	need_64bit_hwint=yes
 	extra_headers="loongson.h"
+	extra_options="${extra_options} g.opt"
 	;;
 picochip-*-*)
         cpu_type=picochip
@@ -349,12 +357,15 @@ powerpc*-*-*)
 		cpu_is_64bit=yes
 		;;
 	esac
+	extra_options="${extra_options} g.opt"
 	;;
 rs6000*-*-*)
 	need_64bit_hwint=yes
+	extra_options="${extra_options} g.opt"
 	;;
 score*-*-*)
 	cpu_type=score
+	extra_options="${extra_options} g.opt"
 	;;
 sparc*-*-*)
 	cpu_type=sparc

@@ -5528,6 +5528,11 @@ ia64_handle_option (size_t code, const char *arg, int value)
 {
   switch (code)
     {
+    case OPT_G:
+      g_switch_value = value;
+      g_switch_set = true;
+      return true;
+
     case OPT_mfixed_range_:
       fix_range (arg);
       return true;

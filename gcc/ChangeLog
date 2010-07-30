@@ -1,3 +1,20 @@
+2010-07-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* common.opt (-G): Don't define option here.
+	* config/g.opt: New.
+	* config.gcc: Use g.opt for alpha, frv, ia64, lm32, m32r, mips,
+	rs6000/powerpc and score targets.
+	* opts.c (common_handle_option): Don't handle -G here.
+	* config/alpha/alpha.c (alpha_handle_option): Handle -G.
+	* config/frv/frv.c (frv_handle_option): Handle -G.
+	* config/ia64/ia64.c (ia64_handle_option): Handle -G.
+	* config/lm32/lm32.c (lm32_handle_option, TARGET_HANDLE_OPTION):
+	New.
+	* config/m32r/m32r.c (m32r_handle_option): Handle -G.
+	* config/mips/mips.c (mips_handle_option): Handle -G.
+	* config/rs6000/rs6000.c (rs6000_handle_option) Handle -G.
+	* config/score/score.c (score_handle_option): Handle -G.
+
 2010-07-30  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/mmix/mmix.c: Include basic-block.h.
