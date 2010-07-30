@@ -1,3 +1,8 @@
+2010-07-30  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/rtems.h: New file.
+	* config.gcc: Add moxie-rtems support.
+
 2010-07-29  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* dce.c (run_word_dce): Take flag_dce into account.  Clear and restore

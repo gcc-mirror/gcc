@@ -946,6 +946,10 @@ moxie-*-uclinux*)
 	tm_defines="${tm_defines} DEFAULT_LIBC=LIBC_UCLIBC"
 	extra_options="${extra_options} linux.opt"
 	;;
+moxie-*-rtems*)
+	tmake_file="${tmake_file} moxie/t-moxie moxie/t-moxie-softfp soft-fp/t-softfp moxie/t-rtems"
+	tm_file="moxie/moxie.h dbxelf.h elfos.h moxie/rtems.h rtems.h newlib-stdint.h"
+	;;
 h8300-*-rtems*)
 	tmake_file="h8300/t-h8300 h8300/t-elf t-rtems h8300/t-rtems"
 	tm_file="h8300/h8300.h dbxelf.h elfos.h h8300/elf.h h8300/rtems.h rtems.h newlib-stdint.h"
