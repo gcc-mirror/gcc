@@ -1,3 +1,8 @@
+2010-07-30  Andrew Haley  <aph@redhat.com>
+
+	* javax/print/attribute/standard/JobStateReasons.java (add): Fix
+	infinite recursion with call to super.
+
 2010-06-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* scripts/check_jni_methods.sh.in: Don't use diff -U.
