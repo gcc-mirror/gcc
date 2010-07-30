@@ -1,3 +1,10 @@
+2010-07-30  Janus Weil  <janus@gcc.gnu.org>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/44929
+	* match.c (match_type_spec): Try to parse derived types before
+	intrinsic types.
+
 2010-07-30  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* gfortran.h (gfc_release_symbol): New prototype.
