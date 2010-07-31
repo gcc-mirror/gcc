@@ -58,16 +58,16 @@ const struct default_include cpp_include_defaults[]
     /* Pick up GNU C++ backward and deprecated include files.  */
     { GPLUSPLUS_BACKWARD_INCLUDE_DIR, "G++", 1, 1, 0, 0 },
 #endif
+#ifdef GCC_INCLUDE_DIR
+    /* This is the dir for gcc's private headers.  */
+    { GCC_INCLUDE_DIR, "GCC", 0, 0, 0, 0 },
+#endif
 #ifdef LOCAL_INCLUDE_DIR
     /* /usr/local/include comes before the fixincluded header files.  */
     { LOCAL_INCLUDE_DIR, 0, 0, 1, 1, 0 },
 #endif
 #ifdef PREFIX_INCLUDE_DIR
     { PREFIX_INCLUDE_DIR, 0, 0, 1, 0, 0 },
-#endif
-#ifdef GCC_INCLUDE_DIR
-    /* This is the dir for gcc's private headers.  */
-    { GCC_INCLUDE_DIR, "GCC", 0, 0, 0, 0 },
 #endif
 #ifdef FIXED_INCLUDE_DIR
     /* This is the dir for fixincludes.  */
