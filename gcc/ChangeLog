@@ -1,3 +1,7 @@
+2010-07-31  John Tytgat  <John.Tytgat@aaug.net>
+
+	* config/arm/arm.c (arm_function_arg): Remove superfluous test.
+
 2010-07-31  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/spu/spu.h (ASM_OUTPUT_SOURCE_FILENAME): Remove macro.
