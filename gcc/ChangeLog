@@ -52,11 +52,6 @@
 
 	* config/mmix/mmix.c: Include basic-block.h.
 
-2010-07-30  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
-
-	PR c++/45112
-	* cp/decl.c (duplicate_decls): Merge DECL_USER_ALIGN and DECL_PACKED.
-
 2010-07-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/45055
