@@ -1,3 +1,7 @@
+2010-07-31  Release Manager
+
+	* GCC 4.5.1 released.
+
 2010-06-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* scripts/check_jni_methods.sh.in: Don't use diff -U.
