@@ -1,3 +1,7 @@
+2010-07-31  Release Manager
+
+	* GCC 4.5.1 released.
+
 2010-07-21  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/44929
