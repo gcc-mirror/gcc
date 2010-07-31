@@ -1414,13 +1414,6 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
   else
     wmult_code = WIDEN_MULT_PLUS_EXPR;
 
-  /* Verify that the machine can perform a widening multiply
-     accumulate in this mode/signedness combination, otherwise
-     this transformation is likely to pessimize code.  */
-  this_optab = optab_for_tree_code (wmult_code, type, optab_default);
-  if (optab_handler (this_optab, TYPE_MODE (type)) == CODE_FOR_nothing)
-    return false;
-
   rhs1 = gimple_assign_rhs1 (stmt);
   rhs2 = gimple_assign_rhs2 (stmt);
 
@@ -1447,37 +1440,49 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple stmt,
       if (!is_widening_mult_p (rhs1_stmt, &type1, &mult_rhs1,
 			       &type2, &mult_rhs2))
 	return false;
-      mult_rhs1 = fold_convert (type1, mult_rhs1);
-      mult_rhs2 = fold_convert (type2, mult_rhs2);
       add_rhs = rhs2;
     }
   else if (rhs2_code == MULT_EXPR)
     {
-      if (!is_widening_mult_p (rhs1_stmt, &type1, &mult_rhs1,
+      if (!is_widening_mult_p (rhs2_stmt, &type1, &mult_rhs1,
 			       &type2, &mult_rhs2))
 	return false;
-      mult_rhs1 = fold_convert (type1, mult_rhs1);
-      mult_rhs2 = fold_convert (type2, mult_rhs2);
       add_rhs = rhs1;
     }
   else if (code == PLUS_EXPR && rhs1_code == WIDEN_MULT_EXPR)
     {
       mult_rhs1 = gimple_assign_rhs1 (rhs1_stmt);
       mult_rhs2 = gimple_assign_rhs2 (rhs1_stmt);
+      type1 = TREE_TYPE (mult_rhs1);
+      type2 = TREE_TYPE (mult_rhs2);
       add_rhs = rhs2;
     }
   else if (rhs2_code == WIDEN_MULT_EXPR)
     {
       mult_rhs1 = gimple_assign_rhs1 (rhs2_stmt);
       mult_rhs2 = gimple_assign_rhs2 (rhs2_stmt);
+      type1 = TREE_TYPE (mult_rhs1);
+      type2 = TREE_TYPE (mult_rhs2);
       add_rhs = rhs1;
     }
   else
     return false;
 
+  if (TYPE_UNSIGNED (type1) != TYPE_UNSIGNED (type2))
+    return false;
+
+  /* Verify that the machine can perform a widening multiply
+     accumulate in this mode/signedness combination, otherwise
+     this transformation is likely to pessimize code.  */
+  this_optab = optab_for_tree_code (wmult_code, type1, optab_default);
+  if (optab_handler (this_optab, TYPE_MODE (type)) == CODE_FOR_nothing)
+    return false;
+
   /* ??? May need some type verification here?  */
 
-  gimple_assign_set_rhs_with_ops_1 (gsi, wmult_code, mult_rhs1, mult_rhs2,
+  gimple_assign_set_rhs_with_ops_1 (gsi, wmult_code,
+				    fold_convert (type1, mult_rhs1),
+				    fold_convert (type2, mult_rhs2),
 				    add_rhs);
   update_stmt (gsi_stmt (*gsi));
   return true;
