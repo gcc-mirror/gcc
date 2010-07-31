@@ -1,5 +1,10 @@
 2010-07-31  Richard Guenther  <rguenther@suse.de>
 
+	* ipa-prop.c (ipa_modify_formal_parameters): Use
+	build_distinct_type_copy.
+
+2010-07-31  Richard Guenther  <rguenther@suse.de>
+
 	* DEV-PHASE: Set back to prerelease.
 	* BASE-VER: Bump to 4.5.2.
 
