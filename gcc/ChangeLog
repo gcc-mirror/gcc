@@ -1,3 +1,16 @@
+2010-07-30  DJ Delorie  <dj@redhat.com>
+
+	* config/rx/predicates.md (rx_constshift_operand): New.
+	* config/rx/rx.md (zs_cond): New.
+	(cbranchsi4): Remove mode.
+	(*cbranchsi4_<code>): Likewise.
+	(*tstbranchsi4_<code>): New.
+	(*tstbranchsi4r_<code>): New.
+	(*tstbranchsi4m_eq): New.
+	(*tstbranchsi4m_ne): New.
+	(cbranchsf4): Remove mode.
+	(*cbranchsf4_<code>): Likewise.
+
 2010-07-30  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* rtlanal.c (simplify_subreg_regno): Don't treat

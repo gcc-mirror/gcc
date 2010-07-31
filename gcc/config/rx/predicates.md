@@ -45,6 +45,13 @@
   }
 )
 
+(define_predicate "rx_constshift_operand"
+  (match_code "const_int")
+  {
+    return IN_RANGE (INTVAL (op), 0, 31);
+  }
+)
+
 ;; Check that the operand is suitable as the source operand
 ;; for a logic or arithmeitc instruction.  Registers, integers
 ;; and a restricted subset of memory addresses are allowed.
