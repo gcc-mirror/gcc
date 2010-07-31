@@ -879,6 +879,7 @@ blank_line:
   return ST_NONE;
 }
 
+extern gfc_symbol *changed_syms;
 
 /* Return the next non-ST_NONE statement to the caller.  We also worry
    about including files and the ends of include files at this stage.  */
@@ -888,6 +889,9 @@ next_statement (void)
 {
   gfc_statement st;
   locus old_locus;
+
+  /* We start with a clean state.  */
+  gcc_assert (changed_syms == NULL);
 
   gfc_new_block = NULL;
 
