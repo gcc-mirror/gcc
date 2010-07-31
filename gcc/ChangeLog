@@ -1,3 +1,8 @@
+2010-07-31  Kai Tietz  <kai.tietz@onevision.com>
+
+	* cppdefault.c (cpp_include_defaults): Move GCC_INCLUDE_DIR before
+	LOCAL_INCLUDE_DIR.
+
 2010-07-31  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* tree-ssa-math-opts.c (convert_plusminus_to_widen): Fix type
