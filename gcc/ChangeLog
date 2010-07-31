@@ -1,3 +1,7 @@
+2010-07-31  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/spu/spu.h (ASM_OUTPUT_SOURCE_FILENAME): Remove macro.
+
 2010-07-30  DJ Delorie  <dj@redhat.com>
 
 	* config/rx/predicates.md (rx_constshift_operand): New.
