@@ -1,3 +1,11 @@
+2010-07-31  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/42051
+	PR fortran/44064
+	* symbol.c (changed_syms): Made non-static.
+	* parse.c (changed_syms): Declare new external. 
+	(next_statement): Assert changed_syms is NULL at the beginning.
+
 2010-07-30  Janus Weil  <janus@gcc.gnu.org>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

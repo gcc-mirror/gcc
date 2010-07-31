@@ -98,7 +98,7 @@ gfc_namespace *gfc_global_ns_list;
 
 gfc_gsymbol *gfc_gsym_root = NULL;
 
-static gfc_symbol *changed_syms = NULL;
+gfc_symbol *changed_syms = NULL;
 
 gfc_dt_list *gfc_derived_types;
 
