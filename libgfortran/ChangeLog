@@ -1,3 +1,7 @@
+2010-07-31  David Edelsohn  <edelsohn@gnu.org>
+
+	* io/inquire.c: Include io.h before string.h.
+
 2010-07-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/44931
