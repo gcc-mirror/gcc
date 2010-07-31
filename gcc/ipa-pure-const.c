@@ -416,6 +416,13 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
       print_gimple_stmt (dump_file, stmt, 0, 0);
     }
 
+  if (gimple_has_volatile_ops (stmt))
+    {
+      local->pure_const_state = IPA_NEITHER;
+      if (dump_file)
+	fprintf (dump_file, "    Volatile stmt is not const/pure\n");
+    }
+
   /* Look for loads and stores.  */
   walk_stmt_load_store_ops (stmt, local, check_load, check_store);
 

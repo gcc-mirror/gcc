@@ -1,5 +1,10 @@
 2010-07-31  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/45052
+	* ipa-pure-const.c (check_stmt): Check volatileness.
+  
+2010-07-31  Richard Guenther  <rguenther@suse.de>
+
 	* ipa-prop.c (ipa_modify_formal_parameters): Use
 	build_distinct_type_copy.
 
