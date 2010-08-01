@@ -1,3 +1,10 @@
+2010-08-01  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/mmix/mmix.h (ASM_OUTPUT_SOURCE_FILENAME): Remove macro.
+	* config/mmix/mmix-protos.h (mmix_asm_output_source_filename): Remove.
+	* config/mmix/mmix.c (mmix_asm_output_source_filename): Make static.
+	(TARGET_ASM_OUTPUT_SOURCE_FILENAME): Define.
+
 2010-07-31  Kai Tietz  <kai.tietz@onevision.com>
 
 	* cppdefault.c (cpp_include_defaults): Move GCC_INCLUDE_DIR before
