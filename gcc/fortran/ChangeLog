@@ -1,3 +1,11 @@
+2010-08-01  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44912
+	* class.c (gfc_build_class_symbol): Make '$vptr' component private.
+	(gfc_find_derived_vtab): Make vtabs and vtypes public.
+	* module.c (read_module): When reading module files, always import
+	vtab and vtype symbols.
+
 2010-07-31  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/42051
