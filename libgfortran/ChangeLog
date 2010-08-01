@@ -1,3 +1,9 @@
+2010-08-01  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        * io/unix.c (file_exists): Use access(2) instead of stat(2) to
+        test file existence.
+	(fallback_access): Move up in file, implement F_OK.
+
 2010-07-31  David Edelsohn  <edelsohn@gnu.org>
 
 	* io/inquire.c: Include io.h before string.h.
@@ -36,7 +42,7 @@
 	* write_float.def (output_float): Use a gfc_char4_t pointer and
 	update memset4 and memcpy calls. (write_infnan): Likewise.
 	(output_float_FMT_G_): Likewise.
-	
+
 2010-07-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/37077
