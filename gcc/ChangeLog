@@ -1,3 +1,11 @@
+2010-08-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/45142
+	* config/i386/sse.md (vec_set<mode>_0): Do not set mode attribute for
+	alternative 2.
+	(vec_set<moode>_0 splitter): Use SSEMODE4S mode iterator to also
+	split V4SI operands.
+
 2010-08-01  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/mmix/mmix.h (ASM_OUTPUT_SOURCE_FILENAME): Remove macro.
@@ -53,8 +61,7 @@
 	* config/alpha/alpha.c (alpha_handle_option): Handle -G.
 	* config/frv/frv.c (frv_handle_option): Handle -G.
 	* config/ia64/ia64.c (ia64_handle_option): Handle -G.
-	* config/lm32/lm32.c (lm32_handle_option, TARGET_HANDLE_OPTION):
-	New.
+	* config/lm32/lm32.c (lm32_handle_option, TARGET_HANDLE_OPTION): New.
 	* config/m32r/m32r.c (m32r_handle_option): Handle -G.
 	* config/mips/mips.c (mips_handle_option): Handle -G.
 	* config/rs6000/rs6000.c (rs6000_handle_option) Handle -G.

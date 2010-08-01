@@ -4040,7 +4040,7 @@
    movss\t{%2, %0|%0, %2}
    #"
   [(set_attr "type" "ssemov")
-   (set_attr "mode" "SF")])
+   (set_attr "mode" "SF,SF,*")])
 
 ;; A subset is vec_setv4sf.
 (define_insn "*vec_setv4sf_avx"
@@ -4108,16 +4108,17 @@
    (set_attr "mode" "V4SF")])
 
 (define_split
-  [(set (match_operand:V4SF 0 "memory_operand" "")
-	(vec_merge:V4SF
-	  (vec_duplicate:V4SF
-	    (match_operand:SF 1 "nonmemory_operand" ""))
+  [(set (match_operand:SSEMODE4S 0 "memory_operand" "")
+	(vec_merge:SSEMODE4S
+	  (vec_duplicate:SSEMODE4S
+	    (match_operand:<ssescalarmode> 1 "nonmemory_operand" ""))
 	  (match_dup 0)
 	  (const_int 1)))]
   "TARGET_SSE && reload_completed"
   [(const_int 0)]
 {
-  emit_move_insn (adjust_address (operands[0], SFmode, 0), operands[1]);
+  emit_move_insn (adjust_address (operands[0], <ssescalarmode>mode, 0),
+		  operands[1]);
   DONE;
 })
 
