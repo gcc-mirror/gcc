@@ -1,3 +1,8 @@
+2010-08-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update_web_docs_libstdcxx_svn: Do not compress generated .html
+	files any more.
+
 2010-06-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* update_web_docs_svn: Also pass -I option pointing to ada/ source
