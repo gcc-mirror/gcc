@@ -178,6 +178,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 	  gcc_assert (vtab);
 	  c->ts.u.derived = vtab->ts.u.derived;
 	}
+      c->attr.access = ACCESS_PRIVATE;
       c->attr.pointer = 1;
     }
 
@@ -343,6 +344,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	  vtab->attr.target = 1;
 	  vtab->attr.save = SAVE_EXPLICIT;
 	  vtab->attr.vtab = 1;
+	  vtab->attr.access = ACCESS_PUBLIC;
 	  vtab->refs++;
 	  gfc_set_sym_referenced (vtab);
 	  sprintf (name, "vtype$%s", derived->name);
@@ -357,6 +359,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	      if (gfc_add_flavor (&vtype->attr, FL_DERIVED,
 				  NULL, &gfc_current_locus) == FAILURE)
 		goto cleanup;
+	      vtype->attr.access = ACCESS_PUBLIC;
 	      vtype->refs++;
 	      gfc_set_sym_referenced (vtype);
 

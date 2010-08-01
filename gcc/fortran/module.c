@@ -4370,6 +4370,11 @@ read_module (void)
 	  if (p == NULL && strcmp (name, module_name) == 0)
 	    p = name;
 
+	  /* Exception: Always import vtabs & vtypes.  */
+	  if (p == NULL && (strcmp (xstrndup (name,5), "vtab$") == 0
+			    || strcmp (xstrndup (name,6), "vtype$") == 0))
+	    p = name;
+
 	  /* Skip symtree nodes not in an ONLY clause, unless there
 	     is an existing symtree loaded from another USE statement.  */
 	  if (p == NULL)
