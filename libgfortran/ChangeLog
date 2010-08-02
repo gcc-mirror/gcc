@@ -1,3 +1,8 @@
+2010-08-02  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/unit.c (update_position): Don't update the position flag for
+	non-seekable files, check for stell() error.
+
 2010-08-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
         * io/unix.c (file_exists): Use access(2) instead of stat(2) to
