@@ -200,29 +200,6 @@
    (set_attr "length" "10,8")]
 )
 
-(define_insn "*thumb2_movdi"
-  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r, r, r, m")
-	(match_operand:DI 1 "di_operand"              "rDa,Db,Dc,mi,r"))]
-  "TARGET_THUMB2
-  && !(TARGET_HARD_FLOAT && (TARGET_MAVERICK || TARGET_VFP))
-  && !TARGET_IWMMXT"
-  "*
-  switch (which_alternative)
-    {
-    case 0:
-    case 1:
-    case 2:
-      return \"#\";
-    default:
-      return output_move_double (operands);
-    }
-  "
-  [(set_attr "length" "8,12,16,8,8")
-   (set_attr "type" "*,*,*,load2,store2")
-   (set_attr "pool_range" "*,*,*,4096,*")
-   (set_attr "neg_pool_range" "*,*,*,0,*")]
-)
-
 ;; We have two alternatives here for memory loads (and similarly for stores)
 ;; to reflect the fact that the permissible constant pool ranges differ
 ;; between ldr instructions taking low regs and ldr instructions taking high
@@ -269,7 +246,7 @@
 ;; Thumb-2 always has load/store halfword instructions, so we can avoid a lot
 ;; of the messiness associated with the ARM patterns.
 (define_insn "*thumb2_movhi_insn"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,m,r")    
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,m,r")
 	(match_operand:HI 1 "general_operand"      "rI,n,r,m"))]
   "TARGET_THUMB2"
   "@
@@ -281,46 +258,6 @@
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,*,*,4096")
    (set_attr "neg_pool_range" "*,*,*,250")]
-)
-
-(define_insn "*thumb2_movsf_soft_insn"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,m")
-	(match_operand:SF 1 "general_operand"  "r,mE,r"))]
-  "TARGET_THUMB2
-   && TARGET_SOFT_FLOAT
-   && (GET_CODE (operands[0]) != MEM
-       || register_operand (operands[1], SFmode))"
-  "@
-   mov%?\\t%0, %1
-   ldr%?\\t%0, %1\\t%@ float
-   str%?\\t%1, %0\\t%@ float"
-  [(set_attr "predicable" "yes")
-   (set_attr "type" "*,load1,store1")
-   (set_attr "pool_range" "*,4096,*")
-   (set_attr "neg_pool_range" "*,0,*")]
-)
-
-(define_insn "*thumb2_movdf_soft_insn"
-  [(set (match_operand:DF 0 "nonimmediate_soft_df_operand" "=r,r,r,r,m")
-	(match_operand:DF 1 "soft_df_operand" "rDa,Db,Dc,mF,r"))]
-  "TARGET_THUMB2 && TARGET_SOFT_FLOAT
-   && (   register_operand (operands[0], DFmode)
-       || register_operand (operands[1], DFmode))"
-  "*
-  switch (which_alternative)
-    {
-    case 0:
-    case 1:
-    case 2:
-      return \"#\";
-    default:
-      return output_move_double (operands);
-    }
-  "
-  [(set_attr "length" "8,12,16,8,8")
-   (set_attr "type" "*,*,*,load2,store2")
-   (set_attr "pool_range" "*,*,*,1020,*")
-   (set_attr "neg_pool_range" "*,*,*,0,*")]
 )
 
 (define_insn "*thumb2_cmpsi_shiftsi"

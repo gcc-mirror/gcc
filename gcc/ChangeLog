@@ -37,6 +37,14 @@
 	(movsi_cbranchsi4 peepholes): Rewrite to generate a sequence of
 	one subtract and one cbranch insn.
 
+	* config/arm/thumb2.md (thumb2_movdi, thumb2_movsf_soft_insn,
+	thumb2_movdf_soft_insn): Delete patterns.
+	* config/arm/arm.md (arm_pool_range, thumb2_pool_range,
+	arm_neg_pool_range, thumb2_neg_pool_range): New attributes.
+	(pool_range, neg_pool_range): Use them to define defaults.
+	(movdi, arm_movsf_soft_insn, arm_movdf_soft_insn): Define them
+	and allow for TARGET_32BIT.
+
 2010-08-02  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/arm.c (COSTS_N_INSNS): Remove definition.

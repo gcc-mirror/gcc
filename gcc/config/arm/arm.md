@@ -172,8 +172,17 @@
 ; reference the pool.
 ; NEG_POOL_RANGE is nonzero for insns that can reference a constant pool entry
 ; before its address.
-(define_attr "pool_range" "" (const_int 0))
-(define_attr "neg_pool_range" "" (const_int 0))
+(define_attr "arm_pool_range" "" (const_int 0))
+(define_attr "thumb2_pool_range" "" (const_int 0))
+(define_attr "arm_neg_pool_range" "" (const_int 0))
+(define_attr "thumb2_neg_pool_range" "" (const_int 0))
+
+(define_attr "pool_range" ""
+  (cond [(eq_attr "is_thumb" "yes") (attr "thumb2_pool_range")]
+	(attr "arm_pool_range")))
+(define_attr "neg_pool_range" ""
+  (cond [(eq_attr "is_thumb" "yes") (attr "thumb2_neg_pool_range")]
+	(attr "arm_neg_pool_range")))
 
 ; An assembler sequence may clobber the condition codes without us knowing.
 ; If such an insn references the pool, then we have no way of knowing how,
@@ -4775,7 +4784,7 @@
 (define_insn "*arm_movdi"
   [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r, r, r, m")
 	(match_operand:DI 1 "di_operand"              "rDa,Db,Dc,mi,r"))]
-  "TARGET_ARM
+  "TARGET_32BIT
    && !(TARGET_HARD_FLOAT && (TARGET_MAVERICK || TARGET_VFP))
    && !TARGET_IWMMXT
    && (   register_operand (operands[0], DImode)
@@ -4793,8 +4802,10 @@
   "
   [(set_attr "length" "8,12,16,8,8")
    (set_attr "type" "*,*,*,load2,store2")
-   (set_attr "pool_range" "*,*,*,1020,*")
-   (set_attr "neg_pool_range" "*,*,*,1008,*")]
+   (set_attr "arm_pool_range" "*,*,*,1020,*")
+   (set_attr "arm_neg_pool_range" "*,*,*,1008,*")
+   (set_attr "thumb2_pool_range" "*,*,*,4096,*")
+   (set_attr "thumb2_neg_pool_range" "*,*,*,0,*")]
 )
 
 (define_split
@@ -5695,7 +5706,7 @@
 
 ;; Pattern to recognize insn generated default case above
 (define_insn "*movhi_insn_arch4"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,m,r")    
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,m,r")
 	(match_operand:HI 1 "general_operand"      "rI,K,r,m"))]
   "TARGET_ARM
    && arm_arch4
@@ -6019,7 +6030,7 @@
 (define_insn "*arm_movsf_soft_insn"
   [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,m")
 	(match_operand:SF 1 "general_operand"  "r,mE,r"))]
-  "TARGET_ARM
+  "TARGET_32BIT
    && TARGET_SOFT_FLOAT
    && (GET_CODE (operands[0]) != MEM
        || register_operand (operands[1], SFmode))"
@@ -6027,11 +6038,11 @@
    mov%?\\t%0, %1
    ldr%?\\t%0, %1\\t%@ float
    str%?\\t%1, %0\\t%@ float"
-  [(set_attr "length" "4,4,4")
-   (set_attr "predicable" "yes")
+  [(set_attr "predicable" "yes")
    (set_attr "type" "*,load1,store1")
    (set_attr "pool_range" "*,4096,*")
-   (set_attr "neg_pool_range" "*,4084,*")]
+   (set_attr "arm_neg_pool_range" "*,4084,*")
+   (set_attr "thumb2_neg_pool_range" "*,0,*")]
 )
 
 ;;; ??? This should have alternatives for constants.
@@ -6123,7 +6134,7 @@
 (define_insn "*movdf_soft_insn"
   [(set (match_operand:DF 0 "nonimmediate_soft_df_operand" "=r,r,r,r,m")
 	(match_operand:DF 1 "soft_df_operand" "rDa,Db,Dc,mF,r"))]
-  "TARGET_ARM && TARGET_SOFT_FLOAT
+  "TARGET_32BIT && TARGET_SOFT_FLOAT
    && (   register_operand (operands[0], DFmode)
        || register_operand (operands[1], DFmode))"
   "*
@@ -6139,8 +6150,9 @@
   "
   [(set_attr "length" "8,12,16,8,8")
    (set_attr "type" "*,*,*,load2,store2")
-   (set_attr "pool_range" "1020")
-   (set_attr "neg_pool_range" "1008")]
+   (set_attr "pool_range" "*,*,*,1020,*")
+   (set_attr "arm_neg_pool_range" "*,*,*,1008,*")
+   (set_attr "thumb2_neg_pool_range" "*,*,*,0,*")]
 )
 
 ;;; ??? This should have alternatives for constants.
