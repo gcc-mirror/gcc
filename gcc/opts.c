@@ -819,6 +819,7 @@ decode_options (unsigned int argc, const char **argv,
 
   /* -O3 optimizations.  */
   opt3 = (optimize >= 3);
+  flag_tree_loop_distribute_patterns = opt3;
   flag_predictive_commoning = opt3;
   flag_inline_functions = opt3;
   flag_unswitch_loops = opt3;

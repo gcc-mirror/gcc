@@ -564,6 +564,7 @@ index_in_loop_nest (int var, VEC (loop_p, heap) *loop_nest)
 }
 
 void stores_from_loop (struct loop *, VEC (gimple, heap) **);
+void stores_zero_from_loop (struct loop *, VEC (gimple, heap) **);
 void remove_similar_memory_refs (VEC (gimple, heap) **);
 bool rdg_defs_used_in_other_loops_p (struct graph *, int);
 bool have_similar_memory_accesses (gimple, gimple);

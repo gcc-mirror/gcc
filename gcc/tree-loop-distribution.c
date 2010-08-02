@@ -1184,18 +1184,36 @@ tree_loop_distribution (void)
     {
       VEC (gimple, heap) *work_list = VEC_alloc (gimple, heap, 3);
 
-      /* With the following working list, we're asking distribute_loop
-	 to separate the stores of the loop: when dependences allow,
-	 it will end on having one store per loop.  */
-      stores_from_loop (loop, &work_list);
+      /* If both flag_tree_loop_distribute_patterns and
+	 flag_tree_loop_distribution are set, then only
+	 distribute_patterns is executed.  */
+      if (flag_tree_loop_distribute_patterns)
+	{
+	  /* With the following working list, we're asking
+	     distribute_loop to separate from the rest of the loop the
+	     stores of the form "A[i] = 0".  */
+	  stores_zero_from_loop (loop, &work_list);
 
-      /* A simple heuristic for cache locality is to not split stores
-	 to the same array.  Without this call, an unrolled loop would
-	 be split into as many loops as unroll factor, each loop
-	 storing in the same array.  */
-      remove_similar_memory_refs (&work_list);
+	  /* Do nothing if there are no patterns to be distributed.  */
+	  if (VEC_length (gimple, work_list) > 0)
+	    nb_generated_loops = distribute_loop (loop, work_list);
+	}
+      else if (flag_tree_loop_distribution)
+	{
+	  /* With the following working list, we're asking
+	     distribute_loop to separate the stores of the loop: when
+	     dependences allow, it will end on having one store per
+	     loop.  */
+	  stores_from_loop (loop, &work_list);
 
-      nb_generated_loops = distribute_loop (loop, work_list);
+	  /* A simple heuristic for cache locality is to not split
+	     stores to the same array.  Without this call, an unrolled
+	     loop would be split into as many loops as unroll factor,
+	     each loop storing in the same array.  */
+	  remove_similar_memory_refs (&work_list);
+
+	  nb_generated_loops = distribute_loop (loop, work_list);
+	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -1217,7 +1235,8 @@ tree_loop_distribution (void)
 static bool
 gate_tree_loop_distribution (void)
 {
-  return flag_tree_loop_distribution != 0;
+  return flag_tree_loop_distribution
+    || flag_tree_loop_distribute_patterns;
 }
 
 struct gimple_opt_pass pass_loop_distribution =

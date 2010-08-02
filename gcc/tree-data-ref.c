@@ -5038,6 +5038,32 @@ stores_from_loop (struct loop *loop, VEC (gimple, heap) **stmts)
   free (bbs);
 }
 
+/* Initialize STMTS with all the statements of LOOP that contain a
+   store to memory of the form "A[i] = 0".  */
+
+void
+stores_zero_from_loop (struct loop *loop, VEC (gimple, heap) **stmts)
+{
+  unsigned int i;
+  basic_block bb;
+  gimple_stmt_iterator si;
+  gimple stmt;
+  tree op;
+  basic_block *bbs = get_loop_body_in_dom_order (loop);
+
+  for (i = 0; i < loop->num_nodes; i++)
+    for (bb = bbs[i], si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+      if ((stmt = gsi_stmt (si))
+	  && gimple_vdef (stmt)
+	  && is_gimple_assign (stmt)
+	  && gimple_assign_rhs_code (stmt) == INTEGER_CST
+	  && (op = gimple_assign_rhs1 (stmt))
+	  && (integer_zerop (op) || real_zerop (op)))
+	VEC_safe_push (gimple, heap, *stmts, gsi_stmt (si));
+
+  free (bbs);
+}
+
 /* For a data reference REF, return the declaration of its base
    address or NULL_TREE if the base is not determined.  */
 
