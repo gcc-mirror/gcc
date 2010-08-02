@@ -1,3 +1,18 @@
+2010-08-02  Mikael Morin  <mikael@gcc.gnu.org>
+	    Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42051
+	PR fortran/44064
+	PR fortran/45151
+	* intrinsic.c (gfc_get_intrinsic_sub_symbol): Commit changed symbol. 
+	* symbol.c (gen_cptr_param, gen_fptr_param, gen_shape_param,
+	gfc_copy_formal_args, gfc_copy_formal_args_intr,
+	gfc_copy_formal_args_ppc, generate_isocbinding_symbol): Ditto.
+	* parse.c (parse_derived_contains, parse_spec, parse_progunit): 
+	Call reject_statement in case of error. 
+	(match_deferred_characteritics): Call gfc_undo_symbols in case match
+	fails.
+
 2010-08-01  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44912
