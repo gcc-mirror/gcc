@@ -1,3 +1,10 @@
+2010-08-02  Uros Bizjak  <ubizjak@gmail.com>
+
+        * lib/gcc-dg.exp (cleanup-coverage-files): Remove options from
+        test name.
+        (cleanup-repo-files): Ditto.
+        (cleanup-saved-temps): Ditto.
+
 2010-07-31  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR c++/45112
@@ -641,7 +648,7 @@
 	PR testsuite/44518
 	* obj-c++.dg/encode-2.mm: XFAIL new test for all targets.
 	* obj-c++.dg/encode-3.mm: Restore XFAIL run for all targets.
-	
+
 2010-06-12  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/44347

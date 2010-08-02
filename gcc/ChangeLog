@@ -2,7 +2,7 @@
 
 	PR tree-optimization/45052
 	* ipa-pure-const.c (check_stmt): Check volatileness.
-  
+
 2010-07-31  Richard Guenther  <rguenther@suse.de>
 
 	* ipa-prop.c (ipa_modify_formal_parameters): Use
@@ -301,7 +301,7 @@
 	if old_decl was DECL_ONE_ONLY.
 
 	2010-06-21  Jakub Jelinek  <jakub@redhat.com>
- 
+
 	PR target/44575
 	* config/i386/i386.c (ix86_gimplify_va_arg): When copying
 	va_arg from a set of register save slots into a temporary,
