@@ -3,6 +3,40 @@
 	* postreload.c (reload_cse_simplify_operands): Take attribute enabled
 	into account.
 
+	* final.c (final_scan_insn): Call CC_STATUS_INIT unconditionally.
+	* config/arm/arm.c (thumb1_code): New variable.
+	(arm_override_options): Set it.
+	(thumb1_final_prescan_insn): Keep track of condition code status.
+	(arm_adjust_cost): For Thumb, try to keep cc-setting insns next to
+	jumps that depend on them.
+	* config/arm/arm.h (thumb1_code): Declare variable.
+	(struct machine_function): Guard with #ifndef GENERATOR_FILE.  Add
+	members thumb1_cc_insn, thumb1_cc_op0, thumb1_cc_op1 and
+	thumb1_cc_mode.
+	(CC_STATUS_INIT): New macro.
+	* config/arm/constraints.md (Pd): New constraint.
+	* config/arm/predicates.md (noov_comparison_operator): New predicate.
+	* config/arm/arm.md (is_thumb1): New define_attr.
+	(conds): Set default to "clob" when generating Thumb1 code.
+	(thumb1_bicsi3): Renamed from bicsi3.  All uses changed.  Condition
+	code are set.  Use two-operand assembly syntax.
+	(thumb1_subsi3_insn): Condition codes are set.  Now a properly named
+	pattern.
+	(thumb1_andsi3_insn, thumb1_iorsi3_insn, thumb1_xorsi3_insn): Condition
+	codes are set.  Use two-operand assembly syntax.
+	(zero_extendhisi splitter): Remove constraints.
+	(thumb1_movsi_insn, thumb1_movhi_insn, thumb1_movqi_insn, thumb1_movhf,
+	thumb1_movsf_insn): Set conds attribute as appropriate.
+	(cbranchsi4_insn): Use condition code status from struct
+	machine_function to determine whether the comparison can be eliminated.
+	Discourage the alternative using high registers.
+	(movsi_cbranchsi4, andsi3_cbranch, orrsi3_cbranch_scratch,
+	orrsi3_cbranch, xorsi3_cbranch_scratch, xorsi3_cbranch,
+	bicsi3_cbranch_scratch, bicsi3_cbranch, subsi3_cbranch_scratch,
+	subsi3_cbranch): Delete.
+	(movsi_cbranchsi4 peepholes): Rewrite to generate a sequence of
+	one subtract and one cbranch insn.
+
 2010-08-02  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/arm.c (COSTS_N_INSNS): Remove definition.

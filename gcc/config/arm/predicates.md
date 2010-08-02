@@ -235,6 +235,9 @@
 (define_special_predicate "lt_ge_comparison_operator"
   (match_code "lt,ge"))
 
+(define_special_predicate "noov_comparison_operator"
+  (match_code "lt,ge,eq,ne"))
+
 (define_special_predicate "minmax_operator"
   (and (match_code "smin,smax,umin,umax")
        (match_test "mode == GET_MODE (op)")))

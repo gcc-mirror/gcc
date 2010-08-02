@@ -99,8 +99,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "sdbout.h"
 #endif
 
-/* If we aren't using cc0, CC_STATUS_INIT shouldn't exist.  So define a
-   null default for it to save conditionalization later.  */
+/* Most ports that aren't using cc0 don't need to define CC_STATUS_INIT.
+   So define a null default for it to save conditionalization later.  */
 #ifndef CC_STATUS_INIT
 #define CC_STATUS_INIT
 #endif
@@ -2039,9 +2039,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 #endif
 	    }
 	}
-#ifdef HAVE_cc0
       CC_STATUS_INIT;
-#endif
 
       if (!DECL_IGNORED_P (current_function_decl) && LABEL_NAME (insn))
 	debug_hooks->label (insn);

@@ -412,8 +412,11 @@ extern int arm_arch7em;
 /* Nonzero if this chip can benefit from load scheduling.  */
 extern int arm_ld_sched;
 
-/* Nonzero if generating thumb code.  */
+/* Nonzero if generating Thumb code, either Thumb-1 or Thumb-2.  */
 extern int thumb_code;
+
+/* Nonzero if generating Thumb-1 code.  */
+extern int thumb1_code;
 
 /* Nonzero if this chip is a StrongARM.  */
 extern int arm_tune_strongarm;
@@ -1593,6 +1596,7 @@ typedef struct GTY(()) arm_stack_offsets
 }
 arm_stack_offsets;
 
+#ifndef GENERATOR_FILE
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */
 typedef struct GTY(()) machine_function
@@ -1623,8 +1627,16 @@ typedef struct GTY(()) machine_function
   /* Set to 1 when a return insn is output, this means that the epilogue
      is not needed.  */
   int return_used_this_function;
+  /* When outputting Thumb-1 code, record the last insn that provides
+     information about condition codes, and the comparison operands.  */
+  rtx thumb1_cc_insn;
+  rtx thumb1_cc_op0;
+  rtx thumb1_cc_op1;
+  /* Also record the CC mode that is supported.  */
+  enum machine_mode thumb1_cc_mode;
 }
 machine_function;
+#endif
 
 /* As in the machine_function, a global set of call-via labels, for code 
    that is in text_section.  */
@@ -2259,6 +2271,9 @@ extern int making_const_table;
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)
 
+#define CC_STATUS_INIT \
+  do { cfun->machine->thumb1_cc_insn = NULL_RTX; } while (0)
+
 #undef  ASM_APP_OFF
 #define ASM_APP_OFF (TARGET_THUMB1 ? "\t.code\t16\n" : \
 		     TARGET_THUMB2 ? "\t.thumb\n" : "")
