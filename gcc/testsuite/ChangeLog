@@ -1,16 +1,15 @@
 2010-08-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/45159
+
+	* gfortran.dg/dependency_29.f90:  New test.
+
+2010-08-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/36854
-	* dependency.h:  Add prototype for gfc_are_identical_variables.
-	* frontend-passes.c:  Include depencency.h.
-	(optimimize_equality):  Use gfc_are_identical_variables.
-	* dependency.c (identical_array_ref): New function.
-	(gfc_are_identical_variables):  New function.
-	(gfc_deb_compare_expr):  Use gfc_are_identical_variables.
-	* dependency.c (gfc_check_section_vs_section).  Rename gfc_
-	prefix from statc function.
-	(check_section_vs_section): Change arguments to gfc_array_ref,
-	adjust function body accordingly.
+	* gfortran.dg/character_comparison_2.f90:  New test.
+	* gfortran.dg/character_comparison_3.f90:  New test.
+	* gfortran.dg/dependency_28.f90:  New test.
 
 2010-08-02  Bernd Schmidt  <bernds@codesourcery.com>
 

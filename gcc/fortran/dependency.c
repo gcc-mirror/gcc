@@ -1716,8 +1716,8 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse)
 
 		  /* If no intention of reversing or reversing is explicitly
 		     inhibited, convert backward dependence to overlap.  */
-		  if ((reverse == NULL && this_dep == GFC_DEP_BACKWARD)
-			|| (reverse && reverse[n] == GFC_CANNOT_REVERSE))
+		  if (this_dep == GFC_DEP_BACKWARD
+		      && (reverse == NULL || reverse[n] == GFC_CANNOT_REVERSE))
 		    this_dep = GFC_DEP_OVERLAP;
 		}
 
