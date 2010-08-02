@@ -6293,9 +6293,6 @@ arm_cannot_force_const_mem (rtx x)
 #define REG_OR_SUBREG_RTX(X)			\
    (GET_CODE (X) == REG ? (X) : SUBREG_REG (X))
 
-#ifndef COSTS_N_INSNS
-#define COSTS_N_INSNS(N) ((N) * 4 - 2)
-#endif
 static inline int
 thumb1_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
 {
