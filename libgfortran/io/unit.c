@@ -714,12 +714,19 @@ close_units (void)
 void
 update_position (gfc_unit *u)
 {
-  if (stell (u->s) == 0)
-    u->flags.position = POSITION_REWIND;
-  else if (file_length (u->s) == stell (u->s))
-    u->flags.position = POSITION_APPEND;
-  else
-    u->flags.position = POSITION_ASIS;
+  /* If unit is not seekable, this makes no sense (and the standard is
+     silent on this matter), and thus we don't change the position for
+     a non-seekable file.  */
+  if (is_seekable (u->s))
+    {
+      gfc_offset cur = stell (u->s);
+      if (cur == 0)
+	u->flags.position = POSITION_REWIND;
+      else if (cur != -1 && (file_length (u->s) == cur))
+	u->flags.position = POSITION_APPEND;
+      else
+	u->flags.position = POSITION_ASIS;
+    }
 }
 
 
