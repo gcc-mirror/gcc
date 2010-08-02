@@ -1,3 +1,9 @@
+2010-08-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/41089
+	* config/alpha/alpha.c (alpha_build_builtin_va_list): Mark __offset
+	as volatile.
+
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* common.opt (ftree-loop-distribute-patterns): New.
