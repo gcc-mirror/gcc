@@ -85,6 +85,9 @@
 	* config/arm/ldmstm.md: New file.
 	* config/arm/arm-ldmstm.ml: New file.
 
+	* config/arm/arm.c (arm_rtx_costs_1): Remove second clause from the
+	if statement which adds extra costs to frame-related expressions.
+
 2010-08-02  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/arm.c (COSTS_N_INSNS): Remove definition.

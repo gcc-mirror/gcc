@@ -6646,12 +6646,10 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	 since then they might not be moved outside of loops.  As a compromise
 	 we allow integration with ops that have a constant as their second
 	 operand.  */
-      if ((REG_OR_SUBREG_REG (XEXP (x, 0))
-	   && ARM_FRAME_RTX (REG_OR_SUBREG_RTX (XEXP (x, 0)))
-	   && GET_CODE (XEXP (x, 1)) != CONST_INT)
-	  || (REG_OR_SUBREG_REG (XEXP (x, 0))
-	      && ARM_FRAME_RTX (REG_OR_SUBREG_RTX (XEXP (x, 0)))))
-	*total = 4;
+      if (REG_OR_SUBREG_REG (XEXP (x, 0))
+	  && ARM_FRAME_RTX (REG_OR_SUBREG_RTX (XEXP (x, 0)))
+	  && GET_CODE (XEXP (x, 1)) != CONST_INT)
+	*total = COSTS_N_INSNS (1);
 
       if (mode == DImode)
 	{
