@@ -687,6 +687,9 @@ int arm_tune_cortex_a9 = 0;
 /* Nonzero if generating Thumb instructions.  */
 int thumb_code = 0;
 
+/* Nonzero if generating Thumb-1 instructions.  */
+int thumb1_code = 0;
+
 /* Nonzero if we should define __THUMB_INTERWORK__ in the
    preprocessor.
    XXX This is a bit of a hack, it's intended to help work around
@@ -718,6 +721,7 @@ enum arm_pcs arm_pcs_default;
 int arm_ccfsm_state;
 /* arm_current_cc is also used for Thumb-2 cond_exec blocks.  */
 enum arm_cond_code arm_current_cc;
+
 rtx arm_target_insn;
 int arm_target_label;
 /* The number of conditionally executed insns, including the current insn.  */
@@ -1572,7 +1576,8 @@ arm_override_options (void)
 
   arm_ld_sched = (tune_flags & FL_LDSCHED) != 0;
   arm_tune_strongarm = (tune_flags & FL_STRONG) != 0;
-  thumb_code = (TARGET_ARM == 0);
+  thumb_code = TARGET_ARM == 0;
+  thumb1_code = TARGET_THUMB1 != 0;
   arm_tune_wbuf = (tune_flags & FL_WBUF) != 0;
   arm_tune_xscale = (tune_flags & FL_XSCALE) != 0;
   arm_arch_iwmmxt = (insn_flags & FL_IWMMXT) != 0;
@@ -7682,11 +7687,25 @@ arm_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
 {
   return TARGET_32BIT ? arm_arm_address_cost (x) : arm_thumb_address_cost (x);
 }
-
+/* This function implements the target macro TARGET_SCHED_ADJUST_COST.
+   It corrects the value of COST based on the relationship between
+   INSN and DEP through the dependence LINK.  It returns the new
+   value.  */
+  
 static int
 arm_adjust_cost (rtx insn, rtx link, rtx dep, int cost)
 {
   rtx i_pat, d_pat;
+
+  /* When generating Thumb-1 code, we want to place flag-setting operations
+     close to a conditional branch which depends on them, so that we can
+     omit the comparison.  */
+  if (TARGET_THUMB1
+      && REG_NOTE_KIND (link) == 0
+      && recog_memoized (insn) == CODE_FOR_cbranchsi4_insn
+      && recog_memoized (dep) >= 0
+      && get_attr_conds (dep) == CONDS_SET)
+    return 0;
 
   /* Some true dependencies can have a higher cost depending
      on precisely how certain input operands are used.  */
@@ -19474,14 +19493,45 @@ thumb_exit (FILE *f, int reg_containing_return_addr)
   /* Return to caller.  */
   asm_fprintf (f, "\tbx\t%r\n", reg_containing_return_addr);
 }
-
 
+/* Scan INSN just before assembler is output for it.
+   For Thumb-1, we track the status of the condition codes; this
+   information is used in the cbranchsi4_insn pattern.  */
 void
 thumb1_final_prescan_insn (rtx insn)
 {
   if (flag_print_asm_name)
     asm_fprintf (asm_out_file, "%@ 0x%04x\n",
 		 INSN_ADDRESSES (INSN_UID (insn)));
+  /* Don't overwrite the previous setter when we get to a cbranch.  */
+  if (INSN_CODE (insn) != CODE_FOR_cbranchsi4_insn)
+    {
+      enum attr_conds conds;
+
+      if (cfun->machine->thumb1_cc_insn)
+	{
+	  if (modified_in_p (cfun->machine->thumb1_cc_op0, insn)
+	      || modified_in_p (cfun->machine->thumb1_cc_op1, insn))
+	    CC_STATUS_INIT;
+	}
+      conds = get_attr_conds (insn);
+      if (conds == CONDS_SET)
+	{
+	  rtx set = single_set (insn);
+	  cfun->machine->thumb1_cc_insn = insn;
+	  cfun->machine->thumb1_cc_op0 = SET_DEST (set);
+	  cfun->machine->thumb1_cc_op1 = const0_rtx;
+	  cfun->machine->thumb1_cc_mode = CC_NOOVmode;
+	  if (INSN_CODE (insn) == CODE_FOR_thumb1_subsi3_insn)
+	    {
+	      rtx src1 = XEXP (SET_SRC (set), 1);
+	      if (src1 == const0_rtx)
+		cfun->machine->thumb1_cc_mode = CCmode;
+	    }
+	}
+      else if (conds != CONDS_NOCOND)
+	cfun->machine->thumb1_cc_insn = NULL_RTX;
+    }
 }
 
 int
