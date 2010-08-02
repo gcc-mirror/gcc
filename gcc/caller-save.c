@@ -763,6 +763,7 @@ save_call_clobbered_regs (void)
 	  if (n_regs_saved)
 	    {
 	      int regno;
+	      HARD_REG_SET this_insn_sets;
 
 	      if (code == JUMP_INSN)
 		/* Restore all registers if this is a JUMP_INSN.  */
@@ -777,7 +778,17 @@ save_call_clobbered_regs (void)
 
 	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 		if (TEST_HARD_REG_BIT (referenced_regs, regno))
-		  regno += insert_restore (chain, 1, regno, MOVE_MAX_WORDS, save_mode);
+		  regno += insert_restore (chain, 1, regno, MOVE_MAX_WORDS,
+					   save_mode);
+	      /* If a saved register is set after the call, this means we no
+		 longer should restore it.  This can happen when parts of a
+		 multi-word pseudo do not conflict with other pseudos, so
+		 IRA may allocate the same hard register for both.  One may
+		 be live across the call, while the other is set
+		 afterwards.  */
+	      CLEAR_HARD_REG_SET (this_insn_sets);
+	      note_stores (PATTERN (insn), mark_set_regs, &this_insn_sets);
+	      AND_COMPL_HARD_REG_SET (hard_regs_saved, this_insn_sets);
 	    }
 
 	  if (code == CALL_INSN
