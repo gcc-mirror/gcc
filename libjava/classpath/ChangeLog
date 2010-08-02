@@ -1,3 +1,23 @@
+2010-07-30  Andrew Haley  <aph@redhat.com>
+
+	* javax/print/attribute/standard/JobStateReasons.java (add): Fix
+	infinite recursion with call to super.
+
+2010-04-27  Andrew Haley  <aph@redhat.com>
+
+	* java/util/concurrent/CopyOnWriteArrayList.java: Fix for empty
+	list.
+
+2010-04-27  Andrew Haley  <aph@redhat.com>
+
+	* gnu/javax/print/ipp/IppResponse.java (parseAttributes): Handle
+	IppValueTag.UNKNOWN.  
+	* gnu/javax/print/ipp/IppRequest.java (writeOperationAttributes):
+	Handle RequestedAttributes.
+	* gnu/javax/print/ipp/IppPrintService.java (processResponse): Add
+	DocFlavor.SERVICE_FORMATTED.PAGEABLE and
+	DocFlavor.SERVICE_FORMATTED.PRINTABLE.
+
 2010-06-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* scripts/check_jni_methods.sh.in: Don't use diff -U.
