@@ -1333,6 +1333,10 @@ ftree-loop-distribution
 Common Report Var(flag_tree_loop_distribution) Optimization
 Enable loop distribution on trees
 
+ftree-loop-distribute-patterns
+Common Report Var(flag_tree_loop_distribute_patterns) Optimization
+Enable loop distribution for patterns transformed into a library call
+
 ftree-loop-im
 Common Report Var(flag_tree_loop_im) Init(1) Optimization
 Enable loop invariant motion on trees

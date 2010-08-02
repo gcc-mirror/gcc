@@ -1,3 +1,15 @@
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* common.opt (ftree-loop-distribute-patterns): New.
+	* invoke.texi (-ftree-loop-distribute-patterns): Documented.
+	* opts.c (decode_options): Enable flag_tree_loop_distribute_patterns
+	at -O3.
+	* tree-data-ref.c (stores_zero_from_loop): New.
+	* tree-data-ref.h (stores_zero_from_loop): Declared.
+	* tree-loop-distribution.c (tree_loop_distribution): Call
+	stores_zero_from_loop.
+	(tree_loop_distribution): Check flag_tree_loop_distribute_patterns.
+
 2010-08-02  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* postreload.c (reload_cse_simplify_operands): Take attribute enabled
