@@ -1096,6 +1096,9 @@ extern int arm_structure_size_boundary;
   ((MODE) == TImode || (MODE) == EImode || (MODE) == OImode \
    || (MODE) == CImode || (MODE) == XImode)
 
+/* The register numbers in sequence, for passing to arm_gen_load_multiple.  */
+extern int arm_regs_in_sequence[];
+
 /* The order in which register should be allocated.  It is good to use ip
    since no saving is required (though calls clobber it) and it never contains
    function parameters.  It is quite good to use lr since other calls may

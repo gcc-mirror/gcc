@@ -98,14 +98,11 @@ extern int symbol_mentioned_p (rtx);
 extern int label_mentioned_p (rtx);
 extern RTX_CODE minmax_code (rtx);
 extern int adjacent_mem_locations (rtx, rtx);
-extern int load_multiple_sequence (rtx *, int, int *, int *, HOST_WIDE_INT *);
-extern const char *emit_ldm_seq (rtx *, int);
-extern int store_multiple_sequence (rtx *, int, int *, int *, HOST_WIDE_INT *);
-extern const char * emit_stm_seq (rtx *, int);
-extern rtx arm_gen_load_multiple (int, int, rtx, int, int,
-				  rtx, HOST_WIDE_INT *);
-extern rtx arm_gen_store_multiple (int, int, rtx, int, int,
-				   rtx, HOST_WIDE_INT *);
+extern bool gen_ldm_seq (rtx *, int, bool);
+extern bool gen_stm_seq (rtx *, int);
+extern bool gen_const_stm_seq (rtx *, int);
+extern rtx arm_gen_load_multiple (int *, int, rtx, int, rtx, HOST_WIDE_INT *);
+extern rtx arm_gen_store_multiple (int *, int, rtx, int, rtx, HOST_WIDE_INT *);
 extern int arm_gen_movmemqi (rtx *);
 extern enum machine_mode arm_select_cc_mode (RTX_CODE, rtx, rtx);
 extern enum machine_mode arm_select_dominance_cc_mode (rtx, rtx,

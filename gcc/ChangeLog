@@ -45,6 +45,46 @@
 	(movdi, arm_movsf_soft_insn, arm_movdf_soft_insn): Define them
 	and allow for TARGET_32BIT.
 
+	PR target/40457
+	* config/arm/arm.h (arm_regs_in_sequence): Declare.
+	* config/arm/arm-protos.h (emit_ldm_seq, emit_stm_seq,
+	load_multiple_sequence, store_multiple_sequence): Delete
+	declarations.
+	(arm_gen_load_multiple, arm_gen_store_multiple): Adjust
+	declarations.
+	* config/arm/ldmstm.md: New file.
+	* config/arm/arm.c (arm_regs_in_sequence): New array.
+	(load_multiple_sequence): Now static.  New args SAVED_ORDER,
+	CHECK_REGS.  All callers changed.
+	If SAVED_ORDER is nonnull, copy the computed order into it.
+	If CHECK_REGS is false, don't sort REGS.  Handle Thumb mode.
+	(store_multiple_sequence): Now static.  New args NOPS_TOTAL,
+	SAVED_ORDER, REG_RTXS and CHECK_REGS.  All callers changed.
+	If SAVED_ORDER is nonnull, copy the computed order into it.
+	If CHECK_REGS is false, don't sort REGS.  Set up REG_RTXS just
+	like REGS.  Handle Thumb mode.
+	(arm_gen_load_multiple_1): New function, broken out of
+	arm_gen_load_multiple.
+	(arm_gen_store_multiple_1): New function, broken out of
+	arm_gen_store_multiple.
+	(arm_gen_multiple_op): New function, with code from
+	arm_gen_load_multiple and arm_gen_store_multiple moved here.
+	(arm_gen_load_multiple, arm_gen_store_multiple): Now just
+	wrappers around arm_gen_multiple_op.  Remove argument UP, all callers
+	changed.
+	(gen_ldm_seq, gen_stm_seq, gen_const_stm_seq): New functions.
+	* config/arm/predicates.md (commutative_binary_operator): New.
+	(load_multiple_operation, store_multiple_operation): Handle more
+	variants of these patterns with different starting offsets.  Handle
+	Thumb-1.
+	* config/arm/arm.md: Include "ldmstm.md".
+	(ldmsi_postinc4, ldmsi_postinc4_thumb1, ldmsi_postinc3, ldmsi_postinc2,
+	ldmsi4, ldmsi3, ldmsi2, stmsi_postinc4, stmsi_postinc4_thumb1,
+	stmsi_postinc3, stmsi_postinc2, stmsi4, stmsi3, stmsi2 and related
+	peepholes): Delete.
+	* config/arm/ldmstm.md: New file.
+	* config/arm/arm-ldmstm.ml: New file.
+
 2010-08-02  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/arm.c (COSTS_N_INSNS): Remove definition.

@@ -6209,7 +6209,7 @@
 
 ;; load- and store-multiple insns
 ;; The arm can load/store any set of registers, provided that they are in
-;; ascending order; but that is beyond GCC so stick with what it knows.
+;; ascending order, but these expanders assume a contiguous set.
 
 (define_expand "load_multiple"
   [(match_par_dup 3 [(set (match_operand:SI 0 "" "")
@@ -6230,125 +6230,11 @@
     FAIL;
 
   operands[3]
-    = arm_gen_load_multiple (REGNO (operands[0]), INTVAL (operands[2]),
+    = arm_gen_load_multiple (arm_regs_in_sequence + REGNO (operands[0]),
+			     INTVAL (operands[2]),
 			     force_reg (SImode, XEXP (operands[1], 0)),
-			     TRUE, FALSE, operands[1], &offset);
+			     FALSE, operands[1], &offset);
 })
-
-;; Load multiple with write-back
-
-(define_insn "*ldmsi_postinc4"
-  [(match_parallel 0 "load_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "=r")
-	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
-		   (const_int 16)))
-     (set (match_operand:SI 3 "arm_hard_register_operand" "")
-	  (mem:SI (match_dup 2)))
-     (set (match_operand:SI 4 "arm_hard_register_operand" "")
-	  (mem:SI (plus:SI (match_dup 2) (const_int 4))))
-     (set (match_operand:SI 5 "arm_hard_register_operand" "")
-	  (mem:SI (plus:SI (match_dup 2) (const_int 8))))
-     (set (match_operand:SI 6 "arm_hard_register_operand" "")
-	  (mem:SI (plus:SI (match_dup 2) (const_int 12))))])]
-  "TARGET_32BIT && XVECLEN (operands[0], 0) == 5"
-  "ldm%(ia%)\\t%1!, {%3, %4, %5, %6}"
-  [(set_attr "type" "load4")
-   (set_attr "predicable" "yes")]
-)
-
-(define_insn "*ldmsi_postinc4_thumb1"
-  [(match_parallel 0 "load_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "=l")
-	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
-		   (const_int 16)))
-     (set (match_operand:SI 3 "arm_hard_register_operand" "")
-	  (mem:SI (match_dup 2)))
-     (set (match_operand:SI 4 "arm_hard_register_operand" "")
-	  (mem:SI (plus:SI (match_dup 2) (const_int 4))))
-     (set (match_operand:SI 5 "arm_hard_register_operand" "")
-	  (mem:SI (plus:SI (match_dup 2) (const_int 8))))
-     (set (match_operand:SI 6 "arm_hard_register_operand" "")
-	  (mem:SI (plus:SI (match_dup 2) (const_int 12))))])]
-  "TARGET_THUMB1 && XVECLEN (operands[0], 0) == 5"
-  "ldmia\\t%1!, {%3, %4, %5, %6}"
-  [(set_attr "type" "load4")]
-)
-
-(define_insn "*ldmsi_postinc3"
-  [(match_parallel 0 "load_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "=r")
-	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
-		   (const_int 12)))
-     (set (match_operand:SI 3 "arm_hard_register_operand" "")
-	  (mem:SI (match_dup 2)))
-     (set (match_operand:SI 4 "arm_hard_register_operand" "")
-	  (mem:SI (plus:SI (match_dup 2) (const_int 4))))
-     (set (match_operand:SI 5 "arm_hard_register_operand" "")
-	  (mem:SI (plus:SI (match_dup 2) (const_int 8))))])]
-  "TARGET_32BIT && XVECLEN (operands[0], 0) == 4"
-  "ldm%(ia%)\\t%1!, {%3, %4, %5}"
-  [(set_attr "type" "load3")
-   (set_attr "predicable" "yes")]
-)
-
-(define_insn "*ldmsi_postinc2"
-  [(match_parallel 0 "load_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "=r")
-	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
-		   (const_int 8)))
-     (set (match_operand:SI 3 "arm_hard_register_operand" "")
-	  (mem:SI (match_dup 2)))
-     (set (match_operand:SI 4 "arm_hard_register_operand" "")
-	  (mem:SI (plus:SI (match_dup 2) (const_int 4))))])]
-  "TARGET_32BIT && XVECLEN (operands[0], 0) == 3"
-  "ldm%(ia%)\\t%1!, {%3, %4}"
-  [(set_attr "type" "load2")
-   (set_attr "predicable" "yes")]
-)
-
-;; Ordinary load multiple
-
-(define_insn "*ldmsi4"
-  [(match_parallel 0 "load_multiple_operation"
-    [(set (match_operand:SI 2 "arm_hard_register_operand" "")
-	  (mem:SI (match_operand:SI 1 "s_register_operand" "r")))
-     (set (match_operand:SI 3 "arm_hard_register_operand" "")
-	  (mem:SI (plus:SI (match_dup 1) (const_int 4))))
-     (set (match_operand:SI 4 "arm_hard_register_operand" "")
-	  (mem:SI (plus:SI (match_dup 1) (const_int 8))))
-     (set (match_operand:SI 5 "arm_hard_register_operand" "")
-	  (mem:SI (plus:SI (match_dup 1) (const_int 12))))])]
-  "TARGET_32BIT && XVECLEN (operands[0], 0) == 4"
-  "ldm%(ia%)\\t%1, {%2, %3, %4, %5}"
-  [(set_attr "type" "load4")
-   (set_attr "predicable" "yes")]
-)
-
-(define_insn "*ldmsi3"
-  [(match_parallel 0 "load_multiple_operation"
-    [(set (match_operand:SI 2 "arm_hard_register_operand" "")
-	  (mem:SI (match_operand:SI 1 "s_register_operand" "r")))
-     (set (match_operand:SI 3 "arm_hard_register_operand" "")
-	  (mem:SI (plus:SI (match_dup 1) (const_int 4))))
-     (set (match_operand:SI 4 "arm_hard_register_operand" "")
-	  (mem:SI (plus:SI (match_dup 1) (const_int 8))))])]
-  "TARGET_32BIT && XVECLEN (operands[0], 0) == 3"
-  "ldm%(ia%)\\t%1, {%2, %3, %4}"
-  [(set_attr "type" "load3")
-   (set_attr "predicable" "yes")]
-)
-
-(define_insn "*ldmsi2"
-  [(match_parallel 0 "load_multiple_operation"
-    [(set (match_operand:SI 2 "arm_hard_register_operand" "")
-	  (mem:SI (match_operand:SI 1 "s_register_operand" "r")))
-     (set (match_operand:SI 3 "arm_hard_register_operand" "")
-	  (mem:SI (plus:SI (match_dup 1) (const_int 4))))])]
-  "TARGET_32BIT && XVECLEN (operands[0], 0) == 2"
-  "ldm%(ia%)\\t%1, {%2, %3}"
-  [(set_attr "type" "load2")
-   (set_attr "predicable" "yes")]
-)
 
 (define_expand "store_multiple"
   [(match_par_dup 3 [(set (match_operand:SI 0 "" "")
@@ -6369,125 +6255,12 @@
     FAIL;
 
   operands[3]
-    = arm_gen_store_multiple (REGNO (operands[1]), INTVAL (operands[2]),
+    = arm_gen_store_multiple (arm_regs_in_sequence + REGNO (operands[1]),
+			      INTVAL (operands[2]),
 			      force_reg (SImode, XEXP (operands[0], 0)),
-			      TRUE, FALSE, operands[0], &offset);
+			      FALSE, operands[0], &offset);
 })
 
-;; Store multiple with write-back
-
-(define_insn "*stmsi_postinc4"
-  [(match_parallel 0 "store_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "=r")
-	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
-		   (const_int 16)))
-     (set (mem:SI (match_dup 2))
-	  (match_operand:SI 3 "arm_hard_register_operand" ""))
-     (set (mem:SI (plus:SI (match_dup 2) (const_int 4)))
-	  (match_operand:SI 4 "arm_hard_register_operand" ""))
-     (set (mem:SI (plus:SI (match_dup 2) (const_int 8)))
-	  (match_operand:SI 5 "arm_hard_register_operand" ""))
-     (set (mem:SI (plus:SI (match_dup 2) (const_int 12)))
-	  (match_operand:SI 6 "arm_hard_register_operand" ""))])]
-  "TARGET_32BIT && XVECLEN (operands[0], 0) == 5"
-  "stm%(ia%)\\t%1!, {%3, %4, %5, %6}"
-  [(set_attr "predicable" "yes")
-   (set_attr "type" "store4")]
-)
-
-(define_insn "*stmsi_postinc4_thumb1"
-  [(match_parallel 0 "store_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "=l")
-	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
-		   (const_int 16)))
-     (set (mem:SI (match_dup 2))
-	  (match_operand:SI 3 "arm_hard_register_operand" ""))
-     (set (mem:SI (plus:SI (match_dup 2) (const_int 4)))
-	  (match_operand:SI 4 "arm_hard_register_operand" ""))
-     (set (mem:SI (plus:SI (match_dup 2) (const_int 8)))
-	  (match_operand:SI 5 "arm_hard_register_operand" ""))
-     (set (mem:SI (plus:SI (match_dup 2) (const_int 12)))
-	  (match_operand:SI 6 "arm_hard_register_operand" ""))])]
-  "TARGET_THUMB1 && XVECLEN (operands[0], 0) == 5"
-  "stmia\\t%1!, {%3, %4, %5, %6}"
-  [(set_attr "type" "store4")]
-)
-
-(define_insn "*stmsi_postinc3"
-  [(match_parallel 0 "store_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "=r")
-	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
-		   (const_int 12)))
-     (set (mem:SI (match_dup 2))
-	  (match_operand:SI 3 "arm_hard_register_operand" ""))
-     (set (mem:SI (plus:SI (match_dup 2) (const_int 4)))
-	  (match_operand:SI 4 "arm_hard_register_operand" ""))
-     (set (mem:SI (plus:SI (match_dup 2) (const_int 8)))
-	  (match_operand:SI 5 "arm_hard_register_operand" ""))])]
-  "TARGET_32BIT && XVECLEN (operands[0], 0) == 4"
-  "stm%(ia%)\\t%1!, {%3, %4, %5}"
-  [(set_attr "predicable" "yes")
-   (set_attr "type" "store3")]
-)
-
-(define_insn "*stmsi_postinc2"
-  [(match_parallel 0 "store_multiple_operation"
-    [(set (match_operand:SI 1 "s_register_operand" "=r")
-	  (plus:SI (match_operand:SI 2 "s_register_operand" "1")
-		   (const_int 8)))
-     (set (mem:SI (match_dup 2))
-	  (match_operand:SI 3 "arm_hard_register_operand" ""))
-     (set (mem:SI (plus:SI (match_dup 2) (const_int 4)))
-	  (match_operand:SI 4 "arm_hard_register_operand" ""))])]
-  "TARGET_32BIT && XVECLEN (operands[0], 0) == 3"
-  "stm%(ia%)\\t%1!, {%3, %4}"
-  [(set_attr "predicable" "yes")
-   (set_attr "type" "store2")]
-)
-
-;; Ordinary store multiple
-
-(define_insn "*stmsi4"
-  [(match_parallel 0 "store_multiple_operation"
-    [(set (mem:SI (match_operand:SI 1 "s_register_operand" "r"))
-	  (match_operand:SI 2 "arm_hard_register_operand" ""))
-     (set (mem:SI (plus:SI (match_dup 1) (const_int 4)))
-	  (match_operand:SI 3 "arm_hard_register_operand" ""))
-     (set (mem:SI (plus:SI (match_dup 1) (const_int 8)))
-	  (match_operand:SI 4 "arm_hard_register_operand" ""))
-     (set (mem:SI (plus:SI (match_dup 1) (const_int 12)))
-	  (match_operand:SI 5 "arm_hard_register_operand" ""))])]
-  "TARGET_32BIT && XVECLEN (operands[0], 0) == 4"
-  "stm%(ia%)\\t%1, {%2, %3, %4, %5}"
-  [(set_attr "predicable" "yes")
-   (set_attr "type" "store4")]
-)
-
-(define_insn "*stmsi3"
-  [(match_parallel 0 "store_multiple_operation"
-    [(set (mem:SI (match_operand:SI 1 "s_register_operand" "r"))
-	  (match_operand:SI 2 "arm_hard_register_operand" ""))
-     (set (mem:SI (plus:SI (match_dup 1) (const_int 4)))
-	  (match_operand:SI 3 "arm_hard_register_operand" ""))
-     (set (mem:SI (plus:SI (match_dup 1) (const_int 8)))
-	  (match_operand:SI 4 "arm_hard_register_operand" ""))])]
-  "TARGET_32BIT && XVECLEN (operands[0], 0) == 3"
-  "stm%(ia%)\\t%1, {%2, %3, %4}"
-  [(set_attr "predicable" "yes")
-   (set_attr "type" "store3")]
-)
-
-(define_insn "*stmsi2"
-  [(match_parallel 0 "store_multiple_operation"
-    [(set (mem:SI (match_operand:SI 1 "s_register_operand" "r"))
-	  (match_operand:SI 2 "arm_hard_register_operand" ""))
-     (set (mem:SI (plus:SI (match_dup 1) (const_int 4)))
-	  (match_operand:SI 3 "arm_hard_register_operand" ""))])]
-  "TARGET_32BIT && XVECLEN (operands[0], 0) == 2"
-  "stm%(ia%)\\t%1, {%2, %3}"
-  [(set_attr "predicable" "yes")
-   (set_attr "type" "store2")]
-)
 
 ;; Move a block of memory if it is word aligned and MORE than 2 words long.
 ;; We could let this apply for blocks of less than this, but it clobbers so
@@ -8395,8 +8168,8 @@
 	if (REGNO (reg) == R0_REGNUM)
 	  {
 	    /* On thumb we have to use a write-back instruction.  */
-	    emit_insn (arm_gen_store_multiple (R0_REGNUM, 4, addr, TRUE,
-			TARGET_THUMB ? TRUE : FALSE, mem, &offset));
+	    emit_insn (arm_gen_store_multiple (arm_regs_in_sequence, 4, addr,
+ 		       TARGET_THUMB ? TRUE : FALSE, mem, &offset));
 	    size = TARGET_ARM ? 16 : 0;
 	  }
 	else
@@ -8442,8 +8215,8 @@
 	if (REGNO (reg) == R0_REGNUM)
 	  {
 	    /* On thumb we have to use a write-back instruction.  */
-	    emit_insn (arm_gen_load_multiple (R0_REGNUM, 4, addr, TRUE,
-			TARGET_THUMB ? TRUE : FALSE, mem, &offset));
+	    emit_insn (arm_gen_load_multiple (arm_regs_in_sequence, 4, addr,
+ 		       TARGET_THUMB ? TRUE : FALSE, mem, &offset));
 	    size = TARGET_ARM ? 16 : 0;
 	  }
 	else
@@ -10036,87 +9809,6 @@
   ""
 )
 
-; Peepholes to spot possible load- and store-multiples, if the ordering is
-; reversed, check that the memory references aren't volatile.
-
-(define_peephole
-  [(set (match_operand:SI 0 "s_register_operand" "=rk")
-        (match_operand:SI 4 "memory_operand" "m"))
-   (set (match_operand:SI 1 "s_register_operand" "=rk")
-        (match_operand:SI 5 "memory_operand" "m"))
-   (set (match_operand:SI 2 "s_register_operand" "=rk")
-        (match_operand:SI 6 "memory_operand" "m"))
-   (set (match_operand:SI 3 "s_register_operand" "=rk")
-        (match_operand:SI 7 "memory_operand" "m"))]
-  "TARGET_ARM && load_multiple_sequence (operands, 4, NULL, NULL, NULL)"
-  "*
-  return emit_ldm_seq (operands, 4);
-  "
-)
-
-(define_peephole
-  [(set (match_operand:SI 0 "s_register_operand" "=rk")
-        (match_operand:SI 3 "memory_operand" "m"))
-   (set (match_operand:SI 1 "s_register_operand" "=rk")
-        (match_operand:SI 4 "memory_operand" "m"))
-   (set (match_operand:SI 2 "s_register_operand" "=rk")
-        (match_operand:SI 5 "memory_operand" "m"))]
-  "TARGET_ARM && load_multiple_sequence (operands, 3, NULL, NULL, NULL)"
-  "*
-  return emit_ldm_seq (operands, 3);
-  "
-)
-
-(define_peephole
-  [(set (match_operand:SI 0 "s_register_operand" "=rk")
-        (match_operand:SI 2 "memory_operand" "m"))
-   (set (match_operand:SI 1 "s_register_operand" "=rk")
-        (match_operand:SI 3 "memory_operand" "m"))]
-  "TARGET_ARM && load_multiple_sequence (operands, 2, NULL, NULL, NULL)"
-  "*
-  return emit_ldm_seq (operands, 2);
-  "
-)
-
-(define_peephole
-  [(set (match_operand:SI 4 "memory_operand" "=m")
-        (match_operand:SI 0 "s_register_operand" "rk"))
-   (set (match_operand:SI 5 "memory_operand" "=m")
-        (match_operand:SI 1 "s_register_operand" "rk"))
-   (set (match_operand:SI 6 "memory_operand" "=m")
-        (match_operand:SI 2 "s_register_operand" "rk"))
-   (set (match_operand:SI 7 "memory_operand" "=m")
-        (match_operand:SI 3 "s_register_operand" "rk"))]
-  "TARGET_ARM && store_multiple_sequence (operands, 4, NULL, NULL, NULL)"
-  "*
-  return emit_stm_seq (operands, 4);
-  "
-)
-
-(define_peephole
-  [(set (match_operand:SI 3 "memory_operand" "=m")
-        (match_operand:SI 0 "s_register_operand" "rk"))
-   (set (match_operand:SI 4 "memory_operand" "=m")
-        (match_operand:SI 1 "s_register_operand" "rk"))
-   (set (match_operand:SI 5 "memory_operand" "=m")
-        (match_operand:SI 2 "s_register_operand" "rk"))]
-  "TARGET_ARM && store_multiple_sequence (operands, 3, NULL, NULL, NULL)"
-  "*
-  return emit_stm_seq (operands, 3);
-  "
-)
-
-(define_peephole
-  [(set (match_operand:SI 2 "memory_operand" "=m")
-        (match_operand:SI 0 "s_register_operand" "rk"))
-   (set (match_operand:SI 3 "memory_operand" "=m")
-        (match_operand:SI 1 "s_register_operand" "rk"))]
-  "TARGET_ARM && store_multiple_sequence (operands, 2, NULL, NULL, NULL)"
-  "*
-  return emit_stm_seq (operands, 2);
-  "
-)
-
 (define_split
   [(set (match_operand:SI 0 "s_register_operand" "")
 	(and:SI (ge:SI (match_operand:SI 1 "s_register_operand" "")
@@ -10906,6 +10598,8 @@
   "
 )
 
+;; Load the load/store multiple patterns
+(include "ldmstm.md")
 ;; Load the FPA co-processor patterns
 (include "fpa.md")
 ;; Load the Maverick co-processor patterns

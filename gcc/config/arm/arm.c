@@ -739,6 +739,12 @@ static const char * const arm_condition_codes[] =
   "hi", "ls", "ge", "lt", "gt", "le", "al", "nv"
 };
 
+/* The register numbers in sequence, for passing to arm_gen_load_multiple.  */
+int arm_regs_in_sequence[] =
+{
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+};
+
 #define ARM_LSL_NAME (TARGET_UNIFIED_ASM ? "lsl" : "asl")
 #define streq(string1, string2) (strcmp (string1, string2) == 0)
 
@@ -9225,13 +9231,29 @@ compute_offset_order (int nops, HOST_WIDE_INT *unsorted_offsets, int *order,
   return true;
 }
 
-int
-load_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
-			HOST_WIDE_INT *load_offset)
+/* Used to determine in a peephole whether a sequence of load
+   instructions can be changed into a load-multiple instruction.
+   NOPS is the number of separate load instructions we are examining.  The
+   first NOPS entries in OPERANDS are the destination registers, the
+   next NOPS entries are memory operands.  If this function is
+   successful, *BASE is set to the common base register of the memory
+   accesses; *LOAD_OFFSET is set to the first memory location's offset
+   from that base register.
+   REGS is an array filled in with the destination register numbers.
+   SAVED_ORDER (if nonnull), is an array filled in with an order that maps
+   insn numbers to to an ascending order of stores.  If CHECK_REGS is true,
+   the sequence of registers in REGS matches the loads from ascending memory
+   locations, and the function verifies that the register numbers are
+   themselves ascending.  If CHECK_REGS is false, the register numbers
+   are stored in the order they are found in the operands.  */
+static int
+load_multiple_sequence (rtx *operands, int nops, int *regs, int *saved_order,
+			int *base, HOST_WIDE_INT *load_offset, bool check_regs)
 {
   int unsorted_regs[MAX_LDM_STM_OPS];
   HOST_WIDE_INT unsorted_offsets[MAX_LDM_STM_OPS];
   int order[MAX_LDM_STM_OPS];
+  rtx base_reg_rtx = NULL;
   int base_reg = -1;
   int i, ldm_case;
 
@@ -9275,13 +9297,16 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
 		  == CONST_INT)))
 	{
 	  if (i == 0)
-	    base_reg = REGNO (reg);
-	  else
 	    {
-	      if (base_reg != (int) REGNO (reg))
-		/* Not addressed from the same base register.  */
+	      base_reg = REGNO (reg);
+	      base_reg_rtx = reg;
+	      if (TARGET_THUMB1 && base_reg > LAST_LO_REGNUM)
 		return 0;
 	    }
+	  else if (base_reg != (int) REGNO (reg))
+	    /* Not addressed from the same base register.  */
+	    return 0;
+
 	  unsorted_regs[i] = (GET_CODE (operands[i]) == REG
 			      ? REGNO (operands[i])
 			      : REGNO (SUBREG_REG (operands[i])));
@@ -9289,7 +9314,9 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
 	  /* If it isn't an integer register, or if it overwrites the
 	     base register but isn't the last insn in the list, then
 	     we can't do this.  */
-	  if (unsorted_regs[i] < 0 || unsorted_regs[i] > 14
+	  if (unsorted_regs[i] < 0
+	      || (TARGET_THUMB1 && unsorted_regs[i] > LAST_LO_REGNUM)
+	      || unsorted_regs[i] > 14
 	      || (i != nops - 1 && unsorted_regs[i] == base_reg))
 	    return 0;
 
@@ -9307,18 +9334,26 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
      order[0] has been set to the lowest offset in the list.  Sort
      the offsets into order, verifying that they are adjacent, and
      check that the register numbers are ascending.  */
-  if (!compute_offset_order (nops, unsorted_offsets, order, unsorted_regs))
+  if (!compute_offset_order (nops, unsorted_offsets, order,
+			     check_regs ? unsorted_regs : NULL))
     return 0;
+
+  if (saved_order)
+    memcpy (saved_order, order, sizeof order);
 
   if (base)
     {
       *base = base_reg;
 
       for (i = 0; i < nops; i++)
-	regs[i] = unsorted_regs[order[i]];
+	regs[i] = unsorted_regs[check_regs ? order[i] : i];
 
       *load_offset = unsorted_offsets[order[0]];
     }
+
+  if (TARGET_THUMB1
+      && !peep2_reg_dead_p (nops, base_reg_rtx))
+    return 0;
 
   if (unsorted_offsets[order[0]] == 0)
     ldm_case = 1; /* ldmia */
@@ -9326,7 +9361,7 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
     ldm_case = 2; /* ldmib */
   else if (TARGET_ARM && unsorted_offsets[order[nops - 1]] == 0)
     ldm_case = 3; /* ldmda */
-  else if (unsorted_offsets[order[nops - 1]] == -4)
+  else if (TARGET_32BIT && unsorted_offsets[order[nops - 1]] == -4)
     ldm_case = 4; /* ldmdb */
   else if (const_ok_for_arm (unsorted_offsets[order[0]])
 	   || const_ok_for_arm (-unsorted_offsets[order[0]]))
@@ -9342,72 +9377,34 @@ load_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
   return ldm_case;
 }
 
-const char *
-emit_ldm_seq (rtx *operands, int nops)
-{
-  int regs[MAX_LDM_STM_OPS];
-  int base_reg;
-  HOST_WIDE_INT offset;
-  char buf[100];
-  int i;
-
-  switch (load_multiple_sequence (operands, nops, regs, &base_reg, &offset))
-    {
-    case 1:
-      strcpy (buf, "ldm%(ia%)\t");
-      break;
-
-    case 2:
-      strcpy (buf, "ldm%(ib%)\t");
-      break;
-
-    case 3:
-      strcpy (buf, "ldm%(da%)\t");
-      break;
-
-    case 4:
-      strcpy (buf, "ldm%(db%)\t");
-      break;
-
-    case 5:
-      if (offset >= 0)
-	sprintf (buf, "add%%?\t%s%s, %s%s, #%ld", REGISTER_PREFIX,
-		 reg_names[regs[0]], REGISTER_PREFIX, reg_names[base_reg],
-		 (long) offset);
-      else
-	sprintf (buf, "sub%%?\t%s%s, %s%s, #%ld", REGISTER_PREFIX,
-		 reg_names[regs[0]], REGISTER_PREFIX, reg_names[base_reg],
-		 (long) -offset);
-      output_asm_insn (buf, operands);
-      base_reg = regs[0];
-      strcpy (buf, "ldm%(ia%)\t");
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  sprintf (buf + strlen (buf), "%s%s, {%s%s", REGISTER_PREFIX,
-	   reg_names[base_reg], REGISTER_PREFIX, reg_names[regs[0]]);
-
-  for (i = 1; i < nops; i++)
-    sprintf (buf + strlen (buf), ", %s%s", REGISTER_PREFIX,
-	     reg_names[regs[i]]);
-
-  strcat (buf, "}\t%@ phole ldm");
-
-  output_asm_insn (buf, operands);
-  return "";
-}
-
-int
-store_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
-			 HOST_WIDE_INT * load_offset)
+/* Used to determine in a peephole whether a sequence of store instructions can
+   be changed into a store-multiple instruction.
+   NOPS is the number of separate store instructions we are examining.
+   NOPS_TOTAL is the total number of instructions recognized by the peephole
+   pattern.
+   The first NOPS entries in OPERANDS are the source registers, the next
+   NOPS entries are memory operands.  If this function is successful, *BASE is
+   set to the common base register of the memory accesses; *LOAD_OFFSET is set
+   to the first memory location's offset from that base register.  REGS is an
+   array filled in with the source register numbers, REG_RTXS (if nonnull) is
+   likewise filled with the corresponding rtx's.
+   SAVED_ORDER (if nonnull), is an array filled in with an order that maps insn
+   numbers to to an ascending order of stores.
+   If CHECK_REGS is true, the sequence of registers in *REGS matches the stores
+   from ascending memory locations, and the function verifies that the register
+   numbers are themselves ascending.  If CHECK_REGS is false, the register
+   numbers are stored in the order they are found in the operands.  */
+static int
+store_multiple_sequence (rtx *operands, int nops, int nops_total,
+			 int *regs, rtx *reg_rtxs, int *saved_order, int *base,
+			 HOST_WIDE_INT *load_offset, bool check_regs)
 {
   int unsorted_regs[MAX_LDM_STM_OPS];
+  rtx unsorted_reg_rtxs[MAX_LDM_STM_OPS];
   HOST_WIDE_INT unsorted_offsets[MAX_LDM_STM_OPS];
   int order[MAX_LDM_STM_OPS];
   int base_reg = -1;
+  rtx base_reg_rtx = NULL;
   int i, stm_case;
 
   /* Can only handle up to MAX_LDM_STM_OPS insns at present, though could be
@@ -9449,17 +9446,27 @@ store_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
 	      && (GET_CODE (offset = XEXP (XEXP (operands[nops + i], 0), 1))
 		  == CONST_INT)))
 	{
-	  unsorted_regs[i] = (GET_CODE (operands[i]) == REG
-			      ? REGNO (operands[i])
-			      : REGNO (SUBREG_REG (operands[i])));
+	  unsorted_reg_rtxs[i] = (GET_CODE (operands[i]) == REG
+				  ? operands[i] : SUBREG_REG (operands[i]));
+	  unsorted_regs[i] = REGNO (unsorted_reg_rtxs[i]);
+
 	  if (i == 0)
-	    base_reg = REGNO (reg);
+	    {
+	      base_reg = REGNO (reg);
+	      base_reg_rtx = reg;
+	      if (TARGET_THUMB1 && base_reg > LAST_LO_REGNUM)
+		return 0;
+	    }
 	  else if (base_reg != (int) REGNO (reg))
 	    /* Not addressed from the same base register.  */
 	    return 0;
 
 	  /* If it isn't an integer register, then we can't do this.  */
-	  if (unsorted_regs[i] < 0 || unsorted_regs[i] > 14)
+	  if (unsorted_regs[i] < 0
+	      || (TARGET_THUMB1 && unsorted_regs[i] > LAST_LO_REGNUM)
+	      || (TARGET_THUMB2 && unsorted_regs[i] == base_reg)
+	      || (TARGET_THUMB2 && unsorted_regs[i] == SP_REGNUM)
+	      || unsorted_regs[i] > 14)
 	    return 0;
 
 	  unsorted_offsets[i] = INTVAL (offset);
@@ -9476,18 +9483,30 @@ store_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
      order[0] has been set to the lowest offset in the list.  Sort
      the offsets into order, verifying that they are adjacent, and
      check that the register numbers are ascending.  */
-  if (!compute_offset_order (nops, unsorted_offsets, order, unsorted_regs))
+  if (!compute_offset_order (nops, unsorted_offsets, order,
+			     check_regs ? unsorted_regs : NULL))
     return 0;
+
+  if (saved_order)
+    memcpy (saved_order, order, sizeof order);
 
   if (base)
     {
       *base = base_reg;
 
       for (i = 0; i < nops; i++)
-	regs[i] = unsorted_regs[order[i]];
+	{
+	  regs[i] = unsorted_regs[check_regs ? order[i] : i];
+	  if (reg_rtxs)
+	    reg_rtxs[i] = unsorted_reg_rtxs[check_regs ? order[i] : i];
+	}
 
       *load_offset = unsorted_offsets[order[0]];
     }
+
+  if (TARGET_THUMB1
+      && !peep2_reg_dead_p (nops_total, base_reg_rtx))
+    return 0;
 
   if (unsorted_offsets[order[0]] == 0)
     stm_case = 1; /* stmia */
@@ -9495,7 +9514,7 @@ store_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
     stm_case = 2; /* stmib */
   else if (TARGET_ARM && unsorted_offsets[order[nops - 1]] == 0)
     stm_case = 3; /* stmda */
-  else if (unsorted_offsets[order[nops - 1]] == -4)
+  else if (TARGET_32BIT && unsorted_offsets[order[nops - 1]] == -4)
     stm_case = 4; /* stmdb */
   else
     return 0;
@@ -9505,62 +9524,21 @@ store_multiple_sequence (rtx *operands, int nops, int *regs, int *base,
 
   return stm_case;
 }
-
-const char *
-emit_stm_seq (rtx *operands, int nops)
-{
-  int regs[MAX_LDM_STM_OPS];
-  int base_reg;
-  HOST_WIDE_INT offset;
-  char buf[100];
-  int i;
-
-  switch (store_multiple_sequence (operands, nops, regs, &base_reg, &offset))
-    {
-    case 1:
-      strcpy (buf, "stm%(ia%)\t");
-      break;
-
-    case 2:
-      strcpy (buf, "stm%(ib%)\t");
-      break;
-
-    case 3:
-      strcpy (buf, "stm%(da%)\t");
-      break;
-
-    case 4:
-      strcpy (buf, "stm%(db%)\t");
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  sprintf (buf + strlen (buf), "%s%s, {%s%s", REGISTER_PREFIX,
-	   reg_names[base_reg], REGISTER_PREFIX, reg_names[regs[0]]);
-
-  for (i = 1; i < nops; i++)
-    sprintf (buf + strlen (buf), ", %s%s", REGISTER_PREFIX,
-	     reg_names[regs[i]]);
-
-  strcat (buf, "}\t%@ phole stm");
-
-  output_asm_insn (buf, operands);
-  return "";
-}
 
 /* Routines for use in generating RTL.  */
 
-rtx
-arm_gen_load_multiple (int base_regno, int count, rtx from, int up,
-		       int write_back, rtx basemem, HOST_WIDE_INT *offsetp)
+/* Generate a load-multiple instruction.  COUNT is the number of loads in
+   the instruction; REGS and MEMS are arrays containing the operands.
+   BASEREG is the base register to be used in addressing the memory operands.
+   WBACK_OFFSET is nonzero if the instruction should update the base
+   register.  */
+
+static rtx
+arm_gen_load_multiple_1 (int count, int *regs, rtx *mems, rtx basereg,
+			 HOST_WIDE_INT wback_offset)
 {
-  HOST_WIDE_INT offset = *offsetp;
   int i = 0, j;
   rtx result;
-  int sign = up ? 1 : -1;
-  rtx mem, addr;
 
   /* XScale has load-store double instructions, but they have stricter
      alignment requirements than load-store multiple, so we cannot
@@ -9597,18 +9575,10 @@ arm_gen_load_multiple (int base_regno, int count, rtx from, int up,
       start_sequence ();
 
       for (i = 0; i < count; i++)
-	{
-	  addr = plus_constant (from, i * 4 * sign);
-	  mem = adjust_automodify_address (basemem, SImode, addr, offset);
-	  emit_move_insn (gen_rtx_REG (SImode, base_regno + i), mem);
-	  offset += 4 * sign;
-	}
+	emit_move_insn (gen_rtx_REG (SImode, regs[i]), mems[i]);
 
-      if (write_back)
-	{
-	  emit_move_insn (from, plus_constant (from, count * 4 * sign));
-	  *offsetp = offset;
-	}
+      if (wback_offset != 0)
+	emit_move_insn (basereg, plus_constant (basereg, wback_offset));
 
       seq = get_insns ();
       end_sequence ();
@@ -9617,41 +9587,40 @@ arm_gen_load_multiple (int base_regno, int count, rtx from, int up,
     }
 
   result = gen_rtx_PARALLEL (VOIDmode,
-			     rtvec_alloc (count + (write_back ? 1 : 0)));
-  if (write_back)
+			     rtvec_alloc (count + (wback_offset != 0 ? 1 : 0)));
+  if (wback_offset != 0)
     {
       XVECEXP (result, 0, 0)
-	= gen_rtx_SET (VOIDmode, from, plus_constant (from, count * 4 * sign));
+	= gen_rtx_SET (VOIDmode, basereg,
+		       plus_constant (basereg, wback_offset));
       i = 1;
       count++;
     }
 
   for (j = 0; i < count; i++, j++)
-    {
-      addr = plus_constant (from, j * 4 * sign);
-      mem = adjust_automodify_address_nv (basemem, SImode, addr, offset);
-      XVECEXP (result, 0, i)
-	= gen_rtx_SET (VOIDmode, gen_rtx_REG (SImode, base_regno + j), mem);
-      offset += 4 * sign;
-    }
-
-  if (write_back)
-    *offsetp = offset;
+    XVECEXP (result, 0, i)
+      = gen_rtx_SET (VOIDmode, gen_rtx_REG (SImode, regs[j]), mems[j]);
 
   return result;
 }
 
-rtx
-arm_gen_store_multiple (int base_regno, int count, rtx to, int up,
-			int write_back, rtx basemem, HOST_WIDE_INT *offsetp)
+/* Generate a store-multiple instruction.  COUNT is the number of stores in
+   the instruction; REGS and MEMS are arrays containing the operands.
+   BASEREG is the base register to be used in addressing the memory operands.
+   WBACK_OFFSET is nonzero if the instruction should update the base
+   register.  */
+
+static rtx
+arm_gen_store_multiple_1 (int count, int *regs, rtx *mems, rtx basereg,
+			  HOST_WIDE_INT wback_offset)
 {
-  HOST_WIDE_INT offset = *offsetp;
   int i = 0, j;
   rtx result;
-  int sign = up ? 1 : -1;
-  rtx mem, addr;
 
-  /* See arm_gen_load_multiple for discussion of
+  if (GET_CODE (basereg) == PLUS)
+    basereg = XEXP (basereg, 0);
+
+  /* See arm_gen_load_multiple_1 for discussion of
      the pros/cons of ldm/stm usage for XScale.  */
   if (arm_tune_xscale && count <= 2 && ! optimize_size)
     {
@@ -9660,18 +9629,10 @@ arm_gen_store_multiple (int base_regno, int count, rtx to, int up,
       start_sequence ();
 
       for (i = 0; i < count; i++)
-	{
-	  addr = plus_constant (to, i * 4 * sign);
-	  mem = adjust_automodify_address (basemem, SImode, addr, offset);
-	  emit_move_insn (mem, gen_rtx_REG (SImode, base_regno + i));
-	  offset += 4 * sign;
-	}
+	emit_move_insn (mems[i], gen_rtx_REG (SImode, regs[i]));
 
-      if (write_back)
-	{
-	  emit_move_insn (to, plus_constant (to, count * 4 * sign));
-	  *offsetp = offset;
-	}
+      if (wback_offset != 0)
+	emit_move_insn (basereg, plus_constant (basereg, wback_offset));
 
       seq = get_insns ();
       end_sequence ();
@@ -9680,29 +9641,319 @@ arm_gen_store_multiple (int base_regno, int count, rtx to, int up,
     }
 
   result = gen_rtx_PARALLEL (VOIDmode,
-			     rtvec_alloc (count + (write_back ? 1 : 0)));
-  if (write_back)
+			     rtvec_alloc (count + (wback_offset != 0 ? 1 : 0)));
+  if (wback_offset != 0)
     {
       XVECEXP (result, 0, 0)
-	= gen_rtx_SET (VOIDmode, to,
-		       plus_constant (to, count * 4 * sign));
+	= gen_rtx_SET (VOIDmode, basereg,
+		       plus_constant (basereg, wback_offset));
       i = 1;
       count++;
     }
 
   for (j = 0; i < count; i++, j++)
+    XVECEXP (result, 0, i)
+      = gen_rtx_SET (VOIDmode, mems[j], gen_rtx_REG (SImode, regs[j]));
+
+  return result;
+}
+
+/* Generate either a load-multiple or a store-multiple instruction.  This
+   function can be used in situations where we can start with a single MEM
+   rtx and adjust its address upwards.
+   COUNT is the number of operations in the instruction, not counting a
+   possible update of the base register.  REGS is an array containing the
+   register operands.
+   BASEREG is the base register to be used in addressing the memory operands,
+   which are constructed from BASEMEM.
+   WRITE_BACK specifies whether the generated instruction should include an
+   update of the base register.
+   OFFSETP is used to pass an offset to and from this function; this offset
+   is not used when constructing the address (instead BASEMEM should have an
+   appropriate offset in its address), it is used only for setting
+   MEM_OFFSET.  It is updated only if WRITE_BACK is true.*/
+
+static rtx
+arm_gen_multiple_op (bool is_load, int *regs, int count, rtx basereg,
+		     bool write_back, rtx basemem, HOST_WIDE_INT *offsetp)
+{
+  rtx mems[MAX_LDM_STM_OPS];
+  HOST_WIDE_INT offset = *offsetp;
+  int i;
+
+  gcc_assert (count <= MAX_LDM_STM_OPS);
+
+  if (GET_CODE (basereg) == PLUS)
+    basereg = XEXP (basereg, 0);
+
+  for (i = 0; i < count; i++)
     {
-      addr = plus_constant (to, j * 4 * sign);
-      mem = adjust_automodify_address_nv (basemem, SImode, addr, offset);
-      XVECEXP (result, 0, i)
-	= gen_rtx_SET (VOIDmode, mem, gen_rtx_REG (SImode, base_regno + j));
-      offset += 4 * sign;
+      rtx addr = plus_constant (basereg, i * 4);
+      mems[i] = adjust_automodify_address_nv (basemem, SImode, addr, offset);
+      offset += 4;
     }
 
   if (write_back)
     *offsetp = offset;
 
-  return result;
+  if (is_load)
+    return arm_gen_load_multiple_1 (count, regs, mems, basereg,
+				    write_back ? 4 * count : 0);
+  else
+    return arm_gen_store_multiple_1 (count, regs, mems, basereg,
+				     write_back ? 4 * count : 0);
+}
+
+rtx
+arm_gen_load_multiple (int *regs, int count, rtx basereg, int write_back,
+		       rtx basemem, HOST_WIDE_INT *offsetp)
+{
+  return arm_gen_multiple_op (TRUE, regs, count, basereg, write_back, basemem,
+			      offsetp);
+}
+
+rtx
+arm_gen_store_multiple (int *regs, int count, rtx basereg, int write_back,
+			rtx basemem, HOST_WIDE_INT *offsetp)
+{
+  return arm_gen_multiple_op (FALSE, regs, count, basereg, write_back, basemem,
+			      offsetp);
+}
+
+/* Called from a peephole2 expander to turn a sequence of loads into an
+   LDM instruction.  OPERANDS are the operands found by the peephole matcher;
+   NOPS indicates how many separate loads we are trying to combine.  SORT_REGS
+   is true if we can reorder the registers because they are used commutatively
+   subsequently.
+   Returns true iff we could generate a new instruction.  */
+
+bool
+gen_ldm_seq (rtx *operands, int nops, bool sort_regs)
+{
+  int regs[MAX_LDM_STM_OPS], mem_order[MAX_LDM_STM_OPS];
+  rtx mems[MAX_LDM_STM_OPS];
+  int i, j, base_reg;
+  rtx base_reg_rtx;
+  HOST_WIDE_INT offset;
+  int write_back = FALSE;
+  int ldm_case;
+  rtx addr;
+
+  ldm_case = load_multiple_sequence (operands, nops, regs, mem_order,
+				     &base_reg, &offset, !sort_regs);
+
+  if (ldm_case == 0)
+    return false;
+
+  if (sort_regs)
+    for (i = 0; i < nops - 1; i++)
+      for (j = i + 1; j < nops; j++)
+	if (regs[i] > regs[j])
+	  {
+	    int t = regs[i];
+	    regs[i] = regs[j];
+	    regs[j] = t;
+	  }
+  base_reg_rtx = gen_rtx_REG (Pmode, base_reg);
+
+  if (TARGET_THUMB1)
+    {
+      gcc_assert (peep2_reg_dead_p (nops, base_reg_rtx));
+      gcc_assert (ldm_case == 1 || ldm_case == 5);
+      write_back = TRUE;
+    }
+
+  if (ldm_case == 5)
+    {
+      rtx newbase = TARGET_THUMB1 ? base_reg_rtx : gen_rtx_REG (SImode, regs[0]);
+      emit_insn (gen_addsi3 (newbase, base_reg_rtx, GEN_INT (offset)));
+      offset = 0;
+      if (!TARGET_THUMB1)
+	{
+	  base_reg = regs[0];
+	  base_reg_rtx = newbase;
+	}
+    }
+
+  for (i = 0; i < nops; i++)
+    {
+      addr = plus_constant (base_reg_rtx, offset + i * 4);
+      mems[i] = adjust_automodify_address_nv (operands[nops + mem_order[i]],
+					      SImode, addr, 0);
+    }
+  emit_insn (arm_gen_load_multiple_1 (nops, regs, mems, base_reg_rtx,
+				      write_back ? offset + i * 4 : 0));
+  return true;
+}
+
+/* Called from a peephole2 expander to turn a sequence of stores into an
+   STM instruction.  OPERANDS are the operands found by the peephole matcher;
+   NOPS indicates how many separate stores we are trying to combine.
+   Returns true iff we could generate a new instruction.  */
+
+bool
+gen_stm_seq (rtx *operands, int nops)
+{
+  int i;
+  int regs[MAX_LDM_STM_OPS], mem_order[MAX_LDM_STM_OPS];
+  rtx mems[MAX_LDM_STM_OPS];
+  int base_reg;
+  rtx base_reg_rtx;
+  HOST_WIDE_INT offset;
+  int write_back = FALSE;
+  int stm_case;
+  rtx addr;
+  bool base_reg_dies;
+
+  stm_case = store_multiple_sequence (operands, nops, nops, regs, NULL,
+				      mem_order, &base_reg, &offset, true);
+
+  if (stm_case == 0)
+    return false;
+
+  base_reg_rtx = gen_rtx_REG (Pmode, base_reg);
+
+  base_reg_dies = peep2_reg_dead_p (nops, base_reg_rtx);
+  if (TARGET_THUMB1)
+    {
+      gcc_assert (base_reg_dies);
+      write_back = TRUE;
+    }
+
+  if (stm_case == 5)
+    {
+      gcc_assert (base_reg_dies);
+      emit_insn (gen_addsi3 (base_reg_rtx, base_reg_rtx, GEN_INT (offset)));
+      offset = 0;
+    }
+
+  addr = plus_constant (base_reg_rtx, offset);
+
+  for (i = 0; i < nops; i++)
+    {
+      addr = plus_constant (base_reg_rtx, offset + i * 4);
+      mems[i] = adjust_automodify_address_nv (operands[nops + mem_order[i]],
+					      SImode, addr, 0);
+    }
+  emit_insn (arm_gen_store_multiple_1 (nops, regs, mems, base_reg_rtx,
+				       write_back ? offset + i * 4 : 0));
+  return true;
+}
+
+/* Called from a peephole2 expander to turn a sequence of stores that are
+   preceded by constant loads into an STM instruction.  OPERANDS are the
+   operands found by the peephole matcher; NOPS indicates how many
+   separate stores we are trying to combine; there are 2 * NOPS
+   instructions in the peephole.
+   Returns true iff we could generate a new instruction.  */
+
+bool
+gen_const_stm_seq (rtx *operands, int nops)
+{
+  int regs[MAX_LDM_STM_OPS], sorted_regs[MAX_LDM_STM_OPS];
+  int reg_order[MAX_LDM_STM_OPS], mem_order[MAX_LDM_STM_OPS];
+  rtx reg_rtxs[MAX_LDM_STM_OPS], orig_reg_rtxs[MAX_LDM_STM_OPS];
+  rtx mems[MAX_LDM_STM_OPS];
+  int base_reg;
+  rtx base_reg_rtx;
+  HOST_WIDE_INT offset;
+  int write_back = FALSE;
+  int stm_case;
+  rtx addr;
+  bool base_reg_dies;
+  int i, j;
+  HARD_REG_SET allocated;
+
+  stm_case = store_multiple_sequence (operands, nops, 2 * nops, regs, reg_rtxs,
+				      mem_order, &base_reg, &offset, false);
+
+  if (stm_case == 0)
+    return false;
+
+  memcpy (orig_reg_rtxs, reg_rtxs, sizeof orig_reg_rtxs);
+
+  /* If the same register is used more than once, try to find a free
+     register.  */
+  CLEAR_HARD_REG_SET (allocated);
+  for (i = 0; i < nops; i++)
+    {
+      for (j = i + 1; j < nops; j++)
+	if (regs[i] == regs[j])
+	  {
+	    rtx t = peep2_find_free_register (0, nops * 2,
+					      TARGET_THUMB1 ? "l" : "r",
+					      SImode, &allocated);
+	    if (t == NULL_RTX)
+	      return false;
+	    reg_rtxs[i] = t;
+	    regs[i] = REGNO (t);
+	  }
+    }
+
+  /* Compute an ordering that maps the register numbers to an ascending
+     sequence.  */
+  reg_order[0] = 0;
+  for (i = 0; i < nops; i++)
+    if (regs[i] < regs[reg_order[0]])
+      reg_order[0] = i;
+
+  for (i = 1; i < nops; i++)
+    {
+      int this_order = reg_order[i - 1];
+      for (j = 0; j < nops; j++)
+	if (regs[j] > regs[reg_order[i - 1]]
+	    && (this_order == reg_order[i - 1]
+		|| regs[j] < regs[this_order]))
+	  this_order = j;
+      reg_order[i] = this_order;
+    }
+
+  /* Ensure that registers that must be live after the instruction end
+     up with the correct value.  */
+  for (i = 0; i < nops; i++)
+    {
+      int this_order = reg_order[i];
+      if ((this_order != mem_order[i]
+	   || orig_reg_rtxs[this_order] != reg_rtxs[this_order])
+	  && !peep2_reg_dead_p (nops * 2, orig_reg_rtxs[this_order]))
+	return false;
+    }
+
+  /* Load the constants.  */
+  for (i = 0; i < nops; i++)
+    {
+      rtx op = operands[2 * nops + mem_order[i]];
+      sorted_regs[i] = regs[reg_order[i]];
+      emit_move_insn (reg_rtxs[reg_order[i]], op);
+    }
+
+  base_reg_rtx = gen_rtx_REG (Pmode, base_reg);
+
+  base_reg_dies = peep2_reg_dead_p (nops * 2, base_reg_rtx);
+  if (TARGET_THUMB1)
+    {
+      gcc_assert (base_reg_dies);
+      write_back = TRUE;
+    }
+
+  if (stm_case == 5)
+    {
+      gcc_assert (base_reg_dies);
+      emit_insn (gen_addsi3 (base_reg_rtx, base_reg_rtx, GEN_INT (offset)));
+      offset = 0;
+    }
+
+  addr = plus_constant (base_reg_rtx, offset);
+
+  for (i = 0; i < nops; i++)
+    {
+      addr = plus_constant (base_reg_rtx, offset + i * 4);
+      mems[i] = adjust_automodify_address_nv (operands[nops + mem_order[i]],
+					      SImode, addr, 0);
+    }
+  emit_insn (arm_gen_store_multiple_1 (nops, sorted_regs, mems, base_reg_rtx,
+				       write_back ? offset + i * 4 : 0));
+  return true;
 }
 
 int
@@ -9738,20 +9989,21 @@ arm_gen_movmemqi (rtx *operands)
   for (i = 0; in_words_to_go >= 2; i+=4)
     {
       if (in_words_to_go > 4)
-	emit_insn (arm_gen_load_multiple (0, 4, src, TRUE, TRUE,
-					  srcbase, &srcoffset));
+	emit_insn (arm_gen_load_multiple (arm_regs_in_sequence, 4, src,
+					  TRUE, srcbase, &srcoffset));
       else
-	emit_insn (arm_gen_load_multiple (0, in_words_to_go, src, TRUE,
-					  FALSE, srcbase, &srcoffset));
+	emit_insn (arm_gen_load_multiple (arm_regs_in_sequence, in_words_to_go,
+					  src, FALSE, srcbase,
+					  &srcoffset));
 
       if (out_words_to_go)
 	{
 	  if (out_words_to_go > 4)
-	    emit_insn (arm_gen_store_multiple (0, 4, dst, TRUE, TRUE,
-					       dstbase, &dstoffset));
+	    emit_insn (arm_gen_store_multiple (arm_regs_in_sequence, 4, dst,
+					       TRUE, dstbase, &dstoffset));
 	  else if (out_words_to_go != 1)
-	    emit_insn (arm_gen_store_multiple (0, out_words_to_go,
-					       dst, TRUE,
+	    emit_insn (arm_gen_store_multiple (arm_regs_in_sequence,
+					       out_words_to_go, dst,
 					       (last_bytes == 0
 						? FALSE : TRUE),
 					       dstbase, &dstoffset));
