@@ -49,6 +49,10 @@ gfc_dependency;
 /* Macros */
 #define IS_ARRAY_EXPLICIT(as) ((as->type == AS_EXPLICIT ? 1 : 0))
 
+/* Forward declarations */
+
+static gfc_dependency check_section_vs_section (gfc_array_ref *,
+						gfc_array_ref *, int);
 
 /* Returns 1 if the expr is an integer constant value 1, 0 if it is not or
    def if the value could not be determined.  */
@@ -67,6 +71,105 @@ gfc_expr_is_one (gfc_expr *expr, int def)
   return mpz_cmp_si (expr->value.integer, 1) == 0;
 }
 
+/* Check if two array references are known to be identical.  Calls
+   gfc_dep_compare_expr if necessary for comparing array indices.  */
+
+static bool
+identical_array_ref (gfc_array_ref *a1, gfc_array_ref *a2)
+{
+  int i;
+
+  if (a1->type == AR_FULL && a2->type == AR_FULL)
+    return true;
+
+  if (a1->type == AR_SECTION && a2->type == AR_SECTION)
+    {
+      gcc_assert (a1->dimen == a2->dimen);
+
+      for ( i = 0; i < a1->dimen; i++)
+	{
+	  /* TODO: Currently, we punt on an integer array as an index.  */
+	  if (a1->dimen_type[i] != DIMEN_RANGE
+	      || a2->dimen_type[i] != DIMEN_RANGE)
+	    return false;
+
+	  if (check_section_vs_section (a1, a2, i) != GFC_DEP_EQUAL)
+	    return false;
+	}
+      return true;
+    }
+
+  if (a1->type == AR_ELEMENT && a2->type == AR_ELEMENT)
+    {
+      gcc_assert (a1->dimen == a2->dimen);
+      for (i = 0; i < a1->dimen; i++)
+	{
+	  if (gfc_dep_compare_expr (a1->start[i], a2->start[i]) != 0)
+	    return false;
+	}
+      return true;
+    }
+  return false;
+}
+
+
+
+/* Return true for identical variables, checking for references if
+   necessary.  Calls identical_array_ref for checking array sections.  */
+
+bool
+gfc_are_identical_variables (gfc_expr *e1, gfc_expr *e2)
+{
+  gfc_ref *r1, *r2;
+
+  if (e1->symtree->n.sym != e2->symtree->n.sym)
+    return false;
+
+  r1 = e1->ref;
+  r2 = e2->ref;
+
+  while (r1 != NULL || r2 != NULL)
+    {
+
+      /* Assume the variables are not equal if one has a reference and the
+	 other doesn't.
+	 TODO: Handle full references like comparing a(:) to a.
+      */
+
+      if (r1 == NULL || r2 == NULL)
+	return false;
+
+      if (r1->type != r2->type)
+	return false;
+
+      switch (r1->type)
+	{
+
+	case REF_ARRAY:
+	  if (!identical_array_ref (&r1->u.ar,  &r2->u.ar))
+	    return false;
+
+	  break;
+
+	case REF_COMPONENT:
+	  if (r1->u.c.component != r2->u.c.component)
+	    return false;
+	  break;
+
+	case REF_SUBSTRING:
+	  if (gfc_dep_compare_expr (r1->u.ss.start, r2->u.ss.start) != 0
+	      || gfc_dep_compare_expr (r1->u.ss.end, r2->u.ss.end) != 0)
+	    return false;
+	  break;
+
+	default:
+	  gfc_internal_error ("gfc_are_identical_variables: Bad type");
+	}
+      r1 = r1->next;
+      r2 = r2->next;
+    }
+  return true;
+}
 
 /* Compare two values.  Returns 0 if e1 == e2, -1 if e1 < e2, +1 if e1 > e2,
    and -2 if the relationship could not be determined.  */
@@ -191,11 +294,10 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
       return 1;
 
     case EXPR_VARIABLE:
-      if (e1->ref || e2->ref)
-	return -2;
-      if (e1->symtree->n.sym == e2->symtree->n.sym)
+      if (gfc_are_identical_variables (e1, e2))
 	return 0;
-      return -2;
+      else
+	return -2;
 
     case EXPR_OP:
       /* Intrinsic operators are the same if their operands are the same.  */
@@ -882,9 +984,8 @@ gfc_check_dependency (gfc_expr *expr1, gfc_expr *expr2, bool identical)
 /* Determines overlapping for two array sections.  */
 
 static gfc_dependency
-gfc_check_section_vs_section (gfc_ref *lref, gfc_ref *rref, int n)
+check_section_vs_section (gfc_array_ref *l_ar, gfc_array_ref *r_ar, int n)
 {
-  gfc_array_ref l_ar;
   gfc_expr *l_start;
   gfc_expr *l_end;
   gfc_expr *l_stride;
@@ -892,7 +993,6 @@ gfc_check_section_vs_section (gfc_ref *lref, gfc_ref *rref, int n)
   gfc_expr *l_upper;
   int l_dir;
 
-  gfc_array_ref r_ar;
   gfc_expr *r_start;
   gfc_expr *r_end;
   gfc_expr *r_stride;
@@ -900,34 +1000,31 @@ gfc_check_section_vs_section (gfc_ref *lref, gfc_ref *rref, int n)
   gfc_expr *r_upper;
   int r_dir;
 
-  l_ar = lref->u.ar;
-  r_ar = rref->u.ar;
-  
   /* If they are the same range, return without more ado.  */
-  if (gfc_is_same_range (&l_ar, &r_ar, n, 0))
+  if (gfc_is_same_range (l_ar, r_ar, n, 0))
     return GFC_DEP_EQUAL;
 
-  l_start = l_ar.start[n];
-  l_end = l_ar.end[n];
-  l_stride = l_ar.stride[n];
+  l_start = l_ar->start[n];
+  l_end = l_ar->end[n];
+  l_stride = l_ar->stride[n];
 
-  r_start = r_ar.start[n];
-  r_end = r_ar.end[n];
-  r_stride = r_ar.stride[n];
+  r_start = r_ar->start[n];
+  r_end = r_ar->end[n];
+  r_stride = r_ar->stride[n];
 
   /* If l_start is NULL take it from array specifier.  */
-  if (NULL == l_start && IS_ARRAY_EXPLICIT (l_ar.as))
-    l_start = l_ar.as->lower[n];
+  if (NULL == l_start && IS_ARRAY_EXPLICIT (l_ar->as))
+    l_start = l_ar->as->lower[n];
   /* If l_end is NULL take it from array specifier.  */
-  if (NULL == l_end && IS_ARRAY_EXPLICIT (l_ar.as))
-    l_end = l_ar.as->upper[n];
+  if (NULL == l_end && IS_ARRAY_EXPLICIT (l_ar->as))
+    l_end = l_ar->as->upper[n];
 
   /* If r_start is NULL take it from array specifier.  */
-  if (NULL == r_start && IS_ARRAY_EXPLICIT (r_ar.as))
-    r_start = r_ar.as->lower[n];
+  if (NULL == r_start && IS_ARRAY_EXPLICIT (r_ar->as))
+    r_start = r_ar->as->lower[n];
   /* If r_end is NULL take it from array specifier.  */
-  if (NULL == r_end && IS_ARRAY_EXPLICIT (r_ar.as))
-    r_end = r_ar.as->upper[n];
+  if (NULL == r_end && IS_ARRAY_EXPLICIT (r_ar->as))
+    r_end = r_ar->as->upper[n];
 
   /* Determine whether the l_stride is positive or negative.  */
   if (!l_stride)
@@ -1574,7 +1671,7 @@ gfc_dep_resolver (gfc_ref *lref, gfc_ref *rref, gfc_reverse *reverse)
 
 	      if (lref->u.ar.dimen_type[n] == DIMEN_RANGE
 		  && rref->u.ar.dimen_type[n] == DIMEN_RANGE)
-		this_dep = gfc_check_section_vs_section (lref, rref, n);
+		this_dep = check_section_vs_section (&lref->u.ar, &rref->u.ar, n);
 	      else if (lref->u.ar.dimen_type[n] == DIMEN_ELEMENT
 		       && rref->u.ar.dimen_type[n] == DIMEN_RANGE)
 		this_dep = gfc_check_element_vs_section (lref, rref, n);

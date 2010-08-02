@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "arith.h"
 #include "flags.h"
+#include "dependency.h"
 
 /* Forward declarations.  */
 
@@ -398,14 +399,13 @@ optimize_equality (gfc_expr *e, bool equal)
       return true;
     }
 
-  /* Check for direct comparison between identical variables.
-     TODO: Handle cases with identical refs.  */
+  /* Check for direct comparison between identical variables.  Don't compare
+     REAL or COMPLEX because of NaN checks.  */
   if (op1->expr_type == EXPR_VARIABLE
       && op2->expr_type == EXPR_VARIABLE
-      && op1->symtree == op2->symtree
-      && op1->ref == NULL && op2->ref == NULL
       && op1->ts.type != BT_REAL && op2->ts.type != BT_REAL
-      && op1->ts.type != BT_COMPLEX && op2->ts.type !=BT_COMPLEX)
+      && op1->ts.type != BT_COMPLEX && op2->ts.type !=BT_COMPLEX
+      && gfc_are_identical_variables (op1, op2))
     {
       /* Replace the expression by a constant expression.  The typespec
 	 and where remains the way it is.  */

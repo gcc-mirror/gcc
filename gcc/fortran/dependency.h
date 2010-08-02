@@ -43,3 +43,5 @@ int gfc_expr_is_one (gfc_expr *, int);
 int gfc_dep_resolver(gfc_ref *, gfc_ref *, gfc_reverse *);
 int gfc_are_equivalenced_arrays (gfc_expr *, gfc_expr *);
 
+bool gfc_are_identical_variables (gfc_expr *, gfc_expr *);
+
