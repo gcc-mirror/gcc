@@ -1,3 +1,35 @@
+2010-08-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (ix86_compare_op0, ix86_compare_op1): Remove.
+	* config/i386/i386.c (ix86_compare_op0, ix86_compare_op1): Remove.
+	(ix86_expand_branch): Add op0 and op1 arguments.  Do not access
+	ix86_compare_op0 and ix86_compare_op1, use op0 and op1 instead.
+	Update calls to ix86_expand_compare and ix86_expand_branch.
+	(ix86_expand_setcc): Add op0 and op1 arguments.  Update calls to
+	ix86_expand_compare.
+	(ix86_expand_compare): Add op0 and op1 arguments.  Do not access
+	ix86_compare_op0 and ix86_compare_op1, use op0 and op1 instead.
+	Make static.
+	(ix86_expand_carry_flag_compare): Do not set ix86_compare_op0
+	and ix86_compare_op1.  Update calls to ix86_expand_compare.
+	(ix86_expand_int_movcc): Ditto.
+	(ix86_expand_fp_movcc): Ditto.  Update calls to ix86_expand_setcc.
+	* config/i386/i386-protos.h (ix86_expand_branch): Update prototype.
+	(ix86_expand_setcc): Ditto.
+	(ix86_expand_compare): Remove prototype.
+	* config/i386/i386.md (cbranch<SDWIM:mode>4): Do not set
+	ix86_compare_op0 and ix86_compare_op1.  Update calls
+	to ix86_expand_branch to directly pass operands[1] and operands[2].
+	(cbranchxf4): Ditto.
+	(cbranch<MODEF:mode>4): Ditto.
+	(cbranchcc4): Ditto.
+	(cstore<SWIM:mode>4): Do not set ix86_compare_op0 and ix86_compare_op1.
+	Update calls to ix86_expand_setcc to directly pass operands[2] and
+	operands[3].
+	(cstorexf4): Ditto.
+	(cstore<MODEF:mode>4): Ditto.
+	(cstorecc4): Ditto.
+
 2010-08-02  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR target/45063

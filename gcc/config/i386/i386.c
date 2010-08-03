@@ -1792,12 +1792,6 @@ int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended SSE registers */
 };
 
-/* Test and compare insns in i386.md store the information needed to
-   generate branch and scc insns here.  */
-
-rtx ix86_compare_op0 = NULL_RTX;
-rtx ix86_compare_op1 = NULL_RTX;
-
 /* Define parameter passing and return registers.  */
 
 static int const x86_64_int_parameter_registers[6] =
@@ -15916,15 +15910,13 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1, rtx scratch)
 			 const0_rtx);
 }
 
-rtx
-ix86_expand_compare (enum rtx_code code)
+static rtx
+ix86_expand_compare (enum rtx_code code, rtx op0, rtx op1)
 {
-  rtx op0, op1, ret;
-  op0 = ix86_compare_op0;
-  op1 = ix86_compare_op1;
+  rtx ret;
 
-  if (GET_MODE_CLASS (GET_MODE (ix86_compare_op0)) == MODE_CC)
-    ret = gen_rtx_fmt_ee (code, VOIDmode, ix86_compare_op0, ix86_compare_op1);
+  if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_CC)
+    ret = gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
 
   else if (SCALAR_FLOAT_MODE_P (GET_MODE (op0)))
     {
@@ -15938,11 +15930,11 @@ ix86_expand_compare (enum rtx_code code)
 }
 
 void
-ix86_expand_branch (enum rtx_code code, rtx label)
+ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
 {
   rtx tmp;
 
-  switch (GET_MODE (ix86_compare_op0))
+  switch (GET_MODE (op0))
     {
     case SFmode:
     case DFmode:
@@ -15951,7 +15943,7 @@ ix86_expand_branch (enum rtx_code code, rtx label)
     case HImode:
     case SImode:
       simple:
-      tmp = ix86_expand_compare (code);
+      tmp = ix86_expand_compare (code, op0, op1);
       tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
 				  gen_rtx_LABEL_REF (VOIDmode, label),
 				  pc_rtx);
@@ -15968,23 +15960,21 @@ ix86_expand_branch (enum rtx_code code, rtx label)
 	enum rtx_code code1, code2, code3;
 	enum machine_mode submode;
 
-	if (CONSTANT_P (ix86_compare_op0) && ! CONSTANT_P (ix86_compare_op1))
+	if (CONSTANT_P (op0) && !CONSTANT_P (op1))
 	  {
-	    tmp = ix86_compare_op0;
-	    ix86_compare_op0 = ix86_compare_op1;
-	    ix86_compare_op1 = tmp;
+	    tmp = op0, op0 = op1, op1 = tmp;
 	    code = swap_condition (code);
 	  }
-	if (GET_MODE (ix86_compare_op0) == DImode)
+	if (GET_MODE (op0) == DImode)
 	  {
-	    split_di (&ix86_compare_op0, 1, lo+0, hi+0);
-	    split_di (&ix86_compare_op1, 1, lo+1, hi+1);
+	    split_di (&op0, 1, lo+0, hi+0);
+	    split_di (&op1, 1, lo+1, hi+1);
 	    submode = SImode;
 	  }
 	else
 	  {
-	    split_ti (&ix86_compare_op0, 1, lo+0, hi+0);
-	    split_ti (&ix86_compare_op1, 1, lo+1, hi+1);
+	    split_ti (&op0, 1, lo+0, hi+0);
+	    split_ti (&op1, 1, lo+1, hi+1);
 	    submode = DImode;
 	  }
 
@@ -16011,9 +16001,7 @@ ix86_expand_branch (enum rtx_code code, rtx label)
 	    tmp = expand_binop (submode, ior_optab, xor1, xor0,
 				NULL_RTX, 0, OPTAB_WIDEN);
 
-	    ix86_compare_op0 = tmp;
-	    ix86_compare_op1 = const0_rtx;
-	    ix86_expand_branch (code, label);
+	    ix86_expand_branch (code, tmp, const0_rtx, label);
 	    return;
 	  }
 
@@ -16028,18 +16016,14 @@ ix86_expand_branch (enum rtx_code code, rtx label)
 	    case LT: case LTU: case GE: case GEU:
 	      if (lo[1] == const0_rtx)
 		{
-		  ix86_compare_op0 = hi[0];
-		  ix86_compare_op1 = hi[1];
-		  ix86_expand_branch (code, label);
+		  ix86_expand_branch (code, hi[0], hi[1], label);
 		  return;
 		}
 	      break;
 	    case LE: case LEU: case GT: case GTU:
 	      if (lo[1] == constm1_rtx)
 		{
-		  ix86_compare_op0 = hi[0];
-		  ix86_compare_op1 = hi[1];
-		  ix86_expand_branch (code, label);
+		  ix86_expand_branch (code, hi[0], hi[1], label);
 		  return;
 		}
 	      break;
@@ -16080,17 +16064,12 @@ ix86_expand_branch (enum rtx_code code, rtx label)
 	 *  false:
 	 */
 
-	ix86_compare_op0 = hi[0];
-	ix86_compare_op1 = hi[1];
-
 	if (code1 != UNKNOWN)
-	  ix86_expand_branch (code1, label);
+	  ix86_expand_branch (code1, hi[0], hi[1], label);
 	if (code2 != UNKNOWN)
-	  ix86_expand_branch (code2, label2);
+	  ix86_expand_branch (code2, hi[0], hi[1], label2);
 
-	ix86_compare_op0 = lo[0];
-	ix86_compare_op1 = lo[1];
-	ix86_expand_branch (code3, label);
+	ix86_expand_branch (code3, lo[0], lo[1], label);
 
 	if (code2 != UNKNOWN)
 	  emit_label (label2);
@@ -16098,10 +16077,7 @@ ix86_expand_branch (enum rtx_code code, rtx label)
       }
 
     default:
-      /* If we have already emitted a compare insn, go straight to simple.
-         ix86_expand_compare won't emit anything if ix86_compare_emitted
-         is non NULL.  */
-      gcc_assert (GET_MODE_CLASS (GET_MODE (ix86_compare_op0)) == MODE_CC);
+      gcc_assert (GET_MODE_CLASS (GET_MODE (op0)) == MODE_CC);
       goto simple;
     }
 }
@@ -16138,13 +16114,13 @@ ix86_split_fp_branch (enum rtx_code code, rtx op1, rtx op2,
 }
 
 void
-ix86_expand_setcc (enum rtx_code code, rtx dest)
+ix86_expand_setcc (rtx dest, enum rtx_code code, rtx op0, rtx op1)
 {
   rtx ret;
 
   gcc_assert (GET_MODE (dest) == QImode);
 
-  ret = ix86_expand_compare (code);
+  ret = ix86_expand_compare (code, op0, op1);
   PUT_MODE (ret, QImode);
   emit_insn (gen_rtx_SET (VOIDmode, dest, ret));
 }
@@ -16272,9 +16248,7 @@ ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
 	return false;
       op0 = force_reg (mode, op0);
     }
-  ix86_compare_op0 = op0;
-  ix86_compare_op1 = op1;
-  *pop = ix86_expand_compare (code);
+  *pop = ix86_expand_compare (code, op0, op1);
   gcc_assert (GET_CODE (*pop) == LTU || GET_CODE (*pop) == GEU);
   return true;
 }
@@ -16286,18 +16260,18 @@ ix86_expand_int_movcc (rtx operands[])
   rtx compare_seq, compare_op;
   enum machine_mode mode = GET_MODE (operands[0]);
   bool sign_bit_compare_p = false;
+  rtx op0 = XEXP (operands[1], 0);
+  rtx op1 = XEXP (operands[1], 1);
 
   start_sequence ();
-  ix86_compare_op0 = XEXP (operands[1], 0);
-  ix86_compare_op1 = XEXP (operands[1], 1);
-  compare_op = ix86_expand_compare (code);
+  compare_op = ix86_expand_compare (code, op0, op1);
   compare_seq = get_insns ();
   end_sequence ();
 
   compare_code = GET_CODE (compare_op);
 
-  if ((ix86_compare_op1 == const0_rtx && (code == GE || code == LT))
-      || (ix86_compare_op1 == constm1_rtx && (code == GT || code == LE)))
+  if ((op1 == const0_rtx && (code == GE || code == LT))
+      || (op1 == constm1_rtx && (code == GT || code == LE)))
     sign_bit_compare_p = true;
 
   /* Don't attempt mode expansion here -- if we had to expand 5 or 6
@@ -16317,8 +16291,7 @@ ix86_expand_int_movcc (rtx operands[])
       /*  Sign bit compares are better done using shifts than we do by using
 	  sbb.  */
       if (sign_bit_compare_p
-	  || ix86_expand_carry_flag_compare (code, ix86_compare_op0,
-					     ix86_compare_op1, &compare_op))
+	  || ix86_expand_carry_flag_compare (code, op0, op1, &compare_op))
 	{
 	  /* Detect overlap between destination and compare sources.  */
 	  rtx tmp = out;
@@ -16361,8 +16334,8 @@ ix86_expand_int_movcc (rtx operands[])
 		}
 	      diff = ct - cf;
 
-	      if (reg_overlap_mentioned_p (out, ix86_compare_op0)
-		  || reg_overlap_mentioned_p (out, ix86_compare_op1))
+	      if (reg_overlap_mentioned_p (out, op0)
+		  || reg_overlap_mentioned_p (out, op1))
 		tmp = gen_reg_rtx (mode);
 
 	      if (mode == DImode)
@@ -16382,8 +16355,7 @@ ix86_expand_int_movcc (rtx operands[])
 		  cf = tmp;
 		  diff = ct - cf;
 		}
-	      tmp = emit_store_flag (tmp, code, ix86_compare_op0,
-				     ix86_compare_op1, VOIDmode, 0, -1);
+	      tmp = emit_store_flag (tmp, code, op0, op1, VOIDmode, 0, -1);
 	    }
 
 	  if (diff == 1)
@@ -16466,7 +16438,7 @@ ix86_expand_int_movcc (rtx operands[])
 
       if (diff < 0)
 	{
-	  enum machine_mode cmp_mode = GET_MODE (ix86_compare_op0);
+	  enum machine_mode cmp_mode = GET_MODE (op0);
 
 	  HOST_WIDE_INT tmp;
 	  tmp = ct, ct = cf, cf = tmp;
@@ -16491,13 +16463,13 @@ ix86_expand_int_movcc (rtx operands[])
 	}
 
       compare_code = UNKNOWN;
-      if (GET_MODE_CLASS (GET_MODE (ix86_compare_op0)) == MODE_INT
-	  && CONST_INT_P (ix86_compare_op1))
+      if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT
+	  && CONST_INT_P (op1))
 	{
-	  if (ix86_compare_op1 == const0_rtx
+	  if (op1 == const0_rtx
 	      && (code == LT || code == GE))
 	    compare_code = code;
-	  else if (ix86_compare_op1 == constm1_rtx)
+	  else if (op1 == constm1_rtx)
 	    {
 	      if (code == LE)
 		compare_code = LT;
@@ -16508,7 +16480,7 @@ ix86_expand_int_movcc (rtx operands[])
 
       /* Optimize dest = (op0 < 0) ? -1 : cf.  */
       if (compare_code != UNKNOWN
-	  && GET_MODE (ix86_compare_op0) == GET_MODE (out)
+	  && GET_MODE (op0) == GET_MODE (out)
 	  && (cf == -1 || ct == -1))
 	{
 	  /* If lea code below could be used, only optimize
@@ -16531,8 +16503,7 @@ ix86_expand_int_movcc (rtx operands[])
 		  code = reverse_condition (code);
 		}
 
-	      out = emit_store_flag (out, code, ix86_compare_op0,
-				     ix86_compare_op1, VOIDmode, 0, -1);
+	      out = emit_store_flag (out, code, op0, op1, VOIDmode, 0, -1);
 
 	      out = expand_simple_binop (mode, IOR,
 					 out, GEN_INT (cf),
@@ -16565,8 +16536,7 @@ ix86_expand_int_movcc (rtx operands[])
 	  rtx tmp;
 	  int nops;
 
-	  out = emit_store_flag (out, code, ix86_compare_op0,
-				 ix86_compare_op1, VOIDmode, 0, 1);
+	  out = emit_store_flag (out, code, op0, op1, VOIDmode, 0, 1);
 
 	  nops = 0;
 	  /* On x86_64 the lea instruction operates on Pmode, so we need
@@ -16625,7 +16595,7 @@ ix86_expand_int_movcc (rtx operands[])
 	{
 	  if (cf == 0)
 	    {
-	      enum machine_mode cmp_mode = GET_MODE (ix86_compare_op0);
+	      enum machine_mode cmp_mode = GET_MODE (op0);
 
 	      cf = ct;
 	      ct = 0;
@@ -16674,15 +16644,14 @@ ix86_expand_int_movcc (rtx operands[])
 		  ct = tmp;
 		}
 
-	      out = emit_store_flag (out, code, ix86_compare_op0,
-				     ix86_compare_op1, VOIDmode, 0, -1);
+	      out = emit_store_flag (out, code, op0, op1, VOIDmode, 0, -1);
 	    }
 	  else
 	    {
-	      out = emit_store_flag (out, code, ix86_compare_op0,
-				     ix86_compare_op1, VOIDmode, 0, 1);
+	      out = emit_store_flag (out, code, op0, op1, VOIDmode, 0, 1);
 
-	      out = expand_simple_binop (mode, PLUS, copy_rtx (out), constm1_rtx,
+	      out = expand_simple_binop (mode, PLUS, copy_rtx (out),
+					 constm1_rtx,
 					 copy_rtx (out), 1, OPTAB_DIRECT);
 	    }
 
@@ -16987,9 +16956,9 @@ ix86_expand_fp_movcc (rtx operands[])
   enum machine_mode mode = GET_MODE (operands[0]);
   enum rtx_code code = GET_CODE (operands[1]);
   rtx tmp, compare_op;
+  rtx op0 = XEXP (operands[1], 0);
+  rtx op1 = XEXP (operands[1], 1);
 
-  ix86_compare_op0 = XEXP (operands[1], 0);
-  ix86_compare_op1 = XEXP (operands[1], 1);
   if (TARGET_SSE_MATH && SSE_FLOAT_MODE_P (mode))
     {
       enum machine_mode cmode;
@@ -16997,25 +16966,22 @@ ix86_expand_fp_movcc (rtx operands[])
       /* Since we've no cmove for sse registers, don't force bad register
 	 allocation just to gain access to it.  Deny movcc when the
 	 comparison mode doesn't match the move mode.  */
-      cmode = GET_MODE (ix86_compare_op0);
+      cmode = GET_MODE (op0);
       if (cmode == VOIDmode)
-	cmode = GET_MODE (ix86_compare_op1);
+	cmode = GET_MODE (op1);
       if (cmode != mode)
 	return 0;
 
-      code = ix86_prepare_sse_fp_compare_args (operands[0], code,
-					       &ix86_compare_op0,
-					       &ix86_compare_op1);
+      code = ix86_prepare_sse_fp_compare_args (operands[0], code, &op0, &op1);
       if (code == UNKNOWN)
 	return 0;
 
-      if (ix86_expand_sse_fp_minmax (operands[0], code, ix86_compare_op0,
-				     ix86_compare_op1, operands[2],
-				     operands[3]))
+      if (ix86_expand_sse_fp_minmax (operands[0], code, op0, op1,
+				     operands[2], operands[3]))
 	return 1;
 
-      tmp = ix86_expand_sse_cmp (operands[0], code, ix86_compare_op0,
-				 ix86_compare_op1, operands[2], operands[3]);
+      tmp = ix86_expand_sse_cmp (operands[0], code, op0, op1,
+				 operands[2], operands[3]);
       ix86_expand_sse_movcc (operands[0], tmp, operands[2], operands[3]);
       return 1;
     }
@@ -17023,15 +16989,13 @@ ix86_expand_fp_movcc (rtx operands[])
   /* The floating point conditional move instructions don't directly
      support conditions resulting from a signed integer comparison.  */
 
-  compare_op = ix86_expand_compare (code);
+  compare_op = ix86_expand_compare (code, op0, op1);
   if (!fcmov_comparison_operator (compare_op, VOIDmode))
     {
       tmp = gen_reg_rtx (QImode);
-      ix86_expand_setcc (code, tmp);
-      code = NE;
-      ix86_compare_op0 = tmp;
-      ix86_compare_op1 = const0_rtx;
-      compare_op = ix86_expand_compare (code);
+      ix86_expand_setcc (tmp, code, op0, op1);
+
+      compare_op = ix86_expand_compare (NE, tmp, const0_rtx);
     }
 
   emit_insn (gen_rtx_SET (VOIDmode, operands[0],
@@ -17303,14 +17267,13 @@ ix86_expand_int_addcc (rtx operands[])
   rtx val = const0_rtx;
   bool fpcmp = false;
   enum machine_mode mode;
+  rtx op0 = XEXP (operands[1], 0);
+  rtx op1 = XEXP (operands[1], 1);
 
-  ix86_compare_op0 = XEXP (operands[1], 0);
-  ix86_compare_op1 = XEXP (operands[1], 1);
   if (operands[3] != const1_rtx
       && operands[3] != constm1_rtx)
     return 0;
-  if (!ix86_expand_carry_flag_compare (code, ix86_compare_op0,
-				       ix86_compare_op1, &compare_op))
+  if (!ix86_expand_carry_flag_compare (code, op0, op1, &compare_op))
      return 0;
   code = GET_CODE (compare_op);
 
