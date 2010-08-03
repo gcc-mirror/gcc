@@ -1,3 +1,10 @@
+2010-08-03  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44584
+	PR fortran/45161
+	* gfortran.dg/typebound_call_9.f03: Modified.
+	* gfortran.dg/typebound_generic_1.f03: Modified.
+
 2010-08-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45159

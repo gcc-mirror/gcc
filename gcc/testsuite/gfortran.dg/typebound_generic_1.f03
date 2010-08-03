@@ -18,7 +18,7 @@ MODULE m
     GENERIC :: gen1 => p1a ! { dg-error "are ambiguous" }
 
     GENERIC, PUBLIC :: gen1 => p1, p2
-    GENERIC :: gen1 => p3 ! Implicitelly PUBLIC.
+    GENERIC :: gen1 => p3 ! Implicitly PUBLIC.
     GENERIC, PRIVATE :: gen2 => p1
 
     GENERIC :: gen2 => p2 ! { dg-error "same access" }
@@ -29,7 +29,8 @@ MODULE m
     GENERIC :: gen3 => ! { dg-error "specific binding" }
     GENERIC :: gen4 => p1 x ! { dg-error "Junk after" }
     GENERIC :: gen5 => p_notthere ! { dg-error "Undefined specific binding" }
-    GENERIC :: gen6 => gen1 ! { dg-error "must target a specific binding" }
+    GENERIC :: gen6 => p1
+    GENERIC :: gen7 => gen6 ! { dg-error "must target a specific binding" }
 
     GENERIC :: gensubr => p2 ! { dg-error "mixed FUNCTION/SUBROUTINE" }
     GENERIC :: gensubr => subr
