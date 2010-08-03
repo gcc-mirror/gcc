@@ -1,3 +1,8 @@
+2010-08-03  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (completely_scalarize_record): New parameter REF, create
+	its own access->expr intead of using build_ref_for_offset.
+
 2010-08-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/alpha/alpha.h (SWITCH_TAKES_ARG): Define.
