@@ -257,10 +257,8 @@ add_procs_to_declared_vtab1 (gfc_symtree *st, gfc_symbol *vtype)
   if (st->right)
     add_procs_to_declared_vtab1 (st->right, vtype);
 
-  if (!st->n.tb)
-    return;
-
-  if (!st->n.tb->is_generic && st->n.tb->u.specific)
+  if (st->n.tb && !st->n.tb->error 
+      && !st->n.tb->is_generic && st->n.tb->u.specific)
     add_proc_comp (vtype, st->name, st->n.tb);
 }
 

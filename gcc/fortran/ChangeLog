@@ -1,3 +1,10 @@
+2010-08-03  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44584
+	PR fortran/45161
+	* class.c (add_procs_to_declared_vtab1): Don't add erroneous procedures.
+	* resolve.c (resolve_tb_generic_targets): Check for errors.
+
 2010-08-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45159
