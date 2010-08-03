@@ -843,10 +843,12 @@ type_consists_of_records_p (tree type)
 /* Create total_scalarization accesses for all scalar type fields in DECL that
    must be of a RECORD_TYPE conforming to type_consists_of_records_p.  BASE
    must be the top-most VAR_DECL representing the variable, OFFSET must be the
-   offset of DECL within BASE.  */
+   offset of DECL within BASE.  REF must be the memory reference expression for
+   the given decl.  */
 
 static void
-completely_scalarize_record (tree base, tree decl, HOST_WIDE_INT offset)
+completely_scalarize_record (tree base, tree decl, HOST_WIDE_INT offset,
+			     tree ref)
 {
   tree fld, decl_type = TREE_TYPE (decl);
 
@@ -855,28 +857,23 @@ completely_scalarize_record (tree base, tree decl, HOST_WIDE_INT offset)
       {
 	HOST_WIDE_INT pos = offset + int_bit_position (fld);
 	tree ft = TREE_TYPE (fld);
+	tree nref = build3 (COMPONENT_REF, TREE_TYPE (fld), ref, fld,
+			    NULL_TREE);
 
 	if (is_gimple_reg_type (ft))
 	  {
 	    struct access *access;
 	    HOST_WIDE_INT size;
-	    tree expr;
-	    bool ok;
 
 	    size = tree_low_cst (DECL_SIZE (fld), 1);
-	    expr = base;
-	    ok = build_ref_for_offset (&expr, TREE_TYPE (base), pos,
-				       ft, false);
-	    gcc_assert (ok);
-
 	    access = create_access_1 (base, pos, size);
-	    access->expr = expr;
+	    access->expr = nref;
 	    access->type = ft;
 	    access->total_scalarization = 1;
 	    /* Accesses for intraprocedural SRA can have their stmt NULL.  */
 	  }
 	else
-	  completely_scalarize_record (base, fld, pos);
+	  completely_scalarize_record (base, fld, pos, nref);
       }
 }
 
@@ -2067,7 +2064,7 @@ analyze_all_variable_accesses (void)
 		<= max_total_scalarization_size)
 	    && type_consists_of_records_p (TREE_TYPE (var)))
 	  {
-	    completely_scalarize_record (var, var, 0);
+	    completely_scalarize_record (var, var, 0, var);
 	    if (dump_file && (dump_flags & TDF_DETAILS))
 	      {
 		fprintf (dump_file, "Will attempt to totally scalarize ");
