@@ -1,3 +1,21 @@
+2010-08-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/alpha/alpha.h (SWITCH_TAKES_ARG): Define.
+	* config/alpha/osf5.h (LIB_SPEC): Don't handle -a.
+	* config/bfin/bfin.h (ASM_SPEC, LINK_SPEC): Don't pass -G*
+	options.
+	* config/darwin.h (WORD_SWITCH_TAKES_ARG): Handle -iframework.
+	* config/ia64/ia64.h (SWITCH_TAKES_ARG): Define.
+	* config/iq2000/iq2000.h (SWITCH_TAKES_ARG): Remove.
+	* config/rs6000/sysv4.h (SWITCH_TAKES_ARG): Define using
+	DEFAULT_SWITCH_TAKES_ARG.
+	* config/rx/rx.opt (-patch=): Remove option.
+	* config/rx/rx.c (rx_handle_option): Don't handle OPT_patch_.
+	* defaults.h (DEFAULT_WORD_SWITCH_TAKES_ARG): Handle -imultilib.
+	* doc/invoke.texi (RX Options): Remove -patch=.
+	* gcc.c (cc1_options): Pass -aux-info* instead of -a* options.
+	(option_map): Remove --profile-blocks, --quiet and --silent.
+
 2010-08-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (ix86_compare_op0, ix86_compare_op1): Remove.

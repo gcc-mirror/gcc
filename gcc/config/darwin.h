@@ -236,6 +236,7 @@ extern GTY(()) int darwin_ms_struct;
    !strcmp (STR, "sectobjectsymbols") ? 2 :     \
    !strcmp (STR, "segcreate") ? 3 :             \
    !strcmp (STR, "dylinker_install_name") ? 1 : \
+   !strcmp (STR, "iframework") ? 1 : \
    0)
 
 #define SUBTARGET_C_COMMON_OVERRIDE_OPTIONS do {                        \

@@ -1,5 +1,5 @@
 /* Definitions for the Blackfin port.
-   Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Analog Devices.
 
    This file is part of GCC.
@@ -252,7 +252,7 @@ extern int target_flags;
    Defined in svr4.h.  */
 #undef  ASM_SPEC
 #define ASM_SPEC "\
-%{G*} %{v} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
+%{v} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
     %{mno-fdpic:-mnopic} %{mfdpic}"
 
 #define LINK_SPEC "\
@@ -262,7 +262,6 @@ extern int target_flags;
 %{static:-dn -Bstatic} \
 %{shared:-G -Bdynamic} \
 %{symbolic:-Bsymbolic} \
-%{G*} \
 %{YP,*} \
 %{Qy:} %{!Qn:-Qy} \
 -init __init -fini __fini "

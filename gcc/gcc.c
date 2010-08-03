@@ -858,7 +858,7 @@ static const char *cpp_debug_options = "%{d*}";
 static const char *cc1_options =
 "%{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
  %{!iplugindir*:%{fplugin*:%:find-plugindir()}}\
- %1 %{!Q:-quiet} %{!dumpbase:-dumpbase %B} %{d*} %{m*} %{a*}\
+ %1 %{!Q:-quiet} %{!dumpbase:-dumpbase %B} %{d*} %{m*} %{aux-info*}\
  %{fcompare-debug-second:%:compare-debug-auxbase-opt(%b)} \
  %{!fcompare-debug-second:%{c|S:%{o*:-auxbase-strip %*}%{!o*:-auxbase %b}}}%{!c:%{!S:-auxbase %b}} \
  %{g*} %{O*} %{W*&pedantic*} %{w} %{std*&ansi&trigraphs}\
@@ -1199,12 +1199,9 @@ static const struct option_map option_map[] =
    {"--print-sysroot", "-print-sysroot", 0},
    {"--print-sysroot-headers-suffix", "-print-sysroot-headers-suffix", 0},
    {"--profile", "-p", 0},
-   {"--profile-blocks", "-a", 0},
-   {"--quiet", "-q", 0},
    {"--resource", "-fcompile-resource=", "aj"},
    {"--save-temps", "-save-temps", 0},
    {"--shared", "-shared", 0},
-   {"--silent", "-q", 0},
    {"--specs", "-specs=", "aj"},
    {"--static", "-static", 0},
    {"--std", "-std=", "aj"},

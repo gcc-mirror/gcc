@@ -790,7 +790,7 @@ See RS/6000 and PowerPC Options.
 
 @emph{RX Options}
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
--mcpu= -patch=@gol
+-mcpu=@gol
 -mbig-endian-data -mlittle-endian-data @gol
 -msmall-data @gol
 -msim  -mno-sim@gol
@@ -15839,9 +15839,7 @@ use then the FPU hardware will not be used for doubles.
 This is because the RX FPU instructions are themselves unsafe.
 
 @item -mcpu=@var{name}
-@itemx -patch=@var{name}
 @opindex -mcpu
-@opindex -patch
 Selects the type of RX CPU to be targeted.  Currently three types are
 supported, the generic @var{RX600} and @var{RX200} series hardware and
 the specific @var{RX610} cpu.  The default is @var{RX600}.

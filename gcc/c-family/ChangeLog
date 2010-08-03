@@ -1,3 +1,9 @@
+2010-08-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (-print-pch-checksum): Remove option.
+	* c-opts.c (c_common_handle_option): Don't handle
+	OPT_print_pch_checksum.
+
 2010-07-27  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.h (c_common_handle_option): Update prototype and return
