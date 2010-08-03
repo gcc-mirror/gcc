@@ -2198,9 +2198,6 @@ extern int ix86_branch_cost, ix86_section_threshold;
 /* Smallest class containing REGNO.  */
 extern enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER];
 
-extern rtx ix86_compare_op0;	/* operand 0 for comparisons */
-extern rtx ix86_compare_op1;	/* operand 1 for comparisons */
-
 enum ix86_fpcmp_strategy {
   IX86_FPCMP_SAHF,
   IX86_FPCMP_COMI,
