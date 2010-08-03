@@ -1,3 +1,10 @@
+2010-08-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/45159
+	* dependency.c (gfc_deb_compare_expr):  Remove any integer
+	conversion functions to larger types from both arguments.
+	Remove handling these functions futher down.
+
 2010-08-03  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44584
