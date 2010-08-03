@@ -1,3 +1,14 @@
+2010-08-03  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* simplify-rtx.c (simplify_binary_operation_1): Try to simplify away
+	NEG as operand of a MULT by merging it with the other operand.
+	* combine.c (make_compound_operation): Use trunc_int_for_mode when
+	generating a MULT with constant.  Canonicalize PLUS and MINUS involving
+	MULT.
+	* config/arm/constraints.md (M): Examine only 32 bits of a
+	HOST_WIDE_INT.
+	* config/arm/predicates.md (power_of_two_operand): Likewise.
+
 2010-08-03  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu.c (spu_emit_branch_hint): Do not access NOTE_KIND of

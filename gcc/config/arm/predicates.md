@@ -289,7 +289,7 @@
 (define_predicate "power_of_two_operand"
   (match_code "const_int")
 {
-  HOST_WIDE_INT value = INTVAL (op);
+  unsigned HOST_WIDE_INT value = INTVAL (op) & 0xffffffff;
 
   return value != 0 && (value & (value - 1)) == 0;
 })

@@ -2109,6 +2109,19 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
       if (trueop1 == constm1_rtx)
 	return simplify_gen_unary (NEG, mode, op0, mode);
 
+      if (GET_CODE (op0) == NEG)
+	{
+	  rtx temp = simplify_unary_operation (NEG, mode, op1, mode);
+	  if (temp)
+	    return simplify_gen_binary (MULT, mode, XEXP (op0, 0), temp);
+	}
+      if (GET_CODE (op1) == NEG)
+	{
+	  rtx temp = simplify_unary_operation (NEG, mode, op0, mode);
+	  if (temp)
+	    return simplify_gen_binary (MULT, mode, temp, XEXP (op1, 0));
+	}
+
       /* Maybe simplify x * 0 to 0.  The reduction is not valid if
 	 x is NaN, since x * 0 is then also NaN.  Nor is it valid
 	 when the mode has signed zeros, since multiplying a negative
