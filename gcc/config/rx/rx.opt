@@ -46,10 +46,6 @@ mcpu=
 Target RejectNegative Joined Var(rx_cpu_name) Report
 Specify the target RX cpu type.
 
-patch=
-Target RejectNegative Joined Var(rx_cpu_name)
-Alias for -mcpu.
-
 ;---------------------------------------------------
 
 mbig-endian-data

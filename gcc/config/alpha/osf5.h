@@ -84,7 +84,7 @@ along with GCC; see the file COPYING3.  If not see
    -lpdf.  */
 
 #define LIB_SPEC \
-"%{p|pg:-lprof1%{pthread|threads:_r} -lpdf} %{a:-lprof2} \
+"%{p|pg:-lprof1%{pthread|threads:_r} -lpdf} \
  %{threads: -lpthreads} %{pthread|threads: -lpthread -lmach -lexc} -lc"
 
 /* Pass "-G 8" to ld because Alpha's CC does.  Pass -O3 if we are

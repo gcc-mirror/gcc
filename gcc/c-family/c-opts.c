@@ -849,11 +849,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       print_struct_values = 1;
       break;
 
-    case OPT_print_pch_checksum:
-      c_common_print_pch_checksum (stdout);
-      exit_after_options = true;
-      break;
-
     case OPT_remap:
       cpp_opts->remap = 1;
       break;

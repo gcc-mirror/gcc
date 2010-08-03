@@ -952,10 +952,6 @@ print-objc-runtime-info
 ObjC ObjC++
 Generate C header of platform-specific features
 
-print-pch-checksum
-C ObjC C++ ObjC++
-Print a checksum of the executable for PCH validity checking, and stop
-
 remap
 C ObjC C++ ObjC++
 Remap file names when including files

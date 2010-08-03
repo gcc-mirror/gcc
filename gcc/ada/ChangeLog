@@ -1,3 +1,7 @@
+2010-08-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc-interface/lang-specs.h: Don't pass -a options.
+
 2010-07-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc-interface/misc.c (gnat_init_options): Ignore erroneous

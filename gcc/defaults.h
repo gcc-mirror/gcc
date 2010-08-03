@@ -50,7 +50,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   || !strcmp (STR, "idirafter") || !strcmp (STR, "iprefix") \
   || !strcmp (STR, "iwithprefix") || !strcmp (STR, "iwithprefixbefore") \
   || !strcmp (STR, "iquote") || !strcmp (STR, "isystem") \
-  || !strcmp (STR, "isysroot") \
+  || !strcmp (STR, "isysroot") || !strcmp (STR, "imultilib") \
   || !strcmp (STR, "-param") || !strcmp (STR, "specs") \
   || !strcmp (STR, "MF") || !strcmp (STR, "MT") || !strcmp (STR, "MQ") \
   || !strcmp (STR, "fintrinsic-modules-path") \
