@@ -1,3 +1,8 @@
+2010-08-03  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c (spu_emit_branch_hint): Do not access NOTE_KIND of
+	non-NOTE insns.
+
 2010-08-03  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-split.c (struct split_point): Add split_part_set_retval.
