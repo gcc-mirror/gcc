@@ -121,7 +121,7 @@
  "In Thumb-1 state a constant that is a multiple of 4 in the range 0-1020."
  (and (match_code "const_int")
       (match_test "TARGET_32BIT ? ((ival >= 0 && ival <= 32)
-				 || ((ival & (ival - 1)) == 0))
+				 || (((ival & (ival - 1)) & 0xFFFFFFFF) == 0))
 		   : ival >= 0 && ival <= 1020 && (ival & 3) == 0")))
 
 (define_constraint "N"

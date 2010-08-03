@@ -7110,12 +7110,78 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 	  && INTVAL (XEXP (x, 1)) < HOST_BITS_PER_WIDE_INT
 	  && INTVAL (XEXP (x, 1)) >= 0)
 	{
+	  HOST_WIDE_INT count = INTVAL (XEXP (x, 1));
+	  HOST_WIDE_INT multval = (HOST_WIDE_INT) 1 << count;
+
 	  new_rtx = make_compound_operation (XEXP (x, 0), next_code);
-	  new_rtx = gen_rtx_MULT (mode, new_rtx,
-			      GEN_INT ((HOST_WIDE_INT) 1
-				       << INTVAL (XEXP (x, 1))));
+	  if (GET_CODE (new_rtx) == NEG)
+	    {
+	      new_rtx = XEXP (new_rtx, 0);
+	      multval = -multval;
+	    }
+	  multval = trunc_int_for_mode (multval, mode);
+	  new_rtx = gen_rtx_MULT (mode, new_rtx, GEN_INT (multval));
 	}
       break;
+
+    case PLUS:
+      lhs = XEXP (x, 0);
+      rhs = XEXP (x, 1);
+      lhs = make_compound_operation (lhs, MEM);
+      rhs = make_compound_operation (rhs, MEM);
+      if (GET_CODE (lhs) == MULT && GET_CODE (XEXP (lhs, 0)) == NEG
+	  && SCALAR_INT_MODE_P (mode))
+	{
+	  tem = simplify_gen_binary (MULT, mode, XEXP (XEXP (lhs, 0), 0),
+				     XEXP (lhs, 1));
+	  new_rtx = simplify_gen_binary (MINUS, mode, rhs, tem);
+	}
+      else if (GET_CODE (lhs) == MULT
+	       && (CONST_INT_P (XEXP (lhs, 1)) && INTVAL (XEXP (lhs, 1)) < 0))
+	{
+	  tem = simplify_gen_binary (MULT, mode, XEXP (lhs, 0),
+				     simplify_gen_unary (NEG, mode,
+							 XEXP (lhs, 1),
+							 mode));
+	  new_rtx = simplify_gen_binary (MINUS, mode, rhs, tem);
+	}
+      else
+	{
+	  SUBST (XEXP (x, 0), lhs);
+	  SUBST (XEXP (x, 1), rhs);
+	  goto maybe_swap;
+	}
+      x = gen_lowpart (mode, new_rtx);
+      goto maybe_swap;
+
+    case MINUS:
+      lhs = XEXP (x, 0);
+      rhs = XEXP (x, 1);
+      lhs = make_compound_operation (lhs, MEM);
+      rhs = make_compound_operation (rhs, MEM);
+      if (GET_CODE (rhs) == MULT && GET_CODE (XEXP (rhs, 0)) == NEG
+	  && SCALAR_INT_MODE_P (mode))
+	{
+	  tem = simplify_gen_binary (MULT, mode, XEXP (XEXP (rhs, 0), 0),
+				     XEXP (rhs, 1));
+	  new_rtx = simplify_gen_binary (PLUS, mode, tem, lhs);
+	}
+      else if (GET_CODE (rhs) == MULT
+	       && (CONST_INT_P (XEXP (rhs, 1)) && INTVAL (XEXP (rhs, 1)) < 0))
+	{
+	  tem = simplify_gen_binary (MULT, mode, XEXP (rhs, 0),
+				     simplify_gen_unary (NEG, mode,
+							 XEXP (rhs, 1),
+							 mode));
+	  new_rtx = simplify_gen_binary (PLUS, mode, tem, lhs);
+	}
+      else
+	{
+	  SUBST (XEXP (x, 0), lhs);
+	  SUBST (XEXP (x, 1), rhs);
+	  return x;
+	}
+      return gen_lowpart (mode, new_rtx);
 
     case AND:
       /* If the second operand is not a constant, we can't do anything
@@ -7345,6 +7411,7 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 	  SUBST (XVECEXP (x, i, j), new_rtx);
 	}
 
+ maybe_swap:
   /* If this is a commutative operation, the changes to the operands
      may have made it noncanonical.  */
   if (COMMUTATIVE_ARITH_P (x)
