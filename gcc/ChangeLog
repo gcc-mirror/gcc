@@ -1,3 +1,12 @@
+2010-08-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/44914
+	* tree-sra.c (cfg_changed): New variable.
+	(sra_initialize): Initialize cgf_changed to false.
+	(scan_function): Set cfg_changed if cfg was changed.
+	(perform_intra_sra): Return also TODO_cleanup_cfg if cfg was changed.
+	(ipa_early_sra): Likewise.
+
 2010-08-02  DJ Delorie  <dj@redhat.com>
 
 	* config/rx/predicates.md (rx_constshift_operand): New.

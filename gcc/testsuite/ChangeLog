@@ -1,3 +1,8 @@
+2010-08-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/44914
+	* g++.dg/tree-ssa/pr44914.C: New test.
+
 2010-08-02  Uros Bizjak  <ubizjak@gmail.com>
 
         * lib/gcc-dg.exp (cleanup-coverage-files): Remove options from
