@@ -180,7 +180,45 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
   gfc_actual_arglist *args1;
   gfc_actual_arglist *args2;
   int i;
+  gfc_expr *n1, *n2;
 
+  n1 = NULL;
+  n2 = NULL;
+
+  /* Remove any integer conversion functions to larger types.  */
+  if (e1->expr_type == EXPR_FUNCTION && e1->value.function.isym
+      && e1->value.function.isym->id == GFC_ISYM_CONVERSION
+      && e1->ts.type == BT_INTEGER)
+    {
+      args1 = e1->value.function.actual;
+      if (args1->expr->ts.type == BT_INTEGER
+	  && e1->ts.kind > args1->expr->ts.kind)
+	n1 = args1->expr;
+    }
+
+  if (e2->expr_type == EXPR_FUNCTION && e2->value.function.isym
+      && e2->value.function.isym->id == GFC_ISYM_CONVERSION
+      && e2->ts.type == BT_INTEGER)
+    {
+      args2 = e2->value.function.actual;
+      if (args2->expr->ts.type == BT_INTEGER
+	  && e2->ts.kind > args2->expr->ts.kind)
+	n2 = args2->expr;
+    }
+
+  if (n1 != NULL)
+    {
+      if (n2 != NULL)
+	return gfc_dep_compare_expr (n1, n2);
+      else
+	return gfc_dep_compare_expr (n1, e2);
+    }
+  else
+    {
+      if (n2 != NULL)
+	return gfc_dep_compare_expr (e1, n2);
+    }
+  
   if (e1->expr_type == EXPR_OP
       && (e1->value.op.op == INTRINSIC_UPLUS
 	  || e1->value.op.op == INTRINSIC_PARENTHESES))
@@ -328,20 +366,6 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 	 argument lists.  */
       switch (e1->value.function.isym->id)
 	{
-	case GFC_ISYM_CONVERSION:
-	  /* Handle integer extensions specially, as __convert_i4_i8
-	     is not only "constant" but also "unary" and "increasing".  */
-	  if (args1 && !args1->next
-	      && args2 && !args2->next
-	      && e1->ts.type == BT_INTEGER
-	      && args1->expr->ts.type == BT_INTEGER
-	      && e1->ts.kind > args1->expr->ts.kind
-	      && e2->ts.type == e1->ts.type
-	      && e2->ts.kind == e1->ts.kind
-	      && args2->expr->ts.type == args1->expr->ts.type
-	      && args2->expr->ts.kind == args2->expr->ts.kind)
-	    return gfc_dep_compare_expr (args1->expr, args2->expr);
-	  break;
 
 	case GFC_ISYM_REAL:
 	case GFC_ISYM_LOGICAL:
