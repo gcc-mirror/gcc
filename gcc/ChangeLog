@@ -1,3 +1,12 @@
+2010-08-03  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-split.c (struct split_point): Add split_part_set_retval.
+	(find_retval): Forward declare.
+	(test_nonssa_use, mark_nonssa_use): Special case return by reference.
+	(consider_split): Compute current->split_part_set_retval.
+	(visit_bb): Do not look into return value.
+	(split_function): Handle !split_part_set_retval
+
 2010-08-03  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (completely_scalarize_record): New parameter REF, create

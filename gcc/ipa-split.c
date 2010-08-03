@@ -120,11 +120,17 @@ struct split_point
 
   /* Basic blocks we are splitting away.  */
   bitmap split_bbs;
+
+  /* True when return value is computed on split part and thus it needs
+     to be returned.  */
+  bool split_part_set_retval;
 };
 
 /* Best split point found.  */
 
 struct split_point best_split_point;
+
+static tree find_retval (basic_block return_bb);
 
 /* Callback for walk_stmt_load_store_addr_ops.  If T is non-ssa automatic
    variable, check it if it is present in bitmap passed via DATA.  */
@@ -141,6 +147,14 @@ test_nonssa_use (gimple stmt ATTRIBUTE_UNUSED, tree t,
 	  || (TREE_CODE (t) == RESULT_DECL)
 	  || (TREE_CODE (t) == PARM_DECL)))
     return bitmap_bit_p ((bitmap)data, DECL_UID (t));
+
+  /* For DECL_BY_REFERENCE, the return value is actually pointer.  We want to pretend
+     that the value pointed to is actual result decl.  */
+  if (t && (TREE_CODE (t) == MEM_REF || INDIRECT_REF_P (t))
+      && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME
+      && TREE_CODE (SSA_NAME_VAR (TREE_OPERAND (t, 0))) == RESULT_DECL
+      && DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
+    return bitmap_bit_p ((bitmap)data, DECL_UID (DECL_RESULT (current_function_decl)));
   return false;
 }
 
@@ -260,6 +274,7 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
   gimple_stmt_iterator bsi;
   unsigned int i;
   int incomming_freq = 0;
+  tree retval;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_split_point (dump_file, current);
@@ -387,6 +402,43 @@ consider_split (struct split_point *current, bitmap non_ssa_vars,
     }
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "  Accepted!\n");
+
+  /* See if retval used by return bb is computed by header or split part.
+     When it is computed by split part, we need to produce return statement
+     in the split part and add code to header to pass it around.
+
+     This is bit tricky to test:
+       1) When there is no return_bb or no return value, we always pass
+          value around.
+       2) Invariants are always computed by caller.
+       3) For SSA we need to look if defining statement is in header or split part
+       4) For non-SSA we need to look where the var is computed. */
+  retval = find_retval (return_bb);
+  if (!retval)
+    current->split_part_set_retval = true;
+  else if (is_gimple_min_invariant (retval))
+    current->split_part_set_retval = false;
+  /* Special case is value returned by reference we record as if it was non-ssa
+     set to result_decl.  */
+  else if (TREE_CODE (retval) == SSA_NAME
+	   && TREE_CODE (SSA_NAME_VAR (retval)) == RESULT_DECL
+	   && DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
+    current->split_part_set_retval
+       = bitmap_bit_p (non_ssa_vars, DECL_UID (SSA_NAME_VAR (retval)));
+  else if (TREE_CODE (retval) == SSA_NAME)
+    current->split_part_set_retval
+      = (!SSA_NAME_IS_DEFAULT_DEF (retval)
+	 && (bitmap_bit_p (current->split_bbs,
+			  gimple_bb (SSA_NAME_DEF_STMT (retval))->index)
+	     || gimple_bb (SSA_NAME_DEF_STMT (retval)) == return_bb));
+  else if (TREE_CODE (retval) == PARM_DECL)
+    current->split_part_set_retval = false;
+  else if (TREE_CODE (retval) == VAR_DECL
+	   || TREE_CODE (retval) == RESULT_DECL)
+    current->split_part_set_retval
+      = bitmap_bit_p (non_ssa_vars, DECL_UID (retval));
+  else
+    current->split_part_set_retval = true;
 
   /* At the moment chose split point with lowest frequency and that leaves
      out smallest size of header.
@@ -516,6 +568,14 @@ mark_nonssa_use (gimple stmt ATTRIBUTE_UNUSED, tree t,
   if ((TREE_CODE (t) == VAR_DECL && auto_var_in_fn_p (t, current_function_decl))
       || (TREE_CODE (t) == RESULT_DECL))
     bitmap_set_bit ((bitmap)data, DECL_UID (t));
+
+  /* For DECL_BY_REFERENCE, the return value is actually pointer.  We want to pretend
+     that the value pointed to is actual result decl.  */
+  if (t && (TREE_CODE (t) == MEM_REF || INDIRECT_REF_P (t))
+      && TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME
+      && TREE_CODE (SSA_NAME_VAR (TREE_OPERAND (t, 0))) == RESULT_DECL
+      && DECL_BY_REFERENCE (DECL_RESULT (current_function_decl)))
+    return bitmap_bit_p ((bitmap)data, DECL_UID (DECL_RESULT (current_function_decl)));
   return false;
 }
 
@@ -630,7 +690,6 @@ visit_bb (basic_block bb, basic_block return_bb,
   FOR_EACH_EDGE (e, ei, bb->succs)
     if (e->dest == return_bb)
       {
-	bool found_phi = false;
 	for (bsi = gsi_start_phis (return_bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	  {
 	    gimple stmt = gsi_stmt (bsi);
@@ -640,24 +699,10 @@ visit_bb (basic_block bb, basic_block return_bb,
 	      continue;
 	    if (!is_gimple_reg (gimple_phi_result (stmt)))
 	      continue;
-	    found_phi = true;
 	    if (TREE_CODE (op) == SSA_NAME)
 	      bitmap_set_bit (used_ssa_names, SSA_NAME_VERSION (op));
 	    else
 	      can_split &= !mark_nonssa_use (stmt, op, non_ssa_vars);
-	  }
-	if (!gsi_end_p (gsi_last_bb (return_bb)))
-	  {
-	    ssa_op_iter iter;
-	    gimple stmt = gsi_stmt (gsi_last_bb (return_bb));
-	    tree op;
-	    if (!found_phi)
-	      FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE)
-		bitmap_set_bit (used_ssa_names, SSA_NAME_VERSION (op));
-	    can_split &= !walk_stmt_load_store_addr_ops (stmt, non_ssa_vars,
-							 mark_nonssa_use,
-							 mark_nonssa_use,
-							 mark_nonssa_use);
 	  }
       }
   return can_split;
@@ -905,8 +950,55 @@ split_function (struct split_point *split_point)
   if (e)
     split_part_return_p = true;
 
-  /* If we return, we will need the return block.  */
-  if (return_bb != EXIT_BLOCK_PTR && split_part_return_p)
+  /* Add return block to what will become the split function.
+     We do not return; no return block is needed.  */
+  if (!split_part_return_p)
+    ;
+  /* We have no return block, so nothing is needed.  */
+  else if (return_bb == EXIT_BLOCK_PTR)
+    ;
+  /* When we do not want to return value, we need to construct
+     new return block with empty return statement.
+     FIXME: Once we are able to change return type, we should change function
+     to return void instead of just outputting function with undefined return
+     value.  For structures this affects quality of codegen.  */
+  else if (!split_point->split_part_set_retval
+           && find_retval (return_bb))
+    {
+      bool redirected = true;
+      basic_block new_return_bb = create_basic_block (NULL, 0, return_bb);
+      gimple_stmt_iterator gsi = gsi_start_bb (new_return_bb);
+      gsi_insert_after (&gsi, gimple_build_return (NULL), GSI_NEW_STMT);
+      while (redirected)
+	{
+	  redirected = false;
+	  FOR_EACH_EDGE (e, ei, return_bb->preds)
+	    if (bitmap_bit_p (split_point->split_bbs, e->src->index))
+	      {
+		new_return_bb->count += e->count;
+		new_return_bb->frequency += EDGE_FREQUENCY (e);
+		redirect_edge_and_branch (e, new_return_bb);
+		redirected = true;
+		break;
+	      }
+	}
+      e = make_edge (new_return_bb, EXIT_BLOCK_PTR, 0);
+      e->probability = REG_BR_PROB_BASE;
+      e->count = new_return_bb->count;
+      bitmap_set_bit (split_point->split_bbs, new_return_bb->index);
+      /* We change CFG in a way tree-inline is not able to compensate on while
+	 updating PHIs.  There are only virtuals in return_bb, so recompute
+	 them.  */
+      for (gsi = gsi_start_phis (return_bb); !gsi_end_p (gsi);)
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  gcc_assert (!is_gimple_reg (gimple_phi_result (stmt)));
+	  mark_sym_for_renaming (SSA_NAME_VAR (PHI_RESULT (stmt)));
+	  gsi_remove (&gsi, false);
+	}
+    }
+  /* When we pass aorund the value, use existing return block.  */
+  else
     bitmap_set_bit (split_point->split_bbs, return_bb->index);
 
   /* Now create the actual clone.  */
@@ -974,15 +1066,7 @@ split_function (struct split_point *split_point)
 	{
 	  real_retval = retval = find_retval (return_bb);
 
-	  /* See if return value is computed by split part;
-	     function might just return its argument, invariant or undefined
-	     value.  In this case we don't need to do any updating.  */
-	  if (real_retval
-	      && !is_gimple_min_invariant (retval)
-	      && (TREE_CODE (retval) != SSA_NAME
-		  || (!SSA_NAME_IS_DEFAULT_DEF (retval)
-		      || DECL_BY_REFERENCE
-			   (DECL_RESULT (current_function_decl)))))
+	  if (real_retval && split_point->split_part_set_retval)
 	    {
 	      gimple_stmt_iterator psi;
 
@@ -1038,7 +1122,8 @@ split_function (struct split_point *split_point)
       else
 	{
 	  gimple ret;
-	  if (!VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))))
+	  if (split_point->split_part_set_retval
+	      && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl))))
 	    {
 	      retval = DECL_RESULT (current_function_decl);
 
