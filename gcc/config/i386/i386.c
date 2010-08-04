@@ -1846,17 +1846,13 @@ struct GTY(()) stack_local_entry {
   */
 struct ix86_frame
 {
-  int padding0;
   int nsseregs;
   int nregs;
-  int padding1;
   int va_arg_size;
   int red_zone_size;
-  HOST_WIDE_INT frame;
-  int padding2;
   int outgoing_arguments_size;
+  HOST_WIDE_INT frame;
 
-  HOST_WIDE_INT to_allocate;
   /* The offsets relative to ARG_POINTER.  */
   HOST_WIDE_INT frame_pointer_offset;
   HOST_WIDE_INT hard_frame_pointer_offset;
@@ -7873,15 +7869,14 @@ ix86_can_use_return_insn_p (void)
   if (! reload_completed || frame_pointer_needed)
     return 0;
 
-  /* Don't allow more than 32 pop, since that's all we can do
+  /* Don't allow more than 32k pop, since that's all we can do
      with one instruction.  */
-  if (crtl->args.pops_args
-      && crtl->args.size >= 32768)
+  if (crtl->args.pops_args && crtl->args.size >= 32768)
     return 0;
 
   ix86_compute_frame_layout (&frame);
-  return frame.to_allocate == 0 && frame.padding0 == 0
-         && (frame.nregs + frame.nsseregs) == 0;
+  return (frame.stack_pointer_offset == UNITS_PER_WORD
+	  && (frame.nregs + frame.nsseregs) == 0);
 }
 
 /* Value should be nonzero if functions must have frame pointers.
@@ -8330,6 +8325,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   HOST_WIDE_INT offset;
   unsigned int preferred_alignment;
   HOST_WIDE_INT size = get_frame_size ();
+  HOST_WIDE_INT to_allocate;
 
   frame->nregs = ix86_nsaved_regs ();
   frame->nsseregs = ix86_nsaved_sseregs ();
@@ -8416,14 +8412,12 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   offset += frame->nregs * UNITS_PER_WORD;
   frame->reg_save_offset = offset;
 
-  /* Align SSE reg save area.  */
+  /* Align and set SSE register save area.  */
   if (frame->nsseregs)
-    frame->padding0 = ((offset + 16 - 1) & -16) - offset;
-  else
-    frame->padding0 = 0;
-
-  /* SSE register save area.  */
-  offset += frame->padding0 + frame->nsseregs * 16;
+    {
+      offset = (offset + 16 - 1) & -16;
+      offset += frame->nsseregs * 16;
+    }
   frame->sse_reg_save_offset = offset;
 
   /* Va-arg area */
@@ -8431,10 +8425,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
   offset += frame->va_arg_size;
 
   /* Align start of frame for local function.  */
-  frame->padding1 = ((offset + stack_alignment_needed - 1)
-		     & -stack_alignment_needed) - offset;
-
-  offset += frame->padding1;
+  offset = (offset + stack_alignment_needed - 1) & -stack_alignment_needed;
 
   /* Frame pointer points here.  */
   frame->frame_pointer_offset = offset;
@@ -8460,23 +8451,16 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
      or using alloca.  */
   if (!current_function_is_leaf || cfun->calls_alloca
       || ix86_current_function_calls_tls_descriptor)
-    frame->padding2 = ((offset + preferred_alignment - 1)
-		       & -preferred_alignment) - offset;
-  else
-    frame->padding2 = 0;
-
-  offset += frame->padding2;
+    offset = (offset + preferred_alignment - 1) & -preferred_alignment;
 
   /* We've reached end of stack frame.  */
   frame->stack_pointer_offset = offset;
 
   /* Size prologue needs to allocate.  */
-  frame->to_allocate =
-    (size + frame->padding1 + frame->padding2
-     + frame->outgoing_arguments_size + frame->va_arg_size);
+  to_allocate = offset - frame->sse_reg_save_offset;
 
-  if ((!frame->to_allocate && frame->nregs <= 1)
-      || (TARGET_64BIT && frame->to_allocate >= (HOST_WIDE_INT) 0x80000000))
+  if ((!to_allocate && frame->nregs <= 1)
+      || (TARGET_64BIT && to_allocate >= (HOST_WIDE_INT) 0x80000000))
     frame->save_regs_using_mov = false;
 
   if (ix86_using_red_zone ()
@@ -8484,7 +8468,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
       && current_function_is_leaf
       && !ix86_current_function_calls_tls_descriptor)
     {
-      frame->red_zone_size = frame->to_allocate;
+      frame->red_zone_size = to_allocate;
       if (frame->save_regs_using_mov)
 	frame->red_zone_size += frame->nregs * UNITS_PER_WORD;
       if (frame->red_zone_size > RED_ZONE_SIZE - RED_ZONE_RESERVE)
@@ -8492,7 +8476,6 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
     }
   else
     frame->red_zone_size = 0;
-  frame->to_allocate -= frame->red_zone_size;
   frame->stack_pointer_offset -= frame->red_zone_size;
 }
 
@@ -9597,16 +9580,13 @@ ix86_expand_prologue (void)
       m->fs.realigned = true;
     }
 
-  allocate = frame.to_allocate + frame.nsseregs * 16 + frame.padding0;
-
   if (!frame.save_regs_using_mov)
     {
       ix86_emit_save_regs ();
       int_registers_saved = true;
       gcc_assert (m->fs.sp_offset == frame.reg_save_offset);
     }
-  else
-    allocate += frame.nregs * UNITS_PER_WORD;
+  allocate = frame.stack_pointer_offset - m->fs.sp_offset;
 
   /* The stack has already been decremented by the instruction calling us
      so we need to probe unconditionally to preserve the protection area.  */
@@ -9998,11 +9978,12 @@ ix86_expand_epilogue (int style)
     restore_regs_via_mov = true;
   else if (TARGET_EPILOGUE_USING_MOVE
 	   && cfun->machine->use_fast_prologue_epilogue
-	   && (frame.nregs > 1 || (frame.to_allocate + frame.padding0) != 0))
+	   && (frame.nregs > 1
+	       || m->fs.sp_offset != frame.reg_save_offset))
     restore_regs_via_mov = true;
   else if (frame_pointer_needed
 	   && !frame.nregs
-	   && (frame.to_allocate + frame.padding0) != 0)
+	   && m->fs.sp_offset != frame.reg_save_offset)
     restore_regs_via_mov = true;
   else if (frame_pointer_needed
 	   && TARGET_USE_LEAVE
