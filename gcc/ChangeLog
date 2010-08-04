@@ -1,3 +1,9 @@
+2010-08-04  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/45162
+	* df-problems.c (df_word_lr_bb_local_compute): Ignore DEBUG_INSNs.
+	* dce.c (word_dce_process_block): Likewise.
+
 2010-08-04  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/44583

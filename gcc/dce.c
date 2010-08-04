@@ -795,7 +795,7 @@ word_dce_process_block (basic_block bb, bool redo_out)
   bitmap_copy (local_live, DF_WORD_LR_OUT (bb));
 
   FOR_BB_INSNS_REVERSE (bb, insn)
-    if (INSN_P (insn))
+    if (NONDEBUG_INSN_P (insn))
       {
 	bool any_changed;
 	/* No matter if the instruction is needed or not, we remove

@@ -2472,7 +2472,7 @@ df_word_lr_bb_local_compute (unsigned int bb_index)
     {
       unsigned int uid = INSN_UID (insn);
 
-      if (!INSN_P (insn))
+      if (!NONDEBUG_INSN_P (insn))
 	continue;
       for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
 	{
