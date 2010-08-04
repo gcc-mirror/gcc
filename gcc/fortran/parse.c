@@ -236,9 +236,7 @@ decode_statement (void)
   match m;
   char c;
 
-#ifdef GFC_DEBUG
-  gfc_symbol_state ();
-#endif
+  gfc_enforce_clean_symbol_state ();
 
   gfc_clear_error ();	/* Clear any pending errors.  */
   gfc_clear_warning ();	/* Clear any pending warnings.  */
@@ -484,9 +482,7 @@ decode_omp_directive (void)
   locus old_locus;
   char c;
 
-#ifdef GFC_DEBUG
-  gfc_symbol_state ();
-#endif
+  gfc_enforce_clean_symbol_state ();
 
   gfc_clear_error ();	/* Clear any pending errors.  */
   gfc_clear_warning ();	/* Clear any pending warnings.  */
@@ -588,9 +584,7 @@ decode_gcc_attribute (void)
 {
   locus old_locus;
 
-#ifdef GFC_DEBUG
-  gfc_symbol_state ();
-#endif
+  gfc_enforce_clean_symbol_state ();
 
   gfc_clear_error ();	/* Clear any pending errors.  */
   gfc_clear_warning ();	/* Clear any pending warnings.  */
@@ -879,7 +873,6 @@ blank_line:
   return ST_NONE;
 }
 
-extern gfc_symbol *changed_syms;
 
 /* Return the next non-ST_NONE statement to the caller.  We also worry
    about including files and the ends of include files at this stage.  */
@@ -890,8 +883,7 @@ next_statement (void)
   gfc_statement st;
   locus old_locus;
 
-  /* We start with a clean state.  */
-  gcc_assert (changed_syms == NULL);
+  gfc_enforce_clean_symbol_state ();
 
   gfc_new_block = NULL;
 

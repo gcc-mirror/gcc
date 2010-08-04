@@ -98,7 +98,7 @@ gfc_namespace *gfc_global_ns_list;
 
 gfc_gsymbol *gfc_gsym_root = NULL;
 
-gfc_symbol *changed_syms = NULL;
+static gfc_symbol *changed_syms = NULL;
 
 gfc_dt_list *gfc_derived_types;
 
@@ -2503,6 +2503,7 @@ gfc_free_symbol (gfc_symbol *sym)
 
 
 /* Decrease the reference counter and free memory when we reach zero.  */
+
 void
 gfc_release_symbol (gfc_symbol *sym)
 {
@@ -3442,16 +3443,13 @@ gfc_save_all (gfc_namespace *ns)
 }
 
 
-#ifdef GFC_DEBUG
 /* Make sure that no changes to symbols are pending.  */
 
 void
-gfc_symbol_state(void) {
-
-  if (changed_syms != NULL)
-    gfc_internal_error("Symbol changes still pending!");
+gfc_enforce_clean_symbol_state(void)
+{
+  gcc_assert (changed_syms == NULL);
 }
-#endif
 
 
 /************** Global symbol handling ************/
