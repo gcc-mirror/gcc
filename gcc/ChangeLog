@@ -1,3 +1,9 @@
+2010-08-04  Richard Guenther  <rguenther@suse.de>
+
+	* Makefile.in (double-int.o): Add $(TOPLEV_H) dependency.
+	* double-int.h (double_int_ctz): Declare.
+	* double-int.c (double_int_ctz): New function.
+
 2010-08-04  Hariharan Sandanagobalane <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE):
