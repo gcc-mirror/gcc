@@ -23,10 +23,6 @@
  *                                                                          *
  ****************************************************************************/
 
-/* FIXME: Still need to include rtl.h here (via expr.h) because this file
-   actually generates RTL (search for gen_rtx_* in gnat_to_gnu_entity).  */
-#undef IN_GCC_FRONTEND
-
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -36,7 +32,6 @@
 #include "toplev.h"
 #include "ggc.h"
 #include "target.h"
-#include "expr.h"
 #include "tree-inline.h"
 
 #include "ada.h"
@@ -600,18 +595,18 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    && DECL_NAME (TYPE_NAME (gnu_type)) == exception_data_name_id)
 	  gnu_type = except_type_node;
 
-	/* For a debug renaming declaration, build a pure debug entity.  */
+	/* For a debug renaming declaration, build a debug-only entity.  */
 	if (Present (Debug_Renaming_Link (gnat_entity)))
 	  {
-	    rtx addr;
+	    /* Force a non-null value to make sure the symbol is retained.  */
+	    tree value = build1 (INDIRECT_REF, gnu_type,
+				 build1 (NOP_EXPR,
+					 build_pointer_type (gnu_type),
+					 integer_minus_one_node));
 	    gnu_decl = build_decl (input_location,
 				   VAR_DECL, gnu_entity_name, gnu_type);
-	    /* The (MEM (CONST (0))) pattern is prescribed by STABS.  */
-	    if (global_bindings_p ())
-	      addr = gen_rtx_CONST (VOIDmode, const0_rtx);
-	    else
-	      addr = stack_pointer_rtx;
-	    SET_DECL_RTL (gnu_decl, gen_rtx_MEM (Pmode, addr));
+	    SET_DECL_VALUE_EXPR (gnu_decl, value);
+	    DECL_HAS_VALUE_EXPR_P (gnu_decl) = 1;
 	    gnat_pushdecl (gnu_decl, gnat_entity);
 	    break;
 	  }
