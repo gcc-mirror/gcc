@@ -542,6 +542,19 @@
   (and (match_operand 0 "fr_reg_or_fp01_operand")
        (not (match_code "subreg"))))
 
+;; Like fr_reg_or_fp01_operand, but don't allow 0 if flag_signed_zero is set.
+;; Using f0 as the second arg to fadd or fsub, or as the third arg to fma or
+;; fms can cause a zero result to have the wrong sign.
+(define_predicate "fr_reg_or_signed_fp01_operand"
+  (ior (match_operand 0 "fr_register_operand")
+       (and (match_code "const_double")
+	    (match_test "satisfies_constraint_Z (op)"))))
+
+;; Like fr_reg_or_signed_fp01_operand, but don't allow any SUBREGs.
+(define_predicate "xfreg_or_signed_fp01_operand"
+  (and (match_operand 0 "fr_reg_or_signed_fp01_operand")
+       (not (match_code "subreg"))))
+
 ;; True if OP is a constant zero, or a register.
 (define_predicate "fr_reg_or_0_operand"
   (ior (match_operand 0 "fr_register_operand")

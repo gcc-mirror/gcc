@@ -1,3 +1,36 @@
+2010-08-04  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/44583
+	* config/ia64/constraints.md (Z): New.
+	* config/ia64/predicates.md (fr_reg_or_signed_fp01_operand): New.
+	(xfreg_or_signed_fp01_operand): New.
+	* config/ia64/ia64.md (addsf3): Replace fr_reg_or_fp01_operand
+	with fr_reg_or_signed_fp01_operand and constraint G with Z.
+	(subsf3): Ditto.
+	(*maddsf4): Ditto.
+	(*msubsf4): Ditto.
+	(adddf3): Ditto.
+	(adddf3_trunc): Ditto.
+	(subdf3): Ditto.
+	(*subdf3_trunc): Ditto.
+	(*madddf4): Ditto.
+	(*madddf4_trunc): Ditto.
+	(*msubdf4): Ditto.
+	(*msubdf4_trunc): Ditto.
+	(addxf3): Replace xfreg_or_fp01_operand with
+	xfreg_or_signed_fp01_operand and constraint G with Z.
+	(*addxf3_truncsf): Ditto.
+	(*addxf3_truncdf): Ditto.
+	(subxf3): Ditto.
+	(*subxf3_truncsf): Ditto.
+	(*subxf3_truncdf): Ditto.
+	(*maddxf4): Ditto.
+	(*maddxf4_truncsf): Ditto.
+	(*maddxf4_truncdf): Ditto.
+	(*msubxf4): Ditto.
+	(*msubxf4_truncsf): Ditto.
+	(*msubxf4_truncdf): Ditto.
+
 2010-08-04  Richard Guenther  <rguenther@suse.de>
 
 	* alias.c (rtx_refs_may_alias_p): Do not resort to TBAA

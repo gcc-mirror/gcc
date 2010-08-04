@@ -95,6 +95,13 @@
   (and (match_code "const_double")
        (match_test "op == CONST0_RTX (mode) || op == CONST1_RTX (mode)")))
 
+(define_constraint "Z"
+  "1.0 or (0.0 and !flag_signed_zeros)"
+  (and (match_code "const_double")
+       (ior (match_test "op == CONST1_RTX (mode)")
+	    (and (match_test "op == CONST0_RTX (mode)")
+		 (match_test "!flag_signed_zeros")))))
+
 (define_constraint "H"
   "0.0"
   (and (match_code "const_double")
