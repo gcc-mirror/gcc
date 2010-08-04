@@ -936,11 +936,26 @@ resolve_structure_cons (gfc_expr *expr)
 	      p = gfc_constructor_first (cons->expr->value.constructor);
 	      if (cons->expr->ts.u.cl != p->expr->ts.u.cl)
 		{
-		  gfc_free_expr (cons->expr->ts.u.cl->length);
-		  gfc_free (cons->expr->ts.u.cl);
+		  gfc_charlen *cl, *cl2;
+
+		  cl2 = NULL;
+		  for (cl = gfc_current_ns->cl_list; cl; cl = cl->next)
+		    {
+		      if (cl == cons->expr->ts.u.cl)
+			break;
+		      cl2 = cl;
+		    }
+
+		  gcc_assert (cl);
+
+		  if (cl2)
+		    cl2->next = cl->next;
+
+		  gfc_free_expr (cl->length);
+		  gfc_free (cl);
 		}
 
-	      cons->expr->ts.u.cl = gfc_get_charlen ();
+	      cons->expr->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 	      cons->expr->ts.u.cl->length_from_typespec = true;
 	      cons->expr->ts.u.cl->length = gfc_copy_expr (comp->ts.u.cl->length);
 	      gfc_resolve_character_array_constructor (cons->expr);
