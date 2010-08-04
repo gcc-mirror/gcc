@@ -1,5 +1,8 @@
 2010-08-04  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (ix86_expand_prologue): Simplify logic
+	saving the int registers.
+
 	* dwarf2out.c: Remove most of the DWARF2_DEBUGGING_INFO
 	and DWARF2_UNWIND_INFO conditional compilation.
 

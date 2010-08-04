@@ -9194,6 +9194,7 @@ ix86_expand_prologue (void)
   struct ix86_frame frame;
   HOST_WIDE_INT allocate;
   int gen_frame_pointer = frame_pointer_needed;
+  bool int_registers_saved = false;
 
   ix86_finalize_stack_realign_flags ();
 
@@ -9347,7 +9348,10 @@ ix86_expand_prologue (void)
   allocate = frame.to_allocate + frame.nsseregs * 16 + frame.padding0;
 
   if (!frame.save_regs_using_mov)
-    ix86_emit_save_regs ();
+    {
+      ix86_emit_save_regs ();
+      int_registers_saved = true;
+    }
   else
     allocate += frame.nregs * UNITS_PER_WORD;
 
@@ -9356,7 +9360,7 @@ ix86_expand_prologue (void)
   if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
     {
       /* We expect the registers to be saved when probes are used.  */
-      gcc_assert (!frame.save_regs_using_mov);
+      gcc_assert (int_registers_saved);
 
       if (STACK_CHECK_MOVING_SP)
 	{
@@ -9382,13 +9386,17 @@ ix86_expand_prologue (void)
      avoid doing this if I am going to have to probe the stack since
      at least on x86_64 the stack probe can turn into a call that clobbers
      a red zone location */
-  if (!TARGET_64BIT_MS_ABI && TARGET_RED_ZONE && frame.save_regs_using_mov
+  if (!int_registers_saved
+      && (TARGET_RED_ZONE && !TARGET_64BIT_MS_ABI)
       && (! TARGET_STACK_PROBE || allocate < CHECK_STACK_LIMIT))
-    ix86_emit_save_regs_using_mov ((frame_pointer_needed
-				     && !crtl->stack_realign_needed)
-                                   ? hard_frame_pointer_rtx
-				   : stack_pointer_rtx,
-				   -frame.nregs * UNITS_PER_WORD);
+    {
+      ix86_emit_save_regs_using_mov ((frame_pointer_needed
+				      && !crtl->stack_realign_needed)
+                                     ? hard_frame_pointer_rtx
+				     : stack_pointer_rtx,
+				     -frame.nregs * UNITS_PER_WORD);
+      int_registers_saved = true;
+    }
 
   if (allocate == 0)
     ;
@@ -9439,9 +9447,7 @@ ix86_expand_prologue (void)
 	}
     }
 
-  if (frame.save_regs_using_mov
-      && !(!TARGET_64BIT_MS_ABI && TARGET_RED_ZONE
-         && (! TARGET_STACK_PROBE || allocate < CHECK_STACK_LIMIT)))
+  if (!int_registers_saved)
     {
       if (!frame_pointer_needed
 	  || !(frame.to_allocate + frame.padding0)
