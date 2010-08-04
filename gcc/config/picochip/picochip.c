@@ -301,6 +301,9 @@ static char picochip_get_vliw_alu_id (void);
 #undef TARGET_STATIC_CHAIN
 #define TARGET_STATIC_CHAIN picochip_static_chain
 
+#undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
+#define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE picochip_override_options
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 
@@ -359,7 +362,6 @@ picochip_override_options (void)
   flag_schedule_insns_after_reload = 0;
   if (picochip_flag_schedule_insns2)
     {
-
       if (optimize_size)
 	picochip_schedule_type = DFA_TYPE_SPACE;
       else
@@ -367,7 +369,6 @@ picochip_override_options (void)
 	  picochip_schedule_type = DFA_TYPE_SPEED;
 	  flag_delayed_branch = 0;
 	}
-
     }
   else
     picochip_schedule_type = DFA_TYPE_NONE;
@@ -449,6 +450,73 @@ picochip_init_libfuncs (void)
   set_optab_libfunc (add_optab, DImode, "_adddi3");
   set_optab_libfunc (sub_optab, DImode, "_subdi3");
 }
+
+/* Memcpy function */
+int
+picochip_expand_movmemhi (rtx *operands)
+{
+  rtx src_addr_reg, dst_addr_reg, count_reg, src_mem, dst_mem, tmp_reg;
+  rtx start_label;
+  int align, size;
+  src_addr_reg = gen_reg_rtx(HImode);
+  dst_addr_reg = gen_reg_rtx(HImode);
+  count_reg = gen_reg_rtx(HImode);
+  emit_insn (gen_movhi (count_reg, operands[2]));
+  emit_insn (gen_movqi (src_addr_reg, XEXP(operands[1], 0)));
+  emit_insn (gen_movqi (dst_addr_reg, XEXP(operands[0], 0)));
+  gcc_assert (GET_CODE(count_reg) == REG);
+  start_label = gen_label_rtx ();
+  emit_label (start_label);
+
+  /* We can specialise the code for different alignments */
+  align = INTVAL(operands[3]);
+  size = INTVAL(operands[2]);
+  gcc_assert(align >= 0 && size >= 0);
+  if (size != 0)
+    {
+      if (size % 4 == 0 && align % 4 == 0)
+        {
+          src_mem = gen_rtx_MEM(SImode, src_addr_reg);
+          dst_mem = gen_rtx_MEM(SImode, dst_addr_reg);
+          tmp_reg = gen_reg_rtx(SImode);
+          emit_insn (gen_movsi (tmp_reg, src_mem));
+          emit_insn (gen_movsi (dst_mem, tmp_reg));
+          emit_insn (gen_addhi3 (dst_addr_reg, dst_addr_reg, GEN_INT(4)));
+          emit_insn (gen_addhi3 (src_addr_reg, src_addr_reg, GEN_INT(4)));
+          emit_insn (gen_addhi3 (count_reg, count_reg, GEN_INT(-4)));
+          /* The sub instruction above generates cc, but we cannot just emit the branch.*/
+          emit_cmp_and_jump_insns (count_reg, const0_rtx, GT, 0, HImode, 0, start_label);
+        }
+      else if (size % 2 == 0 && align % 2 == 0)
+        {
+          src_mem = gen_rtx_MEM(HImode, src_addr_reg);
+          dst_mem = gen_rtx_MEM(HImode, dst_addr_reg);
+          tmp_reg = gen_reg_rtx(HImode);
+          emit_insn (gen_movhi (tmp_reg, src_mem));
+          emit_insn (gen_movhi (dst_mem, tmp_reg));
+          emit_insn (gen_addhi3 (dst_addr_reg, dst_addr_reg, const2_rtx));
+          emit_insn (gen_addhi3 (src_addr_reg, src_addr_reg, const2_rtx));
+          emit_insn (gen_addhi3 (count_reg, count_reg, GEN_INT(-2)));
+          /* The sub instruction above generates cc, but we cannot just emit the branch.*/
+          emit_cmp_and_jump_insns (count_reg, const0_rtx, GT, 0, HImode, 0, start_label);
+        }
+      else
+        {
+          src_mem = gen_rtx_MEM(QImode, src_addr_reg);
+          dst_mem = gen_rtx_MEM(QImode, dst_addr_reg);
+          tmp_reg = gen_reg_rtx(QImode);
+          emit_insn (gen_movqi (tmp_reg, src_mem));
+          emit_insn (gen_movqi (dst_mem, tmp_reg));
+          emit_insn (gen_addhi3 (dst_addr_reg, dst_addr_reg, const1_rtx));
+          emit_insn (gen_addhi3 (src_addr_reg, src_addr_reg, const1_rtx));
+          emit_insn (gen_addhi3 (count_reg, count_reg, GEN_INT(-1)));
+          /* The sub instruction above generates cc, but we cannot just emit the branch.*/
+          emit_cmp_and_jump_insns (count_reg, const0_rtx, GT, 0, HImode, 0, start_label);
+        }
+    }
+  return 1;
+}
+
 
 /* Return the register class for letter C.  */
 enum reg_class
@@ -523,9 +591,9 @@ rtx
 picochip_return_addr_rtx(int count, rtx frameaddr ATTRIBUTE_UNUSED)
 {
    if (count==0)
-      return gen_rtx_REG (Pmode, LINK_REGNUM);
+     return gen_rtx_REG (Pmode, LINK_REGNUM);
    else
-      return NULL_RTX;
+     return NULL_RTX;
 }
 
 
@@ -1150,11 +1218,11 @@ picochip_regno_nregs (int regno ATTRIBUTE_UNUSED, int mode)
 }
 
 int
-picochip_class_max_nregs (int class, int mode)
+picochip_class_max_nregs (int reg_class, int mode)
 {
   int size = ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD);
 
-  if (class == ACC_REGS)
+  if (reg_class == ACC_REGS)
     return 1;
 
   if (GET_MODE_CLASS (mode) == MODE_CC)
@@ -1339,11 +1407,12 @@ rtx
 picochip_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
                              enum machine_mode mode)
 {
+  unsigned mask_val;
+
   if (!optimize)
     return x;
 
-  unsigned mask_val;
-  // Depending on mode, the offsets allowed are either 16/32/64.
+  /* Depending on mode, the offsets allowed are either 16/32/64.*/
   switch (mode)
     {
       case QImode:
@@ -1363,12 +1432,13 @@ picochip_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       && GET_CODE (XEXP (x, 0)) == REG
       && GET_CODE (XEXP (x, 1)) == CONST_INT)
     {
-      int offset = INTVAL (XEXP (x, 1));
+      int high_val, low_val, offset;
+      offset = INTVAL (XEXP (x, 1));
       // Ignore cases with negative offsets.
       if (offset < 0)
         return x;
-      int high_val = offset & mask_val;
-      int low_val = offset - high_val;
+      high_val = offset & mask_val;
+      low_val = offset - high_val;
       if (high_val != 0)
         {
           rtx temp_reg = force_reg (Pmode, gen_rtx_PLUS (Pmode, XEXP (x, 0), GEN_INT(high_val)));
@@ -1398,6 +1468,8 @@ picochip_legitimize_reload_address (rtx *x,
                                     int opnum, int type,
                                     int ind_levels ATTRIBUTE_UNUSED)
 {
+  unsigned mask_val;
+
   if (picochip_symbol_offset(*x))
     {
       *x = gen_rtx_CONST(mode, *x);
@@ -1419,7 +1491,6 @@ picochip_legitimize_reload_address (rtx *x,
       return 1;
     }
 
-  unsigned mask_val;
   // Depending on mode, the offsets allowed are either 16/32/64.
   switch (mode)
     {
@@ -1440,12 +1511,13 @@ picochip_legitimize_reload_address (rtx *x,
       && GET_CODE (XEXP (*x, 0)) == REG
       && GET_CODE (XEXP (*x, 1)) == CONST_INT)
     {
-      int offset = INTVAL (XEXP (*x, 1));
+      int high_val, low_val, offset;
+      offset = INTVAL (XEXP (*x, 1));
       // Ignore cases with negative offsets.
       if (offset < 0)
         return 0;
-      int high_val = offset & mask_val;
-      int low_val = offset - high_val;
+      high_val = offset & mask_val;
+      low_val = offset - high_val;
       if (high_val != 0)
         {
           rtx temp_reg = gen_rtx_PLUS (Pmode, XEXP (*x, 0), GEN_INT(high_val));
@@ -1637,7 +1709,7 @@ picochip_output_ascii (FILE * file, const char *str, int length)
 
   for (i = 0; i < length; ++i)
     {
-      fprintf (file, "16#%hhx# ", (char) (str[i]));
+      fprintf (file, "16#%x# ", (char) (str[i]));
     }
 
   fprintf (file, "  ; ");
@@ -2240,6 +2312,7 @@ picochip_output_cbranch (rtx operands[])
 const char *
 picochip_output_compare (rtx operands[])
 {
+  int code;
 
   if (HImode != GET_MODE (operands[1]) ||
       (HImode != GET_MODE (operands[2]) &&
@@ -2249,9 +2322,9 @@ picochip_output_compare (rtx operands[])
 		      __FUNCTION__);
     }
 
+  code = GET_CODE (operands[0]);
   /* Use the type of comparison to output the appropriate condition
      test. */
-  int code = GET_CODE (operands[0]);
   switch (code)
     {
     case NE:
@@ -3580,6 +3653,7 @@ gen_SImode_mem(rtx opnd1,rtx opnd2)
 {
   int offset1=0,offset2=0;
   rtx reg;
+  rtx address;
   if (GET_CODE(XEXP(opnd1,0)) == PLUS && GET_CODE(XEXP(XEXP(opnd1,0),1)) == CONST_INT)
   {
     offset1 = INTVAL(XEXP(XEXP(opnd1,0),1));
@@ -3593,7 +3667,7 @@ gen_SImode_mem(rtx opnd1,rtx opnd2)
   {
     offset2 = INTVAL(XEXP(XEXP(opnd2,0),1));
   }
-  rtx address = gen_rtx_PLUS (HImode, reg, GEN_INT(minimum(offset1,offset2)));
+  address = gen_rtx_PLUS (HImode, reg, GEN_INT(minimum(offset1,offset2)));
   return gen_rtx_MEM(SImode,address);
 }
 
@@ -4033,6 +4107,7 @@ static rtx
 picochip_generate_halt (void)
 {
   static int currentId = 0;
+  rtx insns;
   rtx id = GEN_INT (currentId);
   currentId += 1;
 
@@ -4043,7 +4118,7 @@ picochip_generate_halt (void)
      it has to continue execution after the HALT.*/
   emit_barrier ();
 
-  rtx insns = get_insns();
+  insns = get_insns();
   end_sequence();
   emit_insn (insns);
 
@@ -4056,6 +4131,7 @@ picochip_generate_halt (void)
 void
 picochip_init_builtins (void)
 {
+  tree noreturn;
   tree endlink = void_list_node;
   tree int_endlink = tree_cons (NULL_TREE, integer_type_node, endlink);
   tree unsigned_endlink = tree_cons (NULL_TREE, unsigned_type_node, endlink);
@@ -4197,7 +4273,7 @@ picochip_init_builtins (void)
   /* Halt instruction. Note that the builtin function is marked as
      having the attribute `noreturn' so that the compiler realises
      that the halt stops the program dead. */
-  tree noreturn = tree_cons (get_identifier ("noreturn"), NULL, NULL);
+  noreturn = tree_cons (get_identifier ("noreturn"), NULL, NULL);
   add_builtin_function ("__builtin_halt", void_ftype_void,
 			       PICOCHIP_BUILTIN_HALT, BUILT_IN_MD, NULL,
 			       noreturn);

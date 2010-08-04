@@ -46,6 +46,8 @@ extern const char *picochip_output_get_array (int alternative,
 extern const char *picochip_output_testport_array (int alternative,
 						   rtx operands[]);
 
+extern int picochip_expand_movmemhi (rtx *operands);
+
 extern rtx gen_SImode_mem(rtx opnd1,rtx opnd2);
 extern bool ok_to_peephole_stw(rtx opnd0, rtx opnd1, rtx opnd2, rtx opnd3);
 extern bool ok_to_peephole_ldw(rtx opnd0, rtx opnd1, rtx opnd2, rtx opnd3);

@@ -1,3 +1,12 @@
+2010-08-04  Hariharan Sandanagobalane <hariharan@picochip.com>
+
+	* config/picochip/picochip.c (TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE):
+	Define.
+	picochip_expand_movmemhi : Expand movmem pattern.
+	* config/picochip/picochip-protos.h (picochip_expand_movmemhi) :
+	Declare.
+	* config/picochip/picochip.md (movmemhi) : New pattern.
+
 2010-08-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/unix.h (GLOBAL_ASM_OPS): Add tabs around .globl.
