@@ -1,3 +1,15 @@
+2010-08-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* c-ada-spec.c (dump_ada_template): Mark underlying instance type as
+	visited.
+	(dump_generic_ada_node): Code clean up. Use TREE_VISITED flag to
+	decide whether a type has already been declared/seen.
+	Do not go to the original type.
+	(dump_nested_types): New parameter forward.
+	Generate forward declaration if needed and mark type as visited.
+	(print_ada_declaration): Call dump_nested_types if not already done.
+	Mark types as visited.
+
 2010-08-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* c.opt (-print-pch-checksum): Remove option.
