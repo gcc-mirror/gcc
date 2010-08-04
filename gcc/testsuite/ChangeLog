@@ -1,3 +1,9 @@
+2010-08-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR c++/44641
+	* lib/scanasm.exp (dg-function-on-line): Expand regex to also ignore
+	.frame and .mask assembler directives.
+
 2010-08-04  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/vrp35.c: Adjust.
