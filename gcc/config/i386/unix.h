@@ -67,7 +67,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define BSS_SECTION_ASM_OP "\t.bss"
 
 /* Globalizing directive for a label.  */
-#define GLOBAL_ASM_OP ".globl "
+#define GLOBAL_ASM_OP "\t.globl\t"
 
 /* By default, target has a 80387, uses IEEE compatible arithmetic,
    and returns float values in the 387.  */

@@ -1,3 +1,7 @@
+2010-08-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/unix.h (GLOBAL_ASM_OPS): Add tabs around .globl.
+
 2010-08-03  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* simplify-rtx.c (simplify_binary_operation_1): Try to simplify away
@@ -32,8 +36,7 @@
 
 	* config/alpha/alpha.h (SWITCH_TAKES_ARG): Define.
 	* config/alpha/osf5.h (LIB_SPEC): Don't handle -a.
-	* config/bfin/bfin.h (ASM_SPEC, LINK_SPEC): Don't pass -G*
-	options.
+	* config/bfin/bfin.h (ASM_SPEC, LINK_SPEC): Don't pass -G* options.
 	* config/darwin.h (WORD_SWITCH_TAKES_ARG): Handle -iframework.
 	* config/ia64/ia64.h (SWITCH_TAKES_ARG): Define.
 	* config/iq2000/iq2000.h (SWITCH_TAKES_ARG): Remove.
