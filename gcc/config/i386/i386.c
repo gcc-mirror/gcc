@@ -10101,49 +10101,11 @@ ix86_expand_epilogue (int style)
 	    }
 	  m->fs.sp_offset = UNITS_PER_WORD;
 	}
-      else if (!frame_pointer_needed)
-	{
-	  pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
-				     GEN_INT (m->fs.sp_offset
-					      - frame.reg_save_offset
-					      + frame.nregs * UNITS_PER_WORD),
-				     style, !using_drap);
-	}
-      else
-	{
-          if (stack_realign_fp)
-	    {
-	      /* We're re-defining what it means to be the local stack
-		 frame.  Thus the FP is suddenly valid and the SP isn't.  */
-	      m->fs.fp_valid = true;
-	      m->fs.sp_valid = false;
-	      m->fs.realigned = false;
-	    }
-
-	  /* Leave results in shorter dependency chains on CPUs that are
-	     able to grok it fast.  */
-	  if (TARGET_USE_LEAVE
-	      || optimize_function_for_size_p (cfun)
-	      || !cfun->machine->use_fast_prologue_epilogue)
-	    ix86_emit_leave ();
-          else
-	    {
-	      pro_epilogue_adjust_stack (stack_pointer_rtx,
-				         hard_frame_pointer_rtx,
-				         const0_rtx, style, !using_drap);
-	      ix86_emit_restore_reg_using_pop (hard_frame_pointer_rtx);
-	    }
-	}
     }
   else
     {
       /* First step is to deallocate the stack frame so that we can
-	 pop the registers.
-
-	 If we realign stack with frame pointer, then stack pointer
-         won't be able to recover via lea $offset(%bp), %sp, because
-         there is a padding area between bp and sp for realign.
-         "add $to_allocate, %sp" must be used instead.  */
+	 pop the registers.  */
       if (!m->fs.sp_valid)
 	{
 	  pro_epilogue_adjust_stack (stack_pointer_rtx, hard_frame_pointer_rtx,
@@ -10161,34 +10123,38 @@ ix86_expand_epilogue (int style)
 	}
 
       ix86_emit_restore_regs_using_pop ();
+    }
 
-      if (frame_pointer_needed)
+  /* If we used a stack pointer and haven't already got rid of it,
+     then do so now.  */
+  if (m->fs.fp_valid || stack_realign_fp)
+    {
+      if (stack_realign_fp)
 	{
-	  if (stack_realign_fp)
-	    {
-	      /* We're re-defining what it means to be the local stack
-		 frame.  Thus the FP is suddenly valid and the SP isn't.  */
-	      m->fs.fp_valid = true;
-	      m->fs.sp_valid = false;
-	      m->fs.realigned = false;
-	    }
-
-	  /* Leave results in shorter dependency chains on CPUs that are
-	     able to grok it fast.  */
-	  if (TARGET_USE_LEAVE
-	      || (stack_realign_fp
-		  && (optimize_function_for_size_p (cfun)
-		      || !cfun->machine->use_fast_prologue_epilogue)))
-	    ix86_emit_leave ();
-	  else
-            {
-              if (stack_realign_fp)
-		pro_epilogue_adjust_stack (stack_pointer_rtx,
-					   hard_frame_pointer_rtx,
-					   const0_rtx, style, !using_drap);
-	      ix86_emit_restore_reg_using_pop (hard_frame_pointer_rtx);
-            }
+	  /* We're re-defining what it means to be the local stack
+	     frame.  Thus the FP is suddenly valid and the SP isn't.  */
+	  m->fs.fp_valid = true;
+	  m->fs.sp_valid = false;
+	  m->fs.realigned = false;
 	}
+
+      /* If the stack pointer is valid and pointing at the frame
+	 pointer store address, then we only need a pop.  */
+      if (m->fs.sp_valid && m->fs.sp_offset == frame.hard_frame_pointer_offset)
+	ix86_emit_restore_reg_using_pop (hard_frame_pointer_rtx);
+      /* Leave results in shorter dependency chains on CPUs that are
+	 able to grok it fast.  */
+      else if (TARGET_USE_LEAVE
+	       || optimize_function_for_size_p (cfun)
+	       || !cfun->machine->use_fast_prologue_epilogue)
+	ix86_emit_leave ();
+      else
+        {
+	  pro_epilogue_adjust_stack (stack_pointer_rtx,
+				     hard_frame_pointer_rtx,
+				     const0_rtx, style, !using_drap);
+	  ix86_emit_restore_reg_using_pop (hard_frame_pointer_rtx);
+        }
     }
 
   if (using_drap)
@@ -10222,31 +10188,20 @@ ix86_expand_epilogue (int style)
 	ix86_emit_restore_reg_using_pop (crtl->drap_reg);
     }
 
-  /* Remove the saved static chain from the stack.  The use of ECX is
-     merely as a scratch register, not as the actual static chain.  */
-  if (ix86_static_chain_on_stack)
-    {
-      rtx r, insn;
-
-      gcc_assert (m->fs.cfa_reg == stack_pointer_rtx);
-      m->fs.cfa_offset -= UNITS_PER_WORD;
-      m->fs.sp_offset -= UNITS_PER_WORD;
-
-      r = gen_rtx_REG (Pmode, CX_REG);
-      insn = emit_insn (ix86_gen_pop1 (r));
-
-      r = plus_constant (stack_pointer_rtx, UNITS_PER_WORD);
-      r = gen_rtx_SET (VOIDmode, stack_pointer_rtx, r);
-      add_reg_note (insn, REG_CFA_ADJUST_CFA, r);
-      RTX_FRAME_RELATED_P (insn) = 1;
-    }
-
-  /* At this point we should have de-allocated the entire stack frame,
-     so the stack pointer points to the return address.  */
-  gcc_assert (m->fs.sp_offset == UNITS_PER_WORD);
+  /* At this point the stack pointer must be valid, and we must have
+     restored all of the registers.  We may not have deallocated the
+     entire stack frame.  We've delayed this until now because it may
+     be possible to merge the local stack deallocation with the
+     deallocation forced by ix86_static_chain_on_stack.   */
   gcc_assert (m->fs.sp_valid);
   gcc_assert (!m->fs.fp_valid);
   gcc_assert (!m->fs.realigned);
+  if (m->fs.sp_offset != UNITS_PER_WORD)
+    {
+      pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
+				 GEN_INT (m->fs.sp_offset - UNITS_PER_WORD),
+				 style, true);
+    }
 
   /* Sibcall epilogues don't want a return instruction.  */
   if (style == 0)

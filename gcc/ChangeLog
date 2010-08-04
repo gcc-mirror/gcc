@@ -1,5 +1,9 @@
 2010-08-04  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (ix86_expand_epilogue): Eliminate code
+	duplication deconstructing the frame pointer.  Simplify
+	deallocation of the local stack frame.
+
 	* reg-notes.def (CFA_EXPRESSION): New.
 	* dwarf2out.c (dwarf2out_frame_debug): Handle it.
 	(dwarf2out_frame_debug_cfa_expression): New.
