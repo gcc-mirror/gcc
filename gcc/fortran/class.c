@@ -322,13 +322,16 @@ gfc_find_derived_vtab (gfc_symbol *derived)
   gfc_namespace *ns;
   gfc_symbol *vtab = NULL, *vtype = NULL, *found_sym = NULL;
   char name[2 * GFC_MAX_SYMBOL_LEN + 8];
-
-  ns = gfc_current_ns;
-
-  for (; ns; ns = ns->parent)
+  
+  /* Find the top-level namespace (MODULE or PROGRAM).  */
+  for (ns = gfc_current_ns; ns; ns = ns->parent)
     if (!ns->parent)
       break;
 
+  /* If the type is a class container, use the underlying derived type.  */
+  if (derived->attr.is_class)
+    derived = gfc_get_derived_super_type (derived);
+    
   if (ns)
     {
       sprintf (name, "vtab$%s", derived->name);
@@ -338,12 +341,13 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	{
 	  gfc_get_symbol (name, ns, &vtab);
 	  vtab->ts.type = BT_DERIVED;
-	  vtab->attr.flavor = FL_VARIABLE;
+	  if (gfc_add_flavor (&vtab->attr, FL_VARIABLE, NULL,
+	                      &gfc_current_locus) == FAILURE)
+	    goto cleanup;
 	  vtab->attr.target = 1;
 	  vtab->attr.save = SAVE_EXPLICIT;
 	  vtab->attr.vtab = 1;
 	  vtab->attr.access = ACCESS_PUBLIC;
-	  vtab->refs++;
 	  gfc_set_sym_referenced (vtab);
 	  sprintf (name, "vtype$%s", derived->name);
 	  
@@ -358,7 +362,6 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 				  NULL, &gfc_current_locus) == FAILURE)
 		goto cleanup;
 	      vtype->attr.access = ACCESS_PUBLIC;
-	      vtype->refs++;
 	      gfc_set_sym_referenced (vtype);
 
 	      /* Add component '$hash'.  */
@@ -421,7 +424,11 @@ cleanup:
   /* It is unexpected to have some symbols added at resolution or code
      generation time. We commit the changes in order to keep a clean state.  */
   if (found_sym)
-    gfc_commit_symbols ();
+    {
+      gfc_commit_symbol (vtab);
+      if (vtype)
+	gfc_commit_symbol (vtype);
+    }
   else
     gfc_undo_symbols ();
 

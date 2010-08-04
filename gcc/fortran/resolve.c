@@ -6569,6 +6569,18 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 	}
     }
 
+  if (e->ts.type == BT_CLASS)
+    {
+      /* Make sure the vtab symbol is present when
+	 the module variables are generated.  */
+      gfc_typespec ts = e->ts;
+      if (code->expr3)
+	ts = code->expr3->ts;
+      else if (code->ext.alloc.ts.type == BT_DERIVED)
+	ts = code->ext.alloc.ts;
+      gfc_find_derived_vtab (ts.u.derived);
+    }
+
   if (pointer || (dimension == 0 && codimension == 0))
     goto success;
 

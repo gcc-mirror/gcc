@@ -1,3 +1,15 @@
+2010-08-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42207
+	PR fortran/44064
+	PR fortran/44065
+	* class.c (gfc_find_derived_vtab): Do not generate vtabs for class
+	container types. Do not artificially increase refs. Commit symbols one
+	by one.
+	* interface.c (compare_parameter): Make sure vtabs are present before
+	generating module variables.
+	* resolve.c (resolve_allocate_expr): Ditto.
+
 2010-08-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45183
