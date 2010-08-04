@@ -1,8 +1,25 @@
+2010-08-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/42051
+	PR fortran/44064
+	* symbol.c (changed_syms): Made static again.
+	(gfc_symbol_state): Don't conditionalize on GFC_DEBUG. 
+	Changed conditional internal error into assert.
+	Rename function to ...
+	(gfc_enforce_clean_symbol_state): ... this.
+	* gfortran.h (gfc_symbol_state, gfc_enforce_clean_symbol_state): 
+	Rename the former to the latter.
+	* parse.c (decode_statement, decode_omp_directive,
+	decode_gcc_attribute): Update callers accordingly. Don't conditionalize
+	on GFC_DEBUG.
+	(changed_syms): Remove declaration.
+	(next_statement): Use gfc_enforce_clean_symbol_state.
+
 2010-08-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44857
 	* resolve.c (resolve_structure_cons): Fix handling of
-	initialization structcture constructors with character
+	initialization structure constructors with character
 	elements of the wrong length.
 	* array.c (gfc_check_iter_variable): Add NULL check.
 	(gfc_resolve_character_array_constructor): Also truncate

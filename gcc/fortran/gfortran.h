@@ -2557,7 +2557,7 @@ void gfc_traverse_ns (gfc_namespace *, void (*)(gfc_symbol *));
 void gfc_traverse_user_op (gfc_namespace *, void (*)(gfc_user_op *));
 void gfc_save_all (gfc_namespace *);
 
-void gfc_symbol_state (void);
+void gfc_enforce_clean_symbol_state (void);
 void gfc_free_dt_list (void);
 
 
