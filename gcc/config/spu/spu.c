@@ -2334,7 +2334,7 @@ spu_emit_branch_hint (rtx before, rtx branch, rtx target,
     return;
 
   /* If we have a Basic block note, emit it after the basic block note.  */
-  if (NOTE_KIND (before) == NOTE_INSN_BASIC_BLOCK)
+  if (NOTE_INSN_BASIC_BLOCK_P (before))
     before = NEXT_INSN (before);
 
   branch_label = gen_label_rtx ();
