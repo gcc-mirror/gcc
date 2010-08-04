@@ -1207,7 +1207,7 @@ gfc_check_iter_variable (gfc_expr *expr)
 
   sym = expr->symtree->n.sym;
 
-  for (c = base; c; c = c->previous)
+  for (c = base; c && c->iterator; c = c->previous)
     if (sym == c->iterator->var->symtree->n.sym)
       return SUCCESS;
 
@@ -1829,7 +1829,7 @@ got_charlen:
 	      has_ts = (expr->ts.u.cl && expr->ts.u.cl->length_from_typespec);
 
 	      if (! cl
-		  || (current_length != -1 && current_length < found_length))
+		  || (current_length != -1 && current_length != found_length))
 		gfc_set_constant_character_len (found_length, p->expr,
 						has_ts ? -1 : found_length);
 	    }
