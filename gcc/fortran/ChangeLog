@@ -1,3 +1,8 @@
+2010-08-04  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-io.c (gfc_build_io_library_fndecls): Fix return
+	value of some libgfortran functions.
+
 2010-08-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45159
