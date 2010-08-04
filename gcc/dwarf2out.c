@@ -93,11 +93,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "tree-flow.h"
 
-#ifdef DWARF2_DEBUGGING_INFO
 static void dwarf2out_source_line (unsigned int, const char *, int, bool);
-
 static rtx last_var_location_insn;
-#endif
 
 #ifdef VMS_DEBUGGING_INFO
 int vms_file_stats_name (const char *, long long *, long *, char *, int *);
@@ -418,13 +415,11 @@ current_fde (void)
 /* A list of call frame insns for the CIE.  */
 static GTY(()) dw_cfi_ref cie_cfi_head;
 
-#if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
 /* Some DWARF extensions (e.g., MIPS/SGI) implement a subprogram
    attribute that accelerates the lookup of the FDE associated
    with the subprogram.  This variable holds the table index of the FDE
    associated with the current function (body) definition.  */
 static unsigned current_funcdef_fde;
-#endif
 
 struct GTY(()) indirect_string_node {
   const char *str;
@@ -453,8 +448,6 @@ static GTY(()) bool cold_text_section_used = false;
 /* The default cold text section.  */
 static GTY(()) section *cold_text_section;
 
-#if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
-
 /* Forward declarations for functions defined in this file.  */
 
 static char *stripattributes (const char *);
@@ -465,9 +458,7 @@ static void add_fde_cfi (const char *, dw_cfi_ref);
 static void lookup_cfa_1 (dw_cfi_ref, dw_cfa_location *, dw_cfa_location *);
 static void lookup_cfa (dw_cfa_location *);
 static void reg_save (const char *, unsigned, unsigned, HOST_WIDE_INT);
-#ifdef DWARF2_UNWIND_INFO
 static void initial_return_save (rtx);
-#endif
 static HOST_WIDE_INT stack_adjust_offset (const_rtx, HOST_WIDE_INT,
 					  HOST_WIDE_INT);
 static void output_cfi (dw_cfi_ref, dw_fde_ref, int);
@@ -1195,7 +1186,6 @@ dwarf2out_return_reg (const char *label, unsigned int sreg)
   reg_save (label, DWARF_FRAME_RETURN_COLUMN, DWARF_FRAME_REGNUM (sreg), 0);
 }
 
-#ifdef DWARF2_UNWIND_INFO
 /* Record the initial position of the return address.  RTL is
    INCOMING_RETURN_ADDR_RTX.  */
 
@@ -1253,7 +1243,6 @@ initial_return_save (rtx rtl)
   if (reg != DWARF_FRAME_RETURN_COLUMN)
     reg_save (NULL, DWARF_FRAME_RETURN_COLUMN, reg, offset - cfa.offset);
 }
-#endif
 
 /* Given a SET, calculate the amount of stack adjustment it
    contains.  */
@@ -1656,8 +1645,6 @@ dwarf2out_notice_stack_adjust (rtx insn, bool after_p)
   dwarf2out_stack_adjust (offset, label);
 }
 
-#endif
-
 /* We delay emitting a register save until either (a) we reach the end
    of the prologue or (b) the register is clobbered.  This clusters
    register saves so that there are fewer pc advances.  */
@@ -1684,7 +1671,6 @@ struct GTY(()) reg_saved_in_data {
 static GTY(()) struct reg_saved_in_data regs_saved_in_regs[4];
 static GTY(()) size_t num_regs_saved_in_regs;
 
-#if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
 static const char *last_reg_save_label;
 
 /* Add an entry to QUEUED_REG_SAVES saying that REG is now saved at
@@ -2895,8 +2881,6 @@ dwarf2out_frame_debug_restore_state (void)
   cfa_remember.in_use = 0;
 }
 
-#endif
-
 /* Describe for the GTY machinery what parts of dw_cfi_oprnd1 are used.  */
 static enum dw_cfi_oprnd_type dw_cfi_oprnd1_desc
  (enum dwarf_call_frame_info cfi);
@@ -2973,8 +2957,6 @@ dw_cfi_oprnd2_desc (enum dwarf_call_frame_info cfi)
     }
 }
 
-#if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
-
 /* Switch [BACK] to eh_frame_section.  If we don't have an eh_frame_section,
    switch to the data section instead, and write out a synthetic start label
    for collect2 the first time around.  */
@@ -3014,7 +2996,7 @@ switch_to_eh_frame_section (bool back)
 	flags = SECTION_WRITE;
       eh_frame_section = get_section (EH_FRAME_SECTION_NAME, flags, NULL);
     }
-#endif
+#endif /* EH_FRAME_SECTION_NAME */
 
   if (eh_frame_section)
     switch_to_section (eh_frame_section);
@@ -4093,9 +4075,7 @@ dwarf2out_end_epilogue (unsigned int line ATTRIBUTE_UNUSED,
   dw_fde_ref fde;
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
-#ifdef DWARF2_DEBUGGING_INFO
   last_var_location_insn = NULL_RTX;
-#endif
 
   if (dwarf2out_do_cfi_asm ())
     fprintf (asm_out_file, "\t.cfi_endproc\n");
@@ -4204,7 +4184,6 @@ dwarf2out_switch_text_section (void)
       fde->dw_fde_switch_cfi = cfi;
     }
 }
-#endif
 
 /* And now, the subset of the debugging information support code necessary
    for emitting location expressions.  */
@@ -4334,8 +4313,6 @@ typedef struct GTY(()) dw_loc_list_struct {
   const char *section; /* Section this loclist is relative to */
   dw_loc_descr_ref expr;
 } dw_loc_list_node;
-
-#if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
 
 static dw_loc_descr_ref int_loc_descriptor (HOST_WIDE_INT);
 
@@ -4755,7 +4732,6 @@ loc_descr_plus_const (dw_loc_descr_ref *list_head, HOST_WIDE_INT offset)
     }
 }
 
-#ifdef DWARF2_DEBUGGING_INFO
 /* Add a constant OFFSET to a location list.  */
 
 static void
@@ -4765,7 +4741,6 @@ loc_list_plus_const (dw_loc_list_ref list_head, HOST_WIDE_INT offset)
   for (d = list_head; d != NULL; d = d->dw_loc_next)
     loc_descr_plus_const (&d->expr, offset);
 }
-#endif
 
 /* Return the size of a location descriptor.  */
 
@@ -4914,9 +4889,7 @@ size_of_locs (dw_loc_descr_ref loc)
   return size;
 }
 
-#ifdef DWARF2_DEBUGGING_INFO
 static HOST_WIDE_INT extract_int (const unsigned char *, unsigned);
-#endif
 
 /* Output location description stack opcode's operands (if any).  */
 
@@ -5506,10 +5479,8 @@ get_cfa_from_loc_descr (dw_cfa_location *cfa, struct dw_loc_descr_struct *loc)
 	}
     }
 }
-#endif /* .debug_frame support */
 
 /* And now, the support for symbolic debugging information.  */
-#ifdef DWARF2_DEBUGGING_INFO
 
 /* .debug_str support.  */
 static int output_indirect_string (void **, void *);
@@ -5585,7 +5556,6 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
   dwarf2out_set_name,
   1                             /* start_end_main_source_file */
 };
-#endif
 
 /* NOTE: In the comments in this file, many references are made to
    "Debugging Information Entries".  This term is abbreviated as `DIE'
@@ -5811,11 +5781,9 @@ skeleton_chain_node;
 #define DWARF_LINE_DEFAULT_MAX_OPS_PER_INSN 1
 #endif
 
-#ifdef DWARF2_DEBUGGING_INFO
 /* This location is used by calc_die_sizes() to keep track
    the offset of each DIE within the .debug_info section.  */
 static unsigned long next_die_offset;
-#endif
 
 /* Record the root of the DIE's built for the current compilation unit.  */
 static GTY(()) dw_die_ref comp_unit_die;
@@ -6016,10 +5984,8 @@ struct GTY (()) vcall_insn {
 
 static GTY ((param_is (struct vcall_insn))) htab_t vcall_insn_table;
 
-#ifdef DWARF2_DEBUGGING_INFO
 /* Record whether the function being analyzed contains inlined functions.  */
 static int current_function_has_inlines;
-#endif
 #if 0 && defined (MIPS_DEBUGGING_INFO)
 static int comp_unit_has_inlines;
 #endif
@@ -6034,8 +6000,6 @@ static GTY(()) int label_num;
 static GTY(()) struct dwarf_file_data * file_table_last_lookup;
 
 static GTY(()) VEC(die_arg_entry,gc) *tmpl_value_parm_die_table;
-
-#ifdef DWARF2_DEBUGGING_INFO
 
 /* Offset from the "steady-state frame pointer" to the frame base,
    within the current function.  */
@@ -11960,7 +11924,7 @@ output_file_names (void)
 
       /* File length in bytes.  */
       dw2_asm_output_data_uleb128 (0, NULL);
-#endif
+#endif /* VMS_DEBUGGING_INFO */
     }
 
   dw2_asm_output_data (1, 0, "End file name table");
@@ -13141,10 +13105,6 @@ multiple_reg_loc_descriptor (rtx rtl, rtx regs,
   return loc_result;
 }
 
-#endif /* DWARF2_DEBUGGING_INFO */
-
-#if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
-
 /* Return a location descriptor that designates a constant.  */
 
 static dw_loc_descr_ref
@@ -13183,9 +13143,7 @@ int_loc_descriptor (HOST_WIDE_INT i)
 
   return new_loc_descr (op, i, 0);
 }
-#endif
 
-#ifdef DWARF2_DEBUGGING_INFO
 /* Return loc description representing "address" of integer value.
    This can appear only as toplevel expression.  */
 
@@ -15798,7 +15756,7 @@ field_byte_offset (const_tree decl)
 	}
     }
   else
-#endif
+#endif /* PCC_BITFIELD_TYPE_MATTERS */
     object_offset_in_bits = bitpos_int;
 
   object_offset_in_bytes
@@ -17502,11 +17460,10 @@ add_name_and_src_coords_attributes (dw_die_ref die, tree decl)
 		   XEXP (DECL_RTL (decl), 0));
       VEC_safe_push (rtx, gc, used_rtx_array, XEXP (DECL_RTL (decl), 0));
     }
-#endif
+#endif /* VMS_DEBUGGING_INFO */
 }
 
 #ifdef VMS_DEBUGGING_INFO
-
 /* Output the debug main pointer die for VMS */
 
 void
@@ -17536,7 +17493,7 @@ dwarf2out_vms_debug_main_pointer (void)
       comp_unit_die->die_child = die;
     }
 }
-#endif
+#endif /* VMS_DEBUGGING_INFO */
 
 /* Push a new declaration scope.  */
 
@@ -22560,46 +22517,5 @@ dwarf2out_finish (const char *filename)
   if (debug_str_hash)
     htab_traverse (debug_str_hash, output_indirect_string, NULL);
 }
-#else
-
-/* This should never be used, but its address is needed for comparisons.  */
-const struct gcc_debug_hooks dwarf2_debug_hooks =
-{
-  0,		/* init */
-  0,		/* finish */
-  0,		/* assembly_start */
-  0,		/* define */
-  0,		/* undef */
-  0,		/* start_source_file */
-  0,		/* end_source_file */
-  0,		/* begin_block */
-  0,		/* end_block */
-  0,		/* ignore_block */
-  0,		/* source_line */
-  0,		/* begin_prologue */
-  0,		/* end_prologue */
-  0,		/* begin_epilogue */
-  0,		/* end_epilogue */
-  0,		/* begin_function */
-  0,		/* end_function */
-  0,		/* function_decl */
-  0,		/* global_decl */
-  0,		/* type_decl */
-  0,		/* imported_module_or_decl */
-  0,		/* deferred_inline_function */
-  0,		/* outlining_inline_function */
-  0,		/* label */
-  0,		/* handle_pch */
-  0,		/* var_location */
-  0,		/* switch_text_section */
-  0,		/* direct_call */
-  0,		/* virtual_call_token */
-  0,		/* copy_call_info */
-  0,		/* virtual_call */
-  0,		/* set_name */
-  0		/* start_end_main_source_file */
-};
-
-#endif /* DWARF2_DEBUGGING_INFO */
 
 #include "gt-dwarf2out.h"
