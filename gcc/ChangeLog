@@ -1,5 +1,35 @@
 2010-08-04  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.h (struct machine_frame_state): Rename from
+	machine_cfa_state.  Add members tracking SP and FP regardless
+	of the current CFA register.  
+	(ix86_cfa_state): Remove.
+	* config/i386/i386.c (struct ix86_frame): Add reg_save_offset
+	and sse_reg_save_offset members.
+	(ix86_compute_frame_layout): Set them.
+	(gen_push): Increment sp_offset too.
+	(choose_baseaddr_len, choose_baseaddr): New.
+	(ix86_emit_save_reg_using_mov): New.
+	(ix86_emit_save_regs_using_mov): Use it.
+	(ix86_emit_save_sse_regs_using_mov): Likewise.
+	(ix86_add_cfa_restore_note): Take cfa_offset not red_offset argument;
+	compare vs the saved red_zone_offset.
+	(pro_epilogue_adjust_stack): Adjust sp_offset.
+	(ix86_adjust_stack_and_probe): Likewise.
+	(ix86_expand_prologue): Set up, use, and validate the new
+	frame_state_info members.  Use gen_frame_mem.
+	(ix86_emit_restore_regs_using_pop): Remove red_offset parameter.
+	(ix86_emit_restore_reg_using_pop): Likewise.  Use and update the
+	new frame_state_info members.
+	(ix86_emit_leave): Likewise.
+	(ix86_emit_restore_regs_using_mov): Likewise.  Don't check for
+	out-of-range stack pointer offsets here.
+	(ix86_emit_restore_sse_regs_using_mov): Likewise.
+	(ix86_expand_epilogue): Use and validate the new frame_state_info
+	members.  Break up and simplify the logic selecting the
+	restore_regs_via_mov code path.  Ensure that there will be no
+	out-of-range stack pointer offsets.
+
 	* config/i386/cygming.h (TARGET_64BIT_MS_ABI): Remove.
 
 	* config/i386/i386.c (ix86_function_ms_hook_prologue): Fix
