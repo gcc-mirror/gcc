@@ -1,5 +1,15 @@
 2010-08-04  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/44857
+	* resolve.c (resolve_structure_cons): Fix handling of
+	initialization structcture constructors with character
+	elements of the wrong length.
+	* array.c (gfc_check_iter_variable): Add NULL check.
+	(gfc_resolve_character_array_constructor): Also truncate
+	character length.
+
+2010-08-04  Tobias Burnus  <burnus@net-b.de>
+
 	* trans-io.c (gfc_build_io_library_fndecls): Fix return
 	value of some libgfortran functions.
 
