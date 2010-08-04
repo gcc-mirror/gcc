@@ -19785,22 +19785,24 @@ gen_typedef_die (tree decl, dw_die_ref context_die)
 	  type = TREE_TYPE (decl);
 
 	  if (is_naming_typedef_decl (TYPE_NAME (type)))
-	    /* 
-	       Here, we are in the case of decl being a typedef naming
-	       an anonymous type, e.g:
+	    {
+	      /* Here, we are in the case of decl being a typedef naming
+	         an anonymous type, e.g:
 	             typedef struct {...} foo;
-	       In that case TREE_TYPE (decl) is not a typedef variant
-	       type and TYPE_NAME of the anonymous type is set to the
-	       TYPE_DECL of the typedef. This construct is emitted by
-	       the C++ FE.
+	         In that case TREE_TYPE (decl) is not a typedef variant
+	         type and TYPE_NAME of the anonymous type is set to the
+	         TYPE_DECL of the typedef. This construct is emitted by
+	         the C++ FE.
 
-	       TYPE is the anonymous struct named by the typedef
-	       DECL. As we need the DW_AT_type attribute of the
-	       DW_TAG_typedef to point to the DIE of TYPE, let's
-	       generate that DIE right away. add_type_attribute
-	       called below will then pick (via lookup_type_die) that
-	       anonymous struct DIE.  */
-	    gen_tagged_type_die (type, context_die, DINFO_USAGE_DIR_USE);
+	         TYPE is the anonymous struct named by the typedef
+	         DECL. As we need the DW_AT_type attribute of the
+	         DW_TAG_typedef to point to the DIE of TYPE, let's
+	         generate that DIE right away. add_type_attribute
+	         called below will then pick (via lookup_type_die) that
+	         anonymous struct DIE.  */
+	      if (!TREE_ASM_WRITTEN (type))
+	        gen_tagged_type_die (type, context_die, DINFO_USAGE_DIR_USE);
+	    }
 	}
 
       add_type_attribute (type_die, type, TREE_READONLY (decl),

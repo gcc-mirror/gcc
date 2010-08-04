@@ -1,3 +1,9 @@
+2010-08-04  Richard Henderson  <rth@redhat.com>
+
+	PR debug/45171
+	* dwarf2out.c (gen_typedef_die): Don't re-generate the die of
+	an is_naming_typedef_decl.
+
 2010-08-04  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR rtl-optimization/45162
