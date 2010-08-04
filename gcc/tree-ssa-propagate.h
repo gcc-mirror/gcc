@@ -61,56 +61,11 @@ enum ssa_prop_result {
 };
 
 
-struct prop_value_d {
-    /* Lattice value.  Each propagator is free to define its own
-       lattice and this field is only meaningful while propagating.
-       It will not be used by substitute_and_fold.  */
-    unsigned lattice_val;
-
-    /* Propagated value.  */
-    tree value;
-};
-
-typedef struct prop_value_d prop_value_t;
-
-
-/* Type of value ranges.  See value_range_d for a description of these
-   types.  */
-enum value_range_type { VR_UNDEFINED, VR_RANGE, VR_ANTI_RANGE, VR_VARYING };
-
-/* Range of values that can be associated with an SSA_NAME after VRP
-   has executed.  */
-struct value_range_d
-{
-  /* Lattice value represented by this range.  */
-  enum value_range_type type;
-
-  /* Minimum and maximum values represented by this range.  These
-     values should be interpreted as follows:
-
-	- If TYPE is VR_UNDEFINED or VR_VARYING then MIN and MAX must
-	  be NULL.
-
-	- If TYPE == VR_RANGE then MIN holds the minimum value and
-	  MAX holds the maximum value of the range [MIN, MAX].
-
-	- If TYPE == ANTI_RANGE the variable is known to NOT
-	  take any values in the range [MIN, MAX].  */
-  tree min;
-  tree max;
-
-  /* Set of SSA names whose value ranges are equivalent to this one.
-     This set is only valid when TYPE is VR_RANGE or VR_ANTI_RANGE.  */
-  bitmap equiv;
-};
-
-typedef struct value_range_d value_range_t;
-
-
 /* Call-back functions used by the value propagation engine.  */
 typedef enum ssa_prop_result (*ssa_prop_visit_stmt_fn) (gimple, edge *, tree *);
 typedef enum ssa_prop_result (*ssa_prop_visit_phi_fn) (gimple);
 typedef bool (*ssa_prop_fold_stmt_fn) (gimple_stmt_iterator *gsi);
+typedef tree (*ssa_prop_get_value_fn) (tree);
 
 
 /* In tree-ssa-propagate.c  */
@@ -119,6 +74,6 @@ bool valid_gimple_rhs_p (tree);
 void move_ssa_defining_stmt_for_defs (gimple, gimple);
 bool update_call_from_tree (gimple_stmt_iterator *, tree);
 bool stmt_makes_single_store (gimple);
-bool substitute_and_fold (prop_value_t *, ssa_prop_fold_stmt_fn, bool);
+bool substitute_and_fold (ssa_prop_get_value_fn, ssa_prop_fold_stmt_fn, bool);
 
 #endif /* _TREE_SSA_PROPAGATE_H  */

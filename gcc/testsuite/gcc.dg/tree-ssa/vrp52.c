@@ -12,5 +12,5 @@ foo (unsigned int i, unsigned int j)
   return i >= 1024 + 2048;
 }
 
-/* { dg-final { scan-tree-dump "Folding predicate i_\[^\n\r\]* to 1" "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "return 1;" 1 "vrp1" } } */
 /* { dg-final { cleanup-tree-dump "vrp1" } } */

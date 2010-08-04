@@ -30,7 +30,5 @@ int baz (int x, int y)
   return x < 20;
 }
 
-/* { dg-final { scan-tree-dump "Folding predicate i_\[^\n\r\]* to 1" "vrp1" } } */
-/* { dg-final { scan-tree-dump "Folding predicate c_\[^\n\r\]* to 1" "vrp1" } } */
-/* { dg-final { scan-tree-dump "Folding predicate x_\[^\n\r\]* to 1" "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "return 1;" 3 "vrp1" } } */
 /* { dg-final { cleanup-tree-dump "vrp1" } } */
