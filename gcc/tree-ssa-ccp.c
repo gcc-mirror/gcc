@@ -281,6 +281,17 @@ get_value (tree var)
   return val;
 }
 
+/* Return the constant tree value associated with VAR.  */
+
+static inline tree
+get_constant_value (tree var)
+{
+  prop_value_t *val = get_value (var);
+  if (val && val->lattice_val == CONSTANT)
+    return val->value;
+  return NULL_TREE;
+}
+
 /* Sets the value associated with VAR to VARYING.  */
 
 static inline void
@@ -782,19 +793,16 @@ ccp_visit_phi_node (gimple phi)
     return SSA_PROP_NOT_INTERESTING;
 }
 
-/* Get operand number OPNR from the rhs of STMT.  Before returning it,
-   simplify it to a constant if possible.  */
+/* Return the constant value for OP or OP otherwise.  */
 
 static tree
-get_rhs_assign_op_for_ccp (gimple stmt, int opnr)
+valueize_op (tree op)
 {
-  tree op = gimple_op (stmt, opnr);
-  
   if (TREE_CODE (op) == SSA_NAME)
     {
-      prop_value_t *val = get_value (op);
-      if (val->lattice_val == CONSTANT)
-	op = get_value (op)->value;
+      tree tem = get_constant_value (op);
+      if (tem)
+	return tem;
     }
   return op;
 }
@@ -829,7 +837,7 @@ ccp_fold (gimple stmt)
                 {
                   /* If the RHS is an SSA_NAME, return its known constant value,
                      if any.  */
-                  return get_value (rhs)->value;
+                  return get_constant_value (rhs);
                 }
 	      /* Handle propagating invariant addresses into address operations.
 		 The folding we do here matches that in tree-ssa-forwprop.c.  */
@@ -842,14 +850,14 @@ ccp_fold (gimple stmt)
 		  if (TREE_CODE (*base) == MEM_REF
 		      && TREE_CODE (TREE_OPERAND (*base, 0)) == SSA_NAME)
 		    {
-		      prop_value_t *val = get_value (TREE_OPERAND (*base, 0));
-		      if (val->lattice_val == CONSTANT
-			  && TREE_CODE (val->value) == ADDR_EXPR)
+		      tree val = get_constant_value (TREE_OPERAND (*base, 0));
+		      if (val
+			  && TREE_CODE (val) == ADDR_EXPR)
 			{
 			  tree ret, save = *base;
 			  tree new_base;
 			  new_base = fold_build2 (MEM_REF, TREE_TYPE (*base),
-						  unshare_expr (val->value),
+						  unshare_expr (val),
 						  TREE_OPERAND (*base, 1));
 			  /* We need to return a new tree, not modify the IL
 			     or share parts of it.  So play some tricks to
@@ -873,9 +881,7 @@ ccp_fold (gimple stmt)
 		  list = NULL_TREE;
 		  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (rhs), i, val)
 		    {
-		      if (TREE_CODE (val) == SSA_NAME
-			  && get_value (val)->lattice_val == CONSTANT)
-			val = get_value (val)->value;
+		      val = valueize_op (val);
 		      if (TREE_CODE (val) == INTEGER_CST
 			  || TREE_CODE (val) == REAL_CST
 			  || TREE_CODE (val) == FIXED_CST)
@@ -894,21 +900,21 @@ ccp_fold (gimple stmt)
 		       || TREE_CODE (rhs) == IMAGPART_EXPR)
 		      && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME)
 		    {
-		      prop_value_t *val = get_value (TREE_OPERAND (rhs, 0));
-		      if (val->lattice_val == CONSTANT)
+		      tree val = get_constant_value (TREE_OPERAND (rhs, 0));
+		      if (val)
 			return fold_unary_loc (EXPR_LOCATION (rhs),
-					   TREE_CODE (rhs),
-					   TREE_TYPE (rhs), val->value);
+					       TREE_CODE (rhs),
+					       TREE_TYPE (rhs), val);
 		    }
 		  else if (TREE_CODE (rhs) == MEM_REF
 			   && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME)
 		    {
-		      prop_value_t *val = get_value (TREE_OPERAND (rhs, 0));
-		      if (val->lattice_val == CONSTANT
-			  && TREE_CODE (val->value) == ADDR_EXPR)
+		      tree val = get_constant_value (TREE_OPERAND (rhs, 0));
+		      if (val
+			  && TREE_CODE (val) == ADDR_EXPR)
 			{
 			  tree tem = fold_build2 (MEM_REF, TREE_TYPE (rhs),
-						  unshare_expr (val->value),
+						  unshare_expr (val),
 						  TREE_OPERAND (rhs, 1));
 			  if (tem)
 			    rhs = tem;
@@ -927,7 +933,7 @@ ccp_fold (gimple stmt)
                  Note that we know the single operand must be a constant,
                  so this should almost always return a simplified RHS.  */
               tree lhs = gimple_assign_lhs (stmt);
-              tree op0 = get_rhs_assign_op_for_ccp (stmt, 1);
+              tree op0 = valueize_op (gimple_assign_rhs1 (stmt));
 
 	      /* Conversions are useless for CCP purposes if they are
 		 value-preserving.  Thus the restrictions that
@@ -958,8 +964,8 @@ ccp_fold (gimple stmt)
           case GIMPLE_BINARY_RHS:
             {
               /* Handle binary operators that can appear in GIMPLE form.  */
-              tree op0 = get_rhs_assign_op_for_ccp (stmt, 1);
-              tree op1 = get_rhs_assign_op_for_ccp (stmt, 2);
+              tree op0 = valueize_op (gimple_assign_rhs1 (stmt));
+              tree op1 = valueize_op (gimple_assign_rhs2 (stmt));
 
 	      /* Translate &x + CST into an invariant form suitable for
 	         further propagation.  */
@@ -980,10 +986,10 @@ ccp_fold (gimple stmt)
 
           case GIMPLE_TERNARY_RHS:
             {
-              /* Handle binary operators that can appear in GIMPLE form.  */
-              tree op0 = get_rhs_assign_op_for_ccp (stmt, 1);
-              tree op1 = get_rhs_assign_op_for_ccp (stmt, 2);
-              tree op2 = get_rhs_assign_op_for_ccp (stmt, 3);
+              /* Handle ternary operators that can appear in GIMPLE form.  */
+              tree op0 = valueize_op (gimple_assign_rhs1 (stmt));
+              tree op1 = valueize_op (gimple_assign_rhs2 (stmt));
+              tree op2 = valueize_op (gimple_assign_rhs3 (stmt));
 
               return fold_ternary_loc (loc, subcode,
 				       gimple_expr_type (stmt), op0, op1, op2);
@@ -997,15 +1003,7 @@ ccp_fold (gimple stmt)
 
     case GIMPLE_CALL:
       {
-	tree fn = gimple_call_fn (stmt);
-	prop_value_t *val;
-
-	if (TREE_CODE (fn) == SSA_NAME)
-	  {
-	    val = get_value (fn);
-	    if (val->lattice_val == CONSTANT)
-	      fn = val->value;
-	  }
+	tree fn = valueize_op (gimple_call_fn (stmt));
 	if (TREE_CODE (fn) == ADDR_EXPR
 	    && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL
 	    && DECL_BUILT_IN (TREE_OPERAND (fn, 0)))
@@ -1014,15 +1012,7 @@ ccp_fold (gimple stmt)
 	    tree call, retval;
 	    unsigned i;
 	    for (i = 0; i < gimple_call_num_args (stmt); ++i)
-	      {
-		args[i] = gimple_call_arg (stmt, i);
-		if (TREE_CODE (args[i]) == SSA_NAME)
-		  {
-		    val = get_value (args[i]);
-		    if (val->lattice_val == CONSTANT)
-		      args[i] = val->value;
-		  }
-	      }
+	      args[i] = valueize_op (gimple_call_arg (stmt, i));
 	    call = build_call_array_loc (loc,
 					 gimple_call_return_type (stmt),
 					 fn, gimple_call_num_args (stmt), args);
@@ -1038,40 +1028,16 @@ ccp_fold (gimple stmt)
     case GIMPLE_COND:
       {
         /* Handle comparison operators that can appear in GIMPLE form.  */
-        tree op0 = gimple_cond_lhs (stmt);
-        tree op1 = gimple_cond_rhs (stmt);
+        tree op0 = valueize_op (gimple_cond_lhs (stmt));
+        tree op1 = valueize_op (gimple_cond_rhs (stmt));
         enum tree_code code = gimple_cond_code (stmt);
-
-        /* Simplify the operands down to constants when appropriate.  */
-        if (TREE_CODE (op0) == SSA_NAME)
-          {
-            prop_value_t *val = get_value (op0);
-            if (val->lattice_val == CONSTANT)
-              op0 = val->value;
-          }
-
-        if (TREE_CODE (op1) == SSA_NAME)
-          {
-            prop_value_t *val = get_value (op1);
-            if (val->lattice_val == CONSTANT)
-              op1 = val->value;
-          }
-
         return fold_binary_loc (loc, code, boolean_type_node, op0, op1);
       }
 
     case GIMPLE_SWITCH:
       {
-        tree rhs = gimple_switch_index (stmt);
-
-        if (TREE_CODE (rhs) == SSA_NAME)
-          {
-            /* If the RHS is an SSA_NAME, return its known constant value,
-               if any.  */
-            return get_value (rhs)->value;
-          }
-
-        return rhs;
+	/* Return the constant switch index.  */
+        return valueize_op (gimple_switch_index (stmt));
       }
 
     default:
@@ -1086,10 +1052,10 @@ ccp_fold (gimple stmt)
 tree
 fold_const_aggregate_ref (tree t)
 {
-  prop_value_t *value;
   tree base, ctor, idx, field;
   unsigned HOST_WIDE_INT cnt;
   tree cfield, cval;
+  tree tem;
 
   if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration)
     return get_symbol_constant_value (t);
@@ -1149,10 +1115,9 @@ fold_const_aggregate_ref (tree t)
       switch (TREE_CODE (idx))
 	{
 	case SSA_NAME:
-	  if ((value = get_value (idx))
-	      && value->lattice_val == CONSTANT
-	      && TREE_CODE (value->value) == INTEGER_CST)
-	    idx = value->value;
+	  if ((tem = get_constant_value (idx))
+	      && TREE_CODE (tem) == INTEGER_CST)
+	    idx = tem;
 	  else
 	    return NULL_TREE;
 	  break;
@@ -1257,9 +1222,8 @@ fold_const_aggregate_ref (tree t)
       /* Get the base object we are accessing.  */
       base = TREE_OPERAND (t, 0);
       if (TREE_CODE (base) == SSA_NAME
-	  && (value = get_value (base))
-	  && value->lattice_val == CONSTANT)
-	base = value->value;
+	  && (tem = get_constant_value (base)))
+	base = tem;
       if (TREE_CODE (base) != ADDR_EXPR)
 	return NULL_TREE;
       base = TREE_OPERAND (base, 0);
@@ -1477,7 +1441,7 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
     case GIMPLE_CALL:
       {
 	tree lhs = gimple_call_lhs (stmt);
-	prop_value_t *val;
+	tree val;
 	tree argt;
 	bool changed = false;
 	unsigned i;
@@ -1487,10 +1451,9 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
 	   type issues.  */
 	if (lhs
 	    && TREE_CODE (lhs) == SSA_NAME
-	    && (val = get_value (lhs))
-	    && val->lattice_val == CONSTANT)
+	    && (val = get_constant_value (lhs)))
 	  {
-	    tree new_rhs = unshare_expr (val->value);
+	    tree new_rhs = unshare_expr (val);
 	    bool res;
 	    if (!useless_type_conversion_p (TREE_TYPE (lhs),
 					    TREE_TYPE (new_rhs)))
@@ -1510,13 +1473,12 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
 	  {
 	    tree arg = gimple_call_arg (stmt, i);
 	    if (TREE_CODE (arg) == SSA_NAME
-		&& (val = get_value (arg))
-		&& val->lattice_val == CONSTANT
+		&& (val = get_constant_value (arg))
 		&& useless_type_conversion_p
 		     (TYPE_MAIN_VARIANT (TREE_VALUE (argt)),
-		      TYPE_MAIN_VARIANT (TREE_TYPE (val->value))))
+		      TYPE_MAIN_VARIANT (TREE_TYPE (val))))
 	      {
-		gimple_call_set_arg (stmt, i, unshare_expr (val->value));
+		gimple_call_set_arg (stmt, i, unshare_expr (val));
 		changed = true;
 	      }
 	  }
@@ -1527,16 +1489,15 @@ ccp_fold_stmt (gimple_stmt_iterator *gsi)
     case GIMPLE_ASSIGN:
       {
 	tree lhs = gimple_assign_lhs (stmt);
-	prop_value_t *val;
+	tree val;
 
 	/* If we have a load that turned out to be constant replace it
 	   as we cannot propagate into all uses in all cases.  */
 	if (gimple_assign_single_p (stmt)
 	    && TREE_CODE (lhs) == SSA_NAME
-	    && (val = get_value (lhs))
-	    && val->lattice_val == CONSTANT)
+	    && (val = get_constant_value (lhs)))
 	  {
-	    tree rhs = unshare_expr (val->value);
+	    tree rhs = unshare_expr (val);
 	    if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
 	      rhs = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (lhs), rhs);
 	    gimple_assign_set_rhs_from_tree (gsi, rhs);
@@ -1569,19 +1530,10 @@ visit_assignment (gimple stmt, tree *output_p)
   gcc_assert (gimple_code (stmt) != GIMPLE_CALL
               || gimple_call_lhs (stmt) != NULL_TREE);
 
-  if (gimple_assign_copy_p (stmt))
-    {
-      tree rhs = gimple_assign_rhs1 (stmt);
-
-      if  (TREE_CODE (rhs) == SSA_NAME)
-        {
-          /* For a simple copy operation, we copy the lattice values.  */
-          prop_value_t *nval = get_value (rhs);
-          val = *nval;
-        }
-      else
-        val = evaluate_stmt (stmt);
-    }
+  if (gimple_assign_single_p (stmt)
+      && gimple_assign_rhs_code (stmt) == SSA_NAME)
+    /* For a simple copy operation, we copy the lattice values.  */
+    val = *get_value (gimple_assign_rhs1 (stmt));
   else
     /* Evaluate the statement, which could be
        either a GIMPLE_ASSIGN or a GIMPLE_CALL.  */
