@@ -1,3 +1,11 @@
+2010-08-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42207
+	PR fortran/44064
+	PR fortran/44065
+	* gfortran.dg/class_25.f03: New.
+	* gfortran.dg/class_26.f03: New.
+
 2010-08-04  Daniel Gutson  <dgutson@codesourcery.com>
 
 	* g++.dg/warn/miss-format-1.C: Update line number.
