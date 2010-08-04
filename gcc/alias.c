@@ -354,7 +354,10 @@ rtx_refs_may_alias_p (const_rtx x, const_rtx mem, bool tbaa_p)
       || !ao_ref_from_mem (&ref2, mem))
     return true;
 
-  return refs_may_alias_p_1 (&ref1, &ref2, tbaa_p);
+  return refs_may_alias_p_1 (&ref1, &ref2,
+			     tbaa_p
+			     && MEM_ALIAS_SET (x) != 0
+			     && MEM_ALIAS_SET (mem) != 0);
 }
 
 /* Returns a pointer to the alias set entry for ALIAS_SET, if there is

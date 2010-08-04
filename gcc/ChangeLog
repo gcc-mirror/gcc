@@ -1,5 +1,10 @@
 2010-08-04  Richard Guenther  <rguenther@suse.de>
 
+	* alias.c (rtx_refs_may_alias_p): Do not resort to TBAA
+	if either alias-set is zero.
+
+2010-08-04  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-propagate.h (struct prop_value_d, prop_value_t): Move ...
 	* tree-ssa-ccp.c: ... here.
 	* tree-ssa-copy.c: ... and here.
