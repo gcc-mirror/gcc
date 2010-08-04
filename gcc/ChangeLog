@@ -1,5 +1,11 @@
 2010-08-04  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/45176
+	* expr.c (expand_expr_real_1): Also preserve TARGET_MEM_REF
+	points-to set for original MEM_REF.
+
+2010-08-04  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-ccp.c (get_constant_value): New function.
 	(get_rhs_assign_op_for_ccp): Remove.
 	(valueize_op): New function.
