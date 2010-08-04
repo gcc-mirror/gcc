@@ -1,3 +1,17 @@
+2010-08-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2010-07-20  Bingfeng Mei  <bmei@broadcom.com>
+
+	* gcc.dg/lto/20090313_0.c: Use dg-require-effective-target
+	sync_char_short
+
+	2010-06-24  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/43283
+	* gcc.dg/lto/20091216-1_0.c: Use newline instead of semicolon
+	and add argument to nop for IA64.
+
 2010-08-03  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/44914
