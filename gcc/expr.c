@@ -8665,7 +8665,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	set_mem_addr_space (temp, as);
 	base = get_base_address (TMR_ORIGINAL (exp));
 	if (base
-	    && INDIRECT_REF_P (base)
+	    && (INDIRECT_REF_P (base) || TREE_CODE (base) == MEM_REF)
 	    && TMR_BASE (exp)
 	    && TREE_CODE (TMR_BASE (exp)) == SSA_NAME
 	    && POINTER_TYPE_P (TREE_TYPE (TMR_BASE (exp))))
