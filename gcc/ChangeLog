@@ -1,5 +1,7 @@
 2010-08-04  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/cygming.h (TARGET_64BIT_MS_ABI): Remove.
+
 	* config/i386/i386.c (ix86_function_ms_hook_prologue): Fix
 	argument name to reflect the expected tree; fix indentation.
 	(ix86_asm_output_function_label): Output the entire 32-bit
