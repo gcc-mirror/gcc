@@ -5117,17 +5117,15 @@ ix86_function_type_abi (const_tree fntype)
 }
 
 static bool
-ix86_function_ms_hook_prologue (const_tree fntype)
+ix86_function_ms_hook_prologue (const_tree fn)
 {
-  if (fntype && lookup_attribute ("ms_hook_prologue", DECL_ATTRIBUTES (fntype)))
+  if (fn && lookup_attribute ("ms_hook_prologue", DECL_ATTRIBUTES (fn)))
     {
-      if (decl_function_context (fntype) != NULL_TREE)
-      {
-	error_at (DECL_SOURCE_LOCATION (fntype),
-	    "ms_hook_prologue is not compatible with nested function");
-      }
-
-      return true;
+      if (decl_function_context (fn) != NULL_TREE)
+	error_at (DECL_SOURCE_LOCATION (fn),
+		  "ms_hook_prologue is not compatible with nested function");
+      else
+        return true;
     }
   return false;
 }
@@ -5169,18 +5167,23 @@ ix86_asm_output_function_label (FILE *asm_out_file, const char *fname,
 
   ASM_OUTPUT_LABEL (asm_out_file, fname);
 
-  /* Output magic byte marker, if hot-patch attribute is set.
-     For x86 case frame-pointer prologue will be emitted in
-     expand_prologue.  */
+  /* Output magic byte marker, if hot-patch attribute is set.  */
   if (is_ms_hook)
     {
       if (TARGET_64BIT)
-	/* leaq [%rsp + 0], %rsp  */
-	asm_fprintf (asm_out_file, ASM_BYTE
-		     "0x48, 0x8d, 0xa4, 0x24, 0x00, 0x00, 0x00, 0x00\n");
+	{
+	  /* leaq [%rsp + 0], %rsp  */
+	  asm_fprintf (asm_out_file, ASM_BYTE
+		       "0x48, 0x8d, 0xa4, 0x24, 0x00, 0x00, 0x00, 0x00\n");
+	}
       else
-        /* movl.s %edi, %edi.  */
-	asm_fprintf (asm_out_file, ASM_BYTE "0x8b, 0xff\n");
+	{
+          /* movl.s %edi, %edi
+	     push   %ebp
+	     movl.s %esp, %ebp */
+	  asm_fprintf (asm_out_file, ASM_BYTE
+		       "0x8b, 0xff, 0x55, 0x8b, 0xec\n");
+	}
     }
 }
 
@@ -9200,7 +9203,7 @@ ix86_expand_prologue (void)
   bool pic_reg_used;
   struct ix86_frame frame;
   HOST_WIDE_INT allocate;
-  int gen_frame_pointer = frame_pointer_needed;
+  bool gen_frame_pointer = frame_pointer_needed;
   bool int_registers_saved = false;
 
   ix86_finalize_stack_realign_flags ();
@@ -9216,51 +9219,78 @@ ix86_expand_prologue (void)
 
   if (!TARGET_64BIT && ix86_function_ms_hook_prologue (current_function_decl))
     {
-      rtx push, mov;
+      /* We should have already generated an error for any use of
+         ms_hook on a nested function.  */
+      gcc_checking_assert (!ix86_static_chain_on_stack);
 
       /* Check if profiling is active and we shall use profiling before
          prologue variant. If so sorry.  */
       if (crtl->profile && flag_fentry != 0)
         sorry ("ms_hook_prologue attribute isn't compatible with -mfentry for 32-bit");
 
-      /* Make sure the function starts with
-	 8b ff     movl.s %edi,%edi (emited by ix86_asm_output_function_label)
+      /* In ix86_asm_output_function_label we emitted:
+	 8b ff     movl.s %edi,%edi
 	 55        push   %ebp
 	 8b ec     movl.s %esp,%ebp
 
 	 This matches the hookable function prologue in Win32 API
 	 functions in Microsoft Windows XP Service Pack 2 and newer.
 	 Wine uses this to enable Windows apps to hook the Win32 API
-	 functions provided by Wine.  */
-      push = emit_insn (gen_push (hard_frame_pointer_rtx));
-      mov = emit_insn (gen_vswapmov (hard_frame_pointer_rtx,
-				     stack_pointer_rtx));
+	 functions provided by Wine.
 
-      if (frame_pointer_needed && !(crtl->drap_reg
-				    && crtl->stack_realign_needed))
+	 What that means is that we've already set up the frame pointer.  */
+
+      if (frame_pointer_needed
+	  && !(crtl->drap_reg && crtl->stack_realign_needed))
 	{
-	  /* The push %ebp and movl.s %esp, %ebp already set up
-	     the frame pointer.  No need to do this again. */
-	  gen_frame_pointer = 0;
+	  rtx push, mov;
+
+	  /* We've decided to use the frame pointer already set up.
+	     Describe this to the unwinder by pretending that both
+	     push and mov insns happen right here.
+
+	     Putting the unwind info here at the end of the ms_hook
+	     is done so that we can make absolutely certain we get
+	     the required byte sequence at the start of the function,
+	     rather than relying on an assembler that can produce
+	     the exact encoding required.
+
+	     However it does mean (in the unpatched case) that we have
+	     a 1 insn window where the asynchronous unwind info is
+	     incorrect.  However, if we placed the unwind info at
+	     its correct location we would have incorrect unwind info
+	     in the patched case.  Which is probably all moot since
+	     I don't expect Wine generates dwarf2 unwind info for the
+	     system libraries that use this feature.  */
+
+	  insn = emit_insn (gen_blockage ());
+
+	  push = gen_push (hard_frame_pointer_rtx);
+	  mov = gen_rtx_SET (VOIDmode, hard_frame_pointer_rtx,
+			     stack_pointer_rtx);
 	  RTX_FRAME_RELATED_P (push) = 1;
 	  RTX_FRAME_RELATED_P (mov) = 1;
+
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+			gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, push, mov)));
+
 	  if (ix86_cfa_state->reg == stack_pointer_rtx)
 	    ix86_cfa_state->reg = hard_frame_pointer_rtx;
+	  gen_frame_pointer = false;
 	}
       else
-	/* If the frame pointer is not needed, pop %ebp again. This
-	   could be optimized for cases where ebp needs to be backed up
-	   for some other reason.  If stack realignment is needed, pop
-	   the base pointer again, align the stack, and later regenerate
-	   the frame pointer setup.  The frame pointer generated by the
-	   hook prologue is not aligned, so it can't be used.  */
-	insn = emit_insn (ix86_gen_pop1 (hard_frame_pointer_rtx));
+	{
+	  /* The frame pointer is not needed so pop %ebp again.
+	     This leaves us with a pristine state.  */
+	  emit_insn (ix86_gen_pop1 (hard_frame_pointer_rtx));
+	}
     }
 
   /* The first insn of a function that accepts its static chain on the
      stack is to push the register that would be filled in by a direct
      call.  This insn will be skipped by the trampoline.  */
-  if (ix86_static_chain_on_stack)
+  else if (ix86_static_chain_on_stack)
     {
       rtx t;
 
@@ -27010,23 +27040,16 @@ ix86_handle_fndecl_attribute (tree *node, tree name,
       warning (OPT_Wattributes, "%qE attribute only applies to functions",
                name);
       *no_add_attrs = true;
-      return NULL_TREE;
     }
-
-#ifndef HAVE_AS_IX86_SWAP
-  if (!TARGET_64BIT)
-    sorry ("ms_hook_prologue attribute needs assembler swap suffix support");
-#endif
-
-    return NULL_TREE;
+  return NULL_TREE;
 }
 
 static bool
 ix86_ms_bitfield_layout_p (const_tree record_type)
 {
-  return (TARGET_MS_BITFIELD_LAYOUT &&
-	  !lookup_attribute ("gcc_struct", TYPE_ATTRIBUTES (record_type)))
-    || lookup_attribute ("ms_struct", TYPE_ATTRIBUTES (record_type));
+  return ((TARGET_MS_BITFIELD_LAYOUT
+	   && !lookup_attribute ("gcc_struct", TYPE_ATTRIBUTES (record_type)))
+          || lookup_attribute ("ms_struct", TYPE_ATTRIBUTES (record_type)));
 }
 
 /* Returns an expression indicating where the this parameter is

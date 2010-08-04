@@ -1,5 +1,15 @@
 2010-08-04  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.c (ix86_function_ms_hook_prologue): Fix
+	argument name to reflect the expected tree; fix indentation.
+	(ix86_asm_output_function_label): Output the entire 32-bit
+	ms_hook here as bytes ...
+	(ix86_expand_prologue): ... not here as insns.  Attach the
+	unwind info for the ms_hook to a blockage insn.
+	(ix86_handle_fndecl_attribute): Don't check HAVE_AS_IX86_SWAP.
+	(ix86_ms_bitfield_layout_p): Fix indentation.
+	* config/i386/i386.md (UNSPECV_VSWAPMOV, vswapmov): Remove.
+
 	* config/i386/i386.c (ix86_using_red_zone): New.
 	(ix86_compute_frame_layout, ix86_add_cfa_restore_note,
 	ix86_expand_prologue, ix86_force_to_memory): Use it.
