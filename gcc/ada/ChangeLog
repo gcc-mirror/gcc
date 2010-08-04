@@ -1,3 +1,11 @@
+2010-08-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c: Do not undefine IN_GCC_FRONTEND and do not
+	include expr.h.
+	(gnat_to_gnu_entity) <object>: Force address of -1 at the tree level
+	for the debug-only entity.
+	* gcc-interface/Make-lang.in (ada/decl.o): Adjust dependencies.
+
 2010-08-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc-interface/lang-specs.h: Don't pass -a options.
