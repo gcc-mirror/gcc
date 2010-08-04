@@ -4,7 +4,7 @@
 /* { dg-options "-Wmissing-format-attribute" } */
 /* { dg-options "-Wmissing-format-attribute -Wno-abi" { target arm_eabi } } */
 /* VxWorks does not provide vscanf, either in kernel or RTP mode.  */
-/* { dg-error "not declared" "" { target *-*-solaris2.8 *-*-vxworks*  alpha*-dec-osf5* } 25 } */
+/* { dg-error "not declared" "" { target *-*-solaris2.8 *-*-vxworks*  alpha*-dec-osf5* } 26 } */
 
 #include <stdio.h>
 #include <stdarg.h>
