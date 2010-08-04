@@ -2201,6 +2201,14 @@ static const char *const cpu_names[TARGET_CPU_DEFAULT_max] =
   "bdver1"
 };
 
+/* Return true if a red-zone is in use.  */
+
+static inline bool
+ix86_using_red_zone (void)
+{
+  return TARGET_RED_ZONE && !TARGET_64BIT_MS_ABI;
+}
+
 /* Implement TARGET_HANDLE_OPTION.  */
 
 static bool
@@ -8459,7 +8467,7 @@ ix86_compute_frame_layout (struct ix86_frame *frame)
       || (TARGET_64BIT && frame->to_allocate >= (HOST_WIDE_INT) 0x80000000))
     frame->save_regs_using_mov = false;
 
-  if (!TARGET_64BIT_MS_ABI && TARGET_RED_ZONE
+  if (ix86_using_red_zone ()
       && current_function_sp_is_unchanging
       && current_function_is_leaf
       && !ix86_current_function_calls_tls_descriptor)
@@ -8542,8 +8550,7 @@ static GTY(()) rtx queued_cfa_restores;
 static void
 ix86_add_cfa_restore_note (rtx insn, rtx reg, HOST_WIDE_INT red_offset)
 {
-  if (TARGET_RED_ZONE
-      && !TARGET_64BIT_MS_ABI
+  if (ix86_using_red_zone ()
       && red_offset + RED_ZONE_SIZE >= 0
       && crtl->args.pops_args < 65536)
     return;
@@ -9387,7 +9394,7 @@ ix86_expand_prologue (void)
      at least on x86_64 the stack probe can turn into a call that clobbers
      a red zone location */
   if (!int_registers_saved
-      && (TARGET_RED_ZONE && !TARGET_64BIT_MS_ABI)
+      && ix86_using_red_zone ()
       && (! TARGET_STACK_PROBE || allocate < CHECK_STACK_LIMIT))
     {
       ix86_emit_save_regs_using_mov ((frame_pointer_needed
@@ -25774,7 +25781,7 @@ ix86_force_to_memory (enum machine_mode mode, rtx operand)
   rtx result;
 
   gcc_assert (reload_completed);
-  if (!TARGET_64BIT_MS_ABI && TARGET_RED_ZONE)
+  if (ix86_using_red_zone ())
     {
       result = gen_rtx_MEM (mode,
 			    gen_rtx_PLUS (Pmode,
@@ -25782,7 +25789,7 @@ ix86_force_to_memory (enum machine_mode mode, rtx operand)
 					  GEN_INT (-RED_ZONE_SIZE)));
       emit_move_insn (result, operand);
     }
-  else if ((TARGET_64BIT_MS_ABI || !TARGET_RED_ZONE) && TARGET_64BIT)
+  else if (TARGET_64BIT)
     {
       switch (mode)
 	{
@@ -25849,7 +25856,7 @@ ix86_force_to_memory (enum machine_mode mode, rtx operand)
 void
 ix86_free_from_memory (enum machine_mode mode)
 {
-  if (!TARGET_RED_ZONE || TARGET_64BIT_MS_ABI)
+  if (!ix86_using_red_zone ())
     {
       int size;
 
