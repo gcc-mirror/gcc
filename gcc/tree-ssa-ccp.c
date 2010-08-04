@@ -144,6 +144,16 @@ typedef enum
   VARYING
 } ccp_lattice_t;
 
+struct prop_value_d {
+    /* Lattice value.  */
+    ccp_lattice_t lattice_val;
+
+    /* Propagated value.  */
+    tree value;
+};
+
+typedef struct prop_value_d prop_value_t;
+
 /* Array of propagated constant values.  After propagation,
    CONST_VAL[I].VALUE holds the constant value for SSA_NAME(I).  If
    the constant is held in an SSA name representing a memory store
@@ -645,7 +655,8 @@ ccp_finalize (void)
 
   do_dbg_cnt ();
   /* Perform substitutions based on the known constant values.  */
-  something_changed = substitute_and_fold (const_val, ccp_fold_stmt, true);
+  something_changed = substitute_and_fold (get_constant_value,
+					   ccp_fold_stmt, true);
 
   free (const_val);
   const_val = NULL;

@@ -1,3 +1,10 @@
+2010-08-04  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/vrp35.c: Adjust.
+	* gcc.dg/tree-ssa/vrp36.c: Likewise.
+	* gcc.dg/tree-ssa/vrp50.c: Likewise.
+	* gcc.dg/tree-ssa/vrp52.c: Likewise.
+
 2010-08-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/44857

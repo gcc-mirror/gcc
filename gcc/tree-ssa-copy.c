@@ -285,6 +285,14 @@ propagate_tree_value_into_stmt (gimple_stmt_iterator *gsi, tree val)
    After propagation, the copy-of value for each variable X_i is
    converted into the final value by walking the copy-of chains and
    updating COPY_OF[i].VALUE to be the last element of the chain.  */
+
+struct prop_value_d {
+    /* Copy-of value.  */
+    tree value;
+};
+
+typedef struct prop_value_d prop_value_t;
+
 static prop_value_t *copy_of;
 
 /* Used in set_copy_of_val to determine if the last link of a copy-of
@@ -626,7 +634,7 @@ copy_prop_visit_phi_node (gimple phi)
 {
   enum ssa_prop_result retval;
   unsigned i;
-  prop_value_t phi_val = { 0, NULL_TREE };
+  prop_value_t phi_val = { NULL_TREE };
 
   tree lhs = gimple_phi_result (phi);
 
@@ -818,6 +826,16 @@ init_copy_prop (void)
     }
 }
 
+/* Callback for substitute_and_fold to get at the final copy-of values.  */
+
+static tree
+get_value (tree name)
+{
+  tree val = copy_of[SSA_NAME_VERSION (name)].value;
+  if (val && val != name)
+    return val;
+  return NULL_TREE;
+}
 
 /* Deallocate memory used in copy propagation and do final
    substitution.  */
@@ -825,12 +843,10 @@ init_copy_prop (void)
 static void
 fini_copy_prop (void)
 {
-  size_t i;
-  prop_value_t *tmp;
+  unsigned i;
 
   /* Set the final copy-of value for each variable by traversing the
      copy-of chains.  */
-  tmp = XCNEWVEC (prop_value_t, num_ssa_names);
   for (i = 1; i < num_ssa_names; i++)
     {
       tree var = ssa_name (i);
@@ -839,7 +855,7 @@ fini_copy_prop (void)
 	  || copy_of[i].value == var)
 	continue;
 
-      tmp[i].value = get_last_copy_of (var);
+      copy_of[i].value = get_last_copy_of (var);
 
       /* In theory the points-to solution of all members of the
          copy chain is their intersection.  For now we do not bother
@@ -847,18 +863,17 @@ fini_copy_prop (void)
 	 information completely by setting the points-to solution
 	 of the representative to the first solution we find if
 	 it doesn't have one already.  */
-      if (tmp[i].value != var
+      if (copy_of[i].value != var
 	  && POINTER_TYPE_P (TREE_TYPE (var))
 	  && SSA_NAME_PTR_INFO (var)
-	  && !SSA_NAME_PTR_INFO (tmp[i].value))
-	duplicate_ssa_name_ptr_info (tmp[i].value, SSA_NAME_PTR_INFO (var));
+	  && !SSA_NAME_PTR_INFO (copy_of[i].value))
+	duplicate_ssa_name_ptr_info (copy_of[i].value, SSA_NAME_PTR_INFO (var));
     }
 
-  substitute_and_fold (tmp, NULL, true);
+  substitute_and_fold (get_value, NULL, true);
 
   free (cached_last_copy_of);
   free (copy_of);
-  free (tmp);
 }
 
 
