@@ -2292,13 +2292,37 @@ enum ix86_stack_slot
 
 #define FASTCALL_PREFIX '@'
 
-/* Machine specific CFA tracking during prologue/epilogue generation.  */
+/* Machine specific frame tracking during prologue/epilogue generation.  */
 
 #ifndef USED_FOR_TARGET
-struct GTY(()) machine_cfa_state
+struct GTY(()) machine_frame_state
 {
-  rtx reg;
-  HOST_WIDE_INT offset;
+  /* This pair tracks the currently active CFA as reg+offset.  When reg
+     is drap_reg, we don't bother trying to record here the real CFA when
+     it might really be a DW_CFA_def_cfa_expression.  */
+  rtx cfa_reg;
+  HOST_WIDE_INT cfa_offset;
+
+  /* The current offset (canonically from the CFA) of ESP and EBP.
+     When stack frame re-alignment is active, these may not be relative
+     to the CFA.  However, in all cases they are relative to the offsets
+     of the saved registers stored in ix86_frame.  */
+  HOST_WIDE_INT sp_offset;
+  HOST_WIDE_INT fp_offset;
+
+  /* The size of the red-zone that may be assumed for the purposes of
+     eliding register restore notes in the epilogue.  This may be zero
+     if no red-zone is in effect, or may be reduced from the real
+     red-zone value by a maximum runtime stack re-alignment value.  */
+  int red_zone_offset;
+
+  /* Indicate whether each of ESP, EBP or DRAP currently holds a valid
+     value within the frame.  If false then the offset above should be
+     ignored.  Note that DRAP, if valid, *always* points to the CFA and
+     thus has an offset of zero.  */
+  BOOL_BITFIELD sp_valid : 1;
+  BOOL_BITFIELD fp_valid : 1;
+  BOOL_BITFIELD drap_valid : 1;
 };
 
 struct GTY(()) machine_function {
@@ -2341,8 +2365,9 @@ struct GTY(()) machine_function {
      stack below the return address.  */
   BOOL_BITFIELD static_chain_on_stack : 1;
 
-  /* The CFA state at the end of the prologue.  */
-  struct machine_cfa_state cfa;
+  /* During prologue/epilogue generation, the current frame state.
+     Otherwise, the frame state at the end of the prologue.  */
+  struct machine_frame_state fs;
 };
 #endif
 
@@ -2360,7 +2385,6 @@ struct GTY(()) machine_function {
    REG_SP is live.  */
 #define ix86_current_function_calls_tls_descriptor \
   (ix86_tls_descriptor_calls_expanded_in_cfun && df_regs_ever_live_p (SP_REG))
-#define ix86_cfa_state (&cfun->machine->cfa)
 #define ix86_static_chain_on_stack (cfun->machine->static_chain_on_stack)
 
 /* Control behavior of x86_file_start.  */
