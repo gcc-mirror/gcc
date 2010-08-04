@@ -8616,8 +8616,9 @@ static void
 ix86_emit_save_reg_using_mov (enum machine_mode mode, unsigned int regno,
 			      HOST_WIDE_INT cfa_offset)
 {
+  struct machine_function *m = cfun->machine;
   rtx reg = gen_rtx_REG (mode, regno);
-  rtx mem, addr, insn;
+  rtx mem, addr, base, insn;
 
   addr = choose_baseaddr (cfa_offset);
   mem = gen_frame_mem (mode, addr);
@@ -8626,20 +8627,64 @@ ix86_emit_save_reg_using_mov (enum machine_mode mode, unsigned int regno,
   set_mem_align (mem, GET_MODE_ALIGNMENT (mode));
 
   insn = emit_move_insn (mem, reg);
+  RTX_FRAME_RELATED_P (insn) = 1;
+
+  base = addr;
+  if (GET_CODE (base) == PLUS)
+    base = XEXP (base, 0);
+  gcc_checking_assert (REG_P (base));
+
+  /* When saving registers into a re-aligned local stack frame, avoid
+     any tricky guessing by dwarf2out.  */
+  if (m->fs.realigned)
+    {
+      if (stack_realign_drap && regno == REGNO (crtl->drap_reg))
+	{
+	  /* A bit of a hack.  We force the DRAP register to be saved in
+	     the re-aligned stack frame, which provides us with a copy
+	     of the CFA that will last past the prologue.  Install it.  */
+	  gcc_checking_assert (cfun->machine->fs.fp_valid);
+	  addr = plus_constant (hard_frame_pointer_rtx,
+				cfun->machine->fs.fp_offset - cfa_offset);
+	  mem = gen_rtx_MEM (mode, addr);
+	  add_reg_note (insn, REG_CFA_DEF_CFA, mem);
+	}
+      else if (stack_realign_fp)
+	{
+	  /* The stack pointer may or may not be varying within the
+	     function.  If it is, then we can't use it as a stable
+	     reference to the locations within the frame.  Instead,
+	     simply compute the location of the aligned frame from
+	     the frame pointer.  */
+	  addr = GEN_INT (-crtl->stack_alignment_needed / BITS_PER_UNIT);
+	  addr = gen_rtx_AND (Pmode, hard_frame_pointer_rtx, addr);
+	  addr = plus_constant (addr, -cfa_offset);
+	  mem = gen_rtx_MEM (mode, addr);
+	  add_reg_note (insn, REG_CFA_EXPRESSION,
+			gen_rtx_SET (VOIDmode, mem, reg));
+	}
+      else
+	{
+	  /* The frame pointer is a stable reference within the
+	     aligned frame.  Use it.  */
+	  gcc_checking_assert (cfun->machine->fs.fp_valid);
+	  addr = plus_constant (hard_frame_pointer_rtx,
+				cfun->machine->fs.fp_offset - cfa_offset);
+	  mem = gen_rtx_MEM (mode, addr);
+	  add_reg_note (insn, REG_CFA_EXPRESSION,
+			gen_rtx_SET (VOIDmode, mem, reg));
+	}
+    }
 
   /* The memory may not be relative to the current CFA register,
      which means that we may need to generate a new pattern for
      use by the unwind info.  */
-  if (GET_CODE (addr) == PLUS)
-    addr = XEXP (addr, 0);
-  if (addr != cfun->machine->fs.cfa_reg)
+  else if (base != m->fs.cfa_reg)
     {
-      addr = plus_constant (cfun->machine->fs.cfa_reg,
-			    cfun->machine->fs.cfa_offset - cfa_offset);
+      addr = plus_constant (m->fs.cfa_reg, m->fs.cfa_offset - cfa_offset);
       mem = gen_rtx_MEM (mode, addr);
       add_reg_note (insn, REG_CFA_OFFSET, gen_rtx_SET (VOIDmode, mem, reg));
     }
-  RTX_FRAME_RELATED_P (insn) = 1;
 }
 
 /* Emit code to save registers using MOV insns.
@@ -9511,6 +9556,7 @@ ix86_expand_prologue (void)
       /* For the purposes of frame and register save area addressing,
 	 we've started over with a new frame.  */
       m->fs.sp_offset = INCOMING_FRAME_SP_OFFSET;
+      m->fs.realigned = true;
     }
 
   if (frame_pointer_needed && !m->fs.fp_valid)
@@ -9546,8 +9592,9 @@ ix86_expand_prologue (void)
       /* ??? There's no need to place the register save area into the
 	 aligned local stack frame.  We should do this later, after
 	 the register saves.  */
-      m->fs.fp_valid = false;
       m->fs.sp_offset = (m->fs.sp_offset + align_bytes - 1) & -align_bytes;
+      m->fs.fp_valid = false;
+      m->fs.realigned = true;
     }
 
   allocate = frame.to_allocate + frame.nsseregs * 16 + frame.padding0;
@@ -10070,6 +10117,7 @@ ix86_expand_epilogue (int style)
 		 frame.  Thus the FP is suddenly valid and the SP isn't.  */
 	      m->fs.fp_valid = true;
 	      m->fs.sp_valid = false;
+	      m->fs.realigned = false;
 	    }
 
 	  /* Leave results in shorter dependency chains on CPUs that are
@@ -10122,6 +10170,7 @@ ix86_expand_epilogue (int style)
 		 frame.  Thus the FP is suddenly valid and the SP isn't.  */
 	      m->fs.fp_valid = true;
 	      m->fs.sp_valid = false;
+	      m->fs.realigned = false;
 	    }
 
 	  /* Leave results in shorter dependency chains on CPUs that are
@@ -10162,6 +10211,7 @@ ix86_expand_epilogue (int style)
       m->fs.cfa_reg = stack_pointer_rtx;
       m->fs.cfa_offset = param_ptr_offset;
       m->fs.sp_offset = param_ptr_offset;
+      m->fs.realigned = false;
 
       add_reg_note (insn, REG_CFA_DEF_CFA,
 		    gen_rtx_PLUS (Pmode, stack_pointer_rtx,
@@ -10196,6 +10246,7 @@ ix86_expand_epilogue (int style)
   gcc_assert (m->fs.sp_offset == UNITS_PER_WORD);
   gcc_assert (m->fs.sp_valid);
   gcc_assert (!m->fs.fp_valid);
+  gcc_assert (!m->fs.realigned);
 
   /* Sibcall epilogues don't want a return instruction.  */
   if (style == 0)

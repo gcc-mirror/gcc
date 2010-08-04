@@ -2323,6 +2323,11 @@ struct GTY(()) machine_frame_state
   BOOL_BITFIELD sp_valid : 1;
   BOOL_BITFIELD fp_valid : 1;
   BOOL_BITFIELD drap_valid : 1;
+
+  /* Indicate whether the local stack frame has been re-aligned.  When
+     set, the SP/FP offsets above are relative to the aligned frame
+     and not the CFA.  */
+  BOOL_BITFIELD realigned : 1;
 };
 
 struct GTY(()) machine_function {
