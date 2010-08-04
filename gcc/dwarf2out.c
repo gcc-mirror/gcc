@@ -479,6 +479,8 @@ static struct dw_loc_descr_struct *build_cfa_loc
 static struct dw_loc_descr_struct *build_cfa_aligned_loc
   (HOST_WIDE_INT, HOST_WIDE_INT);
 static void def_cfa_1 (const char *, dw_cfa_location *);
+static struct dw_loc_descr_struct *mem_loc_descriptor
+  (rtx, enum machine_mode mode, enum var_init_status);
 
 /* How to start an assembler comment.  */
 #ifndef ASM_COMMENT_START
@@ -1833,6 +1835,17 @@ dwarf2out_frame_debug_def_cfa (rtx pat, const char *label)
       cfa.reg = REGNO (pat);
       break;
 
+    case MEM:
+      cfa.indirect = 1;
+      pat = XEXP (pat, 0);
+      if (GET_CODE (pat) == PLUS)
+	{
+	  cfa.base_offset = INTVAL (XEXP (pat, 1));
+	  pat = XEXP (pat, 0);
+	}
+      cfa.reg = REGNO (pat);
+      break;
+
     default:
       /* Recurse and define an expression.  */
       gcc_unreachable ();
@@ -1949,6 +1962,34 @@ dwarf2out_frame_debug_cfa_register (rtx set, const char *label)
   /* ??? We'd like to use queue_reg_save, but we need to come up with
      a different flushing heuristic for epilogues.  */
   reg_save (label, sregno, dregno, 0);
+}
+
+/* A subroutine of dwarf2out_frame_debug, process a REG_CFA_EXPRESSION note. */
+
+static void
+dwarf2out_frame_debug_cfa_expression (rtx set, const char *label)
+{
+  rtx src, dest, span;
+  dw_cfi_ref cfi = new_cfi ();
+
+  dest = SET_DEST (set);
+  src = SET_SRC (set);
+
+  gcc_assert (REG_P (src));
+  gcc_assert (MEM_P (dest));
+
+  span = targetm.dwarf_register_span (src);
+  gcc_assert (!span);
+
+  cfi->dw_cfi_opc = DW_CFA_expression;
+  cfi->dw_cfi_oprnd1.dw_cfi_reg_num = DWARF_FRAME_REGNUM (REGNO (src));
+  cfi->dw_cfi_oprnd2.dw_cfi_loc
+    = mem_loc_descriptor (XEXP (dest, 0), GET_MODE (dest),
+			  VAR_INIT_STATUS_INITIALIZED);
+
+  /* ??? We'd like to use queue_reg_save, were the interface different,
+     and, as above, we could manage flushing for epilogues.  */
+  add_fde_cfi (label, cfi);
 }
 
 /* A subroutine of dwarf2out_frame_debug, process a REG_CFA_RESTORE note.  */
@@ -2737,6 +2778,14 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
 	      n = XVECEXP (n, 0, 0);
 	  }
 	dwarf2out_frame_debug_cfa_register (n, label);
+	handled_one = true;
+	break;
+
+      case REG_CFA_EXPRESSION:
+	n = XEXP (note, 0);
+	if (n == NULL)
+	  n = single_set (insn);
+	dwarf2out_frame_debug_cfa_expression (n, label);
 	handled_one = true;
 	break;
 
@@ -6181,8 +6230,6 @@ static dw_loc_descr_ref based_loc_descr (rtx, HOST_WIDE_INT,
 					 enum var_init_status);
 static int is_based_loc (const_rtx);
 static int resolve_one_addr (rtx *, void *);
-static dw_loc_descr_ref mem_loc_descriptor (rtx, enum machine_mode mode,
-					    enum var_init_status);
 static dw_loc_descr_ref concat_loc_descriptor (rtx, rtx,
 					       enum var_init_status);
 static dw_loc_descr_ref loc_descriptor (rtx, enum machine_mode mode,

@@ -1,5 +1,16 @@
 2010-08-04  Richard Henderson  <rth@redhat.com>
 
+	* reg-notes.def (CFA_EXPRESSION): New.
+	* dwarf2out.c (dwarf2out_frame_debug): Handle it.
+	(dwarf2out_frame_debug_cfa_expression): New.
+	(dwarf2out_frame_debug_def_cfa): Handle simple MEMs.
+
+	* config/i386/i386.h (struct machine_frame_state): Add realigned flag.
+	* config/i386/i386.c (ix86_expand_prologue): Set it.
+	(ix86_expand_epilogue): Clear it.
+	(ix86_emit_save_reg_using_mov):	For registers saved in a realigned
+	context, add REG_CFA_EXPRESSION notes.
+
 	* config/i386/i386.h (struct machine_frame_state): Rename from
 	machine_cfa_state.  Add members tracking SP and FP regardless
 	of the current CFA register.  
