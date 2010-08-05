@@ -38,7 +38,7 @@ package body Ada.Strings.UTF_Encoding.Wide_Wide_Encoding is
    -- Decode --
    ------------
 
-   --  Version to decode UTF-8/UTF-16BE/UTF-16LE input to Wide_Wide_String
+   --  Decode UTF-8/UTF-16BE/UTF-16LE input to Wide_Wide_String
 
    function Decode
      (Item         : UTF_String;
@@ -369,7 +369,7 @@ package body Ada.Strings.UTF_Encoding.Wide_Wide_Encoding is
      (Item       : Wide_Wide_String;
       Output_BOM : Boolean  := False) return UTF_16_Wide_String
    is
-      Result : Wide_String (1 .. 2 * Item'Length + 1);
+      Result : UTF_16_Wide_String (1 .. 2 * Item'Length + 1);
       --  Worst case is each input character generates two output characters
       --  plus one for possible BOM.
 

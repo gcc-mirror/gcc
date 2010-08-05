@@ -426,7 +426,6 @@ package body Errout is
 
          Error_Msg_Sloc := Flag_Location;
          X := Get_Source_File_Index (Flag_Location);
-
          while Instantiation (X) /= No_Location loop
 
             --  Suppress instantiation message on continuation lines

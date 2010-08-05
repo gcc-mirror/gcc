@@ -38,7 +38,7 @@ package body Ada.Strings.UTF_Encoding.Wide_Encoding is
    -- Decode --
    ------------
 
-   --  Version to decode UTF-8/UTF-16BE/UTF-16LE input to Wide_String
+   --  Decode UTF-8/UTF-16BE/UTF-16LE input to Wide_String
 
    function Decode
      (Item         : UTF_String;
@@ -324,7 +324,8 @@ package body Ada.Strings.UTF_Encoding.Wide_Encoding is
      (Item       : Wide_String;
       Output_BOM : Boolean  := False) return UTF_16_Wide_String
    is
-      Result : Wide_String (1 .. Item'Length + Boolean'Pos (Output_BOM));
+      Result : UTF_16_Wide_String
+                 (1 .. Item'Length + Boolean'Pos (Output_BOM));
       --  Output is same length as input + possible BOM
 
       Len : Integer;
@@ -348,7 +349,7 @@ package body Ada.Strings.UTF_Encoding.Wide_Encoding is
          C := To_Unsigned_16 (Item (Iptr));
 
          --  Codes in the range 16#0000#..16#D7FF# or 16#E000#..16#FFFD# are
-         --  output unchaned.
+         --  output unchanged.
 
          if C <= 16#D7FF# or else C in 16#E000# .. 16#FFFD# then
             Len := Len + 1;
