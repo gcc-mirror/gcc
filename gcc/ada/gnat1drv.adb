@@ -801,9 +801,8 @@ begin
       --  We can generate code for a generic package declaration of a generic
       --  subprogram declaration only if does not require a body.
 
-      elsif Nkind_In (Main_Kind,
-              N_Generic_Package_Declaration,
-              N_Generic_Subprogram_Declaration)
+      elsif Nkind_In (Main_Kind, N_Generic_Package_Declaration,
+                                 N_Generic_Subprogram_Declaration)
         and then not Body_Required (Main_Unit_Node)
       then
          Back_End_Mode := Generate_Object;
@@ -811,9 +810,8 @@ begin
       --  Compilation units that are renamings do not require bodies, so we can
       --  generate code for them.
 
-      elsif Nkind_In (Main_Kind,
-              N_Package_Renaming_Declaration,
-              N_Subprogram_Renaming_Declaration)
+      elsif Nkind_In (Main_Kind, N_Package_Renaming_Declaration,
+                                 N_Subprogram_Renaming_Declaration)
       then
          Back_End_Mode := Generate_Object;
 

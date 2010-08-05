@@ -1841,10 +1841,11 @@ package body Prj.Nmsc is
 
                   elsif Attribute.Name = Name_Required_Switches then
 
-                     --  Attribute Required_Switches: the minimum
+                     --  Attribute Required_Switches: the minimum trailing
                      --  options to use when invoking the linker
 
-                     Put (Into_List => Project.Config.Minimum_Linker_Options,
+                     Put (Into_List =>
+                            Project.Config.Trailing_Linker_Required_Switches,
                           From_List => Attribute.Value.Values,
                           In_Tree   => Data.Tree);
 
@@ -1880,14 +1881,27 @@ package body Prj.Nmsc is
                         elsif Name = Name_Gnu then
                            Project.Config.Resp_File_Format := GNU;
 
-                        elsif Name_Buffer (1 .. Name_Len) = "gcc" then
-                           Project.Config.Resp_File_Format := GCC;
-
                         elsif Name = Name_Object_List then
                            Project.Config.Resp_File_Format := Object_List;
 
                         elsif Name = Name_Option_List then
                            Project.Config.Resp_File_Format := Option_List;
+
+                        elsif Name_Buffer (1 .. Name_Len) = "gcc" then
+                           Project.Config.Resp_File_Format := GCC;
+
+                        elsif Name_Buffer (1 .. Name_Len) = "gcc_gnu" then
+                           Project.Config.Resp_File_Format := GCC_GNU;
+
+                        elsif
+                          Name_Buffer (1 .. Name_Len) = "gcc_option_list"
+                        then
+                           Project.Config.Resp_File_Format := GCC_Option_List;
+
+                        elsif
+                          Name_Buffer (1 .. Name_Len) = "gcc_object_list"
+                        then
+                           Project.Config.Resp_File_Format := GCC_Object_List;
 
                         else
                            Error_Msg

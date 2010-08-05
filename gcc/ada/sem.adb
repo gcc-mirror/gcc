@@ -1730,6 +1730,7 @@ package body Sem is
       procedure Do_Unit_And_Dependents (CU : Node_Id; Item : Node_Id) is
          Unit_Num  : constant Unit_Number_Type := Get_Cunit_Unit_Number (CU);
          Child     : Node_Id;
+         Body_U    : Unit_Number_Type;
          Parent_CU : Node_Id;
 
          procedure Do_Withed_Units is new Walk_Withs (Do_Withed_Unit);
@@ -1758,8 +1759,11 @@ package body Sem is
                   if CU = Library_Unit (Main_CU) then
                      Process_Bodies_In_Context (CU);
 
-                     --  If main is a child unit, examine context of parent
-                     --  units to see if they include instantiated units.
+                     --  If main is a child unit, examine parent unit contexts
+                     --  to see if they include instantiated units. Also, if
+                     --  the parent itself is an instance, process its body
+                     --  because it may contain subprograms that are called
+                     --  in the main unit.
 
                      if Is_Child_Unit (Cunit_Entity (Main_Unit)) then
                         Child := Cunit_Entity (Main_Unit);
@@ -1768,6 +1772,20 @@ package body Sem is
                              Cunit
                                (Get_Cunit_Entity_Unit_Number (Scope (Child)));
                            Process_Bodies_In_Context (Parent_CU);
+
+                           if Nkind (Unit (Parent_CU)) = N_Package_Body
+                             and then
+                               Nkind (Original_Node (Unit (Parent_CU)))
+                                 = N_Package_Instantiation
+                             and then
+                               not Seen (Get_Cunit_Unit_Number (Parent_CU))
+                           then
+                              Body_U := Get_Cunit_Unit_Number (Parent_CU);
+                              Seen (Body_U) := True;
+                              Do_Action (Parent_CU, Unit (Parent_CU));
+                              Done (Body_U) := True;
+                           end if;
+
                            Child := Scope (Child);
                         end loop;
                      end if;
@@ -1842,7 +1860,8 @@ package body Sem is
 
                --  If we are processing the spec of the main unit, load bodies
                --  only if the with_clause indicates that it forced the loading
-               --  of the body for a generic instantiation.
+               --  of the body for a generic instantiation. Note that bodies of
+               --  parents that are instances have been loaded already.
 
                if Present (Body_CU)
                  and then Body_CU /= Cunit (Main_Unit)
@@ -1976,6 +1995,9 @@ package body Sem is
             --  If the main unit is a child unit, parent bodies may be present
             --  because they export instances or inlined subprograms. Check for
             --  presence of these, which are not present in context clauses.
+            --  Note that if the parents are instances, their bodies have been
+            --  processed before the main spec, because they may be needed
+            --  therein, so the following loop only affects non-instances.
 
             if Is_Child_Unit (Cunit_Entity (Main_Unit)) then
                Child := Cunit_Entity (Main_Unit);
