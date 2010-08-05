@@ -707,9 +707,13 @@ force_reg (enum machine_mode mode, rtx x)
 	if (SYMBOL_REF_DECL (s) && DECL_P (SYMBOL_REF_DECL (s)))
 	  sa = DECL_ALIGN (SYMBOL_REF_DECL (s));
 
-	ca = exact_log2 (INTVAL (c) & -INTVAL (c)) * BITS_PER_UNIT;
-
-	align = MIN (sa, ca);
+	if (INTVAL (c) == 0)
+	  align = sa;
+	else
+	  {
+	    ca = ctz_hwi (INTVAL (c)) * BITS_PER_UNIT;
+	    align = MIN (sa, ca);
+	  }
       }
 
     if (align || (MEM_P (x) && MEM_POINTER (x)))

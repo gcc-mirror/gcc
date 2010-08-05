@@ -1,5 +1,18 @@
 2010-08-05  Richard Henderson  <rth@redhat.com>
 
+	* toplev.h (ctz_hwi, clz_hwi, ffs_hwi): New.
+	(floor_log2): Use clz_hwi.
+	(exact_log2): Use ctz_hwi.
+	* toplev.c (ctz_hwi, clz_hwi, ffs_hwi): New.
+	* builtins.c (fold_builtin_bitop): Use them.
+	* simplify-rtx.c (simplify_const_unary_operation): Likewise.
+	* combine.c (get_pos_from_mask): Use ctz_hwi.
+	* double-int.c (double_int_ctz): Likewise.
+	* explow.c (force_reg): Likewise.
+	* tree.h (SET_DECL_OFFSET_ALIGN): Use ffs_hwi.
+
+2010-08-05  Richard Henderson  <rth@redhat.com>
+
 	PR target/45189
 	* config/i386/i386.c (ix86_emit_save_reg_using_mov): Make sure
 	the alignment constant is properly sign-extended.

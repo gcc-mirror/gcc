@@ -7436,7 +7436,7 @@ static int
 get_pos_from_mask (unsigned HOST_WIDE_INT m, unsigned HOST_WIDE_INT *plen)
 {
   /* Get the bit number of the first 1 bit from the right, -1 if none.  */
-  int pos = exact_log2 (m & -m);
+  int pos = m ? ctz_hwi (m) : -1;
   int len = 0;
 
   if (pos >= 0)

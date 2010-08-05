@@ -1197,10 +1197,8 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	case FFS:
-	  /* Don't use ffs here.  Instead, get low order bit and then its
-	     number.  If arg0 is zero, this will return 0, as desired.  */
 	  arg0 &= GET_MODE_MASK (mode);
-	  val = exact_log2 (arg0 & (- arg0)) + 1;
+	  val = ffs_hwi (arg0);
 	  break;
 
 	case CLZ:
@@ -1221,7 +1219,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 		val = GET_MODE_BITSIZE (mode);
 	    }
 	  else
-	    val = exact_log2 (arg0 & -arg0);
+	    val = ctz_hwi (arg0);
 	  break;
 
 	case POPCOUNT:
@@ -1351,15 +1349,12 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 
 	case FFS:
 	  hv = 0;
-	  if (l1 == 0)
-	    {
-	      if (h1 == 0)
-		lv = 0;
-	      else
-		lv = HOST_BITS_PER_WIDE_INT + exact_log2 (h1 & -h1) + 1;
-	    }
+	  if (l1 != 0)
+	    lv = ffs_hwi (l1);
+	  else if (h1 != 0)
+	    lv = HOST_BITS_PER_WIDE_INT + ffs_hwi (h1);
 	  else
-	    lv = exact_log2 (l1 & -l1) + 1;
+	    lv = 0;
 	  break;
 
 	case CLZ:
@@ -1376,9 +1371,9 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	case CTZ:
 	  hv = 0;
 	  if (l1 != 0)
-	    lv = exact_log2 (l1 & -l1);
+	    lv = ctz_hwi (l1);
 	  else if (h1 != 0)
-	    lv = HOST_BITS_PER_WIDE_INT + exact_log2 (h1 & -h1);
+	    lv = HOST_BITS_PER_WIDE_INT + ctz_hwi (h1);
 	  else if (! CTZ_DEFINED_VALUE_AT_ZERO (mode, lv))
 	    lv = GET_MODE_BITSIZE (mode);
 	  break;
