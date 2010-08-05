@@ -6995,14 +6995,15 @@ package body Exp_Ch4 is
 
          begin
             if Safe_In_Place_Array_Op (Lhs, Op1, Op2) then
-               if N = Op1 and then Nkind (Op2) = N_Op_Not then
-                  --  (not A) op (not B) can be reduced to a single call
 
+               --  (not A) op (not B) can be reduced to a single call
+
+               if N = Op1 and then Nkind (Op2) = N_Op_Not then
                   return;
 
-               elsif N = Op2 and then Nkind (Parent (N)) = N_Op_Xor then
-                  --  A xor (not B) can also be special-cased
+               --  A xor (not B) can also be special-cased
 
+               elsif N = Op2 and then Nkind (Parent (N)) = N_Op_Xor then
                   return;
                end if;
             end if;
@@ -7274,7 +7275,10 @@ package body Exp_Ch4 is
 
       --  Arithmetic overflow checks for signed integer/fixed point types
 
-      if Is_Signed_Integer_Type (Typ) or else Is_Fixed_Point_Type (Typ) then
+      if Is_Signed_Integer_Type (Typ)
+           or else
+         Is_Fixed_Point_Type (Typ)
+      then
          Apply_Arithmetic_Overflow_Check (N);
 
       --  VAX floating-point types case

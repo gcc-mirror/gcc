@@ -1,3 +1,13 @@
+2010-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Insert_Actions): If the action appears within a
+	conditional expression that is already analyzed, insert action further
+	out.
+
+2010-08-05  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb: Minor reformatting.
+
 2010-08-05  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_ch4.adb: Minor reformatting
