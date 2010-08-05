@@ -93,7 +93,7 @@ namespace __debug
       : _Base(__x), _Safe_base() { }
 
       unordered_map(unordered_map&& __x)
-      : _Base(std::forward<unordered_map>(__x)), _Safe_base() { }
+      : _Base(std::move(__x)), _Safe_base() { }
 
       unordered_map(initializer_list<value_type> __l,
 		    size_type __n = 10,
@@ -352,7 +352,7 @@ namespace __debug
       : _Base(__x), _Safe_base() { }
 
       unordered_multimap(unordered_multimap&& __x) 
-      : _Base(std::forward<unordered_multimap>(__x)), _Safe_base() { }
+      : _Base(std::move(__x)), _Safe_base() { }
 
       unordered_multimap(initializer_list<value_type> __l,
 			 size_type __n = 10,

@@ -452,7 +452,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @param  al    An allocator object.
        */
       forward_list(forward_list&& __list, const _Alloc& __al)
-      : _Base(std::forward<_Base>(__list), __al)
+      : _Base(std::move(__list), __al)
       { }
 
       /**
@@ -523,7 +523,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  %forward_list.
        */
       forward_list(forward_list&& __list)
-      : _Base(std::forward<_Base>(__list)) { }
+      : _Base(std::move(__list)) { }
 
       /**
        *  @brief  Builds a %forward_list from an initializer_list

@@ -113,7 +113,7 @@ namespace __gnu_debug
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
     basic_string(basic_string&& __str)
-    : _Base(std::forward<_Base>(__str))
+    : _Base(std::move(__str))
     { }
 
     basic_string(std::initializer_list<_CharT> __l,
@@ -153,7 +153,7 @@ namespace __gnu_debug
     basic_string&
     operator=(basic_string&& __str)
     {
-      *static_cast<_Base*>(this) = std::forward<_Base>(__str);
+      *static_cast<_Base*>(this) = std::move(__str);
       this->_M_invalidate_all();
       return *this;
     }
@@ -376,7 +376,7 @@ namespace __gnu_debug
     basic_string&
     assign(basic_string&& __x)
     {
-      _Base::assign(std::forward<_Base>(__x));
+      _Base::assign(std::move(__x));
       this->_M_invalidate_all();
       return *this;
     }

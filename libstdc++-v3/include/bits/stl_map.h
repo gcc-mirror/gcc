@@ -179,7 +179,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  The contents of @a x are a valid, but unspecified %map.
        */
       map(map&& __x)
-      : _M_t(std::forward<_Rep_type>(__x._M_t)) { }
+      : _M_t(std::move(__x._M_t)) { }
 
       /**
        *  @brief  Builds a %map from an initializer_list.

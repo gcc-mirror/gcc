@@ -93,7 +93,7 @@ namespace __debug
       : _Base(__x), _Safe_base() { }
 
       unordered_set(unordered_set&& __x) 
-      : _Base(std::forward<unordered_set>(__x)), _Safe_base() { }
+      : _Base(std::move(__x)), _Safe_base() { }
 
       unordered_set(initializer_list<value_type> __l,
 		    size_type __n = 10,
@@ -348,7 +348,7 @@ namespace __debug
       : _Base(__x), _Safe_base() { }
 
       unordered_multiset(unordered_multiset&& __x) 
-      : _Base(std::forward<unordered_multiset>(__x)), _Safe_base() { }
+      : _Base(std::move(__x)), _Safe_base() { }
 
       unordered_multiset(initializer_list<value_type> __l,
 			 size_type __n = 10,

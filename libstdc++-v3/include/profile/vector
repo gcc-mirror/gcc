@@ -137,7 +137,7 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       vector(vector&& __x)
-      : _Base(std::forward<vector>(__x))
+      : _Base(std::move(__x))
       {
         __profcxx_vector_construct(this, this->capacity());
         __profcxx_vector_construct2(this);

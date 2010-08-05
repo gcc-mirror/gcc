@@ -104,7 +104,7 @@ namespace __profile
       }
 
       unordered_map(unordered_map&& __x)
-      : _Base(std::forward<_Base>(__x)) 
+      : _Base(std::move(__x)) 
       {
         __profcxx_hashtable_construct(this, _Base::bucket_count());
         __profcxx_hashtable_construct2(this);
@@ -339,7 +339,7 @@ namespace __profile
       }
 
       unordered_multimap(unordered_multimap&& __x)
-      : _Base(std::forward<_Base>(__x))
+      : _Base(std::move(__x))
       {
         __profcxx_hashtable_construct(this, _Base::bucket_count());
       }

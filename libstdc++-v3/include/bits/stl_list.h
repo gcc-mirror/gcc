@@ -569,7 +569,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  The contents of @a x are a valid, but unspecified %list.
        */
       list(list&& __x)
-      : _Base(std::forward<_Base>(__x)) { }
+      : _Base(std::move(__x)) { }
 
       /**
        *  @brief  Builds a %list from an initializer_list

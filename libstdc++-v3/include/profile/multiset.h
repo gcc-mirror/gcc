@@ -82,7 +82,7 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       multiset(multiset&& __x)
-      : _Base(std::forward<multiset>(__x))
+      : _Base(std::move(__x))
       { }
 
       multiset(initializer_list<value_type> __l,

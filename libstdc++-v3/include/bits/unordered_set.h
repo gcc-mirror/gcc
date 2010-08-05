@@ -85,7 +85,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       __unordered_set(const __unordered_set& __x) = default;
 
       __unordered_set(__unordered_set&& __x)
-      : _Base(std::forward<_Base>(__x)) { }
+      : _Base(std::move(__x)) { }
     };
 
   template<class _Value,
@@ -140,7 +140,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       __unordered_multiset(const __unordered_multiset& __x) = default;
 
       __unordered_multiset(__unordered_multiset&& __x)
-      : _Base(std::forward<_Base>(__x)) { }
+      : _Base(std::move(__x)) { }
     };
 
   template<class _Value, class _Hash, class _Pred, class _Alloc,
@@ -246,7 +246,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       unordered_set(const unordered_set& __x) = default;
 
       unordered_set(unordered_set&& __x)
-      : _Base(std::forward<_Base>(__x)) { }
+      : _Base(std::move(__x)) { }
 
       unordered_set(initializer_list<value_type> __l,
 		    size_type __n = 10,
@@ -330,7 +330,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       unordered_multiset(const unordered_multiset& __x) = default;
 
       unordered_multiset(unordered_multiset&& __x)
-      : _Base(std::forward<_Base>(__x)) { }
+      : _Base(std::move(__x)) { }
 
       unordered_multiset(initializer_list<value_type> __l,
 			 size_type __n = 10,

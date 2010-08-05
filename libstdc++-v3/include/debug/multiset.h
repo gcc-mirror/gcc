@@ -90,7 +90,7 @@ namespace __debug
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       multiset(multiset&& __x)
-      : _Base(std::forward<multiset>(__x)), _Safe_base()
+      : _Base(std::move(__x)), _Safe_base()
       { this->_M_swap(__x); }
 
       multiset(initializer_list<value_type> __l,
