@@ -1796,8 +1796,8 @@ package body Sem is
          --  The body of a unit that is withed by the spec of the main unit
          --  may in turn have a with_clause on that spec. In that case do not
          --  traverse the body, to prevent loops. It can also happen that the
-         --  main body as a with_clause on a child, which of course has an
-         --  implicit with on its parent. It's ok to traverse the child body
+         --  main body has a with_clause on a child, which of course has an
+         --  implicit with on its parent. It's OK to traverse the child body
          --  if the main spec has been processed, otherwise we also have a
          --  circularity to avoid.
 
@@ -1811,7 +1811,7 @@ package body Sem is
          begin
             CL := First (Context_Items (CU));
 
-            --  Problem does not arise with main subprograms.
+            --  Problem does not arise with main subprograms
 
             if Nkind (Unit (Main_CU)) /= N_Package_Body then
                return False;
@@ -1820,8 +1820,7 @@ package body Sem is
             while Present (CL) loop
                if Nkind (CL) = N_With_Clause
                  and then Library_Unit (CL) = Library_Unit (Main_CU)
-                 and then
-                   not Done (Get_Cunit_Unit_Number (Library_Unit (CL)))
+                 and then not Done (Get_Cunit_Unit_Number (Library_Unit (CL)))
                then
                   return True;
                end if;
