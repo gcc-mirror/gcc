@@ -1,3 +1,24 @@
+2010-08-05  Andi Kleen  <ak@linux.intel.com>
+
+	* lto-plugin.c: Include <hashtab.h>
+	(sym_aux): Add next_conflict field to save conflict chains.
+	(plugin_file_info): Add conflicts symtab.
+	(parse_table_entry): Initialize aux->next_conflict.
+	(process_symtab): Increment found.
+	(dump_symtab): Add.
+	(finish_conflict_resolution): Add.
+	(free_symtab): Add.
+	(write_resolution): Remove symbols loop and move into
+	dump_symtab. Call dump_symtab for main symbol and conflicts table.
+	Call free_symtab to free conflicts table.
+	(SWAP): Add.
+	(eq_sym): Add.
+	(hash_sym): Add.
+	(symbol_strength): Add.
+	(resolve_conflicts): Add.
+	(claim_file_handler): Add n variable. Check return value of
+	process_symtab. Call resolve_conflicts.
+
 2010-07-27  Andi Kleen <ak@linux.intel.com>
 
 	* lto-plugin.c (translate): Remove debug fprintf.

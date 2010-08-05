@@ -44,6 +44,7 @@ along with this program; see the file COPYING3.  If not see
 #include <sys/wait.h>
 #include <stdbool.h>
 #include <libiberty.h>
+#include <hashtab.h>
 
 /* The presence of gelf.h is checked by the toplevel configure script.  */
 #include <gelf.h>
@@ -59,6 +60,7 @@ struct sym_aux
 {
   uint32_t slot;
   unsigned id;
+  unsigned next_conflict;
 };
 
 struct plugin_symtab
@@ -76,6 +78,7 @@ struct plugin_file_info
   char *name;
   void *handle;
   struct plugin_symtab symtab;
+  struct plugin_symtab conflicts;
 };
 
 
@@ -183,6 +186,8 @@ parse_table_entry (char *p, struct ld_plugin_symbol *entry,
 
   entry->resolution = LDPR_UNKNOWN;
 
+  aux->next_conflict = -1;
+
   return p;
 }
 
@@ -246,7 +251,7 @@ process_symtab (Elf *elf, struct plugin_symtab *out)
 	  if (s)
 	      sscanf (s, ".%x", &out->id);
 	  translate (elf_getdata (section, NULL), out);
-	  found = 1;
+	  found++;
 	}
     }
   return found;
@@ -303,6 +308,82 @@ free_2 (void)
   arguments_file_name = NULL;
 }
 
+/* Dump SYMTAB to resolution file F. */
+
+static void
+dump_symtab (FILE *f, struct plugin_symtab *symtab)
+{
+  unsigned j;
+
+  for (j = 0; j < symtab->nsyms; j++)
+    {
+      uint32_t slot = symtab->aux[j].slot;
+      unsigned int resolution = symtab->syms[j].resolution;
+      
+      assert (resolution != LDPR_UNKNOWN);
+
+      fprintf (f, "%d %x %s %s\n", slot, symtab->aux[j].id,
+	       lto_resolution_str[resolution], 
+	       symtab->syms[j].name);
+    }
+}
+
+/* Finish the conflicts' resolution information after the linker resolved
+   the original symbols */
+
+static void
+finish_conflict_resolution (struct plugin_symtab *symtab, 
+			   struct plugin_symtab *conflicts)
+{
+  int i, j;
+
+  if (conflicts->nsyms == 0)
+    return;
+
+  for (i = 0; i < symtab->nsyms; i++)
+    { 
+      int resolution;
+
+      if (symtab->aux[i].next_conflict == -1)
+	continue;
+
+      switch (symtab->syms[i].def) 
+	{
+	case LDPK_DEF:
+	case LDPK_COMMON: /* ??? */
+	  resolution = LDPR_RESOLVED_IR; 
+	  break;
+	case LDPK_WEAKDEF:
+	  resolution = LDPR_PREEMPTED_IR;
+	  break;
+	case LDPK_UNDEF:
+	case LDPK_WEAKUNDEF:
+	  resolution = symtab->syms[i].resolution;
+	  break;
+	default:
+	  assert (0);
+	}
+
+      assert (resolution != LDPR_UNKNOWN);
+
+      for (j = symtab->aux[i].next_conflict; 
+	   j != -1; 
+	   j = conflicts->aux[j].next_conflict)
+	conflicts->syms[j].resolution = resolution;
+    }
+}
+
+/* Free symbol table SYMTAB. */
+
+static void
+free_symtab (struct plugin_symtab *symtab)
+{
+  free (symtab->syms);
+  symtab->syms = NULL;
+  free (symtab->aux);
+  symtab->aux = NULL;
+}
+
 /*  Writes the relocations to disk. */
 
 static void
@@ -322,18 +403,17 @@ write_resolution (void)
       struct plugin_file_info *info = &claimed_files[i];
       struct plugin_symtab *symtab = &info->symtab;
       struct ld_plugin_symbol *syms = symtab->syms;
-      unsigned j;
 
       get_symbols (info->handle, symtab->nsyms, syms);
 
-      fprintf (f, "%s %d\n", info->name, info->symtab.nsyms);
+      finish_conflict_resolution (symtab, &info->conflicts);
 
-      for (j = 0; j < info->symtab.nsyms; j++)
+      fprintf (f, "%s %d\n", info->name, symtab->nsyms + info->conflicts.nsyms);
+      dump_symtab (f, symtab);
+      if (info->conflicts.nsyms)
 	{
-	  uint32_t slot = symtab->aux[j].slot;
-	  unsigned int resolution = syms[j].resolution;
-	  fprintf (f, "%d %x %s %s\n", slot, symtab->aux[j].id,
-		   lto_resolution_str[resolution], syms[j].name);
+	  dump_symtab (f, &info->conflicts);
+	  free_symtab (&info->conflicts);
 	}
     }
   fclose (f);
@@ -550,6 +630,130 @@ cleanup_handler (void)
   return LDPS_OK;
 }
 
+#define SWAP(type, a, b) \
+  do { type tmp_; tmp_ = (a); (a) = (b); (b) = tmp_; } while(0)
+
+/* Compare two hash table entries */
+
+static int eq_sym (const void *a, const void *b)
+{
+  const struct ld_plugin_symbol *as = (const struct ld_plugin_symbol *)a;
+  const struct ld_plugin_symbol *bs = (const struct ld_plugin_symbol *)b;
+
+  return !strcmp (as->name, bs->name);
+}
+
+/* Hash a symbol */
+
+static hashval_t hash_sym (const void *a)
+{
+  const struct ld_plugin_symbol *as = (const struct ld_plugin_symbol *)a;
+
+  return htab_hash_string (as->name);
+}
+
+/* Determine how strong a symbol is */
+
+static int symbol_strength (struct ld_plugin_symbol *s)
+{
+  switch (s->def) 
+    { 
+    case LDPK_UNDEF:
+    case LDPK_WEAKUNDEF:
+      return 0;
+    case LDPK_WEAKDEF:
+      return 1;
+    default:
+      return 2;
+    }
+}
+
+/* In the ld -r case we can get dups in the LTO symbol tables, where
+   the same symbol can have different resolutions (e.g. undefined and defined).
+
+   We have to keep that in the LTO symbol tables, but the dups confuse
+   gold and then finally gcc by supplying incorrect resolutions.
+
+   Problem is that the main gold symbol table doesn't know about subids
+   and does not distingush the same symbols in different states.
+
+   So we drop duplicates from the linker visible symbol table
+   and keep them in a private table. Then later do own symbol
+   resolution for the duplicated based on the results for the
+   originals.
+
+   Then when writing out the resolution file readd the dropped symbols.
+   
+   XXX how to handle common? */
+
+static void
+resolve_conflicts (struct plugin_symtab *t, struct plugin_symtab *conflicts)
+{
+  htab_t symtab = htab_create (t->nsyms, hash_sym, eq_sym, NULL);
+  int i;
+  int out;
+  int outlen;
+
+  outlen = t->nsyms;
+  conflicts->syms = xmalloc (sizeof (struct ld_plugin_symbol) * outlen);
+  conflicts->aux = xmalloc (sizeof (struct sym_aux) * outlen);
+
+  /* Move all duplicate symbols into the auxillary conflicts table. */
+  out = 0;
+  for (i = 0; i < t->nsyms; i++) 
+    {
+      struct ld_plugin_symbol *s = &t->syms[i];
+      struct sym_aux *aux = &t->aux[i];
+      void **slot;
+
+      slot = htab_find_slot (symtab, s, INSERT);
+      if (*slot != NULL)
+	{
+	  int cnf;
+	  struct ld_plugin_symbol *orig = (struct ld_plugin_symbol *)*slot;
+	  struct sym_aux *orig_aux = &t->aux[orig - t->syms];
+
+	  /* Always let the linker resolve the strongest symbol */
+	  if (symbol_strength (orig) < symbol_strength (s)) 
+	    {
+	      SWAP (struct ld_plugin_symbol, *orig, *s);
+	      SWAP (uint32_t, orig_aux->slot, aux->slot);
+	      SWAP (unsigned, orig_aux->id, aux->id);
+	      /* Don't swap conflict chain pointer */
+	    } 
+
+	  /* Move current symbol into the conflicts table */
+	  cnf = conflicts->nsyms++;
+	  conflicts->syms[cnf] = *s;
+	  conflicts->aux[cnf] = *aux;
+	  aux = &conflicts->aux[cnf];
+
+	  /* Update conflicts chain of the original symbol */
+	  aux->next_conflict = orig_aux->next_conflict;
+	  orig_aux->next_conflict = cnf;
+
+	  continue;
+	}
+
+      /* Remove previous duplicates in the main table */
+      if (out < i)
+	{
+	  t->syms[out] = *s;
+	  t->aux[out] = *aux;
+	}
+
+      /* Put original into the hash table */
+      *slot = &t->syms[out];
+      out++;
+    }
+
+  assert (conflicts->nsyms <= outlen);
+  assert (conflicts->nsyms + out == t->nsyms);
+  
+  t->nsyms = out;
+  htab_delete (symtab);
+}
+
 /* Callback used by gold to check if the plugin will claim FILE. Writes
    the result in CLAIMED. */
 
@@ -559,6 +763,7 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
   enum ld_plugin_status status;
   Elf *elf;
   struct plugin_file_info lto_file;
+  int n;
 
   memset (&lto_file, 0, sizeof (struct plugin_file_info));
 
@@ -597,8 +802,15 @@ claim_file_handler (const struct ld_plugin_input_file *file, int *claimed)
 
   *claimed = 0;
 
-  if (!elf || !process_symtab (elf, &lto_file.symtab))
+  if (!elf)
     goto err;
+
+  n = process_symtab (elf, &lto_file.symtab);
+  if (n == 0)
+    goto err;
+
+  if (n > 1)
+    resolve_conflicts (&lto_file.symtab, &lto_file.conflicts);
 
   status = add_symbols (file->handle, lto_file.symtab.nsyms,
 			lto_file.symtab.syms);
