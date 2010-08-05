@@ -2850,8 +2850,8 @@ package body Sem_Elab is
                Typ : constant Entity_Id := Etype (N);
                Chk : constant Boolean   := Do_Range_Check (N);
 
-               R   : constant Node_Id :=
-                       Make_Raise_Program_Error (Loc,
+               R  : constant Node_Id :=
+                      Make_Raise_Program_Error (Loc,
                          Reason => PE_Access_Before_Elaboration);
 
                Reloc_N : Node_Id;

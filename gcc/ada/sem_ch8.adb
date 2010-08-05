@@ -7622,9 +7622,10 @@ package body Sem_Ch8 is
                         begin
                            S1 := Scope (Ent1);
                            S2 := Scope (Ent2);
-                           while S1 /= Standard_Standard
-                                   and then
-                                 S2 /= Standard_Standard
+                           while Present (S1)
+                             and then Present (S2)
+                             and then S1 /= Standard_Standard
+                             and then S2 /= Standard_Standard
                            loop
                               S1 := Scope (S1);
                               S2 := Scope (S2);

@@ -1,5 +1,20 @@
 2010-08-05  Robert Dewar  <dewar@adacore.com>
 
+	* a-suezse.adb, a-suezse.ads, a-suezen.adb, a-suezen.ads: Removed.
+	* a-suewse.adb, a-suewse.ads, a-suesen.adb, a-suesen.ads,
+	a-suewen.adb, a-suewen.ads: New files.
+	* Makefile.rtl, impunit.adb: Update implementation of Ada 2012 string
+	encoding packages.
+	* sem_elab.adb: Minor reformatting.
+
+2010-08-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch8.adb (Use_One_Type): Protect against empty scopes.
+	* exp_util.adb (Component_May_Be_Bit_Aligned): Prevent assert failure
+	in case of null Comp.
+
+2010-08-05  Robert Dewar  <dewar@adacore.com>
+
 	* errout.adb, a-suewen.adb, a-suezen.adb: Minor reformatting.
 
 2010-08-05  Gary Dismukes  <dismukes@adacore.com>

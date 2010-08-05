@@ -904,16 +904,18 @@ package body Exp_Util is
    ----------------------------------
 
    function Component_May_Be_Bit_Aligned (Comp : Entity_Id) return Boolean is
-      UT : constant Entity_Id := Underlying_Type (Etype (Comp));
+      UT : Entity_Id;
 
    begin
       --  If no component clause, then everything is fine, since the back end
       --  never bit-misaligns by default, even if there is a pragma Packed for
       --  the record.
 
-      if No (Component_Clause (Comp)) then
+      if No (Comp) or else No (Component_Clause (Comp)) then
          return False;
       end if;
+
+      UT := Underlying_Type (Etype (Comp));
 
       --  It is only array and record types that cause trouble
 
