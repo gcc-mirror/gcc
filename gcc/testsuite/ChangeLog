@@ -1,5 +1,10 @@
 2010-08-05  Martin Jambor  <mjambor@suse.cz>
 
+	PR testsuite/42855
+	* gcc.dg/tree-ssa/pr42585.c: Skip dump scan on powerpc and arm.
+
+2010-08-05  Martin Jambor  <mjambor@suse.cz>
+
 	* gcc.dg/ipa/ipcp-ii-1.c: New test.
 	* g++.dg/ipa/ipcp-ivi-1.C: Likewise.
 

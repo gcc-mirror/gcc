@@ -32,6 +32,6 @@ Cyc_string_ungetc (int ignore, struct _fat_ptr *sptr)
 }
 
 /* The local aggregates . */
-/* { dg-final { scan-tree-dump-times "struct _fat_ptr _ans" 0 "optimized"} } */
-/* { dg-final { scan-tree-dump-times "struct _fat_ptr _T2" 0 "optimized"} } */
+/* { dg-final { scan-tree-dump-times "struct _fat_ptr _ans" 0 "optimized" { target { { ! powerpc*-*-* } && { ! arm-*-* } } } } } */
+/* { dg-final { scan-tree-dump-times "struct _fat_ptr _T2" 0 "optimized" { target { { ! powerpc*-*-* } && { ! arm-*-* } } } } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
