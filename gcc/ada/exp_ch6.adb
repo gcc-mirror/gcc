@@ -3713,9 +3713,7 @@ package body Exp_Ch6 is
 
          Set_Name (N, New_Occurrence_Of (Orig_Bod, Loc));
 
-         if Present (Alias (Orig_Bod))
-           or else Is_Inlined (Orig_Bod)
-         then
+         if Present (Alias (Orig_Bod)) or else Is_Inlined (Orig_Bod) then
             Expand_Call (N);
          end if;
 

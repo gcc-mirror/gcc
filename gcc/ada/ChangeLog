@@ -1,3 +1,14 @@
+2010-08-05  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch6.adb, gnat1drv.adb, exp_ch6.adb, sem_eval.adb: Minor
+	reformatting.
+
+2010-08-05  Steve Baird  <baird@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): An access value which designates
+	a volatile object of a nonvolatile type is prohibited.
+	Do not call Make_Reference to construct a reference to such an object.
+
 2010-08-05  Robert Dewar  <dewar@adacore.com>
 
 	* a-suezse.adb, a-suezse.ads, a-suezen.adb, a-suezen.ads: Removed.

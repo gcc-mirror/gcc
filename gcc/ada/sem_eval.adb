@@ -3865,13 +3865,13 @@ package body Sem_Eval is
                if No (Typ1) then
                   Typ1 := E;
 
-                  --  Before emitting an error, check for the presence of a
-                  --  mixed-mode operation that specifies a fixed point type.
+               --  Before emitting an error, check for the presence of a
+               --  mixed-mode operation that specifies a fixed point type.
 
                elsif Is_Relational
                  and then
                    (Is_Mixed_Mode_Operand (Left_Opnd (N))
-                    or else Is_Mixed_Mode_Operand (Right_Opnd (N)))
+                     or else Is_Mixed_Mode_Operand (Right_Opnd (N)))
                  and then Is_Fixed_Point_Type (E) /= Is_Fixed_Point_Type (Typ1)
 
                then
