@@ -7463,12 +7463,24 @@ package body Exp_Ch4 is
                null;
 
             --  Don't do this optimization for the prefix of an attribute or
-            --  the operand of an object renaming declaration since these are
+            --  the name of an object renaming declaration since these are
             --  contexts where we do not want the value anyway.
 
             elsif (Nkind (Par) = N_Attribute_Reference
                      and then Prefix (Par) = N)
               or else Is_Renamed_Object (N)
+            then
+               null;
+
+            --  If this is a discriminant of a component of a mutable record,
+            --  or a renaming of such, no optimization is possible, and value
+            --  must be retrieved anew. Note that in the previous case we may
+            --  be dealing with a renaming declaration, while here we may have
+            --  a use of a renaming.
+
+            elsif Nkind (P) = N_Selected_Component
+              and then Is_Record_Type (Etype (Prefix (P)))
+              and then not Is_Constrained (Etype (Prefix (P)))
             then
                null;
 

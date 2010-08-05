@@ -1,3 +1,27 @@
+2010-08-05  Robert Dewar  <dewar@adacore.com>
+
+	* gnat1drv.adb: Minor reformatting.
+
+2010-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem.adb (Do_Unit_And_Dependents): If some parent unit is an
+	instantiation, process its body before the spec of the main unit,
+	because it may contain subprograms invoked in the spec of main.
+	* einfo.ads: Add documention of delayed freeze.
+
+2010-08-05  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Process_Linker): Take into account new values for
+	attribute Response_File_Format.
+	* prj.ads (Response_File_Format): New enumeration values GCC_GNU,
+	GCC_Object_List and GCC_Option_List.
+
+2010-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Selected_Component): Do not constant-fold a
+	selected component that denotes a discriminant if it is the
+	discriminant of a component of an unconstrained record type.
+
 2010-08-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_util.adb (Insert_Actions): If the action appears within a

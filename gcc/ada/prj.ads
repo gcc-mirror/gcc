@@ -899,9 +899,12 @@ package Prj is
    type Response_File_Format is
      (None,
       GNU,
-      GCC,
       Object_List,
-      Option_List);
+      Option_List,
+      GCC,
+      GCC_GNU,
+      GCC_Object_List,
+      GCC_Option_List);
    --  The format of the different response files
 
    type Project_Configuration is record
@@ -939,7 +942,7 @@ package Prj is
       Map_File_Option : Name_Id := No_Name;
       --  Option to use when invoking the linker to build a map file
 
-      Minimum_Linker_Options : Name_List_Index := No_Name_List;
+      Trailing_Linker_Required_Switches : Name_List_Index := No_Name_List;
       --  The minimum options for the linker driver. Specified in the
       --  configuration.
 
@@ -1038,7 +1041,8 @@ package Prj is
                                Executable_Suffix             => No_Name,
                                Linker                        => No_Path,
                                Map_File_Option               => No_Name,
-                               Minimum_Linker_Options        => No_Name_List,
+                               Trailing_Linker_Required_Switches =>
+                                 No_Name_List,
                                Linker_Executable_Option      => No_Name_List,
                                Linker_Lib_Dir_Option         => No_Name,
                                Linker_Lib_Name_Option        => No_Name,
