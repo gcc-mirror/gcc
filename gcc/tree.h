@@ -2850,9 +2850,7 @@ struct GTY(()) tree_decl_with_rtl {
 
 /* Specify that DECL_ALIGN(NODE) is a multiple of X.  */
 #define SET_DECL_OFFSET_ALIGN(NODE, X) \
-  (FIELD_DECL_CHECK (NODE)->decl_common.off_align = exact_log2 ((X) & -(X)))
-/* 1 if the alignment for this type was requested by "aligned" attribute,
-   0 if it is the default for this type.  */
+  (FIELD_DECL_CHECK (NODE)->decl_common.off_align = ffs_hwi (X) - 1)
 
 /* For FIELD_DECLS, DECL_FCONTEXT is the *first* baseclass in
    which this FIELD_DECL is defined.  This information is needed when

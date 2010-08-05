@@ -859,15 +859,7 @@ double_int_ctz (double_int a)
   unsigned bits = a.low ? 0 : HOST_BITS_PER_WIDE_INT;
   if (!w)
     return HOST_BITS_PER_DOUBLE_INT;
-#if (GCC_VERSION >= 3004)
-  bits += CTZ_HWI (w);
-#else
-  while (!(w & 1))
-    {
-      w >>= 1;
-      bits += 1;
-    }
-#endif
+  bits += ctz_hwi (w);
   return bits;
 }
 

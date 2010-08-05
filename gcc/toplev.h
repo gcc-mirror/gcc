@@ -111,6 +111,10 @@ extern bool fast_math_flags_struct_set_p (struct cl_optimization *);
 /* Inline versions of the above for speed.  */
 #if GCC_VERSION < 3004
 
+extern int clz_hwi (unsigned HOST_WIDE_INT x);
+extern int ctz_hwi (unsigned HOST_WIDE_INT x);
+extern int ffs_hwi (unsigned HOST_WIDE_INT x);
+
 /* Return log2, or -1 if not exact.  */
 extern int exact_log2                  (unsigned HOST_WIDE_INT);
 
@@ -119,27 +123,57 @@ extern int floor_log2                  (unsigned HOST_WIDE_INT);
 
 #else /* GCC_VERSION >= 3004 */
 
+/* For convenience, define 0 -> word_size.  */
+static inline int
+clz_hwi (unsigned HOST_WIDE_INT x)
+{
+  if (x == 0)
+    return HOST_BITS_PER_WIDE_INT;
 # if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-#  define CLZ_HWI __builtin_clzl
-#  define CTZ_HWI __builtin_ctzl
+  return __builtin_clzl (x);
 # elif HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONGLONG
-#  define CLZ_HWI __builtin_clzll
-#  define CTZ_HWI __builtin_ctzll
+  return __builtin_clzll (x);
 # else
-#  define CLZ_HWI __builtin_clz
-#  define CTZ_HWI __builtin_ctz
+  return __builtin_clz (x);
 # endif
+}
+
+static inline int
+ctz_hwi (unsigned HOST_WIDE_INT x)
+{
+  if (x == 0)
+    return HOST_BITS_PER_WIDE_INT;
+# if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
+  return __builtin_ctzl (x);
+# elif HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONGLONG
+  return __builtin_ctzll (x);
+# else
+  return __builtin_ctz (x);
+# endif
+}
+
+static inline int
+ffs_hwi (unsigned HOST_WIDE_INT x)
+{
+# if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
+  return __builtin_ffsl (x);
+# elif HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONGLONG
+  return __builtin_ffsll (x);
+# else
+  return __builtin_ffs (x);
+# endif
+}
 
 static inline int
 floor_log2 (unsigned HOST_WIDE_INT x)
 {
-  return x ? HOST_BITS_PER_WIDE_INT - 1 - (int) CLZ_HWI (x) : -1;
+  return HOST_BITS_PER_WIDE_INT - 1 - clz_hwi (x);
 }
 
 static inline int
 exact_log2 (unsigned HOST_WIDE_INT x)
 {
-  return x == (x & -x) && x ? (int) CTZ_HWI (x) : -1;
+  return x == (x & -x) && x ? ctz_hwi (x) : -1;
 }
 
 #endif /* GCC_VERSION >= 3004 */
