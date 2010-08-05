@@ -1269,6 +1269,49 @@ ipcp_const_param_count (struct cgraph_node *node)
   return const_param;
 }
 
+/* Given that a formal parameter of NODE given by INDEX is known to be constant
+   CST, try to find any indirect edges that can be made direct and make them
+   so.  Note that INDEX is the number the parameter at the time of analyzing
+   parameter uses and parameter removals should not be considered for it.  (In
+   fact, the parameter itself has just been removed.)  */
+
+static void
+ipcp_discover_new_direct_edges (struct cgraph_node *node, int index, tree cst)
+{
+  struct cgraph_edge *ie, *next_ie;
+
+  for (ie = node->indirect_calls; ie; ie = next_ie)
+    {
+      struct cgraph_indirect_call_info *ici = ie->indirect_info;
+
+      next_ie = ie->next_callee;
+      if (ici->param_index != index)
+	continue;
+
+      if (ici->polymorphic)
+	{
+	  tree binfo;
+	  HOST_WIDE_INT token;
+
+	  if (TREE_CODE (cst) != ADDR_EXPR)
+	    continue;
+
+	  binfo = gimple_get_relevant_ref_binfo (TREE_OPERAND (cst, 0),
+						 NULL_TREE);
+	  if (!binfo)
+	    continue;
+	  gcc_assert (ie->indirect_info->anc_offset == 0);
+	  token = ie->indirect_info->otr_token;
+	  cst = gimple_fold_obj_type_ref_known_binfo (token, binfo);
+	  if (!cst)
+	    continue;
+	}
+
+      ipa_make_edge_direct_to_target (ie, cst);
+    }
+}
+
+
 /* Propagate the constant parameters found by ipcp_iterate_stage()
    to the function's code.  */
 static void
@@ -1390,7 +1433,8 @@ ipcp_insert_stage (void)
 	node_callers++;
       redirect_callers = VEC_alloc (cgraph_edge_p, heap, node_callers);
       for (cs = node->callers; cs != NULL; cs = cs->next_caller)
-	VEC_quick_push (cgraph_edge_p, redirect_callers, cs);
+	if (!cs->indirect_inlining_edge)
+	  VEC_quick_push (cgraph_edge_p, redirect_callers, cs);
 
       /* Redirecting all the callers of the node to the
          new versioned node.  */
@@ -1410,7 +1454,13 @@ ipcp_insert_stage (void)
 		 cgraph_node_name (node), (int)growth, (int)new_size);
       ipcp_init_cloned_node (node, node1);
 
-      /* TODO: We can use indirect inlning info to produce new calls.  */
+      info = IPA_NODE_REF (node);
+      for (i = 0; i < count; i++)
+	{
+	  struct ipcp_lattice *lat = ipcp_get_lattice (info, i);
+	  if (lat->type == IPA_CONST_VALUE)
+	    ipcp_discover_new_direct_edges (node1, i, lat->constant);
+        }
 
       if (dump_file)
 	dump_function_to_file (node1->decl, dump_file, dump_flags);

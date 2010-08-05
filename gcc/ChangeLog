@@ -1,5 +1,12 @@
 2010-08-05  Martin Jambor  <mjambor@suse.cz>
 
+	* ipa-cp.c (ipcp_discover_new_direct_edges): New function.
+	(ipcp_insert_stage): Redirect only edges not flagged with
+	indirect_inlining_edge.  Call ipcp_discover_new_direct_edges for all
+	discovered constants.
+
+2010-08-05  Martin Jambor  <mjambor@suse.cz>
+
 	* ipa-prop.h (enum ipa_lattice_type): Changed comments.
 	(struct ipa_param_descriptor): New fields types and
 	cannot_devirtualize.
