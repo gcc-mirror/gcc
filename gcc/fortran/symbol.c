@@ -3795,6 +3795,9 @@ gen_cptr_param (gfc_formal_arglist **head,
   formal_arg = gfc_get_formal_arglist ();
   /* Add arg to list of formal args (the CPTR arg).  */
   add_formal_arg (head, tail, formal_arg, param_sym);
+
+  /* Validate changes.  */
+  gfc_commit_symbol (param_sym);
 }
 
 
@@ -3840,6 +3843,9 @@ gen_fptr_param (gfc_formal_arglist **head,
   formal_arg = gfc_get_formal_arglist ();
   /* Add arg to list of formal args.  */
   add_formal_arg (head, tail, formal_arg, param_sym);
+
+  /* Validate changes.  */
+  gfc_commit_symbol (param_sym);
 }
 
 
@@ -3911,6 +3917,9 @@ gen_shape_param (gfc_formal_arglist **head,
   formal_arg = gfc_get_formal_arglist ();
   /* Add arg to list of formal args.  */
   add_formal_arg (head, tail, formal_arg, param_sym);
+
+  /* Validate changes.  */
+  gfc_commit_symbol (param_sym);
 }
 
 
@@ -3973,6 +3982,9 @@ gfc_copy_formal_args (gfc_symbol *dest, gfc_symbol *src)
 
       /* Add arg to list of formal args.  */
       add_formal_arg (&head, &tail, formal_arg, formal_arg->sym);
+
+      /* Validate changes.  */
+      gfc_commit_symbol (formal_arg->sym);
     }
 
   /* Add the interface to the symbol.  */
@@ -4030,6 +4042,9 @@ gfc_copy_formal_args_intr (gfc_symbol *dest, gfc_intrinsic_sym *src)
 
       /* Add arg to list of formal args.  */
       add_formal_arg (&head, &tail, formal_arg, formal_arg->sym);
+
+      /* Validate changes.  */
+      gfc_commit_symbol (formal_arg->sym);
     }
 
   /* Add the interface to the symbol.  */
@@ -4083,6 +4098,9 @@ gfc_copy_formal_args_ppc (gfc_component *dest, gfc_symbol *src)
 
       /* Add arg to list of formal args.  */
       add_formal_arg (&head, &tail, formal_arg, formal_arg->sym);
+
+      /* Validate changes.  */
+      gfc_commit_symbol (formal_arg->sym);
     }
 
   /* Add the interface to the symbol.  */
@@ -4465,6 +4483,7 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
       default:
 	gcc_unreachable ();
     }
+  gfc_commit_symbol (tmp_sym);
 }
 
 
@@ -4837,10 +4856,12 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  c->ts.u.derived = vtype;
 		  c->initializer->expr_type = EXPR_NULL;
 		}
+	      gfc_commit_symbol (vtype);
 	    }
 	  vtab->ts.u.derived = vtype;
 
 	  vtab->value = gfc_default_initializer (&vtab->ts);
+	  gfc_commit_symbol (vtab);
 	}
     }
 

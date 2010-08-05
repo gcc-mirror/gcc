@@ -1841,13 +1841,12 @@ parse_derived_contains (void)
 
 	case ST_DATA_DECL:
 	  gfc_error ("Components in TYPE at %C must precede CONTAINS");
-	  error_flag = true;
-	  break;
+	  goto error;
 
 	case ST_PROCEDURE:
 	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003:  Type-bound"
 					     " procedure at %C") == FAILURE)
-	    error_flag = true;
+	    goto error;
 
 	  accept_statement (ST_PROCEDURE);
 	  seen_comps = true;
@@ -1856,7 +1855,7 @@ parse_derived_contains (void)
 	case ST_GENERIC:
 	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003:  GENERIC binding"
 					     " at %C") == FAILURE)
-	    error_flag = true;
+	    goto error;
 
 	  accept_statement (ST_GENERIC);
 	  seen_comps = true;
@@ -1866,7 +1865,7 @@ parse_derived_contains (void)
 	  if (gfc_notify_std (GFC_STD_F2003,
 			      "Fortran 2003:  FINAL procedure declaration"
 			      " at %C") == FAILURE)
-	    error_flag = true;
+	    goto error;
 
 	  accept_statement (ST_FINAL);
 	  seen_comps = true;
@@ -1879,7 +1878,7 @@ parse_derived_contains (void)
 	      && (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Derived type "
 				  "definition at %C with empty CONTAINS "
 				  "section") == FAILURE))
-	    error_flag = true;
+	    goto error;
 
 	  /* ST_END_TYPE is accepted by parse_derived after return.  */
 	  break;
@@ -1889,22 +1888,20 @@ parse_derived_contains (void)
 	    {
 	      gfc_error ("PRIVATE statement in TYPE at %C must be inside "
 			 "a MODULE");
-	      error_flag = true;
-	      break;
+	      goto error;
 	    }
 
 	  if (seen_comps)
 	    {
 	      gfc_error ("PRIVATE statement at %C must precede procedure"
 			 " bindings");
-	      error_flag = true;
-	      break;
+	      goto error;
 	    }
 
 	  if (seen_private)
 	    {
 	      gfc_error ("Duplicate PRIVATE statement at %C");
-	      error_flag = true;
+	      goto error;
 	    }
 
 	  accept_statement (ST_PRIVATE);
@@ -1914,18 +1911,22 @@ parse_derived_contains (void)
 
 	case ST_SEQUENCE:
 	  gfc_error ("SEQUENCE statement at %C must precede CONTAINS");
-	  error_flag = true;
-	  break;
+	  goto error;
 
 	case ST_CONTAINS:
 	  gfc_error ("Already inside a CONTAINS block at %C");
-	  error_flag = true;
-	  break;
+	  goto error;
 
 	default:
 	  unexpected_statement (st);
 	  break;
 	}
+
+      continue;
+
+error:
+      error_flag = true;
+      reject_statement ();
     }
 
   pop_state ();
@@ -2361,7 +2362,10 @@ match_deferred_characteristics (gfc_typespec * ts)
       gfc_commit_symbols ();
     }
   else
-    gfc_error_check ();
+    {
+      gfc_error_check ();
+      gfc_undo_symbols ();
+    }
 
   gfc_current_locus =loc;
   return m;
@@ -2433,6 +2437,7 @@ loop:
 	case ST_STATEMENT_FUNCTION:
 	  gfc_error ("%s statement is not allowed inside of BLOCK at %C",
 		     gfc_ascii_statement (st));
+	  reject_statement ();
 	  break;
 
 	default:
@@ -2519,6 +2524,7 @@ declSt:
 	    {
 	      gfc_error ("%s statement must appear in a MODULE",
 			 gfc_ascii_statement (st));
+	      reject_statement ();
 	      break;
 	    }
 
@@ -2526,6 +2532,7 @@ declSt:
 	    {
 	      gfc_error ("%s statement at %C follows another accessibility "
 			 "specification", gfc_ascii_statement (st));
+	      reject_statement ();
 	      break;
 	    }
 
@@ -3822,6 +3829,7 @@ contains:
     {
       gfc_error ("CONTAINS statement at %C is already in a contained "
 		 "program unit");
+      reject_statement ();
       st = next_statement ();
       goto loop;
     }
