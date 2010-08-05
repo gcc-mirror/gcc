@@ -1153,7 +1153,10 @@ package body Prj is
    begin
       return Source.Language.Config.Compiler_Driver /= No_File
         and then Length_Of_Name (Source.Language.Config.Compiler_Driver) /= 0
-        and then not Source.Locally_Removed;
+        and then not Source.Locally_Removed
+        and then (Source.Language.Config.Kind /= File_Based
+                    or else
+                  Source.Kind /= Spec);
    end Is_Compilable;
 
    ------------------------------

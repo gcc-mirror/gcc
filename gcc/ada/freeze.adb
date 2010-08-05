@@ -544,42 +544,7 @@ package body Freeze is
       if Present (Addr) then
          Expr := Expression (Addr);
 
-         --  If we have no initialization of any kind, then we don't need to
-         --  place any restrictions on the address clause, because the object
-         --  will be elaborated after the address clause is evaluated. This
-         --  happens if the declaration has no initial expression, or the type
-         --  has no implicit initialization, or the object is imported.
-
-         --  The same holds for all initialized scalar types and all access
-         --  types. Packed bit arrays of size up to 64 are represented using a
-         --  modular type with an initialization (to zero) and can be processed
-         --  like other initialized scalar types.
-
-         --  If the type is controlled, code to attach the object to a
-         --  finalization chain is generated at the point of declaration,
-         --  and therefore the elaboration of the object cannot be delayed:
-         --  the address expression must be a constant.
-
-         if (No (Expression (Decl))
-              and then not Needs_Finalization (Typ)
-              and then (not Has_Non_Null_Base_Init_Proc (Typ)
-                         or else Is_Imported (E)))
-           or else (Present (Expression (Decl)) and then Is_Scalar_Type (Typ))
-           or else Is_Access_Type (Typ)
-           or else
-             (Is_Bit_Packed_Array (Typ)
-               and then Is_Modular_Integer_Type (Packed_Array_Type (Typ)))
-         then
-            null;
-
-         --  Otherwise, we require the address clause to be constant because
-         --  the call to the initialization procedure (or the attach code) has
-         --  to happen at the point of the declaration.
-
-         --  Actually the IP call has been moved to the freeze actions
-         --  anyway, so maybe we can relax this restriction???
-
-         else
+         if Needs_Constant_Address (Decl, Typ) then
             Check_Constant_Address_Clause (Expr, E);
 
             --  Has_Delayed_Freeze was set on E when the address clause was

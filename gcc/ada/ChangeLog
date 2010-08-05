@@ -1,5 +1,36 @@
 2010-08-05  Thomas Quinot  <quinot@adacore.com>
 
+	* exp_ch4.adb: Minor reformatting
+	* gnat1drv.adb: Minor reformatting.
+	Minor code reorganization (use Nkind_In).
+
+2010-08-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.ads, exp_util.adb (Needs_Constant_Address): New predicate to
+	determine whether the expression in an address clause for an
+	initialized object must be constant. Code moved from freeze.adb.
+	(Remove_Side_Effects): When the temporary is initialized with a
+	reference, indicate that the temporary is a constant as done in all
+	other cases.
+	* freeze.adb (Check_Address_Clause): use Needs_Constant_Address.
+	* exp_ch13.adb (Expand_N_Attribute_Definition_Clause, case 'Address):
+	If object does not need a constant address, remove side effects from
+	address expression, so it is elaborated at the point of the address
+	clause and not at the freeze point of the object, so that elaboration
+	order is respected.
+
+2010-08-05  Vincent Celier  <celier@adacore.com>
+
+	* prj.adb (Is_Compilable): Return False for header files of non Ada
+	languages.
+
+2010-08-05  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-nmsc.adb: The Missing_Source_Files flag also considers a missing
+	exec directory as a warning rather than an error.
+
+2010-08-05  Thomas Quinot  <quinot@adacore.com>
+
 	* sem_ch6.adb, gnat1drv.adb, exp_ch6.adb, sem_eval.adb: Minor
 	reformatting.
 

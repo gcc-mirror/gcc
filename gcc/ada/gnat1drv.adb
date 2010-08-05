@@ -151,7 +151,7 @@ procedure Gnat1drv is
          Front_End_Inlining := False;
       end if;
 
-      --  Tune settings for optimal SCIL generation in CodePeer_Mode
+      --  Tune settings for optimal SCIL generation in CodePeer mode
 
       if CodePeer_Mode then
 
@@ -172,11 +172,11 @@ procedure Gnat1drv is
 
          --  Enable some restrictions systematically to simplify the generated
          --  code (and ease analysis). Note that restriction checks are also
-         --  disabled in CodePeer_Mode, see Restrict.Check_Restriction
+         --  disabled in CodePeer mode, see Restrict.Check_Restriction
 
-         Restrict.Restrictions.Set (No_Task_Hierarchy) := True;
-         Restrict.Restrictions.Set (No_Abort_Statements) := True;
-         Restrict.Restrictions.Set (Max_Asynchronous_Select_Nesting) := True;
+         Restrict.Restrictions.Set   (No_Task_Hierarchy)               := True;
+         Restrict.Restrictions.Set   (No_Abort_Statements)             := True;
+         Restrict.Restrictions.Set   (Max_Asynchronous_Select_Nesting) := True;
          Restrict.Restrictions.Value (Max_Asynchronous_Select_Nesting) := 0;
 
          --  Suppress overflow, division by zero and access checks since they
@@ -205,7 +205,7 @@ procedure Gnat1drv is
 
          Debug_Generated_Code := False;
 
-         --  Turn cross-referencing on in case it was disabled (by e.g. -gnatD)
+         --  Turn cross-referencing on in case it was disabled (e.g. by -gnatD)
          --  Do we really need to spend time generating xref in CodePeer
          --  mode??? Consider setting Xref_Active to False.
 
@@ -215,8 +215,8 @@ procedure Gnat1drv is
 
          Polling_Required := False;
 
-         --  Set operating mode to Generate_Code to benefit from full
-         --  front-end expansion (e.g. generics).
+         --  Set operating mode to Generate_Code to benefit from full front-end
+         --  expansion (e.g. generics).
 
          Operating_Mode := Generate_Code;
 
@@ -227,8 +227,8 @@ procedure Gnat1drv is
          --  Enable assertions and debug pragmas, since they give CodePeer
          --  valuable extra information.
 
-         Assertions_Enabled     := True;
-         Debug_Pragmas_Enabled  := True;
+         Assertions_Enabled    := True;
+         Debug_Pragmas_Enabled := True;
 
          --  Suppress compiler warnings, since what we are interested in here
          --  is what CodePeer can find out. Also disable all simple value
@@ -320,10 +320,10 @@ procedure Gnat1drv is
          end if;
       end if;
 
-      --  Set proper status for overflow checks. We turn on overflow checks
-      --  if -gnatp was not specified, and either -gnato is set or the back
-      --  end takes care of overflow checks. Otherwise we suppress overflow
-      --  checks by default (since front end checks are expensive).
+      --  Set proper status for overflow checks. We turn on overflow checks if
+      --  -gnatp was not specified, and either -gnato is set or the back-end
+      --  takes care of overflow checks. Otherwise we suppress overflow checks
+      --  by default (since front end checks are expensive).
 
       if not Opt.Suppress_Checks
         and then (Opt.Enable_Overflow_Checks
@@ -408,7 +408,7 @@ procedure Gnat1drv is
          Error_Msg_N ("remove incorrect body in file{!", Main_Unit_Node);
       end Bad_Body_Error;
 
-      --  Start of processing for Check_Bad_Body
+   --  Start of processing for Check_Bad_Body
 
    begin
       --  Nothing to do if we are only checking syntax, because we don't know
@@ -432,7 +432,7 @@ procedure Gnat1drv is
          Sname := Unit_Name (Main_Unit);
 
          --  If we do not already have a body name, then get the body name
-         --  (but how can we have a body name here ???)
+         --  (but how can we have a body name here???)
 
          if not Is_Body_Name (Sname) then
             Sname := Get_Body_Name (Sname);
@@ -665,9 +665,8 @@ begin
          Write_Str ("GNAT ");
          Write_Str (Gnat_Version_String);
          Write_Eol;
-         Write_Str ("Copyright 1992-" &
-                    Current_Year &
-                    ", Free Software Foundation, Inc.");
+         Write_Str ("Copyright 1992-" & Current_Year
+                    & ", Free Software Foundation, Inc.");
          Write_Eol;
       end if;
 
@@ -727,9 +726,9 @@ begin
 
       Set_Generate_Code (Main_Unit);
 
-      --  If we have a corresponding spec, and it comes from source
-      --  or it is not a generated spec for a child subprogram body,
-      --  then we need object code for the spec unit as well.
+      --  If we have a corresponding spec, and it comes from source or it is
+      --  not a generated spec for a child subprogram body, then we need object
+      --  code for the spec unit as well.
 
       if Nkind (Unit (Main_Unit_Node)) in N_Unit_Body
         and then not Acts_As_Spec (Main_Unit_Node)
@@ -763,8 +762,8 @@ begin
          Back_End_Mode := Declarations_Only;
 
       --  All remaining cases are cases in which the user requested that code
-      --  be generated (i.e. no -gnatc or -gnats switch was used). Check if
-      --  we can in fact satisfy this request.
+      --  be generated (i.e. no -gnatc or -gnats switch was used). Check if we
+      --  can in fact satisfy this request.
 
       --  Cannot generate code if someone has turned off code generation for
       --  any reason at all. We will try to figure out a reason below.
@@ -789,9 +788,9 @@ begin
       --  We can generate code for a package declaration or a subprogram
       --  declaration only if it does not required a body.
 
-      elsif (Main_Kind = N_Package_Declaration
-               or else
-             Main_Kind = N_Subprogram_Declaration)
+      elsif Nkind_In (Main_Kind,
+              N_Package_Declaration,
+              N_Subprogram_Declaration)
         and then
           (not Body_Required (Main_Unit_Node)
              or else
@@ -802,18 +801,19 @@ begin
       --  We can generate code for a generic package declaration of a generic
       --  subprogram declaration only if does not require a body.
 
-      elsif (Main_Kind = N_Generic_Package_Declaration
-               or else
-             Main_Kind = N_Generic_Subprogram_Declaration)
+      elsif Nkind_In (Main_Kind,
+              N_Generic_Package_Declaration,
+              N_Generic_Subprogram_Declaration)
         and then not Body_Required (Main_Unit_Node)
       then
          Back_End_Mode := Generate_Object;
 
-      --  Compilation units that are renamings do not require bodies,
-      --  so we can generate code for them.
+      --  Compilation units that are renamings do not require bodies, so we can
+      --  generate code for them.
 
-      elsif Main_Kind = N_Package_Renaming_Declaration
-        or else Main_Kind = N_Subprogram_Renaming_Declaration
+      elsif Nkind_In (Main_Kind,
+              N_Package_Renaming_Declaration,
+              N_Subprogram_Renaming_Declaration)
       then
          Back_End_Mode := Generate_Object;
 
