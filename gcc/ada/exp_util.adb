@@ -4799,12 +4799,17 @@ package body Exp_Util is
          end if;
 
       --  For expressions that denote objects, we can use a renaming scheme.
-      --  We skip using this if we have a volatile reference and we do not
-      --  have Name_Req set true (see comments above for Side_Effect_Free).
+      --  This is needed for correctness in the case of a volatile object
+      --  of a non-volatile type because the Make_Reference call of the
+      --  "default" approach would generate an illegal access value (an access
+      --  value cannot designate such an object - see Analyze_Reference).
+      --  We skip using this scheme if we have an object of a volatile type
+      --  and we do not have Name_Req set true (see comments above for
+      --  Side_Effect_Free).
 
       elsif Is_Object_Reference (Exp)
         and then Nkind (Exp) /= N_Function_Call
-        and then (Name_Req or else not Is_Volatile_Reference (Exp))
+        and then (Name_Req or else not Treat_As_Volatile (Exp_Type))
       then
          Def_Id := Make_Temporary (Loc, 'R', Exp);
 

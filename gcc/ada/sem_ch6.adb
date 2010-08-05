@@ -3472,10 +3472,9 @@ package body Sem_Ch6 is
 
    procedure Cannot_Inline (Msg : String; N : Node_Id; Subp : Entity_Id) is
    begin
-      --  Do not emit warning if this is a predefined unit which is not
-      --  the main unit. With validity checks enabled, some predefined
-      --  subprograms may contain nested subprograms and become ineligible
-      --  for inlining.
+      --  Do not emit warning if this is a predefined unit which is not the
+      --  main unit. With validity checks enabled, some predefined subprograms
+      --  may contain nested subprograms and become ineligible for inlining.
 
       if Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (Subp)))
         and then not In_Extended_Main_Source_Unit (Subp)
@@ -4490,8 +4489,8 @@ package body Sem_Ch6 is
          end;
       end if;
 
-      --  If there is an overridden subprogram, then check that there is not
-      --  a "not overriding" indicator, and mark the subprogram as overriding.
+      --  If there is an overridden subprogram, then check that there is no
+      --  "not overriding" indicator, and mark the subprogram as overriding.
       --  This is not done if the overridden subprogram is marked as hidden,
       --  which can occur for the case of inherited controlled operations
       --  (see Derive_Subprogram), unless the inherited subprogram's parent
@@ -4539,7 +4538,7 @@ package body Sem_Ch6 is
 
       --  If Subp is an operator, it may override a predefined operation, if
       --  it is defined in the same scope as the type to which it applies.
-      --  In that case overridden_subp is empty because of our implicit
+      --  In that case Overridden_Subp is empty because of our implicit
       --  representation for predefined operators. We have to check whether the
       --  signature of Subp matches that of a predefined operator. Note that
       --  first argument provides the name of the operator, and the second
@@ -4551,7 +4550,7 @@ package body Sem_Ch6 is
       elsif Nkind (Subp) = N_Defining_Operator_Symbol then
          declare
             Typ : constant Entity_Id :=
-              Base_Type (Etype (First_Formal (Subp)));
+                    Base_Type (Etype (First_Formal (Subp)));
 
             Can_Override : constant Boolean :=
                              Operator_Matches_Spec (Subp, Subp)
@@ -4573,8 +4572,7 @@ package body Sem_Ch6 is
 
                elsif Can_Override then
                   Error_Msg_NE
-                    ("subprogram & overrides predefined operator ",
-                       Spec, Subp);
+                    ("subprogram& overrides predefined operator ", Spec, Subp);
                end if;
 
             elsif Must_Override (Spec) then

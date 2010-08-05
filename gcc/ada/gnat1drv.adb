@@ -441,20 +441,19 @@ procedure Gnat1drv is
          Fname := Get_File_Name (Sname, Subunit => False);
          Src_Ind := Load_Source_File (Fname);
 
-         --  Case where body is present and it is not a subunit. Exclude
-         --  the subunit case, because it has nothing to do with the
-         --  package we are compiling. It is illegal for a child unit and a
-         --  subunit with the same expanded name (RM 10.2(9)) to appear
-         --  together in a partition, but there is nothing to stop a
-         --  compilation environment from having both, and the test here
-         --  simply allows that. If there is an attempt to include both in
-         --  a partition, this is diagnosed at bind time. In Ada 83 mode
-         --  this is not a warning case.
+         --  Case where body is present and it is not a subunit. Exclude the
+         --  subunit case, because it has nothing to do with the package we are
+         --  compiling. It is illegal for a child unit and a subunit with the
+         --  same expanded name (RM 10.2(9)) to appear together in a partition,
+         --  but there is nothing to stop a compilation environment from having
+         --  both, and the test here simply allows that. If there is an attempt
+         --  to include both in a partition, this is diagnosed at bind time. In
+         --  Ada 83 mode this is not a warning case.
 
-         --  Note: if weird file names are being used, we can have
-         --  situation where the file name that supposedly contains body,
-         --  in fact contains a spec, or we can't tell what it contains.
-         --  Skip the error message in these cases.
+         --  Note: if weird file names are being used, we can have a situation
+         --  where the file name that supposedly contains body in fact contains
+         --  a spec, or we can't tell what it contains. Skip the error message
+         --  in these cases.
 
          --  Also ignore body that is nothing but pragma No_Body; (that's the
          --  whole point of this pragma, to be used this way and to cause the
@@ -635,8 +634,7 @@ begin
          if S = No_Source_File then
             Write_Line
               ("fatal error, run-time library not installed correctly");
-            Write_Line
-              ("cannot locate file system.ads");
+            Write_Line ("cannot locate file system.ads");
             raise Unrecoverable_Error;
 
          --  Remember source index of system.ads (which was read successfully)
@@ -778,18 +776,14 @@ begin
       --  subunits. Note that we always generate code for all generic units (a
       --  change from some previous versions of GNAT).
 
-      elsif Main_Kind = N_Subprogram_Body
-        and then not Subunits_Missing
-      then
+      elsif Main_Kind = N_Subprogram_Body and then not Subunits_Missing then
          Back_End_Mode := Generate_Object;
 
       --  We can generate code for a package body unless there are subunits
       --  missing (note that we always generate code for generic units, which
       --  is a change from some earlier versions of GNAT).
 
-      elsif Main_Kind = N_Package_Body
-        and then not Subunits_Missing
-      then
+      elsif Main_Kind = N_Package_Body and then not Subunits_Missing then
          Back_End_Mode := Generate_Object;
 
       --  We can generate code for a package declaration or a subprogram
@@ -903,8 +897,8 @@ begin
          Exit_Program (E_No_Code);
       end if;
 
-      --  In -gnatc mode, we only do annotation if -gnatt or -gnatR is also
-      --  set as indicated by Back_Annotate_Rep_Info being set to True.
+      --  In -gnatc mode, we only do annotation if -gnatt or -gnatR is also set
+      --  as indicated by Back_Annotate_Rep_Info being set to True.
 
       --  We don't call for annotations on a subunit, because to process those
       --  the back-end requires that the parent(s) be properly compiled.
@@ -912,8 +906,8 @@ begin
       --  Annotation is suppressed for targets where front-end layout is
       --  enabled, because the front end determines representations.
 
-      --  Annotation is also suppressed in the case of compiling for
-      --  a VM, since representations are largely symbolic there.
+      --  Annotation is also suppressed in the case of compiling for a VM,
+      --  since representations are largely symbolic there.
 
       if Back_End_Mode = Declarations_Only
         and then (not (Back_Annotate_Rep_Info or Generate_SCIL)
@@ -1011,11 +1005,10 @@ begin
 
       Write_ALI (Object => (Back_End_Mode = Generate_Object));
 
-      --  Generate the ASIS tree after writing the ALI file, since in ASIS
-      --  mode, Write_ALI may in fact result in further tree decoration from
-      --  the original tree file. Note that we dump the tree just before
-      --  generating it, so that the dump will exactly reflect what is written
-      --  out.
+      --  Generate ASIS tree after writing the ALI file, since in ASIS mode,
+      --  Write_ALI may in fact result in further tree decoration from the
+      --  original tree file. Note that we dump the tree just before generating
+      --  it, so that the dump will exactly reflect what is written out.
 
       Treepr.Tree_Dump;
       Tree_Gen;
