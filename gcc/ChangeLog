@@ -1,5 +1,11 @@
 2010-08-05  Uros Bizjak  <ubizjak@gmail.com>
 
+	* expmed.c (expand_mult_const) <case alg_shift>: Expand shift into
+	temporary. Emit move from temporary to accum, so REG_EQUAL note will
+	be attached to this insn in correct mode.
+
+2010-08-05  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.c (ix86_decompose_address): Check for SI_REG
 	using REGNO of base_reg directly.
 
