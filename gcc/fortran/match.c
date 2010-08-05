@@ -3583,15 +3583,22 @@ gfc_match_module (void)
    do this.  */
 
 void
-gfc_free_equiv (gfc_equiv *eq)
+gfc_free_equiv_until (gfc_equiv *eq, gfc_equiv *stop)
 {
-  if (eq == NULL)
+  if (eq == stop)
     return;
 
   gfc_free_equiv (eq->eq);
-  gfc_free_equiv (eq->next);
+  gfc_free_equiv_until (eq->next, stop);
   gfc_free_expr (eq->expr);
   gfc_free (eq);
+}
+
+
+void
+gfc_free_equiv (gfc_equiv *eq)
+{
+  gfc_free_equiv_until (eq, NULL);
 }
 
 

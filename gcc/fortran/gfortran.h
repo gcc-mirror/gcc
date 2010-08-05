@@ -1326,7 +1326,7 @@ typedef struct gfc_namespace
   struct gfc_code *code;
 
   /* Points to the equivalences set up in this namespace.  */
-  struct gfc_equiv *equiv;
+  struct gfc_equiv *equiv, *old_equiv;
 
   /* Points to the equivalence groups produced by trans_common.  */
   struct gfc_equiv_list *equiv_lists;
@@ -2569,6 +2569,7 @@ void gfc_free_forall_iterator (gfc_forall_iterator *);
 void gfc_free_alloc_list (gfc_alloc *);
 void gfc_free_namelist (gfc_namelist *);
 void gfc_free_equiv (gfc_equiv *);
+void gfc_free_equiv_until (gfc_equiv *, gfc_equiv *);
 void gfc_free_data (gfc_data *);
 void gfc_free_case_list (gfc_case *);
 
