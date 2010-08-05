@@ -528,7 +528,7 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
 	  if (! TEST_HARD_REG_BIT (equiv_regs[i], regno))
 	    continue;
 
-	  SET_REGNO (testreg, regno);
+	  SET_REGNO_RAW (testreg, regno);
 	  PUT_MODE (testreg, mode);
 
 	  /* We found a register equal to this operand.  Now look for all
