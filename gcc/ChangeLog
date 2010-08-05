@@ -1,3 +1,8 @@
+2010-08-05  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu.c (spu_emit_branch_hint): Do not access NOTE_KIND of
+	non-NOTE insns.
+
 2010-07-03  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/44597
