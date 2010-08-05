@@ -173,13 +173,14 @@ package body Impunit is
      "a-wichun",    -- Ada.Wide_Characters.Unicode
      "a-widcha",    -- Ada.Wide_Characters
 
-      --  Note: strictly the next two should be Ada 2012 units, but it seems
+      --  Note: strictly the following should be Ada 2012 units, but it seems
       --  harmless (and useful) to make then available in Ada 95 mode, since
-      --  they only deal with Wide_Character, not Wide_Wide_Character.
+      --  they do not deal with Wide_Wide_Character.
 
      "a-stuten",    -- Ada.Strings.UTF_Encoding
      "a-suenco",    -- Ada.Strings.UTF_Encoding.Conversions
-     "a-suewen",    -- Ada.Strings.UTF_Encoding.Wide_Encoding
+     "a-suesen",    -- Ada.Strings.UTF_Encoding.String_Encoding
+     "a-suewse",    -- Ada.Strings.UTF_Encoding.Wide_String_Encoding
 
    ---------------------------
    -- GNAT Special IO Units --
@@ -470,7 +471,7 @@ package body Impunit is
       --  Note: strictly the following should be Ada 2012 units, but it seems
       --  harmless (and useful) to make then available in Ada 2005 mode.
 
-     "a-suezen",    -- Ada.Strings.UTF_Encoding.Wide_Wide_Encoding
+     "a-suezse",    -- Ada.Strings.UTF_Encoding.Wide_Wide_String_Encoding
 
    ---------------------------
    -- GNAT Special IO Units --
