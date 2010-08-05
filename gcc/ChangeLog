@@ -1,3 +1,9 @@
+2010-08-05  Richard Henderson  <rth@redhat.com>
+
+	PR target/45189
+	* config/i386/i386.c (ix86_emit_save_reg_using_mov): Make sure
+	the alignment constant is properly sign-extended.
+
 2010-08-05  Richard Guenther  <rguenther@suse.de>
 
 	* expr.c (store_expr): Use emit_block_move only if both
@@ -6,7 +12,7 @@
 
 2010-08-05  Richard Henderson  <rth@redhat.com>
 
-	PR 45189
+	PR debug/45188
 	* dwarf2out.c (DWARF2_UNWIND_INFO): Provide default definition.
 	(INCOMING_RETURN_ADDR_RTX): Likewise.
 	(dwarf2out_do_frame): Remove conditional compilation.

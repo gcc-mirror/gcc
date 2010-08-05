@@ -8639,7 +8639,8 @@ ix86_emit_save_reg_using_mov (enum machine_mode mode, unsigned int regno,
 	     reference to the locations within the frame.  Instead,
 	     simply compute the location of the aligned frame from
 	     the frame pointer.  */
-	  addr = GEN_INT (-crtl->stack_alignment_needed / BITS_PER_UNIT);
+	  addr = GEN_INT (-(HOST_WIDE_INT)crtl->stack_alignment_needed
+			  / BITS_PER_UNIT);
 	  addr = gen_rtx_AND (Pmode, hard_frame_pointer_rtx, addr);
 	  addr = plus_constant (addr, -cfa_offset);
 	  mem = gen_rtx_MEM (mode, addr);
