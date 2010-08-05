@@ -832,6 +832,12 @@ DEFPARAM (PARAM_IPA_SRA_PTR_GROWTH_FACTOR,
 	  "a pointer to an aggregate with",
 	  2, 0, 0)
 
+DEFPARAM (PARAM_DEVIRT_TYPE_LIST_SIZE,
+	  "devirt-type-list-size",
+	  "Maximum size of a type list associated with each parameter for "
+	  "devirtualization",
+	  8, 0, 0)
+
 /*
 Local variables:
 mode:c
