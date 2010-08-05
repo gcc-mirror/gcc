@@ -1,3 +1,9 @@
+2010-08-05  Richard Guenther  <rguenther@suse.de>
+
+	* expr.c (store_expr): Use emit_block_move only if both
+	source and target are MEMs.  Use store_bit_field if only
+	the target is a MEM.
+
 2010-08-05  Richard Henderson  <rth@redhat.com>
 
 	PR 45189
