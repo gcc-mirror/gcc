@@ -1,3 +1,46 @@
+2010-08-05  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (enum ipa_lattice_type): Changed comments.
+	(struct ipa_param_descriptor): New fields types and
+	cannot_devirtualize.
+	(ipa_param_cannot_devirtualize_p): New function.
+	(ipa_param_types_vec_empty): Likewise.
+	(ipa_make_edge_direct_to_target): Declare.
+	* ipa-cp.c: Fixed first stage driver name in initial comment,
+	described devirtualization there too.
+	(ipcp_analyze_node): Call ipa_analyze_params_uses.
+	(ipcp_print_all_lattices): Print devirtualization info.
+	(ipa_set_param_cannot_devirtualize): New function.
+	(ipcp_initialize_node_lattices): Set cannot_devirtualize when setting
+	lattice to BOTTOM.
+	(ipcp_init_stage): Merged into...
+	(ipcp_generate_summary): ...its caller.
+	(ipcp_change_tops_to_bottom): Also process type lists.
+	(ipcp_add_param_type): New function.
+	(ipcp_copy_types): Likewise.
+	(ipcp_propagate_types): Likewise.
+	(ipcp_propagate_stage): Also propagate types.
+	(ipcp_need_redirect_p): Variable jump_func moved to its scope block.
+	Also return true if propagated types require it.
+	(ipcp_update_callgraph): Dump redirection info.
+	(ipcp_process_devirtualization_opportunities): New function.
+	(ipcp_const_param_count): Include known type information.
+	(ipcp_insert_stage): Call ipcp_process_devirtualization_opportunities
+	on new node.  Fixed formatting.
+	* ipa-prop.c (make_edge_direct_to_target): Renamed to
+	ipa_make_edge_direct_to_target and changed all callers.  Made
+	externally visible.
+	(ipa_node_duplication_hook): Duplicate types vector.
+	* cgraphunit.c (cgraph_redirect_edge_call_stmt_to_callee): Also try to
+	redirect outgoing calls for which we can't get a decl from the
+	statement.  Check that we can get a decl from the call statement.
+	* ipa-inline.c (inline_indirect_intraprocedural_analysis): Call
+	ipa_analyze_params_uses only when ipa-cp is disabled.
+	* tree-inline.c (get_indirect_callee_fndecl): Removed.
+	(expand_call_inline): Do not call get_indirect_callee_fndecl.
+	* params.def (PARAM_DEVIRT_TYPE_LIST_SIZE): New parameter.
+	* Makefile.in (ipa-cp.o): Add gimple.h to dependencies.
+
 2010-08-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* expmed.c (expand_mult_const) <case alg_shift>: Expand shift into

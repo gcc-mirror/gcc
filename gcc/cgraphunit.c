@@ -2362,14 +2362,18 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
   struct cgraph_node *node;
 #endif
 
-  if (!decl || decl == e->callee->decl
+  if (e->indirect_unknown_callee
+      || decl == e->callee->decl
       /* Don't update call from same body alias to the real function.  */
-      || cgraph_get_node (decl) == cgraph_get_node (e->callee->decl))
+      || (decl && cgraph_get_node (decl) == cgraph_get_node (e->callee->decl)))
     return e->call_stmt;
 
 #ifdef ENABLE_CHECKING
-  node = cgraph_get_node (decl);
-  gcc_assert (!node || !node->clone.combined_args_to_skip);
+  if (decl)
+    {
+      node = cgraph_get_node (decl);
+      gcc_assert (!node || !node->clone.combined_args_to_skip);
+    }
 #endif
 
   if (cgraph_dump_file)

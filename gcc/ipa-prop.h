@@ -133,11 +133,12 @@ struct GTY (()) ipa_jump_func
    computed by the interprocedural stage of IPCP.
    There are three main values of the lattice:
    IPA_TOP - unknown,
-   IPA_BOTTOM - non constant,
+   IPA_BOTTOM - variable,
    IPA_CONST_VALUE - simple scalar constant,
-   Cval of formal f will have a constant value if all callsites to this
-   function have the same constant value passed to f.
-   Integer and real constants are represented as IPA_CONST_VALUE.  */
+
+   We also use this type to propagate types accross the call graph for the
+   purpose of devirtualization.  In that case, IPA_CONST_VALUE denotes a known
+   type, rather than a constant.  */
 enum ipa_lattice_type
 {
   IPA_BOTTOM,
@@ -161,8 +162,14 @@ struct ipa_param_descriptor
   struct ipcp_lattice ipcp_lattice;
   /* PARAM_DECL of this parameter.  */
   tree decl;
+  /* Vector of BINFOs of types that this argument might encounter.  NULL
+     basically means a top value, bottom is marked by the cannot_devirtualize
+     flag below.*/
+  VEC (tree, heap) *types;
   /* The parameter is used.  */
   unsigned used : 1;
+  /* Set when parameter type cannot be used for devirtualization.  */
+  unsigned cannot_devirtualize : 1;
 };
 
 /* ipa_node_params stores information related to formal parameters of functions
@@ -230,6 +237,25 @@ static inline bool
 ipa_is_param_used (struct ipa_node_params *info, int i)
 {
   return info->params[i].used;
+}
+
+/* Return the cannot_devirtualize flag corresponding to the Ith formal
+   parameter of the function associated with INFO.  The corresponding function
+   to set the flag is ipa_set_param_cannot_devirtualize.  */
+
+static inline bool
+ipa_param_cannot_devirtualize_p (struct ipa_node_params *info, int i)
+{
+  return info->params[i].cannot_devirtualize;
+}
+
+/* Return true iff the vector of possible types of the Ith formal parameter of
+   the function associated with INFO is empty.  */
+
+static inline bool
+ipa_param_types_vec_empty (struct ipa_node_params *info, int i)
+{
+  return info->params[i].types == NULL;
 }
 
 /* Flag this node as having callers with variable number of arguments.  */
@@ -401,6 +427,10 @@ void ipa_analyze_node (struct cgraph_node *);
 void ipa_initialize_node_params (struct cgraph_node *node);
 bool ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
 					VEC (cgraph_edge_p, heap) **new_edges);
+
+/* Indirect edge and binfo processing.  */
+struct cgraph_edge *ipa_make_edge_direct_to_target (struct cgraph_edge *, tree);
+
 
 /* Debugging interface.  */
 void ipa_print_node_params (FILE *, struct cgraph_node *node);

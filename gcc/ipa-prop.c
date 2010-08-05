@@ -1430,8 +1430,8 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 /* If TARGET is an addr_expr of a function declaration, make it the destination
    of an indirect edge IE and return the edge.  Otherwise, return NULL.  */
 
-static struct cgraph_edge *
-make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
+struct cgraph_edge *
+ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
 {
   struct cgraph_node *callee;
 
@@ -1484,7 +1484,7 @@ try_make_edge_direct_simple_call (struct cgraph_edge *ie,
   else
     return NULL;
 
-  return make_edge_direct_to_target (ie, target);
+  return ipa_make_edge_direct_to_target (ie, target);
 }
 
 /* Try to find a destination for indirect edge IE that corresponds to a
@@ -1525,7 +1525,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
     return NULL;
 
   if (target)
-    return make_edge_direct_to_target (ie, target);
+    return ipa_make_edge_direct_to_target (ie, target);
   else
     return NULL;
 }
@@ -1794,7 +1794,7 @@ ipa_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
 			   __attribute__((unused)) void *data)
 {
   struct ipa_node_params *old_info, *new_info;
-  int param_count;
+  int param_count, i;
 
   ipa_check_create_node_params ();
   old_info = IPA_NODE_REF (src);
@@ -1805,8 +1805,15 @@ ipa_node_duplication_hook (struct cgraph_node *src, struct cgraph_node *dst,
   new_info->params = (struct ipa_param_descriptor *)
     duplicate_array (old_info->params,
 		     sizeof (struct ipa_param_descriptor) * param_count);
+  for (i = 0; i < param_count; i++)
+    new_info->params[i].types = VEC_copy (tree, heap,
+ 					  old_info->params[i].types);
   new_info->ipcp_orig_node = old_info->ipcp_orig_node;
   new_info->count_scale = old_info->count_scale;
+
+  new_info->called_with_var_arguments = old_info->called_with_var_arguments;
+  new_info->uses_analysis_done = old_info->uses_analysis_done;
+  new_info->node_enqueued = old_info->node_enqueued;
 }
 
 /* Register our cgraph hooks if they are not already there.  */

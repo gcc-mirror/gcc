@@ -3707,20 +3707,6 @@ add_local_variables (struct function *callee, struct function *caller,
       }
 }
 
-/* Fetch callee declaration from the call graph edge going from NODE and
-   associated with STMR call statement.  Return NULL_TREE if not found.  */
-static tree
-get_indirect_callee_fndecl (struct cgraph_node *node, gimple stmt)
-{
-  struct cgraph_edge *cs;
-
-  cs = cgraph_edge (node, stmt);
-  if (cs && !cs->indirect_unknown_callee)
-    return cs->callee->decl;
-
-  return NULL_TREE;
-}
-
 /* If STMT is a GIMPLE_CALL, replace it with its inline expansion.  */
 
 static bool
@@ -3754,11 +3740,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
      If we cannot, then there is no hope of inlining the function.  */
   fn = gimple_call_fndecl (stmt);
   if (!fn)
-    {
-      fn = get_indirect_callee_fndecl (id->dst_node, stmt);
-      if (!fn)
-	goto egress;
-    }
+    goto egress;
 
   /* Turn forward declarations into real ones.  */
   fn = cgraph_node (fn)->decl;
