@@ -1,3 +1,14 @@
+2010-08-05  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch4.adb (Analyze_Allocator): Flag errors on allocators of a
+	nested access type whose designated type has tasks or is a protected
+	object when the restrictions No_Task_Hierarchy or
+	No_Local_Protected_Objects apply. Add ??? comment.
+	* sem_ch9.adb (Analyze_Protected_Type): Give a warning when a protected
+	type is not a library-level type and No_Local_Protected_Objects applies.
+	(Analyze_Task_Type): Give a warning when a task type is not a
+	library-level type and No_Task_Hierarchy applies.
+
 2010-08-05  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem.adb: Minor reformatting
