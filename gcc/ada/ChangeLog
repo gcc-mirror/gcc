@@ -1,3 +1,9 @@
+2010-08-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem.adb: Minor reformatting
+	* sem_ch4.adb (Analyze_Reference): Disable error message in CodePeer
+	mode, not useful.
+
 2010-08-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c: Do not undefine IN_GCC_FRONTEND and do not

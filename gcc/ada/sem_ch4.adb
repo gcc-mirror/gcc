@@ -3244,12 +3244,14 @@ package body Sem_Ch4 is
       --  It is not clear if that can ever occur, but in case it does, we will
       --  generate an error message. Not clear if this message can ever be
       --  generated, and pretty clear that it represents a bug if it is, still
-      --  seems worth checking!
+      --  seems worth checking, except in CodePeer mode where we do not really
+      --  care and don't want to bother the user.
 
       T := Etype (P);
 
       if Is_Entity_Name (P)
         and then Is_Object_Reference (P)
+        and then not CodePeer_Mode
       then
          E := Entity (P);
          T := Etype (P);
