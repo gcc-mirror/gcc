@@ -112,6 +112,14 @@ int vms_file_stats_name (const char *, long long *, long *, char *, int *);
 #define DWARF2_INDIRECT_STRING_SUPPORT_MISSING_ON_TARGET 0
 #endif
 
+#ifndef DWARF2_UNWIND_INFO
+#define DWARF2_UNWIND_INFO 0
+#endif
+
+#ifndef INCOMING_RETURN_ADDR_RTX
+#define INCOMING_RETURN_ADDR_RTX  (gcc_unreachable (), NULL_RTX)
+#endif
+
 #ifndef DWARF2_FRAME_INFO
 # ifdef DWARF2_DEBUGGING_INFO
 #  define DWARF2_FRAME_INFO \
@@ -143,11 +151,9 @@ dwarf2out_do_frame (void)
   return (write_symbols == DWARF2_DEBUG
 	  || write_symbols == VMS_AND_DWARF2_DEBUG
 	  || DWARF2_FRAME_INFO || saved_do_cfi_asm
-#ifdef DWARF2_UNWIND_INFO
 	  || (DWARF2_UNWIND_INFO
 	      && (flag_unwind_tables
 		  || (flag_exceptions && ! USING_SJLJ_EXCEPTIONS)))
-#endif
 	  );
 }
 
@@ -4153,10 +4159,8 @@ dwarf2out_frame_init (void)
   /* On entry, the Canonical Frame Address is at SP.  */
   dwarf2out_def_cfa (NULL, STACK_POINTER_REGNUM, INCOMING_FRAME_SP_OFFSET);
 
-#ifdef DWARF2_UNWIND_INFO
   if (DWARF2_UNWIND_INFO || DWARF2_FRAME_INFO)
     initial_return_save (INCOMING_RETURN_ADDR_RTX);
-#endif
 }
 
 void
