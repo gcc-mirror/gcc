@@ -1,5 +1,13 @@
 2010-08-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/tr1_impl/utility (begin, end): Remove per GB 85.
+	* testsuite/20_util/pair/range_access.cc: Remove.
+
+	* include/std/functional (function<>::function()): Remove explicit,
+	per JP 3.
+
+2010-08-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/move.h (forward): Update to N3092.
 	(identity): Remove (US 92 is NAD).
 	* include/debug/set.h: Fix move constructor to simply use move.
