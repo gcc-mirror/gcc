@@ -5379,10 +5379,9 @@ package body Prj.Nmsc is
 
             if not Dir_Exists then
                Err_Vars.Error_Msg_File_1 := File_Name_Type (Exec_Dir.Value);
-               Error_Msg
-                 (Data.Flags,
-                  "exec directory { not found",
-                  Project.Location, Project);
+               Error_Or_Warning
+                 (Data.Flags, Data.Flags.Missing_Source_Files,
+                  "exec directory { not found", Project.Location, Project);
             end if;
          end if;
       end if;

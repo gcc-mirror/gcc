@@ -127,6 +127,16 @@ package body Exp_Ch13 is
                   else
                      Set_Expression (Decl, Empty);
                   end if;
+
+               --  An object declaration to which an address clause applies
+               --  has a delayed freeze, but the address expression itself
+               --  must be elaborated at the point it appears. If the object
+               --  is controlled, additional checks apply elsewhere.
+
+               elsif Nkind (Decl) = N_Object_Declaration
+                 and then not Needs_Constant_Address (Decl, Typ)
+               then
+                  Remove_Side_Effects (Exp);
                end if;
             end;
 
