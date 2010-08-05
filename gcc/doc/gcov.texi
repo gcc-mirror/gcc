@@ -130,6 +130,7 @@ gcov [@option{-v}|@option{--version}] [@option{-h}|@option{--help}]
      [@option{-f}|@option{--function-summaries}]
      [@option{-o}|@option{--object-directory} @var{directory|file}] @var{sourcefiles}
      [@option{-u}|@option{--unconditional-branches}]
+     [@option{-d}|@option{--display-progress}]
 @c man end
 @c man begin SEEALSO
 gpl(7), gfdl(7), fsf-funding(7), gcc(1) and the Info entry for @file{gcc}.
@@ -210,6 +211,10 @@ option is not supplied, it defaults to the current directory.
 @itemx --unconditional-branches
 When branch probabilities are given, include those of unconditional branches.
 Unconditional branches are normally not interesting.
+
+@item -d
+@itemx --display-progress
+Display the progress on the standard output.
 
 @end table
 

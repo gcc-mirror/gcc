@@ -1,3 +1,12 @@
+2010-08-05  Nicolas Setton  <setton@adacore.com>
+
+	* gcov.c (flag_display_progress): New static variable.
+	(main): Display progress info on standard output if requested.
+	(options): Add -d/--display-progress.
+	(print_usage): Print them.
+	(process_args): Handle them.
+	* doc/gcov.texi: Document them.
+
 2010-08-05  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-cp.c (ipcp_discover_new_direct_edges): New function.
