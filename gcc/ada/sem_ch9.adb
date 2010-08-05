@@ -1178,6 +1178,27 @@ package body Sem_Ch9 is
 
       Analyze (Protected_Definition (N));
 
+      --  In the case where the protected type is declared at a nested level
+      --  and the No_Local_Protected_Objects restriction applies, issue a
+      --  warning that objects of the type will violate the restriction.
+
+      if not Is_Library_Level_Entity (T)
+        and then Comes_From_Source (T)
+        and then Restrictions.Set (No_Local_Protected_Objects)
+      then
+         Error_Msg_Sloc := Restrictions_Loc (No_Local_Protected_Objects);
+
+         if Error_Msg_Sloc = No_Location then
+            Error_Msg_N
+              ("objects of this type will violate " &
+               "`No_Local_Protected_Objects`?", N);
+         else
+            Error_Msg_N
+              ("objects of this type will violate " &
+               "`No_Local_Protected_Objects`?#", N);
+         end if;
+      end if;
+
       --  Protected types with entries are controlled (because of the
       --  Protection component if nothing else), same for any protected type
       --  with interrupt handlers. Note that we need to analyze the protected
@@ -1970,8 +1991,23 @@ package body Sem_Ch9 is
          Analyze_Task_Definition (Task_Definition (N));
       end if;
 
-      if not Is_Library_Level_Entity (T) then
-         Check_Restriction (No_Task_Hierarchy, N);
+      --  In the case where the task type is declared at a nested level and the
+      --  No_Task_Hierarchy restriction applies, issue a warning that objects
+      --  of the type will violate the restriction.
+
+      if not Is_Library_Level_Entity (T)
+        and then Comes_From_Source (T)
+        and then Restrictions.Set (No_Task_Hierarchy)
+      then
+         Error_Msg_Sloc := Restrictions_Loc (No_Task_Hierarchy);
+
+         if Error_Msg_Sloc = No_Location then
+            Error_Msg_N
+              ("objects of this type will violate `No_Task_Hierarchy`?", N);
+         else
+            Error_Msg_N
+              ("objects of this type will violate `No_Task_Hierarchy`?#", N);
+         end if;
       end if;
 
       End_Scope;

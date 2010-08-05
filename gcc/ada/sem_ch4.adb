@@ -590,6 +590,25 @@ package body Sem_Ch4 is
          Check_Restriction (No_Tasking, N);
          Check_Restriction (Max_Tasks, N);
          Check_Restriction (No_Task_Allocators, N);
+
+         --  Check that an allocator with task parts isn't for a nested access
+         --  type when restriction No_Task_Hierarchy applies.
+
+         if not Is_Library_Level_Entity (Acc_Type) then
+            Check_Restriction (No_Task_Hierarchy, N);
+         end if;
+      end if;
+
+      --  Check that an allocator of a nested access type doesn't create a
+      --  protected object when restriction No_Local_Protected_Objects applies.
+      --  We don't have an equivalent to Has_Task for protected types, so only
+      --  cases where the designated type itself is a protected type are
+      --  currently checked. ???
+
+      if Is_Protected_Type (Designated_Type (Acc_Type))
+        and then not Is_Library_Level_Entity (Acc_Type)
+      then
+         Check_Restriction (No_Local_Protected_Objects, N);
       end if;
 
       --  If the No_Streams restriction is set, check that the type of the
