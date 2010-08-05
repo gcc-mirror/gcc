@@ -1,6 +1,6 @@
 // TR1 utility -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -114,26 +114,6 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     inline const typename tuple_element<_Int, std::pair<_Tp1, _Tp2> >::type&
     get(const std::pair<_Tp1, _Tp2>& __in)
     { return __pair_get<_Int>::__const_get(__in); }
-
-#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
-  /**
-   *  @brief  Return the first of a pair containing two input iterators.
-   *  @param  p  Pair.
-   */
-  template<class _InputIterator>
-    inline _InputIterator
-    begin(const std::pair<_InputIterator, _InputIterator>& __p)
-    { return __p.first; }
-
-  /**
-   *  @brief  Return the second of a pair containing two input iterators.
-   *  @param  p  Pair.
-   */
-  template<class _InputIterator>
-    inline _InputIterator
-    end(const std::pair<_InputIterator, _InputIterator>& __p)
-    { return __p.second; }
-#endif
 
 _GLIBCXX_END_NAMESPACE_TR1
 }

@@ -1786,7 +1786,6 @@ namespace std
        *  @brief Default construct creates an empty function call wrapper.
        *  @post @c !(bool)*this
        */
-      explicit
       function() : _Function_base() { }
       
       /**
