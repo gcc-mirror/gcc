@@ -528,7 +528,7 @@ template<typename _Alloc>
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
     vector(vector&& __x)
-    : _Base(std::forward<_Base>(__x)) { }
+    : _Base(std::move(__x)) { }
 
     vector(initializer_list<bool> __l,
 	   const allocator_type& __a = allocator_type())

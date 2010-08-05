@@ -839,8 +839,8 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  The newly-created %deque contains the exact contents of @a x.
        *  The contents of @a x are a valid, but unspecified %deque.
        */
-      deque(deque&&  __x)
-      : _Base(std::forward<_Base>(__x)) { }
+      deque(deque&& __x)
+      : _Base(std::move(__x)) { }
 
       /**
        *  @brief  Builds a %deque from an initializer list.

@@ -85,7 +85,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       __unordered_map(const __unordered_map& __x) = default;
 
       __unordered_map(__unordered_map&& __x)
-      : _Base(std::forward<_Base>(__x)) { }
+      : _Base(std::move(__x)) { }
     };
   
   template<class _Key, class _Tp,
@@ -142,7 +142,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       __unordered_multimap(const __unordered_multimap& __x) = default;
 
       __unordered_multimap(__unordered_multimap&& __x)
-      : _Base(std::forward<_Base>(__x)) { }
+      : _Base(std::move(__x)) { }
     };
 
   template<class _Key, class _Tp, class _Hash, class _Pred, class _Alloc,
@@ -253,7 +253,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       unordered_map(const unordered_map& __x) = default;
 
       unordered_map(unordered_map&& __x)
-      : _Base(std::forward<_Base>(__x)) { }
+      : _Base(std::move(__x)) { }
 
       unordered_map(initializer_list<value_type> __l,
 		    size_type __n = 10,
@@ -340,7 +340,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
       unordered_multimap(const unordered_multimap& __x) = default;
 
       unordered_multimap(unordered_multimap&& __x)
-      : _Base(std::forward<_Base>(__x)) { }
+      : _Base(std::move(__x)) { }
 
       unordered_multimap(initializer_list<value_type> __l,
 			 size_type __n = 10,

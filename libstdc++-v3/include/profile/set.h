@@ -82,7 +82,7 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       set(set&& __x)
-      : _Base(std::forward<set>(__x))
+      : _Base(std::move(__x))
       { }
 
       set(initializer_list<value_type> __l,

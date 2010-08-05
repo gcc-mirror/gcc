@@ -155,7 +155,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
        *  string.
        */
       __versa_string(__versa_string&& __str)
-      : __vstring_base(std::forward<__vstring_base>(__str)) { }
+      : __vstring_base(std::move(__str)) { }
 
       /**
        *  @brief  Construct string from an initializer list.

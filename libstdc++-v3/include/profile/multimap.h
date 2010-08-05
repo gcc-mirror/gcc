@@ -84,7 +84,7 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       multimap(multimap&& __x)
-      : _Base(std::forward<multimap>(__x))
+      : _Base(std::move(__x))
       { }
 
       multimap(initializer_list<value_type> __l,

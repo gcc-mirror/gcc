@@ -94,7 +94,7 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       map(map&& __x)
-      : _Base(std::forward<map>(__x))
+      : _Base(std::move(__x))
       { }
 
       map(initializer_list<value_type> __l,

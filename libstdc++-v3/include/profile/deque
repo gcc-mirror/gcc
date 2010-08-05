@@ -93,7 +93,7 @@ namespace __profile
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       deque(deque&& __x)
-      : _Base(std::forward<deque>(__x))
+      : _Base(std::move(__x))
       { }
 
       deque(initializer_list<value_type> __l,

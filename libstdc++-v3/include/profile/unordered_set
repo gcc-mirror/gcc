@@ -103,7 +103,7 @@ namespace __profile
       }
 
       unordered_set(unordered_set&& __x)
-      : _Base(std::forward<_Base>(__x)) 
+      : _Base(std::move(__x)) 
       { 
         __profcxx_hashtable_construct(this, _Base::bucket_count());
         __profcxx_hashtable_construct2(this);
@@ -328,7 +328,7 @@ namespace __profile
       }
 
       unordered_multiset(unordered_multiset&& __x)
-      : _Base(std::forward<_Base>(__x))
+      : _Base(std::move(__x))
       {
         __profcxx_hashtable_construct(this, _Base::bucket_count());
       }
