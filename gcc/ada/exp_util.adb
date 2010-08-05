@@ -814,8 +814,8 @@ package body Exp_Util is
       Stats : constant List_Id := New_List;
 
    begin
-      --  For a dynamic task, the name comes from the target variable.
-      --  For a static one it is a formal of the enclosing init proc.
+      --  For a dynamic task, the name comes from the target variable. For a
+      --  static one it is a formal of the enclosing init proc.
 
       if Dyn then
          Get_Name_String (Chars (Entity (Prefix (Id_Ref))));
@@ -1105,8 +1105,8 @@ package body Exp_Util is
       IR : Node_Id;
 
    begin
-      --  An itype reference must only be created if this is a local
-      --  itype, so that gigi can elaborate it on the proper objstack.
+      --  An itype reference must only be created if this is a local itype, so
+      --  that gigi can elaborate it on the proper objstack.
 
       if Is_Itype (Typ)
         and then Scope (Typ) = Current_Scope
@@ -1356,9 +1356,9 @@ package body Exp_Util is
          pragma Assert (Is_Class_Wide_Type (Unc_Type));
          null;
 
-      --  In Ada95, nothing to be done if the type of the expression is
-      --  limited, because in this case the expression cannot be copied,
-      --  and its use can only be by reference.
+      --  In Ada95 nothing to be done if the type of the expression is limited,
+      --  because in this case the expression cannot be copied, and its use can
+      --  only be by reference.
 
       --  In Ada2005, the context can be an object declaration whose expression
       --  is a function that returns in place. If the nominal subtype has
@@ -1823,9 +1823,9 @@ package body Exp_Util is
          if Nkind (Cond) = N_And_Then
            or else Nkind (Cond) = N_Op_And
          then
-            --  Don't ever try to invert a condition that is of the form
-            --  of an AND or AND THEN (since we are not doing sufficiently
-            --  general processing to allow this).
+            --  Don't ever try to invert a condition that is of the form of an
+            --  AND or AND THEN (since we are not doing sufficiently general
+            --  processing to allow this).
 
             if Sens = False then
                Op  := N_Empty;
@@ -2002,8 +2002,8 @@ package body Exp_Util is
             end;
 
             --  ELSIF part. Condition is known true within the referenced
-            --  ELSIF, known False in any subsequent ELSIF or ELSE part, and
-            --  unknown before the ELSE part or after the IF statement.
+            --  ELSIF, known False in any subsequent ELSIF or ELSE part,
+            --  and unknown before the ELSE part or after the IF statement.
 
          elsif Nkind (CV) = N_Elsif_Part then
 
@@ -2386,12 +2386,19 @@ package body Exp_Util is
                   ElseX : constant Node_Id := Next (ThenX);
 
                begin
-                  --  Actions belong to the then expression, temporarily
-                  --  place them as Then_Actions of the conditional expr.
-                  --  They will be moved to the proper place later when
-                  --  the conditional expression is expanded.
+                  --  If the enclosing expression is already analyzed, as
+                  --  is the case for nested elaboration checks, insert the
+                  --  conditional further out.
 
-                  if N = ThenX then
+                  if Analyzed (P) then
+                     null;
+
+                  --  Actions belong to the then expression, temporarily place
+                  --  them as Then_Actions of the conditional expr. They will
+                  --  be moved to the proper place later when the conditional
+                  --  expression is expanded.
+
+                  elsif N = ThenX then
                      if Present (Then_Actions (P)) then
                         Insert_List_After_And_Analyze
                           (Last (Then_Actions (P)), Ins_Actions);
@@ -2427,9 +2434,9 @@ package body Exp_Util is
                   end if;
                end;
 
-            --  Alternative of case expression, we place the action in
-            --  the Actions field of the case expression alternative, this
-            --  will be handled when the case expression is expanded.
+            --  Alternative of case expression, we place the action in the
+            --  Actions field of the case expression alternative, this will
+            --  be handled when the case expression is expanded.
 
             when N_Case_Expression_Alternative =>
                if Present (Actions (P)) then
@@ -2464,11 +2471,11 @@ package body Exp_Util is
                   else
                      Set_Condition_Actions (P, Ins_Actions);
 
-                     --  Set the parent of the insert actions explicitly.
-                     --  This is not a syntactic field, but we need the
-                     --  parent field set, in particular so that freeze
-                     --  can understand that it is dealing with condition
-                     --  actions, and properly insert the freezing actions.
+                     --  Set the parent of the insert actions explicitly. This
+                     --  is not a syntactic field, but we need the parent field
+                     --  set, in particular so that freeze can understand that
+                     --  it is dealing with condition actions, and properly
+                     --  insert the freezing actions.
 
                      Set_Parent (Ins_Actions, P);
                      Analyze_List (Condition_Actions (P));
@@ -2574,6 +2581,7 @@ package body Exp_Util is
                --  subsequent use in the back end: within a package spec the
                --  loop is part of the elaboration procedure and is only
                --  elaborated during the second pass.
+
                --  If the loop comes from source, or the entity is local to
                --  the loop itself it must remain within.
 
@@ -2596,10 +2604,9 @@ package body Exp_Util is
                   return;
                end if;
 
-            --  A special case, N_Raise_xxx_Error can act either as a
-            --  statement or a subexpression. We tell the difference
-            --  by looking at the Etype. It is set to Standard_Void_Type
-            --  in the statement case.
+            --  A special case, N_Raise_xxx_Error can act either as a statement
+            --  or a subexpression. We tell the difference by looking at the
+            --  Etype. It is set to Standard_Void_Type in the statement case.
 
             when
                N_Raise_xxx_Error =>
@@ -2645,9 +2652,9 @@ package body Exp_Util is
                            Decl : Node_Id;
 
                         begin
-                           --  Check whether these actions were generated
-                           --  by a declaration that is part of the loop_
-                           --  actions for the component_association.
+                           --  Check whether these actions were generated by a
+                           --  declaration that is part of the loop_ actions
+                           --  for the component_association.
 
                            Decl := Assoc_Node;
                            while Present (Decl) loop
@@ -2855,9 +2862,9 @@ package body Exp_Util is
 
          if Nkind (Parent (N)) = N_Subunit then
 
-            --  This is the proper body corresponding to a stub. Insertion
-            --  must be done at the point of the stub, which is in the decla-
-            --  rative part of the parent unit.
+            --  This is the proper body corresponding to a stub. Insertion must
+            --  be done at the point of the stub, which is in the declarative
+            --  part of the parent unit.
 
             P := Corresponding_Stub (Parent (N));
 
