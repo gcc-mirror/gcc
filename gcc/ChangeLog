@@ -1,3 +1,9 @@
+2010-08-05  Jie Zhang  <jie@codesourcery.com>
+
+	PR tree-optimization/45144
+	* tree-sra.c (type_consists_of_records_p): Return false
+	if the record contains bit-field.
+
 2010-08-04  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (struct ix86_frame): Remove padding and

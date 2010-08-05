@@ -811,7 +811,7 @@ create_access (tree expr, gimple stmt, bool write)
 /* Return true iff TYPE is a RECORD_TYPE with fields that are either of gimple
    register types or (recursively) records with only these two kinds of fields.
    It also returns false if any of these records has a zero-size field as its
-   last field.  */
+   last field or has a bit-field.  */
 
 static bool
 type_consists_of_records_p (tree type)
@@ -826,6 +826,9 @@ type_consists_of_records_p (tree type)
     if (TREE_CODE (fld) == FIELD_DECL)
       {
 	tree ft = TREE_TYPE (fld);
+
+	if (DECL_BIT_FIELD (fld))
+	  return false;
 
 	if (!is_gimple_reg_type (ft)
 	    && !type_consists_of_records_p (ft))
