@@ -1,3 +1,14 @@
+2010-08-05  Bernd Schmidt  <bernds@codesourcery.com>
+
+	From Martin Thuresson  <martint@google.com>
+	* postreload.c (reload_cse_simplify_operands): Use
+	SET_REGNO_RAW instead of SET_REGNO.
+	* caller-save.c (reg_save_code): Use SET_REGNO_RAW instead of
+	SET_REGNO.
+	* ira.c (setup_prohibited_mode_move_regs): Use SET_REGNO_RAW
+	instead of SET_REGNO.
+	* rtl.h (SET_REGNO_RAW): New macro.
+
 2010-08-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* rtlanal.c (nonzero_bits1): Use unsigned HOST_WIDE_INT in all mask

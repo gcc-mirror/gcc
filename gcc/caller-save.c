@@ -124,7 +124,7 @@ reg_save_code (int reg, enum machine_mode mode)
 
   /* Update the register number and modes of the register
      and memory operand.  */
-  SET_REGNO (test_reg, reg);
+  SET_REGNO_RAW (test_reg, reg);
   PUT_MODE (test_reg, mode);
   PUT_MODE (test_mem, mode);
 
