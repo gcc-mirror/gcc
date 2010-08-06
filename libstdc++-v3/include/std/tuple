@@ -549,27 +549,10 @@ namespace std
       return __result_type(std::forward<_Elements>(__args)...);
     }
 
-  template<typename _Tp, bool = is_array<_Tp>::value>
-    struct __pa_add_rvalue_reference_helper
-    { typedef typename std::add_rvalue_reference<_Tp>::type __type; };
-
-  template<typename _Tp>
-    struct __pa_add_rvalue_reference_helper<_Tp, true>
-    { typedef _Tp& __type; };
-
-  template<typename _Tp>
-    struct __pa_add_rvalue_reference
-    : public __pa_add_rvalue_reference_helper<_Tp>
-    { };
-
   template<typename... _Elements>
-    inline tuple<typename __pa_add_rvalue_reference<_Elements>::__type...>
-    pack_arguments(_Elements&&... __args)
-    {
-      typedef tuple<typename __pa_add_rvalue_reference<_Elements>::__type...>
-	__result_type;
-      return __result_type(std::forward<_Elements>(__args)...);
-    }
+    inline tuple<_Elements&&...>
+    forward_as_tuple(_Elements&&... __args)
+    { return tuple<_Elements&&...>(std::forward<_Elements>(__args)...); }
 
   template<std::size_t...> struct __index_holder { };    
 
