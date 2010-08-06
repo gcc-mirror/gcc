@@ -1,3 +1,9 @@
+2010-08-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/44942
+	* config/sparc/sparc.c (function_arg_advance): Always take into account
+	the padding, if any.
+
 2010-08-06  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-ccp.c (struct prop_value_d): Add mask member.
