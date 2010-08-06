@@ -1,5 +1,9 @@
 2010-08-05  David Daney  <ddaney@caviumnetworks.com>
 
+	* class.c (build_utf8_ref): Fix code formatting from previous commit.
+
+2010-08-05  David Daney  <ddaney@caviumnetworks.com>
+
 	* class.c (build_utf8_ref): Make decl DECL_USER_ALIGN.
 
 2010-07-27  Joseph Myers  <joseph@codesourcery.com>
