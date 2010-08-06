@@ -983,6 +983,7 @@ build_utf8_ref (tree name)
   TREE_READONLY (decl) = 1;
   TREE_THIS_VOLATILE (decl) = 0;
   DECL_INITIAL (decl) = cinit;
+  DECL_USER_ALIGN(decl) = 1;
 
   if (HAVE_GAS_SHF_MERGE)
     {
