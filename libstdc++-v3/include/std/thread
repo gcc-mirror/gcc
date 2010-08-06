@@ -123,6 +123,7 @@ namespace std
 
   public:
     thread() = default;
+    thread(thread&) = delete;
     thread(const thread&) = delete;
 
     thread(thread&& __t)

@@ -27,13 +27,7 @@ void test01()
   // copy
   typedef std::thread test_type;
   test_type t1;
-  test_type t2(t1);		// { dg-error "deleted" "" { xfail *-*-* } }
+  test_type t2(t1);		// { dg-error "deleted" }
 }
-
-// This is failing for the wrong reason; it should fail because we're
-// trying to call the deleted copy constructor, but instead it fails
-// because we try to call the thread(_Callable&&,_Args&&...) constructor
-// and fail because thread isn't callable.  But that's OK for now.
-// { dg-error "" "" { target *-*-* } 30 }
 
 // { dg-prune-output "include" }
