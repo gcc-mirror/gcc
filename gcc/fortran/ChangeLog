@@ -1,3 +1,14 @@
+2010-08-06  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/44660
+	* gfortran.h (gfc_namespace): New field old_equiv.
+	(gfc_free_equiv_until): New prototype.
+	* match.c (gfc_free_equiv_until): New, renamed from gfc_free_equiv with
+	a parameterized stop condition.
+	(gfc_free_equiv): Use gfc_free_equiv_until.
+	* parse.c (next_statement): Save equivalence list.
+	(reject_statement): Restore equivalence list. 
+
 2010-07-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45019
