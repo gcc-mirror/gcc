@@ -1180,7 +1180,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    gnu_type = build_reference_type (gnu_type);
 	    gnu_size = NULL_TREE;
 	    used_by_ref = true;
-	    const_flag = true;
 
 	    /* In case this was a aliased object whose nominal subtype is
 	       unconstrained, the pointer above will be a thin pointer and
@@ -1194,7 +1193,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       If we are elaborating a mutable object, tell build_allocator to
 	       ignore a possibly simpler size from the initializer, if any, as
 	       we must allocate the maximum possible size in this case.  */
-	    if (definition)
+	    if (definition && !imported_p)
 	      {
 		tree gnu_alloc_type = TREE_TYPE (gnu_type);
 
@@ -1217,14 +1216,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  }
 
 		if (TREE_CODE (TYPE_SIZE_UNIT (gnu_alloc_type)) == INTEGER_CST
-		    && TREE_OVERFLOW (TYPE_SIZE_UNIT (gnu_alloc_type))
-		    && !Is_Imported (gnat_entity))
+		    && TREE_OVERFLOW (TYPE_SIZE_UNIT (gnu_alloc_type)))
 		  post_error ("?`Storage_Error` will be raised at run time!",
 			      gnat_entity);
 
 		gnu_expr
 		  = build_allocator (gnu_alloc_type, gnu_expr, gnu_type,
 				     Empty, Empty, gnat_entity, mutable_p);
+		const_flag = true;
 	      }
 	    else
 	      {
