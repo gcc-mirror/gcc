@@ -70,21 +70,21 @@ void test01()
   bool test __attribute__((unused)) = true;
 
   std::pair<type_one, type_zero> pp0(std::piecewise_construct_t(),
-				     std::pack_arguments(-3),
-				     std::pack_arguments());
+				     std::forward_as_tuple(-3),
+				     std::forward_as_tuple());
   VERIFY( pp0.first.get() == -3 );
   VERIFY( pp0.second.get() == 757 );
 
   std::pair<type_one, type_two> pp1(std::piecewise_construct_t(),
-				    std::pack_arguments(6),
-				    std::pack_arguments(5, 4));
+				    std::forward_as_tuple(6),
+				    std::forward_as_tuple(5, 4));
   VERIFY( pp1.first.get() == 6 );
   VERIFY( pp1.second.get1() == 5 );
   VERIFY( pp1.second.get2() == 4 );
 
   std::pair<type_two, type_two> pp2(std::piecewise_construct_t(),
-				    std::pack_arguments(2, 1),
-				    std::pack_arguments(-1, -3));
+				    std::forward_as_tuple(2, 1),
+				    std::forward_as_tuple(-1, -3));
   VERIFY( pp2.first.get1() == 2 );
   VERIFY( pp2.first.get2() == 1 );
   VERIFY( pp2.second.get1() == -1 );
