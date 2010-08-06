@@ -5558,14 +5558,13 @@ void
 function_arg_advance (struct sparc_args *cum, enum machine_mode mode,
 		      tree type, int named)
 {
-  int slotno, regno, padding;
+  int regno, padding;
 
   /* We pass 0 for incoming_p here, it doesn't matter.  */
-  slotno = function_arg_slotno (cum, mode, type, named, 0, &regno, &padding);
+  function_arg_slotno (cum, mode, type, named, 0, &regno, &padding);
 
-  /* If register required leading padding, add it.  */
-  if (slotno != -1)
-    cum->words += padding;
+  /* If argument requires leading padding, add it.  */
+  cum->words += padding;
 
   if (TARGET_ARCH32)
     {
