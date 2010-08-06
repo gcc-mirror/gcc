@@ -1,5 +1,10 @@
 2010-08-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/std/tuple (begin, end): Remove per GB 87.
+	* testsuite/20_util/tuple/range_access.cc: Remove.
+
+2010-08-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/std/ratio (ratio_less): Improve, use ratio_divide to avoid
 	more overflows.
 	* testsuite/20_util/ratio/comparisons/comp1.cc: Extend.
