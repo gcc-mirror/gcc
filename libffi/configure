@@ -11320,7 +11320,7 @@ TARGETDIR="unknown"
 case "$host" in
   alpha*-*-*)
 	TARGET=ALPHA; TARGETDIR=alpha;
-	# Support 128-bit long double, changable via command-line switch.
+	# Support 128-bit long double, changeable via command-line switch.
 	HAVE_LONG_DOUBLE='defined(__LONG_DOUBLE_128__)'
 	;;
 
