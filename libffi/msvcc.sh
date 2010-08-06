@@ -42,7 +42,7 @@
 # format and translated into something sensible for cl or ml.
 #
 
-args="-nologo -W3"
+args="-nologo"
 md=-MD
 cl="cl"
 ml="ml"
@@ -108,7 +108,8 @@ do
       shift 1
     ;;
     -Wall)
-      args="$args -Wall"
+      # -Wall on MSVC is overzealous. Use -W3 instead.
+      args="$args -W3"
       shift 1
     ;;
     -Werror)

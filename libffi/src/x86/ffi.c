@@ -209,7 +209,7 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 #endif
         {
           cif->flags = FFI_TYPE_STRUCT;
-          // allocate space for return value pointer
+          /* allocate space for return value pointer */
           cif->bytes += ALIGN(sizeof(void*), FFI_SIZEOF_ARG);
         }
       break;
@@ -234,7 +234,7 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
     }
 
 #ifdef X86_WIN64
-  // ensure space for storing four registers
+  /* ensure space for storing four registers */
   cif->bytes += 4 * sizeof(ffi_arg);
 #endif
 
@@ -292,8 +292,8 @@ void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
 #ifdef X86_WIN64
     case FFI_WIN64:
       {
-        // Make copies of all struct arguments
-        // NOTE: not sure if responsibility should be here or in caller
+        /* Make copies of all struct arguments
+           NOTE: not sure if responsibility should be here or in caller */
         unsigned int i;
         for (i=0; i < cif->nargs;i++) {
           size_t size = cif->arg_types[i]->size;
