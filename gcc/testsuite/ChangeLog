@@ -320,7 +320,7 @@
 
 	2009-10-03  Ben Elliston  <bje@au.ibm.com>
 		    Janis Johnson  <janis187@us.ibm.com>
-	    	    Diego Novillo  <dnovillo@google.com>
+		    Diego Novillo  <dnovillo@google.com>
 
 	* lib/c-torture.exp: Load target-supports.exp.
 
