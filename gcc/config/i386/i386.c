@@ -6871,8 +6871,7 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
      Avoid this by transforming to [%esi+0].  */
   if (TARGET_K6 && !optimize_size
       && base_reg && !index_reg && !disp
-      && REG_P (base_reg)
-      && REGNO_REG_CLASS (REGNO (base_reg)) == SIREG)
+      && REG_P (base_reg) && REGNO (base_reg) == SI_REG)
     disp = const0_rtx;
 
   /* Special case: encode reg+reg instead of reg*2.  */
