@@ -1,3 +1,8 @@
+2010-08-06  Alan Modra  <amodra@gmail.com>
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Rewrite -mrelocatable
+	and -mrelocatable-lib description.
+
 2010-08-05  Bernd Schmidt  <bernds@codesourcery.com>
 
 	From Martin Thuresson  <martint@google.com>
