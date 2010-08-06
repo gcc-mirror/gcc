@@ -146,7 +146,7 @@ selinux_enabled_check (void)
       p = strchr (p + 1, ' ');
       if (p == NULL)
         break;
-      if (strncmp (p + 1, "selinuxfs ", 10) != 0)
+      if (strncmp (p + 1, "selinuxfs ", 10) == 0)
         {
           free (buf);
           fclose (f);

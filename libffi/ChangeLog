@@ -1,3 +1,7 @@
+2010-07-10  Evan Phoenix  <evan@fallingsnow.net>
+
+	* src/closures.c (selinux_enabled_check): Fix strncmp usage bug.
+
 2010-07-07   Neil Roberts <neil@linux.intel.com>
 
 	* src/x86/sysv.S (ffi_call_SYSV): Align the stack pointer to
