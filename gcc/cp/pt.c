@@ -11705,7 +11705,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 			       pack expansion where the parameter packs
 			       used in that expansion were of length
 			       zero.  */
-			    init = build_value_init (TREE_TYPE (decl));
+			    init = build_value_init (TREE_TYPE (decl),
+						     complain);
 			    if (TREE_CODE (init) == AGGR_INIT_EXPR)
 			      init = get_target_expr (init);
 			  }

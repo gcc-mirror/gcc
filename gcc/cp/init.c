@@ -269,7 +269,7 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
    TYPE, as described in [dcl.init].  */
 
 tree
-build_value_init (tree type)
+build_value_init (tree type, tsubst_flags_t complain)
 {
   /* [dcl.init]
 
@@ -302,7 +302,7 @@ build_value_init (tree type)
 	  (type,
 	   build_special_member_call (NULL_TREE, complete_ctor_identifier,
 				      NULL, type, LOOKUP_NORMAL,
-				      tf_warning_or_error));
+				      complain));
       else if (TREE_CODE (type) != UNION_TYPE && TYPE_NEEDS_CONSTRUCTING (type))
 	{
 	  /* This is a class that needs constructing, but doesn't have
@@ -311,21 +311,21 @@ build_value_init (tree type)
 	     This will be handled in simplify_aggr_init_expr.  */
 	  tree ctor = build_special_member_call
 	    (NULL_TREE, complete_ctor_identifier,
-	     NULL, type, LOOKUP_NORMAL, tf_warning_or_error);
+	     NULL, type, LOOKUP_NORMAL, complain);
 
 	  ctor = build_aggr_init_expr (type, ctor);
 	  AGGR_INIT_ZERO_FIRST (ctor) = 1;
 	  return ctor;
 	}
     }
-  return build_value_init_noctor (type);
+  return build_value_init_noctor (type, complain);
 }
 
 /* Like build_value_init, but don't call the constructor for TYPE.  Used
    for base initializers.  */
 
 tree
-build_value_init_noctor (tree type)
+build_value_init_noctor (tree type, tsubst_flags_t complain)
 {
   if (CLASS_TYPE_P (type))
     {
@@ -347,7 +347,12 @@ build_value_init_noctor (tree type)
 	      ftype = TREE_TYPE (field);
 
 	      if (TREE_CODE (ftype) == REFERENCE_TYPE)
-		error ("value-initialization of reference");
+		{
+		  if (complain & tf_error)
+		    error ("value-initialization of reference");
+		  else
+		    return error_mark_node;
+		}
 
 	      /* We could skip vfields and fields of types with
 		 user-defined constructors, but I think that won't improve
@@ -359,7 +364,7 @@ build_value_init_noctor (tree type)
 		 corresponding to base classes as well.  Thus, iterating
 		 over TYPE_FIELDs will result in correct initialization of
 		 all of the subobjects.  */
-	      value = build_value_init (ftype);
+	      value = build_value_init (ftype, complain);
 
 	      if (value)
 		CONSTRUCTOR_APPEND_ELT(v, field, value);
@@ -401,7 +406,7 @@ build_value_init_noctor (tree type)
 	    ce->index = build2 (RANGE_EXPR, sizetype, size_zero_node,
 				max_index);
 
-	  ce->value = build_value_init (TREE_TYPE (type));
+	  ce->value = build_value_init (TREE_TYPE (type), complain);
 
 	  /* The gimplifier can't deal with a RANGE_EXPR of TARGET_EXPRs.  */
 	  gcc_assert (TREE_CODE (ce->value) != TARGET_EXPR
@@ -459,7 +464,8 @@ perform_member_init (tree member, tree init)
 		       member);
 	  else
 	    {
-	      init = build2 (INIT_EXPR, type, decl, build_value_init (type));
+	      init = build2 (INIT_EXPR, type, decl,
+			     build_value_init (type, tf_warning_or_error));
 	      finish_expr_stmt (init);
 	    }
 	}
@@ -1473,7 +1479,8 @@ expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags,
 	 then just zero out the object and we're done.  */
       else
 	{
-	  init = build2 (INIT_EXPR, type, exp, build_value_init_noctor (type));
+	  init = build2 (INIT_EXPR, type, exp,
+			 build_value_init_noctor (type, complain));
 	  finish_expr_stmt (init);
 	  return;
 	}
@@ -2314,8 +2321,10 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	  else if (explicit_value_init_p)
 	    {
 	      /* Something like `new int()'.  */
-	      init_expr = build2 (INIT_EXPR, type,
-				  init_expr, build_value_init (type));
+	      tree val = build_value_init (type, complain);
+	      if (val == error_mark_node)
+		return error_mark_node;
+	      init_expr = build2 (INIT_EXPR, type, init_expr, val);
 	    }
 	  else
 	    {
@@ -2534,7 +2543,7 @@ build_new (VEC(tree,gc) **placement, tree type, tree nelts,
   /* The type allocated must be complete.  If the new-type-id was
      "T[N]" then we are just checking that "T" is complete here, but
      that is equivalent, since the value of "N" doesn't matter.  */
-  if (!complete_type_or_else (type, NULL_TREE))
+  if (!complete_type_or_maybe_complain (type, NULL_TREE, complain))
     return error_mark_node;
 
   rval = build_new_1 (placement, type, nelts, init, use_global_new, complain);
@@ -3041,8 +3050,13 @@ build_vec_init (tree base, tree maxindex, tree init,
 				     0, complain);
 	}
       else if (explicit_value_init_p)
-	elt_init = build2 (INIT_EXPR, type, to,
-			   build_value_init (type));
+	{
+	  elt_init = build_value_init (type, complain);
+	  if (elt_init == error_mark_node)
+	    return error_mark_node;
+	  else
+	    elt_init = build2 (INIT_EXPR, type, to, elt_init);
+	}
       else
 	{
 	  gcc_assert (TYPE_NEEDS_CONSTRUCTING (type));
