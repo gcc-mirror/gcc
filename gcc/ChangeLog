@@ -1,3 +1,29 @@
+2010-08-06  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-ccp.c (struct prop_value_d): Add mask member.
+	(dump_lattice_value): Dump it.
+	(get_default_value): Adjust.
+	(get_constant_value): Likewise.
+	(set_value_varying): Likewise.
+	(set_lattice_value): Make sure to not go up the lattice
+	with bitwise constant values.
+	(get_value_for_expr): Handle ADDR_EXPRs.
+	(value_to_double_int): New function.
+	(get_value_from_alignment): Likewise.
+	(do_dbg_cnt): Adjust.
+	(ccp_lattice_meet): Handle partially constant values.
+	(bit_value_unop_1): New function.
+	(bit_value_binop_1): Likewise.
+	(bit_value_unop): Likewise.
+	(bit_value_binop): Likewise.
+	(evaluate_stmt): Track partially constant values if
+	flag_tree_bit_ccp is set.
+	(ccp_fold_stmt): Dump if we folded a predicate.
+	(ccp_visit_stmt): Adjust.
+	* common.opt (ftree-bit-ccp): New flag.
+	* doc/invoke.texi (ftree-bit-ccp): Document.
+	* opts.c (decode_options): Enable bit-CCP at -O1.
+
 2010-08-06  Alan Modra  <amodra@gmail.com>
 
 	* doc/invoke.texi (RS/6000 and PowerPC Options): Rewrite -mrelocatable

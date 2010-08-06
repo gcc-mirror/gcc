@@ -1,3 +1,14 @@
+2010-08-06  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-dce-3.c: XFAIL.
+	* gcc.dg/tree-ssa/pr23744.c: Disable CCP.
+	* gcc.dg/tree-ssa/pr25382.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ccp-30.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-ccp-31.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ccp-32.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ccp-33.c: Likewise.
+	* gcc.c-torture/execute/20100805-1.c: Likewise.
+
 2010-08-05  Martin Jambor  <mjambor@suse.cz>
 
 	PR testsuite/42855
