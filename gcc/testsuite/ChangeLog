@@ -1,5 +1,10 @@
 2010-08-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/45159
+	* gfortran.dg/dependency_31.f90:  New test.
+
+2010-08-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	* gfortran.dg/dependency_30.f90:  Fix incorrect dg-do line.
 
 2010-08-06  Jason Merrill  <jason@redhat.com>

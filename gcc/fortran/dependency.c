@@ -1196,13 +1196,33 @@ check_section_vs_section (gfc_array_ref *l_ar, gfc_array_ref *r_ar, int n)
 	return GFC_DEP_FORWARD;
     }
 
-  /* Check for backward dependencies:
-     Are the strides the same?.  */
+
+  /*  Are the strides the same?  */
   if ((!l_stride && !r_stride)
 	||
       (l_stride && r_stride
 	&& gfc_dep_compare_expr (l_stride, r_stride) == 0))
     {
+
+      if (l_start && IS_ARRAY_EXPLICIT (l_ar->as))
+	{
+
+	  /* Check for a(low:y:s) vs. a(z:a:s) where a has a lower bound
+	     of low, which is always at least a forward dependence.  */
+
+	  if (r_dir == 1
+	      && gfc_dep_compare_expr (l_start, l_ar->as->lower[n]) == 0)
+	    return GFC_DEP_FORWARD;
+
+	  /* Check for a(high:y:-s) vs. a(z:a:-s) where a has a higher bound
+	     of high, which is always at least a forward dependence.  */
+
+	  if (r_dir == -1
+	      && gfc_dep_compare_expr (l_start, l_ar->as->upper[n]) == 0)
+	    return GFC_DEP_FORWARD;
+	}
+
+      /* From here, check for backwards dependencies.  */
       /* x:y vs. x+1:z.  */
       if (l_dir == 1 && r_dir == 1
 	    && l_start && r_start
