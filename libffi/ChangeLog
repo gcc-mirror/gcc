@@ -36,6 +36,13 @@
 	* configure.ac: Ditto.
 	* configure: Rebuilt.
 
+2010-04-13  Dan Witte  <dwitte@mozilla.com>
+
+	* msvcc.sh: Build with -W3 instead of -Wall.
+	* src/powerpc/ffi_darwin.c: Remove build warnings.
+	* src/x86/ffi.c: Ditto.
+	* src/x86/ffitarget.h: Ditto.
+
 2010-04-12  Dan Witte  <dwitte@mozilla.com>
 	    Walter Meinl <wuno@lsvw.de>
 
