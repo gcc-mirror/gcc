@@ -1281,6 +1281,10 @@ ftree-ccp
 Common Report Var(flag_tree_ccp) Optimization
 Enable SSA-CCP optimization on trees
 
+ftree-bit-ccp
+Common Report Var(flag_tree_bit_ccp) Optimization
+Enable SSA-BIT-CCP optimization on trees
+
 ftree-store-ccp
 Common
 Does nothing.  Preserved for backward compatibility.

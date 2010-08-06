@@ -380,7 +380,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsel-sched-pipelining -fsel-sched-pipelining-outer-loops @gol
 -fsignaling-nans -fsingle-precision-constant -fsplit-ivs-in-unroller @gol
 -fsplit-wide-types -fstack-protector -fstack-protector-all @gol
--fstrict-aliasing -fstrict-overflow -fthread-jumps -ftracer @gol
+-fstrict-aliasing -fstrict-overflow -fthread-jumps -ftracer -ftree-bit-ccp @gol
 -ftree-builtin-call-dce -ftree-ccp -ftree-ch -ftree-copy-prop @gol
 -ftree-copyrename -ftree-dce -ftree-dominator-opts -ftree-dse @gol
 -ftree-forwprop -ftree-fre -ftree-loop-if-convert -ftree-loop-im @gol
@@ -5848,6 +5848,7 @@ compilation time.
 -fipa-reference @gol
 -fmerge-constants
 -fsplit-wide-types @gol
+-ftree-bit-ccp @gol
 -ftree-builtin-call-dce @gol
 -ftree-ccp @gol
 -ftree-ch @gol
@@ -6736,6 +6737,13 @@ Transposing is enabled only if profiling information is available.
 @opindex ftree-sink
 Perform forward store motion  on trees.  This flag is
 enabled by default at @option{-O} and higher.
+
+@item -ftree-bit-ccp
+@opindex ftree-bit-ccp
+Perform sparse conditional bit constant propagation on trees and propagate
+pointer alignment information.
+This pass only operates on local scalar variables and is enabled by default
+at @option{-O} and higher.  It requires that @option{-ftree-ccp} is enabled.
 
 @item -ftree-ccp
 @opindex ftree-ccp

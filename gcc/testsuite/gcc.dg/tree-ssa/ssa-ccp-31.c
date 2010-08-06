@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-tree-ccp -fdump-tree-vrp1" } */
+/* { dg-options "-O -fdump-tree-ccp1" } */
 
 int g (int i, int j)
 {
@@ -15,5 +15,5 @@ int g (int i, int j)
     return 1;
 }
 
-/* { dg-final { scan-tree-dump-times "Folding predicate.*to 1" 1 "vrp1" } } */
-/* { dg-final { cleanup-tree-dump "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "Folding predicate.*to 1" 1 "ccp1" } } */
+/* { dg-final { cleanup-tree-dump "ccp1" } } */

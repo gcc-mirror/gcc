@@ -767,6 +767,7 @@ decode_options (unsigned int argc, const char **argv,
   flag_merge_constants = opt1;
   flag_split_wide_types = opt1;
   flag_tree_ccp = opt1;
+  flag_tree_bit_ccp = opt1;
   flag_tree_dce = opt1;
   flag_tree_dom = opt1;
   flag_tree_dse = opt1;
