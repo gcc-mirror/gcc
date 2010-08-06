@@ -39,6 +39,11 @@
 	* libffi/src/x86/unix64.S (.eh_frame)
 	[HAVE_AS_X86_64_UNWIND_SECTION_TYPE]: Use @unwind section type.
 
+2010-03-14  Matthias Klose  <doko@ubuntu.com>
+
+	* src/x86/ffi64.c: Fix typo in comment.
+	* src/x86/ffi.c: Use /* ... */ comment style.
+
 2010-02-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/libffi.texi (The Closure API): Fix typo.
