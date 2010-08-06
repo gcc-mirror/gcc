@@ -1468,7 +1468,7 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 
   /* The code for conversions from class type is currently only used for
      delete expressions.  Other expressions are handled by build_new_op.  */
-  if (!complete_type_or_else (basetype, expr))
+  if (!complete_type_or_maybe_complain (basetype, expr, complain))
     return error_mark_node;
   if (!TYPE_HAS_CONVERSION (basetype))
     return NULL_TREE;

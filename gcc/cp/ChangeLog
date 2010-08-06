@@ -1,5 +1,26 @@
 2010-08-06  Jason Merrill  <jason@redhat.com>
 
+	* typeck.c (complete_type_or_maybe_complain): Split out from...
+	(complete_type_or_else): Here.
+	(build_class_member_access_expr): Call it.
+	(finish_class_member_access_expr): Likewise.
+	* call.c (build_special_member_call): Likewise.
+	* cvt.c (build_expr_type_conversion): Likewise.
+	* init.c (build_new): Likewise.
+	* typeck2.c (build_functional_cast): Likewise.
+	* cp-tree.h: Declare it.
+
+	* init.c (build_value_init): Add complain parm.
+	(build_value_init_noctor): Likewise.
+	(perform_member_init): Pass it.
+	(expand_aggr_init_1): Likewise.
+	(build_new_1): Likewise.
+	(build_vec_init): Likewise.
+	* pt.c (tsubst_expr): Likewise.
+	* typeck2.c (build_functional_cast): Likewise.
+	* cp-tree.h: Adjust.
+	* tree.c (build_target_expr_with_type): Handle error_mark_node.
+
 	* typeck.c (decay_conversion): Any expression with type nullptr_t
 	decays to nullptr.
 

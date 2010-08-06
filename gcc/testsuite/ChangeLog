@@ -1,3 +1,8 @@
+2010-08-06  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/sfinae3.C: New.
+	* g++.dg/cpp0x/sfinae4.C: New.
+
 2010-08-06  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-dce-3.c: XFAIL.
