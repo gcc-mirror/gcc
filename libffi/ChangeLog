@@ -36,6 +36,15 @@
 	* configure.ac: Ditto.
 	* configure: Rebuilt.
 
+2010-04-12  Dan Witte  <dwitte@mozilla.com>
+	    Walter Meinl <wuno@lsvw.de>
+
+	* configure.ac: Add OS/2 support.
+	* configure: Rebuilt.
+	* src/closures.c: Ditto.
+	* src/dlmalloc.c: Ditto.
+	* src/x86/win32.S: Ditto.
+
 2010-04-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* regex.c (byte_re_match_2_internal): Avoid set but not used
