@@ -24,10 +24,10 @@
 
 2010-08-02  Uros Bizjak  <ubizjak@gmail.com>
 
-        * lib/gcc-dg.exp (cleanup-coverage-files): Remove options from
-        test name.
-        (cleanup-repo-files): Ditto.
-        (cleanup-saved-temps): Ditto.
+	* lib/gcc-dg.exp (cleanup-coverage-files): Remove options from
+	test name.
+	(cleanup-repo-files): Ditto.
+	(cleanup-saved-temps): Ditto.
 
 2010-07-31  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
@@ -515,15 +515,15 @@
 	Backport from mainline
 	2010-05-17  Martin Jambor  <mjambor@suse.cz>
 
-        PR middle-end/44133
-        * gcc.dg/tree-ssa/pr44133.c: New test.
+	PR middle-end/44133
+	* gcc.dg/tree-ssa/pr44133.c: New test.
 
 2010-06-29  Martin Jambor  <mjambor@suse.cz>
 
 	Backport from mainline
 	2010-04-13  Martin Jambor  <mjambor@suse.cz>
 
-        * gcc.dg/tree-ssa/sra-9.c: New test.
+	* gcc.dg/tree-ssa/sra-9.c: New test.
 
 2010-06-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
