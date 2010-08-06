@@ -1,3 +1,8 @@
+2010-08-06  Jason Merrill  <jason@redhat.com>
+
+	* typeck.c (decay_conversion): Any expression with type nullptr_t
+	decays to nullptr.
+
 2010-07-30  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR c++/45112

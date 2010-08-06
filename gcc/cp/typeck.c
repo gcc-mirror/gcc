@@ -1920,6 +1920,9 @@ decay_conversion (tree exp)
   if (error_operand_p (exp))
     return error_mark_node;
 
+  if (NULLPTR_TYPE_P (type))
+    return nullptr_node;
+
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
      Leave such NOP_EXPRs, since RHS is being used in non-lvalue context.  */
   code = TREE_CODE (type);
