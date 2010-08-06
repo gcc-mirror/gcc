@@ -2,6 +2,13 @@
 
 	* src/closures.c (selinux_enabled_check): Fix strncmp usage bug.
 
+2010-07-07  Dan Horák <dan@danny.cz>
+
+	* include/ffi.h.in: Protect #define with #ifndef.
+	* src/powerpc/ffitarget.h: Ditto.
+	* src/s390/ffitarget.h: Ditto.
+	* src/sparc/ffitarget.h: Ditto.
+
 2010-07-07   Neil Roberts <neil@linux.intel.com>
 
 	* src/x86/sysv.S (ffi_call_SYSV): Align the stack pointer to

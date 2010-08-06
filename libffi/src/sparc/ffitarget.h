@@ -30,7 +30,9 @@
 /* ---- System specific configurations ----------------------------------- */
 
 #if defined(__arch64__) || defined(__sparcv9)
+#ifndef SPARC64
 #define SPARC64
+#endif
 #endif
 
 #ifndef LIBFFI_ASM
