@@ -233,23 +233,30 @@ namespace std
     struct ratio_not_equal
     : integral_constant<bool, !ratio_equal<_R1, _R2>::value>
     { };
-  
-  template<typename _R1, typename _R2>
-    struct __ratio_less_simple_impl
-    : integral_constant<bool,
-			(__safe_multiply<_R1::num, _R2::den>::value
-			 < __safe_multiply<_R2::num, _R1::den>::value)>
-    { };
 
-  // If the denominators are equal or the signs differ, we can just compare
-  // numerators, otherwise fallback to the simple cross-multiply method.
-  template<typename _R1, typename _R2>
-    struct __ratio_less_impl
-    : conditional<(_R1::den == _R2::den
+  template<typename _R1>
+    struct __ratio_less_impl_1
+    : integral_constant<bool, _R1::num < _R1::den>
+    { }; 
+
+  template<typename _R1, typename _R2,
+	   bool = (_R1::num == 0 || _R2::num == 0
 		   || (__static_sign<_R1::num>::value
 		       != __static_sign<_R2::num>::value)),
-      integral_constant<bool, (_R1::num < _R2::num)>,
-      __ratio_less_simple_impl<_R1, _R2>>::type
+	   bool = (__static_sign<_R1::num>::value == -1
+		   && __static_sign<_R2::num>::value == -1)>
+    struct __ratio_less_impl
+    : __ratio_less_impl_1<typename ratio_divide<_R1, _R2>::type>::type
+    { };
+
+  template<typename _R1, typename _R2>
+    struct __ratio_less_impl<_R1, _R2, true, false>
+    : integral_constant<bool, _R1::num < _R2::num>
+    { };
+
+  template<typename _R1, typename _R2>
+    struct __ratio_less_impl<_R1, _R2, false, true>
+    : __ratio_less_impl_1<typename ratio_divide<_R2, _R1>::type>::type
     { };
 
   /// ratio_less

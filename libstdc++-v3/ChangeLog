@@ -1,3 +1,10 @@
+2010-08-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/ratio (ratio_less): Improve, use ratio_divide to avoid
+	more overflows.
+	* testsuite/20_util/ratio/comparisons/comp1.cc: Extend.
+	* testsuite/20_util/ratio/comparisons/comp2.cc: Likewise.
+
 2010-08-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1_impl/utility (begin, end): Remove per GB 85.
