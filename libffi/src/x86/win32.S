@@ -395,7 +395,9 @@ END
         # This assumes we are using gas.
         .balign 16
 	.globl	_ffi_call_win32
+#ifndef __OS2__
 	.def	_ffi_call_win32;	.scl	2;	.type	32;	.endef
+#endif
 _ffi_call_win32:
 .LFB1:
         pushl %ebp
@@ -547,7 +549,9 @@ _ffi_call_win32:
         # This assumes we are using gas.
         .balign 16
 	.globl	_ffi_closure_SYSV
+#ifndef __OS2__
 	.def	_ffi_closure_SYSV;	.scl	2;	.type	32;	.endef
+#endif
 _ffi_closure_SYSV:
 .LFB3:
 	pushl	%ebp
@@ -668,7 +672,9 @@ _ffi_closure_SYSV:
         # This assumes we are using gas.
         .balign 16
 	.globl	_ffi_closure_raw_SYSV
+#ifndef __OS2__
 	.def	_ffi_closure_raw_SYSV;	.scl	2;	.type	32;	.endef
+#endif
 _ffi_closure_raw_SYSV:
 .LFB4:
 	pushl	%ebp
@@ -784,7 +790,9 @@ _ffi_closure_raw_SYSV:
         # This assumes we are using gas.
 	.balign	16
 	.globl	_ffi_closure_STDCALL
+#ifndef __OS2__
 	.def	_ffi_closure_STDCALL;	.scl	2;	.type	32;	.endef
+#endif
 _ffi_closure_STDCALL:
 .LFB5:
 	pushl	%ebp
@@ -890,7 +898,9 @@ _ffi_closure_STDCALL:
 .ffi_closure_STDCALL_end:
 .LFE5:
 
+#ifndef __OS2__
 	.section	.eh_frame,"w"
+#endif
 .Lframe1:
 .LSCIE1:
 	.long	.LECIE1-.LASCIE1  /* Length of Common Information Entry */
