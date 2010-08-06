@@ -697,24 +697,6 @@ namespace std
   const _Swallow_assign ignore{};
 
   /**
-   *  @brief  Return the first of a tuple containing two input iterators.
-   *  @param  tpl  Tuple.
-   */
-  template<class _InputIterator>
-    inline _InputIterator
-    begin(const tuple<_InputIterator, _InputIterator>& __tpl)
-    { return get<0>(__tpl); }
-
-  /**
-   *  @brief  Return the second of a tuple containing two input iterators.
-   *  @param  tpl  Tuple.
-   */
-  template<class _InputIterator>
-    inline _InputIterator
-    end(const tuple<_InputIterator, _InputIterator>& __tpl)
-    { return get<1>(__tpl); }
-
-  /**
    * Stores a tuple of indices. Used by bind() to extract the elements
    * in a tuple. 
    */
