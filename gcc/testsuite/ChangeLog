@@ -1,3 +1,8 @@
+2010-08-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/45213
+	* gcc.target/i386/pr45213.c: New test.
+
 2010-08-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/45143
@@ -5,9 +10,9 @@
 
 2010-08-07  Marcus Shawcroft <marcus.shawcroft@arm.com>
 
-        * lib/target-supports.exp: (check_effective_target_sync_int_long):
-        Add arm*-*-linux-gnueabi.
-        (check_effective_target_sync_char_short): Likewise.
+	* lib/target-supports.exp (check_effective_target_sync_int_long):
+	Add arm*-*-linux-gnueabi.
+	(check_effective_target_sync_char_short): Likewise.
 
 2010-08-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
