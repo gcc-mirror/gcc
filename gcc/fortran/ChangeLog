@@ -1,3 +1,23 @@
+2010-08-07  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* interface.c (compare_actual_formal): Use XALLOCAVEC instead of
+	alloca.
+	(check_some_aliasing): Likewise.
+	* trans-intrinsic.c (gfc_conv_intrinsic_conversion): Likewise.
+	(gfc_conv_intrinsic_int): Likewise.
+	(gfc_conv_intrinsic_lib_function): Likewise.
+	(gfc_conv_intrinsic_cmplx): Likewise.
+	(gfc_conv_intrinsic_ctime): Likewise.
+	(gfc_conv_intrinsic_fdate): Likewise.
+	(gfc_conv_intrinsic_ttynam): Likewise.
+	(gfc_conv_intrinsic_minmax): Likewise.
+	(gfc_conv_intrinsic_minmax_char): Likewise.
+	(gfc_conv_intrinsic_ishftc): Likewise.
+	(gfc_conv_intrinsic_index_scan_verify): Likewise.
+	(gfc_conv_intrinsic_merge): Likewise.
+	(gfc_conv_intrinsic_trim): Likewise.
+	* trans.c (gfc_trans_runtime_error_vararg): Likewise.
+
 2010-08-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45159

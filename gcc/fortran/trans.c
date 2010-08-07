@@ -405,7 +405,7 @@ gfc_trans_runtime_error_vararg (bool error, locus* where, const char* msgid,
   gfc_free(message);
 
   /* Build the argument array.  */
-  argarray = (tree *) alloca (sizeof (tree) * (nargs + 2));
+  argarray = XALLOCAVEC (tree, nargs + 2);
   argarray[0] = arg;
   argarray[1] = arg2;
   for (i = 0; i < nargs; i++)
