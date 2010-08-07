@@ -35,28 +35,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stdbool.h>
 #include <stdlib.h>
 
-#define FARRAY_SIZE 64
-
-typedef struct fnode_array
-{
-  struct fnode_array *next;
-  fnode array[FARRAY_SIZE];
-}
-fnode_array;
-
-typedef struct format_data
-{
-  char *format_string, *string;
-  const char *error;
-  char error_element;
-  format_token saved_token;
-  int value, format_string_len, reversion_ok;
-  fnode *avail;
-  const fnode *saved_format;
-  fnode_array *last;
-  fnode_array array;
-}
-format_data;
 
 static const fnode colon_node = { FMT_COLON, 0, NULL, NULL, {{ 0, 0, 0 }}, 0,
 				  NULL };
@@ -612,13 +590,13 @@ format_lex (format_data *fmt)
  * parenthesis node which contains the rest of the list. */
 
 static fnode *
-parse_format_list (st_parameter_dt *dtp, bool *save_ok)
+parse_format_list (st_parameter_dt *dtp, bool *save_ok, bool *seen_dd)
 {
   fnode *head, *tail;
   format_token t, u, t2;
   int repeat;
   format_data *fmt = dtp->u.p.fmt;
-  bool saveit;
+  bool saveit, seen_data_desc = false;
 
   head = tail = NULL;
   saveit = *save_ok;
@@ -638,10 +616,14 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok)
 	}
       get_fnode (fmt, &head, &tail, FMT_LPAREN);
       tail->repeat = -2;  /* Signifies unlimited format.  */
-      tail->u.child = parse_format_list (dtp, &saveit);
+      tail->u.child = parse_format_list (dtp, &saveit, &seen_data_desc);
       if (fmt->error != NULL)
 	goto finished;
-
+      if (!seen_data_desc)
+	{
+	  fmt->error = "'*' requires at least one associated data descriptor";
+	  goto finished;
+	}
       goto between_desc;
 
     case FMT_POSINT:
@@ -653,7 +635,8 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok)
 	case FMT_LPAREN:
 	  get_fnode (fmt, &head, &tail, FMT_LPAREN);
 	  tail->repeat = repeat;
-	  tail->u.child = parse_format_list (dtp, &saveit);
+	  tail->u.child = parse_format_list (dtp, &saveit, &seen_data_desc);
+	  *seen_dd = seen_data_desc;
 	  if (fmt->error != NULL)
 	    goto finished;
 
@@ -680,7 +663,8 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok)
     case FMT_LPAREN:
       get_fnode (fmt, &head, &tail, FMT_LPAREN);
       tail->repeat = 1;
-      tail->u.child = parse_format_list (dtp, &saveit);
+      tail->u.child = parse_format_list (dtp, &saveit, &seen_data_desc);
+      *seen_dd = seen_data_desc;
       if (fmt->error != NULL)
 	goto finished;
 
@@ -821,6 +805,7 @@ parse_format_list (st_parameter_dt *dtp, bool *save_ok)
     case FMT_F:
     case FMT_G:
       repeat = 1;
+      *seen_dd = true;
       goto data_desc;
 
     case FMT_H:
@@ -1217,7 +1202,7 @@ void
 parse_format (st_parameter_dt *dtp)
 {
   format_data *fmt;
-  bool format_cache_ok;
+  bool format_cache_ok, seen_data_desc = false;
 
   /* Don't cache for internal units and set an arbitrary limit on the size of
      format strings we will cache.  (Avoids memory issues.)  */
@@ -1266,7 +1251,8 @@ parse_format (st_parameter_dt *dtp)
   fmt->avail++;
 
   if (format_lex (fmt) == FMT_LPAREN)
-    fmt->array.array[0].u.child = parse_format_list (dtp, &format_cache_ok);
+    fmt->array.array[0].u.child = parse_format_list (dtp, &format_cache_ok,
+						     &seen_data_desc);
   else
     fmt->error = "Missing initial left parenthesis in format";
 

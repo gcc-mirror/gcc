@@ -92,6 +92,32 @@ struct fnode
 };
 
 
+/* A storage structures for format node data.  */
+
+#define FARRAY_SIZE 64
+
+typedef struct fnode_array
+{
+  struct fnode_array *next;
+  fnode array[FARRAY_SIZE];
+}
+fnode_array;
+
+
+typedef struct format_data
+{
+  char *format_string, *string;
+  const char *error;
+  char error_element;
+  format_token saved_token;
+  int value, format_string_len, reversion_ok;
+  fnode *avail;
+  const fnode *saved_format;
+  fnode_array *last;
+  fnode_array array;
+}
+format_data;
+
 extern void parse_format (st_parameter_dt *);
 internal_proto(parse_format);
 
