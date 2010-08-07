@@ -1856,8 +1856,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	tree gnu_template_reference;
 	tree gnu_ptr_template = build_pointer_type (gnu_template_type);
 	tree gnu_fat_type = make_node (RECORD_TYPE);
-	tree *gnu_index_types = (tree *) alloca (ndim * sizeof (tree));
-	tree *gnu_temp_fields = (tree *) alloca (ndim * sizeof (tree));
+	tree *gnu_index_types = XALLOCAVEC (tree, ndim);
+	tree *gnu_temp_fields = XALLOCAVEC (tree, ndim);
 	tree gnu_max_size = size_one_node, gnu_max_size_unit, tem;
 	int index;
 
@@ -2127,7 +2127,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    = (Convention (gnat_entity) == Convention_Fortran);
 	  const int ndim = Number_Dimensions (gnat_entity);
 	  tree gnu_base_type = gnu_type;
-	  tree *gnu_index_types = (tree *) alloca (ndim * sizeof (tree));
+	  tree *gnu_index_types = XALLOCAVEC (tree, ndim);
 	  tree gnu_max_size = size_one_node, gnu_max_size_unit;
 	  bool need_index_type_struct = false;
 	  int index;
@@ -7161,7 +7161,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
       tree gnu_rep_type
 	= (gnu_field_list ? make_node (RECORD_TYPE) : gnu_record_type);
       int i, len = list_length (gnu_our_rep_list);
-      tree *gnu_arr = (tree *) alloca (sizeof (tree) * len);
+      tree *gnu_arr = XALLOCAVEC (tree, len);
 
       for (gnu_field = gnu_our_rep_list, i = 0;
 	   gnu_field;

@@ -2134,7 +2134,7 @@ max_size (tree exp, bool max_p)
 
 	  n = call_expr_nargs (exp);
 	  gcc_assert (n > 0);
-	  argarray = (tree *) alloca (n * sizeof (tree));
+	  argarray = XALLOCAVEC (tree, n);
 	  for (i = 0; i < n; i++)
 	    argarray[i] = max_size (CALL_EXPR_ARG (exp, i), max_p);
 	  return build_call_array (type, CALL_EXPR_FN (exp), n, argarray);
@@ -2317,7 +2317,7 @@ build_vms_descriptor32 (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
 	 ndim++, inner_type = TREE_TYPE (inner_type))
       ;
 
-  idx_arr = (tree *) alloca (ndim * sizeof (tree));
+  idx_arr = XALLOCAVEC (tree, ndim);
 
   if (mech != By_Descriptor_NCA && mech != By_Short_Descriptor_NCA
       && TREE_CODE (type) == ARRAY_TYPE && TYPE_CONVENTION_FORTRAN_P (type))
@@ -2631,7 +2631,7 @@ build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
 	 ndim++, inner_type = TREE_TYPE (inner_type))
       ;
 
-  idx_arr = (tree *) alloca (ndim * sizeof (tree));
+  idx_arr = XALLOCAVEC (tree, ndim);
 
   if (mech != By_Descriptor_NCA
       && TREE_CODE (type) == ARRAY_TYPE && TYPE_CONVENTION_FORTRAN_P (type))
