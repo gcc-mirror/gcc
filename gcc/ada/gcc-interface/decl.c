@@ -104,6 +104,14 @@ static struct incomplete *defer_limited_with;
 static int defer_finalize_level = 0;
 static VEC (tree,heap) *defer_finalize_list;
 
+typedef struct GTY(()) subst_pair_d {
+  tree discriminant;
+  tree replacement;
+} subst_pair;
+
+DEF_VEC_O(subst_pair);
+DEF_VEC_ALLOC_O(subst_pair,heap);
+
 /* A hash table used to cache the result of annotate_value.  */
 static GTY ((if_marked ("tree_int_map_marked_p"),
 	     param_is (struct tree_int_map))) htab_t annotate_value_cache;
@@ -141,19 +149,21 @@ static void components_to_record (tree, Node_Id, tree, int, bool, tree *,
 static Uint annotate_value (tree);
 static void annotate_rep (Entity_Id, tree);
 static tree build_position_list (tree, bool, tree, tree, unsigned int, tree);
-static tree build_subst_list (Entity_Id, Entity_Id, bool);
-static tree build_variant_list (tree, tree, tree);
+static VEC(subst_pair,heap) *build_subst_list (Entity_Id, Entity_Id, bool);
+static tree build_variant_list (tree, VEC(subst_pair,heap) *, tree);
 static tree validate_size (Uint, tree, Entity_Id, enum tree_code, bool, bool);
 static void set_rm_size (Uint, tree, Entity_Id);
 static tree make_type_from_size (tree, tree, bool);
 static unsigned int validate_alignment (Uint, Entity_Id, unsigned int);
 static unsigned int ceil_alignment (unsigned HOST_WIDE_INT);
 static void check_ok_for_atomic (tree, Entity_Id, bool);
-static tree create_field_decl_from (tree, tree, tree, tree, tree, tree);
+static tree create_field_decl_from (tree, tree, tree, tree, tree,
+				    VEC(subst_pair,heap) *);
 static tree get_rep_part (tree);
 static tree get_variant_part (tree);
-static tree create_variant_part_from (tree, tree, tree, tree, tree);
-static void copy_and_substitute_in_size (tree, tree, tree);
+static tree create_variant_part_from (tree, tree, tree, tree,
+				      VEC(subst_pair,heap) *);
+static void copy_and_substitute_in_size (tree, tree, VEC(subst_pair,heap) *);
 static void rest_of_type_decl_compilation_no_defer (tree);
 
 /* The relevant constituents of a subprogram binding to a GCC builtin.  Used
@@ -3032,7 +3042,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      && Present (Discriminant_Constraint (gnat_entity))
 	      && Stored_Constraint (gnat_entity) != No_Elist)
 	    {
-	      tree gnu_subst_list
+	      VEC(subst_pair,heap) *gnu_subst_list
 		= build_subst_list (gnat_entity, gnat_base_type, definition);
 	      tree gnu_unpad_base_type, gnu_rep_part, gnu_variant_part, t;
 	      tree gnu_variant_list, gnu_pos_list, gnu_field_list = NULL_TREE;
@@ -3308,6 +3318,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 					 false, false, false, false, NULL,
 					 gnat_entity);
 		}
+
+	      VEC_free (subst_pair, heap, gnu_subst_list);
 
 	      /* Now we can finalize it.  */
 	      rest_of_record_type_compilation (gnu_type);
@@ -7500,17 +7512,16 @@ build_position_list (tree gnu_type, bool do_not_flatten_variant, tree gnu_pos,
   return gnu_list;
 }
 
-/* Return a TREE_LIST describing the substitutions needed to reflect the
+/* Return a VEC describing the substitutions needed to reflect the
    discriminant substitutions from GNAT_TYPE to GNAT_SUBTYPE.  They can
-   be in any order.  TREE_PURPOSE gives the tree for the discriminant and
-   TREE_VALUE is the replacement value.  They are in the form of operands
-   to SUBSTITUTE_IN_EXPR.  DEFINITION is true if this is for a definition
-   of GNAT_SUBTYPE.  */
+   be in any order.  The values in an element of the VEC are in the form
+   of operands to SUBSTITUTE_IN_EXPR.  DEFINITION is true if this is for
+   a definition of GNAT_SUBTYPE.  */
 
-static tree
+static VEC(subst_pair,heap) *
 build_subst_list (Entity_Id gnat_subtype, Entity_Id gnat_type, bool definition)
 {
-  tree gnu_list = NULL_TREE;
+  VEC(subst_pair,heap) *gnu_vec = NULL;
   Entity_Id gnat_discrim;
   Node_Id gnat_value;
 
@@ -7523,16 +7534,17 @@ build_subst_list (Entity_Id gnat_subtype, Entity_Id gnat_type, bool definition)
     if (!Is_Access_Type (Etype (Node (gnat_value))))
       {
 	tree gnu_field = gnat_to_gnu_field_decl (gnat_discrim);
-	gnu_list = tree_cons (gnu_field,
-			      convert (TREE_TYPE (gnu_field),
-				       elaborate_expression
-				       (Node (gnat_value), gnat_subtype,
-					get_entity_name (gnat_discrim),
-					definition, true, false)),
-			      gnu_list);
+	tree replacement = convert (TREE_TYPE (gnu_field),
+				    elaborate_expression
+				    (Node (gnat_value), gnat_subtype,
+				     get_entity_name (gnat_discrim),
+				     definition, true, false));
+	subst_pair *s = VEC_safe_push (subst_pair, heap, gnu_vec, NULL);
+	s->discriminant = gnu_field;
+	s->replacement = replacement;
       }
 
-  return gnu_list;
+  return gnu_vec;
 }
 
 /* Scan all fields in QUAL_UNION_TYPE and return a TREE_LIST describing the
@@ -7543,7 +7555,8 @@ build_subst_list (Entity_Id gnat_subtype, Entity_Id gnat_type, bool definition)
    list to be chained to the newly created entries.  */
 
 static tree
-build_variant_list (tree qual_union_type, tree subst_list, tree gnu_list)
+build_variant_list (tree qual_union_type, VEC(subst_pair,heap) *subst_list,
+		    tree gnu_list)
 {
   tree gnu_field;
 
@@ -7551,10 +7564,12 @@ build_variant_list (tree qual_union_type, tree subst_list, tree gnu_list)
        gnu_field;
        gnu_field = DECL_CHAIN (gnu_field))
     {
-      tree t, qual = DECL_QUALIFIER (gnu_field);
+      tree qual = DECL_QUALIFIER (gnu_field);
+      unsigned ix;
+      subst_pair *s;
 
-      for (t = subst_list; t; t = TREE_CHAIN (t))
-	qual = SUBSTITUTE_IN_EXPR (qual, TREE_PURPOSE (t), TREE_VALUE (t));
+      FOR_EACH_VEC_ELT_REVERSE (subst_pair, subst_list, ix, s)
+	qual = SUBSTITUTE_IN_EXPR (qual, s->discriminant, s->replacement);
 
       /* If the new qualifier is not unconditionally false, its variant may
 	 still be accessed.  */
@@ -8217,16 +8232,19 @@ intrin_profiles_compatible_p (intrin_binding_t * inb)
 
 static tree
 create_field_decl_from (tree old_field, tree field_type, tree record_type,
-			tree size, tree pos_list, tree subst_list)
+			tree size, tree pos_list,
+			VEC(subst_pair,heap) *subst_list)
 {
   tree t = TREE_VALUE (purpose_member (old_field, pos_list));
   tree pos = TREE_VEC_ELT (t, 0), bitpos = TREE_VEC_ELT (t, 2);
   unsigned int offset_align = tree_low_cst (TREE_VEC_ELT (t, 1), 1);
   tree new_pos, new_field;
+  unsigned ix;
+  subst_pair *s;
 
   if (CONTAINS_PLACEHOLDER_P (pos))
-    for (t = subst_list; t; t = TREE_CHAIN (t))
-      pos = SUBSTITUTE_IN_EXPR (pos, TREE_PURPOSE (t), TREE_VALUE (t));
+    FOR_EACH_VEC_ELT_REVERSE (subst_pair, subst_list, ix, s)
+      pos = SUBSTITUTE_IN_EXPR (pos, s->discriminant, s->replacement);
 
   /* If the position is now a constant, we can set it as the position of the
      field when we make it.  Otherwise, we need to deal with it specially.  */
@@ -8302,7 +8320,8 @@ get_variant_part (tree record_type)
 
 static tree
 create_variant_part_from (tree old_variant_part, tree variant_list,
-			  tree record_type, tree pos_list, tree subst_list)
+			  tree record_type, tree pos_list,
+			  VEC(subst_pair,heap) *subst_list)
 {
   tree offset = DECL_FIELD_OFFSET (old_variant_part);
   tree old_union_type = TREE_TYPE (old_variant_part);
@@ -8415,9 +8434,11 @@ create_variant_part_from (tree old_variant_part, tree variant_list,
    in SUBST_LIST.  */
 
 static void
-copy_and_substitute_in_size (tree new_type, tree old_type, tree subst_list)
+copy_and_substitute_in_size (tree new_type, tree old_type,
+			     VEC(subst_pair,heap) *subst_list)
 {
-  tree t;
+  unsigned ix;
+  subst_pair *s;
 
   TYPE_SIZE (new_type) = TYPE_SIZE (old_type);
   TYPE_SIZE_UNIT (new_type) = TYPE_SIZE_UNIT (old_type);
@@ -8426,25 +8447,22 @@ copy_and_substitute_in_size (tree new_type, tree old_type, tree subst_list)
   relate_alias_sets (new_type, old_type, ALIAS_SET_COPY);
 
   if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (new_type)))
-    for (t = subst_list; t; t = TREE_CHAIN (t))
+    FOR_EACH_VEC_ELT_REVERSE (subst_pair, subst_list, ix, s)
       TYPE_SIZE (new_type)
 	= SUBSTITUTE_IN_EXPR (TYPE_SIZE (new_type),
-			      TREE_PURPOSE (t),
-			      TREE_VALUE (t));
+			      s->discriminant, s->replacement);
 
   if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE_UNIT (new_type)))
-    for (t = subst_list; t; t = TREE_CHAIN (t))
+    FOR_EACH_VEC_ELT_REVERSE (subst_pair, subst_list, ix, s)
       TYPE_SIZE_UNIT (new_type)
 	= SUBSTITUTE_IN_EXPR (TYPE_SIZE_UNIT (new_type),
-			      TREE_PURPOSE (t),
-			      TREE_VALUE (t));
+			      s->discriminant, s->replacement);
 
   if (CONTAINS_PLACEHOLDER_P (TYPE_ADA_SIZE (new_type)))
-    for (t = subst_list; t; t = TREE_CHAIN (t))
+    FOR_EACH_VEC_ELT_REVERSE (subst_pair, subst_list, ix, s)
       SET_TYPE_ADA_SIZE
 	(new_type, SUBSTITUTE_IN_EXPR (TYPE_ADA_SIZE (new_type),
-				       TREE_PURPOSE (t),
-				       TREE_VALUE (t)));
+				       s->discriminant, s->replacement));
 
   /* Finalize the size.  */
   TYPE_SIZE (new_type) = variable_size (TYPE_SIZE (new_type));
