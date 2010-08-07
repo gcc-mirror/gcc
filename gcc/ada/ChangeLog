@@ -1,3 +1,15 @@
+2010-08-07  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc-interface/decl.c (subst_pair): Declare.  Declare a VEC of it.
+	(build_subst_list): Return a VEC instead of a tree.
+	(build_variant_list): Take a VEC for subst_list.  Adjust
+	accordingly.
+	(create_field_decl_from): Likewise.
+	(create_variant_part_from): Likewise.
+	(copy_and_substitute_in_size): Likewise.
+	(gnat_to_gnu_entity): Adjust for new interface to build_subst_list.
+	Free the built vector.
+
 2010-08-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Do not build an
