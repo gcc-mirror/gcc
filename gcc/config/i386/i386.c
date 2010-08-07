@@ -12921,7 +12921,11 @@ ix86_print_operand (FILE *file, rtx x, int code)
 
       if (ASSEMBLER_DIALECT == ASM_ATT)
 	putc ('$', file);
-      fprintf (file, "0x%08lx", (long unsigned int) l);
+      /* Sign extend 32bit SFmode immediate to 8 bytes.  */
+      if (code == 'q')
+	fprintf (file, "0x%08llx", (unsigned long long) (int) l);
+      else
+	fprintf (file, "0x%08x", (unsigned int) l);
     }
 
   /* These float cases don't actually occur as immediate operands.  */
