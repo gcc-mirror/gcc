@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "../../libcpp/internal.h"
 #include "cpp.h"
 #include "incpath.h"
+#include "mkdeps.h"
 
 #ifndef TARGET_OS_CPP_BUILTINS
 # define TARGET_OS_CPP_BUILTINS()
@@ -84,6 +85,12 @@ struct gfc_cpp_option_data
   int no_predefined;                    /* -undef */
   int standard_include_paths;           /* -nostdinc */
   int verbose;                          /* -v */
+  int deps;                             /* -M */
+  int deps_skip_system;                 /* -MM */
+  const char *deps_filename;            /* -M[M]D */
+  const char *deps_filename_user;       /* -MF <arg> */
+  int deps_missing_are_generated;       /* -MG */
+  int deps_phony;                       /* -MP */
 
   const char *multilib;                 /* -imultilib <dir>  */
   const char *prefix;                   /* -iprefix <dir>  */
@@ -270,6 +277,26 @@ gfc_cpp_preprocess_only (void)
   return gfc_cpp_option.preprocess_only;
 }
 
+bool
+gfc_cpp_makedep (void)
+{
+  return gfc_cpp_option.deps;
+}
+
+void
+gfc_cpp_add_dep (const char *name, bool system)
+{
+  if (!gfc_cpp_option.deps_skip_system || !system)
+    deps_add_dep (cpp_get_deps (cpp_in), name);
+}
+
+void
+gfc_cpp_add_target (const char *name)
+{
+  deps_add_target (cpp_get_deps (cpp_in), name, 0);
+}
+
+
 const char *
 gfc_cpp_temporary_file (void)
 {
@@ -299,6 +326,12 @@ gfc_cpp_init_options (unsigned int argc,
   gfc_cpp_option.no_predefined = 0;
   gfc_cpp_option.standard_include_paths = 1;
   gfc_cpp_option.verbose = 0;
+  gfc_cpp_option.deps = 0;
+  gfc_cpp_option.deps_skip_system = 0;
+  gfc_cpp_option.deps_phony = 0;
+  gfc_cpp_option.deps_missing_are_generated = 0;
+  gfc_cpp_option.deps_filename = NULL;
+  gfc_cpp_option.deps_filename_user = NULL;
 
   gfc_cpp_option.multilib = NULL;
   gfc_cpp_option.prefix = NULL;
@@ -414,6 +447,43 @@ gfc_cpp_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED
       gfc_cpp_option.print_include_names = 1;
       break;
 
+    case OPT_MM:
+      gfc_cpp_option.deps_skip_system = 1;
+      /* fall through */
+
+    case OPT_M:
+      gfc_cpp_option.deps = 1;
+      break;
+
+    case OPT_MMD:
+      gfc_cpp_option.deps_skip_system = 1;
+      /* fall through */
+
+    case OPT_MD:
+      gfc_cpp_option.deps = 1;
+      gfc_cpp_option.deps_filename = arg;
+      break;
+
+    case OPT_MF:
+      /* If specified multiple times, last one wins.  */
+      gfc_cpp_option.deps_filename_user = arg;
+      break;
+
+    case OPT_MG:
+      gfc_cpp_option.deps_missing_are_generated = 1;
+      break;
+
+    case OPT_MP:
+      gfc_cpp_option.deps_phony = 1;
+      break;
+
+    case OPT_MQ:
+    case OPT_MT:
+      gfc_cpp_option.deferred_opt[gfc_cpp_option.deferred_opt_count].code = code;
+      gfc_cpp_option.deferred_opt[gfc_cpp_option.deferred_opt_count].arg = arg;
+      gfc_cpp_option.deferred_opt_count++;
+      break;
+
     case OPT_P:
       gfc_cpp_option.no_line_commands = 1;
       break;
@@ -430,16 +500,17 @@ gfc_cpp_post_options (void)
      an error.  */
   if (!gfc_cpp_enabled ()
       && (gfc_cpp_preprocess_only ()
-          || !gfc_cpp_option.discard_comments
-          || !gfc_cpp_option.discard_comments_in_macro_exp
-          || gfc_cpp_option.print_include_names
-          || gfc_cpp_option.no_line_commands
-          || gfc_cpp_option.dump_macros
-          || gfc_cpp_option.dump_includes))
+	  || gfc_cpp_makedep ()
+	  || !gfc_cpp_option.discard_comments
+	  || !gfc_cpp_option.discard_comments_in_macro_exp
+	  || gfc_cpp_option.print_include_names
+	  || gfc_cpp_option.no_line_commands
+	  || gfc_cpp_option.dump_macros
+	  || gfc_cpp_option.dump_includes))
     gfc_fatal_error("To enable preprocessing, use -cpp");
 
   cpp_in = cpp_create_reader (CLK_GNUC89, NULL, line_table);
-  if (!gfc_cpp_enabled())
+  if (!gfc_cpp_enabled ())
     return;
 
   gcc_assert (cpp_in);
@@ -461,6 +532,17 @@ gfc_cpp_post_options (void)
   cpp_option->discard_comments_in_macro_exp = gfc_cpp_option.discard_comments_in_macro_exp;
   cpp_option->print_include_names = gfc_cpp_option.print_include_names;
   cpp_option->preprocessed = gfc_option.flag_preprocessed;
+
+  if (gfc_cpp_makedep ())
+    {
+      cpp_option->deps.style = DEPS_USER;
+      cpp_option->deps.phony_targets = gfc_cpp_option.deps_phony;
+      cpp_option->deps.missing_files = gfc_cpp_option.deps_missing_are_generated;
+
+      /* -MF <arg> overrides -M[M]D.  */
+      if (gfc_cpp_option.deps_filename_user)
+	gfc_cpp_option.deps_filename = gfc_cpp_option.deps_filename_user;
+  }
 
   if (gfc_cpp_option.working_directory == -1)
     gfc_cpp_option.working_directory = (debug_info_level != DINFO_LEVEL_NONE);
@@ -571,6 +653,9 @@ gfc_cpp_init (void)
 	  else
 	    cpp_assert (cpp_in, opt->arg);
 	}
+      else if (opt->code == OPT_MT || opt->code == OPT_MQ)
+	deps_add_target (cpp_get_deps (cpp_in),
+			 opt->arg, opt->code == OPT_MQ);
     }
 
   if (gfc_cpp_option.working_directory
@@ -614,14 +699,27 @@ gfc_cpp_done (void)
   if (!gfc_cpp_enabled ())
     return;
 
-  /* TODO: if dependency tracking was enabled, call
-     cpp_finish() here to write dependencies.
-
-     Use cpp_get_deps() to access the current source's
-     dependencies during parsing. Add dependencies using
-     the mkdeps-interface (defined in libcpp).  */
-
   gcc_assert (cpp_in);
+
+  if (gfc_cpp_makedep ())
+    {
+      if (gfc_cpp_option.deps_filename)
+	{
+	  FILE *f = fopen (gfc_cpp_option.deps_filename, "w");
+	  if (f)
+	    {
+	      cpp_finish (cpp_in, f);
+	      fclose (f);
+	    }
+	  else
+	    gfc_fatal_error ("opening output file %s: %s",
+			     gfc_cpp_option.deps_filename,
+			     xstrerror (errno));
+	}
+      else
+	cpp_finish (cpp_in, stdout);
+    }
+
   cpp_undef_all (cpp_in);
   cpp_clear_file_cache (cpp_in);
 }
