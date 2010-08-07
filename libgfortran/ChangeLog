@@ -1,3 +1,12 @@
+2010-08-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/45143
+	* io/format.c: Remove fnode storage structure definitions, moving these
+	to format.h. (parse_format_list): Add check for data descriptors,
+	taking care of nested formats. Adjust calling parameters to pass a
+	check flag. (parse_format): Likewise.
+	* io/format.h: Add structures moved from format.c.
+	
 2010-08-02  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* io/unit.c (update_position): Don't update the position flag for
