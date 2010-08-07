@@ -1,3 +1,16 @@
+2010-08-07  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+        * config/arm/cortex-a9.md: Rewrite VFP Pipeline description.
+        * config/arm/arm.c (arm_xscale_tune): Initialize sched_adjust_cost.
+         (arm_fastmul_tune,arm_slowmul_tune, arm_9e_tune): Likewise.
+         (arm_adjust_cost): Split into xscale_sched_adjust_cost and a
+         generic part.
+         (cortex_a9_sched_adjust_cost): New function.
+         (xscale_sched_adjust_cost): New function.
+        * config/arm/arm-protos.h (struct tune_params): New field
+        sched_adjust_cost.
+        * config/arm/arm-cores.def: Adjust costs for cortex-a9.
+
 2010-08-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/44942

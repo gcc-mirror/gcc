@@ -216,6 +216,7 @@ extern void arm_order_regs_for_local_alloc (void);
 struct tune_params
 {
   bool (*rtx_costs) (rtx, RTX_CODE, RTX_CODE, int *, bool);
+  bool (*sched_adjust_cost) (rtx, rtx, rtx, int *);
   int constant_limit;
 };
 
