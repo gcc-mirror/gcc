@@ -1,3 +1,14 @@
+2010-08-07  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/arm/linux-atomic.c (SUBWORD_VAL_CAS): Instantiate with
+	'unsigned short' and 'unsigned char' instead of 'short' and 'char'.
+	(SUBWORD_BOOL_CAS): Likewise.
+	(SUBWORD_SYNC_OP): Likewise.
+	(SUBWORD_TEST_AND_SET): Likewise.
+	(FETCH_AND_OP_WORD): Parenthesise INF_OP
+	(SUBWORD_SYNC_OP): Likewise.
+	(OP_AND_FETCH_WORD): Likewise.
+
 2010-08-07  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
         * config/arm/cortex-a9.md: Rewrite VFP Pipeline description.

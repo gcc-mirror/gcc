@@ -1,3 +1,9 @@
+2010-08-07  Marcus Shawcroft <marcus.shawcroft@arm.com>
+
+        * lib/target-supports.exp: (check_effective_target_sync_int_long):
+        Add arm*-*-linux-gnueabi.
+        (check_effective_target_sync_char_short): Likewise.
+
 2010-08-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45159
