@@ -6176,6 +6176,22 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
     }
 }
 
+/* Allocate and initialize a c_arg_info structure from the parser's
+   obstack.  */
+
+struct c_arg_info *
+build_arg_info (void)
+{
+  struct c_arg_info *ret = XOBNEW (&parser_obstack, struct c_arg_info);
+  ret->parms = NULL_TREE;
+  ret->tags = NULL;
+  ret->types = NULL_TREE;
+  ret->others = NULL_TREE;
+  ret->pending_sizes = NULL;
+  ret->had_vla_unspec = 0;
+  return ret;
+}
+
 /* Take apart the current scope and return a c_arg_info structure with
    info on a parameter list just parsed.
 
@@ -6188,8 +6204,8 @@ struct c_arg_info *
 get_parm_info (bool ellipsis)
 {
   struct c_binding *b = current_scope->bindings;
-  struct c_arg_info *arg_info = XOBNEW (&parser_obstack,
-					struct c_arg_info);
+  struct c_arg_info *arg_info = build_arg_info ();
+
   tree parms    = 0;
   VEC(c_arg_tag,gc) *tags = NULL;
   tree types    = 0;
@@ -6198,11 +6214,6 @@ get_parm_info (bool ellipsis)
   static bool explained_incomplete_types = false;
   bool gave_void_only_once_err = false;
 
-  arg_info->parms = 0;
-  arg_info->tags = 0;
-  arg_info->types = 0;
-  arg_info->others = 0;
-  arg_info->pending_sizes = 0;
   arg_info->had_vla_unspec = current_scope->had_vla_unspec;
 
   /* The bindings in this scope must not get put into a block.

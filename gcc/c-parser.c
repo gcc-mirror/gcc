@@ -194,7 +194,6 @@ typedef struct GTY(()) c_parser {
 
 static GTY (()) c_parser *the_parser;
 
-
 /* Read in and lex a single token, storing it in *TOKEN.  */
 
 static void
@@ -2672,13 +2671,8 @@ c_parser_parms_declarator (c_parser *parser, bool id_list_ok, tree attrs)
 	}
       if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
 	{
-	  struct c_arg_info *ret = XOBNEW (&parser_obstack, struct c_arg_info);
-	  ret->parms = 0;
-	  ret->tags = 0;
+	  struct c_arg_info *ret = build_arg_info ();
 	  ret->types = list;
-	  ret->others = 0;
-	  ret->pending_sizes = 0;
-	  ret->had_vla_unspec = 0;
 	  c_parser_consume_token (parser);
 	  pop_scope ();
 	  return ret;
@@ -2715,24 +2709,13 @@ c_parser_parms_list_declarator (c_parser *parser, tree attrs)
      declarations.  */
   if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
     {
-      struct c_arg_info *ret = XOBNEW (&parser_obstack, struct c_arg_info);
-      ret->parms = 0;
-      ret->tags = 0;
-      ret->types = 0;
-      ret->others = 0;
-      ret->pending_sizes = 0;
-      ret->had_vla_unspec = 0;
+      struct c_arg_info *ret = build_arg_info ();
       c_parser_consume_token (parser);
       return ret;
     }
   if (c_parser_next_token_is (parser, CPP_ELLIPSIS))
     {
-      struct c_arg_info *ret = XOBNEW (&parser_obstack, struct c_arg_info);
-      ret->parms = 0;
-      ret->tags = 0;
-      ret->others = 0;
-      ret->pending_sizes = 0;
-      ret->had_vla_unspec = 0;
+      struct c_arg_info *ret = build_arg_info ();
       /* Suppress -Wold-style-definition for this case.  */
       ret->types = error_mark_node;
       error_at (c_parser_peek_token (parser)->location,
