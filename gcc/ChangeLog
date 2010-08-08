@@ -1,3 +1,12 @@
+2010-08-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	Backport from mainline.
+	2010-07-17  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/44805
+	* config/pa/pa.h (CONSTANT_ALIGNMENT): Align strings to BITS_PER_WORD
+	on all targets.
+
 2010-08-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45109
