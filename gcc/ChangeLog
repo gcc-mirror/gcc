@@ -1,3 +1,9 @@
+2010-08-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45109
+	* tree-ssa-structalias.c (get_constraint_for_component_ref):
+	Explicitly strip handled components and indirect references.
+
 2010-08-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR boehm-gc/34544
