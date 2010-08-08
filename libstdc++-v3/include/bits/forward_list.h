@@ -461,7 +461,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  constructed elements.
        */
       explicit
-      forward_list(size_type __n);
+      forward_list(size_type __n)
+      : _Base()
+      { _M_default_initialize(__n); }
 
       /**
        *  @brief  Creates a %forward_list with copies of an exemplar element.
@@ -1207,6 +1209,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // Called by splice_after and insert_after.
       iterator
       _M_splice_after(const_iterator __pos, forward_list&& __list);
+
+      // Called by forward_list(n).
+      void
+      _M_default_initialize(size_type __n);
+
+      // Called by resize(sz).
+      void
+      _M_default_insert_after(const_iterator __pos, size_type __n);
     };
 
   /**

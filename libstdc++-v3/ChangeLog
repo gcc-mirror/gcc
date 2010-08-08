@@ -1,5 +1,21 @@
 2010-08-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/forward_list.h (_M_default_initialize,
+	_M_default_insert_after): Declare.
+	(forward_list<>::forward_list(size_type), resize(size_type)): Fix,
+	use the latter.
+	* include/bits/forward_list.tcc (forward_list<>::_M_default_append,
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	assign_neg.cc: Adjust dg-error line numbers.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+
+2010-08-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/44963
 	* include/bits/stl_iterator.h (insert_iterator<>::
 	operator=(const typename _Container::value_type&,
