@@ -416,14 +416,21 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  the end, if you like).  Assigning a value to the %iterator will
        *  always append the value to the end of the container.
       */
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
       back_insert_iterator&
       operator=(typename _Container::const_reference __value)
       {
 	container->push_back(__value);
 	return *this;
       }
+#else
+      back_insert_iterator&
+      operator=(const typename _Container::value_type& __value)
+      {
+	container->push_back(__value);
+	return *this;
+      }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
       back_insert_iterator&
       operator=(typename _Container::value_type&& __value)
       {
@@ -499,14 +506,21 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  the front, if you like).  Assigning a value to the %iterator will
        *  always prepend the value to the front of the container.
       */
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
       front_insert_iterator&
       operator=(typename _Container::const_reference __value)
       {
 	container->push_front(__value);
 	return *this;
       }
+#else
+      front_insert_iterator&
+      operator=(const typename _Container::value_type& __value)
+      {
+	container->push_front(__value);
+	return *this;
+      }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
       front_insert_iterator&
       operator=(typename _Container::value_type&& __value)
       {
@@ -603,6 +617,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *     // vector v contains A, 1, 2, 3, and Z
        *  @endcode
       */
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
       insert_iterator&
       operator=(typename _Container::const_reference __value)
       {
@@ -610,8 +625,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	++iter;
 	return *this;
       }
+#else
+      insert_iterator&
+      operator=(const typename _Container::value_type& __value)
+      {
+	iter = container->insert(iter, __value);
+	++iter;
+	return *this;
+      }
 
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
       insert_iterator&
       operator=(typename _Container::value_type&& __value)
       {
