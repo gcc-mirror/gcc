@@ -1,3 +1,12 @@
+2010-08-07  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* name-lookup.h (cp_label_binding): Declare.  Declare a VEC type
+	containing it.
+	(cp_binding_level): Convert shadowed_labels and dead_vars_from_for
+	fields to VECs.
+	* decl.c (poplevel): Adjust for type changes.
+	(declare_local_label): Likewise.
+
 2010-08-06  Jason Merrill  <jason@redhat.com>
 
 	* typeck.c (complete_type_or_maybe_complain): Split out from...
