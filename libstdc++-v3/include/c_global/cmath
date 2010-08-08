@@ -497,6 +497,252 @@ _GLIBCXX_END_NAMESPACE
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  inline int
+  fpclassify(float __x)
+  { return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL,
+				FP_SUBNORMAL, FP_ZERO, __x); }
+
+  inline int
+  fpclassify(double __x)
+  { return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL,
+				FP_SUBNORMAL, FP_ZERO, __x); }
+
+  inline int
+  fpclassify(long double __x)
+  { return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL,
+				FP_SUBNORMAL, FP_ZERO, __x); }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
+					   int>::__type
+    fpclassify(_Tp __x)
+    { return __x != 0 ? FP_NORMAL : FP_ZERO; }
+
+  inline bool
+  isfinite(float __x)
+  { return __builtin_isfinite(__x); }
+
+  inline bool
+  isfinite(double __x)
+  { return __builtin_isfinite(__x); }
+
+  inline bool
+  isfinite(long double __x)
+  { return __builtin_isfinite(__x); }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
+					   bool>::__type
+    isfinite(_Tp __x)
+    { return true; }
+
+  inline bool
+  isinf(float __x)
+  { return __builtin_isinf(__x); }
+
+  inline bool
+  isinf(double __x)
+  { return __builtin_isinf(__x); }
+
+  inline bool
+  isinf(long double __x)
+  { return __builtin_isinf(__x); }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
+					   bool>::__type
+    isinf(_Tp __x)
+    { return false; }
+
+  inline bool
+  isnan(float __x)
+  { return __builtin_isnan(__x); }
+
+  inline bool
+  isnan(double __x)
+  { return __builtin_isnan(__x); }
+
+  inline bool
+  isnan(long double __x)
+  { return __builtin_isnan(__x); }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
+					   bool>::__type
+    isnan(_Tp __x)
+    { return false; }
+
+  inline bool
+  isnormal(float __x)
+  { return __builtin_isnormal(__x); }
+
+  inline bool
+  isnormal(double __x)
+  { return __builtin_isnormal(__x); }
+
+  inline bool
+  isnormal(long double __x)
+  { return __builtin_isnormal(__x); }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
+					   bool>::__type
+    isnormal(_Tp __x)
+    { return __x != 0 ? true : false; }
+
+  inline bool
+  signbit(float __x)
+  { return __builtin_signbit(__x); }
+
+  inline bool
+  signbit(double __x)
+  { return __builtin_signbit(__x); }
+
+  inline bool
+  signbit(long double __x)
+  { return __builtin_signbit(__x); }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_integer<_Tp>::__value,
+					   bool>::__type
+    signbit(_Tp __x)
+    { return __x < 0 ? true : false; }
+
+  inline bool
+  isgreater(float __x, float __y)
+  { return __builtin_isgreater(__x, __y); }
+
+  inline bool
+  isgreater(double __x, double __y)
+  { return __builtin_isgreater(__x, __y); }
+
+  inline bool
+  isgreater(long double __x, long double __y)
+  { return __builtin_isgreater(__x, __y); }
+
+  template<typename _Tp, typename _Up>
+    inline typename
+    __gnu_cxx::__enable_if<(__is_arithmetic<_Tp>::__value
+			    && __is_arithmetic<_Up>::__value), bool>::__type
+    isgreater(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return __builtin_isgreater(__type(__x), __type(__y));
+    }
+
+  inline bool
+  isgreaterequal(float __x, float __y)
+  { return __builtin_isgreaterequal(__x, __y); }
+
+  inline bool
+  isgreaterequal(double __x, double __y)
+  { return __builtin_isgreaterequal(__x, __y); }
+
+  inline bool
+  isgreaterequal(long double __x, long double __y)
+  { return __builtin_isgreaterequal(__x, __y); }
+
+  template<typename _Tp, typename _Up>
+    inline typename
+    __gnu_cxx::__enable_if<(__is_arithmetic<_Tp>::__value
+			    && __is_arithmetic<_Up>::__value), bool>::__type
+    isgreaterequal(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return __builtin_isgreaterequal(__type(__x), __type(__y));
+    }
+
+  inline bool
+  isless(float __x, float __y)
+  { return __builtin_isless(__x, __y); }
+
+  inline bool
+  isless(double __x, double __y)
+  { return __builtin_isless(__x, __y); }
+
+  inline bool
+  isless(long double __x, long double __y)
+  { return __builtin_isless(__x, __y); }
+
+  template<typename _Tp, typename _Up>
+    inline typename
+    __gnu_cxx::__enable_if<(__is_arithmetic<_Tp>::__value
+			    && __is_arithmetic<_Up>::__value), bool>::__type
+    isless(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return __builtin_isless(__type(__x), __type(__y));
+    }
+
+  inline bool
+  islessequal(float __x, float __y)
+  { return __builtin_islessequal(__x, __y); }
+
+  inline bool
+  islessequal(double __x, double __y)
+  { return __builtin_islessequal(__x, __y); }
+
+  inline bool
+  islessequal(long double __x, long double __y)
+  { return __builtin_islessequal(__x, __y); }
+
+  template<typename _Tp, typename _Up>
+    inline typename
+    __gnu_cxx::__enable_if<(__is_arithmetic<_Tp>::__value
+			    && __is_arithmetic<_Up>::__value), bool>::__type
+    islessequal(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return __builtin_islessequal(__type(__x), __type(__y));
+    }
+
+  inline bool
+  islessgreater(float __x, float __y)
+  { return __builtin_islessgreater(__x, __y); }
+
+  inline bool
+  islessgreater(double __x, double __y)
+  { return __builtin_islessgreater(__x, __y); }
+
+  inline bool
+  islessgreater(long double __x, long double __y)
+  { return __builtin_islessgreater(__x, __y); }
+
+  template<typename _Tp, typename _Up>
+    inline typename
+    __gnu_cxx::__enable_if<(__is_arithmetic<_Tp>::__value
+			    && __is_arithmetic<_Up>::__value), bool>::__type
+    islessgreater(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return __builtin_islessgreater(__type(__x), __type(__y));
+    }
+
+  inline bool
+  isunordered(float __x, float __y)
+  { return __builtin_isunordered(__x, __y); }
+
+  inline bool
+  isunordered(double __x, double __y)
+  { return __builtin_isunordered(__x, __y); }
+
+  inline bool
+  isunordered(long double __x, long double __y)
+  { return __builtin_isunordered(__x, __y); }
+
+  template<typename _Tp, typename _Up>
+    inline typename
+    __gnu_cxx::__enable_if<(__is_arithmetic<_Tp>::__value
+			    && __is_arithmetic<_Up>::__value), bool>::__type
+    isunordered(_Tp __x, _Up __y)
+    {
+      typedef typename __gnu_cxx::__promote_2<_Tp, _Up>::__type __type;
+      return __builtin_isunordered(__type(__x), __type(__y));
+    }
+
+#else
+
   template<typename _Tp>
     inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
 					   int>::__type
@@ -605,6 +851,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
       return __builtin_isunordered(__type(__f1), __type(__f2));
     }
+
+#endif
 
 _GLIBCXX_END_NAMESPACE
 
