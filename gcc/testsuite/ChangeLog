@@ -1,3 +1,25 @@
+2010-08-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/20030107-1.c: Do not call cleanup-coverage-files.
+	* gcc.dg/20030702-1.c: Ditto.
+	* gcc.dg/20050309-1.c: Ditto.
+	* gcc.dg/20050325-1.c: Ditto.
+	* gcc.dg/20050330-2.c: Ditto.
+	* gcc.dg/20051201-1.c: Ditto.
+	* gcc.dg/gomp/pr27573.c: Ditto.
+	* gcc.dg/gomp/pr34610.c: Ditto.
+	* gcc.dg/pr24225.c: Ditto.
+	* gcc.dg/pr26570.c: Ditto.
+	* gcc.dg/pr32773.c: Ditto.
+	* g++.dg/gcov/gcov-6.C: Ditto.
+	* g++.dg/gomp/pr34608.C: Ditto.
+	* gfortran.dg/gomp/pr27573.f90: Ditto.
+
+	* gcc.dg/profile-dir-1.c: Do not call cleanup-coverage-files.  Remove
+	dg-require-host-local dg directive.
+	* gcc.dg/profile-dir-2.c: Ditto.
+	* gcc.dg/profile-dir-3.c: Ditto.
+
 2010-08-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45109
