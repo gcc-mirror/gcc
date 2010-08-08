@@ -1,5 +1,13 @@
 2010-08-08  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* c-tree.h (c_arg_tag): Define.  Define a VEC containing it.
+	(struct c_arg_info): Change type of tags field.
+	* c-decl.c (grokdeclarator): Update for changed type of tags field.
+	(get_parm_info): Likewise.
+	(store_parm_decls_newstyle): Likewise.
+
+2010-08-08  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/rs6000/rs6000.c (branch_island): Define.  Define a VEC of it.
 	(branch_island_list): Delete.
 	(branch_islands): Declare.

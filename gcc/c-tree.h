@@ -295,12 +295,22 @@ enum c_declarator_kind {
   cdk_attrs
 };
 
+typedef struct GTY(()) c_arg_tag_d {
+  /* The argument name.  */
+  tree id;
+  /* The type of the argument.  */
+  tree type;
+} c_arg_tag;
+
+DEF_VEC_O(c_arg_tag);
+DEF_VEC_ALLOC_O(c_arg_tag,gc);
+
 /* Information about the parameters in a function declarator.  */
 struct c_arg_info {
   /* A list of parameter decls.  */
   tree parms;
   /* A list of structure, union and enum tags defined.  */
-  tree tags;
+  VEC(c_arg_tag,gc) *tags;
   /* A list of argument types to go in the FUNCTION_TYPE.  */
   tree types;
   /* A list of non-parameter decls (notably enumeration constants)
