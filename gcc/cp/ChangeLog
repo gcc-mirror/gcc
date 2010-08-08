@@ -1,5 +1,24 @@
 2010-08-07  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* parser.c (cp_default_arg_entry): Declare.  Declare a VEC of it.
+	(cp_unparsed_functions_entry): Declare.  Declare a VEC of it.
+	(cp_parser) [unparsed_functions_queues]: Rename to unparsed_queues.
+	Change type to a VEC.
+	(unparsed_funs_with_default_args): Define.
+	(unparsed_funs_with_definitions): Define.
+	(push_unparsed_function_queues): New function.
+	(cp_parser_new): Call it.
+	(pop_unparsed_function_queues): New function.
+	(cp_parser_class_specifier): Adjust processing of unparsed functions.
+	(cp_parser_template_declaration_after_export): Use VEC_safe_push.
+	(cp_parser_save_member_function_body): Likewise.
+	(cp_parser_late_parsing_for_member): Call push_unparsed_function_queues
+	and pop_unparsed_function_queues.
+	(cp_parser_late_parsing_default_args): Likewise.
+	(cp_parser_save_default_args): Use VEC_safe_push.
+
+2010-08-07  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* name-lookup.h (cp_label_binding): Declare.  Declare a VEC type
 	containing it.
 	(cp_binding_level): Convert shadowed_labels and dead_vars_from_for
