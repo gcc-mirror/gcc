@@ -2928,7 +2928,8 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results,
   /* Some people like to do cute things like take the address of
      &0->a.b */
   forzero = t;
-  while (!SSA_VAR_P (forzero) && !CONSTANT_CLASS_P (forzero))
+  while (handled_component_p (forzero)
+	 || INDIRECT_REF_P (forzero))
     forzero = TREE_OPERAND (forzero, 0);
 
   if (CONSTANT_CLASS_P (forzero) && integer_zerop (forzero))
