@@ -1,5 +1,13 @@
 2010-08-08  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* c-tree.h (build_arg_info): Declare.
+	* c-decl.c (build_arg_info): Define.
+	(get_parm_info): Call it.  Delete initialization code.
+	* c-parser.c (c_parser_parms_declarator): Likewise.
+	(c_parser_parms_list_declaractor): Likewise.
+
+2010-08-08  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* c-tree.h (c_arg_tag): Define.  Define a VEC containing it.
 	(struct c_arg_info): Change type of tags field.
 	* c-decl.c (grokdeclarator): Update for changed type of tags field.
