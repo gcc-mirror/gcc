@@ -11,5 +11,3 @@ program pr27573
     end do
   !$omp end parallel
 end
-
-! { dg-final { cleanup-coverage-files } }
