@@ -1,3 +1,8 @@
+2010-08-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.old-deja/g++.jason/thunk3.C: Skip for targets with
+	generic thunk support.
+
 2010-07-27  Richard Guenther  <rguenther@suse.de>
 
 	PR c/44555
