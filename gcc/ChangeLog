@@ -1,5 +1,11 @@
 2010-08-08  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/45034
+	* convert.c (convert_to_integer): Always use an unsigned
+	type for narrowed negate and bitwise not.
+
+2010-08-08  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/45109
 	* tree-ssa-structalias.c (get_constraint_for_component_ref):
 	Explicitly strip handled components and indirect references.

@@ -799,14 +799,7 @@ convert_to_integer (tree type, tree expr)
 	  /* This is not correct for ABS_EXPR,
 	     since we must test the sign before truncation.  */
 	  {
-	    tree typex;
-
-	    /* Don't do unsigned arithmetic where signed was wanted,
-	       or vice versa.  */
-	    if (TYPE_UNSIGNED (TREE_TYPE (expr)))
-	      typex = unsigned_type_for (type);
-	    else
-	      typex = signed_type_for (type);
+	    tree typex = unsigned_type_for (type);
 	    return convert (type,
 			    fold_build1 (ex_form, typex,
 					 convert (typex,
