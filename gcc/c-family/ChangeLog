@@ -1,3 +1,11 @@
+2010-08-08  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-pragma.c (pending_redefinition): Declare.  Declare a VEC of it.
+	(pending_redefine_extname): Change type to a VEC.
+	(add_to_renaming_pragma_list): Update for new type of
+	pending_redefine_extname.
+	(maybe_apply_pending_pragma): Likewise.
+
 2010-08-04  Arnaud Charlet  <charlet@adacore.com>
 
 	* c-ada-spec.c (dump_ada_template): Mark underlying instance type as
