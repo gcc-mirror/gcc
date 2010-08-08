@@ -197,32 +197,18 @@ __gthread_active_p (void)
 
 static volatile int __gthread_active = -1;
 
-static void *
-__gthread_start (void *arg __attribute__((unused)))
-{
-  return NULL;
-}
-
 static void __gthread_active_init (void) __attribute__((noinline));
 static void
 __gthread_active_init (void)
 {
   static pthread_mutex_t __gthread_active_mutex = PTHREAD_MUTEX_INITIALIZER;
-  pthread_t t;
-  pthread_attr_t a;
-  int result;
+  size_t __s;
 
   __gthrw_(pthread_mutex_lock) (&__gthread_active_mutex);
   if (__gthread_active < 0)
     {
-      __gthrw_(pthread_attr_init) (&a);
-      __gthrw_(pthread_attr_setdetachstate) (&a, PTHREAD_CREATE_DETACHED);
-      result = __gthrw_(pthread_create) (&t, &a, __gthread_start, NULL);
-      if (result != ENOSYS)
-	__gthread_active = 1;
-      else
-	__gthread_active = 0;
-      __gthrw_(pthread_attr_destroy) (&a);
+      pthread_default_stacksize_np (0, &__s);
+      __gthread_active = __s ? 1 : 0;
     }
   __gthrw_(pthread_mutex_unlock) (&__gthread_active_mutex);
 }
