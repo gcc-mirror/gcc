@@ -1514,6 +1514,34 @@ cp_parser_context_new (cp_parser_context* next)
   return context;
 }
 
+/* An entry in a queue of function arguments that require post-processing.  */
+
+typedef struct GTY(()) cp_default_arg_entry_d {
+  /* The current_class_type when we parsed this arg.  */
+  tree class_type;
+
+  /* The function decl itself.  */
+  tree decl;
+} cp_default_arg_entry;
+
+DEF_VEC_O(cp_default_arg_entry);
+DEF_VEC_ALLOC_O(cp_default_arg_entry,gc);
+
+/* An entry in a stack for member functions of local classes.  */
+
+typedef struct GTY(()) cp_unparsed_functions_entry_d {
+  /* Functions with default arguments that require post-processing.
+     Functions appear in this list in declaration order.  */
+  VEC(cp_default_arg_entry,gc) *funs_with_default_args;
+
+  /* Functions with defintions that require post-processing.  Functions
+     appear in this list in declaration order.  */
+  VEC(tree,gc) *funs_with_definitions;
+} cp_unparsed_functions_entry;
+
+DEF_VEC_O(cp_unparsed_functions_entry);
+DEF_VEC_ALLOC_O(cp_unparsed_functions_entry,gc);
+
 /* The cp_parser structure represents the C++ parser.  */
 
 typedef struct GTY(()) cp_parser {
@@ -1640,21 +1668,10 @@ typedef struct GTY(()) cp_parser {
      issued as an error message if a type is defined.  */
   const char *type_definition_forbidden_message;
 
-  /* A list of lists. The outer list is a stack, used for member
-     functions of local classes. At each level there are two sub-list,
-     one on TREE_VALUE and one on TREE_PURPOSE. Each of those
-     sub-lists has a FUNCTION_DECL or TEMPLATE_DECL on their
-     TREE_VALUE's. The functions are chained in reverse declaration
-     order.
-
-     The TREE_PURPOSE sublist contains those functions with default
-     arguments that need post processing, and the TREE_VALUE sublist
-     contains those functions with definitions that need post
-     processing.
-
-     These lists can only be processed once the outermost class being
-     defined is complete.  */
-  tree unparsed_functions_queues;
+  /* A stack used for member functions of local classes.  The lists
+     contained in an individual entry can only be processed once the
+     outermost class being defined is complete.  */
+  VEC(cp_unparsed_functions_entry,gc) *unparsed_queues;
 
   /* The number of classes whose definitions are currently in
      progress.  */
@@ -1664,6 +1681,29 @@ typedef struct GTY(()) cp_parser {
      current declaration.  */
   unsigned num_template_parameter_lists;
 } cp_parser;
+
+/* Managing the unparsed function queues.  */
+
+#define unparsed_funs_with_default_args \
+  VEC_last (cp_unparsed_functions_entry, parser->unparsed_queues)->funs_with_default_args
+#define unparsed_funs_with_definitions \
+  VEC_last (cp_unparsed_functions_entry, parser->unparsed_queues)->funs_with_definitions
+
+static void
+push_unparsed_function_queues (cp_parser *parser)
+{
+  VEC_safe_push (cp_unparsed_functions_entry, gc,
+		 parser->unparsed_queues, NULL);
+  unparsed_funs_with_default_args = NULL;
+  unparsed_funs_with_definitions = make_tree_vector ();
+}
+
+static void
+pop_unparsed_function_queues (cp_parser *parser)
+{
+  release_tree_vector (unparsed_funs_with_definitions);
+  VEC_pop (cp_unparsed_functions_entry, parser->unparsed_queues);
+}
 
 /* Prototypes.  */
 
@@ -3151,7 +3191,7 @@ cp_parser_new (void)
   parser->in_function_body = false;
 
   /* The unparsed function queue is empty.  */
-  parser->unparsed_functions_queues = build_tree_list (NULL_TREE, NULL_TREE);
+  push_unparsed_function_queues (parser);
 
   /* There are no classes being defined.  */
   parser->num_classes_being_defined = 0;
@@ -16263,10 +16303,11 @@ cp_parser_class_specifier (cp_parser* parser)
      there is no need to delay the parsing of `A::B::f'.  */
   if (--parser->num_classes_being_defined == 0)
     {
-      tree queue_entry;
       tree fn;
       tree class_type = NULL_TREE;
       tree pushed_scope = NULL_TREE;
+      unsigned ix;
+      cp_default_arg_entry *e;
 
       /* In a first pass, parse default arguments to the functions.
 	 Then, in a second pass, parse the bodies of the functions.
@@ -16278,20 +16319,19 @@ cp_parser_class_specifier (cp_parser* parser)
 	    };
 
 	 */
-      for (TREE_PURPOSE (parser->unparsed_functions_queues)
-	     = nreverse (TREE_PURPOSE (parser->unparsed_functions_queues));
-	   (queue_entry = TREE_PURPOSE (parser->unparsed_functions_queues));
-	   TREE_PURPOSE (parser->unparsed_functions_queues)
-	     = TREE_CHAIN (TREE_PURPOSE (parser->unparsed_functions_queues)))
+      for (ix = 0;
+	   VEC_iterate (cp_default_arg_entry, unparsed_funs_with_default_args,
+			ix, e);
+	   ix++)
 	{
-	  fn = TREE_VALUE (queue_entry);
+	  fn = e->decl;
 	  /* If there are default arguments that have not yet been processed,
 	     take care of them now.  */
-	  if (class_type != TREE_PURPOSE (queue_entry))
+	  if (class_type != e->class_type)
 	    {
 	      if (pushed_scope)
 		pop_scope (pushed_scope);
-	      class_type = TREE_PURPOSE (queue_entry);
+	      class_type = e->class_type;
 	      pushed_scope = push_scope (class_type);
 	    }
 	  /* Make sure that any template parameters are in scope.  */
@@ -16303,18 +16343,13 @@ cp_parser_class_specifier (cp_parser* parser)
 	}
       if (pushed_scope)
 	pop_scope (pushed_scope);
+      VEC_truncate (cp_default_arg_entry, unparsed_funs_with_default_args, 0);
       /* Now parse the body of the functions.  */
-      for (TREE_VALUE (parser->unparsed_functions_queues)
-	     = nreverse (TREE_VALUE (parser->unparsed_functions_queues));
-	   (queue_entry = TREE_VALUE (parser->unparsed_functions_queues));
-	   TREE_VALUE (parser->unparsed_functions_queues)
-	     = TREE_CHAIN (TREE_VALUE (parser->unparsed_functions_queues)))
-	{
-	  /* Figure out which function we need to process.  */
-	  fn = TREE_VALUE (queue_entry);
-	  /* Parse the function.  */
-	  cp_parser_late_parsing_for_member (parser, fn);
-	}
+      for (ix = 0;
+	   VEC_iterate (tree, unparsed_funs_with_definitions, ix, fn);
+	   ix++)
+	cp_parser_late_parsing_for_member (parser, fn);
+      VEC_truncate (tree, unparsed_funs_with_definitions, 0);
     }
 
   /* Put back any saved access checks.  */
@@ -19167,9 +19202,7 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
   if (member_p && decl
       && (TREE_CODE (decl) == FUNCTION_DECL
 	  || DECL_FUNCTION_TEMPLATE_P (decl)))
-    TREE_VALUE (parser->unparsed_functions_queues)
-      = tree_cons (NULL_TREE, decl,
-		   TREE_VALUE (parser->unparsed_functions_queues));
+    VEC_safe_push (tree, gc, unparsed_funs_with_definitions, decl);
 }
 
 /* Perform the deferred access checks from a template-parameter-list.
@@ -19439,9 +19472,7 @@ cp_parser_save_member_function_body (cp_parser* parser,
   DECL_INITIALIZED_IN_CLASS_P (fn) = 1;
 
   /* Add FN to the queue of functions to be parsed later.  */
-  TREE_VALUE (parser->unparsed_functions_queues)
-    = tree_cons (NULL_TREE, fn,
-		 TREE_VALUE (parser->unparsed_functions_queues));
+  VEC_safe_push (tree, gc, unparsed_funs_with_definitions, fn);
 
   return fn;
 }
@@ -19572,8 +19603,7 @@ cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
      classes.  We want to handle them right away, but we don't want
      them getting mixed up with functions that are currently in the
      queue.  */
-  parser->unparsed_functions_queues
-    = tree_cons (NULL_TREE, NULL_TREE, parser->unparsed_functions_queues);
+  push_unparsed_function_queues (parser);
 
   /* Make sure that any template parameters are in scope.  */
   maybe_begin_member_template_processing (member_function);
@@ -19625,8 +19655,7 @@ cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
   maybe_end_member_template_processing ();
 
   /* Restore the queue.  */
-  parser->unparsed_functions_queues
-    = TREE_CHAIN (parser->unparsed_functions_queues);
+  pop_unparsed_function_queues (parser);
 }
 
 /* If DECL contains any default args, remember it on the unparsed
@@ -19642,9 +19671,11 @@ cp_parser_save_default_args (cp_parser* parser, tree decl)
        probe = TREE_CHAIN (probe))
     if (TREE_PURPOSE (probe))
       {
-	TREE_PURPOSE (parser->unparsed_functions_queues)
-	  = tree_cons (current_class_type, decl,
-		       TREE_PURPOSE (parser->unparsed_functions_queues));
+	cp_default_arg_entry *entry
+	  = VEC_safe_push (cp_default_arg_entry, gc,
+			   unparsed_funs_with_default_args, NULL);
+	entry->class_type = current_class_type;
+	entry->decl = decl;
 	break;
       }
 }
@@ -19664,8 +19695,7 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
      statement expression extension) encounter more classes.  We want
      to handle them right away, but we don't want them getting mixed
      up with default args that are currently in the queue.  */
-  parser->unparsed_functions_queues
-    = tree_cons (NULL_TREE, NULL_TREE, parser->unparsed_functions_queues);
+  push_unparsed_function_queues (parser);
 
   /* Local variable names (and the `this' keyword) may not appear
      in a default argument.  */
@@ -19737,8 +19767,7 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
   parser->local_variables_forbidden_p = saved_local_variables_forbidden_p;
 
   /* Restore the queue.  */
-  parser->unparsed_functions_queues
-    = TREE_CHAIN (parser->unparsed_functions_queues);
+  pop_unparsed_function_queues (parser);
 }
 
 /* Parse the operand of `sizeof' (or a similar operator).  Returns
