@@ -1,6 +1,6 @@
 // TR1 cmath -*- C++ -*-
 
-// Copyright (C) 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -294,21 +294,115 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 #if !_GLIBCXX_USE_C99_FP_MACROS_DYNAMIC
 
   /// Function template definitions [8.16.3].
-  using std::signbit;
-  
-  using std::fpclassify;
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
+    fpclassify(_Tp __f)
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL,
+				  FP_SUBNORMAL, FP_ZERO, __type(__f));
+    }
 
-  using std::isfinite;
-  using std::isinf;
-  using std::isnan;
-  using std::isnormal;
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
+    isfinite(_Tp __f)
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_isfinite(__type(__f));
+    }
 
-  using std::isgreater;
-  using std::isgreaterequal;
-  using std::isless;
-  using std::islessequal;
-  using std::islessgreater;
-  using std::isunordered;
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
+    isinf(_Tp __f)
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_isinf(__type(__f));
+    }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
+    isnan(_Tp __f)
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_isnan(__type(__f));
+    }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
+    isnormal(_Tp __f)
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_isnormal(__type(__f));
+    }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
+    signbit(_Tp __f)
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_signbit(__type(__f));
+    }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
+    isgreater(_Tp __f1, _Tp __f2)
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_isgreater(__type(__f1), __type(__f2));
+    }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
+    isgreaterequal(_Tp __f1, _Tp __f2)
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_isgreaterequal(__type(__f1), __type(__f2));
+    }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
+    isless(_Tp __f1, _Tp __f2)
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_isless(__type(__f1), __type(__f2));
+    }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
+    islessequal(_Tp __f1, _Tp __f2)
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_islessequal(__type(__f1), __type(__f2));
+    }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
+    islessgreater(_Tp __f1, _Tp __f2)
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_islessgreater(__type(__f1), __type(__f2));
+    }
+
+  template<typename _Tp>
+    inline typename __gnu_cxx::__enable_if<__is_arithmetic<_Tp>::__value,
+					   int>::__type
+    isunordered(_Tp __f1, _Tp __f2)
+    {
+      typedef typename __gnu_cxx::__promote<_Tp>::__type __type;
+      return __builtin_isunordered(__type(__f1), __type(__f2));
+    }
+
 #endif
 #endif
 

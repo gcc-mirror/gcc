@@ -1,3 +1,11 @@
+2010-08-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/c_global/cmath: Implement US 136.
+	* include/tr1_impl/cmath: Do not bring fpclassify, etc from namespace
+	std, define namespace tr1.
+	* testsuite/26_numerics/headers/cmath/
+	c99_classification_macros_c++0x.cc: New.
+
 2010-08-06  David Malcolm  <dmalcolm@redhat.com>
 	    Jan Kratochvil  <jan.kratochvil@redhat.com>
 
