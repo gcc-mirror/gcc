@@ -1,4 +1,4 @@
-2010-08-04  Uros Bizjak  <ubizjak@gmail.com>
+2010-08-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/march.c: Skip if -march defined.
 	* gcc.dg/mtune.c: Skip if -mtune defined.
