@@ -497,7 +497,7 @@ add_to_renaming_pragma_list (tree oldname, tree newname)
 	return;
       }
 
-  p = VEC_safe_push (pending_redefinition, pending_redefine_extname, NULL);
+  p = VEC_safe_push (pending_redefinition, gc, pending_redefine_extname, NULL);
   p->oldname = oldname;
   p->newname = newname;
 }
@@ -533,7 +533,6 @@ maybe_apply_renaming_pragma (tree decl, tree asmname)
 {
   unsigned ix;
   pending_redefinition *p;
-  tree *p, t;
 
   /* The renaming pragmas are only applied to declarations with
      external linkage.  */
