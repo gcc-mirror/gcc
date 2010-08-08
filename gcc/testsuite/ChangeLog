@@ -1,3 +1,8 @@
+2010-08-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45109
+	* gcc.c-torture/compile/pr45109.c: New testcase.
+
 2010-08-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/march.c: Skip if -march defined.
