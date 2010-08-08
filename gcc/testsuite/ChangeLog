@@ -1,3 +1,11 @@
+2010-08-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/march.c: Skip if -march defined.
+	* gcc.dg/mtune.c: Skip if -mtune defined.
+
+	* g++.old-deja/g++.jason/thunk3.C: Skip for targets with
+	generic thunk support.
+
 2010-08-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/45213
