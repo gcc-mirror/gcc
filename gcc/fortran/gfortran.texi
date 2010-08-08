@@ -1951,9 +1951,6 @@ J3 Fortran 95 standard.
 User-specified alignment rules for structures.
 
 @item
-Flag to generate @code{Makefile} info.
-
-@item
 Automatically extend single precision constants to double.
 
 @item

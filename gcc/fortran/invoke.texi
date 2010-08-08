@@ -148,8 +148,7 @@ and warnings}.
 
 @item Directory Options
 @xref{Directory Options,,Options for directory search}.
-@gccoptlist{-I@var{dir}  -J@var{dir}  -M@var{dir}  @gol
--fintrinsic-modules-path @var{dir}}
+@gccoptlist{-I@var{dir}  -J@var{dir} -fintrinsic-modules-path @var{dir}}
 
 @item Link Options
 @xref{Link Options,,Options for influencing the linking step}.
@@ -935,7 +934,6 @@ gcc,Using the GNU Compiler Collection (GCC)}, for information on the
 @option{-I} option.
 
 @item -J@var{dir}
-@item -M@var{dir}
 @opindex @code{J}@var{dir}
 @opindex @code{M}@var{dir}
 @cindex paths, search
@@ -945,8 +943,6 @@ It is also added to the list of directories to searched by an @code{USE}
 statement.
 
 The default is the current directory.
-
-@option{-M} is deprecated to avoid conflicts with existing GCC options.
 
 @item -fintrinsic-modules-path @var{dir}
 @opindex @code{fintrinsic-modules-path} @var{dir}

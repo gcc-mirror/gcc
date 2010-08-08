@@ -425,36 +425,6 @@ For more information about these matters, see the file named COPYING\n\n"));
 	  continue;
 	}
 
-      if ((argv[i][0] == '-') && (argv[i][1] == 'M'))
-	{
-	  char *p;
-
-	  fprintf (stderr, _("Warning: Using -M <directory> is deprecated, "
-	           "use -J instead\n"));
-	  if (argv[i][2] == '\0')
-	    {
-	      if (i+1 < argc)
-		{
-		  p = XNEWVEC (char, strlen (argv[i + 1]) + 3);
-		  p[0] = '-';
-		  p[1] = 'J';
-		  strcpy (&p[2], argv[i + 1]);
-		  i++;
-		}
-	      else
-		fatal ("argument to '%s' missing", argv[i]);
-	    }
-	  else
-	    {
-	      p = XNEWVEC (char, strlen (argv[i]) + 1);
-	      p[0] = '-';
-	      p[1] = 'J';
-	      strcpy (&p[2], argv[i] + 2);
-	    }
-	  append_arg (p);
-	  continue;
-	}
-
       if ((argv[i][0] == '-') && (argv[i][1] != 'l'))
 	{
 	  /* Not a filename or library.  */

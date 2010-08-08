@@ -56,6 +56,42 @@ J
 Fortran Joined Separate
 -J<directory>	Put MODULE files in 'directory'
 
+M
+Fortran
+; Documented in C
+
+MD
+Fortran Separate
+; Documented in C
+
+MF
+Fortran Joined Separate
+; Documented in C
+
+MG
+Fortran
+; Documented in C
+
+MM
+Fortran
+; Documented in C
+
+MMD
+Fortran Separate
+; Documented in C
+
+MP
+Fortran
+; Documented in C
+
+MT
+Fortran Joined Separate
+; Documented in C
+
+MQ
+Fortran Joined Separate
+; Documented in C
+
 P
 Fortran
 ; Documented in C
