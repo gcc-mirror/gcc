@@ -1,3 +1,14 @@
+2010-08-08  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/rs6000/rs6000.c (branch_island): Define.  Define a VEC of it.
+	(branch_island_list): Delete.
+	(branch_islands): Declare.
+	(add_compiler_branch_island): Adjust for branch_islands instead of
+	branch_island_list.
+	(macho_branch_islands): Likewise.
+	(no_previous_def): Likewise.
+	(get_prev_label): Likewise.
+
 2010-08-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR boehm-gc/34544
