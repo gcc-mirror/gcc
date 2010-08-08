@@ -1,5 +1,19 @@
 2010-08-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/44963
+	* include/bits/stl_iterator.h (insert_iterator<>::
+	operator=(const typename _Container::value_type&,
+	back_insert_iterator<>::
+	operator=(const typename _Container::value_type&),
+	front_insert_iterator<>::
+	operator=(const typename _Container::value_type&))): Add
+	in C++0x mode.
+	* testsuite/ext/rope/44963.cc: New.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust
+	dg-error line number.
+
+2010-08-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/c_global/cmath: Implement US 136.
 	* include/tr1_impl/cmath: Do not bring fpclassify, etc from namespace
 	std, define namespace tr1.
