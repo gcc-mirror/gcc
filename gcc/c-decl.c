@@ -5541,12 +5541,11 @@ grokdeclarator (const struct c_declarator *declarator,
 	       the formal parameter list of this FUNCTION_TYPE to point to
 	       the FUNCTION_TYPE node itself.  */
 	    {
-	      tree link;
+	      c_arg_tag *tag;
+	      unsigned ix;
 
-	      for (link = arg_info->tags;
-		   link;
-		   link = TREE_CHAIN (link))
-		TYPE_CONTEXT (TREE_VALUE (link)) = type;
+	      FOR_EACH_VEC_ELT_REVERSE (c_arg_tag, arg_info->tags, ix, tag)
+		TYPE_CONTEXT (tag->type) = type;
 	    }
 	    break;
 	  }
@@ -6192,7 +6191,7 @@ get_parm_info (bool ellipsis)
   struct c_arg_info *arg_info = XOBNEW (&parser_obstack,
 					struct c_arg_info);
   tree parms    = 0;
-  tree tags     = 0;
+  VEC(c_arg_tag,gc) *tags = NULL;
   tree types    = 0;
   tree others   = 0;
 
@@ -6246,6 +6245,7 @@ get_parm_info (bool ellipsis)
     {
       tree decl = b->decl;
       tree type = TREE_TYPE (decl);
+      c_arg_tag *tag;
       const char *keyword;
 
       switch (TREE_CODE (decl))
@@ -6319,7 +6319,9 @@ get_parm_info (bool ellipsis)
 		}
 	    }
 
-	  tags = tree_cons (b->id, decl, tags);
+	  tag = VEC_safe_push (c_arg_tag, gc, tags, NULL);
+	  tag->id = b->id;
+	  tag->type = decl;
 	  break;
 
 	case CONST_DECL:
@@ -7644,6 +7646,8 @@ static void
 store_parm_decls_newstyle (tree fndecl, const struct c_arg_info *arg_info)
 {
   tree decl;
+  c_arg_tag *tag;
+  unsigned ix;
 
   if (current_scope->bindings)
     {
@@ -7696,9 +7700,9 @@ store_parm_decls_newstyle (tree fndecl, const struct c_arg_info *arg_info)
     }
 
   /* And all the tag declarations.  */
-  for (decl = arg_info->tags; decl; decl = TREE_CHAIN (decl))
-    if (TREE_PURPOSE (decl))
-      bind (TREE_PURPOSE (decl), TREE_VALUE (decl), current_scope,
+  FOR_EACH_VEC_ELT_REVERSE (c_arg_tag, arg_info->tags, ix, tag)
+    if (tag->id)
+      bind (tag->id, tag->type, current_scope,
 	    /*invisible=*/false, /*nested=*/false, UNKNOWN_LOCATION);
 }
 
