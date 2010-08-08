@@ -1,3 +1,7 @@
+2010-08-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* config/pa/pa.c (override_options): Fix warning.
+
 2010-08-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* expmed.c (expand_mult_const) <case alg_shift>: Expand shift into
