@@ -1,3 +1,12 @@
+2010-08-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR boehm-gc/34544
+	* gthr-posix.h (__gthread_start): Delete.
+	(__gthread_active_init): Use pthread_default_stacksize_np instead of
+	pthread_create to determine if hpux pthreads are active.
+	* gthr-posix95.h (__gthread_start): Delete.
+	(__gthread_active_init): Likewise use pthread_default_stacksize_np.
+
 2010-08-08  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/mingw32.h ((EXTRA_OS_CPP_BUILTINS): Define
