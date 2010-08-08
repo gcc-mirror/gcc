@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 	{							\
 	  builtin_define ("__MINGW64__");			\
 	  builtin_define_std ("WIN64");				\
-	  builtin_define_std ("_WIN64");			\
+	  builtin_define ("_WIN64");				\
 	}							\
     }								\
   while (0)
