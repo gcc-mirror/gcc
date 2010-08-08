@@ -424,7 +424,15 @@ maybe_apply_pending_pragma_weaks (void)
       if it appears afterward, we have no way of knowing whether a modified
       DECL_ASSEMBLER_NAME is due to #pragma extern_prefix.)  */
 
-static GTY(()) tree pending_redefine_extname;
+typedef struct GTY(()) pending_redefinition_d {
+  tree oldname;
+  tree newname;
+} pending_redefinition;
+
+DEF_VEC_O(pending_redefinition);
+DEF_VEC_ALLOC_O(pending_redefinition,gc);
+
+static GTY(()) VEC(pending_redefinition,gc) *pending_redefine_extname;
 
 static void handle_pragma_redefine_extname (cpp_reader *);
 
@@ -475,17 +483,23 @@ handle_pragma_redefine_extname (cpp_reader * ARG_UNUSED (dummy))
 void
 add_to_renaming_pragma_list (tree oldname, tree newname)
 {
-  tree previous = purpose_member (oldname, pending_redefine_extname);
-  if (previous)
-    {
-      if (TREE_VALUE (previous) != newname)
-	warning (OPT_Wpragmas, "#pragma redefine_extname ignored due to "
-		 "conflict with previous #pragma redefine_extname");
-      return;
-    }
+  unsigned ix;
+  pending_redefinition *p;
 
-  pending_redefine_extname
-    = tree_cons (oldname, newname, pending_redefine_extname);
+  for (ix = 0;
+       VEC_iterate (pending_redefinition, pending_redefine_extname, ix, p);
+       ix++)
+    if (oldname == p->oldname)
+      {
+	if (p->newname != newname)
+	  warning (OPT_Wpragmas, "#pragma redefine_extname ignored due to "
+		   "conflict with previous #pragma redefine_extname");
+	return;
+      }
+
+  p = VEC_safe_push (pending_redefinition, pending_redefine_extname, NULL);
+  p->oldname = oldname;
+  p->newname = newname;
 }
 
 static GTY(()) tree pragma_extern_prefix;
@@ -517,6 +531,8 @@ handle_pragma_extern_prefix (cpp_reader * ARG_UNUSED (dummy))
 tree
 maybe_apply_renaming_pragma (tree decl, tree asmname)
 {
+  unsigned ix;
+  pending_redefinition *p;
   tree *p, t;
 
   /* The renaming pragmas are only applied to declarations with
@@ -538,26 +554,32 @@ maybe_apply_renaming_pragma (tree decl, tree asmname)
 		   "conflict with previous rename");
 
       /* Take any pending redefine_extname off the list.  */
-      for (p = &pending_redefine_extname; (t = *p); p = &TREE_CHAIN (t))
-	if (DECL_NAME (decl) == TREE_PURPOSE (t))
+      for (ix = 0;
+	   VEC_iterate (pending_redefinition, pending_redefine_extname, ix, p);
+	   ix++)
+	if (DECL_NAME (decl) == p->oldname)
 	  {
 	    /* Only warn if there is a conflict.  */
-	    if (strcmp (IDENTIFIER_POINTER (TREE_VALUE (t)), oldname))
+	    if (strcmp (IDENTIFIER_POINTER (p->newname), oldname))
 	      warning (OPT_Wpragmas, "#pragma redefine_extname ignored due to "
 		       "conflict with previous rename");
 
-	    *p = TREE_CHAIN (t);
+	    VEC_unordered_remove (pending_redefinition,
+				  pending_redefine_extname, ix);
 	    break;
 	  }
       return 0;
     }
 
   /* Find out if we have a pending #pragma redefine_extname.  */
-  for (p = &pending_redefine_extname; (t = *p); p = &TREE_CHAIN (t))
-    if (DECL_NAME (decl) == TREE_PURPOSE (t))
+  for (ix = 0;
+       VEC_iterate (pending_redefinition, pending_redefine_extname, ix, p);
+       ix++)
+    if (DECL_NAME (decl) == p->oldname)
       {
-	tree newname = TREE_VALUE (t);
-	*p = TREE_CHAIN (t);
+	tree newname = p->newname;
+	VEC_unordered_remove (pending_redefinition,
+			      pending_redefine_extname, ix);
 
 	/* If we already have an asmname, #pragma redefine_extname is
 	   ignored (with a warning if it conflicts).  */
