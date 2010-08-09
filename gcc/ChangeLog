@@ -1,3 +1,7 @@
+2010-08-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* alias.c (may_alias_p): Remove unused ret.
+
 2010-08-09  Bingfeng Mei  <bmei@broadcom.com>
 
 	* ddg.c (walk_mems_2): Moved from alias.c, use may_alias_p instead of
