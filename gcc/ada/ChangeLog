@@ -1,3 +1,12 @@
+2010-08-08  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc-interface/decl.c (rec_variant).  Declare.  Declare a VEC of it.
+	(build_variant_list): Return a VEC instead of a tree.  Take a
+	VEC instead of a tree.
+	(create_variant_part_from): Take a VEC instead of a tree for
+	variant_list.  Adjust accordingly.
+	(gnat_to_gnu_entity): Adjust for changes to previous functions.
+
 2010-08-07  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Use XALLOCAVEC instead

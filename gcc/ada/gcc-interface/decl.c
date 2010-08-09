@@ -112,6 +112,23 @@ typedef struct GTY(()) subst_pair_d {
 DEF_VEC_O(subst_pair);
 DEF_VEC_ALLOC_O(subst_pair,heap);
 
+typedef struct GTY(()) variant_desc_d {
+  /* The type of the variant.  */
+  tree type;
+
+  /* The associated field.  */
+  tree field;
+
+  /* The value of the qualifier.  */
+  tree qual;
+
+  /* The record associated with this variant.  */
+  tree record;
+} variant_desc;
+
+DEF_VEC_O(variant_desc);
+DEF_VEC_ALLOC_O(variant_desc,heap);
+
 /* A hash table used to cache the result of annotate_value.  */
 static GTY ((if_marked ("tree_int_map_marked_p"),
 	     param_is (struct tree_int_map))) htab_t annotate_value_cache;
@@ -150,7 +167,9 @@ static Uint annotate_value (tree);
 static void annotate_rep (Entity_Id, tree);
 static tree build_position_list (tree, bool, tree, tree, unsigned int, tree);
 static VEC(subst_pair,heap) *build_subst_list (Entity_Id, Entity_Id, bool);
-static tree build_variant_list (tree, VEC(subst_pair,heap) *, tree);
+static VEC(variant_desc,heap) *build_variant_list (tree,
+						   VEC(subst_pair,heap) *,
+						   VEC(variant_desc,heap) *);
 static tree validate_size (Uint, tree, Entity_Id, enum tree_code, bool, bool);
 static void set_rm_size (Uint, tree, Entity_Id);
 static tree make_type_from_size (tree, tree, bool);
@@ -161,8 +180,8 @@ static tree create_field_decl_from (tree, tree, tree, tree, tree,
 				    VEC(subst_pair,heap) *);
 static tree get_rep_part (tree);
 static tree get_variant_part (tree);
-static tree create_variant_part_from (tree, tree, tree, tree,
-				      VEC(subst_pair,heap) *);
+static tree create_variant_part_from (tree, VEC(variant_desc,heap) *, tree,
+				      tree, VEC(subst_pair,heap) *);
 static void copy_and_substitute_in_size (tree, tree, VEC(subst_pair,heap) *);
 static void rest_of_type_decl_compilation_no_defer (tree);
 
@@ -3045,9 +3064,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      VEC(subst_pair,heap) *gnu_subst_list
 		= build_subst_list (gnat_entity, gnat_base_type, definition);
 	      tree gnu_unpad_base_type, gnu_rep_part, gnu_variant_part, t;
-	      tree gnu_variant_list, gnu_pos_list, gnu_field_list = NULL_TREE;
+	      tree gnu_pos_list, gnu_field_list = NULL_TREE;
 	      bool selected_variant = false;
 	      Entity_Id gnat_field;
+	      VEC(variant_desc,heap) *gnu_variant_list;
 
 	      gnu_type = make_node (RECORD_TYPE);
 	      TYPE_NAME (gnu_type) = gnu_entity_name;
@@ -3075,15 +3095,19 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		 union for the variants that are still relevant.  */
 	      if (gnu_variant_part)
 		{
+		  variant_desc *v;
+		  unsigned ix;
+
 		  gnu_variant_list
 		    = build_variant_list (TREE_TYPE (gnu_variant_part),
-					  gnu_subst_list, NULL_TREE);
+					  gnu_subst_list, NULL);
 
 		  /* If all the qualifiers are unconditionally true, the
 		     innermost variant is statically selected.  */
 		  selected_variant = true;
-		  for (t = gnu_variant_list; t; t = TREE_CHAIN (t))
-		    if (!integer_onep (TREE_VEC_ELT (TREE_VALUE (t), 1)))
+		  FOR_EACH_VEC_ELT_REVERSE (variant_desc, gnu_variant_list,
+					    ix, v)
+		    if (!integer_onep (v->qual))
 		      {
 			selected_variant = false;
 			break;
@@ -3091,20 +3115,21 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 		  /* Otherwise, create the new variants.  */
 		  if (!selected_variant)
-		    for (t = gnu_variant_list; t; t = TREE_CHAIN (t))
+		    FOR_EACH_VEC_ELT_REVERSE (variant_desc, gnu_variant_list,
+					      ix, v)
 		      {
-			tree old_variant = TREE_PURPOSE (t);
+			tree old_variant = v->type;
 			tree new_variant = make_node (RECORD_TYPE);
 			TYPE_NAME (new_variant)
 			  = DECL_NAME (TYPE_NAME (old_variant));
 			copy_and_substitute_in_size (new_variant, old_variant,
 						     gnu_subst_list);
-			TREE_VEC_ELT (TREE_VALUE (t), 2) = new_variant;
+			v->record = new_variant;
 		      }
 		}
 	      else
 		{
-		  gnu_variant_list = NULL_TREE;
+		  gnu_variant_list = NULL;
 		  selected_variant = false;
 		}
 
@@ -3187,13 +3212,23 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		      gnu_cont_type = gnu_type;
 		    else
 		      {
-			t = purpose_member (gnu_context, gnu_variant_list);
+			variant_desc *v;
+			unsigned ix;
+
+			t = NULL_TREE;
+			FOR_EACH_VEC_ELT_REVERSE (variant_desc,
+						  gnu_variant_list, ix, v)
+			  if (v->type == gnu_context)
+			    {
+			      t = v->type;
+			      break;
+			    }
 			if (t)
 			  {
 			    if (selected_variant)
 			      gnu_cont_type = gnu_type;
 			    else
-			      gnu_cont_type = TREE_VEC_ELT (TREE_VALUE (t), 2);
+			      gnu_cont_type = v->record;
 			  }
 			else
 			  /* The front-end may pass us "ghost" components if
@@ -3319,6 +3354,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 					 gnat_entity);
 		}
 
+	      VEC_free (variant_desc, heap, gnu_variant_list);
 	      VEC_free (subst_pair, heap, gnu_subst_list);
 
 	      /* Now we can finalize it.  */
@@ -7547,16 +7583,15 @@ build_subst_list (Entity_Id gnat_subtype, Entity_Id gnat_type, bool definition)
   return gnu_vec;
 }
 
-/* Scan all fields in QUAL_UNION_TYPE and return a TREE_LIST describing the
-   variants of QUAL_UNION_TYPE that are still relevant after applying the
-   substitutions described in SUBST_LIST.  TREE_PURPOSE is the type of the
-   variant and TREE_VALUE is a TREE_VEC containing the field, the new value
-   of the qualifier and NULL_TREE respectively.  GNU_LIST is a pre-existing
-   list to be chained to the newly created entries.  */
+/* Scan all fields in QUAL_UNION_TYPE and return a VEC describing the
+   variants of QUAL_UNION_TYPE that are still relevant after applying
+   the substitutions described in SUBST_LIST.  VARIANT_LIST is a
+   pre-existing VEC onto which newly created entries should be
+   pushed.  */
 
-static tree
+static VEC(variant_desc,heap) *
 build_variant_list (tree qual_union_type, VEC(subst_pair,heap) *subst_list,
-		    tree gnu_list)
+		    VEC(variant_desc,heap) *variant_list)
 {
   tree gnu_field;
 
@@ -7575,18 +7610,20 @@ build_variant_list (tree qual_union_type, VEC(subst_pair,heap) *subst_list,
 	 still be accessed.  */
       if (!integer_zerop (qual))
 	{
+	  variant_desc *v;
 	  tree variant_type = TREE_TYPE (gnu_field), variant_subpart;
-	  tree v = make_tree_vec (3);
-	  TREE_VEC_ELT (v, 0) = gnu_field;
-	  TREE_VEC_ELT (v, 1) = qual;
-	  TREE_VEC_ELT (v, 2) = NULL_TREE;
-	  gnu_list = tree_cons (variant_type, v, gnu_list);
+
+	  v = VEC_safe_push (variant_desc, heap, variant_list, NULL);
+	  v->type = variant_type;
+	  v->field = gnu_field;
+	  v->qual = qual;
+	  v->record = NULL_TREE;
 
 	  /* Recurse on the variant subpart of the variant, if any.  */
 	  variant_subpart = get_variant_part (variant_type);
 	  if (variant_subpart)
-	    gnu_list = build_variant_list (TREE_TYPE (variant_subpart),
-					   subst_list, gnu_list);
+	    variant_list = build_variant_list (TREE_TYPE (variant_subpart),
+					       subst_list, variant_list);
 
 	  /* If the new qualifier is unconditionally true, the subsequent
 	     variants cannot be accessed.  */
@@ -7595,7 +7632,7 @@ build_variant_list (tree qual_union_type, VEC(subst_pair,heap) *subst_list,
 	}
     }
 
-  return gnu_list;
+  return variant_list;
 }
 
 /* UINT_SIZE is a Uint giving the specified size for an object of GNU_TYPE
@@ -8319,14 +8356,17 @@ get_variant_part (tree record_type)
    layout.  */
 
 static tree
-create_variant_part_from (tree old_variant_part, tree variant_list,
+create_variant_part_from (tree old_variant_part,
+			  VEC(variant_desc,heap) *variant_list,
 			  tree record_type, tree pos_list,
 			  VEC(subst_pair,heap) *subst_list)
 {
   tree offset = DECL_FIELD_OFFSET (old_variant_part);
   tree old_union_type = TREE_TYPE (old_variant_part);
-  tree new_union_type, new_variant_part, t;
+  tree new_union_type, new_variant_part;
   tree union_field_list = NULL_TREE;
+  variant_desc *v;
+  unsigned ix;
 
   /* First create the type of the variant part from that of the old one.  */
   new_union_type = make_node (QUAL_UNION_TYPE);
@@ -8354,9 +8394,9 @@ create_variant_part_from (tree old_variant_part, tree variant_list,
     copy_and_substitute_in_size (new_union_type, old_union_type, subst_list);
 
   /* Now finish up the new variants and populate the union type.  */
-  for (t = variant_list; t; t = TREE_CHAIN (t))
+  FOR_EACH_VEC_ELT_REVERSE (variant_desc, variant_list, ix, v)
     {
-      tree old_field = TREE_VEC_ELT (TREE_VALUE (t), 0), new_field;
+      tree old_field = v->field, new_field;
       tree old_variant, old_variant_subpart, new_variant, field_list;
 
       /* Skip variants that don't belong to this nesting level.  */
@@ -8364,12 +8404,12 @@ create_variant_part_from (tree old_variant_part, tree variant_list,
 	continue;
 
       /* Retrieve the list of fields already added to the new variant.  */
-      new_variant = TREE_VEC_ELT (TREE_VALUE (t), 2);
+      new_variant = v->record;
       field_list = TYPE_FIELDS (new_variant);
 
       /* If the old variant had a variant subpart, we need to create a new
 	 variant subpart and add it to the field list.  */
-      old_variant = TREE_PURPOSE (t);
+      old_variant = v->type;
       old_variant_subpart = get_variant_part (old_variant);
       if (old_variant_subpart)
 	{
@@ -8391,7 +8431,7 @@ create_variant_part_from (tree old_variant_part, tree variant_list,
 	= create_field_decl_from (old_field, new_variant, new_union_type,
 				  TYPE_SIZE (new_variant),
 				  pos_list, subst_list);
-      DECL_QUALIFIER (new_field) = TREE_VEC_ELT (TREE_VALUE (t), 1);
+      DECL_QUALIFIER (new_field) = v->qual;
       DECL_INTERNAL_P (new_field) = 1;
       DECL_CHAIN (new_field) = union_field_list;
       union_field_list = new_field;
