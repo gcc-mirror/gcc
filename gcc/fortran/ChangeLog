@@ -1,3 +1,7 @@
+2010-08-09  Janus Weil  <janus@gcc.gnu.org>
+
+	* intrinsic.texi: Correct documentation of ASINH, ACOSH and ATANH.
+
 2010-08-07  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* interface.c (compare_actual_formal): Use XALLOCAVEC instead of
