@@ -452,43 +452,6 @@ alias_sets_conflict_p (alias_set_type set1, alias_set_type set2)
   return 0;
 }
 
-static int
-walk_mems_2 (rtx *x, rtx mem)
-{
-  if (MEM_P (*x))
-    {
-      if (alias_sets_conflict_p (MEM_ALIAS_SET(*x), MEM_ALIAS_SET(mem)))
-        return 1;
-
-      return -1;
-    }
-  return 0;
-}
-
-static int
-walk_mems_1 (rtx *x, rtx *pat)
-{
-  if (MEM_P (*x))
-    {
-      /* Visit all MEMs in *PAT and check indepedence.  */
-      if (for_each_rtx (pat, (rtx_function) walk_mems_2, *x))
-        /* Indicate that dependence was determined and stop traversal.  */
-        return 1;
-
-      return -1;
-    }
-  return 0;
-}
-
-/* Return 1 if two specified instructions have mem expr with conflict alias sets*/
-bool
-insn_alias_sets_conflict_p (rtx insn1, rtx insn2)
-{
-  /* For each pair of MEMs in INSN1 and INSN2 check their independence.  */
-  return  for_each_rtx (&PATTERN (insn1), (rtx_function) walk_mems_1,
-			 &PATTERN (insn2));
-}
-
 /* Return 1 if the two specified alias sets will always conflict.  */
 
 int
@@ -2187,10 +2150,11 @@ adjust_offset_for_component_ref (tree x, rtx offset)
 }
 
 /* Return nonzero if we can determine the exprs corresponding to memrefs
-   X and Y and they do not overlap.  */
+   X and Y and they do not overlap. 
+   If LOOP_VARIANT is set, skip offset-based disambiguation */
 
 int
-nonoverlapping_memrefs_p (const_rtx x, const_rtx y)
+nonoverlapping_memrefs_p (const_rtx x, const_rtx y, bool loop_invariant)
 {
   tree exprx = MEM_EXPR (x), expry = MEM_EXPR (y);
   rtx rtlx, rtly;
@@ -2286,6 +2250,10 @@ nonoverlapping_memrefs_p (const_rtx x, const_rtx y)
 		&& REGNO_PTR_FRAME_P (REGNO (basey)))
 	    || (CONSTANT_P (basey) && REG_P (basex)
 		&& REGNO_PTR_FRAME_P (REGNO (basex))));
+
+  /* Offset based disambiguation not appropriate for loop invariant */
+  if (loop_invariant)
+    return 0;              
 
   sizex = (!MEM_P (rtlx) ? (int) GET_MODE_SIZE (GET_MODE (rtlx))
 	   : MEM_SIZE (rtlx) ? INTVAL (MEM_SIZE (rtlx))
@@ -2413,7 +2381,7 @@ true_dependence_1 (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
   if (DIFFERENT_ALIAS_SETS_P (x, mem))
     return 0;
 
-  if (nonoverlapping_memrefs_p (mem, x))
+  if (nonoverlapping_memrefs_p (mem, x, false))
     return 0;
 
   if (aliases_everything_p (x))
@@ -2528,7 +2496,7 @@ write_dependence_p (const_rtx mem, const_rtx x, int writep)
 				 SIZE_FOR_MODE (x), x_addr, 0)) != -1)
     return ret;
 
-  if (nonoverlapping_memrefs_p (x, mem))
+  if (nonoverlapping_memrefs_p (x, mem, false))
     return 0;
 
   fixed_scalar
@@ -2558,6 +2526,76 @@ output_dependence (const_rtx mem, const_rtx x)
   return write_dependence_p (mem, x, /*writep=*/1);
 }
 
+
+
+/* Check whether X may be aliased with MEM.  Don't do offset-based
+  memory disambiguation & TBAA.  */
+int
+may_alias_p (const_rtx mem, const_rtx x)
+{
+  rtx x_addr, mem_addr;
+  int ret;
+
+  if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
+    return 1;
+
+  /* ??? In true_dependence we also allow BLKmode to alias anything. */
+  if (GET_MODE (mem) == BLKmode || GET_MODE (x) == BLKmode)
+    return 1;
+    
+  if (MEM_ALIAS_SET (x) == ALIAS_SET_MEMORY_BARRIER
+      || MEM_ALIAS_SET (mem) == ALIAS_SET_MEMORY_BARRIER)
+    return 1;
+
+  /* Read-only memory is by definition never modified, and therefore can't
+     conflict with anything.  We don't expect to find read-only set on MEM,
+     but stupid user tricks can produce them, so don't die.  */
+  if (MEM_READONLY_P (x))
+    return 0;
+
+  /* If we have MEMs refering to different address spaces (which can
+     potentially overlap), we cannot easily tell from the addresses
+     whether the references overlap.  */
+  if (MEM_ADDR_SPACE (mem) != MEM_ADDR_SPACE (x))
+    return 1;
+
+  x_addr = XEXP (x, 0);
+  mem_addr = XEXP (mem, 0);
+  if (!((GET_CODE (x_addr) == VALUE
+	 && GET_CODE (mem_addr) != VALUE
+	 && reg_mentioned_p (x_addr, mem_addr))
+	|| (GET_CODE (x_addr) != VALUE
+	    && GET_CODE (mem_addr) == VALUE
+	    && reg_mentioned_p (mem_addr, x_addr))))
+    {
+      x_addr = get_addr (x_addr);
+      mem_addr = get_addr (mem_addr);
+    }
+
+  if (! base_alias_check (x_addr, mem_addr, GET_MODE (x), GET_MODE (mem_addr)))
+    return 0;
+
+  x_addr = canon_rtx (x_addr);
+  mem_addr = canon_rtx (mem_addr);
+
+  if (nonoverlapping_memrefs_p (mem, x, true))
+    return 0;
+
+  if (aliases_everything_p (x))
+    return 1;
+
+  /* We cannot use aliases_everything_p to test MEM, since we must look
+     at MEM_ADDR, rather than XEXP (mem, 0).  */
+  if (GET_MODE (mem) == QImode || GET_CODE (mem_addr) == AND)
+    return 1;
+
+  if (fixed_scalar_and_varying_struct_p (mem, x, mem_addr, x_addr,
+                                         rtx_addr_varies_p))
+    return 0;
+
+  /* TBAA not valid for loop_invarint */
+  return rtx_refs_may_alias_p (x, mem, false);
+}
 
 void
 init_alias_target (void)
