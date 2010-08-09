@@ -1,5 +1,11 @@
 2010-08-08  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* gcc-interface/utils.c (make_descriptor_field): Add tree parameter.
+	(build_vms_descriptor32): Adjust calls to it for new parameter.
+	(build_vms_descriptor): Likewise.
+
+2010-08-08  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* gcc-interface/decl.c (rec_variant).  Declare.  Declare a VEC of it.
 	(build_variant_list): Return a VEC instead of a tree.  Take a
 	VEC instead of a tree.
