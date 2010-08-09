@@ -1,3 +1,8 @@
+2010-08-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/45236
+	* g++.dg/cpp0x/variadic-104.C: New.
+
 2010-08-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/44235

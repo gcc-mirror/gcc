@@ -6540,11 +6540,16 @@ lookup_template_class (tree d1,
 	       i > 0 && t != NULL_TREE;
 	       --i, t = TREE_CHAIN (t))
 	    {
-	      tree a = coerce_template_parms (TREE_VALUE (t),
-					      arglist, gen_tmpl,
-					      complain,
-					      /*require_all_args=*/true,
-					      /*use_default_args=*/true);
+	      tree a;
+	      if (i == saved_depth)
+		a = coerce_template_parms (TREE_VALUE (t),
+					   arglist, gen_tmpl,
+					   complain,
+					   /*require_all_args=*/true,
+					   /*use_default_args=*/true);
+	      else
+		/* Outer levels should have already been coerced.  */
+		a = TMPL_ARGS_LEVEL (arglist, i);
 
 	      /* Don't process further if one of the levels fails.  */
 	      if (a == error_mark_node)

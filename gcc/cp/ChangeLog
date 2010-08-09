@@ -1,3 +1,8 @@
+2010-08-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/45236
+	* pt.c (lookup_template_class): Don't re-coerce outer parms.
+
 2010-08-09  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* call.c (add_builtin_candidates): Use VECs for local variable
