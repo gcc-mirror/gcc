@@ -1,3 +1,7 @@
+2010-08-09  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.c (varargs_function_p): Use stdarg_p.
+
 2010-08-07  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* parser.c (cp_default_arg_entry): Declare.  Declare a VEC of it.

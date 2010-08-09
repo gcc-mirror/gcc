@@ -3717,9 +3717,7 @@ arm_get_pcs_model (const_tree type, const_tree decl)
       /* Detect varargs functions.  These always use the base rules
 	 (no argument is ever a candidate for a co-processor
 	 register).  */
-      bool base_rules = (TYPE_ARG_TYPES (type) != 0
-			 && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (type)))
-			     != void_type_node));
+      bool base_rules = stdarg_p (type);
       
       if (user_convention)
 	{

@@ -157,9 +157,7 @@ do {								\
 		   }							\
 	       }							\
 	     /* anonymous args */					\
-	     if (TYPE_ARG_TYPES (tree_type) != 0			\
-		 && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (tree_type)))\
-		     != void_type_node))				\
+	     if (stdarg_p (tree_type))					\
 	       {							\
 		 for (; i < 4; i++)					\
 		   fprintf (FILE, ",ARGW%d=GR", i);			\

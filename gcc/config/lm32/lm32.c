@@ -656,14 +656,10 @@ lm32_setup_incoming_varargs (CUMULATIVE_ARGS * cum, enum machine_mode mode,
 {
   int first_anon_arg;
   tree fntype;
-  int stdarg_p;
 
   fntype = TREE_TYPE (current_function_decl);
-  stdarg_p = (TYPE_ARG_TYPES (fntype) != 0
-	      && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
-		  != void_type_node));
 
-  if (stdarg_p)
+  if (stdarg_p (fntype))
     first_anon_arg = *cum + LM32_FIRST_ARG_REG;
   else
     {
