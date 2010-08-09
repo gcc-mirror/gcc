@@ -2807,7 +2807,7 @@ simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
     {
       if (upper)
 	{
-	  if (gfc_ref_dimen_size (&ref->u.ar, d-1, &result->value.integer)
+	  if (gfc_ref_dimen_size (&ref->u.ar, d-1, &result->value.integer, NULL)
 	      != SUCCESS)
 	    goto returnNull;
 	}
