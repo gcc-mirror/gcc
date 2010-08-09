@@ -1,3 +1,7 @@
+2010-08-09  Janus Weil  <janus@gcc.gnu.org>
+
+	* intrinsic.texi: Correct documentation of ASINH, ACOSH and ATANH.
+
 2010-08-07  Daniel Franke  <franke.daniel@gmail.com>
 
 	2010-06-13  Daniel Franke  <franke.daniel@gmail.com>
