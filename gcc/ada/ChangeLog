@@ -1,3 +1,8 @@
+2010-08-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (build_vms_descriptor32): Fix formatting.
+	(build_vms_descriptor): Likewise.
+
 2010-08-08  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* gcc-interface/utils.c (make_descriptor_field): Add tree parameter.
@@ -6,9 +11,8 @@
 
 2010-08-08  Nathan Froyd  <froydnj@codesourcery.com>
 
-	* gcc-interface/decl.c (rec_variant).  Declare.  Declare a VEC of it.
-	(build_variant_list): Return a VEC instead of a tree.  Take a
-	VEC instead of a tree.
+	* gcc-interface/decl.c (rec_variant):  Declare.  Declare a VEC of it.
+	(build_variant_list): Take and return a VEC instead of a tree.
 	(create_variant_part_from): Take a VEC instead of a tree for
 	variant_list.  Adjust accordingly.
 	(gnat_to_gnu_entity): Adjust for changes to previous functions.
