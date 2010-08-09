@@ -44,7 +44,7 @@ Some basic guidelines for editing this document:
 * @code{ACCESS}:        ACCESS,    Checks file access modes
 * @code{ACHAR}:         ACHAR,     Character in @acronym{ASCII} collating sequence
 * @code{ACOS}:          ACOS,      Arccosine function
-* @code{ACOSH}:         ACOSH,     Hyperbolic arccosine function
+* @code{ACOSH}:         ACOSH,     Inverse hyperbolic cosine function
 * @code{ADJUSTL}:       ADJUSTL,   Left adjust a string
 * @code{ADJUSTR}:       ADJUSTR,   Right adjust a string
 * @code{AIMAG}:         AIMAG,     Imaginary part of complex number
@@ -56,11 +56,11 @@ Some basic guidelines for editing this document:
 * @code{ANINT}:         ANINT,     Nearest whole number
 * @code{ANY}:           ANY,       Determine if any values are true
 * @code{ASIN}:          ASIN,      Arcsine function
-* @code{ASINH}:         ASINH,     Hyperbolic arcsine function
+* @code{ASINH}:         ASINH,     Inverse hyperbolic sine function
 * @code{ASSOCIATED}:    ASSOCIATED, Status of a pointer or pointer/target pair
 * @code{ATAN}:          ATAN,      Arctangent function
 * @code{ATAN2}:         ATAN2,     Arctangent function
-* @code{ATANH}:         ATANH,     Hyperbolic arctangent function
+* @code{ATANH}:         ATANH,     Inverse hyperbolic tangent function
 * @code{BESSEL_J0}:     BESSEL_J0, Bessel function of the first kind of order 0
 * @code{BESSEL_J1}:     BESSEL_J1, Bessel function of the first kind of order 1
 * @code{BESSEL_JN}:     BESSEL_JN, Bessel function of the first kind
@@ -579,18 +579,17 @@ Inverse function: @ref{COS}
 
 
 @node ACOSH
-@section @code{ACOSH} --- Hyperbolic arccosine function
+@section @code{ACOSH} --- Inverse hyperbolic cosine function
 @fnindex ACOSH
 @fnindex DACOSH
 @cindex area hyperbolic cosine
-@cindex hyperbolic arccosine
+@cindex inverse hyperbolic cosine
 @cindex hyperbolic function, cosine, inverse
 @cindex cosine, hyperbolic, inverse
 
 @table @asis
 @item @emph{Description}:
-@code{ACOSH(X)} computes the hyperbolic arccosine of @var{X} (inverse of
-@code{COSH(X)}).
+@code{ACOSH(X)} computes the inverse hyperbolic cosine of @var{X}.
 
 @item @emph{Standard}:
 Fortran 2008 and later
@@ -1227,17 +1226,17 @@ Inverse function: @ref{SIN}
 
 
 @node ASINH
-@section @code{ASINH} --- Hyperbolic arcsine function
+@section @code{ASINH} --- Inverse hyperbolic sine function
 @fnindex ASINH
 @fnindex DASINH
 @cindex area hyperbolic sine
-@cindex hyperbolic arcsine
+@cindex inverse hyperbolic sine
 @cindex hyperbolic function, sine, inverse
 @cindex sine, hyperbolic, inverse
 
 @table @asis
 @item @emph{Description}:
-@code{ASINH(X)} computes the hyperbolic arcsine of @var{X} (inverse of @code{SINH(X)}).
+@code{ASINH(X)} computes the inverse hyperbolic sine of @var{X}.
 
 @item @emph{Standard}:
 Fortran 2008 and later
@@ -1471,18 +1470,17 @@ end program test_atan2
 
 
 @node ATANH
-@section @code{ATANH} --- Hyperbolic arctangent function
-@fnindex ASINH
-@fnindex DASINH
+@section @code{ATANH} --- Inverse hyperbolic tangent function
+@fnindex ATANH
+@fnindex DATANH
 @cindex area hyperbolic tangent
-@cindex hyperbolic arctangent
+@cindex inverse hyperbolic tangent
 @cindex hyperbolic function, tangent, inverse
 @cindex tangent, hyperbolic, inverse
 
 @table @asis
 @item @emph{Description}:
-@code{ATANH(X)} computes the hyperbolic arctangent of @var{X} (inverse
-of @code{TANH(X)}).
+@code{ATANH(X)} computes the inverse hyperbolic tangent of @var{X}.
 
 @item @emph{Standard}:
 Fortran 2008 and later
