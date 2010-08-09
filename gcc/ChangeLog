@@ -1,5 +1,9 @@
 2010-08-09  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* tree.c (nreverse): Assert that we don't have a BLOCK.
+
+2010-08-09  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* builtins.c (fold_builtin_next_arg): Use stdarg_p.
 	* config/arm/arm.c (arm_get_pcs_model): Likewise.
 	* config/avr/avr.c (init_cumulative_args): Likewise.
