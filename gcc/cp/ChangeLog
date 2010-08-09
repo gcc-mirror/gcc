@@ -1,5 +1,10 @@
 2010-08-09  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* call.c (add_builtin_candidates): Use VECs for local variable
+	`types'.  Adjust remainder of function accordingly.
+
+2010-08-09  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* name-lookup.c (is_associated_namespace): Convert local variables
 	to be VECs instead of TREE_LISTs.
 
