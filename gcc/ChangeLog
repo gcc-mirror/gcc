@@ -1,5 +1,19 @@
 2010-08-09  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-copy.c (cached_last_copy_of): Remove.
+	(valueize_val): New function.
+	(get_last_copy_of): Remove.
+	(set_copy_of_val): Simplify.
+	(dump_copy_of): Likewise.
+	(copy_prop_visit_cond_stmt): Use valueize_val.
+	(copy_prop_visit_phi_node): Properly handle unvisited names.
+	Drop code managing copy-of chains.
+	(init_copy_prop): Adjust.
+	(fini_copy_prop): Likewise.
+	(execute_copy_prop): Remove obsolete comment.
+
+2010-08-09  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/44632
 	* function.c (gimplify_parameters): Do not clear addressable
 	bit of the original parameter.
