@@ -198,7 +198,7 @@ static tree split_plus (tree, tree *);
 static tree float_type_for_precision (int, enum machine_mode);
 static tree convert_to_fat_pointer (tree, tree);
 static tree convert_to_thin_pointer (tree, tree);
-static tree make_descriptor_field (const char *,tree, tree, tree);
+static tree make_descriptor_field (const char *,tree, tree, tree, tree);
 static bool potential_alignment_gap (tree, tree, tree);
 static void process_attributes (tree, struct attrib *);
 
@@ -2293,7 +2293,7 @@ build_vms_descriptor32 (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
 {
   tree record_type = make_node (RECORD_TYPE);
   tree pointer32_type;
-  tree field_list = 0;
+  tree field_list = NULL_TREE;
   int klass;
   int dtype = 0;
   tree inner_type;
@@ -2427,34 +2427,30 @@ build_vms_descriptor32 (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
 
   /* Make the type for a descriptor for VMS.  The first four fields are the
      same for all types.  */
-  field_list
-    = chainon (field_list,
-	       make_descriptor_field ("LENGTH", gnat_type_for_size (16, 1),
-				      record_type,
-				      size_in_bytes
-				      ((mech == By_Descriptor_A
-					|| mech == By_Short_Descriptor_A)
-				       ? inner_type : type)));
-  field_list
-    = chainon (field_list,
-	       make_descriptor_field ("DTYPE", gnat_type_for_size (8, 1),
-				      record_type, size_int (dtype)));
-  field_list
-    = chainon (field_list,
-	       make_descriptor_field ("CLASS", gnat_type_for_size (8, 1),
-				      record_type, size_int (klass)));
+  field_list = 
+    make_descriptor_field ("LENGTH", gnat_type_for_size (16, 1),
+			   record_type,
+			   size_in_bytes
+			   ((mech == By_Descriptor_A
+			     || mech == By_Short_Descriptor_A)
+			    ? inner_type : type), field_list);
+  field_list =
+    make_descriptor_field ("DTYPE", gnat_type_for_size (8, 1),
+			   record_type, size_int (dtype), field_list);
+  field_list =
+    make_descriptor_field ("CLASS", gnat_type_for_size (8, 1),
+			   record_type, size_int (klass), field_list);
 
   /* Of course this will crash at run time if the address space is not
      within the low 32 bits, but there is nothing else we can do.  */
   pointer32_type = build_pointer_type_for_mode (type, SImode, false);
 
-  field_list
-    = chainon (field_list,
-	       make_descriptor_field ("POINTER", pointer32_type, record_type,
-				      build_unary_op (ADDR_EXPR,
-						      pointer32_type,
-						      build0 (PLACEHOLDER_EXPR,
-							      type))));
+  field_list =
+    make_descriptor_field ("POINTER", pointer32_type, record_type,
+			   build_unary_op (ADDR_EXPR,
+					   pointer32_type,
+					   build0 (PLACEHOLDER_EXPR,
+						   type)), field_list);
 
   switch (mech)
     {
@@ -2466,59 +2462,52 @@ build_vms_descriptor32 (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
 
     case By_Descriptor_SB:
     case By_Short_Descriptor_SB:
-      field_list
-	= chainon (field_list,
-		   make_descriptor_field
-		   ("SB_L1", gnat_type_for_size (32, 1), record_type,
-		    TREE_CODE (type) == ARRAY_TYPE
-		    ? TYPE_MIN_VALUE (TYPE_DOMAIN (type)) : size_zero_node));
-      field_list
-	= chainon (field_list,
-		   make_descriptor_field
-		   ("SB_U1", gnat_type_for_size (32, 1), record_type,
-		    TREE_CODE (type) == ARRAY_TYPE
-		    ? TYPE_MAX_VALUE (TYPE_DOMAIN (type)) : size_zero_node));
+      field_list =
+	make_descriptor_field ("SB_L1", gnat_type_for_size (32, 1),
+			       record_type,
+			       (TREE_CODE (type) == ARRAY_TYPE
+				? TYPE_MIN_VALUE (TYPE_DOMAIN (type))
+				: size_zero_node), field_list);
+      field_list =
+	make_descriptor_field ("SB_U1", gnat_type_for_size (32, 1),
+			       record_type,
+			       (TREE_CODE (type) == ARRAY_TYPE
+				? TYPE_MAX_VALUE (TYPE_DOMAIN (type))
+				: size_zero_node), field_list);
       break;
 
     case By_Descriptor_A:
     case By_Short_Descriptor_A:
     case By_Descriptor_NCA:
     case By_Short_Descriptor_NCA:
-      field_list = chainon (field_list,
-			    make_descriptor_field ("SCALE",
-						   gnat_type_for_size (8, 1),
-						   record_type,
-						   size_zero_node));
+      field_list =
+	make_descriptor_field ("SCALE", gnat_type_for_size (8, 1),
+			       record_type, size_zero_node, field_list);
 
-      field_list = chainon (field_list,
-			    make_descriptor_field ("DIGITS",
-						   gnat_type_for_size (8, 1),
-						   record_type,
-						   size_zero_node));
+      field_list =
+	make_descriptor_field ("DIGITS", gnat_type_for_size (8, 1),
+			       record_type, size_zero_node, field_list);
 
-      field_list
-	= chainon (field_list,
-		   make_descriptor_field
-		   ("AFLAGS", gnat_type_for_size (8, 1), record_type,
-		    size_int ((mech == By_Descriptor_NCA ||
-                              mech == By_Short_Descriptor_NCA)
-			      ? 0
-			      /* Set FL_COLUMN, FL_COEFF, and FL_BOUNDS.  */
-			      : (TREE_CODE (type) == ARRAY_TYPE
-				 && TYPE_CONVENTION_FORTRAN_P (type)
-				 ? 224 : 192))));
 
-      field_list = chainon (field_list,
-			    make_descriptor_field ("DIMCT",
-						   gnat_type_for_size (8, 1),
-						   record_type,
-						   size_int (ndim)));
+      field_list =
+	make_descriptor_field ("AFLAGS", gnat_type_for_size (8, 1),
+			       record_type,
+			       size_int ((mech == By_Descriptor_NCA ||
+					  mech == By_Short_Descriptor_NCA)
+					 ? 0
+					 /* Set FL_COLUMN, FL_COEFF, and
+					    FL_BOUNDS.  */
+					 : (TREE_CODE (type) == ARRAY_TYPE
+					    && TYPE_CONVENTION_FORTRAN_P (type)
+					    ? 224 : 192)), field_list);
 
-      field_list = chainon (field_list,
-			    make_descriptor_field ("ARSIZE",
-						   gnat_type_for_size (32, 1),
-						   record_type,
-						   size_in_bytes (type)));
+      field_list =
+	make_descriptor_field ("DIMCT", gnat_type_for_size (8, 1),
+			       record_type, size_int (ndim), field_list);
+
+      field_list =
+	make_descriptor_field ("ARSIZE", gnat_type_for_size (32, 1),
+			       record_type, size_in_bytes (type), field_list);
 
       /* Now build a pointer to the 0,0,0... element.  */
       tem = build0 (PLACEHOLDER_EXPR, type);
@@ -2528,16 +2517,10 @@ build_vms_descriptor32 (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
 		      convert (TYPE_DOMAIN (inner_type), size_zero_node),
 		      NULL_TREE, NULL_TREE);
 
-      field_list
-	= chainon (field_list,
-		   make_descriptor_field
-		   ("A0",
-		    build_pointer_type_for_mode (inner_type, SImode, false),
-		    record_type,
-		    build1 (ADDR_EXPR,
-			    build_pointer_type_for_mode (inner_type, SImode,
-							 false),
-			    tem)));
+      field_list =
+	make_descriptor_field ("A0", pointer32_type, record_type,
+			       build1 (ADDR_EXPR, pointer32_type, tem),
+			       field_list);
 
       /* Next come the addressing coefficients.  */
       tem = size_one_node;
@@ -2555,11 +2538,9 @@ build_vms_descriptor32 (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
 	  fname[0] = ((mech == By_Descriptor_NCA ||
                        mech == By_Short_Descriptor_NCA) ? 'S' : 'M');
 	  fname[1] = '0' + i, fname[2] = 0;
-	  field_list
-	    = chainon (field_list,
-		       make_descriptor_field (fname,
-					      gnat_type_for_size (32, 1),
-					      record_type, idx_length));
+	  field_list =
+	    make_descriptor_field (fname, gnat_type_for_size (32, 1),
+				   record_type, idx_length, field_list);
 
 	  if (mech == By_Descriptor_NCA || mech == By_Short_Descriptor_NCA)
 	    tem = idx_length;
@@ -2571,18 +2552,16 @@ build_vms_descriptor32 (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
 	  char fname[3];
 
 	  fname[0] = 'L', fname[1] = '0' + i, fname[2] = 0;
-	  field_list
-	    = chainon (field_list,
-		       make_descriptor_field
-		       (fname, gnat_type_for_size (32, 1), record_type,
-			TYPE_MIN_VALUE (idx_arr[i])));
+	  field_list =
+	    make_descriptor_field (fname, gnat_type_for_size (32, 1),
+				   record_type, TYPE_MIN_VALUE (idx_arr[i]),
+				   field_list);
 
 	  fname[0] = 'U';
-	  field_list
-	    = chainon (field_list,
-		       make_descriptor_field
-		       (fname, gnat_type_for_size (32, 1), record_type,
-			TYPE_MAX_VALUE (idx_arr[i])));
+	  field_list =
+	    make_descriptor_field (fname, gnat_type_for_size (32, 1),
+				   record_type, TYPE_MAX_VALUE (idx_arr[i]),
+				   field_list);
 	}
       break;
 
@@ -2591,7 +2570,7 @@ build_vms_descriptor32 (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
     }
 
   TYPE_NAME (record_type) = create_concat_name (gnat_entity, "DESC");
-  finish_record_type (record_type, field_list, 0, false);
+  finish_record_type (record_type, nreverse (field_list), 0, false);
   return record_type;
 }
 
@@ -2607,7 +2586,7 @@ build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
 {
   tree record64_type = make_node (RECORD_TYPE);
   tree pointer64_type;
-  tree field_list64 = 0;
+  tree field_list64 = NULL_TREE;
   int klass;
   int dtype = 0;
   tree inner_type;
@@ -2737,38 +2716,30 @@ build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
   /* Make the type for a 64-bit descriptor for VMS.  The first six fields
      are the same for all types.  */
   field_list64
-    = chainon (field_list64,
-	       make_descriptor_field ("MBO", gnat_type_for_size (16, 1),
-				      record64_type, size_int (1)));
+    = make_descriptor_field ("MBO", gnat_type_for_size (16, 1),
+			     record64_type, size_int (1), field_list64);
   field_list64
-    = chainon (field_list64,
-	       make_descriptor_field ("DTYPE", gnat_type_for_size (8, 1),
-				      record64_type, size_int (dtype)));
+    = make_descriptor_field ("DTYPE", gnat_type_for_size (8, 1),
+			     record64_type, size_int (dtype), field_list64);
   field_list64
-    = chainon (field_list64,
-	       make_descriptor_field ("CLASS", gnat_type_for_size (8, 1),
-				      record64_type, size_int (klass)));
+    = make_descriptor_field ("CLASS", gnat_type_for_size (8, 1),
+			     record64_type, size_int (klass), field_list64);
   field_list64
-    = chainon (field_list64,
-	       make_descriptor_field ("MBMO", gnat_type_for_size (32, 1),
-				      record64_type, ssize_int (-1)));
+    = make_descriptor_field ("MBMO", gnat_type_for_size (32, 1),
+			     record64_type, ssize_int (-1), field_list64);
   field_list64
-    = chainon (field_list64,
-	       make_descriptor_field ("LENGTH", gnat_type_for_size (64, 1),
-				      record64_type,
-				      size_in_bytes (mech == By_Descriptor_A
-						     ? inner_type : type)));
+    = make_descriptor_field ("LENGTH", gnat_type_for_size (64, 1),
+			     record64_type,
+			     size_in_bytes (mech == By_Descriptor_A
+					    ? inner_type : type), field_list64);
 
   pointer64_type = build_pointer_type_for_mode (type, DImode, false);
 
   field_list64
-    = chainon (field_list64,
-	       make_descriptor_field ("POINTER", pointer64_type,
-				      record64_type,
-				      build_unary_op (ADDR_EXPR,
-						      pointer64_type,
-						      build0 (PLACEHOLDER_EXPR,
-							      type))));
+    = make_descriptor_field ("POINTER", pointer64_type, record64_type,
+			     build_unary_op (ADDR_EXPR, pointer64_type,
+					     build0 (PLACEHOLDER_EXPR,
+						     type)), field_list64);
 
   switch (mech)
     {
@@ -2778,60 +2749,52 @@ build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
 
     case By_Descriptor_SB:
       field_list64
-	= chainon (field_list64,
-		   make_descriptor_field
-		   ("SB_L1", gnat_type_for_size (64, 1), record64_type,
-		    TREE_CODE (type) == ARRAY_TYPE
-		    ? TYPE_MIN_VALUE (TYPE_DOMAIN (type)) : size_zero_node));
+	= make_descriptor_field ("SB_L1", gnat_type_for_size (64, 1),
+				 record64_type,
+				 (TREE_CODE (type) == ARRAY_TYPE
+				  ? TYPE_MIN_VALUE (TYPE_DOMAIN (type))
+				  : size_zero_node), field_list64);
       field_list64
-	= chainon (field_list64,
-		   make_descriptor_field
-		   ("SB_U1", gnat_type_for_size (64, 1), record64_type,
-		    TREE_CODE (type) == ARRAY_TYPE
-		    ? TYPE_MAX_VALUE (TYPE_DOMAIN (type)) : size_zero_node));
+	= make_descriptor_field ("SB_U1", gnat_type_for_size (64, 1),
+				 record64_type,
+				 (TREE_CODE (type) == ARRAY_TYPE
+				  ? TYPE_MAX_VALUE (TYPE_DOMAIN (type))
+				  : size_zero_node), field_list64);
       break;
 
     case By_Descriptor_A:
     case By_Descriptor_NCA:
-      field_list64 = chainon (field_list64,
-			    make_descriptor_field ("SCALE",
-						   gnat_type_for_size (8, 1),
-						   record64_type,
-						   size_zero_node));
-
-      field_list64 = chainon (field_list64,
-			    make_descriptor_field ("DIGITS",
-						   gnat_type_for_size (8, 1),
-						   record64_type,
-						   size_zero_node));
+      field_list64
+	= make_descriptor_field ("SCALE", gnat_type_for_size (8, 1),
+				 record64_type, size_zero_node, field_list64);
 
       field_list64
-	= chainon (field_list64,
-		   make_descriptor_field
-		   ("AFLAGS", gnat_type_for_size (8, 1), record64_type,
-		    size_int (mech == By_Descriptor_NCA
-			      ? 0
-			      /* Set FL_COLUMN, FL_COEFF, and FL_BOUNDS.  */
-			      : (TREE_CODE (type) == ARRAY_TYPE
-				 && TYPE_CONVENTION_FORTRAN_P (type)
-				 ? 224 : 192))));
+	= make_descriptor_field ("DIGITS", gnat_type_for_size (8, 1),
+				 record64_type, size_zero_node, field_list64);
 
-      field_list64 = chainon (field_list64,
-			    make_descriptor_field ("DIMCT",
-						   gnat_type_for_size (8, 1),
-						   record64_type,
-						   size_int (ndim)));
+      dtype = (mech == By_Descriptor_NCA
+	       ? 0
+	       /* Set FL_COLUMN, FL_COEFF, and
+		  FL_BOUNDS.  */
+	       : (TREE_CODE (type) == ARRAY_TYPE
+		  && TYPE_CONVENTION_FORTRAN_P (type)
+		  ? 224 : 192));
+      field_list64
+	= make_descriptor_field ("AFLAGS", gnat_type_for_size (8, 1),
+				 record64_type, size_int (dtype),
+				 field_list64);
 
-      field_list64 = chainon (field_list64,
-			    make_descriptor_field ("MBZ",
-						   gnat_type_for_size (32, 1),
-						   record64_type,
-						   size_int (0)));
-      field_list64 = chainon (field_list64,
-			    make_descriptor_field ("ARSIZE",
-						   gnat_type_for_size (64, 1),
-						   record64_type,
-						   size_in_bytes (type)));
+      field_list64
+	= make_descriptor_field ("DIMCT", gnat_type_for_size (8, 1),
+				 record64_type, size_int (ndim), field_list64);
+
+      field_list64
+	= make_descriptor_field ("MBZ", gnat_type_for_size (32, 1),
+				 record64_type, size_int (0), field_list64);
+      field_list64
+	= make_descriptor_field ("ARSIZE", gnat_type_for_size (64, 1),
+				 record64_type, size_in_bytes (type),
+				 field_list64);
 
       /* Now build a pointer to the 0,0,0... element.  */
       tem = build0 (PLACEHOLDER_EXPR, type);
@@ -2842,15 +2805,9 @@ build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
 		      NULL_TREE, NULL_TREE);
 
       field_list64
-	= chainon (field_list64,
-		   make_descriptor_field
-		   ("A0",
-		    build_pointer_type_for_mode (inner_type, DImode, false),
-		    record64_type,
-		    build1 (ADDR_EXPR,
-			    build_pointer_type_for_mode (inner_type, DImode,
-							 false),
-			    tem)));
+	= make_descriptor_field ("A0", pointer64_type, record64_type,
+				 build1 (ADDR_EXPR, pointer64_type, tem),
+				 field_list64);
 
       /* Next come the addressing coefficients.  */
       tem = size_one_node;
@@ -2868,10 +2825,8 @@ build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
 	  fname[0] = (mech == By_Descriptor_NCA ? 'S' : 'M');
 	  fname[1] = '0' + i, fname[2] = 0;
 	  field_list64
-	    = chainon (field_list64,
-		       make_descriptor_field (fname,
-					      gnat_type_for_size (64, 1),
-					      record64_type, idx_length));
+	    = make_descriptor_field (fname, gnat_type_for_size (64, 1),
+				     record64_type, idx_length, field_list64);
 
 	  if (mech == By_Descriptor_NCA)
 	    tem = idx_length;
@@ -2884,17 +2839,15 @@ build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
 
 	  fname[0] = 'L', fname[1] = '0' + i, fname[2] = 0;
 	  field_list64
-	    = chainon (field_list64,
-		       make_descriptor_field
-		       (fname, gnat_type_for_size (64, 1), record64_type,
-			TYPE_MIN_VALUE (idx_arr[i])));
+	    = make_descriptor_field (fname, gnat_type_for_size (64, 1),
+				     record64_type,
+				     TYPE_MIN_VALUE (idx_arr[i]), field_list64);
 
 	  fname[0] = 'U';
 	  field_list64
-	    = chainon (field_list64,
-		       make_descriptor_field
-		       (fname, gnat_type_for_size (64, 1), record64_type,
-			TYPE_MAX_VALUE (idx_arr[i])));
+	    = make_descriptor_field (fname, gnat_type_for_size (64, 1),
+				     record64_type,
+				     TYPE_MAX_VALUE (idx_arr[i]), field_list64);
 	}
       break;
 
@@ -2903,21 +2856,24 @@ build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
     }
 
   TYPE_NAME (record64_type) = create_concat_name (gnat_entity, "DESC64");
-  finish_record_type (record64_type, field_list64, 0, false);
+  finish_record_type (record64_type, nreverse (field_list64), 0, false);
   return record64_type;
 }
 
-/* Utility routine for above code to make a field.  */
+/* Utility routine for above code to make a field.  FIELD_LIST is the
+   list of decls being built; the new decl is chained on to the front of
+   the list.  */
 
 static tree
 make_descriptor_field (const char *name, tree type,
-		       tree rec_type, tree initial)
+		       tree rec_type, tree initial, tree field_list)
 {
   tree field
     = create_field_decl (get_identifier (name), type, rec_type, NULL_TREE,
 			 NULL_TREE, 0, 0);
 
   DECL_INITIAL (field) = initial;
+  DECL_CHAIN (field) = field_list;
   return field;
 }
 
