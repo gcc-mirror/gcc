@@ -1,3 +1,25 @@
+2010-08-09  Bingfeng Mei  <bmei@broadcom.com>
+
+	* ddg.c (walk_mems_2): Moved from alias.c, use may_alias_p instead of
+	alias_sets_conflict_p.
+	(walk_mems_1): Moved from alias.c.
+	(insns_may_alias_p): New function, originally insn_alias_sets_conflict_p
+	in alias.c. 
+        (add_inter_loop_mem_dep): Use insns_may_alias_p now.
+        * cse.c (cse_insn): New argument in calling nonoverlapping_memrefs_p.
+        * alias.c (walk_mems_2): Moved to ddg.c.
+	(walk_mems_1): Ditto.
+	(insn_alias_sets_conflict_p): Renamed to insns_may_alias_p and moved
+	to ddg.c.
+	(nonoverlapping_memrefs_p): Add flag to guard offset-based memory
+	disambiguation.
+	*(may_alias_p): New function to check whether two memory expression
+	may alias or not. Currently used in buidling inter-iteration memory
+	dependence.
+	*alias.h (nonoverlapping_memrefs_p): New flag as third argument.
+	(insn_alias_sets_conflict_p): Removed
+	*rtl.h (may_alias_p): New function prototype.
+        
 2010-08-09  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree.c (nreverse): Assert that we don't have a BLOCK.

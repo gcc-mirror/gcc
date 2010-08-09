@@ -348,12 +348,49 @@ build_inter_loop_deps (ddg_ptr g)
 }
 
 
+static int
+walk_mems_2 (rtx *x, rtx mem)
+{
+  if (MEM_P (*x))
+    {
+      if (may_alias_p (*x, mem))
+        return 1;
+
+      return -1;
+    }
+  return 0;
+}
+
+static int
+walk_mems_1 (rtx *x, rtx *pat)
+{
+  if (MEM_P (*x))
+    {
+      /* Visit all MEMs in *PAT and check indepedence.  */
+      if (for_each_rtx (pat, (rtx_function) walk_mems_2, *x))
+        /* Indicate that dependence was determined and stop traversal.  */
+        return 1;
+
+      return -1;
+    }
+  return 0;
+}
+
+/* Return 1 if two specified instructions have mem expr with conflict alias sets*/
+static int
+insns_may_alias_p (rtx insn1, rtx insn2)
+{
+  /* For each pair of MEMs in INSN1 and INSN2 check their independence.  */
+  return  for_each_rtx (&PATTERN (insn1), (rtx_function) walk_mems_1,
+			 &PATTERN (insn2));
+}
+
 /* Given two nodes, analyze their RTL insns and add inter-loop mem deps
    to ddg G.  */
 static void
 add_inter_loop_mem_dep (ddg_ptr g, ddg_node_ptr from, ddg_node_ptr to)
 {
-  if (!insn_alias_sets_conflict_p (from->insn, to->insn))
+  if (!insns_may_alias_p (from->insn, to->insn))
     /* Do not create edge if memory references have disjoint alias sets.  */
     return;
 
