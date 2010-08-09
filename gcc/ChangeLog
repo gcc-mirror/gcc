@@ -1,3 +1,7 @@
+2010-08-09  Eric Fisher <joefoxreal@gmail.com>
+
+	* doc/sourcebuild.texi (vect_int_mult): Remove duplicate entry.
+
 2010-08-08  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* c-tree.h (build_arg_info): Declare.
