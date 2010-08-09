@@ -382,7 +382,7 @@ gnat_poplevel (void)
   tree block = level->block;
 
   BLOCK_VARS (block) = nreverse (BLOCK_VARS (block));
-  BLOCK_SUBBLOCKS (block) = nreverse (BLOCK_SUBBLOCKS (block));
+  BLOCK_SUBBLOCKS (block) = blocks_nreverse (BLOCK_SUBBLOCKS (block));
 
   /* If this is a function-level BLOCK don't do anything.  Otherwise, if there
      are no variables free the block and merge its subblocks into those of its

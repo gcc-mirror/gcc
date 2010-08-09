@@ -1,3 +1,7 @@
+2010-08-09  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc-interface/utils.c (gnat_poplevel): Use blocks_nreverse.
+
 2010-08-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (build_vms_descriptor32): Fix formatting.
