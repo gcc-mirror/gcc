@@ -1324,11 +1324,6 @@ Target supports hardware vectors of @code{float}.
 @item vect_int
 Target supports hardware vectors of @code{int}.
 
-@item vect_int_mult
-Target supports a vector widening multiplication of @code{short} operands
-into an @code{int} result, or supports promotion (unpacking) from
-@code{short} to @code{int} and a non-widening multiplication of @code{int}.
-
 @item vect_long
 Target supports hardware vectors of @code{long}.
 
