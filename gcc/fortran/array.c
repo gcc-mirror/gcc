@@ -1940,10 +1940,11 @@ spec_size (gfc_array_spec *as, mpz_t *result)
 }
 
 
-/* Get the number of elements in an array section.  */
+/* Get the number of elements in an array section. Optionally, also supply
+   the end value.  */
 
 gfc_try
-gfc_ref_dimen_size (gfc_array_ref *ar, int dimen, mpz_t *result)
+gfc_ref_dimen_size (gfc_array_ref *ar, int dimen, mpz_t *result, mpz_t *end)
 {
   mpz_t upper, lower, stride;
   gfc_try t;
@@ -2016,6 +2017,15 @@ gfc_ref_dimen_size (gfc_array_ref *ar, int dimen, mpz_t *result)
 	mpz_set_ui (*result, 0);
       t = SUCCESS;
 
+      if (end)
+	{
+	  mpz_init (*end);
+
+	  mpz_sub_ui (*end, *result, 1UL);
+	  mpz_mul (*end, *end, stride);
+	  mpz_add (*end, *end, lower);
+	}
+
     cleanup:
       mpz_clear (upper);
       mpz_clear (lower);
@@ -2040,7 +2050,7 @@ ref_size (gfc_array_ref *ar, mpz_t *result)
 
   for (d = 0; d < ar->dimen; d++)
     {
-      if (gfc_ref_dimen_size (ar, d, &size) == FAILURE)
+      if (gfc_ref_dimen_size (ar, d, &size, NULL) == FAILURE)
 	{
 	  mpz_clear (*result);
 	  return FAILURE;
@@ -2086,7 +2096,7 @@ gfc_array_dimen_size (gfc_expr *array, int dimen, mpz_t *result)
 		if (ref->u.ar.dimen_type[i] != DIMEN_ELEMENT)
 		  dimen--;
 
-	      return gfc_ref_dimen_size (&ref->u.ar, i - 1, result);
+	      return gfc_ref_dimen_size (&ref->u.ar, i - 1, result, NULL);
 	    }
 	}
 
@@ -2222,7 +2232,7 @@ gfc_array_ref_shape (gfc_array_ref *ar, mpz_t *shape)
 	{
 	  if (ar->dimen_type[i] != DIMEN_ELEMENT)
 	    {
-	      if (gfc_ref_dimen_size (ar, i, &shape[d]) == FAILURE)
+	      if (gfc_ref_dimen_size (ar, i, &shape[d], NULL) == FAILURE)
 		goto cleanup;
 	      d++;
 	    }

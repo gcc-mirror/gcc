@@ -4377,6 +4377,38 @@ resolve_array_ref (gfc_array_ref *ar)
 		       &ar->c_where[i], e->rank);
 	    return FAILURE;
 	  }
+
+      /* Fill in the upper bound, which may be lower than the
+	 specified one for something like a(2:10:5), which is
+	 identical to a(2:7:5).  Only relevant for strides not equal
+	 to one.  */
+      if (ar->dimen_type[i] == DIMEN_RANGE
+	  && ar->stride[i] != NULL && ar->stride[i]->expr_type == EXPR_CONSTANT
+	  && mpz_cmp_si (ar->stride[i]->value.integer, 1L) != 0)
+	{
+	  mpz_t size, end;
+
+	  if (gfc_ref_dimen_size (ar, i, &size, &end) == SUCCESS)
+	    {
+	      if (ar->end[i] == NULL)
+		{
+		  ar->end[i] =
+		    gfc_get_constant_expr (BT_INTEGER, gfc_index_integer_kind,
+					   &ar->where);
+		  mpz_set (ar->end[i]->value.integer, end);
+		}
+	      else if (ar->end[i]->ts.type == BT_INTEGER
+		       && ar->end[i]->expr_type == EXPR_CONSTANT)
+		{
+		  mpz_set (ar->end[i]->value.integer, end);
+		}
+	      else
+		gcc_unreachable ();
+
+	      mpz_clear (size);
+	      mpz_clear (end);
+	    }
+	}
     }
 
   if (ar->type == AR_FULL && ar->as->rank == 0)

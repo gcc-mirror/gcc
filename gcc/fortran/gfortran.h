@@ -2753,7 +2753,7 @@ gfc_try spec_size (gfc_array_spec *, mpz_t *);
 gfc_try spec_dimen_size (gfc_array_spec *, int, mpz_t *);
 int gfc_is_compile_time_shape (gfc_array_spec *);
 
-gfc_try gfc_ref_dimen_size (gfc_array_ref *, int dimen, mpz_t *);
+gfc_try gfc_ref_dimen_size (gfc_array_ref *, int dimen, mpz_t *, mpz_t *);
 
 
 /* interface.c -- FIXME: some of these should be in symbol.c */

@@ -1,3 +1,15 @@
+2010-08-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/44235
+	* array.c (gfc_ref_dimen_size):  Add end argument.
+	If end is non-NULL, calculate it.
+	(ref_size):  Adjust call to gfc_ref_dimen_size.
+	(gfc_array_dimen_size):  Likewise.
+	(gfc_array_res_shape):  Likewise.
+	* gfortran.h:  Adjust prototype for gfc_ref_dimen_size.
+	* resolve.c (resolve_array_ref):  For stride not equal to -1,
+	fill in the lowest possible end.
+
 2010-08-09  Janus Weil  <janus@gcc.gnu.org>
 
 	* intrinsic.texi: Correct documentation of ASINH, ACOSH and ATANH.
