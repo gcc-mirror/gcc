@@ -1,5 +1,10 @@
 2010-08-09  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/44632
+	* g++.dg/opt/nrv17.C: New testcase.
+
+2010-08-09  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/45212
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Adjust
 	alignment from MEM_REF offset only if we took it from the
