@@ -2284,11 +2284,7 @@ error_type (tree arg)
 int
 varargs_function_p (const_tree function)
 {
-  const_tree parm = TYPE_ARG_TYPES (TREE_TYPE (function));
-  for (; parm; parm = TREE_CHAIN (parm))
-    if (TREE_VALUE (parm) == void_type_node)
-      return 0;
-  return 1;
+  return stdarg_p (TREE_TYPE (function));
 }
 
 /* Returns 1 if decl is a member of a class.  */

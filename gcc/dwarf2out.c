@@ -18927,7 +18927,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
       if (fn_arg_types != NULL)
 	{
 	  /* This is the prototyped case, check for....  */
-	  if (TREE_VALUE (tree_last (fn_arg_types)) != void_type_node)
+	  if (stdarg_p (TREE_TYPE (decl)))
 	    gen_unspecified_parameters_die (decl, subr_die);
 	}
       else if (DECL_INITIAL (decl) == NULL_TREE)

@@ -1996,9 +1996,7 @@ iq2000_expand_prologue (void)
   /* If this function is a varargs function, store any registers that
      would normally hold arguments ($4 - $7) on the stack.  */
   if (store_args_on_stack
-      && ((TYPE_ARG_TYPES (fntype) != 0
-	   && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
-	       != void_type_node))
+      && (stdarg_p (fntype)
 	  || last_arg_is_vararg_marker))
     {
       int offset = (regno - GP_ARG_FIRST) * UNITS_PER_WORD;

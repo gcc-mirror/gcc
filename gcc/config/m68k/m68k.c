@@ -6540,9 +6540,7 @@ m68k_return_pops_args (tree fundecl, tree funtype, int size)
   return ((TARGET_RTD
 	   && (!fundecl
 	       || TREE_CODE (fundecl) != IDENTIFIER_NODE)
-	   && (TYPE_ARG_TYPES (funtype) == 0
-	       || (TREE_VALUE (tree_last (TYPE_ARG_TYPES (funtype)))
-		   == void_type_node)))
+	   && (!stdarg_p (funtype)))
 	  ? size : 0);
 }
 
