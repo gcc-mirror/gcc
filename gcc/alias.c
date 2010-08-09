@@ -2534,7 +2534,6 @@ int
 may_alias_p (const_rtx mem, const_rtx x)
 {
   rtx x_addr, mem_addr;
-  int ret;
 
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
     return 1;
