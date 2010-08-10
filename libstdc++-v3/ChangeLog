@@ -1,3 +1,22 @@
+2010-08-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/45228
+	* include/std/tuple (tuple<typename... _Elements>): Constrain
+	converting constructors and assignment operators with
+	sizeof...(_UElements) == sizeof...(_Elements).
+	(tuple(tuple<_UElements...>&): Remove.
+	(tuple<typename _T1>): Add.
+	* testsuite/20_util/tuple/cons/45228.cc: New.
+	* testsuite/20_util/tuple/cons/converting.cc: Likewise.
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust
+	dg-error line number.
+
+	* include/std/tuple (_Tuple_impl<>::_Tuple_impl(const _Tuple_impl&)):
+	Defaulted.
+
+	* include/std/tuple (tuple<typename _T1, typename _T2>
+	::operator=(pair<_U1, _U2>&&)): Use forward.
+
 2010-08-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/44963
