@@ -9289,6 +9289,36 @@ multiple_operation_profitable_p (bool is_store ATTRIBUTE_UNUSED,
   if (nops == 2 && arm_ld_sched && add_offset != 0)
     return false;
 
+  /* XScale has load-store double instructions, but they have stricter
+     alignment requirements than load-store multiple, so we cannot
+     use them.
+
+     For XScale ldm requires 2 + NREGS cycles to complete and blocks
+     the pipeline until completion.
+
+	NREGS		CYCLES
+	  1		  3
+	  2		  4
+	  3		  5
+	  4		  6
+
+     An ldr instruction takes 1-3 cycles, but does not block the
+     pipeline.
+
+	NREGS		CYCLES
+	  1		 1-3
+	  2		 2-6
+	  3		 3-9
+	  4		 4-12
+
+     Best case ldr will always win.  However, the more ldr instructions
+     we issue, the less likely we are to be able to schedule them well.
+     Using ldr instructions also increases code size.
+
+     As a compromise, we use ldr for counts of 1 or 2 regs, and ldm
+     for counts of 3 or 4 regs.  */
+  if (nops <= 2 && arm_tune_xscale && !optimize_size)
+    return false;
   return true;
 }
 
@@ -9641,35 +9671,7 @@ arm_gen_load_multiple_1 (int count, int *regs, rtx *mems, rtx basereg,
   int i = 0, j;
   rtx result;
 
-  /* XScale has load-store double instructions, but they have stricter
-     alignment requirements than load-store multiple, so we cannot
-     use them.
-
-     For XScale ldm requires 2 + NREGS cycles to complete and blocks
-     the pipeline until completion.
-
-	NREGS		CYCLES
-	  1		  3
-	  2		  4
-	  3		  5
-	  4		  6
-
-     An ldr instruction takes 1-3 cycles, but does not block the
-     pipeline.
-
-	NREGS		CYCLES
-	  1		 1-3
-	  2		 2-6
-	  3		 3-9
-	  4		 4-12
-
-     Best case ldr will always win.  However, the more ldr instructions
-     we issue, the less likely we are to be able to schedule them well.
-     Using ldr instructions also increases code size.
-
-     As a compromise, we use ldr for counts of 1 or 2 regs, and ldm
-     for counts of 3 or 4 regs.  */
-  if (arm_tune_xscale && count <= 2 && ! optimize_size)
+  if (!multiple_operation_profitable_p (false, count, 0))
     {
       rtx seq;
 
@@ -9721,9 +9723,7 @@ arm_gen_store_multiple_1 (int count, int *regs, rtx *mems, rtx basereg,
   if (GET_CODE (basereg) == PLUS)
     basereg = XEXP (basereg, 0);
 
-  /* See arm_gen_load_multiple_1 for discussion of
-     the pros/cons of ldm/stm usage for XScale.  */
-  if (arm_tune_xscale && count <= 2 && ! optimize_size)
+  if (!multiple_operation_profitable_p (false, count, 0))
     {
       rtx seq;
 
