@@ -511,11 +511,6 @@ package body Sem_Ch8 is
    procedure Write_Info;
    --  Write debugging information on entities declared in current scope
 
-   procedure Write_Scopes;
-   pragma Warnings (Off, Write_Scopes);
-   pragma Export (Ada, Write_Scopes);
-   --  Debugging information: dump all entities on scope stack
-
    --------------------------------
    -- Analyze_Exception_Renaming --
    --------------------------------
@@ -7732,11 +7727,11 @@ package body Sem_Ch8 is
       Write_Eol;
    end Write_Info;
 
-   -----------------
-   -- Write_Scopes --
-   -----------------
+   --------
+   -- ws --
+   --------
 
-   procedure Write_Scopes is
+   procedure ws is
       S : Entity_Id;
    begin
       for J in reverse 1 .. Scope_Stack.Last loop
@@ -7746,6 +7741,6 @@ package body Sem_Ch8 is
          Write_Name (Chars (S));
          Write_Eol;
       end loop;
-   end Write_Scopes;
+   end ws;
 
 end Sem_Ch8;
