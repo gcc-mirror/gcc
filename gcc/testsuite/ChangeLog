@@ -1,3 +1,8 @@
+2010-08-10  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR middle-end/45182
+	* gcc.c-torture/compile/pr45182.c: New test.
+
 2010-08-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/45236
