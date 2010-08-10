@@ -903,6 +903,7 @@ find_split_points (int overall_time, int overall_size)
   ENTRY_BLOCK_PTR->aux = NULL;
   FOR_EACH_BB (bb)
     bb->aux = NULL;
+  VEC_free (stack_entry, heap, stack);
   BITMAP_FREE (current.ssa_names_to_pass);
 }
 
