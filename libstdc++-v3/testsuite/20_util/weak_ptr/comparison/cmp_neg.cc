@@ -43,7 +43,7 @@ main()
 
 // { dg-warning "note" "" { target *-*-* } 327 }
 // { dg-warning "note" "" { target *-*-* } 446 }
-// { dg-warning "note" "" { target *-*-* } 864 }
+// { dg-warning "note" "" { target *-*-* } 863 }
 // { dg-warning "note" "" { target *-*-* } 580 }
 // { dg-warning "note" "" { target *-*-* } 1027 }
 // { dg-warning "note" "" { target *-*-* } 340 }
