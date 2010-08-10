@@ -1,3 +1,11 @@
+2010-08-10  Daniel Kraft  <d@domob.eu>
+
+	* gfortran.texi (Interoperability with C): Fix ordering in menu
+	and add new subsection about pointers.
+	(Interoperable Subroutines and Functions): Split off the pointer part.
+	(working with Pointers): New subsection with extended discussion
+	of pointers (especially procedure pointers).
+
 2010-08-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/44235

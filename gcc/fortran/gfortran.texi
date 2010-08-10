@@ -1933,10 +1933,11 @@ and their use is highly recommended.
 
 @menu
 * Intrinsic Types::
-* Further Interoperability of Fortran with C::
 * Derived Types and struct::
 * Interoperable Global Variables::
 * Interoperable Subroutines and Functions::
+* Working with Pointers::
+* Further Interoperability of Fortran with C::
 @end menu
 
 Since Fortran 2003 (ISO/IEC 1539-1:2004(E)) there is a
@@ -2059,7 +2060,8 @@ matches the Fortran declaration
     integer(c_int) :: j
 @end smallexample
 
-Note that pointer arguments also frequently need the @code{VALUE} attribute.
+Note that pointer arguments also frequently need the @code{VALUE} attribute,
+see @ref{Working with Pointers}.
 
 Strings are handled quite differently in C and Fortran. In C a string
 is a @code{NUL}-terminated array of characters while in Fortran each string
@@ -2096,7 +2098,7 @@ literal has the right type; typically the default character
 kind and @code{c_char} are the same and thus @code{"Hello World"}
 is equivalent. However, the standard does not guarantee this.
 
-The use of pointers is now illustrated using the C library
+The use of strings is now further illustrated using the C library
 function @code{strncpy}, whose prototype is
 
 @smallexample
@@ -2128,8 +2130,13 @@ example, we ignore the return value:
   end
 @end smallexample
 
-C pointers are represented in Fortran via the special derived type
-@code{type(c_ptr)}, with private components. Thus one needs to
+The intrinsic procedures are described in @ref{Intrinsic Procedures}.
+
+@node Working with Pointers
+@subsection Working with Pointers
+
+C pointers are represented in Fortran via the special opaque derived type
+@code{type(c_ptr)} (with private components). Thus one needs to
 use intrinsic conversion procedures to convert from or to C pointers.
 For example,
 
@@ -2147,14 +2154,131 @@ For example,
 @end smallexample
 
 When converting C to Fortran arrays, the one-dimensional @code{SHAPE} argument
-has to be passed. Note: A pointer argument @code{void *} matches
-@code{TYPE(C_PTR), VALUE} while @code{TYPE(C_PTR)} matches @code{void **}.
+has to be passed.
+
+If a pointer is a dummy-argument of an interoperable procedure, it usually
+has to be declared using the @code{VALUE} attribute.  @code{void*}
+matches @code{TYPE(C_PTR), VALUE}, while @code{TYPE(C_PTR)} alone
+matches @code{void**}.
 
 Procedure pointers are handled analogously to pointers; the C type is
 @code{TYPE(C_FUNPTR)} and the intrinsic conversion procedures are
-@code{C_F_PROC_POINTER} and @code{C_FUNLOC}.
+@code{C_F_PROCPOINTER} and @code{C_FUNLOC}.
 
-The intrinsic procedures are described in @ref{Intrinsic Procedures}.
+Let's consider two examples of actually passing a procedure pointer from
+C to Fortran and vice versa.  Note that these examples are also very
+similar to passing ordinary pointers between both languages.
+First, consider this code in C:
+
+@smallexample
+/* Procedure implemented in Fortran.  */
+void get_values (void (*)(double));
+
+/* Call-back routine we want called from Fortran.  */
+void
+print_it (double x)
+@{
+  printf ("Number is %f.\n", x);
+@}
+
+/* Call Fortran routine and pass call-back to it.  */
+void
+foobar ()
+@{
+  get_values (&print_it);
+@}
+@end smallexample
+
+A matching implementation for @code{get_values} in Fortran, that correctly
+receives the procedure pointer from C and is able to call it, is given
+in the following @code{MODULE}:
+
+@smallexample
+MODULE m
+  IMPLICIT NONE
+
+  ! Define interface of call-back routine.
+  ABSTRACT INTERFACE
+    SUBROUTINE callback (x)
+      USE, INTRINSIC :: ISO_C_BINDING
+      REAL(KIND=C_DOUBLE), INTENT(IN), VALUE :: x
+    END SUBROUTINE callback
+  END INTERFACE
+
+CONTAINS
+
+  ! Define C-bound procedure.
+  SUBROUTINE get_values (cproc) BIND(C)
+    USE, INTRINSIC :: ISO_C_BINDING
+    TYPE(C_FUNPTR), INTENT(IN), VALUE :: cproc
+
+    PROCEDURE(callback), POINTER :: proc
+
+    ! Convert C to Fortran procedure pointer.
+    CALL C_F_PROCPOINTER (cproc, proc)
+
+    ! Call it.
+    CALL proc (1.0_C_DOUBLE)
+    CALL proc (-42.0_C_DOUBLE)
+    CALL proc (18.12_C_DOUBLE)
+  END SUBROUTINE get_values
+
+END MODULE m
+@end smallexample
+
+Next, we want to call a C routine that expects a procedure pointer argument
+and pass it a Fortran procedure (which clearly must be interoperable!).
+Again, the C function may be:
+
+@smallexample
+int
+call_it (int (*func)(int), int arg)
+@{
+  return func (arg);
+@}
+@end smallexample
+
+It can be used as in the following Fortran code:
+
+@smallexample
+MODULE m
+  USE, INTRINSIC :: ISO_C_BINDING
+  IMPLICIT NONE
+
+  ! Define interface of C function.
+  INTERFACE
+    INTEGER(KIND=C_INT) FUNCTION call_it (func, arg) BIND(C)
+      USE, INTRINSIC :: ISO_C_BINDING
+      TYPE(C_FUNPTR), INTENT(IN), VALUE :: func
+      INTEGER(KIND=C_INT), INTENT(IN), VALUE :: arg
+    END FUNCTION call_it
+  END INTERFACE
+
+CONTAINS
+
+  ! Define procedure passed to C function.
+  ! It must be interoperable!
+  INTEGER(KIND=C_INT) FUNCTION double_it (arg) BIND(C)
+    INTEGER(KIND=C_INT), INTENT(IN), VALUE :: arg
+    double_it = arg + arg
+  END FUNCTION double_it
+
+  ! Call C function.
+  SUBROUTINE foobar ()
+    TYPE(C_FUNPTR) :: cproc
+    INTEGER(KIND=C_INT) :: i
+
+    ! Get C procedure pointer.
+    cproc = C_FUNLOC (double_it)
+
+    ! Use it.
+    DO i = 1_C_INT, 10_C_INT
+      PRINT *, call_it (cproc, i)
+    END DO
+  END SUBROUTINE foobar
+
+END MODULE m
+@end smallexample
 
 @node Further Interoperability of Fortran with C
 @subsection Further Interoperability of Fortran with C
