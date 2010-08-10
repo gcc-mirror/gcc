@@ -399,13 +399,7 @@
 ;;---------------------------------------------------------------------------
 ;; Mode iterators
 
-; A list of modes that are exactly 64 bits in size.  We use this to expand
-; some splits that are the same for all modes when operating on ARM 
-; registers.
-(define_mode_iterator ANY64 [DI DF V8QI V4HI V2SI V2SF])
-
-;; The integer modes up to word size
-(define_mode_iterator QHSI [QI HI SI])
+(include "iterators.md")
 
 ;;---------------------------------------------------------------------------
 ;; Predicates
@@ -865,10 +859,6 @@
    cmp%?\\t%0, #%n1"
   [(set_attr "conds" "set")]
 )
-
-(define_code_iterator LTUGEU [ltu geu])
-(define_code_attr cnb [(ltu "CC_C") (geu "CC")])
-(define_code_attr optab [(ltu "ltu") (geu "geu")])
 
 (define_insn "*addsi3_carryin_<optab>"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -4258,7 +4248,6 @@
   ""
 )
 
-(define_code_iterator ior_xor [ior xor])
 
 (define_split
   [(set (match_operand:SI 0 "s_register_operand" "")
