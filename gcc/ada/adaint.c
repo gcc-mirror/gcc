@@ -579,7 +579,7 @@ __gnat_get_maximum_file_name_length (void)
 int
 __gnat_get_file_names_case_sensitive (void)
 {
-#if defined (VMS) || defined (WINNT)
+#if defined (VMS) || defined (WINNT) || defined (__APPLE__)
   return 0;
 #else
   return 1;

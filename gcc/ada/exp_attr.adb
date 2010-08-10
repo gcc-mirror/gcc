@@ -96,7 +96,6 @@ package body Exp_Attr is
      (N    : Node_Id;
       Pref : Node_Id;
       Typ  : Entity_Id);
-
    --  An attribute reference to a protected subprogram is transformed into
    --  a pair of pointers: one to the object, and one to the operations.
    --  This expansion is performed for 'Access and for 'Unrestricted_Access.
@@ -370,7 +369,11 @@ package body Exp_Attr is
         Make_Aggregate (Loc,
           Expressions => New_List (Obj_Ref, Sub_Ref));
 
+      --  Sub_Ref has been marked as analyzed, but we still need to make sure
+      --  Sub is correctly frozen.
+
       Freeze_Before (N, Entity (Sub));
+
       Rewrite (N, Agg);
       Analyze_And_Resolve (N, E_T);
 
