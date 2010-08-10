@@ -1,3 +1,9 @@
+2010-08-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira-live.c: Include sbitmap.h.
+	(remove_some_program_points_and_update_live_ranges): Use sbitmaps.
+	Compress live ranges even more.
+
 2010-08-10  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* coverage.c (ctr_labels): Delete.
