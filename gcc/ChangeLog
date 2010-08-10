@@ -1,3 +1,11 @@
+2010-08-10  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR bootstrap/45177
+	* config/arm/arm.c (multiple_operation_profitable_p): Move xscale
+	test here from arm_gen_load_multiple_1.
+	(arm_gen_load_multiple_1, arm_gen_store_multiple_1): Use
+	multiple_operation_profitable_p.
+
 2010-08-10  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree-ssa-prec. (init_pre): Call alloc_aux_for_blocks.
