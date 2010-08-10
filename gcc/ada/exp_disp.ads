@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -186,6 +186,10 @@ package Exp_Disp is
    --  bodies they are added to the end of the list of declarations of the
    --  package body.
 
+   function CPP_Num_Prims (Typ : Entity_Id) return Nat;
+   --  Return the number of primitives of the C++ part of the dispatch table.
+   --  For types that are not derivations of CPP types return 0.
+
    procedure Expand_Dispatching_Call (Call_Node : Node_Id);
    --  Expand the call to the operation through the dispatch table and perform
    --  the required tag checks when appropriate. For CPP types tag checks are
@@ -214,6 +218,9 @@ package Exp_Disp is
    --  generate the thunk then Thunk_Id and Thunk_Code are set to Empty.
    --  Otherwise they are set to the defining identifier and the subprogram
    --  body of the generated thunk.
+
+   function Has_CPP_Constructors (Typ : Entity_Id) return Boolean;
+   --  Returns true if the type has CPP constructors
 
    function Is_Predefined_Dispatching_Operation (E : Entity_Id) return Boolean;
    --  Ada 2005 (AI-251): Determines if E is a predefined primitive operation

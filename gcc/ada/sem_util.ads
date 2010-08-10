@@ -279,6 +279,9 @@ package Sem_Util is
    --  these names is supposed to be a selected component name, an expanded
    --  name, a defining program unit name or an identifier.
 
+   function Enclosing_CPP_Parent (Typ : Entity_Id) return Entity_Id;
+   --  Returns the closest ancestor of Typ that is a CPP type.
+
    function Enclosing_Generic_Body
      (N : Node_Id) return Node_Id;
    --  Returns the Node_Id associated with the innermost enclosing generic
@@ -577,6 +580,9 @@ package Sem_Util is
    --  there is no Stream type in sight. For a private type, the test is
    --  applied to the underlying type (or returns False if there is no
    --  underlying type).
+
+   function Has_Suffix (E : Entity_Id; Suffix : Character) return Boolean;
+   --  Returns true if the last character of E is Suffix. Used in Assertions.
 
    function Has_Tagged_Component (Typ : Entity_Id) return Boolean;
    --  Returns True if Typ is a composite type (array or record) which is

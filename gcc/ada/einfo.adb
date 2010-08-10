@@ -219,11 +219,11 @@ package body Einfo is
    --    Last_Assignment                 Node26
    --    Overridden_Operation            Node26
    --    Package_Instantiation           Node26
-   --    Related_Type                    Node26
    --    Relative_Deadline_Variable      Node26
    --    Static_Initialization           Node26
 
    --    Current_Use_Clause              Node27
+   --    Related_Type                    Node27
    --    Wrapped_Entity                  Node27
 
    --    Extra_Formals                   Node28
@@ -1481,7 +1481,6 @@ package body Einfo is
 
    function Has_Thunks (Id : E) return B is
    begin
-      pragma Assert (Ekind (Id) = E_Constant);
       return Flag228 (Id);
    end Has_Thunks;
 
@@ -2442,8 +2441,8 @@ package body Einfo is
 
    function Related_Type (Id : E) return E is
    begin
-      pragma Assert (Ekind_In (Id, E_Component, E_Constant));
-      return Node26 (Id);
+      pragma Assert (Ekind_In (Id, E_Component, E_Constant, E_Variable));
+      return Node27 (Id);
    end Related_Type;
 
    function Relative_Deadline_Variable (Id : E) return E is
@@ -3884,8 +3883,7 @@ package body Einfo is
 
    procedure Set_Has_Thunks (Id : E; V : B := True) is
    begin
-      pragma Assert (Is_Tag (Id)
-        and then Ekind (Id) = E_Constant);
+      pragma Assert (Is_Tag (Id));
       Set_Flag228 (Id, V);
    end Set_Has_Thunks;
 
@@ -4452,7 +4450,7 @@ package body Einfo is
 
    procedure Set_Is_Tag (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind_In (Id, E_Component, E_Constant));
+      pragma Assert (Ekind_In (Id, E_Component, E_Constant, E_Variable));
       Set_Flag78 (Id, V);
    end Set_Is_Tag;
 
@@ -4883,8 +4881,8 @@ package body Einfo is
 
    procedure Set_Related_Type (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Component, E_Constant));
-      Set_Node26 (Id, V);
+      pragma Assert (Ekind_In (Id, E_Component, E_Constant, E_Variable));
+      Set_Node27 (Id, V);
    end Set_Related_Type;
 
    procedure Set_Relative_Deadline_Variable (Id : E; V : E) is
@@ -8011,10 +8009,6 @@ package body Einfo is
    procedure Write_Field26_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
-         when E_Component                                  |
-              E_Constant                                   =>
-            Write_Str ("Related_Type");
-
          when E_Generic_Package                            |
               E_Package                                    =>
             Write_Str ("Package_Instantiation");
@@ -8052,6 +8046,11 @@ package body Einfo is
    procedure Write_Field27_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when E_Component                                  |
+              E_Constant                                   |
+              E_Variable                                   =>
+            Write_Str ("Related_Type");
+
          when E_Procedure                                  =>
             Write_Str ("Wrapped_Entity");
 

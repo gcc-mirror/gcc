@@ -34,6 +34,7 @@ with Exp_Util; use Exp_Util;
 with Exp_Ch3;  use Exp_Ch3;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch9;  use Exp_Ch9;
+with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
@@ -2840,12 +2841,61 @@ package body Exp_Aggr is
       --  constructor to ensure the proper initialization of the _Tag
       --  component.
 
-      if Is_CPP_Class (Typ) then
-         pragma Assert (Present (Base_Init_Proc (Typ)));
-         Append_List_To (L,
-           Build_Initialization_Call (Loc,
-             Id_Ref => Lhs,
-             Typ    => Typ));
+      if Is_CPP_Class (Root_Type (Typ))
+        and then CPP_Num_Prims (Typ) > 0
+      then
+         Invoke_Constructor : declare
+            CPP_Parent : constant Entity_Id :=
+                           Enclosing_CPP_Parent (Typ);
+
+            procedure Invoke_IC_Proc (T : Entity_Id);
+            --  Recursive routine used to climb to parents. Required because
+            --  parents must be initialized before descendants to ensure
+            --  propagation of inherited C++ slots.
+
+            --------------------
+            -- Invoke_IC_Proc --
+            --------------------
+
+            procedure Invoke_IC_Proc (T : Entity_Id) is
+            begin
+               --  Avoid generating extra calls. Initialization required
+               --  only for types defined from the level of derivation of
+               --  type of the constructor and the type of the aggregate.
+
+               if T = CPP_Parent then
+                  return;
+               end if;
+
+               Invoke_IC_Proc (Etype (T));
+
+               --  Generate call to the IC routine
+
+               if Present (CPP_Init_Proc (T)) then
+                  Append_To (L,
+                    Make_Procedure_Call_Statement (Loc,
+                      New_Reference_To (CPP_Init_Proc (T), Loc)));
+               end if;
+            end Invoke_IC_Proc;
+
+         --  Start of processing for Invoke_Constructor
+
+         begin
+            --  Implicit invocation of the C++ constructor
+
+            if Nkind (N) = N_Aggregate then
+               Append_To (L,
+                 Make_Procedure_Call_Statement (Loc,
+                   Name =>
+                     New_Reference_To
+                       (Base_Init_Proc (CPP_Parent), Loc),
+                   Parameter_Associations => New_List (
+                     Unchecked_Convert_To (CPP_Parent,
+                       New_Copy_Tree (Lhs)))));
+            end if;
+
+            Invoke_IC_Proc (Typ);
+         end Invoke_Constructor;
       end if;
 
       --  Generate the assignments, component by component

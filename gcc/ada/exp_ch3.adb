@@ -214,6 +214,9 @@ package body Exp_Ch3 is
    --  Check if E is defined in the RTL (in a child of Ada or System). Used
    --  to avoid to bring in the overhead of _Input, _Output for tagged types.
 
+   function Is_Variable_Size_Array (E : Entity_Id) return Boolean;
+   --  Returns true if E has variable size components
+
    function Is_Variable_Size_Record (E : Entity_Id) return Boolean;
    --  Returns true if E has variable size components
 
@@ -1777,6 +1780,12 @@ package body Exp_Ch3 is
       --
       --  This function builds the call statement in this _init_proc.
 
+      procedure Build_CPP_Init_Procedure;
+      --  Build the tree corresponding to the procedure specification and body
+      --  of the IC procedure that initializes the C++ part of the dispatch
+      --  table of an Ada tagged type that is a derivation of a CPP type.
+      --  Install it as the CPP_Init TSS.
+
       procedure Build_Init_Procedure;
       --  Build the tree corresponding to the procedure specification and body
       --  of the initialization procedure (by calling all the preceding
@@ -2209,6 +2218,104 @@ package body Exp_Ch3 is
          end loop;
       end Build_Offset_To_Top_Functions;
 
+      ------------------------------
+      -- Build_CPP_Init_Procedure --
+      ------------------------------
+
+      procedure Build_CPP_Init_Procedure is
+         Body_Node         : Node_Id;
+         Body_Stmts        : List_Id;
+         Flag_Id           : Entity_Id;
+         Flag_Decl         : Node_Id;
+         Handled_Stmt_Node : Node_Id;
+         Init_Tags_List    : List_Id;
+         Proc_Id           : Entity_Id;
+         Proc_Spec_Node    : Node_Id;
+
+      begin
+         --  Check cases requiring no IC routine
+
+         if not Is_CPP_Class (Root_Type (Rec_Type))
+           or else Is_CPP_Class (Rec_Type)
+           or else CPP_Num_Prims (Rec_Type) = 0
+           or else not Tagged_Type_Expansion
+           or else No_Run_Time_Mode
+         then
+            return;
+         end if;
+
+         --  Generate:
+
+         --     Flag : Boolean := False;
+         --
+         --     procedure Typ_IC is
+         --     begin
+         --        if not Flag then
+         --           Copy C++ dispatch table slots from parent
+         --           Update C++ slots of overridden primitives
+         --        end if;
+         --     end;
+
+         Flag_Id := Make_Temporary (Loc, 'F');
+
+         Flag_Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Flag_Id,
+             Object_Definition =>
+               New_Reference_To (Standard_Boolean, Loc),
+             Expression =>
+               New_Reference_To (Standard_True, Loc));
+
+         Analyze (Flag_Decl);
+         Append_Freeze_Action (Rec_Type, Flag_Decl);
+
+         Body_Stmts := New_List;
+         Body_Node := New_Node (N_Subprogram_Body, Loc);
+
+         Proc_Spec_Node := New_Node (N_Procedure_Specification, Loc);
+
+         Proc_Id :=
+           Make_Defining_Identifier (Loc,
+             Chars => Make_TSS_Name (Rec_Type, TSS_CPP_Init_Proc));
+
+         Set_Ekind       (Proc_Id, E_Procedure);
+         Set_Is_Internal (Proc_Id);
+
+         Set_Defining_Unit_Name (Proc_Spec_Node, Proc_Id);
+
+         Set_Parameter_Specifications (Proc_Spec_Node, New_List);
+         Set_Specification (Body_Node, Proc_Spec_Node);
+         Set_Declarations (Body_Node, New_List);
+
+         Init_Tags_List := Build_Inherit_CPP_Prims (Rec_Type);
+
+         Append_To (Init_Tags_List,
+           Make_Assignment_Statement (Loc,
+             Name =>
+               New_Reference_To (Flag_Id, Loc),
+             Expression =>
+               New_Reference_To (Standard_False, Loc)));
+
+         Append_To (Body_Stmts,
+           Make_If_Statement (Loc,
+             Condition => New_Occurrence_Of (Flag_Id, Loc),
+             Then_Statements => Init_Tags_List));
+
+         Handled_Stmt_Node :=
+           New_Node (N_Handled_Sequence_Of_Statements, Loc);
+         Set_Statements (Handled_Stmt_Node, Body_Stmts);
+         Set_Exception_Handlers (Handled_Stmt_Node, No_List);
+         Set_Handled_Statement_Sequence (Body_Node, Handled_Stmt_Node);
+
+         if not Debug_Generated_Code then
+            Set_Debug_Info_Off (Proc_Id);
+         end if;
+
+         --  Associate CPP_Init_Proc with type
+
+         Set_Init_Proc (Rec_Type, Proc_Id);
+      end Build_CPP_Init_Procedure;
+
       --------------------------
       -- Build_Init_Procedure --
       --------------------------
@@ -2239,9 +2346,7 @@ package body Exp_Ch3 is
          --  a type extension. If the flag is false, we do not set the tag
          --  because it has been set already in the extension.
 
-         if Is_Tagged_Type (Rec_Type)
-           and then not Is_CPP_Class (Rec_Type)
-         then
+         if Is_Tagged_Type (Rec_Type) then
             Set_Tag := Make_Temporary (Loc, 'P');
 
             Append_To (Parameters,
@@ -2312,133 +2417,154 @@ package body Exp_Ch3 is
          --  the C++ side.
 
          if Is_Tagged_Type (Rec_Type)
-           and then not Is_CPP_Class (Rec_Type)
            and then Tagged_Type_Expansion
            and then not No_Run_Time_Mode
          then
-            --  Initialize the primary tag
-
-            Init_Tags_List := New_List (
-              Make_Assignment_Statement (Loc,
-                Name =>
-                  Make_Selected_Component (Loc,
-                    Prefix => Make_Identifier (Loc, Name_uInit),
-                    Selector_Name =>
-                      New_Reference_To (First_Tag_Component (Rec_Type), Loc)),
-
-                Expression =>
-                  New_Reference_To
-                    (Node (First_Elmt (Access_Disp_Table (Rec_Type))), Loc)));
-
-            --  Ada 2005 (AI-251): Initialize the secondary tags components
-            --  located at fixed positions (tags whose position depends on
-            --  variable size components are initialized later ---see below).
-
-            if Ada_Version >= Ada_05
-              and then not Is_Interface (Rec_Type)
-              and then Has_Interfaces (Rec_Type)
-            then
-               Init_Secondary_Tags
-                 (Typ            => Rec_Type,
-                  Target         => Make_Identifier (Loc, Name_uInit),
-                  Stmts_List     => Init_Tags_List,
-                  Fixed_Comps    => True,
-                  Variable_Comps => False);
-            end if;
-
-            --  The tag must be inserted before the assignments to other
-            --  components,  because the initial value of the component may
-            --  depend on the tag (eg. through a dispatching operation on
-            --  an access to the current type). The tag assignment is not done
-            --  when initializing the parent component of a type extension,
-            --  because in that case the tag is set in the extension.
-
-            --  Extensions of imported C++ classes add a final complication,
-            --  because we cannot inhibit tag setting in the constructor for
-            --  the parent. In that case we insert the tag initialization
-            --  after the calls to initialize the parent.
+            --  Case 1: Ada tagged types with no CPP ancestor. Set the tags of
+            --  the actual object and invoke the IP of the parent (in this
+            --  order). The tag must be initialized before the call to the IP
+            --  of the parent and the assignments to other components because
+            --  the initial value of the components may depend on the tag (eg.
+            --  through a dispatching operation on an access to the current
+            --  type). The tag assignment is not done when initializing the
+            --  parent component of a type extension, because in that case the
+            --  tag is set in the extension.
 
             if not Is_CPP_Class (Root_Type (Rec_Type)) then
+
+               --  Initialize the primary tag component
+
+               Init_Tags_List := New_List (
+                 Make_Assignment_Statement (Loc,
+                   Name =>
+                     Make_Selected_Component (Loc,
+                       Prefix => Make_Identifier (Loc, Name_uInit),
+                       Selector_Name =>
+                         New_Reference_To
+                           (First_Tag_Component (Rec_Type), Loc)),
+                   Expression =>
+                     New_Reference_To
+                       (Node
+                         (First_Elmt (Access_Disp_Table (Rec_Type))), Loc)));
+
+               --  Ada 2005 (AI-251): Initialize the secondary tags components
+               --  located at fixed positions (tags whose position depends on
+               --  variable size components are initialized later ---see below)
+
+               if Ada_Version >= Ada_05
+                 and then not Is_Interface (Rec_Type)
+                 and then Has_Interfaces (Rec_Type)
+               then
+                  Init_Secondary_Tags
+                    (Typ            => Rec_Type,
+                     Target         => Make_Identifier (Loc, Name_uInit),
+                     Stmts_List     => Init_Tags_List,
+                     Fixed_Comps    => True,
+                     Variable_Comps => False);
+               end if;
+
                Prepend_To (Body_Stmts,
                  Make_If_Statement (Loc,
                    Condition => New_Occurrence_Of (Set_Tag, Loc),
                    Then_Statements => Init_Tags_List));
 
-            --  CPP_Class derivation: In this case the dispatch table of the
-            --  parent was built in the C++ side and we copy the table of the
-            --  parent to initialize the new dispatch table.
+            --  Case 2: CPP type. The imported C++ constructor takes care of
+            --  tags initialization. No action needed here because the IP
+            --  is built by Set_CPP_Constructors; in this case the IP is a
+            --  wrapper that invokes the C++ constructor and copies the C++
+            --  tags locally. Done to inherit the C++ slots in Ada derivations
+            --  (see case 3).
+
+            elsif Is_CPP_Class (Rec_Type) then
+               pragma Assert (False);
+               null;
+
+            --  Case 3: Combined hierarchy containing C++ types and Ada tagged
+            --  type derivations. Derivations of imported C++ classes add a
+            --  complication, because we cannot inhibit tag setting in the
+            --  constructor for the parent. Hence we initialize the tag after
+            --  the call to the parent IP (that is, in reverse order compared
+            --  with pure Ada hierarchies ---see comment on case 1).
 
             else
+               --  Initialize the primary tag
+
+               Init_Tags_List := New_List (
+                 Make_Assignment_Statement (Loc,
+                   Name =>
+                     Make_Selected_Component (Loc,
+                       Prefix => Make_Identifier (Loc, Name_uInit),
+                       Selector_Name =>
+                         New_Reference_To
+                           (First_Tag_Component (Rec_Type), Loc)),
+                   Expression =>
+                     New_Reference_To
+                       (Node
+                         (First_Elmt (Access_Disp_Table (Rec_Type))), Loc)));
+
+               --  Ada 2005 (AI-251): Initialize the secondary tags components
+               --  located at fixed positions (tags whose position depends on
+               --  variable size components are initialized later ---see below)
+
+               if Ada_Version >= Ada_05
+                 and then not Is_Interface (Rec_Type)
+                 and then Has_Interfaces (Rec_Type)
+               then
+                  Init_Secondary_Tags
+                    (Typ            => Rec_Type,
+                     Target         => Make_Identifier (Loc, Name_uInit),
+                     Stmts_List     => Init_Tags_List,
+                     Fixed_Comps    => True,
+                     Variable_Comps => False);
+               end if;
+
+               --  Initialize the tag component after invocation of parent IP.
+
+               --  Generate:
+               --     parent_IP(_init.parent); // Invokes the C++ constructor
+               --     [ typIC; ]               // Inherit C++ slots from parent
+               --     init_tags
+
                declare
-                  Nod : Node_Id;
+                  Ins_Nod : Node_Id;
 
                begin
-                  --  We assume the first init_proc call is for the parent
+                  --  Search for the call to the IP of the parent. We assume
+                  --  that the first init_proc call is for the parent.
 
-                  Nod := First (Body_Stmts);
-                  while Present (Next (Nod))
-                    and then (Nkind (Nod) /= N_Procedure_Call_Statement
-                               or else not Is_Init_Proc (Name (Nod)))
+                  Ins_Nod := First (Body_Stmts);
+                  while Present (Next (Ins_Nod))
+                     and then (Nkind (Ins_Nod) /= N_Procedure_Call_Statement
+                                or else not Is_Init_Proc (Name (Ins_Nod)))
                   loop
-                     Nod := Next (Nod);
+                     Next (Ins_Nod);
                   end loop;
 
-                  --  Generate:
-                  --     ancestor_constructor (_init.parent);
-                  --     if Arg2 then
-                  --        inherit_prim_ops (_init._tag, new_dt, num_prims);
-                  --        _init._tag := new_dt;
-                  --     end if;
+                  --  The IC routine copies the inherited slots of the C+ part
+                  --  of the dispatch table from the parent and updates the
+                  --  overridden C++ slots.
 
-                  Prepend_To (Init_Tags_List,
-                    Build_Inherit_Prims (Loc,
-                      Typ          => Rec_Type,
-                      Old_Tag_Node =>
-                        Make_Selected_Component (Loc,
-                          Prefix        =>
-                            Make_Identifier (Loc,
-                              Chars => Name_uInit),
-                          Selector_Name =>
-                            New_Reference_To
-                              (First_Tag_Component (Rec_Type), Loc)),
-                      New_Tag_Node =>
-                        New_Reference_To
-                          (Node (First_Elmt (Access_Disp_Table (Rec_Type))),
-                           Loc),
-                      Num_Prims    =>
-                        UI_To_Int
-                          (DT_Entry_Count (First_Tag_Component (Rec_Type)))));
+                  if CPP_Num_Prims (Rec_Type) > 0 then
+                     declare
+                        Init_DT : Entity_Id;
+                        New_Nod : Node_Id;
 
-                  Insert_After (Nod,
-                    Make_If_Statement (Loc,
-                      Condition => New_Occurrence_Of (Set_Tag, Loc),
-                      Then_Statements => Init_Tags_List));
+                     begin
+                        Init_DT := CPP_Init_Proc (Rec_Type);
+                        pragma Assert (Present (Init_DT));
 
-                  --  We have inherited table of the parent from the CPP side.
-                  --  Now we fill the slots associated with Ada primitives.
-                  --  This needs more work to avoid its execution each time
-                  --  an object is initialized???
+                        New_Nod :=
+                          Make_Procedure_Call_Statement (Loc,
+                            New_Reference_To (Init_DT, Loc));
+                        Insert_After (Ins_Nod, New_Nod);
 
-                  declare
-                     E    : Elmt_Id;
-                     Prim : Node_Id;
+                        --  Update location of init tag statements
 
-                  begin
-                     E := First_Elmt (Primitive_Operations (Rec_Type));
-                     while Present (E) loop
-                        Prim := Node (E);
+                        Ins_Nod := New_Nod;
+                     end;
+                  end if;
 
-                        if not Is_Imported (Prim)
-                          and then Convention (Prim) = Convention_CPP
-                          and then not Present (Interface_Alias (Prim))
-                        then
-                           Append_List_To (Init_Tags_List,
-                             Register_Primitive (Loc, Prim => Prim));
-                        end if;
-
-                        Next_Elmt (E);
-                     end loop;
-                  end;
+                  Insert_List_After (Ins_Nod, Init_Tags_List);
                end;
             end if;
 
@@ -3116,7 +3242,8 @@ package body Exp_Ch3 is
          --     at the other end of the call, even if it does nothing!)
 
          --  Note: the reason we exclude the CPP_Class case is because in this
-         --  case the initialization is performed in the C++ side.
+         --  case the initialization is performed by the C++ constructors, and
+         --  the IP is built by Set_CPP_Constructors.
 
          if Is_CPP_Class (Rec_Id) then
             return False;
@@ -3243,6 +3370,7 @@ package body Exp_Ch3 is
          end if;
 
          Build_Offset_To_Top_Functions;
+         Build_CPP_Init_Procedure;
          Build_Init_Procedure;
          Set_Is_Public (Proc_Id, Is_Public (Pe));
 
@@ -5720,13 +5848,14 @@ package body Exp_Ch3 is
 
          if Is_CPP_Class (Def_Id) then
             Set_All_DT_Position (Def_Id);
-            Set_CPP_Constructors (Def_Id);
 
             --  Create the tag entities with a minimum decoration
 
             if Tagged_Type_Expansion then
                Append_Freeze_Actions (Def_Id, Make_Tags (Def_Id));
             end if;
+
+            Set_CPP_Constructors (Def_Id);
 
          else
             if not Has_Static_DT then
@@ -6930,11 +7059,6 @@ package body Exp_Ch3 is
    is
       Loc : constant Source_Ptr := Sloc (Target);
 
-      procedure Inherit_CPP_Tag
-        (Typ       : Entity_Id;
-         Iface     : Entity_Id;
-         Tag_Comp  : Entity_Id;
-         Iface_Tag : Node_Id);
       --  Inherit the C++ tag of the secondary dispatch table of Typ associated
       --  with Iface. Tag_Comp is the component of Typ that stores Iface_Tag.
 
@@ -6948,32 +7072,6 @@ package body Exp_Ch3 is
       --  Compiling under the CPP full ABI compatibility mode, if the ancestor
       --  of Typ CPP tagged type we generate code to inherit the contents of
       --  the dispatch table directly from the ancestor.
-
-      ---------------------
-      -- Inherit_CPP_Tag --
-      ---------------------
-
-      procedure Inherit_CPP_Tag
-        (Typ       : Entity_Id;
-         Iface     : Entity_Id;
-         Tag_Comp  : Entity_Id;
-         Iface_Tag : Node_Id)
-      is
-      begin
-         pragma Assert (Is_CPP_Class (Etype (Typ)));
-
-         Append_To (Stmts_List,
-           Build_Inherit_Prims (Loc,
-             Typ          => Iface,
-             Old_Tag_Node =>
-               Make_Selected_Component (Loc,
-                 Prefix        => New_Copy_Tree (Target),
-                 Selector_Name => New_Reference_To (Tag_Comp, Loc)),
-             New_Tag_Node =>
-               New_Reference_To (Iface_Tag, Loc),
-             Num_Prims    =>
-               UI_To_Int (DT_Entry_Count (First_Tag_Component (Iface)))));
-      end Inherit_CPP_Tag;
 
       --------------------
       -- Initialize_Tag --
@@ -7175,26 +7273,85 @@ package body Exp_Ch3 is
       while Present (Iface_Elmt) loop
          Tag_Comp := Node (Iface_Comp_Elmt);
 
+         --  Check if parent of record type has variable size components
+
+         In_Variable_Pos := Scope (Tag_Comp) /= Etype (Scope (Tag_Comp))
+           and then Is_Variable_Size_Record (Etype (Scope (Tag_Comp)));
+
          --  If we are compiling under the CPP full ABI compatibility mode and
          --  the ancestor is a CPP_Pragma tagged type then we generate code to
-         --  inherit the contents of the dispatch table directly from the
-         --  ancestor.
+         --  initialize the secondary tag components from tags that reference
+         --  secondary tables filled with copy of parent slots.
 
-         if Is_CPP_Class (Etype (Full_Typ)) then
-            Inherit_CPP_Tag (Full_Typ,
-              Iface     => Node (Iface_Elmt),
-              Tag_Comp  => Tag_Comp,
-              Iface_Tag => Node (Iface_Tag_Elmt));
+         if Is_CPP_Class (Root_Type (Full_Typ)) then
+
+            --  Reject interface components located at variable offset in
+            --  C++ derivations. This is currently unsupported.
+
+            if not Fixed_Comps and then In_Variable_Pos then
+
+               --  Locate the first dynamic component of the record. Done to
+               --  improve the text of the warning.
+
+               declare
+                  Comp     : Entity_Id;
+                  Comp_Typ : Entity_Id;
+
+               begin
+                  Comp := First_Entity (Typ);
+                  while Present (Comp) loop
+                     Comp_Typ := Etype (Comp);
+
+                     if Ekind (Comp) /= E_Discriminant
+                       and then not Is_Tag (Comp)
+                     then
+                        exit when
+                          (Is_Record_Type (Comp_Typ)
+                             and then Is_Variable_Size_Record
+                                        (Base_Type (Comp_Typ)))
+                         or else
+                           (Is_Array_Type (Comp_Typ)
+                              and then Is_Variable_Size_Array (Comp_Typ));
+                     end if;
+
+                     Next_Entity (Comp);
+                  end loop;
+
+                  pragma Assert (Present (Comp));
+                  Error_Msg_Node_2 := Comp;
+                  Error_Msg_NE
+                    ("parent type & with dynamic component & cannot be parent"
+                       & " of 'C'P'P derivation if new interfaces are present",
+                     Typ, Scope (Original_Record_Component (Comp)));
+
+                  Error_Msg_Sloc :=
+                    Sloc (Scope (Original_Record_Component (Comp)));
+                  Error_Msg_NE
+                    ("type derived from 'C'P'P type & defined #",
+                     Typ, Scope (Original_Record_Component (Comp)));
+
+                  --  Avoid duplicated warnings
+
+                  exit;
+               end;
+
+            --  Initialize secondary tags
+
+            else
+               Append_To (Stmts_List,
+                 Make_Assignment_Statement (Loc,
+                   Name =>
+                     Make_Selected_Component (Loc,
+                       Prefix => New_Copy_Tree (Target),
+                       Selector_Name =>
+                         New_Reference_To (Node (Iface_Comp_Elmt), Loc)),
+                   Expression =>
+                     New_Reference_To (Node (Iface_Tag_Elmt), Loc)));
+            end if;
 
          --  Otherwise generate code to initialize the tag
 
          else
-            --  Check if the parent of the record type has variable size
-            --  components.
-
-            In_Variable_Pos := Scope (Tag_Comp) /= Etype (Scope (Tag_Comp))
-              and then Is_Variable_Size_Record (Etype (Scope (Tag_Comp)));
-
             if (In_Variable_Pos and then Variable_Comps)
               or else (not In_Variable_Pos and then Fixed_Comps)
             then
@@ -7211,14 +7368,11 @@ package body Exp_Ch3 is
       end loop;
    end Init_Secondary_Tags;
 
-   -----------------------------
-   -- Is_Variable_Size_Record --
-   -----------------------------
+   ----------------------------
+   -- Is_Variable_Size_Array --
+   ----------------------------
 
-   function Is_Variable_Size_Record (E : Entity_Id) return Boolean is
-      Comp     : Entity_Id;
-      Comp_Typ : Entity_Id;
-      Idx      : Node_Id;
+   function Is_Variable_Size_Array (E : Entity_Id) return Boolean is
 
       function Is_Constant_Bound (Exp : Node_Id) return Boolean;
       --  To simplify handling of array components. Determines whether the
@@ -7244,7 +7398,40 @@ package body Exp_Ch3 is
          end if;
       end Is_Constant_Bound;
 
-   --  Start of processing for Is_Variable_Sized_Record
+      --  Local variables
+
+      Idx : Node_Id;
+
+   --  Start of processing for Is_Variable_Sized_Array
+
+   begin
+      pragma Assert (Is_Array_Type (E));
+
+      --  Check if some index is initialized with a non-constant value
+
+      Idx := First_Index (E);
+      while Present (Idx) loop
+         if Nkind (Idx) = N_Range then
+            if not Is_Constant_Bound (Low_Bound (Idx))
+              or else not Is_Constant_Bound (High_Bound (Idx))
+            then
+               return True;
+            end if;
+         end if;
+
+         Idx := Next_Index (Idx);
+      end loop;
+
+      return False;
+   end Is_Variable_Size_Array;
+
+   -----------------------------
+   -- Is_Variable_Size_Record --
+   -----------------------------
+
+   function Is_Variable_Size_Record (E : Entity_Id) return Boolean is
+      Comp     : Entity_Id;
+      Comp_Typ : Entity_Id;
 
    begin
       pragma Assert (Is_Record_Type (E));
@@ -7253,33 +7440,18 @@ package body Exp_Ch3 is
       while Present (Comp) loop
          Comp_Typ := Etype (Comp);
 
-         if Is_Record_Type (Comp_Typ) then
+         --  Recursive call if the record type has discriminants
 
-            --  Recursive call if the record type has discriminants
+         if Is_Record_Type (Comp_Typ)
+           and then Has_Discriminants (Comp_Typ)
+           and then Is_Variable_Size_Record (Comp_Typ)
+         then
+            return True;
 
-            if Has_Discriminants (Comp_Typ)
-              and then Is_Variable_Size_Record (Comp_Typ)
-            then
-               return True;
-            end if;
-
-         elsif Is_Array_Type (Comp_Typ) then
-
-            --  Check if some index is initialized with a non-constant value
-
-            Idx := First_Index (Comp_Typ);
-            while Present (Idx) loop
-               if Nkind (Idx) = N_Range then
-                  if not Is_Constant_Bound (Low_Bound  (Idx))
-                       or else
-                     not Is_Constant_Bound (High_Bound (Idx))
-                  then
-                     return True;
-                  end if;
-               end if;
-
-               Idx := Next_Index (Idx);
-            end loop;
+         elsif Is_Array_Type (Comp_Typ)
+           and then Is_Variable_Size_Array (Comp_Typ)
+         then
+            return True;
          end if;
 
          Next_Entity (Comp);

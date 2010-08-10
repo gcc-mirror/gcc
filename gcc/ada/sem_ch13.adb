@@ -26,7 +26,9 @@
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
+with Elists;   use Elists;
 with Errout;   use Errout;
+with Exp_Disp; use Exp_Disp;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Lib;      use Lib;
@@ -2384,6 +2386,70 @@ package body Sem_Ch13 is
          --  spurious errors in case of late overriding.
 
          Add_Internal_Interface_Entities (E);
+      end if;
+
+      --  Check CPP types
+
+      if Ekind (E) = E_Record_Type
+        and then Is_CPP_Class (E)
+        and then Is_Tagged_Type (E)
+        and then Tagged_Type_Expansion
+        and then Expander_Active
+      then
+         if CPP_Num_Prims (E) = 0 then
+
+            --  If the CPP type has user defined components then it must import
+            --  primitives from C++. This is required because if the C++ class
+            --  has no primitives then the C++ compiler does not added the _tag
+            --  component to the type.
+
+            pragma Assert (Chars (First_Entity (E)) = Name_uTag);
+
+            if First_Entity (E) /= Last_Entity (E) then
+               Error_Msg_N
+                 ("?'C'P'P type must import at least one primitive from C++",
+                  E);
+            end if;
+         end if;
+
+         --  Check that all its primitives are abstract or imported from C++.
+         --  Check also availability of the C++ constructor.
+
+         declare
+            Has_Constructors : constant Boolean := Has_CPP_Constructors (E);
+            Elmt             : Elmt_Id;
+            Error_Reported   : Boolean := False;
+            Prim             : Node_Id;
+
+         begin
+            Elmt := First_Elmt (Primitive_Operations (E));
+            while Present (Elmt) loop
+               Prim := Node (Elmt);
+
+               if Comes_From_Source (Prim) then
+                  if Is_Abstract_Subprogram (Prim) then
+                     null;
+
+                  elsif not Is_Imported (Prim)
+                    or else Convention (Prim) /= Convention_CPP
+                  then
+                     Error_Msg_N
+                       ("?primitives of 'C'P'P types must be imported from C++"
+                        & " or abstract", Prim);
+
+                  elsif not Has_Constructors
+                     and then not Error_Reported
+                  then
+                     Error_Msg_Name_1 := Chars (E);
+                     Error_Msg_N
+                       ("?'C'P'P constructor required for type %", Prim);
+                     Error_Reported := True;
+                  end if;
+               end if;
+
+               Next_Elmt (Elmt);
+            end loop;
+         end;
       end if;
    end Analyze_Freeze_Entity;
 

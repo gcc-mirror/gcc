@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -175,7 +175,7 @@ package Freeze is
    --  do not allow a size clause if the size would not otherwise be known at
    --  compile time in any case.
 
-   function  Is_Atomic_Aggregate
+   function Is_Atomic_Aggregate
      (E   : Entity_Id;
       Typ : Entity_Id) return Boolean;
 

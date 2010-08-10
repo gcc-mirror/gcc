@@ -513,6 +513,7 @@ package body Sem_Ch8 is
 
    procedure Write_Scopes;
    pragma Warnings (Off, Write_Scopes);
+   pragma Export (Ada, Write_Scopes);
    --  Debugging information: dump all entities on scope stack
 
    --------------------------------
