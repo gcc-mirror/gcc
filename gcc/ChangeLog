@@ -1,3 +1,9 @@
+2010-08-10  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR middle-end/45182
+	* combine.c (make_compound_operation): Don't try to convert
+	shifts into multiplications for modes that aren't SCALAR_INT_MODE_P.
+
 2010-08-10  Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (get_object_alignment): Adjust prototype.

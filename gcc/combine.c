@@ -7093,7 +7093,9 @@ make_compound_operation (rtx x, enum rtx_code in_code)
      address, we stay there.  If we have a comparison, set to COMPARE,
      but once inside, go back to our default of SET.  */
 
-  next_code = (code == MEM || code == PLUS || code == MINUS ? MEM
+  next_code = (code == MEM ? MEM
+	       : ((code == PLUS || code == MINUS)
+		  && SCALAR_INT_MODE_P (mode)) ? MEM
 	       : ((code == COMPARE || COMPARISON_P (x))
 		  && XEXP (x, 1) == const0_rtx) ? COMPARE
 	       : in_code == COMPARE ? SET : in_code);
@@ -7127,8 +7129,8 @@ make_compound_operation (rtx x, enum rtx_code in_code)
     case PLUS:
       lhs = XEXP (x, 0);
       rhs = XEXP (x, 1);
-      lhs = make_compound_operation (lhs, MEM);
-      rhs = make_compound_operation (rhs, MEM);
+      lhs = make_compound_operation (lhs, next_code);
+      rhs = make_compound_operation (rhs, next_code);
       if (GET_CODE (lhs) == MULT && GET_CODE (XEXP (lhs, 0)) == NEG
 	  && SCALAR_INT_MODE_P (mode))
 	{
@@ -7157,8 +7159,8 @@ make_compound_operation (rtx x, enum rtx_code in_code)
     case MINUS:
       lhs = XEXP (x, 0);
       rhs = XEXP (x, 1);
-      lhs = make_compound_operation (lhs, MEM);
-      rhs = make_compound_operation (rhs, MEM);
+      lhs = make_compound_operation (lhs, next_code);
+      rhs = make_compound_operation (rhs, next_code);
       if (GET_CODE (rhs) == MULT && GET_CODE (XEXP (rhs, 0)) == NEG
 	  && SCALAR_INT_MODE_P (mode))
 	{
