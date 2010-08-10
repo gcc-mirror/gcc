@@ -4740,8 +4740,7 @@ init_pre (bool do_fre)
   postorder = XNEWVEC (int, n_basic_blocks - NUM_FIXED_BLOCKS);
   my_rev_post_order_compute (postorder, false);
 
-  FOR_ALL_BB (bb)
-    bb->aux = XCNEWVEC (struct bb_bitmap_sets, 1);
+  alloc_aux_for_blocks (sizeof (struct bb_bitmap_sets));
 
   calculate_dominance_info (CDI_POST_DOMINATORS);
   calculate_dominance_info (CDI_DOMINATORS);
@@ -4773,8 +4772,6 @@ init_pre (bool do_fre)
 static void
 fini_pre (bool do_fre)
 {
-  basic_block bb;
-
   free (postorder);
   VEC_free (bitmap_set_t, heap, value_expressions);
   BITMAP_FREE (inserted_exprs);
@@ -4786,11 +4783,7 @@ fini_pre (bool do_fre)
   htab_delete (expression_to_id);
   VEC_free (unsigned, heap, name_to_id);
 
-  FOR_ALL_BB (bb)
-    {
-      free (bb->aux);
-      bb->aux = NULL;
-    }
+  free_aux_for_blocks ();
 
   free_dominance_info (CDI_POST_DOMINATORS);
 
