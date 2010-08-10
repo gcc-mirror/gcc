@@ -20,18 +20,6 @@
 
 ;; Vector Moves
 
-;; All integer and float modes supported by Neon and IWMMXT.
-(define_mode_iterator VALL [V2DI V2SI V4HI V8QI V2SF V4SI V8HI V16QI V4SF])
-
-;; All integer and float modes supported by Neon and IWMMXT, except V2DI.
-(define_mode_iterator VALLW [V2SI V4HI V8QI V2SF V4SI V8HI V16QI V4SF])
-
-;; All integer modes supported by Neon and IWMMXT
-(define_mode_iterator VINT [V2DI V2SI V4HI V8QI V4SI V8HI V16QI])
-
-;; All integer modes supported by Neon and IWMMXT, except V2DI
-(define_mode_iterator VINTW [V2SI V4HI V8QI V4SI V8HI V16QI])
-
 (define_expand "mov<mode>"
   [(set (match_operand:VALL 0 "nonimmediate_operand" "")
 	(match_operand:VALL 1 "general_operand" ""))]
