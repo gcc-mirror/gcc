@@ -2314,11 +2314,34 @@ package body Sem_Ch10 is
       --  Set True if the unit currently being compiled is an internal unit
 
       Save_Style_Check : constant Boolean := Opt.Style_Check;
-      Save_C_Restrict  : constant Save_Cunit_Boolean_Restrictions :=
-                           Cunit_Boolean_Restrictions_Save;
+      Save_C_Restrict  : Save_Cunit_Boolean_Restrictions;
 
    begin
       U := Unit (Library_Unit (N));
+
+      --  If this is an internal unit which is a renaming, then this is a
+      --  violation of No_Obsolescent_Features.
+
+      --  Note: this is not quite right if the user defines one of these units
+      --  himself, but that's a marginal case, and fixing it is hard ???
+
+      if Restriction_Active (No_Obsolescent_Features) then
+         declare
+            F : constant File_Name_Type :=
+                  Unit_File_Name (Get_Source_Unit (U));
+         begin
+            if Is_Predefined_File_Name (F, Renamings_Included => True)
+                 and then not
+               Is_Predefined_File_Name (F, Renamings_Included => False)
+            then
+               Check_Restriction (No_Obsolescent_Features, N);
+            end if;
+         end;
+      end if;
+
+      --  Save current restriction set, does not apply to with'ed unit
+
+      Save_C_Restrict  := Cunit_Boolean_Restrictions_Save;
 
       --  Several actions are skipped for dummy packages (those supplied for
       --  with's where no matching file could be found). Such packages are
@@ -2350,9 +2373,7 @@ package body Sem_Ch10 is
       --  explicit with'ing of run-time units.
 
       if Configurable_Run_Time_Mode
-        and then
-          Is_Predefined_File_Name
-            (Unit_File_Name (Get_Source_Unit (Unit (Library_Unit (N)))))
+        and then Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (U)))
       then
          Configurable_Run_Time_Mode := False;
          Semantics (Library_Unit (N));

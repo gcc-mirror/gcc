@@ -4430,6 +4430,19 @@ package body Sem_Prag is
                   Restriction_Warnings (R_Id) := False;
                end if;
 
+               --  Check for obsolescent restrictions in Ada 2005 mode
+
+               if not Warn
+                 and then Ada_Version >= Ada_2005
+                 and then (R_Id = No_Asynchronous_Control
+                            or else
+                           R_Id = No_Unchecked_Deallocation
+                            or else
+                           R_Id = No_Unchecked_Conversion)
+               then
+                  Check_Restriction (No_Obsolescent_Features, N);
+               end if;
+
                --  A very special case that must be processed here: pragma
                --  Restrictions (No_Exceptions) turns off all run-time
                --  checking. This is a bit dubious in terms of the formal
@@ -4621,6 +4634,12 @@ package body Sem_Prag is
          --  a specified entity (given as the second argument of the pragma)
 
          else
+            --  This is obsolescent in Ada 2005 mode
+
+            if Ada_Version >= Ada_2005 then
+               Check_Restriction (No_Obsolescent_Features, Arg2);
+            end if;
+
             Check_Optional_Identifier (Arg2, Name_On);
             E_Id := Expression (Arg2);
             Analyze (E_Id);
@@ -8307,6 +8326,14 @@ package body Sem_Prag is
             Check_At_Least_N_Arguments (2);
             Check_At_Most_N_Arguments  (4);
             Process_Import_Or_Interface;
+
+            --  In Ada 2005, the permission to use Interface (a reserved word)
+            --  as a pragma name is considered an obsolescent feature.
+
+            if Ada_Version >= Ada_2005 then
+               Check_Restriction
+                 (No_Obsolescent_Features, Pragma_Identifier (N));
+            end if;
 
          --------------------
          -- Interface_Name --

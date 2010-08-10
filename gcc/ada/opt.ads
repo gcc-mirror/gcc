@@ -68,6 +68,10 @@ package Opt is
    --  Versions of Ada for Ada_Version below. Note that these are ordered,
    --  so that tests like Ada_Version >= Ada_95 are legitimate and useful.
 
+   Ada_2005 : Ada_Version_Type renames Ada_05;
+   Ada_2012 : Ada_Version_Type renames Ada_12;
+   --  Renamings with full names (preferred usage)
+
    Ada_Version_Default : constant Ada_Version_Type := Ada_05;
    pragma Warnings (Off, Ada_Version_Default);
    --  GNAT
