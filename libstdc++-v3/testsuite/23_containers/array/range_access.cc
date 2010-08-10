@@ -25,7 +25,7 @@
 void
 test01()
 {
-  std::array<int, 3> a{1, 2, 3};
+  std::array<int, 3> a{{1, 2, 3}};
   std::begin(a);
   std::end(a);
 }

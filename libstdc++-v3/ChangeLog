@@ -1,5 +1,10 @@
 2010-08-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/23_containers/array/range_access.cc: Avoid -Wall
+	warnings.
+
+2010-08-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Avoid -Wall
 	warnings.
 
