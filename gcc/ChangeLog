@@ -1,3 +1,11 @@
+2010-08-10  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-copy.c (set_copy_of_val): Use operand_equal_p.
+	(copy_prop_visit_assignment): Simplify.
+	(copy_prop_visit_stmt): Also visit assignments from
+	constants.
+	(copy_prop_visit_phi_node): Use operand_equal_p.
+
 2010-08-09  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* ipa-split.c (find_split_points): Free stack.

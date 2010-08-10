@@ -366,7 +366,8 @@ set_copy_of_val (tree var, tree val)
   old = copy_of[ver].value;
   copy_of[ver].value = val;
 
-  if (old != val)
+  if (old != val
+      || (val && !operand_equal_p (old, val, 0)))
     return true;
 
   return false;
@@ -409,14 +410,9 @@ static enum ssa_prop_result
 copy_prop_visit_assignment (gimple stmt, tree *result_p)
 {
   tree lhs, rhs;
-  prop_value_t *rhs_val;
 
   lhs = gimple_assign_lhs (stmt);
-  rhs = gimple_assign_rhs1 (stmt);
-
-  gcc_assert (gimple_assign_rhs_code (stmt) == SSA_NAME);
-
-  rhs_val = get_copy_of_val (rhs);
+  rhs = valueize_val (gimple_assign_rhs1 (stmt));
 
   if (TREE_CODE (lhs) == SSA_NAME)
     {
@@ -425,14 +421,8 @@ copy_prop_visit_assignment (gimple stmt, tree *result_p)
       if (!may_propagate_copy (lhs, rhs))
 	return SSA_PROP_VARYING;
 
-      /* Notice that in the case of assignments, we make the LHS be a
-	 copy of RHS's value, not of RHS itself.  This avoids keeping
-	 unnecessary copy-of chains (assignments cannot be in a cycle
-	 like PHI nodes), speeding up the propagation process.
-	 This is different from what we do in copy_prop_visit_phi_node.
-	 In those cases, we are interested in the copy-of chains.  */
       *result_p = lhs;
-      if (set_copy_of_val (*result_p, rhs_val->value))
+      if (set_copy_of_val (*result_p, rhs))
 	return SSA_PROP_INTERESTING;
       else
 	return SSA_PROP_NOT_INTERESTING;
@@ -518,7 +508,8 @@ copy_prop_visit_stmt (gimple stmt, edge *taken_edge_p, tree *result_p)
 
   if (gimple_assign_single_p (stmt)
       && TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME
-      && TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME)
+      && (TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME
+	  || is_gimple_min_invariant (gimple_assign_rhs1 (stmt))))
     {
       /* If the statement is a copy assignment, evaluate its RHS to
 	 see if the lattice value of its output has changed.  */
@@ -631,7 +622,8 @@ copy_prop_visit_phi_node (gimple phi)
 
       /* If PHI_VAL and ARG don't have a common copy-of chain, then
 	 this PHI node cannot be a copy operation.  */
-      if (phi_val.value != arg_val->value)
+      if (phi_val.value != arg_val->value
+	  && !operand_equal_p (phi_val.value, arg_val->value, 0))
 	{
 	  phi_val.value = lhs;
 	  break;
