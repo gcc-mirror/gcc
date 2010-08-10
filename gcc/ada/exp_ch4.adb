@@ -7358,6 +7358,7 @@ package body Exp_Ch4 is
       Disc  : Entity_Id;
       New_N : Node_Id;
       Dcon  : Elmt_Id;
+      Dval  : Node_Id;
 
       function In_Left_Hand_Side (Comp : Node_Id) return Boolean;
       --  Gigi needs a temporary for prefixes that depend on a discriminant,
@@ -7472,18 +7473,6 @@ package body Exp_Ch4 is
             then
                null;
 
-            --  If this is a discriminant of a component of a mutable record,
-            --  or a renaming of such, no optimization is possible, and value
-            --  must be retrieved anew. Note that in the previous case we may
-            --  be dealing with a renaming declaration, while here we may have
-            --  a use of a renaming.
-
-            elsif Nkind (P) = N_Selected_Component
-              and then Is_Record_Type (Etype (Prefix (P)))
-              and then not Is_Constrained (Etype (Prefix (P)))
-            then
-               null;
-
             --  Don't do this optimization if we are within the code for a
             --  discriminant check, since the whole point of such a check may
             --  be to verify the condition on which the code below depends!
@@ -7501,7 +7490,9 @@ package body Exp_Ch4 is
 
                Disc := First_Discriminant (Ptyp);
                Dcon := First_Elmt (Discriminant_Constraint (Ptyp));
+
                Discr_Loop : while Present (Dcon) loop
+                  Dval := Node (Dcon);
 
                   --  Check if this is the matching discriminant
 
@@ -7512,9 +7503,30 @@ package body Exp_Ch4 is
                      --  constrained by an outer discriminant, which cannot
                      --  be optimized away.
 
-                     if
-                       Denotes_Discriminant
-                        (Node (Dcon), Check_Concurrent => True)
+                     if Denotes_Discriminant
+                          (Dval, Check_Concurrent => True)
+                     then
+                        exit Discr_Loop;
+
+                     elsif Nkind (Original_Node (Dval)) = N_Selected_Component
+                       and then
+                         Denotes_Discriminant
+                           (Selector_Name (Original_Node (Dval)), True)
+                     then
+                        exit Discr_Loop;
+
+                     --  Do not retrieve value if constraint is not static. It
+                     --  is generally not useful, and the constraint may be a
+                     --  rewritten outer discriminant in which case it is in
+                     --  fact incorrect.
+
+                     elsif Is_Entity_Name (Dval)
+                       and then Nkind (Parent (Entity (Dval)))
+                         = N_Object_Declaration
+                       and then Present (Expression (Parent (Entity (Dval))))
+                       and then
+                         not Is_Static_Expression
+                           (Expression (Parent (Entity (Dval))))
                      then
                         exit Discr_Loop;
 
@@ -7524,14 +7536,14 @@ package body Exp_Ch4 is
                      --  missing cases.
 
                      elsif Nkind (Parent (N)) = N_Case_Statement
-                       and then Etype (Node (Dcon)) /= Etype (Disc)
+                       and then Etype (Dval) /= Etype (Disc)
                      then
                         Rewrite (N,
                           Make_Qualified_Expression (Loc,
                             Subtype_Mark =>
                               New_Occurrence_Of (Etype (Disc), Loc),
                             Expression   =>
-                              New_Copy_Tree (Node (Dcon))));
+                              New_Copy_Tree (Dval)));
                         Analyze_And_Resolve (N, Etype (Disc));
 
                         --  In case that comes out as a static expression,
@@ -7548,7 +7560,7 @@ package body Exp_Ch4 is
                      --  yet, and this must be done now.
 
                      else
-                        Rewrite (N, New_Copy_Tree (Node (Dcon)));
+                        Rewrite (N, New_Copy_Tree (Dval));
                         Analyze_And_Resolve (N);
                         Set_Is_Static_Expression (N, False);
                         return;

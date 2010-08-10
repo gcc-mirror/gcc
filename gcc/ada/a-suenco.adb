@@ -34,7 +34,7 @@
 package body Ada.Strings.UTF_Encoding.Conversions is
    use Interfaces;
 
-   --  Version convertion from UTF-8/UTF-16BE/LE to UTF-8/UTF-16BE/LE
+   --  Convert from UTF-8/UTF-16BE/LE to UTF-8/UTF-16BE/LE
 
    function Convert
      (Item          : UTF_String;
@@ -57,7 +57,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       end if;
    end Convert;
 
-   --  Version converting UTF-8/UTF-16BE/LE to UTF-16
+   --  Convert from UTF-8/UTF-16BE/LE to UTF-16
 
    function Convert
      (Item          : UTF_String;
@@ -72,7 +72,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
       end if;
    end Convert;
 
-   --  Version converting UTF-8 to UTF-16
+   --  Convert from UTF-8 to UTF-16
 
    function Convert
      (Item       : UTF_8_String;
@@ -316,7 +316,7 @@ package body Ada.Strings.UTF_Encoding.Conversions is
          elsif C1 <= 16#07FF# then
             Result (Len + 1) :=
               Character'Val
-                (2#110_000000# or Shift_Right (C1, 6));
+                (2#110_00000# or Shift_Right (C1, 6));
             Result (Len + 2) :=
               Character'Val
                 (2#10_000000# or (C1 and 2#00_111111#));

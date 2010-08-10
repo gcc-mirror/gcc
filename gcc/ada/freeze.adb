@@ -5100,10 +5100,16 @@ package body Freeze is
          --  issue an error message saying that this object cannot be imported
          --  or exported. If it has an address clause it is an overlay in the
          --  current partition and the static requirement is not relevant.
+         --  Do not issue any error message when ignoring rep clauses.
 
-         if Is_Imported (E) and then No (Address_Clause (E)) then
-            Error_Msg_N
-              ("& cannot be imported (local type is not constant)", E);
+         if Ignore_Rep_Clauses then
+            null;
+
+         elsif Is_Imported (E) then
+            if No (Address_Clause (E)) then
+               Error_Msg_N
+                 ("& cannot be imported (local type is not constant)", E);
+            end if;
 
          --  Otherwise must be exported, something is wrong if compiler
          --  is marking something as statically allocated which cannot be).
