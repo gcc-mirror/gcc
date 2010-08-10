@@ -2456,6 +2456,10 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	     alignment.  */
           if (fde && XEXP (src, 0) == stack_pointer_rtx)
             {
+	      /* We interpret reg_save differently with stack_realign set.
+		 Thus we must flush whatever we have queued first.  */
+	      flush_queued_reg_saves ();
+
               gcc_assert (cfa_store.reg == REGNO (XEXP (src, 0)));
               fde->stack_realign = 1;
               fde->stack_realignment = INTVAL (XEXP (src, 1));
