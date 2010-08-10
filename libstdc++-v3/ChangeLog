@@ -1,5 +1,11 @@
 2010-08-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/ext/stdio_sync_filebuf/char/1.cc: Avoid -Wall
+	warnings.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/1.cc: Likewise.
+
+2010-08-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* testsuite/23_containers/array/range_access.cc: Avoid -Wall
 	warnings.
 
