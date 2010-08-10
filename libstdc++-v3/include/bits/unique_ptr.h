@@ -49,7 +49,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       {
 	default_delete() { }
 
-	template<typename _Up>
+	template<typename _Up, typename = typename
+		 std::enable_if<std::is_convertible<_Up*, _Tp*>::value>::type>
 	  default_delete(const default_delete<_Up>&) { }
 
 	void
@@ -133,14 +134,32 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       unique_ptr(unique_ptr&& __u) 
       : _M_t(__u.release(), std::forward<deleter_type>(__u.get_deleter())) { }
 
-      template<typename _Up, typename _Up_Deleter> 
+      template<typename _Up, typename _Up_Deleter, typename = typename
+	std::enable_if
+	  <std::is_convertible<typename unique_ptr<_Up, _Up_Deleter>::pointer,
+			       pointer>::value
+	   && !std::is_array<_Up>::value
+	   && ((std::is_reference<_Tp_Deleter>::value
+		&& std::is_same<_Up_Deleter, _Tp_Deleter>::value)
+	       || (!std::is_reference<_Tp_Deleter>::value
+		   && std::is_convertible<_Up_Deleter, _Tp_Deleter>::value))>
+             ::type>
         unique_ptr(unique_ptr<_Up, _Up_Deleter>&& __u) 
         : _M_t(__u.release(), std::forward<deleter_type>(__u.get_deleter()))
 	{ }
 
+#if _GLIBCXX_DEPRECATED
+      template<typename _Up, typename = typename
+	std::enable_if<std::is_convertible<_Up*, _Tp*>::value
+		       && std::is_same<_Tp_Deleter,
+				       default_delete<_Tp>>::value>::type>
+        unique_ptr(auto_ptr<_Up>&& __u)
+	: _M_t(__u.release(), deleter_type()) { }
+#endif
+
       // Destructor.
       ~unique_ptr() { reset(); }
-    
+
       // Assignment.
       unique_ptr&
       operator=(unique_ptr&& __u)
@@ -150,7 +169,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         return *this;
       }
 
-      template<typename _Up, typename _Up_Deleter> 
+      template<typename _Up, typename _Up_Deleter, typename = typename
+        std::enable_if
+	  <std::is_convertible<typename unique_ptr<_Up, _Up_Deleter>::pointer,
+			       pointer>::value
+	   && !std::is_array<_Up>::value>::type> 
         unique_ptr&
         operator=(unique_ptr<_Up, _Up_Deleter>&& __u)
 	{

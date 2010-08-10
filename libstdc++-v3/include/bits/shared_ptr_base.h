@@ -601,7 +601,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       //  generated copy constructor, assignment, destructor are fine.
 
-      template<typename _Tp1>
+      template<typename _Tp1, typename = typename
+	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
 	__shared_ptr(const __shared_ptr<_Tp1, _Lp>& __r)
 	: _M_ptr(__r._M_ptr), _M_refcount(__r._M_refcount) // never throws
 	{ __glibcxx_function_requires(_ConvertibleConcept<_Tp1*, _Tp*>) }
@@ -613,7 +614,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	__r._M_ptr = 0;
       }
 
-      template<typename _Tp1>
+      template<typename _Tp1, typename = typename
+	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
 	__shared_ptr(__shared_ptr<_Tp1, _Lp>&& __r)
 	: _M_ptr(__r._M_ptr), _M_refcount() // never throws
 	{
@@ -965,7 +967,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       //
       // It is not possible to avoid spurious access violations since
       // in multithreaded programs __r._M_ptr may be invalidated at any point.
-      template<typename _Tp1>
+      template<typename _Tp1, typename = typename
+	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
 	__weak_ptr(const __weak_ptr<_Tp1, _Lp>& __r)
 	: _M_refcount(__r._M_refcount) // never throws
 	{
@@ -973,7 +976,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  _M_ptr = __r.lock().get();
 	}
 
-      template<typename _Tp1>
+      template<typename _Tp1, typename = typename
+	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
 	__weak_ptr(const __shared_ptr<_Tp1, _Lp>& __r)
 	: _M_ptr(__r._M_ptr), _M_refcount(__r._M_refcount) // never throws
 	{ __glibcxx_function_requires(_ConvertibleConcept<_Tp1*, _Tp*>) }

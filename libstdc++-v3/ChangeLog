@@ -1,5 +1,31 @@
 2010-08-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/20_util/ratio/cons/cons_overflow_neg.cc: Avoid -Wall
+	warnings.
+
+	* include/bits/shared_ptr.h (shared_ptr<>::shared_ptr
+	(const shared_ptr<>&), shared_ptr(shared_ptr<>&&), weak_ptr<>::
+	weak_ptr(const weak_ptr<>&), weak_ptr(const shared_ptr<>&)):
+	Constrain appropriately via std::is_convertible, etc.
+	* include/bits/shared_ptr_base.h: Likewise.
+	* include/bits/unique_ptr.h (default_delete<>::
+	default_delete(const default_delete<>&),
+	unique_ptr<>::unique_ptr(unique_ptr<>&&), operator=(unique_ptr<>&&)):
+	Likewise.
+
+	* testsuite/20_util/weak_ptr/comparison/cmp_neg.cc: Adjust dg-error
+	line numbers.
+	* testsuite/20_util/shared_ptr/cons/43820.cc: Likewise.
+
+	* include/bits/unique_ptr.h (unique_ptr<>::unique_ptr(auto_ptr<>&&)):
+	Add.
+	* include/std/memory: Adjust includes order.
+	* testsuite/20_util/unique_ptr/cons/auto_ptr.cc: New.
+	* testsuite/20_util/unique_ptr/cons/auto_ptr_neg.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/auto_ptr_neg.cc: Minor tweaks.
+
+2010-08-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/45228
 	* include/std/tuple (tuple<typename... _Elements>): Constrain
 	converting constructors and assignment operators with
