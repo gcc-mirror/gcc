@@ -255,6 +255,12 @@ procedure Gnat1drv is
          --  front-end warnings when we are getting CodePeer output.
 
          Reset_Style_Check_Options;
+
+         --  Always perform semantics and generate ali files in CodePeer mode,
+         --  so that a gnatmake -c -k will proceed further when possible.
+
+         Force_ALI_Tree_File := True;
+         Try_Semantics := True;
       end if;
 
       --  Set Configurable_Run_Time mode if system.ads flag set

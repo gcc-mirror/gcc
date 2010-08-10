@@ -1,3 +1,31 @@
+2010-08-10  Robert Dewar  <dewar@adacore.com>
+
+	* a-suenco.adb (Convert): Fix bug in UTF-16 to UTF-8 conversion for
+	codes in the range 16#80#..16#7FF#.
+	* sem_ch10.adb: Minor reformatting.
+
+2010-08-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb (Scan_Front_End_Switches): Always perform semantics and
+	generate ali files in CodePeer mode, so that a gnatmake -c -k will
+	proceed further when possible
+	* freeze.adb (Freeze_Static_Object): Fix thinko. Do not generate error
+	messages when ignoring representation clauses (-gnatI).
+
+2010-08-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Selected_Component): Do not attempt to
+	constant-fold discriminant reference if the constraint is an object
+	with non-static expression. Expression may contain volatile references
+	in the presence of renamings.
+
+2010-08-10  Vincent Celier  <celier@adacore.com>
+
+	* prj-proc.adb (Get_Attribute_Index): If Index is All_Other_Names,
+	returns Index.
+	* prj-strt.adb (Attribute_Reference): Recognize 'others' as a valid
+	index for an associative array where it is allowed.
+
 2010-08-10  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_attr.adb: Add comments.

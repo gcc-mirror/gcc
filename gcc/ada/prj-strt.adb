@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -230,18 +230,34 @@ package body Prj.Strt is
 
                if Token = Tok_Left_Paren then
                   Scan (In_Tree);
-                  Expect (Tok_String_Literal, "literal string");
 
-                  if Token = Tok_String_Literal then
+                  if Others_Allowed_For (Current_Attribute)
+                    and then Token = Tok_Others
+                  then
                      Set_Associative_Array_Index_Of
-                       (Reference, In_Tree, To => Token_Name);
+                       (Reference, In_Tree, To => All_Other_Names);
                      Scan (In_Tree);
-                     Expect (Tok_Right_Paren, "`)`");
 
-                     if Token = Tok_Right_Paren then
+                  else
+                     if Others_Allowed_For (Current_Attribute) then
+                        Expect
+                          (Tok_String_Literal, "literal string or others");
+                     else
+                        Expect (Tok_String_Literal, "literal string");
+                     end if;
+
+                     if Token = Tok_String_Literal then
+                        Set_Associative_Array_Index_Of
+                          (Reference, In_Tree, To => Token_Name);
                         Scan (In_Tree);
                      end if;
                   end if;
+               end if;
+
+               Expect (Tok_Right_Paren, "`)`");
+
+               if Token = Tok_Right_Paren then
+                  Scan (In_Tree);
                end if;
             end if;
          end if;
