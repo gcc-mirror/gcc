@@ -1,5 +1,11 @@
 2010-08-10  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* basic-block.h (alloc_aux_for_block, alloc_aux_for_edge): Delete.
+	* cfg.c (alloc_aux_for_block, alloc_aux_for_edge): Make static.
+	(alloc_aux_for_blocks, clear_aux_for_blocks): Use FOR_ALL_BB.
+
+2010-08-10  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* dwarf2out.c (struct die_struct): Move die_tag to the end.
 
 2010-08-09  Sofiane Naci  <sofiane.naci@arm.com>
