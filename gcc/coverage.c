@@ -104,10 +104,6 @@ static htab_t counts_hash = NULL;
 /* Trees representing the counter table arrays.  */
 static GTY(()) tree tree_ctr_tables[GCOV_COUNTERS];
 
-/* The names of the counter tables.  Not used if we're
-   generating counters at tree level.  */
-static GTY(()) rtx ctr_labels[GCOV_COUNTERS];
-
 /* The names of merge functions for counters.  */
 static const char *const ctr_merge_functions[GCOV_COUNTERS] = GCOV_MERGE_FUNCTIONS;
 static const char *const ctr_names[GCOV_COUNTERS] = GCOV_COUNTER_NAMES;
