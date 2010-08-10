@@ -44,7 +44,7 @@ main()
 // { dg-warning "note" "" { target *-*-* } 324 }
 // { dg-warning "note" "" { target *-*-* } 423 }
 // { dg-warning "note" "" { target *-*-* } 862 }
-// { dg-warning "note" "" { target *-*-* } 510 }
+// { dg-warning "note" "" { target *-*-* } 580 }
 // { dg-warning "note" "" { target *-*-* } 1027 }
 // { dg-warning "note" "" { target *-*-* } 340 }
 // { dg-warning "note" "" { target *-*-* } 290 }
