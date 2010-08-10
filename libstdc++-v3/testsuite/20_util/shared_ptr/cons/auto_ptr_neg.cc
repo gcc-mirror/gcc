@@ -21,28 +21,16 @@
 // 20.6.6.2 Template class shared_ptr [util.smartptr.shared]
 
 #include <memory>
-#include <testsuite_hooks.h>
 
 struct A { };
 
 // 20.6.6.2.3 shared_ptr assignment [util.smartptr.shared.const]
 
 // Construction from const auto_ptr
-int
+void
 test01()
 {
-  bool test __attribute__((unused)) = true;
-
   const std::auto_ptr<A> a;
   std::shared_ptr<A> p(std::move(a)); // { dg-error "no match" }
-
-  return 0;
-}
-
-int 
-main()
-{
-  test01();
-  return 0;
 }
 // { dg-excess-errors "candidates are" }

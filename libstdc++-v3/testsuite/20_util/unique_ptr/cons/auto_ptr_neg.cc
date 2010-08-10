@@ -1,7 +1,7 @@
-// { dg-options "-std=gnu++0x " }
+// { dg-options "-std=gnu++0x" }
 // { dg-do compile }
 
-// Copyright (C) 2008, 2009, 2010 Free Software Foundation
+// Copyright (C) 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,34 +18,19 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.6.6.3 Template class weak_ptr [util.smartptr.weak]
+// 20.9.10 Class template unique_ptr [unique.ptr]
 
 #include <memory>
 
 struct A { };
 
-// 20.8.13.3.6 weak_ptr comparison [util.smartptr.weak.cmp] (removed)
+// 20.9.10.2.1 unique_ptr constructors [unique.ptr.single.ctor] 
 
-int
+// Construction from const auto_ptr
+void
 test01()
 {
-  std::weak_ptr<A> p1;
-  p1 < p1;  // { dg-error "no match" }
-  return 0;
+  const std::auto_ptr<A> a(new A);
+  std::unique_ptr<A> a2(std::move(a)); // { dg-error "no match" }
 }
-
-int 
-main()
-{
-  test01();
-  return 0;
-}
-
-// { dg-warning "note" "" { target *-*-* } 327 }
-// { dg-warning "note" "" { target *-*-* } 446 }
-// { dg-warning "note" "" { target *-*-* } 864 }
-// { dg-warning "note" "" { target *-*-* } 580 }
-// { dg-warning "note" "" { target *-*-* } 1027 }
-// { dg-warning "note" "" { target *-*-* } 340 }
-// { dg-warning "note" "" { target *-*-* } 290 }
-// { dg-warning "note" "" { target *-*-* } 197 }
+// { dg-excess-errors "candidates are" }

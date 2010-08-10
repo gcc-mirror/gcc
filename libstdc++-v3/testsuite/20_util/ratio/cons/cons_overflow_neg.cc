@@ -2,7 +2,7 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-require-cstdint "" }
 
-// Copyright (C) 2008, 2009 Free Software Foundation
+// Copyright (C) 2008, 2009, 2010 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,26 +24,26 @@
 void
 test01()
 {
-  std::ratio<INTMAX_MAX, INTMAX_MAX> r1;
-  std::ratio<-INTMAX_MAX, INTMAX_MAX> r2;
+  std::ratio<INTMAX_MAX, INTMAX_MAX> r1 __attribute__((unused));
+  std::ratio<-INTMAX_MAX, INTMAX_MAX> r2 __attribute__((unused));
 }
 
 void
 test02()
 {
-  std::ratio<INTMAX_MIN, 1> r1;
+  std::ratio<INTMAX_MIN, 1> r1 __attribute__((unused));
 }
 
 void
 test03()
 {
-  std::ratio<1, INTMAX_MIN> r1;
+  std::ratio<1, INTMAX_MIN> r1 __attribute__((unused));
 }
 
 void
 test04()
 {
-  std::ratio<1,0> r1;
+  std::ratio<1,0> r1 __attribute__((unused));
 }
 
 // { dg-error "instantiated from here" "" { target *-*-* } 34 }

@@ -206,8 +206,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @param  __r  A %shared_ptr.
        *  @post   get() == __r.get() && use_count() == __r.use_count()
        */
-      template<typename _Tp1>
-	shared_ptr(const shared_ptr<_Tp1>& __r) : __shared_ptr<_Tp>(__r) { }
+      template<typename _Tp1, typename = typename
+	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
+	shared_ptr(const shared_ptr<_Tp1>& __r)
+        : __shared_ptr<_Tp>(__r) { }
 
       /**
        *  @brief  Move-constructs a %shared_ptr instance from @a __r.
@@ -222,7 +224,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @param  __r  A %shared_ptr rvalue.
        *  @post   *this contains the old value of @a __r, @a __r is empty.
        */
-      template<typename _Tp1>
+      template<typename _Tp1, typename = typename
+	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
 	shared_ptr(shared_ptr<_Tp1>&& __r)
 	: __shared_ptr<_Tp>(std::move(__r)) { }
 
@@ -366,11 +369,13 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     public:
       weak_ptr() : __weak_ptr<_Tp>() { }
 
-      template<typename _Tp1>
+      template<typename _Tp1, typename = typename
+	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
 	weak_ptr(const weak_ptr<_Tp1>& __r)
 	: __weak_ptr<_Tp>(__r) { }
 
-      template<typename _Tp1>
+      template<typename _Tp1, typename = typename
+	       std::enable_if<std::is_convertible<_Tp1*, _Tp*>::value>::type>
 	weak_ptr(const shared_ptr<_Tp1>& __r)
 	: __weak_ptr<_Tp>(__r) { }
 
