@@ -1,3 +1,8 @@
+2010-08-10  Xinliang David Li  <davidxl@google.com>
+
+	* tree-ssa-loop-ivopts.c (get_address_cost): Properly
+	compute max/min offset in address.
+
 2010-08-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-live.c: Include sbitmap.h.
