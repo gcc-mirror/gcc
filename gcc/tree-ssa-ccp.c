@@ -515,8 +515,7 @@ get_value_from_alignment (tree expr)
     val = bit_value_binop (PLUS_EXPR, TREE_TYPE (expr),
 			   TREE_OPERAND (base, 0), TREE_OPERAND (base, 1));
   else if (base
-	   && ((align = get_object_alignment (base, BITS_PER_UNIT,
-					      BIGGEST_ALIGNMENT))
+	   && ((align = get_object_alignment (base, BIGGEST_ALIGNMENT))
 		> BITS_PER_UNIT))
     {
       val.lattice_val = CONSTANT;

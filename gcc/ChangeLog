@@ -1,5 +1,16 @@
 2010-08-10  Richard Guenther  <rguenther@suse.de>
 
+	* tree.h (get_object_alignment): Adjust prototype.
+	* builtins.c (get_object_alignment): Return unsigned int,
+	drop the align parameter.  Handle MEM_REF, MISALIGNED_INDIRECT_REF
+	and TARGET_MEM_REF properly.
+	(get_pointer_alignment): Adjust.
+	* emit-rtl.c (get_mem_align_offset): Adjust comment.
+	(set_mem_attributes_minus_bitpos): Adjust.
+	* tree-ssa-ccp.c (get_value_from_alignment): Adjust.
+
+2010-08-10  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-copy.c (set_copy_of_val): Use operand_equal_p.
 	(copy_prop_visit_assignment): Simplify.
 	(copy_prop_visit_stmt): Also visit assignments from
