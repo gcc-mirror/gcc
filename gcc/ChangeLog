@@ -1,5 +1,9 @@
 2010-08-09  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* ipa-split.c (find_split_points): Free stack.
+
+2010-08-09  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* tree.h (tree_node_kind) [perm_list_kind,temp_list_kind]: Delete.
 	* tree.c (tree_node_kind): Delete corresponding entries.
 
