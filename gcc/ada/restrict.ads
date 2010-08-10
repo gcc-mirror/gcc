@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -229,6 +229,15 @@ package Restrict is
    procedure Check_No_Implicit_Heap_Alloc (N : Node_Id);
    --  Equivalent to Check_Restriction (No_Implicit_Heap_Allocations, N).
    --  Provided for easy use by back end, which has to check this restriction.
+
+   procedure Check_Obsolescent_2005_Entity (E : Entity_Id; N : Node_Id);
+   --  This routine checks if the entity E is one of the obsolescent entries
+   --  in Ada.Characters.Handling in Ada 2005 and No_Obsolescent_Features
+   --  restriction is active. If so an appropriate message is given. N is
+   --  the node on which the message is to be placed. It's a bit kludgy to
+   --  have this highly specialized routine rather than some wonderful general
+   --  mechanism (e.g. a special pragma) to handle this case, but there are
+   --  only six cases, and it is not worth the effort to do something general.
 
    function Cunit_Boolean_Restrictions_Save
      return Save_Cunit_Boolean_Restrictions;

@@ -538,6 +538,14 @@ package body Sem_Ch11 is
          end if;
       end if;
 
+      --  Check obsolescent use of Numeric_Error
+
+      if Exception_Name = Standard_Numeric_Error then
+         Check_Restriction (No_Obsolescent_Features, Exception_Id);
+      end if;
+
+      --  Kill last assignment indication
+
       Kill_Current_Values (Last_Assignment_Only => True);
    end Analyze_Raise_Statement;
 

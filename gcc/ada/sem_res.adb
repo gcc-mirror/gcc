@@ -5250,7 +5250,7 @@ package body Sem_Res is
                         K : constant Node_Kind := Nkind (Parent (N));
                      begin
                         if (K = N_Loop_Statement
-                            and then Present (Iteration_Scheme (Parent (N))))
+                             and then Present (Iteration_Scheme (Parent (N))))
                           or else K = N_If_Statement
                           or else K = N_Elsif_Part
                           or else K = N_Case_Statement_Alternative
@@ -5275,6 +5275,10 @@ package body Sem_Res is
             end loop Scope_Loop;
          end if;
       end if;
+
+      --  Check obsolescent reference to Ada.Characters.Handling subprogram
+
+      Check_Obsolescent_2005_Entity (Nam, Subp);
 
       --  If subprogram name is a predefined operator, it was given in
       --  functional notation. Replace call node with operator node, so

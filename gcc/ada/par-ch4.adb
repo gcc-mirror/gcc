@@ -2670,7 +2670,7 @@ package body Ch4 is
    begin
       if Ada_Version < Ada_12 then
          Error_Msg_SC ("|case expression is an Ada 2012 feature");
-         Error_Msg_SC ("\|use -gnat12 switch to compile this unit");
+         Error_Msg_SC ("\|unit must be compiled with -gnat2012 switch");
       end if;
 
       Scan; -- past CASE
@@ -2761,7 +2761,7 @@ package body Ch4 is
 
       if Token = Tok_If and then Ada_Version < Ada_12 then
          Error_Msg_SC ("|conditional expression is an Ada 2012 feature");
-         Error_Msg_SC ("\|use -gnat12 switch to compile this unit");
+         Error_Msg_SC ("\|unit must be compiled with -gnat2012 switch");
       end if;
 
       Scan; -- past IF or ELSIF
@@ -2844,7 +2844,7 @@ package body Ch4 is
       if Token = Tok_Vertical_Bar then
          if Ada_Version < Ada_12 then
             Error_Msg_SC ("set notation is an Ada 2012 feature");
-            Error_Msg_SC ("\|use -gnat12 switch to compile this unit");
+            Error_Msg_SC ("\|unit must be compiled with -gnat2012 switch");
          end if;
 
          Set_Alternatives (N, New_List (Alt));

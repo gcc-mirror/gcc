@@ -3188,7 +3188,8 @@ package Einfo is
 --       is an error to reference the primitive operations field of a type
 --       that is not tagged). In order to fulfill the C++ ABI, entities of
 --       primitives that come from source must be stored in this list following
---       their order of occurrence in the sources.
+--       their order of occurrence in the sources. Also present in incomplete
+--       types, but in this case the list is always empty.
 
 --    Prival (Node17)
 --       Present in private components of protected types. Refers to the entity

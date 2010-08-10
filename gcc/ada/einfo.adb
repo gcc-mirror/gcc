@@ -7475,6 +7475,7 @@ package body Einfo is
             Write_Str ("Storage_Size_Variable");
 
          when Class_Wide_Kind                              |
+              Incomplete_Kind                              |
               E_Record_Type                                |
               E_Record_Subtype                             |
               Private_Kind                                 =>

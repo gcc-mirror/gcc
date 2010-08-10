@@ -34,6 +34,7 @@ with Opt;      use Opt;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
+with Stand;    use Stand;
 with Uname;    use Uname;
 
 package body Restrict is
@@ -120,6 +121,46 @@ package body Restrict is
    begin
       Check_Restriction (No_Implicit_Heap_Allocations, N);
    end Check_No_Implicit_Heap_Alloc;
+
+   -----------------------------------
+   -- Check_Obsolescent_2005_Entity --
+   -----------------------------------
+
+   procedure Check_Obsolescent_2005_Entity (E : Entity_Id; N : Node_Id) is
+      function Chars_Is (E : Entity_Id; S : String) return Boolean;
+      --  Return True iff Chars (E) matches S (given in lower case)
+
+      function Chars_Is (E : Entity_Id; S : String) return Boolean is
+         Nam : constant Name_Id := Chars (E);
+      begin
+         if Length_Of_Name (Nam) /= S'Length then
+            return False;
+         else
+            return Get_Name_String (Nam) = S;
+         end if;
+      end Chars_Is;
+
+   --  Start of processing for Check_Obsolescent_2005_Entity
+
+   begin
+      if Ada_Version >= Ada_2005
+        and then Restriction_Active (No_Obsolescent_Features)
+        and then Chars_Is (Scope (E),                 "handling")
+        and then Chars_Is (Scope (Scope (E)),         "characters")
+        and then Chars_Is (Scope (Scope (Scope (E))), "ada")
+        and then Scope (Scope (Scope (Scope (E)))) = Standard_Standard
+      then
+         if Chars_Is (E, "is_character")      or else
+            Chars_Is (E, "is_string")         or else
+            Chars_Is (E, "to_character")      or else
+            Chars_Is (E, "to_string")         or else
+            Chars_Is (E, "to_wide_character") or else
+            Chars_Is (E, "to_wide_string")
+         then
+            Check_Restriction (No_Obsolescent_Features, N);
+         end if;
+      end if;
+   end Check_Obsolescent_2005_Entity;
 
    ---------------------------
    -- Check_Restricted_Unit --

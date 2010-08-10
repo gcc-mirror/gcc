@@ -1,5 +1,43 @@
 2010-08-10  Robert Dewar  <dewar@adacore.com>
 
+	* a-chahan.ads: Add comments on handling of obsolescent entries.
+	* opt.ads: Add Ada_2005 and Ada_2012 renamings for versions.
+	* restrict.adb (Check_Obsolescent_2005_Entity): New procedure.
+	* restrict.ads (Check_Obsolescent_2005_Entity): New procedure.
+	* sem_attr.adb (Analyze_Access_Attribute): Call
+	Check_Obsolescent_2005_Entity to check for access to obsolescent
+	Ada.Characters.Handling subprogram.
+	(Analyze_Attribute, case Class): Applying Class to untagged incomplete
+	type is obsolescent in Ada 2005.
+	(Analyze_Attribute, case Constrained): Better placement of flag when
+	flagged as obsolescent feature.
+	(Analyze_Attribute, case Storage_Size): Use with tasks is obsolescent
+	* sem_ch10.adb (Analyze_With_Clause): With of renamings such as Text_IO
+	is an obsolescent feature.
+	* sem_ch11.adb (Analyze_Raise_Statement): Numeric_Error is obsolescent
+	feature.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Call
+	Check_Obsolescent_2005_Entity to check for renaming obsolete
+	Ada.Characters.Handling subprogram.
+	* sem_prag.adb (Process_Restrictions_Or_Restriction_Warnings): Check
+	for obsolescent restrictions in Ada 2005.
+	(Analyze_Pragma, case Suppress): Entity arg is obsolescent in Ada 2005
+	(Analyze_Pragma, case Interface): Interface is obsolescent in Ada 2005
+	* sem_res.adb (Resolve_Call): Call Check_Obsolescent_2005_Entity to
+	check for obsolescent references to Ada.Characters.Handling subprograms
+
+2010-08-10  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb, einfo.ads: Fix bad -gnatdt output for incomplete type.
+
+2010-08-10  Robert Dewar  <dewar@adacore.com>
+
+	* errout.ads: Add VMS table entries for 2005, 12, 2012 switches
+	* par-ch4.adb: Change wording of Ada 2012 messages
+	* vms_data.ads: Add VMS entries for /2005, /12, /2012
+
+2010-08-10  Robert Dewar  <dewar@adacore.com>
+
 	* a-suenco.adb (Convert): Fix bug in UTF-16 to UTF-8 conversion for
 	codes in the range 16#80#..16#7FF#.
 	* sem_ch10.adb: Minor reformatting.

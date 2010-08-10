@@ -584,6 +584,10 @@ package body Sem_Attr is
 
             Check_For_Eliminated_Subprogram (P, Entity (P));
 
+            --  Check for obsolescent subprogram reference
+
+            Check_Obsolescent_2005_Entity (Entity (P), P);
+
             --  Build the appropriate subprogram type
 
             Build_Access_Subprogram_Type (P);
@@ -2535,6 +2539,25 @@ package body Sem_Attr is
          Check_E0;
          Find_Type (N);
 
+         --  Applying Class to untagged incomplete type is obsolescent in Ada
+         --  2005. Note that we can't test Is_Tagged_Type here on P_Type, since
+         --  this flag gets set by Find_Type in this situation.
+
+         if Restriction_Active (No_Obsolescent_Features)
+           and then Ada_Version >= Ada_2005
+           and then Ekind (P_Type) = E_Incomplete_Type
+         then
+            declare
+               DN : constant Node_Id := Declaration_Node (P_Type);
+            begin
+               if Nkind (DN) = N_Incomplete_Type_Declaration
+                 and then not Tagged_Present (DN)
+               then
+                  Check_Restriction (No_Obsolescent_Features, P);
+               end if;
+            end;
+         end if;
+
       ------------------
       -- Code_Address --
       ------------------
@@ -2612,7 +2635,7 @@ package body Sem_Attr is
          --  Case from RM J.4(2) of constrained applied to private type
 
          if Is_Entity_Name (P) and then Is_Type (Entity (P)) then
-            Check_Restriction (No_Obsolescent_Features, N);
+            Check_Restriction (No_Obsolescent_Features, P);
 
             if Warn_On_Obsolescent_Feature then
                Error_Msg_N
@@ -4196,6 +4219,10 @@ package body Sem_Attr is
 
          if Is_Task_Type (P_Type) then
             Set_Etype (N, Universal_Integer);
+
+            --  Use with tasks is an obsolescent feature
+
+            Check_Restriction (No_Obsolescent_Features, P);
 
          elsif Is_Access_Type (P_Type) then
             if Ekind (P_Type) = E_Access_Subprogram_Type then

@@ -2467,6 +2467,7 @@ package body Sem_Ch8 is
       end if;
 
       --  A useful warning, suggested by Ada Bug Finder (Ada-Europe 2005)
+      --  is to warn if an operator is being renamed as a different operator.
 
       if Comes_From_Source (N)
         and then Present (Old_S)
@@ -2478,6 +2479,10 @@ package body Sem_Ch8 is
            ("?& is being renamed as a different operator",
              New_S, Old_S);
       end if;
+
+      --  Check for renaming of obsolescent subprogram
+
+      Check_Obsolescent_2005_Entity (Entity (Nam), Nam);
 
       --  Another warning or some utility: if the new subprogram as the same
       --  name as the old one, the old one is not hidden by an outer homograph,
