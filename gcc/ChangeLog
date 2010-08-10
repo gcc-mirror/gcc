@@ -1,3 +1,11 @@
+2010-08-10  Steve Ellcey  <sje@cup.hp.com>
+	    Jakub Jelinek <jakub@redhat.com>
+
+	Backport from mainline:
+	PR middle-end/41551
+	* function.c (instantiate_virtual_regs_in_insn): Copy to new reg
+	before forcing mode.
+
 2010-08-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	Backport from mainline.
