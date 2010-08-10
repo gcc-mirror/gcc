@@ -12,7 +12,7 @@
 
 2010-08-10  Nathan Froyd  <froydnj@codesourcery.com>
 
-	* tree-ssa-prec. (init_pre): Call alloc_aux_for_blocks.
+	* tree-ssa-pre.c (init_pre): Call alloc_aux_for_blocks.
 	(fini_pre): Call free_aux_for_blocks.  Delete unused bb variable.
 
 2010-08-10  Richard Henderson  <rth@redhat.com>
