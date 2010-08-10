@@ -1,3 +1,11 @@
+2010-08-10  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_attr.adb: Add comments.
+
+2010-08-10  Jerome Lambourg  <lambourg@adacore.com>
+
+	* adaint.c (__gnat_get_file_names_case_sensitive): return 0 on darwin.
+
 2010-08-09  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* gcc-interface/utils.c (gnat_poplevel): Use blocks_nreverse.
