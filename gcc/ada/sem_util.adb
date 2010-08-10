@@ -1598,7 +1598,7 @@ package body Sem_Util is
                Next_Elmt (ADT);
 
                --  Skip secondary dispatch table referencing predefined
-               --  primitives
+               --  primitives.
 
                pragma Assert (Has_Suffix (Node (ADT), 'Z'));
                Next_Elmt (ADT);

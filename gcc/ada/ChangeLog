@@ -1,3 +1,8 @@
+2010-08-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch8.adb, sem_ch8.ads: Change name Write_Scopes to ws.
+	* sem_util.adb: Minor reformatting.
+
 2010-08-10  Javier Miranda  <miranda@adacore.com>
 
 	* sem_aggr.adb (Resolve_Extension_Aggregate): Warn on the use of C++
