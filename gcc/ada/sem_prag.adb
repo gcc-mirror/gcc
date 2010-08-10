@@ -6554,6 +6554,14 @@ package body Sem_Prag is
 
             Def_Id := Entity (Id);
 
+            --  Check if already defined as constructor
+
+            if Is_Constructor (Def_Id) then
+               Error_Msg_N
+                 ("?duplicate argument for pragma 'C'P'P_Constructor", Arg1);
+               return;
+            end if;
+
             if Ekind (Def_Id) = E_Function
               and then (Is_CPP_Class (Etype (Def_Id))
                          or else (Is_Class_Wide_Type (Etype (Def_Id))

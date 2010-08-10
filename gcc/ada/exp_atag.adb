@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2006-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,6 +26,7 @@
 with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
+with Exp_Disp; use Exp_Disp;
 with Exp_Util; use Exp_Util;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
@@ -33,6 +34,7 @@ with Nmake;    use Nmake;
 with Rtsfind;  use Rtsfind;
 with Sinfo;    use Sinfo;
 with Sem_Aux;  use Sem_Aux;
+with Sem_Disp; use Sem_Disp;
 with Sem_Util; use Sem_Util;
 with Stand;    use Stand;
 with Snames;   use Snames;
@@ -326,6 +328,258 @@ package body Exp_Atag is
           Expressions =>
             New_List (Make_Integer_Literal (Loc, Position)));
    end Build_Get_Predefined_Prim_Op_Address;
+
+   -----------------------------
+   -- Build_Inherit_CPP_Prims --
+   -----------------------------
+
+   function Build_Inherit_CPP_Prims (Typ : Entity_Id) return List_Id is
+      Loc          : constant Source_Ptr := Sloc (Typ);
+      CPP_Nb_Prims : constant Nat := CPP_Num_Prims (Typ);
+      CPP_Table    : array (1 .. CPP_Nb_Prims) of Boolean := (others => False);
+      CPP_Typ      : constant Entity_Id := Enclosing_CPP_Parent (Typ);
+      Result       : constant List_Id   := New_List;
+      Parent_Typ   : constant Entity_Id := Etype (Typ);
+      E            : Entity_Id;
+      Elmt         : Elmt_Id;
+      Parent_Tag   : Entity_Id;
+      Prim         : Entity_Id;
+      Prim_Pos     : Nat;
+      Typ_Tag      : Entity_Id;
+
+   begin
+      pragma Assert (not Is_CPP_Class (Typ));
+
+      --  No code needed if this type has no primitives inherited from C++
+
+      if CPP_Nb_Prims = 0 then
+         return Result;
+      end if;
+
+      --  Stage 1: Inherit and override C++ slots of the primary dispatch table
+
+      --  Generate:
+      --     Typ'Tag (Prim_Pos) := Prim'Unrestricted_Access;
+
+      Parent_Tag := Node (First_Elmt (Access_Disp_Table (Parent_Typ)));
+      Typ_Tag    := Node (First_Elmt (Access_Disp_Table (Typ)));
+
+      Elmt := First_Elmt (Primitive_Operations (Typ));
+      while Present (Elmt) loop
+         Prim     := Node (Elmt);
+         E        := Ultimate_Alias (Prim);
+         Prim_Pos := UI_To_Int (DT_Position (E));
+
+         --  Skip predefined, abstract, and eliminated primitives. Skip also
+         --  primitives not located in the C++ part of the dispatch table.
+
+         if not Is_Predefined_Dispatching_Operation (Prim)
+           and then not Is_Predefined_Dispatching_Operation (E)
+           and then not Present (Interface_Alias (Prim))
+           and then not Is_Abstract_Subprogram (E)
+           and then not Is_Eliminated (E)
+           and then Prim_Pos <= CPP_Nb_Prims
+           and then Find_Dispatching_Type (E) = Typ
+         then
+            --  Remember that this slot is used
+
+            pragma Assert (CPP_Table (Prim_Pos) = False);
+            CPP_Table (Prim_Pos) := True;
+
+            Append_To (Result,
+              Make_Assignment_Statement (Loc,
+                Name =>
+                  Make_Indexed_Component (Loc,
+                    Prefix =>
+                      Make_Explicit_Dereference (Loc,
+                        Unchecked_Convert_To
+                          (Node (Last_Elmt (Access_Disp_Table (Typ))),
+                           New_Reference_To (Typ_Tag, Loc))),
+                    Expressions =>
+                       New_List (Make_Integer_Literal (Loc, Prim_Pos))),
+
+               Expression =>
+                 Unchecked_Convert_To (RTE (RE_Prim_Ptr),
+                   Make_Attribute_Reference (Loc,
+                     Prefix => New_Reference_To (E, Loc),
+                     Attribute_Name => Name_Unrestricted_Access))));
+         end if;
+
+         Next_Elmt (Elmt);
+      end loop;
+
+      --  If all primitives have been overridden then there is no need to copy
+      --  from Typ's parent its dispatch table. Otherwise, if some primitive is
+      --  inherited from the parent we copy only the C++ part of the dispatch
+      --  table from the parent before the assignments that initialize the
+      --  overridden primitives.
+
+      --  Generate:
+
+      --     type CPP_TypG is array (1 .. CPP_Nb_Prims) ofd Prim_Ptr;
+      --     type CPP_TypH is access CPP_TypG;
+      --     CPP_TypG!(Typ_Tag).all := CPP_TypG!(Parent_Tag).all;
+
+      --   Note: There is no need to duplicate the declarations of CPP_TypG and
+      --         CPP_TypH because, for expansion of dispatching calls, these
+      --         entities are stored in the last elements of Access_Disp_Table.
+
+      for J in CPP_Table'Range loop
+         if not CPP_Table (J) then
+            Prepend_To (Result,
+              Make_Assignment_Statement (Loc,
+                Name =>
+                  Make_Explicit_Dereference (Loc,
+                    Unchecked_Convert_To
+                      (Node (Last_Elmt (Access_Disp_Table (CPP_Typ))),
+                       New_Reference_To (Typ_Tag, Loc))),
+                Expression =>
+                  Make_Explicit_Dereference (Loc,
+                    Unchecked_Convert_To
+                      (Node (Last_Elmt (Access_Disp_Table (CPP_Typ))),
+                       New_Reference_To (Parent_Tag, Loc)))));
+            exit;
+         end if;
+      end loop;
+
+      --  Stage 2: Inherit and override C++ slots of secondary dispatch tables
+
+      declare
+         Iface                   : Entity_Id;
+         Iface_Nb_Prims          : Nat;
+         Parent_Ifaces_List      : Elist_Id;
+         Parent_Ifaces_Comp_List : Elist_Id;
+         Parent_Ifaces_Tag_List  : Elist_Id;
+         Parent_Iface_Tag_Elmt   : Elmt_Id;
+         Typ_Ifaces_List         : Elist_Id;
+         Typ_Ifaces_Comp_List    : Elist_Id;
+         Typ_Ifaces_Tag_List     : Elist_Id;
+         Typ_Iface_Tag_Elmt      : Elmt_Id;
+
+      begin
+         Collect_Interfaces_Info
+           (T               => Parent_Typ,
+            Ifaces_List     => Parent_Ifaces_List,
+            Components_List => Parent_Ifaces_Comp_List,
+            Tags_List       => Parent_Ifaces_Tag_List);
+
+         Collect_Interfaces_Info
+           (T               => Typ,
+            Ifaces_List     => Typ_Ifaces_List,
+            Components_List => Typ_Ifaces_Comp_List,
+            Tags_List       => Typ_Ifaces_Tag_List);
+
+         Parent_Iface_Tag_Elmt := First_Elmt (Parent_Ifaces_Tag_List);
+         Typ_Iface_Tag_Elmt    := First_Elmt (Typ_Ifaces_Tag_List);
+         while Present (Parent_Iface_Tag_Elmt) loop
+            Parent_Tag := Node (Parent_Iface_Tag_Elmt);
+            Typ_Tag    := Node (Typ_Iface_Tag_Elmt);
+
+            pragma Assert
+              (Related_Type (Parent_Tag) = Related_Type (Typ_Tag));
+            Iface := Related_Type (Parent_Tag);
+
+            Iface_Nb_Prims :=
+              UI_To_Int (DT_Entry_Count (First_Tag_Component (Iface)));
+
+            if Iface_Nb_Prims > 0 then
+
+               --  Update slots of overridden primitives
+
+               declare
+                  Last_Nod : constant Node_Id := Last (Result);
+                  Nb_Prims : constant Nat := UI_To_Int
+                                              (DT_Entry_Count
+                                               (First_Tag_Component (Iface)));
+                  Elmt     : Elmt_Id;
+                  Prim     : Entity_Id;
+                  E        : Entity_Id;
+                  Prim_Pos : Nat;
+
+                  Prims_Table : array (1 .. Nb_Prims) of Boolean;
+
+               begin
+                  Prims_Table := (others => False);
+
+                  Elmt := First_Elmt (Primitive_Operations (Typ));
+                  while Present (Elmt) loop
+                     Prim := Node (Elmt);
+                     E    := Ultimate_Alias (Prim);
+
+                     if not Is_Predefined_Dispatching_Operation (Prim)
+                       and then Present (Interface_Alias (Prim))
+                       and then Find_Dispatching_Type (Interface_Alias (Prim))
+                                  = Iface
+                       and then not Is_Abstract_Subprogram (E)
+                       and then not Is_Eliminated (E)
+                       and then Find_Dispatching_Type (E) = Typ
+                     then
+                        Prim_Pos := UI_To_Int (DT_Position (Prim));
+
+                        --  Remember that this slot is already initialized
+
+                        pragma Assert (Prims_Table (Prim_Pos) = False);
+                        Prims_Table (Prim_Pos) := True;
+
+                        Append_To (Result,
+                          Make_Assignment_Statement (Loc,
+                            Name =>
+                              Make_Indexed_Component (Loc,
+                                Prefix =>
+                                  Make_Explicit_Dereference (Loc,
+                                    Unchecked_Convert_To
+                                      (Node
+                                        (Last_Elmt
+                                          (Access_Disp_Table (Iface))),
+                                       New_Reference_To (Typ_Tag, Loc))),
+                                Expressions =>
+                                   New_List
+                                    (Make_Integer_Literal (Loc, Prim_Pos))),
+
+                            Expression =>
+                              Unchecked_Convert_To (RTE (RE_Prim_Ptr),
+                                Make_Attribute_Reference (Loc,
+                                  Prefix => New_Reference_To (E, Loc),
+                                  Attribute_Name =>
+                                    Name_Unrestricted_Access))));
+                     end if;
+
+                     Next_Elmt (Elmt);
+                  end loop;
+
+                  --  Check if all primitives from the parent have been
+                  --  overridden (to avoid copying the whole secondary
+                  --  table from the parent).
+
+                  --   IfaceG!(Typ_Sec_Tag).all := IfaceG!(Parent_Sec_Tag).all;
+
+                  for J in Prims_Table'Range loop
+                     if not Prims_Table (J) then
+                        Insert_After (Last_Nod,
+                          Make_Assignment_Statement (Loc,
+                            Name =>
+                              Make_Explicit_Dereference (Loc,
+                                Unchecked_Convert_To
+                                 (Node (Last_Elmt (Access_Disp_Table (Iface))),
+                                  New_Reference_To (Typ_Tag, Loc))),
+                            Expression =>
+                              Make_Explicit_Dereference (Loc,
+                                Unchecked_Convert_To
+                                 (Node (Last_Elmt (Access_Disp_Table (Iface))),
+                                  New_Reference_To (Parent_Tag, Loc)))));
+                        exit;
+                     end if;
+                  end loop;
+               end;
+            end if;
+
+            Next_Elmt (Typ_Iface_Tag_Elmt);
+            Next_Elmt (Parent_Iface_Tag_Elmt);
+         end loop;
+      end;
+
+      return Result;
+   end Build_Inherit_CPP_Prims;
 
    -------------------------
    -- Build_Inherit_Prims --

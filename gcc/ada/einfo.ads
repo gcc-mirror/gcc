@@ -3306,10 +3306,10 @@ package Einfo is
 --       wrapper package, but for debugging purposes its external symbol
 --       must correspond to the name and scope of the related instance.
 
---    Related_Type (Node26)
---       Present in components and constants associated with dispatch tables.
---       Set to point to the entity of the associated tagged type or interface
---       type.
+--    Related_Type (Node27)
+--       Present in components, constants and variables. Set when there is an
+--       associated dispatch table to point to entities containing primary or
+--       secondary tags. Not set in the _tag component of record types.
 
 --    Relative_Deadline_Variable (Node26) [implementation base type only]
 --       Present in task type entities. This flag is set if a valid and
@@ -4827,7 +4827,7 @@ package Einfo is
    --    Interface_Name                      (Node21)   (JGNAT usage only)
    --    Original_Record_Component           (Node22)
    --    DT_Offset_To_Top_Func               (Node25)
-   --    Related_Type                        (Node26)
+   --    Related_Type                        (Node27)
    --    Has_Biased_Representation           (Flag139)
    --    Has_Per_Object_Constraint           (Flag154)
    --    Is_Atomic                           (Flag85)
@@ -4850,7 +4850,7 @@ package Einfo is
    --    Size_Check_Code                     (Node19)   (constants only)
    --    Prival_Link                         (Node20)   (privals only)
    --    Interface_Name                      (Node21)
-   --    Related_Type                        (Node26)   (constants only)
+   --    Related_Type                        (Node27)   (constants only)
    --    Has_Alignment_Clause                (Flag46)
    --    Has_Atomic_Components               (Flag86)
    --    Has_Biased_Representation           (Flag139)
@@ -5479,6 +5479,7 @@ package Einfo is
    --    Related_Expression                  (Node24)
    --    Debug_Renaming_Link                 (Node25)
    --    Last_Assignment                     (Node26)
+   --    Related_Type                        (Node27)
    --    Has_Alignment_Clause                (Flag46)
    --    Has_Atomic_Components               (Flag86)
    --    Has_Biased_Representation           (Flag139)

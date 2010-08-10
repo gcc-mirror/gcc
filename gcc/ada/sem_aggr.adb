@@ -2417,6 +2417,36 @@ package body Sem_Aggr is
                Error_Msg_N
                  ("type of limited ancestor part must be constrained", A);
 
+            --  Reject the use of CPP constructors that leave objects partially
+            --  initialized. For example:
+
+            --    type CPP_Root is tagged limited record ...
+            --    pragma Import (CPP, CPP_Root);
+
+            --    type CPP_DT is new CPP_Root and Iface ...
+            --    pragma Import (CPP, CPP_DT);
+
+            --    type Ada_DT is new CPP_DT with ...
+
+            --    Obj : Ada_DT := Ada_DT'(New_CPP_Root with others => <>);
+
+            --  Using the constructor of CPP_Root the slots of the dispatch
+            --  table of CPP_DT cannot be set, and the secondary tag of
+            --  CPP_DT is unknown.
+
+            elsif Nkind (A) = N_Function_Call
+              and then Is_CPP_Constructor_Call (A)
+              and then Enclosing_CPP_Parent (Typ) /= A_Type
+            then
+               Error_Msg_NE
+                 ("?must use 'C'P'P constructor for type &", A,
+                  Enclosing_CPP_Parent (Typ));
+
+               --  The following call is not needed if the previous warning
+               --  is promoted to an error.
+
+               Resolve_Record_Aggregate (N, Typ);
+
             elsif Is_Class_Wide_Type (Etype (A))
               and then Nkind (Original_Node (A)) = N_Function_Call
             then

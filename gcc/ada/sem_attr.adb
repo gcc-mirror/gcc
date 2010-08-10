@@ -697,6 +697,12 @@ package body Sem_Attr is
                        ("current instance attribute must appear alone", N);
                   end if;
 
+                  if Is_CPP_Class (Root_Type (Typ)) then
+                     Error_Msg_N
+                       ("?current instance unsupported for derivations of "
+                        & "'C'P'P types", N);
+                  end if;
+
                --  OK if we are in initialization procedure for the type
                --  in question, in which case the reference to the type
                --  is rewritten as a reference to the current object.

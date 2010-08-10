@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -108,6 +108,35 @@ package body Exp_Tss is
 
       Prepend_Elmt (TSS, TSS_Elist (FN));
    end Copy_TSS;
+
+   -------------------
+   -- CPP_Init_Proc --
+   -------------------
+
+   function CPP_Init_Proc (Typ  : Entity_Id) return Entity_Id is
+      FN   : constant Node_Id := Freeze_Node (Typ);
+      Elmt : Elmt_Id;
+
+   begin
+      if not Is_CPP_Class (Root_Type (Typ))
+        or else No (FN)
+        or else No (TSS_Elist (FN))
+      then
+         return Empty;
+
+      else
+         Elmt := First_Elmt (TSS_Elist (FN));
+         while Present (Elmt) loop
+            if Is_CPP_Init_Proc (Node (Elmt)) then
+               return Node (Elmt);
+            end if;
+
+            Next_Elmt (Elmt);
+         end loop;
+      end if;
+
+      return Empty;
+   end CPP_Init_Proc;
 
    ------------------------
    -- Find_Inherited_TSS --
@@ -276,6 +305,18 @@ package body Exp_Tss is
       return Empty;
    end Init_Proc;
 
+   ----------------------
+   -- Is_CPP_Init_Proc --
+   ----------------------
+
+   function Is_CPP_Init_Proc (E : Entity_Id) return Boolean is
+      C1 : Character;
+      C2 : Character;
+   begin
+      Get_Last_Two_Chars (Chars (E), C1, C2);
+      return C1 = TSS_CPP_Init_Proc (1) and then C2 = TSS_CPP_Init_Proc (2);
+   end Is_CPP_Init_Proc;
+
    ------------------
    -- Is_Init_Proc --
    ------------------
@@ -393,7 +434,7 @@ package body Exp_Tss is
       --  Skip this for Init_Proc with No_Default_Initialization, since the
       --  Init proc is a dummy void entity in this case to be ignored.
 
-      if Is_Init_Proc (TSS)
+      if (Is_Init_Proc (TSS) or else Is_CPP_Init_Proc (TSS))
         and then Restriction_Active (No_Default_Initialization)
       then
          null;

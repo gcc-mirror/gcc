@@ -1,3 +1,75 @@
+2010-08-10  Javier Miranda  <miranda@adacore.com>
+
+	* sem_aggr.adb (Resolve_Extension_Aggregate): Warn on the use of C++
+	constructors that leave the object partially initialized.
+	* exp_atag.ads, exp_atags.adb (Build_Inherit_CPP_Prims): New subprogram
+	that copies from parent of Typ the dispatch table slots of inherited
+	C++ primitives. It handles primary and secondary dispatch tables.
+	* einfo.adb (Related_Type): Moved from Node26 to Node27. Required to
+	use this attribute with E_Variable entities.
+	(Set_Is_Tag): Relax assertion to allow its use with variables that
+	store tags.
+	(Set_Related_Type): Relax assertion to allow its use with variables
+	that store the tag of a C++ class.
+	(Write_26_Field_Name): Remove Related_Type.
+	(Write_27_Field_Name): Add Related_Type.
+	* einfo.ads (Related_Type): Moved from Node26 to Node27. Available also
+	with E_Variable entities.
+	* sem_prag.adb (CPP_Constructor): Warn on duplicated occurrence of this
+	pragma.
+	* sem_util.adb (Search_Tag): Add missing support for CPP types.
+	(Enclosing_CPP_Parent): New subprogram.
+	(Has_Suffix): New subprogram.
+	* sem_util.ads (Enclosing_CPP_Parent): New subprogram that returns the
+	closest ancestor of a type that is a C++ type.
+	(Has_Suffix): New subprogram. Used in assertions to check the suffix of
+	internal entities.
+	* sem_attr.adb (Analyze_Access_Attribute): Check wrong use of current
+	instance in derivations of C++ types.
+	* exp_tss.adb (CPP_Init_Proc): New subprogram.
+	(Is_CPP_Init_Proc): New subprogram.
+	(Set_TSS): Handle new C++ init routines.
+	* exp_tss.ads (TSS_CPP_Init): New TSS name. For initialization of C++
+	dispatch tables.
+	(CPP_Init_Proc): New subprogram.
+	(Is_CPP_Init_Proc): New subprogram.
+	* exp_disp.adb (CPP_Num_Prims): New subprogram.
+	(Has_CPP_Constructors): New subprogram.
+	(Make_Secondary_DT, Make_DT): For derivations of CPP types, do not
+	initialize slots located in the C++ part of the dispatch table.
+	(Make_Tags): For CPP types declare variables used by the IP routine to
+	store the C++ tag values after the first invocation of the C++
+	constructor.
+	(Build_CPP_Init_DT): New subprogram.
+	(Set_CPP_Constructors): New implementation that builds an IP for each
+	CPP constructor. These IP are wrappers of the C++ constructors that,
+	after the first invocation of the constructor, read the C++ tags from
+	the object and save them locally. These copies of the C++ tags are used
+	by the IC routines to initialize tables of Ada derivations of CPP types.
+	(Write_DT): Indicate what primitives are imported from C++
+	* exp_disp.ads (CPP_Num_Prims): New subprogram.
+	(Has_CPP_Constructors): New subprogram.
+	* exp_aggr.adb (Build_Record_Aggr_Code): For derivations of C++ types
+	invoke the IC routine to inherit the slots of the parents.
+	* sem_ch13.adb (Analyze_Freeze_Entity): Add new warnings on CPP types.
+	* exp_ch3.adb (Is_Variable_Size_Array): New subprogram.
+	(Is_Variable_Size_Record): Factorize code calling
+	Is_Variable_Size_Array.
+	(Build_CPP_Init_Procedure): New subprogram that builds the tree
+	corresponding to the procedure that initializes the C++ part of the
+	dispatch table of an Ada tagged type that is a derivation of a CPP type.
+	(Build_Init_Procedure): Adding documentation plus code reorganization to
+	leave more clear the construction of the IP with C++ types.
+	(Expand_Freeze_Record_Type): Delay call to Set_CPP_Constructors because
+	it cannot be called after Make_Tags has been invoked.
+	(Inherit_CPP_Tag): Removed.
+	(Init_Secondary_Tags): For derivations of CPP types, warn on tags
+	located at variable offset.
+	* freeze.ads: Minor reformating.
+	* sem_ch8.adb (Write_Scopes): Add pragma export. Required to have it
+	available in gdb.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
 2010-08-10  Robert Dewar  <dewar@adacore.com>
 
 	* a-chahan.ads: Add comments on handling of obsolescent entries.
