@@ -1,3 +1,7 @@
+2010-08-10  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* coverage.c (ctr_labels): Delete.
+
 2010-08-10  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR bootstrap/45177
