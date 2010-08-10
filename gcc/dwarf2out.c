@@ -5672,7 +5672,6 @@ DEF_VEC_ALLOC_O(dw_attr_node,gc);
    die_sib.  die_child points to the node *before* the "first" child node.  */
 
 typedef struct GTY((chain_circular ("%h.die_sib"))) die_struct {
-  enum dwarf_tag die_tag;
   union die_symbol_or_type_node
     {
       char * GTY ((tag ("0"))) die_symbol;
@@ -5690,6 +5689,7 @@ typedef struct GTY((chain_circular ("%h.die_sib"))) die_struct {
   /* Die is used and must not be pruned as unused.  */
   int die_perennial_p;
   unsigned int decl_id;
+  enum dwarf_tag die_tag;
 }
 die_node;
 
