@@ -29,24 +29,25 @@
 
 2010-08-09  Sofiane Naci  <sofiane.naci@arm.com>
 
-    * config/arm/iterators.md: New file.
-    * config/arm/arm.md: Include iterators.md.
-    (QHSI): Move to new file.
-    (LTUGEU, cnb, optab, ior_xor): Likewise.
-    * config/arm/iwmmxt.md (VMMX): Move to new file.
-    (VSHFT, MMX_char): Likewise.
-    * config/arm/neon.md (VD): Move to new file.
-    (VDX, VDI, VQ, VQX, VQI, VQXMOV, VSTRUCT, VTAB, V_TAB_n, VW): Likewise.
-    (VN, VDQ, VDQW, VDQIW, VCVTF, VCVTI, VMD, VMQ, VMDQ, VMDI): Likewise.
-    (VMDQI, VX, VE, V64, V32, V_CVTTO, V_elem, V_ext, V_two_elem): Likewise.
-    (V_three_elem, V_four_elem, V_req, V_widen, V_narrow, V_HALF): Likewise.
-    (V_half,V_DOUBLE, V_double, V_double_width, V_cmp_result): Likewise.
-    (V_if_elem, V_s_elem, V_u_elem, V_uf_sclr, V_sz_elem, VD_dup): Likewise.
-    (V_PAIR, vqh_ops, vqhs_ops, VQH_mnem, VQH_sign, V_suf64): Likewise.
-    (scalar_mul_constraint,Is_float_mode, Scalar_mul_8_16): Likewise.
-    (Is_d_reg, V_mode_nunits): Likewise.
-    * config/arm/vec-common.md (VALL): Move to new file.
-    (VALLW, VINT, VINTW): Likewise.
+	* config/arm/iterators.md: New file.
+	* config/arm/arm.md: Include iterators.md.
+	(QHSI): Move to new file.
+	(LTUGEU, cnb, optab, ior_xor): Likewise.
+	* config/arm/iwmmxt.md (VMMX): Move to new file.
+	(VSHFT, MMX_char): Likewise.
+	* config/arm/neon.md (VD): Move to new file.
+	(VDX, VDI, VQ, VQX, VQI, VQXMOV, VSTRUCT, VTAB, V_TAB_n, VW): Likewise.
+	(VN, VDQ, VDQW, VDQIW, VCVTF, VCVTI, VMD, VMQ, VMDQ, VMDI): Likewise.
+	(VMDQI, VX, VE, V64, V32, V_CVTTO, V_elem, V_ext): Likewise.
+	(V_two_elem, V_three_elem, V_four_elem, V_req, V_widen): Likewise.
+	(V_narrow, V_HALF, V_half,V_DOUBLE, V_double): Likewise.
+	(V_double_width, V_cmp_result, V_if_elem, V_s_elem): Likewise.
+	(V_u_elem, V_uf_sclr, V_sz_elem, VD_dup): Likewise.
+	(V_PAIR, vqh_ops, vqhs_ops, VQH_mnem, VQH_sign, V_suf64): Likewise.
+	(scalar_mul_constraint,Is_float_mode, Scalar_mul_8_16): Likewise.
+	(Is_d_reg, V_mode_nunits): Likewise.
+	* config/arm/vec-common.md (VALL): Move to new file.
+	(VALLW, VINT, VINTW): Likewise.
 
 2010-08-10  Bernd Schmidt  <bernds@codesourcery.com>
 
