@@ -1,3 +1,10 @@
+2010-06-12  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-dependences.c (dot_deps): Make system call to dotty run
+	in background.
+	(dot_deps_stmt): Same.
+	* graphite-poly.c (dot_lst): Same.
+
 2010-06-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-clast-to-gimple.c (gcc_type_for_interval): Do not pass
