@@ -1,5 +1,11 @@
 2010-06-09  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-scalar-evolution.c (instantiate_scev_name): Do not fail
+	the scev analysis when the variable is not used outside the loop
+	in a close phi node: call compute_overall_effect_of_inner_loop.
+
+2010-06-09  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (single_pred_cond): Renamed
 	single_pred_cond_non_loop_exit.  Return NULL for loop exit edges.
 	(build_sese_conditions_before): Renamed call to single_pred_cond.
