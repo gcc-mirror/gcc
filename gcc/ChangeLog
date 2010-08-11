@@ -1,5 +1,17 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): Add an
+	extra parameter for the region.  Call scev_analyzable_p.
+	(rewrite_reductions_out_of_ssa): Update call to
+	rewrite_close_phi_out_of_ssa.
+	(rewrite_cross_bb_phi_deps): Same.
+	(rewrite_commutative_reductions_out_of_ssa_loop): Add an extra
+	parameter for the region.  Call scev_analyzable_p.
+	(rewrite_commutative_reductions_out_of_ssa): Update call to
+	rewrite_commutative_reductions_out_of_ssa_loop.
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* sese.c (rename_uses): Call unshare_expr before force_gimple_operand.
 
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
