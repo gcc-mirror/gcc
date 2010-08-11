@@ -846,27 +846,6 @@ build_iv_mapping (htab_t map, sese region,
     }
 }
 
-/* Helper function for htab_traverse.  */
-
-static int
-copy_renames (void **slot, void *s)
-{
-  struct rename_map_elt_s *entry = (struct rename_map_elt_s *) *slot;
-  htab_t res = (htab_t) s;
-  tree old_name = entry->old_name;
-  tree expr = entry->expr;
-  struct rename_map_elt_s tmp;
-  PTR *x;
-
-  tmp.old_name = old_name;
-  x = htab_find_slot (res, &tmp, INSERT);
-
-  if (x && !*x)
-    *x = new_rename_map_elt (old_name, expr);
-
-  return 1;
-}
-
 /* Construct bb_pbb_def with BB and PBB. */
 
 static bb_pbb_def *
@@ -1095,26 +1074,12 @@ translate_clast_for (sese region, loop_p context_loop, struct clast_for *stmt,
 {
   edge last_e = graphite_create_new_loop_guard (region, next_e, stmt, *newivs,
 						newivs_index, params_index);
-
   edge true_e = get_true_edge_from_guard_bb (next_e->dest);
-  edge false_e = get_false_edge_from_guard_bb (next_e->dest);
-  edge exit_true_e = single_succ_edge (true_e->dest);
-  edge exit_false_e = single_succ_edge (false_e->dest);
 
-  htab_t before_guard = htab_create (10, rename_map_elt_info,
-				     eq_rename_map_elts, free);
-  htab_traverse (rename_map, copy_renames, before_guard);
-
-  next_e = translate_clast_for_loop (region, context_loop, stmt, true_e,
-				     rename_map, newivs,
-				     newivs_index, bb_pbb_mapping, level,
-				     params_index);
-
-  insert_guard_phis (last_e->src, exit_true_e, exit_false_e,
-		     before_guard, rename_map);
-
-  htab_delete (before_guard);
-
+  translate_clast_for_loop (region, context_loop, stmt, true_e,
+			    rename_map, newivs,
+			    newivs_index, bb_pbb_mapping, level,
+			    params_index);
   return last_e;
 }
 
@@ -1137,25 +1102,11 @@ translate_clast_guard (sese region, loop_p context_loop,
 {
   edge last_e = graphite_create_new_guard (region, next_e, stmt, *newivs,
 					   newivs_index, params_index);
-
   edge true_e = get_true_edge_from_guard_bb (next_e->dest);
-  edge false_e = get_false_edge_from_guard_bb (next_e->dest);
-  edge exit_true_e = single_succ_edge (true_e->dest);
-  edge exit_false_e = single_succ_edge (false_e->dest);
 
-  htab_t before_guard = htab_create (10, rename_map_elt_info,
-				     eq_rename_map_elts, free);
-  htab_traverse (rename_map, copy_renames, before_guard);
-
-  next_e = translate_clast (region, context_loop, stmt->then, true_e,
-			    rename_map, newivs, newivs_index, bb_pbb_mapping,
-			    level, params_index);
-
-  insert_guard_phis (last_e->src, exit_true_e, exit_false_e,
-		     before_guard, rename_map);
-
-  htab_delete (before_guard);
-
+  translate_clast (region, context_loop, stmt->then, true_e,
+		   rename_map, newivs, newivs_index, bb_pbb_mapping,
+		   level, params_index);
   return last_e;
 }
 
