@@ -1,5 +1,15 @@
 2010-08-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/stl_algo.h (shuffle): Change signature consistently
+	with random_shuffle (US 121).
+	* include/bits/algorithmfwd.h: Adjust.
+	* testsuite/25_algorithms/shuffle/requirements/
+	explicit_instantiation/2.cc: Likewise.
+	* testsuite/25_algorithms/shuffle/requirements/
+	explicit_instantiation/pod.cc: Likewise.
+
+2010-08-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/move.h (forward): Reinstate the N2835 version.
 
 2010-08-11  Paolo Carlini  <paolo.carlini@oracle.com>
