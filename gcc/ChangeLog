@@ -1,5 +1,10 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (reduction_phi_p): Do not rewrite out of
+	SSA scalar phi nodes that can be scev_analyzable_p.
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): Correctly
 	handle SSA_NAME_IS_DEFAULT_DEF.
 
