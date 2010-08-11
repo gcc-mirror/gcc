@@ -64,8 +64,7 @@
 
 2010-04-07  Jakub Jelinek  <jakub@redhat.com>
 
-	* regex.c (byte_re_match_2_internal): Avoid set but not used
-	warning.
+	* testsuite/libffi.call/err_bad_abi.c: Remove unused args variable.
 
 2010-04-02  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
