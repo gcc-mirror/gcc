@@ -1,5 +1,12 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (dot_deps): Make system call to dotty run
+	in background.
+	(dot_deps_stmt): Same.
+	* graphite-poly.c (dot_lst): Same.
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (loop_entry_phi_arg): Renamed
 	phi_arg_in_outermost_loop.
 	(remove_simple_copy_phi): Call phi_arg_in_outermost_loop.
