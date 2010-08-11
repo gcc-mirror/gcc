@@ -543,7 +543,8 @@ rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
 		  && !tree_contains_chrecs (new_expr, NULL));
 
       /* Replace the old_name with the new_expr.  */
-      new_expr = force_gimple_operand (new_expr, &stmts, true, NULL);
+      new_expr = force_gimple_operand (unshare_expr (new_expr), &stmts,
+				       true, NULL);
       gsi_insert_seq_before (gsi_tgt, stmts, GSI_SAME_STMT);
       replace_exp (use_p, new_expr);
       set_rename (rename_map, old_name, new_expr);
