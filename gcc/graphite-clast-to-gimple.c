@@ -426,26 +426,26 @@ precision_for_value (mpz_t val)
   mpz_t x, y, two;
   int precision;
 
-  value_init (x);
-  value_init (y);
-  value_init (two);
-  value_set_si (x, 2);
-  value_assign (y, val);
-  value_set_si (two, 2);
+  mpz_init (x);
+  mpz_init (y);
+  mpz_init (two);
+  mpz_set_si (x, 2);
+  mpz_set (y, val);
+  mpz_set_si (two, 2);
   precision = 1;
 
-  if (value_neg_p (y))
-    value_oppose (y, y);
+  if (mpz_sgn (y) < 0)
+    mpz_neg (y, y);
 
-  while (value_gt (y, x))
+  while (mpz_cmp (y, x) > 0)
     {
-      value_multiply (x, x, two);
+      mpz_mul (x, x, two);
       precision++;
     }
 
-  value_clear (x);
-  value_clear (y);
-  value_clear (two);
+  mpz_clear (x);
+  mpz_clear (y);
+  mpz_clear (two);
 
   return precision;
 }
@@ -459,12 +459,12 @@ precision_for_interval (mpz_t low, mpz_t up)
   mpz_t diff;
   int precision;
 
-  gcc_assert (value_le (low, up));
+  gcc_assert (mpz_cmp (low, up) <= 0);
 
-  value_init (diff);
-  value_subtract (diff, up, low);
+  mpz_init (diff);
+  mpz_sub (diff, up, low);
   precision = precision_for_value (diff);
-  value_clear (diff);
+  mpz_clear (diff);
 
   return precision;
 }
@@ -479,9 +479,9 @@ gcc_type_for_interval (mpz_t low, mpz_t up)
   tree type;
   enum machine_mode mode;
 
-  gcc_assert (value_le (low, up));
+  gcc_assert (mpz_cmp (low, up) <= 0);
 
-  if (value_neg_p (low))
+  if (mpz_sgn (low) < 0)
     unsigned_p = false;
 
   prec_up = precision_for_value (up);
@@ -731,14 +731,14 @@ compute_type_for_level (poly_bb_p pbb, int level)
   mpz_t low, up;
   tree type;
 
-  value_init (low);
-  value_init (up);
+  mpz_init (low);
+  mpz_init (up);
 
   compute_bounds_for_level (pbb, level, low, up);
   type = gcc_type_for_interval (low, up);
 
-  value_clear (low);
-  value_clear (up);
+  mpz_clear (low);
+  mpz_clear (up);
   return type;
 }
 

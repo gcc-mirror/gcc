@@ -478,7 +478,7 @@ lst_interchange_profitable_p (lst_p loop1, lst_p loop2)
   memory_strides_in_loop (loop1, lst_depth (loop1), d1);
   memory_strides_in_loop (loop2, lst_depth (loop2), d2);
 
-  res = value_lt (d1, d2);
+  res = mpz_cmp (d1, d2) < 0;
 
   mpz_clear (d1);
   mpz_clear (d2);

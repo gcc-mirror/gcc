@@ -664,7 +664,7 @@ ppl_max_for_le_pointset (ppl_Pointset_Powerset_C_Polyhedron_t ps,
     {
       ppl_Coefficient_to_mpz_t (num, nv);
       ppl_Coefficient_to_mpz_t (denom, dv);
-      gcc_assert (value_notzero_p (dv));
+      gcc_assert (mpz_sgn (dv) != 0);
       mpz_tdiv_q (res, nv, dv);
     }
 
@@ -695,7 +695,7 @@ ppl_min_for_le_pointset (ppl_Pointset_Powerset_C_Polyhedron_t ps,
     {
       ppl_Coefficient_to_mpz_t (num, nv);
       ppl_Coefficient_to_mpz_t (denom, dv);
-      gcc_assert (value_notzero_p (dv));
+      gcc_assert (mpz_sgn (dv) != 0);
       mpz_tdiv_q (res, nv, dv);
     }
 
