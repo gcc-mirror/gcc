@@ -1127,14 +1127,14 @@ translate_clast (sese region, loop_p context_loop, struct clast_stmt *stmt,
 /* Free the SCATTERING domain list.  */
 
 static void
-free_scattering (CloogDomainList *scattering)
+free_scattering (CloogScatteringList *scattering)
 {
   while (scattering)
     {
-      CloogDomain *dom = cloog_domain (scattering);
-      CloogDomainList *next = cloog_next_domain (scattering);
+      CloogScattering *dom = cloog_scattering (scattering);
+      CloogScatteringList *next = cloog_next_scattering (scattering);
 
-      cloog_domain_free (dom);
+      cloog_scattering_free (dom);
       free (scattering);
       scattering = next;
     }
@@ -1212,7 +1212,7 @@ build_cloog_prog (scop_p scop, CloogProgram *prog,
   poly_bb_p pbb;
   CloogLoop *loop_list = NULL;
   CloogBlockList *block_list = NULL;
-  CloogDomainList *scattering = NULL;
+  CloogScatteringList *scattering = NULL;
   int nbs = 2 * max_nb_loops + 1;
   int *scaldims;
 
@@ -1264,17 +1264,18 @@ build_cloog_prog (scop_p scop, CloogProgram *prog,
       /* Build scattering list.  */
       {
         /* XXX: Replace with cloog_domain_list_alloc(), when available.  */
-        CloogDomainList *new_scattering
-	  = (CloogDomainList *) xmalloc (sizeof (CloogDomainList));
+        CloogScatteringList *new_scattering
+	  = (CloogScatteringList *) xmalloc (sizeof (CloogScatteringList));
         ppl_Polyhedron_t scat;
-	CloogDomain *dom;
+	CloogScattering *dom;
 
 	scat = PBB_TRANSFORMED_SCATTERING (pbb);
-	dom = new_Cloog_Domain_from_ppl_Polyhedron (scat, scop_nb_params (scop),
-                                                    state);
+        dom = new_Cloog_Scattering_from_ppl_Polyhedron
+          (scat, scop_nb_params (scop), pbb_nb_scattering_transform (pbb),
+           state);
 
-        cloog_set_next_domain (new_scattering, scattering);
-        cloog_set_domain (new_scattering, dom);
+        cloog_set_next_scattering (new_scattering, scattering);
+        cloog_set_scattering (new_scattering, dom);
         scattering = new_scattering;
       }
     }
