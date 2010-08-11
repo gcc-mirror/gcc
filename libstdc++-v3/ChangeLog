@@ -1,3 +1,8 @@
+2010-08-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/unique_ptr.h: Replace _Tp_Deleter -> _Dp, and
+	_Up_Deleter -> _Ep.
+
 2010-08-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/shared_ptr_base.h: Remove a few now redundant
