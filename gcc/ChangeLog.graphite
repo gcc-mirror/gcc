@@ -1,5 +1,17 @@
 2010-07-22  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (propagate_expr_outside_region): New.
+	(rewrite_close_phi_out_of_ssa): Propagate constant values or
+	parametric expressions outside the scop region.
+	(rewrite_cross_bb_scalar_deps): Same.
+	* sese.c (rename_uses): Use NULL_TREE instead of NULL for trees.
+
+	* gcc.dg/graphite/run-id-5.c: New.
+	* gcc.dg/graphite/run-id-6.c: New.
+	* gfortran.dg/graphite/id-21.f: New.
+
+2010-07-22  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (rewrite_phi_out_of_ssa): Use
 	SSA_NAME_DEF_STMT only on SSA_NAMEs.
 

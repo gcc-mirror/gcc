@@ -2182,6 +2182,45 @@ scalar_close_phi_node_p (gimple phi)
   return (gimple_phi_num_args (phi) == 1);
 }
 
+/* For a definition DEF in REGION, propagates the expression EXPR in
+   all the uses of DEF outside REGION.  */
+
+static void
+propagate_expr_outside_region (tree def, tree expr, sese region)
+{
+  imm_use_iterator imm_iter;
+  gimple use_stmt;
+  gimple_seq stmts;
+  bool replaced_once = false;
+
+  gcc_assert (TREE_CODE (def) == SSA_NAME
+	      && bb_in_sese_p (gimple_bb (SSA_NAME_DEF_STMT (def)), region));
+
+  expr = force_gimple_operand (unshare_expr (expr), &stmts, true,
+			       NULL_TREE);
+
+  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
+    if (!is_gimple_debug (use_stmt)
+	&& !bb_in_sese_p (gimple_bb (use_stmt), region))
+      {
+	ssa_op_iter iter;
+	use_operand_p use_p;
+
+	FOR_EACH_PHI_OR_STMT_USE (use_p, use_stmt, iter, SSA_OP_ALL_USES)
+	  if (operand_equal_p (def, USE_FROM_PTR (use_p), 0)
+	      && (replaced_once = true))
+	    replace_exp (use_p, expr);
+
+	update_stmt (use_stmt);
+      }
+
+  if (replaced_once)
+    {
+      gsi_insert_seq_on_edge (SESE_ENTRY (region), stmts);
+      gsi_commit_edge_inserts ();
+    }
+}
+
 /* Rewrite out of SSA the reduction phi node at PSI by creating a zero
    dimension array for it.  */
 
@@ -2201,20 +2240,36 @@ rewrite_close_phi_out_of_ssa (gimple_stmt_iterator *psi, sese region)
      before Graphite: see canonicalize_loop_closed_ssa_form.  */
   gcc_assert (gimple_phi_num_args (phi) == 1);
 
-  /* If res is scev analyzable, it is safe to ignore the close phi
-     node: it will be code generated in the out of Graphite pass.  */
-  if (scev_analyzable_p (res, region))
-    {
-      gsi_next (psi);
-      return;
-    }
-
   /* The phi node can be a non close phi node, when its argument is
      invariant, or when it is defined in the same loop as the phi node.  */
   if (is_gimple_min_invariant (arg)
       || SSA_NAME_IS_DEFAULT_DEF (arg)
       || gimple_bb (SSA_NAME_DEF_STMT (arg))->loop_father == bb->loop_father)
     stmt = gimple_build_assign (res, arg);
+
+  /* If res is scev analyzable and is not a scalar value, it is safe
+     to ignore the close phi node: it will be code generated in the
+     out of Graphite pass.  */
+  else if (scev_analyzable_p (res, region))
+    {
+      loop_p loop = loop_containing_stmt (SSA_NAME_DEF_STMT (res));
+      tree scev;
+
+      if (!loop_in_sese_p (loop, region))
+	{
+	  loop = loop_containing_stmt (SSA_NAME_DEF_STMT (arg));
+	  scev = scalar_evolution_in_region (region, loop, arg);
+	  scev = compute_overall_effect_of_inner_loop (loop, scev);
+	}
+      else
+	  scev = scalar_evolution_in_region (region, loop, res);
+
+      if (tree_does_not_contain_chrecs (scev))
+	propagate_expr_outside_region (res, scev, region);
+
+      gsi_next (psi);
+      return;
+    }
   else
     {
       tree zero_dim_array = create_zero_dim_array (var, "Close_Phi");
@@ -2428,9 +2483,19 @@ rewrite_cross_bb_scalar_deps (sese region, gimple_stmt_iterator *gsi)
       return;
     }
 
-  if (!is_gimple_reg (def)
-      || scev_analyzable_p (def, region))
+  if (!is_gimple_reg (def))
     return;
+
+  if (scev_analyzable_p (def, region))
+    {
+      loop_p loop = loop_containing_stmt (SSA_NAME_DEF_STMT (def));
+      tree scev = scalar_evolution_in_region (region, loop, def);
+
+      if (tree_does_not_contain_chrecs (scev))
+	propagate_expr_outside_region (def, scev, region);
+
+      return;
+    }
 
   def_bb = gimple_bb (stmt);
 
