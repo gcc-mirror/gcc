@@ -1,3 +1,7 @@
+2010-07-20  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gcc.dg/tree-ssa/pr20742.c: New.
+
 2010-07-15  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* sese.c (rename_uses): Call unshare_expr before force_gimple_operand.
