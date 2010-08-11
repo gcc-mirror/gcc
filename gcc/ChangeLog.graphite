@@ -1,5 +1,10 @@
 2010-05-07  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (graphite_create_new_loop_guard): Fix
+	type of integer_one_node for fold_build of POINTER_PLUS_EXPR.
+
+2010-05-07  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (loop_entry_phi_arg): Renamed
 	phi_arg_in_outermost_loop.
 	(remove_simple_copy_phi): Call phi_arg_in_outermost_loop.
