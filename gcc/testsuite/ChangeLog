@@ -1,3 +1,9 @@
+2010-08-12  Jie Zhang  <jie@codesourcery.com>
+
+	* gcc.dg/graphite/interchange-9.c (M): Define to be 111.
+	(N): Likewise.
+	(main): Adjust accordingly.
+
 2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* gfortran.dg/graphite/id-22.f: New.
