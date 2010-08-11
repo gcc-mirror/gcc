@@ -2249,6 +2249,16 @@ rewrite_close_phi_out_of_ssa (gimple_stmt_iterator *psi, sese region)
       return;
     }
 
+  else if (gimple_bb (SSA_NAME_DEF_STMT (arg))->loop_father == bb->loop_father)
+    {
+      propagate_expr_outside_region (res, arg, region);
+      stmt = gimple_build_assign (res, arg);
+      remove_phi_node (psi, false);
+      gsi_insert_before (&gsi, stmt, GSI_NEW_STMT);
+      SSA_NAME_DEF_STMT (res) = stmt;
+      return;
+    }
+
   /* If res is scev analyzable and is not a scalar value, it is safe
      to ignore the close phi node: it will be code generated in the
      out of Graphite pass.  */

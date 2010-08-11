@@ -1,5 +1,13 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): Add back
+	the case removed in the previous patch, when the only phi argument
+	is defined in the same loop as the phi node itself.  Handle it
+	separately from the invariant case by both propagating it outside
+	the region and replacing the phi node with an assign.
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): The only
 	constant phi nodes with one argument are is_gimple_min_invariant
 	and SSA_NAME_IS_DEFAULT_DEF.
