@@ -32,7 +32,8 @@ typedef const char *clast_name_p;
 #ifndef CLOOG_ORG
 
 /* CloogOptions compatibility.  */
-#define build_cloog_prog(SCOP, PROG, OPT) build_cloog_prog (SCOP, PROG)
+#define build_cloog_prog(SCOP, PROG, OPT, STATE)\
+  build_cloog_prog (SCOP, PROG, STATE)
 #define cloog_program_extract_scalars(PROG, SCATT, OPT)\
   cloog_program_extract_scalars (PROG, SCATT)
 #define cloog_program_scatter(PROG, SCATT, OPT)\
@@ -44,6 +45,19 @@ typedef const char *clast_name_p;
 #define clast_expr_bin expr_bin
 #define clast_pprint pprint
 
+/* CloogState compatibility.  */
+#define CloogState void
+#define cloog_state_malloc() NULL
+#define cloog_state_free(STATE)
+#define cloog_loop_malloc(STATE) cloog_loop_malloc ()
+#define cloog_options_malloc(STATE) cloog_options_malloc ()
+#define cloog_statement_alloc(STATE, INDEX) cloog_statement_alloc (INDEX)
+#define new_Cloog_Domain_from_ppl_Pointset_Powerset(PSPS, NB, STATE)\
+  new_Cloog_Domain_from_ppl_Pointset_Powerset (PSPS)
+#define new_Cloog_Domain_from_ppl_Polyhedron(POLY, NB, STATE)\
+  new_Cloog_Domain_from_ppl_Polyhedron (POLY)
+#define cloog_domain_from_cloog_matrix(STATE, MAT, NB)\
+  cloog_domain_matrix2domain (MAT)
 #endif
 
 /* Adapt CLooG accessors from CLooG legacy to
