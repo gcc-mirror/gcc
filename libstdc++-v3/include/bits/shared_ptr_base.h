@@ -851,11 +851,31 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	       const __shared_ptr<_Tp2, _Lp>& __b)
     { return __a.get() == __b.get(); }
 
+  template<typename _Tp, _Lock_policy _Lp>
+    inline bool
+    operator==(const __shared_ptr<_Tp, _Lp>& __a, nullptr_t)
+    { return __a.get() == nullptr; }
+
+  template<typename _Tp, _Lock_policy _Lp>
+    inline bool
+    operator==(nullptr_t, const __shared_ptr<_Tp, _Lp>& __b)
+    { return nullptr == __b.get(); }
+
   template<typename _Tp1, typename _Tp2, _Lock_policy _Lp>
     inline bool
     operator!=(const __shared_ptr<_Tp1, _Lp>& __a,
 	       const __shared_ptr<_Tp2, _Lp>& __b)
     { return __a.get() != __b.get(); }
+
+  template<typename _Tp, _Lock_policy _Lp>
+    inline bool
+    operator!=(const __shared_ptr<_Tp, _Lp>& __a, nullptr_t)
+    { return __a.get() != nullptr; }
+
+  template<typename _Tp, _Lock_policy _Lp>
+    inline bool
+    operator!=(nullptr_t, const __shared_ptr<_Tp, _Lp>& __b)
+    { return nullptr != __b.get(); }
 
   template<typename _Tp1, typename _Tp2, _Lock_policy _Lp>
     inline bool

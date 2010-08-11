@@ -317,10 +317,30 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     operator==(const shared_ptr<_Tp1>& __a, const shared_ptr<_Tp2>& __b)
     { return __a.get() == __b.get(); }
 
+  template<typename _Tp>
+    inline bool
+    operator==(const shared_ptr<_Tp>& __a, nullptr_t)
+    { return __a.get() == nullptr; }
+
+  template<typename _Tp>
+    inline bool
+    operator==(nullptr_t, const shared_ptr<_Tp>& __b)
+    { return nullptr == __b.get(); }
+
   template<typename _Tp1, typename _Tp2>
     inline bool
     operator!=(const shared_ptr<_Tp1>& __a, const shared_ptr<_Tp2>& __b)
     { return __a.get() != __b.get(); }
+
+  template<typename _Tp>
+    inline bool
+    operator!=(const shared_ptr<_Tp>& __a, nullptr_t)
+    { return __a.get() != nullptr; }
+
+  template<typename _Tp>
+    inline bool
+    operator!=(nullptr_t, const shared_ptr<_Tp>& __b)
+    { return nullptr != __b.get(); }
 
   template<typename _Tp1, typename _Tp2>
     inline bool
