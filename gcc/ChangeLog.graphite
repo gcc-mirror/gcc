@@ -1,5 +1,26 @@
 2010-07-27  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
+	* graphite-clast-to-gimple.c (free_scattering): Change
+	CloogDomainList/CloogDomain to CloogScatteringList/CloogScattering
+	(CLOOG_ORG).
+	(build_cloog_prog): Same.
+	* graphite-cloog-compat.h (cloog_domain): Removed.
+	(cloog_scattering): New.
+	(cloog_set_domain): Removed.
+	(cloog_set_scattering): New.
+	(cloog_next_domain): Removed.
+	(cloog_next_scattering): New.
+	(cloog_set_next_domain): Removed.
+	(cloog_set_next_scattering): New.
+	(CloogScatteringList): New.
+	(CloogScattering): New.
+	(cloog_scattering_free): New.
+	(new_Cloog_Scattering_from_ppl_Polyhedron): New.
+	* graphite-cloog-util.c (new_Cloog_Scattering_from_ppl_Polyhedron):
+	New.
+
+2010-07-27  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+
 	* graphite-clast-to-gimple.c (build_cloog_prog): Extend with
 	CloogState.
 	(set_cloog_options): Same.

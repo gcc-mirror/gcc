@@ -238,6 +238,27 @@ new_Cloog_Domain_from_ppl_Polyhedron (ppl_const_Polyhedron_t ph, int nb_params,
   return res;
 }
 
+/* Create a CloogScattering from polyhedron PH.  */
+
+CloogScattering *
+new_Cloog_Scattering_from_ppl_Polyhedron (ppl_const_Polyhedron_t ph,
+                                          int nb_params ATTRIBUTE_UNUSED,
+                                          int nb_scatt ATTRIBUTE_UNUSED,
+                                          CloogState *state ATTRIBUTE_UNUSED)
+{
+#ifdef CLOOG_ORG
+  CloogMatrix *mat = new_Cloog_Matrix_from_ppl_Polyhedron (ph);
+  CloogScattering *res = cloog_scattering_from_cloog_matrix (state, mat,
+                                                             nb_scatt,
+                                                             nb_params);
+
+  cloog_matrix_free (mat);
+  return res;
+#else
+  return new_Cloog_Domain_from_ppl_Polyhedron (ph, nb_params, state);
+#endif
+}
+
 /* Creates a CloogDomain from a pointset powerset PS.  */
 
 CloogDomain *

@@ -58,6 +58,16 @@ typedef const char *clast_name_p;
   new_Cloog_Domain_from_ppl_Polyhedron (POLY)
 #define cloog_domain_from_cloog_matrix(STATE, MAT, NB)\
   cloog_domain_matrix2domain (MAT)
+
+/* CloogScatteringList compatibility.  */
+#define CloogScatteringList CloogDomainList
+#define CloogScattering CloogDomain
+#define cloog_set_next_scattering cloog_set_next_domain
+#define cloog_set_scattering cloog_set_domain
+#define cloog_scattering cloog_domain
+#define cloog_next_scattering cloog_next_domain
+#define cloog_scattering_free cloog_domain_free
+
 #endif
 
 /* Adapt CLooG accessors from CLooG legacy to
@@ -71,28 +81,28 @@ cloog_statement_usr (CloogStatement *cs)
   return cs->usr;
 }
 
-static inline CloogDomain *
-cloog_domain (CloogDomainList *dl)
+static inline CloogScattering *
+cloog_scattering (CloogScatteringList *sl)
 {
-  return dl->domain;
+  return sl->scatt;
 }
 
 static inline void
-cloog_set_domain (CloogDomainList *dl, CloogDomain *domain)
+cloog_set_scattering (CloogScatteringList *sl, CloogScattering *scatt)
 {
-  dl->domain = domain;
+  sl->scatt = scatt;
 }
 
-static inline CloogDomainList *
-cloog_next_domain (CloogDomainList *dl)
+static inline CloogScatteringList *
+cloog_next_scattering (CloogScatteringList *sl)
 {
-  return dl->next;
+  return sl->next;
 }
 
 static inline void
-cloog_set_next_domain (CloogDomainList *dl, CloogDomainList *next)
+cloog_set_next_scattering (CloogScatteringList *sl, CloogScatteringList *next)
 {
-  dl->next = next;
+  sl->next = next;
 }
 
 static inline int
