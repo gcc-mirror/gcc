@@ -900,9 +900,12 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_check_data_deps);
 	  NEXT_PASS (pass_loop_distribution);
 	  NEXT_PASS (pass_linear_transform);
-	  NEXT_PASS (pass_graphite_transforms);
+	  NEXT_PASS (pass_copy_prop);
+	  NEXT_PASS (pass_graphite);
 	    {
-	      struct opt_pass **p = &pass_graphite_transforms.pass.sub;
+	      struct opt_pass **p = &pass_graphite.pass.sub;
+	      NEXT_PASS (pass_copy_prop);
+	      NEXT_PASS (pass_graphite_transforms);
 	      NEXT_PASS (pass_copy_prop);
 	      NEXT_PASS (pass_dce_loop);
 	      NEXT_PASS (pass_lim);
