@@ -2326,7 +2326,8 @@ scev_analyzable_p (tree def, sese region)
   loop_p loop = loop_containing_stmt (stmt);
   tree scev = scalar_evolution_in_region (region, loop, def);
 
-  return !chrec_contains_undetermined (scev);
+  return !chrec_contains_undetermined (scev)
+    && TREE_CODE (scev) != SSA_NAME;
 }
 
 /* Rewrite the scalar dependence of DEF used in USE_STMT with a memory
@@ -2380,9 +2381,13 @@ rewrite_cross_bb_scalar_deps (sese region, gimple_stmt_iterator *gsi)
   def_bb = gimple_bb (stmt);
 
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
-    if (def_bb != gimple_bb (use_stmt)
-	&& gimple_code (use_stmt) != GIMPLE_PHI
-	&& !is_gimple_debug (use_stmt))
+    if (gimple_code (use_stmt) == GIMPLE_PHI)
+      {
+	gimple_stmt_iterator si = gsi_for_stmt (use_stmt);
+	rewrite_phi_out_of_ssa (&si);
+      }
+    else if (def_bb != gimple_bb (use_stmt)
+	     && !is_gimple_debug (use_stmt))
       {
 	if (!zero_dim_array)
 	  {
