@@ -1,3 +1,16 @@
+2010-06-25  Vladimir Kargov  <kargov@gmail.com>
+
+	* refined-regions.c (bb_index_compare): New.
+	(get_bbs_in_region): New.
+	(print_bbs_in_region): New.
+	(print_refined_region): Add an argument that allows to print
+	all basic blocks contained in regions.
+	(debug_refined_region): Update call to print_refined_region.
+	* refined-regions.h (print_refined_region): Update declaration.
+	(get_bbs_in_region): Declared.
+	* graphite-scop-detection.c (build_scops_new): Print the refined
+	region tree into the Grahite dump file.
+
 2010-06-24  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_degenerate_phi): New.
