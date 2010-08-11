@@ -1,5 +1,18 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (insert_out_of_ssa_copy): Pass an extra
+	argument for the place after which to insert the out of SSA copy.
+	(rewrite_close_phi_out_of_ssa): Update calls to insert_out_of_ssa_copy.
+	(rewrite_phi_out_of_ssa): Same.
+	(rewrite_cross_bb_scalar_deps): Same.
+	(insert_copyout): Removed.
+	(insert_copyin): Removed.
+	(translate_scalar_reduction_to_array): Call insert_out_of_ssa_copy and
+	insert_out_of_ssa_copy_on_edge instead of insert_copyout and
+	insert_copyin.
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (build_scop_bbs): Not static anymore.
 	(rewrite_reductions_out_of_ssa): Same.
 	(rewrite_commutative_reductions_out_of_ssa): Same.

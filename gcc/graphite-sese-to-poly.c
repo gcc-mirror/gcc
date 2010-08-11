@@ -2117,10 +2117,10 @@ gsi_for_phi_node (gimple stmt)
   return psi;
 }
 
-/* Insert the assignment "RES := VAR" just after the definition of VAR.  */
+/* Insert the assignment "RES := VAR" just after AFTER_STMT.  */
 
 static void
-insert_out_of_ssa_copy (tree res, tree var)
+insert_out_of_ssa_copy (tree res, tree var, gimple after_stmt)
 {
   gimple stmt;
   gimple_seq stmts;
@@ -2134,15 +2134,14 @@ insert_out_of_ssa_copy (tree res, tree var)
   si = gsi_last (stmts);
   gsi_insert_after (&si, stmt, GSI_NEW_STMT);
 
-  stmt = SSA_NAME_DEF_STMT (var);
-  if (gimple_code (stmt) == GIMPLE_PHI)
+  if (gimple_code (after_stmt) == GIMPLE_PHI)
     {
-      gsi = gsi_after_labels (gimple_bb (stmt));
+      gsi = gsi_after_labels (gimple_bb (after_stmt));
       gsi_insert_seq_before (&gsi, stmts, GSI_NEW_STMT);
     }
   else
     {
-      gsi = gsi_for_stmt (stmt);
+      gsi = gsi_for_stmt (after_stmt);
       gsi_insert_seq_after (&gsi, stmts, GSI_NEW_STMT);
     }
 }
@@ -2218,7 +2217,7 @@ rewrite_close_phi_out_of_ssa (gimple_stmt_iterator *psi)
 
   if (TREE_CODE (arg) == SSA_NAME
       && !SSA_NAME_IS_DEFAULT_DEF (arg))
-    insert_out_of_ssa_copy (zero_dim_array, arg);
+    insert_out_of_ssa_copy (zero_dim_array, arg, SSA_NAME_DEF_STMT (arg));
   else
     insert_out_of_ssa_copy_on_edge (single_pred_edge (gimple_bb (phi)),
 				    zero_dim_array, arg);
@@ -2239,7 +2238,7 @@ rewrite_phi_out_of_ssa (gimple_stmt_iterator *psi)
   basic_block bb = gimple_bb (phi);
   tree res = gimple_phi_result (phi);
   tree var = SSA_NAME_VAR (res);
-  tree zero_dim_array = create_zero_dim_array (var, "General_Reduction");
+  tree zero_dim_array = create_zero_dim_array (var, "phi_out_of_ssa");
   gimple_stmt_iterator gsi;
   gimple stmt;
   gimple_seq stmts;
@@ -2295,7 +2294,7 @@ rewrite_phi_out_of_ssa (gimple_stmt_iterator *psi)
 				     gimple_bb (SSA_NAME_DEF_STMT (arg)))
 	      || flow_bb_inside_loop_p (loop_outer (bb->loop_father),
 					gimple_bb (SSA_NAME_DEF_STMT (arg)))))
-	insert_out_of_ssa_copy (zero_dim_array, arg);
+	insert_out_of_ssa_copy (zero_dim_array, arg, SSA_NAME_DEF_STMT (arg));
       else
 	insert_out_of_ssa_copy_on_edge (gimple_phi_arg_edge (phi, i),
 					zero_dim_array, arg);
@@ -2389,7 +2388,8 @@ rewrite_cross_bb_scalar_deps (sese region, gimple_stmt_iterator *gsi)
 	  {
 	    zero_dim_array = create_zero_dim_array
 	      (SSA_NAME_VAR (def), "Cross_BB_scalar_dependence");
-	    insert_out_of_ssa_copy (zero_dim_array, def);
+	    insert_out_of_ssa_copy (zero_dim_array, def,
+				    SSA_NAME_DEF_STMT (def));
 	    gsi_next (gsi);
 	  }
 
@@ -2728,32 +2728,6 @@ translate_scalar_reduction_to_array_for_stmt (tree red, gimple stmt,
   gsi_insert_after (&insert_gsi, assign, GSI_SAME_STMT);
 }
 
-/* Insert the assignment "result (CLOSE_PHI) = RED".  */
-
-static void
-insert_copyout (tree red, gimple close_phi)
-{
-  tree res = gimple_phi_result (close_phi);
-  basic_block bb = gimple_bb (close_phi);
-  gimple_stmt_iterator insert_gsi = gsi_after_labels (bb);
-  gimple assign = gimple_build_assign (res, red);
-
-  gsi_insert_before (&insert_gsi, assign, GSI_SAME_STMT);
-}
-
-/* Insert the assignment "RED = initial_value (LOOP_PHI)".  */
-
-static void
-insert_copyin (tree red, gimple loop_phi)
-{
-  gimple_seq stmts;
-  tree init = initial_value_for_loop_phi (loop_phi);
-  tree expr = build2 (MODIFY_EXPR, TREE_TYPE (init), red, init);
-
-  force_gimple_operand (expr, &stmts, true, NULL);
-  gsi_insert_seq_on_edge (edge_initial_value_for_loop_phi (loop_phi), stmts);
-}
-
 /* Removes the PHI node and resets all the debug stmts that are using
    the PHI_RESULT.  */
 
@@ -2829,8 +2803,11 @@ translate_scalar_reduction_to_array (VEC (gimple, heap) *in,
 
       if (i == VEC_length (gimple, in) - 1)
 	{
-	  insert_copyout (red, close_phi);
-	  insert_copyin (red, loop_phi);
+	  insert_out_of_ssa_copy (gimple_phi_result (close_phi), red,
+				  close_phi);
+	  insert_out_of_ssa_copy_on_edge
+	    (edge_initial_value_for_loop_phi (loop_phi),
+	     red, initial_value_for_loop_phi (loop_phi));
 	}
 
       remove_phi (loop_phi);
