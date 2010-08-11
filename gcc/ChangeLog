@@ -1,3 +1,28 @@
+2010-08-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* opts.h (struct cl_option_handler_func): Make handler take
+	cl_decoded_option structure as parameter, not individual elements.
+	(struct cl_option_handlers): Make callbacks take cl_decoded_option
+	structure as parameter, not individual elements.
+	(handle_option): Take cl_decoded_option structure as parameter,
+	not individual elements.
+	(handle_generated_option): Declare.
+	* opts-common.c (handle_option): Take cl_decoded_option structure
+	as parameter, not individual elements.  Update calls to callback
+	and handler functions.
+	(handle_generated_option): New.
+	(read_cmdline_option): Update calls to callback functions and
+	handle_option.
+	* opts.c (common_handle_option, complain_wrong_lang,
+	unknown_option_callback, post_handling_callback,
+	lang_handle_option, target_handle_option): Take cl_decoded_option
+	structure as parameter, not individual elements.
+	(lang_handle_option, target_handle_option, common_handle_option):
+	Assert option has at most one argument.
+	(enable_warning_as_error): Call handle_generated_option instead of
+	handle_option.  Do not pass -Werror argument as argument of
+	generated option.
+
 2010-08-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* config/pa/linux-atomic.c (SUBWORD_VAL_CAS): Instantiate with

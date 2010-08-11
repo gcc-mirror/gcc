@@ -1,3 +1,8 @@
+2010-08-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-opts.c (c_common_handle_option): Call handle_generated_option
+	instead of handle_option.
+
 2010-08-08  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* c-pragma.c (add_to_renaming_pragma_list): Fix call to VEC_safe_push.
