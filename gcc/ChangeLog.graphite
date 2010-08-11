@@ -1,3 +1,11 @@
+2010-06-11  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (gcc_type_for_interval): Do not pass
+	old_type in parameter.
+	(gcc_type_for_value): Update call to gcc_type_for_interval.
+	(compute_type_for_level_1): Renamed compute_type_for_level.
+	Update call to gcc_type_for_interval.
+
 2010-06-09  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* tree-scalar-evolution.c (instantiate_scev_name): Do not fail
