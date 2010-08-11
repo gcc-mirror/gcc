@@ -819,11 +819,11 @@ graphite_create_new_loop (sese region, edge entry_edge,
   return loop;
 }
 
-/* Inserts in MAP a tuple (OLD_NAME, NEW_NAME) for the induction
+/* Inserts in RENAME_MAP a tuple (OLD_NAME, NEW_NAME) for the induction
    variables of the loops around GBB in SESE.  */
 
 static void
-build_iv_mapping (htab_t map, sese region,
+build_iv_mapping (htab_t rename_map, sese region,
 		  VEC (tree, heap) *newivs, htab_t newivs_index,
 		  struct clast_user_stmt *user_stmt,
 		  htab_t params_index)
@@ -842,7 +842,7 @@ build_iv_mapping (htab_t map, sese region,
       tree old_name = pbb_to_depth_to_oldiv (pbb, index);
       tree e = clast_to_gcc_expression (type, expr, region, newivs,
 					newivs_index, params_index);
-      set_rename (map, old_name, e);
+      set_rename (rename_map, old_name, e);
     }
 }
 

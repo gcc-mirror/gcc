@@ -1,5 +1,22 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (build_iv_mapping): Rename map with
+	rename_map.
+	* sese.c (debug_rename_map): Same.
+	(get_rename): Same.
+	(set_rename): Same.
+	(rename_variables_in_stmt): Same.
+	(expand_scalar_variables_call): Same.
+	(expand_scalar_variables_ssa_name): Same.
+	(expand_scalar_variables_expr): Same.
+	(expand_scalar_variables_stmt): Same.
+	(expand_scalar_variables): Same.
+	(rename_variables): Same.
+	(graphite_copy_stmts_from_block): Same.
+	(copy_bb_and_scalar_dependences): Same.
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (copy_renames): Removed.
 	(translate_clast_for): Do not call copy_renames.
 	(translate_clast_guard): Same.
