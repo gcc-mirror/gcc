@@ -1,5 +1,9 @@
 2010-06-23  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* gcc.dg/graphite/run-id-2.c: Call abort.
+
+2010-06-23  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (rewrite_phi_out_of_ssa): Always insert out
 	of SSA copies on edges except for loop->latch.
 
