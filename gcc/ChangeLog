@@ -1,5 +1,24 @@
 2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
+	* graphite-cloog-util.c (oppose_constraint):
+	Extend loop counter's value range (CLOOG_ORG).
+	(cloog_matrix_to_ppl_constraint): Same.
+	(new_Constraint_System_from_Cloog_matrix): Same.
+	* graphite-cloog-compat.h (matrix_num_type): New.
+
+2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+
+	* graphite.c (graphite_initialize): Do not initialize
+	CLooG and initialize the Parma Polyhedra Library
+	manually when using CLOOG_ORG.
+	(graphite_finalize): Do not finalize CLooG and finalize
+	the Parma Polyhedra Library manually when using CLOOG_ORG.
+	* graphite-cloog-compat.h (cloog_initialize): Hide function
+	when using CLOOG_ORG.
+	(cloog_finalize): Same.
+
+2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+
 	* graphite-clast-to-gimple.c (free_scattering): Change
 	CloogDomainList/CloogDomain to CloogScatteringList/CloogScattering
 	(CLOOG_ORG).

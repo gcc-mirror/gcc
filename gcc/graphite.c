@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "cloog/cloog.h"
 #include "ppl_c.h"
+#include "graphite-cloog-compat.h"
 #include "graphite-ppl.h"
 #include "graphite.h"
 #include "graphite-poly.h"
@@ -200,6 +201,8 @@ print_graphite_statistics (FILE* file, VEC (scop_p, heap) *scops)
 static bool
 graphite_initialize (void)
 {
+  int ppl_initialized;
+
   if (number_of_loops () <= 1
       /* FIXME: This limit on the number of basic blocks of a function
 	 should be removed when the SCOP detection is faster.  */
@@ -213,6 +216,10 @@ graphite_initialize (void)
 
   recompute_all_dominators ();
   initialize_original_copy_tables ();
+
+  ppl_initialized = ppl_initialize ();
+  gcc_assert (ppl_initialized == 0);
+
   cloog_initialize ();
 
   if (dump_file && dump_flags)
@@ -237,6 +244,7 @@ graphite_finalize (bool need_cfg_cleanup_p)
     }
 
   cloog_finalize ();
+  ppl_finalize ();
   free_original_copy_tables ();
 
   if (dump_file && dump_flags)
