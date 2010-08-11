@@ -480,6 +480,16 @@ rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
   use_operand_p use_p;
   ssa_op_iter op_iter;
 
+  if (is_gimple_debug (copy))
+    {
+      if (gimple_debug_bind_p (copy))
+	gimple_debug_bind_reset_value (copy);
+      else
+	gcc_unreachable ();
+
+      return;
+    }
+
   FOR_EACH_SSA_USE_OPERAND (use_p, copy, op_iter, SSA_OP_ALL_USES)
     {
       tree old_name = USE_FROM_PTR (use_p);
@@ -501,19 +511,7 @@ rename_uses (gimple copy, htab_t rename_map, gimple_stmt_iterator *gsi_tgt,
 	      || (TREE_CODE (new_expr) != SSA_NAME
 		  && is_gimple_reg (old_name)))
 	    {
-	      tree var;
-
-	      if (is_gimple_debug (copy))
-		{
-		  if (gimple_debug_bind_p (copy))
-		    gimple_debug_bind_reset_value (copy);
-		  else
-		    gcc_unreachable ();
-
-		  break;
-		}
-
-	      var = create_tmp_var (type_old_name, "var");
+	      tree var = create_tmp_var (type_old_name, "var");
 
 	      if (type_old_name != type_new_expr)
 		new_expr = fold_convert (type_old_name, new_expr);

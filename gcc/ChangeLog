@@ -1,5 +1,9 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* sese.c (rename_uses): Handl unconditionally gimple_debug statements.
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): Special
 	case non close-phi nodes with one argument.
 
