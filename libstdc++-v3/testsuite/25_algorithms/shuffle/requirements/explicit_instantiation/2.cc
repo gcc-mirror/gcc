@@ -21,7 +21,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
 #include <algorithm>
 #include <random>
 #include <testsuite_api.h>
@@ -34,5 +33,5 @@ namespace std
   typedef value_type* 		       iterator_type;
   typedef std::mt19937_64            ugenerator_type;
 
-  template void shuffle(iterator_type, iterator_type, ugenerator_type&);
+  template void shuffle(iterator_type, iterator_type, ugenerator_type&&);
 } 
