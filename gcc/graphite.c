@@ -280,6 +280,7 @@ graphite_transform_loops (void)
     if (dbg_cnt (graphite_scop))
       {
 	rewrite_reductions_out_of_ssa (scop);
+	rewrite_cross_bb_scalar_deps_out_of_ssa (scop);
 	build_scop_bbs (scop, reductions);
       }
 

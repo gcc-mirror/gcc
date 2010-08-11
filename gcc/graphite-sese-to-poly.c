@@ -2425,6 +2425,17 @@ rewrite_reductions_out_of_ssa (scop_p scop)
 #ifdef ENABLE_CHECKING
   verify_loop_closed_ssa (true);
 #endif
+}
+
+
+/* Rewrite out of SSA all the reduction phi nodes of SCOP.  */
+
+void
+rewrite_cross_bb_scalar_deps_out_of_ssa (scop_p scop)
+{
+  basic_block bb;
+  gimple_stmt_iterator psi;
+  sese region = SCOP_REGION (scop);
 
   FOR_EACH_BB (bb)
     if (bb_in_sese_p (bb, region))
