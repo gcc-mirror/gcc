@@ -1,3 +1,51 @@
+2010-05-27  Tobias Grosser  <grosser@fim.uni-passau.de>
+	    Antoniu Pop  <antoniu.pop@gmail.com>
+
+	* Makefile.in (OBJS-common): Add refined-regions.o.
+	(refined-regions.o): New.
+	(graphite-scop-detection.o): Use refined-regions.h.
+	* graphite-scop-detection.c: Include refined-regions.h
+	(build_scops): Also build the refined region tree.
+	* refined-regions.c: New. Adds an algorithm to detect refined
+	regions.
+	(print_refined_region): New.
+	(debug_refined_region): New.
+	(refined_region_contains_bb_p): New.
+	(refined_region_contains_region_p): New.
+	(is_common_df): New.
+	(struct find_regions_global_data): New.
+	(is_region): New.
+	(typedef struct bb_bb_def): New.
+	(new_bb_bb_def): New.
+	(bb_bb_map_hash): New.
+	(eq_bb_bb_map): New.
+	(find_new_bb): New.
+	(bb_reg_def): New.
+	(new_bb_reg_def): New.
+	(bb_reg_map_hash): New.
+	(eq_bb_reg_map): New.
+	(find_new_region): New.
+	(insert_new_reg): New.
+	(insert_new_bb): New.
+	(insert_shortcut): New.
+	(get_next_postdom): New.
+	(create_region): New.
+	(find_regions_with_entry): New.
+	(find_regions_adc): New.
+	(find_regions): New.
+	(get_topmost_parent): New.
+	(build_regions_tree): New.
+	(calculate_region_tree): New.
+	(free_region_tree): New.
+	* refined-regions.h: New.
+	(struct refined_region): New.
+	(calculate_region_tree): New.
+	(free_region_tree): New.
+	(refined_region_contains_bb_p): New.
+	(refined_region_contains_region_p): New.
+	(print_refined_region): New.
+	(debug_refined_region): New.
+
 2010-05-26  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-clast-to-gimple.c (graphite_create_new_loop_guard): Use
