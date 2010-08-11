@@ -1,5 +1,50 @@
 2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
+	* Makefile.in (OBJS-common): Added graphite-cloog-util.o.
+	(graphite-clast-to-gimple.o): Added graphite-cloog-util.h.
+	(graphite-cloog-util.o): New.
+	(graphite-ppl.o): Added graphite-cloog-util.h.
+	* graphite-clast-to-gimple.c:
+	Added graphite-cloog-util.h to include statements.
+	* graphite-cloog-util.c: New.
+	(new_Cloog_Matrix_from_ppl_Polyhedron): Moved from graphite-ppl.c.
+	(new_Cloog_Domain_from_ppl_Polyhedron): Same.
+	(new_Cloog_Domain_from_ppl_Pointset_Powerset): Same.
+	(new_C_Polyhedron_from_Cloog_Matrix): Same.
+	(insert_constraint_into_matrix): Same.
+	(ppl_Constrain_System_number_of_constraints): Same.
+	(new_Cloog_Matrix_from_ppl_Constraint_System): Same.
+	(oppose_constraint): Same.
+	(cloog_matrix_to_ppl_constraint): Same.
+	(new_Constraint_System_from_Cloog_Matrix): Same.
+	* graphite-cloog-util.h: New.
+	(new_Cloog_Matrix_from_ppl_Polyhedron): Moved from graphite-ppl.h.
+	(new_Cloog_Domain_from_ppl_Polyhedron): Same.
+	(new_Cloog_Domain_from_ppl_Pointset_Powerset): Same.
+	(new_C_Polyhedron_from_Cloog_Matrix): Same.
+	(insert_constraint_into_matrix): Same.
+	* graphite-ppl.c:
+	Added graphite-cloog-util.h to include statements.
+	(new_Cloog_Matrix_from_ppl_Polyhedron): Moved to graphite-cloog-util.c.
+	(new_Cloog_Domain_from_ppl_Polyhedron): Same.
+	(new_Cloog_Domain_from_ppl_Pointset_Powerset): Same.
+	(new_C_Polyhedron_from_Cloog_Matrix): Same.
+	(insert_constraint_into_matrix): Same.
+	(ppl_Constrain_System_number_of_constraints): Same.
+	(new_Cloog_Matrix_from_ppl_Constraint_System): Same.
+	(oppose_constraint): Same.
+	(cloog_matrix_to_ppl_constraint): Same.
+	(new_Constraint_System_from_Cloog_Matrix): Same.
+	* graphite-ppl.h:
+	(new_Cloog_Matrix_from_ppl_Polyhedron): Moved to
+	graphite-cloog-util.h.
+	(new_Cloog_Domain_from_ppl_Polyhedron): Same.
+	(new_Cloog_Domain_from_ppl_Pointset_Powerset): Same.
+	(new_C_Polyhedron_from_Cloog_Matrix): Same.
+	(insert_constraint_into_matrix): Same.
+
+2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+
 	* graphite-clast-to-gimple.c
 	(precision_for_value): Resolve value_* calls to matching mpz_* calls.
 	(precision_for_interval): Same.

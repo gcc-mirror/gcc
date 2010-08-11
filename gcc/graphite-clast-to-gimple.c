@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifdef HAVE_cloog
 #include "cloog/cloog.h"
 #include "ppl_c.h"
+#include "graphite-cloog-util.h"
 #include "graphite-ppl.h"
 #include "graphite.h"
 #include "graphite-poly.h"
