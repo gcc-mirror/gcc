@@ -1,5 +1,13 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (rewrite_cross_bb_scalar_deps_out_of_ssa):
+	Split out of rewrite_reductions_out_of_ssa.
+	* graphite-sese-to-poly.h (rewrite_cross_bb_scalar_deps_out_of_ssa):
+	Declared.
+	* graphite.c (graphite_transform_loops): Call it.
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite.c (graphite_transform_loops): Add two more dbg_cnt calls.
 
 2010-08-02  Alexander Monakov  <amonakov@ispras.ru>
