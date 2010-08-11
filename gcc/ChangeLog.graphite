@@ -1,3 +1,10 @@
+2010-05-07  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (loop_entry_phi_arg): Renamed
+	phi_arg_in_outermost_loop.
+	(remove_simple_copy_phi): Call phi_arg_in_outermost_loop.
+	(remove_invariant_phi): Same.
+
 2010-04-12  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
 	* graphite-blocking.c
