@@ -1,5 +1,10 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (rewrite_cross_bb_phi_deps): Call
+	rewrite_close_phi_out_of_ssa.
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (rewrite_cross_bb_phi_deps): Remove dead code.
 
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>

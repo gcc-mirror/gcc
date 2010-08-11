@@ -2361,8 +2361,12 @@ rewrite_cross_bb_phi_deps (sese region, gimple_stmt_iterator gsi)
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
     if (gimple_code (use_stmt) == GIMPLE_PHI)
       {
-	gimple_stmt_iterator si = gsi_for_stmt (use_stmt);
-	rewrite_phi_out_of_ssa (&si);
+	gimple_stmt_iterator psi = gsi_for_stmt (use_stmt);
+
+	if (scalar_close_phi_node_p (gsi_stmt (psi)))
+	  rewrite_close_phi_out_of_ssa (&psi);
+	else
+	  rewrite_phi_out_of_ssa (&psi);
       }
 }
 
