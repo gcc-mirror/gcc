@@ -41,9 +41,9 @@ main()
   return 0;
 }
 
-// { dg-warning "note" "" { target *-*-* } 327 }
-// { dg-warning "note" "" { target *-*-* } 446 }
-// { dg-warning "note" "" { target *-*-* } 863 }
+// { dg-warning "note" "" { target *-*-* } 347 }
+// { dg-warning "note" "" { target *-*-* } 466 }
+// { dg-warning "note" "" { target *-*-* } 883 }
 // { dg-warning "note" "" { target *-*-* } 580 }
 // { dg-warning "note" "" { target *-*-* } 1027 }
 // { dg-warning "note" "" { target *-*-* } 340 }

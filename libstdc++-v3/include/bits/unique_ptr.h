@@ -101,7 +101,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     public:
       typedef typename _Pointer::type	pointer;
       typedef _Tp                       element_type;
-      typedef _Dp               deleter_type;
+      typedef _Dp                       deleter_type;
 
       // Constructors.
       unique_ptr()
@@ -432,12 +432,32 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	       const unique_ptr<_Up, _Ep>& __y)
     { return __x.get() == __y.get(); }
 
+  template<typename _Tp, typename _Dp>
+    inline bool
+    operator==(const unique_ptr<_Tp, _Dp>& __x, nullptr_t)
+    { return __x.get() == nullptr; }
+
+  template<typename _Tp, typename _Dp>
+    inline bool
+    operator==(nullptr_t, const unique_ptr<_Tp, _Dp>& __y)
+    { return nullptr == __y.get(); }
+
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
     inline bool
     operator!=(const unique_ptr<_Tp, _Dp>& __x,
 	       const unique_ptr<_Up, _Ep>& __y)
     { return !(__x.get() == __y.get()); }
+
+  template<typename _Tp, typename _Dp>
+    inline bool
+    operator!=(const unique_ptr<_Tp, _Dp>& __x, nullptr_t)
+    { return __x.get() != nullptr; }
+
+  template<typename _Tp, typename _Dp>
+    inline bool
+    operator!=(nullptr_t, const unique_ptr<_Tp, _Dp>& __y)
+    { return nullptr != __y.get(); }
 
   template<typename _Tp, typename _Dp,
 	   typename _Up, typename _Ep>
