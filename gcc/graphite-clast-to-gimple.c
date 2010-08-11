@@ -1198,7 +1198,7 @@ initialize_cloog_names (scop_p scop, CloogProgram *prog)
 /* Build cloog program for SCoP.  */
 
 static void
-build_cloog_prog (scop_p scop, CloogProgram *prog)
+build_cloog_prog (scop_p scop, CloogProgram *prog, CloogOptions *options)
 {
   int i;
   int max_nb_loops = scop_max_loop_depth (scop);
@@ -1277,10 +1277,10 @@ build_cloog_prog (scop_p scop, CloogProgram *prog)
   cloog_program_set_scaldims (prog, scaldims);
 
   /* Extract scalar dimensions to simplify the code generation problem.  */
-  cloog_program_extract_scalars (prog, scattering);
+  cloog_program_extract_scalars (prog, scattering, options);
 
   /* Apply scattering.  */
-  cloog_program_scatter (prog, scattering);
+  cloog_program_scatter (prog, scattering, options);
   free_scattering (scattering);
 
   /* Iterators corresponding to scalar dimensions have to be extracted.  */
@@ -1321,9 +1321,14 @@ set_cloog_options (void)
      GLooG.  */
   options->esp = 1;
 
+#ifdef CLOOG_ORG
+  /* Silence CLooG to avoid failing tests due to debug output to stderr.  */
+  options->quiet = 1;
+#else
   /* Enable C pretty-printing mode: normalizes the substitution
      equations for statements.  */
   options->cpp = 1;
+#endif
 
   /* Allow cloog to build strides with a stride width different to one.
      This example has stride = 4:
@@ -1378,7 +1383,7 @@ scop_to_clast (scop_p scop)
 
   /* Connect new cloog prog generation to graphite.  */
   pc.prog = cloog_program_malloc ();
-  build_cloog_prog (scop, pc.prog);
+  build_cloog_prog (scop, pc.prog, options);
   pc.prog = cloog_program_generate (pc.prog, options);
   pc.stmt = cloog_clast_create (pc.prog, options);
 

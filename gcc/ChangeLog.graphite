@@ -1,5 +1,16 @@
 2010-07-27  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
+	* graphite-clast-to-gimple.c (set_cloog_options): Make CLooG options
+	compatible to newer CLooG releases (CLOOG_ORG).
+	(build_cloog_prog): Pass CloogOptions to more functions (CLOOG_ORG).
+	(scop_to_clast): Pass CloogOptions to build_cloog_prog (CLOOG_ORG).
+	* graphite-cloog-compat.h: Add compatibility macros for CLooG Legacy.
+	(build_cloog_prog) : New.
+	(cloog_program_extract_scalars): New.
+	(cloog_program_scatter): New.
+
+2010-07-27  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+
 	* graphite-clast-to-gimple.c: Include graphite-cloog-compat.h
 	conditionally (CLOOG_ORG).
 	* graphite-cloog-compat.h: New.  Include graphite-cloog-compat.h.
