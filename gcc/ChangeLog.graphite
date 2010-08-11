@@ -1,3 +1,11 @@
+2010-06-02  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* graphite-scop-detection.c (is_scop_p): New.
+	(build_scops_new): New. A skeleton for the new scop detection.
+	(build_scops_old): Renamed from build_scops.
+	(build_scops): New version. Call the new and the old scop
+	detection.
+
 2010-05-27  Tobias Grosser  <grosser@fim.uni-passau.de>
 	    Antoniu Pop  <antoniu.pop@gmail.com>
 
