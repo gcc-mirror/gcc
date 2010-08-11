@@ -1,3 +1,8 @@
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-scalar-evolution.c (instantiate_scev_name): Do not
+	instantiate default definitions.
+
 2010-08-02  Vladimir Kargov  <kargov@gmail.com>
 	    Sebastian Pop  <sebastian.pop@amd.com>
 
