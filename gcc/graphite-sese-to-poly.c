@@ -73,21 +73,23 @@ var_used_in_not_loop_header_phi_node (tree var)
   return result;
 }
 
-/* Returns the index of the phi argument corresponding to the initial
-   value in the loop.  */
+/* Returns the index of the PHI argument defined in the outermost
+   loop.  */
 
 static size_t
-loop_entry_phi_arg (gimple phi)
+phi_arg_in_outermost_loop (gimple phi)
 {
   loop_p loop = gimple_bb (phi)->loop_father;
-  size_t i;
+  size_t i, res = 0;
 
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     if (!flow_bb_inside_loop_p (loop, gimple_phi_arg_edge (phi, i)->src))
-      return i;
+      {
+	loop = gimple_phi_arg_edge (phi, i)->src->loop_father;
+	res = i;
+      }
 
-  gcc_unreachable ();
-  return 0;
+  return res;
 }
 
 /* Removes a simple copy phi node "RES = phi (INIT, RES)" at position
@@ -98,7 +100,7 @@ remove_simple_copy_phi (gimple_stmt_iterator *psi)
 {
   gimple phi = gsi_stmt (*psi);
   tree res = gimple_phi_result (phi);
-  size_t entry = loop_entry_phi_arg (phi);
+  size_t entry = phi_arg_in_outermost_loop (phi);
   tree init = gimple_phi_arg_def (phi, entry);
   gimple stmt = gimple_build_assign (res, init);
   edge e = gimple_phi_arg_edge (phi, entry);
@@ -118,7 +120,7 @@ remove_invariant_phi (sese region, gimple_stmt_iterator *psi)
   loop_p loop = loop_containing_stmt (phi);
   tree res = gimple_phi_result (phi);
   tree scev = scalar_evolution_in_region (region, loop, res);
-  size_t entry = loop_entry_phi_arg (phi);
+  size_t entry = phi_arg_in_outermost_loop (phi);
   edge e = gimple_phi_arg_edge (phi, entry);
   tree var;
   gimple stmt;
