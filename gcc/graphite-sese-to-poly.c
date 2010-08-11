@@ -2829,6 +2829,9 @@ rewrite_commutative_reductions_out_of_ssa (sese region, sbitmap reductions)
   loop_iterator li;
   loop_p loop;
 
+  if (!flag_associative_math)
+    return;
+
   FOR_EACH_LOOP (li, loop, 0)
     if (loop_in_sese_p (loop, region))
       rewrite_commutative_reductions_out_of_ssa_loop (loop, reductions);

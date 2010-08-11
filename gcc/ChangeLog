@@ -1,5 +1,10 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (rewrite_commutative_reductions_out_of_ssa):
+	Early return in when flag_associative_math is not set.
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (rewrite_phi_out_of_ssa): Always insert out
 	of SSA copies on edges except for loop->latch.
 
