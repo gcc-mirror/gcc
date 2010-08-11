@@ -1,3 +1,9 @@
+2010-08-11  Richard Guenther  <rguenther@suse.de>
+
+	PR c/44555
+	* c-common.c (c_common_truthvalue_conversion): Remove
+	premature and wrong optimization concering ADDR_EXPRs.
+
 2010-08-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR boehm-gc/34544
