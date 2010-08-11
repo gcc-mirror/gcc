@@ -9,7 +9,7 @@
 	when using CLOOG_ORG.
 	(cloog_finalize): Same.
 
-2010-07-18  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+2010-07-27  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
 	* graphite-clast-to-gimple.c (free_scattering): Change
 	CloogDomainList/CloogDomain to CloogScatteringList/CloogScattering
@@ -735,7 +735,7 @@
 
 2010-04-11  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
-	* graphite-blocking.c (pbb_strip_mine_profitable_p): Resolve 
+	* graphite-blocking.c (pbb_strip_mine_profitable_p): Resolve
 	CLooG's value_* macros to their respective mpz_* counterparts.
 	* graphite-clast-to-gimple.c (clast_to_gcc_expression): Same.
 	(graphite_create_new_loop_guard): Same.
