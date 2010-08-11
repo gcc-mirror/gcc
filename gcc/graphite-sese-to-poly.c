@@ -2333,20 +2333,6 @@ rewrite_reductions_out_of_ssa (scop_p scop)
 #endif
 }
 
-/* Return true when DEF can be analyzed in REGION by the scalar
-   evolution analyzer.  */
-
-static bool
-scev_analyzable_p (tree def, sese region)
-{
-  gimple stmt = SSA_NAME_DEF_STMT (def);
-  loop_p loop = loop_containing_stmt (stmt);
-  tree scev = scalar_evolution_in_region (region, loop, def);
-
-  return !chrec_contains_undetermined (scev)
-    && TREE_CODE (scev) != SSA_NAME;
-}
-
 /* Rewrite the scalar dependence of DEF used in USE_STMT with a memory
    read from ZERO_DIM_ARRAY.  */
 

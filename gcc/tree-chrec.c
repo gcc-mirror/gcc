@@ -632,6 +632,23 @@ chrec_apply (unsigned var,
   return res;
 }
 
+/* For a given CHREC and an induction variable map IV_MAP that maps
+   (loop->num, expr) for every loop number of the current_loops an
+   expression, calls chrec_apply when the expression is not NULL.  */
+
+tree
+chrec_apply_map (tree chrec, VEC (tree, heap) *iv_map)
+{
+  int i;
+  tree expr;
+
+  for (i = 0; VEC_iterate (tree, iv_map, i, expr); i++)
+    if (expr)
+      chrec = chrec_apply (i, chrec, expr);
+
+  return chrec;
+}
+
 /* Replaces the initial condition in CHREC with INIT_COND.  */
 
 tree

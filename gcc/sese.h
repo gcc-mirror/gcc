@@ -56,7 +56,8 @@ extern sese new_sese (edge, edge);
 extern void free_sese (sese);
 extern void sese_insert_phis_for_liveouts (sese, basic_block, edge, edge);
 extern void build_sese_loop_nests (sese);
-extern edge copy_bb_and_scalar_dependences (basic_block, sese, edge, htab_t);
+extern edge copy_bb_and_scalar_dependences (basic_block, sese, edge,
+					    VEC (tree, heap) *);
 extern struct loop *outermost_loop_in_sese (sese, basic_block);
 extern void insert_loop_close_phis (htab_t, loop_p);
 extern void insert_guard_phis (basic_block, edge, edge, htab_t, htab_t);
@@ -261,7 +262,6 @@ DEF_VEC_ALLOC_P (rename_map_elt, heap);
 extern void debug_rename_map (htab_t);
 extern hashval_t rename_map_elt_info (const void *);
 extern int eq_rename_map_elts (const void *, const void *);
-extern void set_rename (htab_t, tree, tree);
 
 /* Constructs a new SCEV_INFO_STR structure for VAR and INSTANTIATED_BELOW.  */
 
@@ -384,6 +384,21 @@ nb_common_loops (sese region, gimple_bb_p gbb1, gimple_bb_p gbb2)
   loop_p common = find_common_loop (l1, l2);
 
   return sese_loop_depth (region, common);
+}
+
+/* Return true when DEF can be analyzed in REGION by the scalar
+   evolution analyzer.  */
+
+static inline bool
+scev_analyzable_p (tree def, sese region)
+{
+  gimple stmt = SSA_NAME_DEF_STMT (def);
+  loop_p loop = loop_containing_stmt (stmt);
+  tree scev = scalar_evolution_in_region (region, loop, def);
+
+  return !chrec_contains_undetermined (scev)
+    && TREE_CODE (scev) != SSA_NAME
+    && evolution_function_is_affine_p (scev);
 }
 
 #endif
