@@ -1,3 +1,8 @@
+2010-07-22  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-scalar-evolution.c (instantiate_scev_name): Do not
+	instantiate default definitions.
+
 2010-07-20  Vladimir Kargov  <kargov@gmail.com>
 
 	* graphite-scop-detection.c (is_valid_stmt_p): New.
