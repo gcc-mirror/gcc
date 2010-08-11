@@ -2428,9 +2428,10 @@ rewrite_cross_bb_scalar_dependence (tree zero_dim_array, tree def, gimple use_st
 }
 
 /* Rewrite the scalar dependences crossing the boundary of the BB
-   containing STMT with an array.  */
+   containing STMT with an array.  Return true when something has been
+   changed.  */
 
-static void
+static bool
 rewrite_cross_bb_scalar_deps (sese region, gimple_stmt_iterator *gsi)
 {
   gimple stmt = gsi_stmt (*gsi);
@@ -2439,6 +2440,7 @@ rewrite_cross_bb_scalar_deps (sese region, gimple_stmt_iterator *gsi)
   basic_block def_bb;
   tree zero_dim_array = NULL_TREE;
   gimple use_stmt;
+  bool res = false;
 
   switch (gimple_code (stmt))
     {
@@ -2451,27 +2453,29 @@ rewrite_cross_bb_scalar_deps (sese region, gimple_stmt_iterator *gsi)
       break;
 
     default:
-      return;
+      return false;
     }
 
   if (!is_gimple_reg (def))
-    return;
+    return false;
 
   if (scev_analyzable_p (def, region))
     {
       loop_p loop = loop_containing_stmt (SSA_NAME_DEF_STMT (def));
       tree scev = scalar_evolution_in_region (region, loop, def);
 
-      if (tree_does_not_contain_chrecs (scev))
-	propagate_expr_outside_region (def, scev, region);
+      if (tree_contains_chrecs (scev, NULL))
+	return false;
 
-      return;
+      propagate_expr_outside_region (def, scev, region);
+      return true;
     }
 
   def_bb = gimple_bb (stmt);
 
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
-    if (gimple_code (use_stmt) == GIMPLE_PHI)
+    if (gimple_code (use_stmt) == GIMPLE_PHI
+	&& (res = true))
       {
 	gimple_stmt_iterator psi = gsi_for_stmt (use_stmt);
 
@@ -2484,7 +2488,8 @@ rewrite_cross_bb_scalar_deps (sese region, gimple_stmt_iterator *gsi)
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
     if (gimple_code (use_stmt) != GIMPLE_PHI
 	&& def_bb != gimple_bb (use_stmt)
-	&& !is_gimple_debug (use_stmt))
+	&& !is_gimple_debug (use_stmt)
+	&& (res = true))
       {
 	if (!zero_dim_array)
 	  {
@@ -2497,6 +2502,8 @@ rewrite_cross_bb_scalar_deps (sese region, gimple_stmt_iterator *gsi)
 
 	rewrite_cross_bb_scalar_dependence (zero_dim_array, def, use_stmt);
       }
+
+  return res;
 }
 
 /* Rewrite out of SSA all the reduction phi nodes of SCOP.  */
@@ -2507,16 +2514,21 @@ rewrite_cross_bb_scalar_deps_out_of_ssa (scop_p scop)
   basic_block bb;
   gimple_stmt_iterator psi;
   sese region = SCOP_REGION (scop);
+  bool changed = false;
 
   FOR_EACH_BB (bb)
     if (bb_in_sese_p (bb, region))
       for (psi = gsi_start_bb (bb); !gsi_end_p (psi); gsi_next (&psi))
-	rewrite_cross_bb_scalar_deps (region, &psi);
+	changed |= rewrite_cross_bb_scalar_deps (region, &psi);
 
-  update_ssa (TODO_update_ssa);
+  if (changed)
+    {
+      scev_reset_htab ();
+      update_ssa (TODO_update_ssa);
 #ifdef ENABLE_CHECKING
-  verify_loop_closed_ssa (true);
+      verify_loop_closed_ssa (true);
 #endif
+    }
 }
 
 /* Returns the number of pbbs that are in loops contained in SCOP.  */
@@ -2902,26 +2914,31 @@ translate_scalar_reduction_to_array (VEC (gimple, heap) *in,
     }
 }
 
-/* Rewrites out of SSA a commutative reduction at CLOSE_PHI.  */
+/* Rewrites out of SSA a commutative reduction at CLOSE_PHI.  Returns
+   true when something has been changed.  */
 
-static void
+static bool
 rewrite_commutative_reductions_out_of_ssa_close_phi (gimple close_phi,
 						     sbitmap reductions)
 {
+  bool res;
   VEC (gimple, heap) *in = VEC_alloc (gimple, heap, 10);
   VEC (gimple, heap) *out = VEC_alloc (gimple, heap, 10);
 
   detect_commutative_reduction (close_phi, &in, &out);
-  if (VEC_length (gimple, in) > 0)
+  res = VEC_length (gimple, in) > 0;
+  if (res)
     translate_scalar_reduction_to_array (in, out, reductions);
 
   VEC_free (gimple, heap, in);
   VEC_free (gimple, heap, out);
+  return res;
 }
 
-/* Rewrites all the commutative reductions from LOOP out of SSA.  */
+/* Rewrites all the commutative reductions from LOOP out of SSA.
+   Returns true when something has been changed.  */
 
-static void
+static bool
 rewrite_commutative_reductions_out_of_ssa_loop (loop_p loop,
 						sbitmap reductions,
 						sese region)
@@ -2929,16 +2946,19 @@ rewrite_commutative_reductions_out_of_ssa_loop (loop_p loop,
   gimple_stmt_iterator gsi;
   edge exit = single_exit (loop);
   tree res;
+  bool changed = false;
 
   if (!exit)
-    return;
+    return false;
 
   for (gsi = gsi_start_phis (exit->dest); !gsi_end_p (gsi); gsi_next (&gsi))
     if ((res = gimple_phi_result (gsi_stmt (gsi)))
 	&& is_gimple_reg (res)
 	&& !scev_analyzable_p (res, region))
-      rewrite_commutative_reductions_out_of_ssa_close_phi (gsi_stmt (gsi),
-							   reductions);
+      changed |= rewrite_commutative_reductions_out_of_ssa_close_phi
+	(gsi_stmt (gsi), reductions);
+
+  return changed;
 }
 
 /* Rewrites all the commutative reductions from SCOP out of SSA.  */
@@ -2948,19 +2968,26 @@ rewrite_commutative_reductions_out_of_ssa (sese region, sbitmap reductions)
 {
   loop_iterator li;
   loop_p loop;
+  bool changed = false;
 
   if (!flag_associative_math)
     return;
 
   FOR_EACH_LOOP (li, loop, 0)
     if (loop_in_sese_p (loop, region))
-      rewrite_commutative_reductions_out_of_ssa_loop (loop, reductions, region);
+      changed |= rewrite_commutative_reductions_out_of_ssa_loop (loop,
+								 reductions,
+								 region);
 
-  gsi_commit_edge_inserts ();
-  update_ssa (TODO_update_ssa);
+  if (changed)
+    {
+      scev_reset_htab ();
+      gsi_commit_edge_inserts ();
+      update_ssa (TODO_update_ssa);
 #ifdef ENABLE_CHECKING
-  verify_loop_closed_ssa (true);
+      verify_loop_closed_ssa (true);
 #endif
+    }
 }
 
 /* Java does not initialize long_long_integer_type_node.  */

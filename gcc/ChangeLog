@@ -1,5 +1,15 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (rewrite_cross_bb_scalar_deps): Returns
+	a bool.
+	(rewrite_commutative_reductions_out_of_ssa_close_phi): Same.
+	(rewrite_commutative_reductions_out_of_ssa_loop): Same.
+	(rewrite_cross_bb_scalar_deps_out_of_ssa): Call scev_reset_htab
+	when something has been changed.
+	(rewrite_commutative_reductions_out_of_ssa): Same.
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (propagate_expr_outside_region): Also
 	handle the case when def is in the sese region.
 	(rewrite_close_phi_out_of_ssa): Call propagate_expr_outside_region
