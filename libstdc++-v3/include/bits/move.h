@@ -51,16 +51,29 @@ _GLIBCXX_END_NAMESPACE
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
   
-  /// forward
-  template<typename _Tp, typename _Up>
-    inline typename
-    enable_if<((std::is_convertible<
-		typename std::remove_reference<_Up>::type*,
-		typename std::remove_reference<_Tp>::type*>::value)
-	       && (!std::is_lvalue_reference<_Tp>::value
-		   || std::is_lvalue_reference<_Up>::value)), _Tp&&>::type
-    forward(_Up&& __u)
-    { return static_cast<_Tp&&>(__u); }
+  /// forward (as per N2835)
+  /// Forward lvalues as rvalues.
+  template<typename _Tp>
+    inline typename enable_if<!is_lvalue_reference<_Tp>::value, _Tp&&>::type
+    forward(typename std::common_type<_Tp>::type& __t)
+    { return static_cast<_Tp&&>(__t); }
+
+  /// Forward rvalues as rvalues.
+  template<typename _Tp>
+    inline typename enable_if<!is_lvalue_reference<_Tp>::value, _Tp&&>::type
+    forward(typename std::common_type<_Tp>::type&& __t)
+    { return static_cast<_Tp&&>(__t); }
+
+  // Forward lvalues as lvalues.
+  template<typename _Tp>
+    inline typename enable_if<is_lvalue_reference<_Tp>::value, _Tp>::type
+    forward(typename std::common_type<_Tp>::type __t)
+    { return __t; }
+
+  // Prevent forwarding rvalues as const lvalues.
+  template<typename _Tp>
+    inline typename enable_if<is_lvalue_reference<_Tp>::value, _Tp>::type
+    forward(typename std::remove_reference<_Tp>::type&& __t) = delete;
 
   /**
    *  @brief Move a value.
