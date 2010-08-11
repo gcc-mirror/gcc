@@ -1,5 +1,12 @@
 2010-06-23  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (rewrite_reductions_out_of_ssa): Moved up.
+	(rewrite_cross_bb_phi_deps): Split out of rewrite_cross_bb_scalar_deps.
+	(rewrite_cross_bb_scalar_deps_out_of_ssa): Run rewrite_cross_bb_phi_deps
+	before rewrite_cross_bb_scalar_deps.
+
+2010-06-23  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (rewrite_commutative_reductions_out_of_ssa):
 	Early return in when flag_associative_math is not set.
 
