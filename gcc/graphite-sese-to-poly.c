@@ -2950,12 +2950,15 @@ rewrite_commutative_reductions_out_of_ssa_loop (loop_p loop,
 {
   gimple_stmt_iterator gsi;
   edge exit = single_exit (loop);
+  tree res;
 
   if (!exit)
     return;
 
   for (gsi = gsi_start_phis (exit->dest); !gsi_end_p (gsi); gsi_next (&gsi))
-    if (!scev_analyzable_p (gimple_phi_result (gsi_stmt (gsi)), region))
+    if ((res = gimple_phi_result (gsi_stmt (gsi)))
+	&& is_gimple_reg (res)
+	&& !scev_analyzable_p (res, region))
       rewrite_commutative_reductions_out_of_ssa_close_phi (gsi_stmt (gsi),
 							   reductions);
 }
