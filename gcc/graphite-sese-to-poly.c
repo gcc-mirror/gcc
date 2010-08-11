@@ -2203,22 +2203,34 @@ rewrite_close_phi_out_of_ssa (gimple_stmt_iterator *psi)
   gimple phi = gsi_stmt (*psi);
   tree res = gimple_phi_result (phi);
   tree var = SSA_NAME_VAR (res);
-  tree zero_dim_array = create_zero_dim_array (var, "Close_Phi");
-  gimple_stmt_iterator gsi = gsi_after_labels (gimple_bb (phi));
-  gimple stmt = gimple_build_assign (res, zero_dim_array);
+  basic_block bb = gimple_bb (phi);
+  gimple_stmt_iterator gsi = gsi_after_labels (bb);
   tree arg = gimple_phi_arg_def (phi, 0);
+  gimple stmt;
 
   /* Note that loop close phi nodes should have a single argument
      because we translated the representation into a canonical form
      before Graphite: see canonicalize_loop_closed_ssa_form.  */
   gcc_assert (gimple_phi_num_args (phi) == 1);
 
-  if (TREE_CODE (arg) == SSA_NAME
-      && !SSA_NAME_IS_DEFAULT_DEF (arg))
-    insert_out_of_ssa_copy (zero_dim_array, arg, SSA_NAME_DEF_STMT (arg));
+  /* The phi node can be a non close phi node, when its argument is
+     invariant, or when it is defined in the same loop as the phi node.  */
+  if (is_gimple_min_invariant (arg)
+      || gimple_bb (SSA_NAME_DEF_STMT (arg))->loop_father == bb->loop_father)
+    stmt = gimple_build_assign (res, arg);
   else
-    insert_out_of_ssa_copy_on_edge (single_pred_edge (gimple_bb (phi)),
-				    zero_dim_array, arg);
+    {
+      tree zero_dim_array = create_zero_dim_array (var, "Close_Phi");
+
+      stmt = gimple_build_assign (res, zero_dim_array);
+
+      if (TREE_CODE (arg) == SSA_NAME
+	  && !SSA_NAME_IS_DEFAULT_DEF (arg))
+	insert_out_of_ssa_copy (zero_dim_array, arg, SSA_NAME_DEF_STMT (arg));
+      else
+	insert_out_of_ssa_copy_on_edge (single_pred_edge (bb),
+					zero_dim_array, arg);
+    }
 
   remove_phi_node (psi, false);
   gsi_insert_before (&gsi, stmt, GSI_NEW_STMT);
