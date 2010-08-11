@@ -1,3 +1,13 @@
+2010-06-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* passes.c (init_optimization_passes): Add pass_graphite.
+	Schedule a pass_copy_prop before pass_graphite_transforms.
+	* timevar.def (TV_GRAPHITE): Declared.
+	* tree-pass.h (pass_graphite): Declared.
+	* tree-ssa-loop.c (pass_graphite): New.
+
+	* gcc.dg/graphite/id-20.c: New.
+
 2010-06-12  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-clast-to-gimple.c (gloog): Do not pass scops in parameter.

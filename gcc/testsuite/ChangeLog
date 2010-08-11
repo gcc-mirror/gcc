@@ -1,3 +1,7 @@
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gcc.dg/graphite/id-20.c: New.
+
 2010-08-11  Janus Weil  <janus@gcc.gnu.org>
 	    Steve Kargl <kargl@gcc.gnu.org>
 

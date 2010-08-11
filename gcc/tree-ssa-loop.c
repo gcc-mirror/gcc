@@ -310,6 +310,25 @@ gate_graphite_transforms (void)
   return flag_graphite != 0;
 }
 
+struct gimple_opt_pass pass_graphite =
+{
+ {
+  GIMPLE_PASS,
+  "graphite0",				/* name */
+  gate_graphite_transforms,		/* gate */
+  NULL,					/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_GRAPHITE,				/* tv_id */
+  PROP_cfg | PROP_ssa,			/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0					/* todo_flags_finish */
+ }
+};
+
 struct gimple_opt_pass pass_graphite_transforms =
 {
  {
