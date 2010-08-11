@@ -29,6 +29,11 @@ typedef const struct clast_expr *clast_name_p;
 typedef const char *clast_name_p;
 #endif
 
+#ifdef CLOOG_ORG
+#define cloog_initialize()
+#define cloog_finalize()
+#endif
+
 #ifndef CLOOG_ORG
 
 /* CloogOptions compatibility.  */
