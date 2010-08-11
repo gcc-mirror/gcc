@@ -232,7 +232,8 @@ extern int num_loop_insns (const struct loop *);
 extern int average_num_loop_insns (const struct loop *);
 extern unsigned get_loop_level (const struct loop *);
 extern bool loop_exit_edge_p (const struct loop *, const_edge);
-extern bool is_loop_exit (struct loop *, basic_block);
+extern bool loop_exits_to_bb_p (struct loop *, basic_block);
+extern bool loop_exits_from_bb_p (struct loop *, basic_block);
 extern void mark_loop_exit_edges (void);
 
 /* Loops & cfg manipulation.  */
