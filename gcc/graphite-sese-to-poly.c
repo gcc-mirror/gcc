@@ -2256,7 +2256,8 @@ rewrite_phi_out_of_ssa (gimple_stmt_iterator *psi)
 
       /* Avoid the insertion of code in the loop latch to please the
 	 pattern matching of the vectorizer.  */
-      if (e->src == bb->loop_father->latch)
+      if (TREE_CODE (arg) == SSA_NAME
+	  && e->src == bb->loop_father->latch)
 	insert_out_of_ssa_copy (zero_dim_array, arg, SSA_NAME_DEF_STMT (arg));
       else
 	insert_out_of_ssa_copy_on_edge (e, zero_dim_array, arg);
