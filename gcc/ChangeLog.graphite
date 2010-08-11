@@ -1,3 +1,8 @@
+2010-05-26  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (graphite_create_new_loop_guard): Use
+	size_one_node.
+
 2010-05-07  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-clast-to-gimple.c (graphite_create_new_loop_guard): Fix
