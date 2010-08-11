@@ -594,7 +594,7 @@ scopdet_basic_block_info (basic_block bb, loop_p outermost_loop,
 	  {
 	    /* Ignore loop exits.  They will be handled after the loop
 	       body.  */
-	    if (is_loop_exit (loop, e->dest))
+	    if (loop_exits_to_bb_p (loop, e->dest))
 	      {
 		result.exits = true;
 		continue;
