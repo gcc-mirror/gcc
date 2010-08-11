@@ -67,12 +67,12 @@ debug_rename_map_1 (void **slot, void *s ATTRIBUTE_UNUSED)
   return 1;
 }
 
-/* Print to stderr all the elements of MAP.  */
+/* Print to stderr all the elements of RENAME_MAP.  */
 
 DEBUG_FUNCTION void
-debug_rename_map (htab_t map)
+debug_rename_map (htab_t rename_map)
 {
-  htab_traverse (map, debug_rename_map_1, NULL);
+  htab_traverse (rename_map, debug_rename_map_1, NULL);
 }
 
 /* Computes a hash function for database element ELT.  */
@@ -394,17 +394,17 @@ sese_insert_phis_for_liveouts (sese region, basic_block bb,
   update_ssa (TODO_update_ssa);
 }
 
-/* Returns the expression associated to OLD_NAME in MAP.  */
+/* Returns the expression associated to OLD_NAME in RENAME_MAP.  */
 
 static tree
-get_rename (htab_t map, tree old_name)
+get_rename (htab_t rename_map, tree old_name)
 {
   struct rename_map_elt_s tmp;
   PTR *slot;
 
   gcc_assert (TREE_CODE (old_name) == SSA_NAME);
   tmp.old_name = old_name;
-  slot = htab_find_slot (map, &tmp, NO_INSERT);
+  slot = htab_find_slot (rename_map, &tmp, NO_INSERT);
 
   if (slot && *slot)
     return ((rename_map_elt) *slot)->expr;
@@ -412,10 +412,10 @@ get_rename (htab_t map, tree old_name)
   return old_name;
 }
 
-/* Register in MAP the rename tuple (OLD_NAME, EXPR).  */
+/* Register in RENAME_MAP the rename tuple (OLD_NAME, EXPR).  */
 
 void
-set_rename (htab_t map, tree old_name, tree expr)
+set_rename (htab_t rename_map, tree old_name, tree expr)
 {
   struct rename_map_elt_s tmp;
   PTR *slot;
@@ -424,7 +424,7 @@ set_rename (htab_t map, tree old_name, tree expr)
     return;
 
   tmp.old_name = old_name;
-  slot = htab_find_slot (map, &tmp, INSERT);
+  slot = htab_find_slot (rename_map, &tmp, INSERT);
 
   if (!slot)
     return;
@@ -435,10 +435,10 @@ set_rename (htab_t map, tree old_name, tree expr)
   *slot = new_rename_map_elt (old_name, expr);
 }
 
-/* Rename the SSA_NAMEs used in STMT and that appear in MAP.  */
+/* Rename the SSA_NAMEs used in STMT and that appear in RENAME_MAP.  */
 
 static void
-rename_variables_in_stmt (gimple stmt, htab_t map, gimple_stmt_iterator *insert_gsi)
+rename_variables_in_stmt (gimple stmt, htab_t rename_map, gimple_stmt_iterator *insert_gsi)
 {
   ssa_op_iter iter;
   use_operand_p use_p;
@@ -452,7 +452,7 @@ rename_variables_in_stmt (gimple stmt, htab_t map, gimple_stmt_iterator *insert_
       if (TREE_CODE (use) != SSA_NAME)
 	continue;
 
-      expr = get_rename (map, use);
+      expr = get_rename (rename_map, use);
       if (use == expr)
 	continue;
 
@@ -522,7 +522,7 @@ expand_scalar_variables_expr (tree, tree, enum tree_code, tree, basic_block,
 
 static tree
 expand_scalar_variables_call (gimple stmt, basic_block bb, sese region,
-			      htab_t map, gimple_stmt_iterator *gsi)
+			      htab_t rename_map, gimple_stmt_iterator *gsi)
 {
   int i, nargs = gimple_call_num_args (stmt);
   VEC (tree, gc) *args = VEC_alloc (tree, gc, nargs);
@@ -538,7 +538,7 @@ expand_scalar_variables_call (gimple stmt, basic_block bb, sese region,
 
       var = create_tmp_var (t, "var");
       arg = expand_scalar_variables_expr (t, arg, TREE_CODE (arg), NULL,
-					  bb, region, map, gsi);
+					  bb, region, rename_map, gsi);
       arg = build2 (MODIFY_EXPR, t, var, arg);
       arg = force_gimple_operand_gsi (gsi, arg, true, NULL,
 				      true, GSI_SAME_STMT);
@@ -561,12 +561,12 @@ expand_scalar_variables_call (gimple stmt, basic_block bb, sese region,
    the definition of OP0, that are defined outside BB and still in the
    SESE, i.e. not a parameter of the SESE.  The expression that is
    returned contains only induction variables from the generated code:
-   MAP contains the induction variables renaming mapping, and is used
+   RENAME_MAP contains the induction variables renaming mapping, and is used
    to translate the names of induction variables.  */
 
 static tree
 expand_scalar_variables_ssa_name (tree type, tree op0, basic_block bb,
-				  sese region, htab_t map,
+				  sese region, htab_t rename_map,
 				  gimple_stmt_iterator *gsi)
 {
   gimple def_stmt;
@@ -574,12 +574,12 @@ expand_scalar_variables_ssa_name (tree type, tree op0, basic_block bb,
 
   if (is_parameter (region, op0)
       || is_iv (op0))
-    return fold_convert (type, get_rename (map, op0));
+    return fold_convert (type, get_rename (rename_map, op0));
 
   def_stmt = SSA_NAME_DEF_STMT (op0);
 
   /* Check whether we already have a rename for OP0.  */
-  new_op = get_rename (map, op0);
+  new_op = get_rename (rename_map, op0);
 
   if (new_op != op0
       && gimple_bb (SSA_NAME_DEF_STMT (new_op)) == bb)
@@ -590,7 +590,7 @@ expand_scalar_variables_ssa_name (tree type, tree op0, basic_block bb,
       /* If the defining statement is in the basic block already
 	 we do not need to create a new expression for it, we
 	 only need to ensure its operands are expanded.  */
-      expand_scalar_variables_stmt (def_stmt, bb, region, map, gsi);
+      expand_scalar_variables_stmt (def_stmt, bb, region, rename_map, gsi);
       return fold_convert (type, new_op);
     }
   else
@@ -609,11 +609,11 @@ expand_scalar_variables_ssa_name (tree type, tree op0, basic_block bb,
 	    tree type = gimple_expr_type (def_stmt);
 
 	    return expand_scalar_variables_expr (type, var0, subcode, var1, bb,
-						 region, map, gsi);
+						 region, rename_map, gsi);
 	  }
 
 	case GIMPLE_CALL:
-	  return expand_scalar_variables_call (def_stmt, bb, region, map, gsi);
+	  return expand_scalar_variables_call (def_stmt, bb, region, rename_map, gsi);
 
 	default:
 	  gcc_unreachable ();
@@ -627,13 +627,13 @@ expand_scalar_variables_ssa_name (tree type, tree op0, basic_block bb,
    variables used in OP0 and OP1, defined outside BB and still defined
    in the SESE, i.e. not a parameter of the SESE.  The expression that
    is returned contains only induction variables from the generated
-   code: MAP contains the induction variables renaming mapping, and is
+   code: RENAME_MAP contains the induction variables renaming mapping, and is
    used to translate the names of induction variables.  */
 
 static tree
 expand_scalar_variables_expr (tree type, tree op0, enum tree_code code,
 			      tree op1, basic_block bb, sese region,
-			      htab_t map, gimple_stmt_iterator *gsi)
+			      htab_t rename_map, gimple_stmt_iterator *gsi)
 {
   if (TREE_CODE_CLASS (code) == tcc_constant
       || TREE_CODE_CLASS (code) == tcc_declaration)
@@ -650,7 +650,7 @@ expand_scalar_variables_expr (tree type, tree op0, enum tree_code code,
 	  {
 	    tree op = TREE_OPERAND (op0, 0);
 	    tree res = expand_scalar_variables_expr
-	      (type, op, TREE_CODE (op), NULL, bb, region, map, gsi);
+	      (type, op, TREE_CODE (op), NULL, bb, region, rename_map, gsi);
 	    return build1 (code, type, res);
 	  }
 
@@ -658,7 +658,7 @@ expand_scalar_variables_expr (tree type, tree op0, enum tree_code code,
 	  {
 	    tree old_name = TREE_OPERAND (op0, 0);
 	    tree expr = expand_scalar_variables_ssa_name
-	      (type, old_name, bb, region, map, gsi);
+	      (type, old_name, bb, region, rename_map, gsi);
 
 	    if (TREE_CODE (expr) != SSA_NAME
 		&& is_gimple_reg (old_name))
@@ -682,10 +682,10 @@ expand_scalar_variables_expr (tree type, tree op0, enum tree_code code,
 	    tree op03 = TREE_OPERAND (op0, 3);
 	    tree base = expand_scalar_variables_expr
 	      (TREE_TYPE (op00), op00, TREE_CODE (op00), NULL, bb, region,
-	       map, gsi);
+	       rename_map, gsi);
 	    tree subscript = expand_scalar_variables_expr
 	      (TREE_TYPE (op01), op01, TREE_CODE (op01), NULL, bb, region,
-	       map, gsi);
+	       rename_map, gsi);
 
 	    return build4 (ARRAY_REF, type, base, subscript, op02, op03);
 	  }
@@ -704,7 +704,7 @@ expand_scalar_variables_expr (tree type, tree op0, enum tree_code code,
       tree op0_type = TREE_TYPE (op0);
       enum tree_code op0_code = TREE_CODE (op0);
       tree op0_expr = expand_scalar_variables_expr (op0_type, op0, op0_code,
-						    NULL, bb, region, map, gsi);
+						    NULL, bb, region, rename_map, gsi);
 
       return fold_build1 (code, type, op0_expr);
     }
@@ -715,17 +715,17 @@ expand_scalar_variables_expr (tree type, tree op0, enum tree_code code,
       tree op0_type = TREE_TYPE (op0);
       enum tree_code op0_code = TREE_CODE (op0);
       tree op0_expr = expand_scalar_variables_expr (op0_type, op0, op0_code,
-						    NULL, bb, region, map, gsi);
+						    NULL, bb, region, rename_map, gsi);
       tree op1_type = TREE_TYPE (op1);
       enum tree_code op1_code = TREE_CODE (op1);
       tree op1_expr = expand_scalar_variables_expr (op1_type, op1, op1_code,
-						    NULL, bb, region, map, gsi);
+						    NULL, bb, region, rename_map, gsi);
 
       return fold_build2 (code, type, op0_expr, op1_expr);
     }
 
   if (code == SSA_NAME)
-    return expand_scalar_variables_ssa_name (type, op0, bb, region, map, gsi);
+    return expand_scalar_variables_ssa_name (type, op0, bb, region, rename_map, gsi);
 
   if (code == ADDR_EXPR)
     {
@@ -736,7 +736,7 @@ expand_scalar_variables_expr (tree type, tree op0, enum tree_code code,
 	{
 	  tree e = expand_scalar_variables_expr (TREE_TYPE (op00), op00,
 						 TREE_CODE (op00),
-						 NULL, bb, region, map, gsi);
+						 NULL, bb, region, rename_map, gsi);
 	  return fold_build1 (code, TREE_TYPE (op0), e);
 	}
 
@@ -751,13 +751,13 @@ expand_scalar_variables_expr (tree type, tree op0, enum tree_code code,
    STMT depends on in the SESE: these are all the scalar variables used
    in STMT, defined outside BB and still defined in the SESE, i.e. not a
    parameter of the SESE.  The expression that is returned contains
-   only induction variables from the generated code: MAP contains the
+   only induction variables from the generated code: RENAME_MAP contains the
    induction variables renaming mapping, and is used to translate the
    names of induction variables.  */
 
 static void
 expand_scalar_variables_stmt (gimple stmt, basic_block bb, sese region,
-			      htab_t map, gimple_stmt_iterator *gsi)
+			      htab_t rename_map, gimple_stmt_iterator *gsi)
 {
   ssa_op_iter iter;
   use_operand_p use_p;
@@ -773,12 +773,12 @@ expand_scalar_variables_stmt (gimple stmt, basic_block bb, sese region,
 	continue;
 
       /* Don't expand USE if we already have a rename for it.  */
-      use_expr = get_rename (map, use);
+      use_expr = get_rename (rename_map, use);
       if (use_expr != use)
 	continue;
 
       use_expr = expand_scalar_variables_expr (type, use, code, NULL, bb,
-					       region, map, gsi);
+					       region, rename_map, gsi);
       use_expr = fold_convert (type, use_expr);
 
       if (use_expr == use)
@@ -813,33 +813,33 @@ expand_scalar_variables_stmt (gimple stmt, basic_block bb, sese region,
    BB depends on in the SESE: these are all the scalar variables used
    in BB, defined outside BB and still defined in the SESE, i.e. not a
    parameter of the SESE.  The expression that is returned contains
-   only induction variables from the generated code: MAP contains the
+   only induction variables from the generated code: RENAME_MAP contains the
    induction variables renaming mapping, and is used to translate the
    names of induction variables.  */
 
 static void
-expand_scalar_variables (basic_block bb, sese region, htab_t map)
+expand_scalar_variables (basic_block bb, sese region, htab_t rename_map)
 {
   gimple_stmt_iterator gsi;
 
   for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi);)
     {
       gimple stmt = gsi_stmt (gsi);
-      expand_scalar_variables_stmt (stmt, bb, region, map, &gsi);
+      expand_scalar_variables_stmt (stmt, bb, region, rename_map, &gsi);
       gsi_next (&gsi);
     }
 }
 
-/* Rename all the SSA_NAMEs from block BB according to the MAP.  */
+/* Rename all the SSA_NAMEs from block BB according to the RENAME_MAP.  */
 
 static void
-rename_variables (basic_block bb, htab_t map)
+rename_variables (basic_block bb, htab_t rename_map)
 {
   gimple_stmt_iterator gsi;
   gimple_stmt_iterator insert_gsi = gsi_start_bb (bb);
 
   for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    rename_variables_in_stmt (gsi_stmt (gsi), map, &insert_gsi);
+    rename_variables_in_stmt (gsi_stmt (gsi), rename_map, &insert_gsi);
 }
 
 /* Remove condition from BB.  */
@@ -1172,7 +1172,7 @@ insert_guard_phis (basic_block bb, edge true_edge, edge false_edge,
    preserve SSA form.  */
 
 static void
-graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb, htab_t map)
+graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb, htab_t rename_map)
 {
   gimple_stmt_iterator gsi, gsi_tgt;
 
@@ -1202,7 +1202,7 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb, htab_t map)
 	{
 	  tree old_name = DEF_FROM_PTR (def_p);
 	  tree new_name = create_new_def_for (old_name, copy, def_p);
-	  set_rename (map, old_name, new_name);
+	  set_rename (rename_map, old_name, new_name);
 	}
     }
 }
@@ -1213,16 +1213,16 @@ graphite_copy_stmts_from_block (basic_block bb, basic_block new_bb, htab_t map)
 
 edge
 copy_bb_and_scalar_dependences (basic_block bb, sese region,
-				edge next_e, htab_t map)
+				edge next_e, htab_t rename_map)
 {
   basic_block new_bb = split_edge (next_e);
 
   next_e = single_succ_edge (new_bb);
-  graphite_copy_stmts_from_block (bb, new_bb, map);
+  graphite_copy_stmts_from_block (bb, new_bb, rename_map);
   remove_condition (new_bb);
   remove_phi_nodes (new_bb);
-  expand_scalar_variables (new_bb, region, map);
-  rename_variables (new_bb, map);
+  expand_scalar_variables (new_bb, region, rename_map);
+  rename_variables (new_bb, rename_map);
 
   return next_e;
 }
