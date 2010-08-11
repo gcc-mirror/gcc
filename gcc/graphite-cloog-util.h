@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GRAPHITE_CLOOG_UTIL_H
 
 #include "cloog/cloog.h"
+#include "graphite-cloog-compat.h"
 
 CloogMatrix *new_Cloog_Matrix_from_ppl_Polyhedron (ppl_const_Polyhedron_t);
 CloogDomain *new_Cloog_Domain_from_ppl_Polyhedron (ppl_const_Polyhedron_t);

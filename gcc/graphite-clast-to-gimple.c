@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphite-scop-detection.h"
 #include "graphite-clast-to-gimple.h"
 #include "graphite-dependences.h"
+#include "graphite-cloog-compat.h"
 
 /* This flag is set when an error occurred during the translation of
    CLAST to Gimple.  */
