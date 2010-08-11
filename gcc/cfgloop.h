@@ -165,10 +165,6 @@ struct GTY ((chain_next ("%h.next"))) loop {
 
   /* Head of the cyclic list of the exits of the loop.  */
   struct loop_exit *exits;
-
-  /* The single induction variable of the loop when the loop is in
-     normal form.  */
-  tree single_iv;
 };
 
 /* Flags for state of loop structure.  */

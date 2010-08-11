@@ -2906,45 +2906,6 @@ rewrite_commutative_reductions_out_of_ssa (sese region, sbitmap reductions)
 #endif
 }
 
-/* A LOOP is in normal form for Graphite when it contains only one
-   scalar phi node that defines the main induction variable of the
-   loop, only one increment of the IV, and only one exit condition.  */
-
-static void
-graphite_loop_normal_form (loop_p loop)
-{
-  struct tree_niter_desc niter;
-  tree nit;
-  gimple_seq stmts;
-  edge exit = single_dom_exit (loop);
-
-  bool known_niter = number_of_iterations_exit (loop, exit, &niter, false);
-
-  /* At this point we should know the number of iterations.  */
-  gcc_assert (known_niter);
-
-  nit = force_gimple_operand (unshare_expr (niter.niter), &stmts, true,
-			      NULL_TREE);
-  if (stmts)
-    gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
-
-  loop->single_iv = canonicalize_loop_ivs (loop, &nit, false);
-}
-
-/* Rewrite all the loops of SCOP in normal form: one induction
-   variable per loop.  */
-
-static void
-scop_canonicalize_loops (scop_p scop)
-{
-  loop_iterator li;
-  loop_p loop;
-
-  FOR_EACH_LOOP (li, loop, 0)
-    if (loop_in_sese_p (loop, SCOP_REGION (scop)))
-      graphite_loop_normal_form (loop);
-}
-
 /* Java does not initialize long_long_integer_type_node.  */
 #define my_long_long (long_long_integer_type_node ? long_long_integer_type_node : ssizetype)
 
@@ -2957,24 +2918,24 @@ scop_ivs_can_be_represented (scop_p scop)
 {
   loop_iterator li;
   loop_p loop;
+  gimple_stmt_iterator psi;
 
   FOR_EACH_LOOP (li, loop, 0)
     {
-      tree type;
-      int precision;
-
       if (!loop_in_sese_p (loop, SCOP_REGION (scop)))
 	continue;
 
-      if (!loop->single_iv)
-	continue;
+      for (psi = gsi_start_phis (loop->header);
+	   !gsi_end_p (psi); gsi_next (&psi))
+	{
+	  gimple phi = gsi_stmt (psi);
+	  tree res = PHI_RESULT (phi);
+	  tree type = TREE_TYPE (res);
 
-      type = TREE_TYPE (loop->single_iv);
-      precision = TYPE_PRECISION (type);
-
-      if (TYPE_UNSIGNED (type)
-	  && precision >= TYPE_PRECISION (my_long_long))
-	return false;
+	  if (TYPE_UNSIGNED (type)
+	      && TYPE_PRECISION (type) >= TYPE_PRECISION (my_long_long))
+	    return false;
+	}
     }
 
   return true;
@@ -2998,7 +2959,6 @@ build_poly_scop (scop_p scop)
   if (nb_pbbs_in_loops (scop) == 0)
     return;
 
-  scop_canonicalize_loops (scop);
   if (!scop_ivs_can_be_represented (scop))
     return;
 

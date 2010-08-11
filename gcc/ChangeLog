@@ -1,5 +1,15 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* cfgloop.c (alloc_loop): Remove initialization of loop->single_iv.
+	* cfgloop.h (struct loop): Remove single_iv field.
+	* graphite-sese-to-poly.c (graphite_loop_normal_form): Removed.
+	(scop_canonicalize_loops): Removed.
+	(scop_ivs_can_be_represented): Do not use loop->single_iv.  Iterate
+	over all the loop phi nodes in loop->header.
+	(build_poly_scop): Remove use of scop_canonicalize_loops.
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (rewrite_cross_bb_scalar_deps): Also
 	handle GIMPLE_CALL.
 
