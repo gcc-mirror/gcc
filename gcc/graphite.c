@@ -287,7 +287,7 @@ graphite_transform_loops (void)
   for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
     if (POLY_SCOP_P (scop)
 	&& apply_poly_transforms (scop)
-	&& gloog (scop, scops, bb_pbb_mapping))
+	&& gloog (scop, bb_pbb_mapping))
       need_cfg_cleanup_p = true;
 
   htab_delete (bb_pbb_mapping);
