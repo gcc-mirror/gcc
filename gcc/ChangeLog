@@ -1,5 +1,16 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (propagate_expr_outside_region): Also
+	handle the case when def is in the sese region.
+	(rewrite_close_phi_out_of_ssa): Call propagate_expr_outside_region
+	for invariant expressions.
+	(rewrite_cross_bb_phi_deps): Removed.
+	(rewrite_cross_bb_scalar_deps): Also handle GIMPLE_PHI nodes.
+	(rewrite_cross_bb_scalar_deps_out_of_ssa): Do not call
+	rewrite_cross_bb_phi_deps.2
+
+010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c
 	(rewrite_commutative_reductions_out_of_ssa_loop): Call
 	scev_analyzable_p only on is_gimple_reg

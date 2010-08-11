@@ -2193,8 +2193,7 @@ propagate_expr_outside_region (tree def, tree expr, sese region)
   gimple_seq stmts;
   bool replaced_once = false;
 
-  gcc_assert (TREE_CODE (def) == SSA_NAME
-	      && bb_in_sese_p (gimple_bb (SSA_NAME_DEF_STMT (def)), region));
+  gcc_assert (TREE_CODE (def) == SSA_NAME);
 
   expr = force_gimple_operand (unshare_expr (expr), &stmts, true,
 			       NULL_TREE);
@@ -2245,7 +2244,11 @@ rewrite_close_phi_out_of_ssa (gimple_stmt_iterator *psi, sese region)
   if (is_gimple_min_invariant (arg)
       || SSA_NAME_IS_DEFAULT_DEF (arg)
       || gimple_bb (SSA_NAME_DEF_STMT (arg))->loop_father == bb->loop_father)
-    stmt = gimple_build_assign (res, arg);
+    {
+      propagate_expr_outside_region (res, arg, region);
+      gsi_next (psi);
+      return;
+    }
 
   /* If res is scev analyzable and is not a scalar value, it is safe
      to ignore the close phi node: it will be code generated in the
@@ -2262,7 +2265,7 @@ rewrite_close_phi_out_of_ssa (gimple_stmt_iterator *psi, sese region)
 	  scev = compute_overall_effect_of_inner_loop (loop, scev);
 	}
       else
-	  scev = scalar_evolution_in_region (region, loop, res);
+	scev = scalar_evolution_in_region (region, loop, res);
 
       if (tree_does_not_contain_chrecs (scev))
 	propagate_expr_outside_region (res, scev, region);
@@ -2425,38 +2428,6 @@ rewrite_cross_bb_scalar_dependence (tree zero_dim_array, tree def, gimple use_st
 }
 
 /* Rewrite the scalar dependences crossing the boundary of the BB
-   containing STMT with an array.  GSI points to a definition that is
-   used in a PHI node.  */
-
-static void
-rewrite_cross_bb_phi_deps (sese region, gimple_stmt_iterator gsi)
-{
-  gimple stmt = gsi_stmt (gsi);
-  imm_use_iterator imm_iter;
-  tree def;
-  gimple use_stmt;
-
-  if (gimple_code (stmt) != GIMPLE_ASSIGN)
-    return;
-
-  def = gimple_assign_lhs (stmt);
-  if (!is_gimple_reg (def)
-      || scev_analyzable_p (def, region))
-    return;
-
-  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
-    if (gimple_code (use_stmt) == GIMPLE_PHI)
-      {
-	gimple_stmt_iterator psi = gsi_for_stmt (use_stmt);
-
-	if (scalar_close_phi_node_p (gsi_stmt (psi)))
-	  rewrite_close_phi_out_of_ssa (&psi, region);
-	else
-	  rewrite_phi_out_of_ssa (&psi);
-      }
-}
-
-/* Rewrite the scalar dependences crossing the boundary of the BB
    containing STMT with an array.  */
 
 static void
@@ -2500,11 +2471,21 @@ rewrite_cross_bb_scalar_deps (sese region, gimple_stmt_iterator *gsi)
   def_bb = gimple_bb (stmt);
 
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
-    if (def_bb != gimple_bb (use_stmt)
+    if (gimple_code (use_stmt) == GIMPLE_PHI)
+      {
+	gimple_stmt_iterator psi = gsi_for_stmt (use_stmt);
+
+	if (scalar_close_phi_node_p (gsi_stmt (psi)))
+	  rewrite_close_phi_out_of_ssa (&psi, region);
+	else
+	  rewrite_phi_out_of_ssa (&psi);
+      }
+
+  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
+    if (gimple_code (use_stmt) != GIMPLE_PHI
+	&& def_bb != gimple_bb (use_stmt)
 	&& !is_gimple_debug (use_stmt))
       {
-	gcc_assert (gimple_code (use_stmt) != GIMPLE_PHI);
-
 	if (!zero_dim_array)
 	  {
 	    zero_dim_array = create_zero_dim_array
@@ -2530,10 +2511,7 @@ rewrite_cross_bb_scalar_deps_out_of_ssa (scop_p scop)
   FOR_EACH_BB (bb)
     if (bb_in_sese_p (bb, region))
       for (psi = gsi_start_bb (bb); !gsi_end_p (psi); gsi_next (&psi))
-	{
-	  rewrite_cross_bb_phi_deps (region, psi);
-	  rewrite_cross_bb_scalar_deps (region, &psi);
-	}
+	rewrite_cross_bb_scalar_deps (region, &psi);
 
   update_ssa (TODO_update_ssa);
 #ifdef ENABLE_CHECKING
