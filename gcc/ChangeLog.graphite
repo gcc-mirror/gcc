@@ -1,5 +1,17 @@
 2010-07-20  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): Add an
+	extra parameter for the region.  Call scev_analyzable_p.
+	(rewrite_reductions_out_of_ssa): Update call to
+	rewrite_close_phi_out_of_ssa.
+	(rewrite_cross_bb_phi_deps): Same.
+	(rewrite_commutative_reductions_out_of_ssa_loop): Add an extra
+	parameter for the region.  Call scev_analyzable_p.
+	(rewrite_commutative_reductions_out_of_ssa): Update call to
+	rewrite_commutative_reductions_out_of_ssa_loop.
+
+2010-07-20  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* gcc.dg/tree-ssa/pr20742.c: New.
 
 2010-07-15  Sebastian Pop  <sebastian.pop@amd.com>

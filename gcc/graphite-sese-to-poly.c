@@ -2186,7 +2186,7 @@ scalar_close_phi_node_p (gimple phi)
    dimension array for it.  */
 
 static void
-rewrite_close_phi_out_of_ssa (gimple_stmt_iterator *psi)
+rewrite_close_phi_out_of_ssa (gimple_stmt_iterator *psi, sese region)
 {
   gimple phi = gsi_stmt (*psi);
   tree res = gimple_phi_result (phi);
@@ -2200,6 +2200,14 @@ rewrite_close_phi_out_of_ssa (gimple_stmt_iterator *psi)
      because we translated the representation into a canonical form
      before Graphite: see canonicalize_loop_closed_ssa_form.  */
   gcc_assert (gimple_phi_num_args (phi) == 1);
+
+  /* If res is scev analyzable, it is safe to ignore the close phi
+     node: it will be code generated in the out of Graphite pass.  */
+  if (scev_analyzable_p (res, region))
+    {
+      gsi_next (psi);
+      return;
+    }
 
   /* The phi node can be a non close phi node, when its argument is
      invariant, or when it is defined in the same loop as the phi node.  */
@@ -2321,7 +2329,7 @@ rewrite_reductions_out_of_ssa (scop_p scop)
 	    rewrite_degenerate_phi (&psi);
 
 	  else if (scalar_close_phi_node_p (phi))
-	    rewrite_close_phi_out_of_ssa (&psi);
+	    rewrite_close_phi_out_of_ssa (&psi, region);
 
 	  else if (reduction_phi_p (region, &psi))
 	    rewrite_phi_out_of_ssa (&psi);
@@ -2386,7 +2394,7 @@ rewrite_cross_bb_phi_deps (sese region, gimple_stmt_iterator gsi)
 	gimple_stmt_iterator psi = gsi_for_stmt (use_stmt);
 
 	if (scalar_close_phi_node_p (gsi_stmt (psi)))
-	  rewrite_close_phi_out_of_ssa (&psi);
+	  rewrite_close_phi_out_of_ssa (&psi, region);
 	else
 	  rewrite_phi_out_of_ssa (&psi);
       }
@@ -2871,7 +2879,8 @@ rewrite_commutative_reductions_out_of_ssa_close_phi (gimple close_phi,
 
 static void
 rewrite_commutative_reductions_out_of_ssa_loop (loop_p loop,
-						sbitmap reductions)
+						sbitmap reductions,
+						sese region)
 {
   gimple_stmt_iterator gsi;
   edge exit = single_exit (loop);
@@ -2880,8 +2889,9 @@ rewrite_commutative_reductions_out_of_ssa_loop (loop_p loop,
     return;
 
   for (gsi = gsi_start_phis (exit->dest); !gsi_end_p (gsi); gsi_next (&gsi))
-    rewrite_commutative_reductions_out_of_ssa_close_phi (gsi_stmt (gsi),
-							 reductions);
+    if (!scev_analyzable_p (gimple_phi_result (gsi_stmt (gsi)), region))
+      rewrite_commutative_reductions_out_of_ssa_close_phi (gsi_stmt (gsi),
+							   reductions);
 }
 
 /* Rewrites all the commutative reductions from SCOP out of SSA.  */
@@ -2897,7 +2907,7 @@ rewrite_commutative_reductions_out_of_ssa (sese region, sbitmap reductions)
 
   FOR_EACH_LOOP (li, loop, 0)
     if (loop_in_sese_p (loop, region))
-      rewrite_commutative_reductions_out_of_ssa_loop (loop, reductions);
+      rewrite_commutative_reductions_out_of_ssa_loop (loop, reductions, region);
 
   gsi_commit_edge_inserts ();
   update_ssa (TODO_update_ssa);
