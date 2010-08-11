@@ -1,5 +1,18 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (build_scop_bbs): Not static anymore.
+	(rewrite_reductions_out_of_ssa): Same.
+	(rewrite_commutative_reductions_out_of_ssa): Same.
+	(build_poly_scop): Do not call these functions.
+	* graphite-sese-to-poly.h (build_poly_scop): Declared.
+	(rewrite_reductions_out_of_ssa): Declared.
+	(rewrite_commutative_reductions_out_of_ssa): Declared.
+	* graphite.c (graphite_transform_loops): Call on every scop
+	rewrite_commutative_reductions_out_of_ssa before calling
+	rewrite_reductions_out_of_ssa and build_scop_bbs.
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-dependences.c (dot_deps): Make system call to dotty run
 	in background.
 	(dot_deps_stmt): Same.

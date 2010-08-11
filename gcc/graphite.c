@@ -253,6 +253,7 @@ graphite_transform_loops (void)
   bool need_cfg_cleanup_p = false;
   VEC (scop_p, heap) *scops = NULL;
   htab_t bb_pbb_mapping;
+  sbitmap reductions;
 
   if (!graphite_initialize ())
     return;
@@ -266,6 +267,19 @@ graphite_transform_loops (void)
     }
 
   bb_pbb_mapping = htab_create (10, bb_pbb_map_hash, eq_bb_pbb_map, free);
+  reductions = sbitmap_alloc (last_basic_block * 2);
+  sbitmap_zero (reductions);
+
+  for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
+    rewrite_commutative_reductions_out_of_ssa (SCOP_REGION (scop), reductions);
+
+  for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
+    {
+      rewrite_reductions_out_of_ssa (scop);
+      build_scop_bbs (scop, reductions);
+    }
+
+  sbitmap_free (reductions);
 
   for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
     build_poly_scop (scop);

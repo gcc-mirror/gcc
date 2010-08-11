@@ -462,7 +462,7 @@ build_scop_bbs_1 (scop_p scop, sbitmap visited, basic_block bb, sbitmap reductio
 
 /* Gather the basic blocks belonging to the SCOP.  */
 
-static void
+void
 build_scop_bbs (scop_p scop, sbitmap reductions)
 {
   sbitmap visited = sbitmap_alloc (last_basic_block);
@@ -2399,7 +2399,7 @@ rewrite_cross_bb_scalar_deps (sese region, gimple_stmt_iterator *gsi)
 
 /* Rewrite out of SSA all the reduction phi nodes of SCOP.  */
 
-static void
+void
 rewrite_reductions_out_of_ssa (scop_p scop)
 {
   basic_block bb;
@@ -2578,7 +2578,7 @@ detect_commutative_reduction_arg (tree lhs, gimple stmt, tree arg,
 }
 
 /* Detect commutative and associative scalar reductions starting at
-   the STMT.  Return the phi node of the reduction cycle, or NULL.  */
+   STMT.  Return the phi node of the reduction cycle, or NULL.  */
 
 static gimple
 detect_commutative_reduction_assign (gimple stmt, VEC (gimple, heap) **in,
@@ -2666,7 +2666,7 @@ initial_value_for_loop_phi (gimple phi)
 }
 
 /* Detect commutative and associative scalar reductions starting at
-   the loop closed phi node CLOSE_PHI.  Return the phi node of the
+   the loop closed phi node STMT.  Return the phi node of the
    reduction cycle, or NULL.  */
 
 static gimple
@@ -2874,7 +2874,7 @@ rewrite_commutative_reductions_out_of_ssa_loop (loop_p loop,
 
 /* Rewrites all the commutative reductions from SCOP out of SSA.  */
 
-static void
+void
 rewrite_commutative_reductions_out_of_ssa (sese region, sbitmap reductions)
 {
   loop_iterator li;
@@ -2973,14 +2973,8 @@ void
 build_poly_scop (scop_p scop)
 {
   sese region = SCOP_REGION (scop);
-  sbitmap reductions = sbitmap_alloc (last_basic_block * 2);
   graphite_dim_t max_dim;
 
-  sbitmap_zero (reductions);
-  rewrite_commutative_reductions_out_of_ssa (region, reductions);
-  rewrite_reductions_out_of_ssa (scop);
-  build_scop_bbs (scop, reductions);
-  sbitmap_free (reductions);
 
   /* FIXME: This restriction is needed to avoid a problem in CLooG.
      Once CLooG is fixed, remove this guard.  Anyways, it makes no
