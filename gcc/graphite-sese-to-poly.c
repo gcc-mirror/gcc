@@ -2272,6 +2272,31 @@ rewrite_phi_out_of_ssa (gimple_stmt_iterator *psi)
   gsi_insert_seq_before (&gsi, stmts, GSI_NEW_STMT);
 }
 
+/* Rewrite out of SSA all the reduction phi nodes of SCOP.  */
+
+void
+rewrite_reductions_out_of_ssa (scop_p scop)
+{
+  basic_block bb;
+  gimple_stmt_iterator psi;
+  sese region = SCOP_REGION (scop);
+
+  FOR_EACH_BB (bb)
+    if (bb_in_sese_p (bb, region))
+      for (psi = gsi_start_phis (bb); !gsi_end_p (psi);)
+	{
+	  if (scalar_close_phi_node_p (gsi_stmt (psi)))
+	    rewrite_close_phi_out_of_ssa (&psi);
+	  else if (reduction_phi_p (region, &psi))
+	    rewrite_phi_out_of_ssa (&psi);
+	}
+
+  update_ssa (TODO_update_ssa);
+#ifdef ENABLE_CHECKING
+  verify_loop_closed_ssa (true);
+#endif
+}
+
 /* Return true when DEF can be analyzed in REGION by the scalar
    evolution analyzer.  */
 
@@ -2314,6 +2339,37 @@ rewrite_cross_bb_scalar_dependence (tree zero_dim_array, tree def, gimple use_st
 }
 
 /* Rewrite the scalar dependences crossing the boundary of the BB
+   containing STMT with an array.  GSI points to a definition that is
+   used in a PHI node.  */
+
+static void
+rewrite_cross_bb_phi_deps (sese region, gimple_stmt_iterator gsi)
+{
+  gimple stmt = gsi_stmt (gsi);
+  imm_use_iterator imm_iter;
+  tree def;
+  basic_block def_bb;
+  gimple use_stmt;
+
+  if (gimple_code (stmt) != GIMPLE_ASSIGN)
+    return;
+
+  def = gimple_assign_lhs (stmt);
+  if (!is_gimple_reg (def)
+      || scev_analyzable_p (def, region))
+    return;
+
+  def_bb = gimple_bb (stmt);
+
+  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
+    if (gimple_code (use_stmt) == GIMPLE_PHI)
+      {
+	gimple_stmt_iterator si = gsi_for_stmt (use_stmt);
+	rewrite_phi_out_of_ssa (&si);
+      }
+}
+
+/* Rewrite the scalar dependences crossing the boundary of the BB
    containing STMT with an array.  */
 
 static void
@@ -2337,14 +2393,11 @@ rewrite_cross_bb_scalar_deps (sese region, gimple_stmt_iterator *gsi)
   def_bb = gimple_bb (stmt);
 
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
-    if (gimple_code (use_stmt) == GIMPLE_PHI)
+    if (def_bb != gimple_bb (use_stmt)
+	&& !is_gimple_debug (use_stmt))
       {
-	gimple_stmt_iterator si = gsi_for_stmt (use_stmt);
-	rewrite_phi_out_of_ssa (&si);
-      }
-    else if (def_bb != gimple_bb (use_stmt)
-	     && !is_gimple_debug (use_stmt))
-      {
+	gcc_assert (gimple_code (use_stmt) != GIMPLE_PHI);
+
 	if (!zero_dim_array)
 	  {
 	    zero_dim_array = create_zero_dim_array
@@ -2361,32 +2414,6 @@ rewrite_cross_bb_scalar_deps (sese region, gimple_stmt_iterator *gsi)
 /* Rewrite out of SSA all the reduction phi nodes of SCOP.  */
 
 void
-rewrite_reductions_out_of_ssa (scop_p scop)
-{
-  basic_block bb;
-  gimple_stmt_iterator psi;
-  sese region = SCOP_REGION (scop);
-
-  FOR_EACH_BB (bb)
-    if (bb_in_sese_p (bb, region))
-      for (psi = gsi_start_phis (bb); !gsi_end_p (psi);)
-	{
-	  if (scalar_close_phi_node_p (gsi_stmt (psi)))
-	    rewrite_close_phi_out_of_ssa (&psi);
-	  else if (reduction_phi_p (region, &psi))
-	    rewrite_phi_out_of_ssa (&psi);
-	}
-
-  update_ssa (TODO_update_ssa);
-#ifdef ENABLE_CHECKING
-  verify_loop_closed_ssa (true);
-#endif
-}
-
-
-/* Rewrite out of SSA all the reduction phi nodes of SCOP.  */
-
-void
 rewrite_cross_bb_scalar_deps_out_of_ssa (scop_p scop)
 {
   basic_block bb;
@@ -2396,7 +2423,10 @@ rewrite_cross_bb_scalar_deps_out_of_ssa (scop_p scop)
   FOR_EACH_BB (bb)
     if (bb_in_sese_p (bb, region))
       for (psi = gsi_start_bb (bb); !gsi_end_p (psi); gsi_next (&psi))
-	rewrite_cross_bb_scalar_deps (region, &psi);
+	{
+	  rewrite_cross_bb_phi_deps (region, psi);
+	  rewrite_cross_bb_scalar_deps (region, &psi);
+	}
 
   update_ssa (TODO_update_ssa);
 #ifdef ENABLE_CHECKING
