@@ -1079,7 +1079,8 @@ namespace std
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // 526. Is it undefined if a function in the standard changes
 	  // in parameters?
-	  if (&this->_M_extract((*__slot)->_M_v) != &__k)
+	  if (std::__addressof(this->_M_extract((*__slot)->_M_v))
+	      != std::__addressof(__k))
 	    {
               _Node* __p = *__slot;
               *__slot = __p->_M_next;

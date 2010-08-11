@@ -286,13 +286,26 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     remove(const _Tp& __val)
     {
       _Node* __curr = static_cast<_Node*>(&this->_M_impl._M_head);
-      while (_Node* __temp = static_cast<_Node*>(__curr->_M_next))
+      _Node* __extra = 0;
+
+      while (_Node* __tmp = static_cast<_Node*>(__curr->_M_next))
         {
-          if (__temp->_M_value == __val)
-            this->_M_erase_after(__curr);
-          else
-            __curr = static_cast<_Node*>(__curr->_M_next);
+          if (__tmp->_M_value == __val)
+	    {
+	      if (std::__addressof(__tmp->_M_value)
+		  != std::__addressof(__val))
+		{
+		  this->_M_erase_after(__curr);
+		  continue;
+		}
+	      else
+		__extra = __curr;
+	    }
+	  __curr = static_cast<_Node*>(__curr->_M_next);
         }
+
+      if (__extra)
+	this->_M_erase_after(__extra);
     }
 
   template<typename _Tp, typename _Alloc>
@@ -302,9 +315,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       remove_if(_Pred __pred)
       {
 	_Node* __curr = static_cast<_Node*>(&this->_M_impl._M_head);
-        while (_Node* __temp = static_cast<_Node*>(__curr->_M_next))
+        while (_Node* __tmp = static_cast<_Node*>(__curr->_M_next))
           {
-            if (__pred(__temp->_M_value))
+            if (__pred(__tmp->_M_value))
               this->_M_erase_after(__curr);
             else
               __curr = static_cast<_Node*>(__curr->_M_next);
