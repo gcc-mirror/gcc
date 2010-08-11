@@ -30,5 +30,8 @@ struct base_alias_pair
 
 void build_poly_scop (scop_p);
 void check_poly_representation (scop_p);
+void rewrite_commutative_reductions_out_of_ssa (sese, sbitmap);
+void rewrite_reductions_out_of_ssa (scop_p);
+void build_scop_bbs (scop_p, sbitmap);
 
 #endif
