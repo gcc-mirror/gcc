@@ -22,6 +22,18 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GRAPHITE_CLOOG_COMPAT_H
 #define GRAPHITE_CLOOG_COMPAT_H
 
+/* Restore compatibility to CLooG Legacy.  */
+#ifndef CLOOG_ORG
+
+/* CloogOptions compatibility.  */
+#define build_cloog_prog(SCOP, PROG, OPT) build_cloog_prog (SCOP, PROG)
+#define cloog_program_extract_scalars(PROG, SCATT, OPT)\
+  cloog_program_extract_scalars (PROG, SCATT)
+#define cloog_program_scatter(PROG, SCATT, OPT)\
+  cloog_program_scatter (PROG, SCATT)
+
+#endif
+
 /* Adapt CLooG accessors from CLooG legacy to
    newer CLooG versions.  */
 
