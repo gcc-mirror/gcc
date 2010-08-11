@@ -1,3 +1,12 @@
+2010-06-08  Tobias Grosser  <grosser@fim.uni-passau.de>
+
+	* refined-regions.c (create_region): Only initialize the region.
+	(find_regions_with_entry): Initialize parent relation and bbmap
+	correctly.
+	(build_regions_tree): Set outermost_region to region instead of
+	topmost_region.
+	(calculate_region_tree): Remove unneeded parameters.
+
 2010-06-02  Tobias Grosser  <grosser@fim.uni-passau.de>
 
 	* graphite-scop-detection.c (is_scop_p): New.
