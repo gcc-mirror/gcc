@@ -97,12 +97,18 @@ new_clast_name_index (const char *name, int index)
    SCATTERING_DIMENSIONS vector.  */
 
 static inline int
-clast_name_to_index (const char *name, htab_t index_table)
+clast_name_to_index (clast_name_p name, htab_t index_table)
 {
   struct clast_name_index tmp;
   PTR *slot;
 
+#ifdef CLOOG_ORG
+  gcc_assert (name->type == clast_expr_name);
+  tmp.name = ((const struct clast_name*) name)->name;
+#else
   tmp.name = name;
+#endif
+
   slot = htab_find_slot (index_table, &tmp, NO_INSERT);
 
   if (slot && *slot)
@@ -165,7 +171,7 @@ newivs_to_depth_to_newiv (VEC (tree, heap) *newivs, int depth)
    Cloog representation.  */
 
 static tree
-clast_name_to_gcc (const char *name, sese region, VEC (tree, heap) *newivs,
+clast_name_to_gcc (clast_name_p name, sese region, VEC (tree, heap) *newivs,
 		   htab_t newivs_index, htab_t params_index)
 {
   int index;
@@ -267,7 +273,7 @@ clast_to_gcc_expression (tree type, struct clast_expr *e,
 {
   switch (e->type)
     {
-    case expr_term:
+    case clast_expr_term:
       {
 	struct clast_term *t = (struct clast_term *) e;
 
@@ -319,7 +325,7 @@ clast_to_gcc_expression (tree type, struct clast_expr *e,
 	  return gmp_cst_to_tree (type, t->val);
       }
 
-    case expr_red:
+    case clast_expr_red:
       {
         struct clast_reduction *r = (struct clast_reduction *) e;
 
@@ -346,7 +352,7 @@ clast_to_gcc_expression (tree type, struct clast_expr *e,
         break;
       }
 
-    case expr_bin:
+    case clast_expr_bin:
       {
 	struct clast_binary *b = (struct clast_binary *) e;
 	struct clast_expr *lhs = (struct clast_expr *) b->LHS;
@@ -485,7 +491,7 @@ gcc_type_for_clast_term (struct clast_term *t,
 			 sese region, VEC (tree, heap) *newivs,
 			 htab_t newivs_index, htab_t params_index)
 {
-  gcc_assert (t->expr.type == expr_term);
+  gcc_assert (t->expr.type == clast_expr_term);
 
   if (!t->var)
     return gcc_type_for_value (t->val);
@@ -557,15 +563,15 @@ gcc_type_for_clast_expr (struct clast_expr *e,
 {
   switch (e->type)
     {
-    case expr_term:
+    case clast_expr_term:
       return gcc_type_for_clast_term ((struct clast_term *) e, region,
 				      newivs, newivs_index, params_index);
 
-    case expr_red:
+    case clast_expr_red:
       return gcc_type_for_clast_red ((struct clast_reduction *) e, region,
 				     newivs, newivs_index, params_index);
 
-    case expr_bin:
+    case clast_expr_bin:
       return gcc_type_for_clast_bin ((struct clast_binary *) e, region,
 				     newivs, newivs_index, params_index);
 
@@ -1359,7 +1365,7 @@ print_clast_stmt (FILE *file, struct clast_stmt *stmt)
 {
   CloogOptions *options = set_cloog_options ();
 
-  pprint (file, stmt, 0, options);
+  clast_pprint (file, stmt, 0, options);
   cloog_options_free (options);
 }
 
@@ -1404,7 +1410,7 @@ print_generated_program (FILE *file, scop_p scop)
   fprintf (file, "       )\n");
 
   fprintf (file, "       (clast: \n");
-  pprint (file, pc.stmt, 0, options);
+  clast_pprint (file, pc.stmt, 0, options);
   fprintf (file, "       )\n");
 
   cloog_options_free (options);
