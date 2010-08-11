@@ -1,5 +1,10 @@
 2010-07-15  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* sese.h (scev_analyzable_p): Scevs could be expressions without
+	chrecs and still be scev_analyzable_p.
+
+2010-07-15  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* params.def (PARAM_SCEV_MAX_EXPR_SIZE): Bump the value to 100.
 
 2010-07-15  Sebastian Pop  <sebastian.pop@amd.com>
