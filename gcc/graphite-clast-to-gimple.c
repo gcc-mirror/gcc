@@ -130,32 +130,6 @@ save_clast_name_index (htab_t index_table, const char *name, int index)
     }
 }
 
-/* Print to stderr the element ELT.  */
-
-static inline void
-debug_clast_name_index (clast_name_index_p elt)
-{
-  fprintf (stderr, "(index = %d, name = %s)\n", elt->index, elt->name);
-}
-
-/* Helper function for debug_rename_map.  */
-
-static inline int
-debug_clast_name_indexes_1 (void **slot, void *s ATTRIBUTE_UNUSED)
-{
-  struct clast_name_index *entry = (struct clast_name_index *) *slot;
-  debug_clast_name_index (entry);
-  return 1;
-}
-
-/* Print to stderr all the elements of MAP.  */
-
-DEBUG_FUNCTION void
-debug_clast_name_indexes (htab_t map)
-{
-  htab_traverse (map, debug_clast_name_indexes_1, NULL);
-}
-
 /* Computes a hash function for database element ELT.  */
 
 static inline hashval_t
@@ -173,20 +147,6 @@ eq_clast_name_indexes (const void *e1, const void *e2)
   const struct clast_name_index *elt2 = (const struct clast_name_index *) e2;
 
   return (elt1->name == elt2->name);
-}
-
-
-/* For a given loop DEPTH in the loop nest of the original black box
-   PBB, return the old induction variable associated to that loop.  */
-
-static inline tree
-pbb_to_depth_to_oldiv (poly_bb_p pbb, int depth)
-{
-  gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
-  sese region = SCOP_REGION (PBB_SCOP (pbb));
-  loop_p loop = gbb_loop_at_index (gbb, region, depth);
-
-  return loop->single_iv;
 }
 
 /* For a given scattering dimension, return the new induction variable
@@ -820,34 +780,36 @@ graphite_create_new_loop (sese region, edge entry_edge,
   return loop;
 }
 
-/* Inserts in RENAME_MAP a tuple (OLD_NAME, NEW_NAME) for the induction
-   variables of the loops around GBB in SESE.  */
+/* Inserts in iv_map a tuple (OLD_LOOP->num, NEW_NAME) for the
+   induction variables of the loops around GBB in SESE.  */
 
 static void
-build_iv_mapping (htab_t rename_map, sese region,
+build_iv_mapping (VEC (tree, heap) *iv_map, sese region,
 		  VEC (tree, heap) *newivs, htab_t newivs_index,
 		  struct clast_user_stmt *user_stmt,
 		  htab_t params_index)
 {
   struct clast_stmt *t;
-  int index = 0;
+  int depth = 0;
   CloogStatement *cs = user_stmt->statement;
   poly_bb_p pbb = (poly_bb_p) cloog_statement_usr (cs);
+  gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
 
-  for (t = user_stmt->substitutions; t; t = t->next, index++)
+  for (t = user_stmt->substitutions; t; t = t->next, depth++)
     {
       struct clast_expr *expr = (struct clast_expr *)
        ((struct clast_assignment *)t)->RHS;
       tree type = gcc_type_for_clast_expr (expr, region, newivs,
 					   newivs_index, params_index);
-      tree old_name = pbb_to_depth_to_oldiv (pbb, index);
-      tree e = clast_to_gcc_expression (type, expr, region, newivs,
-					newivs_index, params_index);
-      set_rename (rename_map, old_name, e);
+      tree new_name = clast_to_gcc_expression (type, expr, region, newivs,
+					       newivs_index, params_index);
+      loop_p old_loop = gbb_loop_at_index (gbb, region, depth);
+
+      VEC_replace (tree, iv_map, old_loop->num, new_name);
     }
 }
 
-/* Construct bb_pbb_def with BB and PBB. */
+/* Construct bb_pbb_def with BB and PBB.  */
 
 static bb_pbb_def *
 new_bb_pbb_def (basic_block bb, poly_bb_p pbb)
@@ -930,38 +892,39 @@ dependency_in_loop_p (loop_p loop, htab_t bb_pbb_mapping, int level)
   return false;
 }
 
-static edge
-translate_clast (sese, loop_p, struct clast_stmt *, edge, htab_t,
-		 VEC (tree, heap) **, htab_t, htab_t, int, htab_t);
-
 /* Translates a clast user statement STMT to gimple.
 
    - REGION is the sese region we used to generate the scop.
    - NEXT_E is the edge where new generated code should be attached.
    - CONTEXT_LOOP is the loop in which the generated code will be placed
-   - RENAME_MAP contains a set of tuples of new names associated to
-     the original variables names.
    - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.
    - PARAMS_INDEX connects the cloog parameters with the gimple parameters in
      the sese region.  */
 static edge
 translate_clast_user (sese region, struct clast_user_stmt *stmt, edge next_e,
-		      htab_t rename_map, VEC (tree, heap) **newivs,
+		      VEC (tree, heap) **newivs,
 		      htab_t newivs_index, htab_t bb_pbb_mapping,
 		      htab_t params_index)
 {
-  gimple_bb_p gbb;
+  int i, nb_loops;
   basic_block new_bb;
   poly_bb_p pbb = (poly_bb_p) cloog_statement_usr (stmt->statement);
-  gbb = PBB_BLACK_BOX (pbb);
+  gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
+  VEC (tree, heap) *iv_map;
 
   if (GBB_BB (gbb) == ENTRY_BLOCK_PTR)
     return next_e;
 
-  build_iv_mapping (rename_map, region, *newivs, newivs_index, stmt,
-		    params_index);
+  nb_loops = number_of_loops ();
+  iv_map = VEC_alloc (tree, heap, nb_loops);
+  for (i = 0; i < nb_loops; i++)
+    VEC_quick_push (tree, iv_map, NULL_TREE);
+
+  build_iv_mapping (iv_map, region, *newivs, newivs_index, stmt, params_index);
   next_e = copy_bb_and_scalar_dependences (GBB_BB (gbb), region,
-					   next_e, rename_map);
+					   next_e, iv_map);
+  VEC_free (tree, heap, iv_map);
+
   new_bb = next_e->src;
   mark_bb_with_pbb (pbb, new_bb, bb_pbb_mapping);
   update_ssa (TODO_update_ssa);
@@ -1009,20 +972,21 @@ graphite_create_new_loop_guard (sese region, edge entry_edge,
   return exit_edge;
 }
 
+static edge
+translate_clast (sese, loop_p, struct clast_stmt *, edge,
+		 VEC (tree, heap) **, htab_t, htab_t, int, htab_t);
 
 /* Create the loop for a clast for statement.
 
    - REGION is the sese region we used to generate the scop.
    - NEXT_E is the edge where new generated code should be attached.
-   - RENAME_MAP contains a set of tuples of new names associated to
-     the original variables names.
    - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.
    - PARAMS_INDEX connects the cloog parameters with the gimple parameters in
      the sese region.  */
 static edge
 translate_clast_for_loop (sese region, loop_p context_loop,
 			  struct clast_for *stmt, edge next_e,
-			  htab_t rename_map, VEC (tree, heap) **newivs,
+			  VEC (tree, heap) **newivs,
 			  htab_t newivs_index, htab_t bb_pbb_mapping,
 			  int level, htab_t params_index)
 {
@@ -1038,7 +1002,7 @@ translate_clast_for_loop (sese region, loop_p context_loop,
   last_e = single_succ_edge (split_edge (last_e));
 
   /* Translate the body of the loop.  */
-  next_e = translate_clast (region, loop, stmt->body, to_body, rename_map,
+  next_e = translate_clast (region, loop, stmt->body, to_body,
 			    newivs, newivs_index, bb_pbb_mapping, level + 1,
 			    params_index);
   redirect_edge_succ_nodup (next_e, after);
@@ -1058,14 +1022,12 @@ translate_clast_for_loop (sese region, loop_p context_loop,
 
    - REGION is the sese region we used to generate the scop.
    - NEXT_E is the edge where new generated code should be attached.
-   - RENAME_MAP contains a set of tuples of new names associated to
-     the original variables names.
    - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.
    - PARAMS_INDEX connects the cloog parameters with the gimple parameters in
      the sese region.  */
 static edge
 translate_clast_for (sese region, loop_p context_loop, struct clast_for *stmt,
-		     edge next_e, htab_t rename_map, VEC (tree, heap) **newivs,
+		     edge next_e, VEC (tree, heap) **newivs,
 		     htab_t newivs_index, htab_t bb_pbb_mapping, int level,
 		     htab_t params_index)
 {
@@ -1073,8 +1035,7 @@ translate_clast_for (sese region, loop_p context_loop, struct clast_for *stmt,
 						newivs_index, params_index);
   edge true_e = get_true_edge_from_guard_bb (next_e->dest);
 
-  translate_clast_for_loop (region, context_loop, stmt, true_e,
-			    rename_map, newivs,
+  translate_clast_for_loop (region, context_loop, stmt, true_e, newivs,
 			    newivs_index, bb_pbb_mapping, level,
 			    params_index);
   return last_e;
@@ -1085,15 +1046,13 @@ translate_clast_for (sese region, loop_p context_loop, struct clast_for *stmt,
    - REGION is the sese region we used to generate the scop.
    - NEXT_E is the edge where new generated code should be attached.
    - CONTEXT_LOOP is the loop in which the generated code will be placed
-   - RENAME_MAP contains a set of tuples of new names associated to
-     the original variables names.
    - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.
    - PARAMS_INDEX connects the cloog parameters with the gimple parameters in
      the sese region.  */
 static edge
 translate_clast_guard (sese region, loop_p context_loop,
 		       struct clast_guard *stmt, edge next_e,
-		       htab_t rename_map, VEC (tree, heap) **newivs,
+		       VEC (tree, heap) **newivs,
 		       htab_t newivs_index, htab_t bb_pbb_mapping, int level,
 		       htab_t params_index)
 {
@@ -1102,7 +1061,7 @@ translate_clast_guard (sese region, loop_p context_loop,
   edge true_e = get_true_edge_from_guard_bb (next_e->dest);
 
   translate_clast (region, context_loop, stmt->then, true_e,
-		   rename_map, newivs, newivs_index, bb_pbb_mapping,
+		   newivs, newivs_index, bb_pbb_mapping,
 		   level, params_index);
   return last_e;
 }
@@ -1112,12 +1071,10 @@ translate_clast_guard (sese region, loop_p context_loop,
 
    - NEXT_E is the edge where new generated code should be attached.
    - CONTEXT_LOOP is the loop in which the generated code will be placed
-   - RENAME_MAP contains a set of tuples of new names associated to
-     the original variables names.
    - BB_PBB_MAPPING is is a basic_block and it's related poly_bb_p mapping.  */
 static edge
 translate_clast (sese region, loop_p context_loop, struct clast_stmt *stmt,
-		 edge next_e, htab_t rename_map, VEC (tree, heap) **newivs,
+		 edge next_e, VEC (tree, heap) **newivs,
 		 htab_t newivs_index, htab_t bb_pbb_mapping, int level,
 		 htab_t params_index)
 {
@@ -1129,25 +1086,25 @@ translate_clast (sese region, loop_p context_loop, struct clast_stmt *stmt,
 
   else if (CLAST_STMT_IS_A (stmt, stmt_user))
     next_e = translate_clast_user (region, (struct clast_user_stmt *) stmt,
-				   next_e, rename_map, newivs, newivs_index,
+				   next_e, newivs, newivs_index,
 				   bb_pbb_mapping, params_index);
 
   else if (CLAST_STMT_IS_A (stmt, stmt_for))
     next_e = translate_clast_for (region, context_loop,
 				  (struct clast_for *) stmt, next_e,
-				  rename_map, newivs, newivs_index,
+				  newivs, newivs_index,
 				  bb_pbb_mapping, level, params_index);
 
   else if (CLAST_STMT_IS_A (stmt, stmt_guard))
     next_e = translate_clast_guard (region, context_loop,
 				    (struct clast_guard *) stmt, next_e,
-				    rename_map, newivs, newivs_index,
+				    newivs, newivs_index,
 				    bb_pbb_mapping, level, params_index);
 
   else if (CLAST_STMT_IS_A (stmt, stmt_block))
     next_e = translate_clast (region, context_loop,
 			      ((struct clast_block *) stmt)->body,
-			      next_e, rename_map, newivs, newivs_index,
+			      next_e, newivs, newivs_index,
 			      bb_pbb_mapping, level, params_index);
   else
     gcc_unreachable();
@@ -1156,7 +1113,7 @@ translate_clast (sese region, loop_p context_loop, struct clast_stmt *stmt,
   graphite_verify ();
 
   return translate_clast (region, context_loop, stmt->next, next_e,
-			  rename_map, newivs, newivs_index,
+			  newivs, newivs_index,
 			  bb_pbb_mapping, level, params_index);
 }
 
@@ -1483,7 +1440,7 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
   loop_p context_loop;
   sese region = SCOP_REGION (scop);
   ifsese if_region = NULL;
-  htab_t rename_map, newivs_index, params_index;
+  htab_t newivs_index, params_index;
   cloog_prog_clast pc;
 
   timevar_push (TV_GRAPHITE_CODE_GEN);
@@ -1510,7 +1467,6 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
   graphite_verify ();
 
   context_loop = SESE_ENTRY (region)->src->loop_father;
-  rename_map = htab_create (10, rename_map_elt_info, eq_rename_map_elts, free);
   newivs_index = htab_create (10, clast_name_index_elt_info,
 			      eq_clast_name_indexes, free);
   params_index = htab_create (10, clast_name_index_elt_info,
@@ -1520,7 +1476,7 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
 
   translate_clast (region, context_loop, pc.stmt,
 		   if_region->true_region->entry,
-		   rename_map, &newivs, newivs_index,
+		   &newivs, newivs_index,
 		   bb_pbb_mapping, 1, params_index);
   graphite_verify ();
   scev_reset_htab ();
@@ -1534,7 +1490,6 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
   free (if_region->region);
   free (if_region);
 
-  htab_delete (rename_map);
   htab_delete (newivs_index);
   htab_delete (params_index);
   VEC_free (tree, heap, newivs);

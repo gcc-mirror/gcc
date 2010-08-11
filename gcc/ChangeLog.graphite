@@ -1,5 +1,52 @@
 2010-07-15  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (debug_clast_name_index): Removed.
+	(debug_clast_name_indexes_1): Removed.
+	(debug_clast_name_indexes): Removed.
+	(pbb_to_depth_to_oldiv): Removed.
+	(build_iv_mapping): Replace the use of rename_map with iv_map.
+	(translate_clast_user): Remove uses of rename_map.  Allocate and
+	free iv_map.
+	(translate_clast_for_loop): Remove uses of rename_map.
+	(translate_clast_for): Same.
+	(translate_clast_guard): Same.
+	(translate_clast): Same.
+	(gloog): Same.
+	* graphite-clast-to-gimple.h (debug_clast_name_indexes): Removed.
+	* graphite-sese-to-poly.c (scev_analyzable_p): Moved...
+	* sese.c (set_rename): Now static.
+	(rename_variables_in_stmt): Removed.
+	(rename_uses): New.
+	(is_parameter): Removed.
+	(is_iv): Removed.
+	(expand_scalar_variables_call): Removed.
+	(expand_scalar_variables_ssa_name): Removed.
+	(expand_scalar_variables_expr): Removed.
+	(expand_scalar_variables_stmt): Removed.
+	(expand_scalar_variables): Removed.
+	(rename_variables): Removed.
+	(remove_condition): Removed.
+	(get_true_edge_from_guard_bb): Removed.
+	(get_false_edge_from_guard_bb): Removed.
+	(struct igp): Removed.
+	(default_before_guard): Removed.
+	(convert_for_phi_arg): Removed.
+	(add_guard_exit_phis): Removed.
+	(insert_guard_phis): Removed.
+	(graphite_copy_stmts_from_block): Now also uses iv_map and a
+	region.  Do not copy conditions.  Do not copy induction variables.
+	Call rename_uses.
+	(copy_bb_and_scalar_dependences): Allocate a local rename_map for
+	the translated statement.  Use the iv_map for the induction
+	variable renaming.
+	* sese.h (copy_bb_and_scalar_dependences): Update declaration.
+	(set_rename): Removed declaration.
+	(scev_analyzable_p): ...here.
+	* tree-chrec.c (chrec_apply_map): New.
+	* tree-chrec.h (chrec_apply_map): Declared.
+
+2010-07-15  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (translate_clast_for_loop): Do not call
 	insert_loop_close_phis.
 	* sese.c (name_defined_in_loop_p): Removed.
