@@ -7410,6 +7410,18 @@ The default implementation of this hook will use the
 when the relevant string is @code{NULL}.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA (FILE *@var{file}, rtx @var{x})
+A target hook to recognize @var{rtx} patterns that @code{output_addr_const}
+can't deal with, and output assembly code to @var{file} corresponding to
+the pattern @var{x}.  This may be used to allow machine-dependent
+@code{UNSPEC}s to appear within constants.
+
+If target hook fails to recognize a pattern, it must return @code{false},
+so that a standard error message is printed.  If it prints an error message
+itself, by calling, for example, @code{output_operand_lossage}, it may just
+return @code{true}.
+@end deftypefn
+
 @defmac OUTPUT_ADDR_CONST_EXTRA (@var{stream}, @var{x}, @var{fail})
 A C statement to recognize @var{rtx} patterns that
 @code{output_addr_const} can't deal with, and output assembly code to

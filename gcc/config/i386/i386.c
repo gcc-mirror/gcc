@@ -13124,8 +13124,10 @@ ix86_print_operand_address (FILE *file, rtx addr)
     }
 }
 
-bool
-output_addr_const_extra (FILE *file, rtx x)
+/* Implementation of TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA.  */
+
+static bool
+i386_asm_output_addr_const_extra (FILE *file, rtx x)
 {
   rtx op;
 
@@ -31539,6 +31541,8 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 #define TARGET_PRINT_OPERAND_ADDRESS ix86_print_operand_address
 #undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
 #define TARGET_PRINT_OPERAND_PUNCT_VALID_P ix86_print_operand_punct_valid_p
+#undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
+#define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA i386_asm_output_addr_const_extra 
 
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST ix86_adjust_cost
