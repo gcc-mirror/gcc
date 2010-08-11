@@ -1224,48 +1224,6 @@ ira_add_allocno_copy_to_list (ira_copy_t cp)
   ALLOCNO_COPIES (second) = cp;
 }
 
-/* Detach a copy CP from allocnos involved into the copy.  */
-void
-ira_remove_allocno_copy_from_list (ira_copy_t cp)
-{
-  ira_allocno_t first = cp->first, second = cp->second;
-  ira_copy_t prev, next;
-
-  next = cp->next_first_allocno_copy;
-  prev = cp->prev_first_allocno_copy;
-  if (prev == NULL)
-    ALLOCNO_COPIES (first) = next;
-  else if (prev->first == first)
-    prev->next_first_allocno_copy = next;
-  else
-    prev->next_second_allocno_copy = next;
-  if (next != NULL)
-    {
-      if (next->first == first)
-	next->prev_first_allocno_copy = prev;
-      else
-	next->prev_second_allocno_copy = prev;
-    }
-  cp->prev_first_allocno_copy = cp->next_first_allocno_copy = NULL;
-
-  next = cp->next_second_allocno_copy;
-  prev = cp->prev_second_allocno_copy;
-  if (prev == NULL)
-    ALLOCNO_COPIES (second) = next;
-  else if (prev->second == second)
-    prev->next_second_allocno_copy = next;
-  else
-    prev->next_first_allocno_copy = next;
-  if (next != NULL)
-    {
-      if (next->second == second)
-	next->prev_second_allocno_copy = prev;
-      else
-	next->prev_first_allocno_copy = prev;
-    }
-  cp->prev_second_allocno_copy = cp->next_second_allocno_copy = NULL;
-}
-
 /* Make a copy CP a canonical copy where number of the
    first allocno is less than the second one.  */
 void
