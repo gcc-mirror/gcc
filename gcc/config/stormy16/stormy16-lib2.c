@@ -332,3 +332,26 @@ __ucmpsi2 (USItype a, USItype b)
   return hi_a < hi_b ? 0 : 2;
 }
 #endif
+
+#ifdef XSTORMY16_CMPSI2
+/* Performs an signed comparison of two 32-bit values: A and B.
+   If A is less than B, then 0 is returned.  If A is greater than B,
+   then 2 is returned.  Otherwise A and B are equal and 1 is returned.  */
+
+word_type
+__cmpsi2 (SItype a, SItype b)
+{
+  word_type hi_a = (a >> 16);
+  word_type hi_b = (b >> 16);
+
+  if (hi_a == hi_b)
+    {
+      word_type low_a = (a & 0xffff);
+      word_type low_b = (b & 0xffff);
+
+      return low_a < low_b ? 0 : (low_a > low_b ? 2 : 1);
+    }
+
+  return hi_a < hi_b ? 0 : 2;
+}
+#endif
