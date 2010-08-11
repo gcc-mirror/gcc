@@ -2405,10 +2405,20 @@ rewrite_cross_bb_scalar_deps (sese region, gimple_stmt_iterator *gsi)
   tree zero_dim_array = NULL_TREE;
   gimple use_stmt;
 
-  if (gimple_code (stmt) != GIMPLE_ASSIGN)
-    return;
+  switch (gimple_code (stmt))
+    {
+    case GIMPLE_ASSIGN:
+      def = gimple_assign_lhs (stmt);
+      break;
 
-  def = gimple_assign_lhs (stmt);
+    case GIMPLE_CALL:
+      def = gimple_call_lhs (stmt);
+      break;
+
+    default:
+      return;
+    }
+
   if (!is_gimple_reg (def)
       || scev_analyzable_p (def, region))
     return;

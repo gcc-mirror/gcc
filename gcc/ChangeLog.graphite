@@ -1,5 +1,10 @@
 2010-07-15  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (rewrite_cross_bb_scalar_deps): Also
+	handle GIMPLE_CALL.
+
+2010-07-15  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-chrec.c (chrec_apply): Should only apply to the specified
 	variable.  Also handle multivariate chains of recurrences that
 	satisfy evolution_function_is_affine_p.  Also handle CASE_CONVERT.
