@@ -1,3 +1,11 @@
+2010-06-09  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-poly.h: Fix comments and indentation.
+	* graphite-sese-to-poly.c: Same.
+	(build_sese_conditions_before): Compute stmt and gbb only when needed.
+	* tree-chrec.c: Fix comments and indentation.
+	(tree-ssa-loop-niter.c): Same.
+
 2010-06-08  Tobias Grosser  <grosser@fim.uni-passau.de>
 
 	* refined-regions.c (create_region): Only initialize the region.
