@@ -2272,6 +2272,37 @@ rewrite_phi_out_of_ssa (gimple_stmt_iterator *psi)
   gsi_insert_seq_before (&gsi, stmts, GSI_NEW_STMT);
 }
 
+/* Rewrite the degenerate phi node at position PSI from the degenerate
+   form "x = phi (y, y, ..., y)" to "x = y".  */
+
+static void
+rewrite_degenerate_phi (gimple_stmt_iterator *psi)
+{
+  tree rhs;
+  gimple stmt;
+  gimple_stmt_iterator gsi;
+  gimple phi = gsi_stmt (*psi);
+  tree res = gimple_phi_result (phi);
+  basic_block bb;
+
+  if (!is_gimple_reg (res))
+    {
+      gsi_next (psi);
+      return;
+    }
+
+  bb = gimple_bb (phi);
+  rhs = degenerate_phi_result (phi);
+  gcc_assert (rhs);
+
+  stmt = gimple_build_assign (res, rhs);
+  remove_phi_node (psi, false);
+  SSA_NAME_DEF_STMT (res) = stmt;
+
+  gsi = gsi_after_labels (bb);
+  gsi_insert_before (&gsi, stmt, GSI_NEW_STMT);
+}
+
 /* Rewrite out of SSA all the reduction phi nodes of SCOP.  */
 
 void
@@ -2285,8 +2316,15 @@ rewrite_reductions_out_of_ssa (scop_p scop)
     if (bb_in_sese_p (bb, region))
       for (psi = gsi_start_phis (bb); !gsi_end_p (psi);)
 	{
-	  if (scalar_close_phi_node_p (gsi_stmt (psi)))
+	  gimple phi = gsi_stmt (psi);
+
+	  if (gimple_phi_num_args (phi) > 1
+	      && degenerate_phi_result (phi))
+	    rewrite_degenerate_phi (&psi);
+
+	  else if (scalar_close_phi_node_p (phi))
 	    rewrite_close_phi_out_of_ssa (&psi);
+
 	  else if (reduction_phi_p (region, &psi))
 	    rewrite_phi_out_of_ssa (&psi);
 	}
