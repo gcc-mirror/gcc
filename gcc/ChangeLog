@@ -1,5 +1,10 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (rewrite_phi_out_of_ssa): Use
+	SSA_NAME_DEF_STMT only on SSA_NAMEs.
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* tree-scalar-evolution.c (instantiate_scev_name): Do not
 	instantiate default definitions.
 
