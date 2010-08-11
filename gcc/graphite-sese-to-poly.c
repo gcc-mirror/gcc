@@ -43,13 +43,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "sese.h"
 
 #ifdef HAVE_cloog
-#include "cloog/cloog.h"
 #include "ppl_c.h"
 #include "graphite-ppl.h"
 #include "graphite.h"
 #include "graphite-poly.h"
 #include "graphite-scop-detection.h"
-#include "graphite-clast-to-gimple.h"
 #include "graphite-sese-to-poly.h"
 
 /* Check if VAR is used in a phi node, that is no loop header.  */
@@ -3027,17 +3025,5 @@ build_poly_scop (scop_p scop)
   /* This SCoP has been translated to the polyhedral
      representation.  */
   POLY_SCOP_P (scop) = true;
-}
-
-/* Always return false.  Exercise the scop_to_clast function.  */
-
-void
-check_poly_representation (scop_p scop ATTRIBUTE_UNUSED)
-{
-#ifdef ENABLE_CHECKING
-  cloog_prog_clast pc = scop_to_clast (scop);
-  cloog_clast_free (pc.stmt);
-  cloog_program_free (pc.prog);
-#endif
 }
 #endif

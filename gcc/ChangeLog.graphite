@@ -1,5 +1,21 @@
 2010-07-05  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
+	* graphite-cloog-util.h: Added cloog.h.
+	* graphite-blocking.c: Removed cloog.h.
+	* graphite-dependences.c: Same.
+	* graphite-interchange.c: Same.
+	* graphite-poly.c: Same.
+	* graphite-ppl.c: Same.
+	* graphite-scop-detection.c: Same.
+	* graphite-sese-to-poly.c:
+	Removed cloog.h.
+	Removed graphite-clast-to-gimple.h.
+	(check_poly_representation): Removed (unused).
+	* graphite-sese-to-poly.h
+	(check_poly_representation): Removed (unused).
+
+2010-07-05  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+
 	* Makefile.in
 	(OBJS-common): Added graphite-cloog-util.o.
 	(graphite-clast-to-gimple.o): Added graphite-cloog-util.h.
