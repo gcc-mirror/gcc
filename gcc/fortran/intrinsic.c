@@ -36,7 +36,7 @@ bool gfc_init_expr_flag = false;
    checked.  */
 
 const char *gfc_current_intrinsic;
-const char *gfc_current_intrinsic_arg[MAX_INTRINSIC_ARGS];
+gfc_intrinsic_arg *gfc_current_intrinsic_arg[MAX_INTRINSIC_ARGS];
 locus *gfc_current_intrinsic_where;
 
 static gfc_intrinsic_sym *functions, *subroutines, *conversion, *next_sym;
@@ -3390,7 +3390,7 @@ check_arglist (gfc_actual_arglist **ap, gfc_intrinsic_sym *sym,
 	{
 	  if (error_flag)
 	    gfc_error ("Type of argument '%s' in call to '%s' at %L should "
-		       "be %s, not %s", gfc_current_intrinsic_arg[i],
+		       "be %s, not %s", gfc_current_intrinsic_arg[i]->name,
 		       gfc_current_intrinsic, &actual->expr->where,
 		       gfc_typename (&formal->ts),
 		       gfc_typename (&actual->expr->ts));
@@ -3609,7 +3609,7 @@ init_arglist (gfc_intrinsic_sym *isym)
     {
       if (i >= MAX_INTRINSIC_ARGS)
 	gfc_internal_error ("init_arglist(): too many arguments");
-      gfc_current_intrinsic_arg[i++] = formal->name;
+      gfc_current_intrinsic_arg[i++] = formal;
     }
 }
 
@@ -3678,8 +3678,8 @@ check_specific (gfc_intrinsic_sym *specific, gfc_expr *expr, int error_flag)
 	if (gfc_check_conformance (first_expr, arg->expr,
 				   "arguments '%s' and '%s' for "
 				   "intrinsic '%s'",
-				   gfc_current_intrinsic_arg[0],
-				   gfc_current_intrinsic_arg[n],
+				   gfc_current_intrinsic_arg[0]->name,
+				   gfc_current_intrinsic_arg[n]->name,
 				   gfc_current_intrinsic) == FAILURE)
 	  return FAILURE;
     }

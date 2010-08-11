@@ -1,3 +1,35 @@
+2010-08-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44595
+	* intrinsic.c (gfc_current_intrinsic_arg): Change type from 'char' to
+	'gfc_intrinsic_arg'.
+	(check_arglist,check_specific): Add reference to 'name' field.
+	(init_arglist): Remove reference to 'name' field.
+	* intrinsic.h (gfc_current_intrinsic_arg): Modify prototype.
+	* check.c (variable_check): Reverse order of checks. Respect intent of
+	formal arg.
+	(int_or_proc_check): New function.
+	(coarray_check): New function.
+	(allocatable_check): New function.
+	(gfc_check_allocated,gfc_check_move_alloc): Use 'allocatable_check'.
+	(gfc_check_complex): Use 'int_or_real_check'.
+	(gfc_check_lcobound,gfc_check_image_index,gfc_check_this_image,
+	gfc_check_ucobound): Use 'coarray_check'.
+	(gfc_check_pack): Use 'real_or_complex_check'.
+	(gfc_check_alarm_sub,gfc_check_signal,gfc_check_signal_sub): Use
+	'int_or_proc_check'.
+	(scalar_check,type_check,numeric_check,int_or_real_check,
+	real_or_complex_check,kind_check,double_check,logical_array_check,
+	array_check,same_type_check,rank_check,nonoptional_check,
+	kind_value_check,gfc_check_a_p,gfc_check_associated,gfc_check_cmplx,
+	gfc_check_cshift,gfc_check_dcmplx,gfc_check_dot_product,gfc_check_dprod,
+	gfc_check_eoshift,gfc_check_fn_rc2008,gfc_check_index,gfc_check_kind,
+	gfc_check_matmul,gfc_check_minloc_maxloc,check_reduction,gfc_check_null,
+	gfc_check_present,gfc_check_reshape,gfc_check_same_type_as,
+	gfc_check_spread,gfc_check_unpack,gfc_check_random_seed,
+	gfc_check_getarg,gfc_check_and,gfc_check_storage_size): Add reference
+	to 'name' field.
+
 2010-08-10  Daniel Kraft  <d@domob.eu>
 
 	* gfortran.texi (Interoperability with C): Fix ordering in menu
