@@ -165,8 +165,6 @@ static bool
 reduction_phi_p (sese region, gimple_stmt_iterator *psi)
 {
   loop_p loop;
-  tree scev;
-  affine_iv iv;
   gimple phi = gsi_stmt (*psi);
   tree res = gimple_phi_result (phi);
 
@@ -189,25 +187,15 @@ reduction_phi_p (sese region, gimple_stmt_iterator *psi)
       return false;
     }
 
-  /* Main induction variables with constant strides in LOOP are not
-     reductions.  */
-  if (simple_iv (loop, loop, res, &iv, true))
+  if (scev_analyzable_p (res, region))
     {
-      if (integer_zerop (iv.step))
+      tree scev = scalar_evolution_in_region (region, loop, res);
+
+      if (evolution_function_is_invariant_p (scev, loop->num))
 	remove_invariant_phi (region, psi);
       else
 	gsi_next (psi);
 
-      return false;
-    }
-
-  scev = scalar_evolution_in_region (region, loop, res);
-  if (chrec_contains_undetermined (scev))
-    return true;
-
-  if (evolution_function_is_invariant_p (scev, loop->num))
-    {
-      remove_invariant_phi (region, psi);
       return false;
     }
 
