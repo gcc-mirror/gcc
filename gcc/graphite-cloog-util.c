@@ -187,7 +187,7 @@ cloog_matrix_to_ppl_constraint (CloogMatrix *matrix, int row)
   ppl_Linear_Expression_add_to_inhomogeneous (expr, coef);
   ppl_delete_Coefficient (coef);
 
-  if (mpz_sgn (matrix->p[row][0]))
+  if (mpz_sgn (matrix->p[row][0]) == 0)
     ppl_new_Constraint (&cstr, expr, PPL_CONSTRAINT_TYPE_EQUAL);
   else
     ppl_new_Constraint (&cstr, expr, PPL_CONSTRAINT_TYPE_GREATER_OR_EQUAL);

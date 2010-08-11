@@ -1,5 +1,12 @@
 2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
+	* graphite-cloog-util.c
+	(cloog_matrix_to_ppl_constraint): Fix flipped condition.
+	* graphite-poly.c
+	(psct_scattering_dim_for_loop_depth): Same.
+
+2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+
 	* graphite-cloog-util.h: Added cloog.h.
 	* graphite-blocking.c: Removed cloog.h.
 	* graphite-dependences.c: Same.
