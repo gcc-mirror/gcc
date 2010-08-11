@@ -1,3 +1,7 @@
+2010-06-23  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite.c (graphite_transform_loops): Add two more dbg_cnt calls.
+
 2010-06-15  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* passes.c (init_optimization_passes): Add pass_graphite.

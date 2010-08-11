@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "sese.h"
 #include "predict.h"
+#include "dbgcnt.h"
 
 #ifdef HAVE_cloog
 
@@ -271,18 +272,22 @@ graphite_transform_loops (void)
   sbitmap_zero (reductions);
 
   for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
-    rewrite_commutative_reductions_out_of_ssa (SCOP_REGION (scop), reductions);
+    if (dbg_cnt (graphite_scop))
+      rewrite_commutative_reductions_out_of_ssa (SCOP_REGION (scop),
+						 reductions);
 
   for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
-    {
-      rewrite_reductions_out_of_ssa (scop);
-      build_scop_bbs (scop, reductions);
-    }
+    if (dbg_cnt (graphite_scop))
+      {
+	rewrite_reductions_out_of_ssa (scop);
+	build_scop_bbs (scop, reductions);
+      }
 
   sbitmap_free (reductions);
 
   for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
-    build_poly_scop (scop);
+    if (dbg_cnt (graphite_scop))
+      build_poly_scop (scop);
 
   for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
     if (POLY_SCOP_P (scop)
