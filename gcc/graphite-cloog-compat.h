@@ -23,6 +23,12 @@ along with GCC; see the file COPYING3.  If not see
 #define GRAPHITE_CLOOG_COMPAT_H
 
 /* Restore compatibility to CLooG Legacy.  */
+#ifdef CLOOG_ORG
+typedef const struct clast_expr *clast_name_p;
+#else
+typedef const char *clast_name_p;
+#endif
+
 #ifndef CLOOG_ORG
 
 /* CloogOptions compatibility.  */
@@ -31,6 +37,12 @@ along with GCC; see the file COPYING3.  If not see
   cloog_program_extract_scalars (PROG, SCATT)
 #define cloog_program_scatter(PROG, SCATT, OPT)\
   cloog_program_scatter (PROG, SCATT)
+
+/* CLAST compatibility.  */
+#define clast_expr_term expr_term
+#define clast_expr_red expr_red
+#define clast_expr_bin expr_bin
+#define clast_pprint pprint
 
 #endif
 

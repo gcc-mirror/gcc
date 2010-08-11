@@ -1,5 +1,20 @@
 2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
+	* graphite-clast-to-gimple.c (clast_name_to_gcc): Parameter
+	type of NAME now depends on used CLooG version.
+	(clast_to_gcc_expression): Replace expr_* with clast_expr_*.
+	(gcc_type_for_clast_expr): Same.
+	(print_clast_stmt): Replace pprint with clast_pprint.
+	* graphite-cloog-compat.h: Provide compatibility macros for
+	CLooG Legacy.
+	(clast_name_p): New.
+	(clast_expr_term): New.
+	(clast_expr_red): New.
+	(clast_expr_bin): New.
+	(clast_pprint): New.
+
+2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+
 	* graphite-clast-to-gimple.c (set_cloog_options): Make CLooG options
 	compatible to newer CLooG releases (CLOOG_ORG).
 	(build_cloog_prog): Pass CloogOptions to more functions (CLOOG_ORG).
