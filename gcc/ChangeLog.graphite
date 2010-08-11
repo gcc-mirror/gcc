@@ -1,5 +1,9 @@
 2010-06-24  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (rewrite_cross_bb_phi_deps): Remove dead code.
+
+2010-06-24  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (build_iv_mapping): Rename map with
 	rename_map.
 	* sese.c (debug_rename_map): Same.

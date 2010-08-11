@@ -2348,7 +2348,6 @@ rewrite_cross_bb_phi_deps (sese region, gimple_stmt_iterator gsi)
   gimple stmt = gsi_stmt (gsi);
   imm_use_iterator imm_iter;
   tree def;
-  basic_block def_bb;
   gimple use_stmt;
 
   if (gimple_code (stmt) != GIMPLE_ASSIGN)
@@ -2358,8 +2357,6 @@ rewrite_cross_bb_phi_deps (sese region, gimple_stmt_iterator gsi)
   if (!is_gimple_reg (def)
       || scev_analyzable_p (def, region))
     return;
-
-  def_bb = gimple_bb (stmt);
 
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
     if (gimple_code (use_stmt) == GIMPLE_PHI)
