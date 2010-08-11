@@ -1,4 +1,9 @@
 2010-07-20  Vladimir Kargov  <kargov@gmail.com>
+
+	* graphite-scop-detection.c (is_valid_stmt_p): New.
+	(is_valid_bb_p): New.
+
+2010-07-20  Vladimir Kargov  <kargov@gmail.com>
 	    Sebastian Pop  <sebastian.pop@amd.com>
 
 	* cfgloop.c (is_loop_exit): Renamed loop_exits_to_bb_p.
