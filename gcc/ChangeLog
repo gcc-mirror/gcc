@@ -1,3 +1,9 @@
+2010-08-11  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira-int.h (ira_remove_allocno_copy_from_list): Remove.
+
+	* ira-build.c (ira_remove_allocno_copy_from_list): Remove.
+
 2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): Add back

@@ -957,7 +957,6 @@ extern ira_copy_t ira_create_copy (ira_allocno_t, ira_allocno_t,
 				   int, bool, rtx, ira_loop_tree_node_t);
 extern void ira_add_allocno_copy_to_list (ira_copy_t);
 extern void ira_swap_allocno_copy_ends_if_necessary (ira_copy_t);
-extern void ira_remove_allocno_copy_from_list (ira_copy_t);
 extern ira_copy_t ira_add_allocno_copy (ira_allocno_t, ira_allocno_t, int,
 					bool, rtx, ira_loop_tree_node_t);
 
