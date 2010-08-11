@@ -1,5 +1,11 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* tree-chrec.c (chrec_apply): Should only apply to the specified
+	variable.  Also handle multivariate chains of recurrences that
+	satisfy evolution_function_is_affine_p.  Also handle CASE_CONVERT.
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (debug_clast_name_index): Removed.
 	(debug_clast_name_indexes_1): Removed.
 	(debug_clast_name_indexes): Removed.

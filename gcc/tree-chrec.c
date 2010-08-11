@@ -599,23 +599,40 @@ chrec_apply (unsigned var,
   if (TREE_CODE (x) == INTEGER_CST && SCALAR_FLOAT_TYPE_P (type))
     x = build_real_from_int_cst (type, x);
 
-  if (evolution_function_is_affine_p (chrec))
+  switch (TREE_CODE (chrec))
     {
-      /* "{a, +, b} (x)"  ->  "a + b*x".  */
-      x = chrec_convert_rhs (type, x, NULL);
-      res = chrec_fold_multiply (TREE_TYPE (x), CHREC_RIGHT (chrec), x);
-      res = chrec_fold_plus (type, CHREC_LEFT (chrec), res);
+    case POLYNOMIAL_CHREC:
+      if (evolution_function_is_affine_p (chrec))
+	{
+	  if (CHREC_VARIABLE (chrec) != var)
+	    return build_polynomial_chrec
+	      (CHREC_VARIABLE (chrec),
+	       chrec_apply (var, CHREC_LEFT (chrec), x),
+	       chrec_apply (var, CHREC_RIGHT (chrec), x));
+
+	  /* "{a, +, b} (x)"  ->  "a + b*x".  */
+	  x = chrec_convert_rhs (type, x, NULL);
+	  res = chrec_fold_multiply (TREE_TYPE (x), CHREC_RIGHT (chrec), x);
+	  res = chrec_fold_plus (type, CHREC_LEFT (chrec), res);
+	}
+      else if (TREE_CODE (x) == INTEGER_CST
+	       && tree_int_cst_sgn (x) == 1)
+	/* testsuite/.../ssa-chrec-38.c.  */
+	res = chrec_evaluate (var, chrec, x, 0);
+      else
+	res = chrec_dont_know;
+      break;
+
+    CASE_CONVERT:
+      res = chrec_convert (TREE_TYPE (chrec),
+			   chrec_apply (var, TREE_OPERAND (chrec, 0), x),
+			   NULL);
+      break;
+
+    default:
+      res = chrec;
+      break;
     }
-
-  else if (TREE_CODE (chrec) != POLYNOMIAL_CHREC)
-    res = chrec;
-
-  else if (TREE_CODE (x) == INTEGER_CST
-	   && tree_int_cst_sgn (x) == 1)
-    /* testsuite/.../ssa-chrec-38.c.  */
-    res = chrec_evaluate (var, chrec, x, 0);
-  else
-    res = chrec_dont_know;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
