@@ -1,3 +1,18 @@
+2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+
+	* graphite-clast-to-gimple.c
+	(precision_for_value): Resolve value_* calls to matching mpz_* calls.
+	(precision_for_interval): Same.
+	(gcc_type_for_interval): Same.
+	(compute_type_for_level): Same.
+	* graphite-interchange.c
+	(lst_interchange_profitable_p): Same.
+	* graphite-poly.c
+	(psct_scattering_dim_for_loop_depth): Same.
+	* graphite-ppl.c
+	(ppl_max_for_le_pointset): Same.
+	(ppl_min_for_le_pointset): Same.
+
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_degenerate_phi): New.

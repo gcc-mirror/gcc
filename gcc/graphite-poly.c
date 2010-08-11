@@ -1032,7 +1032,7 @@ psct_scattering_dim_for_loop_depth (poly_bb_p pbb, graphite_dim_t loop_depth)
 	  ppl_Linear_Expression_coefficient (expr, scatter, coef);
 	  ppl_Coefficient_to_mpz_t (coef, val);
 
-	  if (value_notzero_p (val))
+	  if (mpz_sgn (val) != 0)
 	    {
 	      mpz_clear (val);
 	      ppl_delete_Linear_Expression (expr);
