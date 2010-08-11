@@ -1,5 +1,18 @@
 2010-06-12  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (gloog): Remove call to
+	sese_adjust_liveout_phis.
+	* graphite-sese-to-poly.c (scev_analyzable_p): When scev returns an
+	SSA_NAME, allow it to be handled by rewrite_cross_bb_scalar_deps.
+	(rewrite_cross_bb_scalar_deps): Handle GIMPLE_PHI nodes: call
+	rewrite_phi_out_of_ssa.
+	* sese.c (get_vdef_before_sese): Removed.
+	(sese_adjust_vphi): Removed.
+	(sese_adjust_liveout_phis): Removed.
+	* sese.h (sese_adjust_liveout_phis): Removed.
+
+2010-06-12  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (insert_out_of_ssa_copy): Pass an extra
 	argument for the place after which to insert the out of SSA copy.
 	(rewrite_close_phi_out_of_ssa): Update calls to insert_out_of_ssa_copy.

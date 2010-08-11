@@ -1576,10 +1576,6 @@ gloog (scop_p scop, VEC (scop_p, heap) *scops, htab_t bb_pbb_mapping)
 		   rename_map, &newivs, newivs_index,
 		   bb_pbb_mapping, 1, params_index);
   graphite_verify ();
-  sese_adjust_liveout_phis (region, rename_map,
-			    if_region->region->exit->src,
-			    if_region->false_region->exit,
-			    if_region->true_region->exit);
   scev_reset_htab ();
   rename_nb_iterations (rename_map);
 

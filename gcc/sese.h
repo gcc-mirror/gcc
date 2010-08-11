@@ -55,7 +55,6 @@ typedef struct sese_s
 extern sese new_sese (edge, edge);
 extern void free_sese (sese);
 extern void sese_insert_phis_for_liveouts (sese, basic_block, edge, edge);
-extern void sese_adjust_liveout_phis (sese, htab_t, basic_block, edge, edge);
 extern void build_sese_loop_nests (sese);
 extern edge copy_bb_and_scalar_dependences (basic_block, sese, edge, htab_t);
 extern struct loop *outermost_loop_in_sese (sese, basic_block);
