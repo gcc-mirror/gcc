@@ -496,17 +496,19 @@ done:
   free (options);
 }
 
-/* Handle option OPT_INDEX, and argument ARG, for the language
-   indicated by LANG_MASK, using the handlers in HANDLERS.  VALUE is
-   the option value as for the value field of cl_decoded_option.  KIND
-   is the diagnostic_t if this is a diagnostics option, DK_UNSPECIFIED
-   otherwise.  Returns false if the switch was invalid.  */
+/* Handle option DECODED for the language indicated by LANG_MASK,
+   using the handlers in HANDLERS.  KIND is the diagnostic_t if this
+   is a diagnostics option, DK_UNSPECIFIED otherwise.  Returns false
+   if the switch was invalid.  */
 
 bool
-handle_option (size_t opt_index, const char *arg, int value,
+handle_option (const struct cl_decoded_option *decoded,
 	       unsigned int lang_mask, int kind,
 	       const struct cl_option_handlers *handlers)
 {
+  size_t opt_index = decoded->opt_index;
+  const char *arg = decoded->arg;
+  int value = decoded->value;
   const struct cl_option *option = &cl_options[opt_index];
   size_t i;
 
@@ -516,15 +518,66 @@ handle_option (size_t opt_index, const char *arg, int value,
   for (i = 0; i < handlers->num_handlers; i++)
     if (option->flags & handlers->handlers[i].mask)
       {
-	if (!handlers->handlers[i].handler (opt_index, arg, value,
+	if (!handlers->handlers[i].handler (decoded,
 					    lang_mask, kind, handlers))
 	  return false;
 	else
-	  handlers->post_handling_callback (opt_index, arg, value,
+	  handlers->post_handling_callback (decoded,
 					    handlers->handlers[i].mask);
       }
   
   return true;
+}
+
+/* Like handle_option, but OPT_INDEX, ARG and VALUE describe the
+   option instead of DECODED.  This is used for callbacks when one
+   option implies another instead of an option being decoded from the
+   command line.  */
+
+bool
+handle_generated_option (size_t opt_index, const char *arg, int value,
+			 unsigned int lang_mask, int kind,
+			 const struct cl_option_handlers *handlers)
+{
+  const struct cl_option *option = &cl_options[opt_index];
+  struct cl_decoded_option decoded;
+
+  decoded.opt_index = opt_index;
+  decoded.arg = arg;
+  decoded.canonical_option[2] = NULL;
+  decoded.canonical_option[3] = NULL;
+  decoded.value = value;
+  decoded.errors = 0;
+
+  if (arg)
+    {
+      if (option->flags & CL_SEPARATE)
+	{
+	  decoded.orig_option_with_args_text = concat (option->opt_text, " ",
+						       arg, NULL);
+	  decoded.canonical_option[0] = option->opt_text;
+	  decoded.canonical_option[1] = arg;
+	  decoded.canonical_option_num_elements = 2;
+	}
+      else
+	{
+	  gcc_assert (option->flags & CL_JOINED);
+	  decoded.orig_option_with_args_text = concat (option->opt_text, arg,
+						       NULL);
+	  decoded.canonical_option[0] = decoded.orig_option_with_args_text;
+	  decoded.canonical_option[1] = NULL;
+	  decoded.canonical_option_num_elements = 1;
+	}
+    }
+  else
+    {
+      decoded.orig_option_with_args_text = option->opt_text;
+      decoded.canonical_option[0] = option->opt_text;
+      decoded.canonical_option[1] = NULL;
+      decoded.canonical_option_num_elements = 1;
+    }
+
+  return handle_option (&decoded, lang_mask, kind, handlers);
 }
 
 /* Handle the switch DECODED for the language indicated by LANG_MASK,
@@ -540,10 +593,8 @@ read_cmdline_option (struct cl_decoded_option *decoded,
 
   if (decoded->opt_index == OPT_SPECIAL_unknown)
     {
-      opt = decoded->arg;
-
-      if (handlers->unknown_option_callback (opt))
-	error ("unrecognized command line option %qs", opt);
+      if (handlers->unknown_option_callback (decoded))
+	error ("unrecognized command line option %qs", decoded->arg);
       return;
     }
 
@@ -559,7 +610,7 @@ read_cmdline_option (struct cl_decoded_option *decoded,
 
   if (decoded->errors & CL_ERR_WRONG_LANG)
     {
-      handlers->wrong_lang_callback (opt, option, lang_mask);
+      handlers->wrong_lang_callback (decoded, lang_mask);
       return;
     }
 
@@ -581,8 +632,7 @@ read_cmdline_option (struct cl_decoded_option *decoded,
 
   gcc_assert (!decoded->errors);
 
-  if (!handle_option (decoded->opt_index, decoded->arg, decoded->value,
-		      lang_mask, DK_UNSPECIFIED, handlers))
+  if (!handle_option (decoded, lang_mask, DK_UNSPECIFIED, handlers))
     error ("unrecognized command line option %qs", opt);
 }
 

@@ -142,7 +142,7 @@ struct cl_decoded_option
 struct cl_option_handler_func
 {
   /* The function called to handle the option.  */
-  bool (*handler) (size_t opt_index, const char *arg, int value,
+  bool (*handler) (const struct cl_decoded_option *decoded,
 		   unsigned int lang_mask, int kind,
 		   const struct cl_option_handlers *handlers);
 
@@ -159,17 +159,16 @@ struct cl_option_handlers
      error for it, and possibly store information to diagnose the
      option at a later point.  Return true if an error should be
      given, false otherwise.  */
-  bool (*unknown_option_callback) (const char *opt);
+  bool (*unknown_option_callback) (const struct cl_decoded_option *decoded);
 
   /* Callback to handle, and possibly diagnose, an option for another
      language.  */
-  void (*wrong_lang_callback) (const char *text,
-			       const struct cl_option *option,
+  void (*wrong_lang_callback) (const struct cl_decoded_option *decoded,
 			       unsigned int lang_mask);
 
   /* Callback to call after the successful handling of any option.  */
-  void (*post_handling_callback) (size_t opt_index, const char *arg,
-				  int value, unsigned int mask);
+  void (*post_handling_callback) (const struct cl_decoded_option *decoded,
+				  unsigned int mask);
 
   /* The number of individual handlers.  */
   size_t num_handlers;
@@ -200,9 +199,12 @@ extern void decode_options (unsigned int argc, const char **argv,
 extern int option_enabled (int opt_idx);
 extern bool get_option_state (int, struct cl_option_state *);
 extern void set_option (int opt_index, int value, const char *arg, int);
-bool handle_option (size_t opt_index, const char *arg, int value,
+bool handle_option (const struct cl_decoded_option *decoded,
 		    unsigned int lang_mask, int kind,
 		    const struct cl_option_handlers *handlers);
+bool handle_generated_option (size_t opt_index, const char *arg, int value,
+			      unsigned int lang_mask, int kind,
+			      const struct cl_option_handlers *handlers);
 extern void read_cmdline_option (struct cl_decoded_option *decoded,
 				 unsigned int lang_mask,
 				 const struct cl_option_handlers *handlers);
