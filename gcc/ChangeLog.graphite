@@ -1,5 +1,11 @@
 2010-07-15  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* sese.c (rename_uses): Call unshare_expr before force_gimple_operand.
+
+	* gcc.dg/graphite/id-23.c: New.
+
+2010-07-15  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (reduction_phi_p): Do not rewrite out of
 	SSA scalar phi nodes that can be scev_analyzable_p.
 
