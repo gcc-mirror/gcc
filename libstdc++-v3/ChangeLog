@@ -1,5 +1,9 @@
 2010-08-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/move.h (forward): Reinstate the N2835 version.
+
+2010-08-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/42925
 	* include/bits/unique_ptr.h (operator==(const unique_ptr<>&,
 	nullptr_t), operator==(nullptr_t, const unique_ptr<>&),
