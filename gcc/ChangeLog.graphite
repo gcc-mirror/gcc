@@ -1,9 +1,20 @@
+2010-07-15  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-clast-to-gimple.c (translate_clast_for_loop): Do not call
+	insert_loop_close_phis.
+	* sese.c (name_defined_in_loop_p): Removed.
+	(expr_defined_in_loop_p): Removed.
+	(alive_after_loop): Removed.
+	(close_phi_not_yet_inserted_p): Removed.
+	(struct alep): Removed.
+	(add_loop_exit_phis): Removed.
+	(insert_loop_close_phis): Removed.
+
 2010-07-15  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
-	* graphite-cloog-util.c
-	(cloog_matrix_to_ppl_constraint): Fix flipped condition.
-	* graphite-poly.c
-	(psct_scattering_dim_for_loop_depth): Same.
+	* graphite-cloog-util.c	(cloog_matrix_to_ppl_constraint): Fix flipped
+	condition.
+	* graphite-poly.c (psct_scattering_dim_for_loop_depth): Same.
 
 2010-07-07  Sebastian Pop  <sebastian.pop@amd.com>
 
