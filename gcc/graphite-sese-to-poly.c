@@ -2216,6 +2216,7 @@ rewrite_close_phi_out_of_ssa (gimple_stmt_iterator *psi)
   /* The phi node can be a non close phi node, when its argument is
      invariant, or when it is defined in the same loop as the phi node.  */
   if (is_gimple_min_invariant (arg)
+      || SSA_NAME_IS_DEFAULT_DEF (arg)
       || gimple_bb (SSA_NAME_DEF_STMT (arg))->loop_father == bb->loop_father)
     stmt = gimple_build_assign (res, arg);
   else
@@ -2224,8 +2225,7 @@ rewrite_close_phi_out_of_ssa (gimple_stmt_iterator *psi)
 
       stmt = gimple_build_assign (res, zero_dim_array);
 
-      if (TREE_CODE (arg) == SSA_NAME
-	  && !SSA_NAME_IS_DEFAULT_DEF (arg))
+      if (TREE_CODE (arg) == SSA_NAME)
 	insert_out_of_ssa_copy (zero_dim_array, arg, SSA_NAME_DEF_STMT (arg));
       else
 	insert_out_of_ssa_copy_on_edge (single_pred_edge (bb),

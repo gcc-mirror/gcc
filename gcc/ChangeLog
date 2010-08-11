@@ -1,5 +1,10 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): Correctly
+	handle SSA_NAME_IS_DEFAULT_DEF.
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* sese.c (rename_uses): Handl unconditionally gimple_debug statements.
 
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
