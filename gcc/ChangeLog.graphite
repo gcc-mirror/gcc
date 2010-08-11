@@ -1,3 +1,39 @@
+2010-07-27  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+
+	* graphite-clast-to-gimple.c: Include graphite-cloog-compat.h
+	conditionally (CLOOG_ORG).
+	* graphite-cloog-compat.h: New.  Include graphite-cloog-compat.h.
+	(cloog_statement_usr): New.
+	(cloog_domain): Same.
+	(cloog_set_domain): Same.
+	(cloog_next_domain): Same.
+	(cloog_set_next_domain): Same.
+	(cloog_program_nb_scattdims): Same.
+	(cloog_program_set_nb_scattdims): Same.
+	(cloog_program_names): Same.
+	(cloog_program_set_names): Same.
+	(cloog_program_set_context): Same.
+	(cloog_program_set_loop): Same.
+	(cloog_program_blocklist): Same.
+	(cloog_program_set_blocklist): Same.
+	(cloog_program_scaldims): Same.
+	(cloog_program_set_scaldims): Same.
+	(cloog_names_nb_parameters): Same.
+	(cloog_names_set_nb_parameters): Same.
+	(cloog_names_parameters): Same.
+	(cloog_names_set_parameters): Same.
+	(cloog_names_set_nb_iterators): Same.
+	(cloog_names_set_iterators): Same.
+	(cloog_names_set_nb_scattering): Same.
+	(cloog_names_set_scattering): Same.
+	(cloog_statement_set_usr): Same.
+	(cloog_loop_set_next): Same.
+	(cloog_loop_set_domain): Same.
+	(cloog_loop_set_block): Same.
+	(cloog_block_list_next): Same.
+	(cloog_block_list_set_next):
+	(cloog_block_list_set_block): Same.
+
 2010-07-27  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_cross_bb_scalar_deps): Returns
