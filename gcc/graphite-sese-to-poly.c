@@ -2240,10 +2240,9 @@ rewrite_close_phi_out_of_ssa (gimple_stmt_iterator *psi, sese region)
   gcc_assert (gimple_phi_num_args (phi) == 1);
 
   /* The phi node can be a non close phi node, when its argument is
-     invariant, or when it is defined in the same loop as the phi node.  */
+     invariant, or a default definition.  */
   if (is_gimple_min_invariant (arg)
-      || SSA_NAME_IS_DEFAULT_DEF (arg)
-      || gimple_bb (SSA_NAME_DEF_STMT (arg))->loop_father == bb->loop_father)
+      || SSA_NAME_IS_DEFAULT_DEF (arg))
     {
       propagate_expr_outside_region (res, arg, region);
       gsi_next (psi);

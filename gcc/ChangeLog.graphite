@@ -1,3 +1,11 @@
+2010-07-28  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): The only
+	constant phi nodes with one argument are is_gimple_min_invariant
+	and SSA_NAME_IS_DEFAULT_DEF.
+
+	* gfortran.dg/graphite/id-22.f: New.
+
 2010-07-27  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
 	* graphite.c (graphite_initialize): Do not initialize
