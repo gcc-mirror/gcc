@@ -1,5 +1,9 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* params.def (PARAM_SCEV_MAX_EXPR_SIZE): Bump the value to 100.
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* cfgloop.c (alloc_loop): Remove initialization of loop->single_iv.
 	* cfgloop.h (struct loop): Remove single_iv field.
 	* graphite-sese-to-poly.c (graphite_loop_normal_form): Removed.
