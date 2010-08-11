@@ -1,4 +1,4 @@
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): Add back
 	the case removed in the previous patch, when the only phi argument
@@ -6,13 +6,13 @@
 	separately from the invariant case by both propagating it outside
 	the region and replacing the phi node with an assign.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): The only
 	constant phi nodes with one argument are is_gimple_min_invariant
 	and SSA_NAME_IS_DEFAULT_DEF.
 
-2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+2010-08-11  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
 	* graphite-cloog-util.c (oppose_constraint):
 	Extend loop counter's value range (CLOOG_ORG).
@@ -20,7 +20,7 @@
 	(new_Constraint_System_from_Cloog_matrix): Same.
 	* graphite-cloog-compat.h (matrix_num_type): New.
 
-2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+2010-08-11  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
 	* graphite.c (graphite_initialize): Do not initialize
 	CLooG and initialize the Parma Polyhedra Library
@@ -31,7 +31,7 @@
 	when using CLOOG_ORG.
 	(cloog_finalize): Same.
 
-2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+2010-08-11  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
 	* graphite-clast-to-gimple.c (free_scattering): Change
 	CloogDomainList/CloogDomain to CloogScatteringList/CloogScattering
@@ -52,7 +52,7 @@
 	* graphite-cloog-util.c (new_Cloog_Scattering_from_ppl_Polyhedron):
 	New.
 
-2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+2010-08-11  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
 	* graphite-clast-to-gimple.c (build_cloog_prog): Extend with
 	CloogState.
@@ -80,7 +80,7 @@
 	(new_Cloog_Domain_from_ppl_Pointset_Powerset): New.
 	(new_Cloog_Domain_from_ppl_Polyhedron): New.
 
-2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+2010-08-11  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
 	* graphite-clast-to-gimple.c (clast_name_to_gcc): Parameter
 	type of NAME now depends on used CLooG version.
@@ -95,7 +95,7 @@
 	(clast_expr_bin): New.
 	(clast_pprint): New.
 
-2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+2010-08-11  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
 	* graphite-clast-to-gimple.c (set_cloog_options): Make CLooG options
 	compatible to newer CLooG releases (CLOOG_ORG).
@@ -106,7 +106,7 @@
 	(cloog_program_extract_scalars): New.
 	(cloog_program_scatter): New.
 
-2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+2010-08-11  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
 	* graphite-clast-to-gimple.c: Include graphite-cloog-compat.h
 	conditionally (CLOOG_ORG).
@@ -142,7 +142,7 @@
 	(cloog_block_list_set_next):
 	(cloog_block_list_set_block): Same.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_cross_bb_scalar_deps): Returns
 	a bool.
@@ -152,7 +152,7 @@
 	when something has been changed.
 	(rewrite_commutative_reductions_out_of_ssa): Same.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (propagate_expr_outside_region): Also
 	handle the case when def is in the sese region.
@@ -161,15 +161,15 @@
 	(rewrite_cross_bb_phi_deps): Removed.
 	(rewrite_cross_bb_scalar_deps): Also handle GIMPLE_PHI nodes.
 	(rewrite_cross_bb_scalar_deps_out_of_ssa): Do not call
-	rewrite_cross_bb_phi_deps.2
+	rewrite_cross_bb_phi_deps.
 
-010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c
 	(rewrite_commutative_reductions_out_of_ssa_loop): Call
 	scev_analyzable_p only on is_gimple_reg
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (propagate_expr_outside_region): New.
 	(rewrite_close_phi_out_of_ssa): Propagate constant values or
@@ -177,17 +177,17 @@
 	(rewrite_cross_bb_scalar_deps): Same.
 	* sese.c (rename_uses): Use NULL_TREE instead of NULL for trees.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_phi_out_of_ssa): Use
 	SSA_NAME_DEF_STMT only on SSA_NAMEs.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* tree-scalar-evolution.c (instantiate_scev_name): Do not
 	instantiate default definitions.
 
-2010-08-02  Vladimir Kargov  <kargov@gmail.com>
+2010-08-11  Vladimir Kargov  <kargov@gmail.com>
 	    Sebastian Pop  <sebastian.pop@amd.com>
 
 	* cfgloop.c (is_loop_exit): Renamed loop_exits_to_bb_p.
@@ -197,7 +197,7 @@
 	* graphite-scop-detection.c (scopdet_basic_block_info): Call
 	loop_exits_to_bb_p.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): Add an
 	extra parameter for the region.  Call scev_analyzable_p.
@@ -209,39 +209,39 @@
 	(rewrite_commutative_reductions_out_of_ssa): Update call to
 	rewrite_commutative_reductions_out_of_ssa_loop.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* sese.c (rename_uses): Call unshare_expr before force_gimple_operand.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (reduction_phi_p): Do not rewrite out of
 	SSA scalar phi nodes that can be scev_analyzable_p.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): Correctly
 	handle SSA_NAME_IS_DEFAULT_DEF.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* sese.c (rename_uses): Handl unconditionally gimple_debug statements.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): Special
 	case non close-phi nodes with one argument.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* sese.h (scev_analyzable_p): Scevs could be expressions without
 	chrecs and still be scev_analyzable_p.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* params.def (PARAM_SCEV_MAX_EXPR_SIZE): Bump the value to 100.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* cfgloop.c (alloc_loop): Remove initialization of loop->single_iv.
 	* cfgloop.h (struct loop): Remove single_iv field.
@@ -251,18 +251,18 @@
 	over all the loop phi nodes in loop->header.
 	(build_poly_scop): Remove use of scop_canonicalize_loops.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_cross_bb_scalar_deps): Also
 	handle GIMPLE_CALL.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* tree-chrec.c (chrec_apply): Should only apply to the specified
 	variable.  Also handle multivariate chains of recurrences that
 	satisfy evolution_function_is_affine_p.  Also handle CASE_CONVERT.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-clast-to-gimple.c (debug_clast_name_index): Removed.
 	(debug_clast_name_indexes_1): Removed.
@@ -309,7 +309,7 @@
 	* tree-chrec.c (chrec_apply_map): New.
 	* tree-chrec.h (chrec_apply_map): Declared.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-clast-to-gimple.c (translate_clast_for_loop): Do not call
 	insert_loop_close_phis.
@@ -321,14 +321,14 @@
 	(add_loop_exit_phis): Removed.
 	(insert_loop_close_phis): Removed.
 
-2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+2010-08-11  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
 	* graphite-cloog-util.c
 	(cloog_matrix_to_ppl_constraint): Fix flipped condition.
 	* graphite-poly.c
 	(psct_scattering_dim_for_loop_depth): Same.
 
-2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+2010-08-11  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
 	* graphite-cloog-util.h: Added cloog.h.
 	* graphite-blocking.c: Removed cloog.h.
@@ -344,7 +344,7 @@
 	* graphite-sese-to-poly.h
 	(check_poly_representation): Removed (unused).
 
-2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+2010-08-11  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
 	* Makefile.in (OBJS-common): Added graphite-cloog-util.o.
 	(graphite-clast-to-gimple.o): Added graphite-cloog-util.h.
@@ -389,7 +389,7 @@
 	(new_C_Polyhedron_from_Cloog_Matrix): Same.
 	(insert_constraint_into_matrix): Same.
 
-2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+2010-08-11  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
 	* graphite-clast-to-gimple.c
 	(precision_for_value): Resolve value_* calls to matching mpz_* calls.
@@ -404,21 +404,21 @@
 	(ppl_max_for_le_pointset): Same.
 	(ppl_min_for_le_pointset): Same.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_degenerate_phi): New.
 	(rewrite_reductions_out_of_ssa): Call it for degenerate_phi_result.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_cross_bb_phi_deps): Call
 	rewrite_close_phi_out_of_ssa.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_cross_bb_phi_deps): Remove dead code.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-clast-to-gimple.c (build_iv_mapping): Rename map with
 	rename_map.
@@ -435,30 +435,30 @@
 	(graphite_copy_stmts_from_block): Same.
 	(copy_bb_and_scalar_dependences): Same.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-clast-to-gimple.c (copy_renames): Removed.
 	(translate_clast_for): Do not call copy_renames.
 	(translate_clast_guard): Same.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_reductions_out_of_ssa): Moved up.
 	(rewrite_cross_bb_phi_deps): Split out of rewrite_cross_bb_scalar_deps.
 	(rewrite_cross_bb_scalar_deps_out_of_ssa): Run rewrite_cross_bb_phi_deps
 	before rewrite_cross_bb_scalar_deps.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_commutative_reductions_out_of_ssa):
 	Early return in when flag_associative_math is not set.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_phi_out_of_ssa): Always insert out
 	of SSA copies on edges except for loop->latch.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_cross_bb_scalar_deps_out_of_ssa):
 	Split out of rewrite_reductions_out_of_ssa.
@@ -466,18 +466,18 @@
 	Declared.
 	* graphite.c (graphite_transform_loops): Call it.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite.c (graphite_transform_loops): Add two more dbg_cnt calls.
 
-2010-08-02  Alexander Monakov  <amonakov@ispras.ru>
+2010-08-11  Alexander Monakov  <amonakov@ispras.ru>
 
 	* dbgcnt.def (graphite_scop): New counter.
 	* graphite.c: Include dbgcnt.h.
 	(graphite_transform_loops): Use new counter to limit transformations.
 	* Makefile.in (graphite.o): Depend on DBGCNT_H.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* passes.c (init_optimization_passes): Add pass_graphite.
 	Schedule a pass_copy_prop before pass_graphite_transforms.
@@ -485,7 +485,7 @@
 	* tree-pass.h (pass_graphite): Declared.
 	* tree-ssa-loop.c (pass_graphite): New.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-clast-to-gimple.c (gloog): Do not pass scops in parameter.
 	Remove calls to rename_nb_iterations and rename_sese_parameters.
@@ -497,7 +497,7 @@
 	* sese.h (rename_nb_iterations): Removed.
 	(rename_sese_parameters): Removed.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-clast-to-gimple.c (gloog): Remove call to
 	sese_adjust_liveout_phis.
@@ -510,7 +510,7 @@
 	(sese_adjust_liveout_phis): Removed.
 	* sese.h (sese_adjust_liveout_phis): Removed.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (insert_out_of_ssa_copy): Pass an extra
 	argument for the place after which to insert the out of SSA copy.
@@ -523,7 +523,7 @@
 	insert_out_of_ssa_copy_on_edge instead of insert_copyout and
 	insert_copyin.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (build_scop_bbs): Not static anymore.
 	(rewrite_reductions_out_of_ssa): Same.
@@ -536,14 +536,14 @@
 	rewrite_commutative_reductions_out_of_ssa before calling
 	rewrite_reductions_out_of_ssa and build_scop_bbs.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-dependences.c (dot_deps): Make system call to dotty run
 	in background.
 	(dot_deps_stmt): Same.
 	* graphite-poly.c (dot_lst): Same.
 
-2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+2010-08-11  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (loop_entry_phi_arg): Renamed
 	phi_arg_in_outermost_loop.
