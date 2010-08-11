@@ -398,7 +398,8 @@ scev_analyzable_p (tree def, sese region)
 
   return !chrec_contains_undetermined (scev)
     && TREE_CODE (scev) != SSA_NAME
-    && evolution_function_is_affine_p (scev);
+    && (tree_does_not_contain_chrecs (scev)
+	|| evolution_function_is_affine_p (scev));
 }
 
 #endif
