@@ -1204,7 +1204,8 @@ initialize_cloog_names (scop_p scop, CloogProgram *prog)
 /* Build cloog program for SCoP.  */
 
 static void
-build_cloog_prog (scop_p scop, CloogProgram *prog, CloogOptions *options)
+build_cloog_prog (scop_p scop, CloogProgram *prog,
+                  CloogOptions *options, CloogState *state ATTRIBUTE_UNUSED)
 {
   int i;
   int max_nb_loops = scop_max_loop_depth (scop);
@@ -1216,7 +1217,8 @@ build_cloog_prog (scop_p scop, CloogProgram *prog, CloogOptions *options)
   int *scaldims;
 
   cloog_program_set_context
-    (prog, new_Cloog_Domain_from_ppl_Pointset_Powerset (SCOP_CONTEXT (scop)));
+    (prog, new_Cloog_Domain_from_ppl_Pointset_Powerset (SCOP_CONTEXT (scop),
+      scop_nb_params (scop), state));
   nbs = unify_scattering_dimensions (scop);
   scaldims = (int *) xmalloc (nbs * (sizeof (int)));
   cloog_program_set_nb_scattdims (prog, nbs);
@@ -1226,6 +1228,7 @@ build_cloog_prog (scop_p scop, CloogProgram *prog, CloogOptions *options)
     {
       CloogStatement *stmt;
       CloogBlock *block;
+      CloogDomain *dom;
 
       /* Dead code elimination: when the domain of a PBB is empty,
 	 don't generate code for the PBB.  */
@@ -1233,17 +1236,18 @@ build_cloog_prog (scop_p scop, CloogProgram *prog, CloogOptions *options)
 	continue;
 
       /* Build the new statement and its block.  */
-      stmt = cloog_statement_alloc (pbb_index (pbb));
+      stmt = cloog_statement_alloc (state, pbb_index (pbb));
+      dom = new_Cloog_Domain_from_ppl_Pointset_Powerset (PBB_DOMAIN (pbb),
+                                                         scop_nb_params (scop),
+                                                         state);
       block = cloog_block_alloc (stmt, 0, NULL, pbb_dim_iter_domain (pbb));
       cloog_statement_set_usr (stmt, pbb);
 
       /* Build loop list.  */
       {
-        CloogLoop *new_loop_list = cloog_loop_malloc ();
+        CloogLoop *new_loop_list = cloog_loop_malloc (state);
         cloog_loop_set_next (new_loop_list, loop_list);
-        cloog_loop_set_domain
-	  (new_loop_list,
-	   new_Cloog_Domain_from_ppl_Pointset_Powerset (PBB_DOMAIN (pbb)));
+        cloog_loop_set_domain (new_loop_list, dom);
         cloog_loop_set_block (new_loop_list, block);
         loop_list = new_loop_list;
       }
@@ -1266,7 +1270,8 @@ build_cloog_prog (scop_p scop, CloogProgram *prog, CloogOptions *options)
 	CloogDomain *dom;
 
 	scat = PBB_TRANSFORMED_SCATTERING (pbb);
-	dom = new_Cloog_Domain_from_ppl_Polyhedron (scat);
+	dom = new_Cloog_Domain_from_ppl_Polyhedron (scat, scop_nb_params (scop),
+                                                    state);
 
         cloog_set_next_domain (new_scattering, scattering);
         cloog_set_domain (new_scattering, dom);
@@ -1312,9 +1317,9 @@ build_cloog_prog (scop_p scop, CloogProgram *prog, CloogOptions *options)
 /* Return the options that will be used in GLOOG.  */
 
 static CloogOptions *
-set_cloog_options (void)
+set_cloog_options (CloogState *state ATTRIBUTE_UNUSED)
 {
-  CloogOptions *options = cloog_options_malloc ();
+  CloogOptions *options = cloog_options_malloc (state);
 
   /* Change cloog output language to C.  If we do use FORTRAN instead, cloog
      will stop e.g. with "ERROR: unbounded loops not allowed in FORTRAN.", if
@@ -1363,10 +1368,12 @@ set_cloog_options (void)
 void
 print_clast_stmt (FILE *file, struct clast_stmt *stmt)
 {
-  CloogOptions *options = set_cloog_options ();
+  CloogState *state = cloog_state_malloc ();
+  CloogOptions *options = set_cloog_options (state);
 
   clast_pprint (file, stmt, 0, options);
   cloog_options_free (options);
+  cloog_state_free (state);
 }
 
 /* Prints STMT to STDERR.  */
@@ -1382,14 +1389,14 @@ debug_clast_stmt (struct clast_stmt *stmt)
    without a program.  */
 
 cloog_prog_clast
-scop_to_clast (scop_p scop)
+scop_to_clast (scop_p scop, CloogState *state)
 {
-  CloogOptions *options = set_cloog_options ();
+  CloogOptions *options = set_cloog_options (state);
   cloog_prog_clast pc;
 
   /* Connect new cloog prog generation to graphite.  */
   pc.prog = cloog_program_malloc ();
-  build_cloog_prog (scop, pc.prog, options);
+  build_cloog_prog (scop, pc.prog, options, state);
   pc.prog = cloog_program_generate (pc.prog, options);
   pc.stmt = cloog_clast_create (pc.prog, options);
 
@@ -1402,8 +1409,10 @@ scop_to_clast (scop_p scop)
 void
 print_generated_program (FILE *file, scop_p scop)
 {
-  CloogOptions *options = set_cloog_options ();
-  cloog_prog_clast pc = scop_to_clast (scop);
+  CloogState *state = cloog_state_malloc ();
+  CloogOptions *options = set_cloog_options (state);
+
+  cloog_prog_clast pc = scop_to_clast (scop, state);
 
   fprintf (file, "       (prog: \n");
   cloog_program_print (file, pc.prog);
@@ -1454,11 +1463,13 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
   ifsese if_region = NULL;
   htab_t newivs_index, params_index;
   cloog_prog_clast pc;
+  CloogState *state;
 
+  state = cloog_state_malloc ();
   timevar_push (TV_GRAPHITE_CODE_GEN);
   gloog_error = false;
 
-  pc = scop_to_clast (scop);
+  pc = scop_to_clast (scop, state);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1523,7 +1534,8 @@ gloog (scop_p scop, htab_t bb_pbb_mapping)
 	       num_no_dependency);
     }
 
+  cloog_state_free (state);
+
   return !gloog_error;
 }
-
 #endif

@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GRAPHITE_CLAST_TO_GIMPLE_H
 #define GCC_GRAPHITE_CLAST_TO_GIMPLE_H
 
+#include "graphite-cloog-util.h"
 /* Data structure for CLooG program representation.  */
 
 typedef struct cloog_prog_clast {
@@ -37,7 +38,7 @@ typedef struct bb_pbb_def
 }bb_pbb_def;
 
 extern bool gloog (scop_p, htab_t);
-extern cloog_prog_clast scop_to_clast (scop_p);
+extern cloog_prog_clast scop_to_clast (scop_p, CloogState *);
 extern void debug_clast_stmt (struct clast_stmt *);
 extern void print_clast_stmt (FILE *, struct clast_stmt *);
 

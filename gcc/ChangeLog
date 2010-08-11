@@ -1,5 +1,33 @@
 2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
 
+	* graphite-clast-to-gimple.c (build_cloog_prog): Extend with
+	CloogState.
+	(set_cloog_options): Same.
+	(print_clast_stmt): Same.
+	(scop_to_clast): Same.
+	(print_generated_program): Same.
+	(gloog): Same.
+	* graphite-clast-to-gimple.h: Include graphite-cloog-util.h.
+	(scop_to_clast): Extend with CloogState.
+	* graphite-cloog-util.c: Include graphite-cloog-compat.h
+	(new_Cloog_Domain_from_ppl_Polyhedron):
+	Extend with CloogState.  Use cloog_domain_from_cloog_matrix (CLOOG_ORG).
+	(new_Cloog_Domain_from_ppl_Pointset_Powerset): Extend with CloogState.
+	(new_Cloog_Domain_from_ppl_Polyhedron): Same.
+	* graphite-cloog-util.h (build_cloog_prog): Same.
+	* graphite-cloog-copat.h (build_cloog_prog): New.
+	(CloogState): New.
+	(cloog_state_malloc): New.
+	(cloog_state_free): New.
+	(cloog_loop_malloc): New.
+	(cloog_options_malloc): New.
+	(cloog_statement_alloc): New.
+	(cloog_domain_from_cloog_matrix): New.
+	(new_Cloog_Domain_from_ppl_Pointset_Powerset): New.
+	(new_Cloog_Domain_from_ppl_Polyhedron): New.
+
+2010-08-02  Andreas Simbuerger  <simbuerg@fim.uni-passau.de>
+
 	* graphite-clast-to-gimple.c (clast_name_to_gcc): Parameter
 	type of NAME now depends on used CLooG version.
 	(clast_to_gcc_expression): Replace expr_* with clast_expr_*.

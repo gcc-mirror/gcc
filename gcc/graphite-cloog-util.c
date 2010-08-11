@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ppl_c.h"
 #include "cloog/cloog.h"
 #include "graphite-cloog-util.h"
+#include "graphite-cloog-compat.h"
 
 /* Counts the number of constraints in PCS.  */
 
@@ -228,10 +229,11 @@ new_C_Polyhedron_from_Cloog_Matrix (ppl_Polyhedron_t *ph,
 /* Creates a CloogDomain from polyhedron PH.  */
 
 CloogDomain *
-new_Cloog_Domain_from_ppl_Polyhedron (ppl_const_Polyhedron_t ph)
+new_Cloog_Domain_from_ppl_Polyhedron (ppl_const_Polyhedron_t ph, int nb_params,
+                                      CloogState *state ATTRIBUTE_UNUSED)
 {
   CloogMatrix *mat = new_Cloog_Matrix_from_ppl_Polyhedron (ph);
-  CloogDomain *res = cloog_domain_matrix2domain (mat);
+  CloogDomain *res = cloog_domain_from_cloog_matrix (state, mat, nb_params);
   cloog_matrix_free (mat);
   return res;
 }
@@ -239,8 +241,9 @@ new_Cloog_Domain_from_ppl_Polyhedron (ppl_const_Polyhedron_t ph)
 /* Creates a CloogDomain from a pointset powerset PS.  */
 
 CloogDomain *
-new_Cloog_Domain_from_ppl_Pointset_Powerset (
-  ppl_Pointset_Powerset_C_Polyhedron_t ps)
+new_Cloog_Domain_from_ppl_Pointset_Powerset
+  (ppl_Pointset_Powerset_C_Polyhedron_t ps, int nb_params,
+   CloogState *state ATTRIBUTE_UNUSED)
 {
   CloogDomain *res = NULL;
   ppl_Pointset_Powerset_C_Polyhedron_iterator_t it, end;
@@ -257,7 +260,7 @@ new_Cloog_Domain_from_ppl_Pointset_Powerset (
       CloogDomain *tmp;
 
       ppl_Pointset_Powerset_C_Polyhedron_iterator_dereference (it, &ph);
-      tmp = new_Cloog_Domain_from_ppl_Polyhedron (ph);
+      tmp = new_Cloog_Domain_from_ppl_Polyhedron (ph, nb_params, state);
 
       if (res == NULL)
 	res = tmp;
