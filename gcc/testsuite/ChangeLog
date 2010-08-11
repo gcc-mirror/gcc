@@ -1,5 +1,9 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* gfortran.dg/graphite/id-20.f: New.
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* gcc.dg/graphite/id-22.c: New.
 
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
