@@ -1,3 +1,12 @@
+2010-07-20  Vladimir Kargov  <kargov@gmail.com>
+
+	* refined-regions.c: Include tree-pass.h, cfgloop.h, gimple.h, and
+	tree-data-ref.h.
+	(dot_regions_1): New.
+	(dot_regions): New.
+	* refined-regions.h (dot_regions): Declared.
+	* Makefile.in (refined-regions.o): Update dependences.
+
 2010-07-20  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (rewrite_close_phi_out_of_ssa): Add an
