@@ -1,5 +1,17 @@
 2010-06-12  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (gloog): Do not pass scops in parameter.
+	Remove calls to rename_nb_iterations and rename_sese_parameters.
+	* graphite-clast-to-gimple.h (gloog): Update declaration.
+	* graphite.c (graphite_transform_loops): Update call to gloog.
+	* sese.c (rename_variables_in_expr): Removed.
+	(rename_nb_iterations): Removed.
+	(rename_sese_parameters): Removed.
+	* sese.h (rename_nb_iterations): Removed.
+	(rename_sese_parameters): Removed.
+
+2010-06-12  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-clast-to-gimple.c (gloog): Remove call to
 	sese_adjust_liveout_phis.
 	* graphite-sese-to-poly.c (scev_analyzable_p): When scev returns an
