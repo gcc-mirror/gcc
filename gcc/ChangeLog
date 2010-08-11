@@ -1,5 +1,11 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-clast-to-gimple.c (copy_renames): Removed.
+	(translate_clast_for): Do not call copy_renames.
+	(translate_clast_guard): Same.
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (rewrite_reductions_out_of_ssa): Moved up.
 	(rewrite_cross_bb_phi_deps): Split out of rewrite_cross_bb_scalar_deps.
 	(rewrite_cross_bb_scalar_deps_out_of_ssa): Run rewrite_cross_bb_phi_deps
