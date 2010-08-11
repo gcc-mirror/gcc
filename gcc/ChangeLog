@@ -1,3 +1,19 @@
+2010-08-11  Anatoly Sokolov  <aesok@post.ru>
+
+	* target.def (output_addr_const_extra): New hook.
+	* doc/tm.texi.in (TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA): Document.
+	* doc/tm.texi: Regenerate.
+	* targhooks.c (default_asm_output_addr_const_extra): New function.
+	* targhooks.h (default_asm_output_addr_const_extra): Declare.
+	* final.c: (output_addr_const): Use TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
+	target hook.
+
+	* config/i386/i386.h (OUTPUT_ADDR_CONST_EXTRA): Remove.
+	* config/i386/i386-protos.h (output_addr_const_extra): Remove.
+	* config/i386/i386.h (output_addr_const_extra): Rename to...
+	(i386_asm_output_addr_const_extra): ...this. Make static.
+	(TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA): Define.
+
 2010-08-11  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.h (HARD_REGNO_CALL_PART_CLOBBERED): New.

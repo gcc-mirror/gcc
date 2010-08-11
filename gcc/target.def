@@ -415,6 +415,12 @@ DEFHOOK
  void ,(FILE *file, const char *name),
  default_asm_output_source_filename)
 
+DEFHOOK
+(output_addr_const_extra,
+ "",
+ bool, (FILE *file, rtx x),
+ default_asm_output_addr_const_extra)
+
 /* ??? The TARGET_PRINT_OPERAND* hooks are part of the asm_out struct,
    even though that is not reflected in the macro name to override their
    initializers.  */
