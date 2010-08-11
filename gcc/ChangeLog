@@ -1,5 +1,16 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite.c (graphite_transform_loops): Add two more dbg_cnt calls.
+
+2010-08-02  Alexander Monakov  <amonakov@ispras.ru>
+
+	* dbgcnt.def (graphite_scop): New counter.
+	* graphite.c: Include dbgcnt.h.
+	(graphite_transform_loops): Use new counter to limit transformations.
+	* Makefile.in (graphite.o): Depend on DBGCNT_H.
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* passes.c (init_optimization_passes): Add pass_graphite.
 	Schedule a pass_copy_prop before pass_graphite_transforms.
 	* timevar.def (TV_GRAPHITE): Declared.
