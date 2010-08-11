@@ -1044,10 +1044,6 @@ translate_clast_for_loop (sese region, loop_p context_loop,
   redirect_edge_succ_nodup (next_e, after);
   set_immediate_dominator (CDI_DOMINATORS, next_e->dest, next_e->src);
 
-   /* Remove from rename_map all the tuples containing variables
-      defined in loop's body.  */
-  insert_loop_close_phis (rename_map, loop);
-
   if (flag_loop_parallelize_all
       && !dependency_in_loop_p (loop, bb_pbb_mapping,
  				get_scattering_level (level)))
