@@ -1,5 +1,11 @@
 2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c
+	(rewrite_commutative_reductions_out_of_ssa_loop): Call
+	scev_analyzable_p only on is_gimple_reg
+
+2010-08-02  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (propagate_expr_outside_region): New.
 	(rewrite_close_phi_out_of_ssa): Propagate constant values or
 	parametric expressions outside the scop region.

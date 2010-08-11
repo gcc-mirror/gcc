@@ -1,3 +1,11 @@
+2010-07-26  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* graphite-sese-to-poly.c
+	(rewrite_commutative_reductions_out_of_ssa_loop): Call
+	scev_analyzable_p only on is_gimple_reg
+
+	* gcc.dg/graphite/id-25.c: New.
+
 2010-07-22  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-sese-to-poly.c (propagate_expr_outside_region): New.
