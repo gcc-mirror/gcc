@@ -1,5 +1,10 @@
 2010-06-23  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-sese-to-poly.c (rewrite_phi_out_of_ssa): Always insert out
+	of SSA copies on edges except for loop->latch.
+
+2010-06-23  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* graphite-sese-to-poly.c (rewrite_cross_bb_scalar_deps_out_of_ssa):
 	Split out of rewrite_reductions_out_of_ssa.
 	* graphite-sese-to-poly.h (rewrite_cross_bb_scalar_deps_out_of_ssa):

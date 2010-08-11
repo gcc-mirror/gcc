@@ -2246,58 +2246,14 @@ rewrite_phi_out_of_ssa (gimple_stmt_iterator *psi)
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
       tree arg = gimple_phi_arg_def (phi, i);
+      edge e = gimple_phi_arg_edge (phi, i);
 
-      /* Try to avoid the insertion on edges as much as possible: this
-	 would avoid the insertion of code on loop latch edges, making
-	 the pattern matching of the vectorizer happy, or it would
-	 avoid the insertion of useless basic blocks.  Note that it is
-	 incorrect to insert out of SSA copies close by their
-	 definition when they are more than two loop levels apart:
-	 for example, starting from a double nested loop
-
-	 | a = ...
-	 | loop_1
-	 |  loop_2
-	 |    b = phi (a, c)
-	 |    c = ...
-	 |  end_2
-	 | end_1
-
-	 the following transform is incorrect
-
-	 | a = ...
-	 | Red[0] = a
-	 | loop_1
-	 |  loop_2
-	 |    b = Red[0]
-	 |    c = ...
-	 |    Red[0] = c
-	 |  end_2
-	 | end_1
-
-	 whereas inserting the copy on the incoming edge is correct
-
-	 | a = ...
-	 | loop_1
-	 |  Red[0] = a
-	 |  loop_2
-	 |    b = Red[0]
-	 |    c = ...
-	 |    Red[0] = c
-	 |  end_2
-	 | end_1
-      */
-      if (TREE_CODE (arg) == SSA_NAME
-	  && is_gimple_reg (arg)
-	  && gimple_bb (SSA_NAME_DEF_STMT (arg))
-	  && (flow_bb_inside_loop_p (bb->loop_father,
-				     gimple_bb (SSA_NAME_DEF_STMT (arg)))
-	      || flow_bb_inside_loop_p (loop_outer (bb->loop_father),
-					gimple_bb (SSA_NAME_DEF_STMT (arg)))))
+      /* Avoid the insertion of code in the loop latch to please the
+	 pattern matching of the vectorizer.  */
+      if (e->src == bb->loop_father->latch)
 	insert_out_of_ssa_copy (zero_dim_array, arg, SSA_NAME_DEF_STMT (arg));
       else
-	insert_out_of_ssa_copy_on_edge (gimple_phi_arg_edge (phi, i),
-					zero_dim_array, arg);
+	insert_out_of_ssa_copy_on_edge (e, zero_dim_array, arg);
     }
 
   var = force_gimple_operand (zero_dim_array, &stmts, true, NULL_TREE);
