@@ -1,3 +1,9 @@
+2010-08-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* lib/target-supports.exp (check_effective_target_sync_int_long):
+	Add hppa*-*-linux*.
+	(check_effective_target_sync_char_short): Likewise.
+
 2010-08-10  Yao Qi  <yao@codesourcery.com>
 
 	* gcc.dg/builtin-stringop-chk-1.c: Change ARM triplet to a more
