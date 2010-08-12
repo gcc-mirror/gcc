@@ -1,5 +1,9 @@
 2010-08-12  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/45262
+	* fold-const.c (make_range) <case NEGATE_EXPR>: Punt if
+	-a overflows.  Normalize the range.
+
 	PR debug/45259
 	* caller-save.c (save_call_clobbered_regs): Only swap notes with
 	DEBUG_INSNs if n_regs_saved.
