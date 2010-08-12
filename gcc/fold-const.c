@@ -3985,9 +3985,9 @@ make_range (tree exp, int *pin_p, tree *plow, tree *phigh,
 	  n_high = range_binop (MINUS_EXPR, exp_type,
 				build_int_cst (exp_type, 0),
 				0, low, 0);
-	  low = n_low, high = n_high;
-	  exp = arg0;
-	  continue;
+	  if (n_high != 0 && TREE_OVERFLOW (n_high))
+	    break;
+	  goto normalize;
 
 	case BIT_NOT_EXPR:
 	  /* ~ X -> -X - 1  */
@@ -4021,6 +4021,7 @@ make_range (tree exp, int *pin_p, tree *plow, tree *phigh,
 	  if (TYPE_OVERFLOW_UNDEFINED (arg0_type))
 	    *strict_overflow_p = true;
 
+	normalize:
 	  /* Check for an unsigned range which has wrapped around the maximum
 	     value thus making n_high < n_low, and normalize it.  */
 	  if (n_low && n_high && tree_int_cst_lt (n_high, n_low))

@@ -3,6 +3,10 @@
 	* builtins.c (fold_builtin_memory_op): Avoid -Wsign-compare
 	warning.
 
+	PR middle-end/45262
+	* fold-const.c (make_range) <case NEGATE_EXPR>: Punt if
+	-a overflows.  Normalize the range.
+
 2010-08-12  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45232
