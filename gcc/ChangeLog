@@ -1,5 +1,15 @@
 2010-08-12  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/45232
+	* tree-ssa-reassoc.c (can_reassociate_p): Disable re-association
+	for types with undefined overflow.
+	(reassociate_bb): Allow re-associating of bit and min/max
+	operations for types with undefined overflow.
+	* tree-ssa-forwprop.c (associate_plusminus): New function.
+	(tree_ssa_forward_propagate_single_use_vars): Call it.
+
+2010-08-12  Richard Guenther  <rguenther@suse.de>
+
 	* tree-flow.h (struct ptr_info_def): Add align and misalign fields.
 	* tree-ssa-alias.c (get_ptr_info): Move ...
 	* tree-ssanames.c (get_ptr_info): ... here.  Initialize

@@ -1949,7 +1949,7 @@ static bool
 can_reassociate_p (tree op)
 {
   tree type = TREE_TYPE (op);
-  if (INTEGRAL_TYPE_P (type)
+  if ((INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_WRAPS (type))
       || NON_SAT_FIXED_POINT_TYPE_P (type)
       || (flag_associative_math && FLOAT_TYPE_P (type)))
     return true;
@@ -2065,9 +2065,16 @@ reassociate_bb (basic_block bb)
 	  rhs1 = gimple_assign_rhs1 (stmt);
 	  rhs2 = gimple_assign_rhs2 (stmt);
 
-	  if (!can_reassociate_p (lhs)
-	      || !can_reassociate_p (rhs1)
-	      || !can_reassociate_p (rhs2))
+	  /* For non-bit or min/max operations we can't associate
+	     all types.  Verify that here.  */
+	  if (rhs_code != BIT_IOR_EXPR
+	      && rhs_code != BIT_AND_EXPR
+	      && rhs_code != BIT_XOR_EXPR
+	      && rhs_code != MIN_EXPR
+	      && rhs_code != MAX_EXPR
+	      && (!can_reassociate_p (lhs)
+		  || !can_reassociate_p (rhs1)
+		  || !can_reassociate_p (rhs2)))
 	    continue;
 
 	  if (associative_tree_code (rhs_code))
