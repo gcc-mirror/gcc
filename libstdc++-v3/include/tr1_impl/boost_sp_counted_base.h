@@ -1,6 +1,6 @@
 // <tr1_impl/boost_sp_counted_base.h> -*- C++ -*-
 
-// Copyright (C) 2007, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -139,8 +139,11 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       void
       _M_release() // nothrow
       {
+        // Be race-detector-friendly.  For more info see bits/c++config.
+        _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_use_count)
 	if (__gnu_cxx::__exchange_and_add_dispatch(&_M_use_count, -1) == 1)
 	  {
+            _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_use_count)
 	    _M_dispose();
 	    // There must be a memory barrier between dispose() and destroy()
 	    // to ensure that the effects of dispose() are observed in the
@@ -152,9 +155,14 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	        _GLIBCXX_WRITE_MEM_BARRIER;
 	      }
 
+            // Be race-detector-friendly.  For more info see bits/c++config.
+            _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_weak_count)
 	    if (__gnu_cxx::__exchange_and_add_dispatch(&_M_weak_count,
 						       -1) == 1)
-	      _M_destroy();
+              {
+                _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_weak_count)
+	        _M_destroy();
+              }
 	  }
       }
   
@@ -165,8 +173,11 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       void
       _M_weak_release() // nothrow
       {
+        // Be race-detector-friendly. For more info see bits/c++config.
+        _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_weak_count)
 	if (__gnu_cxx::__exchange_and_add_dispatch(&_M_weak_count, -1) == 1)
 	  {
+            _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_weak_count)
 	    if (_Mutex_base<_Lp>::_S_need_barriers)
 	      {
 	        // See _M_release(),

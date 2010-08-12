@@ -402,8 +402,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     void
     _M_remove_reference() const throw()
     {
+      // Be race-detector-friendly.  For more info see bits/c++config.
+      _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_refcount)
       if (__gnu_cxx::__exchange_and_add_dispatch(&_M_refcount, -1) == 1)
 	{
+          _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_refcount)
 	  __try
 	    { delete this; }
 	  __catch(...)
@@ -508,8 +511,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     void
     _M_remove_reference() throw()
     {
+      // Be race-detector-friendly.  For more info see bits/c++config.
+      _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_refcount)
       if (__gnu_cxx::__exchange_and_add_dispatch(&_M_refcount, -1) == 1)
 	{
+          _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_refcount)
 	  __try
 	    { delete this; }
 	  __catch(...)

@@ -60,6 +60,35 @@
 # define _GLIBCXX_DEPRECATED_ATTR
 #endif
 
+// Macros for race detectors.
+// _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(A) and
+// _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(A) should be used to explain
+// atomic (lock-free) synchronization to race detectors:
+// the race detector will infer a happens-before arc from the former to the
+// latter when they share the same argument pointer.
+//
+// The most frequent use case for these macros (and the only case in the
+// current implementation of the library) is atomic reference counting:
+//   void _M_remove_reference()
+//   {
+//     _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&this->_M_refcount)
+//     if (__gnu_cxx::__exchange_and_add_dispatch(&this->_M_refcount, -1) <= 0)
+//       {
+//         _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&this->_M_refcount)
+//         _M_destroy(__a);
+//       }
+//   }
+// The annotations in this example tell the race detector that all memory
+// accesses occurred when the refcount was positive do not race with
+// memory accesses which occurred after the refcount became zero.
+
+#ifndef _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE
+# define  _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(A)
+#endif
+#ifndef _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER
+# define  _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(A)
+#endif
+
 // Macros for activating various namespace association modes.
 // _GLIBCXX_NAMESPACE_ASSOCIATION_DEBUG
 // _GLIBCXX_NAMESPACE_ASSOCIATION_PARALLEL

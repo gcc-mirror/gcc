@@ -1,3 +1,20 @@
+2010-08-12  Kostya Serebryany <kcc@google.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/c++config (_GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE,
+	_GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER): Add.
+	* src/ios_init.cc (ios_base::Init::~Init): Decorate with the
+	latter.
+	* include/tr1_impl/boost_sp_counted_base.h: Likewise.
+	* include/ext/rc_string_base.h: Likewise.
+	* include/bits/locale_classes.h: Likewise.
+	* include/bits/basic_string.h: Likewise.
+	* include/bits/ios_base.h: Likewise.
+	* testsuite/27_io/ios_base/cons/assign_neg.cc: Adjust dg-error
+	line number.
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: Likewise.
+	* testsuite/ext/profile/mutex_extensions.cc: Likewise.
+
 2010-08-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/hashtable.h (_Hashtable<>::erase(const key_type&)):
