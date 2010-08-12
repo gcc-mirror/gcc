@@ -1,3 +1,9 @@
+2010-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/45259
+	* caller-save.c (save_call_clobbered_regs): Only swap notes with
+	DEBUG_INSNs if n_regs_saved.
+
 2010-08-12  Wei Guozhi  <carrot@google.com>
 
 	PR target/44999
