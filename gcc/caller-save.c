@@ -883,7 +883,10 @@ save_call_clobbered_regs (void)
 	     remain saved.  If the last insn in the block is a JUMP_INSN, put
 	     the restore before the insn, otherwise, put it after the insn.  */
 
-	  if (DEBUG_INSN_P (insn) && last && last->block == chain->block)
+	  if (n_regs_saved
+	      && DEBUG_INSN_P (insn)
+	      && last
+	      && last->block == chain->block)
 	    {
 	      rtx ins, prev;
 	      basic_block bb = BLOCK_FOR_INSN (insn);
