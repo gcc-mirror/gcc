@@ -1,3 +1,17 @@
+2010-08-12  H.J. Lu  <hongjiu.lu@intel.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* config.gcc: Handle --enable-frame-pointer.
+
+	* configure.ac: Add --enable-frame-pointer.
+	* configure: Regenerated.
+
+	* config/i386/i386.c (USE_IX86_FRAME_POINTER): Default to 0.
+	(override_options): If not configured with --enable-frame-pointer,
+	enable -fomit-frame-pointer (but not for TARGET_MACHO or when
+	optimizing for size), -fasynchronous-unwind-tables and
+	-maccumulate-outgoing-args by default.
+
 2010-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtins.c (fold_builtin_memory_op): Avoid -Wsign-compare

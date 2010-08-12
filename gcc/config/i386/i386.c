@@ -2979,32 +2979,6 @@ override_options (bool main_args_p)
   if (TARGET_MACHO && TARGET_64BIT)
     flag_pic = 2;
 
-  /* Set the default values for switches whose default depends on TARGET_64BIT
-     in case they weren't overwritten by command line options.  */
-  if (TARGET_64BIT)
-    {
-      if (flag_zee == 2)
-        flag_zee = 1;
-      /* Mach-O doesn't support omitting the frame pointer for now.  */
-      if (flag_omit_frame_pointer == 2)
-	flag_omit_frame_pointer = (TARGET_MACHO ? 0 : 1);
-      if (flag_asynchronous_unwind_tables == 2)
-	flag_asynchronous_unwind_tables = 1;
-      if (flag_pcc_struct_return == 2)
-	flag_pcc_struct_return = 0;
-    }
-  else
-    {
-      if (flag_zee == 2)
-        flag_zee = 0;
-      if (flag_omit_frame_pointer == 2)
-	flag_omit_frame_pointer = 0;
-      if (flag_asynchronous_unwind_tables == 2)
-	flag_asynchronous_unwind_tables = 0;
-      if (flag_pcc_struct_return == 2)
-	flag_pcc_struct_return = DEFAULT_PCC_STRUCT_RETURN;
-    }
-
   /* Need to check -mtune=generic first.  */
   if (ix86_tune_string)
     {
@@ -3292,6 +3266,38 @@ override_options (bool main_args_p)
   for (i = 0; i < X86_TUNE_LAST; ++i)
     ix86_tune_features[i] = !!(initial_ix86_tune_features[i] & ix86_tune_mask);
 
+#ifndef USE_IX86_FRAME_POINTER
+#define USE_IX86_FRAME_POINTER 0
+#endif
+
+  /* Set the default values for switches whose default depends on TARGET_64BIT
+     in case they weren't overwritten by command line options.  */
+  if (TARGET_64BIT)
+    {
+      if (flag_zee == 2)
+        flag_zee = 1;
+      /* Mach-O doesn't support omitting the frame pointer for now.  */
+      if (flag_omit_frame_pointer == 2)
+	flag_omit_frame_pointer = (TARGET_MACHO ? 0 : 1);
+      if (flag_asynchronous_unwind_tables == 2)
+	flag_asynchronous_unwind_tables = 1;
+      if (flag_pcc_struct_return == 2)
+	flag_pcc_struct_return = 0;
+    }
+  else
+    {
+      if (flag_zee == 2)
+        flag_zee = 0;
+      /* Mach-O doesn't support omitting the frame pointer for now.  */
+      if (flag_omit_frame_pointer == 2)
+	flag_omit_frame_pointer =
+	  (TARGET_MACHO ? 0 : !(USE_IX86_FRAME_POINTER || optimize_size));
+      if (flag_asynchronous_unwind_tables == 2)
+	flag_asynchronous_unwind_tables = !USE_IX86_FRAME_POINTER;
+      if (flag_pcc_struct_return == 2)
+	flag_pcc_struct_return = DEFAULT_PCC_STRUCT_RETURN;
+    }
+
   if (optimize_size)
     ix86_cost = &ix86_size_cost;
   else
@@ -3574,7 +3580,8 @@ override_options (bool main_args_p)
 	       prefix, suffix, sw);
     }
 
-  if ((x86_accumulate_outgoing_args & ix86_tune_mask)
+  if ((!USE_IX86_FRAME_POINTER
+       || (x86_accumulate_outgoing_args & ix86_tune_mask))
       && !(target_flags_explicit & MASK_ACCUMULATE_OUTGOING_ARGS)
       && !optimize_size)
     target_flags |= MASK_ACCUMULATE_OUTGOING_ARGS;
