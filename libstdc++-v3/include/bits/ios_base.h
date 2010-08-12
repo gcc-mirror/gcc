@@ -474,7 +474,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // 0 => OK to delete.
       int
       _M_remove_reference() 
-      { return __gnu_cxx::__exchange_and_add_dispatch(&_M_refcount, -1); }
+      {
+        // Be race-detector-friendly.  For more info see bits/c++config.
+        _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_refcount)
+        int __res = __gnu_cxx::__exchange_and_add_dispatch(&_M_refcount, -1);
+        if (__res == 0)
+          {
+            _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_refcount)
+          }
+        return __res;
+      }
     };
 
      _Callback_list*	_M_callbacks;
@@ -962,4 +971,3 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 _GLIBCXX_END_NAMESPACE
 
 #endif /* _IOS_BASE_H */
-
