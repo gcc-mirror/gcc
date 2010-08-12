@@ -1,3 +1,9 @@
+2010-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/45262
+	* fold-const.c (make_range) <case NEGATE_EXPR>: Punt if
+	-a overflows.  Normalize the range.
+
 2010-08-10  Steve Ellcey  <sje@cup.hp.com>
 	    Jakub Jelinek <jakub@redhat.com>
 
