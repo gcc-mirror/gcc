@@ -829,8 +829,8 @@ static const char *trad_capable_cpp =
    file that happens to exist is up-to-date.  */
 static const char *cpp_unique_options =
 "%{!Q:-quiet} %{nostdinc*} %{C} %{CC} %{v} %{I*&F*} %{P} %I\
- %{MD:-MD %{!o:%b.d}%{o*:%.d%*}}\
- %{MMD:-MMD %{!o:%b.d}%{o*:%.d%*}}\
+ %{MD:-MDX %{!o:%b.d}%{o*:%.d%*}}\
+ %{MMD:-MMDX %{!o:%b.d}%{o*:%.d%*}}\
  %{M} %{MM} %{MF*} %{MG} %{MP} %{MQ*} %{MT*}\
  %{!E:%{!M:%{!MM:%{!MT:%{!MQ:%{MD|MMD:%{o*:-MQ %*}}}}}}}\
  %{remap} %{g3|ggdb3|gstabs3|gcoff3|gxcoff3|gvms3:-dD}\

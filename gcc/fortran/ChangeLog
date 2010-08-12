@@ -1,3 +1,8 @@
+2010-08-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang.opt (MD, MMD): Change to MDX and MMDX.
+	* cpp.c (gfc_cpp_handle_option): Use OPT_MMD and OPT_MMDX.
+
 2010-08-11  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44595
