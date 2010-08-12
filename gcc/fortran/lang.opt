@@ -60,7 +60,7 @@ M
 Fortran
 ; Documented in C
 
-MD
+MDX
 Fortran Separate
 ; Documented in C
 
@@ -76,7 +76,7 @@ MM
 Fortran
 ; Documented in C
 
-MMD
+MMDX
 Fortran Separate
 ; Documented in C
 

@@ -1,3 +1,8 @@
+2010-08-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c (cpp_unique_options): Generate -MDX and -MMDX from -MD and
+	-MMD.
+
 2010-08-12  Changpeng Fang  <changpeng.fang@amd.com>
 
 	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Give
