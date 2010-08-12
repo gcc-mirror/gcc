@@ -1,3 +1,9 @@
+2010-08-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (LONG_TYPE_SIZE): Remove.
+	(EMPTY_FIELD_BOUNDARY): Remove.
+	* config/i386/i386-interix.h (PCC_BITFIELD_TYPE_MATTERS): Remove.
+
 2010-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/45259
@@ -752,7 +758,7 @@
 	alias_sets_conflict_p.
 	(walk_mems_1): Moved from alias.c.
 	(insns_may_alias_p): New function, originally insn_alias_sets_conflict_p
-	in alias.c. 
+	in alias.c.
         (add_inter_loop_mem_dep): Use insns_may_alias_p now.
         * cse.c (cse_insn): New argument in calling nonoverlapping_memrefs_p.
         * alias.c (walk_mems_2): Moved to ddg.c.
@@ -767,7 +773,7 @@
 	*alias.h (nonoverlapping_memrefs_p): New flag as third argument.
 	(insn_alias_sets_conflict_p): Removed
 	*rtl.h (may_alias_p): New function prototype.
-        
+
 2010-08-09  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree.c (nreverse): Assert that we don't have a BLOCK.
