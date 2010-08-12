@@ -1,3 +1,8 @@
+2010-08-12  Wei Guozhi  <carrot@google.com>
+
+	PR target/44999
+	* gcc.target/arm/pr44999.c: New testcase.
+
 2010-08-12  Jie Zhang  <jie@codesourcery.com>
 
 	* gcc.dg/graphite/interchange-9.c (M): Define to be 111.

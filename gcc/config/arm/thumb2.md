@@ -907,7 +907,7 @@
    (set_attr "neg_pool_range" "*,250")]
 )
 
-(define_insn "*thumb2_zero_extendqisi2_v6"
+(define_insn "thumb2_zero_extendqisi2_v6"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(zero_extend:SI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
   "TARGET_THUMB2 && arm_arch6"

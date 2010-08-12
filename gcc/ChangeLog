@@ -1,3 +1,9 @@
+2010-08-12  Wei Guozhi  <carrot@google.com>
+
+	PR target/44999
+	* config/arm/arm.md (andsi3): Change to zero extension if possible.
+	* config/arm/thumb2.md (thumb2_zero_extendqisi2_v6): Change the name.
+
 2010-08-11  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira-int.h (ira_remove_allocno_copy_from_list): Remove.
