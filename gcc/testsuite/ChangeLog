@@ -1,3 +1,8 @@
+2010-08-12  Changpeng Fang  <changpeng.fang@amd.com>
+
+	PR tree-optimization/45241
+	* gcc.dg/vect/no-tree-pre-pr45241.c: New test.
+
 2010-08-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/pr40906-1.c: Add -fno-asynchronous-unwind-tables
