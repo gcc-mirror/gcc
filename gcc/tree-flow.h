@@ -119,6 +119,18 @@ struct GTY(()) ptr_info_def
 {
   /* The points-to solution.  */
   struct pt_solution pt;
+
+  /* Alignment and misalignment of the pointer in bytes.  Together
+     align and misalign specify low known bits of the pointer.
+     ptr & (align - 1) == misalign.  */
+
+  /* The power-of-two byte alignment of the object this pointer
+     points into.  This is usually DECL_ALIGN_UNIT for decls and
+     MALLOC_ABI_ALIGNMENT for allocated storage.  */
+  unsigned int align;
+
+  /* The byte offset this pointer differs from the above alignment.  */
+  unsigned int misalign;
 };
 
 

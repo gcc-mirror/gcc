@@ -839,8 +839,40 @@ static bool
 ccp_finalize (void)
 {
   bool something_changed;
+  unsigned i;
 
   do_dbg_cnt ();
+
+  /* Derive alignment and misalignment information from partially
+     constant pointers in the lattice.  */
+  for (i = 1; i < num_ssa_names; ++i)
+    {
+      tree name = ssa_name (i);
+      prop_value_t *val;
+      struct ptr_info_def *pi;
+      unsigned int tem, align;
+
+      if (!name
+	  || !POINTER_TYPE_P (TREE_TYPE (name)))
+	continue;
+
+      val = get_value (name);
+      if (val->lattice_val != CONSTANT
+	  || TREE_CODE (val->value) != INTEGER_CST)
+	continue;
+
+      /* Trailing constant bits specify the alignment, trailing value
+	 bits the misalignment.  */
+      tem = val->mask.low;
+      align = (tem & -tem);
+      if (align == 1)
+	continue;
+
+      pi = get_ptr_info (name);
+      pi->align = align;
+      pi->misalign = TREE_INT_CST_LOW (val->value) & (align - 1);
+    }
+
   /* Perform substitutions based on the known constant values.  */
   something_changed = substitute_and_fold (get_constant_value,
 					   ccp_fold_stmt, true);
@@ -1981,6 +2013,7 @@ evaluate_stmt (gimple stmt)
       && !is_constant)
     {
       enum gimple_code code = gimple_code (stmt);
+      tree fndecl;
       val.lattice_val = VARYING;
       val.value = NULL_TREE;
       val.mask = double_int_minus_one;
@@ -2025,6 +2058,33 @@ evaluate_stmt (gimple stmt)
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
 	      || POINTER_TYPE_P (TREE_TYPE (rhs1)))
 	    val = bit_value_binop (code, TREE_TYPE (rhs1), rhs1, rhs2);
+	}
+      else if (code == GIMPLE_CALL
+	       && (fndecl = gimple_call_fndecl (stmt))
+	       && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+	{
+	  switch (DECL_FUNCTION_CODE (fndecl))
+	    {
+	    case BUILT_IN_MALLOC:
+	    case BUILT_IN_REALLOC:
+	    case BUILT_IN_CALLOC:
+	      val.lattice_val = CONSTANT;
+	      val.value = build_int_cst (TREE_TYPE (gimple_get_lhs (stmt)), 0);
+	      val.mask = shwi_to_double_int
+		  	   (~(((HOST_WIDE_INT) MALLOC_ABI_ALIGNMENT)
+			      / BITS_PER_UNIT - 1));
+	      break;
+
+	    case BUILT_IN_ALLOCA:
+	      val.lattice_val = CONSTANT;
+	      val.value = build_int_cst (TREE_TYPE (gimple_get_lhs (stmt)), 0);
+	      val.mask = shwi_to_double_int
+		  	   (~(((HOST_WIDE_INT) BIGGEST_ALIGNMENT)
+			      / BITS_PER_UNIT - 1));
+	      break;
+
+	    default:;
+	    }
 	}
       is_constant = (val.lattice_val == CONSTANT);
     }

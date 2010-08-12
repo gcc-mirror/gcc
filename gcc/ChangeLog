@@ -1,3 +1,29 @@
+2010-08-12  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow.h (struct ptr_info_def): Add align and misalign fields.
+	* tree-ssa-alias.c (get_ptr_info): Move ...
+	* tree-ssanames.c (get_ptr_info): ... here.  Initialize
+	align and misalign fields conservatively.
+	* tree-ssa-ccp.c (ccp_finalize): From partially constant pointers
+	derive alignment information.
+	(evaluate_stmt): Derive alignment information from memory
+	allocation functions.
+	* tree.h (get_pointer_alignment): Make unsigned.
+	* builtins.c (get_object_alignment): Use alignment information we
+	have computed for pointers.
+	(get_pointer_alignment): Likewise.  Make conservative, return
+	and unsigned value.
+	(expand_builtin_strlen): Adjust.
+	(expand_builtin_memcmp): Likewise.
+	(expand_builtin_strcmp): Likewise.
+	(expand_builtin_strncmp): Likewise.
+	(get_builtin_sync_mem): Use at least mode alignment.
+	(fold_builtin_memset): Adjust.
+	(fold_builtin_memory_op): Likewise.
+	* gimple-pretty-print.c (dump_gimple_phi): Alongside alias
+	information also dump pointer alignment knowledge.
+	(dump_gimple_stmt): Likewise.
+
 2010-08-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (LONG_TYPE_SIZE): Remove.

@@ -368,27 +368,6 @@ debug_alias_info (void)
 }
 
 
-/* Return the alias information associated with pointer T.  It creates a
-   new instance if none existed.  */
-
-struct ptr_info_def *
-get_ptr_info (tree t)
-{
-  struct ptr_info_def *pi;
-
-  gcc_assert (POINTER_TYPE_P (TREE_TYPE (t)));
-
-  pi = SSA_NAME_PTR_INFO (t);
-  if (pi == NULL)
-    {
-      pi = ggc_alloc_cleared_ptr_info_def ();
-      pt_solution_reset (&pi->pt);
-      SSA_NAME_PTR_INFO (t) = pi;
-    }
-
-  return pi;
-}
-
 /* Dump the points-to set *PT into FILE.  */
 
 void
