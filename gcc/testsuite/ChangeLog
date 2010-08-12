@@ -1,3 +1,29 @@
+2010-08-12  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45232
+	* gcc.dg/tree-ssa/pr44133.c: Adjust warning location.
+	* gcc.dg/tree-ssa/loop-7.c: Adjust.
+	* gcc.dg/tree-ssa/reassoc-1.c: XFAIL.
+	* gcc.dg/tree-ssa/reassoc-20.c: Add reassoc-1.c variant with
+	unsigned arithmetic.
+	* gcc.dg/tree-ssa/reassoc-14.c: Use unsigned arithmetic.
+	* gcc.dg/tree-ssa/reassoc-15.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-18.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-2.c: XFAIL.
+	* gcc.dg/tree-ssa/reassoc-21.c: Add reassoc-2.c variant with
+	unsigned arithmetic.
+	* gcc.dg/tree-ssa/reassoc-6.c: XFAIL.
+	* gcc.dg/tree-ssa/reassoc-22.c: Add reassoc-6.c variant with
+	unsigned arithmetic.
+	* gcc.dg/tree-ssa/reassoc-7.c: Use unsigned arithmetic.
+	* gcc.dg/tree-ssa/reassoc-9.c: XFAIL.
+	* gcc.dg/tree-ssa/reassoc-23.c: Add reassoc-9.c variant with
+	unsigned arithmetic.
+	* gcc.dg/tree-ssa/ssa-pre-2.c: Adjust.
+	* gcc.dg/tree-ssa/negate.c: Adjust.
+	* gcc.dg/vect/vect-1.c: Adjust.
+	* gfortran.dg/reassoc_6.f: XFAIL.
+
 2010-08-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/45259

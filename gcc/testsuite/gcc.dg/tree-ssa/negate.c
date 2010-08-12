@@ -8,6 +8,11 @@ int f (int a, int b)
   return y;
 }
 
+/* We tested for reassociation to -(a + b) on the following which
+   isn't a transform that makes things cheaper.  With reassoc
+   no longer applying to types with undefined overflow we lost
+   this transform.
+
 int g (int a, int b)
 {
   int x = -a;
@@ -15,6 +20,8 @@ int g (int a, int b)
   return y;
 }
 
-/* There should be two additions now.  */
-/* { dg-final { scan-tree-dump-times "\\+" 2 "reassoc1"} } */
+*/
+
+/* There should be an addition now.  */
+/* { dg-final { scan-tree-dump-times "\\+" 1 "reassoc1"} } */
 /* { dg-final { cleanup-tree-dump "reassoc1" } } */
