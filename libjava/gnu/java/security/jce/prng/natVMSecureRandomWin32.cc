@@ -1,6 +1,6 @@
 // natVMSecureRandomWin32.cc - Native part of VMSecureRandom class for Win32.
 
-/* Copyright (C) 2009 Free Software Foundation
+/* Copyright (C) 2009, 2010 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -26,7 +26,7 @@ jint
 gnu::java::security::jce::prng::VMSecureRandom::natGenerateSeed(jbyteArray byte_array, jint offset, jint length)
 {
   if (length != 0)
-    throw new java::lang::UnsupportedOperationException (
+    throw new ::java::lang::UnsupportedOperationException (
       JvNewStringLatin1 ("natGenerateSeed is not available for Win32 target."));
   return 0;
 }

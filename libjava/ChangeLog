@@ -1,3 +1,8 @@
+2010-08-12  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/java/security/jce/prng/natVMSecureRandomWin32.cc
+	(natGenerateSeed): Add missing "::".
+
 2010-07-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (*-*-solaris2.8): Use alternate thread library.
