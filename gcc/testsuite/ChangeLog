@@ -1,3 +1,8 @@
+2010-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/45259
+	* gcc.dg/pr45259.c: New test.
+
 2010-08-12  Wei Guozhi  <carrot@google.com>
 
 	PR target/44999
