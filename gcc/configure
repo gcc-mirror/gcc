@@ -898,6 +898,7 @@ with_system_libunwind
 enable_secureplt
 enable_leading_mingw64_underscores
 enable_cld
+enable_frame_pointer
 enable_win32_registry
 enable_static
 with_pic
@@ -1597,6 +1598,7 @@ Optional Features:
   --enable-leading-mingw64-underscores
                           Enable leading underscores on 64 bit mingw targets
   --enable-cld            enable -mcld by default for 32bit x86
+  --enable-frame-pointer  enable -fno-omit-frame-pointer by default for 32bit x86
   --disable-win32-registry
                           disable lookup of installation paths in the
                           Registry on Windows hosts
@@ -10708,6 +10710,24 @@ else
 fi
 
 
+# Check whether --enable-frame-pointer was given.
+if test "${enable_frame_pointer+set}" = set; then :
+  enableval=$enable_frame_pointer;
+else
+
+case $target_os in
+linux*)
+  # Enable -fomit-frame-pointer by default for Linux.
+  enable_frame_pointer=no
+  ;;
+*)
+  enable_frame_pointer=yes
+  ;;
+esac
+
+fi
+
+
 # Windows32 Registry support for specifying GCC installation paths.
 # Check whether --enable-win32-registry was given.
 if test "${enable_win32_registry+set}" = set; then :
@@ -17109,7 +17129,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17112 "configure"
+#line 17132 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17215,7 +17235,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17218 "configure"
+#line 17238 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
