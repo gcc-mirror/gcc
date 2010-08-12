@@ -1937,9 +1937,17 @@
     {
       if (GET_CODE (operands[2]) == CONST_INT)
         {
-          arm_split_constant (AND, SImode, NULL_RTX,
-	                      INTVAL (operands[2]), operands[0],
-			      operands[1], optimize && can_create_pseudo_p ());
+	  if (INTVAL (operands[2]) == 255 && arm_arch6)
+	    {
+	      operands[1] = convert_to_mode (QImode, operands[1], 1);
+	      emit_insn (gen_thumb2_zero_extendqisi2_v6 (operands[0],
+							 operands[1]));
+	    }
+	  else
+	    arm_split_constant (AND, SImode, NULL_RTX,
+				INTVAL (operands[2]), operands[0],
+				operands[1],
+				optimize && can_create_pseudo_p ());
 
           DONE;
         }
