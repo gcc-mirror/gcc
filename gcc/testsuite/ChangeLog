@@ -1,3 +1,9 @@
+2010-08-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/profile-generate-3.c: Call dg-require-profiling with
+	empty argument.
+	* g++.dg/other/profile1.C: Ditto.
+
 2010-08-12  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45232
