@@ -309,6 +309,7 @@ get_object_alignment (tree exp, unsigned int max_align)
   else if (TREE_CODE (exp) == MEM_REF)
     {
       tree addr = TREE_OPERAND (exp, 0);
+      struct ptr_info_def *pi;
       if (TREE_CODE (addr) == BIT_AND_EXPR
 	  && TREE_CODE (TREE_OPERAND (addr, 1)) == INTEGER_CST)
 	{
@@ -319,10 +320,51 @@ get_object_alignment (tree exp, unsigned int max_align)
 	}
       else
 	align = BITS_PER_UNIT;
-      if (TREE_CODE (addr) == ADDR_EXPR)
+      if (TREE_CODE (addr) == SSA_NAME
+	  && (pi = SSA_NAME_PTR_INFO (addr)))
+	{
+	  bitpos += (pi->misalign * BITS_PER_UNIT) & ~(align - 1);
+	  align = MAX (pi->align * BITS_PER_UNIT, align);
+	}
+      else if (TREE_CODE (addr) == ADDR_EXPR)
 	align = MAX (align, get_object_alignment (TREE_OPERAND (addr, 0),
 						  max_align));
       bitpos += mem_ref_offset (exp).low * BITS_PER_UNIT;
+    }
+  else if (TREE_CODE (exp) == TARGET_MEM_REF
+	   && TMR_BASE (exp)
+	   && POINTER_TYPE_P (TREE_TYPE (TMR_BASE (exp))))
+    {
+      struct ptr_info_def *pi;
+      tree addr = TMR_BASE (exp);
+      if (TREE_CODE (addr) == BIT_AND_EXPR
+	  && TREE_CODE (TREE_OPERAND (addr, 1)) == INTEGER_CST)
+	{
+	  align = (TREE_INT_CST_LOW (TREE_OPERAND (addr, 1))
+		   & -TREE_INT_CST_LOW (TREE_OPERAND (addr, 1)));
+	  align *= BITS_PER_UNIT;
+	  addr = TREE_OPERAND (addr, 0);
+	}
+      else
+	align = BITS_PER_UNIT;
+      if (TREE_CODE (addr) == SSA_NAME
+	  && (pi = SSA_NAME_PTR_INFO (addr)))
+	{
+	  bitpos += (pi->misalign * BITS_PER_UNIT) & ~(align - 1);
+	  align = MAX (pi->align * BITS_PER_UNIT, align);
+	}
+      else if (TREE_CODE (addr) == ADDR_EXPR)
+	align = MAX (align, get_object_alignment (TREE_OPERAND (addr, 0),
+						  max_align));
+      if (TMR_OFFSET (exp))
+	bitpos += TREE_INT_CST_LOW (TMR_OFFSET (exp)) * BITS_PER_UNIT;
+      if (TMR_INDEX (exp) && TMR_STEP (exp))
+	{
+	  unsigned HOST_WIDE_INT step = TREE_INT_CST_LOW (TMR_STEP (exp));
+	  align = MIN (align, (step & -step) * BITS_PER_UNIT);
+	}
+      else if (TMR_INDEX (exp))
+	align = BITS_PER_UNIT;
     }
   else if (TREE_CODE (exp) == TARGET_MEM_REF
 	   && TMR_SYMBOL (exp))
@@ -417,56 +459,28 @@ can_trust_pointer_alignment (void)
    Otherwise, look at the expression to see if we can do better, i.e., if the
    expression is actually pointing at an object whose alignment is tighter.  */
 
-int
+unsigned int
 get_pointer_alignment (tree exp, unsigned int max_align)
 {
-  unsigned int align, inner;
+  STRIP_NOPS (exp);
 
-  if (!can_trust_pointer_alignment ())
-    return 0;
-
-  if (!POINTER_TYPE_P (TREE_TYPE (exp)))
-    return 0;
-
-  align = TYPE_ALIGN (TREE_TYPE (TREE_TYPE (exp)));
-  align = MIN (align, max_align);
-
-  while (1)
+  if (TREE_CODE (exp) == ADDR_EXPR)
+    return get_object_alignment (TREE_OPERAND (exp, 0), max_align);
+  else if (TREE_CODE (exp) == SSA_NAME
+	   && POINTER_TYPE_P (TREE_TYPE (exp)))
     {
-      switch (TREE_CODE (exp))
-	{
-	CASE_CONVERT:
-	  exp = TREE_OPERAND (exp, 0);
-	  if (! POINTER_TYPE_P (TREE_TYPE (exp)))
-	    return align;
-
-	  inner = TYPE_ALIGN (TREE_TYPE (TREE_TYPE (exp)));
-	  align = MIN (inner, max_align);
-	  break;
-
-	case POINTER_PLUS_EXPR:
-	  /* If sum of pointer + int, restrict our maximum alignment to that
-	     imposed by the integer.  If not, we can't do any better than
-	     ALIGN.  */
-	  if (! host_integerp (TREE_OPERAND (exp, 1), 1))
-	    return align;
-
-	  while (((tree_low_cst (TREE_OPERAND (exp, 1), 1))
-		  & (max_align / BITS_PER_UNIT - 1))
-		 != 0)
-	    max_align >>= 1;
-
-	  exp = TREE_OPERAND (exp, 0);
-	  break;
-
-	case ADDR_EXPR:
-	  /* See what we are pointing at and look at its alignment.  */
-	  return get_object_alignment (TREE_OPERAND (exp, 0), max_align);
-
-	default:
-	  return align;
-	}
+      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (exp);
+      unsigned align;
+      if (!pi)
+	return BITS_PER_UNIT;
+      if (pi->misalign != 0)
+	align = (pi->misalign & -pi->misalign);
+      else
+	align = pi->align;
+      return MIN (max_align, align * BITS_PER_UNIT);
     }
+
+  return POINTER_TYPE_P (TREE_TYPE (exp)) ? BITS_PER_UNIT : 0;
 }
 
 /* Compute the length of a C string.  TREE_STRING_LENGTH is not the right
@@ -3293,7 +3307,7 @@ expand_builtin_strlen (tree exp, rtx target,
       rtx result, src_reg, char_rtx, before_strlen;
       enum machine_mode insn_mode = target_mode, char_mode;
       enum insn_code icode = CODE_FOR_nothing;
-      int align;
+      unsigned int align;
 
       /* If the length can be computed at compile-time, return it.  */
       len = c_strlen (src, 0);
@@ -4066,9 +4080,9 @@ expand_builtin_memcmp (tree exp, ATTRIBUTE_UNUSED rtx target,
     tree arg2 = CALL_EXPR_ARG (exp, 1);
     tree len = CALL_EXPR_ARG (exp, 2);
 
-    int arg1_align
+    unsigned int arg1_align
       = get_pointer_alignment (arg1, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-    int arg2_align
+    unsigned int arg2_align
       = get_pointer_alignment (arg2, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
     enum machine_mode insn_mode;
 
@@ -4168,9 +4182,9 @@ expand_builtin_strcmp (tree exp, ATTRIBUTE_UNUSED rtx target)
       tree arg1 = CALL_EXPR_ARG (exp, 0);
       tree arg2 = CALL_EXPR_ARG (exp, 1);
 
-      int arg1_align
+      unsigned int arg1_align
 	= get_pointer_alignment (arg1, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-      int arg2_align
+      unsigned int arg2_align
 	= get_pointer_alignment (arg2, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
 
       /* If we don't have POINTER_TYPE, call the function.  */
@@ -4319,9 +4333,9 @@ expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
     tree arg2 = CALL_EXPR_ARG (exp, 1);
     tree arg3 = CALL_EXPR_ARG (exp, 2);
 
-    int arg1_align
+    unsigned int arg1_align
       = get_pointer_alignment (arg1, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-    int arg2_align
+    unsigned int arg2_align
       = get_pointer_alignment (arg2, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
     enum machine_mode insn_mode
       = insn_data[(int) CODE_FOR_cmpstrnsi].operand[0].mode;
@@ -5505,7 +5519,9 @@ get_builtin_sync_mem (tree loc, enum machine_mode mode)
      satisfy the full barrier semantics of the intrinsic.  */
   mem = validize_mem (gen_rtx_MEM (mode, addr));
 
-  set_mem_align (mem, get_pointer_alignment (loc, BIGGEST_ALIGNMENT));
+  /* The alignment needs to be at least according to that of the mode.  */
+  set_mem_align (mem, MAX (GET_MODE_ALIGNMENT (mode),
+			   get_pointer_alignment (loc, BIGGEST_ALIGNMENT)));
   set_mem_alias_set (mem, ALIAS_SET_MEMORY_BARRIER);
   MEM_VOLATILE_P (mem) = 1;
 
@@ -8280,7 +8296,7 @@ fold_builtin_memset (location_t loc, tree dest, tree c, tree len,
   length = tree_low_cst (len, 1);
   if (GET_MODE_SIZE (TYPE_MODE (etype)) != length
       || get_pointer_alignment (dest, BIGGEST_ALIGNMENT) / BITS_PER_UNIT
-	 < (int) length)
+	 < length)
     return NULL_TREE;
 
   if (length > HOST_BITS_PER_WIDE_INT / BITS_PER_UNIT)
@@ -8365,7 +8381,7 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
   else
     {
       tree srctype, desttype;
-      int src_align, dest_align;
+      unsigned int src_align, dest_align;
       tree off0;
 
       if (endp == 3)
@@ -8504,8 +8520,8 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 
       src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
       dest_align = get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
-      if (dest_align < (int) TYPE_ALIGN (desttype)
-	  || src_align < (int) TYPE_ALIGN (srctype))
+      if (dest_align < TYPE_ALIGN (desttype)
+	  || src_align < TYPE_ALIGN (srctype))
 	return NULL_TREE;
 
       if (!ignore)
@@ -8531,7 +8547,7 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 	  && tree_int_cst_equal (TYPE_SIZE_UNIT (srctype), len)
 	  && (!STRICT_ALIGNMENT
 	      || !destvar
-	      || src_align >= (int) TYPE_ALIGN (desttype)))
+	      || src_align >= TYPE_ALIGN (desttype)))
 	srcvar = fold_build2 (MEM_REF, destvar ? desttype : srctype,
 			      srcvar, off0);
       else
@@ -8543,7 +8559,7 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
       if (srcvar == NULL_TREE)
 	{
 	  if (STRICT_ALIGNMENT
-	      && src_align < (int) TYPE_ALIGN (desttype))
+	      && src_align < TYPE_ALIGN (desttype))
 	    return NULL_TREE;
 	  STRIP_NOPS (src);
 	  srcvar = fold_build2 (MEM_REF, desttype, src, off0);
@@ -8551,7 +8567,7 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
       else if (destvar == NULL_TREE)
 	{
 	  if (STRICT_ALIGNMENT
-	      && dest_align < (int) TYPE_ALIGN (srctype))
+	      && dest_align < TYPE_ALIGN (srctype))
 	    return NULL_TREE;
 	  STRIP_NOPS (dest);
 	  destvar = fold_build2 (MEM_REF, srctype, dest, off0);

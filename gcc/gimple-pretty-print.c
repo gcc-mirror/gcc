@@ -1363,8 +1363,13 @@ dump_gimple_phi (pretty_printer *buffer, gimple phi, int spc, int flags)
       && POINTER_TYPE_P (TREE_TYPE (lhs))
       && SSA_NAME_PTR_INFO (lhs))
     {
+      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (lhs);
       pp_string (buffer, "PT = ");
-      pp_points_to_solution (buffer, &SSA_NAME_PTR_INFO (lhs)->pt);
+      pp_points_to_solution (buffer, &pi->pt);
+      newline_and_indent (buffer, spc);
+      if (pi->align != 1)
+	pp_printf (buffer, "# ALIGN = %u, MISALIGN = %u",
+		   pi->align, pi->misalign);
       newline_and_indent (buffer, spc);
       pp_string (buffer, "# ");
     }
@@ -1650,9 +1655,16 @@ dump_gimple_stmt (pretty_printer *buffer, gimple gs, int spc, int flags)
 	  && POINTER_TYPE_P (TREE_TYPE (lhs))
 	  && SSA_NAME_PTR_INFO (lhs))
 	{
+	  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (lhs);
 	  pp_string (buffer, "# PT = ");
-	  pp_points_to_solution (buffer, &SSA_NAME_PTR_INFO (lhs)->pt);
+	  pp_points_to_solution (buffer, &pi->pt);
 	  newline_and_indent (buffer, spc);
+	  if (pi->align != 1)
+	    {
+	      pp_printf (buffer, "# ALIGN = %u, MISALIGN = %u",
+			 pi->align, pi->misalign);
+	      newline_and_indent (buffer, spc);
+	    }
 	}
     }
 

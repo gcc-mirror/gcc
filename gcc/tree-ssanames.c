@@ -240,20 +240,29 @@ release_ssa_name (tree var)
     }
 }
 
-/* Creates a duplicate of a ssa name NAME defined in statement STMT.  */
 
-tree
-duplicate_ssa_name (tree name, gimple stmt)
+/* Return the alias information associated with pointer T.  It creates a
+   new instance if none existed.  */
+
+struct ptr_info_def *
+get_ptr_info (tree t)
 {
-  tree new_name = make_ssa_name (SSA_NAME_VAR (name), stmt);
-  struct ptr_info_def *old_ptr_info = SSA_NAME_PTR_INFO (name);
+  struct ptr_info_def *pi;
 
-  if (old_ptr_info)
-    duplicate_ssa_name_ptr_info (new_name, old_ptr_info);
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (t)));
 
-  return new_name;
+  pi = SSA_NAME_PTR_INFO (t);
+  if (pi == NULL)
+    {
+      pi = ggc_alloc_cleared_ptr_info_def ();
+      pt_solution_reset (&pi->pt);
+      pi->align = 1;
+      pi->misalign = 0;
+      SSA_NAME_PTR_INFO (t) = pi;
+    }
+
+  return pi;
 }
-
 
 /* Creates a duplicate of the ptr_info_def at PTR_INFO for use by
    the SSA name NAME.  */
@@ -273,6 +282,21 @@ duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)
   *new_ptr_info = *ptr_info;
 
   SSA_NAME_PTR_INFO (name) = new_ptr_info;
+}
+
+
+/* Creates a duplicate of a ssa name NAME tobe defined by statement STMT.  */
+
+tree
+duplicate_ssa_name (tree name, gimple stmt)
+{
+  tree new_name = make_ssa_name (SSA_NAME_VAR (name), stmt);
+  struct ptr_info_def *old_ptr_info = SSA_NAME_PTR_INFO (name);
+
+  if (old_ptr_info)
+    duplicate_ssa_name_ptr_info (new_name, old_ptr_info);
+
+  return new_name;
 }
 
 
