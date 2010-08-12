@@ -1,3 +1,8 @@
+2010-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.c (fold_builtin_memory_op): Avoid -Wsign-compare
+	warning.
+
 2010-08-12  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45232
