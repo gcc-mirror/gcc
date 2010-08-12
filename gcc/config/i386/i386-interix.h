@@ -287,8 +287,6 @@ while (0)
 
 #define HOST_PTR_AS_INT unsigned long
 
-#define PCC_BITFIELD_TYPE_MATTERS 1
-
 /* The following two flags are usually "off" for i386, because some non-gnu
    tools (for the i386) don't handle them.  However, we don't have that
    problem, so....  */

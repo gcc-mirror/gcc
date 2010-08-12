@@ -661,10 +661,9 @@ enum target_cpu_default
 
 #define SHORT_TYPE_SIZE 16
 #define INT_TYPE_SIZE 32
-#define FLOAT_TYPE_SIZE 32
-#define LONG_TYPE_SIZE BITS_PER_WORD
-#define DOUBLE_TYPE_SIZE 64
 #define LONG_LONG_TYPE_SIZE 64
+#define FLOAT_TYPE_SIZE 32
+#define DOUBLE_TYPE_SIZE 64
 #define LONG_DOUBLE_TYPE_SIZE 80
 
 #define WIDEST_HARDWARE_FP_SIZE LONG_DOUBLE_TYPE_SIZE
@@ -739,10 +738,6 @@ enum target_cpu_default
 
 /* C++ stores the virtual bit in the lowest bit of function pointers.  */
 #define TARGET_PTRMEMFUNC_VBIT_LOCATION ptrmemfunc_vbit_in_pfn
-
-/* Alignment of field after `int : 0' in a structure.  */
-
-#define EMPTY_FIELD_BOUNDARY BITS_PER_WORD
 
 /* Minimum size in bits of the largest boundary to which any
    and all fundamental data types supported by the hardware
