@@ -810,7 +810,7 @@ reload_combine (void)
 	  rtx reg = SET_DEST (set);
 	  rtx plus = SET_SRC (set);
 	  rtx base = XEXP (plus, 1);
-	  rtx prev = prev_nonnote_insn (insn);
+	  rtx prev = prev_nonnote_nondebug_insn (insn);
 	  rtx prev_set = prev ? single_set (prev) : NULL_RTX;
 	  unsigned int regno = REGNO (reg);
 	  rtx index_reg = NULL_RTX;
@@ -1323,7 +1323,7 @@ reload_cse_move2add (rtx first)
 		       && MODES_OK_FOR_MOVE2ADD (GET_MODE (reg),
 						 reg_mode[REGNO (src)]))
 		{
-		  rtx next = next_nonnote_insn (insn);
+		  rtx next = next_nonnote_nondebug_insn (insn);
 		  rtx set = NULL_RTX;
 		  if (next)
 		    set = single_set (next);

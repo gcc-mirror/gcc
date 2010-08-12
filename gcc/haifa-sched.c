@@ -1997,13 +1997,9 @@ queue_to_ready (struct ready_list *ready)
   q_ptr = NEXT_Q (q_ptr);
 
   if (dbg_cnt (sched_insn) == false)
-    {
-      /* If debug counter is activated do not requeue insn next after
-	 last_scheduled_insn.  */
-      skip_insn = next_nonnote_insn (last_scheduled_insn);
-      while (skip_insn && DEBUG_INSN_P (skip_insn))
-	skip_insn = next_nonnote_insn (skip_insn);
-    }
+    /* If debug counter is activated do not requeue insn next after
+       last_scheduled_insn.  */
+    skip_insn = next_nonnote_nondebug_insn (last_scheduled_insn);
   else
     skip_insn = NULL_RTX;
 

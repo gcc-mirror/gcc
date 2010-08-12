@@ -4,6 +4,24 @@
 	* caller-save.c (save_call_clobbered_regs): Only swap notes with
 	DEBUG_INSNs if n_regs_saved.
 
+	Backport from mainline
+	2010-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/45055
+	PR rtl-optimization/45137
+	* rtl.h (prev_nonnote_nondebug_insn, next_nonnote_nondebug_insn): New
+	prototypes.
+	* emit-rtl.c (prev_nonnote_nondebug_insn, next_nonnote_nondebug_insn):
+	New functions.
+	* combine.c (next_nonnote_nondebug_insn): Removed.
+	* ifcvt.c (noce_process_if_block): Use prev_nonnote_nondebug_insn.
+	* haifa-sched.c (queue_to_ready): Use next_nonnote_nondebug_insn.
+	* sched-deps.c (sched_analyze_insn): Likewise.
+	(fixup_sched_groups, deps_start_bb): Use prev_nonnote_nondebug_insn.
+	* rtlanal.c (canonicalize_condition): Likewise.
+	* postreload.c (reload_combine): Likewise.
+	(reload_cse_move2add): Use next_nonnote_nondebug_insn.
+
 2010-08-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	Backport from mainline.
