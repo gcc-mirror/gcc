@@ -1,3 +1,8 @@
+2010-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/45262
+	* gcc.c-torture/execute/pr45262.c: New test.
+
 2010-08-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/profile-generate-3.c: Call dg-require-profiling with
