@@ -140,10 +140,10 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       _M_release() // nothrow
       {
         // Be race-detector-friendly.  For more info see bits/c++config.
-        _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_use_count)
+        _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_use_count);
 	if (__gnu_cxx::__exchange_and_add_dispatch(&_M_use_count, -1) == 1)
 	  {
-            _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_use_count)
+            _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_use_count);
 	    _M_dispose();
 	    // There must be a memory barrier between dispose() and destroy()
 	    // to ensure that the effects of dispose() are observed in the
@@ -156,11 +156,11 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	      }
 
             // Be race-detector-friendly.  For more info see bits/c++config.
-            _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_weak_count)
+            _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_weak_count);
 	    if (__gnu_cxx::__exchange_and_add_dispatch(&_M_weak_count,
 						       -1) == 1)
               {
-                _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_weak_count)
+                _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_weak_count);
 	        _M_destroy();
               }
 	  }
@@ -174,10 +174,10 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       _M_weak_release() // nothrow
       {
         // Be race-detector-friendly. For more info see bits/c++config.
-        _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_weak_count)
+        _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_weak_count);
 	if (__gnu_cxx::__exchange_and_add_dispatch(&_M_weak_count, -1) == 1)
 	  {
-            _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_weak_count)
+            _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_weak_count);
 	    if (_Mutex_base<_Lp>::_S_need_barriers)
 	      {
 	        // See _M_release(),

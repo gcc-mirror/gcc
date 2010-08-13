@@ -234,11 +234,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #endif
 	    {
 	      // Be race-detector-friendly.  For more info see bits/c++config.
-	      _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&this->_M_refcount)
+	      _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&this->_M_refcount);
 	      if (__gnu_cxx::__exchange_and_add_dispatch(&this->_M_refcount,
 							 -1) <= 0)
 		{
-		  _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&this->_M_refcount)
+		  _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&this->_M_refcount);
 		  _M_destroy(__a);
 		}
 	    }
