@@ -1,5 +1,22 @@
 2010-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/23_containers/unordered_map/dr1189.cc: Move to...
+	* testsuite/23_containers/unordered_map/hash_policy/dr1189.cc:
+	... here.
+	* testsuite/23_containers/unordered_set/dr1189.cc: Move to...
+	* testsuite/23_containers/unordered_set/hash_policy/dr1189.cc:
+	... here.
+	* testsuite/23_containers/unordered_multimap/dr1189.cc: Move to...
+	* testsuite/23_containers/unordered_multimap/hash_policy/dr1189.cc:
+	... here.
+	* testsuite/23_containers/unordered_multiset/dr1189.cc: Move to...
+	* testsuite/23_containers/unordered_multiset/hash_policy/dr1189.cc:
+	... here.
+
+	* testsuite/23_containers/unordered_set/hash_policy/26132.cc: New.
+
+2010-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* src/ios_init.cc (ios_base::Init::~Init): Add back semicolon
 	at the end of the _GLIBCXX_SYNCHRONIZATION_HAPPENS_* macros,
 	removed by mistake.
