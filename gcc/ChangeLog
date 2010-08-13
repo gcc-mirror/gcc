@@ -1,3 +1,8 @@
+2010-08-13  Jie Zhang  <jie@codesourcery.com>
+
+	* config/arm/arm.md (cstoredf4): Only valid when
+	!TARGET_VFP_SINGLE.
+
 2010-08-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.c (cpp_unique_options): Generate -MDX and -MMDX from -MD and
