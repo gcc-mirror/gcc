@@ -11673,20 +11673,24 @@ resolve_symbol (gfc_symbol *sym)
     }
 
   /* Assumed size arrays and assumed shape arrays must be dummy
-     arguments.  */
+     arguments.  Array-spec's of implied-shape should have been resolved to
+     AS_EXPLICIT already.  */
 
-  if (sym->as != NULL
-      && ((sym->as->type == AS_ASSUMED_SIZE && !sym->as->cp_was_assumed)
-	  || sym->as->type == AS_ASSUMED_SHAPE)
-      && sym->attr.dummy == 0)
+  if (sym->as)
     {
-      if (sym->as->type == AS_ASSUMED_SIZE)
-	gfc_error ("Assumed size array at %L must be a dummy argument",
-		   &sym->declared_at);
-      else
-	gfc_error ("Assumed shape array at %L must be a dummy argument",
-		   &sym->declared_at);
-      return;
+      gcc_assert (sym->as->type != AS_IMPLIED_SHAPE);
+      if (((sym->as->type == AS_ASSUMED_SIZE && !sym->as->cp_was_assumed)
+	   || sym->as->type == AS_ASSUMED_SHAPE)
+	  && sym->attr.dummy == 0)
+	{
+	  if (sym->as->type == AS_ASSUMED_SIZE)
+	    gfc_error ("Assumed size array at %L must be a dummy argument",
+		       &sym->declared_at);
+	  else
+	    gfc_error ("Assumed shape array at %L must be a dummy argument",
+		       &sym->declared_at);
+	  return;
+	}
     }
 
   /* Make sure symbols with known intent or optional are really dummy

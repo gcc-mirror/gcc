@@ -463,6 +463,12 @@ gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
       as->rank++;
       current_type = match_array_element_spec (as);
 
+      /* Note that current_type == AS_ASSUMED_SIZE for both assumed-size
+	 and implied-shape specifications.  If the rank is at least 2, we can
+	 distinguish between them.  But for rank 1, we currently return
+	 ASSUMED_SIZE; this gets adjusted later when we know for sure
+	 whether the symbol parsed is a PARAMETER or not.  */
+
       if (as->rank == 1)
 	{
 	  if (current_type == AS_UNKNOWN)
@@ -474,6 +480,15 @@ gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
 	  {		/* See how current spec meshes with the existing.  */
 	  case AS_UNKNOWN:
 	    goto cleanup;
+
+	  case AS_IMPLIED_SHAPE:
+	    if (current_type != AS_ASSUMED_SHAPE)
+	      {
+		gfc_error ("Bad array specification for implied-shape"
+			   " array at %C");
+		goto cleanup;
+	      }
+	    break;
 
 	  case AS_EXPLICIT:
 	    if (current_type == AS_ASSUMED_SIZE)
@@ -513,6 +528,12 @@ gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
 	    goto cleanup;
 
 	  case AS_ASSUMED_SIZE:
+	    if (as->rank == 2 && current_type == AS_ASSUMED_SIZE)
+	      {
+		as->type = AS_IMPLIED_SHAPE;
+		break;
+	      }
+
 	    gfc_error ("Bad specification for assumed size array at %C");
 	    goto cleanup;
 	  }
@@ -570,6 +591,7 @@ coarray:
       else
 	switch (as->cotype)
 	  { /* See how current spec meshes with the existing.  */
+	    case AS_IMPLIED_SHAPE:
 	    case AS_UNKNOWN:
 	      goto cleanup;
 

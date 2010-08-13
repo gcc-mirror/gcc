@@ -1,3 +1,13 @@
+2010-08-13  Daniel Kraft  <d@domob.eu>
+
+	* gfortran.h (array_type): New type `AS_IMPLIED_SHAPE'.
+	* array.c (gfc_match_array_spec): Match implied-shape specification and
+	handle AS_IMPLIED_SHAPE correctly otherwise.
+	* decl.c (add_init_expr_to_sym): Set upper bounds for implied-shape.
+	(variable_decl): Some checks for implied-shape declaration.
+	* resolve.c (resolve_symbol): Assert that array-spec is no longer
+	AS_IMPLIED_SHAPE in any case.
+
 2010-08-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* lang.opt (MD, MMD): Change to MDX and MMDX.
