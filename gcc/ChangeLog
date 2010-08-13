@@ -1,3 +1,9 @@
+2010-08-13  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	* gcc/configure.ac: Enable -fomit-frame-pointer on darwin
+	which support dwarf2.
+	* config/i386/i386.c (override_options): Same.
+
 2010-08-13  Jie Zhang  <jie@codesourcery.com>
 
 	* config/arm/arm.md (cstoredf4): Only valid when

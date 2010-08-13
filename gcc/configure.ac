@@ -1584,8 +1584,9 @@ AC_ARG_ENABLE(frame-pointer,
 [  --enable-frame-pointer  enable -fno-omit-frame-pointer by default for 32bit x86], [],
 [
 case $target_os in
-linux*)
-  # Enable -fomit-frame-pointer by default for Linux.
+linux* | darwin[[8912]]*)
+  # Enable -fomit-frame-pointer by default for Linux and Darwin with
+  # DWARF2.
   enable_frame_pointer=no
   ;;
 *)
