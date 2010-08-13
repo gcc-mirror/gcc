@@ -1,3 +1,8 @@
+2010-08-13  Nick Clifton  <nickc@redhat.com>
+
+	* argv.c (expandargv): Limit the number of times that response
+	files are opened in order to prevent infinite recursion.
+
 2010-07-21  Pascal Obry  <obry@adacore.com>
 
 	* make-temp-file.c (choose_tmpdir): Append a dot to P_tmpdir if needed.
