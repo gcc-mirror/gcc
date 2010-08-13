@@ -157,7 +157,7 @@ expr_t;
 /* Array types.  */
 typedef enum
 { AS_EXPLICIT = 1, AS_ASSUMED_SHAPE, AS_DEFERRED,
-  AS_ASSUMED_SIZE, AS_UNKNOWN
+  AS_ASSUMED_SIZE, AS_IMPLIED_SHAPE, AS_UNKNOWN
 }
 array_type;
 

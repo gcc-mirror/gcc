@@ -1,3 +1,9 @@
+2010-08-13  Daniel Kraft  <d@domob.eu>
+
+	* gfortran.dg/implied_shape_1.f08: New test.
+	* gfortran.dg/implied_shape_2.f90: New test.
+	* gfortran.dg/implied_shape_3.f08: New test.
+
 2010-08-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/42526
