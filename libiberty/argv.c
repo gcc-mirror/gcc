@@ -1,5 +1,5 @@
 /* Create and destroy argument vectors (argv's)
-   Copyright (C) 1992, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1992, 2001, 2010 Free Software Foundation, Inc.
    Written by Fred Fish @ Cygnus Support
 
 This file is part of the libiberty library.
@@ -386,6 +386,9 @@ expandargv (int *argcp, char ***argvp)
   int i = 0;
   /* Non-zero if ***argvp has been dynamically allocated.  */
   int argv_dynamic = 0;
+  /* Limit the number of response files that we parse in order
+     to prevent infinite recursion.  */
+  unsigned int iteration_limit = 2000;
   /* Loop over the arguments, handling response files.  We always skip
      ARGVP[0], as that is the name of the program being run.  */
   while (++i < *argcp)
@@ -412,6 +415,12 @@ expandargv (int *argcp, char ***argvp)
       filename = (*argvp)[i];
       if (filename[0] != '@')
 	continue;
+      /* If we have iterated too many times then stop.  */
+      if (-- iteration_limit == 0)
+	{
+	  fprintf (stderr, "%s: error: too many @-files encountered\n", (*argvp)[0]);
+	  xexit (1);
+	}
       /* Read the contents of the file.  */
       f = fopen (++filename, "r");
       if (!f)
