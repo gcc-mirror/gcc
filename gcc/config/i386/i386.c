@@ -3276,9 +3276,8 @@ override_options (bool main_args_p)
     {
       if (flag_zee == 2)
         flag_zee = 1;
-      /* Mach-O doesn't support omitting the frame pointer for now.  */
       if (flag_omit_frame_pointer == 2)
-	flag_omit_frame_pointer = (TARGET_MACHO ? 0 : 1);
+	flag_omit_frame_pointer = 1;
       if (flag_asynchronous_unwind_tables == 2)
 	flag_asynchronous_unwind_tables = 1;
       if (flag_pcc_struct_return == 2)
@@ -3288,10 +3287,8 @@ override_options (bool main_args_p)
     {
       if (flag_zee == 2)
         flag_zee = 0;
-      /* Mach-O doesn't support omitting the frame pointer for now.  */
       if (flag_omit_frame_pointer == 2)
-	flag_omit_frame_pointer =
-	  (TARGET_MACHO ? 0 : !(USE_IX86_FRAME_POINTER || optimize_size));
+	flag_omit_frame_pointer = !(USE_IX86_FRAME_POINTER || optimize_size);
       if (flag_asynchronous_unwind_tables == 2)
 	flag_asynchronous_unwind_tables = !USE_IX86_FRAME_POINTER;
       if (flag_pcc_struct_return == 2)

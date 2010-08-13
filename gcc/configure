@@ -10716,8 +10716,9 @@ if test "${enable_frame_pointer+set}" = set; then :
 else
 
 case $target_os in
-linux*)
-  # Enable -fomit-frame-pointer by default for Linux.
+linux* | darwin[8912]*)
+  # Enable -fomit-frame-pointer by default for Linux and Darwin with
+  # DWARF2.
   enable_frame_pointer=no
   ;;
 *)
@@ -17129,7 +17130,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17132 "configure"
+#line 17133 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17235,7 +17236,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17238 "configure"
+#line 17239 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
