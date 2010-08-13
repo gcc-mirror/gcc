@@ -1,3 +1,8 @@
+2010-08-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/42526
+	* gfortran.dg/char_component_initializer_1.f90: New test.
+
 2010-08-12  Changpeng Fang  <changpeng.fang@amd.com>
 
 	PR tree-optimization/45241
