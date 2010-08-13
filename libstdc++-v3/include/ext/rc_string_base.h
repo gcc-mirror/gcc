@@ -201,12 +201,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       {
 	// Be race-detector-friendly.  For more info see bits/c++config.
 	_GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_rep()->_M_info.
-						_M_refcount)
+						_M_refcount);
 	if (__exchange_and_add_dispatch(&_M_rep()->_M_info._M_refcount,
 					-1) <= 0)
 	  {
 	    _GLIBCXX_SYNCHRONIZATION_HAPPENS_AFTER(&_M_rep()->_M_info.
-						   _M_refcount)
+						   _M_refcount);
 	    _M_rep()->_M_destroy(_M_get_allocator());
 	  }
       }  // XXX MT

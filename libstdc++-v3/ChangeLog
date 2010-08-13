@@ -1,3 +1,15 @@
+2010-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* src/ios_init.cc (ios_base::Init::~Init): Add back semicolon
+	at the end of the _GLIBCXX_SYNCHRONIZATION_HAPPENS_* macros,
+	removed by mistake.
+	* include/tr1_impl/boost_sp_counted_base.h: Likewise.
+	* include/ext/rc_string_base.h: Likewise.
+	* include/bits/locale_classes.h: Likewise.
+	* include/bits/basic_string.h: Likewise.
+	* include/bits/ios_base.h: Likewise.
+	* include/bits/c++config: Adjust comment.
+
 2010-08-12  Kostya Serebryany <kcc@google.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
