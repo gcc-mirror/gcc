@@ -1,3 +1,9 @@
+2010-08-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/44931
+	* io/inquire.c (inquire_via_unit): Add special case for __MINGW32__ to
+	return special file names CONIN$, CONOUT$, and CONERR$.
+
 2010-08-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/45143
