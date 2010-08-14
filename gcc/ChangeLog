@@ -1,3 +1,10 @@
+2010-08-14  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/43358
+	* ira-lives.c (process_single_reg_class_operands): Adjust the costs
+	of a single hard register, using simplify_subreg_regno to decide
+	what that register should be.
+
 2010-08-14  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* config/mips/mips.c (CODE_FOR_loongson_pmullh): Define.
