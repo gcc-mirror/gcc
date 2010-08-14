@@ -1,6 +1,6 @@
-2010-08-14  Gerald Pfeifer  <gerald@pfeifer.com>
+2010-08-15  Gerald Pfeifer  <gerald@pfeifer.com>
 
-	* gcc_release (CVSROOT): Remove.
+	* gcc_release (CVSROOT): Remove all occurrences.
 	
 2010-08-14  Gerald Pfeifer  <gerald@pfeifer.com>
 
