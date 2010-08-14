@@ -1,3 +1,10 @@
+2010-08-14  Mingjie Xing  <mingjie.xing@gmail.com>
+
+	* config/mips/mips.c (CODE_FOR_loongson_pmullh): Define.
+	* config/mips/loongson.md (UNSPEC_LOONGSON_PMULL): Delete.
+	(loongson_pmull<V_suffix>): Rename to...
+	(mul<mode>3): ...this and use MULT instead of an UNSPEC.
+
 2010-08-13  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	* gcc/configure.ac: Enable -fomit-frame-pointer on darwin
