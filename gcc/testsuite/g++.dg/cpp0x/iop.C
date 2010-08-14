@@ -12,8 +12,8 @@
 template <bool> struct sa;
 template <> struct sa<true> {};
 
-struct one   {char x[1];};
-struct two   {char x[2];};
+struct one   {long x[1];};
+struct two   {long x[2];};
 
 struct os
 {
@@ -30,7 +30,7 @@ two operator<<(os&, const A&);
 void test()
 {
     os o;
-    sa<sizeof(o << 1) == 1> t1;  // Calls os::operator<<(int)
+    sa<sizeof(o << 1) == 1 * sizeof(long)> t1;  // Calls os::operator<<(int)
                                  // Would be ambiguous if the implicit object parameter
                                  // was an rvalue reference.
 }
