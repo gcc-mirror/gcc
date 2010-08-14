@@ -8,14 +8,14 @@
 template <bool> struct sa;
 template <> struct sa<true> {};
 
-struct one   {char x[1];};
-struct two   {char x[2];};
-struct three {char x[3];};
-struct four  {char x[4];};
-struct five  {char x[5];};
-struct six   {char x[6];};
-struct seven {char x[7];};
-struct eight {char x[8];};
+struct one   {long x[1];};
+struct two   {long x[2];};
+struct three {long x[3];};
+struct four  {long x[4];};
+struct five  {long x[5];};
+struct six   {long x[6];};
+struct seven {long x[7];};
+struct eight {long x[8];};
 
 struct A
 {
@@ -42,12 +42,12 @@ int test5_12345()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_12345(a))           == 1> t1;
-    sa<sizeof(sink_5_12345(ca))          == 2> t2;
-    sa<sizeof(sink_5_12345(va))          == 3> t3;
-    sa<sizeof(sink_5_12345(cva))         == 4> t4;
-    sa<sizeof(sink_5_12345(source()))    == 5> t5;
-    sa<sizeof(sink_5_12345(c_source()))  == 2> t6;
+    sa<sizeof(sink_5_12345(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_12345(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_12345(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_12345(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_12345(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_12345(c_source()))  == 2* sizeof(long)> t6;
     return 0;
 }
 
@@ -63,12 +63,12 @@ int test5_12346()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_12346(a))           == 1> t1;
-    sa<sizeof(sink_5_12346(ca))          == 2> t2;
-    sa<sizeof(sink_5_12346(va))          == 3> t3;
-    sa<sizeof(sink_5_12346(cva))         == 4> t4;
-    sa<sizeof(sink_5_12346(source()))    == 6> t5;
-    sa<sizeof(sink_5_12346(c_source()))  == 6> t6;
+    sa<sizeof(sink_5_12346(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_12346(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_12346(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_12346(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_12346(source()))    == 6* sizeof(long)> t5;
+    sa<sizeof(sink_5_12346(c_source()))  == 6* sizeof(long)> t6;
     return 0;
 }
 
@@ -84,13 +84,13 @@ int test5_12347()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_12347(a))           == 1> t1;
-    sa<sizeof(sink_5_12347(ca))          == 2> t2;
-    sa<sizeof(sink_5_12347(va))          == 3> t3;
-    sa<sizeof(sink_5_12347(cva))         == 4> t4;
-    sa<sizeof(sink_5_12347(source()))    == 7> t5;
-    sa<sizeof(sink_5_12347(c_source()))  == 2> t6;
-    sa<sizeof(sink_5_12347(v_source()))  == 7> t7;
+    sa<sizeof(sink_5_12347(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_12347(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_12347(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_12347(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_12347(source()))    == 7* sizeof(long)> t5;
+    sa<sizeof(sink_5_12347(c_source()))  == 2* sizeof(long)> t6;
+    sa<sizeof(sink_5_12347(v_source()))  == 7* sizeof(long)> t7;
     return 0;
 }
 
@@ -106,14 +106,14 @@ int test5_12348()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_12348(a))           == 1> t1;
-    sa<sizeof(sink_5_12348(ca))          == 2> t2;
-    sa<sizeof(sink_5_12348(va))          == 3> t3;
-    sa<sizeof(sink_5_12348(cva))         == 4> t4;
-    sa<sizeof(sink_5_12348(source()))    == 8> t5;
-    sa<sizeof(sink_5_12348(c_source()))  == 8> t6;
-    sa<sizeof(sink_5_12348(v_source()))  == 8> t7;
-    sa<sizeof(sink_5_12348(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_12348(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_12348(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_12348(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_12348(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_12348(source()))    == 8* sizeof(long)> t5;
+    sa<sizeof(sink_5_12348(c_source()))  == 8* sizeof(long)> t6;
+    sa<sizeof(sink_5_12348(v_source()))  == 8* sizeof(long)> t7;
+    sa<sizeof(sink_5_12348(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -129,11 +129,11 @@ int test5_12356()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_12356(a))           == 1> t1;
-    sa<sizeof(sink_5_12356(ca))          == 2> t2;
-    sa<sizeof(sink_5_12356(va))          == 3> t3;
-    sa<sizeof(sink_5_12356(source()))    == 5> t5;
-    sa<sizeof(sink_5_12356(c_source()))  == 6> t6;
+    sa<sizeof(sink_5_12356(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_12356(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_12356(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_12356(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_12356(c_source()))  == 6* sizeof(long)> t6;
     return 0;
 }
 
@@ -149,12 +149,12 @@ int test5_12357()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_12357(a))           == 1> t1;
-    sa<sizeof(sink_5_12357(ca))          == 2> t2;
-    sa<sizeof(sink_5_12357(va))          == 3> t3;
-    sa<sizeof(sink_5_12357(source()))    == 5> t5;
-    sa<sizeof(sink_5_12357(c_source()))  == 2> t6;
-    sa<sizeof(sink_5_12357(v_source()))  == 7> t7;
+    sa<sizeof(sink_5_12357(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_12357(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_12357(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_12357(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_12357(c_source()))  == 2* sizeof(long)> t6;
+    sa<sizeof(sink_5_12357(v_source()))  == 7* sizeof(long)> t7;
     return 0;
 }
 
@@ -170,13 +170,13 @@ int test5_12358()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_12358(a))           == 1> t1;
-    sa<sizeof(sink_5_12358(ca))          == 2> t2;
-    sa<sizeof(sink_5_12358(va))          == 3> t3;
-    sa<sizeof(sink_5_12358(source()))    == 5> t5;
-    sa<sizeof(sink_5_12358(c_source()))  == 8> t6;
-    sa<sizeof(sink_5_12358(v_source()))  == 8> t7;
-    sa<sizeof(sink_5_12358(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_12358(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_12358(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_12358(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_12358(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_12358(c_source()))  == 8* sizeof(long)> t6;
+    sa<sizeof(sink_5_12358(v_source()))  == 8* sizeof(long)> t7;
+    sa<sizeof(sink_5_12358(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -192,11 +192,11 @@ int test5_12367()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_12367(a))           == 1> t1;
-    sa<sizeof(sink_5_12367(ca))          == 2> t2;
-    sa<sizeof(sink_5_12367(va))          == 3> t3;
-    sa<sizeof(sink_5_12367(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_12367(v_source()))  == 7> t7;
+    sa<sizeof(sink_5_12367(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_12367(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_12367(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_12367(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_12367(v_source()))  == 7* sizeof(long)> t7;
     return 0;
 }
 
@@ -212,13 +212,13 @@ int test5_12368()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_12368(a))           == 1> t1;
-    sa<sizeof(sink_5_12368(ca))          == 2> t2;
-    sa<sizeof(sink_5_12368(va))          == 3> t3;
-    sa<sizeof(sink_5_12368(source()))    == 6> t5;
-    sa<sizeof(sink_5_12368(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_12368(v_source()))  == 8> t7;
-    sa<sizeof(sink_5_12368(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_12368(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_12368(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_12368(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_12368(source()))    == 6* sizeof(long)> t5;
+    sa<sizeof(sink_5_12368(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_12368(v_source()))  == 8* sizeof(long)> t7;
+    sa<sizeof(sink_5_12368(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -234,13 +234,13 @@ int test5_12378()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_12378(a))           == 1> t1;
-    sa<sizeof(sink_5_12378(ca))          == 2> t2;
-    sa<sizeof(sink_5_12378(va))          == 3> t3;
-    sa<sizeof(sink_5_12378(source()))    == 7> t5;
-    sa<sizeof(sink_5_12378(c_source()))  == 8> t6;
-    sa<sizeof(sink_5_12378(v_source()))  == 7> t7;
-    sa<sizeof(sink_5_12378(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_12378(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_12378(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_12378(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_12378(source()))    == 7* sizeof(long)> t5;
+    sa<sizeof(sink_5_12378(c_source()))  == 8* sizeof(long)> t6;
+    sa<sizeof(sink_5_12378(v_source()))  == 7* sizeof(long)> t7;
+    sa<sizeof(sink_5_12378(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -256,12 +256,12 @@ int test5_12456()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_12456(a))           == 1> t1;
-    sa<sizeof(sink_5_12456(ca))          == 2> t2;
-    sa<sizeof(sink_5_12456(va))          == 4> t3;
-    sa<sizeof(sink_5_12456(cva))         == 4> t4;
-    sa<sizeof(sink_5_12456(source()))    == 5> t5;
-    sa<sizeof(sink_5_12456(c_source()))  == 6> t6;
+    sa<sizeof(sink_5_12456(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_12456(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_12456(va))          == 4* sizeof(long)> t3;
+    sa<sizeof(sink_5_12456(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_12456(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_12456(c_source()))  == 6* sizeof(long)> t6;
     return 0;
 }
 
@@ -277,13 +277,13 @@ int test5_12457()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_12457(a))           == 1> t1;
-    sa<sizeof(sink_5_12457(ca))          == 2> t2;
-    sa<sizeof(sink_5_12457(va))          == 4> t3;
-    sa<sizeof(sink_5_12457(cva))         == 4> t4;
-    sa<sizeof(sink_5_12457(source()))    == 5> t5;
-    sa<sizeof(sink_5_12457(c_source()))  == 2> t6;
-    sa<sizeof(sink_5_12457(v_source()))  == 7> t7;
+    sa<sizeof(sink_5_12457(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_12457(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_12457(va))          == 4* sizeof(long)> t3;
+    sa<sizeof(sink_5_12457(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_12457(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_12457(c_source()))  == 2* sizeof(long)> t6;
+    sa<sizeof(sink_5_12457(v_source()))  == 7* sizeof(long)> t7;
     return 0;
 }
 
@@ -299,14 +299,14 @@ int test5_12458()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_12458(a))           == 1> t1;
-    sa<sizeof(sink_5_12458(ca))          == 2> t2;
-    sa<sizeof(sink_5_12458(va))          == 4> t3;
-    sa<sizeof(sink_5_12458(cva))         == 4> t4;
-    sa<sizeof(sink_5_12458(source()))    == 5> t5;
-    sa<sizeof(sink_5_12458(c_source()))  == 8> t6;
-    sa<sizeof(sink_5_12458(v_source()))  == 8> t7;
-    sa<sizeof(sink_5_12458(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_12458(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_12458(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_12458(va))          == 4* sizeof(long)> t3;
+    sa<sizeof(sink_5_12458(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_12458(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_12458(c_source()))  == 8* sizeof(long)> t6;
+    sa<sizeof(sink_5_12458(v_source()))  == 8* sizeof(long)> t7;
+    sa<sizeof(sink_5_12458(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -322,12 +322,12 @@ int test5_12467()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_12467(a))           == 1> t1;
-    sa<sizeof(sink_5_12467(ca))          == 2> t2;
-    sa<sizeof(sink_5_12467(va))          == 4> t3;
-    sa<sizeof(sink_5_12467(cva))         == 4> t4;
-    sa<sizeof(sink_5_12467(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_12467(v_source()))  == 7> t7;
+    sa<sizeof(sink_5_12467(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_12467(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_12467(va))          == 4* sizeof(long)> t3;
+    sa<sizeof(sink_5_12467(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_12467(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_12467(v_source()))  == 7* sizeof(long)> t7;
     return 0;
 }
 
@@ -343,14 +343,14 @@ int test5_12468()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_12468(a))           == 1> t1;
-    sa<sizeof(sink_5_12468(ca))          == 2> t2;
-    sa<sizeof(sink_5_12468(va))          == 4> t3;
-    sa<sizeof(sink_5_12468(cva))         == 4> t4;
-    sa<sizeof(sink_5_12468(source()))    == 6> t5;
-    sa<sizeof(sink_5_12468(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_12468(v_source()))  == 8> t7;
-    sa<sizeof(sink_5_12468(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_12468(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_12468(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_12468(va))          == 4* sizeof(long)> t3;
+    sa<sizeof(sink_5_12468(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_12468(source()))    == 6* sizeof(long)> t5;
+    sa<sizeof(sink_5_12468(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_12468(v_source()))  == 8* sizeof(long)> t7;
+    sa<sizeof(sink_5_12468(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -366,14 +366,14 @@ int test5_12478()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_12478(a))           == 1> t1;
-    sa<sizeof(sink_5_12478(ca))          == 2> t2;
-    sa<sizeof(sink_5_12478(va))          == 4> t3;
-    sa<sizeof(sink_5_12478(cva))         == 4> t4;
-    sa<sizeof(sink_5_12478(source()))    == 7> t5;
-    sa<sizeof(sink_5_12478(c_source()))  == 8> t6;
-    sa<sizeof(sink_5_12478(v_source()))  == 7> t7;
-    sa<sizeof(sink_5_12478(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_12478(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_12478(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_12478(va))          == 4* sizeof(long)> t3;
+    sa<sizeof(sink_5_12478(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_12478(source()))    == 7* sizeof(long)> t5;
+    sa<sizeof(sink_5_12478(c_source()))  == 8* sizeof(long)> t6;
+    sa<sizeof(sink_5_12478(v_source()))  == 7* sizeof(long)> t7;
+    sa<sizeof(sink_5_12478(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -389,11 +389,11 @@ int test5_12567()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_12567(a))           == 1> t1;
-    sa<sizeof(sink_5_12567(ca))          == 2> t2;
-    sa<sizeof(sink_5_12567(source()))    == 5> t5;
-    sa<sizeof(sink_5_12567(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_12567(v_source()))  == 7> t7;
+    sa<sizeof(sink_5_12567(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_12567(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_12567(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_12567(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_12567(v_source()))  == 7* sizeof(long)> t7;
     return 0;
 }
 
@@ -409,12 +409,12 @@ int test5_12568()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_12568(a))           == 1> t1;
-    sa<sizeof(sink_5_12568(ca))          == 2> t2;
-    sa<sizeof(sink_5_12568(source()))    == 5> t5;
-    sa<sizeof(sink_5_12568(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_12568(v_source()))  == 8> t7;
-    sa<sizeof(sink_5_12568(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_12568(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_12568(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_12568(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_12568(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_12568(v_source()))  == 8* sizeof(long)> t7;
+    sa<sizeof(sink_5_12568(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -430,12 +430,12 @@ int test5_12578()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_12578(a))           == 1> t1;
-    sa<sizeof(sink_5_12578(ca))          == 2> t2;
-    sa<sizeof(sink_5_12578(source()))    == 5> t5;
-    sa<sizeof(sink_5_12578(c_source()))  == 8> t6;
-    sa<sizeof(sink_5_12578(v_source()))  == 7> t7;
-    sa<sizeof(sink_5_12578(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_12578(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_12578(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_12578(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_12578(c_source()))  == 8* sizeof(long)> t6;
+    sa<sizeof(sink_5_12578(v_source()))  == 7* sizeof(long)> t7;
+    sa<sizeof(sink_5_12578(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -451,11 +451,11 @@ int test5_12678()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_12678(a))           == 1> t1;
-    sa<sizeof(sink_5_12678(ca))          == 2> t2;
-    sa<sizeof(sink_5_12678(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_12678(v_source()))  == 7> t7;
-    sa<sizeof(sink_5_12678(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_12678(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_12678(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_12678(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_12678(v_source()))  == 7* sizeof(long)> t7;
+    sa<sizeof(sink_5_12678(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -471,12 +471,12 @@ int test5_13456()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_13456(a))           == 1> t1;
-    sa<sizeof(sink_5_13456(ca))          == 4> t2;
-    sa<sizeof(sink_5_13456(va))          == 3> t3;
-    sa<sizeof(sink_5_13456(cva))         == 4> t4;
-    sa<sizeof(sink_5_13456(source()))    == 5> t5;
-    sa<sizeof(sink_5_13456(c_source()))  == 6> t6;
+    sa<sizeof(sink_5_13456(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_13456(ca))          == 4* sizeof(long)> t2;
+    sa<sizeof(sink_5_13456(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_13456(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_13456(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_13456(c_source()))  == 6* sizeof(long)> t6;
     return 0;
 }
 
@@ -492,12 +492,12 @@ int test5_13457()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_13457(a))           == 1> t1;
-    sa<sizeof(sink_5_13457(ca))          == 4> t2;
-    sa<sizeof(sink_5_13457(va))          == 3> t3;
-    sa<sizeof(sink_5_13457(cva))         == 4> t4;
-    sa<sizeof(sink_5_13457(source()))    == 5> t5;
-    sa<sizeof(sink_5_13457(v_source()))  == 7> t7;
+    sa<sizeof(sink_5_13457(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_13457(ca))          == 4* sizeof(long)> t2;
+    sa<sizeof(sink_5_13457(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_13457(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_13457(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_13457(v_source()))  == 7* sizeof(long)> t7;
     return 0;
 }
 
@@ -513,14 +513,14 @@ int test5_13458()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_13458(a))           == 1> t1;
-    sa<sizeof(sink_5_13458(ca))          == 4> t2;
-    sa<sizeof(sink_5_13458(va))          == 3> t3;
-    sa<sizeof(sink_5_13458(cva))         == 4> t4;
-    sa<sizeof(sink_5_13458(source()))    == 5> t5;
-    sa<sizeof(sink_5_13458(c_source()))  == 8> t6;
-    sa<sizeof(sink_5_13458(v_source()))  == 8> t7;
-    sa<sizeof(sink_5_13458(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_13458(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_13458(ca))          == 4* sizeof(long)> t2;
+    sa<sizeof(sink_5_13458(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_13458(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_13458(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_13458(c_source()))  == 8* sizeof(long)> t6;
+    sa<sizeof(sink_5_13458(v_source()))  == 8* sizeof(long)> t7;
+    sa<sizeof(sink_5_13458(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -536,12 +536,12 @@ int test5_13467()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_13467(a))           == 1> t1;
-    sa<sizeof(sink_5_13467(ca))          == 4> t2;
-    sa<sizeof(sink_5_13467(va))          == 3> t3;
-    sa<sizeof(sink_5_13467(cva))         == 4> t4;
-    sa<sizeof(sink_5_13467(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_13467(v_source()))  == 7> t7;
+    sa<sizeof(sink_5_13467(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_13467(ca))          == 4* sizeof(long)> t2;
+    sa<sizeof(sink_5_13467(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_13467(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_13467(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_13467(v_source()))  == 7* sizeof(long)> t7;
     return 0;
 }
 
@@ -557,14 +557,14 @@ int test5_13468()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_13468(a))           == 1> t1;
-    sa<sizeof(sink_5_13468(ca))          == 4> t2;
-    sa<sizeof(sink_5_13468(va))          == 3> t3;
-    sa<sizeof(sink_5_13468(cva))         == 4> t4;
-    sa<sizeof(sink_5_13468(source()))    == 6> t5;
-    sa<sizeof(sink_5_13468(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_13468(v_source()))  == 8> t7;
-    sa<sizeof(sink_5_13468(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_13468(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_13468(ca))          == 4* sizeof(long)> t2;
+    sa<sizeof(sink_5_13468(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_13468(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_13468(source()))    == 6* sizeof(long)> t5;
+    sa<sizeof(sink_5_13468(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_13468(v_source()))  == 8* sizeof(long)> t7;
+    sa<sizeof(sink_5_13468(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -580,14 +580,14 @@ int test5_13478()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_13478(a))           == 1> t1;
-    sa<sizeof(sink_5_13478(ca))          == 4> t2;
-    sa<sizeof(sink_5_13478(va))          == 3> t3;
-    sa<sizeof(sink_5_13478(cva))         == 4> t4;
-    sa<sizeof(sink_5_13478(source()))    == 7> t5;
-    sa<sizeof(sink_5_13478(c_source()))  == 8> t6;
-    sa<sizeof(sink_5_13478(v_source()))  == 7> t7;
-    sa<sizeof(sink_5_13478(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_13478(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_13478(ca))          == 4* sizeof(long)> t2;
+    sa<sizeof(sink_5_13478(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_13478(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_13478(source()))    == 7* sizeof(long)> t5;
+    sa<sizeof(sink_5_13478(c_source()))  == 8* sizeof(long)> t6;
+    sa<sizeof(sink_5_13478(v_source()))  == 7* sizeof(long)> t7;
+    sa<sizeof(sink_5_13478(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -603,11 +603,11 @@ int test5_13567()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_13567(a))           == 1> t1;
-    sa<sizeof(sink_5_13567(va))          == 3> t3;
-    sa<sizeof(sink_5_13567(source()))    == 5> t5;
-    sa<sizeof(sink_5_13567(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_13567(v_source()))  == 7> t7;
+    sa<sizeof(sink_5_13567(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_13567(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_13567(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_13567(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_13567(v_source()))  == 7* sizeof(long)> t7;
     return 0;
 }
 
@@ -623,12 +623,12 @@ int test5_13568()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_13568(a))           == 1> t1;
-    sa<sizeof(sink_5_13568(va))          == 3> t3;
-    sa<sizeof(sink_5_13568(source()))    == 5> t5;
-    sa<sizeof(sink_5_13568(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_13568(v_source()))  == 8> t7;
-    sa<sizeof(sink_5_13568(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_13568(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_13568(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_13568(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_13568(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_13568(v_source()))  == 8* sizeof(long)> t7;
+    sa<sizeof(sink_5_13568(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -644,12 +644,12 @@ int test5_13578()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_13578(a))           == 1> t1;
-    sa<sizeof(sink_5_13578(va))          == 3> t3;
-    sa<sizeof(sink_5_13578(source()))    == 5> t5;
-    sa<sizeof(sink_5_13578(c_source()))  == 8> t6;
-    sa<sizeof(sink_5_13578(v_source()))  == 7> t7;
-    sa<sizeof(sink_5_13578(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_13578(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_13578(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_13578(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_13578(c_source()))  == 8* sizeof(long)> t6;
+    sa<sizeof(sink_5_13578(v_source()))  == 7* sizeof(long)> t7;
+    sa<sizeof(sink_5_13578(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -665,11 +665,11 @@ int test5_13678()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_13678(a))           == 1> t1;
-    sa<sizeof(sink_5_13678(va))          == 3> t3;
-    sa<sizeof(sink_5_13678(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_13678(v_source()))  == 7> t7;
-    sa<sizeof(sink_5_13678(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_13678(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_13678(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_13678(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_13678(v_source()))  == 7* sizeof(long)> t7;
+    sa<sizeof(sink_5_13678(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -685,13 +685,13 @@ int test5_14567()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_14567(a))           == 1> t1;
-    sa<sizeof(sink_5_14567(ca))          == 4> t2;
-    sa<sizeof(sink_5_14567(va))          == 4> t3;
-    sa<sizeof(sink_5_14567(cva))         == 4> t4;
-    sa<sizeof(sink_5_14567(source()))    == 5> t5;
-    sa<sizeof(sink_5_14567(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_14567(v_source()))  == 7> t7;
+    sa<sizeof(sink_5_14567(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_14567(ca))          == 4* sizeof(long)> t2;
+    sa<sizeof(sink_5_14567(va))          == 4* sizeof(long)> t3;
+    sa<sizeof(sink_5_14567(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_14567(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_14567(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_14567(v_source()))  == 7* sizeof(long)> t7;
     return 0;
 }
 
@@ -707,14 +707,14 @@ int test5_14568()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_14568(a))           == 1> t1;
-    sa<sizeof(sink_5_14568(ca))          == 4> t2;
-    sa<sizeof(sink_5_14568(va))          == 4> t3;
-    sa<sizeof(sink_5_14568(cva))         == 4> t4;
-    sa<sizeof(sink_5_14568(source()))    == 5> t5;
-    sa<sizeof(sink_5_14568(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_14568(v_source()))  == 8> t7;
-    sa<sizeof(sink_5_14568(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_14568(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_14568(ca))          == 4* sizeof(long)> t2;
+    sa<sizeof(sink_5_14568(va))          == 4* sizeof(long)> t3;
+    sa<sizeof(sink_5_14568(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_14568(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_14568(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_14568(v_source()))  == 8* sizeof(long)> t7;
+    sa<sizeof(sink_5_14568(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -730,14 +730,14 @@ int test5_14578()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_14578(a))           == 1> t1;
-    sa<sizeof(sink_5_14578(ca))          == 4> t2;
-    sa<sizeof(sink_5_14578(va))          == 4> t3;
-    sa<sizeof(sink_5_14578(cva))         == 4> t4;
-    sa<sizeof(sink_5_14578(source()))    == 5> t5;
-    sa<sizeof(sink_5_14578(c_source()))  == 8> t6;
-    sa<sizeof(sink_5_14578(v_source()))  == 7> t7;
-    sa<sizeof(sink_5_14578(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_14578(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_14578(ca))          == 4* sizeof(long)> t2;
+    sa<sizeof(sink_5_14578(va))          == 4* sizeof(long)> t3;
+    sa<sizeof(sink_5_14578(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_14578(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_14578(c_source()))  == 8* sizeof(long)> t6;
+    sa<sizeof(sink_5_14578(v_source()))  == 7* sizeof(long)> t7;
+    sa<sizeof(sink_5_14578(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -753,13 +753,13 @@ int test5_14678()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_14678(a))           == 1> t1;
-    sa<sizeof(sink_5_14678(ca))          == 4> t2;
-    sa<sizeof(sink_5_14678(va))          == 4> t3;
-    sa<sizeof(sink_5_14678(cva))         == 4> t4;
-    sa<sizeof(sink_5_14678(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_14678(v_source()))  == 7> t7;
-    sa<sizeof(sink_5_14678(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_14678(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_14678(ca))          == 4* sizeof(long)> t2;
+    sa<sizeof(sink_5_14678(va))          == 4* sizeof(long)> t3;
+    sa<sizeof(sink_5_14678(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_14678(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_14678(v_source()))  == 7* sizeof(long)> t7;
+    sa<sizeof(sink_5_14678(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -775,11 +775,11 @@ int test5_15678()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_15678(a))           == 1> t1;
-    sa<sizeof(sink_5_15678(source()))    == 5> t5;
-    sa<sizeof(sink_5_15678(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_15678(v_source()))  == 7> t7;
-    sa<sizeof(sink_5_15678(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_15678(a))           == 1* sizeof(long)> t1;
+    sa<sizeof(sink_5_15678(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_15678(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_15678(v_source()))  == 7* sizeof(long)> t7;
+    sa<sizeof(sink_5_15678(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -795,11 +795,11 @@ int test5_23456()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_23456(ca))          == 2> t2;
-    sa<sizeof(sink_5_23456(va))          == 3> t3;
-    sa<sizeof(sink_5_23456(cva))         == 4> t4;
-    sa<sizeof(sink_5_23456(source()))    == 5> t5;
-    sa<sizeof(sink_5_23456(c_source()))  == 6> t6;
+    sa<sizeof(sink_5_23456(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_23456(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_23456(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_23456(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_23456(c_source()))  == 6* sizeof(long)> t6;
     return 0;
 }
 
@@ -815,12 +815,12 @@ int test5_23457()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_23457(ca))          == 2> t2;
-    sa<sizeof(sink_5_23457(va))          == 3> t3;
-    sa<sizeof(sink_5_23457(cva))         == 4> t4;
-    sa<sizeof(sink_5_23457(source()))    == 5> t5;
-    sa<sizeof(sink_5_23457(c_source()))  == 2> t6;
-    sa<sizeof(sink_5_23457(v_source()))  == 7> t7;
+    sa<sizeof(sink_5_23457(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_23457(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_23457(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_23457(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_23457(c_source()))  == 2* sizeof(long)> t6;
+    sa<sizeof(sink_5_23457(v_source()))  == 7* sizeof(long)> t7;
     return 0;
 }
 
@@ -836,13 +836,13 @@ int test5_23458()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_23458(ca))          == 2> t2;
-    sa<sizeof(sink_5_23458(va))          == 3> t3;
-    sa<sizeof(sink_5_23458(cva))         == 4> t4;
-    sa<sizeof(sink_5_23458(source()))    == 5> t5;
-    sa<sizeof(sink_5_23458(c_source()))  == 8> t6;
-    sa<sizeof(sink_5_23458(v_source()))  == 8> t7;
-    sa<sizeof(sink_5_23458(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_23458(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_23458(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_23458(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_23458(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_23458(c_source()))  == 8* sizeof(long)> t6;
+    sa<sizeof(sink_5_23458(v_source()))  == 8* sizeof(long)> t7;
+    sa<sizeof(sink_5_23458(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -858,11 +858,11 @@ int test5_23467()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_23467(ca))          == 2> t2;
-    sa<sizeof(sink_5_23467(va))          == 3> t3;
-    sa<sizeof(sink_5_23467(cva))         == 4> t4;
-    sa<sizeof(sink_5_23467(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_23467(v_source()))  == 7> t7;
+    sa<sizeof(sink_5_23467(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_23467(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_23467(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_23467(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_23467(v_source()))  == 7* sizeof(long)> t7;
     return 0;
 }
 
@@ -878,13 +878,13 @@ int test5_23468()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_23468(ca))          == 2> t2;
-    sa<sizeof(sink_5_23468(va))          == 3> t3;
-    sa<sizeof(sink_5_23468(cva))         == 4> t4;
-    sa<sizeof(sink_5_23468(source()))    == 6> t5;
-    sa<sizeof(sink_5_23468(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_23468(v_source()))  == 8> t7;
-    sa<sizeof(sink_5_23468(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_23468(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_23468(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_23468(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_23468(source()))    == 6* sizeof(long)> t5;
+    sa<sizeof(sink_5_23468(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_23468(v_source()))  == 8* sizeof(long)> t7;
+    sa<sizeof(sink_5_23468(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -900,13 +900,13 @@ int test5_23478()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_23478(ca))          == 2> t2;
-    sa<sizeof(sink_5_23478(va))          == 3> t3;
-    sa<sizeof(sink_5_23478(cva))         == 4> t4;
-    sa<sizeof(sink_5_23478(source()))    == 7> t5;
-    sa<sizeof(sink_5_23478(c_source()))  == 8> t6;
-    sa<sizeof(sink_5_23478(v_source()))  == 7> t7;
-    sa<sizeof(sink_5_23478(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_23478(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_23478(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_23478(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_23478(source()))    == 7* sizeof(long)> t5;
+    sa<sizeof(sink_5_23478(c_source()))  == 8* sizeof(long)> t6;
+    sa<sizeof(sink_5_23478(v_source()))  == 7* sizeof(long)> t7;
+    sa<sizeof(sink_5_23478(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -922,11 +922,11 @@ int test5_23567()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_23567(ca))          == 2> t2;
-    sa<sizeof(sink_5_23567(va))          == 3> t3;
-    sa<sizeof(sink_5_23567(source()))    == 5> t5;
-    sa<sizeof(sink_5_23567(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_23567(v_source()))  == 7> t7;
+    sa<sizeof(sink_5_23567(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_23567(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_23567(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_23567(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_23567(v_source()))  == 7* sizeof(long)> t7;
     return 0;
 }
 
@@ -942,12 +942,12 @@ int test5_23568()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_23568(ca))          == 2> t2;
-    sa<sizeof(sink_5_23568(va))          == 3> t3;
-    sa<sizeof(sink_5_23568(source()))    == 5> t5;
-    sa<sizeof(sink_5_23568(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_23568(v_source()))  == 8> t7;
-    sa<sizeof(sink_5_23568(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_23568(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_23568(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_23568(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_23568(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_23568(v_source()))  == 8* sizeof(long)> t7;
+    sa<sizeof(sink_5_23568(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -963,12 +963,12 @@ int test5_23578()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_23578(ca))          == 2> t2;
-    sa<sizeof(sink_5_23578(va))          == 3> t3;
-    sa<sizeof(sink_5_23578(source()))    == 5> t5;
-    sa<sizeof(sink_5_23578(c_source()))  == 8> t6;
-    sa<sizeof(sink_5_23578(v_source()))  == 7> t7;
-    sa<sizeof(sink_5_23578(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_23578(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_23578(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_23578(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_23578(c_source()))  == 8* sizeof(long)> t6;
+    sa<sizeof(sink_5_23578(v_source()))  == 7* sizeof(long)> t7;
+    sa<sizeof(sink_5_23578(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -984,11 +984,11 @@ int test5_23678()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_23678(ca))          == 2> t2;
-    sa<sizeof(sink_5_23678(va))          == 3> t3;
-    sa<sizeof(sink_5_23678(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_23678(v_source()))  == 7> t7;
-    sa<sizeof(sink_5_23678(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_23678(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_23678(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_23678(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_23678(v_source()))  == 7* sizeof(long)> t7;
+    sa<sizeof(sink_5_23678(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -1004,13 +1004,13 @@ int test5_24567()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_24567(a))           == 2> t1;
-    sa<sizeof(sink_5_24567(ca))          == 2> t2;
-    sa<sizeof(sink_5_24567(va))          == 4> t3;
-    sa<sizeof(sink_5_24567(cva))         == 4> t4;
-    sa<sizeof(sink_5_24567(source()))    == 5> t5;
-    sa<sizeof(sink_5_24567(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_24567(v_source()))  == 7> t7;
+    sa<sizeof(sink_5_24567(a))           == 2* sizeof(long)> t1;
+    sa<sizeof(sink_5_24567(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_24567(va))          == 4* sizeof(long)> t3;
+    sa<sizeof(sink_5_24567(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_24567(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_24567(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_24567(v_source()))  == 7* sizeof(long)> t7;
     return 0;
 }
 
@@ -1026,14 +1026,14 @@ int test5_24568()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_24568(a))           == 2> t1;
-    sa<sizeof(sink_5_24568(ca))          == 2> t2;
-    sa<sizeof(sink_5_24568(va))          == 4> t3;
-    sa<sizeof(sink_5_24568(cva))         == 4> t4;
-    sa<sizeof(sink_5_24568(source()))    == 5> t5;
-    sa<sizeof(sink_5_24568(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_24568(v_source()))  == 8> t7;
-    sa<sizeof(sink_5_24568(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_24568(a))           == 2* sizeof(long)> t1;
+    sa<sizeof(sink_5_24568(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_24568(va))          == 4* sizeof(long)> t3;
+    sa<sizeof(sink_5_24568(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_24568(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_24568(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_24568(v_source()))  == 8* sizeof(long)> t7;
+    sa<sizeof(sink_5_24568(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -1049,14 +1049,14 @@ int test5_24578()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_24578(a))           == 2> t1;
-    sa<sizeof(sink_5_24578(ca))          == 2> t2;
-    sa<sizeof(sink_5_24578(va))          == 4> t3;
-    sa<sizeof(sink_5_24578(cva))         == 4> t4;
-    sa<sizeof(sink_5_24578(source()))    == 5> t5;
-    sa<sizeof(sink_5_24578(c_source()))  == 8> t6;
-    sa<sizeof(sink_5_24578(v_source()))  == 7> t7;
-    sa<sizeof(sink_5_24578(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_24578(a))           == 2* sizeof(long)> t1;
+    sa<sizeof(sink_5_24578(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_24578(va))          == 4* sizeof(long)> t3;
+    sa<sizeof(sink_5_24578(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_24578(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_24578(c_source()))  == 8* sizeof(long)> t6;
+    sa<sizeof(sink_5_24578(v_source()))  == 7* sizeof(long)> t7;
+    sa<sizeof(sink_5_24578(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -1072,13 +1072,13 @@ int test5_24678()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_24678(a))           == 2> t1;
-    sa<sizeof(sink_5_24678(ca))          == 2> t2;
-    sa<sizeof(sink_5_24678(va))          == 4> t3;
-    sa<sizeof(sink_5_24678(cva))         == 4> t4;
-    sa<sizeof(sink_5_24678(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_24678(v_source()))  == 7> t7;
-    sa<sizeof(sink_5_24678(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_24678(a))           == 2* sizeof(long)> t1;
+    sa<sizeof(sink_5_24678(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_24678(va))          == 4* sizeof(long)> t3;
+    sa<sizeof(sink_5_24678(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_24678(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_24678(v_source()))  == 7* sizeof(long)> t7;
+    sa<sizeof(sink_5_24678(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -1094,12 +1094,12 @@ int test5_25678()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_25678(a))           == 2> t1;
-    sa<sizeof(sink_5_25678(ca))          == 2> t2;
-    sa<sizeof(sink_5_25678(source()))    == 5> t5;
-    sa<sizeof(sink_5_25678(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_25678(v_source()))  == 7> t7;
-    sa<sizeof(sink_5_25678(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_25678(a))           == 2* sizeof(long)> t1;
+    sa<sizeof(sink_5_25678(ca))          == 2* sizeof(long)> t2;
+    sa<sizeof(sink_5_25678(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_25678(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_25678(v_source()))  == 7* sizeof(long)> t7;
+    sa<sizeof(sink_5_25678(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -1115,13 +1115,13 @@ int test5_34567()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_34567(a))           == 3> t1;
-    sa<sizeof(sink_5_34567(ca))          == 4> t2;
-    sa<sizeof(sink_5_34567(va))          == 3> t3;
-    sa<sizeof(sink_5_34567(cva))         == 4> t4;
-    sa<sizeof(sink_5_34567(source()))    == 5> t5;
-    sa<sizeof(sink_5_34567(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_34567(v_source()))  == 7> t7;
+    sa<sizeof(sink_5_34567(a))           == 3* sizeof(long)> t1;
+    sa<sizeof(sink_5_34567(ca))          == 4* sizeof(long)> t2;
+    sa<sizeof(sink_5_34567(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_34567(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_34567(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_34567(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_34567(v_source()))  == 7* sizeof(long)> t7;
     return 0;
 }
 
@@ -1137,14 +1137,14 @@ int test5_34568()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_34568(a))           == 3> t1;
-    sa<sizeof(sink_5_34568(ca))          == 4> t2;
-    sa<sizeof(sink_5_34568(va))          == 3> t3;
-    sa<sizeof(sink_5_34568(cva))         == 4> t4;
-    sa<sizeof(sink_5_34568(source()))    == 5> t5;
-    sa<sizeof(sink_5_34568(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_34568(v_source()))  == 8> t7;
-    sa<sizeof(sink_5_34568(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_34568(a))           == 3* sizeof(long)> t1;
+    sa<sizeof(sink_5_34568(ca))          == 4* sizeof(long)> t2;
+    sa<sizeof(sink_5_34568(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_34568(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_34568(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_34568(c_source()))  == 6* sizeof(long)> t6;
+    sa<sizeof(sink_5_34568(v_source()))  == 8* sizeof(long)> t7;
+    sa<sizeof(sink_5_34568(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -1160,14 +1160,14 @@ int test5_34578()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_34578(a))           == 3> t1;
-    sa<sizeof(sink_5_34578(ca))          == 4> t2;
-    sa<sizeof(sink_5_34578(va))          == 3> t3;
-    sa<sizeof(sink_5_34578(cva))         == 4> t4;
-    sa<sizeof(sink_5_34578(source()))    == 5> t5;
-    sa<sizeof(sink_5_34578(c_source()))  == 8> t6;
-    sa<sizeof(sink_5_34578(v_source()))  == 7> t7;
-    sa<sizeof(sink_5_34578(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_34578(a))           == 3* sizeof(long)> t1;
+    sa<sizeof(sink_5_34578(ca))          == 4* sizeof(long)> t2;
+    sa<sizeof(sink_5_34578(va))          == 3* sizeof(long)> t3;
+    sa<sizeof(sink_5_34578(cva))         == 4* sizeof(long)> t4;
+    sa<sizeof(sink_5_34578(source()))    == 5* sizeof(long)> t5;
+    sa<sizeof(sink_5_34578(c_source()))  == 8* sizeof(long)> t6;
+    sa<sizeof(sink_5_34578(v_source()))  == 7* sizeof(long)> t7;
+    sa<sizeof(sink_5_34578(cv_source())) == 8* sizeof(long)> t8;
     return 0;
 }
 
@@ -1183,13 +1183,13 @@ int test5_34678()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_34678(a))           == 3> t1;
-    sa<sizeof(sink_5_34678(ca))          == 4> t2;
-    sa<sizeof(sink_5_34678(va))          == 3> t3;
-    sa<sizeof(sink_5_34678(cva))         == 4> t4;
-    sa<sizeof(sink_5_34678(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_34678(v_source()))  == 7> t7;
-    sa<sizeof(sink_5_34678(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_34678(a))           == 3 * sizeof(long)> t1;
+    sa<sizeof(sink_5_34678(ca))          == 4 * sizeof(long)> t2;
+    sa<sizeof(sink_5_34678(va))          == 3 * sizeof(long)> t3;
+    sa<sizeof(sink_5_34678(cva))         == 4 * sizeof(long)> t4;
+    sa<sizeof(sink_5_34678(c_source()))  == 6 * sizeof(long)> t6;
+    sa<sizeof(sink_5_34678(v_source()))  == 7 * sizeof(long)> t7;
+    sa<sizeof(sink_5_34678(cv_source())) == 8 * sizeof(long)> t8;
     return 0;
 }
 
@@ -1205,12 +1205,12 @@ int test5_35678()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_35678(a))           == 3> t1;
-    sa<sizeof(sink_5_35678(va))          == 3> t3;
-    sa<sizeof(sink_5_35678(source()))    == 5> t5;
-    sa<sizeof(sink_5_35678(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_35678(v_source()))  == 7> t7;
-    sa<sizeof(sink_5_35678(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_35678(a))           == 3 * sizeof(long)> t1;
+    sa<sizeof(sink_5_35678(va))          == 3 * sizeof(long)> t3;
+    sa<sizeof(sink_5_35678(source()))    == 5 * sizeof(long)> t5;
+    sa<sizeof(sink_5_35678(c_source()))  == 6 * sizeof(long)> t6;
+    sa<sizeof(sink_5_35678(v_source()))  == 7 * sizeof(long)> t7;
+    sa<sizeof(sink_5_35678(cv_source())) == 8 * sizeof(long)> t8;
     return 0;
 }
 
@@ -1226,14 +1226,14 @@ int test5_45678()
     const          A ca;
           volatile A va;
     const volatile A cva;
-    sa<sizeof(sink_5_45678(a))           == 4> t1;
-    sa<sizeof(sink_5_45678(ca))          == 4> t2;
-    sa<sizeof(sink_5_45678(va))          == 4> t3;
-    sa<sizeof(sink_5_45678(cva))         == 4> t4;
-    sa<sizeof(sink_5_45678(source()))    == 5> t5;
-    sa<sizeof(sink_5_45678(c_source()))  == 6> t6;
-    sa<sizeof(sink_5_45678(v_source()))  == 7> t7;
-    sa<sizeof(sink_5_45678(cv_source())) == 8> t8;
+    sa<sizeof(sink_5_45678(a))           == 4 * sizeof(long)> t1;
+    sa<sizeof(sink_5_45678(ca))          == 4 * sizeof(long)> t2;
+    sa<sizeof(sink_5_45678(va))          == 4 * sizeof(long)> t3;
+    sa<sizeof(sink_5_45678(cva))         == 4 * sizeof(long)> t4;
+    sa<sizeof(sink_5_45678(source()))    == 5 * sizeof(long)> t5;
+    sa<sizeof(sink_5_45678(c_source()))  == 6 * sizeof(long)> t6;
+    sa<sizeof(sink_5_45678(v_source()))  == 7 * sizeof(long)> t7;
+    sa<sizeof(sink_5_45678(cv_source())) == 8 * sizeof(long)> t8;
     return 0;
 }
 
