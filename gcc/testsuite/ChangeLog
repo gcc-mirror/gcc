@@ -1,3 +1,19 @@
+2010-08-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/cast.C: Change fields of structures to "long" to pass
+	the test on targets with STRUCTURE_SIZE_BOUNDARY != BITS_PER_UNIT.
+	* g++.dg/cpp0x/iop.C: Ditto.
+	* g++.dg/cpp0x/named_refs.C: Ditto.
+	* g++.dg/cpp0x/rv1p.C: Ditto.
+	* g++.dg/cpp0x/rv2p.C: Ditto.
+	* g++.dg/cpp0x/rv3p.C: Ditto.
+	* g++.dg/cpp0x/rv4p.C: Ditto.
+	* g++.dg/cpp0x/rv5p.C: Ditto.
+	* g++.dg/cpp0x/rv6p.C: Ditto.
+	* g++.dg/cpp0x/rv7p.C: Ditto.
+	* g++.dg/cpp0x/rv8p.C: Ditto.
+	* g++.dg/cpp0x/unnamed_refs.C: Ditto.
+
 2010-08-13  Daniel Kraft  <d@domob.eu>
 
 	* gfortran.dg/implied_shape_1.f08: New test.
