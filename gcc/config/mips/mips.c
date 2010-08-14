@@ -474,6 +474,23 @@ struct mips16e_save_restore_info {
   HOST_WIDE_INT size;
 };
 
+/* Costs of various operations on the different architectures.  */
+
+struct mips_rtx_cost_data
+{
+  unsigned short fp_add;
+  unsigned short fp_mult_sf;
+  unsigned short fp_mult_df;
+  unsigned short fp_div_sf;
+  unsigned short fp_div_df;
+  unsigned short int_mult_si;
+  unsigned short int_mult_di;
+  unsigned short int_div_si;
+  unsigned short int_div_di;
+  unsigned short branch_cost;
+  unsigned short memory_latency;
+};
+
 /* Global variables for machine-dependent things.  */
 
 /* The -G setting, or the configuration's default small-data limit if
@@ -522,7 +539,7 @@ static const struct mips_cpu_info *mips_isa_option_info;
 int mips_abi = MIPS_ABI_DEFAULT;
 
 /* Which cost information to use.  */
-const struct mips_rtx_cost_data *mips_cost;
+static const struct mips_rtx_cost_data *mips_cost;
 
 /* The ambient target flags, excluding MASK_MIPS16.  */
 static int mips_base_target_flags;
@@ -1167,6 +1184,8 @@ static const struct mips_rtx_cost_data
 };
 
 static rtx mips_find_pic_call_symbol (rtx, rtx);
+static int mips_register_move_cost (enum machine_mode, reg_class_t,
+				    reg_class_t);
 
 /* This hash table keeps track of implicit "mips16" and "nomips16" attributes
    for -mflip_mips16.  It maps decl names onto a boolean mode setting.  */
@@ -10809,8 +10828,8 @@ mips_preferred_reload_class (rtx x, enum reg_class rclass)
 /* RCLASS is a class involved in a REGISTER_MOVE_COST calculation.
    Return a "canonical" class to represent it in later calculations.  */
 
-static enum reg_class
-mips_canonicalize_move_class (enum reg_class rclass)
+static reg_class_t
+mips_canonicalize_move_class (reg_class_t rclass)
 {
   /* All moves involving accumulator registers have the same cost.  */
   if (reg_class_subset_p (rclass, ACC_REGS))
@@ -10832,7 +10851,7 @@ mips_canonicalize_move_class (enum reg_class rclass)
 
 static int
 mips_move_to_gpr_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
-		       enum reg_class from)
+		       reg_class_t from)
 {
   switch (from)
     {
@@ -10868,7 +10887,7 @@ mips_move_to_gpr_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
    other classes handled by this function.  */
 
 static int
-mips_move_from_gpr_cost (enum machine_mode mode, enum reg_class to)
+mips_move_from_gpr_cost (enum machine_mode mode, reg_class_t to)
 {
   switch (to)
     {
@@ -10900,15 +10919,15 @@ mips_move_from_gpr_cost (enum machine_mode mode, enum reg_class to)
     }
 }
 
-/* Implement REGISTER_MOVE_COST.  Return 0 for classes that are the
+/* Implement TARGET_REGISTER_MOVE_COST.  Return 0 for classes that are the
    maximum of the move costs for subclasses; regclass will work out
    the maximum for us.  */
 
-int
+static int
 mips_register_move_cost (enum machine_mode mode,
-			 enum reg_class from, enum reg_class to)
+			 reg_class_t from, reg_class_t to)
 {
-  enum reg_class dregs;
+  reg_class_t dregs;
   int cost1, cost2;
 
   from = mips_canonicalize_move_class (from);
@@ -10943,6 +10962,15 @@ mips_register_move_cost (enum machine_mode mode,
 
   return 0;
 }
+
+/* Implement TARGET_MEMORY_MOVE_COST.  */
+
+static int
+mips_memory_move_cost (enum machine_mode mode, reg_class_t rclass, bool in)
+{
+  return (mips_cost->memory_latency
+	  + memory_move_secondary_cost (mode, rclass, in));
+} 
 
 /* Implement TARGET_IRA_COVER_CLASSES.  */
 
@@ -16376,6 +16404,10 @@ void mips_function_profiler (FILE *file)
 
 #undef TARGET_VALID_POINTER_MODE
 #define TARGET_VALID_POINTER_MODE mips_valid_pointer_mode
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST mips_register_move_cost
+#undef TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST mips_memory_move_cost
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS mips_rtx_costs
 #undef TARGET_ADDRESS_COST

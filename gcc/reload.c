@@ -518,9 +518,9 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
 /* If a secondary reload is needed, return its class.  If both an intermediate
    register and a scratch register is needed, we return the class of the
    intermediate register.  */
-enum reg_class
-secondary_reload_class (bool in_p, enum reg_class rclass,
-			enum machine_mode mode, rtx x)
+reg_class_t
+secondary_reload_class (bool in_p, reg_class_t rclass, enum machine_mode mode,
+			rtx x)
 {
   enum insn_code icode;
   secondary_reload_info sri;

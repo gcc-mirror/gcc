@@ -1,3 +1,32 @@
+2010-08-14  Anatoly Sokolov  <aesok@post.ru>
+
+	* reload.h (register_move_cost, memory_move_secondary_cost,
+	secondary_reload_class): Adjust prototype.
+	* rtl.h (reg_class_subset_p): Adjust prototype.
+	* reload.c (secondary_reload_class): Change arguments type from
+	enum reg_class to reg_class_t. Change result type to reg_class_t.
+	* reginfo.c (register_move_cost, reg_class_subset_p): Change
+	arguments type from enum reg_class to reg_class_t.
+	(memory_move_secondary_cost): Change arguments type from
+	enum reg_class to reg_class_t. Change type of saved_flags to
+	reg_class_t.
+
+	* config/mips/mips.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST): 
+	Remove macros.
+	(mips_cost): Remove.
+	(struct mips_rtx_cost_data): Moved to mips.c.
+	* config/mips/mips-protos.h (mips_register_move_cost): Remove.
+	* config/mips/mips.c (struct mips_rtx_cost_data): Moved from mips.h.
+	(mips_cost): Make static.
+	(mips_canonicalize_move_class): Change argument type to reg_class_t.
+	Change result type to reg_class_t.
+	(mips_move_to_gpr_cost, mips_move_from_gpr_cost): Change arguments
+	type from enum reg_class to reg_class_t.
+	(mips_register_move_cost): Make static. Change arguments
+	type from enum reg_class to reg_class_t.
+	(mips_memory_move_cost): New function.
+	(TARGET_REGISTER_MOVE_COST, TARGET_MEMORY_MOVE_COST): Define.
+
 2010-08-14  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR rtl-optimization/43358
