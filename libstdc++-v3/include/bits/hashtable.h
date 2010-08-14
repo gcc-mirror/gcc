@@ -212,7 +212,22 @@ namespace std
       _Hashtable(_Hashtable&&);
       
       _Hashtable&
-      operator=(const _Hashtable&);
+      operator=(const _Hashtable& __ht)
+      {
+	_Hashtable __tmp(__ht);
+	this->swap(__tmp);
+	return *this;
+      }
+
+      _Hashtable&
+      operator=(_Hashtable&& __ht)
+      {
+	// NB: DR 1204.
+	// NB: DR 675.
+	this->clear();
+	this->swap(__ht);
+	return *this;
+      }
 
       ~_Hashtable();
 
@@ -661,21 +676,6 @@ namespace std
       __ht._M_bucket_count = __n_bkt;
       __ht._M_element_count = 0;
       __ht._M_rehash_policy = _RehashPolicy();
-    }
-
-  template<typename _Key, typename _Value, 
-	   typename _Allocator, typename _ExtractKey, typename _Equal,
-	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
-	   bool __chc, bool __cit, bool __uk>
-    _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
-	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>&
-    _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
-	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
-    operator=(const _Hashtable& __ht)
-    {
-      _Hashtable __tmp(__ht);
-      this->swap(__tmp);
-      return *this;
     }
 
   template<typename _Key, typename _Value, 

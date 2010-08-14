@@ -79,7 +79,7 @@ namespace __debug
 
       template<typename _InputIterator>
         unordered_map(_InputIterator __f, _InputIterator __l, 
-		      size_type __n = 10,
+		      size_type __n = 0,
 		      const hasher& __hf = hasher(), 
 		      const key_equal& __eql = key_equal(), 
 		      const allocator_type& __a = allocator_type())
@@ -96,7 +96,7 @@ namespace __debug
       : _Base(std::move(__x)), _Safe_base() { }
 
       unordered_map(initializer_list<value_type> __l,
-		    size_type __n = 10,
+		    size_type __n = 0,
 		    const hasher& __hf = hasher(),
 		    const key_equal& __eql = key_equal(),
 		    const allocator_type& __a = allocator_type())
@@ -338,7 +338,7 @@ namespace __debug
 
       template<typename _InputIterator>
         unordered_multimap(_InputIterator __f, _InputIterator __l, 
-			   size_type __n = 10,
+			   size_type __n = 0,
 			   const hasher& __hf = hasher(), 
 			   const key_equal& __eql = key_equal(), 
 			   const allocator_type& __a = allocator_type())
@@ -355,7 +355,7 @@ namespace __debug
       : _Base(std::move(__x)), _Safe_base() { }
 
       unordered_multimap(initializer_list<value_type> __l,
-			 size_type __n = 10,
+			 size_type __n = 0,
 			 const hasher& __hf = hasher(),
 			 const key_equal& __eql = key_equal(),
 			 const allocator_type& __a = allocator_type())
