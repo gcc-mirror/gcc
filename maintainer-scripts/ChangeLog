@@ -1,5 +1,9 @@
 2010-08-14  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* gcc_release (CVSROOT): Remove.
+	
+2010-08-14  Gerald Pfeifer  <gerald@pfeifer.com>
+
 	* gcc_release (snapshot_print): Include md5 hash for every tarball
 	in the README file and notification mail.
 

@@ -703,13 +703,10 @@ TESTSUITE_DIRS=`adjust_dirs ${TESTSUITE_DIRS}`
 # Set up SVNROOT.
 if [ $LOCAL -eq 0 ]; then
     SVNROOT="svn+ssh://${SVN_USERNAME}@${SVN_SERVER}${SVN_REPOSITORY}"
-    CVSROOT=":ext:${SVN_USERNAME}@gcc.gnu.org/cvs/gcc"
 else
     SVNROOT="file:///svn/gcc"
-    CVSROOT="/cvs/gcc"
 fi
 export SVNROOT
-export CVSROOT
 
 ########################################################################
 # Main Program
