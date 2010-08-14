@@ -86,10 +86,10 @@ namespace __profile
 
       template<typename _InputIterator>
         unordered_map(_InputIterator __f, _InputIterator __l,
-              size_type __n = 10,
-              const hasher& __hf = hasher(),
-              const key_equal& __eql = key_equal(),
-              const allocator_type& __a = allocator_type())
+		      size_type __n = 0,
+		      const hasher& __hf = hasher(),
+		      const key_equal& __eql = key_equal(),
+		      const allocator_type& __a = allocator_type())
       : _Base(__f, __l, __n, __hf, __eql, __a)
       {
         __profcxx_hashtable_construct(this, _Base::bucket_count());
@@ -111,7 +111,7 @@ namespace __profile
       }
 
       unordered_map(initializer_list<value_type> __l,
-		    size_type __n = 10,
+		    size_type __n = 0,
 		    const hasher& __hf = hasher(),
 		    const key_equal& __eql = key_equal(),
 		    const allocator_type& __a = allocator_type())
@@ -314,19 +314,19 @@ namespace __profile
 
       explicit
       unordered_multimap(size_type __n = 10,
-		    const hasher& __hf = hasher(),
-		    const key_equal& __eql = key_equal(),
-		    const allocator_type& __a = allocator_type())
+			 const hasher& __hf = hasher(),
+			 const key_equal& __eql = key_equal(),
+			 const allocator_type& __a = allocator_type())
       : _Base(__n, __hf, __eql, __a)
       {
         __profcxx_hashtable_construct(this, _Base::bucket_count());
       }
       template<typename _InputIterator>
         unordered_multimap(_InputIterator __f, _InputIterator __l,
-              size_type __n = 10,
-              const hasher& __hf = hasher(),
-              const key_equal& __eql = key_equal(),
-              const allocator_type& __a = allocator_type())
+			   size_type __n = 0,
+			   const hasher& __hf = hasher(),
+			   const key_equal& __eql = key_equal(),
+			   const allocator_type& __a = allocator_type())
       : _Base(__f, __l, __n, __hf, __eql, __a)
       {
         __profcxx_hashtable_construct(this, _Base::bucket_count());
@@ -345,7 +345,7 @@ namespace __profile
       }
 
       unordered_multimap(initializer_list<value_type> __l,
-			 size_type __n = 10,
+			 size_type __n = 0,
 			 const hasher& __hf = hasher(),
 			 const key_equal& __eql = key_equal(),
 			 const allocator_type& __a = allocator_type())

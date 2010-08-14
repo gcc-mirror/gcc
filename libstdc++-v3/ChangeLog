@@ -1,5 +1,64 @@
 2010-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/hashtable.h (_Hashtable<>::operator=(const
+	_Hashtable&)): Move inline.
+	(operator=(_Hashtable&&)): Define.
+	* include/bits/unordered_map.h (unordered_map(unordered_map&&),
+	unordered_map(const unordered_map&), unordered_multimap
+	(unordered_multimap&&), unordered_multimap(const unordered_multimap&),
+	__unordered_map(__unordered_map&&), __unordered_map(const
+	__unordered_map&), __unordered_multimap(__unordered_multimap&&),
+	__unordered_multimap(const __unordered_multimap&)): Do not define,
+	leave implicit.
+	* include/bits/unordered_set.h (unordered_set(unordered_set&&),
+	unordered_set(const unordered_set&), unordered_multiset
+	(unordered_multiset&&), unordered_multiset(const unordered_multiset&),
+	__unordered_set(__unordered_set&&), __unordered_set(const
+	__unordered_set&), __unordered_multiset(__unordered_multiset&&),
+	__unordered_multiset(const __unordered_multiset&)): Likewise.
+
+	* include/bits/unordered_map.h (__unordered_map(initializer_list<>),
+	__unordered_map<>::operator=(initializer_list<>),
+	__unordered_multimap(initializer_list<>), __unordered_multimap<>::
+	operator=(initializer_list<>)): Add.
+	* include/bits/unordered_set.h (__unordered_set(initializer_list<>),
+	__unordered_set<>::operator=(initializer_list<>),
+	__unordered_multiset(initializer_list<>), __unordered_multiset<>::
+	operator=(initializer_list<>)): Likewise.
+
+	* include/bits/unordered_map.h (__unordered_map(_InputIterator,
+	_InputIterator, size_type __n), unordered_map(_InputIterator,
+	_InputIterator, size_type __n), unordered_map(initializer_list<>,
+	size_type __n), unordered_multimap(initializer_list<>, size_type __n)):
+	Fix __n default to 0.
+	* include/bits/unordered_set.h (__unordered_set(_InputIterator,
+	_InputIterator, size_type __n), unordered_set(_InputIterator,
+	_InputIterator, size_type __n), unordered_set(initializer_list<>,
+	size_type __n), unordered_multiset(initializer_list<>, size_type __n)):
+	Likewise.
+	* include/debug/unordered_map (unordered_map(_InputIterator,
+	_InputIterator, size_type __n), unordered_map(initializer_list<>,
+	size_type __n), unordered_map(_InputIterator, _InputIterator,
+	size_type __n), unordered_multimap(initializer_list<>, size_type __n)):
+	Likewise.
+	* include/debug/unordered_set (unordered_set(_InputIterator,
+	_InputIterator, size_type __n), unordered_set(initializer_list<>,
+	size_type __n), unordered_set(_InputIterator, _InputIterator,
+	size_type __n), unordered_multiset(initializer_list<>, size_type __n)):
+	Likewise.
+	* include/profile/unordered_map (unordered_map(_InputIterator,
+	_InputIterator, size_type __n), unordered_map(initializer_list<>,
+	size_type __n), unordered_map(_InputIterator, _InputIterator,
+	size_type __n), unordered_multimap(initializer_list<>, size_type __n)):
+	Likewise.
+	* include/profile/unordered_set (unordered_set(_InputIterator,
+	_InputIterator, size_type __n), unordered_set(initializer_list<>,
+	size_type __n), unordered_set(_InputIterator, _InputIterator,
+	size_type __n), unordered_multiset(initializer_list<>, size_type __n)):
+	Likewise.
+
+2010-08-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/45281
 	* include/bits/stl_queue.h (queue(queue&&), operator=(queue&&),
 	priority_queue(priority_queue&&), operator=(priority_queue&&)):
