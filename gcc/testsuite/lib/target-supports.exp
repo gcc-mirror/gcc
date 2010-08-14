@@ -1620,7 +1620,9 @@ proc check_effective_target_vect_int { } {
 	      || [istarget sparc*-*-*]
 	      || [istarget alpha*-*-*]
 	      || [istarget ia64-*-*] 
-	      || [check_effective_target_arm32] } {
+	      || [check_effective_target_arm32]
+	      || ([istarget mips*-*-*]
+		  && [check_effective_target_mips_loongson]) } {
 	   set et_vect_int_saved 1
 	}
     }
@@ -2156,7 +2158,9 @@ proc check_effective_target_vect_shift { } {
 	     || [istarget ia64-*-*]
 	     || [istarget i?86-*-*]
 	     || [istarget x86_64-*-*]
-	     || [check_effective_target_arm32] } {
+	     || [check_effective_target_arm32]
+	     || ([istarget mips*-*-*]
+		 && [check_effective_target_mips_loongson]) } {
 	   set et_vect_shift_saved 1
 	}
     }
@@ -2270,7 +2274,9 @@ proc check_effective_target_vect_no_int_max { } {
 	set et_vect_no_int_max_saved 0
 	if { [istarget sparc*-*-*]
 	     || [istarget spu-*-*]
-	     || [istarget alpha*-*-*] } {
+	     || [istarget alpha*-*-*]
+	     || ([istarget mips*-*-*]
+		 && [check_effective_target_mips_loongson]) } {
 	    set et_vect_no_int_max_saved 1
 	}
     }
@@ -2643,7 +2649,9 @@ proc check_effective_target_vect_no_align { } {
 	if { [istarget mipsisa64*-*-*]
 	     || [istarget sparc*-*-*]
 	     || [istarget ia64-*-*]
-	     || [check_effective_target_arm32] } { 
+	     || [check_effective_target_arm32]
+	     || ([istarget mips*-*-*]
+		 && [check_effective_target_mips_loongson]) } {
 	    set et_vect_no_align_saved 1
 	}
     }
@@ -2833,8 +2841,10 @@ proc check_effective_target_vect_short_mult { } {
 	     || [istarget spu-*-*]
 	     || [istarget i?86-*-*]
 	     || [istarget x86_64-*-*]
-             || [istarget powerpc*-*-*]
-             || [check_effective_target_arm32] } {
+	     || [istarget powerpc*-*-*]
+	     || [check_effective_target_arm32]
+	     || ([istarget mips*-*-*]
+		 && [check_effective_target_mips_loongson]) } {
 	   set et_vect_short_mult_saved 1
 	}
     }
