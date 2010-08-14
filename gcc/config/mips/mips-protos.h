@@ -295,8 +295,6 @@ extern enum reg_class mips_secondary_reload_class (enum reg_class,
 						   enum machine_mode,
 						   rtx, bool);
 extern int mips_class_max_nregs (enum reg_class, enum machine_mode);
-extern int mips_register_move_cost (enum machine_mode, enum reg_class,
-				    enum reg_class);
 
 extern int mips_adjust_insn_length (rtx, int);
 extern void mips_output_load_label (rtx);

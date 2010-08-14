@@ -628,8 +628,7 @@ init_fake_stack_mems (void)
    TO, using MODE.  */
 
 int
-register_move_cost (enum machine_mode mode, enum reg_class from,
-                    enum reg_class to)
+register_move_cost (enum machine_mode mode, reg_class_t from, reg_class_t to)
 {
   return targetm.register_move_cost (mode, from, to);
 }
@@ -644,10 +643,10 @@ memory_move_cost (enum machine_mode mode, enum reg_class rclass, bool in)
 /* Compute extra cost of moving registers to/from memory due to reloads.
    Only needed if secondary reloads are required for memory moves.  */
 int
-memory_move_secondary_cost (enum machine_mode mode, enum reg_class rclass,
+memory_move_secondary_cost (enum machine_mode mode, reg_class_t rclass,
 			    bool in)
 {
-  enum reg_class altclass;
+  reg_class_t altclass;
   int partial_cost = 0;
   /* We need a memory reference to feed to SECONDARY... macros.  */
   /* mem may be unused even if the SECONDARY_ macros are defined.  */
@@ -1174,7 +1173,7 @@ reg_scan_mark_refs (rtx x, rtx insn)
 /* Return nonzero if C1 is a subset of C2, i.e., if every register in C1
    is also in C2.  */
 int
-reg_class_subset_p (enum reg_class c1, enum reg_class c2)
+reg_class_subset_p (reg_class_t c1, reg_class_t c2)
 {
   return (c1 == c2
 	  || c2 == ALL_REGS

@@ -28,23 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* MIPS external variables defined in mips.c.  */
 
-/* Costs of various operations on the different architectures.  */
-
-struct mips_rtx_cost_data
-{
-  unsigned short fp_add;
-  unsigned short fp_mult_sf;
-  unsigned short fp_mult_df;
-  unsigned short fp_div_sf;
-  unsigned short fp_div_df;
-  unsigned short int_mult_si;
-  unsigned short int_mult_di;
-  unsigned short int_div_si;
-  unsigned short int_div_di;
-  unsigned short branch_cost;
-  unsigned short memory_latency;
-};
-
 /* Which ABI to use.  ABI_32 (original 32, or o32), ABI_N32 (n32),
    ABI_64 (n64) are all defined by SGI.  ABI_O64 is o32 extended
    to work on a 64-bit machine.  */
@@ -2487,29 +2470,6 @@ typedef struct mips_args {
 #define FUNCTION_MODE SImode
 
 
-/* A C expression for the cost of moving data from a register in
-   class FROM to one in class TO.  The classes are expressed using
-   the enumeration values such as `GENERAL_REGS'.  A value of 2 is
-   the default; other values are interpreted relative to that.
-
-   It is not required that the cost always equal 2 when FROM is the
-   same as TO; on some machines it is expensive to move between
-   registers if they are not general registers.
-
-   If reload sees an insn consisting of a single `set' between two
-   hard registers, and if `REGISTER_MOVE_COST' applied to their
-   classes returns a value of 2, reload does not check to ensure
-   that the constraints of the insn are met.  Setting a cost of
-   other than 2 will allow reload to verify that the constraints are
-   met.  You should do this if the `movM' pattern's constraints do
-   not allow such copying.  */
-
-#define REGISTER_MOVE_COST(MODE, FROM, TO)				\
-  mips_register_move_cost (MODE, FROM, TO)
-
-#define MEMORY_MOVE_COST(MODE,CLASS,TO_P) \
-  (mips_cost->memory_latency	      		\
-   + memory_move_secondary_cost ((MODE), (CLASS), (TO_P)))
 
 /* Define if copies to/from condition code registers should be avoided.
 
@@ -3019,7 +2979,6 @@ extern int mips_isa;			/* architectural level */
 extern int mips_abi;			/* which ABI to use */
 extern const struct mips_cpu_info *mips_arch_info;
 extern const struct mips_cpu_info *mips_tune_info;
-extern const struct mips_rtx_cost_data *mips_cost;
 extern bool mips_base_mips16;
 extern enum mips_code_readable_setting mips_code_readable;
 extern GTY(()) struct target_globals *mips16_globals;

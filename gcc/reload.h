@@ -30,11 +30,9 @@ along with GCC; see the file COPYING3.  If not see
   SECONDARY_RELOAD_CLASS (CLASS, MODE, X)
 #endif
 
-extern int register_move_cost (enum machine_mode, enum reg_class,
-			       enum reg_class);
+extern int register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
 extern int memory_move_cost (enum machine_mode, enum reg_class, bool);
-extern int memory_move_secondary_cost (enum machine_mode, enum reg_class,
-				       bool);
+extern int memory_move_secondary_cost (enum machine_mode, reg_class_t, bool);
 
 /* Maximum number of reloads we can need.  */
 #define MAX_RELOADS (2 * MAX_RECOG_OPERANDS * (MAX_REGS_PER_ADDRESS + 1))
@@ -292,8 +290,8 @@ extern void compute_use_by_pseudos (HARD_REG_SET *, bitmap);
 
 /* Functions from reload.c:  */
 
-extern enum reg_class secondary_reload_class (bool, enum reg_class,
-					      enum machine_mode, rtx);
+extern reg_class_t secondary_reload_class (bool, reg_class_t,
+					   enum machine_mode, rtx);
 
 #ifdef GCC_INSN_CODES_H
 extern enum reg_class scratch_reload_class (enum insn_code);
