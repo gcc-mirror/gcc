@@ -1,3 +1,12 @@
+2010-08-14  Mingjie Xing  <mingjie.xing@gmail.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_int): Return
+	true for Loongson targets.
+	(check_effective_target_vect_shift): Likewise.
+	(check_effective_target_vect_no_int_max): Likewise.
+	(check_effective_target_vect_no_align): Likewise.
+	(check_effective_target_vect_short_mult): Likewise.
+
 2010-08-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/cast.C: Change fields of structures to "long" to pass
