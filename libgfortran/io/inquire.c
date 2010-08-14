@@ -83,8 +83,19 @@ inquire_via_unit (st_parameter_inquire *iqp, gfc_unit * u)
 	    fstrcpy (iqp->name, iqp->name_len, u->file, u->file_len);
 	}
       else
-#endif
 	fstrcpy (iqp->name, iqp->name_len, u->file, u->file_len);
+#elif defined __MINGW32__
+      if (u->unit_number == options.stdin_unit)
+	fstrcpy (iqp->name, iqp->name_len, "CONIN$", sizeof("CONIN$"));
+      else if (u->unit_number == options.stdout_unit)
+	fstrcpy (iqp->name, iqp->name_len, "CONOUT$", sizeof("CONOUT$"));
+      else if (u->unit_number == options.stderr_unit)
+	fstrcpy (iqp->name, iqp->name_len, "CONERR$", sizeof("CONERR$"));
+      else
+	fstrcpy (iqp->name, iqp->name_len, u->file, u->file_len);
+#else
+    fstrcpy (iqp->name, iqp->name_len, u->file, u->file_len);
+#endif
     }
 
   if ((cf & IOPARM_INQUIRE_HAS_ACCESS) != 0)
