@@ -1,3 +1,8 @@
+2010-08-14  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gcc_release (snapshot_print): Include md5 hash for every tarball
+	in the README file and notification mail.
+
 2010-08-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* update_web_docs_libstdcxx_svn: Do not compress generated .html
