@@ -1,5 +1,10 @@
 2010-08-14  Mingjie Xing  <mingjie.xing@gmail.com>
 
+	* gcc.dg/vect/fast-math-vect-reduc-8.c: Move
+	dg-require-effective-target after dg-do.
+
+2010-08-14  Mingjie Xing  <mingjie.xing@gmail.com>
+
 	* lib/target-supports.exp (check_effective_target_vect_int): Return
 	true for Loongson targets.
 	(check_effective_target_vect_shift): Likewise.
