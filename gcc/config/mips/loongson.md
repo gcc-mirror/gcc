@@ -31,7 +31,6 @@
   UNSPEC_LOONGSON_PMOVMSK
   UNSPEC_LOONGSON_PMULHU
   UNSPEC_LOONGSON_PMULH
-  UNSPEC_LOONGSON_PMULL
   UNSPEC_LOONGSON_PMULU
   UNSPEC_LOONGSON_PASUBUB
   UNSPEC_LOONGSON_BIADD
@@ -353,11 +352,10 @@
   [(set_attr "type" "fmul")])
 
 ;; Multiply signed integers and store low result.
-(define_insn "loongson_pmull<V_suffix>"
+(define_insn "mul<mode>3"
   [(set (match_operand:VH 0 "register_operand" "=f")
-        (unspec:VH [(match_operand:VH 1 "register_operand" "f")
-		    (match_operand:VH 2 "register_operand" "f")]
-		   UNSPEC_LOONGSON_PMULL))]
+        (mult:VH (match_operand:VH 1 "register_operand" "f")
+                 (match_operand:VH 2 "register_operand" "f")))]
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
   "pmull<V_suffix>\t%0,%1,%2"
   [(set_attr "type" "fmul")])
