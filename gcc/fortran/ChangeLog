@@ -1,5 +1,11 @@
 2010-08-15  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/45211
+	* decl.c (verify_c_interop_param): Remove superfluous space (" ").
+	(verify_c_interop): Handle unresolved DT with bind(C).
+
+2010-08-15  Tobias Burnus  <burnus@net-b.de>
+
 	* trans-expr.c (gfc_conv_expr_present): Regard nullified
 	pointer arrays as absent.
 	(gfc_conv_procedure_call): Handle EXPR_NULL for non-pointer
