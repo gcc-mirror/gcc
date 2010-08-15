@@ -456,7 +456,12 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	      && (first_stmt_code != IMAGPART_EXPR
 		  || rhs_code != REALPART_EXPR)
 	      && (first_stmt_code != REALPART_EXPR
-		  || rhs_code != IMAGPART_EXPR))
+		  || rhs_code != IMAGPART_EXPR)
+              && !(STMT_VINFO_STRIDED_ACCESS (vinfo_for_stmt (stmt))
+                   && (first_stmt_code == ARRAY_REF
+                       || first_stmt_code == INDIRECT_REF
+                       || first_stmt_code == COMPONENT_REF
+                       || first_stmt_code == MEM_REF)))
 	    {
 	      if (vect_print_dump_info (REPORT_SLP))
 		{
@@ -1509,7 +1514,75 @@ vect_slp_analyze_operations (bb_vec_info bb_vinfo)
 }
 
 
-/* Cheick if the basic block can be vectorized.  */
+/* Check if vectorization of the basic block is profitable.  */
+
+static bool
+vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
+{
+  VEC (slp_instance, heap) *slp_instances = BB_VINFO_SLP_INSTANCES (bb_vinfo);
+  slp_instance instance;
+  int i;
+  unsigned int vec_outside_cost = 0, vec_inside_cost = 0, scalar_cost = 0;
+  unsigned int stmt_cost;
+  gimple stmt;
+  gimple_stmt_iterator si;
+  basic_block bb = BB_VINFO_BB (bb_vinfo);
+  stmt_vec_info stmt_info = NULL;
+  tree dummy_type = NULL;
+  int dummy = 0;
+
+  /* Calculate vector costs.  */
+  for (i = 0; VEC_iterate (slp_instance, slp_instances, i, instance); i++)
+    {
+      vec_outside_cost += SLP_INSTANCE_OUTSIDE_OF_LOOP_COST (instance);
+      vec_inside_cost += SLP_INSTANCE_INSIDE_OF_LOOP_COST (instance);
+    }
+
+  /* Calculate scalar cost.  */
+  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+    {
+      stmt = gsi_stmt (si);
+      stmt_info = vinfo_for_stmt (stmt);
+
+      if (!stmt_info || !STMT_VINFO_VECTORIZABLE (stmt_info)
+          || !PURE_SLP_STMT (stmt_info))
+        continue;
+
+      if (STMT_VINFO_DATA_REF (stmt_info))
+        {
+          if (DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)))
+            stmt_cost = targetm.vectorize.builtin_vectorization_cost 
+                          (scalar_load, dummy_type, dummy);
+          else
+            stmt_cost = targetm.vectorize.builtin_vectorization_cost
+                          (scalar_store, dummy_type, dummy);
+        }
+      else
+        stmt_cost = targetm.vectorize.builtin_vectorization_cost
+                      (scalar_stmt, dummy_type, dummy);
+
+      scalar_cost += stmt_cost;
+    }
+
+  if (vect_print_dump_info (REPORT_COST))
+    {
+      fprintf (vect_dump, "Cost model analysis: \n");
+      fprintf (vect_dump, "  Vector inside of basic block cost: %d\n",
+               vec_inside_cost);
+      fprintf (vect_dump, "  Vector outside of basic block cost: %d\n",
+               vec_outside_cost);
+      fprintf (vect_dump, "  Scalar cost of basic block: %d", scalar_cost);
+    }
+
+  /* Vectorization is profitable if its cost is less than the cost of scalar
+     version.  */
+  if (vec_outside_cost + vec_inside_cost >= scalar_cost)
+    return false;
+
+  return true;
+}
+
+/* Check if the basic block can be vectorized.  */
 
 bb_vec_info
 vect_slp_analyze_bb (basic_block bb)
@@ -1636,6 +1709,18 @@ vect_slp_analyze_bb (basic_block bb)
     {
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
         fprintf (vect_dump, "not vectorized: bad operation in basic block.\n");
+
+      destroy_bb_vec_info (bb_vinfo);
+      return NULL;
+    }
+
+  /* Cost model: check if the vectorization is worthwhile.  */
+  if (flag_vect_cost_model
+      && !vect_bb_vectorization_profitable_p (bb_vinfo))
+    {
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+        fprintf (vect_dump, "not vectorized: vectorization is not "
+                            "profitable.\n");
 
       destroy_bb_vec_info (bb_vinfo);
       return NULL;
