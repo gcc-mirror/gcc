@@ -1,3 +1,9 @@
+2010-08-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/45283
+	* testsuite/performance/30_threads/future/polling.cc: Replace calls to
+	shared_future::is_ready.
+
 2010-08-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/forward_list.h (_M_default_initialize,
