@@ -5993,6 +5993,12 @@ machine-description macro @code{FRAME_POINTER_REQUIRED} controls
 whether a target machine supports this flag.  @xref{Registers,,Register
 Usage, gccint, GNU Compiler Collection (GCC) Internals}.
 
+Starting with GCC version 4.6, the default setting (when not optimizing for
+size) for 32-bit Linux x86 and 32-bit Darwin x86 targets has been changed to
+@option{-fomit-frame-pointer}.  The default can be reverted to
+@option{-fno-omit-frame-pointer} by configuring GCC with the
+@option{--enable-frame-pointer} configure option.
+
 Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -foptimize-sibling-calls
