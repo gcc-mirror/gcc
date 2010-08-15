@@ -8,14 +8,14 @@
 template <bool> struct sa;
 template <> struct sa<true> {};
 
-struct one   {char x[1];};
-struct two   {char x[2];};
-struct three {char x[3];};
-struct four  {char x[4];};
-struct five  {char x[5];};
-struct six   {char x[6];};
-struct seven {char x[7];};
-struct eight {char x[8];};
+struct one   {long x[1];};
+struct two   {long x[2];};
+struct three {long x[3];};
+struct four  {long x[4];};
+struct five  {long x[5];};
+struct six   {long x[6];};
+struct seven {long x[7];};
+struct eight {long x[8];};
 
 struct A
 {
@@ -39,10 +39,10 @@ int test2_12()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_12(a))           == 1> t1;
-    sa<sizeof(sink_2_12(ca))          == 2> t2;
-    sa<sizeof(sink_2_12(source()))    == 2> t5;
-    sa<sizeof(sink_2_12(c_source()))  == 2> t6;
+    sa<sizeof(sink_2_12(a))           == 1 * sizeof(long)> t1;
+    sa<sizeof(sink_2_12(ca))          == 2 * sizeof(long)> t2;
+    sa<sizeof(sink_2_12(source()))    == 2 * sizeof(long)> t5;
+    sa<sizeof(sink_2_12(c_source()))  == 2 * sizeof(long)> t6;
     return 0;
 }
 
@@ -55,8 +55,8 @@ int test2_13()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_13(a))           == 1> t1;
-    sa<sizeof(sink_2_13(va))          == 3> t3;
+    sa<sizeof(sink_2_13(a))           == 1 * sizeof(long)> t1;
+    sa<sizeof(sink_2_13(va))          == 3 * sizeof(long)> t3;
     return 0;
 }
 
@@ -69,10 +69,10 @@ int test2_14()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_14(a))           == 1> t1;
-    sa<sizeof(sink_2_14(ca))          == 4> t2;
-    sa<sizeof(sink_2_14(va))          == 4> t3;
-    sa<sizeof(sink_2_14(cva))         == 4> t4;
+    sa<sizeof(sink_2_14(a))           == 1 * sizeof(long)> t1;
+    sa<sizeof(sink_2_14(ca))          == 4 * sizeof(long)> t2;
+    sa<sizeof(sink_2_14(va))          == 4 * sizeof(long)> t3;
+    sa<sizeof(sink_2_14(cva))         == 4 * sizeof(long)> t4;
     return 0;
 }
 
@@ -85,8 +85,8 @@ int test2_15()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_15(a))           == 1> t1;
-    sa<sizeof(sink_2_15(source()))    == 5> t5;
+    sa<sizeof(sink_2_15(a))           == 1 * sizeof(long)> t1;
+    sa<sizeof(sink_2_15(source()))    == 5 * sizeof(long)> t5;
     return 0;
 }
 
@@ -99,10 +99,10 @@ int test2_16()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_16(a))           == 1> t1;
-    sa<sizeof(sink_2_16(ca))          == 6> t2;
-    sa<sizeof(sink_2_16(source()))    == 6> t5;
-    sa<sizeof(sink_2_16(c_source()))  == 6> t6;
+    sa<sizeof(sink_2_16(a))           == 1 * sizeof(long)> t1;
+    sa<sizeof(sink_2_16(ca))          == 6 * sizeof(long)> t2;
+    sa<sizeof(sink_2_16(source()))    == 6 * sizeof(long)> t5;
+    sa<sizeof(sink_2_16(c_source()))  == 6 * sizeof(long)> t6;
     return 0;
 }
 
@@ -115,10 +115,10 @@ int test2_17()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_17(a))           == 1> t1;
-    sa<sizeof(sink_2_17(va))          == 7> t3;
-    sa<sizeof(sink_2_17(source()))    == 7> t5;
-    sa<sizeof(sink_2_17(v_source()))  == 7> t7;
+    sa<sizeof(sink_2_17(a))           == 1 * sizeof(long)> t1;
+    sa<sizeof(sink_2_17(va))          == 7 * sizeof(long)> t3;
+    sa<sizeof(sink_2_17(source()))    == 7 * sizeof(long)> t5;
+    sa<sizeof(sink_2_17(v_source()))  == 7 * sizeof(long)> t7;
     return 0;
 }
 
@@ -131,14 +131,14 @@ int test2_18()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_18(a))           == 1> t1;
-    sa<sizeof(sink_2_18(ca))          == 8> t2;
-    sa<sizeof(sink_2_18(va))          == 8> t3;
-    sa<sizeof(sink_2_18(cva))         == 8> t4;
-    sa<sizeof(sink_2_18(source()))    == 8> t5;
-    sa<sizeof(sink_2_18(c_source()))  == 8> t6;
-    sa<sizeof(sink_2_18(v_source()))  == 8> t7;
-    sa<sizeof(sink_2_18(cv_source())) == 8> t8;
+    sa<sizeof(sink_2_18(a))           == 1 * sizeof(long)> t1;
+    sa<sizeof(sink_2_18(ca))          == 8 * sizeof(long)> t2;
+    sa<sizeof(sink_2_18(va))          == 8 * sizeof(long)> t3;
+    sa<sizeof(sink_2_18(cva))         == 8 * sizeof(long)> t4;
+    sa<sizeof(sink_2_18(source()))    == 8 * sizeof(long)> t5;
+    sa<sizeof(sink_2_18(c_source()))  == 8 * sizeof(long)> t6;
+    sa<sizeof(sink_2_18(v_source()))  == 8 * sizeof(long)> t7;
+    sa<sizeof(sink_2_18(cv_source())) == 8 * sizeof(long)> t8;
     return 0;
 }
 
@@ -151,10 +151,10 @@ int test2_23()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_23(ca))          == 2> t2;
-    sa<sizeof(sink_2_23(va))          == 3> t3;
-    sa<sizeof(sink_2_23(source()))    == 2> t5;
-    sa<sizeof(sink_2_23(c_source()))  == 2> t6;
+    sa<sizeof(sink_2_23(ca))          == 2 * sizeof(long)> t2;
+    sa<sizeof(sink_2_23(va))          == 3 * sizeof(long)> t3;
+    sa<sizeof(sink_2_23(source()))    == 2 * sizeof(long)> t5;
+    sa<sizeof(sink_2_23(c_source()))  == 2 * sizeof(long)> t6;
     return 0;
 }
 
@@ -167,14 +167,14 @@ int test2_24()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_24(a))           == 2> t1;
-    sa<sizeof(sink_2_24(ca))          == 2> t2;
-    sa<sizeof(sink_2_24(va))          == 4> t3;
-    sa<sizeof(sink_2_24(cva))         == 4> t4;
-    sa<sizeof(sink_2_24(source()))    == 2> t5;
-    sa<sizeof(sink_2_24(c_source()))  == 2> t6;
-//    sa<sizeof(sink_2_24(v_source()))  == 4> t7;
-//    sa<sizeof(sink_2_24(cv_source())) == 4> t8;
+    sa<sizeof(sink_2_24(a))           == 2 * sizeof(long)> t1;
+    sa<sizeof(sink_2_24(ca))          == 2 * sizeof(long)> t2;
+    sa<sizeof(sink_2_24(va))          == 4 * sizeof(long)> t3;
+    sa<sizeof(sink_2_24(cva))         == 4 * sizeof(long)> t4;
+    sa<sizeof(sink_2_24(source()))    == 2 * sizeof(long)> t5;
+    sa<sizeof(sink_2_24(c_source()))  == 2 * sizeof(long)> t6;
+//    sa<sizeof(sink_2_24(v_source()))  == 4 * sizeof(long)> t7;
+//    sa<sizeof(sink_2_24(cv_source())) == 4 * sizeof(long)> t8;
     return 0;
 }
 
@@ -187,10 +187,10 @@ int test2_25()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_25(a))           == 2> t1;
-    sa<sizeof(sink_2_25(ca))          == 2> t2;
-    sa<sizeof(sink_2_25(source()))    == 5> t5;
-    sa<sizeof(sink_2_25(c_source()))  == 2> t6;
+    sa<sizeof(sink_2_25(a))           == 2 * sizeof(long)> t1;
+    sa<sizeof(sink_2_25(ca))          == 2 * sizeof(long)> t2;
+    sa<sizeof(sink_2_25(source()))    == 5 * sizeof(long)> t5;
+    sa<sizeof(sink_2_25(c_source()))  == 2 * sizeof(long)> t6;
     return 0;
 }
 
@@ -203,10 +203,10 @@ int test2_26()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_26(a))           == 2> t1;
-    sa<sizeof(sink_2_26(ca))          == 2> t2;
-    sa<sizeof(sink_2_26(source()))    == 6> t5;
-    sa<sizeof(sink_2_26(c_source()))  == 6> t6;
+    sa<sizeof(sink_2_26(a))           == 2 * sizeof(long)> t1;
+    sa<sizeof(sink_2_26(ca))          == 2 * sizeof(long)> t2;
+    sa<sizeof(sink_2_26(source()))    == 6 * sizeof(long)> t5;
+    sa<sizeof(sink_2_26(c_source()))  == 6 * sizeof(long)> t6;
     return 0;
 }
 
@@ -219,12 +219,12 @@ int test2_27()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_27(a))           == 2> t1;
-    sa<sizeof(sink_2_27(ca))          == 2> t2;
-    sa<sizeof(sink_2_27(va))          == 7> t3;
-    sa<sizeof(sink_2_27(source()))    == 7> t5;
-    sa<sizeof(sink_2_27(c_source()))  == 2> t6;
-    sa<sizeof(sink_2_27(v_source()))  == 7> t7;
+    sa<sizeof(sink_2_27(a))           == 2 * sizeof(long)> t1;
+    sa<sizeof(sink_2_27(ca))          == 2 * sizeof(long)> t2;
+    sa<sizeof(sink_2_27(va))          == 7 * sizeof(long)> t3;
+    sa<sizeof(sink_2_27(source()))    == 7 * sizeof(long)> t5;
+    sa<sizeof(sink_2_27(c_source()))  == 2 * sizeof(long)> t6;
+    sa<sizeof(sink_2_27(v_source()))  == 7 * sizeof(long)> t7;
     return 0;
 }
 
@@ -237,14 +237,14 @@ int test2_28()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_28(a))           == 2> t1;
-    sa<sizeof(sink_2_28(ca))          == 2> t2;
-    sa<sizeof(sink_2_28(va))          == 8> t3;
-    sa<sizeof(sink_2_28(cva))         == 8> t4;
-    sa<sizeof(sink_2_28(source()))    == 8> t5;
-    sa<sizeof(sink_2_28(c_source()))  == 8> t6;
-    sa<sizeof(sink_2_28(v_source()))  == 8> t7;
-    sa<sizeof(sink_2_28(cv_source())) == 8> t8;
+    sa<sizeof(sink_2_28(a))           == 2 * sizeof(long)> t1;
+    sa<sizeof(sink_2_28(ca))          == 2 * sizeof(long)> t2;
+    sa<sizeof(sink_2_28(va))          == 8 * sizeof(long)> t3;
+    sa<sizeof(sink_2_28(cva))         == 8 * sizeof(long)> t4;
+    sa<sizeof(sink_2_28(source()))    == 8 * sizeof(long)> t5;
+    sa<sizeof(sink_2_28(c_source()))  == 8 * sizeof(long)> t6;
+    sa<sizeof(sink_2_28(v_source()))  == 8 * sizeof(long)> t7;
+    sa<sizeof(sink_2_28(cv_source())) == 8 * sizeof(long)> t8;
     return 0;
 }
 
@@ -257,14 +257,14 @@ int test2_34()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_34(a))           == 3> t1;
-    sa<sizeof(sink_2_34(ca))          == 4> t2;
-    sa<sizeof(sink_2_34(va))          == 3> t3;
-    sa<sizeof(sink_2_34(cva))         == 4> t4;
-//    sa<sizeof(sink_2_34(source()))    == 4> t5;
-//    sa<sizeof(sink_2_34(c_source()))  == 4> t6;
-//    sa<sizeof(sink_2_34(v_source()))  == 4> t7;
-//    sa<sizeof(sink_2_34(cv_source())) == 4> t8;
+    sa<sizeof(sink_2_34(a))           == 3 * sizeof(long)> t1;
+    sa<sizeof(sink_2_34(ca))          == 4 * sizeof(long)> t2;
+    sa<sizeof(sink_2_34(va))          == 3 * sizeof(long)> t3;
+    sa<sizeof(sink_2_34(cva))         == 4 * sizeof(long)> t4;
+//    sa<sizeof(sink_2_34(source()))    == 4 * sizeof(long)> t5;
+//    sa<sizeof(sink_2_34(c_source()))  == 4 * sizeof(long)> t6;
+//    sa<sizeof(sink_2_34(v_source()))  == 4 * sizeof(long)> t7;
+//    sa<sizeof(sink_2_34(cv_source())) == 4 * sizeof(long)> t8;
     return 0;
 }
 
@@ -277,9 +277,9 @@ int test2_35()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_35(a))           == 3> t1;
-    sa<sizeof(sink_2_35(va))          == 3> t3;
-    sa<sizeof(sink_2_35(source()))    == 5> t5;
+    sa<sizeof(sink_2_35(a))           == 3 * sizeof(long)> t1;
+    sa<sizeof(sink_2_35(va))          == 3 * sizeof(long)> t3;
+    sa<sizeof(sink_2_35(source()))    == 5 * sizeof(long)> t5;
     return 0;
 }
 
@@ -292,11 +292,11 @@ int test2_36()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_36(a))           == 3> t1;
-    sa<sizeof(sink_2_36(ca))          == 6> t2;
-    sa<sizeof(sink_2_36(va))          == 3> t3;
-    sa<sizeof(sink_2_36(source()))    == 6> t5;
-    sa<sizeof(sink_2_36(c_source()))  == 6> t6;
+    sa<sizeof(sink_2_36(a))           == 3 * sizeof(long)> t1;
+    sa<sizeof(sink_2_36(ca))          == 6 * sizeof(long)> t2;
+    sa<sizeof(sink_2_36(va))          == 3 * sizeof(long)> t3;
+    sa<sizeof(sink_2_36(source()))    == 6 * sizeof(long)> t5;
+    sa<sizeof(sink_2_36(c_source()))  == 6 * sizeof(long)> t6;
     return 0;
 }
 
@@ -309,10 +309,10 @@ int test2_37()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_37(a))           == 3> t1;
-    sa<sizeof(sink_2_37(va))          == 3> t3;
-    sa<sizeof(sink_2_37(source()))    == 7> t5;
-    sa<sizeof(sink_2_37(v_source()))  == 7> t7;
+    sa<sizeof(sink_2_37(a))           == 3 * sizeof(long)> t1;
+    sa<sizeof(sink_2_37(va))          == 3 * sizeof(long)> t3;
+    sa<sizeof(sink_2_37(source()))    == 7 * sizeof(long)> t5;
+    sa<sizeof(sink_2_37(v_source()))  == 7 * sizeof(long)> t7;
     return 0;
 }
 
@@ -325,14 +325,14 @@ int test2_38()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_38(a))           == 3> t1;
-    sa<sizeof(sink_2_38(ca))          == 8> t2;
-    sa<sizeof(sink_2_38(va))          == 3> t3;
-    sa<sizeof(sink_2_38(cva))         == 8> t4;
-    sa<sizeof(sink_2_38(source()))    == 8> t5;
-    sa<sizeof(sink_2_38(c_source()))  == 8> t6;
-    sa<sizeof(sink_2_38(v_source()))  == 8> t7;
-    sa<sizeof(sink_2_38(cv_source())) == 8> t8;
+    sa<sizeof(sink_2_38(a))           == 3 * sizeof(long)> t1;
+    sa<sizeof(sink_2_38(ca))          == 8 * sizeof(long)> t2;
+    sa<sizeof(sink_2_38(va))          == 3 * sizeof(long)> t3;
+    sa<sizeof(sink_2_38(cva))         == 8 * sizeof(long)> t4;
+    sa<sizeof(sink_2_38(source()))    == 8 * sizeof(long)> t5;
+    sa<sizeof(sink_2_38(c_source()))  == 8 * sizeof(long)> t6;
+    sa<sizeof(sink_2_38(v_source()))  == 8 * sizeof(long)> t7;
+    sa<sizeof(sink_2_38(cv_source())) == 8 * sizeof(long)> t8;
     return 0;
 }
 
@@ -345,14 +345,14 @@ int test2_45()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_45(a))           == 4> t1;
-    sa<sizeof(sink_2_45(ca))          == 4> t2;
-    sa<sizeof(sink_2_45(va))          == 4> t3;
-    sa<sizeof(sink_2_45(cva))         == 4> t4;
-    sa<sizeof(sink_2_45(source()))    == 5> t5;
-//    sa<sizeof(sink_2_45(c_source()))  == 4> t6;
-//    sa<sizeof(sink_2_45(v_source()))  == 4> t7;
-//    sa<sizeof(sink_2_45(cv_source())) == 4> t8;
+    sa<sizeof(sink_2_45(a))           == 4 * sizeof(long)> t1;
+    sa<sizeof(sink_2_45(ca))          == 4 * sizeof(long)> t2;
+    sa<sizeof(sink_2_45(va))          == 4 * sizeof(long)> t3;
+    sa<sizeof(sink_2_45(cva))         == 4 * sizeof(long)> t4;
+    sa<sizeof(sink_2_45(source()))    == 5 * sizeof(long)> t5;
+//    sa<sizeof(sink_2_45(c_source()))  == 4 * sizeof(long)> t6;
+//    sa<sizeof(sink_2_45(v_source()))  == 4 * sizeof(long)> t7;
+//    sa<sizeof(sink_2_45(cv_source())) == 4 * sizeof(long)> t8;
     return 0;
 }
 
@@ -365,14 +365,14 @@ int test2_46()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_46(a))           == 4> t1;
-    sa<sizeof(sink_2_46(ca))          == 4> t2;
-    sa<sizeof(sink_2_46(va))          == 4> t3;
-    sa<sizeof(sink_2_46(cva))         == 4> t4;
-    sa<sizeof(sink_2_46(source()))    == 6> t5;
-    sa<sizeof(sink_2_46(c_source()))  == 6> t6;
-//    sa<sizeof(sink_2_46(v_source()))  == 4> t7;
-//    sa<sizeof(sink_2_46(cv_source())) == 4> t8;
+    sa<sizeof(sink_2_46(a))           == 4 * sizeof(long)> t1;
+    sa<sizeof(sink_2_46(ca))          == 4 * sizeof(long)> t2;
+    sa<sizeof(sink_2_46(va))          == 4 * sizeof(long)> t3;
+    sa<sizeof(sink_2_46(cva))         == 4 * sizeof(long)> t4;
+    sa<sizeof(sink_2_46(source()))    == 6 * sizeof(long)> t5;
+    sa<sizeof(sink_2_46(c_source()))  == 6 * sizeof(long)> t6;
+//    sa<sizeof(sink_2_46(v_source()))  == 4 * sizeof(long)> t7;
+//    sa<sizeof(sink_2_46(cv_source())) == 4 * sizeof(long)> t8;
     return 0;
 }
 
@@ -385,14 +385,14 @@ int test2_47()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_47(a))           == 4> t1;
-    sa<sizeof(sink_2_47(ca))          == 4> t2;
-    sa<sizeof(sink_2_47(va))          == 4> t3;
-    sa<sizeof(sink_2_47(cva))         == 4> t4;
-    sa<sizeof(sink_2_47(source()))    == 7> t5;
-//    sa<sizeof(sink_2_47(c_source()))  == 4> t6;
-    sa<sizeof(sink_2_47(v_source()))  == 7> t7;
-//    sa<sizeof(sink_2_47(cv_source())) == 4> t8;
+    sa<sizeof(sink_2_47(a))           == 4 * sizeof(long)> t1;
+    sa<sizeof(sink_2_47(ca))          == 4 * sizeof(long)> t2;
+    sa<sizeof(sink_2_47(va))          == 4 * sizeof(long)> t3;
+    sa<sizeof(sink_2_47(cva))         == 4 * sizeof(long)> t4;
+    sa<sizeof(sink_2_47(source()))    == 7 * sizeof(long)> t5;
+//    sa<sizeof(sink_2_47(c_source()))  == 4 * sizeof(long)> t6;
+    sa<sizeof(sink_2_47(v_source()))  == 7 * sizeof(long)> t7;
+//    sa<sizeof(sink_2_47(cv_source())) == 4 * sizeof(long)> t8;
     return 0;
 }
 
@@ -405,14 +405,14 @@ int test2_48()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_48(a))           == 4> t1;
-    sa<sizeof(sink_2_48(ca))          == 4> t2;
-    sa<sizeof(sink_2_48(va))          == 4> t3;
-    sa<sizeof(sink_2_48(cva))         == 4> t4;
-    sa<sizeof(sink_2_48(source()))    == 8> t5;
-    sa<sizeof(sink_2_48(c_source()))  == 8> t6;
-    sa<sizeof(sink_2_48(v_source()))  == 8> t7;
-    sa<sizeof(sink_2_48(cv_source())) == 8> t8;
+    sa<sizeof(sink_2_48(a))           == 4 * sizeof(long)> t1;
+    sa<sizeof(sink_2_48(ca))          == 4 * sizeof(long)> t2;
+    sa<sizeof(sink_2_48(va))          == 4 * sizeof(long)> t3;
+    sa<sizeof(sink_2_48(cva))         == 4 * sizeof(long)> t4;
+    sa<sizeof(sink_2_48(source()))    == 8 * sizeof(long)> t5;
+    sa<sizeof(sink_2_48(c_source()))  == 8 * sizeof(long)> t6;
+    sa<sizeof(sink_2_48(v_source()))  == 8 * sizeof(long)> t7;
+    sa<sizeof(sink_2_48(cv_source())) == 8 * sizeof(long)> t8;
     return 0;
 }
 
@@ -425,10 +425,10 @@ int test2_56()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_56(a))           == 5> t1;
-    sa<sizeof(sink_2_56(ca))          == 6> t2;
-    sa<sizeof(sink_2_56(source()))    == 5> t5;
-    sa<sizeof(sink_2_56(c_source()))  == 6> t6;
+    sa<sizeof(sink_2_56(a))           == 5 * sizeof(long)> t1;
+    sa<sizeof(sink_2_56(ca))          == 6 * sizeof(long)> t2;
+    sa<sizeof(sink_2_56(source()))    == 5 * sizeof(long)> t5;
+    sa<sizeof(sink_2_56(c_source()))  == 6 * sizeof(long)> t6;
     return 0;
 }
 
@@ -441,10 +441,10 @@ int test2_57()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_57(a))           == 5> t1;
-    sa<sizeof(sink_2_57(va))          == 7> t3;
-    sa<sizeof(sink_2_57(source()))    == 5> t5;
-    sa<sizeof(sink_2_57(v_source()))  == 7> t7;
+    sa<sizeof(sink_2_57(a))           == 5 * sizeof(long)> t1;
+    sa<sizeof(sink_2_57(va))          == 7 * sizeof(long)> t3;
+    sa<sizeof(sink_2_57(source()))    == 5 * sizeof(long)> t5;
+    sa<sizeof(sink_2_57(v_source()))  == 7 * sizeof(long)> t7;
     return 0;
 }
 
@@ -457,14 +457,14 @@ int test2_58()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_58(a))           == 5> t1;
-    sa<sizeof(sink_2_58(ca))          == 8> t2;
-    sa<sizeof(sink_2_58(va))          == 8> t3;
-    sa<sizeof(sink_2_58(cva))         == 8> t4;
-    sa<sizeof(sink_2_58(source()))    == 5> t5;
-    sa<sizeof(sink_2_58(c_source()))  == 8> t6;
-    sa<sizeof(sink_2_58(v_source()))  == 8> t7;
-    sa<sizeof(sink_2_58(cv_source())) == 8> t8;
+    sa<sizeof(sink_2_58(a))           == 5 * sizeof(long)> t1;
+    sa<sizeof(sink_2_58(ca))          == 8 * sizeof(long)> t2;
+    sa<sizeof(sink_2_58(va))          == 8 * sizeof(long)> t3;
+    sa<sizeof(sink_2_58(cva))         == 8 * sizeof(long)> t4;
+    sa<sizeof(sink_2_58(source()))    == 5 * sizeof(long)> t5;
+    sa<sizeof(sink_2_58(c_source()))  == 8 * sizeof(long)> t6;
+    sa<sizeof(sink_2_58(v_source()))  == 8 * sizeof(long)> t7;
+    sa<sizeof(sink_2_58(cv_source())) == 8 * sizeof(long)> t8;
     return 0;
 }
 
@@ -477,10 +477,10 @@ int test2_67()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_67(ca))          == 6> t2;
-    sa<sizeof(sink_2_67(va))          == 7> t3;
-    sa<sizeof(sink_2_67(c_source()))  == 6> t6;
-    sa<sizeof(sink_2_67(v_source()))  == 7> t7;
+    sa<sizeof(sink_2_67(ca))          == 6 * sizeof(long)> t2;
+    sa<sizeof(sink_2_67(va))          == 7 * sizeof(long)> t3;
+    sa<sizeof(sink_2_67(c_source()))  == 6 * sizeof(long)> t6;
+    sa<sizeof(sink_2_67(v_source()))  == 7 * sizeof(long)> t7;
     return 0;
 }
 
@@ -493,14 +493,14 @@ int test2_68()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_68(a))           == 6> t1;
-    sa<sizeof(sink_2_68(ca))          == 6> t2;
-    sa<sizeof(sink_2_68(va))          == 8> t3;
-    sa<sizeof(sink_2_68(cva))         == 8> t4;
-    sa<sizeof(sink_2_68(source()))    == 6> t5;
-    sa<sizeof(sink_2_68(c_source()))  == 6> t6;
-    sa<sizeof(sink_2_68(v_source()))  == 8> t7;
-    sa<sizeof(sink_2_68(cv_source())) == 8> t8;
+    sa<sizeof(sink_2_68(a))           == 6 * sizeof(long)> t1;
+    sa<sizeof(sink_2_68(ca))          == 6 * sizeof(long)> t2;
+    sa<sizeof(sink_2_68(va))          == 8 * sizeof(long)> t3;
+    sa<sizeof(sink_2_68(cva))         == 8 * sizeof(long)> t4;
+    sa<sizeof(sink_2_68(source()))    == 6 * sizeof(long)> t5;
+    sa<sizeof(sink_2_68(c_source()))  == 6 * sizeof(long)> t6;
+    sa<sizeof(sink_2_68(v_source()))  == 8 * sizeof(long)> t7;
+    sa<sizeof(sink_2_68(cv_source())) == 8 * sizeof(long)> t8;
     return 0;
 }
 
@@ -513,14 +513,14 @@ int test2_78()
     const          A ca = a;
           volatile A va;
     const volatile A cva = a;
-    sa<sizeof(sink_2_78(a))           == 7> t1;
-    sa<sizeof(sink_2_78(ca))          == 8> t2;
-    sa<sizeof(sink_2_78(va))          == 7> t3;
-    sa<sizeof(sink_2_78(cva))         == 8> t4;
-    sa<sizeof(sink_2_78(source()))    == 7> t5;
-    sa<sizeof(sink_2_78(c_source()))  == 8> t6;
-    sa<sizeof(sink_2_78(v_source()))  == 7> t7;
-    sa<sizeof(sink_2_78(cv_source())) == 8> t8;
+    sa<sizeof(sink_2_78(a))           == 7 * sizeof(long)> t1;
+    sa<sizeof(sink_2_78(ca))          == 8 * sizeof(long)> t2;
+    sa<sizeof(sink_2_78(va))          == 7 * sizeof(long)> t3;
+    sa<sizeof(sink_2_78(cva))         == 8 * sizeof(long)> t4;
+    sa<sizeof(sink_2_78(source()))    == 7 * sizeof(long)> t5;
+    sa<sizeof(sink_2_78(c_source()))  == 8 * sizeof(long)> t6;
+    sa<sizeof(sink_2_78(v_source()))  == 7 * sizeof(long)> t7;
+    sa<sizeof(sink_2_78(cv_source())) == 8 * sizeof(long)> t8;
     return 0;
 }
 
