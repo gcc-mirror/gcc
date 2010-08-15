@@ -57,7 +57,10 @@ if [check_vmx_hw_available] {
 # Initialize `dg'.
 dg-init
 
+set VECT_SLP_CFLAGS $DEFAULT_VECTCFLAGS
+
 lappend DEFAULT_VECTCFLAGS "-fdump-tree-vect-details"
+lappend VECT_SLP_CFLAGS "-fdump-tree-slp-details"
 
 # Main loop.
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/costmodel-pr*.\[cS\]]]  \
@@ -66,6 +69,8 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/costmodel-vect-*.\[cS\]]]  \
 	"" $DEFAULT_VECTCFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/costmodel-slp-*.\[cS\]]]  \
         "" $DEFAULT_VECTCFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/costmodel-bb-slp*.\[cS\]]]  \
+        "" $VECT_SLP_CFLAGS
 
 #### Tests with special options
 global SAVED_DEFAULT_VECTCFLAGS

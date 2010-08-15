@@ -24,8 +24,8 @@ main1 (int dummy)
       *pout++ = *pin++;
 
       /* Avoid loop vectorization.  */
-      if (dummy == 32)
-        abort ();
+      if (dummy)
+        __asm__ volatile ("" : : : "memory");
     }
 
   /* check results:  */ 

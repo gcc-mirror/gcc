@@ -1,3 +1,14 @@
+2010-08-15  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vect-data-refs.c (vect_setup_realignment): Support realignment
+	in basic blocks.
+	(vect_supportable_dr_alignment): Check alignment for basic blocks.
+	* tree-vect-slp.c (vect_build_slp_tree): Allow different codes for 
+	data references.
+	(vect_bb_vectorization_profitable_p): New function.
+	(vect_slp_analyze_bb): Call vect_bb_vectorization_profitable_p() to
+	check if it's worthwhile to vectorize the basic block.
+
 2010-08-14  Anatoly Sokolov  <aesok@post.ru>
 
 	* reload.h (register_move_cost, memory_move_secondary_cost,

@@ -3467,8 +3467,8 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  edge pe;
+  struct loop *loop = NULL;
+  edge pe = NULL;
   tree scalar_dest = gimple_assign_lhs (stmt);
   tree vec_dest;
   gimple inc;
@@ -3483,9 +3483,15 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
   gimple_seq stmts = NULL;
   bool inv_p;
   bool compute_in_loop = false;
-  bool nested_in_vect_loop = nested_in_vect_loop_p (loop, stmt);
+  bool nested_in_vect_loop = false;
   struct loop *containing_loop = (gimple_bb (stmt))->loop_father;
-  struct loop *loop_for_initial_load;
+  struct loop *loop_for_initial_load = NULL;
+
+  if (loop_vinfo)
+    {
+      loop = LOOP_VINFO_LOOP (loop_vinfo);
+      nested_in_vect_loop = nested_in_vect_loop_p (loop, stmt);
+    }
 
   gcc_assert (alignment_support_scheme == dr_explicit_realign
 	      || alignment_support_scheme == dr_explicit_realign_optimized);
@@ -3523,7 +3529,7 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
      or not, which in turn determines if the misalignment is computed inside
      the inner-loop, or outside LOOP.  */
 
-  if (init_addr != NULL_TREE)
+  if (init_addr != NULL_TREE || !loop_vinfo)
     {
       compute_in_loop = true;
       gcc_assert (alignment_support_scheme == dr_explicit_realign);
@@ -3555,6 +3561,9 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
   if (at_loop)
     *at_loop = loop_for_initial_load;
 
+  if (loop_for_initial_load)
+    pe = loop_preheader_edge (loop_for_initial_load);
+
   /* 3. For the case of the optimized realignment, create the first vector
       load at the loop preheader.  */
 
@@ -3563,7 +3572,6 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
       /* Create msq_init = *(floor(p1)) in the loop preheader  */
 
       gcc_assert (!compute_in_loop);
-      pe = loop_preheader_edge (loop_for_initial_load);
       vec_dest = vect_create_destination_var (scalar_dest, vectype);
       ptr = vect_create_data_ref_ptr (stmt, loop_for_initial_load, NULL_TREE,
 				      &init_addr, &inc, true, &inv_p);
@@ -3582,8 +3590,14 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
       new_temp = make_ssa_name (vec_dest, new_stmt);
       gimple_assign_set_lhs (new_stmt, new_temp);
       mark_symbols_for_renaming (new_stmt);
-      new_bb = gsi_insert_on_edge_immediate (pe, new_stmt);
-      gcc_assert (!new_bb);
+      if (pe)
+        {
+          new_bb = gsi_insert_on_edge_immediate (pe, new_stmt);
+          gcc_assert (!new_bb);
+        }
+      else
+         gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+
       msq_init = gimple_assign_lhs (new_stmt);
     }
 
@@ -3596,16 +3610,19 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
       tree builtin_decl;
 
       /* Compute INIT_ADDR - the initial addressed accessed by this memref.  */
-      if (compute_in_loop)
-	gcc_assert (init_addr); /* already computed by the caller.  */
-      else
+      if (!init_addr)
 	{
 	  /* Generate the INIT_ADDR computation outside LOOP.  */
 	  init_addr = vect_create_addr_base_for_vector_ref (stmt, &stmts,
 							NULL_TREE, loop);
-	  pe = loop_preheader_edge (loop);
-	  new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
-	  gcc_assert (!new_bb);
+          if (loop)
+            {
+   	      pe = loop_preheader_edge (loop);
+	      new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
+	      gcc_assert (!new_bb);
+            }
+          else
+             gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
 	}
 
       builtin_decl = targetm.vectorize.builtin_mask_for_load ();
@@ -3979,12 +3996,11 @@ vect_supportable_dr_alignment (struct data_reference *dr,
   if (aligned_access_p (dr) && !check_aligned_accesses)
     return dr_aligned;
 
-  if (!loop_vinfo)
-    /* FORNOW: Misaligned accesses are supported only in loops.  */
-    return dr_unaligned_unsupported;
-
-  vect_loop = LOOP_VINFO_LOOP (loop_vinfo);
-  nested_in_vect_loop = nested_in_vect_loop_p (vect_loop, stmt);
+  if (loop_vinfo)
+    {
+      vect_loop = LOOP_VINFO_LOOP (loop_vinfo);
+      nested_in_vect_loop = nested_in_vect_loop_p (vect_loop, stmt);
+    }
 
   /* Possibly unaligned access.  */
 
@@ -4059,9 +4075,10 @@ vect_supportable_dr_alignment (struct data_reference *dr,
 	      || targetm.vectorize.builtin_mask_for_load ()))
 	{
 	  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-	  if (nested_in_vect_loop
-	      && (TREE_INT_CST_LOW (DR_STEP (dr))
-		  != GET_MODE_SIZE (TYPE_MODE (vectype))))
+	  if ((nested_in_vect_loop
+	       && (TREE_INT_CST_LOW (DR_STEP (dr))
+	 	   != GET_MODE_SIZE (TYPE_MODE (vectype))))
+              || !loop_vinfo)
 	    return dr_explicit_realign;
 	  else
 	    return dr_explicit_realign_optimized;
