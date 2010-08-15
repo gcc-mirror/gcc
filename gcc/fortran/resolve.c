@@ -278,6 +278,14 @@ resolve_formal_arglist (gfc_symbol *proc)
 	      continue;
 	    }
 
+	  if (sym->attr.allocatable)
+	    {
+	      gfc_error ("Argument '%s' of elemental procedure at %L cannot "
+			 "have the ALLOCATABLE attribute", sym->name,
+			 &sym->declared_at);
+	      continue;
+	    }
+
 	  if (sym->attr.pointer)
 	    {
 	      gfc_error ("Argument '%s' of elemental procedure at %L cannot "
@@ -290,6 +298,14 @@ resolve_formal_arglist (gfc_symbol *proc)
 	    {
 	      gfc_error ("Dummy procedure '%s' not allowed in elemental "
 			 "procedure '%s' at %L", sym->name, proc->name,
+			 &sym->declared_at);
+	      continue;
+	    }
+
+	  if (sym->attr.intent == INTENT_UNKNOWN)
+	    {
+	      gfc_error ("Argument '%s' of elemental procedure '%s' at %L must "
+			 "have its INTENT specified", sym->name, proc->name,
 			 &sym->declared_at);
 	      continue;
 	    }
@@ -12474,7 +12490,7 @@ gfc_pure (gfc_symbol *sym)
 	  if (sym == NULL)
 	    return 0;
 	  attr = sym->attr;
-	  if (attr.flavor == FL_PROCEDURE && (attr.pure || attr.elemental))
+	  if (attr.flavor == FL_PROCEDURE && attr.pure)
 	    return 1;
 	}
       return 0;
@@ -12482,7 +12498,7 @@ gfc_pure (gfc_symbol *sym)
 
   attr = sym->attr;
 
-  return attr.flavor == FL_PROCEDURE && (attr.pure || attr.elemental);
+  return attr.flavor == FL_PROCEDURE && attr.pure;
 }
 
 
