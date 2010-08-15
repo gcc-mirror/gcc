@@ -2863,9 +2863,9 @@ two forms, whichever is not the default.  For further,
 language-specific options also refer to @ref{C++ Dialect Options} and
 @ref{Objective-C and Objective-C++ Dialect Options}.
 
-When an unrecognized warning label is requested (e.g.,
+When an unrecognized warning option is requested (e.g.,
 @option{-Wunknown-warning}), GCC will emit a diagnostic stating
-that the option is not recognized.  However, if the @samp{-Wno-} form
+that the option is not recognized.  However, if the @option{-Wno-} form
 is used, the behavior is slightly different: No diagnostic will be
 produced for @option{-Wno-unknown-warning} unless other diagnostics
 are being produced.  This allows the use of new @option{-Wno-} options
