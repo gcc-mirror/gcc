@@ -1,3 +1,18 @@
+2010-08-15  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/45197
+	* decl.c (gfc_match_prefix): Match IMPURE prefix and mark ELEMENTAL
+	routines not IMPURE also as PURE.
+	* intrinsic.c (enum klass): New class `CLASS_PURE' and renamed
+	`NO_CLASS' in `CLASS_IMPURE'.
+	(add_sym): Set symbol-attributes `pure' and `elemental' correctly.
+	(add_sym_0s): Renamed `NO_CLASS' in `CLASS_IMPURE'.
+	(add_functions): Ditto.
+	(add_subroutines): Ditto and mark `MOVE_ALLOC' as CLASS_PURE.
+	* resolve.c (gfc_pure): Do not treat ELEMENTAL as automatically PURE.
+	(resolve_formal_arglist): Check that arguments to ELEMENTAL procedures
+	are not ALLOCATABLE and have their INTENT specified.
+
 2010-08-13  Daniel Kraft  <d@domob.eu>
 
 	* gfortran.h (array_type): New type `AS_IMPLIED_SHAPE'.
