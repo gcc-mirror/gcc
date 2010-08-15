@@ -1589,7 +1589,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   if (rank_check || ranks_must_agree
       || (formal->attr.pointer && actual->expr_type != EXPR_NULL)
       || (actual->rank != 0 && !(is_elemental || formal->attr.dimension))
-      || (actual->rank == 0 && formal->as->type == AS_ASSUMED_SHAPE)
+      || (actual->rank == 0 && formal->as->type == AS_ASSUMED_SHAPE
+	  && actual->expr_type != EXPR_NULL)
       || (actual->rank == 0 && formal->attr.dimension
 	  && gfc_is_coindexed (actual)))
     {
@@ -2002,6 +2003,20 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  if (where)
 	    gfc_error ("Unexpected alternate return spec in subroutine "
 		       "call at %L", where);
+	  return 0;
+	}
+
+      if (a->expr->expr_type == EXPR_NULL && !f->sym->attr.pointer
+	  && (f->sym->attr.allocatable || !f->sym->attr.optional
+	      || (gfc_option.allow_std & GFC_STD_F2008) == 0))
+	{
+	  if (where && (f->sym->attr.allocatable || !f->sym->attr.optional))
+	    gfc_error ("Unexpected NULL() intrinsic at %L to dummy '%s'",
+		       where, f->sym->name);
+	  else if (where)
+	    gfc_error ("Fortran 2008: Null pointer at %L to non-pointer "
+		       "dummy '%s'", where, f->sym->name);
+
 	  return 0;
 	}
       

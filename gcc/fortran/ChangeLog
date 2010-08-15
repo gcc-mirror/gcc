@@ -1,5 +1,14 @@
 2010-08-15  Tobias Burnus  <burnus@net-b.de>
 
+	* trans-expr.c (gfc_conv_expr_present): Regard nullified
+	pointer arrays as absent.
+	(gfc_conv_procedure_call): Handle EXPR_NULL for non-pointer
+	dummys as absent argument.
+	* interface.c (compare_actual_formal,compare_parameter):
+	Ditto.
+
+2010-08-15  Tobias Burnus  <burnus@net-b.de>
+
 	* interface.c (compare_pointer, ): Allow passing TARGETs to pointers
 	dummies with intent(in).
 

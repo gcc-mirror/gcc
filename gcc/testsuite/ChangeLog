@@ -1,5 +1,10 @@
 2010-08-15  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.dg/optional_absent_1.f90: New.
+	* gfortran.dg/null_actual.f90: New.
+
+2010-08-15  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/pointer_target_1.f90: New.
 	* gfortran.dg/pointer_target_2.f90: New.
 	* gfortran.dg/pointer_target_3.f90: New.

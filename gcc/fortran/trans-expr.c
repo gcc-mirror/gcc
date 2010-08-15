@@ -123,7 +123,7 @@ gfc_make_safe_expr (gfc_se * se)
 tree
 gfc_conv_expr_present (gfc_symbol * sym)
 {
-  tree decl;
+  tree decl, cond;
 
   gcc_assert (sym->attr.dummy);
 
@@ -136,8 +136,26 @@ gfc_conv_expr_present (gfc_symbol * sym)
              || GFC_ARRAY_TYPE_P (TREE_TYPE (decl)));
       decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
     }
-  return fold_build2 (NE_EXPR, boolean_type_node, decl,
+
+  cond = fold_build2 (NE_EXPR, boolean_type_node, decl,
 		      fold_convert (TREE_TYPE (decl), null_pointer_node));
+
+  /* Fortran 2008 allows to pass null pointers and non-associated pointers
+     as actual argument to denote absent dummies. For array descriptors,
+     we thus also need to check the array descriptor.  */
+  if (!sym->attr.pointer && !sym->attr.allocatable
+      && sym->as && sym->as->type == AS_ASSUMED_SHAPE
+      && (gfc_option.allow_std & GFC_STD_F2008) != 0)
+    {
+      tree tmp;
+      tmp = build_fold_indirect_ref_loc (input_location, decl);
+      tmp = gfc_conv_array_data (tmp);
+      tmp = fold_build2 (NE_EXPR, boolean_type_node, tmp,
+			 fold_convert (TREE_TYPE (tmp), null_pointer_node));
+      cond = fold_build2 (TRUTH_ANDIF_EXPR, boolean_type_node, cond, tmp);
+    }
+
+  return cond;
 }
 
 
@@ -2849,6 +2867,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      if (arg->missing_arg_type == BT_CHARACTER)
 		parmse.string_length = build_int_cst (gfc_charlen_type_node, 0);
 	    }
+	}
+      else if (arg->expr->expr_type == EXPR_NULL && fsym && !fsym->attr.pointer)
+	{
+	  /* Pass a NULL pointer to denote an absent arg.  */
+	  gcc_assert (fsym->attr.optional && !fsym->attr.allocatable);
+	  gfc_init_se (&parmse, NULL);
+	  parmse.expr = null_pointer_node;
+	  if (arg->missing_arg_type == BT_CHARACTER)
+	    parmse.string_length = build_int_cst (gfc_charlen_type_node, 0);
 	}
       else if (fsym && fsym->ts.type == BT_CLASS
 		 && e->ts.type == BT_DERIVED)
