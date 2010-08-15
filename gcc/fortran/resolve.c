@@ -4814,11 +4814,26 @@ resolve_variable (gfc_expr *e)
 
   if (e->symtree == NULL)
     return FAILURE;
+  sym = e->symtree->n.sym;
+
+  /* If this is an associate-name, it may be parsed with references in error
+     even though the target is scalar.  Fail directly in this case.  */
+  if (sym->assoc && !sym->attr.dimension && e->ref)
+    return FAILURE;
+
+  /* On the other hand, the parser may not have known this is an array;
+     in this case, we have to add a FULL reference.  */
+  if (sym->assoc && sym->attr.dimension && !e->ref)
+    {
+      e->ref = gfc_get_ref ();
+      e->ref->type = REF_ARRAY;
+      e->ref->u.ar.type = AR_FULL;
+      e->ref->u.ar.dimen = 0;
+    }
 
   if (e->ref && resolve_ref (e) == FAILURE)
     return FAILURE;
 
-  sym = e->symtree->n.sym;
   if (sym->attr.flavor == FL_PROCEDURE
       && (!sym->attr.function
 	  || (sym->attr.function && sym->result
@@ -8276,11 +8291,43 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
 static void
 resolve_block_construct (gfc_code* code)
 {
-  /* For an ASSOCIATE block, the associations (and their targets) are already
-     resolved during gfc_resolve_symbol.  */
-
   /* Resolve the BLOCK's namespace.  */
   gfc_resolve (code->ext.block.ns);
+
+  /* For an ASSOCIATE block, the associations (and their targets) are already
+     resolved during gfc_resolve_symbol.  Here, we have to add code
+     to assign expression values to the variables associated to expressions.  */
+  if (code->ext.block.assoc)
+    {
+      gfc_association_list* a;     
+      gfc_code* assignTail;
+      gfc_code* assignHead;
+
+      assignHead = assignTail = NULL;
+      for (a = code->ext.block.assoc; a; a = a->next)
+	if (!a->variable)
+	  {
+	    gfc_code* newAssign;
+
+	    newAssign = gfc_get_code ();
+	    newAssign->op = EXEC_ASSIGN;
+	    newAssign->loc = gfc_current_locus;
+	    newAssign->expr1 = gfc_lval_expr_from_sym (a->st->n.sym);
+	    newAssign->expr2 = a->target;
+
+	    if (!assignHead)
+	      assignHead = newAssign;
+	    else
+	      {
+		gcc_assert (assignTail);
+		assignTail->next = newAssign;
+	      }
+	    assignTail = newAssign;
+	  }
+
+      assignTail->next = code->ext.block.ns->code;
+      code->ext.block.ns->code = assignHead;
+    }
 }
 
 
@@ -8765,7 +8812,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	  break;
 
 	case EXEC_BLOCK:
-	  gfc_resolve (code->ext.block.ns);
+	  resolve_block_construct (code);
 	  break;
 
 	case EXEC_DO:
@@ -11651,6 +11698,54 @@ resolve_symbol (gfc_symbol *sym)
 
       sym->ts = sym->assoc->target->ts;
       gcc_assert (sym->ts.type != BT_UNKNOWN);
+
+      if (sym->attr.dimension && sym->assoc->target->rank == 0)
+	{
+	  gfc_error ("Associate-name '%s' at %L is used as array",
+		     sym->name, &sym->declared_at);
+	  sym->attr.dimension = 0;
+	  return;
+	}
+      if (sym->assoc->target->rank > 0)
+	sym->attr.dimension = 1;
+
+      if (sym->attr.dimension)
+	{
+	  int dim;
+
+	  sym->as = gfc_get_array_spec ();
+	  sym->as->rank = sym->assoc->target->rank;
+	  sym->as->type = AS_EXPLICIT;
+
+	  /* Target must not be coindexed, thus the associate-variable
+	     has no corank.  */
+	  sym->as->corank = 0;
+
+	  for (dim = 0; dim < sym->assoc->target->rank; ++dim)
+	    {
+	      gfc_expr* dim_expr;
+	      gfc_expr* e;
+
+	      dim_expr = gfc_get_constant_expr (BT_INTEGER,
+						gfc_default_integer_kind,
+						&sym->declared_at);
+	      mpz_set_si (dim_expr->value.integer, dim + 1);
+
+	      e = gfc_build_intrinsic_call ("lbound", sym->declared_at, 3,
+					    gfc_copy_expr (sym->assoc->target),
+					    gfc_copy_expr (dim_expr), NULL);
+	      gfc_resolve_expr (e);
+	      sym->as->lower[dim] = e;
+
+	      e = gfc_build_intrinsic_call ("ubound", sym->declared_at, 3,
+					    gfc_copy_expr (sym->assoc->target),
+					    gfc_copy_expr (dim_expr), NULL);
+	      gfc_resolve_expr (e);
+	      sym->as->upper[dim] = e;
+
+	      gfc_free_expr (dim_expr);
+	    }
+	}
     }
 
   /* Assign default type to symbols that need one and don't have one.  */

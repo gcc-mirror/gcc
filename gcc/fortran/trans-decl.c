@@ -658,6 +658,7 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
   tree type;
   int dim;
   int nest;
+  gfc_namespace* procns;
 
   type = TREE_TYPE (decl);
 
@@ -666,7 +667,8 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
     return;
 
   gcc_assert (GFC_ARRAY_TYPE_P (type));
-  nest = (sym->ns->proc_name->backend_decl != current_function_decl)
+  procns = gfc_find_proc_namespace (sym->ns);
+  nest = (procns->proc_name->backend_decl != current_function_decl)
 	 && !sym->attr.contained;
 
   for (dim = 0; dim < GFC_TYPE_ARRAY_RANK (type); dim++)

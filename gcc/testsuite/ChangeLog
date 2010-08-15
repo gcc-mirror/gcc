@@ -1,3 +1,11 @@
+2010-08-15  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/38936
+	* gfortran.dg/associate_1.f03: Enable test for array expressions.
+	* gfortran.dg/associate_3.f03: Clarify comment.
+	* gfortran.dg/associate_5.f03: New test.
+	* gfortran.dg/associate_6.f03: New test.
+
 2010-08-15  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45211

@@ -4221,7 +4221,6 @@ gfc_build_intrinsic_call (const char* name, locus where, unsigned numarg, ...)
   result->expr_type = EXPR_FUNCTION;
   result->ts = isym->ts;
   result->where = where;
-  gfc_get_ha_sym_tree (isym->name, &result->symtree);
   result->value.function.name = name;
   result->value.function.isym = isym;
 

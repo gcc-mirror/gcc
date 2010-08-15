@@ -4742,3 +4742,19 @@ gfc_type_compatible (gfc_typespec *ts1, gfc_typespec *ts2)
   else
     return 0;
 }
+
+
+/* Find the parent-namespace of the current function.  If we're inside
+   BLOCK constructs, it may not be the current one.  */
+
+gfc_namespace*
+gfc_find_proc_namespace (gfc_namespace* ns)
+{
+  while (ns->construct_entities)
+    {
+      ns = ns->parent;
+      gcc_assert (ns);
+    }
+
+  return ns;
+}

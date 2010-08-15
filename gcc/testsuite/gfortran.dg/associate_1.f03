@@ -24,13 +24,15 @@ PROGRAM main
   ! TODO: Test association to derived types.
 
   ! Test association to arrays.
-  ! TODO: Enable when working.
-  !ALLOCATE (arr(3))
-  !arr = (/ 1, 2, 3 /)
-  !ASSOCIATE (doubled => 2 * arr)
-  !  IF (doubled(1) /= 2 .OR. doubled(2) /= 4 .OR. doubled(3) /= 6) &
-  !    CALL abort ()
-  !END ASSOCIATE
+  ALLOCATE (arr(3))
+  arr = (/ 1, 2, 3 /)
+  ASSOCIATE (doubled => 2 * arr, xyz => func ())
+    IF (SIZE (doubled) /= SIZE (arr)) CALL abort ()
+    IF (doubled(1) /= 2 .OR. doubled(2) /= 4 .OR. doubled(3) /= 6) &
+      CALL abort ()
+
+    IF (ANY (xyz /= (/ 1, 3, 5 /))) CALL abort ()
+  END ASSOCIATE
 
   ! Named and nested associate.
   myname: ASSOCIATE (x => a - b * c)
@@ -46,4 +48,12 @@ PROGRAM main
       IF (x /= 2 .OR. y /= 1) CALL abort ()
     END ASSOCIATE
   END ASSOCIATE
+
+CONTAINS
+
+  FUNCTION func ()
+    INTEGER :: func(3)
+    func = (/ 1, 3, 5 /)
+  END FUNCTION func
+
 END PROGRAM main
