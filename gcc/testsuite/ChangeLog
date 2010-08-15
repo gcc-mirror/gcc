@@ -1,5 +1,11 @@
 2010-08-15  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/45211
+	* gfortran.dg/bind_c_usage_21.f90: New.
+	* gfortran.dg/bind_c_dts_3.f03: Update dg-error.
+
+2010-08-15  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/optional_absent_1.f90: New.
 	* gfortran.dg/null_actual.f90: New.
 
