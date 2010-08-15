@@ -5606,65 +5606,26 @@ void gfc_trans_assign_vtab_procs (stmtblock_t *block, gfc_symbol *dt,
 				  gfc_symbol *vtab)
 {
   gfc_component *cmp;
-  tree vtb;
-  tree ctree;
-  tree proc;
-  tree cond = NULL_TREE;
+  tree vtb, ctree, proc, cond = NULL_TREE;
   stmtblock_t body;
-  bool seen_extends;
 
   /* Point to the first procedure pointer.  */
   cmp = gfc_find_component (vtab->ts.u.derived, "$extends", true, true);
-
-  seen_extends = (cmp != NULL);
-
+  cmp = cmp->next;
+  if (!cmp)
+    return;
+  
   vtb = gfc_get_symbol_decl (vtab);
 
-  if (seen_extends)
-    {
-      cmp = cmp->next;
-      if (!cmp)
-	return;
-      ctree = fold_build3 (COMPONENT_REF, TREE_TYPE (cmp->backend_decl),
-		           vtb, cmp->backend_decl, NULL_TREE);
-      cond = fold_build2 (EQ_EXPR, boolean_type_node, ctree,
-			   build_int_cst (TREE_TYPE (ctree), 0));
-    }
-  else
-    {
-      cmp = vtab->ts.u.derived->components; 
-    }
+  ctree = fold_build3 (COMPONENT_REF, TREE_TYPE (cmp->backend_decl), vtb,
+		       cmp->backend_decl, NULL_TREE);
+  cond = fold_build2 (EQ_EXPR, boolean_type_node, ctree,
+		      build_int_cst (TREE_TYPE (ctree), 0));
 
   gfc_init_block (&body);
   for (; cmp; cmp = cmp->next)
     {
       gfc_symbol *target = NULL;
-      
-      /* Generic procedure - build its vtab.  */
-      if (cmp->ts.type == BT_DERIVED && !cmp->tb)
-	{
-	  gfc_symbol *vt = cmp->ts.interface;
-
-	  if (vt == NULL)
-	    {
-	      /* Use association loses the interface.  Obtain the vtab
-		 by name instead.  */
-	      char name[2 * GFC_MAX_SYMBOL_LEN + 8];
-	      sprintf (name, "vtab$%s$%s", vtab->ts.u.derived->name,
-		       cmp->name);
-	      gfc_find_symbol (name, vtab->ns, 0, &vt);
-	      if (vt == NULL)
-		continue;
-	    }
-
-	  gfc_trans_assign_vtab_procs (&body, dt, vt);
-	  ctree = fold_build3 (COMPONENT_REF, TREE_TYPE (cmp->backend_decl),
-			       vtb, cmp->backend_decl, NULL_TREE);
-	  proc = gfc_get_symbol_decl (vt);
-	  proc = gfc_build_addr_expr (TREE_TYPE (ctree), proc);
-	  gfc_add_modify (&body, ctree, proc);
-	  continue;
-	}
 
       /* This is required when typebound generic procedures are called
 	 with derived type targets.  The specific procedures do not get
@@ -5691,8 +5652,7 @@ void gfc_trans_assign_vtab_procs (stmtblock_t *block, gfc_symbol *dt,
 
   proc = gfc_finish_block (&body);
 
-  if (seen_extends)
-    proc = build3_v (COND_EXPR, cond, proc, build_empty_stmt (input_location));
+  proc = build3_v (COND_EXPR, cond, proc, build_empty_stmt (input_location));
 
   gfc_add_expr_to_block (block, proc);
 }
