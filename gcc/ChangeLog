@@ -1,3 +1,8 @@
+2010-08-15  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/darwin.h (REAL_LIBGCC_SPEC): Remove libgcc_s.10.5 stub for 
+	Darwin10.  Do not link libgcc.a for Darwin >= 9.
+
 2010-08-15  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/invoke.texi (Warning Options): Fix terminology and markup
