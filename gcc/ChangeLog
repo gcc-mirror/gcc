@@ -1,6 +1,13 @@
+2010-08-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* doc/invoke.texi (-fomit-frame-pointer): Document that starting
+	with GCC version 4.6, the default setting (when not optimizing
+	for size) for 32-bit Linux x86 and 32-bit Darwin x86 targets has
+	been changed to -fomit-frame-pointer.
+
 2010-08-15  Iain Sandoe  <iains@gcc.gnu.org>
 
-	* config/darwin.h (REAL_LIBGCC_SPEC): Remove libgcc_s.10.5 stub for 
+	* config/darwin.h (REAL_LIBGCC_SPEC): Remove libgcc_s.10.5 stub for
 	Darwin10.  Do not link libgcc.a for Darwin >= 9.
 
 2010-08-15  Gerald Pfeifer  <gerald@pfeifer.com>
@@ -13,7 +20,7 @@
 	* tree-vect-data-refs.c (vect_setup_realignment): Support realignment
 	in basic blocks.
 	(vect_supportable_dr_alignment): Check alignment for basic blocks.
-	* tree-vect-slp.c (vect_build_slp_tree): Allow different codes for 
+	* tree-vect-slp.c (vect_build_slp_tree): Allow different codes for
 	data references.
 	(vect_bb_vectorization_profitable_p): New function.
 	(vect_slp_analyze_bb): Call vect_bb_vectorization_profitable_p() to
@@ -32,7 +39,7 @@
 	enum reg_class to reg_class_t. Change type of saved_flags to
 	reg_class_t.
 
-	* config/mips/mips.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST): 
+	* config/mips/mips.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST):
 	Remove macros.
 	(mips_cost): Remove.
 	(struct mips_rtx_cost_data): Moved to mips.c.
@@ -70,8 +77,7 @@
 
 2010-08-13  Jie Zhang  <jie@codesourcery.com>
 
-	* config/arm/arm.md (cstoredf4): Only valid when
-	!TARGET_VFP_SINGLE.
+	* config/arm/arm.md (cstoredf4): Only valid when !TARGET_VFP_SINGLE.
 
 2010-08-12  Joseph Myers  <joseph@codesourcery.com>
 
@@ -99,8 +105,7 @@
 
 2010-08-12  Jakub Jelinek  <jakub@redhat.com>
 
-	* builtins.c (fold_builtin_memory_op): Avoid -Wsign-compare
-	warning.
+	* builtins.c (fold_builtin_memory_op): Avoid -Wsign-compare warning.
 
 	PR middle-end/45262
 	* fold-const.c (make_range) <case NEGATE_EXPR>: Punt if
@@ -903,9 +908,9 @@
 	(walk_mems_1): Moved from alias.c.
 	(insns_may_alias_p): New function, originally insn_alias_sets_conflict_p
 	in alias.c.
-        (add_inter_loop_mem_dep): Use insns_may_alias_p now.
-        * cse.c (cse_insn): New argument in calling nonoverlapping_memrefs_p.
-        * alias.c (walk_mems_2): Moved to ddg.c.
+	(add_inter_loop_mem_dep): Use insns_may_alias_p now.
+	* cse.c (cse_insn): New argument in calling nonoverlapping_memrefs_p.
+	* alias.c (walk_mems_2): Moved to ddg.c.
 	(walk_mems_1): Ditto.
 	(insn_alias_sets_conflict_p): Renamed to insns_may_alias_p and moved
 	to ddg.c.
