@@ -1,3 +1,20 @@
+2010-08-15  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/38936
+	* gfortran.h (gfc_find_proc_namespace): New method.
+	* expr.c (gfc_build_intrinsic_call): No need to build symtree messing
+	around with namespace.
+	* symbol.c (gfc_find_proc_namespace): New method.
+	* trans-decl.c (gfc_build_qualified_array): Use it for correct
+	value of nest.
+	* primary.c (gfc_match_varspec): Handle associate-names as arrays.
+	* parse.c (parse_associate): Removed assignment-generation here...
+	* resolve.c (resolve_block_construct): ...and added it here.
+	(resolve_variable): Handle names that are arrays but were not parsed
+	as such because of association.
+	(resolve_code): Fix BLOCK resolution.
+	(resolve_symbol): Generate array-spec for associate-names.
+
 2010-08-15  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45211

@@ -2,7 +2,7 @@
 ! { dg-options "-std=f2003" }
 
 ! PR fortran/38936
-! Check for errors with ASSOCIATE.
+! Check for errors with ASSOCIATE during parsing.
 
 PROGRAM main
   IMPLICIT NONE

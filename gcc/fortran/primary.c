@@ -1748,6 +1748,13 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	}
     }
 
+  /* For associate names, we may not yet know whether they are arrays or not.
+     Thus if we have one and parentheses follow, we have to assume that it
+     actually is one for now.  The final decision will be made at
+     resolution time, of course.  */
+  if (sym->assoc && gfc_peek_ascii_char () == '(')
+    sym->attr.dimension = 1;
+
   if ((equiv_flag && gfc_peek_ascii_char () == '(')
       || gfc_peek_ascii_char () == '[' || sym->attr.codimension
       || (sym->attr.dimension && !sym->attr.proc_pointer

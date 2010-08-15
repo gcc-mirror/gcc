@@ -2577,6 +2577,7 @@ void gfc_copy_formal_args_ppc (gfc_component *, gfc_symbol *);
 void gfc_free_finalizer (gfc_finalizer *el); /* Needed in resolve.c, too  */
 
 gfc_try gfc_check_symbol_typed (gfc_symbol*, gfc_namespace*, bool, locus);
+gfc_namespace* gfc_find_proc_namespace (gfc_namespace*);
 
 /* intrinsic.c -- true if working in an init-expr, false otherwise.  */
 extern bool gfc_init_expr_flag;

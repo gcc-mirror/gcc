@@ -3206,7 +3206,6 @@ parse_associate (void)
   gfc_state_data s;
   gfc_statement st;
   gfc_association_list* a;
-  gfc_code* assignTail;
 
   gfc_notify_std (GFC_STD_F2003, "Fortran 2003: ASSOCIATE construct at %C");
 
@@ -3216,46 +3215,24 @@ parse_associate (void)
   new_st.ext.block.ns = my_ns;
   gcc_assert (new_st.ext.block.assoc);
 
-  /* Add all associations to expressions as BLOCK variables, and create
-     assignments to them giving their values.  */
+  /* Add all associate-names as BLOCK variables.  There values will be assigned
+     to them during resolution of the ASSOCIATE construct.  */
   gfc_current_ns = my_ns;
-  assignTail = NULL;
   for (a = new_st.ext.block.assoc; a; a = a->next)
-    if (!a->variable)
-      {
-	gfc_code* newAssign;
+    {
+      if (a->variable)
+	{
+	  gfc_error ("Association to variables is not yet supported at %C");
+	  return;
+	}
 
-	if (gfc_get_sym_tree (a->name, NULL, &a->st, false))
-	  gcc_unreachable ();
+      if (gfc_get_sym_tree (a->name, NULL, &a->st, false))
+	gcc_unreachable ();
 
-	/* Note that in certain cases, the target-expression's type is not yet
-	   known and so we have to adapt the symbol's ts also during resolution
-	   for these cases.  */
-	a->st->n.sym->ts = a->target->ts;
-	a->st->n.sym->attr.flavor = FL_VARIABLE;
-	a->st->n.sym->assoc = a;
-	gfc_set_sym_referenced (a->st->n.sym);
-
-	/* Create the assignment to calculate the expression and set it.  */
-	newAssign = gfc_get_code ();
-	newAssign->op = EXEC_ASSIGN;
-	newAssign->loc = gfc_current_locus;
-	newAssign->expr1 = gfc_get_variable_expr (a->st);
-	newAssign->expr2 = a->target;
-
-	/* Hang it in.  */
-	if (assignTail)
-	  assignTail->next = newAssign;
-	else
-	  gfc_current_ns->code = newAssign;
-	assignTail = newAssign;
-      }
-    else
-      {
-	gfc_error ("Association to variables is not yet supported at %C");
-	return;
-      }
-  gcc_assert (assignTail);
+      a->st->n.sym->attr.flavor = FL_VARIABLE;
+      a->st->n.sym->assoc = a;
+      gfc_set_sym_referenced (a->st->n.sym);
+    }
 
   accept_statement (ST_ASSOCIATE);
   push_state (&s, COMP_ASSOCIATE, my_ns->proc_name);
@@ -3269,7 +3246,7 @@ loop:
 
     case_end:
       accept_statement (st);
-      assignTail->next = gfc_state_stack->head;
+      my_ns->code = gfc_state_stack->head;
       break;
 
     default:
