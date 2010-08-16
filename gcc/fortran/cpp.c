@@ -456,11 +456,11 @@ gfc_cpp_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED
       gfc_cpp_option.deps = 1;
       break;
 
-    case OPT_MMDX:
+    case OPT_MMD:
       gfc_cpp_option.deps_skip_system = 1;
       /* fall through */
 
-    case OPT_MDX:
+    case OPT_MD:
       gfc_cpp_option.deps = 1;
       gfc_cpp_option.deps_filename = arg;
       break;

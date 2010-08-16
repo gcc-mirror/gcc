@@ -159,6 +159,12 @@ option handler.  @code{UInteger} should also be used on options like
 @code{-falign-loops}=@var{n} are supported to make sure the saved
 options are given a full integer.
 
+@item NoDriverArg
+For an option marked @code{Separate}, the option only takes an
+argument in the compiler proper, not in the driver.  This is for
+compatibility with existing options that are used both directly and
+via @option{-Wp,}; new options should not have this property.
+
 @item Var(@var{var})
 The state of this option should be stored in variable @var{var}.
 The way that the state is stored depends on the type of option:

@@ -1,5 +1,14 @@
 2010-08-16  Joseph Myers  <joseph@codesourcery.com>
 
+	* lang.opt (MDX): Change back to MD.  Mark NoDriverArg instead of
+	RejectDriver.
+	(MMDX): Change back to MMD.  Mark NoDriverArg instead of
+	RejectDriver.
+	* cpp.c (gfc_cpp_handle_option): Use OPT_MD and OPT_MMD instead of
+	OPT_MDX and OPT_MMDX.
+
+2010-08-16  Joseph Myers  <joseph@codesourcery.com>
+
 	* lang.opt (MDX, MMDX): Mark RejectDriver.
 
 2010-08-15  Janus Weil  <janus@gcc.gnu.org>

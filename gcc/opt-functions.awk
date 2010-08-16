@@ -80,6 +80,7 @@ function switch_flags (flags)
 	  test_flag("Target", flags, " | CL_TARGET") \
 	  test_flag("Driver", flags, " | CL_DRIVER") \
 	  test_flag("RejectDriver", flags, " | CL_REJECT_DRIVER") \
+	  test_flag("NoDriverArg", flags, " | CL_NO_DRIVER_ARG") \
 	  test_flag("Save", flags, " | CL_SAVE") \
 	  test_flag("Joined", flags, " | CL_JOINED") \
 	  test_flag("JoinedOrMissing", flags, " | CL_JOINED | CL_MISSING_OK") \

@@ -72,9 +72,9 @@ M
 C ObjC C++ ObjC++
 Generate make dependencies
 
-MDX
-C ObjC C++ ObjC++ RejectDriver Separate MissingArgError(missing filename after %qs)
--MD	Generate make dependencies and compile
+MD
+C ObjC C++ ObjC++ NoDriverArg Separate MissingArgError(missing filename after %qs)
+Generate make dependencies and compile
 
 MF
 C ObjC C++ ObjC++ Joined Separate MissingArgError(missing filename after %qs)
@@ -88,9 +88,9 @@ MM
 C ObjC C++ ObjC++
 Like -M but ignore system header files
 
-MMDX
-C ObjC C++ ObjC++ RejectDriver Separate MissingArgError(missing filename after %qs)
--MMD	Like -MD but ignore system header files
+MMD
+C ObjC C++ ObjC++ NoDriverArg Separate MissingArgError(missing filename after %qs)
+Like -MD but ignore system header files
 
 MP
 C ObjC C++ ObjC++

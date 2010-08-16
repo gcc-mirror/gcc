@@ -60,8 +60,8 @@ M
 Fortran
 ; Documented in C
 
-MDX
-Fortran Separate RejectDriver
+MD
+Fortran Separate NoArgDriver
 ; Documented in C
 
 MF
@@ -76,8 +76,8 @@ MM
 Fortran
 ; Documented in C
 
-MMDX
-Fortran Separate RejectDriver
+MMD
+Fortran Separate NoArgDriver
 ; Documented in C
 
 MP
