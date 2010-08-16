@@ -1,3 +1,7 @@
+2010-08-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (MDX, MMDX, lang-asm): Mark RejectDriver.
+
 2010-08-12  Joseph Myers  <joseph@codesourcery.com>
 
 	* c.opt (MD, MMD): Change to MDX and MMDX.

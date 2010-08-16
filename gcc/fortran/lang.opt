@@ -61,7 +61,7 @@ Fortran
 ; Documented in C
 
 MDX
-Fortran Separate
+Fortran Separate RejectDriver
 ; Documented in C
 
 MF
@@ -77,7 +77,7 @@ Fortran
 ; Documented in C
 
 MMDX
-Fortran Separate
+Fortran Separate RejectDriver
 ; Documented in C
 
 MP

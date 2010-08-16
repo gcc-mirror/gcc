@@ -1,3 +1,39 @@
+2010-08-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* common.opt: Add driver options.
+	(auxbase, auxbase-strip, quiet, version): Mark RejectDriver.
+	* doc/options.texi (Driver, RejectDriver): Document.
+	* gcc.c (pass_exit_codes, print_search_dirs, print_file_name,
+	print_prog_name, print_multi_directory, print_sysroot,
+	print_multi_os_directory, print_multi_lib,
+	print_sysroot_headers_suffix, report_times, combine_flag,
+	use_pipes, wrapper_string): Remove.
+	(save_switch, driver_unknown_option_callback,
+	driver_wrong_lang_callback, driver_post_handling_callback,
+	driver_handle_option): New.
+	(spec_lang, last_language_n_infiles): Make file-scope static
+	instead of local to process_command.
+	(process_command): Use decode_cmdline_options_to_array and
+	read_cmdline_option for option processing.  Compute have_c in
+	prescan of decoded options.
+	* opt-functions.awk (switch_flags): Handle Driver and
+	RejectDriver.
+	(var_type, var_type_struct): Handle Separate options as generating
+	const char * variables.
+	* opts-common.c (decode_cmdline_option): Expect CL_COMMON and
+	CL_TARGET to be passed by caller if required.
+	(decode_cmdline_options_to_array): Update comment.
+	* opts.c (complain_wrong_lang): Handle options only valid for the
+	driver.
+	(decode_options): Update call to decode_cmdline_options_to_array.
+	(print_filtered_help): Ignore driver-only options.
+	(print_specific_help): Ignore CL_DRIVER.
+	(common_handle_option): Don't call print_specific_help for
+	CL_DRIVER.
+	* opts.h (CL_DRIVER, CL_REJECT_DRIVER): Define.
+	(CL_PARAMS, CL_WARNING, CL_OPTIMIZATION, CL_TARGET, CL_COMMON):
+	Update values.
+
 2010-08-16  Richard Guenther  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_types_in_gimple_reference): Verify

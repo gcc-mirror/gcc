@@ -33,7 +33,7 @@ Java
 ; Documented for C
 
 MD_
-Java Undocumented
+Java Undocumented RejectDriver
 ; Documented for C
 
 MF
@@ -45,7 +45,7 @@ Java
 ; Documented for C
 
 MMD_
-Java Undocumented
+Java Undocumented RejectDriver
 ; Documented for C
 
 MP
@@ -209,7 +209,7 @@ Java Joined
 Set the target VM version
 
 version
-Java
+Java RejectDriver
 
 ;
 ; Warnings handled by ecj.

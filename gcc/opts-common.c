@@ -128,8 +128,9 @@ integral_argument (const char *arg)
 }
 
 /* Decode the switch beginning at ARGV for the language indicated by
-   LANG_MASK, into the structure *DECODED.  Returns the number of
-   switches consumed.  */
+   LANG_MASK (including CL_COMMON and CL_TARGET if applicable), into
+   the structure *DECODED.  Returns the number of switches
+   consumed.  */
 
 static unsigned int
 decode_cmdline_option (const char **argv, unsigned int lang_mask,
@@ -147,7 +148,7 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
 
   opt = argv[0];
 
-  opt_index = find_opt (opt + 1, lang_mask | CL_COMMON | CL_TARGET);
+  opt_index = find_opt (opt + 1, lang_mask);
   if (opt_index == OPT_SPECIAL_unknown
       && (opt[1] == 'W' || opt[1] == 'f' || opt[1] == 'm')
       && opt[2] == 'n' && opt[3] == 'o' && opt[4] == '-')
@@ -161,7 +162,7 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
       memcpy (dup + 2, opt + 5, len - 2 + 1);
       opt = dup;
       value = 0;
-      opt_index = find_opt (opt + 1, lang_mask | CL_COMMON | CL_TARGET);
+      opt_index = find_opt (opt + 1, lang_mask);
     }
 
   if (opt_index == OPT_SPECIAL_unknown)
@@ -218,11 +219,11 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
     }
 
   /* Check if this is a switch for a different front end.  */
-  if (!(option->flags & (lang_mask | CL_COMMON | CL_TARGET)))
+  if (!(option->flags & lang_mask))
     errors |= CL_ERR_WRONG_LANG;
   else if ((option->flags & CL_TARGET)
-	   && (option->flags & CL_LANG_ALL)
-	   && !(option->flags & lang_mask))
+	   && (option->flags & (CL_LANG_ALL | CL_DRIVER))
+	   && !(option->flags & (lang_mask & ~CL_COMMON & ~CL_TARGET)))
     /* Complain for target flag language mismatches if any languages
        are specified.  */
       errors |= CL_ERR_WRONG_LANG;
@@ -301,8 +302,9 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
    array and *DECODED_OPTIONS_COUNT to the number of entries in the
    array.  The first entry in the array is always one for the program
    name (OPT_SPECIAL_program_name).  LANG_MASK indicates the language
-   applicable for decoding.  Do not produce any diagnostics or set
-   state outside of these variables.  */
+   flags applicable for decoding (including CL_COMMON and CL_TARGET if
+   those options should be considered applicable).  Do not produce any
+   diagnostics or set state outside of these variables.  */
 
 void
 decode_cmdline_options_to_array (unsigned int argc, const char **argv, 

@@ -102,12 +102,20 @@ The option is available for all languages and targets.
 @item Target
 The option is available for all languages but is target-specific.
 
+@item Driver
+The option is handled by the compiler driver using code not shared
+with the compilers proper (@file{cc1} etc.).
+
 @item @var{language}
 The option is available when compiling for the given language.
 
 It is possible to specify several different languages for the same
 option.  Each @var{language} must have been declared by an earlier
 @code{Language} record.  @xref{Option file format}.
+
+@item RejectDriver
+The option is only handled by the compilers proper (@file{cc1} etc.)@:
+and should not be accepted by the driver.
 
 @item RejectNegative
 The option does not have a ``no-'' form.  All options beginning with

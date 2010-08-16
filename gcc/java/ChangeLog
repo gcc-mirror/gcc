@@ -1,3 +1,7 @@
+2010-08-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang.opt (MD_, MMD_, version): Mark RejectDriver.
+
 2010-08-05  David Daney  <ddaney@caviumnetworks.com>
 
 	* class.c (build_utf8_ref): Fix code formatting from previous commit.

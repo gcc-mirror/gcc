@@ -67,11 +67,12 @@ extern const unsigned int cl_options_count;
 extern const char *const lang_names[];
 extern const unsigned int cl_lang_count;
 
-#define CL_PARAMS               (1 << 17) /* Fake entry.  Used to display --param info with --help.  */
-#define CL_WARNING		(1 << 18) /* Enables an (optional) warning message.  */
-#define CL_OPTIMIZATION		(1 << 19) /* Enables an (optional) optimization.  */
-#define CL_TARGET		(1 << 20) /* Target-specific option.  */
-#define CL_COMMON		(1 << 21) /* Language-independent.  */
+#define CL_PARAMS               (1 << 15) /* Fake entry.  Used to display --param info with --help.  */
+#define CL_WARNING		(1 << 16) /* Enables an (optional) warning message.  */
+#define CL_OPTIMIZATION		(1 << 17) /* Enables an (optional) optimization.  */
+#define CL_DRIVER		(1 << 18) /* Driver option.  */
+#define CL_TARGET		(1 << 19) /* Target-specific option.  */
+#define CL_COMMON		(1 << 20) /* Language-independent.  */
 
 #define CL_MIN_OPTION_CLASS	CL_PARAMS
 #define CL_MAX_OPTION_CLASS	CL_COMMON
@@ -81,6 +82,7 @@ extern const unsigned int cl_lang_count;
    This distinction is important because --help will not list options
    which only have these higher bits set.  */
 
+#define CL_REJECT_DRIVER	(1 << 21) /* Reject this option in the driver.  */
 #define CL_SAVE			(1 << 22) /* Target-specific option for attribute.  */
 #define CL_DISABLED		(1 << 23) /* Disabled in this configuration.  */
 #define CL_REPORT		(1 << 24) /* Report argument with -fverbose-asm  */

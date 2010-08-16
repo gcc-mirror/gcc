@@ -418,17 +418,27 @@ complain_wrong_lang (const struct cl_decoded_option *decoded,
 {
   const struct cl_option *option = &cl_options[decoded->opt_index];
   const char *text = decoded->orig_option_with_args_text;
-  char *ok_langs, *bad_lang;
+  char *ok_langs = NULL, *bad_lang = NULL;
+  unsigned int opt_flags = option->flags;
 
   if (!lang_hooks.complain_wrong_lang_p (option))
     return;
 
-  ok_langs = write_langs (option->flags);
-  bad_lang = write_langs (lang_mask);
+  opt_flags &= ((1U << cl_lang_count) - 1) | CL_DRIVER;
+  if (opt_flags != CL_DRIVER)
+    ok_langs = write_langs (opt_flags);
+  if (lang_mask != CL_DRIVER)
+    bad_lang = write_langs (lang_mask);
 
-  /* Eventually this should become a hard error IMO.  */
-  warning (0, "command line option \"%s\" is valid for %s but not for %s",
-	   text, ok_langs, bad_lang);
+  if (opt_flags == CL_DRIVER)
+    error ("command line option %qs is valid for the driver but not for %s",
+	   text, bad_lang);
+  else if (lang_mask == CL_DRIVER)
+    gcc_unreachable ();
+  else
+    /* Eventually this should become a hard error IMO.  */
+    warning (0, "command line option %qs is valid for %s but not for %s",
+	     text, ok_langs, bad_lang);
 
   free (ok_langs);
   free (bad_lang);
@@ -681,7 +691,8 @@ decode_options (unsigned int argc, const char **argv,
   else
     lang_mask = initial_lang_mask;
 
-  decode_cmdline_options_to_array (argc, argv, lang_mask,
+  decode_cmdline_options_to_array (argc, argv,
+				   lang_mask | CL_COMMON | CL_TARGET,
 				   decoded_options, decoded_options_count);
   if (first_time_p)
     /* Perform language-specific options initialization.  */
@@ -1193,6 +1204,12 @@ print_filtered_help (unsigned int include_flags,
       if ((option->flags & exclude_flags) != 0)
 	continue;
 
+      /* The driver currently prints its own help text.  */
+      if ((option->flags & CL_DRIVER) != 0
+	  && (option->flags & (((1U << cl_lang_count) - 1)
+			       | CL_COMMON | CL_TARGET)) == 0)
+	continue;
+
       found = true;
       /* Skip switches that have already been printed.  */
       if (printed[i])
@@ -1333,6 +1350,7 @@ print_specific_help (unsigned int include_flags,
       switch (flag & include_flags)
 	{
 	case 0:
+	case CL_DRIVER:
 	  break;
 
 	case CL_TARGET:
@@ -1436,7 +1454,8 @@ common_handle_option (const struct cl_decoded_option *decoded,
 	print_specific_help (0, undoc_mask, all_langs_mask);
 	/* Then display any remaining, non-language options.  */
 	for (i = CL_MIN_OPTION_CLASS; i <= CL_MAX_OPTION_CLASS; i <<= 1)
-	  print_specific_help (i, undoc_mask, 0);
+	  if (i != CL_DRIVER)
+	    print_specific_help (i, undoc_mask, 0);
 	exit_after_options = true;
 	break;
       }
