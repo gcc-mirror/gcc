@@ -1,3 +1,9 @@
+2010-08-16  Chris Moller  <cmoller@redhat.com>
+
+	http://sourceware.org/bugzilla/show_bug.cgi?id=11874
+	* python/libstdcxx/v6/printers.py (StdVectorPrinter): Added stuff
+	to handle pretty-printing of std::vector<bool>.
+
 2010-08-14  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/45283
