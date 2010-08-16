@@ -1,3 +1,41 @@
+2010-08-16  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_types_in_gimple_reference): Verify
+	TARGET_MEM_REF a bit.
+	* tree-ssa-address.c (addr_for_mem_ref): Adjust.
+	(create_mem_ref_raw): Always create TMR_OFFSET, store the
+	alias pointer type via it.
+	(copy_mem_ref_info): Adjust.
+	(maybe_fold_tmr): Likewise.
+	* tree.c (mem_ref_offset): Also handle TARGET_MEM_REF.
+	(reference_alias_ptr_type): Likewise.
+	* tree.def (TARGET_MEM_REF): Remove TMR_ORIGINAL operand,
+	adjust documentation of TMR_OFFSET operand.
+	* alias.c (get_alias_set): Do not look at TMR_ORIGINAL but
+	use the alias pointer type.
+	* expr.c (expand_expr_real_1): Do not use TMR_ORIGINAL to
+	initialize mem attrs but the TMR itself.
+	* tree-eh.c (tree_could_trap_p): Handle TARGET_MEM_REF
+	similar to MEM_REF.
+	* tree-pretty-print.c (dump_generic_node): Do not dump TMR_ORIGINAL.
+	* tree-ssa-loop-ivopts.c (idx_remove_ssa_names): Remove.
+	(unshare_and_remove_ssa_names): Likewise.
+	(copy_ref_info): Adjust.
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Simplify
+	TARGET_MEM_REF case.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Do not look
+	at TMR_ORIGINAL.
+	* tree.h (TMR_ORIGINAL): Remove.
+	* gimple.c (get_base_address): For TARGET_MEM_REF with a
+	symbol return that.
+	* tree-dfa.c (get_ref_base_and_extent): Handle TARGET_MEM_REF
+	with a symbol.
+	(get_addr_base_and_unit_offset): Likewise.
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Handle
+	TARGET_MEM_REFs.
+	(indirect_ref_may_alias_decl_p): Likewise.
+	(refs_may_alias_p_1): Do not bail out for TARGET_MEM_REFs.
+
 2010-08-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/invoke.texi (-fomit-frame-pointer): Document that starting

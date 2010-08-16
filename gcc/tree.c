@@ -3906,12 +3906,12 @@ build_simple_mem_ref_loc (location_t loc, tree ptr)
   return tem;
 }
 
-/* Return the constant offset of a MEM_REF tree T.  */
+/* Return the constant offset of a MEM_REF or TARGET_MEM_REF tree T.  */
 
 double_int
 mem_ref_offset (const_tree t)
 {
-  tree toff = TREE_OPERAND (t, 1);
+  tree toff = TREE_CODE (t) == MEM_REF ? TREE_OPERAND (t, 1) : TMR_OFFSET (t);
   return double_int_sext (tree_to_double_int (toff),
 			  TYPE_PRECISION (TREE_TYPE (toff)));
 }
@@ -3928,8 +3928,9 @@ reference_alias_ptr_type (const_tree t)
     base = TREE_OPERAND (base, 0);
   if (TREE_CODE (base) == MEM_REF)
     return TREE_TYPE (TREE_OPERAND (base, 1));
-  else if (TREE_CODE (base) == TARGET_MEM_REF
-	   || TREE_CODE (base) == MISALIGNED_INDIRECT_REF)
+  else if (TREE_CODE (base) == TARGET_MEM_REF)
+    return TREE_TYPE (TMR_OFFSET (base)); 
+  else if (TREE_CODE (base) == MISALIGNED_INDIRECT_REF)
     return NULL_TREE;
   else
     return build_pointer_type (TYPE_MAIN_VARIANT (TREE_TYPE (base)));

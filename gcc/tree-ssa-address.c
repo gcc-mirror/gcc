@@ -198,7 +198,10 @@ addr_for_mem_ref (struct mem_address *addr, addr_space_t as,
     st = NULL_RTX;
 
   if (addr->offset && !integer_zerop (addr->offset))
-    off = immed_double_int_const (tree_to_double_int (addr->offset), address_mode);
+    off = immed_double_int_const
+	    (double_int_sext (tree_to_double_int (addr->offset),
+			      TYPE_PRECISION (TREE_TYPE (addr->offset))),
+	     address_mode);
   else
     off = NULL_RTX;
 
@@ -346,8 +349,10 @@ create_mem_ref_raw (tree type, tree alias_ptr_type, struct mem_address *addr)
   if (addr->step && integer_onep (addr->step))
     addr->step = NULL_TREE;
 
-  if (addr->offset && integer_zerop (addr->offset))
-    addr->offset = NULL_TREE;
+  if (addr->offset)
+    addr->offset = fold_convert (alias_ptr_type, addr->offset);
+  else
+    addr->offset = build_int_cst (alias_ptr_type, 0);
 
   /* If possible use a plain MEM_REF instead of a TARGET_MEM_REF.  */
   if (alias_ptr_type
@@ -355,22 +360,18 @@ create_mem_ref_raw (tree type, tree alias_ptr_type, struct mem_address *addr)
       && !addr->step
       && (!addr->base || POINTER_TYPE_P (TREE_TYPE (addr->base))))
     {
-      tree base, offset;
+      tree base;
       gcc_assert (!addr->symbol ^ !addr->base);
       if (addr->symbol)
 	base = build_fold_addr_expr (addr->symbol);
       else
 	base = addr->base;
-      if (addr->offset)
-	offset = fold_convert (alias_ptr_type, addr->offset);
-      else
-	offset = build_int_cst (alias_ptr_type, 0);
-      return fold_build2 (MEM_REF, type, base, offset);
+      return fold_build2 (MEM_REF, type, base, addr->offset);
     }
 
-  return build6 (TARGET_MEM_REF, type,
+  return build5 (TARGET_MEM_REF, type,
 		 addr->symbol, addr->base, addr->index,
-		 addr->step, addr->offset, NULL);
+		 addr->step, addr->offset);
 }
 
 /* Returns true if OBJ is an object whose address is a link time constant.  */
@@ -820,7 +821,6 @@ void
 copy_mem_ref_info (tree to, tree from)
 {
   /* And the info about the original reference.  */
-  TMR_ORIGINAL (to) = TMR_ORIGINAL (from);
   TREE_SIDE_EFFECTS (to) = TREE_SIDE_EFFECTS (from);
   TREE_THIS_VOLATILE (to) = TREE_THIS_VOLATILE (from);
 }
@@ -839,13 +839,9 @@ maybe_fold_tmr (tree ref)
 
   if (addr.base && TREE_CODE (addr.base) == INTEGER_CST)
     {
-      if (addr.offset)
-	addr.offset = fold_binary_to_constant (PLUS_EXPR, sizetype,
-			addr.offset,
-			fold_convert (sizetype, addr.base));
-      else
-	addr.offset = addr.base;
-
+      addr.offset = fold_binary_to_constant (PLUS_EXPR,
+					     TREE_TYPE (addr.offset),
+					     addr.offset, addr.base);
       addr.base = NULL_TREE;
       changed = true;
     }
@@ -860,14 +856,9 @@ maybe_fold_tmr (tree ref)
 	  addr.step = NULL_TREE;
 	}
 
-      if (addr.offset)
-	{
-	  addr.offset = fold_binary_to_constant (PLUS_EXPR, sizetype,
-						 addr.offset, off);
-	}
-      else
-	addr.offset = off;
-
+      addr.offset = fold_binary_to_constant (PLUS_EXPR,
+					     TREE_TYPE (addr.offset),
+					     addr.offset, off);
       addr.index = NULL_TREE;
       changed = true;
     }
@@ -875,7 +866,7 @@ maybe_fold_tmr (tree ref)
   if (!changed)
     return NULL_TREE;
 
-  ret = create_mem_ref_raw (TREE_TYPE (ref), NULL_TREE, &addr);
+  ret = create_mem_ref_raw (TREE_TYPE (ref), TREE_TYPE (addr.offset), &addr);
   if (!ret)
     return NULL_TREE;
 

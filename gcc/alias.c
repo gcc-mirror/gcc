@@ -619,10 +619,6 @@ get_alias_set (tree t)
       if (set != -1)
 	return set;
 
-      /* Retrieve the original memory reference if needed.  */
-      if (TREE_CODE (t) == TARGET_MEM_REF)
-	t = TMR_ORIGINAL (t);
-
       /* Get the base object of the reference.  */
       inner = t;
       while (handled_component_p (inner))
@@ -643,6 +639,8 @@ get_alias_set (tree t)
 	  if (set != -1)
 	    return set;
 	}
+      else if (TREE_CODE (inner) == TARGET_MEM_REF)
+	return get_deref_alias_set (TMR_OFFSET (inner));
       else if (TREE_CODE (inner) == MEM_REF)
 	{
 	  set = get_deref_alias_set_1 (TREE_OPERAND (inner, 1));

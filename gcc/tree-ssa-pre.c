@@ -2773,8 +2773,6 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
       break;
     case TARGET_MEM_REF:
       {
-	vn_reference_op_t nextop = VEC_index (vn_reference_op_s, ref->operands,
-					      *operand);
 	pre_expr op0expr;
 	tree genop0 = NULL_TREE;
 	tree baseop = create_component_ref_by_pieces_1 (block, ref, operand,
@@ -2790,15 +2788,13 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	      return NULL_TREE;
 	  }
 	if (DECL_P (baseop))
-	  return build6 (TARGET_MEM_REF, currop->type,
+	  return build5 (TARGET_MEM_REF, currop->type,
 			 baseop, NULL_TREE,
-			 genop0, currop->op1, currop->op2,
-			 unshare_expr (nextop->op1));
+			 genop0, currop->op1, currop->op2);
 	else
-	  return build6 (TARGET_MEM_REF, currop->type,
+	  return build5 (TARGET_MEM_REF, currop->type,
 			 NULL_TREE, baseop,
-			 genop0, currop->op1, currop->op2,
-			 unshare_expr (nextop->op1));
+			 genop0, currop->op1, currop->op2);
       }
       break;
     case ADDR_EXPR:
