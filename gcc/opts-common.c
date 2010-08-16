@@ -145,6 +145,8 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
   char *p;
   const struct cl_option *option;
   int errors = 0;
+  bool separate_arg_flag;
+  bool joined_arg_flag;
 
   opt = argv[0];
 
@@ -186,8 +188,15 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
   if (option->flags & CL_DISABLED)
     errors |= CL_ERR_DISABLED;
 
+  /* Determine whether there may be a separate argument based on
+     whether this option is being processed for the driver.  */
+  separate_arg_flag = ((option->flags & CL_SEPARATE)
+		       && !((option->flags & CL_NO_DRIVER_ARG)
+			    && (lang_mask & CL_DRIVER)));
+  joined_arg_flag = (option->flags & CL_JOINED) != 0;
+
   /* Sort out any argument the switch takes.  */
-  if (option->flags & CL_JOINED)
+  if (joined_arg_flag)
     {
       /* Have arg point to the original switch.  This is because
 	 some code, such as disable_builtin_function, expects its
@@ -198,7 +207,7 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
 
       if (*arg == '\0' && !(option->flags & CL_MISSING_OK))
 	{
-	  if (option->flags & CL_SEPARATE)
+	  if (separate_arg_flag)
 	    {
 	      arg = argv[1];
 	      result = 2;
@@ -210,7 +219,7 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
 	    arg = NULL;
 	}
     }
-  else if (option->flags & CL_SEPARATE)
+  else if (separate_arg_flag)
     {
       arg = argv[1];
       result = 2;
@@ -228,7 +237,7 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
        are specified.  */
       errors |= CL_ERR_WRONG_LANG;
 
-  if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
+  if (arg == NULL && (separate_arg_flag || joined_arg_flag))
     errors |= CL_ERR_MISSING_ARG;
 
   /* If the switch takes an integer, convert it.  */

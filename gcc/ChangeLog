@@ -1,5 +1,17 @@
 2010-08-16  Joseph Myers  <joseph@codesourcery.com>
 
+	* doc/options.texi (NoDriverArg): Document.
+	* gcc.c (cpp_unique_options): Generate -MD and -MMD instead of
+	-MDX and -MMDX.
+	* opt-functions.awk (switch_flags): Handle NoDriverArg.
+	* opts-common.c (decode_cmdline_option): Ignore CL_SEPARATE
+	marking for CL_NO_DRIVER_ARG options when in the driver.
+	* opts.h (CL_NO_DRIVER_ARG): Define.
+	(CL_PARAMS, CL_WARNING, CL_OPTIMIZATION, CL_DRIVER, CL_TARGET,
+	CL_COMMON): Update values.
+
+2010-08-16  Joseph Myers  <joseph@codesourcery.com>
+
 	* common.opt: Add driver options.
 	(auxbase, auxbase-strip, quiet, version): Mark RejectDriver.
 	* doc/options.texi (Driver, RejectDriver): Document.
