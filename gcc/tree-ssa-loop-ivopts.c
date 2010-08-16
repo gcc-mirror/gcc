@@ -5880,56 +5880,12 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
     }
 }
 
-/* Replaces ssa name in index IDX by its basic variable.  Callback for
-   for_each_index.  */
-
-static bool
-idx_remove_ssa_names (tree base, tree *idx,
-		      void *data ATTRIBUTE_UNUSED)
-{
-  tree *op;
-
-  if (TREE_CODE (*idx) == SSA_NAME)
-    *idx = SSA_NAME_VAR (*idx);
-
-  if (TREE_CODE (base) == ARRAY_REF || TREE_CODE (base) == ARRAY_RANGE_REF)
-    {
-      op = &TREE_OPERAND (base, 2);
-      if (*op
-	  && TREE_CODE (*op) == SSA_NAME)
-	*op = SSA_NAME_VAR (*op);
-      op = &TREE_OPERAND (base, 3);
-      if (*op
-	  && TREE_CODE (*op) == SSA_NAME)
-	*op = SSA_NAME_VAR (*op);
-    }
-
-  return true;
-}
-
-/* Unshares REF and replaces ssa names inside it by their basic variables.  */
-
-static tree
-unshare_and_remove_ssa_names (tree ref)
-{
-  ref = unshare_expr (ref);
-  for_each_index (&ref, idx_remove_ssa_names, NULL);
-
-  return ref;
-}
-
 /* Copies the reference information from OLD_REF to NEW_REF.  */
 
 static void
 copy_ref_info (tree new_ref, tree old_ref)
 {
   tree new_ptr_base = NULL_TREE;
-
-  if (TREE_CODE (old_ref) == TARGET_MEM_REF
-      && TREE_CODE (new_ref) == TARGET_MEM_REF)
-    TMR_ORIGINAL (new_ref) = TMR_ORIGINAL (old_ref);
-  else if (TREE_CODE (new_ref) == TARGET_MEM_REF)
-    TMR_ORIGINAL (new_ref) = unshare_and_remove_ssa_names (old_ref);
 
   TREE_SIDE_EFFECTS (new_ref) = TREE_SIDE_EFFECTS (old_ref);
   TREE_THIS_VOLATILE (new_ref) = TREE_THIS_VOLATILE (old_ref);

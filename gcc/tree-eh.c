@@ -2405,11 +2405,10 @@ tree_could_trap_p (tree expr)
   switch (code)
     {
     case TARGET_MEM_REF:
-      /* For TARGET_MEM_REFs use the information based on the original
-	 reference.  */
-      expr = TMR_ORIGINAL (expr);
-      code = TREE_CODE (expr);
-      goto restart;
+      if (TMR_SYMBOL (expr)
+	  && !TMR_INDEX (expr))
+	return false;
+      return !TREE_THIS_NOTRAP (expr);
 
     case COMPONENT_REF:
     case REALPART_EXPR:

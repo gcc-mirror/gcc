@@ -893,13 +893,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	    dump_generic_node (buffer, tmp, spc, flags, false);
 	  }
 	pp_string (buffer, "]");
-	if (flags & TDF_DETAILS)
-	  {
-	    pp_string (buffer, "{");
-	    dump_generic_node (buffer, TMR_ORIGINAL (node), spc, flags,
-			       false);
-	    pp_string (buffer, "}");
-	  }
       }
       break;
 

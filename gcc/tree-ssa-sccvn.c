@@ -595,7 +595,6 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
       temp.type = NULL_TREE;
       temp.opcode = TREE_CODE (base);
       temp.op0 = base;
-      temp.op1 = TMR_ORIGINAL (ref);
       temp.off = -1;
       VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
       return;

@@ -2988,6 +2988,17 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
 	  return true;
 	}
     }
+  else if (TREE_CODE (expr) == TARGET_MEM_REF)
+    {
+      if (!TMR_OFFSET (expr)
+	  || TREE_CODE (TMR_OFFSET (expr)) != INTEGER_CST
+	  || !POINTER_TYPE_P (TREE_TYPE (TMR_OFFSET (expr))))
+	{
+	  error ("Invalid offset operand in TARGET_MEM_REF.");
+	  debug_generic_stmt (expr);
+	  return true;
+	}
+    }
 
   return ((require_lvalue || !is_gimple_min_invariant (expr))
 	  && verify_types_in_gimple_min_lval (expr));
