@@ -128,6 +128,11 @@
   (ior (match_operand 0 "arm_rhs_operand")
        (match_operand 0 "memory_operand")))
 
+(define_predicate "shift_amount_operand"
+  (ior (and (match_test "TARGET_ARM")
+	    (match_operand 0 "s_register_operand"))
+       (match_operand 0 "const_int_operand")))
+
 (define_predicate "arm_add_operand"
   (ior (match_operand 0 "arm_rhs_operand")
        (match_operand 0 "arm_neg_immediate_operand")))
@@ -220,6 +225,10 @@
 				   && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (op, 1))) < 32")))
 	    (match_code "ashift,ashiftrt,lshiftrt,rotatert"))
        (match_test "mode == GET_MODE (op)")))
+
+;; True for MULT, to identify which variant of shift_operator is in use.
+(define_special_predicate "mult_operator"
+  (match_code "mult"))
 
 ;; True for operators that have 16-bit thumb variants.  */
 (define_special_predicate "thumb_16bit_operator"

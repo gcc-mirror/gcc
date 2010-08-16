@@ -1,3 +1,37 @@
+2010-08-16  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/arm/thumb2.md (thumb2_notsi_shiftsi,
+	thumbsi_notsi_shiftsi_compare0, thumb2_not_shiftsi_compare0_scratch,
+	thumb2_cmpsi_shiftsi, thumb2_cmpsi_shiftsi_swp, thumb2_arith_shiftsi,
+	thumb2_arith_shiftsi splitter, thumb2_arith_shiftsi_compare0,
+	thumb2_arith_shiftsi_compare0_scratch, thumb2_sub_shiftsi,
+	thumb2_sub_shiftsi_compare0, thumb2_sub_shiftsi_compare0_scratch,
+	thumb2_iorsi3): Delete.
+	(orsi_notsi_si): No longer a named pattern.
+	(orsi_not_shiftsi_si): Renamed from thumb_orsi_not_shiftsi_si.
+	* config/arm/predicates.md (shift_amount_operand): New.
+	(mult_operator): New.
+	* config/arm/arm.md (attr arch, attr arch_enabled, attr insn_enabled,
+	attr enabled): New.
+	(iorsi3_insn): Renamed from arm_iorsi3.  Handle a new alternative if
+	arch matches t2.
+	(not_shiftsi): Renamed from arm_notsi_shiftsi.  Handle Thumb2 variant.
+	(not_shiftsi_compare0): Likewise, renamed from
+	arm_notsi_shiftsi_compare0.
+	(not_shiftsi_compare0_scratch): Likweise, renamed from
+	arm_notsi_shiftsi_compare0_scratch.
+	(cmpsi_shiftsi): Likewise, renamed from arm_cmpsi_shiftsi.
+	(cmpsi_shiftsi_swp): Likewise, renamed from arm_cmpsi_shiftsi_swp.
+	(arith_shiftsi): Handle Thumb2 variant.  Set insn_enabled attribute
+	so that the register alternative is disabled when the shift_operator
+	is MULT.  Use "M" as the constraint for constants.
+	(arith_shiftsi splitter): Enable for TARGET_32BIT.
+	(arith_shiftsi_compare0): Handle Thumb2 variant.  Use "M" as the
+	constraint for constants.
+	(arith_shiftsi_compare0_scratch): Likewise.
+	(sub_shiftsi, sub_shiftsi_compare0, sub_shiftsi_compare0_scratch):
+	Handle Thumb2 alternative.
+
 2010-08-16  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/options.texi (NoDriverArg): Document.
