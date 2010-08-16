@@ -1,3 +1,11 @@
+2010-08-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/45300
+	* include/c_std/cstdlib: Replace 'restrict' -> '__restrict'.
+	* include/c_std/cstdio: Likewise.
+	* include/c_global/cstdlib: Likewise.
+	* include/c_global/cstdio: Likewise.
+
 2010-08-16  Chris Moller  <cmoller@redhat.com>
 
 	http://sourceware.org/bugzilla/show_bug.cgi?id=11874

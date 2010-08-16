@@ -150,15 +150,16 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 #if _GLIBCXX_USE_C99_CHECK || _GLIBCXX_USE_C99_DYNAMIC
   extern "C" int
-  (snprintf)(char * restrict, std::size_t, const char * restrict, ...) throw ();
+  (snprintf)(char * __restrict, std::size_t, const char * __restrict, ...)
+  throw ();
   extern "C" int
-  (vfscanf)(FILE * restrict, const char * restrict, __gnuc_va_list);
-  extern "C" int (vscanf)(const char * restrict, __gnuc_va_list);
+  (vfscanf)(FILE * __restrict, const char * __restrict, __gnuc_va_list);
+  extern "C" int (vscanf)(const char * __restrict, __gnuc_va_list);
   extern "C" int
-  (vsnprintf)(char * restrict, std::size_t, const char * restrict,
+  (vsnprintf)(char * __restrict, std::size_t, const char * __restrict,
 	      __gnuc_va_list) throw ();
   extern "C" int
-  (vsscanf)(const char * restrict, const char * restrict, __gnuc_va_list)
+  (vsscanf)(const char * __restrict, const char * __restrict, __gnuc_va_list)
   throw ();
 #endif
 
