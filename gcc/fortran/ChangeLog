@@ -1,3 +1,7 @@
+2010-08-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang.opt (MDX, MMDX): Mark RejectDriver.
+
 2010-08-15  Janus Weil  <janus@gcc.gnu.org>
 
 	* trans-expr.c (gfc_trans_assign_vtab_procs): Clean up (we don't have

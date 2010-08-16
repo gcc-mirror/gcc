@@ -78,6 +78,8 @@ function switch_flags (flags)
 	result = result \
 	  test_flag("Common", flags, " | CL_COMMON") \
 	  test_flag("Target", flags, " | CL_TARGET") \
+	  test_flag("Driver", flags, " | CL_DRIVER") \
+	  test_flag("RejectDriver", flags, " | CL_REJECT_DRIVER") \
 	  test_flag("Save", flags, " | CL_SAVE") \
 	  test_flag("Joined", flags, " | CL_JOINED") \
 	  test_flag("JoinedOrMissing", flags, " | CL_JOINED | CL_MISSING_OK") \
@@ -128,7 +130,7 @@ function static_var(name, flags)
 # Return the type of variable that should be associated with the given flags.
 function var_type(flags)
 {
-	if (!flag_set_p("Joined.*", flags))
+	if (!flag_set_p("Joined.*", flags) && !flag_set_p("Separate", flags))
 		return "int "
 	else if (flag_set_p("UInteger", flags))
 		return "int "
@@ -143,7 +145,7 @@ function var_type_struct(flags)
 {
 	if (flag_set_p("UInteger", flags))
 		return "int "
-	else if (!flag_set_p("Joined.*", flags)) {
+	else if (!flag_set_p("Joined.*", flags) && !flag_set_p("Separate", flags)) {
 		if (flag_set_p(".*Mask.*", flags))
 			return "int "
 		else

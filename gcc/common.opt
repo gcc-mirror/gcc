@@ -23,39 +23,51 @@
 
 ; Please try to keep this file in ASCII collating order.
 
+###
+Driver
+
 -help
-Common
+Common Driver
 Display this information
 
 -help=
-Common Report Joined
+Common Driver Report Joined
 --help=<class>	Display descriptions of a specific class of options.  <class> is one or more of optimizers, target, warnings, undocumented, params
 
 -target-help
-Common
+Common Driver
 Alias for --help=target
 
 ;; The following four entries are to work around the gcc driver
 ;; program's insatiable desire to turn options starting with a
 ;; double dash (--) into options starting with a dash f (-f).
 fhelp
-Common Var(help_flag)
+Common Driver Var(help_flag)
 
 fhelp=
-Common Joined
+Common Driver Joined
 
 ftarget-help
-Common
+Common Driver
 
 fversion
-Common
+Common Driver
 
 -param
 Common Separate
 --param <param>=<value>	Set parameter <param> to value.  See below for a complete list of parameters
 
+-sysroot=
+Driver JoinedOrMissing
+
 -version
-Common
+Common Driver
+
+B
+Driver Joined Separate
+
+E
+Driver
 
 O
 Common JoinedOrMissing Optimization
@@ -69,9 +81,21 @@ Ofast
 Common Optimization
 Optimize for speed disregarding exact standards compliance
 
+S
+Driver
+
 W
 Common RejectNegative Var(extra_warnings) Warning
 This switch is deprecated; use -Wextra instead
+
+Wa,
+Driver JoinedOrMissing
+
+Wl,
+Driver JoinedOrMissing
+
+Wp,
+Driver JoinedOrMissing
 
 Waggregate-return
 Common Var(warn_aggregate_return) Warning
@@ -260,6 +284,15 @@ Wcoverage-mismatch
 Common Var(warn_coverage_mismatch) Init(1) Warning
 Warn in case profiles in -fprofile-use do not match
 
+Xassembler
+Driver Separate
+
+Xlinker
+Driver Separate
+
+Xpreprocessor
+Driver Separate
+
 aux-info
 Common Separate
 -aux-info <file>	Emit declaration information into <file>
@@ -268,10 +301,16 @@ aux-info=
 Common Joined
 
 auxbase
-Common Separate
+Common Separate RejectDriver
 
 auxbase-strip
-Common Separate
+Common Separate RejectDriver
+
+combine
+Driver Var(combine_flag)
+
+c
+Driver
 
 d
 Common Joined
@@ -284,6 +323,15 @@ Common Separate
 dumpdir
 Common Separate
 -dumpdir <dir>	Set the directory name to be used for dumps
+
+dumpmachine
+Driver
+
+dumpspecs
+Driver
+
+dumpversion
+Driver
 
 ; The version of the C++ ABI in use.  The following values are allowed:
 ;
@@ -410,12 +458,16 @@ fcommon
 Common Report Var(flag_no_common,0) Optimization
 Do not put uninitialized globals in the common section
 
+fcompare-debug
+Driver
+; Converted by the driver to -fcompare-debug= options.
+
 fcompare-debug=
-Common JoinedOrMissing RejectNegative Var(flag_compare_debug_opt)
+Common Driver JoinedOrMissing RejectNegative Var(flag_compare_debug_opt)
 -fcompare-debug[=<opts>]	Compile with and without e.g. -gtoggle, and compare the final-insns dump
 
 fcompare-debug-second
-Common RejectNegative Var(flag_compare_debug)
+Common Driver RejectNegative Var(flag_compare_debug)
 Run only the second compilation of -fcompare-debug
 
 fconserve-stack
@@ -1587,13 +1639,22 @@ iplugindir=
 Common Joined Var(plugindir_string) Init(0)
 -iplugindir=<dir>	Set <dir> to be the default plugin directory
 
+l
+Driver Joined Separate
+
+no-canonical-prefixes
+Driver
+
 o
-Common Joined Separate MissingArgError(missing filename after %qs)
+Common Driver Joined Separate MissingArgError(missing filename after %qs)
 -o <file>	Place output into <file>
 
 p
 Common Var(profile_flag)
 Enable function profiling
+
+pass-exit-codes
+Driver Var(pass_exit_codes)
 
 pedantic
 Common Var(pedantic)
@@ -1603,21 +1664,91 @@ pedantic-errors
 Common
 Like -pedantic but issue them as errors
 
+pipe
+Driver Var(use_pipes)
+
+print-file-name=
+Driver JoinedOrMissing Var(print_file_name)
+
+print-libgcc-file-name
+Driver
+
+print-multi-directory
+Driver Var(print_multi_directory)
+
+print-multi-lib
+Driver Var(print_multi_lib)
+
+print-multi-os-directory
+Driver Var(print_multi_os_directory)
+
+print-prog-name=
+Driver JoinedOrMissing Var(print_prog_name)
+
+print-search-dirs
+Driver Var(print_search_dirs)
+
+print-sysroot
+Driver Var(print_sysroot)
+
+print-sysroot-headers-suffix
+Driver Var(print_sysroot_headers_suffix)
+
 quiet
-Common Var(quiet_flag)
+Common Var(quiet_flag) RejectDriver
 Do not display functions compiled or elapsed time
 
+save-temps
+Driver
+
+save-temps=
+Driver Joined
+
+time
+Driver Var(report_times)
+
+time=
+Driver JoinedOrMissing
+
+v
+Driver
+
 version
-Common Var(version_flag)
+Common Var(version_flag) RejectDriver
 Display the compiler's version
 
 w
 Common Var(inhibit_warnings)
 Suppress warnings
 
+wrapper
+Driver Separate Var(wrapper_string)
+
+x
+Driver Joined Separate
+
 shared
 Common RejectNegative Negative(pie)
 Create a shared library
+
+shared-libgcc
+Driver
+
+specs
+Driver Separate
+
+specs=
+Driver Joined
+
+static-libgcc
+Driver
+
+static-libgfortran
+Driver
+; Documented for Fortran, but always accepted by driver.
+
+static-libstdc++
+Driver
 
 pie
 Common RejectNegative Negative(shared)
