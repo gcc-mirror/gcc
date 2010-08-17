@@ -1,3 +1,14 @@
+2010-08-17  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-dom.c (struct edge_info): Use a VEC for the
+	list of conditional equivalences.
+	(free_all_edge_infos): Adjust.
+	(record_equivalences_from_incoming_edge): Likewise.
+	(record_cond): Likewise.
+	(build_and_record_new_cond): Likewise.
+	(record_conditions): Likewise.
+	(dom_opt_leave_block): Likewise.
+
 2010-08-17  Kai Tietz  <kai.tietz@onevision.com>
 
 	* doc/invoke.texi (ms-extension): Add documentation.
