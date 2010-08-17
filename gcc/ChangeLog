@@ -1,3 +1,7 @@
+2010-08-17  Kai Tietz  <kai.tietz@onevision.com>
+
+	* doc/invoke.texi (ms-extension): Add documentation.
+
 2010-08-17  Richard Guenther  <rguenther@suse.de>
 
 	* fold-const.c (fold_comparison): Strip nops inside

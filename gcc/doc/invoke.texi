@@ -1685,6 +1685,16 @@ have support for @option{-pthread}.
 @opindex fms-extensions
 Accept some non-standard constructs used in Microsoft header files.
 
+It allows for c++ that member-names in structures can be similiar
+to previous types declarations.
+
+@smallexample
+typedef int UOW;
+struct ABC @{
+  UOW UOW;
+@};
+@end smallexample
+
 Some cases of unnamed fields in structures and unions are only
 accepted with this option.  @xref{Unnamed Fields,,Unnamed struct/union
 fields within structs/unions}, for details.
