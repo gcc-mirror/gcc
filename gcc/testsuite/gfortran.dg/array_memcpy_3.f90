@@ -11,5 +11,5 @@ subroutine bar(x)
   x = (/ 3, 1, 4, 1 /)
 end subroutine
 
-! { dg-final { scan-tree-dump-times "memcpy|(ref-all.*ref-all)" 2 "original" } }
+! { dg-final { scan-tree-dump-times "memcpy|ref-all.*ref-all" 2 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
