@@ -1,3 +1,9 @@
+2010-08-17  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* include/posix.h: Make substitution of 
+	_darwin10_Unwind_FindEnclosingFunction conditional on 
+	OSX >= 10.6 (Darwin10).
+	
 2010-08-12  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/java/security/jce/prng/natVMSecureRandomWin32.cc
