@@ -1,3 +1,8 @@
+2010-08-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/45296
+	* gcc.target/i386/pr45296.c: New test.
+
 2010-08-17  Kai Tietz  <kai.tietz@onevision.com>
 
 	* g++.dg/ext/uow-1.C: New.

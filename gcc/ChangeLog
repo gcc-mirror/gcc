@@ -1,3 +1,8 @@
+2010-08-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/45296
+	* reginfo.c (globalize_reg): Reject stack registers.
+
 2010-08-17  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-dom.c (struct edge_info): Use a VEC for the
@@ -24,7 +29,7 @@
 	* c-decl.c (diagnose_uninitialized_cst_member): New function.
 	(finish_decl): Use it to issue a -Wc++-compat warning about
 	uninitialized const field in struct or union.
-	
+
 	(finish_struct): Use strip_array_types.
 
 2010-08-17  Jakub Jelinek  <jakub@redhat.com>
@@ -112,8 +117,7 @@
 	(decode_options): Update call to decode_cmdline_options_to_array.
 	(print_filtered_help): Ignore driver-only options.
 	(print_specific_help): Ignore CL_DRIVER.
-	(common_handle_option): Don't call print_specific_help for
-	CL_DRIVER.
+	(common_handle_option): Don't call print_specific_help for CL_DRIVER.
 	* opts.h (CL_DRIVER, CL_REJECT_DRIVER): Define.
 	(CL_PARAMS, CL_WARNING, CL_OPTIMIZATION, CL_TARGET, CL_COMMON):
 	Update values.
