@@ -4103,6 +4103,35 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
   return tem;
 }
 
+/* Subroutine of finish_decl. TYPE is the type of an uninitialized object
+   DECL or the non-array element type if DECL is an uninitialized array.
+   If that type has a const member, diagnose this. */
+
+static void
+diagnose_uninitialized_cst_member (tree decl, tree type)
+{
+  tree field;
+  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+    {
+      tree field_type;
+      if (TREE_CODE (field) != FIELD_DECL)
+	continue;
+      field_type = strip_array_types (TREE_TYPE (field));
+
+      if (TYPE_QUALS (field_type) & TYPE_QUAL_CONST)
+      	{
+	  warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wc___compat,
+	  	      "uninitialized const member in %qT is invalid in C++",
+		      strip_array_types (TREE_TYPE (decl)));
+	  inform (DECL_SOURCE_LOCATION (field), "%qD should be initialized", field);
+	}
+
+      if (TREE_CODE (field_type) == RECORD_TYPE
+	  || TREE_CODE (field_type) == UNION_TYPE)
+	diagnose_uninitialized_cst_member (decl, field_type);
+    }
+}
+
 /* Finish processing of a declaration;
    install its initial value.
    If ORIGTYPE is not NULL_TREE, it is the original type of INIT.
@@ -4420,11 +4449,18 @@ finish_decl (tree decl, location_t init_loc, tree init,
 
   if (warn_cxx_compat
       && TREE_CODE (decl) == VAR_DECL
-      && TREE_READONLY (decl)
       && !DECL_EXTERNAL (decl)
       && DECL_INITIAL (decl) == NULL_TREE)
-    warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wc___compat,
-		"uninitialized const %qD is invalid in C++", decl);
+    {
+      type = strip_array_types (type);
+      if (TREE_READONLY (decl))
+	warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wc___compat,
+		    "uninitialized const %qD is invalid in C++", decl);
+      else if ((TREE_CODE (type) == RECORD_TYPE
+	      	|| TREE_CODE (type) == UNION_TYPE)
+	       && C_TYPE_FIELDS_READONLY (type))
+	diagnose_uninitialized_cst_member (decl, type);
+    }
 }
 
 /* Given a parsed parameter declaration, decode it into a PARM_DECL.  */
@@ -6872,9 +6908,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       else
 	{
 	  /* A field that is pseudo-const makes the structure likewise.  */
-	  tree t1 = TREE_TYPE (x);
-	  while (TREE_CODE (t1) == ARRAY_TYPE)
-	    t1 = TREE_TYPE (t1);
+	  tree t1 = strip_array_types (TREE_TYPE (x));
 	  if ((TREE_CODE (t1) == RECORD_TYPE || TREE_CODE (t1) == UNION_TYPE)
 	      && C_TYPE_FIELDS_READONLY (t1))
 	    C_TYPE_FIELDS_READONLY (t) = 1;
