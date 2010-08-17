@@ -8295,39 +8295,7 @@ resolve_block_construct (gfc_code* code)
   gfc_resolve (code->ext.block.ns);
 
   /* For an ASSOCIATE block, the associations (and their targets) are already
-     resolved during gfc_resolve_symbol.  Here, we have to add code
-     to assign expression values to the variables associated to expressions.  */
-  if (code->ext.block.assoc)
-    {
-      gfc_association_list* a;     
-      gfc_code* assignTail;
-      gfc_code* assignHead;
-
-      assignHead = assignTail = NULL;
-      for (a = code->ext.block.assoc; a; a = a->next)
-	if (!a->variable)
-	  {
-	    gfc_code* newAssign;
-
-	    newAssign = gfc_get_code ();
-	    newAssign->op = EXEC_ASSIGN;
-	    newAssign->loc = gfc_current_locus;
-	    newAssign->expr1 = gfc_lval_expr_from_sym (a->st->n.sym);
-	    newAssign->expr2 = a->target;
-
-	    if (!assignHead)
-	      assignHead = newAssign;
-	    else
-	      {
-		gcc_assert (assignTail);
-		assignTail->next = newAssign;
-	      }
-	    assignTail = newAssign;
-	  }
-
-      assignTail->next = code->ext.block.ns->code;
-      code->ext.block.ns->code = assignHead;
-    }
+     resolved during gfc_resolve_symbol.  */
 }
 
 
@@ -9523,12 +9491,11 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 		     sym->name, &sym->declared_at);
 	  return FAILURE;
 	}
-
     }
   else
     {
       if (!mp_flag && !sym->attr.allocatable && !sym->attr.pointer
-	  && !sym->attr.dummy && sym->ts.type != BT_CLASS)
+	  && !sym->attr.dummy && sym->ts.type != BT_CLASS && !sym->assoc)
 	{
 	  gfc_error ("Array '%s' at %L cannot have a deferred shape",
 		     sym->name, &sym->declared_at);
@@ -11692,59 +11659,70 @@ resolve_symbol (gfc_symbol *sym)
      they get their type-spec set this way.  */
   if (sym->assoc)
     {
+      gfc_expr* target;
+      bool to_var;
+
       gcc_assert (sym->attr.flavor == FL_VARIABLE);
-      if (gfc_resolve_expr (sym->assoc->target) != SUCCESS)
+
+      target = sym->assoc->target;
+      if (gfc_resolve_expr (target) != SUCCESS)
 	return;
 
-      sym->ts = sym->assoc->target->ts;
+      /* For variable targets, we get some attributes from the target.  */
+      if (target->expr_type == EXPR_VARIABLE)
+	{
+	  gfc_symbol* tsym;
+
+	  gcc_assert (target->symtree);
+	  tsym = target->symtree->n.sym;
+
+	  sym->attr.asynchronous = tsym->attr.asynchronous;
+	  sym->attr.volatile_ = tsym->attr.volatile_;
+
+	  sym->attr.target = (tsym->attr.target || tsym->attr.pointer);
+	}
+
+      sym->ts = target->ts;
       gcc_assert (sym->ts.type != BT_UNKNOWN);
 
-      if (sym->attr.dimension && sym->assoc->target->rank == 0)
+      /* See if this is a valid association-to-variable.  */
+      to_var = (target->expr_type == EXPR_VARIABLE
+		&& !gfc_has_vector_subscript (target));
+      if (sym->assoc->variable && !to_var)
+	{
+	  if (target->expr_type == EXPR_VARIABLE)
+	    gfc_error ("'%s' at %L associated to vector-indexed target can not"
+		       " be used in a variable definition context",
+		       sym->name, &sym->declared_at);
+	  else
+	    gfc_error ("'%s' at %L associated to expression can not"
+		       " be used in a variable definition context",
+		       sym->name, &sym->declared_at);
+
+	  return;
+	}
+      sym->assoc->variable = to_var;
+
+      /* Finally resolve if this is an array or not.  */
+      if (sym->attr.dimension && target->rank == 0)
 	{
 	  gfc_error ("Associate-name '%s' at %L is used as array",
 		     sym->name, &sym->declared_at);
 	  sym->attr.dimension = 0;
 	  return;
 	}
-      if (sym->assoc->target->rank > 0)
+      if (target->rank > 0)
 	sym->attr.dimension = 1;
 
       if (sym->attr.dimension)
 	{
-	  int dim;
-
 	  sym->as = gfc_get_array_spec ();
-	  sym->as->rank = sym->assoc->target->rank;
-	  sym->as->type = AS_EXPLICIT;
+	  sym->as->rank = target->rank;
+	  sym->as->type = AS_DEFERRED;
 
 	  /* Target must not be coindexed, thus the associate-variable
 	     has no corank.  */
 	  sym->as->corank = 0;
-
-	  for (dim = 0; dim < sym->assoc->target->rank; ++dim)
-	    {
-	      gfc_expr* dim_expr;
-	      gfc_expr* e;
-
-	      dim_expr = gfc_get_constant_expr (BT_INTEGER,
-						gfc_default_integer_kind,
-						&sym->declared_at);
-	      mpz_set_si (dim_expr->value.integer, dim + 1);
-
-	      e = gfc_build_intrinsic_call ("lbound", sym->declared_at, 3,
-					    gfc_copy_expr (sym->assoc->target),
-					    gfc_copy_expr (dim_expr), NULL);
-	      gfc_resolve_expr (e);
-	      sym->as->lower[dim] = e;
-
-	      e = gfc_build_intrinsic_call ("ubound", sym->declared_at, 3,
-					    gfc_copy_expr (sym->assoc->target),
-					    gfc_copy_expr (dim_expr), NULL);
-	      gfc_resolve_expr (e);
-	      sym->as->upper[dim] = e;
-
-	      gfc_free_expr (dim_expr);
-	    }
 	}
     }
 

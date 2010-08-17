@@ -1,3 +1,14 @@
+2010-08-17  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/38936
+	* gfortran.dg/associate_1.f03: Extended to test newly supported
+	features like association to variables.
+	* gfortran.dg/associate_3.f03: Removed check for illegal change
+	of associate-name here...
+	* gfortran.dg/associate_5.f03: ...and added it here.
+	* gfortran.dg/associate_6.f03: No longer XFAIL'ed.
+	* gfortran.dg/associate_7.f03: New test.
+
 2010-08-15  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* gcc.dg/tree-ssa/pr42585.c: Skip dump scan on sh.

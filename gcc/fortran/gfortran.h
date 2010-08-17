@@ -2007,6 +2007,8 @@ typedef struct gfc_association_list
 
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_symtree *st; /* Symtree corresponding to name.  */
+  locus where;
+
   gfc_expr *target;
 }
 gfc_association_list;
@@ -2578,6 +2580,8 @@ void gfc_free_finalizer (gfc_finalizer *el); /* Needed in resolve.c, too  */
 
 gfc_try gfc_check_symbol_typed (gfc_symbol*, gfc_namespace*, bool, locus);
 gfc_namespace* gfc_find_proc_namespace (gfc_namespace*);
+
+bool gfc_is_associate_pointer (gfc_symbol*);
 
 /* intrinsic.c -- true if working in an init-expr, false otherwise.  */
 extern bool gfc_init_expr_flag;

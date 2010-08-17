@@ -3215,23 +3215,21 @@ parse_associate (void)
   new_st.ext.block.ns = my_ns;
   gcc_assert (new_st.ext.block.assoc);
 
-  /* Add all associate-names as BLOCK variables.  There values will be assigned
-     to them during resolution of the ASSOCIATE construct.  */
+  /* Add all associate-names as BLOCK variables.  Creating them is enough
+     for now, they'll get their values during trans-* phase.  */
   gfc_current_ns = my_ns;
   for (a = new_st.ext.block.assoc; a; a = a->next)
     {
-      if (a->variable)
-	{
-	  gfc_error ("Association to variables is not yet supported at %C");
-	  return;
-	}
+      gfc_symbol* sym;
 
       if (gfc_get_sym_tree (a->name, NULL, &a->st, false))
 	gcc_unreachable ();
 
-      a->st->n.sym->attr.flavor = FL_VARIABLE;
-      a->st->n.sym->assoc = a;
-      gfc_set_sym_referenced (a->st->n.sym);
+      sym = a->st->n.sym;
+      sym->attr.flavor = FL_VARIABLE;
+      sym->assoc = a;
+      sym->declared_at = a->where;
+      gfc_set_sym_referenced (sym);
     }
 
   accept_statement (ST_ASSOCIATE);

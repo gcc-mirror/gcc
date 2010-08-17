@@ -31,10 +31,6 @@ PROGRAM main
   ASSOCIATE (a => 1, b => 2, a => 3) ! { dg-error "Duplicate name 'a'" }
 
   ASSOCIATE (a => 5)
-    a = 4 ! { dg-error "variable definition context" }
-  ENd ASSOCIATE
-
-  ASSOCIATE (a => 5)
     INTEGER :: b ! { dg-error "Unexpected data declaration statement" }
   END ASSOCIATE
 END PROGRAM main ! { dg-error "Expecting END ASSOCIATE" }

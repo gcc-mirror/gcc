@@ -1183,13 +1183,13 @@ gfc_is_nodesc_array (gfc_symbol * sym)
   if (sym->attr.pointer || sym->attr.allocatable)
     return 0;
 
+  /* We want a descriptor for associate-name arrays that do not have an
+     explicitely known shape already.  */
+  if (sym->assoc && sym->as->type != AS_EXPLICIT)
+    return 0;
+
   if (sym->attr.dummy)
-    {
-      if (sym->as->type != AS_ASSUMED_SHAPE)
-        return 1;
-      else
-        return 0;
-    }
+    return sym->as->type != AS_ASSUMED_SHAPE;
 
   if (sym->attr.result || sym->attr.function)
     return 0;
@@ -1798,7 +1798,8 @@ gfc_sym_type (gfc_symbol * sym)
     }
   else
     {
-      if (sym->attr.allocatable || sym->attr.pointer)
+      if (sym->attr.allocatable || sym->attr.pointer
+	  || gfc_is_associate_pointer (sym))
 	type = gfc_build_pointer_type (sym, type);
       if (sym->attr.pointer || sym->attr.cray_pointee)
 	GFC_POINTER_TYPE_P (type) = 1;

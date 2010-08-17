@@ -1827,6 +1827,7 @@ gfc_match_associate (void)
 	  gfc_error ("Expected association at %C");
 	  goto assocListError;
 	}
+      newAssoc->where = gfc_current_locus;
 
       /* Check that the current name is not yet in the list.  */
       for (a = new_st.ext.block.assoc; a; a = a->next)
@@ -1844,10 +1845,11 @@ gfc_match_associate (void)
 	  goto assocListError;
 	}
 
-      /* The target is a variable (and may be used as lvalue) if it's an
-	 EXPR_VARIABLE and does not have vector-subscripts.  */
-      newAssoc->variable = (newAssoc->target->expr_type == EXPR_VARIABLE
-			    && !gfc_has_vector_subscript (newAssoc->target));
+      /* The `variable' field is left blank for now; because the target is not
+	 yet resolved, we can't use gfc_has_vector_subscript to determine it
+	 for now.  Instead, if the symbol is matched as variable, this field
+	 is set -- and during resolution we check that.  */
+      newAssoc->variable = 0;
 
       /* Put it into the list.  */
       newAssoc->next = new_st.ext.block.assoc;

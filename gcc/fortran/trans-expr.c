@@ -672,9 +672,10 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 	    se->expr = build_fold_indirect_ref_loc (input_location,
 						se->expr);
 
-          /* Dereference non-character pointer variables. 
+	  /* Dereference non-character pointer variables. 
 	     These must be dummies, results, or scalars.  */
-	  if ((sym->attr.pointer || sym->attr.allocatable)
+	  if ((sym->attr.pointer || sym->attr.allocatable
+	       || gfc_is_associate_pointer (sym))
 	      && (sym->attr.dummy
 		  || sym->attr.function
 		  || sym->attr.result
