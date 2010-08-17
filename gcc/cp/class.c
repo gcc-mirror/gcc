@@ -6807,7 +6807,13 @@ note_name_declared_in_class (tree name, tree decl)
     = current_class_stack[current_class_depth - 1].names_used;
   if (!names_used)
     return;
-
+  /* The C language allows members to be declared with a type of the same
+     name, and the C++ standard says this diagnostic is not required.  So
+     allow it in extern "C" blocks unless predantic is specified.
+     Allow it in all cases if -ms-extensions is specified.  */
+  if ((!pedantic && current_lang_name == lang_name_c)
+      || flag_ms_extensions)
+    return;
   n = splay_tree_lookup (names_used, (splay_tree_key) name);
   if (n)
     {
