@@ -2353,7 +2353,7 @@ build_library_function_decl_1 (tree name, const char *spec,
   if (nargs >= 0)
     {
       /* Terminate the list.  */
-      arglist = gfc_chainon_list (arglist, void_type_node);
+      arglist = chainon (arglist, void_list_node);
     }
 
   /* Build the function type and decl.  */

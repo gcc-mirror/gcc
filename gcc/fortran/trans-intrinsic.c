@@ -684,7 +684,7 @@ gfc_get_intrinsic_lib_fndecl (gfc_intrinsic_map_t * m, gfc_expr * expr)
       type = gfc_typenode_for_spec (&actual->expr->ts);
       argtypes = gfc_chainon_list (argtypes, type);
     }
-  argtypes = gfc_chainon_list (argtypes, void_type_node);
+  argtypes = chainon (argtypes, void_list_node);
   type = build_function_type (gfc_typenode_for_spec (ts), argtypes);
   fndecl = build_decl (input_location,
 		       FUNCTION_DECL, get_identifier (name), type);
