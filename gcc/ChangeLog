@@ -4,9 +4,8 @@
 	2010-08-12  Changpeng Fang  <changpeng.fang@amd.com>
 
 	PR tree-optimization/45241
-        * tree-vect-patterns.c (vect_recog_dot_prod_pattern): Give
-        up dot_prod pattern searching if a stmt is outside the loop.
-
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Give
+	up dot_prod pattern searching if a stmt is outside the loop.
 
 2010-08-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
@@ -1813,7 +1812,7 @@
 	* tree-tailcall.c (find_tail_calls): Verify the tail call
 	properly.
 
-2010-04-19 Ira Rosen <irar@il.ibm.com>
+2010-04-19 Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/43771
 	* tree-vect-slp.c (vect_supported_load_permutation_p): Check that
@@ -2079,11 +2078,11 @@
 	* Makefile.in ($(out_object_file)): Depend on
 	gt-$(basename $(notdir $(out_file))).h.
 
-2010-04-01  Ralf Corsépius <ralf.corsepius@rtems.org>
+2010-04-01  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config.gcc (lm32-*-rtems*): Add t-lm32.
 
-2010-04-01  Joel Sherrill <joel.sherrill@oarcorp.com>
+2010-04-01  Joel Sherrill  <joel.sherrill@oarcorp.com>
 
 	* config.gcc: Add lm32-*-rtems*.
 	* config/lm32/rtems.h: New file.
@@ -2138,8 +2137,8 @@
 
 	PR middle-end/43602
 	Revert
-	2010-03-30  Seongbae Park <seongbae.park@gmail.com>
-	    Jack Howarth <howarth@bromo.med.uc.edu>
+	2010-03-30  Seongbae Park  <seongbae.park@gmail.com>
+		    Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* tree-profile.c (tree_init_ic_make_global_vars): Make static
 	variables TLS.
@@ -2430,8 +2429,8 @@
 	* config/s390/s390.c (s390_emit_prologue): Omit issuing a dynamic
 	stack check if the mask would be zero.
 
-2010-03-30  Seongbae Park <seongbae.park@gmail.com>
-	    Jack Howarth <howarth@bromo.med.uc.edu>
+2010-03-30  Seongbae Park  <seongbae.park@gmail.com>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* tree-profile.c (tree_init_ic_make_global_vars): Make static
 	variables TLS.
@@ -2774,7 +2773,7 @@
 	instead of callq.
 
 2010-03-22  Janis Johnson  <janis187@us.ibm.com>
-	    Rainer Orth <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/sourcebuild.texi (Test Directives): Split into six
 	subsections, with most of the current text in new subsections
@@ -2929,8 +2928,8 @@
 	(sparc_file_end): Emit a hidden comdat symbol for the PIC
 	thunk if possible.  Output CFI information as needed.
 
-2010-03-18  Francois-Xavier Coudert <fxcoudert@gcc.gnu.org>
-	    Jack Howarth <howarth@bromo.med.uc.edu>
+2010-03-18  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR target/36399
 	* config/i386/i386.h: Fix ABI on darwin x86-32.
@@ -3073,7 +3072,7 @@
 	* graphite-sese-to-poly.c (split_reduction_stmt): Skip debug
 	statements before splitting block.
 
-2010-03-16  Rainer Orth <ro@CeBiTec.Uni-Bielefeld.DE>
+2010-03-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/sourcebuild.texi (Testsuites): Fix markup.
 	Use pathnames relative to gcc/testsuite.
@@ -3685,7 +3684,7 @@
 	* tree-vect-loop.c (vect_transform_loop): Kill out-of-loop debug
 	uses of relevant DEFs that are dead outside the loop too.
 
-2010-03-06  Alexandre Oliva <aoliva@redhat.com>
+2010-03-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* var-tracking.c (dataflow_set_merge): Swap src and src2.
 	Reverted:
@@ -4467,7 +4466,7 @@
 	* config/spu/spu-c.c (spu_resolve_overloaded_builtin): Call
 	lang_hooks.types_compatible_p instead of comptypes.
 
-2010-02-18  Sebastian Huber <sebastian.huber@embedded-brains.de>
+2010-02-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/arm/lib1funcs.asm (__prefer_thumb__): New define.
 	(udivsi3, aeabi_uidivmod, divsi3, aeabi_idivmod): Use Thumb-1 variant
@@ -4538,7 +4537,7 @@
 	statements ...
 	(vrp_visit_phi_node): ... but only for loop PHI nodes.
 
-2010-02-16  Ira Rosen <irar@il.ibm.com>
+2010-02-16  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/43074
 	* tree-vectorizer.h (VECTORIZABLE_CYCLE_DEF): New.
@@ -4566,8 +4565,8 @@
 	flag_var_tracking_assignments.
 	* Makefile.in (var-tracking.o): Adjust dependencies.
 
-2010-02-16  Jack Howarth <howarth@bromo.med.uc.edu>
-	    Jakub Jelinek <jakub@redhat.com>
+2010-02-16  Jack Howarth  <howarth@bromo.med.uc.edu>
+	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/42854
 	* config/darwin.h (ASM_WEAKEN_DECL): Don't check weak attribute
@@ -4665,7 +4664,7 @@
 
 2010-02-12  Dave Korn  <dave.korn.cygwin@gmail.com>
 	    Jack Howarth  <howarth@bromo.med.uc.edu>
-	    Iain Sandoe <iain.sandoe@sandoe-acoustics.co.uk>
+	    Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
 	PR target/42982
 	Partial revert of unintended change in fix for PR41605.
@@ -6088,7 +6087,7 @@
 	(maybe_tidy_empty_bb): Delete prototype.
 	(purge_empty_blocks): Declare.
 
-2010-01-14  Andrey Belevantsev <abel@ispras.ru>
+2010-01-14  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/42249
 	* sel-sched.c (try_replace_dest_reg): When chosen register
