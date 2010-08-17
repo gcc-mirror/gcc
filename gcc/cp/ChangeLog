@@ -1,3 +1,8 @@
+2010-08-17  Kai Tietz  <kai.tietz@onevision.com>
+
+	* class.c (note_name_declared_in_class): Make in 'extern "C"' blocks,
+	or if -fms-extensions is enabled check, check permissive.
+
 2010-08-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/45236
