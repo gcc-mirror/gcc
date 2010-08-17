@@ -14802,10 +14802,10 @@ distance_agu_use (unsigned int regno0, rtx insn)
 #define IX86_LEA_PRIORITY 2
 
 /* Return true if it is ok to optimize an ADD operation to LEA
-   operation to avoid flag register consumation.  For the processors
-   like ATOM, if the destination register of LEA holds an actual
-   address which will be used soon, LEA is better and otherwise ADD
-   is better.  */
+   operation to avoid flag register consumation.  For most processors,
+   ADD is faster than LEA.  For the processors like ATOM, if the
+   destination register of LEA holds an actual address which will be
+   used soon, LEA is better and otherwise ADD is better.  */
 
 bool
 ix86_lea_for_add_ok (enum rtx_code code ATTRIBUTE_UNUSED,
@@ -14813,16 +14813,14 @@ ix86_lea_for_add_ok (enum rtx_code code ATTRIBUTE_UNUSED,
 {
   unsigned int regno0 = true_regnum (operands[0]);
   unsigned int regno1 = true_regnum (operands[1]);
-  unsigned int regno2;
-
-  if (!TARGET_OPT_AGU || optimize_function_for_size_p (cfun))
-    return regno0 != regno1;
-
-  regno2 = true_regnum (operands[2]);
+  unsigned int regno2 = true_regnum (operands[2]);
 
   /* If a = b + c, (a!=b && a!=c), must use lea form. */
   if (regno0 != regno1 && regno0 != regno2)
     return true;
+
+  if (!TARGET_OPT_AGU || optimize_function_for_size_p (cfun))
+    return false;
   else
     {
       int dist_define, dist_use;
