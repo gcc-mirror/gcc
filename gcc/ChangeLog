@@ -1,3 +1,10 @@
+2010-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (host_integerp): Add ATTRIBUTE_PURE when not
+	ENABLE_TREE_CHECKING.
+	(tree_low_cst): Add inline version for !ENABLE_TREE_CHECKING
+	and GCC >= 4.3.
+
 2010-08-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_lea_for_add_ok): For !TARGET_OPT_AGU
