@@ -1,3 +1,9 @@
+2010-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/45186
+	* trans.c (gfc_annotate_with_location): New function.
+	(trans_code): Use it.
+
 2010-08-09  Janus Weil  <janus@gcc.gnu.org>
 
 	* intrinsic.texi: Correct documentation of ASINH, ACOSH and ATANH.

@@ -1041,6 +1041,29 @@ gfc_set_backend_locus (locus * loc)
   input_location = loc->lb->location;
 }
 
+/* Annotate statement or statement list T with location LOC.  */
+
+static void
+gfc_annotate_with_location (tree t, location_t loc)
+{
+  if (TREE_CODE (t) == STATEMENT_LIST)
+    {
+      tree_stmt_iterator i;
+
+      for (i = tsi_start (t); !tsi_end_p (i); tsi_next (&i))
+	gfc_annotate_with_location (tsi_stmt (i), loc);
+      return;
+    }
+  if (TREE_CODE (t) == COMPOUND_EXPR)
+    {
+      gfc_annotate_with_location (TREE_OPERAND (t, 0), loc);
+      gfc_annotate_with_location (TREE_OPERAND (t, 1), loc);
+    }
+  if (TREE_CODE (t) == LABEL_EXPR || !TREE_SIDE_EFFECTS (t))
+    return;
+  if (CAN_HAVE_LOCATION_P (t) && ! EXPR_HAS_LOCATION (t))
+    SET_EXPR_LOCATION (t, loc);
+}
 
 /* Translate an executable statement. The tree cond is used by gfc_trans_do.
    This static function is wrapped by gfc_trans_code_cond and
@@ -1281,9 +1304,8 @@ trans_code (gfc_code * code, tree cond)
 
       if (res != NULL_TREE && ! IS_EMPTY_STMT (res))
 	{
-	  if (TREE_CODE (res) != STATEMENT_LIST)
-	    SET_EXPR_LOCATION (res, input_location);
-	    
+	  gfc_annotate_with_location (res, input_location);
+
 	  /* Add the new statement to the block.  */
 	  gfc_add_expr_to_block (&block, res);
 	}
