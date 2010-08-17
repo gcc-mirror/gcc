@@ -1,3 +1,8 @@
+2010-08-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/45296
+	* reginfo.c (globalize_reg): Reject stack registers.
+
 2010-08-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	Backport from mainline:
