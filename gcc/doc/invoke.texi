@@ -9629,6 +9629,15 @@ is a small example of its usage:
 %@{fgnu-runtime:%:replace-outfile(-lobjc -lobjc-gnu)@}
 @end smallexample
 
+@item @code{remove-outfile}
+The @code{remove-outfile} spec function takes one argument.  It looks for the
+first argument in the outfiles array and removes it.  Here is a small example
+its usage:
+
+@smallexample
+%:remove-outfile(-lm)
+@end smallexample
+
 @item @code{print-asm-header}
 The @code{print-asm-header} function takes no arguments and simply
 prints a banner like:
