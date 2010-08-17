@@ -1,3 +1,12 @@
+2010-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* function.c (block_fragments_nreverse, blocks_nreverse_all): New
+	functions.
+	(reorder_blocks): Use blocks_nreverse_all instead of blocks_nreverse.
+	(reorder_blocks_1): Assert BLOCK_FRAGMENT_ORIGIN is NULL.  Don't
+	call block_nreverse here.
+	(blocks_nreverse): Rename decl temporary to block.
+
 2010-08-16  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* config/arm/thumb2.md (thumb2_notsi_shiftsi,
