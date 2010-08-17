@@ -276,13 +276,14 @@ _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
 }
 
 void *
-_darwin10_Unwind_FindEnclosingFunction (void *pc)
+_darwin10_Unwind_FindEnclosingFunction (void *pc ATTRIBUTE_UNUSED)
 {
+#if __MACH__ && (__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1060)
   struct dwarf_eh_bases bases;
   const struct dwarf_fde *fde = _Unwind_Find_FDE (pc-1, &bases);
   if (fde)
     return bases.func;
-  else
-    return NULL;
+#endif
+  return NULL;
 }
 

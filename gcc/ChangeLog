@@ -1,3 +1,9 @@
+2010-08-17  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* unwind-dw2-fde-darwin.c (_darwin10_Unwind_FindEnclosingFunction):
+	Dunmmy function with NULL return unless the target is 
+	OSX >= 10.6 (Darwin10).
+	
 2010-08-17  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	* gcc.c (spec_function): Add remove-outfile.
