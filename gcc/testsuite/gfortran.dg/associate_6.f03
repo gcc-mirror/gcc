@@ -7,8 +7,6 @@
 
 ! Contributed by Daniel Kraft, d@domob.eu.
 
-! FIXME: XFAIL'ed because this is not yet implemented 'correctly'.
-
 MODULE m
   IMPLICIT NONE
 
@@ -31,8 +29,11 @@ PROGRAM main
 
   ASSOCIATE (arr => func (4))
     ! func should only be called once here, not again for the bounds!
+
+    IF (LBOUND (arr, 1) /= 1 .OR. UBOUND (arr, 1) /= 4) CALL abort ()
+    IF (arr(1) /= 1 .OR. arr(4) /= 4) CALL abort ()
   END ASSOCIATE
 END PROGRAM main
 ! { dg-final { cleanup-modules "m" } }
-! { dg-final { scan-tree-dump-times "func" 2 "original" { xfail *-*-* } } }
+! { dg-final { scan-tree-dump-times "func" 2 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }

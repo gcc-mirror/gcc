@@ -1206,7 +1206,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
     }
 
   /* Remember this variable for allocation/cleanup.  */
-  if (sym->attr.dimension || sym->attr.allocatable
+  if (sym->attr.dimension || sym->attr.allocatable || sym->assoc
       || (sym->ts.type == BT_CLASS &&
 	  (CLASS_DATA (sym)->attr.dimension
 	   || CLASS_DATA (sym)->attr.allocatable))
@@ -3095,12 +3095,125 @@ init_intent_out_dt (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 }
 
 
+/* Do proper initialization for ASSOCIATE names.  */
+
+static void
+trans_associate_var (gfc_symbol* sym, gfc_wrapped_block* block)
+{
+  gfc_expr* e;
+  tree tmp;
+
+  gcc_assert (sym->assoc);
+  e = sym->assoc->target;
+
+  /* Do a `pointer assignment' with updated descriptor (or assign descriptor
+     to array temporary) for arrays with either unknown shape or if associating
+     to a variable.  */
+  if (sym->attr.dimension
+      && (sym->as->type == AS_DEFERRED || sym->assoc->variable))
+    {
+      gfc_se se;
+      gfc_ss* ss;
+      tree desc;
+
+      desc = sym->backend_decl;
+
+      /* If association is to an expression, evaluate it and create temporary.
+	 Otherwise, get descriptor of target for pointer assignment.  */
+      gfc_init_se (&se, NULL);
+      ss = gfc_walk_expr (e);
+      if (sym->assoc->variable)
+	{
+	  se.direct_byref = 1;
+	  se.expr = desc;
+	}
+      gfc_conv_expr_descriptor (&se, e, ss);
+
+      /* If we didn't already do the pointer assignment, set associate-name
+	 descriptor to the one generated for the temporary.  */
+      if (!sym->assoc->variable)
+	{
+	  tree offs;
+	  int dim;
+
+	  gfc_add_modify (&se.pre, desc, se.expr);
+
+	  /* The generated descriptor has lower bound zero (as array
+	     temporary), shift bounds so we get lower bounds of 1 all the time.
+	     The offset has to be corrected as well.
+	     Because the ubound shift and offset depends on the lower bounds, we
+	     first calculate those and set the lbound to one last.  */
+
+	  offs = gfc_conv_descriptor_offset_get (desc);
+	  for (dim = 0; dim < e->rank; ++dim)
+	    {
+	      tree from, to;
+	      tree stride;
+
+	      from = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[dim]);
+	      to = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[dim]);
+	      stride = gfc_conv_descriptor_stride_get (desc, gfc_rank_cst[dim]);
+
+	      tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
+				 gfc_index_one_node, from);
+	      to = fold_build2 (PLUS_EXPR, gfc_array_index_type, to, tmp);
+
+	      tmp = fold_build2 (MULT_EXPR, gfc_array_index_type, tmp, stride);
+	      offs = fold_build2 (MINUS_EXPR, gfc_array_index_type, offs, tmp);
+
+	      gfc_conv_descriptor_ubound_set (&se.pre, desc,
+					      gfc_rank_cst[dim], to);
+	    }
+	  gfc_conv_descriptor_offset_set (&se.pre, desc, offs);
+
+	  for (dim = 0; dim < e->rank; ++dim)
+	    gfc_conv_descriptor_lbound_set (&se.pre, desc, gfc_rank_cst[dim],
+					    gfc_index_one_node);
+	}
+
+      /* Done, register stuff as init / cleanup code.  */
+      gfc_add_init_cleanup (block, gfc_finish_block (&se.pre),
+			    gfc_finish_block (&se.post));
+    }
+
+  /* Do a scalar pointer assignment; this is for scalar variable targets.  */
+  else if (gfc_is_associate_pointer (sym))
+    {
+      gfc_se se;
+
+      gcc_assert (!sym->attr.dimension);
+
+      gfc_init_se (&se, NULL);
+      gfc_conv_expr (&se, e);
+
+      tmp = TREE_TYPE (sym->backend_decl);
+      tmp = gfc_build_addr_expr (tmp, se.expr);
+      gfc_add_modify (&se.pre, sym->backend_decl, tmp);
+      
+      gfc_add_init_cleanup (block, gfc_finish_block( &se.pre),
+			    gfc_finish_block (&se.post));
+    }
+
+  /* Do a simple assignment.  This is for scalar expressions, where we
+     can simply use expression assignment.  */
+  else
+    {
+      gfc_expr* lhs;
+
+      lhs = gfc_lval_expr_from_sym (sym);
+      tmp = gfc_trans_assignment (lhs, e, false, true);
+      gfc_add_init_cleanup (block, tmp, NULL_TREE);
+    }
+}
+
+
 /* Generate function entry and exit code, and add it to the function body.
    This includes:
     Allocation and initialization of array variables.
     Allocation of character string variables.
     Initialization and possibly repacking of dummy arrays.
     Initialization of ASSIGN statement auxiliary variable.
+    Initialization of ASSOCIATE names.
     Automatic deallocation.  */
 
 void
@@ -3159,7 +3272,9 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
     {
       bool sym_has_alloc_comp = (sym->ts.type == BT_DERIVED)
 				   && sym->ts.u.derived->attr.alloc_comp;
-      if (sym->attr.dimension)
+      if (sym->assoc)
+	trans_associate_var (sym, block);
+      else if (sym->attr.dimension)
 	{
 	  switch (sym->as->type)
 	    {

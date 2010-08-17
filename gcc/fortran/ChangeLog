@@ -1,3 +1,28 @@
+2010-08-17  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/38936
+	* gfortran.h (struct gfc_association_list): New member `where'.
+	(gfc_is_associate_pointer) New method.
+	* match.c (gfc_match_associate): Remember locus for each associate
+	name matched and do not try to set variable flag.
+	* parse.c (parse_associate): Use remembered locus for symbols.
+	* primary.c (match_variable): Instead of variable-flag check for
+	associate names set it for all such names used.
+	* symbol.c (gfc_is_associate_pointer): New method.
+	* resolve.c (resolve_block_construct): Don't generate assignments
+	to give associate-names their values.
+	(resolve_fl_var_and_proc): Allow associate-names to be deferred-shape.
+	(resolve_symbol): Set some more attributes for associate variables,
+	set variable flag here and check it and don't try to build an
+	explicitely shaped array-spec for array associate variables.
+	* trans-expr.c (gfc_conv_variable): Dereference in case of association
+	to scalar variable.
+	* trans-types.c (gfc_is_nodesc_array): Handle array association symbols.
+	(gfc_sym_type): Return pointer type for association to scalar vars.
+	* trans-decl.c (gfc_get_symbol_decl): Defer association symbols.
+	(trans_associate_var): New method.
+	(gfc_trans_deferred_vars): Handle association symbols.
+
 2010-08-16  Joseph Myers  <joseph@codesourcery.com>
 
 	* lang.opt (MDX): Change back to MD.  Mark NoDriverArg instead of
