@@ -1,3 +1,11 @@
+2010-08-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_lea_for_add_ok): For !TARGET_OPT_AGU
+	or optimizing for size, always avoid lea if possible.
+
+	* config/i386/i386.md (*add<mode>_1): Always avoid lea if
+	possible.
+
 2010-08-17  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* unwind-dw2-fde-darwin.c (_darwin10_Unwind_FindEnclosingFunction):
