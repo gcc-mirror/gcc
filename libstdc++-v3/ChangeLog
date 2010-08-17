@@ -1,3 +1,9 @@
+2010-08-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/45300
+	* include/c_std/cwchar: Replace 'restrict' -> '__restrict'.
+	* include/c_global/cwchar: Likewise.
+
 2010-08-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/45300
