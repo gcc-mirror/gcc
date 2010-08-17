@@ -1,3 +1,12 @@
+2010-08-17  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	PR c/40563
+	* c-decl.c (diagnose_uninitialized_cst_member): New function.
+	(finish_decl): Use it to issue a -Wc++-compat warning about
+	uninitialized const field in struct or union.
+	
+	(finish_struct): Use strip_array_types.
+
 2010-08-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* function.c (block_fragments_nreverse, blocks_nreverse_all): New
