@@ -1,3 +1,10 @@
+2010-08-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/45308
+	* intrinsics/date_and_time.c (date_and_time): Pass __{zone,time,date}_len
+	instead of {ZONE,TIME,DATE}_LEN as second argument to fstrcpy.  Drop
+	asserts.  Adjust comment to the F2003 wording from the F95 wording.
+
 2010-08-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/44931
