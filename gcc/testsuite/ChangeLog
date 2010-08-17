@@ -1,3 +1,10 @@
+2010-08-17  Kai Tietz  <kai.tietz@onevision.com>
+
+	* g++.dg/ext/uow-1.C: New.
+	* g++.dg/ext/uow-2.C: New.
+	* g++.dg/ext/uow-3.C: New.
+	* g++.dg/ext/uow-4.C: New.
+
 2010-08-17  Richard Guenther  <rguenther@suse.de>
 
 	PR testsuite/45266
