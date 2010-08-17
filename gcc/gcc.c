@@ -317,6 +317,7 @@ static const char *getenv_spec_function (int, const char **);
 static const char *if_exists_spec_function (int, const char **);
 static const char *if_exists_else_spec_function (int, const char **);
 static const char *replace_outfile_spec_function (int, const char **);
+static const char *remove_outfile_spec_function (int, const char **);
 static const char *version_compare_spec_function (int, const char **);
 static const char *include_spec_function (int, const char **);
 static const char *find_file_spec_function (int, const char **);
@@ -1615,6 +1616,7 @@ static const struct spec_function static_spec_functions[] =
   { "if-exists",		if_exists_spec_function },
   { "if-exists-else",		if_exists_else_spec_function },
   { "replace-outfile",		replace_outfile_spec_function },
+  { "remove-outfile",		remove_outfile_spec_function },
   { "version-compare",		version_compare_spec_function },
   { "include",			include_spec_function },
   { "find-file",		find_file_spec_function },
@@ -8270,6 +8272,27 @@ replace_outfile_spec_function (int argc, const char **argv)
     {
       if (outfiles[i] && !strcmp (outfiles[i], argv[0]))
 	outfiles[i] = xstrdup (argv[1]);
+    }
+  return NULL;
+}
+
+/* remove-outfile built-in spec function.
+ *
+ *    This looks for the first argument in the outfiles array's name and
+ *       removes it.  */
+
+static const char *
+remove_outfile_spec_function (int argc, const char **argv)
+{
+  int i;
+  /* Must have exactly one argument.  */
+  if (argc != 1)
+    abort ();
+
+  for (i = 0; i < n_infiles; i++)
+    {
+      if (outfiles[i] && !strcmp (outfiles[i], argv[0]))
+        outfiles[i] = NULL;
     }
   return NULL;
 }

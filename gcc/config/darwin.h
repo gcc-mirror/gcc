@@ -303,6 +303,9 @@ extern GTY(()) int darwin_ms_struct;
    so put a * after their names so all of them get passed.  */
 #define LINK_SPEC  \
   "%{static}%{!static:-dynamic} \
+   %:remove-outfile(-ldl) \
+   %:remove-outfile(-lm) \
+   %:remove-outfile(-lpthread) \
    %{fgnu-runtime: %{static|static-libgcc: \
                      %:replace-outfile(-lobjc libobjc-gnu.a%s); \
                     :%:replace-outfile(-lobjc -lobjc-gnu ) } }\
