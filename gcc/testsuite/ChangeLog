@@ -1,3 +1,8 @@
+2010-08-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/45296
+	* gcc.target/i386/pr45296.c: New test.
+
 2010-08-16  Changpeng Fang  <changpeng.fang@amd.com>
 
         PR tree-optimization/45241

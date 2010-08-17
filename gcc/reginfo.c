@@ -841,6 +841,14 @@ fix_register (const char *name, int fixed, int call_used)
 void
 globalize_reg (int i)
 {
+#ifdef STACK_REGS
+  if (IN_RANGE (i, FIRST_STACK_REG, LAST_STACK_REG))
+    {
+      error ("stack register used for global register variable");
+      return;
+    }
+#endif
+
   if (fixed_regs[i] == 0 && no_global_reg_vars)
     error ("global register variable follows a function definition");
 
