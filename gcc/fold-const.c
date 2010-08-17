@@ -8683,6 +8683,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
       else if (TREE_CODE (arg0) == POINTER_PLUS_EXPR)
 	{
 	  base0 = TREE_OPERAND (arg0, 0);
+	  STRIP_SIGN_NOPS (base0);
 	  if (TREE_CODE (base0) == ADDR_EXPR)
 	    {
 	      base0 = TREE_OPERAND (base0, 0);
@@ -8705,6 +8706,7 @@ fold_comparison (location_t loc, enum tree_code code, tree type,
       else if (TREE_CODE (arg1) == POINTER_PLUS_EXPR)
 	{
 	  base1 = TREE_OPERAND (arg1, 0);
+	  STRIP_SIGN_NOPS (base1);
 	  if (TREE_CODE (base1) == ADDR_EXPR)
 	    {
 	      base1 = TREE_OPERAND (base1, 0);
