@@ -1,3 +1,8 @@
+2010-08-18  Yao Qi  <yao@codesourcery.com>
+
+	PR target/45094
+	* gcc.target/arm/pr45094.c: New test.
+
 2010-08-18  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* gcc.target/arm/mla-1.c: Use thumb-friendly architecture.
