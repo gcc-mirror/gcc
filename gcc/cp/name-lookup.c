@@ -2157,7 +2157,7 @@ push_overloaded_decl (tree decl, int flags, bool is_friend)
 
 	  for (d = &IDENTIFIER_BINDING (name)->scope->names;
 	       *d;
-	       d = &DECL_CHAIN (*d))
+	       d = &TREE_CHAIN (*d))
 	    if (*d == old
 		|| (TREE_CODE (*d) == TREE_LIST
 		    && TREE_VALUE (*d) == old))
@@ -2168,7 +2168,7 @@ push_overloaded_decl (tree decl, int flags, bool is_friend)
 		else
 		  /* Build a TREE_LIST to wrap the OVERLOAD.  */
 		  *d = tree_cons (NULL_TREE, new_binding,
-				  DECL_CHAIN (*d));
+				  TREE_CHAIN (*d));
 
 		/* And update the cxx_binding node.  */
 		IDENTIFIER_BINDING (name)->value = new_binding;
