@@ -1,3 +1,9 @@
+2010-08-18  Kostya Serebryany <kcc@google.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/45276
+	* doc/xml/manual/debug.xml ([debug.races]): Add.
+
 2010-08-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/45300
