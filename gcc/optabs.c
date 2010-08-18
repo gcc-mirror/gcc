@@ -1257,7 +1257,7 @@ expand_doubleword_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
   /* OP1_HIGH should now be dead.  */
 
   adjust = expand_binop (word_mode, add_optab, adjust, temp,
-			 adjust, 0, OPTAB_DIRECT);
+			 NULL_RTX, 0, OPTAB_DIRECT);
 
   if (target && !REG_P (target))
     target = NULL_RTX;
@@ -1274,8 +1274,7 @@ expand_doubleword_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 
   product_high = operand_subword (product, high, 1, mode);
   adjust = expand_binop (word_mode, add_optab, product_high, adjust,
-			 REG_P (product_high) ? product_high : adjust,
-			 0, OPTAB_DIRECT);
+			 NULL_RTX, 0, OPTAB_DIRECT);
   emit_move_insn (product_high, adjust);
   return product;
 }
