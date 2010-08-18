@@ -1,3 +1,10 @@
+2010-08-18  Jie Zhang  <jie@codesourcery.com>
+
+	* gcc.dg/builtin-apply2.c (STACK_ARGUMENTS_SIZE): Define to
+	20 if __ARM_PCS is defined otherwise 64.
+	(bar): Use STACK_ARGUMENTS_SIZE for the third argument
+	instead of hard coded 64.
+
 2010-08-18  Yao Qi  <yao@codesourcery.com>
 
 	PR target/45094
