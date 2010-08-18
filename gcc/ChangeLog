@@ -1,3 +1,8 @@
+2010-08-18  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-uninit.c (find_uninit_use): Disregard debug stmts,
+	use operand helpers.
+
 2010-08-18  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR middle-end/45292

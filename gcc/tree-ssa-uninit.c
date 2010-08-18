@@ -1598,27 +1598,17 @@ find_uninit_use (gimple phi, unsigned uninit_opnds,
       struct pointer_set_t *visited_phis;
       basic_block use_bb;
 
-      use_stmt = use_p->loc.stmt;
+      use_stmt = USE_STMT (use_p);
+      if (is_gimple_debug (use_stmt))
+	continue;
 
       visited_phis = pointer_set_create ();
 
-      use_bb = gimple_bb (use_stmt);
       if (gimple_code (use_stmt) == GIMPLE_PHI)
-        {
-	  unsigned i, n;
-          n = gimple_phi_num_args (use_stmt);
-
-          /* Find the matching phi argument of the use.  */
-          for (i = 0; i < n; ++i)
-            {
-               if (gimple_phi_arg_def_ptr (use_stmt, i) == use_p->use)
-	         {
-		    edge e = gimple_phi_arg_edge (use_stmt, i);
-		    use_bb = e->src;
-                    break;
-		 }
-	    }
-	}
+	use_bb = gimple_phi_arg_edge (use_stmt,
+				      PHI_ARG_INDEX_FROM_USE (use_p))->src;
+      else
+	use_bb = gimple_bb (use_stmt);
 
       if (is_use_properly_guarded (use_stmt,
                                    use_bb, 
