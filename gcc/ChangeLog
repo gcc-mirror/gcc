@@ -1,5 +1,11 @@
 2010-08-18  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/45327
+	* config/i386/i386.md (<any_or:code><SWI:mode>_3): Do not use
+	ix86_binary_operator_ok.
+
+2010-08-18  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (*add<mode>_1) <TYPE_LEA>: Split insn to lea.
 	<default>:  Swap operands 1 and 2 for alternative 2 to use existing
 	code to output insn mnemonic.  Fix comment.
