@@ -14808,8 +14808,7 @@ distance_agu_use (unsigned int regno0, rtx insn)
    used soon, LEA is better and otherwise ADD is better.  */
 
 bool
-ix86_lea_for_add_ok (enum rtx_code code ATTRIBUTE_UNUSED,
-                     rtx insn, rtx operands[])
+ix86_lea_for_add_ok (rtx insn, rtx operands[])
 {
   unsigned int regno0 = true_regnum (operands[0]);
   unsigned int regno1 = true_regnum (operands[1]);
