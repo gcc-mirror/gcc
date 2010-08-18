@@ -1,3 +1,13 @@
+2010-08-18  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	* libjava/configure.ac (THREADLIBS): Don't set on Darwin.
+	(THREADSPEC): Likwise.
+	* libjava/configure: Regenerate.
+	* libjava/Makefile.am: Define LIBJAVA_LDFLAGS_LIBMATH as
+	-lm only if USING_DARWIN_CRT undefined.
+	(libgcj_tools_la_LIBADD): Replace '-lm' with $(LIBJAVA_LDFLAGS_LIBMATH).
+	* libjava/Makefile.in: Regenerate.
+
 2010-08-17  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* include/posix.h: Make substitution of 
