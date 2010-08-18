@@ -1,3 +1,9 @@
+2010-08-18  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	PR rtl-optimization/42575
+	* optabs.c (expand_doubleword_mult): Generate new pseudos to shorten
+	live ranges.
+
 2010-08-18  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* config/arm/arm-protos.h (arm_expand_sync): New.
