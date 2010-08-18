@@ -1,3 +1,7 @@
+2010-08-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tracebak.c (i386): Use GCC unwinder on Linux with GCC > 4.5.
+
 2010-08-10  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch8.adb, sem_ch8.ads: Change name Write_Scopes to ws.
