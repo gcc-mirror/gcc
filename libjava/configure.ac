@@ -1077,6 +1077,10 @@ case "$THREADS" in
 	THREADLIBS='-lpthread -lthread'
 	THREADSPEC='-lpthread -lthread'
 	;;
+     *-*-darwin*)
+	# Don't set THREADLIBS or THREADSPEC as Darwin already
+	# provides pthread via libSystem.
+	;;
      *)
 	THREADLIBS=-lpthread
 	THREADSPEC=-lpthread
@@ -1444,6 +1448,8 @@ else
 	    # IRIX 6 lacks a N64 libdl.so, but only the N32 (default multilib)
 	    # libgcj.spec is used, so override here
 	    SYSTEMSPEC="$SYSTEMSPEC %{!mabi=64:-ldl}"
+	  ;;
+	  *-*-darwin*)
 	  ;;
 	  *)
             AC_CHECK_LIB(dl, main, SYSTEMSPEC="$SYSTEMSPEC -ldl")
