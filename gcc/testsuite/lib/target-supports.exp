@@ -614,6 +614,23 @@ proc check_effective_target_tls_native {} {
     }]
 }
 
+# Return 1 if *emulated* thread local storage (TLS) is supported, 0 otherwise.
+
+proc check_effective_target_tls_emulated {} {
+    # VxWorks uses emulated TLS machinery, but with non-standard helper
+    # functions, so we fail to automatically detect it.
+    global target_triplet
+    if { [regexp ".*-.*-vxworks.*" $target_triplet] } {
+	return 1
+    }
+    
+    return [check_no_messages_and_pattern tls_emulated "emutls" assembly {
+	__thread int i;
+	int f (void) { return i; }
+	void g (int j) { i = j; }
+    }]
+}
+
 # Return 1 if TLS executables can run correctly, 0 otherwise.
 
 proc check_effective_target_tls_runtime {} {

@@ -1,5 +1,10 @@
 2010-08-18  Iain Sandoe  <iains@gcc.gnu.org>
 
+	* lib/target-supports.exp (check_effective_target_tls_emulated): New.
+	* gcc.dg/tls/thr-cse-1.c: New.
+
+2010-08-18  Iain Sandoe  <iains@gcc.gnu.org>
+
 	PR debug/42487
 	* lib/target-supports.exp
 	(check_effective_target_function_sections): New.
