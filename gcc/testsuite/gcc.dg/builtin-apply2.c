@@ -8,9 +8,18 @@
 /* Verify that __builtin_apply behaves correctly on targets
    with pre-pushed arguments (e.g. SPARC).  */
 
-   
+
 
 #define INTEGER_ARG  5
+
+#ifdef __ARM_PCS
+/* For Base AAPCS, NAME is passed in r0.  D is passed in r2 and r3.
+   E, F and G are passed on stack.  So the size of the stack argument
+   data is 20.  */
+#define STACK_ARGUMENTS_SIZE  20
+#else
+#define STACK_ARGUMENTS_SIZE  64
+#endif
 
 extern void abort(void);
 
@@ -22,7 +31,7 @@ void foo(char *name, double d, double e, double f, int g)
 
 void bar(char *name, ...)
 {
-  __builtin_apply(foo, __builtin_apply_args(), 64);
+  __builtin_apply(foo, __builtin_apply_args(), STACK_ARGUMENTS_SIZE);
 }
 
 int main(void)
