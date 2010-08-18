@@ -1,3 +1,11 @@
+2010-08-18  Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR debug/42487
+	* lib/target-supports.exp
+	(check_effective_target_function_sections): New.
+	* gcc.dg/debug/dwarf2/aranges-fnsec-1.c: Check that the target supports
+	function sections before proceding.
+	
 2010-08-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/45308

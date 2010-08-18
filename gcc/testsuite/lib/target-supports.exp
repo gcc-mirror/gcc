@@ -623,6 +623,20 @@ proc check_effective_target_tls_runtime {} {
     }]
 }
 
+# Return 1 if -ffunction-sections is supported, 0 otherwise.
+
+proc check_effective_target_function_sections {} {
+    # Darwin has its own scheme and silently accepts -ffunction-sections.
+    global target_triplet
+    if { [regexp ".*-.*-darwin.*" $target_triplet] } {
+	return 0
+    }
+    
+    return [check_no_compiler_messages functionsections assembly {
+ 	void foo (void) { }
+    } "-ffunction-sections"]
+}
+
 # Return 1 if compilation with -fgraphite is error-free for trivial 
 # code, 0 otherwise.
 
