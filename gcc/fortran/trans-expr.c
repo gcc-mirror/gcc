@@ -556,7 +556,7 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 {
   gfc_ref *ref;
   gfc_symbol *sym;
-  tree parent_decl;
+  tree parent_decl = NULL_TREE;
   int parent_flag;
   bool return_value;
   bool alternate_entry;
@@ -590,7 +590,8 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
       entry_master = sym->attr.result
 		     && sym->ns->proc_name->attr.entry_master
 		     && !gfc_return_by_reference (sym->ns->proc_name);
-      parent_decl = DECL_CONTEXT (current_function_decl);
+      if (current_function_decl)
+	parent_decl = DECL_CONTEXT (current_function_decl);
 
       if ((se->expr == parent_decl && return_value)
 	   || (sym->ns && sym->ns->proc_name
@@ -3983,7 +3984,17 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
 	return gfc_conv_array_initializer (type, expr);
     }
   else if (pointer)
-    return fold_convert (type, null_pointer_node);
+    {
+      if (!expr || expr->expr_type == EXPR_NULL)
+	return fold_convert (type, null_pointer_node);
+      else
+	{
+	  gfc_init_se (&se, NULL);
+	  se.want_pointer = 1;
+	  gfc_conv_expr (&se, expr);
+	  return se.expr;
+	}
+    }
   else
     {
       switch (ts->type)

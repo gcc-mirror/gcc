@@ -22,7 +22,6 @@ type :: t
   procedure(), pointer, nopass ptr4              ! { dg-error "Expected '::'" }
   procedure(), pointer, nopass, pointer :: ptr5  ! { dg-error "Duplicate" }
   procedure, pointer, nopass :: ptr6             ! { dg-error "Syntax error" }
-  procedure(), pointer, nopass :: ptr7 => ptr2   ! { dg-error "requires a NULL" }
   procedure(), nopass :: ptr8                    ! { dg-error "POINTER attribute is required" }
   procedure(pp), pointer, nopass :: ptr9         ! { dg-error "declared in a later PROCEDURE statement" }
   procedure(aaargh), pointer, nopass :: ptr10    ! { dg-error "must be explicit" }

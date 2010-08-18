@@ -1,3 +1,29 @@
+2010-08-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45290
+	* gfortran.h (gfc_add_save): Modified prototype.
+	* decl.c (add_init_expr_to_sym): Defer checking of proc pointer init.
+	(match_pointer_init): New function to match F08 pointer initialization.
+	(variable_decl,match_procedure_decl,match_ppc_decl): Use
+	'match_pointer_init'.
+	(match_attr_spec): Module variables are implicitly SAVE.
+	(gfc_match_save): Modified call to 'gfc_add_save'.
+	* expr.c (gfc_check_assign_symbol): Extra checks for pointer
+	initialization.
+	* primary.c (gfc_variable_attr): Handle SAVE attribute.
+	* resolve.c (resolve_structure_cons): Add new argument and do pointer
+	initialization checks.
+	(gfc_resolve_expr): Modified call to 'resolve_structure_cons'.
+	(resolve_values): Call 'resolve_structure_cons' directly with init arg.
+	(resolve_fl_variable): Handle SAVE_IMPLICIT.
+	* symbol.c (gfc_add_save,gfc_copy_attr,save_symbol): Handle
+	SAVE_IMPLICIT.
+	* trans-decl.c (gfc_create_module_variable): Module variables with
+	TARGET can already exist.
+	* trans-expr.c (gfc_conv_variable): Check for 'current_function_decl'.
+	(gfc_conv_initializer): Implement non-NULL pointer
+	initialization.
+
 2010-08-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45295

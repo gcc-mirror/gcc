@@ -3552,7 +3552,35 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_expr *rvalue)
 
   gfc_free (lvalue.symtree);
 
-  return r;
+  if (r == FAILURE)
+    return r;
+  
+  if (sym->attr.pointer && rvalue->expr_type != EXPR_NULL)
+    {
+      /* F08:C461. Additional checks for pointer initialization.  */
+      symbol_attribute attr;
+      attr = gfc_expr_attr (rvalue);
+      if (attr.allocatable)
+	{
+	  gfc_error ("Pointer initialization target at %C "
+	             "must not be ALLOCATABLE ");
+	  return FAILURE;
+	}
+      if (!attr.target)
+	{
+	  gfc_error ("Pointer initialization target at %C "
+		     "must have the TARGET attribute");
+	  return FAILURE;
+	}
+      if (!attr.save)
+	{
+	  gfc_error ("Pointer initialization target at %C "
+		     "must have the SAVE attribute");
+	  return FAILURE;
+	}
+    }
+
+  return SUCCESS;
 }
 
 
