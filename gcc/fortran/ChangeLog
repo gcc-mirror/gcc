@@ -1,3 +1,9 @@
+2010-08-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45295
+	* intrinsic.texi (selected_char_kind): Document ISO_10646
+	support.
+
 2010-08-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/45304

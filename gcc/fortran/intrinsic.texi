@@ -9677,7 +9677,8 @@ seconds.
 @code{SELECTED_CHAR_KIND(NAME)} returns the kind value for the character
 set named @var{NAME}, if a character set with such a name is supported,
 or @math{-1} otherwise. Currently, supported character sets include
-``ASCII'' and ``DEFAULT'', which are equivalent.
+``ASCII'' and ``DEFAULT'', which are equivalent, and ``ISO_10646''
+(Universal Character Set, UCS-4) which is commonly known as Unicode.
 
 @item @emph{Standard}:
 Fortran 2003 and later
@@ -9695,13 +9696,25 @@ Transformational function
 
 @item @emph{Example}:
 @smallexample
-program ascii_kind
-  integer,parameter :: ascii = selected_char_kind("ascii")
-  character(kind=ascii, len=26) :: s
+program character_kind
+  use iso_fortran_env
+  implicit none
+  integer, parameter :: ascii = selected_char_kind ("ascii")
+  integer, parameter :: ucs4  = selected_char_kind ('ISO_10646')
 
-  s = ascii_"abcdefghijklmnopqrstuvwxyz"
-  print *, s
-end program ascii_kind
+  character(kind=ascii, len=26) :: alphabet
+  character(kind=ucs4,  len=30) :: hello_world
+
+  alphabet = ascii_"abcdefghijklmnopqrstuvwxyz"
+  hello_world = ucs4_'Hello World and Ni Hao -- ' &
+                // char (int (z'4F60'), ucs4)     &
+                // char (int (z'597D'), ucs4)
+
+  write (*,*) alphabet
+
+  open (output_unit, encoding='UTF-8')
+  write (*,*) trim (hello_world)
+end program character_kind
 @end smallexample
 @end table
 
