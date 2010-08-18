@@ -1,3 +1,9 @@
+2010-08-18  Nathan Froyd  <froydnj@codesourcery.com>
+
+	PR c++/45049
+	* name-lookup.c (push_overloaded_decl): Change DECL_CHAIN to
+	TREE_CHAIN.
+
 2010-08-17  Kai Tietz  <kai.tietz@onevision.com>
 
 	* class.c (note_name_declared_in_class): Make in 'extern "C"' blocks,
