@@ -1,3 +1,11 @@
+2010-08-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45290
+	* gfortran.dg/proc_ptr_comp_3.f90: Modified.
+	* gfortran.dg/pointer_init_2.f90: New.
+	* gfortran.dg/pointer_init_3.f90: New.
+	* gfortran.dg/pointer_init_4.f90: New.
+
 2010-08-18  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c++/45049

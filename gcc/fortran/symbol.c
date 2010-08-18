@@ -1095,13 +1095,14 @@ gfc_add_result (symbol_attribute *attr, const char *name, locus *where)
 
 
 gfc_try
-gfc_add_save (symbol_attribute *attr, const char *name, locus *where)
+gfc_add_save (symbol_attribute *attr, save_state s, const char *name,
+	      locus *where)
 {
 
   if (check_used (attr, name, where))
     return FAILURE;
 
-  if (gfc_pure (NULL))
+  if (s == SAVE_EXPLICIT && gfc_pure (NULL))
     {
       gfc_error
 	("SAVE attribute at %L cannot be specified in a PURE procedure",
@@ -1109,7 +1110,7 @@ gfc_add_save (symbol_attribute *attr, const char *name, locus *where)
       return FAILURE;
     }
 
-  if (attr->save == SAVE_EXPLICIT && !attr->vtab)
+  if (s == SAVE_EXPLICIT && attr->save == SAVE_EXPLICIT)
     {
 	if (gfc_notify_std (GFC_STD_LEGACY, 
 			    "Duplicate SAVE attribute specified at %L",
@@ -1118,7 +1119,7 @@ gfc_add_save (symbol_attribute *attr, const char *name, locus *where)
 	  return FAILURE;
     }
 
-  attr->save = SAVE_EXPLICIT;
+  attr->save = s;
   return check_conflict (attr, name, where);
 }
 
@@ -1740,7 +1741,7 @@ gfc_copy_attr (symbol_attribute *dest, symbol_attribute *src, locus *where)
     goto fail;
   if (src->is_protected && gfc_add_protected (dest, NULL, where) == FAILURE)
     goto fail;
-  if (src->save && gfc_add_save (dest, NULL, where) == FAILURE)
+  if (src->save && gfc_add_save (dest, src->save, NULL, where) == FAILURE)
     goto fail;
   if (src->value && gfc_add_value (dest, NULL, where) == FAILURE)
     goto fail;
@@ -3430,7 +3431,7 @@ save_symbol (gfc_symbol *sym)
   /* Automatic objects are not saved.  */
   if (gfc_is_var_automatic (sym))
     return;
-  gfc_add_save (&sym->attr, sym->name, &sym->declared_at);
+  gfc_add_save (&sym->attr, SAVE_EXPLICIT, sym->name, &sym->declared_at);
 }
 
 
