@@ -144,6 +144,11 @@ extern const char *vfp_output_fstmd (rtx *);
 extern void arm_set_return_address (rtx, rtx);
 extern int arm_eliminable_register (rtx);
 extern const char *arm_output_shift(rtx *, int);
+extern void arm_expand_sync (enum machine_mode, struct arm_sync_generator *,
+ 			     rtx, rtx, rtx, rtx);
+extern const char *arm_output_memory_barrier (rtx *);
+extern const char *arm_output_sync_insn (rtx, rtx *);
+extern unsigned int arm_sync_loop_insns (rtx , rtx *);
 
 extern bool arm_output_addr_const_extra (FILE *, rtx);
 

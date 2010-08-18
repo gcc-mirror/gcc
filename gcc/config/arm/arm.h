@@ -126,6 +126,24 @@ enum target_cpus
 /* The processor for which instructions should be scheduled.  */
 extern enum processor_type arm_tune;
 
+enum arm_sync_generator_tag
+  {
+    arm_sync_generator_omn,
+    arm_sync_generator_omrn
+  };
+
+/* Wrapper to pass around a polymorphic pointer to a sync instruction
+   generator and.  */
+struct arm_sync_generator
+{
+  enum arm_sync_generator_tag op;
+  union
+  {
+    rtx (* omn) (rtx, rtx, rtx);
+    rtx (* omrn) (rtx, rtx, rtx, rtx);
+  } u;
+};
+
 typedef enum arm_cond_code
 {
   ARM_EQ = 0, ARM_NE, ARM_CS, ARM_CC, ARM_MI, ARM_PL, ARM_VS, ARM_VC,
@@ -270,6 +288,20 @@ extern void (*arm_lang_output_object_attributes_hook)(void);
    for Thumb-2.  */
 #define TARGET_UNIFIED_ASM TARGET_THUMB2
 
+/* Nonzero if this chip provides the DMB instruction.  */
+#define TARGET_HAVE_DMB		(arm_arch7)
+
+/* Nonzero if this chip implements a memory barrier via CP15.  */
+#define TARGET_HAVE_DMB_MCR	(arm_arch6k && ! TARGET_HAVE_DMB)
+
+/* Nonzero if this chip implements a memory barrier instruction.  */
+#define TARGET_HAVE_MEMORY_BARRIER (TARGET_HAVE_DMB || TARGET_HAVE_DMB_MCR)
+
+/* Nonzero if this chip supports ldrex and strex */
+#define TARGET_HAVE_LDREX	((arm_arch6 && TARGET_ARM) || arm_arch7)
+
+/* Nonzero if this chip supports ldrex{bhd} and strex{bhd}.  */
+#define TARGET_HAVE_LDREXBHD	((arm_arch6k && TARGET_ARM) || arm_arch7)
 
 /* True iff the full BPABI is being used.  If TARGET_BPABI is true,
    then TARGET_AAPCS_BASED must be true -- but the converse does not
@@ -402,6 +434,12 @@ extern int arm_arch5e;
 
 /* Nonzero if this chip supports the ARM Architecture 6 extensions.  */
 extern int arm_arch6;
+
+/* Nonzero if this chip supports the ARM Architecture 6k extensions.  */
+extern int arm_arch6k;
+
+/* Nonzero if this chip supports the ARM Architecture 7 extensions.  */
+extern int arm_arch7;
 
 /* Nonzero if instructions not present in the 'M' profile can be used.  */
 extern int arm_arch_notm;
