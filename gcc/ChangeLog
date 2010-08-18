@@ -1,3 +1,9 @@
+2010-08-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/45327
+	* config/i386/i386.md (<any_or:code><SWI:mode>_3): Do not use
+	ix86_binary_operator_ok.
+
 2010-08-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
