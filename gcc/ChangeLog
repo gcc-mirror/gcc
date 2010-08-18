@@ -1,3 +1,24 @@
+2010-08-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*add<mode>_1) <TYPE_LEA>: Split insn to lea.
+	<default>:  Swap operands 1 and 2 for alternative 2 to use existing
+	code to output insn mnemonic.  Fix comment.
+	(*addsi_1_zext): Add r-r-0 alternative 1.
+	<TYPE_LEA>: Split insn to lea.
+	<default>: Handle alternative 1.
+	(*addhi_1_lea): Add r-r-0 alternative 2.  Use cond RTX instead of
+	multi-level if_then_else RTX to set "type" attribute.
+	<default>: Handle alternative 2.
+	(*addqi_1_lea): Add q-q-0 alternative 2 and r-r-0 alternative 4.
+	Use cond RTX instead of multi-level if_then_else RTX to set
+	"type" attribute.
+	<default>: Handle alternatives 2 and 4.
+	(lea splitters): Update calls to ix86_lea_for_add_ok.
+
+	* config/i386/i386.c (ix86_lea_for_add_ok): Remove unused "code"
+	argument.
+	* config/i386/i386-protos.h (ix86_lea_for_add_ok): Update prototype.
+
 2010-08-18  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-uninit.c (find_uninit_use): Disregard debug stmts,
@@ -12,7 +33,7 @@
 2010-08-18  Yao Qi  <yao@codesourcery.com>
 
 	PR target/45094
-	* config/arm/arm.c (output_move_double): Fix typo generating 
+	* config/arm/arm.c (output_move_double): Fix typo generating
 	instructions ('ldr'->'str').
 
 2010-08-18  Maxim Kuvyrkov  <maxim@codesourcery.com>
@@ -66,21 +87,19 @@
 	* config/i386/i386.c (ix86_lea_for_add_ok): For !TARGET_OPT_AGU
 	or optimizing for size, always avoid lea if possible.
 
-	* config/i386/i386.md (*add<mode>_1): Always avoid lea if
-	possible.
+	* config/i386/i386.md (*add<mode>_1): Always avoid lea if possible.
 
 2010-08-17  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* unwind-dw2-fde-darwin.c (_darwin10_Unwind_FindEnclosingFunction):
-	Dunmmy function with NULL return unless the target is 
+	Dunmmy function with NULL return unless the target is
 	OSX >= 10.6 (Darwin10).
-	
+
 2010-08-17  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	* gcc.c (spec_function): Add remove-outfile.
 	(remove_outfile_spec_function): New function.
-	* config/darwin.h (LINK_SPEC): Add removal of
-	-ldl, -lm and -lpthread.
+	* config/darwin.h (LINK_SPEC): Add removal of -ldl, -lm and -lpthread.
 	* invoke.texi (replace-outfile): Document.
 
 2010-08-17  Uros Bizjak  <ubizjak@gmail.com>
@@ -105,8 +124,7 @@
 
 2010-08-17  Richard Guenther  <rguenther@suse.de>
 
-	* fold-const.c (fold_comparison): Strip nops inside
-	POINTER_PLUS_EXPR.
+	* fold-const.c (fold_comparison): Strip nops inside POINTER_PLUS_EXPR.
 
 2010-08-17  Shujing Zhao  <pearly.zhao@oracle.com>
 
