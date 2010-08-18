@@ -1,3 +1,9 @@
+2010-08-18  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR middle-end/45292
+	* optabs.c (expand_bool_compare_and_swap): Expand pending
+	pops before trying the optab.
+
 2010-08-18  Yao Qi  <yao@codesourcery.com>
 
 	PR target/45094
