@@ -6908,6 +6908,7 @@ expand_bool_compare_and_swap (rtx mem, rtx old_val, rtx new_val, rtx target)
   if (icode == CODE_FOR_nothing)
     return NULL_RTX;
 
+  do_pending_stack_adjust ();
   do
     {
       start_sequence ();
