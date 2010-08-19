@@ -1,5 +1,11 @@
 2010-08-19  Ian Bolton  <ian.bolton@arm.com>
 
+	PR target/45070
+	* config/arm/arm.c (arm_output_epilogue): Ensure that return
+	 value of size 1-3 is handled correctly.
+
+2010-08-19  Ian Bolton  <ian.bolton@arm.com>
+
 	* tree-switch-conversion.c (gen_inbound_check): Ensure that the
 	type for the conditional has wide enough range.
 
