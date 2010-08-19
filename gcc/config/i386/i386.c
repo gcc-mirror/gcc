@@ -6466,7 +6466,7 @@ function_arg_ms_64 (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
    ellipsis).  */
 
 static rtx
-ix86_function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode omode,
+ix86_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode omode,
 		   const_tree type, bool named)
 {
   enum machine_mode mode = omode;

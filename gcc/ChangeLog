@@ -1,3 +1,13 @@
+2010-08-19  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* target.def (function_arg, function_incoming_arg): Remove const
+	qualifier on CUMULATIVE_ARGS parameter.
+	* targhooks.h (default_function_arg, default_function_incoming_arg):
+	Likewise.
+	* targhooks.c (default_function_arg, default_function_incoming_arg):
+	Likewise.
+	* config/i386/i386.c (ix86_function_arg): Likewise.
+
 2010-08-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/45336
