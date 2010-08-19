@@ -202,12 +202,11 @@ verify_non_ssa_vars (struct split_point *current, bitmap non_ssa_vars,
 
       FOR_EACH_EDGE (e, ei, bb->preds)
 	if (e->src != ENTRY_BLOCK_PTR
-	    && !bitmap_bit_p (seen, e->src->index))
+	    && bitmap_set_bit (seen, e->src->index))
 	  {
 	    gcc_checking_assert (!bitmap_bit_p (current->split_bbs,
 					        e->src->index));
 	    VEC_safe_push (basic_block, heap, worklist, e->src);
-	    bitmap_set_bit (seen, e->src->index);
 	  }
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{

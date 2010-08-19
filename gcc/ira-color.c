@@ -568,11 +568,9 @@ assign_hard_reg (ira_allocno_t allocno, bool retry_p)
 
 		  if (allocno_coalesced_p)
 		    {
-		      if (bitmap_bit_p (processed_coalesced_allocno_bitmap,
+		      if (!bitmap_set_bit (processed_coalesced_allocno_bitmap,
 					ALLOCNO_NUM (conflict_allocno)))
 			continue;
-		      bitmap_set_bit (processed_coalesced_allocno_bitmap,
-				      ALLOCNO_NUM (conflict_allocno));
 		    }
 
 		  ira_allocate_and_copy_costs
@@ -977,11 +975,9 @@ push_allocno_to_stack (ira_allocno_t allocno)
 		{
 		  conflict_obj = ALLOCNO_OBJECT (conflict_allocno,
 						 OBJECT_SUBWORD (conflict_obj));
-		  if (bitmap_bit_p (processed_coalesced_allocno_bitmap,
+		  if (!bitmap_set_bit (processed_coalesced_allocno_bitmap,
 				    OBJECT_CONFLICT_ID (conflict_obj)))
 		    continue;
-		  bitmap_set_bit (processed_coalesced_allocno_bitmap,
-				  OBJECT_CONFLICT_ID (conflict_obj));
 		}
 
 	      if (!ALLOCNO_IN_GRAPH_P (conflict_allocno)
@@ -1552,11 +1548,9 @@ setup_allocno_left_conflicts_size (ira_allocno_t allocno)
 			    == ALLOCNO_COVER_CLASS (conflict_allocno));
 		if (allocno_coalesced_p)
 		  {
-		    if (bitmap_bit_p (processed_coalesced_allocno_bitmap,
-				      ALLOCNO_NUM (conflict_allocno)))
+		    if (!bitmap_set_bit (processed_coalesced_allocno_bitmap,
+					 ALLOCNO_NUM (conflict_allocno)))
 		      continue;
-		    bitmap_set_bit (processed_coalesced_allocno_bitmap,
-				    ALLOCNO_NUM (conflict_allocno));
 		  }
 
 		if (! ALLOCNO_ASSIGNED_P (conflict_allocno))
@@ -2436,9 +2430,8 @@ ira_reassign_conflict_allocnos (int start_regno)
 	      ira_allocno_t conflict_a = OBJECT_ALLOCNO (conflict_obj);
 	      ira_assert (ira_reg_classes_intersect_p
 			  [cover_class][ALLOCNO_COVER_CLASS (conflict_a)]);
-	      if (bitmap_bit_p (allocnos_to_color, ALLOCNO_NUM (conflict_a)))
+	      if (!bitmap_set_bit (allocnos_to_color, ALLOCNO_NUM (conflict_a)))
 		continue;
-	      bitmap_set_bit (allocnos_to_color, ALLOCNO_NUM (conflict_a));
 	      sorted_allocnos[allocnos_to_color_num++] = conflict_a;
 	    }
 	}
@@ -3041,10 +3034,9 @@ ira_reassign_pseudos (int *spilled_pseudo_regs, int num,
 	      ira_allocno_t conflict_a = OBJECT_ALLOCNO (conflict_obj);
 	      if (ALLOCNO_HARD_REGNO (conflict_a) < 0
 		  && ! ALLOCNO_DONT_REASSIGN_P (conflict_a)
-		  && ! bitmap_bit_p (temp, ALLOCNO_REGNO (conflict_a)))
+		  && bitmap_set_bit (temp, ALLOCNO_REGNO (conflict_a)))
 		{
 		  spilled_pseudo_regs[num++] = ALLOCNO_REGNO (conflict_a);
-		  bitmap_set_bit (temp, ALLOCNO_REGNO (conflict_a));
 		  /* ?!? This seems wrong.  */
 		  bitmap_set_bit (consideration_allocno_bitmap,
 				  ALLOCNO_NUM (conflict_a));

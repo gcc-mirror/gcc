@@ -1180,9 +1180,8 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code, tree op1, bitma
       def = SSA_NAME_DEF_STMT (op0);
 
       /* If we were already here, break the infinite cycle.  */
-      if (bitmap_bit_p (visited, SSA_NAME_VERSION (op0)))
+      if (!bitmap_set_bit (visited, SSA_NAME_VERSION (op0)))
 	return NULL;
-      bitmap_set_bit (visited, SSA_NAME_VERSION (op0));
 
       if (gimple_code (def) == GIMPLE_PHI)
 	{

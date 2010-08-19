@@ -485,18 +485,13 @@ mark_type (tree type, enum escape_t escape_status)
     }
 
   uid = TYPE_UID (type);
-  if (bitmap_bit_p (map, uid))
+  if (!bitmap_set_bit (map, uid))
     return type;
-  else
-    {
-      bitmap_set_bit (map, uid);
-      if (escape_status == FULL_ESCAPE)
-	{
-	  /* Efficiency hack. When things are bad, do not mess around
-	     with this type anymore.  */
-	  bitmap_set_bit (global_types_exposed_parameter, uid);
-	}
-    }
+  else if (escape_status == FULL_ESCAPE)
+    /* Efficiency hack. When things are bad, do not mess around
+       with this type anymore.  */
+    bitmap_set_bit (global_types_exposed_parameter, uid);
+
   return type;
 }
 
@@ -1746,9 +1741,8 @@ close_type_seen (tree type)
 
   uid = TYPE_UID (type);
 
-  if (bitmap_bit_p (been_there_done_that, uid))
+  if (!bitmap_set_bit (been_there_done_that, uid))
     return;
-  bitmap_set_bit (been_there_done_that, uid);
 
   /* If we are doing a language with a type hierarchy, mark all of
      the superclasses.  */
@@ -1796,9 +1790,8 @@ close_type_exposed_parameter (tree type)
   uid = TYPE_UID (type);
   gcc_assert (!POINTER_TYPE_P (type));
 
-  if (bitmap_bit_p (been_there_done_that, uid))
+  if (!bitmap_set_bit (been_there_done_that, uid))
     return;
-  bitmap_set_bit (been_there_done_that, uid);
 
   /* If the field is a struct or union type, mark all of the
      subfields.  */
@@ -1851,9 +1844,8 @@ close_type_full_escape (tree type)
     return;
   uid = TYPE_UID (type);
 
-  if (bitmap_bit_p (been_there_done_that, uid))
+  if (!bitmap_set_bit (been_there_done_that, uid))
     return;
-  bitmap_set_bit (been_there_done_that, uid);
 
   subtype_map = subtype_map_for_uid (uid, false);
 
@@ -1929,9 +1921,8 @@ close_addressof_down (int uid)
   else
     return NULL;
 
-  if (bitmap_bit_p (been_there_done_that, uid))
+  if (!bitmap_set_bit (been_there_done_that, uid))
     return map;
-  bitmap_set_bit (been_there_done_that, uid);
 
   /* If the type escapes, get rid of the addressof map, it will not be
      needed.  */

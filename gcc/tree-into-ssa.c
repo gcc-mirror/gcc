@@ -960,11 +960,10 @@ prune_unused_phi_nodes (bitmap phis, bitmap kills, bitmap uses)
 	}
 
       /* If the phi node is already live, there is nothing to do.  */
-      if (bitmap_bit_p (live_phis, p))
+      if (!bitmap_set_bit (live_phis, p))
 	continue;
 
-      /* Mark the phi as live, and add the new uses to the worklist.  */
-      bitmap_set_bit (live_phis, p);
+      /* Add the new uses to the worklist.  */
       def_bb = BASIC_BLOCK (p);
       FOR_EACH_EDGE (e, ei, def_bb->preds)
 	{

@@ -924,22 +924,16 @@ get_loop_body_in_bfs_order (const struct loop *loop)
       edge e;
       edge_iterator ei;
 
-      if (!bitmap_bit_p (visited, bb->index))
-	{
-	  /* This basic block is now visited */
-	  bitmap_set_bit (visited, bb->index);
-	  blocks[i++] = bb;
-	}
+      if (bitmap_set_bit (visited, bb->index))
+	/* This basic block is now visited */
+	blocks[i++] = bb;
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
 	  if (flow_bb_inside_loop_p (loop, e->dest))
 	    {
-	      if (!bitmap_bit_p (visited, e->dest->index))
-		{
-		  bitmap_set_bit (visited, e->dest->index);
-		  blocks[i++] = e->dest;
-		}
+	      if (bitmap_set_bit (visited, e->dest->index))
+		blocks[i++] = e->dest;
 	    }
 	}
 

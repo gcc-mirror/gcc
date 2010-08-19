@@ -2338,11 +2338,8 @@ expand_case (gimple stmt)
 	  /* If we have not seen this label yet, then increase the
 	     number of unique case node targets seen.  */
 	  lab = label_rtx (n->code_label);
-	  if (!bitmap_bit_p (label_bitmap, CODE_LABEL_NUMBER (lab)))
-	    {
-	      bitmap_set_bit (label_bitmap, CODE_LABEL_NUMBER (lab));
-	      uniq++;
-	    }
+	  if (bitmap_set_bit (label_bitmap, CODE_LABEL_NUMBER (lab)))
+	    uniq++;
 	}
 
       BITMAP_FREE (label_bitmap);

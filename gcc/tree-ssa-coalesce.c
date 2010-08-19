@@ -725,11 +725,8 @@ live_track_add_partition (live_track_p ptr, int partition)
   root = basevar_index (ptr->map, partition);
   /* If this base var wasn't live before, it is now.  Clear the element list
      since it was delayed until needed.  */
-  if (!bitmap_bit_p (ptr->live_base_var, root))
-    {
-      bitmap_set_bit (ptr->live_base_var, root);
-      bitmap_clear (ptr->live_base_partitions[root]);
-    }
+  if (bitmap_set_bit (ptr->live_base_var, root))
+    bitmap_clear (ptr->live_base_partitions[root]);
   bitmap_set_bit (ptr->live_base_partitions[root], partition);
 
 }

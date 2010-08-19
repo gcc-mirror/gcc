@@ -377,11 +377,8 @@ mark_all_vars_used_1 (tree *tp, int *walk_subtrees, void *data)
      eliminated as unused.  */
   if (TREE_CODE (t) == VAR_DECL)
     {
-      if (data != NULL && bitmap_bit_p ((bitmap) data, DECL_UID (t)))
-	{
-	  bitmap_clear_bit ((bitmap) data, DECL_UID (t));
-	  mark_all_vars_used (&DECL_INITIAL (t), data);
-	}
+      if (data != NULL && bitmap_clear_bit ((bitmap) data, DECL_UID (t)))
+	mark_all_vars_used (&DECL_INITIAL (t), data);
       set_is_used (t);
     }
   /* remove_unused_scope_block_p requires information about labels

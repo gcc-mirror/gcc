@@ -1004,9 +1004,8 @@ get_maxval_strlen (tree arg, tree *length, bitmap visited, int type)
     }
 
   /* If we were already here, break the infinite cycle.  */
-  if (bitmap_bit_p (visited, SSA_NAME_VERSION (arg)))
+  if (!bitmap_set_bit (visited, SSA_NAME_VERSION (arg)))
     return true;
-  bitmap_set_bit (visited, SSA_NAME_VERSION (arg));
 
   var = arg;
   def_stmt = SSA_NAME_DEF_STMT (var);

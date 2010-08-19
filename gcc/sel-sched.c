@@ -4632,11 +4632,8 @@ create_block_for_bookkeeping (edge e1, edge e2)
 		if (INSN_P (insn))
 		  EXPR_ORIG_BB_INDEX (INSN_EXPR (insn)) = succ->index;
 
-	      if (bitmap_bit_p (code_motion_visited_blocks, new_bb->index))
-		{
-		  bitmap_set_bit (code_motion_visited_blocks, succ->index);
-		  bitmap_clear_bit (code_motion_visited_blocks, new_bb->index);
-		}
+	      if (bitmap_clear_bit (code_motion_visited_blocks, new_bb->index))
+		bitmap_set_bit (code_motion_visited_blocks, succ->index);
 
 	      gcc_assert (LABEL_P (BB_HEAD (new_bb))
 			  && LABEL_P (BB_HEAD (succ)));
@@ -5785,7 +5782,7 @@ track_scheduled_insns_and_blocks (rtx insn)
      we still need to count it as an originator.  */
   bitmap_set_bit (current_originators, INSN_UID (insn));
 
-  if (!bitmap_bit_p (current_copies, INSN_UID (insn)))
+  if (!bitmap_clear_bit (current_copies, INSN_UID (insn)))
     {
       /* Note that original block needs to be rescheduled, as we pulled an
 	 instruction out of it.  */
@@ -5794,8 +5791,6 @@ track_scheduled_insns_and_blocks (rtx insn)
       else if (INSN_UID (insn) < first_emitted_uid && !DEBUG_INSN_P (insn))
 	num_insns_scheduled++;
     }
-  else
-    bitmap_clear_bit (current_copies, INSN_UID (insn));
 
   /* For instructions we must immediately remove insn from the
      stream, so subsequent update_data_sets () won't include this
@@ -7498,7 +7493,7 @@ sel_sched_region_1 (void)
                   continue;
                 }
 
-              if (bitmap_bit_p (blocks_to_reschedule, bb->index))
+              if (bitmap_clear_bit (blocks_to_reschedule, bb->index))
                 {
                   flist_tail_init (new_fences);
 
@@ -7506,8 +7501,6 @@ sel_sched_region_1 (void)
 
                   /* Mark BB as head of the new ebb.  */
                   bitmap_set_bit (forced_ebb_heads, bb->index);
-
-                  bitmap_clear_bit (blocks_to_reschedule, bb->index);
 
                   gcc_assert (fences == NULL);
 

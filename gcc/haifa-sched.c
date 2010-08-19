@@ -3613,9 +3613,8 @@ fix_inter_tick (rtx head, rtx tail)
 	  gcc_assert (tick >= MIN_TICK);
 
 	  /* Fix INSN_TICK of instruction from just scheduled block.  */
-	  if (!bitmap_bit_p (&processed, INSN_LUID (head)))
+	  if (bitmap_set_bit (&processed, INSN_LUID (head)))
 	    {
-	      bitmap_set_bit (&processed, INSN_LUID (head));
 	      tick -= next_clock;
 
 	      if (tick < MIN_TICK)
@@ -3635,9 +3634,8 @@ fix_inter_tick (rtx head, rtx tail)
 		  /* If NEXT has its INSN_TICK calculated, fix it.
 		     If not - it will be properly calculated from
 		     scratch later in fix_tick_ready.  */
-		  && !bitmap_bit_p (&processed, INSN_LUID (next)))
+		  && bitmap_set_bit (&processed, INSN_LUID (next)))
 		{
-		  bitmap_set_bit (&processed, INSN_LUID (next));
 		  tick -= next_clock;
 
 		  if (tick < MIN_TICK)
@@ -4756,11 +4754,8 @@ fix_recovery_deps (basic_block rec)
 	    {
 	      sd_delete_dep (sd_it);
 
-	      if (!bitmap_bit_p (&in_ready, INSN_LUID (consumer)))
-		{
-		  ready_list = alloc_INSN_LIST (consumer, ready_list);
-		  bitmap_set_bit (&in_ready, INSN_LUID (consumer));
-		}
+	      if (bitmap_set_bit (&in_ready, INSN_LUID (consumer)))
+		ready_list = alloc_INSN_LIST (consumer, ready_list);
 	    }
 	  else
 	    {

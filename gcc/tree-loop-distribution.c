@@ -519,10 +519,8 @@ mark_nodes_having_upstream_mem_writes (struct graph *rdg)
 
 	for (i = 0; VEC_iterate (int, nodes, i, x); i++)
 	  {
-	    if (bitmap_bit_p (seen, x))
+	    if (!bitmap_set_bit (seen, x))
 	      continue;
-
-	    bitmap_set_bit (seen, x);
 
 	    if (RDG_MEM_WRITE_STMT (rdg, x)
 		|| predecessor_has_mem_write (rdg, &(rdg->vertices[x]))
@@ -644,12 +642,11 @@ rdg_flag_vertex (struct graph *rdg, int v, bitmap partition, bitmap loops,
 {
   struct loop *loop;
 
-  if (bitmap_bit_p (partition, v))
+  if (!bitmap_set_bit (partition, v))
     return;
 
   loop = loop_containing_stmt (RDG_STMT (rdg, v));
   bitmap_set_bit (loops, loop->num);
-  bitmap_set_bit (partition, v);
 
   if (rdg_cannot_recompute_vertex_p (rdg, v))
     {
@@ -730,11 +727,8 @@ rdg_flag_loop_exits (struct graph *rdg, bitmap loops, bitmap partition,
 				       part_has_writes);
 
       EXECUTE_IF_SET_IN_BITMAP (new_loops, 0, i, bi)
-	if (!bitmap_bit_p (loops, i))
-	  {
-	    bitmap_set_bit (loops, i);
-	    collect_condition_stmts (get_loop (i), &conds);
-	  }
+	if (bitmap_set_bit (loops, i))
+	  collect_condition_stmts (get_loop (i), &conds);
 
       BITMAP_FREE (new_loops);
     }
@@ -864,14 +858,13 @@ rdg_build_components (struct graph *rdg, VEC (int, heap) *starting_vertices,
     {
       int c = rdg->vertices[v].component;
 
-      if (!bitmap_bit_p (saved_components, c))
+      if (bitmap_set_bit (saved_components, c))
 	{
 	  rdgc x = XCNEW (struct rdg_component);
 	  x->num = c;
 	  x->vertices = all_components[c];
 
 	  VEC_safe_push (rdgc, heap, *components, x);
-	  bitmap_set_bit (saved_components, c);
 	}
     }
 

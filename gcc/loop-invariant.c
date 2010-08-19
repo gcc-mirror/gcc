@@ -1671,9 +1671,8 @@ mark_regno_live (int regno)
        loop != current_loops->tree_root;
        loop = loop_outer (loop))
     bitmap_set_bit (&LOOP_DATA (loop)->regs_live, regno);
-  if (bitmap_bit_p (&curr_regs_live, regno))
+  if (!bitmap_set_bit (&curr_regs_live, regno))
     return;
-  bitmap_set_bit (&curr_regs_live, regno);
   change_pressure (regno, true);
 }
 
@@ -1681,9 +1680,8 @@ mark_regno_live (int regno)
 static void
 mark_regno_death (int regno)
 {
-  if (! bitmap_bit_p (&curr_regs_live, regno))
+  if (! bitmap_clear_bit (&curr_regs_live, regno))
     return;
-  bitmap_clear_bit (&curr_regs_live, regno);
   change_pressure (regno, false);
 }
 

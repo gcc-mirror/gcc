@@ -2323,10 +2323,8 @@ write_symbol (struct lto_streamer_cache_d *cache,
   gcc_assert (slot_num >= 0);
 
   /* Avoid duplicate symbols. */
-  if (bitmap_bit_p (seen, slot_num))
+  if (!bitmap_set_bit (seen, slot_num))
     return;
-  else
-    bitmap_set_bit (seen, slot_num);
 
   if (DECL_EXTERNAL (t))
     {
