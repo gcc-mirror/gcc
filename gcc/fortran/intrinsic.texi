@@ -1630,28 +1630,40 @@ end program test_besj1
 @item @emph{Description}:
 @code{BESSEL_JN(N, X)} computes the Bessel function of the first kind of
 order @var{N} of @var{X}. This function is available under the name
-@code{BESJN} as a GNU extension.
+@code{BESJN} as a GNU extension.  If @var{N} and @var{X} are arrays,
+their ranks and shapes shall conform.  
 
-If both arguments are arrays, their ranks and shapes shall conform.
+@code{BESSEL_JN(N1, N2, X)} returns an array with the Bessel functions
+of the first kind of the orders @var{N1} to @var{N2}.
 
 @item @emph{Standard}:
-Fortran 2008 and later
+Fortran 2008 and later, negative @var{N} is allowed as GNU extension
 
 @item @emph{Class}:
-Elemental function
+Elemental function, except for the tranformational function
+@code{BESSEL_JN(N1, N2, X)}
 
 @item @emph{Syntax}:
 @code{RESULT = BESSEL_JN(N, X)}
+@code{RESULT = BESSEL_JN(N1, N2, X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{N} @tab Shall be a scalar or an array of type  @code{INTEGER}.
-@item @var{X} @tab Shall be a scalar or an array of type  @code{REAL}.
+@item @var{N1} @tab Shall be a non-negative scalar of type  @code{INTEGER}.
+@item @var{N2} @tab Shall be a non-negative scalar of type  @code{INTEGER}.
+@item @var{X} @tab Shall be a scalar or an array of type  @code{REAL};
+for @code{BESSEL_JN(N1, N2, X)} it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
 The return value is a scalar of type @code{REAL}. It has the same
 kind as @var{X}.
+
+@item @emph{Note}:
+The transformational function uses a recurrance algorithm which might,
+for some values of @var{X}, lead to different results than calls to
+the elemental function.
 
 @item @emph{Example}:
 @smallexample
@@ -1778,28 +1790,40 @@ end program test_besy1
 @item @emph{Description}:
 @code{BESSEL_YN(N, X)} computes the Bessel function of the second kind of
 order @var{N} of @var{X}. This function is available under the name
-@code{BESYN} as a GNU extension.
+@code{BESYN} as a GNU extension.  If @var{N} and @var{X} are arrays,
+their ranks and shapes shall conform.  
 
-If both arguments are arrays, their ranks and shapes shall conform.
+@code{BESSEL_YN(N1, N2, X)} returns an array with the Bessel functions
+of the first kind of the orders @var{N1} to @var{N2}.
 
 @item @emph{Standard}:
-Fortran 2008 and later
+Fortran 2008 and later, negative @var{N} is allowed as GNU extension
 
 @item @emph{Class}:
-Elemental function
+Elemental function, except for the tranformational function
+@code{BESSEL_YN(N1, N2, X)}
 
 @item @emph{Syntax}:
 @code{RESULT = BESSEL_YN(N, X)}
+@code{RESULT = BESSEL_YN(N1, N2, X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{N} @tab Shall be a scalar or an array of type  @code{INTEGER}.
-@item @var{X} @tab Shall be a scalar or an array of type  @code{REAL}.
+@item @var{N} @tab Shall be a scalar or an array of type  @code{INTEGER} .
+@item @var{N1} @tab Shall be a non-negative scalar of type  @code{INTEGER}.
+@item @var{N2} @tab Shall be a non-negative scalar of type  @code{INTEGER}.
+@item @var{X} @tab Shall be a scalar or an array of type  @code{REAL};
+for @code{BESSEL_YN(N1, N2, X)} it shall be scalar.
 @end multitable
 
 @item @emph{Return value}:
 The return value is a scalar of type @code{REAL}. It has the same
 kind as @var{X}.
+
+@item @emph{Note}:
+The transformational function uses a recurrance algorithm which might,
+for some values of @var{X}, lead to different results than calls to
+the elemental function.
 
 @item @emph{Example}:
 @smallexample
