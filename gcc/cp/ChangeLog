@@ -1,5 +1,9 @@
 2010-08-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/45307
+	* cp-gimplify.c (cp_gimplify_expr): Also remove assignment
+	of empty class CONSTRUCTOR.
+
 	* except.c (pending_noexcept, pending_noexcept_checks): New.
 	(perform_deferred_noexcept_checks): New.
 	(maybe_noexcept_warning): Split from...

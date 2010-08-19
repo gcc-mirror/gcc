@@ -1,3 +1,10 @@
+2010-08-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/45307
+	* gimplify.c (gimplify_init_constructor): Just return GS_UNHANDLED
+	if ctor is empty.
+	(gimplify_modify_expr_rhs): Adjust.
+
 2010-08-19  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* cfgloop.c (get_loop_body_in_bfs_order): Avoid redundant call to
