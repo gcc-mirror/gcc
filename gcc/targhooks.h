@@ -104,9 +104,9 @@ extern const char *hook_invalid_arg_for_unprototyped_fn
 extern void default_function_arg_advance
   (CUMULATIVE_ARGS *, enum machine_mode, const_tree, bool);
 extern rtx default_function_arg
-  (const CUMULATIVE_ARGS *, enum machine_mode, const_tree, bool);
+  (CUMULATIVE_ARGS *, enum machine_mode, const_tree, bool);
 extern rtx default_function_incoming_arg
-  (const CUMULATIVE_ARGS *, enum machine_mode, const_tree, bool);
+  (CUMULATIVE_ARGS *, enum machine_mode, const_tree, bool);
 extern bool hook_bool_const_rtx_commutative_p (const_rtx, int);
 extern rtx default_function_value (const_tree, const_tree, bool);
 extern rtx default_libcall_value (enum machine_mode, const_rtx);

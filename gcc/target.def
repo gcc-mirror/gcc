@@ -1788,7 +1788,7 @@ DEFHOOK_UNDOC
 DEFHOOK_UNDOC
 (function_arg,
  "",
- rtx, (const CUMULATIVE_ARGS *ca, enum machine_mode mode, const_tree type,
+ rtx, (CUMULATIVE_ARGS *ca, enum machine_mode mode, const_tree type,
        bool named),
  default_function_arg)
 
@@ -1798,7 +1798,7 @@ DEFHOOK_UNDOC
 DEFHOOK_UNDOC
 (function_incoming_arg,
  "",
- rtx, (const CUMULATIVE_ARGS *ca, enum machine_mode mode, const_tree type,
+ rtx, (CUMULATIVE_ARGS *ca, enum machine_mode mode, const_tree type,
        bool named),
  default_function_incoming_arg)
 
