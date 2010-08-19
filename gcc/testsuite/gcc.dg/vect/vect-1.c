@@ -37,7 +37,7 @@ foo (int n)
   /* Vectorizable.  */
   diff = 0;
   for (i = 0; i < N; i++) {
-    for (i = 0; i < N; i++) {
+    for (j = 0; i < N; j++) {
       diff += (image[i][j] - block[i][j]);
     }
   }

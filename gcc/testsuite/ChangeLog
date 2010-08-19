@@ -1,3 +1,8 @@
+2010-08-19  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.dg/vect/vect-1.c (foo): Change inner loop index
+	variable.
+
 2010-08-19  Ian Bolton  <ian.bolton@arm.com>
 
 	PR target/45070
