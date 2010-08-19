@@ -1,3 +1,9 @@
+2010-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/45336
+	* simplify-rtx.c (simplify_unary_operation_1): Optimize nested
+	SIGN_EXTENDs or ZERO_EXTENDs.
+
 2010-08-19  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR target/42172
