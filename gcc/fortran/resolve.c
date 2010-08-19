@@ -7747,7 +7747,12 @@ resolve_transfer (gfc_code *code)
 
   exp = code->expr1;
 
-  if (exp->expr_type != EXPR_VARIABLE && exp->expr_type != EXPR_FUNCTION)
+  while (exp != NULL && exp->expr_type == EXPR_OP
+	 && exp->value.op.op == INTRINSIC_PARENTHESES)
+    exp = exp->value.op.op1;
+
+  if (exp == NULL || (exp->expr_type != EXPR_VARIABLE
+		      && exp->expr_type != EXPR_FUNCTION))
     return;
 
   sym = exp->symtree->n.sym;
