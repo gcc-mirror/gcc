@@ -1,3 +1,13 @@
+2010-08-19  Jason Merrill  <jason@redhat.com>
+
+	* except.c (pending_noexcept, pending_noexcept_checks): New.
+	(perform_deferred_noexcept_checks): New.
+	(maybe_noexcept_warning): Split from...
+	(finish_noexcept_expr): ...here.  Adjust.
+	* decl2.c (cp_write_global_declarations): Call
+	perform_deferred_noexcept_checks.
+	* cp-tree.h: And declare it.
+
 2010-08-18  Nathan Froyd  <froydnj@codesourcery.com>
 
 	PR c++/45049

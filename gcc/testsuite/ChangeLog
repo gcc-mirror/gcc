@@ -1,3 +1,7 @@
+2010-08-19  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/noexcept09.C: New.
+
 2010-08-19  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/29785
