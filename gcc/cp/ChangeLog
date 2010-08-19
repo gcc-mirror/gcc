@@ -1,5 +1,9 @@
 2010-08-19  Jason Merrill  <jason@redhat.com>
 
+	* call.c (reference_related_p): Check for error_mark_node.
+	(add_function_candidate): Check it instead of
+	same_type_ignoring_top_level_qualifiers_p.
+
 	PR c++/45315
 	* init.c (build_new_1): Don't use build_value_init in a template.
 	(build_value_init): Make sure we don't.
