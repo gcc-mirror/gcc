@@ -139,6 +139,9 @@ void gfc_conv_descriptor_stride_set (stmtblock_t *, tree, tree, tree);
 void gfc_conv_descriptor_lbound_set (stmtblock_t *, tree, tree, tree);
 void gfc_conv_descriptor_ubound_set (stmtblock_t *, tree, tree, tree);
 
+/* Shift lower bound of descriptor, updating ubound and offset.  */
+void gfc_conv_shift_descriptor_lbound (stmtblock_t*, tree, int, tree);
+
 /* Add pre-loop scalarization code for intrinsic functions which require
    special handling.  */
 void gfc_add_intrinsic_ss_code (gfc_loopinfo *, gfc_ss *);
@@ -149,3 +152,7 @@ tree gfc_build_constant_array_constructor (gfc_expr *, tree);
 
 /* Copy a string from src to dest.  */
 void gfc_trans_string_copy (stmtblock_t *, tree, tree, int, tree, tree, int);
+
+/* Calculate extent / size of an array.  */
+tree gfc_conv_array_extent_dim (tree, tree, tree*);
+tree gfc_conv_descriptor_size (tree, int);

@@ -382,6 +382,39 @@ gfc_build_null_descriptor (tree type)
 }
 
 
+/* Modify a descriptor such that the lbound of a given dimension is the value
+   specified.  This also updates ubound and offset accordingly.  */
+
+void
+gfc_conv_shift_descriptor_lbound (stmtblock_t* block, tree desc,
+				  int dim, tree new_lbound)
+{
+  tree offs, ubound, lbound, stride;
+  tree diff, offs_diff;
+
+  new_lbound = fold_convert (gfc_array_index_type, new_lbound);
+
+  offs = gfc_conv_descriptor_offset_get (desc);
+  lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[dim]);
+  ubound = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[dim]);
+  stride = gfc_conv_descriptor_stride_get (desc, gfc_rank_cst[dim]);
+
+  /* Get difference (new - old) by which to shift stuff.  */
+  diff = fold_build2 (MINUS_EXPR, gfc_array_index_type, new_lbound, lbound);
+
+  /* Shift ubound and offset accordingly.  This has to be done before
+     updating the lbound, as they depend on the lbound expression!  */
+  ubound = fold_build2 (PLUS_EXPR, gfc_array_index_type, ubound, diff);
+  gfc_conv_descriptor_ubound_set (block, desc, gfc_rank_cst[dim], ubound);
+  offs_diff = fold_build2 (MULT_EXPR, gfc_array_index_type, diff, stride);
+  offs = fold_build2 (MINUS_EXPR, gfc_array_index_type, offs, offs_diff);
+  gfc_conv_descriptor_offset_set (block, desc, offs);
+
+  /* Finally set lbound to value we want.  */
+  gfc_conv_descriptor_lbound_set (block, desc, gfc_rank_cst[dim], new_lbound);
+}
+
+
 /* Cleanup those #defines.  */
 
 #undef DATA_FIELD
@@ -3784,6 +3817,62 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 }
 
 
+/* Calculate the size of a given array dimension from the bounds.  This
+   is simply (ubound - lbound + 1) if this expression is positive
+   or 0 if it is negative (pick either one if it is zero).  Optionally
+   (if or_expr is present) OR the (expression != 0) condition to it.  */
+
+tree
+gfc_conv_array_extent_dim (tree lbound, tree ubound, tree* or_expr)
+{
+  tree res;
+  tree cond;
+
+  /* Calculate (ubound - lbound + 1).  */
+  res = fold_build2 (MINUS_EXPR, gfc_array_index_type, ubound, lbound);
+  res = fold_build2 (PLUS_EXPR, gfc_array_index_type, res, gfc_index_one_node);
+
+  /* Check whether the size for this dimension is negative.  */
+  cond = fold_build2 (LE_EXPR, boolean_type_node, res, gfc_index_zero_node);
+  res = fold_build3 (COND_EXPR, gfc_array_index_type, cond,
+		      gfc_index_zero_node, res);
+
+  /* Build OR expression.  */
+  if (or_expr)
+    *or_expr = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, *or_expr, cond);
+
+  return res;
+}
+
+
+/* For an array descriptor, get the total number of elements.  This is just
+   the product of the extents along all dimensions.  */
+
+tree
+gfc_conv_descriptor_size (tree desc, int rank)
+{
+  tree res;
+  int dim;
+
+  res = gfc_index_one_node;
+
+  for (dim = 0; dim < rank; ++dim)
+    {
+      tree lbound;
+      tree ubound;
+      tree extent;
+
+      lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[dim]);
+      ubound = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[dim]);
+
+      extent = gfc_conv_array_extent_dim (lbound, ubound, NULL);
+      res = fold_build2 (MULT_EXPR, gfc_array_index_type, res, extent);
+    }
+
+  return res;
+}
+
+
 /* Fills in an array descriptor, and returns the size of the array.  The size
    will be a simple_val, ie a variable or a constant.  Also calculates the
    offset of the base.  Returns the size of the array.
@@ -3792,13 +3881,13 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
     offset = 0;
     for (n = 0; n < rank; n++)
       {
-        a.lbound[n] = specified_lower_bound;
-        offset = offset + a.lbond[n] * stride;
-        size = 1 - lbound;
-        a.ubound[n] = specified_upper_bound;
-        a.stride[n] = stride;
-        size = siz >= 0 ? ubound + size : 0; //size = ubound + 1 - lbound
-        stride = stride * size;
+	a.lbound[n] = specified_lower_bound;
+	offset = offset + a.lbond[n] * stride;
+	size = 1 - lbound;
+	a.ubound[n] = specified_upper_bound;
+	a.stride[n] = stride;
+	size = siz >= 0 ? ubound + size : 0; //size = ubound + 1 - lbound
+	stride = stride * size;
       }
     return (stride);
    }  */
@@ -3814,7 +3903,6 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
   tree size;
   tree offset;
   tree stride;
-  tree cond;
   tree or_expr;
   tree thencase;
   tree elsecase;
@@ -3834,14 +3922,17 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
   tmp = gfc_conv_descriptor_dtype (descriptor);
   gfc_add_modify (pblock, tmp, gfc_get_dtype (TREE_TYPE (descriptor)));
 
-  or_expr = NULL_TREE;
+  or_expr = boolean_false_node;
 
   for (n = 0; n < rank; n++)
     {
+      tree conv_lbound;
+      tree conv_ubound;
+
       /* We have 3 possibilities for determining the size of the array:
-         lower == NULL    => lbound = 1, ubound = upper[n]
-         upper[n] = NULL  => lbound = 1, ubound = lower[n]
-         upper[n] != NULL => lbound = lower[n], ubound = upper[n]  */
+	 lower == NULL    => lbound = 1, ubound = upper[n]
+	 upper[n] = NULL  => lbound = 1, ubound = lower[n]
+	 upper[n] != NULL => lbound = lower[n], ubound = upper[n]  */
       ubound = upper[n];
 
       /* Set lower bound.  */
@@ -3851,27 +3942,24 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
       else
 	{
 	  gcc_assert (lower[n]);
-          if (ubound)
-            {
+	  if (ubound)
+	    {
 	      gfc_conv_expr_type (&se, lower[n], gfc_array_index_type);
 	      gfc_add_block_to_block (pblock, &se.pre);
-            }
-          else
-            {
-              se.expr = gfc_index_one_node;
-              ubound = lower[n];
-            }
+	    }
+	  else
+	    {
+	      se.expr = gfc_index_one_node;
+	      ubound = lower[n];
+	    }
 	}
       gfc_conv_descriptor_lbound_set (pblock, descriptor, gfc_rank_cst[n],
 				      se.expr);
+      conv_lbound = se.expr;
 
       /* Work out the offset for this component.  */
       tmp = fold_build2 (MULT_EXPR, gfc_array_index_type, se.expr, stride);
       offset = fold_build2 (MINUS_EXPR, gfc_array_index_type, offset, tmp);
-
-      /* Start the calculation for the size of this dimension.  */
-      size = fold_build2 (MINUS_EXPR, gfc_array_index_type,
-			  gfc_index_one_node, se.expr);
 
       /* Set upper bound.  */
       gfc_init_se (&se, NULL);
@@ -3879,24 +3967,16 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
       gfc_conv_expr_type (&se, ubound, gfc_array_index_type);
       gfc_add_block_to_block (pblock, &se.pre);
 
-      gfc_conv_descriptor_ubound_set (pblock, descriptor, gfc_rank_cst[n], se.expr);
+      gfc_conv_descriptor_ubound_set (pblock, descriptor,
+				      gfc_rank_cst[n], se.expr);
+      conv_ubound = se.expr;
 
       /* Store the stride.  */
-      gfc_conv_descriptor_stride_set (pblock, descriptor, gfc_rank_cst[n], stride);
+      gfc_conv_descriptor_stride_set (pblock, descriptor,
+				      gfc_rank_cst[n], stride);
 
-      /* Calculate the size of this dimension.  */
-      size = fold_build2 (PLUS_EXPR, gfc_array_index_type, se.expr, size);
-
-      /* Check whether the size for this dimension is negative.  */
-      cond = fold_build2 (LE_EXPR, boolean_type_node, size,
-			  gfc_index_zero_node);
-      if (n == 0)
-	or_expr = cond;
-      else
-	or_expr = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, or_expr, cond);
-
-      size = fold_build3 (COND_EXPR, gfc_array_index_type, cond,
-			  gfc_index_zero_node, size);
+      /* Calculate size and check whether extent is negative.  */
+      size = gfc_conv_array_extent_dim (conv_lbound, conv_ubound, &or_expr);
 
       /* Multiply the stride by the number of elements in this dimension.  */
       stride = fold_build2 (MULT_EXPR, gfc_array_index_type, stride, size);
@@ -3916,16 +3996,16 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 	}
       else
 	{
-          if (ubound || n == rank + corank - 1)
-            {
+	  if (ubound || n == rank + corank - 1)
+	    {
 	      gfc_conv_expr_type (&se, lower[n], gfc_array_index_type);
 	      gfc_add_block_to_block (pblock, &se.pre);
-            }
-          else
-            {
-              se.expr = gfc_index_one_node;
-              ubound = lower[n];
-            }
+	    }
+	  else
+	    {
+	      se.expr = gfc_index_one_node;
+	      ubound = lower[n];
+	    }
 	}
       gfc_conv_descriptor_lbound_set (pblock, descriptor, gfc_rank_cst[n],
 				      se.expr);
@@ -3936,7 +4016,8 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
 	  gcc_assert (ubound);
 	  gfc_conv_expr_type (&se, ubound, gfc_array_index_type);
 	  gfc_add_block_to_block (pblock, &se.pre);
-	  gfc_conv_descriptor_ubound_set (pblock, descriptor, gfc_rank_cst[n], se.expr);
+	  gfc_conv_descriptor_ubound_set (pblock, descriptor,
+					  gfc_rank_cst[n], se.expr);
 	}
     }
 
@@ -5064,7 +5145,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
       if (full)
 	{
-	  if (se->direct_byref)
+	  if (se->direct_byref && !se->byref_noassign)
 	    {
 	      /* Copy the descriptor for pointer assignments.  */
 	      gfc_add_modify (&se->pre, se->expr, desc);
@@ -5269,7 +5350,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
       desc = info->descriptor;
       gcc_assert (secss && secss != gfc_ss_terminator);
-      if (se->direct_byref)
+      if (se->direct_byref && !se->byref_noassign)
 	{
 	  /* For pointer assignments we fill in the destination.  */
 	  parm = se->expr;
@@ -5427,7 +5508,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       desc = parm;
     }
 
-  if (!se->direct_byref)
+  if (!se->direct_byref || se->byref_noassign)
     {
       /* Get a pointer to the new descriptor.  */
       if (se->want_pointer)
