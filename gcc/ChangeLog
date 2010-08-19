@@ -1,8 +1,23 @@
+2010-08-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*lea_1): Use P mode iterator.
+	(lea add splitter): Also handle DImode operands.
+	(DImode lea add splitter): Use x86_64_immediate_operand for operand 2
+	predicate.  Do not use ix86_lea_for_add_ok.
+	(zext DImode lea add splitter): Use ix86_lea_for_add_ok.
+	(lea ashift splitter): Also handle DImode operands.
+	(DImode lea ashift splitter): Remove splitter.
+
+2010-08-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*add<SWI:mode>3_cconly_overflow): Do not use
+	ix86_binary_operator_ok.
+
 2010-08-19  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/44691
 	* sel-sched.c (count_occurrences_1): Also punt when SUBREG_REG
-	is not a register. 
+	is not a register.
 
 2010-08-19  Ian Bolton  <ian.bolton@arm.com>
 
