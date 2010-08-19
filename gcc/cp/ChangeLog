@@ -1,5 +1,9 @@
 2010-08-19  Jason Merrill  <jason@redhat.com>
 
+	PR c++/45315
+	* init.c (build_new_1): Don't use build_value_init in a template.
+	(build_value_init): Make sure we don't.
+
 	PR c++/45307
 	* cp-gimplify.c (cp_gimplify_expr): Also remove assignment
 	of empty class CONSTRUCTOR.
