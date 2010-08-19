@@ -1,5 +1,7 @@
 2010-08-19  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/init/value8.C: New.
+
 	* g++.dg/tree-ssa/empty-2.C: New.
 
 	* g++.dg/cpp0x/noexcept09.C: New.

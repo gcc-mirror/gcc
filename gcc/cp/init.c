@@ -295,6 +295,9 @@ build_value_init (tree type, tsubst_flags_t complain)
      zero-initializing the object and then calling the default
      constructor.  */
 
+  /* The AGGR_INIT_EXPR tweaking below breaks in templates.  */
+  gcc_assert (!processing_template_decl);
+
   if (CLASS_TYPE_P (type))
     {
       if (type_has_user_provided_constructor (type))
@@ -2310,7 +2313,8 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	{
 	  init_expr = cp_build_indirect_ref (data_addr, RO_NULL, complain);
 
-	  if (TYPE_NEEDS_CONSTRUCTING (type) && !explicit_value_init_p)
+	  if (TYPE_NEEDS_CONSTRUCTING (type)
+	      && (!explicit_value_init_p || processing_template_decl))
 	    {
 	      init_expr = build_special_member_call (init_expr,
 						     complete_ctor_identifier,
@@ -2320,11 +2324,17 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	    }
 	  else if (explicit_value_init_p)
 	    {
-	      /* Something like `new int()'.  */
-	      tree val = build_value_init (type, complain);
-	      if (val == error_mark_node)
-		return error_mark_node;
-	      init_expr = build2 (INIT_EXPR, type, init_expr, val);
+	      if (processing_template_decl)
+		/* Don't worry about it, we'll handle this properly at
+		   instantiation time.  */;
+	      else
+		{
+		  /* Something like `new int()'.  */
+		  tree val = build_value_init (type, complain);
+		  if (val == error_mark_node)
+		    return error_mark_node;
+		  init_expr = build2 (INIT_EXPR, type, init_expr, val);
+		}
 	    }
 	  else
 	    {
