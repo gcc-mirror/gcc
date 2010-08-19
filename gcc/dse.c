@@ -963,11 +963,10 @@ set_usage_bits (group_info_t group, HOST_WIDE_INT offset, HOST_WIDE_INT width)
 	    ai = i;
 	  }
 
-	if (bitmap_bit_p (store1, ai))
+	if (!bitmap_set_bit (store1, ai))
 	  bitmap_set_bit (store2, ai);
 	else
 	  {
-	    bitmap_set_bit (store1, ai);
 	    if (i < 0)
 	      {
 		if (group->offset_map_size_n < ai)
@@ -1232,11 +1231,8 @@ set_position_unneeded (store_info_t s_info, int pos)
 {
   if (__builtin_expect (s_info->is_large, false))
     {
-      if (!bitmap_bit_p (s_info->positions_needed.large.bmap, pos))
-	{
-	  s_info->positions_needed.large.count++;
-	  bitmap_set_bit (s_info->positions_needed.large.bmap, pos);
-	}
+      if (bitmap_set_bit (s_info->positions_needed.large.bmap, pos))
+	s_info->positions_needed.large.count++;
     }
   else
     s_info->positions_needed.small_bitmask
@@ -1393,10 +1389,8 @@ record_store (rtx body, bb_info_t bb_info)
 
       gcc_assert (GET_MODE (mem) != BLKmode);
 
-      if (bitmap_bit_p (store1, spill_alias_set))
+      if (!bitmap_set_bit (store1, spill_alias_set))
 	bitmap_set_bit (store2, spill_alias_set);
-      else
-	bitmap_set_bit (store1, spill_alias_set);
 
       if (clear_alias_group->offset_map_size_p < spill_alias_set)
 	clear_alias_group->offset_map_size_p = spill_alias_set;

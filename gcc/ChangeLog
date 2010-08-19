@@ -1,3 +1,42 @@
+2010-08-19  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* cfgloop.c (get_loop_body_in_bfs_order): Avoid redundant call to
+	bitmap_bit_p.
+	* config/bfin/bifn.c (bfin_discover_loop): Likewise.
+	* dominance.c (iterate_fix_dominators): Likewise.
+	* dse.c (set_usage_bits): Likewise.
+	(set_position_unneeded, record_store): Likewise.
+	* gimple-fold.c (get_maxval_strlen): Likewise.
+	* haifa-sched.c (fix_inter_tick, fix_recovery_deps): Likewise.
+	* ipa-inline.c (update_caller_keys): Likewise.
+	* ipa-split.c (verify_non_ssa_vars): Likewise.
+	* ipa-type-escape.c (mark_type, close_type_seen): Likewise.
+	(close_type_exposed_parameter, close_type_full_escape): Likewise.
+	(close_addressof_down): Likewise.
+	* ira-color.c (assign_hard_reg, push_allocno_to_stack): Likewise.
+	(setup_allocno_left_conflicts_size): Likewise.
+	(ira_reassign_conflict_allocnos): Likewise.
+	(ira_reassign_pseudos): Likewise.
+	* ira-emit.c (change_loop): Likewise.
+	* loop-invariant.c (mark_regno_live, mark_regno_death): Likewise.
+	* lto-streamer-out.c (write_symbol): Likewise.
+	* predict.c (expr_expected_value_1): Likewise.
+	* regstat.c (regstat_bb_compute_ri): Likewise.
+	* sel-sched.c (create_block_for_bookkeeping): Likewise.
+	(track_scheduled_insns_and_blocks, sel_sched_region_1): Likewise.
+	* stmt.c (expand_case): Likewise.
+	* tree-eh.c (emit_eh_dispatch): Likewise.
+	* tree-into-ssa.c (prune_unused_phi_nodes): Likewise.
+	* tree-loop-distribution.c (make_nodes_having_upstream_mem_writes):
+	Likewise.
+	(rdg_flag_vertex, rdg_flag_loop_exits): Likewise.
+	(rdg_build_components): Likewise.
+	* tree-object-size.c (collect_object_sizes_for): Likewise.
+	* tree-sra.c (convert_callers): Likewise.
+	* tree-ssa-coalesce.c (live_track_add_partition): Likewise.
+	* tree-ssa-live.c (mark_all_vars_used_1): Likewise.
+	* tree-ssa-pre.c (bitmap_set_replace_value): Likewise.
+
 2010-08-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*lea_1): Use P mode iterator.

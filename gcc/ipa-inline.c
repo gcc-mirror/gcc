@@ -699,9 +699,8 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
   if (!node->local.inlinable
       || node->global.inlined_to)
     return;
-  if (bitmap_bit_p (updated_nodes, node->uid))
+  if (!bitmap_set_bit (updated_nodes, node->uid))
     return;
-  bitmap_set_bit (updated_nodes, node->uid);
   node->global.estimated_growth = INT_MIN;
 
   /* See if there is something to do.  */

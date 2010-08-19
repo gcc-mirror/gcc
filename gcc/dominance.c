@@ -1357,10 +1357,9 @@ iterate_fix_dominators (enum cdi_direction dir, VEC (basic_block, heap) *bbs,
 	  dom_i = (size_t) *pointer_map_contains (map, dom);
 
 	  /* Do not include parallel edges to G.  */
-	  if (bitmap_bit_p ((bitmap) g->vertices[dom_i].data, i))
+	  if (!bitmap_set_bit ((bitmap) g->vertices[dom_i].data, i))
 	    continue;
 
-	  bitmap_set_bit ((bitmap) g->vertices[dom_i].data, i);
 	  add_edge (g, dom_i, i);
 	}
     }

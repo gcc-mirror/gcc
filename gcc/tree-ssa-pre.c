@@ -855,9 +855,8 @@ bitmap_set_replace_value (bitmap_set_t set, unsigned int lookfor,
   exprset = VEC_index (bitmap_set_t, value_expressions, lookfor);
   FOR_EACH_EXPR_ID_IN_SET (exprset, i, bi)
     {
-      if (bitmap_bit_p (&set->expressions, i))
+      if (bitmap_clear_bit (&set->expressions, i))
 	{
-	  bitmap_clear_bit (&set->expressions, i);
 	  bitmap_set_bit (&set->expressions, get_expression_id (expr));
 	  return;
 	}
