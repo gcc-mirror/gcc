@@ -1,3 +1,9 @@
+2010-08-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/45108
+	* io/list_read.c (namelist_read): If namelist reading fails, use
+	generate_error and then continue the read loop.
+
 2010-08-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/45308
