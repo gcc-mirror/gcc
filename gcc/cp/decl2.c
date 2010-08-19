@@ -3934,6 +3934,8 @@ cp_write_global_declarations (void)
 				      VEC_length (tree, pending_statics));
     }
 
+  perform_deferred_noexcept_checks ();
+
   /* Generate hidden aliases for Java.  */
   if (candidates)
     {
