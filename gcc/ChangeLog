@@ -1,3 +1,8 @@
+2010-08-19  Ian Bolton  <ian.bolton@arm.com>
+
+	* tree-switch-conversion.c (gen_inbound_check): Ensure that the
+	type for the conditional has wide enough range.
+
 2010-08-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/45327
