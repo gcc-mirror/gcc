@@ -1,5 +1,10 @@
 2010-08-19  Ian Bolton  <ian.bolton@arm.com>
 
+	PR target/45070
+	* gcc.c-torture/execute/pr45070.c: New.
+
+2010-08-19  Ian Bolton  <ian.bolton@arm.com>
+
 	* g++.dg/pr44328.C: New test.
 
 2010-08-19  Tobias Burnus  <burnus@net-b.de>
