@@ -1,3 +1,19 @@
+2010-08-19  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR target/42172
+	* combine.c (combine_validate_cost): New arg I0.  All callers changed.
+	Take its cost into account if nonnull.
+	(insn_a_feeds_b): New static function.
+	(combine_instructions): Look for four-insn combinations.
+	(can_combine_p): New args PRED2, SUCC2.  All callers changed.  Take
+	them into account when computing all_adjacent and looking for other
+	uses.
+	(combinable_i3pat): New args I0DEST, I0_NOT_IN_SRC.  All callers
+	changed.  Treat them like I1DEST and I1_NOT_IN_SRC.
+	(try_combine): New arg I0.  Handle four-insn combinations.
+	(distribute_notes): New arg ELIM_I0.  All callers changed.  Treat it
+	like ELIM_I1.
+
 2010-08-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/45307
