@@ -1,3 +1,9 @@
+2010-08-19  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR bootstrap/45350
+	* combine.c (try_combine): Initialize i1_is_used and i2_is_used.  Fix
+	a comment.
+
 2010-08-19  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* target.def (function_arg, function_incoming_arg): Remove const

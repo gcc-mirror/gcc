@@ -2511,7 +2511,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
   /* Total number of SETs to put into I3.  */
   int total_sets;
   /* Nonzero if I2's or I1's body now appears in I3.  */
-  int i2_is_used, i1_is_used;
+  int i2_is_used = 0, i1_is_used = 0;
   /* INSN_CODEs for new I3, new I2, and user of condition code.  */
   int insn_code_number, i2_code_number = 0, other_code_number = 0;
   /* Contains I3 if the destination of I3 is used in its source, which means
@@ -2546,8 +2546,8 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
   int i;
 
   /* Only try four-insn combinations when there's high likelihood of
-     success.  Look for simple insns, such as loads of constants, unary
-     operations, or binary operations involving a constant.  */
+     success.  Look for simple insns, such as loads of constants or
+     binary operations involving a constant.  */
   if (i0)
     {
       int i;
