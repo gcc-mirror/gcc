@@ -422,6 +422,7 @@ enum gfc_isym_id
   GFC_ISYM_J0,
   GFC_ISYM_J1,
   GFC_ISYM_JN,
+  GFC_ISYM_JN2,
   GFC_ISYM_KILL,
   GFC_ISYM_KIND,
   GFC_ISYM_LBOUND,
@@ -531,7 +532,8 @@ enum gfc_isym_id
   GFC_ISYM_XOR,
   GFC_ISYM_Y0,
   GFC_ISYM_Y1,
-  GFC_ISYM_YN
+  GFC_ISYM_YN,
+  GFC_ISYM_YN2
 };
 typedef enum gfc_isym_id gfc_isym_id;
 

@@ -1196,6 +1196,184 @@ gfc_simplify_bessel_jn (gfc_expr *order, gfc_expr *x)
 }
 
 
+/* Simplify transformational form of JN and YN.  */
+
+static gfc_expr *
+gfc_simplify_bessel_n2 (gfc_expr *order1, gfc_expr *order2, gfc_expr *x,
+			bool jn)
+{
+  gfc_expr *result;
+  gfc_expr *e;
+  long n1, n2;
+  int i;
+  mpfr_t x2rev, last1, last2;
+
+  if (x->expr_type != EXPR_CONSTANT || order1->expr_type != EXPR_CONSTANT
+      || order2->expr_type != EXPR_CONSTANT)
+    {
+      gfc_error ("Sorry, non-constant transformational Bessel function at %L"
+		   " not yet supported", &order2->where);
+      return &gfc_bad_expr;
+    }
+
+  n1 = mpz_get_si (order1->value.integer);
+  n2 = mpz_get_si (order2->value.integer);
+  result = gfc_get_array_expr (x->ts.type, x->ts.kind, &x->where);
+  result->rank = 1;
+  result->shape = gfc_get_shape (1);
+  mpz_init_set_ui (result->shape[0], MAX (n2-n1+1, 0));
+
+  if (n2 < n1)
+    return result;
+
+  /* Special case: x == 0; it is J0(0.0) == 1, JN(N > 0, 0.0) == 0; and
+     YN(N, 0.0) = -Inf.  */
+
+  if (mpfr_cmp_ui (x->value.real, 0.0) == 0)
+    {
+      if (!jn && gfc_option.flag_range_check)
+	{
+	  gfc_error ("Result of BESSEL_YN is -INF at %L", &result->where);
+ 	  gfc_free_expr (result);
+	  return &gfc_bad_expr;
+	}
+
+      if (jn && n1 == 0)
+	{
+	  e = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+	  mpfr_set_ui (e->value.real, 1.0, GFC_RND_MODE);
+	  gfc_constructor_append_expr (&result->value.constructor, e,
+				       &x->where);
+	  n1++;
+	}
+
+      for (i = n1; i <= n2; i++)
+	{
+	  e = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+	  if (jn)
+	    mpfr_set_ui (e->value.real, 0.0, GFC_RND_MODE);
+	  else
+            mpfr_set_inf (e->value.real, -1);
+	  gfc_constructor_append_expr (&result->value.constructor, e,
+				       &x->where);
+	}
+
+      return result;
+    }
+
+  /* Use the faster but more verbose recursion algorithm. Bessel functions
+     are stable for downward recursion and Neumann functions are stable
+     for upward recursion. It is
+       x2rev = 2.0/x,
+       J(N-1, x) = x2rev * N * J(N, x) - J(N+1, x),
+       Y(N+1, x) = x2rev * N * Y(N, x) - Y(N-1, x).
+     Cf. http://dlmf.nist.gov/10.74#iv and http://dlmf.nist.gov/10.6#E1  */
+
+  gfc_set_model_kind (x->ts.kind);
+
+  /* Get first recursion anchor.  */
+
+  mpfr_init (last1);
+  if (jn)
+    mpfr_jn (last1, n2, x->value.real, GFC_RND_MODE);
+  else
+    mpfr_yn (last1, n1, x->value.real, GFC_RND_MODE);
+
+  e = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+  mpfr_set (e->value.real, last1, GFC_RND_MODE);
+  if (range_check (e, jn ? "BESSEL_JN" : "BESSEL_YN") == &gfc_bad_expr)
+    {
+      mpfr_clear (last1);
+      gfc_free_expr (e);
+      gfc_free_expr (result);
+      return &gfc_bad_expr;
+    }
+  gfc_constructor_append_expr (&result->value.constructor, e, &x->where);
+
+  if (n1 == n2)
+    {
+      mpfr_clear (last1);
+      return result;
+    }
+ 
+  /* Get second recursion anchor.  */
+
+  mpfr_init (last2);
+  if (jn)
+    mpfr_jn (last2, n2-1, x->value.real, GFC_RND_MODE);
+  else
+    mpfr_yn (last2, n1+1, x->value.real, GFC_RND_MODE);
+
+  e = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+  mpfr_set (e->value.real, last2, GFC_RND_MODE);
+  if (range_check (e, jn ? "BESSEL_JN" : "BESSEL_YN") == &gfc_bad_expr)
+    {
+      mpfr_clear (last1);
+      mpfr_clear (last2);
+      gfc_free_expr (e);
+      gfc_free_expr (result);
+      return &gfc_bad_expr;
+    }
+  if (jn)
+     gfc_constructor_insert_expr (&result->value.constructor, e, &x->where, -2);
+  else 
+    gfc_constructor_append_expr (&result->value.constructor, e, &x->where);
+
+  if (n1 + 1 == n2)
+    {
+      mpfr_clear (last1);
+      mpfr_clear (last2);
+      return result;
+    }
+
+  /* Start actual recursion.  */
+
+  mpfr_init (x2rev);
+  mpfr_ui_div (x2rev, 2, x->value.real, GFC_RND_MODE);
+ 
+  for (i = 2; i <= n2-n1; i++)
+    {
+      e = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+      mpfr_mul_si (e->value.real, x2rev, jn ? (n2-i+1) : (n1+i-1),
+		   GFC_RND_MODE);
+      mpfr_mul (e->value.real, e->value.real, last2, GFC_RND_MODE);
+      mpfr_sub (e->value.real, e->value.real, last1, GFC_RND_MODE);
+
+      if (range_check (e, jn ? "BESSEL_JN" : "BESSEL_YN") == &gfc_bad_expr)
+	goto error;
+
+      if (jn)
+	gfc_constructor_insert_expr (&result->value.constructor, e, &x->where,
+				     -i-1);
+      else
+	gfc_constructor_append_expr (&result->value.constructor, e, &x->where);
+
+      mpfr_set (last1, last2, GFC_RND_MODE);
+      mpfr_set (last2, e->value.real, GFC_RND_MODE);
+    }
+
+  mpfr_clear (last1);
+  mpfr_clear (last2);
+  mpfr_clear (x2rev);
+  return result;
+
+error:
+  mpfr_clear (last1);
+  mpfr_clear (last2);
+  mpfr_clear (x2rev);
+  gfc_free_expr (e);
+  gfc_free_expr (result);
+  return &gfc_bad_expr;
+}
+
+
+gfc_expr *
+gfc_simplify_bessel_jn2 (gfc_expr *order1, gfc_expr *order2, gfc_expr *x)
+{
+  return gfc_simplify_bessel_n2 (order1, order2, x, true);
+}
+
+
 gfc_expr *
 gfc_simplify_bessel_y0 (gfc_expr *x)
 {
@@ -1240,6 +1418,13 @@ gfc_simplify_bessel_yn (gfc_expr *order, gfc_expr *x)
   mpfr_yn (result->value.real, n, x->value.real, GFC_RND_MODE);
 
   return range_check (result, "BESSEL_YN");
+}
+
+
+gfc_expr *
+gfc_simplify_bessel_yn2 (gfc_expr *order1, gfc_expr *order2, gfc_expr *x)
+{
+  return gfc_simplify_bessel_n2 (order1, order2, x, false);
 }
 
 

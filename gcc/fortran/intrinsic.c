@@ -1317,6 +1317,11 @@ add_functions (void)
 	     gfc_check_besn, gfc_simplify_bessel_jn, gfc_resolve_besn,
 	     n, BT_INTEGER, di, REQUIRED, x, BT_REAL, dd, REQUIRED);
 
+  add_sym_3 ("bessel_jn", GFC_ISYM_JN2, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F2008,
+	     gfc_check_bessel_n2, gfc_simplify_bessel_jn2, NULL,
+	     "n1", BT_INTEGER, di, REQUIRED,"n2", BT_INTEGER, di, REQUIRED,
+	     x, BT_REAL, dr, REQUIRED);
+
   make_generic ("bessel_jn", GFC_ISYM_JN, GFC_STD_F2008);
 
   add_sym_1 ("besy0", GFC_ISYM_Y0, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_GNU,
@@ -1352,6 +1357,11 @@ add_functions (void)
   add_sym_2 ("dbesyn", GFC_ISYM_YN, CLASS_ELEMENTAL, ACTUAL_NO, BT_REAL, dd, GFC_STD_GNU,
 	     gfc_check_besn, gfc_simplify_bessel_yn, gfc_resolve_besn,
 	     n, BT_INTEGER, di, REQUIRED, x, BT_REAL, dd, REQUIRED);
+
+  add_sym_3 ("bessel_yn", GFC_ISYM_YN2, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F2008,
+	     gfc_check_bessel_n2, gfc_simplify_bessel_yn2, NULL,
+	     "n1", BT_INTEGER, di, REQUIRED,"n2", BT_INTEGER, di, REQUIRED,
+	      x, BT_REAL, dr, REQUIRED);
 
   make_generic ("bessel_yn", GFC_ISYM_YN, GFC_STD_F2008);
 

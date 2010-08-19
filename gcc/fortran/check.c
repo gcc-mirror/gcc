@@ -884,8 +884,44 @@ gfc_check_besn (gfc_expr *n, gfc_expr *x)
 {
   if (type_check (n, 0, BT_INTEGER) == FAILURE)
     return FAILURE;
+  if (n->expr_type == EXPR_CONSTANT)
+    {
+      int i;
+      gfc_extract_int (n, &i);
+      if (i < 0 && gfc_notify_std (GFC_STD_GNU, "Extension: Negative argument "
+				   "N at %L", &n->where) == FAILURE)
+	return FAILURE;
+    }
 
   if (type_check (x, 1, BT_REAL) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+/* Transformational version of the Bessel JN and YN functions.  */
+
+gfc_try
+gfc_check_bessel_n2 (gfc_expr *n1, gfc_expr *n2, gfc_expr *x)
+{
+  if (type_check (n1, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+  if (scalar_check (n1, 0) == FAILURE)
+    return FAILURE;
+  if (nonnegative_check("N1", n1) == FAILURE)
+    return FAILURE;
+
+  if (type_check (n2, 1, BT_INTEGER) == FAILURE)
+    return FAILURE;
+  if (scalar_check (n2, 1) == FAILURE)
+    return FAILURE;
+  if (nonnegative_check("N2", n2) == FAILURE)
+    return FAILURE;
+
+  if (type_check (x, 2, BT_REAL) == FAILURE)
+    return FAILURE;
+  if (scalar_check (x, 2) == FAILURE)
     return FAILURE;
 
   return SUCCESS;
