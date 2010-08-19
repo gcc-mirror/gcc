@@ -1661,7 +1661,7 @@ The return value is a scalar of type @code{REAL}. It has the same
 kind as @var{X}.
 
 @item @emph{Note}:
-The transformational function uses a recurrance algorithm which might,
+The transformational function uses a recurrence algorithm which might,
 for some values of @var{X}, lead to different results than calls to
 the elemental function.
 
@@ -1821,7 +1821,7 @@ The return value is a scalar of type @code{REAL}. It has the same
 kind as @var{X}.
 
 @item @emph{Note}:
-The transformational function uses a recurrance algorithm which might,
+The transformational function uses a recurrence algorithm which might,
 for some values of @var{X}, lead to different results than calls to
 the elemental function.
 

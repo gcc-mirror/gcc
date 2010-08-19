@@ -1,5 +1,11 @@
 2010-08-19  Tobias Burnus  <burnus@net-b.de>
 
+	* intrinsic.texi (Bessel_jn, Bessel_yn): Fix typo.
+	* * simplify.c (gfc_simplify_bessel_yn): Change recursive
+	into recurrence.
+
+2010-08-19  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/36158
 	PR fortran/33197
 	* check.c (gfc_check_bessel_n2): New function.
