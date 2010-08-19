@@ -999,6 +999,9 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 bool
 reference_related_p (tree t1, tree t2)
 {
+  if (t1 == error_mark_node || t2 == error_mark_node)
+    return false;
+
   t1 = TYPE_MAIN_VARIANT (t1);
   t2 = TYPE_MAIN_VARIANT (t2);
 
@@ -1598,8 +1601,10 @@ add_function_candidate (struct z_candidate **candidates,
 
   /* Kludge: When looking for a function from a subobject while generating
      an implicit copy/move constructor/operator=, don't consider anything
-     that takes (a reference to) a different type.  See c++/44909.  */
-  else if (flags & LOOKUP_SPECULATIVE)
+     that takes (a reference to) an unrelated type.  See c++/44909.  */
+  else if ((flags & LOOKUP_SPECULATIVE)
+	   || (current_function_decl
+	       && DECL_DEFAULTED_FN (current_function_decl)))
     {
       if (DECL_CONSTRUCTOR_P (fn))
 	i = 1;
@@ -1611,8 +1616,8 @@ add_function_candidate (struct z_candidate **candidates,
       if (i && len == i)
 	{
 	  parmnode = chain_index (i-1, parmlist);
-	  if (!(same_type_ignoring_top_level_qualifiers_p
-		(non_reference (TREE_VALUE (parmnode)), ctype)))
+	  if (!reference_related_p (non_reference (TREE_VALUE (parmnode)),
+				    ctype))
 	    viable = 0;
 	}
     }
