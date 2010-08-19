@@ -14,4 +14,4 @@ int foo ()
   return bits.b;
 }
 
-/* { dg-final { scan-assembler "movzbl.*bits" } } */
+/* { dg-final { scan-assembler "mov(b|zbl).*bits" } } */
