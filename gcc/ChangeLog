@@ -1,3 +1,9 @@
+2010-08-19  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/44691
+	* sel-sched.c (count_occurrences_1): Also punt when SUBREG_REG
+	is not a register. 
+
 2010-08-19  Ian Bolton  <ian.bolton@arm.com>
 
 	PR target/45070
