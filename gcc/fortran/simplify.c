@@ -1261,7 +1261,7 @@ gfc_simplify_bessel_n2 (gfc_expr *order1, gfc_expr *order2, gfc_expr *x,
       return result;
     }
 
-  /* Use the faster but more verbose recursion algorithm. Bessel functions
+  /* Use the faster but more verbose recurrence algorithm. Bessel functions
      are stable for downward recursion and Neumann functions are stable
      for upward recursion. It is
        x2rev = 2.0/x,
