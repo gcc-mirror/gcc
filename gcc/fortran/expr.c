@@ -3232,7 +3232,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 {
   symbol_attribute attr;
   gfc_ref *ref;
-  int is_pure;
+  bool is_pure, rank_remap;
   int pointer, check_intent_in, proc_pointer;
 
   if (lvalue->symtree->n.sym->ts.type == BT_UNKNOWN
@@ -3260,6 +3260,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
   pointer = lvalue->symtree->n.sym->attr.pointer;
   proc_pointer = lvalue->symtree->n.sym->attr.proc_pointer;
 
+  rank_remap = false;
   for (ref = lvalue->ref; ref; ref = ref->next)
     {
       if (pointer)
@@ -3273,6 +3274,8 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 
       if (ref->type == REF_ARRAY && ref->next == NULL)
 	{
+	  int dim;
+
 	  if (ref->u.ar.type == AR_FULL)
 	    break;
 
@@ -3285,16 +3288,41 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 
 	  if (gfc_notify_std (GFC_STD_F2003,"Fortran 2003: Bounds "
 			      "specification for '%s' in pointer assignment "
-                              "at %L", lvalue->symtree->n.sym->name,
+			      "at %L", lvalue->symtree->n.sym->name,
 			      &lvalue->where) == FAILURE)
-            return FAILURE;
+	    return FAILURE;
 
-	  gfc_error ("Pointer bounds remapping at %L is not yet implemented "
-		     "in gfortran", &lvalue->where);
-	  /* TODO: See PR 29785. Add checks that all lbounds are specified and
-	     either never or always the upper-bound; strides shall not be
-	     present.  */
-	  return FAILURE;
+	  /* When bounds are given, all lbounds are necessary and either all
+	     or none of the upper bounds; no strides are allowed.  If the
+	     upper bounds are present, we may do rank remapping.  */
+	  for (dim = 0; dim < ref->u.ar.dimen; ++dim)
+	    {
+	      if (!ref->u.ar.start[dim])
+		{
+		  gfc_error ("Lower bound has to be present at %L",
+			     &lvalue->where);
+		  return FAILURE;
+		}
+	      if (ref->u.ar.stride[dim])
+		{
+		  gfc_error ("Stride must not be present at %L",
+			     &lvalue->where);
+		  return FAILURE;
+		}
+
+	      if (dim == 0)
+		rank_remap = (ref->u.ar.end[dim] != NULL);
+	      else
+		{
+		  if ((rank_remap && !ref->u.ar.end[dim])
+		      || (!rank_remap && ref->u.ar.end[dim]))
+		    {
+		      gfc_error ("Either all or none of the upper bounds"
+				 " must be specified at %L", &lvalue->where);
+		      return FAILURE;
+		    }
+		}
+	    }
 	}
     }
 
@@ -3456,11 +3484,45 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
       return FAILURE;
     }
 
-  if (lvalue->rank != rvalue->rank)
+  if (lvalue->rank != rvalue->rank && !rank_remap)
     {
-      gfc_error ("Different ranks in pointer assignment at %L",
-		 &lvalue->where);
+      gfc_error ("Different ranks in pointer assignment at %L", &lvalue->where);
       return FAILURE;
+    }
+
+  /* Check rank remapping.  */
+  if (rank_remap)
+    {
+      mpz_t lsize, rsize;
+
+      /* If this can be determined, check that the target must be at least as
+	 large as the pointer assigned to it is.  */
+      if (gfc_array_size (lvalue, &lsize) == SUCCESS
+	  && gfc_array_size (rvalue, &rsize) == SUCCESS
+	  && mpz_cmp (rsize, lsize) < 0)
+	{
+	  gfc_error ("Rank remapping target is smaller than size of the"
+		     " pointer (%ld < %ld) at %L",
+		     mpz_get_si (rsize), mpz_get_si (lsize),
+		     &lvalue->where);
+	  return FAILURE;
+	}
+
+      /* The target must be either rank one or it must be simply contiguous
+	 and F2008 must be allowed.  */
+      if (rvalue->rank != 1)
+	{
+	  if (!gfc_is_simply_contiguous (rvalue, true))
+	    {
+	      gfc_error ("Rank remapping target must be rank 1 or"
+			 " simply contiguous at %L", &rvalue->where);
+	      return FAILURE;
+	    }
+	  if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: Rank remapping"
+			      " target is not rank 1 at %L", &rvalue->where)
+		== FAILURE)
+	    return FAILURE;
+	}
     }
 
   /* Now punt if we are dealing with a NULLIFY(X) or X = NULL(X).  */

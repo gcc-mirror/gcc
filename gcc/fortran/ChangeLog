@@ -1,3 +1,21 @@
+2010-08-19  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/29785
+	PR fortran/45016
+	* trans.h (struct gfc_se): New flag `byref_noassign'.
+	* trans-array.h (gfc_conv_shift_descriptor_lbound): New method.
+	(gfc_conv_array_extent_dim), (gfc_conv_descriptor_size): New methods.
+	* expr.c (gfc_check_pointer_assign): Allow bounds and rank remapping
+	and check for compile-time errors with those.
+	* trans-decl.c (trans_associate_var): Use new routine
+	`gfc_conv_shift_descriptor_lbound' instead of doing it manually.
+	* trans-array.c (gfc_conv_shift_descriptor_lbound): New method.
+	(gfc_conv_array_extent_dim), (gfc_conv_descriptor_size): New methods.
+	(gfc_array_init_size): Use new `gfc_conv_array_extent_dim'.
+	(gfc_conv_expr_descriptor): Handle new flag `byref_noassign'.
+	* trans-expr.c (gfc_trans_pointer_assignment): Handle bounds and
+	rank remapping for assignment.
+
 2010-08-19  Tobias Burnus  <burnus@net-b.de>
 
 	* intrinsic.texi (Bessel_jn, Bessel_yn): Fix typo.

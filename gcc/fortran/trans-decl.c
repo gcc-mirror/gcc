@@ -3133,42 +3133,15 @@ trans_associate_var (gfc_symbol* sym, gfc_wrapped_block* block)
 	 descriptor to the one generated for the temporary.  */
       if (!sym->assoc->variable)
 	{
-	  tree offs;
 	  int dim;
 
 	  gfc_add_modify (&se.pre, desc, se.expr);
 
 	  /* The generated descriptor has lower bound zero (as array
-	     temporary), shift bounds so we get lower bounds of 1 all the time.
-	     The offset has to be corrected as well.
-	     Because the ubound shift and offset depends on the lower bounds, we
-	     first calculate those and set the lbound to one last.  */
-
-	  offs = gfc_conv_descriptor_offset_get (desc);
+	     temporary), shift bounds so we get lower bounds of 1.  */
 	  for (dim = 0; dim < e->rank; ++dim)
-	    {
-	      tree from, to;
-	      tree stride;
-
-	      from = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[dim]);
-	      to = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[dim]);
-	      stride = gfc_conv_descriptor_stride_get (desc, gfc_rank_cst[dim]);
-
-	      tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
-				 gfc_index_one_node, from);
-	      to = fold_build2 (PLUS_EXPR, gfc_array_index_type, to, tmp);
-
-	      tmp = fold_build2 (MULT_EXPR, gfc_array_index_type, tmp, stride);
-	      offs = fold_build2 (MINUS_EXPR, gfc_array_index_type, offs, tmp);
-
-	      gfc_conv_descriptor_ubound_set (&se.pre, desc,
-					      gfc_rank_cst[dim], to);
-	    }
-	  gfc_conv_descriptor_offset_set (&se.pre, desc, offs);
-
-	  for (dim = 0; dim < e->rank; ++dim)
-	    gfc_conv_descriptor_lbound_set (&se.pre, desc, gfc_rank_cst[dim],
-					    gfc_index_one_node);
+	    gfc_conv_shift_descriptor_lbound (&se.pre, desc,
+					      dim, gfc_index_one_node);
 	}
 
       /* Done, register stuff as init / cleanup code.  */

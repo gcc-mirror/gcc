@@ -64,6 +64,13 @@ typedef struct gfc_se
      pointer assignments.  */
   unsigned direct_byref:1;
 
+  /* If direct_byref is set, do work out the descriptor as in that case but
+     do still create a new descriptor variable instead of using an
+     existing one.  This is useful for special pointer assignments like
+     rank remapping where we have to process the descriptor before
+     assigning to final one.  */
+  unsigned byref_noassign:1;
+
   /* Ignore absent optional arguments.  Used for some intrinsics.  */
   unsigned ignore_optional:1;
 
