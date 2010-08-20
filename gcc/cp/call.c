@@ -3161,7 +3161,7 @@ resolve_args (VEC(tree,gc) *args)
   unsigned int ix;
   tree arg;
 
-  for (ix = 0; VEC_iterate (tree, args, ix, arg); ++ix)
+  FOR_EACH_VEC_ELT (tree, args, ix, arg)
     {
       if (error_operand_p (arg))
 	return NULL;
@@ -5423,7 +5423,7 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum)
     }
 
   /* Detect recursion.  */
-  for (i = 0; VEC_iterate (tree, default_arg_context, i, t); ++i)
+  FOR_EACH_VEC_ELT (tree, default_arg_context, i, t)
     if (t == fn)
       {
 	error ("recursive evaluation of default argument for %q#D", fn);
@@ -5620,7 +5620,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  ++nargs;
 	  alcarray = XALLOCAVEC (tree, nargs);
 	  alcarray[0] = first_arg;
-	  for (ix = 0; VEC_iterate (tree, args, ix, arg); ++ix)
+	  FOR_EACH_VEC_ELT (tree, args, ix, arg)
 	    alcarray[ix + 1] = arg;
 	  argarray = alcarray;
 	}

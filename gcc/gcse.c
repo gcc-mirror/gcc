@@ -4413,9 +4413,7 @@ hoist_code (void)
 
   /* Walk over each basic block looking for potentially hoistable
      expressions, nothing gets hoisted from the entry block.  */
-  for (dom_tree_walk_index = 0;
-       VEC_iterate (basic_block, dom_tree_walk, dom_tree_walk_index, bb);
-       dom_tree_walk_index++)
+  FOR_EACH_VEC_ELT (basic_block, dom_tree_walk, dom_tree_walk_index, bb)
     {
       domby = get_dominated_to_depth (CDI_DOMINATORS, bb, MAX_HOIST_DEPTH);
 
@@ -4468,7 +4466,7 @@ hoist_code (void)
 	      /* We've found a potentially hoistable expression, now
 		 we look at every block BB dominates to see if it
 		 computes the expression.  */
-	      for (j = 0; VEC_iterate (basic_block, domby, j, dominated); j++)
+	      FOR_EACH_VEC_ELT (basic_block, domby, j, dominated)
 		{
 		  int max_distance;
 
@@ -4552,9 +4550,7 @@ hoist_code (void)
 
 	      /* Walk through occurences of I'th expressions we want
 		 to hoist to BB and make the transformations.  */
-	      for (j = 0;
-		   VEC_iterate (occr_t, occrs_to_hoist, j, occr);
-		   j++)
+	      FOR_EACH_VEC_ELT (occr_t, occrs_to_hoist, j, occr)
 		{
 		  rtx insn;
 		  rtx set;

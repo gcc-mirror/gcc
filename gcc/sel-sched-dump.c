@@ -467,7 +467,7 @@ dump_insn_vector (rtx_vec_t succs)
   int i;
   rtx succ;
 
-  for (i = 0; VEC_iterate (rtx, succs, i, succ); i++)
+  FOR_EACH_VEC_ELT (rtx, succs, i, succ)
     if (succ)
       dump_insn (succ);
     else

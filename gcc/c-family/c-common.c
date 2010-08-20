@@ -9300,7 +9300,7 @@ make_tree_vector_copy (const VEC(tree,gc) *orig)
 
   ret = make_tree_vector ();
   VEC_reserve (tree, gc, ret, VEC_length (tree, orig));
-  for (ix = 0; VEC_iterate (tree, orig, ix, t); ++ix)
+  FOR_EACH_VEC_ELT (tree, orig, ix, t)
     VEC_quick_push (tree, ret, t);
   return ret;
 }

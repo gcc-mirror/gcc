@@ -5437,7 +5437,7 @@ finish_aliases_1 (void)
   unsigned i;
   alias_pair *p;
 
-  for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p); i++)
+  FOR_EACH_VEC_ELT (alias_pair, alias_pairs, i, p)
     {
       tree target_decl;
 
@@ -5470,7 +5470,7 @@ finish_aliases_2 (void)
   unsigned i;
   alias_pair *p;
 
-  for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p); i++)
+  FOR_EACH_VEC_ELT (alias_pair, alias_pairs, i, p)
     do_assemble_alias (p->decl, p->target);
 
   VEC_truncate (alias_pair, alias_pairs, 0);
@@ -6715,12 +6715,12 @@ output_object_block (struct object_block *block)
 
   /* Define the values of all anchors relative to the current section
      position.  */
-  for (i = 0; VEC_iterate (rtx, block->anchors, i, symbol); i++)
+  FOR_EACH_VEC_ELT (rtx, block->anchors, i, symbol)
     targetm.asm_out.output_anchor (symbol);
 
   /* Output the objects themselves.  */
   offset = 0;
-  for (i = 0; VEC_iterate (rtx, block->objects, i, symbol); i++)
+  FOR_EACH_VEC_ELT (rtx, block->objects, i, symbol)
     {
       /* Move to the object's offset, padding with zeros if necessary.  */
       assemble_zeros (SYMBOL_REF_BLOCK_OFFSET (symbol) - offset);

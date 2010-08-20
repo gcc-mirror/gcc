@@ -1648,7 +1648,7 @@ gimple_find_values_to_profile (histogram_values *values)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       gimple_values_to_profile (gsi_stmt (gsi), values);
 
-  for (i = 0; VEC_iterate (histogram_value, *values, i, hist); i++)
+  FOR_EACH_VEC_ELT (histogram_value, *values, i, hist)
     {
       switch (hist->type)
         {

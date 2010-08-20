@@ -3057,7 +3057,7 @@ output_one_function_exception_table (const char * ARG_UNUSED (fnname),
   /* ??? Decode and interpret the data for flag_debug_asm.  */
   {
     uchar uc;
-    for (i = 0; VEC_iterate (uchar, crtl->eh.action_record_data, i, uc); ++i)
+    FOR_EACH_VEC_ELT (uchar, crtl->eh.action_record_data, i, uc)
       dw2_asm_output_data (1, uc, i ? NULL : "Action record table");
   }
 

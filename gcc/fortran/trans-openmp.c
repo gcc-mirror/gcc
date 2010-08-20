@@ -1357,7 +1357,7 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
 
   gfc_start_block (&body);
 
-  for (ix = 0; VEC_iterate (dovar_init, inits, ix, di); ix++)
+  FOR_EACH_VEC_ELT (dovar_init, inits, ix, di)
     gfc_add_modify (&body, di->var, di->init);
   VEC_free (dovar_init, heap, inits);
 

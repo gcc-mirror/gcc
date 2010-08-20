@@ -6213,7 +6213,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
     {
       eh_region region = NULL;
 
-      for (i = 0; VEC_iterate (basic_block, bbs, i, bb); i++)
+      FOR_EACH_VEC_ELT (basic_block, bbs, i, bb)
 	region = find_outermost_region_in_block (saved_cfun, bb, region);
 
       init_eh_for_function ();
@@ -6242,7 +6242,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   d.eh_map = eh_map;
   d.remap_decls_p = true;
 
-  for (i = 0; VEC_iterate (basic_block, bbs, i, bb); i++)
+  FOR_EACH_VEC_ELT (basic_block, bbs, i, bb)
     {
       /* No need to update edge counts on the last block.  It has
 	 already been updated earlier when we detached the region from
@@ -6307,7 +6307,7 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
     }
 
   set_immediate_dominator (CDI_DOMINATORS, bb, dom_entry);
-  for (i = 0; VEC_iterate (basic_block, dom_bbs, i, abb); i++)
+  FOR_EACH_VEC_ELT (basic_block, dom_bbs, i, abb)
     set_immediate_dominator (CDI_DOMINATORS, abb, bb);
   VEC_free (basic_block, heap, dom_bbs);
 
@@ -6917,7 +6917,7 @@ remove_edge_and_dominated_blocks (edge e)
   else
     {
       bbs_to_remove = get_all_dominated_blocks (CDI_DOMINATORS, e->dest);
-      for (i = 0; VEC_iterate (basic_block, bbs_to_remove, i, bb); i++)
+      FOR_EACH_VEC_ELT (basic_block, bbs_to_remove, i, bb)
 	{
 	  FOR_EACH_EDGE (f, ei, bb->succs)
 	    {
@@ -6925,7 +6925,7 @@ remove_edge_and_dominated_blocks (edge e)
 		bitmap_set_bit (df, f->dest->index);
 	    }
 	}
-      for (i = 0; VEC_iterate (basic_block, bbs_to_remove, i, bb); i++)
+      FOR_EACH_VEC_ELT (basic_block, bbs_to_remove, i, bb)
 	bitmap_clear_bit (df, bb->index);
 
       EXECUTE_IF_SET_IN_BITMAP (df, 0, i, bi)

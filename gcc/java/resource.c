@@ -107,7 +107,7 @@ write_resource_constructor (tree *list_p)
   register_resource_fn = t;
 
   /* Write out entries in the same order in which they were defined.  */
-  for (ix = 0; VEC_iterate (tree, resources, ix, decl); ix++)
+  FOR_EACH_VEC_ELT (tree, resources, ix, decl)
     {
       t = build_fold_addr_expr (decl);
       t = build_call_expr (register_resource_fn, 1, t);

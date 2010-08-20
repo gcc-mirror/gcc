@@ -942,7 +942,7 @@ predict_loops (void)
       exits = get_loop_exit_edges (loop);
       n_exits = VEC_length (edge, exits);
 
-      for (j = 0; VEC_iterate (edge, exits, j, ex); j++)
+      FOR_EACH_VEC_ELT (edge, exits, j, ex)
 	{
 	  tree niter = NULL;
 	  HOST_WIDE_INT nitercst;

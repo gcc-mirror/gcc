@@ -2040,7 +2040,7 @@ execute_update_addresses_taken (bool do_optimize)
 	 differences for -g vs. -g0.  */
       for (var = DECL_ARGUMENTS (cfun->decl); var; var = DECL_CHAIN (var))
 	update_vops |= maybe_optimize_var (var, addresses_taken, not_reg_needs);
-      for (i = 0; VEC_iterate (tree, cfun->local_decls, i, var); ++i)
+      FOR_EACH_VEC_ELT (tree, cfun->local_decls, i, var)
 	update_vops |= maybe_optimize_var (var, addresses_taken, not_reg_needs);
     }
 

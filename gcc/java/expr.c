@@ -2296,7 +2296,7 @@ get_symbol_table_index (tree t, tree special,
   method_entry *e;
   unsigned i;
 
-  for (i = 0; VEC_iterate (method_entry, *symbol_table, i, e); i++)
+  FOR_EACH_VEC_ELT (method_entry, *symbol_table, i, e)
     if (t == e->method && special == e->special)
       goto done;
 

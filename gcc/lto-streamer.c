@@ -643,7 +643,7 @@ lto_streamer_cache_create (void)
      unnecessarily.  */
   common_nodes = lto_get_common_nodes ();
 
-  for (i = 0; VEC_iterate (tree, common_nodes, i, node); i++)
+  FOR_EACH_VEC_ELT (tree, common_nodes, i, node)
     preload_common_node (cache, node);
 
   VEC_free(tree, heap, common_nodes);

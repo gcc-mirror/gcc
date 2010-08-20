@@ -306,7 +306,7 @@ maybe_apply_pragma_weak (tree decl)
 
   id = DECL_ASSEMBLER_NAME (decl);
 
-  for (i = 0; VEC_iterate (pending_weak, pending_weaks, i, pe); i++)
+  FOR_EACH_VEC_ELT (pending_weak, pending_weaks, i, pe)
     if (id == pe->name)
       {
 	apply_pragma_weak (decl, pe->value);
@@ -324,7 +324,7 @@ maybe_apply_pending_pragma_weaks (void)
   int i;
   pending_weak *pe;
 
-  for (i = 0; VEC_iterate (pending_weak, pending_weaks, i, pe); i++)
+  FOR_EACH_VEC_ELT (pending_weak, pending_weaks, i, pe)
     {
       alias_id = pe->name;
       id = pe->value;
@@ -486,9 +486,7 @@ add_to_renaming_pragma_list (tree oldname, tree newname)
   unsigned ix;
   pending_redefinition *p;
 
-  for (ix = 0;
-       VEC_iterate (pending_redefinition, pending_redefine_extname, ix, p);
-       ix++)
+  FOR_EACH_VEC_ELT (pending_redefinition, pending_redefine_extname, ix, p)
     if (oldname == p->oldname)
       {
 	if (p->newname != newname)
@@ -553,9 +551,7 @@ maybe_apply_renaming_pragma (tree decl, tree asmname)
 		   "conflict with previous rename");
 
       /* Take any pending redefine_extname off the list.  */
-      for (ix = 0;
-	   VEC_iterate (pending_redefinition, pending_redefine_extname, ix, p);
-	   ix++)
+      FOR_EACH_VEC_ELT (pending_redefinition, pending_redefine_extname, ix, p)
 	if (DECL_NAME (decl) == p->oldname)
 	  {
 	    /* Only warn if there is a conflict.  */
@@ -571,9 +567,7 @@ maybe_apply_renaming_pragma (tree decl, tree asmname)
     }
 
   /* Find out if we have a pending #pragma redefine_extname.  */
-  for (ix = 0;
-       VEC_iterate (pending_redefinition, pending_redefine_extname, ix, p);
-       ix++)
+  FOR_EACH_VEC_ELT (pending_redefinition, pending_redefine_extname, ix, p)
     if (DECL_NAME (decl) == p->oldname)
       {
 	tree newname = p->newname;

@@ -746,9 +746,7 @@ vect_pattern_recog_1 (
 
   /* Patterns cannot be vectorized using SLP, because they change the order of
      computation.  */
-  for (i = 0; VEC_iterate (gimple, LOOP_VINFO_REDUCTIONS (loop_vinfo), i,
-                           next);
-       i++)
+  FOR_EACH_VEC_ELT (gimple, LOOP_VINFO_REDUCTIONS (loop_vinfo), i, next)
     if (next == stmt)
       VEC_ordered_remove (gimple, LOOP_VINFO_REDUCTIONS (loop_vinfo), i); 
 }

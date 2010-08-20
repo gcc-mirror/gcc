@@ -1417,7 +1417,7 @@ init_reg_last (void)
   unsigned int i;
   reg_stat_type *p;
 
-  for (i = 0; VEC_iterate (reg_stat_type, reg_stat, i, p); ++i)
+  FOR_EACH_VEC_ELT (reg_stat_type, reg_stat, i, p)
     memset (p, 0, offsetof (reg_stat_type, sign_bit_copies));
 }
 

@@ -142,13 +142,13 @@ find_tune_attr (rtx exp)
       if (strcmp (XSTR (exp, 0), "alternative") == 0)
 	return false;
 
-      for (i = 0; VEC_iterate (rtx, const_attrs, i, attr); i++)
+      FOR_EACH_VEC_ELT (rtx, const_attrs, i, attr)
 	if (strcmp (XSTR (attr, 0), XSTR (exp, 0)) == 0)
 	  {
 	    unsigned int j;
 	    rtx resv;
 
-	    for (j = 0; VEC_iterate (rtx, reservations, j, resv); j++)
+	    FOR_EACH_VEC_ELT (rtx, reservations, j, resv)
 	      if (! check_tune_attr (XSTR (attr, 0), XEXP (resv, 2)))
 		return false;
 	    return true;

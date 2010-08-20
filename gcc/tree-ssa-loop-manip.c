@@ -1045,7 +1045,7 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   free (wont_exit);
   gcc_assert (ok);
 
-  for (i = 0; VEC_iterate (edge, to_remove, i, e); i++)
+  FOR_EACH_VEC_ELT (edge, to_remove, i, e)
     {
       ok = remove_path (e);
       gcc_assert (ok);

@@ -1327,7 +1327,7 @@ mudflap_finish_file (void)
     {
       size_t i;
       tree obj;
-      for (i = 0; VEC_iterate (tree, deferred_static_decls, i, obj); i++)
+      FOR_EACH_VEC_ELT (tree, deferred_static_decls, i, obj)
         {
           gcc_assert (DECL_P (obj));
 

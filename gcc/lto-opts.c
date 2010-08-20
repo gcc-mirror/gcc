@@ -128,7 +128,7 @@ clear_options (VEC(opt_t, heap) **opts_p)
   int i;
   opt_t *o;
 
-  for (i = 0; VEC_iterate (opt_t, *opts_p, i, o); i++)
+  FOR_EACH_VEC_ELT (opt_t, *opts_p, i, o)
     free (o->arg);
 
   VEC_free (opt_t, heap, *opts_p);
@@ -278,7 +278,7 @@ output_options (struct lto_output_stream *stream)
 
   output_data_stream (stream, &length, sizeof (length));
 
-  for (i = 0; VEC_iterate (opt_t, opts, i, o); i++)
+  FOR_EACH_VEC_ELT (opt_t, opts, i, o)
     {
       output_data_stream (stream, &o->type, sizeof (o->type));
       output_data_stream (stream, &o->code, sizeof (o->code));
@@ -397,7 +397,7 @@ lto_reissue_options (void)
   int i;
   opt_t *o;
 
-  for (i = 0; VEC_iterate (opt_t, opts, i, o); i++)
+  FOR_EACH_VEC_ELT (opt_t, opts, i, o)
     {
       const struct cl_option *option = &cl_options[o->code];
 

@@ -1690,7 +1690,7 @@ invalidate_global_renaming_pointers (void)
   unsigned int i;
   tree iter;
 
-  for (i = 0; VEC_iterate(tree, global_renaming_pointers, i, iter); i++)
+  FOR_EACH_VEC_ELT (tree, global_renaming_pointers, i, iter)
     SET_DECL_RENAMED_OBJECT (iter, NULL_TREE);
 
   VEC_free (tree, gc, global_renaming_pointers);
@@ -4661,7 +4661,7 @@ builtin_decl_for (tree name)
   unsigned i;
   tree decl;
 
-  for (i = 0; VEC_iterate(tree, builtin_decls, i, decl); i++)
+  FOR_EACH_VEC_ELT (tree, builtin_decls, i, decl)
     if (DECL_NAME (decl) == name)
       return decl;
 

@@ -3795,12 +3795,12 @@ bfin_dump_loops (loop_info loops)
       fprintf (dump_file, "{head:%d, depth:%d}", loop->head->index, loop->depth);
 
       fprintf (dump_file, " blocks: [ ");
-      for (ix = 0; VEC_iterate (basic_block, loop->blocks, ix, b); ix++)
+      FOR_EACH_VEC_ELT (basic_block, loop->blocks, ix, b)
 	fprintf (dump_file, "%d ", b->index);
       fprintf (dump_file, "] ");
 
       fprintf (dump_file, " inner loops: [ ");
-      for (ix = 0; VEC_iterate (loop_info, loop->loops, ix, i); ix++)
+      FOR_EACH_VEC_ELT (loop_info, loop->loops, ix, i)
 	fprintf (dump_file, "%d ", i->loop_no);
       fprintf (dump_file, "]\n");
     }
@@ -3826,7 +3826,7 @@ bfin_scan_loop (loop_info loop, rtx reg, rtx loop_end)
   unsigned ix;
   basic_block bb;
 
-  for (ix = 0; VEC_iterate (basic_block, loop->blocks, ix, bb); ix++)
+  FOR_EACH_VEC_ELT (basic_block, loop->blocks, ix, bb)
     {
       rtx insn;
 
@@ -3902,7 +3902,7 @@ bfin_optimize_loop (loop_info loop)
   /* Every loop contains in its list of inner loops every loop nested inside
      it, even if there are intermediate loops.  This works because we're doing
      a depth-first search here and never visit a loop more than once.  */
-  for (ix = 0; VEC_iterate (loop_info, loop->loops, ix, inner); ix++)
+  FOR_EACH_VEC_ELT (loop_info, loop->loops, ix, inner)
     {
       bfin_optimize_loop (inner);
 
@@ -4052,7 +4052,7 @@ bfin_optimize_loop (loop_info loop)
   reg_lb0 = gen_rtx_REG (SImode, REG_LB0);
   reg_lb1 = gen_rtx_REG (SImode, REG_LB1);
 
-  for (ix = 0; VEC_iterate (basic_block, loop->blocks, ix, bb); ix++)
+  FOR_EACH_VEC_ELT (basic_block, loop->blocks, ix, bb)
     {
       rtx insn;
 
@@ -4433,7 +4433,7 @@ bfin_discover_loop (loop_info loop, basic_block tail_bb, rtx tail_insn)
   if (!loop->bad)
     {
       int pass, retry;
-      for (dwork = 0; VEC_iterate (basic_block, loop->blocks, dwork, bb); dwork++)
+      FOR_EACH_VEC_ELT (basic_block, loop->blocks, dwork, bb)
 	{
 	  edge e;
 	  edge_iterator ei;

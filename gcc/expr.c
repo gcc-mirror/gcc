@@ -6599,9 +6599,7 @@ safe_from_p (const_rtx x, tree exp, int top_p)
 	  constructor_elt *ce;
 	  unsigned HOST_WIDE_INT idx;
 
-	  for (idx = 0;
-	       VEC_iterate (constructor_elt, CONSTRUCTOR_ELTS (exp), idx, ce);
-	       idx++)
+	  FOR_EACH_VEC_ELT (constructor_elt, CONSTRUCTOR_ELTS (exp), idx, ce)
 	    if ((ce->index != NULL_TREE && !safe_from_p (x, ce->index, 0))
 		|| !safe_from_p (x, ce->value, 0))
 	      return 0;

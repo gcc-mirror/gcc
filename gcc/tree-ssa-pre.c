@@ -1886,7 +1886,7 @@ phi_translate_set (bitmap_set_t dest, bitmap_set_t set, basic_block pred,
     }
 
   exprs = sorted_array_from_bitmap_set (set);
-  for (i = 0; VEC_iterate (pre_expr, exprs, i, expr); i++)
+  FOR_EACH_VEC_ELT (pre_expr, exprs, i, expr)
     {
       pre_expr translated;
       translated = phi_translate (expr, set, NULL, pred, phiblock);
@@ -2150,7 +2150,7 @@ valid_in_sets (bitmap_set_t set1, bitmap_set_t set2, pre_expr expr,
 	vn_reference_op_t vro;
 	unsigned int i;
 
-	for (i = 0; VEC_iterate (vn_reference_op_s, ref->operands, i, vro); i++)
+	FOR_EACH_VEC_ELT (vn_reference_op_s, ref->operands, i, vro)
 	  {
 	    if (!vro_valid_in_sets (set1, set2, vro))
 	      return false;
@@ -2184,7 +2184,7 @@ dependent_clean (bitmap_set_t set1, bitmap_set_t set2, basic_block block)
   pre_expr expr;
   int i;
 
-  for (i = 0; VEC_iterate (pre_expr, exprs, i, expr); i++)
+  FOR_EACH_VEC_ELT (pre_expr, exprs, i, expr)
     {
       if (!valid_in_sets (set1, set2, expr, block))
 	bitmap_remove_from_set (set1, expr);
@@ -2203,7 +2203,7 @@ clean (bitmap_set_t set, basic_block block)
   pre_expr expr;
   int i;
 
-  for (i = 0; VEC_iterate (pre_expr, exprs, i, expr); i++)
+  FOR_EACH_VEC_ELT (pre_expr, exprs, i, expr)
     {
       if (!valid_in_sets (set, NULL, expr, block))
 	bitmap_remove_from_set (set, expr);
@@ -2337,7 +2337,7 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
       else
 	bitmap_set_copy (ANTIC_OUT, ANTIC_IN (first));
 
-      for (i = 0; VEC_iterate (basic_block, worklist, i, bprime); i++)
+      FOR_EACH_VEC_ELT (basic_block, worklist, i, bprime)
 	{
 	  if (!gimple_seq_empty_p (phi_nodes (bprime)))
 	    {
@@ -2480,7 +2480,7 @@ compute_partial_antic_aux (basic_block block,
 	}
       if (VEC_length (basic_block, worklist) > 0)
 	{
-	  for (i = 0; VEC_iterate (basic_block, worklist, i, bprime); i++)
+	  FOR_EACH_VEC_ELT (basic_block, worklist, i, bprime)
 	    {
 	      unsigned int i;
 	      bitmap_iterator bi;
@@ -3259,7 +3259,7 @@ inhibit_phi_insertion (basic_block bb, pre_expr expr)
      memory reference is a simple induction variable.  In other
      cases the vectorizer won't do anything anyway (either it's
      loop invariant or a complicated expression).  */
-  for (i = 0; VEC_iterate (vn_reference_op_s, ops, i, op); ++i)
+  FOR_EACH_VEC_ELT (vn_reference_op_s, ops, i, op)
     {
       switch (op->opcode)
 	{
@@ -3546,7 +3546,7 @@ do_regular_insertion (basic_block block, basic_block dom)
   pre_expr expr;
   int i;
 
-  for (i = 0; VEC_iterate (pre_expr, exprs, i, expr); i++)
+  FOR_EACH_VEC_ELT (pre_expr, exprs, i, expr)
     {
       if (expr->kind != NAME)
 	{
@@ -3692,7 +3692,7 @@ do_partial_partial_insertion (basic_block block, basic_block dom)
   pre_expr expr;
   int i;
 
-  for (i = 0; VEC_iterate (pre_expr, exprs, i, expr); i++)
+  FOR_EACH_VEC_ELT (pre_expr, exprs, i, expr)
     {
       if (expr->kind != NAME)
 	{
@@ -4473,7 +4473,7 @@ eliminate (void)
   /* We cannot remove stmts during BB walk, especially not release SSA
      names there as this confuses the VN machinery.  The stmts ending
      up in to_remove are either stores or simple copies.  */
-  for (i = 0; VEC_iterate (gimple, to_remove, i, stmt); ++i)
+  FOR_EACH_VEC_ELT (gimple, to_remove, i, stmt)
     {
       tree lhs = gimple_assign_lhs (stmt);
       tree rhs = gimple_assign_rhs1 (stmt);

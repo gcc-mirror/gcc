@@ -1198,7 +1198,7 @@ determine_dominators_for_sons (struct graph *g, VEC (basic_block, heap) *bbs,
   for (i = nc - 1; i >= 0; i--)
     {
       dom = NULL;
-      for (si = 0; VEC_iterate (int, sccs[i], si, a); si++)
+      FOR_EACH_VEC_ELT (int, sccs[i], si, a)
 	{
 	  bb = VEC_index (basic_block, bbs, a);
 	  FOR_EACH_EDGE (e, ei, bb->preds)
@@ -1211,7 +1211,7 @@ determine_dominators_for_sons (struct graph *g, VEC (basic_block, heap) *bbs,
 	}
 
       gcc_assert (dom != NULL);
-      for (si = 0; VEC_iterate (int, sccs[i], si, a); si++)
+      FOR_EACH_VEC_ELT (int, sccs[i], si, a)
 	{
 	  bb = VEC_index (basic_block, bbs, a);
 	  set_immediate_dominator (CDI_DOMINATORS, bb, dom);
@@ -1314,7 +1314,7 @@ iterate_fix_dominators (enum cdi_direction dir, VEC (basic_block, heap) *bbs,
 	 conservatively correct, setting the dominators using the
 	 heuristics in prune_bbs_to_update_dominators could
 	 create cycles in the dominance "tree", and cause ICE.  */
-      for (i = 0; VEC_iterate (basic_block, bbs, i, bb); i++)
+      FOR_EACH_VEC_ELT (basic_block, bbs, i, bb)
 	set_immediate_dominator (CDI_DOMINATORS, bb, NULL);
     }
 
@@ -1334,7 +1334,7 @@ iterate_fix_dominators (enum cdi_direction dir, VEC (basic_block, heap) *bbs,
 
   /* Construct the graph G.  */
   map = pointer_map_create ();
-  for (i = 0; VEC_iterate (basic_block, bbs, i, bb); i++)
+  FOR_EACH_VEC_ELT (basic_block, bbs, i, bb)
     {
       /* If the dominance tree is conservatively correct, split it now.  */
       if (conservative)
@@ -1346,7 +1346,7 @@ iterate_fix_dominators (enum cdi_direction dir, VEC (basic_block, heap) *bbs,
   g = new_graph (n + 1);
   for (y = 0; y < g->n_vertices; y++)
     g->vertices[y].data = BITMAP_ALLOC (NULL);
-  for (i = 0; VEC_iterate (basic_block, bbs, i, bb); i++)
+  FOR_EACH_VEC_ELT (basic_block, bbs, i, bb)
     {
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{

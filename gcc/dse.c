@@ -2772,7 +2772,7 @@ dse_step2_init (void)
   unsigned int i;
   group_info_t group;
 
-  for (i = 0; VEC_iterate (group_info_t, rtx_group_vec, i, group); i++)
+  FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
     {
       /* For all non stack related bases, we only consider a store to
 	 be deletable if there are two or more stores for that
@@ -2824,7 +2824,7 @@ dse_step2_nospill (void)
      unused.  */
   current_position = 1;
 
-  for (i = 0; VEC_iterate (group_info_t, rtx_group_vec, i, group); i++)
+  FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
     {
       bitmap_iterator bi;
       unsigned int j;
@@ -3067,7 +3067,7 @@ scan_reads_nospill (insn_info_t insn_info, bitmap gen, bitmap kill)
   /* If this insn reads the frame, kill all the frame related stores.  */
   if (insn_info->frame_read)
     {
-      for (i = 0; VEC_iterate (group_info_t, rtx_group_vec, i, group); i++)
+      FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
 	if (group->process_globally && group->frame_related)
 	  {
 	    if (kill)
@@ -3078,7 +3078,7 @@ scan_reads_nospill (insn_info_t insn_info, bitmap gen, bitmap kill)
 
   while (read_info)
     {
-      for (i = 0; VEC_iterate (group_info_t, rtx_group_vec, i, group); i++)
+      FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
 	{
 	  if (group->process_globally)
 	    {
@@ -3259,7 +3259,7 @@ dse_step3_exit_block_scan (bb_info_t bb_info)
       unsigned int i;
       group_info_t group;
 
-      for (i = 0; VEC_iterate (group_info_t, rtx_group_vec, i, group); i++)
+      FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
 	{
 	  if (group->process_globally && group->frame_related)
 	    bitmap_ior_into (bb_info->gen, group->group_kill);
@@ -3341,7 +3341,7 @@ dse_step3 (bool for_spills)
 	      group_info_t group;
 
 	      all_ones = BITMAP_ALLOC (NULL);
-	      for (j = 0; VEC_iterate (group_info_t, rtx_group_vec, j, group); j++)
+	      FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, j, group)
 		bitmap_ior_into (all_ones, group->group_kill);
 	    }
 	  if (!bb_info->out)
@@ -3743,7 +3743,7 @@ dse_step7 (bool global_done)
   group_info_t group;
   basic_block bb;
 
-  for (i = 0; VEC_iterate (group_info_t, rtx_group_vec, i, group); i++)
+  FOR_EACH_VEC_ELT (group_info_t, rtx_group_vec, i, group)
     {
       free (group->offset_map_n);
       free (group->offset_map_p);

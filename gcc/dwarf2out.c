@@ -7560,7 +7560,7 @@ get_AT (dw_die_ref die, enum dwarf_attribute attr_kind)
   if (! die)
     return NULL;
 
-  for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
+  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
     if (a->dw_attr == attr_kind)
       return a;
     else if (a->dw_attr == DW_AT_specification
@@ -7689,7 +7689,7 @@ remove_AT (dw_die_ref die, enum dwarf_attribute attr_kind)
   if (! die)
     return;
 
-  for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
+  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
     if (a->dw_attr == attr_kind)
       {
 	if (AT_class (a) == dw_val_class_str)
@@ -8277,7 +8277,7 @@ print_die (dw_die_ref die, FILE *outfile)
       fprintf (outfile, "\n");
     }
 
-  for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
+  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
     {
       print_spaces (outfile);
       fprintf (outfile, "  %s: ", dwarf_attr_name (a->dw_attr));
@@ -8556,7 +8556,7 @@ die_checksum (dw_die_ref die, struct md5_ctx *ctx, int *mark)
 
   CHECKSUM (die->die_tag);
 
-  for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
+  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
     attr_checksum (a, ctx, mark);
 
   FOR_EACH_CHILD (die, c, die_checksum (c, ctx, mark));
@@ -8869,7 +8869,7 @@ collect_checksum_attributes (struct checksum_attributes *attrs, dw_die_ref die)
   dw_attr_ref a;
   unsigned ix;
 
-  for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
+  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
     {
       switch (a->dw_attr)
         {
@@ -9303,7 +9303,7 @@ same_die_p (dw_die_ref die1, dw_die_ref die2, int *mark)
       != VEC_length (dw_attr_node, die2->die_attr))
     return 0;
 
-  for (ix = 0; VEC_iterate (dw_attr_node, die1->die_attr, ix, a1); ix++)
+  FOR_EACH_VEC_ELT (dw_attr_node, die1->die_attr, ix, a1)
     if (!same_attr_p (a1, VEC_index (dw_attr_node, die2->die_attr, ix), mark))
       return 0;
 
@@ -9664,7 +9664,7 @@ is_declaration_die (dw_die_ref die)
   dw_attr_ref a;
   unsigned ix;
 
-  for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
+  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
     if (a->dw_attr == DW_AT_declaration)
       return 1;
 
@@ -9735,7 +9735,7 @@ clone_die (dw_die_ref die)
   clone = ggc_alloc_cleared_die_node ();
   clone->die_tag = die->die_tag;
 
-  for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
+  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
     add_dwarf_attr (clone, a);
 
   return clone;
@@ -9776,7 +9776,7 @@ clone_as_declaration (dw_die_ref die)
   clone = ggc_alloc_cleared_die_node ();
   clone->die_tag = die->die_tag;
 
-  for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
+  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
     {
       /* We don't want to copy over all attributes.
          For example we don't want DW_AT_byte_size because otherwise we will no
@@ -9833,7 +9833,7 @@ copy_declaration_context (dw_die_ref unit, dw_die_ref die)
 
       remove_AT (die, DW_AT_specification);
 
-      for (ix = 0; VEC_iterate (dw_attr_node, decl->die_attr, ix, a); ix++)
+      FOR_EACH_VEC_ELT (dw_attr_node, decl->die_attr, ix, a)
         {
           if (a->dw_attr != DW_AT_name
               && a->dw_attr != DW_AT_declaration
@@ -10129,7 +10129,7 @@ copy_decls_walk (dw_die_ref unit, dw_die_ref die, htab_t decl_table)
   dw_attr_ref a;
   unsigned ix;
 
-  for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
+  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
     {
       if (AT_class (a) == dw_val_class_die_ref)
         {
@@ -10248,7 +10248,7 @@ output_location_lists (dw_die_ref die)
   dw_attr_ref a;
   unsigned ix;
 
-  for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
+  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
     if (AT_class (a) == dw_val_class_loc_list)
       output_loc_list (AT_loc_list (a));
 
@@ -10271,7 +10271,7 @@ build_abbrev_table (dw_die_ref die)
 
   /* Scan the DIE references, and mark as external any that refer to
      DIEs from other CUs (i.e. those which are not marked).  */
-  for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
+  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
     if (AT_class (a) == dw_val_class_die_ref
 	&& AT_ref (a)->die_mark == 0)
       {
@@ -10295,7 +10295,7 @@ build_abbrev_table (dw_die_ref die)
 	  != VEC_length (dw_attr_node, die->die_attr))
 	continue;
 
-      for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, die_a); ix++)
+      FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, die_a)
 	{
 	  abbrev_a = VEC_index (dw_attr_node, abbrev->die_attr, ix);
 	  if ((abbrev_a->dw_attr != die_a->dw_attr)
@@ -10359,7 +10359,7 @@ size_of_die (dw_die_ref die)
   unsigned ix;
 
   size += size_of_uleb128 (die->die_abbrev);
-  for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
+  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
     {
       switch (AT_class (a))
 	{
@@ -10531,7 +10531,7 @@ unmark_all_dies (dw_die_ref die)
 
   FOR_EACH_CHILD (die, c, unmark_all_dies (c));
 
-  for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
+  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
     if (AT_class (a) == dw_val_class_die_ref)
       unmark_all_dies (AT_ref (a));
 }
@@ -10547,7 +10547,7 @@ size_of_pubnames (VEC (pubname_entry, gc) * names)
   pubname_ref p;
 
   size = DWARF_PUBNAMES_HEADER_SIZE;
-  for (i = 0; VEC_iterate (pubname_entry, names, i, p); i++)
+  FOR_EACH_VEC_ELT (pubname_entry, names, i, p)
     if (names != pubtype_table
 	|| p->die->die_offset != 0
 	|| !flag_eliminate_unused_debug_types)
@@ -10905,7 +10905,7 @@ output_die (dw_die_ref die)
 			       (unsigned long)die->die_offset,
 			       dwarf_tag_name (die->die_tag));
 
-  for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
+  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
     {
       const char *name = dwarf_attr_name (a->dw_attr);
 
@@ -11371,7 +11371,7 @@ output_pubnames (VEC (pubname_entry, gc) * names)
   dw2_asm_output_data (DWARF_OFFSET_SIZE, next_die_offset,
 		       "Compilation Unit Length");
 
-  for (i = 0; VEC_iterate (pubname_entry, names, i, pub); i++)
+  FOR_EACH_VEC_ELT (pubname_entry, names, i, pub)
     {
       /* We shouldn't see pubnames for DIEs outside of the main CU.  */
       if (names == pubname_table)
@@ -12318,7 +12318,7 @@ size_of_dcall_table (void)
   size = 2 + DWARF_OFFSET_SIZE + 1;
 
   /* Each entry:  code label + DIE offset.  */
-  for (i = 0; VEC_iterate (dcall_entry, dcall_table, i, p); i++)
+  FOR_EACH_VEC_ELT (dcall_entry, dcall_table, i, p)
     {
       gcc_assert (p->targ_die != NULL);
       /* Insert a "from" entry when the point-of-call DIE offset changes.  */
@@ -12360,7 +12360,7 @@ output_dcall_table (void)
 			 "Offset of Compilation Unit Info");
   dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Pointer Size (in bytes)");
 
-  for (i = 0; VEC_iterate (dcall_entry, dcall_table, i, p); i++)
+  FOR_EACH_VEC_ELT (dcall_entry, dcall_table, i, p)
     {
       /* Insert a "from" entry when the point-of-call DIE offset changes.  */
       if (p->poc_decl != last_poc_decl)
@@ -12394,7 +12394,7 @@ size_of_vcall_table (void)
   size = 2 + 1;
 
   /* Each entry:  code label + vtable slot index.  */
-  for (i = 0; VEC_iterate (vcall_entry, vcall_table, i, p); i++)
+  FOR_EACH_VEC_ELT (vcall_entry, vcall_table, i, p)
     size += DWARF_OFFSET_SIZE + size_of_uleb128 (p->vtable_slot);
 
   return size;
@@ -12419,7 +12419,7 @@ output_vcall_table (void)
   dw2_asm_output_data (2, 4, "Version number");
   dw2_asm_output_data (1, DWARF2_ADDR_SIZE, "Pointer Size (in bytes)");
 
-  for (i = 0; VEC_iterate (vcall_entry, vcall_table, i, p); i++)
+  FOR_EACH_VEC_ELT (vcall_entry, vcall_table, i, p)
     {
       ASM_GENERATE_INTERNAL_LABEL (poc_label, "LPOC", p->poc_label_num);
       dw2_asm_output_addr (DWARF_OFFSET_SIZE, poc_label, "Point of call");
@@ -16713,9 +16713,7 @@ native_encode_initializer (tree init, unsigned char *array, int size)
 
 	  min_index = tree_low_cst (TYPE_MIN_VALUE (TYPE_DOMAIN (type)), 0);
 	  memset (array, '\0', size);
-	  for (cnt = 0;
-	       VEC_iterate (constructor_elt, CONSTRUCTOR_ELTS (init), cnt, ce);
-	       cnt++)
+	  FOR_EACH_VEC_ELT (constructor_elt, CONSTRUCTOR_ELTS (init), cnt, ce)
 	    {
 	      tree val = ce->value;
 	      tree index = ce->index;
@@ -16761,9 +16759,7 @@ native_encode_initializer (tree init, unsigned char *array, int size)
 	  if (TREE_CODE (type) == RECORD_TYPE)
 	    field = TYPE_FIELDS (type);
 
-	  for (cnt = 0;
-	       VEC_iterate (constructor_elt, CONSTRUCTOR_ELTS (init), cnt, ce);
-	       cnt++, field = field ? DECL_CHAIN (field) : 0)
+	  FOR_EACH_VEC_ELT (constructor_elt, CONSTRUCTOR_ELTS (init), cnt, ce)
 	    {
 	      tree val = ce->value;
 	      int pos, fieldsize;
@@ -21121,9 +21117,7 @@ gen_remaining_tmpl_value_param_die_attribute (void)
       unsigned i;
       die_arg_entry *e;
 
-      for (i = 0;
-           VEC_iterate (die_arg_entry, tmpl_value_parm_die_table, i, e);
-           i++)
+      FOR_EACH_VEC_ELT (die_arg_entry, tmpl_value_parm_die_table, i, e)
 	tree_add_const_value_attribute (e->die, e->arg);
     }
 }
@@ -21733,7 +21727,7 @@ prune_unused_types_walk_attribs (dw_die_ref die)
   dw_attr_ref a;
   unsigned ix;
 
-  for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
+  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
     {
       if (a->dw_attr_val.val_class == dw_val_class_die_ref)
 	{
@@ -21918,7 +21912,7 @@ prune_unused_types_update_strings (dw_die_ref die)
   dw_attr_ref a;
   unsigned ix;
 
-  for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
+  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
     if (AT_class (a) == dw_val_class_str)
       {
 	struct indirect_string_node *s = a->dw_attr_val.v.val_str;
@@ -22025,13 +22019,13 @@ prune_unused_types (void)
 
   /* Also set the mark on nodes referenced from the
      pubname_table or arange_table.  */
-  for (i = 0; VEC_iterate (pubname_entry, pubname_table, i, pub); i++)
+  FOR_EACH_VEC_ELT (pubname_entry, pubname_table, i, pub)
     prune_unused_types_mark (pub->die, 1);
   for (i = 0; i < arange_table_in_use; i++)
     prune_unused_types_mark (arange_table[i], 1);
 
   /* Mark nodes referenced from the direct call table.  */
-  for (i = 0; VEC_iterate (dcall_entry, dcall_table, i, dcall); i++)
+  FOR_EACH_VEC_ELT (dcall_entry, dcall_table, i, dcall)
     prune_unused_types_mark (dcall->targ_die, 1);
 
   /* Get rid of nodes that aren't marked; and update the string counts.  */
@@ -22190,7 +22184,7 @@ resolve_addr (dw_die_ref die)
   dw_loc_list_ref *curr;
   unsigned ix;
 
-  for (ix = 0; VEC_iterate (dw_attr_node, die->die_attr, ix, a); ix++)
+  FOR_EACH_VEC_ELT (dw_attr_node, die->die_attr, ix, a)
     switch (AT_class (a))
       {
       case dw_val_class_loc_list:

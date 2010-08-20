@@ -714,7 +714,7 @@ ipa_lower_emutls (void)
   VEC_safe_grow (tree, heap, access_vars, n_tls);
 
   /* Create the control variables for each TLS variable.  */
-  for (i = 0; VEC_iterate (varpool_node_ptr, tls_vars->nodes, i, var); ++i)
+  FOR_EACH_VEC_ELT (varpool_node_ptr, tls_vars->nodes, i, var)
     {
       tree cdecl;
       struct varpool_node *cvar;
@@ -750,7 +750,7 @@ ipa_lower_emutls (void)
   if (any_aliases)
     {
       alias_pair *p;
-      for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p); ++i)
+      FOR_EACH_VEC_ELT (alias_pair, alias_pairs, i, p)
 	if (DECL_THREAD_LOCAL_P (p->decl))
 	  {
 	    p->decl = emutls_decl (p->decl);

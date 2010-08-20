@@ -403,7 +403,7 @@ elim_graph_add_node (elim_graph g, int node)
   int x;
   int t;
 
-  for (x = 0; VEC_iterate (int, g->nodes, x, t); x++)
+  FOR_EACH_VEC_ELT (int, g->nodes, x, t)
     if (t == node)
       return;
   VEC_safe_push (int, heap, g->nodes, node);
@@ -678,7 +678,7 @@ eliminate_phi (edge e, elim_graph g)
       sbitmap_zero (g->visited);
       VEC_truncate (int, g->stack, 0);
 
-      for (x = 0; VEC_iterate (int, g->nodes, x, part); x++)
+      FOR_EACH_VEC_ELT (int, g->nodes, x, part)
         {
 	  if (!TEST_BIT (g->visited, part))
 	    elim_forward (g, part);

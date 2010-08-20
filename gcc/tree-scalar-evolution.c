@@ -2809,7 +2809,7 @@ number_of_iterations_for_all_loops (VEC(gimple,heap) **exit_conditions)
   unsigned nb_static_loops = 0;
   gimple cond;
 
-  for (i = 0; VEC_iterate (gimple, *exit_conditions, i, cond); i++)
+  FOR_EACH_VEC_ELT (gimple, *exit_conditions, i, cond)
     {
       tree res = number_of_latch_executions (loop_containing_stmt (cond));
       if (chrec_contains_undetermined (res))
@@ -2963,7 +2963,7 @@ analyze_scalar_evolution_for_all_loop_phi_nodes (VEC(gimple,heap) **exit_conditi
 
   reset_chrecs_counters (&stats);
 
-  for (i = 0; VEC_iterate (gimple, *exit_conditions, i, cond); i++)
+  FOR_EACH_VEC_ELT (gimple, *exit_conditions, i, cond)
     {
       struct loop *loop;
       basic_block bb;

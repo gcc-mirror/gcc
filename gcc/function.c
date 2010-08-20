@@ -2171,7 +2171,7 @@ split_complex_args (VEC(tree, heap) **args)
   unsigned i;
   tree p;
 
-  for (i = 0; VEC_iterate (tree, *args, i, p); ++i)
+  FOR_EACH_VEC_ELT (tree, *args, i, p)
     {
       tree type = TREE_TYPE (p);
       if (TREE_CODE (type) == COMPLEX_TYPE
@@ -3295,7 +3295,7 @@ assign_parms (tree fndecl)
   assign_parms_initialize_all (&all);
   fnargs = assign_parms_augmented_arg_list (&all);
 
-  for (i = 0; VEC_iterate (tree, fnargs, i, parm); ++i)
+  FOR_EACH_VEC_ELT (tree, fnargs, i, parm)
     {
       struct assign_parm_data_one data;
 
@@ -3523,7 +3523,7 @@ gimplify_parameters (void)
   assign_parms_initialize_all (&all);
   fnargs = assign_parms_augmented_arg_list (&all);
 
-  for (i = 0; VEC_iterate (tree, fnargs, i, parm); ++i)
+  FOR_EACH_VEC_ELT (tree, fnargs, i, parm)
     {
       struct assign_parm_data_one data;
 

@@ -148,7 +148,7 @@ move_sd_regions (VEC (sd_region, heap) **source,
   sd_region *s;
   int i;
 
-  for (i = 0; VEC_iterate (sd_region, *source, i, s); i++)
+  FOR_EACH_VEC_ELT (sd_region, *source, i, s)
     VEC_safe_push (sd_region, heap, *target, s);
 
   VEC_free (sd_region, heap, *source);
@@ -284,7 +284,7 @@ stmt_has_simple_data_refs_p (loop_p outermost_loop, gimple stmt)
 
   graphite_find_data_references_in_stmt (outermost_loop, stmt, &drs);
 
-  for (j = 0; VEC_iterate (data_reference_p, drs, j, dr); j++)
+  FOR_EACH_VEC_ELT (data_reference_p, drs, j, dr)
     for (i = 0; i < DR_NUM_DIMENSIONS (dr); i++)
       if (!graphite_can_represent_scev (DR_ACCESS_FN (dr, i), loop))
 	{
@@ -552,7 +552,7 @@ scopdet_basic_block_info (basic_block bb, loop_p outermost_loop,
 		  - The exit destinations are dominated by another bb inside
 		    the loop.
 		  - The loop dominates bbs, that are not exit destinations.  */
-        for (i = 0; VEC_iterate (edge, exits, i, e); i++)
+        FOR_EACH_VEC_ELT (edge, exits, i, e)
           if (e->src->loop_father == loop
 	      && dominated_by_p (CDI_DOMINATORS, e->dest, e->src))
 	    {
@@ -590,7 +590,7 @@ scopdet_basic_block_info (basic_block bb, loop_p outermost_loop,
 
 	/* First check the successors of BB, and check if it is
 	   possible to join the different branches.  */
-	for (i = 0; VEC_iterate (edge, bb->succs, i, e); i++)
+	FOR_EACH_VEC_ELT (edge, bb->succs, i, e)
 	  {
 	    /* Ignore loop exits.  They will be handled after the loop
 	       body.  */
@@ -676,7 +676,7 @@ scopdet_basic_block_info (basic_block bb, loop_p outermost_loop,
 	/* Scan remaining bbs dominated by BB.  */
 	dominated = get_dominated_by (CDI_DOMINATORS, bb);
 
-	for (i = 0; VEC_iterate (basic_block, dominated, i, dom_bb); i++)
+	FOR_EACH_VEC_ELT (basic_block, dominated, i, dom_bb)
 	  {
 	    /* Ignore loop exits: they will be handled after the loop body.  */
 	    if (loop_depth (find_common_loop (loop, dom_bb->loop_father))
@@ -990,7 +990,7 @@ unmark_exit_edges (VEC (sd_region, heap) *regions)
   edge e;
   edge_iterator ei;
 
-  for (i = 0; VEC_iterate (sd_region, regions, i, s); i++)
+  FOR_EACH_VEC_ELT (sd_region, regions, i, s)
     FOR_EACH_EDGE (e, ei, s->exit->preds)
       e->aux = NULL;
 }
@@ -1007,7 +1007,7 @@ mark_exit_edges (VEC (sd_region, heap) *regions)
   edge e;
   edge_iterator ei;
 
-  for (i = 0; VEC_iterate (sd_region, regions, i, s); i++)
+  FOR_EACH_VEC_ELT (sd_region, regions, i, s)
     FOR_EACH_EDGE (e, ei, s->exit->preds)
       if (bb_in_sd_region (e->src, s))
 	e->aux = s;
@@ -1021,12 +1021,12 @@ create_sese_edges (VEC (sd_region, heap) *regions)
   int i;
   sd_region *s;
 
-  for (i = 0; VEC_iterate (sd_region, regions, i, s); i++)
+  FOR_EACH_VEC_ELT (sd_region, regions, i, s)
     create_single_entry_edge (s);
 
   mark_exit_edges (regions);
 
-  for (i = 0; VEC_iterate (sd_region, regions, i, s); i++)
+  FOR_EACH_VEC_ELT (sd_region, regions, i, s)
     /* Don't handle multiple edges exiting the function.  */
     if (!find_single_exit_edge (s)
 	&& s->exit != EXIT_BLOCK_PTR)
@@ -1052,7 +1052,7 @@ build_graphite_scops (VEC (sd_region, heap) *regions,
   int i;
   sd_region *s;
 
-  for (i = 0; VEC_iterate (sd_region, regions, i, s); i++)
+  FOR_EACH_VEC_ELT (sd_region, regions, i, s)
     {
       edge entry = find_single_entry_edge (s);
       edge exit = find_single_exit_edge (s);
@@ -1070,7 +1070,7 @@ build_graphite_scops (VEC (sd_region, heap) *regions,
 	  int j;
 	  sd_region *s2;
 
-	  for (j = 0; VEC_iterate (sd_region, regions, j, s2); j++)
+	  FOR_EACH_VEC_ELT (sd_region, regions, j, s2)
 	    if (s != s2)
 	      gcc_assert (!bb_in_sd_region (s->entry, s2));
 	}
@@ -1159,7 +1159,7 @@ print_graphite_statistics (FILE* file, VEC (scop_p, heap) *scops)
   int i;
   scop_p scop;
 
-  for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
+  FOR_EACH_VEC_ELT (scop_p, scops, i, scop)
     print_graphite_scop_statistics (file, scop);
 }
 
@@ -1191,14 +1191,14 @@ limit_scops (VEC (scop_p, heap) **scops)
   int i;
   scop_p scop;
 
-  for (i = 0; VEC_iterate (scop_p, *scops, i, scop); i++)
+  FOR_EACH_VEC_ELT (scop_p, *scops, i, scop)
     {
       int j;
       loop_p loop;
       sese region = SCOP_REGION (scop);
       build_sese_loop_nests (region);
 
-      for (j = 0; VEC_iterate (loop_p, SESE_LOOP_NEST (region), j, loop); j++)
+      FOR_EACH_VEC_ELT (loop_p, SESE_LOOP_NEST (region), j, loop)
         if (!loop_in_sese_p (loop_outer (loop), region)
 	    && single_exit (loop))
           {
@@ -1380,7 +1380,7 @@ dot_all_scops_1 (FILE *file, VEC (scop_p, heap) *scops)
       fprintf (file, "CELLSPACING=\"0\">\n");
 
       /* Select color for SCoP.  */
-      for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
+      FOR_EACH_VEC_ELT (scop_p, scops, i, scop)
 	{
 	  sese region = SCOP_REGION (scop);
 	  if (bb_in_sese_p (bb, region)

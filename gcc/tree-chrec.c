@@ -659,7 +659,7 @@ chrec_apply_map (tree chrec, VEC (tree, heap) *iv_map)
   int i;
   tree expr;
 
-  for (i = 0; VEC_iterate (tree, iv_map, i, expr); i++)
+  FOR_EACH_VEC_ELT (tree, iv_map, i, expr)
     if (expr)
       chrec = chrec_apply (i, chrec, expr);
 

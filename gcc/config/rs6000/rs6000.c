@@ -24602,7 +24602,7 @@ no_previous_def (tree function_name)
   branch_island *bi;
   unsigned ix;
 
-  for (ix = 0; VEC_iterate (branch_island, branch_islands, ix, bi); ix++)
+  FOR_EACH_VEC_ELT (branch_island, branch_islands, ix, bi)
     if (function_name == bi->function_name)
       return 0;
   return 1;
@@ -24617,7 +24617,7 @@ get_prev_label (tree function_name)
   branch_island *bi;
   unsigned ix;
 
-  for (ix = 0; VEC_iterate (branch_island, branch_islands, ix, bi); ix++)
+  FOR_EACH_VEC_ELT (branch_island, branch_islands, ix, bi)
     if (function_name == bi->function_name)
       return bi->label_name;
   return NULL_TREE;

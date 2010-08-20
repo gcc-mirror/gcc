@@ -278,7 +278,7 @@ free_data_refs_aux (VEC (data_reference_p, heap) *datarefs)
   unsigned int i;
   struct data_reference *dr;
 
-  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+  FOR_EACH_VEC_ELT (data_reference_p, datarefs, i, dr)
     if (dr->aux)
       {
 	base_alias_pair *bap = (base_alias_pair *)(dr->aux);
@@ -312,7 +312,7 @@ remove_gbbs_in_scop (scop_p scop)
   int i;
   poly_bb_p pbb;
 
-  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
+  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
     free_gimple_bb (PBB_BLACK_BOX (pbb));
 }
 
@@ -324,7 +324,7 @@ free_scops (VEC (scop_p, heap) *scops)
   int i;
   scop_p scop;
 
-  for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
+  FOR_EACH_VEC_ELT (scop_p, scops, i, scop)
     {
       remove_gbbs_in_scop (scop);
       free_sese (SCOP_REGION (scop));
@@ -434,7 +434,7 @@ build_scop_bbs_1 (scop_p scop, sbitmap visited, basic_block bb, sbitmap reductio
       int i;
       basic_block dom_bb;
 
-      for (i = 0; VEC_iterate (basic_block, dom, i, dom_bb); i++)
+      FOR_EACH_VEC_ELT (basic_block, dom, i, dom_bb)
 	if (all_non_dominated_preds_marked_p (dom_bb, visited))
 	  {
 	    build_scop_bbs_1 (scop, visited, dom_bb, reductions);
@@ -616,7 +616,7 @@ build_scop_scattering (scop_p scop)
   ppl_assign_Coefficient_from_mpz_t (c, v);
   ppl_Linear_Expression_add_to_coefficient (static_schedule, 0, c);
 
-  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
+  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
     {
       gimple_bb_p gbb = PBB_BLACK_BOX (pbb);
       ppl_Linear_Expression_t common;
@@ -741,7 +741,7 @@ parameter_index_in_region_1 (tree name, sese region)
 
   gcc_assert (TREE_CODE (name) == SSA_NAME);
 
-  for (i = 0; VEC_iterate (tree, SESE_PARAMS (region), i, p); i++)
+  FOR_EACH_VEC_ELT (tree, SESE_PARAMS (region), i, p)
     if (p == name)
       return i;
 
@@ -955,12 +955,12 @@ find_params_in_bb (sese region, gimple_bb_p gbb)
   mpz_set_si (one, 1);
 
   /* Find parameters in the access functions of data references.  */
-  for (i = 0; VEC_iterate (data_reference_p, GBB_DATA_REFS (gbb), i, dr); i++)
+  FOR_EACH_VEC_ELT (data_reference_p, GBB_DATA_REFS (gbb), i, dr)
     for (j = 0; j < DR_NUM_DIMENSIONS (dr); j++)
       scan_tree_for_params (region, DR_ACCESS_FN (dr, j), NULL, one);
 
   /* Find parameters in conditional statements.  */
-  for (i = 0; VEC_iterate (gimple, GBB_CONDITIONS (gbb), i, stmt); i++)
+  FOR_EACH_VEC_ELT (gimple, GBB_CONDITIONS (gbb), i, stmt)
     {
       tree lhs = scalar_evolution_in_region (region, loop,
 					     gimple_cond_lhs (stmt));
@@ -990,7 +990,7 @@ find_scop_parameters (scop_p scop)
   mpz_set_si (one, 1);
 
   /* Find the parameters used in the loop bounds.  */
-  for (i = 0; VEC_iterate (loop_p, SESE_LOOP_NEST (region), i, loop); i++)
+  FOR_EACH_VEC_ELT (loop_p, SESE_LOOP_NEST (region), i, loop)
     {
       tree nb_iters = number_of_latch_executions (loop);
 
@@ -1004,7 +1004,7 @@ find_scop_parameters (scop_p scop)
   mpz_clear (one);
 
   /* Find the parameters used in data accesses.  */
-  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
+  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
     find_params_in_bb (region, PBB_BLACK_BOX (pbb));
 
   scop_set_nb_params (scop, sese_nb_params (region));
@@ -1335,7 +1335,7 @@ add_conditions_to_domain (poly_bb_p pbb)
   if (VEC_empty (gimple, GBB_CONDITIONS (gbb)))
     return;
 
-  for (i = 0; VEC_iterate (gimple, GBB_CONDITIONS (gbb), i, stmt); i++)
+  FOR_EACH_VEC_ELT (gimple, GBB_CONDITIONS (gbb), i, stmt)
     switch (gimple_code (stmt))
       {
       case GIMPLE_COND:
@@ -1490,7 +1490,7 @@ add_conditions_to_constraints (scop_p scop)
   int i;
   poly_bb_p pbb;
 
-  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
+  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
     add_conditions_to_domain (pbb);
 }
 
@@ -1586,11 +1586,11 @@ build_scop_iteration_domain (scop_p scop)
 
   ppl_new_C_Polyhedron_from_space_dimension (&ph, scop_nb_params (scop), 0);
 
-  for (i = 0; VEC_iterate (loop_p, SESE_LOOP_NEST (region), i, loop); i++)
+  FOR_EACH_VEC_ELT (loop_p, SESE_LOOP_NEST (region), i, loop)
     if (!loop_in_sese_p (loop_outer (loop), region))
       build_loop_iteration_domains (scop, loop, ph, 0, domains);
 
-  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
+  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
     if (domains[gbb_loop (PBB_BLACK_BOX (pbb))->num])
       ppl_new_Pointset_Powerset_C_Polyhedron_from_Pointset_Powerset_C_Polyhedron
 	(&PBB_DOMAIN (pbb), (ppl_const_Pointset_Powerset_C_Polyhedron_t)
@@ -1788,7 +1788,7 @@ write_alias_graph_to_ascii_dimacs (FILE *file, char *comment,
   if (num_vertex == 0)
     return true;
 
-  for (i = 0; VEC_iterate (data_reference_p, drs, i, dr1); i++)
+  FOR_EACH_VEC_ELT (data_reference_p, drs, i, dr1)
     for (j = i + 1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
       if (dr_may_alias_p (dr1, dr2))
 	edge_num++;
@@ -1800,7 +1800,7 @@ write_alias_graph_to_ascii_dimacs (FILE *file, char *comment,
 
   fprintf (file, "p edge %d %d\n", num_vertex, edge_num);
 
-  for (i = 0; VEC_iterate (data_reference_p, drs, i, dr1); i++)
+  FOR_EACH_VEC_ELT (data_reference_p, drs, i, dr1)
     for (j = i + 1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
       if (dr_may_alias_p (dr1, dr2))
 	fprintf (file, "e %d %d\n", i + 1, j + 1);
@@ -1827,10 +1827,10 @@ write_alias_graph_to_ascii_dot (FILE *file, char *comment,
     fprintf (file, "c %s\n", comment);
 
   /* First print all the vertices.  */
-  for (i = 0; VEC_iterate (data_reference_p, drs, i, dr1); i++)
+  FOR_EACH_VEC_ELT (data_reference_p, drs, i, dr1)
     fprintf (file, "n%d;\n", i);
 
-  for (i = 0; VEC_iterate (data_reference_p, drs, i, dr1); i++)
+  FOR_EACH_VEC_ELT (data_reference_p, drs, i, dr1)
     for (j = i + 1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
       if (dr_may_alias_p (dr1, dr2))
 	fprintf (file, "n%d n%d\n", i, j);
@@ -1856,7 +1856,7 @@ write_alias_graph_to_ascii_ecc (FILE *file, char *comment,
   if (comment)
     fprintf (file, "c %s\n", comment);
 
-  for (i = 0; VEC_iterate (data_reference_p, drs, i, dr1); i++)
+  FOR_EACH_VEC_ELT (data_reference_p, drs, i, dr1)
     for (j = i + 1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
       if (dr_may_alias_p (dr1, dr2))
 	fprintf (file, "%d %d\n", i, j);
@@ -1892,7 +1892,7 @@ build_alias_set_optimal_p (VEC (data_reference_p, heap) *drs)
   int this_component_is_clique;
   int all_components_are_cliques = 1;
 
-  for (i = 0; VEC_iterate (data_reference_p, drs, i, dr1); i++)
+  FOR_EACH_VEC_ELT (data_reference_p, drs, i, dr1)
     for (j = i+1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
       if (dr_may_alias_p (dr1, dr2))
 	{
@@ -1972,7 +1972,7 @@ build_base_obj_set_for_drs (VEC (data_reference_p, heap) *drs)
   int i, j;
   int *queue;
 
-  for (i = 0; VEC_iterate (data_reference_p, drs, i, dr1); i++)
+  FOR_EACH_VEC_ELT (data_reference_p, drs, i, dr1)
     for (j = i + 1; VEC_iterate (data_reference_p, drs, j, dr2); j++)
       if (dr_same_base_object_p (dr1, dr2))
 	{
@@ -2010,7 +2010,7 @@ build_pbb_drs (poly_bb_p pbb)
   data_reference_p dr;
   VEC (data_reference_p, heap) *gbb_drs = GBB_DATA_REFS (PBB_BLACK_BOX (pbb));
 
-  for (j = 0; VEC_iterate (data_reference_p, gbb_drs, j, dr); j++)
+  FOR_EACH_VEC_ELT (data_reference_p, gbb_drs, j, dr)
     build_poly_dr (dr, pbb);
 }
 
@@ -2060,12 +2060,12 @@ build_scop_drs (scop_p scop)
   data_reference_p dr;
   VEC (data_reference_p, heap) *drs = VEC_alloc (data_reference_p, heap, 3);
 
-  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
+  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
     for (j = 0; VEC_iterate (data_reference_p,
 			     GBB_DATA_REFS (PBB_BLACK_BOX (pbb)), j, dr); j++)
       VEC_safe_push (data_reference_p, heap, drs, dr);
 
-  for (i = 0; VEC_iterate (data_reference_p, drs, i, dr); i++)
+  FOR_EACH_VEC_ELT (data_reference_p, drs, i, dr)
     dr->aux = XNEW (base_alias_pair);
 
   if (!build_alias_set_optimal_p (drs))
@@ -2083,7 +2083,7 @@ build_scop_drs (scop_p scop)
 
   VEC_free (data_reference_p, heap, drs);
 
-  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
+  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
     build_pbb_drs (pbb);
 }
 
@@ -2549,7 +2549,7 @@ nb_pbbs_in_loops (scop_p scop)
   poly_bb_p pbb;
   int res = 0;
 
-  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
+  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
     if (loop_in_sese_p (gbb_loop (PBB_BLACK_BOX (pbb)), SCOP_REGION (scop)))
       res++;
 
@@ -2862,7 +2862,7 @@ remove_phi (gimple phi)
 	}
     }
 
-  for (i = 0; VEC_iterate (gimple, update, i, stmt); i++)
+  FOR_EACH_VEC_ELT (gimple, update, i, stmt)
     update_stmt (stmt);
 
   VEC_free (gimple, heap, update);
@@ -2890,7 +2890,7 @@ translate_scalar_reduction_to_array (VEC (gimple, heap) *in,
   gimple loop_phi;
   tree red = NULL_TREE;
 
-  for (i = 0; VEC_iterate (gimple, in, i, loop_phi); i++)
+  FOR_EACH_VEC_ELT (gimple, in, i, loop_phi)
     {
       gimple close_phi = VEC_index (gimple, out, i);
 

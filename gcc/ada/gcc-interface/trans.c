@@ -1603,7 +1603,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	   and the dimension in the cache and create a new one on failure.  */
 	if (!optimize && Present (gnat_param))
 	  {
-	    for (i = 0; VEC_iterate (parm_attr, f_parm_attr_cache, i, pa); i++)
+	    FOR_EACH_VEC_ELT (parm_attr, f_parm_attr_cache, i, pa)
 	      if (pa->id == gnat_param && pa->dim == Dimension)
 		break;
 
@@ -2521,7 +2521,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
 
       start_stmt_group ();
 
-      for (i = 0; VEC_iterate (parm_attr, cache, i, pa); i++)
+      FOR_EACH_VEC_ELT (parm_attr, cache, i, pa)
 	{
 	  if (pa->first)
 	    add_stmt_with_node (pa->first, gnat_node);

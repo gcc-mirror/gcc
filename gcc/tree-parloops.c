@@ -549,7 +549,7 @@ eliminate_local_variables (edge entry, edge exit)
 
   gather_blocks_in_sese_region (entry_bb, exit_bb, &body);
 
-  for (i = 0; VEC_iterate (basic_block, body, i, bb); i++)
+  FOR_EACH_VEC_ELT (basic_block, body, i, bb)
     if (bb != entry_bb && bb != exit_bb)
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	eliminate_local_variables_stmt (entry, gsi_stmt (gsi),
@@ -1087,7 +1087,7 @@ separate_decls_in_region (edge entry, edge exit, htab_t reduction_list,
   entry = single_succ_edge (entry_bb);
   gather_blocks_in_sese_region (entry_bb, exit_bb, &body);
 
-  for (i = 0; VEC_iterate (basic_block, body, i, bb); i++)
+  FOR_EACH_VEC_ELT (basic_block, body, i, bb)
     {
       if (bb != entry_bb && bb != exit_bb)
 	{
@@ -1115,7 +1115,7 @@ separate_decls_in_region (edge entry, edge exit, htab_t reduction_list,
      and discard those for which we know there's nothing we can
      do.  */
   if (has_debug_stmt)
-    for (i = 0; VEC_iterate (basic_block, body, i, bb); i++)
+    FOR_EACH_VEC_ELT (basic_block, body, i, bb)
       if (bb != entry_bb && bb != exit_bb)
 	{
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)

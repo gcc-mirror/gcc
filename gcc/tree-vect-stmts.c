@@ -1803,7 +1803,7 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 	  builtin_decl =
 	    targetm.vectorize.builtin_conversion (code,
 						  vectype_out, vectype_in);
-	  for (i = 0; VEC_iterate (tree, vec_oprnds0, i, vop0); i++)
+	  FOR_EACH_VEC_ELT (tree, vec_oprnds0, i, vop0)
 	    {
 	      /* Arguments are ready. create the new vector stmt.  */
 	      new_stmt = gimple_build_call (builtin_decl, 1, vop0);
@@ -2004,7 +2004,7 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
         vect_get_vec_defs_for_stmt_copy (dt, &vec_oprnds, NULL);
 
       /* Arguments are ready. create the new vector stmt.  */
-      for (i = 0; VEC_iterate (tree, vec_oprnds, i, vop); i++)
+      FOR_EACH_VEC_ELT (tree, vec_oprnds, i, vop)
        {
 	 if (CONVERT_EXPR_CODE_P (code))
 	   vop = build1 (VIEW_CONVERT_EXPR, vectype, vop);
@@ -2382,7 +2382,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
 	vect_get_vec_defs_for_stmt_copy (dt, &vec_oprnds0, &vec_oprnds1);
 
       /* Arguments are ready. Create the new vector stmt.  */
-      for (i = 0; VEC_iterate (tree, vec_oprnds0, i, vop0); i++)
+      FOR_EACH_VEC_ELT (tree, vec_oprnds0, i, vop0)
         {
 	  vop1 = ((op_type == binary_op)
 		  ? VEC_index (tree, vec_oprnds1, i) : NULL);
@@ -2722,7 +2722,7 @@ vect_create_vectorized_promotion_stmts (VEC (tree, heap) **vec_oprnds0,
   vec_dest = VEC_pop (tree, vec_dsts);
   vec_tmp = VEC_alloc (tree, heap, VEC_length (tree, *vec_oprnds0) * 2);
 
-  for (i = 0; VEC_iterate (tree, *vec_oprnds0, i, vop0); i++)
+  FOR_EACH_VEC_ELT (tree, *vec_oprnds0, i, vop0)
     {
       if (op_type == binary_op)
         vop1 = VEC_index (tree, *vec_oprnds1, i);

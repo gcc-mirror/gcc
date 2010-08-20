@@ -267,9 +267,7 @@ finish_repo (void)
       fprintf (repo_file, "\n");
     }
 
-  for (ix = VEC_length (tree, pending_repo) - 1;
-       VEC_iterate (tree, pending_repo, ix, val);
-       ix--)
+  FOR_EACH_VEC_ELT_REVERSE (tree, pending_repo, ix, val)
     {
       tree name = DECL_ASSEMBLER_NAME (val);
       char type = IDENTIFIER_REPO_CHOSEN (name) ? 'C' : 'O';

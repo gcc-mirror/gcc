@@ -1009,7 +1009,7 @@ print_vec_tree (FILE *file, const char *prefix, VEC(tree,gc) *vec, int indent)
   fprintf (file, "%s <VEC", prefix);
   dump_addr (file, " ", vec);
 
-  for (ix = 0; VEC_iterate (tree, vec, ix, elt); ++ix)
+  FOR_EACH_VEC_ELT (tree, vec, ix, elt)
     {
       char temp[10];
       sprintf (temp, "elt %d", ix);

@@ -2760,7 +2760,7 @@ cond_move_process_if_block (struct noce_if_info *if_info)
      source register does not change after the assignment.  Also count
      the number of registers set in only one of the blocks.  */
   c = 0;
-  for (i = 0; VEC_iterate (int, then_regs, i, reg); i++)
+  FOR_EACH_VEC_ELT (int, then_regs, i, reg)
     {
       if (!then_vals[reg] && !else_vals[reg])
 	continue;
@@ -2781,7 +2781,7 @@ cond_move_process_if_block (struct noce_if_info *if_info)
     }
 
   /* Finish off c for MAX_CONDITIONAL_EXECUTE.  */
-  for (i = 0; VEC_iterate (int, else_regs, i, reg); ++i)
+  FOR_EACH_VEC_ELT (int, else_regs, i, reg)
     if (!then_vals[reg])
       ++c;
 

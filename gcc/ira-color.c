@@ -1113,7 +1113,7 @@ ira_loop_edge_freq (ira_loop_tree_node_t loop_node, int regno, bool exit_p)
   else
     {
       edges = get_loop_exit_edges (loop_node->loop);
-      for (i = 0; VEC_iterate (edge, edges, i, e); i++)
+      FOR_EACH_VEC_ELT (edge, edges, i, e)
 	if (regno < 0
 	    || (bitmap_bit_p (DF_LR_OUT (e->src), regno)
 		&& bitmap_bit_p (DF_LR_IN (e->dest), regno)))

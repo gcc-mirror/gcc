@@ -1,3 +1,7 @@
+2010-08-20  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* lto.c: Use FOR_EACH_VEC_ELT.
+
 2010-07-27  Andi Kleen <ak@linux.intel.com>
 
 	* Make-lang.in (lto.o): Add dependency to splay-tree.h

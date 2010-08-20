@@ -1672,9 +1672,7 @@ ipa_free_all_edge_args (void)
   int i;
   struct ipa_edge_args *args;
 
-  for (i = 0;
-       VEC_iterate (ipa_edge_args_t, ipa_edge_args_vector, i, args);
-       i++)
+  FOR_EACH_VEC_ELT (ipa_edge_args_t, ipa_edge_args_vector, i, args)
     ipa_free_edge_args_substructures (args);
 
   VEC_free (ipa_edge_args_t, gc, ipa_edge_args_vector);
@@ -1701,9 +1699,7 @@ ipa_free_all_node_params (void)
   int i;
   struct ipa_node_params *info;
 
-  for (i = 0;
-       VEC_iterate (ipa_node_params_t, ipa_node_params_vector, i, info);
-       i++)
+  FOR_EACH_VEC_ELT (ipa_node_params_t, ipa_node_params_vector, i, info)
     ipa_free_node_params_substructures (info);
 
   VEC_free (ipa_node_params_t, heap, ipa_node_params_vector);

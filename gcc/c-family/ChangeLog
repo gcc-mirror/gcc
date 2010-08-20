@@ -1,3 +1,9 @@
+2010-08-20  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* c-common.c: Use FOR_EACH_VEC_ELT.
+	* c-gimplify.c: Likewise.
+	* c-pragma.c: Likewise.
+
 2010-08-16  Joseph Myers  <joseph@codesourcery.com>
 
 	* c.opt (MDX): Change back to MD.  Mark NoDriverArg instead of

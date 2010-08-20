@@ -1063,7 +1063,7 @@ lto_wpa_write_files (void)
      compiled by LTRANS.  After this loop, only those sets that
      contain callgraph nodes from more than one file will need to be
      compiled by LTRANS.  */
-  for (i = 0; VEC_iterate (ltrans_partition, ltrans_partitions, i, part); i++)
+  FOR_EACH_VEC_ELT (ltrans_partition, ltrans_partitions, i, part)
     lto_stats.num_output_cgraph_nodes += VEC_length (cgraph_node_ptr,
 						     part->cgraph_set->nodes);
 
@@ -1592,7 +1592,7 @@ lto_fixup_decls (struct lto_file_decl_data **files)
       htab_traverse (file->function_decl_states, lto_fixup_state_aux, &data);
     }
 
-  for (i = 0; VEC_iterate (tree, lto_global_var_decls, i, decl); i++)
+  FOR_EACH_VEC_ELT (tree, lto_global_var_decls, i, decl)
     {
       tree saved_decl = decl;
       walk_tree (&decl, lto_fixup_tree, &data, NULL);
@@ -1892,7 +1892,7 @@ materialize_cgraph (void)
   set_cfun (NULL);
 
   /* Inform the middle end about the global variables we have seen.  */
-  for (i = 0; VEC_iterate (tree, lto_global_var_decls, i, decl); i++)
+  FOR_EACH_VEC_ELT (tree, lto_global_var_decls, i, decl)
     rest_of_decl_compilation (decl, 1, 0);
 
   if (!quiet_flag)

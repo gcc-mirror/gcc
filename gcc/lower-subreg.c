@@ -1312,7 +1312,7 @@ decompose_multiword_subregs (void)
     unsigned int i;
     bitmap b;
 
-    for (i = 0; VEC_iterate (bitmap, reg_copy_graph, i, b); ++i)
+    FOR_EACH_VEC_ELT (bitmap, reg_copy_graph, i, b)
       if (b)
 	BITMAP_FREE (b);
   }
