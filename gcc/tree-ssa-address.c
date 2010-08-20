@@ -299,6 +299,7 @@ tree_mem_ref_addr (tree type, tree mem_ref)
 
   if (offset && !integer_zerop (offset))
     {
+      offset = fold_convert (sizetype, offset);
       if (addr_off)
 	addr_off = fold_build2 (PLUS_EXPR, sizetype, addr_off, offset);
       else
