@@ -505,6 +505,7 @@ pex_read_err (struct pex_obj *obj, int binary)
   if (o < 0 || o == STDIN_FILE_NO)
     return NULL;
   obj->read_err = obj->funcs->fdopenr (obj, o, binary);
+  obj->stderr_pipe = -1;
   return obj->read_err;    
 }
 
@@ -597,8 +598,17 @@ pex_get_times (struct pex_obj *obj, int count, struct pex_time *vector)
 void
 pex_free (struct pex_obj *obj)
 {
+  /* Close pipe file descriptors corresponding to child's stdout and
+     stderr so that the child does not hang trying to output something
+     while we're waiting for it.  */
   if (obj->next_input >= 0 && obj->next_input != STDIN_FILE_NO)
     obj->funcs->close (obj, obj->next_input);
+  if (obj->stderr_pipe >= 0 && obj->stderr_pipe != STDIN_FILE_NO)
+    obj->funcs->close (obj, obj->stderr_pipe);
+  if (obj->read_output != NULL)
+    fclose (obj->read_output);
+  if (obj->read_err != NULL)
+    fclose (obj->read_err);
 
   /* If the caller forgot to wait for the children, we do it here, to
      avoid zombies.  */
@@ -619,10 +629,6 @@ pex_free (struct pex_obj *obj)
     free (obj->status);
   if (obj->time != NULL)
     free (obj->time);
-  if (obj->read_output != NULL)
-    fclose (obj->read_output);
-  if (obj->read_err != NULL)
-    fclose (obj->read_err);
 
   if (obj->remove_count > 0)
     {
