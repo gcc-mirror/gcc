@@ -1,3 +1,10 @@
+2010-08-20  Olivier Hainque  <hainque@adacore.com>
+
+	* tree.h (alias_diag_flags): New enum.
+	(alias_pair): Add an 'emitted_diags' field.
+	* varasm.c (finish_aliases_1): Honor and update p->emitted_diags.
+	(assemble_alias): Initialize emitted_diags of new pairs.
+
 2010-08-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/rs6000/aix.h (STACK_CHECK_STATIC_BUILTIN): Define to 1.

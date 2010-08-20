@@ -5444,19 +5444,27 @@ finish_aliases_1 (void)
       target_decl = find_decl_and_mark_needed (p->decl, p->target);
       if (target_decl == NULL)
 	{
-	  if (! lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl)))
-	    error ("%q+D aliased to undefined symbol %qE",
-		   p->decl, p->target);
+	  if (! (p->emitted_diags & ALIAS_DIAG_TO_UNDEF)
+	      && ! lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl)))
+	    {
+	      error ("%q+D aliased to undefined symbol %qE",
+		     p->decl, p->target);
+	      p->emitted_diags |= ALIAS_DIAG_TO_UNDEF;
+	    }
 	}
-      else if (DECL_EXTERNAL (target_decl)
- 	       /* We use local aliases for C++ thunks to force the tailcall
- 		  to bind locally.  Of course this is a hack - to keep it
- 		  working do the following (which is not strictly correct).  */
- 	       && (! TREE_CODE (target_decl) == FUNCTION_DECL
- 		   || ! DECL_VIRTUAL_P (target_decl))
+      else if (! (p->emitted_diags & ALIAS_DIAG_TO_EXTERN)
+	       && DECL_EXTERNAL (target_decl)
+	       /* We use local aliases for C++ thunks to force the tailcall
+		  to bind locally.  This is a hack - to keep it working do
+		  the following (which is not strictly correct).  */
+	       && (! TREE_CODE (target_decl) == FUNCTION_DECL
+		   || ! DECL_VIRTUAL_P (target_decl))
 	       && ! lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl)))
-	error ("%q+D aliased to external symbol %qE",
-	       p->decl, p->target);
+	{
+	  error ("%q+D aliased to external symbol %qE",
+		 p->decl, p->target);	  
+	  p->emitted_diags |= ALIAS_DIAG_TO_EXTERN;
+	}
     }
 }
 
@@ -5549,6 +5557,7 @@ assemble_alias (tree decl, tree target)
       alias_pair *p = VEC_safe_push (alias_pair, gc, alias_pairs, NULL);
       p->decl = decl;
       p->target = target;
+      p->emitted_diags = ALIAS_DIAG_NONE;
     }
 }
 
