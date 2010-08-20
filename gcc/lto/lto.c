@@ -117,6 +117,34 @@ lto_materialize_constructors_and_inits (struct lto_file_decl_data * file_data)
 			 data, len);
 }
 
+/* Return true when NODE has a clone that is analyzed (i.e. we need
+   to load its body even if the node itself is not needed).  */
+
+static bool
+has_analyzed_clone_p (struct cgraph_node *node)
+{
+  struct cgraph_node *orig = node;
+  node = node->clones;
+  if (node)
+    while (node != orig)
+      {
+	if (node->analyzed)
+	  return true;
+	if (node->clones)
+	  node = node->clones;
+	else if (node->next_sibling_clone)
+	  node = node->next_sibling_clone;
+	else
+	  {
+	    while (node != orig && !node->next_sibling_clone)
+	      node = node->clone_of;
+	    if (node != orig)
+	      node = node->next_sibling_clone;
+	  }
+      }
+  return false;
+}
+
 /* Read the function body for the function associated with NODE.  */
 
 static void
@@ -127,27 +155,29 @@ lto_materialize_function (struct cgraph_node *node)
   const char *data, *name;
   size_t len;
 
-  /* Ignore clone nodes.  Read the body only from the original one.
-     We may find clone nodes during LTRANS after WPA has made inlining
-     decisions.  */
-  if (node->clone_of)
-    return;
-
   decl = node->decl;
-  file_data = node->local.lto_file_data;
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)); 
-
-  /* We may have renamed the declaration, e.g., a static function.  */
-  name = lto_get_decl_name_mapping (file_data, name);
-
-  data = lto_get_section_data (file_data, LTO_section_function_body,
-			       name, &len);
-  if (data)
+  /* Read in functions with body (analyzed nodes)
+     and also functions that are needed to produce virtual clones.  */
+  if (node->analyzed || has_analyzed_clone (node))
     {
-      gcc_assert (!DECL_IS_BUILTIN (decl));
-
       /* This function has a definition.  */
       TREE_STATIC (decl) = 1;
+
+      /* Clones don't need to be read.  */
+      if (node->clone_of)
+	return;
+      file_data = node->local.lto_file_data;
+      name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)); 
+
+      /* We may have renamed the declaration, e.g., a static function.  */
+      name = lto_get_decl_name_mapping (file_data, name);
+
+      data = lto_get_section_data (file_data, LTO_section_function_body,
+				   name, &len);
+      if (!data)
+	fatal_error ("%s: section %s is missing",
+		     file_data->file_name,
+		     name);
 
       gcc_assert (DECL_STRUCT_FUNCTION (decl) == NULL);
 
@@ -1862,17 +1892,7 @@ materialize_cgraph (void)
 
   for (node = cgraph_nodes; node; node = node->next)
     {
-      /* Some cgraph nodes get created on the fly, and they don't need
-	 to be materialized.  For instance, nodes for nested functions
-	 where the parent function was not streamed out or builtin
-	 functions.  Additionally, builtin functions should not be
-	 materialized and may, in fact, cause confusion because there
-	 may be a regular function in the file whose assembler name
-	 matches that of the function.
-	 See gcc.c-torture/execute/20030125-1.c and
-	 gcc.c-torture/execute/921215-1.c.  */
-      if (node->local.lto_file_data
-          && !DECL_IS_BUILTIN (node->decl))
+      if (node->local.lto_file_data)
 	{
 	  lto_materialize_function (node);
 	  lto_stats.num_input_cgraph_nodes++;
