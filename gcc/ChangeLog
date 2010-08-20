@@ -1,3 +1,8 @@
+2010-08-20  Olivier Hainque  <hainque@adacore.com>
+
+	* config/sparc/sparc.c (sparc_asm_function_epilogue): Don't output
+	an extra nop past a sibling call at the very end.
+
 2010-08-19  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR bootstrap/45350
