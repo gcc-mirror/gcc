@@ -66,6 +66,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Type Attributes::     Specifying attributes of types.
 * Alignment::           Inquiring about the alignment of a type or variable.
 * Inline::              Defining inline functions (as fast as macros).
+* Volatiles::           What constitutes an access to a volatile object.
 * Extended Asm::        Assembler instructions with C expressions as operands.
                         (With them you can define ``built-in'' functions.)
 * Constraints::         Constraints for asm operands
@@ -5051,6 +5052,88 @@ definition (lacking @code{inline} and @code{extern}) in a library file.
 The definition in the header file will cause most calls to the function
 to be inlined.  If any uses of the function remain, they will refer to
 the single copy in the library.
+
+@node Volatiles
+@section When is a Volatile Object Accessed?
+@cindex accessing volatiles
+@cindex volatile read
+@cindex volatile write
+@cindex volatile access
+
+C has the concept of volatile objects.  These are normally accessed by
+pointers and used for accessing hardware or inter-thread
+communication.  The standard encourage compilers to refrain from
+optimizations concerning accesses to volatile objects, but leaves it
+implementation defined as to what constitutes a volatile access.  The
+minimum requirement is that at a sequence point all previous accesses
+to volatile objects have stabilized and no subsequent accesses have
+occurred.  Thus an implementation is free to reorder and combine
+volatile accesses which occur between sequence points, but cannot do
+so for accesses across a sequence point.  The use of volatiles does
+not allow you to violate the restriction on updating objects multiple
+times between two sequence points.
+
+Accesses to non-volatile objects are not ordered with respect to
+volatile accesses.  You cannot use a volatile object as a memory
+barrier to order a sequence of writes to non-volatile memory.  For
+instance:
+
+@smallexample
+int *ptr = @var{something};
+volatile int vobj;
+*ptr = @var{something};
+vobj = 1;
+@end smallexample
+
+Unless @var{*ptr} and @var{vobj} can be aliased, it is not guaranteed
+that the write to @var{*ptr} will have occurred by the time the update
+of @var{vobj} has happened.  If you need this guarantee, you must use
+a stronger memory barrier such as:
+
+@smallexample
+int *ptr = @var{something};
+volatile int vobj;
+*ptr = @var{something};
+asm volatile ("" : : : "memory");
+vobj = 1;
+@end smallexample
+
+A scalar volatile object is read, when it is accessed in a void context:
+
+@smallexample
+volatile int *src = @var{somevalue};
+*src;
+@end smallexample
+
+Such expressions are rvalues, and GCC implements this as a
+read of the volatile object being pointed to.
+
+Assignments are also expressions and have an rvalue.  However when
+assigning to a scalar volatile, the volatile object is not reread,
+regardless of whether the assignment expression's rvalue is used or
+not.  If the assignment's rvalue is used, the value is that assigned
+to the volatile object.  For instance, there is no read of @var{vobj}
+in all the following cases:
+
+@smallexample
+int obj;
+volatile int vobj;
+vobj = @var{something};
+obj = vobj = @var{something};
+obj ? vobj = @var{onething} : vobj = @var{anotherthing};
+obj = (@var{something}, vobj = @var{anotherthing});
+@end smallexample
+
+If you need to read the volatile object after an assignment has
+occurred, you must use a separate expression with an intervening
+sequence point.
+
+As bitfields are not individually addressable, volatile bitfields may
+be implicitly read when written to, or when adjacent bitfields are
+accessed.  Bitfield operations may be optimized such that adjacent
+bitfields are only partially accessed, if they straddle a storage unit
+boundary.  For these reasons it is unwise to use volatile bitfields to
+access hardware.
 
 @node Extended Asm
 @section Assembler Instructions with C Expression Operands
@@ -13152,7 +13235,7 @@ test specifically for GNU C++ (@pxref{Common Predefined Macros,,
 Predefined Macros,cpp,The GNU C Preprocessor}).
 
 @menu
-* Volatiles::           What constitutes an access to a volatile object.
+* C++ Volatiles::       What constitutes an access to a volatile object.
 * Restricted Pointers:: C99 restricted pointers and references.
 * Vague Linkage::       Where G++ puts inlines, vtables and such.
 * C++ Interface::       You can use a single C++ header file for both
@@ -13169,50 +13252,40 @@ Predefined Macros,cpp,The GNU C Preprocessor}).
 * Backwards Compatibility:: Compatibilities with earlier definitions of C++.
 @end menu
 
-@node Volatiles
-@section When is a Volatile Object Accessed?
+@node C++ Volatiles
+@section When is a Volatile C++ Object Accessed?
 @cindex accessing volatiles
 @cindex volatile read
 @cindex volatile write
 @cindex volatile access
 
-Both the C and C++ standard have the concept of volatile objects.  These
-are normally accessed by pointers and used for accessing hardware.  The
-standards encourage compilers to refrain from optimizations concerning
-accesses to volatile objects.  The C standard leaves it implementation
-defined  as to what constitutes a volatile access.  The C++ standard omits
-to specify this, except to say that C++ should behave in a similar manner
-to C with respect to volatiles, where possible.  The minimum either
-standard specifies is that at a sequence point all previous accesses to
-volatile objects have stabilized and no subsequent accesses have
-occurred.  Thus an implementation is free to reorder and combine
-volatile accesses which occur between sequence points, but cannot do so
-for accesses across a sequence point.  The use of volatiles does not
-allow you to violate the restriction on updating objects multiple times
-within a sequence point.
+The C++ standard differs from the C standard in its treatment of
+volatile objects.  It fails to specify what constitutes a volatile
+access, except to say that C++ should behave in a similar manner to C
+with respect to volatiles, where possible.  However, the different
+lvalueness of expressions between C and C++ complicate the behaviour.
+G++ behaves the same as GCC for volatile access, @xref{C
+Extensions,,Volatiles}, for a description of GCC's behaviour.
 
-@xref{Qualifiers implementation, , Volatile qualifier and the C compiler}.
-
-The behavior differs slightly between C and C++ in the non-obvious cases:
+The C and C++ language specifications differ when an object is
+accessed in a void context:
 
 @smallexample
 volatile int *src = @var{somevalue};
 *src;
 @end smallexample
 
-With C, such expressions are rvalues, and GCC interprets this either as a
-read of the volatile object being pointed to or only as request to evaluate
-the side-effects.  The C++ standard specifies that such expressions do not
-undergo lvalue to rvalue conversion, and that the type of the dereferenced
-object may be incomplete.  The C++ standard does not specify explicitly
-that it is this lvalue to rvalue conversion which may be responsible for
-causing an access.  However, there is reason to believe that it is,
-because otherwise certain simple expressions become undefined.  However,
-because it would surprise most programmers, G++ treats dereferencing a
-pointer to volatile object of complete type when the value is unused as
-GCC would do for an equivalent type in C@.  When the object has incomplete
-type, G++ issues a warning; if you wish to force an error, you must
-force a conversion to rvalue with, for instance, a static cast.
+The C++ standard specifies that such expressions do not undergo lvalue
+to rvalue conversion, and that the type of the dereferenced object may
+be incomplete.  The C++ standard does not specify explicitly that it
+is lvalue to rvalue conversion which is responsible for causing an
+access.  There is reason to believe that it is, because otherwise
+certain simple expressions become undefined.  However, because it
+would surprise most programmers, G++ treats dereferencing a pointer to
+volatile object of complete type as GCC would do for an equivalent
+type in C@.  When the object has incomplete type, G++ issues a
+warning; if you wish to force an error, you must force a conversion to
+rvalue with, for instance, a static cast.
 
 When using a reference to volatile, G++ does not treat equivalent
 expressions as accesses to volatiles, but instead issues a warning that
@@ -13221,6 +13294,18 @@ becomes difficult to determine where volatile access occur, and not
 possible to ignore the return value from functions returning volatile
 references.  Again, if you wish to force a read, cast the reference to
 an rvalue.
+
+G++ implements the same behaviour as GCC does when assigning to a
+volatile object -- there is no reread of the assigned-to object, the
+assigned rvalue is reused.  Note that in C++ assignment expressions
+are lvalues, and if used as an lvalue, the volatile object will be
+referred to.  For instance, @var{vref} will refer to @var{vobj}, as
+expected, in the following example:
+
+@smallexample
+volatile int vobj;
+volatile int &vref = vobj = @var{something};
+@end smallexample
 
 @node Restricted Pointers
 @section Restricting Pointer Aliasing
