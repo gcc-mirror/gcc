@@ -1,3 +1,8 @@
+2010-08-19  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/44691
+	* gfortran.dg/pr44691.f: New test.
+
 2010-10-19  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc.target/sparc/sibcall-dslot.c: New testcase.
