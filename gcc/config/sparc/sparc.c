@@ -4527,11 +4527,11 @@ sparc_can_use_return_insn_p (void)
 static void
 sparc_asm_function_epilogue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 {
-  /* If code does not drop into the epilogue, we have to still output
-     a dummy nop for the sake of sane backtraces.  Otherwise, if the
-     last two instructions of a function were "call foo; dslot;" this
-     can make the return PC of foo (i.e. address of call instruction
-     plus 8) point to the first instruction in the next function.  */
+  /* If the last two instructions of a function are "call foo; dslot;"
+     the return address might point to the first instruction in the next
+     function and we have to output a dummy nop for the sake of sane
+     backtraces in such cases.  This is pointless for sibling calls since
+     the return address is explicitly adjusted.  */
 
   rtx insn, last_real_insn;
 
@@ -4543,7 +4543,9 @@ sparc_asm_function_epilogue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
       && GET_CODE (PATTERN (last_real_insn)) == SEQUENCE)
     last_real_insn = XVECEXP (PATTERN (last_real_insn), 0, 0);
 
-  if (last_real_insn && GET_CODE (last_real_insn) == CALL_INSN)
+  if (last_real_insn
+      && CALL_P (last_real_insn)
+      && !SIBLING_CALL_P (last_real_insn))
     fputs("\tnop\n", file);
 
   sparc_output_deferred_case_vectors ();
