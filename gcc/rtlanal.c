@@ -118,13 +118,11 @@ rtx_unstable_p (const_rtx x)
 	  /* The arg pointer varies if it is not a fixed register.  */
 	  || (x == arg_pointer_rtx && fixed_regs[ARG_POINTER_REGNUM]))
 	return 0;
-#ifndef PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
       /* ??? When call-clobbered, the value is stable modulo the restore
 	 that must happen after a call.  This currently screws up local-alloc
 	 into believing that the restore is not needed.  */
-      if (x == pic_offset_table_rtx)
+      if (!PIC_OFFSET_TABLE_REG_CALL_CLOBBERED && x == pic_offset_table_rtx)
 	return 0;
-#endif
       return 1;
 
     case ASM_OPERANDS:
@@ -197,14 +195,11 @@ rtx_varies_p (const_rtx x, bool for_alias)
 	  || (x == arg_pointer_rtx && fixed_regs[ARG_POINTER_REGNUM]))
 	return 0;
       if (x == pic_offset_table_rtx
-#ifdef PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
 	  /* ??? When call-clobbered, the value is stable modulo the restore
 	     that must happen after a call.  This currently screws up
 	     local-alloc into believing that the restore is not needed, so we
 	     must return 0 only if we are called from alias analysis.  */
-	  && for_alias
-#endif
-	  )
+	  && (!PIC_OFFSET_TABLE_REG_CALL_CLOBBERED || for_alias))
 	return 0;
       return 1;
 

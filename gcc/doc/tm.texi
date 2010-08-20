@@ -7128,8 +7128,9 @@ when @code{flag_pic} is true).
 @end defmac
 
 @defmac PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
-Define this macro if the register defined by
-@code{PIC_OFFSET_TABLE_REGNUM} is clobbered by calls.  Do not define
+A C expression that is nonzero if the register defined by
+@code{PIC_OFFSET_TABLE_REGNUM} is clobbered by calls.  If not defined,
+the default is zero.  Do not define
 this macro if @code{PIC_OFFSET_TABLE_REGNUM} is not defined.
 @end defmac
 
