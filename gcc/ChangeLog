@@ -1,8 +1,14 @@
+2010-08-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (ashift RSP splitter): Remove splitter.
+	(pro_epilogue_adjust_stack_di_2): Use "l" constraint for
+	alternative 1 of operand 2.
+
 2010-08-20  Jakub Jelinek  <jakub@redhat.com>
 	    Paolo Bonzini  <bonzini@gnu.org>
 
 	* simplify-rtx.c (simplify_unary_operation_1): Optimize
-	(sign_extend (zero_extend ()) and
+	(sign_extend (zero_extend (...)) and
 	({sign,zero}_extend (lshiftrt (ashift X (const_int I)) (const_int I))).
 
 2010-08-20  Jakub Jelinek  <jakub@redhat.com>
@@ -13,14 +19,13 @@
 
 2010-08-20  Iain Sandoe  <iains@gcc.gnu.org>
 
-	* config/rs6000/darwin.h (LIB_SPEC): New. Provide save/restFP by 
+	* config/rs6000/darwin.h (LIB_SPEC): New. Provide saveFP/restFP by
 	linking libgcc.a.
-	
+
 2010-08-20  Jakub Jelinek  <jakub@redhat.com>
 	    Michael Matz  <matz@suse.de>
 
-	* tree-ssa-address.c (tree_mem_ref_addr): Convert offset to
-	sizetype.
+	* tree-ssa-address.c (tree_mem_ref_addr): Convert offset to sizetype.
 
 2010-08-20  Nathan Froyd  <froydnj@codesourcery.com>
 
