@@ -5770,7 +5770,8 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
      none of its arguments are volatile, we can avoid expanding the
      built-in call and just evaluate the arguments for side-effects.  */
   if (target == const0_rtx
-      && (DECL_PURE_P (fndecl) || TREE_READONLY (fndecl)))
+      && (DECL_PURE_P (fndecl) || TREE_READONLY (fndecl))
+      && !DECL_LOOPING_CONST_OR_PURE_P (fndecl))
     {
       bool volatilep = false;
       tree arg;
