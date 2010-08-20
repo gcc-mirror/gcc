@@ -1359,7 +1359,7 @@ do {									\
 /* Define this macro if the register defined by `PIC_OFFSET_TABLE_REGNUM' is
    clobbered by calls.  */
 
-#define PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
+#define PIC_OFFSET_TABLE_REG_CALL_CLOBBERED 1
 
 
 /* The Overall Framework of an Assembler File.  */

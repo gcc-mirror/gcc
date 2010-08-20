@@ -495,10 +495,9 @@ init_reg_sets_1 (void)
       else if (i == ARG_POINTER_REGNUM && fixed_regs[i])
 	;
 #endif
-#ifndef PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
-      else if (i == (unsigned) PIC_OFFSET_TABLE_REGNUM && fixed_regs[i])
+      else if (!PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
+	       && i == (unsigned) PIC_OFFSET_TABLE_REGNUM && fixed_regs[i])
 	;
-#endif
       else if (CALL_REALLY_USED_REGNO_P (i))
         {
 	  SET_HARD_REG_BIT (regs_invalidated_by_call, i);

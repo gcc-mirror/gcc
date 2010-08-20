@@ -4032,14 +4032,13 @@ df_get_exit_block_use_set (bitmap exit_block_uses)
 #endif
     }
 
-#ifndef PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
   /* Many architectures have a GP register even without flag_pic.
      Assume the pic register is not in use, or will be handled by
      other means, if it is not fixed.  */
-  if ((unsigned) PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM
+  if (!PIC_OFFSET_TABLE_REG_CALL_CLOBBERED
+      && (unsigned) PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM
       && fixed_regs[PIC_OFFSET_TABLE_REGNUM])
     bitmap_set_bit (exit_block_uses, PIC_OFFSET_TABLE_REGNUM);
-#endif
 
   /* Mark all global registers, and all registers used by the
      epilogue as being live at the end of the function since they
