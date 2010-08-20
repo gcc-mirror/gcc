@@ -1,3 +1,10 @@
+2010-08-20  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (has_analyzed_clone_p): New function
+	(lto_materialize_function): Use callgraph to determine if
+	body is needed.
+	(materialize_cgraph): Remove DECL_IS_BUILTIN check.
+
 2010-08-20  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* lto.c: Use FOR_EACH_VEC_ELT.
