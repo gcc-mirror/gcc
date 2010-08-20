@@ -1,3 +1,10 @@
+2010-08-20  Iain Sandoe  <iains@gcc.gnu.org>
+
+	revert r163410, partially revert r163267.
+	* config/rs6000/darwin.h (LIB_SPEC): Remove.
+	* config/darwin.h (REAL_LIBGCC_SPEC): Link lgcc for all 
+	Darwin versions.
+	
 2010-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/44974
