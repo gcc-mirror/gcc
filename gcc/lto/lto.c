@@ -158,7 +158,7 @@ lto_materialize_function (struct cgraph_node *node)
   decl = node->decl;
   /* Read in functions with body (analyzed nodes)
      and also functions that are needed to produce virtual clones.  */
-  if (node->analyzed || has_analyzed_clone (node))
+  if (node->analyzed || has_analyzed_clone_p (node))
     {
       /* This function has a definition.  */
       TREE_STATIC (decl) = 1;
