@@ -1,4 +1,11 @@
 2010-08-20  Jakub Jelinek  <jakub@redhat.com>
+	    Paolo Bonzini  <bonzini@gnu.org>
+
+	* simplify-rtx.c (simplify_unary_operation_1): Optimize
+	(sign_extend (zero_extend ()) and
+	({sign,zero}_extend (lshiftrt (ashift X (const_int I)) (const_int I))).
+
+2010-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/45353
 	* sel-sched-ir.c (sel_bb_head): Return NULL even if next_nonnote_insn
