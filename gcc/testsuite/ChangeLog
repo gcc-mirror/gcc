@@ -1,5 +1,8 @@
 2010-08-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/44974
+	* gcc.dg/pr44974.c: New test.
+
 	PR rtl-optimization/45353
 	* gcc.dg/pr45353.c: New test.
 
