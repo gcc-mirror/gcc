@@ -1,3 +1,9 @@
+2010-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/45353
+	* sel-sched-ir.c (sel_bb_head): Return NULL even if next_nonnote_insn
+	after bb_note is a BARRIER.
+
 2010-08-20  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* config/rs6000/darwin.h (LIB_SPEC): New. Provide save/restFP by 

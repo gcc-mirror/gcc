@@ -1,3 +1,8 @@
+2010-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/45353
+	* gcc.dg/pr45353.c: New test.
+
 2010-08-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.target/i386/volatile-2.c: New.
