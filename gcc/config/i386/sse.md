@@ -7075,14 +7075,14 @@
    (set_attr "length_immediate" "1")
    (set_attr "mode" "TI")])
 
-(define_insn "*sse4_1_pextrb"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(zero_extend:SI
+(define_insn "*sse4_1_pextrb_<mode>"
+  [(set (match_operand:SWI48 0 "register_operand" "=r")
+	(zero_extend:SWI48
 	  (vec_select:QI
 	    (match_operand:V16QI 1 "register_operand" "x")
 	    (parallel [(match_operand:SI 2 "const_0_to_15_operand" "n")]))))]
   "TARGET_SSE4_1"
-  "%vpextrb\t{%2, %1, %0|%0, %1, %2}"
+  "%vpextrb\t{%2, %1, %k0|%k0, %1, %2}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
@@ -7102,14 +7102,14 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "TI")])
 
-(define_insn "*sse2_pextrw"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(zero_extend:SI
+(define_insn "*sse2_pextrw_<mode>"
+  [(set (match_operand:SWI48 0 "register_operand" "=r")
+	(zero_extend:SWI48
 	  (vec_select:HI
 	    (match_operand:V8HI 1 "register_operand" "x")
 	    (parallel [(match_operand:SI 2 "const_0_to_7_operand" "n")]))))]
   "TARGET_SSE2"
-  "%vpextrw\t{%2, %1, %0|%0, %1, %2}"
+  "%vpextrw\t{%2, %1, %k0|%k0, %1, %2}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_data16" "1")
    (set_attr "length_immediate" "1")
@@ -7136,6 +7136,20 @@
 	  (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n")])))]
   "TARGET_SSE4_1"
   "%vpextrd\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "TI")])
+
+(define_insn "*sse4_1_pextrd_zext"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	  (vec_select:SI
+	    (match_operand:V4SI 1 "register_operand" "x")
+	    (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n")]))))]
+  "TARGET_64BIT && TARGET_SSE4_1"
+  "%vpextrd\t{%2, %1, %k0|%k0, %1, %2}"
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
