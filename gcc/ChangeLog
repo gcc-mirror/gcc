@@ -100,6 +100,14 @@
 	* varasm.c: Likewise.
 	* vmsdbgout.c: Likewise.
 
+2010-08-19  Nathan Sidwell  <nathan@codesourcery.com>
+	    Richard Guenther  <richard.guenther@gmail.com>
+
+	* gimplify.c (gimplify_modify_expr): When assigning to volatiles,
+	copy the src value and return a copy.
+	* doc/extend.texi (Volatiles): Move from C++ to C and expand.
+	(C++ Volatiles): Adjust to describe C++ semantics only.
+
 2010-08-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/tm.texi.in (PIC_OFFSET_TABLE_REG_CALL_CLOBBERED): Document to
