@@ -1010,15 +1010,22 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	  && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (GET_MODE (XEXP (op, 0))))
 	return rtl_hooks.gen_lowpart_no_emit (mode, op);
 
-      /* (sign_extend:M (sign_extend:N <X>)) is (sign_extend:M <X>).  */
-      if (GET_CODE (op) == SIGN_EXTEND)
-	return simplify_gen_unary (SIGN_EXTEND, mode, XEXP (op, 0),
-				   GET_MODE (XEXP (op, 0)));
+      /* (sign_extend:M (sign_extend:N <X>)) is (sign_extend:M <X>).
+	 (sign_extend:M (zero_extend:N <X>)) is (zero_extend:M <X>).  */
+      if (GET_CODE (op) == SIGN_EXTEND || GET_CODE (op) == ZERO_EXTEND)
+	{
+	  gcc_assert (GET_MODE_BITSIZE (mode)
+		      > GET_MODE_BITSIZE (GET_MODE (op)));
+	  return simplify_gen_unary (GET_CODE (op), mode, XEXP (op, 0),
+				     GET_MODE (XEXP (op, 0)));
+	}
 
       /* (sign_extend:M (ashiftrt:N (ashift <X> (const_int I)) (const_int I)))
 	 is (sign_extend:M (subreg:O <X>)) if there is mode with
-	 GET_MODE_BITSIZE (N) - I bits.  */
-      if (GET_CODE (op) == ASHIFTRT
+	 GET_MODE_BITSIZE (N) - I bits.
+	 (sign_extend:M (lshiftrt:N (ashift <X> (const_int I)) (const_int I)))
+	 is similarly (zero_extend:M (subreg:O <X>)).  */
+      if ((GET_CODE (op) == ASHIFTRT || GET_CODE (op) == LSHIFTRT)
 	  && GET_CODE (XEXP (op, 0)) == ASHIFT
 	  && CONST_INT_P (XEXP (op, 1))
 	  && XEXP (XEXP (op, 0), 1) == XEXP (op, 1)
@@ -1027,11 +1034,15 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	  enum machine_mode tmode
 	    = mode_for_size (GET_MODE_BITSIZE (GET_MODE (op))
 			     - INTVAL (XEXP (op, 1)), MODE_INT, 1);
+	  gcc_assert (GET_MODE_BITSIZE (mode)
+		      > GET_MODE_BITSIZE (GET_MODE (op)));
 	  if (tmode != BLKmode)
 	    {
 	      rtx inner =
 		rtl_hooks.gen_lowpart_no_emit (tmode, XEXP (XEXP (op, 0), 0));
-	      return simplify_gen_unary (SIGN_EXTEND, mode, inner, tmode);
+	      return simplify_gen_unary (GET_CODE (op) == ASHIFTRT
+					 ? SIGN_EXTEND : ZERO_EXTEND,
+					 mode, inner, tmode);
 	    }
 	}
 
@@ -1065,6 +1076,26 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
       if (GET_CODE (op) == ZERO_EXTEND)
 	return simplify_gen_unary (ZERO_EXTEND, mode, XEXP (op, 0),
 				   GET_MODE (XEXP (op, 0)));
+
+      /* (zero_extend:M (lshiftrt:N (ashift <X> (const_int I)) (const_int I)))
+	 is (zero_extend:M (subreg:O <X>)) if there is mode with
+	 GET_MODE_BITSIZE (N) - I bits.  */
+      if (GET_CODE (op) == LSHIFTRT
+	  && GET_CODE (XEXP (op, 0)) == ASHIFT
+	  && CONST_INT_P (XEXP (op, 1))
+	  && XEXP (XEXP (op, 0), 1) == XEXP (op, 1)
+	  && GET_MODE_BITSIZE (GET_MODE (op)) > INTVAL (XEXP (op, 1)))
+	{
+	  enum machine_mode tmode
+	    = mode_for_size (GET_MODE_BITSIZE (GET_MODE (op))
+			     - INTVAL (XEXP (op, 1)), MODE_INT, 1);
+	  if (tmode != BLKmode)
+	    {
+	      rtx inner =
+		rtl_hooks.gen_lowpart_no_emit (tmode, XEXP (XEXP (op, 0), 0));
+	      return simplify_gen_unary (ZERO_EXTEND, mode, inner, tmode);
+	    }
+	}
 
 #if defined(POINTERS_EXTEND_UNSIGNED) && !defined(HAVE_ptr_extend)
       /* As we do not know which address space the pointer is refering to,
