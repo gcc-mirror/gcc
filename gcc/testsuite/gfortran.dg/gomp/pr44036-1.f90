@@ -12,7 +12,7 @@ subroutine foo(a, b)
   x = a(4)
 !$omp end parallel
 !$omp parallel default(none) private (x)	! { dg-error "enclosing parallel" }
-  x = b(5)					! { dg-error "not specified in" "" { target *-*-* } 11 }
+  x = b(5)					! { dg-error "not specified in" }
 !$omp end parallel
 !$omp parallel default(none) private (x)
   x = c(6)
