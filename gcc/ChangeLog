@@ -1,3 +1,8 @@
+2010-08-20  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* config/rs6000/darwin.h (LIB_SPEC): New. Provide save/restFP by 
+	linking libgcc.a.
+	
 2010-08-20  Jakub Jelinek  <jakub@redhat.com>
 	    Michael Matz  <matz@suse.de>
 
