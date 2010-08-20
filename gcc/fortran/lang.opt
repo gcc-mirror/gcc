@@ -61,7 +61,7 @@ Fortran
 ; Documented in C
 
 MD
-Fortran Separate NoArgDriver
+Fortran Separate NoDriverArg
 ; Documented in C
 
 MF
@@ -77,7 +77,7 @@ Fortran
 ; Documented in C
 
 MMD
-Fortran Separate NoArgDriver
+Fortran Separate NoDriverArg
 ; Documented in C
 
 MP
