@@ -1,3 +1,10 @@
+2010-08-20  David Edelsohn  <edelsohn@gnu.org>
+
+	Backport from mainline
+	2010-04-22  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/x-aix: Override LDFLAGS for all COMPILERS.
+	
 2010-08-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*add<SWI:mode>3_cconly_overflow): Do not use
