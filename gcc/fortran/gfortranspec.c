@@ -477,7 +477,7 @@ For more information about these matters, see the file named COPYING\n\n"));
       append_arg (argv[i]);
     }
 
-  /* Append `-lg2c -lm' as necessary.  */
+  /* Append `-lgfortran -lm' as necessary.  */
 
   if (library)
     {				/* Doing a link and no -nostdlib.  */

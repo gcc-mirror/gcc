@@ -1,3 +1,8 @@
+2010-08-20  Joseph Myers  <joseph@codesourcery.com>
+
+	* gfortranspec.c (lang_specific_driver): Refer to -lgfortran in
+	comment, not -lg2c.
+
 2010-08-20  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* trans-openmp.c: Use FOR_EACH_VEC_ELT.
