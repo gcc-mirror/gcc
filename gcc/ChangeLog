@@ -1,3 +1,17 @@
+2010-08-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/rs6000/aix.h (STACK_CHECK_STATIC_BUILTIN): Define to 1.
+	* config/rs6000/linux.h (STACK_CHECK_STATIC_BUILTIN): Likewise.
+	* config/rs6000/linux64.h (STACK_CHECK_STATIC_BUILTIN): Likewise.
+	(STACK_CHECK_PROTECT): Define.
+	* config/rs6000/rs6000.c (rs6000_emit_probe_stack_range): New function.
+	(output_probe_stack_range): Likewise.
+	(rs6000_emit_prologue): Invoke rs6000_emit_probe_stack_range if static
+	builtin stack checking is enabled.
+	* config/rs6000/rs6000-protos.h (output_probe_stack_range): Declare.
+	* config/rs6000/rs6000.md (UNSPECV_PROBE_STACK_RANGE): New constant.
+	(probe_stack_range): New insn.
+
 2010-08-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/45336

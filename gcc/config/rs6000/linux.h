@@ -130,3 +130,6 @@
 #ifdef TARGET_DEFAULT_LONG_DOUBLE_128
 #define RS6000_DEFAULT_LONG_DOUBLE_SIZE 128
 #endif
+
+/* Static stack checking is supported by means of probes.  */
+#define STACK_CHECK_STATIC_BUILTIN 1
