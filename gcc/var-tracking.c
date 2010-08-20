@@ -5758,7 +5758,7 @@ compute_bb_dataflow (basic_block bb)
   dataflow_set_copy (&old_out, out);
   dataflow_set_copy (out, in);
 
-  for (i = 0; VEC_iterate (micro_operation, VTI (bb)->mos, i, mo); i++)
+  FOR_EACH_VEC_ELT (micro_operation, VTI (bb)->mos, i, mo)
     {
       rtx insn = mo->insn;
 
@@ -7683,7 +7683,7 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
   dataflow_set_clear (set);
   dataflow_set_copy (set, &VTI (bb)->in);
 
-  for (i = 0; VEC_iterate (micro_operation, VTI (bb)->mos, i, mo); i++)
+  FOR_EACH_VEC_ELT (micro_operation, VTI (bb)->mos, i, mo)
     {
       rtx insn = mo->insn;
 
@@ -7978,7 +7978,7 @@ vt_emit_notes (void)
       unsigned int i;
       rtx val;
 
-      for (i = 0; VEC_iterate (rtx, preserved_values, i, val); i++)
+      FOR_EACH_VEC_ELT (rtx, preserved_values, i, val)
 	add_cselib_value_chains (dv_from_value (val));
       changed_variables_stack = VEC_alloc (variable, heap, 40);
       changed_values_stack = VEC_alloc (rtx, heap, 40);
@@ -8008,7 +8008,7 @@ vt_emit_notes (void)
       unsigned int i;
       rtx val;
 
-      for (i = 0; VEC_iterate (rtx, preserved_values, i, val); i++)
+      FOR_EACH_VEC_ELT (rtx, preserved_values, i, val)
 	remove_cselib_value_chains (dv_from_value (val));
       gcc_assert (htab_elements (value_chains) == 0);
     }

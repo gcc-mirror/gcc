@@ -1268,7 +1268,7 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
       len = lto_input_uleb128 (ib);
     }
 
-  for (i = 0; VEC_iterate (cgraph_node_ptr, nodes, i, node); i++)
+  FOR_EACH_VEC_ELT (cgraph_node_ptr, nodes, i, node)
     {
       int ref = (int) (intptr_t) node->global.inlined_to;
 
@@ -1307,7 +1307,7 @@ input_varpool_1 (struct lto_file_decl_data *file_data,
 		     input_varpool_node (file_data, ib));
       len--;
     }
-  for (i = 0; VEC_iterate (varpool_node_ptr, varpool, i, node); i++)
+  FOR_EACH_VEC_ELT (varpool_node_ptr, varpool, i, node)
     {
       int ref = (int) (intptr_t) node->same_comdat_group;
 
@@ -1481,7 +1481,7 @@ output_node_opt_summary (struct output_block *ob,
     lto_output_uleb128_stream (ob->main_stream, index);
   lto_output_uleb128_stream (ob->main_stream,
 		             VEC_length (ipa_replace_map_p, node->clone.tree_map));
-  for (i = 0; VEC_iterate (ipa_replace_map_p, node->clone.tree_map, i, map); i++)
+  FOR_EACH_VEC_ELT (ipa_replace_map_p, node->clone.tree_map, i, map)
     {
       int parm_num;
       tree parm;

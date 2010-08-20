@@ -727,7 +727,7 @@ combine_reaching_defs (rtx zero_extend_insn, rtx set_pat)
      in this vector.  */
 
   vec = VEC_alloc (rtx, heap, 8);
-  for (defs_ix = 0; VEC_iterate (rtx, defs_list, defs_ix, def_insn); defs_ix++)
+  FOR_EACH_VEC_ELT (rtx, defs_list, defs_ix, def_insn)
     {
       merge_code = get_insn_status (def_insn);
       gcc_assert (merge_code == MERGE_NOT_ATTEMPTED);
@@ -746,7 +746,7 @@ combine_reaching_defs (rtx zero_extend_insn, rtx set_pat)
 
   if (merge_successful)
     {
-      for (i = 0; VEC_iterate (rtx, copies_list, i, def_insn); i++)
+      FOR_EACH_VEC_ELT (rtx, copies_list, i, def_insn)
         {
           if (transform_ifelse (def_insn))
             {
@@ -773,7 +773,7 @@ combine_reaching_defs (rtx zero_extend_insn, rtx set_pat)
           if (dump_file)
             fprintf (dump_file, "All merges were successful ....\n");
 
-          for (i = 0; VEC_iterate (rtx, vec, i, def_insn); i++)
+          FOR_EACH_VEC_ELT (rtx, vec, i, def_insn)
             {
               set_insn_status (def_insn, MERGE_SUCCESS);
             }
@@ -791,7 +791,7 @@ combine_reaching_defs (rtx zero_extend_insn, rtx set_pat)
 
           if (dump_file)
             {
-              for (i = 0; VEC_iterate (rtx, vec, i, def_insn); i++)
+              FOR_EACH_VEC_ELT (rtx, vec, i, def_insn)
                 {
                   fprintf (dump_file, " Ummergable definitions : \n");
                   print_rtl_single (dump_file, def_insn);
@@ -916,7 +916,7 @@ find_and_remove_ze (void)
 
   zeinsn_list = find_removable_zero_extends ();
 
-  for (ix = 0; VEC_iterate (rtx, zeinsn_list, ix, curr_insn); ix++)
+  FOR_EACH_VEC_ELT (rtx, zeinsn_list, ix, curr_insn)
     {
       num_ze_opportunities++;
       /* Try to combine the zero-extends with the definition here.  */
@@ -937,7 +937,7 @@ find_and_remove_ze (void)
     }
 
   /* Delete all useless zero extensions here in one sweep.  */
-  for (ix = 0; VEC_iterate (rtx, zeinsn_del_list, ix, curr_insn); ix++)
+  FOR_EACH_VEC_ELT (rtx, zeinsn_del_list, ix, curr_insn)
     delete_insn (curr_insn);
 
   free (is_insn_merge_attempted);

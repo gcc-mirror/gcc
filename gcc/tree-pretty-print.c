@@ -538,7 +538,7 @@ dump_block_node (pretty_printer *buffer, tree block, int spc, int flags)
       VEC(tree,gc) *nlv = BLOCK_NONLOCALIZED_VARS (block);
 
       pp_string (buffer, "NONLOCALIZED_VARS: ");
-      for (i = 0; VEC_iterate (tree, nlv, i, t); i++)
+      FOR_EACH_VEC_ELT (tree, nlv, i, t)
 	{
 	  dump_generic_node (buffer, t, 0, flags, false);
 	  pp_string (buffer, " ");

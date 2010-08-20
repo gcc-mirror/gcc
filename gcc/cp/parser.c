@@ -11187,14 +11187,10 @@ cp_parser_template_id (cp_parser *parser,
       access_check = check_value->checks;
       if (access_check)
 	{
-	  for (i = 0 ;
-	       VEC_iterate (deferred_access_check, access_check, i, chk) ;
-	       ++i)
-	    {
-	      perform_or_defer_access_check (chk->binfo,
-					     chk->decl,
-					     chk->diag_decl);
-	    }
+	  FOR_EACH_VEC_ELT (deferred_access_check, access_check, i, chk)
+	    perform_or_defer_access_check (chk->binfo,
+					   chk->decl,
+					   chk->diag_decl);
 	}
       /* Return the stored value.  */
       return check_value->value;
@@ -16319,10 +16315,8 @@ cp_parser_class_specifier (cp_parser* parser)
 	    };
 
 	 */
-      for (ix = 0;
-	   VEC_iterate (cp_default_arg_entry, unparsed_funs_with_default_args,
-			ix, e);
-	   ix++)
+      FOR_EACH_VEC_ELT (cp_default_arg_entry, unparsed_funs_with_default_args,
+			ix, e)
 	{
 	  fn = e->decl;
 	  /* If there are default arguments that have not yet been processed,
@@ -16345,9 +16339,7 @@ cp_parser_class_specifier (cp_parser* parser)
 	pop_scope (pushed_scope);
       VEC_truncate (cp_default_arg_entry, unparsed_funs_with_default_args, 0);
       /* Now parse the body of the functions.  */
-      for (ix = 0;
-	   VEC_iterate (tree, unparsed_funs_with_definitions, ix, fn);
-	   ix++)
+      FOR_EACH_VEC_ELT (tree, unparsed_funs_with_definitions, ix, fn)
 	cp_parser_late_parsing_for_member (parser, fn);
       VEC_truncate (tree, unparsed_funs_with_definitions, 0);
     }
@@ -20469,14 +20461,10 @@ cp_parser_pre_parsed_nested_name_specifier (cp_parser *parser)
   checks = check_value->checks;
   if (checks)
     {
-      for (i = 0 ;
-	   VEC_iterate (deferred_access_check, checks, i, chk) ;
-	   ++i)
-	{
-	  perform_or_defer_access_check (chk->binfo,
-					 chk->decl,
-					 chk->diag_decl);
-	}
+      FOR_EACH_VEC_ELT (deferred_access_check, checks, i, chk)
+	perform_or_defer_access_check (chk->binfo,
+				       chk->decl,
+				       chk->diag_decl);
     }
   /* Set the scope from the stored value.  */
   parser->scope = check_value->value;

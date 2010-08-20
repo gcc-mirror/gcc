@@ -1442,7 +1442,7 @@ free_mem_ref_locs (mem_ref_locs_p accs)
   if (!accs)
     return;
 
-  for (i = 0; VEC_iterate (mem_ref_loc_p, accs->locs, i, loc); i++)
+  FOR_EACH_VEC_ELT (mem_ref_loc_p, accs->locs, i, loc)
     free (loc);
   VEC_free (mem_ref_loc_p, heap, accs->locs);
   free (accs);
@@ -1463,7 +1463,7 @@ memref_free (void *obj)
   BITMAP_FREE (mem->indep_ref);
   BITMAP_FREE (mem->dep_ref);
 
-  for (i = 0; VEC_iterate (mem_ref_locs_p, mem->accesses_in_loop, i, accs); i++)
+  FOR_EACH_VEC_ELT (mem_ref_locs_p, mem->accesses_in_loop, i, accs)
     free_mem_ref_locs (accs);
   VEC_free (mem_ref_locs_p, heap, mem->accesses_in_loop);
 
@@ -1929,7 +1929,7 @@ get_all_locs_in_loop (struct loop *loop, mem_ref_p ref,
       accs = VEC_index (mem_ref_locs_p, ref->accesses_in_loop, loop->num);
       if (accs)
 	{
-	  for (i = 0; VEC_iterate (mem_ref_loc_p, accs->locs, i, loc); i++)
+	  FOR_EACH_VEC_ELT (mem_ref_loc_p, accs->locs, i, loc)
 	    VEC_safe_push (mem_ref_loc_p, heap, *locs, loc);
 	}
     }
@@ -1948,7 +1948,7 @@ rewrite_mem_refs (struct loop *loop, mem_ref_p ref, tree tmp_var)
   VEC (mem_ref_loc_p, heap) *locs = NULL;
 
   get_all_locs_in_loop (loop, ref, &locs);
-  for (i = 0; VEC_iterate (mem_ref_loc_p, locs, i, loc); i++)
+  FOR_EACH_VEC_ELT (mem_ref_loc_p, locs, i, loc)
     rewrite_mem_ref_loc (loc, tmp_var);
   VEC_free (mem_ref_loc_p, heap, locs);
 }
@@ -2113,7 +2113,7 @@ execute_sm (struct loop *loop, VEC (edge, heap) *exits, mem_ref_p ref)
      all dependencies.  */
   gsi_insert_on_edge (loop_latch_edge (loop), load);
 
-  for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
+  FOR_EACH_VEC_ELT (edge, exits, i, ex)
     {
       store = gimple_build_assign (unshare_expr (ref->mem), tmp_var);
       gsi_insert_on_edge (ex, store);
@@ -2157,7 +2157,7 @@ ref_always_accessed_p (struct loop *loop, mem_ref_p ref, bool stored_p)
     base = TREE_OPERAND (base, 0);
 
   get_all_locs_in_loop (loop, ref, &locs);
-  for (i = 0; VEC_iterate (mem_ref_loc_p, locs, i, loc); i++)
+  FOR_EACH_VEC_ELT (mem_ref_loc_p, locs, i, loc)
     {
       if (!get_lim_data (loc->stmt))
 	continue;
@@ -2378,7 +2378,7 @@ loop_suitable_for_sm (struct loop *loop ATTRIBUTE_UNUSED,
   unsigned i;
   edge ex;
 
-  for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
+  FOR_EACH_VEC_ELT (edge, exits, i, ex)
     if (ex->flags & EDGE_ABNORMAL)
       return false;
 
@@ -2545,19 +2545,19 @@ tree_ssa_lim_finalize (void)
   VEC_free (mem_ref_p, heap, memory_accesses.refs_list);
   htab_delete (memory_accesses.refs);
 
-  for (i = 0; VEC_iterate (bitmap, memory_accesses.refs_in_loop, i, b); i++)
+  FOR_EACH_VEC_ELT (bitmap, memory_accesses.refs_in_loop, i, b)
     BITMAP_FREE (b);
   VEC_free (bitmap, heap, memory_accesses.refs_in_loop);
 
-  for (i = 0; VEC_iterate (bitmap, memory_accesses.all_refs_in_loop, i, b); i++)
+  FOR_EACH_VEC_ELT (bitmap, memory_accesses.all_refs_in_loop, i, b)
     BITMAP_FREE (b);
   VEC_free (bitmap, heap, memory_accesses.all_refs_in_loop);
 
-  for (i = 0; VEC_iterate (bitmap, memory_accesses.clobbered_vops, i, b); i++)
+  FOR_EACH_VEC_ELT (bitmap, memory_accesses.clobbered_vops, i, b)
     BITMAP_FREE (b);
   VEC_free (bitmap, heap, memory_accesses.clobbered_vops);
 
-  for (i = 0; VEC_iterate (htab_t, memory_accesses.vop_ref_map, i, h); i++)
+  FOR_EACH_VEC_ELT (htab_t, memory_accesses.vop_ref_map, i, h)
     htab_delete (h);
   VEC_free (htab_t, heap, memory_accesses.vop_ref_map);
 

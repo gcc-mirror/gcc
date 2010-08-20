@@ -595,7 +595,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
     }
 
   loop_depth = index_in_loop_nest (loop->num, DDR_LOOP_NEST (ddr));
-  for (i = 0; VEC_iterate (lambda_vector, DDR_DIST_VECTS (ddr), i, dist_v); i++)
+  FOR_EACH_VEC_ELT (lambda_vector, DDR_DIST_VECTS (ddr), i, dist_v)
     {
       int dist = dist_v[loop_depth];
 
@@ -692,7 +692,7 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo,
   else
     ddrs = BB_VINFO_DDRS (bb_vinfo);
 
-  for (i = 0; VEC_iterate (ddr_p, ddrs, i, ddr); i++)
+  FOR_EACH_VEC_ELT (ddr_p, ddrs, i, ddr)
     if (vect_analyze_data_ref_dependence (ddr, loop_vinfo, max_vf))
       return false;
 
@@ -866,7 +866,7 @@ vect_compute_data_refs_alignment (loop_vec_info loop_vinfo,
   else
     datarefs = BB_VINFO_DATAREFS (bb_vinfo);
 
-  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+  FOR_EACH_VEC_ELT (data_reference_p, datarefs, i, dr)
     if (STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (DR_STMT (dr)))
         && !vect_compute_data_ref_alignment (dr))
       {
@@ -915,7 +915,7 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
      are aligned in the vector loop.  */
   same_align_drs
     = STMT_VINFO_SAME_ALIGN_REFS (vinfo_for_stmt (DR_STMT (dr_peel)));
-  for (i = 0; VEC_iterate (dr_p, same_align_drs, i, current_dr); i++)
+  FOR_EACH_VEC_ELT (dr_p, same_align_drs, i, current_dr)
     {
       if (current_dr != dr)
         continue;
@@ -960,7 +960,7 @@ vect_verify_datarefs_alignment (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
   else
     datarefs = BB_VINFO_DATAREFS (bb_vinfo);
 
-  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+  FOR_EACH_VEC_ELT (data_reference_p, datarefs, i, dr)
     {
       gimple stmt = DR_STMT (dr);
       stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
@@ -1186,7 +1186,7 @@ vect_peeling_hash_get_lowest_cost (void **slot, void *data)
   VEC (data_reference_p, heap) *datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
   struct data_reference *dr;
 
-  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+  FOR_EACH_VEC_ELT (data_reference_p, datarefs, i, dr)
     {
       stmt = DR_STMT (dr);
       stmt_info = vinfo_for_stmt (stmt);
@@ -1397,7 +1397,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
      - The cost of peeling (the extra runtime checks, the increase
        in code size).  */
 
-  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+  FOR_EACH_VEC_ELT (data_reference_p, datarefs, i, dr)
     {
       stmt = DR_STMT (dr);
       stmt_info = vinfo_for_stmt (stmt);
@@ -1643,7 +1643,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
         }
 
       /* Ensure that all data refs can be vectorized after the peel.  */
-      for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+      FOR_EACH_VEC_ELT (data_reference_p, datarefs, i, dr)
         {
           int save_misalignment;
 
@@ -1688,7 +1688,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
              by the peeling factor times the element size of DR_i (MOD the
              vectorization factor times the size).  Otherwise, the
              misalignment of DR_i must be set to unknown.  */
-	  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+	  FOR_EACH_VEC_ELT (data_reference_p, datarefs, i, dr)
 	    if (dr != dr0)
 	      vect_update_misalignment_for_peel (dr, dr0, npeel);
 
@@ -1728,7 +1728,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
   if (do_versioning)
     {
-      for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+      FOR_EACH_VEC_ELT (data_reference_p, datarefs, i, dr)
         {
 	  stmt = DR_STMT (dr);
 	  stmt_info = vinfo_for_stmt (stmt);
@@ -1797,7 +1797,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       /* It can now be assumed that the data references in the statements
          in LOOP_VINFO_MAY_MISALIGN_STMTS will be aligned in the version
          of the loop being vectorized.  */
-      for (i = 0; VEC_iterate (gimple, may_misalign_stmts, i, stmt); i++)
+      FOR_EACH_VEC_ELT (gimple, may_misalign_stmts, i, stmt)
         {
           stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
           dr = STMT_VINFO_DATA_REF (stmt_info);
@@ -1860,7 +1860,7 @@ vect_find_same_alignment_drs (struct data_dependence_relation *ddr,
     return;
 
   loop_depth = index_in_loop_nest (loop->num, DDR_LOOP_NEST (ddr));
-  for (i = 0; VEC_iterate (lambda_vector, DDR_DIST_VECTS (ddr), i, dist_v); i++)
+  FOR_EACH_VEC_ELT (lambda_vector, DDR_DIST_VECTS (ddr), i, dist_v)
     {
       int dist = dist_v[loop_depth];
 
@@ -1908,7 +1908,7 @@ vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo,
       struct data_dependence_relation *ddr;
       unsigned int i;
 
-      for (i = 0; VEC_iterate (ddr_p, ddrs, i, ddr); i++)
+      FOR_EACH_VEC_ELT (ddr_p, ddrs, i, ddr)
 	vect_find_same_alignment_drs (ddr, loop_vinfo);
     }
 
@@ -2254,7 +2254,7 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
   else
     datarefs = BB_VINFO_DATAREFS (bb_vinfo);
 
-  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+  FOR_EACH_VEC_ELT (data_reference_p, datarefs, i, dr)
     if (STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (DR_STMT (dr))) 
         && !vect_analyze_data_ref_access (dr))
       {
@@ -2415,7 +2415,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
   /* Go through the data-refs, check that the analysis succeeded. Update pointer
      from stmt_vec_info struct to DR and vectype.  */
 
-  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+  FOR_EACH_VEC_ELT (data_reference_p, datarefs, i, dr)
     {
       gimple stmt;
       stmt_vec_info stmt_info;
@@ -3890,7 +3890,7 @@ vect_transform_strided_load (gimple stmt, VEC(tree,heap) *dr_chain, int size,
      corresponds the order of data-refs in RESULT_CHAIN.  */
   next_stmt = first_stmt;
   gap_count = 1;
-  for (i = 0; VEC_iterate (tree, result_chain, i, tmp_data_ref); i++)
+  FOR_EACH_VEC_ELT (tree, result_chain, i, tmp_data_ref)
     {
       if (!next_stmt)
 	break;

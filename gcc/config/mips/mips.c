@@ -4021,9 +4021,7 @@ mips_multi_write (void)
   struct mips_multi_member *member;
   unsigned int i;
 
-  for (i = 0;
-       VEC_iterate (mips_multi_member, mips_multi_members, i, member);
-       i++)
+  FOR_EACH_VEC_ELT (mips_multi_member, mips_multi_members, i, member)
     if (member->is_label_p)
       fprintf (asm_out_file, "%s\n", member->format);
     else

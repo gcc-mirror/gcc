@@ -7470,7 +7470,7 @@ identify_jump_threads (void)
 
   /* Do not thread across edges we are about to remove.  Just marking
      them as EDGE_DFS_BACK will do.  */
-  for (i = 0; VEC_iterate (edge, to_remove_edges, i, e); ++i)
+  FOR_EACH_VEC_ELT (edge, to_remove_edges, i, e)
     e->flags |= EDGE_DFS_BACK;
 
   /* Allocate our unwinder stack to unwind any temporary equivalences
@@ -7676,10 +7676,10 @@ execute_vrp (void)
 
   /* Remove dead edges from SWITCH_EXPR optimization.  This leaves the
      CFG in a broken state and requires a cfg_cleanup run.  */
-  for (i = 0; VEC_iterate (edge, to_remove_edges, i, e); ++i)
+  FOR_EACH_VEC_ELT (edge, to_remove_edges, i, e)
     remove_edge (e);
   /* Update SWITCH_EXPR case label vector.  */
-  for (i = 0; VEC_iterate (switch_update, to_update_switch_stmts, i, su); ++i)
+  FOR_EACH_VEC_ELT (switch_update, to_update_switch_stmts, i, su)
     {
       size_t j;
       size_t n = TREE_VEC_LENGTH (su->vec);

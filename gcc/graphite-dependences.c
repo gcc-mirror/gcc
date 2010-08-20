@@ -585,7 +585,7 @@ reduction_dr_1 (poly_bb_p pbb1, poly_dr_p pdr1, poly_dr_p pdr2)
   int i;
   poly_dr_p pdr;
 
-  for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), i, pdr); i++)
+  FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb1), i, pdr)
     if (PDR_TYPE (pdr) == PDR_WRITE)
       break;
 
@@ -722,8 +722,8 @@ graphite_legal_transform_bb (poly_bb_p pbb1, poly_bb_p pbb2)
   if (reduction_ddr_p (pbb1, pbb2))
     return true;
 
-  for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), i, pdr1); i++)
-    for (j = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), j, pdr2); j++)
+  FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb1), i, pdr1)
+    FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb2), j, pdr2)
       if (!graphite_legal_transform_dr (pdr1, pdr2))
 	return false;
 
@@ -741,8 +741,8 @@ graphite_legal_transform (scop_p scop)
 
   timevar_push (TV_GRAPHITE_DATA_DEPS);
 
-  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb1); i++)
-    for (j = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), j, pbb2); j++)
+  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb1)
+    FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), j, pbb2)
       if (!graphite_legal_transform_bb (pbb1, pbb2))
 	{
 	  timevar_pop (TV_GRAPHITE_DATA_DEPS);
@@ -803,8 +803,8 @@ dependency_between_pbbs_p (poly_bb_p pbb1, poly_bb_p pbb2, int level)
 
   timevar_push (TV_GRAPHITE_DATA_DEPS);
 
-  for (i = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), i, pdr1); i++)
-    for (j = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), j, pdr2); j++)
+  FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb1), i, pdr1)
+    FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb2), j, pdr2)
       if (graphite_carried_dependence_level_k (pdr1, pdr2, level))
 	{
 	  timevar_pop (TV_GRAPHITE_DATA_DEPS);
@@ -825,11 +825,11 @@ dot_original_deps_stmt_1 (FILE *file, scop_p scop)
   poly_bb_p pbb1, pbb2;
   poly_dr_p pdr1, pdr2;
 
-  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb1); i++)
-    for (j = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), j, pbb2); j++)
+  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb1)
+    FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), j, pbb2)
       {
-	for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
-	  for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
+	FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb1), k, pdr1)
+	  FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb2), l, pdr2)
 	    if (!pddr_is_empty (dependence_polyhedron (pdr1, pdr2, 1, true)))
 	      {
 		fprintf (file, "OS%d -> OS%d\n",
@@ -850,11 +850,11 @@ dot_transformed_deps_stmt_1 (FILE *file, scop_p scop)
   poly_bb_p pbb1, pbb2;
   poly_dr_p pdr1, pdr2;
 
-  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb1); i++)
-    for (j = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), j, pbb2); j++)
+  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb1)
+    FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), j, pbb2)
       {
-	for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
-	  for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
+	FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb1), k, pdr1)
+	  FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb2), l, pdr2)
 	    {
 	      poly_ddr_p pddr = dependence_polyhedron (pdr1, pdr2, 1, false);
 
@@ -898,10 +898,10 @@ dot_original_deps (FILE *file, scop_p scop)
   poly_bb_p pbb1, pbb2;
   poly_dr_p pdr1, pdr2;
 
-  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb1); i++)
-    for (j = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), j, pbb2); j++)
-      for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
-	for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
+  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb1)
+    FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), j, pbb2)
+      FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb1), k, pdr1)
+	FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb2), l, pdr2)
 	  if (!pddr_is_empty (dependence_polyhedron (pdr1, pdr2, 1, true)))
 	    fprintf (file, "OS%d_D%d -> OS%d_D%d\n",
 		     pbb_index (pbb1), PDR_ID (pdr1),
@@ -918,10 +918,10 @@ dot_transformed_deps (FILE *file, scop_p scop)
   poly_bb_p pbb1, pbb2;
   poly_dr_p pdr1, pdr2;
 
-  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb1); i++)
-    for (j = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), j, pbb2); j++)
-      for (k = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb1), k, pdr1); k++)
-	for (l = 0; VEC_iterate (poly_dr_p, PBB_DRS (pbb2), l, pdr2); l++)
+  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb1)
+    FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), j, pbb2)
+      FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb1), k, pdr1)
+	FOR_EACH_VEC_ELT (poly_dr_p, PBB_DRS (pbb2), l, pdr2)
 	  {
 	    poly_ddr_p pddr = dependence_polyhedron (pdr1, pdr2, 1, false);
 

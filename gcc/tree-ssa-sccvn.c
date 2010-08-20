@@ -432,7 +432,7 @@ vn_reference_compute_hash (const vn_reference_t vr1)
   HOST_WIDE_INT off = -1;
   bool deref = false;
 
-  for (i = 0; VEC_iterate (vn_reference_op_s, vr1->operands, i, vro); i++)
+  FOR_EACH_VEC_ELT (vn_reference_op_s, vr1->operands, i, vro)
     {
       if (vro->opcode == MEM_REF)
 	deref = true;
@@ -769,7 +769,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 
   /* Compute cumulative bit-offset for nested component-refs and array-refs,
      and find the ultimate containing object.  */
-  for (i = 0; VEC_iterate (vn_reference_op_s, ops, i, op); ++i)
+  FOR_EACH_VEC_ELT (vn_reference_op_s, ops, i, op)
     {
       switch (op->opcode)
 	{
@@ -1140,7 +1140,7 @@ valueize_refs (VEC (vn_reference_op_s, heap) *orig)
   vn_reference_op_t vro;
   unsigned int i;
 
-  for (i = 0; VEC_iterate (vn_reference_op_s, orig, i, vro); i++)
+  FOR_EACH_VEC_ELT (vn_reference_op_s, orig, i, vro)
     {
       if (vro->opcode == SSA_NAME
 	  || (vro->op0 && TREE_CODE (vro->op0) == SSA_NAME))
@@ -1436,7 +1436,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       else
 	VEC_truncate (vn_reference_op_s, vr->operands,
 		      i + 1 + VEC_length (vn_reference_op_s, rhs));
-      for (j = 0; VEC_iterate (vn_reference_op_s, rhs, j, vro); ++j)
+      FOR_EACH_VEC_ELT (vn_reference_op_s, rhs, j, vro)
 	VEC_replace (vn_reference_op_s, vr->operands, i + 1 + j, vro);
       VEC_free (vn_reference_op_s, heap, rhs);
       vr->hashcode = vn_reference_compute_hash (vr);
@@ -1933,7 +1933,7 @@ vn_phi_compute_hash (vn_phi_t vp1)
 	     + (INTEGRAL_TYPE_P (type)
 		? TYPE_PRECISION (type) + TYPE_UNSIGNED (type) : 0));
 
-  for (i = 0; VEC_iterate (tree, vp1->phiargs, i, phi1op); i++)
+  FOR_EACH_VEC_ELT (tree, vp1->phiargs, i, phi1op)
     {
       if (phi1op == VN_TOP)
 	continue;
@@ -1976,7 +1976,7 @@ vn_phi_eq (const void *p1, const void *p2)
 
       /* Any phi in the same block will have it's arguments in the
 	 same edge order, because of how we store phi nodes.  */
-      for (i = 0; VEC_iterate (tree, vp1->phiargs, i, phi1op); i++)
+      FOR_EACH_VEC_ELT (tree, vp1->phiargs, i, phi1op)
 	{
 	  tree phi2op = VEC_index (tree, vp2->phiargs, i);
 	  if (phi1op == VN_TOP || phi2op == VN_TOP)
@@ -2067,7 +2067,7 @@ print_scc (FILE *out, VEC (tree, heap) *scc)
   unsigned int i;
 
   fprintf (out, "SCC consists of: ");
-  for (i = 0; VEC_iterate (tree, scc, i, var); i++)
+  FOR_EACH_VEC_ELT (tree, scc, i, var)
     {
       print_generic_expr (out, var, 0);
       fprintf (out, " ");
@@ -3131,9 +3131,9 @@ process_scc (VEC (tree, heap) *scc)
       gcc_obstack_init (&optimistic_info->nary_obstack);
       empty_alloc_pool (optimistic_info->phis_pool);
       empty_alloc_pool (optimistic_info->references_pool);
-      for (i = 0; VEC_iterate (tree, scc, i, var); i++)
+      FOR_EACH_VEC_ELT (tree, scc, i, var)
 	VN_INFO (var)->expr = NULL_TREE;
-      for (i = 0; VEC_iterate (tree, scc, i, var); i++)
+      FOR_EACH_VEC_ELT (tree, scc, i, var)
 	changed |= visit_use (var);
     }
 

@@ -192,7 +192,7 @@ print_graphite_statistics (FILE* file, VEC (scop_p, heap) *scops)
 
   scop_p scop;
 
-  for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
+  FOR_EACH_VEC_ELT (scop_p, scops, i, scop)
     print_graphite_scop_statistics (file, scop);
 }
 
@@ -279,12 +279,12 @@ graphite_transform_loops (void)
   reductions = sbitmap_alloc (last_basic_block * 2);
   sbitmap_zero (reductions);
 
-  for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
+  FOR_EACH_VEC_ELT (scop_p, scops, i, scop)
     if (dbg_cnt (graphite_scop))
       rewrite_commutative_reductions_out_of_ssa (SCOP_REGION (scop),
 						 reductions);
 
-  for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
+  FOR_EACH_VEC_ELT (scop_p, scops, i, scop)
     if (dbg_cnt (graphite_scop))
       {
 	rewrite_reductions_out_of_ssa (scop);
@@ -294,11 +294,11 @@ graphite_transform_loops (void)
 
   sbitmap_free (reductions);
 
-  for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
+  FOR_EACH_VEC_ELT (scop_p, scops, i, scop)
     if (dbg_cnt (graphite_scop))
       build_poly_scop (scop);
 
-  for (i = 0; VEC_iterate (scop_p, scops, i, scop); i++)
+  FOR_EACH_VEC_ELT (scop_p, scops, i, scop)
     if (POLY_SCOP_P (scop)
 	&& apply_poly_transforms (scop)
 	&& gloog (scop, bb_pbb_mapping))

@@ -1992,7 +1992,7 @@ rewrite_update_phi_arguments (basic_block bb)
 	continue;
 
       phis = VEC_index (gimple_vec, phis_to_rewrite, e->dest->index);
-      for (i = 0; VEC_iterate (gimple, phis, i, phi); i++)
+      FOR_EACH_VEC_ELT (gimple, phis, i, phi)
 	{
 	  tree arg, lhs_sym, reaching_def = NULL;
 	  use_operand_p arg_p;

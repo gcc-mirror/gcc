@@ -1016,7 +1016,7 @@ undistribute_ops_list (enum tree_code opcode,
   candidates = sbitmap_alloc (length);
   sbitmap_zero (candidates);
   nr_candidates = 0;
-  for (i = 0; VEC_iterate (operand_entry_t, *ops, i, oe1); ++i)
+  FOR_EACH_VEC_ELT (operand_entry_t, *ops, i, oe1)
     {
       enum tree_code dcode;
       gimple oe1def;
@@ -1067,7 +1067,7 @@ undistribute_ops_list (enum tree_code opcode,
       linearize_expr_tree (&subops[i], oedef,
 			   associative_tree_code (oecode), false);
 
-      for (j = 0; VEC_iterate (operand_entry_t, subops[i], j, oe1); ++j)
+      FOR_EACH_VEC_ELT (operand_entry_t, subops[i], j, oe1)
 	{
 	  oecount c;
 	  void **slot;
@@ -1100,7 +1100,7 @@ undistribute_ops_list (enum tree_code opcode,
     {
       oecount *c;
       fprintf (dump_file, "Candidates:\n");
-      for (j = 0; VEC_iterate (oecount, cvec, j, c); ++j)
+      FOR_EACH_VEC_ELT (oecount, cvec, j, c)
 	{
 	  fprintf (dump_file, "  %u %s: ", c->cnt,
 		   c->oecode == MULT_EXPR
@@ -1139,7 +1139,7 @@ undistribute_ops_list (enum tree_code opcode,
 	  if (oecode != c->oecode)
 	    continue;
 
-	  for (j = 0; VEC_iterate (operand_entry_t, subops[i], j, oe1); ++j)
+	  FOR_EACH_VEC_ELT (operand_entry_t, subops[i], j, oe1)
 	    {
 	      if (oe1->op == c->op)
 		{
@@ -1864,7 +1864,7 @@ repropagate_negates (void)
   unsigned int i = 0;
   tree negate;
 
-  for (i = 0; VEC_iterate (tree, plus_negates, i, negate); i++)
+  FOR_EACH_VEC_ELT (tree, plus_negates, i, negate)
     {
       gimple user = get_single_immediate_use (negate);
 
@@ -2148,7 +2148,7 @@ dump_ops_vector (FILE *file, VEC (operand_entry_t, heap) *ops)
   operand_entry_t oe;
   unsigned int i;
 
-  for (i = 0; VEC_iterate (operand_entry_t, ops, i, oe); i++)
+  FOR_EACH_VEC_ELT (operand_entry_t, ops, i, oe)
     {
       fprintf (file, "Op %d -> rank: %d, tree: ", i, oe->rank);
       print_generic_expr (file, oe->op, 0);

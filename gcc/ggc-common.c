@@ -168,7 +168,7 @@ ggc_mark_roots (void)
       for (i = 0; i < rti->nelt; i++)
 	(*rti->cb) (*(void **)((char *)rti->base + rti->stride * i));
 
-  for (i = 0; VEC_iterate (const_ggc_root_tab_t, extra_root_vec, i, rtp); i++)
+  FOR_EACH_VEC_ELT (const_ggc_root_tab_t, extra_root_vec, i, rtp)
     {
       for (rti = rtp; rti->base != NULL; rti++)
         for (i = 0; i < rti->nelt; i++)
@@ -183,7 +183,7 @@ ggc_mark_roots (void)
   for (ct = gt_ggc_cache_rtab; *ct; ct++)
     ggc_scan_cache_tab (*ct);
 
-  for (i = 0; VEC_iterate (const_ggc_cache_tab_t, extra_cache_vec, i, ctp); i++)
+  FOR_EACH_VEC_ELT (const_ggc_cache_tab_t, extra_cache_vec, i, ctp)
     ggc_scan_cache_tab (ctp);
 
   if (! ggc_protect_identifiers)

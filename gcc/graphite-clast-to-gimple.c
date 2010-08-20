@@ -1224,7 +1224,7 @@ build_cloog_prog (scop_p scop, CloogProgram *prog,
   cloog_program_set_nb_scattdims (prog, nbs);
   initialize_cloog_names (scop, prog);
 
-  for (i = 0; VEC_iterate (poly_bb_p, SCOP_BBS (scop), i, pbb); i++)
+  FOR_EACH_VEC_ELT (poly_bb_p, SCOP_BBS (scop), i, pbb)
     {
       CloogStatement *stmt;
       CloogBlock *block;

@@ -232,14 +232,10 @@ pop_to_parent_deferring_access_checks (void)
 	  int i, j;
 	  deferred_access_check *chk, *probe;
 
-	  for (i = 0 ;
-	       VEC_iterate (deferred_access_check, checks, i, chk) ;
-	       ++i)
+	  FOR_EACH_VEC_ELT (deferred_access_check, checks, i, chk)
 	    {
-	      for (j = 0 ;
-		   VEC_iterate (deferred_access_check,
-				ptr->deferred_access_checks, j, probe) ;
-		   ++j)
+	      FOR_EACH_VEC_ELT (deferred_access_check,
+				ptr->deferred_access_checks, j, probe)
 		{
 		  if (probe->binfo == chk->binfo &&
 		      probe->decl == chk->decl &&
@@ -268,7 +264,7 @@ perform_access_checks (VEC (deferred_access_check,gc)* checks)
   if (!checks)
     return;
 
-  for (i = 0 ; VEC_iterate (deferred_access_check, checks, i, chk) ; ++i)
+  FOR_EACH_VEC_ELT (deferred_access_check, checks, i, chk)
     enforce_access (chk->binfo, chk->decl, chk->diag_decl);
 }
 
@@ -323,10 +319,8 @@ perform_or_defer_access_check (tree binfo, tree decl, tree diag_decl)
     }
 
   /* See if we are already going to perform this check.  */
-  for (i = 0 ;
-       VEC_iterate (deferred_access_check,
-		    ptr->deferred_access_checks, i, chk) ;
-       ++i)
+  FOR_EACH_VEC_ELT  (deferred_access_check,
+		     ptr->deferred_access_checks, i, chk)
     {
       if (chk->decl == decl && chk->binfo == binfo &&
 	  chk->diag_decl == diag_decl)

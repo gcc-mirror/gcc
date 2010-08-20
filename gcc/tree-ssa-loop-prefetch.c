@@ -1196,7 +1196,7 @@ emit_mfence_after_loop (struct loop *loop)
   gimple_stmt_iterator bsi;
   unsigned i;
 
-  for (i = 0; VEC_iterate (edge, exits, i, exit); i++)
+  FOR_EACH_VEC_ELT (edge, exits, i, exit)
     {
       call = gimple_build_call (FENCE_FOLLOWING_MOVNT, 0);
 
@@ -1233,7 +1233,7 @@ may_use_storent_in_loop_p (struct loop *loop)
       unsigned i;
       edge exit;
 
-      for (i = 0; VEC_iterate (edge, exits, i, exit); i++)
+      FOR_EACH_VEC_ELT (edge, exits, i, exit)
 	if ((exit->flags & EDGE_ABNORMAL)
 	    && exit->dest == EXIT_BLOCK_PTR)
 	  ret = false;
@@ -1452,7 +1452,7 @@ self_reuse_distance (data_reference_p dr, unsigned *loop_sizes, unsigned n,
   strides = XCNEWVEC (HOST_WIDE_INT, n);
   access_fns = DR_ACCESS_FNS (dr);
 
-  for (i = 0; VEC_iterate (tree, access_fns, i, access_fn); i++)
+  FOR_EACH_VEC_ELT (tree, access_fns, i, access_fn)
     {
       /* Keep track of the reference corresponding to the subscript, so that we
 	 know its stride.  */
@@ -1574,7 +1574,7 @@ determine_loop_nest_reuse (struct loop *loop, struct mem_ref_group *refs,
 	  no_other_refs = false;
       }
 
-  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+  FOR_EACH_VEC_ELT (data_reference_p, datarefs, i, dr)
     {
       dist = self_reuse_distance (dr, loop_data_size, n, loop);
       ref = (struct mem_ref *) dr->aux;
@@ -1587,7 +1587,7 @@ determine_loop_nest_reuse (struct loop *loop, struct mem_ref_group *refs,
 
   compute_all_dependences (datarefs, &dependences, vloops, true);
 
-  for (i = 0; VEC_iterate (ddr_p, dependences, i, dep); i++)
+  FOR_EACH_VEC_ELT (ddr_p, dependences, i, dep)
     {
       if (DDR_ARE_DEPENDENT (dep) == chrec_known)
 	continue;

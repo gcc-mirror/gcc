@@ -539,7 +539,7 @@ fixup_eh_region_pointers (struct function *fn, HOST_WIDE_INT root_region)
 
   /* Convert all the index numbers stored in pointer fields into
      pointers to the corresponding slots in the EH region array.  */
-  for (i = 0; VEC_iterate (eh_region, eh_array, i, r); i++)
+  FOR_EACH_VEC_ELT (eh_region, eh_array, i, r)
     {
       /* The array may contain NULL regions.  */
       if (r == NULL)
@@ -554,7 +554,7 @@ fixup_eh_region_pointers (struct function *fn, HOST_WIDE_INT root_region)
 
   /* Convert all the index numbers stored in pointer fields into
      pointers to the corresponding slots in the EH landing pad array.  */
-  for (i = 0; VEC_iterate (eh_landing_pad, lp_array, i, lp); i++)
+  FOR_EACH_VEC_ELT (eh_landing_pad, lp_array, i, lp)
     {
       /* The array may contain NULL landing pads.  */
       if (lp == NULL)

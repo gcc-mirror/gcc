@@ -1272,7 +1272,7 @@ dump_enumerated_decls (FILE *file, int flags)
 
       fprintf (file, "Declarations used by %s, sorted by DECL_UID:\n",
 	       current_function_name ());
-      for (ix = 0; VEC_iterate (numbered_tree, decl_list, ix, ntp); ix++)
+      FOR_EACH_VEC_ELT (numbered_tree, decl_list, ix, ntp)
 	{
 	  if (ntp->t == last)
 	    continue;

@@ -658,7 +658,7 @@ function_and_variable_visibility (bool whole_program)
   alias_pair *p;
 
   /* Discover aliased nodes.  */
-  for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p); i++)
+  FOR_EACH_VEC_ELT (alias_pair, alias_pairs, i, p)
     {
       if (dump_file)
        fprintf (dump_file, "Alias %s->%s",

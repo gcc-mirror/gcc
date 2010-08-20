@@ -2370,7 +2370,7 @@ copy_debug_stmts (copy_body_data *id)
   if (!id->debug_stmts)
     return;
 
-  for (i = 0; VEC_iterate (gimple, id->debug_stmts, i, stmt); i++)
+  FOR_EACH_VEC_ELT (gimple, id->debug_stmts, i, stmt)
     copy_debug_stmt (stmt, id);
 
   VEC_free (gimple, heap, id->debug_stmts);

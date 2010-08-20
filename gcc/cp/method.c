@@ -1204,7 +1204,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
       if (diag)
 	msg = ("virtual base %qT does not have a move constructor "
 	       "or trivial copy constructor");
-      for (i = 0; VEC_iterate (tree, vbases, i, base_binfo); ++i)
+      FOR_EACH_VEC_ELT (tree, vbases, i, base_binfo)
 	{
 	  if (copy_arg_p)
 	    argtype = build_stub_type (BINFO_TYPE (base_binfo), quals, move_p);

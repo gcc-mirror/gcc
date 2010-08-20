@@ -999,9 +999,7 @@ update_label_decls (struct c_scope *scope)
 
 	      /* Update the bindings of any goto statements associated
 		 with this label.  */
-	      for (ix = 0;
-		   VEC_iterate (c_goto_bindings_p, label_vars->gotos, ix, g);
-		   ++ix)
+	      FOR_EACH_VEC_ELT (c_goto_bindings_p, label_vars->gotos, ix, g)
 		update_spot_bindings (scope, &g->goto_bindings);
 	    }
 	}
@@ -1352,9 +1350,7 @@ c_bindings_start_stmt_expr (struct c_spot_bindings* switch_bindings)
 	    continue;
 	  label_vars = b->u.label;
 	  ++label_vars->label_bindings.stmt_exprs;
-	  for (ix = 0;
-	       VEC_iterate (c_goto_bindings_p, label_vars->gotos, ix, g);
-	       ++ix)
+	  FOR_EACH_VEC_ELT (c_goto_bindings_p, label_vars->gotos, ix, g)
 	    ++g->goto_bindings.stmt_exprs;
 	}
     }
@@ -1392,9 +1388,7 @@ c_bindings_end_stmt_expr (struct c_spot_bindings *switch_bindings)
 	      label_vars->label_bindings.left_stmt_expr = true;
 	      label_vars->label_bindings.stmt_exprs = 0;
 	    }
-	  for (ix = 0;
-	       VEC_iterate (c_goto_bindings_p, label_vars->gotos, ix, g);
-	       ++ix)
+	  FOR_EACH_VEC_ELT (c_goto_bindings_p, label_vars->gotos, ix, g)
 	    {
 	      --g->goto_bindings.stmt_exprs;
 	      if (g->goto_bindings.stmt_exprs < 0)
@@ -3120,7 +3114,7 @@ lookup_label_for_goto (location_t loc, tree name)
        ...
        goto lab;
      Issue a warning or error.  */
-  for (ix = 0; VEC_iterate (tree, label_vars->decls_in_scope, ix, decl); ++ix)
+  FOR_EACH_VEC_ELT (tree, label_vars->decls_in_scope, ix, decl)
     warn_about_goto (loc, label, decl);
 
   if (label_vars->label_bindings.left_stmt_expr)
@@ -3172,9 +3166,7 @@ check_earlier_gotos (tree label, struct c_label_vars* label_vars)
   unsigned int ix;
   struct c_goto_bindings *g;
 
-  for (ix = 0;
-       VEC_iterate (c_goto_bindings_p, label_vars->gotos, ix, g);
-       ++ix)
+  FOR_EACH_VEC_ELT (c_goto_bindings_p, label_vars->gotos, ix, g)
     {
       struct c_binding *b;
       struct c_scope *scope;
@@ -6788,7 +6780,7 @@ warn_cxx_compat_finish_struct (tree fieldlist)
      because the flag is used to issue visibility warnings, and we
      only want to issue those warnings if the type is referenced
      outside of the struct declaration.  */
-  for (ix = 0; VEC_iterate (tree, struct_parse_info->struct_types, ix, x); ++ix)
+  FOR_EACH_VEC_ELT (tree, struct_parse_info->struct_types, ix, x)
     C_TYPE_DEFINED_IN_STRUCT (x) = 1;
 
   /* The TYPEDEFS_SEEN field of STRUCT_PARSE_INFO is a list of
@@ -6804,9 +6796,7 @@ warn_cxx_compat_finish_struct (tree fieldlist)
 	 a pointer_set because identifiers are interned.  */
       struct pointer_set_t *tset = pointer_set_create ();
 
-      for (ix = 0;
-	   VEC_iterate (tree, struct_parse_info->typedefs_seen, ix, x);
-	   ++ix)
+      FOR_EACH_VEC_ELT (tree, struct_parse_info->typedefs_seen, ix, x)
 	pointer_set_insert (tset, DECL_NAME (x));
 
       for (x = fieldlist; x != NULL_TREE; x = DECL_CHAIN (x))
@@ -6827,9 +6817,7 @@ warn_cxx_compat_finish_struct (tree fieldlist)
 
   /* For each field which has a binding and which was not defined in
      an enclosing struct, clear the in_struct field.  */
-  for (ix = 0;
-       VEC_iterate (c_binding_ptr, struct_parse_info->fields, ix, b);
-       ++ix)
+  FOR_EACH_VEC_ELT (c_binding_ptr, struct_parse_info->fields, ix, b)
     b->in_struct = 0;
 }
 
@@ -8090,7 +8078,7 @@ store_parm_decls (void)
     tree t;
     int i;
 
-    for (i = 0; VEC_iterate (tree, pending_sizes, i, t); i++)
+    FOR_EACH_VEC_ELT (tree, pending_sizes, i, t)
       add_stmt (t);
   }
 

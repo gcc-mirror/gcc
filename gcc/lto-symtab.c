@@ -601,7 +601,7 @@ lto_symtab_merge_decls_2 (void **slot)
     return;
 
   /* Diagnose all mismatched re-declarations.  */
-  for (i = 0; VEC_iterate (tree, mismatches, i, decl); ++i)
+  FOR_EACH_VEC_ELT (tree, mismatches, i, decl)
     {
       if (!gimple_types_compatible_p (TREE_TYPE (prevailing->decl),
 				      TREE_TYPE (decl), GTC_DIAG))

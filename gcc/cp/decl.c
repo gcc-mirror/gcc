@@ -720,9 +720,8 @@ poplevel (int keep, int reverse, int functionbody)
 
   /* Remove declarations for any `for' variables from inner scopes
      that we kept around.  */
-  for (ix = VEC_length (tree, current_binding_level->dead_vars_from_for) - 1;
-       VEC_iterate (tree, current_binding_level->dead_vars_from_for, ix, decl);
-       ix--)
+  FOR_EACH_VEC_ELT_REVERSE (tree, current_binding_level->dead_vars_from_for,
+			    ix, decl)
     pop_binding (DECL_NAME (decl), decl);
 
   /* Restore the IDENTIFIER_TYPE_VALUEs.  */
@@ -731,11 +730,9 @@ poplevel (int keep, int reverse, int functionbody)
     SET_IDENTIFIER_TYPE_VALUE (TREE_PURPOSE (link), TREE_VALUE (link));
 
   /* Restore the IDENTIFIER_LABEL_VALUEs for local labels.  */
-  for (ix = VEC_length (cp_label_binding,
-			current_binding_level->shadowed_labels) - 1;
-       VEC_iterate (cp_label_binding, current_binding_level->shadowed_labels,
-		    ix, label_bind);
-       ix--)
+  FOR_EACH_VEC_ELT_REVERSE (cp_label_binding,
+			    current_binding_level->shadowed_labels,
+			    ix, label_bind)
     pop_local_label (label_bind->label, label_bind->prev_value);
 
   /* There may be OVERLOADs (wrapped in TREE_LISTs) on the BLOCK_VARs
@@ -2712,7 +2709,7 @@ check_goto (tree decl)
       identified = true;
     }
 
-  for (ix = 0; VEC_iterate (tree, ent->bad_decls, ix, bad); ix++)
+  FOR_EACH_VEC_ELT (tree, ent->bad_decls, ix, bad)
     {
       int u = decl_jump_unsafe (bad);
 
@@ -4598,9 +4595,7 @@ maybe_deduce_size_from_array_init (tree decl, tree init)
 	  VEC(constructor_elt,gc) *v = CONSTRUCTOR_ELTS (initializer);
 	  constructor_elt *ce;
 	  HOST_WIDE_INT i;
-	  for (i = 0; 
-	       VEC_iterate (constructor_elt, v, i, ce);
-	       ++i) 
+	  FOR_EACH_VEC_ELT (constructor_elt, v, i, ce)
 	    if (!check_array_designated_initializer (ce))
 	      failure = 1;
 	}
@@ -12837,7 +12832,7 @@ finish_function (int flags)
       unsigned int i;
       tree decl;
 
-      for (i = 0; VEC_iterate (tree, deferred_mark_used_calls, i, decl); i++)
+      FOR_EACH_VEC_ELT (tree, deferred_mark_used_calls, i, decl)
 	mark_used (decl);
       VEC_free (tree, gc, deferred_mark_used_calls);
     }

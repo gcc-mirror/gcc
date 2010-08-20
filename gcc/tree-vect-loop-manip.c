@@ -2105,7 +2105,7 @@ vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters)
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_update_inits_of_dr ===");
 
-  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+  FOR_EACH_VEC_ELT (data_reference_p, datarefs, i, dr)
     vect_update_init_of_dr (dr, niters);
 }
 
@@ -2229,7 +2229,7 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
   /* Create expression (mask & (dr_1 || ... || dr_n)) where dr_i is the address
      of the first vector of the i'th data reference. */
 
-  for (i = 0; VEC_iterate (gimple, may_misalign_stmts, i, ref_stmt); i++)
+  FOR_EACH_VEC_ELT (gimple, may_misalign_stmts, i, ref_stmt)
     {
       gimple_seq new_stmt_list = NULL;
       tree addr_base;
@@ -2380,7 +2380,7 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
   if (VEC_empty (ddr_p, may_alias_ddrs))
     return;
 
-  for (i = 0; VEC_iterate (ddr_p, may_alias_ddrs, i, ddr); i++)
+  FOR_EACH_VEC_ELT (ddr_p, may_alias_ddrs, i, ddr)
     {
       struct data_reference *dr_a, *dr_b;
       gimple dr_group_first_a, dr_group_first_b;

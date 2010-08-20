@@ -5093,7 +5093,7 @@ calc_priorities (rtx_vec_t roots)
   int i;
   rtx insn;
 
-  for (i = 0; VEC_iterate (rtx, roots, i, insn); i++)
+  FOR_EACH_VEC_ELT (rtx, roots, i, insn)
     priority (insn);
 }
 
@@ -5321,7 +5321,7 @@ sched_scan (const struct sched_scan_info_def *ssi,
 	  unsigned i;
 	  basic_block x;
 
-	  for (i = 0; VEC_iterate (basic_block, bbs, i, x); i++)
+	  FOR_EACH_VEC_ELT (basic_block, bbs, i, x)
 	    init_bb (x);
 	}
 
@@ -5336,7 +5336,7 @@ sched_scan (const struct sched_scan_info_def *ssi,
       unsigned i;
       basic_block x;
 
-      for (i = 0; VEC_iterate (basic_block, bbs, i, x); i++)
+      FOR_EACH_VEC_ELT (basic_block, bbs, i, x)
 	init_insns_in_bb (x);
     }
 
@@ -5348,7 +5348,7 @@ sched_scan (const struct sched_scan_info_def *ssi,
       unsigned i;
       rtx x;
 
-      for (i = 0; VEC_iterate (rtx, insns, i, x); i++)
+      FOR_EACH_VEC_ELT (rtx, insns, i, x)
 	init_insn (x);
     }
 
@@ -5478,7 +5478,7 @@ haifa_finish_h_i_d (void)
   haifa_insn_data_t data;
   struct reg_use_data *use, *next;
 
-  for (i = 0; VEC_iterate (haifa_insn_data_def, h_i_d, i, data); i++)
+  FOR_EACH_VEC_ELT (haifa_insn_data_def, h_i_d, i, data)
     {
       if (data->reg_pressure != NULL)
 	free (data->reg_pressure);

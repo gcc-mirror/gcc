@@ -181,7 +181,7 @@ build_sese_loop_nests (sese region)
   /* Make sure that the loops in the SESE_LOOP_NEST are ordered.  It
      can be the case that an inner loop is inserted before an outer
      loop.  To avoid this, semi-sort once.  */
-  for (i = 0; VEC_iterate (loop_p, SESE_LOOP_NEST (region), i, loop0); i++)
+  FOR_EACH_VEC_ELT (loop_p, SESE_LOOP_NEST (region), i, loop0)
     {
       if (VEC_length (loop_p, SESE_LOOP_NEST (region)) == i + 1)
 	break;

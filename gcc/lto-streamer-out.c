@@ -1042,7 +1042,7 @@ lto_output_ts_block_tree_pointers (struct output_block *ob, tree expr,
   lto_output_chain (ob, BLOCK_VARS (expr), ref_p);
 
   output_uleb128 (ob, VEC_length (tree, BLOCK_NONLOCALIZED_VARS (expr)));
-  for (i = 0; VEC_iterate (tree, BLOCK_NONLOCALIZED_VARS (expr), i, t); i++)
+  FOR_EACH_VEC_ELT (tree, BLOCK_NONLOCALIZED_VARS (expr), i, t)
     lto_output_tree_or_ref (ob, t, ref_p);
 
   lto_output_tree_or_ref (ob, BLOCK_SUPERCONTEXT (expr), ref_p);
@@ -1067,7 +1067,7 @@ lto_output_ts_binfo_tree_pointers (struct output_block *ob, tree expr,
   /* Note that the number of BINFO slots has already been emitted in
      EXPR's header (see lto_output_tree_header) because this length
      is needed to build the empty BINFO node on the reader side.  */
-  for (i = 0; VEC_iterate (tree, BINFO_BASE_BINFOS (expr), i, t); i++)
+  FOR_EACH_VEC_ELT (tree, BINFO_BASE_BINFOS (expr), i, t)
     lto_output_tree_or_ref (ob, t, ref_p);
   output_zero (ob);
 
@@ -1077,7 +1077,7 @@ lto_output_ts_binfo_tree_pointers (struct output_block *ob, tree expr,
   lto_output_tree_or_ref (ob, BINFO_VPTR_FIELD (expr), ref_p);
 
   output_uleb128 (ob, VEC_length (tree, BINFO_BASE_ACCESSES (expr)));
-  for (i = 0; VEC_iterate (tree, BINFO_BASE_ACCESSES (expr), i, t); i++)
+  FOR_EACH_VEC_ELT (tree, BINFO_BASE_ACCESSES (expr), i, t)
     lto_output_tree_or_ref (ob, t, ref_p);
 
   lto_output_tree_or_ref (ob, BINFO_INHERITANCE_CHAIN (expr), ref_p);
@@ -1508,17 +1508,17 @@ output_eh_regions (struct output_block *ob, struct function *fn)
 
       /* Emit all the EH regions in the region array.  */
       output_sleb128 (ob, VEC_length (eh_region, fn->eh->region_array));
-      for (i = 0; VEC_iterate (eh_region, fn->eh->region_array, i, eh); i++)
+      FOR_EACH_VEC_ELT (eh_region, fn->eh->region_array, i, eh)
 	output_eh_region (ob, eh);
 
       /* Emit all landing pads.  */
       output_sleb128 (ob, VEC_length (eh_landing_pad, fn->eh->lp_array));
-      for (i = 0; VEC_iterate (eh_landing_pad, fn->eh->lp_array, i, lp); i++)
+      FOR_EACH_VEC_ELT (eh_landing_pad, fn->eh->lp_array, i, lp)
 	output_eh_lp (ob, lp);
 
       /* Emit all the runtime type data.  */
       output_sleb128 (ob, VEC_length (tree, fn->eh->ttype_data));
-      for (i = 0; VEC_iterate (tree, fn->eh->ttype_data, i, ttype); i++)
+      FOR_EACH_VEC_ELT (tree, fn->eh->ttype_data, i, ttype)
 	lto_output_tree_ref (ob, ttype);
 
       /* Emit the table of action chains.  */
@@ -1526,16 +1526,14 @@ output_eh_regions (struct output_block *ob, struct function *fn)
 	{
 	  tree t;
 	  output_sleb128 (ob, VEC_length (tree, fn->eh->ehspec_data.arm_eabi));
-	  for (i = 0;
-	       VEC_iterate (tree, fn->eh->ehspec_data.arm_eabi, i, t);
-	       i++)
+	  FOR_EACH_VEC_ELT (tree, fn->eh->ehspec_data.arm_eabi, i, t)
 	    lto_output_tree_ref (ob, t);
 	}
       else
 	{
 	  uchar c;
 	  output_sleb128 (ob, VEC_length (uchar, fn->eh->ehspec_data.other));
-	  for (i = 0; VEC_iterate (uchar, fn->eh->ehspec_data.other, i, c); i++)
+	  FOR_EACH_VEC_ELT (uchar, fn->eh->ehspec_data.other, i, c)
 	    lto_output_1_stream (ob->main_stream, c);
 	}
     }
@@ -1908,7 +1906,7 @@ output_function (struct cgraph_node *node)
 
   /* Output all the local variables in the function.  */
   output_sleb128 (ob, VEC_length (tree, fn->local_decls));
-  for (i = 0; VEC_iterate (tree, fn->local_decls, i, t); i++)
+  FOR_EACH_VEC_ELT (tree, fn->local_decls, i, t)
     lto_output_tree_ref (ob, t);
 
   /* Output the head of the arguments list.  */
@@ -2013,7 +2011,7 @@ output_unreferenced_globals (cgraph_node_set set, varpool_node_set vset)
   output_zero (ob);
 
   /* Emit the alias pairs for the nodes in SET.  */
-  for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p); i++)
+  FOR_EACH_VEC_ELT (alias_pair, alias_pairs, i, p)
     {
       if (output_alias_pair_p (p, set, vset))
 	{
@@ -2446,7 +2444,7 @@ produce_symtab (struct output_block *ob,
     }
 
   /* Write all aliases.  */
-  for (i = 0; VEC_iterate (alias_pair, alias_pairs, i, p); i++)
+  FOR_EACH_VEC_ELT (alias_pair, alias_pairs, i, p)
     if (output_alias_pair_p (p, set, vset))
       write_symbol (cache, &stream, p->decl, seen, true);
 

@@ -1,3 +1,20 @@
+2010-08-20  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* call.c: Use FOR_EACH_VEC_ELT.
+	* class.c: Likewise.
+	* decl.c: Likewise.
+	* decl2.c: Likewise.
+	* error.c: Likewise.
+	* except.c: Likewise.
+	* mangle.c: Likewise.
+	* method.c: Likewise.
+	* name-lookup.c: Likewise.
+	* parser.c: Likewise.
+	* pt.c: Likewise.
+	* repo.c: Likewise.
+	* semantics.c: Likewise.
+	* typeck2.c: Likewise.
+
 2010-08-19  Jason Merrill  <jason@redhat.com>
 
 	* call.c (reference_related_p): Check for error_mark_node.

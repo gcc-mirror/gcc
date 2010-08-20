@@ -412,7 +412,7 @@ abstract_virtuals_error (tree decl, tree type)
 	      "  because the following virtual functions are pure within %qT:",
 	      type);
 
-      for (ix = 0; VEC_iterate (tree, pure, ix, fn); ix++)
+      FOR_EACH_VEC_ELT (tree, pure, ix, fn)
 	inform (input_location, "\t%+#D", fn);
       /* Now truncate the vector.  This leaves it non-null, so we know
 	 there are pure virtuals, but empty so we don't list them out
@@ -1035,7 +1035,7 @@ process_init_constructor_array (tree type, tree init)
   if (!unbounded && VEC_length (constructor_elt, v)  > len)
     error ("too many initializers for %qT", type);
 
-  for (i = 0; VEC_iterate (constructor_elt, v, i, ce); ++i)
+  FOR_EACH_VEC_ELT (constructor_elt, v, i, ce)
     {
       if (ce->index)
 	{

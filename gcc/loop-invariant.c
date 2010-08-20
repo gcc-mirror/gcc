@@ -536,7 +536,7 @@ merge_identical_invariants (void)
   htab_t eq = htab_create (VEC_length (invariant_p, invariants),
 			   hash_invariant_expr, eq_invariant_expr, free);
 
-  for (i = 0; VEC_iterate (invariant_p, invariants, i, inv); i++)
+  FOR_EACH_VEC_ELT (invariant_p, invariants, i, inv)
     find_identical_invariants (eq, inv);
 
   htab_delete (eq);
@@ -1254,7 +1254,7 @@ best_gain_for_invariant (struct invariant **best, unsigned *regs_needed,
   int i, gain = 0, again;
   unsigned aregs_needed[N_REG_CLASSES], invno;
 
-  for (invno = 0; VEC_iterate (invariant_p, invariants, invno, inv); invno++)
+  FOR_EACH_VEC_ELT (invariant_p, invariants, invno, inv)
     {
       if (inv->move)
 	continue;
@@ -1508,11 +1508,11 @@ move_invariants (struct loop *loop)
   struct invariant *inv;
   unsigned i;
 
-  for (i = 0; VEC_iterate (invariant_p, invariants, i, inv); i++)
+  FOR_EACH_VEC_ELT (invariant_p, invariants, i, inv)
     move_invariant_reg (loop, i);
   if (flag_ira_loop_pressure && resize_reg_info ())
     {
-      for (i = 0; VEC_iterate (invariant_p, invariants, i, inv); i++)
+      FOR_EACH_VEC_ELT (invariant_p, invariants, i, inv)
 	if (inv->reg != NULL_RTX)
 	  {
 	    if (inv->orig_regno >= 0)
@@ -1561,7 +1561,7 @@ free_inv_motion_data (void)
 	}
     }
 
-  for (i = 0; VEC_iterate (invariant_p, invariants, i, inv); i++)
+  FOR_EACH_VEC_ELT (invariant_p, invariants, i, inv)
     {
       BITMAP_FREE (inv->depends_on);
       free (inv);

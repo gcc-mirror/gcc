@@ -1484,7 +1484,7 @@ sdbout_finish (const char *main_filename ATTRIBUTE_UNUSED)
   size_t i;
   tree decl;
 
-  for (i = 0; VEC_iterate (tree, deferred_global_decls, i, decl); i++)
+  FOR_EACH_VEC_ELT (tree, deferred_global_decls, i, decl)
     sdbout_symbol (decl, 0);
 }
 

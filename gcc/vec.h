@@ -190,6 +190,11 @@ along with GCC; see the file COPYING3.  If not see
 
 #define VEC_iterate(T,V,I,P)	(VEC_OP(T,base,iterate)(VEC_BASE(V),I,&(P)))
 
+/* Convenience macro for forward iteration.  */
+
+#define FOR_EACH_VEC_ELT(T, V, I, P)		\
+  for (I = 0; VEC_iterate (T, (V), (I), (P)); ++(I))
+
 /* Convenience macro for reverse iteration.  */
 
 #define FOR_EACH_VEC_ELT_REVERSE(T,V,I,P) \

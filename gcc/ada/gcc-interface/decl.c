@@ -4966,7 +4966,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  unsigned int i;
 	  tree t;
 
-	  for (i = 0; VEC_iterate (tree, defer_finalize_list, i, t); i++)
+	  FOR_EACH_VEC_ELT (tree, defer_finalize_list, i, t)
 	    rest_of_type_decl_compilation_no_defer (t);
 
 	  VEC_free (tree, heap, defer_finalize_list);

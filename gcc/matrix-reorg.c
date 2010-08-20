@@ -890,9 +890,7 @@ analyze_transpose (void **slot, void *data ATTRIBUTE_UNUSED)
     {
       if (mi->access_l)
 	{
-	  for (i = 0;
-	       VEC_iterate (access_site_info_p, mi->access_l, i, acc_info);
-	       i++)
+	  FOR_EACH_VEC_ELT (access_site_info_p, mi->access_l, i, acc_info)
 	    free (acc_info);
 	  VEC_free (access_site_info_p, heap, mi->access_l);
 

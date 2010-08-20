@@ -1,3 +1,10 @@
+2010-08-20  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* class.c: Use FOR_EACH_VEC_ELT.
+	* expr.c: Likewise.
+	* jcf-parse.c: Likewise.
+	* resource.c: Likewise.
+
 2010-08-16  Joseph Myers  <joseph@codesourcery.com>
 
 	* lang.opt (MD_, MMD_, version): Mark RejectDriver.

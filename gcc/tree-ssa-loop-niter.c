@@ -1907,7 +1907,7 @@ find_loop_niter (struct loop *loop, edge *exit)
   struct tree_niter_desc desc;
 
   *exit = NULL;
-  for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
+  FOR_EACH_VEC_ELT (edge, exits, i, ex)
     {
       if (!just_once_each_iteration_p (loop, ex->src))
 	continue;
@@ -1984,7 +1984,7 @@ finite_loop_p (struct loop *loop)
     }
 
   exits = get_loop_exit_edges (loop);
-  for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
+  FOR_EACH_VEC_ELT (edge, exits, i, ex)
     {
       if (!just_once_each_iteration_p (loop, ex->src))
 	continue;
@@ -2264,7 +2264,7 @@ find_loop_niter_by_eval (struct loop *loop, edge *exit)
       && VEC_length (edge, exits) > 1)
     return chrec_dont_know;
 
-  for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
+  FOR_EACH_VEC_ELT (edge, exits, i, ex)
     {
       if (!just_once_each_iteration_p (loop, ex->src))
 	continue;
@@ -2920,7 +2920,7 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
   loop->any_estimate = false;
 
   exits = get_loop_exit_edges (loop);
-  for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
+  FOR_EACH_VEC_ELT (edge, exits, i, ex)
     {
       if (!number_of_iterations_exit (loop, ex, &niter_desc, false))
 	continue;

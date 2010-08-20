@@ -323,7 +323,7 @@ setup_entered_from_non_parent_p (void)
   unsigned int i;
   loop_p loop;
 
-  for (i = 0; VEC_iterate (loop_p, ira_loops.larray, i, loop); i++)
+  FOR_EACH_VEC_ELT (loop_p, ira_loops.larray, i, loop)
     if (ira_loop_nodes[i].regno_allocno_map != NULL)
       ira_loop_nodes[i].entered_from_non_parent_p
 	= entered_from_non_parent_p (&ira_loop_nodes[i]);

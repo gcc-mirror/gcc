@@ -1683,7 +1683,7 @@ predefined_filename_p (tree node)
   unsigned ix;
   tree f;
 
-  for (ix = 0; VEC_iterate (tree, predefined_filenames, ix, f); ix++)
+  FOR_EACH_VEC_ELT (tree, predefined_filenames, ix, f)
     if (f == node)
       return 1;
 
@@ -1869,7 +1869,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
     }
 
   current_jcf = main_jcf;
-  for (ix = 0; VEC_iterate (tree, current_file_list, ix, node); ix++)
+  FOR_EACH_VEC_ELT (tree, current_file_list, ix, node)
     {
       unsigned char magic_string[4];
       char *real_path;
@@ -1956,7 +1956,7 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	}
     }
 
-  for (ix = 0; VEC_iterate (tree, current_file_list, ix, node); ix++)
+  FOR_EACH_VEC_ELT (tree, current_file_list, ix, node)
     {
       input_location = DECL_SOURCE_LOCATION (node);
       if (CLASS_FILE_P (node))

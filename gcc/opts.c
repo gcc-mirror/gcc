@@ -592,14 +592,10 @@ flag_instrument_functions_exclude_p (tree fndecl)
       char *s;
 
       name = lang_hooks.decl_printable_name (fndecl, 0);
-      for (i = 0;
-	   VEC_iterate (char_p, flag_instrument_functions_exclude_functions,
-			i, s);
-	   ++i)
-	{
-	  if (strstr (name, s) != NULL)
-	    return true;
-	}
+      FOR_EACH_VEC_ELT (char_p, flag_instrument_functions_exclude_functions,
+			i, s)
+	if (strstr (name, s) != NULL)
+	  return true;
     }
 
   if (VEC_length (char_p, flag_instrument_functions_exclude_files) > 0)
@@ -609,13 +605,9 @@ flag_instrument_functions_exclude_p (tree fndecl)
       char *s;
 
       name = DECL_SOURCE_FILE (fndecl);
-      for (i = 0;
-	   VEC_iterate (char_p, flag_instrument_functions_exclude_files, i, s);
-	   ++i)
-	{
-	  if (strstr (name, s) != NULL)
-	    return true;
-	}
+      FOR_EACH_VEC_ELT (char_p, flag_instrument_functions_exclude_files, i, s)
+	if (strstr (name, s) != NULL)
+	  return true;
     }
 
   return false;

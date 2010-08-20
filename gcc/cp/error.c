@@ -304,7 +304,7 @@ dump_template_bindings (tree parms, tree args, VEC(tree,gc)* typenames)
       parms = TREE_CHAIN (parms);
     }
 
-  for (i = 0; VEC_iterate (tree, typenames, i, t); ++i)
+  FOR_EACH_VEC_ELT (tree, typenames, i, t)
     {
       if (need_comma)
 	pp_separate_with_comma (cxx_pp);

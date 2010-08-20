@@ -258,7 +258,7 @@ self_referential_size (tree size)
   /* Build the parameter and argument lists in parallel; also
      substitute the former for the latter in the expression.  */
   args = VEC_alloc (tree, gc, VEC_length (tree, self_refs));
-  for (i = 0; VEC_iterate (tree, self_refs, i, ref); i++)
+  FOR_EACH_VEC_ELT (tree, self_refs, i, ref)
     {
       tree subst, param_name, param_type, param_decl;
 

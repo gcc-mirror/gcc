@@ -1180,15 +1180,13 @@ df_free_collection_rec (struct df_collection_rec *collection_rec)
   df_ref ref;
   struct df_mw_hardreg *mw;
 
-  for (ix = 0; VEC_iterate (df_ref, collection_rec->def_vec, ix, ref); ++ix)
+  FOR_EACH_VEC_ELT (df_ref, collection_rec->def_vec, ix, ref)
     df_free_ref (ref);
-  for (ix = 0; VEC_iterate (df_ref, collection_rec->use_vec, ix, ref); ++ix)
+  FOR_EACH_VEC_ELT (df_ref, collection_rec->use_vec, ix, ref)
     df_free_ref (ref);
-  for (ix = 0; VEC_iterate (df_ref, collection_rec->eq_use_vec, ix, ref); ++ix)
+  FOR_EACH_VEC_ELT (df_ref, collection_rec->eq_use_vec, ix, ref)
     df_free_ref (ref);
-  for (ix = 0;
-       VEC_iterate (df_mw_hardreg_ptr, collection_rec->mw_vec, ix, mw);
-       ++ix)
+  FOR_EACH_VEC_ELT (df_mw_hardreg_ptr, collection_rec->mw_vec, ix, mw)
     pool_free (problem_data->mw_reg_pool, mw);
 
   VEC_free (df_ref, stack, collection_rec->def_vec);
@@ -2664,7 +2662,7 @@ df_install_refs (basic_block bb,
       if (add_to_table && df->analyze_subset)
 	add_to_table = bitmap_bit_p (df->blocks_to_analyze, bb->index);
 
-      for (ix = 0; VEC_iterate (df_ref, old_vec, ix, this_ref); ++ix)
+      FOR_EACH_VEC_ELT (df_ref, old_vec, ix, this_ref)
 	{
 	  new_vec[ix] = this_ref;
 	  df_install_ref (this_ref, reg_info[DF_REF_REGNO (this_ref)],
@@ -3398,7 +3396,7 @@ df_get_conditional_uses (struct df_collection_rec *collection_rec)
   unsigned int ix;
   df_ref ref;
 
-  for (ix = 0; VEC_iterate (df_ref, collection_rec->def_vec, ix, ref); ++ix)
+  FOR_EACH_VEC_ELT (df_ref, collection_rec->def_vec, ix, ref)
     {
       if (DF_REF_FLAGS_IS_SET (ref, DF_REF_CONDITIONAL))
         {
@@ -3446,7 +3444,7 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
   /* Do not generate clobbers for registers that are the result of the
      call.  This causes ordering problems in the chain building code
      depending on which def is seen first.  */
-  for (i = 0; VEC_iterate (df_ref, collection_rec->def_vec, i, def); ++i)
+  FOR_EACH_VEC_ELT (df_ref, collection_rec->def_vec, i, def)
     bitmap_set_bit (&defs_generated, DF_REF_REGNO (def));
 
   /* Record the registers used to pass arguments, and explicitly
@@ -4382,7 +4380,7 @@ df_refs_verify (VEC(df_ref,stack) *new_rec, df_ref *old_rec,
   unsigned int ix;
   df_ref new_ref;
 
-  for (ix = 0; VEC_iterate (df_ref, new_rec, ix, new_ref); ++ix)
+  FOR_EACH_VEC_ELT (df_ref, new_rec, ix, new_ref)
     {
       if (*old_rec == NULL || !df_ref_equal_p (new_ref, *old_rec))
 	{
@@ -4421,7 +4419,7 @@ df_mws_verify (VEC(df_mw_hardreg_ptr,stack) *new_rec,
   unsigned int ix;
   struct df_mw_hardreg *new_reg;
 
-  for (ix = 0; VEC_iterate (df_mw_hardreg_ptr, new_rec, ix, new_reg); ++ix)
+  FOR_EACH_VEC_ELT (df_mw_hardreg_ptr, new_rec, ix, new_reg)
     {
       if (*old_rec == NULL || !df_mw_equal_p (new_reg, *old_rec))
 	{

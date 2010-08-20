@@ -2149,7 +2149,7 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
 	n->count = 0;
     }
 
-  for (i = 0; VEC_iterate (cgraph_edge_p, redirect_callers, i, e); i++)
+  FOR_EACH_VEC_ELT (cgraph_edge_p, redirect_callers, i, e)
     {
       /* Redirect calls to the old version node to point to its new
 	 version.  */
@@ -2272,7 +2272,7 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   DECL_WEAK (new_node->decl) = 0;
   new_node->clone.tree_map = tree_map;
   new_node->clone.args_to_skip = args_to_skip;
-  for (i = 0; VEC_iterate (ipa_replace_map_p, tree_map, i, map); i++)
+  FOR_EACH_VEC_ELT (ipa_replace_map_p, tree_map, i, map)
     {
       tree var = map->new_tree;
 

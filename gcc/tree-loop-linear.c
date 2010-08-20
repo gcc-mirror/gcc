@@ -99,7 +99,7 @@ gather_interchange_stats (VEC (ddr_p, heap) *dependence_relations ATTRIBUTE_UNUS
   *nb_deps_not_carried_by_loop = 0;
   *access_strides = double_int_zero;
 
-  for (i = 0; VEC_iterate (ddr_p, dependence_relations, i, ddr); i++)
+  FOR_EACH_VEC_ELT (ddr_p, dependence_relations, i, ddr)
     {
       /* If we don't know anything about this dependence, or the distance
 	 vector is NULL, or there is no dependence, then there is no reuse of
@@ -125,7 +125,7 @@ gather_interchange_stats (VEC (ddr_p, heap) *dependence_relations ATTRIBUTE_UNUS
     }
 
   /* Compute the access strides.  */
-  for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
+  FOR_EACH_VEC_ELT (data_reference_p, datarefs, i, dr)
     {
       unsigned int it;
       tree ref = DR_REF (dr);
@@ -414,7 +414,7 @@ linear_transform_loops (void)
       VEC_free (loop_p, heap, nest);
     }
 
-  for (i = 0; VEC_iterate (gimple, remove_ivs, i, oldiv_stmt); i++)
+  FOR_EACH_VEC_ELT (gimple, remove_ivs, i, oldiv_stmt)
     remove_iv (oldiv_stmt);
 
   VEC_free (tree, heap, oldivs);

@@ -2504,7 +2504,7 @@ output_used_types (void)
       qsort (VEC_address (tree, types), VEC_length (tree, types),
 	     sizeof (tree), output_types_sort);
 
-      for (i = 0; VEC_iterate (tree, types, i, type); i++)
+      FOR_EACH_VEC_ELT (tree, types, i, type)
 	debug_queue_symbol (type);
 
       VEC_free (tree, heap, types);

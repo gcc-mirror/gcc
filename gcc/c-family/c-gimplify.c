@@ -112,7 +112,7 @@ add_block_to_enclosing (tree block)
   gimple bind;
   VEC(gimple, heap) *stack = gimple_bind_expr_stack ();
 
-  for (i = 0; VEC_iterate (gimple, stack, i, bind); i++)
+  FOR_EACH_VEC_ELT (gimple, stack, i, bind)
     if (gimple_bind_block (bind))
       break;
 

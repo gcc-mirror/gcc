@@ -403,7 +403,7 @@ try_unroll_loop_completely (struct loop *loop,
 	  return false;
 	}
 
-      for (i = 0; VEC_iterate (edge, to_remove, i, e); i++)
+      FOR_EACH_VEC_ELT (edge, to_remove, i, e)
 	{
 	  bool ok = remove_path (e);
 	  gcc_assert (ok);
