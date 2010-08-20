@@ -147,14 +147,25 @@ ggc_scan_cache_tab (const_ggc_cache_tab_t ctp)
       }
 }
 
+/* Mark all the roots in the table RT.  */
+
+static void
+ggc_mark_root_tab (const_ggc_root_tab_t rt)
+{
+  size_t i;
+
+  for ( ; rt->base != NULL; rt++)
+    for (i = 0; i < rt->nelt; i++)
+      (*rt->cb) (*(void **) ((char *)rt->base + rt->stride * i));
+}
+
 /* Iterate through all registered roots and mark each element.  */
 
 void
 ggc_mark_roots (void)
 {
   const struct ggc_root_tab *const *rt;
-  const struct ggc_root_tab *rti;
-  const_ggc_root_tab_t rtp;
+  const_ggc_root_tab_t rtp, rti;
   const struct ggc_cache_tab *const *ct;
   const_ggc_cache_tab_t ctp;
   size_t i;
@@ -164,16 +175,10 @@ ggc_mark_roots (void)
       memset (rti->base, 0, rti->stride);
 
   for (rt = gt_ggc_rtab; *rt; rt++)
-    for (rti = *rt; rti->base != NULL; rti++)
-      for (i = 0; i < rti->nelt; i++)
-	(*rti->cb) (*(void **)((char *)rti->base + rti->stride * i));
+    ggc_mark_root_tab (*rt);
 
   FOR_EACH_VEC_ELT (const_ggc_root_tab_t, extra_root_vec, i, rtp)
-    {
-      for (rti = rtp; rti->base != NULL; rti++)
-        for (i = 0; i < rti->nelt; i++)
-          (*rti->cb) (*(void **) ((char *)rti->base + rti->stride * i));
-    }
+    ggc_mark_root_tab (rtp);
 
   if (ggc_protect_identifiers)
     ggc_mark_stringpool ();
