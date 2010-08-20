@@ -120,6 +120,11 @@ extern int darwin_emit_branch_islands;
    mcpu=G5:ppc970;				\
    :ppc}}"
 
+/* Linked libs might refer to save/restFP - we still need to append -lgcc to
+   provide these.  */
+#undef	LIB_SPEC
+#define LIB_SPEC "%{!static:-lgcc -lSystem}"
+
 /* crt2.o is at least partially required for 10.3.x and earlier.  */
 #define DARWIN_CRT2_SPEC \
   "%{!m64:%:version-compare(!> 10.4 mmacosx-version-min= crt2.o%s)}"
