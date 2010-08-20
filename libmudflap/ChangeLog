@@ -1,3 +1,8 @@
+2010-08-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/libmudflap.c++/pass41-frag.cxx (dg-prune-output):
+	New dg directive.
+
 2010-06-09  Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR bootstrap/43170
