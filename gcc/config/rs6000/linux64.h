@@ -573,3 +573,9 @@ extern enum rs6000_cmodel cmodel;
 #ifdef TARGET_DEFAULT_LONG_DOUBLE_128
 #define RS6000_DEFAULT_LONG_DOUBLE_SIZE 128
 #endif
+
+/* Static stack checking is supported by means of probes.  */
+#define STACK_CHECK_STATIC_BUILTIN 1
+
+/* The default value isn't sufficient in 64-bit mode.  */
+#define STACK_CHECK_PROTECT (TARGET_64BIT ? 16 * 1024 : 12 * 1024)
