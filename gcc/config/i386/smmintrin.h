@@ -439,7 +439,7 @@ _mm_insert_epi64 (__m128i __D, long long __S, const int __N)
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_extract_epi8 (__m128i __X, const int __N)
 {
-   return __builtin_ia32_vec_ext_v16qi ((__v16qi)__X, __N);
+   return (unsigned char) __builtin_ia32_vec_ext_v16qi ((__v16qi)__X, __N);
 }
 
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -457,7 +457,7 @@ _mm_extract_epi64 (__m128i __X, const int __N)
 #endif
 #else
 #define _mm_extract_epi8(X, N) \
-  ((int) __builtin_ia32_vec_ext_v16qi ((__v16qi)(__m128i)(X), (int)(N)))
+  ((int) (unsigned char) __builtin_ia32_vec_ext_v16qi ((__v16qi)(__m128i)(X), (int)(N)))
 #define _mm_extract_epi32(X, N) \
   ((int) __builtin_ia32_vec_ext_v4si ((__v4si)(__m128i)(X), (int)(N)))
 

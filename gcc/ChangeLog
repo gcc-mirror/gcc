@@ -1,3 +1,12 @@
+2010-08-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/45336
+	* config/i386/emmintrin.h (_mm_extract_epi16): Cast to unsigned
+	short first.
+
+	* config/i386/smmintrin.h (_mm_extract_epi8): Cast to unsigned
+	char first.
+
 2010-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/45336
