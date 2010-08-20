@@ -1,3 +1,9 @@
+2010-08-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR testsuite/45361
+	* gcc.target/i386/volatile-2.c: Update scan strings to also
+	include (%rip) for the memory reference on x86_64.
+
 2010-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/44974
@@ -22,11 +28,8 @@
 2010-08-19  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/init/synth3.C: New.
-
 	* g++.dg/init/value8.C: New.
-
 	* g++.dg/tree-ssa/empty-2.C: New.
-
 	* g++.dg/cpp0x/noexcept09.C: New.
 
 2010-08-19  Daniel Kraft  <d@domob.eu>
@@ -119,7 +122,7 @@
 	(check_effective_target_function_sections): New.
 	* gcc.dg/debug/dwarf2/aranges-fnsec-1.c: Check that the target supports
 	function sections before proceding.
-	
+
 2010-08-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/45308
