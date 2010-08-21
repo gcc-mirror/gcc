@@ -2343,7 +2343,7 @@ static void mio_formal_arglist (gfc_formal_arglist **formal);
 static void mio_typebound_proc (gfc_typebound_proc** proc);
 
 static void
-mio_component (gfc_component *c)
+mio_component (gfc_component *c, int vtype)
 {
   pointer_info *p;
   int n;
@@ -2373,7 +2373,8 @@ mio_component (gfc_component *c)
   mio_symbol_attribute (&c->attr);
   c->attr.access = MIO_NAME (gfc_access) (c->attr.access, access_types); 
 
-  mio_expr (&c->initializer);
+  if (!vtype)
+    mio_expr (&c->initializer);
 
   if (c->attr.proc_pointer)
     {
@@ -2408,7 +2409,7 @@ mio_component (gfc_component *c)
 
 
 static void
-mio_component_list (gfc_component **cp)
+mio_component_list (gfc_component **cp, int vtype)
 {
   gfc_component *c, *tail;
 
@@ -2417,7 +2418,7 @@ mio_component_list (gfc_component **cp)
   if (iomode == IO_OUTPUT)
     {
       for (c = *cp; c; c = c->next)
-	mio_component (c);
+	mio_component (c, vtype);
     }
   else
     {
@@ -2430,7 +2431,7 @@ mio_component_list (gfc_component **cp)
 	    break;
 
 	  c = gfc_get_component ();
-	  mio_component (c);
+	  mio_component (c, vtype);
 
 	  if (tail == NULL)
 	    *cp = c;
@@ -3597,7 +3598,7 @@ mio_symbol (gfc_symbol *sym)
   /* Note that components are always saved, even if they are supposed
      to be private.  Component access is checked during searching.  */
 
-  mio_component_list (&sym->components);
+  mio_component_list (&sym->components, sym->attr.vtype);
 
   if (sym->components != NULL)
     sym->component_access

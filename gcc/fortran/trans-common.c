@@ -649,8 +649,10 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
 	      {
 		/* Add the initializer for this field.  */
 		tmp = gfc_conv_initializer (s->sym->value, &s->sym->ts,
-		    TREE_TYPE (s->field), s->sym->attr.dimension,
-		    s->sym->attr.pointer || s->sym->attr.allocatable);
+					    TREE_TYPE (s->field),
+					    s->sym->attr.dimension,
+					    s->sym->attr.pointer
+					    || s->sym->attr.allocatable, false);
 
 		CONSTRUCTOR_APPEND_ELT (v, s->field, tmp);
 	      }
