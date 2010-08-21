@@ -1,3 +1,9 @@
+2010-08-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR target/45084
+	* stdint.m4 (GCC_HEADER_STDINT): Use m4 quotes for arguments
+	of AC_MSG_ERROR.
+
 2010-07-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gc++filt.m4: New file.
