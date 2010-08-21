@@ -147,173 +147,8 @@ static void cgraph_analyze_function (struct cgraph_node *);
 
 FILE *cgraph_dump_file;
 
-/* A vector of FUNCTION_DECLs declared as static constructors.  */
-static GTY (()) VEC(tree, gc) *static_ctors;
-/* A vector of FUNCTION_DECLs declared as static destructors.  */
-static GTY (()) VEC(tree, gc) *static_dtors;
-
 /* Used for vtable lookup in thunk adjusting.  */
 static GTY (()) tree vtable_entry_type;
-
-/* When target does not have ctors and dtors, we call all constructor
-   and destructor by special initialization/destruction function
-   recognized by collect2.
-
-   When we are going to build this function, collect all constructors and
-   destructors and turn them into normal functions.  */
-
-static void
-record_cdtor_fn (tree fndecl)
-{
-  struct cgraph_node *node;
-  if (targetm.have_ctors_dtors
-      || (!DECL_STATIC_CONSTRUCTOR (fndecl)
-	  && !DECL_STATIC_DESTRUCTOR (fndecl)))
-    return;
-
-  if (DECL_STATIC_CONSTRUCTOR (fndecl))
-    {
-      VEC_safe_push (tree, gc, static_ctors, fndecl);
-      DECL_STATIC_CONSTRUCTOR (fndecl) = 0;
-    }
-  if (DECL_STATIC_DESTRUCTOR (fndecl))
-    {
-      VEC_safe_push (tree, gc, static_dtors, fndecl);
-      DECL_STATIC_DESTRUCTOR (fndecl) = 0;
-    }
-  node = cgraph_node (fndecl);
-  node->local.disregard_inline_limits = 1;
-  cgraph_mark_reachable_node (node);
-}
-
-/* Define global constructors/destructor functions for the CDTORS, of
-   which they are LEN.  The CDTORS are sorted by initialization
-   priority.  If CTOR_P is true, these are constructors; otherwise,
-   they are destructors.  */
-
-static void
-build_cdtor (bool ctor_p, tree *cdtors, size_t len)
-{
-  size_t i;
-
-  i = 0;
-  while (i < len)
-    {
-      tree body;
-      tree fn;
-      priority_type priority;
-
-      priority = 0;
-      body = NULL_TREE;
-      /* Find the next batch of constructors/destructors with the same
-	 initialization priority.  */
-      do
-	{
-	  priority_type p;
-	  tree call;
-	  fn = cdtors[i];
-	  p = ctor_p ? DECL_INIT_PRIORITY (fn) : DECL_FINI_PRIORITY (fn);
-	  if (!body)
-	    priority = p;
-	  else if (p != priority)
-	    break;
-	  call = build_call_expr (fn, 0);
-	  append_to_statement_list (call, &body);
-	  ++i;
-	}
-      while (i < len);
-      gcc_assert (body != NULL_TREE);
-      /* Generate a function to call all the function of like
-	 priority.  */
-      cgraph_build_static_cdtor (ctor_p ? 'I' : 'D', body, priority);
-    }
-}
-
-/* Comparison function for qsort.  P1 and P2 are actually of type
-   "tree *" and point to static constructors.  DECL_INIT_PRIORITY is
-   used to determine the sort order.  */
-
-static int
-compare_ctor (const void *p1, const void *p2)
-{
-  tree f1;
-  tree f2;
-  int priority1;
-  int priority2;
-
-  f1 = *(const tree *)p1;
-  f2 = *(const tree *)p2;
-  priority1 = DECL_INIT_PRIORITY (f1);
-  priority2 = DECL_INIT_PRIORITY (f2);
-
-  if (priority1 < priority2)
-    return -1;
-  else if (priority1 > priority2)
-    return 1;
-  else
-    /* Ensure a stable sort.  */
-    return (const tree *)p1 - (const tree *)p2;
-}
-
-/* Comparison function for qsort.  P1 and P2 are actually of type
-   "tree *" and point to static destructors.  DECL_FINI_PRIORITY is
-   used to determine the sort order.  */
-
-static int
-compare_dtor (const void *p1, const void *p2)
-{
-  tree f1;
-  tree f2;
-  int priority1;
-  int priority2;
-
-  f1 = *(const tree *)p1;
-  f2 = *(const tree *)p2;
-  priority1 = DECL_FINI_PRIORITY (f1);
-  priority2 = DECL_FINI_PRIORITY (f2);
-
-  if (priority1 < priority2)
-    return -1;
-  else if (priority1 > priority2)
-    return 1;
-  else
-    /* Ensure a stable sort.  */
-    return (const tree *)p1 - (const tree *)p2;
-}
-
-/* Generate functions to call static constructors and destructors
-   for targets that do not support .ctors/.dtors sections.  These
-   functions have magic names which are detected by collect2.  */
-
-static void
-cgraph_build_cdtor_fns (void)
-{
-  if (!VEC_empty (tree, static_ctors))
-    {
-      gcc_assert (!targetm.have_ctors_dtors);
-      qsort (VEC_address (tree, static_ctors),
-	     VEC_length (tree, static_ctors),
-	     sizeof (tree),
-	     compare_ctor);
-      build_cdtor (/*ctor_p=*/true,
-		   VEC_address (tree, static_ctors),
-		   VEC_length (tree, static_ctors));
-      VEC_truncate (tree, static_ctors, 0);
-    }
-
-  if (!VEC_empty (tree, static_dtors))
-    {
-      gcc_assert (!targetm.have_ctors_dtors);
-      qsort (VEC_address (tree, static_dtors),
-	     VEC_length (tree, static_dtors),
-	     sizeof (tree),
-	     compare_dtor);
-      build_cdtor (/*ctor_p=*/false,
-		   VEC_address (tree, static_dtors),
-		   VEC_length (tree, static_dtors));
-      VEC_truncate (tree, static_dtors, 0);
-    }
-}
 
 /* Determine if function DECL is needed.  That is, visible to something
    either outside this translation unit, something magic in the system
@@ -519,7 +354,6 @@ cgraph_finalize_function (tree decl, bool nested)
   node->local.finalized = true;
   node->lowered = DECL_STRUCT_FUNCTION (decl)->cfg != NULL;
   node->finalized_by_frontend = true;
-  record_cdtor_fn (node->decl);
 
   if (cgraph_decide_is_function_needed (node, decl))
     cgraph_mark_needed_node (node);
@@ -1154,10 +988,6 @@ cgraph_finalize_compilation_unit (void)
 
   /* Emit size functions we didn't inline.  */
   finalize_size_functions ();
-
-  /* Call functions declared with the "constructor" or "destructor"
-     attribute.  */
-  cgraph_build_cdtor_fns ();
 
   /* Mark alias targets necessary and emit diagnostics.  */
   finish_aliases_1 ();
@@ -2005,78 +1835,6 @@ cgraph_optimize (void)
 	internal_error ("nodes with unreleased memory found");
     }
 #endif
-}
-
-
-/* Generate and emit a static constructor or destructor.  WHICH must
-   be one of 'I' (for a constructor) or 'D' (for a destructor).  BODY
-   is a STATEMENT_LIST containing GENERIC statements.  PRIORITY is the
-   initialization priority for this constructor or destructor.  */
-
-void
-cgraph_build_static_cdtor (char which, tree body, int priority)
-{
-  static int counter = 0;
-  char which_buf[16];
-  tree decl, name, resdecl;
-
-  /* The priority is encoded in the constructor or destructor name.
-     collect2 will sort the names and arrange that they are called at
-     program startup.  */
-  sprintf (which_buf, "%c_%.5d_%d", which, priority, counter++);
-  name = get_file_function_name (which_buf);
-
-  decl = build_decl (input_location, FUNCTION_DECL, name,
-		     build_function_type_list (void_type_node, NULL_TREE));
-  current_function_decl = decl;
-
-  resdecl = build_decl (input_location,
-			RESULT_DECL, NULL_TREE, void_type_node);
-  DECL_ARTIFICIAL (resdecl) = 1;
-  DECL_RESULT (decl) = resdecl;
-  DECL_CONTEXT (resdecl) = decl;
-
-  allocate_struct_function (decl, false);
-
-  TREE_STATIC (decl) = 1;
-  TREE_USED (decl) = 1;
-  DECL_ARTIFICIAL (decl) = 1;
-  DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl) = 1;
-  DECL_SAVED_TREE (decl) = body;
-  if (!targetm.have_ctors_dtors)
-    {
-      TREE_PUBLIC (decl) = 1;
-      DECL_PRESERVE_P (decl) = 1;
-    }
-  DECL_UNINLINABLE (decl) = 1;
-
-  DECL_INITIAL (decl) = make_node (BLOCK);
-  TREE_USED (DECL_INITIAL (decl)) = 1;
-
-  DECL_SOURCE_LOCATION (decl) = input_location;
-  cfun->function_end_locus = input_location;
-
-  switch (which)
-    {
-    case 'I':
-      DECL_STATIC_CONSTRUCTOR (decl) = 1;
-      decl_init_priority_insert (decl, priority);
-      break;
-    case 'D':
-      DECL_STATIC_DESTRUCTOR (decl) = 1;
-      decl_fini_priority_insert (decl, priority);
-      break;
-    default:
-      gcc_unreachable ();
-    }
-
-  gimplify_function_tree (decl);
-
-  cgraph_add_new_function (decl, false);
-  cgraph_mark_needed_node (cgraph_node (decl));
-
-  set_cfun (NULL);
-  current_function_decl = NULL;
 }
 
 void

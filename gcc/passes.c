@@ -811,6 +811,7 @@ init_optimization_passes (void)
   NEXT_PASS (pass_ipa_whole_program_visibility);
   NEXT_PASS (pass_ipa_profile);
   NEXT_PASS (pass_ipa_cp);
+  NEXT_PASS (pass_ipa_cdtor_merge);
   NEXT_PASS (pass_ipa_inline);
   NEXT_PASS (pass_ipa_pure_const);
   NEXT_PASS (pass_ipa_reference);

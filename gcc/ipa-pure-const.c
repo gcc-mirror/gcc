@@ -427,7 +427,7 @@ worse_state (enum pure_const_state_e *state, bool *looping,
 /* Recognize special cases of builtins that are by themself not pure or const
    but function using them is.  */
 static bool
-special_builtlin_state (enum pure_const_state_e *state, bool *looping,
+special_builtin_state (enum pure_const_state_e *state, bool *looping,
 			tree callee)
 {
   if (DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
@@ -510,7 +510,7 @@ check_call (funct_state local, gimple call, bool ipa)
       enum pure_const_state_e call_state;
       bool call_looping;
 
-      if (special_builtlin_state (&call_state, &call_looping, callee_t))
+      if (special_builtin_state (&call_state, &call_looping, callee_t))
 	{
 	  worse_state (&local->pure_const_state, &local->looping,
 		       call_state, call_looping);
@@ -1203,7 +1203,7 @@ propagate_pure_const (void)
 		      edge_looping = y_l->looping;
 		    }
 		}
-	      else if (special_builtlin_state (&edge_state, &edge_looping,
+	      else if (special_builtin_state (&edge_state, &edge_looping,
 					       y->decl))
 		;
 	      else
