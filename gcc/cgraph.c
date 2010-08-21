@@ -2709,6 +2709,33 @@ cgraph_edge_cannot_lead_to_return (struct cgraph_edge *e)
     return cgraph_node_cannot_return (e->callee);
 }
 
+/* Return true when function NODE can be removed from callgraph
+   if all direct calls are eliminated.  */
+
+bool
+cgraph_can_remove_if_no_direct_calls_and_refs_p (struct cgraph_node *node)
+{
+  /* When function is needed, we can not remove it.  */
+  if (node->needed || node->reachable_from_other_partition)
+    return false;
+  /* Only COMDAT functions can be removed if externally visible.  */
+  if (node->local.externally_visible
+      && (!DECL_COMDAT (node->decl) || node->local.used_from_object_file))
+    return false;
+  /* Constructors and destructors are executed by the runtime, however
+     we can get rid of all pure constructors and destructors.  */
+  if (DECL_STATIC_CONSTRUCTOR (node->decl)
+      || DECL_STATIC_DESTRUCTOR (node->decl))
+    {
+      int flags = flags_from_decl_or_type (node->decl);
+      if (!optimize
+	  || !(flags & (ECF_CONST | ECF_PURE))
+	  || (flags & ECF_LOOPING_CONST_OR_PURE))
+	return false;
+    }
+  return true;
+}
+
 /* Return true when function NODE can be excpected to be removed
    from program when direct calls in this compilation unit are removed.
 

@@ -1,3 +1,10 @@
+2010-08-20  Jan Hubicka  <jh@suse.cz>
+
+	PR c++/45307
+	PR c++/17736
+	* gcc.dg/ipa/ctor-empty-1.c: Add testcase.
+	* g++.dg/tree-ssa/empty-2.C: Check that constructor got optimized out.
+
 2010-08-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/45336

@@ -367,11 +367,6 @@ cgraph_decide_is_function_needed (struct cgraph_node *node, tree decl)
       && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
     return true;
 
-  /* Constructors and destructors are reachable from the runtime by
-     some mechanism.  */
-  if (DECL_STATIC_CONSTRUCTOR (decl) || DECL_STATIC_DESTRUCTOR (decl))
-    return true;
-
   return false;
 }
 
@@ -532,7 +527,9 @@ cgraph_finalize_function (tree decl, bool nested)
   /* Since we reclaim unreachable nodes at the end of every language
      level unit, we need to be conservative about possible entry points
      there.  */
-  if ((TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl)))
+  if ((TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
+      || DECL_STATIC_CONSTRUCTOR (decl)
+      || DECL_STATIC_DESTRUCTOR (decl))
     cgraph_mark_reachable_node (node);
 
   /* If we've not yet emitted decl, tell the debug info about it.  */
@@ -1219,8 +1216,7 @@ cgraph_mark_functions_to_output (void)
 	 outside the current compilation unit.  */
       if (node->analyzed
 	  && !node->global.inlined_to
-	  && (node->needed || node->reachable_from_other_partition
-	      || node->address_taken
+	  && (!cgraph_only_called_directly_p (node)
 	      || (e && node->reachable))
 	  && !TREE_ASM_WRITTEN (decl)
 	  && !DECL_EXTERNAL (decl))

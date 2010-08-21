@@ -608,6 +608,10 @@ void cgraph_set_looping_const_or_pure_flag (struct cgraph_node *, bool);
 tree clone_function_name (tree decl, const char *);
 bool cgraph_node_cannot_return (struct cgraph_node *);
 bool cgraph_edge_cannot_lead_to_return (struct cgraph_edge *);
+bool cgraph_will_be_removed_from_program_if_no_direct_calls
+  (struct cgraph_node *node);
+bool cgraph_can_remove_if_no_direct_calls_and_refs_p
+  (struct cgraph_node *node);
 
 /* In cgraphunit.c  */
 extern FILE *cgraph_dump_file;
@@ -664,8 +668,6 @@ void cgraph_remove_node_duplication_hook (struct cgraph_2node_hook_list *);
 void cgraph_materialize_all_clones (void);
 gimple cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *);
 bool cgraph_propagate_frequency (struct cgraph_node *node);
-bool cgraph_will_be_removed_from_program_if_no_direct_calls
-  (struct cgraph_node *node);
 /* In cgraphbuild.c  */
 unsigned int rebuild_cgraph_edges (void);
 void cgraph_rebuild_references (void);
@@ -903,17 +905,11 @@ varpool_node_set_nonempty_p (varpool_node_set set)
 static inline bool
 cgraph_only_called_directly_p (struct cgraph_node *node)
 {
-  return !node->needed && !node->address_taken && !node->local.externally_visible;
-}
-
-/* Return true when function NODE can be removed from callgraph
-   if all direct calls are eliminated.  */
-
-static inline bool
-cgraph_can_remove_if_no_direct_calls_and_refs_p (struct cgraph_node *node)
-{
-  return (!node->needed && !node->reachable_from_other_partition
-  	  && (DECL_COMDAT (node->decl) || !node->local.externally_visible));
+  return (!node->needed && !node->address_taken
+	  && !node->reachable_from_other_partition
+	  && !DECL_STATIC_CONSTRUCTOR (node->decl)
+	  && !DECL_STATIC_DESTRUCTOR (node->decl)
+	  && !node->local.externally_visible);
 }
 
 /* Return true when function NODE can be removed from callgraph
