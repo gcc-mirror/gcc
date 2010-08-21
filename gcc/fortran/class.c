@@ -214,8 +214,6 @@ add_proc_comp (gfc_symbol *vtype, const char *name, gfc_typebound_proc *tb)
       /* Add procedure component.  */
       if (gfc_add_component (vtype, name, &c) == FAILURE)
 	return;
-      if (tb->u.specific)
-	c->ts.interface = tb->u.specific->n.sym;
 
       if (!c->tb)
 	c->tb = XCNEW (gfc_typebound_proc);
@@ -228,17 +226,18 @@ add_proc_comp (gfc_symbol *vtype, const char *name, gfc_typebound_proc *tb)
       c->attr.external = 1;
       c->attr.untyped = 1;
       c->attr.if_source = IFSRC_IFBODY;
-
-      /* A static initializer cannot be used here because the specific
-	function is not a constant; internal compiler error: in
-	output_constant, at varasm.c:4623  */
-      c->initializer = NULL;
     }
   else if (c->attr.proc_pointer && c->tb)
     {
       *c->tb = *tb;
       c->tb->ppc = 1;
-      c->ts.interface = tb->u.specific->n.sym;	  
+    }
+
+  if (tb->u.specific)
+    {
+      c->ts.interface = tb->u.specific->n.sym;
+      if (!tb->deferred)
+	c->initializer = gfc_get_variable_expr (tb->u.specific);
     }
 }
 
@@ -296,7 +295,7 @@ add_procs_to_declared_vtab (gfc_symbol *derived, gfc_symbol *vtype)
     {
       /* Make sure that the PPCs appear in the same order as in the parent.  */
       copy_vtab_proc_comps (super_type, vtype);
-      /* Only needed to get the PPC interfaces right.  */
+      /* Only needed to get the PPC initializers right.  */
       add_procs_to_declared_vtab (super_type, vtype);
     }
 

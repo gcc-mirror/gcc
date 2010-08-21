@@ -433,7 +433,7 @@ void gfc_set_decl_location (tree, locus *);
 tree gfc_get_symbol_decl (gfc_symbol *);
 
 /* Build a static initializer.  */
-tree gfc_conv_initializer (gfc_expr *, gfc_typespec *, tree, bool, bool);
+tree gfc_conv_initializer (gfc_expr *, gfc_typespec *, tree, bool, bool, bool);
 
 /* Assign a default initializer to a derived type.  */
 void gfc_init_default_dt (gfc_symbol *, stmtblock_t *, bool);
@@ -526,9 +526,6 @@ tree gfc_trans_assignment (gfc_expr *, gfc_expr *, bool, bool);
 
 /* Generate code for a pointer assignment.  */
 tree gfc_trans_pointer_assignment (gfc_expr *, gfc_expr *);
-
-/* Generate code to assign typebound procedures to a derived vtab.  */
-void gfc_trans_assign_vtab_procs (stmtblock_t*, gfc_symbol*, gfc_symbol*);
 
 /* Initialize function decls for library functions.  */
 void gfc_build_intrinsic_lib_fndecls (void);

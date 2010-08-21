@@ -1,3 +1,30 @@
+2010-08-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45271
+	PR fortran/45290
+	* class.c (add_proc_comp): Add static initializer for PPCs.
+	(add_procs_to_declared_vtab): Modified comment.
+	* module.c (mio_component): Add argument 'vtype'. Don't read/write the
+	initializer if the component is part of a vtype.
+	(mio_component_list): Add argument 'vtype', pass it on to
+	'mio_component'.
+	(mio_symbol): Modified call to 'mio_component_list'.
+	* trans.h (gfc_conv_initializer): Modified prototype.
+	(gfc_trans_assign_vtab_procs): Removed.
+	* trans-common.c (create_common): Modified call to
+	'gfc_conv_initializer'.
+	* trans-decl.c (gfc_get_symbol_decl,get_proc_pointer_decl,
+	gfc_emit_parameter_debug_info): Modified call to
+	'gfc_conv_initializer'.
+	(build_function_decl): Remove assertion.
+	* trans-expr.c (gfc_conv_derived_to_class,gfc_trans_class_assign):
+	Removed call to 'gfc_trans_assign_vtab_procs'.
+	(gfc_conv_initializer): Add argument 'procptr'.
+	(gfc_conv_structure): Modified call to 'gfc_conv_initializer'.
+	(gfc_trans_assign_vtab_procs): Removed.
+	* trans-stmt.c (gfc_trans_allocate): Removed call to
+	'gfc_trans_assign_vtab_procs'.
+
 2010-08-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/36158

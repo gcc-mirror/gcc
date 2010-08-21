@@ -4441,7 +4441,6 @@ gfc_trans_allocate (gfc_code * code)
 		{
 		  vtab = gfc_find_derived_vtab (ts->u.derived);
 		  gcc_assert (vtab);
-		  gfc_trans_assign_vtab_procs (&block, ts->u.derived, vtab);
 		  gfc_init_se (&lse, NULL);
 		  lse.want_pointer = 1;
 		  gfc_conv_expr (&lse, lhs);

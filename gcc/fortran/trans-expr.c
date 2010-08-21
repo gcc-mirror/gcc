@@ -2574,7 +2574,6 @@ gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e,
      not to the class declared type.  */
   vtab = gfc_find_derived_vtab (e->ts.u.derived);
   gcc_assert (vtab);
-  gfc_trans_assign_vtab_procs (&parmse->pre, e->ts.u.derived, vtab);
   tmp = gfc_build_addr_expr (NULL_TREE, gfc_get_symbol_decl (vtab));
   gfc_add_modify (&parmse->pre, ctree,
 		  fold_convert (TREE_TYPE (ctree), tmp));
@@ -3946,11 +3945,11 @@ gfc_conv_array_constructor_expr (gfc_se * se, gfc_expr * expr)
 
 tree
 gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
-		      bool array, bool pointer)
+		      bool array, bool pointer, bool procptr)
 {
   gfc_se se;
 
-  if (!(expr || pointer))
+  if (!(expr || pointer || procptr))
     return NULL_TREE;
 
   /* Check if we have ISOCBINDING_NULL_PTR or ISOCBINDING_NULL_FUNPTR
@@ -3972,7 +3971,7 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
       return se.expr;
     }
   
-  if (array)
+  if (array && !procptr)
     {
       /* Arrays need special handling.  */
       if (pointer)
@@ -3983,7 +3982,7 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
       else
 	return gfc_conv_array_initializer (type, expr);
     }
-  else if (pointer)
+  else if (pointer || procptr)
     {
       if (!expr || expr->expr_type == EXPR_NULL)
 	return fold_convert (type, null_pointer_node);
@@ -4462,8 +4461,9 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
       else
 	{
 	  val = gfc_conv_initializer (c->expr, &cm->ts,
-	      TREE_TYPE (cm->backend_decl), cm->attr.dimension,
-	      cm->attr.pointer || cm->attr.proc_pointer);
+				      TREE_TYPE (cm->backend_decl),
+				      cm->attr.dimension, cm->attr.pointer,
+				      cm->attr.proc_pointer);
 
 	  /* Append it to the constructor list.  */
 	  CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, val);
@@ -5779,63 +5779,6 @@ gfc_trans_assign (gfc_code * code)
 }
 
 
-/* Generate code to assign typebound procedures to a derived vtab.  */
-void gfc_trans_assign_vtab_procs (stmtblock_t *block, gfc_symbol *dt,
-				  gfc_symbol *vtab)
-{
-  gfc_component *cmp;
-  tree vtb, ctree, proc, cond = NULL_TREE;
-  stmtblock_t body;
-
-  /* Point to the first procedure pointer.  */
-  cmp = gfc_find_component (vtab->ts.u.derived, "$extends", true, true);
-  cmp = cmp->next;
-  if (!cmp)
-    return;
-  
-  vtb = gfc_get_symbol_decl (vtab);
-
-  ctree = fold_build3 (COMPONENT_REF, TREE_TYPE (cmp->backend_decl), vtb,
-		       cmp->backend_decl, NULL_TREE);
-  cond = fold_build2 (EQ_EXPR, boolean_type_node, ctree,
-		      build_int_cst (TREE_TYPE (ctree), 0));
-
-  gfc_init_block (&body);
-  for (; cmp; cmp = cmp->next)
-    {
-      gfc_symbol *target = NULL;
-
-      /* This is required when typebound generic procedures are called
-	 with derived type targets.  The specific procedures do not get
-	 added to the vtype, which remains "empty".  */
-      if (cmp->tb && cmp->tb->u.specific && cmp->tb->u.specific->n.sym)
-	target = cmp->tb->u.specific->n.sym;
-      else
-	{
-	  gfc_symtree *st;
-	  st = gfc_find_typebound_proc (dt, NULL, cmp->name, false, NULL);
-	  if (st->n.tb && st->n.tb->u.specific)
-	    target = st->n.tb->u.specific->n.sym;
-	}
-
-      if (!target)
-	continue;
-
-      ctree = fold_build3 (COMPONENT_REF, TREE_TYPE (cmp->backend_decl),
-			   vtb, cmp->backend_decl, NULL_TREE);
-      proc = gfc_get_symbol_decl (target);
-      proc = gfc_build_addr_expr (TREE_TYPE (ctree), proc);
-      gfc_add_modify (&body, ctree, proc);
-    }
-
-  proc = gfc_finish_block (&body);
-
-  proc = build3_v (COND_EXPR, cond, proc, build_empty_stmt (input_location));
-
-  gfc_add_expr_to_block (block, proc);
-}
-
-
 /* Special case for initializing a CLASS variable on allocation.
    A MEMCPY is needed to copy the full data of the dynamic type,
    which may be different from the declared type.  */
@@ -5887,7 +5830,6 @@ gfc_trans_class_assign (gfc_expr *expr1, gfc_expr *expr2, gfc_exec_op op)
 	  gfc_symtree *st;
 	  vtab = gfc_find_derived_vtab (expr2->ts.u.derived);
 	  gcc_assert (vtab);
-	  gfc_trans_assign_vtab_procs (&block, expr2->ts.u.derived, vtab);
 	  rhs = gfc_get_expr ();
 	  rhs->expr_type = EXPR_VARIABLE;
 	  gfc_find_sym_tree (vtab->name, NULL, 1, &st);

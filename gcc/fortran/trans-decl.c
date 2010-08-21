@@ -1034,6 +1034,9 @@ add_attributes_to_decl (symbol_attribute sym_attr, tree list)
 }
 
 
+static void build_function_decl (gfc_symbol * sym, bool global);
+
+
 /* Return the decl for a gfc_symbol, create it if it doesn't already
    exist.  */
 
@@ -1160,12 +1163,21 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	}
     }
 
-  /* Catch function declarations.  Only used for actual parameters and
-     procedure pointers.  */
   if (sym->attr.flavor == FL_PROCEDURE)
     {
-      decl = gfc_get_extern_function_decl (sym);
-      gfc_set_decl_location (decl, &sym->declared_at);
+      /* Catch function declarations. Only used for actual parameters,
+	 procedure pointers and procptr initialization targets.  */
+      if (sym->attr.external || sym->attr.use_assoc || sym->attr.intrinsic)
+	{
+	  decl = gfc_get_extern_function_decl (sym);
+	  gfc_set_decl_location (decl, &sym->declared_at);
+	}
+      else
+	{
+	  if (!sym->backend_decl)
+	    build_function_decl (sym, false);
+	  decl = sym->backend_decl;
+	}
       return decl;
     }
 
@@ -1281,8 +1293,11 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	 every time the procedure is entered. The TREE_STATIC is
 	 in this case due to -fmax-stack-var-size=.  */
       DECL_INITIAL (decl) = gfc_conv_initializer (sym->value, &sym->ts,
-	  TREE_TYPE (decl), sym->attr.dimension,
-	  sym->attr.pointer || sym->attr.allocatable);
+						  TREE_TYPE (decl),
+						  sym->attr.dimension,
+						  sym->attr.pointer
+						  || sym->attr.allocatable,
+						  sym->attr.proc_pointer);
     }
 
   if (!TREE_STATIC (decl)
@@ -1369,9 +1384,9 @@ get_proc_pointer_decl (gfc_symbol *sym)
     {
       /* Add static initializer.  */
       DECL_INITIAL (decl) = gfc_conv_initializer (sym->value, &sym->ts,
-	  TREE_TYPE (decl),
-	  sym->attr.proc_pointer ? false : sym->attr.dimension,
-	  sym->attr.proc_pointer);
+						  TREE_TYPE (decl),
+						  sym->attr.dimension,
+						  false, true);
     }
 
   attributes = add_attributes_to_decl (sym->attr, NULL_TREE);
@@ -1608,8 +1623,10 @@ build_function_decl (gfc_symbol * sym, bool global)
   tree result_decl;
   gfc_formal_arglist *f;
 
-  gcc_assert (!sym->backend_decl);
   gcc_assert (!sym->attr.external);
+
+  if (sym->backend_decl)
+    return;
 
   /* Set the line and filename.  sym->declared_at seems to point to the
      last statement for subroutines, but it'll do for now.  */
@@ -3806,9 +3823,10 @@ gfc_emit_parameter_debug_info (gfc_symbol *sym)
   TREE_USED (decl) = 1;
   if (DECL_CONTEXT (decl) && TREE_CODE (DECL_CONTEXT (decl)) == NAMESPACE_DECL)
     TREE_PUBLIC (decl) = 1;
-  DECL_INITIAL (decl)
-    = gfc_conv_initializer (sym->value, &sym->ts, TREE_TYPE (decl),
-			    sym->attr.dimension, 0);
+  DECL_INITIAL (decl) = gfc_conv_initializer (sym->value, &sym->ts,
+					      TREE_TYPE (decl),
+					      sym->attr.dimension,
+					      false, false);
   debug_hooks->global_decl (decl);
 }
 
