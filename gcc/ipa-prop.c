@@ -1541,11 +1541,12 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 				      struct cgraph_node *node,
 				      VEC (cgraph_edge_p, heap) **new_edges)
 {
-  struct ipa_edge_args *top = IPA_EDGE_REF (cs);
+  struct ipa_edge_args *top;
   struct cgraph_edge *ie, *next_ie, *new_direct_edge;
   bool res = false;
 
   ipa_check_create_edge_args ();
+  top = IPA_EDGE_REF (cs);
 
   for (ie = node->indirect_calls; ie; ie = next_ie)
     {

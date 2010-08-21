@@ -1,5 +1,29 @@
 2010-08-20  Jan Hubicka  <jh@suse.cz>
 
+	* tree-pass.h (pass_ipa_cdtor_merge): New function.
+	* cgraphunit.c (static_ctors, static_dtors): Move to ipa.c; make
+	heap allocated.
+	(record_cdtor_fn): Move to ipa.c; do not test for
+	have_ctors_dtors.
+	(build_cdtor): Move to ipa.c; add code avoiding construction
+	when target have ctors/dtors and there is only one ctor/dtor at given
+	priority.
+	(compare_ctor, compare_dtor): Move to ipa.c; use DECL_UID to stabilize sort;
+	reverse order of constructors.
+	(cgraph_build_cdtor_fns):Move to ipa.c; rename to build_cdtor_fns.
+	(cgraph_finalize_function): Do not call record_cdtor_fn.
+	(cgraph_finalize_compilation_unit): Do not call cgraph_build_cdtor_fns.
+	(cgraph_build_static_cdtor): Move to ipa.c.
+	* ipa.c: Include target.h and tree-iterator.h.
+	(cgraph_build_static_cdtor, static_ctors, static_dtors,
+	record_cdtor_fn, build_cdtor, compare_ctor, compare_dtor,
+	build_cdtor_fns, ipa_cdtor_merge, gate_ipa_cdtor_merge,
+	pass_ipa_cdtor_merge): New.
+	* passes.c (init_optimization_passes): Enqueue pass_ipa_cdtor_merge.
+	* ipa-prop.c (update_indirect_edges_after_inlining): Avoid out of bounds access.
+
+2010-08-20  Jan Hubicka  <jh@suse.cz>
+
 	PR c++/45307
 	PR c++/17736
 	* cgraph.h (cgraph_only_called_directly_p,
