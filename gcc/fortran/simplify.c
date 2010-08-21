@@ -1210,11 +1210,7 @@ gfc_simplify_bessel_n2 (gfc_expr *order1, gfc_expr *order2, gfc_expr *x,
 
   if (x->expr_type != EXPR_CONSTANT || order1->expr_type != EXPR_CONSTANT
       || order2->expr_type != EXPR_CONSTANT)
-    {
-      gfc_error ("Sorry, non-constant transformational Bessel function at %L"
-		   " not yet supported", &order2->where);
-      return &gfc_bad_expr;
-    }
+    return NULL;
 
   n1 = mpz_get_si (order1->value.integer);
   n2 = mpz_get_si (order2->value.integer);
@@ -1253,7 +1249,7 @@ gfc_simplify_bessel_n2 (gfc_expr *order1, gfc_expr *order2, gfc_expr *x,
 	  if (jn)
 	    mpfr_set_ui (e->value.real, 0.0, GFC_RND_MODE);
 	  else
-            mpfr_set_inf (e->value.real, -1);
+	    mpfr_set_inf (e->value.real, -1);
 	  gfc_constructor_append_expr (&result->value.constructor, e,
 				       &x->where);
 	}
@@ -1334,6 +1330,17 @@ gfc_simplify_bessel_n2 (gfc_expr *order1, gfc_expr *order2, gfc_expr *x,
   for (i = 2; i <= n2-n1; i++)
     {
       e = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
+
+      /* Special case: For YN, if the previous N gave -INF, set
+	 also N+1 to -INF.  */
+      if (!jn && !gfc_option.flag_range_check && mpfr_inf_p (last2))
+	{
+	  mpfr_set_inf (e->value.real, -1);
+	  gfc_constructor_append_expr (&result->value.constructor, e,
+				       &x->where);
+	  continue;
+	}
+
       mpfr_mul_si (e->value.real, x2rev, jn ? (n2-i+1) : (n1+i-1),
 		   GFC_RND_MODE);
       mpfr_mul (e->value.real, e->value.real, last2, GFC_RND_MODE);

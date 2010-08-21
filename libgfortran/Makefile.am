@@ -175,6 +175,12 @@ $(srcdir)/generated/any_l4.c \
 $(srcdir)/generated/any_l8.c \
 $(srcdir)/generated/any_l16.c
 
+i_bessel_c= \
+$(srcdir)/generated/bessel_r4.c \
+$(srcdir)/generated/bessel_r8.c \
+$(srcdir)/generated/bessel_r10.c \
+$(srcdir)/generated/bessel_r16.c
+
 i_count_c= \
 $(srcdir)/generated/count_1_l.c \
 $(srcdir)/generated/count_2_l.c \
@@ -583,11 +589,11 @@ m4_files= m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
     m4/transpose.m4 m4/eoshift1.m4 m4/eoshift3.m4 m4/exponent.m4 \
     m4/fraction.m4 m4/nearest.m4 m4/set_exponent.m4 m4/pow.m4 \
     m4/misc_specifics.m4 m4/rrspacing.m4 m4/spacing.m4 m4/pack.m4 \
-    m4/unpack.m4 m4/spread.m4
+    m4/unpack.m4 m4/spread.m4 m4/bessel.m4
 
 gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_maxloc1_c) $(i_maxval_c) $(i_minloc0_c) $(i_minloc1_c) $(i_minval_c) \
-    $(i_product_c) $(i_sum_c) \
+    $(i_product_c) $(i_sum_c) $(i_bessel_c) \
     $(i_matmul_c) $(i_matmull_c) $(i_transpose_c) $(i_shape_c) $(i_eoshift1_c) \
     $(i_eoshift3_c) $(i_cshift1_c) $(i_reshape_c) $(in_pack_c) $(in_unpack_c) \
     $(i_exponent_c) $(i_fraction_c) $(i_nearest_c) $(i_set_exponent_c) \
@@ -820,6 +826,9 @@ fpu-target.h: $(srcdir)/$(FPU_HOST_HEADER)
 if MAINTAINER_MODE
 $(i_all_c): m4/all.m4 $(I_M4_DEPS2)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 all.m4 > $@
+
+$(i_bessel_c): m4/bessel.m4 $(I_M4_DEPS)
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 bessel.m4 > $@
 
 $(i_any_c): m4/any.m4 $(I_M4_DEPS2)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 any.m4 > $@

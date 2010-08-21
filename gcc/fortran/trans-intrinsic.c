@@ -1562,7 +1562,8 @@ gfc_get_symbol_for_expr (gfc_expr * expr)
       sym->as->rank = expr->rank;
     }
 
-  /* TODO: proper argument lists for external intrinsics.  */
+  gfc_copy_formal_args_intr (sym, expr->value.function.isym);
+
   return sym;
 }
 
@@ -5389,6 +5390,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_IERRNO:
     case GFC_ISYM_IRAND:
     case GFC_ISYM_ISATTY:
+    case GFC_ISYM_JN2:
     case GFC_ISYM_LINK:
     case GFC_ISYM_LSTAT:
     case GFC_ISYM_MALLOC:
@@ -5407,6 +5409,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_TIME8:
     case GFC_ISYM_UMASK:
     case GFC_ISYM_UNLINK:
+    case GFC_ISYM_YN2:
       gfc_conv_intrinsic_funcall (se, expr);
       break;
 
@@ -5499,6 +5502,7 @@ gfc_is_intrinsic_libcall (gfc_expr * expr)
     case GFC_ISYM_ALL:
     case GFC_ISYM_ANY:
     case GFC_ISYM_COUNT:
+    case GFC_ISYM_JN2:
     case GFC_ISYM_MATMUL:
     case GFC_ISYM_MAXLOC:
     case GFC_ISYM_MAXVAL:
@@ -5509,6 +5513,7 @@ gfc_is_intrinsic_libcall (gfc_expr * expr)
     case GFC_ISYM_SHAPE:
     case GFC_ISYM_SPREAD:
     case GFC_ISYM_TRANSPOSE:
+    case GFC_ISYM_YN2:
       /* Ignore absent optional parameters.  */
       return 1;
 

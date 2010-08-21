@@ -380,6 +380,7 @@ void gfc_resolve_atan (gfc_expr *, gfc_expr *);
 void gfc_resolve_atanh (gfc_expr *, gfc_expr *);
 void gfc_resolve_atan2 (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_besn (gfc_expr *, gfc_expr *, gfc_expr *);
+void gfc_resolve_bessel_n2 (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *a);
 void gfc_resolve_btest (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_ceiling (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_char (gfc_expr *, gfc_expr *, gfc_expr *);

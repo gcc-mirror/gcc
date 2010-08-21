@@ -143,40 +143,41 @@ am__objects_11 = product_i1.lo product_i2.lo product_i4.lo \
 am__objects_12 = sum_i1.lo sum_i2.lo sum_i4.lo sum_i8.lo sum_i16.lo \
 	sum_r4.lo sum_r8.lo sum_r10.lo sum_r16.lo sum_c4.lo sum_c8.lo \
 	sum_c10.lo sum_c16.lo
-am__objects_13 = matmul_i1.lo matmul_i2.lo matmul_i4.lo matmul_i8.lo \
+am__objects_13 = bessel_r4.lo bessel_r8.lo bessel_r10.lo bessel_r16.lo
+am__objects_14 = matmul_i1.lo matmul_i2.lo matmul_i4.lo matmul_i8.lo \
 	matmul_i16.lo matmul_r4.lo matmul_r8.lo matmul_r10.lo \
 	matmul_r16.lo matmul_c4.lo matmul_c8.lo matmul_c10.lo \
 	matmul_c16.lo
-am__objects_14 = matmul_l4.lo matmul_l8.lo matmul_l16.lo
-am__objects_15 = transpose_i4.lo transpose_i8.lo transpose_i16.lo \
+am__objects_15 = matmul_l4.lo matmul_l8.lo matmul_l16.lo
+am__objects_16 = transpose_i4.lo transpose_i8.lo transpose_i16.lo \
 	transpose_r4.lo transpose_r8.lo transpose_r10.lo \
 	transpose_r16.lo transpose_c4.lo transpose_c8.lo \
 	transpose_c10.lo transpose_c16.lo
-am__objects_16 = shape_i4.lo shape_i8.lo shape_i16.lo
-am__objects_17 = eoshift1_4.lo eoshift1_8.lo eoshift1_16.lo
-am__objects_18 = eoshift3_4.lo eoshift3_8.lo eoshift3_16.lo
-am__objects_19 = cshift1_4.lo cshift1_8.lo cshift1_16.lo
-am__objects_20 = reshape_i4.lo reshape_i8.lo reshape_i16.lo \
+am__objects_17 = shape_i4.lo shape_i8.lo shape_i16.lo
+am__objects_18 = eoshift1_4.lo eoshift1_8.lo eoshift1_16.lo
+am__objects_19 = eoshift3_4.lo eoshift3_8.lo eoshift3_16.lo
+am__objects_20 = cshift1_4.lo cshift1_8.lo cshift1_16.lo
+am__objects_21 = reshape_i4.lo reshape_i8.lo reshape_i16.lo \
 	reshape_r4.lo reshape_r8.lo reshape_r10.lo reshape_r16.lo \
 	reshape_c4.lo reshape_c8.lo reshape_c10.lo reshape_c16.lo
-am__objects_21 = in_pack_i1.lo in_pack_i2.lo in_pack_i4.lo \
+am__objects_22 = in_pack_i1.lo in_pack_i2.lo in_pack_i4.lo \
 	in_pack_i8.lo in_pack_i16.lo in_pack_r4.lo in_pack_r8.lo \
 	in_pack_r10.lo in_pack_r16.lo in_pack_c4.lo in_pack_c8.lo \
 	in_pack_c10.lo in_pack_c16.lo
-am__objects_22 = in_unpack_i1.lo in_unpack_i2.lo in_unpack_i4.lo \
+am__objects_23 = in_unpack_i1.lo in_unpack_i2.lo in_unpack_i4.lo \
 	in_unpack_i8.lo in_unpack_i16.lo in_unpack_r4.lo \
 	in_unpack_r8.lo in_unpack_r10.lo in_unpack_r16.lo \
 	in_unpack_c4.lo in_unpack_c8.lo in_unpack_c10.lo \
 	in_unpack_c16.lo
-am__objects_23 = exponent_r4.lo exponent_r8.lo exponent_r10.lo \
+am__objects_24 = exponent_r4.lo exponent_r8.lo exponent_r10.lo \
 	exponent_r16.lo
-am__objects_24 = fraction_r4.lo fraction_r8.lo fraction_r10.lo \
+am__objects_25 = fraction_r4.lo fraction_r8.lo fraction_r10.lo \
 	fraction_r16.lo
-am__objects_25 = nearest_r4.lo nearest_r8.lo nearest_r10.lo \
+am__objects_26 = nearest_r4.lo nearest_r8.lo nearest_r10.lo \
 	nearest_r16.lo
-am__objects_26 = set_exponent_r4.lo set_exponent_r8.lo \
+am__objects_27 = set_exponent_r4.lo set_exponent_r8.lo \
 	set_exponent_r10.lo set_exponent_r16.lo
-am__objects_27 = pow_i4_i4.lo pow_i8_i4.lo pow_i16_i4.lo pow_c4_i4.lo \
+am__objects_28 = pow_i4_i4.lo pow_i8_i4.lo pow_i16_i4.lo pow_c4_i4.lo \
 	pow_c8_i4.lo pow_c10_i4.lo pow_c16_i4.lo pow_i4_i8.lo \
 	pow_i8_i8.lo pow_i16_i8.lo pow_r4_i8.lo pow_r8_i8.lo \
 	pow_r10_i8.lo pow_r16_i8.lo pow_c4_i8.lo pow_c8_i8.lo \
@@ -184,26 +185,26 @@ am__objects_27 = pow_i4_i4.lo pow_i8_i4.lo pow_i16_i4.lo pow_c4_i4.lo \
 	pow_i16_i16.lo pow_r4_i16.lo pow_r8_i16.lo pow_r10_i16.lo \
 	pow_r16_i16.lo pow_c4_i16.lo pow_c8_i16.lo pow_c10_i16.lo \
 	pow_c16_i16.lo
-am__objects_28 = rrspacing_r4.lo rrspacing_r8.lo rrspacing_r10.lo \
+am__objects_29 = rrspacing_r4.lo rrspacing_r8.lo rrspacing_r10.lo \
 	rrspacing_r16.lo
-am__objects_29 = spacing_r4.lo spacing_r8.lo spacing_r10.lo \
+am__objects_30 = spacing_r4.lo spacing_r8.lo spacing_r10.lo \
 	spacing_r16.lo
-am__objects_30 = pack_i1.lo pack_i2.lo pack_i4.lo pack_i8.lo \
+am__objects_31 = pack_i1.lo pack_i2.lo pack_i4.lo pack_i8.lo \
 	pack_i16.lo pack_r4.lo pack_r8.lo pack_r10.lo pack_r16.lo \
 	pack_c4.lo pack_c8.lo pack_c10.lo pack_c16.lo
-am__objects_31 = unpack_i1.lo unpack_i2.lo unpack_i4.lo unpack_i8.lo \
+am__objects_32 = unpack_i1.lo unpack_i2.lo unpack_i4.lo unpack_i8.lo \
 	unpack_i16.lo unpack_r4.lo unpack_r8.lo unpack_r10.lo \
 	unpack_r16.lo unpack_c4.lo unpack_c8.lo unpack_c10.lo \
 	unpack_c16.lo
-am__objects_32 = spread_i1.lo spread_i2.lo spread_i4.lo spread_i8.lo \
+am__objects_33 = spread_i1.lo spread_i2.lo spread_i4.lo spread_i8.lo \
 	spread_i16.lo spread_r4.lo spread_r8.lo spread_r10.lo \
 	spread_r16.lo spread_c4.lo spread_c8.lo spread_c10.lo \
 	spread_c16.lo
-am__objects_33 = cshift0_i1.lo cshift0_i2.lo cshift0_i4.lo \
+am__objects_34 = cshift0_i1.lo cshift0_i2.lo cshift0_i4.lo \
 	cshift0_i8.lo cshift0_i16.lo cshift0_r4.lo cshift0_r8.lo \
 	cshift0_r10.lo cshift0_r16.lo cshift0_c4.lo cshift0_c8.lo \
 	cshift0_c10.lo cshift0_c16.lo
-am__objects_34 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
+am__objects_35 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
 	$(am__objects_5) $(am__objects_6) $(am__objects_7) \
 	$(am__objects_8) $(am__objects_9) $(am__objects_10) \
 	$(am__objects_11) $(am__objects_12) $(am__objects_13) \
@@ -213,11 +214,11 @@ am__objects_34 = $(am__objects_2) $(am__objects_3) $(am__objects_4) \
 	$(am__objects_23) $(am__objects_24) $(am__objects_25) \
 	$(am__objects_26) $(am__objects_27) $(am__objects_28) \
 	$(am__objects_29) $(am__objects_30) $(am__objects_31) \
-	$(am__objects_32) $(am__objects_33)
-am__objects_35 = close.lo file_pos.lo format.lo inquire.lo \
+	$(am__objects_32) $(am__objects_33) $(am__objects_34)
+am__objects_36 = close.lo file_pos.lo format.lo inquire.lo \
 	intrinsics.lo list_read.lo lock.lo open.lo read.lo \
 	size_from_kind.lo transfer.lo unit.lo unix.lo write.lo fbuf.lo
-am__objects_36 = associated.lo abort.lo access.lo args.lo \
+am__objects_37 = associated.lo abort.lo access.lo args.lo \
 	bit_intrinsics.lo c99_functions.lo chdir.lo chmod.lo clock.lo \
 	cpu_time.lo cshift0.lo ctime.lo date_and_time.lo dtime.lo \
 	env.lo eoshift0.lo eoshift2.lo erfc_scaled.lo etime.lo exit.lo \
@@ -232,8 +233,8 @@ am__objects_36 = associated.lo abort.lo access.lo args.lo \
 	system_clock.lo time.lo transpose_generic.lo umask.lo \
 	unlink.lo unpack_generic.lo in_pack_generic.lo \
 	in_unpack_generic.lo
-am__objects_37 =
-am__objects_38 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
+am__objects_38 =
+am__objects_39 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_abs_i4.lo _abs_i8.lo _abs_i16.lo _abs_r4.lo _abs_r8.lo \
 	_abs_r10.lo _abs_r16.lo _aimag_c4.lo _aimag_c8.lo \
 	_aimag_c10.lo _aimag_c16.lo _exp_r4.lo _exp_r8.lo _exp_r10.lo \
@@ -257,18 +258,18 @@ am__objects_38 = _abs_c4.lo _abs_c8.lo _abs_c10.lo _abs_c16.lo \
 	_conjg_c4.lo _conjg_c8.lo _conjg_c10.lo _conjg_c16.lo \
 	_aint_r4.lo _aint_r8.lo _aint_r10.lo _aint_r16.lo _anint_r4.lo \
 	_anint_r8.lo _anint_r10.lo _anint_r16.lo
-am__objects_39 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
+am__objects_40 = _sign_i4.lo _sign_i8.lo _sign_i16.lo _sign_r4.lo \
 	_sign_r8.lo _sign_r10.lo _sign_r16.lo _dim_i4.lo _dim_i8.lo \
 	_dim_i16.lo _dim_r4.lo _dim_r8.lo _dim_r10.lo _dim_r16.lo \
 	_atan2_r4.lo _atan2_r8.lo _atan2_r10.lo _atan2_r16.lo \
 	_mod_i4.lo _mod_i8.lo _mod_i16.lo _mod_r4.lo _mod_r8.lo \
 	_mod_r10.lo _mod_r16.lo
-am__objects_40 = misc_specifics.lo
-am__objects_41 = $(am__objects_38) $(am__objects_39) $(am__objects_40) \
+am__objects_41 = misc_specifics.lo
+am__objects_42 = $(am__objects_39) $(am__objects_40) $(am__objects_41) \
 	dprod_r8.lo f2c_specifics.lo
-am__objects_42 = $(am__objects_1) $(am__objects_34) $(am__objects_35) \
-	$(am__objects_36) $(am__objects_37) $(am__objects_41)
-@onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_42)
+am__objects_43 = $(am__objects_1) $(am__objects_35) $(am__objects_36) \
+	$(am__objects_37) $(am__objects_38) $(am__objects_42)
+@onestep_FALSE@am_libgfortran_la_OBJECTS = $(am__objects_43)
 @onestep_TRUE@am_libgfortran_la_OBJECTS = libgfortran_c.lo
 libgfortran_la_OBJECTS = $(am_libgfortran_la_OBJECTS)
 libgfortranbegin_la_LIBADD =
@@ -589,6 +590,12 @@ $(srcdir)/generated/any_l2.c \
 $(srcdir)/generated/any_l4.c \
 $(srcdir)/generated/any_l8.c \
 $(srcdir)/generated/any_l16.c
+
+i_bessel_c = \
+$(srcdir)/generated/bessel_r4.c \
+$(srcdir)/generated/bessel_r8.c \
+$(srcdir)/generated/bessel_r10.c \
+$(srcdir)/generated/bessel_r16.c
 
 i_count_c = \
 $(srcdir)/generated/count_1_l.c \
@@ -997,11 +1004,11 @@ m4_files = m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
     m4/transpose.m4 m4/eoshift1.m4 m4/eoshift3.m4 m4/exponent.m4 \
     m4/fraction.m4 m4/nearest.m4 m4/set_exponent.m4 m4/pow.m4 \
     m4/misc_specifics.m4 m4/rrspacing.m4 m4/spacing.m4 m4/pack.m4 \
-    m4/unpack.m4 m4/spread.m4
+    m4/unpack.m4 m4/spread.m4 m4/bessel.m4
 
 gfor_built_src = $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_maxloc1_c) $(i_maxval_c) $(i_minloc0_c) $(i_minloc1_c) $(i_minval_c) \
-    $(i_product_c) $(i_sum_c) \
+    $(i_product_c) $(i_sum_c) $(i_bessel_c) \
     $(i_matmul_c) $(i_matmull_c) $(i_transpose_c) $(i_shape_c) $(i_eoshift1_c) \
     $(i_eoshift3_c) $(i_cshift1_c) $(i_reshape_c) $(in_pack_c) $(in_unpack_c) \
     $(i_exponent_c) $(i_fraction_c) $(i_nearest_c) $(i_set_exponent_c) \
@@ -1328,6 +1335,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/args.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/associated.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backtrace.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bessel_r10.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bessel_r16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bessel_r4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bessel_r8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bit_intrinsics.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bounds.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/c99_functions.Plo@am__quote@
@@ -3456,6 +3467,34 @@ sum_c16.lo: $(srcdir)/generated/sum_c16.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o sum_c16.lo `test -f '$(srcdir)/generated/sum_c16.c' || echo '$(srcdir)/'`$(srcdir)/generated/sum_c16.c
 
+bessel_r4.lo: $(srcdir)/generated/bessel_r4.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT bessel_r4.lo -MD -MP -MF $(DEPDIR)/bessel_r4.Tpo -c -o bessel_r4.lo `test -f '$(srcdir)/generated/bessel_r4.c' || echo '$(srcdir)/'`$(srcdir)/generated/bessel_r4.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/bessel_r4.Tpo $(DEPDIR)/bessel_r4.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/bessel_r4.c' object='bessel_r4.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o bessel_r4.lo `test -f '$(srcdir)/generated/bessel_r4.c' || echo '$(srcdir)/'`$(srcdir)/generated/bessel_r4.c
+
+bessel_r8.lo: $(srcdir)/generated/bessel_r8.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT bessel_r8.lo -MD -MP -MF $(DEPDIR)/bessel_r8.Tpo -c -o bessel_r8.lo `test -f '$(srcdir)/generated/bessel_r8.c' || echo '$(srcdir)/'`$(srcdir)/generated/bessel_r8.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/bessel_r8.Tpo $(DEPDIR)/bessel_r8.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/bessel_r8.c' object='bessel_r8.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o bessel_r8.lo `test -f '$(srcdir)/generated/bessel_r8.c' || echo '$(srcdir)/'`$(srcdir)/generated/bessel_r8.c
+
+bessel_r10.lo: $(srcdir)/generated/bessel_r10.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT bessel_r10.lo -MD -MP -MF $(DEPDIR)/bessel_r10.Tpo -c -o bessel_r10.lo `test -f '$(srcdir)/generated/bessel_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/bessel_r10.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/bessel_r10.Tpo $(DEPDIR)/bessel_r10.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/bessel_r10.c' object='bessel_r10.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o bessel_r10.lo `test -f '$(srcdir)/generated/bessel_r10.c' || echo '$(srcdir)/'`$(srcdir)/generated/bessel_r10.c
+
+bessel_r16.lo: $(srcdir)/generated/bessel_r16.c
+@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT bessel_r16.lo -MD -MP -MF $(DEPDIR)/bessel_r16.Tpo -c -o bessel_r16.lo `test -f '$(srcdir)/generated/bessel_r16.c' || echo '$(srcdir)/'`$(srcdir)/generated/bessel_r16.c
+@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/bessel_r16.Tpo $(DEPDIR)/bessel_r16.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$(srcdir)/generated/bessel_r16.c' object='bessel_r16.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o bessel_r16.lo `test -f '$(srcdir)/generated/bessel_r16.c' || echo '$(srcdir)/'`$(srcdir)/generated/bessel_r16.c
+
 matmul_i1.lo: $(srcdir)/generated/matmul_i1.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT matmul_i1.lo -MD -MP -MF $(DEPDIR)/matmul_i1.Tpo -c -o matmul_i1.lo `test -f '$(srcdir)/generated/matmul_i1.c' || echo '$(srcdir)/'`$(srcdir)/generated/matmul_i1.c
 @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/matmul_i1.Tpo $(DEPDIR)/matmul_i1.Plo
@@ -5524,6 +5563,9 @@ fpu-target.h: $(srcdir)/$(FPU_HOST_HEADER)
 
 @MAINTAINER_MODE_TRUE@$(i_all_c): m4/all.m4 $(I_M4_DEPS2)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 all.m4 > $@
+
+@MAINTAINER_MODE_TRUE@$(i_bessel_c): m4/bessel.m4 $(I_M4_DEPS)
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 bessel.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_any_c): m4/any.m4 $(I_M4_DEPS2)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 any.m4 > $@

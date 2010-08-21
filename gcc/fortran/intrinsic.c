@@ -330,6 +330,7 @@ add_sym (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type
 	  next_arg->ts.type = type;
 	  next_arg->ts.kind = kind;
 	  next_arg->optional = optional;
+	  next_arg->value = 0;
 	  next_arg->intent = intent;
 	}
     }
@@ -1065,6 +1066,30 @@ make_noreturn (void)
     next_sym[-1].noreturn = 1;
 }
 
+/* Set the attr.value of the current procedure.  */
+
+static void
+set_attr_value (int n, ...)
+{
+  gfc_intrinsic_arg *arg;
+  va_list argp;
+  int i;
+
+  if (sizing != SZ_NOTHING)
+    return;
+
+  va_start (argp, n);
+  arg = next_sym[-1].formal;
+
+  for (i = 0; i < n; i++)
+    {
+      gcc_assert (arg != NULL);
+      arg->value = va_arg (argp, int);
+      arg = arg->next;
+    }
+  va_end (argp);
+}
+
 
 /* Add intrinsic functions.  */
 
@@ -1318,9 +1343,10 @@ add_functions (void)
 	     n, BT_INTEGER, di, REQUIRED, x, BT_REAL, dd, REQUIRED);
 
   add_sym_3 ("bessel_jn", GFC_ISYM_JN2, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F2008,
-	     gfc_check_bessel_n2, gfc_simplify_bessel_jn2, NULL,
+	     gfc_check_bessel_n2, gfc_simplify_bessel_jn2, gfc_resolve_bessel_n2,
 	     "n1", BT_INTEGER, di, REQUIRED,"n2", BT_INTEGER, di, REQUIRED,
 	     x, BT_REAL, dr, REQUIRED);
+  set_attr_value (3, true, true, true);
 
   make_generic ("bessel_jn", GFC_ISYM_JN, GFC_STD_F2008);
 
@@ -1359,9 +1385,10 @@ add_functions (void)
 	     n, BT_INTEGER, di, REQUIRED, x, BT_REAL, dd, REQUIRED);
 
   add_sym_3 ("bessel_yn", GFC_ISYM_YN2, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F2008,
-	     gfc_check_bessel_n2, gfc_simplify_bessel_yn2, NULL,
+	     gfc_check_bessel_n2, gfc_simplify_bessel_yn2, gfc_resolve_bessel_n2,
 	     "n1", BT_INTEGER, di, REQUIRED,"n2", BT_INTEGER, di, REQUIRED,
 	      x, BT_REAL, dr, REQUIRED);
+  set_attr_value (3, true, true, true);
 
   make_generic ("bessel_yn", GFC_ISYM_YN, GFC_STD_F2008);
 
