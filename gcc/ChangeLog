@@ -4,7 +4,7 @@
 
 2010-08-21  Olivier Hainque  <hainque@adacore.com>
 
-	* config/rs6000/vxworks.h:  (PREFERRED_STACK_BOUNDARY,
+	* config/rs6000/vxworks.h (PREFERRED_STACK_BOUNDARY,
 	ABI_STACK_BOUNDARY): Ensure STACK_BOUNDARY is honored despite EABI.
 
 2010-08-20  Jan Hubicka  <jh@suse.cz>
