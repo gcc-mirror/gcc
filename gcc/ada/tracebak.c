@@ -493,8 +493,8 @@ __gnat_backtrace (void **array,
 
 #else
 
-/* No target specific implementation and neither USE_GCC_UNWINDER not
-   USE_GCC_UNWINDER defined.  */
+/* No target specific implementation and neither USE_GCC_UNWINDER nor
+   USE_GENERIC_UNWINDER defined.  */
 
 /*------------------------------*
  *-- The dummy implementation --*
