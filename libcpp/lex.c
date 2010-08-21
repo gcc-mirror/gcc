@@ -1,5 +1,5 @@
 /* CPP Library - lexical analysis.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
@@ -96,6 +96,531 @@ add_line_note (cpp_buffer *buffer, const uchar *pos, unsigned int type)
   buffer->notes_used++;
 }
 
+
+/* Fast path to find line special characters using optimized character
+   scanning algorithms.  Anything complicated falls back to the slow
+   path below.  Since this loop is very hot it's worth doing these kinds
+   of optimizations.
+
+   One of the paths through the ifdefs should provide 
+
+     const uchar *search_line_fast (const uchar *s, const uchar *end);
+
+   Between S and END, search for \n, \r, \\, ?.  Return a pointer to
+   the found character.
+
+   Note that the last character of the buffer is *always* a newline,
+   as forced by _cpp_convert_input.  This fact can be used to avoid
+   explicitly looking for the end of the buffer.  */
+
+/* Configure gives us an ifdef test.  */
+#ifndef WORDS_BIGENDIAN
+#define WORDS_BIGENDIAN 0
+#endif
+
+/* We'd like the largest integer that fits into a register.  There's nothing
+   in <stdint.h> that gives us that.  For most hosts this is unsigned long,
+   but MS decided on an LLP64 model.  Thankfully when building with GCC we
+   can get the "real" word size.  */
+#ifdef __GNUC__
+typedef unsigned int word_type __attribute__((__mode__(__word__)));
+#else
+typedef unsigned long word_type;
+#endif
+
+/* The code below is only expecting sizes 4 or 8.
+   Die at compile-time if this expectation is violated.  */
+typedef char check_word_type_size
+  [(sizeof(word_type) == 8 || sizeof(word_type) == 4) * 2 - 1];
+
+/* Return X with the first N bytes forced to values that won't match one
+   of the interesting characters.  Note that NUL is not interesting.  */
+
+static inline word_type
+acc_char_mask_misalign (word_type val, unsigned int n)
+{
+  word_type mask = -1;
+  if (WORDS_BIGENDIAN)
+    mask >>= n * 8;
+  else
+    mask <<= n * 8;
+  return val & mask;
+}
+
+/* Return X replicated to all byte positions within WORD_TYPE.  */
+
+static inline word_type
+acc_char_replicate (uchar x)
+{
+  word_type ret;
+
+  ret = (x << 24) | (x << 16) | (x << 8) | x;
+  if (sizeof(word_type) == 8)
+    ret = (ret << 16 << 16) | ret;
+  return ret;
+}
+
+/* Return non-zero if some byte of VAL is (probably) C.  */
+
+static inline word_type
+acc_char_cmp (word_type val, word_type c)
+{
+#if defined(__GNUC__) && defined(__alpha__)
+  /* We can get exact results using a compare-bytes instruction.  
+     Get (val == c) via (0 >= (val ^ c)).  */
+  return __builtin_alpha_cmpbge (0, val ^ c);
+#else
+  word_type magic = 0x7efefefeU;
+  if (sizeof(word_type) == 8)
+    magic = (magic << 16 << 16) | 0xfefefefeU;
+  magic |= 1;
+
+  val ^= c;
+  return ((val + magic) ^ ~val) & ~magic;
+#endif
+}
+
+/* Given the result of acc_char_cmp is non-zero, return the index of
+   the found character.  If this was a false positive, return -1.  */
+
+static inline int
+acc_char_index (word_type cmp ATTRIBUTE_UNUSED,
+		word_type val ATTRIBUTE_UNUSED)
+{
+#if defined(__GNUC__) && defined(__alpha__) && !WORDS_BIGENDIAN
+  /* The cmpbge instruction sets *bits* of the result corresponding to
+     matches in the bytes with no false positives.  */
+  return __builtin_ctzl (cmp);
+#else
+  unsigned int i;
+
+  /* ??? It would be nice to force unrolling here,
+     and have all of these constants folded.  */
+  for (i = 0; i < sizeof(word_type); ++i)
+    {
+      uchar c;
+      if (WORDS_BIGENDIAN)
+	c = (val >> (sizeof(word_type) - i - 1) * 8) & 0xff;
+      else
+	c = (val >> i * 8) & 0xff;
+
+      if (c == '\n' || c == '\r' || c == '\\' || c == '?')
+	return i;
+    }
+
+  return -1;
+#endif
+}
+
+/* A version of the fast scanner using bit fiddling techniques.
+ 
+   For 32-bit words, one would normally perform 16 comparisons and
+   16 branches.  With this algorithm one performs 24 arithmetic
+   operations and one branch.  Whether this is faster with a 32-bit
+   word size is going to be somewhat system dependent.
+
+   For 64-bit words, we eliminate twice the number of comparisons
+   and branches without increasing the number of arithmetic operations.
+   It's almost certainly going to be a win with 64-bit word size.  */
+
+static const uchar * search_line_acc_char (const uchar *, const uchar *)
+  ATTRIBUTE_UNUSED;
+
+static const uchar *
+search_line_acc_char (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
+{
+  const word_type repl_nl = acc_char_replicate ('\n');
+  const word_type repl_cr = acc_char_replicate ('\r');
+  const word_type repl_bs = acc_char_replicate ('\\');
+  const word_type repl_qm = acc_char_replicate ('?');
+
+  unsigned int misalign;
+  const word_type *p;
+  word_type val, t;
+  
+  /* Align the buffer.  Mask out any bytes from before the beginning.  */
+  p = (word_type *)((uintptr_t)s & -sizeof(word_type));
+  val = *p;
+  misalign = (uintptr_t)s & (sizeof(word_type) - 1);
+  if (misalign)
+    val = acc_char_mask_misalign (val, misalign);
+
+  /* Main loop.  */
+  while (1)
+    {
+      t  = acc_char_cmp (val, repl_nl);
+      t |= acc_char_cmp (val, repl_cr);
+      t |= acc_char_cmp (val, repl_bs);
+      t |= acc_char_cmp (val, repl_qm);
+
+      if (__builtin_expect (t != 0, 0))
+	{
+	  int i = acc_char_index (t, val);
+	  if (i >= 0)
+	    return (const uchar *)p + i;
+	}
+
+      val = *++p;
+    }
+}
+
+#if (GCC_VERSION >= 4005) && (defined(__i386__) || defined(__x86_64__))
+
+/* Replicated character data to be shared between implementations.
+   Recall that outside of a context with vector support we can't
+   define compatible vector types, therefore these are all defined
+   in terms of raw characters.  */
+static const char repl_chars[4][16] __attribute__((aligned(16))) = {
+  { '\n', '\n', '\n', '\n', '\n', '\n', '\n', '\n',
+    '\n', '\n', '\n', '\n', '\n', '\n', '\n', '\n' },
+  { '\r', '\r', '\r', '\r', '\r', '\r', '\r', '\r',
+    '\r', '\r', '\r', '\r', '\r', '\r', '\r', '\r' },
+  { '\\', '\\', '\\', '\\', '\\', '\\', '\\', '\\',
+    '\\', '\\', '\\', '\\', '\\', '\\', '\\', '\\' },
+  { '?', '?', '?', '?', '?', '?', '?', '?',
+    '?', '?', '?', '?', '?', '?', '?', '?' },
+};
+
+/* A version of the fast scanner using MMX vectorized byte compare insns.
+
+   This uses the PMOVMSKB instruction which was introduced with "MMX2",
+   which was packaged into SSE1; it is also present in the AMD 3dNOW-A
+   extension.  Mark the function as using "sse" so that we emit a real
+   "emms" instruction, rather than the 3dNOW "femms" instruction.  */
+
+static const uchar *
+#ifndef __SSE__
+__attribute__((__target__("sse")))
+#endif
+search_line_mmx (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
+{
+  typedef char v8qi __attribute__ ((__vector_size__ (8)));
+  typedef int __m64 __attribute__ ((__vector_size__ (8), __may_alias__));
+
+  const v8qi repl_nl = *(const v8qi *)repl_chars[0];
+  const v8qi repl_cr = *(const v8qi *)repl_chars[1];
+  const v8qi repl_bs = *(const v8qi *)repl_chars[2];
+  const v8qi repl_qm = *(const v8qi *)repl_chars[3];
+
+  unsigned int misalign, found, mask;
+  const v8qi *p;
+  v8qi data, t, c;
+
+  /* Align the source pointer.  While MMX doesn't generate unaligned data
+     faults, this allows us to safely scan to the end of the buffer without
+     reading beyond the end of the last page.  */
+  misalign = (uintptr_t)s & 7;
+  p = (const v8qi *)((uintptr_t)s & -8);
+  data = *p;
+
+  /* Create a mask for the bytes that are valid within the first
+     16-byte block.  The Idea here is that the AND with the mask
+     within the loop is "free", since we need some AND or TEST
+     insn in order to set the flags for the branch anyway.  */
+  mask = -1u << misalign;
+
+  /* Main loop processing 8 bytes at a time.  */
+  goto start;
+  do
+    {
+      data = *++p;
+      mask = -1;
+
+    start:
+      t = __builtin_ia32_pcmpeqb(data, repl_nl);
+      c = __builtin_ia32_pcmpeqb(data, repl_cr);
+      t = (v8qi) __builtin_ia32_por ((__m64)t, (__m64)c);
+      c = __builtin_ia32_pcmpeqb(data, repl_bs);
+      t = (v8qi) __builtin_ia32_por ((__m64)t, (__m64)c);
+      c = __builtin_ia32_pcmpeqb(data, repl_qm);
+      t = (v8qi) __builtin_ia32_por ((__m64)t, (__m64)c);
+      found = __builtin_ia32_pmovmskb (t);
+      found &= mask;
+    }
+  while (!found);
+
+  __builtin_ia32_emms ();
+
+  /* FOUND contains 1 in bits for which we matched a relevant
+     character.  Conversion to the byte index is trivial.  */
+  found = __builtin_ctz(found);
+  return (const uchar *)p + found;
+}
+
+/* A version of the fast scanner using SSE2 vectorized byte compare insns.  */
+
+static const uchar *
+#ifndef __SSE2__
+__attribute__((__target__("sse2")))
+#endif
+search_line_sse2 (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
+{
+  typedef char v16qi __attribute__ ((__vector_size__ (16)));
+
+  const v16qi repl_nl = *(const v16qi *)repl_chars[0];
+  const v16qi repl_cr = *(const v16qi *)repl_chars[1];
+  const v16qi repl_bs = *(const v16qi *)repl_chars[2];
+  const v16qi repl_qm = *(const v16qi *)repl_chars[3];
+
+  unsigned int misalign, found, mask;
+  const v16qi *p;
+  v16qi data, t;
+
+  /* Align the source pointer.  */
+  misalign = (uintptr_t)s & 15;
+  p = (const v16qi *)((uintptr_t)s & -16);
+  data = *p;
+
+  /* Create a mask for the bytes that are valid within the first
+     16-byte block.  The Idea here is that the AND with the mask
+     within the loop is "free", since we need some AND or TEST
+     insn in order to set the flags for the branch anyway.  */
+  mask = -1u << misalign;
+
+  /* Main loop processing 16 bytes at a time.  */
+  goto start;
+  do
+    {
+      data = *++p;
+      mask = -1;
+
+    start:
+      t  = __builtin_ia32_pcmpeqb128(data, repl_nl);
+      t |= __builtin_ia32_pcmpeqb128(data, repl_cr);
+      t |= __builtin_ia32_pcmpeqb128(data, repl_bs);
+      t |= __builtin_ia32_pcmpeqb128(data, repl_qm);
+      found = __builtin_ia32_pmovmskb128 (t);
+      found &= mask;
+    }
+  while (!found);
+
+  /* FOUND contains 1 in bits for which we matched a relevant
+     character.  Conversion to the byte index is trivial.  */
+  found = __builtin_ctz(found);
+  return (const uchar *)p + found;
+}
+
+/* A version of the fast scanner using SSE 4.2 vectorized string insns.  */
+
+static const uchar *
+#ifndef __SSE4_2__
+__attribute__((__target__("sse4.2")))
+#endif
+search_line_sse42 (const uchar *s, const uchar *end)
+{
+  typedef char v16qi __attribute__ ((__vector_size__ (16)));
+  static const v16qi search = { '\n', '\r', '?', '\\' };
+
+  uintptr_t si = (uintptr_t)s;
+  uintptr_t index;
+
+  /* Check for unaligned input.  */
+  if (si & 15)
+    {
+      if (__builtin_expect (end - s < 16, 0)
+	  && __builtin_expect ((si & 0xfff) > 0xff0, 0))
+	{
+	  /* There are less than 16 bytes left in the buffer, and less
+	     than 16 bytes left on the page.  Reading 16 bytes at this
+	     point might generate a spurious page fault.  Defer to the
+	     SSE2 implementation, which already handles alignment.  */
+	  return search_line_sse2 (s, end);
+	}
+
+      /* ??? The builtin doesn't understand that the PCMPESTRI read from
+	 memory need not be aligned.  */
+      __asm ("%vpcmpestri $0, (%1), %2"
+	     : "=c"(index) : "r"(s), "x"(search), "a"(4), "d"(16));
+      if (__builtin_expect (index < 16, 0))
+	goto found;
+
+      /* Advance the pointer to an aligned address.  We will re-scan a
+	 few bytes, but we no longer need care for reading past the
+	 end of a page, since we're guaranteed a match.  */
+      s = (const uchar *)((si + 16) & -16);
+    }
+
+  /* Main loop, processing 16 bytes at a time.  By doing the whole loop
+     in inline assembly, we can make proper use of the flags set.  */
+  __asm (      "sub $16, %1\n"
+	"	.balign 16\n"
+	"0:	add $16, %1\n"
+	"	%vpcmpestri $0, (%1), %2\n"
+	"	jnc 0b"
+	: "=&c"(index), "+r"(s)
+	: "x"(search), "a"(4), "d"(16));
+
+ found:
+  return s + index;
+}
+
+/* Check the CPU capabilities.  */
+
+#include "../gcc/config/i386/cpuid.h"
+
+typedef const uchar * (*search_line_fast_type) (const uchar *, const uchar *);
+static search_line_fast_type search_line_fast;
+
+static void __attribute__((constructor))
+init_vectorized_lexer (void)
+{
+  unsigned dummy, ecx = 0, edx = 0;
+  search_line_fast_type impl = search_line_acc_char;
+  int minimum = 0;
+
+#if defined(__SSE4_2__)
+  minimum = 3;
+#elif defined(__SSE2__)
+  minimum = 2;
+#elif defined(__SSE__) || defined(__3dNOW_A__)
+  minimum = 1;
+#endif
+
+  if (minimum == 3)
+    impl = search_line_sse42;
+  else if (__get_cpuid (1, &dummy, &dummy, &ecx, &edx) || minimum == 2)
+    {
+      if (minimum == 3 || (ecx & bit_SSE4_2))
+        impl = search_line_sse42;
+      else if (minimum == 2 || (edx & bit_SSE2))
+	impl = search_line_sse2;
+      else if (minimum == 1 || (edx & bit_SSE))
+	impl = search_line_mmx;
+    }
+  else if (__get_cpuid (0x80000001, &dummy, &dummy, &dummy, &edx))
+    {
+      if (minimum == 1 || edx & bit_3DNOWP)
+	impl = search_line_mmx;
+    }
+
+  search_line_fast = impl;
+}
+
+#elif defined(__GNUC__) && defined(__ALTIVEC__)
+
+/* A vection of the fast scanner using AltiVec vectorized byte compares.  */
+/* ??? Unfortunately, attribute(target("altivec")) is not yet supported,
+   so we can't compile this function without -maltivec on the command line
+   (or implied by some other switch).  */
+
+static const uchar *
+search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
+{
+  typedef __attribute__((altivec(vector))) unsigned char vc;
+
+  const vc repl_nl = {
+    '\n', '\n', '\n', '\n', '\n', '\n', '\n', '\n', 
+    '\n', '\n', '\n', '\n', '\n', '\n', '\n', '\n'
+  };
+  const vc repl_cr = {
+    '\r', '\r', '\r', '\r', '\r', '\r', '\r', '\r', 
+    '\r', '\r', '\r', '\r', '\r', '\r', '\r', '\r'
+  };
+  const vc repl_bs = {
+    '\\', '\\', '\\', '\\', '\\', '\\', '\\', '\\', 
+    '\\', '\\', '\\', '\\', '\\', '\\', '\\', '\\'
+  };
+  const vc repl_qm = {
+    '?', '?', '?', '?', '?', '?', '?', '?', 
+    '?', '?', '?', '?', '?', '?', '?', '?', 
+  };
+  const vc ones = {
+    -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1,
+  };
+  const vc zero = { 0 };
+
+  vc data, mask, t;
+
+  /* Altivec loads automatically mask addresses with -16.  This lets us
+     issue the first load as early as possible.  */
+  data = __builtin_vec_ld(0, (const vc *)s);
+
+  /* Discard bytes before the beginning of the buffer.  Do this by
+     beginning with all ones and shifting in zeros according to the
+     mis-alignment.  The LVSR instruction pulls the exact shift we
+     want from the address.  */
+  mask = __builtin_vec_lvsr(0, s);
+  mask = __builtin_vec_perm(zero, ones, mask);
+  data &= mask;
+
+  /* While altivec loads mask addresses, we still need to align S so
+     that the offset we compute at the end is correct.  */
+  s = (const uchar *)((uintptr_t)s & -16);
+
+  /* Main loop processing 16 bytes at a time.  */
+  goto start;
+  do
+    {
+      vc m_nl, m_cr, m_bs, m_qm;
+
+      s += 16;
+      data = __builtin_vec_ld(0, (const vc *)s);
+
+    start:
+      m_nl = (vc) __builtin_vec_cmpeq(data, repl_nl);
+      m_cr = (vc) __builtin_vec_cmpeq(data, repl_cr);
+      m_bs = (vc) __builtin_vec_cmpeq(data, repl_bs);
+      m_qm = (vc) __builtin_vec_cmpeq(data, repl_qm);
+      t = (m_nl | m_cr) | (m_bs | m_qm);
+
+      /* T now contains 0xff in bytes for which we matched one of the relevant
+	 characters.  We want to exit the loop if any byte in T is non-zero.
+	 Below is the expansion of vec_any_ne(t, zero).  */
+    }
+  while (!__builtin_vec_vcmpeq_p(/*__CR6_LT_REV*/3, t, zero));
+
+  {
+#define N  (sizeof(vc) / sizeof(long))
+
+    typedef char check_count[(N == 2 || N == 4) * 2 - 1];
+    union {
+      vc v;
+      unsigned long l[N];
+    } u;
+    unsigned long l, i = 0;
+
+    u.v = t;
+
+    /* Find the first word of T that is non-zero.  */
+    switch (N)
+      {
+      case 4:
+	l = u.l[i++];
+	if (l != 0)
+	  break;
+	s += sizeof(unsigned long);
+	l = u.l[i++];
+	if (l != 0)
+	  break;
+	s += sizeof(unsigned long);
+      case 2:
+	l = u.l[i++];
+	if (l != 0)
+	  break;
+	s += sizeof(unsigned long);
+	l = u.l[i];
+      }
+
+    /* L now contains 0xff in bytes for which we matched one of the
+       relevant characters.  We can find the byte index by finding
+       its bit index and dividing by 8.  */
+    l = __builtin_clzl(l) >> 3;
+    return s + l;
+
+#undef N
+  }
+}
+
+#else
+
+/* We only have one accellerated alternative.  Use a direct call so that
+   we encourage inlining.  */
+
+#define search_line_fast  search_line_acc_char
+
+#endif
+
 /* Returns with a logical line that contains no escaped newlines or
    trigraphs.  This is a time-critical inner loop.  */
 void
@@ -109,82 +634,91 @@ _cpp_clean_line (cpp_reader *pfile)
   buffer->cur_note = buffer->notes_used = 0;
   buffer->cur = buffer->line_base = buffer->next_line;
   buffer->need_line = false;
-  s = buffer->next_line - 1;
+  s = buffer->next_line;
 
   if (!buffer->from_stage3)
     {
       const uchar *pbackslash = NULL;
 
-      /* Short circuit for the common case of an un-escaped line with
+      /* Fast path.  This is the common case of an un-escaped line with
 	 no trigraphs.  The primary win here is by not writing any
 	 data back to memory until we have to.  */
-      for (;;)
+      while (1)
 	{
-	  c = *++s;
-	  if (__builtin_expect (c == '\n', false)
-	      || __builtin_expect (c == '\r', false))
+	  /* Perform an optimized search for \n, \r, \\, ?.  */
+	  s = search_line_fast (s, buffer->rlimit);
+
+	  c = *s;
+	  if (c == '\\')
 	    {
-	      d = (uchar *) s;
-
-	      if (__builtin_expect (s == buffer->rlimit, false))
-		goto done;
-
-	      /* DOS line ending? */
-	      if (__builtin_expect (c == '\r', false)
-		  && s[1] == '\n')
-		{
-		  s++;
-		  if (s == buffer->rlimit)
-		    goto done;
-		}
-
-	      if (__builtin_expect (pbackslash == NULL, true))
-		goto done;
-
-	      /* Check for escaped newline.  */
-	      p = d;
-	      while (is_nvspace (p[-1]))
-		p--;
-	      if (p - 1 != pbackslash)
-		goto done;
-
-	      /* Have an escaped newline; process it and proceed to
-		 the slow path.  */
-	      add_line_note (buffer, p - 1, p != d ? ' ' : '\\');
-	      d = p - 2;
-	      buffer->next_line = p - 1;
-	      break;
+	      /* Record the location of the backslash and continue.  */
+	      pbackslash = s++;
 	    }
-	  if (__builtin_expect (c == '\\', false))
-	    pbackslash = s;
-	  else if (__builtin_expect (c == '?', false)
-		   && __builtin_expect (s[1] == '?', false)
+	  else if (__builtin_expect (c == '?', 0))
+	    {
+	      if (__builtin_expect (s[1] == '?', false)
 		   && _cpp_trigraph_map[s[2]])
-	    {
-	      /* Have a trigraph.  We may or may not have to convert
-		 it.  Add a line note regardless, for -Wtrigraphs.  */
-	      add_line_note (buffer, s, s[2]);
-	      if (CPP_OPTION (pfile, trigraphs))
 		{
-		  /* We do, and that means we have to switch to the
-		     slow path.  */
-		  d = (uchar *) s;
-		  *d = _cpp_trigraph_map[s[2]];
-		  s += 2;
-		  break;
+		  /* Have a trigraph.  We may or may not have to convert
+		     it.  Add a line note regardless, for -Wtrigraphs.  */
+		  add_line_note (buffer, s, s[2]);
+		  if (CPP_OPTION (pfile, trigraphs))
+		    {
+		      /* We do, and that means we have to switch to the
+		         slow path.  */
+		      d = (uchar *) s;
+		      *d = _cpp_trigraph_map[s[2]];
+		      s += 2;
+		      goto slow_path;
+		    }
 		}
+	      /* Not a trigraph.  Continue on fast-path.  */
+	      s++;
 	    }
+	  else
+	    break;
 	}
 
+      /* This must be \r or \n.  We're either done, or we'll be forced
+	 to write back to the buffer and continue on the slow path.  */
+      d = (uchar *) s;
 
-      for (;;)
+      if (__builtin_expect (s == buffer->rlimit, false))
+	goto done;
+
+      /* DOS line ending? */
+      if (__builtin_expect (c == '\r', false) && s[1] == '\n')
+	{
+	  s++;
+	  if (s == buffer->rlimit)
+	    goto done;
+	}
+
+      if (__builtin_expect (pbackslash == NULL, true))
+	goto done;
+
+      /* Check for escaped newline.  */
+      p = d;
+      while (is_nvspace (p[-1]))
+	p--;
+      if (p - 1 != pbackslash)
+	goto done;
+
+      /* Have an escaped newline; process it and proceed to
+	 the slow path.  */
+      add_line_note (buffer, p - 1, p != d ? ' ' : '\\');
+      d = p - 2;
+      buffer->next_line = p - 1;
+
+    slow_path:
+      while (1)
 	{
 	  c = *++s;
 	  *++d = c;
 
 	  if (c == '\n' || c == '\r')
 	    {
-		  /* Handle DOS line endings.  */
+	      /* Handle DOS line endings.  */
 	      if (c == '\r' && s != buffer->rlimit && s[1] == '\n')
 		s++;
 	      if (s == buffer->rlimit)
@@ -215,9 +749,8 @@ _cpp_clean_line (cpp_reader *pfile)
     }
   else
     {
-      do
+      while (*s != '\n' && *s != '\r')
 	s++;
-      while (*s != '\n' && *s != '\r');
       d = (uchar *) s;
 
       /* Handle DOS line endings.  */

@@ -70,12 +70,15 @@ else
 fi
 
 # Checks for typedefs, structures, and compiler characteristics.
+AC_C_BIGENDIAN
 AC_C_CONST
 AC_C_INLINE
 AC_FUNC_OBSTACK
 AC_TYPE_OFF_T
 AC_TYPE_SIZE_T
-AC_CHECK_TYPE(ssize_t, int)
+AC_TYPE_SSIZE_T
+AC_TYPE_UINTPTR_T
+AC_CHECK_TYPE(ptrdiff_t, int)
 AC_STRUCT_TM
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
