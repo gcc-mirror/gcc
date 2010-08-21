@@ -1,3 +1,17 @@
+2010-08-19  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/36158
+	PR fortran/33197
+	* m4/bessel.m4: Implement bessel_jn and bessel_yn.
+	* gfortran.map: Add the generated bessel_jn_r{4,8,10,16}
+	and bessel_yn_r{4,8,10,16}.
+	* Makefile.am: Add bessel.m4.
+	* Makefile.in: Regenerated.
+	* generated/bessel_r4.c: Generated.
+	* generated/bessel_r16.c: Generated.
+	* generated/bessel_r8.c: Generated.
+	* generated/bessel_r10.c: Generated.
+
 2010-08-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/45108
@@ -33,8 +47,8 @@
 
 2010-08-01  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        * io/unix.c (file_exists): Use access(2) instead of stat(2) to
-        test file existence.
+	* io/unix.c (file_exists): Use access(2) instead of stat(2) to
+	test file existence.
 	(fallback_access): Move up in file, implement F_OK.
 
 2010-07-31  David Edelsohn  <edelsohn@gnu.org>

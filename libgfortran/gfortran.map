@@ -1107,6 +1107,14 @@ GFORTRAN_1.4 {
   global:
     _gfortran_error_stop_numeric;
     _gfortran_selected_real_kind2008;
+    _gfortran_bessel_jn_r4;
+    _gfortran_bessel_jn_r8;
+    _gfortran_bessel_jn_r10;
+    _gfortran_bessel_jn_r16;
+    _gfortran_bessel_yn_r4;
+    _gfortran_bessel_yn_r8;
+    _gfortran_bessel_yn_r10;
+    _gfortran_bessel_yn_r16;
 } GFORTRAN_1.3; 
 
 F2C_1.0 {

@@ -1,3 +1,25 @@
+2010-08-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/36158
+	PR fortran/33197
+	* intrinsic.c (add_sym): Init value attribute.
+	(set_attr_value): New function.
+	(add_functions) Use it and add JN/YN resolvers.
+	* symbol.c (gfc_copy_formal_args_intr): Copy value attr.
+	* intrinsic.h (gfc_resolve_bessel_n2): New prototype.
+	* gfortran.h (gfc_intrinsic_arg): Add value attribute.
+	* iresolve.c (gfc_resolve_bessel_n2): New function.
+	* trans-intrinsic.c (gfc_get_symbol_for_expr): Create
+	formal arg list.
+	(gfc_conv_intrinsic_function,gfc_is_intrinsic_libcall):
+	Add GFC_ISYM_JN2/GFC_ISYM_YN2 as case value.
+	* simplify.c (): For YN set to -INF if previous values
+	was -INF.
+	* trans-expr.c (gfc_conv_procedure_call): Don't crash
+	if sym->as is NULL.
+	* iresolve.c (gfc_resolve_extends_type_of): Set the
+	type of the dummy argument to the one of the actual.
+
 2010-08-20  Joseph Myers  <joseph@codesourcery.com>
 
 	* lang.opt (MD, MMD): Use NoDriverArg instead of NoArgDriver.
