@@ -1,5 +1,9 @@
 2010-08-21  Olivier Hainque  <hainque@adacore.com>
 
+	* config/rs6000/vxworks.h (TARGET_OS_CPP_BUILTINS): Define __PPC__.
+
+2010-08-21  Olivier Hainque  <hainque@adacore.com>
+
 	* config/rs6000/vxworks.h:  (PREFERRED_STACK_BOUNDARY,
 	ABI_STACK_BOUNDARY): Ensure STACK_BOUNDARY is honored despite EABI.
 

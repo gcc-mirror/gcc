@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
   do						\
     {						\
       builtin_define ("__ppc");			\
+      builtin_define ("__PPC__");		\
       builtin_define ("__EABI__");		\
       builtin_define ("__ELF__");		\
       builtin_define ("__vxworks");		\
