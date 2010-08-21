@@ -29,6 +29,9 @@ along with GCC; see the file COPYING3.  If not see
 #ifdef HAVE_STDDEF_H
 # include <stddef.h>
 #endif
+#ifdef HAVE_STDINT_H
+# include <stdint.h>
+#endif
 
 #include <stdio.h>
 
