@@ -146,7 +146,7 @@ if test $acx_cv_header_stdint = stddef.h; then
   AC_MSG_CHECKING(for type equivalent to int8_t)
   case "$ac_cv_sizeof_char" in
     1) acx_cv_type_int8_t=char ;;
-    *) AC_MSG_ERROR(no 8-bit type, please report a bug)
+    *) AC_MSG_ERROR([no 8-bit type, please report a bug])
   esac
   AC_MSG_RESULT($acx_cv_type_int8_t)
 
@@ -154,7 +154,7 @@ if test $acx_cv_header_stdint = stddef.h; then
   case "$ac_cv_sizeof_int:$ac_cv_sizeof_short" in
     2:*) acx_cv_type_int16_t=int ;;
     *:2) acx_cv_type_int16_t=short ;;
-    *) AC_MSG_ERROR(no 16-bit type, please report a bug)
+    *) AC_MSG_ERROR([no 16-bit type, please report a bug])
   esac
   AC_MSG_RESULT($acx_cv_type_int16_t)
 
@@ -162,7 +162,7 @@ if test $acx_cv_header_stdint = stddef.h; then
   case "$ac_cv_sizeof_int:$ac_cv_sizeof_long" in
     4:*) acx_cv_type_int32_t=int ;;
     *:4) acx_cv_type_int32_t=long ;;
-    *) AC_MSG_ERROR(no 32-bit type, please report a bug)
+    *) AC_MSG_ERROR([no 32-bit type, please report a bug])
   esac
   AC_MSG_RESULT($acx_cv_type_int32_t)
 fi
@@ -185,7 +185,7 @@ if test "$ac_cv_type_uintptr_t" != yes; then
     2) acx_cv_type_intptr_t=int16_t ;;
     4) acx_cv_type_intptr_t=int32_t ;;
     8) acx_cv_type_intptr_t=int64_t ;;
-    *) AC_MSG_ERROR(no equivalent for intptr_t, please report a bug)
+    *) AC_MSG_ERROR([no equivalent for intptr_t, please report a bug])
   esac
   AC_MSG_RESULT($acx_cv_type_intptr_t)
 fi
