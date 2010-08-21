@@ -835,15 +835,28 @@ lto_1_to_1_map (void)
 	continue;
 
       file_data = node->local.lto_file_data;
-      gcc_assert (!node->same_body_alias && file_data);
+      gcc_assert (!node->same_body_alias);
 
-      slot = pointer_map_contains (pmap, file_data);
-      if (slot)
-	partition = (ltrans_partition) *slot;
+      if (file_data)
+	{
+          slot = pointer_map_contains (pmap, file_data);
+          if (slot)
+	    partition = (ltrans_partition) *slot;
+	  else
+	    {
+	      partition = new_partition (file_data->file_name);
+	      slot = pointer_map_insert (pmap, file_data);
+	      *slot = partition;
+	      npartitions++;
+	    }
+	}
+      else if (!file_data
+	       && VEC_length (ltrans_partition, ltrans_partitions))
+	partition = VEC_index (ltrans_partition, ltrans_partitions, 0);
       else
 	{
-	  partition = new_partition (file_data->file_name);
-	  slot = pointer_map_insert (pmap, file_data);
+	  partition = new_partition ("");
+	  slot = pointer_map_insert (pmap, NULL);
 	  *slot = partition;
 	  npartitions++;
 	}
@@ -1089,16 +1102,13 @@ lto_wpa_write_files (void)
 
   timevar_push (TV_WHOPR_WPA);
 
-  /* Include all inlined functions and determine what sets need to be
-     compiled by LTRANS.  After this loop, only those sets that
-     contain callgraph nodes from more than one file will need to be
-     compiled by LTRANS.  */
   FOR_EACH_VEC_ELT (ltrans_partition, ltrans_partitions, i, part)
     lto_stats.num_output_cgraph_nodes += VEC_length (cgraph_node_ptr,
 						     part->cgraph_set->nodes);
 
-  /* After adding all inlinees, find out statics that need to be promoted
-     to globals because of cross-file inlining.  */
+  /* Find out statics that need to be promoted
+     to globals with hidden visibility because they are accessed from multiple
+     partitions.  */
   lto_promote_cross_file_statics ();
 
   timevar_pop (TV_WHOPR_WPA);

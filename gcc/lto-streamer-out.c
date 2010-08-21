@@ -2122,7 +2122,7 @@ lto_output (cgraph_node_set set, varpool_node_set vset)
 #endif
 	  decl_state = lto_new_out_decl_state ();
 	  lto_push_out_decl_state (decl_state);
-	  if (!flag_wpa)
+	  if (gimple_has_body_p (node->decl))
 	    output_function (node);
 	  else
 	    copy_function (node);
