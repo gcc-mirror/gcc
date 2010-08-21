@@ -1,3 +1,8 @@
+2010-08-20  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_1_to_1_map): Be prepared for node to have no file data.
+	(lto_wpa_write_files): Update comments.
+
 2010-08-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/45357

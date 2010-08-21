@@ -281,7 +281,8 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
   lto_output_sleb128_stream (ob->main_stream, edge->count);
 
   bp = bitpack_create (ob->main_stream);
-  uid = flag_wpa ? edge->lto_stmt_uid : gimple_uid (edge->call_stmt);
+  uid = (!gimple_has_body_p (edge->caller->decl)
+	 ? edge->lto_stmt_uid : gimple_uid (edge->call_stmt));
   bp_pack_value (&bp, uid, HOST_BITS_PER_INT);
   bp_pack_value (&bp, edge->inline_failed, HOST_BITS_PER_INT);
   bp_pack_value (&bp, edge->frequency, HOST_BITS_PER_INT);

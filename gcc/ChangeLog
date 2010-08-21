@@ -1,3 +1,9 @@
+2010-08-20  Jan Hubicka  <jh@suse.cz>
+
+	* lto-cgraph.c (lto_output_edge): Use gimple_has_body_p instead of flag_wpa.
+	* lto-streamer-out.c (lto_output): Likewise.
+	* passes.c (ipa_write_optimization_summaries): Initialize statement uids.
+
 2010-08-20  Olivier Hainque  <hainque@adacore.com>
 
 	* tree.h (alias_diag_flags): New enum.
