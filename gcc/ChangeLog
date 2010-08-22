@@ -1,3 +1,13 @@
+2010-08-22  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/mips/mips.c (mips_override_options): Rename to...
+	(mips_option_override): ...this. Make static.
+	(TARGET_OPTION_OVERRIDE): Define.
+	(mips_in_small_data_p): Update comment.
+	* config/mips/mips.h (OVERRIDE_OPTIONS): Remove.
+	(FIXED_REGISTERS): Update comment.
+	* config/mips/mips-protos.h (mips_override_options): Remove.
+
 2010-08-21  Olivier Hainque  <hainque@adacore.com>
 
 	* config/rs6000/vxworks.h (TARGET_OS_CPP_BUILTINS): Define __PPC__.
