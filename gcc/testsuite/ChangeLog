@@ -1,4 +1,10 @@
 2010-08-22  Tobias Burnus  <burnus@net-b.de>
+	    Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	PR fortran/45367
+	* gfortran.dg/bessel_6.f90: Further reduce required accuracy.
+
+2010-08-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45367
 	* gfortran.dg/bessel_6.f90: Fix numeric tolerence.

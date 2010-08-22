@@ -8,12 +8,12 @@
 implicit none
 real,parameter :: values(*) = [0.0, 0.5, 1.0, 0.9, 1.8,2.0,3.0,4.0,4.25,8.0,34.53, 475.78] 
 real,parameter :: myeps(size(values)) = epsilon(0.0) &
-                  * [2, 7, 5, 6, 9, 12, 12, 7, 7, 8, 75, 6 ]
+                  * [2, 7, 5, 6, 9, 12, 12, 7, 7, 8, 75, 15 ]
 ! The following is sufficient for me - the values above are a bit
 ! more tolerant
 !                  * [0, 5, 3, 4, 6, 7, 7, 5, 5, 6, 66, 4 ]
 integer,parameter :: mymax(size(values)) =  &
-                 [100, 17, 23, 21, 27, 28, 32, 35, 36, 41, 49, 50 ]
+                 [100, 17, 23, 21, 27, 28, 32, 35, 36, 41, 47, 37 ]
 integer, parameter :: Nmax = 100
 real :: rec(0:Nmax), lib(0:Nmax)
 integer :: i
