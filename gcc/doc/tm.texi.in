@@ -10675,10 +10675,11 @@ for overlap with regards to asm-declared registers.
 
 @defmac MATH_LIBRARY
 Define this macro as a C string constant for the linker argument to link
-in the system math library, or @samp{""} if the target does not have a
+in the system math library, minus the initial @samp{"-l"}, or
+@samp{""} if the target does not have a
 separate math library.
 
-You need only define this macro if the default of @samp{"-lm"} is wrong.
+You need only define this macro if the default of @samp{"m"} is wrong.
 @end defmac
 
 @defmac LIBRARY_PATH_ENV

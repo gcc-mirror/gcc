@@ -48,149 +48,62 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
-#include "gcc.h"
-
 #include "coretypes.h"
+#include "gcc.h"
+#include "opts.h"
+
 #include "tm.h"
 #include "intl.h"
 
 #ifndef MATH_LIBRARY
-#define MATH_LIBRARY "-lm"
+#define MATH_LIBRARY "m"
 #endif
 
 #ifndef FORTRAN_LIBRARY
-#define FORTRAN_LIBRARY "-lgfortran"
+#define FORTRAN_LIBRARY "gfortran"
 #endif
-
-#ifdef HAVE_LD_STATIC_DYNAMIC
-#define ADD_ARG_LIBGFORTRAN(arg) \
-  { \
-    if (static_lib && !static_linking) \
-      append_arg ("-Wl,-Bstatic"); \
-    append_arg (arg); \
-    if (static_lib && !static_linking) \
-      append_arg ("-Wl,-Bdynamic"); \
-  }
-#else
-#define ADD_ARG_LIBGFORTRAN(arg) append_arg (arg);
-#endif
-
-
-/* Options this driver needs to recognize, not just know how to
-   skip over.  */
-typedef enum
-{
-  OPTION_b,			/* Aka --prefix.  */
-  OPTION_B,			/* Aka --target.  */
-  OPTION_c,			/* Aka --compile.  */
-  OPTION_E,			/* Aka --preprocess.  */
-  OPTION_help,			/* --help.  */
-  OPTION_i,			/* -imacros, -include, -include-*.  */
-  OPTION_l,
-  OPTION_L,			/* Aka --library-directory.  */
-  OPTION_nostdlib,		/* Aka --no-standard-libraries, or
-				   -nodefaultlibs.  */
-  OPTION_o,			/* Aka --output.  */
-  OPTION_S,			/* Aka --assemble.  */
-  OPTION_static,		/* -static.  */
-  OPTION_static_libgfortran,	/* -static-libgfortran.  */
-  OPTION_syntax_only,		/* -fsyntax-only.  */
-  OPTION_v,			/* Aka --verbose.  */
-  OPTION_version,		/* --version.  */
-  OPTION_V,			/* Aka --use-version.  */
-  OPTION_x,			/* Aka --language.  */
-  OPTION_			/* Unrecognized or unimportant.  */
-}
-Option;
 
 /* The original argument list and related info is copied here.  */
-static int g77_xargc;
-static const char *const *g77_xargv;
-static void lookup_option (Option *, int *, const char **, const char *);
-static void append_arg (const char *);
+static unsigned int g77_xargc;
+static const struct cl_decoded_option *g77_x_decoded_options;
+static void append_arg (const struct cl_decoded_option *);
 
 /* The new argument list will be built here.  */
-static int g77_newargc;
-static const char **g77_newargv;
+static unsigned int g77_newargc;
+static struct cl_decoded_option *g77_new_decoded_options;
 
-/* Assumes text[0] == '-'.  Returns number of argv items that belong to
-   (and follow) this one, an option id for options important to the
-   caller, and a pointer to the first char of the arg, if embedded (else
-   returns NULL, meaning no arg or it's the next argv).
+/* Return whether strings S1 and S2 are both NULL or both the same
+   string.  */
 
-   Note that this also assumes gcc.c's pass converting long options
-   to short ones, where available, has already been run.  */
-
-static void
-lookup_option (Option *xopt, int *xskip, const char **xarg, const char *text)
+static bool
+strings_same (const char *s1, const char *s2)
 {
-  Option opt = OPTION_;
-  int skip;
-  const char *arg = NULL;
+  return s1 == s2 || (s1 != NULL && s2 != NULL && strcmp (s1, s2) == 0);
+}
 
-  if ((skip = SWITCH_TAKES_ARG (text[1])))
-    skip -= (text[2] != '\0');	/* See gcc.c.  */
+/* Return whether decoded option structures OPT1 and OPT2 are the
+   same.  */
 
-  if (text[1] == 'B')
-    opt = OPTION_B, skip = (text[2] == '\0'), arg = text + 2;
-  else if (text[1] == 'b')
-    opt = OPTION_b, skip = (text[2] == '\0'), arg = text + 2;
-  else if ((text[1] == 'c') && (text[2] == '\0'))
-    opt = OPTION_c, skip = 0;
-  else if ((text[1] == 'E') && (text[2] == '\0'))
-    opt = OPTION_E, skip = 0;
-  else if (text[1] == 'i')
-    opt = OPTION_i, skip = 0;
-  else if (text[1] == 'l')
-    opt = OPTION_l;
-  else if (text[1] == 'L')
-    opt = OPTION_L, arg = text + 2;
-  else if (text[1] == 'o')
-    opt = OPTION_o;
-  else if ((text[1] == 'S') && (text[2] == '\0'))
-    opt = OPTION_S, skip = 0;
-  else if (text[1] == 'V')
-    opt = OPTION_V, skip = (text[2] == '\0');
-  else if ((text[1] == 'v') && (text[2] == '\0'))
-    opt = OPTION_v, skip = 0;
-  else if (text[1] == 'x')
-    opt = OPTION_x, arg = text + 2;
-  else if (text[1] == 'J')
-    ;
-  else
-    {
-      if ((skip = WORD_SWITCH_TAKES_ARG (text + 1)) != 0)  /* See gcc.c.  */
-	;
-      else if (!strcmp (text, "-fhelp"))	/* Really --help!! */
-	opt = OPTION_help;
-      else if (!strcmp (text, "-nostdlib")
-	       || !strcmp (text, "-nodefaultlibs"))
-	opt = OPTION_nostdlib;
-      else if (!strcmp (text, "-fsyntax-only"))
-	opt = OPTION_syntax_only;
-      else if (!strcmp (text, "-static-libgfortran"))
-	opt = OPTION_static_libgfortran;
-      else if (!strcmp (text, "-static"))
-	opt = OPTION_static;
-      else if (!strcmp (text, "-fversion"))	/* Really --version!! */
-	opt = OPTION_version;
-      else if (!strcmp (text, "-Xlinker") || !strcmp (text, "-specs"))
-	skip = 1;
-      else
-	skip = 0;
-    }
-
-  if (xopt != NULL)
-    *xopt = opt;
-  if (xskip != NULL)
-    *xskip = skip;
-  if (xarg != NULL)
-    {
-      if ((arg != NULL) && (arg[0] == '\0'))
-	*xarg = NULL;
-      else
-	*xarg = arg;
-    }
+static bool
+options_same (const struct cl_decoded_option *opt1,
+	      const struct cl_decoded_option *opt2)
+{
+  return (opt1->opt_index == opt2->opt_index
+	  && strings_same (opt1->arg, opt2->arg)
+	  && strings_same (opt1->orig_option_with_args_text,
+			   opt2->orig_option_with_args_text)
+	  && strings_same (opt1->canonical_option[0],
+			   opt2->canonical_option[0])
+	  && strings_same (opt1->canonical_option[1],
+			   opt2->canonical_option[1])
+	  && strings_same (opt1->canonical_option[2],
+			   opt2->canonical_option[2])
+	  && strings_same (opt1->canonical_option[3],
+			   opt2->canonical_option[3])
+	  && (opt1->canonical_option_num_elements
+	      == opt2->canonical_option_num_elements)
+	  && opt1->value == opt2->value
+	  && opt1->errors == opt2->errors);
 }
 
 /* Append another argument to the list being built.  As long as it is
@@ -198,52 +111,78 @@ lookup_option (Option *xopt, int *xskip, const char **xarg, const char *text)
    the new arg count.  Otherwise allocate a new list, etc.  */
 
 static void
-append_arg (const char *arg)
+append_arg (const struct cl_decoded_option *arg)
 {
-  static int newargsize;
+  static unsigned int newargsize;
 
 #if 0
   fprintf (stderr, "`%s'\n", arg);
 #endif
 
-  if (g77_newargv == g77_xargv
+  if (g77_new_decoded_options == g77_x_decoded_options
       && g77_newargc < g77_xargc
-      && (arg == g77_xargv[g77_newargc]
-	  || !strcmp (arg, g77_xargv[g77_newargc])))
+      && options_same (arg, &g77_x_decoded_options[g77_newargc]))
     {
       ++g77_newargc;
       return;			/* Nothing new here.  */
     }
 
-  if (g77_newargv == g77_xargv)
+  if (g77_new_decoded_options == g77_x_decoded_options)
     {				/* Make new arglist.  */
-      int i;
+      unsigned int i;
 
       newargsize = (g77_xargc << 2) + 20;	/* This should handle all.  */
-      g77_newargv = (const char **) xmalloc (newargsize * sizeof (char *));
+      g77_new_decoded_options = XNEWVEC (struct cl_decoded_option, newargsize);
 
       /* Copy what has been done so far.  */
       for (i = 0; i < g77_newargc; ++i)
-	g77_newargv[i] = g77_xargv[i];
+	g77_new_decoded_options[i] = g77_x_decoded_options[i];
     }
 
   if (g77_newargc == newargsize)
-    fatal_error ("overflowed output arg list for %qs", arg);
+    fatal_error ("overflowed output arg list for %qs",
+		 arg->orig_option_with_args_text);
 
-  g77_newargv[g77_newargc++] = arg;
+  g77_new_decoded_options[g77_newargc++] = *arg;
+}
+
+/* Append an option described by OPT_INDEX, ARG and VALUE to the list
+   being built.  */
+static void
+append_option (size_t opt_index, const char *arg, int value)
+{
+  struct cl_decoded_option decoded;
+
+  generate_option (opt_index, arg, value, CL_DRIVER, &decoded);
+  append_arg (&decoded);
+}
+
+/* Append a libgfortran argument to the list being built.  If
+   FORCE_STATIC, ensure the library is linked statically.  */
+
+static void
+add_arg_libgfortran (bool force_static ATTRIBUTE_UNUSED)
+{
+#ifdef HAVE_LD_STATIC_DYNAMIC
+  if (force_static)
+    append_option (OPT_Wl_, "-Bstatic", 1);
+#endif
+  append_option (OPT_l, FORTRAN_LIBRARY, 1);
+#ifdef HAVE_LD_STATIC_DYNAMIC
+  if (force_static)
+    append_option (OPT_Wl_, "-Bdynamic", 1);
+#endif
 }
 
 void
-lang_specific_driver (int *in_argc, const char *const **in_argv,
+lang_specific_driver (struct cl_decoded_option **in_decoded_options,
+		      unsigned int *in_decoded_options_count,
 		      int *in_added_libraries ATTRIBUTE_UNUSED)
 {
-  int argc = *in_argc;
-  const char *const *argv = *in_argv;
-  int i;
+  unsigned int argc = *in_decoded_options_count;
+  struct cl_decoded_option *decoded_options = *in_decoded_options;
+  unsigned int i;
   int verbose = 0;
-  Option opt;
-  int skip;
-  const char *arg;
 
   /* This will be NULL if we encounter a situation where we should not
      link in libf2c.  */
@@ -261,13 +200,11 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
   /* By default, we throw on the math library if we have one.  */
   int need_math = (MATH_LIBRARY[0] != '\0');
 
-#ifdef HAVE_LD_STATIC_DYNAMIC
   /* Whether we should link a static libgfortran. */
   int static_lib = 0; 
 
   /* Whether we need to link statically.  */
   int static_linking = 0;
-#endif
 
   /* The number of input and output files in the incoming arg list.  */
   int n_infiles = 0;
@@ -276,91 +213,65 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 #if 0
   fprintf (stderr, "Incoming:");
   for (i = 0; i < argc; i++)
-    fprintf (stderr, " %s", argv[i]);
+    fprintf (stderr, " %s", decoded_options[i].orig_option_with_args_text);
   fprintf (stderr, "\n");
 #endif
 
   g77_xargc = argc;
-  g77_xargv = argv;
+  g77_x_decoded_options = decoded_options;
   g77_newargc = 0;
-  g77_newargv = CONST_CAST2 (const char **, const char *const *, argv);
+  g77_new_decoded_options = decoded_options;
 
   /* First pass through arglist.
 
      If -nostdlib or a "turn-off-linking" option is anywhere in the
      command line, don't do any library-option processing (except
-     relating to -x).  Also, if -v is specified, but no other options
-     that do anything special (allowing -V version, etc.), remember
-     to add special stuff to make gcc command actually invoke all
-     the different phases of the compilation process so all the version
-     numbers can be seen.
-
-     Also, here is where all problems with missing arguments to options
-     are caught.  If this loop is exited normally, it means all options
-     have the appropriate number of arguments as far as the rest of this
-     program is concerned.  */
+     relating to -x).  */
 
   for (i = 1; i < argc; ++i)
     {
-      if ((argv[i][0] == '+') && (argv[i][1] == 'e'))
+      switch (decoded_options[i].opt_index)
 	{
-	  continue;
-	}
-
-      if ((argv[i][0] != '-') || (argv[i][1] == '\0'))
-	{
+	case OPT_SPECIAL_input_file:
 	  ++n_infiles;
 	  continue;
-	}
 
-      lookup_option (&opt, &skip, NULL, argv[i]);
-
-      switch (opt)
-	{
-	case OPTION_nostdlib:
-	case OPTION_c:
-	case OPTION_S:
-	case OPTION_syntax_only:
-	case OPTION_E:
+	case OPT_nostdlib:
+	case OPT_nodefaultlibs:
+	case OPT_c:
+	case OPT_S:
+	case OPT_fsyntax_only:
+	case OPT_E:
 	  /* These options disable linking entirely or linking of the
 	     standard libraries.  */
 	  library = 0;
 	  break;
 
-	case OPTION_static_libgfortran:
+	case OPT_static_libgfortran:
 #ifdef HAVE_LD_STATIC_DYNAMIC
 	  static_lib = 1;
 #endif
 	  break;
 
-	case OPTION_static:
+	case OPT_static:
 #ifdef HAVE_LD_STATIC_DYNAMIC
 	  static_linking = 1;
 #endif
 	  break;
 
-	case OPTION_l:
+	case OPT_l:
 	  ++n_infiles;
 	  break;
 
-	case OPTION_o:
+	case OPT_o:
 	  ++n_outfiles;
 	  break;
 
-	case OPTION_v:
+	case OPT_v:
 	  verbose = 1;
 	  break;
 
-	case OPTION_b:
-	case OPTION_B:
-	case OPTION_L:
-	case OPTION_i:
-	case OPTION_V:
-	  /* These options are useful in conjunction with -v to get
-	     appropriate version info.  */
-	  break;
-
-	case OPTION_version:
+	case OPT_fversion:
 	  printf ("GNU Fortran %s%s\n", pkgversion_string, version_string);
 	  printf ("Copyright %s 2010 Free Software Foundation, Inc.\n\n",
 		  _("(C)"));
@@ -371,7 +282,7 @@ For more information about these matters, see the file named COPYING\n\n"));
 	  exit (0);
 	  break;
 
-	case OPTION_help:
+	case OPT_fhelp:
 	  /* Let gcc.c handle this, as it has a really
 	     cool facility for handling --help and --verbose --help.  */
 	  return;
@@ -379,14 +290,6 @@ For more information about these matters, see the file named COPYING\n\n"));
 	default:
 	  break;
 	}
-
-      /* This is the one place we check for missing arguments in the
-	 program.  */
-
-      if (i + skip < argc)
-	i += skip;
-      else
-	fatal_error ("argument to %qs missing", argv[i]);
     }
 
   if ((n_outfiles != 0) && (n_infiles == 0))
@@ -398,50 +301,50 @@ For more information about these matters, see the file named COPYING\n\n"));
 
   /* Second pass through arglist, transforming arguments as appropriate.  */
 
-  append_arg (argv[0]);		/* Start with command name, of course.  */
+  append_arg (&decoded_options[0]); /* Start with command name, of course.  */
 
   for (i = 1; i < argc; ++i)
     {
-      if (argv[i][0] == '\0')
+      if (decoded_options[i].errors & CL_ERR_MISSING_ARG)
 	{
-	  append_arg (argv[i]);	/* Interesting.  Just append as is.  */
+	  append_arg (&decoded_options[i]);
 	  continue;
 	}
 
-      if ((argv[i][0] == '-') && (argv[i][1] != 'l'))
+      if (decoded_options[i].opt_index == OPT_SPECIAL_input_file
+	  && decoded_options[i].arg[0] == '\0')
+	{
+	  /* Interesting.  Just append as is.  */
+	  append_arg (&decoded_options[i]);
+	  continue;
+	}
+
+      if (decoded_options[i].opt_index != OPT_l
+	  && (decoded_options[i].opt_index != OPT_SPECIAL_input_file
+	      || strcmp (decoded_options[i].arg, "-") == 0))
 	{
 	  /* Not a filename or library.  */
 
 	  if (saw_library == 1 && need_math)	/* -l<library>.  */
-	    append_arg (MATH_LIBRARY);
+	    append_option (OPT_l, MATH_LIBRARY, 1);
 
 	  saw_library = 0;
 
-	  lookup_option (&opt, &skip, &arg, argv[i]);
-
-	  if (argv[i][1] == '\0')
+	  if (decoded_options[i].opt_index == OPT_SPECIAL_input_file)
 	    {
-	      append_arg (argv[i]);	/* "-" == Standard input.  */
+	      append_arg (&decoded_options[i]);	/* "-" == Standard input.  */
 	      continue;
 	    }
 
-	  if (opt == OPTION_x)
+	  if (decoded_options[i].opt_index == OPT_x)
 	    {
 	      /* Track input language.  */
-	      const char *lang;
-
-	      if (arg == NULL)
-		lang = argv[i + 1];
-	      else
-		lang = arg;
+	      const char *lang = decoded_options[i].arg;
 
 	      saw_speclang = (strcmp (lang, "none") != 0);
 	    }
 
-	  append_arg (argv[i]);
-
-	  for (; skip != 0; --skip)
-	    append_arg (argv[++i]);
+	  append_arg (&decoded_options[i]);
 
 	  continue;
 	}
@@ -452,29 +355,29 @@ For more information about these matters, see the file named COPYING\n\n"));
 	saw_library = 0;	/* -xfoo currently active.  */
       else
 	{			/* -lfoo or filename.  */
-	  if (strcmp (argv[i], MATH_LIBRARY) == 0)
+	  if (decoded_options[i].opt_index == OPT_l
+	      && strcmp (decoded_options[i].arg, MATH_LIBRARY) == 0)
 	    {
 	      if (saw_library == 1)
 		saw_library = 2;	/* -l<library> -lm.  */
 	      else
-		{
-		  ADD_ARG_LIBGFORTRAN (FORTRAN_LIBRARY);
-		}
+		add_arg_libgfortran (static_lib && !static_linking);
 	    }
-	  else if (strcmp (argv[i], FORTRAN_LIBRARY) == 0)
+	  else if (decoded_options[i].opt_index == OPT_l
+	      && strcmp (decoded_options[i].arg, FORTRAN_LIBRARY) == 0)
 	    {
 	      saw_library = 1;	/* -l<library>.  */
-	      ADD_ARG_LIBGFORTRAN (argv[i]);
+	      add_arg_libgfortran (static_lib && !static_linking);
 	      continue;
 	    }
 	  else
 	    {			/* Other library, or filename.  */
 	      if (saw_library == 1 && need_math)
-		append_arg (MATH_LIBRARY);
+		append_option (OPT_l, MATH_LIBRARY, 1);
 	      saw_library = 0;
 	    }
 	}
-      append_arg (argv[i]);
+      append_arg (&decoded_options[i]);
     }
 
   /* Append `-lgfortran -lm' as necessary.  */
@@ -482,17 +385,17 @@ For more information about these matters, see the file named COPYING\n\n"));
   if (library)
     {				/* Doing a link and no -nostdlib.  */
       if (saw_speclang)
-	append_arg ("-xnone");
+	append_option (OPT_x, "none", 1);
 
       switch (saw_library)
 	{
 	case 0:
-	  ADD_ARG_LIBGFORTRAN (library);
+	  add_arg_libgfortran (static_lib && !static_linking);
 	  /* Fall through.  */
 
 	case 1:
 	  if (need_math)
-	    append_arg (MATH_LIBRARY);
+	    append_option (OPT_l, MATH_LIBRARY, 1);
 	default:
 	  break;
 	}
@@ -501,30 +404,30 @@ For more information about these matters, see the file named COPYING\n\n"));
 #ifdef ENABLE_SHARED_LIBGCC
   if (library)
     {
-      int i;
+      unsigned int i;
 
       for (i = 1; i < g77_newargc; i++)
-	if (g77_newargv[i][0] == '-')
-	  if (strcmp (g77_newargv[i], "-static-libgcc") == 0
-	      || strcmp (g77_newargv[i], "-static") == 0)
-	    break;
+	if (g77_new_decoded_options[i].opt_index == OPT_static_libgcc
+	    || g77_new_decoded_options[i].opt_index == OPT_static)
+	  break;
 
       if (i == g77_newargc)
-	append_arg ("-shared-libgcc");
+	append_option (OPT_shared_libgcc, NULL, 1);
     }
 
 #endif
 
-  if (verbose && g77_newargv != g77_xargv)
+  if (verbose && g77_new_decoded_options != g77_x_decoded_options)
     {
       fprintf (stderr, _("Driving:"));
       for (i = 0; i < g77_newargc; i++)
-	fprintf (stderr, " %s", g77_newargv[i]);
+	fprintf (stderr, " %s",
+		 g77_new_decoded_options[i].orig_option_with_args_text);
       fprintf (stderr, "\n");
     }
 
-  *in_argc = g77_newargc;
-  *in_argv = g77_newargv;
+  *in_decoded_options_count = g77_newargc;
+  *in_decoded_options = g77_new_decoded_options;
 }
 
 

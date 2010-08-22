@@ -208,6 +208,11 @@ bool handle_option (const struct cl_decoded_option *decoded,
 bool handle_generated_option (size_t opt_index, const char *arg, int value,
 			      unsigned int lang_mask, int kind,
 			      const struct cl_option_handlers *handlers);
+void generate_option (size_t opt_index, const char *arg, int value,
+		      unsigned int lang_mask,
+		      struct cl_decoded_option *decoded);
+void generate_option_input_file (const char *file,
+				 struct cl_decoded_option *decoded);
 extern void read_cmdline_option (struct cl_decoded_option *decoded,
 				 unsigned int lang_mask,
 				 const struct cl_option_handlers *handlers);

@@ -1,5 +1,6 @@
 /* Base configuration file for all FreeBSD targets.
-   Copyright (C) 1999, 2000, 2001, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2007, 2008, 2009,
+   2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -76,7 +77,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef  WINT_TYPE
 #define WINT_TYPE "int"
 
-#define MATH_LIBRARY_PROFILE    "-lm_p"
+#define MATH_LIBRARY_PROFILE    "m_p"
 
 /* Code generation parameters.  */
 

@@ -1,3 +1,34 @@
+2010-08-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* Makefile.in (gccspec.o, cppspec.o): Update dependencies.
+	* common.opt (L, nodefaultlibs, nostdlib, pg, static): New
+	options.
+	* config/avr/avr.h (LIBSTDCXX): Remove initial "-l".
+	* config/freebsd.h (MATH_LIBRARY_PROFILE): Remove initial "-l".
+	* config/i386/djgpp.h (LIBSTDCXX): Remove initial "-l".
+	* config/rs6000/aix.h (LIBSTDCXX_STATIC): Remove initial "-l".
+	* config/s390/tpf.h (MATH_LIBRARY, LIBSTDCXX): Remove initial
+	"-l".
+	* cppspec.c: Include opts.h.
+	(lang_specific_driver): Use cl_decoded_option structures.
+	* doc/tm.texi.in (MATH_LIBRARY): Update documentation.
+	* doc/tm.texi: Regenerate.
+	* gcc.c (translate_options): Translate -d to -foutput-class-dir=.
+	(driver_handle_option): Allow driver options needing no special
+	processing.
+	(process_command): Decode options before call to
+	lang_specific_driver.  Pass decoded options to
+	lang_specific_driver.
+	* gcc.h (lang_specific_driver): Update prototype.
+	* gccspec.c: Include opts.h.
+	(lang_specific_driver): Use cl_decoded_option structures.
+	* opts-common.c (option_ok_for_language, generate_option,
+	generate_option_input_file): New.
+	(decode_cmdline_option): Use option_ok_for_language.
+	(decode_cmdline_options_to_array): Use generate_option_input_file.
+	(handle_generated_option): Use generate_option.
+	* opts.h (generate_option, generate_option_input_file): Declare.
+
 2010-08-22  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/mips/mips.c (mips_override_options): Rename to...

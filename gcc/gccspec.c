@@ -1,5 +1,5 @@
 /* Specific flags and argument handling of the C front-end.
-   Copyright (C) 1999, 2001, 2003, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2003, 2007, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,75 +22,77 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "gcc.h"
+#include "opts.h"
 
-/* Filter argc and argv before processing by the gcc driver proper.  */
+/* Filter command line before processing by the gcc driver proper.  */
 void
-lang_specific_driver (int *in_argc ATTRIBUTE_UNUSED,
-		      const char *const **in_argv ATTRIBUTE_UNUSED,
+lang_specific_driver (struct cl_decoded_option **in_decoded_options ATTRIBUTE_UNUSED,
+		      unsigned int *in_decoded_options_count ATTRIBUTE_UNUSED,
 		      int *in_added_libraries ATTRIBUTE_UNUSED)
 {
   /* Systems which use the NeXT runtime by default should arrange
      for the shared libgcc to be used when -fgnu-runtime is passed
      through specs.  */
 #if defined(ENABLE_SHARED_LIBGCC) && ! defined(NEXT_OBJC_RUNTIME)
-  int i;
+  unsigned int i;
 
   /* The new argument list will be contained in this.  */
-  const char **arglist;
+  struct cl_decoded_option *new_decoded_options;
 
   /* True if we should add -shared-libgcc to the command-line.  */
   int shared_libgcc = 0;
 
   /* The total number of arguments with the new stuff.  */
-  int argc;
+  unsigned int argc;
 
   /* The argument list.  */
-  const char *const *argv;
+  struct cl_decoded_option *decoded_options;
 
-  argc = *in_argc;
-  argv = *in_argv;
+  argc = *in_decoded_options_count;
+  decoded_options = *in_decoded_options;
 
   for (i = 1; i < argc; i++)
     {
-      if (argv[i][0] == '-')
+      switch (decoded_options[i].opt_index)
 	{
-	  if (strcmp (argv[i], "-static-libgcc") == 0
-	      || strcmp (argv[i], "-static") == 0)
-	    return;
-	}
-      else
-	{
-	  int len;
+	case OPT_static_libgcc:
+	case OPT_static:
+	  return;
 
-	  /* If the filename ends in .m or .mi, we are compiling ObjC
-	     and want to pass -shared-libgcc.  */
-	  len = strlen (argv[i]);
-	  if ((len > 2 && argv[i][len - 2] == '.' && argv[i][len - 1] == 'm')
-	      ||  (len > 3 && argv[i][len - 3] == '.' && argv[i][len - 2] == 'm'
-		   && argv[i][len - 1] == 'i'))
-	    shared_libgcc = 1;
+	case OPT_SPECIAL_input_file:
+	  {
+	    const char *file = decoded_options[i].arg;
+	    int len;
+
+	    /* If the filename ends in .m or .mi, we are compiling
+	       ObjC and want to pass -shared-libgcc.  */
+	    len = strlen (file);
+	    if ((len > 2 && file[len - 2] == '.' && file[len - 1] == 'm')
+		||  (len > 3 && file[len - 3] == '.' && file[len - 2] == 'm'
+		     && file[len - 1] == 'i'))
+	      shared_libgcc = 1;
+	  }
+	  break;
 	}
     }
 
   if  (shared_libgcc)
     {
-      /* Make sure to have room for the trailing NULL argument.  */
-      arglist = XNEWVEC (const char *, argc + 2);
+      new_decoded_options = XNEWVEC (struct cl_decoded_option, argc + 1);
 
       i = 0;
       do
 	{
-	  arglist[i] = argv[i];
+	  new_decoded_options[i] = decoded_options[i];
 	  i++;
 	}
       while (i < argc);
 
-      arglist[i++] = "-shared-libgcc";
+      generate_option (OPT_shared_libgcc, NULL, 1, CL_DRIVER,
+		       &new_decoded_options[i++]);
 
-      arglist[i] = NULL;
-
-      *in_argc = i;
-      *in_argv = arglist;
+      *in_decoded_options_count = i;
+      *in_decoded_options = new_decoded_options;
     }
 #endif
 }

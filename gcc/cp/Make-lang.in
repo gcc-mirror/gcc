@@ -53,7 +53,8 @@ c++: cc1plus$(exeext)
 # Tell GNU make to ignore these if they exist.
 .PHONY: c++
 
-g++spec.o: $(srcdir)/cp/g++spec.c $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) $(CONFIG_H)
+g++spec.o: $(srcdir)/cp/g++spec.c $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
+    $(CONFIG_H) opts.h
 	(SHLIB_LINK='$(SHLIB_LINK)'; \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
 		$(INCLUDES) $(srcdir)/cp/g++spec.c)

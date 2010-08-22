@@ -1368,6 +1368,16 @@ translate_options (int *argcp, const char *const **argvp)
 	  if (nskip + i > argc)
 	    nskip = argc - i;
 
+	  /* Convert -d with a separate argument to
+	     -foutput-class-dir= for Java.  */
+	  if (c == 'd' && p[1] == 0 && argv[i + 1] != NULL)
+	    {
+	      newv[newindex++] = concat ("-foutput-class-dir=", argv[i + 1],
+					 NULL);
+	      nskip = 0;
+	      i += 2;
+	    }
+
 	  while (nskip > 0)
 	    {
 	      newv[newindex++] = argv[i++];
@@ -3849,12 +3859,6 @@ driver_handle_option (const struct cl_decoded_option *decoded,
       do_save = false;
       break;
 
-    case OPT_S:
-    case OPT_c:
-    case OPT_E:
-      /* have_c already set in a prescan above.  */
-      break;
-
     case OPT_o:
       have_o = 1;
 #if defined(HAVE_TARGET_EXECUTABLE_SUFFIX) || defined(HAVE_TARGET_OBJECT_SUFFIX)
@@ -3878,7 +3882,10 @@ driver_handle_option (const struct cl_decoded_option *decoded,
       break;
 
     default:
-      gcc_unreachable ();
+      /* Various driver options need no special processing at this
+	 point, having been handled in a prescan above or being
+	 handled by specs.  */
+      break;
     }
 
   if (do_save)
@@ -3983,10 +3990,11 @@ process_command (int argc, const char **argv)
      is relocated. The toolchain was either relocated using GCC_EXEC_PREFIX
      or an automatically created GCC_EXEC_PREFIX from argv[0].  */
 
+  decode_cmdline_options_to_array (argc, argv, CL_DRIVER,
+				   &decoded_options, &decoded_options_count);
+
   /* Do language-specific adjustment/addition of flags.  */
-  lang_specific_driver (&argc,
-			CONST_CAST2 (const char *const **, const char ***,
-				     &argv),
+  lang_specific_driver (&decoded_options, &decoded_options_count,
 			&added_libraries);
 
   if (gcc_exec_prefix)
@@ -4117,9 +4125,6 @@ process_command (int argc, const char **argv)
      vectors.  */
 
   last_language_n_infiles = -1;
-
-  decode_cmdline_options_to_array (argc, argv, CL_DRIVER,
-				   &decoded_options, &decoded_options_count);
 
   handlers.unknown_option_callback = driver_unknown_option_callback;
   handlers.wrong_lang_callback = driver_wrong_lang_callback;

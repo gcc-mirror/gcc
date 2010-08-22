@@ -1,5 +1,5 @@
 ; Options for the Java front end.
-; Copyright (C) 2003, 2005, 2007, 2009 Free Software Foundation, Inc.
+; Copyright (C) 2003, 2005, 2007, 2009, 2010 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -23,6 +23,17 @@
 
 Language
 Java
+
+C
+Driver
+; Java driver option in fact distinct from C-family option with the same name.
+
+CLASSPATH
+Driver Separate
+
+D
+Driver Joined Separate
+; Java driver option similar to C-family option.
 
 I
 Java Joined Separate
@@ -75,6 +86,18 @@ Warn if .class files are out of date
 Wredundant-modifiers
 Java Var(flag_redundant)
 Warn if modifiers are specified when not necessary
+
+bootclasspath
+Driver Separate
+
+classpath
+Driver Separate
+
+encoding
+Driver Separate
+
+extdirs
+Driver Separate
 
 fCLASSPATH=
 Java JoinedOrMissing RejectNegative
@@ -135,6 +158,9 @@ Java Joined RejectNegative
 fextdirs=
 Java Joined RejectNegative
 --extdirs=<path>	Set the extension directory path
+
+fmain=
+Driver JoinedOrMissing RejectNegative
 
 fsource-filename=
 Java Joined Undocumented 
@@ -207,6 +233,9 @@ Set the source language version
 ftarget=
 Java Joined
 Set the target VM version
+
+s-bc-abi
+Driver
 
 version
 Java RejectDriver
