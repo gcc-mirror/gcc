@@ -7773,7 +7773,7 @@ mips_in_small_data_p (const_tree decl)
 
   /* We don't yet generate small-data references for -mabicalls
      or VxWorks RTP code.  See the related -G handling in
-     mips_override_options.  */
+     mips_option_override.  */
   if (TARGET_ABICALLS || TARGET_VXWORKS_RTP)
     return false;
 
@@ -15469,10 +15469,10 @@ mips_handle_option (size_t code, const char *arg, int value)
     }
 }
 
-/* Implement OVERRIDE_OPTIONS.  */
+/* Implement TARGET_OPTION_OVERRIDE.  */
 
-void
-mips_override_options (void)
+static void
+mips_option_override (void)
 {
   int i, start, regno, mode;
 
@@ -16343,6 +16343,9 @@ void mips_function_profiler (FILE *file)
 #define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
 #undef TARGET_ASM_ALIGNED_DI_OP
 #define TARGET_ASM_ALIGNED_DI_OP "\t.dword\t"
+
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE mips_option_override
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS mips_legitimize_address

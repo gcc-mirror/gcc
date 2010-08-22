@@ -1073,8 +1073,6 @@ enum mips_code_readable_setting {
 #define SWITCH_TAKES_ARG(CHAR)						\
   (DEFAULT_SWITCH_TAKES_ARG (CHAR) || (CHAR) == 'G')
 
-#define OVERRIDE_OPTIONS mips_override_options ()
-
 #define CONDITIONAL_REGISTER_USAGE mips_conditional_register_usage ()
 
 /* Show we can debug even without a frame pointer.  */
@@ -1521,7 +1519,7 @@ enum mips_code_readable_setting {
 
    Regarding coprocessor registers: without evidence to the contrary,
    it's best to assume that each coprocessor register has a unique
-   use.  This can be overridden, in, e.g., mips_override_options or
+   use.  This can be overridden, in, e.g., mips_option_override or
    CONDITIONAL_REGISTER_USAGE should the assumption be inappropriate
    for a particular target.  */
 
