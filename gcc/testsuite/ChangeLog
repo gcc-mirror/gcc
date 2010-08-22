@@ -1,5 +1,10 @@
 2010-08-22  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/45367
+	* gfortran.dg/bessel_6.f90: Fix numeric tolerence.
+
+2010-08-22  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/36158
 	* gfortran.dg/bessel_7.f90: Disable accidently enabled debug output.
 
