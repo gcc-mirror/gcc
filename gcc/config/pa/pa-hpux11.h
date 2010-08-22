@@ -121,10 +121,15 @@ along with GCC; see the file COPYING3.  If not see
 #undef LIB_SPEC
 #define LIB_SPEC \
   "%{!shared:\
-     %{static|mt|pthread:%{fopenmp:%{static:-a archive_shared} -lrt\
-       %{static:-a archive}} -lpthread} -lc\
+     %{fopenmp:%{static:-a archive_shared} -lrt %{static:-a archive}}\
+     %{mt|pthread:-lpthread} -lc\
      %{static:%{!nolibdld:-a archive_shared -ldld -a archive -lc}}}\
    %{shared:%{mt|pthread:-lpthread}}"
+
+/* The libgcc_stub.a library needs to come last.  */
+#undef LINK_GCC_C_SEQUENCE_SPEC
+#define LINK_GCC_C_SEQUENCE_SPEC \
+  "%G %L %G %{!nostdlib:%{!nodefaultlibs:%{!shared:-lgcc_stub}}}"
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
