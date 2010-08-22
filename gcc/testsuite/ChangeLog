@@ -1,4 +1,9 @@
 2010-08-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/36158
+	* gfortran.dg/bessel_7.f90: Disable accidently enabled debug output.
+
+2010-08-22  Tobias Burnus  <burnus@net-b.de>
 	    Dominique d'Humieres <dominiq@lps.ens.fr>
 
 	PR fortran/45367
