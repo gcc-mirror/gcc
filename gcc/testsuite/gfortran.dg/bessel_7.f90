@@ -32,13 +32,13 @@ real X, myeps, myeps2
 rec = BESSEL_YN(0, Nmax, X)
 lib = [ (BESSEL_YN(i, X), i=0,Nmax) ]
 
-print *, 'YN for X = ', X, ' -- Epsilon = ',epsilon(x)
+!print *, 'YN for X = ', X, ' -- Epsilon = ',epsilon(x)
 do i = 0, Nmax
-  print '(i2,2e17.9,e12.2,f14.10,2l3)', i, rec(i), lib(i), &
-        rec(i)-lib(i), ((rec(i)-lib(i))/rec(i))/epsilon(x), &
-        i > nit .or. rec(i) == lib(i) &
-                .or. abs((rec(i)-lib(i))/rec(i)) < myeps2, &
-        rec(i) == lib(i) .or. abs((rec(i)-lib(i))/rec(i)) < myeps
+!  print '(i2,2e17.9,e12.2,f14.10,2l3)', i, rec(i), lib(i), &
+!        rec(i)-lib(i), ((rec(i)-lib(i))/rec(i))/epsilon(x), &
+!        i > nit .or. rec(i) == lib(i) &
+!                .or. abs((rec(i)-lib(i))/rec(i)) < myeps2, &
+!        rec(i) == lib(i) .or. abs((rec(i)-lib(i))/rec(i)) < myeps
 if (.not. (i > nit .or. rec(i) == lib(i) &
                    .or. abs((rec(i)-lib(i))/rec(i)) < myeps2)) &
   call abort ()
