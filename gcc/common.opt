@@ -69,6 +69,9 @@ Driver Joined Separate
 E
 Driver
 
+L
+Driver Joined Separate
+
 O
 Common JoinedOrMissing Optimization
 -O<number>	Set optimization level to <number>
@@ -1645,6 +1648,12 @@ Driver Joined Separate
 no-canonical-prefixes
 Driver
 
+nodefaultlibs
+Driver
+
+nostdlib
+Driver
+
 o
 Common Driver Joined Separate MissingArgError(missing filename after %qs)
 -o <file>	Place output into <file>
@@ -1663,6 +1672,9 @@ Issue warnings needed for strict compliance to the standard
 pedantic-errors
 Common
 Like -pedantic but issue them as errors
+
+pg
+Driver
 
 pipe
 Driver Var(use_pipes)
@@ -1739,6 +1751,9 @@ Driver Separate
 
 specs=
 Driver Joined
+
+static
+Driver
 
 static-libgcc
 Driver

@@ -57,7 +57,7 @@ JAVA_TARGET_INDEPENDENT_BIN_TOOLS = jcf-dump
 .PHONY: java
 
 jvspec.o: $(srcdir)/java/jvspec.c $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(GCC_H) $(CONFIG_H) java/jcf.h java/javaop.h
+  $(GCC_H) $(CONFIG_H) java/jcf.h java/javaop.h opts.h
 	(SHLIB_LINK='$(SHLIB_LINK)'; \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
 		$(INCLUDES) $(srcdir)/java/jvspec.c $(OUTPUT_OPTION))

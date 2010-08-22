@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "gcc.h"
+#include "opts.h"
 
 /* The `cpp' executable installed in $(bindir) and $(cpp_install_dir)
    is a customized version of the gcc driver.  It forces -E; -S and -c
@@ -41,13 +42,14 @@ static const char *const known_suffixes[] =
   NULL
 };
 
-/* Filter argc and argv before processing by the gcc driver proper.  */
+/* Filter the command line before processing by the gcc driver proper.  */
 void
-lang_specific_driver (int *in_argc, const char *const **in_argv,
+lang_specific_driver (struct cl_decoded_option **in_decoded_options,
+		      unsigned int *in_decoded_options_count,
 		      int *in_added_libraries ATTRIBUTE_UNUSED)
 {
-  int argc = *in_argc;
-  const char *const *argv = *in_argv;
+  struct cl_decoded_option *decoded_options = *in_decoded_options;
+  unsigned int argc = *in_decoded_options_count;
 
   /* Do we need to read stdin? */
   int read_stdin = 1;
@@ -60,16 +62,16 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 
   /* Positions to insert -xc, -xassembler-with-cpp, and -o, if necessary.
      0 means unnecessary.  */
-  int lang_c_here = 0;
-  int lang_S_here = 0;
-  int o_here = 0;
+  unsigned int lang_c_here = 0;
+  unsigned int lang_S_here = 0;
+  unsigned int o_here = 0;
 
   /* Do we need to fix up an input file with an unrecognized suffix? */
   int need_fixups = 1;
 
-  int i, j, quote = 0;
-  const char **new_argv;
-  int new_argc;
+  unsigned int i, j;
+  struct cl_decoded_option *new_decoded_options;
+  unsigned int new_argc;
   extern int is_cpp_driver;
 
   is_cpp_driver = 1;
@@ -79,117 +81,111 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
      the output file.  If we see a third input file, barf.  */
   for (i = 1; i < argc; i++)
     {
-      if (quote == 1)
+      switch (decoded_options[i].opt_index)
 	{
-	  quote = 0;
-	  continue;
-	}
+	case OPT_E:
+	  need_E = 0;
+	  break;
 
-      if (argv[i][0] == '-')
-	{
-	  if (argv[i][1] == '\0')
-	    read_stdin = 0;
-	  else if (argv[i][2] == '\0')
-	    {
-	      if (argv[i][1] == 'E')
-		need_E = 0;
-	      else if (argv[i][1] == 'S' || argv[i][1] == 'c')
-		{
-		  fatal_error ("%qs is not a valid option to the "
-			       "preprocessor", argv[i]);
-		  return;
-		}
-	      else if (argv[i][1] == 'x')
-		{
-		  need_fixups = 0;
-		  quote = 1;
-		}
-	      else if (SWITCH_TAKES_ARG (argv[i][1]))
-		quote = 1;
-	    }
-	  else if (argv[i][1] == 'x')
-	    need_fixups = 0;
-	  else if (WORD_SWITCH_TAKES_ARG (&argv[i][1]))
-	    quote = 1;
-	}
-      else /* not an option */
-	{
-	  seen_input++;
-	  if (seen_input == 3)
-	    {
-	      fatal_error ("too many input files");
-	      return;
-	    }
-	  else if (seen_input == 2)
-	    {
-	      o_here = i;
-	    }
-	  else
-	    {
+	case OPT_S:
+	case OPT_c:
+	  fatal_error ("%qs is not a valid option to the preprocessor",
+		       decoded_options[i].orig_option_with_args_text);
+	  return;
+
+	case OPT_x:
+	  need_fixups = 0;
+	  break;
+
+	case OPT_SPECIAL_input_file:
+	  {
+	    const char *file = decoded_options[i].arg;
+
+	    if (strcmp (file, "-") == 0)
 	      read_stdin = 0;
-	      if (need_fixups)
-		{
-		  int l = strlen (argv[i]);
-		  int known = 0;
-		  const char *const *suff;
-
-		  for (suff = known_suffixes; *suff; suff++)
-		    if (!strcmp (*suff, &argv[i][l - strlen(*suff)]))
+	    else
+	      {
+		seen_input++;
+		if (seen_input == 3)
+		  {
+		    fatal_error ("too many input files");
+		    return;
+		  }
+		else if (seen_input == 2)
+		  {
+		    o_here = i;
+		  }
+		else
+		  {
+		    read_stdin = 0;
+		    if (need_fixups)
 		      {
-			known = 1;
-			break;
-		      }
+			int l = strlen (file);
+			int known = 0;
+			const char *const *suff;
 
-		  if (! known)
-		    {
-		      /* .s files are a special case; we have to treat
-			 them like .S files so -D__ASSEMBLER__ will be
-			 in effect.  */
-		      if (!strcmp (".s", &argv[i][l - 2]))
-			lang_S_here = i;
-		      else
-			lang_c_here = i;
-		    }
-		}
-	    }
+			for (suff = known_suffixes; *suff; suff++)
+			  if (!strcmp (*suff, &file[l - strlen(*suff)]))
+			    {
+			      known = 1;
+			      break;
+			    }
+
+			if (! known)
+			  {
+			    /* .s files are a special case; we have to
+			       treat them like .S files so
+			       -D__ASSEMBLER__ will be in effect.  */
+			    if (!strcmp (".s", &file[l - 2]))
+			      lang_S_here = i;
+			    else
+			      lang_c_here = i;
+			  }
+		      }
+		  }
+	      }
+	  }
+	  break;
 	}
     }
 
   /* If we don't need to edit the command line, we can bail early.  */
 
-  new_argc = argc + need_E + read_stdin
-    + !!o_here + !!lang_c_here + !!lang_S_here;
+  new_argc = argc + need_E + read_stdin + !!lang_c_here + !!lang_S_here;
 
-  if (new_argc == argc)
+  if (new_argc == argc && !o_here)
     return;
 
-  /* One more slot for a terminating null.  */
-  new_argv = XNEWVEC (const char *, new_argc + 1);
+  new_decoded_options = XNEWVEC (struct cl_decoded_option, new_argc);
 
-  new_argv[0] = argv[0];
+  new_decoded_options[0] = new_decoded_options[0];
   j = 1;
 
   if (need_E)
-    new_argv[j++] = "-E";
+    generate_option (OPT_E, NULL, 1, CL_DRIVER, &new_decoded_options[j++]);
 
   for (i = 1; i < argc; i++, j++)
     {
       if (i == lang_c_here)
-	new_argv[j++] = "-xc";
+	generate_option (OPT_x, "c", 1, CL_DRIVER, &new_decoded_options[j++]);
       else if (i == lang_S_here)
-	new_argv[j++] = "-xassembler-with-cpp";
+	generate_option (OPT_x, "assembler-with-cpp", 1, CL_DRIVER,
+			 &new_decoded_options[j++]);
       else if (i == o_here)
-	new_argv[j++] = "-o";
+	{
+	  generate_option (OPT_o, decoded_options[i].arg, 1, CL_DRIVER,
+			   &new_decoded_options[j]);
+	  continue;
+	}
 
-      new_argv[j] = argv[i];
+      new_decoded_options[j] = decoded_options[i];
     }
 
   if (read_stdin)
-    new_argv[j++] = "-";
+    generate_option_input_file ("-", &new_decoded_options[j++]);
 
-  new_argv[j] = NULL;
-  *in_argc = new_argc;
-  *in_argv = new_argv;
+  *in_decoded_options_count = new_argc;
+  *in_decoded_options = new_decoded_options;
 }
 
 /* Called before linking.  Returns 0 on success and -1 on failure.  */

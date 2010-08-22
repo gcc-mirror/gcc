@@ -127,6 +127,23 @@ integral_argument (const char *arg)
   return -1;
 }
 
+/* Return whether OPTION is OK for the language given by
+   LANG_MASK.  */
+static bool
+option_ok_for_language (const struct cl_option *option,
+			unsigned int lang_mask)
+{
+  if (!(option->flags & lang_mask))
+    return false;
+  else if ((option->flags & CL_TARGET)
+	   && (option->flags & (CL_LANG_ALL | CL_DRIVER))
+	   && !(option->flags & (lang_mask & ~CL_COMMON & ~CL_TARGET)))
+    /* Complain for target flag language mismatches if any languages
+       are specified.  */
+    return false;
+  return true;
+}
+
 /* Decode the switch beginning at ARGV for the language indicated by
    LANG_MASK (including CL_COMMON and CL_TARGET if applicable), into
    the structure *DECODED.  Returns the number of switches
@@ -228,14 +245,8 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
     }
 
   /* Check if this is a switch for a different front end.  */
-  if (!(option->flags & lang_mask))
+  if (!option_ok_for_language (option, lang_mask))
     errors |= CL_ERR_WRONG_LANG;
-  else if ((option->flags & CL_TARGET)
-	   && (option->flags & (CL_LANG_ALL | CL_DRIVER))
-	   && !(option->flags & (lang_mask & ~CL_COMMON & ~CL_TARGET)))
-    /* Complain for target flag language mismatches if any languages
-       are specified.  */
-      errors |= CL_ERR_WRONG_LANG;
 
   if (arg == NULL && (separate_arg_flag || joined_arg_flag))
     errors |= CL_ERR_MISSING_ARG;
@@ -346,16 +357,7 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
       /* Interpret "-" or a non-switch as a file name.  */
       if (opt[0] != '-' || opt[1] == '\0')
 	{
-	  opt_array[num_decoded_options].opt_index = OPT_SPECIAL_input_file;
-	  opt_array[num_decoded_options].arg = opt;
-	  opt_array[num_decoded_options].orig_option_with_args_text = opt;
-	  opt_array[num_decoded_options].canonical_option_num_elements = 1;
-	  opt_array[num_decoded_options].canonical_option[0] = opt;
-	  opt_array[num_decoded_options].canonical_option[1] = NULL;
-	  opt_array[num_decoded_options].canonical_option[2] = NULL;
-	  opt_array[num_decoded_options].canonical_option[3] = NULL;
-	  opt_array[num_decoded_options].value = 1;
-	  opt_array[num_decoded_options].errors = 0;
+	  generate_option_input_file (opt, &opt_array[num_decoded_options]);
 	  num_decoded_options++;
 	  n = 1;
 	  continue;
@@ -550,45 +552,76 @@ handle_generated_option (size_t opt_index, const char *arg, int value,
 			 unsigned int lang_mask, int kind,
 			 const struct cl_option_handlers *handlers)
 {
-  const struct cl_option *option = &cl_options[opt_index];
   struct cl_decoded_option decoded;
 
-  decoded.opt_index = opt_index;
-  decoded.arg = arg;
-  decoded.canonical_option[2] = NULL;
-  decoded.canonical_option[3] = NULL;
-  decoded.value = value;
-  decoded.errors = 0;
+  generate_option (opt_index, arg, value, lang_mask, &decoded);
+  return handle_option (&decoded, lang_mask, kind, handlers);
+}
+
+/* Fill in *DECODED with an option described by OPT_INDEX, ARG and
+   VALUE for a front end using LANG_MASK.  This is used when the
+   compiler generates options internally.  */
+
+void
+generate_option (size_t opt_index, const char *arg, int value,
+		 unsigned int lang_mask, struct cl_decoded_option *decoded)
+{
+  const struct cl_option *option = &cl_options[opt_index];
+
+  decoded->opt_index = opt_index;
+  decoded->arg = arg;
+  decoded->canonical_option[2] = NULL;
+  decoded->canonical_option[3] = NULL;
+  decoded->value = value;
+  decoded->errors = (option_ok_for_language (option, lang_mask)
+		     ? 0
+		     : CL_ERR_WRONG_LANG);
 
   if (arg)
     {
       if (option->flags & CL_SEPARATE)
 	{
-	  decoded.orig_option_with_args_text = concat (option->opt_text, " ",
-						       arg, NULL);
-	  decoded.canonical_option[0] = option->opt_text;
-	  decoded.canonical_option[1] = arg;
-	  decoded.canonical_option_num_elements = 2;
+	  decoded->orig_option_with_args_text = concat (option->opt_text, " ",
+							arg, NULL);
+	  decoded->canonical_option[0] = option->opt_text;
+	  decoded->canonical_option[1] = arg;
+	  decoded->canonical_option_num_elements = 2;
 	}
       else
 	{
 	  gcc_assert (option->flags & CL_JOINED);
-	  decoded.orig_option_with_args_text = concat (option->opt_text, arg,
-						       NULL);
-	  decoded.canonical_option[0] = decoded.orig_option_with_args_text;
-	  decoded.canonical_option[1] = NULL;
-	  decoded.canonical_option_num_elements = 1;
+	  decoded->orig_option_with_args_text = concat (option->opt_text, arg,
+							NULL);
+	  decoded->canonical_option[0] = decoded->orig_option_with_args_text;
+	  decoded->canonical_option[1] = NULL;
+	  decoded->canonical_option_num_elements = 1;
 	}
     }
   else
     {
-      decoded.orig_option_with_args_text = option->opt_text;
-      decoded.canonical_option[0] = option->opt_text;
-      decoded.canonical_option[1] = NULL;
-      decoded.canonical_option_num_elements = 1;
+      decoded->orig_option_with_args_text = option->opt_text;
+      decoded->canonical_option[0] = option->opt_text;
+      decoded->canonical_option[1] = NULL;
+      decoded->canonical_option_num_elements = 1;
     }
+}
 
-  return handle_option (&decoded, lang_mask, kind, handlers);
+/* Fill in *DECODED with an option for input file FILE.  */
+
+void
+generate_option_input_file (const char *file,
+			    struct cl_decoded_option *decoded)
+{
+  decoded->opt_index = OPT_SPECIAL_input_file;
+  decoded->arg = file;
+  decoded->orig_option_with_args_text = file;
+  decoded->canonical_option_num_elements = 1;
+  decoded->canonical_option[0] = file;
+  decoded->canonical_option[1] = NULL;
+  decoded->canonical_option[2] = NULL;
+  decoded->canonical_option[3] = NULL;
+  decoded->value = 1;
+  decoded->errors = 0;
 }
 
 /* Handle the switch DECODED for the language indicated by LANG_MASK,

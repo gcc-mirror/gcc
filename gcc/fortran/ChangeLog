@@ -1,3 +1,20 @@
+2010-08-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* Make-lang.in (gfortranspec.o): Update dependencies.
+	* gfortranspec.c: Include coretypes.h before gcc.h.  Include
+	opts.h.
+	(MATH_LIBRARY, FORTRAN_LIBRARY): Remove initial "-l".
+	(ADD_ARG_LIBGFORTRAN, Option, lookup_option): Remove.
+	(g77_xargc): Make unsigned.
+	(g77_xargv): Change to g77_x_decoded_options.
+	(g77_newargc): Make unsigned.
+	(g77_newargv): Change to g77_new_decoded_options.
+	(strings_same, options_same): New.
+	(append_arg): Use cl_decoded_option structures.
+	(append_option): New.
+	(add_arg_libgfortran): New.
+	(lang_specific_driver): Use cl_decoded_option structures.
+
 2010-08-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45271

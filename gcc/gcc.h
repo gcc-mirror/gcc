@@ -41,7 +41,8 @@ extern void set_input (const char *);
 /* Spec files linked with gcc.c must provide definitions for these.  */
 
 /* Called before processing to change/add/remove arguments.  */
-extern void lang_specific_driver (int *, const char *const **, int *);
+extern void lang_specific_driver (struct cl_decoded_option **,
+				  unsigned int *, int *);
 
 /* Called before linking.  Returns 0 on success and -1 on failure.  */
 extern int lang_specific_pre_link (void);

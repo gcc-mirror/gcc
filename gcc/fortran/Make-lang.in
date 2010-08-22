@@ -78,7 +78,7 @@ fortran: f951$(exeext)
 .PHONY: fortran
 
 gfortranspec.o: $(srcdir)/fortran/gfortranspec.c $(SYSTEM_H) $(TM_H) $(GCC_H) \
-	$(CONFIG_H) coretypes.h intl.h
+	$(CONFIG_H) coretypes.h intl.h opts.h
 	(SHLIB_LINK='$(SHLIB_LINK)'; \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
 		$(INCLUDES) $(srcdir)/fortran/gfortranspec.c)
