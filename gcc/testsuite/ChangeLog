@@ -1,3 +1,11 @@
+2010-08-22  Tobias Burnus  <burnus@net-b.de>
+	    Dominique d'Humieres <dominiq@lps.ens.fr>
+
+	PR fortran/45367
+	PR fortran/36158
+	* gfortran.dg/bessel_6.f90: Increase numeric tolerence.
+	* gfortran.dg/bessel_7.f90: Increase numeric tolerence.
+
 2010-08-21  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44863
