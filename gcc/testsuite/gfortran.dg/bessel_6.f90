@@ -13,7 +13,7 @@ real,parameter :: myeps(size(values)) = epsilon(0.0) &
 ! more tolerant
 !                  * [0, 5, 3, 4, 6, 7, 7, 5, 5, 6, 66, 4 ]
 integer,parameter :: mymax(size(values)) =  &
-                 [100, 17, 23, 21, 27, 28, 32, 35, 36, 41, 100, 100 ]
+                 [100, 17, 23, 21, 27, 28, 32, 35, 36, 41, 49, 50 ]
 integer, parameter :: Nmax = 100
 real :: rec(0:Nmax), lib(0:Nmax)
 integer :: i
