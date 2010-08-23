@@ -539,7 +539,7 @@ gather_memory_references_ref (struct loop *loop, struct mem_ref_group **refs,
   if (step == NULL_TREE)
     return false;
 
-  /* Stop if the address of BASE could not taken.  */
+  /* Stop if the address of BASE could not be taken.  */
   if (may_be_nonaddressable_p (base))
     return false;
 
