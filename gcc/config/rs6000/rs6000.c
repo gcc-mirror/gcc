@@ -949,6 +949,9 @@ static const enum rs6000_btc builtin_classify[(int)RS6000_BUILTIN_COUNT] =
 #undef RS6000_BUILTIN
 #undef RS6000_BUILTIN_EQUATE
 
+/* Support for -mveclibabi=<xxx> to control which vector library to use.  */
+static tree (*rs6000_veclib_handler) (tree, tree, tree);
+
 
 static bool rs6000_function_ok_for_sibcall (tree, tree);
 static const char *rs6000_invalid_within_doloop (const_rtx);
@@ -2772,6 +2775,15 @@ rs6000_override_options (const char *default_cpu)
 	       rs6000_traceback_name);
     }
 
+  if (rs6000_veclibabi_name)
+    {
+      if (strcmp (rs6000_veclibabi_name, "mass") == 0)
+	rs6000_veclib_handler = rs6000_builtin_vectorized_libmass;
+      else
+	error ("unknown vectorization library ABI type (%s) for "
+	       "-mveclibabi= switch", rs6000_veclibabi_name);
+    }
+
   if (!rs6000_explicit_options.long_double)
     rs6000_long_double_type_size = RS6000_DEFAULT_LONG_DOUBLE_SIZE;
 
@@ -3909,8 +3921,8 @@ rs6000_builtin_vectorized_function (tree fndecl, tree type_out,
     }
 
   /* Generate calls to libmass if appropriate.  */
-  if (TARGET_MASS)
-    return rs6000_builtin_vectorized_libmass (fndecl, type_out, type_in);
+  if (rs6000_veclib_handler)
+    return rs6000_veclib_handler (fndecl, type_out, type_in);
 
   return NULL_TREE;
 }

@@ -1,15 +1,18 @@
 2010-08-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
-	* config/rs6000/rs6000.opt (-mmass): New option to enable the
-	compiler to autovectorize mathmetical functions for power7 using
-	the Mathematical Acceleration Subsystem library.
+	* config/rs6000/rs6000.opt (-mveclibabi=mass): New option to
+	enable the compiler to autovectorize mathmetical functions for
+	power7 using the Mathematical Acceleration Subsystem library.
 
-	* config/rs6000/rs6000.c (rs6000_builtin_vectorized_libmass): New
-	function to handle auto vectorizing math functions that are in the
-	MASS library.
+	* config/rs6000/rs6000.c (rs6000_veclib_handler): New variable to
+	handle which vector math library we have.
+	(rs6000_override_options): Add -mveclibabi=mass support.
+	(rs6000_builtin_vectorized_libmass): New function to handle auto
+	vectorizing math functions that are in the MASS library.
 	(rs6000_builtin_vectorized_function): Call it.
 
-	* doc/invoke.texi (RS/6000 and PowerPC Options): Document -mmass.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document
+	-mveclibabi=mass.
 
 2010-08-22  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
