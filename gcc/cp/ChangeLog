@@ -1,3 +1,8 @@
+2010-08-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/45315
+	* init.c (build_new_1): Don't use build_value_init in a template.
+
 2010-07-31  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	PR c++/45112

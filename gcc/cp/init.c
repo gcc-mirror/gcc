@@ -2158,7 +2158,8 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	{
 	  init_expr = cp_build_indirect_ref (data_addr, RO_NULL, complain);
 
-	  if (TYPE_NEEDS_CONSTRUCTING (type) && !explicit_value_init_p)
+	  if (TYPE_NEEDS_CONSTRUCTING (type)
+	      && (!explicit_value_init_p || processing_template_decl))
 	    {
 	      init_expr = build_special_member_call (init_expr,
 						     complete_ctor_identifier,
@@ -2168,9 +2169,13 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 	    }
 	  else if (explicit_value_init_p)
 	    {
-	      /* Something like `new int()'.  */
-	      init_expr = build2 (INIT_EXPR, type,
-				  init_expr, build_value_init (type));
+	      if (processing_template_decl)
+		/* Don't worry about it, we'll handle this properly at
+		   instantiation time.  */;
+	      else
+		/* Something like `new int()'.  */
+		init_expr = build2 (INIT_EXPR, type,
+				    init_expr, build_value_init (type));
 	    }
 	  else
 	    {
