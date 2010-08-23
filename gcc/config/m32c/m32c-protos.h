@@ -1,5 +1,5 @@
 /* Target Prototypes for R8C/M16C/M32C
-   Copyright (C) 2005, 2007, 2008
+   Copyright (C) 2005, 2007, 2008, 2010
    Free Software Foundation, Inc.
    Contributed by Red Hat.
 
@@ -37,7 +37,6 @@ void m32c_init_expanders (void);
 int  m32c_initial_elimination_offset (int, int);
 void m32c_output_reg_pop (FILE *, int);
 void m32c_output_reg_push (FILE *, int);
-void m32c_override_options (void);
 int  m32c_print_operand_punct_valid_p (int);
 int  m32c_push_rounding (int);
 int  m32c_reg_class_from_constraint (char, const char *);
@@ -75,7 +74,6 @@ bool m32c_immd_dbl_mov (rtx *, MM);
 rtx  m32c_incoming_return_addr_rtx (void);
 int  m32c_legitimate_constant_p (rtx);
 int  m32c_legitimize_reload_address (rtx *, MM, int, int, int);
-bool m32c_function_value_regno_p (const unsigned int);
 int  m32c_limit_reload_class (MM, int);
 int  m32c_memory_move_cost (MM, int, int);
 int  m32c_modes_tieable_p (MM, MM);
