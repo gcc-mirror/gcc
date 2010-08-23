@@ -115,9 +115,9 @@ mpopcntd
 Target Report Mask(POPCNTD)
 Use PowerPC V2.06 popcntd instruction
 
-mmass
-Target Report Var(TARGET_MASS) Init(0)
-Use the Mathematical Acceleration Subsystem library high performance math libraries.
+mveclibabi=
+Target RejectNegative Joined Var(rs6000_veclibabi_name)
+Vector library ABI to use
 
 mvsx
 Target Report Mask(VSX)

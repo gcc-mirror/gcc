@@ -1,6 +1,7 @@
 2010-08-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
-	* gcc.target/powerpc/vsx-mass-1.c: New file, test -mmass.
+	* gcc.target/powerpc/vsx-mass-1.c: New file, test
+	-mveclibabi=mass.
 
 2010-08-23  Janus Weil  <janus@gcc.gnu.org>
 
