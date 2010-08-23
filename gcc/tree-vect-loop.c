@@ -2031,6 +2031,7 @@ vect_get_single_scalar_iteraion_cost (loop_vec_info loop_vinfo)
      statements.  */
 
   /* FORNOW.  */
+  innerloop_iters = 1;
   if (loop->inner)
     innerloop_iters = 50; /* FIXME */
 
