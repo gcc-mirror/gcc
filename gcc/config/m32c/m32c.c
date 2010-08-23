@@ -1,5 +1,5 @@
 /* Target Code for R8C/M16C/M32C
-   Copyright (C) 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Red Hat.
 
@@ -416,11 +416,15 @@ m32c_handle_option (size_t code,
   return TRUE;
 }
 
-/* Implements OVERRIDE_OPTIONS.  We limit memregs to 0..16, and
-   provide a default.  */
-void
-m32c_override_options (void)
+/* Implements TARGET_OPTION_OVERRIDE.  */
+
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE m32c_option_override
+
+static void
+m32c_option_override (void)
 {
+  /* We limit memregs to 0..16, and provide a default.  */
   if (target_memregs_set)
     {
       if (target_memregs < 0 || target_memregs > 16)
@@ -1675,9 +1679,12 @@ m32c_function_value (const_tree valtype,
   return m32c_libcall_value (mode, NULL_RTX);
 }
 
-/* Implements FUNCTION_VALUE_REGNO_P.  */
+/* Implements TARGET_FUNCTION_VALUE_REGNO_P.  */
 
-bool
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P m32c_function_value_regno_p
+
+static bool
 m32c_function_value_regno_p (const unsigned int regno)
 {
   return (regno == R0_REGNO || regno == MEM0_REGNO);
