@@ -1,3 +1,8 @@
+2010-08-23  Kai Tietz  <kai.tietz@onevision.com>
+
+	* tree-vect-loop.c (vect_get_single_scalar_iteraion_cost):
+	Pre-initialize innerloop_iters to one.
+
 2010-08-23  Changpeng Fang  <changpeng.fang@amd.com>
 
 	* tree-flow.h (may_be_nonaddressable_p): New definition. Make the
