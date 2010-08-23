@@ -1,3 +1,9 @@
+2010-08-23  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45323
+	* io/write.c (nml_write_obj, namelist_write): Cast argument
+	of toupper to int.
+
 2010-08-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
