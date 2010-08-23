@@ -399,6 +399,13 @@ optimize_equality (gfc_expr *e, bool equal)
       return true;
     }
 
+  /* An expression of type EXPR_CONSTANT is only valid for scalars.  */
+  /* TODO: A scalar constant may be acceptable in some cases (the scalarizer
+     handles them well). However, there are also cases that need a non-scalar
+     argument. For example the any intrinsic. See PR 45380.  */
+  if (e->rank > 0)
+    return false;
+
   /* Check for direct comparison between identical variables.  Don't compare
      REAL or COMPLEX because of NaN checks.  */
   if (op1->expr_type == EXPR_VARIABLE
