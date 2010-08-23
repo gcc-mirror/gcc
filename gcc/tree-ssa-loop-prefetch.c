@@ -539,6 +539,10 @@ gather_memory_references_ref (struct loop *loop, struct mem_ref_group **refs,
   if (step == NULL_TREE)
     return false;
 
+  /* Stop if the address of BASE could not taken.  */
+  if (may_be_nonaddressable_p (base))
+    return false;
+
   /* Limit non-constant step prefetching only to the innermost loops.  */
   if (!cst_and_fits_in_hwi (step) && loop->inner != NULL)
     return false;

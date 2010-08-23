@@ -1,3 +1,15 @@
+2010-08-23  Changpeng Fang  <changpeng.fang@amd.com>
+
+	* tree-flow.h (may_be_nonaddressable_p): New definition. Make the
+	existing static function global.
+
+	*tree-ssa-loop-ivopts.c (may_be_nonaddressable_p): This function
+	is changed to global.
+
+	*tree-ssa-loop-prefetch.c (gather_memory_references_ref): Call
+	may_be_nonaddressable_p on base, and don't collect this reference
+	if the address of the base could not be taken.
+
 2010-08-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.opt (-mveclibabi=mass): New option to
