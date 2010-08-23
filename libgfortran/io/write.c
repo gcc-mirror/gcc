@@ -1703,14 +1703,14 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 	  base_name_len = strlen (base_name);
 	  for (dim_i = 0; dim_i < base_name_len; dim_i++)
             {
-	      cup = toupper (base_name[dim_i]);
+	      cup = toupper ((int) base_name[dim_i]);
 	      write_character (dtp, &cup, 1, 1);
             }
 	}
       clen = strlen (obj->var_name);
       for (dim_i = len; dim_i < clen; dim_i++)
 	{
-	  cup = toupper (obj->var_name[dim_i]);
+	  cup = toupper ((int) obj->var_name[dim_i]);
 	  write_character (dtp, &cup, 1, 1);
 	}
       write_character (dtp, "=", 1, 1);
@@ -1959,7 +1959,7 @@ namelist_write (st_parameter_dt *dtp)
   /* Write namelist name in upper case - f95 std.  */
   for (i = 0 ;i < dtp->namelist_name_len ;i++ )
     {
-      c = toupper (dtp->namelist_name[i]);
+      c = toupper ((int) dtp->namelist_name[i]);
       write_character (dtp, &c, 1 ,1);
     }
 
