@@ -481,6 +481,10 @@ gather_memory_references_ref (struct loop *loop, struct mem_ref_group **refs,
   if (!analyze_ref (loop, &ref, &base, &step, &delta, stmt))
     return false;
 
+  /* Stop if the address of BASE could not be taken.  */
+  if (may_be_nonaddressable_p (base))
+    return false;
+
   /* Now we know that REF = &BASE + STEP * iter + DELTA, where DELTA and STEP
      are integer constants.  */
   agrp = find_or_create_group (refs, base, step);

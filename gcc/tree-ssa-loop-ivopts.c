@@ -1557,7 +1557,7 @@ may_be_unaligned_p (tree ref, tree step)
 
 /* Return true if EXPR may be non-addressable.   */
 
-static bool
+bool
 may_be_nonaddressable_p (tree expr)
 {
   switch (TREE_CODE (expr))
