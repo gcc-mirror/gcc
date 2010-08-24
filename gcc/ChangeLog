@@ -1,6 +1,14 @@
 2010-08-24  Andrey Belevantsev  <abel@ispras.ru>
 
 	Backport from mainline:
+	2009-10-15  Steve Ellcey  <sje@cup.hp.com>
+
+	PR rtl-optimization/41697
+	* sel-sched-ir.h (_eligible_successor_edge_p): Check successor count.
+
+2010-08-24  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline:
 	2009-05-29  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/40101

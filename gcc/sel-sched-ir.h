@@ -1356,6 +1356,9 @@ _eligible_successor_edge_p (edge e1, succ_iterator *ip)
           && !(flags & SUCCS_OUT))
         return false;
 
+      if (EDGE_COUNT (bb->succs) == 0)
+	return false;
+
       e2 = EDGE_SUCC (bb, 0);
       bb = e2->dest;
     }
