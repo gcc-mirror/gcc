@@ -1,5 +1,6 @@
 /* Prototypes for pa.c functions used in the md file & elsewhere.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation,
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2010
+   Free Software Foundation,
    Inc.
 
 This file is part of GCC.
@@ -131,7 +132,6 @@ extern int integer_store_memory_operand (rtx, enum machine_mode);
 extern int ldil_cint_p (HOST_WIDE_INT);
 extern int zdepi_cint_p (unsigned HOST_WIDE_INT);
 
-extern void override_options (void);
 extern void output_ascii (FILE *, const char *, int);
 extern HOST_WIDE_INT compute_frame_size (HOST_WIDE_INT, int *);
 extern int and_mask_p (unsigned HOST_WIDE_INT);

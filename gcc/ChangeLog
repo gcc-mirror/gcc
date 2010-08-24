@@ -1,3 +1,18 @@
+2010-08-24  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/pa/pa.c (hppa_register_move_cost, pa_libcall_value,
+	pa_function_value_regno_p, pa_print_operand_punct_valid_p): New.
+	(pa_function_value): Make static.
+	(override_options): Rename to...
+	(pa_option_override): ...this. Make static.
+	(TARGET_PRINT_OPERAND_PUNCT_VALID_P, TARGET_REGISTER_MOVE_COST,
+	TARGET_LIBCALL_VALUE, TARGET_FUNCTION_VALUE_REGNO_P,
+	TARGET_OPTION_OVERRIDE): Define.
+	* config/pa/pa.h (OVERRIDE_OPTIONS, FUNCTION_VALUE_REGNO_P,
+	LIBCALL_VALUE, REGISTER_MOVE_COST, PRINT_OPERAND_PUNCT_VALID_P):
+	Remove.
+	* config/pa/pa-protos.h (override_options): Remove.
+
 2010-08-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/45379

@@ -84,9 +84,12 @@ hppa_fpstore_bypass_p (rtx out_insn, rtx in_insn)
 #endif
 #endif
 
+static void pa_option_override (void);
 static void copy_reg_pointer (rtx, rtx);
 static void fix_range (const char *);
 static bool pa_handle_option (size_t, const char *, int);
+static int hppa_register_move_cost (enum machine_mode mode, reg_class_t,
+				    reg_class_t);
 static int hppa_address_cost (rtx, bool);
 static bool hppa_rtx_costs (rtx, int, int, int *, bool);
 static inline rtx force_mode (enum machine_mode, rtx);
@@ -104,6 +107,8 @@ static void store_reg_modify (int, int, HOST_WIDE_INT);
 static void load_reg (int, HOST_WIDE_INT, int);
 static void set_reg_plus_d (int, int, HOST_WIDE_INT, int);
 static rtx pa_function_value (const_tree, const_tree, bool);
+static rtx pa_libcall_value (enum machine_mode, const_rtx);
+static bool pa_function_value_regno_p (const unsigned int);
 static void pa_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void update_total_code_bytes (unsigned int);
 static void pa_output_function_epilogue (FILE *, HOST_WIDE_INT);
@@ -168,6 +173,7 @@ static void pa_asm_trampoline_template (FILE *);
 static void pa_trampoline_init (rtx, tree, rtx);
 static rtx pa_trampoline_adjust_address (rtx);
 static rtx pa_delegitimize_address (rtx);
+static bool pa_print_operand_punct_valid_p (unsigned char);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -213,6 +219,9 @@ static size_t n_deferred_plabels = 0;
 
 /* Initialize the GCC target structure.  */
 
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE pa_option_override
+
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
 #undef TARGET_ASM_ALIGNED_SI_OP
@@ -235,6 +244,10 @@ static size_t n_deferred_plabels = 0;
 
 #undef TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE pa_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE pa_libcall_value
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P pa_function_value_regno_p
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS hppa_legitimize_address
@@ -269,6 +282,9 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_ASM_FILE_END output_deferred_plabels
 #endif
 
+#undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P pa_print_operand_punct_valid_p
+
 #if !defined(USE_COLLECT2)
 #undef TARGET_ASM_CONSTRUCTOR
 #define TARGET_ASM_CONSTRUCTOR pa_asm_out_constructor
@@ -284,6 +300,8 @@ static size_t n_deferred_plabels = 0;
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS pa_init_builtins
 
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST hppa_register_move_cost
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS hppa_rtx_costs
 #undef TARGET_ADDRESS_COST
@@ -487,8 +505,10 @@ pa_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
     }
 }
 
-void
-override_options (void)
+/* Implement the TARGET_OPTION_OVERRIDE hook.  */
+
+static void
+pa_option_override (void)
 {
   /* Unconditional branches in the delay slot are not compatible with dwarf2
      call frame information.  There is no benefit in using this optimization
@@ -1295,6 +1315,32 @@ hppa_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
     }
 
   return orig;
+}
+
+/* Implement the TARGET_REGISTER_MOVE_COST hook.
+
+   Compute extra cost of moving data between one register class
+   and another.
+
+   Make moves from SAR so expensive they should never happen.  We used to
+   have 0xffff here, but that generates overflow in rare cases.
+
+   Copies involving a FP register and a non-FP register are relatively
+   expensive because they must go through memory.
+
+   Other copies are reasonably cheap.  */
+
+static int
+hppa_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+			 reg_class_t from, reg_class_t to)
+{
+  if (from == SHIFT_REGS)
+    return 0x100;
+  else if ((FP_REG_CLASS_P (from) && ! FP_REG_CLASS_P (to))
+           || (FP_REG_CLASS_P (to) && ! FP_REG_CLASS_P (from)))
+    return 16;
+  else
+    return 2;
 }
 
 /* For the HPPA, REG and REG+CONST is cost 0
@@ -4799,6 +4845,20 @@ pa_adjust_insn_length (rtx insn, int length)
 	return 0;
     }
   return 0;
+}
+
+/* Implement the TARGET_PRINT_OPERAND_PUNCT_VALID_P hook.  */
+
+static bool
+pa_print_operand_punct_valid_p (unsigned char code)
+{
+  if (code == '@'
+      || code == '#'
+      || code == '*'
+      || code == '^')
+    return true;
+
+  return false;
 }
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
@@ -9235,7 +9295,7 @@ pa_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
    Small structures must be returned in a PARALLEL on PA64 in order
    to match the HP Compiler ABI.  */
 
-rtx
+static rtx
 pa_function_value (const_tree valtype, 
                    const_tree func ATTRIBUTE_UNUSED, 
                    bool outgoing ATTRIBUTE_UNUSED)
@@ -9294,6 +9354,31 @@ pa_function_value (const_tree valtype,
     return gen_rtx_REG (valmode, 32);
 
   return gen_rtx_REG (valmode, 28);
+}
+
+/* Implement the TARGET_LIBCALL_VALUE hook.  */
+
+static rtx
+pa_libcall_value (enum machine_mode mode,
+		  const_rtx fun ATTRIBUTE_UNUSED)
+{
+  if (! TARGET_SOFT_FLOAT
+      && (mode == SFmode || mode == DFmode))
+    return  gen_rtx_REG (mode, 32);
+  else
+    return  gen_rtx_REG (mode, 28);
+}
+
+/* Implement the TARGET_FUNCTION_VALUE_REGNO_P hook.  */
+
+static bool
+pa_function_value_regno_p (const unsigned int regno)
+{
+  if (regno == 28
+      || (! TARGET_SOFT_FLOAT &&  regno == 32))
+    return true;
+
+  return false;
 }
 
 /* Return the location of a parameter that is passed in a register or NULL

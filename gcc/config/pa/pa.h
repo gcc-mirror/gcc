@@ -145,8 +145,6 @@ extern int flag_pa_unix;
    and the old mnemonics are dialect zero.  */
 #define ASSEMBLER_DIALECT (TARGET_PA_20 ? 1 : 0)
 
-#define OVERRIDE_OPTIONS override_options ()
-
 /* Override some settings from dbxelf.h.  */
 
 /* We do not have to be compatible with dbx, so we enable gdb extensions
@@ -553,20 +551,6 @@ extern struct rtx_def *hppa_pic_save_rtx (void);
   (TARGET_64BIT				\
    ? (STACK_POINTER_OFFSET)		\
    : ((STACK_POINTER_OFFSET) - crtl->outgoing_args_size))
-
-/* Define how to find the value returned by a library function
-   assuming the value has mode MODE.  */
-
-#define LIBCALL_VALUE(MODE)	\
-  gen_rtx_REG (MODE,							\
-	       (! TARGET_SOFT_FLOAT					\
-		&& ((MODE) == SFmode || (MODE) == DFmode) ? 32 : 28))
-
-/* 1 if N is a possible register number for a function value
-   as seen by the caller.  */
-
-#define FUNCTION_VALUE_REGNO_P(N) \
-  ((N) == 28 || (! TARGET_SOFT_FLOAT && (N) == 32))
 
 
 /* Define a data type for recording info about an argument list
@@ -1331,22 +1315,6 @@ do { 									\
    few bits.  */
 #define SHIFT_COUNT_TRUNCATED 1
 
-/* Compute extra cost of moving data between one register class
-   and another.
-
-   Make moves from SAR so expensive they should never happen.  We used to
-   have 0xffff here, but that generates overflow in rare cases.
-
-   Copies involving a FP register and a non-FP register are relatively
-   expensive because they must go through memory.
-
-   Other copies are reasonably cheap.  */
-#define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2) \
- (CLASS1 == SHIFT_REGS ? 0x100					\
-  : FP_REG_CLASS_P (CLASS1) && ! FP_REG_CLASS_P (CLASS2) ? 16	\
-  : FP_REG_CLASS_P (CLASS2) && ! FP_REG_CLASS_P (CLASS1) ? 16	\
-  : 2)
-
 /* Adjust the cost of branches.  */
 #define BRANCH_COST(speed_p, predictable_p) (pa_cpu == PROCESSOR_8000 ? 2 : 1)
 
@@ -1523,9 +1491,6 @@ do { 									\
   
 /* All HP assemblers use "!" to separate logical lines.  */
 #define IS_ASM_LOGICAL_LINE_SEPARATOR(C, STR) ((C) == '!')
-
-#define PRINT_OPERAND_PUNCT_VALID_P(CHAR) \
-  ((CHAR) == '@' || (CHAR) == '#' || (CHAR) == '*' || (CHAR) == '^')
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
