@@ -264,7 +264,17 @@ search_line_acc_char (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
     }
 }
 
-#if (GCC_VERSION >= 4005) && (defined(__i386__) || defined(__x86_64__))
+/* Disable on Solaris 2/x86 until the following problems can be properly
+   autoconfed:
+
+   The Solaris 8 assembler cannot assemble SSE2/SSE4.2 insns.
+   The Solaris 9 assembler cannot assemble SSE4.2 insns.
+   Before Solaris 9 Update 6, SSE insns cannot be executed.
+   The Solaris 10+ assembler tags objects with the instruction set
+   extensions used, so SSE4.2 executables cannot run on machines that
+   don't support that extension.  */
+
+#if (GCC_VERSION >= 4005) && (defined(__i386__) || defined(__x86_64__)) && !(defined(__sun__) && defined(__svr4__))
 
 /* Replicated character data to be shared between implementations.
    Recall that outside of a context with vector support we can't
