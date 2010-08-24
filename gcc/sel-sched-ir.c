@@ -4290,6 +4290,11 @@ fallthru_bb_of_jump (rtx jump)
   if (!any_condjump_p (jump))
     return NULL;
 
+  /* A basic block that ends with a conditional jump may still have one successor
+     (and be followed by a barrier), we are not interested.  */
+  if (single_succ_p (BLOCK_FOR_INSN (jump)))
+    return NULL;
+
   return FALLTHRU_EDGE (BLOCK_FOR_INSN (jump))->dest;
 }
 
