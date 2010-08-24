@@ -3,7 +3,16 @@
 	Backport from mainline:
 	2010-01-14  Alexander Monakov <amonakov@ispras.ru>
 
-	PR rtl-optimization/42294
+	PR middle-end/42245
+	* gcc.dg/pr42245.c: New.
+	* gcc.dg/pr42245-2.c: New.
+
+2010-08-24  Andrey Belevantsev <abel@ispras.ru>
+
+	Backport from mainline:
+	2010-01-14  Alexander Monakov <amonakov@ispras.ru>
+
+	PR rtl-optimization/42249
 	* gcc.dg/pr42249.c: New.
 
 2010-08-24  Andrey Belevantsev <abel@ispras.ru>
