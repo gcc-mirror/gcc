@@ -7091,6 +7091,12 @@ update_seqnos_and_stage (int min_seqno, int max_seqno,
       gcc_assert (INSN_SEQNO (insn) < 0);
       INSN_SEQNO (insn) += highest_seqno_in_use + max_seqno - min_seqno + 2;
       gcc_assert (INSN_SEQNO (insn) <= new_hs);
+
+      /* When not pipelining, purge unneeded insn info on the scheduled insns.
+         For example, having reg_last array of INSN_DEPS_CONTEXT in memory may
+         require > 1GB of memory e.g. on limit-fnargs.c.  */
+      if (! pipelining_p)
+        free_data_for_scheduled_insn (insn);
     }
 
   ilist_clear (pscheduled_insns);

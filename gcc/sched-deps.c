@@ -2850,15 +2850,19 @@ sched_free_deps (rtx head, rtx tail, bool resolved_p)
 }
 
 /* Initialize variables for region data dependence analysis.
-   n_bbs is the number of region blocks.  */
+   When LAZY_REG_LAST is true, do not allocate reg_last array
+   of struct deps immediately.  */
 
 void
-init_deps (struct deps *deps)
+init_deps (struct deps *deps, bool lazy_reg_last)
 {
   int max_reg = (reload_completed ? FIRST_PSEUDO_REGISTER : max_reg_num ());
 
   deps->max_reg = max_reg;
-  deps->reg_last = XCNEWVEC (struct deps_reg, max_reg);
+  if (lazy_reg_last)
+    deps->reg_last = NULL;
+  else
+    deps->reg_last = XCNEWVEC (struct deps_reg, max_reg);
   INIT_REG_SET (&deps->reg_last_in_use);
   INIT_REG_SET (&deps->reg_conditional_sets);
 
@@ -2877,6 +2881,18 @@ init_deps (struct deps *deps)
   deps->readonly = 0;
 }
 
+/* Init only reg_last field of DEPS, which was not allocated before as
+   we inited DEPS lazily.  */
+void
+init_deps_reg_last (struct deps *deps)
+{
+  gcc_assert (deps && deps->max_reg > 0);
+  gcc_assert (deps->reg_last == NULL);
+
+  deps->reg_last = XCNEWVEC (struct deps_reg, deps->max_reg);
+}
+
+
 /* Free insn lists found in DEPS.  */
 
 void
@@ -2884,6 +2900,14 @@ free_deps (struct deps *deps)
 {
   unsigned i;
   reg_set_iterator rsi;
+
+  /* We set max_reg to 0 when this context was already freed.  */
+  if (deps->max_reg == 0)
+    {
+      gcc_assert (deps->reg_last == NULL);
+      return;
+    }
+  deps->max_reg = 0;
 
   free_INSN_LIST_list (&deps->pending_read_insns);
   free_EXPR_LIST_list (&deps->pending_read_mems);
@@ -2907,7 +2931,10 @@ free_deps (struct deps *deps)
   CLEAR_REG_SET (&deps->reg_last_in_use);
   CLEAR_REG_SET (&deps->reg_conditional_sets);
 
-  free (deps->reg_last);
+  /* As we initialize reg_last lazily, it is possible that we didn't allocate
+     it at all.  */
+  if (deps->reg_last)
+    free (deps->reg_last);
   deps->reg_last = NULL;
 
   deps = NULL;

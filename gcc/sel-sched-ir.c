@@ -432,7 +432,7 @@ reset_target_context (tc_t tc, bool clean_p)
 static void
 copy_deps_context (deps_t to, deps_t from)
 {
-  init_deps (to);
+  init_deps (to, false);
   deps_join (to, from);
 }
 
@@ -449,7 +449,7 @@ create_deps_context (void)
 {
   deps_t dc = alloc_deps_context ();
 
-  init_deps (dc);
+  init_deps (dc, false);
   return dc;
 }
 
@@ -483,7 +483,7 @@ static void
 reset_deps_context (deps_t dc)
 {
   clear_deps_context (dc);
-  init_deps (dc);
+  init_deps (dc, false);
 }
 
 /* This structure describes the dependence analysis hooks for advancing 
@@ -2671,7 +2671,7 @@ deps_init_id (idata_t id, insn_t insn, bool force_unique_p)
   deps_init_id_data.force_unique_p = force_unique_p;
   deps_init_id_data.force_use_p = false;
 
-  init_deps (dc);
+  init_deps (dc, false);
 
   memcpy (&deps_init_id_sched_deps_info,
 	  &const_deps_init_id_sched_deps_info,
@@ -2743,7 +2743,7 @@ init_first_time_insn_data (insn_t insn)
   /* These are needed for nops too.  */
   INSN_LIVE (insn) = get_regset_from_pool ();
   INSN_LIVE_VALID_P (insn) = false;
-  
+
   if (!INSN_NOP_P (insn))
     {
       INSN_ANALYZED_DEPS (insn) = BITMAP_ALLOC (NULL);
@@ -2751,8 +2751,34 @@ init_first_time_insn_data (insn_t insn)
       INSN_TRANSFORMED_INSNS (insn) 
         = htab_create (16, hash_transformed_insns,
                        eq_transformed_insns, free_transformed_insns);
-      init_deps (&INSN_DEPS_CONTEXT (insn));
+      init_deps (&INSN_DEPS_CONTEXT (insn), true);
     }
+}
+
+/* Free almost all above data for INSN that is scheduled already.
+   Used for extra-large basic blocks.  */
+void
+free_data_for_scheduled_insn (insn_t insn)
+{
+  gcc_assert (! first_time_insn_init (insn));
+
+  if (! INSN_ANALYZED_DEPS (insn))
+    return;
+
+  BITMAP_FREE (INSN_ANALYZED_DEPS (insn));
+  BITMAP_FREE (INSN_FOUND_DEPS (insn));
+  htab_delete (INSN_TRANSFORMED_INSNS (insn));
+
+  /* This is allocated only for bookkeeping insns.  */
+  if (INSN_ORIGINATORS (insn))
+    BITMAP_FREE (INSN_ORIGINATORS (insn));
+  free_deps (&INSN_DEPS_CONTEXT (insn));
+
+  INSN_ANALYZED_DEPS (insn) = NULL;
+
+  /* Clear the readonly flag so we would ICE when trying to recalculate
+     the deps context (as we believe that it should not happen).  */
+  (&INSN_DEPS_CONTEXT (insn))->readonly = 0;
 }
 
 /* Free the same data as above for INSN.  */
@@ -2761,17 +2787,10 @@ free_first_time_insn_data (insn_t insn)
 {
   gcc_assert (! first_time_insn_init (insn));
 
-  BITMAP_FREE (INSN_ANALYZED_DEPS (insn));
-  BITMAP_FREE (INSN_FOUND_DEPS (insn));
-  htab_delete (INSN_TRANSFORMED_INSNS (insn));
+  free_data_for_scheduled_insn (insn);
   return_regset_to_pool (INSN_LIVE (insn));
   INSN_LIVE (insn) = NULL;
   INSN_LIVE_VALID_P (insn) = false;
-
-  /* This is allocated only for bookkeeping insns.  */
-  if (INSN_ORIGINATORS (insn))
-    BITMAP_FREE (INSN_ORIGINATORS (insn));
-  free_deps (&INSN_DEPS_CONTEXT (insn));
 }
 
 /* Initialize region-scope data structures for basic blocks.  */
@@ -3208,6 +3227,11 @@ has_dependence_p (expr_t expr, insn_t pred, ds_t **has_dep_pp)
     return false;
 
   dc = &INSN_DEPS_CONTEXT (pred);
+
+  /* We init this field lazily.  */
+  if (dc->reg_last == NULL)
+    init_deps_reg_last (dc);
+
   if (!dc->readonly)
     {
       has_dependence_data.pro = NULL;
@@ -3814,8 +3838,17 @@ extend_insn_data (void)
              - VEC_length (sel_insn_data_def, s_i_d));
   if (reserve > 0 
       && ! VEC_space (sel_insn_data_def, s_i_d, reserve))
-    VEC_safe_grow_cleared (sel_insn_data_def, heap, s_i_d,
-                           3 * sched_max_luid / 2);
+    {
+      int size;
+
+      if (sched_max_luid / 2 > 1024)
+        size = sched_max_luid + 1024;
+      else
+        size = 3 * sched_max_luid / 2;
+
+
+      VEC_safe_grow_cleared (sel_insn_data_def, heap, s_i_d, size);
+    }
 }
 
 /* Finalize data structures for insns from current region.  */

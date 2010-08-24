@@ -381,7 +381,7 @@ build_intra_loop_deps (ddg_ptr g)
 
   /* Build the dependence information, using the sched_analyze function.  */
   init_deps_global ();
-  init_deps (&tmp_deps);
+  init_deps (&tmp_deps, false);
 
   /* Do the intra-block data dependence analysis for the given block.  */
   get_ebb_head_tail (g->bb, g->bb, &head, &tail);

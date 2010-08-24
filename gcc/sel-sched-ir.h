@@ -1607,6 +1607,7 @@ extern void init_lv_sets (void);
 extern void free_lv_sets (void);
 extern void setup_nop_and_exit_insns (void);
 extern void free_nop_and_exit_insns (void);
+extern void free_data_for_scheduled_insn (insn_t);
 extern void setup_nop_vinsn (void);
 extern void free_nop_vinsn (void);
 extern void sel_set_sched_flags (void);
