@@ -1,3 +1,9 @@
+2010-08-24  Mingjie Xing  <mingjie.xing@gmail.com>
+
+	* gcc.dg/vect/vect.exp: Check loongson targets
+	* g++.dg/vect/vect.exp: Likewise
+	* gfortran.dg/vect/vect.exp: Likewise
+
 2010-08-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/vsx-mass-1.c: New file, test
