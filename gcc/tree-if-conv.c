@@ -446,6 +446,21 @@ if_convertible_phi_p (struct loop *loop, basic_block bb, gimple phi)
   return true;
 }
 
+/* Records the status of a data reference.  This struct is attached to
+   each DR->aux field.  */
+
+struct ifc_dr {
+  /* -1 when not initialized, 0 when false, 1 when true.  */
+  int written_at_least_once;
+
+  /* -1 when not initialized, 0 when false, 1 when true.  */
+  int rw_unconditionally;
+};
+
+#define IFC_DR(DR) ((struct ifc_dr *) (DR)->aux)
+#define DR_WRITTEN_AT_LEAST_ONCE(DR) (IFC_DR (DR)->written_at_least_once)
+#define DR_RW_UNCONDITIONALLY(DR) (IFC_DR (DR)->rw_unconditionally)
+
 /* Returns true when the memory references of STMT are read or written
    unconditionally.  In other words, this function returns true when
    for every data reference A in STMT there exist other accesses to
@@ -465,6 +480,13 @@ memrefs_read_or_written_unconditionally (gimple stmt,
     if (DR_STMT (a) == stmt)
       {
 	bool found = false;
+	int x = DR_RW_UNCONDITIONALLY (a);
+
+	if (x == 0)
+	  return false;
+
+	if (x == 1)
+	  continue;
 
 	for (j = 0; VEC_iterate (data_reference_p, drs, j, b); j++)
 	  if (DR_STMT (b) != stmt
@@ -472,17 +494,23 @@ memrefs_read_or_written_unconditionally (gimple stmt,
 	    {
 	      tree cb = bb_predicate (gimple_bb (DR_STMT (b)));
 
-	      if (is_true_predicate (cb)
+	      if (DR_RW_UNCONDITIONALLY (b) == 1
+		  || is_true_predicate (cb)
 		  || is_true_predicate (ca = fold_or_predicates (EXPR_LOCATION (cb),
 								 ca, cb)))
 		{
+		  DR_RW_UNCONDITIONALLY (a) = 1;
+		  DR_RW_UNCONDITIONALLY (b) = 1;
 		  found = true;
 		  break;
 		}
 	    }
 
 	if (!found)
-	  return false;
+	  {
+	    DR_RW_UNCONDITIONALLY (a) = 0;
+	    return false;
+	  }
       }
 
   return true;
@@ -508,6 +536,13 @@ write_memrefs_written_at_least_once (gimple stmt,
 	&& !DR_IS_READ (a))
       {
 	bool found = false;
+	int x = DR_WRITTEN_AT_LEAST_ONCE (a);
+
+	if (x == 0)
+	  return false;
+
+	if (x == 1)
+	  continue;
 
 	for (j = 0; VEC_iterate (data_reference_p, drs, j, b); j++)
 	  if (DR_STMT (b) != stmt
@@ -516,17 +551,23 @@ write_memrefs_written_at_least_once (gimple stmt,
 	    {
 	      tree cb = bb_predicate (gimple_bb (DR_STMT (b)));
 
-	      if (is_true_predicate (cb)
+	      if (DR_WRITTEN_AT_LEAST_ONCE (b) == 1
+		  || is_true_predicate (cb)
 		  || is_true_predicate (ca = fold_or_predicates (EXPR_LOCATION (cb),
 								 ca, cb)))
 		{
+		  DR_WRITTEN_AT_LEAST_ONCE (a) = 1;
+		  DR_WRITTEN_AT_LEAST_ONCE (b) = 1;
 		  found = true;
 		  break;
 		}
 	    }
 
 	if (!found)
-	  return false;
+	  {
+	    DR_WRITTEN_AT_LEAST_ONCE (a) = 0;
+	    return false;
+	  }
       }
 
   return true;
@@ -972,6 +1013,18 @@ if_convertible_loop_p_1 (struct loop *loop,
   if (!res)
     return false;
 
+  if (flag_tree_loop_if_convert_stores)
+    {
+      data_reference_p dr;
+
+      for (i = 0; VEC_iterate (data_reference_p, *refs, i, dr); i++)
+	{
+	  dr->aux = XNEW (struct ifc_dr);
+	  DR_WRITTEN_AT_LEAST_ONCE (dr) = -1;
+	  DR_RW_UNCONDITIONALLY (dr) = -1;
+	}
+    }
+
   for (i = 0; i < loop->num_nodes; i++)
     {
       basic_block bb = ifc_bbs[i];
@@ -1044,6 +1097,15 @@ if_convertible_loop_p (struct loop *loop)
   refs = VEC_alloc (data_reference_p, heap, 5);
   ddrs = VEC_alloc (ddr_p, heap, 25);
   res = if_convertible_loop_p_1 (loop, &refs, &ddrs);
+
+  if (flag_tree_loop_if_convert_stores)
+    {
+      data_reference_p dr;
+      unsigned int i;
+
+      for (i = 0; VEC_iterate (data_reference_p, refs, i, dr); i++)
+	free (dr->aux);
+    }
 
   free_data_refs (refs);
   free_dependence_relations (ddrs);
