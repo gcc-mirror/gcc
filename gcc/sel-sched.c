@@ -835,7 +835,8 @@ count_occurrences_1 (rtx *cur_rtx, void *arg)
 
   if (GET_CODE (*cur_rtx) == SUBREG
       && REG_P (p->x)
-      && REGNO (SUBREG_REG (*cur_rtx)) == REGNO (p->x))
+      && (!REG_P (SUBREG_REG (*cur_rtx))
+	  || REGNO (SUBREG_REG (*cur_rtx)) == REGNO (p->x)))
     {
       /* ??? Do not support substituting regs inside subregs.  In that case,
          simplify_subreg will be called by validate_replace_rtx, and 

@@ -1,6 +1,15 @@
 2010-08-24  Andrey Belevantsev  <abel@ispras.ru>
 
 	Backport from mainline:
+	2010-08-19  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/44691
+	* sel-sched.c (count_occurrences_1): Also punt when SUBREG_REG
+	is not a register.
+
+2010-08-24  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline:
 	2010-01-14  Alexander Monakov  <amonakov@ispras.ru>
 
 	* sel-sched.c: Add 2010 to copyright years.
