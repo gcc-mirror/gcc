@@ -446,6 +446,132 @@ if_convertible_phi_p (struct loop *loop, basic_block bb, gimple phi)
   return true;
 }
 
+/* Returns true when the memory references of STMT are read or written
+   unconditionally.  In other words, this function returns true when
+   for every data reference A in STMT there exist other accesses to
+   the same data reference with predicates that add up (OR-up) to the
+   true predicate: this ensures that the data reference A is touched
+   (read or written) on every iteration of the if-converted loop.  */
+
+static bool
+memrefs_read_or_written_unconditionally (gimple stmt,
+					 VEC (data_reference_p, heap) *drs)
+{
+  int i, j;
+  data_reference_p a, b;
+  tree ca = bb_predicate (gimple_bb (stmt));
+
+  for (i = 0; VEC_iterate (data_reference_p, drs, i, a); i++)
+    if (DR_STMT (a) == stmt)
+      {
+	bool found = false;
+
+	for (j = 0; VEC_iterate (data_reference_p, drs, j, b); j++)
+	  if (DR_STMT (b) != stmt
+	      && same_data_refs (a, b))
+	    {
+	      tree cb = bb_predicate (gimple_bb (DR_STMT (b)));
+
+	      if (is_true_predicate (cb)
+		  || is_true_predicate (ca = fold_or_predicates (EXPR_LOCATION (cb),
+								 ca, cb)))
+		{
+		  found = true;
+		  break;
+		}
+	    }
+
+	if (!found)
+	  return false;
+      }
+
+  return true;
+}
+
+/* Returns true when the memory references of STMT are unconditionally
+   written.  In other words, this function returns true when for every
+   data reference A written in STMT, there exist other writes to the
+   same data reference with predicates that add up (OR-up) to the true
+   predicate: this ensures that the data reference A is written on
+   every iteration of the if-converted loop.  */
+
+static bool
+write_memrefs_written_at_least_once (gimple stmt,
+				     VEC (data_reference_p, heap) *drs)
+{
+  int i, j;
+  data_reference_p a, b;
+  tree ca = bb_predicate (gimple_bb (stmt));
+
+  for (i = 0; VEC_iterate (data_reference_p, drs, i, a); i++)
+    if (DR_STMT (a) == stmt
+	&& !DR_IS_READ (a))
+      {
+	bool found = false;
+
+	for (j = 0; VEC_iterate (data_reference_p, drs, j, b); j++)
+	  if (DR_STMT (b) != stmt
+	      && !DR_IS_READ (b)
+	      && same_data_refs_base_objects (a, b))
+	    {
+	      tree cb = bb_predicate (gimple_bb (DR_STMT (b)));
+
+	      if (is_true_predicate (cb)
+		  || is_true_predicate (ca = fold_or_predicates (EXPR_LOCATION (cb),
+								 ca, cb)))
+		{
+		  found = true;
+		  break;
+		}
+	    }
+
+	if (!found)
+	  return false;
+      }
+
+  return true;
+}
+
+/* Return true when the memory references of STMT won't trap in the
+   if-converted code.  There are two things that we have to check for:
+
+   - writes to memory occur to writable memory: if-conversion of
+   memory writes transforms the conditional memory writes into
+   unconditional writes, i.e. "if (cond) A[i] = foo" is transformed
+   into "A[i] = cond ? foo : A[i]", and as the write to memory may not
+   be executed at all in the original code, it may be a readonly
+   memory.  To check that A is not const-qualified, we check that
+   there exists at least an unconditional write to A in the current
+   function.
+
+   - reads or writes to memory are valid memory accesses for every
+   iteration.  To check that the memory accesses are correctly formed
+   and that we are allowed to read and write in these locations, we
+   check that the memory accesses to be if-converted occur at every
+   iteration unconditionally.  */
+
+static bool
+ifcvt_memrefs_wont_trap (gimple stmt, VEC (data_reference_p, heap) *refs)
+{
+  return write_memrefs_written_at_least_once (stmt, refs)
+    && memrefs_read_or_written_unconditionally (stmt, refs);
+}
+
+/* Wrapper around gimple_could_trap_p refined for the needs of the
+   if-conversion.  Try to prove that the memory accesses of STMT could
+   not trap in the innermost loop containing STMT.  */
+
+static bool
+ifcvt_could_trap_p (gimple stmt, VEC (data_reference_p, heap) *refs)
+{
+  if (gimple_vuse (stmt)
+      && !gimple_could_trap_p_1 (stmt, false, false)
+      && ifcvt_memrefs_wont_trap (stmt, refs))
+    return false;
+
+  return gimple_could_trap_p (stmt);
+}
+
 /* Return true when STMT is if-convertible.
 
    GIMPLE_ASSIGN statement is not if-convertible if,
@@ -454,7 +580,8 @@ if_convertible_phi_p (struct loop *loop, basic_block bb, gimple phi)
    - LHS is not var decl.  */
 
 static bool
-if_convertible_gimple_assign_stmt_p (gimple stmt)
+if_convertible_gimple_assign_stmt_p (gimple stmt,
+				     VEC (data_reference_p, heap) *refs)
 {
   tree lhs = gimple_assign_lhs (stmt);
   basic_block bb;
@@ -482,7 +609,7 @@ if_convertible_gimple_assign_stmt_p (gimple stmt)
 
   if (flag_tree_loop_if_convert_stores)
     {
-      if (gimple_could_trap_p (stmt))
+      if (ifcvt_could_trap_p (stmt, refs))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "tree could trap...\n");
@@ -522,7 +649,7 @@ if_convertible_gimple_assign_stmt_p (gimple stmt)
    - it is a GIMPLE_LABEL or a GIMPLE_COND.  */
 
 static bool
-if_convertible_stmt_p (gimple stmt)
+if_convertible_stmt_p (gimple stmt, VEC (data_reference_p, heap) *refs)
 {
   switch (gimple_code (stmt))
     {
@@ -532,7 +659,7 @@ if_convertible_stmt_p (gimple stmt)
       return true;
 
     case GIMPLE_ASSIGN:
-      return if_convertible_gimple_assign_stmt_p (stmt);
+      return if_convertible_gimple_assign_stmt_p (stmt, refs);
 
     default:
       /* Don't know what to do with 'em so don't do anything.  */
@@ -800,6 +927,73 @@ predicate_bbs (loop_p loop)
   return true;
 }
 
+/* Return true when LOOP is if-convertible.  This is a helper function
+   for if_convertible_loop_p.  REFS and DDRS are initialized and freed
+   in if_convertible_loop_p.  */
+
+static bool
+if_convertible_loop_p_1 (struct loop *loop,
+			 VEC (data_reference_p, heap) **refs,
+			 VEC (ddr_p, heap) **ddrs)
+{
+  bool res;
+  unsigned int i;
+  basic_block exit_bb = NULL;
+
+  /* Don't if-convert the loop when the data dependences cannot be
+     computed: the loop won't be vectorized in that case.  */
+  res = compute_data_dependences_for_loop (loop, true, refs, ddrs);
+  if (!res)
+    return false;
+
+  calculate_dominance_info (CDI_DOMINATORS);
+
+  /* Allow statements that can be handled during if-conversion.  */
+  ifc_bbs = get_loop_body_in_if_conv_order (loop);
+  if (!ifc_bbs)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Irreducible loop\n");
+      return false;
+    }
+
+  for (i = 0; i < loop->num_nodes; i++)
+    {
+      basic_block bb = ifc_bbs[i];
+
+      if (!if_convertible_bb_p (loop, bb, exit_bb))
+	return false;
+
+      if (bb_with_exit_edge_p (loop, bb))
+	exit_bb = bb;
+    }
+
+  res = predicate_bbs (loop);
+  if (!res)
+    return false;
+
+  for (i = 0; i < loop->num_nodes; i++)
+    {
+      basic_block bb = ifc_bbs[i];
+      gimple_stmt_iterator itr;
+
+      for (itr = gsi_start_phis (bb); !gsi_end_p (itr); gsi_next (&itr))
+	if (!if_convertible_phi_p (loop, bb, gsi_stmt (itr)))
+	  return false;
+
+      /* Check the if-convertibility of statements in predicated BBs.  */
+      if (is_predicated (bb))
+	for (itr = gsi_start_bb (bb); !gsi_end_p (itr); gsi_next (&itr))
+	  if (!if_convertible_stmt_p (gsi_stmt (itr), *refs))
+	    return false;
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "Applying if-conversion\n");
+
+  return true;
+}
+
 /* Return true when LOOP is if-convertible.
    LOOP is if-convertible if:
    - it is innermost,
@@ -811,10 +1005,11 @@ predicate_bbs (loop_p loop)
 static bool
 if_convertible_loop_p (struct loop *loop)
 {
-  unsigned int i;
   edge e;
   edge_iterator ei;
-  basic_block exit_bb = NULL;
+  bool res = false;
+  VEC (data_reference_p, heap) *refs;
+  VEC (ddr_p, heap) *ddrs;
 
   /* Handle only innermost loop.  */
   if (!loop || loop->inner)
@@ -840,77 +1035,19 @@ if_convertible_loop_p (struct loop *loop)
       return false;
     }
 
-  /* ??? Check target's vector conditional operation support for vectorizer.  */
-
-  /* If one of the loop header's edge is exit edge then do not apply
-     if-conversion.  */
+  /* If one of the loop header's edge is an exit edge then do not
+     apply if-conversion.  */
   FOR_EACH_EDGE (e, ei, loop->header->succs)
-    {
-      if (loop_exit_edge_p (loop, e))
-	return false;
-    }
-
-  /* Don't if-convert the loop when the data dependences cannot be
-     computed: the loop won't be vectorized in that case.  */
-  {
-    VEC (data_reference_p, heap) *refs = VEC_alloc (data_reference_p, heap, 5);
-    VEC (ddr_p, heap) *ddrs = VEC_alloc (ddr_p, heap, 25);
-    bool res = compute_data_dependences_for_loop (loop, true, &refs, &ddrs);
-
-    free_data_refs (refs);
-    free_dependence_relations (ddrs);
-
-    if (!res)
+    if (loop_exit_edge_p (loop, e))
       return false;
-  }
 
-  calculate_dominance_info (CDI_DOMINATORS);
+  refs = VEC_alloc (data_reference_p, heap, 5);
+  ddrs = VEC_alloc (ddr_p, heap, 25);
+  res = if_convertible_loop_p_1 (loop, &refs, &ddrs);
 
-  /* Allow statements that can be handled during if-conversion.  */
-  ifc_bbs = get_loop_body_in_if_conv_order (loop);
-  if (!ifc_bbs)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Irreducible loop\n");
-      return false;
-    }
-
-  for (i = 0; i < loop->num_nodes; i++)
-    {
-      basic_block bb = ifc_bbs[i];
-
-      if (!if_convertible_bb_p (loop, bb, exit_bb))
-	return false;
-
-      if (bb_with_exit_edge_p (loop, bb))
-	exit_bb = bb;
-    }
-
-  if (!predicate_bbs (loop))
-    return false;
-
-  for (i = 0; i < loop->num_nodes; i++)
-    {
-      basic_block bb = ifc_bbs[i];
-      gimple_stmt_iterator itr;
-
-      for (itr = gsi_start_phis (bb); !gsi_end_p (itr); gsi_next (&itr))
-	if (!if_convertible_phi_p (loop, bb, gsi_stmt (itr)))
-	  return false;
-
-      /* For non predicated BBs, don't check their statements.  */
-      if (!is_predicated (bb))
-	continue;
-
-      for (itr = gsi_start_bb (bb); !gsi_end_p (itr); gsi_next (&itr))
-	if (!if_convertible_stmt_p (gsi_stmt (itr)))
-	  return false;
-    }
-
-  if (dump_file)
-    fprintf (dump_file, "Applying if-conversion\n");
-
-  return true;
+  free_data_refs (refs);
+  free_dependence_relations (ddrs);
+  return res;
 }
 
 /* Basic block BB has two predecessors.  Using predecessor's bb

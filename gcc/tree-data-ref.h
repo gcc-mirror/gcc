@@ -417,6 +417,39 @@ extern void create_rdg_vertices (struct graph *, VEC (gimple, heap) *);
 extern bool dr_may_alias_p (const struct data_reference *,
 			    const struct data_reference *);
 
+
+/* Return true when the base objects of data references A and B are
+   the same memory object.  */
+
+static inline bool
+same_data_refs_base_objects (data_reference_p a, data_reference_p b)
+{
+  return DR_NUM_DIMENSIONS (a) == DR_NUM_DIMENSIONS (b)
+    && operand_equal_p (DR_BASE_OBJECT (a), DR_BASE_OBJECT (b), 0);
+}
+
+/* Return true when the data references A and B are accessing the same
+   memory object with the same access functions.  */
+
+static inline bool
+same_data_refs (data_reference_p a, data_reference_p b)
+{
+  unsigned int i;
+
+  /* The references are exactly the same.  */
+  if (operand_equal_p (DR_REF (a), DR_REF (b), 0))
+    return true;
+
+  if (!same_data_refs_base_objects (a, b))
+    return false;
+
+  for (i = 0; i < DR_NUM_DIMENSIONS (a); i++)
+    if (!eq_evolutions_p (DR_ACCESS_FN (a, i), DR_ACCESS_FN (b, i)))
+      return false;
+
+  return true;
+}
+
 /* Return true when the DDR contains two data references that have the
    same access functions.  */
 
