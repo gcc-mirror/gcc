@@ -1,6 +1,18 @@
 2010-08-24  Andrey Belevantsev  <abel@ispras.ru>
 
 	Backport from mainline:
+	2009-05-29  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/40101
+	* sel-sched-ir.c (get_seqno_by_preds): Allow returning negative
+	seqno.	Adjust comment.
+	* sel-sched.c (find_seqno_for_bookkeeping): Assert that when
+	inserting bookkeeping before a jump, the jump is not scheduled.
+	When no positive seqno found, provide a value.  Add comment.
+
+2010-08-24  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline:
 	2009-04-28  Alexander Monakov  <amonakov@ispras.ru>
 
 	* sel-sched-ir.c (maybe_tidy_empty_bb): Do not attempt to delete a

@@ -4524,11 +4524,27 @@ find_seqno_for_bookkeeping (insn_t place_to_insert, insn_t join_point)
   if (INSN_P (next) 
       && JUMP_P (next)
       && BLOCK_FOR_INSN (next) == BLOCK_FOR_INSN (place_to_insert))
-    seqno = INSN_SEQNO (next);
+    {
+      gcc_assert (INSN_SCHED_TIMES (next) == 0);
+      seqno = INSN_SEQNO (next);
+    }
   else if (INSN_SEQNO (join_point) > 0)
     seqno = INSN_SEQNO (join_point);
   else
-    seqno = get_seqno_by_preds (place_to_insert);
+    {
+      seqno = get_seqno_by_preds (place_to_insert);
+
+      /* Sometimes the fences can move in such a way that there will be
+         no instructions with positive seqno around this bookkeeping.
+         This means that there will be no way to get to it by a regular
+         fence movement.  Never mind because we pick up such pieces for
+         rescheduling anyways, so any positive value will do for now.  */
+      if (seqno < 0)
+        {
+          gcc_assert (pipelining_p);
+          seqno = 1;
+        }
+    }
   
   gcc_assert (seqno > 0);
   return seqno;
