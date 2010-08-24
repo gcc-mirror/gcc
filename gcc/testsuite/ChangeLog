@@ -1,3 +1,9 @@
+2010-08-24  Andrey Belevantsev <abel@ispras.ru>
+
+	Backport from mainline:
+	2009-04-28  Alexander Monakov  <amonakov@ispras.ru>
+	* gcc.target/ia64/20071210-2.c: New testcase.
+
 2010-08-19  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/init/value8.C: New.

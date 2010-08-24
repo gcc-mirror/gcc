@@ -1,3 +1,17 @@
+2010-08-24  Andrey Belevantsev  <abel@ispras.ru>
+
+	Backport from mainline:
+	2009-04-28  Alexander Monakov  <amonakov@ispras.ru>
+
+	* sel-sched-ir.c (maybe_tidy_empty_bb): Do not attempt to delete a
+	block if there are complex incoming edges.
+	(sel_merge_blocks): Remove useless assert.
+	(sel_redirect_edge_and_branch): Check that edge was redirected.
+	* sel-sched-ir.h (_eligible_successor_edge_p): Remove assert.
+	(sel_find_rgns): Delete declaration.
+	* sel-sched.c (purge_empty_blocks): Attempt to remove first block of
+	the region when it is not a preheader.
+
 2010-08-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/45296
