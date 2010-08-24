@@ -1,3 +1,8 @@
+2010-08-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lex.c [__sun__ && __svr4__]: Disable init_vectorized_lexer
+	etc. on Solaris 2/x86.
+
 2010-08-21  Richard Henderson  <rth@redhat.com>
 	    Andi Kleen <ak@linux.intel.com>
 	    David S. Miller  <davem@davemloft.net>
