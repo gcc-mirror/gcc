@@ -1,3 +1,34 @@
+2010-08-24  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* common.opt (ftree-loop-if-convert-stores): New flag.
+	* doc/invoke.texi (ftree-loop-if-convert-stores): Documented.
+	* tree-if-conv.c (ifc_temp_var): Pass an extra parameter GSI.  Insert
+	the created statement before GSI.
+	(if_convertible_phi_p): Allow virtual phi nodes when
+	flag_loop_if_convert_stores is set.
+	(if_convertible_gimple_assign_stmt_p): Allow memory reads and writes
+	Do not handle types that do not match is_gimple_reg_type.
+	Remove loop and bb parameters.  Call gimple_could_trap_p instead of
+	when flag_loop_if_convert_stores is set, as LHS can contain
+	memory refs.
+	(if_convertible_stmt_p): Remove loop and bb parameters.  Update calls
+	to if_convertible_gimple_assign_stmt_p.
+	(if_convertible_loop_p): Update call to if_convertible_stmt_p.
+	(replace_phi_with_cond_gimple_assign_stmt): Renamed
+	predicate_scalar_phi.  Do not handle virtual phi nodes.
+	(ifconvert_phi_nodes): Renamed predicate_all_scalar_phis.
+	Call predicate_scalar_phi.
+	(insert_gimplified_predicates): Insert the gimplified predicate of a BB
+	just after the labels for flag_loop_if_convert_stores, otherwise
+	insert the predicate in the end of the BB.
+	(predicate_mem_writes): New.
+	(combine_blocks): Call predicate_all_scalar_phis.  When
+	flag_loop_if_convert_stores is set, call predicate_mem_writes.
+	(tree_if_conversion): Call mark_sym_for_renaming when
+	flag_loop_if_convert_stores is set.
+	(main_tree_if_conversion): Return TODO_update_ssa_only_virtuals when
+	flag_loop_if_convert_stores is set.
+
 2010-08-24  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/pa/pa.c (hppa_register_move_cost, pa_libcall_value,
