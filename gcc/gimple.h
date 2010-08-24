@@ -886,6 +886,7 @@ void gimple_cond_set_condition_from_tree (gimple, tree);
 bool gimple_has_side_effects (const_gimple);
 bool gimple_rhs_has_side_effects (const_gimple);
 bool gimple_could_trap_p (gimple);
+bool gimple_could_trap_p_1 (gimple, bool, bool);
 bool gimple_assign_rhs_could_trap_p (gimple);
 void gimple_regimplify_operands (gimple, gimple_stmt_iterator *);
 bool empty_body_p (gimple_seq);

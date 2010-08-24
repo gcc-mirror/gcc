@@ -1,5 +1,25 @@
 2010-08-24  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* gimple.c (gimple_could_trap_p_1): Not static anymore.
+	Pass an extra bool parameter include_mem.
+	(gimple_could_trap_p): Adjust call to gimple_could_trap_p_1.
+	(gimple_assign_rhs_could_trap_p): Same.
+	* gimple.h (gimple_could_trap_p_1): Declared.
+	* tree-data-ref.h (same_data_refs_base_objects): New.
+	(same_data_refs): New.
+	* tree-if-conv.c (memrefs_read_or_written_unconditionally): New.
+	(write_memrefs_written_at_least_once): New.
+	(ifcvt_memrefs_wont_trap): New.
+	(operations_could_trap): New.
+	(ifcvt_could_trap_p): New.
+	(if_convertible_gimple_assign_stmt_p): Call ifcvt_could_trap_p.
+	Gets a vector of data refs.
+	(if_convertible_stmt_p): Same.
+	(if_convertible_loop_p_1): New.
+	(if_convertible_loop_p): Call if_convertible_loop_p_1.
+
+2010-08-24  Sebastian Pop  <sebastian.pop@amd.com>
+
 	* common.opt (ftree-loop-if-convert-stores): New flag.
 	* doc/invoke.texi (ftree-loop-if-convert-stores): Documented.
 	* tree-if-conv.c (ifc_temp_var): Pass an extra parameter GSI.  Insert

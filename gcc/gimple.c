@@ -2399,24 +2399,25 @@ gimple_rhs_has_side_effects (const_gimple s)
   return false;
 }
 
-
 /* Helper for gimple_could_trap_p and gimple_assign_rhs_could_trap_p.
-   Return true if S can trap.  If INCLUDE_LHS is true and S is a
-   GIMPLE_ASSIGN, the LHS of the assignment is also checked.
-   Otherwise, only the RHS of the assignment is checked.  */
+   Return true if S can trap.  When INCLUDE_MEM is true, check whether
+   the memory operations could trap.  When INCLUDE_STORES is true and
+   S is a GIMPLE_ASSIGN, the LHS of the assignment is also checked.  */
 
-static bool
-gimple_could_trap_p_1 (gimple s, bool include_lhs)
+bool
+gimple_could_trap_p_1 (gimple s, bool include_mem, bool include_stores)
 {
-  unsigned i, start;
   tree t, div = NULL_TREE;
   enum tree_code op;
 
-  start = (is_gimple_assign (s) && !include_lhs) ? 1 : 0;
+  if (include_mem)
+    {
+      unsigned i, start = (is_gimple_assign (s) && !include_stores) ? 1 : 0;
 
-  for (i = start; i < gimple_num_ops (s); i++)
-    if (tree_could_trap_p (gimple_op (s, i)))
-      return true;
+      for (i = start; i < gimple_num_ops (s); i++)
+	if (tree_could_trap_p (gimple_op (s, i)))
+	  return true;
+    }
 
   switch (gimple_code (s))
     {
@@ -2445,18 +2446,15 @@ gimple_could_trap_p_1 (gimple s, bool include_lhs)
     }
 
   return false;
-
 }
-
 
 /* Return true if statement S can trap.  */
 
 bool
 gimple_could_trap_p (gimple s)
 {
-  return gimple_could_trap_p_1 (s, true);
+  return gimple_could_trap_p_1 (s, true, true);
 }
-
 
 /* Return true if RHS of a GIMPLE_ASSIGN S can trap.  */
 
@@ -2464,7 +2462,7 @@ bool
 gimple_assign_rhs_could_trap_p (gimple s)
 {
   gcc_assert (is_gimple_assign (s));
-  return gimple_could_trap_p_1 (s, false);
+  return gimple_could_trap_p_1 (s, true, false);
 }
 
 
