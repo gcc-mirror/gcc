@@ -122,7 +122,6 @@ RTEMS Ports		Joel Sherrill		joel@oarcorp.com
 RTEMS Ports		Ralf Corsepius		ralf.corsepius@rtems.org
 VxWorks ports		Nathan Sidwell		nathan@codesourcery.com
 windows, cygwin, mingw	Christopher Faylor	cgf@gcc.gnu.org
-windows, cygwin, mingw	Danny Smith		dannysmith@users.sourceforge.net
 windows, cygwin, mingw	Kai Tietz		kai.tietz@onevision.com
 windows, cygwin, mingw	Dave Korn		dave.korn.cygwin@gmail.com
 
