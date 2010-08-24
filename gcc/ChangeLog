@@ -1,3 +1,15 @@
+2010-08-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/45379
+	* tree-ssa-address.c (create_mem_ref_raw): Drop to MEM_REF
+	if addr->index is NULL or zero.
+	* tree-ssa-alias.c (indirect_refs_may_alias_p): Handle
+	TARGET_MEM_REF more properly.
+	(indirect_ref_may_alias_decl_p): Likewise.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Keep TARGET_MEM_REFs.
+	* alias.c (ao_ref_from_mem): Handle TARGET_MEM_REF more
+	properly.
+
 2010-08-23  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/m32c/m32c.c (m32c_function_value_regno_p): Make static.

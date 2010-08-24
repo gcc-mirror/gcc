@@ -283,6 +283,10 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
        || TREE_CODE (base) == MEM_REF)
       && TREE_CODE (TREE_OPERAND (base, 0)) != SSA_NAME)
     return false;
+  if (TREE_CODE (base) == TARGET_MEM_REF
+      && TMR_BASE (base)
+      && TREE_CODE (TMR_BASE (base)) != SSA_NAME)
+    return false;
 
   /* If this is a reference based on a partitioned decl replace the
      base with an INDIRECT_REF of the pointer representative we
@@ -293,6 +297,18 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
     {
       void *namep;
       namep = pointer_map_contains (cfun->gimple_df->decls_to_pointers, base);
+      if (namep)
+	ref->base = build_simple_mem_ref (*(tree *)namep);
+    }
+  else if (TREE_CODE (base) == TARGET_MEM_REF
+	   && TMR_SYMBOL (base)
+	   && TREE_CODE (TMR_SYMBOL (base)) == VAR_DECL
+	   && ! TREE_STATIC (TMR_SYMBOL (base))
+	   && cfun->gimple_df->decls_to_pointers != NULL)
+    {
+      void *namep;
+      namep = pointer_map_contains (cfun->gimple_df->decls_to_pointers,
+				    TMR_SYMBOL (base));
       if (namep)
 	ref->base = build_simple_mem_ref (*(tree *)namep);
     }
