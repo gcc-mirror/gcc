@@ -213,11 +213,13 @@ reset_bb_predicate (basic_block bb)
   init_bb_predicate (bb);
 }
 
-/* Create a new temp variable of type TYPE.  Add GIMPLE_ASSIGN to assign EXP
-   to the new variable.  */
+/* Returns a new SSA_NAME of type TYPE that is assigned the value of
+   the expression EXPR.  Inserts the statement created for this
+   computation before GSI and leaves the iterator GSI at the same
+   statement.  */
 
-static gimple
-ifc_temp_var (tree type, tree exp)
+static tree
+ifc_temp_var (tree type, tree expr, gimple_stmt_iterator *gsi)
 {
   const char *name = "_ifc_";
   tree var, new_name;
@@ -227,8 +229,8 @@ ifc_temp_var (tree type, tree exp)
   var = create_tmp_var (type, name);
   add_referenced_var (var);
 
-  /* Build new statement to assign EXP to new variable.  */
-  stmt = gimple_build_assign (var, exp);
+  /* Build new statement to assign EXPR to new variable.  */
+  stmt = gimple_build_assign (var, expr);
 
   /* Get SSA name for the new variable and set make new statement
      its definition statement.  */
@@ -237,7 +239,8 @@ ifc_temp_var (tree type, tree exp)
   SSA_NAME_DEF_STMT (new_name) = stmt;
   update_stmt (stmt);
 
-  return stmt;
+  gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
+  return gimple_assign_lhs (stmt);
 }
 
 /* Return true when COND is a true predicate.  */
@@ -388,9 +391,12 @@ bb_with_exit_edge_p (struct loop *loop, basic_block bb)
    and it belongs to basic block BB.
 
    PHI is not if-convertible if:
-   - it has more than 2 arguments,
-   - virtual PHI is immediately used in another PHI node,
-   - virtual PHI on BB other than header.  */
+   - it has more than 2 arguments.
+
+   When the flag_tree_loop_if_convert_stores is not set, PHI is not
+   if-convertible if:
+   - a virtual PHI is immediately used in another PHI node,
+   - there is a virtual PHI in a BB other than the loop->header.  */
 
 static bool
 if_convertible_phi_p (struct loop *loop, basic_block bb, gimple phi)
@@ -408,6 +414,12 @@ if_convertible_phi_p (struct loop *loop, basic_block bb, gimple phi)
       return false;
     }
 
+  if (flag_tree_loop_if_convert_stores)
+    return true;
+
+  /* When the flag_tree_loop_if_convert_stores is not set, check
+     that there are no memory writes in the branches of the loop to be
+     if-converted.  */
   if (!is_gimple_reg (SSA_NAME_VAR (gimple_phi_result (phi))))
     {
       imm_use_iterator imm_iter;
@@ -416,9 +428,10 @@ if_convertible_phi_p (struct loop *loop, basic_block bb, gimple phi)
       if (bb != loop->header)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Virtual phi not on loop header.\n");
+	    fprintf (dump_file, "Virtual phi not on loop->header.\n");
 	  return false;
 	}
+
       FOR_EACH_IMM_USE_FAST (use_p, imm_iter, gimple_phi_result (phi))
 	{
 	  if (gimple_code (USE_STMT (use_p)) == GIMPLE_PHI)
@@ -438,21 +451,22 @@ if_convertible_phi_p (struct loop *loop, basic_block bb, gimple phi)
    GIMPLE_ASSIGN statement is not if-convertible if,
    - it is not movable,
    - it could trap,
-   - LHS is not var decl.
-
-   GIMPLE_ASSIGN is part of block BB, which is inside loop LOOP.  */
+   - LHS is not var decl.  */
 
 static bool
-if_convertible_gimple_assign_stmt_p (struct loop *loop, basic_block bb,
-    				     gimple stmt)
+if_convertible_gimple_assign_stmt_p (gimple stmt)
 {
   tree lhs = gimple_assign_lhs (stmt);
+  basic_block bb;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "-------------------------\n");
       print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
     }
+
+  if (!is_gimple_reg_type (TREE_TYPE (lhs)))
+    return false;
 
   /* Some of these constrains might be too conservative.  */
   if (stmt_ends_bb_p (stmt)
@@ -466,6 +480,17 @@ if_convertible_gimple_assign_stmt_p (struct loop *loop, basic_block bb,
       return false;
     }
 
+  if (flag_tree_loop_if_convert_stores)
+    {
+      if (gimple_could_trap_p (stmt))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "tree could trap...\n");
+	  return false;
+	}
+      return true;
+    }
+
   if (gimple_assign_rhs_could_trap_p (stmt))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -473,9 +498,11 @@ if_convertible_gimple_assign_stmt_p (struct loop *loop, basic_block bb,
       return false;
     }
 
+  bb = gimple_bb (stmt);
+
   if (TREE_CODE (lhs) != SSA_NAME
-      && bb != loop->header
-      && !bb_with_exit_edge_p (loop, bb))
+      && bb != bb->loop_father->header
+      && !bb_with_exit_edge_p (bb->loop_father, bb))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -492,12 +519,10 @@ if_convertible_gimple_assign_stmt_p (struct loop *loop, basic_block bb,
 
    A statement is if-convertible if:
    - it is an if-convertible GIMPLE_ASSGIN,
-   - it is a GIMPLE_LABEL or a GIMPLE_COND.
-
-   STMT is inside BB, which is inside loop LOOP.  */
+   - it is a GIMPLE_LABEL or a GIMPLE_COND.  */
 
 static bool
-if_convertible_stmt_p (struct loop *loop, basic_block bb, gimple stmt)
+if_convertible_stmt_p (gimple stmt)
 {
   switch (gimple_code (stmt))
     {
@@ -507,7 +532,7 @@ if_convertible_stmt_p (struct loop *loop, basic_block bb, gimple stmt)
       return true;
 
     case GIMPLE_ASSIGN:
-      return if_convertible_gimple_assign_stmt_p (loop, bb, stmt);
+      return if_convertible_gimple_assign_stmt_p (stmt);
 
     default:
       /* Don't know what to do with 'em so don't do anything.  */
@@ -878,7 +903,7 @@ if_convertible_loop_p (struct loop *loop)
 	continue;
 
       for (itr = gsi_start_bb (bb); !gsi_end_p (itr); gsi_next (&itr))
-	if (!if_convertible_stmt_p (loop, bb, gsi_stmt (itr)))
+	if (!if_convertible_stmt_p (gsi_stmt (itr)))
 	  return false;
     }
 
@@ -898,7 +923,7 @@ if_convertible_loop_p (struct loop *loop)
 static basic_block
 find_phi_replacement_condition (struct loop *loop,
 				basic_block bb, tree *cond,
-                                gimple_stmt_iterator *gsi)
+				gimple_stmt_iterator *gsi)
 {
   edge first_edge, second_edge;
   tree tmp_cond;
@@ -970,21 +995,16 @@ find_phi_replacement_condition (struct loop *loop,
 				    false, NULL_TREE,
 				    true, GSI_SAME_STMT);
   if (!is_gimple_reg (*cond) && !is_gimple_condexpr (*cond))
-    {
-      gimple new_stmt;
-
-      new_stmt = ifc_temp_var (TREE_TYPE (*cond), unshare_expr (*cond));
-      gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
-      *cond = gimple_assign_lhs (new_stmt);
-    }
+    *cond = ifc_temp_var (TREE_TYPE (*cond), unshare_expr (*cond), gsi);
 
   gcc_assert (*cond);
 
   return first_edge->src;
 }
 
-/* Replace PHI node with conditional modify expr using COND.  This
-   routine does not handle PHI nodes with more than two arguments.
+/* Replace a scalar PHI node with a COND_EXPR using COND as condition.
+   This routine does not handle PHI nodes with more than two
+   arguments.
 
    For example,
      S1: A = PHI <x1(1), x2(5)
@@ -996,17 +1016,21 @@ find_phi_replacement_condition (struct loop *loop,
    TRUE_BB is selected.  */
 
 static void
-replace_phi_with_cond_gimple_assign_stmt (gimple phi, tree cond,
-    					  basic_block true_bb,
-                                   	  gimple_stmt_iterator *gsi)
+predicate_scalar_phi (gimple phi, tree cond,
+		      basic_block true_bb,
+		      gimple_stmt_iterator *gsi)
 {
   gimple new_stmt;
   basic_block bb;
-  tree rhs;
-  tree arg;
+  tree rhs, res, arg;
 
   gcc_assert (gimple_code (phi) == GIMPLE_PHI
 	      && gimple_phi_num_args (phi) == 2);
+
+  res = gimple_phi_result (phi);
+  /* Do not handle virtual phi nodes.  */
+  if (!is_gimple_reg (SSA_NAME_VAR (res)))
+    return;
 
   bb = gimple_bb (phi);
 
@@ -1029,11 +1053,11 @@ replace_phi_with_cond_gimple_assign_stmt (gimple phi, tree cond,
 	}
 
       /* Build new RHS using selected condition and arguments.  */
-      rhs = build3 (COND_EXPR, TREE_TYPE (PHI_RESULT (phi)),
+      rhs = build3 (COND_EXPR, TREE_TYPE (res),
 		    unshare_expr (cond), arg_0, arg_1);
     }
 
-  new_stmt = gimple_build_assign (PHI_RESULT (phi), rhs);
+  new_stmt = gimple_build_assign (res, rhs);
   SSA_NAME_DEF_STMT (gimple_phi_result (phi)) = new_stmt;
   gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
   update_stmt (new_stmt);
@@ -1045,11 +1069,11 @@ replace_phi_with_cond_gimple_assign_stmt (gimple phi, tree cond,
     }
 }
 
-/* Replaces in LOOP all the phi nodes other than those in the
+/* Replaces in LOOP all the scalar phi nodes other than those in the
    LOOP->header block with conditional modify expressions.  */
 
 static void
-ifconvert_phi_nodes (struct loop *loop)
+predicate_all_scalar_phis (struct loop *loop)
 {
   basic_block bb;
   unsigned int orig_loop_num_nodes = loop->num_nodes;
@@ -1078,7 +1102,7 @@ ifconvert_phi_nodes (struct loop *loop)
       while (!gsi_end_p (phi_gsi))
 	{
 	  phi = gsi_stmt (phi_gsi);
-	  replace_phi_with_cond_gimple_assign_stmt (phi, cond, true_bb, &gsi);
+	  predicate_scalar_phi (phi, cond, true_bb, &gsi);
 	  release_phi_node (phi);
 	  gsi_next (&phi_gsi);
 	}
@@ -1098,7 +1122,7 @@ insert_gimplified_predicates (loop_p loop)
   for (i = 0; i < loop->num_nodes; i++)
     {
       basic_block bb = ifc_bbs[i];
-      gimple_seq stmts = bb_predicate_gimplified_stmts (bb);
+      gimple_seq stmts;
 
       if (!is_predicated (bb))
 	{
@@ -1109,19 +1133,174 @@ insert_gimplified_predicates (loop_p loop)
 	  continue;
 	}
 
+      stmts = bb_predicate_gimplified_stmts (bb);
       if (stmts)
 	{
-	  gimple_stmt_iterator gsi = gsi_last_bb (bb);
-
-	  if (gsi_end_p (gsi)
-	      || gimple_code (gsi_stmt (gsi)) == GIMPLE_COND)
-	    gsi_insert_seq_before (&gsi, stmts, GSI_SAME_STMT);
+	  if (flag_tree_loop_if_convert_stores)
+	    {
+	      /* Insert the predicate of the BB just after the label,
+		 as the if-conversion of memory writes will use this
+		 predicate.  */
+	      gimple_stmt_iterator gsi = gsi_after_labels (bb);
+	      gsi_insert_seq_before (&gsi, stmts, GSI_SAME_STMT);
+	    }
 	  else
-	    gsi_insert_seq_after (&gsi, stmts, GSI_SAME_STMT);
+	    {
+	      /* Insert the predicate of the BB at the end of the BB
+		 as this would reduce the register pressure: the only
+		 use of this predicate will be in successor BBs.  */
+	      gimple_stmt_iterator gsi = gsi_last_bb (bb);
+
+	      if (gsi_end_p (gsi)
+		  || stmt_ends_bb_p (gsi_stmt (gsi)))
+		gsi_insert_seq_before (&gsi, stmts, GSI_SAME_STMT);
+	      else
+		gsi_insert_seq_after (&gsi, stmts, GSI_SAME_STMT);
+	    }
 
 	  /* Once the sequence is code generated, set it to NULL.  */
 	  set_bb_predicate_gimplified_stmts (bb, NULL);
 	}
+    }
+}
+
+/* Predicate each write to memory in LOOP.
+
+   This function transforms control flow constructs containing memory
+   writes of the form:
+
+   | for (i = 0; i < N; i++)
+   |   if (cond)
+   |     A[i] = expr;
+
+   into the following form that does not contain control flow:
+
+   | for (i = 0; i < N; i++)
+   |   A[i] = cond ? expr : A[i];
+
+   The original CFG looks like this:
+
+   | bb_0
+   |   i = 0
+   | end_bb_0
+   |
+   | bb_1
+   |   if (i < N) goto bb_5 else goto bb_2
+   | end_bb_1
+   |
+   | bb_2
+   |   cond = some_computation;
+   |   if (cond) goto bb_3 else goto bb_4
+   | end_bb_2
+   |
+   | bb_3
+   |   A[i] = expr;
+   |   goto bb_4
+   | end_bb_3
+   |
+   | bb_4
+   |   goto bb_1
+   | end_bb_4
+
+   insert_gimplified_predicates inserts the computation of the COND
+   expression at the beginning of the destination basic block:
+
+   | bb_0
+   |   i = 0
+   | end_bb_0
+   |
+   | bb_1
+   |   if (i < N) goto bb_5 else goto bb_2
+   | end_bb_1
+   |
+   | bb_2
+   |   cond = some_computation;
+   |   if (cond) goto bb_3 else goto bb_4
+   | end_bb_2
+   |
+   | bb_3
+   |   cond = some_computation;
+   |   A[i] = expr;
+   |   goto bb_4
+   | end_bb_3
+   |
+   | bb_4
+   |   goto bb_1
+   | end_bb_4
+
+   predicate_mem_writes is then predicating the memory write as follows:
+
+   | bb_0
+   |   i = 0
+   | end_bb_0
+   |
+   | bb_1
+   |   if (i < N) goto bb_5 else goto bb_2
+   | end_bb_1
+   |
+   | bb_2
+   |   if (cond) goto bb_3 else goto bb_4
+   | end_bb_2
+   |
+   | bb_3
+   |   cond = some_computation;
+   |   A[i] = cond ? expr : A[i];
+   |   goto bb_4
+   | end_bb_3
+   |
+   | bb_4
+   |   goto bb_1
+   | end_bb_4
+
+   and finally combine_blocks removes the basic block boundaries making
+   the loop vectorizable:
+
+   | bb_0
+   |   i = 0
+   |   if (i < N) goto bb_5 else goto bb_1
+   | end_bb_0
+   |
+   | bb_1
+   |   cond = some_computation;
+   |   A[i] = cond ? expr : A[i];
+   |   if (i < N) goto bb_5 else goto bb_4
+   | end_bb_1
+   |
+   | bb_4
+   |   goto bb_1
+   | end_bb_4
+*/
+
+static void
+predicate_mem_writes (loop_p loop)
+{
+  unsigned int i, orig_loop_num_nodes = loop->num_nodes;
+
+  for (i = 1; i < orig_loop_num_nodes; i++)
+    {
+      gimple_stmt_iterator gsi;
+      basic_block bb = ifc_bbs[i];
+      tree cond = bb_predicate (bb);
+      gimple stmt;
+
+      if (is_true_predicate (cond))
+	continue;
+
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	if ((stmt = gsi_stmt (gsi))
+	    && gimple_assign_single_p (stmt)
+	    && gimple_vdef (stmt))
+	  {
+	    tree lhs = gimple_assign_lhs (stmt);
+	    tree rhs = gimple_assign_rhs1 (stmt);
+	    tree type = TREE_TYPE (lhs);
+
+	    lhs = ifc_temp_var (type, unshare_expr (lhs), &gsi);
+	    rhs = ifc_temp_var (type, unshare_expr (rhs), &gsi);
+	    rhs = build3 (COND_EXPR, type, unshare_expr (cond), rhs, lhs);
+	    gimple_assign_set_rhs1 (stmt, ifc_temp_var (type, rhs, &gsi));
+	    update_stmt (stmt);
+	  }
     }
 }
 
@@ -1181,7 +1360,10 @@ combine_blocks (struct loop *loop)
 
   remove_conditions_and_labels (loop);
   insert_gimplified_predicates (loop);
-  ifconvert_phi_nodes (loop);
+  predicate_all_scalar_phis (loop);
+
+  if (flag_tree_loop_if_convert_stores)
+    predicate_mem_writes (loop);
 
   /* Merge basic blocks: first remove all the edges in the loop,
      except for those from the exit block.  */
@@ -1283,6 +1465,10 @@ tree_if_conversion (struct loop *loop)
      blocks into one huge basic block doing the if-conversion
      on-the-fly.  */
   combine_blocks (loop);
+
+  if (flag_tree_loop_if_convert_stores)
+    mark_sym_for_renaming (gimple_vop (cfun));
+
   changed = true;
 
  cleanup:
@@ -1308,6 +1494,7 @@ main_tree_if_conversion (void)
   loop_iterator li;
   struct loop *loop;
   bool changed = false;
+  unsigned todo = 0;
 
   if (number_of_loops () <= 1)
     return 0;
@@ -1315,7 +1502,13 @@ main_tree_if_conversion (void)
   FOR_EACH_LOOP (li, loop, 0)
     changed |= tree_if_conversion (loop);
 
-  return changed ? TODO_cleanup_cfg : 0;
+  if (changed)
+    todo |= TODO_cleanup_cfg;
+
+  if (changed && flag_tree_loop_if_convert_stores)
+    todo |= TODO_update_ssa_only_virtuals;
+
+  return todo;
 }
 
 /* Returns true when the if-conversion pass is enabled.  */
@@ -1324,7 +1517,8 @@ static bool
 gate_tree_if_conversion (void)
 {
   return ((flag_tree_vectorize && flag_tree_loop_if_convert != 0)
-	  || flag_tree_loop_if_convert == 1);
+	  || flag_tree_loop_if_convert == 1
+	  || flag_tree_loop_if_convert_stores == 1);
 }
 
 struct gimple_opt_pass pass_if_conversion =

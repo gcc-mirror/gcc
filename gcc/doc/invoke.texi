@@ -383,7 +383,8 @@ Objective-C and Objective-C++ Dialects}.
 -fstrict-aliasing -fstrict-overflow -fthread-jumps -ftracer -ftree-bit-ccp @gol
 -ftree-builtin-call-dce -ftree-ccp -ftree-ch -ftree-copy-prop @gol
 -ftree-copyrename -ftree-dce -ftree-dominator-opts -ftree-dse @gol
--ftree-forwprop -ftree-fre -ftree-loop-if-convert -ftree-loop-im @gol
+-ftree-forwprop -ftree-fre -ftree-loop-if-convert @gol
+-ftree-loop-if-convert-memory-writes -ftree-loop-im @gol
 -ftree-phiprop -ftree-loop-distribution -ftree-loop-distribute-patterns @gol
 -ftree-loop-ivcanon -ftree-loop-linear -ftree-loop-optimize @gol
 -ftree-parallelize-loops=@var{n} -ftree-pre -ftree-pta -ftree-reassoc @gol
@@ -6930,6 +6931,23 @@ branch-less equivalents.  The intent is to remove control-flow from
 the innermost loops in order to improve the ability of the
 vectorization pass to handle these loops.  This is enabled by default
 if vectorization is enabled.
+
+@item -ftree-loop-if-convert-stores
+Attempt to also if-convert conditional jumps containing memory writes.
+This transformation can be unsafe for multi-threaded programs as it
+transforms conditional memory writes into unconditional memory writes.
+For example,
+@smallexample
+for (i = 0; i < N; i++)
+  if (cond)
+    A[i] = expr;
+@end smallexample
+would be transformed to
+@smallexample
+for (i = 0; i < N; i++)
+  A[i] = cond ? expr : A[i];
+@end smallexample
+potentially producing data races.
 
 @item -ftree-loop-distribution
 Perform loop distribution.  This flag can improve cache performance on

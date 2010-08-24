@@ -1,3 +1,8 @@
+2010-08-24  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* gcc.dg/tree-ssa/ifc-4.c: New.
+	* gcc.dg/tree-ssa/ifc-7.c: New.
+
 2010-08-24  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* gcc.dg/vect/vect.exp: Check loongson targets
