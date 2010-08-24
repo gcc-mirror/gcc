@@ -7209,6 +7209,27 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+case $target in
+  i?86-* | x86_64-*)
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm ("pcmpestri %0, %%xmm0, %%xmm1" : : "i"(0))
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+
+$as_echo "#define HAVE_SSE4 1" >>confdefs.h
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+esac
+
 # Output.
 
 ac_config_headers="$ac_config_headers config.h:config.in"

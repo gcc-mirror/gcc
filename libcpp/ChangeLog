@@ -1,3 +1,10 @@
+2010-08-24  Richard Henderson  <rth@redhat.com>
+
+	PR bootstrap/45376
+	* configure.ac (HAVE_SSE4): New check.
+	* configure, config.in: Rebuild.
+	* lex.c (search_line_sse42): Omit if !HAVE_SSE4.
+
 2010-08-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lex.c [__sun__ && __svr4__]: Disable init_vectorized_lexer

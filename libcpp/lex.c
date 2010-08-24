@@ -410,6 +410,7 @@ search_line_sse2 (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
   return (const uchar *)p + found;
 }
 
+#ifdef HAVE_SSE4
 /* A version of the fast scanner using SSE 4.2 vectorized string insns.  */
 
 static const uchar *
@@ -463,6 +464,11 @@ search_line_sse42 (const uchar *s, const uchar *end)
  found:
   return s + index;
 }
+
+#else
+/* Work around out-dated assemblers without sse4 support.  */
+#define search_line_sse42 search_line_sse2
+#endif
 
 /* Check the CPU capabilities.  */
 
