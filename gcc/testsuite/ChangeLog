@@ -1,3 +1,8 @@
+2010-08-25  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45393
+	* g++.dg/torture/pr45393.C: New testcase.
+
 2010-08-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/45059
