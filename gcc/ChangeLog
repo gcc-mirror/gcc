@@ -1,3 +1,11 @@
+2010-08-25  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/arm.c (arm_issue_rate): Return 2 for Cortex-A5.
+	* config/arm/arm.md (generic_sched): No for Cortex-A5.
+	(generic_vfp): Likewise.
+	(cortex-a5.md): Include.
+	* config/arm/cortex-a5.md: New.
+
 2010-08-25  Richard Guenther  <rguenther@suse.de>
 
 	* alias.c (get_alias_set): Assign a single alias-set to
