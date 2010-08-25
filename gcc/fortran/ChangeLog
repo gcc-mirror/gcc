@@ -1,3 +1,11 @@
+2010-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-decl.c (gfc_build_intrinsic_function_decls): Set
+	TREE_NOTHROW on fndecls that can't throw.  Set
+	TREE_READONLY on gfor_fndecl_math_ishftc{4,8,16}.
+	(gfc_build_builtin_function_decls): Set TREE_NOTHROW on
+	gfor_fndecl_associated.
+
 2010-08-23  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/45380
