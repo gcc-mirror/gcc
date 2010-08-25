@@ -4498,9 +4498,12 @@ eliminate (void)
       if (TREE_CODE (lhs) != SSA_NAME
 	  || has_zero_uses (lhs))
 	{
+	  basic_block bb = gimple_bb (stmt);
 	  gsi = gsi_for_stmt (stmt);
 	  unlink_stmt_vdef (stmt);
 	  gsi_remove (&gsi, true);
+	  if (gimple_purge_dead_eh_edges (bb))
+	    todo |= TODO_cleanup_cfg;
 	  if (TREE_CODE (lhs) == SSA_NAME)
 	    bitmap_clear_bit (inserted_exprs, SSA_NAME_VERSION (lhs));
 	  release_defs (stmt);
