@@ -1,16 +1,21 @@
+2010-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/45400
+	* combine.c (simplify_shift_const_1) <case SUBREG>: Only use
+	SUBREG_REG if both modes are of MODE_INT class.
+
 2010-08-20  Changpeng Fang  <changpeng.fang@amd.com>
 
 	PR tree-optimization/45260
 	* tree-flow.h (may_be_nonaddressable_p): New definition. Make the
 	existing static function global.
 
-	*tree-ssa-loop-ivopts.c (may_be_nonaddressable_p): This function
+	* tree-ssa-loop-ivopts.c (may_be_nonaddressable_p): This function
 	is changed to global.
 
-	*tree-ssa-loop-prefetch.c (gather_memory_references_ref): Call
+	* tree-ssa-loop-prefetch.c (gather_memory_references_ref): Call
 	may_be_nonaddressable_p on base, and don't collect this reference
 	if the address of the base could not be taken.
-
 
 2010-08-20  David Edelsohn  <edelsohn@gnu.org>
 
