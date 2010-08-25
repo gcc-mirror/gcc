@@ -1,5 +1,9 @@
 2010-08-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/44858
+	* combine.c (try_combine): If recog_for_combine added CLOBBERs to
+	newi2pat, make sure they don't affect newpat.
+
 	PR rtl-optimization/45400
 	* combine.c (simplify_shift_const_1) <case SUBREG>: Only use
 	SUBREG_REG if both modes are of MODE_INT class.

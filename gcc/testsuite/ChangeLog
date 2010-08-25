@@ -1,5 +1,8 @@
 2010-08-25  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/44858
+	* gcc.c-torture/execute/pr44858.c: New test.
+
 	PR rtl-optimization/45400
 	* g++.dg/other/i386-8.C: New test.
 
