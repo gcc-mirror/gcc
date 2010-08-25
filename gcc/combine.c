@@ -2862,7 +2862,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
   i1_feeds_i2_n = i1 && insn_a_feeds_b (i1, i2);
   i0_feeds_i1_n = i0 && insn_a_feeds_b (i0, i1);
   i0_feeds_i2_n = (i0 && (!i0_feeds_i1_n ? insn_a_feeds_b (i0, i2)
-			  : (!dead_or_set_p (i1, i0dest)
+			  : (!reg_overlap_mentioned_p (i1dest, i0dest)
 			     && reg_overlap_mentioned_p (i0dest, i2src))));
 
   /* Ensure that I3's pattern can be the destination of combines.  */
