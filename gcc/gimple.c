@@ -4215,8 +4215,9 @@ gimple_register_type (tree t)
   gcc_assert (TYPE_P (t));
 
   /* In TYPE_CANONICAL we cache the result of gimple_register_type.
-     It is initially set to NULL during LTO streaming.  */
-  if (TYPE_CANONICAL (t))
+     It is initially set to NULL during LTO streaming.
+     But do not mess with TYPE_CANONICAL when not in WPA or link phase.  */
+  if (in_lto_p && TYPE_CANONICAL (t))
     return TYPE_CANONICAL (t);
 
   /* Always register the main variant first.  This is important so we
@@ -4282,12 +4283,14 @@ gimple_register_type (tree t)
 	  TYPE_NEXT_REF_TO (t) = NULL_TREE;
 	}
 
-      TYPE_CANONICAL (t) = new_type;
+      if (in_lto_p)
+	TYPE_CANONICAL (t) = new_type;
       t = new_type;
     }
   else
     {
-      TYPE_CANONICAL (t) = t;
+      if (in_lto_p)
+	TYPE_CANONICAL (t) = t;
       *slot = (void *) t;
     }
 
