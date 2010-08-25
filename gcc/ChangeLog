@@ -1,3 +1,9 @@
+2010-08-25  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR middle-end/45355
+	* combine.c (try_combine): Use reg_overlap_mentioned_p rather than
+	dead_or_set_p when computing i0_feeds_i2_n.
+
 2010-08-25  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44562
