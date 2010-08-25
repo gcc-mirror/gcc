@@ -3725,7 +3725,58 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
       i2_code_number = recog_for_combine (&newi2pat, i2, &new_i2_notes);
 
       if (i2_code_number >= 0)
-	insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
+	{
+	  /* recog_for_combine might have added CLOBBERs to newi2pat.
+	     Make sure NEWPAT does not depend on the clobbered regs.  */
+	  if (GET_CODE (newi2pat) == PARALLEL)
+	    {
+	      for (i = XVECLEN (newi2pat, 0) - 1; i >= 0; i--)
+		if (GET_CODE (XVECEXP (newi2pat, 0, i)) == CLOBBER)
+		  {
+		    rtx reg = XEXP (XVECEXP (newi2pat, 0, i), 0);
+		    if (reg_overlap_mentioned_p (reg, newpat))
+		      break;
+		  }
+
+	      if (i >= 0)
+		{
+		  /* CLOBBERs on newi2pat prevent it going first.
+		     Try the other order of the insns if possible.  */
+		  temp = newpat;
+		  newpat = XVECEXP (newi2pat, 0, 0);
+		  newi2pat = temp;
+#ifdef HAVE_cc0
+		  if (reg_referenced_p (cc0_rtx, newpat))
+		    {
+		      undo_all ();
+		      return 0;
+		    }
+#endif
+
+		  i2_code_number = recog_for_combine (&newi2pat, i2,
+						      &new_i2_notes);
+		  if (i2_code_number < 0)
+		    {
+		      undo_all ();
+		      return 0;
+		    }
+
+		  if (GET_CODE (newi2pat) == PARALLEL)
+		    for (i = XVECLEN (newi2pat, 0) - 1; i >= 0; i--)
+		      if (GET_CODE (XVECEXP (newi2pat, 0, i)) == CLOBBER)
+			{
+			  rtx reg = XEXP (XVECEXP (newi2pat, 0, i), 0);
+			  if (reg_overlap_mentioned_p (reg, newpat))
+			    {
+			      undo_all ();
+			      return 0;
+			    }
+			}
+		}
+	    }
+
+	  insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
+	}
     }
 
   /* If it still isn't recognized, fail and change things back the way they
