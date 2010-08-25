@@ -4,6 +4,10 @@
 	* combine.c (try_combine): Use reg_overlap_mentioned_p rather than
 	dead_or_set_p when computing i0_feeds_i2_n.
 
+	* combine.c (find_split_point): Undo canonicalization of multiply-add
+	to (minus x (mult)) when it seems likely that this will increase the
+	chances of a split.
+
 2010-08-25  Richard Guenther  <rguenther@suse.de>
 
 	PR lto/44562
