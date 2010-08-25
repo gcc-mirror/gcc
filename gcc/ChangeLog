@@ -1,5 +1,12 @@
 2010-08-25  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/44562
+	* lto-streamer.c (lto_record_common_node): Do not mess with
+	TYPE_CANONICAL when not in lto.
+	* gimple.c (gimple_register_type): Likewise.
+
+2010-08-25  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/45316
 	* tree-ssa-pre.c (eliminate): Properly clean EH info.
 

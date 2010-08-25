@@ -1,5 +1,11 @@
 2010-08-25  Richard Guenther  <rguenther@suse.de>
 
+	PR lto/44562
+	* gcc.dg/graphite/id-27.c: New testcase.
+	* gcc.dg/lto/20100825-1_0.c: Likewise.
+
+2010-08-25  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/45316
 	* g++.dg/opt/pr45316.C: New testcase.
 

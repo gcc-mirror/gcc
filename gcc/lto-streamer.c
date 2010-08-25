@@ -524,7 +524,8 @@ lto_record_common_node (tree *nodep, VEC(tree, heap) **common_nodes,
     {
       /* Type merging will get confused by the canonical types as they
 	 are set by the middle-end.  */
-      TYPE_CANONICAL (node) = NULL_TREE;
+      if (in_lto_p)
+	TYPE_CANONICAL (node) = NULL_TREE;
       *nodep = node = gimple_register_type (node);
     }
 
