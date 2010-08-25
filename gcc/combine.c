@@ -9858,7 +9858,9 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 		  > GET_MODE_SIZE (GET_MODE (varop)))
 	      && (unsigned int) ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (varop)))
 				  + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
-		 == mode_words)
+		 == mode_words
+	      && GET_MODE_CLASS (GET_MODE (varop)) == MODE_INT
+	      && GET_MODE_CLASS (GET_MODE (SUBREG_REG (varop))) == MODE_INT)
 	    {
 	      varop = SUBREG_REG (varop);
 	      if (GET_MODE_SIZE (GET_MODE (varop)) > GET_MODE_SIZE (mode))

@@ -1,3 +1,9 @@
+2010-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/45400
+	* combine.c (simplify_shift_const_1) <case SUBREG>: Only use
+	SUBREG_REG if both modes are of MODE_INT class.
+
 2010-08-25  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/arm.c (arm_issue_rate): Return 2 for Cortex-A5.
