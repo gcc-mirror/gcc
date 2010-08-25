@@ -1,3 +1,10 @@
+2010-08-25  Richard Guenther  <rguenther@suse.de>
+
+	* alias.c (get_alias_set): Assign a single alias-set to
+	all pointers.
+	* gimple.c (gimple_get_alias_set): Remove special handling
+	for pointers.
+
 2010-08-25  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR middle-end/45355
