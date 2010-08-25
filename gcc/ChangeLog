@@ -1,5 +1,10 @@
 2010-08-25  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/45316
+	* tree-ssa-pre.c (eliminate): Properly clean EH info.
+
+2010-08-25  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/45393
 	* tree-ssa-math-opts.c (execute_cse_sincos_1): Properly transfer
 	and clean EH info.  Avoid SSA update.
