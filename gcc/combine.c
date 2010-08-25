@@ -4771,6 +4771,23 @@ find_split_point (rtx *loc, rtx insn, bool set_src)
 
     case PLUS:
     case MINUS:
+      /* Canonicalization can produce (minus A (mult B C)), where C is a
+	 constant.  It may be better to try splitting (plus (mult B -C) A)
+	 instead if this isn't a multiply by a power of two.  */
+      if (set_src && code == MINUS && GET_CODE (XEXP (x, 1)) == MULT
+	  && GET_CODE (XEXP (XEXP (x, 1), 1)) == CONST_INT
+	  && exact_log2 (INTVAL (XEXP (XEXP (x, 1), 1))) < 0)
+	{
+	  enum machine_mode mode = GET_MODE (x);
+	  unsigned HOST_WIDE_INT this_int = INTVAL (XEXP (XEXP (x, 1), 1));
+	  HOST_WIDE_INT other_int = trunc_int_for_mode (-this_int, mode);
+	  SUBST (*loc, gen_rtx_PLUS (mode, gen_rtx_MULT (mode,
+							 XEXP (XEXP (x, 1), 0),
+							 GEN_INT (other_int)),
+				     XEXP (x, 0)));
+	  return find_split_point (loc, insn, set_src);
+	}
+
       /* Split at a multiply-accumulate instruction.  However if this is
          the SET_SRC, we likely do not have such an instruction and it's
          worthless to try this split.  */
