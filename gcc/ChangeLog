@@ -1,3 +1,24 @@
+2010-08-25  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/arm/iterators.md (VU, SE, V_widen_l): New.
+	(V_unpack, US): New.
+	* config/arm/neon.md (vec_unpack<US>_hi_<mode>): Expansion for
+	vmovl.
+	(vec_unpack<US>_lo_<mode>): Likewise.
+	(neon_vec_unpack<US>_hi_<mode>): Instruction pattern for vmovl.
+	(neon_vec_unpack<US>_lo_<mode>): Likewise.
+	(vec_widen_<US>mult_lo_<mode>): Expansion for vmull.
+	(vec_widen_<US>mult_hi_<mode>): Likewise.
+	(neon_vec_<US>mult_lo_<mode>"): Instruction pattern for vmull.
+	(neon_vec_<US>mult_hi_<mode>"): Likewise.
+	(neon_unpack<US>_<mode>): Widening move intermediate step for
+	vectorizing without -mvectorize-with-neon-quad.
+	(neon_vec_<US>mult_<mode>): Widening multiply intermediate step
+	for vectorizing without -mvectorize-with-neon-quad.
+	* config/arm/predicates.md (vect_par_constant_high): Check for
+	high-half lanes of a vector.
+	(vect_par_constant_low): Check for low-half lanes of a vector.
+
 2010-08-24  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* tree-if-conv.c (struct ifc_dr): New.

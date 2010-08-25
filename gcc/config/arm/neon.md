@@ -4977,3 +4977,205 @@
   emit_insn (gen_orn<mode>3_neon (operands[0], operands[1], operands[2]));
   DONE;
 })
+
+(define_insn "neon_vec_unpack<US>_lo_<mode>"
+  [(set (match_operand:<V_unpack> 0 "register_operand" "=w")
+        (SE:<V_unpack> (vec_select:<V_HALF>
+			  (match_operand:VU 1 "register_operand" "w")
+			  (match_operand:VU 2 "vect_par_constant_low" ""))))]
+  "TARGET_NEON"
+  "vmovl.<US><V_sz_elem> %q0, %e1"
+  [(set_attr "neon_type" "neon_shift_1")]
+)
+
+(define_insn "neon_vec_unpack<US>_hi_<mode>"
+  [(set (match_operand:<V_unpack> 0 "register_operand" "=w")
+        (SE:<V_unpack> (vec_select:<V_HALF>
+			  (match_operand:VU 1 "register_operand" "w")
+			  (match_operand:VU 2 "vect_par_constant_high" ""))))]
+  "TARGET_NEON"
+  "vmovl.<US><V_sz_elem> %q0, %f1"
+  [(set_attr "neon_type" "neon_shift_1")]
+)
+
+(define_expand "vec_unpack<US>_hi_<mode>"
+  [(match_operand:<V_unpack> 0 "register_operand" "")
+   (SE:<V_unpack> (match_operand:VU 1 "register_operand"))]
+ "TARGET_NEON"
+  {
+   rtvec v = rtvec_alloc (<V_mode_nunits>/2)  ;
+   rtx t1;
+   int i;
+   for (i = 0; i < (<V_mode_nunits>/2); i++)
+     RTVEC_ELT (v, i) = GEN_INT ((<V_mode_nunits>/2) + i);
+  
+   t1 = gen_rtx_PARALLEL (<MODE>mode, v);
+   emit_insn (gen_neon_vec_unpack<US>_hi_<mode> (operands[0], 
+                                                 operands[1], 
+					         t1));
+   DONE;
+  }
+)
+
+(define_expand "vec_unpack<US>_lo_<mode>"
+  [(match_operand:<V_unpack> 0 "register_operand" "")
+   (SE:<V_unpack> (match_operand:VU 1 "register_operand" ""))]
+ "TARGET_NEON"
+  {
+   rtvec v = rtvec_alloc (<V_mode_nunits>/2)  ;
+   rtx t1;
+   int i;
+   for (i = 0; i < (<V_mode_nunits>/2) ; i++)
+     RTVEC_ELT (v, i) = GEN_INT (i);
+   t1 = gen_rtx_PARALLEL (<MODE>mode, v);
+   emit_insn (gen_neon_vec_unpack<US>_lo_<mode> (operands[0], 
+                                                 operands[1], 
+				   	         t1));
+   DONE;
+  }
+)
+
+(define_insn "neon_vec_<US>mult_lo_<mode>"
+ [(set (match_operand:<V_unpack> 0 "register_operand" "=w")
+       (mult:<V_unpack> (SE:<V_unpack> (vec_select:<V_HALF>
+			   (match_operand:VU 1 "register_operand" "w") 
+                           (match_operand:VU 2 "vect_par_constant_low" "")))
+ 		        (SE:<V_unpack> (vec_select:<V_HALF>
+                           (match_operand:VU 3 "register_operand" "w") 
+                           (match_dup 2)))))]
+  "TARGET_NEON"
+  "vmull.<US><V_sz_elem> %q0, %e1, %e3"
+  [(set_attr "neon_type" "neon_shift_1")]
+)
+
+(define_expand "vec_widen_<US>mult_lo_<mode>"
+  [(match_operand:<V_unpack> 0 "register_operand" "")
+   (SE:<V_unpack> (match_operand:VU 1 "register_operand" ""))
+   (SE:<V_unpack> (match_operand:VU 2 "register_operand" ""))]
+ "TARGET_NEON"
+ {
+   rtvec v = rtvec_alloc (<V_mode_nunits>/2)  ;
+   rtx t1;
+   int i;
+   for (i = 0; i < (<V_mode_nunits>/2) ; i++)
+     RTVEC_ELT (v, i) = GEN_INT (i);
+   t1 = gen_rtx_PARALLEL (<MODE>mode, v);
+
+   emit_insn (gen_neon_vec_<US>mult_lo_<mode> (operands[0],
+ 					       operands[1],
+					       t1,
+					       operands[2]));
+   DONE;
+ }
+)
+
+(define_insn "neon_vec_<US>mult_hi_<mode>"
+ [(set (match_operand:<V_unpack> 0 "register_operand" "=w")
+      (mult:<V_unpack> (SE:<V_unpack> (vec_select:<V_HALF>
+			    (match_operand:VU 1 "register_operand" "w") 
+			    (match_operand:VU 2 "vect_par_constant_high" "")))
+		       (SE:<V_unpack> (vec_select:<V_HALF>
+			    (match_operand:VU 3 "register_operand" "w") 
+			    (match_dup 2)))))]
+  "TARGET_NEON"
+  "vmull.<US><V_sz_elem> %q0, %f1, %f3"
+  [(set_attr "neon_type" "neon_shift_1")]
+)
+
+(define_expand "vec_widen_<US>mult_hi_<mode>"
+  [(match_operand:<V_unpack> 0 "register_operand" "")
+   (SE:<V_unpack> (match_operand:VU 1 "register_operand" ""))
+   (SE:<V_unpack> (match_operand:VU 2 "register_operand" ""))]
+ "TARGET_NEON"
+ {
+   rtvec v = rtvec_alloc (<V_mode_nunits>/2)  ;
+   rtx t1;
+   int i;
+   for (i = 0; i < (<V_mode_nunits>/2) ; i++)
+     RTVEC_ELT (v, i) = GEN_INT (<V_mode_nunits>/2 + i);
+   t1 = gen_rtx_PARALLEL (<MODE>mode, v);
+
+   emit_insn (gen_neon_vec_<US>mult_hi_<mode> (operands[0],
+ 					       operands[1],
+					       t1,
+					       operands[2]));
+   DONE;
+
+ }
+)
+
+;; Vectorize for non-neon-quad case
+(define_insn "neon_unpack<US>_<mode>"
+ [(set (match_operand:<V_widen> 0 "register_operand" "=w")
+       (SE:<V_widen> (match_operand:VDI 1 "register_operand" "")))]
+ "TARGET_NEON"
+ "vmovl.<US><V_sz_elem> %q0, %1"
+  [(set_attr "neon_type" "neon_shift_1")]
+)
+
+(define_expand "vec_unpack<US>_lo_<mode>"
+ [(match_operand:<V_double_width> 0 "register_operand" "")
+  (SE:<V_double_width>(match_operand:VDI 1 "register_operand"))]
+ "TARGET_NEON"
+{
+  rtx tmpreg = gen_reg_rtx (<V_widen>mode);
+  emit_insn (gen_neon_unpack<US>_<mode> (tmpreg, operands[1]));
+  emit_insn (gen_neon_vget_low<V_widen_l> (operands[0], tmpreg));
+
+  DONE;
+}
+)
+
+(define_expand "vec_unpack<US>_hi_<mode>"
+ [(match_operand:<V_double_width> 0 "register_operand" "")
+  (SE:<V_double_width>(match_operand:VDI 1 "register_operand"))]
+ "TARGET_NEON"
+{
+  rtx tmpreg = gen_reg_rtx (<V_widen>mode);
+  emit_insn (gen_neon_unpack<US>_<mode> (tmpreg, operands[1]));
+  emit_insn (gen_neon_vget_high<V_widen_l> (operands[0], tmpreg));
+
+  DONE;
+}
+)
+
+(define_insn "neon_vec_<US>mult_<mode>"
+ [(set (match_operand:<V_widen> 0 "register_operand" "=w")
+       (mult:<V_widen> (SE:<V_widen> 
+		 	   (match_operand:VDI 1 "register_operand" "w"))
+ 		       (SE:<V_widen> 
+			   (match_operand:VDI 2 "register_operand" "w"))))]
+  "TARGET_NEON"
+  "vmull.<US><V_sz_elem> %q0, %1, %2"
+  [(set_attr "neon_type" "neon_shift_1")]
+)
+
+(define_expand "vec_widen_<US>mult_hi_<mode>"
+  [(match_operand:<V_double_width> 0 "register_operand" "")
+   (SE:<V_double_width> (match_operand:VDI 1 "register_operand" ""))
+   (SE:<V_double_width> (match_operand:VDI 2 "register_operand" ""))]
+ "TARGET_NEON"
+ {
+   rtx tmpreg = gen_reg_rtx (<V_widen>mode);
+   emit_insn (gen_neon_vec_<US>mult_<mode> (tmpreg, operands[1], operands[2]));
+   emit_insn (gen_neon_vget_high<V_widen_l> (operands[0], tmpreg));
+ 					    
+   DONE;
+
+ }
+)
+
+(define_expand "vec_widen_<US>mult_lo_<mode>"
+  [(match_operand:<V_double_width> 0 "register_operand" "")
+   (SE:<V_double_width> (match_operand:VDI 1 "register_operand" ""))
+   (SE:<V_double_width> (match_operand:VDI 2 "register_operand" ""))]
+ "TARGET_NEON"
+ {
+   rtx tmpreg = gen_reg_rtx (<V_widen>mode);
+   emit_insn (gen_neon_vec_<US>mult_<mode> (tmpreg, operands[1], operands[2]));
+   emit_insn (gen_neon_vget_low<V_widen_l> (operands[0], tmpreg));
+ 					    
+   DONE;
+
+ }
+)
