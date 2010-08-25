@@ -1,3 +1,8 @@
+2010-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/45059
+	* gcc.c-torture/compile/pr45059.c: New test.
+
 2010-08-25  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_unpack):
