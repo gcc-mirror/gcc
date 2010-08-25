@@ -8,5 +8,5 @@ struct s {
 void
 func(struct s *ptr)
 {
-  *(void **)&ptr->p = 0; /* { dg-warning "type-punned pointer" } */
+  *(void **)&ptr->p = 0; /* { dg-warning "type-punned pointer" "" { xfail *-*-* } } */
 }

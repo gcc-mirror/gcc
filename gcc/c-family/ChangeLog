@@ -1,3 +1,8 @@
+2010-08-25  Richard Guenther  <rguenther@suse.de>
+
+	* c-common.c (c_common_get_alias_set): Remove special
+	handling for pointers.
+
 2010-08-20  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* c-common.c: Use FOR_EACH_VEC_ELT.

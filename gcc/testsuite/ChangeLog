@@ -1,3 +1,7 @@
+2010-08-25  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/alias-8.c: Adjust.
+
 2010-08-25  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* gcc.target/i386/combine-mul.c: New test.
