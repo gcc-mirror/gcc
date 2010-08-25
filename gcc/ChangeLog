@@ -1,3 +1,9 @@
+2010-08-25  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/45379
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Handle
+	TARGET_MEM_REF in alignment computation.
+
 2010-08-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/45059
