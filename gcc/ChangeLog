@@ -1,3 +1,10 @@
+2010-08-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/45059
+	* tree-ssa-reassoc.c (eliminate_redundant_comparison): Strip useless
+	type conversions from newop{1,2}.  Assert t is a comparison and
+	newop{1,2} after the stripping are gimple vals.
+
 2010-08-25  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/arm/iterators.md (VU, SE, V_widen_l): New.

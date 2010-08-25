@@ -1314,9 +1314,14 @@ eliminate_redundant_comparison (enum tree_code opcode,
 	  enum tree_code subcode;
 	  tree newop1;
 	  tree newop2;
+	  gcc_assert (COMPARISON_CLASS_P (t));
 	  tmpvar = create_tmp_var (TREE_TYPE (t), NULL);
 	  add_referenced_var (tmpvar);
 	  extract_ops_from_tree (t, &subcode, &newop1, &newop2);
+	  STRIP_USELESS_TYPE_CONVERSION (newop1);
+	  STRIP_USELESS_TYPE_CONVERSION (newop2);
+	  gcc_checking_assert (is_gimple_val (newop1)
+			       && is_gimple_val (newop2));
 	  sum = build_and_add_sum (tmpvar, newop1, newop2, subcode);
 	  curr->op = gimple_get_lhs (sum);
 	}
