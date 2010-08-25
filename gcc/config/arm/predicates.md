@@ -619,3 +619,61 @@
 		(and (match_test "TARGET_32BIT")
 		     (match_operand 0 "arm_di_operand"))))
 
+;; Predicates for parallel expanders based on mode.
+(define_special_predicate "vect_par_constant_high" 
+  (match_code "parallel")
+{
+  HOST_WIDE_INT count = XVECLEN (op, 0);
+  int i;
+  int base = GET_MODE_NUNITS (mode);
+
+  if ((count < 1)
+      || (count != base/2))
+    return false;
+    
+  if (!VECTOR_MODE_P (mode))
+    return false;
+
+  for (i = 0; i < count; i++)
+   {
+     rtx elt = XVECEXP (op, 0, i);
+     int val;
+
+     if (GET_CODE (elt) != CONST_INT)
+       return false;
+
+     val = INTVAL (elt);
+     if (val != (base/2) + i)
+       return false;
+   }
+  return true; 
+})
+
+(define_special_predicate "vect_par_constant_low"
+  (match_code "parallel")
+{
+  HOST_WIDE_INT count = XVECLEN (op, 0);
+  int i;
+  int base = GET_MODE_NUNITS (mode);
+
+  if ((count < 1)
+      || (count != base/2))
+    return false;
+    
+  if (!VECTOR_MODE_P (mode))
+    return false;
+
+  for (i = 0; i < count; i++)
+   {
+     rtx elt = XVECEXP (op, 0, i);
+     int val;
+
+     if (GET_CODE (elt) != CONST_INT)
+       return false;
+
+     val = INTVAL (elt);
+     if (val != i)
+       return false;
+   } 
+  return true; 
+})

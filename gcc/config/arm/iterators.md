@@ -136,7 +136,9 @@
 ;; Modes with 32-bit elements only.
 (define_mode_iterator V32 [V2SI V2SF V4SI V4SF])
 
-
+;; Modes with 8-bit, 16-bit and 32-bit elements.
+(define_mode_iterator VU [V16QI V8HI V4SI])
+ 
 ;;----------------------------------------------------------------------------
 ;; Code iterators
 ;;----------------------------------------------------------------------------
@@ -156,6 +158,8 @@
 ;; without unsigned variants (for use with *SFmode pattern).
 (define_code_iterator vqhs_ops [plus smin smax])
 
+;; A list of widening operators
+(define_code_iterator SE [sign_extend zero_extend])
 
 ;;----------------------------------------------------------------------------
 ;; Mode attributes
@@ -360,6 +364,11 @@
                                  (V2SF "2") (V4SF "4")
                                  (DI "1")   (V2DI "2")])
 
+;; Same as V_widen, but lower-case.
+(define_mode_attr V_widen_l [(V8QI "v8hi") (V4HI "v4si") ( V2SI "v2di")])
+
+;; Widen. Result is half the number of elements, but widened to double-width.
+(define_mode_attr V_unpack   [(V16QI "V8HI") (V8HI "V4SI") (V4SI "V2DI")])
 
 ;;----------------------------------------------------------------------------
 ;; Code attributes
@@ -375,3 +384,6 @@
 
 (define_code_attr cnb [(ltu "CC_C") (geu "CC")])
 (define_code_attr optab [(ltu "ltu") (geu "geu")])
+
+;; Assembler mnemonics for signedness of widening operations.
+(define_code_attr US [(sign_extend "s") (zero_extend "u")])
