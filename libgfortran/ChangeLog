@@ -1,3 +1,8 @@
+2010-08-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/fpu-387.h (has_sse): Remove cw_sse, unused.
+	Use fixed-length asm.
+
 2010-08-23  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45323
