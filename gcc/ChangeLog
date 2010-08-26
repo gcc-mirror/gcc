@@ -1,3 +1,9 @@
+2010-08-26  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45255
+	* tree.c (decl_address_invariant_p): DECL_DLLIMPORT_P
+	statics and externals are also invariant.
+
 2010-08-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/44858
