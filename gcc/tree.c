@@ -2474,8 +2474,7 @@ decl_address_invariant_p (const_tree op)
       return true;
 
     case VAR_DECL:
-      if (((TREE_STATIC (op) || DECL_EXTERNAL (op))
-           && !DECL_DLLIMPORT_P (op))
+      if ((TREE_STATIC (op) || DECL_EXTERNAL (op))
           || DECL_THREAD_LOCAL_P (op)
           || DECL_CONTEXT (op) == current_function_decl
           || decl_function_context (op) == current_function_decl)
