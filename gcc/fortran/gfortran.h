@@ -2007,6 +2007,12 @@ typedef struct gfc_association_list
      lvalue.  */
   unsigned variable:1;
 
+  /* True if this struct is currently only linked to from a gfc_symbol rather
+     than as part of a real list in gfc_code->ext.block.assoc.  This may
+     happen for SELECT TYPE temporaries and must be considered
+     for memory handling.  */
+  unsigned dangling:1;
+
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_symtree *st; /* Symtree corresponding to name.  */
   locus where;
@@ -2831,6 +2837,7 @@ void gfc_dump_parse_tree (gfc_namespace *, FILE *);
 /* parse.c */
 gfc_try gfc_parse_file (void);
 void gfc_global_used (gfc_gsymbol *, locus *);
+gfc_namespace* gfc_build_block_ns (gfc_namespace *);
 
 /* dependency.c */
 int gfc_dep_compare_expr (gfc_expr *, gfc_expr *);

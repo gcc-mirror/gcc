@@ -860,7 +860,7 @@ gfc_trans_block_construct (gfc_code* code)
   gcc_assert (!sym->tlink);
   sym->tlink = sym;
 
-  gfc_process_block_locals (ns);
+  gfc_process_block_locals (ns, code->ext.block.assoc);
 
   gfc_start_wrapped_block (&body, gfc_trans_code (ns->code));
   gfc_trans_deferred_vars (sym, &body);

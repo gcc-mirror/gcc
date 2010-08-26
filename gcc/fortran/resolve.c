@@ -4921,9 +4921,9 @@ resolve_variable (gfc_expr *e)
     return FAILURE;
   sym = e->symtree->n.sym;
 
-  /* If this is an associate-name, it may be parsed with references in error
-     even though the target is scalar.  Fail directly in this case.  */
-  if (sym->assoc && !sym->attr.dimension && e->ref)
+  /* If this is an associate-name, it may be parsed with an array reference
+     in error even though the target is scalar.  Fail directly in this case.  */
+  if (sym->assoc && !sym->attr.dimension && e->ref && e->ref->type == REF_ARRAY)
     return FAILURE;
 
   /* On the other hand, the parser may not have known this is an array;
@@ -7551,6 +7551,88 @@ gfc_type_is_extensible (gfc_symbol *sym)
 }
 
 
+/* Resolve an associate name:  Resolve target and ensure the type-spec is
+   correct as well as possibly the array-spec.  */
+
+static void
+resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
+{
+  gfc_expr* target;
+  bool to_var;
+
+  gcc_assert (sym->assoc);
+  gcc_assert (sym->attr.flavor == FL_VARIABLE);
+
+  /* If this is for SELECT TYPE, the target may not yet be set.  In that
+     case, return.  Resolution will be called later manually again when
+     this is done.  */
+  target = sym->assoc->target;
+  if (!target)
+    return;
+  gcc_assert (!sym->assoc->dangling);
+
+  if (resolve_target && gfc_resolve_expr (target) != SUCCESS)
+    return;
+
+  /* For variable targets, we get some attributes from the target.  */
+  if (target->expr_type == EXPR_VARIABLE)
+    {
+      gfc_symbol* tsym;
+
+      gcc_assert (target->symtree);
+      tsym = target->symtree->n.sym;
+
+      sym->attr.asynchronous = tsym->attr.asynchronous;
+      sym->attr.volatile_ = tsym->attr.volatile_;
+
+      sym->attr.target = (tsym->attr.target || tsym->attr.pointer);
+    }
+
+  sym->ts = target->ts;
+  gcc_assert (sym->ts.type != BT_UNKNOWN);
+
+  /* See if this is a valid association-to-variable.  */
+  to_var = (target->expr_type == EXPR_VARIABLE
+	    && !gfc_has_vector_subscript (target));
+  if (sym->assoc->variable && !to_var)
+    {
+      if (target->expr_type == EXPR_VARIABLE)
+	gfc_error ("'%s' at %L associated to vector-indexed target can not"
+		   " be used in a variable definition context",
+		   sym->name, &sym->declared_at);
+      else
+	gfc_error ("'%s' at %L associated to expression can not"
+		   " be used in a variable definition context",
+		   sym->name, &sym->declared_at);
+
+      return;
+    }
+  sym->assoc->variable = to_var;
+
+  /* Finally resolve if this is an array or not.  */
+  if (sym->attr.dimension && target->rank == 0)
+    {
+      gfc_error ("Associate-name '%s' at %L is used as array",
+		 sym->name, &sym->declared_at);
+      sym->attr.dimension = 0;
+      return;
+    }
+  if (target->rank > 0)
+    sym->attr.dimension = 1;
+
+  if (sym->attr.dimension)
+    {
+      sym->as = gfc_get_array_spec ();
+      sym->as->rank = target->rank;
+      sym->as->type = AS_DEFERRED;
+
+      /* Target must not be coindexed, thus the associate-variable
+	 has no corank.  */
+      sym->as->corank = 0;
+    }
+}
+
+
 /* Resolve a SELECT TYPE statement.  */
 
 static void
@@ -7628,37 +7710,42 @@ resolve_select_type (gfc_code *code)
 	}
     }
     
-  if (error>0)
+  if (error > 0)
     return;
 
+  /* Transform SELECT TYPE statement to BLOCK and associate selector to
+     target if present.  */
+  code->op = EXEC_BLOCK;
   if (code->expr2)
     {
-      /* Insert assignment for selector variable.  */
-      new_st = gfc_get_code ();
-      new_st->op = EXEC_ASSIGN;
-      new_st->expr1 = gfc_copy_expr (code->expr1);
-      new_st->expr2 = gfc_copy_expr (code->expr2);
-      ns->code = new_st;
-    }
+      gfc_association_list* assoc;
 
-  /* Put SELECT TYPE statement inside a BLOCK.  */
+      assoc = gfc_get_association_list ();
+      assoc->st = code->expr1->symtree;
+      assoc->target = gfc_copy_expr (code->expr2);
+      /* assoc->variable will be set by resolve_assoc_var.  */
+      
+      code->ext.block.assoc = assoc;
+      code->expr1->symtree->n.sym->assoc = assoc;
+
+      resolve_assoc_var (code->expr1->symtree->n.sym, false);
+    }
+  else
+    code->ext.block.assoc = NULL;
+
+  /* Add EXEC_SELECT to switch on type.  */
   new_st = gfc_get_code ();
   new_st->op = code->op;
   new_st->expr1 = code->expr1;
   new_st->expr2 = code->expr2;
   new_st->block = code->block;
+  code->expr1 = code->expr2 =  NULL;
+  code->block = NULL;
   if (!ns->code)
     ns->code = new_st;
   else
     ns->code->next = new_st;
-  code->op = EXEC_BLOCK;
-  code->ext.block.assoc = NULL;
-  code->expr1 = code->expr2 =  NULL;
-  code->block = NULL;
-
   code = new_st;
-
-  /* Transform to EXEC_SELECT.  */
   code->op = EXEC_SELECT;
   gfc_add_component_ref (code->expr1, "$vptr");
   gfc_add_component_ref (code->expr1, "$hash");
@@ -7675,24 +7762,37 @@ resolve_select_type (gfc_code *code)
       else if (c->ts.type == BT_UNKNOWN)
 	continue;
 
-      /* Assign temporary to selector.  */
+      /* Associate temporary to selector.  This should only be done
+	 when this case is actually true, so build a new ASSOCIATE
+	 that does precisely this here (instead of using the
+	 'global' one).  */
+
       if (c->ts.type == BT_CLASS)
 	sprintf (name, "tmp$class$%s", c->ts.u.derived->name);
       else
 	sprintf (name, "tmp$type$%s", c->ts.u.derived->name);
       st = gfc_find_symtree (ns->sym_root, name);
-      new_st = gfc_get_code ();
-      new_st->expr1 = gfc_get_variable_expr (st);
-      new_st->expr2 = gfc_get_variable_expr (code->expr1->symtree);
+      gcc_assert (st->n.sym->assoc);
+      st->n.sym->assoc->target = gfc_get_variable_expr (code->expr1->symtree);
       if (c->ts.type == BT_DERIVED)
-	{
-	  new_st->op = EXEC_POINTER_ASSIGN;
-	  gfc_add_component_ref (new_st->expr2, "$data");
-	}
-      else
-	new_st->op = EXEC_POINTER_ASSIGN;
-      new_st->next = body->next;
+	gfc_add_component_ref (st->n.sym->assoc->target, "$data");
+
+      new_st = gfc_get_code ();
+      new_st->op = EXEC_BLOCK;
+      new_st->ext.block.ns = gfc_build_block_ns (ns);
+      new_st->ext.block.ns->code = body->next;
       body->next = new_st;
+
+      /* Chain in the new list only if it is marked as dangling.  Otherwise
+	 there is a CASE label overlap and this is already used.  Just ignore,
+	 the error is diagonsed elsewhere.  */
+      if (st->n.sym->assoc->dangling)
+	{
+	  new_st->ext.block.assoc = st->n.sym->assoc;
+	  st->n.sym->assoc->dangling = 0;
+	}
+
+      resolve_assoc_var (st->n.sym, false);
     }
     
   /* Take out CLASS IS cases for separate treatment.  */
@@ -8405,7 +8505,7 @@ resolve_block_construct (gfc_code* code)
   gfc_resolve (code->ext.block.ns);
 
   /* For an ASSOCIATE block, the associations (and their targets) are already
-     resolved during gfc_resolve_symbol.  */
+     resolved during resolve_symbol.  */
 }
 
 
@@ -9634,8 +9734,10 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 	}
 
       /* F03:C509.  */
-      /* Assume that use associated symbols were checked in the module ns.  */ 
-      if (!sym->attr.class_ok && !sym->attr.use_assoc)
+      /* Assume that use associated symbols were checked in the module ns.
+	 Class-variables that are associate-names are also something special
+	 and excepted from the test.  */
+      if (!sym->attr.class_ok && !sym->attr.use_assoc && !sym->assoc)
 	{
 	  gfc_error ("CLASS variable '%s' at %L must be dummy, allocatable "
 		     "or pointer", sym->name, &sym->declared_at);
@@ -11701,76 +11803,9 @@ resolve_symbol (gfc_symbol *sym)
       && resolve_intrinsic (sym, &sym->declared_at) == FAILURE)
     return;
 
-  /* For associate names, resolve corresponding expression and make sure
-     they get their type-spec set this way.  */
+  /* Resolve associate names.  */
   if (sym->assoc)
-    {
-      gfc_expr* target;
-      bool to_var;
-
-      gcc_assert (sym->attr.flavor == FL_VARIABLE);
-
-      target = sym->assoc->target;
-      if (gfc_resolve_expr (target) != SUCCESS)
-	return;
-
-      /* For variable targets, we get some attributes from the target.  */
-      if (target->expr_type == EXPR_VARIABLE)
-	{
-	  gfc_symbol* tsym;
-
-	  gcc_assert (target->symtree);
-	  tsym = target->symtree->n.sym;
-
-	  sym->attr.asynchronous = tsym->attr.asynchronous;
-	  sym->attr.volatile_ = tsym->attr.volatile_;
-
-	  sym->attr.target = (tsym->attr.target || tsym->attr.pointer);
-	}
-
-      sym->ts = target->ts;
-      gcc_assert (sym->ts.type != BT_UNKNOWN);
-
-      /* See if this is a valid association-to-variable.  */
-      to_var = (target->expr_type == EXPR_VARIABLE
-		&& !gfc_has_vector_subscript (target));
-      if (sym->assoc->variable && !to_var)
-	{
-	  if (target->expr_type == EXPR_VARIABLE)
-	    gfc_error ("'%s' at %L associated to vector-indexed target can not"
-		       " be used in a variable definition context",
-		       sym->name, &sym->declared_at);
-	  else
-	    gfc_error ("'%s' at %L associated to expression can not"
-		       " be used in a variable definition context",
-		       sym->name, &sym->declared_at);
-
-	  return;
-	}
-      sym->assoc->variable = to_var;
-
-      /* Finally resolve if this is an array or not.  */
-      if (sym->attr.dimension && target->rank == 0)
-	{
-	  gfc_error ("Associate-name '%s' at %L is used as array",
-		     sym->name, &sym->declared_at);
-	  sym->attr.dimension = 0;
-	  return;
-	}
-      if (target->rank > 0)
-	sym->attr.dimension = 1;
-
-      if (sym->attr.dimension)
-	{
-	  sym->as = gfc_get_array_spec ();
-	  sym->as->rank = target->rank;
-	  sym->as->type = AS_DEFERRED;
-
-	  /* Target must not be coindexed, thus the associate-variable
-	     has no corank.  */
-	  sym->as->corank = 0;
-	}
-    }
+    resolve_assoc_var (sym, true);
 
   /* Assign default type to symbols that need one and don't have one.  */
   if (sym->ts.type == BT_UNKNOWN)
