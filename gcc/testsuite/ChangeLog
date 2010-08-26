@@ -1,3 +1,8 @@
+2010-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/44485
+	* gcc.dg/pr44485.c: New test.
+
 2010-08-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/tls/thr-init-2.c: Use dg-add-options tls.

@@ -601,7 +601,7 @@ flags_from_decl_or_type (const_tree exp)
 	flags |= ECF_RETURNS_TWICE;
 
       /* Process the pure and const attributes.  */
-      if (TREE_READONLY (exp) && ! TREE_THIS_VOLATILE (exp))
+      if (TREE_READONLY (exp))
 	flags |= ECF_CONST;
       if (DECL_PURE_P (exp))
 	flags |= ECF_PURE;
@@ -616,11 +616,15 @@ flags_from_decl_or_type (const_tree exp)
 
       flags = special_function_p (exp, flags);
     }
-  else if (TYPE_P (exp) && TYPE_READONLY (exp) && ! TREE_THIS_VOLATILE (exp))
+  else if (TYPE_P (exp) && TYPE_READONLY (exp))
     flags |= ECF_CONST;
 
   if (TREE_THIS_VOLATILE (exp))
-    flags |= ECF_NORETURN;
+    {
+      flags |= ECF_NORETURN;
+      if (flags & (ECF_CONST|ECF_PURE))
+	flags |= ECF_LOOPING_CONST_OR_PURE;
+    }
 
   return flags;
 }
