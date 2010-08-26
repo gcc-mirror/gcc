@@ -64,7 +64,6 @@ has_sse (void)
   if (edx & bit_SSE)
     {
       struct sigaction act, oact;
-      unsigned int cw_sse;
 
       act.sa_handler = sigill_hdlr;
       sigemptyset (&act.sa_mask);
@@ -72,7 +71,9 @@ has_sse (void)
       act.sa_flags = SA_SIGINFO;
       sigaction (SIGILL, &act, &oact);
 
-      asm volatile ("stmxcsr %0" : "=m" (cw_sse));
+      /* We need a single SSE instruction here so the handler can safely skip
+	 over it.  */
+      __asm__ volatile ("movss %xmm2,%xmm1");
 
       sigaction (SIGILL, &oact, NULL);
 
