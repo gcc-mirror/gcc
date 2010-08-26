@@ -5748,6 +5748,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
   tree fndecl = get_callee_fndecl (exp);
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
   enum machine_mode target_mode = TYPE_MODE (TREE_TYPE (exp));
+  int flags;
 
   if (DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
     return targetm.expand_builtin (exp, target, subtarget, mode, ignore);
@@ -5770,8 +5771,8 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
      none of its arguments are volatile, we can avoid expanding the
      built-in call and just evaluate the arguments for side-effects.  */
   if (target == const0_rtx
-      && (DECL_PURE_P (fndecl) || TREE_READONLY (fndecl))
-      && !DECL_LOOPING_CONST_OR_PURE_P (fndecl))
+      && ((flags = flags_from_decl_or_type (fndecl)) & (ECF_CONST | ECF_PURE))
+      && !(flags & ECF_LOOPING_CONST_OR_PURE))
     {
       bool volatilep = false;
       tree arg;

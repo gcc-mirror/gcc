@@ -1,3 +1,14 @@
+2010-08-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/44485
+	* calls.c (flags_from_decl_or_type): For const or pure
+	noreturn functions return ECF_LOOPING_CONST_OR_PURE|ECF_NORETURN
+	together with ECF_CONST resp. ECF_PURE.
+	* builtins.c (expand_builtin): Use flags_from_decl_or_type
+	instead of querying flags directly.
+	* tree-ssa-loop-niter.c (finite_loop_p): Likewise.
+	* tree-ssa-dce.c (find_obviously_necessary_stmts): Likewise.
+
 2010-08-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45255

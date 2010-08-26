@@ -1970,12 +1970,12 @@ finite_loop_p (struct loop *loop)
   edge ex;
   struct tree_niter_desc desc;
   bool finite = false;
+  int flags;
 
   if (flag_unsafe_loop_optimizations)
     return true;
-  if ((TREE_READONLY (current_function_decl)
-       || DECL_PURE_P (current_function_decl))
-      && !DECL_LOOPING_CONST_OR_PURE_P (current_function_decl))
+  flags = flags_from_decl_or_type (current_function_decl);
+  if ((flags & (ECF_CONST|ECF_PURE)) && !(flags & ECF_LOOPING_CONST_OR_PURE))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Found loop %i to be finite: it is within pure or const function.\n",

@@ -433,6 +433,7 @@ find_obviously_necessary_stmts (struct edge_list *el)
   gimple_stmt_iterator gsi;
   edge e;
   gimple phi, stmt;
+  int flags;
 
   FOR_EACH_BB (bb)
     {
@@ -454,9 +455,8 @@ find_obviously_necessary_stmts (struct edge_list *el)
 
   /* Pure and const functions are finite and thus have no infinite loops in
      them.  */
-  if ((TREE_READONLY (current_function_decl)
-       || DECL_PURE_P (current_function_decl))
-      && !DECL_LOOPING_CONST_OR_PURE_P (current_function_decl))
+  flags = flags_from_decl_or_type (current_function_decl);
+  if ((flags & (ECF_CONST|ECF_PURE)) && !(flags & ECF_LOOPING_CONST_OR_PURE))
     return;
 
   /* Prevent the empty possibly infinite loops from being removed.  */
