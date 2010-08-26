@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target tls } */
+/* { dg-add-options tls } */
 
 extern int printf (char *,...);
 extern void abort() ;

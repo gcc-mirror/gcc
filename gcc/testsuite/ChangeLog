@@ -1,3 +1,9 @@
+2010-08-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/tls/thr-init-2.c: Use dg-add-options tls.
+	* gcc.dg/torture/tls/thr-init-1.c: Likewise.
+	* gcc.dg/torture/tls/thr-init-2.c: Likewise.
+
 2010-08-26  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/graphite/scop-0.c: Fix out-of-bound array accesses.
