@@ -1,3 +1,7 @@
+2010-08-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* system.h [HAVE_INTTYPES_H]: Include inttypes.h.
+
 2010-08-24  Richard Henderson  <rth@redhat.com>
 
 	PR bootstrap/45376
