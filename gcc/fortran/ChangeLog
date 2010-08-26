@@ -1,3 +1,28 @@
+2010-08-26  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/38936
+	PR fortran/44047
+	PR fortran/45384
+	* gfortran.h (struct gfc_association_list): New flag `dangling'.
+	(gfc_build_block_ns): Declared here...
+	* parse.h (gfc_build_block_ns): ...instead of here.
+	* trans.h (gfc_process_block_locals): Expect additionally the
+	gfc_association_list of BLOCK (if present).
+	* match.c (select_type_set_tmp): Create sym->assoc for temporary.
+	* resolve.c (resolve_variable): Only check for invalid *array*
+	references on associate-names.
+	(resolve_assoc_var): New method with code previously in resolve_symbol.
+	(resolve_select_type): Use association to give the selector and
+	temporaries their values instead of ordinary assignment.
+	(resolve_fl_var_and_proc): Allow CLASS associate-names.
+	(resolve_symbol): Use new `resolve_assoc_var' instead of inlining here.
+	* trans-stmt.c (gfc_trans_block_construct): Pass association-list
+	to `gfc_process_block_locals' to match new interface.
+	* trans-decl.c (gfc_get_symbol_decl): Don't defer associate-names
+	here automatically.
+	(gfc_process_block_locals): Defer them rather here when linked to
+	from the BLOCK's association list.
+
 2010-08-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-decl.c (gfc_build_intrinsic_function_decls): Set

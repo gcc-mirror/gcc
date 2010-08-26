@@ -4479,6 +4479,12 @@ select_type_set_tmp (gfc_typespec *ts)
       tmp->n.sym->attr.class_ok = 1;
     }
 
+  /* Add an association for it, so the rest of the parser knows it is
+     an associate-name.  The target will be set during resolution.  */
+  tmp->n.sym->assoc = gfc_get_association_list ();
+  tmp->n.sym->assoc->dangling = 1;
+  tmp->n.sym->assoc->st = tmp;
+
   select_type_stack->tmp = tmp;
 }
 

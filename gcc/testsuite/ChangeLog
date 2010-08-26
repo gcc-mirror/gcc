@@ -1,3 +1,12 @@
+2010-08-26  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/38936
+	PR fortran/44047
+	PR fortran/45384
+	* gfortran.dg/associate_8.f03: New test.
+	* gfortran.dg/select_type_13.f03: New test.
+	* gfortran.dg/select_type_14.f03: New test.
+
 2010-08-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/44485

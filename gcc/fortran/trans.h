@@ -538,7 +538,7 @@ tree gfc_build_library_function_decl_with_spec (tree name, const char *spec,
 						tree rettype, int nargs, ...);
 
 /* Process the local variable decls of a block construct.  */
-void gfc_process_block_locals (gfc_namespace*);
+void gfc_process_block_locals (gfc_namespace*, gfc_association_list*);
 
 /* Output initialization/clean-up code that was deferred.  */
 void gfc_trans_deferred_vars (gfc_symbol*, gfc_wrapped_block *);

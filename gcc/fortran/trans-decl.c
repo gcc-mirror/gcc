@@ -1218,7 +1218,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
     }
 
   /* Remember this variable for allocation/cleanup.  */
-  if (sym->attr.dimension || sym->attr.allocatable || sym->assoc
+  if (sym->attr.dimension || sym->attr.allocatable
       || (sym->ts.type == BT_CLASS &&
 	  (CLASS_DATA (sym)->attr.dimension
 	   || CLASS_DATA (sym)->attr.allocatable))
@@ -4869,12 +4869,21 @@ gfc_generate_block_data (gfc_namespace * ns)
 /* Process the local variables of a BLOCK construct.  */
 
 void
-gfc_process_block_locals (gfc_namespace* ns)
+gfc_process_block_locals (gfc_namespace* ns, gfc_association_list* assoc)
 {
   tree decl;
 
   gcc_assert (saved_local_decls == NULL_TREE);
   generate_local_vars (ns);
+
+  /* Mark associate names to be initialized.  The symbol's namespace may not
+     be the BLOCK's, we have to force this so that the deferring
+     works as expected.  */
+  for (; assoc; assoc = assoc->next)
+    {
+      assoc->st->n.sym->ns = ns;
+      gfc_defer_symbol_init (assoc->st->n.sym);
+    }
 
   decl = saved_local_decls;
   while (decl)
