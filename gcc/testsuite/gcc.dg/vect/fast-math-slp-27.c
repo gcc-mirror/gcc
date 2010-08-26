@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_float } */
 
-float x[256];
+float x[2*256+1];
 
 void foo(void)
 {
