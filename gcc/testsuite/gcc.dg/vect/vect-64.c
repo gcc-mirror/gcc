@@ -12,8 +12,8 @@ int main1 ()
 {
   int i, j;
   int ia[N][4][N+1];
-  int ic[N][N][3][13];
-  int id[N][N][N];
+  int ic[N][N][3][N+1];
+  int id[N][N][N+1];
 
   /* Multidimensional array. Not aligned: vectorizable. */
   for (i = 0; i < N; i++)

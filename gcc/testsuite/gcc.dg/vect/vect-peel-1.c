@@ -5,7 +5,7 @@
 
 #define N 128
 
-int ib[N+5];
+int ib[N+7];
 
 __attribute__ ((noinline))
 int main1 ()
@@ -38,7 +38,7 @@ int main (void)
 
   check_vect ();
 
-  for (i = 0; i < N+5; i++)
+  for (i = 0; i <= N+6; i++)
     ib[i] = i;
 
   return main1 ();
