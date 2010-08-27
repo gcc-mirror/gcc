@@ -1115,6 +1115,15 @@ GFORTRAN_1.4 {
     _gfortran_bessel_yn_r8;
     _gfortran_bessel_yn_r10;
     _gfortran_bessel_yn_r16;
+    _gfortran_norm2_r4;
+    _gfortran_norm2_r8;
+    _gfortran_norm2_r10;
+    _gfortran_norm2_r16;
+    _gfortran_parity_l1;
+    _gfortran_parity_l2;
+    _gfortran_parity_l4;
+    _gfortran_parity_l8;
+    _gfortran_parity_l16;
 } GFORTRAN_1.3; 
 
 F2C_1.0 {

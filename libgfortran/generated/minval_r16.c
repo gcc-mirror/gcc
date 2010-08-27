@@ -1,8 +1,8 @@
 /* Implementation of the MINVAL intrinsic
-   Copyright 2002, 2007, 2009 Free Software Foundation, Inc.
+   Copyright 2002, 2007, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -166,6 +166,7 @@ minval_r16 (gfc_array_r16 * const restrict retarray,
 		if (*src < result)
 		  result = *src;
 	      }
+	    
 	    *dest = result;
 	  }
       }

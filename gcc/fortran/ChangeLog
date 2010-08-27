@@ -1,3 +1,26 @@
+2010-08-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/33197
+	* gcc/fortran/intrinsic.c (add_functions): Add norm2 and parity.
+	* gcc/fortran/intrinsic.h (gfc_check_norm2, gfc_check_parity):
+	gfc_simplify_norm2, gfc_simplify_parity, gfc_resolve_norm2,
+	gfc_resolve_parity): New prototypes.
+	* gcc/fortran/gfortran.h (gfc_isym_id): New enum items
+	GFC_ISYM_NORM2 and GFC_ISYM_PARITY.
+	* gcc/fortran/iresolve.c (gfc_resolve_norm2,
+	gfc_resolve_parity): New functions.
+	* gcc/fortran/check.c (gfc_check_norm2, gfc_check_parity):
+	New functions.
+	* gcc/fortran/trans-intrinsic.c (gfc_conv_intrinsic_arith,
+	gfc_conv_intrinsic_function): Handle NORM2 and PARITY.
+	* gcc/fortran/intrinsic.texi (NORM2, PARITY): Add.
+	* gcc/fortran/simplify.c (simplify_transformation_to_array):
+	Add post-processing opterator.
+	(gfc_simplify_all, gfc_simplify_any, gfc_simplify_count,
+	gfc_simplify_product, gfc_simplify_sum): Update call.
+	(add_squared, do_sqrt, gfc_simplify_norm2, do_xor,
+	gfc_simplify_parity): New functions.
+
 2010-08-27  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45420

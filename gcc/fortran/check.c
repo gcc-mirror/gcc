@@ -2432,6 +2432,21 @@ gfc_check_new_line (gfc_expr *a)
 
 
 gfc_try
+gfc_check_norm2 (gfc_expr *array, gfc_expr *dim)
+{
+  if (type_check (array, 0, BT_REAL) == FAILURE)
+    return FAILURE;
+
+  if (array_check (array, 0) == FAILURE)
+    return FAILURE;
+
+  if (dim_rank_check (dim, array, false) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+gfc_try
 gfc_check_null (gfc_expr *mold)
 {
   symbol_attribute attr;
@@ -2534,6 +2549,22 @@ gfc_check_pack (gfc_expr *array, gfc_expr *mask, gfc_expr *vector)
       if (have_vector_size)
 	mpz_clear (vector_size);
     }
+
+  return SUCCESS;
+}
+
+
+gfc_try
+gfc_check_parity (gfc_expr *mask, gfc_expr *dim)
+{
+  if (type_check (mask, 0, BT_LOGICAL) == FAILURE)
+    return FAILURE;
+
+  if (array_check (mask, 0) == FAILURE)
+    return FAILURE;
+
+  if (dim_rank_check (dim, mask, false) == FAILURE)
+    return FAILURE;
 
   return SUCCESS;
 }

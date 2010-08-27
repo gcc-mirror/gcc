@@ -203,11 +203,13 @@ Some basic guidelines for editing this document:
 * @code{NEAREST}:       NEAREST,   Nearest representable number
 * @code{NEW_LINE}:      NEW_LINE,  New line character
 * @code{NINT}:          NINT,      Nearest whole number
+* @code{NORM2}:         NORM2,     Euclidean vector norm
 * @code{NOT}:           NOT,       Logical negation
 * @code{NULL}:          NULL,      Function that returns an disassociated pointer
 * @code{NUM_IMAGES}:    NUM_IMAGES, Number of images
 * @code{OR}:            OR,        Bitwise logical OR
 * @code{PACK}:          PACK,      Pack an array into an array of rank one
+* @code{PARITY}:        PARITY,    Reduction with exclusive OR
 * @code{PERROR}:        PERROR,    Print system error message
 * @code{PRECISION}:     PRECISION, Decimal precision of a real kind
 * @code{PRESENT}:       PRESENT,   Determine whether an optional dummy argument is specified
@@ -8471,6 +8473,57 @@ end program test_nint
 
 
 
+@node NORM2
+@section @code{NORM2} --- Euclidean vector norms
+@fnindex NORM2
+@cindex Euclidean vector norm
+@cindex L2 vector norm
+@cindex norm, Euclidean
+
+@table @asis
+@item @emph{Description}:
+Calculates the Euclidean vector norm (@math{L_2}) norm of
+of @var{ARRAY} along dimension @var{DIM}.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@multitable @columnfractions .80
+@item @code{RESULT = NORM2(ARRAY[, DIM])}
+@end multitable
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ARRAY} @tab Shall be an array of type @code{REAL}
+@item @var{DIM}   @tab (Optional) shall be a scalar of type 
+@code{INTEGER} with a value in the range from 1 to n, where n 
+equals the rank of @var{ARRAY}.
+@end multitable
+
+@item @emph{Return value}:
+The result is of the same type as @var{ARRAY}.
+
+If @var{DIM} is absent, a scalar with the square root of the sum of all
+elements in @var{ARRAY} squared  is returned. Otherwise, an array of
+rank @math{n-1}, where @math{n} equals the rank of @var{ARRAY}, and a
+shape similar to that of @var{ARRAY} with dimension @var{DIM} dropped
+is returned.
+
+@item @emph{Example}:
+@smallexample
+PROGRAM test_sum
+  REAL :: x(5) = [ real :: 1, 2, 3, 4, 5 ]
+  print *, NORM2(x)  ! = sqrt(55.) ~ 7.416
+END PROGRAM
+@end smallexample
+@end table
+
+
+
 @node NOT
 @section @code{NOT} --- Logical negation
 @fnindex NOT
@@ -8713,6 +8766,58 @@ END PROGRAM
 
 @item @emph{See also}:
 @ref{UNPACK}
+@end table
+
+
+
+@node PARITY
+@section @code{PARITY} --- Reduction with exclusive OR
+@fnindex PARITY
+@cindex Parity
+@cindex Reduction, XOR
+@cindex XOR reduction
+
+@table @asis
+@item @emph{Description}:
+Calculates the partity, i.e. the reduction using @code{.XOR.},
+of @var{MASK} along dimension @var{DIM}.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@multitable @columnfractions .80
+@item @code{RESULT = PARITY(MASK[, DIM])}
+@end multitable
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{LOGICAL} @tab Shall be an array of type @code{LOGICAL}
+@item @var{DIM}   @tab (Optional) shall be a scalar of type 
+@code{INTEGER} with a value in the range from 1 to n, where n 
+equals the rank of @var{MASK}.
+@end multitable
+
+@item @emph{Return value}:
+The result is of the same type as @var{MASK}.
+
+If @var{DIM} is absent, a scalar with the parity of all elements in
+@var{MASK} is returned, i.e. true if an odd number of elements is
+@code{.true.} and false otherwise.  If @var{DIM} is present, an array
+of rank @math{n-1}, where @math{n} equals the rank of @var{ARRAY},
+and a shape similar to that of @var{MASK} with dimension @var{DIM}
+dropped is returned.
+
+@item @emph{Example}:
+@smallexample
+PROGRAM test_sum
+  LOGICAL :: x(2) = [ .true., .false. ]
+  print *, PARITY(x) ! prints "T" (true).
+END PROGRAM
+@end smallexample
 @end table
 
 

@@ -488,11 +488,12 @@ simplify_transformation_to_scalar (gfc_expr *result, gfc_expr *array, gfc_expr *
      REAL, PARAMETER :: array(n, m) = ...
      REAL, PARAMETER :: s(n) = PROD(array, DIM=1)
 
-  where OP == gfc_multiply().  */
+  where OP == gfc_multiply(). The result might be post processed using post_op. */ 
 
 static gfc_expr *
 simplify_transformation_to_array (gfc_expr *result, gfc_expr *array, gfc_expr *dim,
-				  gfc_expr *mask, transformational_op op)
+				  gfc_expr *mask, transformational_op op,
+				  transformational_op post_op)
 {
   mpz_t size;
   int done, i, n, arraysize, resultsize, dim_index, dim_extent, dim_stride;
@@ -606,7 +607,10 @@ simplify_transformation_to_array (gfc_expr *result, gfc_expr *array, gfc_expr *d
   result_ctor = gfc_constructor_first (result->value.constructor);
   for (i = 0; i < resultsize; ++i)
     {
-      result_ctor->expr = resultvec[i];
+      if (post_op)
+	result_ctor->expr = post_op (result_ctor->expr, resultvec[i]);
+      else
+	result_ctor->expr = resultvec[i];
       result_ctor = gfc_constructor_next (result_ctor);
     }
 
@@ -896,7 +900,7 @@ gfc_simplify_all (gfc_expr *mask, gfc_expr *dim)
 
   return !dim || mask->rank == 1 ?
     simplify_transformation_to_scalar (result, mask, NULL, gfc_and) :
-    simplify_transformation_to_array (result, mask, dim, NULL, gfc_and);
+    simplify_transformation_to_array (result, mask, dim, NULL, gfc_and, NULL);
 }
 
 
@@ -982,7 +986,7 @@ gfc_simplify_any (gfc_expr *mask, gfc_expr *dim)
 
   return !dim || mask->rank == 1 ?
     simplify_transformation_to_scalar (result, mask, NULL, gfc_or) :
-    simplify_transformation_to_array (result, mask, dim, NULL, gfc_or);
+    simplify_transformation_to_array (result, mask, dim, NULL, gfc_or, NULL);
 }
 
 
@@ -1679,7 +1683,7 @@ gfc_simplify_count (gfc_expr *mask, gfc_expr *dim, gfc_expr *kind)
      Whenever gfc_count is called, '1' is added to the result.  */
   return !dim || mask->rank == 1 ?
     simplify_transformation_to_scalar (result, mask, mask, gfc_count) :
-    simplify_transformation_to_array (result, mask, dim, mask, gfc_count);
+    simplify_transformation_to_array (result, mask, dim, mask, gfc_count, NULL);
 }
 
 
@@ -4048,6 +4052,65 @@ gfc_simplify_idnint (gfc_expr *e)
 }
 
 
+static gfc_expr *
+add_squared (gfc_expr *result, gfc_expr *e)
+{
+  mpfr_t tmp;
+
+  gcc_assert (e->ts.type == BT_REAL && e->expr_type == EXPR_CONSTANT);
+  gcc_assert (result->ts.type == BT_REAL
+	      && result->expr_type == EXPR_CONSTANT);
+
+  gfc_set_model_kind (result->ts.kind);
+  mpfr_init (tmp);
+  mpfr_pow_ui (tmp, e->value.real, 2, GFC_RND_MODE);
+  mpfr_add (result->value.real, result->value.real, tmp,
+	    GFC_RND_MODE);
+  mpfr_clear (tmp);
+
+  return result;
+}
+
+
+static gfc_expr *
+do_sqrt (gfc_expr *result, gfc_expr *e)
+{
+  gcc_assert (e->ts.type == BT_REAL && e->expr_type == EXPR_CONSTANT);
+  gcc_assert (result->ts.type == BT_REAL
+	      && result->expr_type == EXPR_CONSTANT);
+
+  mpfr_set (result->value.real, e->value.real, GFC_RND_MODE);
+  mpfr_sqrt (result->value.real, result->value.real, GFC_RND_MODE);
+  return result;
+}
+
+
+gfc_expr *
+gfc_simplify_norm2 (gfc_expr *e, gfc_expr *dim)
+{
+  gfc_expr *result;
+
+  if (!is_constant_array_expr (e)
+      || (dim != NULL && !gfc_is_constant_expr (dim)))
+    return NULL;
+
+  result = transformational_result (e, dim, e->ts.type, e->ts.kind, &e->where);
+  init_result_expr (result, 0, NULL);
+
+  if (!dim || e->rank == 1)
+    {
+      result = simplify_transformation_to_scalar (result, e, NULL,
+						  add_squared);
+      mpfr_sqrt (result->value.real, result->value.real, GFC_RND_MODE);
+    }
+  else
+    result = simplify_transformation_to_array (result, e, dim, NULL,
+					       add_squared, &do_sqrt);
+
+  return result;
+}
+
+
 gfc_expr *
 gfc_simplify_not (gfc_expr *e)
 {
@@ -4198,6 +4261,37 @@ gfc_simplify_pack (gfc_expr *array, gfc_expr *mask, gfc_expr *vector)
 }
 
 
+static gfc_expr *
+do_xor (gfc_expr *result, gfc_expr *e)
+{
+  gcc_assert (e->ts.type == BT_LOGICAL && e->expr_type == EXPR_CONSTANT);
+  gcc_assert (result->ts.type == BT_LOGICAL
+	      && result->expr_type == EXPR_CONSTANT);
+
+  result->value.logical = result->value.logical != e->value.logical;
+  return result;
+}
+
+
+
+gfc_expr *
+gfc_simplify_parity (gfc_expr *e, gfc_expr *dim)
+{
+  gfc_expr *result;
+
+  if (!is_constant_array_expr (e)
+      || (dim != NULL && !gfc_is_constant_expr (dim)))
+    return NULL;
+
+  result = transformational_result (e, dim, e->ts.type, e->ts.kind, &e->where);
+  init_result_expr (result, 0, NULL);
+
+  return (!dim || e->rank == 1)
+    ? simplify_transformation_to_scalar (result, e, NULL, do_xor)
+    : simplify_transformation_to_array (result, e, dim, NULL, do_xor, NULL);
+}
+
+
 gfc_expr *
 gfc_simplify_precision (gfc_expr *e)
 {
@@ -4227,7 +4321,7 @@ gfc_simplify_product (gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 
   return !dim || array->rank == 1 ?
     simplify_transformation_to_scalar (result, array, mask, gfc_multiply) :
-    simplify_transformation_to_array (result, array, dim, mask, gfc_multiply);
+    simplify_transformation_to_array (result, array, dim, mask, gfc_multiply, NULL);
 }
 
 
@@ -5390,7 +5484,7 @@ gfc_simplify_sum (gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 
   return !dim || array->rank == 1 ?
     simplify_transformation_to_scalar (result, array, mask, gfc_add) :
-    simplify_transformation_to_array (result, array, dim, mask, gfc_add);
+    simplify_transformation_to_array (result, array, dim, mask, gfc_add, NULL);
 }
 
 

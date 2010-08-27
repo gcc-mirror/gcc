@@ -152,6 +152,7 @@ sum_r8 (gfc_array_r8 * const restrict retarray,
 
   result += *src;
 	      }
+	    
 	    *dest = result;
 	  }
       }
