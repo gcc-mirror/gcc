@@ -7,8 +7,8 @@
 
 /* Unaligned stores.  */
 
-int ia[N+1];
-short sa[N+1];
+int ia[N+2];
+short sa[N+2];
 
 int main1 (int n)
 {
