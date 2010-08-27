@@ -2531,7 +2531,7 @@ write_types_process_field (type_p f, const struct walk_type_data *d)
 static void
 output_type_enum (outf_p of, type_p s)
 {
-  if (s->kind == TYPE_PARAM_STRUCT && s->u.s.line.file != NULL)
+  if (s->kind == TYPE_PARAM_STRUCT && s->u.param_struct.line.file != NULL)
     {
       oprintf (of, ", gt_e_");
       output_mangled_typename (of, s);
