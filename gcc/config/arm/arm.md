@@ -234,10 +234,12 @@
   (const_string "yes"))
 
 ; Enable all alternatives that are both arch_enabled and insn_enabled.
-(define_attr "enabled" "no,yes"
-  (if_then_else (eq_attr "insn_enabled" "yes")
-		(attr "arch_enabled")
-		(const_string "no")))
+ (define_attr "enabled" "no,yes"
+   (if_then_else (eq_attr "insn_enabled" "yes")
+               (if_then_else (eq_attr "arch_enabled" "yes")
+                             (const_string "yes")
+                             (const_string "no"))
+                (const_string "no")))
 
 ; POOL_RANGE is how far away from a constant pool entry that this insn
 ; can be placed.  If the distance is zero, then this insn will never
