@@ -1023,6 +1023,7 @@ check_section_vs_section (gfc_array_ref *l_ar, gfc_array_ref *r_ar, int n)
   gfc_expr *r_lower;
   gfc_expr *r_upper;
   int r_dir;
+  bool identical_strides;
 
   /* If they are the same range, return without more ado.  */
   if (gfc_is_same_range (l_ar, r_ar, n, 0))
@@ -1075,6 +1076,23 @@ check_section_vs_section (gfc_array_ref *l_ar, gfc_array_ref *r_ar, int n)
   /* The strides should never be zero.  */
   if (l_dir == 0 || r_dir == 0)
     return GFC_DEP_OVERLAP;
+
+  /* Determine if the strides are equal.  */
+
+  if (l_stride)
+    {
+      if (r_stride)
+	identical_strides = gfc_dep_compare_expr (l_stride, r_stride) == 0;
+      else
+	identical_strides = gfc_expr_is_one (l_stride, 0) == 1;
+    }
+  else
+    {
+      if (r_stride)
+	identical_strides = gfc_expr_is_one (r_stride, 0) == 1;
+      else
+	identical_strides = true;
+    }
 
   /* Determine LHS upper and lower bounds.  */
   if (l_dir == 1)
@@ -1175,11 +1193,7 @@ check_section_vs_section (gfc_array_ref *l_ar, gfc_array_ref *r_ar, int n)
       && l_start && r_start && gfc_dep_compare_expr (l_start, r_start) == -1
       && l_end && r_end && gfc_dep_compare_expr (l_end, r_end) == -1)
     {
-      /* Check that the strides are the same.  */
-      if (!l_stride && !r_stride)
-	return GFC_DEP_FORWARD;
-      if (l_stride && r_stride
-	  && gfc_dep_compare_expr (l_stride, r_stride) == 0)
+      if (identical_strides)
 	return GFC_DEP_FORWARD;
     }
 
@@ -1188,20 +1202,12 @@ check_section_vs_section (gfc_array_ref *l_ar, gfc_array_ref *r_ar, int n)
       && l_start && r_start && gfc_dep_compare_expr (l_start, r_start) == 1
       && l_end && r_end && gfc_dep_compare_expr (l_end, r_end) == 1)
     {
-      /* Check that the strides are the same.  */
-      if (!l_stride && !r_stride)
-	return GFC_DEP_FORWARD;
-      if (l_stride && r_stride
-	  && gfc_dep_compare_expr (l_stride, r_stride) == 0)
+      if (identical_strides)
 	return GFC_DEP_FORWARD;
     }
 
 
-  /*  Are the strides the same?  */
-  if ((!l_stride && !r_stride)
-	||
-      (l_stride && r_stride
-	&& gfc_dep_compare_expr (l_stride, r_stride) == 0))
+  if (identical_strides)
     {
 
       if (l_start && IS_ARRAY_EXPLICIT (l_ar->as))
