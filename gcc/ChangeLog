@@ -1,3 +1,9 @@
+
+2010-08-27  Basile Starynkevitch  <basile@starynkevitch.net>
+            Jeremie Salvucci  <jeremie.salvucci@free.fr>
+
+        * gengtype.c (output_type_enum): Test the right union member.
+
 2010-08-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/41484
