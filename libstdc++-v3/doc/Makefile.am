@@ -25,26 +25,46 @@ include $(top_srcdir)/fragment.am
 # Documentation Overview
 #
 # There are two main source materials for libstdc++ documentation.
-# The first is the doxygen markup in libstdc++ sources. And the second
-# is the docbook markup in doc/xml/. A third and more obscure option
-# deals with charting performance tests.
+# The first is the doxygen markup in libstdc++ sources, which is a
+# reference to the API. And the second is the docbook markup in
+# doc/xml/.
+#
+# A third and more obscure option deals with charting
+# performance tests, and should be considered experimental.
 
-# Default, points to current best sub-rule that is the best conversion.
-# MAN
-doc-man: doc-man-doxygen
-
-# PDF
-doc-pdf: doc-pdf-docbook
+# Default rules.
+#
+# Point to best sub-rule for the requested documentation target,
+# create, and then copy into toplevel directory with standardized names
+# and layouts.
 
 # HTML
-doc-html: doc-html-docbook
+doc-html: doc-html-docbook doc-html-doxygen
+	cp -R ${docbook_outdir}/html ./libstdc++-manual.html
+	cp -R ${doxygen_outdir}/html ./libstdc++-api.html
+
+# MAN
+doc-man: doc-man-doxygen
+	cp -R ${doxygen_outdir}/man ./libstdc++-api.man
+
+# PDF
+doc-pdf: doc-pdf-docbook doc-pdf-doxygen
+	cp ${docbook_outdir}/pdf/libstdc++-manual.pdf .
+	cp ${doxygen_outdir}/pdf/libstdc++-api.pdf .
+
+# TEXINFO
+doc-texinfo: doc-texinfo-docbook
+
+# XML
+doc-xml: doc-xml-single-docbook doc-xml-single-doxygen
+	cp ${manual_xml} .
+	cp ${api_xml} .
 
 
 # Doxygen configuration
 # Assumes doxygen, graphviz (with dot), pdflatex installed
 doxygen_script=${top_srcdir}/scripts/run_doxygen
 doxygen_outdir = ${glibcxx_builddir}/doc/doxygen
-doxygen_pdf = ${doxygen_outdir}/latex/refman.pdf
 
 doc-html-doxygen:
 	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
@@ -64,10 +84,11 @@ doc-xml-doxygen:
 	  ${SHELL} ${doxygen_script} \
 	  --host_alias=${host_alias} --mode=xml $${srcdir} $${builddir} NO)
 
-doc-xml-single-doxygen:
+api_xml = ${doxygen_outdir}/xml/libstdc++-api-single.xml
+doc-xml-single-doxygen: doc-xml-doxygen
 	@echo "Generating doxygen xml single file..."
 	$(XSLTPROC) ${doxygen_outdir}/xml/combine.xslt \
-	${doxygen_outdir}/xml/index.xml > ${doxygen_outdir}/xml/api-spine.xml;
+	${doxygen_outdir}/xml/index.xml > ${api_xml};
 
 doc-latex-doxygen:
 	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
@@ -75,12 +96,23 @@ doc-latex-doxygen:
 	  ${SHELL} ${doxygen_script} \
 	  --host_alias=${host_alias} --mode=latex $${srcdir} $${builddir} NO)
 
-# Chance of loooooonnggg creation time on this rule.
-doc-pdf-doxygen: stamp-latex-doxygen
+# Chance of loooooonnggg creation time on this rule.  Iff this fails,
+# look at refman.log and see if TeX's memory is exhausted. Symptoms
+# include asking a wizard to enlarge capacity. If this is the case,
+# find texmf.cnf and add a zero for pool_size, string_vacancies,
+# max_strings, and pool_free values.
+doxygen_pdf = ${doxygen_outdir}/latex/refman.pdf
+api_pdf = ${doxygen_outdir}/pdf/libstdc++-api.pdf
+
+${doxygen_outdir}/pdf:
+	mkdir -p ${doxygen_outdir}/pdf
+
+doc-pdf-doxygen: stamp-latex-doxygen ${doxygen_outdir}/pdf
 	-(cd ${doxygen_outdir}/latex && $(MAKE) -i pdf;)
 	echo "Generating doxygen pdf file...";
 	if [ -f ${doxygen_pdf} ]; then \
-	  echo "... ${doxygen_pdf}"; \
+	  mv ${doxygen_pdf} ${api_pdf} ; \
+	  echo ":: PDF file is ${api_pdf}"; \
 	else \
 	  echo "... error"; \
 	  exit 12; \
@@ -193,14 +225,17 @@ XSL_HTML_STYLE = $(XSL_STYLE_DIR)/xhtml/chunk.xsl
 #XSL_HTML_SINGLE_STYLE = $(XSL_STYLE_DIR)/xhtml/onechunk.xsl
 XSL_HTML_SINGLE_STYLE = $(XSL_STYLE_DIR)/xhtml/docbook.xsl
 
+${docbook_outdir}/fo:
+	mkdir -p ${docbook_outdir}/fo
+
 ${docbook_outdir}/html:
 	mkdir -p ${docbook_outdir}/html
 
 ${docbook_outdir}/pdf:
 	mkdir -p ${docbook_outdir}/pdf
 
-${docbook_outdir}/fo:
-	mkdir -p ${docbook_outdir}/fo
+${docbook_outdir}/texinfo:
+	mkdir -p ${docbook_outdir}/texinfo
 
 ${docbook_outdir}/xml:
 	mkdir -p ${docbook_outdir}/xml
@@ -216,11 +251,14 @@ doc-xml-validate-docbook: $(xml_sources)
 	@echo "Generating XML validation log..."
 	$(XMLLINT) $(XMLLINT_FLAGS) ${top_srcdir}/doc/xml/spine.xml
 
+# XML, all one page
+# Some info on canonicalization
+# http://www.mail-archive.com/help-texinfo@gnu.org/msg00864.html
+manual_xml = ${docbook_outdir}/xml/libstdc++-manual-single.xml
 doc-xml-single-docbook: $(xml_sources) ${docbook_outdir}/xml
 	@echo "Generating XML single..."
-	$(XMLLINT) --xinclude --noent --noblanks \
-	-o ${docbook_outdir}/xml/spine-single.xml \
-	${top_srcdir}/doc/xml/spine.xml
+	$(XMLLINT) --xinclude --noent --noblanks --nocdata --nsclean --c14n \
+	${top_srcdir}/doc/xml/manual/spine.xml > ${manual_xml}
 
 # HTML, index plus chapters
 doc-html-docbook: $(xml_sources) ${docbook_outdir}/html
@@ -229,9 +267,10 @@ doc-html-docbook: $(xml_sources) ${docbook_outdir}/html
 	$(XSL_HTML_STYLE) ${top_srcdir}/doc/xml/spine.xml
 
 # HTML, all one page
+manual_html = ${docbook_outdir}/html/libstdc++-manual-single.html
 doc-html-single-docbook: $(xml_sources) ${docbook_outdir}/html
 	@echo "Generating html single file..."
-	$(XSLTPROC) $(XSLTPROC_FLAGS) -o ${docbook_outdir}/html/ \
+	$(XSLTPROC) $(XSLTPROC_FLAGS) -o ${manual_html} \
 	$(XSL_HTML_SINGLE_STYLE) ${top_srcdir}/doc/xml/spine.xml
 
 # FO
@@ -240,52 +279,24 @@ doc-fo-docbook: $(xml_sources) ${docbook_outdir}/fo
 	$(XSLTPROC) $(XSLTPROC_FLAGS) -o ${docbook_outdir}/fo/spine.fo \
 	$(XSL_FO_STYLE) ${top_srcdir}/doc/xml/spine.xml
 
-# PDF 1
-# fop
-FOP = fop
-FOP_FLAGS = -d -r
-doc-pdf-fop-xml-docbook: $(xml_sources) ${glibcxx_builddir}/doc/pdf
-	@echo "Generating pdf fop files from xml..."
-	$(FOP) $(FOP_FLAGS) -xml ${top_srcdir}/doc/xml/spine.xml \
-	-xsl $(XSL_FO_STYLE) -pdf ${docbook_outdir}/pdf/spine.pdf
+# PDF, via dblatex
+manual_pdf = ${docbook_outdir}/pdf/libstdc++-manual.pdf
+DBLATEX_FLAGS = --dump --verbose --pdf -o ${manual_pdf}
+doc-pdf-docbook: doc-pdf-dblatex-docbook
 
-doc-pdf-fop-fo-docbook: $(xml_sources) ${glibcxx_builddir}/doc/pdf doc-fo
-	@echo "Generating pdf fop files from fo..."
-	$(FOP) $(FOP_FLAGS) -fo ${docbook_outdir}/fo/spine.fo \
-	-pdf ${docbook_outdir}/pdf/spine.pdf
-
-# PDF 2
-# xmlto
-XML2PDF = xmlto
-XML2PDF_FLAGS = -v pdf --skip-validation -o pdf
-doc-pdf-xmlto-docbook: $(xml_sources) ${docbook_outdir}/pdf
-	@echo "Generating pdf xmlto files..."
-	$(XML2PDF) $(XML2PDF_FLAGS) ${top_srcdir}/doc/xml/spine.xml
-
-# PDF 3
-# xmlroff
-XMLROFF = xmlroff
-XMLROFF_FLAGS = --format=pdf --backend=cairo --warn=1 --debug=1 --continue
-doc-pdf-xmlroff-docbook: $(xml_sources) doc-fo
-	@echo "Generating pdf xmlroff files..."
-	$(XMLROFF) $(XMLROFF_FLAGS) ${docbook_outdir}/fo/spine.fo
-
-# PDF 4
-# prince
-PRINCE = prince
-PRINCE_FLAGS = --log prince.log -o pdf/spine.pdf
-doc-pdf-prince-docbook: $(xml_sources) ${docbook_outdir}/pdf
-	@echo "Generating pdf prince files..."
-	$(PRINCE) $(PRINCE_FLAGS) ${top_srcdir}/xml/spine.xml
-
-# PDF 5
-# dblatex
-DBLATEX_FLAGS = --dump --verbose --pdf -o ${docbook_outdir}/pdf/manual.pdf
 doc-pdf-dblatex-docbook: $(xml_sources) ${docbook_outdir}/pdf
 	@echo "Generating pdf dblatex files..."
 	dblatex $(DBLATEX_FLAGS) ${top_srcdir}/doc/xml/spine.xml
 
-doc-pdf-docbook: doc-pdf-dblatex-docbook
+# Texinfo, via docbook2X
+DB2TEXI_FLAGS = \
+	--encoding=utf-8//TRANSLIT \
+	--string-param output-file="libstdc++-manual" \
+	--string-param directory-category="GNU C++ Library" \
+	--string-param explicit-node-names=true
+doc-texinfo-docbook: doc-xml-single-docbook ${docbook_outdir}/texinfo
+	@echo "Generating texinfo files..."
+	db2x_docbook2texi $(DB2TEXI_FLAGS) ${manual_xml}
 
 
 # Performance doc and graph configuration.
@@ -307,4 +318,4 @@ CLEANFILES = *.log
 
 # To remove directories.
 clean-local:
-	rm -rf man html pdf fo xml doxygen docbook stamp*
+	rm -rf man html pdf fo xml doxygen docbook stamp* ./libstdc++-* db2t*

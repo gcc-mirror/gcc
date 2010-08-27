@@ -1,3 +1,44 @@
+2010-08-26  Benjamin Kosnik  <bkoz@redhat.com>
+
+        * include/bits/stl_iterator_base_types.h: Fix doxygen warning.
+
+	Merge in other doc patches.
+
+	2010-07-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+        * include/bits/stl_heap.h: Update markup.
+        * include/bits/move.h: Same.
+        * include/bits/algorithmfwd.h: Same.
+        * include/bits/random.h: Same.
+        * doc/doxygen/doxygroups.cc: Same.
+        * doc/doxygen/user.cfg.in: Remove include/tr1_impl/regex from
+        input file list.
+        * doc/Makefile.am (doc-pdf-doxygen): Add comment, put generated
+        pdf in location consistent with docbook pdf generation.
+        * doc/Makefile.in: Regenerate.
+
+	2010-07-13  Benjamin Kosnik  <bkoz@redhat.com>
+        * doc/Makefile.in: Regenerate.
+        * doc/Makefile.am: Edit pdf rules, expand default rules.
+        * doc/doxygen/user.cfg.in: Update to Doxygen 1.7.1.
+
+	2010-07-19  Benjamin Kosnik  <bkoz@redhat.com>
+
+        * doc/Makefile.am (doc-texinfo): New rule.
+        (doc-texinfo-docbook): New rule.
+        (DB2TEXI_FLAGS): New.
+        (doc-xml-single-docbook): Just the manual, not the set. Tweak flags.
+        * doc/Makefile.in: Regenerate.
+
+	2010-07-19  Benjamin Kosnik  <bkoz@redhat.com>
+
+        * doc/xml/manual/appendix_contributing.xml: Update for new reality.
+        * doc/Makefile.am (doc-xml): New default rule for XML output.
+        (doc-xml-single-doxygen): Standardize output names.
+        * doc/Makefile.in: Regenerate.
+
+        * doc/doxygen/user.cfg.in: Tweak.
+
 2010-08-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/45283

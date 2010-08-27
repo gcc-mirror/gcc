@@ -69,6 +69,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @defgroup iterators Iterators
+   *  Abstractions for uniform iterating through various underlying types.
+  */
+  //@{ 
+
+  /**
+   *  @defgroup iterator_tags Iterator Tags
    *  These are empty types, used to distinguish different iterators.  The
    *  distinction is not made by what they contain, but simply by what they
    *  are.  Different underlying algorithms can then be used based on the
@@ -91,7 +97,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /// Random-access iterators support a superset of bidirectional
   /// iterator operations.
   struct random_access_iterator_tag : public bidirectional_iterator_tag { };
-
+  //@}
 
   /**
    *  @brief  Common %iterator class.

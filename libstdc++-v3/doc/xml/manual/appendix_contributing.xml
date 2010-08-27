@@ -942,7 +942,15 @@ indicate a place that may require attention for multi-thread safety.
       <title>Generating the Doxygen Files</title>
       <para>
 	The following Makefile rules run Doxygen to generate HTML
-	docs, XML docs, PDF docs, and the man pages.
+	docs, XML docs, XML docs as a single file, PDF docs, and the man pages.
+      </para>
+
+      <para>
+	Generated files are output into separate sub directores of
+	<filename class="directory">doc/doxygen/</filename> in the
+	build directory, based on the output format. For instance, the
+	HTML docs will be in <filename
+	class="directory">doc/doxygen/html</filename>.
       </para>
 
       <para>
@@ -951,6 +959,10 @@ indicate a place that may require attention for multi-thread safety.
 
       <para>
       <screen><userinput>make doc-xml-doxygen</userinput></screen>
+      </para>
+
+      <para>
+      <screen><userinput>make doc-xml-single-doxygen</userinput></screen>
       </para>
 
       <para>
@@ -1204,21 +1216,28 @@ indicate a place that may require attention for multi-thread safety.
       </para>
 
       <para>
-	For PDF output, something that transforms valid XML to PDF is
-	required. Possible solutions include 
-	<ulink url="http://dblatex.sourceforge.net">dblatex</ulink>, 
-	<command>xmlto</command>, or <command>prince</command>. Other
-	options are listed on the DocBook
-	web <ulink url="http://wiki.docbook.org/topic/DocBookPublishingTools">pages</ulink>. Please
+	For PDF output, something that transforms valid Docbook XML to PDF is
+	required. Possible solutions include <ulink
+	url="http://dblatex.sourceforge.net">dblatex</ulink>,
+	<command>xmlto</command>, or <command>prince</command>. Of
+	these, <command>dblatex</command> is the default. Other
+	options are listed on the DocBook web <ulink
+	url="http://wiki.docbook.org/topic/DocBookPublishingTools">pages</ulink>. Please
 	consult the <email>libstdc++@gcc.gnu.org</email> list when
 	preparing printed manuals for current best practice and
 	suggestions.
       </para>
 
       <para>
-	Make sure that the XML documentation and markup is valid for
-	any change. This can be done easily, with the validation rules
-	in the <filename>Makefile</filename>, which is equivalent to doing:
+	For Texinfo output, something that transforms valid Docbook
+	XML to Texinfo is required. The default choice is <ulink
+	url="http://docbook2x.sourceforge.net/">docbook2X</ulink>.
+      </para>
+
+      <para>
+	Please make sure that the XML documentation and markup is valid for
+	any change. This can be done easily, with the validation rule
+	detailed below, which is equivalent to doing:
       </para>
 
 	<screen>
@@ -1236,6 +1255,14 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
 	version of all the DocBook documentation, a PDF version of the same, a
 	single XML document, and the result of validating the entire XML
 	document.
+      </para>
+
+      <para>
+	Generated files are output into separate sub directores of
+	<filename class="directory">doc/docbook/</filename> in the
+	build directory, based on the output format. For instance, the
+	HTML docs will be in <filename
+	class="directory">doc/docbook/html</filename>.
       </para>
 
       <para>
@@ -1492,20 +1519,90 @@ xmllint --noout --valid <filename>xml/index.xml</filename>
 
       <para>
 	The following Makefile rules are defaults, and are usually
-	aliased to variable rules.
+	aliased to more detailed rules. They are shortcuts for
+	generating HTML, PDF, Texinfo, XML, or man files and then collecting
+	the generated files into the build directory's doc directory.
       </para>
 
-      <para>
-      <screen><userinput>make doc-html</userinput></screen>
-      </para>
+<variablelist>
 
+<varlistentry><term>
+      <emphasis>make doc-html</emphasis>
+    </term>
+<listitem>
       <para>
-      <screen><userinput>make doc-man</userinput></screen>
+	Generates multi-page HTML documentation in the following directories:
       </para>
+      <para>
+	<filename class="directory">doc/libstdc++-api.html</filename>
+      </para>
+      <para>
+	<filename class="directory">doc/libstdc++-manual.html</filename>
+      </para>
+</listitem>
+</varlistentry>
 
+<varlistentry><term>
+      <emphasis>make doc-man</emphasis>
+    </term>
+<listitem>
       <para>
-      <screen><userinput>make doc-pdf</userinput></screen>
+	Generates man pages in the following directory:
       </para>
+      <para>
+	<filename class="directory">doc/libstdc++-api.man</filename>
+      </para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term>
+      <emphasis>make doc-pdf</emphasis>
+    </term>
+<listitem>
+      <para>
+	Generates indexed PDF documentation in the following files:
+      </para>
+      <para>
+	<filename>doc/libstdc++-api.pdf</filename>
+      </para>
+      <para>
+	<filename>doc/libstdc++-manual.pdf</filename>
+      </para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term>
+      <emphasis>make doc-texinfo</emphasis>
+    </term>
+<listitem>
+      <para>
+	Generates Texinfo documentation in the following files:
+      </para>
+      <para>
+	<filename>doc/libstdc++-manual.texinfo</filename>
+      </para>
+</listitem>
+</varlistentry>
+
+<varlistentry><term>
+      <emphasis>make doc-xml</emphasis>
+    </term>
+<listitem>
+      <para>
+	Generates single-file XML documentation in the following files:
+      </para>
+      <para>
+	<filename>doc/libstdc++-api.xml</filename>
+      </para>
+      <para>
+	<filename>doc/libstdc++-manual.xml</filename>
+      </para>
+</listitem>
+</varlistentry>
+
+</variablelist>
+
+
   </sect3>
   </sect2>
 </sect1>
