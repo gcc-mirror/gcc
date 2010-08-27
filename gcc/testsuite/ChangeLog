@@ -1,3 +1,8 @@
+2010-08-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/43217
+	* gfortran.dg/hollerith8.f90: New test.
+
 2010-08-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45159
