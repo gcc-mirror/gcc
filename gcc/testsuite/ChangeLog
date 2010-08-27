@@ -1,3 +1,10 @@
+2010-08-27  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/graphite/scop-1.c: Fix out-of-bound array accesses.
+	* gcc.dg/graphite/scop-2.c: Likewise.
+	* gcc.dg/graphite/scop-20.c: Likewise.
+	* gcc.dg/vect/slp-25.c: Likewise.
+
 2010-08-27  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/dse_step.ads, dse_step.adb, test_dse_step.adb: New test.
