@@ -1,3 +1,8 @@
+2010-08-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/45159
+	* gfortran.dg/dependency_33.f90:  New test.
+
 2010-08-27  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/graphite/scop-1.c: Fix out-of-bound array accesses.
