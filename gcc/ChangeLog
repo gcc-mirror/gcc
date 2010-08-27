@@ -1,3 +1,10 @@
+2010-08-27  Olivier Hainque  <hainque@adacore.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dse.c (group_info.base_mem, get_group_info): Use BLKmode to
+	cover all the possible offsets from this base.
+	(scan_reads_nospill): Pass base_mem's mode to canon_true_dependence.
+
 2010-08-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/44485

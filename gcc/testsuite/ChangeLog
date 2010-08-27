@@ -1,3 +1,7 @@
+2010-08-27  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/dse_step.ads, dse_step.adb, test_dse_step.adb: New test.
+
 2010-08-26  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/38936

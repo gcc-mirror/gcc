@@ -473,8 +473,9 @@ struct group_info
      hard_frame_pointer.  */
   bool frame_related;
 
-  /* A mem wrapped around the base pointer for the group in order to
-     do read dependency.  */
+  /* A mem wrapped around the base pointer for the group in order to do
+     read dependency.  It must be given BLKmode in order to encompass all
+     the possible offsets from the base.  */
   rtx base_mem;
 
   /* Canonized version of base_mem's address.  */
@@ -705,7 +706,7 @@ get_group_info (rtx base)
       *slot = gi = (group_info_t) pool_alloc (rtx_group_info_pool);
       gi->rtx_base = base;
       gi->id = rtx_group_next_id++;
-      gi->base_mem = gen_rtx_MEM (QImode, base);
+      gi->base_mem = gen_rtx_MEM (BLKmode, base);
       gi->canon_base_addr = canon_rtx (base);
       gi->store1_n = BITMAP_ALLOC (NULL);
       gi->store1_p = BITMAP_ALLOC (NULL);
@@ -3118,7 +3119,7 @@ scan_reads_nospill (insn_info_t insn_info, bitmap gen, bitmap kill)
 		     base.  */
 		  if ((read_info->group_id < 0)
 		      && canon_true_dependence (group->base_mem,
-						QImode,
+						GET_MODE (group->base_mem),
 						group->canon_base_addr,
 						read_info->mem, NULL_RTX,
 						rtx_varies_p))
