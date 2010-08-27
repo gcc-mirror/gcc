@@ -1,3 +1,8 @@
+2010-08-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45432
+	* match.c (gfc_match_allocate): Avoid double free on error.
+
 2010-08-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/32049

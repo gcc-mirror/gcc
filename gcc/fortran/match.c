@@ -2955,6 +2955,7 @@ alloc_opt_list:
 	    }
 
 	  stat = tmp;
+	  tmp = NULL;
 	  saw_stat = true;
 
 	  if (gfc_check_do_variable (stat->symtree))
@@ -2981,6 +2982,7 @@ alloc_opt_list:
 	    }
 
 	  errmsg = tmp;
+	  tmp = NULL;
 	  saw_errmsg = true;
 
 	  if (gfc_match_char (',') == MATCH_YES)
@@ -3019,6 +3021,7 @@ alloc_opt_list:
             }
 
 	  source = tmp;
+	  tmp = NULL;
 	  saw_source = true;
 
 	  if (gfc_match_char (',') == MATCH_YES)
@@ -3050,6 +3053,7 @@ alloc_opt_list:
 	    }
 
 	  mold = tmp;
+	  tmp = NULL;
 	  saw_mold = true;
 	  mold->mold = 1;
 
