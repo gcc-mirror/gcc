@@ -4460,6 +4460,12 @@ select_type_set_tmp (gfc_typespec *ts)
   char name[GFC_MAX_SYMBOL_LEN];
   gfc_symtree *tmp;
   
+  if (!ts)
+    {
+      select_type_stack->tmp = NULL;
+      return;
+    }
+  
   if (!gfc_type_is_extensible (ts->u.derived))
     return;
 
@@ -4708,6 +4714,7 @@ gfc_match_class_is (void)
       c->where = gfc_current_locus;
       c->ts.type = BT_UNKNOWN;
       new_st.ext.case_list = c;
+      select_type_set_tmp (NULL);
       return MATCH_YES;
     }
 
