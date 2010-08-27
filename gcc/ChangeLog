@@ -375,8 +375,8 @@
 	(build_cdtor): Move to ipa.c; add code avoiding construction
 	when target have ctors/dtors and there is only one ctor/dtor at given
 	priority.
-	(compare_ctor, compare_dtor): Move to ipa.c; use DECL_UID to stabilize sort;
-	reverse order of constructors.
+	(compare_ctor, compare_dtor): Move to ipa.c; use DECL_UID to stabilize
+	sort; reverse order of constructors.
 	(cgraph_build_cdtor_fns):Move to ipa.c; rename to build_cdtor_fns.
 	(cgraph_finalize_function): Do not call record_cdtor_fn.
 	(cgraph_finalize_compilation_unit): Do not call cgraph_build_cdtor_fns.
@@ -387,7 +387,8 @@
 	build_cdtor_fns, ipa_cdtor_merge, gate_ipa_cdtor_merge,
 	pass_ipa_cdtor_merge): New.
 	* passes.c (init_optimization_passes): Enqueue pass_ipa_cdtor_merge.
-	* ipa-prop.c (update_indirect_edges_after_inlining): Avoid out of bounds access.
+	* ipa-prop.c (update_indirect_edges_after_inlining): Avoid out of
+	bounds access.
 
 2010-08-20  Jan Hubicka  <jh@suse.cz>
 
@@ -403,7 +404,8 @@
 
 2010-08-20  Jan Hubicka  <jh@suse.cz>
 
-	* lto-cgraph.c (lto_output_edge): Use gimple_has_body_p instead of flag_wpa.
+	* lto-cgraph.c (lto_output_edge): Use gimple_has_body_p instead of
+	flag_wpa.
 	* lto-streamer-out.c (lto_output): Likewise.
 	* passes.c (ipa_write_optimization_summaries): Initialize statement uids.
 
