@@ -1,3 +1,32 @@
+2010-08-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/41484
+	* config/i386/sse.md (sse4_1_extendv8qiv8hi2): Also accept memory
+	operands for operand 1.
+	(sse4_1_extendv4qiv4si2): Ditto.
+	(sse4_1_extendv2qiv2di2): Ditto.
+	(sse4_1_extendv4hiv4si2): Ditto.
+	(sse4_1_extendv2hiv2di2): Ditto.
+	(sse4_1_extendv2siv2di2): Ditto.
+	(sse4_1_zero_extendv8qiv8hi2): Ditto.
+	(sse4_1_zero_extendv4qiv4si2): Ditto.
+	(sse4_1_zero_extendv2qiv2di2): Ditto.
+	(sse4_1_zero_extendv4hiv4si2): Ditto.
+	(sse4_1_zero_extendv2hiv2di2): Ditto.
+	(sse4_1_zero_extendv2siv2di2): Ditto.
+	(*sse4_1_extendv8qiv8hi2): Remove insn pattern.
+	(*sse4_1_extendv4qiv4si2): Ditto.
+	(*sse4_1_extendv2qiv2di2): Ditto.
+	(*sse4_1_extendv4hiv4si2): Ditto.
+	(*sse4_1_extendv2hiv2di2): Ditto.
+	(*sse4_1_extendv2siv2di2): Ditto.
+	(*sse4_1_zero_extendv8qiv8hi2): Ditto.
+	(*sse4_1_zero_extendv4qiv4si2): Ditto.
+	(*sse4_1_zero_extendv2qiv2di2): Ditto.
+	(*sse4_1_zero_extendv4hiv4si2): Ditto.
+	(*sse4_1_zero_extendv2hiv2di2): Ditto.
+	(*sse4_1_zero_extendv2siv2di2): Ditto.
+
 2010-08-27  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/mips/mips-protos.h (mips_function_arg_advance): Delete
@@ -23,8 +52,7 @@
 	(rs6000_parm_start): Likewise.
 	(rs6000_arg_size): Likewise.
 	(rs6000_darwin64_record_arg_advance_recurse): Likewise.
-	(rs6000_darwin64_record_arg): Likewise.  Take a bool instead of
-	an int.
+	(rs6000_darwin64_record_arg): Likewise.  Take a bool instead of an int.
 	(rs6000_mixed_function_arg): Likewise.
 	(function_arg): Rename to...
 	(rs6000_function_arg): ...this.
@@ -62,8 +90,8 @@
 2010-08-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45255
-	* tree.c (decl_address_invariant_p): DECL_DLLIMPORT_P
-	statics and externals are also invariant.
+	* tree.c (decl_address_invariant_p): DECL_DLLIMPORT_P statics
+	and externals are also invariant.
 
 2010-08-25  Jakub Jelinek  <jakub@redhat.com>
 
@@ -85,8 +113,7 @@
 
 2010-08-25  Richard Guenther  <rguenther@suse.de>
 
-	* alias.c (get_alias_set): Assign a single alias-set to
-	all pointers.
+	* alias.c (get_alias_set): Assign a single alias-set to all pointers.
 	* gimple.c (gimple_get_alias_set): Remove special handling
 	for pointers.
 
@@ -136,8 +163,7 @@
 
 	* config/arm/iterators.md (VU, SE, V_widen_l): New.
 	(V_unpack, US): New.
-	* config/arm/neon.md (vec_unpack<US>_hi_<mode>): Expansion for
-	vmovl.
+	* config/arm/neon.md (vec_unpack<US>_hi_<mode>): Expansion for vmovl.
 	(vec_unpack<US>_lo_<mode>): Likewise.
 	(neon_vec_unpack<US>_hi_<mode>): Instruction pattern for vmovl.
 	(neon_vec_unpack<US>_lo_<mode>): Likewise.
@@ -239,8 +265,7 @@
 	TARGET_MEM_REF more properly.
 	(indirect_ref_may_alias_decl_p): Likewise.
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Keep TARGET_MEM_REFs.
-	* alias.c (ao_ref_from_mem): Handle TARGET_MEM_REF more
-	properly.
+	* alias.c (ao_ref_from_mem): Handle TARGET_MEM_REF more properly.
 
 2010-08-23  Anatoly Sokolov  <aesok@post.ru>
 
@@ -268,10 +293,10 @@
 	* tree-flow.h (may_be_nonaddressable_p): New definition. Make the
 	existing static function global.
 
-	*tree-ssa-loop-ivopts.c (may_be_nonaddressable_p): This function
+	* tree-ssa-loop-ivopts.c (may_be_nonaddressable_p): This function
 	is changed to global.
 
-	*tree-ssa-loop-prefetch.c (gather_memory_references_ref): Call
+	* tree-ssa-loop-prefetch.c (gather_memory_references_ref): Call
 	may_be_nonaddressable_p on base, and don't collect this reference
 	if the address of the base could not be taken.
 
@@ -377,7 +402,7 @@
 	priority.
 	(compare_ctor, compare_dtor): Move to ipa.c; use DECL_UID to stabilize
 	sort; reverse order of constructors.
-	(cgraph_build_cdtor_fns):Move to ipa.c; rename to build_cdtor_fns.
+	(cgraph_build_cdtor_fns): Move to ipa.c; rename to build_cdtor_fns.
 	(cgraph_finalize_function): Do not call record_cdtor_fn.
 	(cgraph_finalize_compilation_unit): Do not call cgraph_build_cdtor_fns.
 	(cgraph_build_static_cdtor): Move to ipa.c.
@@ -407,7 +432,8 @@
 	* lto-cgraph.c (lto_output_edge): Use gimple_has_body_p instead of
 	flag_wpa.
 	* lto-streamer-out.c (lto_output): Likewise.
-	* passes.c (ipa_write_optimization_summaries): Initialize statement uids.
+	* passes.c (ipa_write_optimization_summaries): Initialize statement
+	uids.
 
 2010-08-20  Olivier Hainque  <hainque@adacore.com>
 
@@ -451,9 +477,9 @@
 
 	revert r163410, partially revert r163267.
 	* config/rs6000/darwin.h (LIB_SPEC): Remove.
-	* config/darwin.h (REAL_LIBGCC_SPEC): Link lgcc for all 
+	* config/darwin.h (REAL_LIBGCC_SPEC): Link lgcc for all
 	Darwin versions.
-	
+
 2010-08-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/44974
@@ -462,7 +488,7 @@
 
 2010-08-20  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386.md (ashift RSP splitter): Remove splitter.
+	* config/i386/i386.md (ashift %rsp splitter): Remove splitter.
 	(pro_epilogue_adjust_stack_di_2): Use "l" constraint for
 	alternative 1 of operand 2.
 
