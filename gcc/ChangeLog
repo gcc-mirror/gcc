@@ -1,3 +1,8 @@
+2010-08-27  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm.md (enabled): Test the value of arch_enabled
+        rather than just using it.
+
 2010-08-27  Olivier Hainque  <hainque@adacore.com>
             Eric Botcazou  <ebotcazou@adacore.com>
 
