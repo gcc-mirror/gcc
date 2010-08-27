@@ -1,3 +1,15 @@
+2010-08-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/43217
+	* primary.c (match_hollerith_constant): Calculate padding needed to
+	fill default integer and allocate string for that size.  Set pad bytes
+	to ' '.
+	* gfortran.h: Add hollerith pad value to type spec union.
+	* data.c (create_character_initializer): Fix spelling of function name.
+	Use hollerith pad value to calculate length.
+	* arith.c (hollerith2representation); Use hollerith pad value to
+	calculate length.
+
 2010-08-26  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/38936

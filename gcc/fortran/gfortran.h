@@ -880,6 +880,7 @@ typedef struct
   {
     struct gfc_symbol *derived;	/* For derived types only.  */
     gfc_charlen *cl;		/* For character types only.  */
+    int pad;			/* For hollerith types only.  */
   }
   u;
 
