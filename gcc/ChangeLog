@@ -1,3 +1,12 @@
+2010-08-27  Naveen H.S  <naveen.S@kpitcummins.com>
+	    Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (push_regs): Emit movml for interrupt handler
+	when possible.
+	(sh_expand_epilogue): Likewise.
+	* config/sh/sh.md (movml_push_banked): New insn.
+	(movml_pop_banked): Likewise.
+
 2010-08-28  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* genautomata.c (gen_regexp_repeat, gen_regexp_allof,
