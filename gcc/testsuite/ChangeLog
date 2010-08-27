@@ -1,3 +1,8 @@
+2010-08-27  Naveen H.S  <naveen.S@kpitcummins.com>
+	    Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* gcc.dg/attr-isr.c: Skip test for -m2a.  Don't	run on sh2a*-*-*.
+
 2010-08-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/ppc-fpconv-1.c: New test for integer to

@@ -6407,9 +6407,50 @@ push_regs (HARD_REG_SET *mask, int interrupt_handler)
 
   /* Push banked registers last to improve delay slot opportunities.  */
   if (interrupt_handler)
-    for (i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
-      if (TEST_HARD_REG_BIT (*mask, i))
-	push (i);
+    {
+      bool use_movml = false;
+
+      if (TARGET_SH2A)
+	{
+	  unsigned int count = 0;
+
+	  for (i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
+	    if (TEST_HARD_REG_BIT (*mask, i))
+	      count++;
+	    else
+	      break;
+
+	  /* Use movml when all banked registers are pushed.  */
+	  if (count == LAST_BANKED_REG - FIRST_BANKED_REG + 1)
+	    use_movml = true;
+	}
+
+      if (use_movml)
+	{
+	  rtx x, mem, reg, set;
+	  rtx sp_reg = gen_rtx_REG (SImode, STACK_POINTER_REGNUM);
+
+	  /* We must avoid scheduling multiple store insn with another
+	     insns.  */
+	  emit_insn (gen_blockage ());
+	  x = gen_movml_push_banked (sp_reg);
+	  x = frame_insn (x);
+	  for (i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
+	    {
+	      mem = gen_rtx_MEM (SImode, plus_constant (sp_reg, i * 4));
+	      reg = gen_rtx_REG (SImode, i);
+	      add_reg_note (x, REG_CFA_OFFSET, gen_rtx_SET (SImode, mem, reg));
+	    }
+
+	  set = gen_rtx_SET (SImode, sp_reg, plus_constant (sp_reg, - 32));
+	  add_reg_note (x, REG_CFA_ADJUST_CFA, set);
+	  emit_insn (gen_blockage ());
+	}
+      else
+	for (i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
+	  if (TEST_HARD_REG_BIT (*mask, i))
+	    push (i);
+    }
 
   /* Don't push PR register for an ISR with RESBANK attribute assigned.  */
   if (TEST_HARD_REG_BIT (*mask, PR_REG) && !sh_cfun_resbank_handler_p ())
@@ -7347,9 +7388,37 @@ sh_expand_epilogue (bool sibcall_p)
 	 delay slot. RTE switches banks before the ds instruction.  */
       if (current_function_interrupt)
 	{
-	  for (i = LAST_BANKED_REG; i >= FIRST_BANKED_REG; i--)
-	    if (TEST_HARD_REG_BIT (live_regs_mask, i))
-	      pop (i);
+	  bool use_movml = false;
+
+	  if (TARGET_SH2A)
+	    {
+	      unsigned int count = 0;
+
+	      for (i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
+		if (TEST_HARD_REG_BIT (live_regs_mask, i))
+		  count++;
+		else
+		  break;
+
+	      /* Use movml when all banked register are poped.  */
+	      if (count == LAST_BANKED_REG - FIRST_BANKED_REG + 1)
+		use_movml = true;
+	    }
+
+	  if (use_movml)
+	    {
+	      rtx sp_reg = gen_rtx_REG (SImode, STACK_POINTER_REGNUM);
+
+	      /* We must avoid scheduling multiple load insn with another
+		 insns.  */
+	      emit_insn (gen_blockage ());
+	      emit_insn (gen_movml_pop_banked (sp_reg));
+	      emit_insn (gen_blockage ());
+	    }
+	  else
+	    for (i = LAST_BANKED_REG; i >= FIRST_BANKED_REG; i--)
+	      if (TEST_HARD_REG_BIT (live_regs_mask, i))
+		pop (i);
 
 	  last_reg = FIRST_PSEUDO_REGISTER - LAST_BANKED_REG - 1;
 	}
