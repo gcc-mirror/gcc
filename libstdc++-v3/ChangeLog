@@ -1,3 +1,7 @@
+2010-08-26  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/stl_iterator_base_types.h: Fix doxygen warning.
+
 2010-08-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
