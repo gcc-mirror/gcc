@@ -1,3 +1,11 @@
+2010-08-28  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* genautomata.c (gen_regexp_repeat, gen_regexp_allof,
+	gen_regexp_oneof, gen_regexp_sequence): Use the string found
+	in vector element 0 rather than the original string when there's
+	only one element.
+	(gen_regexp): Remove extra semicolon.
+
 2010-08-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-protos.h (rs6000_address_for_fpconvert):
