@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010
    Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
@@ -553,6 +554,25 @@ extern int rs6000_vector_align[];
 #define TARGET_E500_SINGLE 0
 #define TARGET_E500_DOUBLE 0
 #define CHECK_E500_OPTIONS do { } while (0)
+
+/* ISA 2.01 allowed FCFID to be done in 32-bit, previously it was 64-bit only.
+   Enable 32-bit fcfid's on any of the switches for newer ISA machines or
+   XILINX.  */
+#define TARGET_FCFID	(TARGET_POWERPC64 \
+			 || TARGET_POPCNTB	/* ISA 2.02 */ \
+			 || TARGET_CMPB		/* ISA 2.05 */ \
+			 || TARGET_POPCNTD	/* ISA 2.06 */ \
+			 || TARGET_XILINX_FPU)
+
+#define TARGET_FCTIDZ	TARGET_FCFID
+#define TARGET_STFIWX	TARGET_PPC_GFXOPT
+#define TARGET_LFIWAX	TARGET_CMPB
+#define TARGET_LFIWZX	TARGET_POPCNTD
+#define TARGET_FCFIDS	TARGET_POPCNTD
+#define TARGET_FCFIDU	TARGET_POPCNTD
+#define TARGET_FCFIDUS	TARGET_POPCNTD
+#define TARGET_FCTIDUZ	TARGET_POPCNTD
+#define TARGET_FCTIWUZ	TARGET_POPCNTD
 
 /* E500 processors only support plain "sync", not lwsync.  */
 #define TARGET_NO_LWSYNC TARGET_E500

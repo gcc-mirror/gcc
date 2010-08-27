@@ -2510,10 +2510,10 @@ rs6000_override_options (const char *default_cpu)
 	  POWERPC_BASE_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_PPC_GFXOPT
 	  | MASK_MFCRF | MASK_POPCNTB | MASK_FPRND | MASK_CMPB | MASK_DFP
 	  | MASK_MFPGPR | MASK_RECIP_PRECISION},
-	 {"power7", PROCESSOR_POWER7,
+	 {"power7", PROCESSOR_POWER7,   /* Don't add MASK_ISEL by default */
 	  POWERPC_7400_MASK | MASK_POWERPC64 | MASK_PPC_GPOPT | MASK_MFCRF
 	  | MASK_POPCNTB | MASK_FPRND | MASK_CMPB | MASK_DFP | MASK_POPCNTD
-	  | MASK_VSX| MASK_RECIP_PRECISION},	/* Don't add MASK_ISEL by default */
+	  | MASK_VSX | MASK_RECIP_PRECISION},
 	 {"powerpc", PROCESSOR_POWERPC, POWERPC_BASE_MASK},
 	 {"powerpc64", PROCESSOR_POWERPC64,
 	  POWERPC_BASE_MASK | MASK_PPC_GFXOPT | MASK_POWERPC64},
@@ -2550,15 +2550,19 @@ rs6000_override_options (const char *default_cpu)
     ISA_2_1_MASKS = MASK_MFCRF,
     ISA_2_2_MASKS = (ISA_2_1_MASKS | MASK_POPCNTB | MASK_FPRND),
 
-    /* For ISA 2.05, do not add MFPGPR, since it isn't in ISA 2.06, and
-       don't add ALTIVEC, since in general it isn't a win on power6.  */
-    ISA_2_5_MASKS = (ISA_2_2_MASKS | MASK_CMPB | MASK_RECIP_PRECISION
-		     | MASK_DFP),
+    /* For ISA 2.05, do not add MFPGPR, since it isn't in ISA 2.06, and don't
+       add ALTIVEC, since in general it isn't a win on power6.  In ISA 2.04,
+       fsel, fre, fsqrt, etc. were no longer documented as optional.  Group
+       masks by server and embedded. */
+    ISA_2_5_MASKS_EMBEDDED = (ISA_2_2_MASKS | MASK_CMPB | MASK_RECIP_PRECISION
+			      | MASK_PPC_GFXOPT | MASK_PPC_GPOPT),
+    ISA_2_5_MASKS_SERVER = (ISA_2_5_MASKS_EMBEDDED | MASK_DFP),
 
     /* For ISA 2.06, don't add ISEL, since in general it isn't a win, but
        altivec is a win so enable it.  */
-    ISA_2_6_MASKS = (ISA_2_5_MASKS | MASK_ALTIVEC | MASK_POPCNTD
-		     | MASK_VSX | MASK_RECIP_PRECISION)
+    ISA_2_6_MASKS_EMBEDDED = (ISA_2_5_MASKS_EMBEDDED | MASK_POPCNTD),
+    ISA_2_6_MASKS_SERVER = (ISA_2_5_MASKS_SERVER | MASK_POPCNTD | MASK_ALTIVEC
+			    | MASK_VSX)
   };
 
   /* Numerous experiment shows that IRA based loop pressure
@@ -2699,15 +2703,22 @@ rs6000_override_options (const char *default_cpu)
 	{
 	  warning (0, msg);
 	  target_flags &= ~ MASK_VSX;
+	  target_flags_explicit |= MASK_VSX;
 	}
     }
 
   /* For the newer switches (vsx, dfp, etc.) set some of the older options,
      unless the user explicitly used the -mno-<option> to disable the code.  */
   if (TARGET_VSX)
-    target_flags |= (ISA_2_6_MASKS & ~target_flags_explicit);
+    target_flags |= (ISA_2_6_MASKS_SERVER & ~target_flags_explicit);
+  else if (TARGET_POPCNTD)
+    target_flags |= (ISA_2_6_MASKS_EMBEDDED & ~target_flags_explicit);
   else if (TARGET_DFP)
-    target_flags |= (ISA_2_5_MASKS & ~target_flags_explicit);
+    target_flags |= (ISA_2_5_MASKS_SERVER & ~target_flags_explicit);
+  else if (TARGET_CMPB)
+    target_flags |= (ISA_2_5_MASKS_EMBEDDED & ~target_flags_explicit);
+  else if (TARGET_POPCNTB || TARGET_FPRND)
+    target_flags |= (ISA_2_2_MASKS & ~target_flags_explicit);
   else if (TARGET_ALTIVEC)
     target_flags |= (MASK_PPC_GFXOPT & ~target_flags_explicit);
 
@@ -26956,6 +26967,124 @@ rs6000_final_prescan_insn (rtx insn, rtx *operand ATTRIBUTE_UNUSED,
 	warning_at (location, OPT_mwarn_cell_microcode,
 		    "emitting conditional microcode insn %s\t[%s] #%d",
 		    temp, insn_data[INSN_CODE (insn)].name, INSN_UID (insn));
+    }
+}
+
+
+/* Allocate a stack temp and fixup the address so it meets the particular
+   memory requirements (either offetable or REG+REG addressing).  */
+
+rtx
+rs6000_allocate_stack_temp (enum machine_mode mode,
+			    bool offsettable_p,
+			    bool reg_reg_p)
+{
+  rtx stack = assign_stack_temp (mode, GET_MODE_SIZE (mode), 0);
+  rtx addr = XEXP (stack, 0);
+  int strict_p = (reload_in_progress || reload_completed);
+
+  if (!legitimate_indirect_address_p (addr, strict_p))
+    {
+      if (offsettable_p
+	  && !rs6000_legitimate_offset_address_p (mode, addr, strict_p))
+	stack = replace_equiv_address (stack, copy_addr_to_reg (addr));
+
+      else if (reg_reg_p && !legitimate_indexed_address_p (addr, strict_p))
+	stack = replace_equiv_address (stack, copy_addr_to_reg (addr));
+    }
+
+  return stack;
+}
+
+/* Given a memory reference, if it is not a reg or reg+reg addressing, convert
+   to such a form to deal with memory reference instructions like STFIWX that
+   only take reg+reg addressing.  */
+
+rtx
+rs6000_address_for_fpconvert (rtx x)
+{
+  int strict_p = (reload_in_progress || reload_completed);
+  rtx addr;
+
+  gcc_assert (MEM_P (x));
+  addr = XEXP (x, 0);
+  if (! legitimate_indirect_address_p (addr, strict_p)
+      && ! legitimate_indexed_address_p (addr, strict_p))
+    x = replace_equiv_address (x, copy_addr_to_reg (addr));
+
+  return x;
+}
+
+/* Expand 32-bit int -> floating point conversions.  Return true if
+   successful.  */
+
+void
+rs6000_expand_convert_si_to_sfdf (rtx dest, rtx src, bool unsigned_p)
+{
+  enum machine_mode dmode = GET_MODE (dest);
+  rtx (*func_si) (rtx, rtx, rtx, rtx);
+  rtx (*func_si_mem) (rtx, rtx);
+  rtx (*func_di) (rtx, rtx);
+  rtx reg, stack;
+
+  gcc_assert (GET_MODE (src) == SImode);
+
+  if (dmode == SFmode)
+    {
+      if (unsigned_p)
+	{
+	  gcc_assert (TARGET_FCFIDUS && TARGET_LFIWZX);
+	  func_si = gen_floatunssisf2_lfiwzx;
+	  func_si_mem = gen_floatunssisf2_lfiwzx_mem;
+	  func_di = gen_floatunsdisf2;
+	}
+      else
+	{
+	  gcc_assert (TARGET_FCFIDS && TARGET_LFIWAX);
+	  func_si = gen_floatsisf2_lfiwax;
+	  func_si_mem = gen_floatsisf2_lfiwax_mem;
+	  func_di = gen_floatdisf2;
+	}
+    }
+
+  else if (dmode == DFmode)
+    {
+      if (unsigned_p)
+	{
+	  gcc_assert (TARGET_FCFIDU && TARGET_LFIWZX);
+	  func_si = gen_floatunssidf2_lfiwzx;
+	  func_si_mem = gen_floatunssidf2_lfiwzx_mem;
+	  func_di = gen_floatunsdidf2;
+	}
+      else
+	{
+	  gcc_assert (TARGET_FCFID && TARGET_LFIWAX);
+	  func_si = gen_floatsidf2_lfiwax;
+	  func_si_mem = gen_floatsidf2_lfiwax_mem;
+	  func_di = gen_floatdidf2;
+	}
+    }
+
+  else
+    gcc_unreachable ();
+
+  if (MEM_P (src))
+    {
+      src = rs6000_address_for_fpconvert (src);
+      emit_insn (func_si_mem (dest, src));
+    }
+  else if (!TARGET_MFPGPR)
+    {
+      reg = gen_reg_rtx (DImode);
+      stack = rs6000_allocate_stack_temp (SImode, false, true);
+      emit_insn (func_si (dest, src, stack, reg));
+    }
+  else
+    {
+      if (!REG_P (src))
+	src = force_reg (SImode, src);
+      reg = convert_to_mode (DImode, src, unsigned_p);
+      emit_insn (func_di (dest, reg));
     }
 }
 

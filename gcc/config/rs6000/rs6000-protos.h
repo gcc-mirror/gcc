@@ -129,6 +129,9 @@ extern void rs6000_emit_parity (rtx, rtx);
 
 extern rtx rs6000_machopic_legitimize_pic_address (rtx, enum machine_mode,
 						   rtx);
+extern rtx rs6000_address_for_fpconvert (rtx);
+extern rtx rs6000_allocate_stack_temp (enum machine_mode, bool, bool);
+extern void rs6000_expand_convert_si_to_sfdf (rtx, rtx, bool);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE

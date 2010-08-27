@@ -1,5 +1,5 @@
 ;; VSX patterns.
-;; Copyright (C) 2009
+;; Copyright (C) 2009, 2010
 ;; Free Software Foundation, Inc.
 ;; Contributed by Michael Meissner <meissner@linux.vnet.ibm.com>
 
@@ -73,11 +73,11 @@
 ;; Map the register class used for float<->int conversions
 (define_mode_attr VSr2	[(V2DF  "wd")
 			 (V4SF  "wf")
-			 (DF    "!f#r")])
+			 (DF    "ws")])
 
 (define_mode_attr VSr3	[(V2DF  "wa")
 			 (V4SF  "wa")
-			 (DF    "!f#r")])
+			 (DF    "ws")])
 
 ;; Map the register class for sp<->dp float conversions, destination
 (define_mode_attr VSr4	[(SF	"ws")

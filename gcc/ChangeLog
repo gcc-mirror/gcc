@@ -1,3 +1,123 @@
+2010-08-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-protos.h (rs6000_address_for_fpconvert):
+	New declaration.
+	(rs6000_allocate_stack_temp): Ditto.
+	(rs6000_expand_convert_si_to_sfdf): Ditto.
+
+	* config/rs6000/rs6000.c (rs6000_override_options): Adjust long
+	line.  Update the options set if power6 or power7 server/embedded
+	type options are used.  If we give a warning for no vsx under
+	-mcpu=power7 -mno-altivec, mark -mvsx as an explicit option.
+	(rs6000_allocate_stack_temp): New function to allocate a stack
+	tempoary and adjust the address so it meets either REG+OFFSET or
+	REG+REG addressing requirements.
+	(rs6000_address_for_fpconvert): Adjust REG+OFFSET addresses so
+	that they can be used with the LFIWAX/LFIWZX instrucitons.
+	(rs6000_expand_convert_si_to_sfdf): New helper funciton for
+	converting signed/unsigned SImode to either SFmode/DFmode.
+
+	* config/rs6000/rs6000.h (TARGET_FCFID): New macros to determine
+	whether certain instructions can be generated.
+	(TARGET_FCTIDZ): Ditto.
+	(TARGET_STFIWX): Ditto.
+	(TARGET_LFIWAX): Ditto.
+	(TARGET_LFIWZX): Ditto.
+	(TARGET_FCFIDS): Ditto.
+	(TARGET_FCFIDU): Ditto.
+	(TARGET_FCFIDUS): Ditto.
+	(TARGET_FCTIDUZ): Ditto.
+	(TARGET_FCTIWUZ): Ditto.
+
+	* config/rs6000/rs6000.md (UNSPEC_FCTIW): New unspec constants.
+	(UNSPEC_FCTID): Ditto.
+	(UNSPEC_LFIWAX): Ditto.
+	(UNSPEC_LFIWZX): Ditto.
+	(UNSPEC_FCTIWUZ): Ditto.
+	(rreg): Use correct constraints.
+	(SI_CONVERT_FP): New mode attribute for floating point conversion
+	tests.
+	(E500_CONVERT): Ditto.
+	(lfiwax): New insns for converting from integer to floating point
+	utilizing newer instructions.  Attempt to optimize conversions
+	that come from memory so that we don't load the value into a GPR,
+	spill it to the stack and reload it into a FPR.
+	(floatsi<mode>2_lfiwax): Ditto.
+	(floatsi<mode>2_lfiwax_mem): Ditto.
+	(floatsi<mode>2_lfiwax_mem2): Ditto.
+	(lfiwzx): Ditto.
+	(floatunssi<mode>2_lfiwzx): Ditto.
+	(floatunssi<mode>2_lfiwzx_mem): Ditto.
+	(floatunssi<mode>2_lfiwzx_mem2): Ditto.
+	(floatdidf2_mem): Ditto.
+	(floatunsdidf2_fcfidu): Ditto.
+	(floatunsdidf2_mem): Ditto.
+	(floatunsdisf2): Ditto.
+	(floatunsdisf2_fcfidus): Ditto.
+	(floatunsdisf2_mem): Ditto.
+	(floatsidf2): Add support for LFIWAX/LFIWZX/FCFIDS/FCFIDU/FCFIDUS.
+	Use FCFID on 32-bit hosts that support it.
+	(floatsidf2_internal): Ditto.
+	(floatunssisf2): Ditto.
+	(floatunssidf2): Ditto.
+	(floatunssidf2_internal): Ditto.
+	(floatsisf2): Ditto.
+	(floatdidf2): Ditto.
+	(floatdidf2_fpr): Ditto.
+	(floatunsdidf2): Ditto.
+	(floatdisf2): Ditto.
+	(floatdisf2_fcfids): Ditto.
+	(floatdisf2_internal1): Ditto.
+	(fixuns_truncsfsi2): Delete, merge into common pattern for both
+	SF/DF.  Add power7 support.
+	(fix_truncsfsi2): Ditto.
+	(fixuns_truncdfsi2): Ditto.
+	(fixuns_truncdfdi2): Ditto.
+	(fix_truncdfsi2): Ditto.
+	(fix_truncdfsi2_internal): Ditto.
+	(fix_truncdfsi2_internal_gfxopt): Ditto.
+	(fix_truncdfsi2_mfpgpr): Ditto.
+	(fctiwz): Ditto.
+	(btruncdf2): Ditto.
+	(btruncdf2_fpr): Ditto.
+	(btructsf2): Ditto.
+	(ceildf2): Ditto.
+	(ceildf2_fpr): Ditto.
+	(ceilsf2): Ditto.
+	(floordf2): Ditto.
+	(floordf2_fpr): Ditto.
+	(floorsf2): Ditto.
+	(rounddf2): Ditto.
+	(rounddf2_fpr): Ditto.
+	(roundsf2): Ditto.
+	(fix_trunc<mode>si2): Combine SF/DF conversion into one insn.
+	(fix_trunc<mode>di2): Ditto.
+	(fixuns_trunc<mode>si2): Ditto.
+	(fixuns_trunc<mode>di2): Ditto.
+	(fctiwz_<mode>): Ditto.
+	(btrunc<mode>2): Ditto.
+	(btrunc<mode>2_fpr): Ditto.
+	(ceil<mode>2): Ditto.
+	(ceil<mode>2_fpr): Ditto.
+	(floor<mode>2): Ditto.
+	(float<mode>2_fpr): Ditto.
+	(round<mode>2): Ditto.
+	(round<mode>2_fpr): Ditto.
+	(fix_trunc<mode>si2_stfiwx): New insn for machines with STFIWX.
+	(fixuns_trunc<mode>si2_stfiwx): Ditto.
+	(fix_truncdfsi2_internal): Ditto.
+	(fix_trunc<mode>si2_mem): Combiner pattern to eliminate storing
+	converted value on stack, loaded into GPR, and then stored into
+	the final destination.
+	(fix_trunc<mode>di2_fctidz): New pattern for targets supporting
+	FCTIDZ.
+	(lrint<mode>di2): New insn, provide the lrint builtin functions.
+	(ftruncdf2): Delete, unused.
+	(fix_trunctfsi2_internal): Use gen_fctiwz_df, not gen_fctiwz.
+
+	* config/rs6000/vsx.md (toplevel): Update copyright year.
+	(VSr2): Use "ws" contraint for DFmode, not "!r#r".
+	(VSr3): Ditto.
 
 2010-08-27  Basile Starynkevitch  <basile@starynkevitch.net>
             Jeremie Salvucci  <jeremie.salvucci@free.fr>
