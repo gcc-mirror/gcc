@@ -1,3 +1,27 @@
+2010-08-27  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/rs6000/rs6000.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
+	* config/rs6000/rs6000-protos.h (function_arg_advance): Delete.
+	(function_arg): Delete.
+	(function_arg_boundary): Take a const_tree.
+	* config/rs6000/rs6000.c (function_arg_boundary): Likewise.
+	(rs6000_spe_function_arg): Likewise.
+	(rs6000_parm_start): Likewise.
+	(rs6000_arg_size): Likewise.
+	(rs6000_darwin64_record_arg_advance_recurse): Likewise.
+	(rs6000_darwin64_record_arg): Likewise.  Take a bool instead of
+	an int.
+	(rs6000_mixed_function_arg): Likewise.
+	(function_arg): Rename to...
+	(rs6000_function_arg): ...this.
+	(function_arg_advance): Rename to...
+	(rs6000_function_arg_advance_1): ...this
+	(rs6000_function_arg_advance): New function.  Call it.
+	(setup_incoming_varargs): Call rs6000_function_arg_advance_1.
+	(rs6000_return_in_memory): Adjust call to rs6000_darwin64_record_arg.
+	(rs6000_function_value): Likewise.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+
 2010-08-27  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/arm.md (enabled): Test the value of arch_enabled
