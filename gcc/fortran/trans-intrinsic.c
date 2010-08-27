@@ -1810,9 +1810,11 @@ gfc_conv_intrinsic_count (gfc_se * se, gfc_expr * expr)
 
 /* Inline implementation of the sum and product intrinsics.  */
 static void
-gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op)
+gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
+			  bool norm2)
 {
   tree resvar;
+  tree scale = NULL_TREE;
   tree type;
   stmtblock_t body;
   stmtblock_t block;
@@ -1835,8 +1837,20 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op)
   type = gfc_typenode_for_spec (&expr->ts);
   /* Initialize the result.  */
   resvar = gfc_create_var (type, "val");
-  if (op == PLUS_EXPR)
+  if (norm2)
+    {
+      /* result = 0.0;
+	 scale = 1.0.  */
+      scale = gfc_create_var (type, "scale");
+      gfc_add_modify (&se->pre, scale,
+		      gfc_build_const (type, integer_one_node));
+      tmp = gfc_build_const (type, integer_zero_node);
+    }
+  else if (op == PLUS_EXPR)
     tmp = gfc_build_const (type, integer_zero_node);
+  else if (op == NE_EXPR)
+    /* PARITY.  */
+    tmp = convert (type, boolean_false_node);
   else
     tmp = gfc_build_const (type, integer_one_node);
 
@@ -1848,9 +1862,16 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op)
   arrayss = gfc_walk_expr (arrayexpr);
   gcc_assert (arrayss != gfc_ss_terminator);
 
-  actual = actual->next->next;
-  gcc_assert (actual);
-  maskexpr = actual->expr;
+  if (op == NE_EXPR || norm2)
+    /* PARITY and NORM2.  */
+    maskexpr = NULL;
+  else
+    {
+      actual = actual->next->next;
+      gcc_assert (actual);
+      maskexpr = actual->expr;
+    }
+
   if (maskexpr && maskexpr->rank != 0)
     {
       maskss = gfc_walk_expr (maskexpr);
@@ -1896,15 +1917,77 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op)
   gfc_conv_expr_val (&arrayse, arrayexpr);
   gfc_add_block_to_block (&block, &arrayse.pre);
 
-  tmp = fold_build2 (op, type, resvar, arrayse.expr);
-  gfc_add_modify (&block, resvar, tmp);
+  if (norm2)
+    {
+      /* if (x(i) != 0.0)
+	   {
+	     absX = abs(x(i))
+	     if (absX > scale)
+	       {
+                 val = scale/absX;
+		 result = 1.0 + result * val * val;
+		 scale = absX;
+	       }
+	     else
+	       {
+                 val = absX/scale;
+	         result += val * val;
+	       }
+	   }  */
+      tree res1, res2, cond, absX, val;
+      stmtblock_t ifblock1, ifblock2, ifblock3;
+
+      gfc_init_block (&ifblock1);
+
+      absX = gfc_create_var (type, "absX");
+      gfc_add_modify (&ifblock1, absX,
+		      fold_build1 (ABS_EXPR, type, arrayse.expr));
+      val = gfc_create_var (type, "val");
+      gfc_add_expr_to_block (&ifblock1, val);
+
+      gfc_init_block (&ifblock2);
+      gfc_add_modify (&ifblock2, val,
+		      fold_build2 (RDIV_EXPR, type, scale, absX));
+      res1 = fold_build2 (MULT_EXPR, type, val, val); 
+      res1 = fold_build2 (MULT_EXPR, type, resvar, res1);
+      res1 = fold_build2 (PLUS_EXPR, type, res1,
+			  gfc_build_const (type, integer_one_node));
+      gfc_add_modify (&ifblock2, resvar, res1);
+      gfc_add_modify (&ifblock2, scale, absX);
+      res1 = gfc_finish_block (&ifblock2); 
+
+      gfc_init_block (&ifblock3);
+      gfc_add_modify (&ifblock3, val,
+		      fold_build2 (RDIV_EXPR, type, absX, scale));
+      res2 = fold_build2 (MULT_EXPR, type, val, val); 
+      res2 = fold_build2 (PLUS_EXPR, type, resvar, res2);
+      gfc_add_modify (&ifblock3, resvar, res2);
+      res2 = gfc_finish_block (&ifblock3);
+
+      cond = fold_build2 (GT_EXPR, boolean_type_node, absX, scale);
+      tmp = build3_v (COND_EXPR, cond, res1, res2);
+      gfc_add_expr_to_block (&ifblock1, tmp);  
+      tmp = gfc_finish_block (&ifblock1);
+
+      cond = fold_build2 (NE_EXPR, boolean_type_node, arrayse.expr,
+			  gfc_build_const (type, integer_zero_node));
+
+      tmp = build3_v (COND_EXPR, cond, tmp, build_empty_stmt (input_location));
+      gfc_add_expr_to_block (&block, tmp);  
+    }
+  else
+    {
+      tmp = fold_build2 (op, type, resvar, arrayse.expr);
+      gfc_add_modify (&block, resvar, tmp);
+    }
+
   gfc_add_block_to_block (&block, &arrayse.post);
 
   if (maskss)
     {
       /* We enclose the above in if (mask) {...} .  */
-      tmp = gfc_finish_block (&block);
 
+      tmp = gfc_finish_block (&block);
       tmp = build3_v (COND_EXPR, maskse.expr, tmp,
 		      build_empty_stmt (input_location));
     }
@@ -1936,6 +2019,16 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op)
     }
 
   gfc_cleanup_loop (&loop);
+
+  if (norm2)
+    {
+      /* result = scale * sqrt(result).  */
+      tree sqrt;
+      sqrt = builtin_decl_for_float_kind (BUILT_IN_SQRT, expr->ts.kind);
+      resvar = build_call_expr_loc (input_location,
+				    sqrt, 1, resvar);
+      resvar = fold_build2 (MULT_EXPR, type, scale, resvar);
+    }
 
   se->expr = resvar;
 }
@@ -5288,6 +5381,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       gfc_conv_intrinsic_nearest (se, expr);
       break;
 
+    case GFC_ISYM_NORM2:
+      gfc_conv_intrinsic_arith (se, expr, PLUS_EXPR, true);
+      break;
+
     case GFC_ISYM_NOT:
       gfc_conv_intrinsic_not (se, expr);
       break;
@@ -5296,12 +5393,16 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       gfc_conv_intrinsic_bitop (se, expr, BIT_IOR_EXPR);
       break;
 
+    case GFC_ISYM_PARITY:
+      gfc_conv_intrinsic_arith (se, expr, NE_EXPR, false);
+      break;
+
     case GFC_ISYM_PRESENT:
       gfc_conv_intrinsic_present (se, expr);
       break;
 
     case GFC_ISYM_PRODUCT:
-      gfc_conv_intrinsic_arith (se, expr, MULT_EXPR);
+      gfc_conv_intrinsic_arith (se, expr, MULT_EXPR, false);
       break;
 
     case GFC_ISYM_RRSPACING:
@@ -5338,7 +5439,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_SUM:
-      gfc_conv_intrinsic_arith (se, expr, PLUS_EXPR);
+      gfc_conv_intrinsic_arith (se, expr, PLUS_EXPR, false);
       break;
 
     case GFC_ISYM_TRANSFER:
@@ -5508,6 +5609,8 @@ gfc_is_intrinsic_libcall (gfc_expr * expr)
     case GFC_ISYM_MAXVAL:
     case GFC_ISYM_MINLOC:
     case GFC_ISYM_MINVAL:
+    case GFC_ISYM_NORM2:
+    case GFC_ISYM_PARITY:
     case GFC_ISYM_PRODUCT:
     case GFC_ISYM_SUM:
     case GFC_ISYM_SHAPE:

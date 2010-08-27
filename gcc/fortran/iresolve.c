@@ -1825,6 +1825,23 @@ gfc_resolve_nint (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
 
 
 void
+gfc_resolve_norm2 (gfc_expr *f, gfc_expr *array, gfc_expr *dim)
+{
+  f->ts = array->ts;
+
+  if (dim != NULL)
+    {
+      f->rank = array->rank - 1;
+      f->shape = gfc_copy_shape_excluding (array->shape, array->rank, dim);
+      gfc_resolve_dim_arg (dim);
+    }
+
+  f->value.function.name
+    = gfc_get_string (PREFIX ("norm2_r%d"), array->ts.kind);
+}
+
+
+void
 gfc_resolve_not (gfc_expr *f, gfc_expr *i)
 {
   f->ts = i->ts;
@@ -1885,6 +1902,25 @@ gfc_resolve_pack (gfc_expr *f, gfc_expr *array, gfc_expr *mask,
       else
 	f->value.function.name = PREFIX ("pack_s");
     }
+}
+
+
+void
+gfc_resolve_parity (gfc_expr *f, gfc_expr *array, gfc_expr *dim)
+{
+  f->ts = array->ts;
+
+  if (dim != NULL)
+    {
+      f->rank = array->rank - 1;
+      f->shape = gfc_copy_shape_excluding (array->shape, array->rank, dim);
+      gfc_resolve_dim_arg (dim);
+    }
+
+  resolve_mask_arg (array);
+
+  f->value.function.name
+    = gfc_get_string (PREFIX ("parity_l%d"), array->ts.kind);
 }
 
 

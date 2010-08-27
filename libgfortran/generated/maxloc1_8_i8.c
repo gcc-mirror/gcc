@@ -1,8 +1,8 @@
 /* Implementation of the MAXLOC intrinsic
-   Copyright 2002, 2007, 2009 Free Software Foundation, Inc.
+   Copyright 2002, 2007, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
-This file is part of the GNU Fortran 95 runtime library (libgfortran).
+This file is part of the GNU Fortran runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public
@@ -174,6 +174,7 @@ maxloc1_8_i8 (gfc_array_i8 * const restrict retarray,
 		    result = (GFC_INTEGER_8)n + 1;
 		  }
 	      }
+	    
 	    *dest = result;
 	  }
       }

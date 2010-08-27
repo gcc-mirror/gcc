@@ -326,6 +326,19 @@ $(srcdir)/generated/minval_r8.c \
 $(srcdir)/generated/minval_r10.c \
 $(srcdir)/generated/minval_r16.c
 
+i_norm2_c= \
+$(srcdir)/generated/norm2_r4.c \
+$(srcdir)/generated/norm2_r8.c \
+$(srcdir)/generated/norm2_r10.c \
+$(srcdir)/generated/norm2_r16.c
+
+i_parity_c = \
+$(srcdir)/generated/parity_l1.c \
+$(srcdir)/generated/parity_l2.c \
+$(srcdir)/generated/parity_l4.c \
+$(srcdir)/generated/parity_l8.c \
+$(srcdir)/generated/parity_l16.c
+
 i_sum_c= \
 $(srcdir)/generated/sum_i1.c \
 $(srcdir)/generated/sum_i2.c \
@@ -589,11 +602,11 @@ m4_files= m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
     m4/transpose.m4 m4/eoshift1.m4 m4/eoshift3.m4 m4/exponent.m4 \
     m4/fraction.m4 m4/nearest.m4 m4/set_exponent.m4 m4/pow.m4 \
     m4/misc_specifics.m4 m4/rrspacing.m4 m4/spacing.m4 m4/pack.m4 \
-    m4/unpack.m4 m4/spread.m4 m4/bessel.m4
+    m4/unpack.m4 m4/spread.m4 m4/bessel.m4 m4/norm2.m4 m4/parity.m4
 
 gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_maxloc1_c) $(i_maxval_c) $(i_minloc0_c) $(i_minloc1_c) $(i_minval_c) \
-    $(i_product_c) $(i_sum_c) $(i_bessel_c) \
+    $(i_product_c) $(i_sum_c) $(i_bessel_c) $(i_norm2_c) $(i_parity_c) \
     $(i_matmul_c) $(i_matmull_c) $(i_transpose_c) $(i_shape_c) $(i_eoshift1_c) \
     $(i_eoshift3_c) $(i_cshift1_c) $(i_reshape_c) $(in_pack_c) $(in_unpack_c) \
     $(i_exponent_c) $(i_fraction_c) $(i_nearest_c) $(i_set_exponent_c) \
@@ -865,6 +878,12 @@ $(i_matmul_c): m4/matmul.m4 $(I_M4_DEPS)
 
 $(i_matmull_c): m4/matmull.m4 $(I_M4_DEPS)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 matmull.m4 > $@
+
+$(i_norm2_c): m4/norm2.m4 $(I_M4_DEPS)
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 norm2.m4 > $@
+
+$(i_parity_c): m4/parity.m4 $(I_M4_DEPS)
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 parity.m4 > $@
 
 $(i_transpose_c): m4/transpose.m4 $(I_M4_DEPS)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 transpose.m4 > $@

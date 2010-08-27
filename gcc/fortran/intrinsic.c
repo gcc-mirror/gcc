@@ -2268,6 +2268,13 @@ add_functions (void)
 
   make_generic ("not", GFC_ISYM_NOT, GFC_STD_F95);
 
+  add_sym_2 ("norm2", GFC_ISYM_NORM2, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr,
+	     GFC_STD_F2008, gfc_check_norm2, gfc_simplify_norm2, gfc_resolve_norm2,
+	     x, BT_REAL, dr, REQUIRED,
+	     dm, BT_INTEGER, ii, OPTIONAL);
+
+  make_generic ("norm2", GFC_ISYM_NORM2, GFC_STD_F2008);
+
   add_sym_1 ("null", GFC_ISYM_NULL, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
 	     gfc_check_null, gfc_simplify_null, NULL,
 	     mo, BT_INTEGER, di, OPTIONAL);
@@ -2283,6 +2290,14 @@ add_functions (void)
 	     v, BT_REAL, dr, OPTIONAL);
 
   make_generic ("pack", GFC_ISYM_PACK, GFC_STD_F95);
+
+
+  add_sym_2 ("parity", GFC_ISYM_PARITY, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_LOGICAL, dl,
+	     GFC_STD_F2008, gfc_check_parity, gfc_simplify_parity, gfc_resolve_parity,
+	     msk, BT_LOGICAL, dl, REQUIRED,
+	     dm, BT_INTEGER, ii, OPTIONAL);
+
+  make_generic ("parity", GFC_ISYM_PARITY, GFC_STD_F2008);
 
   add_sym_1 ("precision", GFC_ISYM_PRECISION, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
 	     gfc_check_precision, gfc_simplify_precision, NULL,
