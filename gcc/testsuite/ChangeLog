@@ -1,3 +1,17 @@
+2010-08-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/ppc-fpconv-1.c: New test for integer to
+	floating point conversion code generation.
+	* gcc.target/powerpc/ppc-fpconv-2.c: Ditto.
+	* gcc.target/powerpc/ppc-fpconv-3.c: Ditto.
+	* gcc.target/powerpc/ppc-fpconv-4.c: Ditto.
+	* gcc.target/powerpc/ppc-fpconv-5.c: New test for floating point
+	to integer conversion code generation.
+	* gcc.target/powerpc/ppc-fpconv-6.c: Ditto.
+	* gcc.target/powerpc/ppc-fpconv-7.c: Ditto.
+	* gcc.target/powerpc/ppc-fpconv-8.c: Ditto.
+	* gcc.target/powerpc/ppc-fpconv-9.c: Ditto.
+
 2010-08-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/32049
