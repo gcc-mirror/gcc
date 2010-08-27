@@ -4701,7 +4701,7 @@ mips_init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype)
 
 static void
 mips_get_arg_info (struct mips_arg_info *info, const CUMULATIVE_ARGS *cum,
-		   enum machine_mode mode, tree type, int named)
+		   enum machine_mode mode, const_tree type, bool named)
 {
   bool doubleword_aligned_p;
   unsigned int num_bytes, num_words, max_regs;
@@ -4834,11 +4834,11 @@ mips_strict_argument_naming (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
   return !TARGET_OLDABI;
 }
 
-/* Implement FUNCTION_ARG.  */
+/* Implement TARGET_FUNCTION_ARG.  */
 
-rtx
-mips_function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
-		   tree type, int named)
+static rtx
+mips_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		   const_tree type, bool named)
 {
   struct mips_arg_info info;
 
@@ -4960,11 +4960,11 @@ mips_function_arg (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
   return gen_rtx_REG (mode, mips_arg_regno (&info, TARGET_HARD_FLOAT));
 }
 
-/* Implement FUNCTION_ARG_ADVANCE.  */
+/* Implement TARGET_FUNCTION_ARG_ADVANCE.  */
 
-void
+static void
 mips_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-			   tree type, int named)
+			   const_tree type, bool named)
 {
   struct mips_arg_info info;
 
@@ -5013,7 +5013,7 @@ mips_arg_partial_bytes (CUMULATIVE_ARGS *cum,
    to STACK_BOUNDARY bits if the type requires it.  */
 
 int
-mips_function_arg_boundary (enum machine_mode mode, tree type)
+mips_function_arg_boundary (enum machine_mode mode, const_tree type)
 {
   unsigned int alignment;
 
@@ -5346,7 +5346,7 @@ mips_setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
      argument.  Advance a local copy of CUM past the last "real" named
      argument, to find out how many registers are left over.  */
   local_cum = *cum;
-  FUNCTION_ARG_ADVANCE (local_cum, mode, type, true);
+  mips_function_arg_advance (&local_cum, mode, type, true);
 
   /* Found out how many registers we need to save.  */
   gp_saved = MAX_ARGS_IN_REGISTERS - local_cum.num_gprs;
@@ -16469,6 +16469,10 @@ void mips_function_profiler (FILE *file)
 #define TARGET_CALLEE_COPIES mips_callee_copies
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES mips_arg_partial_bytes
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG mips_function_arg
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE mips_function_arg_advance
 
 #undef TARGET_MODE_REP_EXTENDED
 #define TARGET_MODE_REP_EXTENDED mips_mode_rep_extended

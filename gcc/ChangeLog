@@ -1,5 +1,19 @@
 2010-08-27  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/mips/mips-protos.h (mips_function_arg_advance): Delete
+	(mips_function_arg): Delete.
+	(mips_function_arg_boundary): Take a const_tree.
+	* config/mips/mips.c (mips_function_arg_boundary): Likewise.
+	(mips_arg_info): Likewise.
+	(mips_setup_incoming_varargs): Call mips_function_arg_advance
+	instead of FUNCTION_ARG_ADVANCE.
+	(mips_function_arg_advance): Adjust prototype.  Make static.
+	(mips_function_arg): Likewise.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+	* config/mips/mips.h (FUNCTION_ARG_ADVANCE, FUNCTION_ARG): Delete.
+
+2010-08-27  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/rs6000/rs6000.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
 	* config/rs6000/rs6000-protos.h (function_arg_advance): Delete.
 	(function_arg): Delete.

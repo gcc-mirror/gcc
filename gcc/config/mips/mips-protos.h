@@ -240,11 +240,7 @@ extern bool mips_expand_block_move (rtx, rtx, rtx);
 extern void mips_expand_synci_loop (rtx, rtx);
 
 extern void mips_init_cumulative_args (CUMULATIVE_ARGS *, tree);
-extern void mips_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
-				       tree, int);
-extern rtx mips_function_arg (const CUMULATIVE_ARGS *,
-			      enum machine_mode, tree, int);
-extern int mips_function_arg_boundary (enum machine_mode, tree);
+extern int mips_function_arg_boundary (enum machine_mode, const_tree);
 extern bool mips_pad_arg_upward (enum machine_mode, const_tree);
 extern bool mips_pad_reg_upward (enum machine_mode, tree);
 
