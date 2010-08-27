@@ -1,3 +1,8 @@
+2010-08-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45420
+	* gfortran.dg/select_type_15.f03: New.
+
 2010-08-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/43217

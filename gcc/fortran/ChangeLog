@@ -1,3 +1,10 @@
+2010-08-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45420
+	* match.c (select_type_set_tmp): Add the possibility to reset the
+	temporary to NULL.
+	(gfc_match_class_is): Reset the temporary in CLASS DEFAULT clauses.
+
 2010-08-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45159
