@@ -105,10 +105,10 @@ gfc_intrinsic_map_t;
     false, HAVE_COMPLEX, true, NAME, NULL_TREE, NULL_TREE, NULL_TREE, \
     NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE }
 
-#define OTHER_BUILTIN(ID, NAME, TYPE) \
+#define OTHER_BUILTIN(ID, NAME, TYPE, CONST) \
   { GFC_ISYM_NONE, BUILT_IN_ ## ID ## F, BUILT_IN_ ## ID, \
     BUILT_IN_ ## ID ## L, END_BUILTINS, END_BUILTINS, END_BUILTINS, \
-    true, false, true, NAME, NULL_TREE, NULL_TREE, \
+    true, false, CONST, NAME, NULL_TREE, NULL_TREE, \
     NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE},
 
 static GTY(()) gfc_intrinsic_map_t gfc_intrinsic_map[] =
@@ -151,6 +151,12 @@ builtin_decl_for_precision (enum built_in_function base_built_in,
     i = m->double_built_in;
   else if (precision == TYPE_PRECISION (long_double_type_node))
     i = m->long_double_built_in;
+  else if (precision == TYPE_PRECISION (float128_type_node))
+    {
+      /* Special treatment, because it is not exactly a built-in, but
+	 a library function.  */
+      return m->real16_decl;
+    }
 
   return (i == END_BUILTINS ? NULL_TREE : built_in_decls[i]);
 }
@@ -160,6 +166,18 @@ static tree
 builtin_decl_for_float_kind (enum built_in_function double_built_in, int kind)
 {
   int i = gfc_validate_kind (BT_REAL, kind, false);
+
+  if (gfc_real_kinds[i].c_float128)
+    {
+      /* For __float128, the story is a bit different, because we return
+	 a decl to a library function rather than a built-in.  */
+      gfc_intrinsic_map_t *m; 
+      for (m = gfc_intrinsic_map; m->double_built_in != double_built_in ; m++)
+	;
+
+      return m->real16_decl;
+    }
+
   return builtin_decl_for_precision (double_built_in,
 				     gfc_real_kinds[i].mode_precision);
 }
@@ -557,6 +575,28 @@ gfc_conv_intrinsic_conjg (gfc_se * se, gfc_expr * expr)
 }
 
 
+
+static tree
+define_quad_builtin (const char *name, tree type, bool is_const)
+{
+  tree fndecl;
+  fndecl = build_decl (input_location, FUNCTION_DECL, get_identifier (name),
+		       type);
+
+  /* Mark the decl as external.  */
+  DECL_EXTERNAL (fndecl) = 1;
+  TREE_PUBLIC (fndecl) = 1;
+
+  /* Mark it __attribute__((const)).  */
+  TREE_READONLY (fndecl) = is_const;
+
+  rest_of_decl_compilation (fndecl, 1, 0);
+
+  return fndecl;
+}
+
+
+
 /* Initialize function decls for library functions.  The external functions
    are created as required.  Builtin functions are added here.  */
 
@@ -564,6 +604,62 @@ void
 gfc_build_intrinsic_lib_fndecls (void)
 {
   gfc_intrinsic_map_t *m;
+  tree quad_decls[(int) END_BUILTINS];
+
+  if (gfc_real16_is_float128)
+  {
+    /* If we have soft-float types, we create the decls for their
+       C99-like library functions.  For now, we only handle __float128
+       q-suffixed functions.  */
+
+    tree tmp, func_0, func_1, func_2, func_cabs, func_frexp;
+    tree func_lround, func_llround, func_scalbn;
+
+    memset (quad_decls, 0, sizeof(tree) * (int) END_BUILTINS);
+
+    /* type (*) (void) */
+    func_0 = build_function_type (float128_type_node, void_list_node);
+    /* type (*) (type) */
+    tmp = tree_cons (NULL_TREE, float128_type_node, void_list_node);
+    func_1 = build_function_type (float128_type_node, tmp);
+    /* long (*) (type) */
+    func_lround = build_function_type (long_integer_type_node, tmp);
+    /* long long (*) (type) */
+    func_llround = build_function_type (long_long_integer_type_node, tmp);
+    /* type (*) (type, type) */
+    tmp = tree_cons (NULL_TREE, float128_type_node, tmp);
+    func_2 = build_function_type (float128_type_node, tmp);
+    /* type (*) (type, &int) */
+    tmp = tree_cons (NULL_TREE, float128_type_node, void_list_node);
+    tmp = tree_cons (NULL_TREE, build_pointer_type (integer_type_node), tmp);
+    func_frexp = build_function_type (float128_type_node, tmp);
+    /* type (*) (type, int) */
+    tmp = tree_cons (NULL_TREE, float128_type_node, void_list_node);
+    tmp = tree_cons (NULL_TREE, integer_type_node, tmp);
+    func_scalbn = build_function_type (float128_type_node, tmp);
+    /* type (*) (complex type) */
+    tmp = tree_cons (NULL_TREE, complex_float128_type_node, void_list_node);
+    func_cabs = build_function_type (float128_type_node, tmp);
+
+#define DEFINE_MATH_BUILTIN(ID, NAME, ARGTYPE)
+#define DEFINE_MATH_BUILTIN_C(ID, NAME, ARGTYPE)
+#define LIB_FUNCTION(ID, NAME, HAVE_COMPLEX)
+
+    /* Only these built-ins are actually needed here. These are used directly
+       from the code, when calling builtin_decl_for_precision() or
+       builtin_decl_for_float_type(). The others are all constructed by
+       gfc_get_intrinsic_lib_fndecl().  */
+#define OTHER_BUILTIN(ID, NAME, TYPE, CONST) \
+  quad_decls[BUILT_IN_ ## ID] = define_quad_builtin (NAME "q", func_ ## TYPE, CONST);
+
+#include "mathbuiltins.def"
+
+#undef OTHER_BUILTIN
+#undef LIB_FUNCTION
+#undef DEFINE_MATH_BUILTIN
+#undef DEFINE_MATH_BUILTIN_C
+
+  }
 
   /* Add GCC builtin functions.  */
   for (m = gfc_intrinsic_map;
@@ -584,12 +680,26 @@ gfc_build_intrinsic_lib_fndecls (void)
       if (m->complex_long_double_built_in != END_BUILTINS)
 	m->complex10_decl = built_in_decls[m->complex_long_double_built_in];
 
-      /* For now, we assume that if real(kind=16) exists, it is long double.
-	 Later, we will deal with __float128 and break this assumption.  */
-      if (m->long_double_built_in != END_BUILTINS)
-	m->real16_decl = built_in_decls[m->long_double_built_in];
-      if (m->complex_long_double_built_in != END_BUILTINS)
-	m->complex16_decl = built_in_decls[m->complex_long_double_built_in];
+      if (!gfc_real16_is_float128)
+	{
+	  if (m->long_double_built_in != END_BUILTINS)
+	    m->real16_decl = built_in_decls[m->long_double_built_in];
+	  if (m->complex_long_double_built_in != END_BUILTINS)
+	    m->complex16_decl = built_in_decls[m->complex_long_double_built_in];
+	}
+      else if (quad_decls[m->double_built_in] != NULL_TREE)
+        {
+	  /* Quad-precision function calls are constructed when first
+	     needed by builtin_decl_for_precision(), except for those
+	     that will be used directly (define by OTHER_BUILTIN).  */
+	  m->real16_decl = quad_decls[m->double_built_in];
+	}
+      else if (quad_decls[m->complex_double_built_in] != NULL_TREE)
+        {
+	  /* Same thing for the complex ones.  */
+	  m->complex16_decl = quad_decls[m->double_built_in];
+	  m->real16_decl = quad_decls[m->double_built_in];
+	}
     }
 }
 
@@ -668,6 +778,9 @@ gfc_get_intrinsic_lib_fndecl (gfc_intrinsic_map_t * m, gfc_expr * expr)
       else if (gfc_real_kinds[n].c_long_double)
 	snprintf (name, sizeof (name), "%s%s%s",
 		  ts->type == BT_COMPLEX ? "c" : "", m->name, "l");
+      else if (gfc_real_kinds[n].c_float128)
+	snprintf (name, sizeof (name), "%s%s%s",
+		  ts->type == BT_COMPLEX ? "c" : "", m->name, "q");
       else
 	gcc_unreachable ();
     }

@@ -1,3 +1,28 @@
+2010-08-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/32049
+	* gfortran.h (gfc_real_info): Add c_float128 field.
+	* mathbuiltins.def: Indicate which builtins are const.
+	* trans-types.h (float128_type_node, complex_float128_type_node,
+	gfc_real16_is_float128): New variables.
+	* trans-types.c (float128_type_node, complex_float128_type_node,
+	gfc_real16_is_float128): New variables.
+	(gfc_init_kinds): Allow TFmode.
+	(gfc_build_real_type): Mark __float128 types as such.
+	(gfc_init_types): Initialize float128_type_node and
+	complex_float128_type_node
+	* f95-lang.c (gfc_init_builtin_functions): Adjust for new
+	argument of OTHER_BUILTIN macro.
+	* trans-intrinsic.c (gfc_intrinsic_map_t): Likewise.
+	(builtin_decl_for_precision): Special case for __float128.
+	(builtin_decl_for_float_kind): Likewise.
+	(define_quad_builtin): New function.
+	(gfc_build_intrinsic_lib_fndecls): Create all __float128
+	library decls if necessary. Store them in the real16_decl and
+	complex16_decl builtin map fields.
+	(gfc_get_intrinsic_lib_fndecl): Handle q-suffixed __float128
+	library function names.
+
 2010-08-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33197
