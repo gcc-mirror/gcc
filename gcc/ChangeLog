@@ -6,6 +6,19 @@
 	only one element.
 	(gen_regexp): Remove extra semicolon.
 
+	* config/arm/vfp.md (arm_movsi_vfp, thumb2_movsi_vfp, movsf_vfp,
+	thumb2_movsf_vfp): Set attribute "insn".
+	* config/arm/arm.md (arm_ashrdi3_1bit, arm_lshrdi3_1bit, not_shiftsi,
+	not_shiftsi_compare0, not_shiftsi_compare0_scratch, arm_one_cmplsi2,
+	thumb1_one_cmplsi2, notsi_compare0, notsi_compare0_scratch,
+	arm_zero_extendsidi2, arm_extendsidi2, thumb1_movdi_insn,
+	arm_movsi_insn, movhi_insn_arch4, movhi_bytes, arm_movqi_insn,
+	thumb1_movqi_insn arm32_movhf, thumb1_movhf, arm_movsf_soft_insn,
+	thumb1_movsf_insn, thumb_movdf_insn, mov_scc, mov_negscc, mov_notscc,
+	movsicc_insn, movsfcc_soft_insn, and_scc, cond_move, if_move_not,
+	if_not_move, if_shift_move, if_move_shift, if_shift_shift,
+	if_not_arith, if_arith_not, cond_move_not): Likewise.
+
 2010-08-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-protos.h (rs6000_address_for_fpconvert):
