@@ -1,3 +1,16 @@
+2010-08-27  Dmitrijs Ledkovs  <dmitrij.ledkov@ubuntu.com>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR libgcj/40868
+	* configure.ac: Add GCC_FOR_ECJX variable.  Ensure
+	GCJ_FOR_ECJX is always set.
+	* Makefile.am [!NATIVE] (ecjx.$(OBJEXT)): New rule.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* gcj/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2010-08-18  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	* libjava/configure.ac (THREADLIBS): Don't set on Darwin.

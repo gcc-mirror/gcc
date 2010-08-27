@@ -550,6 +550,7 @@ EGREP = @EGREP@
 EXCEPTIONSPEC = @EXCEPTIONSPEC@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+GCC_FOR_ECJX = @GCC_FOR_ECJX@
 GCC_UNWIND_INCLUDE = @GCC_UNWIND_INCLUDE@
 GCDEPS = @GCDEPS@
 GCINCS = @GCINCS@
@@ -12632,6 +12633,8 @@ write-entries-to-file-check:
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	| sed -n -e 's|0x\(..\)\(..\).*\(0x....\).*#\(.*\)$$|MAP(0x\1, 0x\2, \3)  /*\4 */|p' \
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	>> tmp-0212; \
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@	mv tmp-0212 $(srcdir)/gnu/gcj/convert/JIS0212.h
+@NATIVE_FALSE@ecjx.$(OBJEXT): ecjx.cc
+@NATIVE_FALSE@	$(GCC_FOR_ECJX) -c $<
 
 src.zip:
 	-rm -f src.zip
