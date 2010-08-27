@@ -788,7 +788,7 @@ gfc_init_builtin_functions (void)
     build_function_type_list (void_type_node, ptype, ptype, NULL_TREE);
 
 /* Non-math builtins are defined manually, so they're not included here.  */
-#define OTHER_BUILTIN(ID,NAME,TYPE)
+#define OTHER_BUILTIN(ID,NAME,TYPE,CONST)
 
 #include "mathbuiltins.def"
 

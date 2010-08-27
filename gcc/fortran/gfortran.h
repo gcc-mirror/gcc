@@ -1822,6 +1822,7 @@ typedef struct
   unsigned int c_float : 1;
   unsigned int c_double : 1;
   unsigned int c_long_double : 1;
+  unsigned int c_float128 : 1;
 }
 gfc_real_info;
 

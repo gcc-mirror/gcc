@@ -64,6 +64,11 @@ tree pfunc_type_node;
 
 tree gfc_charlen_type_node;
 
+tree float128_type_node = NULL_TREE;
+tree complex_float128_type_node = NULL_TREE;
+
+bool gfc_real16_is_float128 = false;
+
 static GTY(()) tree gfc_desc_dim_type;
 static GTY(()) tree gfc_max_array_element_size;
 static GTY(()) tree gfc_array_descriptor_base[2 * GFC_MAX_DIMENSIONS];
@@ -403,12 +408,14 @@ gfc_init_kinds (void)
       if (!targetm.scalar_mode_supported_p ((enum machine_mode) mode))
 	continue;
 
-      /* Only let float/double/long double go through because the fortran
-	 library assumes these are the only floating point types.  */
-
-      if (mode != TYPE_MODE (float_type_node)
+      /* Only let float, double, long double and __float128 go through.
+	 Runtime support for others is not provided, so they would be
+	 useless.  TFmode support is only enabled with option
+	 -fsoft-float. 	*/
+	if (mode != TYPE_MODE (float_type_node)
 	  && (mode != TYPE_MODE (double_type_node))
-          && (mode != TYPE_MODE (long_double_type_node)))
+          && (mode != TYPE_MODE (long_double_type_node))
+	  && (mode != TFmode))
 	continue;
 
       /* Let the kind equal the precision divided by 8, rounding up.  Again,
@@ -711,6 +718,11 @@ gfc_build_real_type (gfc_real_info *info)
     info->c_double = 1;
   if (mode_precision == LONG_DOUBLE_TYPE_SIZE)
     info->c_long_double = 1;
+  if (mode_precision != LONG_DOUBLE_TYPE_SIZE && mode_precision == 128)
+    {
+      info->c_float128 = 1;
+      gfc_real16_is_float128 = true;
+    }
 
   if (TYPE_PRECISION (float_type_node) == mode_precision)
     return float_type_node;
@@ -835,11 +847,17 @@ gfc_init_types (void)
 		gfc_real_kinds[index].kind);
       PUSH_TYPE (name_buf, type);
 
+      if (gfc_real_kinds[index].c_float128)
+	float128_type_node = type;
+
       type = gfc_build_complex_type (type);
       gfc_complex_types[index] = type;
       snprintf (name_buf, sizeof(name_buf), "complex(kind=%d)",
 		gfc_real_kinds[index].kind);
       PUSH_TYPE (name_buf, type);
+
+      if (gfc_real_kinds[index].c_float128)
+	complex_float128_type_node = type;
     }
 
   for (index = 0; gfc_character_kinds[index].kind != 0; ++index)

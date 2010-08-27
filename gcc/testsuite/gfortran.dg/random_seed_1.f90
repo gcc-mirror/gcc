@@ -13,8 +13,17 @@
 
 PROGRAM random_seed_1
   IMPLICIT NONE
-  INTEGER, PARAMETER :: k = selected_real_kind (precision (0.0_8) + 1)
-  INTEGER, PARAMETER :: nbytes = MERGE(48, 32, k == 16)
+
+  ! Find out what the's largest kind size
+  INTEGER, PARAMETER :: k1 = kind (0.d0)
+  INTEGER, PARAMETER :: &
+    k2 = max (k1, selected_real_kind (precision (0._k1) + 1))
+  INTEGER, PARAMETER :: &
+    k3 = max (k2, selected_real_kind (precision (0._k2) + 1))
+  INTEGER, PARAMETER :: &
+    k4 = max (k3, selected_real_kind (precision (0._k3) + 1))
+
+  INTEGER, PARAMETER :: nbytes = MERGE(48, 32, k4 == 16)
 
   ! '+1' to avoid out-of-bounds warnings
   INTEGER, PARAMETER    :: n = nbytes / KIND(n) + 1
