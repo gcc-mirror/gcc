@@ -9084,28 +9084,7 @@
   [(set (match_operand:V8HI 0 "register_operand" "=x")
 	(sign_extend:V8HI
 	  (vec_select:V8QI
-	    (match_operand:V16QI 1 "register_operand" "x")
-	    (parallel [(const_int 0)
-		       (const_int 1)
-		       (const_int 2)
-		       (const_int 3)
-		       (const_int 4)
-		       (const_int 5)
-		       (const_int 6)
-		       (const_int 7)]))))]
-  "TARGET_SSE4_1"
-  "%vpmovsxbw\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssemov")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "TI")])
-
-(define_insn "*sse4_1_extendv8qiv8hi2"
-  [(set (match_operand:V8HI 0 "register_operand" "=x")
-	(sign_extend:V8HI
-	  (vec_select:V8QI
-	    (vec_duplicate:V16QI
-	      (match_operand:V8QI 1 "nonimmediate_operand" "xm"))
+	    (match_operand:V16QI 1 "nonimmediate_operand" "xm")
 	    (parallel [(const_int 0)
 		       (const_int 1)
 		       (const_int 2)
@@ -9125,24 +9104,7 @@
   [(set (match_operand:V4SI 0 "register_operand" "=x")
 	(sign_extend:V4SI
 	  (vec_select:V4QI
-	    (match_operand:V16QI 1 "register_operand" "x")
-	    (parallel [(const_int 0)
-		       (const_int 1)
-		       (const_int 2)
-		       (const_int 3)]))))]
-  "TARGET_SSE4_1"
-  "%vpmovsxbd\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssemov")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "TI")])
-
-(define_insn "*sse4_1_extendv4qiv4si2"
-  [(set (match_operand:V4SI 0 "register_operand" "=x")
-	(sign_extend:V4SI
-	  (vec_select:V4QI
-	    (vec_duplicate:V16QI
-	      (match_operand:V4QI 1 "nonimmediate_operand" "xm"))
+	    (match_operand:V16QI 1 "nonimmediate_operand" "xm")
 	    (parallel [(const_int 0)
 		       (const_int 1)
 		       (const_int 2)
@@ -9158,22 +9120,7 @@
   [(set (match_operand:V2DI 0 "register_operand" "=x")
 	(sign_extend:V2DI
 	  (vec_select:V2QI
-	    (match_operand:V16QI 1 "register_operand" "x")
-	    (parallel [(const_int 0)
-		       (const_int 1)]))))]
-  "TARGET_SSE4_1"
-  "%vpmovsxbq\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssemov")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "TI")])
-
-(define_insn "*sse4_1_extendv2qiv2di2"
-  [(set (match_operand:V2DI 0 "register_operand" "=x")
-	(sign_extend:V2DI
-	  (vec_select:V2QI
-	    (vec_duplicate:V16QI
-	      (match_operand:V2QI 1 "nonimmediate_operand" "xm"))
+	    (match_operand:V16QI 1 "nonimmediate_operand" "xm")
 	    (parallel [(const_int 0)
 		       (const_int 1)]))))]
   "TARGET_SSE4_1"
@@ -9187,24 +9134,7 @@
   [(set (match_operand:V4SI 0 "register_operand" "=x")
 	(sign_extend:V4SI
 	  (vec_select:V4HI
-	    (match_operand:V8HI 1 "register_operand" "x")
-	    (parallel [(const_int 0)
-		       (const_int 1)
-		       (const_int 2)
-		       (const_int 3)]))))]
-  "TARGET_SSE4_1"
-  "%vpmovsxwd\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssemov")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "TI")])
-
-(define_insn "*sse4_1_extendv4hiv4si2"
-  [(set (match_operand:V4SI 0 "register_operand" "=x")
-	(sign_extend:V4SI
-	  (vec_select:V4HI
-	    (vec_duplicate:V8HI
-	      (match_operand:V2HI 1 "nonimmediate_operand" "xm"))
+	    (match_operand:V8HI 1 "nonimmediate_operand" "xm")
 	    (parallel [(const_int 0)
 		       (const_int 1)
 		       (const_int 2)
@@ -9220,22 +9150,7 @@
   [(set (match_operand:V2DI 0 "register_operand" "=x")
 	(sign_extend:V2DI
 	  (vec_select:V2HI
-	    (match_operand:V8HI 1 "register_operand" "x")
-	    (parallel [(const_int 0)
-		       (const_int 1)]))))]
-  "TARGET_SSE4_1"
-  "%vpmovsxwq\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssemov")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "TI")])
-
-(define_insn "*sse4_1_extendv2hiv2di2"
-  [(set (match_operand:V2DI 0 "register_operand" "=x")
-	(sign_extend:V2DI
-	  (vec_select:V2HI
-	    (vec_duplicate:V8HI
-	      (match_operand:V8HI 1 "nonimmediate_operand" "xm"))
+	    (match_operand:V8HI 1 "nonimmediate_operand" "xm")
 	    (parallel [(const_int 0)
 		       (const_int 1)]))))]
   "TARGET_SSE4_1"
@@ -9249,22 +9164,7 @@
   [(set (match_operand:V2DI 0 "register_operand" "=x")
 	(sign_extend:V2DI
 	  (vec_select:V2SI
-	    (match_operand:V4SI 1 "register_operand" "x")
-	    (parallel [(const_int 0)
-		       (const_int 1)]))))]
-  "TARGET_SSE4_1"
-  "%vpmovsxdq\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssemov")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "TI")])
-
-(define_insn "*sse4_1_extendv2siv2di2"
-  [(set (match_operand:V2DI 0 "register_operand" "=x")
-	(sign_extend:V2DI
-	  (vec_select:V2SI
-	    (vec_duplicate:V4SI
-	      (match_operand:V2SI 1 "nonimmediate_operand" "xm"))
+	    (match_operand:V4SI 1 "nonimmediate_operand" "xm")
 	    (parallel [(const_int 0)
 		       (const_int 1)]))))]
   "TARGET_SSE4_1"
@@ -9278,28 +9178,7 @@
   [(set (match_operand:V8HI 0 "register_operand" "=x")
 	(zero_extend:V8HI
 	  (vec_select:V8QI
-	    (match_operand:V16QI 1 "register_operand" "x")
-	    (parallel [(const_int 0)
-		       (const_int 1)
-		       (const_int 2)
-		       (const_int 3)
-		       (const_int 4)
-		       (const_int 5)
-		       (const_int 6)
-		       (const_int 7)]))))]
-  "TARGET_SSE4_1"
-  "%vpmovzxbw\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssemov")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "TI")])
-
-(define_insn "*sse4_1_zero_extendv8qiv8hi2"
-  [(set (match_operand:V8HI 0 "register_operand" "=x")
-	(zero_extend:V8HI
-	  (vec_select:V8QI
-	    (vec_duplicate:V16QI
-	      (match_operand:V8QI 1 "nonimmediate_operand" "xm"))
+	    (match_operand:V16QI 1 "nonimmediate_operand" "xm")
 	    (parallel [(const_int 0)
 		       (const_int 1)
 		       (const_int 2)
@@ -9319,24 +9198,7 @@
   [(set (match_operand:V4SI 0 "register_operand" "=x")
 	(zero_extend:V4SI
 	  (vec_select:V4QI
-	    (match_operand:V16QI 1 "register_operand" "x")
-	    (parallel [(const_int 0)
-		       (const_int 1)
-		       (const_int 2)
-		       (const_int 3)]))))]
-  "TARGET_SSE4_1"
-  "%vpmovzxbd\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssemov")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "TI")])
-
-(define_insn "*sse4_1_zero_extendv4qiv4si2"
-  [(set (match_operand:V4SI 0 "register_operand" "=x")
-	(zero_extend:V4SI
-	  (vec_select:V4QI
-	    (vec_duplicate:V16QI
-	      (match_operand:V4QI 1 "nonimmediate_operand" "xm"))
+	    (match_operand:V16QI 1 "nonimmediate_operand" "xm")
 	    (parallel [(const_int 0)
 		       (const_int 1)
 		       (const_int 2)
@@ -9352,22 +9214,7 @@
   [(set (match_operand:V2DI 0 "register_operand" "=x")
 	(zero_extend:V2DI
 	  (vec_select:V2QI
-	    (match_operand:V16QI 1 "register_operand" "x")
-	    (parallel [(const_int 0)
-		       (const_int 1)]))))]
-  "TARGET_SSE4_1"
-  "%vpmovzxbq\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssemov")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "TI")])
-
-(define_insn "*sse4_1_zero_extendv2qiv2di2"
-  [(set (match_operand:V2DI 0 "register_operand" "=x")
-	(zero_extend:V2DI
-	  (vec_select:V2QI
-	    (vec_duplicate:V16QI
-	      (match_operand:V2QI 1 "nonimmediate_operand" "xm"))
+	    (match_operand:V16QI 1 "nonimmediate_operand" "xm")
 	    (parallel [(const_int 0)
 		       (const_int 1)]))))]
   "TARGET_SSE4_1"
@@ -9381,24 +9228,7 @@
   [(set (match_operand:V4SI 0 "register_operand" "=x")
 	(zero_extend:V4SI
 	  (vec_select:V4HI
-	    (match_operand:V8HI 1 "register_operand" "x")
-	    (parallel [(const_int 0)
-		       (const_int 1)
-		       (const_int 2)
-		       (const_int 3)]))))]
-  "TARGET_SSE4_1"
-  "%vpmovzxwd\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssemov")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "TI")])
-
-(define_insn "*sse4_1_zero_extendv4hiv4si2"
-  [(set (match_operand:V4SI 0 "register_operand" "=x")
-	(zero_extend:V4SI
-	  (vec_select:V4HI
-	    (vec_duplicate:V8HI
-	      (match_operand:V4HI 1 "nonimmediate_operand" "xm"))
+	    (match_operand:V8HI 1 "nonimmediate_operand" "xm")
 	    (parallel [(const_int 0)
 		       (const_int 1)
 		       (const_int 2)
@@ -9414,22 +9244,7 @@
   [(set (match_operand:V2DI 0 "register_operand" "=x")
 	(zero_extend:V2DI
 	  (vec_select:V2HI
-	    (match_operand:V8HI 1 "register_operand" "x")
-	    (parallel [(const_int 0)
-		       (const_int 1)]))))]
-  "TARGET_SSE4_1"
-  "%vpmovzxwq\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssemov")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "TI")])
-
-(define_insn "*sse4_1_zero_extendv2hiv2di2"
-  [(set (match_operand:V2DI 0 "register_operand" "=x")
-	(zero_extend:V2DI
-	  (vec_select:V2HI
-	    (vec_duplicate:V8HI
-	      (match_operand:V2HI 1 "nonimmediate_operand" "xm"))
+	    (match_operand:V8HI 1 "nonimmediate_operand" "xm")
 	    (parallel [(const_int 0)
 		       (const_int 1)]))))]
   "TARGET_SSE4_1"
@@ -9443,22 +9258,7 @@
   [(set (match_operand:V2DI 0 "register_operand" "=x")
 	(zero_extend:V2DI
 	  (vec_select:V2SI
-	    (match_operand:V4SI 1 "register_operand" "x")
-	    (parallel [(const_int 0)
-		       (const_int 1)]))))]
-  "TARGET_SSE4_1"
-  "%vpmovzxdq\t{%1, %0|%0, %1}"
-  [(set_attr "type" "ssemov")
-   (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "maybe_vex")
-   (set_attr "mode" "TI")])
-
-(define_insn "*sse4_1_zero_extendv2siv2di2"
-  [(set (match_operand:V2DI 0 "register_operand" "=x")
-	(zero_extend:V2DI
-	  (vec_select:V2SI
-	    (vec_duplicate:V4SI
-	      (match_operand:V2SI 1 "nonimmediate_operand" "xm"))
+	    (match_operand:V4SI 1 "nonimmediate_operand" "xm")
 	    (parallel [(const_int 0)
 		       (const_int 1)]))))]
   "TARGET_SSE4_1"
