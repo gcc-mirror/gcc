@@ -44,6 +44,7 @@ echo "#define GFC_UINTEGER_LARGEST GFC_UINTEGER_${largest}"
 echo "#define GFC_DEFAULT_CHAR ${smallest}"
 echo ""
 
+REAL_10_FOUND=
 
 for k in $possible_real_kinds; do
   echo "  real (kind=$k) :: x" > tmp$$.f90
@@ -53,8 +54,15 @@ for k in $possible_real_kinds; do
     case $k in
       4) ctype="float" ; suffix="f" ;;
       8) ctype="double" ; suffix="" ;;
-      10) ctype="long double" ; suffix="l" ;;
-      16) ctype="long double" ; suffix="l" ;;
+      10) ctype="long double" ; suffix="l" ; REAL_10_FOUND=1 ;;
+      16) ctype="long double"
+	  suffix="l"
+	  # Disable REAL(16) if it is just __float128
+	  # until the library is fixed
+	  if [ -n "$REAL_10_FOUND" ]; then
+	    continue
+	  fi
+	  ;;
       *) echo "$0: Unknown type" >&2 ; exit 1 ;;
     esac
 
