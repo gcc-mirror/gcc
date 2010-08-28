@@ -3138,40 +3138,68 @@ static void
 reorder_var_tracking_notes (void)
 {
   basic_block bb;
+
   FOR_EACH_BB (bb)
     {
-      rtx insn, next;
+      rtx insn, next, last_insn = NULL_RTX;
+      rtx vliw_start = NULL_RTX;
       rtx queue = NULL_RTX;
 
-      for (insn = BB_HEAD (bb); insn != BB_END (bb); insn = next)
-	{
-	  next = NEXT_INSN (insn);
+      /* Iterate through the bb and find the last non-debug insn */
+      for (insn = BB_HEAD (bb); insn != NEXT_INSN(BB_END (bb)); insn = NEXT_INSN(insn))
+        {
+          if (NONDEBUG_INSN_P(insn))
+            last_insn = insn;
+        }
 
-	  if (NONDEBUG_INSN_P (insn))
-	    {
-	      /* Emit queued up notes before the first instruction of a bundle.  */
-	      if (GET_MODE (insn) == TImode)
-		{
-		  while (queue)
-		    {
-		      rtx next_queue = PREV_INSN (queue);
-		      NEXT_INSN (PREV_INSN(insn)) = queue;
-		      PREV_INSN (queue) = PREV_INSN(insn);
-		      PREV_INSN (insn) = queue;
-		      NEXT_INSN (queue) = insn;
-		      queue = next_queue;
-		    }
-		}
-	    }
-	  else if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_VAR_LOCATION)
-	    {
-	       rtx prev = PREV_INSN (insn);
-	       PREV_INSN (next) = prev;
-	       NEXT_INSN (prev) = next;
+      /* In all normal cases, queue up notes and emit them just before a TImode
+         instruction. For the last instruction, emit the queued notes just after
+         the last instruction. */
+      for (insn = BB_HEAD (bb); insn != NEXT_INSN(BB_END (bb)); insn = next)
+        {
+          next = NEXT_INSN (insn);
+
+          if (insn == last_insn)
+            {
+              while (queue)
+                {
+                  rtx next_queue = PREV_INSN (queue);
+                  PREV_INSN (NEXT_INSN(insn)) = queue;
+                  NEXT_INSN(queue) = NEXT_INSN(insn);
+                  PREV_INSN(queue) = insn;
+                  NEXT_INSN(insn) = queue;
+                  queue = next_queue;
+                }
+              /* There is no more to do for this bb. break*/
+              break;
+            }
+          else if (NONDEBUG_INSN_P (insn))
+            {
+              /* Emit queued up notes before the first instruction of a bundle.  */
+              if (GET_MODE (insn) == TImode)
+                {
+                  while (queue)
+                    {
+                      rtx next_queue = PREV_INSN (queue);
+                      NEXT_INSN (PREV_INSN(insn)) = queue;
+                      PREV_INSN (queue) = PREV_INSN(insn);
+                      PREV_INSN (insn) = queue;
+                      NEXT_INSN (queue) = insn;
+                      queue = next_queue;
+                    }
+                }
+            }
+          else if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_VAR_LOCATION)
+            {
+               rtx prev = PREV_INSN (insn);
+               PREV_INSN (next) = prev;
+               NEXT_INSN (prev) = next;
                PREV_INSN (insn) = queue;
-	       queue = insn;
-	    }
-	}
+               queue = insn;
+            }
+        }
+        /* Make sure we are not dropping debug instructions.*/
+        gcc_assert (queue == NULL_RTX);
     }
 }
 

@@ -1,5 +1,9 @@
-2010-08-28  Uros Bizjak  <ubizjak@gmail.com>
+2010-08-28  Hariharan Sandanagobalane <hariharan@picochip.com>
 
+	* config/picochip/picochip.c (reorder_var_tracking_notes): This
+	function was dropping debug insns which caused PR45299.
+
+2010-08-28  Uros Bizjak  <ubizjak@gmail.com>
 	* config/i386/sse.md (extsuffix): New code attribute.
 	(sse4_1_<code>v8qiv8hi2): Macroize insn from sse4_1_extendv8qiv8hi2
 	and sse4_1_zero_extendv8qiv8hi2 using any_extend code iterator.
