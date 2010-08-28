@@ -1,3 +1,16 @@
+2010-08-27  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/sh/sh-protos.h (sh_function_arg): Delete.
+	(sh_function_arg_advance): Delete.
+	* config/sh/sh.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
+	(PASS_IN_REG_P): Eliminate cast.
+	* config/sh/sh.c (sh_function_arg_advance): Make static.  Take a
+	const_tree and a bool.
+	(sh_function_arg): Likewise.
+	(sh_output_mi_thunk): Call sh_function_arg_advance) and
+	sh_function_arg.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+
 2010-08-27  Naveen H.S  <naveen.S@kpitcummins.com>
 	    Kaz Kojima  <kkojima@gcc.gnu.org>
 
