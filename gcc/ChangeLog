@@ -1,3 +1,7 @@
+2010-08-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/ia64/ia64.md (cstorebi4): Fix thinko.
+
 2010-08-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/41484
