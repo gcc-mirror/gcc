@@ -327,6 +327,13 @@ struct iv_ca
   /* Number of times each invariant is used.  */
   unsigned *n_invariant_uses;
 
+  /* The array holding the number of uses of each loop
+     invariant expressions created by ivopt.  */
+  unsigned *used_inv_expr;
+
+  /* The number of created loop invariants.  */
+  unsigned num_used_inv_expr;
+
   /* Total cost of the assignment.  */
   comp_cost cost;
 };
@@ -4806,45 +4813,17 @@ iv_ca_cand_for_use (struct iv_ca *ivs, struct iv_use *use)
   return ivs->cand_for_use[use->id];
 }
 
-
-/* Returns the number of temps needed for new loop invariant
-   expressions.  */
-
-static int
-iv_ca_get_num_inv_exprs (struct ivopts_data *data, struct iv_ca *ivs)
-{
-  unsigned i, n = 0;
-  unsigned *used_inv_expr = XCNEWVEC (unsigned, data->inv_expr_id + 1);
-
-  for (i = 0; i < ivs->upto; i++)
-    {
-      struct iv_use *use = iv_use (data, i);
-      struct cost_pair *cp = iv_ca_cand_for_use (ivs, use);
-      if (cp && cp->inv_expr_id != -1)
-        {
-          used_inv_expr[cp->inv_expr_id]++;
-          if (used_inv_expr[cp->inv_expr_id] == 1)
-            n++;
-        }
-    }
-
-  free (used_inv_expr);
-  return n;
-}
-
 /* Computes the cost field of IVS structure.  */
 
 static void
 iv_ca_recount_cost (struct ivopts_data *data, struct iv_ca *ivs)
 {
-  unsigned n_inv_exprs = 0;
   comp_cost cost = ivs->cand_use_cost;
 
   cost.cost += ivs->cand_cost;
 
-  n_inv_exprs = iv_ca_get_num_inv_exprs (data, ivs);
   cost.cost += ivopts_global_cost_for_size (data,
-                                            ivs->n_regs + n_inv_exprs);
+                                            ivs->n_regs + ivs->num_used_inv_expr);
 
   ivs->cost = cost;
 }
@@ -4901,6 +4880,13 @@ iv_ca_set_no_cp (struct ivopts_data *data, struct iv_ca *ivs,
   ivs->cand_use_cost = sub_costs (ivs->cand_use_cost, cp->cost);
 
   iv_ca_set_remove_invariants (ivs, cp->depends_on);
+
+  if (cp->inv_expr_id != -1)
+    {
+      ivs->used_inv_expr[cp->inv_expr_id]--;
+      if (ivs->used_inv_expr[cp->inv_expr_id] == 0)
+        ivs->num_used_inv_expr--;
+    }
   iv_ca_recount_cost (data, ivs);
 }
 
@@ -4958,6 +4944,13 @@ iv_ca_set_cp (struct ivopts_data *data, struct iv_ca *ivs,
 
       ivs->cand_use_cost = add_costs (ivs->cand_use_cost, cp->cost);
       iv_ca_set_add_invariants (ivs, cp->depends_on);
+
+      if (cp->inv_expr_id != -1)
+        {
+          ivs->used_inv_expr[cp->inv_expr_id]++;
+          if (ivs->used_inv_expr[cp->inv_expr_id] == 1)
+            ivs->num_used_inv_expr++;
+        }
       iv_ca_recount_cost (data, ivs);
     }
 }
@@ -5165,6 +5158,8 @@ iv_ca_new (struct ivopts_data *data)
   nw->cand_cost = 0;
   nw->n_invariant_uses = XCNEWVEC (unsigned, data->max_inv_id + 1);
   nw->cost = zero_cost;
+  nw->used_inv_expr = XCNEWVEC (unsigned, data->inv_expr_id + 1);
+  nw->num_used_inv_expr = 0;
 
   return nw;
 }
@@ -5178,6 +5173,7 @@ iv_ca_free (struct iv_ca **ivs)
   free ((*ivs)->n_cand_uses);
   BITMAP_FREE ((*ivs)->cands);
   free ((*ivs)->n_invariant_uses);
+  free ((*ivs)->used_inv_expr);
   free (*ivs);
   *ivs = NULL;
 }
