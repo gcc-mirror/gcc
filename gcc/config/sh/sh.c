@@ -282,6 +282,10 @@ static bool sh_callee_copies (CUMULATIVE_ARGS *, enum machine_mode,
 			      const_tree, bool);
 static int sh_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 			         tree, bool);
+static void sh_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+				     const_tree, bool);
+static rtx sh_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			    const_tree, bool);
 static bool sh_scalar_mode_supported_p (enum machine_mode);
 static int sh_dwarf_calling_convention (const_tree);
 static void sh_encode_section_info (tree, rtx, int);
@@ -495,6 +499,10 @@ static const struct attribute_spec sh_attribute_table[] =
 #define TARGET_CALLEE_COPIES sh_callee_copies
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES sh_arg_partial_bytes
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG sh_function_arg
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE sh_function_arg_advance
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST sh_build_builtin_va_list
@@ -8235,10 +8243,9 @@ sh_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
    NPARM_REGS words is at least partially passed in a register unless
    its data type forbids.  */
 
-
-rtx
+static rtx
 sh_function_arg (CUMULATIVE_ARGS *ca, enum machine_mode mode,
-		 tree type, int named)
+		 const_tree type, bool named)
 {
   if (! TARGET_SH5 && mode == VOIDmode)
     return GEN_INT (ca->renesas_abi ? 1 : 0);
@@ -8324,17 +8331,17 @@ sh_function_arg (CUMULATIVE_ARGS *ca, enum machine_mode mode,
    (TYPE is null for libcalls where that information may not be
    available.)  */
 
-void
+static void
 sh_function_arg_advance (CUMULATIVE_ARGS *ca, enum machine_mode mode,
-			 tree type, int named)
+			 const_tree type, bool named)
 {
   if (ca->force_mem)
     ca->force_mem = 0;
   else if (TARGET_SH5)
     {
-      tree type2 = (ca->byref && type
-		    ? TREE_TYPE (type)
-		    : type);
+      const_tree type2 = (ca->byref && type
+			  ? TREE_TYPE (type)
+			  : type);
       enum machine_mode mode2 = (ca->byref && type
 				 ? TYPE_MODE (type2)
 				 : mode);
@@ -11493,9 +11500,9 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
     {
       tree ptype = build_pointer_type (TREE_TYPE (funtype));
 
-      FUNCTION_ARG_ADVANCE (cum, Pmode, ptype, 1);
+      sh_function_arg_advance (&cum, Pmode, ptype, true);
     }
-  this_rtx = FUNCTION_ARG (cum, Pmode, ptr_type_node, 1);
+  this_rtx = sh_function_arg (&cum, Pmode, ptr_type_node, true);
 
   /* For SHcompact, we only have r0 for a scratch register: r1 is the
      static chain pointer (even if you can't have nested virtual functions

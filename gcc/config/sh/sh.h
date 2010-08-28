@@ -1625,17 +1625,12 @@ struct sh_args {
 #define INIT_CUMULATIVE_LIBCALL_ARGS(CUM, MODE, LIBNAME) \
   sh_init_cumulative_args (& (CUM), NULL_TREE, (LIBNAME), NULL_TREE, 0, (MODE))
 
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
-	sh_function_arg_advance (&(CUM), (MODE), (TYPE), (NAMED))
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)	\
-	sh_function_arg (&(CUM), (MODE), (TYPE), (NAMED))
-
 /* Return boolean indicating arg of mode MODE will be passed in a reg.
    This macro is only used in this file.  */
 
 #define PASS_IN_REG_P(CUM, MODE, TYPE) \
   (((TYPE) == 0 \
-    || (! TREE_ADDRESSABLE ((tree)(TYPE)) \
+    || (! TREE_ADDRESSABLE ((TYPE)) \
 	&& (! (TARGET_HITACHI || (CUM).renesas_abi) \
 	    || ! (AGGREGATE_TYPE_P (TYPE) \
 		  || (!TARGET_FPU_ANY \
