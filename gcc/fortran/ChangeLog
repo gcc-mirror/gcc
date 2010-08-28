@@ -1,3 +1,8 @@
+2010-07-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* simplify.c (gfc_simplify_bessel_n2): Fix indention
+	and argument type.
+
 2010-08-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/45436
