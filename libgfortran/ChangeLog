@@ -1,3 +1,7 @@
+2010-08-28  Tobias Burnus  <burnus@net-b.de>
+
+	* mk-kinds-h.sh: Disable REAL(16) if REAL(10) is available.
+
 2010-08-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/33197
