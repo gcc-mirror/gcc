@@ -1,3 +1,12 @@
+2010-08-27  Xinliang David Li  <davidxl@google.com>
+
+	PR/45422
+	* tree-ssa-loop-ivopts.c (iv_ca_get_num_inv_exprs): Remove.
+	(iv_ca_set_no_cp): Update used inv expr count.
+	(iv_ca_set_cp): Ditto.
+	(iv_ca_new): Initialize new member.
+	(iv_ca_free): Free memory.
+
 2010-08-27  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/sh/sh-protos.h (sh_function_arg): Delete.
