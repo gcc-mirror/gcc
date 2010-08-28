@@ -410,12 +410,11 @@ gfc_init_kinds (void)
 
       /* Only let float, double, long double and __float128 go through.
 	 Runtime support for others is not provided, so they would be
-	 useless.  TFmode support is only enabled with option
-	 -fsoft-float. 	*/
+	 useless.  TODO: TFmode support should be enabled once libgfortran
+	 support is done.  */
 	if (mode != TYPE_MODE (float_type_node)
 	  && (mode != TYPE_MODE (double_type_node))
-          && (mode != TYPE_MODE (long_double_type_node))
-	  && (mode != TFmode))
+          && (mode != TYPE_MODE (long_double_type_node)))
 	continue;
 
       /* Let the kind equal the precision divided by 8, rounding up.  Again,

@@ -1,3 +1,8 @@
+2010-08-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/45436
+	* trans-types.c (gfc_init_kinds): Disable TFmode.
+
 2010-08-27  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45432
