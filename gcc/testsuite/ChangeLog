@@ -1,3 +1,8 @@
+2010-07-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/bessel_7.f90: Decrease required precision.
+
 2010-08-27  Naveen H.S  <naveen.S@kpitcummins.com>
 	    Kaz Kojima  <kkojima@gcc.gnu.org>
 

@@ -1241,7 +1241,7 @@ gfc_simplify_bessel_n2 (gfc_expr *order1, gfc_expr *order2, gfc_expr *x,
       if (jn && n1 == 0)
 	{
 	  e = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
-	  mpfr_set_ui (e->value.real, 1.0, GFC_RND_MODE);
+	  mpfr_set_ui (e->value.real, 1, GFC_RND_MODE);
 	  gfc_constructor_append_expr (&result->value.constructor, e,
 				       &x->where);
 	  n1++;
@@ -1251,7 +1251,7 @@ gfc_simplify_bessel_n2 (gfc_expr *order1, gfc_expr *order2, gfc_expr *x,
 	{
 	  e = gfc_get_constant_expr (x->ts.type, x->ts.kind, &x->where);
 	  if (jn)
-	    mpfr_set_ui (e->value.real, 0.0, GFC_RND_MODE);
+	    mpfr_set_ui (e->value.real, 0, GFC_RND_MODE);
 	  else
 	    mpfr_set_inf (e->value.real, -1);
 	  gfc_constructor_append_expr (&result->value.constructor, e,
@@ -1315,7 +1315,7 @@ gfc_simplify_bessel_n2 (gfc_expr *order1, gfc_expr *order2, gfc_expr *x,
       return &gfc_bad_expr;
     }
   if (jn)
-     gfc_constructor_insert_expr (&result->value.constructor, e, &x->where, -2);
+    gfc_constructor_insert_expr (&result->value.constructor, e, &x->where, -2);
   else 
     gfc_constructor_append_expr (&result->value.constructor, e, &x->where);
 
