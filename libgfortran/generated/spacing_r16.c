@@ -26,7 +26,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 
 
-#if defined (HAVE_GFC_REAL_16) && defined (HAVE_FREXPL)
+
+#if defined(GFC_REAL_16_IS_FLOAT128)
+#define MATHFUNC(funcname) funcname ## q
+#else
+#define MATHFUNC(funcname) funcname ## l
+#endif
+
+#if defined (HAVE_GFC_REAL_16) && (defined(GFC_WITH_QUAD_LIB) || defined(HAVE_FREXPL))
 
 extern GFC_REAL_16 spacing_r16 (GFC_REAL_16 s, int p, int emin, GFC_REAL_16 tiny);
 export_proto(spacing_r16);
@@ -37,13 +44,13 @@ spacing_r16 (GFC_REAL_16 s, int p, int emin, GFC_REAL_16 tiny)
   int e;
   if (s == 0.)
     return tiny;
-  frexpl (s, &e);
+  MATHFUNC(frexp) (s, &e);
   e = e - p;
   e = e > emin ? e : emin;
-#if defined (HAVE_LDEXPL)
-  return ldexpl (1., e);
+#if (defined(GFC_WITH_QUAD_LIB) || defined(HAVE_LDEXPL))
+  return MATHFUNC(ldexp) (1., e);
 #else
-  return scalbnl (1., e);
+  return MATHFUNC(scalbn) (1., e);
 #endif
 }
 

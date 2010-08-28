@@ -26,6 +26,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 
 
+
+#define MATHFUNC(funcname) funcname ## f
+
 #if defined (HAVE_GFC_REAL_4) && defined (HAVE_FREXPF)
 
 extern GFC_INTEGER_4 exponent_r4 (GFC_REAL_4 s);
@@ -35,7 +38,7 @@ GFC_INTEGER_4
 exponent_r4 (GFC_REAL_4 s)
 {
   int ret;
-  frexpf (s, &ret);
+  MATHFUNC(frexp) (s, &ret);
   return ret;
 }
 

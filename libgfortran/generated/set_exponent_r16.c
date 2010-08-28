@@ -26,7 +26,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 
 
-#if defined (HAVE_GFC_REAL_16) && defined (HAVE_SCALBNL) && defined (HAVE_FREXPL)
+
+#if defined(GFC_REAL_16_IS_FLOAT128)
+#define MATHFUNC(funcname) funcname ## q
+#else
+#define MATHFUNC(funcname) funcname ## l
+#endif
+
+#if defined (HAVE_GFC_REAL_16) && (defined(GFC_WITH_QUAD_LIB) || defined(HAVE_SCALBNL)) && (defined(GFC_WITH_QUAD_LIB) || defined(HAVE_FREXPL))
 
 extern GFC_REAL_16 set_exponent_r16 (GFC_REAL_16 s, GFC_INTEGER_4 i);
 export_proto(set_exponent_r16);
@@ -35,7 +42,7 @@ GFC_REAL_16
 set_exponent_r16 (GFC_REAL_16 s, GFC_INTEGER_4 i)
 {
   int dummy_exp;
-  return scalbnl (frexpl (s, &dummy_exp), i);
+  return MATHFUNC(scalbn) (MATHFUNC(frexp) (s, &dummy_exp), i);
 }
 
 #endif

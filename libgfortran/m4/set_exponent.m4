@@ -27,7 +27,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 include(`mtype.m4')dnl
 
-`#if defined (HAVE_'real_type`) && defined (HAVE_SCALBN'Q`) && defined (HAVE_FREXP'Q`)
+mathfunc_macro
+
+`#if defined (HAVE_'real_type`) && 'hasmathfunc(scalbn) && hasmathfunc(frexp)`
 
 extern 'real_type` set_exponent_r'kind` ('real_type` s, GFC_INTEGER_4 i);
 export_proto(set_exponent_r'kind`);
@@ -36,7 +38,7 @@ export_proto(set_exponent_r'kind`);
 set_exponent_r'kind` ('real_type` s, GFC_INTEGER_4 i)
 {
   int dummy_exp;
-  return scalbn'q` (frexp'q` (s, &dummy_exp), i);
+  return MATHFUNC(scalbn) (MATHFUNC(frexp) (s, &dummy_exp), i);
 }
 
 #endif'

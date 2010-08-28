@@ -31,11 +31,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 include(iparm.m4)dnl
 include(`mtype.m4')dnl
 
+mathfunc_macro
+
 `#if defined (HAVE_'rtype_name`)
 
 
 
-#if defined (HAVE_JN'Q`)
+#if 'hasmathfunc(jn)`
 extern void bessel_jn_r'rtype_kind` ('rtype` * const restrict ret, int n1,
 				     int n2, 'rtype_name` x);
 export_proto(bessel_jn_r'rtype_kind`);
@@ -69,28 +71,28 @@ bessel_jn_r'rtype_kind` ('rtype` * const restrict ret, int n1, int n2, 'rtype_na
 
   stride = GFC_DESCRIPTOR_STRIDE(ret,0);
 
-  if (unlikely (x == 0.0'Q`))
+  if (unlikely (x == 0))
     {
-      ret->data[0] = 1.0'Q`;
+      ret->data[0] = 1;
       for (i = 1; i <= n2-n1; i++)
-        ret->data[i*stride] = 0.0'Q`;
+        ret->data[i*stride] = 0;
       return;
     }
 
   ret->data = ret->data;
-  last1 = jn'q` (n2, x);
+  last1 = MATHFUNC(jn) (n2, x);
   ret->data[(n2-n1)*stride] = last1;
 
   if (n1 == n2)
     return;
 
-  last2 = jn'q` (n2 - 1, x);
+  last2 = MATHFUNC(jn) (n2 - 1, x);
   ret->data[(n2-n1-1)*stride] = last2;
 
   if (n1 + 1 == n2)
     return;
 
-  x2rev = 2.0'Q`/x;
+  x2rev = GFC_REAL_'rtype_kind`_LITERAL(2.)/x;
 
   for (i = n2-n1-2; i >= 0; i--)
     {
@@ -102,7 +104,7 @@ bessel_jn_r'rtype_kind` ('rtype` * const restrict ret, int n1, int n2, 'rtype_na
 
 #endif
 
-#if defined (HAVE_YN'Q`)
+#if 'hasmathfunc(yn)`
 extern void bessel_yn_r'rtype_kind` ('rtype` * const restrict ret,
 				     int n1, int n2, 'rtype_name` x);
 export_proto(bessel_yn_r'rtype_kind`);
@@ -137,7 +139,7 @@ bessel_yn_r'rtype_kind` ('rtype` * const restrict ret, int n1, int n2,
 
   stride = GFC_DESCRIPTOR_STRIDE(ret,0);
 
-  if (unlikely (x == 0.0'Q`))
+  if (unlikely (x == 0))
     {
       for (i = 0; i <= n2-n1; i++)
 #if defined('rtype_name`_INFINITY)
@@ -149,19 +151,19 @@ bessel_yn_r'rtype_kind` ('rtype` * const restrict ret, int n1, int n2,
     }
 
   ret->data = ret->data;
-  last1 = yn'q` (n1, x);
+  last1 = MATHFUNC(yn) (n1, x);
   ret->data[0] = last1;
 
   if (n1 == n2)
     return;
 
-  last2 = yn'q` (n1 + 1, x);
+  last2 = MATHFUNC(yn) (n1 + 1, x);
   ret->data[1*stride] = last2;
 
   if (n1 + 1 == n2)
     return;
 
-  x2rev = 2.0'Q`/x;
+  x2rev = GFC_REAL_'rtype_kind`_LITERAL(2.)/x;
 
   for (i = 2; i <= n1+n2; i++)
     {

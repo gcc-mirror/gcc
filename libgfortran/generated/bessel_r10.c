@@ -29,6 +29,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <assert.h>
 
 
+
+#define MATHFUNC(funcname) funcname ## l
+
 #if defined (HAVE_GFC_REAL_10)
 
 
@@ -67,28 +70,28 @@ bessel_jn_r10 (gfc_array_r10 * const restrict ret, int n1, int n2, GFC_REAL_10 x
 
   stride = GFC_DESCRIPTOR_STRIDE(ret,0);
 
-  if (unlikely (x == 0.0L))
+  if (unlikely (x == 0))
     {
-      ret->data[0] = 1.0L;
+      ret->data[0] = 1;
       for (i = 1; i <= n2-n1; i++)
-        ret->data[i*stride] = 0.0L;
+        ret->data[i*stride] = 0;
       return;
     }
 
   ret->data = ret->data;
-  last1 = jnl (n2, x);
+  last1 = MATHFUNC(jn) (n2, x);
   ret->data[(n2-n1)*stride] = last1;
 
   if (n1 == n2)
     return;
 
-  last2 = jnl (n2 - 1, x);
+  last2 = MATHFUNC(jn) (n2 - 1, x);
   ret->data[(n2-n1-1)*stride] = last2;
 
   if (n1 + 1 == n2)
     return;
 
-  x2rev = 2.0L/x;
+  x2rev = GFC_REAL_10_LITERAL(2.)/x;
 
   for (i = n2-n1-2; i >= 0; i--)
     {
@@ -135,7 +138,7 @@ bessel_yn_r10 (gfc_array_r10 * const restrict ret, int n1, int n2,
 
   stride = GFC_DESCRIPTOR_STRIDE(ret,0);
 
-  if (unlikely (x == 0.0L))
+  if (unlikely (x == 0))
     {
       for (i = 0; i <= n2-n1; i++)
 #if defined(GFC_REAL_10_INFINITY)
@@ -147,19 +150,19 @@ bessel_yn_r10 (gfc_array_r10 * const restrict ret, int n1, int n2,
     }
 
   ret->data = ret->data;
-  last1 = ynl (n1, x);
+  last1 = MATHFUNC(yn) (n1, x);
   ret->data[0] = last1;
 
   if (n1 == n2)
     return;
 
-  last2 = ynl (n1 + 1, x);
+  last2 = MATHFUNC(yn) (n1 + 1, x);
   ret->data[1*stride] = last2;
 
   if (n1 + 1 == n2)
     return;
 
-  x2rev = 2.0L/x;
+  x2rev = GFC_REAL_10_LITERAL(2.)/x;
 
   for (i = 2; i <= n1+n2; i++)
     {

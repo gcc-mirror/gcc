@@ -32,20 +32,22 @@ include(iparm.m4)dnl
 include(ifunction.m4)dnl
 include(`mtype.m4')dnl
 
-`#if defined (HAVE_'atype_name`) && defined (HAVE_'rtype_name`)'
+`#if defined (HAVE_'atype_name`) && defined (HAVE_'rtype_name`) && 'hasmathfunc(sqrt) && hasmathfunc(fabs)
 
-ARRAY_FUNCTION(`0.0'Q,
+mathfunc_macro
+
+ARRAY_FUNCTION(0,
 `	'rtype_name` scale;
-	result = 0.0'Q`;
-	scale = 1.0'Q`;',
-`	  if (*src != 0.0'Q`)
+	result = 0;
+	scale = 1;',
+`	  if (*src != 0)
 	    {
 	      'rtype_name` absX, val;
-	      absX = fabs'q` (*src);
+	      absX = MATHFUNC(fabs) (*src);
 	      if (scale < absX)
 		{
 		  val = scale / absX;
-		  result = 1.0'Q` + result * val * val;
+		  result = 1 + result * val * val;
 		  scale = absX;
 		}
 	      else
@@ -54,6 +56,6 @@ ARRAY_FUNCTION(`0.0'Q,
 		  result += val * val;
 		}
 	    }',
-`   result = scale * sqrt'q` (result);')
+`   result = scale * MATHFUNC(sqrt) (result);')
 
 #endif

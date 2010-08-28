@@ -29,7 +29,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <assert.h>
 
 
-#if defined (HAVE_GFC_REAL_10) && defined (HAVE_GFC_REAL_10)
+
+#if defined (HAVE_GFC_REAL_10) && defined (HAVE_GFC_REAL_10) && defined (HAVE_SQRTL) && defined (HAVE_FABSL)
+
+#define MATHFUNC(funcname) funcname ## l
 
 
 extern void norm2_r10 (gfc_array_r10 * const restrict, 
@@ -144,23 +147,23 @@ norm2_r10 (gfc_array_r10 * const restrict retarray,
       {
 
 	GFC_REAL_10 scale;
-	result = 0.0L;
-	scale = 1.0L;
+	result = 0;
+	scale = 1;
 	if (len <= 0)
-	  *dest = 0.0L;
+	  *dest = 0;
 	else
 	  {
 	    for (n = 0; n < len; n++, src += delta)
 	      {
 
-	  if (*src != 0.0L)
+	  if (*src != 0)
 	    {
 	      GFC_REAL_10 absX, val;
-	      absX = fabsl (*src);
+	      absX = MATHFUNC(fabs) (*src);
 	      if (scale < absX)
 		{
 		  val = scale / absX;
-		  result = 1.0L + result * val * val;
+		  result = 1 + result * val * val;
 		  scale = absX;
 		}
 	      else
@@ -170,7 +173,7 @@ norm2_r10 (gfc_array_r10 * const restrict retarray,
 		}
 	    }
 	      }
-	    result = scale * sqrtl (result);
+	    result = scale * MATHFUNC(sqrt) (result);
 	    *dest = result;
 	  }
       }
