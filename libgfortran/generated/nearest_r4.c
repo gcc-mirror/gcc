@@ -26,6 +26,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 
 
+
+#define MATHFUNC(funcname) funcname ## f
+
 #if defined (HAVE_GFC_REAL_4) && defined (HAVE_COPYSIGNF) && defined (HAVE_NEXTAFTERF)
 
 extern GFC_REAL_4 nearest_r4 (GFC_REAL_4 s, GFC_REAL_4 dir);
@@ -34,15 +37,15 @@ export_proto(nearest_r4);
 GFC_REAL_4
 nearest_r4 (GFC_REAL_4 s, GFC_REAL_4 dir)
 {
-  dir = copysignf (__builtin_inff (), dir);
+  dir = MATHFUNC(copysign) (MATHFUNC(__builtin_inf) (), dir);
   if (FLT_EVAL_METHOD != 0)
     {
       /* ??? Work around glibc bug on x86.  */
-      volatile GFC_REAL_4 r = nextafterf (s, dir);
+      volatile GFC_REAL_4 r = MATHFUNC(nextafter) (s, dir);
       return r;
     }
   else
-    return nextafterf (s, dir);
+    return MATHFUNC(nextafter) (s, dir);
 }
 
 #endif

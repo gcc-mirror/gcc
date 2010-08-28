@@ -26,7 +26,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 
 
-#if defined (HAVE_GFC_REAL_16) && defined (HAVE_COPYSIGNL) && defined (HAVE_NEXTAFTERL)
+
+#if defined(GFC_REAL_16_IS_FLOAT128)
+#define MATHFUNC(funcname) funcname ## q
+#else
+#define MATHFUNC(funcname) funcname ## l
+#endif
+
+#if defined (HAVE_GFC_REAL_16) && (defined(GFC_WITH_QUAD_LIB) || defined(HAVE_COPYSIGNL)) && (defined(GFC_WITH_QUAD_LIB) || defined(HAVE_NEXTAFTERL))
 
 extern GFC_REAL_16 nearest_r16 (GFC_REAL_16 s, GFC_REAL_16 dir);
 export_proto(nearest_r16);
@@ -34,15 +41,15 @@ export_proto(nearest_r16);
 GFC_REAL_16
 nearest_r16 (GFC_REAL_16 s, GFC_REAL_16 dir)
 {
-  dir = copysignl (__builtin_infl (), dir);
+  dir = MATHFUNC(copysign) (MATHFUNC(__builtin_inf) (), dir);
   if (FLT_EVAL_METHOD != 0)
     {
       /* ??? Work around glibc bug on x86.  */
-      volatile GFC_REAL_16 r = nextafterl (s, dir);
+      volatile GFC_REAL_16 r = MATHFUNC(nextafter) (s, dir);
       return r;
     }
   else
-    return nextafterl (s, dir);
+    return MATHFUNC(nextafter) (s, dir);
 }
 
 #endif

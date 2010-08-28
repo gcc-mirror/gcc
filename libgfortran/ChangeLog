@@ -1,3 +1,47 @@
+2010-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* m4/mtype.m4 (upcase, hasmathfunc, mathfunc_macro): New macros.
+	* m4/fraction.m4: Use new macros to support quad-float types.
+	* m4/set_exponent.m4: Likewise.
+	* m4/spacing.m4: Likewise.
+	* m4/exponent.m4: Likewise.
+	* m4/nearest.m4: Likewise.
+	* m4/norm2.m4: Likewise.
+	* m4/bessel.m4: Likewise.
+	* m4/rrspacing.m4: Likewise.
+	* generated/bessel_r4.c:Regenerated.
+	* generated/bessel_r8.c: Regenerated.
+	* generated/bessel_r10.c: Regenerated.
+	* generated/bessel_r16.c: Regenerated.
+	* generated/exponent_r4.c: Regenerated.
+	* generated/exponent_r8.c: Regenerated.
+	* generated/exponent_r10.c: Regenerated.
+	* generated/exponent_r16.c: Regenerated.
+	* generated/fraction_r4.c: Regenerated.
+	* generated/fraction_r8.c: Regenerated.
+	* generated/fraction_r10.c: Regenerated.
+	* generated/fraction_r16.c: Regenerated.
+	* generated/nearest_r4.c: Regenerated.
+	* generated/nearest_r8.c: Regenerated.
+	* generated/nearest_r10.c: Regenerated.
+	* generated/nearest_r16.c: Regenerated.
+	* generated/norm2_r4.c: Regenerated.
+	* generated/norm2_r8.c: Regenerated.
+	* generated/norm2_r10.c: Regenerated.
+	* generated/norm2_r16.c: Regenerated.
+	* generated/rrspacing_r4.c: Regenerated.
+	* generated/rrspacing_r8.c: Regenerated.
+	* generated/rrspacing_r10.c: Regenerated.
+	* generated/rrspacing_r16.c: Regenerated.
+	* generated/set_exponent_r4.c: Regenerated.
+	* generated/set_exponent_r8.c: Regenerated.
+	* generated/set_exponent_r10.c: Regenerated.
+	* generated/set_exponent_r16.c: Regenerated.
+	* generated/spacing_r4.c: Regenerated.
+	* generated/spacing_r8.c: Regenerated.
+	* generated/spacing_r10.c: Regenerated.
+	* generated/spacing_r16.c: Regenerated.
+
 2010-08-28  Tobias Burnus  <burnus@net-b.de>
 
 	* mk-kinds-h.sh: Disable REAL(16) if REAL(10) is available.
