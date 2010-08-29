@@ -1,3 +1,9 @@
+2010-08-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/44991
+	* parser.c (cp_parser_parameter_declaration): Pop parameter decls
+	after tentative parsing.
+
 2010-08-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* Make-lang.in (g++spec.o): Update dependencies.
