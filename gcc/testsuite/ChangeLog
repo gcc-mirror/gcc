@@ -1,3 +1,8 @@
+2010-08-29  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/42769
+	* gfortran.dg/dynamic_dispatch_11.f03: New.
+
 2010-08-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44991
@@ -8,7 +13,7 @@
 	PR fortran/45439
 	* gfortran.dg/select_type_16.f03: New.
 
-2010-07-28  Steven G. Kargl  <kargl@gcc.gnu.org>
+2010-08-28  Steven G. Kargl  <kargl@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/bessel_7.f90: Decrease required precision.
