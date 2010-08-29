@@ -4532,6 +4532,7 @@ gfc_match_select_type (void)
 	expr1->symtree->n.sym->attr.untyped = 1;
       else
 	expr1->symtree->n.sym->ts = expr2->ts;
+      expr1->symtree->n.sym->attr.flavor = FL_VARIABLE;
       expr1->symtree->n.sym->attr.referenced = 1;
       expr1->symtree->n.sym->attr.class_ok = 1;
     }
