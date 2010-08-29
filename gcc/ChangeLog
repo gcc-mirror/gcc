@@ -1,3 +1,13 @@
+2010-08-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/ia64/ia64.h (HARD_REGNO_NREGS): Return 1 for CCImode in
+	general purpose registers.
+	(HARD_REGNO_MODE_OK): Accept CCImode in general purpose registers.
+	* config/ia64/ia64.md (*movcci): Change to named pattern.  Deal
+	with general purpose registers and memory operands.  Add associated
+	CCImode post-reload splitter.
+	* config/ia64/div.md: Change BImode to CCImode throughout.
+
 2010-08-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/ia64/ia64.md (cstorebi4): Fix thinko.
