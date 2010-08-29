@@ -930,6 +930,10 @@ resolve_structure_cons (gfc_expr *expr, int init)
   symbol_attribute a;
 
   t = SUCCESS;
+
+  if (expr->ts.type == BT_DERIVED)
+    resolve_symbol (expr->ts.u.derived);
+
   cons = gfc_constructor_first (expr->value.constructor);
   /* A constructor may have references if it is the result of substituting a
      parameter variable.  In this case we just pull out the component we
@@ -11039,6 +11043,7 @@ error:
   stree->n.tb->error = 1;
 }
 
+
 static gfc_try
 resolve_typebound_procedures (gfc_symbol* derived)
 {
@@ -11049,6 +11054,9 @@ resolve_typebound_procedures (gfc_symbol* derived)
 
   resolve_bindings_derived = derived;
   resolve_bindings_result = SUCCESS;
+
+  /* Make sure the vtab has been generated.  */
+  gfc_find_derived_vtab (derived);
 
   if (derived->f2k_derived->tb_sym_root)
     gfc_traverse_symtree (derived->f2k_derived->tb_sym_root,
