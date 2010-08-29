@@ -123,7 +123,6 @@ namespace __gnu_debug
 # define __glibcxx_requires_subscript(_N) __glibcxx_check_subscript(_N)
 
 # include <debug/functions.h>
-# include <debug/formatter.h>
 
 #endif
 
