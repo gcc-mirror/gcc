@@ -1,3 +1,8 @@
+2010-08-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/44991
+	* g++.dg/parse/defarg15.C: New.
+
 2010-08-29  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45439
