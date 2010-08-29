@@ -37,7 +37,7 @@
 
 (define_insn "addrf3_cond"
   [(set (match_operand:RF 0 "fr_register_operand" "=f,f")
-        (if_then_else:RF (ne:RF (match_operand:BI 1 "register_operand"  "c,c")
+        (if_then_else:RF (ne:RF (match_operand:CCI 1 "register_operand"  "c,c")
                                 (const_int 0))
           (plus:RF
             (match_operand:RF 2 "fr_reg_or_fp01_operand" "fG,fG")
@@ -52,7 +52,7 @@
 
 (define_insn "subrf3_cond"
   [(set (match_operand:RF 0 "fr_register_operand" "=f,f")
-        (if_then_else:RF (ne:RF (match_operand:BI 1 "register_operand"  "c,c")
+        (if_then_else:RF (ne:RF (match_operand:CCI 1 "register_operand"  "c,c")
                                 (const_int 0))
           (minus:RF
             (match_operand:RF 2 "fr_reg_or_fp01_operand" "fG,fG")
@@ -67,7 +67,7 @@
 
 (define_insn "mulrf3_cond"
   [(set (match_operand:RF 0 "fr_register_operand" "=f,f")
-        (if_then_else:RF (ne:RF (match_operand:BI 1 "register_operand"  "c,c")
+        (if_then_else:RF (ne:RF (match_operand:CCI 1 "register_operand"  "c,c")
                                 (const_int 0))
           (mult:RF
             (match_operand:RF 2 "fr_reg_or_fp01_operand" "fG,fG")
@@ -84,7 +84,7 @@
 
 (define_insn "nmulrf3_cond"
   [(set (match_operand:RF 0 "fr_register_operand" "=f,f")
-        (if_then_else:RF (ne:RF (match_operand:BI 1 "register_operand"  "c,c")
+        (if_then_else:RF (ne:RF (match_operand:CCI 1 "register_operand"  "c,c")
                                 (const_int 0))
           (neg:RF (mult:RF
             (match_operand:RF 2 "fr_reg_or_fp01_operand" "fG,fG")
@@ -101,7 +101,7 @@
 
 (define_insn "m1addrf4_cond"
   [(set (match_operand:RF 0 "fr_register_operand" "=f,f")
-        (if_then_else:RF (ne:RF (match_operand:BI 1 "register_operand"  "c,c")
+        (if_then_else:RF (ne:RF (match_operand:CCI 1 "register_operand"  "c,c")
                                 (const_int 0))
           (plus:RF
             (mult:RF
@@ -118,7 +118,7 @@
 
 (define_insn "m1subrf4_cond"
   [(set (match_operand:RF 0 "fr_register_operand" "=f,f")
-        (if_then_else:RF (ne:RF (match_operand:BI 1 "register_operand"  "c,c")
+        (if_then_else:RF (ne:RF (match_operand:CCI 1 "register_operand"  "c,c")
                                 (const_int 0))
           (minus:RF
             (mult:RF
@@ -137,7 +137,7 @@
 
 (define_insn "m2addrf4_cond"
   [(set (match_operand:RF 0 "fr_register_operand" "=f,f")
-        (if_then_else:RF (ne:RF (match_operand:BI 1 "register_operand"  "c,c")
+        (if_then_else:RF (ne:RF (match_operand:CCI 1 "register_operand"  "c,c")
                                 (const_int 0))
           (plus:RF
             (match_operand:RF 2 "fr_reg_or_fp01_operand" "fG,fG")
@@ -154,7 +154,7 @@
 
 (define_insn "m2subrf4_cond"
   [(set (match_operand:RF 0 "fr_register_operand" "=f,f")
-        (if_then_else:RF (ne:RF (match_operand:BI 1 "register_operand"  "c,c")
+        (if_then_else:RF (ne:RF (match_operand:CCI 1 "register_operand"  "c,c")
                                 (const_int 0))
           (minus:RF
             (match_operand:RF 2 "fr_reg_or_fp01_operand" "fG,fG")
@@ -255,8 +255,8 @@
         (unspec:RF [(match_operand:RF 1 "fr_reg_or_fp01_operand" "fG")
 		    (match_operand:RF 2 "fr_reg_or_fp01_operand" "fG")]
 		   UNSPEC_FR_RECIP_APPROX_RES))
-   (set (match_operand:BI 3 "register_operand" "=c")
-        (unspec:BI [(match_dup 1) (match_dup 2)] UNSPEC_FR_RECIP_APPROX))
+   (set (match_operand:CCI 3 "register_operand" "=c")
+        (unspec:CCI [(match_dup 1) (match_dup 2)] UNSPEC_FR_RECIP_APPROX))
    (use (match_operand:SI 4 "const_int_operand" ""))]
   ""
   "frcpa.s%4 %0, %3 = %F1, %F2"
@@ -297,7 +297,7 @@
   rtx q     = gen_reg_rtx (RFmode);
   rtx r     = gen_reg_rtx (RFmode);
   rtx q_res = gen_reg_rtx (RFmode);
-  rtx cond  = gen_reg_rtx (BImode);
+  rtx cond  = gen_reg_rtx (CCImode);
   rtx zero    = CONST0_RTX (RFmode);
   rtx one     = CONST1_RTX (RFmode);
   rtx status0 = CONST0_RTX (SImode);
@@ -345,7 +345,7 @@
   rtx q1        = gen_reg_rtx (RFmode);
   rtx r         = gen_reg_rtx (RFmode);
   rtx q_res     = gen_reg_rtx (RFmode);
-  rtx cond      = gen_reg_rtx (BImode);
+  rtx cond      = gen_reg_rtx (CCImode);
   rtx zero      = CONST0_RTX (RFmode);
   rtx one       = CONST1_RTX (RFmode);
   rtx status0   = CONST0_RTX (SImode);
@@ -414,7 +414,7 @@
   rtx y3    = gen_reg_rtx (RFmode);
   rtx q     = gen_reg_rtx (RFmode);
   rtx r     = gen_reg_rtx (RFmode);
-  rtx cond  = gen_reg_rtx (BImode);
+  rtx cond  = gen_reg_rtx (CCImode);
   rtx zero    = CONST0_RTX (RFmode);
   rtx one     = CONST1_RTX (RFmode);
   rtx status0 = CONST0_RTX (SImode);
@@ -471,7 +471,7 @@
   rtx e3        = gen_reg_rtx (RFmode);
   rtx q         = gen_reg_rtx (RFmode);
   rtx r1        = gen_reg_rtx (RFmode);
-  rtx cond      = gen_reg_rtx (BImode);
+  rtx cond      = gen_reg_rtx (CCImode);
   rtx zero      = CONST0_RTX (RFmode);
   rtx one       = CONST1_RTX (RFmode);
   rtx status0   = CONST0_RTX (SImode);
@@ -535,7 +535,7 @@
   rtx q         = gen_reg_rtx (RFmode);
   rtx r         = gen_reg_rtx (RFmode);
   rtx r1        = gen_reg_rtx (RFmode);
-  rtx cond      = gen_reg_rtx (BImode);
+  rtx cond      = gen_reg_rtx (CCImode);
   rtx zero      = CONST0_RTX (RFmode);
   rtx one       = CONST1_RTX (RFmode);
   rtx status0   = CONST0_RTX (SImode);
@@ -702,7 +702,7 @@
   rtx e1        = gen_reg_rtx (RFmode);
   rtx q         = gen_reg_rtx (RFmode);
   rtx q1        = gen_reg_rtx (RFmode);
-  rtx cond      = gen_reg_rtx (BImode);
+  rtx cond      = gen_reg_rtx (CCImode);
   rtx zero      = CONST0_RTX (RFmode);
   rtx one       = CONST1_RTX (RFmode);
   rtx status1   = CONST1_RTX (SImode);
@@ -844,7 +844,7 @@
   rtx q1        = gen_reg_rtx (RFmode);
   rtx q2        = gen_reg_rtx (RFmode);
   rtx r         = gen_reg_rtx (RFmode);
-  rtx cond      = gen_reg_rtx (BImode);
+  rtx cond      = gen_reg_rtx (CCImode);
   rtx zero      = CONST0_RTX (RFmode);
   rtx one       = CONST1_RTX (RFmode);
   rtx status1   = CONST1_RTX (SImode);
@@ -888,7 +888,7 @@
   rtx e1        = gen_reg_rtx (RFmode);
   rtx q2        = gen_reg_rtx (RFmode);
   rtx r         = gen_reg_rtx (RFmode);
-  rtx cond      = gen_reg_rtx (BImode);
+  rtx cond      = gen_reg_rtx (CCImode);
   rtx zero      = CONST0_RTX (RFmode);
   rtx one       = CONST1_RTX (RFmode);
   rtx status1   = CONST1_RTX (SImode);
@@ -920,8 +920,8 @@
   [(set (match_operand:RF 0 "fr_register_operand" "=f")
                 (unspec:RF [(match_operand:RF 1 "fr_reg_or_fp01_operand" "fG")]
 			   UNSPEC_FR_SQRT_RECIP_APPROX_RES))
-   (set (match_operand:BI 2 "register_operand" "=c")
-        (unspec:BI [(match_dup 1)] UNSPEC_FR_SQRT_RECIP_APPROX))
+   (set (match_operand:CCI 2 "register_operand" "=c")
+        (unspec:CCI [(match_dup 1)] UNSPEC_FR_SQRT_RECIP_APPROX))
    (use (match_operand:SI 3 "const_int_operand" ""))]
   ""
   "frsqrta.s%3 %0, %2 = %F1"
@@ -958,7 +958,7 @@
   rtx h         = gen_reg_rtx (RFmode);
   rtx d         = gen_reg_rtx (RFmode);
   rtx g2        = gen_reg_rtx (RFmode);
-  rtx cond      = gen_reg_rtx (BImode);
+  rtx cond      = gen_reg_rtx (CCImode);
   rtx zero      = CONST0_RTX (RFmode);
   rtx one       = CONST1_RTX (RFmode);
   rtx c1        = ia64_dconst_0_5();
@@ -1021,7 +1021,7 @@
   rtx h         = gen_reg_rtx (RFmode);
   rtx h1        = gen_reg_rtx (RFmode);
   rtx d         = gen_reg_rtx (RFmode);
-  rtx cond      = gen_reg_rtx (BImode);
+  rtx cond      = gen_reg_rtx (CCImode);
   rtx zero      = CONST0_RTX (RFmode);
   rtx one       = CONST1_RTX (RFmode);
   rtx c1        = ia64_dconst_0_5();
@@ -1104,7 +1104,7 @@
   rtx h2        = gen_reg_rtx (RFmode);
   rtx d         = gen_reg_rtx (RFmode);
   rtx d1        = gen_reg_rtx (RFmode);
-  rtx cond      = gen_reg_rtx (BImode);
+  rtx cond      = gen_reg_rtx (CCImode);
   rtx zero      = CONST0_RTX (RFmode);
   rtx c1        = ia64_dconst_0_5();
   rtx reg_df_c1	= gen_reg_rtx (DFmode);
@@ -1171,7 +1171,7 @@
   rtx h3        = gen_reg_rtx (RFmode);
   rtx d         = gen_reg_rtx (RFmode);
   rtx d1        = gen_reg_rtx (RFmode);
-  rtx cond      = gen_reg_rtx (BImode);
+  rtx cond      = gen_reg_rtx (CCImode);
   rtx zero      = CONST0_RTX (RFmode);
   rtx c1        = ia64_dconst_0_5();
   rtx reg_df_c1	= gen_reg_rtx (DFmode);
