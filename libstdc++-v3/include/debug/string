@@ -107,8 +107,10 @@ namespace __gnu_debug
 
     template<typename _InputIterator>
       basic_string(_InputIterator __begin, _InputIterator __end,
-		     const _Allocator& __a = _Allocator())
-      : _Base(__gnu_debug::__check_valid_range(__begin, __end), __end, __a)
+		   const _Allocator& __a = _Allocator())
+      : _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__begin,
+								   __end)),
+	      __gnu_debug::__base(__end), __a)
       { }
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
@@ -350,7 +352,8 @@ namespace __gnu_debug
       append(_InputIterator __first, _InputIterator __last)
       {
 	__glibcxx_check_valid_range(__first, __last);
-	_Base::append(__first, __last);
+	_Base::append(__gnu_debug::__base(__first),
+		      __gnu_debug::__base(__last));
 	this->_M_invalidate_all();
 	return *this;
       }
@@ -421,7 +424,8 @@ namespace __gnu_debug
       assign(_InputIterator __first, _InputIterator __last)
       {
 	__glibcxx_check_valid_range(__first, __last);
-	_Base::assign(__first, __last);
+	_Base::assign(__gnu_debug::__base(__first),
+		      __gnu_debug::__base(__last));
 	this->_M_invalidate_all();
 	return *this;
       }
@@ -501,7 +505,8 @@ namespace __gnu_debug
       insert(iterator __p, _InputIterator __first, _InputIterator __last)
       {
 	__glibcxx_check_insert_range(__p, __first, __last);
-	_Base::insert(__p.base(), __first, __last);
+	_Base::insert(__p.base(), __gnu_debug::__base(__first),
+				  __gnu_debug::__base(__last));
 	this->_M_invalidate_all();
       }
 

@@ -1,3 +1,109 @@
+2010-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/23_containers/bitset/invalidation: Move...
+	* testsuite/23_containers/bitset/debug/invalidation: ... here.
+	* testsuite/23_containers/deque/invalidation: Move...
+	* testsuite/23_containers/deque/debug/invalidation: ... here.
+	* testsuite/23_containers/list/invalidation: Move...
+	* testsuite/23_containers/list/debug/invalidation: ... here.
+	* testsuite/23_containers/map/invalidation: Move...
+	* testsuite/23_containers/map/debug/invalidation: ... here.
+	* testsuite/23_containers/multimap/invalidation: Move...
+	* testsuite/23_containers/multimap/debug/invalidation: ... here.
+	* testsuite/23_containers/set/invalidation: Move...
+	* testsuite/23_containers/set/debug/invalidation: ... here.
+	* testsuite/23_containers/multiset/invalidation: Move...
+	* testsuite/23_containers/multiset/debug/invalidation: ... here.
+	* testsuite/23_containers/vector/invalidation: Move...
+	* testsuite/23_containers/vector/debug/invalidation: ... here.
+
+2010-08-29  François Dumont  <francois.cppdevs@free.fr>
+
+        * include/bits/stl_algobase.h (_Iter_base):  Move...
+        * include/bits/stl_iterator_base_types.h: ...here.
+        * include/debug/functions.h (__check_valid_range, __check_string,
+	__check_sorted): Fix to not depend on _GLIBCXX_DEBUG; include
+	formatter.h and use formatting macros for a consistent debug result.
+        * include/debug/formatter.h (__check_singular): Declare; do not
+	include debug.h.
+        * include/debug/debug.h: Do not include formatter.h.
+        * include/debug/safe_iterator.h (_Safe_iterator::_Base_Iterator)
+        rename to iterator_type.
+	(__gnu_debug::__base): Add.
+        * include/debug/set.h: Use everywhere __gnu_debug::__base once
+	iterator range valided.
+        * include/debug/unordered_map: Likewise.
+        * include/debug/multiset.h: Likewise.
+        * include/debug/vector: Likewise.
+        * include/debug/unordered_set: Likewise.
+        * include/debug/deque: Likewise.
+        * include/debug/map.h: Likewise.
+        * include/debug/string: Likewise.
+        * include/debug/list: Likewise.
+        * include/debug/multimap.h: Likewise.
+        * testsuite/23_containers/util/debug/assign_neg.h: New test cases on
+        debug checks performed on container assign operation.
+        * testsuite/23_containers/util/debug/construct_neg.h: New test cases
+        on debug checks on constructors.
+        * testsuite/23_containers/util/debug/insert_neg.h: New test cases on
+        debug checks performed on container insert operations.
+        * testsuite/23_containers/unordered_map/debug/cont_traits.h,
+        debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
+        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+        insert3_neg.cc, insert4_neg.cc: New.
+        * testsuite/23_containers/multimap/debug/cont_traits.h,
+        debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
+        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+        insert3_neg.cc, insert4_neg.cc: Likewise.
+        * testsuite/23_containers/set/debug/cont_traits.h,
+        debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
+        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+        insert3_neg.cc, insert4_neg.cc: Likewise.
+        * testsuite/23_containers/unordered_multimap/debug/cont_traits.h,
+        debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
+        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+        insert3_neg.cc, insert4_neg.cc: Likewise.
+        * testsuite/23_containers/unordered_set/debug/cont_traits.h,
+        debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
+        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+        insert3_neg.cc, insert4_neg.cc: Likewise.
+        * testsuite/23_containers/multiset/debug/cont_traits.h,
+        debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
+        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+        insert3_neg.cc, insert4_neg.cc: Likewise.
+        * testsuite/23_containers/unordered_multiset/debug/cont_traits.h,
+        debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
+        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+        insert3_neg.cc, insert4_neg.cc: Likewise.
+        * testsuite/23_containers/map/debug/cont_traits.h,
+        debug_cont_traits.h, construct1_neg.cc, construct2_neg.cc,
+        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+        insert3_neg.cc, insert4_neg.cc: Likewise.
+        * testsuite/23_containers/vector/debug/cont_traits.h,
+        debug_cont_traits.h, assign1_neg.cc, assign2_neg.cc, assign3_neg.cc,
+        assign4_neg.cc, construct1_neg.cc, construct2_neg.cc,
+        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+        insert3_neg.cc, insert4_neg.cc: Likewise.
+        * testsuite/23_containers/deque/debug/cont_traits.h,
+        debug_cont_traits.h, assign1_neg.cc, assign2_neg.cc, assign3_neg.cc,
+        assign4_neg.cc, construct1_neg.cc, construct2_neg.cc,
+        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+        insert3_neg.cc, insert4_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/cont_traits.h,
+        debug_cont_traits.h, assign1_neg.cc, assign2_neg.cc, assign3_neg.cc,
+        assign4_neg.cc, construct1_neg.cc, construct2_neg.cc,
+        construct3_neg.cc, construct4_neg.cc, insert1_neg.cc, insert2_neg.cc,
+        insert3_neg.cc, insert4_neg.cc: Likewise.
+        * testsuite/performance/23_containers/range_construct/
+	list_construct1.cc: New, validate performance impact of the patch
+	on the debug mode.
+        * testsuite/performance/23_containers/range_construct/
+	list_construct2.cc: Likewise.
+        * testsuite/performance/23_containers/range_construct/
+	vector_construct.cc: Likewise.
+        * testsuite/performance/23_containers/range_construct/
+	deque_construct.cc: Likewise.
+
 2010-08-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/stl_iterator_base_types.h: Fix doxygen warning.

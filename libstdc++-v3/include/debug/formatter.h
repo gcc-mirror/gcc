@@ -32,11 +32,13 @@
 
 #include <bits/c++config.h>
 #include <typeinfo>
-#include <debug/debug.h>
 
 namespace __gnu_debug
 {
   using std::type_info;
+
+  template<typename _Iterator>
+    bool __check_singular(_Iterator&);
 
   /** Determine if the two types are the same. */
   template<typename _Type1, typename _Type2>

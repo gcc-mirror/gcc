@@ -94,8 +94,9 @@ namespace __debug
       template<class _InputIterator>
         vector(_InputIterator __first, _InputIterator __last,
 	       const _Allocator& __a = _Allocator())
-	: _Base(__gnu_debug::__check_valid_range(__first, __last),
-		__last, __a),
+        : _Base(__gnu_debug::__base(__gnu_debug::__check_valid_range(__first,
+								     __last)),
+		__gnu_debug::__base(__last), __a),
 	  _M_guaranteed_capacity(0)
         { _M_update_guaranteed_capacity(); }
 
@@ -158,7 +159,8 @@ namespace __debug
         assign(_InputIterator __first, _InputIterator __last)
         {
 	  __glibcxx_check_valid_range(__first, __last);
-	  _Base::assign(__first, __last);
+	  _Base::assign(__gnu_debug::__base(__first),
+			__gnu_debug::__base(__last));
 	  this->_M_invalidate_all();
 	  _M_update_guaranteed_capacity();
 	}
@@ -463,7 +465,8 @@ namespace __debug
 	     punt here by checking if it did occur. */
 	  typename _Base::iterator __old_begin = _M_base().begin();
 	  difference_type __offset = __position - begin();
-	  _Base::insert(__position.base(), __first, __last);
+	  _Base::insert(__position.base(), __gnu_debug::__base(__first),
+					   __gnu_debug::__base(__last));
 
 	  if (_M_base().begin() != __old_begin)
 	    this->_M_invalidate_all();

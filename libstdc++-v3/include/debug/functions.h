@@ -33,6 +33,7 @@
 #include <bits/c++config.h>
 #include <bits/stl_iterator_base_types.h> // for iterator_traits, categories
 #include <bits/cpp_type_traits.h>         // for __is_integer
+#include <debug/formatter.h>
 
 namespace __gnu_debug
 {
@@ -153,7 +154,7 @@ namespace __gnu_debug
 			const _InputIterator& __last
 			__attribute__((__unused__)))
     {
-      _GLIBCXX_DEBUG_ASSERT(__valid_range(__first, __last));
+      __glibcxx_check_valid_range(__first, __last);
       return __first;
     }
 
@@ -164,7 +165,7 @@ namespace __gnu_debug
 		   const _Integer& __n __attribute__((__unused__)))
     {
 #ifdef _GLIBCXX_DEBUG_PEDANTIC
-      _GLIBCXX_DEBUG_ASSERT(__s != 0 || __n == 0);
+      __glibcxx_assert(__s != 0 || __n == 0);
 #endif
       return __s;
     }
@@ -175,7 +176,7 @@ namespace __gnu_debug
     __check_string(const _CharT* __s)
     {
 #ifdef _GLIBCXX_DEBUG_PEDANTIC
-      _GLIBCXX_DEBUG_ASSERT(__s != 0);
+      __glibcxx_assert(__s != 0);
 #endif
       return __s;
     }
@@ -242,7 +243,7 @@ namespace __gnu_debug
 
       // Verify that the < operator for elements in the sequence is a
       // StrictWeakOrdering by checking that it is irreflexive.
-      _GLIBCXX_DEBUG_ASSERT(__first == __last || !(*__first < *__first));
+      __glibcxx_assert(__first == __last || !(*__first < *__first));
 
       return __check_sorted_aux(__first, __last, _Category());
     }
@@ -257,7 +258,7 @@ namespace __gnu_debug
 
       // Verify that the predicate is StrictWeakOrdering by checking that it
       // is irreflexive.
-      _GLIBCXX_DEBUG_ASSERT(__first == __last || !__pred(*__first, *__first));
+      __glibcxx_assert(__first == __last || !__pred(*__first, *__first));
 
       return __check_sorted_aux(__first, __last, __pred, _Category());
     }

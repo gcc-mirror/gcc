@@ -1,6 +1,6 @@
 // Safe iterator implementation  -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2009
+// Copyright (C) 2003, 2004, 2005, 2006, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -33,9 +33,9 @@
 #include <debug/debug.h>
 #include <debug/macros.h>
 #include <debug/functions.h>
-#include <debug/formatter.h>
 #include <debug/safe_base.h>
 #include <bits/stl_pair.h>
+#include <bits/stl_iterator_base_types.h> // for _Iter_base
 #include <ext/type_traits.h>
 
 namespace __gnu_debug
@@ -88,7 +88,7 @@ namespace __gnu_debug
       typedef std::iterator_traits<_Iterator> _Traits;
 
     public:
-      typedef _Iterator                           _Base_iterator;
+      typedef _Iterator                           iterator_type;
       typedef typename _Traits::iterator_category iterator_category;
       typedef typename _Traits::value_type        value_type;
       typedef typename _Traits::difference_type   difference_type;
@@ -136,7 +136,7 @@ namespace __gnu_debug
         _Safe_iterator(
           const _Safe_iterator<_MutableIterator,
           typename __gnu_cxx::__enable_if<(std::__are_same<_MutableIterator,
-                      typename _Sequence::iterator::_Base_iterator>::__value),
+                      typename _Sequence::iterator::iterator_type>::__value),
                    _Sequence>::__type>& __x)
 	: _Safe_iterator_base(__x, _M_constant()), _M_current(__x.base())
         {
@@ -638,6 +638,37 @@ namespace __gnu_debug
     operator+(typename _Safe_iterator<_Iterator,_Sequence>::difference_type __n,
 	      const _Safe_iterator<_Iterator, _Sequence>& __i)
     { return __i + __n; }
+
+  // Helper struct to detect random access safe iterators.
+  template<typename _Iterator>
+    struct __is_safe_random_iterator
+    {
+      enum { __value = 0 };
+      typedef std::__false_type __type;
+    };
+
+  template<typename _Iterator, typename _Sequence>
+    struct __is_safe_random_iterator<_Safe_iterator<_Iterator, _Sequence> >
+    : std::__are_same<std::random_access_iterator_tag,
+                      typename std::iterator_traits<_Iterator>::
+		      iterator_category>
+    { };
+
+  template<typename _Iterator>
+    struct _Siter_base
+    : std::_Iter_base<_Iterator, __is_safe_random_iterator<_Iterator>::__value>
+    { };
+
+  /** Helper function to extract base iterator of random access safe iterator
+      in order to reduce performance impact of debug mode.  Limited to random
+      access iterator because it is the only category for which it is possible
+      to check for correct iterators order in the __valid_range function
+      thanks to the < operator.
+  */
+  template<typename _Iterator>
+    inline typename _Siter_base<_Iterator>::iterator_type
+    __base(_Iterator __it)
+    { return _Siter_base<_Iterator>::_S_base(__it); }
 } // namespace __gnu_debug
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE
