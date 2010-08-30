@@ -1,3 +1,11 @@
+2010-08-30  Joseph Myers  <joseph@codesourcery.com>
+
+	* opts.h (CL_ERR_NEGATIVE): Define.
+	* opts.c (unknown_option_callback): Don't postpone warnings for
+	options marked with CL_ERR_NEGATIVE.
+	* opts-common.c (decode_cmdline_option): Set CL_ERR_NEGATIVE error
+	for negative versions of CL_REJECT_NEGATIVE options.
+
 2010-08-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (zero_extendsidi2_1): Rename from
