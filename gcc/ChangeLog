@@ -1,3 +1,24 @@
+2010-08-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (zero_extendsidi2_1): Rename from
+	zero_extendsidi2_32.
+	(zero_extend<mode>di2): Macroize insn from zero_extend{qi,hi}di2
+	using SWI12 mode iterator.
+	(zero_extendhisi2_and): Merge insn pattern and corresponding spliter
+	to define_insn_and_split pattern.
+	(zero_extendqi<mode>2): Macroize expander from zero_extendqi{hi,si}2
+	using SWI24 mode iterator.
+	(*zero_extendqi<mode>2_and): Macroize insn from
+	*zero_extendqi{hi,si}2_and using SWI24 mode iterator.
+	(*zero_extendqi<mode>2_movzbl_and): Macroize insn from
+	*zero_extendqihi2_movzbw_and and *zero_extendqisi2_movzbl_and using
+	SWI24 mode iterator.
+	(*zero_extendqi<mode>2_movzbl): Ditto from
+	*zero_extendqi{hi,si}2_movzbl.
+	(extendsidi2_1): Rename from extendsidi2_32.
+	(extend<mode>di2): Macroize insn from extend{qi,hi}di2 using
+	SWI12 mode iterator.
+
 2010-08-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/ia64/ia64.h (HARD_REGNO_NREGS): Return 1 for CCImode in
