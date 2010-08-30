@@ -1,3 +1,8 @@
+2010-08-30  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR tree-optimization/45427
+	* gcc.dg/tree-ssa/pr45427.c: New test.
+
 2010-08-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/45043
