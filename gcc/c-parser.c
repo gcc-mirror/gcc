@@ -7847,6 +7847,42 @@ c_parser_omp_atomic (location_t loc, c_parser *parser)
       rhs = integer_one_node;
       break;
 
+    case COMPOUND_EXPR:
+      if (TREE_CODE (TREE_OPERAND (lhs, 0)) == SAVE_EXPR
+	  && TREE_CODE (TREE_OPERAND (lhs, 1)) == COMPOUND_EXPR
+	  && TREE_CODE (TREE_OPERAND (TREE_OPERAND (lhs, 1), 0)) == MODIFY_EXPR
+	  && TREE_OPERAND (TREE_OPERAND (lhs, 1), 1) == TREE_OPERAND (lhs, 0)
+	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (TREE_OPERAND
+					      (TREE_OPERAND (lhs, 1), 0), 0)))
+	     == BOOLEAN_TYPE)
+	/* Undo effects of boolean_increment for post {in,de}crement.  */
+	lhs = TREE_OPERAND (TREE_OPERAND (lhs, 1), 0);
+      /* FALLTHRU */
+    case MODIFY_EXPR:
+      if (TREE_CODE (lhs) == MODIFY_EXPR
+	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (lhs, 0))) == BOOLEAN_TYPE)
+	{
+	  /* Undo effects of boolean_increment.  */
+	  if (integer_onep (TREE_OPERAND (lhs, 1)))
+	    {
+	      /* This is pre or post increment.  */
+	      rhs = TREE_OPERAND (lhs, 1);
+	      lhs = TREE_OPERAND (lhs, 0);
+	      code = NOP_EXPR;
+	      break;
+	    }
+	  if (TREE_CODE (TREE_OPERAND (lhs, 1)) == TRUTH_NOT_EXPR
+	      && TREE_OPERAND (lhs, 0)
+		 == TREE_OPERAND (TREE_OPERAND (lhs, 1), 0))
+	    {
+	      /* This is pre or post decrement.  */
+	      rhs = TREE_OPERAND (lhs, 1);
+	      lhs = TREE_OPERAND (lhs, 0);
+	      code = NOP_EXPR;
+	      break;
+	    }
+	}
+      /* FALLTHRU */
     default:
       switch (c_parser_peek_token (parser)->type)
 	{

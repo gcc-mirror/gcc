@@ -1,3 +1,9 @@
+2010-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/45423
+	* parser.c (cp_parser_omp_atomic): Handle boolean
+	{PRE,POST}_INCREMENT.
+
 2010-08-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/44991
