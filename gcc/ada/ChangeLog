@@ -1,5 +1,10 @@
 2010-08-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (gnat_pushdecl): Remove test for PARM_DECLs.
+	Attach fake PARM_DECLs to the topmost block of the function.
+
+2010-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (call_to_gnu): Also force the return slot opt
 	for the call to a function whose return type was unconstrained.
 
