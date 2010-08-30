@@ -2144,6 +2144,10 @@ pp_c_expression (c_pretty_printer *pp, tree e)
       pp_string (pp, "({...})");
       break;
 
+    case C_MAYBE_CONST_EXPR:
+      pp_c_expression (pp, C_MAYBE_CONST_EXPR_EXPR (e));
+      break;
+
     default:
       pp_unsupported_tree (pp, e);
       break;
