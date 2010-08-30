@@ -1083,7 +1083,8 @@ resolve_structure_cons (gfc_expr *expr, int init)
 		     comp->name);
 	}
 
-      if (!comp->attr.pointer || cons->expr->expr_type == EXPR_NULL)
+      if (!comp->attr.pointer || comp->attr.proc_pointer
+	  || cons->expr->expr_type == EXPR_NULL)
 	continue;
 
       a = gfc_expr_attr (cons->expr);
