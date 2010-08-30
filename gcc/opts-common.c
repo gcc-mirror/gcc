@@ -197,6 +197,7 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
   if (!value && (option->flags & CL_REJECT_NEGATIVE))
     {
       opt_index = OPT_SPECIAL_unknown;
+      errors |= CL_ERR_NEGATIVE;
       arg = argv[0];
       goto done;
     }

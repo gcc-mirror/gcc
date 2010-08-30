@@ -102,6 +102,9 @@ extern const unsigned int cl_lang_count;
 #define CL_ERR_MISSING_ARG	(1 << 1) /* Argument required but missing.  */
 #define CL_ERR_WRONG_LANG	(1 << 2) /* Option for wrong language.  */
 #define CL_ERR_UINT_ARG		(1 << 3) /* Bad unsigned integer argument.  */
+#define CL_ERR_NEGATIVE		(1 << 4) /* Negative form of option
+					    not permitted (together
+					    with OPT_SPECIAL_unknown).  */
 
 /* Structure describing the result of decoding an option.  */
 
