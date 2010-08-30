@@ -1,3 +1,9 @@
+2010-08-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/21602
+	* builtins.c (fold_builtin_memory_op): Fold memmove to memcpy
+	using points-to information.
+
 2010-08-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/linux.h (TARGET_HAS_SINCOS): Replace | with ||.

@@ -8467,6 +8467,27 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 		return NULL_TREE;
 	      return build_call_expr_loc (loc, fn, 3, dest, src, len);
 	    }
+
+	  /* If the destination and source do not alias optimize into
+	     memcpy as well.  */
+	  if ((is_gimple_min_invariant (dest)
+	       || TREE_CODE (dest) == SSA_NAME)
+	      && (is_gimple_min_invariant (src)
+		  || TREE_CODE (src) == SSA_NAME))
+	    {
+	      ao_ref destr, srcr;
+	      ao_ref_init_from_ptr_and_size (&destr, dest, len);
+	      ao_ref_init_from_ptr_and_size (&srcr, src, len);
+	      if (!refs_may_alias_p_1 (&destr, &srcr, false))
+		{
+		  tree fn;
+		  fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
+		  if (!fn)
+		    return NULL_TREE;
+		  return build_call_expr_loc (loc, fn, 3, dest, src, len);
+		}
+	    }
+
 	  return NULL_TREE;
 	}
 
