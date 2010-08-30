@@ -160,6 +160,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_C99_FUNCTIONS (OPTION_GLIBC)
 
 /* Whether we have sincos that follows the GNU extension.  */
-#define TARGET_HAS_SINCOS (OPTION_GLIBC | OPTION_BIONIC)
+#define TARGET_HAS_SINCOS (OPTION_GLIBC || OPTION_BIONIC)
 
 #define TARGET_POSIX_IO
