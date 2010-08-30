@@ -1,3 +1,8 @@
+2010-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (gnat_pushdecl): Remove test for PARM_DECLs.
+	Attach fake PARM_DECLs to the topmost block of the function.
+
 2010-07-31  Release Manager
 
 	* GCC 4.5.1 released.

@@ -423,11 +423,8 @@ gnat_poplevel (void)
 void
 gnat_pushdecl (tree decl, Node_Id gnat_node)
 {
-  /* If this decl is public external or at toplevel, there is no context.
-     But PARM_DECLs always go in the level of its function.  */
-  if (TREE_CODE (decl) != PARM_DECL
-      && ((DECL_EXTERNAL (decl) && TREE_PUBLIC (decl))
-	  || global_bindings_p ()))
+  /* If this decl is public external or at toplevel, there is no context.  */
+  if ((TREE_PUBLIC (decl) && DECL_EXTERNAL (decl)) || global_bindings_p ())
     DECL_CONTEXT (decl) = 0;
   else
     {
@@ -466,8 +463,14 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	}
       else
 	{
-	  TREE_CHAIN (decl) = BLOCK_VARS (current_binding_level->block);
-	  BLOCK_VARS (current_binding_level->block) = decl;
+	  tree block;
+	  /* Fake PARM_DECLs go into the topmost block of the function.  */
+	  if (TREE_CODE (decl) == PARM_DECL)
+	    block = BLOCK_SUPERCONTEXT (current_binding_level->block);
+	  else
+	    block = current_binding_level->block;
+	  TREE_CHAIN (decl) = BLOCK_VARS (block);
+	  BLOCK_VARS (block) = decl;
 	}
     }
 
@@ -2085,9 +2088,7 @@ end_subprog_body (tree body)
 {
   tree fndecl = current_function_decl;
 
-  /* Mark the BLOCK for this level as being for this function and pop the
-     level.  Since the vars in it are the parameters, clear them.  */
-  BLOCK_VARS (current_binding_level->block) = 0;
+  /* Attach the BLOCK for this level to the function and pop the level.  */
   BLOCK_SUPERCONTEXT (current_binding_level->block) = fndecl;
   DECL_INITIAL (fndecl) = current_binding_level->block;
   gnat_poplevel ();
