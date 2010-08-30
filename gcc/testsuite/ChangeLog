@@ -1,3 +1,8 @@
+2010-08-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/debug/dwarf2/nested-2.C: Allow for single / as comment
+	delimiter.
+
 2010-08-30  Thomas Quinot  <quinot@adacore.com>
 
 	* gnat.dg/discr24.adb: New test.
