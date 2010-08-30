@@ -350,6 +350,7 @@ static const param_info lang_independent_params[] = {
 
 FILE *asm_out_file;
 FILE *aux_info_file;
+FILE *stack_usage_file = NULL;
 FILE *dump_file = NULL;
 const char *dump_file_name;
 
@@ -1584,6 +1585,88 @@ alloc_for_identifier_to_locale (size_t len)
   return ggc_alloc_atomic (len);
 }
 
+/* Output stack usage information.  */
+void
+output_stack_usage (void)
+{
+  static bool warning_issued = false;
+  enum stack_usage_kind_type { STATIC = 0, DYNAMIC, DYNAMIC_BOUNDED };
+  const char *stack_usage_kind_str[] = {
+    "static",
+    "dynamic",
+    "dynamic,bounded"
+  };
+  HOST_WIDE_INT stack_usage = current_function_static_stack_size;
+  enum stack_usage_kind_type stack_usage_kind;
+  expanded_location loc;
+  const char *raw_id, *id;
+
+  if (stack_usage < 0)
+    {
+      if (!warning_issued)
+	{
+	  warning (0, "-fstack-usage not supported for this target");
+	  warning_issued = true;
+	}
+      return;
+    }
+
+  stack_usage_kind = STATIC;
+
+  /* Add the maximum amount of space pushed onto the stack.  */
+  if (current_function_pushed_stack_size > 0)
+    {
+      stack_usage += current_function_pushed_stack_size;
+      stack_usage_kind = DYNAMIC_BOUNDED;
+    }
+
+  /* Now on to the tricky part: dynamic stack allocation.  */
+  if (current_function_allocates_dynamic_stack_space)
+    {
+      if (current_function_has_unbounded_dynamic_stack_size)
+	stack_usage_kind = DYNAMIC;
+      else
+	stack_usage_kind = DYNAMIC_BOUNDED;
+
+      /* Add the size even in the unbounded case, this can't hurt.  */
+      stack_usage += current_function_dynamic_stack_size;
+    }
+
+  loc = expand_location (DECL_SOURCE_LOCATION (current_function_decl));
+
+  /* Strip the scope prefix if any.  */
+  raw_id = lang_hooks.decl_printable_name (current_function_decl, 2);
+  id = strrchr (raw_id, '.');
+  if (id)
+    id++;
+  else
+    id = raw_id;
+
+  fprintf (stack_usage_file,
+	   "%s:%d:%d:%s\t"HOST_WIDE_INT_PRINT_DEC"\t%s\n",
+	   basename (loc.file),
+	   loc.line,
+	   loc.column,
+	   id,
+	   stack_usage,
+	   stack_usage_kind_str[stack_usage_kind]);
+}
+
+/* Open an auxiliary output file.  */
+static FILE *
+open_auxiliary_file (const char *ext)
+{
+  char *filename;
+  FILE *file;
+
+  filename = concat (aux_base_name, ".", ext, NULL);
+  file = fopen (filename, "w");
+  if (!file)
+    fatal_error ("can't open %s for writing: %m", filename);
+  free (filename);
+  return file;
+}
+
 /* Initialization of the front end environment, before command line
    options are parsed.  Signal handlers, internationalization etc.
    ARGV0 is main's argv[0].  */
@@ -2199,6 +2282,10 @@ lang_dependent_init (const char *name)
 
   init_asm_output (name);
 
+  /* If stack usage information is desired, open the output file.  */
+  if (flag_stack_usage)
+    stack_usage_file = open_auxiliary_file ("su");
+
   /* This creates various _DECL nodes, so needs to be called after the
      front end is initialized.  */
   init_eh ();
@@ -2279,6 +2366,9 @@ finalize (void)
       if (flag_wpa)
 	unlink_if_ordinary (asm_file_name);
     }
+
+  if (stack_usage_file)
+    fclose (stack_usage_file);
 
   statistics_fini ();
   finish_optimization_passes ();

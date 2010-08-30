@@ -132,7 +132,7 @@ static rtx expand_builtin_memset (tree, rtx, enum machine_mode);
 static rtx expand_builtin_memset_args (tree, tree, tree, rtx, enum machine_mode, tree);
 static rtx expand_builtin_bzero (tree);
 static rtx expand_builtin_strlen (tree, rtx, enum machine_mode);
-static rtx expand_builtin_alloca (tree, rtx);
+static rtx expand_builtin_alloca (tree, rtx, bool);
 static rtx expand_builtin_unop (enum machine_mode, tree, rtx, rtx, optab);
 static rtx expand_builtin_frame_address (tree, tree);
 static tree stabilize_va_list_loc (location_t, tree, int);
@@ -1588,8 +1588,10 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
     emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
 
   /* Allocate a block of memory onto the stack and copy the memory
-     arguments to the outgoing arguments address.  */
-  allocate_dynamic_stack_space (argsize, 0, BITS_PER_UNIT);
+     arguments to the outgoing arguments address.  We can pass TRUE
+     as the 4th argument because we just saved the stack pointer
+     and will restore it right after the call.  */
+  allocate_dynamic_stack_space (argsize, 0, BITS_PER_UNIT, TRUE);
 
   /* Set DRAP flag to true, even though allocate_dynamic_stack_space
      may have already set current_function_calls_alloca to true.
@@ -4949,12 +4951,13 @@ expand_builtin_frame_address (tree fndecl, tree exp)
     }
 }
 
-/* Expand EXP, a call to the alloca builtin.  Return NULL_RTX if
-   we failed and the caller should emit a normal call, otherwise try to get
-   the result in TARGET, if convenient.  */
+/* Expand EXP, a call to the alloca builtin.  Return NULL_RTX if we
+   failed and the caller should emit a normal call, otherwise try to
+   get the result in TARGET, if convenient.  CANNOT_ACCUMULATE is the
+   same as for allocate_dynamic_stack_space.  */
 
 static rtx
-expand_builtin_alloca (tree exp, rtx target)
+expand_builtin_alloca (tree exp, rtx target, bool cannot_accumulate)
 {
   rtx op0;
   rtx result;
@@ -4970,7 +4973,8 @@ expand_builtin_alloca (tree exp, rtx target)
   op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
 
   /* Allocate the desired space.  */
-  result = allocate_dynamic_stack_space (op0, target, BITS_PER_UNIT);
+  result = allocate_dynamic_stack_space (op0, target, BITS_PER_UNIT,
+					 cannot_accumulate);
   result = convert_memory_address (ptr_mode, result);
 
   return result;
@@ -6009,7 +6013,9 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 	return XEXP (DECL_RTL (DECL_RESULT (current_function_decl)), 0);
 
     case BUILT_IN_ALLOCA:
-      target = expand_builtin_alloca (exp, target);
+      /* If the allocation stems from the declaration of a variable-sized
+	 object, it cannot accumulate.  */
+      target = expand_builtin_alloca (exp, target, ALLOCA_FOR_VAR_P (exp));
       if (target)
 	return target;
       break;

@@ -7763,6 +7763,30 @@ emit_frame_store (unsigned int regno, rtx base_reg,
   emit_frame_store_1 (reg, base_reg, frame_bias, base_ofs, reg);
 }
 
+/* Compute the frame size.  SIZE is the size of the "naked" frame
+   and SA_SIZE is the size of the register save area.  */
+
+static HOST_WIDE_INT
+compute_frame_size (HOST_WIDE_INT size, HOST_WIDE_INT sa_size)
+{
+  if (TARGET_ABI_OPEN_VMS)
+    return ALPHA_ROUND (sa_size 
+			+ (alpha_procedure_type == PT_STACK ? 8 : 0)
+			+ size
+			+ crtl->args.pretend_args_size);
+  else if (TARGET_ABI_UNICOSMK)
+    /* We have to allocate space for the DSIB if we generate a frame.  */
+    return ALPHA_ROUND (sa_size
+			+ (alpha_procedure_type == PT_STACK ? 48 : 0))
+	   + ALPHA_ROUND (size
+			  + crtl->outgoing_args_size);
+  else
+    return ALPHA_ROUND (crtl->outgoing_args_size)
+	   + sa_size
+	   + ALPHA_ROUND (size
+			  + crtl->args.pretend_args_size);
+}
+
 /* Write function prologue.  */
 
 /* On vms we have two kinds of functions:
@@ -7796,24 +7820,10 @@ alpha_expand_prologue (void)
   int i;
 
   sa_size = alpha_sa_size ();
+  frame_size = compute_frame_size (get_frame_size (), sa_size);
 
-  frame_size = get_frame_size ();
-  if (TARGET_ABI_OPEN_VMS)
-    frame_size = ALPHA_ROUND (sa_size
-			      + (alpha_procedure_type == PT_STACK ? 8 : 0)
-			      + frame_size
-			      + crtl->args.pretend_args_size);
-  else if (TARGET_ABI_UNICOSMK)
-    /* We have to allocate space for the DSIB if we generate a frame.  */
-    frame_size = ALPHA_ROUND (sa_size
-			      + (alpha_procedure_type == PT_STACK ? 48 : 0))
-		 + ALPHA_ROUND (frame_size
-				+ crtl->outgoing_args_size);
-  else
-    frame_size = (ALPHA_ROUND (crtl->outgoing_args_size)
-		  + sa_size
-		  + ALPHA_ROUND (frame_size
-				 + crtl->args.pretend_args_size));
+  if (flag_stack_usage)
+    current_function_static_stack_size = frame_size;
 
   if (TARGET_ABI_OPEN_VMS)
     reg_offset = 8 + 8 * cfun->machine->uses_condition_handler;
@@ -8135,23 +8145,7 @@ alpha_start_function (FILE *file, const char *fnname,
 
   alpha_fnname = fnname;
   sa_size = alpha_sa_size ();
-
-  frame_size = get_frame_size ();
-  if (TARGET_ABI_OPEN_VMS)
-    frame_size = ALPHA_ROUND (sa_size
-			      + (alpha_procedure_type == PT_STACK ? 8 : 0)
-			      + frame_size
-			      + crtl->args.pretend_args_size);
-  else if (TARGET_ABI_UNICOSMK)
-    frame_size = ALPHA_ROUND (sa_size
-			      + (alpha_procedure_type == PT_STACK ? 48 : 0))
-		 + ALPHA_ROUND (frame_size
-			      + crtl->outgoing_args_size);
-  else
-    frame_size = (ALPHA_ROUND (crtl->outgoing_args_size)
-		  + sa_size
-		  + ALPHA_ROUND (frame_size
-				 + crtl->args.pretend_args_size));
+  frame_size = compute_frame_size (get_frame_size (), sa_size);
 
   if (TARGET_ABI_OPEN_VMS)
     reg_offset = 8 + 8 * cfun->machine->uses_condition_handler;
@@ -8353,23 +8347,7 @@ alpha_expand_epilogue (void)
   int i;
 
   sa_size = alpha_sa_size ();
-
-  frame_size = get_frame_size ();
-  if (TARGET_ABI_OPEN_VMS)
-    frame_size = ALPHA_ROUND (sa_size
-			      + (alpha_procedure_type == PT_STACK ? 8 : 0)
-			      + frame_size
-			      + crtl->args.pretend_args_size);
-  else if (TARGET_ABI_UNICOSMK)
-    frame_size = ALPHA_ROUND (sa_size
-			      + (alpha_procedure_type == PT_STACK ? 48 : 0))
-		 + ALPHA_ROUND (frame_size
-			      + crtl->outgoing_args_size);
-  else
-    frame_size = (ALPHA_ROUND (crtl->outgoing_args_size)
-		  + sa_size
-		  + ALPHA_ROUND (frame_size
-				 + crtl->args.pretend_args_size));
+  frame_size = compute_frame_size (get_frame_size (), sa_size);
 
   if (TARGET_ABI_OPEN_VMS)
     {

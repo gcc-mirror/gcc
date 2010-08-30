@@ -1095,9 +1095,13 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 		      pending_stack_adjust = 0;
 		    }
 
+		  /* We can pass TRUE as the 4th argument because we just
+		     saved the stack pointer and will restore it right after
+		     the call.  */
 		  copy = gen_rtx_MEM (BLKmode,
 				      allocate_dynamic_stack_space
-				      (size_rtx, NULL_RTX, TYPE_ALIGN (type)));
+				      (size_rtx, NULL_RTX,
+				       TYPE_ALIGN (type), TRUE));
 		  set_mem_attributes (copy, type, 1);
 		}
 	      else
@@ -2492,6 +2496,8 @@ expand_call (tree exp, rtx target, int ignore)
 	      stack_arg_under_construction = 0;
 	    }
 	  argblock = push_block (ARGS_SIZE_RTX (adjusted_args_size), 0, 0);
+	  if (flag_stack_usage)
+	    current_function_has_unbounded_dynamic_stack_size = 1;
 	}
       else
 	{
@@ -2653,8 +2659,11 @@ expand_call (tree exp, rtx target, int ignore)
 		  stack_usage_map = stack_usage_map_buf;
 		  highest_outgoing_arg_in_use = 0;
 		}
+	      /* We can pass TRUE as the 4th argument because we just
+		 saved the stack pointer and will restore it right after
+		 the call.  */
 	      allocate_dynamic_stack_space (push_size, NULL_RTX,
-					    BITS_PER_UNIT);
+					    BITS_PER_UNIT, TRUE);
 	    }
 
 	  /* If argument evaluation might modify the stack pointer,
@@ -2693,6 +2702,19 @@ expand_call (tree exp, rtx target, int ignore)
       /* Now that the stack is properly aligned, pops can't safely
 	 be deferred during the evaluation of the arguments.  */
       NO_DEFER_POP;
+
+      /* Record the maximum pushed stack space size.  We need to delay
+	 doing it this far to take into account the optimization done
+	 by combine_pending_stack_adjustment_and_call.  */
+      if (flag_stack_usage
+	  && !ACCUMULATE_OUTGOING_ARGS
+	  && pass
+	  && adjusted_args_size.var == 0)
+	{
+	  int pushed = adjusted_args_size.constant + pending_stack_adjust;
+	  if (pushed > current_function_pushed_stack_size)
+	    current_function_pushed_stack_size = pushed;
+	}
 
       funexp = rtx_for_function_call (fndecl, addr);
 
@@ -3550,6 +3572,13 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 
   if (args_size.constant > crtl->outgoing_args_size)
     crtl->outgoing_args_size = args_size.constant;
+
+  if (flag_stack_usage && !ACCUMULATE_OUTGOING_ARGS)
+    {
+      int pushed = args_size.constant + pending_stack_adjust;
+      if (pushed > current_function_pushed_stack_size)
+	current_function_pushed_stack_size = pushed;
+    }
 
   if (ACCUMULATE_OUTGOING_ARGS)
     {

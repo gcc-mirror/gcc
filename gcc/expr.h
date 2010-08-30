@@ -641,9 +641,8 @@ extern void emit_stack_restore (enum save_level, rtx, rtx);
 /* Invoke emit_stack_save for the nonlocal_goto_save_area.  */
 extern void update_nonlocal_goto_save_area (void);
 
-/* Allocate some space on the stack dynamically and return its address.  An rtx
-   says how many bytes.  */
-extern rtx allocate_dynamic_stack_space (rtx, rtx, int);
+/* Allocate some space on the stack dynamically and return its address.  */
+extern rtx allocate_dynamic_stack_space (rtx, rtx, int, bool);
 
 /* Emit one stack probe at ADDRESS, an address within the stack.  */
 extern void emit_stack_probe (rtx);

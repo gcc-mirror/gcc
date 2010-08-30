@@ -3734,6 +3734,8 @@ hppa_expand_prologue (void)
     local_fsize += STARTING_FRAME_OFFSET;
 
   actual_fsize = compute_frame_size (size, &save_fregs);
+  if (flag_stack_usage)
+    current_function_static_stack_size = actual_fsize;
 
   /* Compute a few things we will use often.  */
   tmpreg = gen_rtx_REG (word_mode, 1);
