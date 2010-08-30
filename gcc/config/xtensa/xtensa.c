@@ -140,6 +140,12 @@ static tree xtensa_build_builtin_va_list (void);
 static bool xtensa_return_in_memory (const_tree, const_tree);
 static tree xtensa_gimplify_va_arg_expr (tree, tree, gimple_seq *,
 					 gimple_seq *);
+static void xtensa_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+					 const_tree, bool);
+static rtx xtensa_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+				const_tree, bool);
+static rtx xtensa_function_incoming_arg (CUMULATIVE_ARGS *,
+					 enum machine_mode, const_tree, bool);
 static rtx xtensa_function_value (const_tree, const_tree, bool);
 static void xtensa_init_builtins (void);
 static tree xtensa_fold_builtin (tree, int, tree *, bool);
@@ -201,6 +207,12 @@ static const int reg_nonleaf_alloc_order[FIRST_PSEUDO_REGISTER] =
 #define TARGET_SPLIT_COMPLEX_ARG hook_bool_const_tree_true
 #undef TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE xtensa_function_arg_advance
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG xtensa_function_arg
+#undef TARGET_FUNCTION_INCOMING_ARG
+#define TARGET_FUNCTION_INCOMING_ARG xtensa_function_incoming_arg
 
 #undef TARGET_EXPAND_BUILTIN_SAVEREGS
 #define TARGET_EXPAND_BUILTIN_SAVEREGS xtensa_builtin_saveregs
@@ -1983,8 +1995,9 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, int incoming)
 
 /* Advance the argument to the next argument position.  */
 
-void
-function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type)
+static void
+xtensa_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			     const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   int words, max;
   int *arg_words;
@@ -2009,9 +2022,9 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type)
    or 0 if the argument is to be passed on the stack.  INCOMING_P is nonzero
    if this is an incoming argument to the current function.  */
 
-rtx
-function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
-	      int incoming_p)
+static rtx
+xtensa_function_arg_1 (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		       const_tree type, bool incoming_p)
 {
   int regbase, words, max;
   int *arg_words;
@@ -2042,6 +2055,23 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
   return gen_rtx_REG (mode, regno);
 }
 
+/* Implement TARGET_FUNCTION_ARG.  */
+
+static rtx
+xtensa_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		     const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  return xtensa_function_arg_1 (cum, mode, type, false);
+}
+
+/* Implement TARGET_FUNCTION_INCOMING_ARG.  */
+
+static rtx
+xtensa_function_incoming_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			      const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  return xtensa_function_arg_1 (cum, mode, type, true);
+}
 
 int
 function_arg_boundary (enum machine_mode mode, tree type)

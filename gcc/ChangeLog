@@ -1,3 +1,19 @@
+2010-08-30  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/xtensa/xtensa-protos.h (function_arg_advance): Delete.
+	(function_arg): Delete.
+	* config/xtensa/xtensa.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
+	(FUNCTION_INCOMING_ARG): Delete.
+	* config/xtensa/xtensa.c (function_arg_advance): Rename to...
+	(xtensa_function_arg_advance): ...this.  Make static.  Take a const_tree
+	and a bool.
+	(function_arg): Rename to...
+	(xtensa_function_arg_1): ...this.  Make static.  Take a const_tree and
+	a bool.
+	(xtensa_function_arg, xtensa_function_incoming_arg): Nex functions.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+	(TARGET_FUNCTION_INCOMING_ARG): Define.
+
 2010-08-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/21602
