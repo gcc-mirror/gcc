@@ -73,9 +73,6 @@ extern reg_class_t xtensa_secondary_reload (bool, rtx, reg_class_t,
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
-extern void function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode, tree);
-extern struct rtx_def *function_arg (CUMULATIVE_ARGS *, enum machine_mode,
-				     tree, int);
 extern int function_arg_boundary (enum machine_mode, tree);
 #endif /* TREE_CODE */
 
