@@ -1,3 +1,7 @@
+2010-08-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* Make-lang.in: Add frontend-passes.o dependencies.
+
 2010-08-29  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/42769
