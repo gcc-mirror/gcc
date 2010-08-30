@@ -640,7 +640,7 @@ maybe_record_sincos (VEC(gimple, heap) **stmts,
    result of the cexpi call we insert before the use statement that
    dominates all other candidates.  */
 
-static void
+static bool
 execute_cse_sincos_1 (tree name)
 {
   gimple_stmt_iterator gsi;
@@ -651,6 +651,7 @@ execute_cse_sincos_1 (tree name)
   VEC(gimple, heap) *stmts = NULL;
   basic_block top_bb = NULL;
   int i;
+  bool cfg_changed = false;
 
   type = TREE_TYPE (name);
   FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, name)
@@ -682,16 +683,20 @@ execute_cse_sincos_1 (tree name)
   if (seen_cos + seen_sin + seen_cexpi <= 1)
     {
       VEC_free(gimple, heap, stmts);
-      return;
+      return false;
     }
 
   /* Simply insert cexpi at the beginning of top_bb but not earlier than
      the name def statement.  */
   fndecl = mathfn_built_in (type, BUILT_IN_CEXPI);
   if (!fndecl)
-    return;
-  res = make_rename_temp (TREE_TYPE (TREE_TYPE (fndecl)), "sincostmp");
+    return false;
+  res = create_tmp_var (TREE_TYPE (TREE_TYPE (fndecl)), "sincostmp");
+  if (TREE_CODE (TREE_TYPE (TREE_TYPE (fndecl))) == COMPLEX_TYPE
+      || TREE_CODE (TREE_TYPE (TREE_TYPE (fndecl))) == VECTOR_TYPE)
+    DECL_GIMPLE_REG_P (res) = 1;
   stmt = gimple_build_call (fndecl, 1, name);
+  res = make_ssa_name (res, stmt);
   gimple_call_set_lhs (stmt, res);
 
   def_stmt = SSA_NAME_DEF_STMT (name);
@@ -737,11 +742,14 @@ execute_cse_sincos_1 (tree name)
 	stmt = gimple_build_assign (gimple_call_lhs (use_stmt), rhs);
 
 	gsi = gsi_for_stmt (use_stmt);
-	gsi_insert_after (&gsi, stmt, GSI_SAME_STMT);
-	gsi_remove (&gsi, true);
+	gsi_replace (&gsi, stmt, true);
+	if (gimple_purge_dead_eh_edges (gimple_bb (stmt)))
+	  cfg_changed = true;
     }
 
   VEC_free(gimple, heap, stmts);
+
+  return cfg_changed;
 }
 
 /* Go through all calls to sin, cos and cexpi and call execute_cse_sincos_1
@@ -751,6 +759,7 @@ static unsigned int
 execute_cse_sincos (void)
 {
   basic_block bb;
+  bool cfg_changed = false;
 
   calculate_dominance_info (CDI_DOMINATORS);
 
@@ -777,7 +786,7 @@ execute_cse_sincos (void)
 		CASE_FLT_FN (BUILT_IN_CEXPI):
 		  arg = gimple_call_arg (stmt, 0);
 		  if (TREE_CODE (arg) == SSA_NAME)
-		    execute_cse_sincos_1 (arg);
+		    cfg_changed |= execute_cse_sincos_1 (arg);
 		  break;
 
 		default:;
@@ -787,7 +796,7 @@ execute_cse_sincos (void)
     }
 
   free_dominance_info (CDI_DOMINATORS);
-  return 0;
+  return cfg_changed ? TODO_cleanup_cfg : 0;
 }
 
 static bool

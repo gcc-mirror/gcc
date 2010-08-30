@@ -1,3 +1,13 @@
+2010-08-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-08-25  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45393
+	* tree-ssa-math-opts.c (execute_cse_sincos_1): Properly transfer
+	and clean EH info.  Avoid SSA update.
+	(execute_cse_sincos): Cleanup the CFG if it has changed.
+
 2010-08-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/ia64/ia64.md (cstorebi4): Fix thinko.
