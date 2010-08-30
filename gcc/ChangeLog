@@ -1,5 +1,8 @@
 2010-08-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/45419
+	* tree-ssa-live.c (dump_enumerated_decls): Clear the whole wi variable.
+
 	PR middle-end/45423
 	* gimplify.c (goa_stabilize_expr): Handle TRUTH_NOT_EXPR
 	and TRUTH_{AND,OR,XOR}_EXPR.

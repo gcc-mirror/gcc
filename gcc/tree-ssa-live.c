@@ -1245,8 +1245,8 @@ dump_enumerated_decls (FILE *file, int flags)
   struct walk_stmt_info wi;
   VEC (numbered_tree, heap) *decl_list = VEC_alloc (numbered_tree, heap, 40);
 
+  memset (&wi, '\0', sizeof (wi));
   wi.info = (void*) decl_list;
-  wi.pset = NULL;
   FOR_EACH_BB (bb)
     {
       gimple_stmt_iterator gsi;
