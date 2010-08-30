@@ -536,22 +536,46 @@ inverse (tree x, tree mask)
 }
 
 /* Derives the upper bound BND on the number of executions of loop with exit
-   condition S * i <> C, assuming that this exit is taken.  If
-   NO_OVERFLOW is true, then the control variable of the loop does not
-   overflow.  If NO_OVERFLOW is true or BNDS.below >= 0, then BNDS.up
-   contains the upper bound on the value of C.  */
+   condition S * i <> C.  If NO_OVERFLOW is true, then the control variable of
+   the loop does not overflow.  EXIT_MUST_BE_TAKEN is true if we are guaranteed
+   that the loop ends through this exit, i.e., the induction variable ever
+   reaches the value of C.  
+   
+   The value C is equal to final - base, where final and base are the final and
+   initial value of the actual induction variable in the analysed loop.  BNDS
+   bounds the value of this difference when computed in signed type with
+   unbounded range, while the computation of C is performed in an unsigned
+   type with the range matching the range of the type of the induction variable.
+   In particular, BNDS.up contains an upper bound on C in the following cases:
+   -- if the iv must reach its final value without overflow, i.e., if
+      NO_OVERFLOW && EXIT_MUST_BE_TAKEN is true, or
+   -- if final >= base, which we know to hold when BNDS.below >= 0.  */
 
 static void
 number_of_iterations_ne_max (mpz_t bnd, bool no_overflow, tree c, tree s,
-			     bounds *bnds)
+			     bounds *bnds, bool exit_must_be_taken)
 {
   double_int max;
   mpz_t d;
+  bool bnds_u_valid = ((no_overflow && exit_must_be_taken)
+		       || mpz_sgn (bnds->below) >= 0);
 
-  /* If the control variable does not overflow, the number of iterations is
-     at most c / s.  Otherwise it is at most the period of the control
-     variable.  */
-  if (!no_overflow && !multiple_of_p (TREE_TYPE (c), c, s))
+  if (multiple_of_p (TREE_TYPE (c), c, s))
+    {
+      /* If C is an exact multiple of S, then its value will be reached before
+	 the induction variable overflows (unless the loop is exited in some
+	 other way before).  Note that the actual induction variable in the
+	 loop (which ranges from base to final instead of from 0 to C) may
+	 overflow, in which case BNDS.up will not be giving a correct upper
+	 bound on C; thus, BNDS_U_VALID had to be computed in advance.  */
+      no_overflow = true;
+      exit_must_be_taken = true;
+    }
+
+  /* If the induction variable can overflow, the number of iterations is at
+     most the period of the control variable (or infinite, but in that case
+     the whole # of iterations analysis will fail).  */
+  if (!no_overflow)
     {
       max = double_int_mask (TYPE_PRECISION (TREE_TYPE (c))
 			     - tree_low_cst (num_ending_zeros (s), 1));
@@ -559,14 +583,22 @@ number_of_iterations_ne_max (mpz_t bnd, bool no_overflow, tree c, tree s,
       return;
     }
 
-  /* Determine the upper bound on C.  */
-  if (no_overflow || mpz_sgn (bnds->below) >= 0)
-    mpz_set (bnd, bnds->up);
-  else if (TREE_CODE (c) == INTEGER_CST)
-    mpz_set_double_int (bnd, tree_to_double_int (c), true);
-  else
-    mpz_set_double_int (bnd, double_int_mask (TYPE_PRECISION (TREE_TYPE (c))),
-			true);
+  /* Now we know that the induction variable does not overflow, so the loop
+     iterates at most (range of type / S) times.  */
+  mpz_set_double_int (bnd, double_int_mask (TYPE_PRECISION (TREE_TYPE (c))),
+		      true);
+
+  /* If the induction variable is guaranteed to reach the value of C before
+     overflow, ... */
+  if (exit_must_be_taken)
+    {
+      /* ... then we can strenghten this to C / S, and possibly we can use
+	 the upper bound on C given by BNDS.  */
+      if (TREE_CODE (c) == INTEGER_CST)
+	mpz_set_double_int (bnd, tree_to_double_int (c), true);
+      else if (bnds_u_valid)
+	mpz_set (bnd, bnds->up);
+    }
 
   mpz_init (d);
   mpz_set_double_int (d, tree_to_double_int (s), true);
@@ -618,7 +650,8 @@ number_of_iterations_ne (tree type, affine_iv *iv, tree final,
     }
 
   mpz_init (max);
-  number_of_iterations_ne_max (max, iv->no_overflow, c, s, bnds);
+  number_of_iterations_ne_max (max, iv->no_overflow, c, s, bnds,
+			       exit_must_be_taken);
   niter->max = mpz_get_double_int (niter_type, max, false);
   mpz_clear (max);
 

@@ -1,3 +1,11 @@
+2010-08-30  Zdenek Dvorak  <ook@ucw.cz>
+
+	PR tree-optimization/45427
+	* tree-ssa-loop-niter.c (number_of_iterations_ne_max): Rewritten.
+	Handle the case that the exit is never taken correctly.
+	(number_of_iterations_ne): Pass exit_must_be_taken to
+	number_of_iterations_ne_max.
+
 2010-08-31  Catherine Moore  <clm@codesourcery.com>
 
 	* config/mips/mips.h (BASE_DRIVER_SELF_SPECS):
