@@ -15191,6 +15191,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
 			 the default argument; otherwise the default
 			 argument continues.  */
 		      bool error = false;
+		      tree t;
 
 		      /* Set ITALP so cp_parser_parameter_declaration_list
 			 doesn't decide to commit to this parse.  */
@@ -15199,7 +15200,11 @@ cp_parser_parameter_declaration (cp_parser *parser,
 
 		      cp_parser_parse_tentatively (parser);
 		      cp_lexer_consume_token (parser->lexer);
+		      begin_scope (sk_function_parms, NULL_TREE);
 		      cp_parser_parameter_declaration_list (parser, &error);
+		      for (t = current_binding_level->names; t; t = TREE_CHAIN (t))
+			pop_binding (DECL_NAME (t), t);
+		      leave_scope ();
 		      if (!cp_parser_error_occurred (parser) && !error)
 			done = true;
 		      cp_parser_abort_tentative_parse (parser);
