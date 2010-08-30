@@ -1,8 +1,13 @@
+2010-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (call_to_gnu): Also force the return slot opt
+	for the call to a function whose return type was unconstrained.
+
 2010-08-30  Olivier Hainque  <hainque@adacore.com>
 
-        * gcc-interface/decl.c (FOREIGN_FORCE_REALIGN_STACK): New macro,
-        replacement for FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN.
-        (gnat_to_gnu_entity) <case ..., E_Procedure>: Use it.
+	* gcc-interface/decl.c (FOREIGN_FORCE_REALIGN_STACK): New macro,
+	replacement for FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN.
+	(gnat_to_gnu_entity) <case ..., E_Procedure>: Use it.
 
 2010-08-21  Eric Botcazou  <ebotcazou@adacore.com>
 

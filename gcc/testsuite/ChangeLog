@@ -1,3 +1,7 @@
+2010-08-30  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat.dg/discr24.adb: New test.
+
 2010-08-30  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45449
