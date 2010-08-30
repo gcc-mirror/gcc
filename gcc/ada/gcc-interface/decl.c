@@ -60,27 +60,20 @@
 #define Has_Stdcall_Convention(E) (0)
 #endif
 
-/* Stack realignment for functions with foreign conventions is provided on a
-   per back-end basis now, as it is handled by the prologue expanders and not
-   as part of the function's body any more.  It might be requested by way of a
-   dedicated function type attribute on the targets that support it.
+/* Stack realignment is necessary for functions with foreign conventions when
+   the ABI doesn't mandate as much as what the compiler assumes - that is, up
+   to PREFERRED_STACK_BOUNDARY.
 
-   We need a way to avoid setting the attribute on the targets that don't
-   support it and use FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN for this purpose.
+   Such realignment can be requested with a dedicated function type attribute
+   on the targets that support it.  We define FOREIGN_FORCE_REALIGN_STACK to
+   characterize the situations where the attribute should be set.  We rely on
+   compiler configuration settings for 'main' to decide.  */
 
-   It is defined on targets where the circuitry is available, and indicates
-   whether the realignment is needed for 'main'.  We use this to decide for
-   foreign subprograms as well.
-
-   It is not defined on targets where the circuitry is not implemented, and
-   we just never set the attribute in these cases.
-
-   Whether it is defined on all targets that would need it in theory is
-   not entirely clear.  We currently trust the base GCC settings for this
-   purpose.  */
-
-#ifndef FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN
-#define FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN 0
+#ifdef MAIN_STACK_BOUNDARY
+#define FOREIGN_FORCE_REALIGN_STACK \
+  (MAIN_STACK_BOUNDARY < PREFERRED_STACK_BOUNDARY)
+#else
+#define FOREIGN_FORCE_REALIGN_STACK 0
 #endif
 
 struct incomplete
@@ -4208,13 +4201,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	     get_identifier ("stdcall"), NULL_TREE,
 	     gnat_entity);
 
-	/* If we are on a target where stack realignment is needed for 'main'
-	   to honor GCC's implicit expectations (stack alignment greater than
-	   what the base ABI guarantees), ensure we do the same for foreign
-	   convention subprograms as they might be used as callbacks from code
-	   breaking such expectations.  Note that this applies to task entry
-	   points in particular.  */
-	if (FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN
+	/* If we should request stack realignment for a foreign convention
+	   subprogram, do so.  Note that this applies to task entry points in
+	   particular.  */
+	if (FOREIGN_FORCE_REALIGN_STACK
 	    && Has_Foreign_Convention (gnat_entity))
 	  prepend_one_attribute_to
 	    (&attr_list, ATTR_MACHINE_ATTRIBUTE,
