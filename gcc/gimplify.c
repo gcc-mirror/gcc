@@ -6405,8 +6405,12 @@ goa_stabilize_expr (tree *expr_p, gimple_seq *pre_p, tree lhs_addr,
 	{
 	case TRUTH_ANDIF_EXPR:
 	case TRUTH_ORIF_EXPR:
+	case TRUTH_AND_EXPR:
+	case TRUTH_OR_EXPR:
+	case TRUTH_XOR_EXPR:
 	  saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 1), pre_p,
 					 lhs_addr, lhs_var);
+	case TRUTH_NOT_EXPR:
 	  saw_lhs |= goa_stabilize_expr (&TREE_OPERAND (expr, 0), pre_p,
 					 lhs_addr, lhs_var);
 	  break;

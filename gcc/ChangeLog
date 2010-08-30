@@ -1,3 +1,11 @@
+2010-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/45423
+	* gimplify.c (goa_stabilize_expr): Handle TRUTH_NOT_EXPR
+	and TRUTH_{AND,OR,XOR}_EXPR.
+	* c-parser.c (c_parser_omp_atomic): Handle boolean
+	{PRE,POST}_{INC,DEC}REMENT.
+
 2010-08-30  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/xtensa/xtensa-protos.h (function_arg_advance): Delete.
