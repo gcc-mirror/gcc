@@ -1,3 +1,11 @@
+2010-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lib/gcc-dg.exp (cleanup-stack-usage): New procedure.
+	* lib/scanasm.exp (scan-stack-usage): Likewise.
+	(scan-stack-usage-not): Likewise.
+	* gcc.dg/stack-usage-1.c: New test.
+	* gcc.target/i386/stack-usage-realign.c: Likewise.
+
 2010-08-30  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR tree-optimization/45427

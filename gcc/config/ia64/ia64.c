@@ -3097,6 +3097,9 @@ ia64_expand_prologue (void)
   ia64_compute_frame_size (get_frame_size ());
   last_scratch_gr_reg = 15;
 
+  if (flag_stack_usage)
+    current_function_static_stack_size = current_frame_info.total_size;
+
   if (dump_file) 
     {
       fprintf (dump_file, "ia64 frame related registers "

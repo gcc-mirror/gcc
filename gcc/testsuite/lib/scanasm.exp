@@ -1,4 +1,5 @@
-# Copyright (C) 2000, 2002, 2003, 2007, 2008 Free Software Foundation, Inc.
+# Copyright (C) 2000, 2002, 2003, 2007, 2008, 2010
+# Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -151,6 +152,28 @@ proc scan-file { output_file args } {
 proc scan-file-not { output_file args } {
     upvar 2 name testcase
     set testcase [lindex $testcase 0]
+    dg-scan "scan-file-not" 0 $testcase $output_file $args
+}
+
+# Look for a pattern in the .su file produced by the compiler.  See
+# dg-scan for details.
+
+proc scan-stack-usage { args } {
+    upvar 2 name testcase
+    set testcase [lindex $testcase 0]
+    set output_file "[file rootname [file tail $testcase]].su"
+
+    dg-scan "scan-file" 1 $testcase $output_file $args
+}
+
+# Check that a pattern is not present in the .su file produced by the
+# compiler.  See dg-scan for details.
+
+proc scan-stack-usage-not { args } {
+    upvar 2 name testcase
+    set testcase [lindex $testcase 0]
+    set output_file "[file rootname [file tail $testcase]].su"
+
     dg-scan "scan-file-not" 0 $testcase $output_file $args
 }
 

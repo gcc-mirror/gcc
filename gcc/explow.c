@@ -1114,11 +1114,22 @@ update_nonlocal_goto_save_area (void)
    SIZE is an rtx representing the size of the area.
    TARGET is a place in which the address can be placed.
 
-   KNOWN_ALIGN is the alignment (in bits) that we know SIZE has.  */
+   KNOWN_ALIGN is the alignment (in bits) that we know SIZE has.
+
+   If CANNOT_ACCUMULATE is set to TRUE, the caller guarantees that the
+   stack space allocated by the generated code cannot be added with itself
+   in the course of the execution of the function.  It is always safe to
+   pass FALSE here and the following criterion is sufficient in order to
+   pass TRUE: every path in the CFG that starts at the allocation point and
+   loops to it executes the associated deallocation code.  */
 
 rtx
-allocate_dynamic_stack_space (rtx size, rtx target, int known_align)
+allocate_dynamic_stack_space (rtx size, rtx target, int known_align,
+			      bool cannot_accumulate)
 {
+  HOST_WIDE_INT stack_usage_size = -1;
+  bool known_align_valid = true;
+
   /* If we're asking for zero bytes, it doesn't matter what we point
      to since we can't dereference it.  But return a reasonable
      address anyway.  */
@@ -1127,6 +1138,37 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align)
 
   /* Otherwise, show we're calling alloca or equivalent.  */
   cfun->calls_alloca = 1;
+
+  /* If stack usage info is requested, look into the size we are passed.
+     We need to do so this early to avoid the obfuscation that may be
+     introduced later by the various alignment operations.  */
+  if (flag_stack_usage)
+    {
+      if (GET_CODE (size) == CONST_INT)
+	stack_usage_size = INTVAL (size);
+      else if (GET_CODE (size) == REG)
+        {
+	  /* Look into the last emitted insn and see if we can deduce
+	     something for the register.  */
+	  rtx insn, set, note;
+	  insn = get_last_insn ();
+	  if ((set = single_set (insn)) && rtx_equal_p (SET_DEST (set), size))
+	    {
+	      if (GET_CODE (SET_SRC (set)) == CONST_INT)
+		stack_usage_size = INTVAL (SET_SRC (set));
+	      else if ((note = find_reg_equal_equiv_note (insn))
+		       && GET_CODE (XEXP (note, 0)) == CONST_INT)
+		stack_usage_size = INTVAL (XEXP (note, 0));
+	    }
+	}
+
+      /* If the size is not constant, we can't say anything.  */
+      if (stack_usage_size == -1)
+	{
+	  current_function_has_unbounded_dynamic_stack_size = 1;
+	  stack_usage_size = 0;
+	}
+    }
 
   /* Ensure the size is in the proper mode.  */
   if (GET_MODE (size) != VOIDmode && GET_MODE (size) != Pmode)
@@ -1157,10 +1199,17 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align)
 #endif
 
   if (MUST_ALIGN)
-    size
-      = force_operand (plus_constant (size,
-				      BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1),
-		       NULL_RTX);
+    {
+      size
+        = force_operand (plus_constant (size,
+					BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1),
+			 NULL_RTX);
+
+      if (flag_stack_usage)
+	stack_usage_size += BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1;
+
+      known_align_valid = false;
+    }
 
 #ifdef SETJMP_VIA_SAVE_AREA
   /* If setjmp restores regs from a save area in the stack frame,
@@ -1174,32 +1223,7 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align)
      would use reg notes to store the "optimized" size and fix things
      up later.  These days we know this information before we ever
      start building RTL so the reg notes are unnecessary.  */
-  if (!cfun->calls_setjmp)
-    {
-      int align = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
-
-      /* ??? Code below assumes that the save area needs maximal
-	 alignment.  This constraint may be too strong.  */
-      gcc_assert (PREFERRED_STACK_BOUNDARY == BIGGEST_ALIGNMENT);
-
-      if (CONST_INT_P (size))
-	{
-	  HOST_WIDE_INT new_size = INTVAL (size) / align * align;
-
-	  if (INTVAL (size) != new_size)
-	    size = GEN_INT (new_size);
-	}
-      else
-	{
-	  /* Since we know overflow is not possible, we avoid using
-	     CEIL_DIV_EXPR and use TRUNC_DIV_EXPR instead.  */
-	  size = expand_divmod (0, TRUNC_DIV_EXPR, Pmode, size,
-				GEN_INT (align), NULL_RTX, 1);
-	  size = expand_mult (Pmode, size,
-			      GEN_INT (align), NULL_RTX, 1);
-	}
-    }
-  else
+  if (cfun->calls_setjmp)
     {
       rtx dynamic_offset
 	= expand_binop (Pmode, sub_optab, virtual_stack_dynamic_rtx,
@@ -1207,6 +1231,14 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align)
 
       size = expand_binop (Pmode, add_optab, size, dynamic_offset,
 			   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+
+      /* The above dynamic offset cannot be computed statically at this
+	 point, but it will be possible to do so after RTL expansion is
+	 done.  Record how many times we will need to add it.  */
+      if (flag_stack_usage)
+	current_function_dynamic_alloc_count++;
+
+      known_align_valid = false;
     }
 #endif /* SETJMP_VIA_SAVE_AREA */
 
@@ -1223,13 +1255,28 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align)
      insns.  Since this is an extremely rare event, we have no reliable
      way of knowing which systems have this problem.  So we avoid even
      momentarily mis-aligning the stack.  */
+  if (!known_align_valid || known_align % PREFERRED_STACK_BOUNDARY != 0)
+    {
+      size = round_push (size);
 
-  /* If we added a variable amount to SIZE,
-     we can no longer assume it is aligned.  */
-#if !defined (SETJMP_VIA_SAVE_AREA)
-  if (MUST_ALIGN || known_align % PREFERRED_STACK_BOUNDARY != 0)
-#endif
-    size = round_push (size);
+      if (flag_stack_usage)
+	{
+	  int align = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
+	  stack_usage_size = (stack_usage_size + align - 1) / align * align;
+	}
+    }
+
+  /* The size is supposed to be fully adjusted at this point so record it
+     if stack usage info is requested.  */
+  if (flag_stack_usage)
+    {
+      current_function_dynamic_stack_size += stack_usage_size;
+
+      /* ??? This is gross but the only safe stance in the absence
+	 of stack usage oriented flow analysis.  */
+      if (!cannot_accumulate)
+	current_function_has_unbounded_dynamic_stack_size = 1;
+    }
 
   do_pending_stack_adjust ();
 

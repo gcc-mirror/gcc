@@ -1899,6 +1899,18 @@ instantiate_virtual_regs (void)
   /* Indicate that, from now on, assign_stack_local should use
      frame_pointer_rtx.  */
   virtuals_instantiated = 1;
+
+  /* See allocate_dynamic_stack_space for the rationale.  */
+#ifdef SETJMP_VIA_SAVE_AREA
+  if (flag_stack_usage && cfun->calls_setjmp)
+    {
+      int align = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
+      dynamic_offset = (dynamic_offset + align - 1) / align * align;
+      current_function_dynamic_stack_size
+	+= current_function_dynamic_alloc_count * dynamic_offset;
+    }
+#endif
+
   return 0;
 }
 
@@ -3586,6 +3598,8 @@ gimplify_parameters (void)
 
 		  t = built_in_decls[BUILT_IN_ALLOCA];
 		  t = build_call_expr (t, 1, DECL_SIZE_UNIT (parm));
+		  /* The call has been built for a variable-sized object.  */
+		  ALLOCA_FOR_VAR_P (t) = 1;
 		  t = fold_convert (ptr_type, t);
 		  t = build2 (MODIFY_EXPR, TREE_TYPE (addr), addr, t);
 		  gimplify_and_add (t, &stmts);
@@ -4364,6 +4378,12 @@ prepare_function_start (void)
   init_varasm_status ();
   init_expr ();
   default_rtl_profile ();
+
+  if (flag_stack_usage)
+    {
+      cfun->su = ggc_alloc_cleared_stack_usage ();
+      cfun->su->static_stack_size = -1;
+    }
 
   cse_not_expected = ! optimize;
 
@@ -5753,12 +5773,17 @@ rest_of_handle_thread_prologue_and_epilogue (void)
 {
   if (optimize)
     cleanup_cfg (CLEANUP_EXPENSIVE);
+
   /* On some machines, the prologue and epilogue code, or parts thereof,
      can be represented as RTL.  Doing so lets us schedule insns between
      it and the rest of the code and also allows delayed branch
      scheduling to operate in the epilogue.  */
-
   thread_prologue_and_epilogue_insns ();
+
+  /* The stack usage info is finalized during prologue expansion.  */
+  if (flag_stack_usage)
+    output_stack_usage ();
+
   return 0;
 }
 

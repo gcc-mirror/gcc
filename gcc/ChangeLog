@@ -1,3 +1,59 @@
+2010-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Stack usage support
+	* common.opt (-fstack-usage): New option.
+	* doc/invoke.texi (Debugging options): Document it.
+	* builtins.c (expand_builtin_apply): Pass TRUE as 4th argument to
+	allocate_dynamic_stack_space.
+	(expand_builtin_alloca): Add 4th bool parameter CANNOT_ACCUMULATE
+	and propagate it to allocate_dynamic_stack_space.
+	(expand_builtin) <BUILT_IN_ALLOCA>: Adjust for above change.
+	* calls.c (initialize_argument_information): Pass TRUE as 4th
+	argument to allocate_dynamic_stack_space.
+	(expand_call): Set current_function_has_unbounded_dynamic_stack_size
+	to 1 when pushing a variable-sized argument onto the stack.  Pass
+	TRUE as 4th argument to allocate_dynamic_stack_space.
+	Update current_function_pushed_stack_size.
+	(emit_library_call_value_1): Likewise.
+	* explow.c (allocate_dynamic_stack_space): Add 4th bool parameter
+	CANNOT_ACCUMULATE.  If flag_stack_usage, look into the size and
+	attempt to find an upper bound.  Remove redundant code for the
+	SETJMP_VIA_SAVE_AREA case.
+	* expr.h (allocate_dynamic_stack_space): Add 4th bool parameter.
+	* function.h (struct stack_usage): New structure.
+	(current_function_static_stack_size): New macro.
+	(current_function_dynamic_stack_size): Likewise.
+	(current_function_pushed_stack_size): Likewise.
+	(current_function_dynamic_alloc_count): Likewise.
+	(current_function_has_unbounded_dynamic_stack_size): Likewise.
+	(current_function_allocates_dynamic_stack_space): Likewise.
+	(struct function): Add new field 'su'.
+	* function.c (instantiate_virtual_regs): If SETJMP_VIA_SAVE_AREA,
+	add the value of the dynamic offset to the dynamic stack usage.
+	(gimplify_parameters): Set ALLOCA_FOR_VAR_P on call to BUILT_IN_ALLOCA
+	for variable-sized objects.
+	(prepare_function_start): Allocate cfun->su if flag_stack_usage.
+	(rest_of_handle_thread_prologue_and_epilogue): Call output_stack_usage.
+	* gimplify.c (gimplify_decl_expr): Set ALLOCA_FOR_VAR_P on call to
+	BUILT_IN_ALLOCA for variable-sized objects.
+	* output.h (output_stack_usage): Declare.
+	* toplev.c (stack_usage_file): New file pointer.
+	(output_stack_usage): New function.
+	(open_auxiliary_file): Likewise.
+	(lang_dependent_init): Open file if flag_stack_usage is set.
+	(finalize): Close file if stack_usage_file is not null.
+	* tree.h (ALLOCA_FOR_VAR_P): New macro.
+	* config/alpha/alpha.c (compute_frame_size): New function.
+	(alpha_expand_prologue): Use it.
+	(alpha_start_function): Likewise.
+	(alpha_expand_epilogue): Likewise.  Set stack usage info.
+	* config/i386/i386.c (ix86_expand_prologue): Likewise.
+	* config/ia64/ia64.c (ia64_expand_prologue): Likewise.
+	* config/mips/mips.c (mips_expand_prologue): Likewise.
+	* config/pa/pa.c (hppa_expand_prologue): Likewise.
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Likewise.
+	* config/sparc/sparc.c (sparc_expand_prologue): Likewise.
+
 2010-08-30  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR tree-optimization/45427
@@ -6,7 +62,7 @@
 	(number_of_iterations_ne): Pass exit_must_be_taken to
 	number_of_iterations_ne_max.
 
-2010-08-31  Catherine Moore  <clm@codesourcery.com>
+2010-08-30  Catherine Moore  <clm@codesourcery.com>
 
 	* config/mips/mips.h (BASE_DRIVER_SELF_SPECS):
 	Infer -mdspr2 for the the 74K.

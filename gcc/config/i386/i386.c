@@ -9613,6 +9613,29 @@ ix86_expand_prologue (void)
 
   allocate = frame.stack_pointer_offset - m->fs.sp_offset;
 
+  if (flag_stack_usage)
+    {
+      /* We start to count from ARG_POINTER.  */
+      HOST_WIDE_INT stack_size = frame.stack_pointer_offset;
+
+      /* If it was realigned, take into account the fake frame.  */
+      if (stack_realign_drap)
+	{
+	  if (ix86_static_chain_on_stack)
+	    stack_size += UNITS_PER_WORD;
+
+	  if (!call_used_regs[REGNO (crtl->drap_reg)])
+	    stack_size += UNITS_PER_WORD;
+
+	  /* This over-estimates by 1 minimal-stack-alignment-unit but
+	     mitigates that by counting in the new return address slot.  */
+	  current_function_dynamic_stack_size
+	    += crtl->stack_alignment_needed / BITS_PER_UNIT;
+	}
+
+      current_function_static_stack_size = stack_size;
+    }
+
   /* The stack has already been decremented by the instruction calling us
      so we need to probe unconditionally to preserve the protection area.  */
   if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
