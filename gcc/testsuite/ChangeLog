@@ -1,3 +1,8 @@
+2010-08-30  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45449
+	* gcc.dg/pr45449.c: New testcase.
+
 2010-08-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/opts-1.c: Expect errors, not warnings.

@@ -813,18 +813,13 @@ remove_unused_locals (void)
       BITMAP_FREE (global_unused_vars);
     }
 
-  /* Remove unused variables from REFERENCED_VARs.  As a special
-     exception keep the variables that are believed to be aliased.
-     Those can't be easily removed from the alias sets and operand
-     caches.  They will be removed shortly after the next may_alias
-     pass is performed.  */
+  /* Remove unused variables from REFERENCED_VARs.  */
   FOR_EACH_REFERENCED_VAR (t, rvi)
     if (!is_global_var (t)
 	&& TREE_CODE (t) != PARM_DECL
 	&& TREE_CODE (t) != RESULT_DECL
 	&& !(ann = var_ann (t))->used
-	&& !ann->is_heapvar
-	&& !TREE_ADDRESSABLE (t))
+	&& !ann->is_heapvar)
       remove_referenced_var (t);
   remove_unused_scope_block_p (DECL_INITIAL (current_function_decl));
   if (dump_file && (dump_flags & TDF_DETAILS))
