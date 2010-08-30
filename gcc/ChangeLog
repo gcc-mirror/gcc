@@ -1,3 +1,8 @@
+2010-08-31  Catherine Moore  <clm@codesourcery.com>
+
+	* config/mips/mips.h (BASE_DRIVER_SELF_SPECS):
+	Infer -mdspr2 for the the 74K.
+
 2010-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/45419
