@@ -1,3 +1,8 @@
+2010-08-31  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/45455
+	* gcc.dg/vect/vect-cond-4.c: Fix use of uninitialized variable.
+
 2010-08-31  Bingfeng Mei  <bmei@broadcom.com>
 
 	* gcc.dg/vect/pr43430-1.c: Requires vect_condition target.
