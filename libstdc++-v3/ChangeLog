@@ -1,5 +1,20 @@
 2010-08-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/44480
+	* include/bits/hashtable.h (_Hashtable<>::_M_begin_bucket_index):
+	Add, caching the index of the first non-empty bucket.
+	(begin, cbegin): Use it.
+	(_Hashtable<>::_Hashtable(_InputIterator, _InputIterator, ...),
+	_Hashtable(const _Hashtable&), _Hashtable(_Hashtable&&),
+	swap(_Hashtable&), clear): Adjust.
+	(_M_insert_bucket, _M_insert, erase(const_iterator),
+	erase(const key_type&), _M_rehash): Update it.
+
+	* include/bits/hashtable.h (_Hashtable<>::_M_erase): Remove.
+	(erase(const_iterator)): Inline the latter.
+
+2010-08-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* testsuite/23_containers/forward_list/operations/remove_freed.cc:
 	Fix test01 return type to void.
 	* testsuite/util/exception/safety.h: Avoid -Wall -m32 warnings.
