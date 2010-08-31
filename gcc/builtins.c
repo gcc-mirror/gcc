@@ -4741,7 +4741,7 @@ static tree
 dummy_object (tree type)
 {
   tree t = build_int_cst (build_pointer_type (type), 0);
-  return build1 (INDIRECT_REF, type, t);
+  return build2 (MEM_REF, type, t, t);
 }
 
 /* Gimplify __builtin_va_arg, aka VA_ARG_EXPR, which is not really a

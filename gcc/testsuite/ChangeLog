@@ -1,3 +1,8 @@
+2010-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/45461
+	* gcc.dg/pr45461.c: New test.
+
 2010-08-31  Richard Guenther  <rguenther@suse.de>
 
 	PR testsuite/45455
