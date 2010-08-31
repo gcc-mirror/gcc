@@ -1737,27 +1737,6 @@ typedef struct
   MACHMODE aapcs_vfp_rmode;
 } CUMULATIVE_ARGS;
 
-/* Define where to put the arguments to a function.
-   Value is zero to push the argument on the stack,
-   or a hard register in which to store the argument.
-
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
-   CUM is a variable of type CUMULATIVE_ARGS which gives info about
-    the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).
-
-   On the ARM, normally the first 16 bytes are passed in registers r0-r3; all
-   other arguments are passed on the stack.  If (NAMED == 0) (which happens
-   only in assign_parms, since TARGET_SETUP_INCOMING_VARARGS is
-   defined), say it is passed in the stack (function_prologue will
-   indeed make it pass in the stack if necessary).  */
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  arm_function_arg (&(CUM), (MODE), (TYPE), (NAMED))
-
 #define FUNCTION_ARG_PADDING(MODE, TYPE) \
   (arm_pad_arg_upward (MODE, TYPE) ? upward : downward)
 
@@ -1775,12 +1754,6 @@ typedef struct
    On the ARM, the offset starts at 0.  */
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
   arm_init_cumulative_args (&(CUM), (FNTYPE), (LIBNAME), (FNDECL))
-
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
-  arm_function_arg_advance (&(CUM), (MODE), (TYPE), (NAMED))
 
 /* If defined, a C expression that gives the alignment boundary, in bits, of an
    argument with the specified mode and type.  If it is not defined,
