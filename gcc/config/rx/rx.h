@@ -321,11 +321,6 @@ typedef unsigned int CUMULATIVE_ARGS;
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
   (CUM) = 0
 
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  rx_function_arg (& CUM, MODE, TYPE, NAMED)
-
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
-  (CUM) += rx_function_arg_size (MODE, TYPE)
 
 #define TRAMPOLINE_SIZE 	(! TARGET_BIG_ENDIAN_DATA ? 14 : 20)
 #define TRAMPOLINE_ALIGNMENT 	32
