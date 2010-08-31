@@ -75,6 +75,10 @@ static bool v850_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 static int v850_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				   tree, bool);
 static bool v850_strict_argument_naming (CUMULATIVE_ARGS *);
+static rtx v850_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			      const_tree, bool);
+static void v850_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+				       const_tree, bool);
 static bool v850_can_eliminate       (const int, const int);
 static void v850_asm_trampoline_template (FILE *);
 static void v850_trampoline_init (rtx, tree, rtx);
@@ -197,6 +201,12 @@ static const struct attribute_spec v850_attribute_table[] =
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES v850_arg_partial_bytes
 
+#undef TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG v850_function_arg
+
+#undef TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE v850_function_arg_advance
+
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE v850_can_eliminate
 
@@ -299,11 +309,9 @@ v850_strict_argument_naming (CUMULATIVE_ARGS * ca ATTRIBUTE_UNUSED)
    and type TYPE will be passed to a function.  If the result
    is NULL_RTX, the argument will be pushed.  */
 
-rtx
-function_arg (CUMULATIVE_ARGS * cum,
-              enum machine_mode mode,
-              tree type,
-              int named)
+static rtx
+v850_function_arg (CUMULATIVE_ARGS * cum, enum machine_mode mode,
+		   const_tree type, bool named)
 {
   rtx result = NULL_RTX;
   int size, align;
@@ -397,6 +405,22 @@ v850_arg_partial_bytes (CUMULATIVE_ARGS * cum, enum machine_mode mode,
     return 0;
 
   return 4 * UNITS_PER_WORD - cum->nbytes;
+}
+
+/* Update the data in CUM to advance over an argument
+   of mode MODE and data type TYPE.
+   (TYPE is null for libcalls where that information may not be available.)  */
+
+static void
+v850_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			   const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  cum->nbytes += (((type && int_size_in_bytes (type) > 8
+		    ? GET_MODE_SIZE (Pmode)
+		    : (mode != BLKmode
+		       ? GET_MODE_SIZE (mode)
+		       : int_size_in_bytes (type))) + UNITS_PER_WORD - 1)
+		  & -UNITS_PER_WORD);
 }
 
 /* Return the high and low words of a CONST_DOUBLE */

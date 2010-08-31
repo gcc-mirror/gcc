@@ -1,5 +1,14 @@
 2010-08-31  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/v850/v850-protos.h (function_arg): Delete.
+	* config/v850/v850.h (FUNCTION_ARG): Delete.
+	(FUNCTION_ARG_ADVANCE): Move code to...
+	* config/v850/v850.c (v850_function_arg_advance): ...here.
+	(v850_function_arg): Make static.  Take a const_tree and a bool.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+
+2010-08-31  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/m32r/m32r.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Move
 	these...
 	(ROUND_ADVANCE, ROUND_ADVANCE_ARG, ROUND_ADVANCE_CUM, PASS_IN_REG_P):
