@@ -1,3 +1,14 @@
+2010-08-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/38282
+	* f95-lang.c (gfc_init_builtin_functions): Define popcount{,l,ll}
+	and parity{,l,ll} builtins.
+	* trans-intrinsic.c (gfc_conv_intrinsic_popcnt_poppar): New function.
+	(gfc_conv_intrinsic_function): Call above new functions.
+	* simplify.c (gfc_simplify_popcnt, gfc_simplify_poppar): New
+	functions.
+	* intrinsic.texi: Document POPCNT and POPPAR.
+
 2010-08-30  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45456

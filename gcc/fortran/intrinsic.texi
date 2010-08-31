@@ -211,6 +211,8 @@ Some basic guidelines for editing this document:
 * @code{PACK}:          PACK,      Pack an array into an array of rank one
 * @code{PARITY}:        PARITY,    Reduction with exclusive OR
 * @code{PERROR}:        PERROR,    Print system error message
+* @code{POPCNT}:        POPCNT,    Number of bits set
+* @code{POPPAR}:        POPPAR,    Parity of the number of bits set
 * @code{PRECISION}:     PRECISION, Decimal precision of a real kind
 * @code{PRESENT}:       PRESENT,   Determine whether an optional dummy argument is specified
 * @code{PRODUCT}:       PRODUCT,   Product of array elements
@@ -6719,7 +6721,7 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{BIT_SIZE}, @ref{TRAILZ}
+@ref{BIT_SIZE}, @ref{TRAILZ}, @ref{POPCNT}, @ref{POPPAR}
 @end table
 
 
@@ -8894,6 +8896,95 @@ program prec_and_range
   print *, precision(x), range(x)
   print *, precision(y), range(y)
 end program prec_and_range
+@end smallexample
+@end table
+
+
+
+@node POPCNT
+@section @code{POPCNT} --- Number of bits set
+@fnindex POPCNT
+@cindex binary representation
+@cindex bits set
+
+@table @asis
+@item @emph{Description}:
+@code{POPCNT(I)} returns the number of bits set ('1' bits) in the binary
+representation of @code{I}.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = POPCNT(I)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{I} @tab Shall be of type @code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER} and of the default integer
+kind.
+
+@item @emph{See also}:
+@ref{POPPAR}, @ref{LEADZ}, @ref{TRAILZ}
+
+@item @emph{Example}:
+@smallexample
+program test_population
+  print *, popcnt(127),       poppar(127)
+  print *, popcnt(huge(0_4)), poppar(huge(0_4))
+  print *, popcnt(huge(0_8)), poppar(huge(0_8))
+end program test_population
+@end smallexample
+@end table
+
+
+@node POPPAR
+@section @code{POPPAR} --- Parity of the number of bits set
+@fnindex POPPAR
+@cindex binary representation
+@cindex parity
+
+@table @asis
+@item @emph{Description}:
+@code{POPPAR(I)} returns parity of the integer @code{I}, i.e. the parity
+of the number of bits set ('1' bits) in the binary representation of
+@code{I}. It is equal to 0 if @code{I} has an even number of bits set,
+and 1 for an odd number of '1' bits.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = POPPAR(I)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{I} @tab Shall be of type @code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER} and of the default integer
+kind.
+
+@item @emph{See also}:
+@ref{POPCNT}, @ref{LEADZ}, @ref{TRAILZ}
+
+@item @emph{Example}:
+@smallexample
+program test_population
+  print *, popcnt(127),       poppar(127)
+  print *, popcnt(huge(0_4)), poppar(huge(0_4))
+  print *, popcnt(huge(0_8)), poppar(huge(0_8))
+end program test_population
 @end smallexample
 @end table
 
@@ -11228,7 +11319,7 @@ END PROGRAM
 @end smallexample
 
 @item @emph{See also}:
-@ref{BIT_SIZE}, @ref{LEADZ}
+@ref{BIT_SIZE}, @ref{LEADZ}, @ref{POPPAR}, @ref{POPCNT}
 @end table
 
 

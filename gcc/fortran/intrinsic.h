@@ -317,6 +317,8 @@ gfc_expr *gfc_simplify_not (gfc_expr *);
 gfc_expr *gfc_simplify_or (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_pack (gfc_expr *, gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_parity (gfc_expr *, gfc_expr *);
+gfc_expr *gfc_simplify_popcnt (gfc_expr *);
+gfc_expr *gfc_simplify_poppar (gfc_expr *);
 gfc_expr *gfc_simplify_precision (gfc_expr *);
 gfc_expr *gfc_simplify_product (gfc_expr *, gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_radix (gfc_expr *);

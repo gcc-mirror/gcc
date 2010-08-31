@@ -2299,6 +2299,20 @@ add_functions (void)
 
   make_generic ("parity", GFC_ISYM_PARITY, GFC_STD_F2008);
 
+  add_sym_1 ("popcnt", GFC_ISYM_POPCNT, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_INTEGER, di, GFC_STD_F2008,
+	     gfc_check_i, gfc_simplify_popcnt, NULL,
+	     i, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("popcnt", GFC_ISYM_POPCNT, GFC_STD_F2008);
+
+  add_sym_1 ("poppar", GFC_ISYM_POPPAR, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_INTEGER, di, GFC_STD_F2008,
+	     gfc_check_i, gfc_simplify_poppar, NULL,
+	     i, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("poppar", GFC_ISYM_POPPAR, GFC_STD_F2008);
+
   add_sym_1 ("precision", GFC_ISYM_PRECISION, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
 	     gfc_check_precision, gfc_simplify_precision, NULL,
 	     x, BT_UNKNOWN, 0, REQUIRED);
