@@ -1579,8 +1579,8 @@ Common
 Enable partitioned link-time optimization
 
 fwhopr=
-Common RejectNegative UInteger Joined Var(flag_whopr)
-Enable partitioned link-time optimization with specified number of parallel jobs
+Common RejectNegative Joined Var(flag_whopr)
+Partitioned link-time optimization with number of parallel jobs or jobserver.
 
 ftree-builtin-call-dce
 Common Report Var(flag_tree_builtin_call_dce) Init(0) Optimization

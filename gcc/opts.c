@@ -2089,7 +2089,7 @@ common_handle_option (const struct cl_decoded_option *decoded,
       break;
 
     case OPT_fwhopr:
-      flag_whopr = value;
+      flag_whopr = arg;
       break;
 
     case OPT_w:

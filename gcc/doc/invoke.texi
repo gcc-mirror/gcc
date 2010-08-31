@@ -7619,6 +7619,13 @@ parallel using @var{n} parallel jobs by utilizing an installed
 @command{make} program.  The environment variable @env{MAKE} may be
 used to override the program used.
 
+You can also specify @option{-fwhopr=jobserver} to use GNU make's 
+job server mode to determine the number of parallel jobs. This 
+is useful when the Makefile calling GCC is already parallel.
+The parent Makefile will need a @samp{+} prepended to the command recipe
+for this to work. This will likely only work if @env{MAKE} is 
+GNU make.
+
 Disabled by default.
 
 @item -fwpa
