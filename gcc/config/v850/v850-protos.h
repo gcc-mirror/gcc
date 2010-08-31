@@ -48,11 +48,8 @@ extern int    v850_float_nz_comparison_operator (rtx, Mmode);
 extern rtx    v850_gen_compare              (enum rtx_code, Mmode, rtx, rtx);
 extern Mmode  v850_gen_float_compare (enum rtx_code, Mmode, rtx, rtx);
 extern Mmode  v850_select_cc_mode (RTX_CODE, rtx, rtx);
-#ifdef TREE_CODE
-extern rtx    function_arg                  (CUMULATIVE_ARGS *, Mmode, tree, int);
 #endif
-#endif
-#endif /* TREE_CODE */
+#endif /* RTX_CODE */
 
 #ifdef TREE_CODE
 extern int    v850_interrupt_function_p     (tree);

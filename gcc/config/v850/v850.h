@@ -608,40 +608,12 @@ enum reg_class
 #define CUMULATIVE_ARGS struct cum_arg
 struct cum_arg { int nbytes; int anonymous_args; };
 
-/* Define where to put the arguments to a function.
-   Value is zero to push the argument on the stack,
-   or a hard register in which to store the argument.
-
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
-   CUM is a variable of type CUMULATIVE_ARGS which gives info about
-    the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
-
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-  function_arg (&CUM, MODE, TYPE, NAMED)
-
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.  */
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
  ((CUM).nbytes = 0, (CUM).anonymous_args = 0)
-
-/* Update the data in CUM to advance over an argument
-   of mode MODE and data type TYPE.
-   (TYPE is null for libcalls where that information may not be available.)  */
-#define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
- ((CUM).nbytes +=							\
-  ((((TYPE) && int_size_in_bytes (TYPE) > 8)				\
-   ? GET_MODE_SIZE (Pmode)						\
-   : ((MODE) != BLKmode							\
-      ? GET_MODE_SIZE ((MODE))						\
-      : int_size_in_bytes ((TYPE))))					\
-   + UNITS_PER_WORD - 1) & -UNITS_PER_WORD)
 
 /* When a parameter is passed in a register, stack space is still
    allocated for it.  */
