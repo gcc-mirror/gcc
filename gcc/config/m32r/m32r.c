@@ -90,6 +90,10 @@ static bool m32r_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				    const_tree, bool);
 static int m32r_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				   tree, bool);
+static rtx m32r_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
+			      const_tree, bool);
+static void m32r_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
+				       const_tree, bool);
 static bool m32r_can_eliminate (const int, const int);
 static void m32r_trampoline_init (rtx, tree, rtx);
 
@@ -162,6 +166,10 @@ static const struct attribute_spec m32r_attribute_table[] =
 #define TARGET_PASS_BY_REFERENCE m32r_pass_by_reference
 #undef  TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES m32r_arg_partial_bytes
+#undef  TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG m32r_function_arg
+#undef  TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE m32r_function_arg_advance
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE m32r_can_eliminate
@@ -1170,6 +1178,64 @@ m32r_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     words = 0;
 
   return words * UNITS_PER_WORD;
+}
+
+/* The ROUND_ADVANCE* macros are local to this file.  */
+/* Round SIZE up to a word boundary.  */
+#define ROUND_ADVANCE(SIZE) \
+  (((SIZE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+
+/* Round arg MODE/TYPE up to the next word boundary.  */
+#define ROUND_ADVANCE_ARG(MODE, TYPE) \
+  ((MODE) == BLKmode				\
+   ? ROUND_ADVANCE ((unsigned int) int_size_in_bytes (TYPE))	\
+   : ROUND_ADVANCE ((unsigned int) GET_MODE_SIZE (MODE)))
+
+/* Round CUM up to the necessary point for argument MODE/TYPE.  */
+#define ROUND_ADVANCE_CUM(CUM, MODE, TYPE) (CUM)
+
+/* Return boolean indicating arg of type TYPE and mode MODE will be passed in
+   a reg.  This includes arguments that have to be passed by reference as the
+   pointer to them is passed in a reg if one is available (and that is what
+   we're given).
+   This macro is only used in this file.  */
+#define PASS_IN_REG_P(CUM, MODE, TYPE) \
+  (ROUND_ADVANCE_CUM ((CUM), (MODE), (TYPE)) < M32R_MAX_PARM_REGS)
+
+/* Determine where to put an argument to a function.
+   Value is zero to push the argument on the stack,
+   or a hard register in which to store the argument.
+
+   MODE is the argument's machine mode.
+   TYPE is the data type of the argument (as a tree).
+    This is null for libcalls where that information may
+    not be available.
+   CUM is a variable of type CUMULATIVE_ARGS which gives info about
+    the preceding args and about the function being called.
+   NAMED is nonzero if this argument is a named parameter
+    (otherwise it is an extra parameter matching an ellipsis).  */
+/* On the M32R the first M32R_MAX_PARM_REGS args are normally in registers
+   and the rest are pushed.  */
+
+static rtx
+m32r_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+		   const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  return (PASS_IN_REG_P (*cum, mode, type)
+	  ? gen_rtx_REG (mode, ROUND_ADVANCE_CUM (*cum, mode, type))
+	  : NULL_RTX);
+}
+
+/* Update the data in CUM to advance over an argument
+   of mode MODE and data type TYPE.
+   (TYPE is null for libcalls where that information may not be available.)  */
+
+static void
+m32r_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
+			   const_tree type, bool named ATTRIBUTE_UNUSED)
+{
+  *cum = (ROUND_ADVANCE_CUM (*cum, mode, type)
+	  + ROUND_ADVANCE_ARG (mode, type));
 }
 
 /* Worker function for TARGET_RETURN_IN_MEMORY.  */

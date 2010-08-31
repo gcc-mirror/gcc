@@ -1,5 +1,17 @@
 2010-08-31  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/m32r/m32r.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Move
+	these...
+	(ROUND_ADVANCE, ROUND_ADVANCE_ARG, ROUND_ADVANCE_CUM, PASS_IN_REG_P):
+	...and these...
+	* config/m32r/m32r.c (m32r_function_arg, m32r_function_arg_advance):
+	..to here..
+	(ROUND_ADVANCE, ROUND_ADVANCE_ARG, ROUND_ADVANCE_CUM, PASS_IN_REG_P):
+	...and here.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+
+2010-08-31  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/rx/rx-protos.h (rx_function_arg, rx_function_arg_size):
 	Delete.
 	* config/rx/rx.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
