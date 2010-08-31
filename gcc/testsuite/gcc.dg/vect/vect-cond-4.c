@@ -19,7 +19,7 @@ __attribute__ ((noinline)) void
 foo (int z)
 {
   int j, i, x;
-  int curr_a, flag, next_a, curr_b, next_b;
+  int curr_a, curr_b;
 
   for (j = 0; j < M; j++) 
     {
@@ -30,7 +30,7 @@ foo (int z)
       for (i = 0; i < N; i++) 
         {
           curr_a = x > c[i] ? curr_a : z;
-          curr_b = x > c[i] ? next_b : 5;
+          curr_b = x > c[i] ? curr_b : 5;
         }
 
       x_out_a[j] = curr_a;
