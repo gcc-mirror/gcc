@@ -1,3 +1,13 @@
+2010-08-31  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/rx/rx-protos.h (rx_function_arg, rx_function_arg_size):
+	Delete.
+	* config/rx/rx.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
+	* config/rx/rx.c (rx_function_arg_size): Make static.
+	(rx_function_arg): Likewise.
+	(rx_function_arg_advance): New function.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+
 2010-08-31  John Tytgat  <John.Tytgat@aaug.net>
 
 	* config/arm/arm.c (arm_override_options): Remove superfluous test.

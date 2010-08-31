@@ -44,9 +44,4 @@ extern bool		rx_is_restricted_memory_address (rtx, Mmode);
 extern void		rx_notice_update_cc (rtx body, rtx insn);
 #endif
 
-#ifdef TREE_CODE
-extern unsigned int     rx_function_arg_size (Mmode, const_tree);
-extern struct rtx_def * rx_function_arg (Fargs *, Mmode, const_tree, bool);
-#endif
-
 #endif /* GCC_RX_PROTOS_H */
