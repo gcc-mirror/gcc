@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target nonpic } */
 /* { dg-options "-O2" } */
 
 /* Check volatiles are written, read or not re-read consistently */
