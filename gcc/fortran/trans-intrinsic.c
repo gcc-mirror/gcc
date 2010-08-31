@@ -3476,6 +3476,88 @@ gfc_conv_intrinsic_trailz (gfc_se * se, gfc_expr *expr)
   se->expr = fold_build3 (COND_EXPR, result_type, cond, bit_size, trailz);
 }
 
+/* Using __builtin_popcount for POPCNT and __builtin_parity for POPPAR;
+   for types larger than "long long", we call the long long built-in for
+   the lower and higher bits and combine the result.  */
+ 
+static void
+gfc_conv_intrinsic_popcnt_poppar (gfc_se * se, gfc_expr *expr, int parity)
+{
+  tree arg;
+  tree arg_type;
+  tree result_type;
+  tree func;
+  int argsize;
+
+  gfc_conv_intrinsic_function_args (se, expr, &arg, 1);
+  argsize = TYPE_PRECISION (TREE_TYPE (arg));
+  result_type = gfc_get_int_type (gfc_default_integer_kind);
+
+  /* Which variant of the builtin should we call?  */
+  if (argsize <= INT_TYPE_SIZE)
+    {
+      arg_type = unsigned_type_node;
+      func = built_in_decls[parity ? BUILT_IN_PARITY : BUILT_IN_POPCOUNT];
+    }
+  else if (argsize <= LONG_TYPE_SIZE)
+    {
+      arg_type = long_unsigned_type_node;
+      func = built_in_decls[parity ? BUILT_IN_PARITYL : BUILT_IN_POPCOUNTL];
+    }
+  else if (argsize <= LONG_LONG_TYPE_SIZE)
+    {
+      arg_type = long_long_unsigned_type_node;
+      func = built_in_decls[parity ? BUILT_IN_PARITYLL : BUILT_IN_POPCOUNTLL];
+    }
+  else
+    {
+      /* Our argument type is larger than 'long long', which mean none
+	 of the POPCOUNT builtins covers it.  We thus call the 'long long'
+	 variant multiple times, and add the results.  */
+      tree utype, arg2, call1, call2;
+
+      /* For now, we only cover the case where argsize is twice as large
+	 as 'long long'.  */
+      gcc_assert (argsize == 2 * LONG_LONG_TYPE_SIZE);
+
+      func = built_in_decls[parity ? BUILT_IN_PARITYLL : BUILT_IN_POPCOUNTLL];
+
+      /* Convert it to an integer, and store into a variable.  */
+      utype = gfc_build_uint_type (argsize);
+      arg = fold_convert (utype, arg);
+      arg = gfc_evaluate_now (arg, &se->pre);
+
+      /* Call the builtin twice.  */
+      call1 = build_call_expr_loc (input_location, func, 1,
+				   fold_convert (long_long_unsigned_type_node,
+						 arg));
+
+      arg2 = fold_build2 (RSHIFT_EXPR, utype, arg,
+			  build_int_cst (utype, LONG_LONG_TYPE_SIZE));
+      call2 = build_call_expr_loc (input_location, func, 1,
+				   fold_convert (long_long_unsigned_type_node,
+						 arg2));
+			  
+      /* Combine the results.  */
+      if (parity)
+	se->expr = fold_build2 (BIT_XOR_EXPR, result_type, call1, call2);
+      else
+	se->expr = fold_build2 (PLUS_EXPR, result_type, call1, call2);
+
+      return;
+    }
+
+  /* Convert the actual argument twice: first, to the unsigned type of the
+     same size; then, to the proper argument type for the built-in
+     function.  */
+  arg = fold_convert (gfc_build_uint_type (argsize), arg);
+  arg = fold_convert (arg_type, arg);
+
+  se->expr = fold_convert (result_type,
+			   build_call_expr_loc (input_location, func, 1, arg));
+}
+
+
 /* Process an intrinsic with unspecified argument-types that has an optional
    argument (which could be of type character), e.g. EOSHIFT.  For those, we
    need to append the string length of the optional argument if it is not
@@ -5416,6 +5498,14 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_TRAILZ:
       gfc_conv_intrinsic_trailz (se, expr);
+      break;
+
+    case GFC_ISYM_POPCNT:
+      gfc_conv_intrinsic_popcnt_poppar (se, expr, 0);
+      break;
+
+    case GFC_ISYM_POPPAR:
+      gfc_conv_intrinsic_popcnt_poppar (se, expr, 1);
       break;
 
     case GFC_ISYM_LBOUND:

@@ -4293,6 +4293,47 @@ gfc_simplify_parity (gfc_expr *e, gfc_expr *dim)
 
 
 gfc_expr *
+gfc_simplify_popcnt (gfc_expr *e)
+{
+  int res, k;
+  mpz_t x;
+
+  if (e->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  k = gfc_validate_kind (e->ts.type, e->ts.kind, false);
+
+  /* Convert argument to unsigned, then count the '1' bits.  */
+  mpz_init_set (x, e->value.integer);
+  convert_mpz_to_unsigned (x, gfc_integer_kinds[k].bit_size);
+  res = mpz_popcount (x);
+  mpz_clear (x);
+
+  return gfc_get_int_expr (gfc_default_integer_kind, &e->where, res);
+}
+
+
+gfc_expr *
+gfc_simplify_poppar (gfc_expr *e)
+{
+  gfc_expr *popcnt;
+  const char *s;
+  int i;
+
+  if (e->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  popcnt = gfc_simplify_popcnt (e);
+  gcc_assert (popcnt);
+
+  s = gfc_extract_int (popcnt, &i);
+  gcc_assert (!s);
+
+  return gfc_get_int_expr (gfc_default_integer_kind, &e->where, i % 2);
+}
+
+
+gfc_expr *
 gfc_simplify_precision (gfc_expr *e)
 {
   int i = gfc_validate_kind (e->ts.type, e->ts.kind, false);
