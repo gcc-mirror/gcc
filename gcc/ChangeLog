@@ -1,3 +1,23 @@
+2010-08-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (popdi1): Rewrite using POST_INC memory operand.
+	(popsi1): Ditto.
+	(*popdi1_epilogue): Ditto.
+	(*popsi1_epilogue): Ditto.
+	(popsi, popdi peephole2 patterns): Update peepholes for changed
+	pop{si,di}1 and *pop{si,di}1_epilogue patterns.
+
+	(pop<mode>1): Macroize insn from pop{si,di}1 using P code iterator.
+	(*pop<mode>1_epilogue): Ditto from *pop{si,di}1_epilogue.
+
+	* config/i386/i386.c (*ix86_gen_pop1): Remove indirect function.
+	(override_options): Do not initialize removed ix86_gen_pop1.
+	(gen_pop): New static function.
+	(ix86_expand_prologue): Use gen_pop instead of ix86_gen_pop1.
+	(release_scratch_register_on_entry): Ditto.
+	(ix86_restore_reg_using_pop): Ditto.
+	(ix86_expand_epilogue): Ditto.
+
 2010-08-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/45461
@@ -414,9 +434,9 @@
 	(VSr3): Ditto.
 
 2010-08-27  Basile Starynkevitch  <basile@starynkevitch.net>
-            Jeremie Salvucci  <jeremie.salvucci@free.fr>
+	    Jeremie Salvucci  <jeremie.salvucci@free.fr>
 
-        * gengtype.c (output_type_enum): Test the right union member.
+	* gengtype.c (output_type_enum): Test the right union member.
 
 2010-08-27  Uros Bizjak  <ubizjak@gmail.com>
 
