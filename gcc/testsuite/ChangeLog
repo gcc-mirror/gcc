@@ -1,3 +1,8 @@
+2010-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/45457
+	* c-c++-common/cpp/pr45457.c: New test.
+
 2010-08-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/nested-func-8.c: New test.

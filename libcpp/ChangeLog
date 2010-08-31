@@ -1,3 +1,10 @@
+2010-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/45457
+	* expr.c (parse_defined): Call pfile->cb.user_builtin_macro hook if
+	needed.
+	* directives.c (do_ifdef, do_ifndef): Likewise.
+
 2010-08-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* system.h [HAVE_INTTYPES_H]: Include inttypes.h.
