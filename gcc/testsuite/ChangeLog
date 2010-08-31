@@ -1,3 +1,7 @@
+2010-08-31  Bingfeng Mei  <bmei@broadcom.com>
+
+	* gcc.dg/vect/pr43430-1.c: Requires vect_condition target.
+        
 2010-08-30  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45456
