@@ -7137,7 +7137,7 @@ depending on the arguments' types.  For example:
 You can use the built-in function @code{__builtin_choose_expr} to
 evaluate code depending on the value of a constant expression.  This
 built-in function returns @var{exp1} if @var{const_exp}, which is an
-integer constant expression, is nonzero.  Otherwise it returns 0.
+integer constant expression, is nonzero.  Otherwise it returns @var{exp2}.
 
 This built-in function is analogous to the @samp{? :} operator in C,
 except that the expression returned has its type unaltered by promotion
