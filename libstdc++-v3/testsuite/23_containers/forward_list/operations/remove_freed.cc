@@ -25,7 +25,7 @@
 // 23.3.3.5 forward_list operations [forwardlist.ops]
 
 // Used to cause many Valgrind errors: LWG 526-type situation.
-int test01()
+void test01()
 {
   bool test __attribute__((unused)) = true;
 

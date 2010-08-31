@@ -1,3 +1,10 @@
+2010-08-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/23_containers/forward_list/operations/remove_freed.cc:
+	Fix test01 return type to void.
+	* testsuite/util/exception/safety.h: Avoid -Wall -m32 warnings.
+	* testsuite/util/replacement_memory_operators.h: Likewise.
+
 2010-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/23_containers/bitset/invalidation: Move...
