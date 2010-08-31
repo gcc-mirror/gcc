@@ -578,13 +578,6 @@ typedef struct m32c_cumulative_args
 
 #define REVERSIBLE_CC_MODE(MODE) 1
 
-/* Describing Relative Costs of Operations */
-
-#define REGISTER_MOVE_COST(MODE,FROM,TO) \
-	m32c_register_move_cost (MODE, FROM, TO)
-#define MEMORY_MOVE_COST(MODE,CLASS,IN) \
-	m32c_memory_move_cost (MODE, CLASS, IN)
-
 /* Dividing the Output into Sections (Texts, Data, ...) */
 
 #define TEXT_SECTION_ASM_OP ".text"
