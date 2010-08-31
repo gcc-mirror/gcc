@@ -1,3 +1,8 @@
+2010-08-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (gen_decl_die) <CONST_DECL>: Do not skip in Ada.
+	(dwarf2out_decl) <CONST_DECL>: Likewise.
+
 2010-08-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Stack usage support
