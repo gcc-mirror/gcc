@@ -1,3 +1,12 @@
+2010-08-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2010-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/45353
+	* sel-sched-ir.c (sel_bb_head): Return NULL even if next_nonnote_insn
+	after bb_note is a BARRIER.
+
 2010-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/45423

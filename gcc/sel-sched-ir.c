@@ -4324,7 +4324,7 @@ sel_bb_head (basic_block bb)
       note = bb_note (bb);
       head = next_nonnote_insn (note);
 
-      if (head && BLOCK_FOR_INSN (head) != bb)
+      if (head && (BARRIER_P (head) || BLOCK_FOR_INSN (head) != bb))
 	head = NULL_RTX;
     }
 
