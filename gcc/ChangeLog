@@ -1,3 +1,11 @@
+2010-08-31  Andi Kleen      <ak@linux.intel.com>
+
+	* common.opt (fwhopr=): Update for -fwhopr=jobserver
+	* doc/invoke.texi (fwhopr): Document -fwhopr=jobserver.
+	* lto-wrapper.c (run_gcc): Add jobserver mode.
+	* opts.c (common_handle_option): Fix OPT_fwhopr for non numeric
+	argument.
+
 2010-08-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (popdi1): Rewrite using POST_INC memory operand.
