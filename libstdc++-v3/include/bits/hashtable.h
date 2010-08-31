@@ -175,6 +175,7 @@ namespace std
       _Node_allocator_type   _M_node_allocator;
       _Node**                _M_buckets;
       size_type              _M_bucket_count;
+      size_type              _M_begin_bucket_index; // First non-empty bucket.
       size_type              _M_element_count;
       _RehashPolicy          _M_rehash_policy;
       
@@ -236,21 +237,11 @@ namespace std
       // Basic container operations
       iterator
       begin()
-      {
-	iterator __i(_M_buckets);
-	if (!__i._M_cur_node)
-	  __i._M_incr_bucket();
-	return __i;
-      }
+      { return iterator(_M_buckets + _M_begin_bucket_index); }
 
       const_iterator
       begin() const
-      {
-	const_iterator __i(_M_buckets);
-	if (!__i._M_cur_node)
-	  __i._M_incr_bucket();
-	return __i;
-      }
+      { return const_iterator(_M_buckets + _M_begin_bucket_index); }
 
       iterator
       end()
@@ -262,12 +253,7 @@ namespace std
 
       const_iterator
       cbegin() const
-      {
-	const_iterator __i(_M_buckets);
-	if (!__i._M_cur_node)
-	  __i._M_incr_bucket();
-	return __i;
-      }
+      { return const_iterator(_M_buckets + _M_begin_bucket_index); }
 
       const_iterator
       cend() const
@@ -408,10 +394,7 @@ namespace std
       iterator
       _M_insert(const value_type&, std::false_type);
 
-      void
-      _M_erase_node(_Node*, _Node**);
-
-    public:				
+    public:
       // Insert and erase
       _Insert_Return_Type
       insert(const value_type& __v) 
@@ -571,6 +554,7 @@ namespace std
     {
       _M_bucket_count = _M_rehash_policy._M_next_bkt(__bucket_hint);
       _M_buckets = _M_allocate_buckets(_M_bucket_count);
+      _M_begin_bucket_index = _M_bucket_count;
     }
 
   template<typename _Key, typename _Value, 
@@ -601,6 +585,7 @@ namespace std
 						       __distance_fw(__f,
 								     __l)));
 	_M_buckets = _M_allocate_buckets(_M_bucket_count);
+	_M_begin_bucket_index = _M_bucket_count;
 	__try
 	  {
 	    for (; __f != __l; ++__f)
@@ -627,6 +612,7 @@ namespace std
       __detail::_Map_base<_Key, _Value, _ExtractKey, __uk, _Hashtable>(__ht),
       _M_node_allocator(__ht._M_node_allocator),
       _M_bucket_count(__ht._M_bucket_count),
+      _M_begin_bucket_index(__ht._M_begin_bucket_index),
       _M_element_count(__ht._M_element_count),
       _M_rehash_policy(__ht._M_rehash_policy)
     {
@@ -668,12 +654,14 @@ namespace std
       _M_node_allocator(__ht._M_node_allocator),
       _M_buckets(__ht._M_buckets),
       _M_bucket_count(__ht._M_bucket_count),
+      _M_begin_bucket_index(__ht._M_begin_bucket_index),
       _M_element_count(__ht._M_element_count),
       _M_rehash_policy(__ht._M_rehash_policy)
     {
       size_type __n_bkt = __ht._M_rehash_policy._M_next_bkt(0);
       __ht._M_buckets = __ht._M_allocate_buckets(__n_bkt);
       __ht._M_bucket_count = __n_bkt;
+      __ht._M_begin_bucket_index = __ht._M_bucket_count;
       __ht._M_element_count = 0;
       __ht._M_rehash_policy = _RehashPolicy();
     }
@@ -713,6 +701,7 @@ namespace std
       std::swap(_M_rehash_policy, __x._M_rehash_policy);
       std::swap(_M_buckets, __x._M_buckets);
       std::swap(_M_bucket_count, __x._M_bucket_count);
+      std::swap(_M_begin_bucket_index, __x._M_begin_bucket_index);
       std::swap(_M_element_count, __x._M_element_count);
     }
 
@@ -915,6 +904,8 @@ namespace std
 	  this->_M_store_code(__new_node, __code);
 	  _M_buckets[__n] = __new_node;
 	  ++_M_element_count;
+	  if (__n < _M_begin_bucket_index)
+	    _M_begin_bucket_index = __n;
 	  return iterator(__new_node, _M_buckets + __n);
 	}
       __catch(...)
@@ -981,39 +972,13 @@ namespace std
 	{
 	  __new_node->_M_next = _M_buckets[__n];
 	  _M_buckets[__n] = __new_node;
+	  if (__n < _M_begin_bucket_index)
+	    _M_begin_bucket_index = __n;
 	}
       this->_M_store_code(__new_node, __code);
 
       ++_M_element_count;
       return iterator(__new_node, _M_buckets + __n);
-    }
-
-  // For erase(iterator) and erase(const_iterator).
-  template<typename _Key, typename _Value, 
-	   typename _Allocator, typename _ExtractKey, typename _Equal,
-	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
-	   bool __chc, bool __cit, bool __uk>
-    void
-    _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
-	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
-    _M_erase_node(_Node* __p, _Node** __b)
-    {
-      _Node* __cur = *__b;
-      if (__cur == __p)
-	*__b = __cur->_M_next;
-      else
-	{
-	  _Node* __next = __cur->_M_next;
-	  while (__next != __p)
-	    {
-	      __cur = __next;
-	      __next = __cur->_M_next;
-	    }
-	  __cur->_M_next = __next->_M_next;
-	}
-
-      _M_deallocate_node(__p);
-      --_M_element_count;
     }
 
   template<typename _Key, typename _Value, 
@@ -1050,7 +1015,31 @@ namespace std
     {
       iterator __result(__it._M_cur_node, __it._M_cur_bucket);
       ++__result;
-      _M_erase_node(__it._M_cur_node, __it._M_cur_bucket);
+
+      _Node* __cur = *__it._M_cur_bucket;
+      if (__cur == __it._M_cur_node)
+	{
+	  *__it._M_cur_bucket = __cur->_M_next;
+
+	  // If _M_begin_bucket_index no longer indexes the first non-empty
+	  // bucket - its single node is being erased - update it.
+	  if (!_M_buckets[_M_begin_bucket_index])
+	    _M_begin_bucket_index = __result._M_cur_bucket - _M_buckets;
+	}
+      else
+	{
+	  _Node* __next = __cur->_M_next;
+	  while (__next != __it._M_cur_node)
+	    {
+	      __cur = __next;
+	      __next = __cur->_M_next;
+	    }
+	  __cur->_M_next = __next->_M_next;
+	}
+
+      _M_deallocate_node(__it._M_cur_node);
+      --_M_element_count;
+
       return __result;
     }
 
@@ -1104,6 +1093,20 @@ namespace std
 	  ++__result;
 	}
 
+      // If the entire bucket indexed by _M_begin_bucket_index has been
+      // erased look forward for the first non-empty bucket.
+      if (!_M_buckets[_M_begin_bucket_index])
+	{
+	  if (!_M_element_count)
+	    _M_begin_bucket_index = _M_bucket_count;
+	  else
+	    {
+	      ++_M_begin_bucket_index;
+	      while (!_M_buckets[_M_begin_bucket_index])
+		++_M_begin_bucket_index;
+	    }
+	}
+
       return __result;
     }
 
@@ -1121,8 +1124,8 @@ namespace std
 	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
     erase(const_iterator __first, const_iterator __last)
     {
-      while (__first != __last)
-	__first = this->erase(__first);
+       while (__first != __last)
+	 __first = this->erase(__first);
       return iterator(__last._M_cur_node, __last._M_cur_bucket);
     }
 
@@ -1137,6 +1140,7 @@ namespace std
     {
       _M_deallocate_nodes(_M_buckets, _M_bucket_count);
       _M_element_count = 0;
+      _M_begin_bucket_index = _M_bucket_count;
     }
  
   template<typename _Key, typename _Value, 
@@ -1165,6 +1169,7 @@ namespace std
       _Node** __new_array = _M_allocate_buckets(__n);
       __try
 	{
+	  _M_begin_bucket_index = __n;
 	  for (size_type __i = 0; __i < _M_bucket_count; ++__i)
 	    while (_Node* __p = _M_buckets[__i])
 	      {
@@ -1172,6 +1177,8 @@ namespace std
 		_M_buckets[__i] = __p->_M_next;
 		__p->_M_next = __new_array[__new_index];
 		__new_array[__new_index] = __p;
+		if (__new_index < _M_begin_bucket_index)
+		  _M_begin_bucket_index = __new_index;
 	      }
 	  _M_deallocate_buckets(_M_buckets, _M_bucket_count);
 	  _M_bucket_count = __n;
@@ -1187,6 +1194,7 @@ namespace std
 	  _M_deallocate_buckets(__new_array, __n);
 	  _M_deallocate_nodes(_M_buckets, _M_bucket_count);
 	  _M_element_count = 0;
+	  _M_begin_bucket_index = _M_bucket_count;
 	  __throw_exception_again;
 	}
     }
