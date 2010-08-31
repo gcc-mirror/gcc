@@ -1,3 +1,15 @@
+2010-08-31  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/arm/arm-protos.h (arm_function_arg_advance): Delete.
+	(arm_function_arg): Delete.
+	(arm_needs_doubleword_align): Take a const_tree.
+	* config/arm/arm.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
+	* config/arm/arm.c (aapcs_select_call_coproc): Take a const_tree.
+	(aapcs_layout_arg, arm_needs_doubleword_align): Likewise.
+	(arm_function_arg): Make static.  Take a const_tree and a bool.
+	(arm_function_arg_advance): Likewise.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+
 2010-08-31  Andi Kleen      <ak@linux.intel.com>
 
 	* common.opt (fwhopr=): Update for -fwhopr=jobserver
