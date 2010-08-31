@@ -1896,7 +1896,6 @@ static const char ix86_force_align_arg_pointer_string[]
   = "force_align_arg_pointer";
 
 static rtx (*ix86_gen_leave) (void);
-static rtx (*ix86_gen_pop1) (rtx);
 static rtx (*ix86_gen_add3) (rtx, rtx, rtx);
 static rtx (*ix86_gen_sub3) (rtx, rtx, rtx);
 static rtx (*ix86_gen_sub3_carry) (rtx, rtx, rtx, rtx, rtx);
@@ -3655,7 +3654,6 @@ override_options (bool main_args_p)
   if (TARGET_64BIT)
     {
       ix86_gen_leave = gen_leave_rex64;
-      ix86_gen_pop1 = gen_popdi1;
       ix86_gen_add3 = gen_adddi3;
       ix86_gen_sub3 = gen_subdi3;
       ix86_gen_sub3_carry = gen_subdi3_carry;
@@ -3669,7 +3667,6 @@ override_options (bool main_args_p)
   else
     {
       ix86_gen_leave = gen_leave;
-      ix86_gen_pop1 = gen_popsi1;
       ix86_gen_add3 = gen_addsi3;
       ix86_gen_sub3 = gen_subsi3;
       ix86_gen_sub3_carry = gen_subsi3_carry;
@@ -8173,6 +8170,18 @@ gen_push (rtx arg)
 		      arg);
 }
 
+/* Generate an "pop" pattern for input ARG.  */
+
+static rtx
+gen_pop (rtx arg)
+{
+  return gen_rtx_SET (VOIDmode,
+		      arg,
+		      gen_rtx_MEM (Pmode,
+				   gen_rtx_POST_INC (Pmode,
+						     stack_pointer_rtx)));
+}
+
 /* Return >= 0 if there is an unused call-clobbered register available
    for the entire function.  */
 
@@ -9052,7 +9061,7 @@ release_scratch_register_on_entry (struct scratch_reg *sr)
 {
   if (sr->saved)
     {
-      rtx x, insn = emit_insn (ix86_gen_pop1 (sr->reg));
+      rtx x, insn = emit_insn (gen_pop (sr->reg));
 
       /* The RTX_FRAME_RELATED_P mechanism doesn't know about pop.  */
       RTX_FRAME_RELATED_P (insn) = 1;
@@ -9478,7 +9487,7 @@ ix86_expand_prologue (void)
 	{
 	  /* The frame pointer is not needed so pop %ebp again.
 	     This leaves us with a pristine state.  */
-	  emit_insn (ix86_gen_pop1 (hard_frame_pointer_rtx));
+	  emit_insn (gen_pop (hard_frame_pointer_rtx));
 	}
     }
 
@@ -9786,7 +9795,7 @@ static void
 ix86_emit_restore_reg_using_pop (rtx reg)
 {
   struct machine_function *m = cfun->machine;
-  rtx insn = emit_insn (ix86_gen_pop1 (reg));
+  rtx insn = emit_insn (gen_pop (reg));
 
   ix86_add_cfa_restore_note (insn, reg, m->fs.sp_offset);
   m->fs.sp_offset -= UNITS_PER_WORD;
@@ -9809,10 +9818,12 @@ ix86_emit_restore_reg_using_pop (rtx reg)
 
   if (m->fs.cfa_reg == stack_pointer_rtx)
     {
-      m->fs.cfa_offset -= UNITS_PER_WORD;
-      add_reg_note (insn, REG_CFA_ADJUST_CFA,
-		    copy_rtx (XVECEXP (PATTERN (insn), 0, 1)));
+      rtx x = plus_constant (stack_pointer_rtx, UNITS_PER_WORD);
+      x = gen_rtx_SET (VOIDmode, stack_pointer_rtx, x);
+      add_reg_note (insn, REG_CFA_ADJUST_CFA, x);
       RTX_FRAME_RELATED_P (insn) = 1;
+
+      m->fs.cfa_offset -= UNITS_PER_WORD;
     }
 
   /* When the frame pointer is the CFA, and we pop it, we are
@@ -10229,7 +10240,7 @@ ix86_expand_epilogue (int style)
 	  /* There is no "pascal" calling convention in any 64bit ABI.  */
 	  gcc_assert (!TARGET_64BIT);
 
-	  insn = emit_insn (gen_popsi1 (ecx));
+	  insn = emit_insn (gen_pop (ecx));
 	  m->fs.cfa_offset -= UNITS_PER_WORD;
 	  m->fs.sp_offset -= UNITS_PER_WORD;
 
