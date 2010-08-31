@@ -340,47 +340,33 @@ reduce_class (int original_class, int limiting_class, int returned_if_empty)
   return best;
 }
 
-/* Returns TRUE If there are any registers that exist in both register
-   classes.  */
-static int
-classes_intersect (int class1, int class2)
-{
-  return class_contents[class1][0] & class_contents[class2][0];
-}
-
 /* Used by m32c_register_move_cost to determine if a move is
    impossibly expensive.  */
-static int
-class_can_hold_mode (int rclass, enum machine_mode mode)
+static bool
+class_can_hold_mode (reg_class_t rclass, enum machine_mode mode)
 {
   /* Cache the results:  0=untested  1=no  2=yes */
   static char results[LIM_REG_CLASSES][MAX_MACHINE_MODE];
-  if (results[rclass][mode] == 0)
+
+  if (results[(int) rclass][mode] == 0)
     {
-      int r, n, i;
+      int r;
       results[rclass][mode] = 1;
       for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
-	if (class_contents[rclass][0] & (1 << r)
+	if (in_hard_reg_set_p (reg_class_contents[(int) rclass], mode, r)
 	    && HARD_REGNO_MODE_OK (r, mode))
 	  {
-	    int ok = 1;
-	    n = HARD_REGNO_NREGS (r, mode);
-	    for (i = 1; i < n; i++)
-	      if (!(class_contents[rclass][0] & (1 << (r + i))))
-		ok = 0;
-	    if (ok)
-	      {
-		results[rclass][mode] = 2;
-		break;
-	      }
+	    results[rclass][mode] = 2;
+	    break;
 	  }
     }
+
 #if DEBUG0
   fprintf (stderr, "class %s can hold %s? %s\n",
-	   class_names[rclass], mode_name[mode],
+	   class_names[(int) rclass], mode_name[mode],
 	   (results[rclass][mode] == 2) ? "yes" : "no");
 #endif
-  return results[rclass][mode] == 2;
+  return results[(int) rclass][mode] == 2;
 }
 
 /* Run-time Target Specification.  */
@@ -740,7 +726,7 @@ m32c_preferred_reload_class (rtx x, int rclass)
   if (rclass == NO_REGS)
     rclass = GET_MODE (x) == QImode ? HL_REGS : R03_REGS;
 
-  if (classes_intersect (rclass, CR_REGS))
+  if (reg_classes_intersect_p (rclass, CR_REGS))
     {
       switch (GET_MODE (x))
 	{
@@ -826,7 +812,7 @@ m32c_secondary_reload_class (int rclass, enum machine_mode mode, rtx x)
   if (mode == QImode
       && GET_CODE (x) == MEM && (cc & ~class_contents[R23_REGS][0]) == 0)
     return QI_REGS;
-  if (classes_intersect (rclass, CR_REGS)
+  if (reg_classes_intersect_p (rclass, CR_REGS)
       && GET_CODE (x) == REG
       && REGNO (x) >= SB_REGNO && REGNO (x) <= SP_REGNO)
     return TARGET_A16 ? HI_REGS : A_REGS;
@@ -2096,19 +2082,29 @@ m32c_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
 
 /* Describing Relative Costs of Operations */
 
-/* Implements REGISTER_MOVE_COST.  We make impossible moves
+/* Implements TARGET_REGISTER_MOVE_COST.  We make impossible moves
    prohibitively expensive, like trying to put QIs in r2/r3 (there are
    no opcodes to do that).  We also discourage use of mem* registers
    since they're really memory.  */
-int
-m32c_register_move_cost (enum machine_mode mode, int from, int to)
+
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST m32c_register_move_cost
+
+static int
+m32c_register_move_cost (enum machine_mode mode, reg_class_t from,
+			 reg_class_t to)
 {
   int cost = COSTS_N_INSNS (3);
-  int cc = class_contents[from][0] | class_contents[to][0];
-  /* FIXME: pick real values, but not 2 for now.  */
-  if (mode == QImode && (cc & class_contents[R23_REGS][0]))
+  HARD_REG_SET cc;
+
+/* FIXME: pick real values, but not 2 for now.  */
+  COPY_HARD_REG_SET (cc, reg_class_contents[(int) from]);
+  IOR_HARD_REG_SET (cc, reg_class_contents[(int) to]);
+
+  if (mode == QImode
+      && hard_reg_set_intersect_p (cc, reg_class_contents[R23_REGS]))
     {
-      if (!(cc & ~class_contents[R23_REGS][0]))
+      if (hard_reg_set_subset_p (cc, reg_class_contents[R23_REGS]))
 	cost = COSTS_N_INSNS (1000);
       else
 	cost = COSTS_N_INSNS (80);
@@ -2117,30 +2113,35 @@ m32c_register_move_cost (enum machine_mode mode, int from, int to)
   if (!class_can_hold_mode (from, mode) || !class_can_hold_mode (to, mode))
     cost = COSTS_N_INSNS (1000);
 
-  if (classes_intersect (from, CR_REGS))
+  if (reg_classes_intersect_p (from, CR_REGS))
     cost += COSTS_N_INSNS (5);
 
-  if (classes_intersect (to, CR_REGS))
+  if (reg_classes_intersect_p (to, CR_REGS))
     cost += COSTS_N_INSNS (5);
 
   if (from == MEM_REGS || to == MEM_REGS)
     cost += COSTS_N_INSNS (50);
-  else if (classes_intersect (from, MEM_REGS)
-	   || classes_intersect (to, MEM_REGS))
+  else if (reg_classes_intersect_p (from, MEM_REGS)
+	   || reg_classes_intersect_p (to, MEM_REGS))
     cost += COSTS_N_INSNS (10);
 
 #if DEBUG0
   fprintf (stderr, "register_move_cost %s from %s to %s = %d\n",
-	   mode_name[mode], class_names[from], class_names[to], cost);
+	   mode_name[mode], class_names[(int) from], class_names[(int) to],
+	   cost);
 #endif
   return cost;
 }
 
-/*  Implements MEMORY_MOVE_COST.  */
-int
+/*  Implements TARGET_MEMORY_MOVE_COST.  */
+
+#undef TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST m32c_memory_move_cost
+
+static int
 m32c_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
-		       int reg_class ATTRIBUTE_UNUSED,
-		       int in ATTRIBUTE_UNUSED)
+		       reg_class_t rclass ATTRIBUTE_UNUSED,
+		       bool in ATTRIBUTE_UNUSED)
 {
   /* FIXME: pick real values.  */
   return COSTS_N_INSNS (10);

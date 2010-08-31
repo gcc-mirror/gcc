@@ -1,3 +1,20 @@
+2010-08-31  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/m32c/m32c.c (classes_intersect): Remove.
+	(m32c_preferred_reload_class, m32c_secondary_reload_class): Use
+	reg_classes_intersect_p instead of classes_intersect.
+	(class_can_hold_mode): Change arguments type from enum reg_class to
+	reg_class_t.  Use reg_class_contents instead of class_contents.
+	(m32c_register_move_cost): Make static. Change arguments type from
+	enum reg_class to reg_class_t. Use reg_classes_intersect_p instead of
+	classes_intersect. Use reg_class_contents instead of class_contents.
+	(m32c_memory_move_cost): Make static. Change arguments type from
+	enum reg_class to reg_class_t.
+	(TARGET_REGISTER_MOVE_COST, TARGET_MEMORY_MOVE_COST): Define.
+	* config/m32c/m32c.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST): Remove.
+	* config/m32c/m32c-protos.h (m32c_register_move_cost,
+	m32c_memory_move_cost): Remove.
+
 2010-08-31  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/arm/arm-protos.h (arm_function_arg_advance): Delete.
