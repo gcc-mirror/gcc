@@ -1,3 +1,8 @@
+2010-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/45461
+	* builtins.c (dummy_object): Return a MEM_REF instead of INDIRECT_REF.
+
 2010-08-31  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/fr30/fr30.c (fr30_move_double): Delete `dregno' and extra
