@@ -1545,7 +1545,7 @@ arm_override_options (void)
   /* Callee super interworking implies thumb interworking.  Adding
      this to the flags here simplifies the logic elsewhere.  */
   if (TARGET_THUMB && TARGET_CALLEE_INTERWORKING)
-      target_flags |= MASK_INTERWORK;
+    target_flags |= MASK_INTERWORK;
 
   /* TARGET_BACKTRACE calls leaf_function_p, which causes a crash if done
      from here where no function is being compiled currently.  */
@@ -1554,9 +1554,6 @@ arm_override_options (void)
 
   if (TARGET_ARM && TARGET_CALLEE_INTERWORKING)
     warning (0, "enabling callee interworking support is only meaningful when compiling for the Thumb");
-
-  if (TARGET_ARM && TARGET_CALLER_INTERWORKING)
-    warning (0, "enabling caller interworking support is only meaningful when compiling for the Thumb");
 
   if (TARGET_APCS_STACK && !TARGET_APCS_FRAME)
     {

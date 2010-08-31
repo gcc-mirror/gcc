@@ -1,3 +1,8 @@
+2010-08-31  John Tytgat  <John.Tytgat@aaug.net>
+
+	* config/arm/arm.c (arm_override_options): Remove superfluous test.
+	Fix indentation.
+
 2010-08-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2out.c (gen_decl_die) <CONST_DECL>: Do not skip in Ada.
