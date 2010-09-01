@@ -1,3 +1,13 @@
+2010-09-01  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/m32c/m32c-protos.h (m32c_function_arg): Delete.
+	(m32c_function_arg_advance): Delete.
+	* config/m32c/m32c.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
+	* config/m32c/m32c.c (m32c_function_arg): Make static.  Adjust
+	comments.  Take a const_tree and a bool.  Declare.
+	(m32c_function_arg_advance): Likewise.
+	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
+
 2010-09-01  Uros Bizjak  <ubizjak@gmail.com>
 
         PR target/45476
