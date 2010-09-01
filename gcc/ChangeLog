@@ -1,3 +1,24 @@
+2010-09-01  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/neon-schedgen.ml (core): New type.
+	(allCores): List of supported cores.
+	(availability_table): Add supported cores.
+	(collate_bypasses): Accept core as a parameter.
+	(worst_case_latencies_and_bypasses): Accept core as a
+	 parameter.
+	(emit_insn_reservations): Accept core as a parameter.
+	Use tuneStr and coreStr to get tune attribute and prefix
+	for functional units.
+	(emit_bypasses): Accept core name and use it.
+	(calculate_per_core_availability_table): New.
+	(filter_core): New.
+	(calculate_core_availability_table): New.
+	(main): Use calculate_core_availablity_table.
+	* config/arm/cortex-a8-neon.md: Update copyright year.
+	Regenerated from ml file and merged in.
+	(neon_mrrc, neon_mrc): Rename to cortex_a8_neon_mrrc and
+	cortex_a8_neon_mrc.
+
 2010-09-01  Ian Bolton  <ian.bolton@arm.com>
 
 	* Makefile.in (tree-switch-conversion.o): Update dependencies.
