@@ -1067,7 +1067,11 @@ rx_get_stack_layout (unsigned int * lowest,
 
   for (save_mask = high = low = 0, reg = 1; reg < CC_REGNUM; reg++)
     {
-      if (df_regs_ever_live_p (reg)
+      if ((df_regs_ever_live_p (reg)
+	   /* Always save all call clobbered registers inside interrupt
+	      handlers, even if they are not live - they may be used in
+	      routines called from this one.  */
+	   || (call_used_regs[reg] && is_interrupt_func (NULL_TREE)))
 	  && (! call_used_regs[reg]
 	      /* Even call clobbered registered must
 		 be pushed inside interrupt handlers.  */
@@ -1307,8 +1311,6 @@ rx_expand_prologue (void)
 	  emit_insn (gen_stack_pushm (GEN_INT (2 * UNITS_PER_WORD),
 				      gen_rx_store_vector (acc_low, acc_high)));
 	}
-
-      frame_size += 2 * UNITS_PER_WORD;
     }
 
   /* If needed, set up the frame pointer.  */

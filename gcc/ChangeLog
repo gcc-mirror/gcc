@@ -1,3 +1,11 @@
+2010-09-01  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.c (rx_expand_prologue): Do not adjust frame size
+	when pushing accumulator register.
+	(rx_get_stack_layout): Always save call clobbered registers inside
+	interrupt handlers.
+	* config/rx/rx-modes.def: Fix descriptive comment at start of file.
+
 2010-09-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config.gcc (i[34567]86-*-freebsd*, x86_64-*-freebsd*): Add
