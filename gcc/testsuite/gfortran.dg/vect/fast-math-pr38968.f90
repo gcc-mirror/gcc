@@ -1,4 +1,7 @@
-! { dg-timeout-factor 4.0 }
+! Skip this on platforms that don't have the vectorization instructions
+! to handle complex types.  This test is very slow on these platforms so
+! skipping is better then running it unvectorized.
+! { dg-skip-if "" { ia64-*-* sparc*-*-* } { "*" } { "" } }
 program mymatmul
   implicit none
   integer, parameter :: kp = 4
@@ -18,5 +21,5 @@ program mymatmul
 
 end program mymatmul
 
-! { dg-final { scan-tree-dump "vectorized 1 loops" "vect"  { xfail { ia64-*-* sparc*-*-* } } } }
+! { dg-final { scan-tree-dump "vectorized 1 loops" "vect" } }
 ! { dg-final { cleanup-tree-dump "vect" } }
