@@ -247,8 +247,7 @@ addr_for_mem_ref (struct mem_address *addr, addr_space_t as,
 
   /* Otherwise really expand the expressions.  */
   sym = (addr->symbol
-	 ? expand_expr (build_addr (addr->symbol, current_function_decl),
-			NULL_RTX, address_mode, EXPAND_NORMAL)
+	 ? expand_expr (addr->symbol, NULL_RTX, address_mode, EXPAND_NORMAL)
 	 : NULL_RTX);
   bse = (addr->base
 	 ? expand_expr (addr->base, NULL_RTX, address_mode, EXPAND_NORMAL)
@@ -273,9 +272,10 @@ tree_mem_ref_addr (tree type, tree mem_ref)
   tree addr_base = NULL_TREE, addr_off = NULL_TREE;
 
   if (sym)
-    addr_base = fold_convert (type, build_addr (sym, current_function_decl));
-  else if (base && POINTER_TYPE_P (TREE_TYPE (base)))
+    addr_base = fold_convert (type, sym);
+  else if (base)
     {
+      gcc_assert (POINTER_TYPE_P (TREE_TYPE (base)));
       addr_base = fold_convert (type, base);
       base = NULL_TREE;
     }
@@ -363,7 +363,7 @@ create_mem_ref_raw (tree type, tree alias_ptr_type, struct mem_address *addr)
       tree base;
       gcc_assert (!addr->symbol ^ !addr->base);
       if (addr->symbol)
-	base = build_fold_addr_expr (addr->symbol);
+	base = addr->symbol;
       else
 	base = addr->base;
       return fold_build2 (MEM_REF, type, base, addr->offset);
@@ -408,7 +408,7 @@ move_fixed_address_to_symbol (struct mem_address *parts, aff_tree *addr)
   if (i == addr->n)
     return;
 
-  parts->symbol = TREE_OPERAND (val, 0);
+  parts->symbol = val;
   aff_combination_remove_elt (addr, i);
 }
 
@@ -717,7 +717,7 @@ create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
 
   if (parts.symbol)
     {
-      tmp = build_addr (parts.symbol, current_function_decl);
+      tmp = parts.symbol;
       gcc_assert (is_gimple_val (tmp));
 
       /* Add the symbol to base, eventually forcing it to register.  */
@@ -883,7 +883,7 @@ dump_mem_address (FILE *file, struct mem_address *parts)
   if (parts->symbol)
     {
       fprintf (file, "symbol: ");
-      print_generic_expr (file, parts->symbol, TDF_SLIM);
+      print_generic_expr (file, TREE_OPERAND (parts->symbol, 0), TDF_SLIM);
       fprintf (file, "\n");
     }
   if (parts->base)

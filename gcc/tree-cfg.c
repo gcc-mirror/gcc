@@ -2990,6 +2990,13 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
     }
   else if (TREE_CODE (expr) == TARGET_MEM_REF)
     {
+      if (TMR_SYMBOL (expr)
+	  && TMR_BASE (expr)
+	  && !useless_type_conversion_p (sizetype, TREE_TYPE (TMR_BASE (expr))))
+	{
+	  error ("Non-sizetype base in TARGET_MEM_REF with symbol");
+	  return true;
+	}
       if (!TMR_OFFSET (expr)
 	  || TREE_CODE (TMR_OFFSET (expr)) != INTEGER_CST
 	  || !POINTER_TYPE_P (TREE_TYPE (TMR_OFFSET (expr))))

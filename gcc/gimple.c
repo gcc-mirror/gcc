@@ -3009,7 +3009,7 @@ get_base_address (tree t)
     t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
   else if (TREE_CODE (t) == TARGET_MEM_REF
 	   && TMR_SYMBOL (t))
-    t = TMR_SYMBOL (t);
+    t = TREE_OPERAND (TMR_SYMBOL (t), 0);
 
   if (SSA_VAR_P (t)
       || TREE_CODE (t) == STRING_CST

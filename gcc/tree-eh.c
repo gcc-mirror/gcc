@@ -2405,7 +2405,7 @@ tree_could_trap_p (tree expr)
     {
     case TARGET_MEM_REF:
       if (TMR_SYMBOL (expr)
-	  && !TMR_INDEX (expr))
+	  && !TMR_INDEX (expr) && !TMR_BASE (expr))
 	return false;
       return !TREE_THIS_NOTRAP (expr);
 
