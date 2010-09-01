@@ -1,3 +1,16 @@
+2010-09-01  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44541
+	* class.c (gfc_find_derived_vtab): Add component '$def_init'.
+	* resolve.c (resolve_allocate_expr): Defer handling of default
+	initialization to 'gfc_trans_allocate'.
+	(apply_default_init,resolve_symbol): Handle polymorphic dummies.
+	(resolve_fl_derived): Suppress error messages for vtypes.
+	* trans-stmt.c (gfc_trans_allocate): Handle initialization via
+	polymorphic MOLD expression.
+	* trans-expr.c (gfc_trans_class_init_assign): Now only used for
+	dummy initialization.
+
 2010-09-01  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi (preprocessing): Update URL to COCO.

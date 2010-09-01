@@ -5760,27 +5760,39 @@ gfc_trans_assign (gfc_code * code)
 }
 
 
-/* Special case for initializing a CLASS variable on allocation.
-   A MEMCPY is needed to copy the full data of the dynamic type,
-   which may be different from the declared type.  */
+/* Special case for initializing a polymorphic dummy with INTENT(OUT).
+   A MEMCPY is needed to copy the full data from the default initializer
+   of the dynamic type.  */
 
 tree
 gfc_trans_class_init_assign (gfc_code *code)
 {
   stmtblock_t block;
-  tree tmp, memsz;
-  gfc_se dst,src;
-  
+  tree tmp;
+  gfc_se dst,src,memsz;
+  gfc_expr *lhs,*rhs,*sz;
+
   gfc_start_block (&block);
-  
+
+  lhs = gfc_copy_expr (code->expr1);
+  gfc_add_component_ref (lhs, "$data");
+
+  rhs = gfc_copy_expr (code->expr1);
+  gfc_add_component_ref (rhs, "$vptr");
+  gfc_add_component_ref (rhs, "$def_init");
+
+  sz = gfc_copy_expr (code->expr1);
+  gfc_add_component_ref (sz, "$vptr");
+  gfc_add_component_ref (sz, "$size");
+
   gfc_init_se (&dst, NULL);
   gfc_init_se (&src, NULL);
-  gfc_add_component_ref (code->expr1, "$data");
-  gfc_conv_expr (&dst, code->expr1);
-  gfc_conv_expr (&src, code->expr2);
+  gfc_init_se (&memsz, NULL);
+  gfc_conv_expr (&dst, lhs);
+  gfc_conv_expr (&src, rhs);
+  gfc_conv_expr (&memsz, sz);
   gfc_add_block_to_block (&block, &src.pre);
-  memsz = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&code->expr2->ts));
-  tmp = gfc_build_memcpy_call (dst.expr, src.expr, memsz);
+  tmp = gfc_build_memcpy_call (dst.expr, src.expr, memsz.expr);
   gfc_add_expr_to_block (&block, tmp);
   
   return gfc_finish_block (&block);
