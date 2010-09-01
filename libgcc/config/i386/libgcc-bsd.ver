@@ -1,0 +1,108 @@
+# Copyright (C) 2010 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# 128 bit long double support was introduced with GCC 4.6.0 for FreeBSD.
+# These lines make the symbols to get a @@GCC_4.6.0.
+
+%exclude {
+  __addtf3
+  __copysigntf3
+  __divtc3
+  __divtf3
+  __eqtf2
+  __extenddftf2
+  __extendsftf2
+  __extendxftf2
+  __fabstf2
+  __fixtfdi
+  __fixtfsi
+  __fixtfti
+  __fixunstfdi
+  __fixunstfsi
+  __fixunstfti
+  __floatditf
+  __floatsitf
+  __floattitf
+  __floatunditf
+  __floatunsitf
+  __floatuntitf
+  __getf2
+  __gttf2
+  __letf2
+  __lttf2
+  __multc3
+  __multf3
+  __negtf2
+  __netf2
+  __powitf2
+  __subtf3
+  __trunctfdf2
+  __trunctfsf2
+  __trunctfxf2
+  __unordtf2
+}
+
+GCC_4.6.0 {
+  __addtf3
+%ifndef __x86_64__
+  __copysigntf3
+%endif
+  __divtc3
+  __divtf3
+  __eqtf2
+  __extenddftf2
+  __extendsftf2
+  __extendxftf2
+%ifndef __x86_64__
+  __fabstf2
+%endif
+  __fixtfdi
+  __fixtfsi
+%ifdef __x86_64__
+  __fixtfti
+%endif
+  __fixunstfdi
+  __fixunstfsi
+%ifdef __x86_64__
+  __fixunstfti
+%endif
+  __floatditf
+  __floatsitf
+%ifdef __x86_64__
+  __floattitf
+%endif
+  __floatunditf
+  __floatunsitf
+%ifdef __x86_64__
+  __floatuntitf
+%endif
+  __getf2
+  __gttf2
+  __letf2
+  __lttf2
+  __multc3
+  __multf3
+  __negtf2
+  __netf2
+  __powitf2
+  __subtf3
+  __trunctfdf2
+  __trunctfsf2
+  __trunctfxf2
+  __unordtf2
+}

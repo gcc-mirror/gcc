@@ -1,3 +1,10 @@
+2010-09-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config.gcc (i[34567]86-*-freebsd*, x86_64-*-freebsd*): Add
+	i386/t-fprules-softfp and soft-fp/t-softfp to tmake_file.
+
+	* libgcc-std.ver (GCC_4.6.0): Define version.
+
 2010-08-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-nested.c (convert_all_function_calls): Iterate until after the
@@ -32,7 +39,7 @@
 	(arm_function_arg_advance): Likewise.
 	(TARGET_FUNCTION_ARG, TARGET_FUNCTION_ARG_ADVANCE): Define.
 
-2010-08-31  Andi Kleen      <ak@linux.intel.com>
+2010-08-31  Andi Kleen  <ak@linux.intel.com>
 
 	* common.opt (fwhopr=): Update for -fwhopr=jobserver
 	* doc/invoke.texi (fwhopr): Document -fwhopr=jobserver.
@@ -203,7 +210,7 @@
 	* config/xtensa/xtensa.h (FUNCTION_ARG, FUNCTION_ARG_ADVANCE): Delete.
 	(FUNCTION_INCOMING_ARG): Delete.
 	* config/xtensa/xtensa.c (function_arg_advance): Rename to...
-	(xtensa_function_arg_advance): ...this.  Make static.  Take a const_tree
+	(xtensa_function_arg_advance): ...this.  Make static. Take a const_tree
 	and a bool.
 	(function_arg): Rename to...
 	(xtensa_function_arg_1): ...this.  Make static.  Take a const_tree and
