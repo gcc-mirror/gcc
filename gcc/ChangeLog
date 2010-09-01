@@ -1,3 +1,8 @@
+2010-09-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_init_constructor): Do not create a temporary for
+	a volatile LHS if the constructor has only one element.
+
 2010-08-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-nested.c (convert_all_function_calls): Iterate until after the
