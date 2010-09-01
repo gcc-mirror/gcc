@@ -2812,6 +2812,15 @@ add_subroutines (void)
 	      gfc_check_dtime_etime_sub, NULL, gfc_resolve_dtime_sub,
 	      vl, BT_REAL, 4, REQUIRED, tm, BT_REAL, 4, REQUIRED);
 
+  add_sym_5s ("execute_command_line", GFC_ISYM_EXECUTE_COMMAND_LINE,
+	      CLASS_IMPURE , BT_UNKNOWN, 0, GFC_STD_F2008,
+	      NULL, NULL, gfc_resolve_execute_command_line,
+	      "command", BT_CHARACTER, dc, REQUIRED, INTENT_IN,
+	      "wait", BT_LOGICAL, dl, OPTIONAL, INTENT_IN,
+	      "exitstat", BT_INTEGER, di, OPTIONAL, INTENT_INOUT,
+	      "cmdstat", BT_INTEGER, di, OPTIONAL, INTENT_OUT,
+	      "cmdmsg", BT_CHARACTER, dc, OPTIONAL, INTENT_INOUT);
+
   add_sym_1s ("fdate", GFC_ISYM_FDATE, CLASS_IMPURE, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_fdate_sub, NULL, gfc_resolve_fdate_sub,
 	      dt, BT_CHARACTER, dc, REQUIRED);

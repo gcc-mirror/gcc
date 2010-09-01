@@ -1,3 +1,11 @@
+2010-09-01  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* intrinsic.c: Add EXECUTE_COMMAND_LINE intrinsic.
+	* intrinsic.h (gfc_resolve_execute_command_line): New function.
+	* iresolve.c (gfc_resolve_execute_command_line): New function.
+	* gfortran.h (GFC_ISYM_EXECUTE_COMMAND_LINE): New value.
+	* intrinsic.texi: Document EXECUTE_COMMAND_LINE.
+
 2010-08-31  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/38282

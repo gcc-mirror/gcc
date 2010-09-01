@@ -1,3 +1,11 @@
+2010-09-01  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* intrinsics/execute_command_line.c: New file.
+	* gfortran.map (_gfortran_execute_command_line_i4,
+	_gfortran_execute_command_line_i8): New symbols.
+	* Makefile.am: Add new file intrinsics/execute_command_line.c.
+	* Makefile.in: Regenerated.
+
 2010-08-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* m4/mtype.m4 (upcase, hasmathfunc, mathfunc_macro): New macros.

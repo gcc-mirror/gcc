@@ -3184,6 +3184,17 @@ gfc_resolve_system_clock (gfc_code *c)
 }
 
 
+/* Resolve the EXECUTE_COMMAND_LINE intrinsic subroutine.  */
+void
+gfc_resolve_execute_command_line (gfc_code *c)
+{
+  const char *name;
+  name = gfc_get_string (PREFIX ("execute_command_line_i%d"),
+			 gfc_default_integer_kind);
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+
 /* Resolve the EXIT intrinsic subroutine.  */
 
 void
