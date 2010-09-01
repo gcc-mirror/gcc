@@ -1,11 +1,16 @@
+2010-09-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_init_constructor): Do not create a temporary for
+	a volatile LHS if the constructor has only one element.
+
 2010-09-01  Mikael Pettersson  <mikpe@it.uu.se>
 
-       PR bootstrap/45321
-       * tree.c (stdarg_p): Make fntype parameter const.
-       * tree.h (stdarg_p): Likewise.
-       (function_args_iterator): Remove unused fntype field.
-       (function_args_iter_init): Do not initialize fntype
-       field.  Make fntype parameter const. 
+	PR bootstrap/45321
+	* tree.c (stdarg_p): Make fntype parameter const.
+	* tree.h (stdarg_p): Likewise.
+	(function_args_iterator): Remove unused fntype field.
+	(function_args_iter_init): Do not initialize fntype
+	field.  Make fntype parameter const. 
 
 2010-09-01  Richard Guenther  <rguenther@suse.de>
 
