@@ -1,3 +1,7 @@
+2010-09-01  Ian Bolton  <ian.bolton@arm.com>
+
+	* Makefile.in (tree-switch-conversion.o): Update dependencies.
+
 2010-09-01  Richard Guenther  <rguenther@suse.de>
 
 	* alias.c (ao_ref_from_mem): Adjust.
