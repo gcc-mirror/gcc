@@ -958,7 +958,7 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
   int ikind;
   gfc_se lse;
   gfc_se rse;
-  tree fndecl;
+  tree fndecl = NULL;
 
   gfc_init_se (&lse, se);
   gfc_conv_expr_val (&lse, expr->value.op.op1);
@@ -1056,15 +1056,24 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
 		  break;
 
 		case 2:
-		case 3:
 		  fndecl = built_in_decls[BUILT_IN_POWIL];
+		  break;
+
+		case 3:
+		  /* Use the __builtin_powil() only if real(kind=16) is 
+		     actually the C long double type.  */
+		  if (!gfc_real16_is_float128)
+		    fndecl = built_in_decls[BUILT_IN_POWIL];
 		  break;
 
 		default:
 		  gcc_unreachable ();
 		}
 	    }
-	  else
+
+	  /* If we don't have a good builtin for this, go for the 
+	     library function.  */
+	  if (!fndecl)
 	    fndecl = gfor_fndecl_math_powi[kind][ikind].real;
 	  break;
 
@@ -1078,39 +1087,11 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
       break;
 
     case BT_REAL:
-      switch (kind)
-	{
-	case 4:
-	  fndecl = built_in_decls[BUILT_IN_POWF];
-	  break;
-	case 8:
-	  fndecl = built_in_decls[BUILT_IN_POW];
-	  break;
-	case 10:
-	case 16:
-	  fndecl = built_in_decls[BUILT_IN_POWL];
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
+      fndecl = gfc_builtin_decl_for_float_kind (BUILT_IN_POW, kind);
       break;
 
     case BT_COMPLEX:
-      switch (kind)
-	{
-	case 4:
-	  fndecl = built_in_decls[BUILT_IN_CPOWF];
-	  break;
-	case 8:
-	  fndecl = built_in_decls[BUILT_IN_CPOW];
-	  break;
-	case 10:
-	case 16:
-	  fndecl = built_in_decls[BUILT_IN_CPOWL];
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
+      fndecl = gfc_builtin_decl_for_float_kind (BUILT_IN_CPOW, kind);
       break;
 
     default:

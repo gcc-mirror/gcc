@@ -1,5 +1,28 @@
 2010-09-01  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* trans-expr.c (gfc_conv_power_op): Handle floating-point types
+	other than long double.
+	* mathbuiltins.def: Add builtins from the POW and CPOW family.
+	* trans.h (gfc_builtin_decl_for_float_kind): New prototype.
+	* trans-intrinsic.c (gfc_builtin_decl_for_float_kind): Add gfc_
+	prefix to function name.
+	(gfc_build_intrinsic_lib_fndecls): Add cpow prototype.
+	(gfc_conv_intrinsic_aint): Use gfc_builtin_decl_for_float_kind
+	function name.
+	(gfc_conv_intrinsic_exponent): Likewise.
+	(gfc_conv_intrinsic_abs): Likewise.
+	(gfc_conv_intrinsic_mod): Likewise.
+	(gfc_conv_intrinsic_sign): Likewise.
+	(gfc_conv_intrinsic_arith): Likewise.
+	(gfc_conv_intrinsic_fraction): Likewise.
+	(gfc_conv_intrinsic_nearest): Likewise.
+	(gfc_conv_intrinsic_spacing): Likewise.
+	(gfc_conv_intrinsic_rrspacing): Likewise.
+	(gfc_conv_intrinsic_scale): Likewise.
+	(gfc_conv_intrinsic_set_exponent): Likewise.
+
+2010-09-01  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* intrinsic.c: Add EXECUTE_COMMAND_LINE intrinsic.
 	* intrinsic.h (gfc_resolve_execute_command_line): New function.
 	* iresolve.c (gfc_resolve_execute_command_line): New function.
