@@ -1,5 +1,10 @@
 2010-09-01  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	* trans-intrinsic.c (gfc_build_intrinsic_lib_fndecls): Resize
+	array quad_decls. Remove unnecessary assignment.
+
+2010-09-01  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	* trans-expr.c (gfc_conv_power_op): Handle floating-point types
 	other than long double.
 	* mathbuiltins.def: Add builtins from the POW and CPOW family.

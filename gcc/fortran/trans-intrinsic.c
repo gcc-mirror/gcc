@@ -605,7 +605,7 @@ void
 gfc_build_intrinsic_lib_fndecls (void)
 {
   gfc_intrinsic_map_t *m;
-  tree quad_decls[(int) END_BUILTINS];
+  tree quad_decls[END_BUILTINS + 1];
 
   if (gfc_real16_is_float128)
   {
@@ -616,7 +616,7 @@ gfc_build_intrinsic_lib_fndecls (void)
     tree tmp, func_0, func_1, func_2, func_cabs, func_frexp;
     tree func_lround, func_llround, func_scalbn, func_cpow;
 
-    memset (quad_decls, 0, sizeof(tree) * (int) END_BUILTINS);
+    memset (quad_decls, 0, sizeof(tree) * (END_BUILTINS + 1));
 
     /* type (*) (void) */
     func_0 = build_function_type (float128_type_node, void_list_node);
@@ -702,7 +702,6 @@ gfc_build_intrinsic_lib_fndecls (void)
         {
 	  /* Same thing for the complex ones.  */
 	  m->complex16_decl = quad_decls[m->double_built_in];
-	  m->real16_decl = quad_decls[m->double_built_in];
 	}
     }
 }
