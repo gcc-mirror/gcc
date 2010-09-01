@@ -4399,6 +4399,54 @@ gfc_trans_allocate (gfc_code * code)
 	  gfc_free_expr (rhs);
 	  gfc_add_expr_to_block (&block, tmp);
 	}
+      else
+	{
+	  /* Add default initializer for those derived types that need them.  */
+	  gfc_expr *rhs = NULL;
+	  gfc_typespec ts;
+
+	  if (code->ext.alloc.ts.type == BT_DERIVED)
+	    ts = code->ext.alloc.ts;
+	  else if (code->expr3)
+	    ts = code->expr3->ts;
+	  else
+	    ts = expr->ts;
+
+	  if (ts.type == BT_DERIVED)
+	    {
+	      rhs = gfc_default_initializer (&ts);
+	      gfc_resolve_expr (rhs);
+	    }
+	  else if (ts.type == BT_CLASS)
+	    {
+	      rhs = gfc_copy_expr (code->expr3);
+	      gfc_add_component_ref (rhs, "$vptr");
+	      gfc_add_component_ref (rhs, "$def_init");
+	    }
+
+	  if (rhs)
+	    {
+	      gfc_expr *lhs = gfc_expr_to_initialize (expr);
+	      if (al->expr->ts.type == BT_DERIVED)
+		{
+		  tmp = gfc_trans_assignment (lhs, rhs, true, false);
+		  gfc_add_expr_to_block (&block, tmp);
+		}
+	      else if (al->expr->ts.type == BT_CLASS)
+		{
+		  gfc_se dst,src;
+		  gfc_init_se (&dst, NULL);
+		  gfc_init_se (&src, NULL);
+		  gfc_conv_expr (&dst, lhs);
+		  gfc_conv_expr (&src, rhs);
+		  gfc_add_block_to_block (&block, &src.pre);
+		  tmp = gfc_build_memcpy_call (dst.expr, src.expr, memsz);
+		  gfc_add_expr_to_block (&block, tmp);
+		}
+	      gfc_free_expr (lhs);
+	      gfc_free_expr (rhs);
+	    }
+	}
 
       /* Allocation of CLASS entities.  */
       gfc_free_expr (expr);

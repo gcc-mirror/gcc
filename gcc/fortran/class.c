@@ -319,7 +319,7 @@ gfc_symbol *
 gfc_find_derived_vtab (gfc_symbol *derived)
 {
   gfc_namespace *ns;
-  gfc_symbol *vtab = NULL, *vtype = NULL, *found_sym = NULL;
+  gfc_symbol *vtab = NULL, *vtype = NULL, *found_sym = NULL, *def_init = NULL;
   char name[2 * GFC_MAX_SYMBOL_LEN + 8];
   
   /* Find the top-level namespace (MODULE or PROGRAM).  */
@@ -408,6 +408,33 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  c->initializer = gfc_get_null_expr (NULL);
 		}
 
+	      /* Add component $def_init.  */
+	      if (gfc_add_component (vtype, "$def_init", &c) == FAILURE)
+		goto cleanup;
+	      c->attr.pointer = 1;
+	      c->attr.access = ACCESS_PRIVATE;
+	      c->ts.type = BT_DERIVED;
+	      c->ts.u.derived = derived;
+	      if (derived->attr.abstract)
+		c->initializer = NULL;
+	      else
+		{
+		  /* Construct default initialization variable.  */
+		  sprintf (name, "def_init$%s", derived->name);
+		  gfc_get_symbol (name, ns, &def_init);
+		  def_init->attr.target = 1;
+		  def_init->attr.save = SAVE_EXPLICIT;
+		  def_init->attr.access = ACCESS_PUBLIC;
+		  def_init->attr.flavor = FL_VARIABLE;
+		  gfc_set_sym_referenced (def_init);
+		  def_init->ts.type = BT_DERIVED;
+		  def_init->ts.u.derived = derived;
+		  def_init->value = gfc_default_initializer (&def_init->ts);
+
+		  c->initializer = gfc_lval_expr_from_sym (def_init);
+		}
+
+	      /* Add procedure pointers for type-bound procedures.  */
 	      add_procs_to_declared_vtab (derived, vtype);
 	      vtype->attr.vtype = 1;
 	    }
@@ -427,6 +454,8 @@ cleanup:
       gfc_commit_symbol (vtab);
       if (vtype)
 	gfc_commit_symbol (vtype);
+      if (def_init)
+	gfc_commit_symbol (def_init);
     }
   else
     gfc_undo_symbols ();

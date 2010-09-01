@@ -6710,37 +6710,6 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 		 sym->name, &e->where);
       goto failure;
     }
-    
-  if (!code->expr3 || code->expr3->mold)
-    {
-      /* Add default initializer for those derived types that need them.  */
-      gfc_expr *init_e = NULL;
-      gfc_typespec ts;
-
-      if (code->ext.alloc.ts.type == BT_DERIVED)
-	ts = code->ext.alloc.ts;
-      else if (code->expr3)
-	ts = code->expr3->ts;
-      else
-	ts = e->ts;
-
-      if (ts.type == BT_DERIVED)
-	init_e = gfc_default_initializer (&ts);
-      /* FIXME: Use default init of dynamic type (cf. PR 44541).  */
-      else if (e->ts.type == BT_CLASS)
-	init_e = gfc_default_initializer (&ts.u.derived->components->ts);
-
-      if (init_e)
-	{
-	  gfc_code *init_st = gfc_get_code ();
-	  init_st->loc = code->loc;
-	  init_st->op = EXEC_INIT_ASSIGN;
-	  init_st->expr1 = gfc_expr_to_initialize (e);
-	  init_st->expr2 = init_e;
-	  init_st->next = code->next;
-	  code->next = init_st;
-	}
-    }
 
   if (e->ts.type == BT_CLASS)
     {
@@ -9503,7 +9472,7 @@ apply_default_init (gfc_symbol *sym)
   if (sym->ts.type == BT_DERIVED && sym->ts.u.derived)
     init = gfc_default_initializer (&sym->ts);
 
-  if (init == NULL)
+  if (init == NULL && sym->ts.type != BT_CLASS)
     return;
 
   build_init_assign (sym, init);
@@ -11429,7 +11398,7 @@ resolve_fl_derived (gfc_symbol *sym)
 	}
 
       /* Check type-spec if this is not the parent-type component.  */
-      if ((!sym->attr.extension || c != sym->components)
+      if ((!sym->attr.extension || c != sym->components) && !sym->attr.vtype
 	  && resolve_typespec_used (&c->ts, &c->loc, c->name) == FAILURE)
 	return FAILURE;
 
@@ -11488,8 +11457,8 @@ resolve_fl_derived (gfc_symbol *sym)
 	    }
 	}
 
-      if (!sym->attr.is_class && c->ts.type == BT_DERIVED && c->attr.pointer
-	  && c->ts.u.derived->components == NULL
+      if (!sym->attr.is_class && c->ts.type == BT_DERIVED && !sym->attr.vtype
+	  && c->attr.pointer && c->ts.u.derived->components == NULL
 	  && !c->ts.u.derived->attr.zero_comp)
 	{
 	  gfc_error ("The pointer component '%s' of '%s' at %L is a type "
@@ -12192,6 +12161,14 @@ resolve_symbol (gfc_symbol *sym)
 	   && !(a->function && sym != sym->result))
 	  || (a->dummy && a->intent == INTENT_OUT && !a->pointer))
 	apply_default_init (sym);
+    }
+
+  if (sym->ts.type == BT_CLASS && sym->ns == gfc_current_ns
+      && sym->attr.dummy && sym->attr.intent == INTENT_OUT
+      && !sym->attr.pointer && !sym->attr.allocatable)
+    {
+      apply_default_init (sym);
+      gfc_set_sym_referenced (sym);
     }
 
   /* If this symbol has a type-spec, check it.  */

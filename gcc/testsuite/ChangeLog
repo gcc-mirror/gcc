@@ -1,3 +1,9 @@
+2010-09-01  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44541
+	* gfortran.dg/allocate_alloc_opt_10.f90: Extended.
+	* gfortran.dg/class_dummy_1.f03: New.
+
 2010-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/45458
