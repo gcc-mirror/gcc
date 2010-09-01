@@ -458,7 +458,7 @@ tree_ssa_loop_bounds (void)
   if (number_of_loops () <= 1)
     return 0;
 
-  estimate_numbers_of_iterations ();
+  estimate_numbers_of_iterations (true);
   scev_reset ();
   return 0;
 }

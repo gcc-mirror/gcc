@@ -3382,6 +3382,38 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop,
   else
     tmax = TYPE_MAX_VALUE (type);
 
+  /* Try to use estimated number of iterations for the loop to constrain the
+     final value in the evolution.
+     We are interested in the number of executions of the latch, while
+     nb_iterations_upper_bound includes the last execution of the exit test.  */
+  if (TREE_CODE (step) == INTEGER_CST
+      && loop->any_upper_bound
+      && !double_int_zero_p (loop->nb_iterations_upper_bound)
+      && is_gimple_val (init)
+      && (TREE_CODE (init) != SSA_NAME
+	  || get_value_range (init)->type == VR_RANGE))
+    {
+      value_range_t maxvr = { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL };
+      double_int dtmp;
+      dtmp = double_int_mul (tree_to_double_int (step),
+			     double_int_sub (loop->nb_iterations_upper_bound,
+					     double_int_one));
+      tem = double_int_to_tree (TREE_TYPE (init), dtmp);
+      /* If the multiplication overflowed we can't do a meaningful
+	 adjustment.  */
+      if (double_int_equal_p (dtmp, tree_to_double_int (tem)))
+	{
+	  extract_range_from_binary_expr (&maxvr, PLUS_EXPR,
+					  TREE_TYPE (init), init, tem);
+	  /* Likewise if the addition did.  */
+	  if (maxvr.type == VR_RANGE)
+	    {
+	      tmin = maxvr.min;
+	      tmax = maxvr.max;
+	    }
+	}
+    }
+
   if (vr->type == VR_VARYING || vr->type == VR_UNDEFINED)
     {
       min = tmin;
@@ -3414,39 +3446,34 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop,
 	  /* INIT is the maximum value.  If INIT is lower than VR->MAX
 	     but no smaller than VR->MIN, set VR->MAX to INIT.  */
 	  if (compare_values (init, max) == -1)
-	    {
-	      max = init;
-
-	      /* If we just created an invalid range with the minimum
-		 greater than the maximum, we fail conservatively.
-		 This should happen only in unreachable
-		 parts of code, or for invalid programs.  */
-	      if (compare_values (min, max) == 1)
-		return;
-	    }
+	    max = init;
 
 	  /* According to the loop information, the variable does not
 	     overflow.  If we think it does, probably because of an
 	     overflow due to arithmetic on a different INF value,
 	     reset now.  */
-	  if (is_negative_overflow_infinity (min))
+	  if (is_negative_overflow_infinity (min)
+	      || compare_values (min, tmin) == -1)
 	    min = tmin;
+
 	}
       else
 	{
 	  /* If INIT is bigger than VR->MIN, set VR->MIN to INIT.  */
 	  if (compare_values (init, min) == 1)
-	    {
-	      min = init;
+	    min = init;
 
-	      /* Again, avoid creating invalid range by failing.  */
-	      if (compare_values (min, max) == 1)
-		return;
-	    }
-
-	  if (is_positive_overflow_infinity (max))
+	  if (is_positive_overflow_infinity (max)
+	      || compare_values (tmax, max) == -1)
 	    max = tmax;
 	}
+
+      /* If we just created an invalid range with the minimum
+	 greater than the maximum, we fail conservatively.
+	 This should happen only in unreachable
+	 parts of code, or for invalid programs.  */
+      if (compare_values (min, max) == 1)
+	return;
 
       set_value_range (vr, VR_RANGE, min, max, vr->equiv);
     }
@@ -6509,8 +6536,6 @@ vrp_visit_phi_node (gimple phi)
   int edges, old_edges;
   struct loop *l;
 
-  copy_value_range (&vr_result, lhs_vr);
-
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "\nVisiting PHI node: ");
@@ -6571,13 +6596,6 @@ vrp_visit_phi_node (gimple phi)
 	}
     }
 
-  /* If this is a loop PHI node SCEV may known more about its
-     value-range.  */
-  if (current_loops
-      && (l = loop_containing_stmt (phi))
-      && l->header == gimple_bb (phi))
-    adjust_range_with_scev (&vr_result, l, phi, lhs);
-
   if (vr_result.type == VR_VARYING)
     goto varying;
 
@@ -6589,61 +6607,63 @@ vrp_visit_phi_node (gimple phi)
      previous one.  We don't do this if we have seen a new executable
      edge; this helps us avoid an overflow infinity for conditionals
      which are not in a loop.  */
-  if (lhs_vr->type == VR_RANGE && vr_result.type == VR_RANGE
-      && edges <= old_edges)
+  if (edges > 0
+      && edges == old_edges)
     {
-      if (!POINTER_TYPE_P (TREE_TYPE (lhs)))
+      int cmp_min = compare_values (lhs_vr->min, vr_result.min);
+      int cmp_max = compare_values (lhs_vr->max, vr_result.max);
+
+      /* For non VR_RANGE or for pointers fall back to varying if
+	 the range changed.  */
+      if ((lhs_vr->type != VR_RANGE || vr_result.type != VR_RANGE
+	   || POINTER_TYPE_P (TREE_TYPE (lhs)))
+	  && (cmp_min != 0 || cmp_max != 0))
+	goto varying;
+
+      /* If the new minimum is smaller or larger than the previous
+	 one, go all the way to -INF.  In the first case, to avoid
+	 iterating millions of times to reach -INF, and in the
+	 other case to avoid infinite bouncing between different
+	 minimums.  */
+      if (cmp_min > 0 || cmp_min < 0)
 	{
-	  int cmp_min = compare_values (lhs_vr->min, vr_result.min);
-	  int cmp_max = compare_values (lhs_vr->max, vr_result.max);
-
-	  /* If the new minimum is smaller or larger than the previous
-	     one, go all the way to -INF.  In the first case, to avoid
-	     iterating millions of times to reach -INF, and in the
-	     other case to avoid infinite bouncing between different
-	     minimums.  */
-	  if (cmp_min > 0 || cmp_min < 0)
-	    {
-	      /* If we will end up with a (-INF, +INF) range, set it to
-		 VARYING.  Same if the previous max value was invalid for
-		 the type and we'd end up with vr_result.min > vr_result.max.  */
-	      if (vrp_val_is_max (vr_result.max)
-		  || compare_values (TYPE_MIN_VALUE (TREE_TYPE (vr_result.min)),
-				     vr_result.max) > 0)
-		goto varying;
-
-	      if (!needs_overflow_infinity (TREE_TYPE (vr_result.min))
-		  || !vrp_var_may_overflow (lhs, phi))
-		vr_result.min = TYPE_MIN_VALUE (TREE_TYPE (vr_result.min));
-	      else if (supports_overflow_infinity (TREE_TYPE (vr_result.min)))
-		vr_result.min =
-		  negative_overflow_infinity (TREE_TYPE (vr_result.min));
-	      else
-		goto varying;
-	    }
-
-	  /* Similarly, if the new maximum is smaller or larger than
-	     the previous one, go all the way to +INF.  */
-	  if (cmp_max < 0 || cmp_max > 0)
-	    {
-	      /* If we will end up with a (-INF, +INF) range, set it to
-		 VARYING.  Same if the previous min value was invalid for
-		 the type and we'd end up with vr_result.max < vr_result.min.  */
-	      if (vrp_val_is_min (vr_result.min)
-		  || compare_values (TYPE_MAX_VALUE (TREE_TYPE (vr_result.max)),
-				     vr_result.min) < 0)
-		goto varying;
-
-	      if (!needs_overflow_infinity (TREE_TYPE (vr_result.max))
-		  || !vrp_var_may_overflow (lhs, phi))
-		vr_result.max = TYPE_MAX_VALUE (TREE_TYPE (vr_result.max));
-	      else if (supports_overflow_infinity (TREE_TYPE (vr_result.max)))
-		vr_result.max =
-		  positive_overflow_infinity (TREE_TYPE (vr_result.max));
-	      else
-		goto varying;
-	    }
+	  if (!needs_overflow_infinity (TREE_TYPE (vr_result.min))
+	      || !vrp_var_may_overflow (lhs, phi))
+	    vr_result.min = TYPE_MIN_VALUE (TREE_TYPE (vr_result.min));
+	  else if (supports_overflow_infinity (TREE_TYPE (vr_result.min)))
+	    vr_result.min =
+		negative_overflow_infinity (TREE_TYPE (vr_result.min));
 	}
+
+      /* Similarly, if the new maximum is smaller or larger than
+	 the previous one, go all the way to +INF.  */
+      if (cmp_max < 0 || cmp_max > 0)
+	{
+	  if (!needs_overflow_infinity (TREE_TYPE (vr_result.max))
+	      || !vrp_var_may_overflow (lhs, phi))
+	    vr_result.max = TYPE_MAX_VALUE (TREE_TYPE (vr_result.max));
+	  else if (supports_overflow_infinity (TREE_TYPE (vr_result.max)))
+	    vr_result.max =
+		positive_overflow_infinity (TREE_TYPE (vr_result.max));
+	}
+
+      /* If we dropped either bound to +-INF then if this is a loop
+	 PHI node SCEV may known more about its value-range.  */
+      if ((cmp_min > 0 || cmp_min < 0
+	   || cmp_max < 0 || cmp_max > 0)
+	  && current_loops
+	  && (l = loop_containing_stmt (phi))
+	  && l->header == gimple_bb (phi))
+	adjust_range_with_scev (&vr_result, l, phi, lhs);
+
+      /* If we will end up with a (-INF, +INF) range, set it to
+	 VARYING.  Same if the previous max value was invalid for
+	 the type and we end up with vr_result.min > vr_result.max.  */
+      if ((vrp_val_is_max (vr_result.max)
+	   && vrp_val_is_min (vr_result.min))
+	  || compare_values (vr_result.min,
+			     vr_result.max) > 0)
+	goto varying;
     }
 
   /* If the new range is different than the previous value, keep
@@ -7649,6 +7669,12 @@ execute_vrp (void)
   loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
   rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
   scev_initialize ();
+
+  /* Estimate number of iterations - but do not use undefined behavior
+     for this.  We can't do this lazily as other functions may compute
+     this using undefined behavior.  */
+  free_numbers_of_iterations_estimates ();
+  estimate_numbers_of_iterations (false);
 
   insert_range_assertions ();
 

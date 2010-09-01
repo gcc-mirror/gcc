@@ -1,3 +1,20 @@
+2010-09-01  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (adjust_range_with_scev): Use number of iteration
+	estimate.
+	(vrp_visit_phi_node): Delay using SCEV till we balloon the
+	range.
+	(execute_vrp): Compute number of iteration estimates.
+	* cfgloop.h (estimate_numbers_of_iterations_loop): Adjust prototype.
+	* tree-flow.h (estimate_numbers_of_iterations): Likewise.
+	* tree-data-ref.c (estimated_loop_iterations): Adjust.
+	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations_loop):
+	Infer loop bounds from undefined behavior based on a new
+	parameter.
+	(estimate_numbers_of_iterations): Likewise.
+	(scev_probably_wraps_p): Adjust.
+	* tree-ssa-loop.c (tree_ssa_loop_bounds): Likewise.
+
 2010-09-01  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/stormy16.c: Use REG_P, MEM_P and CONST_INT_P

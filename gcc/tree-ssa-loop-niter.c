@@ -2933,10 +2933,11 @@ gcov_type_to_double_int (gcov_type val)
   return ret;
 }
 
-/* Records estimates on numbers of iterations of LOOP.  */
+/* Records estimates on numbers of iterations of LOOP.  If USE_UNDEFINED_P
+   is true also use estimates derived from undefined behavior.  */
 
 void
-estimate_numbers_of_iterations_loop (struct loop *loop)
+estimate_numbers_of_iterations_loop (struct loop *loop, bool use_undefined_p)
 {
   VEC (edge, heap) *exits;
   tree niter, type;
@@ -2970,7 +2971,8 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
     }
   VEC_free (edge, heap, exits);
 
-  infer_loop_bounds_from_undefined (loop);
+  if (use_undefined_p)
+    infer_loop_bounds_from_undefined (loop);
 
   /* If we have a measured profile, use it to estimate the number of
      iterations.  */
@@ -2993,7 +2995,7 @@ estimate_numbers_of_iterations_loop (struct loop *loop)
 /* Records estimates on numbers of iterations of loops.  */
 
 void
-estimate_numbers_of_iterations (void)
+estimate_numbers_of_iterations (bool use_undefined_p)
 {
   loop_iterator li;
   struct loop *loop;
@@ -3004,7 +3006,7 @@ estimate_numbers_of_iterations (void)
 
   FOR_EACH_LOOP (li, loop, 0)
     {
-      estimate_numbers_of_iterations_loop (loop);
+      estimate_numbers_of_iterations_loop (loop, use_undefined_p);
     }
 
   fold_undefer_and_ignore_overflow_warnings ();
@@ -3200,7 +3202,7 @@ scev_probably_wraps_p (tree base, tree step,
 
   valid_niter = fold_build2 (FLOOR_DIV_EXPR, unsigned_type, delta, step_abs);
 
-  estimate_numbers_of_iterations_loop (loop);
+  estimate_numbers_of_iterations_loop (loop, true);
   for (bound = loop->bounds; bound; bound = bound->next)
     {
       if (n_of_executions_at_most (at_stmt, bound, valid_niter))

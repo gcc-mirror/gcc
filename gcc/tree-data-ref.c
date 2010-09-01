@@ -1716,7 +1716,7 @@ bool
 estimated_loop_iterations (struct loop *loop, bool conservative,
 			   double_int *nit)
 {
-  estimate_numbers_of_iterations_loop (loop);
+  estimate_numbers_of_iterations_loop (loop, true);
   if (conservative)
     {
       if (!loop->any_upper_bound)
