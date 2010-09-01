@@ -3314,11 +3314,12 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	      }
 	  }
 
-	/* If the target is volatile and we have non-zero elements
-	   initialize the target from a temporary.  */
+	/* If the target is volatile, we have non-zero elements and more than
+	   one field to assign, initialize the target from a temporary.  */
 	if (TREE_THIS_VOLATILE (object)
 	    && !TREE_ADDRESSABLE (type)
-	    && num_nonzero_elements > 0)
+	    && num_nonzero_elements > 0
+	    && VEC_length (constructor_elt, elts) > 1)
 	  {
 	    tree temp = create_tmp_var (TYPE_MAIN_VARIANT (type), NULL);
 	    TREE_OPERAND (*expr_p, 0) = temp;
