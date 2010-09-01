@@ -77,7 +77,7 @@ along with GCC; see the file COPYING3.  If not see
    kernel32.  */
 #undef LIB_SPEC
 #define LIB_SPEC "%{pg:-lgmon} %{mwindows:-lgdi32 -lcomdlg32} \
-                  -luser32 -lkernel32 -ladvapi32 -lshell32"
+                  -ladvapi32 -lshell32 -luser32 -lkernel32"
 
 /* Weak symbols do not get resolved if using a Windows dll import lib.
    Make the unwind registration references strong undefs.  */

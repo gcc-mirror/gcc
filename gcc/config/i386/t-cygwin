@@ -34,7 +34,7 @@ cygwin2.o: $(srcdir)/config/i386/cygwin2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(srcdir)/config/i386/cygwin2.c
 
 # Cygwin-specific parts of LIB_SPEC
-SHLIB_LC = -lcygwin -luser32 -lkernel32 -ladvapi32 -lshell32
+SHLIB_LC = -lcygwin -ladvapi32 -lshell32 -luser32 -lkernel32
 
 # We have already included one of the t-{dw2,sjlj}-eh fragments for EH_MODEL
 SHLIB_EH_EXTENSION = $(subst -dw2,,-$(EH_MODEL))

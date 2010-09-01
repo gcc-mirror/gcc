@@ -1,3 +1,13 @@
+2010-09-01  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR/target 45452
+	* config/i386/cygwin.h: Change order of specified import libraries.
+	* config/i386/mingw32.h: Likewise.
+	* config/i386/t-cygwin: Likewise.
+	* config/i386/t-mingw32: Likewise.
+	* config/i386/t-mingw-w32: Likewise.
+	* config/i386/t-mingw-w64: Likewise.
+
 2010-09-01  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/neon-schedgen.ml (core): New type.
