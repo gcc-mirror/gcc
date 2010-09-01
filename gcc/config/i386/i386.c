@@ -1480,21 +1480,21 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   /* X86_TUNE_PROMOTE_HI_REGS */
   m_PPRO,
 
-  /* X86_TUNE_ADD_ESP_4: Enable if add/sub is preferred over 1/2 push/pop.  */
-  m_ATOM | m_AMD_MULTIPLE | m_K6_GEODE | m_PENT4 | m_NOCONA
-  | m_CORE2 | m_GENERIC,
+  /* X86_TUNE_SINGLE_POP: Enable if single pop insn is preferred
+     over esp addition.  */
+  m_386 | m_486 | m_PENT | m_PPRO,
 
-  /* X86_TUNE_ADD_ESP_8 */
-  m_AMD_MULTIPLE | m_ATOM | m_PPRO | m_K6_GEODE | m_386
-  | m_486 | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC,
+  /* X86_TUNE_DOUBLE_POP: Enable if double pop insn is preferred
+     over esp addition.  */
+  m_PENT,
 
-  /* X86_TUNE_SUB_ESP_4 */
-  m_AMD_MULTIPLE | m_ATOM | m_PPRO | m_PENT4 | m_NOCONA | m_CORE2
-  | m_GENERIC,
+  /* X86_TUNE_SINGLE_PUSH: Enable if single push insn is preferred
+     over esp subtraction.  */
+  m_386 | m_486 | m_PENT | m_K6_GEODE,
 
-  /* X86_TUNE_SUB_ESP_8 */
-  m_AMD_MULTIPLE | m_ATOM | m_PPRO | m_386 | m_486
-  | m_PENT4 | m_NOCONA | m_CORE2 | m_GENERIC,
+  /* X86_TUNE_DOUBLE_PUSH. Enable if double push insn is preferred
+     over esp subtraction.  */
+  m_PENT | m_K6_GEODE,
 
   /* X86_TUNE_INTEGER_DFMODE_MOVES: Enable if integer moves are preferred
      for DFmode copies */

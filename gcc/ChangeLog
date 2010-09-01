@@ -1,3 +1,26 @@
+2010-09-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (enum ix86_tune_indices) <X86_TUNE_SINGLE_POP>:
+	Rename from X86_TUNE_ADD_ESP_4.
+	<IX86_TUNE_DOUBLE_POP>: Rename from X86_TUNE_ADD_ESP_8.
+	<IX86_TUNE_SINGLE_PUSH>: Rename from X86_TUNE_SUB_ESP_4.
+	<IX86_TUNE_DOUBLE_PUSH>: Rename from X86_TUNE_SUB_ESP_8.
+	(TARGET_SINGLE_POP): Rename from TARGET_ADD_ESP_4.
+	(TARGET_DOUBLE_POP): Rename from TARGET_ADD_ESP_8.
+	(TARGET_SINGLE_PUSH): Rename from TARGET_SUB_ESP_4.
+	(TARGET_DOUBLE_POP): Rename from TARGET_SUB_ESP_8.
+	* config/i386/i386.c (initial_ix86_tune_features)
+	<X86_TUNE_SINGLE_POP>: Invert members.
+	<X86_TUNE_DOUBLE_POP>: Ditto.
+	<X86_TUNE_SINGLE_PUSH>: Ditto.
+	<X86_TUNE_DOUBLE_PUSH>: Ditto.
+	* config/i386/i386.md (*pop<mode>1): Rename from pop<mode>1.
+	No longer exported.
+	(push peephole2 patterns): Macroize peepholes using P mode iterator.
+	Adjust for renamed TARGET_{SINGLE,DOUBLE}_PUSH defines.
+	(pop peephole2 patterns): Macroize peepholes using P mode iterator.
+	Adjust for renamed TARGET_{SINGLE,DOUBLE}_POP defines.
+
 2010-09-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (gimplify_init_constructor): Do not create a temporary for
@@ -10,21 +33,19 @@
 	* tree.h (stdarg_p): Likewise.
 	(function_args_iterator): Remove unused fntype field.
 	(function_args_iter_init): Do not initialize fntype
-	field.  Make fntype parameter const. 
+	field.  Make fntype parameter const.
 
 2010-09-01  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vrp.c (adjust_range_with_scev): Use number of iteration
 	estimate.
-	(vrp_visit_phi_node): Delay using SCEV till we balloon the
-	range.
+	(vrp_visit_phi_node): Delay using SCEV till we balloon the range.
 	(execute_vrp): Compute number of iteration estimates.
 	* cfgloop.h (estimate_numbers_of_iterations_loop): Adjust prototype.
 	* tree-flow.h (estimate_numbers_of_iterations): Likewise.
 	* tree-data-ref.c (estimated_loop_iterations): Adjust.
 	* tree-ssa-loop-niter.c (estimate_numbers_of_iterations_loop):
-	Infer loop bounds from undefined behavior based on a new
-	parameter.
+	Infer loop bounds from undefined behavior based on a new parameter.
 	(estimate_numbers_of_iterations): Likewise.
 	(scev_probably_wraps_p): Adjust.
 	* tree-ssa-loop.c (tree_ssa_loop_bounds): Likewise.
