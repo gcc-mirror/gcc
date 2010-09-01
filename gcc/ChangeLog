@@ -1,10 +1,17 @@
+2010-09-01  Uros Bizjak  <ubizjak@gmail.com>
+
+        PR target/45476
+        * config/i386/cygming.h (LIBGCC2_HAS_TF_MODE,
+	LIBGCC2_TF_CEXT, TF_SIZE): Move from ...
+        * config/i386/mingw32.h: ... here.
+
 2010-09-01  Andi Kleen	<ak@linux.intel.com>
 
-    	PR lto/45475
-    	* lto-streamer-in.c (lto_input_ts_target_option): Add.
-    	(lto_input_tree_pointers): Call lto_input_ts_target_option.
-    	* lto-streamer-out: (lto_output_ts_target_option): Add.
-    	(lto_output_tree_pointers): Call lto_output_ts_target_option.
+	PR lto/45475
+	* lto-streamer-in.c (lto_input_ts_target_option): Add.
+	(lto_input_tree_pointers): Call lto_input_ts_target_option.
+	* lto-streamer-out: (lto_output_ts_target_option): Add.
+	(lto_output_tree_pointers): Call lto_output_ts_target_option.
 
 2010-09-01  Kai Tietz  <kai.tietz@onevision.com>
 
