@@ -1,3 +1,12 @@
+2010-09-01  Christopher Yeleighton  <giecrilj@stegny.2a.pl>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/45488
+	* include/bits/stl_algobase.h (lower_bound): Clean-up a tad, move
+	two variables inside the main loop.
+	* include/bits/stl_algo.h (lower_bound, upper_bound, equal_range):
+	Likewise.
+
 2010-08-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/44480
