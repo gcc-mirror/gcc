@@ -1,3 +1,7 @@
+2010-09-01  Steve Ellcey  <sje@cup.hp.com>
+
+	* gfortran.dg/vect/fast-math-pr38969.f90: Skip if not vectorizing.
+
 2010-09-01  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44541
