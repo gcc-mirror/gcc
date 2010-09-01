@@ -1069,6 +1069,8 @@ GFORTRAN_1.1 {
     _gfortran_erfc_scaled_r16;
     _gfortran_erfc_scaled_r4;
     _gfortran_erfc_scaled_r8;
+    _gfortran_execute_command_line_i4;
+    _gfortran_execute_command_line_i8;
     _gfortran_pack_char4;
     _gfortran_pack_s_char4;
     _gfortran_reshape_char4;

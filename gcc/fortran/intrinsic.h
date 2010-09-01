@@ -538,6 +538,7 @@ void gfc_resolve_chdir_sub (gfc_code *);
 void gfc_resolve_chmod_sub (gfc_code *);
 void gfc_resolve_cpu_time (gfc_code *);
 void gfc_resolve_ctime_sub (gfc_code *);
+void gfc_resolve_execute_command_line (gfc_code *);
 void gfc_resolve_exit (gfc_code *);
 void gfc_resolve_fdate_sub (gfc_code *);
 void gfc_resolve_flush (gfc_code *);

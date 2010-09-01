@@ -102,6 +102,7 @@ intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
 intrinsics/erfc_scaled.c \
 intrinsics/etime.c \
+intrinsics/execute_command_line.c \
 intrinsics/exit.c \
 intrinsics/extends_type_of.c \
 intrinsics/fnum.c \

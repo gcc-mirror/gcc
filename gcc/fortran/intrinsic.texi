@@ -104,6 +104,7 @@ Some basic guidelines for editing this document:
 * @code{ERFC}:          ERFC,      Complementary error function
 * @code{ERFC_SCALED}:   ERFC_SCALED, Exponentially-scaled complementary error function
 * @code{ETIME}:         ETIME,     Execution time subroutine (or function)
+* @code{EXECUTE_COMMAND_LINE}: EXECUTE_COMMAND_LINE, Execute a shell command
 * @code{EXIT}:          EXIT,      Exit the program with status.
 * @code{EXP}:           EXP,       Exponential function
 * @code{EXPONENT}:      EXPONENT,  Exponent function
@@ -3813,6 +3814,82 @@ end program test_etime
 @item @emph{See also}:
 @ref{CPU_TIME}
 
+@end table
+
+
+
+@node EXECUTE_COMMAND_LINE
+@section @code{EXECUTE_COMMAND_LINE} --- Execute a shell command
+@fnindex EXECUTE_COMMAND_LINE
+@cindex system, system call
+@cindex command line
+
+@table @asis
+@item @emph{Description}:
+@code{EXECUTE_COMMAND_LINE} runs a shell command, synchronously or
+asynchronously.
+
+The @code{COMMAND} argument is passed to the shell and executed, using
+the C library's @code{system()} call.  (The shell is @code{sh} on Unix
+systems, and @code{cmd.exe} on Windows.)  If @code{WAIT} is present and
+has the value false, the execution of the command is asynchronous if the
+system supports it; otherwise, the command is executed synchronously.
+
+The three last arguments allow the user to get status information.  After
+synchronous execution, @code{EXITSTAT} contains the integer exit code of
+the command, as returned by @code{system}.  @code{CMDSTAT} is set to zero
+if the command line was executed (whatever its exit status was).
+@code{CMDMSG} is assigned an error message if an error has occurred.
+
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Subroutine
+
+@item @emph{Syntax}:
+@code{CALL EXECUTE_COMMAND_LINE(COMMAND [, WAIT, EXITSTAT, CMDSTAT, CMDMSG ])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{COMMAND} @tab Shall be a default @code{CHARACTER} scalar.
+@item @var{WAIT} @tab (Optional) Shall be a default @code{LOGICAL} scalar.
+@item @var{EXITSTAT} @tab (Optional) Shall be an @code{INTEGER} of the
+default kind.
+@item @var{CMDSTAT} @tab (Optional) Shall be an @code{INTEGER} of the
+default kind.
+@item @var{CMDMSG} @tab (Optional) Shall be an @code{CHARACTER} scalar of the
+default kind.
+@end multitable
+
+@item @emph{Example}:
+@smallexample
+program test_exec
+  integer :: i
+
+  call execute_command_line ("external_prog.exe", exitstat=i)
+  print *, "Exit status of external_prog.exe was ", i
+
+  call execute_command_line ("reindex_files.exe", wait=.false.)
+  print *, "Now reindexing files in the background"
+
+end program test_exec
+@end smallexample
+
+
+@item @emph{Note}:
+
+Because this intrinsic is implemented in terms of the @code{system()}
+function call, its behavior with respect to signalling is processor
+dependent. In particular, on POSIX-compliant systems, the SIGINT and
+SIGQUIT signals will be ignored, and the SIGCHLD will be blocked. As
+such, if the parent process is terminated, the child process might not be
+terminated alongside.
+
+
+@item @emph{See also}:
+@ref{SYSTEM}
 @end table
 
 
@@ -10955,6 +11032,8 @@ Subroutine, function
 @end multitable
 
 @item @emph{See also}:
+@ref{EXECUTE_COMMAND_LINE}, which is part of the Fortran 2008 standard
+and should considered in new code for future portability.
 @end table
 
 
