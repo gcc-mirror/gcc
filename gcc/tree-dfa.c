@@ -882,16 +882,17 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	  /* Hand back the decl for MEM[&decl, off].  */
 	  if (TMR_SYMBOL (exp))
 	    {
-	      /* Via the variable index we can reach the whole object.  */
-	      if (TMR_INDEX (exp))
+	      /* Via the variable index or base we can reach the
+		 whole object.  */
+	      if (TMR_INDEX (exp) || TMR_BASE (exp))
 		{
-		  exp = TMR_SYMBOL (exp);
+		  exp = TREE_OPERAND (TMR_SYMBOL (exp), 0);
 		  bit_offset = 0;
 		  maxsize = -1;
 		  goto done;
 		}
 	      if (integer_zerop (TMR_OFFSET (exp)))
-		exp = TMR_SYMBOL (exp);
+		exp = TREE_OPERAND (TMR_SYMBOL (exp), 0);
 	      else
 		{
 		  double_int off = mem_ref_offset (exp);
@@ -903,7 +904,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		  if (double_int_fits_in_shwi_p (off))
 		    {
 		      bit_offset = double_int_to_shwi (off);
-		      exp = TMR_SYMBOL (exp);
+		      exp = TREE_OPERAND (TMR_SYMBOL (exp), 0);
 		    }
 		}
 	    }
@@ -1045,7 +1046,7 @@ get_addr_base_and_unit_offset (tree exp, HOST_WIDE_INT *poffset)
 	  /* Hand back the decl for MEM[&decl, off].  */
 	  if (TMR_SYMBOL (exp))
 	    {
-	      if (TMR_SYMBOL (exp))
+	      if (TMR_INDEX (exp) || TMR_BASE (exp))
 		return NULL_TREE;
 	      if (!integer_zerop (TMR_OFFSET (exp)))
 		{
@@ -1053,7 +1054,7 @@ get_addr_base_and_unit_offset (tree exp, HOST_WIDE_INT *poffset)
 		  gcc_assert (off.high == -1 || off.high == 0);
 		  byte_offset += double_int_to_shwi (off);
 		}
-	      exp = TMR_SYMBOL (exp);
+	      exp = TREE_OPERAND (TMR_SYMBOL (exp), 0);
 	    }
 	  goto done;
 

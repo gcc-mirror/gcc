@@ -672,14 +672,14 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 
   if (TREE_CODE (base1) == TARGET_MEM_REF)
     {
-      if (TMR_BASE (base1))
+      if (TMR_SYMBOL (base1))
+	ptr1 = TMR_SYMBOL (base1);
+      else if (TMR_BASE (base1))
 	{
 	  if (!POINTER_TYPE_P (TREE_TYPE (TMR_BASE (base1))))
 	    return true;
 	  ptr1 = TMR_BASE (base1);
 	}
-      else if (TMR_SYMBOL (base1))
-	ptr1 = build_fold_addr_expr (TMR_SYMBOL (base1));
       else
 	return true;
     }
@@ -814,14 +814,14 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 
   if (TREE_CODE (base1) == TARGET_MEM_REF)
     {
-      if (TMR_BASE (base1))
+      if (TMR_SYMBOL (base1))
+	ptr1 = TMR_SYMBOL (base1);
+      else if (TMR_BASE (base1))
 	{
 	  if (!POINTER_TYPE_P (TREE_TYPE (TMR_BASE (base1))))
 	    return true;
 	  ptr1 = TMR_BASE (base1);
 	}
-      else if (TMR_SYMBOL (base1))
-	ptr1 = build_fold_addr_expr (TMR_SYMBOL (base1));
       else
 	return true;
     }
@@ -830,14 +830,14 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 
   if (TREE_CODE (base2) == TARGET_MEM_REF)
     {
-      if (TMR_BASE (base2))
+      if (TMR_SYMBOL (base2))
+	ptr2 = TMR_SYMBOL (base2);
+      else if (TMR_BASE (base2))
 	{
 	  if (!POINTER_TYPE_P (TREE_TYPE (TMR_BASE (base2))))
 	    return true;
 	  ptr2 = TMR_BASE (base2);
 	}
-      else if (TMR_SYMBOL (base2))
-	ptr2 = build_fold_addr_expr (TMR_SYMBOL (base2));
       else
 	return true;
     }

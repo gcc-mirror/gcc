@@ -6978,9 +6978,14 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    enum gimplify_status r0 = GS_ALL_DONE, r1 = GS_ALL_DONE;
 
 	    if (TMR_SYMBOL (*expr_p))
-	      r0 = gimplify_expr (&TMR_SYMBOL (*expr_p), pre_p,
-				  post_p, is_gimple_lvalue, fb_either);
-	    else if (TMR_BASE (*expr_p))
+	      /* We can't gimplify the symbol part.  Assert it is
+		 already gimple instead.
+		 ???  This isn't exactly the same as ADDR_EXPR
+		 plus is_gimple_mem_ref_addr (), see fixed_address_object_p.  */
+	      gcc_assert (TREE_CODE (TMR_SYMBOL (*expr_p)) == ADDR_EXPR
+			  && (TREE_CODE (TREE_OPERAND (TMR_SYMBOL (*expr_p), 0))
+			      == VAR_DECL));
+	    if (TMR_BASE (*expr_p))
 	      r0 = gimplify_expr (&TMR_BASE (*expr_p), pre_p,
 				  post_p, is_gimple_val, fb_either);
 	    if (TMR_INDEX (*expr_p))

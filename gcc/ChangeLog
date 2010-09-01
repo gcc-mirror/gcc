@@ -1,3 +1,30 @@
+2010-09-01  Richard Guenther  <rguenther@suse.de>
+
+	* alias.c (ao_ref_from_mem): Adjust.
+	* builtins.c (get_object_alignment): Likewise.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	* gimple.c (get_base_address): Likewise.
+	* tree-dfa.c (get_ref_base_and_extent): Likewise.
+	(get_addr_base_and_unit_offset): Likewise.  Fix for
+	both TMR_SYMBOL and TMR_BASE being set.
+	* tree-eh.c (tree_could_trap_p): Likewise.
+	* gimplify.c (gimplify_expr): Do not attempt to gimplify
+	TMR_SYMBOL.  Always gimplify TMR_BASE.
+	* tree-cfg.c (verify_types_in_gimple_reference): Verify
+	TMR_BASE if there is a TMR_SYMBOL.
+	* tree-pretty-print.c (dump_generic_node): Adjust.
+	* tree-ssa-address.c (addr_for_mem_ref): Likewise.
+	(tree_mem_ref_addr): Likewise.
+	(create_mem_ref_raw): Likewise.
+	(move_fixed_address_to_symbol): Likewise.
+	(create_mem_ref): Likewise.
+	(dump_mem_address): Likewise.
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Adjust.
+	Fix for both TMR_SYMBOL and TMR_BASE being set.
+	(indirect_refs_may_alias_p): Likewise.
+	* tree-ssa-operands.c (get_tmr_operands): Adjust.
+	* tree.def (TARGET_MEM_REF): Adjust documentation.
+
 2010-09-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (enum ix86_tune_indices) <X86_TUNE_SINGLE_POP>:

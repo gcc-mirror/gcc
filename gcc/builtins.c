@@ -369,7 +369,8 @@ get_object_alignment (tree exp, unsigned int max_align)
   else if (TREE_CODE (exp) == TARGET_MEM_REF
 	   && TMR_SYMBOL (exp))
     {
-      align = get_object_alignment (TMR_SYMBOL (exp), max_align);
+      align = get_object_alignment (TREE_OPERAND (TMR_SYMBOL (exp), 0),
+				    max_align);
       if (TMR_OFFSET (exp))
         bitpos += TREE_INT_CST_LOW (TMR_OFFSET (exp)) * BITS_PER_UNIT;
       if (TMR_INDEX (exp) && TMR_STEP (exp))
@@ -378,6 +379,8 @@ get_object_alignment (tree exp, unsigned int max_align)
 	  align = MIN (align, (step & -step) * BITS_PER_UNIT);
 	}
       else if (TMR_INDEX (exp))
+	align = BITS_PER_UNIT;
+      if (TMR_BASE (exp))
 	align = BITS_PER_UNIT;
     }
   else

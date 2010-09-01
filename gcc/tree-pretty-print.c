@@ -858,7 +858,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	    pp_string (buffer, sep);
 	    sep = ", ";
 	    pp_string (buffer, "symbol: ");
-	    dump_generic_node (buffer, tmp, spc, flags, false);
+	    dump_generic_node (buffer, TREE_OPERAND (tmp, 0),
+			       spc, flags, false);
 	  }
 	tmp = TMR_BASE (node);
 	if (tmp)

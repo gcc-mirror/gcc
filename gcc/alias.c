@@ -302,13 +302,13 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
     }
   else if (TREE_CODE (base) == TARGET_MEM_REF
 	   && TMR_SYMBOL (base)
-	   && TREE_CODE (TMR_SYMBOL (base)) == VAR_DECL
-	   && ! TREE_STATIC (TMR_SYMBOL (base))
+	   && TREE_CODE (TREE_OPERAND (TMR_SYMBOL (base), 0)) == VAR_DECL
+	   && ! TREE_STATIC (TREE_OPERAND (TMR_SYMBOL (base), 0))
 	   && cfun->gimple_df->decls_to_pointers != NULL)
     {
       void *namep;
       namep = pointer_map_contains (cfun->gimple_df->decls_to_pointers,
-				    TMR_SYMBOL (base));
+				    TREE_OPERAND (TMR_SYMBOL (base), 0));
       if (namep)
 	ref->base = build_simple_mem_ref (*(tree *)namep);
     }

@@ -756,7 +756,7 @@ get_tmr_operands (gimple stmt, tree expr, int flags)
   get_expr_operands (stmt, &TMR_INDEX (expr), opf_use | (flags & opf_no_vops));
 
   if (TMR_SYMBOL (expr))
-    mark_address_taken (TMR_SYMBOL (expr));
+    mark_address_taken (TREE_OPERAND (TMR_SYMBOL (expr), 0));
 
   add_virtual_operand (stmt, flags);
 }
