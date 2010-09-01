@@ -938,7 +938,7 @@ gfc_init_builtin_functions (void)
 		          BUILT_IN_SINCOSF, "sincosf", false);
     }
 
-  /* For LEADZ, TRAILZ, POPCNT and POPAR.  */
+  /* For LEADZ, TRAILZ, POPCNT and POPPAR.  */
   ftype = build_function_type_list (integer_type_node,
                                     unsigned_type_node, NULL_TREE);
   gfc_define_builtin ("__builtin_clz", ftype, BUILT_IN_CLZ,
