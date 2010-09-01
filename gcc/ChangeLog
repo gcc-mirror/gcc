@@ -1,5 +1,16 @@
 2010-09-01  Nick Clifton  <nickc@redhat.com>
 
+	* config/stormy16/stormy16.c: Use REG_P, MEM_P and CONST_INT_P
+	where appropriate.
+	(xstormy16_legitimate_address_p): Use true and false instead of 1
+	and 0.
+	(xstormy16_expand_prologue): Delete unused local variable 'insn'.
+	(xstormy16_function_arg): Use FIRST_ARGUMENT_REGNUM in place of
+	magic constant 2.
+	(xstormy16_expand_call): Fix comment at start of function.
+
+2010-09-01  Nick Clifton  <nickc@redhat.com>
+
 	* config/rx/rx.c (rx_expand_prologue): Do not adjust frame size
 	when pushing accumulator register.
 	(rx_get_stack_layout): Always save call clobbered registers inside
