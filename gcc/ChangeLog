@@ -1,3 +1,10 @@
+2010-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/45458
+	* bb-reorder.c (add_labels_and_missing_jumps): Treat
+	bbs ending with throwing insns like blocks ending with a call.
+	(fix_up_fall_thru_edges): Likewise.
+
 2010-09-01  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/m32c/m32c-protos.h (m32c_function_arg): Delete.
