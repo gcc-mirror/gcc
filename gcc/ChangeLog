@@ -1,3 +1,12 @@
+2010-09-01  Mikael Pettersson  <mikpe@it.uu.se>
+
+       PR bootstrap/45321
+       * tree.c (stdarg_p): Make fntype parameter const.
+       * tree.h (stdarg_p): Likewise.
+       (function_args_iterator): Remove unused fntype field.
+       (function_args_iter_init): Do not initialize fntype
+       field.  Make fntype parameter const. 
+
 2010-09-01  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vrp.c (adjust_range_with_scev): Use number of iteration

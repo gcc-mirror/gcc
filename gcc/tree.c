@@ -10508,7 +10508,7 @@ get_name (tree t)
 /* Return true if TYPE has a variable argument list.  */
 
 bool
-stdarg_p (tree fntype)
+stdarg_p (const_tree fntype)
 {
   function_args_iterator args_iter;
   tree n = NULL_TREE, t;
