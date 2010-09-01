@@ -505,9 +505,6 @@ enum reg_class
 
 /* Passing Arguments in Registers */
 
-#define FUNCTION_ARG(CA,MODE,TYPE,NAMED) \
-	m32c_function_arg (&(CA),MODE,TYPE,NAMED)
-
 typedef struct m32c_cumulative_args
 {
   /* For address of return value buffer (structures are returned by
@@ -523,8 +520,6 @@ typedef struct m32c_cumulative_args
 #define CUMULATIVE_ARGS m32c_cumulative_args
 #define INIT_CUMULATIVE_ARGS(CA,FNTYPE,LIBNAME,FNDECL,N_NAMED_ARGS) \
 	m32c_init_cumulative_args (&(CA),FNTYPE,LIBNAME,FNDECL,N_NAMED_ARGS)
-#define FUNCTION_ARG_ADVANCE(CA,MODE,TYPE,NAMED) \
-	m32c_function_arg_advance (&(CA),MODE,TYPE,NAMED)
 #define FUNCTION_ARG_BOUNDARY(MODE,TYPE) (TARGET_A16 ? 8 : 16)
 #define FUNCTION_ARG_REGNO_P(r) m32c_function_arg_regno_p (r)
 
