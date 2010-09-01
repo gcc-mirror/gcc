@@ -1,3 +1,11 @@
+2010-09-01  Andi Kleen	<ak@linux.intel.com>
+
+    	PR lto/45475
+    	* lto-streamer-in.c (lto_input_ts_target_option): Add.
+    	(lto_input_tree_pointers): Call lto_input_ts_target_option.
+    	* lto-streamer-out: (lto_output_ts_target_option): Add.
+    	(lto_output_tree_pointers): Call lto_output_ts_target_option.
+
 2010-09-01  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR/target 45452
