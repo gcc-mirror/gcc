@@ -945,13 +945,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __glibcxx_requires_partitioned_lower(__first, __last, __val);
 
       _DistanceType __len = std::distance(__first, __last);
-      _DistanceType __half;
-      _ForwardIterator __middle;
 
       while (__len > 0)
 	{
-	  __half = __len >> 1;
-	  __middle = __first;
+	  _DistanceType __half = __len >> 1;
+	  _ForwardIterator __middle = __first;
 	  std::advance(__middle, __half);
 	  if (*__middle < __val)
 	    {
