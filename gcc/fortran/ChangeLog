@@ -1,3 +1,29 @@
+2010-09-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45186
+	* trans-common.c (create_common): Change build[0-9] to
+	build[0-9]_loc.
+	* trans-const.c (gfc_conv_constant_to_tree,
+	gfc_conv_constant_to_tree): Ditto.
+	* trans-decl.c (gfc_build_qualified_array, build_entry_thunks,
+	gfc_get_fake_result_decl, gfc_trans_auto_character_variable,
+	add_argument_checking, create_main_function,
+	gfc_generate_return): Ditto.
+	* trans-types.c (gfc_get_dtype, gfc_get_array_type_bounds): Ditto.
+	* trans-stmt.c (allocate_temp_for_forall_nest_1,
+	compute_inner_temp_size, compute_overall_iter_number,
+	generate_loop_for_rhs_to_temp, generate_loop_for_temp_to_lhs,
+	gfc_conv_elemental_dependencies, gfc_do_allocate,
+	gfc_evaluate_where_mask, gfc_trans_allocate,
+	gfc_trans_arithmetic_if, gfc_trans_call,
+	gfc_trans_character_select, gfc_trans_deallocate,
+	gfc_trans_do, gfc_trans_do_while, gfc_trans_forall_1,
+	gfc_trans_forall_loop, gfc_trans_goto, gfc_trans_if_1,
+	gfc_trans_integer_select, gfc_trans_logical_select,
+	gfc_trans_pointer_assign_need_temp, gfc_trans_return,
+	gfc_trans_simple_do, gfc_trans_sync, gfc_trans_where_2,
+	gfc_trans_where_assign) Ditto.
+
 2010-09-02  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44541

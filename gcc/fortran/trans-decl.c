@@ -724,8 +724,8 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
     {
       tree size, range;
 
-      size = fold_build2 (MINUS_EXPR, gfc_array_index_type,
-			  GFC_TYPE_ARRAY_SIZE (type), gfc_index_one_node);
+      size = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
+			      GFC_TYPE_ARRAY_SIZE (type), gfc_index_one_node);
       range = build_range_type (gfc_array_index_type, gfc_index_zero_node,
 				size);
       TYPE_DOMAIN (type) = range;
@@ -2108,8 +2108,8 @@ build_entry_thunks (gfc_namespace * ns, bool global)
 	  pushdecl (union_decl);
 
 	  DECL_CONTEXT (union_decl) = current_function_decl;
-	  tmp = fold_build2 (MODIFY_EXPR, TREE_TYPE (union_decl),
-			     union_decl, tmp);
+	  tmp = fold_build2_loc (input_location, MODIFY_EXPR,
+				 TREE_TYPE (union_decl), union_decl, tmp);
 	  gfc_add_expr_to_block (&body, tmp);
 
 	  for (field = TYPE_FIELDS (TREE_TYPE (union_decl));
@@ -2118,9 +2118,10 @@ build_entry_thunks (gfc_namespace * ns, bool global)
 		thunk_sym->result->name) == 0)
 	      break;
 	  gcc_assert (field != NULL_TREE);
-	  tmp = fold_build3 (COMPONENT_REF, TREE_TYPE (field),
-			     union_decl, field, NULL_TREE);
-	  tmp = fold_build2 (MODIFY_EXPR, 
+	  tmp = fold_build3_loc (input_location, COMPONENT_REF,
+				 TREE_TYPE (field), union_decl, field,
+				 NULL_TREE);
+	  tmp = fold_build2_loc (input_location, MODIFY_EXPR, 
 			     TREE_TYPE (DECL_RESULT (current_function_decl)),
 			     DECL_RESULT (current_function_decl), tmp);
 	  tmp = build1_v (RETURN_EXPR, tmp);
@@ -2128,7 +2129,7 @@ build_entry_thunks (gfc_namespace * ns, bool global)
       else if (TREE_TYPE (DECL_RESULT (current_function_decl))
 	       != void_type_node)
 	{
-	  tmp = fold_build2 (MODIFY_EXPR,
+	  tmp = fold_build2_loc (input_location, MODIFY_EXPR,
 			     TREE_TYPE (DECL_RESULT (current_function_decl)),
 			     DECL_RESULT (current_function_decl), tmp);
 	  tmp = build1_v (RETURN_EXPR, tmp);
@@ -2256,8 +2257,8 @@ gfc_get_fake_result_decl (gfc_symbol * sym, int parent_flag)
 	      break;
 
 	  gcc_assert (field != NULL_TREE);
-	  decl = fold_build3 (COMPONENT_REF, TREE_TYPE (field),
-			      decl, field, NULL_TREE);
+	  decl = fold_build3_loc (input_location, COMPONENT_REF,
+				  TREE_TYPE (field), decl, field, NULL_TREE);
 	}
 
       var = create_tmp_var_raw (TREE_TYPE (decl), sym->name);
@@ -2949,7 +2950,7 @@ gfc_trans_auto_character_variable (gfc_symbol * sym, gfc_wrapped_block * block)
 
   /* Emit a DECL_EXPR for this variable, which will cause the
      gimplifier to allocate storage, and all that good stuff.  */
-  tmp = fold_build1 (DECL_EXPR, TREE_TYPE (decl), decl);
+  tmp = fold_build1_loc (input_location, DECL_EXPR, TREE_TYPE (decl), decl);
   gfc_add_expr_to_block (&init, tmp);
 
   gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
@@ -4198,27 +4199,29 @@ add_argument_checking (stmtblock_t *block, gfc_symbol *sym)
 	/* Build the condition.  For optional arguments, an actual length
 	   of 0 is also acceptable if the associated string is NULL, which
 	   means the argument was not passed.  */
-	cond = fold_build2 (comparison, boolean_type_node,
-			    cl->passed_length, cl->backend_decl);
+	cond = fold_build2_loc (input_location, comparison, boolean_type_node,
+				cl->passed_length, cl->backend_decl);
 	if (fsym->attr.optional)
 	  {
 	    tree not_absent;
 	    tree not_0length;
 	    tree absent_failed;
 
-	    not_0length = fold_build2 (NE_EXPR, boolean_type_node,
-				       cl->passed_length,
-				       fold_convert (gfc_charlen_type_node,
-						     integer_zero_node));
+	    not_0length = fold_build2_loc (input_location, NE_EXPR,
+					   boolean_type_node,
+					   cl->passed_length,
+					   fold_convert (gfc_charlen_type_node,
+							 integer_zero_node));
 	    /* The symbol needs to be referenced for gfc_get_symbol_decl.  */
 	    fsym->attr.referenced = 1;
 	    not_absent = gfc_conv_expr_present (fsym);
 
-	    absent_failed = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
-					 not_0length, not_absent);
+	    absent_failed = fold_build2_loc (input_location, TRUTH_OR_EXPR,
+					     boolean_type_node, not_0length,
+					     not_absent);
 
-	    cond = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
-				cond, absent_failed);
+	    cond = fold_build2_loc (input_location, TRUTH_AND_EXPR,
+				    boolean_type_node, cond, absent_failed);
 	  }
 
 	/* Build the runtime check.  */
@@ -4431,8 +4434,9 @@ create_main_function (tree fndecl)
   TREE_USED (fndecl) = 1;
 
   /* "return 0".  */
-  tmp = fold_build2 (MODIFY_EXPR, integer_type_node, DECL_RESULT (ftn_main),
-		     build_int_cst (integer_type_node, 0));
+  tmp = fold_build2_loc (input_location, MODIFY_EXPR, integer_type_node,
+			 DECL_RESULT (ftn_main),
+			 build_int_cst (integer_type_node, 0));
   tmp = build1_v (RETURN_EXPR, tmp);
   gfc_add_expr_to_block (&body, tmp);
 
@@ -4503,8 +4507,9 @@ gfc_generate_return (void)
       if (result != NULL_TREE)
 	{
 	  result = convert (TREE_TYPE (DECL_RESULT (fndecl)), result);
-	  result = fold_build2 (MODIFY_EXPR, TREE_TYPE (result),
-				DECL_RESULT (fndecl), result);
+	  result = fold_build2_loc (input_location, MODIFY_EXPR,
+				    TREE_TYPE (result), DECL_RESULT (fndecl),
+				    result);
 	}
     }
 

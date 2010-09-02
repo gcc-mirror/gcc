@@ -703,8 +703,9 @@ create_common (gfc_common_head *com, segment_info *head, bool saw_equiv)
 	gfc_add_decl_to_function (var_decl);
 
       SET_DECL_VALUE_EXPR (var_decl,
-			   fold_build3 (COMPONENT_REF, TREE_TYPE (s->field),
-					decl, s->field, NULL_TREE));
+			   fold_build3_loc (input_location, COMPONENT_REF,
+					    TREE_TYPE (s->field),
+					    decl, s->field, NULL_TREE));
       DECL_HAS_VALUE_EXPR_P (var_decl) = 1;
       GFC_DECL_COMMON_OR_EQUIV (var_decl) = 1;
 
