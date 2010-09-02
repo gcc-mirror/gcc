@@ -1,3 +1,11 @@
+2010-09-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44937
+	PR tree-optimization/45412
+	* g++.dg/opt/pr45412.C: New testcase.
+	* gcc.c-torture/compile/pr45412.c: Likewise.
+	* gcc.c-torture/compile/pr44937.c: Likewise.
+
 2010-09-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/cpp/warn-comments-3.c: New.  Based on warn-comments-2.c
