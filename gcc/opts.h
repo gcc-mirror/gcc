@@ -45,6 +45,7 @@ struct cl_option
   const char *opt_text;
   const char *help;
   const char *missing_argument_error;
+  const char *warn_message;
   const char *alias_arg;
   const char *neg_alias_arg;
   unsigned short alias_target;
@@ -116,6 +117,9 @@ struct cl_decoded_option
   /* The index of this option, or an OPT_SPECIAL_* value for
      non-options and unknown options.  */
   size_t opt_index;
+
+  /* Any warning to give for use of this option, or NULL if none.  */
+  const char *warn_message;
 
   /* The string argument, or NULL if none.  For OPT_SPECIAL_* cases,
      the option or non-option command-line argument.  */

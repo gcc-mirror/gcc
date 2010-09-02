@@ -1,6 +1,7 @@
 ; Options for the IA-32 and AMD64 ports of the compiler.
 
-; Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2006, 2007, 2008, 2009,
+; 2010 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -112,6 +113,9 @@ mcmodel=
 Target RejectNegative Joined Var(ix86_cmodel_string)
 Use given x86-64 code model
 
+mcpu=
+Target RejectNegative Joined Undocumented Alias(mtune=) Warn(%<-mcpu=%> is deprecated; use %<-mtune=%> or %<-march=%> instead)
+
 mfancy-math-387
 Target RejectNegative Report InverseMask(NO_FANCY_MATH_387, USE_FANCY_MATH_387) Save
 Generate sin, cos, sqrt for FPU
@@ -145,7 +149,7 @@ Target Report Mask(INLINE_STRINGOPS_DYNAMICALLY) Save
 Inline memset/memcpy string operations, but perform inline version only for small blocks
 
 mintel-syntax
-Target Undocumented
+Target Undocumented Alias(masm=, intel, att) Warn(%<-mintel-syntax%> and %<-mno-intel-syntax%> are deprecated; use %<-masm=intel%> and %<-masm=att%> instead)
 ;; Deprecated
 
 mms-bitfields

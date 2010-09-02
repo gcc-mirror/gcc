@@ -248,7 +248,7 @@ Common Var(warn_uninitialized) Init(-1) Warning
 Warn about uninitialized automatic variables
 
 Wunreachable-code
-Common
+Common Ignore
 Does nothing. Preserved for backward compatibility.
 
 Wunused
@@ -387,19 +387,19 @@ falign-loops=
 Common RejectNegative Joined UInteger
 
 fargument-alias
-Common
+Common Ignore
 Does nothing. Preserved for backward compatibility.
 
 fargument-noalias
-Common
+Common Ignore
 Does nothing. Preserved for backward compatibility.
 
 fargument-noalias-global
-Common
+Common Ignore
 Does nothing. Preserved for backward compatibility.
 
 fargument-noalias-anything
-Common
+Common Ignore
 Does nothing. Preserved for backward compatibility.
 
 fasynchronous-unwind-tables
@@ -490,7 +490,7 @@ Common Report Var(flag_cse_follow_jumps) Optimization
 When running CSE, follow jumps to their targets
 
 fcse-skip-blocks
-Common
+Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 fcx-limited-range
@@ -619,7 +619,7 @@ Common Report Var(flag_float_store) Optimization
 Don't allocate floats and doubles in extended-precision registers
 
 fforce-addr
-Common
+Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 fforward-propagate
@@ -852,7 +852,7 @@ Common Report Var(flag_leading_underscore) Init(-1)
 Give external symbols a leading underscore
 
 floop-optimize
-Common
+Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 flto
@@ -1098,7 +1098,7 @@ Common Report Var(flag_rerun_cse_after_loop) Init(2) Optimization
 Add a common subexpression elimination pass after loop optimizations
 
 frerun-loop-opt
-Common
+Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 frounding-math
@@ -1134,7 +1134,7 @@ Common Report Var(flag_sched2_use_superblocks) Optimization
 If scheduling post reload, do superblock scheduling
 
 fsched2-use-traces
-Common
+Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 fschedule-insns
@@ -1219,7 +1219,7 @@ Common Report Var(flag_section_anchors) Optimization
 Access data in the same section from shared anchor points
 
 fsee
-Common
+Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 fzee
@@ -1286,7 +1286,7 @@ Common RejectNegative Var(flag_stack_usage)
 Output stack usage information on a per-function basis
 
 fstrength-reduce
-Common
+Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 ; Nonzero if we should do (language-dependent) alias analysis.
@@ -1349,7 +1349,7 @@ Common Report Var(flag_tree_bit_ccp) Optimization
 Enable SSA-BIT-CCP optimization on trees
 
 ftree-store-ccp
-Common
+Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 ftree-ch
@@ -1365,7 +1365,7 @@ Common Report Var(flag_tree_copy_prop) Optimization
 Enable copy propagation on trees
 
 ftree-store-copy-prop
-Common
+Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 ftree-cselim
@@ -1441,7 +1441,7 @@ Common Report Var(flag_tree_reassoc) Init(1) Optimization
 Enable reassociation on tree level
 
 ftree-salias
-Common
+Common Ignore
 Does nothing.  Preserved for backward compatibility.
 
 ftree-sink

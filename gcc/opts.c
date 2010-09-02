@@ -2081,24 +2081,6 @@ common_handle_option (const struct cl_decoded_option *decoded,
       global_dc->inhibit_warnings = true;
       break;
 
-    case OPT_fsee:
-    case OPT_fcse_skip_blocks:
-    case OPT_floop_optimize:
-    case OPT_frerun_loop_opt:
-    case OPT_fsched2_use_traces:
-    case OPT_fstrength_reduce:
-    case OPT_ftree_store_copy_prop:
-    case OPT_fforce_addr:
-    case OPT_ftree_salias:
-    case OPT_ftree_store_ccp:
-    case OPT_Wunreachable_code:
-    case OPT_fargument_alias:
-    case OPT_fargument_noalias:
-    case OPT_fargument_noalias_anything:
-    case OPT_fargument_noalias_global:
-      /* These are no-ops, preserved for backward compatibility.  */
-      break;
-
     case OPT_fuse_linker_plugin:
       /* No-op. Used by the driver and passed to us because it starts with f.*/
       break;
@@ -2363,6 +2345,8 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
 
       if (option->alias_target != N_OPTS)
 	option_index = option->alias_target;
+      if (option_index == OPT_SPECIAL_ignore)
+	return;
       diagnostic_classify_diagnostic (global_dc, option_index, kind,
 				      UNKNOWN_LOCATION);
       if (kind == DK_ERROR)

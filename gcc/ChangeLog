@@ -1,5 +1,34 @@
 2010-09-02  Joseph Myers  <joseph@codesourcery.com>
 
+	* opts.h (struct cl_option): Add warn_message field.
+	(struct cl_decoded_option): Add warn_message field.
+	* doc/options.texi (Ignore, Warn): Document.
+	* opt-functions.awk (needs_state_p): Don't consider aliases or
+	ignored options to need state saved.
+	* optc-gen.awk: Handle Warn and Ignore.
+	* opth-gen.awk: Output OPT_SPECIAL_ignore.
+	* opts-common.c (decode_cmdline_option): Set warn_message field.
+	Handle ignored options.
+	(decode_cmdline_options_to_array, generate_option,
+	generate_option_input_file): Set warn_message field.
+	(read_cmdline_option): Generate warnings from warn_message field.
+	Handle ignored options.
+	* common.opt (Wunreachable-code, fargument-alias,
+	fargument-noalias, fargument-noalias-global,
+	fargument-noalias-anything, fcse-skip-blocks, fforce-addr,
+	floop-optimize, frerun-loop-opt, fsched2-use-traces, fsee,
+	fstrength-reduce, ftree-store-ccp, ftree-store-copy-prop,
+	ftree-salias): Mark Ignore.
+	* config/i386/i386.h (CC1_CPU_SPEC_1): Don't handle -mcpu,
+	-mintel-syntax and -mno-intel-syntax here.
+	* config/i386/i386.opt (mcpu=, mintel-syntax): Define as aliases
+	using Warn.
+	* opts.c (common_handle_option): Don't handle options marked as
+	ignored.
+	(enable_warning_as_error): Handle ignored options.
+
+2010-09-02  Joseph Myers  <joseph@codesourcery.com>
+
 	PR driver/44076
 	* opts.h (struct cl_option): Add alias_arg, neg_alias_arg and
 	alias_target fields.
