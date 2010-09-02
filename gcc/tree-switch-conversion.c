@@ -96,6 +96,7 @@ eight) times the number of the actual switch branches. */
 #include "diagnostic.h"
 #include "tree-dump.h"
 #include "timevar.h"
+#include "langhooks.h"
 
 /* The main structure of the pass.  */
 struct switch_conv_info
@@ -693,9 +694,11 @@ gen_inbound_check (gimple swtch)
 
   /* Make sure we do not generate arithmetics in a subrange.  */
   if (TREE_TYPE (TREE_TYPE (info.index_expr)))
-    utype = unsigned_type_for (TREE_TYPE (TREE_TYPE (info.index_expr)));
+    utype = lang_hooks.types.type_for_mode
+      (TYPE_MODE (TREE_TYPE (TREE_TYPE (info.index_expr))), 1);
   else
-    utype = unsigned_type_for (TREE_TYPE (info.index_expr));
+    utype = lang_hooks.types.type_for_mode
+      (TYPE_MODE (TREE_TYPE (info.index_expr)), 1);
 
   /* (end of) block 0 */
   gsi = gsi_for_stmt (info.arr_ref_first);

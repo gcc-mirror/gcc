@@ -1,3 +1,21 @@
+2010-09-02  Ian Bolton  <ian.bolton@arm.com>
+
+	Backport from mainline
+	2010-08-19  Ian Bolton  <ian.bolton@arm.com>
+	
+	PR target/45070
+	* gcc.c-torture/execute/pr45070.c: New.
+
+	2010-08-19  Ian Bolton  <ian.bolton@arm.com>
+
+	* g++.dg/pr44328.C: New test.
+	
+	2010-08-07  Marcus Shawcroft <marcus.shawcroft@arm.com>
+
+	* lib/target-supports.exp: (check_effective_target_sync_int_long):
+	Add arm*-*-linux-gnueabi.
+	(check_effective_target_sync_char_short): Likewise.
+	
 2010-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/45458
