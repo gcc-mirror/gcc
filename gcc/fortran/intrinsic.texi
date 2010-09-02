@@ -9706,9 +9706,10 @@ The value returned is equal to
 @item @emph{Description}:
 @code{RSHIFT} returns a value corresponding to @var{I} with all of the
 bits shifted right by @var{SHIFT} places.  If the absolute value of
-@var{SHIFT} is greater than @code{BIT_SIZE(I)}, the value is undefined. 
-Bits shifted out from the left end are lost; zeros are shifted in from
-the opposite end.
+@var{SHIFT} is greater than @code{BIT_SIZE(I)}, the value is undefined.
+Bits shifted out from the right end are lost. The fill is arithmetic: the
+bits shifted in from the left end are equal to the leftmost bit, which in
+two's complement representation is the sign bit.
 
 This function has been superseded by the @code{ISHFT} intrinsic, which
 is standard in Fortran 95 and later.

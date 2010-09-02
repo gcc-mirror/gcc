@@ -1,3 +1,7 @@
+2010-09-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/ishft_4.f90: New test.
+
 2010-09-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/ppc-fpconv-10.c: New file to test generating
