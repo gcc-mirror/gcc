@@ -993,8 +993,8 @@ split_function (struct split_point *split_point)
 	{
 	  gimple stmt = gsi_stmt (gsi);
 	  gcc_assert (!is_gimple_reg (gimple_phi_result (stmt)));
-	  mark_sym_for_renaming (SSA_NAME_VAR (PHI_RESULT (stmt)));
-	  gsi_remove (&gsi, false);
+	  mark_virtual_phi_result_for_renaming (stmt);
+	  remove_phi_node (&gsi, true);
 	}
     }
   /* When we pass aorund the value, use existing return block.  */

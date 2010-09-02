@@ -1,3 +1,9 @@
+2010-09-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/44937
+	PR tree-optimization/45412
+	* ipa-split.c (split_function): Properly remove PHI nodes.
+
 2010-09-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* opts.h (struct cl_option): Add warn_message field.
