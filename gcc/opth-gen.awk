@@ -29,8 +29,6 @@ BEGIN {
 	n_langs = 0
 	n_target_save = 0
 	n_extra_masks = 0
-	quote = "\042"
-	comma = ","
 	FS=SUBSEP
 }
 
@@ -355,8 +353,6 @@ for (i = 0; i < n_opts; i++) {
 
 	s = substr("                                          ",
 		   length (enum_string))
-	if (i + 1 == n_opts)
-		comma = ""
 
 	if (help[i] == "")
 		hlp = "0"
