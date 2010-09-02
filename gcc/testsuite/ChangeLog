@@ -1,3 +1,7 @@
+2010-09-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/debug/dwarf2/nested-2.C: Allow for ! as comment delimiter.
+
 2010-09-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44937
