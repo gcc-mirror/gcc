@@ -261,7 +261,6 @@ java_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_faux_classpath:
     case OPT_fclasspath_:
-    case OPT_fCLASSPATH_:
       jcf_path_classpath_arg (arg);
       break;
 

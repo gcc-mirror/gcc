@@ -45,6 +45,9 @@ struct cl_option
   const char *opt_text;
   const char *help;
   const char *missing_argument_error;
+  const char *alias_arg;
+  const char *neg_alias_arg;
+  unsigned short alias_target;
   unsigned short back_chain;
   unsigned char opt_len;
   int neg_index;

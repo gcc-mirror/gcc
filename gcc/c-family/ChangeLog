@@ -1,3 +1,14 @@
+2010-09-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (Wcomments, Werror-implicit-function-declaration,
+	ftemplate-depth-, std=c89, std=c9x, std=gnu89, std=gnu9x,
+	std=iso9899:1990, std=iso9899:1999, std=iso9899:199x): Mark as
+	aliases.
+	* c-common.c (option_codes): Use OPT_Wcomment instead of
+	OPT_Wcomments.
+	* c-opts.c (warning_as_error_callback, c_common_handle_option):
+	Don't handle options marked as aliases.
+
 2010-08-25  Richard Guenther  <rguenther@suse.de>
 
 	* c-common.c (c_common_get_alias_set): Remove special

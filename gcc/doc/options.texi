@@ -247,6 +247,32 @@ The main purpose of this property is to support synonymous options.
 The first option should use @samp{Mask(@var{name})} and the others
 should use @samp{Mask(@var{name}) MaskExists}.
 
+@item Alias(@var{opt})
+@itemx Alias(@var{opt}, @var{arg})
+@itemx Alias(@var{opt}, @var{posarg}, @var{negarg})
+The option is an alias for @option{-@var{opt}}.  In the first form,
+any argument passed to the alias is considered to be passed to
+@option{-@var{opt}}, and @option{-@var{opt}} is considered to be
+negated if the alias is used in negated form.  In the second form, the
+alias may not be negated or have an argument, and @var{posarg} is
+considered to be passed as an argument to @option{-@var{opt}}.  In the
+third form, the alias may not have an argument, if the alias is used
+in the positive form then @var{posarg} is considered to be passed to
+@option{-@var{opt}}, and if the alias is used in the negative form
+then @var{negarg} is considered to be passed to @option{-@var{opt}}.
+
+Aliases should not specify @code{Var} or @code{Mask} or
+@code{UInteger}.  Aliases should normally specify the same languages
+as the target of the alias; the flags on the target will be used to
+determine any diagnostic for use of an option for the wrong language,
+while those on the alias will be used to identify what command-line
+text is the option and what text is any argument to that option.
+
+When an @code{Alias} definition is used for an option, driver specs do
+not need to handle it and no @samp{OPT_} enumeration value is defined
+for it; only the canonical form of the option will be seen in those
+places.
+
 @item Report
 The state of the option should be printed by @option{-fverbose-asm}.
 

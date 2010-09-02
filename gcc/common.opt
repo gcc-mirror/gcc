@@ -88,7 +88,7 @@ S
 Driver
 
 W
-Common RejectNegative Var(extra_warnings) Warning
+Common RejectNegative Warning Alias(Wextra)
 This switch is deprecated; use -Wextra instead
 
 Wa,
@@ -153,7 +153,7 @@ Common Var(warn_inline) Warning
 Warn when an inlined function cannot be inlined
 
 Wlarger-than-
-Common RejectNegative Joined UInteger Warning Undocumented
+Common RejectNegative Joined Warning Undocumented Alias(Wlarger-than=)
 
 Wlarger-than=
 Common RejectNegative Joined UInteger Warning
@@ -301,7 +301,7 @@ Common Separate
 -aux-info <file>	Emit declaration information into <file>
 
 aux-info=
-Common Joined
+Common Joined Alias(aux-info)
 
 auxbase
 Common Separate RejectDriver
@@ -750,7 +750,7 @@ Common Report Var(flag_inline_functions_called_once) Init(1) Optimization
 Integrate functions called once into their callers
 
 finline-limit-
-Common RejectNegative Joined UInteger
+Common RejectNegative Joined Alias(finline-limit=)
 
 finline-limit=
 Common RejectNegative Joined UInteger
@@ -1259,7 +1259,7 @@ Common Report RejectNegative Joined
 -fstack-check=[no|generic|specific]	Insert stack checking code into the program
 
 fstack-check
-Common Report
+Common Alias(fstack-check=, specific, no)
 Insert stack checking code into the program.  Same as -fstack-check=specific
 
 fstack-limit
@@ -1755,7 +1755,7 @@ shared-libgcc
 Driver
 
 specs
-Driver Separate
+Driver Separate Alias(specs=)
 
 specs=
 Driver Joined

@@ -29,7 +29,7 @@ Driver
 ; Java driver option in fact distinct from C-family option with the same name.
 
 CLASSPATH
-Driver Separate
+Java Separate Alias(fclasspath=)
 
 D
 Driver Joined Separate
@@ -88,19 +88,19 @@ Java Var(flag_redundant)
 Warn if modifiers are specified when not necessary
 
 bootclasspath
-Driver Separate
+Java Separate Alias(fbootclasspath=)
 
 classpath
-Driver Separate
+Java Separate Alias(fclasspath=)
 
 encoding
-Driver Separate
+Java Separate Alias(fencoding=)
 
 extdirs
 Driver Separate
 
 fCLASSPATH=
-Java JoinedOrMissing RejectNegative
+Java JoinedOrMissing RejectNegative Alias(fclasspath=)
 --CLASSPATH	Deprecated; use --classpath instead
 
 faux-classpath

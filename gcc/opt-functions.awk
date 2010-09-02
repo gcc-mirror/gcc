@@ -201,9 +201,6 @@ function var_ref(name, flags)
 # Given the option called NAME return a sanitized version of its name.
 function opt_sanitized_name(name)
 {
-	if (name == "finline-limit=" || name == "Wlarger-than=" \
-	    || name == "ftemplate-depth=")
-		name = name "eq"
 	if (name == "gdwarf+")
 		name = "gdwarfplus"
 	gsub ("[^A-Za-z0-9]", "_", name)

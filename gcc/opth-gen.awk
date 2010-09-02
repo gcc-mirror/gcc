@@ -321,6 +321,7 @@ print "{"
 for (i = 0; i < n_opts; i++)
 	back_chain[i] = "N_OPTS";
 
+enum_value = 0
 for (i = 0; i < n_opts; i++) {
 	# Combine the flags of identical switches.  Switches
 	# appear many times if they are handled by many front
@@ -332,6 +333,12 @@ for (i = 0; i < n_opts; i++) {
 
 	len = length (opts[i]);
 	enum = opt_enum(opts[i])
+	enum_string = enum " = " enum_value ","
+
+	# Aliases do not get enumeration names.
+	if (flag_set_p("Alias.*", flags[i])) {
+		enum_string = "/* " enum_string " */"
+	}
 
 	# If this switch takes joined arguments, back-chain all
 	# subsequent switches to it for which it is a prefix.  If
@@ -346,7 +353,8 @@ for (i = 0; i < n_opts; i++) {
 		}
 	}
 
-	s = substr("                                         ", length (enum))
+	s = substr("                                          ",
+		   length (enum_string))
 	if (i + 1 == n_opts)
 		comma = ""
 
@@ -355,7 +363,8 @@ for (i = 0; i < n_opts; i++) {
 	else
 		hlp = "N_(\"" help[i] "\")";
 
-	print "  " enum "," s "/* -" opts[i] " */"
+	print "  " enum_string s "/* -" opts[i] " */"
+	enum_value++
 }
 
 print "  N_OPTS,"
