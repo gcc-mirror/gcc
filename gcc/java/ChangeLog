@@ -1,5 +1,9 @@
 2010-09-02  Joseph Myers  <joseph@codesourcery.com>
 
+	* jvspec.c (jvgenmain_spec): Don't handle -fnew-verifier.
+
+2010-09-02  Joseph Myers  <joseph@codesourcery.com>
+
 	* lang.opt (CLASSPATH, bootclasspath, classpath, encoding,
 	fCLASSPATH=): Mark as Java options and as aliases.
 	* jvspec.c (jvgenmain_spec): Don't handle -fCLASSPATH*.
