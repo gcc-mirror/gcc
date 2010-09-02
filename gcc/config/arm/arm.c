@@ -1411,7 +1411,7 @@ arm_override_options (void)
 	  arm_selected_cpu = &all_cores[SUBTARGET_CPU_DEFAULT];
 #endif
 	  /* Default to ARM6.  */
-	  if (arm_selected_cpu->name)
+	  if (!arm_selected_cpu->name)
 	    arm_selected_cpu = &all_cores[arm6];
 	}
 

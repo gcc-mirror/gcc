@@ -1,3 +1,8 @@
+2010-09-02  Ryan Mansfield  <rmansfield@qnx.com>
+
+	* arm.c (arm_override_options): Correct fall-back code to use
+	SUBTARGET_CPU_DEFAULT.
+
 2010-09-02  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/neon.md (UNSPEC_VCLE, UNSPEC_VCLT): New constants for
