@@ -1,3 +1,20 @@
+2010-09-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (nonmemory_operand): New mode attribute.
+	(push memory peephole2): Macroize peepholes using SWI mode iterator.
+	(move immediate to memory peephole2): Macroize peepholes using
+	SWI124 mode iterator.
+	(non-pairable NOT peephole2): Macroize peepholes using SWI124
+	mode iterator.
+	(simple lea add peephole2): Macroize peepholes using SWI48
+	mode iterator.
+	(simple lea mult peephole2): Ditto.
+	(imul by 3,5,9 to lea peephole2): Ditto.
+	(mov $-1, reg peephole2): Macroize peepholes using SWI248
+	mode iterator.
+	(imul $32bit_imm,mem,reg peephole2): Ditto.
+	(imul $8/16bit_imm,regmem,reg peephole2): Ditto.
+
 2010-09-02  Ian Bolton  <ian.bolton@arm.com>
 
 	* tree-ssa-loop-prefetch.c: Fix comment at head of file.
