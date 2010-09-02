@@ -538,7 +538,7 @@ C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 falt-external-templates
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
-Change when template instances are emitted
+No longer supported
 
 fasm
 C ObjC C++ ObjC++ Var(flag_no_asm, 0)
@@ -644,7 +644,7 @@ Assume normal C execution environment
 
 fhuge-objects
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
-Enable support for huge objects
+No longer supported
 
 fimplement-inlines
 C++ ObjC++ Var(flag_implement_inlines) Init(1)
@@ -843,11 +843,11 @@ Changes visibility to match Microsoft Visual Studio by default
 
 fvtable-gc
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
-Discard unused virtual functions
+No longer supported
 
 fvtable-thunks
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
-Implement vtables using thunks
+No longer supported
 
 fweak
 C++ ObjC++ Var(flag_weak) Init(1)
@@ -863,7 +863,7 @@ Generate a #line directive pointing at the current working directory
 
 fxref
 C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
-Emit cross referencing information
+No longer supported
 
 fzero-link
 ObjC ObjC++ Var(flag_zero_link)
