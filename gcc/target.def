@@ -1971,6 +1971,12 @@ DEFHOOK
   secondary_reload_info *sri),
  default_secondary_reload)
 
+DEFHOOK
+(class_likely_spilled_p,
+ "",
+ bool, (reg_class_t rclass),
+ default_class_likely_spilled_p)
+
 /* This target hook allows the backend to perform additional
    processing while initializing for variable expansion.  */
 DEFHOOK

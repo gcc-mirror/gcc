@@ -152,3 +152,4 @@ extern int default_register_move_cost (enum machine_mode, reg_class_t,
 				       reg_class_t);
 
 extern bool default_profile_before_prologue (void);
+extern bool default_class_likely_spilled_p (reg_class_t);

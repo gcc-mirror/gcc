@@ -1,3 +1,31 @@
+2010-09-02  Anatoly Sokolov  <aesok@post.ru>
+
+	* target.def (class_likely_spilled_p): New hook.
+	* doc/tm.texi.in (TARGET_CLASS_LIKELY_SPILLED_P): Document.
+	* doc/tm.texi: Regenerate.
+	* targhooks.c (default_class_likely_spilled_p): New function.
+	* targhooks.h (default_class_likely_spilled_p): Declare.
+	* regs.h (CLASS_LIKELY_SPILLED_P): Remove.
+	* combine.c: (cant_combine_insn_p, likely_spilled_retval_p): Use
+	TARGET_CLASS_LIKELY_SPILLED_P target hook. Use HARD_REGISTER_P macro.
+	Use fixed_reg_set instead of fixed_regs.
+	* cse.c (hash_rtx_cb): Use TARGET_CLASS_LIKELY_SPILLED_P target hook.
+	* calls.c (avoid_likely_spilled_reg): Ditto.
+	* ira-conflicts.c: (ira_build_conflicts): Ditto.
+	* ira.c (update_equiv_regs): Ditto.
+	* mode-switching.c (create_pre_exit): Ditto.
+	* regmove.c (find_matches): Ditto.
+	(regclass_compatible_p): Use TARGET_CLASS_LIKELY_SPILLED_P target
+	hook.
+	* reload.c (SMALL_REGISTER_CLASS_P): Remove macro.
+	(small_register_class_p): New inline function.
+	(push_secondary_reload, find_reusable_reload, find_reloads): Use
+	small_register_class_p instead of SMALL_REGISTER_CLASS_P.
+
+	* config/i386/i386.h (CLASS_LIKELY_SPILLED_P): Remove.
+	* config/i386/i386.c (ix86_class_likely_spilled_p): New.
+	(TARGET_CLASS_LIKELY_SPILLED_P): Define.
+
 2010-09-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/44937

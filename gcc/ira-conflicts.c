@@ -864,7 +864,8 @@ ira_build_conflicts (void)
 	  ira_free (conflicts);
 	}
     }
-  if (! CLASS_LIKELY_SPILLED_P (base_reg_class (VOIDmode, ADDRESS, SCRATCH)))
+  if (! targetm.class_likely_spilled_p (base_reg_class (VOIDmode, ADDRESS,
+							SCRATCH)))
     CLEAR_HARD_REG_SET (temp_hard_reg_set);
   else
     {

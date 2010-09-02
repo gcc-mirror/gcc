@@ -121,9 +121,14 @@ a register with any other reload.  */
 
 /* True if C is a non-empty register class that has too few registers
    to be safely used as a reload target class.  */
-#define SMALL_REGISTER_CLASS_P(C) \
-  (reg_class_size [(C)] == 1 \
-   || (reg_class_size [(C)] >= 1 && CLASS_LIKELY_SPILLED_P (C)))
+
+static inline bool
+small_register_class_p (reg_class_t rclass)
+{
+  return (reg_class_size [(int) rclass] == 1
+	  || (reg_class_size [(int) rclass] >= 1 
+	      && targetm.class_likely_spilled_p (rclass)));
+}
 
 
 /* All reloads of the current insn are recorded here.  See reload.h for
@@ -438,7 +443,7 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
 	    || (! in_p && rld[s_reload].secondary_out_reload == t_reload))
 	&& ((in_p && rld[s_reload].secondary_in_icode == t_icode)
 	    || (! in_p && rld[s_reload].secondary_out_icode == t_icode))
-	&& (SMALL_REGISTER_CLASS_P (rclass)
+	&& (small_register_class_p (rclass)
 	    || targetm.small_register_classes_for_mode_p (VOIDmode))
 	&& MERGABLE_RELOADS (secondary_type, rld[s_reload].when_needed,
 			     opnum, rld[s_reload].opnum))
@@ -749,7 +754,7 @@ find_reusable_reload (rtx *p_in, rtx out, enum reg_class rclass,
 	    || (out != 0 && MATCHES (rld[i].out, out)
 		&& (in == 0 || rld[i].in == 0 || MATCHES (rld[i].in, in))))
 	&& (rld[i].out == 0 || ! earlyclobber_operand_p (rld[i].out))
-	&& (SMALL_REGISTER_CLASS_P (rclass)
+	&& (small_register_class_p (rclass)
 	    || targetm.small_register_classes_for_mode_p (VOIDmode))
 	&& MERGABLE_RELOADS (type, rld[i].when_needed, opnum, rld[i].opnum))
       return i;
@@ -775,7 +780,7 @@ find_reusable_reload (rtx *p_in, rtx out, enum reg_class rclass,
 		&& GET_RTX_CLASS (GET_CODE (in)) == RTX_AUTOINC
 		&& MATCHES (XEXP (in, 0), rld[i].in)))
 	&& (rld[i].out == 0 || ! earlyclobber_operand_p (rld[i].out))
-	&& (SMALL_REGISTER_CLASS_P (rclass)
+	&& (small_register_class_p (rclass)
 	    || targetm.small_register_classes_for_mode_p (VOIDmode))
 	&& MERGABLE_RELOADS (type, rld[i].when_needed,
 			     opnum, rld[i].opnum))
@@ -3588,7 +3593,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	      && this_alternative[i] != NO_REGS
 	      && GET_MODE_SIZE (operand_mode[i]) <= UNITS_PER_WORD
 	      && reg_class_size [(int) preferred_class[i]] > 0
-	      && ! SMALL_REGISTER_CLASS_P (preferred_class[i]))
+	      && ! small_register_class_p (preferred_class[i]))
 	    {
 	      if (! reg_class_subset_p (this_alternative[i],
 					preferred_class[i]))
@@ -3646,7 +3651,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		{
 		  /* If the output is in a non-empty few-regs class,
 		     it's costly to reload it, so reload the input instead.  */
-		  if (SMALL_REGISTER_CLASS_P (this_alternative[i])
+		  if (small_register_class_p (this_alternative[i])
 		      && (REG_P (recog_data.operand[j])
 			  || GET_CODE (recog_data.operand[j]) == SUBREG))
 		    {

@@ -1440,34 +1440,6 @@ enum reg_class
   : (((((MODE) == XFmode ? 12 : GET_MODE_SIZE (MODE)))			\
       + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
-/* A C expression whose value is nonzero if pseudos that have been
-   assigned to registers of class CLASS would likely be spilled
-   because registers of CLASS are needed for spill registers.
-
-   The default value of this macro returns 1 if CLASS has exactly one
-   register and zero otherwise.  On most machines, this default
-   should be used.  Only define this macro to some other expression
-   if pseudo allocated by `local-alloc.c' end up in memory because
-   their hard registers were needed for spill registers.  If this
-   macro returns nonzero for those classes, those pseudos will only
-   be allocated by `global.c', which knows how to reallocate the
-   pseudo to another register.  If there would not be another
-   register available for reallocation, you should not change the
-   definition of this macro since the only effect of such a
-   definition would be to slow down register allocation.  */
-
-#define CLASS_LIKELY_SPILLED_P(CLASS)					\
-  (((CLASS) == AREG)							\
-   || ((CLASS) == DREG)							\
-   || ((CLASS) == CREG)							\
-   || ((CLASS) == BREG)							\
-   || ((CLASS) == AD_REGS)						\
-   || ((CLASS) == SIREG)						\
-   || ((CLASS) == DIREG)						\
-   || ((CLASS) == SSE_FIRST_REG)					\
-   || ((CLASS) == FP_TOP_REG)						\
-   || ((CLASS) == FP_SECOND_REG))
-
 /* Return a class of registers that cannot change FROM mode to TO mode.  */
 
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \

@@ -2137,12 +2137,12 @@ cant_combine_insn_p (rtx insn)
   if (GET_CODE (dest) == SUBREG)
     dest = SUBREG_REG (dest);
   if (REG_P (src) && REG_P (dest)
-      && ((REGNO (src) < FIRST_PSEUDO_REGISTER
-	   && ! fixed_regs[REGNO (src)]
-	   && CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (REGNO (src))))
-	  || (REGNO (dest) < FIRST_PSEUDO_REGISTER
-	      && ! fixed_regs[REGNO (dest)]
-	      && CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (REGNO (dest))))))
+      && ((HARD_REGISTER_P (src)
+	   && ! TEST_HARD_REG_BIT (fixed_reg_set, REGNO (src))
+	   && targetm.class_likely_spilled_p (REGNO_REG_CLASS (REGNO (src))))
+	  || (HARD_REGISTER_P (dest)
+	      && ! TEST_HARD_REG_BIT (fixed_reg_set, REGNO (dest))
+	      && targetm.class_likely_spilled_p (REGNO_REG_CLASS (REGNO (dest))))))
     return 1;
 
   return 0;
@@ -2223,7 +2223,7 @@ likely_spilled_retval_p (rtx insn)
   do
     {
       if ((mask & 1 << nregs)
-	  && CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (regno + nregs)))
+	  && targetm.class_likely_spilled_p (REGNO_REG_CLASS (regno + nregs)))
 	return 1;
     } while (nregs--);
   return 0;

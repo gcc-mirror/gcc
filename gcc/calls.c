@@ -1900,7 +1900,7 @@ avoid_likely_spilled_reg (rtx x)
 
   if (REG_P (x)
       && HARD_REGISTER_P (x)
-      && CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (REGNO (x))))
+      && targetm.class_likely_spilled_p (REGNO_REG_CLASS (REGNO (x))))
     {
       /* Make sure that we generate a REG rather than a CONCAT.
 	 Moves into CONCATs can need nontrivial instructions,
