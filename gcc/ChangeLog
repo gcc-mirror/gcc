@@ -1,3 +1,9 @@
+2010-09-02  Olivier Hainque  <hainque@adacore.com>
+
+	* ira-color.c (SORTGT): New macro, helper for qsort callbacks.
+	(allocno_priority_compare_func): Use it instead of a straight
+	difference computation over priorities.
+
 2010-09-02  Andi Kleen  <ak@linux.intel.com>
 
 	* opts.c (common_handle_option): Fix OPT_fwhopr/fwhopr_ handling.
@@ -170,6 +176,7 @@
 	(scev_probably_wraps_p): Adjust.
 	* tree-ssa-loop.c (tree_ssa_loop_bounds): Likewise.
 
+>>>>>>> .r163759
 2010-09-01  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/stormy16.c: Use REG_P, MEM_P and CONST_INT_P
