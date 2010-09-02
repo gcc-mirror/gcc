@@ -275,7 +275,7 @@ C ObjC Var(warn_implicit_int) Init(-1) Warning
 Warn when a declaration does not specify a type
 
 Wimport
-C ObjC C++ ObjC++ Undocumented
+C ObjC C++ ObjC++ Undocumented Ignore
 
 Wint-to-pointer-cast
 C ObjC C++ ObjC++ Var(warn_int_to_pointer_cast) Init(1) Warning
@@ -534,10 +534,10 @@ C++ ObjC++ Var(flag_access_control) Init(1)
 Enforce class member access control semantics
 
 fall-virtual
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 falt-external-templates
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 Change when template instances are emitted
 
 fasm
@@ -572,7 +572,7 @@ C++ ObjC++ Var(flag_deduce_init_list) Init(1)
 -fno-deduce-init-list	disable deduction of std::initializer_list for a template type parameter from a brace-enclosed initializer-list
 
 fdefault-inline
-C++ ObjC++
+C++ ObjC++ Ignore
 Does nothing.  Preserved for backward compatibility.
 
 fdirectives-only
@@ -591,7 +591,7 @@ C++ ObjC++ Var(flag_enforce_eh_specs) Init(1)
 Generate code to check exception specifications
 
 fenum-int-equiv
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fexec-charset=
 C ObjC C++ ObjC++ Joined RejectNegative
@@ -607,7 +607,7 @@ C ObjC C++ ObjC++ Joined RejectNegative
 
 
 fexternal-templates
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 ffor-scope
 C++ ObjC++ Var(flag_new_for_scope) Init(1)
@@ -630,20 +630,20 @@ C ObjC Var(flag_gnu89_inline) Init(-1)
 Use traditional GNU semantics for inline functions
 
 fguiding-decls
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fhandle-exceptions
-C++ ObjC++ Optimization
+C++ ObjC++ Optimization Alias(fexceptions) Warn({-fhandle-exceptions has been renamed -fexceptions (and is now on by default)})
 
 fhonor-std
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fhosted
 C ObjC
 Assume normal C execution environment
 
 fhuge-objects
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 Enable support for huge objects
 
 fimplement-inlines
@@ -663,7 +663,7 @@ C++ ObjC++ Var(flag_friend_injection)
 Inject friend functions into enclosing namespace
 
 flabels-ok
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 flax-vector-conversions
 C ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
@@ -674,10 +674,10 @@ C ObjC C++ ObjC++ Var(flag_ms_extensions)
 Don't warn about uses of Microsoft extensions
 
 fname-mangling-version-
-C++ ObjC++ Joined
+C++ ObjC++ Joined Ignore Warn(switch %qs is no longer supported)
 
 fnew-abi
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fnext-runtime
 ObjC ObjC++
@@ -691,7 +691,7 @@ fnonansi-builtins
 C++ ObjC++ Var(flag_no_nonansi_builtin, 0)
 
 fnonnull-objects
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fnothrow-opt
 C++ ObjC++ Optimization Var(flag_nothrow_opt)
@@ -731,7 +731,7 @@ C++ ObjC++
 Recognize C++ keywords like \"compl\" and \"xor\"
 
 foptional-diags
-C++ ObjC++
+C++ ObjC++ Ignore
 Does nothing.  Preserved for backward compatibility.
 
 fpch-deps
@@ -786,7 +786,7 @@ C ObjC C++ ObjC++ LTO Var(flag_signed_char)
 Make \"char\" signed by default
 
 fsquangle
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fstats
 C++ ObjC++ Var(flag_detailed_statistics)
@@ -797,7 +797,7 @@ C++ ObjC++ Optimization Var(flag_strict_enums)
 Assume that values of enumeration type are always within the minimum range of that type
 
 fstrict-prototype
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 ftabstop=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger
@@ -811,7 +811,7 @@ C++ ObjC++ Joined RejectNegative UInteger
 -ftemplate-depth=<number>	Specify maximum template instantiation depth
 
 fthis-is-variable
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 
 fthreadsafe-statics
 C++ ObjC++ Optimization Var(flag_threadsafe_statics) Init(1)
@@ -842,11 +842,11 @@ C++ ObjC++ Var(flag_visibility_ms_compat)
 Changes visibility to match Microsoft Visual Studio by default
 
 fvtable-gc
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 Discard unused virtual functions
 
 fvtable-thunks
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 Implement vtables using thunks
 
 fweak
@@ -862,7 +862,7 @@ C ObjC C++ ObjC++ Var(flag_working_directory) Init(-1)
 Generate a #line directive pointing at the current working directory
 
 fxref
-C++ ObjC++
+C++ ObjC++ Ignore Warn(switch %qs is no longer supported)
 Emit cross referencing information
 
 fzero-link

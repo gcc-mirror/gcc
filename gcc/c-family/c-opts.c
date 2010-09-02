@@ -537,10 +537,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 				 value, c_family_lang_mask, kind, handlers);
       break;
 
-    case OPT_Wimport:
-      /* Silently ignore for now.  */
-      break;
-
     case OPT_Winvalid_pch:
       cpp_opts->warn_invalid_pch = value;
       break;
@@ -623,25 +619,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	  flag_cond_mismatch = value;
 	  break;
 	}
-      /* Fall through.  */
-
-    case OPT_fall_virtual:
-    case OPT_falt_external_templates:
-    case OPT_fenum_int_equiv:
-    case OPT_fexternal_templates:
-    case OPT_fguiding_decls:
-    case OPT_fhonor_std:
-    case OPT_fhuge_objects:
-    case OPT_flabels_ok:
-    case OPT_fname_mangling_version_:
-    case OPT_fnew_abi:
-    case OPT_fnonnull_objects:
-    case OPT_fsquangle:
-    case OPT_fstrict_prototype:
-    case OPT_fthis_is_variable:
-    case OPT_fvtable_thunks:
-    case OPT_fxref:
-    case OPT_fvtable_gc:
       warning (0, "switch %qs is no longer supported", option->opt_text);
       break;
 
@@ -672,10 +649,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       constant_string_class_name = arg;
       break;
 
-    case OPT_fdefault_inline:
-      /* Ignore.  */
-      break;
-
     case OPT_fextended_identifiers:
       cpp_opts->extended_identifiers = value;
       break;
@@ -684,21 +657,12 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       flag_next_runtime = !value;
       break;
 
-    case OPT_fhandle_exceptions:
-      warning (0, "-fhandle-exceptions has been renamed -fexceptions (and is now on by default)");
-      flag_exceptions = value;
-      break;
-
     case OPT_fnext_runtime:
       flag_next_runtime = value;
       break;
 
     case OPT_foperator_names:
       cpp_opts->operator_names = value;
-      break;
-
-    case OPT_foptional_diags:
-      /* Ignore.  */
       break;
 
     case OPT_fpch_deps:

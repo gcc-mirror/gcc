@@ -114,7 +114,9 @@ function global_state_p(flags)
 # associated with it.
 function needs_state_p(flags)
 {
-	return flag_set_p("Target", flags)
+	return (flag_set_p("Target", flags) \
+		&& !flag_set_p("Alias.*", flags) \
+		&& !flag_set_p("Ignore", flags))
 }
 
 # If FLAGS describes an option that needs a static state variable,

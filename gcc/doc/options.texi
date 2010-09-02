@@ -273,6 +273,19 @@ not need to handle it and no @samp{OPT_} enumeration value is defined
 for it; only the canonical form of the option will be seen in those
 places.
 
+@item Ignore
+This option is ignored apart from printing any warning specified using
+@code{Warn}.  The option will not be seen by specs and no @samp{OPT_}
+enumeration value is defined for it.
+
+@item Warn(@var{message})
+If this option is used, output the warning @var{message}.
+@var{message} is a format string, either taking a single operand with
+a @samp{%qs} format which is the option name, or not taking any
+operands, which is passed to the @samp{warning} function.  If an alias
+is marked @code{Warn}, the target of the alias must not also be marked
+@code{Warn}.
+
 @item Report
 The state of the option should be printed by @option{-fverbose-asm}.
 

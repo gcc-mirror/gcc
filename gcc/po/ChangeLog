@@ -1,3 +1,8 @@
+2010-09-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* exgettext: Handle {} in operand of MissingArgError.  Handle
+	Warn.
+
 2010-07-27  Joseph Myers  <joseph@codesourcery.com>
 
 	* exgettext: Also extract MissingArgError texts from .opt files.

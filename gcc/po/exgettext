@@ -226,7 +226,22 @@ echo "scanning option files..." >&2
 	    if ((field == 1) && /MissingArgError/) {
 		line = $0
 		sub(".*MissingArgError\\(", "", line)
-		sub("\\).*", "", line)
+		if (line ~ "^{") {
+			sub("^{", "", line)
+			sub("}\\).*", "", line)
+		} else
+			sub("\\).*", "", line)
+		printf("#line %d \"%s\"\n", lineno, file)
+		printf("_(\"%s\")\n", line)
+	    }
+	    if ((field == 1) && /Warn/) {
+		line = $0
+		sub(".*Warn\\(", "", line)
+		if (line ~ "^{") {
+			sub("^{", "", line)
+			sub("}\\).*", "", line)
+		} else
+			sub("\\).*", "", line)
 		printf("#line %d \"%s\"\n", lineno, file)
 		printf("_(\"%s\")\n", line)
 	    }

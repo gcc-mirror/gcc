@@ -555,15 +555,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #ifndef CC1_CPU_SPEC
 #define CC1_CPU_SPEC_1 "\
-%{mcpu=*:-mtune=%* \
-%n`-mcpu=' is deprecated. Use `-mtune=' or '-march=' instead.\n} \
-%<mcpu=* \
-%{mintel-syntax:-masm=intel \
-%n`-mintel-syntax' is deprecated. Use `-masm=intel' instead.\n} \
 %{msse5:-mavx \
-%n'-msse5' was removed.\n} \
-%{mno-intel-syntax:-masm=att \
-%n`-mno-intel-syntax' is deprecated. Use `-masm=att' instead.\n}"
+%n'-msse5' was removed.\n}"
 
 #ifndef HAVE_LOCAL_CPU_DETECT
 #define CC1_CPU_SPEC CC1_CPU_SPEC_1

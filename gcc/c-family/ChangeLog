@@ -1,5 +1,18 @@
 2010-09-02  Joseph Myers  <joseph@codesourcery.com>
 
+	* c.opt (Wimport, fall-virtual, falt-external-templates,
+	fdefault-inline, fenum-int-equiv, fexternal-templates,
+	fguiding-decls, fhonor-std, fhuge-objects, flabels-ok,
+	fname-mangling-version-, fnew-abi, fnonnull-objects,
+	foptional-diags, fsquangle, fstrict-prototype, fthis-is-variable,
+	fvtable-gc, fvtable-thunks, fxref): Mark with Ignore and Warn as
+	applicable.
+	(fhandle-exceptions): Mark with Alias and Warn.
+	* c-opts.c (c_common_handle_option): Don't handle options marked
+	as ignored.
+
+2010-09-02  Joseph Myers  <joseph@codesourcery.com>
+
 	* c.opt (Wcomments, Werror-implicit-function-declaration,
 	ftemplate-depth-, std=c89, std=c9x, std=gnu89, std=gnu9x,
 	std=iso9899:1990, std=iso9899:1999, std=iso9899:199x): Mark as
