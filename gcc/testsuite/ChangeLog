@@ -1,3 +1,10 @@
+2010-09-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/cpp/warn-comments-3.c: New.  Based on warn-comments-2.c
+	but using -Werror=comment.
+	* gcc.dg/cpp/warn-comments.c, gcc.dg/cpp/warn-comments-2.c: Adjust
+	expected error messages.
+
 2010-09-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/stack-usage-1.c: Adjust on i386/Darwin.

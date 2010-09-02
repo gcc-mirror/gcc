@@ -164,7 +164,7 @@ C ObjC C++ ObjC++ Warning
 Warn about possibly nested block comments, and C++ comments spanning more than one physical line
 
 Wcomments
-C ObjC C++ ObjC++ Warning
+C ObjC C++ ObjC++ Warning Alias(Wcomment)
 Synonym for -Wcomment
 
 Wconversion
@@ -216,7 +216,7 @@ C ObjC C++ ObjC++
 ; Documented in common.opt
 
 Werror-implicit-function-declaration
-C ObjC RejectNegative Warning
+C ObjC RejectNegative Warning Alias(Werror=, implicit-function-declaration)
 This switch is deprecated; use -Werror=implicit-function-declaration instead
 
 Wfloat-equal
@@ -804,7 +804,7 @@ C ObjC C++ ObjC++ Joined RejectNegative UInteger
 -ftabstop=<number>	Distance between tab stops for column reporting
 
 ftemplate-depth-
-C++ ObjC++ Joined RejectNegative UInteger Undocumented
+C++ ObjC++ Joined RejectNegative Undocumented Alias(ftemplate-depth=)
 
 ftemplate-depth=
 C++ ObjC++ Joined RejectNegative UInteger
@@ -972,7 +972,7 @@ C ObjC
 Conform to the ISO 201X C standard draft (experimental and incomplete support)
 
 std=c89
-C ObjC
+C ObjC Alias(std=c90)
 Conform to the ISO 1990 C standard
 
 std=c90
@@ -984,7 +984,7 @@ C ObjC
 Conform to the ISO 1999 C standard
 
 std=c9x
-C ObjC
+C ObjC Alias(std=c99)
 Deprecated in favor of -std=c99
 
 std=gnu++98
@@ -1003,7 +1003,7 @@ C ObjC
 Conform to the ISO 201X C standard draft with GNU extensions (experimental and incomplete support)
 
 std=gnu89
-C ObjC
+C ObjC Alias(std=gnu90)
 Conform to the ISO 1990 C standard with GNU extensions
 
 std=gnu90
@@ -1015,11 +1015,11 @@ C ObjC
 Conform to the ISO 1999 C standard with GNU extensions
 
 std=gnu9x
-C ObjC
+C ObjC Alias(std=gnu99)
 Deprecated in favor of -std=gnu99
 
 std=iso9899:1990
-C ObjC
+C ObjC Alias(std=c90)
 Conform to the ISO 1990 C standard
 
 std=iso9899:199409
@@ -1027,11 +1027,11 @@ C ObjC
 Conform to the ISO 1990 C standard as amended in 1994
 
 std=iso9899:1999
-C ObjC
+C ObjC Alias(std=c99)
 Conform to the ISO 1999 C standard
 
 std=iso9899:199x
-C ObjC
+C ObjC Alias(std=c99)
 Deprecated in favor of -std=iso9899:1999
 
 traditional-cpp

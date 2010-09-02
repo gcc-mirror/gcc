@@ -8150,7 +8150,7 @@ struct reason_option_codes_t
 
 static const struct reason_option_codes_t option_codes[] = {
   {CPP_W_DEPRECATED,			OPT_Wdeprecated},
-  {CPP_W_COMMENTS,			OPT_Wcomments},
+  {CPP_W_COMMENTS,			OPT_Wcomment},
   {CPP_W_TRIGRAPHS,			OPT_Wtrigraphs},
   {CPP_W_MULTICHAR,			OPT_Wmultichar},
   {CPP_W_TRADITIONAL,			OPT_Wtraditional},

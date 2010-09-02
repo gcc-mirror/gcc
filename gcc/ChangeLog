@@ -1,3 +1,31 @@
+2010-09-02  Joseph Myers  <joseph@codesourcery.com>
+
+	PR driver/44076
+	* opts.h (struct cl_option): Add alias_arg, neg_alias_arg and
+	alias_target fields.
+	* opt-functions.awk (opt_sanitized_name): Don't handle
+	finline-limit=, Wlarger-than= and ftemplate-depth= specially.
+	* optc-gen.awk: Generate alias fields.
+	* opth-gen.awk: Explicitly give values for OPT_* enum constants.
+	Don't generate such constants for aliases.
+	* opts-common.c (generate_canonical_option): New.
+	(decode_cmdline_option): Handle aliases.  Use
+	generate_canonical_option for known options instead of copying the
+	input option text.
+	* doc/options.texi (Alias): Document.
+	* common.opt (W, Wlarger-than-, aux-info=, finline-limit-,
+	fstack-check, specs): Mark as aliases.
+	* gcc.c (driver_handle_option): Canonicalize -L options to joined
+	arguments.
+	(driver_handle_option): Don't handle OPT_specs.
+	* opts.c (common_handle_option): Don't handle options marked as
+	aliases.
+	(enable_warning_as_error): Handle aliases.
+	* stor-layout.c (layout_decl): Use OPT_Wlarger_than_ instead of
+	OPT_Wlarger_than_eq.
+	* tree-optimize.c (tree_rest_of_compilation): Use
+	OPT_Wlarger_than_ instead of OPT_Wlarger_than_eq.
+
 2010-09-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (nonmemory_operand): New mode attribute.

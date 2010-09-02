@@ -1,3 +1,11 @@
+2010-09-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang.opt (CLASSPATH, bootclasspath, classpath, encoding,
+	fCLASSPATH=): Mark as Java options and as aliases.
+	* jvspec.c (jvgenmain_spec): Don't handle -fCLASSPATH*.
+	(lang_specific_driver): Don't handle options marked as aliases.
+	* lang.c (java_handle_option): Don't handle OPT_fCLASSPATH_.
+
 2010-08-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* Make-lang.in (jvspec.o): Update dependencies.

@@ -1598,11 +1598,6 @@ common_handle_option (const struct cl_decoded_option *decoded,
       break;
 
     case OPT_Wlarger_than_:
-      /* This form corresponds to -Wlarger-than-.
-	 Kept for backward compatibility.
-	 Don't use it as the first argument of warning().  */
-
-    case OPT_Wlarger_than_eq:
       larger_than_size = value;
       warn_larger_than = value != -1;
       break;
@@ -1643,7 +1638,6 @@ common_handle_option (const struct cl_decoded_option *decoded,
       break;
 
     case OPT_aux_info:
-    case OPT_aux_info_:
       aux_info_file_name = arg;
       flag_gen_aux_info = 1;
       break;
@@ -1754,7 +1748,6 @@ common_handle_option (const struct cl_decoded_option *decoded,
       break;
 
     case OPT_finline_limit_:
-    case OPT_finline_limit_eq:
       set_param_value ("max-inline-insns-single", value / 2);
       set_param_value ("max-inline-insns-auto", value / 2);
       break;
@@ -1941,18 +1934,6 @@ common_handle_option (const struct cl_decoded_option *decoded,
 			     : GENERIC_STACK_CHECK;
       else
 	warning (0, "unknown stack check parameter \"%s\"", arg);
-      break;
-
-    case OPT_fstack_check:
-      /* This is the same as the "specific" mode above.  */
-      if (value)
-	flag_stack_check = STACK_CHECK_BUILTIN
-			   ? FULL_BUILTIN_STACK_CHECK
-			   : STACK_CHECK_STATIC_BUILTIN
-			     ? STATIC_BUILTIN_STACK_CHECK
-			     : GENERIC_STACK_CHECK;
-      else
-	flag_stack_check = NO_STACK_CHECK;
       break;
 
     case OPT_fstack_limit:
@@ -2377,8 +2358,11 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask,
     }
   else
     {
+      const struct cl_option *option = &cl_options[option_index];
       const diagnostic_t kind = value ? DK_ERROR : DK_WARNING;
 
+      if (option->alias_target != N_OPTS)
+	option_index = option->alias_target;
       diagnostic_classify_diagnostic (global_dc, option_index, kind,
 				      UNKNOWN_LOCATION);
       if (kind == DK_ERROR)

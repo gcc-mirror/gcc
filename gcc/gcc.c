@@ -3742,6 +3742,12 @@ driver_handle_option (const struct cl_decoded_option *decoded,
       do_save = false;
       break;
 
+    case OPT_L:
+      /* Similarly, canonicalize -L for linkers that may not accept
+	 separate arguments.  */
+      save_switch (concat ("-L", arg, NULL), 0, NULL, validated);
+      return true;
+
     case OPT_save_temps:
       save_temps_flag = SAVE_TEMPS_CWD;
       validated = true;
@@ -3772,7 +3778,6 @@ driver_handle_option (const struct cl_decoded_option *decoded,
 	 processing.  */
       break;
 
-    case OPT_specs:
     case OPT_specs_:
       {
 	struct user_specs *user = XNEW (struct user_specs);

@@ -69,7 +69,7 @@ static const char jvgenmain_spec[] =
 		   %<fuse-boehm-gc %<fhash-synchronization %<fjni\
 		   %<findirect-dispatch %<fnew-verifier\
 		   %<fno-store-check %<foutput-class-dir\
-		   %<fclasspath* %<fCLASSPATH* %<fbootclasspath*\
+		   %<fclasspath* %<fbootclasspath*\
 		   %<fextdirs*\
 		   %<fuse-divide-subroutine %<fno-use-divide-subroutine\
 		   %<fuse-atomic-builtins %<fno-use-atomic-builtins\
@@ -299,10 +299,8 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  saw_o = 1;
 	  break;
 
-	case OPT_classpath:
-	case OPT_bootclasspath:
-	case OPT_CLASSPATH:
-	case OPT_encoding:
+	case OPT_fclasspath_:
+	case OPT_fbootclasspath_:
 	case OPT_extdirs:
 	  added -= 1;
 	  break;
@@ -514,15 +512,11 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  --j;
 	  continue;
 
-	case OPT_classpath:
-	case OPT_CLASSPATH:
-	case OPT_fCLASSPATH_:
 	case OPT_fclasspath_:
 	  jcf_path_classpath_arg (decoded_options[i].arg);
 	  --j;
 	  continue;
 
-	case OPT_bootclasspath:
 	case OPT_fbootclasspath_:
 	  jcf_path_bootclasspath_arg (decoded_options[i].arg);
 	  --j;
@@ -531,11 +525,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	case OPT_extdirs:
 	  jcf_path_extdirs_arg (decoded_options[i].arg);
 	  --j;
-	  continue;
-
-	case OPT_encoding:
-	  generate_option (OPT_fencoding_, decoded_options[i].arg, 1,
-			   CL_DRIVER, &new_decoded_options[j]);
 	  continue;
 
 	case OPT_L:

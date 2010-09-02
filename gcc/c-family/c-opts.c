@@ -161,7 +161,6 @@ warning_as_error_callback (int option_index)
 	break;
 
       case OPT_Wcomment:
-      case OPT_Wcomments:
 	cpp_opts->warn_comments = 1;
 	break;
 
@@ -493,7 +492,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_Wcomment:
-    case OPT_Wcomments:
       cpp_opts->warn_comments = value;
       break;
 
@@ -519,13 +517,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_Werror:
       global_dc->warning_as_error_requested = value;
-      break;
-
-    case OPT_Werror_implicit_function_declaration:
-      /* For backward compatibility, this is the same as
-	 -Werror=implicit-function-declaration.  */
-      enable_warning_as_error ("implicit-function-declaration", value,
-			       CL_C | CL_ObjC, handlers);
       break;
 
     case OPT_Wformat:
@@ -752,8 +743,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       break;
 
     case OPT_ftemplate_depth_:
-      /* Kept for backwards compatibility.  */
-    case OPT_ftemplate_depth_eq:
       max_tinst_depth = value;
       break;
 
@@ -865,30 +854,23 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	set_std_cxx0x (code == OPT_std_c__0x /* ISO */);
       break;
 
-    case OPT_std_c89:
     case OPT_std_c90:
-    case OPT_std_iso9899_1990:
     case OPT_std_iso9899_199409:
       if (!preprocessing_asm_p)
 	set_std_c89 (code == OPT_std_iso9899_199409 /* c94 */, true /* ISO */);
       break;
 
-    case OPT_std_gnu89:
     case OPT_std_gnu90:
       if (!preprocessing_asm_p)
 	set_std_c89 (false /* c94 */, false /* ISO */);
       break;
 
     case OPT_std_c99:
-    case OPT_std_c9x:
-    case OPT_std_iso9899_1999:
-    case OPT_std_iso9899_199x:
       if (!preprocessing_asm_p)
 	set_std_c99 (true /* ISO */);
       break;
 
     case OPT_std_gnu99:
-    case OPT_std_gnu9x:
       if (!preprocessing_asm_p)
 	set_std_c99 (false /* ISO */);
       break;
