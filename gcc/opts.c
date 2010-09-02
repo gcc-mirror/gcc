@@ -2088,8 +2088,12 @@ common_handle_option (const struct cl_decoded_option *decoded,
       global_dc->pedantic_errors = 1;
       break;
 
-    case OPT_fwhopr:
+    case OPT_fwhopr_:
       flag_whopr = arg;
+      break;
+
+    case OPT_fwhopr:
+      flag_whopr = "";
       break;
 
     case OPT_w:

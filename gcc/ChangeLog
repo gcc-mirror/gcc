@@ -1,3 +1,7 @@
+2010-09-02  Andi Kleen  <ak@linux.intel.com>
+
+	* opts.c (common_handle_option): Fix OPT_fwhopr/fwhopr_ handling.
+
 2010-09-02  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vectorizer.h (get_later_stmt): New function.
