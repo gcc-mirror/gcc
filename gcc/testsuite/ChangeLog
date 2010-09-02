@@ -1,3 +1,8 @@
+2010-09-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/stack-usage-1.c: Adjust on i386/Darwin.
+	* gcc.target/i386/stack-usage-realign.c: Skip on i386/Darwin.
+
 2010-09-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45489
