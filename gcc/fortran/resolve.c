@@ -12166,7 +12166,8 @@ resolve_symbol (gfc_symbol *sym)
 
   if (sym->ts.type == BT_CLASS && sym->ns == gfc_current_ns
       && sym->attr.dummy && sym->attr.intent == INTENT_OUT
-      && !sym->attr.pointer && !sym->attr.allocatable)
+      && !CLASS_DATA (sym)->attr.class_pointer
+      && !CLASS_DATA (sym)->attr.allocatable)
     apply_default_init (sym);
 
   /* If this symbol has a type-spec, check it.  */
