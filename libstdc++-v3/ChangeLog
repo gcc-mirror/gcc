@@ -1,3 +1,9 @@
+2010-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/40974
+	* include/Makefile.am: Add -nostdinc++ to PCHFLAGS.
+	* include/Makefile.in: Regenerate.
+
 2010-09-01  Christopher Yeleighton  <giecrilj@stegny.2a.pl>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
