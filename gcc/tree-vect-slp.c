@@ -1082,6 +1082,24 @@ vect_find_first_load_in_slp_instance (slp_instance instance)
 }
 
 
+/* Find the last store in SLP INSTANCE.  */
+static gimple
+vect_find_last_store_in_slp_instance (slp_instance instance)
+{
+  int i;
+  slp_tree node;
+  gimple last_store = NULL, store;
+
+  node = SLP_INSTANCE_TREE (instance);
+  for (i = 0;
+       VEC_iterate (gimple, SLP_TREE_SCALAR_STMTS (node), i, store);
+       i++)
+    last_store = get_later_stmt (store, last_store);
+
+  return last_store;
+}
+
+
 /* Analyze an SLP instance starting from a group of strided stores. Call
    vect_build_slp_tree to build a tree of packed stmts if possible.
    Return FALSE if it's impossible to SLP any stmt in the loop.  */
@@ -1503,6 +1521,42 @@ vect_slp_analyze_operations (bb_vec_info bb_vinfo)
   return true;
 }
 
+/* Check if loads and stores are mixed in the basic block (in that
+   case if we are not sure that the accesses differ, we can't vectorize the
+   basic block). Also return FALSE in case that there is statement marked as
+   not vectorizable.  */
+
+static bool
+vect_bb_vectorizable_with_dependencies (bb_vec_info bb_vinfo)
+{
+  basic_block bb = BB_VINFO_BB (bb_vinfo);
+  gimple_stmt_iterator si;
+  bool detected_store = false;
+  gimple stmt;
+  struct data_reference *dr;
+
+  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+    {
+      stmt = gsi_stmt (si);
+
+      /* We can't allow not analyzed statements, since they may contain data
+         accesses.  */ 
+      if (!STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (stmt)))
+        return false;
+
+      if (!STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt)))
+        continue;
+
+      dr = STMT_VINFO_DATA_REF (vinfo_for_stmt (stmt));
+      if (DR_IS_READ (dr) && detected_store)
+        return false;
+
+      if (!DR_IS_READ (dr))
+        detected_store = true;
+    }
+
+  return true;
+}
 
 /* Check if vectorization of the basic block is profitable.  */
 
@@ -1585,6 +1639,8 @@ vect_slp_analyze_bb (basic_block bb)
   gimple_stmt_iterator gsi;
   int min_vf = 2;
   int max_vf = MAX_VECTORIZATION_FACTOR;
+  bool data_dependence_in_bb = false;
+
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "===vect_slp_analyze_bb===\n");
@@ -1632,8 +1688,11 @@ vect_slp_analyze_bb (basic_block bb)
       return NULL;
     }
 
-   if (!vect_analyze_data_ref_dependences (NULL, bb_vinfo, &max_vf)
-       || min_vf > max_vf)
+   if (!vect_analyze_data_ref_dependences (NULL, bb_vinfo, &max_vf, 
+                                           &data_dependence_in_bb)
+       || min_vf > max_vf
+       || (data_dependence_in_bb 
+           && !vect_bb_vectorizable_with_dependencies (bb_vinfo)))
      {
        if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
 	 fprintf (vect_dump, "not vectorized: unhandled data dependence "
@@ -2419,6 +2478,14 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
     si = gsi_for_stmt (SLP_INSTANCE_FIRST_LOAD_STMT (instance));
   else
     si = gsi_for_stmt (stmt);
+
+  /* Stores should be inserted just before the last store.  */
+  if (STMT_VINFO_STRIDED_ACCESS (stmt_info)
+      && REFERENCE_CLASS_P (gimple_get_lhs (stmt)))
+    { 
+      gimple last_store = vect_find_last_store_in_slp_instance (instance);
+      si = gsi_for_stmt (last_store);
+    }
 
   is_store = vect_transform_stmt (stmt, &si, &strided_store, node, instance);
   return is_store;

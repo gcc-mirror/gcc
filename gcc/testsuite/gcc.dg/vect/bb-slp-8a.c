@@ -15,16 +15,15 @@ main1 (unsigned int x, unsigned int y, unsigned int *pin, unsigned int *pout)
   int i;
   unsigned int a0, a1, a2, a3;
  
-  /* pin and pout may alias. But since all the loads are before the first store
-     the basic block is vectorizable.  */
+  /* pin and pout may alias, and loads and stores are mixed. The basic block 
+     cannot be vectorized.  */
   a0 = *pin++ + 23;
-  a1 = *pin++ + 142;
-  a2 = *pin++ + 2;
-  a3 = *pin++ + 31;
-  
   *pout++ = a0 * x;
+  a1 = *pin++ + 142;
   *pout++ = a1 * y;
+  a2 = *pin++ + 2;
   *pout++ = a2 * x;
+  a3 = *pin++ + 31;
   *pout++ = a3 * y;
 
   if (i)
@@ -49,6 +48,6 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "basic block vectorized using SLP" 1 "slp"  { target vect_hw_misalign } } } */
+/* { dg-final { scan-tree-dump-times "basic block vectorized using SLP" 0 "slp" } } */
 /* { dg-final { cleanup-tree-dump "slp" } } */
   

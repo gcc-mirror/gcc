@@ -633,6 +633,32 @@ get_earlier_stmt (gimple stmt1, gimple stmt2)
     return stmt2;
 }
 
+static inline gimple
+get_later_stmt (gimple stmt1, gimple stmt2)
+{
+  unsigned int uid1, uid2;
+
+  if (stmt1 == NULL)
+    return stmt2;
+
+  if (stmt2 == NULL)
+    return stmt1;
+
+  uid1 = gimple_uid (stmt1);
+  uid2 = gimple_uid (stmt2);
+
+  if (uid1 == 0 || uid2 == 0)
+    return NULL;
+
+  gcc_assert (uid1 <= VEC_length (vec_void_p, stmt_vec_info_vec));
+  gcc_assert (uid2 <= VEC_length (vec_void_p, stmt_vec_info_vec));
+
+  if (uid1 > uid2)
+    return stmt1;
+  else
+    return stmt2;
+}
+
 static inline bool
 is_pattern_stmt_p (stmt_vec_info stmt_info)
 {
@@ -776,7 +802,7 @@ extern enum dr_alignment_support vect_supportable_dr_alignment
 extern tree vect_get_smallest_scalar_type (gimple, HOST_WIDE_INT *,
                                            HOST_WIDE_INT *);
 extern bool vect_analyze_data_ref_dependences (loop_vec_info, bb_vec_info,
-					       int *);
+					       int *, bool *);
 extern bool vect_enhance_data_refs_alignment (loop_vec_info);
 extern bool vect_analyze_data_refs_alignment (loop_vec_info, bb_vec_info);
 extern bool vect_verify_datarefs_alignment (loop_vec_info, bb_vec_info);

@@ -322,6 +322,64 @@ vect_equal_offsets (tree offset1, tree offset2)
 }
 
 
+/* Check dependence between DRA and DRB for basic block vectorization.  */
+
+static bool
+vect_drs_dependent_in_basic_block (struct data_reference *dra,
+                                   struct data_reference *drb)
+{
+  HOST_WIDE_INT type_size_a, type_size_b, init_a, init_b;
+  gimple earlier_stmt;
+
+  /* We only call this function for pairs of loads and stores, but we verify
+     it here.  */
+  if (DR_IS_READ (dra) == DR_IS_READ (drb))
+    {
+      if (DR_IS_READ (dra))
+        return false;
+      else
+        return true;
+    }
+
+  /* Check that the data-refs have same bases and offsets. If not, we can't
+     determine if they are dependent.  */
+  if ((DR_BASE_ADDRESS (dra) != DR_BASE_ADDRESS (drb)
+       && (TREE_CODE (DR_BASE_ADDRESS (dra)) != ADDR_EXPR
+           || TREE_CODE (DR_BASE_ADDRESS (drb)) != ADDR_EXPR
+           || TREE_OPERAND (DR_BASE_ADDRESS (dra), 0)
+           != TREE_OPERAND (DR_BASE_ADDRESS (drb),0)))
+      || !vect_equal_offsets (DR_OFFSET (dra), DR_OFFSET (drb)))
+    return true;
+
+  /* Check the types.  */
+  type_size_a = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))));
+  type_size_b = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))));
+
+  if (type_size_a != type_size_b
+      || !types_compatible_p (TREE_TYPE (DR_REF (dra)),
+                              TREE_TYPE (DR_REF (drb))))
+    return true;
+
+  init_a = TREE_INT_CST_LOW (DR_INIT (dra));
+  init_b = TREE_INT_CST_LOW (DR_INIT (drb));
+
+  /* Two different locations - no dependence.  */
+  if (init_a != init_b)
+    return false;
+
+  /* We have a read-write dependence. Check that the load is before the store.
+     When we vectorize basic blocks, vector load can be only before 
+     corresponding scalar load, and vector store can be only after its
+     corresponding scalar store. So the order of the acceses is preserved in 
+     case the load is before the store.  */
+  earlier_stmt = get_earlier_stmt (DR_STMT (dra), DR_STMT (drb));   
+  if (DR_IS_READ (STMT_VINFO_DATA_REF (vinfo_for_stmt (earlier_stmt))))
+    return false;
+
+  return true;
+}
+
+
 /* Function vect_check_interleaving.
 
    Check if DRA and DRB are a part of interleaving. In case they are, insert
@@ -495,7 +553,8 @@ vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
 
 static bool
 vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
-                                  loop_vec_info loop_vinfo, int *max_vf)
+                                  loop_vec_info loop_vinfo, int *max_vf,
+                                  bool *data_dependence_in_bb)
 {
   unsigned int i;
   struct loop *loop = NULL;
@@ -554,10 +613,14 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
           print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
         }
 
-      /* Mark the statements as unvectorizable.  */
-      STMT_VINFO_VECTORIZABLE (stmtinfo_a) = false;
-      STMT_VINFO_VECTORIZABLE (stmtinfo_b) = false;
+      /* We do not vectorize basic blocks with write-write dependencies.  */
+      if (!DR_IS_READ (dra) && !DR_IS_READ (drb))
+        return true;
 
+      /* We deal with read-write dependencies in basic blocks later (by
+         verifying that all the loads in the basic block are before all the
+         stores).  */
+      *data_dependence_in_bb = true;
       return false;
     }
 
@@ -577,7 +640,12 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
           print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
         }
 
-      return true;
+      /* Do not vectorize basic blcoks with write-write dependences.  */
+      if (!DR_IS_READ (dra) && !DR_IS_READ (drb))
+        return true;
+
+      /* Check if this dependence is allowed in basic block vectorization.  */ 
+      return vect_drs_dependent_in_basic_block (dra, drb);
     }
 
   /* Loop-based vectorization and known data dependence.  */
@@ -678,7 +746,8 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 
 bool
 vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo,
-                                   bb_vec_info bb_vinfo, int *max_vf)
+                                   bb_vec_info bb_vinfo, int *max_vf,
+                                   bool *data_dependence_in_bb)
 {
   unsigned int i;
   VEC (ddr_p, heap) *ddrs = NULL;
@@ -693,7 +762,8 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo,
     ddrs = BB_VINFO_DDRS (bb_vinfo);
 
   FOR_EACH_VEC_ELT (ddr_p, ddrs, i, ddr)
-    if (vect_analyze_data_ref_dependence (ddr, loop_vinfo, max_vf))
+    if (vect_analyze_data_ref_dependence (ddr, loop_vinfo, max_vf,
+					  data_dependence_in_bb))
       return false;
 
   return true;

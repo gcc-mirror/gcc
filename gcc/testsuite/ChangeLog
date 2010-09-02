@@ -1,3 +1,11 @@
+2010-09-02  Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/bb-slp-8.c: Separate the interesting part and the
+	check into different basic blocks. Expect vectorization if misaligned
+	stores are supported. 
+	* gcc.dg/vect/bb-slp-8a.c: New test.
+	* gcc.dg/vect/bb-slp-8b.c: New test.
+
 2010-09-01  Steve Ellcey  <sje@cup.hp.com>
 
 	* gfortran.dg/vect/fast-math-pr38969.f90: Skip if not vectorizing.

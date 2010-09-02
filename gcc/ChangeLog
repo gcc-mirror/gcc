@@ -1,3 +1,21 @@
+2010-09-02  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vectorizer.h (get_later_stmt): New function.
+	(vect_analyze_data_ref_dependences): Add argument.
+	* tree-vect-loop.c (vect_analyze_loop): Update call to
+	vect_analyze_data_ref_dependences.
+	* tree-vect-data-refs.c (vect_drs_dependent_in_basic_block):
+	New function.
+	(vect_analyze_data_ref_dependence): Add argument for basic block
+	dependencies. Check dependencies in basic block vectorization.
+	(vect_analyze_data_ref_dependences): Add argument and update call to
+	vect_analyze_data_ref_dependences.
+	* tree-vect-slp.c (vect_find_last_store_in_slp_instance): New.
+	(vect_bb_vectorizable_with_dependencies): New.
+	(vect_slp_analyze_bb): Check dependencies in basic block.
+	(vect_schedule_slp_instance): Insert stores before the last store in
+	SLP instance.
+
 2010-09-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/45476
