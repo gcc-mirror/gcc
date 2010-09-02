@@ -1,3 +1,12 @@
+2010-09-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45489
+	* resolve.c (apply_default_init): Mark symbol as referenced,
+	if it is initialized.
+	(resolve_symbol): Change intialized check for BT_DERIVED such
+	that also function results get initialized; remove now obsolete
+	gfc_set_sym_referenced for BT_CLASS.
+
 2010-09-01  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/44541

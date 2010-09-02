@@ -1,3 +1,8 @@
+2010-09-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45489
+	* gfortran.dg/initialization_27.f90: New.
+
 2010-09-02  Ira Rosen  <irar@il.ibm.com>
 
 	* gcc.dg/vect/bb-slp-8.c: Separate the interesting part and the
