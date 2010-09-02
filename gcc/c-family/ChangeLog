@@ -1,5 +1,10 @@
 2010-09-02  Joseph Myers  <joseph@codesourcery.com>
 
+	* c.opt (falt-external-templates, fhuge-objects, fvtable-gc,
+	fvtable-thunks, fxref): Mark no longer supported in help text.
+
+2010-09-02  Joseph Myers  <joseph@codesourcery.com>
+
 	* c.opt (Wimport, fall-virtual, falt-external-templates,
 	fdefault-inline, fenum-int-equiv, fexternal-templates,
 	fguiding-decls, fhonor-std, fhuge-objects, flabels-ok,
