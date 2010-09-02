@@ -456,7 +456,7 @@ gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, enum rounding_mode op)
   int kind;
 
   kind = expr->ts.kind;
-  nargs =  gfc_intrinsic_argument_list_length (expr);
+  nargs = gfc_intrinsic_argument_list_length (expr);
 
   decl = NULL_TREE;
   /* We have builtin functions for some cases.  */
@@ -3235,6 +3235,10 @@ gfc_conv_intrinsic_ishft (gfc_se * se, gfc_expr * expr)
   tree rshift;
 
   gfc_conv_intrinsic_function_args (se, expr, args, 2);
+
+  args[0] = gfc_evaluate_now (args[0], &se->pre);
+  args[1] = gfc_evaluate_now (args[1], &se->pre);
+
   type = TREE_TYPE (args[0]);
   utype = unsigned_type_for (type);
 
@@ -3320,7 +3324,7 @@ gfc_conv_intrinsic_ishftc (gfc_se * se, gfc_expr * expr)
 	  gcc_unreachable ();
 	}
       se->expr = build_call_expr_loc (input_location,
-				  tmp, 3, args[0], args[1], args[2]);
+				      tmp, 3, args[0], args[1], args[2]);
       /* Convert the result back to the original type, if we extended
 	 the first argument's width above.  */
       if (expr->ts.kind < 4)
@@ -3329,6 +3333,10 @@ gfc_conv_intrinsic_ishftc (gfc_se * se, gfc_expr * expr)
       return;
     }
   type = TREE_TYPE (args[0]);
+
+  /* Evaluate arguments only once.  */
+  args[0] = gfc_evaluate_now (args[0], &se->pre);
+  args[1] = gfc_evaluate_now (args[1], &se->pre);
 
   /* Rotate left if positive.  */
   lrot = fold_build2 (LROTATE_EXPR, type, args[0], args[1]);
