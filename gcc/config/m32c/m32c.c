@@ -823,14 +823,19 @@ m32c_secondary_reload_class (int rclass, enum machine_mode mode, rtx x)
   return NO_REGS;
 }
 
-/* Implements CLASS_LIKELY_SPILLED_P.  A_REGS is needed for address
+/* Implements TARGET_CLASS_LIKELY_SPILLED_P.  A_REGS is needed for address
    reloads.  */
-int
-m32c_class_likely_spilled_p (int regclass)
+
+#undef TARGET_CLASS_LIKELY_SPILLED_P
+#define TARGET_CLASS_LIKELY_SPILLED_P m32c_class_likely_spilled_p
+
+static bool
+m32c_class_likely_spilled_p (reg_class_t regclass)
 {
   if (regclass == A_REGS)
-    return 1;
-  return reg_class_size[regclass] == 1;
+    return true;
+
+  return (reg_class_size[(int) regclass] == 1);
 }
 
 /* Implements CLASS_MAX_NREGS.  We calculate this according to its

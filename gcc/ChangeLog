@@ -1,3 +1,11 @@
+2010-09-02  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/m32c/m32c.h (CLASS_LIKELY_SPILLED_P): Remove.
+	* config/m32c/m32c-protos.h (m32c_class_likely_spilled_p): Remove.
+	* config/m32c/m32c.c (TARGET_CLASS_LIKELY_SPILLED_P): Define.
+	(m32c_class_likely_spilled_p): Make static. Change argument type to
+	reg_class_t. Change result type to bool.
+
 2010-09-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.opt (-mfriz): New switch to control whether
