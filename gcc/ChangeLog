@@ -1,3 +1,7 @@
+2010-09-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* opth-gen.awk (quote, comma): Remove unused variables.
+
 2010-09-02  Ryan Mansfield  <rmansfield@qnx.com>
 
 	* arm.c (arm_override_options): Correct fall-back code to use
