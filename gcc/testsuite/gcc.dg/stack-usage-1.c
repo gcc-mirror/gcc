@@ -8,7 +8,11 @@
    Then check that this is the actual stack usage in the assembly file.  */
 
 #if defined(__i386__)
-#  define SIZE 248
+#  if defined (__MACH__)
+#    define SIZE 232
+#  else
+#    define SIZE 248
+#  endif
 #elif defined(__x86_64__)
 #  define SIZE 356
 #elif defined (__sparc__)
