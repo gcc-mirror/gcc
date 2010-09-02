@@ -619,6 +619,11 @@
 		(and (match_test "TARGET_32BIT")
 		     (match_operand 0 "arm_di_operand"))))
 
+;; True if the operand is memory reference suitable for a ldrex/strex.
+(define_predicate "arm_sync_memory_operand"
+  (and (match_operand 0 "memory_operand")
+       (match_code "reg" "0")))
+
 ;; Predicates for parallel expanders based on mode.
 (define_special_predicate "vect_par_constant_high" 
   (match_code "parallel")
