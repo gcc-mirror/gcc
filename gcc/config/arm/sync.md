@@ -280,7 +280,7 @@
 (define_insn "arm_sync_compare_and_swapsi"
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
         (unspec_volatile:SI
-	  [(match_operand:SI 1 "memory_operand" "+m")
+	  [(match_operand:SI 1 "arm_sync_memory_operand" "+Q")
    	   (match_operand:SI 2 "s_register_operand" "r")
 	   (match_operand:SI 3 "s_register_operand" "r")]
 	  VUNSPEC_SYNC_COMPARE_AND_SWAP))
@@ -307,7 +307,7 @@
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
         (zero_extend:SI
 	  (unspec_volatile:NARROW
-	    [(match_operand:NARROW 1 "memory_operand" "+m")
+	    [(match_operand:NARROW 1 "arm_sync_memory_operand" "+Q")
    	     (match_operand:SI 2 "s_register_operand" "r")
 	     (match_operand:SI 3 "s_register_operand" "r")]
 	    VUNSPEC_SYNC_COMPARE_AND_SWAP)))
@@ -332,7 +332,7 @@
 
 (define_insn "arm_sync_lock_test_and_setsi"
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
-        (match_operand:SI 1 "memory_operand" "+m"))
+        (match_operand:SI 1 "arm_sync_memory_operand" "+Q"))
    (set (match_dup 1)
         (unspec_volatile:SI [(match_operand:SI 2 "s_register_operand" "r")]
 	                    VUNSPEC_SYNC_LOCK))
@@ -353,7 +353,7 @@
 
 (define_insn "arm_sync_lock_test_and_set<mode>"
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
-        (zero_extend:SI (match_operand:NARROW 1 "memory_operand" "+m")))
+        (zero_extend:SI (match_operand:NARROW 1 "arm_sync_memory_operand" "+Q")))
    (set (match_dup 1)
         (unspec_volatile:NARROW [(match_operand:SI 2 "s_register_operand" "r")]
 	                        VUNSPEC_SYNC_LOCK))
@@ -375,7 +375,7 @@
 (define_insn "arm_sync_new_<sync_optab>si"
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
         (unspec_volatile:SI [(syncop:SI
-                               (match_operand:SI 1 "memory_operand" "+m")
+                               (match_operand:SI 1 "arm_sync_memory_operand" "+Q")
                                (match_operand:SI 2 "s_register_operand" "r"))
 	                    ]
 	                    VUNSPEC_SYNC_NEW_OP))
@@ -400,7 +400,7 @@
 (define_insn "arm_sync_new_nandsi"
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
         (unspec_volatile:SI [(not:SI (and:SI
-                               (match_operand:SI 1 "memory_operand" "+m")
+                               (match_operand:SI 1 "arm_sync_memory_operand" "+Q")
                                (match_operand:SI 2 "s_register_operand" "r")))
 	                    ]
 	                    VUNSPEC_SYNC_NEW_OP))
@@ -426,7 +426,7 @@
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
         (unspec_volatile:SI [(syncop:SI
                                (zero_extend:SI
-			         (match_operand:NARROW 1 "memory_operand" "+m"))
+			         (match_operand:NARROW 1 "arm_sync_memory_operand" "+Q"))
                                (match_operand:SI 2 "s_register_operand" "r"))
 	                    ]
 	                    VUNSPEC_SYNC_NEW_OP))
@@ -454,7 +454,7 @@
 	  [(not:SI
 	     (and:SI
                (zero_extend:SI	  
-	         (match_operand:NARROW 1 "memory_operand" "+m"))
+	         (match_operand:NARROW 1 "arm_sync_memory_operand" "+Q"))
                (match_operand:SI 2 "s_register_operand" "r")))
 	  ] VUNSPEC_SYNC_NEW_OP))
    (set (match_dup 1)
@@ -478,7 +478,7 @@
 (define_insn "arm_sync_old_<sync_optab>si"
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
         (unspec_volatile:SI [(syncop:SI
-                               (match_operand:SI 1 "memory_operand" "+m")
+                               (match_operand:SI 1 "arm_sync_memory_operand" "+Q")
                                (match_operand:SI 2 "s_register_operand" "r"))
 	                    ]
 	                    VUNSPEC_SYNC_OLD_OP))
@@ -504,7 +504,7 @@
 (define_insn "arm_sync_old_nandsi"
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
         (unspec_volatile:SI [(not:SI (and:SI
-                               (match_operand:SI 1 "memory_operand" "+m")
+                               (match_operand:SI 1 "arm_sync_memory_operand" "+Q")
                                (match_operand:SI 2 "s_register_operand" "r")))
 	                    ]
 	                    VUNSPEC_SYNC_OLD_OP))
@@ -531,7 +531,7 @@
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
         (unspec_volatile:SI [(syncop:SI
                                (zero_extend:SI
-			         (match_operand:NARROW 1 "memory_operand" "+m"))
+			         (match_operand:NARROW 1 "arm_sync_memory_operand" "+Q"))
                                (match_operand:SI 2 "s_register_operand" "r"))
 	                    ]
 	                    VUNSPEC_SYNC_OLD_OP))
@@ -558,7 +558,7 @@
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
         (unspec_volatile:SI [(not:SI (and:SI
                                (zero_extend:SI
-			         (match_operand:NARROW 1 "memory_operand" "+m"))
+			         (match_operand:NARROW 1 "arm_sync_memory_operand" "+Q"))
                                (match_operand:SI 2 "s_register_operand" "r")))
 	                    ]
 	                    VUNSPEC_SYNC_OLD_OP))
