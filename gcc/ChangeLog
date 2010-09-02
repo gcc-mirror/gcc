@@ -1,3 +1,9 @@
+2010-09-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/45476
+	* config/i386/freebsd.h (LIBGCC2_HAS_TF_MODE,
+	LIBGCC2_TF_CEXT, TF_SIZE): New defines.
+
 2010-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/45458
@@ -46,11 +52,9 @@
 	(allCores): List of supported cores.
 	(availability_table): Add supported cores.
 	(collate_bypasses): Accept core as a parameter.
-	(worst_case_latencies_and_bypasses): Accept core as a
-	 parameter.
-	(emit_insn_reservations): Accept core as a parameter.
-	Use tuneStr and coreStr to get tune attribute and prefix
-	for functional units.
+	(worst_case_latencies_and_bypasses): Accept core as a parameter.
+	(emit_insn_reservations): Accept core as a parameter.  Use tuneStr
+	and coreStr to get tune attribute and prefix for functional units.
 	(emit_bypasses): Accept core name and use it.
 	(calculate_per_core_availability_table): New.
 	(filter_core): New.
