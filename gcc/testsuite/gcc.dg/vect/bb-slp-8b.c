@@ -10,21 +10,22 @@ unsigned int out[N];
 unsigned int in[N] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
 
 __attribute__ ((noinline)) int
-main1 (unsigned int x, unsigned int y, unsigned int *pin, unsigned int *pout)
+main1 (unsigned int x, unsigned int y)
 {
   int i;
   unsigned int a0, a1, a2, a3;
+  unsigned int *pin = &in[0];
+  unsigned int *pout = &out[0];
  
-  /* pin and pout may alias. But since all the loads are before the first store
-     the basic block is vectorizable.  */
+  /* pin and pout are different, so despite the fact that loads and stores 
+     are mixed the basic block is vectorizable.  */
   a0 = *pin++ + 23;
-  a1 = *pin++ + 142;
-  a2 = *pin++ + 2;
-  a3 = *pin++ + 31;
-  
   *pout++ = a0 * x;
+  a1 = *pin++ + 142;
   *pout++ = a1 * y;
+  a2 = *pin++ + 2;
   *pout++ = a2 * x;
+  a3 = *pin++ + 31;
   *pout++ = a3 * y;
 
   if (i)
@@ -44,7 +45,7 @@ int main (void)
 {
   check_vect ();
 
-  main1 (2, 3, &in[0], &out[0]);
+  main1 (2, 3);
 
   return 0;
 }

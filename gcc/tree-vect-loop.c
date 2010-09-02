@@ -1378,7 +1378,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 loop_vec_info
 vect_analyze_loop (struct loop *loop)
 {
-  bool ok;
+  bool ok, dummy;
   loop_vec_info loop_vinfo;
   int max_vf = MAX_VECTORIZATION_FACTOR;
   int min_vf = 2;
@@ -1444,7 +1444,7 @@ vect_analyze_loop (struct loop *loop)
      the dependences.
      FORNOW: fail at the first data dependence that we encounter.  */
 
-  ok = vect_analyze_data_ref_dependences (loop_vinfo, NULL, &max_vf);
+  ok = vect_analyze_data_ref_dependences (loop_vinfo, NULL, &max_vf, &dummy);
   if (!ok
       || max_vf < min_vf)
     {
