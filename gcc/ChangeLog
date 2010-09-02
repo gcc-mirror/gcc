@@ -1,3 +1,13 @@
+2010-09-02  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/neon.md (UNSPEC_VCLE, UNSPEC_VCLT): New constants for
+	unspecs.
+	(vcond<mode>, vcondu<mode>): New expanders.
+	(neon_vceq<mode>, neon_vcge<mode>, neon_vcgt<mode>): Support
+	comparisons with zero.
+	(neon_vcle<mode>, neon_vclt<mode>): New patterns.
+	* config/arm/constraints.md (Dz): New constraint.
+
 2010-09-02  Anatoly Sokolov  <aesok@post.ru>
 
 	* target.def (class_likely_spilled_p): New hook.
