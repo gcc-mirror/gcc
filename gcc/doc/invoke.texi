@@ -789,7 +789,7 @@ See RS/6000 and PowerPC Options.
 -msdata=@var{opt}  -mvxworks  -G @var{num}  -pthread @gol
 -mrecip -mrecip=@var{opt} -mno-recip -mrecip-precision
 -mno-recip-precision @gol
--mveclibabi=@var{type}}
+-mveclibabi=@var{type} -mfriz -mno-friz}
 
 @emph{RX Options}
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
@@ -15931,6 +15931,15 @@ GCC will currently emit calls to @code{acosd2}, @code{acosf4},
 for power7.  Both @option{-ftree-vectorize} and
 @option{-funsafe-math-optimizations} have to be enabled.  The MASS
 libraries will have to be specified at link time.
+
+@item -mfriz
+@itemx -mno-friz
+@opindex mfriz
+Generate (do not generate) the @code{friz} instruction when the
+@option{-funsafe-math-optimizations} option is used to optimize
+rounding a floating point value to 64-bit integer and back to floating
+point.  The @code{friz} instruction does not return the same value if
+the floating point number is too large to fit in an integer.
 @end table
 
 @node RX Options

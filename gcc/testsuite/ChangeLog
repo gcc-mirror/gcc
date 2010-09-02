@@ -1,3 +1,9 @@
+2010-09-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/ppc-fpconv-10.c: New file to test generating
+	FRIZ/XSRIZ instruciton for (double)(long long)x.
+	* gcc.target/powerpc/ppc-fpconv-11.c: Ditto.
+
 2010-09-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/debug/dwarf2/nested-2.C: Allow for ! as comment delimiter.
