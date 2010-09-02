@@ -1,3 +1,16 @@
+2010-09-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.opt (-mfriz): New switch to control whether
+	to convert (double)(long) into a single FRIZ instruction or not
+	when -ffast-math is used.
+
+	* config/rs6000/vsx.md (VSX_DF): New iterator for DF/V2DF modes.
+	(vsx_float_fix_<mode>2): Optimize (double)(long) into X{S,V}RDPIZ
+	or FRIZ instruction if -ffast-math.
+	* config/rs6000/rs6000.md (friz): Ditto.
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document -mfriz.
+
 2010-09-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* opth-gen.awk (quote, comma): Remove unused variables.
