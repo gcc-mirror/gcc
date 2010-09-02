@@ -2401,7 +2401,7 @@ get_rgn_sched_max_insns_priority (void)
   return rgn_sched_info.sched_max_insns_priority;
 }
 
-/* Determine if PAT sets a CLASS_LIKELY_SPILLED_P register.  */
+/* Determine if PAT sets a TARGET_CLASS_LIKELY_SPILLED_P register.  */
 
 static bool
 sets_likely_spilled (rtx pat)
@@ -2418,8 +2418,8 @@ sets_likely_spilled_1 (rtx x, const_rtx pat, void *data)
 
   if (GET_CODE (pat) == SET
       && REG_P (x)
-      && REGNO (x) < FIRST_PSEUDO_REGISTER
-      && CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (REGNO (x))))
+      && HARD_REGISTER_P (x)
+      && targetm.class_likely_spilled_p (REGNO_REG_CLASS (REGNO (x))))
     *ret = true;
 }
 
@@ -2448,8 +2448,8 @@ add_branch_dependences (rtx head, rtx tail)
 
      COND_EXEC insns cannot be moved past a branch (see e.g. PR17808).
 
-     Insns setting CLASS_LIKELY_SPILLED_P registers (usually return values)
-     are not moved before reload because we can wind up with register
+     Insns setting TARGET_CLASS_LIKELY_SPILLED_P registers (usually return
+     values) are not moved before reload because we can wind up with register
      allocation failures.  */
 
   while (tail != head && DEBUG_INSN_P (tail))

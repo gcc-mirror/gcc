@@ -387,7 +387,7 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 	    gcc_assert (!nregs
 			|| forced_late_switch
 			|| short_block
-			|| !(CLASS_LIKELY_SPILLED_P
+			|| !(targetm.class_likely_spilled_p
 			     (REGNO_REG_CLASS (ret_start)))
 			|| (nregs
 			    != hard_regno_nregs[ret_start][GET_MODE (ret_reg)])

@@ -73,13 +73,13 @@ static int fixup_match_2 (rtx, rtx, rtx, rtx);
 /* Return nonzero if registers with CLASS1 and CLASS2 can be merged without
    causing too much register allocation problems.  */
 static int
-regclass_compatible_p (enum reg_class class0, enum reg_class class1)
+regclass_compatible_p (reg_class_t class0, reg_class_t class1)
 {
   return (class0 == class1
 	  || (reg_class_subset_p (class0, class1)
-	      && ! CLASS_LIKELY_SPILLED_P (class0))
+	      && ! targetm.class_likely_spilled_p (class0))
 	  || (reg_class_subset_p (class1, class0)
-	      && ! CLASS_LIKELY_SPILLED_P (class1)));
+	      && ! targetm.class_likely_spilled_p (class1)));
 }
 
 
@@ -1337,7 +1337,7 @@ find_matches (rtx insn, struct match *matchp)
 	  case 'j': case 'k': case 'l': case 'p': case 'q': case 't': case 'u':
 	  case 'v': case 'w': case 'x': case 'y': case 'z': case 'A': case 'B':
 	  case 'C': case 'D': case 'W': case 'Y': case 'Z':
-	    if (CLASS_LIKELY_SPILLED_P (REG_CLASS_FROM_CONSTRAINT ((unsigned char) c, p) ))
+	    if (targetm.class_likely_spilled_p (REG_CLASS_FROM_CONSTRAINT ((unsigned char) c, p)))
 	      likely_spilled[op_no] = 1;
 	    break;
 	  }
