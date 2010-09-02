@@ -80,7 +80,7 @@ along with GCC; see the file COPYING3.  If not see
        (2) has PREFETCH_MOD 64
        (3) has PREFETCH_MOD 4
        (4) has PREFETCH_MOD 1.  We do not set PREFETCH_BEFORE here, since
-           the cache line accessed by (4) is the same with probability only
+           the cache line accessed by (5) is the same with probability only
 	   7/32.
        (5) has PREFETCH_MOD 1 as well.
 
