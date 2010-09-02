@@ -1,3 +1,9 @@
+2010-09-02  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/44541
+	* resolve.c (resolve_symbol): Correct check for attributes of CLASS
+	variable.
+
 2010-09-02  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45489
