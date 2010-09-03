@@ -15,15 +15,16 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 //
+// { dg-require-debug-mode "" }
 // { dg-options "-std=gnu++0x" }
 // { dg-do run { xfail *-*-* } }
 
-#include <debug/insert_neg.h>
-#include "cont_traits.h"
+#include <unordered_map>
+#include <debug/checks.h>
 
 void test01()
 {
-  check2<cont_traits>();
+  __gnu_test::check_insert2<std::unordered_map<int, int> >();
 }
 
 int main()

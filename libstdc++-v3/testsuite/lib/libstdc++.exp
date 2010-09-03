@@ -947,21 +947,20 @@ proc check_v3_target_debug_mode { } {
 	set et_debug_mode 0
 
 	# Set up and compile a C++ test program that depends
-	# on debug mode working.
+	# on debug mode activated.
 	set src debug_mode[pid].cc
 	set exe debug_mode[pid].exe
 
 	set f [open $src "w"]
 	puts $f "#include <string>"
-	puts $f "using namespace std;"	
+	puts $f "#ifndef _GLIBCXX_DEBUG"
+	puts $f "#  error No debug mode"
+	puts $f "#endif"
 	puts $f "int main()"
 	puts $f "{ return 0; }"
 	close $f
 
-	set cxxflags_saved $cxxflags
-	set cxxflags "$cxxflags -Werror -O0 -D_GLIBCXX_DEBUG"
 	set lines [v3_target_compile $src $exe executable ""]
-	set cxxflags $cxxflags_saved
 	file delete $src
 
 	if [string match "" $lines] {

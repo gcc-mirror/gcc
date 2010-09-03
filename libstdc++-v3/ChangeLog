@@ -1,3 +1,170 @@
+2010-09-03  François Dumont <francois.cppdevs@free.fr>
+
+        * testsuite/lib/libstdc++.exp ([check_v3_target_debug_mode]): Fix so
+        that it really detects when debug mode is activated.
+        * testsuite/util/debug/construct_neg.h, insert_neg.h, assign_neg.h:
+        Remove, content moved...
+        * testsuite/util/debug/checks.h: ... here. Modify checks to take the
+	type of the container to test rather than an intermediate container
+        type traits helper.
+	* testsuite/23_containers/unordered_map/debug/insert1_neg.cc: Update to
+	use dg-require-debug-mode when necessary and use new check functions.
+	* testsuite/23_containers/unordered_map/debug/construct1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/debug/construct2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/debug/insert2_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/construct3_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/debug/insert3_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_map/debug/construct4_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/debug/insert4_neg.cc: Likewise.
+	* testsuite/23_containers/multimap/debug/insert1_neg.cc: Likewise.
+	* testsuite/23_containers/multimap/debug/construct1_neg.cc: Likewise.
+	* testsuite/23_containers/multimap/debug/construct2_neg.cc: Likewise.
+	* testsuite/23_containers/multimap/debug/insert2_neg.cc: Likewise.
+	* testsuite/23_containers/multimap/debug/construct3_neg.cc: Likewise.
+	* testsuite/23_containers/multimap/debug/insert3_neg.cc: Likewise.
+	* testsuite/23_containers/multimap/debug/construct4_neg.cc: Likewise.
+	* testsuite/23_containers/multimap/debug/insert4_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/insert1_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/construct1_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/construct2_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/insert2_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/construct3_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/insert3_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/construct4_neg.cc: Likewise.
+	* testsuite/23_containers/set/debug/insert4_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/insert1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/construct1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/construct2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/insert2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/construct3_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/insert3_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/construct4_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/insert4_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/debug/assign1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/construct1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/construct2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/assign2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/construct3_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/assign3_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/construct4_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/assign4_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/insert1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/insert2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/insert3_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/insert4_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/insert1_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/construct1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/debug/construct2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/debug/insert2_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/construct3_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/debug/insert3_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/debug/construct4_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/debug/insert4_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/assign1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/construct1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/construct2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/assign2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/construct3_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/assign3_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/construct4_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/assign4_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/insert1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/insert2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/insert3_neg.cc: Likewise.
+	* testsuite/23_containers/deque/debug/insert4_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/debug/insert1_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/debug/construct1_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/debug/construct2_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/debug/insert2_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/debug/construct3_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/debug/insert3_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/debug/construct4_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/debug/insert4_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/assign1_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/construct1_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/construct2_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/assign2_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/construct3_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/assign3_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/construct4_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/assign4_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/insert1_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/insert2_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/insert3_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/insert4_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/insert1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/construct1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/construct2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/insert2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/construct3_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/insert3_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/construct4_neg.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/insert4_neg.cc:
+	Likewise.
+	* testsuite/23_containers/map/debug/insert1_neg.cc: Likewise.
+	* testsuite/23_containers/map/debug/construct1_neg.cc: Likewise.
+	* testsuite/23_containers/map/debug/construct2_neg.cc: Likewise.
+	* testsuite/23_containers/map/debug/insert2_neg.cc: Likewise.
+	* testsuite/23_containers/map/debug/construct3_neg.cc: Likewise.
+	* testsuite/23_containers/map/debug/insert3_neg.cc: Likewise.
+	* testsuite/23_containers/map/debug/construct4_neg.cc: Likewise.
+	* testsuite/23_containers/map/debug/insert4_neg.cc: Likewise.
+
+	* testsuite/23_containers/unordered_map/debug/cont_traits.h: Remove.
+	* testsuite/23_containers/unordered_map/debug/debug_cont_traits.h:
+	Likewise.
+	* testsuite/23_containers/multimap/debug/cont_traits.h: Likewise.
+	* testsuite/23_containers/multimap/debug/debug_cont_traits.h: Likewise.
+	* testsuite/23_containers/set/debug/cont_traits.h: Likewise.
+	* testsuite/23_containers/set/debug/debug_cont_traits.h: Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/cont_traits.h:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/
+	debug_cont_traits.h: Likewise.
+	* testsuite/23_containers/vector/debug/cont_traits.h: Likewise.
+	* testsuite/23_containers/vector/debug/debug_cont_traits.h: Likewise.
+	* testsuite/23_containers/unordered_set/debug/cont_traits.h: Likewise.
+	* testsuite/23_containers/unordered_set/debug/debug_cont_traits.h:
+	Likewise.
+	* testsuite/23_containers/deque/debug/cont_traits.h: Likewise.
+	* testsuite/23_containers/deque/debug/debug_cont_traits.h: Likewise.
+	* testsuite/23_containers/multiset/debug/cont_traits.h: Likewise.
+	* testsuite/23_containers/multiset/debug/debug_cont_traits.h: Likewise.
+	* testsuite/23_containers/list/debug/cont_traits.h: Likewise.
+	* testsuite/23_containers/list/debug/debug_cont_traits.h: Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/cont_traits.h:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/debug/
+	debug_cont_traits.h: Likewise.
+	* testsuite/23_containers/map/debug/cont_traits.h: Likewise.
+	* testsuite/23_containers/map/debug/debug_cont_traits.h: Likewise.
+
+	* testsuite/21_strings/basic_string/element_access/char: Tidy.
+	* testsuite/21_strings/basic_string/element_access/wchar_t: Likewise.
+
 2010-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/40974

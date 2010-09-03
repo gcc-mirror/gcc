@@ -15,14 +15,15 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 //
+// { dg-require-debug-mode "" }
 // { dg-do run { xfail *-*-* } }
 
-#include <debug/assign_neg.h>
-#include "cont_traits.h"
+#include <deque>
+#include <debug/checks.h>
 
 void test01()
 {
-  check3<cont_traits>();
+  __gnu_test::check_assign3<std::deque<int> >();
 }
 
 int main()
