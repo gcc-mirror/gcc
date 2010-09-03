@@ -1,5 +1,11 @@
 2010-09-03  Jan Hubicka  <jh@suse.cz>
 
+	PR lto/44812
+	* lto-cgraph.c (intput_node, input_varpool_node): Set DECL_EXTERNAL
+	on functions/variables in other partition.
+
+2010-09-03  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.h (struct varpool_node): Add const_value_known.
 	(varpool_decide_const_value_known): Declare.
 	* tree-ssa-ccp.c (fold_const_aggregate_ref): Update initializer folding.
