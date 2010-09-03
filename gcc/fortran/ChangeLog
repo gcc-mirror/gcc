@@ -1,3 +1,12 @@
+2010-09-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/45159
+	* dependency.c (gfc_deb_compare_expr):  Compare equal for equal
+	arglists for pure user functions, or for those intrinsic
+	functions which are also pure.
+	* intrinsics.c (add_conv):  Mark conversion functions as pure.
+	(add_char_conversions):  Likewise.
+
 2010-09-03  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/34162

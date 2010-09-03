@@ -3060,6 +3060,7 @@ add_conv (bt from_type, int from_kind, bt to_type, int to_kind, int standard)
   sym->simplify.cc = gfc_convert_constant;
   sym->standard = standard;
   sym->elemental = 1;
+  sym->pure = 1;
   sym->conversion = 1;
   sym->ts = to;
   sym->id = GFC_ISYM_CONVERSION;
@@ -3210,6 +3211,7 @@ add_char_conversions (void)
 	char_conversions[n].simplify.cc = gfc_convert_char_constant;
 	char_conversions[n].standard = GFC_STD_F2003;
 	char_conversions[n].elemental = 1;
+	char_conversions[n].pure = 1;
 	char_conversions[n].conversion = 0;
 	char_conversions[n].ts = to;
 	char_conversions[n].id = GFC_ISYM_CONVERSION;

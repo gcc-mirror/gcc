@@ -353,39 +353,32 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
       return -2;
 
     case EXPR_FUNCTION:
-      /* We can only compare calls to the same intrinsic function.  */
-      if (e1->value.function.isym == 0 || e2->value.function.isym == 0
-	  || e1->value.function.isym != e2->value.function.isym)
+
+      /* PURE functions can be compared for argument equality.  */
+      if ((e1->value.function.esym && e2->value.function.esym
+	   && e1->value.function.esym == e2->value.function.esym
+	   && e1->value.function.esym->result->attr.pure)
+	  || (e1->value.function.isym && e2->value.function.isym
+	      && e1->value.function.isym == e2->value.function.isym
+	      && e1->value.function.isym->pure))
+	{
+	  args1 = e1->value.function.actual;
+	  args2 = e2->value.function.actual;
+
+	  /* Compare the argument lists for equality.  */
+	  while (args1 && args2)
+	    {
+	      if (gfc_dep_compare_expr (args1->expr, args2->expr) != 0)
+		return -2;
+	      args1 = args1->next;
+	      args2 = args2->next;
+	    }
+	  return (args1 || args2) ? -2 : 0;
+	}
+      else
 	return -2;
+      break;
 
-      args1 = e1->value.function.actual;
-      args2 = e2->value.function.actual;
-
-      /* We should list the "constant" intrinsic functions.  Those
-	 without side-effects that provide equal results given equal
-	 argument lists.  */
-      switch (e1->value.function.isym->id)
-	{
-
-	case GFC_ISYM_REAL:
-	case GFC_ISYM_LOGICAL:
-	case GFC_ISYM_DBLE:
-	  break;
-
-	default:
-	  return -2;
-	}
-
-      /* Compare the argument lists for equality.  */
-      while (args1 && args2)
-	{
-	  if (gfc_dep_compare_expr (args1->expr, args2->expr) != 0)
-	    return -2;
-	  args1 = args1->next;
-	  args2 = args2->next;
-	}
-      return (args1 || args2) ? -2 : 0;
-      
     default:
       return -2;
     }
