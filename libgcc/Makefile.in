@@ -385,9 +385,9 @@ ifneq ($(LIB2_SIDITI_CONV_FUNCS),)
 # functions are built with a wordsize of 4; the TImode functions are
 # built with the same labels, but a wordsize of 8.
 
-sifuncs = $(subst XX,si,$(swfloatfuncs))
-difuncs = $(subst XX,di,$(dwfloatfuncs))
-tifuncs = $(subst XX,ti,$(dwfloatfuncs))
+sifuncs := $(filter-out $(LIB2FUNCS_EXCLUDE),$(subst XX,si,$(swfloatfuncs)))
+difuncs := $(filter-out $(LIB2FUNCS_EXCLUDE),$(subst XX,di,$(dwfloatfuncs)))
+tifuncs := $(filter-out $(LIB2FUNCS_EXCLUDE),$(subst XX,ti,$(dwfloatfuncs)))
 
 iter-items := $(sifuncs) $(difuncs) $(tifuncs)
 iter-labels := $(sifuncs) $(difuncs) $(difuncs)

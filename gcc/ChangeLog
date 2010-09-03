@@ -1,3 +1,11 @@
+2010-09-03  Uros Bizjak  <ubizjak@gmail.com>
+	    Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR target/45476
+	* config/i386/t-darwin (LIB2FUNCS_EXCLUDE): New.
+	* config/i386/darwin.h (LIBGCC2_HAS_TF_MODE,
+	LIBGCC2_TF_CEXT, TF_SIZE): New defines.
+
 2010-09-03  Richard Guenther  <rguenther@suse.de>
 
 	* lto-streamer-out.c (output_function): Output function
@@ -29,13 +37,13 @@
 	initializer folding.
 	* ipa.c (ipa_discover_readonly_nonaddressable_var,
 	function_and_variable_visibility): Compute const_value_known.
-	* gimple-fold.c (get_symbol_constant_value): Use varpool for initializer
-	folding.
+	* gimple-fold.c (get_symbol_constant_value): Use varpool for
+	initializer folding.
 	* varpool.c (varpool_decide_const_value_known): New function.
 
 2010-09-03  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386.md: Remove empty prepartion statements
+	* config/i386/i386.md: Remove empty preparation statements
 	from splitters.
 
 2010-09-03  Jan Hubicka  <jh@suse.cz>

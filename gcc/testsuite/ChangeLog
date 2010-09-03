@@ -1,3 +1,9 @@
+2010-09-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/45476
+	* gcc.target/i386/float128-1.c: Enable for all x86 targets.
+	* gcc.target/i386/float128-2.c: Ditto.
+
 2010-09-03  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/34162

@@ -1,3 +1,10 @@
+2010-09-03  Uros Bizjak  <ubizjak@gmail.com>
+	    Iain Sandoe  <iains@gcc.gnu.org>
+
+	PR target/45476
+	* Makefile.in (sifuncs, difuncs, tifuncs): Filter out
+	LIB2FUNCS_EXCLUDE functions.
+
 2010-09-03  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* configure.ac: Use the GCC_AC_ENABLE_DECIMAL_FLOAT macro.
