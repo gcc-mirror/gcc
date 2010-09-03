@@ -989,6 +989,13 @@ push_state (gfc_state_data *p, gfc_compile_state new_state, gfc_symbol *sym)
   p->sym = sym;
   p->head = p->tail = NULL;
   p->do_variable = NULL;
+
+  /* If this the state of a construct like BLOCK, DO or IF, the corresponding
+     construct statement was accepted right before pushing the state.  Thus,
+     the construct's gfc_code is available as tail of the parent state.  */
+  gcc_assert (gfc_state_stack);
+  p->construct = gfc_state_stack->tail;
+
   gfc_state_stack = p;
 }
 

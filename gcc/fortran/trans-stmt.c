@@ -750,10 +750,21 @@ gfc_trans_if_1 (gfc_code * code)
 tree
 gfc_trans_if (gfc_code * code)
 {
-  /* Ignore the top EXEC_IF, it only announces an IF construct. The
-     actual code we must translate is in code->block.  */
+  stmtblock_t body;
+  tree exit_label;
 
-  return gfc_trans_if_1 (code->block);
+  /* Create exit label so it is available for trans'ing the body code.  */
+  exit_label = gfc_build_label_decl (NULL_TREE);
+  code->exit_label = exit_label;
+
+  /* Translate the actual code in code->block.  */
+  gfc_init_block (&body);
+  gfc_add_expr_to_block (&body, gfc_trans_if_1 (code->block));
+
+  /* Add exit label.  */
+  gfc_add_expr_to_block (&body, build1_v (LABEL_EXPR, exit_label));
+
+  return gfc_finish_block (&body);
 }
 
 
@@ -860,22 +871,32 @@ gfc_trans_block_construct (gfc_code* code)
 {
   gfc_namespace* ns;
   gfc_symbol* sym;
-  gfc_wrapped_block body;
+  gfc_wrapped_block block;
+  tree exit_label;
+  stmtblock_t body;
 
   ns = code->ext.block.ns;
   gcc_assert (ns);
   sym = ns->proc_name;
   gcc_assert (sym);
 
+  /* Process local variables.  */
   gcc_assert (!sym->tlink);
   sym->tlink = sym;
-
   gfc_process_block_locals (ns, code->ext.block.assoc);
 
-  gfc_start_wrapped_block (&body, gfc_trans_code (ns->code));
-  gfc_trans_deferred_vars (sym, &body);
+  /* Generate code including exit-label.  */
+  gfc_init_block (&body);
+  exit_label = gfc_build_label_decl (NULL_TREE);
+  code->exit_label = exit_label;
+  gfc_add_expr_to_block (&body, gfc_trans_code (ns->code));
+  gfc_add_expr_to_block (&body, build1_v (LABEL_EXPR, exit_label));
 
-  return gfc_finish_wrapped_block (&body);
+  /* Finish everything.  */
+  gfc_start_wrapped_block (&block, gfc_finish_block (&body));
+  gfc_trans_deferred_vars (sym, &block);
+
+  return gfc_finish_wrapped_block (&block);
 }
 
 
@@ -938,8 +959,8 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
   exit_label = gfc_build_label_decl (NULL_TREE);
 
   /* Put the labels where they can be found later. See gfc_trans_do().  */
-  code->block->cycle_label = cycle_label;
-  code->block->exit_label = exit_label;
+  code->cycle_label = cycle_label;
+  code->exit_label = exit_label;
 
   /* Loop body.  */
   gfc_start_block (&body);
@@ -1121,6 +1142,10 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
   exit_label = gfc_build_label_decl (NULL_TREE);
   TREE_USED (exit_label) = 1;
 
+  /* Put these labels where they can be found later.  */
+  code->cycle_label = cycle_label;
+  code->exit_label = exit_label;
+
   /* Initialize the DO variable: dovar = from.  */
   gfc_add_modify (&block, dovar, from);
 
@@ -1221,11 +1246,6 @@ gfc_trans_do (gfc_code * code, tree exit_cond)
 
   /* Loop body.  */
   gfc_start_block (&body);
-
-  /* Put these labels where they can be found later.  */
-
-  code->block->cycle_label = cycle_label;
-  code->block->exit_label = exit_label;
 
   /* Main loop body.  */
   tmp = gfc_trans_code_cond (code->block->next, exit_cond);
@@ -1332,8 +1352,8 @@ gfc_trans_do_while (gfc_code * code)
   exit_label = gfc_build_label_decl (NULL_TREE);
 
   /* Put the labels where they can be found later. See gfc_trans_do().  */
-  code->block->cycle_label = cycle_label;
-  code->block->exit_label = exit_label;
+  code->cycle_label = cycle_label;
+  code->exit_label = exit_label;
 
   /* Create a GIMPLE version of the exit condition.  */
   gfc_init_se (&cond, NULL);
@@ -1973,22 +1993,47 @@ gfc_trans_character_select (gfc_code *code)
 tree
 gfc_trans_select (gfc_code * code)
 {
+  stmtblock_t block;
+  tree body;
+  tree exit_label;
+
   gcc_assert (code && code->expr1);
+  gfc_init_block (&block);
+
+  /* Build the exit label and hang it in.  */
+  exit_label = gfc_build_label_decl (NULL_TREE);
+  code->exit_label = exit_label;
 
   /* Empty SELECT constructs are legal.  */
   if (code->block == NULL)
-    return build_empty_stmt (input_location);
+    body = build_empty_stmt (input_location);
 
   /* Select the correct translation function.  */
-  switch (code->expr1->ts.type)
-    {
-    case BT_LOGICAL:	return gfc_trans_logical_select (code);
-    case BT_INTEGER:	return gfc_trans_integer_select (code);
-    case BT_CHARACTER:	return gfc_trans_character_select (code);
-    default:
-      gfc_internal_error ("gfc_trans_select(): Bad type for case expr.");
-      /* Not reached */
-    }
+  else
+    switch (code->expr1->ts.type)
+      {
+      case BT_LOGICAL:
+	body = gfc_trans_logical_select (code);
+	break;
+
+      case BT_INTEGER:
+	body = gfc_trans_integer_select (code);
+	break;
+
+      case BT_CHARACTER:
+	body = gfc_trans_character_select (code);
+	break;
+
+      default:
+	gfc_internal_error ("gfc_trans_select(): Bad type for case expr.");
+	/* Not reached */
+      }
+
+  /* Build everything together.  */
+  gfc_add_expr_to_block (&block, body);
+  gfc_add_expr_to_block (&block, build1_v (LABEL_EXPR, exit_label));
+
+  return gfc_finish_block (&block);
 }
 
 
@@ -4271,7 +4316,9 @@ gfc_trans_cycle (gfc_code * code)
 {
   tree cycle_label;
 
-  cycle_label = code->ext.whichloop->cycle_label;
+  cycle_label = code->ext.which_construct->cycle_label;
+  gcc_assert (cycle_label);
+
   TREE_USED (cycle_label) = 1;
   return build1_v (GOTO_EXPR, cycle_label);
 }
@@ -4286,7 +4333,9 @@ gfc_trans_exit (gfc_code * code)
 {
   tree exit_label;
 
-  exit_label = code->ext.whichloop->exit_label;
+  exit_label = code->ext.which_construct->exit_label;
+  gcc_assert (exit_label);
+
   TREE_USED (exit_label) = 1;
   return build1_v (GOTO_EXPR, exit_label);
 }

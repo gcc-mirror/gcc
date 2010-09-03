@@ -1,3 +1,11 @@
+2010-09-03  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/44602
+	* gfortran.dg/exit_2.f08; Adapt error messages.
+	* gfortran.dg/exit_3.f08: New test.
+	* gfortran.dg/exit_4.f08: New test.
+	* gfortran.dg/exit_5.f03: New test.
+
 2010-09-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gfortran.dg/ishft_4.f90: New test.

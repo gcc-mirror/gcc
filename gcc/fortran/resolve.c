@@ -7688,7 +7688,10 @@ resolve_select_type (gfc_code *code)
     return;
 
   /* Transform SELECT TYPE statement to BLOCK and associate selector to
-     target if present.  */
+     target if present.  If there are any EXIT statements referring to the
+     SELECT TYPE construct, this is no problem because the gfc_code
+     reference stays the same and EXIT is equally possible from the BLOCK
+     it is changed to.  */
   code->op = EXEC_BLOCK;
   if (code->expr2)
     {

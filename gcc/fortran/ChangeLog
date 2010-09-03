@@ -1,3 +1,20 @@
+2010-09-03  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/44602
+	* gfortran.h (struct gfc_code): Renamed `whichloop' to
+	`which_construct' as this is no longer restricted to loops.
+	* parse.h (struct gfc_state_data): New field `construct'.
+	* match.c (match_exit_cycle): Handle EXIT from non-loops.
+	* parse.c (push_state): Set `construct' field.
+	* resolve.c (resolve_select_type): Extend comment.
+	* trans-stmt.c (gfc_trans_if): Add exit label.
+	(gfc_trans_block_construct), (gfc_trans_select): Ditto.
+	(gfc_trans_simple_do): Store exit/cycle labels on the gfc_code itself.
+	(gfc_trans_do), (gfc_trans_do_while): Ditto.
+	(gfc_trans_exit): Use new name `which_construct' instead of `whichloop'.
+	(gfc_trans_cycle): Ditto.
+	(gfc_trans_if_1): Use fold_build3_loc instead of fold_build3.
+
 2010-09-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* trans-intrinsic.c (gfc_conv_intrinsic_aint): Fix whitespace.
