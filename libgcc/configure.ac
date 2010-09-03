@@ -5,6 +5,7 @@ sinclude(../config/tls.m4)
 sinclude(../config/acx.m4)
 sinclude(../config/no-executables.m4)
 sinclude(../config/override.m4)
+sinclude(../config/dfp.m4)
 
 AC_PREREQ(2.64)
 AC_INIT([GNU C Runtime Library], 1.0,,[libgcc])
@@ -125,41 +126,7 @@ AC_CACHE_CHECK([whether decimal floating point is supported], [libgcc_cv_dfp],
 decimal_float=$libgcc_cv_dfp
 AC_SUBST(decimal_float)
 
-AC_ARG_ENABLE(decimal-float,
-[  --enable-decimal-float={no,yes,bid,dpd}
-			enable decimal float extension to C.  Selecting 'bid'
-			or 'dpd' choses which decimal floating point format
-			to use],
-[
-  case $enable_decimal_float in
-    yes | no | bid | dpd) ;;
-    *) AC_MSG_ERROR(['$enable_decimal_float' is an invalid value for --enable-decimal-float.
-Valid choices are 'yes', 'bid', 'dpd', and 'no'.]) ;;
-  esac
-],
-[
-  case $host in
-    powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux*)
-      enable_decimal_float=yes
-      ;;
-    *)
-      enable_decimal_float=no
-      ;;
-  esac
-])
-
-# x86's use BID format instead of DPD
-if test x$enable_decimal_float = xyes; then
-  case $host in
-    i?86*-*-linux* | x86_64*-*-linux*)
-      enable_decimal_float=bid
-      ;;
-    *)
-      enable_decimal_float=dpd
-      ;;
-  esac
-fi
-AC_SUBST(enable_decimal_float)
+GCC_AC_ENABLE_DECIMAL_FLOAT([$host])
 
 # Check for fixed-point support.
 AC_CACHE_CHECK([whether fixed-point is supported], [libgcc_cv_fixed_point],

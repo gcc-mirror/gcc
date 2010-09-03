@@ -1,3 +1,10 @@
+2010-09-03  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* configure.ac: Use the GCC_AC_ENABLE_DECIMAL_FLOAT macro.
+	* Makefile.in: Add aclocal.m4 dependency to dfp.m4.
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.
+
 2010-08-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
