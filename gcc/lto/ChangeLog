@@ -1,3 +1,7 @@
+2010-09-03  Richard Guenther  <rguenther@suse.de>
+
+	* lto-elf.c (validate_file): Always error if validation fails.
+
 2010-08-20  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (lto_1_to_1_map): Be prepared for node to have no file data.
