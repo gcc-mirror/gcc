@@ -1,3 +1,8 @@
+2010-09-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR tree-optimization/45506
+	* gcc.dg/pr45506.c: New.
+
 2010-09-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/45476
