@@ -1,3 +1,11 @@
+2010-09-02  Richard Henderson  <rth@redhat.com>
+
+	* configure.ac (gcc_cv_as_cfi_advance_working): Use objdump
+	instead of readelf in the test.
+	(gcc_cv_as_cfi_sections_directive): Check for correct relocation
+	in the .debug_frame section for coff targets.
+	* configure: Rebuild.
+
 2010-09-02  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/m32c/m32c.h (CLASS_LIKELY_SPILLED_P): Remove.
