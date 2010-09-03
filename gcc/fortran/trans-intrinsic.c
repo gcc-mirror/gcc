@@ -1306,8 +1306,10 @@ gfc_conv_intrinsic_sign (gfc_se * se, gfc_expr * expr)
 	  zero = build_real_from_int_cst (TREE_TYPE (args[1]), integer_zero_node);
 	  cond = fold_build2 (EQ_EXPR, boolean_type_node, args[1], zero);
 	  se->expr = fold_build3 (COND_EXPR, TREE_TYPE (args[0]), cond,
-				  build_call_expr (abs, 1, args[0]),
-				  build_call_expr (tmp, 2, args[0], args[1]));
+				  build_call_expr_loc (input_location, abs, 1,
+						       args[0]),
+				  build_call_expr_loc (input_location, tmp, 2,
+						       args[0], args[1]));
 	}
       else
         se->expr = build_call_expr_loc (input_location, tmp, 2,
@@ -3412,7 +3414,8 @@ gfc_conv_intrinsic_leadz (gfc_se * se, gfc_expr * expr)
 
   /* Compute LEADZ for the case i .ne. 0.  */
   s = TYPE_PRECISION (arg_type) - argsize;
-  tmp = fold_convert (result_type, build_call_expr (func, 1, arg));
+  tmp = fold_convert (result_type, build_call_expr_loc (input_location, func,
+							1, arg));
   leadz = fold_build2 (MINUS_EXPR, result_type,
 		       tmp, build_int_cst (result_type, s));
 

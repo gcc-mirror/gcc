@@ -1,3 +1,37 @@
+2010-09-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45186
+	* trans-intrinsic.c (gfc_conv_intrinsic_sign,
+	gfc_conv_intrinsic_leadz): Use build_call_expr_loc instead
+	of build_call_expr.
+	* trans-expr.c (gfc_conv_expr_present, gfc_conv_missing_dummy,
+	gfc_conv_string_length, gfc_conv_substring,
+	gfc_conv_component_ref, gfc_conv_unary_op, gfc_conv_powi,
+	gfc_conv_cst_int_power, gfc_conv_string_tmp, gfc_conv_concat_op,
+	gfc_conv_expr_op, gfc_build_compare_string,
+	gfc_set_interface_mapping_bounds, gfc_conv_subref_array_arg,
+	gfc_conv_derived_to_class, conv_isocbinding_procedure,
+	gfc_conv_procedure_call, fill_with_spaces,
+	gfc_trans_string_copy, gfc_trans_alloc_subarray_assign,
+	gfc_trans_structure_assign, gfc_trans_pointer_assignment,
+	gfc_trans_scalar_assign, gfc_trans_zero_assign,
+	gfc_trans_array_copy, gfc_trans_array_constructor_copy): Change
+	fold_build[0-9] to fold_build[0-9]_loc.
+	* trans-io.c (set_parameter_const, set_parameter_value,
+	set_parameter_ref, gfc_convert_array_to_string, set_string,
+	set_internal_unit, io_result, set_error_locus,
+	nml_get_addr_expr, build_dt): Ditto.
+	* trans-openmp.c (gfc_omp_clause_default_ctor,
+	gfc_omp_clause_copy_ctor, gfc_omp_clause_assign_op,
+	gfc_trans_omp_array_reduction, gfc_trans_omp_atomic,
+	gfc_trans_omp_do): Ditto.
+	* trans.c (gfc_add_modify, gfc_build_addr_expr,
+	gfc_build_array_ref, gfc_trans_runtime_error_vararg,
+	gfc_trans_runtime_check, gfc_call_malloc,
+	gfc_allocate_with_status, gfc_allocate_array_with_status,
+	gfc_call_free, gfc_deallocate_with_status,
+	gfc_call_realloc): Ditto.
+
 2010-09-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45159
