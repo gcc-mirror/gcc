@@ -1,3 +1,12 @@
+2010-09-03  Michael Matz  <matz@suse.de>
+
+	PR middle-end/45415
+	* tree-sra.c (sra_modify_assign): If we modify the statement,
+	say so.
+
+	* tree-ssa.c (verify_ssa): Check number of operands and links
+	per statement to agree.
+
 2010-09-03  Uros Bizjak  <ubizjak@gmail.com>
 	    Iain Sandoe  <iains@gcc.gnu.org>
 

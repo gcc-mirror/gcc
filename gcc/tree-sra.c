@@ -2783,6 +2783,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 				    true, GSI_SAME_STMT);
   if (gimple_assign_rhs1 (*stmt) != rhs)
     {
+      modify_this_stmt = true;
       gimple_assign_set_rhs_from_tree (&orig_gsi, rhs);
       gcc_assert (*stmt == gsi_stmt (orig_gsi));
     }
