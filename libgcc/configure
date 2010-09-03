@@ -3634,6 +3634,7 @@ $as_echo "$libgcc_cv_dfp" >&6; }
 decimal_float=$libgcc_cv_dfp
 
 
+
 # Check whether --enable-decimal-float was given.
 if test "${enable_decimal_float+set}" = set; then :
   enableval=$enable_decimal_float;
@@ -3646,10 +3647,12 @@ Valid choices are 'yes', 'bid', 'dpd', and 'no'." "$LINENO" 5 ;;
 else
 
   case $host in
-    powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux*)
+    powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux* | s390*-*-linux*)
       enable_decimal_float=yes
       ;;
     *)
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: decimal float is not supported for this target" >&5
+$as_echo "$as_me: WARNING: decimal float is not supported for this target" >&2;}
       enable_decimal_float=no
       ;;
   esac
@@ -3658,16 +3661,25 @@ fi
 
 
 # x86's use BID format instead of DPD
-if test x$enable_decimal_float = xyes; then
-  case $host in
-    i?86*-*-linux* | x86_64*-*-linux*)
-      enable_decimal_float=bid
-      ;;
-    *)
-      enable_decimal_float=dpd
-      ;;
-  esac
-fi
+case x$enable_decimal_float in
+  xyes)
+    case $host in
+      i?86*-*-* | x86_64*-*-*)
+	enable_decimal_float=bid
+	;;
+      *)
+	enable_decimal_float=dpd
+	;;
+    esac
+    ;;
+  xno)
+    # ENABLE_DECIMAL_FLOAT is set to 0. But we have to have proper
+    # dependency on libdecnumber.
+    enable_decimal_float=dpd
+    ;;
+esac
+
+
 
 
 # Check for fixed-point support.
