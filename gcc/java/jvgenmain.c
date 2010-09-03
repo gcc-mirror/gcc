@@ -78,7 +78,9 @@ main (int argc, char **argv)
     {
       if (! strncmp (argv[i], "-D", 2))
 	{
-	  /* Handled later.  */
+	  /* Handled later.  Check "-D XXX=YYY".  */
+	  if (argv[i][2] == '\0')
+	    i++;
 	}
       else
 	break;

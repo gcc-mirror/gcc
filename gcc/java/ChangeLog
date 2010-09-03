@@ -1,3 +1,8 @@
+2010-09-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR java/45504
+	* jvgenmain.c (main): Check "-D XXX=YYY".
+
 2010-09-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* jvspec.c (jvgenmain_spec): Don't handle -fnew-verifier.
