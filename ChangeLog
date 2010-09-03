@@ -1,10 +1,15 @@
+2010-09-03  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	* configure.ac: Enable LTO by default on Darwin.
+	* configure: Regenerate.
+
 2010-09-02  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
-        * MAINTAINERS (Write After Approval): Add myself.
+	* MAINTAINERS (Write After Approval): Add myself.
 
 2010-09-01  Ian Bolton  <ian.bolton@arm.com>
 
-        * MAINTAINERS (Write After Approval): Add myself.
+	* MAINTAINERS (Write After Approval): Add myself.
 
 2010-08-25  Danny Smith  <dannysmith@users.sourceforge.net>
 

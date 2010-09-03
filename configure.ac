@@ -1787,8 +1787,11 @@ to specify its location.])
   AC_SUBST(libelflibs)
   AC_SUBST(libelfinc)
 fi],[if test x"$default_enable_lto" = x"yes" ; then
-    # On non-ELF platforms, LTO must be explicitly enabled.
-    enable_lto=no
+    case $target in
+      *-apple-darwin*) ;;
+      # On other non-ELF platforms, LTO must be explicitly enabled.
+      *) enable_lto=no ;;
+    esac
   else
   # Apart from ELF platforms, only Windows supports LTO so far.  It
   # would also be nice to check the binutils support, but we don't
@@ -1797,7 +1800,6 @@ fi],[if test x"$default_enable_lto" = x"yes" ; then
   # -flto it won't be needed until after installation anyway.
     case $target in
       *-cygwin*|*-mingw*) ;;
-      *-apple-darwin*) ;;
       *) if test x"$enable_lto" = x"yes"; then
 	AC_MSG_ERROR([LTO support is not enabled for this target.])
         fi
