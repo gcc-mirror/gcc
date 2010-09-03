@@ -1,3 +1,8 @@
+2010-09-03  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/45525
+	* gfortran.dg/dummy_procedure_1.f90: Add -std=f2003 and adapt error.
+
 2010-09-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45159
