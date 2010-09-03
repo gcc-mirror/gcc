@@ -1,3 +1,9 @@
+2010-09-03  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR testsuite/42843
+	* Makefile.in (PLUGINCC): Define in terms of @CC@ / @CXX@
+	(PLUGINCFLAGS): Define in terms of @CFLAGS@ / @CXXFLAGS@
+
 2010-09-03  Marcin Baczynski  <marbacz@gmail.com>
 
 	* dwarf2out.c (file scope): Remove #if0'd code.

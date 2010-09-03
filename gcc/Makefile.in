@@ -330,11 +330,14 @@ enable_lto = @enable_lto@
 LTO_BINARY_READER = @LTO_BINARY_READER@
 LTO_USE_LIBELF = @LTO_USE_LIBELF@
 
-# Compiler needed for plugin support
-PLUGINCC = $(COMPILER)
-
-# Flags needed for plugin support
-PLUGINCFLAGS = $(COMPILER_FLAGS)
+# Compiler and flags needed for plugin support
+ifneq ($(ENABLE_BUILD_WITH_CXX),yes)
+PLUGINCC = @CC@
+PLUGINCFLAGS = @CFLAGS@
+else
+PLUGINCC = @CXX@
+PLUGINCFLAGS = @CXXFLAGS@
+endif
 
 # Libs and linker options needed for plugin support
 PLUGINLIBS = @pluginlibs@
