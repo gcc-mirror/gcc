@@ -1,3 +1,7 @@
+2010-09-03  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/torture/pr44806.c: Add -std=c99 to access uint32_t.
+
 2010-09-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/x86_64/abi/avx/abi-avx.exp: Link with
