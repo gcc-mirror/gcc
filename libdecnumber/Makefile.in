@@ -98,6 +98,7 @@ aclocal_deps = \
 	$(srcdir)/../config/stdint.m4 \
 	$(srcdir)/../config/warnings.m4 \
 	$(srcdir)/../config/override.m4 \
+	$(srcdir)/../config/dfp.m4 \
 	$(srcdir)/configure.ac
 
 $(srcdir)/aclocal.m4: @MAINT@ $(aclocal_deps)
