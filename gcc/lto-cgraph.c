@@ -953,6 +953,11 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->lowered = bp_unpack_value (bp, 1);
   node->analyzed = tag == LTO_cgraph_analyzed_node;
   node->in_other_partition = bp_unpack_value (bp, 1);
+  if (node->in_other_partition)
+    {
+      DECL_EXTERNAL (node->decl) = 1;
+      TREE_STATIC (node->decl) = 0;
+    }
   node->alias = bp_unpack_value (bp, 1);
   node->finalized_by_frontend = bp_unpack_value (bp, 1);
   node->frequency = (enum node_frequency)bp_unpack_value (bp, 2);
@@ -1111,6 +1116,11 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   node->analyzed = node->finalized; 
   node->used_from_other_partition = bp_unpack_value (&bp, 1);
   node->in_other_partition = bp_unpack_value (&bp, 1);
+  if (node->in_other_partition)
+    {
+      DECL_EXTERNAL (node->decl) = 1;
+      TREE_STATIC (node->decl) = 0;
+    }
   aliases_p = bp_unpack_value (&bp, 1);
   if (node->finalized)
     varpool_mark_needed_node (node);
