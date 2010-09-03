@@ -1348,7 +1348,8 @@ fold_const_aggregate_ref (tree t)
 	case VAR_DECL:
 	  if (!TREE_READONLY (base)
 	      || TREE_CODE (TREE_TYPE (base)) != ARRAY_TYPE
-	      || !targetm.binds_local_p (base))
+	      || ((TREE_STATIC (base) || DECL_EXTERNAL (base))
+		  && !varpool_get_node (base)->const_value_known))
 	    return NULL_TREE;
 
 	  ctor = DECL_INITIAL (base);
@@ -1435,7 +1436,8 @@ fold_const_aggregate_ref (tree t)
 	case VAR_DECL:
 	  if (!TREE_READONLY (base)
 	      || TREE_CODE (TREE_TYPE (base)) != RECORD_TYPE
-	      || !targetm.binds_local_p (base))
+	      || ((TREE_STATIC (base) || DECL_EXTERNAL (base))
+		  && !varpool_get_node (base)->const_value_known))
 	    return NULL_TREE;
 
 	  ctor = DECL_INITIAL (base);
@@ -1509,7 +1511,8 @@ fold_const_aggregate_ref (tree t)
 
 	  if (!TREE_READONLY (base)
 	      || TREE_CODE (TREE_TYPE (base)) != ARRAY_TYPE
-	      || !targetm.binds_local_p (base))
+	      || ((TREE_STATIC (base) || DECL_EXTERNAL (base))
+		  && !varpool_get_node (base)->const_value_known))
 	    return NULL_TREE;
 
 	  ctor = DECL_INITIAL (base);

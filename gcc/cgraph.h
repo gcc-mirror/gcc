@@ -503,6 +503,8 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) varpool_node {
      During WPA output it is used to mark nodes that are present in
      multiple partitions.  */
   unsigned in_other_partition : 1;
+  /* True when variable is constant and its value is known.  */
+  unsigned int const_value_known : 1;
 };
 
 /* Every top level asm statement is put into a cgraph_asm_node.  */
@@ -726,6 +728,7 @@ void varpool_empty_needed_queue (void);
 bool varpool_extra_name_alias (tree, tree);
 const char * varpool_node_name (struct varpool_node *node);
 void varpool_reset_queue (void);
+bool varpool_decide_const_value_known (struct varpool_node *node);
 
 /* Walk all reachable static variables.  */
 #define FOR_EACH_STATIC_VARIABLE(node) \

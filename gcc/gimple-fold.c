@@ -38,9 +38,9 @@ along with GCC; see the file COPYING3.  If not see
 tree
 get_symbol_constant_value (tree sym)
 {
-  if (TREE_STATIC (sym)
-      && (TREE_READONLY (sym)
-	  || TREE_CODE (sym) == CONST_DECL))
+  if ((TREE_STATIC (sym) || DECL_EXTERNAL (sym))
+      && (TREE_CODE (sym) == CONST_DECL
+	  || varpool_get_node (sym)->const_value_known))
     {
       tree val = DECL_INITIAL (sym);
       if (val)
@@ -65,8 +65,6 @@ get_symbol_constant_value (tree sym)
 	 have zero as the initializer if they may not be
 	 overridden at link or run time.  */
       if (!val
-	  && !DECL_EXTERNAL (sym)
-	  && targetm.binds_local_p (sym)
           && (INTEGRAL_TYPE_P (TREE_TYPE (sym))
 	       || SCALAR_FLOAT_TYPE_P (TREE_TYPE (sym))))
 	return fold_convert (TREE_TYPE (sym), integer_zero_node);

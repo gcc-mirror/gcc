@@ -561,6 +561,7 @@ ipa_discover_readonly_nonaddressable_vars (void)
 	    if (dump_file)
 	      fprintf (dump_file, " %s (read-only)", varpool_node_name (vnode));
 	    TREE_READONLY (vnode->decl) = 1;
+	    vnode->const_value_known |= varpool_decide_const_value_known (vnode);
 	  }
       }
   if (dump_file)
@@ -767,6 +768,9 @@ function_and_variable_visibility (bool whole_program)
 	      || ! (ADDR_SPACE_GENERIC_P
 		    (TYPE_ADDR_SPACE (TREE_TYPE (vnode->decl))))))
 	DECL_COMMON (vnode->decl) = 0;
+     /* Even extern variables might have initializers known.
+	See, for example testsuite/g++.dg/opt/static3.C  */
+     vnode->const_value_known |= varpool_decide_const_value_known (vnode);
     }
   for (vnode = varpool_nodes_queue; vnode; vnode = vnode->next_needed)
     {
@@ -801,6 +805,7 @@ function_and_variable_visibility (bool whole_program)
 	  gcc_assert (in_lto_p || whole_program || !TREE_PUBLIC (vnode->decl));
 	  cgraph_make_decl_local (vnode->decl);
 	}
+     vnode->const_value_known |= varpool_decide_const_value_known (vnode);
      gcc_assert (TREE_STATIC (vnode->decl));
     }
   pointer_set_destroy (aliased_nodes);
