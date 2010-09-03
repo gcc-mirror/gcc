@@ -359,6 +359,37 @@ decide_is_variable_needed (struct varpool_node *node, tree decl)
   return true;
 }
 
+/* Return if NODE is constant and its initial value is known (so we can do
+   constant folding).  The decision depends on whole program decisions
+   and can not be recomputed at ltrans stage for variables from other
+   partitions.  For this reason the new value should be always combined
+   with the previous knowledge.  */
+
+bool
+varpool_decide_const_value_known (struct varpool_node *node)
+{
+  tree decl = node->decl;
+
+  gcc_assert (TREE_STATIC (decl) || DECL_EXTERNAL (decl));
+  gcc_assert (TREE_CODE (decl) == VAR_DECL);
+  if (!TREE_READONLY (decl))
+    return false;
+  /* Variables declared 'const' without an initializer
+     have zero as the initializer if they may not be
+     overridden at link or run time.  */
+  if (!DECL_INITIAL (decl)
+      && (DECL_EXTERNAL (decl)
+	  || DECL_REPLACEABLE_P (decl)))
+    return false;
+
+  /* Variables declared `const' with an initializer are considered
+     to not be overwritable with different initializer by default. 
+
+     ??? Previously we behaved so for scalar variables but not for array
+     accesses.  */
+  return true;
+}
+
 /* Mark DECL as finalized.  By finalizing the declaration, frontend instruct the
    middle end to output the variable to asm file, if needed or externally
    visible.  */

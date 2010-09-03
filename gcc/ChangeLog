@@ -1,3 +1,18 @@
+2010-09-03  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (struct varpool_node): Add const_value_known.
+	(varpool_decide_const_value_known): Declare.
+	* tree-ssa-ccp.c (fold_const_aggregate_ref): Update initializer folding.
+	* lto-cgraph.c (lto_output_varpool_node): Store const_value_known.
+	(input_varpool_node): Restore const_value_known.
+	* tree-ssa-loop-ivcanon (constant_after_peeling): Check varpool for
+	initializer folding.
+	* ipa.c (ipa_discover_readonly_nonaddressable_var,
+	function_and_variable_visibility): Compute const_value_known.
+	* gimple-fold.c (get_symbol_constant_value): Use varpool for initializer
+	folding.
+	* varpool.c (varpool_decide_const_value_known): New function.
+
 2010-09-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md: Remove empty prepartion statements
