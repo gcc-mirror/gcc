@@ -1,3 +1,9 @@
+2010-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/45500
+	* dwarf2out.c (rtl_for_decl_init): Give up for all generic vectors,
+	not just generic vectors with BLKmode.
+
 2010-09-02  Ian Bolton  <ian.bolton@arm.com>
 
 	Backport from mainline
