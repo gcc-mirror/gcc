@@ -16338,6 +16338,20 @@ void mips_function_profiler (FILE *file)
     fprintf (file, "\tmove\t%s,%s\n", reg_names[STATIC_CHAIN_REGNUM],
 	     reg_names[2]);
 }
+
+/* Implement TARGET_SHIFT_TRUNCATION_MASK.  We want to keep the default
+   behaviour of TARGET_SHIFT_TRUNCATION_MASK for non-vector modes even
+   when TARGET_LOONGSON_2EF is true.  */
+
+static unsigned HOST_WIDE_INT
+mips_shift_truncation_mask (enum machine_mode mode)
+{
+  if (TARGET_LOONGSON_2EF && VECTOR_MODE_P (mode))
+    return 0;
+
+  return GET_MODE_BITSIZE (mode) - 1;
+}
+
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -16545,6 +16559,9 @@ void mips_function_profiler (FILE *file)
 
 #undef TARGET_ASM_OUTPUT_SOURCE_FILENAME
 #define TARGET_ASM_OUTPUT_SOURCE_FILENAME mips_output_filename
+
+#undef TARGET_SHIFT_TRUNCATION_MASK
+#define TARGET_SHIFT_TRUNCATION_MASK mips_shift_truncation_mask
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

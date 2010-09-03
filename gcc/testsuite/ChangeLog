@@ -1,3 +1,7 @@
+2010-09-03  Mingjie Xing <mingjie.xing@gmail.com>
+
+	* gcc.target/mips/loongson-shift-count-truncated-1.c: New.
+
 2010-09-03  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/44602
