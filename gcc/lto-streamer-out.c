@@ -1917,6 +1917,10 @@ output_function (struct cgraph_node *node)
   bp_pack_value (&bp, fn->va_list_gpr_size, 8);
   lto_output_bitpack (&bp);
 
+  /* Output the function start and end loci.  */
+  lto_output_location (ob, fn->function_start_locus);
+  lto_output_location (ob, fn->function_end_locus);
+
   /* Output current IL state of the function.  */
   output_uleb128 (ob, fn->curr_properties);
 

@@ -1169,6 +1169,10 @@ input_function (tree fn_decl, struct data_in *data_in,
   fn->va_list_fpr_size = bp_unpack_value (&bp, 8);
   fn->va_list_gpr_size = bp_unpack_value (&bp, 8);
 
+  /* Input the function start and end loci.  */
+  fn->function_start_locus = lto_input_location (ib, data_in);
+  fn->function_end_locus = lto_input_location (ib, data_in);
+
   /* Input the current IL state of the function.  */
   fn->curr_properties = lto_input_uleb128 (ib);
 
