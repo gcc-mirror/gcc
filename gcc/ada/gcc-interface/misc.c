@@ -273,13 +273,24 @@ gnat_init_options (unsigned int decoded_options_count,
   for (i = 0; i < decoded_options_count; i++)
     {
       if (decoded_options[i].errors
-	  || decoded_options[i].opt_index == OPT_SPECIAL_unknown)
+	  || decoded_options[i].opt_index == OPT_SPECIAL_unknown
+	  || decoded_options[i].canonical_option_num_elements == 0)
 	continue;
-      gcc_assert (decoded_options[i].canonical_option_num_elements >= 1
-		  && decoded_options[i].canonical_option_num_elements <= 2);
-      save_argv[save_argc++] = decoded_options[i].canonical_option[0];
-      if (decoded_options[i].canonical_option_num_elements >= 2)
-	save_argv[save_argc++] = decoded_options[i].canonical_option[1];
+      if (decoded_options[i].opt_index == OPT_I)
+	{
+	  gcc_assert (decoded_options[i].canonical_option_num_elements == 2);
+	  save_argv[save_argc++]
+	    = concat (decoded_options[i].canonical_option[0],
+		      decoded_options[i].canonical_option[1], NULL);
+	}
+      else
+	{
+	  gcc_assert (decoded_options[i].canonical_option_num_elements >= 1
+		      && decoded_options[i].canonical_option_num_elements <= 2);
+	  save_argv[save_argc++] = decoded_options[i].canonical_option[0];
+	  if (decoded_options[i].canonical_option_num_elements >= 2)
+	    save_argv[save_argc++] = decoded_options[i].canonical_option[1];
+	}
     }
   save_argv[save_argc] = NULL;
 
