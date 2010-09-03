@@ -6649,6 +6649,7 @@ fi
 
 
 # Enable C extension for decimal float if target supports it.
+
 # Check whether --enable-decimal-float was given.
 if test "${enable_decimal_float+set}" = set; then :
   enableval=$enable_decimal_float;
@@ -6661,7 +6662,7 @@ Valid choices are 'yes', 'bid', 'dpd', and 'no'." "$LINENO" 5 ;;
 else
 
   case $target in
-    powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux*)
+    powerpc*-*-linux* | i?86*-*-linux* | x86_64*-*-linux* | s390*-*-linux*)
       enable_decimal_float=yes
       ;;
     *)
@@ -6674,18 +6675,11 @@ $as_echo "$as_me: WARNING: decimal float is not supported for this target" >&2;}
 fi
 
 
-dfp=`if test $enable_decimal_float != no; then echo 1; else echo 0; fi`
-
-cat >>confdefs.h <<_ACEOF
-#define ENABLE_DECIMAL_FLOAT $dfp
-_ACEOF
-
-
 # x86's use BID format instead of DPD
 case x$enable_decimal_float in
   xyes)
     case $target in
-      i?86*-*-linux* | x86_64*-*-linux*)
+      i?86*-*-* | x86_64*-*-*)
 	enable_decimal_float=bid
 	;;
       *)
@@ -6699,6 +6693,15 @@ case x$enable_decimal_float in
     enable_decimal_float=dpd
     ;;
 esac
+
+
+
+
+dfp=`if test $enable_decimal_float != no; then echo 1; else echo 0; fi`
+
+cat >>confdefs.h <<_ACEOF
+#define ENABLE_DECIMAL_FLOAT $dfp
+_ACEOF
 
 
 bid=`if test $enable_decimal_float = bid; then echo 1; else echo 0; fi`
@@ -17130,7 +17133,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17133 "configure"
+#line 17136 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17236,7 +17239,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17239 "configure"
+#line 17242 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

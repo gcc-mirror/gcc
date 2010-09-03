@@ -11,6 +11,7 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
+m4_include([../config/dfp.m4])
 m4_include([../config/override.m4])
 m4_include([../config/stdint.m4])
 m4_include([../config/warnings.m4])
