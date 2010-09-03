@@ -8119,13 +8119,7 @@ output_set_got (rtx dest, rtx label ATTRIBUTE_UNUSED)
       /* Ensure all queued register saves are flushed before the
 	 call.  */
       if (dwarf2out_do_frame ())
-	{
-	  rtx insn;
-	  start_sequence ();
-	  insn = emit_barrier ();
-	  end_sequence ();
-	  dwarf2out_frame_debug (insn, false);
-	}
+	dwarf2out_flush_queued_reg_saves ();
 #endif
       xops[2] = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
       xops[2] = gen_rtx_MEM (QImode, xops[2]);
