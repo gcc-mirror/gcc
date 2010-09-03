@@ -1,3 +1,20 @@
+2010-09-03  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* tree-data-ref.c (dr_may_alias_p): Replace !DR_IS_READ with
+	DR_IS_WRITE.
+	(compute_all_dependences): Same.
+	(create_rdg_edge_for_ddr): Same.
+	* tree-data-ref.h (DR_IS_WRITE): New.
+	(ddr_is_anti_dependent): Replace !DR_IS_READ with DR_IS_WRITE.
+	* tree-if-conv.c (write_memrefs_written_at_least_once): Same.
+	(write_memrefs_written_at_least_once): Same.
+	* tree-predcom.c (suitable_component_p): Same.
+	(determine_roots_comp): Same.
+	(execute_load_motion): Same.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence): Same.
+	(vect_enhance_data_refs_alignment): Same.
+	(vect_analyze_group_access): Same.
+
 2010-09-03  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR testsuite/42843

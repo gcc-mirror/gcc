@@ -1335,12 +1335,12 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b)
     return false;
 
   /* Query the alias oracle.  */
-  if (!DR_IS_READ (a) && !DR_IS_READ (b))
+  if (DR_IS_WRITE (a) && DR_IS_WRITE (b))
     {
       if (!refs_output_dependent_p (DR_REF (a), DR_REF (b)))
 	return false;
     }
-  else if (DR_IS_READ (a) && !DR_IS_READ (b))
+  else if (DR_IS_READ (a) && DR_IS_WRITE (b))
     {
       if (!refs_anti_dependent_p (DR_REF (a), DR_REF (b)))
 	return false;
@@ -1372,7 +1372,7 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b)
     decl_b = SSA_NAME_VAR (addr_b);
 
   if (TYPE_RESTRICT (type_a) && TYPE_RESTRICT (type_b)
-      && (!DR_IS_READ (a) || !DR_IS_READ (b))
+      && (DR_IS_WRITE (a) || DR_IS_WRITE (b))
       && decl_a && DECL_P (decl_a)
       && decl_b && DECL_P (decl_b)
       && decl_a != decl_b
@@ -4107,7 +4107,7 @@ compute_all_dependences (VEC (data_reference_p, heap) *datarefs,
 
   FOR_EACH_VEC_ELT (data_reference_p, datarefs, i, a)
     for (j = i + 1; VEC_iterate (data_reference_p, datarefs, j, b); j++)
-      if (!DR_IS_READ (a) || !DR_IS_READ (b) || compute_self_and_rr)
+      if (DR_IS_WRITE (a) || DR_IS_WRITE (b) || compute_self_and_rr)
 	{
 	  ddr = initialize_data_dependence_relation (a, b, loop_nest);
 	  VEC_safe_push (ddr_p, heap, *dependence_relations, ddr);
@@ -4772,11 +4772,11 @@ create_rdg_edge_for_ddr (struct graph *rdg, ddr_p ddr)
   /* Determines the type of the data dependence.  */
   if (DR_IS_READ (dra) && DR_IS_READ (drb))
     RDGE_TYPE (e) = input_dd;
-  else if (!DR_IS_READ (dra) && !DR_IS_READ (drb))
+  else if (DR_IS_WRITE (dra) && DR_IS_WRITE (drb))
     RDGE_TYPE (e) = output_dd;
-  else if (!DR_IS_READ (dra) && DR_IS_READ (drb))
+  else if (DR_IS_WRITE (dra) && DR_IS_READ (drb))
     RDGE_TYPE (e) = flow_dd;
-  else if (DR_IS_READ (dra) && !DR_IS_READ (drb))
+  else if (DR_IS_READ (dra) && DR_IS_WRITE (drb))
     RDGE_TYPE (e) = anti_dd;
 }
 

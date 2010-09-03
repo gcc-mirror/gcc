@@ -193,6 +193,7 @@ struct data_reference
 #define DR_ACCESS_FN(DR, I)        VEC_index (tree, DR_ACCESS_FNS (DR), I)
 #define DR_NUM_DIMENSIONS(DR)      VEC_length (tree, DR_ACCESS_FNS (DR))
 #define DR_IS_READ(DR)             (DR)->is_read
+#define DR_IS_WRITE(DR)            (!DR_IS_READ (DR))
 #define DR_BASE_ADDRESS(DR)        (DR)->innermost.base_address
 #define DR_OFFSET(DR)              (DR)->innermost.offset
 #define DR_INIT(DR)                (DR)->innermost.init
@@ -473,7 +474,7 @@ ddr_is_anti_dependent (ddr_p ddr)
 {
   return (DDR_ARE_DEPENDENT (ddr) == NULL_TREE
 	  && DR_IS_READ (DDR_A (ddr))
-	  && !DR_IS_READ (DDR_B (ddr))
+	  && DR_IS_WRITE (DDR_B (ddr))
 	  && !same_access_functions (ddr));
 }
 
