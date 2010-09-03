@@ -1,3 +1,11 @@
+2010-09-03  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/34162
+	* gfortran.dg/internal_dummy_1.f90: Add -std=f2003.
+	* gfortran.dg/internal_dummy_2.f08: New test.
+	* gfortran.dg/internal_dummy_3.f08: New test.
+	* gfortran.dg/internal_dummy_4.f08: New test.
+
 2010-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/45500

@@ -1,5 +1,11 @@
 2010-09-03  Daniel Kraft  <d@domob.eu>
 
+	PR fortran/34162
+	* resolve.c (resolve_actual_arglist): Allow internal procedure
+	as actual argument with Fortran 2008.
+
+2010-09-03  Daniel Kraft  <d@domob.eu>
+
 	PR fortran/44602
 	* gfortran.h (struct gfc_code): Renamed `whichloop' to
 	`which_construct' as this is no longer restricted to loops.

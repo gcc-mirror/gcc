@@ -1590,8 +1590,11 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	  if (sym->attr.contained && !sym->attr.use_assoc
 	      && sym->ns->proc_name->attr.flavor != FL_MODULE)
 	    {
-	      gfc_error ("Internal procedure '%s' is not allowed as an "
-			 "actual argument at %L", sym->name, &e->where);
+	      if (gfc_notify_std (GFC_STD_F2008,
+				  "Fortran 2008: Internal procedure '%s' is"
+				  " used as actual argument at %L",
+				  sym->name, &e->where) == FAILURE)
+		return FAILURE;
 	    }
 
 	  if (sym->attr.elemental && !sym->attr.intrinsic)
