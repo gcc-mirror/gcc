@@ -38,6 +38,13 @@ along with GCC; see the file COPYING3.  If not see
 # define EM_SPARC32PLUS 18
 #endif
 
+#ifndef ELFOSABI_NONE
+# define ELFOSABI_NONE 0
+#endif
+#ifndef ELFOSABI_LINUX
+# define ELFOSABI_LINUX 3
+#endif
+
 
 /* Handle opening elf files on hosts, such as Windows, that may use 
    text file handling that will break binary access.  */
@@ -496,7 +503,6 @@ validate_file (lto_elf_file *elf_file)
       error ("could not read ELF identification information: %s",
 	      elf_errmsg (0));
       return false;
-	     
     }
 
   if (!cached_file_attrs.initialized)
@@ -519,10 +525,31 @@ validate_file (lto_elf_file *elf_file)
       memcpy (cached_file_attrs.elf_ident, elf_ident,
 	      sizeof cached_file_attrs.elf_ident);
     }
+  else
+    {
+      char elf_ident_buf[EI_NIDENT];
 
-  if (memcmp (elf_ident, cached_file_attrs.elf_ident,
-	      sizeof cached_file_attrs.elf_ident))
-    return false;
+      memcpy (elf_ident_buf, elf_ident, sizeof elf_ident_buf);
+
+      if (elf_ident_buf[EI_OSABI] != cached_file_attrs.elf_ident[EI_OSABI])
+	{
+	  /* Allow mixing ELFOSABI_NONE with ELFOSABI_LINUX, with the result
+	     ELFOSABI_LINUX.  */
+	  if (elf_ident_buf[EI_OSABI] == ELFOSABI_NONE
+	      && cached_file_attrs.elf_ident[EI_OSABI] == ELFOSABI_LINUX)
+	    elf_ident_buf[EI_OSABI] = cached_file_attrs.elf_ident[EI_OSABI];
+	  else if (elf_ident_buf[EI_OSABI] == ELFOSABI_LINUX
+		   && cached_file_attrs.elf_ident[EI_OSABI] == ELFOSABI_NONE)
+	    cached_file_attrs.elf_ident[EI_OSABI] = elf_ident_buf[EI_OSABI];
+	}
+
+      if (memcmp (elf_ident_buf, cached_file_attrs.elf_ident,
+		  sizeof cached_file_attrs.elf_ident))
+	{
+	  error ("incompatible ELF identification");
+	  return false;
+	}
+    }
 
   /* Check that the input file is a relocatable object file with the correct
      architecture.  */
