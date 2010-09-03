@@ -1,3 +1,8 @@
+2010-09-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/45347
+	* include/ext/concurrence.h: Add #pragma GCC system_header.
+
 2010-09-03  François Dumont <francois.cppdevs@free.fr>
 
         * testsuite/lib/libstdc++.exp ([check_v3_target_debug_mode]): Fix so
