@@ -1,3 +1,8 @@
+2010-09-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/x86_64/abi/avx/abi-avx.exp: Link with
+	gcc.target/i386/clearcap.map if supported.
+
 2010-09-03  Michael Matz  <matz@suse.de>
 
 	PR middle-end/45415
