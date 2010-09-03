@@ -1,9 +1,16 @@
+2010-09-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md: Remove empty prepartion statements
+	from splitters.
+
 2010-09-03  Jan Hubicka  <jh@suse.cz>
 
-	* passes.c (rest_of_decl_compilation): Do not add local vars into varpol.
+	* passes.c (rest_of_decl_compilation): Do not add local vars into
+	varpool.
 	* varpool.c (varpool_get_node, varpool_node): Sanity check that only
 	static or extern vars are in varpool.
-	(varpool_finalize_decl): Sanity check that only static vars are finalized.
+	(varpool_finalize_decl): Sanity check that only static vars are
+	finalized.
 
 2010-09-03  Jakub Jelinek  <jakub@redhat.com>
 
@@ -32,8 +39,7 @@
 	(get_addr_base_and_unit_offset): Likewise.
 	* tree-eh.c (tree_could_trap_p): Likewise.
 	* tree-pretty-print.c (dump_generic_node): Likewise.
-	* tree-ssa-address.c (tree_mem_ref_addr): Simplify.  Handle
-	TMR_INDEX2.
+	* tree-ssa-address.c (tree_mem_ref_addr): Simplify.  Handle TMR_INDEX2.
 	(create_mem_ref_raw): Merge symbol and base.  Move 2ndary
 	base to index2.
 	(get_address_description): Reconstruct addres description
@@ -119,17 +125,16 @@
 	* targhooks.c (default_class_likely_spilled_p): New function.
 	* targhooks.h (default_class_likely_spilled_p): Declare.
 	* regs.h (CLASS_LIKELY_SPILLED_P): Remove.
-	* combine.c: (cant_combine_insn_p, likely_spilled_retval_p): Use
+	* combine.c (cant_combine_insn_p, likely_spilled_retval_p): Use
 	TARGET_CLASS_LIKELY_SPILLED_P target hook. Use HARD_REGISTER_P macro.
 	Use fixed_reg_set instead of fixed_regs.
 	* cse.c (hash_rtx_cb): Use TARGET_CLASS_LIKELY_SPILLED_P target hook.
 	* calls.c (avoid_likely_spilled_reg): Ditto.
-	* ira-conflicts.c: (ira_build_conflicts): Ditto.
+	* ira-conflicts.c (ira_build_conflicts): Ditto.
 	* ira.c (update_equiv_regs): Ditto.
 	* mode-switching.c (create_pre_exit): Ditto.
 	* regmove.c (find_matches): Ditto.
-	(regclass_compatible_p): Use TARGET_CLASS_LIKELY_SPILLED_P target
-	hook.
+	(regclass_compatible_p): Use TARGET_CLASS_LIKELY_SPILLED_P target hook.
 	* reload.c (SMALL_REGISTER_CLASS_P): Remove macro.
 	(small_register_class_p): New inline function.
 	(push_secondary_reload, find_reusable_reload, find_reloads): Use
@@ -276,17 +281,17 @@
 
 2010-09-01  Uros Bizjak  <ubizjak@gmail.com>
 
-        PR target/45476
-        * config/i386/cygming.h (LIBGCC2_HAS_TF_MODE,
+	PR target/45476
+	* config/i386/cygming.h (LIBGCC2_HAS_TF_MODE,
 	LIBGCC2_TF_CEXT, TF_SIZE): Move from ...
-        * config/i386/mingw32.h: ... here.
+	* config/i386/mingw32.h: ... here.
 
 2010-09-01  Andi Kleen	<ak@linux.intel.com>
 
 	PR lto/45475
 	* lto-streamer-in.c (lto_input_ts_target_option): Add.
 	(lto_input_tree_pointers): Call lto_input_ts_target_option.
-	* lto-streamer-out: (lto_output_ts_target_option): Add.
+	* lto-streamer-out (lto_output_ts_target_option): Add.
 	(lto_output_tree_pointers): Call lto_output_ts_target_option.
 
 2010-09-01  Kai Tietz  <kai.tietz@onevision.com>
@@ -2677,7 +2682,7 @@
 	* doc/tm.texi: Regenerate.
 	* targhooks.c (default_asm_output_addr_const_extra): New function.
 	* targhooks.h (default_asm_output_addr_const_extra): Declare.
-	* final.c: (output_addr_const): Use TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
+	* final.c (output_addr_const): Use TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
 	target hook.
 
 	* config/i386/i386.h (OUTPUT_ADDR_CONST_EXTRA): Remove.
