@@ -1,5 +1,12 @@
 2010-09-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	Backport from mainline:
+	2010-07-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/pr43058.c: Use dg-timeout-factor 4.
+
+2010-09-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* gcc.target/x86_64/abi/avx/abi-avx.exp: Link with
 	gcc.target/i386/clearcap.map if supported.
 
