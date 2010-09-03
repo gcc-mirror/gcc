@@ -17,12 +17,12 @@
 //
 // { dg-do run { xfail *-*-* } }
 
-#include <debug/construct_neg.h>
-#include "debug_cont_traits.h"
+#include <debug/vector>
+#include <debug/checks.h>
 
 void test01()
 {
-  debug_check1<cont_traits>();
+  __gnu_test::check_construct1<__gnu_debug::vector<int> >();
 }
 
 int main()

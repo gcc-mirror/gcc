@@ -17,12 +17,12 @@
 //
 // { dg-do run { xfail *-*-* } }
 
-#include <debug/assign_neg.h>
-#include "debug_cont_traits.h"
+#include <debug/deque>
+#include <debug/checks.h>
 
 void test01()
 {
-  debug_check1<cont_traits>();
+  __gnu_test::check_assign1<__gnu_debug::deque<int> >();
 }
 
 int main()

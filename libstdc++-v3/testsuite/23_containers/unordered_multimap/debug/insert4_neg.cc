@@ -18,12 +18,12 @@
 // { dg-options "-std=gnu++0x" }
 // { dg-do run { xfail *-*-* } }
 
-#include <debug/insert_neg.h>
-#include "debug_cont_traits.h"
+#include <debug/unordered_map>
+#include <debug/checks.h>
 
 void test01()
 {
-  debug_check1<cont_traits>();
+  __gnu_test::check_insert1<__gnu_debug::unordered_multimap<int, int> >();
 }
 
 int main()
