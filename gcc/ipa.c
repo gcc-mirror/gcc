@@ -1425,9 +1425,10 @@ record_cdtor_fn (struct cgraph_node *node)
    they are destructors.  */
 
 static void
-build_cdtor (bool ctor_p, tree *cdtors, size_t len)
+build_cdtor (bool ctor_p, VEC (tree, heap) *cdtors)
 {
   size_t i,j;
+  size_t len = VEC_length (tree, cdtors);
 
   i = 0;
   while (i < len)
@@ -1442,7 +1443,7 @@ build_cdtor (bool ctor_p, tree *cdtors, size_t len)
       do
 	{
 	  priority_type p;
-	  fn = cdtors[i];
+	  fn = VEC_index (tree, cdtors, j);
 	  p = ctor_p ? DECL_INIT_PRIORITY (fn) : DECL_FINI_PRIORITY (fn);
 	  if (j == i)
 	    priority = p;
@@ -1452,7 +1453,7 @@ build_cdtor (bool ctor_p, tree *cdtors, size_t len)
 	}
       while (j < len);
 
-      /* When there is only once constructor and target supports them, do nothing.  */
+      /* When there is only one cdtor and target supports them, do nothing.  */
       if (j == i + 1
 	  && targetm.have_ctors_dtors)
 	{
@@ -1461,14 +1462,10 @@ build_cdtor (bool ctor_p, tree *cdtors, size_t len)
 	}
       /* Find the next batch of constructors/destructors with the same
 	 initialization priority.  */
-      do
+      for (;i < j; i++)
 	{
-	  priority_type p;
 	  tree call;
-	  fn = cdtors[i];
-	  p = ctor_p ? DECL_INIT_PRIORITY (fn) : DECL_FINI_PRIORITY (fn);
-	  if (p != priority)
-	    break;
+	  fn = VEC_index (tree, cdtors, i);
 	  call = build_call_expr (fn, 0);
 	  if (ctor_p)
 	    DECL_STATIC_CONSTRUCTOR (fn) = 0;
@@ -1479,7 +1476,6 @@ build_cdtor (bool ctor_p, tree *cdtors, size_t len)
 	     optimizing, we want user to be able to breakpoint in them.  */
 	  TREE_SIDE_EFFECTS (call) = 1;
 	  append_to_statement_list (call, &body);
-	  ++i;
 	}
       while (i < len);
       gcc_assert (body != NULL_TREE);
@@ -1556,10 +1552,7 @@ build_cdtor_fns (void)
 	     VEC_length (tree, static_ctors),
 	     sizeof (tree),
 	     compare_ctor);
-      build_cdtor (/*ctor_p=*/true,
-		   VEC_address (tree, static_ctors),
-		   VEC_length (tree, static_ctors));
-      VEC_truncate (tree, static_ctors, 0);
+      build_cdtor (/*ctor_p=*/true, static_ctors);
     }
 
   if (!VEC_empty (tree, static_dtors))
@@ -1569,10 +1562,7 @@ build_cdtor_fns (void)
 	     VEC_length (tree, static_dtors),
 	     sizeof (tree),
 	     compare_dtor);
-      build_cdtor (/*ctor_p=*/false,
-		   VEC_address (tree, static_dtors),
-		   VEC_length (tree, static_dtors));
-      VEC_truncate (tree, static_dtors, 0);
+      build_cdtor (/*ctor_p=*/false, static_dtors);
     }
 }
 

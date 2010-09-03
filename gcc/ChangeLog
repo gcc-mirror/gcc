@@ -1,3 +1,8 @@
+2010-09-03  Jan Hubicka  <jh@suse.cz>
+
+	* ipa.c (build_cdtor): Take VECtor as argument; fix array walk.
+	(build_cdtor_fns): Update use of build_cdtor.
+
 2010-09-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/options.texi (SeparateAlias): Document.
