@@ -1,3 +1,12 @@
+2010-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/45484
+	* dwarf2out.c (flush_queued_reg_saves): Rename to...
+	(dwarf2out_flush_queued_reg_saves): ... this.  No longer static.
+	(dwarf2out_frame_debug_expr, dwarf2out_frame_debug): Adjust callers.
+	* dwarf2out.h (dwarf2out_flush_queued_reg_saves): New prototype.
+	* config/i386/i386.c (output_set_got): Call it.
+
 2010-09-03  Michael Matz  <matz@suse.de>
 
 	PR middle-end/45415

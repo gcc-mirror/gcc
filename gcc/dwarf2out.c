@@ -471,7 +471,6 @@ static void output_cfi (dw_cfi_ref, dw_fde_ref, int);
 static void output_cfi_directive (dw_cfi_ref);
 static void output_call_frame_info (int);
 static void dwarf2out_note_section_used (void);
-static void flush_queued_reg_saves (void);
 static bool clobbers_queued_reg_save (const_rtx);
 static void dwarf2out_frame_debug_expr (rtx, const char *);
 
@@ -1712,8 +1711,8 @@ queue_reg_save (const char *label, rtx reg, rtx sreg, HOST_WIDE_INT offset)
 
 /* Output all the entries in QUEUED_REG_SAVES.  */
 
-static void
-flush_queued_reg_saves (void)
+void
+dwarf2out_flush_queued_reg_saves (void)
 {
   struct queued_reg_save *q;
 
@@ -2458,7 +2457,7 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
             {
 	      /* We interpret reg_save differently with stack_realign set.
 		 Thus we must flush whatever we have queued first.  */
-	      flush_queued_reg_saves ();
+	      dwarf2out_flush_queued_reg_saves ();
 
               gcc_assert (cfa_store.reg == REGNO (XEXP (src, 0)));
               fde->stack_realign = 1;
@@ -2705,7 +2704,7 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
       size_t i;
 
       /* Flush any queued register saves.  */
-      flush_queued_reg_saves ();
+      dwarf2out_flush_queued_reg_saves ();
 
       /* Set up state for generating call frame debug info.  */
       lookup_cfa (&cfa);
@@ -2733,7 +2732,7 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
     }
 
   if (!NONJUMP_INSN_P (insn) || clobbers_queued_reg_save (insn))
-    flush_queued_reg_saves ();
+    dwarf2out_flush_queued_reg_saves ();
 
   if (!RTX_FRAME_RELATED_P (insn))
     {
@@ -2841,7 +2840,7 @@ dwarf2out_frame_debug (rtx insn, bool after_p)
      We could probably check just once, here, but this is safer than
      removing the check above.  */
   if (clobbers_queued_reg_save (insn))
-    flush_queued_reg_saves ();
+    dwarf2out_flush_queued_reg_saves ();
 }
 
 /* Determine if we need to save and restore CFI information around this
