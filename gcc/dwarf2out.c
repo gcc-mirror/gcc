@@ -6042,9 +6042,6 @@ static GTY ((param_is (struct vcall_insn))) htab_t vcall_insn_table;
 
 /* Record whether the function being analyzed contains inlined functions.  */
 static int current_function_has_inlines;
-#if 0 && defined (MIPS_DEBUGGING_INFO)
-static int comp_unit_has_inlines;
-#endif
 
 /* The last file entry emitted by maybe_emit_file().  */
 static GTY(()) struct dwarf_file_data * last_emitted_file;
@@ -18960,18 +18957,6 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 
       current_function_has_inlines = 0;
       decls_for_scope (outer_scope, subr_die, 0);
-
-#if 0 && defined (MIPS_DEBUGGING_INFO)
-      if (current_function_has_inlines)
-	{
-	  add_AT_flag (subr_die, DW_AT_MIPS_has_inlines, 1);
-	  if (! comp_unit_has_inlines)
-	    {
-	      add_AT_flag (comp_unit_die, DW_AT_MIPS_has_inlines, 1);
-	      comp_unit_has_inlines = 1;
-	    }
-	}
-#endif
     }
   /* Add the calling convention attribute if requested.  */
   add_calling_convention_attribute (subr_die, decl);
