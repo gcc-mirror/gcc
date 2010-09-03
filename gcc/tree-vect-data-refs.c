@@ -614,7 +614,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
         }
 
       /* We do not vectorize basic blocks with write-write dependencies.  */
-      if (!DR_IS_READ (dra) && !DR_IS_READ (drb))
+      if (DR_IS_WRITE (dra) && DR_IS_WRITE (drb))
         return true;
 
       /* We deal with read-write dependencies in basic blocks later (by
@@ -641,7 +641,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
         }
 
       /* Do not vectorize basic blcoks with write-write dependences.  */
-      if (!DR_IS_READ (dra) && !DR_IS_READ (drb))
+      if (DR_IS_WRITE (dra) && DR_IS_WRITE (drb))
         return true;
 
       /* Check if this dependence is allowed in basic block vectorization.  */ 
@@ -1553,7 +1553,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
                       dr0 = dr;
                     }
 
-                  if (!first_store && !DR_IS_READ (dr))
+                  if (!first_store && DR_IS_WRITE (dr))
                     first_store = dr;
                 }
 
@@ -1565,7 +1565,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
               if (!supportable_dr_alignment)
                 {
                   dr0 = dr;
-                  if (!first_store && !DR_IS_READ (dr))
+                  if (!first_store && DR_IS_WRITE (dr))
                     first_store = dr;
                 }
             }
@@ -2078,7 +2078,7 @@ vect_analyze_group_access (struct data_reference *dr)
                                      DR_INIT (STMT_VINFO_DATA_REF (
 						   vinfo_for_stmt (next)))))
             {
-              if (!DR_IS_READ (data_ref))
+              if (DR_IS_WRITE (data_ref))
                 {
                   if (vect_print_dump_info (REPORT_DETAILS))
                     fprintf (vect_dump, "Two store stmts share the same dr.");
@@ -2123,7 +2123,7 @@ vect_analyze_group_access (struct data_reference *dr)
 	    {
 	      /* FORNOW: SLP of accesses with gaps is not supported.  */
 	      slp_impossible = true;
-	      if (!DR_IS_READ (data_ref))
+	      if (DR_IS_WRITE (data_ref))
 		{
 		  if (vect_print_dump_info (REPORT_DETAILS))
 		    fprintf (vect_dump, "interleaved store with gaps");
@@ -2215,7 +2215,7 @@ vect_analyze_group_access (struct data_reference *dr)
 
       /* SLP: create an SLP data structure for every interleaving group of
 	 stores for further analysis in vect_analyse_slp.  */
-      if (!DR_IS_READ (dr) && !slp_impossible)
+      if (DR_IS_WRITE (dr) && !slp_impossible)
         {
           if (loop_vinfo)
             VEC_safe_push (gimple, heap, LOOP_VINFO_STRIDED_STORES (loop_vinfo),

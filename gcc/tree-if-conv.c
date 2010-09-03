@@ -533,7 +533,7 @@ write_memrefs_written_at_least_once (gimple stmt,
 
   for (i = 0; VEC_iterate (data_reference_p, drs, i, a); i++)
     if (DR_STMT (a) == stmt
-	&& !DR_IS_READ (a))
+	&& DR_IS_WRITE (a))
       {
 	bool found = false;
 	int x = DR_WRITTEN_AT_LEAST_ONCE (a);
@@ -546,7 +546,7 @@ write_memrefs_written_at_least_once (gimple stmt,
 
 	for (j = 0; VEC_iterate (data_reference_p, drs, j, b); j++)
 	  if (DR_STMT (b) != stmt
-	      && !DR_IS_READ (b)
+	      && DR_IS_WRITE (b)
 	      && same_data_refs_base_objects (a, b))
 	    {
 	      tree cb = bb_predicate (gimple_bb (DR_STMT (b)));
