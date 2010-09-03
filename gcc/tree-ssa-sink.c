@@ -191,7 +191,8 @@ is_hidden_global_store (gimple stmt)
 
 	}
       else if (INDIRECT_REF_P (lhs)
-	       || TREE_CODE (lhs) == MEM_REF)
+	       || TREE_CODE (lhs) == MEM_REF
+	       || TREE_CODE (lhs) == TARGET_MEM_REF)
 	return ptr_deref_may_alias_global_p (TREE_OPERAND (lhs, 0));
       else if (CONSTANT_CLASS_P (lhs))
 	return true;

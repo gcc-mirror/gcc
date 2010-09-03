@@ -852,16 +852,22 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
 	pp_string (buffer, "MEM[");
 
-	tmp = TMR_SYMBOL (node);
-	if (tmp)
+	if (TREE_CODE (TMR_BASE (node)) == ADDR_EXPR)
 	  {
 	    pp_string (buffer, sep);
 	    sep = ", ";
 	    pp_string (buffer, "symbol: ");
-	    dump_generic_node (buffer, TREE_OPERAND (tmp, 0),
+	    dump_generic_node (buffer, TREE_OPERAND (TMR_BASE (node), 0),
 			       spc, flags, false);
 	  }
-	tmp = TMR_BASE (node);
+	else
+	  {
+	    pp_string (buffer, sep);
+	    sep = ", ";
+	    pp_string (buffer, "base: ");
+	    dump_generic_node (buffer, TMR_BASE (node), spc, flags, false);
+	  }
+	tmp = TMR_INDEX2 (node);
 	if (tmp)
 	  {
 	    pp_string (buffer, sep);

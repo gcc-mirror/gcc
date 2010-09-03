@@ -2468,8 +2468,8 @@ expand_debug_expr (tree exp)
       return op0;
 
     case TARGET_MEM_REF:
-      if (TMR_SYMBOL (exp)
-	  && !DECL_RTL_SET_P (TREE_OPERAND (TMR_SYMBOL (exp), 0)))
+      if (TREE_CODE (TMR_BASE (exp)) == ADDR_EXPR
+	  && !DECL_RTL_SET_P (TREE_OPERAND (TMR_BASE (exp), 0)))
 	return NULL;
 
       op0 = expand_debug_expr

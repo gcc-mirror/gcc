@@ -327,6 +327,10 @@ for_each_index (tree *addr_p, bool (*cbck) (tree, tree *, void *), void *data)
 	  if (*idx
 	      && !cbck (*addr_p, idx, data))
 	    return false;
+	  idx = &TMR_INDEX2 (*addr_p);
+	  if (*idx
+	      && !cbck (*addr_p, idx, data))
+	    return false;
 	  return true;
 
 	default:

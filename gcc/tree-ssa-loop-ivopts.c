@@ -1722,6 +1722,16 @@ find_interesting_uses_address (struct ivopts_data *data, gimple stmt, tree *op_p
 	  TMR_BASE (base) = civ->base;
 	  step = civ->step;
 	}
+      if (TMR_INDEX2 (base)
+	  && TREE_CODE (TMR_INDEX2 (base)) == SSA_NAME)
+	{
+	  civ = get_iv (data, TMR_INDEX2 (base));
+	  if (!civ)
+	    goto fail;
+
+	  TMR_INDEX2 (base) = civ->base;
+	  step = civ->step;
+	}
       if (TMR_INDEX (base)
 	  && TREE_CODE (TMR_INDEX (base)) == SSA_NAME)
 	{
@@ -1778,9 +1788,14 @@ find_interesting_uses_address (struct ivopts_data *data, gimple stmt, tree *op_p
 	    ref = &TREE_OPERAND (*ref, 0);
 	  if (TREE_CODE (*ref) == MEM_REF)
 	    {
-	      tree tem = fold_binary (MEM_REF, TREE_TYPE (*ref),
-				      TREE_OPERAND (*ref, 0),
-				      TREE_OPERAND (*ref, 1));
+	      tree tem = TREE_OPERAND (*ref, 0);
+	      STRIP_NOPS (tem);
+	      if (tem != TREE_OPERAND (*ref, 0))
+		tem = fold_build2 (MEM_REF, TREE_TYPE (*ref),
+				   tem, TREE_OPERAND (*ref, 1));
+	      else
+		tem = fold_binary (MEM_REF, TREE_TYPE (*ref),
+				   tem, TREE_OPERAND (*ref, 1));
 	      if (tem)
 		*ref = tem;
 	    }

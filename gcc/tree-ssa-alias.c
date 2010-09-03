@@ -670,21 +670,7 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   tree ptrtype1;
   HOST_WIDE_INT offset1p = offset1, offset2p = offset2;
 
-  if (TREE_CODE (base1) == TARGET_MEM_REF)
-    {
-      if (TMR_SYMBOL (base1))
-	ptr1 = TMR_SYMBOL (base1);
-      else if (TMR_BASE (base1))
-	{
-	  if (!POINTER_TYPE_P (TREE_TYPE (TMR_BASE (base1))))
-	    return true;
-	  ptr1 = TMR_BASE (base1);
-	}
-      else
-	return true;
-    }
-  else
-    ptr1 = TREE_OPERAND (base1, 0);
+  ptr1 = TREE_OPERAND (base1, 0);
 
   /* The offset embedded in MEM_REFs can be negative.  Bias them
      so that the resulting offset adjustment is positive.  */
@@ -812,37 +798,8 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   tree ptr2;
   tree ptrtype1, ptrtype2;
 
-  if (TREE_CODE (base1) == TARGET_MEM_REF)
-    {
-      if (TMR_SYMBOL (base1))
-	ptr1 = TMR_SYMBOL (base1);
-      else if (TMR_BASE (base1))
-	{
-	  if (!POINTER_TYPE_P (TREE_TYPE (TMR_BASE (base1))))
-	    return true;
-	  ptr1 = TMR_BASE (base1);
-	}
-      else
-	return true;
-    }
-  else
-    ptr1 = TREE_OPERAND (base1, 0);
-
-  if (TREE_CODE (base2) == TARGET_MEM_REF)
-    {
-      if (TMR_SYMBOL (base2))
-	ptr2 = TMR_SYMBOL (base2);
-      else if (TMR_BASE (base2))
-	{
-	  if (!POINTER_TYPE_P (TREE_TYPE (TMR_BASE (base2))))
-	    return true;
-	  ptr2 = TMR_BASE (base2);
-	}
-      else
-	return true;
-    }
-  else
-    ptr2 = TREE_OPERAND (base2, 0);
+  ptr1 = TREE_OPERAND (base1, 0);
+  ptr2 = TREE_OPERAND (base2, 0);
 
   /* If both bases are based on pointers they cannot alias if they may not
      point to the same memory object or if they point to the same object
