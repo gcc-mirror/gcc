@@ -1085,7 +1085,7 @@ static const struct option_map option_map[] =
    {"--debug", "-g", "oj"},
    {"--define-macro", "-D", "aj"},
    {"--dependencies", "-M", 0},
-   {"--dump", "-d", "a"},
+   {"--dump", "-d", "aj"},
    {"--dumpbase", "-dumpbase", "a"},
    {"--dumpdir", "-dumpdir", "a"},
    {"--encoding", "-fencoding=", "aj"},
@@ -1367,16 +1367,6 @@ translate_options (int *argcp, const char *const **argvp)
 	     command line.  */
 	  if (nskip + i > argc)
 	    nskip = argc - i;
-
-	  /* Convert -d with a separate argument to
-	     -foutput-class-dir= for Java.  */
-	  if (c == 'd' && p[1] == 0 && argv[i + 1] != NULL)
-	    {
-	      newv[newindex++] = concat ("-foutput-class-dir=", argv[i + 1],
-					 NULL);
-	      nskip = 0;
-	      i += 2;
-	    }
 
 	  while (nskip > 0)
 	    {

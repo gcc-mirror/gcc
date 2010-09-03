@@ -174,7 +174,8 @@ generate_canonical_option (size_t opt_index, const char *arg, int value,
 
   if (arg)
     {
-      if (option->flags & CL_SEPARATE)
+      if ((option->flags & CL_SEPARATE)
+	  && !(option->flags & CL_SEPARATE_ALIAS))
 	{
 	  decoded->canonical_option[0] = opt_text;
 	  decoded->canonical_option[1] = arg;
@@ -217,6 +218,7 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
   const char *warn_message = NULL;
   bool separate_arg_flag;
   bool joined_arg_flag;
+  bool have_separate_arg = false;
 
   opt = argv[0];
 
@@ -286,6 +288,8 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
 	      result = 2;
 	      if (arg == NULL)
 		result = 1;
+	      else
+		have_separate_arg = true;
 	    }
 	  else
 	    /* Missing argument.  */
@@ -298,6 +302,8 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
       result = 2;
       if (arg == NULL)
 	result = 1;
+      else
+	have_separate_arg = true;
     }
 
   if (arg == NULL && (separate_arg_flag || joined_arg_flag))
@@ -305,7 +311,8 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
 
   /* Is this option an alias (or an ignored option, marked as an alias
      of OPT_SPECIAL_ignore)?  */
-  if (option->alias_target != N_OPTS)
+  if (option->alias_target != N_OPTS
+      && (!(option->flags & CL_SEPARATE_ALIAS) || have_separate_arg))
     {
       size_t new_opt_index = option->alias_target;
 

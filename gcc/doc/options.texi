@@ -278,6 +278,13 @@ This option is ignored apart from printing any warning specified using
 @code{Warn}.  The option will not be seen by specs and no @samp{OPT_}
 enumeration value is defined for it.
 
+@item SeparateAlias
+For an option marked with @code{Joined}, @code{Separate} and
+@code{Alias}, the option only acts as an alias when passed a separate
+argument; with a joined argument it acts as a normal option, with an
+@samp{OPT_} enumeration value.  This is for compatibility with the
+Java @option{-d} option and should not be used for new options.
+
 @item Warn(@var{message})
 If this option is used, output the warning @var{message}.
 @var{message} is a format string, either taking a single operand with

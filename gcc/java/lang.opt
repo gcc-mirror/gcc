@@ -93,6 +93,10 @@ Java Separate Alias(fbootclasspath=)
 classpath
 Java Separate Alias(fclasspath=)
 
+d
+Java Separate SeparateAlias Alias(foutput-class-dir=)
+; Different from language-independent -d with joined argument.
+
 encoding
 Java Separate Alias(fencoding=)
 

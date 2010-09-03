@@ -543,6 +543,9 @@ fdump-
 Common Joined RejectNegative
 -fdump-<type>	Dump various compiler internals to a file
 
+fdump-final-insns
+Driver RejectNegative
+
 fdump-final-insns=
 Common RejectNegative Joined Var(flag_dump_final_insns)
 -fdump-final-insns=filename	Dump to filename the insns at the end of translation
