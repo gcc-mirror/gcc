@@ -331,9 +331,7 @@ get_object_alignment (tree exp, unsigned int max_align)
 						  max_align));
       bitpos += mem_ref_offset (exp).low * BITS_PER_UNIT;
     }
-  else if (TREE_CODE (exp) == TARGET_MEM_REF
-	   && TMR_BASE (exp)
-	   && POINTER_TYPE_P (TREE_TYPE (TMR_BASE (exp))))
+  else if (TREE_CODE (exp) == TARGET_MEM_REF)
     {
       struct ptr_info_def *pi;
       tree addr = TMR_BASE (exp);
@@ -365,22 +363,7 @@ get_object_alignment (tree exp, unsigned int max_align)
 	}
       else if (TMR_INDEX (exp))
 	align = BITS_PER_UNIT;
-    }
-  else if (TREE_CODE (exp) == TARGET_MEM_REF
-	   && TMR_SYMBOL (exp))
-    {
-      align = get_object_alignment (TREE_OPERAND (TMR_SYMBOL (exp), 0),
-				    max_align);
-      if (TMR_OFFSET (exp))
-        bitpos += TREE_INT_CST_LOW (TMR_OFFSET (exp)) * BITS_PER_UNIT;
-      if (TMR_INDEX (exp) && TMR_STEP (exp))
-	{
-	  unsigned HOST_WIDE_INT step = TREE_INT_CST_LOW (TMR_STEP (exp));
-	  align = MIN (align, (step & -step) * BITS_PER_UNIT);
-	}
-      else if (TMR_INDEX (exp))
-	align = BITS_PER_UNIT;
-      if (TMR_BASE (exp))
+      if (TMR_INDEX2 (exp))
 	align = BITS_PER_UNIT;
     }
   else

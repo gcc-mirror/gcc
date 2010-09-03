@@ -362,13 +362,13 @@ mark_all_vars_used_1 (tree *tp, int *walk_subtrees, void *data)
       && (b = TREE_BLOCK (t)) != NULL)
     TREE_USED (b) = true;
 
-  /* Ignore TREE_ORIGINAL for TARGET_MEM_REFS, as well as other
-     fields that do not contain vars.  */
+  /* Ignore TMR_OFFSET and TMR_STEP for TARGET_MEM_REFS, as those
+     fields do not contain vars.  */
   if (TREE_CODE (t) == TARGET_MEM_REF)
     {
-      mark_all_vars_used (&TMR_SYMBOL (t), data);
       mark_all_vars_used (&TMR_BASE (t), data);
       mark_all_vars_used (&TMR_INDEX (t), data);
+      mark_all_vars_used (&TMR_INDEX2 (t), data);
       *walk_subtrees = 0;
       return NULL;
     }

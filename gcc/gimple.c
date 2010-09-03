@@ -3004,18 +3004,17 @@ get_base_address (tree t)
   while (handled_component_p (t))
     t = TREE_OPERAND (t, 0);
 
-  if (TREE_CODE (t) == MEM_REF
+  if ((TREE_CODE (t) == MEM_REF
+       || TREE_CODE (t) == TARGET_MEM_REF)
       && TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR)
     t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
-  else if (TREE_CODE (t) == TARGET_MEM_REF
-	   && TMR_SYMBOL (t))
-    t = TREE_OPERAND (TMR_SYMBOL (t), 0);
 
   if (SSA_VAR_P (t)
       || TREE_CODE (t) == STRING_CST
       || TREE_CODE (t) == CONSTRUCTOR
       || INDIRECT_REF_P (t)
-      || TREE_CODE (t) == MEM_REF)
+      || TREE_CODE (t) == MEM_REF
+      || TREE_CODE (t) == TARGET_MEM_REF)
     return t;
   else
     return NULL_TREE;
@@ -4725,7 +4724,6 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
 	  if (TREE_CODE (rhs) == ADDR_EXPR)
 	    ret |= visit_addr (stmt, TREE_OPERAND (rhs, 0), data);
 	  else if (TREE_CODE (rhs) == TARGET_MEM_REF
-                   && TMR_BASE (rhs) != NULL_TREE
 		   && TREE_CODE (TMR_BASE (rhs)) == ADDR_EXPR)
 	    ret |= visit_addr (stmt, TREE_OPERAND (TMR_BASE (rhs), 0), data);
 	  else if (TREE_CODE (rhs) == OBJ_TYPE_REF
@@ -4734,7 +4732,6 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
 						   0), data);
           lhs = gimple_assign_lhs (stmt);
 	  if (TREE_CODE (lhs) == TARGET_MEM_REF
-              && TMR_BASE (lhs) != NULL_TREE
               && TREE_CODE (TMR_BASE (lhs)) == ADDR_EXPR)
             ret |= visit_addr (stmt, TREE_OPERAND (TMR_BASE (lhs), 0), data);
 	}

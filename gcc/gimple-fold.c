@@ -528,6 +528,18 @@ maybe_fold_reference (tree expr, bool is_lhs)
 	  return expr;
 	}
     }
+  else if (TREE_CODE (*t) == TARGET_MEM_REF)
+    {
+      tree tem = maybe_fold_tmr (*t);
+      if (tem)
+	{
+	  *t = tem;
+	  tem = maybe_fold_reference (expr, is_lhs);
+	  if (tem)
+	    return tem;
+	  return expr;
+	}
+    }
   else if (!is_lhs
 	   && DECL_P (*t))
     {
@@ -601,9 +613,6 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 	      result = fold_build3_loc (cond_loc, COND_EXPR, TREE_TYPE (rhs), tem,
 				    COND_EXPR_THEN (rhs), COND_EXPR_ELSE (rhs));
           }
-
-	else if (TREE_CODE (rhs) == TARGET_MEM_REF)
-	  return maybe_fold_tmr (rhs);
 
 	else if (REFERENCE_CLASS_P (rhs))
 	  return maybe_fold_reference (rhs, false);

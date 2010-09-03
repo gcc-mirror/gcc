@@ -268,17 +268,9 @@ tree_mem_ref_addr (tree type, tree mem_ref)
   tree addr;
   tree act_elem;
   tree step = TMR_STEP (mem_ref), offset = TMR_OFFSET (mem_ref);
-  tree sym = TMR_SYMBOL (mem_ref), base = TMR_BASE (mem_ref);
   tree addr_base = NULL_TREE, addr_off = NULL_TREE;
 
-  if (sym)
-    addr_base = fold_convert (type, sym);
-  else if (base)
-    {
-      gcc_assert (POINTER_TYPE_P (TREE_TYPE (base)));
-      addr_base = fold_convert (type, base);
-      base = NULL_TREE;
-    }
+  addr_base = fold_convert (type, TMR_BASE (mem_ref));
 
   act_elem = TMR_INDEX (mem_ref);
   if (act_elem)
@@ -288,7 +280,7 @@ tree_mem_ref_addr (tree type, tree mem_ref)
       addr_off = act_elem;
     }
 
-  act_elem = base;
+  act_elem = TMR_INDEX2 (mem_ref);
   if (act_elem)
     {
       if (addr_off)
@@ -307,16 +299,9 @@ tree_mem_ref_addr (tree type, tree mem_ref)
     }
 
   if (addr_off)
-    {
-      if (addr_base)
-	addr = fold_build2 (POINTER_PLUS_EXPR, type, addr_base, addr_off);
-      else
-	addr = fold_convert (type, addr_off);
-    }
-  else if (addr_base)
-    addr = addr_base;
+    addr = fold_build2 (POINTER_PLUS_EXPR, type, addr_base, addr_off);
   else
-    addr = build_int_cst (type, 0);
+    addr = addr_base;
 
   return addr;
 }
@@ -344,6 +329,8 @@ valid_mem_ref_p (enum machine_mode mode, addr_space_t as,
 static tree
 create_mem_ref_raw (tree type, tree alias_ptr_type, struct mem_address *addr)
 {
+  tree base, index2;
+
   if (!valid_mem_ref_p (TYPE_MODE (type), TYPE_ADDR_SPACE (type), addr))
     return NULL_TREE;
 
@@ -355,23 +342,31 @@ create_mem_ref_raw (tree type, tree alias_ptr_type, struct mem_address *addr)
   else
     addr->offset = build_int_cst (alias_ptr_type, 0);
 
-  /* If possible use a plain MEM_REF instead of a TARGET_MEM_REF.  */
-  if (alias_ptr_type
-      && (!addr->index || integer_zerop (addr->index))
-      && (!addr->base || POINTER_TYPE_P (TREE_TYPE (addr->base))))
+  if (addr->symbol)
     {
-      tree base;
-      gcc_assert (!addr->symbol ^ !addr->base);
-      if (addr->symbol)
-	base = addr->symbol;
-      else
-	base = addr->base;
-      return fold_build2 (MEM_REF, type, base, addr->offset);
+      base = addr->symbol;
+      index2 = addr->base;
+    }
+  else if (addr->base
+	   && POINTER_TYPE_P (TREE_TYPE (addr->base)))
+    {
+      base = addr->base;
+      index2 = NULL_TREE;
+    }
+  else
+    {
+      base = build_int_cst (ptr_type_node, 0);
+      index2 = addr->base;
     }
 
+  /* If possible use a plain MEM_REF instead of a TARGET_MEM_REF.  */
+  if (alias_ptr_type
+      && (!index2 || integer_zerop (index2))
+      && (!addr->index || integer_zerop (addr->index)))
+    return fold_build2 (MEM_REF, type, base, addr->offset);
+
   return build5 (TARGET_MEM_REF, type,
-		 addr->symbol, addr->base, addr->index,
-		 addr->step, addr->offset);
+		 base, addr->offset, addr->index, addr->step, index2);
 }
 
 /* Returns true if OBJ is an object whose address is a link time constant.  */
@@ -808,8 +803,22 @@ create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
 void
 get_address_description (tree op, struct mem_address *addr)
 {
-  addr->symbol = TMR_SYMBOL (op);
-  addr->base = TMR_BASE (op);
+  if (TREE_CODE (TMR_BASE (op)) == ADDR_EXPR)
+    {
+      addr->symbol = TMR_BASE (op);
+      addr->base = TMR_INDEX2 (op);
+    }
+  else
+    {
+      addr->symbol = NULL_TREE;
+      if (TMR_INDEX2 (op))
+	{
+	  gcc_assert (integer_zerop (TMR_BASE (op)));
+	  addr->base = TMR_INDEX2 (op);
+	}
+      else
+	addr->base = TMR_BASE (op);
+    }
   addr->index = TMR_INDEX (op);
   addr->step = TMR_STEP (op);
   addr->offset = TMR_OFFSET (op);
@@ -837,12 +846,36 @@ maybe_fold_tmr (tree ref)
 
   get_address_description (ref, &addr);
 
-  if (addr.base && TREE_CODE (addr.base) == INTEGER_CST)
+  if (addr.base
+      && TREE_CODE (addr.base) == INTEGER_CST
+      && !integer_zerop (addr.base))
     {
       addr.offset = fold_binary_to_constant (PLUS_EXPR,
 					     TREE_TYPE (addr.offset),
 					     addr.offset, addr.base);
       addr.base = NULL_TREE;
+      changed = true;
+    }
+
+  if (addr.symbol
+      && TREE_CODE (TREE_OPERAND (addr.symbol, 0)) == MEM_REF)
+    {
+      addr.offset = fold_binary_to_constant
+			(PLUS_EXPR, TREE_TYPE (addr.offset),
+			 addr.offset,
+			 TREE_OPERAND (TREE_OPERAND (addr.symbol, 0), 1));
+      addr.symbol = TREE_OPERAND (TREE_OPERAND (addr.symbol, 0), 0);
+      changed = true;
+    }
+  else if (addr.symbol
+	   && handled_component_p (TREE_OPERAND (addr.symbol, 0)))
+    {
+      HOST_WIDE_INT offset;
+      addr.symbol = build_fold_addr_expr
+		      (get_addr_base_and_unit_offset
+		         (TREE_OPERAND (addr.symbol, 0), &offset));
+      addr.offset = int_const_binop (PLUS_EXPR,
+				     addr.offset, size_int (offset), 0);
       changed = true;
     }
 

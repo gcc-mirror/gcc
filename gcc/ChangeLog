@@ -1,3 +1,49 @@
+2010-09-03  Richard Guenther  <rguenther@suse.de>
+
+	* tree.def (TARGET_MEM_REF): Merge TMR_SYMBOL and TMR_BASE.
+	Move TMR_OFFSET to second operand.  Add TMR_INDEX2.
+	* tree.h (TMR_SYMBOL): Remove.
+	(TMR_BASE, TMR_OFFSET): Adjust.
+	(TMR_INDEX2): New.
+	* alias.c (ao_ref_from_mem): Use TMR_BASE.
+	* builtins.c (get_object_alignment): Merge TMR_BASE and
+	TMR_SYMBOL handling.
+	* cfgexpand.c (expand_debug_expr): Use TMR_BASE.
+	* gimple.c (get_base_address): Merge MEM_REF and TARGET_MEM_REF
+	handling.  Also allow TARGET_MEM_REF as base address.
+	(walk_stmt_load_store_addr_ops): TMR_BASE is always non-NULL.
+	* gimplify.c (gimplify_expr): Gimplify TMR_BASE like MEM_REF
+	base.  Gimplify TMR_INDEX2.
+	* tree-cfg.c (verify_types_in_gimple_reference): Adjust.
+	* tree-dfa.c (get_ref_base_and_extent): Likewise.
+	(get_addr_base_and_unit_offset): Likewise.
+	* tree-eh.c (tree_could_trap_p): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	* tree-ssa-address.c (tree_mem_ref_addr): Simplify.  Handle
+	TMR_INDEX2.
+	(create_mem_ref_raw): Merge symbol and base.  Move 2ndary
+	base to index2.
+	(get_address_description): Reconstruct addres description
+	from merged TMR_BASE and TMR_INDEX2.
+	(maybe_fold_tmr): Fold propagated addresses.
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Merge
+	MEM_REF and TARGET_MEM_REF paths.
+	(indirect_refs_may_alias_p): Likewise.
+	* tree-ssa-live.c (mark_all_vars_used_1): Handle TMR_INDEX2
+	instead of TMR_SYMBOL.
+	* tree-ssa-operands.c (get_tmr_operands): Simplify.
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Adjust
+	according to changes ...
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): ... here.
+	Split TARGET_MEM_REF into two fields plus the base.
+	* tree.c (mem_ref_offset): Simplify.
+	* tree-ssa-loop-im.c (for_each_index): Handle TMR_INDEX2.
+	* tree-ssa-loop-ivopts.c (find_interesting_uses_address): Likewise.
+	Strip NOPs when folding MEM_REF addresses.
+	* tree-ssa-sink.c (is_hidden_global_store): Handle TARGET_MEM_REF.
+	* gimple-fold.c (maybe_fold_reference): Fold TARGET_MEM_REF here ...
+	(fold_gimple_assign): ... not here.
+
 2010-09-03  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* config/mips/mips.h (SHIFT_COUNT_TRUNCATED): Change the definition.

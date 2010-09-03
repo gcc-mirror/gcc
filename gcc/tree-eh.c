@@ -2404,8 +2404,8 @@ tree_could_trap_p (tree expr)
   switch (code)
     {
     case TARGET_MEM_REF:
-      if (TMR_SYMBOL (expr)
-	  && !TMR_INDEX (expr) && !TMR_BASE (expr))
+      if (TREE_CODE (TMR_BASE (expr)) == ADDR_EXPR
+	  && !TMR_INDEX (expr) && !TMR_INDEX2 (expr))
 	return false;
       return !TREE_THIS_NOTRAP (expr);
 
