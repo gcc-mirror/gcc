@@ -111,7 +111,8 @@ varpool_get_node (tree decl)
 {
   struct varpool_node key, **slot;
 
-  gcc_assert (DECL_P (decl) && TREE_CODE (decl) != FUNCTION_DECL);
+  gcc_assert (TREE_CODE (decl) == VAR_DECL
+	      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)));
 
   if (!varpool_hash)
     return NULL;
@@ -129,7 +130,8 @@ varpool_node (tree decl)
 {
   struct varpool_node key, *node, **slot;
 
-  gcc_assert (DECL_P (decl) && TREE_CODE (decl) != FUNCTION_DECL);
+  gcc_assert (TREE_CODE (decl) == VAR_DECL
+	      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)));
 
   if (!varpool_hash)
     varpool_hash = htab_create_ggc (10, hash_varpool_node,
@@ -364,6 +366,8 @@ void
 varpool_finalize_decl (tree decl)
 {
   struct varpool_node *node = varpool_node (decl);
+
+  gcc_assert (TREE_STATIC (decl));
 
   /* The first declaration of a variable that comes through this function
      decides whether it is global (in C, has external linkage)
