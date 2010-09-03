@@ -10,16 +10,16 @@
 PROGRAM main
   IMPLICIT NONE
   
-  EXIT ! { dg-error "is not within a loop" }
+  EXIT ! { dg-error "is not within a construct" }
   EXIT foobar ! { dg-error "is unknown" }
-  EXIT main ! { dg-error "is not a loop name" }
+  EXIT main ! { dg-error "is not a construct name" }
 
   mainLoop: DO
     CALL test ()
   END DO mainLoop
 
   otherLoop: DO
-    EXIT mainLoop ! { dg-error "is not within loop 'mainloop'" }
+    EXIT mainLoop ! { dg-error "is not within construct 'mainloop'" }
   END DO otherLoop
 
 CONTAINS

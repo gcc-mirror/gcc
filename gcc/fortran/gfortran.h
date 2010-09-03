@@ -2096,7 +2096,7 @@ typedef struct gfc_code
     gfc_wait *wait;
     gfc_dt *dt;
     gfc_forall_iterator *forall_iterator;
-    struct gfc_code *whichloop;
+    struct gfc_code *which_construct;
     int stop_code;
     gfc_entry_list *entry;
     gfc_omp_clauses *omp_clauses;
@@ -2106,7 +2106,7 @@ typedef struct gfc_code
   }
   ext;		/* Points to additional structures required by statement */
 
-  /* Cycle and break labels in do loops.  */
+  /* Cycle and break labels in constructs.  */
   tree cycle_label;
   tree exit_label;
 }

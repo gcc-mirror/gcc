@@ -2034,7 +2034,7 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
       sym = stree->n.sym;
       if (sym->attr.flavor != FL_LABEL)
 	{
-	  gfc_error ("Name '%s' in %s statement at %C is not a loop name",
+	  gfc_error ("Name '%s' in %s statement at %C is not a construct name",
 		     name, gfc_ascii_statement (st));
 	  return MATCH_ERROR;
 	}
@@ -2042,9 +2042,7 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 
   /* Find the loop specified by the label (or lack of a label).  */
   for (o = NULL, p = gfc_state_stack; p; p = p->previous)
-    if (p->state == COMP_DO && (sym == NULL || sym == p->sym))
-      break;
-    else if (o == NULL && p->state == COMP_OMP_STRUCTURED_BLOCK)
+    if (o == NULL && p->state == COMP_OMP_STRUCTURED_BLOCK)
       o = p;
     else if (p->state == COMP_CRITICAL)
       {
@@ -2052,16 +2050,52 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 		  gfc_ascii_statement (st));
 	return MATCH_ERROR;
       }
+    else if ((sym && sym == p->sym) || (!sym && p->state == COMP_DO))
+      break;
 
   if (p == NULL)
     {
       if (sym == NULL)
-	gfc_error ("%s statement at %C is not within a loop",
+	gfc_error ("%s statement at %C is not within a construct",
 		   gfc_ascii_statement (st));
       else
-	gfc_error ("%s statement at %C is not within loop '%s'",
+	gfc_error ("%s statement at %C is not within construct '%s'",
 		   gfc_ascii_statement (st), sym->name);
 
+      return MATCH_ERROR;
+    }
+
+  /* Special checks for EXIT from non-loop constructs.  */
+  switch (p->state)
+    {
+    case COMP_DO:
+      break;
+
+    case COMP_CRITICAL:
+      /* This is already handled above.  */
+      gcc_unreachable ();
+
+    case COMP_ASSOCIATE:
+    case COMP_BLOCK:
+    case COMP_IF:
+    case COMP_SELECT:
+    case COMP_SELECT_TYPE:
+      gcc_assert (sym);
+      if (op == EXEC_CYCLE)
+	{
+	  gfc_error ("CYCLE statement at %C is not applicable to non-loop"
+		     " construct '%s'", sym->name);
+	  return MATCH_ERROR;
+	}
+      gcc_assert (op == EXEC_EXIT);
+      if (gfc_notify_std (GFC_STD_F2008, "Fortran 2008: EXIT statement with no"
+			  " do-construct-name at %C") == FAILURE)
+	return MATCH_ERROR;
+      break;
+      
+    default:
+      gfc_error ("%s statement at %C is not applicable to construct '%s'",
+		 gfc_ascii_statement (st), sym->name);
       return MATCH_ERROR;
     }
 
@@ -2096,13 +2130,14 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 	}
       if (st == ST_CYCLE && cnt < collapse)
 	{
-	  gfc_error ("CYCLE statement at %C to non-innermost collapsed !$OMP DO loop");
+	  gfc_error ("CYCLE statement at %C to non-innermost collapsed"
+		     " !$OMP DO loop");
 	  return MATCH_ERROR;
 	}
     }
 
-  /* Save the first statement in the loop - needed by the backend.  */
-  new_st.ext.whichloop = p->head;
+  /* Save the first statement in the construct - needed by the backend.  */
+  new_st.ext.which_construct = p->construct;
 
   new_st.op = op;
 
