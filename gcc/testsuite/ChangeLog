@@ -1,3 +1,8 @@
+2010-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/45500
+	* gcc.target/i386/pr45500.c: New test.
+
 2010-09-03  Mingjie Xing <mingjie.xing@gmail.com>
 
 	* gcc.target/mips/loongson-shift-count-truncated-1.c: New.
