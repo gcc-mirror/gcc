@@ -59,26 +59,38 @@
 
 GCC_4.5.0 {
   __addtf3
+%ifndef __x86_64__
   __copysigntf3
+%endif
   __divtc3
   __divtf3
   __eqtf2
   __extenddftf2
   __extendsftf2
   __extendxftf2
+%ifndef __x86_64__
   __fabstf2
+%endif
   __fixtfdi
   __fixtfsi
+%ifdef __x86_64__
   __fixtfti
+%endif
   __fixunstfdi
   __fixunstfsi
+%ifdef __x86_64__
   __fixunstfti
+%endif
   __floatditf
   __floatsitf
+%ifdef __x86_64__
   __floattitf
+%endif
   __floatunditf
   __floatunsitf
+%ifdef __x86_64__
   __floatuntitf
+%endif
   __getf2
   __gttf2
   __letf2

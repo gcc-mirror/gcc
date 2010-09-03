@@ -1,4 +1,11 @@
 2010-09-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/t-sol2 (__copysigntf3, __fabstf3): Disable for
+	64bit targets.
+	(__fixtfti, __fixunstfti, __floattitf, __floatuntitf): Enable only
+	for 64bit targets.
+
+2010-09-03  Uros Bizjak  <ubizjak@gmail.com>
 	    Iain Sandoe  <iains@gcc.gnu.org>
 
 	PR target/45476
