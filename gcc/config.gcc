@@ -1135,12 +1135,14 @@ i[34567]86-*-darwin*)
 	# support.
 	with_cpu=${with_cpu:-generic}
 	tmake_file="${tmake_file} t-slibgcc-darwin i386/t-crtpc i386/t-crtfm"
+	extra_options="${extra_options} i386/darwin.opt"
 	lto_binary_reader=lto-macho
 	;;
 x86_64-*-darwin*)
 	with_cpu=${with_cpu:-generic}
 	tmake_file="${tmake_file} ${cpu_type}/t-darwin64 t-slibgcc-darwin i386/t-crtpc i386/t-crtfm"
 	tm_file="${tm_file} ${cpu_type}/darwin64.h"
+	extra_options="${extra_options} i386/darwin.opt"
 	lto_binary_reader=lto-macho
 	;;
 i[34567]86-*-elf*)
@@ -1811,6 +1813,7 @@ mips*-*-openbsd*)
 mips*-sde-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/sde.h"
 	tmake_file="mips/t-sde mips/t-libgcc-mips16"
+	extra_options="${extra_options} mips/sde.opt"
 	case "${with_newlib}" in
 	  yes)
 	    # newlib / libgloss.

@@ -1,3 +1,7 @@
+2010-09-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* lang.opt (d): New.
+
 2010-09-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR java/45504

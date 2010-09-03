@@ -39,7 +39,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    || (CHAR) == 'e' || (CHAR) == 'T' || (CHAR) == 'u' \
    || (CHAR) == 'I' || (CHAR) == 'J' || (CHAR) == 'm' \
    || (CHAR) == 'x' || (CHAR) == 'L' || (CHAR) == 'A' \
-   || (CHAR) == 'B' )
+   || (CHAR) == 'B' || (CHAR) == 'd')
 
 /* This defines which multi-letter switches take arguments.  */
 

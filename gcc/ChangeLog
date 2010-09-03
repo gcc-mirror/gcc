@@ -1,3 +1,27 @@
+2010-09-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/options.texi (SeparateAlias): Document.
+	* opt-functions.awk (switch_flags): Handle SeparateAlias.
+	* opth-gen.awk: Generate enumeration names for options marked
+	SeparateAlias, but not for those marked Ignore.
+	* opts-common.c (generate_canonical_option): Don't output separate
+	argument for options marked CL_SEPARATE_ALIAS.
+	(decode_cmdline_option): Handle CL_SEPARATE_ALIAS.
+	* opts.h (CL_SEPARATE_ALIAS): New.
+	(CL_PARAMS, CL_WARNING, CL_OPTIMIZATION, CL_DRIVER, CL_TARGET,
+	CL_COMMON): Adjust definitions.
+	* config/i386/darwin.opt, config/mips/sde.opt: New.
+	* common.opt (fdump-final-insns): New.
+	* config.gcc (i[34567]86-*-darwin*, x86_64-*-darwin*): Add
+	i386/darwin.opt.
+	(mips*-sde-elf*): Add mips/sde.opt.
+	* config/mips/sde.h (DRIVER_SELF_SPECS): Don't handle
+	-mno-data-in-code and -mcode-xonly here.
+	* defaults.h (DEFAULT_SWITCH_TAKES_ARG): Add 'd'.
+	* gcc.c (option_map): Add "j" to --dump entry.
+	(translate_options): Don't translate -d to -foutput-class-dir=
+	here.
+
 2010-09-03  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* tree-data-ref.c (dr_may_alias_p): Replace !DR_IS_READ with

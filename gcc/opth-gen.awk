@@ -334,7 +334,9 @@ for (i = 0; i < n_opts; i++) {
 	enum_string = enum " = " enum_value ","
 
 	# Aliases do not get enumeration names.
-	if (flag_set_p("Alias.*", flags[i])) {
+	if ((flag_set_p("Alias.*", flags[i]) \
+	     && !flag_set_p("SeparateAlias", flags[i])) \
+	    || flag_set_p("Ignore", flags[i])) {
 		enum_string = "/* " enum_string " */"
 	}
 
