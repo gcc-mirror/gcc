@@ -294,7 +294,7 @@ open_temp_exec_file_mnt (const char *mounts)
       struct mntent mnt;
       char buf[MAXPATHLEN * 3];
 
-      if (getmntent_r (last_mntent, &mnt, buf, sizeof (buf)))
+      if (getmntent_r (last_mntent, &mnt, buf, sizeof (buf)) == NULL)
 	return -1;
 
       if (hasmntopt (&mnt, "ro")
