@@ -1,3 +1,8 @@
+2010-09-03  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/vect/vect-peel-3.c: XFAIL if vect_no_align.
+	* gcc.dg/vect/vect-peel-4.c: Ditto.
+
 2010-09-03  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/45525
