@@ -16256,7 +16256,8 @@ rtl_for_decl_init (tree init, tree type)
     ;
   /* Vectors only work if their mode is supported by the target.
      FIXME: generic vectors ought to work too.  */
-  else if (TREE_CODE (type) == VECTOR_TYPE && TYPE_MODE (type) == BLKmode)
+  else if (TREE_CODE (type) == VECTOR_TYPE
+	   && !VECTOR_MODE_P (TYPE_MODE (type)))
     ;
   /* If the initializer is something that we know will expand into an
      immediate RTL constant, expand it now.  We must be careful not to

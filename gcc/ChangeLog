@@ -1,3 +1,9 @@
+2010-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/45500
+	* dwarf2out.c (rtl_for_decl_init): Give up for all generic vectors,
+	not just generic vectors with BLKmode.
+
 2010-09-03  Richard Guenther  <rguenther@suse.de>
 
 	* tree.def (TARGET_MEM_REF): Merge TMR_SYMBOL and TMR_BASE.
