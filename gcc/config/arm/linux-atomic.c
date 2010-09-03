@@ -155,12 +155,12 @@ __sync_val_compare_and_swap_4 (int *ptr, int oldval, int newval)
     {
       actual_oldval = *ptr;
 
-      if (oldval != actual_oldval)
+      if (__builtin_expect (oldval != actual_oldval, 0))
 	return actual_oldval;
 
       fail = __kernel_cmpxchg (actual_oldval, newval, ptr);
   
-      if (!fail)
+      if (__builtin_expect (!fail, 1))
         return oldval;
     }
 }
@@ -180,7 +180,8 @@ __sync_val_compare_and_swap_4 (int *ptr, int oldval, int newval)
       {									\
 	actual_oldval = *wordptr;					\
 									\
-	if (((actual_oldval & mask) >> shift) != (unsigned int) oldval)	\
+	if (__builtin_expect (((actual_oldval & mask) >> shift) !=      \
+                              (unsigned int) oldval, 0))                \
           return (actual_oldval & mask) >> shift;			\
 									\
 	actual_newval = (actual_oldval & ~mask)				\
@@ -189,7 +190,7 @@ __sync_val_compare_and_swap_4 (int *ptr, int oldval, int newval)
 	fail = __kernel_cmpxchg (actual_oldval, actual_newval,		\
 				 wordptr);				\
 									\
-	if (!fail)							\
+      if (__builtin_expect (!fail, 1))                                  \
           return oldval;						\
       }									\
   }
