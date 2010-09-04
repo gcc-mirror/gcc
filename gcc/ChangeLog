@@ -1,3 +1,9 @@
+2010-09-04  Jan Hubicka  <jh@suse.cz>
+
+	* tree-switch-conversion.c (build_one_array): Set constructor to be
+	static.
+	* varpool.c (varpool_finalize_decl): Compute const_value_known.
+
 2010-09-04  Richard Guenther  <rguenther@suse.de>
 
 	PR bootstrap/45519
