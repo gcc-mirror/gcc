@@ -1,3 +1,12 @@
+2010-09-04  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/m32r/m32r.c (m32r_function_value, m32r_libcall_value,
+	m32r_function_value_regno_p): New functions.
+	(TARGET_FUNCTION_VALUE, TARGET_LIBCALL_VALUE,
+	TARGET_FUNCTION_VALUE_REGNO_P): Declare.
+	* config/m32r/m32r.h: (FUNCTION_VALUE, LIBCALL_VALUE,
+	FUNCTION_VALUE_REGNO_P): Remove.
+
 2010-09-04  Jan Hubicka  <jh@suse.cz>
 
 	* gimple-fold.c (maybe_fold_reference): Use fold_const_aggregate_ref.
