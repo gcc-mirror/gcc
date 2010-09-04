@@ -21,14 +21,14 @@
    - One for each subroutine inlined into main, that's 3.
    - One for earch subroutine inline into the out of line instances
      of third, second and first.  */
-/* { dg-final { scan-assembler-times "\\(DIE \\(.*?\\) DW_TAG_inlined_subroutine" 6 } } */
+/* { dg-final { scan-assembler-times "\\(DIE \\(\[^\n\]*\\) DW_TAG_inlined_subroutine" 6 } } */
 
 /* Likewise we should have 6 DW_TAG_lexical_block DIEs:
    - One for each subroutine inlined into main, so that's 3.
    - One for each subroutine inlined in the out of line instances
      of third, second and first, that's 3.
 */
-/* { dg-final { scan-assembler-times "\\(DIE \\(.*?\\) DW_TAG_lexical_block" 6 } } */
+/* { dg-final { scan-assembler-times "\\(DIE \\(\[^\n\]*\\) DW_TAG_lexical_block" 6 } } */
 
 
 /* There are 3 DW_AT_inline attributes: one per abstract inline instance.
