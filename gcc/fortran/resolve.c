@@ -6714,6 +6714,34 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
       goto failure;
     }
 
+  if (!code->expr3)
+    {
+      /* Set up default initializer if needed.  */
+      gfc_typespec ts;
+
+      if (code->ext.alloc.ts.type == BT_DERIVED)
+	ts = code->ext.alloc.ts;
+      else
+	ts = e->ts;
+
+      if (ts.type == BT_CLASS)
+	ts = ts.u.derived->components->ts;
+
+      if (ts.type == BT_DERIVED)
+	{
+	  code->expr3 = gfc_default_initializer (&ts);
+	  gfc_resolve_expr (code->expr3);
+	}
+    }
+  else if (code->expr3->mold && code->expr3->ts.type == BT_DERIVED)
+    {
+      /* Default initialization via MOLD (non-polymorphic).  */
+      gfc_expr *rhs = gfc_default_initializer (&code->expr3->ts);
+      gfc_resolve_expr (rhs);
+      gfc_free_expr (code->expr3);
+      code->expr3 = rhs;
+    }
+
   if (e->ts.type == BT_CLASS)
     {
       /* Make sure the vtab symbol is present when

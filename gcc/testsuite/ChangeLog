@@ -1,3 +1,8 @@
+2010-09-04  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45507
+	* gfortran.dg/allocate_alloc_opt_12.f90: New.
+
 2010-09-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/opts-4.c: New test.
