@@ -31,6 +31,30 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "target.h"
 
+/* CVAL is value taken from DECL_INITIAL of variable.  Try to transorm it into
+   acceptable form for is_gimple_min_invariant.   */
+
+tree
+canonicalize_constructor_val (tree cval)
+{
+  STRIP_NOPS (cval);
+  if (TREE_CODE (cval) == POINTER_PLUS_EXPR)
+    {
+      tree t = maybe_fold_offset_to_address (EXPR_LOCATION (cval),
+					     TREE_OPERAND (cval, 0),
+					     TREE_OPERAND (cval, 1),
+					     TREE_TYPE (cval));
+      if (t)
+	cval = t;
+    }
+  if (TREE_CODE (cval) == ADDR_EXPR)
+    {
+      tree base = get_base_address (TREE_OPERAND (cval, 0));
+      if (base && TREE_CODE (base) == VAR_DECL)
+	add_referenced_var (base);
+    }
+  return cval;
+}
 
 /* If SYM is a constant variable with known value, return the value.
    NULL_TREE is returned otherwise.  */
@@ -45,21 +69,9 @@ get_symbol_constant_value (tree sym)
       tree val = DECL_INITIAL (sym);
       if (val)
 	{
-	  STRIP_NOPS (val);
+	  val = canonicalize_constructor_val (val);
 	  if (is_gimple_min_invariant (val))
-	    {
-	      if (TREE_CODE (val) == ADDR_EXPR)
-		{
-		  tree base = get_base_address (TREE_OPERAND (val, 0));
-		  if (base && TREE_CODE (base) == VAR_DECL)
-		    {
-		      TREE_ADDRESSABLE (base) = 1;
-		      if (gimple_referenced_vars (cfun))
-			add_referenced_var (base);
-		    }
-		}
-	      return val;
-	    }
+	    return val;
 	}
       /* Variables declared 'const' without an initializer
 	 have zero as the initializer if they may not be
@@ -462,14 +474,11 @@ static tree
 maybe_fold_reference (tree expr, bool is_lhs)
 {
   tree *t = &expr;
+  tree result;
 
-  if (TREE_CODE (expr) == ARRAY_REF
-      && !is_lhs)
-    {
-      tree tem = fold_read_from_constant_string (expr);
-      if (tem)
-	return tem;
-    }
+  if (!is_lhs
+      && (result = fold_const_aggregate_ref (expr)))
+    return result;
 
   /* ???  We might want to open-code the relevant remaining cases
      to avoid using the generic fold.  */
