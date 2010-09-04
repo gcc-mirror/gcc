@@ -518,6 +518,7 @@ build_one_array (gimple swtch, int num, tree arr_index_type, gimple phi,
       array_type = build_array_type (value_type, arr_index_type);
       ctor = build_constructor (array_type, info.constructors[num]);
       TREE_CONSTANT (ctor) = true;
+      TREE_STATIC (ctor) = true;
 
       decl = build_decl (loc, VAR_DECL, NULL_TREE, array_type);
       TREE_STATIC (decl) = 1;

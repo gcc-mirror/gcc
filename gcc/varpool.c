@@ -423,6 +423,7 @@ varpool_finalize_decl (tree decl)
      there.  */
   else if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
     varpool_mark_needed_node (node);
+  node->const_value_known |= varpool_decide_const_value_known (node);
   if (cgraph_global_info_ready)
     varpool_assemble_pending_decls ();
 }
