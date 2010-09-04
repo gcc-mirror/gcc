@@ -1,3 +1,37 @@
+2010-09-04  Paolo Bonzini  <bonzini@gnu.org>
+
+	* df.h (enum df_ref_class): Remove DF_REF_EXTRACT.
+	(struct df_extract_ref): Remove.
+	(union df_ref_d): Remove extract_ref member.
+	(df_ref_create): Remove last three arguments.
+	(DF_REF_LOC): Remove DF_REF_EXTRACT case.
+	* df-scan.c (df_ref_record): Remove last three arguments, do not
+	pass them to df_ref_create_structure.
+	(df_uses_record): Remove first and last three arguments.  Replace
+	first argument with DF_REF_REGULAR, adjust calls to remove the
+	width, offset and mode.  Always call recursively on the second
+	and third argument of ZERO_EXTRACT and SIGN_EXTRACT.
+	(df_ref_create_structure): Remove first argument.
+	(struct df_scan_problem_data): Remove ref_extract_pool.
+	(df_scan_free_internal): Do not free it.
+	(df_scan_alloc): Do not allocate it.
+	(df_ref_create): Remove last three arguments, do not pass them to
+	df_ref_create_structure.
+	(df_free_ref): Remove DF_REF_EXTRACT case.
+	(df_notes_rescan): Adjust call to df_uses_record.
+	(df_ref_equal_p, df_ref_compare, df_ref_create_structure):
+	Remove DF_REF_EXTRACT case.
+	(df_def_record_1): Do not special case class for a ZERO_EXTRACT lhs.
+	Adjust calls to df_ref_record, using DF_REF_REGULAR for all REG
+	and SUBREG definitions.
+	(df_get_conditional_uses): Remove references to width/offset/mode,
+	adjust call to df_ref_create_structure.
+	(df_get_call_refs, df_insn_refs_collect, df_bb_refs_collect,
+	df_entry_block_defs_collect, df_exit_block_uses_collect): Adjust
+	calls to df_uses_record and df_ref_record.
+	* fwprop.c (update_df): Remove references to width/offset/mode,
+	adjust call to df_ref_create.
+
 2010-09-03  Jan Hubicka  <jh@suse.cz>
 
 	* ipa.c (build_cdtor): Take VECtor as argument; fix array walk.
