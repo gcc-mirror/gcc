@@ -1,5 +1,10 @@
 2010-09-04  Jan Hubicka  <jh@suse.cz>
 
+	* gcc.dg/tree-ssa/foldconst-2.c: New testcase.
+	* gcc.dg/tree-ssa/foldconst-3.c: New testcase.
+
+2010-09-04  Jan Hubicka  <jh@suse.cz>
+
 	* gcc.dg/tree-ssa/foldconst-1.c: New testcase.
 
 2010-09-04  Janus Weil  <janus@gcc.gnu.org>
