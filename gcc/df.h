@@ -67,7 +67,7 @@ enum df_flow_dir
   };
 
 /* Descriminator for the various df_ref types.  */
-enum df_ref_class {DF_REF_BASE, DF_REF_ARTIFICIAL, DF_REF_REGULAR, DF_REF_EXTRACT};
+enum df_ref_class {DF_REF_BASE, DF_REF_ARTIFICIAL, DF_REF_REGULAR};
 
 /* The first of these us a set of a registers.  The remaining three
    are all uses of a register (the mem_load and mem_store relate to
@@ -402,26 +402,12 @@ struct df_regular_ref
   rtx *loc;
 };
 
-
-/* A df_ref_extract is just a df_ref with a width and offset field at
-   the end of it.  It is used to hold this information if the ref was
-   wrapped by a SIGN_EXTRACT or a ZERO_EXTRACT and to pass this info
-   to passes that wish to process partial regs precisely.  */
-struct df_extract_ref
-{
-  struct df_regular_ref base;
-  int width;
-  int offset;
-  enum machine_mode mode;
-};
-
 /* Union of the different kinds of defs/uses placeholders.  */
 union df_ref_d
 {
   struct df_base_ref base;
   struct df_regular_ref regular_ref;
   struct df_artificial_ref artificial_ref;
-  struct df_extract_ref extract_ref;
 };
 typedef union df_ref_d *df_ref;
 
@@ -645,7 +631,7 @@ struct df_d
 #define DF_REF_REAL_LOC(REF) (GET_CODE (*((REF)->regular_ref.loc)) == SUBREG \
                                ? &SUBREG_REG (*((REF)->regular_ref.loc)) : ((REF)->regular_ref.loc))
 #define DF_REF_REG(REF) ((REF)->base.reg)
-#define DF_REF_LOC(REF) ((DF_REF_CLASS(REF) == DF_REF_REGULAR || DF_REF_CLASS(REF) == DF_REF_EXTRACT) ? \
+#define DF_REF_LOC(REF) (DF_REF_CLASS(REF) == DF_REF_REGULAR ? \
 			 (REF)->regular_ref.loc : NULL)
 #define DF_REF_BB(REF) (DF_REF_IS_ARTIFICIAL(REF) ? \
                         (REF)->artificial_ref.bb : BLOCK_FOR_INSN (DF_REF_INSN(REF)))
@@ -994,8 +980,7 @@ extern void df_grow_reg_info (void);
 extern void df_grow_insn_info (void);
 extern void df_scan_blocks (void);
 extern df_ref df_ref_create (rtx, rtx *, rtx,basic_block,
-				     enum df_ref_type, int ref_flags,
-				     int, int, enum machine_mode);
+			     enum df_ref_type, int ref_flags);
 extern void df_ref_remove (df_ref);
 extern struct df_insn_info * df_insn_create_insn_record (rtx);
 extern void df_insn_delete (basic_block, unsigned int);

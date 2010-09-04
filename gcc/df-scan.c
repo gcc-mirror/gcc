@@ -110,26 +110,22 @@ static struct df_mw_hardreg * df_null_mw_rec[1];
 static void df_ref_record (enum df_ref_class, struct df_collection_rec *,
 			   rtx, rtx *,
 			   basic_block, struct df_insn_info *,
-			   enum df_ref_type, int ref_flags,
-			   int, int, enum machine_mode);
+			   enum df_ref_type, int ref_flags);
 static void df_def_record_1 (struct df_collection_rec *, rtx,
 			     basic_block, struct df_insn_info *,
 			     int ref_flags);
 static void df_defs_record (struct df_collection_rec *, rtx,
 			    basic_block, struct df_insn_info *,
 			    int ref_flags);
-static void df_uses_record (enum df_ref_class, struct df_collection_rec *,
+static void df_uses_record (struct df_collection_rec *,
 			    rtx *, enum df_ref_type,
 			    basic_block, struct df_insn_info *,
-			    int ref_flags,
-			    int, int, enum machine_mode);
+			    int ref_flags);
 
 static df_ref df_ref_create_structure (enum df_ref_class,
 				       struct df_collection_rec *, rtx, rtx *,
 				       basic_block, struct df_insn_info *,
-				       enum df_ref_type, int ref_flags,
-				       int, int, enum machine_mode);
-
+				       enum df_ref_type, int ref_flags);
 static void df_insn_refs_collect (struct df_collection_rec*,
 				  basic_block, struct df_insn_info *);
 static void df_canonize_collection_rec (struct df_collection_rec *);
@@ -182,7 +178,6 @@ struct df_scan_problem_data
   alloc_pool ref_base_pool;
   alloc_pool ref_artificial_pool;
   alloc_pool ref_regular_pool;
-  alloc_pool ref_extract_pool;
   alloc_pool insn_pool;
   alloc_pool reg_pool;
   alloc_pool mw_reg_pool;
@@ -269,7 +264,6 @@ df_scan_free_internal (void)
   free_alloc_pool (problem_data->ref_base_pool);
   free_alloc_pool (problem_data->ref_artificial_pool);
   free_alloc_pool (problem_data->ref_regular_pool);
-  free_alloc_pool (problem_data->ref_extract_pool);
   free_alloc_pool (problem_data->insn_pool);
   free_alloc_pool (problem_data->reg_pool);
   free_alloc_pool (problem_data->mw_reg_pool);
@@ -344,9 +338,6 @@ df_scan_alloc (bitmap all_blocks ATTRIBUTE_UNUSED)
   problem_data->ref_regular_pool
     = create_alloc_pool ("df_scan ref regular",
 			 sizeof (struct df_regular_ref), block_size);
-  problem_data->ref_extract_pool
-    = create_alloc_pool ("df_scan ref extract",
-			 sizeof (struct df_extract_ref), block_size);
   problem_data->insn_pool
     = create_alloc_pool ("df_scan insn",
 			 sizeof (struct df_insn_info), block_size);
@@ -689,19 +680,13 @@ df_scan_blocks (void)
 
 
 /* Create a new ref of type DF_REF_TYPE for register REG at address
-   LOC within INSN of BB.  This function is only used externally.
-
-   If the REF_FLAGS field contain DF_REF_SIGN_EXTRACT or
-   DF_REF_ZERO_EXTRACT.  WIDTH, OFFSET and MODE are used to access the
-   fields if they were constants.  Otherwise they should be -1 if
-   those flags were set.  */
+   LOC within INSN of BB.  This function is only used externally.  */
 
 df_ref
 df_ref_create (rtx reg, rtx *loc, rtx insn,
 	       basic_block bb,
 	       enum df_ref_type ref_type,
-	       int ref_flags,
-	       int width, int offset, enum machine_mode mode)
+	       int ref_flags)
 {
   df_ref ref;
   struct df_reg_info **reg_info;
@@ -717,15 +702,12 @@ df_ref_create (rtx reg, rtx *loc, rtx insn,
   /* You cannot hack artificial refs.  */
   gcc_assert (insn);
 
-  if (width != -1 || offset != -1)
-    cl = DF_REF_EXTRACT;
-  else if (loc)
+  if (loc)
     cl = DF_REF_REGULAR;
   else
     cl = DF_REF_BASE;
   ref = df_ref_create_structure (cl, NULL, reg, loc, bb, DF_INSN_INFO_GET (insn),
-                                 ref_type, ref_flags,
-				 width, offset, mode);
+                                 ref_type, ref_flags);
 
   if (DF_REF_REG_DEF_P (ref))
     {
@@ -842,10 +824,6 @@ df_free_ref (df_ref ref)
 
     case DF_REF_REGULAR:
       pool_free (problem_data->ref_regular_pool, ref);
-      break;
-
-    case DF_REF_EXTRACT:
-      pool_free (problem_data->ref_extract_pool, ref);
       break;
     }
 }
@@ -2011,7 +1989,7 @@ df_ref_change_reg_with_loc_1 (struct df_reg_info *old_df,
   while (the_ref)
     {
       if ((!DF_REF_IS_ARTIFICIAL (the_ref))
-	  && (DF_REF_LOC (the_ref))
+	  && DF_REF_LOC (the_ref)
 	  && (*DF_REF_LOC (the_ref) == loc))
 	{
 	  df_ref next_ref = DF_REF_NEXT_REG (the_ref);
@@ -2214,9 +2192,9 @@ df_notes_rescan (rtx insn)
 	    {
 	    case REG_EQUIV:
 	    case REG_EQUAL:
-	      df_uses_record (DF_REF_REGULAR, &collection_rec,
+	      df_uses_record (&collection_rec,
 			      &XEXP (note, 0), DF_REF_REG_USE,
-			      bb, insn_info, DF_REF_IN_NOTE, -1, -1, VOIDmode);
+			      bb, insn_info, DF_REF_IN_NOTE);
 	    default:
 	      break;
 	    }
@@ -2310,13 +2288,6 @@ df_ref_equal_p (df_ref ref1, df_ref ref2)
     case DF_REF_BASE:
       return true;
 
-    case DF_REF_EXTRACT:
-      if ((DF_REF_EXTRACT_OFFSET (ref1) != DF_REF_EXTRACT_OFFSET (ref2))
-	  || (DF_REF_EXTRACT_WIDTH (ref1) != DF_REF_EXTRACT_WIDTH (ref2))
-	  || (DF_REF_EXTRACT_MODE (ref1) != DF_REF_EXTRACT_MODE (ref2)))
-	return false;
-      /* fallthru.  */
-
     case DF_REF_REGULAR:
       return DF_REF_LOC (ref1) == DF_REF_LOC (ref2);
 
@@ -2371,17 +2342,6 @@ df_ref_compare (const void *r1, const void *r2)
 	return 1;
     }
 
-  /* The classes are the same at this point so it is safe to only look
-     at ref1.  */
-  if (DF_REF_CLASS (ref1) == DF_REF_EXTRACT)
-    {
-      if (DF_REF_EXTRACT_OFFSET (ref1) != DF_REF_EXTRACT_OFFSET (ref2))
-	return DF_REF_EXTRACT_OFFSET (ref1) - DF_REF_EXTRACT_OFFSET (ref2);
-      if (DF_REF_EXTRACT_WIDTH (ref1) != DF_REF_EXTRACT_WIDTH (ref2))
-	return DF_REF_EXTRACT_WIDTH (ref1) - DF_REF_EXTRACT_WIDTH (ref2);
-      if (DF_REF_EXTRACT_MODE (ref1) != DF_REF_EXTRACT_MODE (ref2))
-	return DF_REF_EXTRACT_MODE (ref1) - DF_REF_EXTRACT_MODE (ref2);
-    }
   return (int)DF_REF_ORDER (ref1) - (int)DF_REF_ORDER (ref2);
 }
 
@@ -2762,12 +2722,7 @@ df_refs_add_to_chains (struct df_collection_rec *collection_rec,
 }
 
 
-/* Allocate a ref and initialize its fields.
-
-   If the REF_FLAGS field contain DF_REF_SIGN_EXTRACT or
-   DF_REF_ZERO_EXTRACT.  WIDTH, OFFSET and MODE are used to access the fields
-   if they were constants.  Otherwise they should be -1 if those flags
-   were set.  */
+/* Allocate a ref and initialize its fields.  */
 
 static df_ref
 df_ref_create_structure (enum df_ref_class cl,
@@ -2775,8 +2730,7 @@ df_ref_create_structure (enum df_ref_class cl,
 			 rtx reg, rtx *loc,
 			 basic_block bb, struct df_insn_info *info,
 			 enum df_ref_type ref_type,
-			 int ref_flags,
-			 int width, int offset, enum machine_mode mode)
+			 int ref_flags)
 {
   df_ref this_ref = NULL;
   int regno = REGNO (GET_CODE (reg) == SUBREG ? SUBREG_REG (reg) : reg);
@@ -2798,15 +2752,6 @@ df_ref_create_structure (enum df_ref_class cl,
 
     case DF_REF_REGULAR:
       this_ref = (df_ref) pool_alloc (problem_data->ref_regular_pool);
-      this_ref->regular_ref.loc = loc;
-      gcc_checking_assert (loc);
-      break;
-
-    case DF_REF_EXTRACT:
-      this_ref = (df_ref) pool_alloc (problem_data->ref_extract_pool);
-      DF_REF_EXTRACT_WIDTH (this_ref) = width;
-      DF_REF_EXTRACT_OFFSET (this_ref) = offset;
-      DF_REF_EXTRACT_MODE (this_ref) = mode;
       this_ref->regular_ref.loc = loc;
       gcc_checking_assert (loc);
       break;
@@ -2859,12 +2804,7 @@ df_ref_create_structure (enum df_ref_class cl,
 
 
 /* Create new references of type DF_REF_TYPE for each part of register REG
-   at address LOC within INSN of BB.
-
-   If the REF_FLAGS field contain DF_REF_SIGN_EXTRACT or
-   DF_REF_ZERO_EXTRACT.  WIDTH, OFFSET and MODE are used to access the
-   fields if they were constants.  Otherwise they should be -1 if
-   those flags were set.  */
+   at address LOC within INSN of BB.  */
 
 
 static void
@@ -2873,8 +2813,7 @@ df_ref_record (enum df_ref_class cl,
                rtx reg, rtx *loc,
 	       basic_block bb, struct df_insn_info *insn_info,
 	       enum df_ref_type ref_type,
-	       int ref_flags,
-	       int width, int offset, enum machine_mode mode)
+	       int ref_flags)
 {
   unsigned int regno;
 
@@ -2924,8 +2863,7 @@ df_ref_record (enum df_ref_class cl,
       for (i = regno; i < endregno; i++)
 	{
 	  ref = df_ref_create_structure (cl, collection_rec, regno_reg_rtx[i], loc,
-					 bb, insn_info, ref_type, ref_flags,
-					 width, offset, mode);
+					 bb, insn_info, ref_type, ref_flags);
 
           gcc_assert (ORIGINAL_REGNO (DF_REF_REG (ref)) == i);
 	}
@@ -2933,7 +2871,7 @@ df_ref_record (enum df_ref_class cl,
   else
     {
       df_ref_create_structure (cl, collection_rec, reg, loc, bb, insn_info,
-			       ref_type, ref_flags, width, offset, mode);
+			       ref_type, ref_flags);
     }
 }
 
@@ -2967,10 +2905,6 @@ df_def_record_1 (struct df_collection_rec *collection_rec,
 {
   rtx *loc;
   rtx dst;
-  int offset = -1;
-  int width = -1;
-  enum machine_mode mode = VOIDmode;
-  enum df_ref_class cl = DF_REF_REGULAR;
 
  /* We may recursively call ourselves on EXPR_LIST when dealing with PARALLEL
      construct.  */
@@ -3010,15 +2944,6 @@ df_def_record_1 (struct df_collection_rec *collection_rec,
     {
       flags |= DF_REF_READ_WRITE | DF_REF_PARTIAL | DF_REF_ZERO_EXTRACT;
 
-      if (CONST_INT_P (XEXP (dst, 1))
-	  && CONST_INT_P (XEXP (dst, 2)))
-	{
-	  width = INTVAL (XEXP (dst, 1));
-	  offset = INTVAL (XEXP (dst, 2));
-	  mode = GET_MODE (dst);
-	  cl = DF_REF_EXTRACT;
-	}
-
       loc = &XEXP (dst, 0);
       dst = *loc;
     }
@@ -3026,16 +2951,14 @@ df_def_record_1 (struct df_collection_rec *collection_rec,
   /* At this point if we do not have a reg or a subreg, just return.  */
   if (REG_P (dst))
     {
-      df_ref_record (cl, collection_rec,
-		     dst, loc, bb, insn_info, DF_REF_REG_DEF, flags,
-		     width, offset, mode);
+      df_ref_record (DF_REF_REGULAR, collection_rec,
+		     dst, loc, bb, insn_info, DF_REF_REG_DEF, flags);
 
       /* We want to keep sp alive everywhere - by making all
 	 writes to sp also use of sp. */
       if (REGNO (dst) == STACK_POINTER_REGNUM)
 	df_ref_record (DF_REF_BASE, collection_rec,
-		       dst, NULL, bb, insn_info, DF_REF_REG_USE, flags,
-		       width, offset, mode);
+		       dst, NULL, bb, insn_info, DF_REF_REG_USE, flags);
     }
   else if (GET_CODE (dst) == SUBREG && REG_P (SUBREG_REG (dst)))
     {
@@ -3044,9 +2967,8 @@ df_def_record_1 (struct df_collection_rec *collection_rec,
 
       flags |= DF_REF_SUBREG;
 
-      df_ref_record (cl, collection_rec,
-		     dst, loc, bb, insn_info, DF_REF_REG_DEF, flags,
-		     width, offset, mode);
+      df_ref_record (DF_REF_REGULAR, collection_rec,
+		     dst, loc, bb, insn_info, DF_REF_REG_DEF, flags);
     }
 }
 
@@ -3083,19 +3005,13 @@ df_defs_record (struct df_collection_rec *collection_rec,
 }
 
 
-/* Process all the registers used in the rtx at address LOC.
-
-   If the REF_FLAGS field contain DF_REF_SIGN_EXTRACT or
-   DF_REF_ZERO_EXTRACT.  WIDTH, OFFSET and MODE are used to access the
-   fields if they were constants.  Otherwise they should be -1 if
-   those flags were set.  */
+/* Process all the registers used in the rtx at address LOC.  */
 
 static void
-df_uses_record (enum df_ref_class cl, struct df_collection_rec *collection_rec,
+df_uses_record (struct df_collection_rec *collection_rec,
                 rtx *loc, enum df_ref_type ref_type,
 		basic_block bb, struct df_insn_info *insn_info,
-		int flags,
-		int width, int offset, enum machine_mode mode)
+		int flags)
 {
   RTX_CODE code;
   rtx x;
@@ -3124,20 +3040,19 @@ df_uses_record (enum df_ref_class cl, struct df_collection_rec *collection_rec,
       /* If we are clobbering a MEM, mark any registers inside the address
 	 as being used.  */
       if (MEM_P (XEXP (x, 0)))
-	df_uses_record (cl, collection_rec,
+	df_uses_record (collection_rec,
 			&XEXP (XEXP (x, 0), 0),
 			DF_REF_REG_MEM_STORE,
 		        bb, insn_info,
-			flags, width, offset, mode);
+			flags);
 
       /* If we're clobbering a REG then we have a def so ignore.  */
       return;
 
     case MEM:
-      df_uses_record (cl, collection_rec,
+      df_uses_record (collection_rec,
 		      &XEXP (x, 0), DF_REF_REG_MEM_LOAD,
-		      bb, insn_info, flags & DF_REF_IN_NOTE,
-		      width, offset, mode);
+		      bb, insn_info, flags & DF_REF_IN_NOTE);
       return;
 
     case SUBREG:
@@ -3147,42 +3062,36 @@ df_uses_record (enum df_ref_class cl, struct df_collection_rec *collection_rec,
       if (!REG_P (SUBREG_REG (x)))
 	{
 	  loc = &SUBREG_REG (x);
-	  df_uses_record (cl, collection_rec, loc, ref_type, bb, insn_info, flags,
-			  width, offset, mode);
+	  df_uses_record (collection_rec, loc, ref_type, bb, insn_info, flags);
 	  return;
 	}
       /* ... Fall through ...  */
 
     case REG:
-      df_ref_record (cl, collection_rec,
+      df_ref_record (DF_REF_REGULAR, collection_rec,
 		     x, loc, bb, insn_info,
-		     ref_type, flags,
-		     width, offset, mode);
+		     ref_type, flags);
       return;
 
     case SIGN_EXTRACT:
     case ZERO_EXTRACT:
       {
-	/* If the parameters to the zero or sign extract are
-	   constants, strip them off and recurse, otherwise there is
-	   no information that we can gain from this operation.  */
-	if (CONST_INT_P (XEXP (x, 1))
-	    && CONST_INT_P (XEXP (x, 2)))
-	  {
-	    width = INTVAL (XEXP (x, 1));
-	    offset = INTVAL (XEXP (x, 2));
-	    mode = GET_MODE (x);
+        df_uses_record (collection_rec,
+                        &XEXP (x, 1), ref_type, bb, insn_info, flags);
+        df_uses_record (collection_rec,
+                        &XEXP (x, 2), ref_type, bb, insn_info, flags);
 
-	    if (code == ZERO_EXTRACT)
-	      flags |= DF_REF_ZERO_EXTRACT;
-	    else
-	      flags |= DF_REF_SIGN_EXTRACT;
+        /* If the parameters to the zero or sign extract are
+           constants, strip them off and recurse, otherwise there is
+           no information that we can gain from this operation.  */
+        if (code == ZERO_EXTRACT)
+          flags |= DF_REF_ZERO_EXTRACT;
+        else
+          flags |= DF_REF_SIGN_EXTRACT;
 
-	    df_uses_record (DF_REF_EXTRACT, collection_rec,
-			    &XEXP (x, 0), ref_type, bb, insn_info, flags,
-			    width, offset, mode);
-	    return;
-	  }
+        df_uses_record (collection_rec,
+                        &XEXP (x, 0), ref_type, bb, insn_info, flags);
+        return;
       }
       break;
 
@@ -3190,19 +3099,17 @@ df_uses_record (enum df_ref_class cl, struct df_collection_rec *collection_rec,
       {
 	rtx dst = SET_DEST (x);
 	gcc_assert (!(flags & DF_REF_IN_NOTE));
-	df_uses_record (cl, collection_rec,
-			&SET_SRC (x), DF_REF_REG_USE, bb, insn_info, flags,
-			width, offset, mode);
+	df_uses_record (collection_rec,
+			&SET_SRC (x), DF_REF_REG_USE, bb, insn_info, flags);
 
 	switch (GET_CODE (dst))
 	  {
 	    case SUBREG:
 	      if (df_read_modify_subreg_p (dst))
 		{
-		  df_uses_record (cl, collection_rec, &SUBREG_REG (dst),
+		  df_uses_record (collection_rec, &SUBREG_REG (dst),
 				  DF_REF_REG_USE, bb, insn_info,
-				  flags | DF_REF_READ_WRITE | DF_REF_SUBREG,
-				  width, offset, mode);
+				  flags | DF_REF_READ_WRITE | DF_REF_SUBREG);
 		  break;
 		}
 	      /* Fall through.  */
@@ -3213,9 +3120,8 @@ df_uses_record (enum df_ref_class cl, struct df_collection_rec *collection_rec,
 	    case CC0:
 		break;
 	    case MEM:
-	      df_uses_record (cl, collection_rec, &XEXP (dst, 0),
-			      DF_REF_REG_MEM_STORE, bb, insn_info, flags,
-			      width, offset, mode);
+	      df_uses_record (collection_rec, &XEXP (dst, 0),
+			      DF_REF_REG_MEM_STORE, bb, insn_info, flags);
 	      break;
 	    case STRICT_LOW_PART:
 	      {
@@ -3223,53 +3129,26 @@ df_uses_record (enum df_ref_class cl, struct df_collection_rec *collection_rec,
 		/* A strict_low_part uses the whole REG and not just the
 		 SUBREG.  */
 		dst = XEXP (dst, 0);
-		df_uses_record (cl, collection_rec,
+		df_uses_record (collection_rec,
 				(GET_CODE (dst) == SUBREG) ? &SUBREG_REG (dst) : temp,
 				DF_REF_REG_USE, bb, insn_info,
-				DF_REF_READ_WRITE | DF_REF_STRICT_LOW_PART,
-				width, offset, mode);
+				DF_REF_READ_WRITE | DF_REF_STRICT_LOW_PART);
 	      }
 	      break;
 	    case ZERO_EXTRACT:
 	      {
-		if (CONST_INT_P (XEXP (dst, 1))
-		    && CONST_INT_P (XEXP (dst, 2)))
-		  {
-		    width = INTVAL (XEXP (dst, 1));
-		    offset = INTVAL (XEXP (dst, 2));
-		    mode = GET_MODE (dst);
-		    if (GET_CODE (XEXP (dst,0)) == MEM)
-		      {
-			/* Handle the case of zero_extract(mem(...)) in the set dest.
-			   This special case is allowed only if the mem is a single byte and
-			   is useful to set a bitfield in memory.  */
-			df_uses_record (DF_REF_EXTRACT, collection_rec, &XEXP (XEXP (dst,0), 0),
-					DF_REF_REG_MEM_STORE, bb, insn_info,
-					DF_REF_ZERO_EXTRACT,
-					width, offset, mode);
-		      }
-		    else
-		      {
-			df_uses_record (DF_REF_EXTRACT, collection_rec, &XEXP (dst, 0),
-					DF_REF_REG_USE, bb, insn_info,
-					DF_REF_READ_WRITE | DF_REF_ZERO_EXTRACT,
-					width, offset, mode);
-		      }
-		  }
-		else
-		  {
-		    df_uses_record (cl, collection_rec, &XEXP (dst, 1),
-				    DF_REF_REG_USE, bb, insn_info, flags,
-				    width, offset, mode);
-		    df_uses_record (cl, collection_rec, &XEXP (dst, 2),
-				    DF_REF_REG_USE, bb, insn_info, flags,
-				    width, offset, mode);
-		    df_uses_record (cl, collection_rec, &XEXP (dst, 0),
-				    DF_REF_REG_USE, bb, insn_info,
-				    DF_REF_READ_WRITE | DF_REF_ZERO_EXTRACT,
-				    width, offset, mode);
-		  }
-
+		df_uses_record (collection_rec, &XEXP (dst, 1),
+				DF_REF_REG_USE, bb, insn_info, flags);
+		df_uses_record (collection_rec, &XEXP (dst, 2),
+				DF_REF_REG_USE, bb, insn_info, flags);
+                if (GET_CODE (XEXP (dst,0)) == MEM)
+                  df_uses_record (collection_rec, &XEXP (dst, 0),
+                                  DF_REF_REG_USE, bb, insn_info,
+                                  flags);
+                else
+                  df_uses_record (collection_rec, &XEXP (dst, 0),
+                                  DF_REF_REG_USE, bb, insn_info,
+                                  DF_REF_READ_WRITE | DF_REF_ZERO_EXTRACT);
 	      }
 	      break;
 
@@ -3318,19 +3197,17 @@ df_uses_record (enum df_ref_class cl, struct df_collection_rec *collection_rec,
 	    int j;
 
 	    for (j = 0; j < ASM_OPERANDS_INPUT_LENGTH (x); j++)
-	      df_uses_record (cl, collection_rec, &ASM_OPERANDS_INPUT (x, j),
-			      DF_REF_REG_USE, bb, insn_info, flags,
-			      width, offset, mode);
+	      df_uses_record (collection_rec, &ASM_OPERANDS_INPUT (x, j),
+			      DF_REF_REG_USE, bb, insn_info, flags);
 	    return;
 	  }
 	break;
       }
 
     case VAR_LOCATION:
-      df_uses_record (cl, collection_rec,
+      df_uses_record (collection_rec,
 		      &PAT_VAR_LOCATION_LOC (x),
-		      DF_REF_REG_USE, bb, insn_info,
-		      flags, width, offset, mode);
+		      DF_REF_REG_USE, bb, insn_info, flags);
       return;
 
     case PRE_DEC:
@@ -3341,11 +3218,10 @@ df_uses_record (enum df_ref_class cl, struct df_collection_rec *collection_rec,
     case POST_MODIFY:
       gcc_assert (!DEBUG_INSN_P (insn_info->insn));
       /* Catch the def of the register being modified.  */
-      df_ref_record (cl, collection_rec, XEXP (x, 0), &XEXP (x, 0),
+      df_ref_record (DF_REF_REGULAR, collection_rec, XEXP (x, 0), &XEXP (x, 0),
 		     bb, insn_info,
 		     DF_REF_REG_DEF,
-                     flags | DF_REF_READ_WRITE | DF_REF_PRE_POST_MODIFY,
-		     width, offset, mode);
+                     flags | DF_REF_READ_WRITE | DF_REF_PRE_POST_MODIFY);
 
       /* ... Fall through to handle uses ...  */
 
@@ -3368,18 +3244,16 @@ df_uses_record (enum df_ref_class cl, struct df_collection_rec *collection_rec,
 		loc = &XEXP (x, 0);
 		goto retry;
 	      }
-	    df_uses_record (cl, collection_rec, &XEXP (x, i), ref_type,
-			    bb, insn_info, flags,
-			    width, offset, mode);
+	    df_uses_record (collection_rec, &XEXP (x, i), ref_type,
+			    bb, insn_info, flags);
 	  }
 	else if (fmt[i] == 'E')
 	  {
 	    int j;
 	    for (j = 0; j < XVECLEN (x, i); j++)
-	      df_uses_record (cl, collection_rec,
+	      df_uses_record (collection_rec,
 			      &XVECEXP (x, i, j), ref_type,
-			      bb, insn_info, flags,
-			      width, offset, mode);
+			      bb, insn_info, flags);
 	  }
       }
   }
@@ -3400,23 +3274,12 @@ df_get_conditional_uses (struct df_collection_rec *collection_rec)
     {
       if (DF_REF_FLAGS_IS_SET (ref, DF_REF_CONDITIONAL))
         {
-	  int width = -1;
-	  int offset = -1;
-	  enum machine_mode mode = VOIDmode;
           df_ref use;
-
-	  if (DF_REF_FLAGS_IS_SET (ref, DF_REF_SIGN_EXTRACT | DF_REF_ZERO_EXTRACT))
-	    {
-	      width = DF_REF_EXTRACT_WIDTH (ref);
-	      offset = DF_REF_EXTRACT_OFFSET (ref);
-	      mode = DF_REF_EXTRACT_MODE (ref);
-	    }
 
           use = df_ref_create_structure (DF_REF_CLASS (ref), collection_rec, DF_REF_REG (ref),
 					 DF_REF_LOC (ref), DF_REF_BB (ref),
 					 DF_REF_INSN_INFO (ref), DF_REF_REG_USE,
-					 DF_REF_FLAGS (ref) & ~DF_REF_CONDITIONAL,
-					 width, offset, mode);
+					 DF_REF_FLAGS (ref) & ~DF_REF_CONDITIONAL);
           DF_REF_REGNO (use) = DF_REF_REGNO (ref);
         }
     }
@@ -3453,9 +3316,8 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
        note = XEXP (note, 1))
     {
       if (GET_CODE (XEXP (note, 0)) == USE)
-        df_uses_record (DF_REF_REGULAR, collection_rec, &XEXP (XEXP (note, 0), 0),
-			DF_REF_REG_USE, bb, insn_info, flags, -1, -1,
-			VOIDmode);
+        df_uses_record (collection_rec, &XEXP (XEXP (note, 0), 0),
+			DF_REF_REG_USE, bb, insn_info, flags);
       else if (GET_CODE (XEXP (note, 0)) == CLOBBER)
 	{
 	  if (REG_P (XEXP (XEXP (note, 0), 0)))
@@ -3466,17 +3328,15 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
 				insn_info, flags);
 	    }
 	  else
-	    df_uses_record (DF_REF_REGULAR, collection_rec, &XEXP (note, 0),
-		            DF_REF_REG_USE, bb, insn_info, flags, -1, -1,
-			    VOIDmode);
+	    df_uses_record (collection_rec, &XEXP (note, 0),
+		            DF_REF_REG_USE, bb, insn_info, flags);
 	}
     }
 
   /* The stack ptr is used (honorarily) by a CALL insn.  */
   df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[STACK_POINTER_REGNUM],
 		 NULL, bb, insn_info, DF_REF_REG_USE,
-		 DF_REF_CALL_STACK_USAGE | flags,
-		 -1, -1, VOIDmode);
+		 DF_REF_CALL_STACK_USAGE | flags);
 
   /* Calls may also reference any of the global registers,
      so they are recorded as used.  */
@@ -3484,11 +3344,9 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
     if (global_regs[i])
       {
 	df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
-		       NULL, bb, insn_info, DF_REF_REG_USE, flags, -1, -1,
-		       VOIDmode);
+		       NULL, bb, insn_info, DF_REF_REG_USE, flags);
 	df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
-		       NULL, bb, insn_info, DF_REF_REG_DEF, flags, -1, -1,
-		       VOIDmode);
+		       NULL, bb, insn_info, DF_REF_REG_DEF, flags);
       }
 
   is_sibling_call = SIBLING_CALL_P (insn_info->insn);
@@ -3502,8 +3360,7 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
 				    crtl->return_rtx, NULL)))
         df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[ui],
 		       NULL, bb, insn_info, DF_REF_REG_DEF,
-		       DF_REF_MAY_CLOBBER | flags,
-		       -1, -1, VOIDmode);
+		       DF_REF_MAY_CLOBBER | flags);
     }
 
   bitmap_clear (&defs_generated);
@@ -3539,21 +3396,21 @@ df_insn_refs_collect (struct df_collection_rec* collection_rec,
         {
         case REG_EQUIV:
         case REG_EQUAL:
-          df_uses_record (DF_REF_REGULAR, collection_rec,
+          df_uses_record (collection_rec,
                           &XEXP (note, 0), DF_REF_REG_USE,
-                          bb, insn_info, DF_REF_IN_NOTE, -1, -1, VOIDmode);
+                          bb, insn_info, DF_REF_IN_NOTE);
           break;
         case REG_NON_LOCAL_GOTO:
           /* The frame ptr is used by a non-local goto.  */
           df_ref_record (DF_REF_BASE, collection_rec,
                          regno_reg_rtx[FRAME_POINTER_REGNUM],
                          NULL, bb, insn_info,
-                         DF_REF_REG_USE, 0, -1, -1, VOIDmode);
+                         DF_REF_REG_USE, 0);
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
           df_ref_record (DF_REF_BASE, collection_rec,
                          regno_reg_rtx[HARD_FRAME_POINTER_REGNUM],
                          NULL, bb, insn_info,
-                         DF_REF_REG_USE, 0, -1, -1, VOIDmode);
+                         DF_REF_REG_USE, 0);
 #endif
           break;
         default:
@@ -3566,9 +3423,8 @@ df_insn_refs_collect (struct df_collection_rec* collection_rec,
 		      (is_cond_exec) ? DF_REF_CONDITIONAL : 0);
 
   /* Record the register uses.  */
-  df_uses_record (DF_REF_REGULAR, collection_rec,
-		  &PATTERN (insn_info->insn), DF_REF_REG_USE, bb, insn_info, 0,
-		  -1, -1, VOIDmode);
+  df_uses_record (collection_rec,
+		  &PATTERN (insn_info->insn), DF_REF_REG_USE, bb, insn_info, 0);
 
   /* DF_REF_CONDITIONAL needs corresponding USES. */
   if (is_cond_exec)
@@ -3639,8 +3495,7 @@ df_bb_refs_collect (struct df_collection_rec *collection_rec, basic_block bb)
 	  if (regno == INVALID_REGNUM)
 	    break;
 	  df_ref_record (DF_REF_ARTIFICIAL, collection_rec, regno_reg_rtx[regno], NULL,
-			 bb, NULL, DF_REF_REG_DEF, DF_REF_AT_TOP, -1, -1,
-			 VOIDmode);
+			 bb, NULL, DF_REF_REG_DEF, DF_REF_AT_TOP);
 	}
     }
 #endif
@@ -3649,7 +3504,7 @@ df_bb_refs_collect (struct df_collection_rec *collection_rec, basic_block bb)
      non-local goto.  */
   if (bb->flags & BB_NON_LOCAL_GOTO_TARGET)
     df_ref_record (DF_REF_ARTIFICIAL, collection_rec, hard_frame_pointer_rtx, NULL,
-		   bb, NULL, DF_REF_REG_DEF, DF_REF_AT_TOP, -1, -1, VOIDmode);
+		   bb, NULL, DF_REF_REG_DEF, DF_REF_AT_TOP);
 
   /* Add the artificial uses.  */
   if (bb->index >= NUM_FIXED_BLOCKS)
@@ -3663,7 +3518,7 @@ df_bb_refs_collect (struct df_collection_rec *collection_rec, basic_block bb)
       EXECUTE_IF_SET_IN_BITMAP (au, 0, regno, bi)
 	{
 	  df_ref_record (DF_REF_ARTIFICIAL, collection_rec, regno_reg_rtx[regno], NULL,
-			 bb, NULL, DF_REF_REG_USE, 0, -1, -1, VOIDmode);
+			 bb, NULL, DF_REF_REG_USE, 0);
 	}
     }
 
@@ -3939,8 +3794,7 @@ df_entry_block_defs_collect (struct df_collection_rec *collection_rec,
   EXECUTE_IF_SET_IN_BITMAP (entry_block_defs, 0, i, bi)
     {
       df_ref_record (DF_REF_ARTIFICIAL, collection_rec, regno_reg_rtx[i], NULL,
-		     ENTRY_BLOCK_PTR, NULL, DF_REF_REG_DEF, 0, -1, -1,
-		     VOIDmode);
+		     ENTRY_BLOCK_PTR, NULL, DF_REF_REG_DEF, 0);
     }
 
   df_canonize_collection_rec (collection_rec);
@@ -4102,7 +3956,7 @@ df_exit_block_uses_collect (struct df_collection_rec *collection_rec, bitmap exi
 
   EXECUTE_IF_SET_IN_BITMAP (exit_block_uses, 0, i, bi)
     df_ref_record (DF_REF_ARTIFICIAL, collection_rec, regno_reg_rtx[i], NULL,
-		   EXIT_BLOCK_PTR, NULL, DF_REF_REG_USE, 0, -1, -1, VOIDmode);
+		   EXIT_BLOCK_PTR, NULL, DF_REF_REG_USE, 0);
 
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
   /* It is deliberate that this is not put in the exit block uses but
@@ -4112,7 +3966,7 @@ df_exit_block_uses_collect (struct df_collection_rec *collection_rec, bitmap exi
       && bb_has_eh_pred (EXIT_BLOCK_PTR)
       && fixed_regs[ARG_POINTER_REGNUM])
     df_ref_record (DF_REF_ARTIFICIAL, collection_rec, regno_reg_rtx[ARG_POINTER_REGNUM], NULL,
-		   EXIT_BLOCK_PTR, NULL, DF_REF_REG_USE, 0, -1, -1, VOIDmode);
+		   EXIT_BLOCK_PTR, NULL, DF_REF_REG_USE, 0);
 #endif
 
   df_canonize_collection_rec (collection_rec);

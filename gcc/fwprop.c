@@ -908,28 +908,17 @@ update_df (rtx insn, rtx *loc, df_ref *use_rec, enum df_ref_type type,
     {
       df_ref use = *use_rec;
       df_ref orig_use = use, new_use;
-      int width = -1;
-      int offset = -1;
-      enum machine_mode mode = VOIDmode;
       rtx *new_loc = find_occurrence (loc, DF_REF_REG (orig_use));
       use_rec++;
 
       if (!new_loc)
 	continue;
 
-      if (DF_REF_FLAGS_IS_SET (orig_use, DF_REF_SIGN_EXTRACT | DF_REF_ZERO_EXTRACT))
-	{
-	  width = DF_REF_EXTRACT_WIDTH (orig_use);
-	  offset = DF_REF_EXTRACT_OFFSET (orig_use);
-	  mode = DF_REF_EXTRACT_MODE (orig_use);
-	}
-
       /* Add a new insn use.  Use the original type, because it says if the
          use was within a MEM.  */
       new_use = df_ref_create (DF_REF_REG (orig_use), new_loc,
 			       insn, BLOCK_FOR_INSN (insn),
-			       type, DF_REF_FLAGS (orig_use) | new_flags,
-			       width, offset, mode);
+			       type, DF_REF_FLAGS (orig_use) | new_flags);
 
       /* Set up the use-def chain.  */
       gcc_assert (DF_REF_ID (new_use) == (int) VEC_length (df_ref, use_def_ref));
