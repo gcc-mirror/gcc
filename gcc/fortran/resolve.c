@@ -8854,6 +8854,7 @@ apply_default_init (gfc_symbol *sym)
     return;
 
   build_init_assign (sym, init);
+  sym->attr.referenced = 1;
 }
 
 /* Build an initializer for a local integer, real, complex, logical, or
@@ -11445,7 +11446,6 @@ resolve_symbol (gfc_symbol *sym)
      described in 14.7.5, to those variables that have not already
      been assigned one.  */
   if (sym->ts.type == BT_DERIVED
-      && sym->attr.referenced
       && sym->ns == gfc_current_ns
       && !sym->value
       && !sym->attr.allocatable
@@ -11455,6 +11455,7 @@ resolve_symbol (gfc_symbol *sym)
 
       if ((!a->save && !a->dummy && !a->pointer
 	   && !a->in_common && !a->use_assoc
+	   && (a->referenced || a->result)
 	   && !(a->function && sym != sym->result))
 	  || (a->dummy && a->intent == INTENT_OUT && !a->pointer))
 	apply_default_init (sym);
