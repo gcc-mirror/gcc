@@ -82,6 +82,9 @@ static int    m32r_issue_rate (void);
 static void m32r_encode_section_info (tree, rtx, int);
 static bool m32r_in_small_data_p (const_tree);
 static bool m32r_return_in_memory (const_tree, const_tree);
+static rtx m32r_function_value (const_tree, const_tree, bool);
+static rtx m32r_libcall_value (enum machine_mode, const_rtx);
+static bool m32r_function_value_regno_p (const unsigned int);
 static void m32r_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
 static void init_idents (void);
@@ -158,6 +161,14 @@ static const struct attribute_spec m32r_attribute_table[] =
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 #undef  TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY m32r_return_in_memory
+
+#undef TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE m32r_function_value
+#undef TARGET_LIBCALL_VALUE
+#define TARGET_LIBCALL_VALUE m32r_libcall_value
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P m32r_function_value_regno_p
+
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS m32r_setup_incoming_varargs
 #undef  TARGET_MUST_PASS_IN_STACK
@@ -1244,6 +1255,35 @@ static bool
 m32r_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
   return m32r_pass_by_reference (NULL, TYPE_MODE (type), type, false);
+}
+
+/* Worker function for TARGET_FUNCTION_VALUE.  */
+
+static rtx
+m32r_function_value (const_tree valtype,
+		const_tree fn_decl_or_type ATTRIBUTE_UNUSED,
+		bool outgoing ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (TYPE_MODE (valtype), 0);
+}
+
+/* Worker function for TARGET_LIBCALL_VALUE.  */
+
+static rtx
+m32r_libcall_value (enum machine_mode mode,
+		const_rtx fun ATTRIBUTE_UNUSED)
+{
+  return gen_rtx_REG (mode, 0);
+}
+
+/* Worker function for TARGET_FUNCTION_VALUE_REGNO_P.
+
+  ??? What about r1 in DI/DF values.  */
+
+static bool
+m32r_function_value_regno_p (const unsigned int regno)
+{
+  return (regno == 0);
 }
 
 /* Do any needed setup for a variadic function.  For the M32R, we must
