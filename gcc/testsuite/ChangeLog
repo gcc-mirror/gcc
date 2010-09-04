@@ -1,3 +1,22 @@
+2010-09-04  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* g++.dg/debug/dwarf2/global-used-types-1.C: Replace ".*" by
+	"\[^\n\]*".
+	* g++.dg/debug/dwarf2/namespace-1.C: Likewise.
+	* g++.dg/debug/dwarf2/pubnames-1.C: Likewise.
+	* g++.dg/debug/dwarf2/template-func-params-4.C: Likewise.
+	* g++.dg/debug/dwarf2/template-func-params-7.C: Likewise.
+	* g++.dg/debug/dwarf2/template-params-4.C: Likewise.
+	* g++.dg/debug/dwarf2/template-params-6.C: Likewise.
+	* g++.dg/debug/dwarf2/template-params-7.C: Likewise.
+	* g++.dg/debug/dwarf2/typedef1.C: Likewise.
+	* gcc.dg/debug/dwarf2/global-used-types.c: Likewise.
+	* gcc.dg/debug/dwarf2/inline2.c: Likewise.
+	* gcc.target/i386/pr22152.c: Likewise.
+	* gcc.target/i386/pr36992-1.c: Likewise.
+	* gcc.target/i386/pr36992-2.c: Likewise.
+	* gcc.target/sh/sh4a-memmovua.c: Likewise.
+
 2010-09-04  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR testsuite/43957

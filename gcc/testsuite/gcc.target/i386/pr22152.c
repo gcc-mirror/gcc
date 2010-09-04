@@ -15,4 +15,4 @@ unsigned_add3 (const __m64 * a, const __m64 * b, unsigned long count)
   return sum;
 }
 
-/* { dg-final { scan-assembler-times "movq\[ \\t\]+.*%mm" 1 } } */
+/* { dg-final { scan-assembler-times "movq\[ \\t\]+\[^\n\]*%mm" 1 } } */
