@@ -664,8 +664,8 @@ static void
 gimplify_mem_ref_parts (gimple_stmt_iterator *gsi, struct mem_address *parts)
 {
   if (parts->base)
-    parts->base = force_gimple_operand_gsi (gsi, parts->base,
-					    true, NULL_TREE,
+    parts->base = force_gimple_operand_gsi_1 (gsi, parts->base,
+					    is_gimple_mem_ref_addr, NULL_TREE,
 					    true, GSI_SAME_STMT);
   if (parts->index)
     parts->index = force_gimple_operand_gsi (gsi, parts->index,
@@ -724,11 +724,11 @@ create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
 	  if (parts.index)
 	    {
 	      atype = TREE_TYPE (tmp);
-	      parts.base = force_gimple_operand_gsi (gsi,
+	      parts.base = force_gimple_operand_gsi_1 (gsi,
 			fold_build2 (POINTER_PLUS_EXPR, atype,
 				     tmp,
 				     fold_convert (sizetype, parts.base)),
-			true, NULL_TREE, true, GSI_SAME_STMT);
+			is_gimple_mem_ref_addr, NULL_TREE, true, GSI_SAME_STMT);
 	    }
 	  else
 	    {
@@ -751,11 +751,11 @@ create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
       if (parts.base)
 	{
 	  atype = TREE_TYPE (parts.base);
-	  parts.base = force_gimple_operand_gsi (gsi,
+	  parts.base = force_gimple_operand_gsi_1 (gsi,
 			fold_build2 (POINTER_PLUS_EXPR, atype,
 				     parts.base,
 			    	     parts.index),
-			true, NULL_TREE, true, GSI_SAME_STMT);
+			is_gimple_mem_ref_addr, NULL_TREE, true, GSI_SAME_STMT);
 	}
       else
 	parts.base = parts.index;
@@ -772,11 +772,11 @@ create_mem_ref (gimple_stmt_iterator *gsi, tree type, aff_tree *addr,
       if (parts.base)
 	{
 	  atype = TREE_TYPE (parts.base);
-	  parts.base = force_gimple_operand_gsi (gsi,
+	  parts.base = force_gimple_operand_gsi_1 (gsi,
 			fold_build2 (POINTER_PLUS_EXPR, atype,
 				     parts.base,
 				     fold_convert (sizetype, parts.offset)),
-			true, NULL_TREE, true, GSI_SAME_STMT);
+			is_gimple_mem_ref_addr, NULL_TREE, true, GSI_SAME_STMT);
 	}
       else
 	parts.base = parts.offset;
