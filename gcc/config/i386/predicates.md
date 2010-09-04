@@ -43,6 +43,11 @@
   (and (match_code "reg")
        (match_test "MMX_REGNO_P (REGNO (op))")))
 
+;; True if the operand is an SSE register.
+(define_predicate "sse_reg_operand"
+  (and (match_code "reg")
+       (match_test "SSE_REGNO_P (REGNO (op))")))
+
 ;; True if the operand is a Q_REGS class register.
 (define_predicate "q_regs_operand"
   (match_operand 0 "register_operand")

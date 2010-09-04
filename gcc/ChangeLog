@@ -1,3 +1,16 @@
+2010-09-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (sse_reg_operand): New predicate.
+	* config/i386/i386.md (TFmode push splitter): Use sse_reg_operand
+	predicate for operand 1.
+	(XFmode push splitter): Use fp_register_operand predicate
+	for operand 1.
+	(*dummy_extendsfdf2, *dummy_extendsfxf2): Remove disabled patterns.
+	(SF-DF float_extend push splitter): Add reload_completed insn
+	predicate.
+	({SF,DF}-XF float_extend_push splitter): Macroize splitter using
+	MODEF mode macro.  Add reload_completed insn predicate.
+
 2010-09-04  Paolo Bonzini  <bonzini@gnu.org>
 
 	* df.h (enum df_ref_class): Remove DF_REF_EXTRACT.
@@ -58,8 +71,7 @@
 	-mno-data-in-code and -mcode-xonly here.
 	* defaults.h (DEFAULT_SWITCH_TAKES_ARG): Add 'd'.
 	* gcc.c (option_map): Add "j" to --dump entry.
-	(translate_options): Don't translate -d to -foutput-class-dir=
-	here.
+	(translate_options): Don't translate -d to -foutput-class-dir= here.
 
 2010-09-03  Sebastian Pop  <sebastian.pop@amd.com>
 
