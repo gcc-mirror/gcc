@@ -1788,14 +1788,9 @@ find_interesting_uses_address (struct ivopts_data *data, gimple stmt, tree *op_p
 	    ref = &TREE_OPERAND (*ref, 0);
 	  if (TREE_CODE (*ref) == MEM_REF)
 	    {
-	      tree tem = TREE_OPERAND (*ref, 0);
-	      STRIP_NOPS (tem);
-	      if (tem != TREE_OPERAND (*ref, 0))
-		tem = fold_build2 (MEM_REF, TREE_TYPE (*ref),
-				   tem, TREE_OPERAND (*ref, 1));
-	      else
-		tem = fold_binary (MEM_REF, TREE_TYPE (*ref),
-				   tem, TREE_OPERAND (*ref, 1));
+	      tree tem = fold_binary (MEM_REF, TREE_TYPE (*ref),
+				      TREE_OPERAND (*ref, 0),
+				      TREE_OPERAND (*ref, 1));
 	      if (tem)
 		*ref = tem;
 	    }

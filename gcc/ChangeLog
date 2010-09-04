@@ -1,3 +1,18 @@
+2010-09-04  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/45519
+	* tree-flow.h (force_gimple_operand_1): Declare.
+	(force_gimple_operand_gsi_1): Likewise.
+	* gimplify.c (force_gimple_operand_1): New worker taking a
+	gimple predicate for ...
+	(force_gimple_operand): ... which now wraps it.
+	(force_gimple_operand_gsi_1, force_gimple_operand_gsi): Likewise.
+	* tree-ssa-loop-ivopts.c (find_interesting_uses_address): Revert
+	last change.
+	* tree-ssa-address.c (gimplify_mem_ref_parts): Use
+	force_gimple_operand_gsi_1 with is_gimple_mem_ref_addr.
+	(create_mem_ref): Likewise.
+
 2010-09-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (sse_reg_operand): New predicate.
