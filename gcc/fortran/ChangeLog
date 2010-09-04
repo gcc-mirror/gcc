@@ -1,5 +1,11 @@
 2010-09-04  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/45530
+	* resolve.c (resolve_fl_namelist): Change constraint checking
+	order to prevent endless loop.
+
+2010-09-04  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/45489
 	* resolve.c (apply_default_init): Mark symbol as referenced,
 	if it is initialized.
