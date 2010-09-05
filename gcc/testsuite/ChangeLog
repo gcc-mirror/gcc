@@ -1,5 +1,11 @@
 2010-09-05  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.dg/float128_1.f90: Remove test case as
+	it always fails since Rev 163611 backed out the
+	front-end implementation.
+
+2010-09-05  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/float128_1.f90: XFAIL test case.
 
 2010-09-05  Tobias Burnus  <burnus@net-b.de>
