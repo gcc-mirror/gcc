@@ -200,17 +200,18 @@ gfc_truthvalue_conversion (tree expr)
 	  return expr;
 	}
       else if (TREE_CODE (expr) == NOP_EXPR)
-        return fold_build1 (NOP_EXPR,
+        return fold_build1_loc (input_location, NOP_EXPR,
 			    boolean_type_node, TREE_OPERAND (expr, 0));
       else
-        return fold_build1 (NOP_EXPR, boolean_type_node, expr);
+        return fold_build1_loc (input_location, NOP_EXPR, boolean_type_node,
+				expr);
 
     case INTEGER_TYPE:
       if (TREE_CODE (expr) == INTEGER_CST)
 	return integer_zerop (expr) ? boolean_false_node : boolean_true_node;
       else
-        return fold_build2 (NE_EXPR, boolean_type_node, expr,
-			    build_int_cst (TREE_TYPE (expr), 0));
+        return fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+				expr, build_int_cst (TREE_TYPE (expr), 0));
 
     default:
       internal_error ("Unexpected type in truthvalue_conversion");

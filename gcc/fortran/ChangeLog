@@ -1,3 +1,37 @@
+2010-09-05  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/45186
+	* f95-lang.c (gfc_truthvalue_conversion): Use
+	fold_build[0-9]_loc instead of fold_build[0-9].
+	* convert.c (convert): Ditto.
+	* trans-intrinsic.c (gfc_conv_intrinsic_conversion,
+	build_fixbound_expr, build_fix_expr, gfc_conv_intrinsic_aint,
+	gfc_conv_intrinsic_int, gfc_conv_intrinsic_imagpart,
+	gfc_conv_intrinsic_conjg, gfc_trans_same_strlen_check,
+	gfc_conv_intrinsic_bound, gfc_conv_intrinsic_abs,
+	gfc_conv_intrinsic_cmplx, gfc_conv_intrinsic_mod,
+	gfc_conv_intrinsic_dim, gfc_conv_intrinsic_sign,
+	gfc_conv_intrinsic_dprod, gfc_conv_intrinsic_char,
+	gfc_conv_intrinsic_ctime, gfc_conv_intrinsic_fdate,
+	gfc_conv_intrinsic_ttynam, gfc_conv_intrinsic_minmax,
+	gfc_conv_intrinsic_minmax_char, gfc_conv_intrinsic_anyall,
+	gfc_conv_intrinsic_count, gfc_conv_intrinsic_arith,
+	gfc_conv_intrinsic_dot_product, gfc_conv_intrinsic_minmaxloc,
+	gfc_conv_intrinsic_minmaxval, gfc_conv_intrinsic_btest,
+	gfc_conv_intrinsic_bitop, gfc_conv_intrinsic_not,
+	gfc_conv_intrinsic_singlebitop, gfc_conv_intrinsic_ibits,
+	gfc_conv_intrinsic_rlshift, gfc_conv_intrinsic_ishft,
+	gfc_conv_intrinsic_ishftc, gfc_conv_intrinsic_leadz,
+	gfc_conv_intrinsic_trailz, gfc_conv_intrinsic_popcnt_poppar,
+	gfc_conv_intrinsic_ichar, gfc_conv_has_intvalue,
+	gfc_conv_intrinsic_merge, gfc_conv_intrinsic_spacing,
+	gfc_conv_intrinsic_rrspacing, gfc_conv_intrinsic_size,
+	size_of_string_in_bytes, gfc_conv_intrinsic_sizeof,
+	gfc_conv_intrinsic_storage_size, gfc_conv_intrinsic_strcmp,
+	gfc_conv_intrinsic_transfer, gfc_conv_allocated,
+	gfc_conv_associated, gfc_conv_same_type_as,
+	gfc_conv_intrinsic_trim, gfc_conv_intrinsic_repeat): Ditto.
+
 2010-09-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45530
