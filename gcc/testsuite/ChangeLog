@@ -1,5 +1,9 @@
 2010-09-05  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.dg/float128_1.f90: XFAIL test case.
+
+2010-09-05  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/bessel_7.f90: Decrease required precision.
 
 2010-09-05  Hans-Peter Nilsson  <hp@axis.com>

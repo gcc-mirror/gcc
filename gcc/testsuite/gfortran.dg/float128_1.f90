@@ -1,6 +1,7 @@
 ! Check that __float128 can be used where it's supported
 !
-! { dg-do compile { target ia64-*-* i?86-*-* x86_64-*-* } }
+! { dg-do compile { xfail *-*-* } }
+! TODO: Enable as: compile { target ia64-*-* i?86-*-* x86_64-*-* } 
 ! { dg-options "-fdump-tree-original" }
 ! { dg-final { scan-tree-dump "sqrtq" "original" } }
 ! { dg-final { scan-tree-dump "cabsq" "original" } }
