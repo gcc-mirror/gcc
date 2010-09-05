@@ -693,7 +693,8 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
      (the pointer base cannot validly point to an offset less than zero
      of the variable).
      They also cannot alias if the pointer may not point to the decl.  */
-  if ((TREE_CODE (base1) != TARGET_MEM_REF || !TMR_INDEX (base1))
+  if ((TREE_CODE (base1) != TARGET_MEM_REF
+       || (!TMR_INDEX (base1) && !TMR_INDEX2 (base1)))
       && !ranges_overlap_p (MAX (0, offset1p), -1, offset2p, max_size2))
     return false;
   if (!ptr_deref_may_alias_decl_p (ptr1, base2))
@@ -725,7 +726,8 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
      is relative to the start of the type which we ensure by
      comparing rvalue and access type and disregarding the constant
      pointer offset.  */
-  if ((TREE_CODE (base1) != TARGET_MEM_REF || !TMR_INDEX (base1))
+  if ((TREE_CODE (base1) != TARGET_MEM_REF
+       || (!TMR_INDEX (base1) && !TMR_INDEX2 (base1)))
       && (TREE_CODE (base1) != MEM_REF
 	  || same_type_for_tbaa (TREE_TYPE (base1), TREE_TYPE (ptrtype1)) == 1)
       && same_type_for_tbaa (TREE_TYPE (ptrtype1), TREE_TYPE (base2)) == 1)
@@ -807,16 +809,23 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   if ((!cfun || gimple_in_ssa_p (cfun))
       && operand_equal_p (ptr1, ptr2, 0)
       && (((TREE_CODE (base1) != TARGET_MEM_REF
-	    || !TMR_INDEX (base1))
+	    || (!TMR_INDEX (base1) && !TMR_INDEX2 (base1)))
 	   && (TREE_CODE (base2) != TARGET_MEM_REF
-	       || !TMR_INDEX (base2)))
+	       || (!TMR_INDEX (base2) && !TMR_INDEX2 (base2))))
 	  || (TREE_CODE (base1) == TARGET_MEM_REF
 	      && TREE_CODE (base2) == TARGET_MEM_REF
 	      && (TMR_STEP (base1) == TMR_STEP (base2)
 		  || (TMR_STEP (base1) && TMR_STEP (base2)
 		      && operand_equal_p (TMR_STEP (base1),
 					  TMR_STEP (base2), 0)))
-	      && operand_equal_p (TMR_INDEX (base1), TMR_INDEX (base2), 0))))
+	      && (TMR_INDEX (base1) == TMR_INDEX (base2)
+		  || (TMR_INDEX (base1) && TMR_INDEX (base2)
+		      && operand_equal_p (TMR_INDEX (base1),
+					  TMR_INDEX (base2), 0)))
+	      && (TMR_INDEX2 (base1) == TMR_INDEX2 (base2)
+		  || (TMR_INDEX2 (base1) && TMR_INDEX2 (base2)
+		      && operand_equal_p (TMR_INDEX2 (base1),
+					  TMR_INDEX2 (base2), 0))))))
     {
       /* The offset embedded in MEM_REFs can be negative.  Bias them
 	 so that the resulting offset adjustment is positive.  */

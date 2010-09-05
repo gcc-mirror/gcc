@@ -1,3 +1,11 @@
+2010-09-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45535
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Properly
+	handle TMR_INDEX2.  Make sure TMR_INDEX is not NULL before
+	dereferencing it.
+	(indirect_refs_may_alias_p): Likewise.
+
 2010-09-05  Naveen H.S  <naveen.S@kpitcummins.com>
 
 	* config/sh/sh.c (sh_option_override): Make static.

@@ -1,3 +1,8 @@
+2010-09-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45535
+	* gcc.c-torture/compile/pr45535.c: New testcase.
+
 2010-09-04  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* g++.dg/debug/dwarf2/global-used-types-1.C: Replace ".*" by
