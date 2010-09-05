@@ -1,3 +1,9 @@
+2010-09-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR testsuite/45545
+	* gfortran.dg/array_memcpy_3.f90: Correct pattern for
+	ref-all-matching targets.
+
 2010-09-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45535
