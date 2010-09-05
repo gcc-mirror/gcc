@@ -3106,8 +3106,15 @@ convert_arguments (tree typelist, VEC(tree,gc) *values,
 	  if (type_generic)
 	    parmval = val;
 	  else
-	    /* Convert `float' to `double'.  */
-	    parmval = convert (double_type_node, val);
+	    {
+	      /* Convert `float' to `double'.  */
+	      if (warn_double_promotion && !c_inhibit_evaluation_warnings)
+		warning (OPT_Wdouble_promotion,
+			 "implicit conversion from %qT to %qT when passing "
+			 "argument to function",
+			 valtype, double_type_node);
+	      parmval = convert (double_type_node, val);
+	    }
 	}
       else if (excess_precision && !type_generic)
 	/* A "double" argument with excess precision being passed
@@ -4029,6 +4036,40 @@ ep_convert_and_check (tree type, tree expr, tree semantic_type)
   return convert (type, expr);
 }
 
+/* RESULT_TYPE is the result of converting TYPE1 and TYPE2 to a common
+   type via c_common_type.  If -Wdouble-promotion is in use, and the
+   conditions for warning have been met, issue a warning.  GMSGID is
+   the warning message.  It must have two %T specifiers for the type
+   that was converted (generally "float") and the type to which it was
+   converted (generally "double), respectively.  LOC is the location
+   to which the awrning should refer.  */
+
+static void
+do_warn_double_promotion (tree result_type, tree type1, tree type2,
+			 const char *gmsgid, location_t loc)
+{
+  tree source_type;
+
+  if (!warn_double_promotion)
+    return;
+  /* If the conversion will not occur at run-time, there is no need to
+     warn about it.  */
+  if (c_inhibit_evaluation_warnings)
+    return;
+  if (TYPE_MAIN_VARIANT (result_type) != double_type_node
+      && TYPE_MAIN_VARIANT (result_type) != complex_double_type_node)
+    return;
+  if (TYPE_MAIN_VARIANT (type1) == float_type_node
+      || TYPE_MAIN_VARIANT (type1) == complex_float_type_node)
+    source_type = type1;
+  else if (TYPE_MAIN_VARIANT (type2) == float_type_node
+	   || TYPE_MAIN_VARIANT (type2) == complex_float_type_node)
+    source_type = type2;
+  else
+    return;
+  warning_at (loc, OPT_Wdouble_promotion, gmsgid, source_type, result_type);
+}
+
 /* Build and return a conditional expression IFEXP ? OP1 : OP2.  If
    IFEXP_BCP then the condition is a call to __builtin_constant_p, and
    if folded to an integer constant then the unselected half may
@@ -4140,6 +4181,10 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 	       || code2 == COMPLEX_TYPE))
     {
       result_type = c_common_type (type1, type2);
+      do_warn_double_promotion (result_type, type1, type2,
+				"implicit conversion from %qT to %qT to "
+				"match other result of conditional",
+				colon_loc);
 
       /* If -Wsign-compare, warn here if type1 and type2 have
 	 different signedness.  We'll promote the signed to unsigned
@@ -9822,6 +9867,11 @@ build_binary_op (location_t location, enum tree_code code,
       if (shorten || common || short_compare)
 	{
 	  result_type = c_common_type (type0, type1);
+	  do_warn_double_promotion (result_type, type0, type1,
+				    "implicit conversion from %qT to %qT "
+				    "to match other operand of binary "
+				    "expression",
+				    location);
 	  if (result_type == error_mark_node)
 	    return error_mark_node;
 	}

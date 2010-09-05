@@ -1,3 +1,7 @@
+2010-09-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* c.opt (Wdouble-promotion): New.
+
 2010-09-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* c.opt (falt-external-templates, fhuge-objects, fvtable-gc,
