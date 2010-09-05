@@ -125,7 +125,6 @@ extern bool sh_vector_mode_supported_p (enum machine_mode);
 #endif /* RTX_CODE */
 
 extern void sh_optimization_options (int, int);
-extern void sh_override_options (void);
 extern const char *output_jump_label_table (void);
 extern int sh_handle_pragma (int (*)(void), void (*)(int), const char *);
 extern struct rtx_def *get_fpscr_rtx (void);
@@ -145,8 +144,6 @@ extern bool sh_cannot_change_mode_class
 	      (enum machine_mode, enum machine_mode, enum reg_class);
 extern bool sh_small_register_classes_for_mode_p (enum machine_mode);
 extern void sh_mark_label (rtx, int);
-extern int sh_register_move_cost
-  (enum machine_mode mode, enum reg_class, enum reg_class);
 extern int check_use_sfunc_addr (rtx, rtx);
 
 #ifdef HARD_CONST
@@ -161,7 +158,6 @@ extern rtx sh_get_pr_initial_val (void);
 
 extern int sh_pass_in_reg_p (CUMULATIVE_ARGS *, enum machine_mode, tree);
 extern void sh_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, signed int, enum machine_mode);
-extern bool sh_function_value_regno_p (const unsigned int);
 extern rtx sh_dwarf_register_span (rtx);
 
 extern rtx replace_n_hard_rtx (rtx, rtx *, int , int);

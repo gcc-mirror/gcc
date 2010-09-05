@@ -1,3 +1,18 @@
+2010-09-05  Naveen H.S  <naveen.S@kpitcummins.com>
+
+	* config/sh/sh.c (sh_option_override): Make static.
+	Adjust comments.  Declare.
+	(sh_function_value_regno_p): Likewise. 
+	(sh_register_move_cost): Modify the arguments, make static.
+	Adjust comments.  Declare.
+	(TARGET_OPTION_OVERRIDE, TARGET_REGISTER_MOVE_COST
+	TARGET_FUNCTION_VALUE_REGNO_P): Define.
+	* config/sh/sh.h (OVERRIDE_OPTIONS, FUNCTION_VALUE_REGNO_P
+	REGISTER_MOVE_COST): Delete.
+	* config/sh/sh-protos.h (sh_override_options): Delete.
+	(sh_register_move_cost): Delete.
+	(sh_function_value_regno_p): Delete.
+
 2010-09-04  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/m32r/m32r.c (m32r_function_value, m32r_libcall_value,
