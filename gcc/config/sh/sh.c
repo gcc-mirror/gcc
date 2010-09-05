@@ -182,6 +182,7 @@ static rtx find_barrier (int, rtx, rtx);
 static int noncall_uses_reg (rtx, rtx, rtx *);
 static rtx gen_block_redirect (rtx, int, int);
 static void sh_reorg (void);
+static void sh_option_override (void);
 static void output_stack_adjust (int, rtx, int, HARD_REG_SET *, bool);
 static rtx frame_insn (rtx);
 static rtx push (int);
@@ -205,6 +206,7 @@ static bool sh_print_operand_punct_valid_p (unsigned char code);
 static void sh_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void sh_insert_attributes (tree, tree *);
 static const char *sh_check_pch_target_flags (int);
+static int sh_register_move_cost (enum machine_mode, reg_class_t, reg_class_t);
 static int sh_adjust_cost (rtx, rtx, rtx, int);
 static int sh_issue_rate (void);
 static int sh_dfa_new_cycle (FILE *, int, rtx, int, int, int *sort_p);
@@ -261,6 +263,7 @@ static struct save_entry_s *sh5_schedule_saves (HARD_REG_SET *,
 
 static rtx sh_struct_value_rtx (tree, int);
 static rtx sh_function_value (const_tree, const_tree, bool);
+static bool sh_function_value_regno_p (const unsigned int);
 static rtx sh_libcall_value (enum machine_mode, const_rtx);
 static bool sh_return_in_memory (const_tree, const_tree);
 static rtx sh_builtin_saveregs (void);
@@ -334,6 +337,9 @@ static const struct attribute_spec sh_attribute_table[] =
 #undef TARGET_ASM_ALIGNED_DI_OP
 #define TARGET_ASM_ALIGNED_DI_OP "\t.quad\t"
 
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE sh_option_override
+
 #undef TARGET_PRINT_OPERAND
 #define TARGET_PRINT_OPERAND sh_print_operand
 #undef TARGET_PRINT_OPERAND_ADDRESS
@@ -359,6 +365,9 @@ static const struct attribute_spec sh_attribute_table[] =
 #define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION sh_handle_option
+
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST sh_register_move_cost
 
 #undef TARGET_INSERT_ATTRIBUTES
 #define TARGET_INSERT_ATTRIBUTES sh_insert_attributes
@@ -476,6 +485,8 @@ static const struct attribute_spec sh_attribute_table[] =
 
 #undef TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE sh_function_value
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P sh_function_value_regno_p
 #undef TARGET_LIBCALL_VALUE
 #define TARGET_LIBCALL_VALUE sh_libcall_value
 #undef TARGET_STRUCT_VALUE_RTX
@@ -721,10 +732,10 @@ sh_optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
   set_param_value ("simultaneous-prefetches", 2);
 }
 
-/* Implement OVERRIDE_OPTIONS macro.  Validate and override various
-   options, and do some machine dependent initialization.  */
-void
-sh_override_options (void)
+/* Implement TARGET_OPTION_OVERRIDE macro.  Validate and override 
+   various options, and do some machine dependent initialization.  */
+static void
+sh_option_override (void)
 {
   int regno;
 
@@ -8524,9 +8535,9 @@ sh_libcall_value (enum machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
   return gen_rtx_REG (mode, BASE_RETURN_VALUE_REG (mode));
 }
 
-/* Worker function for FUNCTION_VALUE_REGNO_P.  */
+/* Return true if N is a possible register number of function value.  */
 
-bool
+static bool
 sh_function_value_regno_p (const unsigned int regno)
 {
   return ((regno) == FIRST_RET_REG 
@@ -11387,9 +11398,9 @@ sh_mark_label (rtx address, int nuses)
    uses this information.  Hence, the general register <-> floating point
    register information here is not used for SFmode.  */
 
-int
+static int
 sh_register_move_cost (enum machine_mode mode,
-		       enum reg_class srcclass, enum reg_class dstclass)
+		       reg_class_t srcclass, reg_class_t dstclass)
 {
   if (dstclass == T_REGS || dstclass == PR_REGS)
     return 10;
