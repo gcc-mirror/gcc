@@ -1,3 +1,8 @@
+2010-09-05  Giuseppe Scrivano  <gscrivano@gnu.org>
+
+	* tree-tailcall.c (process_assignment): Handle NEGATE_EXPR and
+	MINUS_EXPR.
+
 2010-09-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/invoke.texi: Document -Wdouble-promotion.
@@ -19,7 +24,7 @@
 
 	* config/sh/sh.c (sh_option_override): Make static.
 	Adjust comments.  Declare.
-	(sh_function_value_regno_p): Likewise. 
+	(sh_function_value_regno_p): Likewise.
 	(sh_register_move_cost): Modify the arguments, make static.
 	Adjust comments.  Declare.
 	(TARGET_OPTION_OVERRIDE, TARGET_REGISTER_MOVE_COST

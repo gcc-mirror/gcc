@@ -252,7 +252,7 @@ static bool
 process_assignment (gimple stmt, gimple_stmt_iterator call, tree *m,
 		    tree *a, tree *ass_var)
 {
-  tree op0, op1, non_ass_var;
+  tree op0, op1 = NULL_TREE, non_ass_var = NULL_TREE;
   tree dest = gimple_assign_lhs (stmt);
   enum tree_code code = gimple_assign_rhs_code (stmt);
   enum gimple_rhs_class rhs_class = get_gimple_rhs_class (code);
@@ -278,8 +278,20 @@ process_assignment (gimple stmt, gimple_stmt_iterator call, tree *m,
       return true;
     }
 
-  if (rhs_class != GIMPLE_BINARY_RHS)
-    return false;
+  switch (rhs_class)
+    {
+    case GIMPLE_BINARY_RHS:
+      op1 = gimple_assign_rhs2 (stmt);
+
+      /* Fall through.  */
+
+    case GIMPLE_UNARY_RHS:
+      op0 = gimple_assign_rhs1 (stmt);
+      break;
+
+    default:
+      return false;
+    }
 
   /* Accumulator optimizations will reverse the order of operations.
      We can only do that for floating-point types if we're assuming
@@ -288,20 +300,9 @@ process_assignment (gimple stmt, gimple_stmt_iterator call, tree *m,
     if (FLOAT_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl))))
       return false;
 
-  /* We only handle the code like
-
-     x = call ();
-     y = m * x;
-     z = y + a;
-     return z;
-
-     TODO -- Extend it for cases where the linear transformation of the output
-     is expressed in a more complicated way.  */
-
-  op0 = gimple_assign_rhs1 (stmt);
-  op1 = gimple_assign_rhs2 (stmt);
-
-  if (op0 == *ass_var
+  if (rhs_class == GIMPLE_UNARY_RHS)
+    ;
+  else if (op0 == *ass_var
       && (non_ass_var = independent_of_stmt_p (op1, stmt, call)))
     ;
   else if (op1 == *ass_var
@@ -322,8 +323,32 @@ process_assignment (gimple stmt, gimple_stmt_iterator call, tree *m,
       *ass_var = dest;
       return true;
 
-      /* TODO -- Handle other codes (NEGATE_EXPR, MINUS_EXPR,
-	 POINTER_PLUS_EXPR).  */
+    case NEGATE_EXPR:
+      if (FLOAT_TYPE_P (TREE_TYPE (op0)))
+        *m = build_real (TREE_TYPE (op0), dconstm1);
+      else
+        *m = build_int_cst (TREE_TYPE (op0), -1);
+
+      *ass_var = dest;
+      return true;
+
+    case MINUS_EXPR:
+      if (*ass_var == op0)
+        *a = fold_build1 (NEGATE_EXPR, TREE_TYPE (non_ass_var), non_ass_var);
+      else
+        {
+          if (FLOAT_TYPE_P (TREE_TYPE (non_ass_var)))
+            *m = build_real (TREE_TYPE (non_ass_var), dconstm1);
+          else
+            *m = build_int_cst (TREE_TYPE (non_ass_var), -1);
+
+          *a = fold_build1 (NEGATE_EXPR, TREE_TYPE (non_ass_var), non_ass_var);
+        }
+
+      *ass_var = dest;
+      return true;
+
+      /* TODO -- Handle POINTER_PLUS_EXPR.  */
 
     default:
       return false;
