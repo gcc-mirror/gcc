@@ -266,6 +266,10 @@ Wimplicit
 C ObjC Var(warn_implicit) Init(-1) Warning
 Warn about implicit declarations
 
+Wdouble-promotion
+C ObjC C++ ObjC++ Var(warn_double_promotion) Warning
+Warn about implicit conversions from \"float\" to \"double\"
+
 Wimplicit-function-declaration
 C ObjC Var(warn_implicit_function_declaration) Init(-1) Warning
 Warn about implicit function declarations

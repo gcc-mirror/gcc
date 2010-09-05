@@ -1,3 +1,7 @@
+2010-09-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.dg/Wdouble-promotion.c: New.
+
 2010-09-05  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/float128_1.f90: Remove test case as

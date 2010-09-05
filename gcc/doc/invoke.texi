@@ -235,8 +235,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wchar-subscripts -Wclobbered  -Wcomment @gol
 -Wconversion  -Wcoverage-mismatch  -Wcpp  -Wno-deprecated  @gol
 -Wno-deprecated-declarations -Wdisabled-optimization  @gol
--Wno-div-by-zero -Wempty-body  -Wenum-compare -Wno-endif-labels @gol
--Werror  -Werror=* @gol
+-Wno-div-by-zero -Wdouble-promotion -Wempty-body  -Wenum-compare @gol
+-Wno-endif-labels -Werror  -Werror=* @gol
 -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-contains-nul -Wno-format-extra-args -Wformat-nonliteral @gol
 -Wformat-security  -Wformat-y2k @gol
@@ -3052,6 +3052,30 @@ This warning is enabled by @option{-Wall}.
 @r{(C, Objective-C, C++, Objective-C++ and Fortran only)}
 
 Suppress warning messages emitted by @code{#warning} directives.
+
+@item -Wdouble-promotion @r{(C and Objective-C only)}
+@opindex Wdouble-promotion
+@opindex Wno-double-promotion
+Give a warning when a value of type @code{float} is implicitly
+promoted to @code{double}.  CPUs with a 32-bit ``single-precision''
+floating-point unit implement @code{float} in hardware, but emulate
+@code{double} in software.  On such a machine, doing computations
+using @code{double} values is much more expensive because of the
+overhead required for software emulation.  
+
+It is easy to accidentally do computations with @code{double} because
+floating-point literals are implicitly of type @code{double}.  For
+example, in:
+@smallexample
+@group
+float area(float radius)
+@{
+   return 3.14159 * radius * radius;        
+@}
+@end group
+@end smallexample
+the compiler will perform the entire computation with @code{double}
+because the floating-point literal is a @code{double}.
 
 @item -Wformat
 @opindex Wformat

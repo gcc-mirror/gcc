@@ -1,3 +1,12 @@
+2010-09-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/invoke.texi: Document -Wdouble-promotion.
+	* c-typeck.c (convert_arguments): Check for implicit conversions
+	from float to double.
+	(do_warn_double_promotion): New function.
+	(build_conditional_expr): Use it.
+	(build_binary_op): Likewise.
+
 2010-09-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45535
