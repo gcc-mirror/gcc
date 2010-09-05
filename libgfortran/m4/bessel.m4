@@ -67,7 +67,7 @@ bessel_jn_r'rtype_kind` ('rtype` * const restrict ret, int n1, int n2, 'rtype_na
       && GFC_DESCRIPTOR_EXTENT(ret,0) != (n2-n1+1))
     runtime_error("Incorrect extent in return value of BESSEL_JN "
 		  "(%ld vs. %ld)", (long int) n2-n1,
-		  GFC_DESCRIPTOR_EXTENT(ret,0));
+		  (long int) GFC_DESCRIPTOR_EXTENT(ret,0));
 
   stride = GFC_DESCRIPTOR_STRIDE(ret,0);
 
@@ -135,7 +135,7 @@ bessel_yn_r'rtype_kind` ('rtype` * const restrict ret, int n1, int n2,
       && GFC_DESCRIPTOR_EXTENT(ret,0) != (n2-n1+1))
     runtime_error("Incorrect extent in return value of BESSEL_JN "
 		  "(%ld vs. %ld)", (long int) n2-n1,
-		  GFC_DESCRIPTOR_EXTENT(ret,0));
+		  (long int) GFC_DESCRIPTOR_EXTENT(ret,0));
 
   stride = GFC_DESCRIPTOR_STRIDE(ret,0);
 
