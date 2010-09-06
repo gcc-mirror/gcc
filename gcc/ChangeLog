@@ -1,3 +1,11 @@
+2010-09-06  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/44919
+	* sel-sched.c (move_cond_jump): Remove assert, check that
+	the several blocks case can only happen with mutually exclusive
+	insns instead.  Rewrite the movement code to support moving through
+	several basic blocks.
+
 2010-09-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (iptrsize): New mode attribute.

@@ -1,3 +1,8 @@
+2010-09-06  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/44919
+	* g++.dg/opt/pr44919.C: New.
+
 2010-09-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/38282
