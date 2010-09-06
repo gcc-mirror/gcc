@@ -1,3 +1,7 @@
+2010-09-06  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/initlist43.C: New.
+
 2010-09-05  Giuseppe Scrivano  <gscrivano@gnu.org>
 
 	* gcc.dg/tree-ssa/tailrecursion-7.c: New file.

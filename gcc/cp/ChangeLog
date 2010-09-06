@@ -1,3 +1,8 @@
+2010-09-06  Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (finish_compound_literal): Always build a
+	TARGET_EXPR.
+
 2010-08-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/45043
