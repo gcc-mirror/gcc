@@ -4,7 +4,7 @@
 #include <mmintrin.h>
 
 __m64
-unsigned_add3 (const __m64 * a, const __m64 * b, unsigned long count)
+unsigned_add3 (const __m64 * a, const __m64 * b, unsigned int count)
 {
   __m64 sum;
   unsigned int i;
