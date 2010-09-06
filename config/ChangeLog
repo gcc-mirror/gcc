@@ -1,3 +1,7 @@
+2010-09-06  Andreas Schwab  <schwab@redhat.com>
+
+	* dfp.m4: Quote argument of AC_MSG_WARN.
+
 2010-09-03  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* dfp.m4: New file.

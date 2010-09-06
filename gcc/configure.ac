@@ -627,7 +627,7 @@ AC_ARG_ENABLE(fixed-point,
     mips*-*-*)
       case $host in
 	mips*-sgi-irix*)
-	  AC_MSG_WARN(fixed-point is not supported on IRIX, ignored)
+	  AC_MSG_WARN([fixed-point is not supported on IRIX, ignored])
 	  enable_fixed_point=no
 	  ;;
 	*)
@@ -636,7 +636,7 @@ AC_ARG_ENABLE(fixed-point,
       esac
       ;;
     *)
-      AC_MSG_WARN(fixed-point is not supported for this target, ignored)
+      AC_MSG_WARN([fixed-point is not supported for this target, ignored])
       enable_fixed_point=no
       ;;
   esac
