@@ -1,5 +1,10 @@
 2010-09-06  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/45560
+	* dump-parse-tree.c (gfc_debug_expr): New function.
+
+2010-09-06  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/38282
 	* intrinsic.c (add_functions): Support IALL, IANY, IPARITY.
 	(check_specific): Special case for those intrinsics.
