@@ -28,8 +28,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc/Protocol.h"
 #include "objc/objc-api.h"
 
-#define MAX_CLASS_NAME_LEN 256
-
 @implementation Object
 
 + initialize
