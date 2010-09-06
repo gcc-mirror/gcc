@@ -49,6 +49,20 @@ static void show_code_node (int, gfc_code *);
 static void show_namespace (gfc_namespace *ns);
 
 
+/* Allow dumping of an expression in the debugger.  */
+void gfc_debug_expr (gfc_expr *);
+
+void
+gfc_debug_expr (gfc_expr *e)
+{
+  FILE *tmp = dumpfile;
+  dumpfile = stdout;
+  show_expr (e);
+  fputc ('\n', dumpfile);
+  dumpfile = tmp;
+}
+
+
 /* Do indentation for a specific level.  */
 
 static inline void
