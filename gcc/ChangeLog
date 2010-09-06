@@ -1,3 +1,11 @@
+2010-09-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/22152
+	* config/i386/mmx.md (*mov<mode>_internal_rex64,
+	*mov<mode>_internal_avx, *mov<mode>_internal,
+	*movv2sf_internal_rex64_avx, *movv2sf_internal_rex64,
+	*movv2sf_internal_avx, *movv2sf_internal): Split out !y-!y alternative.
+
 2010-09-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-typeck.c (do_warn_double_promotion): Remove.
@@ -22,8 +30,7 @@
 2010-09-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/45524
-	* configure.ac (enable_decimal_float): Set to
-	$default_decimal_float.
+	* configure.ac (enable_decimal_float): Set to $default_decimal_float.
 	* configure: Regenerated.
 
 2010-09-06  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
