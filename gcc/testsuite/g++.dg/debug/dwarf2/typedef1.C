@@ -6,7 +6,7 @@
 // { dg-final { scan-assembler-times "DW_AT_name: \"foo<1u>\"|\"foo<1u>..\"\[^\n\]*DW_AT_name" 1 } }
 // { dg-final { scan-assembler-times "DW_TAG_enumeration_type" 2 } }
 // { dg-final { scan-assembler-times "DW_AT_name: \"typedef foo<1u>::type type\"|\"typedef foo<1u>::type type..\"\[^\n\]*DW_AT_name" 1 } }
-// { dg-final { scan-assembler-times "DIE \\(\[^\n\]*\\) DW_TAG_enumeration_type" 2 } }
+// { dg-final { scan-assembler-times "DIE \\(\[^\n\]*\\) DW_TAG_enumeration_type" 1 } }
 // { dg-final { scan-assembler-times "\"e0..\"\[^\n\]*DW_AT_name" 1 } }
 // { dg-final { scan-assembler-times "\"e1..\"\[^\n\]*DW_AT_name" 1 } }
 

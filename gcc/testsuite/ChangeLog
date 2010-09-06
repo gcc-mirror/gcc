@@ -1,3 +1,9 @@
+2010-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/45543
+	* g++.dg/debug/dwarf2/typedef1.C: Expect just one
+	DW_TAG_enumeration_type DIE.
+
 2010-09-06  Iain Sandoe  <iains@gcc.gnu.org>
 
 	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c:
