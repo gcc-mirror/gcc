@@ -236,7 +236,7 @@ switchfiles (int fields)
       || filecnt == 22)
      {
       fprintf (outfile, "\
-/* { dg-do run { xfail powerpc*-*-darwin* powerpc*-*-aix* } } */\n\
+/* { dg-do run { xfail { { \"powerpc*-*-darwin*\" && { ! lp64 } } || { \"powerpc*-*-aix*\" } } } } */\n\
 /* { dg-options \"-w -I%s -fgnu-runtime\" } */\n", srcdir);
      }
   /* FIXME: these should not be xfailed but they are because
