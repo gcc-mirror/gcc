@@ -1,3 +1,7 @@
+2010-09-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/warn/Wdouble-promotion.C: New.
+
 2010-09-06  Arnaud Charlet  <charlet@adacore.com>
 
 	* g++.dg/parse/redef2.C: New.
