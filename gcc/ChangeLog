@@ -1,3 +1,10 @@
+2010-09-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/45524
+	* configure.ac (enable_decimal_float): Set to
+	$default_decimal_float.
+	* configure: Regenerated.
+
 2010-09-06  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* combine.c (try_combine): Set subst_low_luid to i0.

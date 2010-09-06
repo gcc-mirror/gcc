@@ -78,6 +78,9 @@ AC_MSG_CHECKING([for decimal floating point])
 
 GCC_AC_ENABLE_DECIMAL_FLOAT([$target])
 
+# Use default_decimal_float for dependency.
+enable_decimal_float=$default_decimal_float
+
 # If BID is being used, additional objects should be linked in.
 if test x$enable_decimal_float = xbid; then
   ADDITIONAL_OBJS="$ADDITIONAL_OBJS \$(bid_OBJS)"

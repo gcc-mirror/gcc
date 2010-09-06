@@ -612,6 +612,9 @@ dfp=`if test $enable_decimal_float != no; then echo 1; else echo 0; fi`
 AC_DEFINE_UNQUOTED(ENABLE_DECIMAL_FLOAT, $dfp,
 [Define to 1 to enable decimal float extension to C.])
 
+# Use default_decimal_float for dependency.
+enable_decimal_float=$default_decimal_float
+
 bid=`if test $enable_decimal_float = bid; then echo 1; else echo 0; fi`
 AC_DEFINE_UNQUOTED(ENABLE_DECIMAL_BID_FORMAT, $bid,
 [Define to 1 to specify that we are using the BID decimal floating

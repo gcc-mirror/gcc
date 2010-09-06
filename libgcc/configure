@@ -3639,7 +3639,7 @@ decimal_float=$libgcc_cv_dfp
 if test "${enable_decimal_float+set}" = set; then :
   enableval=$enable_decimal_float;
   case $enable_decimal_float in
-    yes | no | bid | dpd) ;;
+    yes | no | bid | dpd) default_decimal_float=$enable_decimal_float ;;
     *) as_fn_error "'$enable_decimal_float' is an invalid value for --enable-decimal-float.
 Valid choices are 'yes', 'bid', 'dpd', and 'no'." "$LINENO" 5 ;;
   esac
@@ -3671,11 +3671,12 @@ case x$enable_decimal_float in
 	enable_decimal_float=dpd
 	;;
     esac
+    default_decimal_float=$enable_decimal_float
     ;;
   xno)
     # ENABLE_DECIMAL_FLOAT is set to 0. But we have to have proper
     # dependency on libdecnumber.
-    enable_decimal_float=dpd
+    default_decimal_float=dpd
     ;;
 esac
 

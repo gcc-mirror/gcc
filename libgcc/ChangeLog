@@ -1,3 +1,8 @@
+2010-09-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/45524
+	* configure: Regenerated.
+
 2010-09-06  Andreas Schwab  <schwab@redhat.com>
 
 	* configure: Regenerate.
