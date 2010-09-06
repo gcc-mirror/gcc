@@ -1,3 +1,23 @@
+2010-09-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (iptrsize): New mode attribute.
+	(tp_seg): Ditto.
+	(*load_tp_<mode>): Macroize insn from *load_tp_{si,di} using P
+	mode iterator.
+	(*add_tp_<mode>): Ditto from *add_tp_{si,di}.
+	(stack_protect_set_<mode>): Ditto from stack_protect_set_{si,di}.
+	(stack_protect_test_<mode>): Ditto from stack_protect_test_{si,di}.
+	(stack_tls_protect_set_<mode>): Ditto from
+	stack_tls_protect_set_{si,di}.  Use %@ to output segment register
+	of thread base pointer load.
+	(stack_tls_protect_test_<mode>): Ditto from
+	stack_tls_protect_test_{si,di}.  Use %@ to output segment register
+	of thread base pointer load.
+	(stack_protect_set): Rewrite using indirect functions.
+	(stack_protect_test): Ditto.
+	* config/i386/i386.c (ix86_print_operand_punct_valid): Add '@'.
+	(ix86_print_operand): Handle '@'.
+
 2010-09-05  Giuseppe Scrivano  <gscrivano@gnu.org>
 
 	* tree-tailcall.c (process_assignment): Handle NEGATE_EXPR and
