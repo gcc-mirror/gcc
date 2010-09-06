@@ -1,3 +1,7 @@
+2010-09-06  Andreas Schwab  <schwab@redhat.com>
+
+	* configure: Regenerate.
+
 2010-09-03  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* configure.ac: Use the GCC_AC_ENABLE_DECIMAL_FLOAT macro.

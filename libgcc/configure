@@ -3651,8 +3651,8 @@ else
       enable_decimal_float=yes
       ;;
     *)
-      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: decimal float is not supported for this target" >&5
-$as_echo "$as_me: WARNING: decimal float is not supported for this target" >&2;}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: decimal float is not supported for this target, ignored" >&5
+$as_echo "$as_me: WARNING: decimal float is not supported for this target, ignored" >&2;}
       enable_decimal_float=no
       ;;
   esac

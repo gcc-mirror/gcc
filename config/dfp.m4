@@ -24,7 +24,7 @@ Valid choices are 'yes', 'bid', 'dpd', and 'no'.]) ;;
       enable_decimal_float=yes
       ;;
     *)
-      AC_MSG_WARN(decimal float is not supported for this target, ignored)
+      AC_MSG_WARN([decimal float is not supported for this target, ignored])
       enable_decimal_float=no
       ;;
   esac

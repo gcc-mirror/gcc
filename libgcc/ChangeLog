@@ -1,3 +1,7 @@
+2010-09-06  Andreas Schwab  <schwab@redhat.com>
+
+	* configure: Regenerate.
+
 2010-09-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/t-sol2 (__copysigntf3, __fabstf3): Disable for

@@ -1,3 +1,8 @@
+2010-09-06  Andreas Schwab  <schwab@redhat.com>
+
+	* configure.ac: Quote argument of AC_MSG_WARN.
+	* configure: Regenerate.
+
 2010-09-06  Alexander Monakov  <amonakov@ispras.ru>
 
 	* sel-sched.c (move_cond_jump): Correct arguments to maybe_tidy_empty_bb.
