@@ -1,5 +1,8 @@
 2010-09-06  Jason Merrill  <jason@redhat.com>
 
+	* call.c (implicit_conversion): Fix value-init of enums.
+	(convert_like_real): Likewise.
+
 	* decl.c (cp_finish_decl): Don't change init for auto deduction.
 
 	* pt.c (fold_non_dependent_expr_sfinae): Split out from...
