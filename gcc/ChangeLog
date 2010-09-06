@@ -1,3 +1,7 @@
+2010-09-06  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* combine.c (try_combine): Set subst_low_luid to i0.
+
 2010-09-06  Richard Guenther  <rguenther@suse.de>
 
 	* tree.def (MISALIGNED_INDIRECT_REF): Remove.

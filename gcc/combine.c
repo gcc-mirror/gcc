@@ -3138,7 +3138,7 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p)
 	}
 
       n_occurrences = 0;
-      subst_low_luid = DF_INSN_LUID (i1);
+      subst_low_luid = DF_INSN_LUID (i0);
       newpat = subst (newpat, i0dest, i0src, 0,
 		      i0_feeds_i1_n && i0dest_in_i0src);
       substed_i0 = 1;
