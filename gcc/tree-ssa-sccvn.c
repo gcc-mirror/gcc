@@ -616,9 +616,6 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 
       switch (temp.opcode)
 	{
-	case MISALIGNED_INDIRECT_REF:
-	  temp.op0 = TREE_OPERAND (ref, 1);
-	  break;
 	case MEM_REF:
 	  /* The base address gets its own vn_reference_op_s structure.  */
 	  temp.op0 = TREE_OPERAND (ref, 1);
@@ -801,12 +798,6 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	  return false;
 
 	/* Record the base objects.  */
-	case MISALIGNED_INDIRECT_REF:
-	  *op0_p = build2 (MISALIGNED_INDIRECT_REF, op->type,
-			   NULL_TREE, op->op0);
-	  op0_p = &TREE_OPERAND (*op0_p, 0);
-	  break;
-
 	case MEM_REF:
 	  base_alias_set = get_deref_alias_set (op->op0);
 	  *op0_p = build2 (MEM_REF, op->type,

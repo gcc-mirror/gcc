@@ -1,5 +1,54 @@
 2010-09-06  Richard Guenther  <rguenther@suse.de>
 
+	* tree.def (MISALIGNED_INDIRECT_REF): Remove.
+	* tree.h (INDIRECT_REF_P): Only check for INDIRECT_REF.
+	(build_aligned_type): Declare.
+	* tree.c (check_qualified_type): Also compare TYPE_ALIGN.
+	(check_aligned_type): New function.
+	(build_aligned_type): Likewise.
+	* expr.c (expand_assignment): Handle misaligned stores via
+	TARGET_MEM_REF and MEM_REF using movmisalign_optab.
+	(expand_expr_real_1): Likewise.
+	(safe_from_p): Remove MISALIGNED_INDIRECT_REF handling.
+	* tree-vect-stmts.c (vectorizable_store): Do not build
+	MISALIGNED_INDIRECT_REF but initialize alignment information.
+	(vectorizable_load): Likewise.
+	* builtins.c (get_object_alignment): Remove MISALIGNED_INDIRECT_REF
+	handling.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	* dwarf2out.c (loc_list_from_tree): Likewise.
+	* fold-const.c (maybe_lvalue_p): Likewise.
+	(operand_equal_p): Likewise.
+	(build_fold_addr_expr_with_type_loc): Likewise.
+	* gimplify.c (gimplify_addr_expr): Likewise.
+	(gimplify_expr): Likewise.
+	* tree-cfg.c (verify_types_in_gimple_min_lval): Likewise.
+	(verify_gimple_assign_single): Likewise.
+	* tree-dump.c (dequeue_and_dump): Likewise.
+	(tree_could_trap_p): Likewise.
+	* tree-predcom.c (ref_at_iteration): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Likewise.
+	(op_code_prio): Likewise.
+	(op_symbol_code): Likewise.
+	* tree-ssa-ccp.c (get_value_from_alignment): Likewise.
+	* tree-ssa-loop-im.c (for_each_index): Likewise.
+	(gen_lsm_tmp_name): Likewise.
+	* tree-ssa-loop-ivopts.c (idx_find_step): Likewise.
+	(find_interesting_uses_address): Likewise.
+	* tree-ssa-loop-prefetch.c (idx_analyze_ref): Likewise.
+	* tree-ssa-operands.c (get_expr_operands): Likewise.
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Likewise.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Likewise.
+	(ao_ref_init_from_vn_reference): Likewise.
+	* tree.c (staticp): Likewise.
+	(build1_stat): Likewise.
+	(reference_alias_ptr_type): Likewise.
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Likewise.
+	* config/rs6000/rs6000.c (rs6000_check_sdmode): Remove
+	MISALIGNED_INDIRECT_REF handling.
+
+2010-09-06  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/45534
 	* tree-ssa-address.c (create_mem_ref_raw): Add verify parameter.
 	(create_mem_ref): Do verify the created TARGET_MEM_REF is valid

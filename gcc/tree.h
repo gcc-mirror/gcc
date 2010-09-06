@@ -117,8 +117,7 @@ extern const enum tree_code_class tree_code_type[];
    ascending code order.  */
 
 #define INDIRECT_REF_P(CODE)\
-  (TREE_CODE (CODE) == INDIRECT_REF \
-   || TREE_CODE (CODE) == MISALIGNED_INDIRECT_REF)
+  (TREE_CODE (CODE) == INDIRECT_REF)
 
 /* Nonzero if CODE represents a reference.  */
 
@@ -602,7 +601,7 @@ struct GTY(()) tree_common {
            all types
 
        TREE_THIS_NOTRAP in
-          (ALIGN/MISALIGNED_)INDIRECT_REF, ARRAY_REF, ARRAY_RANGE_REF
+          INDIRECT_REF, ARRAY_REF, ARRAY_RANGE_REF
 
    deprecated_flag:
 
@@ -1250,8 +1249,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* Nonzero means this node will not trap.  In an INDIRECT_REF, means
    accessing the memory pointed to won't generate a trap.  However,
    this only applies to an object when used appropriately: it doesn't
-   mean that writing a READONLY mem won't trap. Similarly for
-   MISALIGNED_INDIRECT_REF.
+   mean that writing a READONLY mem won't trap.
 
    In ARRAY_REF and ARRAY_RANGE_REF means that we know that the index
    (or slice of the array) always belongs to the range of the array.
@@ -4305,6 +4303,10 @@ extern tree get_qualified_type (tree, int);
    exist.  This function never returns NULL_TREE.  */
 
 extern tree build_qualified_type (tree, int);
+
+/* Create a variant of type T with alignment ALIGN.  */
+
+extern tree build_aligned_type (tree, unsigned int);
 
 /* Like build_qualified_type, but only deals with the `const' and
    `volatile' qualifiers.  This interface is retained for backwards

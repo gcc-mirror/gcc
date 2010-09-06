@@ -4791,7 +4791,6 @@ gimplify_addr_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
   switch (TREE_CODE (op0))
     {
     case INDIRECT_REF:
-    case MISALIGNED_INDIRECT_REF:
     do_indirect_ref:
       /* Check if we are dealing with an expression of the form '&*ptr'.
 	 While the front end folds away '&*ptr' into 'ptr', these
@@ -6781,14 +6780,6 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  /* unary_expr: ... | '(' cast ')' val | ...  */
 	  ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
 			       is_gimple_val, fb_rvalue);
-	  recalculate_side_effects (*expr_p);
-	  break;
-
-	case MISALIGNED_INDIRECT_REF:
-	  /* We can only reach this through re-gimplification from
-	     tree optimizers.  */
-	  ret = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
-			       is_gimple_reg, fb_rvalue);
 	  recalculate_side_effects (*expr_p);
 	  break;
 

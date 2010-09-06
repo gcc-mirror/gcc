@@ -3347,6 +3347,8 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
       next_stmt = first_stmt;
       for (i = 0; i < vec_num; i++)
 	{
+	  struct ptr_info_def *pi;
+
 	  if (i > 0)
 	    /* Bump the vector pointer.  */
 	    dataref_ptr = bump_vector_ptr (dataref_ptr, ptr_incr, gsi, stmt,
@@ -3359,18 +3361,28 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	       vect_permute_store_chain().  */
 	    vec_oprnd = VEC_index (tree, result_chain, i);
 
+	  data_ref = build2 (MEM_REF, TREE_TYPE (vec_oprnd), dataref_ptr,
+			     build_int_cst (reference_alias_ptr_type
+					    (DR_REF (first_dr)), 0));
+	  pi = get_ptr_info (dataref_ptr);
+	  pi->align = TYPE_ALIGN_UNIT (vectype);
           if (aligned_access_p (first_dr))
-	    data_ref
-	      = build2 (MEM_REF, TREE_TYPE (vec_oprnd), dataref_ptr,
-			build_int_cst (reference_alias_ptr_type
-				         (DR_REF (first_dr)), 0));
-          else
-          {
-            int mis = DR_MISALIGNMENT (first_dr);
-            tree tmis = (mis == -1 ? size_zero_node : size_int (mis));
-            tmis = size_binop (MULT_EXPR, tmis, size_int (BITS_PER_UNIT));
-            data_ref = build2 (MISALIGNED_INDIRECT_REF, vectype, dataref_ptr, tmis);
-           }
+	    pi->misalign = 0;
+          else if (DR_MISALIGNMENT (first_dr) == -1)
+	    {
+	      TREE_TYPE (data_ref)
+		= build_aligned_type (TREE_TYPE (data_ref),
+				      TYPE_ALIGN (TREE_TYPE (vectype)));
+	      pi->align = TYPE_ALIGN_UNIT (TREE_TYPE (vectype));
+	      pi->misalign = 0;
+	    }
+	  else
+	    {
+	      TREE_TYPE (data_ref)
+		= build_aligned_type (TREE_TYPE (data_ref),
+				      TYPE_ALIGN (TREE_TYPE (vectype)));
+	      pi->misalign = DR_MISALIGNMENT (first_dr);
+	    }
 
 	  /* Arguments are ready. Create the new vector stmt.  */
 	  new_stmt = gimple_build_assign (data_ref, vec_oprnd);
@@ -3735,20 +3747,35 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  switch (alignment_support_scheme)
 	    {
 	    case dr_aligned:
-	      gcc_assert (aligned_access_p (first_dr));
-	      data_ref
-		= build2 (MEM_REF, vectype, dataref_ptr,
-			  build_int_cst (reference_alias_ptr_type
-					   (DR_REF (first_dr)), 0));
-	      break;
 	    case dr_unaligned_supported:
 	      {
-		int mis = DR_MISALIGNMENT (first_dr);
-		tree tmis = (mis == -1 ? size_zero_node : size_int (mis));
-
-		tmis = size_binop (MULT_EXPR, tmis, size_int(BITS_PER_UNIT));
-		data_ref =
-		  build2 (MISALIGNED_INDIRECT_REF, vectype, dataref_ptr, tmis);
+		struct ptr_info_def *pi;
+		data_ref
+		  = build2 (MEM_REF, vectype, dataref_ptr,
+			    build_int_cst (reference_alias_ptr_type
+					   (DR_REF (first_dr)), 0));
+		pi = get_ptr_info (dataref_ptr);
+		pi->align = TYPE_ALIGN_UNIT (vectype);
+		if (alignment_support_scheme == dr_aligned)
+		  {
+		    gcc_assert (aligned_access_p (first_dr));
+		    pi->misalign = 0;
+		  }
+		else if (DR_MISALIGNMENT (first_dr) == -1)
+		  {
+		    TREE_TYPE (data_ref)
+		      = build_aligned_type (TREE_TYPE (data_ref),
+					    TYPE_ALIGN (TREE_TYPE (vectype)));
+		    pi->align = TYPE_ALIGN_UNIT (TREE_TYPE (vectype));
+		    pi->misalign = 0;
+		  }
+		else
+		  {
+		    TREE_TYPE (data_ref)
+		      = build_aligned_type (TREE_TYPE (data_ref),
+					    TYPE_ALIGN (TREE_TYPE (vectype)));
+		    pi->misalign = DR_MISALIGNMENT (first_dr);
+		  }
 		break;
 	      }
 	    case dr_explicit_realign:

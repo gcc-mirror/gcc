@@ -301,11 +301,6 @@ get_object_alignment (tree exp, unsigned int max_align)
     align = TYPE_ALIGN (TREE_TYPE (exp));
   else if (TREE_CODE (exp) == INDIRECT_REF)
     align = TYPE_ALIGN (TREE_TYPE (exp));
-  else if (TREE_CODE (exp) == MISALIGNED_INDIRECT_REF)
-    {
-      tree op1 = TREE_OPERAND (exp, 1);
-      align = integer_zerop (op1) ? BITS_PER_UNIT : TREE_INT_CST_LOW (op1);
-    }
   else if (TREE_CODE (exp) == MEM_REF)
     {
       tree addr = TREE_OPERAND (exp, 0);
