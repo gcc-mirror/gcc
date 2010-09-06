@@ -6654,7 +6654,7 @@ fi
 if test "${enable_decimal_float+set}" = set; then :
   enableval=$enable_decimal_float;
   case $enable_decimal_float in
-    yes | no | bid | dpd) ;;
+    yes | no | bid | dpd) default_decimal_float=$enable_decimal_float ;;
     *) as_fn_error "'$enable_decimal_float' is an invalid value for --enable-decimal-float.
 Valid choices are 'yes', 'bid', 'dpd', and 'no'." "$LINENO" 5 ;;
   esac
@@ -6686,11 +6686,12 @@ case x$enable_decimal_float in
 	enable_decimal_float=dpd
 	;;
     esac
+    default_decimal_float=$enable_decimal_float
     ;;
   xno)
     # ENABLE_DECIMAL_FLOAT is set to 0. But we have to have proper
     # dependency on libdecnumber.
-    enable_decimal_float=dpd
+    default_decimal_float=dpd
     ;;
 esac
 
@@ -6703,6 +6704,9 @@ cat >>confdefs.h <<_ACEOF
 #define ENABLE_DECIMAL_FLOAT $dfp
 _ACEOF
 
+
+# Use default_decimal_float for dependency.
+enable_decimal_float=$default_decimal_float
 
 bid=`if test $enable_decimal_float = bid; then echo 1; else echo 0; fi`
 
@@ -17133,7 +17137,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17136 "configure"
+#line 17140 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17239,7 +17243,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 17242 "configure"
+#line 17246 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

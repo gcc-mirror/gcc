@@ -1,3 +1,9 @@
+2010-09-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/45524
+	* dfp.m4: Don't set enable_decimal_float to dpd if DFP is
+	disabled.  Set default_decimal_float.
+
 2010-09-06  Andreas Schwab  <schwab@redhat.com>
 
 	* dfp.m4: Quote argument of AC_MSG_WARN.
