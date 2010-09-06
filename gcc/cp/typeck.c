@@ -1220,7 +1220,7 @@ incompatible_dependent_types_p (tree t1, tree t2)
 
   if (!t1_typedef_variant_p || !t2_typedef_variant_p)
     /* Either T1 or T2 is not a typedef so we cannot compare the
-       the template parms of the typedefs of T1 and T2.
+       template parms of the typedefs of T1 and T2.
        At this point, if the main variant type of T1 and T2 are equal
        it means the two types can't be incompatible, from the perspective
        of this function.  */

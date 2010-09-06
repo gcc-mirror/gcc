@@ -1047,6 +1047,11 @@ strip_typedefs (tree t)
 					    TYPE_RAISES_EXCEPTIONS (t));
       }
       break;
+    case TYPENAME_TYPE:
+      result = make_typename_type (strip_typedefs (TYPE_CONTEXT (t)),
+				   TYPENAME_TYPE_FULLNAME (t),
+				   typename_type, tf_none);
+      break;
     default:
       break;
     }
