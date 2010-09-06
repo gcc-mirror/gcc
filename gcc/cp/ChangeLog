@@ -1,3 +1,9 @@
+2010-09-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* parser.c (make_pointer_declarator, make_reference_declarator,
+	make_call_declarator, make_array_declarator): Set declarator->id_loc.
+	(cp_parser_init_declarator): Adjust location of decl if appropriate.
+
 2010-09-06  Jason Merrill  <jason@redhat.com>
 
 	* call.c (implicit_conversion): Fix value-init of enums.
