@@ -1,5 +1,5 @@
 /* Frv prototypes.
-   Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
@@ -102,7 +102,6 @@ extern int frv_trampoline_size		(void);
 extern enum reg_class frv_secondary_reload_class
 					(enum reg_class,
 					 enum machine_mode, rtx);
-extern int frv_class_likely_spilled_p	(enum reg_class rclass);
 extern int frv_hard_regno_mode_ok	(int, enum machine_mode);
 extern int frv_hard_regno_nregs		(int, enum machine_mode);
 extern int frv_class_max_nregs		(enum reg_class rclass,

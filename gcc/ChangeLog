@@ -1,3 +1,11 @@
+2010-09-06  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/frv/frv.h (CLASS_LIKELY_SPILLED_P): Remove.
+	* config/frv/frv-protos.h (frv_class_likely_spilled_p): Remove.
+	* config/frv/frv.c (frv_class_likely_spilled_p): Make static. Change
+	argument type to reg_class_t. Change result type to bool.
+	(TARGET_CLASS_LIKELY_SPILLED_P): Define.
+
 2010-09-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR libobjc/19850
