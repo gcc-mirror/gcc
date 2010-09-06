@@ -131,7 +131,7 @@ static int type_unification_real (tree, tree, tree, const tree *,
 				  unsigned int, int, unification_kind_t, int);
 static void note_template_header (int);
 static tree convert_nontype_argument_function (tree, tree);
-static tree convert_nontype_argument (tree, tree);
+static tree convert_nontype_argument (tree, tree, tsubst_flags_t);
 static tree convert_template_argument (tree, tree, tree,
 				       tsubst_flags_t, int, tree);
 static int for_each_template_parm (tree, tree_fn_t, void*,
@@ -4800,8 +4800,8 @@ redeclare_class_template (tree type, tree parms)
 /* Simplify EXPR if it is a non-dependent expression.  Returns the
    (possibly simplified) expression.  */
 
-tree
-fold_non_dependent_expr (tree expr)
+static tree
+fold_non_dependent_expr_sfinae (tree expr, tsubst_flags_t complain)
 {
   if (expr == NULL_TREE)
     return NULL_TREE;
@@ -4823,13 +4823,19 @@ fold_non_dependent_expr (tree expr)
       processing_template_decl = 0;
       expr = tsubst_copy_and_build (expr,
 				    /*args=*/NULL_TREE,
-				    tf_error,
+				    complain,
 				    /*in_decl=*/NULL_TREE,
 				    /*function_p=*/false,
 				    /*integral_constant_expression_p=*/true);
       processing_template_decl = saved_processing_template_decl;
     }
   return expr;
+}
+
+tree
+fold_non_dependent_expr (tree expr)
+{
+  return fold_non_dependent_expr_sfinae (expr, tf_error);
 }
 
 /* EXPR is an expression which is used in a constant-expression context.
@@ -4960,7 +4966,7 @@ has_value_dependent_address (tree op)
    hacks can go away after we fix the double coercion problem.  */
 
 static tree
-convert_nontype_argument (tree type, tree expr)
+convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 {
   tree expr_type;
 
@@ -4969,11 +4975,13 @@ convert_nontype_argument (tree type, tree expr)
      catch this later), but only to provide better diagnostic for this
      common user mistake. As suggested by DR 100, we do not mention
      linkage issues in the diagnostic as this is not the point.  */
+  /* FIXME we're making this OK.  */
   if (TREE_CODE (expr) == STRING_CST)
     {
-      error ("%qE is not a valid template argument for type %qT "
-	     "because string literals can never be used in this context",
-	     expr, type);
+      if (complain & tf_error)
+	error ("%qE is not a valid template argument for type %qT "
+	       "because string literals can never be used in this context",
+	       expr, type);
       return NULL_TREE;
     }
 
@@ -4992,8 +5000,8 @@ convert_nontype_argument (tree type, tree expr)
   if (TYPE_REF_OBJ_P (type)
       && has_value_dependent_address (expr))
     /* If we want the address and it's value-dependent, don't fold.  */;
-  else
-    expr = fold_non_dependent_expr (expr);
+  else if (!type_unknown_p (expr))
+    expr = fold_non_dependent_expr_sfinae (expr, complain);
   if (error_operand_p (expr))
     return error_mark_node;
   expr_type = TREE_TYPE (expr);
@@ -5061,15 +5069,16 @@ convert_nontype_argument (tree type, tree expr)
 	 do not fold into integer constants.  */
       if (TREE_CODE (expr) != INTEGER_CST)
 	{
-	  error ("%qE is not a valid template argument for type %qT "
-		 "because it is a non-constant expression", expr, type);
+	  if (complain & tf_error)
+	    error ("%qE is not a valid template argument for type %qT "
+		   "because it is a non-constant expression", expr, type);
 	  return NULL_TREE;
 	}
 
       /* At this point, an implicit conversion does what we want,
 	 because we already know that the expression is of integral
 	 type.  */
-      expr = ocp_convert (type, expr, CONV_IMPLICIT, LOOKUP_PROTECT);
+      expr = perform_implicit_conversion (type, expr, complain);
       if (expr == error_mark_node)
 	return error_mark_node;
 
@@ -5319,7 +5328,8 @@ convert_nontype_argument (tree type, tree expr)
 
   /* Sanity check: did we actually convert the argument to the
      right type?  */
-  gcc_assert (same_type_p (type, TREE_TYPE (expr)));
+  gcc_assert (same_type_ignoring_top_level_qualifiers_p
+	      (type, TREE_TYPE (expr)));
   return expr;
 }
 
@@ -5784,7 +5794,7 @@ convert_template_argument (tree parm,
 	   conversions can occur is part of determining which
 	   function template to call, or whether a given explicit
 	   argument specification is valid.  */
-	val = convert_nontype_argument (t, orig_arg);
+	val = convert_nontype_argument (t, orig_arg, complain);
       else
 	val = orig_arg;
 
@@ -8270,9 +8280,12 @@ tsubst_template_arg (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     r = tsubst (t, args, complain, in_decl);
   else
     {
+      if (!(complain & tf_warning))
+	++c_inhibit_evaluation_warnings;
       r = tsubst_expr (t, args, complain, in_decl,
 		       /*integral_constant_expression_p=*/true);
-      r = fold_non_dependent_expr (r);
+      if (!(complain & tf_warning))
+	--c_inhibit_evaluation_warnings;
     }
   return r;
 }

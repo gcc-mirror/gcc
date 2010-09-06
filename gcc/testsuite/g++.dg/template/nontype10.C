@@ -5,6 +5,6 @@
 template <int  T> struct A {};
 template <void* T> struct B {};
 
-A<NULL> a;
+A<NULL> a;			// { dg-warning "NULL" }
 B<NULL> b;  // { dg-error "" }
 
