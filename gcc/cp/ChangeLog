@@ -1,5 +1,7 @@
 2010-09-06  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (cp_finish_decl): Don't change init for auto deduction.
+
 	* pt.c (fold_non_dependent_expr_sfinae): Split out from...
 	(fold_non_dependent_expr): ...here.
 	(convert_nontype_argument): Use it.  Take complain parm.

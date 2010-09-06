@@ -1,5 +1,7 @@
 2010-09-06  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/auto19.C: New.
+
 	* g++.dg/template/sfinae25.C: New.
 	* g++.dg/template/char1.C: Expect warning.
 	* g++.dg/template/nontype10.C: Likewise.
