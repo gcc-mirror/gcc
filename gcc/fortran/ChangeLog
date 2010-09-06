@@ -1,6 +1,11 @@
 2010-09-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45560
+	* dump-parse-tree.c (gfc_debug_expr): Use stderr instead of stdout.
+
+2010-09-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45560
 	* dump-parse-tree.c (gfc_debug_expr): New function.
 
 2010-09-06  Tobias Burnus  <burnus@net-b.de>
