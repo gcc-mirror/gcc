@@ -56,7 +56,7 @@ void
 gfc_debug_expr (gfc_expr *e)
 {
   FILE *tmp = dumpfile;
-  dumpfile = stdout;
+  dumpfile = stderr;
   show_expr (e);
   fputc ('\n', dumpfile);
   dumpfile = tmp;
