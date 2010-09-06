@@ -1,5 +1,8 @@
 2010-09-06  Jason Merrill  <jason@redhat.com>
 
+	* method.c (synthesized_method_walk): In constructors, also check
+	subobject destructors.
+
 	* semantics.c (finish_compound_literal): Always build a
 	TARGET_EXPR.
 
