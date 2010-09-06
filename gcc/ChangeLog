@@ -1,3 +1,12 @@
+2010-09-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45534
+	* tree-ssa-address.c (create_mem_ref_raw): Add verify parameter.
+	(create_mem_ref): Do verify the created TARGET_MEM_REF is valid
+	on the target.
+	(maybe_fold_tmr): Do not verify the created TARGET_MEM_REF is
+	valid on the target.
+
 2010-09-06  Andreas Schwab  <schwab@redhat.com>
 
 	* configure.ac: Quote argument of AC_MSG_WARN.
@@ -5,7 +14,8 @@
 
 2010-09-06  Alexander Monakov  <amonakov@ispras.ru>
 
-	* sel-sched.c (move_cond_jump): Correct arguments to maybe_tidy_empty_bb.
+	* sel-sched.c (move_cond_jump): Correct arguments to
+	maybe_tidy_empty_bb.
 	* sel-sched-ir.c (maybe_tidy_empty_bb): Export.
 
 2010-09-06  Andrey Belevantsev  <abel@ispras.ru>
