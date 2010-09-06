@@ -1,5 +1,12 @@
 2010-09-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/36931
+	* frontend-passes.c (optimize_binop_array_assignment):  New
+	function.
+	(optimize_assignment):  Call it.
+
+2010-09-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/34145
 	* trans-expr.c (gfc_conv_substring):  If start and end
 	of the string reference are equal, set the length to one.
