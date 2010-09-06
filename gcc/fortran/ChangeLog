@@ -1,3 +1,30 @@
+2010-09-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/38282
+	* intrinsic.c (add_functions): Support IALL, IANY, IPARITY.
+	(check_specific): Special case for those intrinsics.
+	* gfortran.h (gfc_isym_id): Add new intrinsics
+	* intrinsic.h (gfc_check_transf_bit_intrins,
+	gfc_simplify_iall, gfc_simplify_iany, gfc_simplify_iparity,
+	gfc_resolve_iall, gfc_resolve_iany, gfc_resolve_iparity):
+	New prototypes.
+	* iresolve.c (gfc_resolve_iall, gfc_resolve_iany,
+	gfc_resolve_iparity, resolve_transformational): New functions.
+	(gfc_resolve_product, gfc_resolve_sum,
+	gfc_resolve_parity): Use resolve_transformational.
+	* check.c (gfc_check_transf_bit_intrins): New function.
+	* simplify.c (gfc_simplify_iall, gfc_simplify_iany,
+	gfc_simplify_iparity, do_bit_any, do_bit_ior,
+	do_bit_xor, simplify_transformation): New functions.
+	(gfc_simplify_all, gfc_simplify_any, gfc_simplify_parity,
+	gfc_simplify_sum, gfc_simplify_product): Use simplify_transformation.
+	* trans-intrinsic.c (gfc_conv_intrinsic_arith,
+	gfc_conv_intrinsic_function, gfc_is_intrinsic_libcall):
+	Handle IALL, IANY and IPARITY intrinsics.	
+	* intrinsic.texi (IMAGE_INDEX): Move up to fix alphabetic
+	order.
+	(IALL, IANY, IPARITY): Document new intrinsics.
+
 2010-09-05  Tobias Burnus <burnus@net-b.de>
 
 	PR fortran/45186

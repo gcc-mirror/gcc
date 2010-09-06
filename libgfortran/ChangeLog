@@ -1,3 +1,28 @@
+2010-09-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/38282
+	* gfortran.map: Add new iany, iall and iparity intrinsics.
+	* Makefile.am: Ditto.
+	* m4/iany.m4: New.
+	* m4/iall.m4: New.
+	* m4/iparity.m4: New.
+	* Makefile.in: Regenerate.
+	* generated/iall_i1.c: Generate.
+	* generated/iall_i2.c: Generate.
+	* generated/iall_i4.c: Generate.
+	* generated/iall_i8.c: Generate.
+	* generated/iall_i16.c: Generate.
+	* generated/iany_i1.c: Generate.
+	* generated/iany_i2.c: Generate.
+	* generated/iany_i4.c: Generate.
+	* generated/iany_i8.c: Generate.
+	* generated/iany_i16.c: Generate.
+	* generated/iparity_i1.c: Generate.
+	* generated/iparity_i2.c: Generate.
+	* generated/iparity_i4.c: Generate.
+	* generated/iparity_i8.c: Generate.
+	* generated/iparity_i16.c: Generate.
+
 2010-09-05  Tobias Burnus  <burnus@net-b.de>
 
 	* m4/bessel.m4: Fix printf warning by casting to (long int).

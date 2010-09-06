@@ -1777,6 +1777,20 @@ add_functions (void)
 
   make_generic ("and", GFC_ISYM_AND, GFC_STD_GNU);
 
+  add_sym_3red ("iall", GFC_ISYM_IALL, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F2008,
+		gfc_check_transf_bit_intrins, gfc_simplify_iall, gfc_resolve_iall,
+		ar, BT_REAL, dr, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL,
+		msk, BT_LOGICAL, dl, OPTIONAL);
+
+  make_generic ("iall", GFC_ISYM_IALL, GFC_STD_F2008);
+
+  add_sym_3red ("iany", GFC_ISYM_IANY, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F2008,
+		gfc_check_transf_bit_intrins, gfc_simplify_iany, gfc_resolve_iany,
+		ar, BT_REAL, dr, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL,
+		msk, BT_LOGICAL, dl, OPTIONAL);
+
+  make_generic ("iany", GFC_ISYM_IANY, GFC_STD_F2008);
+
   add_sym_0 ("iargc", GFC_ISYM_IARGC, CLASS_IMPURE, ACTUAL_NO, BT_INTEGER,
 	     di, GFC_STD_GNU, NULL, NULL, NULL);
 
@@ -1884,6 +1898,13 @@ add_functions (void)
 	     i, BT_UNKNOWN, 0, REQUIRED, j, BT_UNKNOWN, 0, REQUIRED);
 
   make_generic ("or", GFC_ISYM_OR, GFC_STD_GNU);
+
+  add_sym_3red ("iparity", GFC_ISYM_IPARITY, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F2008,
+		gfc_check_transf_bit_intrins, gfc_simplify_iparity, gfc_resolve_iparity,
+		ar, BT_REAL, dr, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL,
+		msk, BT_LOGICAL, dl, OPTIONAL);
+
+  make_generic ("iparity", GFC_ISYM_IPARITY, GFC_STD_F2008);
 
   /* The following function is for G77 compatibility.  */
   add_sym_1 ("irand", GFC_ISYM_IRAND, CLASS_IMPURE, ACTUAL_NO, BT_INTEGER,
@@ -3737,6 +3758,9 @@ check_specific (gfc_intrinsic_sym *specific, gfc_expr *expr, int error_flag)
     /* Same here. The difference to the previous case is that we allow a
        general numeric type.  */
     t = gfc_check_product_sum (*ap);
+  else if (specific->check.f3red == gfc_check_transf_bit_intrins)
+    /* Same as for PRODUCT and SUM, but different checks.  */
+    t = gfc_check_transf_bit_intrins (*ap);
   else
      {
        if (specific->check.f1 == NULL)
