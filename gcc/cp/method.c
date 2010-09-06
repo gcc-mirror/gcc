@@ -1052,10 +1052,15 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   int i, quals, flags;
   tsubst_flags_t complain;
   const char *msg;
+  bool ctor_p;
+  tree cleanup_spec;
+  bool cleanup_trivial = true;
+  bool cleanup_deleted = false;
 
+  cleanup_spec
+    = (cxx_dialect >= cxx0x ? noexcept_true_spec : empty_except_spec);
   if (spec_p)
-    *spec_p = (cxx_dialect >= cxx0x
-	       ? noexcept_true_spec : empty_except_spec);
+    *spec_p = cleanup_spec;
 
   if (deleted_p)
     {
@@ -1109,6 +1114,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     return;
 #endif
 
+  ctor_p = false;
   assign_p = false;
   check_vdtor = false;
   switch (sfk)
@@ -1129,6 +1135,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     case sfk_constructor:
     case sfk_move_constructor:
     case sfk_copy_constructor:
+      ctor_p = true;
       fnname = complete_ctor_identifier;
       break;
 
@@ -1176,7 +1183,16 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
       rval = locate_fn_flags (base_binfo, fnname, argtype, flags, complain);
 
       process_subob_fn (rval, move_p, spec_p, trivial_p, deleted_p,
-			msg, BINFO_TYPE (base_binfo));
+			msg, basetype);
+      if (ctor_p && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (basetype))
+	{
+	  /* In a constructor we also need to check the subobject
+	     destructors for cleanup of partially constructed objects.  */
+	  rval = locate_fn_flags (base_binfo, complete_dtor_identifier,
+				  NULL_TREE, flags, complain);
+	  process_subob_fn (rval, false, &cleanup_spec, &cleanup_trivial,
+			    &cleanup_deleted, NULL, basetype);
+	}
 
       if (check_vdtor && type_has_virtual_destructor (basetype))
 	{
@@ -1186,6 +1202,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	     to have a null rval (no class-specific op delete).  */
 	  if (rval && rval == error_mark_node && deleted_p)
 	    *deleted_p = true;
+	  check_vdtor = false;
 	}
     }
 
@@ -1206,12 +1223,20 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	       "or trivial copy constructor");
       FOR_EACH_VEC_ELT (tree, vbases, i, base_binfo)
 	{
+	  tree basetype = BINFO_TYPE (base_binfo);
 	  if (copy_arg_p)
-	    argtype = build_stub_type (BINFO_TYPE (base_binfo), quals, move_p);
+	    argtype = build_stub_type (basetype, quals, move_p);
 	  rval = locate_fn_flags (base_binfo, fnname, argtype, flags, complain);
 
 	  process_subob_fn (rval, move_p, spec_p, trivial_p, deleted_p,
-			    msg, BINFO_TYPE (base_binfo));
+			    msg, basetype);
+	  if (ctor_p && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (basetype))
+	    {
+	      rval = locate_fn_flags (base_binfo, complete_dtor_identifier,
+				      NULL_TREE, flags, complain);
+	      process_subob_fn (rval, false, &cleanup_spec, &cleanup_trivial,
+				&cleanup_deleted, NULL, basetype);
+	    }
 	}
     }
   if (!diag)
@@ -1225,11 +1250,25 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   walk_field_subobs (TYPE_FIELDS (ctype), fnname, sfk, quals,
 		     copy_arg_p, move_p, assign_p, spec_p, trivial_p,
 		     deleted_p, msg, flags, complain);
+  if (ctor_p)
+    walk_field_subobs (TYPE_FIELDS (ctype), complete_dtor_identifier,
+		       sfk_destructor, TYPE_UNQUALIFIED, false,
+		       false, false, &cleanup_spec, &cleanup_trivial,
+		       &cleanup_deleted, NULL, flags, complain);
 
   pop_scope (scope);
 
   --cp_unevaluated_operand;
   --c_inhibit_evaluation_warnings;
+
+  /* If the constructor isn't trivial, consider the subobject cleanups.  */
+  if (ctor_p && trivial_p && !*trivial_p)
+    {
+      if (deleted_p && cleanup_deleted)
+	*deleted_p = true;
+      if (spec_p)
+	*spec_p = merge_exception_specifiers (*spec_p, cleanup_spec);
+    }
 
 #ifdef ENABLE_CHECKING
   /* If we expected this to be trivial but it isn't, then either we're in
