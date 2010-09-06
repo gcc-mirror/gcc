@@ -12404,6 +12404,7 @@ get_some_local_dynamic_name (void)
    Y -- print condition for XOP pcom* instruction.
    + -- print a branch hint as 'cs' or 'ds' prefix
    ; -- print a semicolon (after prefixes due to bug in older gas).
+   @ -- print a segment register of thread base pointer load
  */
 
 void
@@ -12882,6 +12883,19 @@ ix86_print_operand (FILE *file, rtx x, int code)
 #endif
 	  return;
 
+	case '@':
+	  if (ASSEMBLER_DIALECT == ASM_ATT)
+	    putc ('%', file);
+
+	  /* The kernel uses a different segment register for performance
+	     reasons; a system call would not have to trash the userspace
+	     segment register, which would be expensive.  */
+	  if (TARGET_64BIT && ix86_cmodel != CM_KERNEL)
+	    fputs ("fs", file);
+	  else
+	    fputs ("gs", file);
+	  return;
+
 	default:
 	    output_operand_lossage ("invalid operand code '%c'", code);
 	}
@@ -13012,7 +13026,8 @@ ix86_print_operand (FILE *file, rtx x, int code)
 static bool
 ix86_print_operand_punct_valid_p (unsigned char code)
 {
-  return (code == '*' || code == '+' || code == '&' || code == ';');
+  return (code == '@' || code == '*' || code == '+'
+	  || code == '&' || code == ';');
 }
 
 /* Print a memory operand whose address is ADDR.  */
