@@ -1,3 +1,8 @@
+2010-09-06  Alexander Monakov  <amonakov@ispras.ru>
+
+	* sel-sched.c (move_cond_jump): Correct arguments to maybe_tidy_empty_bb.
+	* sel-sched-ir.c (maybe_tidy_empty_bb): Export.
+
 2010-09-06  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/44919

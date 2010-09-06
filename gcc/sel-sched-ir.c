@@ -3540,7 +3540,7 @@ sel_recompute_toporder (void)
 }
 
 /* Tidy the possibly empty block BB.  */
-static bool
+bool
 maybe_tidy_empty_bb (basic_block bb, bool recompute_toporder_p)
 {
   basic_block succ_bb, pred_bb;

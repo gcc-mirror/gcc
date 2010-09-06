@@ -4941,7 +4941,7 @@ move_cond_jump (rtx insn, bnd_t bnd)
       /* Cleanup possibly empty blocks left.  */
       block_next = bb->next_bb;
       if (bb != block_from)
-          maybe_tidy_empty_bb (bb);
+	maybe_tidy_empty_bb (bb, false);
       bb = block_next;
     }
 
