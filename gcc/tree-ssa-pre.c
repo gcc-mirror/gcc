@@ -2822,26 +2822,6 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	return folded;
       }
       break;
-    case MISALIGNED_INDIRECT_REF:
-      {
-	tree folded;
-	tree genop1 = create_component_ref_by_pieces_1 (block, ref,
-							operand,
-							stmts, domstmt);
-	if (!genop1)
-	  return NULL_TREE;
-	genop1 = fold_convert (build_pointer_type (currop->type),
-			       genop1);
-
-	if (currop->opcode == MISALIGNED_INDIRECT_REF)
-	  folded = fold_build2 (currop->opcode, currop->type,
-				genop1, currop->op1);
-	else
-	  folded = fold_build1 (currop->opcode, currop->type,
-				genop1);
-	return folded;
-      }
-      break;
     case BIT_FIELD_REF:
       {
 	tree folded;

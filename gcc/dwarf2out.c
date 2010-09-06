@@ -15230,7 +15230,6 @@ loc_list_from_tree (tree loc, int want_address)
 	return 0;
       /* Fallthru.  */
     case INDIRECT_REF:
-    case MISALIGNED_INDIRECT_REF:
       list_ret = loc_list_from_tree (TREE_OPERAND (loc, 0), 0);
       have_address = 1;
       break;

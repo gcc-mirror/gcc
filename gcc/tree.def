@@ -414,19 +414,8 @@ DEFTREECODE (ARRAY_REF, "array_ref", tcc_reference, 4)
    of the range is taken from the type of the expression.  */
 DEFTREECODE (ARRAY_RANGE_REF, "array_range_ref", tcc_reference, 4)
 
-/* The ordering of the following codes is optimized for the checking
-   macros in tree.h.  Changing the order will degrade the speed of the
-   compiler.  INDIRECT_REF, MISALIGNED_INDIRECT_REF.  */
-
 /* C unary `*' or Pascal `^'.  One operand, an expression for a pointer.  */
 DEFTREECODE (INDIRECT_REF, "indirect_ref", tcc_reference, 1)
-
-/* Same as INDIRECT_REF, but also specifies the alignment of the referenced
-   address:
-   Operand 0 is the referenced address (a pointer);
-   Operand 1 is an INTEGER_CST which represents the alignment of the address,
-   or 0 if the alignment is unknown.  */
-DEFTREECODE (MISALIGNED_INDIRECT_REF, "misaligned_indirect_ref", tcc_reference, 2)
 
 /* Used to represent lookup in a virtual method table which is dependent on
    the runtime type of an object.  Operands are:

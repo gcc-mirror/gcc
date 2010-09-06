@@ -2434,7 +2434,6 @@ staticp (tree arg)
     case BIT_FIELD_REF:
       return NULL;
 
-    case MISALIGNED_INDIRECT_REF:
     case INDIRECT_REF:
       return TREE_CONSTANT (TREE_OPERAND (arg, 0)) ? arg : NULL;
 
@@ -3660,7 +3659,6 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
       TREE_READONLY (t) = 0;
       break;
 
-    case MISALIGNED_INDIRECT_REF:
     case INDIRECT_REF:
       /* Whether a dereference is readonly has nothing to do with whether
 	 its operand is readonly.  */
@@ -3929,8 +3927,6 @@ reference_alias_ptr_type (const_tree t)
     return TREE_TYPE (TREE_OPERAND (base, 1));
   else if (TREE_CODE (base) == TARGET_MEM_REF)
     return TREE_TYPE (TMR_OFFSET (base)); 
-  else if (TREE_CODE (base) == MISALIGNED_INDIRECT_REF)
-    return NULL_TREE;
   else
     return build_pointer_type (TYPE_MAIN_VARIANT (TREE_TYPE (base)));
 }
@@ -5552,6 +5548,23 @@ check_qualified_type (const_tree cand, const_tree base, int type_quals)
 	  && TYPE_NAME (cand) == TYPE_NAME (base)
 	  /* Apparently this is needed for Objective-C.  */
 	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
+	  /* Check alignment.  */
+	  && TYPE_ALIGN (cand) == TYPE_ALIGN (base)
+	  && attribute_list_equal (TYPE_ATTRIBUTES (cand),
+				   TYPE_ATTRIBUTES (base)));
+}
+
+/* Returns true iff CAND is equivalent to BASE with ALIGN.  */
+
+static bool
+check_aligned_type (const_tree cand, const_tree base, unsigned int align)
+{
+  return (TYPE_QUALS (cand) == TYPE_QUALS (base)
+	  && TYPE_NAME (cand) == TYPE_NAME (base)
+	  /* Apparently this is needed for Objective-C.  */
+	  && TYPE_CONTEXT (cand) == TYPE_CONTEXT (base)
+	  /* Check alignment.  */
+	  && TYPE_ALIGN (cand) == align
 	  && attribute_list_equal (TYPE_ATTRIBUTES (cand),
 				   TYPE_ATTRIBUTES (base)));
 }
@@ -5608,6 +5621,27 @@ build_qualified_type (tree type, int type_quals)
 	TYPE_CANONICAL (t) = t;
 
     }
+
+  return t;
+}
+
+/* Create a variant of type T with alignment ALIGN.  */
+
+tree
+build_aligned_type (tree type, unsigned int align)
+{
+  tree t;
+
+  if (TYPE_PACKED (type)
+      || TYPE_ALIGN (type) == align)
+    return type;
+
+  for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
+    if (check_aligned_type (t, type, align))
+      return t;
+
+  t = build_variant_type_copy (type);
+  TYPE_ALIGN (t) = align;
 
   return t;
 }

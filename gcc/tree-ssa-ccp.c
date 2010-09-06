@@ -509,9 +509,7 @@ get_value_from_alignment (tree expr)
   base = get_inner_reference (TREE_OPERAND (expr, 0),
 			      &bitsize, &bitpos, &offset,
 			      &mode, &align, &align, false);
-  if (TREE_CODE (base) == MISALIGNED_INDIRECT_REF)
-    val = get_value_for_expr (TREE_OPERAND (base, 0), true);
-  else if (TREE_CODE (base) == MEM_REF)
+  if (TREE_CODE (base) == MEM_REF)
     val = bit_value_binop (PLUS_EXPR, TREE_TYPE (expr),
 			   TREE_OPERAND (base, 0), TREE_OPERAND (base, 1));
   else if (base

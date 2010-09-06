@@ -4151,6 +4151,8 @@ expand_assignment (tree to, tree from, bool nontemporal)
 {
   rtx to_rtx = 0;
   rtx result;
+  enum machine_mode mode;
+  int align, icode;
 
   /* Don't crash if the lhs of the assignment was erroneous.  */
   if (TREE_CODE (to) == ERROR_MARK)
@@ -4162,6 +4164,68 @@ expand_assignment (tree to, tree from, bool nontemporal)
   /* Optimize away no-op moves without side-effects.  */
   if (operand_equal_p (to, from, 0))
     return;
+
+  mode = TYPE_MODE (TREE_TYPE (to));
+  if ((TREE_CODE (to) == MEM_REF
+       || TREE_CODE (to) == TARGET_MEM_REF)
+      && mode != BLKmode
+      && ((align = MAX (TYPE_ALIGN (TREE_TYPE (to)),
+			get_object_alignment (to, BIGGEST_ALIGNMENT)))
+	  < (signed) GET_MODE_ALIGNMENT (mode))
+      && ((icode = optab_handler (movmisalign_optab, mode))
+	  != CODE_FOR_nothing))
+    {
+      enum machine_mode address_mode, op_mode1;
+      rtx insn, reg, op0, mem;
+
+      reg = expand_expr (from, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+      reg = force_not_mem (reg);
+
+      if (TREE_CODE (to) == MEM_REF)
+	{
+	  addr_space_t as
+	      = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (to, 1))));
+	  tree base = TREE_OPERAND (to, 0);
+	  address_mode = targetm.addr_space.address_mode (as);
+	  op0 = expand_expr (base, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+	  op0 = convert_memory_address_addr_space (address_mode, op0, as);
+	  if (!integer_zerop (TREE_OPERAND (to, 1)))
+	    {
+	      rtx off
+		  = immed_double_int_const (mem_ref_offset (to), address_mode);
+	      op0 = simplify_gen_binary (PLUS, address_mode, op0, off);
+	    }
+	  op0 = memory_address_addr_space (mode, op0, as);
+	  mem = gen_rtx_MEM (mode, op0);
+	  set_mem_attributes (mem, to, 0);
+	  set_mem_addr_space (mem, as);
+	}
+      else if (TREE_CODE (to) == TARGET_MEM_REF)
+	{
+	  addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (to));
+	  struct mem_address addr;
+
+	  get_address_description (to, &addr);
+	  op0 = addr_for_mem_ref (&addr, as, true);
+	  op0 = memory_address_addr_space (mode, op0, as);
+	  mem = gen_rtx_MEM (mode, op0);
+	  set_mem_attributes (mem, to, 0);
+	  set_mem_addr_space (mem, as);
+	}
+      else
+	gcc_unreachable ();
+      if (TREE_THIS_VOLATILE (to))
+	MEM_VOLATILE_P (mem) = 1;
+
+      op_mode1 = insn_data[icode].operand[1].mode;
+      if (! (*insn_data[icode].operand[1].predicate) (reg, op_mode1)
+	  && op_mode1 != VOIDmode)
+	reg = copy_to_mode_reg (op_mode1, reg);
+
+      insn = GEN_FCN (icode) (mem, reg);
+      emit_insn (insn);
+      return;
+    }
 
   /* Assignment of a structure component needs special treatment
      if the structure component's rtx is not simply a MEM.
@@ -4296,41 +4360,6 @@ expand_assignment (tree to, tree from, bool nontemporal)
       pop_temp_slots ();
       return;
     }
-
-   else if (TREE_CODE (to) == MISALIGNED_INDIRECT_REF)
-     {
-       addr_space_t as = ADDR_SPACE_GENERIC;
-       enum machine_mode mode, op_mode1;
-       enum insn_code icode;
-       rtx reg, addr, mem, insn;
-
-       if (POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (to, 0))))
-	 as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (to, 0))));
-
-       reg = expand_expr (from, NULL_RTX, VOIDmode, EXPAND_NORMAL);
-       reg = force_not_mem (reg);
-
-       mode = TYPE_MODE (TREE_TYPE (to));
-       addr = expand_expr (TREE_OPERAND (to, 0), NULL_RTX, VOIDmode,
-                         EXPAND_SUM);
-       addr = memory_address_addr_space (mode, addr, as);
-       mem = gen_rtx_MEM (mode, addr);
-
-       set_mem_attributes (mem, to, 0);
-       set_mem_addr_space (mem, as);
-
-       icode = optab_handler (movmisalign_optab, mode);
-       gcc_assert (icode != CODE_FOR_nothing);
-
-       op_mode1 = insn_data[icode].operand[1].mode;
-       if (! (*insn_data[icode].operand[1].predicate) (reg, op_mode1)
-           && op_mode1 != VOIDmode)
-         reg = copy_to_mode_reg (op_mode1, reg);
-
-      insn = GEN_FCN (icode) (mem, reg);
-       emit_insn (insn);
-       return;
-     }
 
   /* If the rhs is a function call and its value is not an aggregate,
      call the function before we start to compute the lhs.
@@ -6659,8 +6688,7 @@ safe_from_p (const_rtx x, tree exp, int top_p)
 	    }
 	  break;
 
-	case MISALIGNED_INDIRECT_REF:
-	case INDIRECT_REF:
+	case MEM_REF:
 	  if (MEM_P (x)
 	      && alias_sets_conflict_p (MEM_ALIAS_SET (x),
 					get_alias_set (exp)))
@@ -8598,45 +8626,28 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
       return expand_constructor (exp, target, modifier, false);
 
-    case MISALIGNED_INDIRECT_REF:
-    case INDIRECT_REF:
+    case TARGET_MEM_REF:
       {
-	tree exp1 = treeop0;
-	addr_space_t as = ADDR_SPACE_GENERIC;
+	addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (exp));
+	struct mem_address addr;
+	int icode, align;
 
-	if (modifier != EXPAND_WRITE)
-	  {
-	    tree t;
-
-	    t = fold_read_from_constant_string (exp);
-	    if (t)
-	      return expand_expr (t, target, tmode, modifier);
-	  }
-
-	if (POINTER_TYPE_P (TREE_TYPE (exp1)))
-	  as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp1)));
-
-	op0 = expand_expr (exp1, NULL_RTX, VOIDmode, EXPAND_SUM);
+	get_address_description (exp, &addr);
+	op0 = addr_for_mem_ref (&addr, as, true);
 	op0 = memory_address_addr_space (mode, op0, as);
-
 	temp = gen_rtx_MEM (mode, op0);
-
 	set_mem_attributes (temp, exp, 0);
 	set_mem_addr_space (temp, as);
-
-	/* Resolve the misalignment now, so that we don't have to remember
-	   to resolve it later.  Of course, this only works for reads.  */
-	if (code == MISALIGNED_INDIRECT_REF)
+	align = MAX (TYPE_ALIGN (TREE_TYPE (exp)),
+		     get_object_alignment (exp, BIGGEST_ALIGNMENT));
+	if (mode != BLKmode
+	    && (unsigned) align < GET_MODE_ALIGNMENT (mode)
+	    /* If the target does not have special handling for unaligned
+	       loads of mode then it can use regular moves for them.  */
+	    && ((icode = optab_handler (movmisalign_optab, mode))
+		!= CODE_FOR_nothing))
 	  {
-	    int icode;
 	    rtx reg, insn;
-
-	    gcc_assert (modifier == EXPAND_NORMAL
-			|| modifier == EXPAND_STACK_PARM);
-
-	    /* The vectorizer should have already checked the mode.  */
-	    icode = optab_handler (movmisalign_optab, mode);
-	    gcc_assert (icode != CODE_FOR_nothing);
 
 	    /* We've already validated the memory, and we're creating a
 	       new pseudo destination.  The predicates really can't fail.  */
@@ -8648,23 +8659,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 	    return reg;
 	  }
-
 	return temp;
       }
-
-    case TARGET_MEM_REF:
-      {
-	addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (exp));
-	struct mem_address addr;
-
-	get_address_description (exp, &addr);
-	op0 = addr_for_mem_ref (&addr, as, true);
-	op0 = memory_address_addr_space (mode, op0, as);
-	temp = gen_rtx_MEM (mode, op0);
-	set_mem_attributes (temp, exp, 0);
-	set_mem_addr_space (temp, as);
-      }
-      return temp;
 
     case MEM_REF:
       {
@@ -8673,6 +8669,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	enum machine_mode address_mode;
 	tree base = TREE_OPERAND (exp, 0);
 	gimple def_stmt;
+	int icode, align;
 	/* Handle expansion of non-aliased memory with non-BLKmode.  That
 	   might end up in a register.  */
 	if (TREE_CODE (base) == ADDR_EXPR)
@@ -8717,9 +8714,14 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	address_mode = targetm.addr_space.address_mode (as);
 	base = TREE_OPERAND (exp, 0);
 	if ((def_stmt = get_def_for_expr (base, BIT_AND_EXPR)))
-	  base = build2 (BIT_AND_EXPR, TREE_TYPE (base),
-			 gimple_assign_rhs1 (def_stmt),
-			 gimple_assign_rhs2 (def_stmt));
+	  {
+	    tree mask = gimple_assign_rhs2 (def_stmt);
+	    base = build2 (BIT_AND_EXPR, TREE_TYPE (base),
+			   gimple_assign_rhs1 (def_stmt), mask);
+	    TREE_OPERAND (exp, 0) = base;
+	  }
+	align = MAX (TYPE_ALIGN (TREE_TYPE (exp)),
+		     get_object_alignment (exp, BIGGEST_ALIGNMENT));
 	op0 = expand_expr (base, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 	op0 = convert_memory_address_addr_space (address_mode, op0, as);
 	if (!integer_zerop (TREE_OPERAND (exp, 1)))
@@ -8734,6 +8736,25 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	set_mem_addr_space (temp, as);
 	if (TREE_THIS_VOLATILE (exp))
 	  MEM_VOLATILE_P (temp) = 1;
+	if (mode != BLKmode
+	    && (unsigned) align < GET_MODE_ALIGNMENT (mode)
+	    /* If the target does not have special handling for unaligned
+	       loads of mode then it can use regular moves for them.  */
+	    && ((icode = optab_handler (movmisalign_optab, mode))
+		!= CODE_FOR_nothing))
+	  {
+	    rtx reg, insn;
+
+	    /* We've already validated the memory, and we're creating a
+	       new pseudo destination.  The predicates really can't fail.  */
+	    reg = gen_reg_rtx (mode);
+
+	    /* Nor can the insn generator.  */
+	    insn = GEN_FCN (icode) (reg, temp);
+	    emit_insn (insn);
+
+	    return reg;
+	  }
 	return temp;
       }
 

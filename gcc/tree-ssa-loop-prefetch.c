@@ -423,9 +423,6 @@ idx_analyze_ref (tree base, tree *index, void *data)
   HOST_WIDE_INT idelta = 0, imult = 1;
   affine_iv iv;
 
-  if (TREE_CODE (base) == MISALIGNED_INDIRECT_REF)
-    return false;
-
   if (!simple_iv (ar_data->loop, loop_containing_stmt (ar_data->stmt),
 		  *index, &iv, true))
     return false;
