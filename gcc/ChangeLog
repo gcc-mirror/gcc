@@ -1,3 +1,10 @@
+2010-09-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR libobjc/19850
+	* gthr-posix.h (__gthread_objc_thread_detach): Use
+	_objc_thread_attribs when detaching a thread.
+	* gthr-posix95.h (__gthread_objc_thread_detach): Same change.
+
 2010-09-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/45524
