@@ -463,12 +463,20 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
       gfc_free (msg);
     }
 
-  tmp = fold_build2_loc (input_location, MINUS_EXPR, gfc_charlen_type_node,
-			 end.expr, start.expr);
-  tmp = fold_build2_loc (input_location, PLUS_EXPR, gfc_charlen_type_node,
-			 build_int_cst (gfc_charlen_type_node, 1), tmp);
-  tmp = fold_build2_loc (input_location, MAX_EXPR, gfc_charlen_type_node, tmp,
-			 build_int_cst (gfc_charlen_type_node, 0));
+  /* If the start and end expressions are equal, the length is one.  */
+  if (ref->u.ss.end
+      && gfc_dep_compare_expr (ref->u.ss.start, ref->u.ss.end) == 0)
+    tmp = build_int_cst (gfc_charlen_type_node, 1);
+  else
+    {
+      tmp = fold_build2_loc (input_location, MINUS_EXPR, gfc_charlen_type_node,
+			     end.expr, start.expr);
+      tmp = fold_build2_loc (input_location, PLUS_EXPR, gfc_charlen_type_node,
+			     build_int_cst (gfc_charlen_type_node, 1), tmp);
+      tmp = fold_build2_loc (input_location, MAX_EXPR, gfc_charlen_type_node,
+			     tmp, build_int_cst (gfc_charlen_type_node, 0));
+    }
+
   se->string_length = tmp;
 }
 

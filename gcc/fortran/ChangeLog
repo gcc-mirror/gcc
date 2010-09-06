@@ -1,3 +1,9 @@
+2010-09-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/34145
+	* trans-expr.c (gfc_conv_substring):  If start and end
+	of the string reference are equal, set the length to one.
+
 2010-09-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45560
