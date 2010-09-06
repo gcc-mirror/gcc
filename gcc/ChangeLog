@@ -1,3 +1,20 @@
+2010-09-07  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR target/43137
+	* config/arm/iterators.md (qhs_zextenddi_cond, qhs_sextenddi_cond):
+	New define_mode_attrs.
+	* config/arm/arm.md (zero_extendsidi2, arm_zero_extendsidi2,
+	arm_exxtendsidi2, arm_extendsidi2): Delete patterns.
+	(zero_extend<mode>di2, extend<mode>di2 and related splits): New.
+	(thumb1_zero_extendhisi2): Remove code to handle LABEL_REFs.
+	Remove pool_range attribute.
+	(arm_zero_extendhisi2, arm_zero_extendhisi2_v6, arm_zero_extendqisi2,
+	arm_zero_extendqisi2_v6, thumb1_zero_extendqisi2_v6): Remove
+	pool_range and neg_pool_range attributes.
+	* config/arm/thumb2.md (thumb2_zero_extendsidi2,
+	thumb2_zero_extendhidi2, thumb2_zero_extendqidi2, thumb2_extendsidi2,
+	thumb2_extendhidi2, thumb2_extendqidi2): Delete.
+
 2010-09-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/linux-unwind.h (x86_fallback_frame_state): Properly

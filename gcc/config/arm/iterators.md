@@ -370,6 +370,11 @@
 ;; Widen. Result is half the number of elements, but widened to double-width.
 (define_mode_attr V_unpack   [(V16QI "V8HI") (V8HI "V4SI") (V4SI "V2DI")])
 
+;; Conditions to be used in extend<mode>di patterns.
+(define_mode_attr qhs_zextenddi_cond [(SI "") (HI "&& arm_arch6") (QI "")])
+(define_mode_attr qhs_sextenddi_cond [(SI "") (HI "&& arm_arch6")
+				      (QI "&& arm_arch6")])
+
 ;;----------------------------------------------------------------------------
 ;; Code attributes
 ;;----------------------------------------------------------------------------
