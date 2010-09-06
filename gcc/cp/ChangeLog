@@ -1,3 +1,11 @@
+2010-09-06  Dodji Seketeli  <dodji@redhat.com>
+
+    	PR c++/45200
+    	PR c++/45293
+    	PR c++/45558
+	* tree.c (strip_typedefs): Strip typedefs from the context of
+    	TYPENAME_TYPEs.
+
 2010-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/45423
