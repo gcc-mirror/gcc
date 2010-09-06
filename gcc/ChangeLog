@@ -1,3 +1,9 @@
+2010-09-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-typeck.c (do_warn_double_promotion): Remove.
+	* doc/invoke.texi (-Wdouble-promotion): Note available for C++ and
+	Objective-C++ too.
+
 2010-09-06  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/frv/frv.h (CLASS_LIKELY_SPILLED_P): Remove.

@@ -1,3 +1,9 @@
+2010-09-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* typeck.c (cp_build_binary_op): Call do_warn_double_promotion.
+	* call.c (build_conditional_expr): Likewise.
+	(convert_arg_to_ellipsis): Likewise.
+
 2010-09-06  Arnaud Charlet  <charlet@adacore.com>
 
 	* parser.c (make_pointer_declarator, make_reference_declarator,

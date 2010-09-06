@@ -3053,7 +3053,7 @@ This warning is enabled by @option{-Wall}.
 
 Suppress warning messages emitted by @code{#warning} directives.
 
-@item -Wdouble-promotion @r{(C and Objective-C only)}
+@item -Wdouble-promotion @r{(C, C++, Objective-C and Objective-C++ only)}
 @opindex Wdouble-promotion
 @opindex Wno-double-promotion
 Give a warning when a value of type @code{float} is implicitly

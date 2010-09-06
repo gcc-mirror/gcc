@@ -265,6 +265,7 @@ cp_common_type (tree t1, tree t2)
   enum tree_code code2 = TREE_CODE (t2);
   tree attributes;
 
+
   /* In what follows, we slightly generalize the rules given in [expr] so
      as to deal with `long long' and `complex'.  First, merge the
      attributes.  */
@@ -4362,7 +4363,14 @@ cp_build_binary_op (location_t location,
   if (!result_type
       && arithmetic_types_p
       && (shorten || common || short_compare))
-    result_type = cp_common_type (type0, type1);
+    {
+      result_type = cp_common_type (type0, type1);
+      do_warn_double_promotion (result_type, type0, type1,
+				"implicit conversion from %qT to %qT "
+				"to match other operand of binary "
+				"expression",
+				location);
+    }
 
   if (!result_type)
     {
