@@ -105,13 +105,24 @@ static int __attribute__ ((__unused__)) not_target_flags = 0;
 #undef ALTIVEC_VECTOR_MODE
 #define ALTIVEC_VECTOR_MODE(MODE) (0)
 
+/* Furthermore, some (powerpc) targets also use TARGET_ALIGN_NATURAL
+ in their alignment macros. Currently[4.5/6], rs6000.h points this
+ to a static variable, initialized by target overrides. This is reset
+ in linux64.h but not in darwin64.h.  The macro is not used by *86*.  */
+
+#if __MACH__ && __LP64__
+# undef TARGET_ALIGN_NATURAL
+# define TARGET_ALIGN_NATURAL 1
+#endif
 
 /*  FIXME: while this file has no business including tm.h, this
     definitely has no business defining this macro but it
     is only way around without really rewritting this file,
-    should look after the branch of 3.4 to fix this.  */
+    should look after the branch of 3.4 to fix this.
+    FIXME1: It's also out of date, darwin no longer has the same alignment
+    'special' as aix - this is probably the origin of the m32 breakage.  */
 #define rs6000_special_round_type_align(STRUCT, COMPUTED, SPECIFIED)	\
-  ({ const char *_fields = TYPE_FIELDS (STRUCT);				\
+  ({ const char *_fields = TYPE_FIELDS (STRUCT);			\
   ((_fields != 0							\
     && TYPE_MODE (strip_array_types (TREE_TYPE (_fields))) == DFmode)	\
    ? MAX (MAX (COMPUTED, SPECIFIED), 64)				\

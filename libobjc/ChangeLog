@@ -1,3 +1,8 @@
+2010-09-06  Iain Sandoe  <iains@gcc.gnu.org>
+
+	* encoding.c: Add TARGET_ALIGN_NATURAL definition for m64 powerpc darwin.
+	Add a comment as to why, update FIXME comments.
+
 2010-09-06  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* makefile.dos: Obsolete file removed.
