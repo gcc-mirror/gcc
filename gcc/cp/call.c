@@ -1457,7 +1457,7 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	  tree elt;
 
 	  if (nelts == 0)
-	    elt = integer_zero_node;
+	    elt = build_value_init (to, tf_none);
 	  else if (nelts == 1)
 	    elt = CONSTRUCTOR_ELT (expr, 0)->value;
 	  else
@@ -5050,7 +5050,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	{
 	  int nelts = CONSTRUCTOR_NELTS (expr);
 	  if (nelts == 0)
-	    expr = integer_zero_node;
+	    expr = build_value_init (totype, tf_warning_or_error);
 	  else if (nelts == 1)
 	    expr = CONSTRUCTOR_ELT (expr, 0)->value;
 	  else
