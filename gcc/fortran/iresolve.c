@@ -141,6 +141,40 @@ resolve_bound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind,
   f->value.function.name = xstrdup (name);
 }
 
+
+static void
+resolve_transformational (const char *name, gfc_expr *f, gfc_expr *array,
+			  gfc_expr *dim, gfc_expr *mask)
+{
+  const char *prefix;
+
+  f->ts = array->ts;
+
+  if (mask)
+    {
+      if (mask->rank == 0)
+	prefix = "s";
+      else
+	prefix = "m";
+
+      resolve_mask_arg (mask);
+    }
+  else
+    prefix = "";
+
+  if (dim != NULL)
+    {
+      f->rank = array->rank - 1;
+      f->shape = gfc_copy_shape_excluding (array->shape, array->rank, dim);
+      gfc_resolve_dim_arg (dim);
+    }
+
+  f->value.function.name
+    = gfc_get_string (PREFIX ("%s%s_%c%d"), prefix, name,
+		    gfc_type_letter (array->ts.type), array->ts.kind);
+}
+
+
 /********************** Resolution functions **********************/
 
 
@@ -1044,6 +1078,13 @@ gfc_resolve_hypot (gfc_expr *f, gfc_expr *x, gfc_expr *y ATTRIBUTE_UNUSED)
 
 
 void
+gfc_resolve_iall (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
+{
+  resolve_transformational ("iall", f, array, dim, mask);
+}
+
+
+void
 gfc_resolve_iand (gfc_expr *f, gfc_expr *i, gfc_expr *j)
 {
   /* If the kind of i and j are different, then g77 cross-promoted the
@@ -1059,6 +1100,13 @@ gfc_resolve_iand (gfc_expr *f, gfc_expr *i, gfc_expr *j)
 
   f->ts = i->ts;
   f->value.function.name = gfc_get_string ("__iand_%d", i->ts.kind);
+}
+
+
+void
+gfc_resolve_iany (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
+{
+  resolve_transformational ("iany", f, array, dim, mask);
 }
 
 
@@ -1235,6 +1283,13 @@ gfc_resolve_long (gfc_expr *f, gfc_expr *a)
   f->value.function.name
     = gfc_get_string ("__int_%d_%c%d", f->ts.kind,
 		      gfc_type_letter (a->ts.type), a->ts.kind);
+}
+
+
+void
+gfc_resolve_iparity (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
+{
+  resolve_transformational ("iparity", f, array, dim, mask);
 }
 
 
@@ -1827,17 +1882,7 @@ gfc_resolve_nint (gfc_expr *f, gfc_expr *a, gfc_expr *kind)
 void
 gfc_resolve_norm2 (gfc_expr *f, gfc_expr *array, gfc_expr *dim)
 {
-  f->ts = array->ts;
-
-  if (dim != NULL)
-    {
-      f->rank = array->rank - 1;
-      f->shape = gfc_copy_shape_excluding (array->shape, array->rank, dim);
-      gfc_resolve_dim_arg (dim);
-    }
-
-  f->value.function.name
-    = gfc_get_string (PREFIX ("norm2_r%d"), array->ts.kind);
+  resolve_transformational ("norm2", f, array, dim, NULL);
 }
 
 
@@ -1908,19 +1953,7 @@ gfc_resolve_pack (gfc_expr *f, gfc_expr *array, gfc_expr *mask,
 void
 gfc_resolve_parity (gfc_expr *f, gfc_expr *array, gfc_expr *dim)
 {
-  f->ts = array->ts;
-
-  if (dim != NULL)
-    {
-      f->rank = array->rank - 1;
-      f->shape = gfc_copy_shape_excluding (array->shape, array->rank, dim);
-      gfc_resolve_dim_arg (dim);
-    }
-
-  resolve_mask_arg (array);
-
-  f->value.function.name
-    = gfc_get_string (PREFIX ("parity_l%d"), array->ts.kind);
+  resolve_transformational ("parity", f, array, dim, NULL);
 }
 
 
@@ -1928,32 +1961,7 @@ void
 gfc_resolve_product (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
 		     gfc_expr *mask)
 {
-  const char *name;
-
-  f->ts = array->ts;
-
-  if (dim != NULL)
-    {
-      f->rank = array->rank - 1;
-      f->shape = gfc_copy_shape_excluding (array->shape, array->rank, dim);
-      gfc_resolve_dim_arg (dim);
-    }
-
-  if (mask)
-    {
-      if (mask->rank == 0)
-	name = "sproduct";
-      else
-	name = "mproduct";
-
-      resolve_mask_arg (mask);
-    }
-  else
-    name = "product";
-
-  f->value.function.name
-    = gfc_get_string (PREFIX ("%s_%c%d"), name,
-		      gfc_type_letter (array->ts.type), array->ts.kind);
+  resolve_transformational ("product", f, array, dim, mask);
 }
 
 
@@ -2412,32 +2420,7 @@ gfc_resolve_storage_size (gfc_expr *f, gfc_expr *a ATTRIBUTE_UNUSED,
 void
 gfc_resolve_sum (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
 {
-  const char *name;
-
-  f->ts = array->ts;
-
-  if (mask)
-    {
-      if (mask->rank == 0)
-	name = "ssum";
-      else
-	name = "msum";
-
-      resolve_mask_arg (mask);
-    }
-  else
-    name = "sum";
-
-  if (dim != NULL)
-    {
-      f->rank = array->rank - 1;
-      f->shape = gfc_copy_shape_excluding (array->shape, array->rank, dim);
-      gfc_resolve_dim_arg (dim);
-    }
-
-  f->value.function.name
-    = gfc_get_string (PREFIX ("%s_%c%d"), name,
-		    gfc_type_letter (array->ts.type), array->ts.kind);
+  resolve_transformational ("sum", f, array, dim, mask);
 }
 
 

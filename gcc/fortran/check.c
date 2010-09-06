@@ -2353,6 +2353,26 @@ gfc_check_product_sum (gfc_actual_arglist *ap)
 }
 
 
+/* For IANY, IALL and IPARITY.  */
+
+gfc_try
+gfc_check_transf_bit_intrins (gfc_actual_arglist *ap)
+{
+  if (ap->expr->ts.type != BT_INTEGER)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L must be INTEGER",
+                 gfc_current_intrinsic_arg[0]->name,
+                 gfc_current_intrinsic, &ap->expr->where);
+      return FAILURE;
+    }
+
+  if (array_check (ap->expr, 0) == FAILURE)
+    return FAILURE;
+
+  return check_reduction (ap);
+}
+
+
 gfc_try
 gfc_check_merge (gfc_expr *tsource, gfc_expr *fsource, gfc_expr *mask)
 {

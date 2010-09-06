@@ -2004,11 +2004,14 @@ gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op,
 		      gfc_build_const (type, integer_one_node));
       tmp = gfc_build_const (type, integer_zero_node);
     }
-  else if (op == PLUS_EXPR)
+  else if (op == PLUS_EXPR || op == BIT_IOR_EXPR || op == BIT_XOR_EXPR)
     tmp = gfc_build_const (type, integer_zero_node);
   else if (op == NE_EXPR)
     /* PARITY.  */
     tmp = convert (type, boolean_false_node);
+  else if (op == BIT_AND_EXPR)
+    tmp = gfc_build_const (type, fold_build1_loc (input_location, NEGATE_EXPR,
+						  type, integer_one_node));
   else
     tmp = gfc_build_const (type, integer_one_node);
 
@@ -5530,8 +5533,16 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       gfc_conv_intrinsic_fraction (se, expr);
       break;
 
+    case GFC_ISYM_IALL:
+      gfc_conv_intrinsic_arith (se, expr, BIT_AND_EXPR, false);
+      break;
+
     case GFC_ISYM_IAND:
       gfc_conv_intrinsic_bitop (se, expr, BIT_AND_EXPR);
+      break;
+
+    case GFC_ISYM_IANY:
+      gfc_conv_intrinsic_arith (se, expr, BIT_IOR_EXPR, false);
       break;
 
     case GFC_ISYM_IBCLR:
@@ -5574,6 +5585,10 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
     case GFC_ISYM_IOR:
       gfc_conv_intrinsic_bitop (se, expr, BIT_IOR_EXPR);
+      break;
+
+    case GFC_ISYM_IPARITY:
+      gfc_conv_intrinsic_arith (se, expr, BIT_XOR_EXPR, false);
       break;
 
     case GFC_ISYM_IS_IOSTAT_END:
@@ -5919,6 +5934,9 @@ gfc_is_intrinsic_libcall (gfc_expr * expr)
     case GFC_ISYM_ANY:
     case GFC_ISYM_COUNT:
     case GFC_ISYM_JN2:
+    case GFC_ISYM_IANY:
+    case GFC_ISYM_IALL:
+    case GFC_ISYM_IPARITY:
     case GFC_ISYM_MATMUL:
     case GFC_ISYM_MAXLOC:
     case GFC_ISYM_MAXVAL:

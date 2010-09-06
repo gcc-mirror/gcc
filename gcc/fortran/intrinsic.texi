@@ -139,7 +139,9 @@ Some basic guidelines for editing this document:
 * @code{HUGE}:          HUGE,      Largest number of a kind
 * @code{HYPOT}:         HYPOT,     Euclidian distance function
 * @code{IACHAR}:        IACHAR,    Code in @acronym{ASCII} collating sequence
+* @code{IALL}:          IALL,      Bitwise AND of array elements
 * @code{IAND}:          IAND,      Bitwise logical and
+* @code{IANY}:          IANY,      Bitwise OR of array elements
 * @code{IARGC}:         IARGC,     Get the number of command line arguments
 * @code{IBCLR}:         IBCLR,     Clear bit
 * @code{IBITS}:         IBITS,     Bit extraction
@@ -148,13 +150,14 @@ Some basic guidelines for editing this document:
 * @code{IDATE}:         IDATE,     Current local time (day/month/year)
 * @code{IEOR}:          IEOR,      Bitwise logical exclusive or
 * @code{IERRNO}:        IERRNO,    Function to get the last system error number
+* @code{IMAGE_INDEX}:   IMAGE_INDEX, Cosubscript to image index convertion
 * @code{INDEX}:         INDEX intrinsic, Position of a substring within a string
 * @code{INT}:           INT,       Convert to integer type
 * @code{INT2}:          INT2,      Convert to 16-bit integer type
 * @code{INT8}:          INT8,      Convert to 64-bit integer type
 * @code{IOR}:           IOR,       Bitwise logical or
+* @code{IPARITY}:       IPARITY,   Bitwise XOR of array elements
 * @code{IRAND}:         IRAND,     Integer pseudo-random number
-* @code{IMAGE_INDEX}:   IMAGE_INDEX, Cosubscript to image index convertion
 * @code{IS_IOSTAT_END}:  IS_IOSTAT_END, Test for end-of-file value
 * @code{IS_IOSTAT_EOR}:  IS_IOSTAT_EOR, Test for end-of-record value
 * @code{ISATTY}:        ISATTY,    Whether a unit is a terminal device
@@ -5580,6 +5583,66 @@ and formatted string representations.
 
 
 
+@node IALL
+@section @code{IALL} --- Bitwise AND of array elements
+@fnindex IALL
+@cindex array, AND
+@cindex bits, AND of array elements
+
+@table @asis
+@item @emph{Description}:
+Reduces with bitwise AND the elements of @var{ARRAY} along dimension @var{DIM}
+if the corresponding element in @var{MASK} is @code{TRUE}.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@multitable @columnfractions .80
+@item @code{RESULT = IALL(ARRAY[, MASK])}
+@item @code{RESULT = IALL(ARRAY, DIM[, MASK])}
+@end multitable
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER}
+@item @var{DIM}   @tab (Optional) shall be a scalar of type 
+@code{INTEGER} with a value in the range from 1 to n, where n 
+equals the rank of @var{ARRAY}.
+@item @var{MASK}  @tab (Optional) shall be of type @code{LOGICAL} 
+and either be a scalar or an array of the same shape as @var{ARRAY}.
+@end multitable
+
+@item @emph{Return value}:
+The result is of the same type as @var{ARRAY}.
+
+If @var{DIM} is absent, a scalar with the bitwise ALL of all elements in
+@var{ARRAY} is returned. Otherwise, an array of rank n-1, where n equals
+the rank of @var{ARRAY}, and a shape similar to that of @var{ARRAY} with
+dimension @var{DIM} dropped is returned.
+
+@item @emph{Example}:
+@smallexample
+PROGRAM test_iall
+  INTEGER(1) :: a(2)
+
+  a(1) = b'00100100'
+  a(1) = b'01101010'
+
+  ! prints 00100000
+  PRINT '(b8.8)', IALL(a)
+END PROGRAM
+@end smallexample
+
+@item @emph{See also}:
+@ref{IANY}, @ref{IPARITY}, @ref{IAND}
+@end table
+
+
+
 @node IAND
 @section @code{IAND} --- Bitwise logical and
 @fnindex IAND
@@ -5624,6 +5687,66 @@ END PROGRAM
 @item @emph{See also}:
 @ref{IOR}, @ref{IEOR}, @ref{IBITS}, @ref{IBSET}, @ref{IBCLR}, @ref{NOT}
 
+@end table
+
+
+
+@node IANY
+@section @code{IANY} --- Bitwise XOR of array elements
+@fnindex IANY
+@cindex array, OR
+@cindex bits, OR of array elements
+
+@table @asis
+@item @emph{Description}:
+Reduces with bitwise OR (inclusive or) the elements of @var{ARRAY} along
+dimension @var{DIM} if the corresponding element in @var{MASK} is @code{TRUE}.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@multitable @columnfractions .80
+@item @code{RESULT = IANY(ARRAY[, MASK])}
+@item @code{RESULT = IANY(ARRAY, DIM[, MASK])}
+@end multitable
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER}
+@item @var{DIM}   @tab (Optional) shall be a scalar of type 
+@code{INTEGER} with a value in the range from 1 to n, where n 
+equals the rank of @var{ARRAY}.
+@item @var{MASK}  @tab (Optional) shall be of type @code{LOGICAL} 
+and either be a scalar or an array of the same shape as @var{ARRAY}.
+@end multitable
+
+@item @emph{Return value}:
+The result is of the same type as @var{ARRAY}.
+
+If @var{DIM} is absent, a scalar with the bitwise OR of all elements in
+@var{ARRAY} is returned. Otherwise, an array of rank n-1, where n equals
+the rank of @var{ARRAY}, and a shape similar to that of @var{ARRAY} with
+dimension @var{DIM} dropped is returned.
+
+@item @emph{Example}:
+@smallexample
+PROGRAM test_iany
+  INTEGER(1) :: a(2)
+
+  a(1) = b'00100100'
+  a(1) = b'01101010'
+
+  ! prints 01111011
+  PRINT '(b8.8)', IANY(a)
+END PROGRAM
+@end smallexample
+
+@item @emph{See also}:
+@ref{IPARITY}, @ref{IALL}, @ref{IOR}
 @end table
 
 
@@ -5977,6 +6100,50 @@ kind.
 
 
 
+@node IMAGE_INDEX
+@section @code{IMAGE_INDEX} --- Function that converts a cosubscript to an image index
+@fnindex IMAGE_INDEX
+@cindex coarray, IMAGE_INDEX
+@cindex images, cosubscript to image index conversion
+
+@table @asis
+@item @emph{Description}:
+Returns the image index belonging to a cosubscript.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Inquiry function.
+
+@item @emph{Syntax}:
+@code{RESULT = IMAGE_INDEX(COARRAY, SUB)}
+
+@item @emph{Arguments}: None.
+@multitable @columnfractions .15 .70
+@item @var{COARRAY} @tab Coarray of any type.
+@item @var{SUB}     @tab default integer rank-1 array of a size equal to
+the corank of @var{COARRAY}.
+@end multitable
+
+
+@item @emph{Return value}:
+Scalar default integer with the value of the image index which corresponds
+to the cosubscripts. For invalid cosubscripts the result is zero.
+
+@item @emph{Example}:
+@smallexample
+INTEGER :: array[2,-1:4,8,*]
+! Writes  28 (or 0 if there are fewer than 28 images)
+WRITE (*,*) IMAGE_INDEX (array, [2,0,3,1])
+@end smallexample
+
+@item @emph{See also}:
+@ref{THIS_IMAGE}, @ref{NUM_IMAGES}
+@end table
+
+
+
 @node INDEX intrinsic
 @section @code{INDEX} --- Position of a substring within a string
 @fnindex INDEX
@@ -6204,6 +6371,67 @@ the larger argument.)
 
 
 
+@node IPARITY
+@section @code{IPARITY} --- Bitwise XOR of array elements
+@fnindex IPARITY
+@cindex array, parity
+@cindex array, XOR
+@cindex bits, XOR of array elements
+
+@table @asis
+@item @emph{Description}:
+Reduces with bitwise XOR (exclusive or) the elements of @var{ARRAY} along
+dimension @var{DIM} if the corresponding element in @var{MASK} is @code{TRUE}.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@multitable @columnfractions .80
+@item @code{RESULT = IPARITY(ARRAY[, MASK])}
+@item @code{RESULT = IPARITY(ARRAY, DIM[, MASK])}
+@end multitable
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ARRAY} @tab Shall be an array of type @code{INTEGER}
+@item @var{DIM}   @tab (Optional) shall be a scalar of type 
+@code{INTEGER} with a value in the range from 1 to n, where n 
+equals the rank of @var{ARRAY}.
+@item @var{MASK}  @tab (Optional) shall be of type @code{LOGICAL} 
+and either be a scalar or an array of the same shape as @var{ARRAY}.
+@end multitable
+
+@item @emph{Return value}:
+The result is of the same type as @var{ARRAY}.
+
+If @var{DIM} is absent, a scalar with the bitwise XOR of all elements in
+@var{ARRAY} is returned. Otherwise, an array of rank n-1, where n equals
+the rank of @var{ARRAY}, and a shape similar to that of @var{ARRAY} with
+dimension @var{DIM} dropped is returned.
+
+@item @emph{Example}:
+@smallexample
+PROGRAM test_iparity
+  INTEGER(1) :: a(2)
+
+  a(1) = b'00100100'
+  a(1) = b'01101010'
+
+  ! prints 10111011
+  PRINT '(b8.8)', IPARITY(a)
+END PROGRAM
+@end smallexample
+
+@item @emph{See also}:
+@ref{IANY}, @ref{IALL}, @ref{IEOR}, @ref{PARITY}
+@end table
+
+
+
 @node IRAND
 @section @code{IRAND} --- Integer pseudo-random number
 @fnindex IRAND
@@ -6251,50 +6479,6 @@ program test_irand
 end program test_irand
 @end smallexample
 
-@end table
-
-
-
-@node IMAGE_INDEX
-@section @code{IMAGE_INDEX} --- Function that converts a cosubscript to an image index
-@fnindex IMAGE_INDEX
-@cindex coarray, IMAGE_INDEX
-@cindex images, cosubscript to image index conversion
-
-@table @asis
-@item @emph{Description}:
-Returns the image index belonging to a cosubscript.
-
-@item @emph{Standard}:
-Fortran 2008 and later
-
-@item @emph{Class}:
-Inquiry function.
-
-@item @emph{Syntax}:
-@code{RESULT = IMAGE_INDEX(COARRAY, SUB)}
-
-@item @emph{Arguments}: None.
-@multitable @columnfractions .15 .70
-@item @var{COARRAY} @tab Coarray of any type.
-@item @var{SUB}     @tab default integer rank-1 array of a size equal to
-the corank of @var{COARRAY}.
-@end multitable
-
-
-@item @emph{Return value}:
-Scalar default integer with the value of the image index which corresponds
-to the cosubscripts. For invalid cosubscripts the result is zero.
-
-@item @emph{Example}:
-@smallexample
-INTEGER :: array[2,-1:4,8,*]
-! Writes  28 (or 0 if there are fewer than 28 images)
-WRITE (*,*) IMAGE_INDEX (array, [2,0,3,1])
-@end smallexample
-
-@item @emph{See also}:
-@ref{THIS_IMAGE}, @ref{NUM_IMAGES}
 @end table
 
 
