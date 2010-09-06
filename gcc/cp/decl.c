@@ -5681,18 +5681,21 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   auto_node = type_uses_auto (type);
   if (auto_node)
     {
+      tree d_init;
       if (init == NULL_TREE)
 	{
 	  error ("declaration of %q#D has no initializer", decl);
 	  TREE_TYPE (decl) = error_mark_node;
 	  return;
 	}
-      if (TREE_CODE (init) == TREE_LIST)
-	init = build_x_compound_expr_from_list (init, ELK_INIT,
-						tf_warning_or_error);
-      if (describable_type (init))
+      d_init = init;
+      if (TREE_CODE (d_init) == TREE_LIST)
+	d_init = build_x_compound_expr_from_list (d_init, ELK_INIT,
+						  tf_warning_or_error);
+      if (describable_type (d_init))
 	{
-	  type = TREE_TYPE (decl) = do_auto_deduction (type, init, auto_node);
+	  type = TREE_TYPE (decl) = do_auto_deduction (type, d_init,
+						       auto_node);
 	  if (type == error_mark_node)
 	    return;
 	}
