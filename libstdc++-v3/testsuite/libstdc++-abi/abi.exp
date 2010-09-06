@@ -61,4 +61,4 @@ remote_download "target" "current_symbols.txt" "current_symbols.txt"
 set result [${tool}_load "./abi_check" \
 		[list "--check-verbose" "current_symbols.txt" \
 		     "baseline_symbols.txt"]]
-[lindex $result 0] "abi_check"
+[lindex $result 0] "libstdc++-abi/abi_check"
