@@ -235,6 +235,77 @@ optimize_code_node (gfc_code *c)
     }
 }
 
+/* Replace code like
+   a = matmul(b,c) + d
+   with
+   a = matmul(b,c) ;   a = a + d
+   where the array function is not elemental and not allocatable
+   and does not depend on the left-hand side.
+*/
+
+static bool
+optimize_binop_array_assignment (gfc_code *c, gfc_expr **rhs, bool seen_op)
+{
+  gfc_expr *e;
+
+  e = *rhs;
+  if (e->expr_type == EXPR_OP)
+    {
+      switch (e->value.op.op)
+	{
+	  /* Unary operators and exponentiation: Only look at a single
+	     operand.  */
+	case INTRINSIC_NOT:
+	case INTRINSIC_UPLUS:
+	case INTRINSIC_UMINUS:
+	case INTRINSIC_PARENTHESES:
+	case INTRINSIC_POWER:
+	  if (optimize_binop_array_assignment (c, &e->value.op.op1, seen_op))
+	    return true;
+	  break;
+
+	default:
+	  /* Binary operators.  */
+	  if (optimize_binop_array_assignment (c, &e->value.op.op1, true))
+	    return true;
+
+	  if (optimize_binop_array_assignment (c, &e->value.op.op2, true))
+	    return true;
+
+	  break;
+	}
+    }
+  else if (seen_op && e->expr_type == EXPR_FUNCTION && e->rank > 0
+	   && ! (e->value.function.esym 
+		 && (e->value.function.esym->attr.elemental 
+		     || e->value.function.esym->attr.allocatable))
+	   && ! (e->value.function.isym && e->value.function.isym->elemental))
+    {
+
+      gfc_code *n;
+      gfc_expr *new_expr;
+
+      /* Insert a new assignment statement after the current one.  */
+      n = XCNEW (gfc_code);
+      n->op = EXEC_ASSIGN;
+      n->loc = c->loc;
+      n->next = c->next;
+      c->next = n;
+
+      n->expr1 = gfc_copy_expr (c->expr1);
+      n->expr2 = c->expr2;
+      new_expr = gfc_copy_expr (c->expr1);
+      c->expr2 = e;
+      *rhs = new_expr;
+      
+      return true;
+
+    }
+
+  /* Nothing to optimize.  */
+  return false;
+}
+
 /* Optimizations for an assignment.  */
 
 static void
@@ -258,6 +329,13 @@ optimize_assignment (gfc_code * c)
 	  return;
 	}
     }
+
+  if (lhs->rank > 0 && gfc_check_dependency (lhs, rhs, true) == 0)
+    optimize_binop_array_assignment (c, &rhs, false);
+
+  /* If we insert a statement after the current one, the surrounding loop in
+     optimize_code will call optimize_assignment on the inserted statement
+     anyway, so there is no need to call optimize_assignment again.  */
 
   /* All direct optimizations have been done.  Now it's time
      to optimize the rhs.  */
