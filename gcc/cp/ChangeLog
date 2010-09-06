@@ -1,5 +1,14 @@
 2010-09-06  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (fold_non_dependent_expr_sfinae): Split out from...
+	(fold_non_dependent_expr): ...here.
+	(convert_nontype_argument): Use it.  Take complain parm.
+	Use perform_implicit_conversion	instead of ocp_convert.
+	Allow cv-qual changes.
+	(convert_template_argument): Pass complain down.
+	(tsubst_template_arg): Suppress constant expression warnings.
+	Don't fold here.
+
 	* method.c (synthesized_method_walk): In constructors, also check
 	subobject destructors.
 
