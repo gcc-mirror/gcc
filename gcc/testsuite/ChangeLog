@@ -1,3 +1,7 @@
+2010-09-06  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.dg/20100906-1.c: New testcase.
+
 2010-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/45543
