@@ -4037,71 +4037,80 @@
 
 ;; Zero and sign extension instructions.
 
-(define_expand "zero_extendsidi2"
-  [(set (match_operand:DI 0 "s_register_operand" "")
-        (zero_extend:DI (match_operand:SI 1 "s_register_operand" "")))]
-  "TARGET_32BIT"
-  ""
-)
-
-(define_insn "*arm_zero_extendsidi2"
+(define_insn "zero_extend<mode>di2"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
-        (zero_extend:DI (match_operand:SI 1 "s_register_operand" "r")))]
-  "TARGET_ARM"
-  "*
-    if (REGNO (operands[1])
-        != REGNO (operands[0]) + (WORDS_BIG_ENDIAN ? 1 : 0))
-      output_asm_insn (\"mov%?\\t%Q0, %1\", operands);
-    return \"mov%?\\t%R0, #0\";
-  "
+        (zero_extend:DI (match_operand:QHSI 1 "nonimmediate_operand" "rm")))]
+  "TARGET_32BIT <qhs_zextenddi_cond>"
+  "#"
   [(set_attr "length" "8")
-   (set_attr "insn" "mov")
+   (set_attr "ce_count" "2")
    (set_attr "predicable" "yes")]
 )
 
-(define_expand "zero_extendqidi2"
-  [(set (match_operand:DI                 0 "s_register_operand"  "")
-	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "")))]
-  "TARGET_32BIT"
-  ""
-)
-
-(define_insn "*arm_zero_extendqidi2"
-  [(set (match_operand:DI                 0 "s_register_operand"  "=r,r")
-	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
-  "TARGET_ARM"
-  "@
-   and%?\\t%Q0, %1, #255\;mov%?\\t%R0, #0
-   ldr%(b%)\\t%Q0, %1\;mov%?\\t%R0, #0"
-  [(set_attr "length" "8")
-   (set_attr "predicable" "yes")
-   (set_attr "type" "*,load_byte")
-   (set_attr "pool_range" "*,4092")
-   (set_attr "neg_pool_range" "*,4084")]
-)
-
-(define_expand "extendsidi2"
-  [(set (match_operand:DI 0 "s_register_operand" "")
-        (sign_extend:DI (match_operand:SI 1 "s_register_operand" "")))]
-  "TARGET_32BIT"
-  ""
-)
-
-(define_insn "*arm_extendsidi2"
+(define_insn "extend<mode>di2"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
-        (sign_extend:DI (match_operand:SI 1 "s_register_operand" "r")))]
-  "TARGET_ARM"
-  "*
-    if (REGNO (operands[1])
-        != REGNO (operands[0]) + (WORDS_BIG_ENDIAN ? 1 : 0))
-      output_asm_insn (\"mov%?\\t%Q0, %1\", operands);
-    return \"mov%?\\t%R0, %Q0, asr #31\";
-  "
+        (sign_extend:DI (match_operand:QHSI 1 "nonimmediate_operand" "rm")))]
+  "TARGET_32BIT <qhs_sextenddi_cond>"
+  "#"
   [(set_attr "length" "8")
+   (set_attr "ce_count" "2")
    (set_attr "shift" "1")
-   (set_attr "insn" "mov")
    (set_attr "predicable" "yes")]
 )
+
+;; Splits for all extensions to DImode
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+        (zero_extend:DI (match_operand 1 "nonimmediate_operand" "")))]
+  "TARGET_32BIT"
+  [(set (match_dup 0) (match_dup 1))]
+{
+  rtx insn;
+  rtx lo_part = gen_lowpart (SImode, operands[0]);
+  enum machine_mode src_mode = GET_MODE (operands[1]);
+
+  if (REG_P (operands[0])
+      && !reg_overlap_mentioned_p (operands[0], operands[1]))
+    emit_clobber (operands[0]);
+  if (!REG_P (lo_part) || src_mode != SImode
+      || !rtx_equal_p (lo_part, operands[1]))
+    {
+      if (src_mode == SImode)
+        emit_move_insn (lo_part, operands[1]);
+      else
+        emit_insn (gen_rtx_SET (VOIDmode, lo_part,
+				gen_rtx_ZERO_EXTEND (SImode, operands[1])));
+      operands[1] = lo_part;
+    }
+  operands[0] = gen_highpart (SImode, operands[0]);
+  operands[1] = const0_rtx;
+})
+
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+        (sign_extend:DI (match_operand 1 "nonimmediate_operand" "")))]
+  "TARGET_32BIT"
+  [(set (match_dup 0) (ashiftrt:SI (match_dup 1) (const_int 31)))]
+{
+  rtx lo_part = gen_lowpart (SImode, operands[0]);
+  enum machine_mode src_mode = GET_MODE (operands[1]);
+
+  if (REG_P (operands[0])
+      && !reg_overlap_mentioned_p (operands[0], operands[1]))
+    emit_clobber (operands[0]);
+
+  if (!REG_P (lo_part) || src_mode != SImode
+      || !rtx_equal_p (lo_part, operands[1]))
+    {
+      if (src_mode == SImode)
+        emit_move_insn (lo_part, operands[1]);
+      else
+        emit_insn (gen_rtx_SET (VOIDmode, lo_part,
+				gen_rtx_SIGN_EXTEND (SImode, operands[1])));
+      operands[1] = lo_part;
+    }
+  operands[0] = gen_highpart (SImode, operands[0]);
+})
 
 (define_expand "zero_extendhisi2"
   [(set (match_operand:SI 0 "s_register_operand" "")
@@ -4137,26 +4146,22 @@
   [(set (match_operand:SI 0 "register_operand" "=l,l")
 	(zero_extend:SI (match_operand:HI 1 "nonimmediate_operand" "l,m")))]
   "TARGET_THUMB1"
-  "*
+{
   rtx mem;
 
   if (which_alternative == 0 && arm_arch6)
-    return \"uxth\\t%0, %1\";
+    return "uxth\t%0, %1";
   if (which_alternative == 0)
-    return \"#\";
+    return "#";
 
   mem = XEXP (operands[1], 0);
 
   if (GET_CODE (mem) == CONST)
     mem = XEXP (mem, 0);
     
-  if (GET_CODE (mem) == LABEL_REF)
-    return \"ldr\\t%0, %1\";
-    
   if (GET_CODE (mem) == PLUS)
     {
       rtx a = XEXP (mem, 0);
-      rtx b = XEXP (mem, 1);
 
       /* This can happen due to bugs in reload.  */
       if (GET_CODE (a) == REG && REGNO (a) == SP_REGNUM)
@@ -4165,24 +4170,19 @@
           ops[0] = operands[0];
           ops[1] = a;
       
-          output_asm_insn (\"mov	%0, %1\", ops);
+          output_asm_insn ("mov\t%0, %1", ops);
 
           XEXP (mem, 0) = operands[0];
        }
-
-      else if (   GET_CODE (a) == LABEL_REF
-	       && GET_CODE (b) == CONST_INT)
-        return \"ldr\\t%0, %1\";
     }
     
-  return \"ldrh\\t%0, %1\";
-  "
+  return "ldrh\t%0, %1";
+}
   [(set_attr_alternative "length"
 			 [(if_then_else (eq_attr "is_arch6" "yes")
 				       (const_int 2) (const_int 4))
 			 (const_int 4)])
-   (set_attr "type" "alu_shift,load_byte")
-   (set_attr "pool_range" "*,60")]
+   (set_attr "type" "alu_shift,load_byte")]
 )
 
 (define_insn "*arm_zero_extendhisi2"
@@ -4193,9 +4193,7 @@
    #
    ldr%(h%)\\t%0, %1"
   [(set_attr "type" "alu_shift,load_byte")
-   (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,256")
-   (set_attr "neg_pool_range" "*,244")]
+   (set_attr "predicable" "yes")]
 )
 
 (define_insn "*arm_zero_extendhisi2_v6"
@@ -4206,9 +4204,7 @@
    uxth%?\\t%0, %1
    ldr%(h%)\\t%0, %1"
   [(set_attr "type" "alu_shift,load_byte")
-   (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,256")
-   (set_attr "neg_pool_range" "*,244")]
+   (set_attr "predicable" "yes")]
 )
 
 (define_insn "*arm_zero_extendhisi2addsi"
@@ -4277,9 +4273,8 @@
   "@
    uxtb\\t%0, %1
    ldrb\\t%0, %1"
-  [(set_attr "length" "2,2")
-   (set_attr "type" "alu_shift,load_byte")
-   (set_attr "pool_range" "*,32")]
+  [(set_attr "length" "2")
+   (set_attr "type" "alu_shift,load_byte")]
 )
 
 (define_insn "*arm_zero_extendqisi2"
@@ -4291,9 +4286,7 @@
    ldr%(b%)\\t%0, %1\\t%@ zero_extendqisi2"
   [(set_attr "length" "8,4")
    (set_attr "type" "alu_shift,load_byte")
-   (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,4096")
-   (set_attr "neg_pool_range" "*,4084")]
+   (set_attr "predicable" "yes")]
 )
 
 (define_insn "*arm_zero_extendqisi2_v6"
@@ -4304,9 +4297,7 @@
    uxtb%(%)\\t%0, %1
    ldr%(b%)\\t%0, %1\\t%@ zero_extendqisi2"
   [(set_attr "type" "alu_shift,load_byte")
-   (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,4096")
-   (set_attr "neg_pool_range" "*,4084")]
+   (set_attr "predicable" "yes")]
 )
 
 (define_insn "*arm_zero_extendqisi2addsi"
