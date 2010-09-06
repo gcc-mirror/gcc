@@ -391,6 +391,7 @@ static reg_class_t frv_secondary_reload		(bool, rtx, reg_class_t,
 static bool frv_frame_pointer_required		(void);
 static bool frv_can_eliminate			(const int, const int);
 static void frv_trampoline_init			(rtx, tree, rtx);
+static bool frv_class_likely_spilled_p 		(reg_class_t);
 
 /* Allow us to easily change the default for -malloc-cc.  */
 #ifndef DEFAULT_NO_ALLOC_CC
@@ -480,6 +481,9 @@ static void frv_trampoline_init			(rtx, tree, rtx);
 #undef TARGET_ASM_OUTPUT_DWARF_DTPREL
 #define TARGET_ASM_OUTPUT_DWARF_DTPREL frv_output_dwarf_dtprel
 #endif
+
+#undef TARGET_CLASS_LIKELY_SPILLED_P
+#define TARGET_CLASS_LIKELY_SPILLED_P frv_class_likely_spilled_p
 
 #undef  TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD frv_secondary_reload
@@ -6533,23 +6537,10 @@ frv_secondary_reload (bool in_p, rtx x, reg_class_t reload_class_i,
 
 }
 
-/* A C expression whose value is nonzero if pseudos that have been assigned to
-   registers of class RCLASS would likely be spilled because registers of RCLASS
-   are needed for spill registers.
+/* Worker function for TARGET_CLASS_LIKELY_SPILLED_P.  */
 
-   The default value of this macro returns 1 if RCLASS has exactly one register
-   and zero otherwise.  On most machines, this default should be used.  Only
-   define this macro to some other expression if pseudo allocated by
-   `local-alloc.c' end up in memory because their hard registers were needed
-   for spill registers.  If this macro returns nonzero for those classes, those
-   pseudos will only be allocated by `global.c', which knows how to reallocate
-   the pseudo to another register.  If there would not be another register
-   available for reallocation, you should not change the definition of this
-   macro since the only effect of such a definition would be to slow down
-   register allocation.  */
-
-int
-frv_class_likely_spilled_p (enum reg_class rclass)
+static bool
+frv_class_likely_spilled_p (reg_class_t rclass)
 {
   switch (rclass)
     {
@@ -6574,10 +6565,10 @@ frv_class_likely_spilled_p (enum reg_class rclass)
     case EVEN_ACC_REGS:
     case ACC_REGS:
     case ACCG_REGS:
-      return TRUE;
+      return true;
     }
 
-  return FALSE;
+  return false;
 }
 
 
