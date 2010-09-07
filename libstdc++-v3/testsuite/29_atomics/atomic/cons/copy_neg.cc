@@ -29,19 +29,19 @@ int main()
 }
 
 // { dg-error "used here" "" { target *-*-* } 560 }
-// { dg-error "deleted function" "" { target *-*-* } 233 }
-// { dg-error "deleted function" "" { target *-*-* } 251 }
-// { dg-error "deleted function" "" { target *-*-* } 269 }
-// { dg-error "deleted function" "" { target *-*-* } 287 }
-// { dg-error "deleted function" "" { target *-*-* } 305 }
-// { dg-error "deleted function" "" { target *-*-* } 323 }
-// { dg-error "deleted function" "" { target *-*-* } 341 }
-// { dg-error "deleted function" "" { target *-*-* } 359 }
-// { dg-error "deleted function" "" { target *-*-* } 377 }
-// { dg-error "deleted function" "" { target *-*-* } 395 }
-// { dg-error "deleted function" "" { target *-*-* } 413 }
-// { dg-error "deleted function" "" { target *-*-* } 431 }
-// { dg-error "deleted function" "" { target *-*-* } 449 }
-// { dg-error "deleted function" "" { target *-*-* } 467 }
-// { dg-error "deleted function" "" { target *-*-* } 485 }
+// { dg-error "deleted function" "" { target *-*-* } 232 }
+// { dg-error "deleted function" "" { target *-*-* } 250 }
+// { dg-error "deleted function" "" { target *-*-* } 268 }
+// { dg-error "deleted function" "" { target *-*-* } 286 }
+// { dg-error "deleted function" "" { target *-*-* } 304 }
+// { dg-error "deleted function" "" { target *-*-* } 322 }
+// { dg-error "deleted function" "" { target *-*-* } 340 }
+// { dg-error "deleted function" "" { target *-*-* } 358 }
+// { dg-error "deleted function" "" { target *-*-* } 376 }
+// { dg-error "deleted function" "" { target *-*-* } 394 }
+// { dg-error "deleted function" "" { target *-*-* } 412 }
+// { dg-error "deleted function" "" { target *-*-* } 430 }
+// { dg-error "deleted function" "" { target *-*-* } 448 }
+// { dg-error "deleted function" "" { target *-*-* } 466 }
+// { dg-error "deleted function" "" { target *-*-* } 484 }
 // { dg-excess-errors "In member function" }
