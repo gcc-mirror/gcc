@@ -10118,6 +10118,7 @@ ix86_expand_epilogue (int style)
 		}
 	    }
 	  m->fs.sp_offset = UNITS_PER_WORD;
+	  m->fs.sp_valid = true;
 	}
     }
   else
