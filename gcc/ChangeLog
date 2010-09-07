@@ -1,5 +1,12 @@
 2010-09-07  Richard Henderson  <rth@redhat.com>
 
+	* tree-vect-data-refs.c: Include tm_p.h.
+	* Makefile.in (tree-vect-data-refs.o): Update deps.
+	* config/i386/i386-protos.h (ix86_cfun_abi, ix86_function_type_abi):
+	Move delarations outside #ifdef RTX_CODE.
+
+2010-09-07  Richard Henderson  <rth@redhat.com>
+
 	* final.c (rest_of_handle_final): Unconditionally do 
 	output_function_exception_table before assemble_end_function.
 

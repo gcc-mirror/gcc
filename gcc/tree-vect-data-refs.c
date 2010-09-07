@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "ggc.h"
 #include "tree.h"
+#include "tm_p.h"
 #include "target.h"
 #include "basic-block.h"
 #include "tree-pretty-print.h"

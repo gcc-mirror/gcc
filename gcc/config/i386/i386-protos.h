@@ -35,6 +35,9 @@ extern void ix86_expand_epilogue (int);
 extern void ix86_output_addr_vec_elt (FILE *, int);
 extern void ix86_output_addr_diff_elt (FILE *, int, int);
 
+extern enum calling_abi ix86_cfun_abi (void);
+extern enum calling_abi ix86_function_type_abi (const_tree);
+
 #ifdef RTX_CODE
 extern int standard_80387_constant_p (rtx);
 extern const char *standard_80387_constant_opcode (rtx);
@@ -142,8 +145,6 @@ extern int ix86_function_arg_boundary (enum machine_mode, const_tree);
 extern bool ix86_solaris_return_in_memory (const_tree, const_tree);
 extern rtx ix86_force_to_memory (enum machine_mode, rtx);
 extern void ix86_free_from_memory (enum machine_mode);
-extern enum calling_abi ix86_cfun_abi (void);
-extern enum calling_abi ix86_function_type_abi (const_tree);
 extern void ix86_call_abi_override (const_tree);
 extern int ix86_reg_parm_stack_space (const_tree);
 
