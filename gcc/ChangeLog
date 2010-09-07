@@ -1,3 +1,9 @@
+2010-09-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR fortran/43665
+	* ipa-cp.c (ipcp_versionable_function_p): Return false if there
+	are any type attributes.
+
 2010-09-07  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-ccp.c (fold_const_aggregate_ref): Fix handling of array_ref_low_bound
