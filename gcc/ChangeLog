@@ -1,3 +1,9 @@
+2010-09-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc: Don't append t-android for Android targets.
+
+	* config/t-android: Removed.
+
 2010-09-07  Richard Henderson  <rth@redhat.com>
 
 	* target.def (TARGET_ASM_EMIT_EXCEPT_PERSONALITY): New hook.
