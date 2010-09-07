@@ -196,6 +196,8 @@ static bool arm_return_in_memory (const_tree, const_tree);
 #ifdef TARGET_UNWIND_INFO
 static void arm_unwind_emit (FILE *, rtx);
 static bool arm_output_ttype (rtx);
+static void arm_asm_emit_except_personality (rtx);
+static void arm_asm_init_sections (void);
 #endif
 static void arm_dwarf_handle_frame_unspec (const char *, rtx, int);
 static rtx arm_dwarf_register_span (rtx);
@@ -455,6 +457,12 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_ARM_EABI_UNWINDER
 #define TARGET_ARM_EABI_UNWINDER true
+
+#undef TARGET_ASM_EMIT_EXCEPT_PERSONALITY
+#define TARGET_ASM_EMIT_EXCEPT_PERSONALITY arm_asm_emit_except_personality
+
+#undef TARGET_ASM_INIT_SECTIONS
+#define TARGET_ASM_INIT_SECTIONS arm_asm_init_sections
 #endif /* TARGET_UNWIND_INFO */
 
 #undef TARGET_DWARF_HANDLE_FRAME_UNSPEC
@@ -22208,6 +22216,25 @@ arm_output_ttype (rtx x)
   fputc ('\n', asm_out_file);
 
   return TRUE;
+}
+
+/* Implement TARGET_ASM_EMIT_EXCEPT_PERSONALITY.  */
+
+static void
+arm_asm_emit_except_personality (rtx personality)
+{
+  fputs ("\t.personality\t", asm_out_file);
+  output_addr_const (asm_out_file, personality);
+  fputc ('\n', asm_out_file);
+}
+
+/* Implement TARGET_ASM_INITIALIZE_SECTIONS.  */
+
+static void
+arm_asm_init_sections (void)
+{
+  exception_section = get_unnamed_section (0, output_section_asm_op,
+					   "\t.handlerdata");
 }
 #endif /* TARGET_UNWIND_INFO */
 

@@ -2794,7 +2794,6 @@ sjlj_output_call_site_table (void)
   call_site_base += n;
 }
 
-#ifndef TARGET_UNWIND_INFO
 /* Switch to the section that should be used for exception tables.  */
 
 static void
@@ -2844,7 +2843,6 @@ switch_to_exception_section (const char * ARG_UNUSED (fnname))
 
   switch_to_section (s);
 }
-#endif
 
 
 /* Output a reference from an exception table to the type_info object TYPE.
@@ -2904,8 +2902,7 @@ output_ttype (tree type, int tt_format, int tt_format_size)
 }
 
 static void
-output_one_function_exception_table (const char * ARG_UNUSED (fnname),
-				     int section, rtx ARG_UNUSED (personality))
+output_one_function_exception_table (int section)
 {
   int tt_format, cs_format, lp_format, i;
 #ifdef HAVE_AS_LEB128
@@ -2917,20 +2914,6 @@ output_one_function_exception_table (const char * ARG_UNUSED (fnname),
 #endif
   int have_tt_data;
   int tt_format_size = 0;
-
-#ifdef TARGET_UNWIND_INFO
-  /* TODO: Move this into target file.  */
-  fputs ("\t.personality\t", asm_out_file);
-  output_addr_const (asm_out_file, personality);
-  fputs ("\n\t.handlerdata\n", asm_out_file);
-  /* Note that varasm still thinks we're in the function's code section.
-     The ".endp" directive that will immediately follow will take us back.  */
-#else
-  switch_to_exception_section (fnname);
-#endif
-
-  /* If the target wants a label to begin the table, emit it here.  */
-  targetm.asm_out.emit_except_table_label (asm_out_file);
 
   have_tt_data = (VEC_length (tree, cfun->eh->ttype_data)
 		  || (targetm.arm_eabi_unwinder
@@ -3095,7 +3078,7 @@ output_one_function_exception_table (const char * ARG_UNUSED (fnname),
 }
 
 void
-output_function_exception_table (const char * ARG_UNUSED (fnname))
+output_function_exception_table (const char *fnname)
 {
   rtx personality = get_personality_function (current_function_decl);
 
@@ -3104,11 +3087,21 @@ output_function_exception_table (const char * ARG_UNUSED (fnname))
     return;
 
   if (personality)
-    assemble_external_libcall (personality);
+    {
+      assemble_external_libcall (personality);
 
-  output_one_function_exception_table (fnname, 0, personality);
+      if (targetm.asm_out.emit_except_personality)
+	targetm.asm_out.emit_except_personality (personality);
+    }
+
+  switch_to_exception_section (fnname);
+
+  /* If the target wants a label to begin the table, emit it here.  */
+  targetm.asm_out.emit_except_table_label (asm_out_file);
+
+  output_one_function_exception_table (0);
   if (crtl->eh.call_site_record[1] != NULL)
-    output_one_function_exception_table (fnname, 1, personality);
+    output_one_function_exception_table (1);
 
   switch_to_section (current_function_section ());
 }
