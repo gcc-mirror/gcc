@@ -4065,7 +4065,6 @@
   "TARGET_32BIT"
   [(set (match_dup 0) (match_dup 1))]
 {
-  rtx insn;
   rtx lo_part = gen_lowpart (SImode, operands[0]);
   enum machine_mode src_mode = GET_MODE (operands[1]);
 
