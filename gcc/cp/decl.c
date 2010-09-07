@@ -11627,10 +11627,11 @@ finish_enum (tree enumtype)
 
 /* Build and install a CONST_DECL for an enumeration constant of the
    enumeration type ENUMTYPE whose NAME and VALUE (if any) are provided.
+   LOC is the location of NAME.
    Assignment of sequential values by default is handled here.  */
 
 void
-build_enumerator (tree name, tree value, tree enumtype)
+build_enumerator (tree name, tree value, tree enumtype, location_t loc)
 {
   tree decl;
   tree context;
@@ -11745,12 +11746,12 @@ build_enumerator (tree name, tree value, tree enumtype)
   if (context && context == current_class_type)
     /* This enum declaration is local to the class.  We need the full
        lang_decl so that we can record DECL_CLASS_CONTEXT, for example.  */
-    decl = build_lang_decl (CONST_DECL, name, type);
+    decl = build_lang_decl_loc (loc, CONST_DECL, name, type);
   else
     /* It's a global enum, or it's local to a function.  (Note local to
-      a function could mean local to a class method.  */
-    decl = build_decl (input_location, CONST_DECL, name, type);
-
+       a function could mean local to a class method.  */
+    decl = build_decl (loc, CONST_DECL, name, type);
+  
   DECL_CONTEXT (decl) = FROB_CONTEXT (context);
   TREE_CONSTANT (decl) = 1;
   TREE_READONLY (decl) = 1;

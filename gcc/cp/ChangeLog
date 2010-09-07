@@ -1,3 +1,13 @@
+2010-09-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* cp-tree.h (build_enumerator): Add new location_t parameter.
+	(build_lang_decl_loc): New function.
+	* decl.c (build_enumerator): New parameter loc. Use it when calling
+	build_decl. Replace build_lang_decl with build_lang_decl_loc.
+	* pt.c (tsubst_enum): Adjust call to build_enumerator.
+	* parser.c (cp_parser_enumerator_definition): Ditto.
+	* lex.c (build_lang_decl_loc): New function.
+
 2010-09-06  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/45200
