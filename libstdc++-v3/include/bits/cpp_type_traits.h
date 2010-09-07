@@ -415,7 +415,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #endif
 
   template<typename _Tp>
-    class __is_iterator_helper
+    class __has_iterator_category
     {
       typedef char __one;
       typedef struct { char __arr[2]; } __two;
@@ -431,14 +431,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         static __two __test(...);
 
     public:
-      static const bool __value = (sizeof(__test<_Tp>(0)) == 1
-				   || __is_pointer<_Tp>::__value);
+      static const bool __value = sizeof(__test<_Tp>(0)) == 1;
     };
 
   template<typename _Tp>
     struct __is_iterator
     {
-      enum { __value = __is_iterator_helper<_Tp>::__value };
+      enum { __value = (__has_iterator_category<_Tp>::__value
+			|| __is_pointer<_Tp>::__value) };
       typedef typename __truth_type<__value>::__type __type;
     };
 

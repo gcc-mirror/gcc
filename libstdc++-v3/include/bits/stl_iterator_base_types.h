@@ -64,6 +64,10 @@
 
 #include <bits/c++config.h>
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+# include <bits/cpp_type_traits.h> // For __has_iterator_category
+#endif
+
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
@@ -132,6 +136,25 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  argument.  Specialized versions for pointers and pointers-to-const
    *  provide tighter, more correct semantics.
   */
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  template<typename _Iterator,
+	   bool = __has_iterator_category<_Iterator>::__value>
+    struct __iterator_traits { };
+
+  template<typename _Iterator>
+    struct __iterator_traits<_Iterator, true>
+    {
+      typedef typename _Iterator::iterator_category iterator_category;
+      typedef typename _Iterator::value_type        value_type;
+      typedef typename _Iterator::difference_type   difference_type;
+      typedef typename _Iterator::pointer           pointer;
+      typedef typename _Iterator::reference         reference;
+    };
+
+  template<typename _Iterator>
+    struct iterator_traits
+    : public __iterator_traits<_Iterator> { };
+#else
   template<typename _Iterator>
     struct iterator_traits
     {
@@ -141,6 +164,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typedef typename _Iterator::pointer           pointer;
       typedef typename _Iterator::reference         reference;
     };
+#endif
 
   /// Partial specialization for pointer types.
   template<typename _Tp>

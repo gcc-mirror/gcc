@@ -1,4 +1,17 @@
 2010-09-07  Paolo Carlini  <paolo.carlini@oracle.com>
+	    Marc Glisse  <marc.glisse@normalesup.org>
+
+	PR libstdc++/45549
+	* include/bits/cpp_type_traits.h (__is_iterator_helper): Rename to
+	__has_iterator_category.
+	(__is_iterator): Adjust.
+	* include/bits/stl_iterator_base_types.h (__iterator_traits): Add
+	in C++0x mode, use the latter.
+	(iterator_traits): In C++0x mode, derive from the latter.
+	* include/bits/stl_iterator_base_funcs.h (next, prev): Remove
+	enable_if on the return type.
+
+2010-09-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/45398
 	* include/std/atomic (atomic<_TP*>::store): Define.
