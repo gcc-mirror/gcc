@@ -3433,6 +3433,7 @@ gfc_conv_intrinsic_ishftc (gfc_se * se, gfc_expr * expr)
 			      rrot);
 }
 
+
 /* LEADZ (i) = (i == 0) ? BIT_SIZE (i)
 			: __builtin_clz(i) - (BIT_SIZE('int') - BIT_SIZE(i))
 
@@ -3477,9 +3478,9 @@ gfc_conv_intrinsic_leadz (gfc_se * se, gfc_expr * expr)
     }
   else
     {
-      gcc_assert (argsize == 128);
+      gcc_assert (argsize == 2 * LONG_LONG_TYPE_SIZE);
       arg_type = gfc_build_uint_type (argsize);
-      func = gfor_fndecl_clz128;
+      func = NULL_TREE;
     }
 
   /* Convert the actual argument twice: first, to the unsigned type of the
@@ -3487,14 +3488,66 @@ gfc_conv_intrinsic_leadz (gfc_se * se, gfc_expr * expr)
      function.  But the return type is of the default INTEGER kind.  */
   arg = fold_convert (gfc_build_uint_type (argsize), arg);
   arg = fold_convert (arg_type, arg);
+  arg = gfc_evaluate_now (arg, &se->pre);
   result_type = gfc_get_int_type (gfc_default_integer_kind);
 
   /* Compute LEADZ for the case i .ne. 0.  */
-  s = TYPE_PRECISION (arg_type) - argsize;
-  tmp = fold_convert (result_type, build_call_expr_loc (input_location, func,
-							1, arg));
-  leadz = fold_build2_loc (input_location, MINUS_EXPR, result_type,
-			   tmp, build_int_cst (result_type, s));
+  if (func)
+    {
+      s = TYPE_PRECISION (arg_type) - argsize;
+      tmp = fold_convert (result_type,
+			  build_call_expr_loc (input_location, func,
+					       1, arg));
+      leadz = fold_build2_loc (input_location, MINUS_EXPR, result_type,
+			       tmp, build_int_cst (result_type, s));
+    }
+  else
+    {
+      /* We end up here if the argument type is larger than 'long long'.
+	 We generate this code:
+  
+	    if (x & (ULL_MAX << ULL_SIZE) != 0)
+	      return clzll ((unsigned long long) (x >> ULLSIZE));
+	    else
+	      return ULL_SIZE + clzll ((unsigned long long) x);
+
+	 where ULL_MAX is the largest value that a ULL_MAX can hold
+	 (0xFFFFFFFFFFFFFFFF for a 64-bit long long type), and ULLSIZE
+	 is the bit-size of the long long type (64 in this example).  */
+      tree ullsize, ullmax, tmp1, tmp2;
+
+      ullsize = build_int_cst (result_type, LONG_LONG_TYPE_SIZE);
+      ullmax = fold_build1_loc (input_location, BIT_NOT_EXPR,
+				long_long_unsigned_type_node,
+				build_int_cst (long_long_unsigned_type_node,
+					       0));
+
+      cond = fold_build2_loc (input_location, LSHIFT_EXPR, arg_type,
+			      fold_convert (arg_type, ullmax), ullsize);
+      cond = fold_build2_loc (input_location, BIT_AND_EXPR, arg_type,
+			      arg, cond);
+      cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+			      cond, build_int_cst (arg_type, 0));
+
+      tmp1 = fold_build2_loc (input_location, RSHIFT_EXPR, arg_type,
+			      arg, ullsize);
+      tmp1 = fold_convert (long_long_unsigned_type_node, tmp1);
+      tmp1 = fold_convert (result_type,
+			   build_call_expr_loc (input_location,	
+						built_in_decls[BUILT_IN_CLZLL],
+						1, tmp1));
+
+      tmp2 = fold_convert (long_long_unsigned_type_node, arg);
+      tmp2 = fold_convert (result_type,
+			   build_call_expr_loc (input_location,
+						built_in_decls[BUILT_IN_CLZLL],
+						1, tmp2));
+      tmp2 = fold_build2_loc (input_location, PLUS_EXPR, result_type,
+			      tmp2, ullsize);
+
+      leadz = fold_build3_loc (input_location, COND_EXPR, result_type,
+			       cond, tmp1, tmp2);
+    }
 
   /* Build BIT_SIZE.  */
   bit_size = build_int_cst (result_type, argsize);
@@ -3504,6 +3557,7 @@ gfc_conv_intrinsic_leadz (gfc_se * se, gfc_expr * expr)
   se->expr = fold_build3_loc (input_location, COND_EXPR, result_type, cond,
 			      bit_size, leadz);
 }
+
 
 /* TRAILZ(i) = (i == 0) ? BIT_SIZE (i) : __builtin_ctz(i)
 
@@ -3544,9 +3598,9 @@ gfc_conv_intrinsic_trailz (gfc_se * se, gfc_expr *expr)
     }
   else
     {
-      gcc_assert (argsize == 128);
+      gcc_assert (argsize == 2 * LONG_LONG_TYPE_SIZE);
       arg_type = gfc_build_uint_type (argsize);
-      func = gfor_fndecl_ctz128;
+      func = NULL_TREE;
     }
 
   /* Convert the actual argument twice: first, to the unsigned type of the
@@ -3554,11 +3608,57 @@ gfc_conv_intrinsic_trailz (gfc_se * se, gfc_expr *expr)
      function.  But the return type is of the default INTEGER kind.  */
   arg = fold_convert (gfc_build_uint_type (argsize), arg);
   arg = fold_convert (arg_type, arg);
+  arg = gfc_evaluate_now (arg, &se->pre);
   result_type = gfc_get_int_type (gfc_default_integer_kind);
 
   /* Compute TRAILZ for the case i .ne. 0.  */
-  trailz = fold_convert (result_type, build_call_expr_loc (input_location,
-						       func, 1, arg));
+  if (func)
+    trailz = fold_convert (result_type, build_call_expr_loc (input_location,
+							     func, 1, arg));
+  else
+    {
+      /* We end up here if the argument type is larger than 'long long'.
+	 We generate this code:
+  
+	    if ((x & ULL_MAX) == 0)
+	      return ULL_SIZE + ctzll ((unsigned long long) (x >> ULLSIZE));
+	    else
+	      return ctzll ((unsigned long long) x);
+
+	 where ULL_MAX is the largest value that a ULL_MAX can hold
+	 (0xFFFFFFFFFFFFFFFF for a 64-bit long long type), and ULLSIZE
+	 is the bit-size of the long long type (64 in this example).  */
+      tree ullsize, ullmax, tmp1, tmp2;
+
+      ullsize = build_int_cst (result_type, LONG_LONG_TYPE_SIZE);
+      ullmax = fold_build1_loc (input_location, BIT_NOT_EXPR,
+				long_long_unsigned_type_node,
+				build_int_cst (long_long_unsigned_type_node, 0));
+
+      cond = fold_build2_loc (input_location, BIT_AND_EXPR, arg_type, arg,
+			      fold_convert (arg_type, ullmax));
+      cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node, cond,
+			      build_int_cst (arg_type, 0));
+
+      tmp1 = fold_build2_loc (input_location, RSHIFT_EXPR, arg_type,
+			      arg, ullsize);
+      tmp1 = fold_convert (long_long_unsigned_type_node, tmp1);
+      tmp1 = fold_convert (result_type,
+			   build_call_expr_loc (input_location,	
+						built_in_decls[BUILT_IN_CTZLL],
+						1, tmp1));
+      tmp1 = fold_build2_loc (input_location, PLUS_EXPR, result_type,
+			      tmp1, ullsize);
+
+      tmp2 = fold_convert (long_long_unsigned_type_node, arg);
+      tmp2 = fold_convert (result_type,
+			   build_call_expr_loc (input_location,
+						built_in_decls[BUILT_IN_CTZLL],
+						1, tmp2));
+
+      trailz = fold_build3_loc (input_location, COND_EXPR, result_type,
+				cond, tmp1, tmp2);
+    }
 
   /* Build BIT_SIZE.  */
   bit_size = build_int_cst (result_type, argsize);

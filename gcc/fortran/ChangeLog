@@ -1,6 +1,17 @@
+2010-09-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* trans.h (gfor_fndecl_clz128, gfor_fndecl_ctz128): Remove.
+	* trans-decl.c (gfor_fndecl_clz128, gfor_fndecl_ctz128): Remove.
+	(gfc_build_intrinsic_function_decls): Don't build the
+	gfor_fndecl_clz128 and gfor_fndecl_ctz128.
+	* trans-intrinsic.c (gfc_conv_intrinsic_leadz,
+	gfc_conv_intrinsic_trailz): Generate inline arithmetic instead
+	of calling clz128/ctz128 library functions.
+
 2010-09-07  Jan Hubicka  <jh@suse.cz>
 
-	* trans-expr.c (gfc_conv_initializer): Set STATIC flags for initializers.
+	* trans-expr.c (gfc_conv_initializer): Set STATIC flags for
+	initializers.
 
 2010-09-07  Tobias Burnus <burnus@net-b.de>
 	
