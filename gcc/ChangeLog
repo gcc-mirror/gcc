@@ -1,3 +1,9 @@
+2010-09-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config.gcc: Append t-android for Android targets.
+
+	* config/t-android: New.
+
 2010-09-07  Richard Henderson  <rth@redhat.com>
 
 	* target.def (unwind_emit_before_insn): New hook.
