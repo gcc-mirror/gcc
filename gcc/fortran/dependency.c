@@ -368,8 +368,14 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 	  /* Compare the argument lists for equality.  */
 	  while (args1 && args2)
 	    {
-	      if (gfc_dep_compare_expr (args1->expr, args2->expr) != 0)
+	      /*  Bitwise xor, since C has no non-bitwise xor operator.  */
+	      if ((args1->expr == NULL) ^ (args2->expr == NULL))
 		return -2;
+
+	      if (args1->expr != NULL && args2->expr != NULL
+		  && gfc_dep_compare_expr (args1->expr, args2->expr) != 0)
+		return -2;
+
 	      args1 = args1->next;
 	      args2 = args2->next;
 	    }

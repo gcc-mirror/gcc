@@ -1,3 +1,8 @@
+2010-09-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/45576
+	* gfortran.dg/char_length_18.f90:  New test.
+
 2010-09-07  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	PR target/36502

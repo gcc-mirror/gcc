@@ -1,3 +1,9 @@
+2010-09-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/45576
+	* dependency.c (gfc_deb_compare_expr):  Take missing optional
+	arguments into account.
+
 2010-09-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* trans.h (gfor_fndecl_clz128, gfor_fndecl_ctz128): Remove.
