@@ -13135,6 +13135,11 @@ cp_parser_enumerator_definition (cp_parser* parser, tree type)
 {
   tree identifier;
   tree value;
+  location_t loc;
+
+  /* Save the input location because we are interested in the location
+     of the identifier and not the location of the explicit value.  */
+  loc = cp_lexer_peek_token (parser->lexer)->location;
 
   /* Look for the identifier.  */
   identifier = cp_parser_identifier (parser);
@@ -13160,7 +13165,7 @@ cp_parser_enumerator_definition (cp_parser* parser, tree type)
     value = error_mark_node;
 
   /* Create the enumerator.  */
-  build_enumerator (identifier, value, type);
+  build_enumerator (identifier, value, type, loc);
 }
 
 /* Parse a namespace-name.

@@ -17294,7 +17294,8 @@ tsubst_enum (tree tag, tree newtag, tree args)
       set_current_access_from_decl (decl);
 
       /* Actually build the enumerator itself.  */
-      build_enumerator (DECL_NAME (decl), value, newtag);
+      build_enumerator
+	(DECL_NAME (decl), value, newtag, DECL_SOURCE_LOCATION (decl));
     }
 
   finish_enum (newtag);
