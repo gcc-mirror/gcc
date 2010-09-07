@@ -427,8 +427,11 @@ ipcp_versionable_function_p (struct cgraph_node *node)
 {
   struct cgraph_edge *edge;
 
-  /* There are a number of generic reasons functions cannot be versioned.  */
-  if (!node->local.versionable)
+  /* There are a number of generic reasons functions cannot be versioned.  We
+     also cannot remove parameters if there are type attributes such as fnspec
+     present.  */
+  if (!node->local.versionable
+      || TYPE_ATTRIBUTES (TREE_TYPE (node->decl)))
     return false;
 
   /* Removing arguments doesn't work if the function takes varargs
