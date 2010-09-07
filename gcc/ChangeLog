@@ -1,3 +1,14 @@
+2010-09-07  H.J. Lu  <hjl.tools@gmail.com>
+	    Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR target/36502
+	PR target/42313
+	PR target/44651
+	* gcc/config/i386/darwin.h (STACK_BOUNDARY): Redefine as 128 for
+	profiling or 64-bit MS_ABI and as BITS_PER_WORD otherwise.
+	(PREFERRED_STACK_BOUNDARY): Replace STACK_BOUNDARY with 128 in
+	MAX macro.
+
 2010-09-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* unwind-dw2-fde-glibc.c: Include <elf.h> for DT_CONFIG.
