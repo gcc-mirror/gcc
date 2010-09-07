@@ -1,3 +1,8 @@
+2010-09-07  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR fortran/45505
+	* gfortran.dg/pr25923.f90: XFAIL warning on wrong line for ilp32.
+
 2010-09-07  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/compile/20100907.c: New testcase.
