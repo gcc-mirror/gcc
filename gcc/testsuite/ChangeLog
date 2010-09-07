@@ -1,3 +1,13 @@
+2010-09-07  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR target/36502
+	* gcc.target/i386/pr36502.c: New test.
+
+	PR target/42313
+	PR target/44651
+	* gcc.target/i386/builtin-unreachable.c: Don't skip on darwin.
+	* gcc/testsuite/gcc.dg/stack-usage-1.c: Use default on i386/Darwin.
+
 2010-09-07  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* gfortran.dg/achar_4.f90: Enable bounds checking.

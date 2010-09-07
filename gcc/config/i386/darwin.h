@@ -79,7 +79,9 @@ extern int darwin_emit_branch_islands;
    Failure to ensure this will lead to a crash in the system libraries
    or dynamic loader.  */
 #undef STACK_BOUNDARY
-#define STACK_BOUNDARY 128
+#define STACK_BOUNDARY \
+ ((profile_flag || (TARGET_64BIT && ix86_abi == MS_ABI)) \
+  ? 128 : BITS_PER_WORD)
 
 #undef MAIN_STACK_BOUNDARY
 #define MAIN_STACK_BOUNDARY 128
@@ -91,7 +93,7 @@ extern int darwin_emit_branch_islands;
    it's below the minimum.  */
 #undef PREFERRED_STACK_BOUNDARY
 #define PREFERRED_STACK_BOUNDARY			\
-  MAX (STACK_BOUNDARY, ix86_preferred_stack_boundary)
+  MAX (128, ix86_preferred_stack_boundary)
 
 /* We want -fPIC by default, unless we're using -static to compile for
    the kernel or some such.  */
