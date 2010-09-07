@@ -1,3 +1,37 @@
+2010-09-07  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/45186
+	* trans-array.c (gfc_conv_descriptor_data_get,
+	gfc_conv_descriptor_data_set, gfc_conv_descriptor_data_addr,
+	gfc_conv_descriptor_offset, gfc_conv_descriptor_dtype,
+	gfc_conv_descriptor_dimension, gfc_conv_descriptor_stride,
+	gfc_conv_descriptor_lbound, gfc_conv_descriptor_ubound,
+	gfc_conv_shift_descriptor_lbound,
+	gfc_set_loop_bounds_from_array_spec,
+	gfc_trans_allocate_array_storage, gfc_trans_create_temp_array,
+	gfc_conv_array_transpose, gfc_get_iteration_count,
+	gfc_grow_array, gfc_trans_array_ctor_element,
+	gfc_trans_array_constructor_subarray,
+	gfc_trans_array_constructor_value,
+	constant_array_constructor_loop_size, gfc_trans_array_constructor,
+	gfc_set_vector_loop_bounds, gfc_trans_array_bound_check,
+	gfc_conv_array_index_offset, gfc_conv_scalarized_array_ref,
+	gfc_conv_array_ref, gfc_trans_preloop_setup,
+	gfc_trans_scalarized_loop_end, gfc_conv_ss_startstride,
+	gfc_conv_loop_setup, gfc_conv_array_extent_dim,
+	gfc_conv_descriptor_size, gfc_array_init_size,
+	gfc_array_allocate, gfc_array_deallocate,
+	gfc_trans_array_bounds, gfc_trans_auto_array_allocation,
+	gfc_trans_dummy_array_bias, gfc_get_dataptr_offset,
+	get_array_charlen, gfc_conv_expr_descriptor,
+	array_parameter_size, gfc_conv_array_parameter,
+	gfc_trans_dealloc_allocated, get_full_array_size,
+	duplicate_allocatable,
+	structure_alloc_comps): Change fold_build[0-9] to
+	fold_build[0-9]_loc.
+	(duplicate_allocatable, structure_alloc_comps,
+	gfc_duplicate_allocatable): Add space after function name.
+
 2010-09-07  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans-stmt.c (gfc_trans_character_select): Be conversion-safe while
