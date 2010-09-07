@@ -4000,19 +4000,23 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
 
       gfc_init_se (&se, NULL);
       gfc_conv_constant (&se, expr);
+      gcc_assert (TREE_CODE (se.expr) != CONSTRUCTOR);
       return se.expr;
     }
   
   if (array && !procptr)
     {
+      tree ctor;
       /* Arrays need special handling.  */
       if (pointer)
-	return gfc_build_null_descriptor (type);
+	ctor = gfc_build_null_descriptor (type);
       /* Special case assigning an array to zero.  */
       else if (is_zero_initializer_p (expr))
-        return build_constructor (type, NULL);
+        ctor = build_constructor (type, NULL);
       else
-	return gfc_conv_array_initializer (type, expr);
+	ctor = gfc_conv_array_initializer (type, expr);
+      TREE_STATIC (ctor) = 1;
+      return ctor;
     }
   else if (pointer || procptr)
     {
@@ -4023,6 +4027,7 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
 	  gfc_init_se (&se, NULL);
 	  se.want_pointer = 1;
 	  gfc_conv_expr (&se, expr);
+          gcc_assert (TREE_CODE (se.expr) != CONSTRUCTOR);
 	  return se.expr;
 	}
     }
@@ -4037,14 +4042,21 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
 	    gfc_conv_structure (&se, gfc_class_null_initializer(ts), 1);
 	  else
 	    gfc_conv_structure (&se, expr, 1);
+	  gcc_assert (TREE_CODE (se.expr) == CONSTRUCTOR);
+	  TREE_STATIC (se.expr) = 1;
 	  return se.expr;
 
 	case BT_CHARACTER:
-	  return gfc_conv_string_init (ts->u.cl->backend_decl,expr);
+	  {
+	    tree ctor = gfc_conv_string_init (ts->u.cl->backend_decl,expr);
+	    TREE_STATIC (ctor) = 1;
+	    return ctor;
+	  }
 
 	default:
 	  gfc_init_se (&se, NULL);
 	  gfc_conv_constant (&se, expr);
+	  gcc_assert (TREE_CODE (se.expr) != CONSTRUCTOR);
 	  return se.expr;
 	}
     }
