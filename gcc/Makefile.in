@@ -2753,7 +2753,8 @@ tree-vect-stmts.o: tree-vect-stmts.c $(CONFIG_H) $(SYSTEM_H) \
 tree-vect-data-refs.o: tree-vect-data-refs.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(GGC_H) $(TREE_H) $(TARGET_H) $(BASIC_BLOCK_H) \
    $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) \
-   $(EXPR_H) $(OPTABS_H) $(SCEV_H) $(TREE_VECTORIZER_H) $(TOPLEV_H) $(DIAGNOSTIC_CORE_H) \
+   $(EXPR_H) $(OPTABS_H) $(SCEV_H) $(TREE_VECTORIZER_H) $(TOPLEV_H) \
+   $(DIAGNOSTIC_CORE_H) $(TM_P_H) \
    tree-pretty-print.h gimple-pretty-print.h
 tree-vectorizer.o: tree-vectorizer.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(GGC_H) $(TREE_H) $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) \
