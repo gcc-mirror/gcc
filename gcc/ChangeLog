@@ -1,3 +1,7 @@
+2010-09-07  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm.md: Remove unused variable.
+
 2010-09-07  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/m32r/m32r.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST): Remove.
