@@ -1428,7 +1428,7 @@ gfc_conv_intrinsic_char (gfc_se * se, gfc_expr * expr)
   arg[0] = fold_build1_loc (input_location, NOP_EXPR, type, arg[0]);
   gfc_add_modify (&se->pre, var, arg[0]);
   se->expr = gfc_build_addr_expr (build_pointer_type (type), var);
-  se->string_length = integer_one_node;
+  se->string_length = build_int_cst (gfc_charlen_type_node, 1);
 }
 
 
@@ -4709,7 +4709,7 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
 
   se->expr = info->descriptor;
   if (expr->ts.type == BT_CHARACTER)
-    se->string_length = dest_word_len;
+    se->string_length = fold_convert (gfc_charlen_type_node, dest_word_len);
 
   return;
 
