@@ -1,3 +1,9 @@
+2010-09-07  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/m32r/m32r.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST): Remove.
+	* config/m32r/m32r.c (TARGET_MEMORY_MOVE_COSTS): Define.
+	(m32r_memory_move_cost): New function.
+
 2010-09-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config.gcc: Append t-android for Android targets.

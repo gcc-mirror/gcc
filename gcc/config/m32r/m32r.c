@@ -89,6 +89,7 @@ static void m32r_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
 static void init_idents (void);
 static bool m32r_rtx_costs (rtx, int, int, int *, bool speed);
+static int m32r_memory_move_cost (enum machine_mode, reg_class_t, bool);
 static bool m32r_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				    const_tree, bool);
 static int m32r_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
@@ -152,6 +153,9 @@ static const struct attribute_spec m32r_attribute_table[] =
 #undef  TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P m32r_in_small_data_p
 
+
+#undef  TARGET_MEMORY_MOVE_COSTS
+#define TARGET_MEMORY_MOVE_COSTS m32r_memory_move_costs
 #undef  TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS m32r_rtx_costs
 #undef  TARGET_ADDRESS_COST
@@ -1365,6 +1369,22 @@ m32r_issue_rate (void)
 }
 
 /* Cost functions.  */
+
+/* Implement TARGET_HANDLE_OPTION.
+
+   Memory is 3 times as expensive as registers.
+   ??? Is that the right way to look at it?  */
+
+static int
+m32r_memory_move_cost (enum machine_mode mode,
+		       reg_class_t rclass ATTRIBUTE_UNUSED,
+		       bool in ATTRIBUTE_UNUSED)
+{
+  if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
+    return 6;
+  else
+    return 12;
+}
 
 static bool
 m32r_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total,
