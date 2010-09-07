@@ -152,6 +152,13 @@ DEFHOOK
  void, (FILE *stream, rtx insn),
  NULL)
 
+DEFHOOKPOD
+(unwind_emit_before_insn,
+ "True if the @code{TARGET_ASM_UNWIND_EMIT} hook should be called before\
+ the assembly for @var{insn} has been emitted, false if the hook should\
+ be called afterward.",
+ bool, true)
+
 /* Output an internal label.  */
 DEFHOOK
 (internal_label,
