@@ -1,5 +1,12 @@
 2010-09-07  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/45569
+	* tree-cfg.c (build_gimple_cfg): Remove redundant stmt verification.
+	* passes.c (execute_function_todo): Do not verify anything if
+	we saw errors.
+
+2010-09-07  Richard Guenther  <rguenther@suse.de>
+
 	* tree-pretty-print.c (dump_generic_node): Dump void types
 	as void.
 

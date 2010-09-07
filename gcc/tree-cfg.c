@@ -230,10 +230,6 @@ build_gimple_cfg (gimple_seq seq)
 	dump_end (TDI_vcg, vcg_file);
       }
   }
-
-#ifdef ENABLE_CHECKING
-  verify_stmts ();
-#endif
 }
 
 static unsigned int
