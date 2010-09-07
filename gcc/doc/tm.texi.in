@@ -8739,6 +8739,8 @@ This target hook emits assembly directives required to unwind the
 given instruction.  This is only used when TARGET_UNWIND_INFO is set.
 @end deftypefn
 
+@hook TARGET_ASM_UNWIND_EMIT_BEFORE_INSN
+
 @node Exception Region Output
 @subsection Assembler Commands for Exception Regions
 

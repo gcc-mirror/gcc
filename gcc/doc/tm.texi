@@ -8749,6 +8749,10 @@ This target hook emits assembly directives required to unwind the
 given instruction.  This is only used when TARGET_UNWIND_INFO is set.
 @end deftypefn
 
+@deftypevr {Target Hook} bool TARGET_ASM_UNWIND_EMIT_BEFORE_INSN
+True if the @code{TARGET_ASM_UNWIND_EMIT} hook should be called before the assembly for @var{insn} has been emitted, false if the hook should be called afterward.
+@end deftypevr
+
 @node Exception Region Output
 @subsection Assembler Commands for Exception Regions
 
