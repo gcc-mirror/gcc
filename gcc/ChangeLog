@@ -1,3 +1,9 @@
+2010-09-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/45206
+	* config/i386/i386.c (ix86_expand_epilogue): Mark SP as valid after
+	eh_return fixup sequence.
+
 2010-09-07  Jan Hubicka  <jh@suse.cz>
 
 	* gimple.c (maybe_fold_reference): Verify that operand is
@@ -19,8 +25,7 @@
 
 2010-09-07  Richard Guenther  <rguenther@suse.de>
 
-	* tree-pretty-print.c (dump_generic_node): Dump void types
-	as void.
+	* tree-pretty-print.c (dump_generic_node): Dump void types as void.
 
 2010-09-07  Bernd Schmidt  <bernds@codesourcery.com>
 

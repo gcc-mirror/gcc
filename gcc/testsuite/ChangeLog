@@ -1,3 +1,8 @@
+2010-09-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/45206
+	* gcc.target/i386/pr45206.c: New test.
+
 2010-09-07  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR fortran/45505
