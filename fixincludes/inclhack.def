@@ -1985,7 +1985,7 @@ fix = {
 fix = {
     hackname = hpux_htonl;
     files    = netinet/in.h;
-    select   = "#ifndef _XOPEN_SOURCE_EXTENDED\n"
+    select   = "#ifndef _XOPEN_SOURCE_EXTENDED[ \t]*\n"
                "(/\\*\n"
                " \\* Macros for number representation conversion\\.\n"
                " \\*/\n"
