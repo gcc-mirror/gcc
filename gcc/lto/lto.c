@@ -914,6 +914,7 @@ promote_var (struct varpool_node *vnode)
   gcc_assert (flag_wpa);
   TREE_PUBLIC (vnode->decl) = 1;
   DECL_VISIBILITY (vnode->decl) = VISIBILITY_HIDDEN;
+  DECL_VISIBILITY_SPECIFIED (vnode->decl) = true;
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file,
 	    "Promoting var as hidden: %s\n", varpool_node_name (vnode));
@@ -930,6 +931,7 @@ promote_fn (struct cgraph_node *node)
     return false;
   TREE_PUBLIC (node->decl) = 1;
   DECL_VISIBILITY (node->decl) = VISIBILITY_HIDDEN;
+  DECL_VISIBILITY_SPECIFIED (node->decl) = true;
   if (node->same_body)
     {
       struct cgraph_node *alias;
@@ -938,6 +940,7 @@ promote_fn (struct cgraph_node *node)
 	{
 	  TREE_PUBLIC (alias->decl) = 1;
 	  DECL_VISIBILITY (alias->decl) = VISIBILITY_HIDDEN;
+	  DECL_VISIBILITY_SPECIFIED (alias->decl) = true;
 	}
     }
   if (cgraph_dump_file)
