@@ -4240,18 +4240,12 @@ rest_of_handle_final (void)
   final (get_insns (), asm_out_file, optimize);
   final_end_function ();
 
-#ifdef TARGET_UNWIND_INFO
-  /* ??? The IA-64 ".handlerdata" directive must be issued before
-     the ".endp" directive that closes the procedure descriptor.  */
+  /* The IA-64 ".handlerdata" directive must be issued before the ".endp"
+     directive that closes the procedure descriptor.  Similarly, for x64 SEH.
+     Otherwise it's not strictly necessary, but it doesn't hurt either.  */
   output_function_exception_table (fnname);
-#endif
 
   assemble_end_function (current_function_decl, fnname);
-
-#ifndef TARGET_UNWIND_INFO
-  /* Otherwise, it feels unclean to switch sections in the middle.  */
-  output_function_exception_table (fnname);
-#endif
 
   user_defined_section_attribute = false;
 
