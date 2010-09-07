@@ -1692,7 +1692,7 @@ gfc_trans_character_select (gfc_code *code)
   gfc_init_block (&body);
 
   /* Attempt to optimize length 1 selects.  */
-  if (expr1se.string_length == integer_one_node)
+  if (integer_onep (expr1se.string_length))
     {
       for (d = cp; d; d = d->right)
 	{

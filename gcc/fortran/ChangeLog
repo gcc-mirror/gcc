@@ -1,3 +1,14 @@
+2010-09-07  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-stmt.c (gfc_trans_character_select): Be conversion-safe while
+	checking string length value.
+	* trans-intrinsic.c (gfc_conv_intrinsic_char): Build integer using
+	gfc_charlen_type_node type.
+
+	PR fortran/45564
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Convert string
+	length to gfc_charlen_type_node.
+
 2010-09-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/36931

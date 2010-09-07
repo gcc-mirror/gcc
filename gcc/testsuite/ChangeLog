@@ -1,3 +1,7 @@
+2010-09-07  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.dg/achar_4.f90: Enable bounds checking.
+
 2010-09-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/45206
