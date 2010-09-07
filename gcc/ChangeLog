@@ -1,3 +1,8 @@
+2010-09-07  Richard Henderson  <rth@redhat.com>
+
+	* final.c (rest_of_handle_final): Unconditionally do 
+	output_function_exception_table before assemble_end_function.
+
 2010-09-07  Jan Hubicka  <jh@suse.cz>
 
 	* tree-inline.c (tree_inlinable_function_p): Do not test DECL_REPLACEABLE_P.
