@@ -1249,6 +1249,10 @@ execute_function_todo (void *data)
   if (flags & TODO_rebuild_frequencies)
     rebuild_frequencies ();
 
+  /* If we've seen errors do not bother running any verifiers.  */
+  if (seen_error ())
+    return;
+
 #if defined ENABLE_CHECKING
   if (flags & TODO_verify_ssa
       || (current_loops && loops_state_satisfies_p (LOOP_CLOSED_SSA)))
