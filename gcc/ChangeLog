@@ -1,3 +1,8 @@
+2010-09-07  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-ccp.c (fold_const_aggregate_ref): Fix handling of array_ref_low_bound
+	in string access folding.
+
 2010-09-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/45206
@@ -6,7 +11,7 @@
 
 2010-09-07  Jan Hubicka  <jh@suse.cz>
 
-	* gimple.c (maybe_fold_reference): Verify that operand is
+	* gimple-fold.c (maybe_fold_reference): Verify that operand is
 	gimple_min_invariant.
 
 2010-09-07  Richard Guenther  <rguenther@suse.de>
