@@ -1,3 +1,10 @@
+2010-09-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/45398
+	* include/std/atomic (atomic<_TP*>::store): Define.
+
+	* include/std/atomic (atomic<_TP*>::load, exchange): Define inline.
+
 2010-09-06  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/libstdc++-abi/abi.exp: Add "libstdc++-abi/" to
