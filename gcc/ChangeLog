@@ -1,3 +1,8 @@
+2010-09-07  Richard Guenther  <rguenther@suse.de>
+
+	* tree-pretty-print.c (dump_generic_node): Dump void types
+	as void.
+
 2010-09-07  Bernd Schmidt  <bernds@codesourcery.com>
 
 	PR target/43137

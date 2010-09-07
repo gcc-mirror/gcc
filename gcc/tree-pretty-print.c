@@ -732,6 +732,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 		pp_decimal_int (buffer, TYPE_PRECISION (node));
 		pp_string (buffer, ">");
 	      }
+	    else if (TREE_CODE (node) == VOID_TYPE)
+	      pp_string (buffer, "void");
 	    else
               pp_string (buffer, "<unnamed type>");
 	  }
