@@ -1,3 +1,8 @@
+2010-09-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* inclhack.def (hpux_htonl): Allow trailing whitespace in select.
+	* fixincl.x: Regenerate.
+
 2010-07-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* inclhack.def (solaris_cond_init): New fix.
