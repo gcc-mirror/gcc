@@ -3197,12 +3197,6 @@ tree_inlinable_function_p (tree fn)
       inlinable = false;
     }
 
-  /* Don't auto-inline anything that might not be bound within
-     this unit of translation.  */
-  else if (!DECL_DECLARED_INLINE_P (fn)
-	   && DECL_REPLACEABLE_P (fn))
-    inlinable = false;
-
   else if (!function_attribute_inlinable_p (fn))
     {
       if (do_warning)

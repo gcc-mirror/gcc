@@ -480,13 +480,19 @@ cgraph_default_inline_p (struct cgraph_node *n, cgraph_inline_failed_t *reason)
 	*reason = CIF_FUNCTION_NOT_INLINE_CANDIDATE;
       return false;
     }
-
   if (!n->analyzed)
     {
       if (reason)
 	*reason = CIF_BODY_NOT_AVAILABLE;
       return false;
     }
+  if (cgraph_function_body_availability (n) <= AVAIL_OVERWRITABLE)
+    {
+      if (reason)
+	*reason = CIF_OVERWRITABLE;
+      return false;
+    }
+
 
   if (DECL_DECLARED_INLINE_P (decl))
     {
@@ -697,6 +703,7 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
   cgraph_inline_failed_t failed_reason;
 
   if (!node->local.inlinable
+      || cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE
       || node->global.inlined_to)
     return;
   if (!bitmap_set_bit (updated_nodes, node->uid))
@@ -749,6 +756,7 @@ update_callee_keys (fibheap_t heap, struct cgraph_node *node,
       {
 	if (e->inline_failed
 	    && e->callee->local.inlinable
+	    && cgraph_function_body_availability (e->callee) >= AVAIL_AVAILABLE
 	    && !bitmap_bit_p (updated_nodes, e->callee->uid))
 	  {
 	    node->global.estimated_growth = INT_MIN;
@@ -1499,6 +1507,7 @@ cgraph_decide_inlining (void)
 	      && !node->callers->next_caller
 	      && cgraph_will_be_removed_from_program_if_no_direct_calls (node)
 	      && node->local.inlinable
+	      && cgraph_function_body_availability (node) >= AVAIL_AVAILABLE
 	      && node->callers->inline_failed
 	      && node->callers->caller != node
 	      && node->callers->caller->global.inlined_to != node
