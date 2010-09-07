@@ -1,6 +1,13 @@
 2010-09-07  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/45569
+	* tree-eh.c (operation_could_trap_helper_p): Neither COMPLEX_EXPR
+	nor CONSTRUCTOR can trap.
+	* tree-complex.c (update_complex_assignment): Update EH info.
+
+2010-09-07  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/45569
 	* tree-cfg.c (build_gimple_cfg): Remove redundant stmt verification.
 	* passes.c (execute_function_todo): Do not verify anything if
 	we saw errors.

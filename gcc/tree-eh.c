@@ -2334,6 +2334,11 @@ operation_could_trap_helper_p (enum tree_code op,
 	return true;
       return false;
 
+    case COMPLEX_EXPR:
+    case CONSTRUCTOR:
+      /* Constructing an object cannot trap.  */
+      return false;
+
     default:
       /* Any floating arithmetic may trap.  */
       if (fp_operation && flag_trapping_math)
