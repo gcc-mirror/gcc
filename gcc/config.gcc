@@ -571,7 +571,6 @@ case ${target} in
   case $target in
     *-*-*android*)
       tm_defines="$tm_defines ANDROID_DEFAULT=1"
-      tmake_file="${tmake_file} t-android"
       ;;
     *)
       tm_defines="$tm_defines ANDROID_DEFAULT=0"
