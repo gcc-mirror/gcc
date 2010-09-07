@@ -1,4 +1,9 @@
 2010-09-07  Tobias Burnus <burnus@net-b.de>
+	
+	PR fortran/45583
+	* intrinsic.texi (COS): Remove superfluous "n".
+
+2010-09-07  Tobias Burnus <burnus@net-b.de>
 
 	PR fortran/45186
 	* trans-array.c (gfc_conv_descriptor_data_get,
