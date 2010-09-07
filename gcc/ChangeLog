@@ -1,5 +1,10 @@
 2010-09-07  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* unwind-dw2-fde-glibc.c: Include <elf.h> for DT_CONFIG.
+	Include <link.h> only if USE_PT_GNU_EH_FRAME is defined.
+
+2010-09-07  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config.gcc: Don't append t-android for Android targets.
 
 	* config/t-android: Removed.
