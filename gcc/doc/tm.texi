@@ -8744,6 +8744,10 @@ to be broken up according to function.
 The default is that no label is emitted.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_ASM_EMIT_EXCEPT_PERSONALITY (rtx @var{personality})
+If the target implements @code{TARGET_ASM_UNWIND_EMIT}, this hook may be used to emit a directive to install a personality hook into the unwind info.  This hook should not be used if dwarf2 unwind info is used.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_ASM_UNWIND_EMIT (FILE *@var{stream}, rtx @var{insn})
 This target hook emits assembly directives required to unwind the
 given instruction.  This is only used when TARGET_UNWIND_INFO is set.

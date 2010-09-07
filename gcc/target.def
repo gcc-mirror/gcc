@@ -145,6 +145,15 @@ DEFHOOK
  void, (FILE *stream),
  default_emit_except_table_label)
 
+/* Emit a directive for setting the personality for the function.  */
+DEFHOOK
+(emit_except_personality,
+ "If the target implements @code{TARGET_ASM_UNWIND_EMIT}, this hook may be\
+ used to emit a directive to install a personality hook into the unwind\
+ info.  This hook should not be used if dwarf2 unwind info is used.",
+ void, (rtx personality),
+ NULL)
+
 /* Emit any directives required to unwind this instruction.  */
 DEFHOOK
 (unwind_emit,

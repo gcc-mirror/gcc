@@ -59,7 +59,6 @@ extern void ia64_print_operand (FILE *, rtx, int);
 extern enum reg_class ia64_preferred_reload_class (rtx, enum reg_class);
 extern enum reg_class ia64_secondary_reload_class (enum reg_class,
 						   enum machine_mode, rtx);
-extern void process_for_unwind_directive (FILE *, rtx);
 extern const char *get_bundle_name (int);
 #endif /* RTX_CODE */
 

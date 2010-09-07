@@ -1,3 +1,26 @@
+2010-09-07  Richard Henderson  <rth@redhat.com>
+
+	* target.def (TARGET_ASM_EMIT_EXCEPT_PERSONALITY): New hook.
+	* doc/tm.texi.in: Add doc marker.
+	* doc/tm.texi: Rebuild.
+	* except.c (switch_to_exception_section): Always build.
+	(output_one_function_exception_table): Move section switch,
+	personality output, and label output ...
+	(output_function_exception_table): ... here.  Use the new
+	personality hook.
+
+	* config/ia64/ia64.c (ia64_asm_emit_except_personality,
+	ia64_asm_init_sections, TARGET_ASM_EMIT_EXCEPT_PERSONALITY,
+	TARGET_ASM_INIT_SECTIONS): New.
+	(ia64_asm_unwind_emit): Rename from process_for_unwind_directive,
+	make static.
+	(TARGET_ASM_UNWIND_EMIT): Update to match.
+	* config/ia64/ia64-protos.h (process_for_unwind_directive): Remove.
+
+	* config/arm/arm.c (arm_asm_emit_except_personality): New.
+	(arm_asm_init_sections): New.
+	(TARGET_ASM_EMIT_EXCEPT_PERSONALITY, TARGET_ASM_INIT_SECTIONS): New.
+
 2010-09-07  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/arm.md: Remove unused variable.
