@@ -141,13 +141,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       atomic(_Tp* __v) : atomic_address(__v) { }
 
       void
-      store(_Tp*, memory_order = memory_order_seq_cst);
+      store(_Tp* __v, memory_order __m = memory_order_seq_cst)
+      { atomic_address::store(__v, __m); }
 
       _Tp*
-      load(memory_order = memory_order_seq_cst) const;
+      load(memory_order __m = memory_order_seq_cst) const
+      { return static_cast<_Tp*>(atomic_address::load(__m)); }
 
       _Tp*
-      exchange(_Tp*, memory_order = memory_order_seq_cst);
+      exchange(_Tp* __v, memory_order __m = memory_order_seq_cst)
+      { return static_cast<_Tp*>(atomic_address::exchange(__v, __m)); }
 
       bool
       compare_exchange_weak(_Tp*&, _Tp*, memory_order, memory_order);
@@ -486,17 +489,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       using __base_type::operator __integral_type;
       using __base_type::operator=;
     };
-
-
-  template<typename _Tp>
-    _Tp*
-    atomic<_Tp*>::load(memory_order __m) const
-    { return static_cast<_Tp*>(atomic_address::load(__m)); }
-
-  template<typename _Tp>
-    _Tp*
-    atomic<_Tp*>::exchange(_Tp* __v, memory_order __m)
-    { return static_cast<_Tp*>(atomic_address::exchange(__v, __m)); }
 
   template<typename _Tp>
     bool
