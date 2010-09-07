@@ -477,7 +477,8 @@ maybe_fold_reference (tree expr, bool is_lhs)
   tree result;
 
   if (!is_lhs
-      && (result = fold_const_aggregate_ref (expr)))
+      && (result = fold_const_aggregate_ref (expr))
+      && is_gimple_min_invariant (result))
     return result;
 
   /* ???  We might want to open-code the relevant remaining cases

@@ -1,3 +1,8 @@
+2010-09-07  Jan Hubicka  <jh@suse.cz>
+
+	* gimple.c (maybe_fold_reference): Verify that operand is
+	gimple_min_invariant.
+
 2010-09-07  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/45569

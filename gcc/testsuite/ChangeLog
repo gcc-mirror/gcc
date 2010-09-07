@@ -1,3 +1,7 @@
+2010-09-07  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/compile/20100907.c: New testcase.
+
 2010-09-07  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/45569
