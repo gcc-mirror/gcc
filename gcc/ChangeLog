@@ -1,3 +1,7 @@
+2010-09-08  Kenneth Zadeck <zadeck@naturalbridge.com>
+	PR doc/45587
+	* doc/md.texi: Fixed modes on several standard pattern names.
+
 2010-09-08  Mingjie Xing  <mingjie.xing@gmail.com>
 
 	* config/mips/loongson.md (loongson_psll<V_suffix>): Rename to...

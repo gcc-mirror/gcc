@@ -4370,19 +4370,19 @@ point mode @var{n} as a signed number according to the current
 rounding mode and store in operand 0 (which has mode @var{n}).
 
 @cindex @code{lround@var{m}@var{n}2}
-@item @samp{lround@var{m}2}
+@item @samp{lround@var{m}@var{n}2}
 Convert operand 1 (valid for floating point mode @var{m}) to fixed
 point mode @var{n} as a signed number rounding to nearest and away
 from zero and store in operand 0 (which has mode @var{n}).
 
 @cindex @code{lfloor@var{m}@var{n}2}
-@item @samp{lfloor@var{m}2}
+@item @samp{lfloor@var{m}@var{n}2}
 Convert operand 1 (valid for floating point mode @var{m}) to fixed
 point mode @var{n} as a signed number rounding down and store in
 operand 0 (which has mode @var{n}).
 
 @cindex @code{lceil@var{m}@var{n}2}
-@item @samp{lceil@var{m}2}
+@item @samp{lceil@var{m}@var{n}2}
 Convert operand 1 (valid for floating point mode @var{m}) to fixed
 point mode @var{n} as a signed number rounding up and store in
 operand 0 (which has mode @var{n}).
@@ -4561,19 +4561,19 @@ operand 2 is the character to search for (normally zero),
 and operand 3 is a constant describing the known alignment
 of the beginning of the string.
 
-@cindex @code{float@var{mn}2} instruction pattern
+@cindex @code{float@var{m}@var{n}2} instruction pattern
 @item @samp{float@var{m}@var{n}2}
 Convert signed integer operand 1 (valid for fixed point mode @var{m}) to
 floating point mode @var{n} and store in operand 0 (which has mode
 @var{n}).
 
-@cindex @code{floatuns@var{mn}2} instruction pattern
+@cindex @code{floatuns@var{m}@var{n}2} instruction pattern
 @item @samp{floatuns@var{m}@var{n}2}
 Convert unsigned integer operand 1 (valid for fixed point mode @var{m})
 to floating point mode @var{n} and store in operand 0 (which has mode
 @var{n}).
 
-@cindex @code{fix@var{mn}2} instruction pattern
+@cindex @code{fix@var{m}@var{n}2} instruction pattern
 @item @samp{fix@var{m}@var{n}2}
 Convert operand 1 (valid for floating point mode @var{m}) to fixed
 point mode @var{n} as a signed number and store in operand 0 (which
@@ -4583,7 +4583,7 @@ the value of operand 1 is an integer.
 If the machine description defines this pattern, it also needs to
 define the @code{ftrunc} pattern.
 
-@cindex @code{fixuns@var{mn}2} instruction pattern
+@cindex @code{fixuns@var{m}@var{n}2} instruction pattern
 @item @samp{fixuns@var{m}@var{n}2}
 Convert operand 1 (valid for floating point mode @var{m}) to fixed
 point mode @var{n} as an unsigned number and store in operand 0 (which
@@ -4596,35 +4596,35 @@ Convert operand 1 (valid for floating point mode @var{m}) to an
 integer value, still represented in floating point mode @var{m}, and
 store it in operand 0 (valid for floating point mode @var{m}).
 
-@cindex @code{fix_trunc@var{mn}2} instruction pattern
+@cindex @code{fix_trunc@var{m}@var{n}2} instruction pattern
 @item @samp{fix_trunc@var{m}@var{n}2}
 Like @samp{fix@var{m}@var{n}2} but works for any floating point value
 of mode @var{m} by converting the value to an integer.
 
-@cindex @code{fixuns_trunc@var{mn}2} instruction pattern
+@cindex @code{fixuns_trunc@var{m}@var{n}2} instruction pattern
 @item @samp{fixuns_trunc@var{m}@var{n}2}
 Like @samp{fixuns@var{m}@var{n}2} but works for any floating point
 value of mode @var{m} by converting the value to an integer.
 
-@cindex @code{trunc@var{mn}2} instruction pattern
+@cindex @code{trunc@var{m}@var{n}2} instruction pattern
 @item @samp{trunc@var{m}@var{n}2}
 Truncate operand 1 (valid for mode @var{m}) to mode @var{n} and
 store in operand 0 (which has mode @var{n}).  Both modes must be fixed
 point or both floating point.
 
-@cindex @code{extend@var{mn}2} instruction pattern
+@cindex @code{extend@var{m}@var{n}2} instruction pattern
 @item @samp{extend@var{m}@var{n}2}
 Sign-extend operand 1 (valid for mode @var{m}) to mode @var{n} and
 store in operand 0 (which has mode @var{n}).  Both modes must be fixed
 point or both floating point.
 
-@cindex @code{zero_extend@var{mn}2} instruction pattern
+@cindex @code{zero_extend@var{m}@var{n}2} instruction pattern
 @item @samp{zero_extend@var{m}@var{n}2}
 Zero-extend operand 1 (valid for mode @var{m}) to mode @var{n} and
 store in operand 0 (which has mode @var{n}).  Both modes must be fixed
 point.
 
-@cindex @code{fract@var{mn}2} instruction pattern
+@cindex @code{fract@var{m}@var{n}2} instruction pattern
 @item @samp{fract@var{m}@var{n}2}
 Convert operand 1 of mode @var{m} to mode @var{n} and store in
 operand 0 (which has mode @var{n}).  Mode @var{m} and mode @var{n}
@@ -4633,7 +4633,7 @@ fixed-point to signed integer, floating-point to fixed-point,
 or fixed-point to floating-point.
 When overflows or underflows happen, the results are undefined.
 
-@cindex @code{satfract@var{mn}2} instruction pattern
+@cindex @code{satfract@var{m}@var{n}2} instruction pattern
 @item @samp{satfract@var{m}@var{n}2}
 Convert operand 1 of mode @var{m} to mode @var{n} and store in
 operand 0 (which has mode @var{n}).  Mode @var{m} and mode @var{n}
@@ -4642,7 +4642,7 @@ or floating-point to fixed-point.
 When overflows or underflows happen, the instruction saturates the
 results to the maximum or the minimum.
 
-@cindex @code{fractuns@var{mn}2} instruction pattern
+@cindex @code{fractuns@var{m}@var{n}2} instruction pattern
 @item @samp{fractuns@var{m}@var{n}2}
 Convert operand 1 of mode @var{m} to mode @var{n} and store in
 operand 0 (which has mode @var{n}).  Mode @var{m} and mode @var{n}
@@ -4650,7 +4650,7 @@ could be unsigned integer to fixed-point, or
 fixed-point to unsigned integer.
 When overflows or underflows happen, the results are undefined.
 
-@cindex @code{satfractuns@var{mn}2} instruction pattern
+@cindex @code{satfractuns@var{m}@var{n}2} instruction pattern
 @item @samp{satfractuns@var{m}@var{n}2}
 Convert unsigned integer operand 1 of mode @var{m} to fixed-point mode
 @var{n} and store in operand 0 (which has mode @var{n}).
