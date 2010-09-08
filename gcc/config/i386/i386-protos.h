@@ -25,7 +25,7 @@ extern void optimization_options (int, int);
 extern void ix86_conditional_register_usage (void);
 
 extern bool ix86_target_stack_probe (void);
-extern int ix86_can_use_return_insn_p (void);
+extern bool ix86_can_use_return_insn_p (void);
 extern void ix86_setup_frame_addresses (void);
 
 extern HOST_WIDE_INT ix86_initial_elimination_offset (int, int);
@@ -44,7 +44,7 @@ extern const char *standard_80387_constant_opcode (rtx);
 extern rtx standard_80387_constant_rtx (int);
 extern int standard_sse_constant_p (rtx);
 extern const char *standard_sse_constant_opcode (rtx, rtx);
-extern int symbolic_reference_mentioned_p (rtx);
+extern bool symbolic_reference_mentioned_p (rtx);
 extern bool extended_reg_mentioned_p (rtx);
 extern bool x86_extended_QIreg_mentioned_p (rtx);
 extern bool x86_extended_reg_mentioned_p (rtx);
@@ -54,14 +54,14 @@ extern enum machine_mode ix86_cc_mode (enum rtx_code, rtx, rtx);
 extern int avx_vpermilp_parallel (rtx par, enum machine_mode mode);
 extern int avx_vperm2f128_parallel (rtx par, enum machine_mode mode);
 
-extern int ix86_expand_movmem (rtx, rtx, rtx, rtx, rtx, rtx);
-extern int ix86_expand_setmem (rtx, rtx, rtx, rtx, rtx, rtx);
-extern int ix86_expand_strlen (rtx, rtx, rtx, rtx);
+extern bool ix86_expand_movmem (rtx, rtx, rtx, rtx, rtx, rtx);
+extern bool ix86_expand_setmem (rtx, rtx, rtx, rtx, rtx, rtx);
+extern bool ix86_expand_strlen (rtx, rtx, rtx, rtx);
 
 extern bool legitimate_constant_p (rtx);
 extern bool constant_address_p (rtx);
 extern bool legitimate_pic_operand_p (rtx);
-extern int legitimate_pic_address_disp_p (rtx);
+extern bool legitimate_pic_address_disp_p (rtx);
 
 extern void print_reg (rtx, int, FILE*);
 extern void ix86_print_operand (FILE *, rtx, int);
@@ -88,7 +88,7 @@ extern void ix86_fixup_binary_operands_no_copy (enum rtx_code,
 						enum machine_mode, rtx[]);
 extern void ix86_expand_binary_operator (enum rtx_code,
 					 enum machine_mode, rtx[]);
-extern int ix86_binary_operator_ok (enum rtx_code, enum machine_mode, rtx[]);
+extern bool ix86_binary_operator_ok (enum rtx_code, enum machine_mode, rtx[]);
 extern bool ix86_lea_for_add_ok (rtx, rtx[]);
 extern bool ix86_vec_interleave_v2df_operator_ok (rtx operands[3], bool high);
 extern bool ix86_dep_by_shift_count (const_rtx set_insn, const_rtx use_insn);
@@ -109,18 +109,17 @@ extern void ix86_expand_fp_absneg_operator (enum rtx_code, enum machine_mode,
 extern void ix86_expand_copysign (rtx []);
 extern void ix86_split_copysign_const (rtx []);
 extern void ix86_split_copysign_var (rtx []);
-extern int ix86_unary_operator_ok (enum rtx_code, enum machine_mode, rtx[]);
-extern int ix86_match_ccmode (rtx, enum machine_mode);
-extern int ix86_use_fcomi_compare (enum rtx_code);
+extern bool ix86_unary_operator_ok (enum rtx_code, enum machine_mode, rtx[]);
+extern bool ix86_match_ccmode (rtx, enum machine_mode);
 extern void ix86_expand_branch (enum rtx_code, rtx, rtx, rtx);
 extern void ix86_expand_setcc (rtx, enum rtx_code, rtx, rtx);
-extern int ix86_expand_int_movcc (rtx[]);
-extern int ix86_expand_fp_movcc (rtx[]);
+extern bool ix86_expand_int_movcc (rtx[]);
+extern bool ix86_expand_fp_movcc (rtx[]);
 extern bool ix86_expand_fp_vcond (rtx[]);
 extern bool ix86_expand_int_vcond (rtx[]);
 extern void ix86_expand_sse_unpack (rtx[], bool, bool);
 extern void ix86_expand_sse4_unpack (rtx[], bool, bool);
-extern int ix86_expand_int_addcc (rtx[]);
+extern bool ix86_expand_int_addcc (rtx[]);
 extern void ix86_expand_call (rtx, rtx, rtx, rtx, rtx, int);
 extern void x86_initialize_trampoline (rtx, rtx, rtx);
 extern rtx ix86_zero_extend_to_Pmode (rtx);
@@ -129,7 +128,7 @@ extern void ix86_split_ashl (rtx *, rtx, enum machine_mode);
 extern void ix86_split_ashr (rtx *, rtx, enum machine_mode);
 extern void ix86_split_lshr (rtx *, rtx, enum machine_mode);
 extern rtx ix86_find_base_term (rtx);
-extern int ix86_check_movabs (rtx, int);
+extern bool ix86_check_movabs (rtx, int);
 
 extern rtx assign_386_stack_local (enum machine_mode, enum ix86_stack_slot);
 extern int ix86_attr_length_immediate_default (rtx, int);
@@ -152,8 +151,8 @@ extern void ix86_split_fp_branch (enum rtx_code code, rtx, rtx,
 				  rtx, rtx, rtx, rtx);
 extern bool ix86_hard_regno_mode_ok (int, enum machine_mode);
 extern bool ix86_modes_tieable_p (enum machine_mode, enum machine_mode);
-extern int ix86_secondary_memory_needed (enum reg_class, enum reg_class,
-					 enum machine_mode, int);
+extern bool ix86_secondary_memory_needed (enum reg_class, enum reg_class,
+					  enum machine_mode, int);
 extern bool ix86_cannot_change_mode_class (enum machine_mode,
 					   enum machine_mode, enum reg_class);
 extern enum reg_class ix86_preferred_reload_class (rtx, enum reg_class);
