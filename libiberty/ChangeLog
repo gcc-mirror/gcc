@@ -1,3 +1,14 @@
+2010-09-08  Tristan Gingold  <gingold@adacore.com>
+
+	PR 44001
+	* maint-tool (missing): Fix pattern for object file.
+	(deps): Use $(objext) for object extension.
+	* Makefile.in (objext): New variable.
+	Replace all occurences of .o with .$(objext)
+	Regenerate with maint-deps
+	* configure.ac (pexecute): Set to the basename.
+	* configure: Regenerate.
+
 2010-08-20  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* pex-common.c (pex_read_err): Set stderr_pipe to -1 if a
