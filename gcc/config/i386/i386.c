@@ -6812,59 +6812,59 @@ ix86_libcall_value (enum machine_mode mode)
 
 /* Return true iff type is returned in memory.  */
 
-static int ATTRIBUTE_UNUSED
+static bool ATTRIBUTE_UNUSED
 return_in_memory_32 (const_tree type, enum machine_mode mode)
 {
   HOST_WIDE_INT size;
 
   if (mode == BLKmode)
-    return 1;
+    return true;
 
   size = int_size_in_bytes (type);
 
   if (MS_AGGREGATE_RETURN && AGGREGATE_TYPE_P (type) && size <= 8)
-    return 0;
+    return false;
 
   if (VECTOR_MODE_P (mode) || mode == TImode)
     {
       /* User-created vectors small enough to fit in EAX.  */
       if (size < 8)
-	return 0;
+	return false;
 
       /* MMX/3dNow values are returned in MM0,
 	 except when it doesn't exits.  */
       if (size == 8)
-	return (TARGET_MMX ? 0 : 1);
+	return !TARGET_MMX;
 
       /* SSE values are returned in XMM0, except when it doesn't exist.  */
       if (size == 16)
-	return (TARGET_SSE ? 0 : 1);
+	return !TARGET_SSE;
 
       /* AVX values are returned in YMM0, except when it doesn't exist.  */
       if (size == 32)
-	return TARGET_AVX ? 0 : 1;
+	return !TARGET_AVX;
     }
 
   if (mode == XFmode)
-    return 0;
+    return false;
 
   if (size > 12)
-    return 1;
+    return true;
 
   /* OImode shouldn't be used directly.  */
   gcc_assert (mode != OImode);
 
-  return 0;
+  return false;
 }
 
-static int ATTRIBUTE_UNUSED
+static bool ATTRIBUTE_UNUSED
 return_in_memory_64 (const_tree type, enum machine_mode mode)
 {
   int needed_intregs, needed_sseregs;
   return !examine_argument (mode, type, 1, &needed_intregs, &needed_sseregs);
 }
 
-static int ATTRIBUTE_UNUSED
+static bool ATTRIBUTE_UNUSED
 return_in_memory_ms_64 (const_tree type, enum machine_mode mode)
 {
   HOST_WIDE_INT size = int_size_in_bytes (type);
@@ -6872,10 +6872,10 @@ return_in_memory_ms_64 (const_tree type, enum machine_mode mode)
   /* __m128 is returned in xmm0.  */
   if ((SCALAR_INT_MODE_P (mode) || VECTOR_MODE_P (mode))
       && !COMPLEX_MODE_P (mode) && (GET_MODE_SIZE (mode) == 16 || size == 16))
-    return 0;
+    return false;
 
   /* Otherwise, the size must be exactly in [1248]. */
-  return (size != 1 && size != 2 && size != 4 && size != 8);
+  return size != 1 && size != 2 && size != 4 && size != 8;
 }
 
 static bool
@@ -7604,10 +7604,10 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   return build_va_arg_indirect_ref (addr);
 }
 
-/* Return nonzero if OPNUM's MEM should be matched
+/* Return true if OPNUM's MEM should be matched
    in movabs* patterns.  */
 
-int
+bool
 ix86_check_movabs (rtx insn, int opnum)
 {
   rtx set, mem;
@@ -7620,7 +7620,7 @@ ix86_check_movabs (rtx insn, int opnum)
   while (GET_CODE (mem) == SUBREG)
     mem = SUBREG_REG (mem);
   gcc_assert (MEM_P (mem));
-  return (volatile_ok || !MEM_VOLATILE_P (mem));
+  return volatile_ok || !MEM_VOLATILE_P (mem);
 }
 
 /* Initialize the table of extra 80387 mathematical constants.  */
@@ -7649,8 +7649,8 @@ init_ext_80387_constants (void)
   ext_80387_constants_init = 1;
 }
 
-/* Return true if the constant is something that can be loaded with
-   a special instruction.  */
+/* Return non-zero if the constant is something that
+   can be loaded with a special instruction.  */
 
 int
 standard_80387_constant_p (rtx x)
@@ -7826,16 +7826,16 @@ standard_sse_constant_opcode (rtx insn, rtx x)
   gcc_unreachable ();
 }
 
-/* Returns 1 if OP contains a symbol reference */
+/* Returns true if OP contains a symbol reference */
 
-int
+bool
 symbolic_reference_mentioned_p (rtx op)
 {
   const char *fmt;
   int i;
 
   if (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF)
-    return 1;
+    return true;
 
   fmt = GET_RTX_FORMAT (GET_CODE (op));
   for (i = GET_RTX_LENGTH (GET_CODE (op)) - 1; i >= 0; i--)
@@ -7846,23 +7846,23 @@ symbolic_reference_mentioned_p (rtx op)
 
 	  for (j = XVECLEN (op, i) - 1; j >= 0; j--)
 	    if (symbolic_reference_mentioned_p (XVECEXP (op, i, j)))
-	      return 1;
+	      return true;
 	}
 
       else if (fmt[i] == 'e' && symbolic_reference_mentioned_p (XEXP (op, i)))
-	return 1;
+	return true;
     }
 
-  return 0;
+  return false;
 }
 
-/* Return 1 if it is appropriate to emit `ret' instructions in the
+/* Return true if it is appropriate to emit `ret' instructions in the
    body of a function.  Do this only if the epilogue is simple, needing a
    couple of insns.  Prior to reloading, we can't tell how many registers
-   must be saved, so return 0 then.  Return 0 if there is no frame
+   must be saved, so return false then.  Return false if there is no frame
    marker to de-allocate.  */
 
-int
+bool
 ix86_can_use_return_insn_p (void)
 {
   struct ix86_frame frame;
@@ -10684,7 +10684,7 @@ legitimate_pic_operand_p (rtx x)
 /* Determine if a given CONST RTX is a valid memory displacement
    in PIC mode.  */
 
-int
+bool
 legitimate_pic_address_disp_p (rtx disp)
 {
   bool saw_plus;
@@ -10729,7 +10729,7 @@ legitimate_pic_address_disp_p (rtx disp)
 	}
     }
   if (GET_CODE (disp) != CONST)
-    return 0;
+    return false;
   disp = XEXP (disp, 0);
 
   if (TARGET_64BIT)
@@ -10740,28 +10740,28 @@ legitimate_pic_address_disp_p (rtx disp)
 	  || (XINT (disp, 1) != UNSPEC_GOTPCREL
 	      && XINT (disp, 1) != UNSPEC_GOTOFF
 	      && XINT (disp, 1) != UNSPEC_PLTOFF))
-	return 0;
+	return false;
 
       if (GET_CODE (XVECEXP (disp, 0, 0)) != SYMBOL_REF
 	  && GET_CODE (XVECEXP (disp, 0, 0)) != LABEL_REF)
-	return 0;
-      return 1;
+	return false;
+      return true;
     }
 
   saw_plus = false;
   if (GET_CODE (disp) == PLUS)
     {
       if (!CONST_INT_P (XEXP (disp, 1)))
-	return 0;
+	return false;
       disp = XEXP (disp, 0);
       saw_plus = true;
     }
 
   if (TARGET_MACHO && darwin_local_data_pic (disp))
-    return 1;
+    return true;
 
   if (GET_CODE (disp) != UNSPEC)
-    return 0;
+    return false;
 
   switch (XINT (disp, 1))
     {
@@ -10800,7 +10800,7 @@ legitimate_pic_address_disp_p (rtx disp)
 	      && SYMBOL_REF_TLS_MODEL (disp) == TLS_MODEL_LOCAL_DYNAMIC);
     }
 
-  return 0;
+  return false;
 }
 
 /* Recognizes RTL expressions that are valid memory addresses for an
@@ -11663,7 +11663,7 @@ ix86_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	    }
 	}
 
-      if (changed && ix86_legitimate_address_p (mode, x, FALSE))
+      if (changed && ix86_legitimate_address_p (mode, x, false))
 	return x;
 
       if (GET_CODE (XEXP (x, 0)) == MULT)
@@ -11689,7 +11689,7 @@ ix86_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	  x = legitimize_pic_address (x, 0);
 	}
 
-      if (changed && ix86_legitimate_address_p (mode, x, FALSE))
+      if (changed && ix86_legitimate_address_p (mode, x, false))
 	return x;
 
       if (REG_P (XEXP (x, 0)))
@@ -14562,7 +14562,7 @@ ix86_expand_binary_operator (enum rtx_code code, enum machine_mode mode,
 /* Return TRUE or FALSE depending on whether the binary operator meets the
    appropriate constraints.  */
 
-int
+bool
 ix86_binary_operator_ok (enum rtx_code code, enum machine_mode mode,
 			 rtx operands[3])
 {
@@ -14572,7 +14572,7 @@ ix86_binary_operator_ok (enum rtx_code code, enum machine_mode mode,
 
   /* Both source operands cannot be in memory.  */
   if (MEM_P (src1) && MEM_P (src2))
-    return 0;
+    return false;
 
   /* Canonicalize operand order for commutative operators.  */
   if (ix86_swap_binary_operands_p (code, mode, operands))
@@ -14584,17 +14584,17 @@ ix86_binary_operator_ok (enum rtx_code code, enum machine_mode mode,
 
   /* If the destination is memory, we must have a matching source operand.  */
   if (MEM_P (dst) && !rtx_equal_p (dst, src1))
-      return 0;
+      return false;
 
   /* Source 1 cannot be a constant.  */
   if (CONSTANT_P (src1))
-    return 0;
+    return false;
 
   /* Source 1 cannot be a non-matching memory.  */
   if (MEM_P (src1) && !rtx_equal_p (dst, src1))
-    return 0;
+    return false;
 
-  return 1;
+  return true;
 }
 
 /* Attempt to expand a unary operator.  Make the expansion closer to the
@@ -14957,7 +14957,7 @@ ix86_dep_by_shift_count (const_rtx set_insn, const_rtx use_insn)
 /* Return TRUE or FALSE depending on whether the unary operator meets the
    appropriate constraints.  */
 
-int
+bool
 ix86_unary_operator_ok (enum rtx_code code ATTRIBUTE_UNUSED,
 			enum machine_mode mode ATTRIBUTE_UNUSED,
 			rtx operands[2] ATTRIBUTE_UNUSED)
@@ -14966,8 +14966,8 @@ ix86_unary_operator_ok (enum rtx_code code ATTRIBUTE_UNUSED,
   if ((MEM_P (operands[0])
        || MEM_P (operands[1]))
       && ! rtx_equal_p (operands[0], operands[1]))
-    return FALSE;
-  return TRUE;
+    return false;
+  return true;
 }
 
 /* Return TRUE if the operands to a vec_interleave_{high,low}v2df
@@ -15545,7 +15545,7 @@ ix86_split_copysign_var (rtx operands[])
    has source and destination with matching CC modes, and that the
    CC mode is at least as constrained as REQ_MODE.  */
 
-int
+bool
 ix86_match_ccmode (rtx insn, enum machine_mode req_mode)
 {
   rtx set;
@@ -15564,19 +15564,19 @@ ix86_match_ccmode (rtx insn, enum machine_mode req_mode)
       if (req_mode != CCNOmode
 	  && (req_mode != CCmode
 	      || XEXP (SET_SRC (set), 1) != const0_rtx))
-	return 0;
+	return false;
       break;
     case CCmode:
       if (req_mode == CCGCmode)
-	return 0;
+	return false;
       /* FALLTHRU */
     case CCGCmode:
       if (req_mode == CCGOCmode || req_mode == CCNOmode)
-	return 0;
+	return false;
       /* FALLTHRU */
     case CCGOCmode:
       if (req_mode == CCZmode)
-	return 0;
+	return false;
       /* FALLTHRU */
     case CCAmode:
     case CCCmode:
@@ -15589,7 +15589,7 @@ ix86_match_ccmode (rtx insn, enum machine_mode req_mode)
       gcc_unreachable ();
     }
 
-  return (GET_MODE (SET_SRC (set)) == set_mode);
+  return GET_MODE (SET_SRC (set)) == set_mode;
 }
 
 /* Generate insn patterns to do an integer compare of OPERANDS.  */
@@ -16473,7 +16473,7 @@ ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
   return true;
 }
 
-int
+bool
 ix86_expand_int_movcc (rtx operands[])
 {
   enum rtx_code code = GET_CODE (operands[1]), compare_code;
@@ -16653,7 +16653,7 @@ ix86_expand_int_movcc (rtx operands[])
 	  if (!rtx_equal_p (tmp, out))
 	    emit_move_insn (copy_rtx (out), copy_rtx (tmp));
 
-	  return 1; /* DONE */
+	  return true;
 	}
 
       if (diff < 0)
@@ -16731,7 +16731,7 @@ ix86_expand_int_movcc (rtx operands[])
 	      if (out != operands[0])
 		emit_move_insn (operands[0], out);
 
-	      return 1; /* DONE */
+	      return true;
 	    }
 	}
 
@@ -16790,7 +16790,7 @@ ix86_expand_int_movcc (rtx operands[])
 	  if (!rtx_equal_p (out, operands[0]))
 	    emit_move_insn (operands[0], copy_rtx (out));
 
-	  return 1; /* DONE */
+	  return true;
 	}
 
       /*
@@ -16884,7 +16884,7 @@ ix86_expand_int_movcc (rtx operands[])
 	  if (!rtx_equal_p (out, operands[0]))
 	    emit_move_insn (operands[0], copy_rtx (out));
 
-	  return 1; /* DONE */
+	  return true;
 	}
     }
 
@@ -16896,7 +16896,7 @@ ix86_expand_int_movcc (rtx operands[])
       rtx var, orig_out, out, tmp;
 
       if (BRANCH_COST (optimize_insn_for_speed_p (), false) <= 2)
-	return 0; /* FAIL */
+	return false;
 
       /* If one of the two operands is an interesting constant, load a
 	 constant with the above and mask it in with a logical operation.  */
@@ -16909,7 +16909,7 @@ ix86_expand_int_movcc (rtx operands[])
 	  else if (INTVAL (operands[2]) == -1 && operands[3] != const0_rtx)
 	    operands[3] = const0_rtx, op = ior_optab;
 	  else
-	    return 0; /* FAIL */
+	    return false;
 	}
       else if (CONST_INT_P (operands[3]))
 	{
@@ -16919,10 +16919,10 @@ ix86_expand_int_movcc (rtx operands[])
 	  else if (INTVAL (operands[3]) == -1 && operands[3] != const0_rtx)
 	    operands[2] = const0_rtx, op = ior_optab;
 	  else
-	    return 0; /* FAIL */
+	    return false;
 	}
       else
-        return 0; /* FAIL */
+        return false;
 
       orig_out = operands[0];
       tmp = gen_reg_rtx (mode);
@@ -16930,7 +16930,7 @@ ix86_expand_int_movcc (rtx operands[])
 
       /* Recurse to get the constant loaded.  */
       if (ix86_expand_int_movcc (operands) == 0)
-        return 0; /* FAIL */
+        return false;
 
       /* Mask in the interesting variable.  */
       out = expand_binop (mode, op, var, tmp, orig_out, 0,
@@ -16938,7 +16938,7 @@ ix86_expand_int_movcc (rtx operands[])
       if (!rtx_equal_p (out, orig_out))
 	emit_move_insn (copy_rtx (orig_out), copy_rtx (out));
 
-      return 1; /* DONE */
+      return true;
     }
 
   /*
@@ -16971,8 +16971,7 @@ ix86_expand_int_movcc (rtx operands[])
 			  gen_rtx_IF_THEN_ELSE (mode,
 						compare_op, operands[2],
 						operands[3])));
-
-  return 1; /* DONE */
+  return true;
 }
 
 /* Swap, force into registers, or otherwise massage the two operands
@@ -17170,7 +17169,7 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
 
 /* Expand a floating-point conditional move.  Return true if successful.  */
 
-int
+bool
 ix86_expand_fp_movcc (rtx operands[])
 {
   enum machine_mode mode = GET_MODE (operands[0]);
@@ -17190,20 +17189,20 @@ ix86_expand_fp_movcc (rtx operands[])
       if (cmode == VOIDmode)
 	cmode = GET_MODE (op1);
       if (cmode != mode)
-	return 0;
+	return false;
 
       code = ix86_prepare_sse_fp_compare_args (operands[0], code, &op0, &op1);
       if (code == UNKNOWN)
-	return 0;
+	return false;
 
       if (ix86_expand_sse_fp_minmax (operands[0], code, op0, op1,
 				     operands[2], operands[3]))
-	return 1;
+	return true;
 
       tmp = ix86_expand_sse_cmp (operands[0], code, op0, op1,
 				 operands[2], operands[3]);
       ix86_expand_sse_movcc (operands[0], tmp, operands[2], operands[3]);
-      return 1;
+      return true;
     }
 
   /* The floating point conditional move instructions don't directly
@@ -17222,7 +17221,7 @@ ix86_expand_fp_movcc (rtx operands[])
 			  gen_rtx_IF_THEN_ELSE (mode, compare_op,
 						operands[2], operands[3])));
 
-  return 1;
+  return true;
 }
 
 /* Expand a floating-point vector conditional move; a vcond operation
@@ -17477,7 +17476,7 @@ ix86_expand_sse4_unpack (rtx operands[2], bool unsigned_p, bool high_p)
 /* Expand conditional increment or decrement using adb/sbb instructions.
    The default case using setcc followed by the conditional move can be
    done by generic code.  */
-int
+bool
 ix86_expand_int_addcc (rtx operands[])
 {
   enum rtx_code code = GET_CODE (operands[1]);
@@ -17492,9 +17491,9 @@ ix86_expand_int_addcc (rtx operands[])
 
   if (operands[3] != const1_rtx
       && operands[3] != constm1_rtx)
-    return 0;
+    return false;
   if (!ix86_expand_carry_flag_compare (code, op0, op1, &compare_op))
-     return 0;
+     return false;
   code = GET_CODE (compare_op);
 
   flags = XEXP (compare_op, 0);
@@ -17562,7 +17561,7 @@ ix86_expand_int_addcc (rtx operands[])
     }
   emit_insn (insn (operands[0], operands[2], val, flags, compare_op));
 
-  return 1; /* DONE */
+  return true;
 }
 
 
@@ -19269,7 +19268,7 @@ smallest_pow2_greater_than (int val)
    4) Epilogue: code copying tail of the block that is too small to be
       handled by main body (or up to size guarded by prologue guard).  */
 
-int
+bool
 ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 		    rtx expected_align_exp, rtx expected_size_exp)
 {
@@ -19305,7 +19304,7 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 
   /* Make sure we don't need to care about overflow later on.  */
   if (count > ((unsigned HOST_WIDE_INT) 1 << 30))
-    return 0;
+    return false;
 
   /* Step 0: Decide on preferred algorithm, desired alignment and
      size of chunks to be copied by main loop.  */
@@ -19317,7 +19316,7 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
     align = desired_align;
 
   if (alg == libcall)
-    return 0;
+    return false;
   gcc_assert (alg != no_stringop);
   if (!count)
     count_exp = copy_to_mode_reg (GET_MODE (count_exp), count_exp);
@@ -19563,7 +19562,7 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 			    epilogue_size_needed);
   if (jump_around_label)
     emit_label (jump_around_label);
-  return 1;
+  return true;
 }
 
 /* Helper function for memcpy.  For QImode value 0xXY produce
@@ -19662,7 +19661,7 @@ promote_duplicated_reg_to_size (rtx val, int size_needed, int desired_align, int
 /* Expand string clear operation (bzero).  Use i386 string operations when
    profitable.  See expand_movmem comment for explanation of individual
    steps performed.  */
-int
+bool
 ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
 		    rtx expected_align_exp, rtx expected_size_exp)
 {
@@ -19694,7 +19693,7 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
 
   /* Make sure we don't need to care about overflow later on.  */
   if (count > ((unsigned HOST_WIDE_INT) 1 << 30))
-    return 0;
+    return false;
 
   /* Step 0: Decide on preferred algorithm, desired alignment and
      size of chunks to be copied by main loop.  */
@@ -19706,7 +19705,7 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
     align = desired_align;
 
   if (alg == libcall)
-    return 0;
+    return false;
   gcc_assert (alg != no_stringop);
   if (!count)
     count_exp = copy_to_mode_reg (counter_mode (count_exp), count_exp);
@@ -19952,7 +19951,7 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
     }
   if (jump_around_label)
     emit_label (jump_around_label);
-  return 1;
+  return true;
 }
 
 /* Expand the appropriate insns for doing strlen if not just doing
@@ -20130,7 +20129,7 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
 
 /* Expand strlen.  */
 
-int
+bool
 ix86_expand_strlen (rtx out, rtx src, rtx eoschar, rtx align)
 {
   rtx addr, scratch1, scratch2, scratch3, scratch4;
@@ -20142,7 +20141,7 @@ ix86_expand_strlen (rtx out, rtx src, rtx eoschar, rtx align)
       && !TARGET_INLINE_ALL_STRINGOPS
       && !optimize_insn_for_size_p ()
       && (!CONST_INT_P (align) || INTVAL (align) < 4))
-    return 0;
+    return false;
 
   addr = force_reg (Pmode, XEXP (src, 0));
   scratch1 = gen_reg_rtx (Pmode);
@@ -20191,7 +20190,7 @@ ix86_expand_strlen (rtx out, rtx src, rtx eoschar, rtx align)
       emit_insn (ix86_gen_one_cmpl2 (scratch2, scratch1));
       emit_insn (ix86_gen_add3 (out, scratch2, constm1_rtx));
     }
-  return 1;
+  return true;
 }
 
 /* For given symbol (function) construct code to compute address of it's PLT
@@ -26267,9 +26266,9 @@ ix86_class_likely_spilled_p (reg_class_t rclass)
    When STRICT is false, we are being called from REGISTER_MOVE_COST, so do not
    enforce these sanity checks.  */
 
-static inline int
+static inline bool
 inline_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
-			      enum machine_mode mode, int strict)
+				enum machine_mode mode, int strict)
 {
   if (MAYBE_FLOAT_CLASS_P (class1) != FLOAT_CLASS_P (class1)
       || MAYBE_FLOAT_CLASS_P (class2) != FLOAT_CLASS_P (class2)
@@ -26310,7 +26309,7 @@ inline_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
   return false;
 }
 
-int
+bool
 ix86_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
 			      enum machine_mode mode, int strict)
 {

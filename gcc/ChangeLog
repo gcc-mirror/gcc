@@ -1,3 +1,23 @@
+2010-09-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-protos.h (ix86_can_use_return_insn_p,
+	symbolic_reference_mentioned_p, ix86_expand_movmem, ix86_expand_setmem,
+	ix86_expand_strlen, legitimate_pic_address_disp_p,
+	ix86_binary_operator_ok, ix86_unary_operator_ok, ix86_match_ccmode,
+	ix86_expand_int_movcc, ix86_expand_fp_movcc, ix86_expand_int_addcc,
+	ix86_check_movabs, ix86_secondary_memory_needed): Change function
+	prototype to bool.
+	* config/i386/i386.c (return_in_memory_32, return_in_memory_64,
+	return_in_memory_ms_64, ix86_check_movabs,
+	symbolic_reference_mentioned_p, ix86_can_use_return_insn_p,
+	legitimate_pic_address_disp_p, ix86_binary_operator_ok,
+	ix86_unary_operator_ok, ix86_match_ccmode, ix86_expand_int_movcc,
+	ix86_expand_fp_movcc, ix86_expand_int_addcc, ix86_expand_movmem,
+	ix86_expand_setmem, ix86_expand_strlen, inline_secondary_memory_needed,
+	ix86_secondary_memory_needed): Change to bool.  Return
+	"true" and "false" values.
+	* config/i386/i386.md: Return "true" and "false" values.
+
 2010-09-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/sourcebuild.texi (Effective-Target Keywords): Document
@@ -5,8 +25,7 @@
 
 2010-09-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	* toplev.c (output_stack_usage): Use lbasename instead of
-	basename.
+	* toplev.c (output_stack_usage): Use lbasename instead of basename.
 
 2010-09-08  Martin Jambor  <mjambor@suse.cz>
 
@@ -47,8 +66,7 @@
 2010-09-08  Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (TYPE_ORIG_SIZE_TYPE): Remove.
-	* c-typeck.c (comptypes_internal): Remove TYPE_ORIG_SIZE_TYPE
-	checks.
+	* c-typeck.c (comptypes_internal): Remove TYPE_ORIG_SIZE_TYPE checks.
 
 2010-09-08  Arnaud Charlet  <charlet@adacore.com>
 
@@ -56,6 +74,7 @@
 	* c-parser.c (c_parser_enum_specifier): Adjust call to build_enumerator.
 
 2010-09-08  Kenneth Zadeck <zadeck@naturalbridge.com>
+
 	PR doc/45587
 	* doc/md.texi: Fixed modes on several standard pattern names.
 
@@ -83,14 +102,15 @@
 
 2010-09-07  Richard Henderson  <rth@redhat.com>
 
-	* final.c (rest_of_handle_final): Unconditionally do 
+	* final.c (rest_of_handle_final): Unconditionally do
 	output_function_exception_table before assemble_end_function.
 
 2010-09-07  Jan Hubicka  <jh@suse.cz>
 
-	* tree-inline.c (tree_inlinable_function_p): Do not test DECL_REPLACEABLE_P.
-	* ipa-inline.c (cgraph_default_inline_p, update_caller_keys, update_callee_keys,
-	cgraph_decide_inlining): Test function availability.
+	* tree-inline.c (tree_inlinable_function_p): Do not test
+	DECL_REPLACEABLE_P.
+	* ipa-inline.c (cgraph_default_inline_p, update_caller_keys,
+	update_callee_keys, cgraph_decide_inlining): Test function availability.
 	* cif-code.def (OVERWRITABLE): New code.
 
 2010-09-07  H.J. Lu  <hjl.tools@gmail.com>
