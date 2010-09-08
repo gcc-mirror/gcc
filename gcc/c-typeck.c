@@ -1038,17 +1038,6 @@ comptypes_internal (const_tree type1, const_tree type2, bool *enum_and_int_p,
       || TREE_CODE (t1) == ERROR_MARK || TREE_CODE (t2) == ERROR_MARK)
     return 1;
 
-  /* If either type is the internal version of sizetype, return the
-     language version.  */
-  if (TREE_CODE (t1) == INTEGER_TYPE && TYPE_IS_SIZETYPE (t1)
-      && TYPE_ORIG_SIZE_TYPE (t1))
-    t1 = TYPE_ORIG_SIZE_TYPE (t1);
-
-  if (TREE_CODE (t2) == INTEGER_TYPE && TYPE_IS_SIZETYPE (t2)
-      && TYPE_ORIG_SIZE_TYPE (t2))
-    t2 = TYPE_ORIG_SIZE_TYPE (t2);
-
-
   /* Enumerated types are compatible with integer types, but this is
      not transitive: two enumerated types in the same translation unit
      are compatible with each other only if they are the same type.  */

@@ -1,3 +1,9 @@
+2010-09-08  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (TYPE_ORIG_SIZE_TYPE): Remove.
+	* c-typeck.c (comptypes_internal): Remove TYPE_ORIG_SIZE_TYPE
+	checks.
+
 2010-09-08  Arnaud Charlet  <charlet@adacore.com>
 
 	* c-tree.h, c-decl.c (build_enumerator): Add location parameter.
