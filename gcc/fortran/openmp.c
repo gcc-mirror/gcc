@@ -1516,7 +1516,8 @@ resolve_omp_do (gfc_code *code)
 	  break;
 	}
       do_code = do_code->next;
-      if (do_code->op != EXEC_DO && do_code->op != EXEC_DO_WHILE)
+      if (do_code == NULL
+	  || (do_code->op != EXEC_DO && do_code->op != EXEC_DO_WHILE))
 	{
 	  gfc_error ("not enough DO loops for collapsed !$OMP DO at %L",
 		     &code->loc);
