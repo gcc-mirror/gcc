@@ -1,3 +1,18 @@
+2010-09-08  Mingjie Xing  <mingjie.xing@gmail.com>
+
+	* config/mips/loongson.md (loongson_psll<V_suffix>): Rename to...
+	(ashl<mode>3): ...this.
+	(loongson_psra<V_suffix>): Rename to...
+	(ashr<mode>3): ...this.
+	(loongson_psrl<V_suffix>): Rename to...
+	(lshr<mode>3): ...this.
+	* config/mips/mips.c (CODE_FOR_loongson_psllh): Define.
+	(CODE_FOR_loongson_psllw): Define.
+	(CODE_FOR_loongson_psrlh): Define.
+	(CODE_FOR_loongson_psrlw): Define.
+	(CODE_FOR_loongson_psrah): Define.
+	(CODE_FOR_loongson_psraw): Define.
+
 2010-09-07  Richard Henderson  <rth@redhat.com>
 
 	* tree-vect-data-refs.c: Include tm_p.h.

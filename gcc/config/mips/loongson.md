@@ -411,7 +411,7 @@
   [(set_attr "type" "fmul")])
 
 ;; Shift left logical.
-(define_insn "loongson_psll<V_suffix>"
+(define_insn "ashl<mode>3"
   [(set (match_operand:VWH 0 "register_operand" "=f")
         (ashift:VWH (match_operand:VWH 1 "register_operand" "f")
 		    (match_operand:SI 2 "register_operand" "f")))]
@@ -420,7 +420,7 @@
   [(set_attr "type" "fmul")])
 
 ;; Shift right arithmetic.
-(define_insn "loongson_psra<V_suffix>"
+(define_insn "ashr<mode>3"
   [(set (match_operand:VWH 0 "register_operand" "=f")
         (ashiftrt:VWH (match_operand:VWH 1 "register_operand" "f")
 		      (match_operand:SI 2 "register_operand" "f")))]
@@ -429,7 +429,7 @@
   [(set_attr "type" "fdiv")])
 
 ;; Shift right logical.
-(define_insn "loongson_psrl<V_suffix>"
+(define_insn "lshr<mode>3"
   [(set (match_operand:VWH 0 "register_operand" "=f")
         (lshiftrt:VWH (match_operand:VWH 1 "register_operand" "f")
 		      (match_operand:SI 2 "register_operand" "f")))]
