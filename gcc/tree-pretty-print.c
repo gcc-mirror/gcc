@@ -809,8 +809,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 		== TYPE_MODE (TREE_TYPE (TREE_OPERAND (node, 1))))
 	    && (TYPE_REF_CAN_ALIAS_ALL (TREE_TYPE (TREE_OPERAND (node, 0)))
 		== TYPE_REF_CAN_ALIAS_ALL (TREE_TYPE (TREE_OPERAND (node, 1))))
-	    && (TYPE_QUALS (TREE_TYPE (TREE_OPERAND (node, 0)))
-		== TYPE_QUALS (TREE_TYPE (TREE_OPERAND (node, 1))))
+	    && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (node, 0)))
+		== TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (node, 1))))
 	    /* Same value types ignoring qualifiers.  */
 	    && (TYPE_MAIN_VARIANT (TREE_TYPE (node))
 		== TYPE_MAIN_VARIANT
@@ -829,9 +829,12 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  }
 	else
 	  {
+	    tree ptype;
+
 	    pp_string (buffer, "MEM[");
 	    pp_string (buffer, "(");
-	    dump_generic_node (buffer, TREE_TYPE (TREE_OPERAND (node, 1)),
+	    ptype = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (node, 1)));
+	    dump_generic_node (buffer, ptype,
 			       spc, flags | TDF_SLIM, false);
 	    pp_string (buffer, ")");
 	    dump_generic_node (buffer, TREE_OPERAND (node, 0),
@@ -1170,8 +1173,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 		      == TYPE_MODE (TREE_TYPE (TREE_OPERAND (op0, 1))))
 		  && (TYPE_REF_CAN_ALIAS_ALL (TREE_TYPE (TREE_OPERAND (op0, 0)))
 		      == TYPE_REF_CAN_ALIAS_ALL (TREE_TYPE (TREE_OPERAND (op0, 1))))
-		  && (TYPE_QUALS (TREE_TYPE (TREE_OPERAND (op0, 0)))
-		      == TYPE_QUALS (TREE_TYPE (TREE_OPERAND (op0, 1))))
+		  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (op0, 0)))
+		      == TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (op0, 1))))
 		  /* Same value types ignoring qualifiers.  */
 		  && (TYPE_MAIN_VARIANT (TREE_TYPE (op0))
 		      == TYPE_MAIN_VARIANT
