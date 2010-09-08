@@ -1,5 +1,10 @@
 2010-09-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	run_expensive_tests.
+
+2010-09-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* toplev.c (output_stack_usage): Use lbasename instead of
 	basename.
 
