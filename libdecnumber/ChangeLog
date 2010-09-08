@@ -1,3 +1,13 @@
+2010-09-08  Tristan Gingold  <gingold@adacore.com>
+
+	PR 44001
+	* Makefile.in (objext): New variable.
+	(bid_OBJS): Use $(objext) for extension.
+	(libdecnumber_a_OBJS): Ditto.
+	(mostlyclean): Ditto
+	(.c.o): Ditto.
+	Update dependencies.
+
 2010-09-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/45524
