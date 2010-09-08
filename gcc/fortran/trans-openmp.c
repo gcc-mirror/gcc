@@ -1386,8 +1386,8 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
 
   /* Put these labels where they can be found later.  */
 
-  code->block->cycle_label = cycle_label;
-  code->block->exit_label = NULL_TREE;
+  code->cycle_label = cycle_label;
+  code->exit_label = NULL_TREE;
 
   /* Main loop body.  */
   tmp = gfc_trans_omp_code (code->block->next, true);
