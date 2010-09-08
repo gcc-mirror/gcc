@@ -5776,7 +5776,8 @@ invoking @option{-O2} on programs that use computed gotos.
 Optimize yet more.  @option{-O3} turns on all optimizations specified
 by @option{-O2} and also turns on the @option{-finline-functions},
 @option{-funswitch-loops}, @option{-fpredictive-commoning},
-@option{-fgcse-after-reload} and @option{-ftree-vectorize} options.
+@option{-fgcse-after-reload}, @option{-ftree-vectorize} and
+@option{-fipa-cp-clone} options.
 
 @item -O0
 @opindex O0
