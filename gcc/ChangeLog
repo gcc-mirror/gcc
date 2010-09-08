@@ -1,3 +1,9 @@
+2010-09-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR other/45443
+	* doc/invoke.texi: Add -fipa-cp-clone to list of switches turned on
+	at -O3.
+
 2010-09-08  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (gimple_types, type_hash_cache): Move to GC memory.
