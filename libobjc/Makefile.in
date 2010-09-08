@@ -167,7 +167,11 @@ runtime-info.h:
 	rm -f tmp-runtime.m tmp-runtime.s
 
 archive_gc.lo: archive.c
-	$(LIBTOOL_COMPILE) $(CC) -c  -o $@ $(ALL_CFLAGS) $(OBJC_GCFLAGS) \
+	$(LIBTOOL_COMPILE) $(CC) -Wno-deprecated-declarations -c -o $@ $(ALL_CFLAGS) \
+		$(OBJC_GCFLAGS) $(INCLUDES) $<
+
+archive.lo: archive.c
+	$(LIBTOOL_COMPILE) $(CC) -Wno-deprecated-declarations -c $(ALL_CFLAGS) \
 		$(INCLUDES) $<
 
 class_gc.lo: class.c
@@ -217,13 +221,15 @@ NXConstStr_gc.lo: NXConstStr.m
 	$(LIBTOOL_COMPILE) $(CC) -fgnu-runtime -c -o $@ $(ALL_CFLAGS) \
 		$(OBJC_GCFLAGS) $(INCLUDES) $<
 
+# -Wno-deprecated-declarations is for the objc/typedstream.h functions.
 Object.lo: Object.m
-	$(LIBTOOL_COMPILE) $(CC) -fgnu-runtime -c -o $@ $(ALL_CFLAGS) \
-		$(INCLUDES) $<
+	$(LIBTOOL_COMPILE) $(CC) -fgnu-runtime -Wno-deprecated-declarations \
+		-c -o $@ $(ALL_CFLAGS) $(INCLUDES) $<
 
+# -Wno-deprecated-declarations is for the objc/typedstream.h functions.
 Object_gc.lo: Object.m
-	$(LIBTOOL_COMPILE) $(CC) -fgnu-runtime -c -o $@ $(ALL_CFLAGS) \
-		$(OBJC_GCFLAGS) $(INCLUDES) $<
+	$(LIBTOOL_COMPILE) $(CC) -fgnu-runtime -Wno-deprecated-declarations \
+		-c -o $@ $(ALL_CFLAGS) $(OBJC_GCFLAGS) $(INCLUDES) $<
 
 objects_gc.lo: objects.c
 	$(LIBTOOL_COMPILE) $(CC) -c $(ALL_CFLAGS) -o $@ $(OBJC_GCFLAGS) \

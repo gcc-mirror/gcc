@@ -26,6 +26,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef __typedstream_INCLUDE_GNU
 #define __typedstream_INCLUDE_GNU
 
+/* The API in this file was entirely deprecated in GCC 4.6.0 and will
+   be removed in the following GCC release.
+*/
+
 #include "objc.h"
 #include "hash.h"
 
@@ -94,16 +98,16 @@ typedef struct objc_typed_stream {
 ** arguments are pointers to the objects to read/write.  
 */
 
-int objc_write_type (TypedStream* stream, const char* type, const void* data);
-int objc_read_type (TypedStream* stream, const char* type, void* data);
+int objc_write_type (TypedStream* stream, const char* type, const void* data) __attribute__ ((deprecated));
+int objc_read_type (TypedStream* stream, const char* type, void* data) __attribute__ ((deprecated));
 
-int objc_write_types (TypedStream* stream, const char* type, ...);
-int objc_read_types (TypedStream* stream, const char* type, ...);
+int objc_write_types (TypedStream* stream, const char* type, ...) __attribute__ ((deprecated));
+int objc_read_types (TypedStream* stream, const char* type, ...) __attribute__ ((deprecated));
 
-int objc_write_object_reference (TypedStream* stream, id object);
-int objc_write_root_object (TypedStream* stream, id object);
+int objc_write_object_reference (TypedStream* stream, id object) __attribute__ ((deprecated));
+int objc_write_root_object (TypedStream* stream, id object) __attribute__ ((deprecated));
 
-long objc_get_stream_class_version (TypedStream* stream, Class class_type);
+long objc_get_stream_class_version (TypedStream* stream, Class class_type) __attribute__ ((deprecated));
 
 
 /*
@@ -111,12 +115,12 @@ long objc_get_stream_class_version (TypedStream* stream, Class class_type);
 */
 
 int objc_write_array (TypedStream* stream, const char* type,
-		      int count, const void* data);
+		      int count, const void* data) __attribute__ ((deprecated));
 int objc_read_array (TypedStream* stream, const char* type,
-		     int count, void* data);
+		     int count, void* data) __attribute__ ((deprecated));
 
-int objc_write_object (TypedStream* stream, id object);
-int objc_read_object (TypedStream* stream, id* object);
+int objc_write_object (TypedStream* stream, id object) __attribute__ ((deprecated));
+int objc_read_object (TypedStream* stream, id* object) __attribute__ ((deprecated));
 
 
 
@@ -125,13 +129,13 @@ int objc_read_object (TypedStream* stream, id* object);
 ** OBJC_READONLY or OBJC_WRITEONLY.  
 */
 
-TypedStream* objc_open_typed_stream (FILE* physical, int mode);
-TypedStream* objc_open_typed_stream_for_file (const char* file_name, int mode);
+TypedStream* objc_open_typed_stream (FILE* physical, int mode) __attribute__ ((deprecated));
+TypedStream* objc_open_typed_stream_for_file (const char* file_name, int mode) __attribute__ ((deprecated));
 
-void objc_close_typed_stream (TypedStream* stream);
+void objc_close_typed_stream (TypedStream* stream) __attribute__ ((deprecated));
 
-BOOL objc_end_of_typed_stream (TypedStream* stream);
-void objc_flush_typed_stream (TypedStream* stream);
+BOOL objc_end_of_typed_stream (TypedStream* stream) __attribute__ ((deprecated));
+void objc_flush_typed_stream (TypedStream* stream) __attribute__ ((deprecated));
 
 #ifdef __cplusplus
 }
