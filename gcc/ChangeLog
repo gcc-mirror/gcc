@@ -1,3 +1,8 @@
+2010-09-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR other/18555
+	* doc/cppopts.texi (-isysroot): Document Darwin behaviour. 
+
 2010-09-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386-protos.h (ix86_can_use_return_insn_p,
