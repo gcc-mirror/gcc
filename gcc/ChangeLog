@@ -1,5 +1,13 @@
 2010-09-08  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/45578
+	* tree-ssa-loop-ivopts.c (rewrite_use_nonlinear_expr):
+	Be more careful when transfering alignment information to
+	the new induction variable.
+	(copy_ref_info): Likewise.
+
+2010-09-08  Richard Guenther  <rguenther@suse.de>
+
 	* tree.h (TYPE_ORIG_SIZE_TYPE): Remove.
 	* c-typeck.c (comptypes_internal): Remove TYPE_ORIG_SIZE_TYPE
 	checks.

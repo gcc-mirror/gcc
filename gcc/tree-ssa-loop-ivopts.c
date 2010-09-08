@@ -5863,7 +5863,16 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
       comp = force_gimple_operand_gsi (&bsi, comp, true, NULL_TREE,
 				       true, GSI_SAME_STMT);
       if (POINTER_TYPE_P (TREE_TYPE (tgt)))
-	duplicate_ssa_name_ptr_info (comp, SSA_NAME_PTR_INFO (tgt));
+	{
+	  duplicate_ssa_name_ptr_info (comp, SSA_NAME_PTR_INFO (tgt));
+	  /* As this isn't a plain copy we have to reset alignment
+	     information.  */
+	  if (SSA_NAME_PTR_INFO (comp))
+	    {
+	      SSA_NAME_PTR_INFO (comp)->align = BITS_PER_UNIT;
+	      SSA_NAME_PTR_INFO (comp)->misalign = 0;
+	    }
+	}
     }
 
   if (gimple_code (use->stmt) == GIMPLE_PHI)
@@ -5891,26 +5900,44 @@ copy_ref_info (tree new_ref, tree old_ref)
   TREE_SIDE_EFFECTS (new_ref) = TREE_SIDE_EFFECTS (old_ref);
   TREE_THIS_VOLATILE (new_ref) = TREE_THIS_VOLATILE (old_ref);
 
-  if (TREE_CODE (new_ref) == TARGET_MEM_REF)
-    new_ptr_base = TMR_BASE (new_ref);
-  else if (TREE_CODE (new_ref) == MEM_REF)
-    new_ptr_base = TREE_OPERAND (new_ref, 0);
+  new_ptr_base = TREE_OPERAND (new_ref, 0);
 
   /* We can transfer points-to information from an old pointer
      or decl base to the new one.  */
   if (new_ptr_base
       && TREE_CODE (new_ptr_base) == SSA_NAME
-      && POINTER_TYPE_P (TREE_TYPE (new_ptr_base))
       && !SSA_NAME_PTR_INFO (new_ptr_base))
     {
       tree base = get_base_address (old_ref);
       if (!base)
 	;
-      else if ((INDIRECT_REF_P (base)
-		|| TREE_CODE (base) == MEM_REF)
-	       && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
-	duplicate_ssa_name_ptr_info
-	  (new_ptr_base, SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0)));
+      else if ((TREE_CODE (base) == MEM_REF
+		|| TREE_CODE (base) == TARGET_MEM_REF)
+	       && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME
+	       && SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0)))
+	{
+	  struct ptr_info_def *new_pi;
+	  duplicate_ssa_name_ptr_info
+	    (new_ptr_base, SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0)));
+	  new_pi = SSA_NAME_PTR_INFO (new_ptr_base);
+	  /* We have to be careful about transfering alignment information.  */
+	  if (TREE_CODE (old_ref) == MEM_REF
+	      && !(TREE_CODE (new_ref) == TARGET_MEM_REF
+		   && (TMR_INDEX2 (new_ref)
+		       || (TMR_STEP (new_ref)
+			   && (TREE_INT_CST_LOW (TMR_STEP (new_ref))
+			       < new_pi->align)))))
+	    {
+	      new_pi->misalign += double_int_sub (mem_ref_offset (old_ref),
+						  mem_ref_offset (new_ref)).low;
+	      new_pi->misalign &= (new_pi->align - 1);
+	    }
+	  else
+	    {
+	      new_pi->align = BITS_PER_UNIT;
+	      new_pi->misalign = 0;
+	    }
+	}
       else if (TREE_CODE (base) == VAR_DECL
 	       || TREE_CODE (base) == PARM_DECL
 	       || TREE_CODE (base) == RESULT_DECL)
