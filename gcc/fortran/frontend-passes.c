@@ -225,8 +225,12 @@ optimize_code_node (gfc_code *c)
     case EXEC_OMP_TASK:
     case EXEC_OMP_TASKWAIT:
     case EXEC_OMP_WORKSHARE:
+    case EXEC_OMP_END_NOWAIT:
+    case EXEC_OMP_END_SINGLE:
     case EXEC_DEALLOCATE:
-      
+    case EXEC_DT_END:
+      for (d = c->block; d; d = d->block)
+	optimize_code (d->next);
       break;
 
     default:
