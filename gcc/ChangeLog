@@ -1,3 +1,8 @@
+2010-09-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* toplev.c (output_stack_usage): Use lbasename instead of
+	basename.
+
 2010-09-08  Martin Jambor  <mjambor@suse.cz>
 
 	PR other/45443
