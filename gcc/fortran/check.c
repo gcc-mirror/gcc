@@ -299,11 +299,11 @@ nonnegative_check (const char *arg, gfc_expr *expr)
 
 
 /* If expr2 is constant, then check that the value is less than
-   bit_size(expr1).  */
+   (less than or equal to, if 'or_equal' is true) bit_size(expr1).  */
 
 static gfc_try
 less_than_bitsize1 (const char *arg1, gfc_expr *expr1, const char *arg2,
-	       gfc_expr *expr2)
+		    gfc_expr *expr2, bool or_equal)
 {
   int i2, i3;
 
@@ -311,12 +311,50 @@ less_than_bitsize1 (const char *arg1, gfc_expr *expr1, const char *arg2,
     {
       gfc_extract_int (expr2, &i2);
       i3 = gfc_validate_kind (BT_INTEGER, expr1->ts.kind, false);
-      if (i2 >= gfc_integer_kinds[i3].bit_size)
+      if (or_equal)
 	{
-	  gfc_error ("'%s' at %L must be less than BIT_SIZE('%s')",
-		     arg2, &expr2->where, arg1);
-	  return FAILURE;
+	  if (i2 > gfc_integer_kinds[i3].bit_size)
+	    {
+	      gfc_error ("'%s' at %L must be less than "
+			 "or equal to BIT_SIZE('%s')",
+			 arg2, &expr2->where, arg1);
+	      return FAILURE;
+	    }
 	}
+      else
+	{
+	  if (i2 >= gfc_integer_kinds[i3].bit_size)
+	    {
+	      gfc_error ("'%s' at %L must be less than BIT_SIZE('%s')",
+			 arg2, &expr2->where, arg1);
+	      return FAILURE;
+	    }
+	}
+    }
+
+  return SUCCESS;
+}
+
+
+/* If expr is constant, then check that the value is less than or equal
+   to the bit_size of the kind k.  */
+
+static gfc_try
+less_than_bitsizekind (const char *arg, gfc_expr *expr, int k)
+{
+  int i, val;
+
+  if (expr->expr_type != EXPR_CONSTANT)
+    return SUCCESS;
+ 
+  i = gfc_validate_kind (BT_INTEGER, k, false);
+  gfc_extract_int (expr, &val);
+
+  if (val > gfc_integer_kinds[i].bit_size)
+    {
+      gfc_error ("'%s' at %L must be less than or equal to the BIT_SIZE of "
+		 "INTEGER(KIND=%d)", arg, &expr->where, k);
+      return FAILURE;
     }
 
   return SUCCESS;
@@ -929,6 +967,19 @@ gfc_check_bessel_n2 (gfc_expr *n1, gfc_expr *n2, gfc_expr *x)
 
 
 gfc_try
+gfc_check_bge_bgt_ble_blt (gfc_expr *i, gfc_expr *j)
+{
+  if (type_check (i, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (type_check (j, 1, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+gfc_try
 gfc_check_bitfcn (gfc_expr *i, gfc_expr *pos)
 {
   if (type_check (i, 0, BT_INTEGER) == FAILURE)
@@ -940,7 +991,7 @@ gfc_check_bitfcn (gfc_expr *i, gfc_expr *pos)
   if (nonnegative_check ("pos", pos) == FAILURE)
     return FAILURE;
 
-  if (less_than_bitsize1 ("i", i, "pos", pos) == FAILURE)
+  if (less_than_bitsize1 ("i", i, "pos", pos, false) == FAILURE)
     return FAILURE;
 
   return SUCCESS;
@@ -1311,6 +1362,31 @@ gfc_check_dprod (gfc_expr *x, gfc_expr *y)
 		 gfc_current_intrinsic, &y->where);
       return FAILURE;
     }
+
+  return SUCCESS;
+}
+
+
+gfc_try
+gfc_check_dshift (gfc_expr *i, gfc_expr *j, gfc_expr *shift)
+{
+  if (type_check (i, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (type_check (j, 1, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (same_type_check (i, 0, j, 1) == FAILURE)
+    return FAILURE;
+
+  if (type_check (shift, 2, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (nonnegative_check ("SHIFT", shift) == FAILURE)
+    return FAILURE;
+
+  if (less_than_bitsize1 ("I", i, "SHIFT", shift, true) == FAILURE)
+    return FAILURE;
 
   return SUCCESS;
 }
@@ -2356,6 +2432,32 @@ gfc_check_product_sum (gfc_actual_arglist *ap)
 /* For IANY, IALL and IPARITY.  */
 
 gfc_try
+gfc_check_mask (gfc_expr *i, gfc_expr *kind)
+{
+  int k;
+
+  if (type_check (i, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (nonnegative_check ("I", i) == FAILURE)
+    return FAILURE;
+
+  if (kind_check (kind, 1, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (kind)
+    gfc_extract_int (kind, &k);
+  else
+    k = gfc_default_integer_kind;
+
+  if (less_than_bitsizekind ("I", i, k) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+gfc_try
 gfc_check_transf_bit_intrins (gfc_actual_arglist *ap)
 {
   if (ap->expr->ts.type != BT_INTEGER)
@@ -2384,6 +2486,28 @@ gfc_check_merge (gfc_expr *tsource, gfc_expr *fsource, gfc_expr *mask)
 
   if (tsource->ts.type == BT_CHARACTER)
     return gfc_check_same_strlen (tsource, fsource, "MERGE intrinsic");
+
+  return SUCCESS;
+}
+
+
+gfc_try
+gfc_check_merge_bits (gfc_expr *i, gfc_expr *j, gfc_expr *mask)
+{
+  if (type_check (i, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (type_check (j, 1, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (type_check (mask, 2, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (same_type_check (i, 0, j, 1) == FAILURE)
+    return FAILURE;
+
+  if (same_type_check (i, 0, mask, 2) == FAILURE)
+    return FAILURE;
 
   return SUCCESS;
 }
@@ -3112,6 +3236,25 @@ gfc_check_shape (gfc_expr *source)
 		 "an assumed size array", &source->where);
       return FAILURE;
     }
+
+  return SUCCESS;
+}
+
+
+gfc_try
+gfc_check_shift (gfc_expr *i, gfc_expr *shift)
+{
+  if (type_check (i, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (type_check (shift, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (nonnegative_check ("SHIFT", shift) == FAILURE)
+    return FAILURE;
+
+  if (less_than_bitsize1 ("I", i, "SHIFT", shift, true) == FAILURE)
+    return FAILURE;
 
   return SUCCESS;
 }

@@ -67,7 +67,11 @@ Some basic guidelines for editing this document:
 * @code{BESSEL_Y0}:     BESSEL_Y0, Bessel function of the second kind of order 0
 * @code{BESSEL_Y1}:     BESSEL_Y1, Bessel function of the second kind of order 1
 * @code{BESSEL_YN}:     BESSEL_YN, Bessel function of the second kind
+* @code{BGE}:           BGE,       Bitwise greater than or equal to
+* @code{BGT}:           BGT,       Bitwise greater than
 * @code{BIT_SIZE}:      BIT_SIZE,  Bit size inquiry function
+* @code{BLE}:           BLE,       Bitwise less than or equal to
+* @code{BLT}:           BLT,       Bitwise less than
 * @code{BTEST}:         BTEST,     Bit test function
 * @code{C_ASSOCIATED}:  C_ASSOCIATED, Status of a C pointer
 * @code{C_F_POINTER}:   C_F_POINTER, Convert C into Fortran pointer
@@ -97,6 +101,8 @@ Some basic guidelines for editing this document:
 * @code{DOT_PRODUCT}:   DOT_PRODUCT, Dot product function
 * @code{DPROD}:         DPROD,     Double product function
 * @code{DREAL}:         DREAL,     Double real part function
+* @code{DSHIFTL}:       DSHIFTL,   Combined left shift
+* @code{DSHIFTR}:       DSHIFTR,   Combined right shift
 * @code{DTIME}:         DTIME,     Execution time subroutine (or function)
 * @code{EOSHIFT}:       EOSHIFT,   End-off shift elements of an array
 * @code{EPSILON}:       EPSILON,   Epsilon function
@@ -188,6 +194,8 @@ Some basic guidelines for editing this document:
 * @code{LSTAT}:         LSTAT,     Get file status
 * @code{LTIME}:         LTIME,     Convert time to local time info
 * @code{MALLOC}:        MALLOC,    Dynamic memory allocation function
+* @code{MASKL}:         MASKL,     Left justified mask
+* @code{MASKR}:         MASKR,     Right justified mask
 * @code{MATMUL}:        MATMUL,    matrix multiplication
 * @code{MAX}:           MAX,       Maximum value of an argument list
 * @code{MAXEXPONENT}:   MAXEXPONENT, Maximum exponent of a real kind
@@ -196,6 +204,7 @@ Some basic guidelines for editing this document:
 * @code{MCLOCK}:        MCLOCK,    Time function
 * @code{MCLOCK8}:       MCLOCK8,   Time function (64-bit)
 * @code{MERGE}:         MERGE,     Merge arrays
+* @code{MERGE_BITS}:    MERGE_BITS, Merge of bits under mask
 * @code{MIN}:           MIN,       Minimum value of an argument list
 * @code{MINEXPONENT}:   MINEXPONENT, Minimum exponent of a real kind
 * @code{MINLOC}:        MINLOC,    Location of the minimum value within an array
@@ -242,6 +251,9 @@ Some basic guidelines for editing this document:
 * @code{SELECTED_REAL_KIND}: SELECTED_REAL_KIND,  Choose real kind
 * @code{SET_EXPONENT}:  SET_EXPONENT, Set the exponent of the model
 * @code{SHAPE}:         SHAPE,     Determine the shape of an array
+* @code{SHIFTA}:        SHIFTA,    Right shift with fill
+* @code{SHIFTL}:        SHIFTL,    Left shift
+* @code{SHIFTR}:        SHIFTR,    Right shift
 * @code{SIGN}:          SIGN,      Sign copying function
 * @code{SIGNAL}:        SIGNAL,    Signal handling subroutine (or function)
 * @code{SIN}:           SIN,       Sine function
@@ -1851,6 +1863,75 @@ end program test_besyn
 
 
 
+@node BGE
+@section @code{BGE} --- Bitwise greater than or equal to
+@fnindex BGE
+@cindex bitwise comparison
+
+@table @asis
+@item @emph{Description}:
+Determines whether an integral is a bitwise greater than or equal to
+another.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = BGE(I, J)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{I} @tab Shall be of @code{INTEGER} type.
+@item @var{J} @tab Shall be of @code{INTEGER} type, and of the same kind
+as @var{I}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{LOGICAL} and of the default kind.
+
+@item @emph{See also}:
+@ref{BGT}, @ref{BLE}, @ref{BLT}
+@end table
+
+
+
+@node BGT
+@section @code{BGT} --- Bitwise greater than
+@fnindex BGT
+@cindex bitwise comparison
+
+@table @asis
+@item @emph{Description}:
+Determines whether an integral is a bitwise greater than another.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = BGT(I, J)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{I} @tab Shall be of @code{INTEGER} type.
+@item @var{J} @tab Shall be of @code{INTEGER} type, and of the same kind
+as @var{I}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{LOGICAL} and of the default kind.
+
+@item @emph{See also}:
+@ref{BGE}, @ref{BLE}, @ref{BLT}
+@end table
+
+
+
 @node BIT_SIZE
 @section @code{BIT_SIZE} --- Bit size inquiry function
 @fnindex BIT_SIZE
@@ -1889,6 +1970,75 @@ program test_bit_size
     print *, size
 end program test_bit_size
 @end smallexample
+@end table
+
+
+
+@node BLE
+@section @code{BLE} --- Bitwise less than or equal to
+@fnindex BLE
+@cindex bitwise comparison
+
+@table @asis
+@item @emph{Description}:
+Determines whether an integral is a bitwise less than or equal to
+another.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = BLE(I, J)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{I} @tab Shall be of @code{INTEGER} type.
+@item @var{J} @tab Shall be of @code{INTEGER} type, and of the same kind
+as @var{I}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{LOGICAL} and of the default kind.
+
+@item @emph{See also}:
+@ref{BGT}, @ref{BGE}, @ref{BLT}
+@end table
+
+
+
+@node BLT
+@section @code{BLT} --- Bitwise less than
+@fnindex BLT
+@cindex bitwise comparison
+
+@table @asis
+@item @emph{Description}:
+Determines whether an integral is a bitwise less than another.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = BLT(I, J)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{I} @tab Shall be of @code{INTEGER} type.
+@item @var{J} @tab Shall be of @code{INTEGER} type, and of the same kind
+as @var{I}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{LOGICAL} and of the default kind.
+
+@item @emph{See also}:
+@ref{BGE}, @ref{BGT}, @ref{BLE}
 @end table
 
 
@@ -3419,6 +3569,86 @@ end program test_dreal
 
 @item @emph{See also}:
 @ref{AIMAG}
+
+@end table
+
+
+
+@node DSHIFTL
+@section @code{DSHIFTL} --- Combined left shift
+@fnindex DSHIFTL
+@cindex left shift, combined
+@cindex shift, left
+
+@table @asis
+@item @emph{Description}:
+@code{DSHIFTL(I, J, SHIFT)} combines bits of @var{I} and @var{J}. The
+rightmost @var{SHIFT} bits of the result are the leftmost @var{SHIFT}
+bits of @var{J}, and the remaining bits are the rightmost bits of
+@var{I}.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = DSHIFTL(I, J, SHIFT)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{I} @tab Shall be of type @code{INTEGER}.
+@item @var{J} @tab Shall be of type @code{INTEGER}, and of the same kind
+as @var{I}.
+@item @var{SHIFT} @tab Shall be of type @code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+The return value has same type and kind as @var{I}.
+
+@item @emph{See also}:
+@ref{DSHIFTR}
+
+@end table
+
+
+
+@node DSHIFTR
+@section @code{DSHIFTR} --- Combined right shift
+@fnindex DSHIFTR
+@cindex right shift, combined
+@cindex shift, right
+
+@table @asis
+@item @emph{Description}:
+@code{DSHIFTR(I, J, SHIFT)} combines bits of @var{I} and @var{J}. The
+leftmost @var{SHIFT} bits of the result are the rightmost @var{SHIFT}
+bits of @var{I}, and the remaining bits are the leftmost bits of
+@var{J}.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = DSHIFTR(I, J, SHIFT)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{I} @tab Shall be of type @code{INTEGER}.
+@item @var{J} @tab Shall be of type @code{INTEGER}, and of the same kind
+as @var{I}.
+@item @var{SHIFT} @tab Shall be of type @code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+The return value has same type and kind as @var{I}.
+
+@item @emph{See also}:
+@ref{DSHIFTL}
 
 @end table
 
@@ -7644,7 +7874,8 @@ Bits shifted out from the left end are lost; zeros are shifted in from
 the opposite end.
 
 This function has been superseded by the @code{ISHFT} intrinsic, which
-is standard in Fortran 95 and later.
+is standard in Fortran 95 and later, and the @code{SHIFTL} intrinsic,
+which is standard in Fortran 2008 and later.
 
 @item @emph{Standard}:
 GNU extension
@@ -7666,7 +7897,8 @@ The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
 
 @item @emph{See also}:
-@ref{ISHFT}, @ref{ISHFTC}, @ref{RSHIFT}
+@ref{ISHFT}, @ref{ISHFTC}, @ref{RSHIFT}, @ref{SHIFTA}, @ref{SHIFTL},
+@ref{SHIFTR}
 
 @end table
 
@@ -7825,6 +8057,80 @@ end program test_malloc
 
 @item @emph{See also}:
 @ref{FREE}
+@end table
+
+
+
+@node MASKL
+@section @code{MASKL} --- Left justified mask
+@fnindex MASKL
+@cindex mask, left justified
+
+@table @asis
+@item @emph{Description}:
+@code{MASKL(I[, KIND])} has its leftmost @var{I} bits set to 1, and the
+remaining bits set to 0.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = MASKL(I[, KIND])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{I} @tab Shall be of type @code{INTEGER}.
+@item @var{KIND} @tab Shall be a scalar constant expression of type
+@code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER}. If @var{KIND} is present, it
+specifies the kind value of the return type; otherwise, it is of the
+default integer kind.
+
+@item @emph{See also}:
+@ref{MASKR}
+@end table
+
+
+
+@node MASKR
+@section @code{MASKR} --- Right justified mask
+@fnindex MASKR
+@cindex mask, right justified
+
+@table @asis
+@item @emph{Description}:
+@code{MASKL(I[, KIND])} has its rightmost @var{I} bits set to 1, and the
+remaining bits set to 0.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = MASKR(I[, KIND])}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{I} @tab Shall be of type @code{INTEGER}.
+@item @var{KIND} @tab Shall be a scalar constant expression of type
+@code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER}. If @var{KIND} is present, it
+specifies the kind value of the return type; otherwise, it is of the
+default integer kind.
+
+@item @emph{See also}:
+@ref{MASKL}
 @end table
 
 
@@ -8185,6 +8491,43 @@ as @var{TSOURCE}.
 
 @item @emph{Return value}:
 The result is of the same type and type parameters as @var{TSOURCE}.
+
+@end table
+
+
+
+@node MERGE_BITS
+@section @code{MERGE_BITS} --- Merge of bits under mask
+@fnindex MERGE_BITS
+@cindex bits, merge
+
+@table @asis
+@item @emph{Description}:
+@code{MERGE_BITS(I, J, MASK)} merges the bits of @var{I} and @var{J}
+as determined by the mask.  The i-th bit of the result is equal to the 
+i-th bit of @var{I} if the i-th bit of @var{MASK} is 1; it is equal to
+the i-th bit of @var{J} otherwise.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = MERGE_BITS(I, J, MASK)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{I}    @tab Shall be of type @code{INTEGER}.
+@item @var{J}    @tab Shall be of type @code{INTEGER} and of the same
+kind as @var{I}.
+@item @var{MASK} @tab Shall be of type @code{INTEGER} and of the same
+kind as @var{I}.
+@end multitable
+
+@item @emph{Return value}:
+The result is of the same type and kind as @var{I}.
 
 @end table
 
@@ -9895,8 +10238,8 @@ Bits shifted out from the right end are lost. The fill is arithmetic: the
 bits shifted in from the left end are equal to the leftmost bit, which in
 two's complement representation is the sign bit.
 
-This function has been superseded by the @code{ISHFT} intrinsic, which
-is standard in Fortran 95 and later.
+This function has been superseded by the @code{SHIFTA} intrinsic, which
+is standard in Fortran 2008 and later.
 
 @item @emph{Standard}:
 GNU extension
@@ -9918,7 +10261,8 @@ The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
 
 @item @emph{See also}:
-@ref{ISHFT}, @ref{ISHFTC}, @ref{LSHIFT}
+@ref{ISHFT}, @ref{ISHFTC}, @ref{LSHIFT}, @ref{SHIFTA}, @ref{SHIFTR},
+@ref{SHIFTL}
 
 @end table
 
@@ -10411,6 +10755,124 @@ END PROGRAM
 
 @item @emph{See also}:
 @ref{RESHAPE}, @ref{SIZE}
+@end table
+
+
+
+@node SHIFTA
+@section @code{SHIFTA} --- Right shift with fill
+@fnindex SHIFTA
+@cindex bits, shift right
+@cindex shift, right with fill
+
+@table @asis
+@item @emph{Description}:
+@code{SHIFTA} returns a value corresponding to @var{I} with all of the
+bits shifted right by @var{SHIFT} places.  If the absolute value of
+@var{SHIFT} is greater than @code{BIT_SIZE(I)}, the value is undefined.
+Bits shifted out from the right end are lost. The fill is arithmetic: the
+bits shifted in from the left end are equal to the leftmost bit, which in
+two's complement representation is the sign bit.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = SHIFTA(I, SHIFT)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{I} @tab The type shall be @code{INTEGER}.
+@item @var{SHIFT} @tab The type shall be @code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER} and of the same kind as
+@var{I}.
+
+@item @emph{See also}:
+@ref{SHIFTL}, @ref{SHIFTR}
+@end table
+
+
+
+@node SHIFTL
+@section @code{SHIFTL} --- Left shift
+@fnindex SHIFTL
+@cindex bits, shift left
+@cindex shift, left
+
+@table @asis
+@item @emph{Description}:
+@code{SHIFTL} returns a value corresponding to @var{I} with all of the
+bits shifted left by @var{SHIFT} places.  If the absolute value of
+@var{SHIFT} is greater than @code{BIT_SIZE(I)}, the value is undefined.
+Bits shifted out from the left end are lost, and bits shifted in from
+the right end are set to 0.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = SHIFTL(I, SHIFT)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{I} @tab The type shall be @code{INTEGER}.
+@item @var{SHIFT} @tab The type shall be @code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER} and of the same kind as
+@var{I}.
+
+@item @emph{See also}:
+@ref{SHIFTA}, @ref{SHIFTR}
+@end table
+
+
+
+@node SHIFTR
+@section @code{SHIFTR} --- Right shift
+@fnindex SHIFTR
+@cindex bits, shift right
+@cindex shift, right
+
+@table @asis
+@item @emph{Description}:
+@code{SHIFTR} returns a value corresponding to @var{I} with all of the
+bits shifted right by @var{SHIFT} places.  If the absolute value of
+@var{SHIFT} is greater than @code{BIT_SIZE(I)}, the value is undefined.
+Bits shifted out from the right end are lost, and bits shifted in from
+the left end are set to 0.
+
+@item @emph{Standard}:
+Fortran 2008 and later
+
+@item @emph{Class}:
+Elemental function
+
+@item @emph{Syntax}:
+@code{RESULT = SHIFTR(I, SHIFT)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{I} @tab The type shall be @code{INTEGER}.
+@item @var{SHIFT} @tab The type shall be @code{INTEGER}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER} and of the same kind as
+@var{I}.
+
+@item @emph{See also}:
+@ref{SHIFTA}, @ref{SHIFTL}
 @end table
 
 

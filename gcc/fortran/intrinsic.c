@@ -1392,11 +1392,39 @@ add_functions (void)
 
   make_generic ("bessel_yn", GFC_ISYM_YN, GFC_STD_F2008);
 
+  add_sym_2 ("bge", GFC_ISYM_BGE, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_LOGICAL, dl, GFC_STD_F2008,
+	     gfc_check_bge_bgt_ble_blt, gfc_simplify_bge, NULL,
+	     i, BT_INTEGER, di, REQUIRED, j, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("bge", GFC_ISYM_BGE, GFC_STD_F2008);
+
+  add_sym_2 ("bgt", GFC_ISYM_BGT, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_LOGICAL, dl, GFC_STD_F2008,
+	     gfc_check_bge_bgt_ble_blt, gfc_simplify_bgt, NULL,
+	     i, BT_INTEGER, di, REQUIRED, j, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("bgt", GFC_ISYM_BGT, GFC_STD_F2008);
+
   add_sym_1 ("bit_size", GFC_ISYM_BIT_SIZE, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F95,
 	     gfc_check_i, gfc_simplify_bit_size, NULL,
 	     i, BT_INTEGER, di, REQUIRED);
 
   make_generic ("bit_size", GFC_ISYM_BIT_SIZE, GFC_STD_F95);
+
+  add_sym_2 ("ble", GFC_ISYM_BLE, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_LOGICAL, dl, GFC_STD_F2008,
+	     gfc_check_bge_bgt_ble_blt, gfc_simplify_ble, NULL,
+	     i, BT_INTEGER, di, REQUIRED, j, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("ble", GFC_ISYM_BLE, GFC_STD_F2008);
+
+  add_sym_2 ("blt", GFC_ISYM_BLT, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_LOGICAL, dl, GFC_STD_F2008,
+	     gfc_check_bge_bgt_ble_blt, gfc_simplify_blt, NULL,
+	     i, BT_INTEGER, di, REQUIRED, j, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("blt", GFC_ISYM_BLT, GFC_STD_F2008);
 
   add_sym_2 ("btest", GFC_ISYM_BTEST, CLASS_ELEMENTAL, ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_F95,
 	     gfc_check_bitfcn, gfc_simplify_btest, gfc_resolve_btest,
@@ -1561,10 +1589,28 @@ add_functions (void)
 
   make_generic ("dreal", GFC_ISYM_REAL, GFC_STD_GNU);
 
+  add_sym_3 ("dshiftl", GFC_ISYM_DSHIFTL, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_INTEGER, di, GFC_STD_F2008,
+	     gfc_check_dshift, gfc_simplify_dshiftl, gfc_resolve_dshift,
+	     i, BT_INTEGER, di, REQUIRED,
+	     j, BT_INTEGER, di, REQUIRED,
+	     sh, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("dshiftl", GFC_ISYM_DSHIFTL, GFC_STD_F2008);
+
+  add_sym_3 ("dshiftr", GFC_ISYM_DSHIFTR, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_INTEGER, di, GFC_STD_F2008,
+	     gfc_check_dshift, gfc_simplify_dshiftr, gfc_resolve_dshift,
+	     i, BT_INTEGER, di, REQUIRED,
+	     j, BT_INTEGER, di, REQUIRED,
+	     sh, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("dshiftr", GFC_ISYM_DSHIFTR, GFC_STD_F2008);
+
   add_sym_4 ("eoshift", GFC_ISYM_EOSHIFT, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
 	     gfc_check_eoshift, NULL, gfc_resolve_eoshift,
-	     ar, BT_REAL, dr, 0, sh, BT_INTEGER, ii, REQUIRED,
-	     bd, BT_REAL, dr, 1, dm, BT_INTEGER, ii, OPTIONAL);
+	     ar, BT_REAL, dr, REQUIRED, sh, BT_INTEGER, ii, REQUIRED,
+	     bd, BT_REAL, dr, OPTIONAL, dm, BT_INTEGER, ii, OPTIONAL);
 
   make_generic ("eoshift", GFC_ISYM_EOSHIFT, GFC_STD_F95);
 
@@ -1940,14 +1986,16 @@ add_functions (void)
 
   make_generic ("isnan", GFC_ISYM_ISNAN, GFC_STD_GNU);
 
-  add_sym_2 ("rshift", GFC_ISYM_RSHIFT, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di, GFC_STD_GNU,
-	     gfc_check_ishft, NULL, gfc_resolve_rshift,
+  add_sym_2 ("rshift", GFC_ISYM_RSHIFT, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_INTEGER, di, GFC_STD_GNU,
+	     gfc_check_ishft, gfc_simplify_rshift, gfc_resolve_rshift,
 	     i, BT_INTEGER, di, REQUIRED, sh, BT_INTEGER, di, REQUIRED);
 
   make_generic ("rshift", GFC_ISYM_RSHIFT, GFC_STD_GNU);
 
-  add_sym_2 ("lshift", GFC_ISYM_LSHIFT, CLASS_ELEMENTAL, ACTUAL_NO, BT_INTEGER, di, GFC_STD_GNU,
-	     gfc_check_ishft, NULL, gfc_resolve_lshift,
+  add_sym_2 ("lshift", GFC_ISYM_LSHIFT, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_INTEGER, di, GFC_STD_GNU,
+	     gfc_check_ishft, gfc_simplify_lshift, gfc_resolve_lshift,
 	     i, BT_INTEGER, di, REQUIRED, sh, BT_INTEGER, di, REQUIRED);
 
   make_generic ("lshift", GFC_ISYM_LSHIFT, GFC_STD_GNU);
@@ -2120,6 +2168,22 @@ add_functions (void)
 
   make_generic ("malloc", GFC_ISYM_MALLOC, GFC_STD_GNU);
 
+  add_sym_2 ("maskl", GFC_ISYM_MASKL, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_INTEGER, di, GFC_STD_F2008,
+	     gfc_check_mask, gfc_simplify_maskl, gfc_resolve_mask,
+	     i, BT_INTEGER, di, REQUIRED,
+	     kind, BT_INTEGER, di, OPTIONAL);
+
+  make_generic ("maskl", GFC_ISYM_MASKL, GFC_STD_F2008);
+
+  add_sym_2 ("maskr", GFC_ISYM_MASKR, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_INTEGER, di, GFC_STD_F2008,
+	     gfc_check_mask, gfc_simplify_maskr, gfc_resolve_mask,
+	     i, BT_INTEGER, di, REQUIRED,
+	     kind, BT_INTEGER, di, OPTIONAL);
+
+  make_generic ("maskr", GFC_ISYM_MASKR, GFC_STD_F2008);
+
   add_sym_2 ("matmul", GFC_ISYM_MATMUL, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
 	     gfc_check_matmul, gfc_simplify_matmul, gfc_resolve_matmul,
 	     ma, BT_REAL, dr, REQUIRED, mb, BT_REAL, dr, REQUIRED);
@@ -2191,6 +2255,16 @@ add_functions (void)
 	     msk, BT_LOGICAL, dl, REQUIRED);
 
   make_generic ("merge", GFC_ISYM_MERGE, GFC_STD_F95);
+
+  add_sym_3 ("merge_bits", GFC_ISYM_MERGE_BITS, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_INTEGER, di, GFC_STD_F2008,
+	     gfc_check_merge_bits, gfc_simplify_merge_bits,
+	     gfc_resolve_merge_bits,
+	     i, BT_INTEGER, di, REQUIRED,
+	     j, BT_INTEGER, di, REQUIRED,
+	     msk, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("merge_bits", GFC_ISYM_MERGE_BITS, GFC_STD_F2008);
 
   /* Note: amin0 is equivalent to real(min), min1 is equivalent to
      int(min).  */
@@ -2490,6 +2564,30 @@ add_functions (void)
 	     src, BT_REAL, dr, REQUIRED);
 
   make_generic ("shape", GFC_ISYM_SHAPE, GFC_STD_F95);
+
+  add_sym_2 ("shifta", GFC_ISYM_SHIFTA, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_INTEGER, di, GFC_STD_F2008,
+	     gfc_check_shift, gfc_simplify_shifta, gfc_resolve_shift,
+	     i, BT_INTEGER, di, REQUIRED,
+	     sh, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("shifta", GFC_ISYM_SHIFTA, GFC_STD_F2008);
+
+  add_sym_2 ("shiftl", GFC_ISYM_SHIFTL, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_INTEGER, di, GFC_STD_F2008,
+	     gfc_check_shift, gfc_simplify_shiftl, gfc_resolve_shift,
+	     i, BT_INTEGER, di, REQUIRED,
+	     sh, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("shiftl", GFC_ISYM_SHIFTL, GFC_STD_F2008);
+
+  add_sym_2 ("shiftr", GFC_ISYM_SHIFTR, CLASS_ELEMENTAL, ACTUAL_NO,
+	     BT_INTEGER, di, GFC_STD_F2008,
+	     gfc_check_shift, gfc_simplify_shiftr, gfc_resolve_shift,
+	     i, BT_INTEGER, di, REQUIRED,
+	     sh, BT_INTEGER, di, REQUIRED);
+
+  make_generic ("shiftr", GFC_ISYM_SHIFTR, GFC_STD_F2008);
 
   add_sym_2 ("sign", GFC_ISYM_SIGN, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dr, GFC_STD_F77,
 	     gfc_check_sign, gfc_simplify_sign, gfc_resolve_sign,
