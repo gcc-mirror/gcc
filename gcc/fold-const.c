@@ -2591,14 +2591,17 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
 	  return OP_SAME (0);
 
 	case MEM_REF:
-	  /* Require equal access sizes.  We can have incomplete types
-	     for array references of variable-sized arrays from the
-	     Fortran frontent though.  */
+	  /* Require equal access sizes, and similar pointer types.
+	     We can have incomplete types for array references of
+	     variable-sized arrays from the Fortran frontent
+	     though.  */
 	  return ((TYPE_SIZE (TREE_TYPE (arg0)) == TYPE_SIZE (TREE_TYPE (arg1))
 		   || (TYPE_SIZE (TREE_TYPE (arg0))
 		       && TYPE_SIZE (TREE_TYPE (arg1))
 		       && operand_equal_p (TYPE_SIZE (TREE_TYPE (arg0)),
 					   TYPE_SIZE (TREE_TYPE (arg1)), flags)))
+		  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (arg0, 1)))
+		      == TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (arg1, 1))))
 		  && OP_SAME (0) && OP_SAME (1));
 
 	case ARRAY_REF:
