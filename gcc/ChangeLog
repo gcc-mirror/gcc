@@ -1,5 +1,11 @@
 2010-09-08  Michael Matz  <matz@suse.de>
 
+	PR tree-optimization/43430
+	* tree-vect-stmts.c (vectorizable_condition): Support multiple
+	copies for conditional statements if it's not part of a reduction.
+
+2010-09-08  Michael Matz  <matz@suse.de>
+
 	PR tree-optimization/33244
 	* tree-ssa-sink.c (statement_sink_location): Don't sink into
 	empty loop latches.
