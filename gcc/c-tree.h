@@ -427,7 +427,8 @@ extern int quals_from_declspecs (const struct c_declspecs *);
 extern struct c_declarator *build_array_declarator (location_t, tree,
     						    struct c_declspecs *,
 						    bool, bool);
-extern tree build_enumerator (location_t, struct c_enum_contents *, tree, tree);
+extern tree build_enumerator (location_t, location_t, struct c_enum_contents *,
+			      tree, tree);
 extern tree check_for_loop_decls (location_t);
 extern void mark_forward_parm_decls (void);
 extern void declare_parm_level (void);
