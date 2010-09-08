@@ -4038,16 +4038,18 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   enum machine_mode vec_mode;
   tree def;
-  enum vect_def_type dt;
+  enum vect_def_type dt, dts[4];
   int nunits = TYPE_VECTOR_SUBPARTS (vectype);
   int ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits;
   enum tree_code code;
+  stmt_vec_info prev_stmt_info = NULL;
+  int j;
 
   /* FORNOW: unsupported in basic block SLP.  */
   gcc_assert (loop_vinfo);
 
   gcc_assert (ncopies >= 1);
-  if (ncopies > 1)
+  if (reduc_index && ncopies > 1)
     return false; /* FORNOW */
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info))
@@ -4134,29 +4136,68 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
 
   /* Handle cond expr.  */
-  vec_cond_lhs =
-    vect_get_vec_def_for_operand (TREE_OPERAND (cond_expr, 0), stmt, NULL);
-  vec_cond_rhs =
-    vect_get_vec_def_for_operand (TREE_OPERAND (cond_expr, 1), stmt, NULL);
-  if (reduc_index == 1)
-    vec_then_clause = reduc_def;
-  else
-    vec_then_clause = vect_get_vec_def_for_operand (then_clause, stmt, NULL);
-  if (reduc_index == 2)
-    vec_else_clause = reduc_def;
-  else
-    vec_else_clause = vect_get_vec_def_for_operand (else_clause, stmt, NULL);
+  for (j = 0; j < ncopies; j++)
+    {
+      gimple new_stmt;
+      if (j == 0)
+	{
+	  gimple gtemp;
+	  vec_cond_lhs =
+	      vect_get_vec_def_for_operand (TREE_OPERAND (cond_expr, 0),
+					    stmt, NULL);
+	  vect_is_simple_use (TREE_OPERAND (cond_expr, 0), loop_vinfo,
+			      NULL, &gtemp, &def, &dts[0]);
+	  vec_cond_rhs =
+	      vect_get_vec_def_for_operand (TREE_OPERAND (cond_expr, 1),
+					    stmt, NULL);
+	  vect_is_simple_use (TREE_OPERAND (cond_expr, 1), loop_vinfo,
+			      NULL, &gtemp, &def, &dts[1]);
+	  if (reduc_index == 1)
+	    vec_then_clause = reduc_def;
+	  else
+	    {
+	      vec_then_clause = vect_get_vec_def_for_operand (then_clause,
+							      stmt, NULL);
+	      vect_is_simple_use (then_clause, loop_vinfo,
+				  NULL, &gtemp, &def, &dts[2]);
+	    }
+	  if (reduc_index == 2)
+	    vec_else_clause = reduc_def;
+	  else
+	    {
+	      vec_else_clause = vect_get_vec_def_for_operand (else_clause,
+							      stmt, NULL);
+	      vect_is_simple_use (else_clause, loop_vinfo,
+				  NULL, &gtemp, &def, &dts[3]);
+	    }
+	}
+      else
+	{
+	  vec_cond_lhs = vect_get_vec_def_for_stmt_copy (dts[0], vec_cond_lhs);
+	  vec_cond_rhs = vect_get_vec_def_for_stmt_copy (dts[1], vec_cond_rhs);
+	  vec_then_clause = vect_get_vec_def_for_stmt_copy (dts[2],
+							    vec_then_clause);
+	  vec_else_clause = vect_get_vec_def_for_stmt_copy (dts[3],
+							    vec_else_clause);
+	}
 
-  /* Arguments are ready. Create the new vector stmt.  */
-  vec_compare = build2 (TREE_CODE (cond_expr), vectype,
-			vec_cond_lhs, vec_cond_rhs);
-  vec_cond_expr = build3 (VEC_COND_EXPR, vectype,
-			  vec_compare, vec_then_clause, vec_else_clause);
+      /* Arguments are ready. Create the new vector stmt.  */
+      vec_compare = build2 (TREE_CODE (cond_expr), vectype,
+			    vec_cond_lhs, vec_cond_rhs);
+      vec_cond_expr = build3 (VEC_COND_EXPR, vectype,
+			      vec_compare, vec_then_clause, vec_else_clause);
 
-  *vec_stmt = gimple_build_assign (vec_dest, vec_cond_expr);
-  new_temp = make_ssa_name (vec_dest, *vec_stmt);
-  gimple_assign_set_lhs (*vec_stmt, new_temp);
-  vect_finish_stmt_generation (stmt, *vec_stmt, gsi);
+      new_stmt = gimple_build_assign (vec_dest, vec_cond_expr);
+      new_temp = make_ssa_name (vec_dest, new_stmt);
+      gimple_assign_set_lhs (new_stmt, new_temp);
+      vect_finish_stmt_generation (stmt, new_stmt, gsi);
+      if (j == 0)
+        STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+      else
+        STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
+
+      prev_stmt_info = vinfo_for_stmt (new_stmt);
+    }
 
   return true;
 }
