@@ -1,3 +1,36 @@
+2010-09-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/38282
+	* intrinsic.c (add_functions): Add B{G,L}{E,T}, DSHIFT{L,R},
+	MASK{L,R}, MERGE_BITS and SHIFT{A,L,R}.
+	* gfortran.h: Define ISYM values for above intrinsics.
+	* intrinsic.h (gfc_check_bge_bgt_ble_blt, gfc_check_dshift,
+	gfc_check_mask, gfc_check_merge_bits, gfc_check_shift,
+	gfc_simplify_bge, gfc_simplify_bgt, gfc_simplify_ble,
+	gfc_simplify_blt, gfc_simplify_dshiftl, gfc_simplify_dshiftr,
+	gfc_simplify_lshift, gfc_simplify_maskl, gfc_simplify_maskr,
+	gfc_simplify_merge_bits, gfc_simplify_rshift,
+	gfc_simplify_shifta, gfc_simplify_shiftl, gfc_simplify_shiftr,
+	gfc_resolve_dshift, gfc_resolve_mask, gfc_resolve_merge_bits,
+	gfc_resolve_shift): New prototypes.
+	* iresolve.c (gfc_resolve_dshift, gfc_resolve_mask,
+	gfc_resolve_merge_bits, gfc_resolve_shift): New functions.
+	* check.c (gfc_check_bge_bgt_ble_blt, gfc_check_dshift,
+	gfc_check_mask, gfc_check_merge_bits, gfc_check_shift): New
+	functions.
+	* trans-intrinsic.c (gfc_conv_intrinsic_dshift,
+	gfc_conv_intrinsic_bitcomp, gfc_conv_intrinsic_shift,
+	gfc_conv_intrinsic_merge_bits, gfc_conv_intrinsic_mask): New
+	functions.
+	(gfc_conv_intrinsic_function): Call above static functions.
+	* intrinsic.texi: Document new intrinsics.
+	* simplify.c (gfc_simplify_bge, gfc_simplify_bgt, gfc_simplify_ble,
+	gfc_simplify_blt, gfc_simplify_dshiftl, gfc_simplify_dshiftr,
+	gfc_simplify_lshift, gfc_simplify_maskl, gfc_simplify_maskr,
+	gfc_simplify_merge_bits, gfc_simplify_rshift, 
+	gfc_simplify_shifta, gfc_simplify_shiftl, gfc_simplify_shiftr):
+	New functions.
+
 2010-09-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* frontend-passes.c (optimize_code_node): Walk block chain by default.

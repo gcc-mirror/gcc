@@ -825,6 +825,20 @@ gfc_resolve_dprod (gfc_expr *f, gfc_expr *a ATTRIBUTE_UNUSED,
 
 
 void
+gfc_resolve_dshift (gfc_expr *f, gfc_expr *i, gfc_expr *j ATTRIBUTE_UNUSED,
+		    gfc_expr *shift ATTRIBUTE_UNUSED)
+{
+  f->ts = i->ts;
+  if (f->value.function.isym->id == GFC_ISYM_DSHIFTL)
+    f->value.function.name = gfc_get_string ("dshiftl_i%d", f->ts.kind);
+  else if (f->value.function.isym->id == GFC_ISYM_DSHIFTR)
+    f->value.function.name = gfc_get_string ("dshiftr_i%d", f->ts.kind);
+  else
+    gcc_unreachable ();
+}
+
+
+void
 gfc_resolve_eoshift (gfc_expr *f, gfc_expr *array, gfc_expr *shift,
 		     gfc_expr *boundary, gfc_expr *dim)
 {
@@ -1689,6 +1703,21 @@ gfc_resolve_mclock8 (gfc_expr *f)
 
 
 void
+gfc_resolve_mask (gfc_expr *f, gfc_expr *i ATTRIBUTE_UNUSED,
+		  gfc_expr *kind)
+{
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = kind ? mpz_get_si (kind->value.integer)
+		    : gfc_default_integer_kind;
+
+  if (f->value.function.isym->id == GFC_ISYM_MASKL)
+    f->value.function.name = gfc_get_string ("__maskl_i%d", f->ts.kind);
+  else
+    f->value.function.name = gfc_get_string ("__maskr_i%d", f->ts.kind);
+}
+
+
+void
 gfc_resolve_merge (gfc_expr *f, gfc_expr *tsource,
 		   gfc_expr *fsource ATTRIBUTE_UNUSED,
 		   gfc_expr *mask ATTRIBUTE_UNUSED)
@@ -1706,6 +1735,16 @@ gfc_resolve_merge (gfc_expr *f, gfc_expr *tsource,
   f->value.function.name
     = gfc_get_string ("__merge_%c%d", gfc_type_letter (tsource->ts.type),
 		      tsource->ts.kind);
+}
+
+
+void
+gfc_resolve_merge_bits (gfc_expr *f, gfc_expr *i,
+			gfc_expr *j ATTRIBUTE_UNUSED,
+			gfc_expr *mask ATTRIBUTE_UNUSED)
+{
+  f->ts = i->ts;
+  f->value.function.name = gfc_get_string ("__merge_bits_i%d", i->ts.kind);
 }
 
 
@@ -2154,6 +2193,21 @@ gfc_resolve_shape (gfc_expr *f, gfc_expr *array)
   f->shape = gfc_get_shape (1);
   mpz_init_set_ui (f->shape[0], array->rank);
   f->value.function.name = gfc_get_string (PREFIX ("shape_%d"), f->ts.kind);
+}
+
+
+void
+gfc_resolve_shift (gfc_expr *f, gfc_expr *i, gfc_expr *shift ATTRIBUTE_UNUSED)
+{
+  f->ts = i->ts;
+  if (f->value.function.isym->id == GFC_ISYM_SHIFTA)
+    f->value.function.name = gfc_get_string ("shifta_i%d", f->ts.kind);
+  else if (f->value.function.isym->id == GFC_ISYM_SHIFTL)
+    f->value.function.name = gfc_get_string ("shiftl_i%d", f->ts.kind);
+  else if (f->value.function.isym->id == GFC_ISYM_SHIFTR)
+    f->value.function.name = gfc_get_string ("shiftr_i%d", f->ts.kind);
+  else
+    gcc_unreachable ();
 }
 
 

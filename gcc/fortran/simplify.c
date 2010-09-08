@@ -1464,6 +1464,74 @@ gfc_simplify_btest (gfc_expr *e, gfc_expr *bit)
 }
 
 
+static int
+compare_bitwise (gfc_expr *i, gfc_expr *j)
+{
+  mpz_t x, y;
+  int k, res;
+
+  gcc_assert (i->ts.type == BT_INTEGER);
+  gcc_assert (j->ts.type == BT_INTEGER);
+
+  mpz_init_set (x, i->value.integer);
+  k = gfc_validate_kind (i->ts.type, i->ts.kind, false);
+  convert_mpz_to_unsigned (x, gfc_integer_kinds[k].bit_size);
+
+  mpz_init_set (y, j->value.integer);
+  k = gfc_validate_kind (j->ts.type, j->ts.kind, false);
+  convert_mpz_to_unsigned (y, gfc_integer_kinds[k].bit_size);
+
+  res = mpz_cmp (x, y);
+  mpz_clear (x);
+  mpz_clear (y);
+  return res;
+}
+
+
+gfc_expr *
+gfc_simplify_bge (gfc_expr *i, gfc_expr *j)
+{
+  if (i->expr_type != EXPR_CONSTANT || j->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  return gfc_get_logical_expr (gfc_default_logical_kind, &i->where,
+			       compare_bitwise (i, j) >= 0);
+}
+
+
+gfc_expr *
+gfc_simplify_bgt (gfc_expr *i, gfc_expr *j)
+{
+  if (i->expr_type != EXPR_CONSTANT || j->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  return gfc_get_logical_expr (gfc_default_logical_kind, &i->where,
+			       compare_bitwise (i, j) > 0);
+}
+
+
+gfc_expr *
+gfc_simplify_ble (gfc_expr *i, gfc_expr *j)
+{
+  if (i->expr_type != EXPR_CONSTANT || j->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  return gfc_get_logical_expr (gfc_default_logical_kind, &i->where,
+			       compare_bitwise (i, j) <= 0);
+}
+
+
+gfc_expr *
+gfc_simplify_blt (gfc_expr *i, gfc_expr *j)
+{
+  if (i->expr_type != EXPR_CONSTANT || j->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  return gfc_get_logical_expr (gfc_default_logical_kind, &i->where,
+			       compare_bitwise (i, j) < 0);
+}
+
+
 gfc_expr *
 gfc_simplify_ceiling (gfc_expr *e, gfc_expr *k)
 {
@@ -1811,6 +1879,64 @@ gfc_simplify_dprod (gfc_expr *x, gfc_expr *y)
   gfc_free_expr (a1);
 
   return range_check (result, "DPROD");
+}
+
+
+static gfc_expr *
+simplify_dshift (gfc_expr *arg1, gfc_expr *arg2, gfc_expr *shiftarg,
+		      bool right)
+{
+  gfc_expr *result;
+  int i, k, size, shift;
+
+  if (arg1->expr_type != EXPR_CONSTANT || arg2->expr_type != EXPR_CONSTANT
+      || shiftarg->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  k = gfc_validate_kind (BT_INTEGER, arg1->ts.kind, false);
+  size = gfc_integer_kinds[k].bit_size;
+
+  if (gfc_extract_int (shiftarg, &shift) != NULL)
+    {
+      gfc_error ("Invalid SHIFT argument of DSHIFTL at %L", &shiftarg->where);
+      return &gfc_bad_expr;
+    }
+
+  gcc_assert (shift >= 0 && shift <= size);
+
+  /* DSHIFTR(I,J,SHIFT) = DSHIFTL(I,J,SIZE-SHIFT).  */
+  if (right)
+    shift = size - shift;
+
+  result = gfc_get_constant_expr (BT_INTEGER, arg1->ts.kind, &arg1->where);
+  mpz_set_ui (result->value.integer, 0);
+
+  for (i = 0; i < shift; i++)
+    if (mpz_tstbit (arg2->value.integer, size - shift + i))
+      mpz_setbit (result->value.integer, i);
+
+  for (i = 0; i < size - shift; i++)
+    if (mpz_tstbit (arg1->value.integer, i))
+      mpz_setbit (result->value.integer, shift + i);
+
+  /* Convert to a signed value.  */
+  convert_mpz_to_signed (result->value.integer, size);
+
+  return result;
+}
+
+
+gfc_expr *
+gfc_simplify_dshiftr (gfc_expr *arg1, gfc_expr *arg2, gfc_expr *shiftarg)
+{
+  return simplify_dshift (arg1, arg2, shiftarg, true);
+}
+
+
+gfc_expr *
+gfc_simplify_dshiftl (gfc_expr *arg1, gfc_expr *arg2, gfc_expr *shiftarg)
+{
+  return simplify_dshift (arg1, arg2, shiftarg, false);
 }
 
 
@@ -2776,56 +2902,75 @@ gfc_simplify_isnan (gfc_expr *x)
 }
 
 
-gfc_expr *
-gfc_simplify_ishft (gfc_expr *e, gfc_expr *s)
+/* Performs a shift on its first argument.  Depending on the last
+   argument, the shift can be arithmetic, i.e. with filling from the
+   left like in the SHIFTA intrinsic.  */
+static gfc_expr *
+simplify_shift (gfc_expr *e, gfc_expr *s, const char *name,
+		bool arithmetic, int direction)
 {
   gfc_expr *result;
-  int shift, ashift, isize, k, *bits, i;
+  int ashift, *bits, i, k, bitsize, shift;
 
   if (e->expr_type != EXPR_CONSTANT || s->expr_type != EXPR_CONSTANT)
     return NULL;
-
   if (gfc_extract_int (s, &shift) != NULL)
     {
-      gfc_error ("Invalid second argument of ISHFT at %L", &s->where);
+      gfc_error ("Invalid second argument of %s at %L", name, &s->where);
       return &gfc_bad_expr;
     }
 
   k = gfc_validate_kind (BT_INTEGER, e->ts.kind, false);
-
-  isize = gfc_integer_kinds[k].bit_size;
-
-  if (shift >= 0)
-    ashift = shift;
-  else
-    ashift = -shift;
-
-  if (ashift > isize)
-    {
-      gfc_error ("Magnitude of second argument of ISHFT exceeds bit size "
-		 "at %L", &s->where);
-      return &gfc_bad_expr;
-    }
+  bitsize = gfc_integer_kinds[k].bit_size;
 
   result = gfc_get_constant_expr (e->ts.type, e->ts.kind, &e->where);
 
   if (shift == 0)
     {
       mpz_set (result->value.integer, e->value.integer);
-      return range_check (result, "ISHFT");
+      return result;
     }
-  
-  bits = XCNEWVEC (int, isize);
 
-  for (i = 0; i < isize; i++)
+  if (direction > 0 && shift < 0)
+    {
+      /* Left shift, as in SHIFTL.  */
+      gfc_error ("Second argument of %s is negative at %L", name, &e->where);
+      return &gfc_bad_expr;
+    }
+  else if (direction < 0)
+    {
+      /* Right shift, as in SHIFTR or SHIFTA.  */
+      if (shift < 0)
+	{
+	  gfc_error ("Second argument of %s is negative at %L",
+		     name, &e->where);
+	  return &gfc_bad_expr;
+	}
+
+      shift = -shift;
+    }
+
+  ashift = (shift >= 0 ? shift : -shift);
+
+  if (ashift > bitsize)
+    {
+      gfc_error ("Magnitude of second argument of %s exceeds bit size "
+		 "at %L", name, &e->where);
+      return &gfc_bad_expr;
+    }
+
+  bits = XCNEWVEC (int, bitsize);
+
+  for (i = 0; i < bitsize; i++)
     bits[i] = mpz_tstbit (e->value.integer, i);
 
   if (shift > 0)
     {
+      /* Left shift.  */
       for (i = 0; i < shift; i++)
 	mpz_clrbit (result->value.integer, i);
 
-      for (i = 0; i < isize - shift; i++)
+      for (i = 0; i < bitsize - shift; i++)
 	{
 	  if (bits[i] == 0)
 	    mpz_clrbit (result->value.integer, i + shift);
@@ -2835,10 +2980,15 @@ gfc_simplify_ishft (gfc_expr *e, gfc_expr *s)
     }
   else
     {
-      for (i = isize - 1; i >= isize - ashift; i--)
-	mpz_clrbit (result->value.integer, i);
+      /* Right shift.  */
+      if (arithmetic && bits[bitsize - 1])
+	for (i = bitsize - 1; i >= bitsize - ashift; i--)
+	  mpz_setbit (result->value.integer, i);
+      else
+	for (i = bitsize - 1; i >= bitsize - ashift; i--)
+	  mpz_clrbit (result->value.integer, i);
 
-      for (i = isize - 1; i >= ashift; i--)
+      for (i = bitsize - 1; i >= ashift; i--)
 	{
 	  if (bits[i] == 0)
 	    mpz_clrbit (result->value.integer, i - ashift);
@@ -2847,10 +2997,52 @@ gfc_simplify_ishft (gfc_expr *e, gfc_expr *s)
 	}
     }
 
-  convert_mpz_to_signed (result->value.integer, isize);
-
+  convert_mpz_to_signed (result->value.integer, bitsize);
   gfc_free (bits);
+
   return result;
+}
+
+
+gfc_expr *
+gfc_simplify_ishft (gfc_expr *e, gfc_expr *s)
+{
+  return simplify_shift (e, s, "ISHFT", false, 0);
+}
+
+
+gfc_expr *
+gfc_simplify_lshift (gfc_expr *e, gfc_expr *s)
+{
+  return simplify_shift (e, s, "LSHIFT", false, 1);
+}
+
+
+gfc_expr *
+gfc_simplify_rshift (gfc_expr *e, gfc_expr *s)
+{
+  return simplify_shift (e, s, "RSHIFT", true, -1);
+}
+
+
+gfc_expr *
+gfc_simplify_shifta (gfc_expr *e, gfc_expr *s)
+{
+  return simplify_shift (e, s, "SHIFTA", true, -1);
+}
+
+
+gfc_expr *
+gfc_simplify_shiftl (gfc_expr *e, gfc_expr *s)
+{
+  return simplify_shift (e, s, "SHIFTL", false, 1);
+}
+
+
+gfc_expr *
+gfc_simplify_shiftr (gfc_expr *e, gfc_expr *s)
+{
+  return simplify_shift (e, s, "SHIFTR", false, -1);
 }
 
 
@@ -3657,6 +3849,73 @@ gfc_simplify_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
 
 
 gfc_expr *
+gfc_simplify_maskr (gfc_expr *i, gfc_expr *kind_arg)
+{
+  gfc_expr *result;
+  int kind, arg, k;
+  const char *s;
+
+  if (i->expr_type != EXPR_CONSTANT)
+    return NULL;
+ 
+  kind = get_kind (BT_INTEGER, kind_arg, "MASKR", gfc_default_integer_kind);
+  if (kind == -1)
+    return &gfc_bad_expr;
+  k = gfc_validate_kind (BT_INTEGER, kind, false);
+
+  s = gfc_extract_int (i, &arg);
+  gcc_assert (!s);
+
+  result = gfc_get_constant_expr (BT_INTEGER, kind, &i->where);
+
+  /* MASKR(n) = 2^n - 1 */
+  mpz_set_ui (result->value.integer, 1);
+  mpz_mul_2exp (result->value.integer, result->value.integer, arg);
+  mpz_sub_ui (result->value.integer, result->value.integer, 1);
+
+  convert_mpz_to_signed (result->value.integer, gfc_integer_kinds[k].bit_size);
+
+  return result;
+}
+
+
+gfc_expr *
+gfc_simplify_maskl (gfc_expr *i, gfc_expr *kind_arg)
+{
+  gfc_expr *result;
+  int kind, arg, k;
+  const char *s;
+  mpz_t z;
+
+  if (i->expr_type != EXPR_CONSTANT)
+    return NULL;
+ 
+  kind = get_kind (BT_INTEGER, kind_arg, "MASKL", gfc_default_integer_kind);
+  if (kind == -1)
+    return &gfc_bad_expr;
+  k = gfc_validate_kind (BT_INTEGER, kind, false);
+
+  s = gfc_extract_int (i, &arg);
+  gcc_assert (!s);
+
+  result = gfc_get_constant_expr (BT_INTEGER, kind, &i->where);
+
+  /* MASKL(n) = 2^bit_size - 2^(bit_size - n) */
+  mpz_init_set_ui (z, 1);
+  mpz_mul_2exp (z, z, gfc_integer_kinds[k].bit_size);
+  mpz_set_ui (result->value.integer, 1);
+  mpz_mul_2exp (result->value.integer, result->value.integer,
+		gfc_integer_kinds[k].bit_size - arg);
+  mpz_sub (result->value.integer, z, result->value.integer);
+  mpz_clear (z);
+
+  convert_mpz_to_signed (result->value.integer, gfc_integer_kinds[k].bit_size);
+
+  return result;
+}
+
+
+gfc_expr *
 gfc_simplify_merge (gfc_expr *tsource, gfc_expr *fsource, gfc_expr *mask)
 {
   if (tsource->expr_type != EXPR_CONSTANT
@@ -3668,7 +3927,38 @@ gfc_simplify_merge (gfc_expr *tsource, gfc_expr *fsource, gfc_expr *mask)
 }
 
 
-/* Selects bewteen current value and extremum for simplify_min_max
+gfc_expr *
+gfc_simplify_merge_bits (gfc_expr *i, gfc_expr *j, gfc_expr *mask_expr)
+{
+  mpz_t arg1, arg2, mask;
+  gfc_expr *result;
+
+  if (i->expr_type != EXPR_CONSTANT || j->expr_type != EXPR_CONSTANT
+      || mask_expr->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_get_constant_expr (BT_INTEGER, i->ts.kind, &i->where);
+
+  /* Convert all argument to unsigned.  */
+  mpz_init_set (arg1, i->value.integer);
+  mpz_init_set (arg2, j->value.integer);
+  mpz_init_set (mask, mask_expr->value.integer);
+
+  /* MERGE_BITS(I,J,MASK) = IOR (IAND (I, MASK), IAND (J, NOT (MASK))).  */
+  mpz_and (arg1, arg1, mask);
+  mpz_com (mask, mask);
+  mpz_and (arg2, arg2, mask);
+  mpz_ior (result->value.integer, arg1, arg2);
+
+  mpz_clear (arg1);
+  mpz_clear (arg2);
+  mpz_clear (mask);
+
+  return result;
+}
+
+
+/* Selects between current value and extremum for simplify_min_max
    and simplify_minval_maxval.  */
 static void
 min_max_choose (gfc_expr *arg, gfc_expr *extremum, int sign)
