@@ -1,3 +1,9 @@
+2010-09-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (EH_RETURN_DATA_REGNO) Use DX_REG instead of
+	numerical constant.
+	(EH_RETURN_STACKADJ_RTX): Use CX_REG insted of numerical constant.
+
 2010-09-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/45531
@@ -21,7 +27,7 @@
 2010-09-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR other/18555
-	* doc/cppopts.texi (-isysroot): Document Darwin behaviour. 
+	* doc/cppopts.texi (-isysroot): Document Darwin behaviour.
 
 2010-09-08  Uros Bizjak  <ubizjak@gmail.com>
 

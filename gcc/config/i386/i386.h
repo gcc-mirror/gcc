@@ -740,7 +740,7 @@ enum target_cpu_default
    Pentium+ prefers DFmode values to be aligned to 64 bit boundary
    and Pentium Pro XFmode values at 128 bit boundaries.  */
 
-#define BIGGEST_ALIGNMENT (TARGET_AVX ? 256: 128)
+#define BIGGEST_ALIGNMENT (TARGET_AVX ? 256 : 128)
 
 /* Maximum stack alignment.  */
 #define MAX_STACK_ALIGNMENT MAX_OFILE_ALIGNMENT
@@ -1553,8 +1553,9 @@ typedef struct ix86_args {
   int mmx_nregs;		/* # mmx registers available for passing */
   int mmx_regno;		/* next available mmx register number */
   int maybe_vaarg;		/* true for calls to possibly vardic fncts.  */
-  int float_in_sse;		/* 1 if in 32-bit mode SFmode (2 for DFmode) should
-				   be passed in SSE registers.  Otherwise 0.  */
+  int float_in_sse;		/* Set to 1 or 2 for 32bit targets if
+				   SFmode/DFmode arguments should be passed
+				   in SSE registers.  Otherwise 0.  */
   enum calling_abi call_abi;	/* Set to SYSV_ABI for sysv abi. Otherwise
  				   MS_ABI for ms abi.  */
 } CUMULATIVE_ARGS;
@@ -1741,8 +1742,10 @@ typedef struct ix86_args {
 #define X86_32_REGPARM_MAX 3
 
 #define REGPARM_MAX							\
-  (TARGET_64BIT ? (TARGET_64BIT_MS_ABI ? X86_64_MS_REGPARM_MAX		\
-		   : X86_64_REGPARM_MAX)				\
+  (TARGET_64BIT								\
+   ? (TARGET_64BIT_MS_ABI						\
+      ? X86_64_MS_REGPARM_MAX						\
+      : X86_64_REGPARM_MAX)						\
    : X86_32_REGPARM_MAX)
 
 #define X86_64_SSE_REGPARM_MAX 8
@@ -1751,12 +1754,13 @@ typedef struct ix86_args {
 #define X86_32_SSE_REGPARM_MAX (TARGET_SSE ? (TARGET_MACHO ? 4 : 3) : 0)
 
 #define SSE_REGPARM_MAX							\
-  (TARGET_64BIT ? (TARGET_64BIT_MS_ABI ? X86_64_MS_SSE_REGPARM_MAX	\
-		   : X86_64_SSE_REGPARM_MAX)				\
+  (TARGET_64BIT								\
+   ? (TARGET_64BIT_MS_ABI						\
+      ? X86_64_MS_SSE_REGPARM_MAX					\
+      : X86_64_SSE_REGPARM_MAX)						\
    : X86_32_SSE_REGPARM_MAX)
 
 #define MMX_REGPARM_MAX (TARGET_64BIT ? 0 : (TARGET_MMX ? 3 : 0))
-
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
@@ -1969,8 +1973,8 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 #define INCOMING_FRAME_SP_OFFSET UNITS_PER_WORD
 
 /* Describe how we implement __builtin_eh_return.  */
-#define EH_RETURN_DATA_REGNO(N)	((N) < 2 ? (N) : INVALID_REGNUM)
-#define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, 2)
+#define EH_RETURN_DATA_REGNO(N)	((N) <= DX_REG ? (N) : INVALID_REGNUM)
+#define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, CX_REG)
 
 
 /* Select a format to encode pointers in exception handling data.  CODE
