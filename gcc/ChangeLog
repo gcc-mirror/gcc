@@ -1,5 +1,10 @@
 2010-09-08  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR debug/45531
+	* cfglayout.c (fixup_reorder_chain): Skip debug insns.
+
+2010-09-08  Alexandre Oliva  <aoliva@redhat.com>
+
 	PR debug/45419
 	PR debug/45408
 	* tree-pretty-print.c (dump_generic_node): Disregard top-level
