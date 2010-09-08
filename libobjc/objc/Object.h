@@ -131,8 +131,8 @@ extern "C" {
 + (int)version;
 + setVersion:(int)aVersion;
 
-/* The following methods were deprecated in GCC 4.6.0 and will be removed in the next
-   GCC release.
+/* The following methods were deprecated in GCC 4.6.0 and will be
+   removed in the next GCC release.
 */
 + (int)streamVersion: (TypedStream*)aStream; /* __attribute__ ((deprecated)) */
 
