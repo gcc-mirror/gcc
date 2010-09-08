@@ -174,6 +174,8 @@ static void pa_trampoline_init (rtx, tree, rtx);
 static rtx pa_trampoline_adjust_address (rtx);
 static rtx pa_delegitimize_address (rtx);
 static bool pa_print_operand_punct_valid_p (unsigned char);
+static rtx pa_internal_arg_pointer (void);
+static bool pa_can_eliminate (const int, const int);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -360,6 +362,10 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_TRAMPOLINE_ADJUST_ADDRESS pa_trampoline_adjust_address
 #undef TARGET_DELEGITIMIZE_ADDRESS
 #define TARGET_DELEGITIMIZE_ADDRESS pa_delegitimize_address
+#undef TARGET_INTERNAL_ARG_POINTER
+#define TARGET_INTERNAL_ARG_POINTER pa_internal_arg_pointer
+#undef TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE pa_can_eliminate
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3762,11 +3768,11 @@ hppa_expand_prologue (void)
 	     pointer by actual_fsize bytes.  Two versions, first
 	     handles small (<8k) frames.  The second handles large (>=8k)
 	     frames.  */
-	  insn = emit_move_insn (tmpreg, frame_pointer_rtx);
+	  insn = emit_move_insn (tmpreg, hard_frame_pointer_rtx);
 	  if (DO_FRAME_NOTES)
 	    RTX_FRAME_RELATED_P (insn) = 1;
 
-	  insn = emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
+	  insn = emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx);
 	  if (DO_FRAME_NOTES)
 	    RTX_FRAME_RELATED_P (insn) = 1;
 
@@ -3810,7 +3816,7 @@ hppa_expand_prologue (void)
 				       GEN_INT (TARGET_64BIT ? -8 : -4));
 
 	      emit_move_insn (gen_rtx_MEM (word_mode, addr),
-			      frame_pointer_rtx);
+			      hard_frame_pointer_rtx);
 	    }
 	  else
 	    emit_insn (gen_blockage ());
@@ -3853,7 +3859,7 @@ hppa_expand_prologue (void)
 	      if (regno == INVALID_REGNUM)
 		break;
 
-	      store_reg (regno, offset, FRAME_POINTER_REGNUM);
+	      store_reg (regno, offset, HARD_FRAME_POINTER_REGNUM);
 	      offset += UNITS_PER_WORD;
 	    }
 	}
@@ -3861,7 +3867,7 @@ hppa_expand_prologue (void)
       for (i = 18; i >= 4; i--)
 	if (df_regs_ever_live_p (i) && ! call_used_regs[i])
 	  {
-	    store_reg (i, offset, FRAME_POINTER_REGNUM);
+	    store_reg (i, offset, HARD_FRAME_POINTER_REGNUM);
 	    offset += UNITS_PER_WORD;
 	    gr_saved++;
 	  }
@@ -3950,8 +3956,8 @@ hppa_expand_prologue (void)
 	 save area.  */
       if (frame_pointer_needed)
 	{
-	  set_reg_plus_d (1, FRAME_POINTER_REGNUM, offset, 0);
-	  base = frame_pointer_rtx;
+	  set_reg_plus_d (1, HARD_FRAME_POINTER_REGNUM, offset, 0);
+	  base = hard_frame_pointer_rtx;
 	}
       else
 	{
@@ -4149,7 +4155,7 @@ hppa_expand_epilogue (void)
       ret_off = TARGET_64BIT ? -16 : -20;
       if (frame_pointer_needed)
 	{
-	  load_reg (2, ret_off, FRAME_POINTER_REGNUM);
+	  load_reg (2, ret_off, HARD_FRAME_POINTER_REGNUM);
 	  ret_off = 0;
 	}
       else
@@ -4180,7 +4186,7 @@ hppa_expand_epilogue (void)
 	      if (regno == INVALID_REGNUM)
 		break;
 
-	      load_reg (regno, offset, FRAME_POINTER_REGNUM);
+	      load_reg (regno, offset, HARD_FRAME_POINTER_REGNUM);
 	      offset += UNITS_PER_WORD;
 	    }
 	}
@@ -4188,7 +4194,7 @@ hppa_expand_epilogue (void)
       for (i = 18; i >= 4; i--)
 	if (df_regs_ever_live_p (i) && ! call_used_regs[i])
 	  {
-	    load_reg (i, offset, FRAME_POINTER_REGNUM);
+	    load_reg (i, offset, HARD_FRAME_POINTER_REGNUM);
 	    offset += UNITS_PER_WORD;
 	  }
     }
@@ -4247,7 +4253,7 @@ hppa_expand_epilogue (void)
     {
       /* Adjust the register to index off of.  */
       if (frame_pointer_needed)
-	set_reg_plus_d (1, FRAME_POINTER_REGNUM, offset, 0);
+	set_reg_plus_d (1, HARD_FRAME_POINTER_REGNUM, offset, 0);
       else
 	set_reg_plus_d (1, STACK_POINTER_REGNUM, offset, 0);
 
@@ -4275,8 +4281,9 @@ hppa_expand_epilogue (void)
     {
       rtx delta = GEN_INT (-64);
 
-      set_reg_plus_d (STACK_POINTER_REGNUM, FRAME_POINTER_REGNUM, 64, 0);
-      emit_insn (gen_pre_load (frame_pointer_rtx, stack_pointer_rtx, delta));
+      set_reg_plus_d (STACK_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM, 64, 0);
+      emit_insn (gen_pre_load (hard_frame_pointer_rtx,
+			       stack_pointer_rtx, delta));
     }
   /* If we were deferring a callee register restore, do it now.  */
   else if (merge_sp_adjust_with_load)
@@ -5920,7 +5927,7 @@ pa_eh_return_handler_rtx (void)
 {
   rtx tmp;
 
-  tmp = gen_rtx_PLUS (word_mode, frame_pointer_rtx,
+  tmp = gen_rtx_PLUS (word_mode, hard_frame_pointer_rtx,
 		      TARGET_64BIT ? GEN_INT (-16) : GEN_INT (-20));
   tmp = gen_rtx_MEM (word_mode, tmp);
   tmp->volatil = 1;
@@ -10100,4 +10107,48 @@ pa_delegitimize_address (rtx orig_x)
   return x;
 }
 
+static rtx
+pa_internal_arg_pointer (void)
+{
+  /* The argument pointer and the hard frame pointer are the same in
+     the 32-bit runtime, so we don't need a copy.  */
+  if (TARGET_64BIT)
+    return copy_to_reg (virtual_incoming_args_rtx);
+  else
+    return virtual_incoming_args_rtx;
+}
+
+/* Given FROM and TO register numbers, say whether this elimination is allowed.
+   Frame pointer elimination is automatically handled.  */
+
+static bool
+pa_can_eliminate (const int from, const int to)
+{
+  /* The argument cannot be eliminated in the 64-bit runtime.  */
+  if (TARGET_64BIT && from == ARG_POINTER_REGNUM)
+    return false;
+
+  return (from == HARD_FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM
+          ? ! frame_pointer_needed
+          : true);
+}
+
+/* Define the offset between two registers, FROM to be eliminated and its
+   replacement TO, at the start of a routine.  */
+HOST_WIDE_INT
+pa_initial_elimination_offset (int from, int to)
+{
+  HOST_WIDE_INT offset;
+
+  if ((from == HARD_FRAME_POINTER_REGNUM || from == FRAME_POINTER_REGNUM)
+      && to == STACK_POINTER_REGNUM)
+    offset = -compute_frame_size (get_frame_size (), 0);
+  else if (from == FRAME_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
+    offset = 0;
+  else
+    gcc_unreachable ();
+
+  return offset;
+}
+
 #include "gt-pa.h"

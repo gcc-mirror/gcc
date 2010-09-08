@@ -1,3 +1,34 @@
+2010-09-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/45250
+	* config/pa/pa.md (nonlocal_goto): Restore hard frame pointer using
+	hard_frame_pointer_rtx instead of virtual_stack_vars_rtx.
+	(builtin_longjmp): Likewise.
+	(allocate_stack): Use hard_frame_pointer_rtx instead of
+	frame_pointer_rtx.
+	* config/pa/pa-protos.h (pa_initial_elimination_offset): Declare.
+	* config/pa/pa.c (pa_internal_arg_pointer): Declare.
+	(pa_can_eliminate): Likewise.
+	(TARGET_INTERNAL_ARG_POINTER): Define.
+	(TARGET_CAN_ELIMINATE): Define.
+	(hppa_expand_prologue): Use hard frame pointer instead of soft frame
+	pointer.
+	(hppa_expand_epilogue, pa_eh_return_handler_rtx): Likewise.
+	(pa_internal_arg_pointer, pa_can_eliminate,
+	pa_initial_elimination_offset): New.
+	* config/pa/pa.h (FRAME_POINTER_REGNUM): Set to new general register.
+	(HARD_FRAME_POINTER_REGNUM): Set to register three.
+	(INITIAL_FRAME_POINTER_OFFSET): Delete.
+	(ELIMINABLE_REGS, INITIAL_ELIMINATION_OFFSET, DWARF_FRAME_REGISTERS):
+	Define.
+	(DWARF_ALT_FRAME_RETURN_COLUMN, REGNO_OK_FOR_INDEX_P,
+	REGNO_OK_FOR_BASE_P): Update to include soft frame pointer.
+	* config/pa/pa32-regs.h (FIRST_PSEUDO_REGISTER): Increase by one.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS, REG_ALLOC_ORDER,
+	REG_CLASS_CONTENTS, REGNO_REG_CLASS, REGISTER_NAMES): Update to include
+	new soft frame pointer.
+	* config/pa/pa64-regs.h: Likewise.
+
 2010-09-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (EH_RETURN_DATA_REGNO) Use DX_REG instead of
