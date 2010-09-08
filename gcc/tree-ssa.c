@@ -1026,7 +1026,7 @@ verify_ssa (bool check_modified_stmt)
 	      op = gimple_op (stmt, i);
 	      if (op && TREE_CODE (op) == SSA_NAME && --count < 0)
 		{
-		  error ("nr of operands and imm-links doesn't agree");
+		  error ("nr of operands and imm-links don't agree");
 		  error ("in statement");
 		  print_gimple_stmt (stderr, stmt, 0, TDF_VOPS|TDF_MEMSYMS);
 		  goto err;
