@@ -2056,9 +2056,6 @@ struct GTY(()) tree_block {
 #define TYPE_DOMAIN(NODE) (ARRAY_TYPE_CHECK (NODE)->type.values)
 #define TYPE_FIELDS(NODE) (RECORD_OR_UNION_CHECK (NODE)->type.values)
 #define TYPE_CACHED_VALUES(NODE) (TYPE_CHECK(NODE)->type.values)
-#define TYPE_ORIG_SIZE_TYPE(NODE)			\
-  (INTEGER_TYPE_CHECK (NODE)->type.values		\
-  ? TREE_TYPE ((NODE)->type.values) : NULL_TREE)
 #define TYPE_METHODS(NODE) (RECORD_OR_UNION_CHECK (NODE)->type.maxval)
 #define TYPE_VFIELD(NODE) (RECORD_OR_UNION_CHECK (NODE)->type.minval)
 #define TYPE_ARG_TYPES(NODE) (FUNC_OR_METHOD_CHECK (NODE)->type.values)
