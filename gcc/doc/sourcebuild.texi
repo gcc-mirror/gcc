@@ -1680,6 +1680,11 @@ Target can compile using @code{pthread.h} with no errors or warnings.
 @item pthread_h
 Target has @code{pthread.h}.
 
+@item run_expensive_tests
+Expensive testcases (usually those that consume excessive amounts of CPU
+time) should be run on this target.  This can be enabled by setting the
+@env{GCC_TEST_RUN_EXPENSIVE} environment variable to a non-empty string.
+
 @item simulator
 Test system runs executables on a simulator (i.e. slowly) rather than
 hardware (i.e. fast).

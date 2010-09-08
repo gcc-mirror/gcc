@@ -1,3 +1,10 @@
+2010-09-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp
+	(check_effective_target_run_expensive_tests): New proc.
+	* gcc.c-torture/compile/limits-fnargs.c: Use
+	dg-require-effective-target run_expensive_tests.
+
 2010-09-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/45597
