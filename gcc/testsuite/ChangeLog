@@ -1,8 +1,3 @@
-2010-09-07  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
-
-	PR testsuite/43959
-	* gcc.dg/torture/builtin-cproj-1.c: Require c99 runtime.
-
 2010-09-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45576
