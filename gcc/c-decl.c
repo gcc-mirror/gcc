@@ -7343,12 +7343,13 @@ finish_enum (tree enumtype, tree values, tree attributes)
 
 /* Build and install a CONST_DECL for one value of the
    current enumeration type (one that was begun with start_enum).
-   LOC is the location of the enumerator.
+   DECL_LOC is the location of the enumerator.
+   LOC is the location of the '=' operator if any, DECL_LOC otherwise.
    Return a tree-list containing the CONST_DECL and its value.
    Assignment of sequential values by default is handled here.  */
 
 tree
-build_enumerator (location_t loc,
+build_enumerator (location_t decl_loc, location_t loc,
 		  struct c_enum_contents *the_enum, tree name, tree value)
 {
   tree decl, type;
@@ -7436,7 +7437,7 @@ build_enumerator (location_t loc,
 				  >= TYPE_PRECISION (integer_type_node)
 				  && TYPE_UNSIGNED (type)));
 
-  decl = build_decl (loc, CONST_DECL, name, type);
+  decl = build_decl (decl_loc, CONST_DECL, name, type);
   DECL_INITIAL (decl) = convert (type, value);
   pushdecl (decl);
 

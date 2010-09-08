@@ -1,3 +1,8 @@
+2010-09-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* c-tree.h, c-decl.c (build_enumerator): Add location parameter.
+	* c-parser.c (c_parser_enum_specifier): Adjust call to build_enumerator.
+
 2010-09-08  Kenneth Zadeck <zadeck@naturalbridge.com>
 	PR doc/45587
 	* doc/md.texi: Fixed modes on several standard pattern names.
