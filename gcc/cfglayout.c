@@ -955,7 +955,7 @@ fixup_reorder_chain (void)
 	      insn = BB_END (e->src);
 	      end = PREV_INSN (BB_HEAD (e->src));
 	      while (insn != end
-		     && (!INSN_P (insn) || INSN_LOCATOR (insn) == 0))
+		     && (!NONDEBUG_INSN_P (insn) || INSN_LOCATOR (insn) == 0))
 		insn = PREV_INSN (insn);
 	      if (insn != end
 		  && locator_eq (INSN_LOCATOR (insn), (int) e->goto_locus))
@@ -970,7 +970,7 @@ fixup_reorder_chain (void)
 		{
 		  insn = BB_HEAD (e->dest);
 		  end = NEXT_INSN (BB_END (e->dest));
-		  while (insn != end && !INSN_P (insn))
+		  while (insn != end && !NONDEBUG_INSN_P (insn))
 		    insn = NEXT_INSN (insn);
 		  if (insn != end && INSN_LOCATOR (insn)
 		      && locator_eq (INSN_LOCATOR (insn), (int) e->goto_locus))
