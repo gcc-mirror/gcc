@@ -1,3 +1,9 @@
+2010-09-08  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/44392
+	* config/arm/arm.md (bswapsi2): Handle condition correctly
+	for armv6 and optimize_size.
+
 2010-09-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR other/18555
