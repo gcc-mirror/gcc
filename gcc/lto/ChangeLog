@@ -1,3 +1,8 @@
+2010-09-08  Richard Guenther  <rguenther@suse.de>
+
+	* lto.c (read_cgraph_and_symbols): Collect again after each
+	file.
+
 2010-09-07  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (promote_var, promote_fn): Set DECL_VISIBILITY_SPECIFIED.
