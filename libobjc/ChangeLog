@@ -1,3 +1,28 @@
+2010-09-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Removed obsolete intermediate threading layer.
+	* thr.c: Use __gthread_objc_xxx functions directly instead of
+	__objc_thread_xxx ones.
+	* objc/thr.h: Removed prototypes of no longer existing
+	__objc_thread_xxx functions.
+	* Makefile.in: Removed thr-objc.lo.
+	* thr-dce.c: File removed.
+	* thr-decosf1.c: File removed.
+	* thr-irix.c: File removed.
+	* thr-mach.c: File removed.
+	* thr-objc.c: File removed.
+	* thr-os2.c: File removed.
+	* thr-posix.c: File removed.
+	* thr-pthreads.c: File removed.
+	* thr-rtems.c: File removed.
+	* thr-single.c: File removed.
+	* thr-solaris.c: File removed.
+	* thr-vxworks.c: File removed.
+	* thr-win32.c: File removed.
+	* README.threads: File removed.
+	* THREADS.MACH: File removed.
+	* THREADS: Updated.
+
 2010-09-07  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* Object.m (MAX_CLASS_NAME_LEN): Unused define removed.
