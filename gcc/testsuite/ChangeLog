@@ -1,3 +1,8 @@
+2010-09-08  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/45590
+	* gcc.dg/graphite/pr44391.c: Remove -m32 option.
+
 2010-09-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45576
