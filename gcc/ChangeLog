@@ -1,3 +1,13 @@
+2010-09-08  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.c (gimple_types, type_hash_cache): Move to GC memory.
+	(visit): Adjust.
+	(iterative_hash_gimple_type): Likewise.
+	(gimple_type_hash): Likewise.
+	(gimple_register_type): Likewise.
+	(print_gimple_types_stats): Likewise.
+	(free_gimple_type_tables): Likewise.
+
 2010-09-08  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/43430

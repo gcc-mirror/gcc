@@ -1789,8 +1789,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 
       lto_obj_file_close (current_lto_file);
       current_lto_file = NULL;
-      /* ???  We'd want but can't ggc_collect () here as the type merging
-         code in gimple.c uses hashtables that are not ggc aware.  */
+      ggc_collect ();
     }
 
   lto_flatten_files (decl_data, count, last_file_ix);

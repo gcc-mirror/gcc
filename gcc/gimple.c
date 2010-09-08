@@ -36,15 +36,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "alias.h"
 #include "demangle.h"
+#include "langhooks.h"
 
 /* Global type table.  FIXME lto, it should be possible to re-use some
    of the type hashing routines in tree.c (type_hash_canon, type_hash_lookup,
    etc), but those assume that types were built with the various
    build_*_type routines which is not the case with the streamer.  */
-static htab_t gimple_types;
-static struct pointer_map_t *type_hash_cache;
+static GTY((if_marked ("ggc_marked_p"), param_is (union tree_node)))
+  htab_t gimple_types;
+static GTY((if_marked ("tree_int_map_marked_p"), param_is (struct tree_int_map)))
+  htab_t type_hash_cache;
 
-/* Global type comparison cache.  */
+/* Global type comparison cache.  This is by TYPE_UID for space efficiency
+   and thus cannot use and does not need GC.  */
 static htab_t gtc_visited;
 static struct obstack gtc_ob;
 
@@ -3916,12 +3920,15 @@ visit (tree t, struct sccs *state, hashval_t v,
        struct obstack *sccstate_obstack)
 {
   struct sccs *cstate = NULL;
+  struct tree_int_map m;
   void **slot;
 
   /* If there is a hash value recorded for this type then it can't
      possibly be part of our parent SCC.  Simply mix in its hash.  */
-  if ((slot = pointer_map_contains (type_hash_cache, t)))
-    return iterative_hash_hashval_t ((hashval_t) (size_t) *slot, v);
+  m.base.from = t;
+  if ((slot = htab_find_slot (type_hash_cache, &m, NO_INSERT))
+      && *slot)
+    return iterative_hash_hashval_t (((struct tree_int_map *) *slot)->to, v);
 
   if ((slot = pointer_map_contains (sccstate, t)) != NULL)
     cstate = (struct sccs *)*slot;
@@ -3988,9 +3995,8 @@ iterative_hash_gimple_type (tree type, hashval_t val,
   struct sccs *state;
 
 #ifdef ENABLE_CHECKING
-  /* Not visited during this DFS walk nor during previous walks.  */
-  gcc_assert (!pointer_map_contains (type_hash_cache, type)
-	      && !pointer_map_contains (sccstate, type));
+  /* Not visited during this DFS walk.  */
+  gcc_assert (!pointer_map_contains (sccstate, type));
 #endif
   state = XOBNEW (sccstate_obstack, struct sccs);
   *pointer_map_insert (sccstate, type) = state;
@@ -4137,12 +4143,15 @@ iterative_hash_gimple_type (tree type, hashval_t val,
       do
 	{
 	  struct sccs *cstate;
+	  struct tree_int_map *m = ggc_alloc_cleared_tree_int_map ();
 	  x = VEC_pop (tree, *sccstack);
-	  gcc_assert (!pointer_map_contains (type_hash_cache, x));
 	  cstate = (struct sccs *)*pointer_map_contains (sccstate, x);
 	  cstate->on_sccstack = false;
-	  slot = pointer_map_insert (type_hash_cache, x);
-	  *slot = (void *) (size_t) cstate->u.hash;
+	  m->base.from = x;
+	  m->to = cstate->u.hash;
+	  slot = htab_find_slot (type_hash_cache, m, INSERT);
+	  gcc_assert (!*slot);
+	  *slot = (void *) m;
 	}
       while (x != type);
     }
@@ -4168,12 +4177,16 @@ gimple_type_hash (const void *p)
   struct obstack sccstate_obstack;
   hashval_t val;
   void **slot;
+  struct tree_int_map m;
 
   if (type_hash_cache == NULL)
-    type_hash_cache = pointer_map_create ();
+    type_hash_cache = htab_create_ggc (512, tree_int_map_hash,
+				       tree_int_map_eq, NULL);
 
-  if ((slot = pointer_map_contains (type_hash_cache, p)) != NULL)
-    return iterative_hash_hashval_t ((hashval_t) (size_t) *slot, 0);
+  m.base.from = CONST_CAST_TREE (t);
+  if ((slot = htab_find_slot (type_hash_cache, &m, NO_INSERT))
+      && *slot)
+    return iterative_hash_hashval_t (((struct tree_int_map *) *slot)->to, 0);
 
   /* Perform a DFS walk and pre-hash all reachable types.  */
   next_dfs_num = 1;
@@ -4226,7 +4239,7 @@ gimple_register_type (tree t)
     gimple_register_type (TYPE_MAIN_VARIANT (t));
 
   if (gimple_types == NULL)
-    gimple_types = htab_create (16381, gimple_type_hash, gimple_type_eq, 0);
+    gimple_types = htab_create_ggc (16381, gimple_type_hash, gimple_type_eq, 0);
 
   slot = htab_find_slot (gimple_types, t, INSERT);
   if (*slot
@@ -4312,6 +4325,16 @@ print_gimple_types_stats (void)
 	     htab_collisions (gimple_types));
   else
     fprintf (stderr, "GIMPLE type table is empty\n");
+  if (type_hash_cache)
+    fprintf (stderr, "GIMPLE type hash table: size %ld, %ld elements, "
+	     "%ld searches, %ld collisions (ratio: %f)\n",
+	     (long) htab_size (type_hash_cache),
+	     (long) htab_elements (type_hash_cache),
+	     (long) type_hash_cache->searches,
+	     (long) type_hash_cache->collisions,
+	     htab_collisions (type_hash_cache));
+  else
+    fprintf (stderr, "GIMPLE type hash table is empty\n");
   if (gtc_visited)
     fprintf (stderr, "GIMPLE type comparison table: size %ld, %ld "
 	     "elements, %ld searches, %ld collisions (ratio: %f)\n",
@@ -4340,7 +4363,7 @@ free_gimple_type_tables (void)
     }
   if (type_hash_cache)
     {
-      pointer_map_destroy (type_hash_cache);
+      htab_delete (type_hash_cache);
       type_hash_cache = NULL;
     }
   if (gtc_visited)
