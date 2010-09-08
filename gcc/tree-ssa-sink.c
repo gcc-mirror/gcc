@@ -429,6 +429,12 @@ statement_sink_location (gimple stmt, basic_block frombb,
       || sinkbb->loop_father != frombb->loop_father)
     return false;
 
+  /* If the latch block is empty, don't make it non-empty by sinking
+     something into it.  */
+  if (sinkbb == frombb->loop_father->latch
+      && empty_block_p (sinkbb))
+    return false;
+
   /* Move the expression to a post dominator can't reduce the number of
      executions.  */
   if (dominated_by_p (CDI_POST_DOMINATORS, frombb, sinkbb))
