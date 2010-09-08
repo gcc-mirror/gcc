@@ -344,23 +344,17 @@ typedef struct GTY(()) machine_function
 /* Register to use for pushing function arguments.  */
 #define STACK_POINTER_REGNUM 30
 
+/* Fixed register for local variable access.  Always eliminated.  */
+#define FRAME_POINTER_REGNUM (TARGET_64BIT ? 61 : 89)
+
 /* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM 3
+#define HARD_FRAME_POINTER_REGNUM 3
 
 /* Don't allow hard registers to be renamed into r2 unless r2
    is already live or already being saved (due to eh).  */
 
 #define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG) \
   ((NEW_REG) != 2 || df_regs_ever_live_p (2) || crtl->calls_eh_return)
-
-/* C statement to store the difference between the frame pointer
-   and the stack pointer values immediately after the function prologue.
-
-   Note, we always pretend that this is a leaf function because if
-   it's not, there's no point in trying to eliminate the
-   frame pointer.  If it is a leaf function, we guessed right!  */
-#define INITIAL_FRAME_POINTER_OFFSET(VAR) \
-  do {(VAR) = - compute_frame_size (get_frame_size (), 0);} while (0)
 
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM (TARGET_64BIT ? 29 : 3)
@@ -385,6 +379,31 @@ extern struct rtx_def *hppa_pic_save_rtx (void);
    is passed to a function.  */
 #define PA_STRUCT_VALUE_REGNUM 28
 
+/* Definitions for register eliminations.
+
+   We have two registers that can be eliminated.  First, the frame pointer
+   register can often be eliminated in favor of the stack pointer register.
+   Secondly, the argument pointer register can always be eliminated in the
+   32-bit runtimes.  */
+
+/* This is an array of structures.  Each structure initializes one pair
+   of eliminable registers.  The "from" register number is given first,
+   followed by "to".  Eliminations of the same "from" register are listed
+   in order of preference.
+
+   The argument pointer cannot be eliminated in the 64-bit runtime.  It
+   is the same register as the hard frame pointer in the 32-bit runtime.
+   So, it does not need to be listed.  */
+#define ELIMINABLE_REGS                                 \
+{{ HARD_FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},    \
+ { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},         \
+ { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM} }
+
+/* Define the offset between two registers, one to be eliminated,
+   and the other its replacement, at the start of a routine.  */
+#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
+  ((OFFSET) = pa_initial_elimination_offset(FROM, TO))
+
 /* Describe how we implement __builtin_eh_return.  */
 #define EH_RETURN_DATA_REGNO(N)	\
   ((N) < 3 ? (N) + 20 : (N) == 3 ? 31 : INVALID_REGNUM)
@@ -393,6 +412,10 @@ extern struct rtx_def *hppa_pic_save_rtx (void);
 
 /* Offset from the frame pointer register value to the top of stack.  */
 #define FRAME_POINTER_CFA_OFFSET(FNDECL) 0
+
+/* The maximum number of hard registers that can be saved in the call
+   frame.  The soft frame pointer is not included.  */
+#define DWARF_FRAME_REGISTERS (FIRST_PSEUDO_REGISTER - 1)
 
 /* A C expression whose value is RTL representing the location of the
    incoming return address at the beginning of any function, before the
@@ -408,7 +431,7 @@ extern struct rtx_def *hppa_pic_save_rtx (void);
 
    Column 0 is not used but unfortunately its register size is set to
    4 bytes (sizeof CCmode) so it can't be used on 64-bit targets.  */
-#define DWARF_ALT_FRAME_RETURN_COLUMN FIRST_PSEUDO_REGISTER
+#define DWARF_ALT_FRAME_RETURN_COLUMN (FIRST_PSEUDO_REGISTER - 1)
 
 /* This macro chooses the encoding of pointers embedded in the exception
    handling sections.  If at all possible, this should be defined such
@@ -777,12 +800,14 @@ extern int may_call_alloca;
 
 #define REGNO_OK_FOR_INDEX_P(X) \
   ((X) && ((X) < 32							\
-   || (X >= FIRST_PSEUDO_REGISTER					\
+   || ((X) == FRAME_POINTER_REGNUM)					\
+   || ((X) >= FIRST_PSEUDO_REGISTER					\
        && reg_renumber							\
        && (unsigned) reg_renumber[X] < 32)))
 #define REGNO_OK_FOR_BASE_P(X) \
   ((X) && ((X) < 32							\
-   || (X >= FIRST_PSEUDO_REGISTER					\
+   || ((X) == FRAME_POINTER_REGNUM)					\
+   || ((X) >= FIRST_PSEUDO_REGISTER					\
        && reg_renumber							\
        && (unsigned) reg_renumber[X] < 32)))
 #define REGNO_OK_FOR_FP_P(X) \
@@ -931,12 +956,16 @@ extern int may_call_alloca;
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_INDEX_P(X) \
-  (REGNO (X) && (REGNO (X) < 32 || REGNO (X) >= FIRST_PSEUDO_REGISTER))
+  (REGNO (X) && (REGNO (X) < 32 				\
+   || REGNO (X) == FRAME_POINTER_REGNUM				\
+   || REGNO (X) >= FIRST_PSEUDO_REGISTER))
 
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X) \
-  (REGNO (X) && (REGNO (X) < 32 || REGNO (X) >= FIRST_PSEUDO_REGISTER))
+  (REGNO (X) && (REGNO (X) < 32 				\
+   || REGNO (X) == FRAME_POINTER_REGNUM				\
+   || REGNO (X) >= FIRST_PSEUDO_REGISTER))
 
 #else
 

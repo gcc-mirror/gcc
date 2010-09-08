@@ -7073,10 +7073,10 @@
   /* Restore the frame pointer.  The virtual_stack_vars_rtx is saved
      instead of the hard_frame_pointer_rtx in the save area.  As a
      result, an extra instruction is needed to adjust for the offset
-     of the virtual stack variables and the frame pointer.  */
+     of the virtual stack variables and the hard frame pointer.  */
   if (GET_CODE (fp) != REG)
     fp = force_reg (Pmode, fp);
-  emit_move_insn (virtual_stack_vars_rtx, fp);
+  emit_move_insn (hard_frame_pointer_rtx, plus_constant (fp, -8));
 
   emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
 
@@ -8517,15 +8517,10 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 
   /* Restore the frame pointer.  The virtual_stack_vars_rtx is saved
      instead of the hard_frame_pointer_rtx in the save area.  We need
-     to adjust for the offset between these two values when we have
-     a nonlocal_goto pattern.  When we don't have a nonlocal_goto
-     pattern, the receiver performs the adjustment.  */
-#ifdef HAVE_nonlocal_goto
-  if (HAVE_nonlocal_goto)
-    emit_move_insn (virtual_stack_vars_rtx, force_reg (Pmode, fp));
-  else
-#endif
-    emit_move_insn (hard_frame_pointer_rtx, fp);
+     to adjust for the offset between these two values.  */
+  if (GET_CODE (fp) != REG)
+    fp = force_reg (Pmode, fp);
+  emit_move_insn (hard_frame_pointer_rtx, plus_constant (fp, -8));
 
   /* This bit is the same as expand_builtin_longjmp.  */
   emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
@@ -9528,7 +9523,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
     {
       addr = gen_rtx_PLUS (word_mode, stack_pointer_rtx,
 			   GEN_INT (TARGET_64BIT ? -8 : -4));
-      emit_move_insn (gen_rtx_MEM (word_mode, addr), frame_pointer_rtx);
+      emit_move_insn (gen_rtx_MEM (word_mode, addr), hard_frame_pointer_rtx);
     }
   if (!TARGET_64BIT && flag_pic)
     {
