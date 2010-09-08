@@ -2,7 +2,9 @@
 /* Author: David Ayers */
 
 #ifdef __NEXT_RUNTIME__
-/* This test only runs for the GNU runtime. */
+/* This test only runs for the GNU runtime.  TODO: It should work on
+   the NEXT runtime as well (needs testing).
+ */
 
 int main(void)
 {
@@ -12,8 +14,8 @@ int main(void)
 #else
 
 #include <objc/objc-api.h>
+#include <objc/objc-exception.h>
 #include <objc/Object.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 static unsigned int handlerExpected = 0;
@@ -31,7 +33,7 @@ my_exception_handler(id excp)
 int 
 main(int argc, char *argv[])
 {
-  _objc_unexpected_exception = my_exception_handler;
+  objc_setUncaughtExceptionHandler (my_exception_handler);
 
   @try
     {
