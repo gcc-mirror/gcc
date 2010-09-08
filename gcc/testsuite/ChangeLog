@@ -1,5 +1,9 @@
 2010-09-08  Michael Matz  <matz@suse.de>
 
+	* c-c++-common/uninit-17.c: Adjust.
+
+2010-09-08  Michael Matz  <matz@suse.de>
+
 	PR tree-optimization/43430
 	* gcc.dg/vect/pr43430-2.c: New test.
 	
