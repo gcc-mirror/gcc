@@ -1,3 +1,19 @@
+2010-09-08  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc/objc-exception.h: New file.
+	* exception.c (objc_set_uncaught_exception_handler): Implemented.
+	(objc_set_exception_matcher): Implemented.
+	(objc_exception_throw): Use the uncaught exception handler if set.
+	(PERSONALITY_FUNCTION): Use the exception matcher instead of the
+	hardcoded isKindOf.
+	(isKindOf): Renamed to is_kind_of_exception_matcher.  Tidied code
+	up.  Removed segmentation fault when value is 'nil'.
+	* objc/objc-api.h (_objc_unexpected_exception): Mark as
+	deprecated.
+	* Makefile.in (exception.lo, exception_gc.lo): Use
+	-Wno-deprecated-declarations when compiling.
+	(OBJC_H): Added objc-exception.h
+
 2010-09-08  Nicola Pero  <nicola@nicola.brainstorm.co.uk>
 
 	* objc/typedstream.h: Deprecate all functions in the file.  This
