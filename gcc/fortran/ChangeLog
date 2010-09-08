@@ -1,5 +1,9 @@
 2010-09-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR fortran/45597
+	* trans-openmp.c (gfc_trans_omp_do): Store exit/cycle labels on code
+	instead of code->block.
+
 	PR fortran/45595
 	* openmp.c (resolve_omp_do): Report not enough do loops for
 	collapse even if block->next is NULL.
