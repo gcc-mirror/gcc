@@ -108,31 +108,6 @@ objc_thread_callback objc_set_thread_callback (objc_thread_callback func);
 
 /* Backend initialization functions */
 int __objc_init_thread_system (void);
-int __objc_fini_thread_system (void);
-
-/* Backend mutex functions */
-int __objc_mutex_allocate (objc_mutex_t mutex);
-int __objc_mutex_deallocate (objc_mutex_t mutex);
-int __objc_mutex_lock (objc_mutex_t mutex);
-int __objc_mutex_trylock (objc_mutex_t mutex);
-int __objc_mutex_unlock (objc_mutex_t mutex);
-
-/* Backend condition mutex functions */
-int __objc_condition_allocate (objc_condition_t condition);
-int __objc_condition_deallocate (objc_condition_t condition);
-int __objc_condition_wait (objc_condition_t condition, objc_mutex_t mutex);
-int __objc_condition_broadcast (objc_condition_t condition);
-int __objc_condition_signal (objc_condition_t condition);
-
-/* Backend thread functions */
-objc_thread_t __objc_thread_detach (void (*func) (void *arg), void *arg);
-int __objc_thread_set_priority (int priority);
-int __objc_thread_get_priority (void);
-void __objc_thread_yield (void);
-int __objc_thread_exit (void);
-objc_thread_t __objc_thread_id (void);
-int __objc_thread_set_data (void *value);
-void * __objc_thread_get_data (void);
 
 #ifdef __cplusplus
 }
