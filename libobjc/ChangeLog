@@ -1,3 +1,14 @@
+2010-09-08  Nicola Pero  <nicola@nicola.brainstorm.co.uk>
+
+	* objc/typedstream.h: Deprecate all functions in the file.  This
+	file is obsolete.
+	* objc/Object.h ([+streamVersion:], [-read:], [-write:],
+	[-awake]): Documented that these methods are deprecated.  Added a
+	brief description of the Object class and its relationship to the
+	NSObject class.
+	* Makefile.in: Compile archive.c and Object.m with
+	-Wno-deprecated-declarations.
+
 2010-09-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Removed obsolete intermediate threading layer.
