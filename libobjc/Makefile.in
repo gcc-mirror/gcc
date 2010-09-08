@@ -143,7 +143,7 @@ all: libobjc$(libsuffix).la $(OBJC_BOEHM_GC)
 
 # User-visible header files.
 
-OBJC_H = hash.h objc-list.h sarray.h objc.h objc-api.h \
+OBJC_H = hash.h objc-list.h sarray.h objc.h objc-api.h objc-exception.h \
 	 NXConstStr.h Object.h Protocol.h encoding.h typedstream.h \
 	 thr.h objc-decls.h
 
@@ -152,7 +152,7 @@ OBJC_H = hash.h objc-list.h sarray.h objc.h objc-api.h \
 OBJS =    archive.lo class.lo encoding.lo gc.lo hash.lo init.lo linking.lo \
 	  misc.lo nil_method.lo NXConstStr.lo Object.lo objects.lo \
 	  Protocol.lo sarray.lo selector.lo sendmsg.lo thr.lo \
-          exception.lo
+	  exception.lo
 
 OBJS_GC = archive_gc.lo class_gc.lo encoding_gc.lo gc_gc.lo hash_gc.lo \
 	  init_gc.lo linking_gc.lo misc_gc.lo nil_method_gc.lo \
@@ -262,13 +262,15 @@ thr_gc.lo: thr.c
 	$(LIBTOOL_COMPILE) $(CC) -c -o $@ $(ALL_CFLAGS) $(OBJC_GCFLAGS) \
 		$(INCLUDES) $<
 
+# -Wno-deprecated-declarations is to silence warnings from using 
+# _objc_unexpected_exception.
 exception.lo: exception.c
 	$(LIBTOOL_COMPILE) $(CC) -c -o $@ $(ALL_CFLAGS) \
-		-fexceptions $(INCLUDES) $<
+		-fexceptions -Wno-deprecated-declarations $(INCLUDES) $<
 
 exception_gc.lo: exception.c
 	$(LIBTOOL_COMPILE) $(CC) -c -o $@ $(ALL_CFLAGS) $(OBJC_GCFLAGS) \
-		-fexceptions $(INCLUDES) $<
+		-fexceptions -Wno-deprecated-declarations $(INCLUDES) $<
 
 doc: info dvi pdf html
 
