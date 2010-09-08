@@ -1,3 +1,8 @@
+2010-09-06  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc.dg/type-stream-1.m: Replaced with a test that tests that
+	functions from objc/typedstream.h are deprecated.
+
 2010-09-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/target-supports.exp
