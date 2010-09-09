@@ -26891,8 +26891,8 @@ platforms (NT, 2000, and XP Professional).
 * Windows Calling Conventions::
 * Introduction to Dynamic Link Libraries (DLLs)::
 * Using DLLs with GNAT::
-* Building DLLs with GNAT::
 * Building DLLs with GNAT Project files::
+* Building DLLs with GNAT::
 * Building DLLs with gnatdll::
 * GNAT and Windows Resources::
 * Debugging a DLL::
@@ -26953,11 +26953,7 @@ features are not used, but it is not guaranteed to work.
 
 @item
 It is not possible to link against Microsoft libraries except for
-import libraries. The library must be built to be compatible with
-@file{MSVCRT.LIB} (/MD Microsoft compiler option), @file{LIBC.LIB} and
-@file{LIBCMT.LIB} (/ML or /MT Microsoft compiler options) are known to
-not be compatible with the GNAT runtime. Even if the library is
-compatible with @file{MSVCRT.LIB} it is not guaranteed to work.
+import libraries. Interfacing must be done by the mean of DLLs.
 
 @item
 When the compilation environment is located on FAT32 drives, users may
@@ -27048,29 +27044,8 @@ interoperability strategy.
 
 If you use @command{gcc} to compile the non-Ada part of your application,
 there are no Windows-specific restrictions that affect the overall
-interoperability with your Ada code. If you plan to use
-Microsoft tools (e.g.@: Microsoft Visual C/C++), you should be aware of
-the following limitations:
-
-@itemize @bullet
-@item
-You cannot link your Ada code with an object or library generated with
-Microsoft tools if these use the @code{.tls} section (Thread Local
-Storage section) since the GNAT linker does not yet support this section.
-
-@item
-You cannot link your Ada code with an object or library generated with
-Microsoft tools if these use I/O routines other than those provided in
-the Microsoft DLL: @code{msvcrt.dll}. This is because the GNAT run time
-uses the services of @code{msvcrt.dll} for its I/Os. Use of other I/O
-libraries can cause a conflict with @code{msvcrt.dll} services. For
-instance Visual C++ I/O stream routines conflict with those in
-@code{msvcrt.dll}.
-@end itemize
-
-@noindent
-If you do want to use the Microsoft tools for your non-Ada code and hit one
-of the above limitations, you have two choices:
+interoperability with your Ada code. If you do want to use the
+Microsoft tools for your non-Ada code, you have two choices:
 
 @enumerate
 @item
@@ -27082,14 +27057,18 @@ build the DLL and use GNAT to build your executable
 @item
 Or you can encapsulate your Ada code in a DLL to be linked with the
 other part of your application. In this case, use GNAT to build the DLL
-(@pxref{Building DLLs with GNAT}) and use the Microsoft or whatever
-environment to build your executable.
+(@pxref{Building DLLs with GNAT Project files}) and use the Microsoft
+or whatever environment to build your executable.
 @end enumerate
 
 @node Windows Calling Conventions
 @section Windows Calling Conventions
 @findex Stdcall
 @findex APIENTRY
+
+This section pertain only to Win32. On Win64 there is a single native
+calling convention. All convention specifiers are ignored on this
+platform.
 
 @menu
 * C Calling Convention::
@@ -27394,11 +27373,23 @@ $ gnatmake my_ada_app -largs -lAPI
 
 @noindent
 The argument @option{-largs -lAPI} at the end of the @command{gnatmake} command
-tells the GNAT linker to look first for a library named @file{API.lib}
-(Microsoft-style name) and if not found for a libraries named
-@file{libAPI.dll.a}, @file{API.dll.a} or @file{libAPI.a}.
-(GNAT-style name). Note that if the Ada package spec for @file{API.dll}
-contains the following pragma
+tells the GNAT linker to look for an import library. The linker will
+look for a library name in this specific order:
+
+@enumerate
+@item @file{libAPI.dll.a}
+@item @file{API.dll.a}
+@item @file{libAPI.a}
+@item @file{API.lib}
+@item @file{libAPI.dll}
+@item @file{API.dll}
+@end enumerate
+
+The first three are the GNU style import libraries. The third is the
+Microsoft style import libraries. The last two are the DLL themself.
+
+Note that if the Ada package spec for @file{API.dll} contains the
+following pragma
 
 @smallexample @c ada
 pragma Linker_Options ("-lAPI");
@@ -27637,6 +27628,19 @@ See the Microsoft documentation for further details about the usage of
 @code{lib}.
 @end enumerate
 
+@node Building DLLs with GNAT Project files
+@section Building DLLs with GNAT Project files
+@cindex DLLs, building
+
+@noindent
+There is nothing specific to Windows in the build process.
+@pxref{Library Projects}.
+
+@noindent
+Due to a system limitation, it is not possible under Windows to create threads
+when inside the @code{DllMain} routine which is used for auto-initialization
+of shared libraries, so it is not possible to have library level tasks in SALs.
+
 @node Building DLLs with GNAT
 @section Building DLLs with GNAT
 @cindex DLLs, building
@@ -27699,19 +27703,6 @@ option.
 $ gnatmake main -Iapilib -bargs -shared -largs -Lapilib -lAPI
 @end smallexample
 
-@node Building DLLs with GNAT Project files
-@section Building DLLs with GNAT Project files
-@cindex DLLs, building
-
-@noindent
-There is nothing specific to Windows in the build process.
-@pxref{Library Projects}.
-
-@noindent
-Due to a system limitation, it is not possible under Windows to create threads
-when inside the @code{DllMain} routine which is used for auto-initialization
-of shared libraries, so it is not possible to have library level tasks in SALs.
-
 @node Building DLLs with gnatdll
 @section Building DLLs with gnatdll
 @cindex DLLs, building
@@ -27727,9 +27718,9 @@ of shared libraries, so it is not possible to have library level tasks in SALs.
 @end menu
 
 @noindent
-Note that it is preferred to use the built-in GNAT DLL support
-(@pxref{Building DLLs with GNAT}) or GNAT Project files
-(@pxref{Building DLLs with GNAT Project files}) to build DLLs.
+Note that it is preferred to use GNAT Project files
+(@pxref{Building DLLs with GNAT Project files}) or the built-in GNAT
+DLL support (@pxref{Building DLLs with GNAT}) or to build DLLs.
 
 This section explains how to build DLLs containing Ada code using
 @code{gnatdll}. These DLLs will be referred to as Ada DLLs in the

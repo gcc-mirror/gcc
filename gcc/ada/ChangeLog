@@ -1,3 +1,11 @@
+2010-09-09  Pascal Obry  <obry@adacore.com>
+
+	* gnat_ugn.texi: Update doc on windows related topics.
+
+2010-09-09  Geert Bosch  <bosch@adacore.com>
+
+	* s-fatgen.adb: Update comments.
+
 2010-09-09  Robert Dewar  <dewar@adacore.com>
 
 	* par-ch4.adb (Box_Error): New procedure.
