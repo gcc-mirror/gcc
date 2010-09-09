@@ -1,3 +1,9 @@
+2010-09-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/45312
+	* reload1.c (merge_assigned_reloads): Remove.
+	(reload_as_needed): Don't call it.
+
 2010-09-09  Matthias Klose  <doko@ubuntu.com>
 
 	PR bootstrap/43847
