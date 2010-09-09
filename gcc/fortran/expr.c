@@ -2305,6 +2305,12 @@ check_inquiry (gfc_expr *e, int not_restricted)
 	      && ap->expr->expr_type != EXPR_VARIABLE
 	      && check_restricted (ap->expr) == FAILURE)
 	  return MATCH_ERROR;
+
+	if (not_restricted == 0
+	    && ap->expr->expr_type == EXPR_VARIABLE
+	    && ap->expr->symtree->n.sym->attr.dummy
+	    && ap->expr->symtree->n.sym->attr.optional)
+	  return MATCH_NO;
     }
 
   return MATCH_YES;
