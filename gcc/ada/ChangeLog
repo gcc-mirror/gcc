@@ -1,3 +1,18 @@
+2010-09-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.ads (Find_Master_Scope): New function, extracted from
+	Build_Master_Entity, to find the proper scope for the master entity of
+	a type that may contain tasks, in the presence of transient scopes.
+	* exp_ch9.adb (Build_Master_Entity) Use new function.
+	* exp_ch3.adb (Build_Class_Wide_Master): ditto.
+
+2010-09-09  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: Add new attributes Leading_Library_Options and
+	Linker'Leading_Switches.
+	* snames.ads-tmpl: Add new standard names Leading_Library_Options and
+	Leading_Switches.
+
 2010-09-09  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch3.adb (Derive_Subprogram): The code that checks if a

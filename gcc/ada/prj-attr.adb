@@ -99,6 +99,7 @@ package body Prj.Attr is
    "SVlibrary_version#" &
    "LVlibrary_interface#" &
    "SVlibrary_auto_init#" &
+   "LVleading_library_options#" &
    "LVlibrary_options#" &
    "SVlibrary_src_dir#" &
    "SVlibrary_ali_dir#" &
@@ -246,6 +247,7 @@ package body Prj.Attr is
    "Plinker#" &
    "LVrequired_switches#" &
    "Ladefault_switches#" &
+   "LcOleading_switches#" &
    "LcOswitches#" &
    "LVlinker_options#" &
    "SVmap_file_option#" &
