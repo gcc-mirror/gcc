@@ -8130,7 +8130,6 @@ Output complete list of elaboration-order dependencies.
 @item ^-E^/STORE_TRACEBACKS^
 @cindex @option{^-E^/STORE_TRACEBACKS^} (@command{gnatbind})
 Store tracebacks in exception occurrences when the target supports it.
-This is the default with the zero cost exception mechanism.
 @ignore
 @c The following may get moved to an appendix
 This option is currently supported on the following targets:

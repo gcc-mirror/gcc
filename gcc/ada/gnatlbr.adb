@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,8 +59,8 @@ procedure GnatLbr is
    Make      : constant String := "make";
    Make_Path : String_Access;
 
-   procedure Create_Directory (Name : System.Address; Mode : Integer);
-   pragma Import (C, Create_Directory, "decc$mkdir");
+   procedure Create_Directory (Name : System.Address);
+   pragma Import (C, Create_Directory, "__gnat_mkdir");
 
 begin
    if Argument_Count = 0 then
@@ -171,7 +171,7 @@ begin
             --  Create the new top level library directory
 
             if not Is_Directory (Lib_Dir.all) then
-               Create_Directory (C_Lib_Dir'Address, 8#755#);
+               Create_Directory (C_Lib_Dir'Address);
             end if;
 
             full_name (C_ADC_File'Address, F_ADC_File'Address);

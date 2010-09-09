@@ -2170,22 +2170,54 @@ package body Exp_Ch4 is
                            Lhs_Discr_Val,
                            Rhs_Discr_Val));
                   end;
+
+               else
+                  return
+                    Make_Function_Call (Loc,
+                      Name                   => New_Reference_To (Eq_Op, Loc),
+                      Parameter_Associations => New_List (Lhs, Rhs));
                end if;
-
-               --  Shouldn't this be an else, we can't fall through the above
-               --  IF, right???
-
-               return
-                 Make_Function_Call (Loc,
-                   Name => New_Reference_To (Eq_Op, Loc),
-                   Parameter_Associations => New_List (Lhs, Rhs));
             end if;
+
+         elsif Ada_Version >= Ada_12 then
+
+            --  if no TSS has been created for the type, check whether there is
+            --  a primitive equality declared for it. If it is abstract replace
+            --  the call with an explicit raise.
+
+            declare
+               Prim : Elmt_Id;
+
+            begin
+               Prim := First_Elmt (Collect_Primitive_Operations (Full_Type));
+               while Present (Prim) loop
+                  if Chars (Node (Prim)) = Name_Op_Eq then
+                     if Is_Abstract_Subprogram (Node (Prim)) then
+                        return
+                          Make_Raise_Program_Error (Loc,
+                            Reason => PE_Explicit_Raise);
+                     else
+                        return
+                          Make_Function_Call (Loc,
+                            Name => New_Reference_To (Node (Prim), Loc),
+                            Parameter_Associations => New_List (Lhs, Rhs));
+                     end if;
+                  end if;
+
+                  Next_Elmt (Prim);
+               end loop;
+            end;
+
+            --  Predfined equality applies iff no user-defined primitive exists
+
+            return Make_Op_Eq (Loc, Lhs, Rhs);
 
          else
             return Expand_Record_Equality (Nod, Full_Type, Lhs, Rhs, Bodies);
          end if;
 
       else
+
          --  It can be a simple record or the full view of a scalar private
 
          return Make_Op_Eq (Loc, Left_Opnd => Lhs, Right_Opnd => Rhs);

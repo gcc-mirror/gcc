@@ -1,3 +1,57 @@
+2010-09-09  Robert Dewar  <dewar@adacore.com>
+
+	* prj-env.adb: Minor code reorganization.
+	* par-ch3.adb: Minor reformatting.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2010-09-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Build_Activation_Chain_Entity): The construct enclosing
+	a task declaration can be an entry body.
+
+2010-09-09  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_DT): Decorate as "static" variables containing
+	tags of library level tagged types.
+	(Make_Tags): Disable backend optimizations about aliasing for
+	declarations of access to dispatch tables.
+
+2010-09-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Reset_Entity): If the entity is an itype created as a
+	subtype for a null-excluding access type, recover the original
+	subtype_mark to get the proper visibility on the original name.
+
+2010-09-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Build_Untagged_Equality): For Ada2012, new procedure to
+	create the primitive equality operation for an untagged record. The
+	operation is the predefined equality if no record component has a
+	user-defined equality, or if there is a user-defined equality for the
+	type as a whole, or when the type is derived and it has an inherited
+	equality. Otherwise the body of the operations is built as for tagged
+	types.
+	(Expand_Freeze_Record_Type): Call Build_Untagged_Equality when needed.
+	(Make_Eq_Body): New function to create the expanded body of the equality
+	operation for tagged and untagged records.  In both cases the operation
+	composes, and the primitive operation of each record component is used
+	to generate the equality function for the type.
+	* exp_ch4.adb (Expand_Composite_Equality): In Ada2012, if a component
+	has an abstract equality defined, replace its call with a
+	Raise_Program_Error.
+	* sem_ch6.adb (New_Overloaded_Entity): if Ada2012, verify that a
+	user-defined equality operator for an untagged record type does not
+	happen after type is frozen, and appears in the visible part if partial
+	view of type is not limited.
+
+2010-09-09  Tristan Gingold  <gingold@adacore.com>
+
+	* gnatlbr.adb: Make Create_Directory more portable: use __gnat_mkdir.
+
+2010-09-09  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi: Remove incorrect statement about -E being the default.
+
 2010-09-09  Pascal Obry  <obry@adacore.com>
 
 	* gnat_ugn.texi: Update doc on windows related topics.
