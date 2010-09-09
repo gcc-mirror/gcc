@@ -182,9 +182,6 @@ AdaCore@*
 * The GNAT Metric Tool gnatmetric::
 * File Name Krunching Using gnatkr::
 * Preprocessing Using gnatprep::
-@ifset vms
-* The GNAT Run-Time Library Builder gnatlbr::
-@end ifset
 * The GNAT Library Browser gnatls::
 * Cleaning Up Using gnatclean::
 @ifclear vms
@@ -408,14 +405,6 @@ Preprocessing Using gnatprep
 * Switches for gnatprep::
 * Form of Definitions File::
 * Form of Input Text for gnatprep::
-
-@ifset vms
-The GNAT Run-Time Library Builder gnatlbr
-
-* Running gnatlbr::
-* Switches for gnatlbr::
-* Examples of gnatlbr Usage::
-@end ifset
 
 The GNAT Library Browser gnatls
 
@@ -791,13 +780,6 @@ file names on operating systems with a limit on the length of names.
 preprocessor utility that allows a single source file to be used to
 generate multiple or parameterized source files by means of macro
 substitution.
-
-@ifset vms
-@item
-@ref{The GNAT Run-Time Library Builder gnatlbr}, describes @command{gnatlbr},
-a tool for rebuilding the GNAT run time with user-supplied
-configuration pragmas.
-@end ifset
 
 @item
 @ref{The GNAT Library Browser gnatls}, describes @code{gnatls}, a
@@ -14994,76 +14976,6 @@ Header : String := $XYZ;
 
 @noindent
 and then the substitution will occur as desired.
-
-@ifset vms
-@node The GNAT Run-Time Library Builder gnatlbr
-@chapter The GNAT Run-Time Library Builder @code{gnatlbr}
-@findex gnatlbr
-@cindex Library builder
-
-@noindent
-@code{gnatlbr} is a tool for rebuilding the GNAT run time with user
-supplied configuration pragmas.
-
-@menu
-* Running gnatlbr::
-* Switches for gnatlbr::
-* Examples of gnatlbr Usage::
-@end menu
-
-@node Running gnatlbr
-@section Running @code{gnatlbr}
-
-@noindent
-The @code{gnatlbr} command has the form
-
-@smallexample
-$ GNAT LIBRARY /@r{[}CREATE@r{|}SET@r{|}DELETE@r{]}=directory @r{[}/CONFIG=file@r{]}
-@end smallexample
-
-@node Switches for gnatlbr
-@section Switches for @code{gnatlbr}
-
-@noindent
-@code{gnatlbr} recognizes the following switches:
-
-@table @option
-@c !sort!
-@item /CREATE=directory
-@cindex @code{/CREATE} (@code{gnatlbr})
-Create the new run-time library in the specified directory.
-
-@item /SET=directory
-@cindex @code{/SET} (@code{gnatlbr})
-Make the library in the specified directory the current run-time library.
-
-@item /DELETE=directory
-@cindex @code{/DELETE} (@code{gnatlbr})
-Delete the run-time library in the specified directory.
-
-@item /CONFIG=file
-@cindex @code{/CONFIG} (@code{gnatlbr})
-With /CREATE: Use the configuration pragmas in the specified file when
-building the library.
-
-With /SET: Use the configuration pragmas in the specified file when
-compiling.
-
-@end table
-
-@node Examples of gnatlbr Usage
-@section Example of @code{gnatlbr} Usage
-
-@smallexample
-Contents of VAXFLOAT.ADC:
-pragma Float_Representation (VAX_Float);
-
-$ GNAT LIBRARY /CREATE=[.VAXFLOAT] /CONFIG=VAXFLOAT.ADC
-
-GNAT LIBRARY rebuilds the run-time library in directory [.VAXFLOAT]
-
-@end smallexample
-@end ifset
 
 @node The GNAT Library Browser gnatls
 @chapter The GNAT Library Browser @code{gnatls}

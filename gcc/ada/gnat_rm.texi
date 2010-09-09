@@ -2428,9 +2428,7 @@ floating point types declared in the packages @code{Standard} and
 be @code{IEEE_Float} and the pragma has no effect. On OpenVMS, the
 argument may be @code{VAX_Float} to specify the use of the VAX float
 format for the floating-point types in Standard. This requires that
-the standard runtime libraries be recompiled.  @xref{The GNAT Run-Time
-Library Builder gnatlbr,,, gnat_ugn, @value{EDITION} User's Guide
-OpenVMS}, for a description of the @code{GNAT LIBRARY} command.
+the standard runtime libraries be recompiled.
 
 The two argument form specifies the representation to be used for
 the specified floating-point type. On all systems other than OpenVMS,
@@ -3346,9 +3344,6 @@ type @code{Long_Float} and for floating point type representations with
 For further details on this pragma, see the
 @cite{DEC Ada Language Reference Manual}, section 3.5.7b.  Note that to use
 this pragma, the standard runtime libraries must be recompiled.
-@xref{The GNAT Run-Time Library Builder gnatlbr,,, gnat_ugn,
-@value{EDITION} User's Guide OpenVMS}, for a description of the
-@code{GNAT LIBRARY} command.
 
 @node Pragma Machine_Attribute
 @unnumberedsec Pragma Machine_Attribute

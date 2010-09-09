@@ -24,8 +24,6 @@ gnatfind        ^ GNAT FIND
 Gnatfind        ^ GNAT FIND
 gnatkr          ^ GNAT KRUNCH
 Gnatkr          ^ GNAT KRUNCH
-gnatlbr         ^ GNAT LIBRARY
-Gnatlbr         ^ GNAT LIBRARY
 gnatlink        ^ GNAT LINK
 Gnatlink        ^ GNAT LINK
 gnatls          ^ GNAT LIST

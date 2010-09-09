@@ -1,3 +1,8 @@
+2010-09-09  Doug Rupp  <rupp@adacore.com>
+
+	* gnatlbr.adb: Removed.
+	* gnat_rm.texi, ug_words, gnat_ugn.texi: Remove mention of gnatlbr.
+
 2010-09-09  Robert Dewar  <dewar@adacore.com>
 
 	* sem_res.adb (Resolve_Type_Conversion): Catch more cases of redundant
