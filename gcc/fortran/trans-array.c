@@ -713,6 +713,28 @@ gfc_trans_allocate_array_storage (stmtblock_t * pre, stmtblock_t * post,
 }
 
 
+/* Get the array reference dimension corresponding to the given loop dimension.
+   It is different from the true array dimension given by the dim array in
+   the case of a partial array reference
+   It is different from the loop dimension in the case of a transposed array.
+   */
+
+static int
+get_array_ref_dim (gfc_ss_info *info, int loop_dim)
+{
+  int n, array_dim, array_ref_dim;
+
+  array_ref_dim = 0;
+  array_dim = info->dim[loop_dim];
+
+  for (n = 0; n < info->dimen; n++)
+    if (n != loop_dim && info->dim[n] < array_dim)
+      array_ref_dim++;
+
+  return array_ref_dim;
+}
+
+
 /* Generate code to create and initialize the descriptor for a temporary
    array.  This is used for both temporaries needed by the scalarizer, and
    functions returning arrays.  Adjusts the loop variables to be
@@ -733,6 +755,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 			     tree eltype, tree initial, bool dynamic,
 			     bool dealloc, bool callee_alloc, locus * where)
 {
+  tree from[GFC_MAX_DIMENSIONS], to[GFC_MAX_DIMENSIONS];
   tree type;
   tree desc;
   tree tmp;
@@ -740,8 +763,10 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
   tree nelem;
   tree cond;
   tree or_expr;
-  int n;
-  int dim;
+  int n, dim, tmp_dim;
+
+  memset (from, 0, sizeof (from));
+  memset (to, 0, sizeof (to));
 
   gcc_assert (info->dimen > 0);
   gcc_assert (loop->dimen == info->dimen);
@@ -750,15 +775,28 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
     gfc_warning ("Creating array temporary at %L", where);
 
   /* Set the lower bound to zero.  */
-  for (dim = 0; dim < info->dimen; dim++)
+  for (n = 0; n < loop->dimen; n++)
     {
-      n = loop->order[dim];
+      dim = info->dim[n];
+
       /* Callee allocated arrays may not have a known bound yet.  */
       if (loop->to[n])
-	loop->to[n] = gfc_evaluate_now (fold_build2_loc (input_location,
-					MINUS_EXPR, gfc_array_index_type,
-					loop->to[n], loop->from[n]), pre);
+	loop->to[n] = gfc_evaluate_now (
+			fold_build2_loc (input_location, MINUS_EXPR,
+					 gfc_array_index_type,
+					 loop->to[n], loop->from[n]),
+			pre);
       loop->from[n] = gfc_index_zero_node;
+
+      /* We are constructing the temporary's descriptor based on the loop
+	 dimensions. As the dimensions may be accessed in arbitrary order
+	 (think of transpose) the size taken from the n'th loop may not map
+	 to the n'th dimension of the array. We need to reconstruct loop infos
+	 in the right order before using it to set the descriptor
+	 bounds.  */
+      tmp_dim = get_array_ref_dim (info, n);
+      from[tmp_dim] = loop->from[n];
+      to[tmp_dim] = loop->to[n];
 
       info->delta[dim] = gfc_index_zero_node;
       info->start[dim] = gfc_index_zero_node;
@@ -768,7 +806,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 
   /* Initialize the descriptor.  */
   type =
-    gfc_get_array_type_bounds (eltype, info->dimen, 0, loop->from, loop->to, 1,
+    gfc_get_array_type_bounds (eltype, info->dimen, 0, from, to, 1,
 			       GFC_ARRAY_UNKNOWN, true);
   desc = gfc_create_var (type, "atmp");
   GFC_DECL_PACKED_ARRAY (desc) = 1;
@@ -814,23 +852,23 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 	     of the descriptor fields.  */
 	  tmp = fold_build2_loc (input_location,
 		MINUS_EXPR, gfc_array_index_type,
-		gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[dim]),
-		gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[dim]));
+		gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[n]),
+		gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[n]));
 	  loop->to[n] = tmp;
 	  continue;
 	}
 	
       /* Store the stride and bound components in the descriptor.  */
-      gfc_conv_descriptor_stride_set (pre, desc, gfc_rank_cst[dim], size);
+      gfc_conv_descriptor_stride_set (pre, desc, gfc_rank_cst[n], size);
 
-      gfc_conv_descriptor_lbound_set (pre, desc, gfc_rank_cst[dim],
+      gfc_conv_descriptor_lbound_set (pre, desc, gfc_rank_cst[n],
 				      gfc_index_zero_node);
 
-      gfc_conv_descriptor_ubound_set (pre, desc, gfc_rank_cst[dim],
-				      loop->to[n]);
+      gfc_conv_descriptor_ubound_set (pre, desc, gfc_rank_cst[n],
+				      to[n]);
 
       tmp = fold_build2_loc (input_location, PLUS_EXPR, gfc_array_index_type,
-			     loop->to[n], gfc_index_one_node);
+			     to[n], gfc_index_one_node);
 
       /* Check whether the size for this dimension is negative.  */
       cond = fold_build2_loc (input_location, LE_EXPR, boolean_type_node, tmp,
