@@ -1,3 +1,14 @@
+2010-09-09  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_rm.texi: Minor wordsmithing of section on pragma Ordered.
+
+2010-09-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* par-ch2.adb (Scan_Pragma_Argument_Association): In CodePeer mode,
+	do not generate an error for compatibility with legacy code.
+	ignored when generating SCIL.
+	* sem_attr.adb (Resolve_Attribute): Ignore AI-229 in CodePeer mode.
+
 2010-09-09  Thomas Quinot  <quinot@adacore.com>
 
 	* s-strxdr.adb, gnat_rm.texi, s-stratt-xdr.adb, s-stratt.ads: Rename

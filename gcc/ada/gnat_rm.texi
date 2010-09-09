@@ -3731,6 +3731,7 @@ pragma appears at the start of the file.
 @node Pragma Ordered
 @unnumberedsec Pragma Ordered
 @findex Ordered
+@findex pragma @code{Ordered}
 @noindent
 Syntax:
 
@@ -3740,83 +3741,87 @@ pragma Ordered (enumeration_first_subtype_LOCAL_NAME);
 
 @noindent
 Most enumeration types are from a conceptual point of view unordered.
-For example, if we write:
+For example, consider:
 
 @smallexample @c ada
 type Color is (Red, Blue, Green, Yellow);
 @end smallexample
 
 @noindent
-Then Ada semantics says that Blue > Red, and Green > Blue, but really
-these relations make no sense, the enumeration type merely specifies
-a set of possible colors, and the order is unimportant.
+By Ada semantics @code{Blue > Red} and @code{Green > Blue},
+but really these relations make no sense; the enumeration type merely
+specifies a set of possible colors, and the order is unimportant.
 
-@noindent
-For such unordered enumeration types, it is generally a good idea if
-clients avoid comparisons (other than equality or inequality), or
-explicit ranges. For example, if we have code buried in some client
-that says:
+For unordered enumeration types, it is generally a good idea if
+clients avoid comparisons (other than equality or inequality) and
+explicit ranges. (A @emph{client} is a unit where the type is referenced,
+other than the unit where the type is declared, its body, and its subunits.)
+For example, if code buried in some client says:
 
 @smallexample @c ada
-if Current_Color < Yellow ....
-if Current_Color in Blue .. Green
+if Current_Color < Yellow then ...
+if Current_Color in Blue .. Green then ...
 @end smallexample
 
 @noindent
-Then the code is relying on the order, which is undesriable in this case.
+then the client code is relying on the order, which is undesirable.
 It makes the code hard to read and creates maintenance difficulties if
-entries have to be added to the enumeration type. In cases like this,
-we prefer if the code in the client lists the possibilities, or an
-appropriate subtype is declared in the parent package, e.g. for the
-above case, we might have in the parent package:
+entries have to be added to the enumeration type. Instead,
+the code in the client should list the possibilities, or an
+appropriate subtype should be declared in the unit that declares
+the original enumeration type. E.g., the following subtype could
+be declared along with the type @code{Color}:
 
 @smallexample @c ada
 subtype RBG is Color range Red .. Green;
 @end smallexample
 
 @noindent
-and then in the client we could write:
+and then the client could write:
 
 @smallexample @c ada
-if Current_Color in RBG ....
-if Current_Color = Blue or Current_Color = Green ...
+if Current_Color in RBG then ...
+if Current_Color = Blue or Current_Color = Green then ...
 @end smallexample
 
 @noindent
-
-However some enumeration types are legitimately ordered from a conceptual
-point of view. For example, if you have:
+However, some enumeration types are legitimately ordered from a conceptual
+point of view. For example, if you declare:
 
 @smallexample @c ada
 type Day is (Mon, Tue, Wed, Thu, Fri, Sat, Sun);
 @end smallexample
 
 @noindent
-then the ordering imposed by the language is reasonable, and it
-is fine for clients to depend on this, writing for example:
+then the ordering imposed by the language is reasonable, and 
+clients can depend on it, writing for example:
 
 @smallexample @c ada
-if D in Mon .. Fri then
-if D < Wed
+if D in Mon .. Fri then ...
+if D < Wed then ...
 @end smallexample
 
 @noindent
-pragma @option{Order} is provided to mark enumeration types that
-are conceptually ordered, warning the reader that clients may depend
-on the ordering. We provide a pragma to mark enumerations as Ordered
-rather than one to mark them as Unordered, since in our experience,
-the great majority of enumeration types are conceptually Unordered.
+The pragma @option{Ordered} is provided to mark enumeration types that
+are conceptually ordered, alerting the reader that clients may depend
+on the ordering. GNAT provides a pragma to mark enumerations as ordered
+rather than one to mark them as unordered, since in our experience,
+the great majority of enumeration types are conceptually unordered.
 
-The types Boolean, Character, Wide_Character, and Wide_Wide_Character
-are considered to be ordered types, so there is a pragma Ordered
-present in Standard for these types.
+The types @code{Boolean}, @code{Character}, @code{Wide_Character},
+and @code{Wide_Wide_Character}
+are considered to be ordered types, so each is declared with a
+pragma @code{Ordered} in package @code{Standard}.
 
-Normally pragma Order serves as only documentation and a guide for
-coding standards, but GNAT provides a warning switch -gnatw.u that
+Normally pragma @code{Ordered} serves only as documentation and a guide for
+coding standards, but GNAT provides a warning switch @option{-gnatw.u} that
 requests warnings for inappropriate uses (comparisons and explicit
 subranges) for unordered types. If this switch is used, then any
-enumeration type not marked with pragma Ordered will be considered
+enumeration type not marked with pragma @code{Ordered} will be considered
 as unordered, and will generate warnings for inappropriate uses.
+
+For additional information please refer to the description of the
+@option{-gnatw.u} switch in the @value{EDITION} User's Guide.
 
 @node Pragma Passive
 @unnumberedsec Pragma Passive
