@@ -2726,8 +2726,7 @@ pseudo_for_reload_consideration_p (int regno)
 {
   /* Consider spilled pseudos too for IRA because they still have a
      chance to get hard-registers in the reload when IRA is used.  */
-  return (reg_renumber[regno] >= 0
-	  || (ira_conflicts_p && flag_ira_share_spill_slots));
+  return (reg_renumber[regno] >= 0 || ira_conflicts_p);
 }
 
 /* Init LIVE_SUBREGS[ALLOCNUM] and LIVE_SUBREGS_USED[ALLOCNUM] using
