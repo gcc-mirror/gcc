@@ -7,7 +7,7 @@
 @c                                                                            o
 @c                             G N A T _ U G N                                o
 @c                                                                            o
-@c   GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   o
+@c                     Copyright (C) 1992-2010, AdaCore                       o
 @c                                                                            o
 @c oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 
@@ -3979,7 +3979,7 @@ effect if this switch is present.
 
 @item -fno-inline-functions
 @cindex @option{-fno-inline-functions} (@command{gcc})
-Suppresses automatic inlining of simple subprograms, which is enabled
+Suppresses automatic inlining of subprograms, which is enabled
 if @option{-O3} is used.
 
 @item -fno-inline-small-functions
@@ -10108,12 +10108,11 @@ generates highly optimized code and has
 the slowest compilation time.
 
 @item ^-O3^/OPTIMIZE=INLINING^
-Full optimization as in @option{-O2},
-and also attempts automatic inlining of small
-subprograms within a unit (@pxref{Inlining of Subprograms}).
+Full optimization as in @option{-O2};
+also uses more aggressive automatic inlining of subprograms within a unit (@pxref{Inlining of Subprograms}) and attemps to vectorize loops.
 
 @item ^-Os^/OPTIMIZE=SPACE^
-Optimize space usage of resulting program.
+Optimize space usage (code and data) of resulting program.
 @end table
 
 @noindent
@@ -10142,7 +10141,7 @@ levels.
 
 Note regarding the use of @option{-O3}: The use of this optimization level
 is generally discouraged with GNAT, since it often results in larger
-executables which run more slowly. See further discussion of this point
+executables which may run more slowly. See further discussion of this point
 in @ref{Inlining of Subprograms}.
 
 @node Debugging Optimized Code
@@ -10292,9 +10291,10 @@ subprograms.
 @item
 @cindex pragma Inline
 @findex Inline
-Either @code{pragma Inline} applies to the subprogram, or it is local
-to the unit and called once from within it, or it is small and automatic
-inlining (optimization level @option{-O3}) is specified.
+Either @code{pragma Inline} applies to the subprogram, or it is local to
+the unit and called once from within it, or it is small and optimization
+level @option{-O2} is specified, or automatic inlining (optimization level
+@option{-O3}) is specified.
 @end itemize
 
 @noindent
@@ -10378,7 +10378,11 @@ this switch is used to suppress the resulting inlining actions.
 
 @cindex @option{-fno-inline-functions} (@command{gcc})
 Note: The @option{-fno-inline-functions} switch can be used to prevent
-automatic inlining of small subprograms if @option{-O3} is used.
+automatic inlining of subprograms if @option{-O3} is used.
+
+@cindex @option{-fno-inline-small-functions} (@command{gcc})
+Note: The @option{-fno-inline-small-functions} switch can be used to prevent
+automatic inlining of small subprograms if @option{-O2} is used.
 
 @cindex @option{-fno-inline-functions-called-once} (@command{gcc})
 Note: The @option{-fno-inline-functions-called-once} switch

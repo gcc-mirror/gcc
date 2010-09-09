@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1564,7 +1564,7 @@ package body Ada.Containers.Indefinite_Ordered_Multisets is
       else
          if Tree.Lock > 0 then
             raise Program_Error with
-              "attempt to tamper with cursors (set is locked)";
+              "attempt to tamper with elements (set is locked)";
          end if;
 
          declare

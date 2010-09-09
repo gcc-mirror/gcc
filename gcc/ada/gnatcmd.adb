@@ -56,6 +56,7 @@ with Ada.Text_IO;             use Ada.Text_IO;
 with GNAT.OS_Lib;             use GNAT.OS_Lib;
 
 with VMS_Conv;                use VMS_Conv;
+with VMS_Cmds;                use VMS_Cmds;
 
 procedure GNATCmd is
    Project_Node_Tree : Project_Node_Tree_Ref;
