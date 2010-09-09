@@ -1,3 +1,13 @@
+2010-09-09  Vincent Celier  <celier@adacore.com>
+
+	* adaint.c: New function __gnat_get_env_vars_case_sensitive, returns 0
+	for VMS and Windows, and 1 for all other platforms.
+	* adaint.h: New function __gnat_get_env_vars_case_sensitive
+	* osint.ads, osint.adb (Canonical_Case_Env_Var_Name): New procedure.
+	* prj-ext.adb (Add): Call Canonical_Case_Env_Var_Name instead of
+	Canonical_Case_File_Name, as we are dealing with environment variables,
+	not files.
+
 2010-09-09  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.adb: Minor reformatting

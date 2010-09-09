@@ -586,6 +586,18 @@ __gnat_get_file_names_case_sensitive (void)
 #endif
 }
 
+/* Return nonzero if environment variables are case sensitive.  */
+
+int
+__gnat_get_env_vars_case_sensitive (void)
+{
+#if defined (VMS) || defined (WINNT)
+ return 0;
+#else
+ return 1;
+#endif
+}
+
 char
 __gnat_get_default_identifier_character_set (void)
 {
