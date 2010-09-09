@@ -1,3 +1,13 @@
+2010-09-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem.adb (Walk_Library_Items): Traverse context of subunits of the
+	main unit.
+	(Is_Subunit_Of_Main): Handle null nodes properly.
+
+2010-09-09  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch2.adb: Update comments.
+
 2010-09-09  Ben Brosgol  <brosgol@adacore.com>
 
 	* gnat_rm.texi: Minor wordsmithing of section on pragma Ordered.

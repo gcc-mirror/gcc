@@ -1985,14 +1985,46 @@ package body Sem is
       if not Done (Main_Unit) then
          Do_Main := True;
 
-         declare
+         Process_Main : declare
             Parent_CU : Node_Id;
             Body_CU   : Node_Id;
             Body_U    : Unit_Number_Type;
             Child     : Entity_Id;
 
+            function Is_Subunit_Of_Main (U : Node_Id) return Boolean;
+            --  If the main unit has subunits, their context may include
+            --  bodies that are needed in the body of main. We must examine
+            --  the context of the subunits, which are otherwise not made
+            --  explicit in the main unit.
+
+            ------------------------
+            -- Is_Subunit_Of_Main --
+            ------------------------
+
+            function Is_Subunit_Of_Main (U : Node_Id) return Boolean is
+               Lib : Node_Id;
+            begin
+               if No (U) then
+                  return False;
+               else
+                  Lib := Library_Unit (U);
+                  return Nkind (Unit (U)) = N_Subunit
+                    and then
+                      (Lib = Cunit (Main_Unit)
+                        or else Is_Subunit_Of_Main (Lib));
+               end if;
+            end Is_Subunit_Of_Main;
+
+         --  Start of processing for Process_Main
+
          begin
             Process_Bodies_In_Context (Main_CU);
+
+            for Unit_Num in Done'Range loop
+               if Is_Subunit_Of_Main (Cunit (Unit_Num)) then
+                  Process_Bodies_In_Context (Cunit (Unit_Num));
+               end if;
+            end loop;
 
             --  If the main unit is a child unit, parent bodies may be present
             --  because they export instances or inlined subprograms. Check for
@@ -2023,7 +2055,7 @@ package body Sem is
 
             Do_Action (Main_CU, Unit (Main_CU));
             Done (Main_Unit) := True;
-         end;
+         end Process_Main;
       end if;
 
       if Debug_Unit_Walk then
