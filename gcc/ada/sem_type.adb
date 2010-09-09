@@ -2669,6 +2669,18 @@ package body Sem_Type is
       end if;
    end Is_Invisible_Operator;
 
+   --------------------
+   --  Is_Progenitor --
+   --------------------
+
+   function Is_Progenitor
+     (Iface : Entity_Id;
+      Typ   : Entity_Id) return Boolean
+   is
+   begin
+      return Implements_Interface (Typ, Iface, Exclude_Parents => True);
+   end Is_Progenitor;
+
    -------------------
    -- Is_Subtype_Of --
    -------------------

@@ -2720,6 +2720,10 @@ package body Exp_Ch9 is
                raise Program_Error;
          end case;
 
+         --  Establish link between subprogram body entity and source entry.
+
+         Set_Corresponding_Protected_Entry (Edef, Ent);
+
          --  Create body of entry procedure. The renaming declarations are
          --  placed ahead of the block that contains the actual entry body.
 

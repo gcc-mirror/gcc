@@ -149,6 +149,7 @@ package body Einfo is
 
    --    Alias                           Node18
    --    Corresponding_Concurrent_Type   Node18
+   --    Corresponding_Protected_Entry   Node18
    --    Corresponding_Record_Type       Node18
    --    Delta_Value                     Ureal18
    --    Enclosing_Scope                 Node18
@@ -722,6 +723,11 @@ package body Einfo is
           and then Chars (Id) = Name_Op_Ne);
       return Node13 (Id);
    end Corresponding_Equality;
+
+   function Corresponding_Protected_Entry (Id : E) return E is
+   begin
+      return Node18 (Id);
+   end Corresponding_Protected_Entry;
 
    function Corresponding_Record_Type (Id : E) return E is
    begin
@@ -3108,6 +3114,11 @@ package body Einfo is
           and then Chars (Id) = Name_Op_Ne);
       Set_Node13 (Id, V);
    end Set_Corresponding_Equality;
+
+   procedure Set_Corresponding_Protected_Entry (Id : E; V : E) is
+   begin
+      Set_Node18 (Id, V);
+   end Set_Corresponding_Protected_Entry;
 
    procedure Set_Corresponding_Record_Type (Id : E; V : E) is
    begin
@@ -7647,6 +7658,9 @@ package body Einfo is
 
          when E_Record_Type                                =>
             Write_Str ("Corresponding_Concurrent_Type");
+
+         when E_Subprogram_Body                            =>
+            Write_Str ("Corresponding_Protected_Entry");
 
          when E_Entry_Index_Parameter                      =>
             Write_Str ("Entry_Index_Constant");

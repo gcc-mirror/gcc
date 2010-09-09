@@ -1,3 +1,18 @@
+2010-09-09  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Is_Progenitor): Relocated to sem_type.
+	(Replace_Type): Code cleanup.
+	* sem_type.ads, sem_type.adb (Is_Progenitor): Relocated from sem_ch3
+
+2010-09-09  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch8.adb: Minor reformatting.
+
+2010-09-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb, einfo.adb, einfo.ads: New attribute
+	Corresponding_Protected_Entry.
+
 2010-09-09  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch3.adb (Build_Untagged_Equality): Do not set alias of implicit

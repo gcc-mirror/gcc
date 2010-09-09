@@ -574,14 +574,6 @@ package body Sem_Ch3 is
    --  copying the record declaration for the derived base. In the tagged case
    --  the value returned is irrelevant.
 
-   function Is_Progenitor
-     (Iface : Entity_Id;
-      Typ   : Entity_Id) return Boolean;
-   --  Determine whether the interface Iface is implemented by Typ. It requires
-   --  traversing the list of abstract interfaces of the type, as well as that
-   --  of the ancestor types. The predicate is used to determine when a formal
-   --  in the signature of an inherited operation must carry the derived type.
-
    function Is_Valid_Constraint_Kind
      (T_Kind          : Type_Kind;
       Constraint_Kind : Node_Kind) return Boolean;
@@ -12263,15 +12255,6 @@ package body Sem_Ch3 is
                Set_Etype (New_Id, Base_Type (Derived_Type));
             end if;
 
-         --  Ada 2005 (AI-251): Handle derivations of abstract interface
-         --  primitives.
-
-         elsif Is_Interface (Etype (Id))
-           and then not Is_Class_Wide_Type (Etype (Id))
-           and then Is_Progenitor (Etype (Id), Derived_Type)
-         then
-            Set_Etype (New_Id, Derived_Type);
-
          else
             Set_Etype (New_Id, Etype (Id));
          end if;
@@ -14950,19 +14933,6 @@ package body Sem_Ch3 is
          return True;
       end if;
    end Is_Null_Extension;
-
-   --------------------
-   --  Is_Progenitor --
-   --------------------
-
-   function Is_Progenitor
-     (Iface : Entity_Id;
-      Typ   : Entity_Id) return Boolean
-   is
-   begin
-      return Implements_Interface (Typ, Iface,
-               Exclude_Parents => True);
-   end Is_Progenitor;
 
    ------------------------------
    -- Is_Valid_Constraint_Kind --
