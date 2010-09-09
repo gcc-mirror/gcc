@@ -1,5 +1,16 @@
 2010-09-09  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* config/s390/s390.c (legitimate_reload_constant_p): Accept floating-
+	point zero operands that fit into a single GPR.
+	(s390_preferred_reload_class): Ensure we only return general-purpose
+	register classes.
+	* config/s390/s390.md ("*mov<mode>_64dfp"): Use lghi to load
+	floating-point zero operands into GPRs.
+	("*mov<mode>_64"): Likewise.
+	("mov<mode>"): Likewise using lhi.
+
+2010-09-09  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* config/s390/s390.c (s390_symref_operand_p): Return false for
 	literal pool references.
 	(s390_check_qrst_address): Update caller.
