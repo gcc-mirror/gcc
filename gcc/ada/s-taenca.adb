@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2010, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -589,6 +589,13 @@ package body System.Tasking.Entry_Calls is
             --  corresponding code in the ATC case).
 
             Entry_Call.Cancellation_Attempted := True;
+
+            --  Reset Entry_Call.State so that the call is marked as cancelled
+            --  by Check_Pending_Actions_For_Entry_Call below.
+
+            if Entry_Call.State < Was_Abortable then
+               Entry_Call.State := Now_Abortable;
+            end if;
 
             if Self_Id.Pending_ATC_Level >= Entry_Call.Level then
                Self_Id.Pending_ATC_Level := Entry_Call.Level - 1;

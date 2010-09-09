@@ -958,7 +958,7 @@ package body System.Tasking.Protected_Objects.Operations is
          Send_Trace_Info (POT_Call, Entry_Index (E), Timeout);
       end if;
 
-      Initialization.Defer_Abort (Self_Id);
+      Initialization.Defer_Abort_Nestable (Self_Id);
       Lock_Entries (Object, Ceiling_Violation);
 
       if Ceiling_Violation then
@@ -1009,7 +1009,7 @@ package body System.Tasking.Protected_Objects.Operations is
          end if;
 
          Entry_Call_Successful := Entry_Call.State = Done;
-         Initialization.Undefer_Abort (Self_Id);
+         Initialization.Undefer_Abort_Nestable (Self_Id);
          Entry_Calls.Check_Exception (Self_Id, Entry_Call);
          return;
       end if;
@@ -1025,7 +1025,7 @@ package body System.Tasking.Protected_Objects.Operations is
 
       --  ??? Do we need to yield in case Yielded is False
 
-      Initialization.Undefer_Abort (Self_Id);
+      Initialization.Undefer_Abort_Nestable (Self_Id);
       Entry_Call_Successful := Entry_Call.State = Done;
       Entry_Calls.Check_Exception (Self_Id, Entry_Call);
    end Timed_Protected_Entry_Call;

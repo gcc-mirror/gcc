@@ -1,5 +1,22 @@
 2010-09-09  Robert Dewar  <dewar@adacore.com>
 
+	* sinput-p.ads: Minor comment update.
+
+2010-09-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-tpobop.adb, s-taenca.adb (Wait_For_Completion_With_Timeout): Reset
+	Entry_Call.State if needed so that the call is marked as cancelled by
+	Check_Pending_Actions_For_Entry_Call.
+	(Timed_Protected_Entry_Call): Adjust calls to Defer/Under_Abort, since
+	this procedure may be called from a controlled operation
+	(Initialize/Finalize).
+
+2010-09-09  Vadim Godunko  <godunko@adacore.com>
+
+	* impunit.adb: Correct spelling of package's name in the comment.
+
+2010-09-09  Robert Dewar  <dewar@adacore.com>
+
 	* gnatcmd.adb, gnatlink.adb, sem_ch12.adb, sem_eval.adb, sinput-p.adb:
 	Minor reformatting
 
