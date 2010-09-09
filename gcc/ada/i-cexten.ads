@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,16 +36,22 @@ with System;
 
 package Interfaces.C.Extensions is
 
-   --  Following 7 declarations need comments ???
+   --  Definitions for C "void" and "void*" types
 
    subtype void     is System.Address;
    subtype void_ptr is System.Address;
 
+   --  Definitions for C incomplete/unknown structs
+
    subtype opaque_structure_def is System.Address;
    type opaque_structure_def_ptr is access opaque_structure_def;
 
+   --  Definitions for C++ incomplete/unknown classes
+
    subtype incomplete_class_def is System.Address;
    type incomplete_class_def_ptr is access incomplete_class_def;
+
+   --  C bool
 
    subtype bool is plain_char;
 
@@ -53,6 +59,15 @@ package Interfaces.C.Extensions is
 
    subtype long_long is Long_Long_Integer;
    type unsigned_long_long is mod 2 ** 64;
+
+   --  128bit integer type available on 64bit platforms:
+   --  typedef int signed_128 __attribute__ ((mode (TI)));
+
+   type Signed_128 is record
+      low, high : unsigned_long_long;
+   end record;
+   pragma Convention (C_Pass_By_Copy, Signed_128);
+   for Signed_128'Alignment use unsigned_long_long'Alignment * 2;
 
    --  Types for bitfields
 

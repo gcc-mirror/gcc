@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -908,7 +908,7 @@ package body Ada.Containers.Hashed_Maps is
                return False;
             end if;
 
-            if X = X.Next then  --  to prevent endless loop
+            if X = X.Next then  --  to prevent unnecessary looping
                return False;
             end if;
 

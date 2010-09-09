@@ -1,3 +1,25 @@
+2010-09-09  Yannick Moy  <moy@adacore.com>
+
+	* a-cihama.adb, a-cohama.adb: Fix comments.
+
+2010-09-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* i-cexten.ads: Add comments.
+	(Signed_128): New type, used by some C bindings.
+	* debug.adb: Update comment.
+
+2010-09-09  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: For ASIS tools (gnatpp, gnatcheck, gnatelim,
+	gnatmetric and gnatstub) add a note that '-gnat05' should be used if
+	the tool should process Ada 2005 sources.
+
+2010-09-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Remove_Parent): If the scope containing the child
+	instance is a block, examine the enclosing scope to determine if it is
+	a parent instance.
+
 2010-09-09  Doug Rupp  <rupp@adacore.com>
 
 	* sem_prag.adb (pragma Ident): Pass --identification= vice 
