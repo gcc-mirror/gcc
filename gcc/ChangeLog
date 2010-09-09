@@ -1,3 +1,9 @@
+2010-09-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/40386
+	* ira.c (pseudo_for_reload_consideration_p): Don't use
+	flag_ira_share_spill_slots.
+
 2010-09-09  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/s390/s390.c (legitimate_reload_constant_p): Accept floating-
