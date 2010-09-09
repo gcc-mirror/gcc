@@ -1,3 +1,16 @@
+2010-09-09  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch4.adb (Box_Error): New procedure.
+
+2010-09-09  Thomas Quinot  <quinot@adacore.com>
+
+	* sem.adb: Minor reformatting.
+
+2010-09-09  Pascal Obry  <obry@adacore.com>
+
+	* prj-env.adb: Style fix, use /and then/ and /or else/.
+	* gnat_ugn.texi: Fix typos.
+
 2010-09-03  Joseph Myers  <joseph@codesourcery.com>
 
 	PR ada/45499

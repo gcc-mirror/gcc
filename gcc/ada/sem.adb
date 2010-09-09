@@ -67,7 +67,7 @@ package body Sem is
    --  Controls debugging printouts for Walk_Library_Items
 
    Outer_Generic_Scope : Entity_Id := Empty;
-   --  Global reference to the outer scope that is generic. In a non- generic
+   --  Global reference to the outer scope that is generic. In a non-generic
    --  context, it is empty. At the moment, it is only used for avoiding
    --  freezing of external references in generics.
 
