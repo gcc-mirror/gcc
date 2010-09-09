@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -162,12 +162,11 @@ package body System.Fat_Gen is
 
    begin
       if X = 0.0 then
+
+         --  The normalized exponent of zero is zero, see RM A.5.2(15)
+
          Frac := X;
          Expo := 0;
-
-         --  More useful would be defining Expo to be T'Machine_Emin - 1 or
-         --  T'Machine_Emin - T'Machine_Mantissa, which would preserve
-         --  monotonicity of the exponent function ???
 
       --  Check for infinities, transfinites, whatnot
 
@@ -205,6 +204,7 @@ package body System.Fat_Gen is
                   end if;
 
                   --  Ax < R_Power (N)
+
                end loop;
 
                --  1 <= Ax < Rad
@@ -229,6 +229,7 @@ package body System.Fat_Gen is
                   end if;
 
                   --  R_Neg_Power (N) <= Ax < 1
+
                end loop;
             end if;
 
@@ -553,8 +554,8 @@ package body System.Fat_Gen is
    -- Scaling --
    -------------
 
-   --  Return x * rad ** adjustment quickly,
-   --  or quietly underflow to zero, or overflow naturally.
+   --  Return x * rad ** adjustment quickly, or quietly underflow to zero,
+   --  or overflow naturally.
 
    function Scaling (X : T; Adjustment : UI) return T is
    begin
@@ -586,6 +587,7 @@ package body System.Fat_Gen is
                end if;
 
                --  -Log_Power (N) < Ex <= 0
+
             end loop;
 
             --  Ex = 0
@@ -611,6 +613,7 @@ package body System.Fat_Gen is
             end loop;
 
             --  Ex = 0
+
          end if;
 
          return Y;
@@ -648,13 +651,13 @@ package body System.Fat_Gen is
       else
          Decompose (X, X_Frac, X_Exp);
 
-         --  A special case, if the number we had was a negative power of
-         --  two, then we want to add half of what we would otherwise add,
-         --  since the exponent is going to be reduced.
+         --  A special case, if the number we had was a negative power of two,
+         --  then we want to add half of what we would otherwise add, since the
+         --  exponent is going to be reduced.
 
          --  Note that X_Frac has the same sign as X, so if X_Frac is -0.5,
-         --  then we know that we have a negative number (and hence a
-         --  negative power of 2).
+         --  then we know that we have a negative number (and hence a negative
+         --  power of 2).
 
          if X_Frac = -0.5 then
             return X + Gradual_Scaling (X_Exp - T'Machine_Mantissa - 1);
@@ -779,8 +782,8 @@ package body System.Fat_Gen is
       --  one read, but small enough so that all floating point object sizes
       --  are a multiple of the Float_Word'Size.
 
-      --  The following conditions must be met for all possible
-      --  instantiations of the attributes package:
+      --  The following conditions must be met for all possible instantiations
+      --  of the attributes package:
 
       --    - T'Size is an integral multiple of Float_Word'Size
 
@@ -795,9 +798,11 @@ package body System.Fat_Gen is
       type Rep_Index is range 0 .. 7;
 
       Rep_Words : constant Positive :=
-         (T'Size + Float_Word'Size - 1) / Float_Word'Size;
-      Rep_Last  : constant Rep_Index := Rep_Index'Min
-        (Rep_Index (Rep_Words - 1), (T'Mantissa + 16) / Float_Word'Size);
+                    (T'Size + Float_Word'Size - 1) / Float_Word'Size;
+      Rep_Last  : constant Rep_Index :=
+                    Rep_Index'Min
+                      (Rep_Index (Rep_Words - 1),
+                       (T'Mantissa + 16) / Float_Word'Size);
       --  Determine the number of Float_Words needed for representing the
       --  entire floating-point value. Do not take into account excessive
       --  padding, as occurs on IA-64 where 80 bits floats get padded to 128
