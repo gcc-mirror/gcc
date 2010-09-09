@@ -7845,12 +7845,12 @@ package body Sem_Prag is
 
                   else
                      --  In VMS, the effect of IDENT is achieved by passing
-                     --  IDENTIFICATION=name as a --for-linker switch.
+                     --  --identification=name as a --for-linker switch.
 
                      if OpenVMS_On_Target then
                         Start_String;
                         Store_String_Chars
-                          ("--for-linker=IDENTIFICATION=");
+                          ("--for-linker=--identification=");
                         String_To_Name_Buffer (Strval (Str));
                         Store_String_Chars (Name_Buffer (1 .. Name_Len));
 
@@ -7860,7 +7860,7 @@ package body Sem_Prag is
                         --  associated with a with'd package.
 
                         Replace_Linker_Option_String
-                          (End_String, "--for-linker=IDENTIFICATION=");
+                          (End_String, "--for-linker=--identification=");
                      end if;
 
                      Set_Ident_String (Current_Sem_Unit, Str);
