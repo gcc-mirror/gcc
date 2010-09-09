@@ -151,7 +151,7 @@ package body Sinput.P is
 
    function Source_File_Is_Subunit (X : Source_File_Index) return Boolean is
    begin
-      --  Nothing to do if X is null. So, simply return False.
+      --  Nothing to do if X is no source file, so simply return False
 
       if X = No_Source_File then
          return False;

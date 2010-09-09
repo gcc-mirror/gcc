@@ -642,10 +642,12 @@ package body Sem_Eval is
          --  types, since we may have two NaN values and they should never
          --  compare equal.
 
-         --  If the entity is a discriminant, the two expressions may be
-         --  bounds of components of objects of the same discriminated
-         --  type. The values of the discriminants are not static, and
-         --  therefore the result is unknown.
+         --  If the entity is a discriminant, the two expressions may be bounds
+         --  of components of objects of the same discriminated type. The
+         --  values of the discriminants are not static, and therefore the
+         --  result is unknown.
+
+         --  It would be better to comment individual branches of this test ???
 
          if Nkind_In (Lf, N_Identifier, N_Expanded_Name)
            and then Nkind_In (Rf, N_Identifier, N_Expanded_Name)
