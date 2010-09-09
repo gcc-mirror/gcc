@@ -1,3 +1,12 @@
+2010-09-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb: Improve error message on untagged equality.
+	* sem.adb (Semantics): Include subprogram bodies that act as spec.
+
+2010-09-09  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch13.adb, exp_ch13.adb: Undo previous change, unneeded.
+
 2010-09-09  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch13.adb, sem_ch6.adb, exp_ch3.adb: Minor reformatting.
