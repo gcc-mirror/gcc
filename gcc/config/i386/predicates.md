@@ -68,7 +68,8 @@
     op = SUBREG_REG (op);
 
   /* Be careful to accept only registers having upper parts.  */
-  return REGNO (op) > LAST_VIRTUAL_REGISTER || REGNO (op) <= BX_REG;
+  return (REG_P (op)
+	  && (REGNO (op) > LAST_VIRTUAL_REGISTER || REGNO (op) <= BX_REG));
 })
 
 ;; Return true if op is the AX register.
@@ -97,13 +98,18 @@
 
 ;; Return true if op is not xmm0 register.
 (define_predicate "reg_not_xmm0_operand"
-   (and (match_operand 0 "register_operand")
-	(match_test "REGNO (op) != FIRST_SSE_REG")))
+  (match_operand 0 "register_operand")
+{
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  return !REG_P (op) || REGNO (op) != FIRST_SSE_REG;
+})
 
 ;; As above, but allow nonimmediate operands.
 (define_predicate "nonimm_not_xmm0_operand"
-   (ior (match_operand 0 "memory_operand")
-	(match_operand 0 "reg_not_xmm0_operand")))
+  (ior (match_operand 0 "memory_operand")
+       (match_operand 0 "reg_not_xmm0_operand")))
 
 ;; Return true if VALUE can be stored in a sign extended immediate field.
 (define_predicate "x86_64_immediate_operand"

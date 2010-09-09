@@ -1,3 +1,10 @@
+2010-09-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (ext_register_operand): Check that
+	SUBREG_REG is really a register before looking for REGNO.
+	(reg_not_xmm0_operand): Handle SUBREGs correctly.
+	(nonimm_not_xmm0_operand): Call reg_not_xmm0_operand.
+
 2010-09-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* rtl.def (DEBUG_IMPLICIT_PTR): New rtl code.
