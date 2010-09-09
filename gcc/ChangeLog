@@ -1,3 +1,8 @@
+2010-09-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/44554
+	* ira.c (ira): Switch off sharing spill slots if setjmp is called.
+
 2010-09-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/40386
