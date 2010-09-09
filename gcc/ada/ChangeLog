@@ -1,3 +1,7 @@
+2010-09-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.adb, einfo.ads: Clarify use of Corresponding_Protected_Entry.
+
 2010-09-09  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch3.adb (Is_Progenitor): Relocated to sem_type.

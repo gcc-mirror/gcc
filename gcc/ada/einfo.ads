@@ -632,8 +632,8 @@ package Einfo is
 --       where Comes_From_Source is always False.
 
 --    Corresponding_Protected_Entry (Node18)
---       Present in subrogram bodies that implement entries of protected
---       types.
+--       Present in subrogram bodies. Denotes the entry of a protected type
+--       that is implemented by the subprogram body.
 
 --    Corresponding_Record_Type (Node18)
 --       Present in protected and task types and subtypes. References the
@@ -5439,6 +5439,7 @@ package Einfo is
    --  E_Subprogram_Body
    --    Mechanism                           (Uint8)
    --    First_Entity                        (Node17)
+   --    Corresponding_Protected_Entry       (Node18)
    --    Last_Entity                         (Node20)
    --    Scope_Depth_Value                   (Uint22)
    --    Scope_Depth                         (synth)
