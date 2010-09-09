@@ -1726,6 +1726,11 @@ lto_flatten_files (struct lto_file_decl_data **orig, int count, int last_file_ix
   gcc_assert (k == count);
 }
 
+/* Input file data before flattening (i.e. splitting them to subfiles to support
+   incremental linking.  */
+static int real_file_count;
+static GTY((length ("real_file_count + 1"))) struct lto_file_decl_data **real_file_decl_data;
+
 /* Read all the symbols from the input files FNAMES.  NFILES is the
    number of files requested in the command line.  Instantiate a
    global call graph by aggregating all the sub-graphs found in each
@@ -1744,7 +1749,9 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 
   timevar_push (TV_IPA_LTO_DECL_IN);
 
-  decl_data = (struct lto_file_decl_data **)xmalloc (sizeof(*decl_data) * (nfiles+1));
+  real_file_decl_data
+    = decl_data = ggc_alloc_cleared_vec_lto_file_decl_data_ptr (nfiles + 1);
+  real_file_count = nfiles;
 
   /* Read the resolution file.  */
   resolution = NULL;
@@ -1794,7 +1801,8 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 
   lto_flatten_files (decl_data, count, last_file_ix);
   lto_stats.num_input_files = count;
-  free(decl_data);
+  ggc_free(decl_data);
+  real_file_decl_data = NULL;
 
   if (resolution_file_name)
     fclose (resolution);

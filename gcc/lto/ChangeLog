@@ -1,3 +1,8 @@
+2010-09-08  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (real_file_count, real_file_decl_data): New static vars.
+	(read_cgraph_and_symbols): Use it.
+
 2010-09-08  Richard Guenther  <rguenther@suse.de>
 
 	* lto.c (read_cgraph_and_symbols): Collect again after each
