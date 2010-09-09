@@ -1,3 +1,13 @@
+2010-09-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* configure.ac (gnu_indirect_function): New test.
+	* configure: Rebuilt.
+	* config.in (HAVE_GAS_INDIRECT_FUNCTION): New.
+	* defaults.h (IFUNC_ASM_TYPE): Provide default.
+
+	* doc/extend.texi (Function Attributes): Document ifunc.
+	* varasm.c (do_assemble_alias): Deal with ifuncs too.
+
 2010-09-09  Hariharan Sandanagobalane <hariharan@picochip.com>
 
 	* config/picochip/picochip.c (picochip_reorg): Check for note_p for

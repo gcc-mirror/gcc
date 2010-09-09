@@ -1,3 +1,9 @@
+2010-09-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-common.c (handle_alias_ifunc_attribute): New, broken out of	...
+	(handle_alias_attribute): ... here.
+	(handle_ifunc_attribute): New.
+
 2010-09-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-common.h (do_warn_double_promotion): Declare.

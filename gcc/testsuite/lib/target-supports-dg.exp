@@ -90,6 +90,21 @@ proc dg-require-alias { args } {
     }
 }
 
+# If this target does not support the "ifunc" attribute, skip this
+# test.
+
+proc dg-require-ifunc { args } {
+    set ifunc_available [ check_ifunc_available ]
+    if { $ifunc_available == -1 } {
+	upvar name name
+	unresolved "$name"
+    }
+    if { $ifunc_available < 2 } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+    }
+}
+
 # If this target's linker does not support the --gc-sections flag,
 # skip this test.
 
