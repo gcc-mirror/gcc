@@ -696,14 +696,32 @@ package body Osint is
       if not File_Names_Case_Sensitive then
          for J in S'Range loop
             if S (J) in 'A' .. 'Z' then
-               S (J) := Character'Val (
-                          Character'Pos (S (J)) +
-                          Character'Pos ('a')   -
-                          Character'Pos ('A'));
+               S (J) :=
+                 Character'Val
+                   (Character'Pos (S (J)) +
+                     (Character'Pos ('a') - Character'Pos ('A')));
             end if;
          end loop;
       end if;
    end Canonical_Case_File_Name;
+
+   ---------------------------------
+   -- Canonical_Case_Env_Var_Name --
+   ---------------------------------
+
+   procedure Canonical_Case_Env_Var_Name (S : in out String) is
+   begin
+      if not Env_Vars_Case_Sensitive then
+         for J in S'Range loop
+            if S (J) in 'A' .. 'Z' then
+               S (J) := Character'Val (
+                 Character'Pos (S (J)) +
+                   Character'Pos ('a')   -
+                   Character'Pos ('A'));
+            end if;
+         end loop;
+      end if;
+   end Canonical_Case_Env_Var_Name;
 
    ---------------------------
    -- Create_File_And_Check --

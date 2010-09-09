@@ -60,7 +60,7 @@ package body Prj.Ext is
       The_Value := Name_Find;
       Name_Len := External_Name'Length;
       Name_Buffer (1 .. Name_Len) := External_Name;
-      Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+      Canonical_Case_Env_Var_Name (Name_Buffer (1 .. Name_Len));
       The_Key := Name_Find;
       Name_To_Name_HTable.Set (Tree.External_References, The_Key, The_Value);
    end Add;
@@ -327,7 +327,7 @@ package body Prj.Ext is
       Name      : String := Get_Name_String (External_Name);
 
    begin
-      Canonical_Case_File_Name (Name);
+      Canonical_Case_Env_Var_Name (Name);
       Name_Len := Name'Length;
       Name_Buffer (1 .. Name_Len) := Name;
       The_Value :=
