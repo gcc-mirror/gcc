@@ -579,10 +579,17 @@ __gnat_get_maximum_file_name_length (void)
 int
 __gnat_get_file_names_case_sensitive (void)
 {
+  const char *sensitive = getenv ("GNAT_FILE_NAME_CASE_SENSITIVE");
+
+  if (sensitive != NULL
+      && (sensitive[0] == '0' || sensitive[0] == '1')
+      && sensitive[1] == '\0')
+    return sensitive[0] - '0';
+  else
 #if defined (VMS) || defined (WINNT) || defined (__APPLE__)
-  return 0;
+    return 0;
 #else
-  return 1;
+    return 1;
 #endif
 }
 
