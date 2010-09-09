@@ -221,42 +221,24 @@ extern int __mingw_snprintf (char *, size_t, const char *, ...)
 #define offsetof(TYPE, MEMBER)  ((size_t) &((TYPE *) 0)->MEMBER)
 #endif
 
-/* The isfinite macro is only available with C99, but some non-C99
-   systems still provide fpclassify, and there is a `finite' function
-   in BSD.
+/* The C99 classification macros isfinite, isinf, isnan, isnormal
+   and signbit are broken or inconsistent on quite a few targets.
+   So, we use GCC's builtins instead.
 
-   Also, isfinite is broken on Cygwin.
+   Another advantage for GCC's builtins for these type-generic macros
+   is that it handles floating-point types that the system headers
+   may not support (like __float128).  */
 
-   When isfinite is not available, try to use one of the
-   alternatives, or bail out.  */
-
-#if defined(HAVE_BROKEN_ISFINITE) || defined(__CYGWIN__)
-#undef isfinite
-#endif
-
-#if defined(HAVE_BROKEN_ISNAN)
 #undef isnan
-#endif
-
-#if defined(HAVE_BROKEN_FPCLASSIFY)
-#undef fpclassify
-#endif
-
-#if !defined(isfinite)
-#if !defined(fpclassify)
-#define isfinite(x) ((x) - (x) == 0)
-#else
-#define isfinite(x) (fpclassify(x) != FP_NAN && fpclassify(x) != FP_INFINITE)
-#endif /* !defined(fpclassify) */
-#endif /* !defined(isfinite)  */
-
-#if !defined(isnan)
-#if !defined(fpclassify)
-#define isnan(x) ((x) != (x))
-#else
-#define isnan(x) (fpclassify(x) == FP_NAN)
-#endif /* !defined(fpclassify) */
-#endif /* !defined(isfinite)  */
+#define isnan(x) __builtin_isnan(x)
+#undef isfinite
+#define isfinite(x) __builtin_isfinite(x)
+#undef isinf
+#define isinf(x) __builtin_isinf(x)
+#undef isnormal
+#define isnormal(x) __builtin_isnormal(x)
+#undef signbit
+#define signbit(x) __builtin_signbit(x)
 
 /* TODO: find the C99 version of these an move into above ifdef.  */
 #define REALPART(z) (__real__(z))
