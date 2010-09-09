@@ -1,3 +1,83 @@
+2010-09-09  Reza Yazdani  <reza.yazdani@amd.com>
+
+	* config/i386/i386.c: Include sched-int.h.
+	(TARGET_SCHED_DISPATCH): Defined.
+	(TARGET_SCHED_DISPATCH_DO): Defined.
+	(DISPATCH_WINDOW_SIZE): Defined.
+	(MAX_DISPATCH_WINDOWS): Defined.
+	(MAX_INSN): Defined.
+	(MAX_IMM): Defined.
+	(MAX_IMM_SIZE): Defined.
+	(MAX_IMM_32): Defined.
+	(MAX_IMM_64): Defined.
+	(MAX_LOAD): Defined.
+	(MAX_STORE): Defined.
+	(BIG): Defined.
+	(dispatch_group): New.
+	(num_allowable_groups): New.
+	(group_name): New.
+	(sched_insn_info_s): New.
+	(dispatch_windows_s): New.
+	(imm_info_s): New.
+	(dispatch_window_list): New.
+	(dispatch_window_list1): New.
+	(get_mem_group): New.
+	(is_cmp): New.
+	(dispatch_violation): New.
+	(is_branch): New.
+	(is_prefetch): New.
+	(init_window): New.
+	(allocate_window): New.
+	(init_dispatch_sched): New.
+	(is_end_basic_block): New.
+	(process_end_window): New.
+	(allocate_next_window): New.
+	(find_constant_1): New.
+	(find_constant): New.
+	(get_num_immediates): New.
+	(has_immediate): New.
+	(get_insn_path): New.
+	(get_insn_group): New.
+	(count_num_restricted): New.
+	(fits_dispatch_window): New.
+	(add_insn_window): New.
+	(add_to_dispatch_window): New.
+	(debug_dispatch_window_file): New.
+	(debug_dispatch_window): New.
+	(debug_insn_dispatch_info_file): New.
+	(debug_ready_dispatch): New.
+	(do_dispatch): New.
+	(has_dispatch): New.
+	* config/i386/i386.h (debug_ready_dispatch): Declared.
+	(debug_dispatch_window): Declared.
+	* config/i386/i386.opt (mdispatch-scheduler): New flag.
+	* doc/tm.texi.in (TARGET_SCHED_DISPATCH): New.
+	(TARGET_SCHED_DISPATCH_DO): New.
+	* doc/tm.texi: Regererated.
+	* haifa-sched.c (choose_ready): Call targetm.sched.dispatch and
+	ready_remove_first_dispatch
+	(schedule_block): Call targetm.sched.dispatch and
+	targetm.sched.dispatch_do.
+	(sched_init): Call targetm.sched.dispatch and
+	targetm.sched.dispatch_do.
+	(ready_remove_first_dispatch): New.
+	(number_in_ready): New.
+	(get_ready_element): New.
+	* hooks.c (hook_bool_rtx_int_false): New.
+	(hook_void_rtx_int): New.
+	* hooks.h (hook_bool_rtx_int_false): Declared.
+	(hook_void_rtx_int): Declared.
+	* sched-int.h (IS_DISPATCH_ON): Defined.
+	(IS_CMP): Defined.
+	(DISPATCH_VIOLATION): Defined.
+	(FITS_DISPATCH_WINDOW): Defined.
+	(DISPATCH_INIT): Defined.
+	(ADD_TO_DISPATCH_WINDOW): Defined.
+	(get_ready_element): Declared.
+	(number_in_ready): Declared.
+	* target.def (dispatch): Defined.
+	(dispatch_do): Defined.
+
 2010-09-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/45312

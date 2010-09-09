@@ -46,6 +46,7 @@ extern bool hook_bool_const_tree_hwi_hwi_const_tree_true (const_tree,
 							  HOST_WIDE_INT,
 							  const_tree);
 extern bool hook_bool_rtx_false (rtx);
+extern bool hook_bool_rtx_int_false (rtx, int);
 extern bool hook_bool_uintp_uintp_false (unsigned int *, unsigned int *);
 extern bool hook_bool_rtx_int_int_intp_bool_false (rtx, int, int, int *, bool);
 extern bool hook_bool_size_t_constcharptr_int_true (size_t, const char *, int);
@@ -55,6 +56,7 @@ extern bool hook_bool_tree_bool_false (tree, bool);
 
 extern void hook_void_void (void);
 extern void hook_void_constcharptr (const char *);
+extern void hook_void_rtx_int (rtx, int);
 extern void hook_void_FILEptr_constcharptr (FILE *, const char *);
 extern void hook_void_tree (tree);
 extern void hook_void_tree_treeptr (tree, tree *);

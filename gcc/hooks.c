@@ -340,3 +340,18 @@ hook_tree_const_tree_null (const_tree t ATTRIBUTE_UNUSED)
 {
   return NULL;
 }
+
+/* Generic hook that takes a rtx and an int and returns a bool.  */
+
+bool
+hook_bool_rtx_int_false (rtx insn ATTRIBUTE_UNUSED, int mode ATTRIBUTE_UNUSED)
+{
+  return false;
+}
+
+/* Generic hook that takes a rtx and an int and returns void.  */
+
+void
+hook_void_rtx_int (rtx insn ATTRIBUTE_UNUSED, int mode ATTRIBUTE_UNUSED)
+{
+}
