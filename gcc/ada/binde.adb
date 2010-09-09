@@ -614,7 +614,7 @@ package body Binde is
             Write_Str ("  decrementing Num_Pred for unit ");
             Write_Unit_Name (Units.Table (U).Uname);
             Write_Str (" new value = ");
-            Write_Int (Int (UNR.Table (U).Num_Pred));
+            Write_Int (UNR.Table (U).Num_Pred);
             Write_Eol;
          end if;
 
@@ -1152,7 +1152,7 @@ package body Binde is
                   Write_Str
                     ("    Elaborate_Body = True, Num_Pred for body = ");
                   Write_Int
-                    (Int (UNR.Table (Corresponding_Body (U)).Num_Pred));
+                    (UNR.Table (Corresponding_Body (U)).Num_Pred);
                else
                   Write_Str
                     ("    Elaborate_Body = False");
@@ -1243,8 +1243,7 @@ package body Binde is
                      goto Next_With;
                   end if;
 
-                  Withed_Unit :=
-                    Unit_Id (Unit_Id_Of (Withs.Table (W).Uname));
+                  Withed_Unit := Unit_Id_Of (Withs.Table (W).Uname);
 
                   --  Pragma Elaborate_All case, for this we use the recursive
                   --  Elab_All_Links procedure to establish the links.

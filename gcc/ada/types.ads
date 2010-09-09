@@ -251,13 +251,13 @@ package Types is
    --    Universal integers (type Uint)
    --    Universal reals (type Ureal)
 
-   --  In most contexts, the strongly typed interface determines which of
-   --  these types is present. However, there are some situations (involving
-   --  untyped traversals of the tree), where it is convenient to be easily
-   --  able to distinguish these values. The underlying representation in all
-   --  cases is an integer type Union_Id, and we ensure that the range of
-   --  the various possible values for each of the above types is disjoint
-   --  so that this distinction is possible.
+   --  In most contexts, the strongly typed interface determines which of these
+   --  types is present. However, there are some situations (involving untyped
+   --  traversals of the tree), where it is convenient to be easily able to
+   --  distinguish these values. The underlying representation in all cases is
+   --  an integer type Union_Id, and we ensure that the range of the various
+   --  possible values for each of the above types is disjoint so that this
+   --  distinction is possible.
 
    type Union_Id is new Int;
    --  The type in the tree for a union of possible ID values

@@ -98,7 +98,7 @@ package Osint is
    pragma Import (C, Get_Env_Vars_Case_Sensitive,
                   "__gnat_get_env_vars_case_sensitive");
    Env_Vars_Case_Sensitive : constant Boolean :=
-                                 Get_File_Names_Case_Sensitive /= 0;
+                                 Get_Env_Vars_Case_Sensitive /= 0;
    --  Set to indicate whether the operating system convention is for
    --  environment variable names to be case sensitive (e.g., in Unix, set
    --  True), or non case sensitive (e.g., in Windows, set False).

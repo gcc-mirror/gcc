@@ -1,5 +1,32 @@
 2010-09-09  Vincent Celier  <celier@adacore.com>
 
+	* prj-proc.adb: Minor comment spelling error fix.
+	* osint.ads (Env_Vars_Case_Sensitive): Use function
+	Get_Env_Vars_Case_Sensitive, not Get_File_Names_Case_Sensitive to
+	compute value.
+
+2010-09-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Equality_Op): Implement Ada2012 rule for
+	resolution of conditional expressions whose dependent expressions are
+	anonymous access types.
+
+2010-09-09  Robert Dewar  <dewar@adacore.com>
+
+	* a-ststio.adb: Minor code reorganization.
+	* s-direio.adb, prj.adb, prj-nmsc.adb, sem_type.adb: Remove redundant
+	conversion.
+	* types.ads: Minor reformatting.
+	* binde.adb, vms_conv.adb, gnatls.adb, s-strxdr.adb, uintp.adb: Remove
+	redundant conversions.
+	* output.adb: Minor reformatting.
+	* sem_ch8.adb (Find_Type): Test for redundant base applies to user
+	types.
+	* opt.ads: Add pragma Ordered for Verbosity_Level.
+	* prj.ads: Add pragma Ordered for type Verbosity.
+
+2010-09-09  Vincent Celier  <celier@adacore.com>
+
 	* osint.adb (Canonical_Case_File_Name): Use procedure To_Lower in
 	System.Case_Util
 	(Canonical_Case_Env_Var_Name): Ditto
