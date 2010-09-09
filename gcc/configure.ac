@@ -4542,24 +4542,39 @@ enable_plugin=$enableval,
 enable_plugin=yes; default_plugin=yes)
 
 pluginlibs=
+
+if test x$build = x$host; then
+  export_sym_check="objdump${exeext} -T"
+elif x$host = x$target; then
+  export_sym_check="$gcc_cv_objdump -T"
+else
+  export_sym_check=
+fi
+
 if test x"$enable_plugin" = x"yes"; then
 
   AC_MSG_CHECKING([for exported symbols])
-  echo "int main() {return 0;} int foobar() {return 0;}" > conftest.c
-  ${CC} ${CFLAGS} ${LDFLAGS} conftest.c -o conftest > /dev/null 2>&1
-  if $gcc_cv_objdump -T conftest | grep foobar > /dev/null; then
-    : # No need to use a flag
-  else
-    AC_MSG_CHECKING([for -rdynamic])
-    ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c -o conftest > /dev/null 2>&1
-    if $gcc_cv_objdump -T conftest | grep foobar > /dev/null; then
-      plugin_rdynamic=yes
-      pluginlibs="-rdynamic"
+  if test "x$export_sym_check" != x; then
+    echo "int main() {return 0;} int foobar() {return 0;}" > conftest.c
+    ${CC} ${CFLAGS} ${LDFLAGS} conftest.c -o conftest > /dev/null 2>&1
+    if $export_sym_check conftest | grep foobar > /dev/null; then
+      : # No need to use a flag
+      AC_MSG_RESULT([yes])
     else
-      plugin_rdynamic=no
-      enable_plugin=no
+      AC_MSG_RESULT([yes])
+      AC_MSG_CHECKING([for -rdynamic])
+      ${CC} ${CFLAGS} ${LDFLAGS} -rdynamic conftest.c -o conftest > /dev/null 2>&1
+      if $export_sym_check conftest | grep foobar > /dev/null; then
+        plugin_rdynamic=yes
+        pluginlibs="-rdynamic"
+      else
+        plugin_rdynamic=no
+        enable_plugin=no
+      fi
+      AC_MSG_RESULT([$plugin_rdynamic])
     fi
-    AC_MSG_RESULT([$plugin_rdynamic])
+  else
+    AC_MSG_RESULT([unable to check])
   fi
 
   # Check -ldl
