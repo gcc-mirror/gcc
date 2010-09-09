@@ -3467,11 +3467,13 @@ package body Sprint is
          end if;
 
       --  Case of selector of an expanded name where the expanded name
-      --  has an associated entity, output this entity.
+      --  has an associated entity, output this entity. Check that the
+      --  entity or associated node is of the right kind, see above.
 
       elsif Nkind (Parent (N)) = N_Expanded_Name
         and then Selector_Name (Parent (N)) = N
-        and then Present (Entity (Parent (N)))
+        and then Present (Entity_Or_Associated_Node (Parent (N)))
+        and then Nkind (Entity (Parent (N))) in N_Entity
       then
          Write_Id (Entity (Parent (N)));
 
