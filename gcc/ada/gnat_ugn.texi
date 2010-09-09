@@ -1778,8 +1778,8 @@ of the compiler (@pxref{Character Set Control}).
 @noindent
 The basic character set is Latin-1. This character set is defined by ISO
 standard 8859, part 1. The lower half (character codes @code{16#00#}
-@dots{} @code{16#7F#)} is identical to standard ASCII coding, but the upper half
-is used to represent additional characters. These include extended letters
+@dots{} @code{16#7F#)} is identical to standard ASCII coding, but the upper
+half is used to represent additional characters. These include extended letters
 used by European languages, such as French accents, the vowels with umlauts
 used in German, and the extra letter A-ring used in Swedish.
 
@@ -3823,7 +3823,8 @@ compiled.
 
 @cindex cannot generate code
 If you attempt to compile any of these files, you will get one of the
-following error messages (where @var{fff} is the name of the file you compiled):
+following error messages (where @var{fff} is the name of the file you
+compiled):
 
 @smallexample
 cannot generate code for file @var{fff} (package spec)
@@ -9252,6 +9253,17 @@ project files are used.
 By default, shared library projects are not allowed to import static library
 projects. When this switch is used on the command line, this restriction is
 relaxed.
+
+@ifclear vms
+@item --create-map-file
+When linking an executable, create a map file. The name of the map file
+has the same name as the executable with extension ".map".
+
+@item --create-map-file=mapfile
+When linking an executable, create a map file. The name of the map file is
+"mapfile".
+
+@end ifclear
 
 @item ^-a^/ALL_FILES^
 @cindex @option{^-a^/ALL_FILES^} (@command{gnatmake})
@@ -18647,9 +18659,9 @@ gnatmake -f -pg -P my_project
 @end smallexample
 
 @noindent
-Note that only the objects that were compiled with the @samp{-pg} switch will be
-profiled; if you need to profile your whole project, use the
-@samp{-f} gnatmake switch to force full recompilation.
+Note that only the objects that were compiled with the @samp{-pg} switch will
+be profiled; if you need to profile your whole project, use the @samp{-f}
+gnatmake switch to force full recompilation.
 
 @node Program execution
 @subsection Program execution
@@ -24879,8 +24891,8 @@ Note that in this approach, both declarations are analyzed by the
 compiler so this can only be used where both declarations are legal,
 even though one of them will not be used.
 
-Another approach is to define integer constants, e.g.@: @code{Bits_Per_Word}, or
-Boolean constants, e.g.@: @code{Little_Endian}, and then write declarations
+Another approach is to define integer constants, e.g.@: @code{Bits_Per_Word},
+or Boolean constants, e.g.@: @code{Little_Endian}, and then write declarations
 that are parameterized by these constants. For example
 
 @smallexample @c ada

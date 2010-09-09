@@ -353,6 +353,9 @@ package body Make is
    --  calling Change_Dir if the current working directory is already this
    --  directory.
 
+   Map_File : String_Access := null;
+   --  Value of switch --create-map-file
+
    --  Packages of project files where unknown attributes are errors
 
    Naming_String   : aliased String := "naming";
@@ -6254,6 +6257,15 @@ package body Make is
                   end;
                end if;
 
+               --  Add switch -M to gnatlink if buider switch --create-map-file
+               --  has been specified.
+
+               if Map_File /= null then
+                  Linker_Switches.Increment_Last;
+                  Linker_Switches.Table (Linker_Switches.Last) :=
+                    new String'("-M" & Map_File.all);
+               end if;
+
                declare
                   Args : Argument_List
                            (Linker_Switches.First .. Linker_Switches.Last + 2);
@@ -8120,6 +8132,19 @@ package body Make is
          then
             Add_Switch (Argv, Compiler, And_Save => And_Save);
             Add_Switch (Argv, Linker,   And_Save => And_Save);
+
+         elsif Argv = Create_Map_File_Switch then
+            Map_File := new String'("");
+
+         elsif Argv'Length > Create_Map_File_Switch'Length + 1
+           and then
+             Argv (1 .. Create_Map_File_Switch'Length) = Create_Map_File_Switch
+           and then
+             Argv (Create_Map_File_Switch'Length + 1) = '='
+         then
+            Map_File :=
+              new String'
+                (Argv (Create_Map_File_Switch'Length + 2 .. Argv'Last));
 
          else
             Scan_Make_Switches (Project_Node_Tree, Argv, Success);
