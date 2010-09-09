@@ -57,6 +57,9 @@ package Makeutl is
    --  Switch to forbid simultaneous compilations for the same object directory
    --  when project files are used.
 
+   Create_Map_File_Switch : constant String := "--create-map-file";
+   --  Switch to create a map file when an executable is linked
+
    procedure Add
      (Option : String_Access;
       To     : in out String_List_Access;
