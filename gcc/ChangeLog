@@ -1,3 +1,9 @@
+2010-09-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/44972
+	* ipa-prop.c (ipa_modify_call_arguments): Build MEM_REF instead of
+	calling build_ref_for_offset.
+
 2010-09-09  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
         * config/arm/bpabi.h (BE8_LINK_SPEC): Handle Cortex-a15.
