@@ -435,7 +435,6 @@ static void failed_reload (rtx, int);
 static int set_reload_reg (int, int);
 static void choose_reload_regs_init (struct insn_chain *, rtx *);
 static void choose_reload_regs (struct insn_chain *);
-static void merge_assigned_reloads (rtx);
 static void emit_input_reload_insns (struct insn_chain *, struct reload *,
 				     rtx, int);
 static void emit_output_reload_insns (struct insn_chain *, struct reload *,
@@ -4596,12 +4595,6 @@ reload_as_needed (int live_known)
 		 Record the choices of reload reg in reload_reg_rtx.  */
 	      choose_reload_regs (chain);
 
-	      /* Merge any reloads that we didn't combine for fear of
-		 increasing the number of spill registers needed but now
-		 discover can be safely merged.  */
-	      if (targetm.small_register_classes_for_mode_p (VOIDmode))
-		merge_assigned_reloads (insn);
-
 	      /* Generate the insns to reload operands into or out of
 		 their reload regs.  */
 	      emit_reload_insns (chain);
@@ -6992,153 +6985,6 @@ deallocate_reload_reg (int r)
     clear_reload_reg_in_use (regno, rld[r].opnum, rld[r].when_needed,
 			     rld[r].mode);
   reload_spill_index[r] = -1;
-}
-
-/* If the small_register_classes_for_mode_p target hook returns true for
-   some machine modes, we may not have merged two reloads of the same item
-   for fear that we might not have enough reload registers.  However,
-   normally they will get the same reload register and hence actually need
-   not be loaded twice.
-
-   Here we check for the most common case of this phenomenon: when we have
-   a number of reloads for the same object, each of which were allocated
-   the same reload_reg_rtx, that reload_reg_rtx is not used for any other
-   reload, and is not modified in the insn itself.  If we find such,
-   merge all the reloads and set the resulting reload to RELOAD_OTHER.
-   This will not increase the number of spill registers needed and will
-   prevent redundant code.  */
-
-static void
-merge_assigned_reloads (rtx insn)
-{
-  int i, j;
-
-  /* Scan all the reloads looking for ones that only load values and
-     are not already RELOAD_OTHER and ones whose reload_reg_rtx are
-     assigned and not modified by INSN.  */
-
-  for (i = 0; i < n_reloads; i++)
-    {
-      int conflicting_input = 0;
-      int max_input_address_opnum = -1;
-      int min_conflicting_input_opnum = MAX_RECOG_OPERANDS;
-
-      if (rld[i].in == 0 || rld[i].when_needed == RELOAD_OTHER
-	  || rld[i].out != 0 || rld[i].reg_rtx == 0
-	  || reg_set_p (rld[i].reg_rtx, insn))
-	continue;
-
-      /* Look at all other reloads.  Ensure that the only use of this
-	 reload_reg_rtx is in a reload that just loads the same value
-	 as we do.  Note that any secondary reloads must be of the identical
-	 class since the values, modes, and result registers are the
-	 same, so we need not do anything with any secondary reloads.  */
-
-      for (j = 0; j < n_reloads; j++)
-	{
-	  if (i == j || rld[j].reg_rtx == 0
-	      || ! reg_overlap_mentioned_p (rld[j].reg_rtx,
-					    rld[i].reg_rtx))
-	    continue;
-
-	  if (rld[j].when_needed == RELOAD_FOR_INPUT_ADDRESS
-	      && rld[j].opnum > max_input_address_opnum)
-	    max_input_address_opnum = rld[j].opnum;
-
-	  /* If the reload regs aren't exactly the same (e.g, different modes)
-	     or if the values are different, we can't merge this reload.
-	     But if it is an input reload, we might still merge
-	     RELOAD_FOR_INPUT_ADDRESS and RELOAD_FOR_OTHER_ADDRESS reloads.  */
-
-	  if (! rtx_equal_p (rld[i].reg_rtx, rld[j].reg_rtx)
-	      || rld[j].out != 0 || rld[j].in == 0
-	      || ! rtx_equal_p (rld[i].in, rld[j].in))
-	    {
-	      if (rld[j].when_needed != RELOAD_FOR_INPUT
-		  || ((rld[i].when_needed != RELOAD_FOR_INPUT_ADDRESS
-		       || rld[i].opnum > rld[j].opnum)
-		      && rld[i].when_needed != RELOAD_FOR_OTHER_ADDRESS))
-		break;
-	      conflicting_input = 1;
-	      if (min_conflicting_input_opnum > rld[j].opnum)
-		min_conflicting_input_opnum = rld[j].opnum;
-	    }
-	}
-
-      /* If all is OK, merge the reloads.  Only set this to RELOAD_OTHER if
-	 we, in fact, found any matching reloads.  */
-
-      if (j == n_reloads
-	  && max_input_address_opnum <= min_conflicting_input_opnum)
-	{
-	  gcc_assert (rld[i].when_needed != RELOAD_FOR_OUTPUT);
-
-	  for (j = 0; j < n_reloads; j++)
-	    if (i != j && rld[j].reg_rtx != 0
-		&& rtx_equal_p (rld[i].reg_rtx, rld[j].reg_rtx)
-		&& (! conflicting_input
-		    || rld[j].when_needed == RELOAD_FOR_INPUT_ADDRESS
-		    || rld[j].when_needed == RELOAD_FOR_OTHER_ADDRESS))
-	      {
-		rld[i].when_needed = RELOAD_OTHER;
-		rld[j].in = 0;
-		reload_spill_index[j] = -1;
-		transfer_replacements (i, j);
-	      }
-
-	  /* If this is now RELOAD_OTHER, look for any reloads that
-	     load parts of this operand and set them to
-	     RELOAD_FOR_OTHER_ADDRESS if they were for inputs,
-	     RELOAD_OTHER for outputs.  Note that this test is
-	     equivalent to looking for reloads for this operand
-	     number.
-
-	     We must take special care with RELOAD_FOR_OUTPUT_ADDRESS;
-	     it may share registers with a RELOAD_FOR_INPUT, so we can
-	     not change it to RELOAD_FOR_OTHER_ADDRESS.  We should
-	     never need to, since we do not modify RELOAD_FOR_OUTPUT.
-
-	     It is possible that the RELOAD_FOR_OPERAND_ADDRESS
-	     instruction is assigned the same register as the earlier
-	     RELOAD_FOR_OTHER_ADDRESS instruction.  Merging these two
-	     instructions will cause the RELOAD_FOR_OTHER_ADDRESS
-	     instruction to be deleted later on.  */
-
-	  if (rld[i].when_needed == RELOAD_OTHER)
-	    for (j = 0; j < n_reloads; j++)
-	      if (rld[j].in != 0
-		  && rld[j].when_needed != RELOAD_OTHER
-		  && rld[j].when_needed != RELOAD_FOR_OTHER_ADDRESS
-		  && rld[j].when_needed != RELOAD_FOR_OUTPUT_ADDRESS
-		  && rld[j].when_needed != RELOAD_FOR_OPERAND_ADDRESS
-		  && (! conflicting_input
-		      || rld[j].when_needed == RELOAD_FOR_INPUT_ADDRESS
-		      || rld[j].when_needed == RELOAD_FOR_INPADDR_ADDRESS)
-		  && reg_overlap_mentioned_for_reload_p (rld[j].in,
-							 rld[i].in))
-		{
-		  int k;
-
-		  rld[j].when_needed
-		    = ((rld[j].when_needed == RELOAD_FOR_INPUT_ADDRESS
-			|| rld[j].when_needed == RELOAD_FOR_INPADDR_ADDRESS)
-		       ? RELOAD_FOR_OTHER_ADDRESS : RELOAD_OTHER);
-
-		  /* Check to see if we accidentally converted two
-		     reloads that use the same reload register with
-		     different inputs to the same type.  If so, the
-		     resulting code won't work.  */
-		  if (rld[j].reg_rtx)
-		    for (k = 0; k < j; k++)
-		      gcc_assert (rld[k].in == 0 || rld[k].reg_rtx == 0
-				  || rld[k].when_needed != rld[j].when_needed
-				  || !rtx_equal_p (rld[k].reg_rtx,
-						   rld[j].reg_rtx)
-				  || rtx_equal_p (rld[k].in,
-						  rld[j].in));
-		}
-	}
-    }
 }
 
 /* These arrays are filled by emit_reload_insns and its subroutines.  */
