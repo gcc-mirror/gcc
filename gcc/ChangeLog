@@ -1,3 +1,9 @@
+2010-09-09  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/45598
+	* tree-ssa-ccp.c (fold_const_aggregate_ref): Check that result of
+	string folding is of integral type.
+
 2010-09-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* configure.ac (gnu_indirect_function): New test.

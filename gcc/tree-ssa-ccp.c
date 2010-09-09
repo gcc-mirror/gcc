@@ -1398,8 +1398,7 @@ fold_const_aggregate_ref (tree t)
 	}
 
       /* Fold read from constant string.  */
-      if (TREE_CODE (ctor) == STRING_CST
-	  && TREE_CODE (idx) == INTEGER_CST)
+      if (TREE_CODE (ctor) == STRING_CST)
 	{
 	  tree low_bound = array_ref_low_bound (t);
 	  double_int low_bound_cst;
@@ -1407,7 +1406,9 @@ fold_const_aggregate_ref (tree t)
 	  double_int length_cst;
 	  bool signed_p = TYPE_UNSIGNED (TREE_TYPE (idx));
 
-	  if (TREE_CODE (low_bound) != INTEGER_CST)
+	  if (TREE_CODE (idx) != INTEGER_CST
+	      || !INTEGRAL_TYPE_P (TREE_TYPE (t))
+	      || TREE_CODE (low_bound) != INTEGER_CST)
 	    return NULL_TREE;
 	  low_bound_cst = tree_to_double_int (low_bound);
 	  index_cst = tree_to_double_int (idx);
