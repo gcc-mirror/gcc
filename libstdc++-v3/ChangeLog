@@ -1,3 +1,8 @@
+2010-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* libsupc++/cxxabi.h: Uglify nothrow to __nothrow__; fix a few
+	inconsistent uglifications everywhere.
+
 2010-09-07  Paolo Carlini  <paolo.carlini@oracle.com>
 	    Marc Glisse  <marc.glisse@normalesup.org>
 
