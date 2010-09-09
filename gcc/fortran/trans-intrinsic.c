@@ -6234,6 +6234,7 @@ static gfc_ss *
 gfc_walk_intrinsic_libfunc (gfc_ss * ss, gfc_expr * expr)
 {
   gfc_ss *newss;
+  int n;
 
   gcc_assert (expr->rank > 0);
 
@@ -6242,6 +6243,8 @@ gfc_walk_intrinsic_libfunc (gfc_ss * ss, gfc_expr * expr)
   newss->expr = expr;
   newss->next = ss;
   newss->data.info.dimen = expr->rank;
+  for (n = 0; n < newss->data.info.dimen; n++)
+    newss->data.info.dim[n] = n;
 
   return newss;
 }
