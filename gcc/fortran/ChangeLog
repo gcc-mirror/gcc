@@ -1,3 +1,19 @@
+2010-09-09  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43665
+	* intrincic.texi (FGET, FGETC, FPUT, FPUTC, FSTAT, GETCWD, KILL,
+	STAT): Show also syntax for the function version.
+	* intrinsic.c (add_sym_1s_intent, add_sym_2s_intent,
+	 add_sym_3s_intent): Remove function.
+	(add_sym_1s, add_sym_2s, add_sym_3s): Take always the intent
+	as argument.
+	(add_sym_2_intent): New function.
+	(add_functions): Set intent for functions which modify
+	the argument: fstat, fgetc, fget, hostnm, lstat, stat. Change
+	argument name of hostnm from "a" to "c"
+	(add_subroutines): Change add_sym_*s_intent to
+	add_sym_*s and add intent to the add_sym_*s calls.
+
 2010-09-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/38282

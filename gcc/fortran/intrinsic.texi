@@ -4389,7 +4389,10 @@ GNU extension
 Subroutine, function
 
 @item @emph{Syntax}:
-@code{CALL FGET(C [, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL FGET(C [, STATUS])}
+@item @code{STATUS = FGET(C)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4451,7 +4454,10 @@ GNU extension
 Subroutine, function
 
 @item @emph{Syntax}:
-@code{CALL FGETC(UNIT, C [, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL FGETC(UNIT, C [, STATUS])}
+@item @code{STATUS = FGETC(UNIT, C)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4671,7 +4677,10 @@ GNU extension
 Subroutine, function
 
 @item @emph{Syntax}:
-@code{CALL FPUT(C [, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL FPUT(C [, STATUS])}
+@item @code{STATUS = FPUT(C)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4727,7 +4736,10 @@ GNU extension
 Subroutine, function
 
 @item @emph{Syntax}:
-@code{CALL FPUTC(UNIT, C [, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL FPUTC(UNIT, C [, STATUS])}
+@item @code{STATUS = FPUTC(UNIT, C)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4945,7 +4957,10 @@ GNU extension
 Subroutine, function
 
 @item @emph{Syntax}:
-@code{CALL FSTAT(UNIT, VALUES [, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL FSTAT(UNIT, VALUES [, STATUS])}
+@item @code{STATUS = FSTAT(UNIT, VALUES)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5313,7 +5328,10 @@ GNU extension
 Subroutine, function
 
 @item @emph{Syntax}:
-@code{CALL GETCWD(C [, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL GETCWD(C [, STATUS])}
+@item @code{STATUS = GETCWD(C)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7034,7 +7052,10 @@ only one form can be used in any given program unit.
 Subroutine, function
 
 @item @emph{Syntax}:
-@code{CALL KILL(C, VALUE [, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL KILL(C, VALUE [, STATUS])}
+@item @code{STATUS = KILL(C, VALUE)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7927,7 +7948,10 @@ GNU extension
 Subroutine, function
 
 @item @emph{Syntax}:
-@code{CALL LSTAT(NAME, VALUES [, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL LSTAT(NAME, VALUES [, STATUS])}
+@item @code{STATUS = LSTAT(NAME, VALUES)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -11466,7 +11490,10 @@ GNU extension
 Subroutine, function
 
 @item @emph{Syntax}:
-@code{CALL STAT(NAME, VALUES [, STATUS])}
+@multitable @columnfractions .80
+@item @code{CALL STAT(NAME, VALUES [, STATUS])}
+@item @code{STATUS = STAT(NAME, VALUES)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -12334,8 +12361,10 @@ GNU extension
 Subroutine, function
 
 @item @emph{Syntax}:
-@code{CALL UMASK(MASK [, OLD])}
-@code{OLD = UMASK(MASK)}
+@multitable @columnfractions .80
+@item @code{CALL UMASK(MASK [, OLD])}
+@item @code{OLD = UMASK(MASK)}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
