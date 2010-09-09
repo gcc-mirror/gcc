@@ -3310,7 +3310,7 @@ package body Prj.Nmsc is
 
          --  Get the naming exceptions for all languages
 
-         for Kind in Spec .. Impl loop
+         for Kind in Spec_Or_Body loop
             Lang_Id := Project.Languages;
             while Lang_Id /= No_Language_Index loop
                case Lang_Id.Config.Kind is

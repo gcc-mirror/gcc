@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -792,7 +792,6 @@ package body Prj.Makr is
       --  Do some needed initializations
 
       Csets.Initialize;
-      Namet.Initialize;
       Snames.Initialize;
       Prj.Initialize (No_Project_Tree);
       Prj.Tree.Initialize (Tree);

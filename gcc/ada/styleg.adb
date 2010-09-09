@@ -32,10 +32,13 @@ with Casing;   use Casing;
 with Csets;    use Csets;
 with Einfo;    use Einfo;
 with Err_Vars; use Err_Vars;
+with Lib;      use Lib;
+with Namet;    use Namet;
 with Opt;      use Opt;
 with Scans;    use Scans;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
+with Snames;   use Snames;
 with Stylesw;  use Stylesw;
 
 package body Styleg is
@@ -549,6 +552,82 @@ package body Styleg is
          Require_Following_Space;
       end if;
    end Check_Dot_Dot;
+
+   --------------------------------
+   -- Check_Enumeration_Subrange --
+   --------------------------------
+
+   procedure Check_Enumeration_Subrange (N : Node_Id) is
+      function First_Last_Ref return Boolean;
+      --  Returns True if N is of the form X'First .. X'Last where X is the
+      --  same entity for both attributes. N is already known to be N_Range.
+
+      --------------------
+      -- First_Last_Ref --
+      --------------------
+
+      function First_Last_Ref return Boolean is
+         L : constant Node_Id := Low_Bound  (N);
+         H : constant Node_Id := High_Bound (N);
+
+      begin
+         if Nkind (L) = N_Attribute_Reference
+           and then Nkind (H) = N_Attribute_Reference
+           and then Attribute_Name (L) = Name_First
+           and then Attribute_Name (H) = Name_Last
+         then
+            declare
+               PL : constant Node_Id := Prefix (L);
+               PH : constant Node_Id := Prefix (H);
+            begin
+               if Is_Entity_Name (PL)
+                 and then Is_Entity_Name (PH)
+                 and then Entity (PL) = Entity (PH)
+               then
+                  return True;
+               end if;
+            end;
+         end if;
+
+         return False;
+      end First_Last_Ref;
+
+   --  Start of processing for Check_Enumeration_Subrange
+
+   begin
+      if Style_Check_Enumeration_Subranges then
+
+         if Nkind (N) = N_Range
+
+           --  Only consider ranges that are explicit in the source
+
+           and then Comes_From_Source (N)
+
+           --  Only consider enumeration types
+
+           and then Is_Enumeration_Type (Etype (N))
+
+           --  Exclude standard types. Most importantly we want to exclude the
+           --  standard character types, since we want to allow ranges like
+           --  '0' .. '9'. But also exclude Boolean since False .. True is OK.
+
+           and then Sloc (Root_Type (Etype (N))) /= Standard_Location
+
+           --  Exclude X'First .. X'Last if X is the same entity for both
+
+           and then not First_Last_Ref
+
+           --  Allow the range if in same unit as type declaration (or the
+           --  corresponding body or any of its subunits).
+
+           and then not In_Same_Extended_Unit (N, Etype (N))
+         then
+            Error_Msg
+              ("(style) explicit enumeration subrange not allowed",
+               Sloc (N));
+         end if;
+      end if;
+   end Check_Enumeration_Subrange;
 
    ---------------
    -- Check_EOF --

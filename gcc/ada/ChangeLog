@@ -1,5 +1,54 @@
 2010-09-09  Robert Dewar  <dewar@adacore.com>
 
+	* a-calfor.adb, sem_ch3.adb: Minor reformatting.
+
+2010-09-09  Robert Dewar  <dewar@adacore.com>
+
+	* bindgen.adb (Gen_Restrictions_Ada): Avoid explicit enumeration ranges
+	(Gen_Restrictions_C): Avoid explicit enumeration ranges
+	(Set_String_Replace): New procedure
+	* casing.ads (Known_Casing): New subtype declaration
+	* prj-attr.ads (All_Case_Insensitive_Associative_Array): New subtype
+	declaration
+	* prj-dect.adb (Parse_Attribute_Declaration): Avoid enumeration range
+	* prj-nmsc.adb (Check_Naming): Avoid unnecessary enumeration range
+	* prj-strt.adb (Attribute_Reference): Avoid enumeration range test
+	* prj.adb (Known_Casing): Moved to Casing spec (avoid enum range)
+	* sem_ch13.adb (Adjust_Record_For_Reverse_Bit_Order): Avoid enumeration
+	ranges
+	* sem_res.adb (Resolve_Range): Check for enumeration subrange style rule
+	* sem_type.adb (Is_Array_Class_Record_Type): New.
+	* style.ads (Check_Enumeration_Subrange): New procedure
+	* styleg.adb (Check_Enumeration_Subrange): New procedure
+	* styleg.ads (Check_Enumeration_Subrange): New procedure
+	* stylesw.adb Add handling for Style_Check_Enumeration_Subranges
+	* stylesw.ads (Style_Check_Enumeration_Subranges): New flag
+	* usage.adb: Add line for -gnatyE
+	* vms_data.ads: Add entries for [NO]ENUMERATION_RANGES
+	Add missing entry for NOBOOLEAN_OPERATORS
+	* gnat_ugn.texi: Add documentation for -gnatyE
+
+2010-09-09  Robert Dewar  <dewar@adacore.com>
+
+	* namet.adb (Initialize): Is now a dummy procedure
+	(Reinitialize): New procedure
+	Call Reinitialize from package initialization
+	* namet.ads (Initialize): Is now a dummy procedure
+	(Reinitialize): New procedure
+	* clean.adb, gnat1drv.adb, gnatbind.adb, gnatcmd.adb, gnatlink.adb,
+	gnatls.adb, gprep.adb, make.adb, prj-makr.adb: Remove obsolete call to
+	Namet.Initialize.
+
+2010-09-09  Bob Duff  <duff@adacore.com>
+
+	* sem_elab.adb, s-os_lib.ads: Minor comment fixes.
+
+2010-09-09  Robert Dewar  <dewar@adacore.com>
+
+	* s-bitops.adb (Raise_Error): Add exception message
+
+2010-09-09  Robert Dewar  <dewar@adacore.com>
+
 	* par-ch5.adb (Test_Statement_Required): Deal with Ada 2012 allowing no
 	null statement after label.
 	* sinfo.ads: Minor comment updates.

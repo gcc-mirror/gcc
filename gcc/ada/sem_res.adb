@@ -7611,6 +7611,10 @@ package body Sem_Res is
       Resolve (L, Typ);
       Resolve (H, Typ);
 
+      if Style_Check then
+         Check_Enumeration_Subrange (N);
+      end if;
+
       Check_Unset_Reference (L);
       Check_Unset_Reference (H);
 

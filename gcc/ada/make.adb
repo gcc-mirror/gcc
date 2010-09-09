@@ -6725,7 +6725,7 @@ package body Make is
 
       Check_Object_Consistency := True;
 
-      --  Package initializations. The order of calls is important here
+      --  Package initializations (the order of calls is important here)
 
       Output.Set_Standard_Error;
 
@@ -6734,8 +6734,6 @@ package body Make is
       Linker_Switches.Init;
 
       Csets.Initialize;
-      Namet.Initialize;
-
       Snames.Initialize;
 
       Prj.Initialize (Project_Tree);

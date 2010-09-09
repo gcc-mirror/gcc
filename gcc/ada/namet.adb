@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -864,29 +864,7 @@ package body Namet is
 
    procedure Initialize is
    begin
-      Name_Chars.Init;
-      Name_Entries.Init;
-
-      --  Initialize entries for one character names
-
-      for C in Character loop
-         Name_Entries.Append
-           ((Name_Chars_Index      => Name_Chars.Last,
-             Name_Len              => 1,
-             Byte_Info             => 0,
-             Int_Info              => 0,
-             Name_Has_No_Encodings => True,
-             Hash_Link             => No_Name));
-
-         Name_Chars.Append (C);
-         Name_Chars.Append (ASCII.NUL);
-      end loop;
-
-      --  Clear hash table
-
-      for J in Hash_Index_Type loop
-         Hash_Table (J) := No_Name;
-      end loop;
+      null;
    end Initialize;
 
    ----------------------
@@ -1132,6 +1110,37 @@ package body Namet is
          return Name_Entries.Last;
       end if;
    end Name_Find;
+
+   ------------------
+   -- Reinitialize --
+   ------------------
+
+   procedure Reinitialize is
+   begin
+      Name_Chars.Init;
+      Name_Entries.Init;
+
+      --  Initialize entries for one character names
+
+      for C in Character loop
+         Name_Entries.Append
+           ((Name_Chars_Index      => Name_Chars.Last,
+             Name_Len              => 1,
+             Byte_Info             => 0,
+             Int_Info              => 0,
+             Name_Has_No_Encodings => True,
+             Hash_Link             => No_Name));
+
+         Name_Chars.Append (C);
+         Name_Chars.Append (ASCII.NUL);
+      end loop;
+
+      --  Clear hash table
+
+      for J in Hash_Index_Type loop
+         Hash_Table (J) := No_Name;
+      end loop;
+   end Reinitialize;
 
    ----------------------
    -- Reset_Name_Table --
@@ -1399,4 +1408,8 @@ package body Namet is
       end if;
    end Write_Name_Decoded;
 
+--  Package initialization, initialize tables
+
+begin
+   Reinitialize;
 end Namet;

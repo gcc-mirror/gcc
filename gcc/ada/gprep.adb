@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -172,7 +172,6 @@ package body GPrep is
       --  Do some initializations (order is important here!)
 
       Csets.Initialize;
-      Namet.Initialize;
       Snames.Initialize;
       Stringt.Initialize;
       Prep.Initialize;

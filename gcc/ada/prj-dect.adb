@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -247,8 +247,7 @@ package body Prj.Dect is
             end if;
 
             if Attribute_Kind_Of (Current_Attribute) in
-                 Case_Insensitive_Associative_Array ..
-                 Optional_Index_Case_Insensitive_Associative_Array
+                 All_Case_Insensitive_Associative_Array
             then
                Set_Case_Insensitive (Attribute, In_Tree, To => True);
             end if;

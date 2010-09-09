@@ -1556,7 +1556,6 @@ package body Clean is
          --  Initialize some packages
 
          Csets.Initialize;
-         Namet.Initialize;
          Snames.Initialize;
 
          Project_Node_Tree := new Project_Node_Tree_Data;
