@@ -407,6 +407,10 @@ rtx_equal_p_cb (const_rtx x, const_rtx y, rtx_equal_p_callback_function cb)
     case CONST_FIXED:
       return 0;
 
+    case DEBUG_IMPLICIT_PTR:
+      return DEBUG_IMPLICIT_PTR_DECL (x)
+	     == DEBUG_IMPLICIT_PTR_DECL (y);
+
     default:
       break;
     }
@@ -526,6 +530,10 @@ rtx_equal_p (const_rtx x, const_rtx y)
     case CONST_INT:
     case CONST_FIXED:
       return 0;
+
+    case DEBUG_IMPLICIT_PTR:
+      return DEBUG_IMPLICIT_PTR_DECL (x)
+	     == DEBUG_IMPLICIT_PTR_DECL (y);
 
     default:
       break;
