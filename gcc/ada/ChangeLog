@@ -1,3 +1,9 @@
+2010-09-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in: Update
+	dependencies. Remove handling of gnatlbr.
+	Do not remove s-stratt-xdr for the run-time when installing.
+
 2010-09-09  Robert Dewar  <dewar@adacore.com>
 
 	* sem_attr.adb: Minor reformatting.
