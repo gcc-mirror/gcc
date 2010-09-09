@@ -41,8 +41,8 @@ with Exp_Strm; use Exp_Strm;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
-with Nlists;   use Nlists;
 with Namet;    use Namet;
+with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Restrict; use Restrict;
@@ -792,6 +792,7 @@ package body Exp_Ch3 is
       Decl : Node_Id;
       P    : Node_Id;
       Par  : Node_Id;
+      Scop : Entity_Id;
 
    begin
       --  Nothing to do if there is no task hierarchy
@@ -810,9 +811,11 @@ package body Exp_Ch3 is
          P := Parent (T);
       end if;
 
+      Scop := Find_Master_Scope (T);
+
       --  Nothing to do if we already built a master entity for this scope
 
-      if not Has_Master_Entity (Scope (T)) then
+      if not Has_Master_Entity (Scop) then
 
          --  First build the master entity
          --    _Master : constant Master_Id := Current_Master.all;
@@ -828,9 +831,9 @@ package body Exp_Ch3 is
                Make_Explicit_Dereference (Loc,
                  New_Reference_To (RTE (RE_Current_Master), Loc)));
 
+         Set_Has_Master_Entity (Scop);
          Insert_Action (P, Decl);
          Analyze (Decl);
-         Set_Has_Master_Entity (Scope (T));
 
          --  Now mark the containing scope as a task master. Masters
          --  associated with return statements are already marked at

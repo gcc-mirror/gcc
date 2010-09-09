@@ -2481,31 +2481,7 @@ package body Exp_Ch9 is
       S    : Entity_Id;
 
    begin
-      S := Scope (E);
-
-      --  Ada 2005 (AI-287): Do not set/get the has_master_entity reminder
-      --  in internal scopes, unless present already.. Required for nested
-      --  limited aggregates, where the expansion of task components may
-      --  generate inner blocks. If the block is the rewriting of a call
-      --  or the scope is an extended return statement this is valid master.
-      --  The master in an extended return is only used within the return,
-      --  and is subsequently overwritten in Move_Activation_Chain, but it
-      --  must exist now.
-
-      if Ada_Version >= Ada_05 then
-         while Is_Internal (S) loop
-            if Nkind (Parent (S)) = N_Block_Statement
-              and then
-                Nkind (Original_Node (Parent (S))) = N_Procedure_Call_Statement
-            then
-               exit;
-            elsif Ekind (S) = E_Return_Statement then
-               exit;
-            else
-               S := Scope (S);
-            end if;
-         end loop;
-      end if;
+      S := Find_Master_Scope (E);
 
       --  Nothing to do if we already built a master entity for this scope
       --  or if there is no task hierarchy.
@@ -2534,14 +2510,7 @@ package body Exp_Ch9 is
       Insert_Before (P, Decl);
       Analyze (Decl);
 
-      --  Ada 2005 (AI-287): Set the has_master_entity reminder in the
-      --  non-internal scope selected above.
-
-      if Ada_Version >= Ada_05 then
-         Set_Has_Master_Entity (S);
-      else
-         Set_Has_Master_Entity (Scope (E));
-      end if;
+      Set_Has_Master_Entity (S);
 
       --  Now mark the containing scope as a task master
 
@@ -11135,6 +11104,43 @@ package body Exp_Ch9 is
                 Make_Integer_Literal (Loc, 1)),
             Make_Integer_Literal (Loc, 0)));
    end Family_Size;
+
+   -----------------------
+   -- Find_Master_Scope --
+   -----------------------
+
+   function Find_Master_Scope (E : Entity_Id) return Entity_Id is
+      S : Entity_Id;
+
+   begin
+      --  In Ada2005, the master is the innermost enclosing scope that is not
+      --  transient. If the enclosing block is the rewriting of a call or the
+      --  scope is an extended return statement this is valid master. The
+      --  master in an extended return is only used within the return, and is
+      --  subsequently overwritten in Move_Activation_Chain, but it must exist
+      --  now before that overwriting occurs.
+
+      S := Scope (E);
+
+      if Ada_Version >= Ada_05 then
+         while Is_Internal (S) loop
+            if Nkind (Parent (S)) = N_Block_Statement
+              and then
+                Nkind (Original_Node (Parent (S))) = N_Procedure_Call_Statement
+            then
+               exit;
+
+            elsif Ekind (S) = E_Return_Statement then
+               exit;
+
+            else
+               S := Scope (S);
+            end if;
+         end loop;
+      end if;
+
+      return S;
+   end Find_Master_Scope;
 
    -----------------------------------
    -- Find_Task_Or_Protected_Pragma --
