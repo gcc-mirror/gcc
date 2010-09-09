@@ -1,3 +1,9 @@
+2010-09-09  Matthias Klose  <doko@ubuntu.com>
+
+	PR bootstrap/43847
+	* configure.ac (--enable-plugin): Enhance for cross builds.
+	* configure: Regenerate.
+
 2010-09-09  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/45598
