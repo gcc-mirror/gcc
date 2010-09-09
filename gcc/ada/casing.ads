@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---         Copyright (C) 1992-2009  Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,6 +60,9 @@ package Casing is
       --  Used if an identifier does not distinguish between the above cases,
       --  (e.g. X, Y_3, M4, A_B, or if it is inconsistent ABC_def).
    );
+
+   subtype Known_Casing is Casing_Type range All_Upper_Case .. Mixed_Case;
+   --  Exclude Unknown casing
 
    ------------------------------
    -- Case Control Subprograms --

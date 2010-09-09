@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2006-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,15 +42,15 @@ package body Ada.Calendar.Formatting is
    --  independent, thus only one source file is needed for multiple targets.
 
    procedure Check_Char (S : String; C : Character; Index : Integer);
-   --  Subsidiary to the two versions of Value. Determine whether the
-   --  input string S has character C at position Index. Raise
-   --  Constraint_Error if there is a mismatch.
+   --  Subsidiary to the two versions of Value. Determine whether the input
+   --  string S has character C at position Index. Raise Constraint_Error if
+   --  there is a mismatch.
 
    procedure Check_Digit (S : String; Index : Integer);
-   --  Subsidiary to the two versions of Value. Determine whether the
-   --  character of string S at position Index is a digit. This catches
-   --  invalid input such as 1983-*1-j3 u5:n7:k9 which should be
-   --  1983-01-03 05:07:09. Raise Constraint_Error if there is a mismatch.
+   --  Subsidiary to the two versions of Value. Determine whether the character
+   --  of string S at position Index is a digit. This catches invalid input
+   --  such as 1983-*1-j3 u5:n7:k9 which should be 1983-01-03 05:07:09. Raise
+   --  Constraint_Error if there is a mismatch.
 
    ----------------
    -- Check_Char --
@@ -781,8 +781,8 @@ package body Ada.Calendar.Formatting is
          raise Constraint_Error;
       end if;
 
-      --  After the correct length has been determined, it is safe to
-      --  copy the Date in order to avoid Date'First + N indexing.
+      --  After the correct length has been determined, it is safe to copy the
+      --  Date in order to avoid Date'First + N indexing.
 
       D (1 .. Date'Length) := Date;
 
@@ -865,8 +865,8 @@ package body Ada.Calendar.Formatting is
          raise Constraint_Error;
       end if;
 
-      --  After the correct length has been determined, it is safe to
-      --  copy the Elapsed_Time in order to avoid Date'First + N indexing.
+      --  After the correct length has been determined, it is safe to copy the
+      --  Elapsed_Time in order to avoid Date'First + N indexing.
 
       D (1 .. Elapsed_Time'Length) := Elapsed_Time;
 

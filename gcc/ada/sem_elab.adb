@@ -1676,7 +1676,7 @@ package body Sem_Elab is
 
          --  Here is where we give the warning
 
-                  --  All OK if warnings suppressed on the entity
+         --  All OK if warnings suppressed on the entity
 
          if not Has_Warnings_Off (Ent) then
             Error_Msg_Sloc := Sloc (Ent);

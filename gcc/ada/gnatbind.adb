@@ -583,13 +583,11 @@ begin
    Osint.Add_Default_Search_Dirs;
 
    --  Carry out package initializations. These are initializations which
-   --  might logically be performed at elaboration time, but Namet at least
-   --  can't be done that way (because it is used in the Compiler), and we
-   --  decide to be consistent. Like elaboration, the order in which these
-   --  calls are made is in some cases important.
+   --  might logically be performed at elaboration time, and we decide to be
+   --  consistent. Like elaboration, the order in which these calls are made
+   --  is in some cases important.
 
    Csets.Initialize;
-   Namet.Initialize;
    Snames.Initialize;
 
    --  Acquire target parameters

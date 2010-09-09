@@ -5553,8 +5553,7 @@ package body Sem_Ch3 is
       end if;
 
       --  If we did not have a range constraint, then set the range from the
-      --  parent type. Otherwise, the call to Process_Subtype has set the
-      --  bounds.
+      --  parent type. Otherwise, the Process_Subtype call has set the bounds.
 
       if No_Constraint
         or else not Has_Range_Constraint (Indic)
@@ -17275,7 +17274,7 @@ package body Sem_Ch3 is
                         N_Subtype_Declaration);
 
          --  Create an Itype that is a duplicate of Entity (S) but with the
-         --  null-exclusion attribute
+         --  null-exclusion attribute.
 
          if May_Have_Null_Exclusion
            and then Is_Access_Type (Entity (S))

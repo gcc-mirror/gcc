@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1537,7 +1537,6 @@ begin
 
    --  Initialize packages to be used
 
-   Namet.Initialize;
    Csets.Initialize;
    Snames.Initialize;
 
@@ -1561,7 +1560,6 @@ begin
    --  the binder generated file
 
    if Compile_Bind_File and then Standard_Gcc then
-
       Initialize_ALI;
       Name_Len := Ali_File_Name'Length;
       Name_Buffer (1 .. Name_Len) := Ali_File_Name.all;

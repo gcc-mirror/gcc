@@ -48,8 +48,6 @@ package body Prj is
 
    The_Empty_String : Name_Id := No_Name;
 
-   subtype Known_Casing is Casing_Type range All_Upper_Case .. Mixed_Case;
-
    type Cst_String_Access is access constant String;
 
    All_Lower_Case_Image : aliased constant String := "lowercase";

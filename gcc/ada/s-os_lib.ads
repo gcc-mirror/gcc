@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -203,8 +203,9 @@ package System.OS_Lib is
      (Name  : String;
       Fmode : Mode) return File_Descriptor;
    --  Creates new file with given name for writing, returning file descriptor
-   --  for subsequent use in Write calls. File descriptor returned is
-   --  Invalid_FD if file cannot be successfully created.
+   --  for subsequent use in Write calls. If the file already exists, it is
+   --  overwritten. File descriptor returned is Invalid_FD if file cannot be
+   --  successfully created.
 
    function Create_Output_Text_File (Name : String) return File_Descriptor;
    --  Creates new text file with given name suitable to redirect standard

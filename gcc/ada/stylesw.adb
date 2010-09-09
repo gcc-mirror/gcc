@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,6 +59,12 @@ package body Stylesw is
                      "u" &  -- check no unnecessary blank lines
                      "x";   -- check extra parentheses around conditionals
 
+   --  Note: we intend GNAT_Style to also include the following, but we do
+   --  not yet have the whole tool suite clean with respect to this.
+
+   --                "B" &  -- check boolean operators
+   --                "E" &  -- check enumeration ranges
+
    -------------------------------
    -- Reset_Style_Check_Options --
    -------------------------------
@@ -73,6 +79,7 @@ package body Stylesw is
       Style_Check_Boolean_And_Or        := False;
       Style_Check_Comments              := False;
       Style_Check_DOS_Line_Terminator   := False;
+      Style_Check_Enumeration_Subranges := False;
       Style_Check_End_Labels            := False;
       Style_Check_Form_Feeds            := False;
       Style_Check_Horizontal_Tabs       := False;
@@ -158,6 +165,7 @@ package body Stylesw is
       Add ('c', Style_Check_Comments);
       Add ('d', Style_Check_DOS_Line_Terminator);
       Add ('e', Style_Check_End_Labels);
+      Add ('E', Style_Check_Enumeration_Subranges);
       Add ('f', Style_Check_Form_Feeds);
       Add ('h', Style_Check_Horizontal_Tabs);
       Add ('i', Style_Check_If_Then_Layout);
@@ -324,6 +332,9 @@ package body Stylesw is
             when 'e' =>
                Style_Check_End_Labels            := True;
 
+            when 'E' =>
+               Style_Check_Enumeration_Subranges := True;
+
             when 'f' =>
                Style_Check_Form_Feeds            := True;
 
@@ -487,6 +498,9 @@ package body Stylesw is
 
             when 'e' =>
                Style_Check_End_Labels            := False;
+
+            when 'E' =>
+               Style_Check_Enumeration_Subranges := False;
 
             when 'f' =>
                Style_Check_Form_Feeds            := False;

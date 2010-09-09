@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,6 +102,9 @@ package Style is
      renames Style_Inst.Check_Binary_Operator;
    --  Called after scanning out a binary operator other than a plus, minus
    --  or exponentiation operator. Intended for checking spacing rules.
+
+   procedure Check_Enumeration_Subrange (N : Node_Id)
+     renames Style_Inst.Check_Enumeration_Subrange;
 
    procedure Check_Exponentiation_Operator
      renames Style_Inst.Check_Exponentiation_Operator;

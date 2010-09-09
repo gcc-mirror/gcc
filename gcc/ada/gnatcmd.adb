@@ -1320,9 +1320,7 @@ procedure GNATCmd is
 begin
    --  Initializations
 
-   Namet.Initialize;
    Csets.Initialize;
-
    Snames.Initialize;
 
    Project_Node_Tree := new Project_Node_Tree_Data;

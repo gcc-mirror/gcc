@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1996-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 1996-2010, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,7 @@ pragma Compiler_Unit;
 with System;                 use System;
 with System.Unsigned_Types;  use System.Unsigned_Types;
 
+with Ada.Exceptions;         use Ada.Exceptions;
 with Ada.Unchecked_Conversion;
 
 package body System.Bit_Ops is
@@ -72,6 +73,7 @@ package body System.Bit_Ops is
    -----------------------
 
    procedure Raise_Error;
+   pragma No_Return (Raise_Error);
    --  Raise Constraint_Error, complaining about unequal lengths
 
    -------------
@@ -211,7 +213,8 @@ package body System.Bit_Ops is
 
    procedure Raise_Error is
    begin
-      raise Constraint_Error;
+      Raise_Exception
+        (Constraint_Error'Identity, "operand lengths are unequal");
    end Raise_Error;
 
 end System.Bit_Ops;

@@ -2259,10 +2259,12 @@ package VMS_Data is
                                                "-gnaty-A "                 &
                                             "BLANKS "                      &
                                                "-gnatyb "                  &
-                                            "BOOLEAN_OPERATORS "           &
-                                               "-gnatyB "                  &
                                             "NOBLANKS "                    &
                                                "-gnaty-b "                 &
+                                            "BOOLEAN_OPERATORS "           &
+                                               "-gnatyB "                  &
+                                            "NOBOOLEAN_OPERATORS "         &
+                                               "-gnaty-B "                 &
                                             "COMMENTS "                    &
                                                "-gnatyc "                  &
                                             "NOCOMMENTS "                  &
@@ -2275,6 +2277,10 @@ package VMS_Data is
                                                "-gnatye "                  &
                                             "NOEND "                       &
                                                "-gnaty-e "                 &
+                                            "ENUMERATION_RANGES "          &
+                                               "-gnatyE "                  &
+                                            "NOENUMERATION_RANGES "        &
+                                               "-gnaty-E "                 &
                                             "VTABS "                       &
                                                "-gnatyf "                  &
                                             "NOVTABS "                     &

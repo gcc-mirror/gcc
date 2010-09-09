@@ -610,7 +610,6 @@ begin
       Uintp.Initialize;
       Urealp.Initialize;
       Errout.Initialize;
-      Namet.Initialize;
       SCOs.Initialize;
       Snames.Initialize;
       Stringt.Initialize;

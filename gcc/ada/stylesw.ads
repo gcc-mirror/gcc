@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -112,6 +112,12 @@ package Stylesw is
    Style_Check_End_Labels : Boolean := False;
    --  This can be set True by using the -gnatye switch. If it is True, then
    --  optional END labels must always be present.
+
+   Style_Check_Enumeration_Subranges : Boolean := False;
+   --  This can be set True by using the -gnatyE switch. If it is True, then
+   --  explicit subranges (using .. notation) on enumeration subtypes are not
+   --  permitted in other than the same source unit in which the enumeration
+   --  subtype is declared.
 
    Style_Check_Form_Feeds : Boolean := False;
    --  This can be set True by using the -gnatyf switch. If it is True, then

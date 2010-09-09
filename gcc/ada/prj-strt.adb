@@ -216,8 +216,7 @@ package body Prj.Strt is
             Set_Case_Insensitive
               (Reference, In_Tree,
                To => Attribute_Kind_Of (Current_Attribute) in
-                      Case_Insensitive_Associative_Array ..
-                        Optional_Index_Case_Insensitive_Associative_Array);
+                      All_Case_Insensitive_Associative_Array);
 
             --  Scan past the attribute name
 

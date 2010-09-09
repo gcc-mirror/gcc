@@ -6255,6 +6255,14 @@ allowed).
 Optional labels on @code{end} statements ending subprograms and on
 @code{exit} statements exiting named loops, are required to be present.
 
+@item ^E^ENUMERATION_RANGES^
+@emph{Check enumeration ranges.}
+Explicit subranges of enumeration types (e.g. in loops or membership tests)
+are not allowed unless the subrange occurs in the same package as the type
+declaration, or its body or subunits. Standard types (such as Boolean and
+Character) are excluded, allowing for example the range 'A'..'Z'. In addition
+an explicit reference to X'First..X'Last (equivalent to X'Range) is allowed.
+
 @item ^f^VTABS^
 @emph{No form feeds or vertical tabs.}
 Neither form feeds nor vertical tab characters are permitted

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,6 +91,10 @@ package Styleg is
 
    procedure Check_Dot_Dot;
    --  Called after scanning out dot dot to check spacing
+
+   procedure Check_Enumeration_Subrange (N : Node_Id);
+   --  Called to check a node that may be an N_Range node for an enumeration
+   --  subtype occurring other than in the defining unit of the type.
 
    procedure Check_EOF;
    --  Called after scanning out EOF mark
