@@ -3011,7 +3011,8 @@ package body Exp_Attr is
               and then Chars (Defining_Entity (Subp)) /= Name_uPostconditions;
          end loop;
 
-         --  Insert the assignment at the start of the declarations
+         --  Insert the initialized object declaration at the start of the
+         --  subprogram's declarations.
 
          Asn_Stm :=
            Make_Object_Declaration (Loc,
@@ -3020,12 +3021,24 @@ package body Exp_Attr is
              Object_Definition   => New_Occurrence_Of (Etype (N), Loc),
              Expression          => Pref);
 
+         --  Push the subprogram's scope, so that the object will be analyzed
+         --  in that context (rather than the context of the Precondition
+         --  subprogram) and will have its Scope set properly.
+
+         if Present (Corresponding_Spec (Subp)) then
+            Push_Scope (Corresponding_Spec (Subp));
+         else
+            Push_Scope (Defining_Entity (Subp));
+         end if;
+
          if Is_Empty_List (Declarations (Subp)) then
             Set_Declarations (Subp, New_List (Asn_Stm));
             Analyze (Asn_Stm);
          else
             Insert_Action (First (Declarations (Subp)), Asn_Stm);
          end if;
+
+         Pop_Scope;
 
          Rewrite (N, New_Occurrence_Of (Tnn, Loc));
       end Old;

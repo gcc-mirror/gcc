@@ -1,3 +1,18 @@
+2010-09-09  Doug Rupp  <rupp@adacore.com>
+
+	* sem_prag.adb (pragma Ident): Pass --identification= vice 
+	IDENTIFICATION=
+	* gnatlink.adb (Linker_Options): Look for --identification= vice 
+	IDENTIFICATION=
+
+2010-09-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference, case Attribute_Old): When
+	inserting and analyzing the object declaration for the temporary object
+	created to hold a 'Old value, push the scope for the subprogram where
+	the object is inserted, so that its Scope (and that of related objects)
+	will be set properly.
+
 2010-09-09  Vincent Celier  <celier@adacore.com>
 
 	* prj.adb (Get_Object_Directory): Return object directory display name
