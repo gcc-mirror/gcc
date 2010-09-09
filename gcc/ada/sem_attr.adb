@@ -7930,8 +7930,6 @@ package body Sem_Attr is
                   --  didn't permit the access to be declared in the generic
                   --  spec, whereas the revised rule does (as long as it's not
                   --  a formal type).
-                  --  Note that we relax this check in CodePeer mode for
-                  --  compatibility with legacy code.
 
                   --  There are a couple of subtleties of the test for applying
                   --  the check that are worth noting. First, we only apply it
@@ -7951,6 +7949,12 @@ package body Sem_Attr is
                   --  when within an instance, because any violations will have
                   --  been caught by the compilation of the generic unit.
 
+                  --  Note that we relax this check in CodePeer mode for
+                  --  compatibility with legacy code.
+
+                  --  This seems an odd decision??? Why should codepeer mode
+                  --  have a different notion of legality from the compiler???
+
                   elsif Attr_Id = Attribute_Access
                     and then not CodePeer_Mode
                     and then not In_Instance
@@ -7969,9 +7973,9 @@ package body Sem_Attr is
                      --  The attribute type's ultimate ancestor must be
                      --  declared within the same generic unit as the
                      --  subprogram is declared. The error message is
-                     --  specialized to say "ancestor" for the case where
-                     --  the access type is not its own ancestor, since
-                     --  saying simply "access type" would be very confusing.
+                     --  specialized to say "ancestor" for the case where the
+                     --  access type is not its own ancestor, since saying
+                     --  simply "access type" would be very confusing.
 
                      if Enclosing_Generic_Unit (Entity (P)) /=
                           Enclosing_Generic_Unit (Root_Type (Btyp))

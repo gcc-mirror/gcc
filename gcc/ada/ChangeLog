@@ -1,3 +1,34 @@
+2010-09-09  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb: Minor reformatting.
+
+2010-09-09  Thomas Quinot  <quinot@adacore.com>
+
+	* socket.c (__gnat_socket_ioctl): On Darwin, the req parameter is an
+	unsigned long, not an int.
+
+2010-09-09  Vincent Celier  <celier@adacore.com>
+
+	* make.adb, mlib-prj.adb, prj.adb, prj-nmsc.adb, mlib-tgt.adb,
+	prj-conf.adb, prj-env.adb: Use Display_Name instead of Name whenever
+	we are not checking for equality of path or file names.
+
+2010-09-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): If the expression is a packed
+	array reference, reset the Analyzed flag so that it is properly
+	expanded when the resulting object declaration is analyzed.
+
+2010-09-09  Vincent Celier  <celier@adacore.com>
+
+	* sinput-p.adb (Source_File_Is_Subunit): Return False if X is
+	No_Source_File.
+
+2010-09-09  Ramon Fernandez  <fernandez@adacore.com>
+
+	* sysdep.c: The wrSbc8548 BSP in MILS doesn't know anything about the
+	VX_SPE_TASK option, so disable it.
+
 2010-09-09  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem.adb (Walk_Library_Items): Traverse context of subunits of the

@@ -4777,6 +4777,18 @@ package body Exp_Util is
          Set_Etype (Def_Id, Exp_Type);
          Res := New_Reference_To (Def_Id, Loc);
 
+         --  If the expression is a packed reference, it must be reanalyzed
+         --  and expanded, depending on context. This is the case for actuals
+         --  where a constraint check may capture the actual before expansion
+         --  of the call is complete.
+
+         if Nkind (Exp) = N_Indexed_Component
+           and then Is_Packed (Etype (Prefix (Exp)))
+         then
+            Set_Analyzed (Exp, False);
+            Set_Analyzed (Prefix (Exp), False);
+         end if;
+
          E :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Def_Id,

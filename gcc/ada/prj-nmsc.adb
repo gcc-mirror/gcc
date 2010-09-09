@@ -6877,7 +6877,7 @@ package body Prj.Nmsc is
                  and then Name_Loc.Source.Kind = Impl
                then
                   Src_Ind := Sinput.P.Load_Project_File
-                    (Get_Name_String (Path));
+                    (Get_Name_String (Display_Path));
 
                   if Sinput.P.Source_File_Is_Subunit (Src_Ind) then
                      Override_Kind (Name_Loc.Source, Sep);
@@ -7380,7 +7380,7 @@ package body Prj.Nmsc is
 
                            Src_Ind :=
                              Sinput.P.Load_Project_File
-                               (Get_Name_String (Src_Id.Path.Name));
+                               (Get_Name_String (Src_Id.Path.Display_Name));
 
                            if Sinput.P.Source_File_Is_Subunit (Src_Ind) then
                               Override_Kind (Src_Id, Sep);
