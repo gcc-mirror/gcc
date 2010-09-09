@@ -1569,11 +1569,17 @@ package body Sem_Ch3 is
 
                if No (Prim) then
 
+                  --  Skip non-overridden null interface primitives because
+                  --  their wrappers will be generated later.
+
+                  if Is_Null_Interface_Primitive (Iface_Prim) then
+                     goto Continue;
+
                   --  if the tagged type is defined at library level then we
                   --  invoke Check_Abstract_Overriding to report the error
                   --  and thus avoid generating the dispatch tables.
 
-                  if Is_Library_Level_Tagged_Type (Tagged_Type) then
+                  elsif Is_Library_Level_Tagged_Type (Tagged_Type) then
                      Check_Abstract_Overriding (Tagged_Type);
                      pragma Assert (Serious_Errors_Detected > 0);
                      return;
@@ -1645,6 +1651,7 @@ package body Sem_Ch3 is
                Set_Has_Delayed_Freeze (New_Subp);
             end if;
 
+            <<Continue>>
             Next_Elmt (Elmt);
          end loop;
 
