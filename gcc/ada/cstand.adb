@@ -446,6 +446,7 @@ package body CStand is
 
       Set_Is_Unsigned_Type           (Standard_Boolean);
       Set_Size_Known_At_Compile_Time (Standard_Boolean);
+      Set_Has_Pragma_Ordered         (Standard_Boolean);
 
       Set_Ekind           (Standard_True, E_Enumeration_Literal);
       Set_Etype           (Standard_True, Standard_Boolean);
@@ -566,6 +567,7 @@ package body CStand is
       Init_RM_Size       (Standard_Character, 8);
       Set_Elem_Alignment (Standard_Character);
 
+      Set_Has_Pragma_Ordered         (Standard_Character);
       Set_Is_Unsigned_Type           (Standard_Character);
       Set_Is_Character_Type          (Standard_Character);
       Set_Is_Known_Valid             (Standard_Character);
@@ -611,6 +613,7 @@ package body CStand is
       Init_Size      (Standard_Wide_Character, Standard_Wide_Character_Size);
 
       Set_Elem_Alignment             (Standard_Wide_Character);
+      Set_Has_Pragma_Ordered         (Standard_Wide_Character);
       Set_Is_Unsigned_Type           (Standard_Wide_Character);
       Set_Is_Character_Type          (Standard_Wide_Character);
       Set_Is_Known_Valid             (Standard_Wide_Character);
@@ -658,6 +661,7 @@ package body CStand is
                  Standard_Wide_Wide_Character_Size);
 
       Set_Elem_Alignment             (Standard_Wide_Wide_Character);
+      Set_Has_Pragma_Ordered         (Standard_Wide_Wide_Character);
       Set_Is_Unsigned_Type           (Standard_Wide_Wide_Character);
       Set_Is_Character_Type          (Standard_Wide_Wide_Character);
       Set_Is_Known_Valid             (Standard_Wide_Wide_Character);

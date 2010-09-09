@@ -91,6 +91,15 @@ package body Sem_Res is
 
    --  Note that Resolve_Attribute is separated off in Sem_Attr
 
+   function Bad_Unordered_Enumeration_Reference
+     (N : Node_Id;
+      T : Entity_Id) return Boolean;
+   --  Node N contains a potentially dubious reference to type T, either an
+   --  explicit comparison, or an explicit range. This function returns True
+   --  if the type T is an enumeration type for which No pragma Order has been
+   --  given, and the reference N is not in the same extended source unit as
+   --  the declaration of T.
+
    procedure Check_Discriminant_Use (N : Node_Id);
    --  Enforce the restrictions on the use of discriminants when constraining
    --  a component of a discriminated type (record or concurrent type).
@@ -399,6 +408,22 @@ package body Sem_Res is
            Scope_Suppress;
       end if;
    end Analyze_And_Resolve;
+
+   ----------------------------------------
+   -- Bad_Unordered_Enumeration_Reference --
+   ----------------------------------------
+
+   function Bad_Unordered_Enumeration_Reference
+     (N : Node_Id;
+      T : Entity_Id) return Boolean
+   is
+   begin
+      return Is_Enumeration_Type (T)
+        and then Comes_From_Source (N)
+        and then Warn_On_Unordered_Enumeration_Type
+        and then not Has_Pragma_Ordered (T)
+        and then not In_Same_Extended_Unit (N, T);
+   end Bad_Unordered_Enumeration_Reference;
 
    ----------------------------
    -- Check_Discriminant_Use --
@@ -5658,30 +5683,49 @@ package body Sem_Res is
       Set_Etype (N, Base_Type (Typ));
       Generate_Reference (T, N, ' ');
 
-      if T /= Any_Type then
-         if T = Any_String    or else
-            T = Any_Composite or else
-            T = Any_Character
-         then
-            if T = Any_Character then
-               Ambiguous_Character (L);
-            else
-               Error_Msg_N ("ambiguous operands for comparison", N);
-            end if;
+      --  Skip remaining processing if already set to Any_Type
 
-            Set_Etype (N, Any_Type);
-            return;
-
-         else
-            Resolve (L, T);
-            Resolve (R, T);
-            Check_Unset_Reference (L);
-            Check_Unset_Reference (R);
-            Generate_Operator_Reference (N, T);
-            Check_Low_Bound_Tested (N);
-            Eval_Relational_Op (N);
-         end if;
+      if T = Any_Type then
+         return;
       end if;
+
+      --  Deal with other error cases
+
+      if T = Any_String    or else
+         T = Any_Composite or else
+         T = Any_Character
+      then
+         if T = Any_Character then
+            Ambiguous_Character (L);
+         else
+            Error_Msg_N ("ambiguous operands for comparison", N);
+         end if;
+
+         Set_Etype (N, Any_Type);
+         return;
+      end if;
+
+      --  Resolve the operands if types OK
+
+      Resolve (L, T);
+      Resolve (R, T);
+      Check_Unset_Reference (L);
+      Check_Unset_Reference (R);
+      Generate_Operator_Reference (N, T);
+      Check_Low_Bound_Tested (N);
+
+      --  Check comparison on unordered enumeration
+
+      if Comes_From_Source (N)
+        and then Bad_Unordered_Enumeration_Reference (N, Etype (L))
+      then
+         Error_Msg_N ("comparison on unordered enumeration type?", N);
+      end if;
+
+      --  Evaluate the relation (note we do this after the above check
+      --  since this Eval call may change N to True/False.
+
+      Eval_Relational_Op (N);
    end Resolve_Comparison_Op;
 
    ------------------------------------
@@ -7606,13 +7650,56 @@ package body Sem_Res is
       L : constant Node_Id := Low_Bound (N);
       H : constant Node_Id := High_Bound (N);
 
+      function First_Last_Ref return Boolean;
+      --  Returns True if N is of the form X'First .. X'Last where X is the
+      --  same entity for both attributes.
+
+      --------------------
+      -- First_Last_Ref --
+      --------------------
+
+      function First_Last_Ref return Boolean is
+         Lorig : constant Node_Id := Original_Node (L);
+         Horig : constant Node_Id := Original_Node (H);
+
+      begin
+         if Nkind (Lorig) = N_Attribute_Reference
+           and then Nkind (Horig) = N_Attribute_Reference
+           and then Attribute_Name (Lorig) = Name_First
+           and then Attribute_Name (Horig) = Name_Last
+         then
+            declare
+               PL : constant Node_Id := Prefix (Lorig);
+               PH : constant Node_Id := Prefix (Horig);
+            begin
+               if Is_Entity_Name (PL)
+                 and then Is_Entity_Name (PH)
+                 and then Entity (PL) = Entity (PH)
+               then
+                  return True;
+               end if;
+            end;
+         end if;
+
+         return False;
+      end First_Last_Ref;
+
+   --  Start of processing for Resolve_Range
+
    begin
       Set_Etype (N, Typ);
       Resolve (L, Typ);
       Resolve (H, Typ);
 
-      if Style_Check then
-         Check_Enumeration_Subrange (N);
+      --  Check for inappropriate range on unordered enumeration type
+
+      if Bad_Unordered_Enumeration_Reference (N, Typ)
+
+        --  Exclude X'First .. X'Last if X is the same entity for both
+
+        and then not First_Last_Ref
+      then
+         Error_Msg ("subrange of unordered enumeration type?", Sloc (N));
       end if;
 
       Check_Unset_Reference (L);

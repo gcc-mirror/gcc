@@ -1,5 +1,50 @@
 2010-09-09  Vincent Celier  <celier@adacore.com>
 
+	* osint.adb (Canonical_Case_File_Name): Use procedure To_Lower in
+	System.Case_Util
+	(Canonical_Case_Env_Var_Name): Ditto
+
+2010-09-09  Bob Duff  <duff@adacore.com>
+
+	* g-pehage.adb (Allocate): Initialize the allocated elements of IT.
+
+2010-09-09  Robert Dewar  <dewar@adacore.com>
+
+	* cstand.adb: Mark Boolean and Character types as Ordered
+	* einfo.adb (Has_Pragma_Ordered): New flag
+	* einfo.ads (Has_Pragma_Ordered): New flag
+	* g-calend.ads: Mark Day_Name as Ordered
+	* opt.ads: Mark Ada_Version_Type as Ordered
+	(Warn_On_Unordered_Enumeration_Type): New flag
+	* par-prag.adb: Add procdessing for pragma Ordered
+	* s-ficobl.ads (Read_File_Mode): New subtype
+	* s-fileio.adb: Use Read_File_Mode instead of explicit ranges
+	* s-taskin.ads: Mark Entry_Call_State as ordered
+	* sem_ch3.adb (Build_Derived_Enumeration_Type): Inherit
+	Has_Pragma_Ordered.
+	* sem_ch6.ads: Mark Conformance_Type as Ordered
+	* sem_prag.adb: Implement pragma Ordered
+	* sem_res.adb (Bad_Unordered_Enumeration_Reference): New function
+	(Resolve_Comparison_Op): Diagnose unordered comparison
+	(Resolve_Range): Diagnose unordered range
+	* sem_warn.adb (Warn_On_Unordered_Enumeration_Type): New flag (from
+	-gnatw.u/U)
+	* snames.ads-tmpl: Add entry for pragma Ordered
+	* style.ads (Check_Enumeration_Subrange): Removed
+	* styleg.adb (Check_Enumeration_Subrange): Removed
+	* styleg.ads (Check_Enumeration_Subrange): Removed
+	* stylesw.adb: Remove handling of -gnatyE switch
+	* stylesw.ads: (Style_Check_Enumeration_Subranges): Removed
+	* vms_data.ads: Remove -gnatyE entries
+	Add -gnatw.u entries
+	* ug_words: Entries for -gnatw.u and -gnatw.U
+	* gnat_ugn.texi: Document -gnatw.u/-gnatw.U switches
+	* gnat_rm.texi: Document pragma Ordered.
+	* s-tasren.adb: Avoid unnecessary comparison on unordered enumeration.
+	* s-tpobop.adb: Remove comparison on unordered enumeration type.
+
+2010-09-09  Vincent Celier  <celier@adacore.com>
+
 	* adaint.c: New function __gnat_get_env_vars_case_sensitive, returns 0
 	for VMS and Windows, and 1 for all other platforms.
 	* adaint.h: New function __gnat_get_env_vars_case_sensitive

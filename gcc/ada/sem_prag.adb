@@ -9707,7 +9707,7 @@ package body Sem_Prag is
 
          --  pragma Optimize_Alignment (Time | Space | Off);
 
-         when Pragma_Optimize_Alignment =>
+         when Pragma_Optimize_Alignment => Optimize_Alignment : begin
             GNAT_Pragma;
             Check_No_Identifiers;
             Check_Arg_Count (1);
@@ -9733,6 +9733,42 @@ package body Sem_Prag is
             --  switch will get reset anyway at the start of each unit.
 
             Optimize_Alignment_Local := True;
+         end Optimize_Alignment;
+
+         -------------
+         -- Ordered --
+         -------------
+
+         --  pragma Ordered (first_enumeration_subtype_LOCAL_NAME);
+
+         when Pragma_Ordered => Ordered : declare
+            Assoc   : constant Node_Id := Arg1;
+            Type_Id : Node_Id;
+            Typ     : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_No_Identifiers;
+            Check_Arg_Count (1);
+            Check_Arg_Is_Local_Name (Arg1);
+
+            Type_Id := Expression (Assoc);
+            Find_Type (Type_Id);
+            Typ := Entity (Type_Id);
+
+            if Typ = Any_Type then
+               return;
+            else
+               Typ := Underlying_Type (Typ);
+            end if;
+
+            if not Is_Enumeration_Type (Typ) then
+               Error_Pragma ("pragma% must specify enumeration type");
+            end if;
+
+            Check_First_Subtype (Arg1);
+            Set_Has_Pragma_Ordered (Base_Type (Typ));
+         end Ordered;
 
          ----------
          -- Pack --
@@ -9821,7 +9857,7 @@ package body Sem_Prag is
                      elsif VM_Target = No_VM then
                         Set_Is_Packed            (Base_Type (Typ));
                         Set_Has_Pragma_Pack      (Base_Type (Typ));
-                           Set_Has_Non_Standard_Rep (Base_Type (Typ));
+                        Set_Has_Non_Standard_Rep (Base_Type (Typ));
 
                      --  If we ignore the pack, then warn about this, except
                      --  that we suppress the warning in GNAT mode.
@@ -12818,6 +12854,7 @@ package body Sem_Prag is
       Pragma_Obsolescent                   =>  0,
       Pragma_Optimize                      => -1,
       Pragma_Optimize_Alignment            => -1,
+      Pragma_Ordered                       =>  0,
       Pragma_Pack                          =>  0,
       Pragma_Page                          => -1,
       Pragma_Passive                       => -1,

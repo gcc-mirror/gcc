@@ -456,6 +456,7 @@ package body Einfo is
    --    Is_Primitive_Wrapper            Flag195
    --    Was_Hidden                      Flag196
    --    Is_Limited_Interface            Flag197
+   --    Has_Pragma_Ordered              Flag198
 
    --    Has_Anon_Block_Suffix           Flag201
    --    Itype_Printed                   Flag202
@@ -509,7 +510,6 @@ package body Einfo is
    --    Is_Underlying_Record_View       Flag246
    --    OK_To_Rename                    Flag247
 
-   --    (unused)                        Flag198
    --    (unused)                        Flag199
    --    (unused)                        Flag200
 
@@ -726,8 +726,7 @@ package body Einfo is
 
    function Corresponding_Protected_Entry (Id : E) return E is
    begin
-      pragma Assert
-        (Ekind (Id) = E_Subprogram_Body);
+      pragma Assert (Ekind (Id) = E_Subprogram_Body);
       return Node18 (Id);
    end Corresponding_Protected_Entry;
 
@@ -1343,6 +1342,12 @@ package body Einfo is
    begin
       return Flag230 (Id);
    end Has_Pragma_Inline_Always;
+
+   function Has_Pragma_Ordered (Id : E) return B is
+   begin
+      pragma Assert (Is_Enumeration_Type (Id));
+      return Flag198 (Implementation_Base_Type (Id));
+   end Has_Pragma_Ordered;
 
    function Has_Pragma_Pack (Id : E) return B is
    begin
@@ -3752,6 +3757,13 @@ package body Einfo is
    begin
       Set_Flag230 (Id, V);
    end Set_Has_Pragma_Inline_Always;
+
+   procedure Set_Has_Pragma_Ordered (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Enumeration_Type (Id));
+      pragma Assert (Id = Base_Type (Id));
+      Set_Flag198 (Id, V);
+   end Set_Has_Pragma_Ordered;
 
    procedure Set_Has_Pragma_Pack (Id : E; V : B := True) is
    begin
@@ -6901,6 +6913,7 @@ package body Einfo is
       W ("Has_Pragma_Elaborate_Body",       Flag150 (Id));
       W ("Has_Pragma_Inline",               Flag157 (Id));
       W ("Has_Pragma_Inline_Always",        Flag230 (Id));
+      W ("Has_Pragma_Ordered",              Flag198 (Id));
       W ("Has_Pragma_Pack",                 Flag121 (Id));
       W ("Has_Pragma_Preelab_Init",         Flag221 (Id));
       W ("Has_Pragma_Pure",                 Flag203 (Id));

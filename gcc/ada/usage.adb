@@ -470,6 +470,8 @@ begin
    Write_Line ("        T*   turn off warnings for tracking deleted code");
    Write_Line ("        u+   turn on warnings for unused entity");
    Write_Line ("        U*   turn off warnings for unused entity");
+   Write_Line ("        .u   turn on warnings for unordered enumeration");
+   Write_Line ("        .U*  turn off warnings for unordered enumeration");
    Write_Line ("        v*+  turn on warnings for unassigned variable");
    Write_Line ("        V    turn off warnings for unassigned variable");
    Write_Line ("        .v*+ turn on info messages for reverse bit order");
@@ -533,7 +535,6 @@ begin
    Write_Line ("        c    check comment format");
    Write_Line ("        d    check no DOS line terminators");
    Write_Line ("        e    check end/exit labels present");
-   Write_Line ("        E    check no explicit enumeration subranges");
    Write_Line ("        f    check no form feeds/vertical tabs in source");
    Write_Line ("        g    check standard GNAT style rules");
    Write_Line ("        h    check no horizontal tabs in source");

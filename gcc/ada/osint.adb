@@ -688,20 +688,10 @@ package body Osint is
    -- Canonical_Case_File_Name --
    ------------------------------
 
-   --  For now, we only deal with the case of a-z. Eventually we should
-   --  worry about other Latin-1 letters on systems that support this ???
-
    procedure Canonical_Case_File_Name (S : in out String) is
    begin
       if not File_Names_Case_Sensitive then
-         for J in S'Range loop
-            if S (J) in 'A' .. 'Z' then
-               S (J) :=
-                 Character'Val
-                   (Character'Pos (S (J)) +
-                     (Character'Pos ('a') - Character'Pos ('A')));
-            end if;
-         end loop;
+         To_Lower (S);
       end if;
    end Canonical_Case_File_Name;
 
@@ -712,14 +702,7 @@ package body Osint is
    procedure Canonical_Case_Env_Var_Name (S : in out String) is
    begin
       if not Env_Vars_Case_Sensitive then
-         for J in S'Range loop
-            if S (J) in 'A' .. 'Z' then
-               S (J) := Character'Val (
-                 Character'Pos (S (J)) +
-                   Character'Pos ('a')   -
-                   Character'Pos ('A'));
-            end if;
-         end loop;
+         To_Lower (S);
       end if;
    end Canonical_Case_Env_Var_Name;
 

@@ -2277,10 +2277,6 @@ package VMS_Data is
                                                "-gnatye "                  &
                                             "NOEND "                       &
                                                "-gnaty-e "                 &
-                                            "ENUMERATION_RANGES "          &
-                                               "-gnatyE "                  &
-                                            "NOENUMERATION_RANGES "        &
-                                               "-gnaty-E "                 &
                                             "VTABS "                       &
                                                "-gnatyf "                  &
                                             "NOVTABS "                     &
@@ -3005,6 +3001,10 @@ package VMS_Data is
                                                "-gnatwu "                  &
                                             "NOUNUSED "                    &
                                                "-gnatwU "                  &
+                                            "UNORDERED_ENUMERATIONS "      &
+                                               "-gnatw.u "                 &
+                                            "NOUNORDERED_ENUMERATIONS "    &
+                                               "-gnatw.U "                 &
                                             "VARIABLES_UNINITIALIZED "     &
                                                "-gnatwv "                  &
                                             "NOVARIABLES_UNINITIALIZED "   &

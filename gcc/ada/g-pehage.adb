@@ -553,10 +553,18 @@ package body GNAT.Perfect_Hash_Generators is
    -- Allocate --
    --------------
 
-   function  Allocate (N : Natural; S : Natural := 1) return Table_Id is
+   function Allocate (N : Natural; S : Natural := 1) return Table_Id is
       L : constant Integer := IT.Last;
    begin
       IT.Set_Last (L + N * S);
+
+      --  Initialize, so debugging printouts don't trip over uninitialized
+      --  components.
+
+      for J in L + 1 .. IT.Last loop
+         IT.Table (J) := -1;
+      end loop;
+
       return L + 1;
    end Allocate;
 
