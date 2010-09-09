@@ -1,5 +1,10 @@
 2010-09-09  Robert Dewar  <dewar@adacore.com>
 
+	* gnatcmd.adb, gnatlink.adb, sem_ch12.adb, sem_eval.adb, sinput-p.adb:
+	Minor reformatting
+
+2010-09-09  Robert Dewar  <dewar@adacore.com>
+
 	* impunit.adb: Add entry for a-izteio.
 	* checks.adb: Add comment.
 	* debug.adb, exp_disp.adb: Minor reformatting.

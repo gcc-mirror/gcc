@@ -2145,14 +2145,15 @@ begin
                --  Remove duplicate IDENTIFICATION directives (VMS)
 
                if Linker_Options.Table (J)'Length > 29
-                 and then Linker_Options.Table (J) (1 .. 30)
-                          = "--for-linker=--identification="
+                 and then Linker_Options.Table (J) (1 .. 30) =
+                            "--for-linker=--identification="
                then
                   if IDENT_Op then
                      Linker_Options.Table (J .. Linker_Options.Last - 1) :=
                        Linker_Options.Table (J + 1 .. Linker_Options.Last);
                      Linker_Options.Decrement_Last;
                      Num_Args := Num_Args - 1;
+
                   else
                      IDENT_Op := True;
                   end if;

@@ -11240,9 +11240,10 @@ package body Sem_Ch12 is
                --  block can be involved, because the parent instances have
                --  been installed within it.
 
-               Cur_P := P;
                if Ekind (P) = E_Block then
-                  Cur_P := Scope (Cur_P);
+                  Cur_P := Scope (P);
+               else
+                  Cur_P := P;
                end if;
 
                if Is_Generic_Instance (Cur_P) and then P /= Current_Scope then
