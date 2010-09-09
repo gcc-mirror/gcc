@@ -10116,6 +10116,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    && !TREE_TYPE (max))
 	  TREE_TYPE (max) = TREE_TYPE (TREE_OPERAND (max, 0));
 
+	max = mark_rvalue_use (max);
 	max = fold_decl_constant_value (max);
 
 	/* If we're in a partial instantiation, preserve the magic NOP_EXPR

@@ -1,3 +1,9 @@
+2010-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/45588
+	* pt.c (tsubst) <case INTEGER_TYPE>: Call mark_rvalue_use
+	before calling fold_decl_constant_value.
+
 2010-09-07  Arnaud Charlet  <charlet@adacore.com>
 
 	* cp-tree.h (build_enumerator): Add new location_t parameter.

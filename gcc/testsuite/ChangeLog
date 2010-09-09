@@ -1,3 +1,8 @@
+2010-09-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/45588
+	* g++.dg/warn/Wunused-var-15.C: New test.
+
 2010-09-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* c-c++-common/Wunused-var-12.c: Add -fno-common to options on 32-bit
