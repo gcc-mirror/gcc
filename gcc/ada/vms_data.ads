@@ -4860,6 +4860,11 @@ package VMS_Data is
 
    S_Make_Single  : aliased constant S := "/SINGLE_COMPILE_PER_OBJ_DIR "   &
                                             "--single-compile-per-obj-dir";
+   --        /NOSINGLE_COMPILE_PER_OBJ_DIR (D)
+   --        /SINGLE_COMPILE_PER_OBJ_DIR
+   --
+   --    When project files are used, do not allow simultaneous compilations
+   --    for the same object directory.
 
    S_Make_Skip    : aliased constant S := "/SKIP_MISSING=*"                &
                                             "-aL*";

@@ -1,3 +1,11 @@
+2010-09-09  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb: Minor reformatting
+
+2010-09-09  Vincent Celier  <celier@adacore.com>
+
+	* vms_data.ads: Add documentation for S_Make_Single.
+
 2010-09-09  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (Same_Object): include formal parameters.
