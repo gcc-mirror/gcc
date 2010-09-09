@@ -1,3 +1,46 @@
+2010-09-09  Matthew Heaney  <heaney@adacore.com>
+
+	* a-convec.adb, a-coinve.adb (Clear, Delete, Delete_Last, Finalize,
+	Merge, Insert, Insert_Space, Move, Reserve_Capacity, Generic_Sorting,
+	Replace_Element, Reverse_Elements, Swap): Change exception message to
+	correctly indicate kind of tampering (cursor or element).
+	* a-cdlili.adb, a-cidlli.adb (Clear, Delete, Delete_First, Delete_Last,
+	Merge, Generic_Sorting, Insert, Move, Reverse_Elements, Splice,
+	Swap_Links, Replace_Element, Swap): Ditto.
+	* a-coorse.adb, a-ciorse.adb (Include, Replace, Replace_Element): Ditto
+	* a-coorma.adb, a-ciorma.adb (Include, Replace, Replace_Element): Ditto
+	* a-coormu.adb, a-ciormu.adb (Replace_Element): Ditto
+	* a-chtgke.adb (Delete_Key_Sans_Free, Generic_Conditional_Insert,
+	Generic_Replace_Element): Ditto
+	* a-chtgop.adb (Clear, Move, Reserve_Capacity): Ditto
+	* a-cohama.adb, a-cihama.adb (Delete, Include, Replace,
+	Replace_Element): Ditto.
+	* a-cohase.adb, a-cihase.adb (Delete, Difference, Intersection,
+	Symmetric_Difference, Union, Include, Replace): Ditto
+
+2010-09-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sprint.adb (Write_Id): If the parent node is an expanded name, check
+	that its entity_or_associated_node is an entity before writing it out.
+	* exp_disp.adb (Make_Tags); if a type is declared in C++ and has no
+	constructors, there is no need for a dispatch table pointer because the
+	table is fully inherited from the C++ code.
+
+2010-09-09  Thomas Quinot  <quinot@adacore.com>
+
+	* projects.texi: Fix wrong identifiers on package end lines in project
+	files examples.
+	* exp_ch6.adb: Minor reformatting.
+
+2010-09-09  Tristan Gingold  <gingold@adacore.com>
+
+	* gnatcmd.adb, vms_conv.ads, vms_help.adb, vms_cmds.ads: Extract
+	Command_Type from vms_conv.ads.
+
+2010-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_ugn.texi: Fix description of -O3 optimization level.
+
 2010-09-09  Yannick Moy  <moy@adacore.com>
 
 	* a-cihama.adb, a-cohama.adb: Fix comments.
