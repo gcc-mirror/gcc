@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -501,11 +501,13 @@ package body Ch2 is
          Id_Present := False;
       end if;
 
-      if Identifier_Seen and not Id_Present then
-         Error_Msg_SC
-           ("|pragma argument identifier required here");
-         Error_Msg_SC
-           ("\since previous argument had identifier (RM 2.8(4))");
+      if Identifier_Seen and not Id_Present and not CodePeer_Mode then
+         --  In CodePeer mode, we do not generate an error for compatibility
+         --  with legacy code, since this error can be safely ignored when
+         --  generating SCIL.
+
+         Error_Msg_SC ("|pragma argument identifier required here");
+         Error_Msg_SC ("\since previous argument had identifier (RM 2.8(4))");
       end if;
 
       if Id_Present then

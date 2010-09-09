@@ -7930,6 +7930,8 @@ package body Sem_Attr is
                   --  didn't permit the access to be declared in the generic
                   --  spec, whereas the revised rule does (as long as it's not
                   --  a formal type).
+                  --  Note that we relax this check in CodePeer mode for
+                  --  compatibility with legacy code.
 
                   --  There are a couple of subtleties of the test for applying
                   --  the check that are worth noting. First, we only apply it
@@ -7950,6 +7952,7 @@ package body Sem_Attr is
                   --  been caught by the compilation of the generic unit.
 
                   elsif Attr_Id = Attribute_Access
+                    and then not CodePeer_Mode
                     and then not In_Instance
                     and then Present (Enclosing_Generic_Unit (Entity (P)))
                     and then Present (Enclosing_Generic_Body (N))

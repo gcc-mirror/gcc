@@ -5613,12 +5613,13 @@ the effect of @option{-gnatwF}).
 @emph{Activate warnings on unordered enumeration types.}
 @cindex @option{-gnatw.u} (@command{gcc})
 This switch causes enumeration types to be considered as conceptually
-unordered, unless an explicit pragma Order is given for the type. The
-effect is to generate warnings in clients that use explicit comparisons
+unordered, unless an explicit pragma @code{Ordered} is given for the type.
+The effect is to generate warnings in clients that use explicit comparisons
 or subranges, since these constructs both treat objects of the type as
-ordered. A client is defined as a unit that is other than the unit in
-which the type is declared, or its body or subunits. See description
-of pragma Order in the GNAT RM for further details.
+ordered. (A @emph{client} is defined as a unit that is other than the unit in
+which the type is declared, or its body or subunits.) Please refer to
+the description of pragma @code{Ordered} in the
+@cite{@value{EDITION} Reference Manual} for further details.
 
 @item -gnatw.U
 @emph{Deactivate warnings on unordered enumeration types.}
