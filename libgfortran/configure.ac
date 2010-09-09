@@ -450,15 +450,6 @@ AC_CHECK_LIB([m],[catanl],[AC_DEFINE([HAVE_CATANL],[1],[libm includes catanl])])
 # On AIX, clog is present in libm as __clog
 AC_CHECK_LIB([m],[__clog],[AC_DEFINE([HAVE_CLOG],[1],[libm includes clog])])
 
-# Check for a isfinite macro that works on long doubles.
-LIBGFOR_CHECK_FOR_BROKEN_ISFINITE
-
-# Check for a isnan macro that works on long doubles.
-LIBGFOR_CHECK_FOR_BROKEN_ISNAN
-
-# Check for a fpclassify macro that works on long doubles.
-LIBGFOR_CHECK_FOR_BROKEN_FPCLASSIFY
-
 # Check whether the system has a working stat()
 LIBGFOR_CHECK_WORKING_STAT
 

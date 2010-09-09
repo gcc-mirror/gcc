@@ -977,7 +977,7 @@ sprintf (buffer, "%+-#" STR(MIN_FIELD_WIDTH) ".*" \
 {\
 	GFC_REAL_ ## x tmp;\
 	tmp = * (GFC_REAL_ ## x *)source;\
-	sign_bit = __builtin_signbit (tmp);\
+	sign_bit = signbit (tmp);\
 	if (!isfinite (tmp))\
 	  { \
 	    write_infnan (dtp, f, isnan (tmp), sign_bit);\

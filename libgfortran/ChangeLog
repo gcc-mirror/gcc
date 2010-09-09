@@ -1,3 +1,18 @@
+2010-09-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* acinclude.m4 (LIBGFOR_CHECK_FOR_BROKEN_ISFINITE,
+	LIBGFOR_CHECK_FOR_BROKEN_ISNAN,
+	LIBGFOR_CHECK_FOR_BROKEN_FPCLASSIFY): Remove.
+	* configure.ac: Remove above checks.
+	* libgfortran.h: Define isnan, isinf, isfinite, isnormal and
+	signbit in terms of the respective built-ins.
+	* io/write_float.def (WRITE_FLOAT): Use signbit() instead of
+	__builtin_signbit().
+	* intrinsics/c99_functions.c (tgamma): Use isnan() instead of
+	__builtin_isnan().
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
 2010-09-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/38282
