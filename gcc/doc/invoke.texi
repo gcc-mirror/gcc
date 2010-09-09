@@ -15213,6 +15213,11 @@ scheduling parameters set by @option{-mtune}.
 Generate PowerPC64 code for the small model: The TOC is limited to
 64k.
 
+@item -mcmodel=medium
+@opindex mcmodel=medium
+Generate PowerPC64 code for the medium model: The TOC and other static
+data may be up to a total of 4G in size.
+
 @item -mcmodel=large
 @opindex mcmodel=large
 Generate PowerPC64 code for the large model: The TOC may be up to 4G
