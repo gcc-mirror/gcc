@@ -1,3 +1,8 @@
+2010-09-09  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_conv_array_transpose): Change generated descriptor
+	name
+
 2010-09-09  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43665
