@@ -501,11 +501,14 @@ package body Ch2 is
          Id_Present := False;
       end if;
 
-      if Identifier_Seen and not Id_Present and not CodePeer_Mode then
-         --  In CodePeer mode, we do not generate an error for compatibility
-         --  with legacy code, since this error can be safely ignored when
-         --  generating SCIL.
+      --  Diagnose error of "positional" argument for pragma appearing after
+      --  a "named" argument (quotes here are because that's not quite accurate
+      --  Ada RM terminology).
 
+      --  Since older GNAT versions did not generate this error, disable this
+      --  message in codepeer mode to help legacy code using codepeer.
+
+      if Identifier_Seen and not Id_Present and not CodePeer_Mode then
          Error_Msg_SC ("|pragma argument identifier required here");
          Error_Msg_SC ("\since previous argument had identifier (RM 2.8(4))");
       end if;
