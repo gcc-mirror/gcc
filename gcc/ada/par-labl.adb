@@ -378,12 +378,10 @@ procedure Labl is
 
                   --  If the label and the goto are both in the same statement
                   --  list, then we've found a loop. Note that labels and goto
-                  --  statements are always part of some list, so
-                  --  List_Containing always makes sense.
+                  --  statements are always part of some list, so In_Same_List
+                  --  always makes sense.
 
-                  if List_Containing (Node (N)) =
-                     List_Containing (Node (S1))
-                  then
+                  if In_Same_List (Node (N), Node (S1)) then
                      Source := S1;
                      Found  := True;
 

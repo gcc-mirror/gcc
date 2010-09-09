@@ -454,8 +454,9 @@ package body Sem_Ch8 is
    --  private with on E.
 
    procedure Find_Expanded_Name (N : Node_Id);
-   --  Selected component is known to be expanded name. Verify legality of
-   --  selector given the scope denoted by prefix.
+   --  The input is a selected component is known to be expanded name. Verify
+   --  legality of selector given the scope denoted by prefix, and change node
+   --  N into a expanded name with a properly set Entity field.
 
    function Find_Renamed_Entity
      (N         : Node_Id;
@@ -4411,6 +4412,10 @@ package body Sem_Ch8 is
 
       <<Found>> begin
 
+         --  Check violation of No_Wide_Characters restriction
+
+         Check_Wide_Character_Restriction (E, N);
+
          --  When distribution features are available (Get_PCS_Name /=
          --  Name_No_DSA), a remote access-to-subprogram type is converted
          --  into a record type holding whatever information is needed to
@@ -4959,6 +4964,10 @@ package body Sem_Ch8 is
       else
          Set_Etype (N, Get_Full_View (Etype (Id)));
       end if;
+
+      --  Check for violation of No_Wide_Characters
+
+      Check_Wide_Character_Restriction (Id, N);
 
       --  If the Ekind of the entity is Void, it means that all homonyms are
       --  hidden from all visibility (RM 8.3(5,14-20)).
@@ -7330,8 +7339,8 @@ package body Sem_Ch8 is
               and then Scope (Id) /= Scope (Prev)
               and then Used_As_Generic_Actual (Scope (Prev))
               and then Used_As_Generic_Actual (Scope (Id))
-              and then List_Containing (Current_Use_Clause (Scope (Prev))) /=
-                       List_Containing (Current_Use_Clause (Scope (Id)))
+              and then not In_Same_List (Current_Use_Clause (Scope (Prev)),
+                                         Current_Use_Clause (Scope (Id)))
             then
                Set_Is_Potentially_Use_Visible (Prev, False);
                Append_Elmt (Prev, Hidden_By_Use_Clause (N));

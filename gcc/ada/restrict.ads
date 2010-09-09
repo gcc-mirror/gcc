@@ -239,6 +239,12 @@ package Restrict is
    --  mechanism (e.g. a special pragma) to handle this case, but there are
    --  only six cases, and it is not worth the effort to do something general.
 
+   procedure Check_Wide_Character_Restriction (E : Entity_Id; N : Node_Id);
+   --  This procedure checks if the No_Wide_Character restriction is active,
+   --  and if so, if N Comes_From_Source, and the root type of E is one of
+   --  [Wide_]Wide_Character or [Wide_]Wide_String, then the restriction
+   --  violation is recorded, and an appropriate message given.
+
    function Cunit_Boolean_Restrictions_Save
      return Save_Cunit_Boolean_Restrictions;
    --  This function saves the compilation unit restriction settings, and

@@ -1638,9 +1638,7 @@ package body Sem_Ch6 is
 
          if Present (Prag) then
             if Present (Spec_Id) then
-               if List_Containing (N) =
-                 List_Containing (Unit_Declaration_Node (Spec_Id))
-               then
+               if In_Same_List (N, Unit_Declaration_Node (Spec_Id)) then
                   Analyze (Prag);
                end if;
 
@@ -1649,10 +1647,12 @@ package body Sem_Ch6 is
 
                declare
                   Subp : constant Entity_Id :=
-                    Make_Defining_Identifier (Loc, Chars (Body_Id));
+                           Make_Defining_Identifier (Loc, Chars (Body_Id));
                   Decl : constant Node_Id :=
-                    Make_Subprogram_Declaration (Loc,
-                      Specification =>  New_Copy_Tree (Specification (N)));
+                           Make_Subprogram_Declaration (Loc,
+                             Specification =>
+                               New_Copy_Tree (Specification (N)));
+
                begin
                   Set_Defining_Unit_Name (Specification (Decl), Subp);
 
@@ -7993,9 +7993,7 @@ package body Sem_Ch6 is
                        ("equality operator must be declared "
                          & "before type& is frozen", S, Typ);
 
-                  elsif List_Containing (Parent (Typ))
-                          /=
-                        List_Containing (Decl)
+                  elsif not In_Same_List (Parent (Typ), Decl)
                     and then not Is_Limited_Type (Typ)
                   then
                      Error_Msg_N

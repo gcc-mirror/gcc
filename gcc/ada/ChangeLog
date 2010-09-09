@@ -1,5 +1,24 @@
 2010-09-09  Robert Dewar  <dewar@adacore.com>
 
+	* nlists.ads, nlists.adb (In_Same_List): New function.
+	Use Node_Or_Entity_Id where appropriate.
+	* par-labl.adb, sem_ch6.adb, sem_type.adb: Use In_Same_List.
+
+2010-09-09  Robert Dewar  <dewar@adacore.com>
+
+	* restrict.ads, restrict.adb (Check_Wide_Character_Restriction): New
+	procedure.
+	* sem_ch3.adb: Use Check_Wide_Character_Restriction
+	(Enumeration_Type_Declaration): Check violation of No_Wide_Characters
+	* sem_ch8.adb (Find_Direct_Name): Check violation of No_Wide_Characters
+	(Find_Expanded_Name): Check violation of No_Wide_Characters
+
+2010-09-09  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch5.adb: Minor reformatting.
+
+2010-09-09  Robert Dewar  <dewar@adacore.com>
+
 	* prj-env.adb: Minor code reorganization.
 	* par-ch3.adb: Minor reformatting.
 	* gcc-interface/Make-lang.in: Update dependencies.
