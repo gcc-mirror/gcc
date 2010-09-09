@@ -6572,7 +6572,7 @@ package body Sem_Util is
       --  the corresponding procedure has been created, and which therefore do
       --  not have an assigned scope.
 
-      if Ekind (E) in Formal_Kind then
+      if Is_Formal (E) then
          return False;
       end if;
 
@@ -10532,22 +10532,24 @@ package body Sem_Util is
    begin
       --  First case, both are entities with same entity
 
-      if K1 in N_Has_Entity
-        and then K2 in N_Has_Entity
-        and then Present (Entity (N1))
-        and then Present (Entity (N2))
-        and then (Ekind (Entity (N1)) = E_Variable
-                    or else
-                    Ekind (Entity (N1)) = E_Constant
-                    or else
-                    Ekind (Entity (N1)) in Formal_Kind)
-        and then Entity (N1) = Entity (N2)
-      then
-         return True;
+      if K1 in N_Has_Entity and then K2 in N_Has_Entity then
+         declare
+            EN1 : constant Entity_Id := Entity (N1);
+            EN2 : constant Entity_Id := Entity (N2);
+         begin
+            if Present (EN1) and then Present (EN2)
+              and then (Ekind_In (EN1, E_Variable, E_Constant)
+                         or else Is_Formal (EN1))
+              and then EN1 = EN2
+            then
+               return True;
+            end if;
+         end;
+      end if;
 
       --  Second case, selected component with same selector, same record
 
-      elsif K1 = N_Selected_Component
+      if K1 = N_Selected_Component
         and then K2 = N_Selected_Component
         and then Chars (Selector_Name (N1)) = Chars (Selector_Name (N2))
       then
