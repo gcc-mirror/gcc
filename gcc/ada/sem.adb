@@ -1452,18 +1452,18 @@ package body Sem is
          end if;
 
          --  Do analysis, and then append the compilation unit onto the
-         --  Comp_Unit_List, if appropriate. This is done after analysis, so
-         --  if this unit depends on some others, they have already been
+         --  Comp_Unit_List, if appropriate. This is done after analysis,
+         --  so if this unit depends on some others, they have already been
          --  appended. We ignore bodies, except for the main unit itself, and
-         --   for subprogram bodies that act as specs. We have also to guard
-         --   against ill-formed subunits that have an improper context.
+         --  for subprogram bodies that act as specs. We have also to guard
+         --  against ill-formed subunits that have an improper context.
 
          Do_Analyze;
 
          if Present (Comp_Unit)
            and then Nkind (Unit (Comp_Unit)) in N_Proper_Body
            and then (Nkind (Unit (Comp_Unit)) /= N_Subprogram_Body
-             or else not Acts_As_Spec (Comp_Unit))
+                       or else not Acts_As_Spec (Comp_Unit))
            and then not In_Extended_Main_Source_Unit (Comp_Unit)
          then
             null;

@@ -1422,8 +1422,7 @@ package body Sem_Warn is
                      or else
                        Referenced_As_Out_Parameter_Check_Spec (E1))
 
-               --  Labels, and enumeration literals, and exceptions. The
-               --  warnings are also placed on local packages that cannot be
+               --  All other entities, including local packages that cannot be
                --  referenced from elsewhere, including those declared within a
                --  package body.
 
@@ -1568,7 +1567,7 @@ package body Sem_Warn is
                if not Warnings_Off_E1 then
                   Unreferenced_Entities.Append (E1);
 
-               --  Force warning on entity
+                  --  Force warning on entity
 
                   Set_Referenced (E1, False);
                end if;

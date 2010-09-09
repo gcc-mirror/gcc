@@ -1,5 +1,19 @@
 2010-09-09  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_ch3.adb (Build_Untagged_Equality): Do not set alias of implicit
+	inequality, it is always rewritten as the negation of the corresponding
+	equality operation.
+	* exp_ch8.adb (Expand_N_Subprogram_Renaming): If the subprogram renames
+	the predefined equality of an untagged record, create a body at the
+	point of the renaming, to capture the current meaning of equality for
+	the type.
+
+2010-09-09  Robert Dewar  <dewar@adacore.com>
+
+	* sem.adb, sem_warn.adb: Minor reformatting.
+
+2010-09-09  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch6.adb: Improve error message on untagged equality.
 	* sem.adb (Semantics): Include subprogram bodies that act as spec.
 
