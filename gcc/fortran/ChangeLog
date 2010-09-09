@@ -1,5 +1,10 @@
 2010-09-09  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_set_loop_bounds_from_array_spec):
+	Get the array dimension from the dim array.
+
+2010-09-09  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_trans_preloop_setup): Unconditionally use the
 	dim array to get the stride in the innermost loop.
 

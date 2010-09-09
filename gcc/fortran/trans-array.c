@@ -562,9 +562,11 @@ gfc_set_loop_bounds_from_array_spec (gfc_interface_mapping * mapping,
   tree tmp;
 
   if (as && as->type == AS_EXPLICIT)
-    for (dim = 0; dim < se->loop->dimen; dim++)
+    for (n = 0; n < se->loop->dimen; n++)
       {
-	n = se->loop->order[dim];
+	dim = se->ss->data.info.dim[n];
+	gcc_assert (dim < as->rank);
+	gcc_assert (se->loop->dimen == as->rank);
 	if (se->loop->to[n] == NULL_TREE)
 	  {
 	    /* Evaluate the lower bound.  */
