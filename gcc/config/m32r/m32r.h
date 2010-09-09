@@ -1048,16 +1048,6 @@ L2:     .word STATIC
 	goto ADDR;						\
     }								\
   while (0)
-
-/* Go to LABEL if ADDR (a legitimate address expression)
-   has an effect that depends on the machine mode it is used for.  */
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)		\
-  do								\
-    {						 		\
-      if (GET_CODE (ADDR) == LO_SUM)		 		\
-	goto LABEL;					 	\
-    }								\
-  while (0)
 
 /* Condition code usage.  */
 

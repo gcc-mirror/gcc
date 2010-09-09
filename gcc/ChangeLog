@@ -1,3 +1,9 @@
+2010-09-09  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/m32r/m32r.c (m32r_mode_dependent_address_p): New functions.
+	(TARGET_MODE_DEPENDENT_ADDRESS_P): Define.
+	* config/m32r/m32r.h: (GO_IF_MODE_DEPENDENT_ADDRESS): Remove.
+
 2010-09-09  Matthias Klose  <doko@ubuntu.com>
 
 	PR bootstrap/43847

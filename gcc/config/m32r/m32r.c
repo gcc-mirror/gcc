@@ -67,6 +67,7 @@ static void  init_reg_tables (void);
 static void  block_move_call (rtx, rtx, rtx);
 static int   m32r_is_insn (rtx);
 static rtx   m32r_legitimize_address (rtx, rtx, enum machine_mode);
+static bool  m32r_mode_dependent_address_p (const_rtx);
 static tree  m32r_handle_model_attribute (tree *, tree, tree, int, bool *);
 static void  m32r_print_operand (FILE *, rtx, int);
 static void  m32r_print_operand_address (FILE *, rtx);
@@ -117,6 +118,8 @@ static const struct attribute_spec m32r_attribute_table[] =
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS m32r_legitimize_address
+#undef TARGET_MODE_DEPENDENT_ADDRESS_P
+#define TARGET_MODE_DEPENDENT_ADDRESS_P m32r_mode_dependent_address_p
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
@@ -2042,6 +2045,17 @@ m32r_legitimize_address (rtx x, rtx orig_x ATTRIBUTE_UNUSED,
     return m32r_legitimize_pic_address (x, NULL_RTX);
   else
     return x;
+}
+
+/* Worker function for TARGET_MODE_DEPENDENT_ADDRESS_P.  */
+
+static bool
+m32r_mode_dependent_address_p (const_rtx addr)
+{
+  if (GET_CODE (addr) == LO_SUM)
+    return true;
+
+  return false;
 }
 
 /* Nested function support.  */
