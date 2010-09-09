@@ -193,8 +193,27 @@ package body Ch5 is
       procedure Test_Statement_Required is
       begin
          if Statement_Required then
-            Error_Msg_BC -- CODEFIX
-              ("statement expected");
+
+            --  Check no statement required after label in Ada 2012
+
+            if Ada_Version >= Ada_2012
+              and then not Is_Empty_List (Statement_List)
+              and then Nkind (Last (Statement_List)) = N_Label
+            then
+               declare
+                  Null_Stm : constant Node_Id :=
+                               Make_Null_Statement (Token_Ptr);
+               begin
+                  Set_Comes_From_Source (Null_Stm, False);
+                  Append_To (Statement_List, Null_Stm);
+               end;
+
+            --  If not Ada 2012, or not special case above, give error message
+
+            else
+               Error_Msg_BC -- CODEFIX
+                 ("statement expected");
+            end if;
          end if;
       end Test_Statement_Required;
 

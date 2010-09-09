@@ -3911,6 +3911,10 @@ package Sinfo is
       --  Identifier (Node1) direct name of statement identifier
       --  Exception_Junk (Flag8-Sem)
 
+      --  Note: Before Ada 2012, a label is always followed by a statement,
+      --  and this is true in the tree even in Ada 2012 mode (the parser
+      --  inserts a null statement marked with Comes_From_Source False).
+
       -------------------------------
       -- 5.1  Statement Identifier --
       -------------------------------
@@ -4005,6 +4009,11 @@ package Sinfo is
       --  Expression (Node3)
       --  Alternatives (List4)
       --  End_Span (Uint5) (set to No_Uint if expander generated)
+
+      --  Note: Before Ada 2012, a pragma in a statement sequence is always
+      --  followed by a statement, and this is true in the tree even in Ada
+      --  2012 mode (the parser inserts a null statement marked with the flag
+      --  Comes_From_Source False).
 
       -------------------------------------
       -- 5.4  Case Statement Alternative --
