@@ -27,6 +27,9 @@
  *  You should not attempt to use it directly.
  */
 
+#ifndef _RANDOM_TCC
+#define _RANDOM_TCC 1
+
 #include <numeric> // std::accumulate and std::partial_sum
 
 namespace std
@@ -2815,3 +2818,5 @@ namespace std
       return __sum / __tmp;
     }
 }
+
+#endif

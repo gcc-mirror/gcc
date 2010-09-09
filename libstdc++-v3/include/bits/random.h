@@ -28,6 +28,9 @@
  *  You should not attempt to use it directly.
  */
 
+#ifndef _RANDOM_H
+#define _RANDOM_H 1
+
 #include <vector>
 
 namespace std
@@ -5337,6 +5340,6 @@ namespace std
   /* @} */ // group random_utilities
 
   /* @} */ // group random
-
 }
 
+#endif
