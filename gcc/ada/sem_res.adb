@@ -6505,13 +6505,10 @@ package body Sem_Res is
          --  be anonymous access types.
 
          elsif Ada_Version >= Ada_2012
-           and then Ekind_In (Etype (L),
-             E_Anonymous_Access_Type,
-               E_Anonymous_Access_Subprogram_Type)
-
-           and then Ekind_In (Etype (R),
-             E_Anonymous_Access_Type,
-               E_Anonymous_Access_Subprogram_Type)
+           and then Ekind_In (Etype (L), E_Anonymous_Access_Type,
+                                         E_Anonymous_Access_Subprogram_Type)
+           and then Ekind_In (Etype (R), E_Anonymous_Access_Type,
+                                         E_Anonymous_Access_Subprogram_Type)
          then
             Check_Conditional_Expression (L);
             Check_Conditional_Expression (R);
@@ -8655,6 +8652,10 @@ package body Sem_Res is
       Orig_N      : Node_Id;
       Orig_T      : Node_Id;
 
+      Test_Redundant : Boolean := Warn_On_Redundant_Constructs;
+      --  Set to False to suppress cases where we want to suppress the test
+      --  for redundancy to avoid possible false positives on this warning.
+
    begin
       if not Conv_OK
         and then not Valid_Conversion (N, Target_Typ, Operand)
@@ -8662,7 +8663,20 @@ package body Sem_Res is
          return;
       end if;
 
-      if Etype (Operand) = Any_Fixed then
+      --  If the Operand Etype is Universal_Fixed, then the conversion is
+      --  never redundant. We need this check because by the time we have
+      --  finished the rather complex transformation, the conversion looks
+      --  redundant when it is not.
+
+      if Operand_Typ = Universal_Fixed then
+         Test_Redundant := False;
+
+      --  If the operand is marked as Any_Fixed, then special processing is
+      --  required. This is also a case where we suppress the test for a
+      --  redundant conversion, since most certainly it is not redundant.
+
+      elsif Operand_Typ = Any_Fixed then
+         Test_Redundant := False;
 
          --  Mixed-mode operation involving a literal. Context must be a fixed
          --  type which is applied to the literal subsequently.
@@ -8768,9 +8782,13 @@ package body Sem_Res is
 
       Orig_N := Original_Node (N);
 
-      if Warn_On_Redundant_Constructs
-        and then Comes_From_Source (Orig_N)
+      --  Here we test for a redundant conversion if the warning mode is
+      --  active (and was not locally reset), and we have a type conversion
+      --  from source not appearing in a generic instance.
+
+      if Test_Redundant
         and then Nkind (Orig_N) = N_Type_Conversion
+        and then Comes_From_Source (Orig_N)
         and then not In_Instance
       then
          Orig_N := Original_Node (Expression (Orig_N));
@@ -8786,12 +8804,21 @@ package body Sem_Res is
             Orig_T := Etype (Parent (N));
          end if;
 
-         if Is_Entity_Name (Orig_N)
-           and then
-             (Etype (Entity (Orig_N)) = Orig_T
-                or else
-                  (Ekind (Entity (Orig_N)) = E_Loop_Parameter
-                    and then Covers (Orig_T, Etype (Entity (Orig_N)))))
+         --  if we have an entity name, then give the warning if the entity
+         --  is the right type, or if it is a loop parameter covered by the
+         --  original type (that's needed because loop parameters have an
+         --  odd subtype coming from the bounds).
+
+         if (Is_Entity_Name (Orig_N)
+               and then
+                 (Etype (Entity (Orig_N)) = Orig_T
+                   or else
+                     (Ekind (Entity (Orig_N)) = E_Loop_Parameter
+                      and then Covers (Orig_T, Etype (Entity (Orig_N))))))
+
+         --  If not an entity, then type of expression must match
+
+           or else Etype (Orig_N) = Orig_T
          then
             --  One more check, do not give warning if the analyzed conversion
             --  has an expression with non-static bounds, and the bounds of the
@@ -8804,13 +8831,21 @@ package body Sem_Res is
             then
                null;
 
-            --  Here we give the redundant conversion warning
+            --  Here we give the redundant conversion warning. If it is an
+            --  entity, give the name of the entity in the message. If not,
+            --  just mention the expression.
 
             else
-               Error_Msg_Node_2 := Orig_T;
-               Error_Msg_NE -- CODEFIX
-                 ("?redundant conversion, & is of type &!",
-                  N, Entity (Orig_N));
+               if Is_Entity_Name (Orig_N) then
+                  Error_Msg_Node_2 := Orig_T;
+                  Error_Msg_NE -- CODEFIX
+                    ("?redundant conversion, & is of type &!",
+                     N, Entity (Orig_N));
+               else
+                  Error_Msg_NE
+                    ("?redundant conversion, expression is of type&!",
+                     N, Orig_T);
+               end if;
             end if;
          end if;
       end if;
@@ -9129,7 +9164,6 @@ package body Sem_Res is
 
       Resolve (Operand, Opnd_Type);
       Eval_Unchecked_Conversion (N);
-
    end Resolve_Unchecked_Type_Conversion;
 
    ------------------------------

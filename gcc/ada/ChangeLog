@@ -1,3 +1,12 @@
+2010-09-09  Robert Dewar  <dewar@adacore.com>
+
+	* sem_res.adb (Resolve_Type_Conversion): Catch more cases of redundant
+	conversions.
+
+2010-09-09  Vincent Celier  <celier@adacore.com>
+
+	* gnatlbr.adb: Remove redundant conversions.
+
 2010-09-09  Vincent Celier  <celier@adacore.com>
 
 	* prj-proc.adb: Minor comment spelling error fix.
