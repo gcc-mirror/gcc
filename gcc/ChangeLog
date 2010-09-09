@@ -191,7 +191,7 @@
 	PR target/36502
 	PR target/42313
 	PR target/44651
-	* gcc/config/i386/darwin.h (STACK_BOUNDARY): Redefine as 128 for
+	* config/i386/darwin.h (STACK_BOUNDARY): Redefine as 128 for
 	profiling or 64-bit MS_ABI and as BITS_PER_WORD otherwise.
 	(PREFERRED_STACK_BOUNDARY): Replace STACK_BOUNDARY with 128 in
 	MAX macro.
@@ -2718,7 +2718,7 @@
 
 2010-08-13  Jack Howarth <howarth@bromo.med.uc.edu>
 
-	* gcc/configure.ac: Enable -fomit-frame-pointer on darwin
+	* configure.ac: Enable -fomit-frame-pointer on darwin
 	which support dwarf2.
 	* config/i386/i386.c (override_options): Same.
 
@@ -9374,7 +9374,7 @@
 	 targetm.asm_file_start_file_directive
 	* dwarf2out.c, opts.c, tree-vect-data-refs.c, except.c: Likewise.
 	* varasm.c, config/alpha/alpha.c, config/cris/cris.c: Likewise.
-	* gcc/config/spu/spu.c, config/ia64/ia64.c: Rename target macros:
+	* config/spu/spu.c, config/ia64/ia64.c: Rename target macros:
 	TARGET_VECTOR_ALIGNMENT_REACHABLE ->
 	  TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE
 	TARGET_SUPPORT_VECTOR_MISALIGNMENT ->
@@ -12784,10 +12784,10 @@
 	PR c++/44188
 	* c-common.c (is_typedef_decl): Move this definition ...
 	* tree.c (is_typedef_decl): ... here.
-	(typdef_variant_p): Move definition here from gcc/cp/tree.c.
+	(typdef_variant_p): Move definition here from cp/tree.c.
 	* c-common.h (is_typedef_decl): Move this declaration ...
 	* tree.h (is_typedef_decl): ... here.
-	(typedef_variant_p): Move declaration here from gcc/cp/cp-tree.h
+	(typedef_variant_p): Move declaration here from cp/cp-tree.h
 	* dwarf2out.c (is_naming_typedef_decl): New function.
 	(gen_tagged_type_die): Split out of ...
 	(gen_type_die_with_usage): ... this function. When an anonymous
@@ -14406,12 +14406,12 @@
 	definition ...
 	* tree.c (is_typedef_decl): ... here.
 	(typdef_variant_p): Revert the moving of this  definition
-	here from gcc/cp/tree.c.
+	here from cp/tree.c.
 	* c-common.h (is_typedef_decl): Revert the moving of this
 	declaration ...
 	* tree.h (is_typedef_decl): ... here.
 	(typedef_variant_p): Revert the moving of this  declaration here
-	from gcc/cp/cp-tree.h
+	from cp/cp-tree.h
 	* dwarf2out.c (is_naming_typedef_decl): Revert this new function.
 	(gen_tagged_type_die): Revert the splitting out of ...
 	(gen_type_die_with_usage): ... this function. Revert the anonymous
@@ -14544,10 +14544,10 @@
 	PR c++/44188
 	* c-common.c (is_typedef_decl): Move this definition ...
 	* tree.c (is_typedef_decl): ... here.
-	(typdef_variant_p): Move definition here from gcc/cp/tree.c.
+	(typdef_variant_p): Move definition here from cp/tree.c.
 	* c-common.h (is_typedef_decl): Move this declaration ...
 	* tree.h (is_typedef_decl): ... here.
-	(typedef_variant_p): Move declaration here from gcc/cp/cp-tree.h
+	(typedef_variant_p): Move declaration here from cp/cp-tree.h
 	* dwarf2out.c (is_naming_typedef_decl): New function.
 	(gen_tagged_type_die): Split out of ...
 	(gen_type_die_with_usage): ... this function. When an anonymous
@@ -18703,9 +18703,9 @@
 	warn if older binutils found.
 	(LTO_BINARY_READER): New AC_SUBST'd variable.
 	(LTO_USE_LIBELF): Likewise.
-	* gcc/config.gcc (lto_binary_reader): New target-specific configure
+	* config.gcc (lto_binary_reader): New target-specific configure
 	variable.
-	* gcc/Makefile.in (LTO_BINARY_READER): Import AC_SUBST'd autoconf var.
+	* Makefile.in (LTO_BINARY_READER): Import AC_SUBST'd autoconf var.
 	(LTO_USE_LIBELF): Likewise.
 	* configure: Regenerate.
 
@@ -18737,10 +18737,10 @@
 2010-04-26  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	PR 43715
-	* gcc/configure.ac: Use "$gcc_cv_nm -g" on darwin
+	* configure.ac: Use "$gcc_cv_nm -g" on darwin
 	instead of "$gcc_cv_objdump -T".
 	Use "-undefined dynamic_lookup" on darwin.
-	* gcc/configure: Regenerate.
+	* configure: Regenerate.
 
 2010-04-26  Jakub Jelinek  <jakub@redhat.com>
 
@@ -19737,11 +19737,11 @@
 	(MASK_ACCUMULATE_OUTGOING_ARGS) Define and Set.
 	(rounded_frame_size): Adjust size with outgoing_args_size.
 	(sh_set_return_address): Must return from stack pointer.
-	* gcc/config/sh/sh.h (CAN_DEBUG_WITHOUT_FP): Define.
+	* config/sh/sh.h (CAN_DEBUG_WITHOUT_FP): Define.
 	(SUBTARGET_FRAME_POINTER_REQUIRED): Define.
 	(ACCUMULATE_OUTGOING_ARGS): Define.
 	* doc/invoke.texi (maccumulate-outgoing-args): Document for SH.
-	* gcc/config/sh/sh.opt (maccumulate-outgoing-args): New option.
+	* config/sh/sh.opt (maccumulate-outgoing-args): New option.
 
 2010-04-15  Kaz Kojima  <kkojima@gcc.gnu.org>
 
@@ -20142,8 +20142,8 @@
 2010-04-13  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 	    Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
-	* gcc/config/s390/s390.md: Replace TARGET_64BIT with TARGET_ZARCH.
-	* gcc/config/s390/s390.c: Replace UNTIS_PER_WORD with
+	* config/s390/s390.md: Replace TARGET_64BIT with TARGET_ZARCH.
+	* config/s390/s390.c: Replace UNTIS_PER_WORD with
 	UNITS_PER_LONG where it is ABI relevant.
 	(s390_return_addr_rtx): Likewise.
 	(s390_back_chain_rtx): Likewise.
@@ -20174,9 +20174,9 @@
 	(HARD_REGNO_CALL_PART_CLOBBERED): New macro.
 	(DWARF_CIE_DATA_ALIGNMENT): New macro.
 	(s390_expand_setmem): Remove unused variable src_addr.
-	* gcc/longlong.h: Make smul_ppmm and sdiv_qrnnd inline asms to
+	* longlong.h: Make smul_ppmm and sdiv_qrnnd inline asms to
 	deal with 64 bit registers.
-	* gcc/config/s390/s390.h: Define __zarch__ predefined macro.
+	* config/s390/s390.h: Define __zarch__ predefined macro.
 	Replace UNITS_PER_WORD with UNITS_PER_LONG where it is ABI relevant.
 	(UNITS_PER_LONG): New macro.
 	* libjava/include/s390-signal.h: Define extended ucontext
@@ -21958,7 +21958,7 @@
 	fixinc/Makefile*, intl/Makefile.*.
 	* doc/makefile.texi: Fixed markup. Abstract from version
 	control system used.
-	(Makefile): Removed obsolete gcc/java/parse.y example.
+	(Makefile): Removed obsolete java/parse.y example.
 	* doc/sourcebuild.texi: Likewise.
 	(Top Level): Added config, gnattools, libdecnumber, libgcc,
 	libgomp, libssp.  Removed fastjar.
@@ -22487,7 +22487,7 @@
 2010-03-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR middle-end/42431
-	* gcc/config/rs6000/rs6000.c (rs6000_emit_move): Delete band-aid
+	* config/rs6000/rs6000.c (rs6000_emit_move): Delete band-aid
 	code added to work around reload clobbering CONST insns.
 
 2010-03-12  Jakub Jelinek  <jakub@redhat.com>
