@@ -1714,7 +1714,7 @@ package body Sem_Ch6 is
            and then Present (Spec_Id)
            and then No_Return (Spec_Id)
          then
-               Check_Returns (HSS, 'P', Missing_Ret, Spec_Id);
+            Check_Returns (HSS, 'P', Missing_Ret, Spec_Id);
          end if;
       end Check_Missing_Return;
 
@@ -4037,7 +4037,9 @@ package body Sem_Ch6 is
                   Error_Msg_Name_2 := Get_Convention_Name (Convention (Op));
                   Error_Msg_Sloc   := Sloc (Op);
 
-                  if Comes_From_Source (Op) then
+                  if Comes_From_Source (Op)
+                    or else No (Alias (Op))
+                  then
                      if not Is_Overriding_Operation (Op) then
                         Error_Msg_N ("\\primitive % defined #", Typ);
                      else

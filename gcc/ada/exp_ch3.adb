@@ -312,14 +312,6 @@ package body Exp_Ch3 is
    --  invoking the inherited subprogram's parent subprogram and extended
    --  with a null association list.
 
-   procedure Make_Null_Procedure_Specs
-     (Tag_Typ   : Entity_Id;
-      Decl_List : out List_Id);
-   --  Ada 2005 (AI-251): Makes specs for null procedures associated with any
-   --  null procedures inherited from an interface type that have not been
-   --  overridden. Only one null procedure will be created for a given set of
-   --  inherited null procedures with homographic profiles.
-
    function Predef_Spec_Or_Body
      (Loc      : Source_Ptr;
       Tag_Typ  : Entity_Id;
@@ -5886,7 +5878,6 @@ package body Exp_Ch3 is
 
       Wrapper_Decl_List   : List_Id := No_List;
       Wrapper_Body_List   : List_Id := No_List;
-      Null_Proc_Decl_List : List_Id := No_List;
 
    --  Start of processing for Expand_Freeze_Record_Type
 
@@ -6087,20 +6078,6 @@ package body Exp_Ch3 is
                Make_Controlling_Function_Wrappers
                  (Def_Id, Wrapper_Decl_List, Wrapper_Body_List);
                Insert_List_Before_And_Analyze (N, Wrapper_Decl_List);
-            end if;
-
-            --  Ada 2005 (AI-251): For a nonabstract type extension, build
-            --  null procedure declarations for each set of homographic null
-            --  procedures that are inherited from interface types but not
-            --  overridden. This is done to ensure that the dispatch table
-            --  entry associated with such null primitives are properly filled.
-
-            if Ada_Version >= Ada_05
-              and then Etype (Def_Id) /= Def_Id
-              and then not Is_Abstract_Type (Def_Id)
-            then
-               Make_Null_Procedure_Specs (Def_Id, Null_Proc_Decl_List);
-               Insert_Actions (N, Null_Proc_Decl_List);
             end if;
 
             Set_Is_Frozen (Def_Id);
@@ -8020,118 +7997,6 @@ package body Exp_Ch3 is
          end if;
       end if;
    end Make_Eq_If;
-
-   -------------------------------
-   -- Make_Null_Procedure_Specs --
-   -------------------------------
-
-   procedure Make_Null_Procedure_Specs
-     (Tag_Typ   : Entity_Id;
-      Decl_List : out List_Id)
-   is
-      Loc : constant Source_Ptr := Sloc (Tag_Typ);
-
-      Formal         : Entity_Id;
-      Formal_List    : List_Id;
-      New_Param_Spec : Node_Id;
-      Parent_Subp    : Entity_Id;
-      Prim_Elmt      : Elmt_Id;
-      Proc_Decl      : Node_Id;
-      Subp           : Entity_Id;
-
-      function Is_Null_Interface_Primitive (E : Entity_Id) return Boolean;
-      --  Returns True if E is a null procedure that is an interface primitive
-
-      ---------------------------------
-      -- Is_Null_Interface_Primitive --
-      ---------------------------------
-
-      function Is_Null_Interface_Primitive (E : Entity_Id) return Boolean is
-      begin
-         return Comes_From_Source (E)
-           and then Is_Dispatching_Operation (E)
-           and then Ekind (E) = E_Procedure
-           and then Null_Present (Parent (E))
-           and then Is_Interface (Find_Dispatching_Type (E));
-      end Is_Null_Interface_Primitive;
-
-   --  Start of processing for Make_Null_Procedure_Specs
-
-   begin
-      Decl_List := New_List;
-      Prim_Elmt := First_Elmt (Primitive_Operations (Tag_Typ));
-      while Present (Prim_Elmt) loop
-         Subp := Node (Prim_Elmt);
-
-         --  If a null procedure inherited from an interface has not been
-         --  overridden, then we build a null procedure declaration to
-         --  override the inherited procedure.
-
-         Parent_Subp := Alias (Subp);
-
-         if Present (Parent_Subp)
-           and then Is_Null_Interface_Primitive (Parent_Subp)
-         then
-            Formal_List := No_List;
-            Formal := First_Formal (Subp);
-
-            if Present (Formal) then
-               Formal_List := New_List;
-
-               while Present (Formal) loop
-
-                  --  Copy the parameter spec including default expressions
-
-                  New_Param_Spec :=
-                    New_Copy_Tree (Parent (Formal), New_Sloc => Loc);
-
-                  --  Generate a new defining identifier for the new formal.
-                  --  required because New_Copy_Tree does not duplicate
-                  --  semantic fields (except itypes).
-
-                  Set_Defining_Identifier (New_Param_Spec,
-                    Make_Defining_Identifier (Sloc (Formal),
-                      Chars => Chars (Formal)));
-
-                  --  For controlling arguments we must change their
-                  --  parameter type to reference the tagged type (instead
-                  --  of the interface type)
-
-                  if Is_Controlling_Formal (Formal) then
-                     if Nkind (Parameter_Type (Parent (Formal)))
-                       = N_Identifier
-                     then
-                        Set_Parameter_Type (New_Param_Spec,
-                          New_Occurrence_Of (Tag_Typ, Loc));
-
-                     else pragma Assert
-                            (Nkind (Parameter_Type (Parent (Formal)))
-                               = N_Access_Definition);
-                        Set_Subtype_Mark (Parameter_Type (New_Param_Spec),
-                          New_Occurrence_Of (Tag_Typ, Loc));
-                     end if;
-                  end if;
-
-                  Append (New_Param_Spec, Formal_List);
-
-                  Next_Formal (Formal);
-               end loop;
-            end if;
-
-            Proc_Decl :=
-              Make_Subprogram_Declaration (Loc,
-                Make_Procedure_Specification (Loc,
-                  Defining_Unit_Name =>
-                    Make_Defining_Identifier (Loc, Chars (Subp)),
-                  Parameter_Specifications => Formal_List,
-                  Null_Present => True));
-            Append_To (Decl_List, Proc_Decl);
-            Analyze (Proc_Decl);
-         end if;
-
-         Next_Elmt (Prim_Elmt);
-      end loop;
-   end Make_Null_Procedure_Specs;
 
    -------------------------------------
    -- Make_Predefined_Primitive_Specs --

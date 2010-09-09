@@ -44,6 +44,7 @@ with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch8;  use Sem_Ch8;
+with Sem_Disp; use Sem_Disp;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
@@ -2356,6 +2357,106 @@ package body Sem_Ch13 is
    procedure Analyze_Freeze_Entity (N : Node_Id) is
       E : constant Entity_Id := Entity (N);
 
+      function Make_Null_Procedure_Specs (Tag_Typ : Entity_Id) return List_Id;
+      --  Ada 2005 (AI-251): Makes specs for null procedures associated with
+      --  null procedures inherited from interface types that have not been
+      --  overridden. Only one null procedure will be created for a given
+      --  set of inherited null procedures with homographic profiles.
+
+      -------------------------------
+      -- Make_Null_Procedure_Specs --
+      -------------------------------
+
+      function Make_Null_Procedure_Specs (Tag_Typ : Entity_Id) return List_Id
+      is
+         Decl_List      : constant List_Id    := New_List;
+         Loc            : constant Source_Ptr := Sloc (Tag_Typ);
+         Formal         : Entity_Id;
+         Formal_List    : List_Id;
+         New_Param_Spec : Node_Id;
+         Parent_Subp    : Entity_Id;
+         Prim_Elmt      : Elmt_Id;
+         Proc_Decl      : Node_Id;
+         Subp           : Entity_Id;
+
+      begin
+         Prim_Elmt := First_Elmt (Primitive_Operations (Tag_Typ));
+         while Present (Prim_Elmt) loop
+            Subp := Node (Prim_Elmt);
+
+            --  If a null procedure inherited from an interface has not been
+            --  overridden, then we build a null procedure declaration to
+            --  override the inherited procedure.
+
+            Parent_Subp := Alias (Subp);
+
+            if Present (Parent_Subp)
+              and then Is_Null_Interface_Primitive (Parent_Subp)
+            then
+               Formal_List := No_List;
+               Formal := First_Formal (Subp);
+
+               if Present (Formal) then
+                  Formal_List := New_List;
+
+                  while Present (Formal) loop
+
+                     --  Copy the parameter spec including default expressions
+
+                     New_Param_Spec :=
+                       New_Copy_Tree (Parent (Formal), New_Sloc => Loc);
+
+                     --  Generate a new defining identifier for the new formal.
+                     --  required because New_Copy_Tree does not duplicate
+                     --  semantic fields (except itypes).
+
+                     Set_Defining_Identifier (New_Param_Spec,
+                       Make_Defining_Identifier (Sloc (Formal),
+                         Chars => Chars (Formal)));
+
+                     --  For controlling arguments we must change their
+                     --  parameter type to reference the tagged type (instead
+                     --  of the interface type)
+
+                     if Is_Controlling_Formal (Formal) then
+                        if Nkind (Parameter_Type (Parent (Formal)))
+                          = N_Identifier
+                        then
+                           Set_Parameter_Type (New_Param_Spec,
+                             New_Occurrence_Of (Tag_Typ, Loc));
+
+                        else pragma Assert
+                               (Nkind (Parameter_Type (Parent (Formal)))
+                                  = N_Access_Definition);
+                           Set_Subtype_Mark (Parameter_Type (New_Param_Spec),
+                             New_Occurrence_Of (Tag_Typ, Loc));
+                        end if;
+                     end if;
+
+                     Append (New_Param_Spec, Formal_List);
+
+                     Next_Formal (Formal);
+                  end loop;
+               end if;
+
+               Proc_Decl :=
+                 Make_Subprogram_Declaration (Loc,
+                   Make_Procedure_Specification (Loc,
+                     Defining_Unit_Name =>
+                       Make_Defining_Identifier (Loc, Chars (Subp)),
+                     Parameter_Specifications => Formal_List,
+                     Null_Present => True));
+               Append_To (Decl_List, Proc_Decl);
+            end if;
+
+            Next_Elmt (Prim_Elmt);
+         end loop;
+
+         return Decl_List;
+      end Make_Null_Procedure_Specs;
+
+   --  Start of processing for Analyze_Freeze_Entity
+
    begin
       --  For tagged types covering interfaces add internal entities that link
       --  the primitives of the interfaces with the primitives that cover them.
@@ -2374,6 +2475,21 @@ package body Sem_Ch13 is
         and then not Is_Interface (E)
         and then Has_Interfaces (E)
       then
+         --  Add specs of non-overridden null interface primitives. During
+         --  semantic analysis this is required to ensure consistency of the
+         --  contents of the list of primitives of the tagged type. Routine
+         --  Add_Internal_Interface_Entities will take care of adding to such
+         --  list the internal entities that link each interface primitive with
+         --  the primitive of Tagged_Type that covers it; hence these specs
+         --  must be added before invoking Add_Internal_Interface_Entities.
+         --  In the expansion this consistency is required to ensure that the
+         --  dispatch table slots associated with non-overridden null interface
+         --  primitives are properly filled.
+
+         if not Is_Abstract_Type (E) then
+            Insert_Actions (N, Make_Null_Procedure_Specs (E));
+         end if;
+
          --  This would be a good common place to call the routine that checks
          --  overriding of interface primitives (and thus factorize calls to
          --  Check_Abstract_Overriding located at different contexts in the

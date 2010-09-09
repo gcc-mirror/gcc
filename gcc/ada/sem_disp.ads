@@ -66,6 +66,11 @@ package Sem_Disp is
    --  of "OldSubp" is adjusted to point to the inherited procedure of the
    --  full view because it is always this one which has to be called.
 
+   function Covers_Some_Interface (Prim : Entity_Id) return Boolean;
+   --  Returns true if Prim covers some interface primitive of its associated
+   --  tagged type. The tagged type of Prim must be frozen when this function
+   --  is invoked.
+
    function Find_Controlling_Arg (N : Node_Id) return Node_Id;
    --  Returns the actual controlling argument if N is dynamically tagged,
    --  and Empty if it is not dynamically tagged.
@@ -86,6 +91,9 @@ package Sem_Disp is
    --  Used to determine whether a call is dispatching, i.e. if is an
    --  an expression of a class_Wide type, or a call to a function with
    --  controlling result where at least one operand is dynamically tagged.
+
+   function Is_Null_Interface_Primitive (E : Entity_Id) return Boolean;
+   --  Returns True if E is a null procedure that is an interface primitive
 
    function Is_Tag_Indeterminate (N : Node_Id) return Boolean;
    --  An expression is tag-indeterminate if it is a call that dispatches

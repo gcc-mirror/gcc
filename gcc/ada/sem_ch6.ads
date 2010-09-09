@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -183,9 +183,9 @@ package Sem_Ch6 is
      (Tagged_Type : Entity_Id;
       Iface_Prim  : Entity_Id;
       Prim        : Entity_Id) return Boolean;
-   --  Returns true if both primitives have a matching name and they are also
-   --  type conformant. Special management is done for functions returning
-   --  interfaces.
+   --  Returns true if both primitives have a matching name, they are type
+   --  conformant, and Prim is defined in the scope of Tagged_Type. Special
+   --  management is done for functions returning interfaces.
 
    function Mode_Conformant (New_Id, Old_Id : Entity_Id) return Boolean;
    --  Determine whether two callable entities (subprograms, entries,
