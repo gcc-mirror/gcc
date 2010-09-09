@@ -906,7 +906,7 @@ gfc_conv_array_transpose (gfc_se * se, gfc_expr * expr)
   src = src_se.expr;
 
   /* Allocate a new descriptor for the return value.  */
-  dest = gfc_create_var (TREE_TYPE (src), "atmp");
+  dest = gfc_create_var (TREE_TYPE (src), "transp");
   dest_info->descriptor = dest;
   se->expr = dest;
 
