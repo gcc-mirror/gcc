@@ -2006,7 +2006,7 @@ package body Exp_Ch11 is
 
    procedure Warn_If_No_Propagation (N : Node_Id) is
    begin
-      if Restriction_Active (No_Exception_Propagation)
+      if Restriction_Check_Required (No_Exception_Propagation)
         and then Warn_On_Non_Local_Exception
       then
          Warn_No_Exception_Propagation_Active (N);

@@ -2779,7 +2779,7 @@ package body Sem_Ch3 is
       --  Has_Stream just for efficiency reasons. There is no point in
       --  spending time on a Has_Stream check if the restriction is not set.
 
-      if Restrictions.Set (No_Streams) then
+      if Restriction_Check_Required (No_Streams) then
          if Has_Stream (T) then
             Check_Restriction (No_Streams, N);
          end if;
@@ -13659,7 +13659,7 @@ package body Sem_Ch3 is
 
             --  Check violation of No_Wide_Characters
 
-            if Restriction_Active (No_Wide_Characters) then
+            if Restriction_Check_Required (No_Wide_Characters) then
                Get_Name_String (Chars (L));
 
                if Name_Len >= 3 and then Name_Buffer (1 .. 2) = "QW" then

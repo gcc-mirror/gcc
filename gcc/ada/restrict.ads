@@ -292,7 +292,19 @@ package Restrict is
    --  used where the compiled code depends on whether the restriction is
    --  active. Always use Check_Restriction to record a violation. Note that
    --  this returns False if we only have a Restriction_Warnings set, since
-   --  restriction warnings should never affect generated code.
+   --  restriction warnings should never affect generated code. If you want
+   --  to know if a call to Check_Restriction is needed then use the function
+   --  Restriction_Check_Required instead.
+
+   function Restriction_Check_Required (R : All_Restrictions) return Boolean;
+   pragma Inline (Restriction_Check_Required);
+   --  Determines if either a Restriction_Warnings or Restrictions pragma has
+   --  been given for the specified restriction. If true, then a subsequent
+   --  call to Check_Restriction is required if the restriction is violated.
+   --  This must not be used to guard code generation that depends on whether
+   --  a restriction is active (see Restriction_Active above). Typically it
+   --  is used to avoid complex code to determine if a restriction is violated,
+   --  executing this code only if needed.
 
    function Restricted_Profile return Boolean;
    --  Tests if set of restrictions corresponding to Profile (Restricted) is

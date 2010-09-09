@@ -1182,9 +1182,9 @@ package body Sem_Ch9 is
       --  and the No_Local_Protected_Objects restriction applies, issue a
       --  warning that objects of the type will violate the restriction.
 
-      if not Is_Library_Level_Entity (T)
+      if Restriction_Check_Required (No_Local_Protected_Objects)
+        and then not Is_Library_Level_Entity (T)
         and then Comes_From_Source (T)
-        and then Restrictions.Set (No_Local_Protected_Objects)
       then
          Error_Msg_Sloc := Restrictions_Loc (No_Local_Protected_Objects);
 
@@ -1995,9 +1995,9 @@ package body Sem_Ch9 is
       --  No_Task_Hierarchy restriction applies, issue a warning that objects
       --  of the type will violate the restriction.
 
-      if not Is_Library_Level_Entity (T)
+      if Restriction_Check_Required (No_Task_Hierarchy)
+        and then not Is_Library_Level_Entity (T)
         and then Comes_From_Source (T)
-        and then Restrictions.Set (No_Task_Hierarchy)
       then
          Error_Msg_Sloc := Restrictions_Loc (No_Task_Hierarchy);
 
@@ -2193,18 +2193,10 @@ package body Sem_Ch9 is
                   --  Entry family with non-static bounds
 
                   else
-                     --  If restriction is set, then this is an error
+                     --  Record an unknown count restriction, and if the
+                     --  restriction is active, post a message or warning.
 
-                     if Restrictions.Set (R) then
-                        Error_Msg_N
-                          ("static subtype required by Restriction pragma",
-                           DSD);
-
-                     --  Otherwise we record an unknown count restriction
-
-                     else
-                        Check_Restriction (R, D);
-                     end if;
+                     Check_Restriction (R, D);
                   end if;
                end;
             end if;

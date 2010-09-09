@@ -2360,8 +2360,8 @@ package body Sem_Ch13 is
       function Make_Null_Procedure_Specs (Tag_Typ : Entity_Id) return List_Id;
       --  Ada 2005 (AI-251): Makes specs for null procedures associated with
       --  null procedures inherited from interface types that have not been
-      --  overridden. Only one null procedure will be created for a given
-      --  set of inherited null procedures with homographic profiles.
+      --  overridden. Only one null procedure will be created for a given set
+      --  of inherited null procedures with homographic profiles.
 
       -------------------------------
       -- Make_Null_Procedure_Specs --
@@ -2419,8 +2419,8 @@ package body Sem_Ch13 is
                      --  of the interface type)
 
                      if Is_Controlling_Formal (Formal) then
-                        if Nkind (Parameter_Type (Parent (Formal)))
-                          = N_Identifier
+                        if Nkind (Parameter_Type (Parent (Formal))) =
+                                                              N_Identifier
                         then
                            Set_Parameter_Type (New_Param_Spec,
                              New_Occurrence_Of (Tag_Typ, Loc));

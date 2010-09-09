@@ -617,7 +617,7 @@ package body Sem_Ch4 is
       --  Has_Stream just for efficiency reasons. There is no point in
       --  spending time on a Has_Stream check if the restriction is not set.
 
-      if Restrictions.Set (No_Streams) then
+      if Restriction_Check_Required (No_Streams) then
          if Has_Stream (Designated_Type (Acc_Type)) then
             Check_Restriction (No_Streams, N);
          end if;
