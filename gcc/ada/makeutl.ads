@@ -52,6 +52,11 @@ package Makeutl is
    --  Command line switch to allow shared library projects to import projects
    --  that are not shared library projects.
 
+   Single_Compile_Per_Obj_Dir_Switch : constant String :=
+                                         "--single-compile-per-obj-dir";
+   --  Switch to forbid simultaneous compilations for the same object directory
+   --  when project files are used.
+
    procedure Add
      (Option : String_Access;
       To     : in out String_List_Access;

@@ -4858,6 +4858,9 @@ package VMS_Data is
    --
    --   Search the specified directories for both source and object files.
 
+   S_Make_Single  : aliased constant S := "/SINGLE_COMPILE_PER_OBJ_DIR "   &
+                                            "--single-compile-per-obj-dir";
+
    S_Make_Skip    : aliased constant S := "/SKIP_MISSING=*"                &
                                             "-aL*";
    --        /SKIP_MISSING=(directory[,...])
@@ -4977,6 +4980,7 @@ package VMS_Data is
                       S_Make_Reason  'Access,
                       S_Make_RTS     'Access,
                       S_Make_Search  'Access,
+                      S_Make_Single  'Access,
                       S_Make_Skip    'Access,
                       S_Make_Source  'Access,
                       S_Make_Stand   'Access,

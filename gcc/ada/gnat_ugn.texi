@@ -9250,7 +9250,11 @@ itself must not include any embedded spaces.
 
 @item ^--subdirs^/SUBDIRS^=subdir
 Actual object directory of each project file is the subdirectory subdir of the
-object directory specified or defauted in the project file.
+object directory specified or defaulted in the project file.
+
+@item ^--single-compile-per-obj-dir^/SINGLE_COMPILE_PER_OBJ_DIR^
+Disallow simultaneous compilations in the same object directory when
+project files are used.
 
 @item ^--unchecked-shared-lib-imports^/UNCHECKED_SHARED_LIB_IMPORTS^
 By default, shared library projects are not allowed to import static library

@@ -10538,7 +10538,9 @@ package body Sem_Util is
         and then Present (Entity (N2))
         and then (Ekind (Entity (N1)) = E_Variable
                     or else
-                  Ekind (Entity (N1)) = E_Constant)
+                    Ekind (Entity (N1)) = E_Constant
+                    or else
+                    Ekind (Entity (N1)) in Formal_Kind)
         and then Entity (N1) = Entity (N2)
       then
          return True;
