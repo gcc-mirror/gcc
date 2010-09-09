@@ -3290,7 +3290,7 @@ picochip_reorg (void)
       for (insn = get_insns (); insn; insn = next_insn (insn))
 	{
 	  /* The prologue end must be moved to the end of the VLIW packet. */
-	  if (NOTE_KIND (insn) == NOTE_INSN_PROLOGUE_END)
+	  if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_PROLOGUE_END)
 	    {
 	      prologue_end_note = insn;
 	      break;
