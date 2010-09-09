@@ -1,3 +1,8 @@
+2010-09-09  Jan Hubicka  <jh@suse.cz>
+
+	* collect2.c (maybe_run_lto_and_relink): Rewrite code producing ld
+	command line to allow more partitions than input files.
+
 2010-09-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/44554
