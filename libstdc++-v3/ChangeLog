@@ -1,5 +1,12 @@
 2010-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/45613
+	* include/bits/random.tcc: Add missing include guards.
+	* include/bits/random.h: Likewise.
+	* include/tr1/random.tcc: Likewise.
+
+2010-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* libsupc++/cxxabi.h: Uglify nothrow to __nothrow__; fix a few
 	inconsistent uglifications everywhere.
 
