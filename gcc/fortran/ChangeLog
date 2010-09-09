@@ -1,5 +1,11 @@
 2010-09-09  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_trans_create_temp_array): Assert loop dimension
+	and info dimension are the same. Loop over loop dimension.
+	* trans-stmt.c (gfc_conv_elemental_dependencies): Set loop dimension
+
+2010-09-09  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_conv_array_transpose): Change generated descriptor
 	name
 
@@ -952,11 +958,11 @@
 	PR fortran/42051
 	PR fortran/44064
 	* symbol.c (changed_syms): Made static again.
-	(gfc_symbol_state): Don't conditionalize on GFC_DEBUG. 
+	(gfc_symbol_state): Don't conditionalize on GFC_DEBUG.
 	Changed conditional internal error into assert.
 	Rename function to ...
 	(gfc_enforce_clean_symbol_state): ... this.
-	* gfortran.h (gfc_symbol_state, gfc_enforce_clean_symbol_state): 
+	* gfortran.h (gfc_symbol_state, gfc_enforce_clean_symbol_state):
 	Rename the former to the latter.
 	* parse.c (decode_statement, decode_omp_directive,
 	decode_gcc_attribute): Update callers accordingly. Don't conditionalize
@@ -1019,12 +1025,12 @@
 	PR fortran/42051
 	PR fortran/44064
 	PR fortran/45151
-	* intrinsic.c (gfc_get_intrinsic_sub_symbol): Commit changed symbol. 
+	* intrinsic.c (gfc_get_intrinsic_sub_symbol): Commit changed symbol.
 	* symbol.c (gen_cptr_param, gen_fptr_param, gen_shape_param,
 	gfc_copy_formal_args, gfc_copy_formal_args_intr,
 	gfc_copy_formal_args_ppc, generate_isocbinding_symbol): Ditto.
-	* parse.c (parse_derived_contains, parse_spec, parse_progunit): 
-	Call reject_statement in case of error. 
+	* parse.c (parse_derived_contains, parse_spec, parse_progunit):
+	Call reject_statement in case of error.
 	(match_deferred_characteritics): Call gfc_undo_symbols in case match
 	fails.
 
@@ -1041,7 +1047,7 @@
 	PR fortran/42051
 	PR fortran/44064
 	* symbol.c (changed_syms): Made non-static.
-	* parse.c (changed_syms): Declare new external. 
+	* parse.c (changed_syms): Declare new external.
 	(next_statement): Assert changed_syms is NULL at the beginning.
 
 2010-07-30  Janus Weil  <janus@gcc.gnu.org>
@@ -1202,7 +1208,7 @@
 	a parameterized stop condition.
 	(gfc_free_equiv): Use gfc_free_equiv_until.
 	* parse.c (next_statement): Save equivalence list.
-	(reject_statement): Restore equivalence list. 
+	(reject_statement): Restore equivalence list.
 
 2010-07-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
@@ -1437,7 +1443,7 @@
 2010-07-14  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans-array.c (gfc_conv_section_upper_bound): Remove
-	(gfc_conv_section_startstride): Don't set the upper bound in the 
+	(gfc_conv_section_startstride): Don't set the upper bound in the
 	vector subscript case.
 	(gfc_conv_loop_setup): Don't use gfc_conv_section_upper_bound
 
