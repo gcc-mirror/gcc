@@ -55,7 +55,7 @@ package body Impunit is
    Non_Imp_File_Names_95 : constant File_List := (
 
    ------------------------------------------------------
-   -- Ada Hierarchy Units from Ada-83 Reference Manual --
+   -- Ada Hierarchy Units from Ada-95 Reference Manual --
    ------------------------------------------------------
 
      "a-astaco",    -- Ada.Asynchronous_Task_Control
@@ -395,7 +395,7 @@ package body Impunit is
      "a-envvar",    -- Ada.Environment_Variables
      "a-exetim",    -- Ada.Execution_Time
      "a-extiti",    -- Ada.Execution_Time.Timers
-     "a-izteio",    -- Ada.Integer_Wide_Wide_TextIO;
+     "a-izteio",    -- Ada.Integer_Wide_Wide_Text_IO
      "a-rttiev",    -- Ada.Real_Time.Timing_Events
      "a-ngcoar",    -- Ada.Numerics.Generic_Complex_Arrays
      "a-ngrear",    -- Ada.Numerics.Generic_Real_Arrays
