@@ -2960,13 +2960,7 @@ package body Sem_Ch3 is
 
       --  Check No_Wide_Characters restriction
 
-      if T = Standard_Wide_Character
-        or else T = Standard_Wide_Wide_Character
-        or else Root_Type (T) = Standard_Wide_String
-        or else Root_Type (T) = Standard_Wide_Wide_String
-      then
-         Check_Restriction (No_Wide_Characters, Object_Definition (N));
-      end if;
+      Check_Wide_Character_Restriction (T, Object_Definition (N));
 
       --  Indicate this is not set in source. Certainly true for constants,
       --  and true for variables so far (will be reset for a variable if and
@@ -13677,8 +13671,20 @@ package body Sem_Ch3 is
          Generate_Definition (L);
          Set_Convention (L, Convention_Intrinsic);
 
+         --  Case of character literal
+
          if Nkind (L) = N_Defining_Character_Literal then
             Set_Is_Character_Type (T, True);
+
+            --  Check violation of No_Wide_Characters
+
+            if Restriction_Active (No_Wide_Characters) then
+               Get_Name_String (Chars (L));
+
+               if Name_Len >= 3 and then Name_Buffer (1 .. 2) = "QW" then
+                  Check_Restriction (No_Wide_Characters, L);
+               end if;
+            end if;
          end if;
 
          Ev := Ev + 1;
@@ -14211,13 +14217,7 @@ package body Sem_Ch3 is
 
       --  Check No_Wide_Characters restriction
 
-      if Typ = Standard_Wide_Character
-        or else Typ = Standard_Wide_Wide_Character
-        or else Typ = Standard_Wide_String
-        or else Typ = Standard_Wide_Wide_String
-      then
-         Check_Restriction (No_Wide_Characters, S);
-      end if;
+      Check_Wide_Character_Restriction (Typ, S);
 
       return Typ;
    end Find_Type_Of_Subtype_Indic;

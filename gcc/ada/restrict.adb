@@ -25,6 +25,7 @@
 
 with Atree;    use Atree;
 with Casing;   use Casing;
+with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Debug;    use Debug;
 with Fname;    use Fname;
@@ -395,6 +396,29 @@ package body Restrict is
          end if;
       end loop;
    end Check_Restriction_No_Dependence;
+
+   --------------------------------------
+   -- Check_Wide_Character_Restriction --
+   --------------------------------------
+
+   procedure Check_Wide_Character_Restriction (E : Entity_Id; N : Node_Id) is
+   begin
+      if Restriction_Active (No_Wide_Characters)
+        and then Comes_From_Source (N)
+      then
+         declare
+            T : constant Entity_Id := Root_Type (E);
+         begin
+            if T = Standard_Wide_Character      or else
+               T = Standard_Wide_String         or else
+               T = Standard_Wide_Wide_Character or else
+               T = Standard_Wide_Wide_String
+            then
+               Check_Restriction (No_Wide_Characters, N);
+            end if;
+         end;
+      end if;
+   end Check_Wide_Character_Restriction;
 
    ----------------------------------------
    -- Cunit_Boolean_Restrictions_Restore --

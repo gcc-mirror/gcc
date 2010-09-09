@@ -334,10 +334,10 @@ package body Ch5 is
                when Tok_Exception =>
                   Test_Statement_Required;
 
-                  --  If Extm not set and the exception is not to the left
-                  --  of the expected column of the end for this sequence, then
-                  --  we assume it belongs to the current sequence, even though
-                  --  it is not permitted.
+                  --  If Extm not set and the exception is not to the left of
+                  --  the expected column of the end for this sequence, then we
+                  --  assume it belongs to the current sequence, even though it
+                  --  is not permitted.
 
                   if not SS_Flags.Extm and then
                      Start_Column >= Scope.Table (Scope.Last).Ecol
@@ -350,7 +350,7 @@ package body Ch5 is
 
                   --  Always return, in the case where we scanned out handlers
                   --  that we did not expect, Parse_Exception_Handlers returned
-                  --  with Token being either end or EOF, so we are OK
+                  --  with Token being either end or EOF, so we are OK.
 
                   exit;
 
@@ -358,8 +358,8 @@ package body Ch5 is
 
                when Tok_Or =>
 
-                  --  Terminate if Ortm set or if the or is to the left
-                  --  of the expected column of the end for this sequence
+                  --  Terminate if Ortm set or if the or is to the left of the
+                  --  expected column of the end for this sequence.
 
                   if SS_Flags.Ortm
                      or else Start_Column < Scope.Table (Scope.Last).Ecol
@@ -385,9 +385,9 @@ package body Ch5 is
 
                   exit when SS_Flags.Tatm and then Token = Tok_Abort;
 
-                  --  Otherwise we treat THEN as some kind of mess where we
-                  --  did not see the associated IF, but we pick up assuming
-                  --  it had been there!
+                  --  Otherwise we treat THEN as some kind of mess where we did
+                  --  not see the associated IF, but we pick up assuming it had
+                  --  been there!
 
                   Restore_Scan_State (Scan_State); -- to THEN
                   Append_To (Statement_List, P_If_Statement);
@@ -397,8 +397,8 @@ package body Ch5 is
 
                when Tok_When | Tok_Others =>
 
-                  --  Terminate if Whtm set or if the WHEN is to the left
-                  --  of the expected column of the end for this sequence
+                  --  Terminate if Whtm set or if the WHEN is to the left of
+                  --  the expected column of the end for this sequence.
 
                   if SS_Flags.Whtm
                      or else Start_Column < Scope.Table (Scope.Last).Ecol

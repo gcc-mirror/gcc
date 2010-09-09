@@ -1866,6 +1866,7 @@ package body Sem_Type is
             then
                declare
                   Opnd : Node_Id;
+
                begin
                   if Nkind (N) = N_Function_Call then
                      Opnd := First_Actual (N);
@@ -1875,8 +1876,8 @@ package body Sem_Type is
 
                   if Ekind (Etype (Opnd)) = E_Anonymous_Access_Type
                     and then
-                      List_Containing (Parent (Designated_Type (Etype (Opnd))))
-                        = List_Containing (Unit_Declaration_Node (User_Subp))
+                      In_Same_List (Parent (Designated_Type (Etype (Opnd))),
+                                    Unit_Declaration_Node (User_Subp))
                   then
                      if It2.Nam = Predef_Subp then
                         return It1;
