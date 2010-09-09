@@ -50,8 +50,6 @@ package body ALI.Util is
 
    procedure Error_Msg_SP (Msg : String);
 
-   procedure Obsolescent_Check (S : Source_Ptr);
-
    --  Instantiation of Styleg, needed to instantiate Scng
 
    package Style is new Styleg
@@ -61,8 +59,7 @@ package body ALI.Util is
    --  Get_File_Checksum).
 
    package Scanner is new Scng
-     (Post_Scan, Error_Msg, Error_Msg_S, Error_Msg_SC, Error_Msg_SP,
-      Obsolescent_Check, Style);
+     (Post_Scan, Error_Msg, Error_Msg_S, Error_Msg_SC, Error_Msg_SP, Style);
 
    type Header_Num is range 0 .. 1_000;
 
@@ -200,16 +197,6 @@ package body ALI.Util is
       Source.Init;
       Interfaces.Reset;
    end Initialize_ALI_Source;
-
-   -----------------------
-   -- Obsolescent_Check --
-   -----------------------
-
-   procedure Obsolescent_Check (S : Source_Ptr) is
-      pragma Warnings (Off, S);
-   begin
-      null;
-   end Obsolescent_Check;
 
    ---------------
    -- Post_Scan --

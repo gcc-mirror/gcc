@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,15 +47,7 @@ package Scn is
    --  Determines the casing style of the current token, which is
    --  either a keyword or an identifier. See also package Casing.
 
-   procedure Obsolescent_Check (S : Source_Ptr);
-   --  Called to handle pragma restrictions check for usage of obsolescent
-   --  character replacements during the scan.
-
-   procedure Set_Obsolescent_Check (Value : Boolean);
-   --  Activate or not obsolescent check
-
    procedure Post_Scan;
-   pragma Inline (Post_Scan);
    --  Create nodes for tokens: Char_Literal, Identifier, Real_Literal,
    --  Integer_Literal, String_Literal and Operator_Symbol.
 
@@ -75,13 +67,12 @@ package Scn is
    --  generic package Scng with routines appropriate to the compiler
 
    package Scanner is new Scng
-     (Post_Scan         => Post_Scan,
-      Error_Msg         => Error_Msg,
-      Error_Msg_S       => Error_Msg_S,
-      Error_Msg_SC      => Error_Msg_SC,
-      Error_Msg_SP      => Error_Msg_SP,
-      Obsolescent_Check => Obsolescent_Check,
-      Style             => Style.Style_Inst);
+     (Post_Scan    => Post_Scan,
+      Error_Msg    => Error_Msg,
+      Error_Msg_S  => Error_Msg_S,
+      Error_Msg_SC => Error_Msg_SC,
+      Error_Msg_SP => Error_Msg_SP,
+      Style        => Style.Style_Inst);
 
    procedure Scan renames Scanner.Scan;
    --  Scan scans out the next token, and advances the scan state accordingly

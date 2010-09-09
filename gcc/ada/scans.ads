@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -415,27 +415,34 @@ package Scans is
    --  We do things this way to minimize the impact on comment scanning.
 
    Character_Code : Char_Code;
-   --  Valid only when Token is Tok_Char_Literal
+   --  Valid only when Token is Tok_Char_Literal. Contains the value of the
+   --  scanned literal.
 
    Real_Literal_Value : Ureal;
-   --  Valid only when Token is Tok_Real_Literal
+   --  Valid only when Token is Tok_Real_Literal, contains the value of the
+   --  scanned literal.
 
    Int_Literal_Value : Uint;
-   --  Valid only when Token = Tok_Integer_Literal;
+   --  Valid only when Token = Tok_Integer_Literal, contains the value of the
+   --  scanned literal.
+
+   Based_Literal_Uses_Colon : Boolean;
+   --  Valid only when Token = Tok_Integer_Literal or Tok_Real_Literal. Set
+   --  True only for the case of a based literal using ':' instead of '#'.
 
    String_Literal_Id : String_Id;
-   --  Id for currently scanned string value.
    --  Valid only when Token = Tok_String_Literal or Tok_Operator_Symbol.
+   --  Contains the Id for currently scanned string value.
 
    Wide_Character_Found : Boolean := False;
-   --  Set True if wide character found (i.e. a character that does not fit
-   --  in Character, but fits in Wide_Wide_Character).
-   --  Valid only when Token = Tok_String_Literal.
+   --  Valid only when Token = Tok_String_Literal. Set True if wide character
+   --  found (i.e. a character that does not fit in Character, but fits in
+   --  Wide_Wide_Character).
 
    Wide_Wide_Character_Found : Boolean := False;
-   --  Set True if wide wide character found (i.e. a character that does
-   --  not fit in Character or Wide_Character).
-   --  Valid only when Token = Tok_String_Literal.
+   --  Valid only when Token = Tok_String_Literal. Set True if wide wide
+   --  character found (i.e. a character that does not fit in Character or
+   --  Wide_Character).
 
    Special_Character : Character;
    --  Valid only when Token = Tok_Special. Returns one of the characters

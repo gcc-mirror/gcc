@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -530,12 +530,9 @@ package body Sinput.L is
                Save_Style_Check := Opt.Style_Check;
                Opt.Style_Check := False;
 
-               --  Make sure that there will be no check of pragma Restrictions
-               --  for obsolescent features while preprocessing the source.
+               --  The actual preprocessing step
 
-               Scn.Set_Obsolescent_Check (False);
                Preprocess (Modified);
-               Scn.Set_Obsolescent_Check (True);
 
                --  Reset the scanner to its standard behavior, and restore the
                --  Style_Checks flag.
