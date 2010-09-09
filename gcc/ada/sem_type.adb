@@ -2619,7 +2619,19 @@ package body Sem_Type is
                return True;
 
             elsif Etype (Par) /= Par then
-               Par := Etype (Par);
+
+               --  If this is a private type and its parent is an interface
+               --  then use the parent of the full view (which is a type that
+               --  implements such interface)
+
+               if Is_Private_Type (Par)
+                 and then Is_Interface (Etype (Par))
+                 and then Present (Full_View (Par))
+               then
+                  Par := Etype (Full_View (Par));
+               else
+                  Par := Etype (Par);
+               end if;
             else
                return False;
             end if;

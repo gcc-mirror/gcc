@@ -91,6 +91,81 @@ package body Sem_Disp is
       Append_Unique_Elmt (New_Op, List);
    end Add_Dispatching_Operation;
 
+   ---------------------------
+   -- Covers_Some_Interface --
+   ---------------------------
+
+   function Covers_Some_Interface (Prim : Entity_Id) return Boolean is
+      Tagged_Type : constant Entity_Id := Find_Dispatching_Type (Prim);
+      Elmt        : Elmt_Id;
+      E           : Entity_Id;
+
+   begin
+      pragma Assert (Is_Dispatching_Operation (Prim));
+
+      --  Although this is a dispatching primitive we must check if its
+      --  dispatching type is available because it may be the primitive
+      --  of a private type not defined as tagged in its partial view.
+
+      if Present (Tagged_Type) and then Has_Interfaces (Tagged_Type) then
+
+         --  If the tagged type is frozen then the internal entities associated
+         --  with interfaces are available in the list of primitives of the
+         --  tagged type and can be used to speed up this search.
+
+         if Is_Frozen (Tagged_Type) then
+            Elmt := First_Elmt (Primitive_Operations (Tagged_Type));
+            while Present (Elmt) loop
+               E := Node (Elmt);
+
+               if Present (Interface_Alias (E))
+                 and then Alias (E) = Prim
+               then
+                  return True;
+               end if;
+
+               Next_Elmt (Elmt);
+            end loop;
+
+         --  Otherwise we must collect all the interface primitives and check
+         --  if the Prim will override some interface primitive.
+
+         else
+            declare
+               Ifaces_List : Elist_Id;
+               Iface_Elmt  : Elmt_Id;
+               Iface       : Entity_Id;
+               Iface_Prim  : Entity_Id;
+
+            begin
+               Collect_Interfaces (Tagged_Type, Ifaces_List);
+               Iface_Elmt := First_Elmt (Ifaces_List);
+               while Present (Iface_Elmt) loop
+                  Iface := Node (Iface_Elmt);
+
+                  Elmt := First_Elmt (Primitive_Operations (Iface));
+                  while Present (Elmt) loop
+                     Iface_Prim := Node (Elmt);
+
+                     if Chars (E) = Chars (Prim)
+                       and then Is_Interface_Conformant
+                                  (Tagged_Type, Iface_Prim, Prim)
+                     then
+                        return True;
+                     end if;
+
+                     Next_Elmt (Elmt);
+                  end loop;
+
+                  Next_Elmt (Iface_Elmt);
+               end loop;
+            end;
+         end if;
+      end if;
+
+      return False;
+   end Covers_Some_Interface;
+
    -------------------------------
    -- Check_Controlling_Formals --
    -------------------------------
@@ -794,7 +869,10 @@ package body Sem_Disp is
          --     type by Make_Controlling_Function_Wrappers. However, attribute
          --     Is_Dispatching_Operation must be set to true.
 
-         --  2. Subprograms associated with stream attributes (built by
+         --  2. Ada 2005 (AI-251): Wrapper procedures of null interface
+         --     primitives.
+
+         --  3. Subprograms associated with stream attributes (built by
          --     New_Stream_Subprogram)
 
          if Present (Old_Subp)
@@ -805,9 +883,17 @@ package body Sem_Disp is
              ((Ekind (Subp) = E_Function
                 and then Is_Dispatching_Operation (Old_Subp)
                 and then Is_Null_Extension (Base_Type (Etype (Subp))))
+               or else
+                (Ekind (Subp) = E_Procedure
+                  and then Is_Dispatching_Operation (Old_Subp)
+                  and then Present (Alias (Old_Subp))
+                  and then Is_Null_Interface_Primitive
+                             (Ultimate_Alias (Old_Subp)))
                or else Get_TSS_Name (Subp) = TSS_Stream_Read
                or else Get_TSS_Name (Subp) = TSS_Stream_Write);
 
+            Check_Controlling_Formals (Tagged_Type, Subp);
+            Override_Dispatching_Operation (Tagged_Type, Old_Subp, Subp);
             Set_Is_Dispatching_Operation (Subp);
          end if;
 
@@ -1601,6 +1687,19 @@ package body Sem_Disp is
          return Find_Controlling_Arg (N) /= Empty;
       end if;
    end Is_Dynamically_Tagged;
+
+   ---------------------------------
+   -- Is_Null_Interface_Primitive --
+   ---------------------------------
+
+   function Is_Null_Interface_Primitive (E : Entity_Id) return Boolean is
+   begin
+      return Comes_From_Source (E)
+        and then Is_Dispatching_Operation (E)
+        and then Ekind (E) = E_Procedure
+        and then Null_Present (Parent (E))
+        and then Is_Interface (Find_Dispatching_Type (E));
+   end Is_Null_Interface_Primitive;
 
    --------------------------
    -- Is_Tag_Indeterminate --

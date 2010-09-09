@@ -12284,33 +12284,12 @@ package body Sem_Ch3 is
          end if;
       end Set_Derived_Name;
 
-      --  Local variables
-
-      Parent_Overrides_Interface_Primitive : Boolean := False;
-
    --  Start of processing for Derive_Subprogram
 
    begin
       New_Subp :=
          New_Entity (Nkind (Parent_Subp), Sloc (Derived_Type));
       Set_Ekind (New_Subp, Ekind (Parent_Subp));
-
-      --  Check whether the parent overrides an interface primitive
-
-      if Is_Overriding_Operation (Parent_Subp) then
-         declare
-            E : Entity_Id := Parent_Subp;
-         begin
-            while Present (Overridden_Operation (E)) loop
-               E := Ultimate_Alias (Overridden_Operation (E));
-            end loop;
-
-            Parent_Overrides_Interface_Primitive :=
-              Is_Dispatching_Operation (E)
-                and then Present (Find_Dispatching_Type (E))
-                and then Is_Interface (Find_Dispatching_Type (E));
-         end;
-      end if;
 
       --  Check whether the inherited subprogram is a private operation that
       --  should be inherited but not yet made visible. Such subprograms can
@@ -12380,7 +12359,10 @@ package body Sem_Ch3 is
       --  overrides an interface primitive because interface primitives
       --  must be visible in the partial view of the parent (RM 7.3 (7.3/2))
 
-      elsif Parent_Overrides_Interface_Primitive then
+      elsif Ada_Version >= Ada_05
+         and then Is_Dispatching_Operation (Parent_Subp)
+         and then Covers_Some_Interface (Parent_Subp)
+      then
          Set_Derived_Name;
 
       --  Otherwise, the type is inheriting a private operation, so enter
