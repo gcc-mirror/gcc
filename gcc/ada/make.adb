@@ -1400,7 +1400,7 @@ package body Make is
       when Directory_Error =>
          Make_Failed ("unable to change to object directory """ &
                       Path_Or_File_Name
-                        (Project.Object_Directory.Name) &
+                        (Project.Object_Directory.Display_Name) &
                       """ of project " &
                       Get_Name_String (Project.Display_Name));
    end Change_To_Object_Directory;
@@ -2308,7 +2308,7 @@ package body Make is
                            New_Args : Argument_List (1 .. Number);
                            Last_New : Natural := 0;
                            Dir_Path : constant String := Get_Name_String
-                             (Arguments_Project.Directory.Name);
+                             (Arguments_Project.Directory.Display_Name);
 
                         begin
                            Current := Switches.Values;
@@ -2351,7 +2351,8 @@ package body Make is
                                             (Name_Buffer (1 .. Name_Len)));
                         Dir_Path : constant String :=
                                      Get_Name_String
-                                       (Arguments_Project.Directory.Name);
+                                      (Arguments_Project.
+                                       Directory.Display_Name);
 
                      begin
                         Test_If_Relative_Path
@@ -3496,7 +3497,7 @@ package body Make is
                            then
                               Get_Name_String
                                 (Project_Of_Current_Object_Directory
-                                 .Object_Directory.Name);
+                                 .Object_Directory.Display_Name);
                               Add_Str_To_Name_Buffer
                                 (Get_Name_String (Lib_File));
                               Full_Lib_File := Name_Find;
@@ -4373,7 +4374,7 @@ package body Make is
                            Get_Name_String (ALI_Project.Library_Dir.Name);
                         else
                            Get_Name_String
-                             (ALI_Project.Object_Directory.Name);
+                             (ALI_Project.Object_Directory.Display_Name);
                         end if;
 
                         if not
@@ -5256,7 +5257,8 @@ package body Make is
 
                begin
                   if not Is_Absolute_Path (Exec_File_Name) then
-                     Get_Name_String (Main_Project.Exec_Directory.Name);
+                     Get_Name_String
+                       (Main_Project.Exec_Directory.Display_Name);
 
                      if not
                        Is_Directory_Separator (Name_Buffer (Name_Len))
@@ -5281,7 +5283,7 @@ package body Make is
 
          declare
             Dir_Path : constant String :=
-                         Get_Name_String (Main_Project.Directory.Name);
+                         Get_Name_String (Main_Project.Directory.Display_Name);
          begin
             for J in 1 .. Binder_Switches.Last loop
                Test_If_Relative_Path
@@ -6467,7 +6469,7 @@ package body Make is
                   declare
                      Dir_Path : constant String :=
                                   Get_Name_String
-                                    (Main_Project.Directory.Name);
+                                    (Main_Project.Directory.Display_Name);
 
                   begin
                      for
@@ -6980,7 +6982,7 @@ package body Make is
                   begin
                      Src_Ind := Sinput.P.Load_Project_File
                                   (Get_Name_String
-                                     (Unit.File_Names (Impl).Path.Name));
+                                   (Unit.File_Names (Impl).Path.Display_Name));
 
                      --  If it is a subunit, discard it
 

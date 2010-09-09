@@ -1015,11 +1015,11 @@ package body Prj is
 
          if Project.Library then
             if Project.Object_Directory = No_Path_Information
-              or else Contains_ALI_Files (Project.Library_ALI_Dir.Name)
+              or else Contains_ALI_Files (Project.Library_ALI_Dir.Display_Name)
             then
-               return Project.Library_ALI_Dir.Name;
+               return Project.Library_ALI_Dir.Display_Name;
             else
-               return Project.Object_Directory.Name;
+               return Project.Object_Directory.Display_Name;
             end if;
 
             --  For a non-library project, add object directory if it is not a

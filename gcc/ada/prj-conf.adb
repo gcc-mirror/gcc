@@ -685,7 +685,7 @@ package body Prj.Conf is
          --  First, find the object directory of the user's project
 
          if Obj_Dir = Nil_Variable_Value or else Obj_Dir.Default then
-            Get_Name_String (Project.Directory.Name);
+            Get_Name_String (Project.Directory.Display_Name);
 
          else
             if Is_Absolute_Path (Get_Name_String (Obj_Dir.Value)) then
@@ -694,7 +694,7 @@ package body Prj.Conf is
             else
                Name_Len := 0;
                Add_Str_To_Name_Buffer
-                 (Get_Name_String (Project.Directory.Name));
+                 (Get_Name_String (Project.Directory.Display_Name));
                Add_Str_To_Name_Buffer (Get_Name_String (Obj_Dir.Value));
             end if;
          end if;
