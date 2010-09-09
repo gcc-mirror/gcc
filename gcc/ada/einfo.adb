@@ -726,6 +726,8 @@ package body Einfo is
 
    function Corresponding_Protected_Entry (Id : E) return E is
    begin
+      pragma Assert
+        (Ekind (Id) = E_Subprogram_Body);
       return Node18 (Id);
    end Corresponding_Protected_Entry;
 
