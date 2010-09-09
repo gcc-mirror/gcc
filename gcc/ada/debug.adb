@@ -581,8 +581,7 @@ package body Debug is
    --  d.T  Force Optimize_Alignment (Time) mode as the default
 
    --  d.W  Print out debugging information for Walk_Library_Items, including
-   --       the order in which units are walked. This is primarily for SofCheck
-   --       Inspector.
+   --       the order in which units are walked. This is primarily for CodePeer
 
    --  d.X  By default, the compiler uses an elaborate rewriting framework for
    --       short-circuited forms where the right hand condition generates

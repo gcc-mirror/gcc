@@ -10755,7 +10755,9 @@ the file name may contain path information.
 @command{gcc}. They will be passed on to all compiler invocations made by
 @command{gnatelim} to generate the ASIS trees. Here you can provide
 @option{^-I^/INCLUDE_DIRS=^} switches to form the source search path,
-use the @option{-gnatec} switch to set the configuration file etc.
+use the @option{-gnatec} switch to set the configuration file,
+use the @option{-gnat05} switch if sources should be compiled in
+Ada 2005 mode etc.
 
 @code{gnatelim} has the following switches:
 
@@ -12652,7 +12654,9 @@ follow the GNAT file naming rules
 @command{gcc}. They will be passed on to all compiler invocations made by
 @command{gnatelim} to generate the ASIS trees. Here you can provide
 @option{^-I^/INCLUDE_DIRS=^} switches to form the source search path,
-use the @option{-gnatec} switch to set the configuration file etc.
+use the @option{-gnatec} switch to set the configuration file,
+use the @option{-gnat05} switch if sources should be compiled in
+Ada 2005 mode  etc.
 @end itemize
 
 @menu
@@ -13766,7 +13770,9 @@ Including both a @option{-files} switch and one or more
 @command{gcc}. They will be passed on to all compiler invocations made by
 @command{gnatmetric} to generate the ASIS trees. Here you can provide
 @option{^-I^/INCLUDE_DIRS=^} switches to form the source search path,
-and use the @option{-gnatec} switch to set the configuration file.
+and use the @option{-gnatec} switch to set the configuration file,
+use the @option{-gnat05} switch if sources should be compiled in
+Ada 2005 mode etc.
 @end itemize
 
 @menu
@@ -17151,7 +17157,9 @@ or line breaks.
 @command{gcc}. They will be passed on to all compiler invocations made by
 @command{gnatcheck} to generate the ASIS trees. Here you can provide
 @option{^-I^/INCLUDE_DIRS=^} switches to form the source search path,
-and use the @option{-gnatec} switch to set the configuration file.
+and use the @option{-gnatec} switch to set the configuration file,
+use the @option{-gnat05} switch if sources should be compiled in
+Ada 2005 mode etc.
 
 @item
 @var{rule_options} is a list of options for controlling a set of
@@ -17816,7 +17824,9 @@ current directory)
 @command{gcc}. They will be passed on to all compiler invocations made by
 @command{gnatelim} to generate the ASIS trees. Here you can provide
 @option{^-I^/INCLUDE_DIRS=^} switches to form the source search path,
-use the @option{-gnatec} switch to set the configuration file etc.
+use the @option{-gnatec} switch to set the configuration file,
+use the @option{-gnat05} switch if sources should be compiled in
+Ada 2005 mode etc.
 
 @item switches
 is an optional sequence of switches as described in the next section
