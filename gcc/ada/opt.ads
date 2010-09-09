@@ -65,6 +65,7 @@ package Opt is
    --  Set True if binder file to be generated in Ada rather than C
 
    type Ada_Version_Type is (Ada_83, Ada_95, Ada_05, Ada_12);
+   pragma Ordered (Ada_Version_Type);
    --  Versions of Ada for Ada_Version below. Note that these are ordered,
    --  so that tests like Ada_Version >= Ada_95 are legitimate and useful.
 
@@ -1455,6 +1456,13 @@ package Opt is
    --  Set to True to generate warnings for unchecked conversions that may have
    --  non-portable semantics (e.g. because sizes of types differ). The default
    --  is that this warning is enabled.
+
+   Warn_On_Unordered_Enumeration_Type : Boolean := False;
+   --  GNAT
+   --  Set to True to generate warnings for inappropriate uses (comparisons
+   --  and explicit ranges) on unordered enumeration types (which includes
+   --  all enumeration types for which pragma Ordered is not given). The
+   --  default is that this warning is disabled.
 
    Warn_On_Unrecognized_Pragma : Boolean := True;
    --  GNAT

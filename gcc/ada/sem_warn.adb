@@ -3088,6 +3088,7 @@ package body Sem_Warn is
             Warn_On_Redundant_Constructs        := True;
             Warn_On_Reverse_Bit_Order           := True;
             Warn_On_Unchecked_Conversion        := True;
+            Warn_On_Unordered_Enumeration_Type  := True;
             Warn_On_Unrecognized_Pragma         := True;
             Warn_On_Unrepped_Components         := True;
             Warn_On_Warnings_Off                := True;
@@ -3124,6 +3125,12 @@ package body Sem_Warn is
 
          when 'R' =>
             Warn_On_Object_Renames_Function     := False;
+
+         when 'u' =>
+            Warn_On_Unordered_Enumeration_Type  := True;
+
+         when 'U' =>
+            Warn_On_Unordered_Enumeration_Type  := False;
 
          when 'v' =>
             Warn_On_Reverse_Bit_Order           := True;
@@ -3186,6 +3193,7 @@ package body Sem_Warn is
       Warn_On_Reverse_Bit_Order           := False;
       Warn_On_Object_Renames_Function     := True;
       Warn_On_Unchecked_Conversion        := True;
+      Warn_On_Unordered_Enumeration_Type  := False;
       Warn_On_Unrecognized_Pragma         := True;
       Warn_On_Unrepped_Components         := False;
       Warn_On_Warnings_Off                := False;
@@ -3256,6 +3264,7 @@ package body Sem_Warn is
             Warn_On_Redundant_Constructs        := False;
             Warn_On_Reverse_Bit_Order           := False;
             Warn_On_Unchecked_Conversion        := False;
+            Warn_On_Unordered_Enumeration_Type  := False;
             Warn_On_Unrecognized_Pragma         := False;
             Warn_On_Unrepped_Components         := False;
             Warn_On_Warnings_Off                := False;

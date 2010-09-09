@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -282,32 +282,31 @@ package System.Tasking is
       Cancelled
       --  the call was asynchronous, and was cancelled
      );
+   pragma Ordered (Entry_Call_State);
 
-   --  Never_Abortable is used for calls that are made in a abort
-   --  deferred region (see ARM 9.8(5-11), 9.8 (20)).
-   --  Such a call is never abortable.
+   --  Never_Abortable is used for calls that are made in a abort deferred
+   --  region (see ARM 9.8(5-11), 9.8 (20)). Such a call is never abortable.
 
-   --  The Was_ vs. Not_Yet_ distinction is needed to decide whether it
-   --  is OK to advance into the abortable part of an async. select stmt.
-   --  That is allowed iff the mode is Now_ or Was_.
+   --  The Was_ vs. Not_Yet_ distinction is needed to decide whether it is OK
+   --  to advance into the abortable part of an async. select stmt. That is
+   --  allowed iff the mode is Now_ or Was_.
 
-   --  Done indicates the call has been completed, without cancellation,
-   --  or no call has been made yet at this ATC nesting level,
-   --  and so aborting the call is no longer an issue.
-   --  Completion of the call does not necessarily indicate "success";
-   --  the call may be returning an exception if Exception_To_Raise is
-   --  non-null.
+   --  Done indicates the call has been completed, without cancellation, or no
+   --  call has been made yet at this ATC nesting level, and so aborting the
+   --  call is no longer an issue. Completion of the call does not necessarily
+   --  indicate "success"; the call may be returning an exception if
+   --  Exception_To_Raise is non-null.
 
-   --  Cancelled indicates the call was cancelled,
-   --  and so aborting the call is no longer an issue.
+   --  Cancelled indicates the call was cancelled, and so aborting the call is
+   --  no longer an issue.
 
-   --  The call is on an entry queue unless
-   --  State >= Done, in which case it may or may not be still Onqueue.
+   --  The call is on an entry queue unless State >= Done, in which case it may
+   --  or may not be still Onqueue.
 
-   --  Please do not modify the order of the values, without checking
-   --  all uses of this type. We rely on partial "monotonicity" of
-   --  Entry_Call_Record.State to avoid locking when we access this
-   --  value for certain tests. In particular:
+   --  Please do not modify the order of the values, without checking all uses
+   --  of this type. We rely on partial "monotonicity" of
+   --  Entry_Call_Record.State to avoid locking when we access this value for
+   --  certain tests. In particular:
 
    --  1)  Once State >= Done, we can rely that the call has been
    --      completed. If State >= Done, it will not

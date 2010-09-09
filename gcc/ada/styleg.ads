@@ -92,10 +92,6 @@ package Styleg is
    procedure Check_Dot_Dot;
    --  Called after scanning out dot dot to check spacing
 
-   procedure Check_Enumeration_Subrange (N : Node_Id);
-   --  Called to check a node that may be an N_Range node for an enumeration
-   --  subtype occurring other than in the defining unit of the type.
-
    procedure Check_EOF;
    --  Called after scanning out EOF mark
 

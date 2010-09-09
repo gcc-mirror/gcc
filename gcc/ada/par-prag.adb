@@ -1156,10 +1156,11 @@ begin
            Pragma_Memory_Size                   |
            Pragma_No_Body                       |
            Pragma_No_Return                     |
-           Pragma_Obsolescent                   |
            Pragma_No_Run_Time                   |
            Pragma_No_Strict_Aliasing            |
            Pragma_Normalize_Scalars             |
+           Pragma_Obsolescent                   |
+           Pragma_Ordered                       |
            Pragma_Optimize                      |
            Pragma_Optimize_Alignment            |
            Pragma_Pack                          |

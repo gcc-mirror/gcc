@@ -483,6 +483,7 @@ package Snames is
    Name_No_Return                      : constant Name_Id := N + $; -- Ada 05
    Name_Obsolescent                    : constant Name_Id := N + $; -- GNAT
    Name_Optimize                       : constant Name_Id := N + $;
+   Name_Ordered                        : constant Name_Id := N + $; -- GNAT
    Name_Pack                           : constant Name_Id := N + $;
    Name_Page                           : constant Name_Id := N + $;
    Name_Passive                        : constant Name_Id := N + $; -- GNAT
@@ -1547,6 +1548,7 @@ package Snames is
       Pragma_No_Return,
       Pragma_Obsolescent,
       Pragma_Optimize,
+      Pragma_Ordered,
       Pragma_Pack,
       Pragma_Page,
       Pragma_Passive,

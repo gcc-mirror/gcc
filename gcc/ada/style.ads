@@ -103,9 +103,6 @@ package Style is
    --  Called after scanning out a binary operator other than a plus, minus
    --  or exponentiation operator. Intended for checking spacing rules.
 
-   procedure Check_Enumeration_Subrange (N : Node_Id)
-     renames Style_Inst.Check_Enumeration_Subrange;
-
    procedure Check_Exponentiation_Operator
      renames Style_Inst.Check_Exponentiation_Operator;
    --  Called after scanning out an exponentiation operator. Intended for

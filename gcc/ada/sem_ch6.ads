@@ -28,9 +28,11 @@ package Sem_Ch6 is
 
    type Conformance_Type is
      (Type_Conformant, Mode_Conformant, Subtype_Conformant, Fully_Conformant);
+   pragma Ordered (Conformance_Type);
    --  Conformance type used in conformance checks between specs and bodies,
    --  and for overriding. The literals match the RM definitions of the
-   --  corresponding terms.
+   --  corresponding terms. This is an ordered type, since each conformance
+   --  type is stronger than the ones preceding it.
 
    procedure Analyze_Abstract_Subprogram_Declaration (N : Node_Id);
    procedure Analyze_Extended_Return_Statement       (N : Node_Id);

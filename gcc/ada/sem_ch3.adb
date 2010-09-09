@@ -5375,8 +5375,13 @@ package body Sem_Ch3 is
          Set_RM_Size        (Implicit_Base, RM_Size        (Parent_Type));
          Set_First_Rep_Item (Implicit_Base, First_Rep_Item (Parent_Type));
 
+         --  Copy other flags from parent type
+
          Set_Has_Non_Standard_Rep
                             (Implicit_Base, Has_Non_Standard_Rep
+                                                           (Parent_Type));
+         Set_Has_Pragma_Ordered
+                            (Implicit_Base, Has_Pragma_Ordered
                                                            (Parent_Type));
          Set_Has_Delayed_Freeze (Implicit_Base);
 
