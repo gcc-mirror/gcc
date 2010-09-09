@@ -2772,16 +2772,17 @@ gfc_trans_preloop_setup (gfc_loopinfo * loop, int dim, int flag,
 						  info->offset, index);
 		  info->offset = gfc_evaluate_now (info->offset, pblock);
 		}
-
-	      i = loop->order[0];
-	      stride = gfc_conv_array_stride (info->descriptor, info->dim[i]);
 	    }
-	  else
-	    stride = gfc_conv_array_stride (info->descriptor, 0);
+
+	  i = loop->order[0];
+	  /* For the time being, the innermost loop is unconditionally on
+	     the first dimension of the scalarization loop.  */
+	  gcc_assert (i == 0);
+	  stride = gfc_conv_array_stride (info->descriptor, info->dim[i]);
 
 	  /* Calculate the stride of the innermost loop.  Hopefully this will
-             allow the backend optimizers to do their stuff more effectively.
-           */
+	     allow the backend optimizers to do their stuff more effectively.
+	   */
 	  info->stride0 = gfc_evaluate_now (stride, pblock);
 	}
       else

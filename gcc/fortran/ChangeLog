@@ -1,5 +1,10 @@
 2010-09-09  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_trans_preloop_setup): Unconditionally use the
+	dim array to get the stride in the innermost loop.
+
+2010-09-09  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_trans_create_temp_array): Don't set dim array.
 	(gfc_conv_loop_setup, gfc_walk_function_expr): Set dim array.
 	* trans-intrinsic.c (gfc_walk_intrinsic_libfunc): Ditto.
