@@ -11720,15 +11720,29 @@ package body Sem_Ch12 is
          N2 := Get_Associated_Node (N);
          E := Entity (N2);
 
+         --  If the entity is an itype created as a subtype of an access type
+         --  with a null exclusion restore source entity for proper visibility.
+         --  The itype will be created anew in the instance.
+
          if Present (E) then
+            if Is_Itype (E)
+              and then Ekind (E) = E_Access_Subtype
+              and then Is_Entity_Name (N)
+              and then Chars (Etype (E)) = Chars (N)
+            then
+               E := Etype (E);
+               Set_Entity (N2, E);
+               Set_Etype  (N2, E);
+            end if;
+
             if Is_Global (E) then
                Set_Global_Type (N, N2);
 
             elsif Nkind (N) = N_Op_Concat
               and then Is_Generic_Type (Etype (N2))
-              and then
-               (Base_Type (Etype (Right_Opnd (N2))) = Etype (N2)
-                  or else Base_Type (Etype (Left_Opnd (N2))) = Etype (N2))
+              and then (Base_Type (Etype (Right_Opnd (N2))) = Etype (N2)
+                         or else
+                        Base_Type (Etype (Left_Opnd (N2)))  = Etype (N2))
               and then Is_Intrinsic_Subprogram (E)
             then
                null;
@@ -11971,11 +11985,11 @@ package body Sem_Ch12 is
            and then Is_Generic_Unit (Scope (Gen_Id))
            and then In_Open_Scopes (Scope (Gen_Id))
          then
-            --  This is an instantiation of a child unit within a sibling,
-            --  so that the generic parent is in scope. An eventual instance
-            --  must occur within the scope of an instance of the parent.
-            --  Make name in instance into an expanded name, to preserve the
-            --  identifier of the parent, so it can be resolved subsequently.
+            --  This is an instantiation of a child unit within a sibling, so
+            --  that the generic parent is in scope. An eventual instance must
+            --  occur within the scope of an instance of the parent. Make name
+            --  in instance into an expanded name, to preserve the identifier
+            --  of the parent, so it can be resolved subsequently.
 
             Rewrite (Name (N2),
               Make_Expanded_Name (Loc,

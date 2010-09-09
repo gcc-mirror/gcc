@@ -4489,6 +4489,9 @@ package body Exp_Disp is
                             (RTE_Record_Component (RE_NDT_Prims_Ptr), Loc)),
                       Attribute_Name => Name_Address))));
 
+            Set_Is_Statically_Allocated (DT_Ptr,
+              Is_Library_Level_Tagged_Type (Typ));
+
             --  Generate the SCIL node for the previous object declaration
             --  because it has a tag initialization.
 
@@ -4553,6 +4556,9 @@ package body Exp_Disp is
                           New_Occurrence_Of
                             (RTE_Record_Component (RE_Prims_Ptr), Loc)),
                       Attribute_Name => Name_Address))));
+
+            Set_Is_Statically_Allocated (DT_Ptr,
+              Is_Library_Level_Tagged_Type (Typ));
 
             --  Generate the SCIL node for the previous object declaration
             --  because it has a tag initialization.
@@ -6638,6 +6644,13 @@ package body Exp_Disp is
 
             Analyze_List (Result);
             Set_Suppress_Init_Proc (Base_Type (DT_Prims));
+
+            --  Disable backend optimizations based on assumptions about the
+            --  aliasing status of objects designated by the access to the
+            --  dispatch table. Required to handle dispatch tables imported
+            --  from C++.
+
+            Set_No_Strict_Aliasing (Base_Type (DT_Prims_Acc));
 
             --  Add the freezing nodes of these declarations; required to avoid
             --  generating these freezing nodes in wrong scopes (for example in

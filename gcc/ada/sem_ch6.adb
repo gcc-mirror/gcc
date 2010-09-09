@@ -7974,6 +7974,35 @@ package body Sem_Ch6 is
            and then not Is_Dispatching_Operation (S)
          then
             Make_Inequality_Operator (S);
+
+            --  In Ada 2012, a primitive equality operator on a record type
+            --  must appear before the type is frozen, and have the same
+            --  visibility as the type.
+
+            declare
+               Typ  : constant Entity_Id := Etype (First_Formal (S));
+               Decl : constant Node_Id   := Unit_Declaration_Node (S);
+
+            begin
+               if Ada_Version >= Ada_12
+                 and then Nkind (Decl) = N_Subprogram_Declaration
+                 and then Is_Record_Type (Typ)
+               then
+                  if Is_Frozen (Typ) then
+                     Error_Msg_NE
+                       ("equality operator must be declared "
+                         & "before type& is frozen", S, Typ);
+
+                  elsif List_Containing (Parent (Typ))
+                          /=
+                        List_Containing (Decl)
+                    and then not Is_Limited_Type (Typ)
+                  then
+                     Error_Msg_N
+                       ("equality operator appears too late", S);
+                  end if;
+               end if;
+            end;
          end if;
    end New_Overloaded_Entity;
 

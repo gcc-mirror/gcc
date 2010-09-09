@@ -2250,7 +2250,6 @@ package body Ch3 is
 
    function P_Defining_Character_Literal return Node_Id is
       Literal_Node : Node_Id;
-
    begin
       Literal_Node := Token_Node;
       Change_Character_Literal_To_Defining_Character_Literal (Literal_Node);

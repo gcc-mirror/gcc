@@ -829,10 +829,12 @@ package body Exp_Ch9 is
 
    begin
       --  Loop to find enclosing construct containing activation chain variable
+      --  The construct is a body, a block, or an extended return.
 
       P := Parent (N);
 
       while not Nkind_In (P, N_Subprogram_Body,
+                             N_Entry_Body,
                              N_Package_Declaration,
                              N_Package_Body,
                              N_Block_Statement,
