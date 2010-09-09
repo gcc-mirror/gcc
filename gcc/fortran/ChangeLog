@@ -1,5 +1,11 @@
 2010-09-09  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_get_array_ref_dim): New function.
+	(gfc_trans_create_temp_array): Reconstruct array
+	bounds from loop bounds. Use array bounds instead of loop bounds.
+
+2010-09-09  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_set_loop_bounds_from_array_spec):
 	Get the array dimension from the dim array.
 
