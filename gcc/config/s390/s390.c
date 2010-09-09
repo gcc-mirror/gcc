@@ -2815,6 +2815,12 @@ legitimate_reload_constant_p (rtx op)
       && larl_operand (op, VOIDmode))
     return true;
 
+  /* Accept floating-point zero operands that fit into a single GPR.  */
+  if (GET_CODE (op) == CONST_DOUBLE
+      && s390_float_const_zero_p (op)
+      && GET_MODE_SIZE (GET_MODE (op)) <= UNITS_PER_WORD)
+    return true;
+
   /* Accept double-word operands that can be split.  */
   if (GET_CODE (op) == CONST_INT
       && trunc_int_for_mode (INTVAL (op), word_mode) != INTVAL (op))
@@ -2838,13 +2844,16 @@ s390_preferred_reload_class (rtx op, enum reg_class rclass)
 {
   switch (GET_CODE (op))
     {
-      /* Constants we cannot reload must be forced into the
-	 literal pool.  */
-
+      /* Constants we cannot reload into general registers
+	 must be forced into the literal pool.  */
       case CONST_DOUBLE:
       case CONST_INT:
-	if (legitimate_reload_constant_p (op))
-	  return rclass;
+	if (reg_class_subset_p (GENERAL_REGS, rclass)
+	    && legitimate_reload_constant_p (op))
+	  return GENERAL_REGS;
+	else if (reg_class_subset_p (ADDR_REGS, rclass)
+		 && legitimate_reload_constant_p (op))
+	  return ADDR_REGS;
 	else
 	  return NO_REGS;
 
