@@ -166,6 +166,13 @@ package body Sem_Ch6 is
    --  True otherwise. Proc is the entity for the procedure case and is used
    --  in posting the warning message.
 
+   procedure Check_Untagged_Equality (Eq_Op : Entity_Id);
+   --  In Ada 2012, a primitive equality operator on an untagged record type
+   --  must appear before the type is frozen, and have the same visibility as
+   --  that of the type. This procedure checks that this rule is met, and
+   --  otherwise emits an error on the subprogram declaration and a warning
+   --  on the earlier freeze point if it is easy to locate.
+
    procedure Enter_Overloaded_Entity (S : Entity_Id);
    --  This procedure makes S, a new overloaded entity, into the first visible
    --  entity with that name.
@@ -5790,6 +5797,51 @@ package body Sem_Ch6 is
    end Enter_Overloaded_Entity;
 
    -----------------------------
+   -- Check_Untagged_Equality --
+   -----------------------------
+
+   procedure Check_Untagged_Equality (Eq_Op : Entity_Id) is
+      Typ      : constant Entity_Id := Etype (First_Formal (Eq_Op));
+      Decl     : constant Node_Id   := Unit_Declaration_Node (Eq_Op);
+      Obj_Decl : Node_Id;
+
+   begin
+      if Nkind (Decl) = N_Subprogram_Declaration
+        and then Is_Record_Type (Typ)
+        and then not Is_Tagged_Type (Typ)
+      then
+         if Is_Frozen (Typ) then
+            Error_Msg_NE
+              ("equality operator must be declared "
+                & "before type& is frozen", Eq_Op, Typ);
+
+            Obj_Decl := Next (Parent (Typ));
+            while Present (Obj_Decl)
+              and then Obj_Decl /= Decl
+            loop
+               if Nkind (Obj_Decl) = N_Object_Declaration
+                 and then Etype (Defining_Identifier (Obj_Decl)) = Typ
+               then
+                  Error_Msg_NE ("type& is frozen by declaration?",
+                     Obj_Decl, Typ);
+                  Error_Msg_N
+                    ("\an equality operator cannot be declared after this "
+                      & "point ('R'M 4.5.2 (9.8)) (Ada2012))?", Obj_Decl);
+                  exit;
+               end if;
+
+               Next (Obj_Decl);
+            end loop;
+
+         elsif not In_Same_List (Parent (Typ), Decl)
+           and then not Is_Limited_Type (Typ)
+         then
+            Error_Msg_N ("equality operator appears too late", Eq_Op);
+         end if;
+      end if;
+   end Check_Untagged_Equality;
+
+   -----------------------------
    -- Find_Corresponding_Spec --
    -----------------------------
 
@@ -7975,32 +8027,9 @@ package body Sem_Ch6 is
          then
             Make_Inequality_Operator (S);
 
-            --  In Ada 2012, a primitive equality operator on a record type
-            --  must appear before the type is frozen, and have the same
-            --  visibility as the type.
-
-            declare
-               Typ  : constant Entity_Id := Etype (First_Formal (S));
-               Decl : constant Node_Id   := Unit_Declaration_Node (S);
-
-            begin
-               if Ada_Version >= Ada_12
-                 and then Nkind (Decl) = N_Subprogram_Declaration
-                 and then Is_Record_Type (Typ)
-               then
-                  if Is_Frozen (Typ) then
-                     Error_Msg_NE
-                       ("equality operator must be declared "
-                         & "before type& is frozen", S, Typ);
-
-                  elsif not In_Same_List (Parent (Typ), Decl)
-                    and then not Is_Limited_Type (Typ)
-                  then
-                     Error_Msg_N
-                       ("equality operator appears too late", S);
-                  end if;
-               end if;
-            end;
+            if Ada_Version >= Ada_12 then
+               Check_Untagged_Equality (S);
+            end if;
          end if;
    end New_Overloaded_Entity;
 
