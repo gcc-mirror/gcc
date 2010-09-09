@@ -194,8 +194,8 @@ begin
 
             loop
                declare
-                  Dir : constant String_Access := String_Access
-                    (Get_Next_Dir_In_Path (Include_Dir_Name));
+                  Dir : constant String_Access :=
+                          Get_Next_Dir_In_Path (Include_Dir_Name);
                begin
                   exit when Dir = null;
                   Include_Dirs := Include_Dirs + 1;
@@ -211,8 +211,7 @@ begin
             loop
                declare
                   Dir : constant String_Access :=
-                          String_Access
-                            (Get_Next_Dir_In_Path (Object_Dir_Name));
+                          Get_Next_Dir_In_Path (Object_Dir_Name);
                begin
                   exit when Dir = null;
                   Object_Dirs := Object_Dirs + 1;
