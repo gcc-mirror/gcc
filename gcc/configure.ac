@@ -2158,6 +2158,19 @@ EOF
     ;;
 esac])
 
+# gnu_indirect_function type is an extension proposed at
+# http://groups.google/com/group/generic-abi/files. It allows dynamic runtime
+# selection of function implementation
+gcc_GAS_CHECK_FEATURE(gnu_indirect_function, gcc_cv_as_indirect_function,
+ [elf,2,20,1],,
+[	.type  Foo, @gnu_indirect_function
+Foo:])
+GCC_TARGET_TEMPLATE([HAVE_GAS_INDIRECT_FUNCTION])
+if test $gcc_cv_as_indirect_function = yes ; then
+  AC_DEFINE(HAVE_GAS_INDIRECT_FUNCTION, 1,
+  [Define if your assembler supports indirect function type.])
+fi
+
 changequote(,)dnl
 if test $in_tree_ld != yes ; then
   ld_ver=`$gcc_cv_ld --version 2>/dev/null | sed 1q`

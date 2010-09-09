@@ -1912,6 +1912,7 @@ the enclosing block.
 @cindex functions that do not pop the argument stack on the 386
 @cindex functions that have different compilation options on the 386
 @cindex functions that have different optimization options
+@cindex functions that are dynamically resolved
 
 In GNU C, you declare certain things about functions called in your program
 which help the compiler optimize function calls and check your code more
@@ -1927,13 +1928,13 @@ attributes are currently defined for functions on all targets:
 @code{nothrow}, @code{sentinel}, @code{format}, @code{format_arg},
 @code{no_instrument_function}, @code{section}, @code{constructor},
 @code{destructor}, @code{used}, @code{unused}, @code{deprecated},
-@code{weak}, @code{malloc}, @code{alias}, @code{warn_unused_result},
-@code{nonnull}, @code{gnu_inline}, @code{externally_visible},
-@code{hot}, @code{cold}, @code{artificial}, @code{error} and
-@code{warning}.  Several other attributes are defined for functions on
-particular target systems.  Other attributes, including @code{section}
-are supported for variables declarations (@pxref{Variable Attributes})
-and for types (@pxref{Type Attributes}).
+@code{weak}, @code{malloc}, @code{alias}, @code{ifunc},
+@code{warn_unused_result}, @code{nonnull}, @code{gnu_inline},
+@code{externally_visible}, @code{hot}, @code{cold}, @code{artificial},
+@code{error} and @code{warning}.  Several other attributes are defined
+for functions on particular target systems.  Other attributes,
+including @code{section} are supported for variables declarations
+(@pxref{Variable Attributes}) and for types (@pxref{Type Attributes}).
 
 GCC plugins may provide their own attributes.
 
@@ -2584,6 +2585,51 @@ void __attribute__ ((interrupt, use_shadow_register_set,
                      keep_interrupts_masked,
                      use_debug_exception_return)) v7 ();
 @end smallexample
+
+@item ifunc ("@var{resolver}")
+@cindex @code{ifunc} attribute
+The @code{ifunc} attribute is used to mark a function as an indirect
+function using the STT_GNU_IFUNC symbol type extension to the ELF
+standard.  This allows the resolution of the symbol value to be
+determined dynamically at load time, and an optimized version of the
+routine can be selected for the particular processor or other system
+characteristics determined then.  To use this attribute, first define
+the implementation functions available, and a resolver function that
+returns a pointer to the selected implementation function.  The
+implementation functions' declarations must match the API of the
+function being implemented, the resolver's declaration is be a
+function returning pointer to void function returning void:
+
+@smallexample
+void *my_memcpy (void *dst, const void *src, size_t len)
+@{
+  @dots{}
+@}
+
+static void (*resolve_memcpy (void)) (void)
+@{
+  return my_memcpy; // we'll just always select this routine
+@}
+@end smallexample
+
+The exported header file declaring the function the user calls would
+contain:
+
+@smallexample
+extern void *memcpy (void *, const void *, size_t);
+@end smallexample
+
+allowing the user to call this as a regular function, unaware of the
+implementation.  Finally, the indirect function needs to be defined in
+the same translation unit as the resolver function:
+
+@smallexample
+void *memcpy (void *, const void *, size_t)
+     __attribute__ ((ifunc ("resolve_memcpy")));
+@end smallexample
+
+Indirect functions cannot be weak, and require a recent binutils (at
+least version 2.20.1), and GNU C library (at least version 2.11.1).
 
 @item interrupt_handler
 @cindex interrupt handler functions on the Blackfin, m68k, H8/300 and SH processors

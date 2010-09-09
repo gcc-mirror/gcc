@@ -142,6 +142,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 #endif
 
+#ifndef IFUNC_ASM_TYPE
+#define IFUNC_ASM_TYPE "gnu_indirect_function"
+#endif
+
 #ifndef TLS_COMMON_ASM_OP
 #define TLS_COMMON_ASM_OP ".tls_common"
 #endif

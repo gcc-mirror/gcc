@@ -1,3 +1,17 @@
+2010-09-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* lib/target-supports-dg.exp (dg-require-ifunc): New.
+	* lib/target-supports.exp (check_ifunc_available): New.
+	* gcc.dg/attr-ifunc-1.c: New.
+	* gcc.dg/attr-ifunc-2.c: New.
+	* gcc.dg/attr-ifunc-3.c: New.
+	* gcc.dg/attr-ifunc-4.c: New.
+	* gcc.dg/attr-ifunc-5.c: New.
+	* testsuite/g++.dg/ext/attr-ifunc-1.C: New.
+	* testsuite/g++.dg/ext/attr-ifunc-2.C: New.
+	* testsuite/g++.dg/ext/attr-ifunc-3.C: New.
+	* testsuite/g++.dg/ext/attr-ifunc-4.C: New.
+
 2010-09-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/40386

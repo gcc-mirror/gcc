@@ -327,6 +327,8 @@ static tree handle_mode_attribute (tree *, tree, tree, int, bool *);
 static tree handle_section_attribute (tree *, tree, tree, int, bool *);
 static tree handle_aligned_attribute (tree *, tree, tree, int, bool *);
 static tree handle_weak_attribute (tree *, tree, tree, int, bool *) ;
+static tree handle_alias_ifunc_attribute (bool, tree *, tree, tree, bool *);
+static tree handle_ifunc_attribute (tree *, tree, tree, int, bool *);
 static tree handle_alias_attribute (tree *, tree, tree, int, bool *);
 static tree handle_weakref_attribute (tree *, tree, tree, int, bool *) ;
 static tree handle_visibility_attribute (tree *, tree, tree, int,
@@ -599,6 +601,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_aligned_attribute },
   { "weak",                   0, 0, true,  false, false,
 			      handle_weak_attribute },
+  { "ifunc",                  1, 1, true,  false, false,
+			      handle_ifunc_attribute },
   { "alias",                  1, 1, true,  false, false,
 			      handle_alias_attribute },
   { "weakref",                0, 1, true,  false, false,
@@ -6595,6 +6599,12 @@ handle_weak_attribute (tree *node, tree name,
       error ("inline function %q+D cannot be declared weak", *node);
       *no_add_attrs = true;
     }
+  else if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (*node)))
+    {
+      error ("indirect function %q+D cannot be declared weak", *node);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
   else if (TREE_CODE (*node) == FUNCTION_DECL
 	   || TREE_CODE (*node) == VAR_DECL)
     declare_weak (*node);
@@ -6604,16 +6614,18 @@ handle_weak_attribute (tree *node, tree name,
   return NULL_TREE;
 }
 
-/* Handle an "alias" attribute; arguments as in
-   struct attribute_spec.handler.  */
+/* Handle an "alias" or "ifunc" attribute; arguments as in
+   struct attribute_spec.handler, except that IS_ALIAS tells us
+   whether this is an alias as opposed to ifunc attribute.  */
 
 static tree
-handle_alias_attribute (tree *node, tree name, tree args,
-			int ARG_UNUSED (flags), bool *no_add_attrs)
+handle_alias_ifunc_attribute (bool is_alias, tree *node, tree name, tree args,
+			      bool *no_add_attrs)
 {
   tree decl = *node;
 
-  if (TREE_CODE (decl) != FUNCTION_DECL && TREE_CODE (decl) != VAR_DECL)
+  if (TREE_CODE (decl) != FUNCTION_DECL
+      && (!is_alias || TREE_CODE (decl) != VAR_DECL))
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
@@ -6626,9 +6638,18 @@ handle_alias_attribute (tree *node, tree name, tree args,
       || (TREE_CODE (decl) != FUNCTION_DECL
 	  && ! TREE_PUBLIC (decl) && DECL_INITIAL (decl)))
     {
-      error ("%q+D defined both normally and as an alias", decl);
+      error ("%q+D defined both normally and as %qE attribute", decl, name);
       *no_add_attrs = true;
+      return NULL_TREE;
     }
+  else if (!is_alias
+	   && (lookup_attribute ("weak", DECL_ATTRIBUTES (decl)) 
+	       || lookup_attribute ("weakref", DECL_ATTRIBUTES (decl))))
+    {
+      error ("weak %q+D cannot be defined %qE", decl, name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }			 
 
   /* Note that the very first time we process a nested declaration,
      decl_function_context will not be set.  Indeed, *would* never
@@ -6642,7 +6663,7 @@ handle_alias_attribute (tree *node, tree name, tree args,
       id = TREE_VALUE (args);
       if (TREE_CODE (id) != STRING_CST)
 	{
-	  error ("alias argument not a string");
+	  error ("attribute %qE argument not a string", name);
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
@@ -6660,6 +6681,11 @@ handle_alias_attribute (tree *node, tree name, tree args,
 	    DECL_EXTERNAL (decl) = 0;
 	  TREE_STATIC (decl) = 1;
 	}
+
+      if (!is_alias)
+	/* ifuncs are also aliases, so set that attribute too. */
+	DECL_ATTRIBUTES (decl)
+	  = tree_cons (get_identifier ("alias"), args, DECL_ATTRIBUTES (decl));
     }
   else
     {
@@ -6668,6 +6694,26 @@ handle_alias_attribute (tree *node, tree name, tree args,
     }
 
   return NULL_TREE;
+}
+
+/* Handle an "alias" or "ifunc" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_ifunc_attribute (tree *node, tree name, tree args,
+			int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  return handle_alias_ifunc_attribute (false, node, name, args, no_add_attrs);
+}
+
+/* Handle an "alias" or "ifunc" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_alias_attribute (tree *node, tree name, tree args,
+			int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  return handle_alias_ifunc_attribute (true, node, name, args, no_add_attrs);
 }
 
 /* Handle a "weakref" attribute; arguments as in struct
@@ -6687,6 +6733,13 @@ handle_weakref_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       || (TREE_CODE (*node) != VAR_DECL && TREE_CODE (*node) != FUNCTION_DECL))
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (*node)))
+    {
+      error ("indirect function %q+D cannot be declared weakref", *node);
       *no_add_attrs = true;
       return NULL_TREE;
     }

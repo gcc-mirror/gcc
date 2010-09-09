@@ -993,7 +993,8 @@ use_blocks_for_decl_p (tree decl)
   if (DECL_INITIAL (decl) == decl)
     return false;
 
-  /* If this decl is an alias, then we don't want to emit a definition.  */
+  /* If this decl is an alias, then we don't want to emit a
+     definition.  */
   if (lookup_attribute ("alias", DECL_ATTRIBUTES (decl)))
     return false;
 
@@ -5353,6 +5354,17 @@ do_assemble_alias (tree decl, tree target)
     {
       globalize_decl (decl);
       maybe_assemble_visibility (decl);
+    }
+  if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (decl)))
+    {
+#if defined (ASM_OUTPUT_TYPE_DIRECTIVE) && HAVE_GAS_INDIRECT_FUNCTION
+      ASM_OUTPUT_TYPE_DIRECTIVE
+	(asm_out_file, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
+	 IFUNC_ASM_TYPE);
+#else
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"ifunc is not supported in this configuration");
+#endif
     }
 
 # ifdef ASM_OUTPUT_DEF_FROM_DECLS

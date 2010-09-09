@@ -21327,6 +21327,48 @@ fi
 $as_echo "$gcc_cv_as_hidden" >&6; }
 
 
+# gnu_indirect_function type is an extension proposed at
+# http://groups.google/com/group/generic-abi/files. It allows dynamic runtime
+# selection of function implementation
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for gnu_indirect_function" >&5
+$as_echo_n "checking assembler for gnu_indirect_function... " >&6; }
+if test "${gcc_cv_as_indirect_function+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_indirect_function=no
+    if test $in_tree_gas = yes; then
+    if test $in_tree_gas_is_elf = yes \
+  && test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 20 \) \* 1000 + 1`
+  then gcc_cv_as_indirect_function=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo '	.type  Foo, @gnu_indirect_function
+Foo:' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_indirect_function=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_indirect_function" >&5
+$as_echo "$gcc_cv_as_indirect_function" >&6; }
+
+
+if test $gcc_cv_as_indirect_function = yes ; then
+
+$as_echo "#define HAVE_GAS_INDIRECT_FUNCTION 1" >>confdefs.h
+
+fi
+
 if test $in_tree_ld != yes ; then
   ld_ver=`$gcc_cv_ld --version 2>/dev/null | sed 1q`
   if test x"$ld_is_gold" = xyes; then

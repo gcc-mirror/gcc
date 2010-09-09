@@ -968,6 +968,9 @@
 /* Define if your assembler and linker support .hidden. */
 #undef HAVE_GAS_HIDDEN
 
+/* Define if your assembler supports indirect function type. */
+#undef HAVE_GAS_INDIRECT_FUNCTION
+
 /* Define if your assembler supports .lcomm with an alignment field. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GAS_LCOMM_WITH_ALIGNMENT
