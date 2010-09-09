@@ -2549,7 +2549,7 @@ package body Sem_Attr is
          --  2005. Note that we can't test Is_Tagged_Type here on P_Type, since
          --  this flag gets set by Find_Type in this situation.
 
-         if Restriction_Active (No_Obsolescent_Features)
+         if Restriction_Check_Required (No_Obsolescent_Features)
            and then Ada_Version >= Ada_2005
            and then Ekind (P_Type) = E_Incomplete_Type
          then

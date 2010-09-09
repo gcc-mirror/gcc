@@ -184,18 +184,6 @@ package body Sem_Type is
    --  Interp_Has_Abstract_Op. Determine whether an overloaded node has an
    --  abstract interpretation which yields type Typ.
 
-   function Is_Array_Class_Record_Type (E : Entity_Id) return Boolean;
-   --  This function tests if entity E is in Array_Kind, or Class_Wide_Kind,
-   --  or is E_Record_Type or E_Record_Subtype, and returns True for these
-   --  cases, and False for all others. Note that other record entity kinds
-   --  such as E_Record_Type_With_Private return False.
-   --
-   --  This is a bit of an odd category, maybe it is wrong or a better name
-   --  could be found for the class of entities being tested. The history
-   --  is that this used to be done with an explicit range test for the range
-   --  E_Array_Type .. E_Record_Subtype, which was itself suspicious and is
-   --  now prohibited by the -gnatyE style check ???
-
    procedure New_Interps (N : Node_Id);
    --  Initialize collection of interpretations for the given node, which is
    --  either an overloaded entity, or an operation whose arguments have
@@ -912,7 +900,7 @@ package body Sem_Type is
       --  An aggregate is compatible with an array or record type
 
       elsif T2 = Any_Composite
-        and then Is_Array_Class_Record_Type (T1)
+        and then Is_Aggregate_Type (T1)
       then
          return True;
 
@@ -2632,24 +2620,15 @@ package body Sem_Type is
                else
                   Par := Etype (Par);
                end if;
+
+            --  For all other cases return False, not an Ancestor
+
             else
                return False;
             end if;
          end loop;
       end if;
    end Is_Ancestor;
-
-   --------------------------------
-   -- Is_Array_Class_Record_Type --
-   --------------------------------
-
-   function Is_Array_Class_Record_Type (E : Entity_Id) return Boolean is
-   begin
-      return Is_Array_Type (E)
-        or else Is_Class_Wide_Type (E)
-        or else Ekind (E) = E_Record_Type
-        or else Ekind (E) = E_Record_Subtype;
-   end Is_Array_Class_Record_Type;
 
    ---------------------------
    -- Is_Invisible_Operator --
@@ -3069,12 +3048,12 @@ package body Sem_Type is
          return T1;
 
       elsif T2 = Any_Composite
-        and then Is_Array_Class_Record_Type (T1)
+        and then Is_Aggregate_Type (T1)
       then
          return T1;
 
       elsif T1 = Any_Composite
-        and then Is_Array_Class_Record_Type (T2)
+        and then Is_Aggregate_Type (T2)
       then
          return T2;
 

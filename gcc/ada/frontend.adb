@@ -290,7 +290,7 @@ begin
    --  explicit switch turning off Warn_On_Non_Local_Exception, then turn on
    --  this warning by default if we have encountered an exception handler.
 
-   if Restriction_Active (No_Exception_Propagation)
+   if Restriction_Check_Required (No_Exception_Propagation)
      and then not No_Warn_On_Non_Local_Exception
      and then Exception_Handler_Encountered
    then

@@ -4759,7 +4759,7 @@ package body Sem_Res is
          --  violated if either operand can be negative for mod, or for rem
          --  if both operands can be negative.
 
-         if Restrictions.Set (No_Implicit_Conditionals)
+         if Restriction_Check_Required (No_Implicit_Conditionals)
            and then Nkind_In (N, N_Op_Rem, N_Op_Mod)
          then
             declare

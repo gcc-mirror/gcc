@@ -2325,7 +2325,7 @@ package body Sem_Ch10 is
       --  Note: this is not quite right if the user defines one of these units
       --  himself, but that's a marginal case, and fixing it is hard ???
 
-      if Restriction_Active (No_Obsolescent_Features) then
+      if Restriction_Check_Required (No_Obsolescent_Features) then
          declare
             F : constant File_Name_Type :=
                   Unit_File_Name (Get_Source_Unit (U));

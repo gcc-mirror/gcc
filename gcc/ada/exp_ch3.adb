@@ -142,9 +142,9 @@ package body Exp_Ch3 is
    --  are active) can lead to very large blocks that GCC3 handles poorly.
 
    procedure Build_Untagged_Equality (Typ : Entity_Id);
-   --  AI05-0123: equality on untagged records composes. This procedure
-   --  build the equality routine for an untagged record that has components
-   --  of a record type that have user-defined primitive equality operations.
+   --  AI05-0123: Equality on untagged records composes. This procedure
+   --  builds the equality routine for an untagged record that has components
+   --  of a record type that has user-defined primitive equality operations.
    --  The resulting operation is a TSS subprogram.
 
    procedure Build_Variant_Record_Equality (Typ  : Entity_Id);
@@ -3766,9 +3766,9 @@ package body Exp_Ch3 is
       Eq_Op    : Entity_Id;
 
       function User_Defined_Eq (T : Entity_Id) return Entity_Id;
-      --  Check whether the type T has a user-defined primitive
-      --  equality. If true for a component of Typ, we have to
-      --  build the primitive equality for it.
+      --  Check whether the type T has a user-defined primitive equality. If so
+      --  return it, else return Empty. If true for a component of Typ, we have
+      --  to build the primitive equality for it.
 
       ---------------------
       -- User_Defined_Eq --
@@ -3807,7 +3807,7 @@ package body Exp_Ch3 is
 
    begin
       --  If a record component has a primitive equality operation, we must
-      --  builde the corresponding one for the current type.
+      --  build the corresponding one for the current type.
 
       Build_Eq := False;
       Comp := First_Component (Typ);
@@ -3828,7 +3828,11 @@ package body Exp_Ch3 is
       Eq_Op := Empty;
       while Present (Prim) loop
          if Chars (Node (Prim)) = Name_Op_Eq
-           and then Comes_From_Source (Node (Prim))
+              and then Comes_From_Source (Node (Prim))
+
+         --  Don't we also need to check formal types and return type as in
+         --  User_Defined_Eq above???
+
          then
             Eq_Op := Node (Prim);
             Build_Eq := False;
@@ -3839,10 +3843,10 @@ package body Exp_Ch3 is
       end loop;
 
       --  If the type is derived, inherit the operation, if present, from the
-      --  parent type. It may have been declared after the type derivation.
-      --  If the parent type itself is derived, it may have inherited an
-      --  operation that has itself been overridden, so update its alias
-      --  and related flags. Ditto for inequality.
+      --  parent type. It may have been declared after the type derivation. If
+      --  the parent type itself is derived, it may have inherited an operation
+      --  that has itself been overridden, so update its alias and related
+      --  flags. Ditto for inequality.
 
       if No (Eq_Op) and then Is_Derived_Type (Typ) then
          Prim := First_Elmt (Collect_Primitive_Operations (Etype (Typ)));
@@ -3877,13 +3881,12 @@ package body Exp_Ch3 is
          end loop;
       end if;
 
-      --  If not inherited and not user-defined, build body as for a type
-      --  with tagged components.
+      --  If not inherited and not user-defined, build body as for a type with
+      --  tagged components.
 
       if Build_Eq then
          Decl :=
-           Make_Eq_Body
-             (Typ, Make_TSS_Name (Typ, TSS_Composite_Equality));
+           Make_Eq_Body (Typ, Make_TSS_Name (Typ, TSS_Composite_Equality));
          Op := Defining_Entity (Decl);
          Set_TSS (Typ, Op);
          Set_Is_Pure (Op);
@@ -7824,8 +7827,8 @@ package body Exp_Ch3 is
             Comps := Component_List (Typ_Def);
          end if;
 
-         Variant_Case := Present (Comps)
-           and then Present (Variant_Part (Comps));
+         Variant_Case :=
+           Present (Comps) and then Present (Variant_Part (Comps));
       end if;
 
       if Variant_Case then
