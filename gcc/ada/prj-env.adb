@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1582,7 +1582,7 @@ package body Prj.Env is
       --  For the object path, we make a distinction depending on
       --  Including_Libraries.
 
-      if Objects_Path and Including_Libraries then
+      if Objects_Path and then Including_Libraries then
          if Project.Objects_Path_File_With_Libs = No_Path then
             Object_Path_Table.Init (Object_Paths);
             Process_Object_Dirs := True;
@@ -1602,7 +1602,7 @@ package body Prj.Env is
       --  If there is something to do, set Seen to False for all projects,
       --  then call the recursive procedure Add for Project.
 
-      if Process_Source_Dirs or Process_Object_Dirs then
+      if Process_Source_Dirs or else Process_Object_Dirs then
          For_All_Projects (Project, Dummy);
       end if;
 

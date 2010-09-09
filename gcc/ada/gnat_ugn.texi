@@ -27456,7 +27456,7 @@ end API;
 
 @noindent
 Note that a variable is
-@strong{always imported with a Stdcall convention}. A function
+@strong{always imported with a DLL convention}. A function
 can have @code{C} or @code{Stdcall} convention.
 (@pxref{Windows Calling Conventions}).
 
@@ -28474,7 +28474,6 @@ The program is built with foreign tools and the DLL is built with
 @item
 The program is built with @code{GCC/GNAT} and the DLL is built with
 foreign tools.
-@item
 @end enumerate
 
 @noindent
