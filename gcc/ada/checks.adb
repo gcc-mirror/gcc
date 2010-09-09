@@ -722,8 +722,8 @@ package body Checks is
 
    procedure Apply_Arithmetic_Overflow_Check (N : Node_Id) is
       Loc   : constant Source_Ptr := Sloc (N);
-      Typ   : Entity_Id           := Etype (N);
-      Rtyp  : Entity_Id           := Root_Type (Typ);
+      Typ   : constant Entity_Id  := Etype (N);
+      Rtyp  : constant Entity_Id  := Root_Type (Typ);
 
    begin
       --  An interesting special case. If the arithmetic operation appears as
@@ -815,9 +815,14 @@ package body Checks is
                         Subtype_Mark => New_Occurrence_Of (Target_Type, Loc),
                         Expression   => Relocate_Node (Right_Opnd (N))));
 
+                     --  Rewrite the conversion operand so that the original
+                     --  node is retained, in order to avoid the warning for
+                     --  redundant conversions in Resolve_Type_Conversion.
+
+                     Rewrite (N, Relocate_Node (N));
+
                      Set_Etype (N, Target_Type);
-                     Typ := Target_Type;
-                     Rtyp := Root_Type (Typ);
+
                      Analyze_And_Resolve (Left_Opnd  (N), Target_Type);
                      Analyze_And_Resolve (Right_Opnd (N), Target_Type);
 

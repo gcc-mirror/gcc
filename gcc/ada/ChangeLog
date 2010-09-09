@@ -1,3 +1,26 @@
+2010-09-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_eval.adb (Is_Same_Value): Two occurrences of the same
+	discriminant cannot be assumed to be the same value because they may
+	refer to bounds of a component of two different instances of a
+	discriminated type.
+
+2010-09-09  Gary Dismukes  <dismukes@adacore.com>
+
+	* checks.adb (Apply_Arithmetic_Overflow_Check): When converting the
+	operands of an operator to the type of an enclosing conversion, rewrite
+	the operator so the conversion can't be flagged as redundant.
+	Remove useless assignments to Typ and Rtyp.
+
+2010-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_ugn.texi: Fix another long line.
+
+2010-09-09  Bob Duff  <duff@adacore.com>
+
+	* sem_warn.adb (Output_Reference_Error): Don't warn for renames read
+	but never assigned.
+
 2010-09-09  Matthew Heaney  <heaney@adacore.com>
 
 	* a-convec.adb, a-coinve.adb (Clear, Delete, Delete_Last, Finalize,

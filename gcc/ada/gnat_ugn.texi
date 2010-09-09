@@ -10109,7 +10109,8 @@ the slowest compilation time.
 
 @item ^-O3^/OPTIMIZE=INLINING^
 Full optimization as in @option{-O2};
-also uses more aggressive automatic inlining of subprograms within a unit (@pxref{Inlining of Subprograms}) and attemps to vectorize loops.
+also uses more aggressive automatic inlining of subprograms within a unit
+(@pxref{Inlining of Subprograms}) and attemps to vectorize loops.
 
 @item ^-Os^/OPTIMIZE=SPACE^
 Optimize space usage (code and data) of resulting program.
