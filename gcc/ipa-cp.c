@@ -327,7 +327,6 @@ ipcp_lattice_from_jfunc (struct ipa_node_params *info, struct ipcp_lattice *lat,
     {
       struct ipcp_lattice *caller_lat;
       tree t;
-      bool ok;
 
       caller_lat = ipcp_get_lattice (info, jfunc->value.ancestor.formal_id);
       lat->type = caller_lat->type;
@@ -340,16 +339,9 @@ ipcp_lattice_from_jfunc (struct ipa_node_params *info, struct ipcp_lattice *lat,
 	  return;
 	}
       t = TREE_OPERAND (caller_lat->constant, 0);
-      ok = build_ref_for_offset (&t, TREE_TYPE (t),
-				 jfunc->value.ancestor.offset,
-				 jfunc->value.ancestor.type, false);
-      if (!ok)
-	{
-	  lat->type = IPA_BOTTOM;
-	  lat->constant = NULL_TREE;
-	}
-      else
-	lat->constant = build_fold_addr_expr (t);
+      t = build_ref_for_offset (t, jfunc->value.ancestor.offset,
+				jfunc->value.ancestor.type, NULL, false);
+      lat->constant = build_fold_addr_expr (t);
     }
   else
     lat->type = IPA_BOTTOM;

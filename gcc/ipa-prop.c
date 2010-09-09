@@ -916,23 +916,27 @@ ipa_compute_jump_functions (struct cgraph_node *node,
 static tree
 ipa_get_member_ptr_load_param (tree rhs, bool use_delta)
 {
-  tree rec, fld;
+  tree rec, ref_offset, fld_offset;
   tree ptr_field;
   tree delta_field;
 
-  if (TREE_CODE (rhs) != COMPONENT_REF)
+  if (TREE_CODE (rhs) != MEM_REF)
     return NULL_TREE;
-
   rec = TREE_OPERAND (rhs, 0);
+  if (TREE_CODE (rec) != ADDR_EXPR)
+    return NULL_TREE;
+  rec = TREE_OPERAND (rec, 0);
   if (TREE_CODE (rec) != PARM_DECL
       || !type_like_member_ptr_p (TREE_TYPE (rec), &ptr_field, &delta_field))
     return NULL_TREE;
 
-  fld = TREE_OPERAND (rhs, 1);
-  if (use_delta ? (fld == delta_field) : (fld == ptr_field))
-    return rec;
+  ref_offset = TREE_OPERAND (rhs, 1);
+  if (use_delta)
+    fld_offset = byte_position (delta_field);
   else
-    return NULL_TREE;
+    fld_offset = byte_position (ptr_field);
+
+  return tree_int_cst_equal (ref_offset, fld_offset) ? rec : NULL_TREE;
 }
 
 /* If STMT looks like a statement loading a value from a member pointer formal
@@ -999,8 +1003,8 @@ ipa_note_param_call (struct cgraph_node *node, int param_index, gimple stmt,
    below, the call is on the last line:
 
      <bb 2>:
-       f$__delta_5 = f.__delta;
-       f$__pfn_24 = f.__pfn;
+       f$__delta_5 = MEM[(struct  *)&f];
+       f$__pfn_24 = MEM[(struct  *)&f + 4B];
 
      ...
 

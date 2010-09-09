@@ -968,7 +968,7 @@ EBITMAP_H = ebitmap.h sbitmap.h
 LTO_STREAMER_H = lto-streamer.h $(LINKER_PLUGIN_API_H) $(TARGET_H) \
 		$(CGRAPH_H) $(VEC_H) vecprim.h $(TREE_H) $(GIMPLE_H)
 TREE_VECTORIZER_H = tree-vectorizer.h $(TREE_DATA_REF_H)
-IPA_PROP_H = ipa-prop.h $(TREE_H) $(VEC_H) $(CGRAPH_H)
+IPA_PROP_H = ipa-prop.h $(TREE_H) $(VEC_H) $(CGRAPH_H) $(GIMPLE_H)
 GSTAB_H = gstab.h stab.def
 BITMAP_H = bitmap.h $(HASHTAB_H) statistics.h
 GCC_PLUGIN_H = gcc-plugin.h highlev-plugin-common.h $(CONFIG_H) $(SYSTEM_H) \
@@ -3143,10 +3143,10 @@ tree-ssa-ccp.o : tree-ssa-ccp.c $(TREE_FLOW_H) $(CONFIG_H) \
    tree-ssa-propagate.h value-prof.h $(FLAGS_H) $(TARGET_H) $(TOPLEV_H) $(DIAGNOSTIC_CORE_H) \
    $(DBGCNT_H) tree-pretty-print.h gimple-pretty-print.h
 tree-sra.o : tree-sra.c $(CONFIG_H) $(SYSTEM_H) coretypes.h alloc-pool.h \
-   $(TM_H) $(TREE_H) $(GIMPLE_H) $(CGRAPH_H) $(TREE_FLOW_H) $(IPA_PROP_H) \
-   $(DIAGNOSTIC_H) statistics.h $(TREE_DUMP_H) $(TIMEVAR_H) $(PARAMS_H) \
-   $(TARGET_H) $(FLAGS_H) $(EXPR_H) tree-pretty-print.h $(DBGCNT_H) \
-   $(TREE_INLINE_H) gimple-pretty-print.h
+   $(TM_H) $(TOPLEV_H) $(TREE_H) $(GIMPLE_H) $(CGRAPH_H) $(TREE_FLOW_H) \
+   $(IPA_PROP_H) $(DIAGNOSTIC_H) statistics.h $(TREE_DUMP_H) $(TIMEVAR_H) \
+   $(PARAMS_H) $(TARGET_H) $(FLAGS_H) $(EXPR_H) tree-pretty-print.h \
+   $(DBGCNT_H) $(TREE_INLINE_H) gimple-pretty-print.h
 tree-switch-conversion.o : tree-switch-conversion.c $(CONFIG_H) $(SYSTEM_H) \
     $(TREE_H) $(TM_P_H) $(TREE_FLOW_H) $(DIAGNOSTIC_H) $(TREE_INLINE_H) \
     $(TIMEVAR_H) $(TM_H) coretypes.h $(TREE_DUMP_H) $(GIMPLE_H) \
