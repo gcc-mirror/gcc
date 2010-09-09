@@ -1306,6 +1306,7 @@ package Opt is
    --  information sent to standard output, also header, copyright and summary)
 
    type Verbosity_Level_Type is (None, Low, Medium, High);
+   pragma Ordered (Verbosity_Level_Type);
    Verbosity_Level : Verbosity_Level_Type := High;
    --  GNATMAKE, GPRMAKE
    --  Modified by gnatmake or gprmake switches -v, -vl, -vm, -vh. Indicates

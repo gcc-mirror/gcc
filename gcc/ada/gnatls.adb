@@ -1362,13 +1362,11 @@ procedure Gnatls is
 
                declare
                   Src_Path_Name : constant String_Ptr :=
-                                    String_Ptr
-                                      (Get_RTS_Search_Dir
-                                        (Argv (7 .. Argv'Last), Include));
+                                    Get_RTS_Search_Dir
+                                      (Argv (7 .. Argv'Last), Include);
                   Lib_Path_Name : constant String_Ptr :=
-                                    String_Ptr
-                                      (Get_RTS_Search_Dir
-                                        (Argv (7 .. Argv'Last), Objects));
+                                    Get_RTS_Search_Dir
+                                      (Argv (7 .. Argv'Last), Objects);
 
                begin
                   if Src_Path_Name /= null

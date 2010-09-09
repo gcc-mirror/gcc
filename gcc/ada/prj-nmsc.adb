@@ -5505,7 +5505,7 @@ package body Prj.Nmsc is
             Element := Data.Tree.String_Elements.Table (Current);
             if Element.Value /= No_Name then
                Element.Value :=
-                 Name_Id (Canonical_Case_File_Name (Name_Id (Element.Value)));
+                 Name_Id (Canonical_Case_File_Name (Element.Value));
                Data.Tree.String_Elements.Table (Current) := Element;
             end if;
 
@@ -6519,7 +6519,7 @@ package body Prj.Nmsc is
 
                   if not Found then
                      Error_Msg_Name_1 := Name_Id (Source.Display_File);
-                     Error_Msg_Name_2 := Name_Id (Source.Unit.Name);
+                     Error_Msg_Name_2 := Source.Unit.Name;
                      Error_Or_Warning
                        (Data.Flags, Data.Flags.Missing_Source_Files,
                         "source file %% for unit %% not found",

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1996-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 1996-2010, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GARLIC is free software;  you can redistribute it and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1466,7 +1466,7 @@ package body System.Stream_Attributes is
          Exponent   := Long_Unsigned (E + E_Bias);
          F          := Long_Long_Float'Scaling (F, F_Size - HFS);
          Fraction_1 := Long_Long_Unsigned (Long_Long_Float'Floor (F));
-         F          := Long_Long_Float (F - Long_Long_Float (Fraction_1));
+         F          := F - Long_Long_Float (Fraction_1);
          F          := Long_Long_Float'Scaling (F, HFS);
          Fraction_2 := Long_Long_Unsigned (Long_Long_Float'Floor (F));
       end if;

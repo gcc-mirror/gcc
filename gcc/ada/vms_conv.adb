@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -314,16 +314,16 @@ package body VMS_Conv is
       loop
          declare
             Dir : constant String_Access :=
-                    String_Access (Get_Next_Dir_In_Path (Object_Dir_Name));
+                    Get_Next_Dir_In_Path (Object_Dir_Name);
          begin
             exit when Dir = null;
             Object_Dirs := Object_Dirs + 1;
             Object_Dir (Object_Dirs) :=
               new String'("-L" &
                           To_Canonical_Dir_Spec
-                          (To_Host_Dir_Spec
-                           (Normalize_Directory_Name (Dir.all).all,
-                            True).all, True).all);
+                            (To_Host_Dir_Spec
+                              (Normalize_Directory_Name (Dir.all).all,
+                               True).all, True).all);
          end;
       end loop;
 

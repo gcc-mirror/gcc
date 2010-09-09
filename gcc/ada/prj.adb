@@ -247,16 +247,10 @@ package body Prj is
             return No_File;
 
          when Makefile =>
-            return
-              File_Name_Type
-                (Extend_Name
-                   (Source_File_Name, Makefile_Dependency_Suffix));
+            return Extend_Name (Source_File_Name, Makefile_Dependency_Suffix);
 
          when ALI_File =>
-            return
-              File_Name_Type
-                (Extend_Name
-                   (Source_File_Name, ALI_Dependency_Suffix));
+            return Extend_Name (Source_File_Name, ALI_Dependency_Suffix);
       end case;
    end Dependency_Name;
 

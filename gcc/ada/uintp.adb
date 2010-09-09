@@ -2204,9 +2204,7 @@ package body Uintp is
            and then
          Int (Right) <= Int (Uint_Max_Simple_Mul)
       then
-         return
-           UI_From_Int
-             (Int (Direct_Val (Left)) * Int (Direct_Val (Right)));
+         return UI_From_Int (Direct_Val (Left) * Direct_Val (Right));
       end if;
 
       --  Otherwise we have the general case (Algorithm M in Knuth)

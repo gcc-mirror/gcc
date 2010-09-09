@@ -3222,7 +3222,7 @@ package body Sem_Type is
       Write_Str (" Index: ");
       Write_Int (Int (Interp_Map.Table (Map_Ptr).Index));
       Write_Str (" Next:  ");
-      Write_Int (Int (Interp_Map.Table (Map_Ptr).Next));
+      Write_Int (Interp_Map.Table (Map_Ptr).Next);
       Write_Eol;
    end Write_Interp_Ref;
 

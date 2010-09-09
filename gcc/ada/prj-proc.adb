@@ -346,7 +346,7 @@ package body Prj.Proc is
          Var := In_Tree.Variable_Elements.Table (V1);
          V1  := Var.Next;
 
-         --  Do not copy the value of attribute inker_Options if Restricted
+         --  Do not copy the value of attribute Linker_Options if Restricted
 
          if Restricted and then Var.Name = Snames.Name_Linker_Options then
             Var.Value.Values := Nil_String;

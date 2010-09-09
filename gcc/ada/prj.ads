@@ -820,6 +820,7 @@ package Prj is
       Equal      => "=");
 
    type Verbosity is (Default, Medium, High);
+   pragma Ordered (Verbosity);
    --  Verbosity when parsing GNAT Project Files
    --    Default is default (very quiet, if no errors).
    --    Medium is more verbose.

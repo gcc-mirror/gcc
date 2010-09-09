@@ -6391,11 +6391,40 @@ package body Sem_Res is
       R : constant Node_Id   := Right_Opnd (N);
       T : Entity_Id := Find_Unique_Type (L, R);
 
+      procedure Check_Conditional_Expression (Cond : Node_Id);
+      --  The resolution rule for conditional expressions requires that each
+      --  such must have a unique type. This means that if several dependent
+      --  expressions are of a non-null anonymous access type, and the context
+      --  does not impose an expected type (as can be the case in an equality
+      --  operation) the expression must be rejected.
+
       function Find_Unique_Access_Type return Entity_Id;
       --  In the case of allocators, make a last-ditch attempt to find a single
       --  access type with the right designated type. This is semantically
       --  dubious, and of no interest to any real code, but c48008a makes it
       --  all worthwhile.
+
+      ----------------------------------
+      -- Check_Conditional_Expression --
+      ----------------------------------
+
+      procedure Check_Conditional_Expression (Cond : Node_Id) is
+         Then_Expr : Node_Id;
+         Else_Expr : Node_Id;
+
+      begin
+         if Nkind (Cond) = N_Conditional_Expression then
+            Then_Expr := Next (First (Expressions (Cond)));
+            Else_Expr := Next (Then_Expr);
+
+            if Nkind (Then_Expr) /= N_Null
+              and then Nkind (Else_Expr) /= N_Null
+            then
+               Error_Msg_N
+                 ("cannot determine type of conditional expression", Cond);
+            end if;
+         end if;
+      end Check_Conditional_Expression;
 
       -----------------------------
       -- Find_Unique_Access_Type --
@@ -6470,6 +6499,22 @@ package body Sem_Res is
                Set_Etype (N, Any_Type);
                return;
             end if;
+
+         --  Conditional expressions must have a single type, and if the
+         --  context does not impose one the dependent expressions cannot
+         --  be anonymous access types.
+
+         elsif Ada_Version >= Ada_2012
+           and then Ekind_In (Etype (L),
+             E_Anonymous_Access_Type,
+               E_Anonymous_Access_Subprogram_Type)
+
+           and then Ekind_In (Etype (R),
+             E_Anonymous_Access_Type,
+               E_Anonymous_Access_Subprogram_Type)
+         then
+            Check_Conditional_Expression (L);
+            Check_Conditional_Expression (R);
          end if;
 
          Resolve (L, T);
