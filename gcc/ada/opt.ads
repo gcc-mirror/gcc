@@ -910,6 +910,12 @@ package Opt is
    --  GNATMAKE
    --  Set to True when an object directory is specified with option -D
 
+   One_Compilation_Per_Obj_Dir : Boolean := False;
+   --  GNATMAKE, GPRBUILD
+   --  Set to True with switch --single-compile-per-obj-dir. When True, there
+   --  cannot be simultaneous compilations with the object files in the same
+   --  object directory, if project files are used.
+
    type Operating_Mode_Type is (Check_Syntax, Check_Semantics, Generate_Code);
    Operating_Mode : Operating_Mode_Type := Generate_Code;
    --  GNAT

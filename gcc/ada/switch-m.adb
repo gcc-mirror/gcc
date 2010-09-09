@@ -655,6 +655,9 @@ package body Switch.M is
          elsif Switch_Chars = Makeutl.Unchecked_Shared_Lib_Imports then
             Opt.Unchecked_Shared_Lib_Imports := True;
 
+         elsif Switch_Chars = Makeutl.Single_Compile_Per_Obj_Dir_Switch then
+            Opt.One_Compilation_Per_Obj_Dir := True;
+
          elsif Switch_Chars (Ptr) = '-' then
             Bad_Switch (Switch_Chars);
 

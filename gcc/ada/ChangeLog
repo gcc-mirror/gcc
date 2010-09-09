@@ -1,5 +1,24 @@
 2010-09-09  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_util.adb (Same_Object): include formal parameters.
+
+2010-09-09  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Queue): New package implementing a new impementation of the
+	queue, taking into account the new switch --single-compile-per-obj-dir.
+	* makeutl.ads (Single_Compile_Per_Obj_Dir_Switch): New constant String
+	for gnatmake and gprbuild new switch --single-compile-per-obj-dir.
+	* opt.ads (One_Compilation_Per_Obj_Dir): New Boolean flag, defauted to
+	False.
+	* switch-m.adb (Scan_Make_Switches): Take into account new gnatmake
+	switch --single-compile-per-obj-dir.
+	* vms_data.ads: Add qualifier SINGLE_COMPILE_PER_OBJ_DIR for gnatmake
+	switch --single-compile-per-obj-dir.
+	* gnat_ugn.texi: Add documentation for new gnatmake switch
+	--single-compile-per-obj-dir.
+
+2010-09-09  Ed Schonberg  <schonberg@adacore.com>
+
 	* einfo.adb, einfo.ads: Clarify use of Corresponding_Protected_Entry.
 
 2010-09-09  Javier Miranda  <miranda@adacore.com>

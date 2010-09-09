@@ -71,6 +71,7 @@ with Ada.Command_Line;          use Ada.Command_Line;
 
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.Dynamic_HTables;      use GNAT.Dynamic_HTables;
+with GNAT.HTable;
 with GNAT.Case_Util;            use GNAT.Case_Util;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
@@ -135,49 +136,6 @@ package body Make is
    --  complex, for example in main.1.ada, the termination in this name is
    --  ".1.ada" and in main_.ada the termination is "_.ada".
 
-   -------------------------------------
-   -- Queue (Q) Manipulation Routines --
-   -------------------------------------
-
-   --  The Q is used in Compile_Sources below. Its implementation uses the GNAT
-   --  generic package Table (basically an extensible array). Q_Front points to
-   --  the first valid element in the Q, whereas Q.First is the first element
-   --  ever enqueued, while Q.Last - 1 is the last element in the Q.
-   --
-   --        +---+--------------+---+---+---+-----------+---+--------
-   --    Q   |   |  ........    |   |   |   | .......   |   |
-   --        +---+--------------+---+---+---+-----------+---+--------
-   --          ^                  ^                       ^
-   --       Q.First             Q_Front               Q.Last-1
-   --
-   --  The elements comprised between Q.First and Q_Front-1 are the elements
-   --  that have been enqueued and then dequeued, while the elements between
-   --  Q_Front and Q.Last-1 are the elements currently in the Q. When the Q
-   --  is initialized Q_Front = Q.First = Q.Last. After Compile_Sources has
-   --  terminated its execution, Q_Front = Q.Last and the elements contained
-   --  between Q.First and Q.Last-1 are those that were explored and thus
-   --  marked by Compile_Sources. Whenever the Q is reinitialized, the elements
-   --  between Q.First and Q.Last-1 are unmarked.
-
-   procedure Init_Q;
-   --  Must be called to (re)initialize the Q
-
-   procedure Insert_Q
-     (Source_File : File_Name_Type;
-      Source_Unit : Unit_Name_Type := No_Unit_Name;
-      Index       : Int            := 0);
-   --  Inserts Source_File at the end of Q. Provide Source_Unit when possible
-   --  for external use (gnatdist). Provide index for multi-unit sources.
-
-   function Empty_Q return Boolean;
-   --  Returns True if Q is empty
-
-   procedure Extract_From_Q
-     (Source_File  : out File_Name_Type;
-      Source_Unit  : out Unit_Name_Type;
-      Source_Index : out Int);
-   --  Extracts the first element from the Q
-
    procedure Insert_Project_Sources
      (The_Project  : Project_Id;
       All_Projects : Boolean;
@@ -189,12 +147,6 @@ package body Make is
    --  are concerned; otherwise, only sources of The_Project are concerned,
    --  including, if The_Project is an extending project, sources inherited
    --  from projects being extended.
-
-   First_Q_Initialization : Boolean := True;
-   --  Will be set to false after Init_Q has been called once
-
-   Q_Front : Natural;
-   --  Points to the first valid element in the Q
 
    Unique_Compile : Boolean := False;
    --  Set to True if -u or -U or a project file with no main is used
@@ -216,24 +168,55 @@ package body Make is
    N_M_Switch : Natural := 0;
    --  Used to count -mxxx switches that can affect multilib
 
-   type Q_Record is record
-      File  : File_Name_Type;
-      Unit  : Unit_Name_Type;
-      Index : Int;
-   end record;
-   --  File is the name of the file to compile. Unit is for gnatdist
-   --  use in order to easily get the unit name of a file to compile
-   --  when its name is krunched or declared in gnat.adc. Index, when not 0,
-   --  is the index of the unit in a multi-unit source.
+   package Queue is
+      ---------------------------------
+      -- Queue Manipulation Routines --
+      ---------------------------------
 
-   package Q is new Table.Table (
-     Table_Component_Type => Q_Record,
-     Table_Index_Type     => Natural,
-     Table_Low_Bound      => 0,
-     Table_Initial        => 4000,
-     Table_Increment      => 100,
-     Table_Name           => "Make.Q");
-   --  This is the actual Q
+      procedure Initialize (Queue_Per_Obj_Dir : Boolean);
+      --  Initialize the queue
+
+      function Is_Empty return Boolean;
+      --  Returns True if the queue is empty
+
+      function Is_Virtually_Empty return Boolean;
+      --  Returns True if the queue is empty or if all object directories are
+      --  busy.
+
+      procedure Insert
+        (Source_File_Name : File_Name_Type;
+         Project          : Project_Id;
+         Source_Unit      : Unit_Name_Type := No_Unit_Name;
+         Index            : Int            := 0);
+      --  Insert source in the queue
+
+      procedure Extract
+        (Source_File_Name  : out File_Name_Type;
+         Source_Unit       : out Unit_Name_Type;
+         Source_Index      : out Int);
+      --  Get the first source that can be compiled from the queue. If no
+      --  source may be compiled, return No_File/No_Source.
+
+      function Size return Natural;
+      --  Return the total size of the queue, including the sources already
+      --  extracted.
+
+      function Processed return Natural;
+      --  Return the number of source in the queue that have aready been
+      --  processed.
+
+      procedure Set_Obj_Dir_Busy (Obj_Dir : Path_Name_Type);
+      --  Indicate that this object directory is busy, so that when
+      --  One_Compilation_Per_Obj_Dir is True no other compilation occurs in
+      --  this object directory.
+
+      procedure Set_Obj_Dir_Free (Obj_Dir : Path_Name_Type);
+      --  Indicate that there is no compilation for this object directory
+
+      function Element (Rank : Positive) return File_Name_Type;
+      --  Get the file name for element of index Rank in the queue
+
+   end Queue;
 
    --  The 3 following packages are used to store gcc, gnatbind and gnatlink
    --  switches found in the project files.
@@ -2503,8 +2486,13 @@ package body Make is
       --  library file name. Process_Id of the process spawned to execute the
       --  compilation.
 
+      type ALI_Project is record
+         ALI      : ALI_Id;
+         Project : Project_Id;
+      end record;
+
       package Good_ALI is new Table.Table (
-        Table_Component_Type => ALI_Id,
+        Table_Component_Type => ALI_Project,
         Table_Index_Type     => Natural,
         Table_Low_Bound      => 1,
         Table_Initial        => 50,
@@ -2519,7 +2507,7 @@ package body Make is
       --  Get a mapping file name. If there is one to be reused, reuse it.
       --  Otherwise, create a new mapping file.
 
-      function Get_Next_Good_ALI return ALI_Id;
+      function Get_Next_Good_ALI return ALI_Project;
       --  Returns the next good ALI_Id record
 
       procedure Record_Failure
@@ -2530,7 +2518,7 @@ package body Make is
       --  If Found is False then the compilation of File failed because we
       --  could not find it. Records also Unit when possible.
 
-      procedure Record_Good_ALI (A : ALI_Id);
+      procedure Record_Good_ALI (A : ALI_Id; Project : Project_Id);
       --  Records in the previous set the Id of an ALI file
 
       function Must_Exit_Because_Of_Error return Boolean;
@@ -2586,6 +2574,10 @@ package body Make is
             Project          => Arguments_Project);
 
          Outstanding_Compiles := OC1;
+
+         if Arguments_Project /= No_Project then
+            Queue.Set_Obj_Dir_Busy (Arguments_Project.Object_Directory.Name);
+         end if;
       end Add_Process;
 
       --------------------
@@ -2623,6 +2615,10 @@ package body Make is
                if Pid = Running_Compile (J).Pid then
                   Data    := Running_Compile (J);
                   Project := Running_Compile (J).Project;
+
+                  if Project /= No_Project then
+                     Queue.Set_Obj_Dir_Free (Project.Object_Directory.Name);
+                  end if;
 
                   --  If a mapping file was used by this compilation, get its
                   --  file name for reuse by a subsequent compilation.
@@ -2704,7 +2700,7 @@ package body Make is
                      end if;
 
                   else
-                     Insert_Q (Sfile, Index => 0);
+                     Queue.Insert (Sfile, Project => No_Project, Index => 0);
                      Mark (Sfile, Index => 0);
                   end if;
                end if;
@@ -3013,6 +3009,7 @@ package body Make is
       -------------------------------
 
       procedure Fill_Queue_From_ALI_Files is
+         ALI_P        : ALI_Project;
          ALI          : ALI_Id;
          Source_Index : Int;
          Sfile        : File_Name_Type;
@@ -3022,8 +3019,9 @@ package body Make is
 
       begin
          while Good_ALI_Present loop
-            ALI          := Get_Next_Good_ALI;
-            Source_Index := Unit_Index_Of (ALIs.Table (ALI).Afile);
+            ALI_P        := Get_Next_Good_ALI;
+            ALI          := ALI_P.ALI;
+            Source_Index := Unit_Index_Of (ALIs.Table (ALI_P.ALI).Afile);
 
             --  If we are processing the library file corresponding to the
             --  main source file check if this source can be a main unit.
@@ -3109,8 +3107,11 @@ package body Make is
                            Debug_Msg ("Skipping internal file:", Sfile);
 
                         else
-                           Insert_Q
-                             (Sfile, Withs.Table (K).Uname, Source_Index);
+                           Queue.Insert
+                             (Sfile,
+                              ALI_P.Project,
+                              Withs.Table (K).Uname,
+                              Source_Index);
                            Mark (Sfile, Source_Index);
                         end if;
                      end if;
@@ -3156,14 +3157,14 @@ package body Make is
       -- Get_Next_Good_ALI --
       -----------------------
 
-      function Get_Next_Good_ALI return ALI_Id is
-         ALI : ALI_Id;
+      function Get_Next_Good_ALI return ALI_Project is
+         ALIP : ALI_Project;
 
       begin
          pragma Assert (Good_ALI_Present);
-         ALI := Good_ALI.Table (Good_ALI.Last);
+         ALIP := Good_ALI.Table (Good_ALI.Last);
          Good_ALI.Decrement_Last;
-         return ALI;
+         return ALIP;
       end Get_Next_Good_ALI;
 
       ----------------------
@@ -3217,10 +3218,10 @@ package body Make is
       -- Record_Good_ALI --
       ---------------------
 
-      procedure Record_Good_ALI (A : ALI_Id) is
+      procedure Record_Good_ALI (A : ALI_Id; Project : Project_Id) is
       begin
          Good_ALI.Increment_Last;
-         Good_ALI.Table (Good_ALI.Last) := A;
+         Good_ALI.Table (Good_ALI.Last) := (A, Project);
       end Record_Good_ALI;
 
       -------------------------------
@@ -3256,8 +3257,10 @@ package body Make is
          --  The object file
 
       begin
-         if not Empty_Q and then Outstanding_Compiles < Max_Process then
-            Extract_From_Q (Source_File, Source_Unit, Source_Index);
+         if not Queue.Is_Virtually_Empty and then
+            Outstanding_Compiles < Max_Process
+         then
+            Queue.Extract (Source_File, Source_Unit, Source_Index);
 
             Osint.Full_Source_Name
               (Source_File,
@@ -3387,7 +3390,7 @@ package body Make is
 
                      --  The ALI file is up-to-date; record its Id
 
-                     Record_Good_ALI (ALI);
+                     Record_Good_ALI (ALI, Arguments_Project);
 
                      --  Record the time stamp of the most recent object
                      --  file as long as no (re)compilations are needed.
@@ -3542,7 +3545,7 @@ package body Make is
 
       begin
          if Outstanding_Compiles = Max_Process
-           or else (Empty_Q
+           or else (Queue.Is_Virtually_Empty
                      and then not Good_ALI_Present
                      and then Outstanding_Compiles > 0)
          then
@@ -3603,7 +3606,7 @@ package body Make is
                      end if;
 
                   else
-                     Record_Good_ALI (ALI);
+                     Record_Good_ALI (ALI, Data.Project);
                   end if;
 
                   Free (Text);
@@ -3639,10 +3642,6 @@ package body Make is
 
       Good_ALI.Init;
 
-      if First_Q_Initialization then
-         Init_Q;
-      end if;
-
       if Initialize_ALI_Data then
          Initialize_ALI;
          Initialize_ALI_Source;
@@ -3662,7 +3661,7 @@ package body Make is
       --  compilations if -jnnn is used.
 
       if not Is_Marked (Main_Source, Main_Index) then
-         Insert_Q (Main_Source, Index => Main_Index);
+         Queue.Insert (Main_Source, Main_Project, Index => Main_Index);
          Mark (Main_Source, Main_Index);
       end if;
 
@@ -3674,7 +3673,8 @@ package body Make is
       --  Keep looping until there is no more work to do (the Q is empty)
       --  and all the outstanding compilations have terminated.
 
-      Make_Loop : while not Empty_Q or else Outstanding_Compiles > 0 loop
+      Make_Loop :
+      while not Queue.Is_Empty or else Outstanding_Compiles > 0 loop
          exit Make_Loop when Must_Exit_Because_Of_Error;
          exit Make_Loop when Start_Compile_If_Possible (Args);
 
@@ -3687,11 +3687,11 @@ package body Make is
 
          if Display_Compilation_Progress then
             Write_Str ("completed ");
-            Write_Int (Int (Q_Front));
+            Write_Int (Int (Queue.Processed));
             Write_Str (" out of ");
-            Write_Int (Int (Q.Last));
+            Write_Int (Int (Queue.Size));
             Write_Str (" (");
-            Write_Int (Int ((Q_Front * 100) / (Q.Last - Q.First)));
+            Write_Int (Int ((Queue.Processed * 100) / Queue.Size));
             Write_Str ("%)...");
             Write_Eol;
          end if;
@@ -4052,29 +4052,6 @@ package body Make is
       Display_Executed_Programs := Display;
    end Display_Commands;
 
-   -------------
-   -- Empty_Q --
-   -------------
-
-   function Empty_Q return Boolean is
-   begin
-      if Debug.Debug_Flag_P then
-         Write_Str ("   Q := [");
-
-         for J in Q_Front .. Q.Last - 1 loop
-            Write_Str (" ");
-            Write_Name (Q.Table (J).File);
-            Write_Eol;
-            Write_Str ("         ");
-         end loop;
-
-         Write_Str ("]");
-         Write_Eol;
-      end if;
-
-      return Q_Front >= Q.Last;
-   end Empty_Q;
-
    --------------------------
    -- Enter_Into_Obsoleted --
    --------------------------
@@ -4105,39 +4082,6 @@ package body Make is
       Debug_Msg ("New entry in Obsoleted table:", F2);
       Obsoleted.Set (F2, True);
    end Enter_Into_Obsoleted;
-
-   --------------------
-   -- Extract_From_Q --
-   --------------------
-
-   procedure Extract_From_Q
-     (Source_File  : out File_Name_Type;
-      Source_Unit  : out Unit_Name_Type;
-      Source_Index : out Int)
-   is
-      File  : constant File_Name_Type := Q.Table (Q_Front).File;
-      Unit  : constant Unit_Name_Type := Q.Table (Q_Front).Unit;
-      Index : constant Int            := Q.Table (Q_Front).Index;
-
-   begin
-      if Debug.Debug_Flag_Q then
-         Write_Str ("   Q := Q - [ ");
-         Write_Name (File);
-
-         if Index /= 0 then
-            Write_Str (", ");
-            Write_Int (Index);
-         end if;
-
-         Write_Str (" ]");
-         Write_Eol;
-      end if;
-
-      Q_Front := Q_Front + 1;
-      Source_File  := File;
-      Source_Unit  := Unit;
-      Source_Index := Index;
-   end Extract_From_Q;
 
    --------------
    -- Gnatmake --
@@ -4575,10 +4519,10 @@ package body Make is
 
             Add_Switch ("-n", Binder, And_Save => True);
 
-            for J in Q.First .. Q.Last - 1 loop
+            for J in 1 .. Queue.Size loop
                Add_Switch
                  (Get_Name_String
-                    (Lib_File_Name (Q.Table (J).File)),
+                    (Lib_File_Name (Queue.Element (J))),
                   Binder, And_Save => True);
             end loop;
          end if;
@@ -5595,6 +5539,10 @@ package body Make is
                   Args (J) := Gcc_Switches.Table (J);
                end loop;
 
+               Queue.Initialize
+                       (Main_Project /= No_Project and then
+                        One_Compilation_Per_Obj_Dir);
+
                --  Now we invoke Compile_Sources for the current main
 
                Compile_Sources
@@ -5618,10 +5566,6 @@ package body Make is
                   Write_Str ("End of compilation");
                   Write_Eol;
                end if;
-
-               --  Make sure the queue will be reinitialized for the next round
-
-               First_Q_Initialization := True;
 
                Total_Compilation_Failures :=
                  Total_Compilation_Failures + Compilation_Failures;
@@ -6688,17 +6632,6 @@ package body Make is
       File_Index := Data.Last_Mapping_File_Names;
    end Init_Mapping_File;
 
-   ------------
-   -- Init_Q --
-   ------------
-
-   procedure Init_Q is
-   begin
-      First_Q_Initialization := False;
-      Q_Front := Q.First;
-      Q.Set_Last (Q.First);
-   end Init_Q;
-
    ----------------
    -- Initialize --
    ----------------
@@ -6969,6 +6902,7 @@ package body Make is
       Unit     : Unit_Index;
       Sfile    : File_Name_Type;
       Index    : Int;
+      Project  : Project_Id;
 
       Extending : constant Boolean := The_Project.Extends /= No_Project;
 
@@ -7010,8 +6944,9 @@ package body Make is
 
       Unit := Units_Htable.Get_First (Project_Tree.Units_HT);
       while Unit /= null loop
-         Sfile := No_File;
-         Index := 0;
+         Sfile   := No_File;
+         Index   := 0;
+         Project := No_Project;
 
          --  If there is a source for the body, and the body has not been
          --  locally removed.
@@ -7022,6 +6957,7 @@ package body Make is
             --  And it is a source for the specified project
 
             if Check_Project (Unit.File_Names (Impl).Project) then
+               Project := Unit.File_Names (Impl).Project;
 
                --  If we don't have a spec, we cannot consider the source
                --  if it is a subunit.
@@ -7072,38 +7008,36 @@ package body Make is
 
             Sfile := Unit.File_Names (Spec).Display_File;
             Index := Unit.File_Names (Spec).Index;
+            Project := Unit.File_Names (Spec).Project;
          end if;
 
-         --  If Put_In_Q is True, we insert into the Q
+         --  For the first source inserted into the Q, we need to initialize
+         --  the Q, but not for the subsequent sources.
 
-         if Put_In_Q then
+         Queue.Initialize
+                 (Main_Project /= No_Project and then
+                  One_Compilation_Per_Obj_Dir);
 
-            --  For the first source inserted into the Q, we need to initialize
-            --  the Q, but not for the subsequent sources.
+         --  And of course, only insert in the Q if the source is not marked
 
-            if First_Q_Initialization then
-               Init_Q;
+         if Sfile /= No_File and then not Is_Marked (Sfile, Index) then
+            if Verbose_Mode then
+               Write_Str ("Adding """);
+               Write_Str (Get_Name_String (Sfile));
+               Write_Line (""" to the queue");
             end if;
 
-            --  And of course, only insert in the Q if the source is not marked
+            Queue.Insert (Sfile, Project, Index => Index);
+            Mark (Sfile, Index);
+         end if;
 
-            if Sfile /= No_File and then not Is_Marked (Sfile, Index) then
-               if Verbose_Mode then
-                  Write_Str ("Adding """);
-                  Write_Str (Get_Name_String (Sfile));
-                  Write_Line (""" to the queue");
-               end if;
-
-               Insert_Q (Sfile, Index => Index);
-               Mark (Sfile, Index);
-            end if;
-
-         elsif Sfile /= No_File then
+         if not Put_In_Q and then Sfile /= No_File then
 
             --  If Put_In_Q is False, we add the source as if it were specified
             --  on the command line, and we set Put_In_Q to True, so that the
-            --  following sources will be put directly in the queue. This will
-            --  allow parallel compilation processes if -jx switch is used.
+            --  following sources will only be put in the queue. The source is
+            --  aready in the Q, but we need at least one fake main to call
+            --  Compile_Sources.
 
             if Verbose_Mode then
                Write_Str ("Adding """);
@@ -7113,48 +7047,11 @@ package body Make is
 
             Osint.Add_File (Get_Name_String (Sfile), Index);
             Put_In_Q := True;
-
-            --  As we may look into the Q later, ensure the Q has been
-            --  initialized to avoid errors.
-
-            if First_Q_Initialization then
-               Init_Q;
-            end if;
          end if;
 
          Unit := Units_Htable.Get_Next (Project_Tree.Units_HT);
       end loop;
    end Insert_Project_Sources;
-
-   --------------
-   -- Insert_Q --
-   --------------
-
-   procedure Insert_Q
-     (Source_File : File_Name_Type;
-      Source_Unit : Unit_Name_Type := No_Unit_Name;
-      Index       : Int            := 0)
-   is
-   begin
-      if Debug.Debug_Flag_Q then
-         Write_Str ("   Q := Q + [ ");
-         Write_Name (Source_File);
-
-         if Index /= 0 then
-            Write_Str (", ");
-            Write_Int (Index);
-         end if;
-
-         Write_Str (" ] ");
-         Write_Eol;
-      end if;
-
-      Q.Table (Q.Last) :=
-        (File  => Source_File,
-         Unit  => Source_Unit,
-         Index => Index);
-      Q.Increment_Last;
-   end Insert_Q;
 
    ---------------------
    -- Is_In_Obsoleted --
@@ -7567,6 +7464,290 @@ package body Make is
       Scan_Make_Arg
         (Project_Node_Tree, "--RTS=" & Line (1 .. N_Read), And_Save => True);
    end Process_Multilib;
+
+   -----------
+   -- Queue --
+   -----------
+
+   package body Queue is
+
+      type Q_Record is record
+         File      : File_Name_Type;
+         Unit      : Unit_Name_Type;
+         Index     : Int;
+         Project   : Project_Id;
+         Processed : Boolean;
+      end record;
+      --  File is the name of the file to compile. Unit is for gnatdist use in
+      --  order to easily get the unit name of a file to compile when its name
+      --  is krunched or declared in gnat.adc. Index, when not 0, is the index
+      --  of the unit in a multi-unit source.
+
+      package Q is new Table.Table
+        (Table_Component_Type => Q_Record,
+         Table_Index_Type     => Positive,
+         Table_Low_Bound      => 1,
+         Table_Initial        => 4000,
+         Table_Increment      => 100,
+         Table_Name           => "Make.Queue.Q");
+      --  This is the actual Q
+
+      package Busy_Obj_Dirs is new GNAT.HTable.Simple_HTable
+        (Header_Num => Prj.Header_Num,
+         Element    => Boolean,
+         No_Element => False,
+         Key        => Path_Name_Type,
+         Hash       => Hash,
+         Equal      => "=");
+
+      Q_First : Natural := 1;
+      --  Points to the first valid element in the queue
+
+      Q_Processed           : Natural := 0;
+      One_Queue_Per_Obj_Dir : Boolean := False;
+      Q_Initialized         : Boolean := False;
+
+      -------------
+      -- Element --
+      -------------
+
+      function Element (Rank : Positive) return File_Name_Type is
+      begin
+         if Rank <= Q.Last then
+            return Q.Table (Rank).File;
+         else
+            return No_File;
+         end if;
+      end Element;
+
+      -------------
+      -- Extract --
+      -------------
+
+      --  This body needs commenting ???
+
+      procedure Extract
+        (Source_File_Name : out File_Name_Type;
+         Source_Unit      : out Unit_Name_Type;
+         Source_Index     : out Int)
+      is
+         Found : Boolean := False;
+
+      begin
+         if One_Queue_Per_Obj_Dir then
+            for J in Q_First .. Q.Last loop
+               if not Q.Table (J).Processed
+                 and then (Q.Table (J).Project = No_Project
+                            or else not
+                              Busy_Obj_Dirs.Get
+                                (Q.Table (J).Project.Object_Directory.Name))
+               then
+                  Found := True;
+                  Source_File_Name := Q.Table (J).File;
+                  Source_Unit      := Q.Table (J).Unit;
+                  Source_Index     := Q.Table (J).Index;
+                  Q.Table (J).Processed := True;
+
+                  if J = Q_First then
+                     while Q_First <= Q.Last
+                       and then Q.Table (Q_First).Processed
+                     loop
+                        Q_First := Q_First + 1;
+                     end loop;
+                  end if;
+
+                  exit;
+               end if;
+            end loop;
+
+         elsif Q_First <= Q.Last then
+            Source_File_Name := Q.Table (Q_First).File;
+            Source_Unit      := Q.Table (Q_First).Unit;
+            Source_Index     := Q.Table (Q_First).Index;
+            Q.Table (Q_First).Processed := True;
+            Q_First := Q_First + 1;
+            Found := True;
+         end if;
+
+         if Found then
+            Q_Processed := Q_Processed + 1;
+         else
+            Source_File_Name := No_File;
+            Source_Unit      := No_Unit_Name;
+            Source_Index     := 0;
+         end if;
+
+         if Found and then Debug.Debug_Flag_Q then
+            Write_Str ("   Q := Q - [ ");
+            Write_Name (Source_File_Name);
+
+            if Source_Index /= 0 then
+               Write_Str (", ");
+               Write_Int (Source_Index);
+            end if;
+
+            Write_Str (" ]");
+            Write_Eol;
+
+            Write_Str ("   Q_First =");
+            Write_Int (Int (Q_First));
+            Write_Eol;
+
+            Write_Str ("   Q.Last =");
+            Write_Int (Int (Q.Last));
+            Write_Eol;
+         end if;
+      end Extract;
+
+      ----------------
+      -- Initialize --
+      ----------------
+
+      procedure Initialize (Queue_Per_Obj_Dir : Boolean) is
+      begin
+         if not Q_Initialized then
+            One_Queue_Per_Obj_Dir := Queue_Per_Obj_Dir;
+            Q.Init;
+            Q_Initialized := True;
+            Q_Processed   := 0;
+            Q_First       := 1;
+         end if;
+      end Initialize;
+
+      ------------
+      -- Insert --
+      ------------
+
+      --  This body needs commenting ???
+
+      procedure Insert
+        (Source_File_Name : File_Name_Type;
+         Project          : Project_Id;
+         Source_Unit      : Unit_Name_Type := No_Unit_Name;
+         Index            : Int            := 0)
+      is
+      begin
+         Q.Append
+           ((File      => Source_File_Name,
+             Project   => Project,
+             Unit      => Source_Unit,
+             Index     => Index,
+             Processed => False));
+
+         if Debug.Debug_Flag_Q then
+            Write_Str ("   Q := Q + [ ");
+            Write_Name (Source_File_Name);
+
+            if Index /= 0 then
+               Write_Str (", ");
+               Write_Int (Index);
+            end if;
+
+            Write_Str (" ] ");
+            Write_Eol;
+
+            Write_Str ("   Q_First =");
+            Write_Int (Int (Q_First));
+            Write_Eol;
+
+            Write_Str ("   Q.Last =");
+            Write_Int (Int (Q.Last));
+            Write_Eol;
+         end if;
+      end Insert;
+
+      --------------
+      -- Is_Empty --
+      --------------
+
+      function Is_Empty return Boolean is
+      begin
+         if Debug.Debug_Flag_P then
+            Write_Str ("   Q := [");
+
+            for J in Q_First .. Q.Last loop
+               if not Q.Table (J).Processed then
+                  Write_Str (" ");
+                  Write_Name (Q.Table (J).File);
+                  Write_Eol;
+                  Write_Str ("         ");
+               end if;
+            end loop;
+
+            Write_Str ("]");
+            Write_Eol;
+         end if;
+
+         return Q_First > Q.Last;
+      end Is_Empty;
+
+      ------------------------
+      -- Is_Virtually_Empty --
+      ------------------------
+
+      function Is_Virtually_Empty return Boolean is
+      begin
+         if One_Queue_Per_Obj_Dir then
+            for J in Q_First .. Q.Last loop
+               if not Q.Table (J).Processed
+                 and then
+                   (Q.Table (J).Project = No_Project
+                     or else not
+                       Busy_Obj_Dirs.Get
+                         (Q.Table (J).Project.Object_Directory.Name))
+               then
+                  return False;
+               end if;
+            end loop;
+
+            return True;
+
+         else
+            return Is_Empty;
+         end if;
+      end Is_Virtually_Empty;
+
+      ---------------
+      -- Processed --
+      ---------------
+
+      function Processed return Natural is
+      begin
+         return Q_Processed;
+      end Processed;
+
+      ----------------------
+      -- Set_Obj_Dir_Busy --
+      ----------------------
+
+      procedure Set_Obj_Dir_Busy (Obj_Dir : Path_Name_Type) is
+      begin
+         if One_Queue_Per_Obj_Dir then
+            Busy_Obj_Dirs.Set (Obj_Dir, True);
+         end if;
+      end Set_Obj_Dir_Busy;
+
+      ----------------------
+      -- Set_Obj_Dir_Free --
+      ----------------------
+
+      procedure Set_Obj_Dir_Free (Obj_Dir : Path_Name_Type) is
+      begin
+         if One_Queue_Per_Obj_Dir then
+            Busy_Obj_Dirs.Set (Obj_Dir, False);
+         end if;
+      end Set_Obj_Dir_Free;
+
+      ----------
+      -- Size --
+      ----------
+
+      function Size return Natural is
+      begin
+         return Q.Last;
+      end Size;
+
+   end Queue;
 
    -----------------------------
    -- Recursive_Compute_Depth --
