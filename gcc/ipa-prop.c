@@ -2153,40 +2153,77 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 	}
       else if (!adj->remove_param)
 	{
-	  tree expr, orig_expr;
-	  bool allow_ptr, repl_found;
+	  tree expr, base, off;
+	  location_t loc;
 
-	  orig_expr = expr = gimple_call_arg (stmt, adj->base_index);
-	  if (TREE_CODE (expr) == ADDR_EXPR)
-	    {
-	      allow_ptr = false;
-	      expr = TREE_OPERAND (expr, 0);
-	    }
-	  else
-	    allow_ptr = true;
+	  /* We create a new parameter out of the value of the old one, we can
+	     do the following kind of transformations:
 
-	  repl_found = build_ref_for_offset (&expr, TREE_TYPE (expr),
-					     adj->offset, adj->type,
-					     allow_ptr);
-	  if (repl_found)
-	    {
-	      if (adj->by_ref)
-		expr = build_fold_addr_expr (expr);
-	    }
+	     - A scalar passed by reference is converted to a scalar passed by
+               value.  (adj->by_ref is false and the type of the original
+               actual argument is a pointer to a scalar).
+
+             - A part of an aggregate is passed instead of the whole aggregate.
+               The part can be passed either by value or by reference, this is
+               determined by value of adj->by_ref.  Moreover, the code below
+               handles both situations when the original aggregate is passed by
+               value (its type is not a pointer) and when it is passed by
+               reference (it is a pointer to an aggregate).
+
+	     When the new argument is passed by reference (adj->by_ref is true)
+	     it must be a part of an aggregate and therefore we form it by
+	     simply taking the address of a reference inside the original
+	     aggregate.  */
+
+	  gcc_checking_assert (adj->offset % BITS_PER_UNIT == 0);
+	  base = gimple_call_arg (stmt, adj->base_index);
+	  loc = EXPR_LOCATION (base);
+
+	  if (TREE_CODE (base) == ADDR_EXPR
+	      && DECL_P (TREE_OPERAND (base, 0)))
+	    off = build_int_cst (reference_alias_ptr_type (base),
+				 adj->offset / BITS_PER_UNIT);
+	  else if (TREE_CODE (base) != ADDR_EXPR
+		   && POINTER_TYPE_P (TREE_TYPE (base)))
+	    off = build_int_cst (TREE_TYPE (base), adj->offset / BITS_PER_UNIT);
 	  else
 	    {
-	      tree ptrtype = build_pointer_type (adj->type);
-	      expr = orig_expr;
-	      if (!POINTER_TYPE_P (TREE_TYPE (expr)))
-		expr = build_fold_addr_expr (expr);
-	      if (!useless_type_conversion_p (ptrtype, TREE_TYPE (expr)))
-		expr = fold_convert (ptrtype, expr);
-	      expr = fold_build2 (POINTER_PLUS_EXPR, ptrtype, expr,
-				  build_int_cst (sizetype,
-						 adj->offset / BITS_PER_UNIT));
-	      if (!adj->by_ref)
-		expr = fold_build1 (INDIRECT_REF, adj->type, expr);
+	      HOST_WIDE_INT base_offset;
+	      tree prev_base;
+
+	      if (TREE_CODE (base) == ADDR_EXPR)
+		base = TREE_OPERAND (base, 0);
+	      prev_base = base;
+	      base = get_addr_base_and_unit_offset (base, &base_offset);
+	      /* Aggregate arguments can have non-invariant addresses.  */
+	      if (!base)
+		{
+		  base = build_fold_addr_expr (prev_base);
+		  off = build_int_cst (reference_alias_ptr_type (prev_base),
+				       adj->offset / BITS_PER_UNIT);
+		}
+	      else if (TREE_CODE (base) == MEM_REF)
+		{
+		  off = build_int_cst (TREE_TYPE (TREE_OPERAND (base,1)),
+				       base_offset
+				       + adj->offset / BITS_PER_UNIT);
+		  off = int_const_binop (PLUS_EXPR, TREE_OPERAND (base, 1),
+					 off, 0);
+		  base = TREE_OPERAND (base, 0);
+		}
+	      else
+		{
+		  off = build_int_cst (reference_alias_ptr_type (base),
+				       base_offset
+				       + adj->offset / BITS_PER_UNIT);
+		  base = build_fold_addr_expr (base);
+		}
 	    }
+
+	  expr = fold_build2_loc (loc, MEM_REF, adj->type, base, off);
+	  if (adj->by_ref)
+	    expr = build_fold_addr_expr (expr);
+
 	  expr = force_gimple_operand_gsi (&gsi, expr,
 					   adj->by_ref
 					   || is_gimple_reg_type (adj->type),
