@@ -533,7 +533,10 @@ print_rtx (const_rtx in_rtx)
 
       case 't':
 #ifndef GENERATOR_FILE
-	dump_addr (outfile, " ", XTREE (in_rtx, i));
+	if (i == 0 && GET_CODE (in_rtx) == DEBUG_IMPLICIT_PTR)
+	  print_mem_expr (outfile, DEBUG_IMPLICIT_PTR_DECL (in_rtx));
+	else
+	  dump_addr (outfile, " ", XTREE (in_rtx, i));
 #endif
 	break;
 

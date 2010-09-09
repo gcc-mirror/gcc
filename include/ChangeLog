@@ -1,3 +1,7 @@
+2010-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2.h (DW_OP_GNU_implicit_pointer): New.
+
 2010-07-06  Ken Werner  <ken.werner@de.ibm.com>
 
 	* floatformat.h (floatformat_ieee_half_big): Add declaration.

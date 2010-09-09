@@ -1,3 +1,33 @@
+2010-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* rtl.def (DEBUG_IMPLICIT_PTR): New rtl code.
+	* rtl.h (DEBUG_IMPLICIT_PTR_DECL): Define.
+	* rtl.c (rtx_equal_p_cb, rtx_equal_p): Handle DEBUG_IMPLICIT_PTR.
+	* print-rtl.c (print_rtx): Likewise.
+	* cselib.c (rtx_equal_for_cselib_p, cselib_hash_rtx): Likewise.
+	* cfgexpand.c (expand_debug_expr): Generate DEBUG_IMPLICIT_PTR
+	for ADDR_EXPR with non-addressable object.
+	* dwarf2out.c (enum dw_val_class): Add dw_val_class_decl_ref.
+	(struct dw_val_struct): Add v.val_decl_ref.
+	(dwarf_stack_op_name, output_loc_operands, output_loc_operands_raw):
+	Handle DW_OP_GNU_implicit_pointer.
+	(size_of_loc_descr): Likewise.  Fix up DW_OP_call_ref size.
+	(get_ref_die_offset_label): New function.
+	(implicit_ptr_descriptor): New function.
+	(mem_loc_descriptor): Handle DEBUG_IMPLICIT_PTR.
+	(loc_descriptor): Likewise.
+	(gen_variable_die): Put even definitions into decl_die_table.
+	(resolve_addr_in_expr): Resolve still unresolved
+	DW_OP_GNU_implicit_pointer operands, if it can't be resolved
+	return false.
+	(dwarf2out_finish): Call output_location_lists after outputting
+	.debug_info and .debug_abbrev instead of before.
+
+2010-09-09  Roland McGrath  <roland@redhat.com>
+
+	* dwarf2out.c (DWARF_REF_SIZE): Define.
+	(size_of_loc_descr): Use it for DW_OP_call_ref.
+
 2010-09-09  Alan Modra  <amodra@gmail.com>
 
 	* doc/invoke.text: Reinstate mcmodel=medium.

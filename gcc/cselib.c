@@ -700,6 +700,10 @@ rtx_equal_for_cselib_p (rtx x, rtx y)
     case DEBUG_EXPR:
       return 0;
 
+    case DEBUG_IMPLICIT_PTR:
+      return DEBUG_IMPLICIT_PTR_DECL (x)
+	     == DEBUG_IMPLICIT_PTR_DECL (y);
+
     case LABEL_REF:
       return XEXP (x, 0) == XEXP (y, 0);
 
@@ -833,6 +837,11 @@ cselib_hash_rtx (rtx x, int create)
       hash += ((unsigned) DEBUG_EXPR << 7)
 	      + DEBUG_TEMP_UID (DEBUG_EXPR_TREE_DECL (x));
       return hash ? hash : (unsigned int) DEBUG_EXPR;
+
+    case DEBUG_IMPLICIT_PTR:
+      hash += ((unsigned) DEBUG_IMPLICIT_PTR << 7)
+	      + DECL_UID (DEBUG_IMPLICIT_PTR_DECL (x));
+      return hash ? hash : (unsigned int) DEBUG_IMPLICIT_PTR;
 
     case CONST_INT:
       hash += ((unsigned) CONST_INT << 7) + INTVAL (x);
