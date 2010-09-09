@@ -1,3 +1,9 @@
+2010-09-09  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_symref_operand_p): Return false for
+	literal pool references.
+	(s390_check_qrst_address): Update caller.
+
 2010-09-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md (ext_register_operand): Check that

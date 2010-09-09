@@ -2092,7 +2092,8 @@ s390_legitimate_address_without_index_p (rtx op)
 
 /* Return true if ADDR is of kind symbol_ref or symbol_ref + const_int
    and return these parts in SYMREF and ADDEND.  You can pass NULL in
-   SYMREF and/or ADDEND if you are not interested in these values.  */
+   SYMREF and/or ADDEND if you are not interested in these values.
+   Literal pool references are *not* considered symbol references.  */
 
 static bool
 s390_symref_operand_p (rtx addr, rtx *symref, HOST_WIDE_INT *addend)
@@ -2105,6 +2106,7 @@ s390_symref_operand_p (rtx addr, rtx *symref, HOST_WIDE_INT *addend)
   if (GET_CODE (addr) == PLUS)
     {
       if (GET_CODE (XEXP (addr, 0)) == SYMBOL_REF
+	  && !CONSTANT_POOL_ADDRESS_P (XEXP (addr, 0))
 	  && CONST_INT_P (XEXP (addr, 1)))
 	{
 	  tmpaddend = INTVAL (XEXP (addr, 1));
@@ -2114,7 +2116,7 @@ s390_symref_operand_p (rtx addr, rtx *symref, HOST_WIDE_INT *addend)
 	return false;
     }
   else
-    if (GET_CODE (addr) != SYMBOL_REF)
+    if (GET_CODE (addr) != SYMBOL_REF || CONSTANT_POOL_ADDRESS_P (addr))
 	return false;
 
   if (symref)
@@ -2140,12 +2142,14 @@ s390_check_qrst_address (char c, rtx op, bool lit_pool_ok)
   /* This check makes sure that no symbolic address (except literal
      pool references) are accepted by the R or T constraints.  */
   if (s390_symref_operand_p (op, NULL, NULL))
+    return 0;
+
+  /* Ensure literal pool references are only accepted if LIT_POOL_OK.  */
+  if (!lit_pool_ok)
     {
-      if (!lit_pool_ok)
-	return 0;
       if (!s390_decompose_address (op, &addr))
 	return 0;
-      if (!addr.literal_pool)
+      if (addr.literal_pool)
 	return 0;
       decomposed = true;
     }
