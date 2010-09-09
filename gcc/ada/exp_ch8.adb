@@ -358,7 +358,7 @@ package body Exp_Ch8 is
       end if;
 
       --  Check whether this is a renaming of a predefined equality on an
-      --  untagged record type  (AI05-0123).
+      --  untagged record type (AI05-0123).
 
       if Is_Entity_Name (Nam)
         and then Chars (Entity (Nam)) = Name_Op_Eq
@@ -370,9 +370,9 @@ package body Exp_Ch8 is
             Id  : constant Entity_Id  := Defining_Entity (N);
             Typ : constant Entity_Id  := Etype (First_Formal (Id));
 
-            Decl : Node_Id;
-            Body_Id : constant Entity_Id
-              := Make_Defining_Identifier (Sloc (N), Chars (Id));
+            Decl    : Node_Id;
+            Body_Id : constant Entity_Id :=
+                        Make_Defining_Identifier (Sloc (N), Chars (Id));
 
          begin
             if Is_Record_Type (Typ)
@@ -394,14 +394,15 @@ package body Exp_Ch8 is
                Set_Has_Delayed_Freeze (Id);
 
                Decl := Make_Subprogram_Body (Loc,
-                 Specification =>
-                   Make_Function_Specification (Loc,
-                     Defining_Unit_Name => Body_Id,
-                     Parameter_Specifications => Copy_Parameter_List (Id),
-                     Result_Definition =>
-                       New_Occurrence_Of (Standard_Boolean, Loc)),
-                 Declarations => Empty_List,
-                 Handled_Statement_Sequence => Empty);
+                         Specification              =>
+                           Make_Function_Specification (Loc,
+                             Defining_Unit_Name       => Body_Id,
+                             Parameter_Specifications =>
+                               Copy_Parameter_List (Id),
+                             Result_Definition        =>
+                               New_Occurrence_Of (Standard_Boolean, Loc)),
+                         Declarations               => Empty_List,
+                         Handled_Statement_Sequence => Empty);
 
                Set_Handled_Statement_Sequence (Decl,
                  Make_Handled_Sequence_Of_Statements (Loc,

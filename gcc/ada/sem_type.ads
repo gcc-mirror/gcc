@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -220,6 +220,14 @@ package Sem_Type is
    function Is_Ancestor (T1, T2 : Entity_Id) return Boolean;
    --  T1 is a tagged type (not class-wide). Verify that it is one of the
    --  ancestors of type T2 (which may or not be class-wide).
+
+   function Is_Progenitor
+     (Iface : Entity_Id;
+      Typ   : Entity_Id) return Boolean;
+   --  Determine whether the interface Iface is implemented by Typ. It requires
+   --  traversing the list of abstract interfaces of the type, as well as that
+   --  of the ancestor types. The predicate is used to determine when a formal
+   --  in the signature of an inherited operation must carry the derived type.
 
    function Is_Subtype_Of (T1 : Entity_Id; T2 : Entity_Id) return Boolean;
    --  Checks whether T1 is any subtype of T2 directly or indirectly. Applies
