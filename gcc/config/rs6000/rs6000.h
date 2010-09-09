@@ -297,9 +297,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 /* Code model for 64-bit linux.
    small: 16-bit toc offsets.
-   large: 32-bit toc offsets.  */
+   medium: 32-bit toc offsets, static data and code within 2G of TOC pointer.
+   large: 32-bit toc offsets, no limit on static data and code.  */
 enum rs6000_cmodel {
   CMODEL_SMALL,
+  CMODEL_MEDIUM,
   CMODEL_LARGE
 };
 

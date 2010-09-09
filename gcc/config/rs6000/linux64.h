@@ -134,7 +134,7 @@ extern enum rs6000_cmodel cmodel;
 	  else							\
 	    {							\
 	      if (!rs6000_explicit_options.cmodel)		\
-		SET_CMODEL (CMODEL_LARGE);			\
+		SET_CMODEL (CMODEL_MEDIUM);			\
 	      if (cmodel != CMODEL_SMALL)			\
 		{						\
 		  TARGET_NO_FP_IN_TOC = 0;			\
