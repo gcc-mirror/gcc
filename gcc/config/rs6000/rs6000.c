@@ -4000,6 +4000,8 @@ rs6000_handle_option (size_t code, const char *arg, int value)
     case OPT_mcmodel_:
       if (strcmp (arg, "small") == 0)
 	cmodel = CMODEL_SMALL;
+      else if (strcmp (arg, "medium") == 0)
+	cmodel = CMODEL_MEDIUM;
       else if (strcmp (arg, "large") == 0)
 	cmodel = CMODEL_LARGE;
       else
