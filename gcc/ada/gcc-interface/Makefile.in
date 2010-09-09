@@ -1572,7 +1572,6 @@ adamsg.o: adamsg.msg
   EXTRA_LIBGNAT_OBJS+=adamsg.o
   EXTRA_GNATRTL_TASKING_OBJS=s-tpopde.o
   EXTRA_GNATTOOLS = \
-     ../../gnatlbr$(exeext)  \
      ../../gnatsym$(exeext)  \
      ../../vms_help$(exeext) \
      ../../gnat.hlp
@@ -2425,7 +2424,12 @@ install-gnatlib: ../stamp-gnatlib-$(RTSDIR)
 # Remove files to be replaced by target dependent sources
 	$(RM) $(foreach PAIR,$(LIBGNAT_TARGET_PAIRS), \
 	                $(RTSDIR)/$(word 1,$(subst <, ,$(PAIR))))
-	$(RM) $(RTSDIR)/*-*-*.ads $(RTSDIR)/*-*-*.adb
+	for f in $(RTSDIR)/*-*-*.ads $(RTSDIR)/*-*-*.adb; do \
+	  case "$$f" in \
+	    $(RTSDIR)/s-stratt-*) ;; \
+	    *) $(RM) $$f ;; \
+	  esac; \
+	done
 # Copy new target dependent sources
 	$(foreach PAIR,$(LIBGNAT_TARGET_PAIRS), \
 	          $(LN_S) $(fsrcpfx)ada/$(word 2,$(subst <, ,$(PAIR))) \
@@ -2792,12 +2796,7 @@ tracebak.o  : tracebak.c tb-alvms.c tb-alvxw.c tb-gcc.c
 
 force:
 
-# Gnatlbr, Vms_help, and Gnat.hlp are only used on VMS
-
-../../gnatlbr$(exeext): ../../prefix.o
-	$(GNATMAKE) -c $(ADA_INCLUDES) gnatlbr --GCC="$(CC) $(ALL_ADAFLAGS)"
-	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatlbr
-	$(GNATLINK) -v gnatlbr -o $@ --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
+# Vms_help and Gnat.hlp are only used on VMS
 
 ../../vms_help$(exeext):
 	$(GNATMAKE) -c $(ADA_INCLUDES) vms_help --GCC="$(CC) $(ALL_ADAFLAGS)"
