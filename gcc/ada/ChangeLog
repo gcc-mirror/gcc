@@ -1,3 +1,10 @@
+2010-09-09  Vincent Celier  <celier@adacore.com>
+
+	* prj.adb (Get_Object_Directory): Return object directory display name
+	* adaint.c (__gnat_get_file_names_case_sensitive): When environment
+	variable GNAT_FILE_NAME_CASE_SENSITIVE has a value of "0" or "1",
+	return this value, otherwise return the default for the platform.
+
 2010-09-09  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Makefile.in, gcc-interface/Make-lang.in: Update

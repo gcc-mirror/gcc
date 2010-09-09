@@ -1045,7 +1045,7 @@ package body Prj is
                end loop;
 
                if Add_Object_Dir then
-                  return Project.Object_Directory.Name;
+                  return Project.Object_Directory.Display_Name;
                end if;
             end;
          end if;
