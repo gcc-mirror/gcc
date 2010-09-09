@@ -777,6 +777,24 @@ DEFHOOK
  "",
  int, (struct ddg *g), NULL)
 
+/* The following member value is a function that initializes dispatch
+   schedling and adds instructions to dispatch window according to its
+   parameters.  */
+DEFHOOK
+(dispatch_do,
+"",
+void, (rtx insn, int x),
+hook_void_rtx_int)
+
+/* The following member value is a a function that returns true is
+   dispatch schedling is supported in hardware and condition passed
+   as the second parameter is true.  */
+DEFHOOK
+(dispatch,
+"",
+bool, (rtx insn, int x),
+hook_bool_rtx_int_false)
+
 HOOK_VECTOR_END (sched)
 
 /* Functions relating to vectorization.  */

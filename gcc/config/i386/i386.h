@@ -2375,6 +2375,9 @@ struct GTY(()) machine_function {
 #define SYMBOL_REF_DLLEXPORT_P(X) \
 	((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_DLLEXPORT) != 0)
 
+extern void debug_ready_dispatch (void);
+extern void debug_dispatch_window (int);
+
 /*
 Local variables:
 version-control: t
