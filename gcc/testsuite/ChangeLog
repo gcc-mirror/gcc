@@ -1,3 +1,8 @@
+2010-09-08  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* c-c++-common/Wunused-var-12.c: Add -fno-common to options on 32-bit
+	hppa*-*-hpux*.
+
 2010-09-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/execute/exceptions/throw-nil.m: New test.
