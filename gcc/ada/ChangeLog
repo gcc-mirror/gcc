@@ -34,8 +34,7 @@
 
 2010-09-09  Tristan Gingold  <gingold@adacore.com>
 
-	* gnatcmd.adb, vms_conv.ads, vms_help.adb, vms_cmds.ads: Extract
-	Command_Type from vms_conv.ads.
+	* gnatcmd.adb, vms_conv.ads: Extract Command_Type.
 
 2010-09-09  Eric Botcazou  <ebotcazou@adacore.com>
 

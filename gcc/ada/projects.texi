@@ -575,13 +575,13 @@ packages would be involved in the build process.
    @b{end} Builder;
 
    @b{package} Compiler @b{is} --<<<  for the compiler
-   @b{end} Builder;
+   @b{end} Compiler;
 
    @b{package} Binder @b{is}   --<<<  for the binder
-   @b{end} Builder;
+   @b{end} Binder;
 
    @b{package} Linker @b{is}   --<<<  for the linker
-   @b{end} Builder;
+   @b{end} Linker;
 @end smallexample
 
 @noindent

@@ -192,7 +192,7 @@ package body Ada.Containers.Hashed_Maps is
 
       if Container.HT.Busy > 0 then
          raise Program_Error with
-           "Delete attempted to tamper with elements (map is busy)";
+           "Delete attempted to tamper with cursors (map is busy)";
       end if;
 
       pragma Assert (Vet (Position), "bad cursor in Delete");
@@ -413,7 +413,7 @@ package body Ada.Containers.Hashed_Maps is
       if not Inserted then
          if Container.HT.Lock > 0 then
             raise Program_Error with
-              "Include attempted to tamper with cursors (map is locked)";
+              "Include attempted to tamper with elements (map is locked)";
          end if;
 
          Position.Node.Key := Key;
@@ -755,7 +755,7 @@ package body Ada.Containers.Hashed_Maps is
 
       if Container.HT.Lock > 0 then
          raise Program_Error with
-           "Replace attempted to tamper with cursors (map is locked)";
+           "Replace attempted to tamper with elements (map is locked)";
       end if;
 
       Node.Key := Key;
@@ -784,7 +784,7 @@ package body Ada.Containers.Hashed_Maps is
 
       if Position.Container.HT.Lock > 0 then
          raise Program_Error with
-           "Replace_Element attempted to tamper with cursors (map is locked)";
+           "Replace_Element attempted to tamper with elements (map is locked)";
       end if;
 
       pragma Assert (Vet (Position), "bad cursor in Replace_Element");

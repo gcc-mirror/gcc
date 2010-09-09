@@ -440,7 +440,7 @@ package body Ada.Containers.Vectors is
    begin
       if Container.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (vector is busy)";
+           "attempt to tamper with cursors (vector is busy)";
       end if;
 
       Container.Last := No_Index;
@@ -524,7 +524,7 @@ package body Ada.Containers.Vectors is
 
       if Container.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (vector is busy)";
+           "attempt to tamper with cursors (vector is busy)";
       end if;
 
       --  We first calculate what's available for deletion starting at
@@ -653,7 +653,7 @@ package body Ada.Containers.Vectors is
 
       if Container.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (vector is busy)";
+           "attempt to tamper with cursors (vector is busy)";
       end if;
 
       --  There is no restriction on how large Count can be when deleting
@@ -717,7 +717,7 @@ package body Ada.Containers.Vectors is
    begin
       if Container.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (vector is busy)";
+           "attempt to tamper with cursors (vector is busy)";
       end if;
 
       Container.Elements := null;
@@ -862,7 +862,7 @@ package body Ada.Containers.Vectors is
 
          if Source.Busy > 0 then
             raise Program_Error with
-              "attempt to tamper with elements (vector is busy)";
+              "attempt to tamper with cursors (vector is busy)";
          end if;
 
          Target.Set_Length (Length (Target) + Length (Source));
@@ -923,7 +923,7 @@ package body Ada.Containers.Vectors is
 
          if Container.Lock > 0 then
             raise Program_Error with
-              "attempt to tamper with cursors (vector is locked)";
+              "attempt to tamper with elements (vector is locked)";
          end if;
 
          Sort (Container.Elements.EA (Index_Type'First .. Container.Last));
@@ -1147,7 +1147,7 @@ package body Ada.Containers.Vectors is
 
       if Container.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (vector is busy)";
+           "attempt to tamper with cursors (vector is busy)";
       end if;
 
       --  An internal array has already been allocated, so we must determine
@@ -1802,7 +1802,7 @@ package body Ada.Containers.Vectors is
 
       if Container.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (vector is busy)";
+           "attempt to tamper with cursors (vector is busy)";
       end if;
 
       --  An internal array has already been allocated, so we must determine
@@ -2102,12 +2102,12 @@ package body Ada.Containers.Vectors is
 
       if Target.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (Target is busy)";
+           "attempt to tamper with cursors (Target is busy)";
       end if;
 
       if Source.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (Source is busy)";
+           "attempt to tamper with cursors (Source is busy)";
       end if;
 
       declare
@@ -2303,7 +2303,7 @@ package body Ada.Containers.Vectors is
 
       if Container.Lock > 0 then
          raise Program_Error with
-           "attempt to tamper with cursors (vector is locked)";
+           "attempt to tamper with elements (vector is locked)";
       end if;
 
       Container.Elements.EA (Index) := New_Item;
@@ -2329,7 +2329,7 @@ package body Ada.Containers.Vectors is
 
       if Container.Lock > 0 then
          raise Program_Error with
-           "attempt to tamper with cursors (vector is locked)";
+           "attempt to tamper with elements (vector is locked)";
       end if;
 
       Container.Elements.EA (Position.Index) := New_Item;
@@ -2392,7 +2392,7 @@ package body Ada.Containers.Vectors is
 
             if Container.Busy > 0 then
                raise Program_Error with
-                 "attempt to tamper with elements (vector is busy)";
+                 "attempt to tamper with cursors (vector is busy)";
             end if;
 
             declare
@@ -2527,7 +2527,7 @@ package body Ada.Containers.Vectors is
 
             if Container.Busy > 0 then
                raise Program_Error with
-                 "attempt to tamper with elements (vector is busy)";
+                 "attempt to tamper with cursors (vector is busy)";
             end if;
 
             declare
@@ -2586,7 +2586,7 @@ package body Ada.Containers.Vectors is
 
       if Container.Busy > 0 then
          raise Program_Error with
-           "attempt to tamper with elements (vector is busy)";
+           "attempt to tamper with cursors (vector is busy)";
       end if;
 
       --  We now allocate a new internal array, having a length different from
@@ -2649,7 +2649,7 @@ package body Ada.Containers.Vectors is
 
       if Container.Lock > 0 then
          raise Program_Error with
-           "attempt to tamper with cursors (vector is locked)";
+           "attempt to tamper with elements (vector is locked)";
       end if;
 
       declare
@@ -2801,7 +2801,7 @@ package body Ada.Containers.Vectors is
 
       if Container.Lock > 0 then
          raise Program_Error with
-           "attempt to tamper with cursors (vector is locked)";
+           "attempt to tamper with elements (vector is locked)";
       end if;
 
       declare

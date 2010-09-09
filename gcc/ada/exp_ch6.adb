@@ -1795,9 +1795,8 @@ package body Exp_Ch6 is
 
          Append_To (Extra_Actuals,
            Make_Parameter_Association (Loc,
-             Explicit_Actual_Parameter => Expr,
-             Selector_Name =>
-               Make_Identifier (Loc, Chars (EF))));
+             Selector_Name             => Make_Identifier (Loc, Chars (EF)),
+             Explicit_Actual_Parameter => Expr));
 
          Analyze_And_Resolve (Expr, Etype (EF));
 
@@ -2174,8 +2173,8 @@ package body Exp_Ch6 is
                Prev_Orig := Prev;
             end if;
 
-            --  Ada 2005 (AI-251): Thunks must propagate the extra actuals
-            --  of accessibility levels.
+            --  Ada 2005 (AI-251): Thunks must propagate the extra actuals of
+            --  accessibility levels.
 
             if Ekind (Current_Scope) in Subprogram_Kind
               and then Is_Thunk (Current_Scope)
@@ -2299,7 +2298,7 @@ package body Exp_Ch6 is
                               Extra_Accessibility (Formal));
 
                         --  No other cases of attributes returning access
-                        --  values that can be passed to access parameters
+                        --  values that can be passed to access parameters.
 
                         when others =>
                            raise Program_Error;
