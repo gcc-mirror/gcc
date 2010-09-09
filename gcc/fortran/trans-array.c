@@ -762,7 +762,6 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
       info->start[dim] = gfc_index_zero_node;
       info->end[dim] = gfc_index_zero_node;
       info->stride[dim] = gfc_index_one_node;
-      info->dim[dim] = dim;
     }
 
   /* Initialize the descriptor.  */
@@ -3830,6 +3829,11 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
       memset (&loop->temp_ss->data.info, 0, sizeof (gfc_ss_info));
       loop->temp_ss->type = GFC_SS_SECTION;
       loop->temp_ss->data.info.dimen = n;
+
+      gcc_assert (loop->temp_ss->data.info.dimen != 0);
+      for (n = 0; n < loop->temp_ss->data.info.dimen; n++)
+	loop->temp_ss->data.info.dim[n] = n;
+
       gfc_trans_create_temp_array (&loop->pre, &loop->post, loop,
 				   &loop->temp_ss->data.info, tmp, NULL_TREE,
 				   false, true, false, where);
@@ -6866,6 +6870,7 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
   gfc_intrinsic_sym *isym;
   gfc_symbol *sym;
   gfc_component *comp = NULL;
+  int n;
 
   isym = expr->value.function.isym;
 
@@ -6887,6 +6892,8 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
       newss->expr = expr;
       newss->next = ss;
       newss->data.info.dimen = expr->rank;
+      for (n = 0; n < newss->data.info.dimen; n++)
+	newss->data.info.dim[n] = n;
       return newss;
     }
 
