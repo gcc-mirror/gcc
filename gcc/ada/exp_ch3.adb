@@ -3873,7 +3873,6 @@ package body Exp_Ch3 is
                        (Op, Is_Abstract_Subprogram (Eq_Op));
 
                      if Chars (Next_Entity (Op)) = Name_Op_Ne then
-                        Set_Alias (Next_Entity (Op), NE_Op);
                         Set_Is_Abstract_Subprogram
                           (Next_Entity (Op), Is_Abstract_Subprogram (NE_Op));
                      end if;
