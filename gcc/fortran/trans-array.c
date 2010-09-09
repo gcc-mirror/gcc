@@ -742,6 +742,7 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
   int dim;
 
   gcc_assert (info->dimen > 0);
+  gcc_assert (loop->dimen == info->dimen);
 
   if (gfc_option.warn_array_temp && where)
     gfc_warning ("Creating array temporary at %L", where);
@@ -793,17 +794,17 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
 
   or_expr = NULL_TREE;
 
-  /* If there is at least one null loop->to[n], it is a callee allocated 
+  /* If there is at least one null loop->to[n], it is a callee allocated
      array.  */
-  for (n = 0; n < info->dimen; n++)
+  for (n = 0; n < loop->dimen; n++)
     if (loop->to[n] == NULL_TREE)
       {
 	size = NULL_TREE;
 	break;
       }
 
-  for (n = 0; n < info->dimen; n++)
-     {
+  for (n = 0; n < loop->dimen; n++)
+    {
       dim = info->dim[n];
 
       if (size == NULL_TREE)
