@@ -37,11 +37,11 @@ package Exp_Dbug is
    -- Encoding and Qualification of Names of Entities --
    -----------------------------------------------------
 
-   --  This section describes how the names of entities are encoded in
-   --  the generated debugging information.
+   --  This section describes how the names of entities are encoded in the
+   --  generated debugging information.
 
-   --  An entity in Ada has a name of the form X.Y.Z ... E where X,Y,Z
-   --  are the enclosing scopes (not including Standard at the start).
+   --  An entity in Ada has a name of the form X.Y.Z ... E where X,Y,Z are the
+   --  enclosing scopes (not including Standard at the start).
 
    --  The encoding of the name follows this basic qualified naming scheme,
    --  where the encoding of individual entity names is as described in Namet
@@ -306,13 +306,13 @@ package Exp_Dbug is
       -- Interface Names --
       ---------------------
 
-      --  Note: if an interface name is present, then the external name
-      --  is taken from the specified interface name. Given the current
-      --  limitations of the gcc backend, this means that the debugging
-      --  name is also set to the interface name, but conceptually, it
-      --  would be possible (and indeed desirable) to have the debugging
-      --  information still use the Ada name as qualified above, so we
-      --  still fully qualify the name in the front end.
+      --  Note: if an interface name is present, then the external name is
+      --  taken from the specified interface name. Given current limitations of
+      --  the gcc backend, this means that the debugging name is also set to
+      --  the interface name, but conceptually, it would be possible (and
+      --  indeed desirable) to have the debugging information still use the Ada
+      --  name as qualified above, so we still fully qualify the name in the
+      --  front end.
 
       -------------------------------------
       -- Encodings Related to Task Types --
@@ -330,7 +330,7 @@ package Exp_Dbug is
       --      end TaskObj;
       --    end P;
       --
-      --  The name of subprogram TaskObj.F1 is encoded as p__taskobjTK__f1,
+      --  The name of subprogram TaskObj.F1 is encoded as p__taskobjTK__f1.
       --  The body, B, is contained in a subprogram whose name is
       --  p__taskobjTKB.
 
@@ -413,22 +413,21 @@ package Exp_Dbug is
 
    No_Dollar_In_Label : constant Boolean := True;
    --  True iff the target does not allow dollar signs ("$") in external names
-   --  ??? We want to migrate all platforms to use the same convention.
-   --  As a first step, we force this constant to always be True. This
-   --  constant will eventually be deleted after we have verified that
-   --  the migration does not cause any unforseen adverse impact.
-   --  We chose "__" because it is supported on all platforms, which is
-   --  not the case of "$".
+   --  ??? We want to migrate all platforms to use the same convention. As a
+   --  first step, we force this constant to always be True. This constant will
+   --  eventually be deleted after we have verified that the migration does not
+   --  cause any unforseen adverse impact. We chose "__" because it is
+   --  supported on all platforms, which is not the case of "$".
 
    procedure Get_External_Name
      (Entity     : Entity_Id;
       Has_Suffix : Boolean);
-   --  Set Name_Buffer and Name_Len to the external name of entity E.
-   --  The external name is the Interface_Name, if specified, unless
-   --  the entity has an address clause or a suffix.
+   --  Set Name_Buffer and Name_Len to the external name of entity E. The
+   --  external name is the Interface_Name, if specified, unless the entity
+   --  has an address clause or a suffix.
    --
-   --  If the Interface is not present, or not used, the external name
-   --  is the concatenation of:
+   --  If the Interface is not present, or not used, the external name is the
+   --  concatenation of:
    --
    --    - the string "_ada_", if the entity is a library subprogram,
    --    - the names of any enclosing scopes, each followed by "__",
@@ -441,9 +440,9 @@ package Exp_Dbug is
    procedure Get_External_Name_With_Suffix
      (Entity : Entity_Id;
       Suffix : String);
-   --  Set Name_Buffer and Name_Len to the external name of entity E.
-   --  If Suffix is the empty string the external name is as above,
-   --  otherwise the external name is the concatenation of:
+   --  Set Name_Buffer and Name_Len to the external name of entity E. If
+   --  Suffix is the empty string the external name is as above, otherwise
+   --  the external name is the concatenation of:
    --
    --    - the string "_ada_", if the entity is a library subprogram,
    --    - the names of any enclosing scopes, each followed by "__",
@@ -483,33 +482,33 @@ package Exp_Dbug is
    --  output of names for debugging purposes (which is why we are doing
    --  the name changes in the first place.
 
-   --  Note: the routines Get_Unqualified_[Decoded]_Name_String in Namet
-   --  are useful to remove qualification from a name qualified by the
-   --  call to Qualify_All_Entity_Names.
+   --  Note: the routines Get_Unqualified_[Decoded]_Name_String in Namet are
+   --  useful to remove qualification from a name qualified by the call to
+   --  Qualify_All_Entity_Names.
 
    --------------------------------
    -- Handling of Numeric Values --
    --------------------------------
 
-   --  All numeric values here are encoded as strings of decimal digits.
-   --  Only integer values need to be encoded. A negative value is encoded
-   --  as the corresponding positive value followed by a lower case m for
-   --  minus to indicate that the value is negative (e.g. 2m for -2).
+   --  All numeric values here are encoded as strings of decimal digits. Only
+   --  integer values need to be encoded. A negative value is encoded as the
+   --  corresponding positive value followed by a lower case m for minus to
+   --  indicate that the value is negative (e.g. 2m for -2).
 
    -------------------------
    -- Type Name Encodings --
    -------------------------
 
-   --  In the following typ is the name of the type as normally encoded by
-   --  the debugger rules, i.e. a non-qualified name, all in lower case,
-   --  with standard encoding of upper half and wide characters
+   --  In the following typ is the name of the type as normally encoded by the
+   --  debugger rules, i.e. a non-qualified name, all in lower case, with
+   --  standard encoding of upper half and wide characters
 
       ------------------------
       -- Encapsulated Types --
       ------------------------
 
-      --  In some cases, the compiler encapsulates a type by wrapping it in
-      --  a structure. For example, this is used when a size or alignment
+      --  In some cases, the compiler encapsulates a type by wrapping it in a
+      --  structure. For example, this is used when a size or alignment
       --  specification requires a larger type. Consider:
 
       --    type y is mod 2 ** 64;
@@ -523,34 +522,34 @@ package Exp_Dbug is
       --  a size of 256 for a signed integer value, then a typical choice is
       --  to wrap a 64-bit integer in a 256 bit PAD structure.
 
-      --  A similar encapsulation is done for some packed array types,
-      --  in which case the structure type is y___JM and the field name
-      --  is OBJECT. This is used in the case of a packed array stored
-      --  in modular representation (see section on representation of
-      --  packed array objects). In this case the JM wrapping is used to
-      --  achieve correct positioning of the packed array value (left or
-      --  right justified in its field depending on endianness.
+      --  A similar encapsulation is done for some packed array types, in which
+      --  case the structure type is y___JM and the field name is OBJECT.
+      --  This is used in the case of a packed array stored using modular
+      --  representation (see section on representation of packed array
+      --  objects). In this case the JM wrapping is used to achieve correct
+      --  positioning of the packed array value (left or right justified in its
+      --  field depending on endianness.
 
-      --  When the debugger sees an object of a type whose name has a
-      --  suffix of ___PAD or ___JM, the type will be a record containing
-      --  a single field, and the name of that field will be all upper case.
-      --  In this case, it should look inside to get the value of the inner
-      --  field, and neither the outer structure name, nor the field name
-      --  should appear when the value is printed.
+      --  When the debugger sees an object of a type whose name has a suffix of
+      --  ___PAD or ___JM, the type will be a record containing a single field,
+      --  and the name of that field will be all upper case. In this case, it
+      --  should look inside to get the value of the inner field, and neither
+      --  the outer structure name, nor the field name should appear when the
+      --  value is printed.
 
       --  When the debugger sees a record named REP being a field inside
-      --  another record, it should treat the fields inside REP as being
-      --  part of the outer record (this REP field is only present for
-      --  code generation purposes). The REP record should not appear in
-      --  the values printed by the debugger.
+      --  another record, it should treat the fields inside REP as being part
+      --  of the outer record (this REP field is only present for code
+      --  generation purposes). The REP record should not appear in the values
+      --  printed by the debugger.
 
       -----------------------
       -- Fixed-Point Types --
       -----------------------
 
       --   Fixed-point types are encoded using a suffix that indicates the
-      --   delta and small values. The actual type itself is a normal
-      --   integer type.
+      --   delta and small values. The actual type itself is a normal integer
+      --   type.
 
       --     typ___XF_nn_dd
       --     typ___XF_nn_dd_nn_dd
@@ -576,9 +575,9 @@ package Exp_Dbug is
       --     typ___XFG
 
       --   representing the Vax F Float, D Float, and G Float types. The
-      --   debugger must treat these specially. In particular, printing
-      --   these values can be achieved using the debug procedures that
-      --   are provided in package System.Vax_Float_Operations:
+      --   debugger must treat these specially. In particular, printing these
+      --   values can be achieved using the debug procedures that are provided
+      --   in package System.Vax_Float_Operations:
 
       --     procedure Debug_Output_D (Arg : D);
       --     procedure Debug_Output_F (Arg : F);
@@ -592,17 +591,15 @@ package Exp_Dbug is
       -- Discrete Types --
       --------------------
 
-      --   Discrete types are coded with a suffix indicating the range in
-      --   the case where one or both of the bounds are discriminants or
-      --   variable.
+      --   Discrete types are coded with a suffix indicating the range in the
+      --   case where one or both of the bounds are discriminants or variable.
 
-      --   Note: at the current time, we also encode compile time known
-      --   bounds if they do not match the natural machine type bounds,
-      --   but this may be removed in the future, since it is redundant
-      --   for most debugging formats. However, we do not ever need XD
-      --   encoding for enumeration base types, since here it is always
-      --   clear what the bounds are from the total number of enumeration
-      --   literals.
+      --   Note: at the current time, we also encode compile time known bounds
+      --   if they do not match the natural machine type bounds, but this may
+      --   be removed in the future, since it is redundant for most debugging
+      --   formats. However, we do not ever need XD encoding for enumeration
+      --   base types, since here it is always clear what the bounds are from
+      --   the total number of enumeration literals.
 
       --     typ___XD
       --     typ___XDL_lowerbound
@@ -615,27 +612,26 @@ package Exp_Dbug is
       --   constrained range that does not correspond to the size or that
       --   has discriminant references or other compile time known bounds.
 
-      --   The first form is used if both bounds are dynamic, in which case
-      --   two constant objects are present whose names are typ___L and
-      --   typ___U in the same scope as typ, and the values of these constants
-      --   indicate the bounds. As far as the debugger is concerned, these
-      --   are simply variables that can be accessed like any other variables.
-      --   In the enumeration case, these values correspond to the Enum_Rep
-      --   values for the lower and upper bounds.
+      --   The first form is used if both bounds are dynamic, in which case two
+      --   constant objects are present whose names are typ___L and typ___U in
+      --   the same scope as typ, and the values of these constants indicate
+      --   the bounds. As far as the debugger is concerned, these are simply
+      --   variables that can be accessed like any other variables. In the
+      --   enumeration case, these values correspond to the Enum_Rep values for
+      --   the lower and upper bounds.
 
-      --   The second form is used if the upper bound is dynamic, but the
-      --   lower bound is either constant or depends on a discriminant of
-      --   the record with which the type is associated. The upper bound
-      --   is stored in a constant object of name typ___U as previously
-      --   described, but the lower bound is encoded directly into the
-      --   name as either a decimal integer, or as the discriminant name.
+      --   The second form is used if the upper bound is dynamic, but the lower
+      --   bound is either constant or depends on a discriminant of the record
+      --   with which the type is associated. The upper bound is stored in a
+      --   constant object of name typ___U as previously described, but the
+      --   lower bound is encoded directly into the name as either a decimal
+      --   integer, or as the discriminant name.
 
-      --   The third form is similarly used if the lower bound is dynamic,
-      --   but the upper bound is compile time known or a discriminant
-      --   reference, in which case the lower bound is stored in a constant
-      --   object of name typ___L, and the upper bound is encoded directly
-      --   into the name as either a decimal integer, or as the discriminant
-      --   name.
+      --   The third form is similarly used if the lower bound is dynamic, but
+      --   the upper bound is compile time known or a discriminant reference,
+      --   in which case the lower bound is stored in a constant object of name
+      --   typ___L, and the upper bound is encoded directly into the name as
+      --   either a decimal integer, or as the discriminant name.
 
       --   The fourth form is used if both bounds are discriminant references
       --   or compile time known values, with the encoding first for the lower
@@ -650,9 +646,9 @@ package Exp_Dbug is
       --    type x is mod N;
 
       --  Is encoded as a subrange of an unsigned base type with lower bound
-      --  0 and upper bound N. That is, there is no name encoding. We use
-      --  the standard encodings provided by the debugging format. Thus
-      --  we give these types a non-standard interpretation: the standard
+      --  zero and upper bound N. That is, there is no name encoding. We use
+      --  the standard encodings provided by the debugging format. Thus we
+      --  give these types a non-standard interpretation: the standard
       --  interpretation of our encoding would not, in general, imply that
       --  arithmetic on type x was to be performed modulo N (especially not
       --  when N is not a power of 2).
@@ -661,23 +657,22 @@ package Exp_Dbug is
       -- Biased Types --
       ------------------
 
-      --   Only discrete types can be biased, and the fact that they are
-      --   biased is indicated by a suffix of the form:
+      --   Only discrete types can be biased, and the fact that they are biased
+      --   is indicated by a suffix of the form:
 
       --     typ___XB_lowerbound__upperbound
 
-      --   Here lowerbound and upperbound are decimal integers, with the
-      --   usual (postfix "m") encoding for negative numbers. Biased
-      --   types are only possible where the bounds are compile time
-      --   known, and the values are represented as unsigned offsets
-      --   from the lower bound given. For example:
+      --   Here lowerbound and upperbound are decimal integers, with the usual
+      --   (postfix "m") encoding for negative numbers. Biased types are only
+      --   possible where the bounds are compile time known, and the values are
+      --   represented as unsigned offsets from the lower bound given. For
+      --   example:
 
       --     type Q is range 10 .. 15;
       --     for Q'size use 3;
 
-      --   The size clause will force values of type Q in memory to be
-      --   stored in biased form (e.g. 11 will be represented by the
-      --   bit pattern 001).
+      --   The size clause will force values of type Q in memory to be stored
+      --   in biased form (e.g. 11 will be represented by the bit pattern 001).
 
       ----------------------------------------------
       -- Record Types with Variable-Length Fields --
@@ -692,10 +687,10 @@ package Exp_Dbug is
       --    type___XVU
 
       --  The former name is used for a record and the latter for the union
-      --  that is made for a variant record (see below) if that record or
-      --  union has a field of variable size or if the record or union itself
-      --  has a variable size. These encodings suffix any other encodings that
-      --  that might be suffixed to the type name.
+      --  that is made for a variant record (see below) if that record or union
+      --  has a field of variable size or if the record or union itself has a
+      --  variable size. These encodings suffix any other encodings that that
+      --  might be suffixed to the type name.
 
       --  The idea here is to provide all the needed information to interpret
       --  objects of the original type in the form of a "fixed up" type, which
@@ -706,23 +701,22 @@ package Exp_Dbug is
       --  To deal with this, we encode *all* the field bit positions of the
       --  special ___XV type in a non-standard manner.
 
-      --  The idea is to encode not the position, but rather information
-      --  that allows computing the position of a field from the position
-      --  of the previous field. The algorithm for computing the actual
-      --  positions of all fields and the length of the record is as
-      --  follows. In this description, let P represent the current
-      --  bit position in the record.
+      --  The idea is to encode not the position, but rather information that
+      --  allows computing the position of a field from the position of the
+      --  previous field. The algorithm for computing the actual positions of
+      --  all fields and the length of the record is as follows. In this
+      --  description, let P represent the current bit position in the record.
 
       --    1. Initialize P to 0
 
       --    2. For each field in the record:
 
-      --       2a. If an alignment is given (see below), then round P
-      --       up, if needed, to the next multiple of that alignment.
+      --       2a. If an alignment is given (see below), then round P up, if
+      --       needed, to the next multiple of that alignment.
 
-      --       2b. If a bit position is given, then increment P by that
-      --       amount (that is, treat it as an offset from the end of the
-      --       preceding record).
+      --       2b. If a bit position is given, then increment P by that amount
+      --       (that is, treat it as an offset from the end of the preceding
+      --       record).
 
       --       2c. Assign P as the actual position of the field
 
@@ -738,15 +732,15 @@ package Exp_Dbug is
       --  where the nn after the XVA indicates the alignment value in storage
       --  units. This encoding is present only if an alignment is present.
 
-      --  The size of the record described by an XVE-encoded type (in bits)
-      --  is generally the maximum value attained by P' in step 2d above,
-      --  rounded up according to the record's alignment.
+      --  The size of the record described by an XVE-encoded type (in bits) is
+      --  generally the maximum value attained by P' in step 2d above, rounded
+      --  up according to the record's alignment.
 
       --  Second, the variable-length fields themselves are represented by
-      --  replacing the type by a special access type. The designated type
-      --  of this access type is the original variable-length type, and the
-      --  fact that this field has been transformed in this way is signalled
-      --  by encoding the field name as:
+      --  replacing the type by a special access type. The designated type of
+      --  this access type is the original variable-length type, and the fact
+      --  that this field has been transformed in this way is signalled by
+      --  encoding the field name as:
 
       --    field___XVL
 
@@ -757,24 +751,24 @@ package Exp_Dbug is
       --    field___XVLnn
 
       --  Note: the reason that we change the type is so that the resulting
-      --  type has no variable-length fields. At least some of the formats
-      --  used for debugging information simply cannot tolerate variable-
-      --  length fields, so the encoded information would get lost.
+      --  type has no variable-length fields. At least some of the formats used
+      --  for debugging information simply cannot tolerate variable- length
+      --  fields, so the encoded information would get lost.
 
-      --  Third, in the case of a variant record, the special union
-      --  that contains the variants is replaced by a normal C union.
-      --  In this case, the positions are all zero.
+      --  Third, in the case of a variant record, the special union that
+      --  contains the variants is replaced by a normal C union. In this case,
+      --  the positions are all zero.
 
-      --  Discriminants appear before any variable-length fields that depend
-      --  on them, with one exception. In some cases, a discriminant
-      --  governing the choice of a variant clause may appear in the list
-      --  of fields of an XVE type after the entry for the variant clause
-      --  itself (this can happen in the presence of a representation clause
-      --  for the record type in the source program). However, when this
-      --  happens, the discriminant's position may be determined by first
-      --  applying the rules described in this section, ignoring the variant
-      --  clause. As a result, discriminants can always be located
-      --  independently of the variable-length fields that depend on them.
+      --  Discriminants appear before any variable-length fields that depend on
+      --  them, with one exception. In some cases, a discriminant governing the
+      --  choice of a variant clause may appear in the list of fields of an XVE
+      --  type after the entry for the variant clause itself (this can happen
+      --  in the presence of a representation clause for the record type in the
+      --  source program). However, when this happens, the discriminant's
+      --  position may be determined by first applying the rules described in
+      --  this section, ignoring the variant clause. As a result, discriminants
+      --  can always be located independently of the variable-length fields
+      --  that depend on them.
 
       --  The size of the ___XVE or ___XVU record or union is set to the
       --  alignment (in bytes) of the original object so that the debugger
@@ -815,20 +809,18 @@ package Exp_Dbug is
 
       --  Notes:
 
-      --  1) The B field could also have been encoded by using a position
-      --  of zero, and an alignment of 4, but in such a case, the coding by
-      --  position is preferred (since it takes up less space). We have used
-      --  the (illegal) notation access xxx as field types in the example
-      --  above.
+      --  1) The B field could also have been encoded by using a position of
+      --  zero and an alignment of 4, but in such a case the coding by position
+      --  is preferred (since it takes up less space). We have used the
+      --  (illegal) notation access xxx as field types in the example above.
 
-      --  2) The E field does not actually need the alignment indication
-      --  but this may not be detected in this case by the conversion
-      --  routines.
+      --  2) The E field does not actually need the alignment indication but
+      --  this may not be detected in this case by the conversion routines.
 
       --  3) Our conventions do not cover all XVE-encoded records in which
-      --  some, but not all, fields have representation clauses. Such
-      --  records may, therefore, be displayed incorrectly by debuggers.
-      --  This situation is not common.
+      --  some, but not all, fields have representation clauses. Such records
+      --  may, therefore, be displayed incorrectly by debuggers. This situation
+      --  is not common.
 
       -----------------------
       -- Base Record Types --
@@ -853,7 +845,7 @@ package Exp_Dbug is
       --  The size of the objects typed as x should be obtained from the
       --  structure of x (and x___XVE, if applicable) as for ordinary types
       --  unless there is a variable named x___XVZ, which, if present, will
-      --  hold the size (in bytes) of x; in this latter case, the size of the
+      --  hold the size (in bytes) of x. In this latter case, the size of the
       --  x___XVS type will not be a constant but a reference to x___XVZ.
 
       --  The type x will either be a subtype of y (see also Subtypes of
@@ -965,8 +957,8 @@ package Exp_Dbug is
    -- Renaming --
    --------------
 
-   --  Debugging information is generated for exception, object, package,
-   --  and subprogram renaming (generic renamings are not significant, since
+   --  Debugging information is generated for exception, object, package, and
+   --  subprogram renaming (generic renamings are not significant, since
    --  generic templates are not relevant at debugging time).
 
    --  Consider a renaming declaration of the form
@@ -997,8 +989,8 @@ package Exp_Dbug is
 
    --  Note: subprogram renamings are not encoded at the present time
 
-   --  The suffix of the variable name describing the renamed object is
-   --  defined to use the following encoding:
+   --  The suffix of the variable name describing the renamed object is defined
+   --  to use the following encoding:
 
    --    For the simple entity case, where y is just an entity name, the suffix
    --    is of the form:
@@ -1099,13 +1091,13 @@ package Exp_Dbug is
    --  For every constrained packed array, two types are created, and both
    --  appear in the debugging output:
 
-   --    The original declared array type is a perfectly normal array type,
-   --    and its index bounds indicate the original bounds of the array.
+   --    The original declared array type is a perfectly normal array type, and
+   --    its index bounds indicate the original bounds of the array.
 
    --    The corresponding packed array type, which may be a modular type, or
-   --    may be an array of bytes type (see Exp_Pakd for full details). This
-   --    is the type that is actually used in the generated code and for
-   --    debugging information for all objects of the packed type.
+   --    may be an array of bytes type (see Exp_Pakd for full details). This is
+   --    the type that is actually used in the generated code and for debugging
+   --    information for all objects of the packed type.
 
    --  The name of the corresponding packed array type is:
 
@@ -1138,16 +1130,16 @@ package Exp_Dbug is
    -- Packed Array Representation in Memory --
    -------------------------------------------
 
-   --  Packed arrays are represented in tightly packed form, with no extra
-   --  bits between components. This is true even when the component size
-   --  is not a factor of the storage unit size, so that as a result it is
-   --  possible for components to cross storage unit boundaries.
+   --  Packed arrays are represented in tightly packed form, with no extra bits
+   --  between components. This is true even when the component size is not a
+   --  factor of the storage unit size, so that as a result it is possible for
+   --  components to cross storage unit boundaries.
 
    --  The layout in storage is identical, regardless of whether the
-   --  implementation type is a modular type or an array-of-bytes type.
-   --  See Exp_Pakd for details of how these implementation types are used,
-   --  but for the purpose of the debugger, only the starting address of
-   --  the object in memory is significant.
+   --  implementation type is a modular type or an array-of-bytes type. See
+   --  Exp_Pakd for details of how these implementation types are used, but for
+   --  the purpose of the debugger, only the starting address of the object in
+   --  memory is significant.
 
    --  The following example should show clearly how the packing works in
    --  the little-endian and big-endian cases:
@@ -1187,8 +1179,8 @@ package Exp_Dbug is
    --  For example, in the normal modular case, if we have a 6-bit modular
    --  type, declared as mod 2**6, and we allocate an 8-bit object for this
    --  type, then we extend the value with two bits on the most significant
-   --  end, and in either the little-endian or big-endian case, the value 63 is
-   --  represented as 00111111 in binary in memory.
+   --  end, and in either the little-endian or big-endian case, the value 63
+   --  is represented as 00111111 in binary in memory.
 
    --  For a modular type used to represent a packed array, the rule is
    --  different. In this case, if we have to extend the value, then we do it
@@ -1225,11 +1217,11 @@ package Exp_Dbug is
    --  However, in the equality case, it is important to ensure that the
    --  undefined bits do not participate in an equality test.
 
-   --  If a modular packed array value is assigned to a register, then
-   --  logically it could always be held right justified, to avoid any need to
-   --  shift, e.g. when doing comparisons. But probably this is a bad choice,
-   --  as it would mean that an assignment such as a := above would require
-   --  shifts when one value is in a register and the other value is in memory.
+   --  If a modular packed array value is assigned to a register then logically
+   --  it could always be held right justified, to avoid any need to shift,
+   --  e.g. when doing comparisons. But probably this is a bad choice, as it
+   --  would mean that an assignment such as a := above would require shifts
+   --  when one value is in a register and the other value is in memory.
 
    ------------------------------------------------------
    -- Subprograms for Handling Packed Array Type Names --

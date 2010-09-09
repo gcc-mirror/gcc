@@ -6311,16 +6311,13 @@ package body Exp_Disp is
       Set_Related_Type (DT_Ptr, Typ);
 
       --  For CPP types there is no need to build the dispatch tables since
-      --  they are imported from the C++ side. If the CPP type has an IP
-      --  then we declare now the variable that will store the copy of the
-      --  C++ tag. If the CPP type is an interface, we need the variable as
-      --  well, because it becomes the pointer to the corresponding secondary
-      --  table.
+      --  they are imported from the C++ side. If the CPP type has an IP then
+      --  we declare now the variable that will store the copy of the C++ tag.
+      --  If the CPP type is an interface, we need the variable as well,
+      --  because it becomes the pointer to the corresponding secondary table.
 
       if Is_CPP_Class (Typ) then
-         if Has_CPP_Constructors (Typ)
-           or else Is_Interface (Typ)
-         then
+         if Has_CPP_Constructors (Typ) or else Is_Interface (Typ) then
             Append_To (Result,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => DT_Ptr,

@@ -395,6 +395,7 @@ package body Impunit is
      "a-envvar",    -- Ada.Environment_Variables
      "a-exetim",    -- Ada.Execution_Time
      "a-extiti",    -- Ada.Execution_Time.Timers
+     "a-izteio",    -- Ada.Integer_Wide_Wide_TextIO;
      "a-rttiev",    -- Ada.Real_Time.Timing_Events
      "a-ngcoar",    -- Ada.Numerics.Generic_Complex_Arrays
      "a-ngrear",    -- Ada.Numerics.Generic_Real_Arrays

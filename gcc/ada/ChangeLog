@@ -1,3 +1,10 @@
+2010-09-09  Robert Dewar  <dewar@adacore.com>
+
+	* impunit.adb: Add entry for a-izteio.
+	* checks.adb: Add comment.
+	* debug.adb, exp_disp.adb: Minor reformatting.
+	* exp_dbug.ads: Minor reformatting throughout (pack block comments).
+
 2010-09-09  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_eval.adb (Is_Same_Value): Two occurrences of the same
