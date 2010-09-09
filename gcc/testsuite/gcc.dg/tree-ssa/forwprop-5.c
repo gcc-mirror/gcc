@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-esra -w" } */
+/* { dg-options "-O1 -fdump-tree-optimized -w" } */
 
 #define vector __attribute__((vector_size(16) ))
 struct VecClass
@@ -11,12 +11,9 @@ vector float foo( vector float v )
 {
     vector float x = v;
     x = x + x;
-    struct VecClass y = *(struct VecClass*)&x;
-    return y.v;
+    struct VecClass disappear = *(struct VecClass*)&x;
+    return disappear.v;
 }
 
-/* We should be able to remove the intermediate struct and directly
-   return x.  As we do not fold VIEW_CONVERT_EXPR<struct VecClass>(x).v
-   that doesn't happen right now.  */
-/* { dg-final { scan-tree-dump-times "VIEW_CONVERT_EXPR" 1 "esra"} } */
-/* { dg-final { cleanup-tree-dump "esra" } } */
+/* { dg-final { scan-tree-dump-times "disappear" 0 "optimized"} } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

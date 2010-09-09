@@ -1,6 +1,15 @@
 2010-09-10  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/44972
+	* gcc.dg/ipa/ipa-sra-1.c: Adjust scanning expressions.
+	* gcc.dg/tree-ssa/pr45144.c: Likewise.
+	* gcc.dg/tree-ssa/forwprop-5.c: Likewise and scan optimzed dump
+	instead.
+        * g++.dg/torture/pr44972.C: New test.
+
+2010-09-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/44972
 	* g++.dg/torture/pr34850.C: Remove expected warning.
 
 2010-09-09  Steven G. Kargl  <kargl@gcc.gnu.org>

@@ -36,6 +36,5 @@ main (int argc, char *argv[])
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "About to replace expr cow.green with ISRA" "eipa_sra"  } } */
-/* { dg-final { scan-tree-dump "About to replace expr cow.blue with ISRA" "eipa_sra"  } } */
+/* { dg-final { scan-tree-dump-times "About to replace expr" 2 "eipa_sra" } } */
 /* { dg-final { cleanup-tree-dump "eipa_sra" } } */

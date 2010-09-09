@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "vec.h"
 #include "cgraph.h"
+#include "gimple.h"
 
 /* The following definitions and interfaces are used by
    interprocedural analyses or parameters.  */
@@ -511,6 +512,7 @@ void ipa_prop_read_jump_functions (void);
 void ipa_update_after_lto_read (void);
 
 /* From tree-sra.c:  */
-bool build_ref_for_offset (tree *, tree, HOST_WIDE_INT, tree, bool);
+tree build_ref_for_offset (tree, HOST_WIDE_INT, tree, gimple_stmt_iterator *,
+			   bool);
 
 #endif /* IPA_PROP_H */

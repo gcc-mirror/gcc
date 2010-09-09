@@ -1,6 +1,32 @@
 2010-09-10  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/44972
+	* tree-sra.c: Include toplev.h.
+	(build_ref_for_offset): Entirely reimplemented.
+	(build_ref_for_model): New function.
+	(build_user_friendly_ref_for_offset): New function.
+	(analyze_access_subtree): Removed build_ref_for_offset check.
+	(propagate_subaccesses_across_link): Likewise.
+	(create_artificial_child_access): Use
+	build_user_friendly_ref_for_offset.
+	(propagate_subaccesses_across_link): Likewise.
+	(ref_expr_for_all_replacements_p): Removed.
+	(generate_subtree_copies): Updated comment.  Use build_ref_for_model.
+	(sra_modify_expr): Use build_ref_for_model.
+	(load_assign_lhs_subreplacements): Likewise.
+	(sra_modify_assign): Removed ref_expr_for_all_replacements_p checks,
+	checks for return values of build_ref_for_offset.
+	* ipa-cp.c (ipcp_lattice_from_jfunc): No need to check return value of
+	build_ref_for_offset.
+	* ipa-prop.h: Include gimple.h
+	* ipa-prop.c (ipa_compute_jump_functions): Update to look for MEM_REFs.
+	(ipa_analyze_indirect_call_uses): Update comment.
+	* Makefile.in (tree-sra.o): Add $(GIMPLE_H) to dependencies.
+	(IPA_PROP_H): Likewise.
+
+2010-09-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/44972
 	* ipa-prop.c (ipa_modify_call_arguments): Build MEM_REF instead of
 	calling build_ref_for_offset.
 
