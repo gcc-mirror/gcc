@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2002-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -82,20 +82,16 @@ package Prj.Err is
    -- Scanner --
    -------------
 
-   procedure Obsolescent_Check (S : Source_Ptr);
-   --  Dummy null procedure for Scng instantiation
-
    procedure Post_Scan;
    --  Convert an Ada operator symbol into a standard string
 
    package Scanner is new Scng
-     (Post_Scan         => Post_Scan,
-      Error_Msg         => Errutil.Error_Msg,
-      Error_Msg_S       => Errutil.Error_Msg_S,
-      Error_Msg_SC      => Errutil.Error_Msg_SC,
-      Error_Msg_SP      => Errutil.Error_Msg_SP,
-      Obsolescent_Check => Obsolescent_Check,
-      Style             => Errutil.Style);
+     (Post_Scan    => Post_Scan,
+      Error_Msg    => Errutil.Error_Msg,
+      Error_Msg_S  => Errutil.Error_Msg_S,
+      Error_Msg_SC => Errutil.Error_Msg_SC,
+      Error_Msg_SP => Errutil.Error_Msg_SP,
+      Style        => Errutil.Style);
    --  Instantiation of the generic scanner
 
 end Prj.Err;

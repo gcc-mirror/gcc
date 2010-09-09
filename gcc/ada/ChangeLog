@@ -1,3 +1,34 @@
+2010-09-09  Thomas Quinot  <quinot@adacore.com>
+
+	* s-strxdr.adb, gnat_rm.texi, s-stratt-xdr.adb, s-stratt.ads: Rename
+	s-strxdr.adb to s-stratt-xdr.adb
+
+2010-09-09  Robert Dewar  <dewar@adacore.com>
+
+	* ali-util.adb (Obsolescent_Check): Removed.
+	* gprep.adb (Obsolescent_Check): Removed.
+	Remove Obsolescent_Check parameter in Scng instantiation
+	* prj-err.adb (Obsolescent_Check): Removed.
+	* prj-err.ads (Obsolescent_Check): Removed.
+	Remove Obsolescent_Check parameter in Scng instantiation
+	* scans.ads (Based_Literal_Uses_Colon): New flag
+	* scn.adb (Obsolscent_Check_Flag): Removed
+	(Obsolscent_Check): Removed
+	(Set_Obsolescent_Check): Removed
+	(Post_Scan): Add handling for obsolescent features
+	* scn.ads (Obsolscent_Check): Removed
+	(Set_Obsolescent_Check): Removed
+	(Post_Scan): Can no longer be inlined
+	Remove Obsolescent_Check from instantiation of Scng
+	* scng.adb (Nlit): Set Based_Literal_Uses_Colon
+	(Nlit): Remove handling of obsolescent check
+	(Scan, case '%'): Remove handling of obsolescent check
+	(Scan, case '|'): Call Post_Scan
+	(Scan, case '!'): Remove handling of obsolescent check, call Post_Scan
+	* scng.ads Remove Obsolescent_Check argument from Scng generic
+	(Post_Scan): Now called for Tok_Vertical_Bar
+	* sinput-l.adb: Remove calls to Set_Obsolescent_Check
+
 2010-09-09  Doug Rupp  <rupp@adacore.com>
 
 	* gnatlbr.adb: Removed.

@@ -7182,16 +7182,16 @@ for scalar types.
 @cindex Stream oriented attributes
 The XDR implementation is provided as an alternative body of the
 @code{System.Stream_Attributes} package, in the file
-@file{s-strxdr.adb} in the GNAT library.
-There is no @file{s-strxdr.ads} file.
+@file{s-stratt-xdr.adb} in the GNAT library.
+There is no @file{s-stratt-xdr.ads} file.
 In order to install the XDR implementation, do the following:
 @enumerate
 @item Replace the default implementation of the
 @code{System.Stream_Attributes} package with the XDR implementation.
 For example on a Unix platform issue the commands:
 @smallexample
-$ mv s-stratt.adb s-strold.adb
-$ mv s-strxdr.adb s-stratt.adb
+$ mv s-stratt.adb s-stratt-default.adb
+$ mv s-stratt-xdr.adb s-stratt.adb
 @end smallexample
 
 @item

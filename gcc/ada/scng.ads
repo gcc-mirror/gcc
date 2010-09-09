@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,9 +33,10 @@ with Types;  use Types;
 
 generic
    with procedure Post_Scan;
-   --  Procedure called by Scan for the following tokens:
-   --  Tok_Char_Literal, Tok_Identifier, Tok_Real_Literal, Tok_Real_Literal,
-   --  Tok_Integer_Literal, Tok_String_Literal, Tok_Operator_Symbol.
+   --  Procedure called by Scan for the following tokens: Tok_Char_Literal,
+   --  Tok_Identifier, Tok_Real_Literal, Tok_Real_Literal, Tok_Integer_Literal,
+   --  Tok_String_Literal, Tok_Operator_Symbol, and Tok_Vertical_Bar. Used to
+   --  build Token_Node and also check for obsolescent features.
 
    with procedure Error_Msg (Msg : String; Flag_Location : Source_Ptr);
    --  Output a message at specified location
@@ -48,10 +49,6 @@ generic
 
    with procedure Error_Msg_SP (Msg : String);
    --  Output a message at the start of the previous token
-
-   with procedure Obsolescent_Check (S : Source_Ptr);
-   --  Called when one of the obsolescent character replacements is
-   --  used with S pointing to the character in question.
 
    with package Style is new Styleg
      (Error_Msg, Error_Msg_S, Error_Msg_SC, Error_Msg_SP);

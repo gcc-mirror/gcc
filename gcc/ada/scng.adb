@@ -516,6 +516,7 @@ package body Scng is
          Base := 10;
          UI_Base := Uint_10;
          UI_Int_Value := Uint_0;
+         Based_Literal_Uses_Colon := False;
          Scale := 0;
          Scan_Integer;
          Point_Scanned := False;
@@ -568,19 +569,13 @@ package body Scng is
                          or else
                        Source (Scan_Ptr + 1) in 'a' .. 'z'))
          then
-            if C = ':' then
-               Obsolescent_Check (Scan_Ptr);
-
-               if Warn_On_Obsolescent_Feature then
-                  Error_Msg_S
-                    ("use of "":"" is an obsolescent feature (RM J.2(3))?");
-                  Error_Msg_S ("\use ""'#"" instead?");
-               end if;
-            end if;
-
             Accumulate_Checksum (C);
             Base_Char := C;
             UI_Base := UI_Int_Value;
+
+            if Base_Char = ':' then
+               Based_Literal_Uses_Colon := True;
+            end if;
 
             if UI_Base < 2 or else UI_Base > 16 then
                Error_Msg_SC ("base not 2-16");
@@ -753,7 +748,6 @@ package body Scng is
          end if;
 
          Accumulate_Token_Checksum;
-
          return;
       end Nlit;
 
@@ -1579,24 +1573,9 @@ package body Scng is
             end if;
          end Minus_Case;
 
-         --  Double quote starting a string literal
+         --  Double quote or percent starting a string literal
 
-         when '"' =>
-            Slit;
-            Post_Scan;
-            return;
-
-         --  Percent starting a string literal
-
-         when '%' =>
-            Obsolescent_Check (Token_Ptr);
-
-            if Warn_On_Obsolescent_Feature then
-               Error_Msg_S
-                 ("use of ""'%"" is an obsolescent feature (RM J.2(4))?");
-               Error_Msg_S ("\use """""" instead?");
-            end if;
-
+         when '"' | '%' =>
             Slit;
             Post_Scan;
             return;
@@ -1808,6 +1787,7 @@ package body Scng is
                   Style.Check_Vertical_Bar;
                end if;
 
+               Post_Scan;
                return;
             end if;
          end Vertical_Bar_Case;
@@ -1816,13 +1796,6 @@ package body Scng is
 
          when '!' => Exclamation_Case : begin
             Accumulate_Checksum ('!');
-            Obsolescent_Check (Token_Ptr);
-
-            if Warn_On_Obsolescent_Feature then
-               Error_Msg_S
-                 ("use of ""'!"" is an obsolescent feature (RM J.2(2))?");
-               Error_Msg_S ("\use ""'|"" instead?");
-            end if;
 
             if Source (Scan_Ptr + 1) = '=' then
                Error_Msg_S -- CODEFIX
@@ -1834,6 +1807,7 @@ package body Scng is
             else
                Scan_Ptr := Scan_Ptr + 1;
                Token := Tok_Vertical_Bar;
+               Post_Scan;
                return;
             end if;
          end Exclamation_Case;

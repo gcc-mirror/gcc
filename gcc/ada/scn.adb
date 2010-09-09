@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,10 +43,6 @@ with System.WCh_Con; use System.WCh_Con;
 package body Scn is
 
    use ASCII;
-
-   Obsolescent_Check_Flag : Boolean := True;
-   --  Obsolescent check activation. Set to False during integrated
-   --  preprocessing.
 
    Used_As_Identifier : array (Token_Type) of Boolean;
    --  Flags set True if a given keyword is used as an identifier (used to
@@ -340,28 +336,61 @@ package body Scn is
       end loop;
    end Initialize_Scanner;
 
-   -----------------------
-   -- Obsolescent_Check --
-   -----------------------
-
-   procedure Obsolescent_Check (S : Source_Ptr) is
-   begin
-      if Obsolescent_Check_Flag then
-         --  This is a pain in the neck case, since we normally need a node to
-         --  call Check_Restrictions, and all we have is a source pointer. The
-         --  easiest thing is to construct a dummy node. A bit kludgy, but this
-         --  is a marginal case. It's not worth trying to do things more
-         --  cleanly.
-
-         Check_Restriction (No_Obsolescent_Features, New_Node (N_Empty, S));
-      end if;
-   end Obsolescent_Check;
-
    ---------------
    -- Post_Scan --
    ---------------
 
    procedure Post_Scan is
+      procedure Check_Obsolescent_Features_Restriction (S : Source_Ptr);
+      --  This checks for Obsolescent_Features restriction being active, and
+      --  if so, flags the restriction as occurring at the given scan location.
+
+      procedure Check_Obsolete_Base_Char;
+      --  Check for numeric literal using ':' instead of '#' for based case
+
+      --------------------------------------------
+      -- Check_Obsolescent_Features_Restriction --
+      --------------------------------------------
+
+      procedure Check_Obsolescent_Features_Restriction (S : Source_Ptr) is
+      begin
+         --  Normally we have a node handy for posting restrictions. We don't
+         --  have such a node here, so construct a dummy one with the right
+         --  scan pointer. This is only used to get the Sloc value anyway.
+
+         Check_Restriction (No_Obsolescent_Features, New_Node (N_Empty, S));
+      end Check_Obsolescent_Features_Restriction;
+
+      ------------------------------
+      -- Check_Obsolete_Base_Char --
+      ------------------------------
+
+      procedure Check_Obsolete_Base_Char is
+         S : Source_Ptr;
+
+      begin
+         if Based_Literal_Uses_Colon then
+
+            --  Find the : for the restriction or warning message
+
+            S := Token_Ptr;
+            while Source (S) /= ':' loop
+               S := S + 1;
+            end loop;
+
+            Check_Obsolescent_Features_Restriction (S);
+
+            if Warn_On_Obsolescent_Feature then
+               Error_Msg
+                 ("use of "":"" is an obsolescent feature (RM J.2(3))?", S);
+               Error_Msg
+                 ("\use ""'#"" instead?", S);
+            end if;
+         end if;
+      end Check_Obsolete_Base_Char;
+
+   --  Start of processing for Post_Scan
+
    begin
       case Token is
          when Tok_Char_Literal =>
@@ -376,10 +405,12 @@ package body Scn is
          when Tok_Real_Literal =>
             Token_Node := New_Node (N_Real_Literal, Token_Ptr);
             Set_Realval (Token_Node, Real_Literal_Value);
+            Check_Obsolete_Base_Char;
 
          when Tok_Integer_Literal =>
             Token_Node := New_Node (N_Integer_Literal, Token_Ptr);
             Set_Intval (Token_Node, Int_Literal_Value);
+            Check_Obsolete_Base_Char;
 
          when Tok_String_Literal =>
             Token_Node := New_Node (N_String_Literal, Token_Ptr);
@@ -389,10 +420,31 @@ package body Scn is
               (Token_Node, Wide_Wide_Character_Found);
             Set_Strval (Token_Node, String_Literal_Id);
 
+            if Source (Token_Ptr) = '%' then
+               Check_Obsolescent_Features_Restriction (Token_Ptr);
+
+               if Warn_On_Obsolescent_Feature then
+                  Error_Msg_SC
+                    ("use of ""'%"" is an obsolescent feature (RM J.2(4))?");
+                  Error_Msg_SC ("\use """""" instead?");
+               end if;
+            end if;
+
          when Tok_Operator_Symbol =>
             Token_Node := New_Node (N_Operator_Symbol, Token_Ptr);
             Set_Chars (Token_Node, Token_Name);
             Set_Strval (Token_Node, String_Literal_Id);
+
+         when Tok_Vertical_Bar =>
+            if Source (Token_Ptr) = '!' then
+               Check_Obsolescent_Features_Restriction (Token_Ptr);
+
+               if Warn_On_Obsolescent_Feature then
+                  Error_Msg_SC
+                    ("use of ""'!"" is an obsolescent feature (RM J.2(2))?");
+                  Error_Msg_SC ("\use ""'|"" instead?");
+               end if;
+            end if;
 
          when others =>
             null;
@@ -429,14 +481,5 @@ package body Scn is
       Token_Node := New_Node (N_Identifier, Token_Ptr);
       Set_Chars (Token_Node, Token_Name);
    end Scan_Reserved_Identifier;
-
-   ---------------------------
-   -- Set_Obsolescent_Check --
-   ---------------------------
-
-   procedure Set_Obsolescent_Check (Value : Boolean) is
-   begin
-      Obsolescent_Check_Flag := Value;
-   end Set_Obsolescent_Check;
 
 end Scn;
