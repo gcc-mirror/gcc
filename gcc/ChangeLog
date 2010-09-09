@@ -1,3 +1,9 @@
+2010-09-09  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/45312
+	* reload1.c (merge_assigned_reloads): Remove.
+	(reload_as_needed): Don't call it.
+
 2010-09-09  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/m32r/m32r.c (m32r_mode_dependent_address_p): New functions.
