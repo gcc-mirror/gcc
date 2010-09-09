@@ -1,3 +1,9 @@
+2010-09-09  Gerald Pfeifer  <gerald@pfeifer.com>
+	    Andrew Pinski  <pinskia@gmail.com>
+
+	PR target/40959	
+	* config.host (ia64*-*-freebsd*): Set extra_parts.  Set tmake_file.
+
 2010-09-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/45524
