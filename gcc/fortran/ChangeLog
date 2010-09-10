@@ -1,5 +1,11 @@
 2010-09-10  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-expr.c (expr_is_variable): New function taking non-copying
+	intrinsic functions into account.
+	(gfc_trans_assignment_1): Use expr_is_variable.
+
+2010-09-10  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_conv_loop_setup): Access the shape along the
 	real array dimension instead of the scalarizer (loop) dimension.
 
