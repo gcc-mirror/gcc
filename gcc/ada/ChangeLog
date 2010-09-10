@@ -1,3 +1,12 @@
+2010-09-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_dbug.ads: Mention enhanced encoding for array types.
+
+2010-09-10  Jerome Lambourg  <lambourg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Size clause are
+	unsupported in VM targets. Display a warning in this case.
+
 2010-09-10  Ed Schonberg  <schonberg@adacore.com>
 
 	* sprint.adb (Sprint_Node_Actual, case N_Derived_Type_Definition): Do
