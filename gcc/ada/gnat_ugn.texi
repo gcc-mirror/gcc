@@ -6144,6 +6144,17 @@ specified style check, an appropriate message is given, preceded by
 the character sequence ``(style)''. This message does not prevent
 successful compilation (unless the @option{-gnatwe} switch is used).
 
+Note that this is by no means intended to be a general facility for
+checking arbitrary coding standards. It is simply an embedding of the
+style rules we have chosen for the GNAT sources. If you are starting
+a project which does not have established style standards, you may
+find it useful to adopt the entire set of GNAT coding standards, or
+some subset of them. If you already have an established set of coding
+standards, then it may be that selected style checking options do
+indeed correspond to choices you have made, but for general checking
+of an existing set of coding rules, you should look to the gnatcheck
+tool, which is designed for that purpose.
+
 @ifset vms
 @code{(option,option,@dots{})} is a sequence of keywords
 @end ifset

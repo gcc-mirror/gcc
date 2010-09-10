@@ -518,7 +518,7 @@ package body Xref_Lib is
          when 'T' => return "task type";
          when 'W' => return "protected type";
 
-         when 'a' => return "array type";
+         when 'a' => return Param_String & "array object";
          when 'b' => return Param_String & "boolean object";
          when 'c' => return Param_String & "class-wide object";
          when 'd' => return Param_String & "decimal object";
