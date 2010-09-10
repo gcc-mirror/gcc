@@ -188,11 +188,12 @@ package body Prj.Util is
             return Result;
 
          elsif Builder_Package /= No_Package then
-            --  We still want to take into account cases where the suffix is
-            --  specified in the project itself, as opposed to the config file.
-            --  Unfortunately, when the project was processed, they are both
-            --  stored in Project.Config, so we need to get it from the project
-            --  again
+
+            --  If the suffix is specified in the project itself, as
+            --  opposed to the config file, it needs to be taken into account.
+            --  Unfortunately, when the project was processed, in both cases
+            --  the suffix is stored in Project.Config, so get it from the
+            --  project again.
 
             Suffix_From_Project :=
               Prj.Util.Value_Of
