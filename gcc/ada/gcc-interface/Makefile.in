@@ -1572,9 +1572,7 @@ adamsg.o: adamsg.msg
   EXTRA_LIBGNAT_OBJS+=adamsg.o
   EXTRA_GNATRTL_TASKING_OBJS=s-tpopde.o
   EXTRA_GNATTOOLS = \
-     ../../gnatsym$(exeext)  \
-     ../../vms_help$(exeext) \
-     ../../gnat.hlp
+     ../../gnatsym$(exeext)
   # This command transforms (YYYYMMDD) into YY,MMDD
   GSMATCH_VERSION := $(shell grep "^ *Gnat_Static_Version_String" $(fsrcpfx)ada/gnatvsn.ads | sed -e 's/.*(\(.*\)).*/\1/' -e 's/\(..\)\(..\)\(....\).*/\2,\3/')
   TOOLS_LIBS_LO := --for-linker=sys\\$$\$$library:trace.exe
@@ -2795,14 +2793,3 @@ tracebak.o  : tracebak.c tb-alvms.c tb-alvxw.c tb-gcc.c
 .PHONY: risky-stage1 risky-stage2 risky-stage3 risky-stage4
 
 force:
-
-# Vms_help and Gnat.hlp are only used on VMS
-
-../../vms_help$(exeext):
-	$(GNATMAKE) -c $(ADA_INCLUDES) vms_help --GCC="$(CC) $(ALL_ADAFLAGS)"
-	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) vms_help
-	$(GNATLINK) -v vms_help -o $@ --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
-
-../../gnat.hlp: ../../vms_help$(exeext)
-	../../vms_help$(exeext) $(fsrcdir)/ada/gnat.help_in \
-	                        $(fsrcdir)/ada/vms_data.ads ../../gnat.hlp

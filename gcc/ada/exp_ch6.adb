@@ -5784,6 +5784,7 @@ package body Exp_Ch6 is
            Make_Explicit_Dereference (Loc,
              Prefix => New_Reference_To (Def_Id, Loc));
 
+         Loc := Sloc (Object_Decl);
          Rewrite (Object_Decl,
            Make_Object_Renaming_Declaration (Loc,
              Defining_Identifier => Make_Temporary (Loc, 'D'),
@@ -5821,6 +5822,14 @@ package body Exp_Ch6 is
             Set_Homonym     (Renaming_Def_Id, Homonym (Obj_Def_Id));
 
             Exchange_Entities (Renaming_Def_Id, Obj_Def_Id);
+
+            --  Preserve source indication of original declaration, so that
+            --  xref information is properly generated for the right entity.
+
+            Preserve_Comes_From_Source
+              (Object_Decl, Original_Node (Object_Decl));
+            Set_Comes_From_Source (Obj_Def_Id, True);
+            Set_Comes_From_Source (Renaming_Def_Id, False);
          end;
       end if;
 
