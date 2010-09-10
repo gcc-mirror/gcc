@@ -685,6 +685,7 @@ package body Prj.Nmsc is
             end if;
 
          elsif Prev_Unit /= No_Unit_Index
+           and then Prev_Unit.File_Names (Kind) /= null
            and then not Source.Locally_Removed
          then
             --  Path is set if this is a source we found on the disk, in which

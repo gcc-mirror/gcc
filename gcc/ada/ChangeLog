@@ -1,5 +1,26 @@
 2010-09-10  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch4.adb: Minor reformatting.
+	* exp_ch6.adb: Add comment on testing limited on full type
+	* gnat_rm.texi: Add documentation on Pure_Function.
+
+2010-09-10  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Add_Source): Allow an Ada source to have the same name
+	as a source of another project and of another language.
+
+2010-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Defend against previous
+	errors.
+	* freeze.adb (Check_Unsigned_Type): Ditto.
+	* sem_aggr.adb (Resolve_Aggr_Expr): Ditto.
+	* sem_ch3.adb (Convert_Scalar_Bounds): Ditto.
+	(Set_Scalar_Range_For_Subtype): Ditto.
+	* sem_eval.adb (Subtypes_Statically_Match): Ditto.
+
+2010-09-10  Robert Dewar  <dewar@adacore.com>
+
 	* repinfo.adb (List_Type_Info): List Small and Range for fixed-point
 	types.
 	* sprint.adb (Write_Ureal_With_Col_Check_Sloc): Use square brackets

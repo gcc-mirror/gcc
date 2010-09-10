@@ -11252,6 +11252,12 @@ package body Sem_Ch3 is
       Rng : Node_Id;
 
    begin
+      --  Defend against previous errors
+
+      if No (Scalar_Range (Derived_Type)) then
+         return;
+      end if;
+
       Lo := Build_Scalar_Bound
               (Type_Low_Bound (Derived_Type),
                Parent_Type, Implicit_Base);
@@ -18294,6 +18300,12 @@ package body Sem_Ch3 is
       Kind : constant Entity_Kind :=  Ekind (Def_Id);
 
    begin
+      --  Defend against previous error
+
+      if Nkind (R) = N_Error then
+         return;
+      end if;
+
       Set_Scalar_Range (Def_Id, R);
 
       --  We need to link the range into the tree before resolving it so

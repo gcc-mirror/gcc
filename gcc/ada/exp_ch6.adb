@@ -4096,7 +4096,8 @@ package body Exp_Ch6 is
    --  Initialize scalar out parameters if Initialize/Normalize_Scalars
 
    --  Reset Pure indication if any parameter has root type System.Address
-   --  or has any parameters of limited types.
+   --  or has any parameters of limited types, where limited means that the
+   --  run-time view is limited (i.e. the full type is limited).
 
    --  Wrap thread body
 
@@ -4289,6 +4290,11 @@ package body Exp_Ch6 is
             F := First_Formal (Spec_Id);
             while Present (F) loop
                if Is_Descendent_Of_Address (Etype (F))
+
+                 --  Note that this test is being made in the body of the
+                 --  subprogram, not the spec, so we are testing the full
+                 --  type for being limited here, as required.
+
                  or else Is_Limited_Type (Etype (F))
                then
                   Set_Is_Pure (Spec_Id, False);

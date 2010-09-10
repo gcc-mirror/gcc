@@ -4369,6 +4369,14 @@ modifies a global variable (the count).  Memo functions are another
 example (where a table of previous calls is kept and consulted to
 avoid re-computation).
 
+Note also that the normal rules excluding optimization of subprograms
+in pure units (when parameter types are descended from System.Address,
+or when the full view of a parameter type is limited), do not apply
+for the Pure_Function case. If you explicitly specify Pure_Function,
+the compiler may optimize away calls with identical arguments, and
+if that results in unexpected behavior, the proper action is not to
+use the pragma for subprograms that are not (conceptually) pure.
+
 @findex Pure
 Note: Most functions in a @code{Pure} package are automatically pure, and
 there is no need to use pragma @code{Pure_Function} for such functions.  One

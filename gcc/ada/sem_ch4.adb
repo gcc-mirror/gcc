@@ -6413,11 +6413,11 @@ package body Sem_Ch4 is
          else
             Analyze (Node_To_Replace);
 
-            --  If the operation has been rewritten into a call, which may
-            --  get subsequently an explicit dereference, preserve the
-            --  type on the original node (selected component or indexed
-            --  component) for subsequent legality tests, e.g. Is_Variable.
-            --  which examines the original node.
+            --  If the operation has been rewritten into a call, which may get
+            --  subsequently an explicit dereference, preserve the type on the
+            --  original node (selected component or indexed component) for
+            --  subsequent legality tests, e.g. Is_Variable. which examines
+            --  the original node.
 
             if Nkind (Node_To_Replace) = N_Function_Call then
                Set_Etype
@@ -6534,7 +6534,6 @@ package body Sem_Ch4 is
            and then N = Prefix (Parent_Node)
          then
             Node_To_Replace := Parent_Node;
-
             Actuals := Expressions (Parent_Node);
 
             Actual := First (Actuals);
