@@ -211,7 +211,7 @@ package body Ch6 is
          Is_Overriding := True;
       end if;
 
-      if (Is_Overriding or else Not_Overriding) then
+      if Is_Overriding or else Not_Overriding then
 
          --  Note that if we are not in Ada_05 mode, error messages have
          --  already been given, so no need to give another message here.

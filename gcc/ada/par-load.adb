@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -268,9 +268,9 @@ begin
            Error_Node => Curunit,
            Corr_Body  => Cur_Unum);
 
-      --  If we successfully load the unit, then set the spec/body
-      --  pointers. Once again note that if the loaded unit has a fatal error,
-      --  Load will have set our Fatal_Error flag to propagate this condition.
+      --  If we successfully load the unit, then set the spec/body pointers.
+      --  Once again note that if the loaded unit has a fatal error, Load will
+      --  have set our Fatal_Error flag to propagate this condition.
 
       if Unum /= No_Unit then
          Set_Library_Unit (Curunit, Cunit (Unum));
@@ -342,17 +342,25 @@ begin
    --  If current unit is a subunit, then load its parent body
 
    elsif Nkind (Unit (Curunit)) = N_Subunit then
-      Body_Name := Get_Parent_Body_Name (Unit_Name (Cur_Unum));
-      Unum :=
-        Load_Unit
-          (Load_Name  => Body_Name,
-           Required   => True,
-           Subunit    => True,
-           Error_Node => Name (Unit (Curunit)));
+      declare
+         Save_PMS : constant Boolean := Parsing_Main_Subunit;
 
-      if Unum /= No_Unit then
-         Set_Library_Unit (Curunit, Cunit (Unum));
-      end if;
+      begin
+         Parsing_Main_Subunit := False;
+         Body_Name := Get_Parent_Body_Name (Unit_Name (Cur_Unum));
+         Unum :=
+           Load_Unit
+             (Load_Name  => Body_Name,
+              Required   => True,
+              Subunit    => False,
+              Error_Node => Name (Unit (Curunit)));
+
+         if Unum /= No_Unit then
+            Set_Library_Unit (Curunit, Cunit (Unum));
+         end if;
+
+         Parsing_Main_Subunit := Save_PMS;
+      end;
    end if;
 
    --  Now we load with'ed units, with style/validity checks turned off

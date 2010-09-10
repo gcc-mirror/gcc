@@ -34,6 +34,7 @@ with Prj.Ext;
 with Prj.Util;
 with Snames;   use Snames;
 with Table;
+with Tempdir;
 
 with Ada.Command_Line;  use Ada.Command_Line;
 
@@ -294,6 +295,183 @@ package body Makeutl is
 
       return True;
    end Check_Source_Info_In_ALI;
+
+   --------------------------------
+   -- Create_Binder_Mapping_File --
+   --------------------------------
+
+   function Create_Binder_Mapping_File return Path_Name_Type is
+      Mapping_Path : Path_Name_Type := No_Path;
+
+      Mapping_FD : File_Descriptor := Invalid_FD;
+      --  A File Descriptor for an eventual mapping file
+
+      ALI_Unit : Unit_Name_Type := No_Unit_Name;
+      --  The unit name of an ALI file
+
+      ALI_Name : File_Name_Type := No_File;
+      --  The file name of the ALI file
+
+      ALI_Project : Project_Id := No_Project;
+      --  The project of the ALI file
+
+      Bytes : Integer;
+      OK    : Boolean := False;
+      Unit  : Unit_Index;
+
+      Status : Boolean;
+      --  For call to Close
+
+   begin
+      Tempdir.Create_Temp_File (Mapping_FD, Mapping_Path);
+      Record_Temp_File (Project_Tree, Mapping_Path);
+
+      if Mapping_FD /= Invalid_FD then
+         OK := True;
+
+         --  Traverse all units
+
+         Unit := Units_Htable.Get_First (Project_Tree.Units_HT);
+         while Unit /= No_Unit_Index loop
+            if Unit.Name /= No_Name then
+
+               --  If there is a body, put it in the mapping
+
+               if Unit.File_Names (Impl) /= No_Source
+                 and then Unit.File_Names (Impl).Project /= No_Project
+               then
+                  Get_Name_String (Unit.Name);
+                  Add_Str_To_Name_Buffer ("%b");
+                  ALI_Unit := Name_Find;
+                  ALI_Name :=
+                    Lib_File_Name (Unit.File_Names (Impl).Display_File);
+                  ALI_Project := Unit.File_Names (Impl).Project;
+
+                  --  Otherwise, if there is a spec, put it in the mapping
+
+               elsif Unit.File_Names (Spec) /= No_Source
+                 and then Unit.File_Names (Spec).Project /= No_Project
+               then
+                  Get_Name_String (Unit.Name);
+                  Add_Str_To_Name_Buffer ("%s");
+                  ALI_Unit := Name_Find;
+                  ALI_Name :=
+                    Lib_File_Name (Unit.File_Names (Spec).Display_File);
+                  ALI_Project := Unit.File_Names (Spec).Project;
+
+               else
+                  ALI_Name := No_File;
+               end if;
+
+               --  If we have something to put in the mapping then do it now.
+               --  However, if the project is extended, we don't put anything
+               --  in the mapping file, since we don't know where the ALI file
+               --  is: it might be in the extended project object directory as
+               --  well as in the extending project object directory.
+
+               if ALI_Name /= No_File
+                 and then ALI_Project.Extended_By = No_Project
+                 and then ALI_Project.Extends = No_Project
+               then
+                  --  First check if the ALI file exists. If it does not, do
+                  --  not put the unit in the mapping file.
+
+                  declare
+                     ALI : constant String := Get_Name_String (ALI_Name);
+
+                  begin
+                     --  For library projects, use the library ALI directory,
+                     --  for other projects, use the object directory.
+
+                     if ALI_Project.Library then
+                        Get_Name_String
+                          (ALI_Project.Library_ALI_Dir.Display_Name);
+                     else
+                        Get_Name_String
+                          (ALI_Project.Object_Directory.Display_Name);
+                     end if;
+
+                     if not
+                       Is_Directory_Separator (Name_Buffer (Name_Len))
+                     then
+                        Add_Char_To_Name_Buffer (Directory_Separator);
+                     end if;
+
+                     Add_Str_To_Name_Buffer (ALI);
+                     Add_Char_To_Name_Buffer (ASCII.LF);
+
+                     declare
+                        ALI_Path_Name : constant String :=
+                          Name_Buffer (1 .. Name_Len);
+
+                     begin
+                        if Is_Regular_File
+                             (ALI_Path_Name (1 .. ALI_Path_Name'Last - 1))
+                        then
+                           --  First line is the unit name
+
+                           Get_Name_String (ALI_Unit);
+                           Add_Char_To_Name_Buffer (ASCII.LF);
+                           Bytes :=
+                             Write
+                               (Mapping_FD,
+                                Name_Buffer (1)'Address,
+                                Name_Len);
+                           OK := Bytes = Name_Len;
+
+                           exit when not OK;
+
+                           --  Second line it the ALI file name
+
+                           Get_Name_String (ALI_Name);
+                           Add_Char_To_Name_Buffer (ASCII.LF);
+                           Bytes :=
+                             Write
+                               (Mapping_FD,
+                                Name_Buffer (1)'Address,
+                                Name_Len);
+                           OK := (Bytes = Name_Len);
+
+                           exit when not OK;
+
+                           --  Third line it the ALI path name
+
+                           Bytes :=
+                             Write
+                               (Mapping_FD,
+                                ALI_Path_Name (1)'Address,
+                                ALI_Path_Name'Length);
+                           OK := (Bytes = ALI_Path_Name'Length);
+
+                           --  If OK is False, it means we were unable to
+                           --  write a line. No point in continuing with the
+                           --  other units.
+
+                           exit when not OK;
+                        end if;
+                     end;
+                  end;
+               end if;
+            end if;
+
+            Unit := Units_Htable.Get_Next (Project_Tree.Units_HT);
+         end loop;
+
+         Close (Mapping_FD, Status);
+
+         OK := OK and Status;
+      end if;
+
+      --  If the creation of the mapping file was successful, we add the switch
+      --  to the arguments of gnatbind.
+
+      if OK then
+         return Mapping_Path;
+
+      else
+         return No_Path;
+      end if;
+   end Create_Binder_Mapping_File;
 
    -----------------
    -- Create_Name --
