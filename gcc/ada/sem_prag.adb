@@ -4907,8 +4907,8 @@ package body Sem_Prag is
       --  form created by the parser.
 
       procedure Set_Mechanism_Value (Ent : Entity_Id; Mech_Name : Node_Id) is
-         Class : Node_Id;
-         Param : Node_Id;
+         Class        : Node_Id;
+         Param        : Node_Id;
          Mech_Name_Id : Name_Id;
 
          procedure Bad_Class;
@@ -4957,7 +4957,15 @@ package body Sem_Prag is
 
             elsif Chars (Mech_Name) = Name_Descriptor then
                Check_VMS (Mech_Name);
-               Set_Mechanism (Ent, By_Descriptor);
+
+               --  Descriptor => Short_Descriptor if pragma was given
+
+               if Short_Descriptors then
+                  Set_Mechanism (Ent, By_Short_Descriptor);
+               else
+                  Set_Mechanism (Ent, By_Descriptor);
+               end if;
+
                return;
 
             elsif Chars (Mech_Name) = Name_Short_Descriptor then
@@ -4980,7 +4988,6 @@ package body Sem_Prag is
          --  Note: this form is parsed as an indexed component
 
          elsif Nkind (Mech_Name) = N_Indexed_Component then
-
             Class := First (Expressions (Mech_Name));
 
             if Nkind (Prefix (Mech_Name)) /= N_Identifier
@@ -4991,6 +4998,14 @@ package body Sem_Prag is
                Bad_Mechanism;
             else
                Mech_Name_Id := Chars (Prefix (Mech_Name));
+
+               --  Change Descriptor => Short_Descriptor if pragma was given
+
+               if Mech_Name_Id = Name_Descriptor
+                 and then Short_Descriptors
+               then
+                  Mech_Name_Id := Name_Short_Descriptor;
+               end if;
             end if;
 
          --  MECHANISM_NAME ::= descriptor (Class => CLASS_NAME) |
@@ -5000,7 +5015,6 @@ package body Sem_Prag is
          --  Note: this form is parsed as a function call
 
          elsif Nkind (Mech_Name) = N_Function_Call then
-
             Param := First (Parameter_Associations (Mech_Name));
 
             if Nkind (Name (Mech_Name)) /= N_Identifier
@@ -5028,72 +5042,72 @@ package body Sem_Prag is
             Bad_Class;
 
          elsif Mech_Name_Id = Name_Descriptor
-               and then Chars (Class) = Name_UBS
+           and then Chars (Class) = Name_UBS
          then
             Set_Mechanism (Ent, By_Descriptor_UBS);
 
          elsif Mech_Name_Id = Name_Descriptor
-               and then Chars (Class) = Name_UBSB
+           and then Chars (Class) = Name_UBSB
          then
             Set_Mechanism (Ent, By_Descriptor_UBSB);
 
          elsif Mech_Name_Id = Name_Descriptor
-               and then Chars (Class) = Name_UBA
+           and then Chars (Class) = Name_UBA
          then
             Set_Mechanism (Ent, By_Descriptor_UBA);
 
          elsif Mech_Name_Id = Name_Descriptor
-               and then Chars (Class) = Name_S
+           and then Chars (Class) = Name_S
          then
             Set_Mechanism (Ent, By_Descriptor_S);
 
          elsif Mech_Name_Id = Name_Descriptor
-               and then Chars (Class) = Name_SB
+           and then Chars (Class) = Name_SB
          then
             Set_Mechanism (Ent, By_Descriptor_SB);
 
          elsif Mech_Name_Id = Name_Descriptor
-               and then Chars (Class) = Name_A
+           and then Chars (Class) = Name_A
          then
             Set_Mechanism (Ent, By_Descriptor_A);
 
          elsif Mech_Name_Id = Name_Descriptor
-               and then Chars (Class) = Name_NCA
+           and then Chars (Class) = Name_NCA
          then
             Set_Mechanism (Ent, By_Descriptor_NCA);
 
          elsif Mech_Name_Id = Name_Short_Descriptor
-               and then Chars (Class) = Name_UBS
+           and then Chars (Class) = Name_UBS
          then
             Set_Mechanism (Ent, By_Short_Descriptor_UBS);
 
          elsif Mech_Name_Id = Name_Short_Descriptor
-               and then Chars (Class) = Name_UBSB
+           and then Chars (Class) = Name_UBSB
          then
             Set_Mechanism (Ent, By_Short_Descriptor_UBSB);
 
          elsif Mech_Name_Id = Name_Short_Descriptor
-               and then Chars (Class) = Name_UBA
+           and then Chars (Class) = Name_UBA
          then
             Set_Mechanism (Ent, By_Short_Descriptor_UBA);
 
          elsif Mech_Name_Id = Name_Short_Descriptor
-               and then Chars (Class) = Name_S
+           and then Chars (Class) = Name_S
          then
             Set_Mechanism (Ent, By_Short_Descriptor_S);
 
          elsif Mech_Name_Id = Name_Short_Descriptor
-               and then Chars (Class) = Name_SB
+           and then Chars (Class) = Name_SB
          then
             Set_Mechanism (Ent, By_Short_Descriptor_SB);
 
          elsif Mech_Name_Id = Name_Short_Descriptor
-               and then Chars (Class) = Name_A
+           and then Chars (Class) = Name_A
          then
             Set_Mechanism (Ent, By_Short_Descriptor_A);
 
          elsif Mech_Name_Id = Name_Short_Descriptor
-               and then Chars (Class) = Name_NCA
+           and then Chars (Class) = Name_NCA
          then
             Set_Mechanism (Ent, By_Short_Descriptor_NCA);
 
@@ -11052,6 +11066,18 @@ package body Sem_Prag is
             Set_Is_Shared_Passive (Cunit_Ent);
          end Shared_Passive;
 
+         -----------------------
+         -- Short_Descriptors --
+         -----------------------
+
+         --  pragma Short_Descriptors;
+
+         when Pragma_Short_Descriptors =>
+            GNAT_Pragma;
+            Check_Arg_Count (0);
+            Check_Valid_Configuration_Pragma;
+            Short_Descriptors := True;
+
          ----------------------
          -- Source_File_Name --
          ----------------------
@@ -12887,6 +12913,7 @@ package body Sem_Prag is
       Pragma_Share_Generic                 => -1,
       Pragma_Shared                        => -1,
       Pragma_Shared_Passive                => -1,
+      Pragma_Short_Descriptors             =>  0,
       Pragma_Source_File_Name              => -1,
       Pragma_Source_File_Name_Project      => -1,
       Pragma_Source_Reference              => -1,

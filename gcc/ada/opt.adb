@@ -61,6 +61,7 @@ package body Opt is
       Optimize_Alignment_Config             := Optimize_Alignment;
       Persistent_BSS_Mode_Config            := Persistent_BSS_Mode;
       Polling_Required_Config               := Polling_Required;
+      Short_Descriptors_Config              := Short_Descriptors;
       Use_VADS_Size_Config                  := Use_VADS_Size;
 
       --  Reset the indication that Optimize_Alignment was set locally, since
@@ -94,6 +95,7 @@ package body Opt is
       Optimize_Alignment_Local       := Save.Optimize_Alignment_Local;
       Persistent_BSS_Mode            := Save.Persistent_BSS_Mode;
       Polling_Required               := Save.Polling_Required;
+      Short_Descriptors              := Save.Short_Descriptors;
       Use_VADS_Size                  := Save.Use_VADS_Size;
    end Restore_Opt_Config_Switches;
 
@@ -121,6 +123,7 @@ package body Opt is
       Save.Optimize_Alignment_Local       := Optimize_Alignment_Local;
       Save.Persistent_BSS_Mode            := Persistent_BSS_Mode;
       Save.Polling_Required               := Polling_Required;
+      Save.Short_Descriptors              := Short_Descriptors;
       Save.Use_VADS_Size                  := Use_VADS_Size;
    end Save_Opt_Config_Switches;
 
@@ -193,6 +196,7 @@ package body Opt is
       Fast_Math                      := Fast_Math_Config;
       Optimize_Alignment             := Optimize_Alignment_Config;
       Polling_Required               := Polling_Required_Config;
+      Short_Descriptors              := Short_Descriptors_Config;
    end Set_Opt_Config_Switches;
 
    ---------------

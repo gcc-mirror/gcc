@@ -386,6 +386,7 @@ package Snames is
    Name_Restriction_Warnings           : constant Name_Id := N + $; -- GNAT
    Name_Reviewable                     : constant Name_Id := N + $;
    Name_Short_Circuit_And_Or           : constant Name_Id := N + $; -- GNAT
+   Name_Short_Descriptors              : constant Name_Id := N + $; -- GNAT
    Name_Source_File_Name               : constant Name_Id := N + $; -- GNAT
    Name_Source_File_Name_Project       : constant Name_Id := N + $; -- GNAT
    Name_Style_Checks                   : constant Name_Id := N + $; -- GNAT
@@ -1466,6 +1467,7 @@ package Snames is
       Pragma_Restriction_Warnings,
       Pragma_Reviewable,
       Pragma_Short_Circuit_And_Or,
+      Pragma_Short_Descriptors,
       Pragma_Source_File_Name,
       Pragma_Source_File_Name_Project,
       Pragma_Style_Checks,
