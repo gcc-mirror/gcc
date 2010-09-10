@@ -7034,41 +7034,6 @@ build_type_no_quals (tree t)
     }
 }
 
-/* Create a type of integers to be the TYPE_DOMAIN of an ARRAY_TYPE.
-   MAXVAL should be the maximum value in the domain
-   (one less than the length of the array).
-
-   The maximum value that MAXVAL can have is INT_MAX for a HOST_WIDE_INT.
-   We don't enforce this limit, that is up to caller (e.g. language front end).
-   The limit exists because the result is a signed type and we don't handle
-   sizes that use more than one HOST_WIDE_INT.  */
-
-tree
-build_index_type (tree maxval)
-{
-  tree itype = make_node (INTEGER_TYPE);
-
-  TREE_TYPE (itype) = sizetype;
-  TYPE_PRECISION (itype) = TYPE_PRECISION (sizetype);
-  TYPE_MIN_VALUE (itype) = size_zero_node;
-  TYPE_MAX_VALUE (itype) = fold_convert (sizetype, maxval);
-  SET_TYPE_MODE (itype, TYPE_MODE (sizetype));
-  TYPE_SIZE (itype) = TYPE_SIZE (sizetype);
-  TYPE_SIZE_UNIT (itype) = TYPE_SIZE_UNIT (sizetype);
-  TYPE_ALIGN (itype) = TYPE_ALIGN (sizetype);
-  TYPE_USER_ALIGN (itype) = TYPE_USER_ALIGN (sizetype);
-
-  if (host_integerp (maxval, 1))
-    return type_hash_canon (tree_low_cst (maxval, 1), itype);
-  else
-    {
-      /* Since we cannot hash this type, we need to compare it using
-	 structural equality checks. */
-      SET_TYPE_STRUCTURAL_EQUALITY (itype);
-      return itype;
-    }
-}
-
 #define MAX_INT_CACHED_PREC \
   (HOST_BITS_PER_WIDE_INT > 64 ? HOST_BITS_PER_WIDE_INT : 64)
 static GTY(()) tree nonstandard_integer_type_cache[2 * MAX_INT_CACHED_PREC + 2];
@@ -7111,16 +7076,15 @@ build_nonstandard_integer_type (unsigned HOST_WIDE_INT precision,
 
 /* Create a range of some discrete type TYPE (an INTEGER_TYPE,
    ENUMERAL_TYPE or BOOLEAN_TYPE), with low bound LOWVAL and
-   high bound HIGHVAL.  If TYPE is NULL, sizetype is used.  */
+   high bound HIGHVAL.  */
 
 tree
 build_range_type (tree type, tree lowval, tree highval)
 {
   tree itype = make_node (INTEGER_TYPE);
+  hashval_t hash;
 
   TREE_TYPE (itype) = type;
-  if (type == NULL_TREE)
-    type = sizetype;
 
   TYPE_MIN_VALUE (itype) = fold_convert (type, lowval);
   TYPE_MAX_VALUE (itype) = highval ? fold_convert (type, highval) : NULL;
@@ -7132,12 +7096,35 @@ build_range_type (tree type, tree lowval, tree highval)
   TYPE_ALIGN (itype) = TYPE_ALIGN (type);
   TYPE_USER_ALIGN (itype) = TYPE_USER_ALIGN (type);
 
-  if (host_integerp (lowval, 0) && highval != 0 && host_integerp (highval, 0))
-    return type_hash_canon (tree_low_cst (highval, 0)
-			    - tree_low_cst (lowval, 0),
-			    itype);
-  else
-    return itype;
+  if ((TYPE_MIN_VALUE (itype)
+       && TREE_CODE (TYPE_MIN_VALUE (itype)) != INTEGER_CST)
+      || (TYPE_MAX_VALUE (itype)
+	  && TREE_CODE (TYPE_MAX_VALUE (itype)) != INTEGER_CST))
+    {
+      /* Since we cannot reliably merge this type, we need to compare it using
+	 structural equality checks.  */
+      SET_TYPE_STRUCTURAL_EQUALITY (itype);
+      return itype;
+    }
+  hash = iterative_hash_expr (TYPE_MIN_VALUE (itype), 0);
+  hash = iterative_hash_expr (TYPE_MAX_VALUE (itype), hash);
+  hash = iterative_hash_hashval_t (TYPE_HASH (type), hash);
+  return type_hash_canon (hash, itype);
+}
+
+/* Create a type of integers to be the TYPE_DOMAIN of an ARRAY_TYPE.
+   MAXVAL should be the maximum value in the domain
+   (one less than the length of the array).
+
+   The maximum value that MAXVAL can have is INT_MAX for a HOST_WIDE_INT.
+   We don't enforce this limit, that is up to caller (e.g. language front end).
+   The limit exists because the result is a signed type and we don't handle
+   sizes that use more than one HOST_WIDE_INT.  */
+
+tree
+build_index_type (tree maxval)
+{
+  return build_range_type (sizetype, size_zero_node, maxval);
 }
 
 /* Return true if the debug information for TYPE, a subtype, should be emitted
