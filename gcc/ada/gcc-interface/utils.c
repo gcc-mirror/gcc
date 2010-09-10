@@ -1156,7 +1156,7 @@ tree
 create_index_type (tree min, tree max, tree index, Node_Id gnat_node)
 {
   /* First build a type for the desired range.  */
-  tree type = build_index_2_type (min, max);
+  tree type = build_range_type (sizetype, min, max);
 
   /* If this type has the TYPE_INDEX_TYPE we want, return it.  */
   if (TYPE_INDEX_TYPE (type) == index)
