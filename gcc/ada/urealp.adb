@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009  Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1307,28 +1307,108 @@ package body Urealp is
    -- UR_Write --
    --------------
 
-   procedure UR_Write (Real : Ureal) is
+   procedure UR_Write (Real : Ureal; Brackets : Boolean := False) is
       Val : constant Ureal_Entry := Ureals.Table (Real);
+      T   : Uint;
 
    begin
       --  If value is negative, we precede the constant by a minus sign
-      --  and add an extra layer of parentheses on the outside since the
-      --  minus sign is part of the value, not a negation operator.
 
       if Val.Negative then
-         Write_Str ("(-");
+         Write_Char ('-');
       end if;
+
+      --  Zero is zero
+
+      if Val.Num = 0 then
+         Write_Str ("0.0");
 
       --  Constants in base 10 can be written in normal Ada literal style
 
-      if Val.Rbase = 10 then
-         UI_Write (Val.Num / 10);
-         Write_Char ('.');
-         UI_Write (Val.Num mod 10);
+      elsif Val.Rbase = 10 then
 
-         if Val.Den /= 0 then
+         --  Use fixed-point format for small scaling values
+
+         if Val.Den = 0 then
+            UI_Write (Val.Num, Decimal);
+            Write_Str (".0");
+
+         elsif Val.Den = 1 then
+            UI_Write (Val.Num / 10, Decimal);
+            Write_Char ('.');
+            UI_Write (Val.Num mod 10, Decimal);
+
+         elsif Val.Den = 2 then
+            UI_Write (Val.Num / 100, Decimal);
+            Write_Char ('.');
+            UI_Write (Val.Num mod 100 / 10, Decimal);
+            UI_Write (Val.Num mod 10, Decimal);
+
+         elsif Val.Den = -1 then
+            UI_Write (Val.Num, Decimal);
+            Write_Str ("0.0");
+
+         elsif Val.Den = -2 then
+            UI_Write (Val.Num, Decimal);
+            Write_Str ("00.0");
+
+         --  Else use exponential format
+
+         else
+            UI_Write (Val.Num / 10, Decimal);
+            Write_Char ('.');
+            UI_Write (Val.Num mod 10, Decimal);
             Write_Char ('E');
-            UI_Write (1 - Val.Den);
+            UI_Write (1 - Val.Den, Decimal);
+         end if;
+
+      --  If we have a constant in a base other than 10, and the denominator
+      --  is zero, then the value is simply the numerator value, since we are
+      --  dividing by base**0, which is 1.
+
+      elsif Val.Den = 0 then
+         UI_Write (Val.Num, Decimal);
+         Write_Str (".0");
+
+      --  Small powers of 2 get written in decimal fixed-point format
+
+      elsif Val.Rbase = 2
+        and then Val.Den <= 3
+        and then Val.Den >= -16
+      then
+         if Val.Den = 1 then
+            T := Val.Num * (10/2);
+            UI_Write (T / 10, Decimal);
+            Write_Char ('.');
+            UI_Write (T mod 10, Decimal);
+
+         elsif Val.Den = 2 then
+            T := Val.Num * (100/4);
+            UI_Write (T / 100, Decimal);
+            Write_Char ('.');
+            UI_Write (T mod 100 / 10, Decimal);
+
+            if T mod 10 /= 0 then
+               UI_Write (T mod 10, Decimal);
+            end if;
+
+         elsif Val.Den = 3 then
+            T := Val.Num * (1000 / 8);
+            UI_Write (T / 1000, Decimal);
+            Write_Char ('.');
+            UI_Write (T mod 1000 / 100, Decimal);
+
+            if T mod 100 /= 0 then
+               UI_Write (T mod 100 / 10, Decimal);
+
+               if T mod 10 /= 0 then
+                  UI_Write (T mod 10, Decimal);
+               end if;
+            end if;
+
+         else
+            UI_Write (Val.Num * (Uint_2 ** (-Val.Den)), Decimal);
+            Write_Str (".0");
          end if;
 
       --  Constants in a base other than 10 can still be easily written
@@ -1343,48 +1423,60 @@ package body Urealp is
       --  of the following forms, depending on the sign of the number
       --  and the sign of the exponent (= minus denominator value)
 
-      --    (numerator.0*base**exponent)
-      --    (numerator.0*base**(-exponent))
+      --    numerator.0*base**exponent
+      --    numerator.0*base**-exponent
+
+      --  And of course an exponent of 0 can be omitted
 
       elsif Val.Rbase /= 0 then
-         Write_Char ('(');
-         UI_Write (Val.Num, Decimal);
-         Write_Str (".0*");
-         Write_Int (Val.Rbase);
-         Write_Str ("**");
-
-         if Val.Den <= 0 then
-            UI_Write (-Val.Den, Decimal);
-
-         else
-            Write_Str ("(-");
-            UI_Write (Val.Den, Decimal);
-            Write_Char (')');
+         if Brackets then
+            Write_Char ('[');
          end if;
 
-         Write_Char (')');
-
-      --  Rational constants with a denominator of 1 can be written as
-      --  a real literal for the numerator integer.
-
-      elsif Val.Den = 1 then
          UI_Write (Val.Num, Decimal);
          Write_Str (".0");
 
-      --  Non-based (rational) constants are written in (num/den) style
+         if Val.Den /= 0 then
+            Write_Char ('*');
+            Write_Int (Val.Rbase);
+            Write_Str ("**");
+
+            if Val.Den <= 0 then
+               UI_Write (-Val.Den, Decimal);
+            else
+               Write_Str ("(-");
+               UI_Write (Val.Den, Decimal);
+               Write_Char (')');
+            end if;
+         end if;
+
+         if Brackets then
+            Write_Char (']');
+         end if;
+
+      --  Rationals where numerator is divisible by denominator can be output
+      --  as literals after we do the division. This includes the common case
+      --  where the denominator is 1.
+
+      elsif Val.Num mod Val.Den = 0 then
+         UI_Write (Val.Num / Val.Den, Decimal);
+         Write_Str (".0");
+
+      --  Other non-based (rational) constants are written in num/den style
 
       else
-         Write_Char ('(');
+         if Brackets then
+            Write_Char ('[');
+         end if;
+
          UI_Write (Val.Num, Decimal);
          Write_Str (".0/");
          UI_Write (Val.Den, Decimal);
-         Write_Str (".0)");
-      end if;
+         Write_Str (".0");
 
-      --  Add trailing paren for negative values
-
-      if Val.Negative then
-         Write_Char (')');
+         if Brackets then
+            Write_Char (']');
+         end if;
       end if;
    end UR_Write;
 

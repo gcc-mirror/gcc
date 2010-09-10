@@ -4364,12 +4364,10 @@ package body Sprint is
    procedure Write_Ureal_With_Col_Check_Sloc (U : Ureal) is
       D : constant Uint := Denominator (U);
       N : constant Uint := Numerator (U);
-
    begin
-      Col_Check
-        (UI_Decimal_Digits_Hi (D) + UI_Decimal_Digits_Hi (N) + 4);
+      Col_Check (UI_Decimal_Digits_Hi (D) + UI_Decimal_Digits_Hi (N) + 4);
       Set_Debug_Sloc;
-      UR_Write (U);
+      UR_Write (U, Brackets => True);
    end Write_Ureal_With_Col_Check_Sloc;
 
 end Sprint;
