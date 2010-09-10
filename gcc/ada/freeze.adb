@@ -1089,7 +1089,9 @@ package body Freeze is
 
       --  Do not attempt to analyze case where range was in error
 
-      if Error_Posted (Scalar_Range (E)) then
+      if No (Scalar_Range (E))
+        or else Error_Posted (Scalar_Range (E))
+      then
          return;
       end if;
 

@@ -1411,6 +1411,14 @@ package body Sem_Aggr is
          --  Set to False if resolution of the expression failed
 
       begin
+         --  Defend against previous errors
+
+         if Nkind (Expr) = N_Error
+           or else Error_Posted (Expr)
+         then
+            return True;
+         end if;
+
          --  If the array type against which we are resolving the aggregate
          --  has several dimensions, the expressions nested inside the
          --  aggregate must be further aggregates (or strings).

@@ -4994,7 +4994,10 @@ package body Exp_Ch3 is
                  and then No_Initialization (Expr)
                then
                   null;
-               else
+
+               --  Otherwise apply a constraint check now if no prev error
+
+               elsif Nkind (Expr) /= N_Error then
                   Apply_Constraint_Check (Expr, Typ);
 
                   --  If the expression has been marked as requiring a range

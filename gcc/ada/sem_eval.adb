@@ -4680,9 +4680,9 @@ package body Sem_Eval is
          --  If there was an error in either range, then just assume the types
          --  statically match to avoid further junk errors.
 
-         if Error_Posted (Scalar_Range (T1))
-              or else
-            Error_Posted (Scalar_Range (T2))
+         if No (Scalar_Range (T1)) or else No (Scalar_Range (T2))
+           or else Error_Posted (Scalar_Range (T1))
+           or else Error_Posted (Scalar_Range (T2))
          then
             return True;
          end if;
