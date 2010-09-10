@@ -121,11 +121,16 @@ begin
 
    Lib.Load.Load_Main_Source;
 
-   --  Return immediately if the main source could not be parsed
+   --  Return immediately if the main source could not be found
 
    if Sinput.Main_Source_File = No_Source_File then
       return;
    end if;
+
+   --  We set Parsing_Main_Extended_Source true here to cover processing of all
+   --  the configuration pragma files, as well as the main source unit itself.
+
+   Parsing_Main_Extended_Source := True;
 
    --  Read and process configuration pragma files if present
 
@@ -229,9 +234,9 @@ begin
       Optimize_Alignment := 'T';
    end if;
 
-   --  We have now processed the command line switches, and the gnat.adc
-   --  file, so this is the point at which we want to capture the values
-   --  of the configuration switches (see Opt for further details).
+   --  We have now processed the command line switches, and the configuration
+   --  pragma files, so this is the point at which we want to capture the
+   --  values of the configuration switches (see Opt for further details).
 
    Opt.Register_Opt_Config_Switches;
 
@@ -252,6 +257,7 @@ begin
    --  semantics in any case).
 
    Discard_List (Par (Configuration_Pragmas => False));
+   Parsing_Main_Extended_Source := False;
 
    --  The main unit is now loaded, and subunits of it can be loaded,
    --  without reporting spurious loading circularities.

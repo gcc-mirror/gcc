@@ -1,5 +1,31 @@
 2010-09-10  Robert Dewar  <dewar@adacore.com>
 
+	* errout.adb: Remove tests of Parsing_Main_Subunit, since this test is
+	now done in In_Extended_Main_Source_Unit.
+	* errout.ads (Compiler_State[_Type]): Moved from Errout to Lib
+	(Parsing_Main_Subunit): Moved from Errout to Lib and renamed
+	as Parsing_Main_Extended_Source.
+	* frontend.adb: Set Parsing_Main_Extended_Source True for parsing main
+	unit.
+	* lib-load.adb (Load_Unit): Add PMES parameter
+	Set PMES appropriately in all calls to Load_Unit
+	* lib-load.ads (Load_Unit): Add PMES parameter
+	* lib.adb (In_Extended_Main_Source_Unit): When called with
+	Compiler_State set to Parsing, test new flag
+	Compiling_Main_Extended_Source.
+	* lib.ads (Compiler_State[_Type]): Moved from Errout to Lib
+	(Parsing_Main_Subunit): Moved from Errout to Lib and renamed
+	as Parsing_Main_Extended_Source
+	* par-load.adb (Load): Set PMES properly in call to Load_Unit
+
+2010-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_cg.adb: Use proper entity to handle overloads.
+	* sem_res.adb (Check_Parameterless_Call): An operator node without
+	actuals cannot be a call, and must be treated as a string.
+
+2010-09-10  Robert Dewar  <dewar@adacore.com>
+
 	* frontend.adb: Minor reformatting.
 
 2010-09-10  Robert Dewar  <dewar@adacore.com>

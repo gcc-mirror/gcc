@@ -60,21 +60,6 @@ package Errout is
    --  the use of constructs not permitted by the library in use, or improper
    --  constructs in No_Run_Time mode).
 
-   type Compiler_State_Type is (Parsing, Analyzing);
-   Compiler_State : Compiler_State_Type;
-   --  Indicates current state of compilation. This is put in the Errout spec
-   --  because it affects the handling of error messages. In particular, an
-   --  attempt is made by Errout to suppress cascaded error messages in Parsing
-   --  mode, but not in the other modes.
-
-   Parsing_Main_Subunit : Boolean := False;
-   --  Set True if we are currently parsing a subunit that is part of the main
-   --  extended source. We need this flag, since the In_Main_Extended_Source
-   --  test may produce an improper False value if called too early during the
-   --  parsing process. This is put in the Errout spec because it affects error
-   --  message handling. In particular, warnings and style messages during
-   --  parsing are only generated if this flag is set to True.
-
    Current_Error_Source_File : Source_File_Index
      renames Err_Vars.Current_Error_Source_File;
    --  Id of current messages. Used to post file name when unit changes. This
