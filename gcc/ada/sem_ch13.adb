@@ -1283,6 +1283,7 @@ package body Sem_Ch13 is
 
          when Attribute_Component_Size => Component_Size_Case : declare
             Csize    : constant Uint := Static_Integer (Expr);
+            Ctyp     : Entity_Id;
             Btype    : Entity_Id;
             Biased   : Boolean;
             New_Ctyp : Entity_Id;
@@ -1295,13 +1296,14 @@ package body Sem_Ch13 is
             end if;
 
             Btype := Base_Type (U_Ent);
+            Ctyp := Component_Type (Btype);
 
             if Has_Component_Size_Clause (Btype) then
                Error_Msg_N
                  ("component size clause for& previously given", Nam);
 
             elsif Csize /= No_Uint then
-               Check_Size (Expr, Component_Type (Btype), Csize, Biased);
+               Check_Size (Expr, Ctyp, Csize, Biased);
 
                if Has_Aliased_Components (Btype)
                  and then Csize < 32
@@ -1365,6 +1367,17 @@ package body Sem_Ch13 is
                      Error_Msg_N
                        ("?component size ignored in this configuration", N);
                   end if;
+               end if;
+
+               --  Deal with warning on overridden size
+
+               if Warn_On_Overridden_Size
+                 and then Has_Size_Clause (Ctyp)
+                 and then RM_Size (Ctyp) /= Csize
+               then
+                  Error_Msg_NE
+                    ("?component size overrides size clause for&",
+                     N, Ctyp);
                end if;
 
                Set_Has_Component_Size_Clause (Btype, True);
@@ -2748,6 +2761,15 @@ package body Sem_Ch13 is
                         Set_Esize                (Comp, 1 + (Lbit - Fbit));
                         Set_Normalized_First_Bit (Comp, Fbit mod SSU);
                         Set_Normalized_Position  (Comp, Fbit / SSU);
+
+                        if Warn_On_Overridden_Size
+                          and then Has_Size_Clause (Etype (Comp))
+                          and then RM_Size (Etype (Comp)) /= Esize (Comp)
+                        then
+                           Error_Msg_NE
+                             ("?component size overrides size clause for&",
+                              Component_Name (CC), Etype (Comp));
+                        end if;
 
                         --  This information is also set in the corresponding
                         --  component of the base type, found by accessing the

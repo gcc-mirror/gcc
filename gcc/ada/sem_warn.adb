@@ -3085,6 +3085,7 @@ package body Sem_Warn is
             Warn_On_Object_Renames_Function     := True;
             Warn_On_Obsolescent_Feature         := True;
             Warn_On_Overlap                     := True;
+            Warn_On_Overridden_Size             := True;
             Warn_On_Parameter_Order             := True;
             Warn_On_Questionable_Missing_Parens := True;
             Warn_On_Record_Holes                := True;
@@ -3134,6 +3135,12 @@ package body Sem_Warn is
 
          when 'R' =>
             Warn_On_Object_Renames_Function     := False;
+
+         when 's' =>
+            Warn_On_Overridden_Size             := True;
+
+         when 'S' =>
+            Warn_On_Overridden_Size             := False;
 
          when 'u' =>
             Warn_On_Unordered_Enumeration_Type  := True;
@@ -3268,6 +3275,7 @@ package body Sem_Warn is
             Warn_On_Object_Renames_Function     := False;
             Warn_On_Obsolescent_Feature         := False;
             Warn_On_Overlap                     := False;
+            Warn_On_Overridden_Size             := False;
             Warn_On_Parameter_Order             := False;
             Warn_On_Record_Holes                := False;
             Warn_On_Questionable_Missing_Parens := False;

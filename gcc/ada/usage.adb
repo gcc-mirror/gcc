@@ -468,6 +468,8 @@ begin
    Write_Line ("        .r+  turn on warnings for object renaming function");
    Write_Line ("        .R*  turn off warnings for object renaming function");
    Write_Line ("        s    suppress all info/warnings");
+   Write_Line ("        .s   turn on warnings for overridden size clause");
+   Write_Line ("        .S*  turn off warnings for overridden size clause");
    Write_Line ("        t    turn on warnings for tracking deleted code");
    Write_Line ("        T*   turn off warnings for tracking deleted code");
    Write_Line ("        u+   turn on warnings for unused entity");
