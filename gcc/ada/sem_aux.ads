@@ -172,7 +172,8 @@ package Sem_Aux is
    --  These are the types that are defined as return-by-reference types in Ada
    --  95 (see RM95-6.5(11-16)). In Ada 2005, these are the types that require
    --  build-in-place for function calls. Note that build-in-place is allowed
-   --  for other types, too.
+   --  for other types, too. This is also used for idenfitying pure procedures
+   --  whose calls should not be eliminated (RM 10.2.1(18/2)).
 
    function Is_Limited_Type (Ent : Entity_Id) return Boolean;
    --  Ent is any entity. Returns true if Ent is a limited type (limited
