@@ -55,19 +55,19 @@
 
    --   - Object mutation. Shared data object can be reused without memory
    --     reallocation when all of the following requirements are met:
-   --      - shared data object is no longer used by anyone else.
-   --      - the size is sufficient to store new value.
-   --      - the gap after reuse is less then a defined threashold.
+   --      - the shared data object is no longer used by anyone else;
+   --      - the size is sufficient to store the new value;
+   --      - the gap after reuse is less then a defined threshold.
 
    --   - Memory preallocation. Most of used memory allocation algorithms
-   --     allign allocated segments on the some boundary, thus some amount of
+   --     align allocated segments on the some boundary, thus some amount of
    --     additional memory can be preallocated without any impact. Such
    --     preallocated memory can used later by Append/Insert operations
    --     without reallocation.
 
    --  Reference counting uses GCC builtin atomic operations, which allows to
-   --  safely share internal data between Ada tasks. Nevertheless, this not
-   --  make objects of Unbounded_String thread-safe, so each instance can't be
+   --  safely share internal data between Ada tasks. Nevertheless, this doesn't
+   --  make objects of Unbounded_String thread-safe: each instance can't be
    --  accessed by several tasks simulatenously.
 
 with Ada.Strings.Maps;
