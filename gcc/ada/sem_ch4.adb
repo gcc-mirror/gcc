@@ -3941,12 +3941,11 @@ package body Sem_Ch4 is
          else
             if Ekind (Prefix_Type) = E_Record_Subtype then
 
-               --  Check whether this is a component of the base type
-               --  which is absent from a statically constrained subtype.
-               --  This will raise constraint error at run time, but is
-               --  not a compile-time error. When the selector is illegal
-               --  for base type as well fall through and generate a
-               --  compilation error anyway.
+               --  Check whether this is a component of the base type which
+               --  is absent from a statically constrained subtype. This will
+               --  raise constraint error at run time, but is not a compile-
+               --  time error. When the selector is illegal for base type as
+               --  well fall through and generate a compilation error anyway.
 
                Comp := First_Component (Base_Type (Prefix_Type));
                while Present (Comp) loop

@@ -68,7 +68,7 @@ with Sem_Util; use Sem_Util;
 with Sem_Type; use Sem_Type;
 with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
-with Sinfo.CN;    use Sinfo.CN;
+with Sinfo.CN; use Sinfo.CN;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
@@ -1066,6 +1066,7 @@ package body Sem_Res is
       --  Rewrite as call if overloadable entity that is (or could be, in the
       --  overloaded case) a function call. If we know for sure that the entity
       --  is an enumeration literal, we do not rewrite it.
+
       --  If the entity is the name of an operator, it cannot be a call because
       --  operators cannot have default parameters. In this case, this must be
       --  a string whose contents coincide with an operator name. Set the kind

@@ -5519,9 +5519,11 @@ package body Exp_Attr is
       --  the compiler will generate in-place stream routines for string types
       --  that appear in GNAT's library, but will generate calls via rtsfind
       --  to library routines for user code.
+
       --  ??? For now, disable this code for JVM, since this generates a
       --  VerifyError exception at run time on e.g. c330001.
-      --  This is disabled for AAMP, to avoid making dependences on files not
+
+      --  This is disabled for AAMP, to avoid creating dependences on files not
       --  supported in the AAMP library (such as s-fileio.adb).
 
       if VM_Target /= JVM_Target

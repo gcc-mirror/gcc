@@ -1532,17 +1532,16 @@ package body Sem_Ch13 is
                Error_Msg_N
                  ("size cannot be given for unconstrained array", Nam);
 
-            elsif VM_Target /= No_VM then
+            elsif Size /= No_Uint then
 
-               --  Size clauses are ignored for VM targets. Display a warning
-               --  unless we are in GNAT mode, in which case this is useless.
-
-               if not GNAT_Mode then
+               if VM_Target /= No_VM and then not GNAT_Mode then
+                  --  Size clause is not handled properly on VM targets.
+                  --  Display a warning unless we are in GNAT mode, in which
+                  --  case this is useless.
                   Error_Msg_N
                     ("?size clauses are ignored in this configuration", N);
                end if;
 
-            elsif Size /= No_Uint then
                if Is_Type (U_Ent) then
                   Etyp := U_Ent;
                else

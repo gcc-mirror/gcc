@@ -1007,6 +1007,55 @@ package body Exp_Ch5 is
       F_Or_L : Name_Id;
       S_Or_P : Name_Id;
 
+      function Build_Step (J : Nat) return Node_Id;
+      --  Note that on the last iteration of the loop, the index is increased
+      --  past the upper bound. This is consistent with the C semantics of the
+      --  back-end, where such an off-by-one value on a dead variable is OK.
+      --  However, in CodePeer mode this leads to spurious warnings, and thus
+      --  we place a guard around the attribute reference.
+
+      ----------------
+      -- Build_Step --
+      ----------------
+
+      function Build_Step (J : Nat) return Node_Id is
+         Step : Node_Id;
+         Lim  : Name_Id;
+
+      begin
+         if Rev then
+            Lim := Name_First;
+         else
+            Lim := Name_Last;
+         end if;
+
+         Step :=
+            Make_Assignment_Statement (Loc,
+               Name => New_Occurrence_Of (Rnn (J), Loc),
+               Expression =>
+                 Make_Attribute_Reference (Loc,
+                   Prefix =>
+                     New_Occurrence_Of (R_Index_Type (J), Loc),
+                   Attribute_Name => S_Or_P,
+                   Expressions => New_List (
+                     New_Occurrence_Of (Rnn (J), Loc))));
+
+         if CodePeer_Mode then
+            Step :=
+              Make_If_Statement (Loc,
+                 Condition =>
+                    Make_Op_Ne (Loc,
+                       Left_Opnd  => New_Occurrence_Of (Lnn (J), Loc),
+                       Right_Opnd =>
+                         Make_Attribute_Reference (Loc,
+                           Prefix => New_Occurrence_Of (L_Index_Type (J), Loc),
+                           Attribute_Name => Lim)),
+                 Then_Statements => New_List (Step));
+         end if;
+
+         return Step;
+      end Build_Step;
+
    begin
       if Rev then
          F_Or_L := Name_Last;
@@ -1103,18 +1152,7 @@ package body Exp_Ch5 is
                            Discrete_Subtype_Definition =>
                              New_Reference_To (L_Index_Type (J), Loc))),
 
-                   Statements => New_List (
-                     Assign,
-
-                     Make_Assignment_Statement (Loc,
-                       Name => New_Occurrence_Of (Rnn (J), Loc),
-                       Expression =>
-                         Make_Attribute_Reference (Loc,
-                           Prefix =>
-                             New_Occurrence_Of (R_Index_Type (J), Loc),
-                           Attribute_Name => S_Or_P,
-                           Expressions => New_List (
-                             New_Occurrence_Of (Rnn (J), Loc)))))))));
+                   Statements => New_List (Assign, Build_Step (J))))));
       end loop;
 
       return Assign;
