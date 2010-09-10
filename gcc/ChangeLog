@@ -1,3 +1,9 @@
+2010-09-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/45634
+	* tree-ssa-ccp.c (fold_const_aggregate_ref): Check that result
+	of string folding is of integral type.
+
 2010-09-10  Ryan Mansfield  <rmansfield@qnx.com>
 
 	* doc/invoke.texi (-x): Fix typo.

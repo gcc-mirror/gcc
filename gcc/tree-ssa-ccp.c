@@ -1537,8 +1537,9 @@ fold_const_aggregate_ref (tree t)
       /* Fold read from constant string.  */
       if (TREE_CODE (ctor) == STRING_CST)
 	{
-	  if ((TYPE_MODE (TREE_TYPE (t))
-	       == TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor))))
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (t))
+	      && (TYPE_MODE (TREE_TYPE (t))
+		  == TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor))))
 	      && (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor))))
 	          == MODE_INT)
 	      && GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (ctor)))) == 1
