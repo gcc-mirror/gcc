@@ -7797,7 +7797,7 @@ build_vtbl_initializer (tree binfo,
 	    {
 	      fn = abort_fndecl;
 	      if (abort_fndecl_addr == NULL)
-		abort_fndecl_addr = build1 (ADDR_EXPR, vfunc_ptr_type_node, fn);
+		abort_fndecl_addr = fold_convert (vfunc_ptr_type_node, build_fold_addr_expr (fn));
 	      init = abort_fndecl_addr;
 	    }
 	  else
@@ -7810,7 +7810,7 @@ build_vtbl_initializer (tree binfo,
 		}
 	      /* Take the address of the function, considering it to be of an
 		 appropriate generic type.  */
-	      init = build1 (ADDR_EXPR, vfunc_ptr_type_node, fn);
+	      init = fold_convert (vfunc_ptr_type_node, build_fold_addr_expr (fn));
 	    }
 	}
 
