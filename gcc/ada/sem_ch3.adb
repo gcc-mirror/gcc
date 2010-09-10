@@ -3148,7 +3148,7 @@ package body Sem_Ch3 is
          --  A rather specialized test. If we see two tasks being declared
          --  of the same type in the same object declaration, and the task
          --  has an entry with an address clause, we know that program error
-         --  will be raised at run-time since we can't have two tasks with
+         --  will be raised at run time since we can't have two tasks with
          --  entries at the same address.
 
          if Is_Task_Type (Etype (Id)) and then More_Ids (N) then

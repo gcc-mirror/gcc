@@ -8769,7 +8769,7 @@ package body Exp_Dist is
                                  --  Struct_Counter should be reset before
                                  --  handling a variant part. Indeed only one
                                  --  of the case statement alternatives will be
-                                 --  executed at run-time, so the counter must
+                                 --  executed at run time, so the counter must
                                  --  start at 0 for every case statement.
 
                                  Struct_Counter := 0;
@@ -9655,7 +9655,7 @@ package body Exp_Dist is
                                  --  Struct_Counter should be reset before
                                  --  handling a variant part. Indeed only one
                                  --  of the case statement alternatives will be
-                                 --  executed at run-time, so the counter must
+                                 --  executed at run time, so the counter must
                                  --  start at 0 for every case statement.
 
                                  Struct_Counter := 0;

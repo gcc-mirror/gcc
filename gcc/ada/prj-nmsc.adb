@@ -5208,6 +5208,7 @@ package body Prj.Nmsc is
                                Resolve_Links  =>
                                  Opt.Follow_Links_For_Dirs,
                                Case_Sensitive => True);
+               Has_Error : Boolean := False;
 
             begin
                if Root_Dir'Length = 0 then
@@ -5215,8 +5216,10 @@ package body Prj.Nmsc is
                   Error_Or_Warning
                     (Data.Flags, Data.Flags.Missing_Source_Files,
                      "{ is not a valid directory.", Location, Project);
+                  Has_Error := Data.Flags.Missing_Source_Files = Error;
+               end if;
 
-               else
+               if not Has_Error then
                   --  We have an existing directory, we register it and all of
                   --  its subdirectories.
 
@@ -5240,6 +5243,7 @@ package body Prj.Nmsc is
             declare
                Path_Name  : Path_Information;
                Dir_Exists : Boolean;
+               Has_Error  : Boolean := False;
 
             begin
                Locate_Directory
@@ -5255,8 +5259,10 @@ package body Prj.Nmsc is
                   Error_Or_Warning
                     (Data.Flags, Data.Flags.Missing_Source_Files,
                      "{ is not a valid directory", Location, Project);
+                  Has_Error := Data.Flags.Missing_Source_Files = Error;
+               end if;
 
-               else
+               if not Has_Error then
                   --  links have been resolved if necessary, and Path_Name
                   --  always ends with a directory separator
                   Add_To_Or_Remove_From_Source_Dirs

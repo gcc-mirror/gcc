@@ -4946,7 +4946,7 @@ package body Exp_Aggr is
       end if;
 
       --  If the semantic analyzer has determined that aggregate N will raise
-      --  Constraint_Error at run-time, then the aggregate node has been
+      --  Constraint_Error at run time, then the aggregate node has been
       --  replaced with an N_Raise_Constraint_Error node and we should
       --  never get here.
 

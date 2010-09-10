@@ -2288,7 +2288,7 @@ package body Sem_Elab is
                     ("task will be activated before elaboration of its body?",
                       Decl);
                   Error_Msg_N
-                    ("\Program_Error will be raised at run-time?", Decl);
+                    ("\Program_Error will be raised at run time?", Decl);
 
                elsif
                  Present (Corresponding_Body (Unit_Declaration_Node (Proc)))

@@ -3681,7 +3681,7 @@ package body Exp_Disp is
 
          --  Calculate the number of slots of the dispatch table. If the number
          --  of primitives of Typ is 0 we reserve a dummy single entry for its
-         --  DT because at run-time the pointer to this dummy entry will be
+         --  DT because at run time the pointer to this dummy entry will be
          --  used as the tag.
 
          if Num_Iface_Prims = 0 then
@@ -5095,7 +5095,7 @@ package body Exp_Disp is
                  Is_Library_Level_Tagged_Type (Typ));
 
                --  The table of interfaces is not constant; its slots are
-               --  filled at run-time by the IP routine using attribute
+               --  filled at run time by the IP routine using attribute
                --  'Position to know the location of the tag components
                --  (and this attribute cannot be safely used before the
                --  object is initialized).

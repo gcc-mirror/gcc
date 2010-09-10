@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -392,7 +392,7 @@ package body Exp_Prag is
          then
             return;
          elsif Nam = Name_Assertion then
-            Error_Msg_N ("?assertion will fail at run-time", N);
+            Error_Msg_N ("?assertion will fail at run time", N);
          else
             Error_Msg_N ("?check will fail at run time", N);
          end if;
