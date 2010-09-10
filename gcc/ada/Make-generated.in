@@ -124,3 +124,11 @@ $(ADA_GEN_SUBDIR)/stamp-sdefault : $(srcdir)/version.c Makefile
 	$(ECHO) "end Sdefault;" >> tmp-sdefault.adb
 	$(MOVE_IF_CHANGE) tmp-sdefault.adb $(ADA_GEN_SUBDIR)/sdefault.adb
 	touch $(ADA_GEN_SUBDIR)/stamp-sdefault
+
+$(ADA_GEN_SUBDIR)/gnat.hlp :  $(ADA_GEN_SUBDIR)/vms_help.adb $(ADA_GEN_SUBDIR)/vms_cmds.ads $(ADA_GEN_SUBDIR)/gnat.help_in $(ADA_GEN_SUBDIR)/vms_data.ads
+	-$(MKDIR) $(ADA_GEN_SUBDIR)/bldtools/gnat_hlp
+	$(RM) $(addprefix $(ADA_GEN_SUBDIR)/bldtools/gnat_hlp/,$(notdir $^))
+	$(CP) $^ $(ADA_GEN_SUBDIR)/bldtools/gnat_hlp
+	(cd $(ADA_GEN_SUBDIR)/bldtools/gnat_hlp; \
+	  gnatmake -q vms_help; \
+	  ./vms_help$(build_exeext) gnat.help_in vms_data.ads ../../gnat.hlp)

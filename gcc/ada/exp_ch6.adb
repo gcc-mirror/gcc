@@ -4096,6 +4096,7 @@ package body Exp_Ch6 is
    --  Initialize scalar out parameters if Initialize/Normalize_Scalars
 
    --  Reset Pure indication if any parameter has root type System.Address
+   --  or has any parameters of limited types.
 
    --  Wrap thread body
 
@@ -4287,7 +4288,9 @@ package body Exp_Ch6 is
          begin
             F := First_Formal (Spec_Id);
             while Present (F) loop
-               if Is_Descendent_Of_Address (Etype (F)) then
+               if Is_Descendent_Of_Address (Etype (F))
+                 or else Is_Limited_Type (Etype (F))
+               then
                   Set_Is_Pure (Spec_Id, False);
 
                   if Spec_Id /= Body_Id then

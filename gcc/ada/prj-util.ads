@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,20 +27,26 @@
 
 package Prj.Util is
 
-   --  ??? throughout this spec, parameters are not well enough documented
-
    function Executable_Of
-     (Project  : Project_Id;
-      In_Tree  : Project_Tree_Ref;
-      Main     : File_Name_Type;
-      Index    : Int;
-      Ada_Main : Boolean := True;
-      Language : String := "") return File_Name_Type;
+     (Project        : Project_Id;
+      In_Tree        : Project_Tree_Ref;
+      Main           : File_Name_Type;
+      Index          : Int;
+      Ada_Main       : Boolean := True;
+      Language       : String := "";
+      Include_Suffix : Boolean := True) return File_Name_Type;
    --  Return the value of the attribute Builder'Executable for file Main in
    --  the project Project, if it exists. If there is no attribute Executable
    --  for Main, remove the suffix from Main; then, if the attribute
    --  Executable_Suffix is specified, add this suffix, otherwise add the
    --  standard executable suffix for the platform.
+   --
+   --  If Include_Suffix is true, then the ".exe" suffix (or any suffix defined
+   --  in the config and project files) will be added. Otherwise, such a suffix
+   --  is not added. In particular, the prefix should not be added if you are
+   --  potentially testing for cross-platforms, since the suffix might not be
+   --  known (its default value comes from the ...-gnatmake prefix).
+   --
    --  What is Ada_Main???
    --  What is Language???
 
@@ -60,8 +66,8 @@ package Prj.Util is
    function Value_Of
      (Variable : Variable_Value;
       Default  : String) return String;
-   --  Get the value of a single string variable. If Variable is
-   --  Nil_Variable_Value, is a string list or is defaulted, return Default.
+   --  Get the value of a single string variable. If Variable is a string list,
+   --  is Nil_Variable_Value,or is defaulted, return Default.
 
    function Value_Of
      (Index    : Name_Id;
