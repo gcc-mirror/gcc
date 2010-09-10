@@ -3577,6 +3577,7 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
   gfc_ref *lref;
   gfc_ref *rref;
   int nDepend = 0;
+  int i, j;
 
   loop->temp_ss = NULL;
 
@@ -3603,6 +3604,17 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
 
 	  if (nDepend == 1)
 	    break;
+
+	  for (i = 0; i < dest->data.info.dimen; i++)
+	    for (j = 0; j < ss->data.info.dimen; j++)
+	      if (i != j
+		  && dest->data.info.dim[i] == ss->data.info.dim[j])
+		{
+		  /* If we don't access array elements in the same order,
+		     there is a dependency.  */
+		  nDepend = 1;
+		  goto temporary;
+		}
 #if 0
 	  /* TODO : loop shifting.  */
 	  if (nDepend == 1)
@@ -3640,6 +3652,8 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
 #endif
 	}
     }
+
+temporary:
 
   if (nDepend == 1)
     {

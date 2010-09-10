@@ -1,3 +1,8 @@
+2010-09-10  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_conv_resolve_dependencies): Handle same-array
+	transposed references.
+
 2010-09-10  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/45186
