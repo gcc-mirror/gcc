@@ -1,3 +1,15 @@
+2010-09-10  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+
+	PR c++/43824
+	* g++.dg/lookup/strong-using-1.C: Set dg-options to "".
+	* g++.dg/lookup/strong-using-2.C: Likewise.
+	* g++.dg/lookup/strong-using-3.C: Likewise.
+	* g++.dg/lookup/strong-using-5.C: Likewise.
+
+	* g++.dg/cpp0x/inline-ns3.C: Add -std=c++0x.
+	* g++.dg/cpp0x/inline-ns4.C: New.
+	* g++.dg/cpp0x/inline-ns5.C: New.
+
 2010-09-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/45634

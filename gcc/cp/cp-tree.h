@@ -387,7 +387,9 @@ typedef enum cpp0x_warn_str
   /* scoped enums */
   CPP0X_SCOPED_ENUMS,
   /* defaulted and deleted functions */
-  CPP0X_DEFAULTED_DELETED
+  CPP0X_DEFAULTED_DELETED,
+  /* inline namespaces */
+  CPP0X_INLINE_NAMESPACES
 } cpp0x_warn_str;
   
 /* The various kinds of operation used by composite_pointer_type. */

@@ -13255,6 +13255,7 @@ cp_parser_namespace_definition (cp_parser* parser)
 
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_INLINE))
     {
+      maybe_warn_cpp0x (CPP0X_INLINE_NAMESPACES);
       is_inline = true;
       cp_lexer_consume_token (parser->lexer);
     }

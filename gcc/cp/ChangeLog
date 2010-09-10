@@ -1,3 +1,11 @@
+2010-09-10  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+
+	PR c++/43824
+	* error.c (maybe_warn_cpp0x): Add new warning
+	CPP0X_INLINE_NAMESPACES.
+	* parser.c (cp_parser_namespace_definition): Likewise.
+	* cp-tree.h (cpp0x_warn_str): Likewise.
+
 2010-09-10  Richard Guenther  <rguenther@suse.de>
 
 	* decl.c (reshape_init_vector): For VECTOR_TYPEs, use
