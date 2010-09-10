@@ -1,0 +1,13 @@
+This directory contains the public headers that are installed when
+libobjc is installed.
+
+Deprecated parts of the API should be moved into objc/deprecated and
+then included by public headers until they are finally removed.  For
+example, if objc-api.h contains an _objc_unexpected_exception variable
+which is then deprecated, it should be moved into a header in
+objc/deprecated.  This header is then included into objc-api.h.
+
+The result is that all the deprecated parts of the API are clearly
+separated in objc/deprecated, while objc/ retains only the current public
+API.
+

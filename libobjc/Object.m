@@ -343,6 +343,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   class_set_version(self, aVersion);
   return self;
 }
+@end
+
+/* The following methods were deprecated in GCC 4.6.0 and will be
+   removed in the next GCC release.
+*/
+
+@implementation Object (Deprecated)
 
 + (int)streamVersion: (TypedStream*)aStream
 {

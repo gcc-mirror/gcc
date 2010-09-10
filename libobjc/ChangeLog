@@ -1,3 +1,30 @@
+2010-09-10  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc/deprecated: New directory.
+	* objc/deprecated/README: New file.
+	* objc/README: New file.
+	* objc/typedstream.h: Moved into objc/deprecated/typedstream.h;
+	objc/typedstream.h replaced with a placeholder including the file
+	from the deprecated/ directory.
+	* objc/deprecated/objc-unexpected-exception.h: New file with the
+	definition of _objc_unexpected_exception.	
+	* objc/objc-api.h: Include deprecated/objc-unexcepted-exception.h
+	instead of defining _objc_unexpected_exception.
+	* objc/deprecated/Object.h: New file with the deprecated Object
+	methods in a 'Deprecated' category.
+	* objc/Object.h Include deprecated/Object.h instead of defining
+	the deprecated methods.
+	* Object.m: Moved deprecated methods into 'Deprecated' category.
+	* objc-private: New directory.
+	* objc-private/README: New file.
+	* Makefile.in (OBJC_DEPRECATED_H): New variable.
+	(install-headers): Create installation directory for
+	OBJC_DEPRECATED_H headers, and install them.
+
+2010-09-10  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc/objc-exception.h: Fixed include of objc.h.
+	
 2010-09-08  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/objc-exception.h: New file.
