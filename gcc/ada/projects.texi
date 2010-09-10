@@ -1582,6 +1582,17 @@ Other library-related attributes can be used to change the defaults:
   accomplishes specific actions before calling gcc (which itself is calling the
   linker to build the library image).
 
+@item @b{Library_Options}:
+@cindex @code{Library_Options}
+  This attribute may be used to specified additional switches (last switches)
+  when linking a shared library.
+
+@item @b{Leading_Library_Options}:
+@cindex @code{Leading_Library_Options}
+  This attribute, that is taken into account only by @command{gprbuild}, may be
+  used to specified leading options (first switches) when linking a shared
+  library.
+
 @cindex @code{Linker_Options}
 @item @b{Linker.Linker_Options}:
   This attribute specifies additional switches to be given to the linker when
@@ -1758,11 +1769,6 @@ included in the library.
   When a stand-alone library is bound, the switches that are specified in
   the attribute @b{Binder.Default_Switches ("Ada")} are
   used in the call to @command{gnatbind}.
-
-@item @b{Library_Options}:
-@cindex @code{Library_Options}
-  This attribute may be used to specified additional switches to  @command{gcc}
-  when linking the library.
 
 @item @b{Library_Src_Dir}:
 @cindex @code{Library_Src_Dir}
@@ -2382,9 +2388,8 @@ must be the same as the name of the renaming package. The project must
 contain a package declaration with this name, and the project
 must appear in the context clause of the current project, or be its parent
 project. It is not possible to add or override attributes to the renaming
-project. If you need to do so, you should declare a standard package, and
-assign the value of the attributes one by one (@code{for Switches ("Ada")
-use Other_Project.Compiler'Switches ("Ada")}).
+project. If you need to do so, you should use an @b{extending declaration}
+(see below).
 
 Packages that are renamed in other project files often come from project files
 that have no sources: they are just used as templates. Any modification in the
@@ -2392,14 +2397,22 @@ template will be reflected automatically in all the project files that rename
 a package from the template. This is a very common way to share settings
 between projects.
 
+Finally, a package can also be defined by an @b{extending declaration}. This is
+similar to a @b{renaming declaration}, except that it is possible to add or
+override attributes.
+
 @smallexample
-package_declaration ::= package_spec | package_renaming
+package_declaration ::= package_spec | package_renaming | package_extension
 package_spec ::=
   @i{package} @i{<package_>}simple_name @i{is}
     @{simple_declarative_item@}
   @i{end} package_identifier ;
 package_renaming ::==
   @i{package} @i{<package_>}simple_name @i{renames} @i{<project_>}simple_name.package_identifier ;
+package_extension ::==
+  @i{package} @i{<package_>}simple_name @i{extends} @i{<project_>}simple_name.package_identifier @i{is}
+    @{simple_declarative_item@}
+  @i{end} package_identifier ;
 @end smallexample
 
 @c ---------------------------------------------
@@ -2764,6 +2777,7 @@ system (file). The text is between brackets ([]) if the index is optional.
 @item Library_Interface @tab string @tab - @tab -
 @item Library_Auto_Init @tab string @tab - @tab -
 @item Library_Options @tab list @tab - @tab -
+@item Leading_Library_Options @tab list @tab - @tab -
 @item Library_Src_Dir @tab string @tab - @tab -
 @item Library_ALI_Dir @tab string @tab - @tab -
 @item Library_GCC @tab string @tab - @tab -
@@ -2862,6 +2876,7 @@ system (file). The text is between brackets ([]) if the index is optional.
 @item Objects_Path @tab string @tab Binder @tab insensitive (language)
 @item Objects_Path_File @tab string @tab Binder @tab insensitive (language)
 @item Linker_Options @tab list @tab Linker @tab -
+@item Leading_Switches @tab list @tab Linker @tab -
 @item Map_File_Options @tab string @tab Linker @tab -
 @item Executable_Switches @tab list @tab Linker @tab -
 @item Lib_Dir_Switch @tab string @tab Linker @tab -

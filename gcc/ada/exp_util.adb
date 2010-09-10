@@ -1216,14 +1216,15 @@ package body Exp_Util is
    begin
       --  In general we cannot build the subtype if expansion is disabled,
       --  because internal entities may not have been defined. However, to
-      --  avoid some cascaded errors, we try to continue when the expression
-      --  is an array (or string), because it is safe to compute the bounds.
-      --  It is in fact required to do so even in a generic context, because
-      --  there may be constants that depend on bounds of string literal.
+      --  avoid some cascaded errors, we try to continue when the expression is
+      --  an array (or string), because it is safe to compute the bounds. It is
+      --  in fact required to do so even in a generic context, because there
+      --  may be constants that depend on the bounds of a string literal, both
+      --  standard string types and more generally arrays of characters.
 
       if not Expander_Active
         and then (No (Etype (Exp))
-                   or else Base_Type (Etype (Exp)) /= Standard_String)
+                   or else not Is_String_Type (Etype (Exp)))
       then
          return;
       end if;

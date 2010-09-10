@@ -1,3 +1,14 @@
+2010-09-10  Vincent Celier  <celier@adacore.com>
+
+	* projects.texi: Add documentation for package extensions
+	Add some documentation for attributes Leading_Library_Options and
+	Linker'Leading_Switches.
+
+2010-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Expand_Subtype_From_Expression): When expansion is
+	disabled, compute subtype for all string types.
+
 2010-09-10  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_ugn.texi: Add documentation for -gnatw.s/S
