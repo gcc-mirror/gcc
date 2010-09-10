@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -513,7 +513,6 @@ package body Lib.Load is
       --  See if we already have an entry for this unit
 
       Unum := Main_Unit;
-
       while Unum <= Units.Last loop
          exit when Uname_Actual = Units.Table (Unum).Unit_Name;
          Unum := Unum + 1;
@@ -658,12 +657,22 @@ package body Lib.Load is
             --  Parse the new unit
 
             declare
-               Save_Index : constant Nat := Multiple_Unit_Index;
+               Save_Index : constant Nat     := Multiple_Unit_Index;
+               Save_PMS   : constant Boolean := Parsing_Main_Subunit;
+
             begin
                Multiple_Unit_Index := Get_Unit_Index (Uname_Actual);
                Units.Table (Unum).Munit_Index := Multiple_Unit_Index;
                Initialize_Scanner (Unum, Source_Index (Unum));
+
+               if Calling_Unit = Main_Unit and then Subunit then
+                  Parsing_Main_Subunit := True;
+               end if;
+
                Discard_List (Par (Configuration_Pragmas => False));
+
+               Parsing_Main_Subunit := Save_PMS;
+
                Multiple_Unit_Index := Save_Index;
                Set_Loading (Unum, False);
             end;

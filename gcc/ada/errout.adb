@@ -748,7 +748,9 @@ package body Errout is
          --  If the flag location is in the main extended source unit then for
          --  sure we want the warning since it definitely belongs
 
-         if In_Extended_Main_Source_Unit (Sptr) then
+         if Parsing_Main_Subunit
+           or else In_Extended_Main_Source_Unit (Sptr)
+         then
             null;
 
          --  If the flag location is not in the main extended source unit, then
@@ -1157,7 +1159,8 @@ package body Errout is
    is
    begin
       if Eflag
-        and then In_Extended_Main_Source_Unit (N)
+        and then (Parsing_Main_Subunit
+                   or else In_Extended_Main_Source_Unit (N))
         and then Comes_From_Source (N)
       then
          Error_Msg_NEL (Msg, N, N, Sloc (N));

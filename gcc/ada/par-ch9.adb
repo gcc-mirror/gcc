@@ -639,7 +639,7 @@ package body Ch9 is
             Is_Overriding := True;
          end if;
 
-         if (Is_Overriding or else Not_Overriding) then
+         if Is_Overriding or else Not_Overriding then
             if Ada_Version < Ada_05 then
                Error_Msg_SP ("overriding indicator is an Ada 2005 extension");
                Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
@@ -823,7 +823,7 @@ package body Ch9 is
          Is_Overriding := True;
       end if;
 
-      if (Is_Overriding or else Not_Overriding) then
+      if Is_Overriding or else Not_Overriding then
          if Ada_Version < Ada_05 then
             Error_Msg_SP ("overriding indicator is an Ada 2005 extension");
             Error_Msg_SP ("\unit must be compiled with -gnat05 switch");

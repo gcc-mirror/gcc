@@ -1,3 +1,28 @@
+2010-09-10  Vincent Celier  <celier@adacore.com>
+
+	* vms_data.ads: Add new GNAT BIND qualifiers /32_MALLOC (for -H32) and
+	/64_MALLOC (for -H64).
+
+2010-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb (Error_Msg_Internal): Test Parsing_Main_Subunit flag
+	(Error_Msg_NW): Test Parsing_Main_Subunit flag
+	* errout.ads (Parsing_Main_Subunit): New flag
+	* lib-load.adb (Load_Unit): Set Parsing_Main_Subunit flag
+	* par-ch6.adb: Minor style fix (remove redandant parentheses)
+	* par-ch9.adb: Minor style fix (remove redundant parens)
+	* par-load.adb: (Load): Deal with setting Parsing_Main_Subunit
+
+2010-09-10  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Create_Binder_Mapping_File): Remove procedure. Replaced by
+	function of the same name in Makeutl.
+	(Gnatmake): Call function Create_Binder_Mapping_File in Makeutl, instead
+	of removed procedure when creating a binder mapping file.
+	* makeutl.adb (Create_Binder_Mapping_File): New function. Was a
+	procedure in Make.
+	* makeutl.ads (Create_Binder_Mapping_File): New function
+
 2010-09-10  Jose Ruiz  <ruiz@adacore.com>
 
 	* exp_cg.adb (Is_Predefined_Dispatching_Operation): Add the "__" scope

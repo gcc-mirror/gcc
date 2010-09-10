@@ -353,6 +353,20 @@ package VMS_Data is
    --
    --   The main program is not in Ada.
 
+   S_Bind_Alloc32 : aliased constant S := "/32_MALLOC "                    &
+                                            "-H32";
+   --        /32_MALLOC
+   --
+   --        Use 32-bit allocations for `__gnat_malloc' (and thus for
+   --        access types).
+
+   S_Bind_Alloc64 : aliased constant S := "/64_MALLOC "                    &
+                                            "-H64";
+   --        /64_MALLOC
+   --
+   --        Use 64-bit allocations for `__gnat_malloc' (and thus for
+   --        access types).
+
    S_Bind_Mess    : aliased constant S := "/MESSAGES_PROJECT_FILE="        &
                                             "DEFAULT "                     &
                                                "-vP0 "                     &
@@ -694,6 +708,8 @@ package VMS_Data is
                       S_Bind_Library 'Access,
                       S_Bind_Linker  'Access,
                       S_Bind_Main    'Access,
+                      S_Bind_Alloc32 'Access,
+                      S_Bind_Alloc64 'Access,
                       S_Bind_Mess    'Access,
                       S_Bind_Nostinc 'Access,
                       S_Bind_Nostlib 'Access,

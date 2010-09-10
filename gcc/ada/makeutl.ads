@@ -70,6 +70,9 @@ package Makeutl is
       Last   : in out Natural);
    --  Add a string to a list of strings
 
+   function Create_Binder_Mapping_File return Path_Name_Type;
+   --  Create a binder mapping file and returns its path name
+
    function Create_Name (Name : String) return File_Name_Type;
    function Create_Name (Name : String) return Name_Id;
    function Create_Name (Name : String) return Path_Name_Type;
