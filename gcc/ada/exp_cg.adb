@@ -271,12 +271,21 @@ package body Exp_CG is
                for J in Predef_Names_95'Range loop
                   Get_Name_String (Predef_Names_95 (J));
 
-                  if Full_Name'Last - Suffix_Length > Name_Len
+                  --  The predefined primitive operations are identified by the
+                  --  names "_size", "_alignment", etc. If we try a pattern
+                  --  matching against this string, we can wrongly match other
+                  --  primitive operations like "get_size". To avoid this, we
+                  --  add the "__" scope separator, which can only prepend
+                  --  predefined primitive operations because other primitive
+                  --  operations can neither start with an underline nor
+                  --  contain two consecutive underlines in its name.
+
+                  if Full_Name'Last - Suffix_Length > Name_Len + 2
                     and then
                       Full_Name
-                        (Full_Name'Last - Name_Len - Suffix_Length + 1
+                        (Full_Name'Last - Name_Len - 2 - Suffix_Length + 1
                            .. Full_Name'Last - Suffix_Length) =
-                                                  Name_Buffer (1 .. Name_Len)
+                      "__" & Name_Buffer (1 .. Name_Len)
                   then
                      --  For the equality operator the type of the two operands
                      --  must also match.
@@ -291,12 +300,12 @@ package body Exp_CG is
                   for J in Predef_Names_05'Range loop
                      Get_Name_String (Predef_Names_05 (J));
 
-                     if Full_Name'Last - Suffix_Length > Name_Len
+                     if Full_Name'Last - Suffix_Length > Name_Len + 2
                        and then
                          Full_Name
-                           (Full_Name'Last - Name_Len - Suffix_Length + 1
+                           (Full_Name'Last - Name_Len - 2 - Suffix_Length + 1
                               .. Full_Name'Last - Suffix_Length) =
-                                                 Name_Buffer (1 .. Name_Len)
+                         "__" & Name_Buffer (1 .. Name_Len)
                      then
                         return True;
                      end if;

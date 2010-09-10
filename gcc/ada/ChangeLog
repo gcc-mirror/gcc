@@ -1,3 +1,18 @@
+2010-09-10  Jose Ruiz  <ruiz@adacore.com>
+
+	* exp_cg.adb (Is_Predefined_Dispatching_Operation): Add the "__" scope
+	separator when trying the pattern matching to detect predefined
+	primitive operations.
+
+2010-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* bindgen.adb, atree.adb: Minor reformatting.
+
+2010-09-10  Ben Brosgol  <brosgol@adacore.com>
+
+	* ug_words, gnat_ugn.texi: Revised "Transitioning to 64-Bit GNAT for
+	OpenVMS" section.
+
 2010-09-10  Doug Rupp  <rupp@adacore.com>
 
 	* bindgen.adb: Minor comment fix for -H switch.

@@ -1261,7 +1261,7 @@ package body Atree is
    -- New_Node_Breakpoint --
    -------------------------
 
-   procedure nn is -- New_Node_Breakpoint
+   procedure nn is
    begin
       Write_Str ("Watched node ");
       Write_Int (Int (Watch_Node));
@@ -1273,7 +1273,7 @@ package body Atree is
    -- New_Node_Debugging_Output --
    -------------------------------
 
-   procedure nnd (N : Node_Id) is -- New_Node_Debugging_Output
+   procedure nnd (N : Node_Id) is
       Node_Is_Watched : constant Boolean := N = Watch_Node;
 
    begin
@@ -1666,7 +1666,7 @@ package body Atree is
    -- Rewrite_Breakpoint --
    -------------------------
 
-   procedure rr is -- Rewrite_Breakpoint
+   procedure rr is
    begin
       Write_Str ("Watched node ");
       Write_Int (Int (Watch_Node));
@@ -1678,7 +1678,7 @@ package body Atree is
    -- Rewrite_Debugging_Output --
    ------------------------------
 
-   procedure rrd (Old_Node, New_Node : Node_Id) is -- Rewrite_Debugging_Output
+   procedure rrd (Old_Node, New_Node : Node_Id) is
       Node_Is_Watched : constant Boolean := Old_Node = Watch_Node;
 
    begin
