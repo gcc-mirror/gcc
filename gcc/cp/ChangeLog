@@ -1,7 +1,13 @@
+2010-09-10  Richard Guenther  <rguenther@suse.de>
+
+	* decl.c (reshape_init_vector): For VECTOR_TYPEs, use
+	TYPE_VECTOR_SUBPARTS instead of TYPE_DEBUG_REPRESENTATION_TYPE.
+
 2010-09-10  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/45605
-	* cp/class.c (build_vtbl_initializer): Avoid wrong type conversion in ADDR_EXPR
+	* cp/class.c (build_vtbl_initializer): Avoid wrong type conversion in
+	ADDR_EXPR.
 
 2010-09-08  Jakub Jelinek  <jakub@redhat.com>
 
