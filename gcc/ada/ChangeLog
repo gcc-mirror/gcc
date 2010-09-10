@@ -1,3 +1,13 @@
+2010-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb: Minor code cleanup: Add assertion to
+	Set_Corresponding_Protected_Entry.
+
+2010-09-10  Bob Duff  <duff@adacore.com>
+
+	* g-pehage.ads, g-pehage.adb (Produce): Add a new flag to allow sending
+	the output to standard output.
+
 2010-09-09  Vincent Celier  <celier@adacore.com>
 
 	* gnat_ugn.texi: Add documentation for new gnatmake switch

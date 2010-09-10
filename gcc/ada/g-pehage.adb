@@ -1431,8 +1431,11 @@ package body GNAT.Perfect_Hash_Generators is
    -- Produce --
    -------------
 
-   procedure Produce (Pkg_Name : String := Default_Pkg_Name) is
-      File : File_Descriptor;
+   procedure Produce
+     (Pkg_Name   : String  := Default_Pkg_Name;
+      Use_Stdout : Boolean := False)
+   is
+      File : File_Descriptor := Standout;
 
       Status : Boolean;
       --  For call to Close
@@ -1525,23 +1528,25 @@ package body GNAT.Perfect_Hash_Generators is
       P : Natural;
 
       FName : String := Ada_File_Base_Name (Pkg_Name) & ".ads";
-      --  Initially, the name of the spec file; then modified to be the name of
-      --  the body file.
+      --  Initially, the name of the spec file, then modified to be the name of
+      --  the body file. Not used if Use_Stdout is True.
 
    --  Start of processing for Produce
 
    begin
 
-      if Verbose then
+      if Verbose and then not Use_Stdout then
          Put (Output,
               "Producing " & Ada.Directories.Current_Directory & "/" & FName);
          New_Line (Output);
       end if;
 
-      File := Create_File (FName, Binary);
+      if not Use_Stdout then
+         File := Create_File (FName, Binary);
 
-      if File = Invalid_FD then
-         raise Program_Error with "cannot create: " & FName;
+         if File = Invalid_FD then
+            raise Program_Error with "cannot create: " & FName;
+         end if;
       end if;
 
       Put      (File, "package ");
@@ -1554,18 +1559,26 @@ package body GNAT.Perfect_Hash_Generators is
       Put      (File, Pkg_Name);
       Put      (File, ";");
       New_Line (File);
-      Close    (File, Status);
 
-      if not Status then
-         raise Device_Error;
+      if not Use_Stdout then
+         Close (File, Status);
+
+         if not Status then
+            raise Device_Error;
+         end if;
       end if;
 
-      FName (FName'Last) := 'b';  --  Set to body file name
+      if not Use_Stdout then
 
-      File := Create_File (FName, Binary);
+         --  Set to body file name
 
-      if File = Invalid_FD then
-         raise Program_Error with "cannot create: " & FName;
+         FName (FName'Last) := 'b';
+
+         File := Create_File (FName, Binary);
+
+         if File = Invalid_FD then
+            raise Program_Error with "cannot create: " & FName;
+         end if;
       end if;
 
       Put      (File, "with Interfaces; use Interfaces;");
@@ -1738,10 +1751,13 @@ package body GNAT.Perfect_Hash_Generators is
       Put      (File, Pkg_Name);
       Put      (File, ";");
       New_Line (File);
-      Close    (File, Status);
 
-      if not Status then
-         raise Device_Error;
+      if not Use_Stdout then
+         Close (File, Status);
+
+         if not Status then
+            raise Device_Error;
+         end if;
       end if;
    end Produce;
 

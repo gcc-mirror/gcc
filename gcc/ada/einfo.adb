@@ -3124,6 +3124,7 @@ package body Einfo is
 
    procedure Set_Corresponding_Protected_Entry (Id : E; V : E) is
    begin
+      pragma Assert (Ekind_In (Id, E_Void, E_Subprogram_Body));
       Set_Node18 (Id, V);
    end Set_Corresponding_Protected_Entry;
 
