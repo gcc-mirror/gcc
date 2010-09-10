@@ -1,3 +1,14 @@
+2010-09-10  Jose Ruiz  <ruiz@adacore.com>
+
+	* exp_cg.adb (Is_Predefined_Dispatching_Operation): When trying the
+	pattern matching to detect predefined primitive operations take into
+	account that there can be an extra suffix related to body-nested
+	package entities.
+
+2010-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* s-pooglo.ads: Add overriding indicators.
+
 2010-09-10  Vincent Celier  <celier@adacore.com>
 
 	* vms_data.ads: Add new GNAT BIND qualifiers /32_MALLOC (for -H32) and

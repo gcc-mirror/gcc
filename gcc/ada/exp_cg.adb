@@ -265,9 +265,25 @@ package body Exp_CG is
                                     Name_uDisp_Requeue,
                                     Name_uDisp_Timed_Select);
 
-               Suffix_Length : constant Natural := Homonym_Suffix_Length (E);
+               Suffix_Length : Natural;
 
             begin
+               --  Search for and strip suffix for body-nested package entities
+
+               Suffix_Length := Homonym_Suffix_Length (E);
+               for J in reverse Full_Name'First + 2 .. Full_Name'Last loop
+                  if Full_Name (J) = 'X' then
+
+                     --  Include the "X", "Xb", "Xn", ... in the part of the
+                     --  suffix to be removed.
+
+                     Suffix_Length := Suffix_Length + Full_Name'Last - J + 1;
+                     exit;
+                  end if;
+
+                  exit when Full_Name (J) /= 'b' and then Full_Name (J) /= 'n';
+               end loop;
+
                for J in Predef_Names_95'Range loop
                   Get_Name_String (Predef_Names_95 (J));
 
