@@ -12962,20 +12962,19 @@ package body Sem_Ch3 is
             then
                null;
 
-            --  Case 2: Inherit entities associated with interfaces that
-            --  were not covered by the parent type. We exclude here null
-            --  interface primitives because they do not need special
-            --  management.
-            --  We also exclude interface operations that are renamings.
-            --  If the subprogram is an explicit renaming of an interface
-            --  primitive, it is a regular primitive operation, and the
-            --  presence of its alias is not relevant: it has to be derived
-            --  like any other primitive.
+            --  Case 2: Inherit entities associated with interfaces that were
+            --  not covered by the parent type. We exclude here null interface
+            --  primitives because they do not need special management.
+
+            --  We also exclude interface operations that are renamings. If the
+            --  subprogram is an explicit renaming of an interface primitive,
+            --  it is a regular primitive operation, and the presence of its
+            --  alias is not relevant: it has to be derived like any other
+            --  primitive.
 
             elsif Present (Alias (Subp))
-              and then
-                Nkind (Unit_Declaration_Node (Subp))
-                  /= N_Subprogram_Renaming_Declaration
+              and then Nkind (Unit_Declaration_Node (Subp)) /=
+                                            N_Subprogram_Renaming_Declaration
               and then Is_Interface (Find_Dispatching_Type (Alias_Subp))
               and then not
                 (Nkind (Parent (Alias_Subp)) = N_Procedure_Specification

@@ -41,10 +41,10 @@ with Table;
 with Targparm; use Targparm;
 with Types;
 
-with Ada.Command_Line;     use Ada.Command_Line;
-with Ada.Exceptions;       use Ada.Exceptions;
+with Ada.Command_Line; use Ada.Command_Line;
+with Ada.Exceptions;   use Ada.Exceptions;
 
-with System.OS_Lib;        use System.OS_Lib;
+with System.OS_Lib; use System.OS_Lib;
 with System.CRTL;
 
 with Interfaces.C_Streams; use Interfaces.C_Streams;
@@ -200,11 +200,11 @@ procedure Gnatlink is
    --  Return just the file name part without the extension (if present)
 
    procedure Check_Existing_Executable (File_Name : String);
-   --  Delete any existing executable to avoid accidentally updating
-   --  the target of a symbolic link, but produce a Fatail_Error if
-   --  File_Name matches any of the source file names. This avoids
-   --  overwriting of extensionless source files by accident on systems
-   --  where executables do not have extensions.
+   --  Delete any existing executable to avoid accidentally updating the target
+   --  of a symbolic link, but produce a Fatail_Error if File_Name matches any
+   --  of the source file names. This avoids overwriting of extensionless
+   --  source files by accident on systems where executables do not have
+   --  extensions.
 
    procedure Delete (Name : String);
    --  Wrapper to unlink as status is ignored by this application
@@ -273,6 +273,7 @@ procedure Gnatlink is
       Ename : String := File_Name;
       Efile : File_Name_Type;
       Sfile : File_Name_Type;
+
    begin
       Canonical_Case_File_Name (Ename);
       Name_Len := 0;

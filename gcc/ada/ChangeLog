@@ -1,3 +1,8 @@
+2010-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* gnatlink.adb, prj-ext.adb, prj-util.adb, s-tporft.adb,
+	sem_ch3.adb: Minor reformatting.
+
 2010-09-10  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Derive_Subprograms): An interface primitive operation
