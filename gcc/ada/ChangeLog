@@ -1,5 +1,21 @@
 2010-09-10  Robert Dewar  <dewar@adacore.com>
 
+	* opt.adb (Short_Descriptors): New flag
+	(Short_Descriptors_Config): New flag
+	* opt.ads (Short_Descriptors): New flag
+	(Short_Descriptors_Config): New flag
+	* par-prag.adb: Add dummy entry for Short_Descriptors pragma
+	* sem_prag.adb (Set_Mechanism_Value): Deal with Short_Descriptors pragma
+	(Analyze_Pragma): Implement Short_Descriptors pragma
+	* snames.ads-tmpl: Add entry for Short_Descriptors pragma
+
+2010-09-10  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-util.adb, prj-util.ads (Executable_Of): Take into account the
+	project's Executable_Suffix.
+
+2010-09-10  Robert Dewar  <dewar@adacore.com>
+
 	* g-pehage.ads: Minor reformatting
 
 	* gnat_ugn.texi: Clarifying comment on -gnatyc

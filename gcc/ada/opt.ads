@@ -1089,7 +1089,12 @@ package Opt is
    --  GNAT
    --  Set True if a pragma Short_Circuit_And_Or applies to the current unit.
 
+   Short_Descriptors : Boolean := False;
+   --  GNAT
+   --  Set True if a pragma Short_Descriptors applies to the current unit.
+
    Sprint_Line_Limit : Nat := 72;
+   --  GNAT
    --  Limit values for chopping long lines in Sprint output, can be reset
    --  by use of NNN parameter with -gnatG or -gnatD switches.
 
@@ -1651,6 +1656,14 @@ package Opt is
    --  flag is used to set the initial value for Polling_Required at the start
    --  of analyzing each unit.
 
+   Short_Descriptors_Config : Boolean;
+   --  GNAT
+   --  This is the value of the configuration switch that controls the use of
+   --  Short_Descriptors for setting descriptor default sizes. It can be set
+   --  True by the use of the pragma Short_Descriptors in the gnat.adc file.
+   --  This flag is used to set the initial value for Short_Descriptors at the
+   --  start of analyzing each unit.
+
    Use_VADS_Size_Config : Boolean;
    --  GNAT
    --  This is the value of the configuration switch that controls the use of
@@ -1780,6 +1793,7 @@ private
       Optimize_Alignment_Local       : Boolean;
       Persistent_BSS_Mode            : Boolean;
       Polling_Required               : Boolean;
+      Short_Descriptors              : Boolean;
       Use_VADS_Size                  : Boolean;
    end record;
 

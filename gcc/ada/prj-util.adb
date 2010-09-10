@@ -105,12 +105,12 @@ package body Prj.Util is
    -------------------
 
    function Executable_Of
-     (Project        : Project_Id;
-      In_Tree        : Project_Tree_Ref;
-      Main           : File_Name_Type;
-      Index          : Int;
-      Ada_Main       : Boolean := True;
-      Language       : String := "";
+     (Project  : Project_Id;
+      In_Tree  : Project_Tree_Ref;
+      Main     : File_Name_Type;
+      Index    : Int;
+      Ada_Main : Boolean := True;
+      Language : String := "";
       Include_Suffix : Boolean := True) return File_Name_Type
    is
       pragma Assert (Project /= No_Project);
@@ -131,8 +131,6 @@ package body Prj.Util is
                         In_Package              => Builder_Package,
                         In_Tree                 => In_Tree);
 
-      Executable_Suffix_Name : Name_Id := No_Name;
-
       Lang   : Language_Ptr;
 
       Spec_Suffix : Name_Id := No_Name;
@@ -148,7 +146,7 @@ package body Prj.Util is
 
       function Add_Suffix (File : File_Name_Type) return File_Name_Type;
       --  Return the name of the executable, based on File, and adding the
-      --  executable suffix if needed.
+      --  executable suffix if needed
 
       ------------------
       -- Get_Suffixes --
@@ -177,19 +175,43 @@ package body Prj.Util is
       function Add_Suffix (File : File_Name_Type) return File_Name_Type is
          Saved_EEOT : constant Name_Id := Executable_Extension_On_Target;
          Result     : File_Name_Type;
-
+         Suffix_From_Project : Variable_Value;
       begin
          if Include_Suffix then
-            if Executable_Suffix_Name /= No_Name then
-               Executable_Extension_On_Target := Executable_Suffix_Name;
+            if Project.Config.Executable_Suffix /= No_Name then
+               Executable_Extension_On_Target :=
+                 Project.Config.Executable_Suffix;
             end if;
 
-            Result :=  Executable_Name (File_Name_Type (Executable.Value));
+            Result :=  Executable_Name (File);
             Executable_Extension_On_Target := Saved_EEOT;
             return Result;
 
          else
-            return File;
+            --  We still want to take into account cases where the suffix is
+            --  specified in the project itself, as opposed to the config file.
+            --  Unfortunately, when the project was processed, they are both
+            --  stored in Project.Config, so we need to get it from the project
+            --  again
+
+            Suffix_From_Project :=
+              Prj.Util.Value_Of
+                (Variable_Name => Name_Executable_Suffix,
+                 In_Variables  =>
+                   In_Tree.Packages.Table (Builder_Package).Decl.Attributes,
+                 In_Tree       => In_Tree);
+
+            if Suffix_From_Project /= Nil_Variable_Value
+              and then Suffix_From_Project.Value /= No_Name
+            then
+               Executable_Extension_On_Target := Suffix_From_Project.Value;
+               Result :=  Executable_Name (File);
+               Executable_Extension_On_Target := Saved_EEOT;
+               return Result;
+
+            else
+               return File;
+            end if;
          end if;
       end Add_Suffix;
 
@@ -209,8 +231,6 @@ package body Prj.Util is
       end if;
 
       if Builder_Package /= No_Package then
-         Executable_Suffix_Name := Project.Config.Executable_Suffix;
-
          if Executable = Nil_Variable_Value and then Ada_Main then
             Get_Name_String (Main);
 

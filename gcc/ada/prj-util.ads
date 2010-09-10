@@ -42,8 +42,9 @@ package Prj.Util is
    --  standard executable suffix for the platform.
    --
    --  If Include_Suffix is true, then the ".exe" suffix (or any suffix defined
-   --  in the config and project files) will be added. Otherwise, such a suffix
-   --  is not added. In particular, the prefix should not be added if you are
+   --  in the config) will be added. The suffix defined by the user in his own
+   --  project file is always taken into account. Otherwise, such a suffix is
+   --  not added. In particular, the prefix should not be added if you are
    --  potentially testing for cross-platforms, since the suffix might not be
    --  known (its default value comes from the ...-gnatmake prefix).
    --
