@@ -1,5 +1,10 @@
 2010-09-10  Mikael Morin  <mikael@gcc.gnu.org>
 
+	* trans-array.c (gfc_conv_loop_setup): Access the shape along the
+	real array dimension instead of the scalarizer (loop) dimension.
+
+2010-09-10  Mikael Morin  <mikael@gcc.gnu.org>
+
 	* trans-array.c (gfc_conv_resolve_dependencies): Handle same-array
 	transposed references.
 

@@ -3801,7 +3801,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop, locus * where)
 	  && INTEGER_CST_P (info->stride[dim]))
 	{
 	  loop->from[n] = info->start[dim];
-	  mpz_set (i, cshape[n]);
+	  mpz_set (i, cshape[get_array_ref_dim (info, n)]);
 	  mpz_sub_ui (i, i, 1);
 	  /* To = from + (size - 1) * stride.  */
 	  tmp = gfc_conv_mpz_to_tree (i, gfc_index_integer_kind);
