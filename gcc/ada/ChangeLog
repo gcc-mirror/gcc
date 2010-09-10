@@ -1,3 +1,7 @@
+2010-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem.adb: Minor reformatting.
+
 2010-09-10  Bob Duff  <duff@adacore.com>
 
 	* s-os_lib.ads, g-expect.ads: Add comments.
