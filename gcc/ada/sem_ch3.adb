@@ -5843,6 +5843,7 @@ package body Sem_Ch3 is
                Full_Der  := New_Copy (Derived_Type);
                Set_Comes_From_Source (Full_Decl, False);
                Set_Comes_From_Source (Full_Der, False);
+               Set_Parent (Full_Der, Full_Decl);
 
                Insert_After (N, Full_Decl);
 
@@ -5916,8 +5917,15 @@ package body Sem_Ch3 is
                Set_Defining_Identifier (Full_Decl, Full_Der);
                Build_Derived_Record_Type
                  (Full_Decl, Parent_Type, Full_Der, Derive_Subps);
-               Set_Analyzed (Full_Decl);
             end if;
+
+            --  The full declaration has been introduced into the tree and
+            --  processed in the step above. It should not be analyzed again
+            --  (when encountered later in the current list of declarations)
+            --  to prevent spurious name conflicts. The full entity remains
+            --  invisible.
+
+            Set_Analyzed (Full_Decl);
 
             if Swapped then
                Uninstall_Declarations (Par_Scope);

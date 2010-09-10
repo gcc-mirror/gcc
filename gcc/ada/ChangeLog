@@ -1,3 +1,33 @@
+2010-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Private_Type): Mark generated declaration
+	of full view analyzed after analyzing the corresponding record
+	declaration, to prevent spurious name conflicts with original
+	declaration.
+
+2010-09-10  Jerome Lambourg  <lambourg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): In the VM case,
+	just issue a warning, but continue with the normal processing.
+
+2010-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb, prj-nmsc.adb, sem_ch4.adb, sem_res.adb: Minor
+	reformatting.
+
+2010-09-10  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb (Build_From_Any_Call, Build_To_Any_Call,
+	Build_TypeCode_Call): For a subtype inserted for the expansion of a
+	generic actual type, go to the underlying type of the original actual
+	type.
+
+2010-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Assign_Array_Loop): In CodePeer mode, place a
+	guard around the increment statement, to prevent an off-by-one-value
+	on the last iteration.
+
 2010-09-10  Vincent Celier  <celier@adacore.com>
 
 	* sem_aggr.adb, exp_prag.adb, sem_ch3.adb, exp_attr.adb,

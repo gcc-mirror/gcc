@@ -5220,6 +5220,7 @@ package body Prj.Nmsc is
                end if;
 
                if not Has_Error then
+
                   --  We have an existing directory, we register it and all of
                   --  its subdirectories.
 
@@ -5263,8 +5264,10 @@ package body Prj.Nmsc is
                end if;
 
                if not Has_Error then
-                  --  links have been resolved if necessary, and Path_Name
-                  --  always ends with a directory separator
+
+                  --  Links have been resolved if necessary, and Path_Name
+                  --  always ends with a directory separator.
+
                   Add_To_Or_Remove_From_Source_Dirs
                     (Path_Id         => Path_Name.Name,
                      Display_Path_Id => Path_Name.Display_Name,
