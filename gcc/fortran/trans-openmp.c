@@ -202,8 +202,8 @@ gfc_omp_clause_default_ctor (tree clause, tree decl, tree outer)
 			  fold_convert (pvoid_type_node,
 					gfc_conv_descriptor_data_get (outer)),
 			  null_pointer_node);
-  gfc_add_expr_to_block (&block, build3 (COND_EXPR, void_type_node,
-			 cond, then_b, else_b));
+  gfc_add_expr_to_block (&block, build3_loc (input_location, COND_EXPR,
+			 void_type_node, cond, then_b, else_b));
 
   return gfc_finish_block (&block);
 }
@@ -1155,7 +1155,7 @@ gfc_trans_omp_critical (gfc_code *code)
   if (code->ext.omp_name != NULL)
     name = get_identifier (code->ext.omp_name);
   stmt = gfc_trans_code (code->block->next);
-  return build2 (OMP_CRITICAL, void_type_node, stmt, name);
+  return build2_loc (input_location, OMP_CRITICAL, void_type_node, stmt, name);
 }
 
 typedef struct dovar_init_d {
@@ -1446,7 +1446,8 @@ gfc_trans_omp_parallel (gfc_code *code)
   omp_clauses = gfc_trans_omp_clauses (&block, code->ext.omp_clauses,
 				       code->loc);
   stmt = gfc_trans_omp_code (code->block->next, true);
-  stmt = build2 (OMP_PARALLEL, void_type_node, stmt, omp_clauses);
+  stmt = build2_loc (input_location, OMP_PARALLEL, void_type_node, stmt,
+		     omp_clauses);
   gfc_add_expr_to_block (&block, stmt);
   return gfc_finish_block (&block);
 }
@@ -1486,7 +1487,8 @@ gfc_trans_omp_parallel_do (gfc_code *code)
     stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0, 0));
   else
     poplevel (0, 0, 0);
-  stmt = build2 (OMP_PARALLEL, void_type_node, stmt, omp_clauses);
+  stmt = build2_loc (input_location, OMP_PARALLEL, void_type_node, stmt,
+		     omp_clauses);
   OMP_PARALLEL_COMBINED (stmt) = 1;
   gfc_add_expr_to_block (&block, stmt);
   return gfc_finish_block (&block);
@@ -1511,7 +1513,8 @@ gfc_trans_omp_parallel_sections (gfc_code *code)
     stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0, 0));
   else
     poplevel (0, 0, 0);
-  stmt = build2 (OMP_PARALLEL, void_type_node, stmt, omp_clauses);
+  stmt = build2_loc (input_location, OMP_PARALLEL, void_type_node, stmt,
+		     omp_clauses);
   OMP_PARALLEL_COMBINED (stmt) = 1;
   gfc_add_expr_to_block (&block, stmt);
   return gfc_finish_block (&block);
@@ -1536,7 +1539,8 @@ gfc_trans_omp_parallel_workshare (gfc_code *code)
     stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0, 0));
   else
     poplevel (0, 0, 0);
-  stmt = build2 (OMP_PARALLEL, void_type_node, stmt, omp_clauses);
+  stmt = build2_loc (input_location, OMP_PARALLEL, void_type_node, stmt,
+		     omp_clauses);
   OMP_PARALLEL_COMBINED (stmt) = 1;
   gfc_add_expr_to_block (&block, stmt);
   return gfc_finish_block (&block);
@@ -1568,7 +1572,8 @@ gfc_trans_omp_sections (gfc_code *code, gfc_omp_clauses *clauses)
     }
   stmt = gfc_finish_block (&body);
 
-  stmt = build2 (OMP_SECTIONS, void_type_node, stmt, omp_clauses);
+  stmt = build2_loc (input_location, OMP_SECTIONS, void_type_node, stmt,
+		     omp_clauses);
   gfc_add_expr_to_block (&block, stmt);
 
   return gfc_finish_block (&block);
@@ -1579,7 +1584,8 @@ gfc_trans_omp_single (gfc_code *code, gfc_omp_clauses *clauses)
 {
   tree omp_clauses = gfc_trans_omp_clauses (NULL, clauses, code->loc);
   tree stmt = gfc_trans_omp_code (code->block->next, true);
-  stmt = build2 (OMP_SINGLE, void_type_node, stmt, omp_clauses);
+  stmt = build2_loc (input_location, OMP_SINGLE, void_type_node, stmt,
+		     omp_clauses);
   return stmt;
 }
 
@@ -1593,7 +1599,8 @@ gfc_trans_omp_task (gfc_code *code)
   omp_clauses = gfc_trans_omp_clauses (&block, code->ext.omp_clauses,
 				       code->loc);
   stmt = gfc_trans_omp_code (code->block->next, true);
-  stmt = build2 (OMP_TASK, void_type_node, stmt, omp_clauses);
+  stmt = build2_loc (input_location, OMP_TASK, void_type_node, stmt,
+		     omp_clauses);
   gfc_add_expr_to_block (&block, stmt);
   return gfc_finish_block (&block);
 }
@@ -1708,7 +1715,8 @@ gfc_trans_omp_workshare (gfc_code *code, gfc_omp_clauses *clauses)
 		{
 		  /* Finish single block and add it to pblock.  */
 		  tmp = gfc_finish_block (&singleblock);
-		  tmp = build2 (OMP_SINGLE, void_type_node, tmp, NULL_TREE);
+		  tmp = build2_loc (input_location, OMP_SINGLE,
+				    void_type_node, tmp, NULL_TREE);
 		  gfc_add_expr_to_block (pblock, tmp);
 		  /* Add current gfc_code to pblock.  */
 		  gfc_add_expr_to_block (pblock, res);
@@ -1737,10 +1745,10 @@ gfc_trans_omp_workshare (gfc_code *code, gfc_omp_clauses *clauses)
     {
       /* Finish single block and add it to pblock.  */
       tmp = gfc_finish_block (&singleblock);
-      tmp = build2 (OMP_SINGLE, void_type_node, tmp,
-		    clauses->nowait
-		    ? build_omp_clause (input_location, OMP_CLAUSE_NOWAIT)
-		    : NULL_TREE);
+      tmp = build2_loc (input_location, OMP_SINGLE, void_type_node, tmp,
+			clauses->nowait
+			? build_omp_clause (input_location, OMP_CLAUSE_NOWAIT)
+			: NULL_TREE);
       gfc_add_expr_to_block (pblock, tmp);
     }
 

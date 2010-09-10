@@ -1,3 +1,25 @@
+2010-09-10  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/45186
+	* trans.h (build1_stat_loc, build2_stat_loc, build3_stat_loc,
+	build4_stat_loc): New inline functions.
+	(build1_loc, build2_loc, build3_loc, build4_loc): New macros.
+	(build1_v, build2_v, build3_v, build4_v): Use input_location
+	as locus.
+	* trans-array.c (gfc_trans_scalarized_loop_end,
+	gfc_conv_array_parameter): Replace build[1-4] by build[1-4]_loc.
+	* trans.c (gfc_build_addr_expr, gfc_build_array_ref,
+	gfc_finish_wrapped_block): Ditto.
+	* trans-decl.c (gfc_init_default_dt, init_intent_out_dt): Ditto.
+	* trans-expr.c (gfc_conv_missing_dummy,
+	gfc_trans_alloc_subarray_assign, gfc_trans_zero_assign): Ditto.
+	* trans-openmp.c (gfc_omp_clause_default_ctor,
+	gfc_trans_omp_critical, gfc_trans_omp_parallel,
+	gfc_trans_omp_parallel_do, gfc_trans_omp_parallel_sections,
+	gfc_trans_omp_parallel_workshare, gfc_trans_omp_sections
+	gfc_trans_omp_single, gfc_trans_omp_task,
+	gfc_trans_omp_workshare): Ditto.
+
 2010-09-09  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* fortran/expr.c (check_inquiry): OPTIONAL attribute is not allowed

@@ -3083,8 +3083,8 @@ gfc_init_default_dt (gfc_symbol * sym, stmtblock_t * block, bool dealloc)
 			  || sym->ns->proc_name->attr.entry_master))
     {
       present = gfc_conv_expr_present (sym);
-      tmp = build3 (COND_EXPR, TREE_TYPE (tmp), present,
-		    tmp, build_empty_stmt (input_location));
+      tmp = build3_loc (input_location, COND_EXPR, TREE_TYPE (tmp), present,
+			tmp, build_empty_stmt (input_location));
     }
   gfc_add_expr_to_block (block, tmp);
   gfc_free_expr (e);
@@ -3119,8 +3119,9 @@ init_intent_out_dt (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		|| f->sym->ns->proc_name->attr.entry_master)
 	      {
 		present = gfc_conv_expr_present (f->sym);
-		tmp = build3 (COND_EXPR, TREE_TYPE (tmp), present,
-			      tmp, build_empty_stmt (input_location));
+		tmp = build3_loc (input_location, COND_EXPR, TREE_TYPE (tmp),
+				  present, tmp,
+				  build_empty_stmt (input_location));
 	      }
 
 	    gfc_add_expr_to_block (&init, tmp);
