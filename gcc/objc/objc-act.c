@@ -3822,13 +3822,16 @@ objc_begin_try_stmt (location_t try_locus, tree body)
   c->end_try_locus = input_location;
   cur_try_context = c;
 
-  if (flag_objc_sjlj_exceptions)
+  /* -fobjc-exceptions is required to enable Objective-C exceptions.
+     For example, on Darwin, ObjC exceptions require a sufficiently
+     recent version of the runtime, so the user must ask for them
+     explicitly.  On other platforms, at the moment -fobjc-exceptions
+     triggers -fexceptions which again is required for exceptions to
+     work.
+  */
+  if (!flag_objc_exceptions)
     {
-      /* On Darwin, ObjC exceptions require a sufficiently recent
-	 version of the runtime, so the user must ask for them explicitly.  */
-      if (!flag_objc_exceptions)
-	warning (0, "use %<-fobjc-exceptions%> to enable Objective-C "
-		 "exception syntax");
+      error_at (try_locus, "%<-fobjc-exceptions%> is required to enable Objective-C exception syntax");
     }
 
   if (flag_objc_sjlj_exceptions)
@@ -3979,13 +3982,9 @@ objc_build_throw_stmt (location_t loc, tree throw_expr)
 {
   tree args;
 
-  if (flag_objc_sjlj_exceptions)
+  if (!flag_objc_exceptions)
     {
-      /* On Darwin, ObjC exceptions require a sufficiently recent
-	 version of the runtime, so the user must ask for them explicitly.  */
-      if (!flag_objc_exceptions)
-	warning (0, "use %<-fobjc-exceptions%> to enable Objective-C "
-		 "exception syntax");
+      error_at (loc, "%<-fobjc-exceptions%> is required to enable Objective-C exception syntax");
     }
 
   if (throw_expr == NULL)
