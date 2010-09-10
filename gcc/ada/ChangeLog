@@ -1,3 +1,18 @@
+2010-09-10  Doug Rupp  <rupp@adacore.com>
+
+	* bindgen.adb: Minor comment fix for -H switch.
+
+2010-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_cg.adb (Register_CG_Node): Determine enclosing subprogram or
+	library unit now, by traversing tree before context is expanded.
+	(Write_Call_Info): Use enclosing unit name directly.
+	* exp_ch9.adb (Expand_N_Accept_Statement): Attach generated block to
+	tree earlier, to ensure that subsequent declarations are analyzed in a
+	connected structure.
+	* exp_intr.adb (Expand_Unc_Deallocation): Ditto for generated statement
+	list.
+
 2010-09-10  Robert Dewar  <dewar@adacore.com>
 
 	* symbols-processing-vms-alpha.adb: Minor reformatting.

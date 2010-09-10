@@ -1014,6 +1014,10 @@ package body Exp_Intr is
       Append_To (Stmts, Free_Node);
       Set_Storage_Pool (Free_Node, Pool);
 
+      --  Attach to tree before analysis of generated subtypes below.
+
+      Set_Parent (Stmts, Parent (N));
+
       --  Deal with storage pool
 
       if Present (Pool) then

@@ -5259,6 +5259,11 @@ package body Exp_Ch9 is
              Declarations               => Declarations (N),
              Handled_Statement_Sequence => Build_Accept_Body (N));
 
+         --  For the analysis of the generated declarations, the parent node
+         --  must be properly set.
+
+         Set_Parent (Block, Parent (N));
+
          --  Prepend call to Accept_Call to main statement sequence If the
          --  accept has exception handlers, the statement sequence is wrapped
          --  in a block. Insert call and renaming declarations in the

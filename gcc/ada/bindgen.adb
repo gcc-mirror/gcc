@@ -139,7 +139,7 @@ package body Bindgen is
 
    --  Heap_Size is the heap to use for memory allocations set by use of a
    --  -Hnn parameter for the binder or by the GNAT$NO_MALLOC_64 logical.
-   --  Valid values are 32 and 64. This switch is only available on VMS.
+   --  Valid values are 32 and 64. This switch is only effective on VMS.
 
    --  WC_Encoding shows the wide character encoding method used for the main
    --  program. This is one of the encoding letters defined in

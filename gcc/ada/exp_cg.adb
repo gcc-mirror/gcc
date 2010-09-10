@@ -193,7 +193,7 @@ package body Exp_CG is
                declare
                   Result : Natural := Prefix_Length + 1;
                begin
-                  while Nr > 10 loop
+                  while Nr >= 10 loop
                      Result := Result + 1;
                      Nr := Nr / 10;
                   end loop;
@@ -324,12 +324,22 @@ package body Exp_CG is
 
             declare
                Copy : constant Node_Id := New_Copy (N);
+               Par  : Node_Id;
 
             begin
-               --  Copy the link to the parent to allow climbing up the tree
-               --  when the call-graph information is generated
+               --  Determine the enclosing scope to use when generating the
+               --  call graph. This must be done now to avoid problems with
+               --  control structures that may be rewritten during expansion.
 
-               Set_Parent (Copy, Parent (N));
+               Par := Parent (N);
+               while Nkind (Par) /= N_Subprogram_Body
+                 and then Nkind (Parent (Par)) /= N_Compilation_Unit
+               loop
+                  Par := Parent (Par);
+                  pragma Assert (Present (Par));
+               end loop;
+
+               Set_Parent (Copy, Par);
                Call_Graph_Nodes.Append (Copy);
             end;
          end if;
@@ -378,20 +388,9 @@ package body Exp_CG is
       Ctrl_Arg : constant Node_Id   := Controlling_Argument (Call);
       Ctrl_Typ : constant Entity_Id := Base_Type (Etype (Ctrl_Arg));
       Prim     : constant Entity_Id := Entity (Sinfo.Name (Call));
-      P        : Node_Id;
+      P        : constant Node_Id   := Parent (Call);
 
    begin
-      --  Locate the enclosing context: a subprogram (if available) or the
-      --  enclosing library-level package
-
-      P := Parent (Call);
-      while Nkind (P) /= N_Subprogram_Body
-        and then Nkind (Parent (P)) /= N_Compilation_Unit
-      loop
-         P := Parent (P);
-         pragma Assert (Present (P));
-      end loop;
-
       Write_Str ("edge: { sourcename: ");
       Write_Char ('"');
       Get_External_Name (Defining_Entity (P), Has_Suffix => False);
