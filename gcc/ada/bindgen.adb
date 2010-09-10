@@ -792,11 +792,17 @@ package body Bindgen is
          Write_Statement_Buffer;
 
          --  Generate call to Install_Handler
+         --  In .NET, when binding with -z, we don't install the signal
+         --  handler to let the caller handle the last exception handler.
 
-         WBI ("");
-         WBI ("      if Handler_Installed = 0 then");
-         WBI ("         Install_Handler;");
-         WBI ("      end if;");
+         if VM_Target /= CLI_Target
+           or else Bind_Main_Program
+         then
+            WBI ("");
+            WBI ("      if Handler_Installed = 0 then");
+            WBI ("         Install_Handler;");
+            WBI ("      end if;");
+         end if;
 
          --  Generate call to Set_Features
 
