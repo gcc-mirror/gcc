@@ -5458,6 +5458,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		if (size && integer_zerop (size))
 		  {
 		    gcc_assert (itype);
+		    type = build_distinct_type_copy (TYPE_MAIN_VARIANT (type));
 		    TYPE_SIZE (type) = bitsize_zero_node;
 		    TYPE_SIZE_UNIT (type) = size_zero_node;
 		    SET_TYPE_STRUCTURAL_EQUALITY (type);
@@ -5466,6 +5467,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		  {
 		    gcc_assert (itype);
 		    /* The type is complete.  C99 6.7.5.2p4  */
+		    type = build_distinct_type_copy (TYPE_MAIN_VARIANT (type));
 		    TYPE_SIZE (type) = bitsize_zero_node;
 		    TYPE_SIZE_UNIT (type) = size_zero_node;
 		    SET_TYPE_STRUCTURAL_EQUALITY (type);

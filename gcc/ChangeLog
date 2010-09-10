@@ -1,3 +1,14 @@
+2010-09-10  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (type_hash_eq): For ARRAY_TYPEs also compare
+	TYPE_SIZE.
+	(build_index_type): Implement in terms of build_range_type.
+	(build_range_type): Do not allow NULL_TREE type, improve
+	hashing to cover more cases.  Set TYPE_STRUCTURAL_EQUALITY_P
+	if we didn't hash.
+	* c-decl.c (grokdeclarator): When modifying TYPE_SIZE manually
+	create a distinct copy of the type.
+
 2010-09-10  Kai Tietz  <kai.tietz@onevision.com>
 
 	* configure: Regenerated.
