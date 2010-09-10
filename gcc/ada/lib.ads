@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,16 @@ with Table;
 with Types; use Types;
 
 package Lib is
+
+   type Compiler_State_Type is (Parsing, Analyzing);
+   Compiler_State : Compiler_State_Type;
+   --  Indicates current state of compilation. This is used to implement the
+   --  function In_Extended_Main_Source_Unit.
+
+   Parsing_Main_Extended_Source : Boolean := False;
+   --  Set True if we are currently parsing a file that is part of the main
+   --  extended source (the main unit, its spec, or one of its subunits). This
+   --  flag to implement In_Extended_Main_Source_Unit.
 
    --------------------------------------------
    -- General Approach to Library Management --

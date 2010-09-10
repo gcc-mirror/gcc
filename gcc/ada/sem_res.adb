@@ -68,6 +68,7 @@ with Sem_Util; use Sem_Util;
 with Sem_Type; use Sem_Type;
 with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
+with Sinfo.CN;    use Sinfo.CN;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
@@ -1065,8 +1066,13 @@ package body Sem_Res is
       --  Rewrite as call if overloadable entity that is (or could be, in the
       --  overloaded case) a function call. If we know for sure that the entity
       --  is an enumeration literal, we do not rewrite it.
+      --  If the entity is the name of an operator, it cannot be a call because
+      --  operators cannot have default parameters. In this case, this must be
+      --  a string whose contents coincide with an operator name. Set the kind
+      --  of the node appropriately and reanalyze.
 
       if (Is_Entity_Name (N)
+            and then Nkind (N) /= N_Operator_Symbol
             and then Is_Overloadable (Entity (N))
             and then (Ekind (Entity (N)) /= E_Enumeration_Literal
                        or else Is_Overloaded (N)))
@@ -1115,6 +1121,11 @@ package body Sem_Res is
 
       elsif Nkind (N) = N_Parameter_Association then
          Check_Parameterless_Call (Explicit_Actual_Parameter (N));
+
+      elsif Nkind (N) = N_Operator_Symbol then
+         Change_Operator_Symbol_To_String_Literal (N);
+         Set_Is_Overloaded (N, False);
+         Set_Etype (N, Any_String);
       end if;
    end Check_Parameterless_Call;
 

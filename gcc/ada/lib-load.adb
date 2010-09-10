@@ -344,7 +344,8 @@ package body Lib.Load is
       Subunit           : Boolean;
       Corr_Body         : Unit_Number_Type := No_Unit;
       Renamings         : Boolean          := False;
-      With_Node         : Node_Id          := Empty) return Unit_Number_Type
+      With_Node         : Node_Id          := Empty;
+      PMES              : Boolean          := False) return Unit_Number_Type
    is
       Calling_Unit : Unit_Number_Type;
       Uname_Actual : Unit_Name_Type;
@@ -352,10 +353,11 @@ package body Lib.Load is
       Unump        : Unit_Number_Type;
       Fname        : File_Name_Type;
       Src_Ind      : Source_File_Index;
-
-   --  Start of processing for Load_Unit
+      Save_PMES    : constant Boolean := Parsing_Main_Extended_Source;
 
    begin
+      Parsing_Main_Extended_Source := PMES;
+
       --  If renamings are allowed and we have a child unit name, then we
       --  must first load the parent to deal with finding the real name.
       --  Retain the with_clause that names the child, so that if it is
@@ -372,6 +374,7 @@ package body Lib.Load is
               With_Node  => With_Node);
 
          if Unump = No_Unit then
+            Parsing_Main_Extended_Source := Save_PMES;
             return No_Unit;
          end if;
 
@@ -552,10 +555,12 @@ package body Lib.Load is
                   end if;
 
                   Write_Dependency_Chain;
-                  return No_Unit;
+                  Unum := No_Unit;
+                  goto Done;
 
                else
-                  return No_Unit;
+                  Unum := No_Unit;
+                  goto Done;
                end if;
             end if;
          end loop;
@@ -600,7 +605,8 @@ package body Lib.Load is
                Load_Stack.Decrement_Last;
             end if;
 
-            return No_Unit;
+            Unum := No_Unit;
+            goto Done;
          end if;
 
          if Debug_Flag_L then
@@ -610,7 +616,7 @@ package body Lib.Load is
          end if;
 
          Load_Stack.Decrement_Last;
-         return Unum;
+         goto Done;
 
       --  Unit is not already in table, so try to open the file
 
@@ -658,7 +664,7 @@ package body Lib.Load is
 
             declare
                Save_Index : constant Nat     := Multiple_Unit_Index;
-               Save_PMS   : constant Boolean := Parsing_Main_Subunit;
+               Save_PMES  : constant Boolean := Parsing_Main_Extended_Source;
 
             begin
                Multiple_Unit_Index := Get_Unit_Index (Uname_Actual);
@@ -666,12 +672,12 @@ package body Lib.Load is
                Initialize_Scanner (Unum, Source_Index (Unum));
 
                if Calling_Unit = Main_Unit and then Subunit then
-                  Parsing_Main_Subunit := True;
+                  Parsing_Main_Extended_Source := True;
                end if;
 
                Discard_List (Par (Configuration_Pragmas => False));
 
-               Parsing_Main_Subunit := Save_PMS;
+               Parsing_Main_Extended_Source := Save_PMES;
 
                Multiple_Unit_Index := Save_Index;
                Set_Loading (Unum, False);
@@ -689,7 +695,8 @@ package body Lib.Load is
                Error_Msg
                  ("\incorrect spec in file { must be removed first!",
                   Load_Msg_Sloc);
-               return No_Unit;
+               Unum := No_Unit;
+               goto Done;
             end if;
 
             --  If loaded unit had a fatal error, then caller inherits it!
@@ -706,7 +713,7 @@ package body Lib.Load is
 
             --  All done, return unit number
 
-            return Unum;
+            goto Done;
 
          --  Case of file not found
 
@@ -760,9 +767,16 @@ package body Lib.Load is
                Units.Decrement_Last;
             end if;
 
-            return No_Unit;
+            Unum := No_Unit;
+            goto Done;
          end if;
       end if;
+
+      --  Here to exit, with result in Unum
+
+      <<Done>>
+      Parsing_Main_Extended_Source := Save_PMES;
+      return Unum;
    end Load_Unit;
 
    --------------------------

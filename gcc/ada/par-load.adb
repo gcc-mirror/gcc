@@ -266,7 +266,8 @@ begin
            Required   => False,
            Subunit    => False,
            Error_Node => Curunit,
-           Corr_Body  => Cur_Unum);
+           Corr_Body  => Cur_Unum,
+           PMES       => (Cur_Unum = Main_Unit));
 
       --  If we successfully load the unit, then set the spec/body pointers.
       --  Once again note that if the loaded unit has a fatal error, Load will
@@ -342,25 +343,17 @@ begin
    --  If current unit is a subunit, then load its parent body
 
    elsif Nkind (Unit (Curunit)) = N_Subunit then
-      declare
-         Save_PMS : constant Boolean := Parsing_Main_Subunit;
+      Body_Name := Get_Parent_Body_Name (Unit_Name (Cur_Unum));
+      Unum :=
+        Load_Unit
+          (Load_Name  => Body_Name,
+           Required   => True,
+           Subunit    => False,
+           Error_Node => Name (Unit (Curunit)));
 
-      begin
-         Parsing_Main_Subunit := False;
-         Body_Name := Get_Parent_Body_Name (Unit_Name (Cur_Unum));
-         Unum :=
-           Load_Unit
-             (Load_Name  => Body_Name,
-              Required   => True,
-              Subunit    => False,
-              Error_Node => Name (Unit (Curunit)));
-
-         if Unum /= No_Unit then
-            Set_Library_Unit (Curunit, Cunit (Unum));
-         end if;
-
-         Parsing_Main_Subunit := Save_PMS;
-      end;
+      if Unum /= No_Unit then
+         Set_Library_Unit (Curunit, Cunit (Unum));
+      end if;
    end if;
 
    --  Now we load with'ed units, with style/validity checks turned off

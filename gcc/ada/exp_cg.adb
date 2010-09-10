@@ -426,7 +426,19 @@ package body Exp_CG is
    begin
       Write_Str ("edge: { sourcename: ");
       Write_Char ('"');
-      Get_External_Name (Defining_Entity (P), Has_Suffix => False);
+
+      --  The parent node is the construct that contains the call: subprogram
+      --  body or library-level package. Display the qualified name of the
+      --  entity of the construct. For a subprogram, it is the entity of the
+      --  spec, which carries a homonym counter when it is overloaded.
+
+      if Nkind (P) = N_Subprogram_Body then
+         Get_External_Name (Corresponding_Spec (P), Has_Suffix => False);
+
+      else
+         Get_External_Name (Defining_Entity (P), Has_Suffix => False);
+      end if;
+
       Write_Str (Name_Buffer (1 .. Name_Len));
 
       if Nkind (P) = N_Package_Declaration then

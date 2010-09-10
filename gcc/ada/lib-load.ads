@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -109,7 +109,8 @@ package Lib.Load is
       Subunit           : Boolean;
       Corr_Body         : Unit_Number_Type := No_Unit;
       Renamings         : Boolean          := False;
-      With_Node         : Node_Id          := Empty) return Unit_Number_Type;
+      With_Node         : Node_Id          := Empty;
+      PMES              : Boolean          := False) return Unit_Number_Type;
    --  This function loads and parses the unit specified by Load_Name (or
    --  returns the unit number for the previously constructed units table
    --  entry if this is not the first call for this unit). Required indicates
@@ -151,6 +152,9 @@ package Lib.Load is
    --  With_Node is set to the with_clause or limited_with_clause causing
    --  the unit to be loaded, and is used to bypass the circular dependency
    --  check in the case of a limited_with_clause (Ada 2005, AI-50217).
+   --
+   --  PMES indicates the required setting of Parsing_Main_Extended_Unit during
+   --  loading of the unit. This flag is saved and restored over the call.
 
    procedure Change_Main_Unit_To_Spec;
    --  This procedure is called if the main unit file contains a No_Body pragma
