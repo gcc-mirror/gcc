@@ -2037,8 +2037,6 @@ lto_input_ts_type_tree_pointers (struct lto_input_block *ib,
   else if (TREE_CODE (expr) == FUNCTION_TYPE
 	   || TREE_CODE (expr) == METHOD_TYPE)
     TYPE_ARG_TYPES (expr) = lto_input_tree (ib, data_in);
-  else if (TREE_CODE (expr) == VECTOR_TYPE)
-    TYPE_DEBUG_REPRESENTATION_TYPE (expr) = lto_input_tree (ib, data_in);
 
   TYPE_SIZE (expr) = lto_input_tree (ib, data_in);
   TYPE_SIZE_UNIT (expr) = lto_input_tree (ib, data_in);

@@ -959,8 +959,6 @@ lto_output_ts_type_tree_pointers (struct output_block *ob, tree expr,
   else if (TREE_CODE (expr) == FUNCTION_TYPE
 	   || TREE_CODE (expr) == METHOD_TYPE)
     lto_output_tree_or_ref (ob, TYPE_ARG_TYPES (expr), ref_p);
-  else if (TREE_CODE (expr) == VECTOR_TYPE)
-    lto_output_tree_or_ref (ob, TYPE_DEBUG_REPRESENTATION_TYPE (expr), ref_p);
 
   lto_output_tree_or_ref (ob, TYPE_SIZE (expr), ref_p);
   lto_output_tree_or_ref (ob, TYPE_SIZE_UNIT (expr), ref_p);
