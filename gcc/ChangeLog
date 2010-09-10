@@ -1,3 +1,10 @@
+2010-09-10  Richard Guenther  <rguenther@suse.de>
+
+	* dwarf2out.c (gen_array_type_die): Output DW_TAG_subrange_type
+	for VECTOR_TYPEs using TYPE_VECTOR_SUBPARTS.
+	* dbxout.c (dbxout_type): Manually deal with VECTOR_TYPE
+	using TYPE_VECTOR_SUBPARTS, not TYPE_DEBUG_REPRESENTATION_TYPE.
+
 2010-09-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/45634
