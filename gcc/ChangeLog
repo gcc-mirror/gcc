@@ -1,3 +1,10 @@
+2010-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/45630
+	* dwarf2out.c (get_ref_die_offset_label): Use %ld instead of
+	HOST_WIDE_INT_PRINT_DEC to print ref->die_offset.
+	(implicit_ptr_descriptor): Return NULL if dwarf_strict.
+
 2010-09-10  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/44972

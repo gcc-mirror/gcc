@@ -6545,8 +6545,7 @@ is_tagged_type (const_tree type)
 static void
 get_ref_die_offset_label (char *label, dw_die_ref ref)
 {
-  sprintf (label, "%s+" HOST_WIDE_INT_PRINT_DEC,
-	   debug_info_section_label, ref->die_offset);
+  sprintf (label, "%s+%ld", debug_info_section_label, ref->die_offset);
 }
 
 /* Convert a DIE tag into its string name.  */
@@ -14285,6 +14284,8 @@ implicit_ptr_descriptor (rtx rtl, HOST_WIDE_INT offset)
   dw_loc_descr_ref ret;
   dw_die_ref ref;
 
+  if (dwarf_strict)
+    return NULL;
   gcc_assert (TREE_CODE (DEBUG_IMPLICIT_PTR_DECL (rtl)) == VAR_DECL
 	      || TREE_CODE (DEBUG_IMPLICIT_PTR_DECL (rtl)) == PARM_DECL
 	      || TREE_CODE (DEBUG_IMPLICIT_PTR_DECL (rtl)) == RESULT_DECL);
