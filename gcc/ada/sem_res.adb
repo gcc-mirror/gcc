@@ -8831,6 +8831,19 @@ package body Sem_Res is
             then
                null;
 
+            --  Finally, the expression may be a qualified expression whose
+            --  own expression is a possibly overloaded function call. The
+            --  qualified expression is needed to be disambiguate the call,
+            --  but it appears in a context in which a name is needed, forcing
+            --  the use of a conversion.
+            --  In Ada2012 a qualified expression is a name, and this idiom
+            --  is not needed any longer.
+
+            elsif Nkind (Orig_N) = N_Qualified_Expression
+              and then Nkind (Expression (Orig_N)) = N_Function_Call
+            then
+               null;
+
             --  Here we give the redundant conversion warning. If it is an
             --  entity, give the name of the entity in the message. If not,
             --  just mention the expression.

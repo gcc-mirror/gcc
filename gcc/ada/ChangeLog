@@ -1,3 +1,33 @@
+2010-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sprint.adb (Sprint_Node_Actual, case N_Derived_Type_Definition): Do
+	not reset Sloc when printing keyword "new".
+
+2010-09-10  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (GNATCmd): Put the command line in environment variable
+	GNAT_DRIVER_COMMAND_LINE.
+
+2010-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem.adb (Do_Unit_And_Dependents): if Withed_Body is set on a context
+	clause, process the body at once.
+
+2010-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Type_Conversion): Do not warn on a redundant
+	conversion is the expression is a qualified expression used to
+	disambiguate a function call.
+
+2010-09-10  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Add_Source): Allow an Ada source to have the same name
+	as a source of another project and of another language.
+
+2010-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* prj-util.adb: Minor reformatting.
+
 2010-09-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_disp.adb: Minor reformatting.

@@ -1332,7 +1332,7 @@ package body Sprint is
                Write_Str_With_Col_Check ("abstract ");
             end if;
 
-            Write_Str_With_Col_Check_Sloc ("new ");
+            Write_Str_With_Col_Check ("new ");
 
             --  Ada 2005 (AI-231)
 
