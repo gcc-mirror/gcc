@@ -895,10 +895,10 @@ package Exp_Dbug is
       -----------------
 
       --  Since there is no way for the debugger to obtain the index subtypes
-      --  for an array type, we produce a type that has the name of the
-      --  array type followed by "___XA" and is a record whose field names
-      --  are the names of the types for the bounds. The types of these
-      --  fields is an integer type which is meaningless.
+      --  for an array type, we produce a type that has the name of the array
+      --  type followed by "___XA" and is a record type whose field types are
+      --  the respective types for the bounds (and whose field names are the
+      --  names of these types).
 
       --  To conserve space, we do not produce this type unless one of the
       --  index types is either an enumeration type, has a variable upper
