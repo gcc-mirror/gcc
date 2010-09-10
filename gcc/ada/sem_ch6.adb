@@ -5652,19 +5652,18 @@ package body Sem_Ch6 is
                     E, BIP_Formal_Suffix (BIP_Alloc_Form));
             end if;
 
-            --  In the case of functions whose result type has controlled
-            --  parts, we have an extra formal of type
-            --  System.Finalization_Implementation.Finalizable_Ptr_Ptr. That
-            --  is, we are passing a pointer to a finalization list (which is
-            --  itself a pointer). This extra formal is then passed along to
-            --  Move_Final_List in case of successful completion of a return
-            --  statement. We cannot pass an 'in out' parameter, because we
-            --  need to update the finalization list during an abort-deferred
-            --  region, rather than using copy-back after the function
-            --  returns. This is true even if we are able to get away with
-            --  having 'in out' parameters, which are normally illegal for
-            --  functions. This formal is also needed when the function has
-            --  a tagged result.
+            --  For functions whose result type has controlled parts, we have
+            --  an extra formal of type System.Finalization_Implementation.
+            --  Finalizable_Ptr_Ptr. That is, we are passing a pointer to a
+            --  finalization list (which is itself a pointer). This extra
+            --  formal is then passed along to Move_Final_List in case of
+            --  successful completion of a return statement. We cannot pass an
+            --  'in out' parameter, because we need to update the finalization
+            --  list during an abort-deferred region, rather than using
+            --  copy-back after the function returns. This is true even if we
+            --  are able to get away with having 'in out' parameters, which are
+            --  normally illegal for functions. This formal is also needed when
+            --  the function has a tagged result.
 
             if Needs_BIP_Final_List (E) then
                Discard :=
