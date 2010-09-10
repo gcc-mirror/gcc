@@ -1340,6 +1340,14 @@ package body Exp_Pakd is
       Ctyp := Component_Type (Atyp);
       Csiz := UI_To_Int (Component_Size (Atyp));
 
+      --  We remove side effects, in case the rhs modifies the lhs, because we
+      --  are about to transform the rhs into an expression that first READS
+      --  the lhs, so we can do the necessary shifting and masking. Example:
+      --  "X(2) := F(...);" where F modifies X(3). Otherwise, the side effect
+      --  will be lost.
+
+      Remove_Side_Effects (Rhs);
+
       --  We convert the right hand side to the proper subtype to ensure
       --  that an appropriate range check is made (since the normal range
       --  check from assignment will be lost in the transformations). This

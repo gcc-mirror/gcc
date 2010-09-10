@@ -841,8 +841,11 @@ ada.install-common:
 #
 	-if [ -f gnat1$(exeext) ] ; \
 	then \
-	  if [ -f gnatsym$(exeext) ] ; \
+	  if [ -f gnatsym-cross$(exeext) ] ; \
 	  then \
+	    $(RM) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatsym$(exeext); \
+	    $(INSTALL_PROGRAM) gnatsym-cross$(exeext) $(DESTDIR)$(bindir)/$(target_noncanonical)-gnatsym$(exeext); \
+	  else \
 	    $(RM) $(DESTDIR)$(bindir)/gnatsym$(exeext); \
 	    $(INSTALL_PROGRAM) gnatsym$(exeext) $(DESTDIR)$(bindir)/gnatsym$(exeext); \
 	  fi ; \
