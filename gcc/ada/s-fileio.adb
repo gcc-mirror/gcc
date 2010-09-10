@@ -385,7 +385,7 @@ package body System.File_IO is
    end Errno_Message;
 
    function Errno_Message
-     (Name : String;
+     (Name  : String;
       Errno : Integer := OS_Lib.Errno) return String
    is
    begin

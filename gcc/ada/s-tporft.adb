@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 2002-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -85,6 +85,10 @@ begin
    --  Since this is not an ordinary Ada task, we will start out undeferred
 
    Self_Id.Deferral_Level := 0;
+
+   --  We do not provide an alternate stack for foreign threads
+
+   Self_Id.Common.Task_Alternate_Stack := Null_Address;
 
    System.Soft_Links.Create_TSD (Self_Id.Common.Compiler_Data);
 

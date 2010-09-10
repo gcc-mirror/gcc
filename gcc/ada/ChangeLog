@@ -1,3 +1,14 @@
+2010-09-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-tporft.adb, s-taskin.ads (Register_Foreign_Thread): Move
+	initialization of Task_Alternate_Stack here, cleaner since in case of
+	ranvescar, Restricted_Ada_Task_Control_Block is not initialized
+	implicitly.
+
+2010-09-10  Thomas Quinot  <quinot@adacore.com>
+
+	* s-fileio.adb, a-dirval.adb: Minor reformatting.
+
 2010-09-10  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-util.adb (Executable_Of): Fix CE when the project does not
