@@ -1,3 +1,15 @@
+2010-09-10  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	Backport from mainline
+	2010-09-07  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	PR target/36502
+	* gcc.target/i386/pr36502.c: New test.
+
+	PR target/42313
+	PR target/44651
+	* gcc.target/i386/builtin-unreachable.c: Don't skip on darwin.
+
 2010-09-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/40386
