@@ -17941,12 +17941,7 @@ gen_array_type_die (tree type, dw_die_ref context_die)
   equate_type_number_to_die (type, array_die);
 
   if (TREE_CODE (type) == VECTOR_TYPE)
-    {
-      /* The frontend feeds us a representation for the vector as a struct
-	 containing an array.  Pull out the array type.  */
-      type = TREE_TYPE (TYPE_FIELDS (TYPE_DEBUG_REPRESENTATION_TYPE (type)));
-      add_AT_flag (array_die, DW_AT_GNU_vector, 1);
-    }
+    add_AT_flag (array_die, DW_AT_GNU_vector, 1);
 
   /* For Fortran multidimensional arrays use DW_ORD_col_major ordering.  */
   if (is_fortran ()
@@ -17969,10 +17964,20 @@ gen_array_type_die (tree type, dw_die_ref context_die)
 #ifdef MIPS_DEBUGGING_INFO
   /* The SGI compilers handle arrays of unknown bound by setting
      AT_declaration and not emitting any subrange DIEs.  */
-  if (! TYPE_DOMAIN (type))
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && ! TYPE_DOMAIN (type))
     add_AT_flag (array_die, DW_AT_declaration, 1);
   else
 #endif
+  if (TREE_CODE (type) == VECTOR_TYPE)
+    {
+      /* For VECTOR_TYPEs we use an array die with appropriate bounds.  */
+      dw_die_ref subrange_die = new_die (DW_TAG_subrange_type, array_die, NULL);
+      add_bound_info (subrange_die, DW_AT_lower_bound, size_zero_node);
+      add_bound_info (subrange_die, DW_AT_upper_bound,
+		      size_int (TYPE_VECTOR_SUBPARTS (type) - 1));
+    }
+  else
     add_subscript_info (array_die, type, collapse_nested_arrays);
 
   /* Add representation of the type of the elements of this array type and

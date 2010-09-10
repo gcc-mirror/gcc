@@ -1677,16 +1677,7 @@ static void
 dbxout_type (tree type, int full)
 {
   static int anonymous_type_number = 0;
-  bool vector_type = false;
   tree tem, main_variant, low, high;
-
-  if (TREE_CODE (type) == VECTOR_TYPE)
-    {
-      /* The frontend feeds us a representation for the vector as a struct
-	 containing an array.  Pull out the array type.  */
-      type = TREE_TYPE (TYPE_FIELDS (TYPE_DEBUG_REPRESENTATION_TYPE (type)));
-      vector_type = true;
-    }
 
   if (TREE_CODE (type) == INTEGER_TYPE)
     {
@@ -2020,9 +2011,6 @@ dbxout_type (tree type, int full)
 	  break;
 	}
 
-      if (use_gnu_debug_info_extensions && vector_type)
-	stabstr_S ("@V;");
-
       /* Output "a" followed by a range type definition
 	 for the index type of the array
 	 followed by a reference to the target-type.
@@ -2045,6 +2033,22 @@ dbxout_type (tree type, int full)
 	  stabstr_C ('a');
 	  dbxout_range_type (tem, TYPE_MIN_VALUE (tem), TYPE_MAX_VALUE (tem));
 	}
+
+      dbxout_type (TREE_TYPE (type), 0);
+      break;
+
+    case VECTOR_TYPE:
+      /* Make vectors look like an array.  */
+      if (use_gnu_debug_info_extensions)
+	stabstr_S ("@V;");
+
+      /* Output "a" followed by a range type definition
+	 for the index type of the array
+	 followed by a reference to the target-type.
+	 ar1;0;N;M for a C array of type M and size N+1.  */
+      stabstr_C ('a');
+      dbxout_range_type (integer_type_node, size_zero_node,
+			 size_int (TYPE_VECTOR_SUBPARTS (type) - 1));
 
       dbxout_type (TREE_TYPE (type), 0);
       break;
