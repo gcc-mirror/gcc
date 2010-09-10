@@ -709,6 +709,9 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    -------------
 
    package Ch5 is
+      function P_Condition return Node_Id;
+      --  Scan out and return a condition
+
       function P_Statement_Name (Name_Node : Node_Id) return Node_Id;
       --  Given a node representing a name (which is a call), converts it
       --  to the syntactically corresponding procedure call statement.
@@ -1255,6 +1258,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 --  Start of processing for Par
 
 begin
+   Compiler_State := Parsing;
 
    --  Deal with configuration pragmas case first
 
@@ -1266,10 +1270,12 @@ begin
       begin
          loop
             if Token = Tok_EOF then
+               Compiler_State := Analyzing;
                return Pragmas;
 
             elsif Token /= Tok_Pragma then
                Error_Msg_SC ("only pragmas allowed in configuration file");
+               Compiler_State := Analyzing;
                return Error_List;
 
             else
@@ -1479,6 +1485,7 @@ begin
 
       Restore_Opt_Config_Switches (Save_Config_Switches);
       Set_Comes_From_Source_Default (False);
+      Compiler_State := Analyzing;
       return Empty_List;
    end if;
 end Par;
