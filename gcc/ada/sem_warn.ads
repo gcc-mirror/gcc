@@ -47,6 +47,12 @@ package Sem_Warn is
    --  Warn when explicit record component clauses leave uncovered holes (gaps)
    --  in a record layout. Off by default, set by -gnatw.h (but not -gnatwa).
 
+   Warn_On_Overridden_Size : Boolean := False;
+   --  Warn when explicit record component clause or array component_size
+   --  clause specifies a size that overrides a size for the typen which was
+   --  set with an explicit size clause. Off by default, set by -gnatw.sn (but
+   --  not -gnatwa).
+
    ------------------------
    -- Warnings Off Table --
    ------------------------

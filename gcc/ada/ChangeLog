@@ -1,5 +1,29 @@
 2010-09-10  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_ugn.texi: Add documentation for -gnatw.s/S
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause, case
+	Component_Size): Implement warning on overriden size clause.
+	(Analyze_Record_Representation_Clause): Implement warning on overriden
+	size clause.
+	* sem_warn.ads, sem_warn.adb (Warn_On_Overridden_Size): New flag
+	(-gnatw.s/S).
+	* ug_words: Add entries for -gnatw.s/S.
+	* vms_data.ads, usage.adb: Add line for -gnatw.s/-gnatw.S.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2010-09-10  Vincent Celier  <celier@adacore.com>
+
+	* prj-dect.adb (Parse_Package_Declaration): Allow a package to extend
+	a package with the same name from an imported or extended project.
+	* prj-proc.adb (Process_Declarative_Items): Process package extensions
+
+2010-09-10  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb (Expand_Call): Do not perform a null_exclusion check on
+	'out' parameters.
+
+2010-09-10  Robert Dewar  <dewar@adacore.com>
+
 	* sem.adb: Minor reformatting.
 
 2010-09-10  Bob Duff  <duff@adacore.com>

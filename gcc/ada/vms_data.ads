@@ -3011,6 +3011,10 @@ package VMS_Data is
                                                "-gnatw.R "                 &
                                             "SUPPRESS "                    &
                                                "-gnatws "                  &
+                                            "OVERRIDING_SIZE "             &
+                                               "-gnatw.s "                 &
+                                            "NOOVERRIDING_SIZE "           &
+                                               "-gnatw.S "                 &
                                             "DELETED_CODE "                &
                                                "-gnatwt "                  &
                                             "NODELETED_CODE "              &

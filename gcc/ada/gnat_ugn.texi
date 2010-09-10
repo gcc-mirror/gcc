@@ -5582,6 +5582,25 @@ To suppress these back end warnings as well, use the switch @option{-w}
 in addition to @option{-gnatws}. Also this switch has no effect on the
 handling of style check messages.
 
+@item -gnatw.s
+@emph{Activate warnings on overridden size clauses.}
+@cindex @option{-gnatw.s} (@command{gcc})
+@cindex Record Representation (component sizes)
+This switch activates warnings on component clauses in record
+representation clauses where the length given overrides that
+specified by an explicit size clause for the component type. A
+warning is similarly given in the array case if a specified
+component size overrides an explicit size clause for the array
+component type.
+Note that @option{-gnatwa} does not affect the setting of this warning option.
+
+@item -gnatw.S
+@emph{Suppress warnings on overriddebn size clauses.}
+@cindex @option{-gnatw.S} (@command{gcc})
+This switch suppresses warnings on component clauses in record
+representation clauses that override size clauses, and similar
+warnings when an array component size overrides a size clause.
+
 @item -gnatwt
 @emph{Activate warnings for tracking of deleted conditional code.}
 @cindex @option{-gnatwt} (@command{gcc})

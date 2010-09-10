@@ -1428,7 +1428,7 @@ package body Prj.Proc is
 
                      if Present (Project_Of_Renamed_Package) then
 
-                        --  Renamed package
+                        --  Renamed or extending package
 
                         declare
                            Project_Name : constant Name_Id :=
@@ -1466,8 +1466,6 @@ package body Prj.Proc is
                               In_Tree    => In_Tree);
                         end;
 
-                     --  Standard package declaration, not renaming
-
                      else
                         --  Set the default values of the attributes
 
@@ -1482,19 +1480,22 @@ package body Prj.Proc is
                                 (Current_Item, From_Project_Node_Tree)),
                            Project_Level => False);
 
-                        --  And process declarative items of the new package
-
-                        Process_Declarative_Items
-                          (Project                => Project,
-                           In_Tree                => In_Tree,
-                           Flags                  => Flags,
-                           From_Project_Node      => From_Project_Node,
-                           From_Project_Node_Tree => From_Project_Node_Tree,
-                           Pkg                    => New_Pkg,
-                           Item                   =>
-                             First_Declarative_Item_Of
-                               (Current_Item, From_Project_Node_Tree));
                      end if;
+
+                     --  Process declarative items (nothing to do when the
+                     --  package is renaming, as the first declarative item is
+                     --  null).
+
+                     Process_Declarative_Items
+                       (Project                => Project,
+                        In_Tree                => In_Tree,
+                        Flags                  => Flags,
+                        From_Project_Node      => From_Project_Node,
+                        From_Project_Node_Tree => From_Project_Node_Tree,
+                        Pkg                    => New_Pkg,
+                        Item                   =>
+                          First_Declarative_Item_Of
+                            (Current_Item, From_Project_Node_Tree));
                   end;
                end if;
 
