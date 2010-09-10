@@ -133,10 +133,6 @@ extern objc_error_handler objc_set_error_handler(objc_error_handler func);
 
 #define OBJC_ERR_BAD_STATE 40          /* Bad thread state */
 
-/* Set this variable nonzero to print a line describing each
-   message that is sent.  (this is currently disabled)  */
-extern BOOL objc_trace;
-
 
 /* For every class which happens to have statically allocated instances in
    this module, one OBJC_STATIC_INSTANCES is allocated by the compiler.
@@ -186,18 +182,18 @@ typedef struct objc_symtab {
 ** That array holds a pointer to each module structure of the executable. 
 */
 typedef struct objc_module {
-  unsigned long version;                        /* Compiler revision. */
-  unsigned long size;                           /* sizeof(Module). */
-  const char* name;                             /* Name of the file where the 
-                                                  module was generated.   The 
-                                                  name includes the path. */
-
-  Symtab_t    symtab;                           /* Pointer to the Symtab of
-                                                  the module.  The Symtab
-                                                  holds an array of 
-						  pointers to 
-                                                  the classes and categories 
-                                                  defined in the module. */
+  unsigned long version; /* Version of the Module data structure.  */
+  unsigned long size;    /* sizeof(Module) according to the compiler -
+			    only used to sanity check that it matches
+			    sizeof(Module) according to the
+			    runtime.  */
+  const char* name;      /* Name of the file used to compile the
+			    module - not set by modern compilers for
+			    security reasons.  */
+  Symtab_t    symtab;    /* Pointer to the Symtab of the module.  The
+			    Symtab holds an array of pointers to the
+			    classes and categories defined in the
+			    module. */
 } Module, *Module_t;
 
 

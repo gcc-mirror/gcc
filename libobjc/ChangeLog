@@ -1,5 +1,9 @@
 2010-09-10  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc/objc-api.h (objc_trace): Unused variable removed.
+
+2010-09-10  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc/deprecated: New directory.
 	* objc/deprecated/README: New file.
 	* objc/README: New file.
