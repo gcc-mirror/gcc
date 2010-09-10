@@ -1,3 +1,26 @@
+2010-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Add section on intent of style checking options.
+
+2010-09-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* xref_lib.adb (Get_Full_Type): Fix handling of 'a' char.
+
+2010-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb: Improve error message on derivation from class-wide type
+
+2010-09-10  Steve Baird  <baird@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Enable Expression_With_Actions
+	generation when Generate_SCIL is True.
+
+2010-09-10  Geert Bosch  <bosch@adacore.com>
+
+	* gnatlink.adb (Check_ Existing_Executable): New procedure for checking
+	validity of executable name and removing any existing executable
+	(Gnatlink): Call Check_Existing_Executable.
+
 2010-09-10  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-tporft.adb, s-taskin.ads (Register_Foreign_Thread): Move

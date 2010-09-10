@@ -13520,8 +13520,18 @@ package body Sem_Ch3 is
          if not Is_Generic_Actual_Type (Parent_Type)
            or else In_Visible_Part (Scope (Parent_Type))
          then
-            Error_Msg_N
-              ("type derived from tagged type must have extension", Indic);
+            if Is_Class_Wide_Type (Parent_Type) then
+               Error_Msg_N
+                 ("parent type must not be a class-wide type", Indic);
+
+               --  Use specific type to prevent cascaded errors.
+
+               Parent_Type := Etype (Parent_Type);
+
+            else
+               Error_Msg_N
+                 ("type derived from tagged type must have extension", Indic);
+            end if;
          end if;
       end if;
 

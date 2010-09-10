@@ -355,11 +355,6 @@ procedure Gnat1drv is
       elsif Debug_Flag_Dot_YY then
          Use_Expression_With_Actions := False;
 
-      --  If no debug flags, usage off for SCIL
-
-      elsif Generate_SCIL then
-         Use_Expression_With_Actions := False;
-
       --  Otherwise this feature is implemented, so we allow its use
 
       else
