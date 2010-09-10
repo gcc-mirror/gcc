@@ -1695,11 +1695,9 @@ typedef struct gfc_expr
 
   locus where;
 
-  /* True if the expression is a call to a function that returns an array,
-     and if we have decided not to allocate temporary data for that array.
-     is_boz is true if the integer is regarded as BOZ bitpatten and is_snan
+  /* is_boz is true if the integer is regarded as BOZ bitpatten and is_snan
      denotes a signalling not-a-number.  */
-  unsigned int inline_noncopying_intrinsic : 1, is_boz : 1, is_snan : 1;
+  unsigned int is_boz : 1, is_snan : 1;
 
   /* Sometimes, when an error has been emitted, it is necessary to prevent
       it from recurring.  */
