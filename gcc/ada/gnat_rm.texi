@@ -186,6 +186,7 @@ Implementation Defined Pragmas
 * Pragma Restriction_Warnings::
 * Pragma Shared::
 * Pragma Short_Circuit_And_Or::
+* Pragma Short_Descriptors::
 * Pragma Source_File_Name::
 * Pragma Source_File_Name_Project::
 * Pragma Source_Reference::
@@ -803,6 +804,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Restriction_Warnings::
 * Pragma Shared::
 * Pragma Short_Circuit_And_Or::
+* Pragma Short_Descriptors::
 * Pragma Source_File_Name::
 * Pragma Source_File_Name_Project::
 * Pragma Source_Reference::
@@ -2208,8 +2210,9 @@ you can construct your own extension unit following the above
 definition.  Note that such a package is a child of @code{System}
 and thus is considered part of the implementation.  To compile
 it you will have to use the appropriate switch for compiling
-system units.  @xref{Top, @value{EDITION} User's Guide, About This
-Guide,, gnat_ugn, @value{EDITION} User's Guide}, for details.
+system units.
+@xref{Top, @value{EDITION} User's Guide, About This Guide, gnat_ugn, @value{EDITION} User's Guide},
+for details.
 
 @node Pragma Extensions_Allowed
 @unnumberedsec Pragma Extensions_Allowed
@@ -3793,7 +3796,7 @@ type Day is (Mon, Tue, Wed, Thu, Fri, Sat, Sun);
 @end smallexample
 
 @noindent
-then the ordering imposed by the language is reasonable, and 
+then the ordering imposed by the language is reasonable, and
 clients can depend on it, writing for example:
 
 @smallexample @c ada
@@ -4430,7 +4433,23 @@ short-circuited logical operators. If this configuration pragma occurs locally
 within the file being compiled, it applies only to the file being compiled.
 There is no requirement that all units in a partition use this option.
 
-semantics are identical to pragma Atomic.
+@node Pragma Short_Descriptors
+@unnumberedsec Pragma Short_Descriptors
+@findex Short_Descriptors
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Short_Descriptors
+@end smallexample
+
+@noindent
+In VMS versions of the compiler, this configuration pragma causes all
+occurrences of the mechanism types Descriptor[_xxx] to be treated as
+Short_Descriptor[_xxx]. This is helpful in porting legacy applications from a
+32-bit environment to a 64-bit environment. This pragma is ignored for non-VMS
+versions.
+
 @node Pragma Source_File_Name
 @unnumberedsec Pragma Source_File_Name
 @findex Source_File_Name

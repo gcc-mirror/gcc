@@ -187,7 +187,7 @@ package body Prj.Util is
             Executable_Extension_On_Target := Saved_EEOT;
             return Result;
 
-         else
+         elsif Builder_Package /= No_Package then
             --  We still want to take into account cases where the suffix is
             --  specified in the project itself, as opposed to the config file.
             --  Unfortunately, when the project was processed, they are both
@@ -208,11 +208,10 @@ package body Prj.Util is
                Result :=  Executable_Name (File);
                Executable_Extension_On_Target := Saved_EEOT;
                return Result;
-
-            else
-               return File;
             end if;
          end if;
+
+         return File;
       end Add_Suffix;
 
    --  Start of processing for Executable_Of

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2009, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2010, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -717,7 +717,9 @@ package body System.Task_Primitives.Operations is
 
       Specific.Set (Self_ID);
 
-      if Use_Alternate_Stack then
+      if Use_Alternate_Stack
+        and then Self_ID.Common.Task_Alternate_Stack /= Null_Address
+      then
          declare
             Stack  : aliased stack_t;
             Result : Interfaces.C.int;
