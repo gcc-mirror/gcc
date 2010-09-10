@@ -1,3 +1,8 @@
+2010-09-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* runtime/string.c (compare0): Remove.
+	(find_option): Inline string comparison
+
 2010-09-09  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* acinclude.m4 (LIBGFOR_CHECK_FOR_BROKEN_ISFINITE,
