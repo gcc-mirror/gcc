@@ -25,24 +25,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 #include <string.h>
 
-/* Compare a C-style string with a fortran style string in a case-insensitive
-   manner.  Used for decoding string options to various statements.  Returns
-   zero if not equal, nonzero if equal.  */
-
-static int
-compare0 (const char *s1, gfc_charlen_type s1_len, const char *s2)
-{
-  gfc_charlen_type len;
-
-  /* Strip trailing blanks from the Fortran string.  */
-  len = fstrlen (s1, s1_len);
-
-  if ((size_t) len != strlen(s2))
-    return 0; /* don't match */
-
-  return strncasecmp (s1, s2, len) == 0;
-}
-
 
 /* Given a fortran string, return its length exclusive of the trailing
    spaces.  */
@@ -116,8 +98,11 @@ int
 find_option (st_parameter_common *cmp, const char *s1, gfc_charlen_type s1_len,
 	     const st_option * opts, const char *error_message)
 {
+  /* Strip trailing blanks from the Fortran string.  */
+  size_t len = (size_t) fstrlen (s1, s1_len);
+
   for (; opts->name; opts++)
-    if (compare0 (s1, s1_len, opts->name))
+    if (len == strlen(opts->name) && strncasecmp (s1, opts->name, len) == 0)
       return opts->value;
 
   generate_error (cmp, LIBERROR_BAD_OPTION, error_message);
