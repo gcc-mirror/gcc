@@ -184,6 +184,9 @@ package GNAT.Expect is
    --  subprograms to also match on output on standard error.
    --
    --  Invalid_Process is raised if the process could not be spawned.
+   --
+   --  For information about spawning processes from tasking programs, see the
+   --  "NOTE: Spawn in tasking programs" in System.OS_Lib (s-os_lib.ads).
 
    procedure Close (Descriptor : in out Process_Descriptor);
    --  Terminate the process and close the pipes to it. It implicitly does the

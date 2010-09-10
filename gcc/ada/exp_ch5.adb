@@ -1010,14 +1010,7 @@ package body Exp_Ch5 is
       function Build_Step (J : Nat) return Node_Id;
       --  The increment step for the index of the right-hand side is written
       --  as an attribute reference (Succ or Pred). This function returns
-      --  the corresponding node, which is placed at the end of theloop body.
-
-      --  Note that on the last iteration of the loop, the index is increased
-      --  (or decreased) past the corresponding bound. This is consistent with
-      --  the C semantics of the back-end, where such an off-by-one value on a
-      --  dead index variable is OK.  However, in CodePeer mode this leads to
-      --  spurious warnings, and thus we place a guard around the attribute
-      --  reference. For obvious reasons we only do this for CodePeer.
+      --  the corresponding node, which is placed at the end of the loop body.
 
       ----------------
       -- Build_Step --
@@ -1044,6 +1037,13 @@ package body Exp_Ch5 is
                    Attribute_Name => S_Or_P,
                    Expressions => New_List (
                      New_Occurrence_Of (Rnn (J), Loc))));
+
+      --  Note that on the last iteration of the loop, the index is increased
+      --  (or decreased) past the corresponding bound. This is consistent with
+      --  the C semantics of the back-end, where such an off-by-one value on a
+      --  dead index variable is OK.  However, in CodePeer mode this leads to
+      --  spurious warnings, and thus we place a guard around the attribute
+      --  reference. For obvious reasons we only do this for CodePeer.
 
          if CodePeer_Mode then
             Step :=
