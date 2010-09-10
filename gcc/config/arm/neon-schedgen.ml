@@ -90,7 +90,7 @@ type reservation =
 | Fmul_then_fadd | Fmul_then_fadd_2
 
 type core = CortexA8 | CortexA9
-let allCores = [CortexA8]
+let allCores = [CortexA8; CortexA9]
 let coreStr = function
     CortexA8 -> "cortex_a8"
   | CortexA9 -> "cortex_a9"
