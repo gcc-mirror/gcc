@@ -5,7 +5,7 @@
 	* gcc.dg/tree-ssa/pr45144.c: Likewise.
 	* gcc.dg/tree-ssa/forwprop-5.c: Likewise and scan optimzed dump
 	instead.
-        * g++.dg/torture/pr44972.C: New test.
+	* g++.dg/torture/pr44972.C: New test.
 
 2010-09-10  Martin Jambor  <mjambor@suse.cz>
 
@@ -39,7 +39,7 @@
 
 	PR middle-end/40386
 	* gcc.c-torture/execute/{pr40386.c,pr40386.x}: New testcase.
-	
+
 2010-09-09  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* gfortran.dg/inline_transpose_1.f90: New test.
@@ -60,7 +60,7 @@
 	* objc/execute/exceptions/handler-1.m: Updated to use the new
 	objc_set_uncaught_exception_handler() function.
 	* objc/execute/exceptions/matcher-1.m: New test.
-	
+
 2010-09-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/38282
@@ -104,7 +104,7 @@
 
 	PR tree-optimization/43430
 	* gcc.dg/vect/pr43430-2.c: New test.
-	
+
 2010-09-08  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/33244
@@ -422,7 +422,7 @@
 
 	* gcc.dg/vect/bb-slp-8.c: Separate the interesting part and the
 	check into different basic blocks. Expect vectorization if misaligned
-	stores are supported. 
+	stores are supported.
 	* gcc.dg/vect/bb-slp-8a.c: New test.
 	* gcc.dg/vect/bb-slp-8b.c: New test.
 
