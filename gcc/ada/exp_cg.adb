@@ -129,6 +129,14 @@ package body Exp_CG is
             Write_Call_Info (N);
 
          else pragma Assert (Nkind (N) = N_Defining_Identifier);
+
+            --  The type may be a private untagged type whose completion is
+            --  tagged, in which case we must use the full tagged view.
+
+            if not Is_Tagged_Type (N) and then Is_Private_Type (N) then
+               N := Full_View (N);
+            end if;
+
             pragma Assert (Is_Tagged_Type (N));
 
             Write_Type_Info (N);

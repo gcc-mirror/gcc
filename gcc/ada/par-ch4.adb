@@ -2788,7 +2788,7 @@ package body Ch4 is
       end if;
 
       Scan; -- past IF or ELSIF
-      Append_To (Exprs, P_Expression_No_Right_Paren);
+      Append_To (Exprs, P_Condition);
       TF_Then;
       Append_To (Exprs, P_Expression);
 

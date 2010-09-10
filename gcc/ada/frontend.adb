@@ -161,7 +161,6 @@ begin
          if Source_gnat_adc /= No_Source_File then
             Initialize_Scanner (No_Unit, Source_gnat_adc);
             Config_Pragmas := Par (Configuration_Pragmas => True);
-
          else
             Config_Pragmas := Empty_List;
          end if;
