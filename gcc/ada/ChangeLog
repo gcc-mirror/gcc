@@ -1,3 +1,11 @@
+2010-09-10  Bob Duff  <duff@adacore.com>
+
+	* s-os_lib.ads, g-expect.ads: Add comments.
+
+2010-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch5.adb: Minor reformatting.
+
 2010-09-10  Thomas Quinot  <quinot@adacore.com>
 
 	* scos.ads: Add comments.
