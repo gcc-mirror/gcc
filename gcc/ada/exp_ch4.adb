@@ -3724,8 +3724,8 @@ package body Exp_Ch4 is
                   end if;
 
                   if Restriction_Active (No_Task_Hierarchy) then
-                     --  3 is System.Tasking.Library_Task_Level
-                     Append_To (Args, Make_Integer_Literal (Loc, 3));
+                     Append_To (Args,
+                       New_Occurrence_Of (RTE (RE_Library_Task_Level), Loc));
                   else
                      Append_To (Args,
                        New_Reference_To

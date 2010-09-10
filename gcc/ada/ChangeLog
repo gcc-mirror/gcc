@@ -1,3 +1,34 @@
+2010-09-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_disp.adb: Minor reformatting.
+
+2010-09-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Ignore Inline_Always pragma in
+	CodePeer mode.
+
+2010-09-10  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_res.adb: Minor reformatting.
+	* exp_ch9.adb, rtsfind.ads, exp_ch4.adb, exp_ch3.adb: Do not hardcode
+	magic constants for task master levels (instead, reference
+	named numbers from System.Tasking).
+
+2010-09-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnatvsn.ads (Ver_Prefix): New constant string.
+	* bindgen.adb (Gen_Output_File_Ada): Use it in lieu of hardcoded value.
+	(Gen_Output_File_C): Likewise.
+	* g-comver.adb (Ver_Prefix): Add cross-reference to Gnatvsn.Ver_Prefix
+	in comment.
+	
+2010-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem.adb (Walk_Library_Items): Do not traverse children of the main
+	unit, to prevent spurious circularities in the walk order.
+	(Depends_On_Main): Use elsewhere to prevent circularities when the body
+	of an ancestor of the main unit depends on a child of the main unit.
+
 2010-09-10  Robert Dewar  <dewar@adacore.com>
 
 	* gnatlink.adb, prj-ext.adb, prj-util.adb, s-tporft.adb,

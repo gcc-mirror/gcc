@@ -8287,7 +8287,13 @@ package body Sem_Prag is
 
          when Pragma_Inline_Always =>
             GNAT_Pragma;
-            Process_Inline (True);
+
+            --  Pragma always active unless in CodePeer mode, since this causes
+            --  walk order issues.
+
+            if not CodePeer_Mode then
+               Process_Inline (True);
+            end if;
 
          --------------------
          -- Inline_Generic --

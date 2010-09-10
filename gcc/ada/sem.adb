@@ -1539,6 +1539,23 @@ package body Sem is
       --  context of some other unit. We do not want this to force processing
       --  of the main body before all other units have been processed.
 
+      function Depends_On_Main (CU : Node_Id) return Boolean;
+      --  The body of a unit that is withed by the spec of the main unit
+      --  may in turn have a with_clause on that spec. In that case do not
+      --  traverse the body, to prevent loops. It can also happen that the
+      --  main body has a with_clause on a child, which of course has an
+      --  implicit with on its parent. It's OK to traverse the child body
+      --  if the main spec has been processed, otherwise we also have a
+      --  circularity to avoid.
+
+      --  Another circularity pattern occurs when the main unit is a child unit
+      --  and the body of an ancestor has a with-clause of the main unit or on
+      --  one of its children. In both cases the body in question has a with-
+      --  clause on the main unit, and must be excluded from the traversal. In
+      --  some convoluted cases this may lead to a CodePeer error because the
+      --  spec of a subprogram declared in an instance within the parent will
+      --  not be seen in the main unit.
+
       procedure Do_Action (CU : Node_Id; Item : Node_Id);
       --  Calls Action, with some validity checks
 
@@ -1557,6 +1574,39 @@ package body Sem is
       --  that may be present, together with their  context. The spec of main
       --  is processed wherever it appears in the list of units, while the body
       --  is processed as the last unit in the list.
+
+      ---------------------
+      -- Depends_On_Main --
+      ---------------------
+
+      function Depends_On_Main (CU : Node_Id) return Boolean is
+         CL  : Node_Id;
+         MCU : constant Node_Id := Unit (Main_CU);
+
+      begin
+         CL := First (Context_Items (CU));
+
+         --  Problem does not arise with main subprograms
+
+         if
+           not Nkind_In (MCU, N_Package_Body, N_Package_Declaration)
+         then
+            return False;
+         end if;
+
+         while Present (CL) loop
+            if Nkind (CL) = N_With_Clause
+              and then Library_Unit (CL) = Main_CU
+              and then not Done (Get_Cunit_Unit_Number (Library_Unit (CL)))
+            then
+               return True;
+            end if;
+
+            Next (CL);
+         end loop;
+
+         return False;
+      end Depends_On_Main;
 
       ---------------
       -- Do_Action --
@@ -1812,45 +1862,6 @@ package body Sem is
 
          procedure Do_Withed_Units is new Walk_Withs (Do_Withed_Unit);
 
-         function Depends_On_Main (CU : Node_Id) return Boolean;
-         --  The body of a unit that is withed by the spec of the main unit
-         --  may in turn have a with_clause on that spec. In that case do not
-         --  traverse the body, to prevent loops. It can also happen that the
-         --  main body has a with_clause on a child, which of course has an
-         --  implicit with on its parent. It's OK to traverse the child body
-         --  if the main spec has been processed, otherwise we also have a
-         --  circularity to avoid.
-
-         ---------------------
-         -- Depends_On_Main --
-         ---------------------
-
-         function Depends_On_Main (CU : Node_Id) return Boolean is
-            CL : Node_Id;
-
-         begin
-            CL := First (Context_Items (CU));
-
-            --  Problem does not arise with main subprograms
-
-            if Nkind (Unit (Main_CU)) /= N_Package_Body then
-               return False;
-            end if;
-
-            while Present (CL) loop
-               if Nkind (CL) = N_With_Clause
-                 and then Library_Unit (CL) = Library_Unit (Main_CU)
-                 and then not Done (Get_Cunit_Unit_Number (Library_Unit (CL)))
-               then
-                  return True;
-               end if;
-
-               Next (CL);
-            end loop;
-
-            return False;
-         end Depends_On_Main;
-
       --  Start of processing for Process_Bodies_In_Context
 
       begin
@@ -1931,8 +1942,9 @@ package body Sem is
       Cur := First_Elmt (Comp_Unit_List);
       while Present (Cur) loop
          declare
-            CU : constant Node_Id := Node (Cur);
-            N  : constant Node_Id := Unit (CU);
+            CU  : constant Node_Id := Node (Cur);
+            N   : constant Node_Id := Unit (CU);
+            Par : Entity_Id;
 
          begin
             pragma Assert (Nkind (CU) = N_Compilation_Unit);
@@ -1969,10 +1981,26 @@ package body Sem is
                         Unit (Library_Unit (Main_CU)));
                   end if;
 
-               --  It's a spec, process it, and the units it depends on
+                  --  It's a spec, process it, and the units it depends on,
+                  --  unless it is a descendent of the main unit.  This can
+                  --  happen when the body of a parent depends on some other
+                  --  descendent.
 
                when others =>
-                  Do_Unit_And_Dependents (CU, N);
+                  Par := Scope (Defining_Entity (Unit (CU)));
+
+                  if Is_Child_Unit (Defining_Entity (Unit (CU))) then
+                     while Present (Par)
+                       and then Par /= Standard_Standard
+                       and then Par /= Cunit_Entity (Main_Unit)
+                     loop
+                        Par := Scope (Par);
+                     end loop;
+                  end if;
+
+                  if Par /= Cunit_Entity (Main_Unit) then
+                     Do_Unit_And_Dependents (CU, N);
+                  end if;
             end case;
          end;
 
@@ -2042,6 +2070,7 @@ package body Sem is
 
                   if Present (Body_CU)
                     and then not Seen (Get_Cunit_Unit_Number (Body_CU))
+                    and then not Depends_On_Main (Body_CU)
                   then
                      Body_U := Get_Cunit_Unit_Number (Body_CU);
                      Seen (Body_U) := True;

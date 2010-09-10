@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1396,6 +1396,11 @@ package Rtsfind is
      RE_Conditional_Call,                -- System.Tasking
      RE_Asynchronous_Call,               -- System.Tasking
 
+     RE_Foreign_Task_Level,              -- System.Tasking
+     RE_Environment_Task_Level,          -- System.Tasking
+     RE_Independent_Task_Level,          -- System.Tasking
+     RE_Library_Task_Level,              -- System.Tasking
+
      RE_Ada_Task_Control_Block,          -- System.Tasking
 
      RE_Task_List,                       -- System.Tasking
@@ -2560,6 +2565,11 @@ package Rtsfind is
      RE_Simple_Call                      => System_Tasking,
      RE_Conditional_Call                 => System_Tasking,
      RE_Asynchronous_Call                => System_Tasking,
+
+     RE_Foreign_Task_Level               => System_Tasking,
+     RE_Environment_Task_Level           => System_Tasking,
+     RE_Independent_Task_Level           => System_Tasking,
+     RE_Library_Task_Level               => System_Tasking,
 
      RE_Ada_Task_Control_Block           => System_Tasking,
 

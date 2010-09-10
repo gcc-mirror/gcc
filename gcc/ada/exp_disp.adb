@@ -6667,8 +6667,8 @@ package body Exp_Disp is
          end;
       end if;
 
-      --  Mark entities of dispatch table. Required by the back end to
-      --  handle them properly.
+      --  Mark entities of dispatch table. Required by the back end to handle
+      --  them properly.
 
       if Present (DT) then
          Set_Is_Dispatch_Table_Entity (DT);
