@@ -6208,8 +6208,8 @@ Comments that follow other tokens on a line must have at least one blank
 following the ``@code{--}'' at the start of the comment.
 
 @item
-Full line comments must have two blanks following the ``@code{--}'' that
-starts the comment, with the following exceptions.
+Full line comments must have at least two blanks following the
+``@code{--}'' that starts the comment, with the following exceptions.
 
 @item
 A line consisting only of the ``@code{--}'' characters, possibly preceded

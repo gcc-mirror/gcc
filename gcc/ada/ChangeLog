@@ -1,5 +1,22 @@
 2010-09-10  Robert Dewar  <dewar@adacore.com>
 
+	* g-pehage.ads: Minor reformatting
+
+	* gnat_ugn.texi: Clarifying comment on -gnatyc
+	* exp_ch6.adb (Expand_N_Subprogram_Body): Reset Is_Pure if limited
+	arguments.
+
+2010-09-10  Tristan Gingold  <gingold@adacore.com>
+
+	* Make-generated.in (gnat.hlp): New rule.
+
+2010-09-10  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-util.adb, prj-util.ads (Executable_Of): New parameter
+	Include_Suffix.
+
+2010-09-10  Robert Dewar  <dewar@adacore.com>
+
 	* einfo.adb: Minor code cleanup: Add assertion to
 	Set_Corresponding_Protected_Entry.
 
