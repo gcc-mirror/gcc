@@ -32,11 +32,10 @@
 
 2010-09-09  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        * config/arm/bpabi.h (BE8_LINK_SPEC): Handle Cortex-a15.
-        * config/arm/arm-cores.def (cortex-a15): New core. Treat it 
-	as a v7-a.
-        * config/arm/arm-tune.md: Regenerate.
-        * doc/invoke.texi (ARM Options): Document it.
+	* config/arm/bpabi.h (BE8_LINK_SPEC): Handle Cortex-a15.
+	* config/arm/arm-cores.def (cortex-a15): New core. Treat it as a v7-a.
+	* config/arm/arm-tune.md: Regenerate.
+	* doc/invoke.texi (ARM Options): Document it.
 
 2010-09-09  Reza Yazdani  <reza.yazdani@amd.com>
 
@@ -118,7 +117,6 @@
 	* target.def (dispatch): Defined.
 	(dispatch_do): Defined.
 
->>>>>>> .r164133
 2010-09-09  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/45312
