@@ -1,3 +1,7 @@
+2010-09-10  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-ccp.c (fold_const_aggregate_ref): Do not check STATIC flag.
+
 2010-09-10  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (make_vector_type): Do not set TYPE_DEBUG_REPRESENTATION_TYPE.
