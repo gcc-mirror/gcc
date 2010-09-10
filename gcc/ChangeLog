@@ -1,3 +1,8 @@
+2010-09-10  Kai Tietz  <kai.tietz@onevision.com>
+
+	* configure: Regenerated.
+	* config.gcc: Add for x86_64 and i?86 mingw t-dfprule.
+
 2010-09-10  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
         * config/arm/neon-schedgen.ml (allCores): Add support for

@@ -1,3 +1,8 @@
+2010-09-10  Jonathan Yong  <jon_y@users.sourceforge.net>
+
+	* dfp.m4: Enable decimal float for i?86 cygwin
+	and mingw, and for x86_64 mingw.
+
 2010-09-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/45524
