@@ -1008,11 +1008,16 @@ package body Exp_Ch5 is
       S_Or_P : Name_Id;
 
       function Build_Step (J : Nat) return Node_Id;
+      --  The increment step for the index of the right-hand side is written
+      --  as an attribute reference (Succ or Pred). This function returns
+      --  the corresponding node, which is placed at the end of theloop body.
+
       --  Note that on the last iteration of the loop, the index is increased
-      --  past the upper bound. This is consistent with the C semantics of the
-      --  back-end, where such an off-by-one value on a dead variable is OK.
-      --  However, in CodePeer mode this leads to spurious warnings, and thus
-      --  we place a guard around the attribute reference.
+      --  (or decreased) past the corresponding bound. This is consistent with
+      --  the C semantics of the back-end, where such an off-by-one value on a
+      --  dead index variable is OK.  However, in CodePeer mode this leads to
+      --  spurious warnings, and thus we place a guard around the attribute
+      --  reference. For obvious reasons we only do this for CodePeer.
 
       ----------------
       -- Build_Step --
