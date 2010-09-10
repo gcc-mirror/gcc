@@ -1,3 +1,10 @@
+2010-09-10  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+        * config/arm/neon-schedgen.ml (allCores): Add support for
+	Cortex-A9.
+        * config/arm/cortex-a9-neon.md: New and partially generated.
+        * config/arm/cortex-a9.md (cortex_a9_dp): Adjust for Neon.
+
 2010-09-10  Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (build_index_2_type): Remove.

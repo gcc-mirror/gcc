@@ -80,8 +80,9 @@ cortex_a9_p1_e2 + cortex_a9_p0_e1 + cortex_a9_p1_e1")
 (define_insn_reservation "cortex_a9_dp" 2
   (and (eq_attr "tune" "cortexa9")
        (ior (eq_attr "type" "alu")
-	    (and (eq_attr "type" "alu_shift_reg, alu_shift")
-		 (eq_attr "insn" "mov"))))
+	    (ior (and (eq_attr "type" "alu_shift_reg, alu_shift")
+		 (eq_attr "insn" "mov"))
+		 (eq_attr "neon_type" "none"))))
   "cortex_a9_p0_default|cortex_a9_p1_default")
 
 ;; An instruction using the shifter will go down E1.
