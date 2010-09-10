@@ -1,3 +1,9 @@
+2010-09-10  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc/objc-act.c (objc_begin_try_stmt): Generate an error if
+	-fobjc-exceptions was not used.  (objc_build_throw_stmt): Same
+	change.
+
 2010-07-15  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* objc-act.c: Carefully replace TREE_CHAIN with DECL_CHAIN.
