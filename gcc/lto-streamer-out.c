@@ -861,6 +861,9 @@ lto_output_ts_decl_common_tree_pointers (struct output_block *ob, tree expr,
        || TREE_CODE (expr) == PARM_DECL)
       && DECL_HAS_VALUE_EXPR_P (expr))
     lto_output_tree_or_ref (ob, DECL_VALUE_EXPR (expr), ref_p);
+
+  if (TREE_CODE (expr) == VAR_DECL)
+    lto_output_tree_or_ref (ob, DECL_DEBUG_EXPR (expr), ref_p);
 }
 
 

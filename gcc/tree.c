@@ -4540,12 +4540,6 @@ free_lang_data_in_decl (tree decl)
     }
   else if (TREE_CODE (decl) == VAR_DECL)
     {
-      tree expr = DECL_DEBUG_EXPR (decl);
-      if (expr
-	  && TREE_CODE (expr) == VAR_DECL
-	  && !TREE_STATIC (expr) && !DECL_EXTERNAL (expr))
-	SET_DECL_DEBUG_EXPR (decl, NULL_TREE);
-
       if (DECL_EXTERNAL (decl)
 	  && (!TREE_STATIC (decl) || !TREE_READONLY (decl)))
 	DECL_INITIAL (decl) = NULL_TREE;

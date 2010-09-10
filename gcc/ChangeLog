@@ -1,5 +1,14 @@
 2010-09-10  Richard Guenther  <rguenther@suse.de>
 
+	PR debug/44115
+	* tree.c (free_lang_data_in_decl): Do not clear DECL_DEBUG_EXPR.
+	* lto-streamer-out.c (lto_output_ts_decl_common_tree_pointers):
+	Output DECL_DEBUG_EXPR.
+	* lto-streamer-in.c (lto_input_ts_decl_common_tree_pointers):
+	Input DECL_DEBUG_EXPR.
+
+2010-09-10  Richard Guenther  <rguenther@suse.de>
+
 	* tree.c (type_hash_eq): For ARRAY_TYPEs also compare
 	TYPE_SIZE.
 	(build_index_type): Implement in terms of build_range_type.
