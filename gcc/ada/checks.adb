@@ -4108,9 +4108,9 @@ package body Checks is
          end if;
       end if;
 
-      --  If this is a boolean expression, only its elementary consituents
-      --  need checking: if they are valid, a boolean or short-circuit
-      --  operation with them will be valid as well.
+      --  If this is a boolean expression, only its elementary consituents need
+      --  checking: if they are valid, a boolean or short-circuit operation
+      --  with them will be valid as well.
 
       if Base_Type (Typ) = Standard_Boolean
         and then
