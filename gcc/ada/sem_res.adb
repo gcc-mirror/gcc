@@ -9302,8 +9302,8 @@ package body Sem_Res is
          Index_Subtype := Create_Itype (Subtype_Kind (Ekind (Index_Type)), N);
 
          --  Take a new copy of Drange (where bounds have been rewritten to
-         --  reference side-effect-vree names). Using a separate tree ensures
-         --  that further expansion (e.g while rewriting a slice assignment
+         --  reference side-effect-free names). Using a separate tree ensures
+         --  that further expansion (e.g. while rewriting a slice assignment
          --  into a FOR loop) does not attempt to remove side effects on the
          --  bounds again (which would cause the bounds in the index subtype
          --  definition to refer to temporaries before they are defined) (the

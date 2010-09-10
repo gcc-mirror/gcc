@@ -2341,7 +2341,7 @@ package body Bindgen is
 
          WBI ("");
          WBI ("   GNAT_Version : constant String :=");
-         WBI ("                    ""GNAT Version: " &
+         WBI ("                    """ & Ver_Prefix &
                                    Gnat_Version_String &
                                    """ & ASCII.NUL;");
          WBI ("   pragma Export (C, GNAT_Version, ""__gnat_version"");");
@@ -2750,7 +2750,7 @@ package body Bindgen is
 
       if Bind_Main_Program then
          WBI ("");
-         WBI ("char __gnat_version[] = ""GNAT Version: " &
+         WBI ("char __gnat_version[] = """ & Ver_Prefix &
                                    Gnat_Version_String & """;");
 
          Set_String ("char __gnat_ada_main_program_name[] = """);

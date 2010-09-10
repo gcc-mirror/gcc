@@ -12133,13 +12133,14 @@ package body Exp_Ch9 is
 
          --  Master parameter. This is a reference to the _Master parameter of
          --  the initialization procedure, except in the case of the pragma
-         --  Restrictions (No_Task_Hierarchy) where the value is fixed to 3
-         --  (3 is System.Tasking.Library_Task_Level).
+         --  Restrictions (No_Task_Hierarchy) where the value is fixed to
+         --  System.Tasking.Library_Task_Level.
 
          if Restriction_Active (No_Task_Hierarchy) = False then
             Append_To (Args, Make_Identifier (Loc, Name_uMaster));
          else
-            Append_To (Args, Make_Integer_Literal (Loc, 3));
+            Append_To (Args,
+              New_Occurrence_Of (RTE (RE_Library_Task_Level), Loc));
          end if;
       end if;
 
