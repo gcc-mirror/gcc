@@ -432,7 +432,9 @@ package body Exp_CG is
       --  entity of the construct. For a subprogram, it is the entity of the
       --  spec, which carries a homonym counter when it is overloaded.
 
-      if Nkind (P) = N_Subprogram_Body then
+      if Nkind (P) = N_Subprogram_Body
+        and then not Acts_As_Spec (P)
+      then
          Get_External_Name (Corresponding_Spec (P), Has_Suffix => False);
 
       else

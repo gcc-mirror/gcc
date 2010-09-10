@@ -1,3 +1,21 @@
+2010-09-10  Vincent Celier  <celier@adacore.com>
+
+	* sem_aggr.adb, exp_prag.adb, sem_ch3.adb, exp_attr.adb,
+	sem_res.adb, sem_attr.adb, sem_elab.adb, sem_ch4.adb, exp_disp.adb,
+	exp_aggr.adb, exp_dist.adb: Change all mentions of "at run-time" to
+	"at run time" in comments and error/warning messages.
+
+2010-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_cg.adb: Handle properly bodies without specs.
+
+2010-09-10  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-nmsc.adb (Find_Source_Dirs): When a source directory is not
+	present, and the user requested to either ignore this or display a
+	warning (as opposed to an error), we still need to register the
+	directory.
+
 2010-09-10  Robert Dewar  <dewar@adacore.com>
 
 	* errout.adb: Remove tests of Parsing_Main_Subunit, since this test is

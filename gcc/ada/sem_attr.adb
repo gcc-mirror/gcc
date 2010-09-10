@@ -6392,7 +6392,7 @@ package body Sem_Attr is
       --  Note: for the folding case, it is fine to treat Machine_Rounding
       --  exactly the same way as Rounding, since this is one of the allowed
       --  behaviors, and performance is not an issue here. It might be a bit
-      --  better to give the same result as it would give at run-time, even
+      --  better to give the same result as it would give at run time, even
       --  though the non-determinism is certainly permitted.
 
       when Attribute_Machine_Rounding =>

@@ -7126,7 +7126,7 @@ package body Sem_Res is
       --      end Test;
 
       --  In this case we have nothing else to do. The membership test will be
-      --  done at run-time.
+      --  done at run time.
 
       elsif Ada_Version >= Ada_05
         and then Is_Class_Wide_Type (Etype (L))
@@ -8175,7 +8175,7 @@ package body Sem_Res is
                      --  the Sloc of the expression, not the original pragma.
 
                      Error_Msg_N
-                       ("?assertion would fail at run-time!",
+                       ("?assertion would fail at run time!",
                         Expression
                           (First (Pragma_Argument_Associations (Orig))));
                   end if;
@@ -8201,7 +8201,7 @@ package body Sem_Res is
                      null;
                   else
                      Error_Msg_N
-                       ("?check would fail at run-time!",
+                       ("?check would fail at run time!",
                         Expression
                           (Last (Pragma_Argument_Associations (Orig))));
                   end if;
@@ -8949,7 +8949,7 @@ package body Sem_Res is
                      --  The static analysis is not enough to know if the
                      --  interface is implemented or not. Hence we must pass
                      --  the work to the expander to generate code to evaluate
-                     --  the conversion at run-time.
+                     --  the conversion at run time.
 
                      Expand_Interface_Conversion (N, Is_Static => False);
 

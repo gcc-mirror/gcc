@@ -3943,7 +3943,7 @@ package body Sem_Ch4 is
 
                --  Check whether this is a component of the base type
                --  which is absent from a statically constrained subtype.
-               --  This will raise constraint error at run-time, but is
+               --  This will raise constraint error at run time, but is
                --  not a compile-time error. When the selector is illegal
                --  for base type as well fall through and generate a
                --  compilation error anyway.
