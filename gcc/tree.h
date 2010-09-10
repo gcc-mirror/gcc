@@ -2118,12 +2118,6 @@ extern enum machine_mode vector_type_mode (const_tree);
 #define TYPE_IBIT(NODE) (GET_MODE_IBIT (TYPE_MODE (NODE)))
 #define TYPE_FBIT(NODE) (GET_MODE_FBIT (TYPE_MODE (NODE)))
 
-/* For a VECTOR_TYPE node, this describes a different type which is emitted
-   in the debugging output.  We use this to describe a vector as a
-   structure containing an array.  */
-#define TYPE_DEBUG_REPRESENTATION_TYPE(NODE) \
-  (VECTOR_TYPE_CHECK (NODE)->type.values)
-
 /* For record and union types, information about this type, as a base type
    for itself.  */
 #define TYPE_BINFO(NODE) (RECORD_OR_UNION_CHECK(NODE)->type.binfo)

@@ -8792,24 +8792,6 @@ make_vector_type (tree innertype, int nunits, enum machine_mode mode)
 
   layout_type (t);
 
-  {
-    tree index = build_int_cst (NULL_TREE, nunits - 1);
-    tree array = build_array_type (TYPE_MAIN_VARIANT (innertype),
-				   build_index_type (index));
-    tree rt = make_node (RECORD_TYPE);
-
-    TYPE_FIELDS (rt) = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
-				   get_identifier ("f"), array);
-    DECL_CONTEXT (TYPE_FIELDS (rt)) = rt;
-    layout_type (rt);
-    TYPE_DEBUG_REPRESENTATION_TYPE (t) = rt;
-    /* In dwarfout.c, type lookup uses TYPE_UID numbers.  We want to output
-       the representation type, and we want to find that die when looking up
-       the vector type.  This is most easily achieved by making the TYPE_UID
-       numbers equal.  */
-    TYPE_UID (rt) = TYPE_UID (t);
-  }
-
   hashcode = iterative_hash_host_wide_int (VECTOR_TYPE, hashcode);
   hashcode = iterative_hash_host_wide_int (nunits, hashcode);
   hashcode = iterative_hash_host_wide_int (mode, hashcode);
