@@ -5583,7 +5583,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 
   name = &expr->value.function.name[2];
 
-  if (expr->rank > 0 && !expr->inline_noncopying_intrinsic)
+  if (expr->rank > 0)
     {
       lib = gfc_is_intrinsic_libcall (expr);
       if (lib != 0)
@@ -5957,13 +5957,9 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       break;
 
     case GFC_ISYM_TRANSPOSE:
-      if (se->ss && se->ss->useflags)
-	{
-	  gfc_conv_tmp_array_ref (se);
-	  gfc_advance_se_ss_chain (se);
-	}
-      else
-	gfc_conv_array_transpose (se, expr->value.function.actual->expr);
+      /* The scalarizer has already been set up for reversed dimension access
+	 order ; now we just get the argument value normally.  */
+      gfc_conv_expr (se, expr->value.function.actual->expr);
       break;
 
     case GFC_ISYM_LEN:
@@ -6188,6 +6184,64 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 }
 
 
+static gfc_ss *
+walk_inline_intrinsic_transpose (gfc_ss *ss, gfc_expr *expr)
+{
+  gfc_ss *arg_ss, *tmp_ss;
+  gfc_actual_arglist *arg;
+
+  arg = expr->value.function.actual;
+
+  gcc_assert (arg->expr);
+
+  arg_ss = gfc_walk_subexpr (gfc_ss_terminator, arg->expr);
+  gcc_assert (arg_ss != gfc_ss_terminator);
+
+  for (tmp_ss = arg_ss; ; tmp_ss = tmp_ss->next)
+    {
+      if (tmp_ss->type != GFC_SS_SCALAR
+	  && tmp_ss->type != GFC_SS_REFERENCE)
+	{
+	  int tmp_dim;
+	  gfc_ss_info *info;
+
+	  info = &tmp_ss->data.info;
+	  gcc_assert (info->dimen == 2);
+
+	  /* We just invert dimensions.  */
+	  tmp_dim = info->dim[0];
+	  info->dim[0] = info->dim[1];
+	  info->dim[1] = tmp_dim;
+	}
+
+      /* Stop when tmp_ss points to the last valid element of the chain...  */
+      if (tmp_ss->next == gfc_ss_terminator)
+	break;
+    }
+
+  /* ... so that we can attach the rest of the chain to it.  */
+  tmp_ss->next = ss;
+
+  return arg_ss;
+}
+
+
+static gfc_ss *
+walk_inline_intrinsic_function (gfc_ss * ss, gfc_expr * expr)
+{
+
+  switch (expr->value.function.isym->id)
+    {
+      case GFC_ISYM_TRANSPOSE:
+	return walk_inline_intrinsic_transpose (ss, expr);
+
+      default:
+	gcc_unreachable ();
+    }
+  gcc_unreachable ();
+}
+
+
 /* This generates code to execute before entering the scalarization loop.
    Currently does nothing.  */
 
@@ -6250,6 +6304,26 @@ gfc_walk_intrinsic_libfunc (gfc_ss * ss, gfc_expr * expr)
 }
 
 
+/* Return whether the function call expression EXPR will be expanded
+   inline by gfc_conv_intrinsic_function.  */
+
+bool
+gfc_inline_intrinsic_function_p (gfc_expr *expr)
+{
+  if (!expr->value.function.isym)
+    return false;
+
+  switch (expr->value.function.isym->id)
+    {
+    case GFC_ISYM_TRANSPOSE:
+      return true;
+
+    default:
+      return false;
+    }
+}
+
+
 /* Returns nonzero if the specified intrinsic function call maps directly to
    an external library call.  Should only be used for functions that return
    arrays.  */
@@ -6259,6 +6333,9 @@ gfc_is_intrinsic_libcall (gfc_expr * expr)
 {
   gcc_assert (expr->expr_type == EXPR_FUNCTION && expr->value.function.isym);
   gcc_assert (expr->rank > 0);
+
+  if (gfc_inline_intrinsic_function_p (expr))
+    return 0;
 
   switch (expr->value.function.isym->id)
     {
@@ -6280,7 +6357,6 @@ gfc_is_intrinsic_libcall (gfc_expr * expr)
     case GFC_ISYM_SUM:
     case GFC_ISYM_SHAPE:
     case GFC_ISYM_SPREAD:
-    case GFC_ISYM_TRANSPOSE:
     case GFC_ISYM_YN2:
       /* Ignore absent optional parameters.  */
       return 1;
@@ -6306,10 +6382,14 @@ gfc_walk_intrinsic_function (gfc_ss * ss, gfc_expr * expr,
   gcc_assert (isym);
 
   if (isym->elemental)
-    return gfc_walk_elemental_function_args (ss, expr->value.function.actual, GFC_SS_SCALAR);
+    return gfc_walk_elemental_function_args (ss, expr->value.function.actual,
+					     GFC_SS_SCALAR);
 
   if (expr->rank == 0)
     return ss;
+
+  if (gfc_inline_intrinsic_function_p (expr))
+    return walk_inline_intrinsic_function (ss, expr);
 
   if (gfc_is_intrinsic_libcall (expr))
     return gfc_walk_intrinsic_libfunc (ss, expr);

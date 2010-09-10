@@ -1,3 +1,28 @@
+2010-09-11  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.h (gfc_expr): Remove inline_noncopying_intrinsic attribute.
+	* dependency.c (gfc_check_dependency): Don't depend on
+	expr's inline_noncopying_intrinsic_attribute.
+	* dependency.c (gfc_check_argument_var_dependency,
+	gfc_check_argument_dependency): Ditto. Recursively check dependency
+	as NOT_ELEMENTAL in the non-copying (=transpose) case.
+	* trans-intrinsic.c (gfc_conv_intrinsic_function): Ditto.
+	* resolve.c (find_noncopying_intrinsics): Remove.
+	(resolve_function, resolve_call): Remove call to
+	find_noncopying_intrinsics.
+
+	* trans-array.c (gfc_conv_array_transpose): Remove.
+	(gfc_walk_subexpr): Make non-static. Move prototype...
+	* trans-array.h (gfc_walk_subexpr): ... here.
+	* trans-intrinsic.c (gfc_conv_intrinsic_function): Update transpose
+	handling.
+	(walk_inline_intrinsic_transpose, walk_inline_intrinsic_function,
+	gfc_inline_intrinsic_function_p): New.
+	(gfc_is_intrinsic_libcall): Return early in inline intrinsic case.
+	Remove transpose from the libcall list.
+	(gfc_walk_intrinsic_function): Special case inline intrinsic.
+	* trans.h (gfc_inline_intrinsic_function_p): New prototype.
+
 2010-09-10  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans-expr.c (expr_is_variable): New function taking non-copying

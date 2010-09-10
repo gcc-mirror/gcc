@@ -1,3 +1,9 @@
+2010-09-11  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.dg/inline_transpose_1.f90: Update temporary's locations
+	and counts. Check that transpose is not called.
+	* gfortran.dg/transpose_2.f90: Update error message.
+
 2010-09-10  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
 
 	PR c++/43824

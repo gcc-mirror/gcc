@@ -91,7 +91,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-const.h"
 #include "dependency.h"
 
-static gfc_ss *gfc_walk_subexpr (gfc_ss *, gfc_expr *);
 static bool gfc_get_array_constructor_size (mpz_t *, gfc_constructor_base);
 
 /* The contents of this structure aren't actually used, just the address.  */
@@ -914,96 +913,6 @@ gfc_trans_create_temp_array (stmtblock_t * pre, stmtblock_t * post,
     loop->temp_dim = info->dimen;
 
   return size;
-}
-
-
-/* Generate code to transpose array EXPR by creating a new descriptor
-   in which the dimension specifications have been reversed.  */
-
-void
-gfc_conv_array_transpose (gfc_se * se, gfc_expr * expr)
-{
-  tree dest, src, dest_index, src_index;
-  gfc_loopinfo *loop;
-  gfc_ss_info *dest_info;
-  gfc_ss *dest_ss, *src_ss;
-  gfc_se src_se;
-  int n;
-
-  loop = se->loop;
-
-  src_ss = gfc_walk_expr (expr);
-  dest_ss = se->ss;
-
-  dest_info = &dest_ss->data.info;
-  gcc_assert (dest_info->dimen == 2);
-
-  /* Get a descriptor for EXPR.  */
-  gfc_init_se (&src_se, NULL);
-  gfc_conv_expr_descriptor (&src_se, expr, src_ss);
-  gfc_add_block_to_block (&se->pre, &src_se.pre);
-  gfc_add_block_to_block (&se->post, &src_se.post);
-  src = src_se.expr;
-
-  /* Allocate a new descriptor for the return value.  */
-  dest = gfc_create_var (TREE_TYPE (src), "transp");
-  dest_info->descriptor = dest;
-  se->expr = dest;
-
-  /* Copy across the dtype field.  */
-  gfc_add_modify (&se->pre,
-		       gfc_conv_descriptor_dtype (dest),
-		       gfc_conv_descriptor_dtype (src));
-
-  /* Copy the dimension information, renumbering dimension 1 to 0 and
-     0 to 1.  */
-  for (n = 0; n < 2; n++)
-    {
-      dest_info->delta[n] = gfc_index_zero_node;
-      dest_info->start[n] = gfc_index_zero_node;
-      dest_info->end[n] = gfc_index_zero_node;
-      dest_info->stride[n] = gfc_index_one_node;
-      dest_info->dim[n] = n;
-
-      dest_index = gfc_rank_cst[n];
-      src_index = gfc_rank_cst[1 - n];
-
-      gfc_conv_descriptor_stride_set (&se->pre, dest, dest_index,
-			   gfc_conv_descriptor_stride_get (src, src_index));
-
-      gfc_conv_descriptor_lbound_set (&se->pre, dest, dest_index,
-			   gfc_conv_descriptor_lbound_get (src, src_index));
-
-      gfc_conv_descriptor_ubound_set (&se->pre, dest, dest_index,
-			   gfc_conv_descriptor_ubound_get (src, src_index));
-
-      if (!loop->to[n])
-        {
-	  gcc_assert (integer_zerop (loop->from[n]));
-	  loop->to[n] =
-	    fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
-			 gfc_conv_descriptor_ubound_get (dest, dest_index),
-			 gfc_conv_descriptor_lbound_get (dest, dest_index));
-        }
-    }
-
-  /* Copy the data pointer.  */
-  dest_info->data = gfc_conv_descriptor_data_get (src);
-  gfc_conv_descriptor_data_set (&se->pre, dest, dest_info->data);
-
-  /* Copy the offset.  This is not changed by transposition; the top-left
-     element is still at the same offset as before, except where the loop
-     starts at zero.  */
-  if (!integer_zerop (loop->from[0]))
-    dest_info->offset = gfc_conv_descriptor_offset_get (src);
-  else
-    dest_info->offset = gfc_index_zero_node;
-
-  gfc_conv_descriptor_offset_set (&se->pre, dest,
-				  dest_info->offset);
-	  
-  if (dest_info->dimen > loop->temp_dim)
-    loop->temp_dim = dest_info->dimen;
 }
 
 
@@ -6989,7 +6898,7 @@ gfc_walk_array_constructor (gfc_ss * ss, gfc_expr * expr)
 /* Walk an expression.  Add walked expressions to the head of the SS chain.
    A wholly scalar expression will not be added.  */
 
-static gfc_ss *
+gfc_ss *
 gfc_walk_subexpr (gfc_ss * ss, gfc_expr * expr)
 {
   gfc_ss *head;
