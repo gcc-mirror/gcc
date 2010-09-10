@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,20 @@ with Table;
 with Types; use Types;
 
 package Sem_Warn is
+
+   -------------------
+   -- Warning Flags --
+   -------------------
+
+   --  These flags are activated or deactivated by -gnatw switches and control
+   --  whether warnings of a given class will be generated or not.
+
+   --  Note: most of these flags are still in opt, but the plan is to move them
+   --  here as time goes by.
+
+   Warn_On_Record_Holes : Boolean := False;
+   --  Warn when explicit record component clauses leave uncovered holes (gaps)
+   --  in a record layout. Off by default, set by -gnatw.h (but not -gnatwa).
 
    ------------------------
    -- Warnings Off Table --

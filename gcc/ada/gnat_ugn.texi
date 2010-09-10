@@ -5056,6 +5056,7 @@ individually controlled.  The warnings that are not turned on by this
 switch are
 @option{-gnatwd} (implicit dereferencing),
 @option{-gnatwh} (hiding),
+@option{-gnatw.h} (holes (gaps) in record layouts)
 @option{-gnatwl} (elaboration warnings),
 @option{-gnatw.o} (warn on values set by out parameters ignored)
 and @option{-gnatwt} (tracking of deleted conditional code).
@@ -5257,6 +5258,22 @@ Note that @option{-gnatwa} does not affect the setting of this warning option.
 @emph{Suppress warnings on hiding.}
 @cindex @option{-gnatwH} (@command{gcc})
 This switch suppresses warnings on hiding declarations.
+
+@item -gnatw.h
+@emph{Activate warnings on holes/gaps in records.}
+@cindex @option{-gnatw.h} (@command{gcc})
+@cindex Record Representation (gaps)
+This switch activates warnings on component clauses in record
+representation clauses that leave holes (gaps) in the record layout.
+If this warning option is active, then record representation clauses
+should specify a contiguous layout, adding unused fill fields if needed.
+Note that @option{-gnatwa} does not affect the setting of this warning option.
+
+@item -gnatw.H
+@emph{Suppress warnings on holes/gaps in records.}
+@cindex @option{-gnatw.H} (@command{gcc})
+This switch suppresses warnings on component clauses in record
+representation clauses that leave holes (haps) in the record layout.
 
 @item -gnatwi
 @emph{Activate warnings on implementation units.}

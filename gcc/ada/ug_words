@@ -138,6 +138,8 @@ gcc -c          ^ GNAT COMPILE
 -gnatwG         ^ /WARNINGS=NOUNRECOGNIZED_PRAGMAS
 -gnatwh         ^ /WARNINGS=HIDING
 -gnatwH         ^ /WARNINGS=NOHIDING
+-gnatw.h        ^ /WARNINGS=AVOIDGAPS
+-gnatw.H        ^ /WARNINGS=NOAVOIDGAPS
 -gnatwi         ^ /WARNINGS=IMPLEMENTATION
 -gnatwI         ^ /WARNINGS=NOIMPLEMENTATION
 -gnatwj         ^ /WARNINGS=OBSOLESCENT

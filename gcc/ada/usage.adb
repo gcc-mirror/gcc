@@ -422,6 +422,8 @@ begin
    Write_Line ("        G    turn off warnings for unrecognized pragma");
    Write_Line ("        h    turn on warnings for hiding variable");
    Write_Line ("        H*   turn off warnings for hiding variable");
+   Write_Line ("        .h   turn on warnings for holes in records");
+   Write_Line ("        .H*  turn off warnings for holes in records");
    Write_Line ("        i*+  turn on warnings for implementation unit");
    Write_Line ("        I    turn off warnings for implementation unit");
    Write_Line ("        .i   turn on warnings for overlapping actuals");

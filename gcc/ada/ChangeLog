@@ -1,3 +1,18 @@
+2010-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Check_Record_Representation_Clause): Implement record
+	gap warnings.
+	* sem_warn.ads, sem_warn.adb (Warn_On_Record_Holes): New warning flag.
+	* usage.adb: Add lines for -gnatw.h/H
+	* gnat_ugn.texi: Add documentation for J519-010
+	Warn on record holes/gaps
+	* ug_words: Add entries for -gnatw.h/-gnatw.H
+	* vms_data.ads: Add entries for [NO]AVOIDGAPS
+
+2010-09-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch6.adb: Update comment.
+
 2010-09-10  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Build_Derived_Private_Type): Mark generated declaration
