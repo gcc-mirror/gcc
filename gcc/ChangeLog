@@ -1,3 +1,7 @@
+2010-09-10  Ryan Mansfield  <rmansfield@qnx.com>
+
+	* doc/invoke.texi (-x): Fix typo.
+
 2010-09-10  Richard Guenther  <rguenther@suse.de>
 
 	PR debug/44115
