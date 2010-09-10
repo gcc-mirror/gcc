@@ -278,8 +278,8 @@ gfc_build_addr_expr (tree type, tree t)
       tree type_domain = TYPE_DOMAIN (base_type);
       if (type_domain && TYPE_MIN_VALUE (type_domain))
         min_val = TYPE_MIN_VALUE (type_domain);
-      t = fold (build4 (ARRAY_REF, TREE_TYPE (type),
-			t, min_val, NULL_TREE, NULL_TREE));
+      t = fold (build4_loc (input_location, ARRAY_REF, TREE_TYPE (type),
+			    t, min_val, NULL_TREE, NULL_TREE));
       natural_type = type;
     }
   else
@@ -347,7 +347,8 @@ gfc_build_array_ref (tree base, tree offset, tree decl)
     }
   else
     /* Otherwise use a straightforward array reference.  */
-    return build4 (ARRAY_REF, type, base, offset, NULL_TREE, NULL_TREE);
+    return build4_loc (input_location, ARRAY_REF, type, base, offset,
+		       NULL_TREE, NULL_TREE);
 }
 
 
@@ -1476,7 +1477,8 @@ gfc_finish_wrapped_block (gfc_wrapped_block* block)
   result = block->init;
   add_expr_to_chain (&result, block->code, false);
   if (block->cleanup)
-    result = build2 (TRY_FINALLY_EXPR, void_type_node, result, block->cleanup);
+    result = build2_loc (input_location, TRY_FINALLY_EXPR, void_type_node,
+			 result, block->cleanup);
   
   /* Clear the block.  */
   block->init = NULL_TREE;

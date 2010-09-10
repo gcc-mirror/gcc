@@ -2944,12 +2944,14 @@ gfc_trans_scalarized_loop_end (gfc_loopinfo * loop, int n,
 					 loop->from[n]);
       OMP_FOR_INIT (stmt) = init;
       /* The exit condition.  */
-      TREE_VEC_ELT (cond, 0) = build2 (LE_EXPR, boolean_type_node,
-				       loop->loopvar[n], loop->to[n]);
+      TREE_VEC_ELT (cond, 0) = build2_loc (input_location, LE_EXPR,
+					   boolean_type_node,
+					   loop->loopvar[n], loop->to[n]);
+      SET_EXPR_LOCATION (TREE_VEC_ELT (cond, 0), input_location);
       OMP_FOR_COND (stmt) = cond;
       /* Increment the loopvar.  */
-      tmp = build2 (PLUS_EXPR, gfc_array_index_type,
-	  loop->loopvar[n], gfc_index_one_node);
+      tmp = build2_loc (input_location, PLUS_EXPR, gfc_array_index_type,
+			loop->loopvar[n], gfc_index_one_node);
       TREE_VEC_ELT (incr, 0) = fold_build2_loc (input_location, MODIFY_EXPR,
 	  void_type_node, loop->loopvar[n], tmp);
       OMP_FOR_INCR (stmt) = incr;
@@ -5931,8 +5933,8 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, bool g77,
       if (fsym && fsym->attr.optional && sym && sym->attr.optional)
 	{
 	  tmp = gfc_conv_expr_present (sym);
-	  ptr = build3 (COND_EXPR, TREE_TYPE (se->expr), tmp,
-			fold_convert (TREE_TYPE (se->expr), ptr),
+	  ptr = build3_loc (input_location, COND_EXPR, TREE_TYPE (se->expr),
+			tmp, fold_convert (TREE_TYPE (se->expr), ptr),
 			fold_convert (TREE_TYPE (se->expr), null_pointer_node));
 	}
 

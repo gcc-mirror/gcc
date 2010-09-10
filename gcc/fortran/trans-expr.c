@@ -178,15 +178,16 @@ gfc_conv_missing_dummy (gfc_se * se, gfc_expr * arg, gfc_typespec ts, int kind)
 							se->expr));
     
       /* Test for a NULL value.  */
-      tmp = build3 (COND_EXPR, TREE_TYPE (tmp), present, tmp,
-		    fold_convert (TREE_TYPE (tmp), integer_one_node));
+      tmp = build3_loc (input_location, COND_EXPR, TREE_TYPE (tmp), present,
+			tmp, fold_convert (TREE_TYPE (tmp), integer_one_node));
       tmp = gfc_evaluate_now (tmp, &se->pre);
       se->expr = gfc_build_addr_expr (NULL_TREE, tmp);
     }
   else
     {
-      tmp = build3 (COND_EXPR, TREE_TYPE (se->expr), present, se->expr,
-		    fold_convert (TREE_TYPE (se->expr), integer_zero_node));
+      tmp = build3_loc (input_location, COND_EXPR, TREE_TYPE (se->expr),
+			present, se->expr,
+			fold_convert (TREE_TYPE (se->expr), integer_zero_node));
       tmp = gfc_evaluate_now (tmp, &se->pre);
       se->expr = tmp;
     }
@@ -4299,9 +4300,8 @@ gfc_trans_alloc_subarray_assign (tree dest, gfc_component * cm,
 					null_pointer_node);
 	  null_expr = gfc_finish_block (&block);
 	  tmp = gfc_conv_descriptor_data_get (arg->symtree->n.sym->backend_decl);
-	  tmp = build2 (EQ_EXPR, boolean_type_node, tmp,
-			fold_convert (TREE_TYPE (tmp),
-				      null_pointer_node));
+	  tmp = build2_loc (input_location, EQ_EXPR, boolean_type_node, tmp,
+			    fold_convert (TREE_TYPE (tmp), null_pointer_node));
 	  return build3_v (COND_EXPR, tmp,
 			   null_expr, non_null_expr);
 	}
@@ -5396,8 +5396,8 @@ gfc_trans_zero_assign (gfc_expr * expr)
   /* If we are zeroing a local array avoid taking its address by emitting
      a = {} instead.  */
   if (!POINTER_TYPE_P (TREE_TYPE (dest)))
-    return build2 (MODIFY_EXPR, void_type_node,
-		   dest, build_constructor (TREE_TYPE (dest), NULL));
+    return build2_loc (input_location, MODIFY_EXPR, void_type_node,
+		       dest, build_constructor (TREE_TYPE (dest), NULL));
 
   /* Convert arguments to the correct types.  */
   dest = fold_convert (pvoid_type_node, dest);

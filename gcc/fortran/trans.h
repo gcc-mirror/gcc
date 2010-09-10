@@ -741,14 +741,62 @@ struct GTY((variable_size)) lang_decl {
 #define GFC_TYPE_ARRAY_BASE_DECL(node, internal) \
   (TYPE_LANG_SPECIFIC(node)->base_decl[(internal)])
 
+
+/* Create _loc version of build[0-9].  */
+
+static inline tree
+build1_stat_loc (location_t loc, enum tree_code code, tree type,
+		 tree op MEM_STAT_DECL)
+{
+  tree t = build1_stat (code, type, op PASS_MEM_STAT);
+  SET_EXPR_LOCATION (t, loc);
+  return t;
+}
+#define build1_loc(l,c,t1,t2) build1_stat_loc (l,c,t1,t2 MEM_STAT_INFO)
+
+static inline tree
+build2_stat_loc (location_t loc, enum tree_code code, tree type, tree arg0,
+		 tree op MEM_STAT_DECL)
+{
+  tree t = build2_stat (code, type, arg0, op PASS_MEM_STAT);
+  SET_EXPR_LOCATION (t, loc);
+  return t;
+}
+#define build2_loc(l,c,t1,t2,t3) build2_stat_loc (l,c,t1,t2,t3 MEM_STAT_INFO)
+
+static inline tree
+build3_stat_loc (location_t loc, enum tree_code code, tree type, tree arg0,
+		 tree arg1, tree op MEM_STAT_DECL)
+{
+  tree t = build3_stat (code, type, arg0, arg1, op PASS_MEM_STAT);
+  SET_EXPR_LOCATION (t, loc);
+  return t;
+}
+#define build3_loc(l,c,t1,t2,t3,t4) \
+  build3_stat_loc (l,c,t1,t2,t3,t4 MEM_STAT_INFO)
+
+static inline tree
+build4_stat_loc (location_t loc, enum tree_code code, tree type, tree arg0,
+		 tree arg1, tree arg2, tree op MEM_STAT_DECL)
+{
+  tree t = build4_stat (code, type, arg0, arg1, arg2, op PASS_MEM_STAT);
+  SET_EXPR_LOCATION (t, loc);
+  return t;
+}
+#define build4_loc(l,c,t1,t2,t3,t4,t5) \
+  build4_stat_loc (l,c,t1,t2,t3,t4,t5 MEM_STAT_INFO)
+
+
 /* Build an expression with void type.  */
-#define build1_v(code, arg) fold_build1(code, void_type_node, arg)
-#define build2_v(code, arg1, arg2) fold_build2(code, void_type_node, \
-                                               arg1, arg2)
-#define build3_v(code, arg1, arg2, arg3) fold_build3(code, void_type_node, \
-                                                     arg1, arg2, arg3)
-#define build4_v(code, arg1, arg2, arg3, arg4) build4(code, void_type_node, \
-						      arg1, arg2, arg3, arg4)
+#define build1_v(code, arg) \
+	fold_build1_loc (input_location, code, void_type_node, arg)
+#define build2_v(code, arg1, arg2) \
+	fold_build2_loc (input_location, code, void_type_node, arg1, arg2)
+#define build3_v(code, arg1, arg2, arg3) \
+	fold_build3_loc (input_location, code, void_type_node, arg1, arg2, arg3)
+#define build4_v(code, arg1, arg2, arg3, arg4) \
+	build4_loc (input_location, code, void_type_node, arg1, arg2, \
+		    arg3, arg4)
 
 /* This group of functions allows a caller to evaluate an expression from
    the callee's interface.  It establishes a mapping between the interface's
