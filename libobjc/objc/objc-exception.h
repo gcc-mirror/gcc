@@ -26,7 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef __objc_exception_INCLUDE_GNU
 #define __objc_exception_INCLUDE_GNU
 
-#include <objc/objc.h>
+#include "objc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -68,7 +68,7 @@ void objc_exception_throw (id exception);
    exception handling.  They are not thread safe and should be called
    during the program initialization before threads are started.  They
    are mostly reserved for "Foundation" libraries; in the case of
-   GNUstep, gnustep-base may be using these functions to improve the
+   GNUstep, GNUstep Base may be using these functions to improve the
    standard exception handling.  You probably shouldn't use these
    functions unless you are writing your own Foundation library.
 */

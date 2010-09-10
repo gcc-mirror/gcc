@@ -40,7 +40,7 @@ extern "C" {
    tests, and when writing language/runtime testcases.
 
    Because Objective-C allows multiple root classes, a Foundation
-   library (such as GNUstep-base) is expected to provide its own root
+   library (such as GNUstep Base) is expected to provide its own root
    class (typically called NSObject), fully integrated with the
    library's own high-level features.  If you are using such a
    Foundation library, you should most likely use its root class for
@@ -130,17 +130,9 @@ extern "C" {
         /* Archiving */
 + (int)version;
 + setVersion:(int)aVersion;
-
-/* The following methods were deprecated in GCC 4.6.0 and will be
-   removed in the next GCC release.
-*/
-+ (int)streamVersion: (TypedStream*)aStream; /* __attribute__ ((deprecated)) */
-
-- read: (TypedStream*)aStream; /* __attribute__ ((deprecated)) */
-- write: (TypedStream*)aStream; /* __attribute__ ((deprecated)) */
-- awake; /* __attribute__ ((deprecated)) */
-
 @end
+
+#include "deprecated/Object.h"
 
 #ifdef __cplusplus
 }
