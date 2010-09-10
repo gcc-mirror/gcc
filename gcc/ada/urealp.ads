@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2009  Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -264,14 +264,17 @@ package Urealp is
    function UR_Is_Positive (Real : Ureal) return Boolean;
    --  Test if real value is greater than zero
 
-   procedure UR_Write (Real : Ureal);
-   --  Writes value of Real to standard output. Used only for debugging and
-   --  tree/source output. If the result is easily representable as a standard
-   --  Ada literal, it will be given that way, but as a result of evaluation
-   --  of static expressions, it is possible to generate constants (e.g. 1/13)
-   --  which have no such representation. In such cases (and in cases where it
-   --  is too much work to figure out the Ada literal), the string that is
-   --  output is of the form [numerator/denominator].
+   procedure UR_Write (Real : Ureal; Brackets : Boolean := False);
+   --  Writes value of Real to standard output. Used for debugging and
+   --  tree/source output, and also for -gnatR representation output. If the
+   --  result is easily representable as a standard Ada literal, it will be
+   --  given that way, but as a result of evaluation of static expressions, it
+   --  is possible to generate constants (e.g. 1/13) which have no such
+   --  representation. In such cases (and in cases where it is too much work to
+   --  figure out the Ada literal), the string that is output is of the form
+   --  of some expression such as integer/integer, or integer*integer**integer.
+   --  In the case where an expression is output, if Brackets is set to True,
+   --  the expression is surrounded by square brackets.
 
    procedure pr (Real : Ureal);
    pragma Export (Ada, pr);
