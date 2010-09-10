@@ -1373,8 +1373,7 @@ fold_const_aggregate_ref (tree t)
 
       if (ctor == NULL_TREE
 	  || (TREE_CODE (ctor) != CONSTRUCTOR
-	      && TREE_CODE (ctor) != STRING_CST)
-	  || !TREE_STATIC (ctor))
+	      && TREE_CODE (ctor) != STRING_CST))
 	return NULL_TREE;
 
       /* Get the index.  If we have an SSA_NAME, try to resolve it
@@ -1460,8 +1459,7 @@ fold_const_aggregate_ref (tree t)
 	}
 
       if (ctor == NULL_TREE
-	  || TREE_CODE (ctor) != CONSTRUCTOR
-	  || !TREE_STATIC (ctor))
+	  || TREE_CODE (ctor) != CONSTRUCTOR)
 	return NULL_TREE;
 
       field = TREE_OPERAND (t, 1);
@@ -1527,8 +1525,7 @@ fold_const_aggregate_ref (tree t)
 
       if (ctor == NULL_TREE
 	  || (TREE_CODE (ctor) != CONSTRUCTOR
-	      && TREE_CODE (ctor) != STRING_CST)
-	  || !TREE_STATIC (ctor))
+	      && TREE_CODE (ctor) != STRING_CST))
 	return NULL_TREE;
 
       /* Get the byte offset.  */
