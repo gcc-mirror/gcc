@@ -523,7 +523,7 @@ package System.Tasking is
       --  Activator writes it, once, before Self starts executing. Thereafter,
       --  Self only reads it.
 
-      Task_Alternate_Stack : System.Address;
+      Task_Alternate_Stack : System.Address := System.Null_Address;
       --  The address of the alternate signal stack for this task, if any
       --
       --  Protection: Only accessed by Self

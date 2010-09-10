@@ -250,13 +250,21 @@ package body Prj.Ext is
                Prefix := new String'(Executable_Prefix_Path);
 
                if Prefix.all /= "" then
+                  if Tree.Target_Name /= null and then
+                    Tree.Target_Name.all /= ""
+                  then
+                     Add_Str_To_Name_Buffer
+                       (Path_Separator & Prefix.all &
+                        "lib" & Directory_Separator & "gpr" &
+                        Directory_Separator & Tree.Target_Name.all);
+                  end if;
+
                   Add_Str_To_Name_Buffer
                     (Path_Separator & Prefix.all &
                      "share" & Directory_Separator & "gpr");
                   Add_Str_To_Name_Buffer
                     (Path_Separator & Prefix.all &
-                     Directory_Separator & "lib" &
-                     Directory_Separator & "gnat");
+                     "lib" & Directory_Separator & "gnat");
                end if;
 
             else

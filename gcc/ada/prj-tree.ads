@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2010, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1470,7 +1470,11 @@ package Prj.Tree is
       --  project-tree specific so that one can load the same tree twice but
       --  have two views of it, for instance.
 
-      Project_Path : String_Access;
+      Target_Name : String_Access := null;
+      --  The target name, if any, specified with the gprbuild or gprclean
+      --  switch --target=.
+
+      Project_Path : String_Access := null;
       --  The project path, manipulated through subprograms in prj-ext.ads.
       --  As a special case, if the first character is '#:" or this variable is
       --  unset, this means that the PATH has not been fully initialized yet

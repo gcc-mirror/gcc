@@ -1,3 +1,30 @@
+2010-09-10  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-util.adb (Executable_Of): Fix CE when the project does not
+	contain a Builder package.
+
+2010-09-10  Vincent Celier  <celier@adacore.com>
+
+	* prj-ext.adb (Initialize_Project_Path): Add <prefix>/lib/gpr/<target>
+	to the project path, if Prefix and Target_Name are defined.
+	* prj-tree.ads (Project_Node_Tree_Data): New component Target_Name
+
+2010-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Ensure_Valid): If the expression is a boolean expression
+	or short-circuit operation, do no emit a validity check: only the
+	elementary operands of the expression need checking.
+
+2010-09-10  Ben Brosgol  <brosgol@adacore.com>
+
+	* gnat_rm.texi: Document Short_Descriptors.
+
+2010-09-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-taprop-linux.adb, s-taskin.ads (Task_Alternate_Stack): Default
+	initialize to Null_Address.
+	(Enter_Task): Do not set up an alternate stack for foreign threads.
+
 2010-09-10  Robert Dewar  <dewar@adacore.com>
 
 	* opt.adb (Short_Descriptors): New flag
