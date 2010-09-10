@@ -3087,6 +3087,7 @@ package body Sem_Warn is
             Warn_On_Overlap                     := True;
             Warn_On_Parameter_Order             := True;
             Warn_On_Questionable_Missing_Parens := True;
+            Warn_On_Record_Holes                := True;
             Warn_On_Redundant_Constructs        := True;
             Warn_On_Reverse_Bit_Order           := True;
             Warn_On_Unchecked_Conversion        := True;
@@ -3097,6 +3098,12 @@ package body Sem_Warn is
 
          when 'g' =>
             Set_GNAT_Mode_Warnings;
+
+         when 'h' =>
+            Warn_On_Record_Holes                := True;
+
+         when 'H' =>
+            Warn_On_Record_Holes                := False;
 
          when 'i' =>
             Warn_On_Overlap                     := True;
@@ -3262,6 +3269,7 @@ package body Sem_Warn is
             Warn_On_Obsolescent_Feature         := False;
             Warn_On_Overlap                     := False;
             Warn_On_Parameter_Order             := False;
+            Warn_On_Record_Holes                := False;
             Warn_On_Questionable_Missing_Parens := False;
             Warn_On_Redundant_Constructs        := False;
             Warn_On_Reverse_Bit_Order           := False;

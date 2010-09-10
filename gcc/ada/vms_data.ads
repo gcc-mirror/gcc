@@ -2951,6 +2951,10 @@ package VMS_Data is
                                                "-gnatwh "                  &
                                             "NOHIDING "                    &
                                                "-gnatwH "                  &
+                                            "AVOIDGAPS "                   &
+                                               "-gnatw.h "                 &
+                                            "NOAVOIDGAPS "                 &
+                                               "-gnatw.H "                 &
                                             "IMPLEMENTATION "              &
                                                "-gnatwi "                  &
                                             "NOIMPLEMENTATION "            &

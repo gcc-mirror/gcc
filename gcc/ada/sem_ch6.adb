@@ -5632,15 +5632,16 @@ package body Sem_Ch6 is
 
          begin
             --  In the case of functions with unconstrained result subtypes,
-            --  add a 3-state formal indicating whether the return object is
-            --  allocated by the caller (0), or should be allocated by the
-            --  callee on the secondary stack (1) or in the global heap (2).
-            --  For the moment we just use Natural for the type of this formal.
-            --  Note that this formal isn't usually needed in the case where
-            --  the result subtype is constrained, but it is needed when the
-            --  function has a tagged result, because generally such functions
-            --  can be called in a dispatching context and such calls must be
-            --  handled like calls to a class-wide function.
+            --  add a 4-state formal indicating whether the return object is
+            --  allocated by the caller (1), or should be allocated by the
+            --  callee on the secondary stack (2), in the global heap (3), or
+            --  in a user-defined storage pool (4). For the moment we just use
+            --  Natural for the type of this formal. Note that this formal
+            --  isn't usually needed in the case where the result subtype is
+            --  constrained, but it is needed when the function has a tagged
+            --  result, because generally such functions can be called in a
+            --  dispatching context and such calls must be handled like calls
+            --  to a class-wide function.
 
             if not Is_Constrained (Underlying_Type (Result_Subt))
               or else Is_Tagged_Type (Underlying_Type (Result_Subt))

@@ -1535,9 +1535,11 @@ package body Sem_Ch13 is
             elsif Size /= No_Uint then
 
                if VM_Target /= No_VM and then not GNAT_Mode then
+
                   --  Size clause is not handled properly on VM targets.
                   --  Display a warning unless we are in GNAT mode, in which
                   --  case this is useless.
+
                   Error_Msg_N
                     ("?size clauses are ignored in this configuration", N);
                end if;
@@ -3255,6 +3257,9 @@ package body Sem_Ch13 is
       Overlap_Check_Required : Boolean;
       --  Used to keep track of whether or not an overlap check is required
 
+      Overlap_Detected : Boolean := False;
+      --  Set True if an overlap is detected
+
       Ccount : Natural := 0;
       --  Number of component clauses in record rep clause
 
@@ -3278,6 +3283,7 @@ package body Sem_Ch13 is
       procedure Check_Component_Overlap (C1_Ent, C2_Ent : Entity_Id) is
          CC1 : constant Node_Id := Component_Clause (C1_Ent);
          CC2 : constant Node_Id := Component_Clause (C2_Ent);
+
       begin
          if Present (CC1) and then Present (CC2) then
 
@@ -3309,6 +3315,7 @@ package body Sem_Ch13 is
                   Error_Msg_Node_1 := Component_Name (CC1);
                   Error_Msg_N
                     ("component& overlaps & #", Component_Name (CC1));
+                  Overlap_Detected := True;
                end if;
             end;
          end if;
@@ -3481,11 +3488,13 @@ package body Sem_Ch13 is
          if Present (Comp) then
             Ccount := Ccount + 1;
 
+            --  We need a full overlap check if record positions non-monotonic
+
             if Fbit <= Max_Bit_So_Far then
                Overlap_Check_Required := True;
-            else
-               Max_Bit_So_Far := Lbit;
             end if;
+
+            Max_Bit_So_Far := Lbit;
 
             --  Check bit position out of range of specified size
 
@@ -3505,6 +3514,7 @@ package body Sem_Ch13 is
                   Error_Msg_NE
                     ("component overlaps tag field of&",
                      Component_Name (CC), Rectype);
+                  Overlap_Detected := True;
                end if;
 
                if Hbit < Lbit then
@@ -3654,8 +3664,8 @@ package body Sem_Ch13 is
 
                --  Skip overlap check if entity has no declaration node. This
                --  happens with discriminants in constrained derived types.
-               --  Probably we are missing some checks as a result, but that
-               --  does not seem terribly serious ???
+               --  Possibly we are missing some checks as a result, but that
+               --  does not seem terribly serious.
 
                if No (Declaration_Node (C1_Ent)) then
                   goto Continue_Main_Component_Loop;
@@ -3699,7 +3709,6 @@ package body Sem_Ch13 is
 
                   else
                      Citem := First (Component_Items (Clist));
-
                      while Present (Citem) loop
                         if Nkind (Citem) = N_Component_Declaration then
                            C2_Ent := Defining_Identifier (Citem);
@@ -3743,6 +3752,183 @@ package body Sem_Ch13 is
 
             end loop Main_Component_Loop;
          end Overlap_Check2;
+      end if;
+
+      --  The following circuit deals with warning on record holes (gaps). We
+      --  skip this check if overlap was detected, since it makes sense for the
+      --  programmer to fix this illegality before worrying about warnings.
+
+      if not Overlap_Detected and Warn_On_Record_Holes then
+         Record_Hole_Check : declare
+            Decl : constant Node_Id := Declaration_Node (Base_Type (Rectype));
+            --  Full declaration of record type
+
+            procedure Check_Component_List
+              (CL   : Node_Id;
+               Sbit : Uint;
+               DS   : List_Id);
+            --  Check component list CL for holes. The starting bit should be
+            --  Sbit. which is zero for the main record component list and set
+            --  appropriately for recursive calls for variants. DS is set to
+            --  a list of discriminant specifications to be included in the
+            --  consideration of components. It is No_List if none to consider.
+
+            --------------------------
+            -- Check_Component_List --
+            --------------------------
+
+            procedure Check_Component_List
+              (CL   : Node_Id;
+               Sbit : Uint;
+               DS   : List_Id)
+            is
+               Compl : Integer;
+
+            begin
+               Compl := Integer (List_Length (Component_Items (CL)));
+
+               if DS /= No_List then
+                  Compl := Compl + Integer (List_Length (DS));
+               end if;
+
+               declare
+                  Comps : array (Natural range 0 .. Compl) of Entity_Id;
+                  --  Gather components (zero entry is for sort routine)
+
+                  Ncomps : Natural := 0;
+                  --  Number of entries stored in Comps (starting at Comps (1))
+
+                  Citem : Node_Id;
+                  --  One component item or discriminant specification
+
+                  Nbit  : Uint;
+                  --  Starting bit for next component
+
+                  CEnt  : Entity_Id;
+                  --  Component entity
+
+                  Variant : Node_Id;
+                  --  One variant
+
+                  function Lt (Op1, Op2 : Natural) return Boolean;
+                  --  Compare routine for Sort
+
+                  procedure Move (From : Natural; To : Natural);
+                  --  Move routine for Sort
+
+                  package Sorting is new GNAT.Heap_Sort_G (Move, Lt);
+
+                  --------
+                  -- Lt --
+                  --------
+
+                  function Lt (Op1, Op2 : Natural) return Boolean is
+                  begin
+                     return Component_Bit_Offset (Comps (Op1))
+                       <
+                       Component_Bit_Offset (Comps (Op2));
+                  end Lt;
+
+                  ----------
+                  -- Move --
+                  ----------
+
+                  procedure Move (From : Natural; To : Natural) is
+                  begin
+                     Comps (To) := Comps (From);
+                  end Move;
+
+               begin
+                  --  Gather discriminants into Comp
+
+                  if DS /= No_List then
+                     Citem := First (DS);
+                     while Present (Citem) loop
+                        if Nkind (Citem) = N_Discriminant_Specification then
+                           declare
+                              Ent : constant Entity_Id :=
+                                      Defining_Identifier (Citem);
+                           begin
+                              if Ekind (Ent) = E_Discriminant then
+                                 Ncomps := Ncomps + 1;
+                                 Comps (Ncomps) := Ent;
+                              end if;
+                           end;
+                        end if;
+
+                        Next (Citem);
+                     end loop;
+                  end if;
+
+                  --  Gather component entities into Comp
+
+                  Citem := First (Component_Items (CL));
+                  while Present (Citem) loop
+                     if Nkind (Citem) = N_Component_Declaration then
+                        Ncomps := Ncomps + 1;
+                        Comps (Ncomps) := Defining_Identifier (Citem);
+                     end if;
+
+                     Next (Citem);
+                  end loop;
+
+                  --  Now sort the component entities based on the first bit.
+                  --  Note we already know there are no overlapping components.
+
+                  Sorting.Sort (Ncomps);
+
+                  --  Loop through entries checking for holes
+
+                  Nbit := Sbit;
+                  for J in 1 .. Ncomps loop
+                     CEnt := Comps (J);
+                     Error_Msg_Uint_1 := Component_Bit_Offset (CEnt) - Nbit;
+
+                     if Error_Msg_Uint_1 > 0 then
+                        Error_Msg_NE
+                          ("?^-bit gap before component&",
+                           Component_Name (Component_Clause (CEnt)), CEnt);
+                     end if;
+
+                     Nbit := Component_Bit_Offset (CEnt) + Esize (CEnt);
+                  end loop;
+
+                  --  Process variant parts recursively if present
+
+                  if Present (Variant_Part (CL)) then
+                     Variant := First (Variants (Variant_Part (CL)));
+                     while Present (Variant) loop
+                        Check_Component_List
+                          (Component_List (Variant), Nbit, No_List);
+                        Next (Variant);
+                     end loop;
+                  end if;
+               end;
+            end Check_Component_List;
+
+         --  Start of processing for Record_Hole_Check
+
+         begin
+            declare
+               Sbit : Uint;
+
+            begin
+               if Is_Tagged_Type (Rectype) then
+                  Sbit := UI_From_Int (System_Address_Size);
+               else
+                  Sbit := Uint_0;
+               end if;
+
+               if Nkind (Decl) = N_Full_Type_Declaration
+                 and then Nkind (Type_Definition (Decl)) = N_Record_Definition
+               then
+                  Check_Component_List
+                    (Component_List (Type_Definition (Decl)),
+                     Sbit,
+                     Discriminant_Specifications (Decl));
+               end if;
+            end;
+         end Record_Hole_Check;
       end if;
 
       --  For records that have component clauses for all components, and whose
