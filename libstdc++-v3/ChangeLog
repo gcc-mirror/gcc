@@ -1,3 +1,9 @@
+2010-09-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* src/hash-string-aux.cc: Remove. Move contents...
+	* src/hash_tr1.cc: ... here.
+	* src/compatibility-c++0x.cc: ... and here.
+
 2010-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/45613

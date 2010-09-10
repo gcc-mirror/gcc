@@ -50,7 +50,29 @@ namespace std
   // We need these due to the symbols exported since GLIBCXX_3.4.10.
   // See libstdc++/41662 for details.
 
-#include "hash-string-aux.cc"
+#ifndef _GLIBCXX_LONG_DOUBLE_COMPAT_IMPL
+  template<>
+    size_t
+    hash<string>::operator()(string __s) const
+    { return _Fnv_hash::hash(__s.data(), __s.length()); }
+
+  template<>
+    size_t
+    hash<const string&>::operator()(const string& __s) const
+    { return _Fnv_hash::hash(__s.data(), __s.length()); }
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  template<>
+    size_t
+    hash<wstring>::operator()(wstring __s) const
+    { return _Fnv_hash::hash(__s.data(), __s.length() * sizeof(wchar_t)); }
+
+  template<>
+    size_t
+    hash<const wstring&>::operator()(const wstring& __s) const
+    { return _Fnv_hash::hash(__s.data(), __s.length() * sizeof(wchar_t)); }
+#endif
+#endif
 
   template<>
     size_t
