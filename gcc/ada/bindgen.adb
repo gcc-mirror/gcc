@@ -792,8 +792,9 @@ package body Bindgen is
          Write_Statement_Buffer;
 
          --  Generate call to Install_Handler
-         --  In .NET, when binding with -z, we don't install the signal
-         --  handler to let the caller handle the last exception handler.
+
+         --  In .NET, when binding with -z, we don't install the signal handler
+         --  to let the caller handle the last exception handler.
 
          if VM_Target /= CLI_Target
            or else Bind_Main_Program

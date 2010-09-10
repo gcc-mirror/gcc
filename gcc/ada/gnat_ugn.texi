@@ -8057,6 +8057,7 @@ be presented in subsequent sections.
 * Binder Error Message Control::
 * Elaboration Control::
 * Output Control::
+* Dynamic Allocation Control::
 * Binding with Non-Ada Main Programs::
 * Binding Programs with No Main Subprogram::
 @end menu
@@ -8167,6 +8168,17 @@ flag checks are generated.
 @item ^-h^/HELP^
 @cindex @option{^-h^/HELP^} (@command{gnatbind})
 Output usage (help) information
+
+@item ^-H32^/32_MALLOC^
+@cindex @option{^-H32^/32_MALLOC^} (@command{gnatbind})
+Use 32-bit allocations for @code{__gnat_malloc} (and thus for access types).
+For further details see @ref{Dynamic Allocation Control}.
+
+@item ^-H64^/64_MALLOC^
+@cindex @option{^-H32^/32_MALLOC^} (@command{gnatbind})
+Use 64-bit allocations for @code{__gnat_malloc} (and thus for access types).
+@cindex @code{__gnat_malloc}
+For further details see @ref{Dynamic Allocation Control}.
 
 @item ^-I^/SEARCH^
 @cindex @option{^-I^/SEARCH^} (@command{gnatbind})
@@ -8595,6 +8607,35 @@ the current unit. This is useful for code audit purposes, and also may
 be used to improve code generation in some cases.
 
 @end table
+
+@node Dynamic Allocation Control
+@subsection Dynamic Allocation Control
+
+@noindent
+The heap control switches -- @option{-H32} and @option{-H64} --
+determine whether dynamic allocation uses 32-bit or 64-bit memory.
+They only affect compiler-generated allocations via @code{__gnat_malloc};
+explicit calls to @code{malloc} and related functions from the C
+run-time library are unaffected.
+
+@table @option
+@item -H32
+Allocate memory on 32-bit heap
+
+@item -H64
+Allocate memory on 64-bit heap.  This is the default
+unless explicitly overridden by a @code{'Size} clause on the access type.
+@end table
+
+@ifset vms
+@noindent
+See also @ref{Access types and 32/64-bit allocation}.
+@end ifset
+@ifclear vms
+@noindent
+These switches are only effective on VMS platforms.
+@end ifclear
+
 
 @node Binding with Non-Ada Main Programs
 @subsection Binding with Non-Ada Main Programs
@@ -26509,10 +26550,11 @@ Such code will be referred to below as @emph{64-bit code}.
 
 @menu
 * Address types::
-* Access types::
+* Access types and 32/64-bit allocation::
 * Unchecked conversions::
 * Predefined constants::
 * Interfacing with C::
+* 32/64-bit descriptors::
 * Experience with source compatibility::
 @end menu
 
@@ -26527,9 +26569,13 @@ approach has been taken:
 @itemize @bullet
 @item
 @code{System.Address} always has a size of 64 bits
+@cindex @code{System.Address} size
+@cindex @code{Address} size
 
 @item
 @code{System.Short_Address} is a 32-bit subtype of @code{System.Address}
+@cindex @code{System.Short_Address} size
+@cindex @code{Short_Address} size
 @end itemize
 
 @noindent
@@ -26568,31 +26614,64 @@ required in any code setting or accessing the field; the compiler will
 automatically perform any needed conversions between address
 formats.
 
-@node Access types
-@subsubsection Access types
+@node Access types and 32/64-bit allocation
+@subsubsection Access types and 32/64-bit allocation
+@cindex 32-bit allocation
+@cindex 64-bit allocation
 
 @noindent
-By default, objects designated by access values are always
-allocated in the 32-bit
-address space. Thus legacy code will never contain
-any objects that are not addressable with 32-bit addresses, and
-the compiler will never raise exceptions as result of mixing
-32-bit and 64-bit addresses.
+By default, objects designated by access values are always allocated in
+the 64-bit address space, and access values themselves are represented
+in 64 bits.  If these defaults are not appropriate, and 32-bit allocation
+is required (for example if the address of an allocated object is assigned
+to a @code{Short_Address} variable), then several alternatives are available:
 
-However, the access values themselves are represented in 64 bits, for optimum
-performance and future compatibility with 64-bit code. As was
-the case with @code{System.Address}, the compiler will give an error message
-if an object or record component has a representation clause that
-requires the access value to fit in 32 bits. In such a situation,
-an explicit size clause for the access type, specifying 32 bits,
-will have the desired effect.
+@itemize @bullet
+@item
+A pool-specific access type (ie, an @w{Ada 83} access type, whose
+definition is @code{access T} versus @code{access all T} or
+@code{access constant T}), may be declared with a @code{'Size} representation
+clause that establishes the size as 32 bits.
+In such circumstances allocations for that type will
+be from the 32-bit heap.  Such a clause is not permitted
+for a general access type (declared with @code{access all} or
+@code{access constant}) as values of such types must be able to refer
+to any object of the designated type, including objects residing outside
+the 32-bit address range.  Existing @w{Ada 83} code will not contain such
+type definitions, however, since general access types were introduced
+in @w{Ada 95}.
 
-General access types (declared with @code{access all}) can never be
-32 bits, as values of such types must be able to refer to any object
-of the  designated type,
-including objects residing outside the 32-bit address range.
-Existing Ada 83 code will not contain such type definitions,
-however, since general access types were introduced in Ada 95.
+@item
+Switches for @command{GNAT BIND} control whether the internal GNAT
+allocation routine @code{__gnat_malloc} uses 64-bit or 32-bit allocations.
+@cindex @code{__gnat_malloc}
+The switches are respectively @option{-H64} (the default) and
+@option{-H32}.
+@cindex @option{-H32} (@command{gnatbind})
+@cindex @option{-H64} (@command{gnatbind})
+
+@item
+The environment variable (logical name) @code{GNAT$NO_MALLOC_64}
+@cindex @code{GNAT$NO_MALLOC_64} environment variable
+may be used to force @code{__gnat_malloc} to use 32-bit allocation.
+If this variable is left
+undefined, or defined as @code{"DISABLE"}, @code{"FALSE"}, or @code{"0"},
+then the default (64-bit) allocation is used.
+If defined as @code{"ENABLE"}, @code{"TRUE"}, or @code{"1"},
+then 32-bit allocation is used.  The gnatbind qualifiers described above
+override this logical name.
+
+@item
+A ^gcc switch^gcc switch^ for OpenVMS, @option{-mno-malloc64}, operates
+@cindex @option{-mno-malloc64} (^gcc^gcc^)
+at a low level to convert explicit calls to @code{malloc} and related
+functions from the C run-time library so that they perform allocations
+in the 32-bit heap.
+Since all internal allocations from GNAT use @code{__gnat_malloc},
+this switch is not required unless the program makes explicit calls on
+@code{malloc} (or related functions) from interfaced C code.
+@end itemize
+
 
 @node Unchecked conversions
 @subsubsection Unchecked conversions
@@ -26665,6 +26744,20 @@ pragma Convention(C, int_star);
 for int_star'Size use 64;  -- Necessary to get 64 and not 32 bits
 @end smallexample
 
+@node 32/64-bit descriptors
+@subsubsection 32/64-bit descriptors
+
+@noindent
+By default, GNAT uses a 64-bit descriptor mechanism.  For an imported
+subprogram (i.e., a subprogram identified by pragma @code{Import_Function},
+@code{Import_Procedure}, or @code{Import_Valued_Procedure}) that specifies
+@code{Short_Descriptor} as its mechanism, a 32-bit descriptor is used.
+@cindex @code{Short_Descriptor} mechanism for imported subprograms
+
+If the configuration pragma @code{Short_Descriptors} is supplied, then
+all descriptors will be 32 bits.
+@cindex pragma @code{Short_Descriptors}
+
 @node Experience with source compatibility
 @subsubsection Experience with source compatibility
 
@@ -26697,8 +26790,6 @@ these sorts of potential source code porting problems.
 * Making code 64 bit clean::
 * Allocating memory from the 64 bit storage pool::
 * Restrictions on use of 64 bit objects::
-* Using 64 bit storage pools by default::
-* General access types::
 * STARLET and other predefined libraries::
 @end menu
 
@@ -26742,13 +26833,10 @@ Any attempt to do this will raise @code{Constraint_Error}.
 @subsubsection Allocating memory from the 64-bit storage pool
 
 @noindent
-For any access type @code{T} that potentially requires memory allocations
-beyond the 32-bit address space,
-use the following representation clause:
-
-@smallexample @c ada
-   for T'Storage_Pool use System.Pool_64;
-@end smallexample
+By default, all allocations -- for both pool-specific and general
+access types -- use the 64-bit storage pool.  To override
+this default, for an individual access type or globally, see
+@ref{Access types and 32/64-bit allocation}.
 
 @node Restrictions on use of 64 bit objects
 @subsubsection Restrictions on use of 64-bit objects
@@ -26762,46 +26850,6 @@ or assigning it to a variable of type @code{Short_Address}, will cause
 (@pxref{Making code 64 bit clean}), or checks are suppressed,
 no exception is raised and execution
 will become erroneous.
-
-@node Using 64 bit storage pools by default
-@subsubsection Using 64-bit storage pools by default
-
-@noindent
-In some cases it may be desirable to have the compiler allocate
-from 64-bit storage pools by default. This may be the case for
-libraries that are 64-bit clean, but may be used in both 32-bit
-and 64-bit contexts. For these cases the following configuration
-pragma may be specified:
-
-@smallexample @c ada
-  pragma Pool_64_Default;
-@end smallexample
-
-@noindent
-Any code compiled in the context of this pragma will by default
-use the @code{System.Pool_64} storage pool. This default may be overridden
-for a specific access type @code{T} by the representation clause:
-
-@smallexample @c ada
-   for T'Storage_Pool use System.Pool_32;
-@end smallexample
-
-@noindent
-Any object whose address may be passed to a subprogram with a
-@code{Short_Address} argument, or assigned to a variable of type
-@code{Short_Address}, needs to be allocated from this pool.
-
-@node General access types
-@subsubsection General access types
-
-@noindent
-Objects designated by access values from a
-general access type (declared with @code{access all}) are never allocated
-from a 64-bit storage pool. Code that uses general access types will
-accept objects allocated in either 32-bit or 64-bit address spaces,
-but never allocate objects outside the 32-bit address space.
-Using general access types ensures maximum compatibility with both
-32-bit and 64-bit code.
 
 @node STARLET and other predefined libraries
 @subsubsection STARLET and other predefined libraries

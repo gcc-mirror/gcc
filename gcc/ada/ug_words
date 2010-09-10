@@ -218,3 +218,5 @@ stderr          ^ SYS$ERROR
 -O1             ^ /OPTIMIZE=SOME
 -O2             ^ /OPTIMIZE=ALL
 -O3             ^ /OPTIMIZE=INLINING
+-H32            ^ /32_MALLOC
+-H64            ^ /64_MALLOC
