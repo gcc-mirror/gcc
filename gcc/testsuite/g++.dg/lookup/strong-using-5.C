@@ -1,5 +1,7 @@
 // PR c++/33486
 
+// { dg-options "" }
+
 namespace A
 {
   inline namespace B

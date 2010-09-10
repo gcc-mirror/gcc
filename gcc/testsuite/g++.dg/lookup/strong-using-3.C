@@ -1,5 +1,6 @@
 // PR c++/13659
 
+// { dg-options "" }
 // { dg-do compile }
 
 namespace bar {
