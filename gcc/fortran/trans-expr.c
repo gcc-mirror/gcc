@@ -5536,6 +5536,27 @@ gfc_trans_array_constructor_copy (gfc_expr * expr1, gfc_expr * expr2)
 }
 
 
+/* Tells whether the expression is to be treated as a variable reference.  */
+
+static bool
+expr_is_variable (gfc_expr *expr)
+{
+  gfc_expr *arg;
+
+  if (expr->expr_type == EXPR_VARIABLE)
+    return true;
+
+  arg = gfc_get_noncopying_intrinsic_argument (expr);
+  if (arg)
+    {
+      gcc_assert (expr->value.function.isym->id == GFC_ISYM_TRANSPOSE);
+      return expr_is_variable (arg);
+    }
+
+  return false;
+}
+
+
 /* Subroutine of gfc_trans_assignment that actually scalarizes the
    assignment.  EXPR1 is the destination/LHS and EXPR2 is the source/RHS.
    init_flag indicates initialization expressions and dealloc that no
@@ -5661,7 +5682,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
      must have its components deallocated afterwards.  */
   scalar_to_array = (expr2->ts.type == BT_DERIVED
 		       && expr2->ts.u.derived->attr.alloc_comp
-		       && expr2->expr_type != EXPR_VARIABLE
+		       && !expr_is_variable (expr2)
 		       && !gfc_is_constant_expr (expr2)
 		       && expr1->rank && !expr2->rank);
   if (scalar_to_array && dealloc)
@@ -5672,8 +5693,8 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 
   tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
 				 l_is_temp || init_flag,
-				 (expr2->expr_type == EXPR_VARIABLE)
-				    || scalar_to_array, dealloc);
+				 expr_is_variable (expr2) || scalar_to_array,
+				 dealloc);
   gfc_add_expr_to_block (&body, tmp);
 
   if (lss == gfc_ss_terminator)
