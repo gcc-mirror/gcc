@@ -1349,6 +1349,19 @@ begin
 
    Targparm.Get_Target_Parameters;
 
+   --  Put the command line in environment variable GNAT_DRIVER_COMMAND_LINE,
+   --  so that the spawned tool may know the way the GNAT driver was invoked.
+
+   Name_Len := 0;
+   Add_Str_To_Name_Buffer (Command_Name);
+
+   for J in 1 .. Argument_Count loop
+      Add_Char_To_Name_Buffer (' ');
+      Add_Str_To_Name_Buffer (Argument (J));
+   end loop;
+
+   Setenv ("GNAT_DRIVER_COMMAND_LINE", Name_Buffer (1 .. Name_Len));
+
    --  Add the directory where the GNAT driver is invoked in front of the path,
    --  if the GNAT driver is invoked with directory information. Do not do this
    --  for VMS, where the notion of path does not really exist.

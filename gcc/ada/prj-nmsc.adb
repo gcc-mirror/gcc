@@ -722,6 +722,7 @@ package body Prj.Nmsc is
          elsif not Source.Locally_Removed
            and then not Data.Flags.Allow_Duplicate_Basenames
            and then Lang_Id.Config.Kind = Unit_Based
+           and then Source.Language.Config.Kind = Unit_Based
          then
             Error_Msg_File_1 := File_Name;
             Error_Msg_File_2 := File_Name_Type (Source.Project.Name);
