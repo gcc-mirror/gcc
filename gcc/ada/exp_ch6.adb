@@ -3100,14 +3100,30 @@ package body Exp_Ch6 is
       --  To prevent a double attachment, check that the current call is
       --  not a rewriting of a protected function call.
 
-      if Needs_Finalization (Etype (Subp))
-        and then not Is_Inherently_Limited_Type (Etype (Subp))
-        and then
-          (No (First_Formal (Subp))
-            or else
-              not Is_Concurrent_Record_Type (Etype (First_Formal (Subp))))
-      then
-         Expand_Ctrl_Function_Call (N);
+      if Needs_Finalization (Etype (Subp)) then
+         if not Is_Inherently_Limited_Type (Etype (Subp))
+           and then
+             (No (First_Formal (Subp))
+                or else
+                  not Is_Concurrent_Record_Type (Etype (First_Formal (Subp))))
+         then
+            Expand_Ctrl_Function_Call (N);
+
+         --  Build-in-place function calls which appear in anonymous contexts
+         --  need a transient scope to ensure the proper finalization of the
+         --  intermediate result after its use.
+
+         elsif Is_Build_In_Place_Function_Call (N)
+           and then Nkind_In (Parent (N), N_Attribute_Reference,
+                                          N_Function_Call,
+                                          N_Indexed_Component,
+                                          N_Object_Renaming_Declaration,
+                                          N_Procedure_Call_Statement,
+                                          N_Selected_Component,
+                                          N_Slice)
+         then
+            Establish_Transient_Scope (N, Sec_Stack => True);
+         end if;
       end if;
 
       --  Test for First_Optional_Parameter, and if so, truncate parameter list
@@ -5336,7 +5352,6 @@ package body Exp_Ch6 is
       --  scope is established to ensure eventual cleanup of the result.
 
       else
-
          --  Pass an allocation parameter indicating that the function should
          --  allocate its result on the secondary stack.
 
@@ -5354,8 +5369,6 @@ package body Exp_Ch6 is
 
          Add_Access_Actual_To_Build_In_Place_Call
            (Func_Call, Function_Id, Empty);
-
-         Establish_Transient_Scope (Func_Call, Sec_Stack => True);
       end if;
    end Make_Build_In_Place_Call_In_Anonymous_Context;
 

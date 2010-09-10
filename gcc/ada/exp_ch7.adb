@@ -1098,7 +1098,7 @@ package body Exp_Ch7 is
       --  releasing or some finalizations are needed or in the context
       --  of tasking
 
-      if Uses_Sec_Stack  (Current_Scope)
+      if Uses_Sec_Stack (Current_Scope)
         and then not Sec_Stack_Needed_For_Return (Current_Scope)
       then
          null;

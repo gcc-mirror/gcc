@@ -159,7 +159,7 @@ package SCOs is
    --      Note: for I and W, condition above is in the RM syntax sense (this
    --      condition is a decision in SCO terminology).
 
-   --    and is omitted for all other cases.
+   --    and is omitted for all other cases
 
    --    Note: up to 6 entries can appear on a single CS line. If more than 6
    --    entries appear in one logical statement sequence, continuation lines
@@ -216,7 +216,7 @@ package SCOs is
 
    --    For each decision, a decision line is generated with the form:
 
-   --      C* sloc expression
+   --      C* sloc expression [chaining]
 
    --    Here * is one of the following characters:
 
@@ -229,7 +229,7 @@ package SCOs is
    --    For I, E, P, W, sloc is the source location of the IF, EXIT, PRAGMA or
    --    WHILE token.
 
-   --    For X, sloc is omitted.
+   --    For X, sloc is omitted
 
    --    The expression is a prefix polish form indicating the structure of
    --    the decision, including logical operators and short-circuit forms.
@@ -257,11 +257,11 @@ package SCOs is
    --      where t/f are used to mark a condition that has been recognized by
    --      the compiler as always being true or false.
 
-   --    & indicates AND THEN connecting two conditions.
+   --    & indicates AND THEN connecting two conditions
 
-   --    | indicates OR ELSE connecting two conditions.
+   --    | indicates OR ELSE connecting two conditions
 
-   --    ! indicates NOT applied to the expression.
+   --    ! indicates NOT applied to the expression
 
    --    Note that complex decisions do NOT include non-short-circuited logical
    --    operators (AND/XOR/OR). In the context of existing coverage tools the
@@ -276,6 +276,34 @@ package SCOs is
    --    condition, and that is true even if the Ada 2005 set membership
    --    form is used, e.g. A in (2,7,11.15).
 
+   --    The expression can be followed by chaining indicators of the form
+   --    Tsloc-range or Fsloc-range.
+
+   --    T* is present when the statement with the given sloc range is executed
+   --    if, and only if, the decision evaluates to TRUE.
+
+   --    F* is present when the statement with the given sloc range is executed
+   --    if, and only if, the decision evaluates to FALSE.
+
+   --    For an IF statement or ELSIF part, a T chaining indicator is always
+   --    present, with the sloc range of the first statement in the
+   --    corresponding sequence.
+
+   --    For an ELSE part, the last decision in the IF statement (that of the
+   --    last ELSIF part, if any, or that of the IF statement if there is no
+   --    ELSIF part) has an F chaining indicator with the sloc range of the
+   --    first statement in the sequence of the ELSE part.
+
+   --    For a WHILE loop, a T chaining indicator is always present, with the
+   --    sloc range of the first statement in the loop, but no F chaining
+   --    indicator is ever present.
+
+   --    For an EXIT WHEN statement, an F chaining indicator is present if
+   --    there is an immediately following sequence in the same sequence of
+   --    statements.
+
+   --    In all other cases, chaining indicators are omitted
+
    --  Case Expressions
 
    --    For case statements, we rely on statement coverage to make sure that
@@ -287,7 +315,7 @@ package SCOs is
 
    --      CC sloc-range sloc-range ...
 
-   --    where sloc-range covers the range of the case expression.
+   --    where sloc-range covers the range of the case expression
 
    --    Note: up to 6 entries can appear on a single CC line. If more than 6
    --    entries appear in one logical statement sequence, continuation lines
@@ -381,6 +409,12 @@ package SCOs is
    --      From = starting source location
    --      To   = ending source location
    --      Last = False for all but the last entry, True for last entry
+
+   --    Element (chaining indicator)
+   --      C1   = 'H' (cHain)
+   --      C2   = 'T' or 'F' (chaining on decision true/false)
+   --      From = starting source location of chained statement
+   --      To   = ending source location of chained statement
 
    --    Note: the sequence starting with a decision, and continuing with
    --    operators and elements up to and including the first one labeled with

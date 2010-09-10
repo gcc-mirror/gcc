@@ -9409,10 +9409,10 @@ package body Exp_Dist is
 
             if Is_Itype (Typ) and then Typ /= Base_Type (Typ) then
                Build_To_Any_Function
-                  (Loc  => Loc,
-                   Typ  => Etype (Typ),
-                   Decl => Decl,
-                   Fnam => Fnam);
+                 (Loc  => Loc,
+                  Typ  => Etype (Typ),
+                  Decl => Decl,
+                  Fnam => Fnam);
                return;
             end if;
 

@@ -805,8 +805,6 @@ procedure GNATCmd is
          Return_Code  => Return_Code,
          Err_To_Out   => True);
 
-      Close (FD);
-
       --  Read the output of the invocation of gnatmake
 
       Open (File, In_File, Get_Name_String (Name));

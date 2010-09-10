@@ -2201,10 +2201,15 @@ package body Sem is
 
             --  If the context item indicates that a package body is needed
             --  because of an instantiation in CU, traverse the body now,
-            --  even if CU is not related to the main unit.
+            --  even if CU is not related to the main unit. If the generic
+            --  itself appears in a package body, the context item is this
+            --  body, and it already appears in the traversal order, so we
+            --  only need to examine the case where the context item is a
+            --  package declaration.
 
             if Present (Withed_Body (Context_Item))
-               and then Present (Corresponding_Body (Unit (Lib_Unit)))
+              and then Nkind (Unit (Lib_Unit)) = N_Package_Declaration
+              and then Present (Corresponding_Body (Unit (Lib_Unit)))
             then
                Body_CU :=
                  Parent
