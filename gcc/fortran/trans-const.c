@@ -235,6 +235,26 @@ gfc_conv_mpfr_to_tree (mpfr_t f, int kind, int is_snan)
   return build_real (type, real);
 }
 
+/* Returns a real constant that is +Infinity if the target
+   supports infinities for this floating-point mode, and
+   +HUGE_VAL otherwise (the largest representable number).  */
+
+tree
+gfc_build_inf_or_huge (tree type, int kind)
+{
+  if (HONOR_INFINITIES (TYPE_MODE (type)))
+    {
+      REAL_VALUE_TYPE real;
+      real_inf (&real);
+      return build_real (type, real);
+    }
+  else
+    {
+      int k = gfc_validate_kind (BT_REAL, kind, false);
+      return gfc_conv_mpfr_to_tree (gfc_real_kinds[k].huge, kind, 0);
+    }
+}
+
 /* Converts a backend tree into a real constant.  */
 
 void

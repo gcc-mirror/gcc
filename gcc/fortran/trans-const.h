@@ -27,6 +27,10 @@ void gfc_conv_tree_to_mpz (mpz_t, tree);
 tree gfc_conv_mpfr_to_tree (mpfr_t, int, int);
 void gfc_conv_tree_to_mpfr (mpfr_ptr, tree);
 
+/* Build a tree containing a real infinity (or HUGE if infinities are
+   not supported for the given type.  */
+tree gfc_build_inf_or_huge (tree, int);
+
 /* Build a tree for a constant.  Must be an EXPR_CONSTANT gfc_expr.
    For CHARACTER literal constants, the caller still has to set the
    string length as a separate operation.  */
