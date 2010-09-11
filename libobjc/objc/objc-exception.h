@@ -59,9 +59,9 @@ extern "C" {
  */
 void objc_exception_throw (id exception);
 
-/* PS: the Apple runtime seems to also have objc_exception_rethrow(),
-   objc_begin_catch() and objc_end_catch().  Currently the GNU runtime
-   does not use them.
+/* Compatibility note: the Apple/NeXT runtime seems to also have
+   objc_exception_rethrow(), objc_begin_catch() and objc_end_catch().
+   Currently the GNU runtime does not use them.
 */
 
 /* The following functions allow customizing to a certain extent the
@@ -73,8 +73,8 @@ void objc_exception_throw (id exception);
    functions unless you are writing your own Foundation library.
 */
 
-/* PS: objc_set_exception_preprocessor() (available on the Apple
-   runtime) is not supported on the GNU runtime.  */
+/* Compatibility note: objc_set_exception_preprocessor() (available on
+   the Apple/NeXT runtime) is not available on the GNU runtime.  */
 
 /* An 'objc_exception_matcher' function is used to match an exception
    to a @catch clause.  'catch_class' is the class of objects caught
@@ -106,7 +106,7 @@ objc_uncaught_exception_handler
 objc_set_uncaught_exception_handler (objc_uncaught_exception_handler new_handler);
 
 
-/* For compatibility with the Apple runtime.  */
+/* For compatibility with the Apple/NeXT runtime.  */
 #define objc_setExceptionMatcher objc_set_exception_matcher
 #define objc_setUncaughtExceptionHandler objc_set_uncaught_exception_handler
 

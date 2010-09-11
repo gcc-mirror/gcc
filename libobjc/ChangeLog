@@ -1,3 +1,31 @@
+2010-09-11  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc/deprecated/struct_objc_selector.h: New file.  Definition of
+	'struct objc_selector' and 'sel_eq' moved here.
+	* objc/deprecated/struct_objc_protocol.h: New file.  Definition of
+	'struct objc_procotol' moved here.
+	* objc/deprecated/struct_objc_class.h: New file.  Definition of
+	'struct objc_class' moved here.
+	* objc/deprecated/MetaClass.h: New file.  Definition of MetClass
+	moved here.
+	* objc/deprecated/STR.h: New file.  Definition of STR moved here.	
+	* objc/message.h: New file.  Definitions for relval_t, apply_t,
+	arglist, arglist_t and objc_msg_lookup were moved here.
+	* objc/objc.h: Include the above files instead of defining the
+	corresponding structs, types and functions here.  Added new opaque
+	definitions for SEL and Class.  Use Class and not 'struct
+	objc_class *' in the definition of 'struct objc_object'.
+	Commented all types defined in the file.  Removed special
+	definition of BOOL as 'int' on __vxworks; use 'unsigned char'
+	there as well.
+	* objc/deprecated/objc-unexpected-exception.h: Renamed to
+	objc_unexpected_exception.h.
+	* objc/objc-api.h: Updated include of
+	objc-unexpetected-exception.h
+	* objc/objc-exception.h: Updated comments.
+	* Makefile.in (OBJC_H, OBJC_DEPRECATED_H): Added the new header
+	files.  Reindented list of files.
+	
 2010-09-10  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/objc-api.h (objc_trace): Unused variable removed.
