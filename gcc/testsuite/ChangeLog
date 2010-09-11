@@ -1,3 +1,7 @@
+2010-09-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/promotion.f90: Fix options.
+
 2010-09-11  Rodrigo Rivas <rodrigorivascosta@gmail.com>
 
 	* g++.dg/cpp0x/range-for1.C: New.
