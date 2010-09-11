@@ -1,3 +1,12 @@
+2010-09-11  Rodrigo Rivas <rodrigorivascosta@gmail.com>
+
+	* g++.dg/cpp0x/range-for1.C: New.
+	* g++.dg/cpp0x/range-for2.C: New.
+	* g++.dg/cpp0x/range-for3.C: New.
+	* g++.dg/cpp0x/range-for4.C: New.
+	* g++.dg/cpp0x/range-for5.C: New.
+	* g++.dg/cpp0x/range-for6.C: New.
+
 2010-09-11  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* gfortran.dg/inline_transpose_1.f90: Update temporary's locations

@@ -1829,6 +1829,10 @@ static tree cp_parser_iteration_statement
   (cp_parser *);
 static void cp_parser_for_init_statement
   (cp_parser *);
+static tree  cp_parser_c_for
+  (cp_parser *);
+static tree  cp_parser_range_for
+  (cp_parser *);
 static tree cp_parser_jump_statement
   (cp_parser *);
 static void cp_parser_declaration_statement
@@ -5171,7 +5175,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 			koenig_p = true;
 			if (!any_type_dependent_arguments_p (args))
 			  postfix_expression
-			    = perform_koenig_lookup (postfix_expression, args);
+			    = perform_koenig_lookup (postfix_expression, args,
+						     /*include_std=*/false);
 		      }
 		    else
 		      postfix_expression
@@ -5195,7 +5200,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 			koenig_p = true;
 			if (!any_type_dependent_arguments_p (args))
 			  postfix_expression
-			    = perform_koenig_lookup (postfix_expression, args);
+			    = perform_koenig_lookup (postfix_expression, args,
+						     /*include_std=*/false);
 		      }
 		  }
 	      }
@@ -8580,6 +8586,258 @@ cp_parser_condition (cp_parser* parser)
   return cp_parser_expression (parser, /*cast_p=*/false, NULL);
 }
 
+/* Parses a traditional for-statement until the closing ')', not included. */
+
+static tree
+cp_parser_c_for (cp_parser *parser)
+{
+  /* Normal for loop */
+  tree stmt;
+  tree condition = NULL_TREE;
+  tree expression = NULL_TREE;
+
+  /* Begin the for-statement.  */
+  stmt = begin_for_stmt ();
+
+  /* Parse the initialization.  */
+  cp_parser_for_init_statement (parser);
+  finish_for_init_stmt (stmt);
+
+  /* If there's a condition, process it.  */
+  if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
+    condition = cp_parser_condition (parser);
+  finish_for_cond (condition, stmt);
+  /* Look for the `;'.  */
+  cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
+
+  /* If there's an expression, process it.  */
+  if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN))
+    expression = cp_parser_expression (parser, /*cast_p=*/false, NULL);
+  finish_for_expr (expression, stmt);
+
+  return stmt;
+}
+
+/* Tries to parse a range-based for-statement:
+
+  range-based-for:
+    type-specifier-seq declarator : expression
+
+  If succesful, assigns to *DECL the DECLARATOR and to *EXPR the
+  expression. Note that the *DECL is returned unfinished, so
+  later you should call cp_finish_decl().
+
+  Returns TRUE iff a range-based for is parsed. */
+
+static tree
+cp_parser_range_for (cp_parser *parser)
+{
+  tree stmt, range_decl, range_expr;
+  cp_decl_specifier_seq type_specifiers;
+  cp_declarator *declarator;
+  const char *saved_message;
+  tree attributes, pushed_scope;
+
+  cp_parser_parse_tentatively (parser);
+  /* New types are not allowed in the type-specifier-seq for a
+     range-based for loop.  */
+  saved_message = parser->type_definition_forbidden_message;
+  parser->type_definition_forbidden_message
+    = G_("types may not be defined in range-based for loops");
+  /* Parse the type-specifier-seq.  */
+  cp_parser_type_specifier_seq (parser, /*is_declaration==*/true,
+				/*is_trailing_return=*/false,
+				&type_specifiers);
+  /* Restore the saved message.  */
+  parser->type_definition_forbidden_message = saved_message;
+  /* If all is well, we might be looking at a declaration.  */
+  if (cp_parser_error_occurred (parser))
+    {
+      cp_parser_abort_tentative_parse (parser);
+      return NULL_TREE;
+    }
+  /* Parse the declarator.  */
+  declarator = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
+				     /*ctor_dtor_or_conv_p=*/NULL,
+				     /*parenthesized_p=*/NULL,
+				     /*member_p=*/false);
+  /* Parse the attributes.  */
+  attributes = cp_parser_attributes_opt (parser);
+  /* The next token should be `:'. */
+  if (cp_lexer_next_token_is_not (parser->lexer, CPP_COLON))
+    cp_parser_simulate_error (parser);
+
+  /* Check if it is a range-based for */
+  if (!cp_parser_parse_definitely (parser))
+    return NULL_TREE;
+
+  cp_parser_require (parser, CPP_COLON, RT_COLON);
+  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+    {
+      bool expr_non_constant_p;
+      range_expr = cp_parser_braced_list (parser, &expr_non_constant_p);
+    }
+  else
+    range_expr = cp_parser_expression (parser, /*cast_p=*/false, NULL);
+
+  /* If in template, STMT is converted to a normal for-statements
+     at instantiation. If not, it is done just ahead. */
+  if (processing_template_decl)
+    stmt = begin_range_for_stmt ();
+  else
+    stmt = begin_for_stmt ();
+
+  /* Create the declaration. It must be after begin{,_range}_for_stmt(). */
+  range_decl = start_decl (declarator, &type_specifiers,
+			   /*initialized_p=*/SD_INITIALIZED,
+			   attributes, /*prefix_attributes=*/NULL_TREE,
+			   &pushed_scope);
+  /* No scope allowed here */
+  pop_scope (pushed_scope);
+
+  if (TREE_CODE (stmt) == RANGE_FOR_STMT)
+    finish_range_for_decl (stmt, range_decl, range_expr);
+  else
+    /* Convert the range-based for loop into a normal for-statement. */
+    stmt = cp_convert_range_for (stmt, range_decl, range_expr);
+
+  return stmt;
+}
+
+/* Converts a range-based for-statement into a normal
+   for-statement, as per the definition.
+
+      for (RANGE_DECL : RANGE_EXPR)
+	BLOCK
+
+   should be equivalent to:
+
+      {
+	auto &&__range = RANGE_EXPR;
+	for (auto __begin = BEGIN_EXPR, end = END_EXPR;
+	      __begin != __end;
+	      ++__begin)
+	  {
+	      RANGE_DECL = *__begin;
+	      BLOCK
+	  }
+      }
+
+   If RANGE_EXPR is an array:
+       BEGIN_EXPR = __range
+       END_EXPR = __range + ARRAY_SIZE(__range)
+   Else:
+	BEGIN_EXPR = begin(__range)
+	END_EXPR = end(__range);
+
+   When calling begin()/end() we must use argument dependent
+   lookup, but always considering 'std' as an associated namespace.  */
+
+tree
+cp_convert_range_for (tree statement, tree range_decl, tree range_expr)
+{
+  tree range_type, range_temp;
+  tree begin, end;
+  tree iter_type, begin_expr, end_expr;
+  tree condition, expression;
+
+  /* Find out the type deduced by the declaration
+   * `auto &&__range = range_expr' */
+  range_type = cp_build_reference_type (make_auto (), true);
+  range_type = do_auto_deduction (range_type, range_expr,
+				  type_uses_auto (range_type));
+
+  /* Create the __range variable */
+  range_temp = build_decl (input_location, VAR_DECL,
+			   get_identifier ("__for_range"), range_type);
+  TREE_USED (range_temp) = 1;
+  DECL_ARTIFICIAL (range_temp) = 1;
+  pushdecl (range_temp);
+  finish_expr_stmt (cp_build_modify_expr (range_temp, INIT_EXPR, range_expr,
+					  tf_warning_or_error));
+  range_temp = convert_from_reference (range_temp);
+
+  if (TREE_CODE (TREE_TYPE (range_temp)) == ARRAY_TYPE)
+    {
+      /* If RANGE_TEMP is an array we will use pointer arithmetic */
+      iter_type = build_pointer_type (TREE_TYPE (TREE_TYPE (range_temp)));
+      begin_expr = range_temp;
+      end_expr
+	= build_binary_op (input_location, PLUS_EXPR,
+			   range_temp,
+			   array_type_nelts_top (TREE_TYPE (range_temp)), 0);
+    }
+  else
+    {
+      /* If it is not an array, we must call begin(__range)/end__range() */
+      VEC(tree,gc) *vec;
+
+      begin_expr = get_identifier ("begin");
+      vec = make_tree_vector ();
+      VEC_safe_push (tree, gc, vec, range_temp);
+      begin_expr = perform_koenig_lookup (begin_expr, vec,
+					  /*include_std=*/true);
+      begin_expr = finish_call_expr (begin_expr, &vec, false, true,
+				     tf_warning_or_error);
+      release_tree_vector (vec);
+
+      end_expr = get_identifier ("end");
+      vec = make_tree_vector ();
+      VEC_safe_push (tree, gc, vec, range_temp);
+      end_expr = perform_koenig_lookup (end_expr, vec,
+					/*include_std=*/true);
+      end_expr = finish_call_expr (end_expr, &vec, false, true,
+				   tf_warning_or_error);
+      release_tree_vector (vec);
+
+      /* The unqualified type of the __begin and __end temporaries should
+      * be the same as required by the multiple auto declaration */
+      iter_type = cv_unqualified (TREE_TYPE (begin_expr));
+      if (!same_type_p (iter_type, cv_unqualified (TREE_TYPE (end_expr))))
+	error ("inconsistent begin/end types in range-based for: %qT and %qT",
+	       TREE_TYPE (begin_expr), TREE_TYPE (end_expr));
+    }
+
+  /* The new for initialization statement */
+  begin = build_decl (input_location, VAR_DECL,
+		      get_identifier ("__for_begin"), iter_type);
+  TREE_USED (begin) = 1;
+  DECL_ARTIFICIAL (begin) = 1;
+  pushdecl (begin);
+  finish_expr_stmt (cp_build_modify_expr (begin, INIT_EXPR, begin_expr,
+					  tf_warning_or_error));
+  end = build_decl (input_location, VAR_DECL,
+		    get_identifier ("__for_end"), iter_type);
+  TREE_USED (end) = 1;
+  DECL_ARTIFICIAL (end) = 1;
+  pushdecl (end);
+
+  finish_expr_stmt (cp_build_modify_expr (end, INIT_EXPR, end_expr,
+					  tf_warning_or_error));
+
+  finish_for_init_stmt (statement);
+
+/* The new for condition */
+  condition = build_x_binary_op (NE_EXPR,
+				 begin, ERROR_MARK,
+				 end, ERROR_MARK,
+				 NULL, tf_warning_or_error);
+  finish_for_cond (condition, statement);
+
+  /* The new increment expression */
+  expression = finish_unary_op_expr (PREINCREMENT_EXPR, begin);
+  finish_for_expr (expression, statement);
+
+  /* The declaration is initialized with *__begin inside the loop body */
+  cp_finish_decl (range_decl,
+		  build_x_indirect_ref (begin, RO_NULL, tf_warning_or_error),
+		  /*is_constant_init*/false, NULL_TREE,
+		  LOOKUP_ONLYCONVERTING);
+
+  return statement;
+}
+
+
 /* Parse an iteration-statement.
 
    iteration-statement:
@@ -8588,7 +8846,7 @@ cp_parser_condition (cp_parser* parser)
      for ( for-init-statement condition [opt] ; expression [opt] )
        statement
 
-   Returns the new WHILE_STMT, DO_STMT, or FOR_STMT.  */
+   Returns the new WHILE_STMT, DO_STMT, FOR_STMT or RANGE_FOR_STMT.  */
 
 static tree
 cp_parser_iteration_statement (cp_parser* parser)
@@ -8661,28 +8919,16 @@ cp_parser_iteration_statement (cp_parser* parser)
 
     case RID_FOR:
       {
-	tree condition = NULL_TREE;
-	tree expression = NULL_TREE;
-
-	/* Begin the for-statement.  */
-	statement = begin_for_stmt ();
 	/* Look for the `('.  */
 	cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
-	/* Parse the initialization.  */
-	cp_parser_for_init_statement (parser);
-	finish_for_init_stmt (statement);
 
-	/* If there's a condition, process it.  */
-	if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
-	  condition = cp_parser_condition (parser);
-	finish_for_cond (condition, statement);
-	/* Look for the `;'.  */
-	cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
+	if (cxx_dialect == cxx0x)
+	  statement = cp_parser_range_for (parser);
+	else
+	  statement = NULL_TREE;
+	if (statement == NULL_TREE)
+	  statement = cp_parser_c_for (parser);
 
-	/* If there's an expression, process it.  */
-	if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN))
-	  expression = cp_parser_expression (parser, /*cast_p=*/false, NULL);
-	finish_for_expr (expression, statement);
 	/* Look for the `)'.  */
 	cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
 
