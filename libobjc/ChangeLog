@@ -1,3 +1,29 @@
+2010-09-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* objc/objc.h (__GNU_LIBOBJC__): New #define providing an easy way
+	to check the API version.  Added some comments.
+
+	* objc-private/common.h: New file.
+	* NXConstStr.m: Include objc-private/common.h.
+	* Object.m: Same change.
+	* Protocol.m: Same change.
+	* archive.c: Same change.
+	* class.c: Same change.
+	* encoding.c: Same change.
+	* exception.c: Same change.
+	* gc.c: Same change.
+	* hash.c: Same change.
+	* init.c: Same change.
+	* libobjc_entry.c: Same change.
+	* linking.m: Same change.
+	* misc.c: Same change (and added a comment).
+	* nil_method.c: Same change.
+	* objects.c: Same change.
+	* sarray.c: Same change.
+	* selector.c: Same change.
+	* sendmsg.c: Same change.
+	* thr.c: Same change.
+
 2010-09-11  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/objc-api.h: Removed obsolete #ifdef for NeXTSTEP.

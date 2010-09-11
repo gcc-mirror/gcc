@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* FIXME: This file has no business including tm.h.  */
 
+#include "objc-private/common.h"
 #include "tconfig.h"
 #include "coretypes.h"
 #include "tm.h"

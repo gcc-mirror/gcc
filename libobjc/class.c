@@ -87,6 +87,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   classes from the table - and the difficult thing with lock-free data
   structures is freeing data when is removed from the structures.  */
 
+#include "objc-private/common.h"
 #include "objc/objc.h"
 #include "objc/objc-api.h"
 #include "objc/thr.h"

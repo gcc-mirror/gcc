@@ -26,11 +26,26 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef __objc_INCLUDE_GNU
 #define __objc_INCLUDE_GNU
 
+/* This file contains the definition of the basic types used by the
+   Objective-C language.  It needs to be included to do almost
+   anything with Objective-C.
+*/
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <stddef.h>
+
+/* The current version of the GNU Objective-C Runtime library in
+   compressed ISO date format.  This should be updated any time a new
+   version is released with changes to the public API (there is no
+   need to update it if there were no API changes since the previous
+   release).  This macro is only defined starting with the GNU
+   Objective-C Runtime shipped with GCC 4.6.0.  If it is not defined,
+   it is either an older version of the runtime, or another runtime.
+*/
+#define __GNU_LIBOBJC__ 20100911
 
 /*
   Definition of the boolean type.
