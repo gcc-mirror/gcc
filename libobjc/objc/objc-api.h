@@ -530,12 +530,6 @@ method_get_imp(Method_t method)
 
 IMP get_imp (Class _class, SEL sel);
 
-/* Redefine on NeXTSTEP so as not to conflict with system function */
-#ifdef __NeXT__
-#define object_copy	gnu_object_copy
-#define object_dispose	gnu_object_dispose
-#endif
-
 id object_copy(id object);
 
 id object_dispose(id object);

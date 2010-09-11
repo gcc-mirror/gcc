@@ -1,5 +1,9 @@
 2010-09-11  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc/objc-api.h: Removed obsolete #ifdef for NeXTSTEP.
+
+2010-09-11  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* archive.c: Removed not needed includes.
 	* class.c: Same change.
 	* hash.c: Same change.
