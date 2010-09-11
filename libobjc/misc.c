@@ -24,9 +24,15 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "objc-private/common.h"
 
+/* __USE_FIXED_PROTOTYPES__ used to be required to get prototypes for
+   malloc, free, etc. on some platforms.  It is unclear if we still
+   need it, but it can't hurt.
+*/
 #define __USE_FIXED_PROTOTYPES__
 #include <stdlib.h>
+
 #include "objc/objc.h"
 #include "objc/objc-api.h"
 #include "objc-private/runtime.h"

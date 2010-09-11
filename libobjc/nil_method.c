@@ -26,6 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* This is the nil method, the function that is called when the receiver
    of a method is nil */
 
+#include "objc-private/common.h"
 #include "objc/objc.h"
 
 /* When the receiver of a method invocation is nil, the runtime

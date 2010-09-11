@@ -28,6 +28,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* FIXME: This should be using libffi instead of __builtin_apply
    and friends.  */
 
+#include "objc-private/common.h"
 #include "tconfig.h"
 #include "coretypes.h"
 #include "tm.h"

@@ -22,6 +22,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "objc-private/common.h"
 #define _LIBOBJC
 /* The line below is needed for declarations of functions such as
    pthread_mutexattr_settype, without which gthr-posix.h may fail to
