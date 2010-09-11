@@ -29,9 +29,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stdlib.h>
 #include "objc/objc.h"
 #include "objc/objc-api.h"
-#include "objc/thr.h"
-#include "objc/hash.h"
-#include "objc/objc-list.h" 
 #include "objc-private/runtime.h"
 
 /*
