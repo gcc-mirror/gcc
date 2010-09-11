@@ -1,5 +1,17 @@
 2010-09-11  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* archive.c: Removed not needed includes.
+	* class.c: Same change.
+	* hash.c: Same change.
+	* misc.c: Same change.
+	* nil_method.c: Same change.
+	* objects.c: Same change.
+	* sarray.c: Same change.
+	* sendmsg.c: Same change.
+	* thr.c: Same change.
+
+2010-09-11  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc/runtime.h: Moved to objc-private/runtime.h.  Do not include
 	all the objc/*.h files.
 	* objc-private/runtime.h: New file.
