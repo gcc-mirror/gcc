@@ -27,7 +27,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define __USE_FIXED_PROTOTYPES__
 #include <stdlib.h>
-#include "objc/runtime.h"
+#include "objc/objc.h"
+#include "objc/objc-api.h"
+#include "objc/thr.h"
+#include "objc/hash.h"
+#include "objc/objc-list.h" 
+#include "objc-private/runtime.h"
 
 /*
 ** Error handler function

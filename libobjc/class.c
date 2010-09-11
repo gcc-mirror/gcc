@@ -87,12 +87,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   classes from the table - and the difficult thing with lock-free data
   structures is freeing data when is removed from the structures.  */
 
-#include "objc/runtime.h"            /* the kitchen sink */
-#include "objc/sarray.h"
-
 #include "objc/objc.h"
 #include "objc/objc-api.h"
 #include "objc/thr.h"
+#include "objc/hash.h"
+#include "objc/objc-list.h" 
+#include "objc-private/runtime.h"            /* the kitchen sink */
+#include "objc/sarray.h"
 
 /* We use a table which maps a class name to the corresponding class
  * pointer.  The first part of this file defines this table, and

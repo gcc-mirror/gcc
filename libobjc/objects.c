@@ -25,7 +25,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "tconfig.h"         /* include defs of bzero for target */
 #include "objc/objc.h"
-#include "objc/runtime.h"		/* the kitchen sink */
+#include "objc/objc-api.h"
+#include "objc/thr.h"
+#include "objc/hash.h"
+#include "objc/objc-list.h" 
+#include "objc-private/runtime.h"		/* the kitchen sink */
 
 #if OBJC_WITH_GC
 # include <gc.h>

@@ -22,6 +22,19 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+/* You need to include this file after including a number of standard ObjC files.
+
+The original list was:
+
+#include "objc/objc.h"
+#include "objc/objc-api.h"
+#include "objc/thr.h"
+#include "objc/hash.h"
+#include "objc/objc-list.h"
+
+but can almost certainly be shrinked down.
+
+*/
 
 #ifndef __objc_runtime_INCLUDE_GNU
 #define __objc_runtime_INCLUDE_GNU
@@ -33,14 +46,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <stddef.h>		/* so noone else will get system versions */
 #include <assert.h>
-
-#include "objc.h"		/* core data types */
-#include "objc-api.h"		/* runtime api functions */
-
-#include "thr.h"		/* thread and mutex support */
-
-#include "hash.h"		/* hash structures */
-#include "objc-list.h"		/* linear lists */
 
 #ifdef __cplusplus
 extern "C" {
