@@ -426,7 +426,7 @@ objc_EXPORT void (*_objc_free)(void *);
 objc_EXPORT IMP (*__objc_msg_forward)(SEL);
 objc_EXPORT IMP (*__objc_msg_forward2)(id, SEL);
 
-#include "deprecated/objc-unexpected-exception.h"
+#include "deprecated/objc_unexpected_exception.h"
 
 Method_t class_get_class_method(MetaClass _class, SEL aSel);
 

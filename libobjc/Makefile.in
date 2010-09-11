@@ -143,15 +143,35 @@ all: libobjc$(libsuffix).la $(OBJC_BOEHM_GC)
 
 # User-visible header files, from the objc/ directory
 
-OBJC_H = hash.h objc-list.h sarray.h objc.h objc-api.h objc-exception.h \
-	 NXConstStr.h Object.h Protocol.h encoding.h typedstream.h \
-	 thr.h objc-decls.h
+OBJC_H = \
+  objc.h \
+  objc-exception.h \
+  \
+  message.h \
+  hash.h \
+  objc-list.h \
+  sarray.h \
+  objc-api.h \
+  NXConstStr.h \
+  Object.h \
+  Protocol.h \
+  encoding.h \
+  typedstream.h \
+  thr.h \
+  objc-decls.h
 
 # User-visible header files containing deprecated APIs, from the
 # objc/deprecated directory
 
-OBJC_DEPRECATED_H = Object.h objc-unexpected-exception.h \
-                    typedstream.h 
+OBJC_DEPRECATED_H = \
+  MetaClass.h \
+  Object.h \
+  STR.h \
+  objc_unexpected_exception.h \
+  struct_objc_class.h \
+  struct_objc_protocol.h \
+  struct_objc_selector.h \
+  typedstream.h 
 
 # Modules that comprise the runtime library.
 
