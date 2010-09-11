@@ -1,3 +1,16 @@
+2010-09-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* mathbuiltins.def: Do not defined huge_val built-in.
+	* trans-const.c (gfc_build_inf_or_huge): New function.
+	* trans-const.h (gfc_build_inf_or_huge): New prototype.
+	* f95-lang.c (gfc_init_builtin_functions): Don't defined
+	huge_val built-ins.
+	* trans-intrinsic.c (gfc_build_intrinsic_lib_fndecls): We don't
+	have functions of type (*) (void) anymore.
+	(gfc_conv_intrinsic_minmaxloc): Call gfc_build_inf_or_huge.
+	(gfc_conv_intrinsic_nearest): Call gfc_build_inf_or_huge instead
+	of generating a call to huge_val().
+
 2010-09-11  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* gfortran.h (gfc_expr): Remove inline_noncopying_intrinsic attribute.

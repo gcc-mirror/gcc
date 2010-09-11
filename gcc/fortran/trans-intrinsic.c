@@ -621,13 +621,11 @@ gfc_build_intrinsic_lib_fndecls (void)
        C99-like library functions.  For now, we only handle __float128
        q-suffixed functions.  */
 
-    tree tmp, func_0, func_1, func_2, func_cabs, func_frexp;
+    tree tmp, func_1, func_2, func_cabs, func_frexp;
     tree func_lround, func_llround, func_scalbn, func_cpow;
 
     memset (quad_decls, 0, sizeof(tree) * (END_BUILTINS + 1));
 
-    /* type (*) (void) */
-    func_0 = build_function_type (float128_type_node, void_list_node);
     /* type (*) (type) */
     tmp = tree_cons (NULL_TREE, float128_type_node, void_list_node);
     func_1 = build_function_type (float128_type_node, tmp);
@@ -2490,22 +2488,14 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
     }
 
   limit = gfc_create_var (gfc_typenode_for_spec (&arrayexpr->ts), "limit");
-  n = gfc_validate_kind (arrayexpr->ts.type, arrayexpr->ts.kind, false);
   switch (arrayexpr->ts.type)
     {
     case BT_REAL:
-      if (HONOR_INFINITIES (DECL_MODE (limit)))
-	{
-	  REAL_VALUE_TYPE real;
-	  real_inf (&real);
-	  tmp = build_real (TREE_TYPE (limit), real);
-	}
-      else
-	tmp = gfc_conv_mpfr_to_tree (gfc_real_kinds[n].huge,
-				     arrayexpr->ts.kind, 0);
+      tmp = gfc_build_inf_or_huge (TREE_TYPE (limit), arrayexpr->ts.kind);
       break;
 
     case BT_INTEGER:
+      n = gfc_validate_kind (arrayexpr->ts.type, arrayexpr->ts.kind, false);
       tmp = gfc_conv_mpz_to_tree (gfc_integer_kinds[n].huge,
 				  arrayexpr->ts.kind);
       break;
@@ -4242,12 +4232,12 @@ gfc_conv_intrinsic_nearest (gfc_se * se, gfc_expr * expr)
 
   nextafter = gfc_builtin_decl_for_float_kind (BUILT_IN_NEXTAFTER, expr->ts.kind);
   copysign = gfc_builtin_decl_for_float_kind (BUILT_IN_COPYSIGN, expr->ts.kind);
-  huge_val = gfc_builtin_decl_for_float_kind (BUILT_IN_HUGE_VAL, expr->ts.kind);
 
   type = gfc_typenode_for_spec (&expr->ts);
   gfc_conv_intrinsic_function_args (se, expr, args, 2);
-  tmp = build_call_expr_loc (input_location, copysign, 2,
-			     build_call_expr_loc (input_location, huge_val, 0),
+
+  huge_val = gfc_build_inf_or_huge (type, expr->ts.kind);
+  tmp = build_call_expr_loc (input_location, copysign, 2, huge_val,
 			     fold_convert (type, args[1]));
   se->expr = build_call_expr_loc (input_location, nextafter, 2,
 				  fold_convert (type, args[0]), tmp);
