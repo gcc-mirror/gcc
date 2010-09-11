@@ -1,3 +1,31 @@
+2010-09-11  Rodrigo Rivas <rodrigorivascosta@gmail.com>
+
+	Implement range-based for-statements.
+	* cp-tree.def (RANGE_FOR_STMT): New.
+	* cp-tree.h (RANGE_FOR_DECL, RANGE_FOR_EXPR, RANGE_FOR_BODY): New.
+	(cp_convert_range_for): Declare.
+	* pt.c (tsubst_expr): Add RANGE_FOR_STMT.
+	(tsubst_copy_and_build): perform_koenig_lookup takes extra argument.
+	* semantics.c (begin_range_for_stmt): New.
+	(finish_range_for_decl): New.
+	(finish_for_stmt): Accept also RANGE_FOR_STMT.
+	(perform_koenig_lookup): Add extra argument include_std.
+	* parser.c (cp_parser_c_for): New with code from
+	cp_parser_iteration_statement().
+	(cp_parser_range_for): New.
+	(cp_convert_range_for): New.
+	(cp_parser_iteration_statement): Add range-for support.
+	(cp_parser_condition): Adjust comment.
+	(cp_parser_postfix_expression): perform_koenig_lookup takes extra
+	argument.
+	* dump.c (cp_dump_tree): Add RANGE_FOR_STMT.
+	* cxx-pretty-print.c: Likewise.
+	* lex.c (cxx_init): Likewise.
+	* name-lookup.c (lookup_function_nonclass): Add extra argument
+	include_std.
+	(lookup_arg_dependent): Likewise.
+	* name-lookup.h: Likewise.
+
 2010-09-10  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
 
 	PR c++/43824

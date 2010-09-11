@@ -11743,7 +11743,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 
     case FOR_STMT:
       stmt = begin_for_stmt ();
-			  RECUR (FOR_INIT_STMT (t));
+      RECUR (FOR_INIT_STMT (t));
       finish_for_init_stmt (stmt);
       tmp = RECUR (FOR_COND (t));
       finish_for_cond (tmp, stmt);
@@ -11751,6 +11751,20 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       finish_for_expr (tmp, stmt);
       RECUR (FOR_BODY (t));
       finish_for_stmt (stmt);
+      break;
+
+    case RANGE_FOR_STMT:
+      {
+        tree decl, expr;
+        stmt = begin_for_stmt ();
+        decl = RANGE_FOR_DECL (t);
+        decl = tsubst (decl, args, complain, in_decl);
+        maybe_push_decl (decl);
+        expr = RECUR (RANGE_FOR_EXPR (t));
+        stmt = cp_convert_range_for (stmt, decl, expr);
+        RECUR (RANGE_FOR_BODY (t));
+        finish_for_stmt (stmt);
+      }
       break;
 
     case WHILE_STMT:
@@ -12537,7 +12551,7 @@ tsubst_copy_and_build (tree t,
 	       into a non-dependent call.  */
 	    && type_dependent_expression_p_push (t)
 	    && !any_type_dependent_arguments_p (call_args))
-	  function = perform_koenig_lookup (function, call_args);
+	  function = perform_koenig_lookup (function, call_args, false);
 
 	if (TREE_CODE (function) == IDENTIFIER_NODE)
 	  {

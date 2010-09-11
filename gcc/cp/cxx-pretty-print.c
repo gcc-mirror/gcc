@@ -1921,6 +1921,23 @@ pp_cxx_statement (cxx_pretty_printer *pp, tree t)
       pp_needs_newline (pp) = true;
       break;
 
+    case RANGE_FOR_STMT:
+      pp_cxx_ws_string (pp, "for");
+      pp_space (pp);
+      pp_cxx_left_paren (pp);
+      pp_cxx_statement (pp, RANGE_FOR_DECL (t));
+      pp_space (pp);
+      pp_needs_newline (pp) = false;
+      pp_colon (pp);
+      pp_space (pp);
+      pp_cxx_statement (pp, RANGE_FOR_EXPR (t));
+      pp_cxx_right_paren (pp);
+      pp_newline_and_indent (pp, 3);
+      pp_cxx_statement (pp, FOR_BODY (t));
+      pp_indentation (pp) -= 3;
+      pp_needs_newline (pp) = true;
+      break;
+
       /* jump-statement:
 	    goto identifier;
 	    continue ;

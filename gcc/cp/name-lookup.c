@@ -4389,7 +4389,7 @@ lookup_function_nonclass (tree name, VEC(tree,gc) *args, bool block_p)
     lookup_arg_dependent (name,
 			  lookup_name_real (name, 0, 1, block_p, 0,
 					    LOOKUP_COMPLAIN),
-			  args);
+			  args, false);
 }
 
 tree
@@ -5063,7 +5063,8 @@ arg_assoc (struct arg_lookup *k, tree n)
    are the functions found in normal lookup.  */
 
 tree
-lookup_arg_dependent (tree name, tree fns, VEC(tree,gc) *args)
+lookup_arg_dependent (tree name, tree fns, VEC(tree,gc) *args,
+		      bool include_std)
 {
   struct arg_lookup k;
 
@@ -5086,6 +5087,8 @@ lookup_arg_dependent (tree name, tree fns, VEC(tree,gc) *args)
      picking up later definitions) in the second stage. */
   k.namespaces = make_tree_vector ();
 
+  if (include_std)
+    arg_assoc_namespace (&k, std_node);
   arg_assoc_args_vec (&k, args);
 
   fns = k.functions;

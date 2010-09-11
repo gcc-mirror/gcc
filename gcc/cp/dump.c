@@ -453,6 +453,13 @@ cp_dump_tree (void* dump_info, tree t)
       dump_child ("body", FOR_BODY (t));
       break;
 
+    case RANGE_FOR_STMT:
+      dump_stmt (di, t);
+      dump_child ("decl", RANGE_FOR_DECL (t));
+      dump_child ("expr", RANGE_FOR_EXPR (t));
+      dump_child ("body", RANGE_FOR_BODY (t));
+      break;
+
     case SWITCH_STMT:
       dump_stmt (di, t);
       dump_child ("cond", SWITCH_STMT_COND (t));
