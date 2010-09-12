@@ -1,3 +1,12 @@
+2010-09-12  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/frv/frv.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST): Remove.
+	* config/frv/frv-protos.h (frv_register_move_cost): Remove.
+	* config/frv/frv.c (frv_register_move_cost): Make static. Change
+	arguments type to reg_class_t. Add mode argument.
+	(frv_memory_move_cost): New.
+	(TARGET_REGISTER_MOVE_COSTS, TARGET_MEMORY_MOVE_COSTS): Define.
+
 2010-09-12  Bernd Schmidt  <bernds@codesourcery.com>
 
 	* config/arm/arm.md (arm_ashldi3_1bit, arm_ashrdi3_1bit,

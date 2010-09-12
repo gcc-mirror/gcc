@@ -1946,31 +1946,6 @@ __asm__("\n"								\
 
 /* Describing Relative Costs of Operations.  */
 
-/* A C expression for the cost of moving data from a register in class FROM to
-   one in class TO.  The classes are expressed using the enumeration values
-   such as `GENERAL_REGS'.  A value of 4 is the default; other values are
-   interpreted relative to that.
-
-   It is not required that the cost always equal 2 when FROM is the same as TO;
-   on some machines it is expensive to move between registers if they are not
-   general registers.
-
-   If reload sees an insn consisting of a single `set' between two hard
-   registers, and if `REGISTER_MOVE_COST' applied to their classes returns a
-   value of 2, reload does not check to ensure that the constraints of the insn
-   are met.  Setting a cost of other than 2 will allow reload to verify that
-   the constraints are met.  You should do this if the `movM' pattern's
-   constraints do not allow such copying.  */
-#define REGISTER_MOVE_COST(MODE, FROM, TO) frv_register_move_cost (FROM, TO)
-
-/* A C expression for the cost of moving data of mode M between a register and
-   memory.  A value of 2 is the default; this cost is relative to those in
-   `REGISTER_MOVE_COST'.
-
-   If moving between registers and memory is more expensive than between two
-   registers, you should define this macro to express the relative cost.  */
-#define MEMORY_MOVE_COST(M,C,I) 4
-
 /* A C expression for the cost of a branch instruction.  A value of 1 is the
    default; other values are interpreted relative to that.  */
 #define BRANCH_COST(speed_p, predictable_p) frv_branch_cost_int

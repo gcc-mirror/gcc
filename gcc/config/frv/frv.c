@@ -371,6 +371,10 @@ static void frv_setup_incoming_varargs		(CUMULATIVE_ARGS *,
 static rtx frv_expand_builtin_saveregs		(void);
 static void frv_expand_builtin_va_start		(tree, rtx);
 static bool frv_rtx_costs			(rtx, int, int, int*, bool);
+static int frv_register_move_cost		(enum machine_mode,
+						 reg_class_t, reg_class_t);
+static int frv_memory_move_cost			(enum machine_mode,
+						 reg_class_t, bool);
 static void frv_asm_out_constructor		(rtx, int);
 static void frv_asm_out_destructor		(rtx, int);
 static bool frv_function_symbol_referenced_p	(rtx);
@@ -432,6 +436,10 @@ static bool frv_class_likely_spilled_p 		(reg_class_t);
 #define TARGET_INIT_LIBFUNCS frv_init_libfuncs
 #undef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P frv_in_small_data_p
+#undef TARGET_REGISTER_MOVE_COST
+#define TARGET_REGISTER_MOVE_COST frv_register_move_cost
+#undef TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST frv_memory_move_cost
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS frv_rtx_costs
 #undef TARGET_ASM_CONSTRUCTOR
@@ -6908,28 +6916,16 @@ frv_select_cc_mode (enum rtx_code code, rtx x, rtx y)
     }
 }
 
-/* A C expression for the cost of moving data from a register in class FROM to
-   one in class TO.  The classes are expressed using the enumeration values
-   such as `GENERAL_REGS'.  A value of 4 is the default; other values are
-   interpreted relative to that.
 
-   It is not required that the cost always equal 2 when FROM is the same as TO;
-   on some machines it is expensive to move between registers if they are not
-   general registers.
-
-   If reload sees an insn consisting of a single `set' between two hard
-   registers, and if `REGISTER_MOVE_COST' applied to their classes returns a
-   value of 2, reload does not check to ensure that the constraints of the insn
-   are met.  Setting a cost of other than 2 will allow reload to verify that
-   the constraints are met.  You should do this if the `movM' pattern's
-   constraints do not allow such copying.  */
+/* Worker function for TARGET_REGISTER_MOVE_COST.  */
 
 #define HIGH_COST 40
 #define MEDIUM_COST 3
 #define LOW_COST 1
 
-int
-frv_register_move_cost (enum reg_class from, enum reg_class to)
+static int
+frv_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+			reg_class_t from, reg_class_t to)
 {
   switch (from)
     {
@@ -7012,6 +7008,17 @@ frv_register_move_cost (enum reg_class from, enum reg_class to)
 
   return HIGH_COST;
 }
+
+/* Worker function for TARGET_MEMORY_MOVE_COST.  */
+
+static int
+frv_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
+                      reg_class_t rclass ATTRIBUTE_UNUSED,
+                      bool in ATTRIBUTE_UNUSED)
+{
+  return 4;
+}
+
 
 /* Implementation of TARGET_ASM_INTEGER.  In the FRV case we need to
    use ".picptr" to generate safe relocations for PIC code.  We also
