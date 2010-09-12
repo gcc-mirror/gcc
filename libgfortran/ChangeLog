@@ -1,3 +1,9 @@
+2010-09-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* intrinsics/pack_generic.c (pack): Add missing return and fix whitespace.
+	* intrinsics/cshift0.c (cshift0): Fix whitespace.
+	* intrinsics/unpack_generic.c (unpack1, unpack0): Fix whitespace.
+
 2010-09-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* runtime/string.c (compare0): Remove.
