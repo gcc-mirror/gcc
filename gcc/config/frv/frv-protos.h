@@ -111,7 +111,6 @@ extern enum machine_mode frv_select_cc_mode (enum rtx_code, rtx, rtx);
 #endif	/* RTX_CODE */
 
 extern int direct_return_p		(void);
-extern int frv_register_move_cost	(enum reg_class, enum reg_class);
 extern int frv_issue_rate		(void);
 extern int frv_acc_group		(rtx);
 
