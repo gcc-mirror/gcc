@@ -1,4 +1,8 @@
 2010-09-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* memory.c: Do not include objc-private/runtime.h.
+
+2010-09-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 	
 	* objc/deprecated/objc_malloc.h: New file.
 	* objc/deprecated/objc_valloc.h: New file.

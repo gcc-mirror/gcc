@@ -42,7 +42,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "objc/objc.h"
 #include "objc/objc-api.h"
-#include "objc-private/runtime.h"
 
 #if OBJC_WITH_GC
 #include <gc.h>
