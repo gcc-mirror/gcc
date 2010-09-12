@@ -218,7 +218,7 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
 
 	  cshift0_c4 ((gfc_array_c4 *) ret, (gfc_array_c4 *) array, shift,
 		      which);
-	      return;
+	  return;
 	}
       else
 	{
@@ -242,7 +242,7 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
 
 	  cshift0_c8 ((gfc_array_c8 *) ret, (gfc_array_c8 *) array, shift,
 		      which);
-	      return;
+	  return;
 	}
       else
 	{
