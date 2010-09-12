@@ -27,7 +27,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* FIXME: This file has no business including tm.h.  */
 
+/* FIXME: This file contains functions that will abort the entire
+   program if they fail.  Is that really needed ?
+*/
+
 #include "objc-private/common.h"
+#include "objc-private/error.h"
 #include "tconfig.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -316,8 +321,11 @@ objc_sizeof_type (const char *type)
 	    
 	    default:
 	      {
-		objc_error (nil, OBJC_ERR_BAD_TYPE, "unknown complex type %s\n",
-			    type);
+		/* FIXME: Is this so bad that we have to abort the
+		   entire program ?  (it applies to all the other
+		   _objc_abort calls in this file).
+		*/
+		_objc_abort ("unknown complex type %s\n", type);
 		return 0;
 	      }
 	}
@@ -325,7 +333,7 @@ objc_sizeof_type (const char *type)
 
   default:
     {
-      objc_error (nil, OBJC_ERR_BAD_TYPE, "unknown type %s\n", type);
+      _objc_abort ("unknown type %s\n", type);
       return 0;
     }
   }
@@ -491,8 +499,7 @@ objc_alignof_type (const char *type)
 	    
 	    default:
 	      {
-		objc_error (nil, OBJC_ERR_BAD_TYPE, "unknown complex type %s\n",
-			    type);
+		_objc_abort ("unknown complex type %s\n", type);
 		return 0;
 	      }
 	}
@@ -500,7 +507,7 @@ objc_alignof_type (const char *type)
 
   default:
     {
-      objc_error (nil, OBJC_ERR_BAD_TYPE, "unknown type %s\n", type);
+      _objc_abort ("unknown type %s\n", type);
       return 0;
     }
   }
@@ -643,7 +650,7 @@ objc_skip_typespec (const char *type)
       return ++type;
     else
       {
-	objc_error (nil, OBJC_ERR_BAD_TYPE, "bad array type %s\n", type);
+	_objc_abort ("bad array type %s\n", type);
 	return 0;
       }
 
@@ -684,7 +691,7 @@ objc_skip_typespec (const char *type)
 
   default:
     {
-      objc_error (nil, OBJC_ERR_BAD_TYPE, "unknown type %s\n", type);
+      _objc_abort ("unknown type %s\n", type);
       return 0;
     }
   }
@@ -882,9 +889,8 @@ objc_layout_structure (const char *type,
 
   if (*type != _C_UNION_B && *type != _C_STRUCT_B)
     {
-      objc_error (nil, OBJC_ERR_BAD_TYPE,
-                 "record (or union) type expected in objc_layout_structure, got %s\n",
-                 type);
+      _objc_abort ("record (or union) type expected in objc_layout_structure, got %s\n",
+		   type);
     }
 
   type ++;
