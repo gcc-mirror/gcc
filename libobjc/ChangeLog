@@ -1,5 +1,20 @@
 2010-09-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* Makefile.in (%_gc.lo): New pattern rules to build the
+	garbage-collected version of the library.  Removed rules for
+	specific files that are no longer needed.  Standardized all rules.
+	(C_SOURCE_FILES, OBJC_SOURCE_FILES): New variables.
+	(OBJS, OBJS_GC): Compute these from C_SOURCE_FILES and
+	OBJC_SOURCE_FILES.
+	(INCLUDES): Removed the unused include -I$(srcdir)/objc.
+
+2010-09-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+	
+	* memory.c (objc_calloc): Fixed call to GC_malloc when building
+	with Garbage Colletion.
+	
+2010-09-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* memory.c: Do not include objc-private/runtime.h.
 
 2010-09-12  Nicola Pero  <nicola.pero@meta-innovation.com>
