@@ -78,7 +78,7 @@ objc_calloc (size_t nelem, size_t size)
 {
   /* Note that GC_malloc returns cleared memory (see documentation) so
      there is no need to clear it.  */
-  void *res = (void *)(GC_malloc (nelem, size));
+  void *res = (void *)(GC_malloc (nelem * size));
   if (! res)
     _objc_abort ("Virtual memory exhausted\n");
   return res;
