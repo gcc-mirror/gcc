@@ -82,9 +82,7 @@ struct objc_method_description
 #define _C_VECTOR   '!'
 #define _C_COMPLEX   'j'
 
-
 #include "deprecated/objc_error.h"
-
 
 /* For every class which happens to have statically allocated instances in
    this module, one OBJC_STATIC_INSTANCES is allocated by the compiler.
@@ -328,19 +326,18 @@ objc_EXPORT id (*_objc_object_copy)(id object);
 objc_EXPORT id (*_objc_object_dispose)(id object);
 
 /*
-** Standard functions for memory allocation and disposal.
-** Users should use these functions in their ObjC programs so
-** that they work properly with garbage collectors as well as
-** can take advantage of the exception/error handling available.
+  Standard functions for memory allocation and disposal.  Users should
+  use these functions in their ObjC programs so that they work so that
+  they work properly with garbage collectors.
 */
 void *
 objc_malloc(size_t size);
 
+/* FIXME: Shouldn't the following be called objc_malloc_atomic ?  The
+   GC function is GC_malloc_atomic() which makes sense.
+ */
 void *
 objc_atomic_malloc(size_t size);
-
-void *
-objc_valloc(size_t size);
 
 void *
 objc_realloc(void *mem, size_t size);
@@ -351,22 +348,8 @@ objc_calloc(size_t nelem, size_t size);
 void
 objc_free(void *mem);
 
-/*
-** Hook functions for memory allocation and disposal.
-** This makes it easy to substitute garbage collection systems
-** such as Boehm's GC by assigning these function pointers
-** to the GC's allocation routines.  By default these point
-** to the ANSI standard malloc, realloc, free, etc.
-**
-** Users should call the normal objc routines above for
-** memory allocation and disposal within their programs.
-*/
-objc_EXPORT void *(*_objc_malloc)(size_t);
-objc_EXPORT void *(*_objc_atomic_malloc)(size_t);
-objc_EXPORT void *(*_objc_valloc)(size_t);
-objc_EXPORT void *(*_objc_realloc)(void *, size_t);
-objc_EXPORT void *(*_objc_calloc)(size_t, size_t);
-objc_EXPORT void (*_objc_free)(void *);
+#include "deprecated/objc_valloc.h"
+#include "deprecated/objc_malloc.h"
 
 /*
 **  Hooks for method forwarding. This makes it easy to substitute a

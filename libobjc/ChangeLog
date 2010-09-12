@@ -1,4 +1,18 @@
 2010-09-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+	
+	* objc/deprecated/objc_malloc.h: New file.
+	* objc/deprecated/objc_valloc.h: New file.
+	* objc/objc-api.h: Include the files instead of defining
+	objc_valloc, _objc_malloc() and similar.
+	* Makefile.in (OBJC_DEPRECATED_H): Added objc_valloc.h and
+	objc_malloc.h.
+	* memory.c: Removed the extra layer of indirection of _objc_malloc
+	and similar.
+	(objc_calloc): Use GC_malloc in the garbage-collected
+	implementation as GC_malloc returns memory that is already freed.
+	(objc_valloc): Deprecated.	
+	
+2010-09-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/deprecated/objc_error.h: New file.
 	* objc/objc-api.h: Include deprecated/objc_error.h instead of

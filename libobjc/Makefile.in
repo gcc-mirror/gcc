@@ -168,7 +168,9 @@ OBJC_DEPRECATED_H = \
   Object.h \
   STR.h \
   objc_error.h \
+  objc_malloc.h \
   objc_unexpected_exception.h \
+  objc_valloc.h \
   struct_objc_class.h \
   struct_objc_protocol.h \
   struct_objc_selector.h \
