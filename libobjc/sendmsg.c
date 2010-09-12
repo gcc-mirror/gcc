@@ -29,6 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    and friends.  */
 
 #include "objc-private/common.h"
+#include "objc-private/error.h"
 #include "tconfig.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -661,6 +662,7 @@ __objc_forward (id object, SEL sel, arglist_t args)
 	      : "instance" ),
              object->class_pointer->name, sel_get_name (sel));
 
+    /* TODO: support for error: is surely deprecated ? */
     err_sel = sel_get_any_uid ("error:");
     if (__objc_responds_to (object, err_sel))
       {
@@ -670,7 +672,7 @@ __objc_forward (id object, SEL sel, arglist_t args)
 
     /* The object doesn't respond to doesNotRecognize: or error:;  Therefore,
        a default action is taken. */
-    objc_error (object, OBJC_ERR_UNIMPLEMENTED, "%s\n", msg);
+    _objc_abort ("%s\n", msg);
 
     return 0;
   }

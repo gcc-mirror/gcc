@@ -1,5 +1,32 @@
 2010-09-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc/deprecated/objc_error.h: New file.
+	* objc/objc-api.h: Include deprecated/objc_error.h instead of
+	defining objc_error and related.
+	* error.c: New file.  Added _objc_abort function which replaces
+	objc_error.  No change in functionality as they both print an
+	error and abort.
+	* misc.c: File removed.  Code moved into memory.c and error.c.
+	* memory.c: New file.
+	* objc-private/error.h: New file.
+	* archive.c: Include objc-private/error.h and use _objc_abort
+	instead of objc_error everywhere.
+	* class.c: Same change.
+	* encoding.c: Same change.
+	* init.c: Same change, and simplified init_check_module_version.
+	* memory.c: Same change.
+	* sendmsg.c:  Same change.
+	* thr.c: Same change.
+	* Makefile.in (OBJ_DEPRECATED_H): Added objc_error.h.
+	(OBJ_H): Reordered list.
+	(OBJS): Removed misc.lo, added memory.lo and error.lo.
+	(OBJS_GC): Removed misc_gc.lo, added memory_gc.lo and error_gc.lo.
+	(misc_gc.lo): Rule removed.
+	(error_gc.lo): Rule added.
+	(memory_gc.lo): Rule added.
+	
+2010-09-12  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc/objc.h (__GNU_LIBOBJC__): New #define providing an easy way
 	to check the API version.  Added some comments.
 

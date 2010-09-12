@@ -147,18 +147,18 @@ OBJC_H = \
   objc.h \
   objc-exception.h \
   \
-  message.h \
-  hash.h \
-  objc-list.h \
-  sarray.h \
-  objc-api.h \
   NXConstStr.h \
   Object.h \
   Protocol.h \
   encoding.h \
-  typedstream.h \
+  hash.h \
+  message.h \
+  objc-api.h \
+  objc-decls.h \
+  objc-list.h \
+  sarray.h \
   thr.h \
-  objc-decls.h
+  typedstream.h
 
 # User-visible header files containing deprecated APIs, from the
 # objc/deprecated directory
@@ -167,6 +167,7 @@ OBJC_DEPRECATED_H = \
   MetaClass.h \
   Object.h \
   STR.h \
+  objc_error.h \
   objc_unexpected_exception.h \
   struct_objc_class.h \
   struct_objc_protocol.h \
@@ -175,16 +176,47 @@ OBJC_DEPRECATED_H = \
 
 # Modules that comprise the runtime library.
 
-OBJS =    archive.lo class.lo encoding.lo gc.lo hash.lo init.lo linking.lo \
-	  misc.lo nil_method.lo NXConstStr.lo Object.lo objects.lo \
-	  Protocol.lo sarray.lo selector.lo sendmsg.lo thr.lo \
-	  exception.lo
+OBJS =  \
+   NXConstStr.lo \
+   Object.lo \
+   Protocol.lo \
+   archive.lo \
+   class.lo \
+   encoding.lo \
+   error.lo \
+   gc.lo \
+   hash.lo \
+   init.lo \
+   linking.lo \
+   memory.lo \
+   nil_method.lo \
+   objects.lo \
+   sarray.lo \
+   selector.lo \
+   sendmsg.lo \
+   thr.lo \
+   exception.lo
 
-OBJS_GC = archive_gc.lo class_gc.lo encoding_gc.lo gc_gc.lo hash_gc.lo \
-	  init_gc.lo linking_gc.lo misc_gc.lo nil_method_gc.lo \
-	  NXConstStr_gc.lo Object_gc.lo objects_gc.lo Protocol_gc.lo \
-	  sarray_gc.lo selector_gc.lo sendmsg_gc.lo thr_gc.lo \
-	  exception_gc.lo
+OBJS_GC = \
+   NXConstStr_gc.lo \
+   Object_gc.lo \
+   Protocol_gc.lo \
+   archive_gc.lo \
+   class_gc.lo \
+   encoding_gc.lo \
+   error_gc.lo \
+   gc_gc.lo \
+   hash_gc.lo \
+   init_gc.lo \
+   linking_gc.lo \
+   memory_gc.lo \
+   nil_method_gc.lo \
+   objects_gc.lo \
+   sarray_gc.lo \
+   selector_gc.lo \
+   sendmsg_gc.lo \
+   thr_gc.lo \
+   exception_gc.lo
 
 runtime-info.h: 
 	echo "" > tmp-runtime.m
@@ -206,6 +238,10 @@ class_gc.lo: class.c
 
 encoding_gc.lo: encoding.c
 	$(LIBTOOL_COMPILE) $(CC) -c -o $@ $(ALL_CFLAGS) $(OBJC_GCFLAGS) \
+		$(INCLUDES) $<
+
+error_gc.lo: error.c
+	$(LIBTOOL_COMPILE) $(CC) -c $(ALL_CFLAGS) -o $@ $(OBJC_GCFLAGS) \
 		$(INCLUDES) $<
 
 gc.lo: gc.c
@@ -231,7 +267,7 @@ linking_gc.lo: linking.m
 	$(LIBTOOL_COMPILE) $(CC) -fgnu-runtime -c -o $@ $(ALL_CFLAGS) \
 		$(OBJC_GCFLAGS) $(INCLUDES) $<
 
-misc_gc.lo: misc.c
+memory_gc.lo: memory.c
 	$(LIBTOOL_COMPILE) $(CC) -c $(ALL_CFLAGS) -o $@ $(OBJC_GCFLAGS) \
 		$(INCLUDES) $<
 

@@ -25,6 +25,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "objc-private/common.h"
+#include "objc-private/error.h"
 #include "objc/objc.h"
 #include "objc/objc-api.h"
 #include "objc/thr.h"
@@ -824,17 +825,8 @@ init_check_module_version (Module_t module)
 {
   if ((module->version != OBJC_VERSION) || (module->size != sizeof (Module)))
     {
-      int code;
-
-      if (module->version > OBJC_VERSION)
-	code = OBJC_ERR_OBJC_VERSION;
-      else if (module->version < OBJC_VERSION)
-	code = OBJC_ERR_GCC_VERSION;
-      else
-	code = OBJC_ERR_MODULE_SIZE;
-
-      objc_error (nil, code, "Module %s version %d doesn't match runtime %d\n",
-		  module->name, (int)module->version, OBJC_VERSION);
+      _objc_abort ("Module %s version %d doesn't match runtime %d\n",
+		   module->name, (int)module->version, OBJC_VERSION);
     }
 }
 
@@ -876,11 +868,10 @@ __objc_init_protocols (struct objc_protocol_list *protos)
 	}
       else if (protos->list[i]->class_pointer != proto_class)
 	{
-	  objc_error (nil, OBJC_ERR_PROTOCOL_VERSION,
-		     "Version %d doesn't match runtime protocol version %d\n",
-		     (int) ((char *) protos->list[i]->class_pointer
-			    - (char *) 0),
-		     PROTOCOL_VERSION);
+	  _objc_abort ("Version %d doesn't match runtime protocol version %d\n",
+		       (int) ((char *) protos->list[i]->class_pointer
+			      - (char *) 0),
+		       PROTOCOL_VERSION);
 	}
     }
 

@@ -23,6 +23,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "objc-private/common.h"
+#include "objc-private/error.h"
 #define _LIBOBJC
 /* The line below is needed for declarations of functions such as
    pthread_mutexattr_settype, without which gthr-posix.h may fail to
@@ -129,12 +130,16 @@ __objc_thread_detach_function (struct __objc_thread_start_state *istate)
     if ((imp = (id (*) (id, SEL, id))objc_msg_lookup (object, selector)))
 	(*imp) (object, selector, argument);
     else
-      objc_error (object, OBJC_ERR_UNIMPLEMENTED,
-		  "objc_thread_detach called with bad selector.\n");
+      {
+	/* FIXME: Should we abort here ? */
+	_objc_abort ("objc_thread_detach called with bad selector.\n");
+      }
   }
   else
-    objc_error (nil, OBJC_ERR_BAD_STATE,
-	        "objc_thread_detach called with NULL state.\n");
+    {
+      /* FIXME: Should we abort here ? */
+      _objc_abort ("objc_thread_detach called with NULL state.\n");
+    }
 
   /* Exit the thread */
   objc_thread_exit ();
