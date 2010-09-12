@@ -1,3 +1,9 @@
+2010-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/pr40386.c: Remove part that has been applied
+	twice.
+	* gcc.c-torture/execute/pr40386.x: Likewise.
+
 2010-09-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/40386
