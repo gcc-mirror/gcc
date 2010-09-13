@@ -1,3 +1,11 @@
+2010-09-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR debug/45604
+	PR debug/45419
+	PR debug/45408
+	* tree-pretty-print.c (dump_generic_node): Disregard top-level
+	types of MEM_REF pointer types to the same type.
+
 2010-09-13  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR rtl-optimization/41087
