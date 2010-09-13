@@ -1,3 +1,8 @@
+2010-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/45617
+	* gcc.target/i386/pr45617.c: New test.
+
 2010-09-13  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* gcc.target/i386/volatile-2.c: Allow underscores before symbols.
