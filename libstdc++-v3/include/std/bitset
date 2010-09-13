@@ -1501,7 +1501,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator()(const _GLIBCXX_STD_D::bitset<_Nb>& __b) const
       {
 	const size_t __clength = (_Nb + __CHAR_BIT__ - 1) / __CHAR_BIT__;
-	return std::_Fnv_hash::hash(__b._M_getdata(), __clength);
+	return std::_Hash_impl::hash(__b._M_getdata(), __clength);
       }
     };
 

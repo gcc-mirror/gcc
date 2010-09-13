@@ -54,23 +54,23 @@ namespace std
   template<>
     size_t
     hash<string>::operator()(string __s) const
-    { return _Fnv_hash::hash(__s.data(), __s.length()); }
+    { return _Hash_impl::hash(__s.data(), __s.length()); }
 
   template<>
     size_t
     hash<const string&>::operator()(const string& __s) const
-    { return _Fnv_hash::hash(__s.data(), __s.length()); }
+    { return _Hash_impl::hash(__s.data(), __s.length()); }
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<>
     size_t
     hash<wstring>::operator()(wstring __s) const
-    { return _Fnv_hash::hash(__s.data(), __s.length() * sizeof(wchar_t)); }
+    { return _Hash_impl::hash(__s.data(), __s.length() * sizeof(wchar_t)); }
 
   template<>
     size_t
     hash<const wstring&>::operator()(const wstring& __s) const
-    { return _Fnv_hash::hash(__s.data(), __s.length() * sizeof(wchar_t)); }
+    { return _Hash_impl::hash(__s.data(), __s.length() * sizeof(wchar_t)); }
 #endif
 #endif
 
@@ -78,7 +78,7 @@ namespace std
     size_t
     hash<error_code>::operator()(error_code __e) const
     {
-      const size_t __tmp = std::_Fnv_hash::hash(__e._M_value);
-      return std::_Fnv_hash::__hash_combine(__e._M_cat, __tmp);
+      const size_t __tmp = std::_Hash_impl::hash(__e._M_value);
+      return std::_Hash_impl::__hash_combine(__e._M_cat, __tmp);
     }
 }
