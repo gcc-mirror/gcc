@@ -167,6 +167,7 @@ typedef struct temp_expr_table_d
   bitmap partition_in_use;		/* Partitions with kill entries.  */
   bitmap new_replaceable_dependencies;	/* Holding place for pending dep's.  */
   int *num_in_part;			/* # of ssa_names in a partition.  */
+  int *call_cnt;			/* Call count at definition.  */
 } *temp_expr_table_p;
 
 /* Used to indicate a dependency on VDEFs.  */
@@ -209,6 +210,7 @@ new_temp_expr_table (var_map map)
       if (p != NO_PARTITION)
         t->num_in_part[p]++;
     }
+  t->call_cnt = XCNEWVEC (int, num_ssa_names + 1);
 
   return t;
 }
@@ -240,6 +242,7 @@ free_temp_expr_table (temp_expr_table_p t)
   free (t->kill_list);
   free (t->partition_dependencies);
   free (t->num_in_part);
+  free (t->call_cnt);
 
   if (t->replaceable_expressions)
     ret = t->replaceable_expressions;
@@ -469,7 +472,7 @@ finished_with_expr (temp_expr_table_p tab, int version, bool free_expr)
 /* Create an expression entry for a replaceable expression.  */
 
 static void
-process_replaceable (temp_expr_table_p tab, gimple stmt)
+process_replaceable (temp_expr_table_p tab, gimple stmt, int call_cnt)
 {
   tree var, def, basevar;
   int version;
@@ -510,6 +513,8 @@ process_replaceable (temp_expr_table_p tab, gimple stmt)
       make_dependent_on_partition (tab, version, VIRTUAL_PARTITION (tab));
       add_to_partition_kill_list (tab, VIRTUAL_PARTITION (tab), version);
     }
+
+  tab->call_cnt[version] = call_cnt;
 }
 
 
@@ -576,11 +581,12 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
 {
   gimple_stmt_iterator bsi;
   gimple stmt;
-  tree def, use;
+  tree def, use, fndecl;
   int partition;
   var_map map = tab->map;
   ssa_op_iter iter;
   bool stmt_replaceable;
+  int cur_call_cnt = 0;
 
   for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
     {
@@ -634,10 +640,12 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
 		    same_root_var = true;
 		}
 
-	      /* Mark expression as replaceable unless stmt is volatile or the
+	      /* Mark expression as replaceable unless stmt is volatile, or the
 		 def variable has the same root variable as something in the
-		 substitution list.  */
-	      if (gimple_has_volatile_ops (stmt) || same_root_var)
+		 substitution list, or the def and use span a call such that
+		 we'll expand lifetimes across a call.  */
+	      if (gimple_has_volatile_ops (stmt) || same_root_var ||
+		  tab->call_cnt[ver] != cur_call_cnt)
 		finished_with_expr (tab, ver, true);
 	      else
 		mark_replaceable (tab, use, stmt_replaceable);
@@ -652,9 +660,17 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
 	    kill_expr (tab, partition);
 	}
 
+      /* Increment counter if this is a non BUILT_IN call. We allow
+	 replacement over BUILT_IN calls since many will expand to inline
+	 insns instead of a true call.  */
+      if (is_gimple_call (stmt)
+	  && !((fndecl = gimple_call_fndecl (stmt))
+	       && DECL_BUILT_IN (fndecl)))
+	cur_call_cnt++;
+
       /* Now see if we are creating a new expression or not.  */
       if (stmt_replaceable)
-	process_replaceable (tab, stmt);
+	process_replaceable (tab, stmt, cur_call_cnt);
 
       /* Free any unused dependency lists.  */
       bitmap_clear (tab->new_replaceable_dependencies);
@@ -737,7 +753,7 @@ debug_ter (FILE *f, temp_expr_table_p t)
   for (x = 1; x < num_ssa_names; x++)
     if (t->expr_decl_uids[x])
       {
-        print_generic_expr (stderr, ssa_name (x), TDF_SLIM);
+        print_generic_expr (f, ssa_name (x), TDF_SLIM);
         fprintf (f, " dep-parts : ");
 	if (t->partition_dependencies[x]
 	    && !bitmap_empty_p (t->partition_dependencies[x]))
@@ -745,10 +761,11 @@ debug_ter (FILE *f, temp_expr_table_p t)
 	    EXECUTE_IF_SET_IN_BITMAP (t->partition_dependencies[x], 0, y, bi)
 	      fprintf (f, "P%d ",y);
 	  }
-	fprintf (stderr, "   basedecls: ");
+	fprintf (f, "   basedecls: ");
 	EXECUTE_IF_SET_IN_BITMAP (t->expr_decl_uids[x], 0, y, bi)
 	  fprintf (f, "%d ",y);
-	fprintf (stderr, "\n");
+	fprintf (f, "   call_cnt : %d",t->call_cnt[x]);
+	fprintf (f, "\n");
       }
 
   bitmap_print (f, t->partition_in_use, "Partitions in use ",
