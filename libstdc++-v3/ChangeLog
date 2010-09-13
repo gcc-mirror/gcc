@@ -1,3 +1,9 @@
+2010-09-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/xml/api.xml: Add title.
+	* doc/xml/manual/spine.xml: Same.
+	* doc/xml/spine.xml: Same.
+
 2010-09-13  Matt Austern  <austern@google.com>
 
 	* src/hash_bytes.cc: New file, exports _Hash_bytes (a Murmur hash),

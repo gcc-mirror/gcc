@@ -1,7 +1,9 @@
 <set xmlns="http://docbook.org/ns/docbook" version="5.0" 
      xml:id="set-index" 
-     xreflabel="The GNU C++ Library Documentation">
+     xreflabel="The GNU C++ Library">
 <?dbhtml filename="spine.html"?>
+
+  <title>The GNU C++ Library</title>
 
 <info>
   <copyright>
