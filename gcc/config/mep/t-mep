@@ -1,6 +1,6 @@
 # -*- makefile -*-
 # GCC makefile fragment for MeP
-# Copyright (C) 2001, 2002, 2003, 2005, 2007, 2009
+# Copyright (C) 2001, 2002, 2003, 2005, 2007, 2009, 2010
 # Free Software Foundation, Inc.
 # Contributed by Red Hat Inc
 #
@@ -22,7 +22,7 @@
 
 # Force genpreds to be rebuilt in case MeP-Integrator changed the predicates
 
-GTM_H = tm.h $(tm_file_list) $(srcdir)/config/mep/mep-intrin.h
+GTM_H = tm.h $(tm_file_list) $(srcdir)/config/mep/mep-intrin.h insn-constants.h
 
 # Use -O0 instead of -O2 so we don't get complex relocations
 
