@@ -1,3 +1,9 @@
+2010-09-13  Olivier Hainque  <hainque@adacore.com>
+
+        * fwprop.c (forward_propagate_and_simplify): Only attach a
+	REG_EQUAL note to an insn if the destination is a register.
+        * gcse.c (try_replace_reg): Likewise.
+
 2010-09-13  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45611

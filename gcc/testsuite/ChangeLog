@@ -1,3 +1,7 @@
+2010-09-12  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/memtrap.adb: New test.
+
 2010-09-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gfortran.dg/promotion.f90: Fix options.
