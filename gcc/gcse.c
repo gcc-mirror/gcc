@@ -2351,12 +2351,10 @@ try_replace_reg (rtx from, rtx to, rtx insn)
 	  && validate_change (insn, &SET_SRC (set), src, 0))
 	success = 1;
 
-      /* If we've failed to do replacement, have a single SET, don't already
-	 have a note, and have no special SET, add a REG_EQUAL note to not
-	 lose information.  */
-      if (!success && note == 0 && set != 0
-	  && GET_CODE (SET_DEST (set)) != ZERO_EXTRACT
-	  && GET_CODE (SET_DEST (set)) != STRICT_LOW_PART)
+      /* If we've failed perform the replacement, have a single SET to
+	 a REG destination and don't yet have a note, add a REG_EQUAL note
+	 to not lose information.  */
+      if (!success && note == 0 && set != 0 && REG_P (SET_DEST (set)))
 	note = set_unique_reg_note (insn, REG_EQUAL, copy_rtx (src));
     }
 
