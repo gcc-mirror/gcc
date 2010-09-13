@@ -1,3 +1,9 @@
+2010-09-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/41087
+	* ifcvt.c (noce_get_condition): Don't allow conditions with
+	side-effects.
+
 2010-09-12  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/frv/frv.h (REGISTER_MOVE_COST, MEMORY_MOVE_COST): Remove.
