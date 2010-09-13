@@ -1627,6 +1627,10 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   /* X86_TUNE_OPT_AGU: Optimize for Address Generation Unit. This flag
      will impact LEA instruction selection. */
   m_ATOM,
+
+  /* X86_TUNE_VECTORIZE_DOUBLE: Enable double precision vector
+     instructions.  */
+  ~m_ATOM,
 };
 
 /* Feature tests against the various architecture variations.  */
@@ -32332,6 +32336,28 @@ has_dispatch (rtx insn, int action)
       }
 
   return false;
+}
+
+/* ??? No autovectorization into MMX or 3DNOW until we can reliably
+   place emms and femms instructions.  */
+
+unsigned int
+ix86_units_per_simd_word (enum machine_mode mode)
+{
+  /* Disable double precision vectorizer if needed.  */
+  if (mode == DFmode && !TARGET_VECTORIZE_DOUBLE)
+    return UNITS_PER_WORD;
+
+#if 0
+  /*  FIXME: AVX has 32byte floating point vector operations and 16byte
+      integer vector operations.  But vectorizer doesn't support
+      different sizes for integer and floating point vectors.  We limit
+      vector size to 16byte.  */
+  if (TARGET_AVX)
+    return (mode == DFmode || mode == SFmode) ? 32 : 16;
+  else
+#endif
+    return TARGET_SSE ? 16 : UNITS_PER_WORD;
 }
 
 /* Initialize the GCC target structure.  */

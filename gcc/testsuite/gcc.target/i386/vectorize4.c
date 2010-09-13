@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ilp32 } */
-/* { dg-options "-O2 -ffast-math -ftree-vectorize -msse2 --param ggc-min-expand=0 --param ggc-min-heapsize=0" } */
+/* { dg-options "-O2 -ffast-math -ftree-vectorize -msse2 -mtune=generic --param ggc-min-expand=0 --param ggc-min-heapsize=0" } */
 /* This test, tests two thing, we vectorize square root and also we don't crash due to a GC issue.  */
 
 

@@ -2309,8 +2309,17 @@ proc check_effective_target_vect_double { } {
     } else {
 	set et_vect_double_saved 0
 	if { [istarget i?86-*-*]
-	      || [istarget x86_64-*-*] 
-	      || [istarget spu-*-*] } {
+	      || [istarget x86_64-*-*] } {
+	   if { [check_no_compiler_messages vect_double assembly {
+		 #ifdef __tune_atom__
+		 # error No double vectorizer support.
+		 #endif
+		}] } {
+		set et_vect_double_saved 1
+	    } else {
+		set et_vect_double_saved 0
+	    }
+	} elseif { [istarget spu-*-*] } {
 	   set et_vect_double_saved 1
 	}
     }

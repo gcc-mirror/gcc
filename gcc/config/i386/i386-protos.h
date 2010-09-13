@@ -50,6 +50,7 @@ extern bool x86_extended_QIreg_mentioned_p (rtx);
 extern bool x86_extended_reg_mentioned_p (rtx);
 extern bool x86_maybe_negate_const_int (rtx *, enum machine_mode);
 extern enum machine_mode ix86_cc_mode (enum rtx_code, rtx, rtx);
+extern unsigned int ix86_units_per_simd_word (enum machine_mode);
 
 extern int avx_vpermilp_parallel (rtx par, enum machine_mode mode);
 extern int avx_vperm2f128_parallel (rtx par, enum machine_mode mode);

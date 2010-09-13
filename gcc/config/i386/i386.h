@@ -312,6 +312,7 @@ enum ix86_tune_indices {
   X86_TUNE_USE_VECTOR_CONVERTS,
   X86_TUNE_FUSE_CMP_AND_BRANCH,
   X86_TUNE_OPT_AGU,
+  X86_TUNE_VECTORIZE_DOUBLE,
 
   X86_TUNE_LAST
 };
@@ -404,6 +405,8 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 #define TARGET_FUSE_CMP_AND_BRANCH \
 	ix86_tune_features[X86_TUNE_FUSE_CMP_AND_BRANCH]
 #define TARGET_OPT_AGU ix86_tune_features[X86_TUNE_OPT_AGU]
+#define TARGET_VECTORIZE_DOUBLE \
+	ix86_tune_features[X86_TUNE_VECTORIZE_DOUBLE]
 
 /* Feature tests against the various architecture variations.  */
 enum ix86_arch_indices {
@@ -1030,15 +1033,7 @@ enum target_cpu_default
    || (MODE) == V2SImode || (MODE) == SImode				\
    || (MODE) == V4HImode || (MODE) == V8QImode)
 
-/* ??? No autovectorization into MMX or 3DNOW until we can reliably
-   place emms and femms instructions.
-   FIXME: AVX has 32byte floating point vector operations and 16byte
-   integer vector operations.  But vectorizer doesn't support
-   different sizes for integer and floating point vectors.  We limit
-   vector size to 16byte.  */
-#define UNITS_PER_SIMD_WORD(MODE)					\
-  (TARGET_AVX ? (((MODE) == DFmode || (MODE) == SFmode) ? 16 : 16)	\
-   	      : (TARGET_SSE ? 16 : UNITS_PER_WORD))
+#define UNITS_PER_SIMD_WORD(MODE) ix86_units_per_simd_word (MODE)
 
 #define VALID_DFP_MODE_P(MODE) \
   ((MODE) == SDmode || (MODE) == DDmode || (MODE) == TDmode)

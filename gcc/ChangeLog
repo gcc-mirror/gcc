@@ -1,3 +1,16 @@
+2010-09-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386-protos.h (ix86_units_per_simd_word): New.
+
+	* config/i386/i386.c (initial_ix86_tune_features): Add
+	X86_TUNE_VECTORIZE_DOUBLE.
+	(ix86_units_per_simd_word): New.
+
+	* config/i386/i386.h (ix86_tune_indices): Add
+	X86_TUNE_VECTORIZE_DOUBLE.
+	(TARGET_VECTORIZE_DOUBLE): New.
+	(UNITS_PER_SIMD_WORD): Defined with ix86_units_per_simd_word.
+
 2010-09-13  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* tree-ssa-ter.c (temp_expr_table_d): Add call_cnt field.
