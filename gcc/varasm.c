@@ -3115,7 +3115,7 @@ output_constant_def_contents (rtx symbol)
   output_addressed_constants (exp);
 
   /* We are no longer deferring this constant.  */
-  TREE_ASM_WRITTEN (exp) = 1;
+  TREE_ASM_WRITTEN (decl) = TREE_ASM_WRITTEN (exp) = 1;
 
   /* If the constant is part of an object block, make sure that the
      decl has been positioned within its block, but do not write out

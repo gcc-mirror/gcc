@@ -1,3 +1,9 @@
+2010-09-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR debug/43937
+	* varasm.c (output_constant_def_contents): Set TREE_ASM_WRITTEN on
+	the DECL as well.
+
 2010-09-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/45617
