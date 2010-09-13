@@ -1,3 +1,7 @@
+2010-09-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc_update: Handle hg, too.
+
 2010-07-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* make_sunver.pl: Remove extra whitespace in regexp.

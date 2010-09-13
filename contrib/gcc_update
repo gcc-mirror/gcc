@@ -1,10 +1,11 @@
 #! /bin/sh
 #
-# Update a local Subversion tree from the GCC repository, with an emphasis
-# on treating generated files correctly, so that autoconf, gperf et
-# al are not required for the ``end'' user.
+# Update a local Subversion, Git or Mercurial tree from the GCC
+# repository, with an emphasis on treating generated files correctly, so
+# that autoconf, gperf et al are not required for the ``end'' user.
 #
-# (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation
+# (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
+# Free Software Foundation
 # Originally by Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>, August 1998.
 #
 # This script is Free Software, and it can be copied, distributed and
@@ -12,8 +13,8 @@
 # its license can be downloaded from http://www.gnu.org/copyleft/gpl.html
 #
 #
-# By default all command-line options are passed to `svn update` in
-# addition to $UPDATE_OPTIONS (defined below). If the first parameter
+# By default all command-line options are passed to `svn update` or `hg/git
+# pull` in addition to $UPDATE_OPTIONS (defined below). If the first parameter
 # reads --nostdflags, $UPDATE_OPTIONS as well as this parameter itself
 # are omitted.
 #
@@ -38,9 +39,7 @@
 # contrib/gcc_update --list
 
 
-# SVN command
-GCC_SVN=${GCC_SVN-${SVN-svn}}
-# Default options used when updating via SVN (none).
+# Default options used when updating (none).
 UPDATE_OPTIONS=""
 
 # Set the locale to C to make this script work for users with foreign
@@ -245,14 +244,18 @@ p
 
 esac
 
-is_git=0
-# Check whether this indeed looks like a local SVN tree.
+# Check for known version control systems.
 if [ -d .git ]; then
     GCC_GIT=${GCC_GIT-${GIT-git}}
-    GCC_SVN="true -"
-    is_git=1
-elif [ ! -d .svn ]; then
-    echo "This does not seem to be a GCC SVN tree!"
+    vcs_type="git"
+elif [ -d .hg ]; then
+    GCC_HG=${GCC_HG-${HG-hg}}
+    vcs_type="hg"
+elif [ -d .svn ]; then
+    GCC_SVN=${GCC_SVN-${SVN-svn}}
+    vcs_type="svn"
+else
+    echo "This does not seem to be a GCC GIT/HG/SVN tree!"
     exit
 fi
 
@@ -263,53 +266,96 @@ else
     set -- $UPDATE_OPTIONS ${1+"$@"}
 fi
 
-if [ $is_git -eq 0 ]; then
-chat "Updating SVN tree"
+case $vcs_type in
+    git)
+	chat "Updating GIT tree"
 
-$GCC_SVN ${silent+-q}  --non-interactive update ${1+"$@"}
-if [ $? -ne 0 ]; then
-    (touch_files_reexec)
-    echo "SVN update of full tree failed." >&2
-    exit 1
-fi
+	$GCC_GIT diff --quiet --exit-code HEAD
+	if [ $? -ne 0 ]; then
+            echo "Attempting to update a dirty git tree!" >&2
+            echo "Commit or stash your changes first and retry." >&2
+            exit 1
+	fi
+
+	$GCC_GIT pull ${silent+-q} --rebase ${1+"$@"}
+	if [ $? -ne 0 ]; then
+            (touch_files_reexec)
+            echo "git pull of full tree failed." >&2
+            exit 1
+	fi
+
+	revision=`$GCC_GIT log -n1 --pretty=%p:%t:%H`
+	branch=`$GCC_GIT name-rev --name-only HEAD || :`
+	;;    
+
+    hg)
+	chat "Updating HG tree"
+
+	# Add -q so untracked files aren't listed.
+	if [ `$GCC_HG status -q | wc -l` -gt 0 ]; then
+            echo "Attempting to update a dirty hg tree!" >&2
+            echo "Commit or revert your changes first and retry." >&2
+            exit 1
+	fi
+
+	# Check for mq extension.  mq patches must be popped so tip has
+	# been converted from the SVN tree.
+	if [ -d .hg/patches ] && [ `$GCC_HG qapplied | wc -l` -gt 0 ]; then
+	    # FIXME: Perhaps pop queue instead?  We could do that since we
+	    # know the tree is clean.
+	    echo "Attempting to update hg tree with mq patches applied!" >&2
+	    echo "Pop your patches first and retry." >&2
+	    exit 1
+	fi
+
+	# Update tree, but make sure to only pull the default branch.
+	# Otherwise all branches in the upstream repo are added, even if
+	# only a single one has been cloned.
+	$GCC_HG pull -u ${silent+-q} -r`$GCC_HG branch` ${1+"$@"}
+	if [ $? -ne 0 ]; then
+            (touch_files_reexec)
+            echo "hg pull of full tree failed." >&2
+            exit 1
+	fi
+
+	# Extract SVN revision corresponding to tip, as stored by hg convert.
+	# Before hg 1.4.3, there's no template keyword corresponding to the
+	# extra: tag, so need to use hg log --debug to extract the info.
+	revision=`$GCC_HG log --debug -l1 | \
+	    sed -ne "/^extra:.*convert_revision=svn:/ {
+	        s%^.*@%%
+		p
+	    }"`
+	branch=`$GCC_HG branch`
+	# trunk in SVN parlance shows up as default branch in hg.
+	[ x$branch = x"default" ] && branch="trunk"
+	;;
+
+    svn)
+	chat "Updating SVN tree"
+
+	$GCC_SVN ${silent+-q}  --non-interactive update ${1+"$@"}
+	if [ $? -ne 0 ]; then
+	    (touch_files_reexec)
+	    echo "SVN update of full tree failed." >&2
+	    exit 1
+	fi
+
+	revision=`svn info | awk '/Revision:/ { print $2 }'`
+	branch=`svn info | sed -ne "/URL:/ {
+	    s,.*/trunk,trunk,
+	    s,.*/branches/,,
+	    s,.*/tags/,,
+	    p
+	}"`
+	;;
+esac
 
 rm -f LAST_UPDATED gcc/REVISION
-
-revision=`svn info | awk '/Revision:/ { print $2 }'`
-branch=`svn info | sed -ne "/URL:/ {
-s,.*/trunk,trunk,
-s,.*/branches/,,
-s,.*/tags/,,
-p
-}"`
 {
-  date
-  echo "`TZ=UTC date` (revision $revision)"
+    date
+    echo "`TZ=UTC date` (revision $revision)"
 } > LAST_UPDATED
-
 echo "[$branch revision $revision]" > gcc/REVISION
 
-else
-    chat "Updating GIT tree"
-    $GCC_GIT diff --quiet --exit-code HEAD
-    if [ $? -ne 0 ]; then
-        echo "Attempting to update a dirty git tree!" >&2
-        echo "Commit or stash your changes first and retry." >&2
-        exit 1
-    fi
-    $GCC_GIT pull ${silent+-q} --rebase ${1+"$@"}
-    if [ $? -ne 0 ]; then
-        (touch_files_reexec)
-        echo "git pull of full tree failed." >&2
-        exit 1
-    fi
-    rm -f LAST_UPDATED gcc/REVISION
-    revision=`$GCC_GIT log -n1 --pretty=%p:%t:%H`
-    branch=`$GCC_GIT name-rev --name-only HEAD || :`
-    {
-      date
-      echo "`TZ=UTC date` (revision $revision)"
-    } > LAST_UPDATED
-    echo "[$branch revision $revision]" > gcc/REVISION
-fi
 touch_files_reexec
