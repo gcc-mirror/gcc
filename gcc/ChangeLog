@@ -1,3 +1,9 @@
+2010-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/45617
+	* combine.c (simplify_comparison): Optimize (X >> N) {>,>=,<,<=} C
+	even if low N bits of X aren't known to be zero.
+
 2010-09-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386-protos.h (ix86_units_per_simd_word): New.
