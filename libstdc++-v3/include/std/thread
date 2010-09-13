@@ -228,7 +228,7 @@ namespace std
     {
       size_t
       operator()(const thread::id& __id) const
-      { return std::_Fnv_hash::hash(__id._M_thread); }
+      { return std::_Hash_impl::hash(__id._M_thread); }
     };
 
   template<class _CharT, class _Traits>

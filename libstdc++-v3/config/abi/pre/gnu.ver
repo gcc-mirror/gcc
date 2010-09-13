@@ -1178,6 +1178,12 @@ GLIBCXX_3.4.15 {
     _ZNSbIwSt11char_traitsIwESaIwEE4backEv;
     _ZNKSbIwSt11char_traitsIwESaIwEE4backEv;
 
+    # Default function.
+    _ZSt11_Hash_bytesPKv*;
+
+    # FNV hash.
+    _ZSt15_Fnv_hash_bytesPKv*;
+
 } GLIBCXX_3.4.14;
 
 # Symbols in the support library (libsupc++) have their own tag.

@@ -116,74 +116,55 @@ namespace std
 
 #undef _Cxx_hashtable_define_trivial_hash
 
-  // Fowler / Noll / Vo (FNV) Hash (type FNV-1a)
+  // Hash function implementation for the nontrivial specialization.
+  // All of them are based on a primitive that hashes a pointer to
+  // a byte array. The actual hash algorithm is not guaranteed to
+  // stay the same from release to release -- it may be updated or
+  // tuned to improve hash quality or speed.
+  size_t
+  _Hash_bytes(const void* __ptr, size_t __len, size_t __seed);
 
-  // Dummy generic implementation (for sizeof(size_t) != 4, 8).
-  template<size_t>
-    struct _Fnv_hash_base
-    {
-      template<typename _Tp>
-        static size_t
-        hash(const _Tp* __ptr, size_t __clength, size_t __hash = 0)
-        {
-	  const char* __cptr = reinterpret_cast<const char*>(__ptr);
-	  for (; __clength; --__clength)
-	    __hash = (__hash * 131) + *__cptr++;
-	  return __hash;
-	}
-    };
+  // A similar hash primitive, using the FNV hash algorithm. This
+  // algorithm is guaranteed to stay the same from release to release.
+  // (although it might not produce the same values on different machines.)
+  size_t
+  _Fnv_hash_bytes(const void* __ptr, size_t __len, size_t __seed);
 
-  template<>
-    struct _Fnv_hash_base<4>
-    {
-      template<typename _Tp>
-        static size_t
-        hash(const _Tp* __ptr, size_t __clength,
-	     size_t __hash = static_cast<size_t>(2166136261UL))
-        {
-	  const char* __cptr = reinterpret_cast<const char*>(__ptr);
-	  for (; __clength; --__clength)
-	    {
-	      __hash ^= static_cast<size_t>(*__cptr++);
-	      __hash *= static_cast<size_t>(16777619UL);
-	    }
-	  return __hash;
-	}
-    };
-  
-  template<>
-    struct _Fnv_hash_base<8>
-    {
-      template<typename _Tp>
-        static size_t
-        hash(const _Tp* __ptr, size_t __clength,
-	     size_t __hash = static_cast<size_t>(14695981039346656037ULL))
-        {
-	  const char* __cptr = reinterpret_cast<const char*>(__ptr);
-	  for (; __clength; --__clength)
-	    {
-	      __hash ^= static_cast<size_t>(*__cptr++);
-	      __hash *= static_cast<size_t>(1099511628211ULL);
-	    }
-	  return __hash;
-	}
-    };
+  struct _Hash_impl
+  {
+    static size_t
+    hash(const void* __ptr, size_t __clength,
+	 size_t __seed = static_cast<size_t>(0xc70f6907UL))
+    { return _Hash_bytes(__ptr, __clength, __seed); }
 
-    struct _Fnv_hash
-    : public _Fnv_hash_base<sizeof(size_t)>
-    {
-      using _Fnv_hash_base<sizeof(size_t)>::hash;
+    template<typename _Tp>
+      static size_t
+      hash(const _Tp& __val)
+      { return hash(&__val, sizeof(__val)); }
 
-      template<typename _Tp>
-        static size_t
-        hash(const _Tp& __val)
-        { return hash(&__val, sizeof(__val)); }
+    template<typename _Tp>
+      static size_t
+      __hash_combine(const _Tp& __val, size_t __hash)
+      { return hash(&__val, sizeof(__val), __hash); }
+  };
 
-      template<typename _Tp>
-        static size_t
-        __hash_combine(const _Tp& __val, size_t __hash)
-        { return hash(&__val, sizeof(__val), __hash); }
-    };
+  struct _Fnv_hash_impl
+  {
+    static size_t
+    hash(const void* __ptr, size_t __clength,
+         size_t __seed = static_cast<size_t>(2166136261UL))
+    { return _Fnv_hash_bytes(__ptr, __clength, __seed); }
+
+    template<typename _Tp>
+      static size_t
+      hash(const _Tp& __val)
+      { return hash(&__val, sizeof(__val)); }
+
+    template<typename _Tp>
+      static size_t
+      __hash_combine(const _Tp& __val, size_t __hash)
+      { return hash(&__val, sizeof(__val), __hash); }
+  };
 
   /// Specialization for float.
   template<>
@@ -191,7 +172,7 @@ namespace std
     hash<float>::operator()(float __val) const
     {
       // 0 and -0 both hash to zero.
-      return __val != 0.0f ? std::_Fnv_hash::hash(__val) : 0;
+      return __val != 0.0f ? std::_Hash_impl::hash(__val) : 0;
     }
 
   /// Specialization for double.
@@ -200,7 +181,7 @@ namespace std
     hash<double>::operator()(double __val) const
     {
       // 0 and -0 both hash to zero.
-      return __val != 0.0 ? std::_Fnv_hash::hash(__val) : 0;
+      return __val != 0.0 ? std::_Hash_impl::hash(__val) : 0;
     }
 
   /// Specialization for long double.

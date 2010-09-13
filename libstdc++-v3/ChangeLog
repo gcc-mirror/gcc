@@ -1,3 +1,27 @@
+2010-09-13  Matt Austern  <austern@google.com>
+
+	* src/hash_bytes.cc: New file, exports _Hash_bytes (a Murmur hash),
+	and _Fnv_hash_bytes (based on a FNV algorithm).
+	* src/compatibility-c++0x.cc (hash<string>::operator(),
+	hash<const string&>::operator(), hash<wstring>::operator(),
+	hash<const wstring&>::operator(), hash<error_code>::operator()):
+	Adjust, use _Hash_bytes.
+	* include/std/system_error (hash<error_code>::operator()): Likewise.
+	* include/std/thread (hash<thread::id>operator()): Likewise.
+	* include/std/bitset (hash<bitset>operator()): Likewise.
+	* include/bits/basic_string.h (hash<string>::operator(),
+	hash<wstring>::operator(), hash<u16string>::operator(),
+	hash<u32string>::operator()): Adjust.
+	* include/bits/vector.tcc (hash<vector<bool>>::operator()): Adjust.
+	* include/bits/functional_hash.h (_Hash_bytes, _Fnv_hash_bytes):
+	Declare.
+	(struct _Hash_impl, struct _Fnv_hash_impl): Add, use _Hash_bytes
+	and _Fnv_hash_bytes, respectively.
+	(hash<float>::operator(), hash<double>::operator()): Adjust.
+	* config/abi/pre/gnu.ver: Add exports.
+	* src/Makefile.am: Add.
+	* src/Makefile.in: Regenerate.
+
 2010-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/forward_list.h (forward_list<>::resize(size_type,
