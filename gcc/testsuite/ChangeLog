@@ -1,3 +1,21 @@
+2010-09-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/fma4-256-vector.c: Add -mtune=generic.
+	* gcc.target/i386/fma4-vector.c: Likewise.
+	* gcc.target/i386/vectorize2.c: Likewise.
+	* gcc.target/i386/vectorize4.c: Likewise.
+	* gcc.target/i386/vectorize5.c: Likewise.
+	* gcc.target/i386/vectorize6.c: Likewise.
+	* gcc.target/i386/vectorize8.c: Likewise.
+
+	* gcc.target/i386/vect-double-1.c: New.
+	* gcc.target/i386/vect-double-1a.c: Likewise.
+	* gcc.target/i386/vect-double-2.c: Likewise.
+	* gcc.target/i386/vect-double-2a.c: Likewise.
+
+	* lib/target-supports.exp (check_effective_target_vect_double):
+	Set et_vect_double_saved to 0 when tuning for Atom.
+
 2010-09-13  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/torture/pr23821.c: Drop static keyword.

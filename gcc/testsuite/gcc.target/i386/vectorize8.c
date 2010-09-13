@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -msse2" } */
+/* { dg-options "-O2 -ftree-vectorize -msse2 -mtune=generic" } */
 
 unsigned int a[256];
 double b[256];

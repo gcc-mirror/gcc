@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -msse2 -ftree-vectorize -mveclibabi=svml -ffast-math" } */
+/* { dg-options "-O2 -msse2 -ftree-vectorize -mveclibabi=svml -ffast-math -mtune=generic" } */
 
 double x[256];
 

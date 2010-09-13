@@ -3,7 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-options "-O2 -mfma4 -ftree-vectorize" } */
+/* { dg-options "-O2 -mfma4 -ftree-vectorize -mtune=generic" } */
 
 extern void exit (int);
 

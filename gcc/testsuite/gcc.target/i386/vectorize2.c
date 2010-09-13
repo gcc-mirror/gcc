@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ilp32 } */
-/* { dg-options "-O2 -ffast-math -ftree-vectorize -msse2 -mfpmath=sse" } */
+/* { dg-options "-O2 -ffast-math -ftree-vectorize -msse2 -mfpmath=sse -mtune=generic" } */
 
 double a[256];
 int b[256];
