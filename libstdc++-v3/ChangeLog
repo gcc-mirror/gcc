@@ -1,3 +1,8 @@
+2010-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/27_io/basic_filebuf/seekoff/char/4.cc: New.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/4.cc: Likewise.
+
 2010-09-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* src/hash-string-aux.cc: Remove. Move contents...
