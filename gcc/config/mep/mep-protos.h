@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in mep.c
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009 Free
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010 Free
    Software Foundation, Inc.
    Contributed by Red Hat Inc (dj@redhat.com)
 
@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-extern void mep_conditional_register_usage (char *, char *);
+extern void mep_conditional_register_usage (void);
 extern void mep_optimization_options (void);
 extern void mep_override_options (void);
 extern int mep_regno_reg_class (int);

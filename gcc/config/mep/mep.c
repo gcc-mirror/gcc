@@ -354,7 +354,7 @@ mep_set_leaf_registers (int enable)
 }
 
 void
-mep_conditional_register_usage (char *fixed_regs, char *call_used_regs)
+mep_conditional_register_usage (void)
 {
   int i;
 

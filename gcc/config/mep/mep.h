@@ -1,5 +1,5 @@
 /* Definitions for Toshiba Media Processor
-   Copyright (C) 2001, 2003, 2004, 2005, 2007, 2008, 2009
+   Copyright (C) 2001, 2003, 2004, 2005, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
@@ -276,7 +276,7 @@ extern int target_flags;
   }
 
 #define CONDITIONAL_REGISTER_USAGE \
-	mep_conditional_register_usage (fixed_regs, call_used_regs);
+	mep_conditional_register_usage ();
 
 #define REG_ALLOC_ORDER {						\
   /* core registers */							\
