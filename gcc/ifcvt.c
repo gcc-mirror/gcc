@@ -2201,8 +2201,15 @@ noce_get_condition (rtx jump, rtx *earliest, bool then_else_reversed)
 
   /* Otherwise, fall back on canonicalize_condition to do the dirty
      work of manipulating MODE_CC values and COMPARE rtx codes.  */
-  return canonicalize_condition (jump, cond, reverse, earliest,
-				 NULL_RTX, false, true);
+  tmp = canonicalize_condition (jump, cond, reverse, earliest,
+				NULL_RTX, false, true);
+
+  /* We don't handle side-effects in the condition, like handling
+     REG_INC notes and making sure no duplicate conditions are emitted.  */
+  if (tmp != NULL_RTX && side_effects_p (tmp))
+    return NULL_RTX;
+
+  return tmp;
 }
 
 /* Return true if OP is ok for if-then-else processing.  */
