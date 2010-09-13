@@ -201,7 +201,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Tp, typename _Alloc>
     void
     forward_list<_Tp, _Alloc>::
-    resize(size_type __sz, value_type __val)
+    resize(size_type __sz, const value_type& __val)
     {
       iterator __k = before_begin();
 

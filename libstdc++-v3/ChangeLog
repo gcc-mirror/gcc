@@ -1,5 +1,11 @@
 2010-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/forward_list.h (forward_list<>::resize(size_type,
+	value_type)): Fix signature, per LWG 1340.
+	* include/bits/forward_list.tcc: Adjust definition.
+
+2010-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* testsuite/27_io/basic_filebuf/seekoff/char/4.cc: New.
 	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/4.cc: Likewise.
 
