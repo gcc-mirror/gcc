@@ -1583,6 +1583,18 @@ build_one_cst (tree type)
     }
 }
 
+/* Build 0 constant of type TYPE.  This is used by constructor folding and thus
+   the constant should correspond zero in memory representation.  */
+
+tree
+build_zero_cst (tree type)
+{
+  if (!AGGREGATE_TYPE_P (type))
+    return fold_convert (type, integer_zero_node);
+  return build_constructor (type, NULL);
+}
+
+
 /* Build a BINFO with LEN language slots.  */
 
 tree

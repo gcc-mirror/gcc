@@ -315,7 +315,14 @@ get_value (tree var)
 static inline tree
 get_constant_value (tree var)
 {
-  prop_value_t *val = get_value (var);
+  prop_value_t *val;
+  if (TREE_CODE (var) != SSA_NAME)
+    {
+      if (is_gimple_min_invariant (var))
+        return var;
+      return NULL_TREE;
+    }
+  val = get_value (var);
   if (val
       && val->lattice_val == CONSTANT
       && (TREE_CODE (val->value) != INTEGER_CST
@@ -1308,6 +1315,62 @@ ccp_fold (gimple stmt)
     }
 }
 
+/* See if we can find constructor defining value of BASE.
+
+   As a special case, return error_mark_node when constructor
+   is not explicitly available, but it is known to be zero
+   such as 'static const int a;'.  */
+static tree
+get_base_constructor (tree base, tree *offset)
+{
+  *offset = NULL;
+  if (TREE_CODE (base) == MEM_REF)
+    {
+      if (!integer_zerop (TREE_OPERAND (base, 1)))
+        *offset = TREE_OPERAND (base, 1);
+
+      base = get_constant_value (TREE_OPERAND (base, 0));
+      if (!base || TREE_CODE (base) != ADDR_EXPR)
+        return NULL_TREE;
+      base = TREE_OPERAND (base, 0);
+    }
+
+  /* Get a CONSTRUCTOR.  If BASE is a VAR_DECL, get its
+     DECL_INITIAL.  If BASE is a nested reference into another
+     ARRAY_REF or COMPONENT_REF, make a recursive call to resolve
+     the inner reference.  */
+  switch (TREE_CODE (base))
+    {
+    case VAR_DECL:
+      if (!TREE_READONLY (base)
+	  || ((TREE_STATIC (base) || DECL_EXTERNAL (base))
+	      && !varpool_get_node (base)->const_value_known))
+	return NULL_TREE;
+
+      /* Fallthru.  */
+    case CONST_DECL:
+      if (!DECL_INITIAL (base)
+	  && (TREE_STATIC (base) || DECL_EXTERNAL (base)))
+        return error_mark_node;
+      return DECL_INITIAL (base);
+      
+      break;
+
+    case ARRAY_REF:
+    case COMPONENT_REF:
+      return fold_const_aggregate_ref (base);
+      break;
+
+    case STRING_CST:
+    case CONSTRUCTOR:
+      return base;
+      break;
+
+    default:
+      return NULL_TREE;
+    }
+}
+
 /* Return the tree representing the element referenced by T if T is an
    ARRAY_REF or COMPONENT_REF into constant aggregates.  Return
    NULL_TREE otherwise.  */
@@ -1315,7 +1378,7 @@ ccp_fold (gimple stmt)
 tree
 fold_const_aggregate_ref (tree t)
 {
-  tree base, ctor, idx, field;
+  tree ctor, idx, field;
   unsigned HOST_WIDE_INT cnt;
   tree cfield, cval;
   tree tem;
@@ -1330,46 +1393,13 @@ fold_const_aggregate_ref (tree t)
   switch (TREE_CODE (t))
     {
     case ARRAY_REF:
-      /* Get a CONSTRUCTOR.  If BASE is a VAR_DECL, get its
-	 DECL_INITIAL.  If BASE is a nested reference into another
-	 ARRAY_REF or COMPONENT_REF, make a recursive call to resolve
-	 the inner reference.  */
-      base = TREE_OPERAND (t, 0);
-      switch (TREE_CODE (base))
-	{
-	case MEM_REF:
-	  /* ???  We could handle this case.  */
-	  if (!integer_zerop (TREE_OPERAND (base, 1)))
-	    return NULL_TREE;
-	  base = get_base_address (base);
-	  if (!base
-	      || TREE_CODE (base) != VAR_DECL)
-	    return NULL_TREE;
+      ctor = get_base_constructor (TREE_OPERAND (t, 0), &idx);
 
-	  /* Fallthru.  */
-	case VAR_DECL:
-	  if (!TREE_READONLY (base)
-	      || TREE_CODE (TREE_TYPE (base)) != ARRAY_TYPE
-	      || ((TREE_STATIC (base) || DECL_EXTERNAL (base))
-		  && !varpool_get_node (base)->const_value_known))
-	    return NULL_TREE;
+      if (idx)
+	return NULL_TREE;
 
-	  ctor = DECL_INITIAL (base);
-	  break;
-
-	case ARRAY_REF:
-	case COMPONENT_REF:
-	  ctor = fold_const_aggregate_ref (base);
-	  break;
-
-	case STRING_CST:
-	case CONSTRUCTOR:
-	  ctor = base;
-	  break;
-
-	default:
-	  return NULL_TREE;
-	}
+      if (ctor == error_mark_node)
+	return build_zero_cst (TREE_TYPE (t));
 
       if (ctor == NULL_TREE
 	  || (TREE_CODE (ctor) != CONSTRUCTOR
@@ -1436,27 +1466,13 @@ fold_const_aggregate_ref (tree t)
 	 DECL_INITIAL.  If BASE is a nested reference into another
 	 ARRAY_REF or COMPONENT_REF, make a recursive call to resolve
 	 the inner reference.  */
-      base = TREE_OPERAND (t, 0);
-      switch (TREE_CODE (base))
-	{
-	case VAR_DECL:
-	  if (!TREE_READONLY (base)
-	      || TREE_CODE (TREE_TYPE (base)) != RECORD_TYPE
-	      || ((TREE_STATIC (base) || DECL_EXTERNAL (base))
-		  && !varpool_get_node (base)->const_value_known))
-	    return NULL_TREE;
+      ctor = get_base_constructor (TREE_OPERAND (t, 0), &idx);
 
-	  ctor = DECL_INITIAL (base);
-	  break;
+      if (idx)
+	return NULL_TREE;
 
-	case ARRAY_REF:
-	case COMPONENT_REF:
-	  ctor = fold_const_aggregate_ref (base);
-	  break;
-
-	default:
-	  return NULL_TREE;
-	}
+      if (ctor == error_mark_node)
+	return build_zero_cst (TREE_TYPE (t));
 
       if (ctor == NULL_TREE
 	  || TREE_CODE (ctor) != CONSTRUCTOR)
@@ -1482,54 +1498,28 @@ fold_const_aggregate_ref (tree t)
       }
 
     case MEM_REF:
-      /* Get the base object we are accessing.  */
-      base = TREE_OPERAND (t, 0);
-      if (TREE_CODE (base) == SSA_NAME
-	  && (tem = get_constant_value (base)))
-	base = tem;
-      if (TREE_CODE (base) != ADDR_EXPR)
-	return NULL_TREE;
-      base = TREE_OPERAND (base, 0);
-      switch (TREE_CODE (base))
+      ctor = get_base_constructor (t, &idx);
+
+      if (ctor == error_mark_node)
+	return build_zero_cst (TREE_TYPE (t));
+
+      if (ctor && !AGGREGATE_TYPE_P (TREE_TYPE (ctor))
+	  && !idx)
 	{
-	case VAR_DECL:
-	  if (DECL_P (base)
-	      && !AGGREGATE_TYPE_P (TREE_TYPE (base))
-	      && integer_zerop (TREE_OPERAND (t, 1)))
-	    {
-	      tree res = get_symbol_constant_value (base);
-	      if (res
-		  && !useless_type_conversion_p
-		        (TREE_TYPE (t), TREE_TYPE (res)))
-		res = fold_unary (VIEW_CONVERT_EXPR, TREE_TYPE (t), res);
-	      return res;
-	    }
-
-	  if (!TREE_READONLY (base)
-	      || TREE_CODE (TREE_TYPE (base)) != ARRAY_TYPE
-	      || ((TREE_STATIC (base) || DECL_EXTERNAL (base))
-		  && !varpool_get_node (base)->const_value_known))
-	    return NULL_TREE;
-
-	  ctor = DECL_INITIAL (base);
-	  break;
-
-	case STRING_CST:
-	case CONSTRUCTOR:
-	  ctor = base;
-	  break;
-
-	default:
-	  return NULL_TREE;
+	  if (ctor
+	      && !useless_type_conversion_p
+		    (TREE_TYPE (t), TREE_TYPE (ctor)))
+	    ctor = fold_unary (VIEW_CONVERT_EXPR, TREE_TYPE (t), ctor);
+	  return ctor;
 	}
+
+      if (!idx)
+	idx = integer_zero_node;
 
       if (ctor == NULL_TREE
 	  || (TREE_CODE (ctor) != CONSTRUCTOR
 	      && TREE_CODE (ctor) != STRING_CST))
 	return NULL_TREE;
-
-      /* Get the byte offset.  */
-      idx = TREE_OPERAND (t, 1);
 
       /* Fold read from constant string.  */
       if (TREE_CODE (ctor) == STRING_CST)
