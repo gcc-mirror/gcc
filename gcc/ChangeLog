@@ -1,3 +1,11 @@
+2010-09-13  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c (build_zero_cst): New.
+	* tree.h (build_zero_cst): Declare.
+	* tree-ssa-ccp.c (get_constant_value): Accept general operands.
+	(get_base_constructor): Break out from ...
+	(fold_const_aggregate_ref): Here; handle empty constructors.
+
 2010-09-13  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* config/arm/arm.md: (define_attr "conds"): Update comment.

@@ -1,3 +1,9 @@
+2010-09-13  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/torture/pr23821.c: Drop static keyword.
+	* gcc.dg/tree-ssa/loop-19.c: Likewise.
+	* gcc.dg/tree-ssa/foldconst-4.c: New testcase.
+
 2010-09-13  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* gcc.target/arm/sync-1.c: New.

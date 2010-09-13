@@ -9,7 +9,7 @@
 /* { dg-options "-O3 -fno-prefetch-loop-arrays -fdump-tree-optimized" } */
 
 # define N      2000000
-static double   a[N],c[N];
+double   a[N],c[N];
 void tuned_STREAM_Copy()
 {
   int j;
