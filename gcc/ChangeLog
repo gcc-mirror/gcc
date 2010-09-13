@@ -1,3 +1,21 @@
+2010-09-13  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/arm/arm.md: (define_attr "conds"): Update comment.
+	* config/arm/sync.md (arm_sync_compare_and_swapsi): Change 
+	conds attribute to clob.
+        (arm_sync_compare_and_swapsi): Likewise.
+	(arm_sync_compare_and_swap<mode>): Likewise.
+	(arm_sync_lock_test_and_setsi): Likewise.
+	(arm_sync_lock_test_and_set<mode>): Likewise.
+	(arm_sync_new_<sync_optab>si): Likewise.
+	(arm_sync_new_nandsi): Likewise.
+	(arm_sync_new_<sync_optab><mode>): Likewise.
+	(arm_sync_new_nand<mode>): Likewise.
+	(arm_sync_old_<sync_optab>si): Likewise.
+	(arm_sync_old_nandsi): Likewise.
+	(arm_sync_old_<sync_optab><mode>): Likewise.
+	(arm_sync_old_nand<mode>): Likewise.
+
 2010-09-13  Olivier Hainque  <hainque@adacore.com>
 
         * fwprop.c (forward_propagate_and_simplify): Only attach a

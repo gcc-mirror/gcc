@@ -300,7 +300,7 @@
    (set_attr "sync_new_value"       "3")
    (set_attr "sync_t1"              "0")
    (set_attr "sync_t2"              "4")
-   (set_attr "conds" "nocond")
+   (set_attr "conds" "clob")
    (set_attr "predicable" "no")])
 
 (define_insn "arm_sync_compare_and_swap<mode>"
@@ -327,7 +327,7 @@
    (set_attr "sync_new_value"       "3")
    (set_attr "sync_t1"              "0")
    (set_attr "sync_t2"              "4")
-   (set_attr "conds" "nocond")
+   (set_attr "conds" "clob")
    (set_attr "predicable" "no")])
 
 (define_insn "arm_sync_lock_test_and_setsi"
@@ -348,7 +348,7 @@
    (set_attr "sync_new_value"       "2")
    (set_attr "sync_t1"              "0")
    (set_attr "sync_t2"              "3")
-   (set_attr "conds" "nocond")
+   (set_attr "conds" "clob")
    (set_attr "predicable" "no")])
 
 (define_insn "arm_sync_lock_test_and_set<mode>"
@@ -369,7 +369,7 @@
    (set_attr "sync_new_value"       "2")
    (set_attr "sync_t1"              "0")
    (set_attr "sync_t2"              "3")
-   (set_attr "conds" "nocond")
+   (set_attr "conds" "clob")
    (set_attr "predicable" "no")])
 
 (define_insn "arm_sync_new_<sync_optab>si"
@@ -394,7 +394,7 @@
    (set_attr "sync_t1"              "0")
    (set_attr "sync_t2"              "3")
    (set_attr "sync_op"              "<sync_optab>")
-   (set_attr "conds" "nocond")
+   (set_attr "conds" "clob")
    (set_attr "predicable" "no")])
 
 (define_insn "arm_sync_new_nandsi"
@@ -419,7 +419,7 @@
    (set_attr "sync_t1"              "0")
    (set_attr "sync_t2"              "3")
    (set_attr "sync_op"              "nand")
-   (set_attr "conds" "nocond")
+   (set_attr "conds" "clob")
    (set_attr "predicable" "no")])
 
 (define_insn "arm_sync_new_<sync_optab><mode>"
@@ -445,7 +445,7 @@
    (set_attr "sync_t1"              "0")
    (set_attr "sync_t2"              "3")
    (set_attr "sync_op"              "<sync_optab>")
-   (set_attr "conds" "nocond")
+   (set_attr "conds" "clob")
    (set_attr "predicable" "no")])
 
 (define_insn "arm_sync_new_nand<mode>"
@@ -472,7 +472,7 @@
    (set_attr "sync_t1"              "0")
    (set_attr "sync_t2"              "3")
    (set_attr "sync_op"              "nand")
-   (set_attr "conds" "nocond")
+   (set_attr "conds" "clob")
    (set_attr "predicable" "no")])
 
 (define_insn "arm_sync_old_<sync_optab>si"
@@ -498,7 +498,7 @@
    (set_attr "sync_t1"              "3")
    (set_attr "sync_t2"              "4")
    (set_attr "sync_op"              "<sync_optab>")
-   (set_attr "conds" "nocond")
+   (set_attr "conds" "clob")
    (set_attr "predicable" "no")])
 
 (define_insn "arm_sync_old_nandsi"
@@ -524,7 +524,7 @@
    (set_attr "sync_t1"              "3")
    (set_attr "sync_t2"              "4")
    (set_attr "sync_op"              "nand")
-   (set_attr "conds" "nocond")
+   (set_attr "conds" 		    "clob")
    (set_attr "predicable" "no")])
 
 (define_insn "arm_sync_old_<sync_optab><mode>"
@@ -551,7 +551,7 @@
    (set_attr "sync_t1"              "3")
    (set_attr "sync_t2"              "4")
    (set_attr "sync_op"              "<sync_optab>")
-   (set_attr "conds" "nocond")
+   (set_attr "conds" 		    "clob")
    (set_attr "predicable" "no")])
 
 (define_insn "arm_sync_old_nand<mode>"
@@ -578,7 +578,7 @@
    (set_attr "sync_t1"              "3")
    (set_attr "sync_t2"              "4")
    (set_attr "sync_op"              "nand")
-   (set_attr "conds" "nocond")
+   (set_attr "conds"                "clob")
    (set_attr "predicable" "no")])
 
 (define_insn "*memory_barrier"

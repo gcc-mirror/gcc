@@ -419,10 +419,11 @@
 ; CLOB means that the condition codes are altered in an undefined manner, if
 ;   they are altered at all
 ;
-; UNCONDITIONAL means the instions can not be conditionally executed.
+; UNCONDITIONAL means the instruction can not be conditionally executed and
+;   that the instruction does not use or alter the condition codes.
 ;
-; NOCOND means that the condition codes are neither altered nor affect the
-;   output of this insn
+; NOCOND means that the instruction does not use or alter the condition
+;   codes but can be converted into a conditionally exectuted instruction.
 
 (define_attr "conds" "use,set,clob,unconditional,nocond"
 	(if_then_else
