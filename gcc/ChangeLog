@@ -1,3 +1,9 @@
+2010-09-13  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45611
+	* tree-ssa-loop-ivopts.c (rewrite_use_nonlinear_expr): Fix typo.
+	(copy_ref_info): Likewise.
+
 2010-09-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR debug/45604

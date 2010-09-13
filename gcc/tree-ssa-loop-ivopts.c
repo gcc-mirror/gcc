@@ -5869,7 +5869,7 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
 	     information.  */
 	  if (SSA_NAME_PTR_INFO (comp))
 	    {
-	      SSA_NAME_PTR_INFO (comp)->align = BITS_PER_UNIT;
+	      SSA_NAME_PTR_INFO (comp)->align = 1;
 	      SSA_NAME_PTR_INFO (comp)->misalign = 0;
 	    }
 	}
@@ -5934,7 +5934,7 @@ copy_ref_info (tree new_ref, tree old_ref)
 	    }
 	  else
 	    {
-	      new_pi->align = BITS_PER_UNIT;
+	      new_pi->align = 1;
 	      new_pi->misalign = 0;
 	    }
 	}
