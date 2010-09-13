@@ -1,3 +1,7 @@
+2010-09-13  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* gcc.target/i386/volatile-2.c: Allow underscores before symbols.
+
 2010-09-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/fma4-256-vector.c: Add -mtune=generic.
