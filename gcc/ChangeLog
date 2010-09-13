@@ -1,3 +1,12 @@
+2010-09-13  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* tree-ssa-ter.c (temp_expr_table_d): Add call_cnt field.
+	(new_temp_expr_table): Allocate call_cnt vector.
+	(free_temp_expr_table): Free it.
+	(process_replaceable): Add call_cnt parm and set in vector.
+	(find_replaceable_in_bb): Skip replacement if def/use span a call.
+	(debug_ter): Dump call_cnt value, remove stderr uses.
+
 2010-09-13  Jan Hubicka  <jh@suse.cz>
 
 	* tree.c (build_zero_cst): New.
