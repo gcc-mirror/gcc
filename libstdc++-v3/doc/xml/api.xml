@@ -3,8 +3,9 @@
 <article xml:id="api" xreflabel="API">
 <?dbhtml filename="api.html"?>
 
-<info><title>API Documentation</title>
-  
+<title>The GNU C++ Library API Reference</title>
+
+<info>
   <copyright>
     <year>
       2008

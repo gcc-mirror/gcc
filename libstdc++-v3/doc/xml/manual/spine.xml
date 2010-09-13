@@ -2,6 +2,7 @@
 <?dbhtml dir="manual"?>
 <?dbhtml filename="spine.html"?>
 
+  <title>The GNU C++ Library Manual</title>
 
 <info>
   <copyright>
@@ -23,9 +24,12 @@
 </xi:include>
 
 <!-- Part 02 : Standard Contents -->
-<part xml:id="manual.std" xreflabel="Standard Contents"><info><title>
-  Standard Contents
-</title></info>
+<part xml:id="manual.std" xreflabel="Standard Contents">
+<info>
+  <title>
+    Standard Contents
+  </title>
+</info>
 
 
 <!-- Chapter 01 : Support -->
