@@ -1,3 +1,8 @@
+2010-09-13  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
+
+	* semantics.c (finish_for_stmt): Always test flag_new_for_scope.
+	(begin_range_for_stmt): Likewise.
+
 2010-09-11  Rodrigo Rivas <rodrigorivascosta@gmail.com>
 
 	Implement range-based for-statements.
