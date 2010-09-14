@@ -512,7 +512,7 @@ void ipa_prop_read_jump_functions (void);
 void ipa_update_after_lto_read (void);
 
 /* From tree-sra.c:  */
-tree build_ref_for_offset (tree, HOST_WIDE_INT, tree, gimple_stmt_iterator *,
-			   bool);
+tree build_ref_for_offset (location_t, tree, HOST_WIDE_INT, tree,
+			   gimple_stmt_iterator *, bool);
 
 #endif /* IPA_PROP_H */

@@ -1,3 +1,18 @@
+2010-09-14  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (build_ref_for_offset): Loc made a parameter.  Set the
+	location of generated statement.  Changed all callers.
+	(build_ref_for_model): New parameter loc which used to set location of
+	all generated expressions.  Changed all callers.
+	(generate_subtree_copies): Likewise.
+	(init_subtree_with_zero): Likewise.
+	(sra_modify_expr): Set locations of all generated statements and
+	expressions to the location the original statement.
+	(handle_unscalarized_data_in_subtree): Likewise.
+	(load_assign_lhs_subreplacements): Likewise.
+	(sra_modify_constructor_assign): Likewise.
+	(sra_modify_assign): Likewise.
+
 2010-09-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/45277

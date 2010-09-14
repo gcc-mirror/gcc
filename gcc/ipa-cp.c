@@ -339,7 +339,8 @@ ipcp_lattice_from_jfunc (struct ipa_node_params *info, struct ipcp_lattice *lat,
 	  return;
 	}
       t = TREE_OPERAND (caller_lat->constant, 0);
-      t = build_ref_for_offset (t, jfunc->value.ancestor.offset,
+      t = build_ref_for_offset (EXPR_LOCATION (t), t,
+				jfunc->value.ancestor.offset,
 				jfunc->value.ancestor.type, NULL, false);
       lat->constant = build_fold_addr_expr (t);
     }

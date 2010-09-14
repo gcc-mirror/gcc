@@ -1328,13 +1328,12 @@ make_fancy_name (tree expr)
    by INSERT_AFTER.  This function is not capable of handling bitfields.  */
 
 tree
-build_ref_for_offset (tree base, HOST_WIDE_INT offset,
+build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
 		      tree exp_type, gimple_stmt_iterator *gsi,
 		      bool insert_after)
 {
   tree prev_base = base;
   tree off;
-  location_t loc = EXPR_LOCATION (base);
   HOST_WIDE_INT base_offset;
 
   gcc_checking_assert (offset % BITS_PER_UNIT == 0);
@@ -1354,6 +1353,7 @@ build_ref_for_offset (tree base, HOST_WIDE_INT offset,
       tmp = make_ssa_name (tmp, NULL);
       addr = build_fold_addr_expr (unshare_expr (prev_base));
       stmt = gimple_build_assign (tmp, addr);
+      gimple_set_location (stmt, loc);
       SSA_NAME_DEF_STMT (tmp) = stmt;
       if (insert_after)
 	gsi_insert_after (gsi, stmt, GSI_NEW_STMT);
@@ -1389,7 +1389,7 @@ build_ref_for_offset (tree base, HOST_WIDE_INT offset,
    build_ref_for_offset.  */
 
 static tree
-build_ref_for_model (tree base, HOST_WIDE_INT offset,
+build_ref_for_model (location_t loc, tree base, HOST_WIDE_INT offset,
 		     struct access *model, gimple_stmt_iterator *gsi,
 		     bool insert_after)
 {
@@ -1401,13 +1401,13 @@ build_ref_for_model (tree base, HOST_WIDE_INT offset,
 
       offset -= int_bit_position (TREE_OPERAND (model->expr, 1));
       exp_type = TREE_TYPE (TREE_OPERAND (model->expr, 0));
-      t = build_ref_for_offset (base, offset, exp_type, gsi, insert_after);
-      return fold_build3_loc (EXPR_LOCATION (base), COMPONENT_REF,
-			      model->type, t, TREE_OPERAND (model->expr, 1),
-			      NULL_TREE);
+      t = build_ref_for_offset (loc, base, offset, exp_type, gsi, insert_after);
+      return fold_build3_loc (loc, COMPONENT_REF, model->type, t,
+			      TREE_OPERAND (model->expr, 1), NULL_TREE);
     }
   else
-    return build_ref_for_offset (base, offset, model->type, gsi, insert_after);
+    return build_ref_for_offset (loc, base, offset, model->type,
+				 gsi, insert_after);
 }
 
 /* Construct a memory reference consisting of component_refs and array_refs to
@@ -2187,7 +2187,7 @@ generate_subtree_copies (struct access *access, tree agg,
 			 HOST_WIDE_INT top_offset,
 			 HOST_WIDE_INT start_offset, HOST_WIDE_INT chunk_size,
 			 gimple_stmt_iterator *gsi, bool write,
-			 bool insert_after)
+			 bool insert_after, location_t loc)
 {
   do
     {
@@ -2201,7 +2201,7 @@ generate_subtree_copies (struct access *access, tree agg,
 	  tree expr, repl = get_access_replacement (access);
 	  gimple stmt;
 
-	  expr = build_ref_for_model (agg, access->offset - top_offset,
+	  expr = build_ref_for_model (loc, agg, access->offset - top_offset,
 				      access, gsi, insert_after);
 
 	  if (write)
@@ -2223,6 +2223,7 @@ generate_subtree_copies (struct access *access, tree agg,
 						 : GSI_SAME_STMT);
 	      stmt = gimple_build_assign (expr, repl);
 	    }
+	  gimple_set_location (stmt, loc);
 
 	  if (insert_after)
 	    gsi_insert_after (gsi, stmt, GSI_NEW_STMT);
@@ -2235,7 +2236,7 @@ generate_subtree_copies (struct access *access, tree agg,
       if (access->first_child)
 	generate_subtree_copies (access->first_child, agg, top_offset,
 				 start_offset, chunk_size, gsi,
-				 write, insert_after);
+				 write, insert_after, loc);
 
       access = access->next_sibling;
     }
@@ -2249,7 +2250,7 @@ generate_subtree_copies (struct access *access, tree agg,
 
 static void
 init_subtree_with_zero (struct access *access, gimple_stmt_iterator *gsi,
-			bool insert_after)
+			bool insert_after, location_t loc)
 
 {
   struct access *child;
@@ -2266,10 +2267,11 @@ init_subtree_with_zero (struct access *access, gimple_stmt_iterator *gsi,
       else
 	gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
       update_stmt (stmt);
+      gimple_set_location (stmt, loc);
     }
 
   for (child = access->first_child; child; child = child->next_sibling)
-    init_subtree_with_zero (child, gsi, insert_after);
+    init_subtree_with_zero (child, gsi, insert_after, loc);
 }
 
 /* Search for an access representative for the given expression EXPR and
@@ -2306,6 +2308,7 @@ get_access_for_expr (tree expr)
 static bool
 sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
 {
+  location_t loc;
   struct access *access;
   tree type, bfr;
 
@@ -2324,6 +2327,7 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
     return false;
   type = TREE_TYPE (*expr);
 
+  loc = gimple_location (gsi_stmt (*gsi));
   if (access->grp_to_be_replaced)
     {
       tree repl = get_access_replacement (access);
@@ -2341,7 +2345,7 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
 	{
 	  tree ref;
 
-	  ref = build_ref_for_model (access->base, access->offset, access,
+	  ref = build_ref_for_model (loc, access->base, access->offset, access,
 				     NULL, false);
 
 	  if (write)
@@ -2352,6 +2356,7 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
 		ref = force_gimple_operand_gsi (gsi, ref, true, NULL_TREE,
 						 false, GSI_NEW_STMT);
 	      stmt = gimple_build_assign (repl, ref);
+	      gimple_set_location (stmt, loc);
 	      gsi_insert_after (gsi, stmt, GSI_NEW_STMT);
 	    }
 	  else
@@ -2362,6 +2367,7 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
 		repl = force_gimple_operand_gsi (gsi, repl, true, NULL_TREE,
 						 true, GSI_SAME_STMT);
 	      stmt = gimple_build_assign (ref, repl);
+	      gimple_set_location (stmt, loc);
 	      gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
 	    }
 	}
@@ -2385,7 +2391,8 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
 	start_offset = chunk_size = 0;
 
       generate_subtree_copies (access->first_child, access->base, 0,
-			       start_offset, chunk_size, gsi, write, write);
+			       start_offset, chunk_size, gsi, write, write,
+			       loc);
     }
   return true;
 }
@@ -2408,13 +2415,15 @@ handle_unscalarized_data_in_subtree (struct access *top_racc, tree lhs,
   if (top_racc->grp_unscalarized_data)
     {
       generate_subtree_copies (top_racc->first_child, top_racc->base, 0, 0, 0,
-			       gsi, false, false);
+			       gsi, false, false,
+			       gimple_location (gsi_stmt (*gsi)));
       return SRA_UDH_RIGHT;
     }
   else
     {
       generate_subtree_copies (top_racc->first_child, lhs, top_racc->offset,
-			       0, 0, gsi, false, false);
+			       0, 0, gsi, false, false,
+			       gimple_location (gsi_stmt (*gsi)));
       return SRA_UDH_LEFT;
     }
 }
@@ -2440,7 +2449,7 @@ load_assign_lhs_subreplacements (struct access *lacc, struct access *top_racc,
 				 enum unscalarized_data_handling *refreshed,
 				 tree lhs)
 {
-  location_t loc = EXPR_LOCATION (lacc->expr);
+  location_t loc = gimple_location (gsi_stmt (*old_gsi));
   do
     {
       if (lacc->grp_to_be_replaced)
@@ -2462,19 +2471,20 @@ load_assign_lhs_subreplacements (struct access *lacc, struct access *top_racc,
 	      /* No suitable access on the right hand side, need to load from
 		 the aggregate.  See if we have to update it first... */
 	      if (*refreshed == SRA_UDH_NONE)
-		*refreshed = handle_unscalarized_data_in_subtree (top_racc,
-								  lhs, old_gsi);
+		*refreshed = handle_unscalarized_data_in_subtree (top_racc, lhs,
+								  old_gsi);
 
 	      if (*refreshed == SRA_UDH_LEFT)
-		rhs = build_ref_for_model (lacc->base, lacc->offset, lacc,
+		rhs = build_ref_for_model (loc, lacc->base, lacc->offset, lacc,
 					    new_gsi, true);
 	      else
-		rhs = build_ref_for_model (top_racc->base, offset, lacc,
+		rhs = build_ref_for_model (loc, top_racc->base, offset, lacc,
 					    new_gsi, true);
 	    }
 
 	  stmt = gimple_build_assign (get_access_replacement (lacc), rhs);
 	  gsi_insert_after (new_gsi, stmt, GSI_NEW_STMT);
+	  gimple_set_location (stmt, loc);
 	  update_stmt (stmt);
 	  sra_stats.subreplacements++;
 	}
@@ -2507,11 +2517,13 @@ sra_modify_constructor_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 {
   tree lhs = gimple_assign_lhs (*stmt);
   struct access *acc;
+  location_t loc;
 
   acc = get_access_for_expr (lhs);
   if (!acc)
     return SRA_AM_NONE;
 
+  loc = gimple_location (*stmt);
   if (VEC_length (constructor_elt,
 		  CONSTRUCTOR_ELTS (gimple_assign_rhs1 (*stmt))) > 0)
     {
@@ -2519,20 +2531,20 @@ sra_modify_constructor_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	 following should handle it gracefully.  */
       if (access_has_children_p (acc))
 	generate_subtree_copies (acc->first_child, acc->base, 0, 0, 0, gsi,
-				 true, true);
+				 true, true, loc);
       return SRA_AM_MODIFIED;
     }
 
   if (acc->grp_covered)
     {
-      init_subtree_with_zero (acc, gsi, false);
+      init_subtree_with_zero (acc, gsi, false, loc);
       unlink_stmt_vdef (*stmt);
       gsi_remove (gsi, true);
       return SRA_AM_REMOVED;
     }
   else
     {
-      init_subtree_with_zero (acc, gsi, true);
+      init_subtree_with_zero (acc, gsi, true, loc);
       return SRA_AM_MODIFIED;
     }
 }
@@ -2571,7 +2583,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
   tree lhs, rhs;
   bool modify_this_stmt = false;
   bool force_gimple_rhs = false;
-  location_t loc = gimple_location (*stmt);
+  location_t loc;
   gimple_stmt_iterator orig_gsi = *gsi;
 
   if (!gimple_assign_single_p (*stmt))
@@ -2598,6 +2610,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
   if (!lacc && !racc)
     return SRA_AM_NONE;
 
+  loc = gimple_location (*stmt);
   if (lacc && lacc->grp_to_be_replaced)
     {
       lhs = get_access_replacement (lacc);
@@ -2627,13 +2640,15 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	  if (AGGREGATE_TYPE_P (TREE_TYPE (lhs))
 	      && !access_has_children_p (lacc))
 	    {
-	      lhs = build_ref_for_offset (lhs, 0, TREE_TYPE (rhs), gsi, false);
+	      lhs = build_ref_for_offset (loc, lhs, 0, TREE_TYPE (rhs),
+					  gsi, false);
 	      gimple_assign_set_lhs (*stmt, lhs);
 	    }
 	  else if (AGGREGATE_TYPE_P (TREE_TYPE (rhs))
 		   && !contains_view_convert_expr_p (rhs)
 		   && !access_has_children_p (racc))
-	    rhs = build_ref_for_offset (rhs, 0, TREE_TYPE (lhs), gsi, false);
+	    rhs = build_ref_for_offset (loc, rhs, 0, TREE_TYPE (lhs),
+					gsi, false);
 
 	  if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (rhs)))
 	    {
@@ -2685,10 +2700,10 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
     {
       if (access_has_children_p (racc))
 	generate_subtree_copies (racc->first_child, racc->base, 0, 0, 0,
-				 gsi, false, false);
+				 gsi, false, false, loc);
       if (access_has_children_p (lacc))
 	generate_subtree_copies (lacc->first_child, lacc->base, 0, 0, 0,
-				 gsi, true, true);
+				 gsi, true, true, loc);
       sra_stats.separate_lhs_rhs_handling++;
     }
   else
@@ -2705,7 +2720,8 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 
 	  load_assign_lhs_subreplacements (lacc->first_child, racc,
 					   lacc->offset, racc->offset,
-					   &orig_gsi, gsi, &refreshed, lhs);
+					   &orig_gsi, gsi, &refreshed,
+					   lhs);
 	  if (refreshed != SRA_UDH_RIGHT)
 	    {
 	      gsi_next (gsi);
@@ -2740,7 +2756,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 		      if (racc->first_child)
 			generate_subtree_copies (racc->first_child, lhs,
 						 racc->offset, 0, 0, gsi,
-						 false, false);
+						 false, false, loc);
 
 		      gcc_assert (*stmt == gsi_stmt (*gsi));
 		      unlink_stmt_vdef (*stmt);
@@ -2750,12 +2766,12 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 		    }
 		}
 	      else if (racc->first_child)
-		generate_subtree_copies (racc->first_child, lhs,
-					 racc->offset, 0, 0, gsi, false, true);
+		generate_subtree_copies (racc->first_child, lhs, racc->offset,
+					 0, 0, gsi, false, true, loc);
 	    }
 	  if (access_has_children_p (lacc))
 	    generate_subtree_copies (lacc->first_child, rhs, lacc->offset,
-				     0, 0, gsi, true, true);
+				     0, 0, gsi, true, true, loc);
 	}
     }
 
@@ -2888,7 +2904,8 @@ initialize_parameter_reductions (void)
       for (access = VEC_index (access_p, access_vec, 0);
 	   access;
 	   access = access->next_grp)
-	generate_subtree_copies (access, parm, 0, 0, 0, &gsi, true, true);
+	generate_subtree_copies (access, parm, 0, 0, 0, &gsi, true, true,
+				 EXPR_LOCATION (parm));
     }
 
   if (seq)
