@@ -1,3 +1,8 @@
+2010-09-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/45532
+	* gfortran.dg/namelist_64.f90: New test.
+
 2010-09-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/45617
