@@ -1,5 +1,8 @@
 2010-09-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/45567
+	* gcc.dg/pr45567.c: New test.
+
 	PR debug/45660
 	* g++.dg/debug/pr45660.C: New test.
 
