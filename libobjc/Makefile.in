@@ -111,6 +111,7 @@ INCLUDES = -I$(srcdir)/$(MULTISRCTOP)../gcc \
 OBJC_H = \
   objc.h \
   objc-exception.h \
+  objc-sync.h \
   \
   NXConstStr.h \
   Object.h \
@@ -159,6 +160,7 @@ C_SOURCE_FILES = \
    init.c \
    memory.c \
    nil_method.c \
+   objc-sync.c \
    objects.c \
    sarray.c \
    selector.c \

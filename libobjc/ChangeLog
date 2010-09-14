@@ -1,3 +1,18 @@
+2010-09-14  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Implemented objc_sync_enter() and objc_sync_exit(), which are
+	required by @synchronized() to work.
+	* objc-sync.c: New file.
+	* objc/objc-sync.h: New file.
+	* objc-private/objc-sync.h: New file.
+	* init.c (__objc_exec_class): Call __objc_sync_init() during the
+	Objective-C runtime startup.
+	* Makefile.in: Added objc-sync.c and objc-sync.h.
+	* configure.ac: Added GCC_CHECK_TLS.
+	* acinclude.m4: Include ../config/enable.m4 and ../config/tls.m4.
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+	
 2010-09-12  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* Makefile.in (%_gc.lo): New pattern rules to build the
