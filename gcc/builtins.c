@@ -100,9 +100,9 @@ static void expand_errno_check (tree, rtx);
 static rtx expand_builtin_mathfn (tree, rtx, rtx);
 static rtx expand_builtin_mathfn_2 (tree, rtx, rtx);
 static rtx expand_builtin_mathfn_3 (tree, rtx, rtx);
-static rtx expand_builtin_interclass_mathfn (tree, rtx, rtx);
+static rtx expand_builtin_interclass_mathfn (tree, rtx);
 static rtx expand_builtin_sincos (tree);
-static rtx expand_builtin_cexpi (tree, rtx, rtx);
+static rtx expand_builtin_cexpi (tree, rtx);
 static rtx expand_builtin_int_roundingfn (tree, rtx);
 static rtx expand_builtin_int_roundingfn_2 (tree, rtx);
 static rtx expand_builtin_args_info (tree);
@@ -2291,11 +2291,10 @@ interclass_mathfn_icode (tree arg, tree fndecl)
    isnan, etc).
    Return 0 if a normal call should be emitted rather than expanding the
    function in-line.  EXP is the expression that is a call to the builtin
-   function; if convenient, the result should be placed in TARGET.
-   SUBTARGET may be used as the target for computing one of EXP's operands.  */
+   function; if convenient, the result should be placed in TARGET.  */
 
 static rtx
-expand_builtin_interclass_mathfn (tree exp, rtx target, rtx subtarget)
+expand_builtin_interclass_mathfn (tree exp, rtx target)
 {
   enum insn_code icode = CODE_FOR_nothing;
   rtx op0;
@@ -2328,7 +2327,7 @@ expand_builtin_interclass_mathfn (tree exp, rtx target, rtx subtarget)
 	 side-effects more the once.  */
       CALL_EXPR_ARG (exp, 0) = arg = builtin_save_expr (arg);
 
-      op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
+      op0 = expand_expr (arg, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
       if (mode != GET_MODE (op0))
 	op0 = convert_to_mode (mode, op0, 0);
@@ -2395,11 +2394,10 @@ expand_builtin_sincos (tree exp)
 
 /* Expand a call to the internal cexpi builtin to the sincos math function.
    EXP is the expression that is a call to the builtin function; if convenient,
-   the result should be placed in TARGET.  SUBTARGET may be used as the target
-   for computing one of EXP's operands.  */
+   the result should be placed in TARGET.  */
 
 static rtx
-expand_builtin_cexpi (tree exp, rtx target, rtx subtarget)
+expand_builtin_cexpi (tree exp, rtx target)
 {
   tree fndecl = get_callee_fndecl (exp);
   tree arg, type;
@@ -2422,7 +2420,7 @@ expand_builtin_cexpi (tree exp, rtx target, rtx subtarget)
       op1 = gen_reg_rtx (mode);
       op2 = gen_reg_rtx (mode);
 
-      op0 = expand_expr (arg, subtarget, VOIDmode, EXPAND_NORMAL);
+      op0 = expand_expr (arg, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 
       /* Compute into op1 and op2.  */
       expand_twoval_unop (sincos_optab, op0, op2, op1, 0);
@@ -3073,7 +3071,7 @@ expand_builtin_pow (tree exp, rtx target, rtx subtarget)
    function; if convenient, the result should be placed in TARGET.  */
 
 static rtx
-expand_builtin_powi (tree exp, rtx target, rtx subtarget)
+expand_builtin_powi (tree exp, rtx target)
 {
   tree arg0, arg1;
   rtx op0, op1;
@@ -3102,7 +3100,7 @@ expand_builtin_powi (tree exp, rtx target, rtx subtarget)
 	      || (optimize_insn_for_speed_p ()
 		  && powi_cost (n) <= POWI_MAX_MULTS)))
 	{
-	  op0 = expand_expr (arg0, subtarget, VOIDmode, EXPAND_NORMAL);
+	  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 	  op0 = force_reg (mode, op0);
 	  return expand_powi (op0, mode, n);
 	}
@@ -3116,7 +3114,7 @@ expand_builtin_powi (tree exp, rtx target, rtx subtarget)
   if (target == NULL_RTX)
     target = gen_reg_rtx (mode);
 
-  op0 = expand_expr (arg0, subtarget, mode, EXPAND_NORMAL);
+  op0 = expand_expr (arg0, NULL_RTX, mode, EXPAND_NORMAL);
   if (GET_MODE (op0) != mode)
     op0 = convert_to_mode (mode, op0, 0);
   op1 = expand_expr (arg1, NULL_RTX, mode2, EXPAND_NORMAL);
@@ -4885,7 +4883,10 @@ expand_builtin_unop (enum machine_mode target_mode, tree exp, rtx target,
     return NULL_RTX;
 
   /* Compute the argument.  */
-  op0 = expand_expr (CALL_EXPR_ARG (exp, 0), subtarget,
+  op0 = expand_expr (CALL_EXPR_ARG (exp, 0),
+		     (subtarget
+		      && (TYPE_MODE (TREE_TYPE (CALL_EXPR_ARG (exp, 0)))
+			  == GET_MODE (subtarget))) ? subtarget : NULL_RTX,
 		     VOIDmode, EXPAND_NORMAL);
   /* Compute op, into TARGET if possible.
      Set TARGET to wherever the result comes back.  */
@@ -5722,7 +5723,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     CASE_FLT_FN (BUILT_IN_FINITE):
     case BUILT_IN_ISFINITE:
     case BUILT_IN_ISNORMAL:
-      target = expand_builtin_interclass_mathfn (exp, target, subtarget);
+      target = expand_builtin_interclass_mathfn (exp, target);
       if (target)
 	return target;
       break;
@@ -5752,7 +5753,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       break;
 
     CASE_FLT_FN (BUILT_IN_POWI):
-      target = expand_builtin_powi (exp, target, subtarget);
+      target = expand_builtin_powi (exp, target);
       if (target)
 	return target;
       break;
@@ -5774,7 +5775,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       break;
 
     CASE_FLT_FN (BUILT_IN_CEXPI):
-      target = expand_builtin_cexpi (exp, target, subtarget);
+      target = expand_builtin_cexpi (exp, target);
       gcc_assert (target);
       return target;
 
