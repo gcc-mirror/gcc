@@ -1,3 +1,10 @@
+2010-09-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* tree-vect-stmts.c: Include "tm_p.h".
+
+	* config/i386/i386-protos.h (ix86_units_per_simd_word): Moved
+	out of RTX_CODE.
+
 2010-09-14  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (build_ref_for_offset): Loc made a parameter.  Set the
