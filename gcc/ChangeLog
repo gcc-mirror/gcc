@@ -1,3 +1,22 @@
+2010-09-14  DJ Delorie  <dj@redhat.com>
+
+	PR target/44749
+	* config/mep/mep-protos.h (mep_save_register_info,
+	mep_reinit_regs, mep_init_regs): Declare.
+
+	* config/mep/mep.c: Move all target definitions to the end of the
+	file to avoid the need for duplicate declarations.
+	(mep_save_register_info, mep_reinit_regs, mep_init_regs): New.
+	(mep_reorg_erepeat): Remove unused variables.
+	(mep_expand_builtin): Likewise.
+
+	* config/mep/mep-pragma.c: Don't include rtl.h.
+	(INVALID_REGNUM): New.
+	(mep_pragma_coprocessor_which): Call mep-specific rtl-layer bridge
+	functions.
+	(mep_pragma_coprocessor_subclass): Rename "class" to "rclass".
+	Avoid enum/integer math.
+
 2010-09-13  Joseph Myers  <joseph@codesourcery.com>
 
 	PR target/44749
