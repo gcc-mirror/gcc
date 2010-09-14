@@ -108,6 +108,14 @@ extern bool mep_have_copro_copro_moves_p;
 extern bool mep_cannot_change_mode_class (enum machine_mode, enum machine_mode,
 					  enum reg_class);
 
+/* These are called from mep-pragmas (front end) and then call into
+   the RTL layer to re-initialize the register tables once we're done
+   changing them via pragmas.  */
+extern void mep_save_register_info (void);
+extern void mep_reinit_regs (void);
+extern void mep_init_regs (void);
+
+
 extern int cgen_h_uint_6a1_immediate (rtx, enum machine_mode);
 extern int cgen_h_uint_7a1_immediate (rtx, enum machine_mode);
 extern int cgen_h_uint_8a1_immediate (rtx, enum machine_mode);
