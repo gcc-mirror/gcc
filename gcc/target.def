@@ -880,6 +880,14 @@ DEFHOOK
  (enum machine_mode mode, const_tree type, int misalignment, bool is_packed),
  default_builtin_support_vector_misalignment)
 
+/* Return units per SIMD word.  */
+DEFHOOK
+(units_per_simd_word,
+ "",
+ unsigned int,
+ (enum machine_mode mode),
+ default_units_per_simd_word)
+
 HOOK_VECTOR_END (vectorize)
 
 #undef HOOK_PREFIX

@@ -126,9 +126,10 @@ along with GCC; see the file COPYING3.  If not see
    Target modeling:
    =================
         Currently the only target specific information that is used is the
-   size of the vector (in bytes) - "UNITS_PER_SIMD_WORD". Targets that can
-   support different sizes of vectors, for now will need to specify one value
-   for "UNITS_PER_SIMD_WORD". More flexibility will be added in the future.
+   size of the vector (in bytes) - "TARGET_VECTORIZE_UNITS_PER_SIMD_WORD".
+   Targets that can support different sizes of vectors, for now will need
+   to specify one value for "TARGET_VECTORIZE_UNITS_PER_SIMD_WORD". More
+   flexibility will be added in the future.
 
         Since we only vectorize operations which vector form can be
    expressed using existing tree codes, to verify that an operation is

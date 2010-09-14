@@ -1,5 +1,47 @@
 2010-09-14  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* defaults.h (UNITS_PER_SIMD_WORD): Removed.
+	* config/arm/arm.h (UNITS_PER_SIMD_WORD): Likewise.
+	* config/i386/i386.h (UNITS_PER_SIMD_WORD): Likewise.
+	* config/mips/mips.h (UNITS_PER_SIMD_WORD): Likewise.
+	* config/rs6000/rs6000.h (UNITS_PER_SIMD_WORD): Likewise.
+	* config/sparc/sparc.h (UNITS_PER_SIMD_WORD): Likewise.
+
+	* target.def: Add units_per_simd_word to vectorize.
+
+	* targhooks.c (default_units_per_simd_word): New.
+	* targhooks.h (default_units_per_simd_word): Likewise.
+	* config/arm/arm.c (arm_units_per_simd_word): Likewise.
+	(TARGET_VECTORIZE_UNITS_PER_SIMD_WORD): Likewise.
+	* config/mips/mips.c (mips_units_per_simd_word): Likewise.
+	(TARGET_VECTORIZE_UNITS_PER_SIMD_WORD): Likewise.
+	* config/rs6000/rs6000.c (rs6000_units_per_simd_word): Likewise.
+	(TARGET_VECTORIZE_UNITS_PER_SIMD_WORD): Likewise.
+	* config/sparc/sparc.c (sparc_units_per_simd_word): Likewise.
+	(TARGET_VECTORIZE_UNITS_PER_SIMD_WORD): Likewise.
+
+	* tree-vect-loop.c: Replace UNITS_PER_SIMD_WORD with
+	TARGET_VECTORIZE_UNITS_PER_SIMD_WORD in comments.
+
+	* tree-vect-stmts.c: Don't include "tm_p.h".
+	(get_vectype_for_scalar_type): Replace UNITS_PER_SIMD_WORD
+	with targetm.vectorize.units_per_simd_word.
+
+	* system.h (UNITS_PER_SIMD_WORD): Poisoned.
+
+	* config/i386/i386-protos.h (ix86_units_per_simd_word): Removed.
+
+	* config/i386/i386.c (ix86_units_per_simd_word): Make it
+	static.
+	(TARGET_VECTORIZE_UNITS_PER_SIMD_WORD): New.
+
+	* doc/tm.texi.in: Remove UNITS_PER_SIMD_WORD.  Add
+	TARGET_VECTORIZE_UNITS_PER_SIMD_WORD.
+
+	* doc/tm.texi: Regenerated.
+
+2010-09-14  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* tree-vect-stmts.c: Include "tm_p.h".
 
 	* config/i386/i386-protos.h (ix86_units_per_simd_word): Moved

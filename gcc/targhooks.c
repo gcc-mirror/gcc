@@ -984,6 +984,15 @@ default_builtin_support_vector_misalignment (enum machine_mode mode,
   return false;
 }
 
+/* By default, only attempt to parallelize bitwise operations, and
+   possibly adds/subtracts using bit-twiddling.  */
+
+unsigned int
+default_units_per_simd_word (enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return UNITS_PER_WORD;
+}
+
 /* Determine whether or not a pointer mode is valid. Assume defaults
    of ptr_mode or Pmode - can be overridden.  */
 bool

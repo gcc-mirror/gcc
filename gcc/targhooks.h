@@ -86,6 +86,7 @@ extern bool
 default_builtin_support_vector_misalignment (enum machine_mode mode,
 					     const_tree,
 					     int, bool);
+extern unsigned int default_units_per_simd_word (enum machine_mode mode);
 
 /* These are here, and not in hooks.[ch], because not all users of
    hooks.h include tm.h, and thus we don't have CUMULATIVE_ARGS.  */

@@ -1328,9 +1328,6 @@ enum mips_code_readable_setting {
 /* The number of bytes in a double.  */
 #define UNITS_PER_DOUBLE (TYPE_PRECISION (double_type_node) / BITS_PER_UNIT)
 
-#define UNITS_PER_SIMD_WORD(MODE) \
-  (TARGET_PAIRED_SINGLE_FLOAT ? 8 : UNITS_PER_WORD)
-
 /* Set the sizes of the core types.  */
 #define SHORT_TYPE_SIZE 16
 #define INT_TYPE_SIZE 32

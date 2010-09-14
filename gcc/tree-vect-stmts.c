@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "ggc.h"
 #include "tree.h"
-#include "tm_p.h"
 #include "target.h"
 #include "basic-block.h"
 #include "tree-pretty-print.h"
@@ -4679,7 +4678,8 @@ get_vectype_for_scalar_type (tree scalar_type)
   int nunits;
   tree vectype;
 
-  if (nbytes == 0 || nbytes >= UNITS_PER_SIMD_WORD (inner_mode))
+  if (nbytes == 0
+      || (nbytes >= targetm.vectorize.units_per_simd_word (inner_mode)))
     return NULL_TREE;
 
   /* We can't build a vector type of elements with alignment bigger than
@@ -4695,9 +4695,9 @@ get_vectype_for_scalar_type (tree scalar_type)
       && GET_MODE_BITSIZE (inner_mode) != TYPE_PRECISION (scalar_type))
     return NULL_TREE;
 
-  /* FORNOW: Only a single vector size per mode (UNITS_PER_SIMD_WORD)
-     is expected.  */
-  nunits = UNITS_PER_SIMD_WORD (inner_mode) / nbytes;
+  /* FORNOW: Only a single vector size per mode
+    (TARGET_VECTORIZE_UNITS_PER_SIMD_WORD) is expected.  */
+  nunits = targetm.vectorize.units_per_simd_word (inner_mode) / nbytes;
 
   vectype = build_vector_type (scalar_type, nunits);
   if (vect_print_dump_info (REPORT_DETAILS))

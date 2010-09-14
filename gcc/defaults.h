@@ -949,12 +949,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define HAS_LONG_UNCOND_BRANCH 0
 #endif
 
-/* By default, only attempt to parallelize bitwise operations, and
-   possibly adds/subtracts using bit-twiddling.  */
-#ifndef UNITS_PER_SIMD_WORD
-#define UNITS_PER_SIMD_WORD(MODE) UNITS_PER_WORD
-#endif
-
 /* Determine whether __cxa_atexit, rather than atexit, is used to
    register C++ destructors for local statics and global objects.  */
 #ifndef DEFAULT_USE_CXA_ATEXIT
