@@ -1,3 +1,9 @@
+2010-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/45660
+	* dwarf2out.c (gen_decl_die): Call gen_type_die for origin before
+	gen_type_die for function/method return type.
+
 2010-09-14  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/45470

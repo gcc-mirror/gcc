@@ -1,3 +1,8 @@
+2010-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/45660
+	* g++.dg/debug/pr45660.C: New test.
+
 2010-09-14  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/45470
