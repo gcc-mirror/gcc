@@ -1,6 +1,10 @@
+2010-09-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* configure: Regenerated.
+
 2010-09-10  Kai Tietz  <kai.tietz@onevision.com>
 
-       * configure: Regenerated.
+	* configure: Regenerated.
 
 2010-09-09  Gerald Pfeifer  <gerald@pfeifer.com>
 	    Andrew Pinski  <pinskia@gmail.com>
