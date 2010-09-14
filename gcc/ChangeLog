@@ -1,3 +1,10 @@
+2010-09-14  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/45470
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Fail if a statement
+	can throw an exception.
+	* tree-vect-stmts.c (vectorizable_call): Likewise.	
+
 2010-09-14  DJ Delorie  <dj@redhat.com>
 
 	PR target/44749

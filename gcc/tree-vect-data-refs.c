@@ -2542,6 +2542,17 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
       offset = unshare_expr (DR_OFFSET (dr));
       init = unshare_expr (DR_INIT (dr));
 
+      if (stmt_could_throw_p (stmt))
+        {
+          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+            {
+              fprintf (vect_dump, "not vectorized: statement can throw an "
+                       "exception ");
+              print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+            }
+          return false;
+        }
+
       /* Update DR field in stmt_vec_info struct.  */
 
       /* If the dataref is in an inner-loop of the loop that is considered for
