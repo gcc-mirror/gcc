@@ -1,3 +1,23 @@
+2010-09-14  Matt Austern  <austern@google.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/performance/21_strings/hash.cc: New.
+
+2010-09-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/performance/21_strings/string_append.cc: Rename to...
+	* testsuite/performance/21_strings/append-1.cc: ... this.
+	* testsuite/performance/21_strings/string_append_2.cc: Rename to...
+	* testsuite/performance/21_strings/append-2.cc: ... this.
+	* testsuite/performance/21_strings/string_cons_input_iterator.cc:
+	Rename to...
+	* testsuite/performance/21_strings/cons_input_iterator.cc: ... this.
+	* testsuite/performance/21_strings/string_copy_cons_and_dest.cc:
+	Rename to...
+	* testsuite/performance/21_strings/copy_cons_and_dest.cc: ... this.
+	* testsuite/performance/21_strings/string_find.cc: Rename to...
+	* testsuite/performance/21_strings/find.cc: ... this.
+
 2010-09-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/xml/api.xml: Add title.
