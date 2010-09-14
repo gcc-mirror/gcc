@@ -1,3 +1,9 @@
+2010-09-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/45532
+	* io/list_read.c (nml_get_obj_data): Set first_nl if the previous
+	is NULL.
+
 2010-09-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* intrinsics/pack_generic.c (pack): Add missing return and fix whitespace.
