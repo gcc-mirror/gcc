@@ -2757,10 +2757,11 @@ get_name:
 	  goto nml_err_ret;
 	}
 
-      if (!component_flag)
+      if (*pprev_nl == NULL || !component_flag)
 	first_nl = nl;
 
       root_nl = nl;
+
       component_flag = 1;
 
       c = next_char (dtp);
