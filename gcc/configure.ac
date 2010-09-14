@@ -4644,7 +4644,7 @@ case "${host}" in
   *-*-darwin*)
     if test x$build = x$host; then
       export_sym_check="nm${exeext} -g"
-    elif x$host = x$target; then
+    elif test x$host = x$target; then
       export_sym_check="$gcc_cv_nm -g"
     else
       export_sym_check=
@@ -4653,7 +4653,7 @@ case "${host}" in
   *)
     if test x$build = x$host; then
       export_sym_check="objdump${exeext} -T"
-    elif x$host = x$target; then
+    elif test x$host = x$target; then
       export_sym_check="$gcc_cv_objdump -T"
     else
       export_sym_check=

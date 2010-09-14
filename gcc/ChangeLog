@@ -1,3 +1,8 @@
+2010-09-14  Tristan Gingold  <gingold@adacore.com>
+
+	* configure.ac (plugins): Fix typos.
+	* configure: Regenerate.
+
 2010-09-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/45660
