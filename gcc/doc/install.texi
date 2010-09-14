@@ -2962,6 +2962,8 @@ information are.
 @item
 @uref{#x-x-solaris2,,*-*-solaris2*}
 @item
+@uref{#sparc-x-x,,sparc*-*-*}
+@item
 @uref{#sparc-sun-solaris2,,sparc-sun-solaris2*}
 @item
 @uref{#sparc-sun-solaris210,,sparc-sun-solaris2.10}
@@ -4192,6 +4194,21 @@ additional bug fixes.
 @html
 <hr />
 @end html
+@heading @anchor{sparc-x-x}sparc*-*-*
+
+This section contains general configuration information for all
+SPARC-based platforms.  In addition to reading this section, please
+read all other sections that match your target.
+
+Newer versions of the GNU Multiple Precision Library (GMP), the MPFR
+library and the MPC library are known to be miscompiled by earlier
+versions of GCC on these platforms.  We therefore recommend the use
+of the exact versions of these libraries listed as minimal versions
+in @uref{prerequisites.html,,the prerequisites}.
+
+@html
+<hr />
+@end html
 @heading @anchor{sparc-sun-solaris2}sparc-sun-solaris2*
 
 When GCC is configured to use GNU binutils 2.14 or later, the binaries
@@ -4241,12 +4258,11 @@ ld: warning: relocation error: R_SPARC_UA32: @dots{}
 To work around this problem, compile with @option{-gstabs+} instead of
 plain @option{-g}.
 
-When configuring the GNU Multiple Precision Library (GMP) or the MPFR
-library on a Solaris 7 or later system, the canonical target triplet
-must be specified as the @command{build} parameter on the configure
-line.  This triplet can be obtained by invoking @command{./config.guess} in
-the toplevel source directory of GCC (and not that of GMP or MPFR).
-For example on a Solaris 9 system:
+When configuring the GNU Multiple Precision Library (GMP), the MPFR
+library or the MPC library on a Solaris 7 or later system, the canonical
+target triplet must be specified as the @command{build} parameter on the
+configure line.  This target triplet can be obtained by invoking @command{./config.guess} in the toplevel source directory of GCC (and
+not that of GMP or MPFR or MPC).  For example on a Solaris 9 system:
 
 @smallexample
    % ./configure --build=sparc-sun-solaris2.9 --prefix=xxx

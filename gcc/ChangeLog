@@ -1,3 +1,11 @@
+2010-09-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/45277
+	PR target/45363
+	PR target/45407
+	* doc/install.texi (sparc*-*-*): New section.
+	(sparc-sun-solaris2*): Mention MPC alongside GMP and MPFR.
+
 2010-09-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/45567
