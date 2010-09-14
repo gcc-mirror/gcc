@@ -1,3 +1,9 @@
+2010-09-14  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/45470
+	* g++.dg/vect/pr45470-a.cc: New test.
+	* g++.dg/vect/pr45470-a.cc: New test.
+
 2010-09-10  Jack Howarth <howarth@bromo.med.uc.edu>
 
 	PR target/42070

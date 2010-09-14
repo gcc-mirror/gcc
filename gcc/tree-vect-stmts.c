@@ -1343,6 +1343,9 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
   if (TREE_CODE (gimple_call_lhs (stmt)) != SSA_NAME)
     return false;
 
+  if (stmt_could_throw_p (stmt))
+    return false;
+
   vectype_out = STMT_VINFO_VECTYPE (stmt_info);
 
   /* Process function arguments.  */
