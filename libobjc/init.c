@@ -32,6 +32,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc/hash.h"
 #include "objc/objc-list.h" 
 #include "objc-private/runtime.h"
+#include "objc-private/objc-sync.h" /* For __objc_sync_init() */
 
 /* The version number of this runtime.  This must match the number 
    defined in gcc (objc-act.c).  */
@@ -550,6 +551,7 @@ __objc_exec_class (Module_t module)
       __objc_load_methods = objc_hash_new (128, 
 					   (hash_func_type)objc_hash_ptr,
 					   objc_compare_ptrs);
+      __objc_sync_init ();
       previous_constructors = 1;
     }
 

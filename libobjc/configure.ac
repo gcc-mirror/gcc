@@ -215,6 +215,8 @@ if test $target_thread_file != single; then
         [Define if the compiler has a thread header that is non single.])
 fi 
 
+# Check if we have thread-local storage
+GCC_CHECK_TLS
 
 AC_MSG_CHECKING([for exception model to use])
 AC_LANG_PUSH(C)
