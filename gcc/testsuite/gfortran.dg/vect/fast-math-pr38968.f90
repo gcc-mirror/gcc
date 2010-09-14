@@ -10,6 +10,7 @@ program mymatmul
   complex(kp), dimension(n,n) :: a,b,c
   real :: t1, t2
   integer :: i, j, k
+  common // a,b,c
 
   do j = 1, n
      do k = 1, n
