@@ -2,6 +2,8 @@
 
 	* gfortran.dg/vect/fast-math-pr38968.f90: Add common to prevent
 	folding.
+	* gcc.target/i386/funcspec-1.c: Remove static keywords to prevent
+	folding.
 
 2010-09-14  Jakub Jelinek  <jakub@redhat.com>
 

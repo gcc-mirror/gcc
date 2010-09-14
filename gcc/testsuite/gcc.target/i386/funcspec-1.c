@@ -12,9 +12,9 @@
 #define SIZE 1024
 #endif
 
-static float a[SIZE] __attribute__((__aligned__(16)));
-static float b[SIZE] __attribute__((__aligned__(16)));
-static float c[SIZE] __attribute__((__aligned__(16)));
+float a[SIZE] __attribute__((__aligned__(16)));
+float b[SIZE] __attribute__((__aligned__(16)));
+float c[SIZE] __attribute__((__aligned__(16)));
 
 void sse_addnums (void) __attribute__ ((__target__ ("sse2")));
 
