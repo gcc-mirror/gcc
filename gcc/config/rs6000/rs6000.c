@@ -3570,6 +3570,18 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
     }
 }
 
+/* Implement targetm.vectorize.units_per_simd_word.  */
+
+static int
+rs6000_units_per_simd_word (enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return (TARGET_VSX ? UNITS_PER_VSX_WORD
+	  : (TARGET_ALTIVEC ? UNITS_PER_ALTIVEC_WORD
+	     : (TARGET_SPE ? UNITS_PER_SPE_WORD
+		: (TARGET_PAIRED_FLOAT ? UNITS_PER_PAIRED_WORD
+		   : UNITS_PER_WORD))));
+}
+
 /* Handle generic options of the form -mfoo=yes/no.
    NAME is the option name.
    VALUE is the option value.

@@ -32341,7 +32341,7 @@ has_dispatch (rtx insn, int action)
 /* ??? No autovectorization into MMX or 3DNOW until we can reliably
    place emms and femms instructions.  */
 
-unsigned int
+static unsigned int
 ix86_units_per_simd_word (enum machine_mode mode)
 {
   /* Disable double precision vectorizer if needed.  */
@@ -32609,6 +32609,9 @@ ix86_units_per_simd_word (enum machine_mode mode)
 #undef TARGET_VECTORIZE_BUILTIN_VEC_PERM_OK
 #define TARGET_VECTORIZE_BUILTIN_VEC_PERM_OK \
   ix86_vectorize_builtin_vec_perm_ok
+#undef TARGET_VECTORIZE_UNITS_PER_SIMD_WORD
+#define TARGET_VECTORIZE_UNITS_PER_SIMD_WORD \
+  ix86_units_per_simd_word
 
 #undef TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION ix86_set_current_function

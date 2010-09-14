@@ -995,13 +995,6 @@ Minimum number of units in a word.  If this is undefined, the default is
 smallest value that @code{UNITS_PER_WORD} can have at run-time.
 @end defmac
 
-@defmac UNITS_PER_SIMD_WORD (@var{mode})
-Number of units in the vectors that the vectorizer can produce for
-scalar mode @var{mode}.  The default is equal to @code{UNITS_PER_WORD},
-because the vectorizer can do some transformations even in absence of
-specialized @acronym{SIMD} hardware.
-@end defmac
-
 @defmac POINTER_SIZE
 Width of a pointer, in bits.  You must specify a value no wider than the
 width of @code{Pmode}.  If it is not equal to the width of @code{Pmode},
@@ -5763,6 +5756,13 @@ store/load of a specific factor denoted in the @var{misalignment}
 parameter.  The vector store/load should be of machine mode @var{mode} and
 the elements in the vectors should be of type @var{type}.  @var{is_packed}
 parameter is true if the memory access is defined in a packed struct.
+@end deftypefn
+
+@hook TARGET_VECTORIZE_UNITS_PER_SIMD_WORD
+This hook should return th number of units in the vectors that the
+vectorizer can produce for scalar mode @var{mode}.  The default is
+equal to @code{UNITS_PER_WORD}, because the vectorizer can do some
+transformations even in absence of specialized @acronym{SIMD} hardware.
 @end deftypefn
 
 @node Anchored Addresses

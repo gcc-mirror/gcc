@@ -1150,13 +1150,6 @@ extern unsigned rs6000_pointer_size;
 #define PAIRED_VECTOR_MODE(MODE)        \
          ((MODE) == V2SFmode)            
 
-#define UNITS_PER_SIMD_WORD(MODE)					\
-	(TARGET_VSX ? UNITS_PER_VSX_WORD				\
-	 : (TARGET_ALTIVEC ? UNITS_PER_ALTIVEC_WORD			\
-	 : (TARGET_SPE ? UNITS_PER_SPE_WORD				\
-	 : (TARGET_PAIRED_FLOAT ? UNITS_PER_PAIRED_WORD			\
-	 : UNITS_PER_WORD))))
-
 /* Value is TRUE if hard register REGNO can hold a value of
    machine-mode MODE.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \

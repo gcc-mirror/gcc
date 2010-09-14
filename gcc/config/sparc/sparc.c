@@ -434,6 +434,7 @@ static bool sparc_can_eliminate (const int, const int);
 static const char *sparc_mangle_type (const_tree);
 #endif
 static void sparc_trampoline_init (rtx, tree, rtx);
+static bool sparc_units_per_simd_word (enum machine_mode);
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 /* Table of valid machine attributes.  */
@@ -570,6 +571,9 @@ static bool fpu_option_set = false;
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P sparc_vector_mode_supported_p
+
+#undef TARGET_VECTORIZE_UNITS_PER_SIMD_WORD
+#define TARGET_VECTORIZE_UNITS_PER_SIMD_WORD sparc_units_per_simd_word
 
 #undef TARGET_DWARF_HANDLE_FRAME_UNSPEC
 #define TARGET_DWARF_HANDLE_FRAME_UNSPEC sparc_dwarf_handle_frame_unspec
@@ -6231,6 +6235,14 @@ static bool
 sparc_vector_mode_supported_p (enum machine_mode mode)
 {
   return TARGET_VIS && VECTOR_MODE_P (mode) ? true : false;
+}
+
+/* Implement the TARGET_VECTORIZE_UNITS_PER_SIMD_WORD target hook.  */
+
+static bool
+sparc_units_per_simd_word (enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return TARGET_VIS ? 8 : UNITS_PER_WORD;
 }
 
 /* Return the string to output an unconditional branch to LABEL, which is

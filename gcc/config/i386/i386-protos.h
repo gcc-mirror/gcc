@@ -38,8 +38,6 @@ extern void ix86_output_addr_diff_elt (FILE *, int, int);
 extern enum calling_abi ix86_cfun_abi (void);
 extern enum calling_abi ix86_function_type_abi (const_tree);
 
-extern unsigned int ix86_units_per_simd_word (enum machine_mode);
-
 #ifdef RTX_CODE
 extern int standard_80387_constant_p (rtx);
 extern const char *standard_80387_constant_opcode (rtx);

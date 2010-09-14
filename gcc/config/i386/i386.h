@@ -1033,8 +1033,6 @@ enum target_cpu_default
    || (MODE) == V2SImode || (MODE) == SImode				\
    || (MODE) == V4HImode || (MODE) == V8QImode)
 
-#define UNITS_PER_SIMD_WORD(MODE) ix86_units_per_simd_word (MODE)
-
 #define VALID_DFP_MODE_P(MODE) \
   ((MODE) == SDmode || (MODE) == DDmode || (MODE) == TDmode)
 

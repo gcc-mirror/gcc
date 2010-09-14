@@ -236,6 +236,7 @@ static rtx arm_trampoline_adjust_address (rtx);
 static rtx arm_pic_static_addr (rtx orig, rtx reg);
 static bool cortex_a9_sched_adjust_cost (rtx, rtx, rtx, int *);
 static bool xscale_sched_adjust_cost (rtx, rtx, rtx, int *);
+static unsigned int arm_units_per_simd_word (enum machine_mode);
 
 
 /* Table of machine attributes.  */
@@ -363,6 +364,8 @@ static const struct attribute_spec arm_attribute_table[] =
 #define TARGET_SHIFT_TRUNCATION_MASK arm_shift_truncation_mask
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P arm_vector_mode_supported_p
+#undef TARGET_VECTORIZE_UNITS_PER_SIMD_WORD
+#define TARGET_VECTORIZE_UNITS_PER_SIMD_WORD arm_units_per_simd_word
 
 #undef  TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG arm_reorg
@@ -21867,6 +21870,17 @@ arm_vector_mode_supported_p (enum machine_mode mode)
     return true;
 
   return false;
+}
+
+/* Use the option -mvectorize-with-neon-quad to override the use of doubleword
+   registers when autovectorizing for Neon, at least until multiple vector
+   widths are supported properly by the middle-end.  */
+
+static unsigned int
+arm_units_per_simd_word (enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  return (TARGET_NEON
+	  ? (TARGET_NEON_VECTORIZE_QUAD ? 16 : 8) : UNITS_PER_WORD);
 }
 
 /* Implements target hook small_register_classes_for_mode_p.  */
