@@ -1,3 +1,8 @@
+2010-09-14  Jan Hubicka  <jh@suse.cz>
+
+	* gfortran.dg/vect/fast-math-pr38968.f90: Add common to prevent
+	folding.
+
 2010-09-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/45567
