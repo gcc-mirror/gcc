@@ -14871,15 +14871,19 @@ ix86_lea_for_add_ok (rtx insn, rtx operands[])
   else
     {
       int dist_define, dist_use;
+
+      /* Return false if REGNO0 isn't used in memory address. */
+      dist_use = distance_agu_use (regno0, insn);
+      if (dist_use <= 0)
+	return false;
+
       dist_define = distance_non_agu_define (regno1, regno2, insn);
       if (dist_define <= 0)
         return true;
 
       /* If this insn has both backward non-agu dependence and forward
          agu dependence, the one with short distance take effect. */
-      dist_use = distance_agu_use (regno0, insn);
-      if (dist_use <= 0
-	  || (dist_define + IX86_LEA_PRIORITY) < dist_use)
+      if ((dist_define + IX86_LEA_PRIORITY) < dist_use)
         return false;
 
       return true;
