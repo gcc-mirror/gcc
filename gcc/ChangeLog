@@ -1,5 +1,10 @@
 2010-09-14  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (ix86_lea_for_add_ok): Return false if
+	result isn't used in memory address.
+
+2010-09-14  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* defaults.h (UNITS_PER_SIMD_WORD): Removed.
 	* config/arm/arm.h (UNITS_PER_SIMD_WORD): Likewise.
 	* config/i386/i386.h (UNITS_PER_SIMD_WORD): Likewise.
