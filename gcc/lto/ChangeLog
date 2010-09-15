@@ -1,3 +1,7 @@
+2010-09-15  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* lto-tree.h (struct lang_type): Add variable_size GTY option.
+
 2010-09-08  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (real_file_count, real_file_decl_data): New static vars.

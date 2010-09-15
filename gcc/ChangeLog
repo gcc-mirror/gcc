@@ -1,3 +1,7 @@
+2010-09-15  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* c-lang.h (struct lang_type): Add variable_size GTY option.
+
 2010-09-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/45672
