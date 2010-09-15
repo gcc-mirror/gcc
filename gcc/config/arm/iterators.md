@@ -28,6 +28,8 @@
 ;; registers.
 (define_mode_iterator ANY64 [DI DF V8QI V4HI V2SI V2SF])
 
+(define_mode_iterator ANY128 [V2DI V2DF V16QI V8HI V4SI V4SF])
+
 ;; A list of integer modes that are up to one word long
 (define_mode_iterator QHSI [QI HI SI])
 
@@ -227,9 +229,13 @@
 ;; Narrower modes with the same number of elements.
 (define_mode_attr V_narrow [(V8HI "V8QI") (V4SI "V4HI") (V2DI "V2SI")])
 
+;; Narrower modes with double the number of elements.
+(define_mode_attr V_narrow_pack [(V4SI "V8HI") (V8HI "V16QI") (V2DI "V4SI")
+				 (V4HI "V8QI") (V2SI "V4HI")  (DI "V2SI")])
+
 ;; Modes with half the number of equal-sized elements.
 (define_mode_attr V_HALF [(V16QI "V8QI") (V8HI "V4HI")
-              (V4SI  "V2SI") (V4SF "V2SF")
+              (V4SI  "V2SI") (V4SF "V2SF") (V2DF "DF")
                           (V2DI "DI")])
 
 ;; Same, but lower-case.
@@ -239,7 +245,7 @@
 
 ;; Modes with twice the number of equal-sized elements.
 (define_mode_attr V_DOUBLE [(V8QI "V16QI") (V4HI "V8HI")
-                (V2SI "V4SI") (V2SF "V4SF")
+                (V2SI "V4SI") (V2SF "V4SF") (DF "V2DF")
                             (DI "V2DI")])
 
 ;; Same, but lower-case.
@@ -362,7 +368,8 @@
                                  (V4HI "4") (V8HI "8")
                                  (V2SI "2") (V4SI "4")
                                  (V2SF "2") (V4SF "4")
-                                 (DI "1")   (V2DI "2")])
+                                 (DI "1")   (V2DI "2")
+                                 (DF "1")   (V2DF "2")])
 
 ;; Same as V_widen, but lower-case.
 (define_mode_attr V_widen_l [(V8QI "v8hi") (V4HI "v4si") ( V2SI "v2di")])

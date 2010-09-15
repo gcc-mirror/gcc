@@ -1,3 +1,25 @@
+2010-09-15  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/arm/neon.md (vec_pack_trunc_<mode>): Instruction
+	pattern for vmovn. Expansion in case of non 
+	-mvectorize-with-neon-quad.
+	(neon_vec_pack_trunc_<mode>): Instruction pattern for vmovn for
+	non- -mvectorize-with-neon-quad case.
+	(move_lo_quad_<mode>): New expansion to vmov into low part.
+	(move_hi_quad_<mode>): New expansion to vmov into high part.
+	(move_lo_quad_v4si): Refactor to move_lo_quad_<mode> expansion.
+	(move_lo_quad_v4sf): Likewise.
+	(move_lo_quad_v8hi): Likewise.
+	(neon_move_lo_quad_<mode>): Instruction pattern for vmov into
+	low part.
+	(neon_move_hi_quad_<mode>): Instruction pattern for vmov into
+	high part.
+	* config/arm/iterators.md (ANY128): New mode iterator.
+	(V_narrow_pack): New mode attribute.
+	(V_HALF): Add attribute.
+	(V_DOUBLE): Add attribute.
+	(V_mode_nunits): Add attribute.
+
 2010-09-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/alpha/alpha.c (alpha_expand_prologue): If stack checking
