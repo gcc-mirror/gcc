@@ -1,3 +1,12 @@
+2010-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/45633
+	* tree-cfg.c (verify_gimple_assign_binary): Allow
+	MINUS_EXPR with lhs and rhs1 pointer vector and
+	rhs2 sizetype vector.
+	* expr.c (expand_expr_real_2) <case PLUS_EXPR>: For pointer
+	or vector pointer use TER to optimize pointer subtraction.
+
 2010-09-15  Jie Zhang  <jie@codesourcery.com>
 
 	* config/arm/vfp.md (cmpsf_trap_vfp): Change type from
