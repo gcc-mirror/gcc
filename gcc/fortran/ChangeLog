@@ -1,3 +1,9 @@
+2010-09-15  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45577
+	* resolve.c (resolve_allocate_expr): Do default initialization via
+	EXEC_INIT_ASSIGN.
+
 2010-09-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* mathbuiltins.def: Do not defined huge_val built-in.

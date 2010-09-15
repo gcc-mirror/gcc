@@ -6697,10 +6697,16 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
       if (ts.type == BT_CLASS)
 	ts = ts.u.derived->components->ts;
 
-      if (ts.type == BT_DERIVED)
+      if (ts.type == BT_DERIVED && gfc_has_default_initializer(ts.u.derived))
 	{
-	  code->expr3 = gfc_default_initializer (&ts);
-	  gfc_resolve_expr (code->expr3);
+	  gfc_expr *init_e = gfc_default_initializer (&ts);
+	  gfc_code *init_st = gfc_get_code ();
+	  init_st->loc = code->loc;
+	  init_st->op = EXEC_INIT_ASSIGN;
+	  init_st->expr1 = gfc_expr_to_initialize (e);
+	  init_st->expr2 = init_e;
+	  init_st->next = code->next;
+	  code->next = init_st;
 	}
     }
   else if (code->expr3->mold && code->expr3->ts.type == BT_DERIVED)
