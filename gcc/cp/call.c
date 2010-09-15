@@ -5207,10 +5207,16 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    || TREE_CODE (expr) == CONSTRUCTOR
 	    || TREE_CODE (expr) == VA_ARG_EXPR)
 	  {
-	    tree type = convs->u.next->type;
+	    /* Otherwise, a temporary of type "cv1 T1" is created and
+	       initialized from the initializer expression using the rules
+	       for a non-reference copy-initialization (8.5).  */
+
+	    tree type = TREE_TYPE (ref_type);
 	    cp_lvalue_kind lvalue = real_lvalue_p (expr);
 
-	    if (!CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (ref_type))
+	    gcc_assert (same_type_ignoring_top_level_qualifiers_p
+			(type, convs->u.next->type));
+	    if (!CP_TYPE_CONST_NON_VOLATILE_P (type)
 		&& !TYPE_REF_IS_RVALUE (ref_type))
 	      {
 		if (complain & tf_error)
