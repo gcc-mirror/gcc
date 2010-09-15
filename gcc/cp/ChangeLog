@@ -1,5 +1,7 @@
 2010-09-15  Jason Merrill  <jason@redhat.com>
 
+	* decl2.c (grokbitfield): Diagnose non-integral width.
+
 	* call.c (convert_like_real): Use the underlying type of the
 	reference for the temporary.
 
