@@ -5103,6 +5103,8 @@ get_arg_pointer_save_area (void)
       push_topmost_sequence ();
       emit_insn_after (seq, entry_of_function ());
       pop_topmost_sequence ();
+
+      crtl->arg_pointer_save_area_init = true;
     }
 
   return ret;
