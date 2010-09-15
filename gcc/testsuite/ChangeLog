@@ -1,3 +1,8 @@
+2010-09-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/45665
+	* g++.dg/template/crash103.C: New.
+
 2010-09-15  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.
@@ -12,7 +17,7 @@
 
 	Radar 4219590
 	* objc.dg/break-in-ifstmt.m: New.
-	
+
 	2005-08-22  Ziemowit Laski  <zlaski@apple.com>
 
 	Radar 4174166
@@ -24,7 +29,7 @@
 	Radar 4216500
 	* obj-c++.dg/proto-lossage-7.mm: New.
 	* objc.dg/proto-lossage-7.m: New.
-	
+
 2010-09-14  Jan Hubicka  <jh@suse.cz>
 
 	* gfortran.dg/vect/fast-math-pr38968.f90: Add common to prevent
