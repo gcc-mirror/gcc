@@ -1,3 +1,8 @@
+2010-09-15  Ian Lance Taylor  <iant@google.com>
+
+	* function.c (get_arg_pointer_save_area): Set
+	arg_pointer_save_area_init to true.
+
 2010-09-15  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (generate_subtree_copies): Updated comment.
