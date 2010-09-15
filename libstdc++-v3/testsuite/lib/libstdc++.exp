@@ -863,7 +863,7 @@ proc check_v3_target_namedlocale { args } {
       close $f
 
       set lines [v3_target_compile $src $exe executable ""]
-      #file delete $src
+      file delete $src
 
       if ![string match "" $lines] {
         verbose "check_v3_target_namedlocale: compilation failed" 2
