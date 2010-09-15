@@ -1,3 +1,8 @@
+2010-09-15  Ian Lance Taylor  <iant@google.com>
+
+	* c-common.c (parse_optimize_options): Do not capitalize warning
+	messages.
+
 2010-09-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-common.c (handle_alias_ifunc_attribute): New, broken out of	...

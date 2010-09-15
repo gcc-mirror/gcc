@@ -7730,10 +7730,10 @@ parse_optimize_options (tree args, bool attr_p)
 		  ret = false;
 		  if (attr_p)
 		    warning (OPT_Wattributes,
-			     "Bad option %s to optimize attribute.", p);
+			     "bad option %s to optimize attribute.", p);
 		  else
 		    warning (OPT_Wpragmas,
-			     "Bad option %s to pragma attribute", p);
+			     "bad option %s to pragma attribute", p);
 		  continue;
 		}
 
