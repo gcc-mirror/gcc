@@ -11142,7 +11142,7 @@ mips_scalar_mode_supported_p (enum machine_mode mode)
 
 /* Implement TARGET_VECTORIZE_UNITS_PER_SIMD_WORD.  */
 
-static bool
+static unsigned int
 mips_units_per_simd_word (enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return TARGET_PAIRED_SINGLE_FLOAT ? 8 : UNITS_PER_WORD;
