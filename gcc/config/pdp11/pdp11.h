@@ -764,7 +764,7 @@ extern int may_call_alloca;
 
 /* cost of moving one register class to another */
 #define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2) \
-  register_move_cost (CLASS1, CLASS2)
+  pdp11_register_move_cost (CLASS1, CLASS2)
 
 /* Tell emit-rtl.c how to initialize special values on a per-function base.  */
 extern int optimize;

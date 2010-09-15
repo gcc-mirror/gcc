@@ -1070,7 +1070,7 @@ static const int move_costs[N_REG_CLASSES][N_REG_CLASSES] =
    -- as we do here with 22 -- or not ? */
 
 int 
-register_move_cost(enum reg_class c1, enum reg_class c2)
+pdp11_register_move_cost (enum reg_class c1, enum reg_class c2)
 {
     return move_costs[(int)c1][(int)c2];
 }
