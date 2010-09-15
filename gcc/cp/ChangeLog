@@ -1,3 +1,8 @@
+2010-09-15  Jason Merrill  <jason@redhat.com>
+
+	* call.c (convert_like_real): Use the underlying type of the
+	reference for the temporary.
+
 2010-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/45635
