@@ -1085,7 +1085,7 @@ static bool rs6000_builtin_support_vector_misalignment (enum
 							int, bool);
 static int rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt,
                                               tree, int);
-static int rs6000_units_per_simd_word (enum machine_mode);
+static unsigned int rs6000_units_per_simd_word (enum machine_mode);
 
 static void def_builtin (int, const char *, tree, int);
 static bool rs6000_vector_alignment_reachable (const_tree, bool);
@@ -3576,7 +3576,7 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
 /* Implement targetm.vectorize.units_per_simd_word.  */
 
-static int
+static unsigned int
 rs6000_units_per_simd_word (enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return (TARGET_VSX ? UNITS_PER_VSX_WORD

@@ -434,7 +434,7 @@ static bool sparc_can_eliminate (const int, const int);
 static const char *sparc_mangle_type (const_tree);
 #endif
 static void sparc_trampoline_init (rtx, tree, rtx);
-static bool sparc_units_per_simd_word (enum machine_mode);
+static unsigned int sparc_units_per_simd_word (enum machine_mode);
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 /* Table of valid machine attributes.  */
@@ -6239,7 +6239,7 @@ sparc_vector_mode_supported_p (enum machine_mode mode)
 
 /* Implement the TARGET_VECTORIZE_UNITS_PER_SIMD_WORD target hook.  */
 
-static bool
+static unsigned int
 sparc_units_per_simd_word (enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return TARGET_VIS ? 8 : UNITS_PER_WORD;
