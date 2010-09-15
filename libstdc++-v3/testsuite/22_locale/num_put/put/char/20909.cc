@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "" }
+// { dg-require-namedlocale "de_DE" }
 
 // 2005-04-08  Paolo Carlini  <pcarlini@suse.de>
 

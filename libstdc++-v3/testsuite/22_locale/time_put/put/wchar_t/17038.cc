@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "" }
+// { dg-require-namedlocale "ta_IN" }
 
 // 2004-08-25  Paolo Carlini  <pcarlini@suse.de>
 

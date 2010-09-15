@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "" }
+// { dg-require-namedlocale "de_DE" }
 
 // 1999-11-15 Kevin Ediger  <kediger@licor.com>
 // test the floating point inserters (facet num_put)

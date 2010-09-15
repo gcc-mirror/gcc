@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "" }
+// { dg-require-namedlocale "se_NO.UTF-8" }
 
 // 2003-09-04  Petur Runolfsson  <peturr02@ru.is>
 // Adapted from 27_io/basic_filebuf/underflow/char/2.cc

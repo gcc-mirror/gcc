@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "" }
+// { dg-require-namedlocale "en_HK" }
 
 // 2004-03-15  Paolo Carlini  <pcarlini@suse.de>
 
