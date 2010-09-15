@@ -1,3 +1,7 @@
+2010-09-15  Ian Lance Taylor  <iant@google.com>
+
+	* init.c: Fix type name in comment.
+
 2010-08-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/45457
