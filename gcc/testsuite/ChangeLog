@@ -1,3 +1,9 @@
+2010-09-15  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_pack_trunc): Set vect_pack_trunc
+	supported flag to true for neon.
+
 2010-09-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/45665

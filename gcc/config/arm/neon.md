@@ -1117,12 +1117,13 @@
 ; vector registers. Make an attempt at removing unnecessary moves, though
 ; we're really at the mercy of the register allocator.
 
-(define_insn "move_lo_quad_v4si"
-  [(set (match_operand:V4SI 0 "s_register_operand" "+w")
-        (vec_concat:V4SI
-          (match_operand:V2SI 1 "s_register_operand" "w")
-          (vec_select:V2SI (match_dup 0)
-			   (parallel [(const_int 2) (const_int 3)]))))]
+(define_insn "neon_move_lo_quad_<mode>"
+  [(set (match_operand:ANY128 0 "s_register_operand" "+w")
+        (vec_concat:ANY128
+          (match_operand:<V_HALF> 1 "s_register_operand" "w")
+          (vec_select:<V_HALF> 
+		(match_dup 0)
+	        (match_operand:ANY128 2 "vect_par_constant_high" ""))))]
   "TARGET_NEON"
 {
   int dest = REGNO (operands[0]);
@@ -1136,66 +1137,61 @@
   [(set_attr "neon_type" "neon_bp_simple")]
 )
 
-(define_insn "move_lo_quad_v4sf"
-  [(set (match_operand:V4SF 0 "s_register_operand" "+w")
-        (vec_concat:V4SF
-          (match_operand:V2SF 1 "s_register_operand" "w")
-          (vec_select:V2SF (match_dup 0)
-			   (parallel [(const_int 2) (const_int 3)]))))]
+(define_insn "neon_move_hi_quad_<mode>"
+  [(set (match_operand:ANY128 0 "s_register_operand" "+w")
+        (vec_concat:ANY128
+          (match_operand:<V_HALF> 1 "s_register_operand" "w")
+          (vec_select:<V_HALF>
+		(match_dup 0)
+	        (match_operand:ANY128 2 "vect_par_constant_low" ""))))]
   "TARGET_NEON"
 {
   int dest = REGNO (operands[0]);
   int src = REGNO (operands[1]);
 
   if (dest != src)
-    return "vmov\t%e0, %P1";
+    return "vmov\t%f0, %P1";
   else
     return "";
 }
   [(set_attr "neon_type" "neon_bp_simple")]
 )
 
-(define_insn "move_lo_quad_v8hi"
-  [(set (match_operand:V8HI 0 "s_register_operand" "+w")
-        (vec_concat:V8HI
-          (match_operand:V4HI 1 "s_register_operand" "w")
-          (vec_select:V4HI (match_dup 0)
-                           (parallel [(const_int 4) (const_int 5)
-                                      (const_int 6) (const_int 7)]))))]
-  "TARGET_NEON"
+(define_expand "move_hi_quad_<mode>"
+ [(match_operand:ANY128 0 "s_register_operand" "")
+  (match_operand:<V_HALF> 1 "s_register_operand" "")]
+ "TARGET_NEON"
 {
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
+  rtvec v = rtvec_alloc (<V_mode_nunits>/2);
+  rtx t1;
+  int i;
 
-  if (dest != src)
-    return "vmov\t%e0, %P1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
+  for (i=0; i < (<V_mode_nunits>/2); i++)
+     RTVEC_ELT (v, i) = GEN_INT (i);
 
-(define_insn "move_lo_quad_v16qi"
-  [(set (match_operand:V16QI 0 "s_register_operand" "+w")
-        (vec_concat:V16QI
-          (match_operand:V8QI 1 "s_register_operand" "w")
-          (vec_select:V8QI (match_dup 0)
-                           (parallel [(const_int 8)  (const_int 9)
-                                      (const_int 10) (const_int 11)
-                                      (const_int 12) (const_int 13)
-                                      (const_int 14) (const_int 15)]))))]
-  "TARGET_NEON"
+  t1 = gen_rtx_PARALLEL (<MODE>mode, v);
+  emit_insn (gen_neon_move_hi_quad_<mode> (operands[0], operands[1], t1));
+
+  DONE;
+})
+
+(define_expand "move_lo_quad_<mode>"
+ [(match_operand:ANY128 0 "s_register_operand" "")
+  (match_operand:<V_HALF> 1 "s_register_operand" "")]
+ "TARGET_NEON"
 {
-  int dest = REGNO (operands[0]);
-  int src = REGNO (operands[1]);
+  rtvec v = rtvec_alloc (<V_mode_nunits>/2);
+  rtx t1;
+  int i;
 
-  if (dest != src)
-    return "vmov\t%e0, %P1";
-  else
-    return "";
-}
-  [(set_attr "neon_type" "neon_bp_simple")]
-)
+  for (i=0; i < (<V_mode_nunits>/2); i++)
+     RTVEC_ELT (v, i) = GEN_INT ((<V_mode_nunits>/2) + i);
+
+  t1 = gen_rtx_PARALLEL (<MODE>mode, v);
+  emit_insn (gen_neon_move_lo_quad_<mode> (operands[0], operands[1], t1));
+
+  DONE;
+})
 
 ;; Reduction operations
 
@@ -5390,3 +5386,38 @@
 
  }
 )
+
+(define_insn "vec_pack_trunc_<mode>"
+ [(set (match_operand:<V_narrow_pack> 0 "register_operand" "=&w")
+       (vec_concat:<V_narrow_pack> 
+		(truncate:<V_narrow> 
+			(match_operand:VN 1 "register_operand" "w"))
+		(truncate:<V_narrow>
+			(match_operand:VN 2 "register_operand" "w"))))]
+ "TARGET_NEON"
+ "vmovn.i<V_sz_elem>\t%e0, %q1\n\tvmovn.i<V_sz_elem>\t%f0, %q2"
+ [(set_attr "neon_type" "neon_shift_1")]
+)
+
+;; For the non-quad case.
+(define_insn "neon_vec_pack_trunc_<mode>"
+ [(set (match_operand:<V_narrow> 0 "register_operand" "=w")
+       (truncate:<V_narrow> (match_operand:VN 1 "register_operand" "")))]
+ "TARGET_NEON"
+ "vmovn.i<V_sz_elem>\t%0, %q1"
+ [(set_attr "neon_type" "neon_shift_1")]
+)
+
+(define_expand "vec_pack_trunc_<mode>"
+ [(match_operand:<V_narrow_pack> 0 "register_operand" "")
+  (match_operand:VSHFT 1 "register_operand" "")
+  (match_operand:VSHFT 2 "register_operand")]
+ "TARGET_NEON"
+{
+  rtx tempreg = gen_reg_rtx (<V_DOUBLE>mode);
+  
+  emit_insn (gen_move_lo_quad_<V_double> (tempreg, operands[1])); 
+  emit_insn (gen_move_hi_quad_<V_double> (tempreg, operands[2])); 
+  emit_insn (gen_neon_vec_pack_trunc_<V_double> (operands[0], tempreg));
+  DONE;
+})

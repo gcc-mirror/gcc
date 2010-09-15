@@ -2676,7 +2676,8 @@ proc check_effective_target_vect_pack_trunc { } {
         if { ([istarget powerpc*-*-*] && ![istarget powerpc-*-linux*paired*])
              || [istarget i?86-*-*]
              || [istarget x86_64-*-*]
-             || [istarget spu-*-*] } {
+             || [istarget spu-*-*]
+             || ([istarget arm*-*-*] && [check_effective_target_arm_neon]) } {
             set et_vect_pack_trunc_saved 1
         }
     }
