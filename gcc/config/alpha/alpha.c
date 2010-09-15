@@ -7814,6 +7814,9 @@ alpha_expand_prologue (void)
   HOST_WIDE_INT sa_size;
   /* Complete stack size needed.  */
   HOST_WIDE_INT frame_size;
+  /* Probed stack size; it additionally includes the size of
+     the "reserve region" if any.  */
+  HOST_WIDE_INT probed_size;
   /* Offset from base reg to register save area.  */
   HOST_WIDE_INT reg_offset;
   rtx sa_reg;
@@ -7859,20 +7862,26 @@ alpha_expand_prologue (void)
 
      Note that we are only allowed to adjust sp once in the prologue.  */
 
-  if (frame_size <= 32768)
+  probed_size = frame_size;
+  if (flag_stack_check)
+    probed_size += STACK_CHECK_PROTECT;
+
+  if (probed_size <= 32768)
     {
-      if (frame_size > 4096)
+      if (probed_size > 4096)
 	{
 	  int probed;
 
-	  for (probed = 4096; probed < frame_size; probed += 8192)
+	  for (probed = 4096; probed < probed_size; probed += 8192)
 	    emit_insn (gen_probe_stack (GEN_INT (TARGET_ABI_UNICOSMK
 						 ? -probed + 64
 						 : -probed)));
 
-	  /* We only have to do this probe if we aren't saving registers.  */
-	  if (sa_size == 0 && frame_size > probed - 4096)
-	    emit_insn (gen_probe_stack (GEN_INT (-frame_size)));
+	  /* We only have to do this probe if we aren't saving registers or
+	     if we are probing beyond the frame because of -fstack-check.  */
+	  if ((sa_size == 0 && probed_size > probed - 4096)
+	      || flag_stack_check)
+	    emit_insn (gen_probe_stack (GEN_INT (-probed_size)));
 	}
 
       if (frame_size != 0)
@@ -7887,10 +7896,11 @@ alpha_expand_prologue (void)
 	 number of 8192 byte blocks to probe.  We then probe each block
 	 in the loop and then set SP to the proper location.  If the
 	 amount remaining is > 4096, we have to do one more probe if we
-	 are not saving any registers.  */
+	 are not saving any registers or if we are probing beyond the
+	 frame because of -fstack-check.  */
 
-      HOST_WIDE_INT blocks = (frame_size + 4096) / 8192;
-      HOST_WIDE_INT leftover = frame_size + 4096 - blocks * 8192;
+      HOST_WIDE_INT blocks = (probed_size + 4096) / 8192;
+      HOST_WIDE_INT leftover = probed_size + 4096 - blocks * 8192;
       rtx ptr = gen_rtx_REG (DImode, 22);
       rtx count = gen_rtx_REG (DImode, 23);
       rtx seq;
@@ -7903,19 +7913,22 @@ alpha_expand_prologue (void)
 	 late in the compilation, generate the loop as a single insn.  */
       emit_insn (gen_prologue_stack_probe_loop (count, ptr));
 
-      if (leftover > 4096 && sa_size == 0)
+      if ((leftover > 4096 && sa_size == 0) || flag_stack_check)
 	{
 	  rtx last = gen_rtx_MEM (DImode, plus_constant (ptr, -leftover));
 	  MEM_VOLATILE_P (last) = 1;
 	  emit_move_insn (last, const0_rtx);
 	}
 
-      if (TARGET_ABI_WINDOWS_NT)
+      if (TARGET_ABI_WINDOWS_NT || flag_stack_check)
 	{
 	  /* For NT stack unwind (done by 'reverse execution'), it's
 	     not OK to take the result of a loop, even though the value
 	     is already in ptr, so we reload it via a single operation
 	     and subtract it to sp.
+
+	     Same if -fstack-check is specified, because the probed stack
+	     size is not equal to the frame size.
 
 	     Yes, that's correct -- we have to reload the whole constant
 	     into a temporary via ldah+lda then subtract from sp.  */
