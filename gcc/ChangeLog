@@ -1,3 +1,12 @@
+2010-09-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/pdp11/pdp11.c (register_move_cost): Rename to
+	pdp11_register_move_cost.
+	* config/pdp11/pdp11-protos.h (register_move_cost): Rename to
+	pdp11_register_move_cost.
+	* config/pdp11/pdp11.h (REGISTER_MOVE_COST): Call
+	pdp11_register_move_cost instead of register_move_cost.
+
 2010-09-15  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/arm/neon.md (vec_pack_trunc_<mode>): Instruction

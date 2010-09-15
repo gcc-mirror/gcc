@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler, for the pdp-11
-   Copyright (C) 2000, 2003, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003, 2004, 2007, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GCC.
@@ -34,7 +35,7 @@ extern const char *output_move_quad (rtx *);
 extern const char *output_block_move (rtx *);
 extern const char *output_jump (enum rtx_code, int, int);
 extern void print_operand_address (FILE *, rtx);
-extern int register_move_cost (enum reg_class, enum reg_class);
+extern int pdp11_register_move_cost (enum reg_class, enum reg_class);
 #endif /* RTX_CODE */
 
 extern void output_ascii (FILE *, const char *, int);
