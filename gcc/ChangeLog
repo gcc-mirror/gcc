@@ -1,3 +1,8 @@
+2010-09-15  Ian Lance Taylor  <iant@google.com>
+
+	* incpath.c (remove_duplicates): If name is not a directory, issue
+	a warning rather than an error.
+
 2010-09-15  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/45644
