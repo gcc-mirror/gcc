@@ -1,5 +1,8 @@
 2010-09-15  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (finish_id_expression): Diagnose use of function
+	parms in evaluated context outside function body.
+
 	* decl2.c (grokbitfield): Diagnose non-integral width.
 
 	* call.c (convert_like_real): Use the underlying type of the

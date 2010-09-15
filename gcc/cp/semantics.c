@@ -2864,6 +2864,16 @@ finish_id_expression (tree id_expression,
 	      return error_mark_node;
 	    }
 	}
+
+      /* Also disallow uses of function parameters outside the function
+	 body, except inside an unevaluated context (i.e. decltype).  */
+      if (TREE_CODE (decl) == PARM_DECL
+	  && DECL_CONTEXT (decl) == NULL_TREE
+	  && !cp_unevaluated_operand)
+	{
+	  error ("use of parameter %qD outside function body", decl);
+	  return error_mark_node;
+	}
     }
 
   /* If we didn't find anything, or what we found was a type,
