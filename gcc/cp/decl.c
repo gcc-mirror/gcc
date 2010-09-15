@@ -8762,6 +8762,8 @@ grokdeclarator (const cp_declarator *declarator,
 	      type = build_memfn_type (type,
 				       declarator->u.pointer.class_type,
 				       memfn_quals);
+	      if (type == error_mark_node)
+		return error_mark_node;
 	      memfn_quals = TYPE_UNQUALIFIED;
 	    }
 

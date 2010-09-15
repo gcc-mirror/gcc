@@ -1,3 +1,9 @@
+2010-09-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/45665
+	* decl.c (grokdeclarator): Check build_memfn_type return value
+	for error_mark_node.
+
 2010-09-13  Rodrigo Rivas Costa <rodrigorivascosta@gmail.com>
 
 	* semantics.c (finish_for_stmt): Always test flag_new_for_scope.
