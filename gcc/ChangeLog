@@ -1,3 +1,13 @@
+2010-09-15  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (generate_subtree_copies): Updated comment.
+	(handle_unscalarized_data_in_subtree): Removed parameter lhs which is
+	obtained from the statement iterator instead.
+	(load_assign_lhs_subreplacements): Removed parameters lhs and
+	right_offset, which is obtained from top_racc instead.  Parameter lacc
+	is now expected to be the root of the processed tree rather than root's
+	first child.  Updated all callers.
+
 2010-09-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/pdp11/pdp11.c (register_move_cost): Rename to
