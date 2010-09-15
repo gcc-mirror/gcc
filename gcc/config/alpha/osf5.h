@@ -274,3 +274,5 @@ __enable_execute_stack (void *addr)					\
 
 /* Handle #pragma extern_prefix.  */
 #define TARGET_HANDLE_PRAGMA_EXTERN_PREFIX 1
+
+#define MD_UNWIND_SUPPORT "config/alpha/osf5-unwind.h"

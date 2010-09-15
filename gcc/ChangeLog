@@ -1,3 +1,9 @@
+2010-09-15  Olivier Hainque  <hainque@adacore.com>
+            Jose Ruiz  <ruiz@adacore.com>
+
+	* config/alpha/osf5.h (MD_UNWIND_SUPPORT): Define.
+	* config/alpha/osf5-unwind.h: New file.
+
 2010-09-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/45672
