@@ -1,7 +1,7 @@
 2010-09-15  Ian Lance Taylor  <iant@google.com>
 
 	* c-common.c (parse_optimize_options): Do not capitalize warning
-	messages.
+	messages.  Remove period at end of warning message.
 
 2010-09-09  Nathan Sidwell  <nathan@codesourcery.com>
 
