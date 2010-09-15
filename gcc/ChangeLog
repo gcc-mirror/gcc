@@ -1,3 +1,8 @@
+2010-09-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/45644
+	* tree-sra.c (create_access): Check for bit-fields directly.
+
 2010-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/45633
