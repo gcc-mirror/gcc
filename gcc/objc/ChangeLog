@@ -1,3 +1,34 @@
+2010-09-15  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.
+
+	2006-03-09 Fariborz Jahanian <fjahanian@apple.com>
+
+        Radar 4457381
+	* objc/objc-act.c (objc_finish_message_expr): Look for message in
+	@class's protocol list.
+
+	2006-02-07  Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4219590
+	* objc/objc-act.c (objc_start_method_definition): Initialize
+	break/continue labels.
+
+	2005-08-22  Ziemowit Laski  <zlaski@apple.com>
+
+	Radar 4174166
+	* objc-act.c (objc_compare_types): Compare function
+	pointers; indicate success if the right-hand side has
+	a return type that is covariant, and the argument types
+	contravariant, with those of the left side.
+
+	2005-08-22  Ziemowit Laski  <zlaski@apple.com>
+
+	Radar 4216500
+	* objc-act.c (objc_get_protocol_qualified_type): When looking
+	at a typedef, retrieve the precise type it describes (rather
+	than merely looking up a class by name).
+	
 2010-09-10  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc/objc-act.c (objc_begin_try_stmt): Generate an error if
