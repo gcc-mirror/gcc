@@ -1103,7 +1103,7 @@
    fcmpes%?\\t%0, %1
    fcmpezs%?\\t%0"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "fcmpd")]
+   (set_attr "type" "fcmps")]
 )
 
 (define_insn "*cmpdf_vfp"

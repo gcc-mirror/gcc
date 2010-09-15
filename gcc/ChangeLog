@@ -1,3 +1,8 @@
+2010-09-15  Jie Zhang  <jie@codesourcery.com>
+
+	* config/arm/vfp.md (cmpsf_trap_vfp): Change type from
+	fcmpd to fcmps.
+
 2010-09-15  Ian Lance Taylor  <iant@google.com>
 
 	* config/i386/i386.md (truncxf<mode>2): Fix indentation.
