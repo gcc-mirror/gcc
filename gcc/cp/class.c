@@ -7796,9 +7796,14 @@ build_vtbl_initializer (tree binfo,
 	  if (DECL_PURE_VIRTUAL_P (fn_original))
 	    {
 	      fn = abort_fndecl;
-	      if (abort_fndecl_addr == NULL)
-		abort_fndecl_addr = fold_convert (vfunc_ptr_type_node, build_fold_addr_expr (fn));
-	      init = abort_fndecl_addr;
+	      if (!TARGET_VTABLE_USES_DESCRIPTORS)
+		{
+		  if (abort_fndecl_addr == NULL)
+		    abort_fndecl_addr
+		      = fold_convert (vfunc_ptr_type_node,
+				      build_fold_addr_expr (fn));
+		  init = abort_fndecl_addr;
+		}
 	    }
 	  else
 	    {
@@ -7810,7 +7815,9 @@ build_vtbl_initializer (tree binfo,
 		}
 	      /* Take the address of the function, considering it to be of an
 		 appropriate generic type.  */
-	      init = fold_convert (vfunc_ptr_type_node, build_fold_addr_expr (fn));
+	      if (!TARGET_VTABLE_USES_DESCRIPTORS)
+		init = fold_convert (vfunc_ptr_type_node,
+				     build_fold_addr_expr (fn));
 	    }
 	}
 
@@ -7825,8 +7832,7 @@ build_vtbl_initializer (tree binfo,
 	    for (i = 0; i < TARGET_VTABLE_USES_DESCRIPTORS; ++i)
 	      {
 		tree fdesc = build2 (FDESC_EXPR, vfunc_ptr_type_node,
-				     TREE_OPERAND (init, 0),
-				     build_int_cst (NULL_TREE, i));
+				     fn, build_int_cst (NULL_TREE, i));
 		TREE_CONSTANT (fdesc) = 1;
 
 		CONSTRUCTOR_APPEND_ELT (*inits, NULL_TREE, fdesc);
