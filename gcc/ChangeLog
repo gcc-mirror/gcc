@@ -1,3 +1,9 @@
+2010-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/45593
+	* reorg.c (relax_delay_slots): Use emit_copy_of_insn_after to re-emit
+	insns that were in delay slots as stand-alone insns.
+
 2010-09-15  Ian Lance Taylor  <iant@google.com>
 
 	* incpath.c (remove_duplicates): If name is not a directory, issue
