@@ -1,3 +1,175 @@
+2010-09-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* doc/xml/manual/prerequisites.xml: Update "C" library locale
+	information prerequisites.
+
+2010-09-15  François Dumont  <francois.cppdevs@free.fr>
+
+	* testsuite/lib/libstdc++.exp, dg-options.exp
+	([check_v3_target_namedlocale]): Take the name of the required locale.
+	* testsuite/27_io/objects/wchar_t/9520.cc, 11.cc, 13.cc, 10.cc, 12.cc:
+	Specify locale name to check.
+	* testsuite/27_io/basic_streambuf/imbue/wchar_t/9322.cc, 13007-1.cc,
+	13007-2.cc: Likewise.
+	* testsuite/27_io/basic_streambuf/imbue/char/9322.cc, 13007-1.cc,
+	13007-2.cc: Likewise.
+	* testsuite/27_io/basic_ios/copyfmt/char/2.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/imbue/wchar_t/9322.cc: Likewise.
+	* testsuite/27_io/basic_stringbuf/imbue/char/9322.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/2.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/2.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/1.cc, 2.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13171-3.cc, 9322.cc,
+	13582-2.cc, 2.cc, 13582-3.cc, 12868.cc, 14975-2.cc, 13007.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/13171-2.cc, 13171-4.cc,
+	9322.cc, 13582-2.cc, 2.cc, 14975-1.cc, 13007.cc, 13171-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/11305-1.cc,
+	11305-2.cc, 11305-3.cc, 11305-4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/9520.cc, 1.cc, 2.cc,
+	3.cc, 11389-1.cc, 4.cc, 11389-2.cc, 5.cc, 11389-3.cc, 11389-4.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/9874.cc: Likewise.
+	* testsuite/27_io/manipulators/extended/put_money/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/manipulators/extended/put_money/char/1.cc: Likewise.
+	* testsuite/27_io/manipulators/extended/get_money/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/manipulators/extended/get_money/char/1.cc: Likewise.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/12077.cc: Likewise.
+	* testsuite/22_locale/money_put/put/wchar_t/1.cc, 2.cc, 3.cc,
+	wrapped_locale.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/money_put/put/char/1.cc, 2.cc, 3.cc, 9780-3.cc,
+	wrapped_locale.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/facet/2.cc: Likewise.
+	* testsuite/22_locale/collate/hash/wchar_t/2.cc, wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/collate/hash/char/2.cc, wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/collate/compare/wchar_t/1.cc, 2.cc, 3.cc,
+	wrapped_locale.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/collate/compare/char/1.cc, 2.cc, 3.cc,
+	wrapped_locale.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/collate/transform/wchar_t/2.cc, 3.cc,
+	wrapped_locale.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/collate/transform/char/2.cc, 3.cc,
+	wrapped_locale.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/cons/char/wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/to/wchar_t/wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/to/char/wrapped_locale.cc, wrapped_env.cc:
+	Likewise.
+	* testsuite/22_locale/ctype/scan/wchar_t/wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/scan/char/wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/widen/wchar_t/2.cc, 3.cc,
+	wrapped_locale.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/widen/char/wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/narrow/wchar_t/3.cc, wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/narrow/char/wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/ctype/is/wchar_t/2.cc,wrapped_locale.cc,
+	wrapped_env.cc: Likewise
+	* testsuite/22_locale/ctype/is/char/2.cc, wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/time_put/put/wchar_t/2.cc, 3.cc, 4.cc, 6.cc,
+	7.cc, 8.cc, wrapped_env.cc, wrapped_locale.cc, 17038.cc: Likewise.
+	* testsuite/22_locale/time_put/put/char/2.cc, 3.cc, 4.cc, 6.cc,
+	9780-1.cc, 7.cc, 8.cc, wrapped_env.cc, wrapped_locale.cc, 17038.cc:
+	Likewise.
+	* testsuite/22_locale/money_get/get/wchar_t/1.cc, 2.cc, 3.cc, 4.cc,
+	wrapped_env.cc, 10.cc, 11528.cc, wrapped_locale.cc, 11.cc, 12.cc,
+	13.cc, 15.cc, 16.cc, 17.cc, 18.cc: Likewise.
+	* testsuite/22_locale/money_get/get/char/1.cc, 2.cc, 3.cc, 4.cc,
+	wrapped_env.cc, 10.cc, 11528.cc, wrapped_locale.cc, 11.cc, 12.cc,
+	13.cc, 15.cc, 16.cc, 17.cc, 18.cc: Likewise
+	* testsuite/22_locale/num_put/put/wchar_t/1.cc, 3.cc, 5.cc,
+	wrapped_env.cc, 20914.cc, wrapped_locale.cc, 20909.cc: Likewise.
+	* testsuite/22_locale/num_put/put/char/1.cc, 3.cc, 5.cc, 9780-2.cc,
+	wrapped_env.cc, 20914.cc, wrapped_locale.cc, 20909.cc: Likewise.
+	* testsuite/22_locale/codecvt/unshift/wchar_t/2.cc, wrapped_locale.cc,
+	3.cc, 4.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/unshift/char/wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	testsuite/22_locale/codecvt/length/wchar_t/2.cc, wrapped_locale.cc,
+	3.cc, 4.cc, 7.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/length/char/wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/always_noconv/wchar_t/2.cc,
+	wrapped_locale.cc, 3.cc, 4.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/always_noconv/char/wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/encoding/wchar_t/2.cc, wrapped_locale.cc,
+	3.cc, 4.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/encoding/char/wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/wchar_t/2.cc, wrapped_locale.cc, 3.cc,
+	4.cc, 7.cc, 8.cc, 9.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/in/char/wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/max_length/wchar_t/2.cc,
+	wrapped_locale.cc, 3.cc, 4.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/max_length/char/wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/wchar_t/2.cc, wrapped_locale.cc,
+	3.cc, 4.cc, 7.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/codecvt/out/char/wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/moneypunct_byname/named_equivalence.cc: Likewise.
+	* testsuite/22_locale/time_get/get_year/wchar_t/wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/time_get/get_year/char/wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/2.cc,
+	wrapped_locale.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/char/2.cc,
+	wrapped_locale.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/time_get/date_order/wchar_t/wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/time_get/date_order/char/wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/wchar_t/2.cc,
+	wrapped_locale.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/char/2.cc, 38081-1.cc,
+	wrapped_locale.cc, 38081-2.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/12750.cc, 26701.cc,
+	2.cc, wrapped_locale.cc, 4.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/char/12750.cc, 26701.cc,
+	2.cc, wrapped_locale.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/wchar_t/1.cc, 2.cc,
+	wrapped_locale.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/char/1.cc, 2.cc,
+	wrapped_locale.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/num_get/get/wchar_t/1.cc, 3.cc, 5.cc, 6.cc, 9.cc,
+	wrapped_env.cc, wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/1.cc, 3.cc, 5.cc, 6.cc, 9.cc,
+	wrapped_env.cc, wrapped_locale.cc: Likewise.
+	* testsuite/22_locale/locale/cons/38368.cc, 2.cc, 4.cc, 5.cc, 7.cc,
+	12658_thread-1.cc, 12658_thread-2.cc, 40184.cc, 29217.cc, 38365.cc:
+	Likewise.
+	* testsuite/22_locale/locale/global_locale_objects/14071.cc, 2.cc:
+	Likewise.
+	* testsuite/22_locale/moneypunct/40712.cc: Likewise.
+	* testsuite/22_locale/moneypunct/members/wchar_t/2.cc,
+	wrapped_locale.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/moneypunct/members/char/2.cc, wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/messages_byname/named_equivalence.cc: Likewise.
+	* testsuite/22_locale/numpunct_byname/named_equivalence.cc: Likewise.
+	* testsuite/22_locale/messages/members/char/1.cc, 2.cc,
+	wrapped_locale.cc, 3.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/numpunct/members/wchar_t/2.cc, wrapped_locale.cc,
+	wrapped_env.cc: Likewise.
+	* testsuite/22_locale/numpunct/members/char/2.cc, wrapped_locale.cc,
+	3.cc, wrapped_env.cc: Likewise.
+	* testsuite/22_locale/collate_byname/named_equivalence.cc: Likewise.
+
 2010-09-14  Matt Austern  <austern@google.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 

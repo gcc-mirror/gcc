@@ -1,4 +1,5 @@
-// { dg-require-namedlocale "" }
+// { dg-require-namedlocale "is_IS" }
+// { dg-require-namedlocale "en_US" }
 
 // 2004-02-09  Petur Runolfsson  <peturr02@ru.is>
 

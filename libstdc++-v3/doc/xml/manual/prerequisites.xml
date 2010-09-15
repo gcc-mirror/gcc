@@ -93,14 +93,14 @@ ta_IN               UTF-8
 zh_TW               BIG5
 </programlisting>
 
-      <para>Failure to have the underlying "C" library locale
-      information installed will mean that C++ named locales for the
-      above regions will not work: because of this, the libstdc++
-      testsuite will skip the named locale tests. If this isn't an
-      issue, don't worry about it. If named locales are needed, the
-      underlying locale information must be installed. Note that
-      rebuilding libstdc++ after the "C" locales are installed is not
-      necessary.
+      <para>Failure to have installed the underlying "C" library
+      locale information for any of the above regions means that
+      the corresponding C++ named locale will not work:  because of
+      this, the libstdc++ testsuite will skip named locale tests
+      which need missing information.  If this isn't an issue, don't
+      worry about it.  If a named locale is needed, the underlying
+      locale information must be installed.  Note that rebuilding
+      libstdc++ after "C" locales are installed is not necessary.
       </para>
 
       <para>

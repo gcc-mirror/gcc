@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "" }
+// { dg-require-namedlocale "de_DE" }
 
 // 2001-11-19 Benjamin Kosnik  <bkoz@redhat.com>
 

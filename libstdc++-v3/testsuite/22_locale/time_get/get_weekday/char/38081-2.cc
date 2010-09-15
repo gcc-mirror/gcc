@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "" }
+// { dg-require-namedlocale "ru_RU.UTF8" }
 
 // 2010-01-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
