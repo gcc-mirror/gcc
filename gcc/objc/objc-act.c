@@ -788,6 +788,13 @@ objc_start_method_definition (tree decl)
   if (!objc_implementation_context)
     fatal_error ("method definition not in @implementation context");
 
+#ifndef OBJCPLUS
+  /* Indicate no valid break/continue context by setting these variables
+     to some non-null, non-label value.  We'll notice and emit the proper
+     error message in c_finish_bc_stmt.  */
+  c_break_label = c_cont_label = size_zero_node;
+#endif
+
   objc_add_method (objc_implementation_context,
 		   decl,
 		   objc_inherit_code == CLASS_METHOD_DECL);
@@ -1131,6 +1138,29 @@ objc_compare_types (tree ltyp, tree rtyp, int argno, tree callee)
     }
   while (POINTER_TYPE_P (ltyp) && POINTER_TYPE_P (rtyp));
 
+  /* We must also handle function pointers, since ObjC is a bit more
+     lenient than C or C++ on this.  */
+  if (TREE_CODE (ltyp) == FUNCTION_TYPE && TREE_CODE (rtyp) == FUNCTION_TYPE)
+    {
+      /* Return types must be covariant.  */
+      if (!comptypes (TREE_TYPE (ltyp), TREE_TYPE (rtyp))
+	  && !objc_compare_types (TREE_TYPE (ltyp), TREE_TYPE (rtyp),
+				  argno, callee))
+      return false;
+
+      /* Argument types must be contravariant.  */
+      for (ltyp = TYPE_ARG_TYPES (ltyp), rtyp = TYPE_ARG_TYPES (rtyp);
+	   ltyp && rtyp; ltyp = TREE_CHAIN (ltyp), rtyp = TREE_CHAIN (rtyp))
+	{
+	  if (!comptypes (TREE_VALUE (rtyp), TREE_VALUE (ltyp))
+	      && !objc_compare_types (TREE_VALUE (rtyp), TREE_VALUE (ltyp),
+				      argno, callee))
+	    return false;
+      }
+
+      return (ltyp == rtyp);
+    }
+
   /* Past this point, we are only interested in ObjC class instances,
      or 'id' or 'Class'.  */
   if (TREE_CODE (ltyp) != RECORD_TYPE || TREE_CODE (rtyp) != RECORD_TYPE)
@@ -1415,7 +1445,17 @@ objc_get_protocol_qualified_type (tree interface, tree protocols)
       type = objc_is_class_name (interface);
 
       if (type)
-	type = xref_tag (RECORD_TYPE, type);
+	{
+	  /* If looking at a typedef, retrieve the precise type it
+	     describes.  */
+	  if (TREE_CODE (interface) == IDENTIFIER_NODE)
+	    interface = identifier_global_value (interface);
+
+	  type = ((interface && TREE_CODE (interface) == TYPE_DECL
+		   && DECL_ORIGINAL_TYPE (interface))
+		  ? DECL_ORIGINAL_TYPE (interface)
+		  : xref_tag (RECORD_TYPE, type));
+	}
       else
         return interface;
     }
@@ -6360,7 +6400,14 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
 	 more intelligent about which methods the receiver will
 	 understand. */
       if (!rtype || TREE_CODE (rtype) == IDENTIFIER_NODE)
-	rtype = NULL_TREE;
+	{
+	  rtype = NULL_TREE;
+	  /* We could not find an @interface declaration, yet Message maybe in a 
+	     @class's protocol. */
+	  if (!method_prototype && rprotos)
+	    method_prototype
+	      = lookup_method_in_protocol_list (rprotos, sel_name, 0);
+	}
       else if (TREE_CODE (rtype) == CLASS_INTERFACE_TYPE
 	  || TREE_CODE (rtype) == CLASS_IMPLEMENTATION_TYPE)
 	{
