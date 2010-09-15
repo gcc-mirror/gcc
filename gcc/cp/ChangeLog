@@ -1,3 +1,9 @@
+2010-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/45635
+	* class.c (build_vtbl_initializer): Use fn instead of init's operand
+	as first argument to FDESC_EXPR.
+
 2010-09-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/45665
