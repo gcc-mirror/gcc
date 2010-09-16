@@ -1,3 +1,7 @@
+2010-09-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (PUSH_ROUNDING): Redefine using UNITS_PER_WORD.
+
 2010-09-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/45593
@@ -84,7 +88,7 @@
 	is enabled, probe up to frame_size + STACK_CHECK_PROTECT bytes.
 
 2010-09-15  Olivier Hainque  <hainque@adacore.com>
-            Jose Ruiz  <ruiz@adacore.com>
+	    Jose Ruiz  <ruiz@adacore.com>
 
 	* config/alpha/osf5.h (MD_UNWIND_SUPPORT): Define.
 	* config/alpha/osf5-unwind.h: New file.
@@ -92,8 +96,7 @@
 2010-09-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/45672
-	* config/mips/mips.c (mips_units_per_simd_word): Correct return
-	type.
+	* config/mips/mips.c (mips_units_per_simd_word): Correct return type.
 	* config/rs6000/rs6000.c (rs6000_units_per_simd_word): Likewise.
 	* config/sparc/sparc.c (sparc_units_per_simd_word): Likewise.
 
@@ -144,8 +147,7 @@
 
 	* config/i386/i386-protos.h (ix86_units_per_simd_word): Removed.
 
-	* config/i386/i386.c (ix86_units_per_simd_word): Make it
-	static.
+	* config/i386/i386.c (ix86_units_per_simd_word): Make it static.
 	(TARGET_VECTORIZE_UNITS_PER_SIMD_WORD): New.
 
 	* doc/tm.texi.in: Remove UNITS_PER_SIMD_WORD.  Add
@@ -207,7 +209,7 @@
 	PR tree-optimization/45470
 	* tree-vect-data-refs.c (vect_analyze_data_refs): Fail if a statement
 	can throw an exception.
-	* tree-vect-stmts.c (vectorizable_call): Likewise.	
+	* tree-vect-stmts.c (vectorizable_call): Likewise.
 
 2010-09-14  DJ Delorie  <dj@redhat.com>
 
@@ -284,9 +286,9 @@
 2010-09-13  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* config/arm/arm.md: (define_attr "conds"): Update comment.
-	* config/arm/sync.md (arm_sync_compare_and_swapsi): Change 
+	* config/arm/sync.md (arm_sync_compare_and_swapsi): Change
 	conds attribute to clob.
-        (arm_sync_compare_and_swapsi): Likewise.
+	(arm_sync_compare_and_swapsi): Likewise.
 	(arm_sync_compare_and_swap<mode>): Likewise.
 	(arm_sync_lock_test_and_setsi): Likewise.
 	(arm_sync_lock_test_and_set<mode>): Likewise.
@@ -301,9 +303,9 @@
 
 2010-09-13  Olivier Hainque  <hainque@adacore.com>
 
-        * fwprop.c (forward_propagate_and_simplify): Only attach a
+	* fwprop.c (forward_propagate_and_simplify): Only attach a
 	REG_EQUAL note to an insn if the destination is a register.
-        * gcse.c (try_replace_reg): Likewise.
+	* gcse.c (try_replace_reg): Likewise.
 
 2010-09-13  Richard Guenther  <rguenther@suse.de>
 
@@ -379,8 +381,7 @@
 
 2010-09-10  Richard Guenther  <rguenther@suse.de>
 
-	* tree.c (type_hash_eq): For ARRAY_TYPEs also compare
-	TYPE_SIZE.
+	* tree.c (type_hash_eq): For ARRAY_TYPEs also compare TYPE_SIZE.
 	(build_index_type): Implement in terms of build_range_type.
 	(build_range_type): Do not allow NULL_TREE type, improve
 	hashing to cover more cases.  Set TYPE_STRUCTURAL_EQUALITY_P
@@ -395,10 +396,9 @@
 
 2010-09-10  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        * config/arm/neon-schedgen.ml (allCores): Add support for
-	Cortex-A9.
-        * config/arm/cortex-a9-neon.md: New and partially generated.
-        * config/arm/cortex-a9.md (cortex_a9_dp): Adjust for Neon.
+	* config/arm/neon-schedgen.ml (allCores): Add support for Cortex-A9.
+	* config/arm/cortex-a9-neon.md: New and partially generated.
+	* config/arm/cortex-a9.md (cortex_a9_dp): Adjust for Neon.
 
 2010-09-10  Richard Guenther  <rguenther@suse.de>
 
