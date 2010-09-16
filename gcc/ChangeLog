@@ -1,3 +1,9 @@
+2010-09-16  Reza Yazdani  <reza.yazdani@amd.com>
+
+	PR bootstrap/45680
+	* config/i386/i386.c (min_insn_size): Moved out of the
+	ASM_OUTPUT_MAX_SKIP_PAD ifdef.
+
 2010-09-16  Jan Hubicka  <jh@suse.cz>
 
 	* lto-cgraph.c (lto_output_node): Fix handling of clones.
