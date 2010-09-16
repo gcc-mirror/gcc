@@ -163,8 +163,8 @@ static const struct attribute_spec m32r_attribute_table[] =
 #define TARGET_IN_SMALL_DATA_P m32r_in_small_data_p
 
 
-#undef  TARGET_MEMORY_MOVE_COSTS
-#define TARGET_MEMORY_MOVE_COSTS m32r_memory_move_costs
+#undef  TARGET_MEMORY_MOVE_COST
+#define TARGET_MEMORY_MOVE_COST m32r_memory_move_cost
 #undef  TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS m32r_rtx_costs
 #undef  TARGET_ADDRESS_COST
@@ -1264,7 +1264,8 @@ m32r_arg_partial_bytes (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
 static rtx
 m32r_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
-		   const_tree type, bool named ATTRIBUTE_UNUSED)
+		   const_tree type ATTRIBUTE_UNUSED,
+		   bool named ATTRIBUTE_UNUSED)
 {
   return (PASS_IN_REG_P (*cum, mode, type)
 	  ? gen_rtx_REG (mode, ROUND_ADVANCE_CUM (*cum, mode, type))
