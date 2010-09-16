@@ -1958,6 +1958,7 @@
 
 2010-09-02  Olivier Hainque  <hainque@adacore.com>
 
+	PR middle-end/44763
 	* ira-color.c (SORTGT): New macro, helper for qsort callbacks.
 	(allocno_priority_compare_func): Use it instead of a straight
 	difference computation over priorities.
