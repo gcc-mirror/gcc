@@ -1,3 +1,10 @@
+2010-09-16  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/lto/pr45679-1_0.C: New file.
+	* g++.dg/lto/pr45679-1_1.C: New file.
+	* g++.dg/lto/pr45679-0_0.C: New file.
+	* g++.dg/lto/pr45679-0_1.C: New file.
+
 2010-09-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45674
