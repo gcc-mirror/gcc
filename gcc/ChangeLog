@@ -1,3 +1,9 @@
+2010-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/45686
+	* fold-const.c (fold_checksum_tree): Change slot from const void **
+	to void **, use CONST_CAST_TREE to store into *slot.
+
 2010-09-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md: Remove unneeded empty conditions and

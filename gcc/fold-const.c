@@ -13648,7 +13648,7 @@ fold_check_failed (const_tree expr ATTRIBUTE_UNUSED, const_tree ret ATTRIBUTE_UN
 static void
 fold_checksum_tree (const_tree expr, struct md5_ctx *ctx, htab_t ht)
 {
-  const void **slot;
+  void **slot;
   enum tree_code code;
   union tree_node buf;
   int i, len;
@@ -13660,10 +13660,10 @@ recursive_label:
 	      && sizeof (struct tree_type) <= sizeof (struct tree_function_decl));
   if (expr == NULL)
     return;
-  slot = (const void **) htab_find_slot (ht, expr, INSERT);
+  slot = (void **) htab_find_slot (ht, expr, INSERT);
   if (*slot != NULL)
     return;
-  *slot = expr;
+  *slot = CONST_CAST_TREE (expr);
   code = TREE_CODE (expr);
   if (TREE_CODE_CLASS (code) == tcc_declaration
       && DECL_ASSEMBLER_NAME_SET_P (expr))
