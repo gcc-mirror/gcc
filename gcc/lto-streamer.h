@@ -235,6 +235,7 @@ enum LTO_tags
   LTO_type_ref,
   LTO_const_decl_ref,
   LTO_imported_decl_ref,
+  LTO_translation_unit_decl_ref,
   LTO_global_decl_ref,			/* Do not change.  */
 
   /* This tag must always be last.  */

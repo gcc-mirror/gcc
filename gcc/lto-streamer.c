@@ -303,6 +303,7 @@ check_handled_ts_structures (void)
   handled_p[TS_OMP_CLAUSE] = true;
   handled_p[TS_OPTIMIZATION] = true;
   handled_p[TS_TARGET_OPTION] = true;
+  handled_p[TS_TRANSLATION_UNIT_DECL] = true;
 
   /* Anything not marked above will trigger the following assertion.
      If this assertion triggers, it means that there is a new TS_*

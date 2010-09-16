@@ -533,6 +533,13 @@ pack_ts_block_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, BLOCK_NUMBER (expr), 31);
 }
 
+/* Pack all the non-pointer fields of the TS_TRANSLATION_UNIT_DECL structure
+   of expression EXPR into bitpack BP.  */
+
+static void
+pack_ts_translation_unit_decl_value_fields (struct bitpack_d *bp ATTRIBUTE_UNUSED, tree expr ATTRIBUTE_UNUSED)
+{
+}
 
 /* Pack all the non-pointer fields in EXPR into a bit pack.  */
 
@@ -588,6 +595,9 @@ pack_value_fields (struct bitpack_d *bp, tree expr)
       /* This is only used by High GIMPLE.  */
       gcc_unreachable ();
     }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
+    pack_ts_translation_unit_decl_value_fields (bp, expr);
 }
 
 
@@ -718,6 +728,11 @@ lto_output_tree_ref (struct output_block *ob, tree expr)
 
     case RESULT_DECL:
       output_record_start (ob, LTO_result_decl_ref);
+      lto_output_var_decl_index (ob->decl_state, ob->main_stream, expr);
+      break;
+
+    case TRANSLATION_UNIT_DECL:
+      output_record_start (ob, LTO_translation_unit_decl_ref);
       lto_output_var_decl_index (ob->decl_state, ob->main_stream, expr);
       break;
 
@@ -1127,6 +1142,15 @@ lto_output_ts_target_option (struct output_block *ob, tree expr)
   lto_output_bitpack (&bp);
 }
 
+/* Write a TS_TRANSLATION_UNIT_DECL tree in EXPR to OB.  */
+
+static void
+lto_output_ts_translation_unit_decl_tree_pointers (struct output_block *ob,
+						   tree expr)
+{
+  output_string (ob, ob->main_stream, TRANSLATION_UNIT_LANGUAGE (expr));
+}
+
 /* Helper for lto_output_tree.  Write all pointer fields in EXPR to output
    block OB.  If REF_P is true, the leaves of EXPR are emitted as
    references.  */
@@ -1209,6 +1233,9 @@ lto_output_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
     lto_output_ts_target_option (ob, expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
+    lto_output_ts_translation_unit_decl_tree_pointers (ob, expr);
 }
 
 

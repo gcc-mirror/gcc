@@ -118,12 +118,6 @@ static GTY(()) struct stmt_tree_s c_stmt_tree;
 tree c_break_label;
 tree c_cont_label;
 
-/* Linked list of TRANSLATION_UNIT_DECLS for the translation units
-   included in this invocation.  Note that the current translation
-   unit is not included in this list.  */
-
-static GTY(()) tree all_translation_units;
-
 /* A list of decls to be made automatically visible in each file scope.  */
 static GTY(()) tree visible_builtins;
 
@@ -1072,10 +1066,7 @@ pop_scope (void)
     context = current_function_decl;
   else if (scope == file_scope)
     {
-      tree file_decl = build_decl (UNKNOWN_LOCATION,
-	  			   TRANSLATION_UNIT_DECL, 0, 0);
-      DECL_CHAIN (file_decl) = all_translation_units;
-      all_translation_units = file_decl;
+      tree file_decl = build_translation_unit_decl (NULL_TREE);
       context = file_decl;
     }
   else
@@ -9664,8 +9655,9 @@ static void
 collect_all_refs (const char *source_file)
 {
   tree t;
+  unsigned i;
 
-  for (t = all_translation_units; t; t = TREE_CHAIN (t))
+  FOR_EACH_VEC_ELT (tree, all_translation_units, i, t)
     collect_ada_nodes (BLOCK_VARS (DECL_INITIAL (t)), source_file);
 }
 
@@ -9677,8 +9669,9 @@ for_each_global_decl (void (*callback) (tree decl))
   tree t;
   tree decls;
   tree decl;
+  unsigned i;
 
-  for (t = all_translation_units; t; t = TREE_CHAIN (t))
+  FOR_EACH_VEC_ELT (tree, all_translation_units, i, t)
     { 
       decls = DECL_INITIAL (t);
       for (decl = BLOCK_VARS (decls); decl; decl = TREE_CHAIN (decl))
@@ -9693,6 +9686,7 @@ void
 c_write_global_declarations (void)
 {
   tree t;
+  unsigned i;
 
   /* We don't want to do this if generating a PCH.  */
   if (pch_file)
@@ -9729,7 +9723,7 @@ c_write_global_declarations (void)
 
   /* Process all file scopes in this compilation, and the external_scope,
      through wrapup_global_declarations and check_global_declarations.  */
-  for (t = all_translation_units; t; t = DECL_CHAIN (t))
+  FOR_EACH_VEC_ELT (tree, all_translation_units, i, t)
     c_write_global_declarations_1 (BLOCK_VARS (DECL_INITIAL (t)));
   c_write_global_declarations_1 (BLOCK_VARS (ext_block));
 
@@ -9742,7 +9736,7 @@ c_write_global_declarations (void)
   if (!seen_error ())
     {
       timevar_push (TV_SYMOUT);
-      for (t = all_translation_units; t; t = DECL_CHAIN (t))
+      FOR_EACH_VEC_ELT (tree, all_translation_units, i, t)
 	c_write_global_declarations_2 (BLOCK_VARS (DECL_INITIAL (t)));
       c_write_global_declarations_2 (BLOCK_VARS (ext_block));
       timevar_pop (TV_SYMOUT);

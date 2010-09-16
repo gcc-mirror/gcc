@@ -1,3 +1,8 @@
+2010-09-16  Richard Guenther  <rguenther@suse.de>
+
+	* jcf-parse.c (current_file_list): Remove.
+	(java_parse_file): Use build_translation_unit_decl.  Adjust.
+
 2010-09-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* lang.opt (d): New.
