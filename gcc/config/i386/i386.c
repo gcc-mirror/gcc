@@ -1985,6 +1985,7 @@ static bool ix86_expand_vector_init_one_nonzero (bool, enum machine_mode,
 static void ix86_add_new_builtins (int);
 static rtx ix86_expand_vec_perm_builtin (tree);
 static tree ix86_canonical_va_list_type (tree);
+static void predict_jump (int);
 
 enum ix86_function_specific_strings
 {
@@ -2629,6 +2630,7 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
     { "-msseregparm",			MASK_SSEREGPARM },
     { "-mstack-arg-probe",		MASK_STACK_PROBE },
     { "-mtls-direct-seg-refs",		MASK_TLS_DIRECT_SEG_REFS },
+    { "-m8bit-idiv",			MASK_USE_8BIT_IDIV },
   };
 
   const char *opts[ARRAY_SIZE (isa_opts) + ARRAY_SIZE (flag_opts) + 6][2];
@@ -14654,6 +14656,107 @@ ix86_expand_unary_operator (enum rtx_code code, enum machine_mode mode,
   /* Fix up the destination if needed.  */
   if (dst != operands[0])
     emit_move_insn (operands[0], dst);
+}
+
+/* Split 32bit/64bit divmod with 8bit unsigned divmod if dividend and
+   divisor are within the the range [0-255].  */
+
+void
+ix86_split_idivmod (enum machine_mode mode, rtx operands[],
+		    bool signed_p)
+{
+  rtx end_label, qimode_label;
+  rtx insn, div, mod;
+  rtx scratch, tmp0, tmp1, tmp2;
+  rtx (*gen_divmod4_1) (rtx, rtx, rtx, rtx);
+  rtx (*gen_zero_extend) (rtx, rtx);
+  rtx (*gen_test_ccno_1) (rtx, rtx);
+
+  switch (mode)
+    {
+    case SImode:
+      gen_divmod4_1 = signed_p ? gen_divmodsi4_1 : gen_udivmodsi4_1;
+      gen_test_ccno_1 = gen_testsi_ccno_1;
+      gen_zero_extend = gen_zero_extendqisi2;
+      break;
+    case DImode:
+      gen_divmod4_1 = signed_p ? gen_divmoddi4_1 : gen_udivmoddi4_1;
+      gen_test_ccno_1 = gen_testdi_ccno_1;
+      gen_zero_extend = gen_zero_extendqidi2;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  end_label = gen_label_rtx ();
+  qimode_label = gen_label_rtx ();
+
+  scratch = gen_reg_rtx (mode);
+
+  /* Use 8bit unsigned divimod if dividend and divisor are within the
+     the range [0-255].  */
+  emit_move_insn (scratch, operands[2]);
+  scratch = expand_simple_binop (mode, IOR, scratch, operands[3],
+				 scratch, 1, OPTAB_DIRECT);
+  emit_insn (gen_test_ccno_1 (scratch, GEN_INT (-0x100)));
+  tmp0 = gen_rtx_REG (CCNOmode, FLAGS_REG);
+  tmp0 = gen_rtx_EQ (VOIDmode, tmp0, const0_rtx);
+  tmp0 = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp0,
+			       gen_rtx_LABEL_REF (VOIDmode, qimode_label),
+			       pc_rtx);
+  insn = emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp0));
+  predict_jump (REG_BR_PROB_BASE * 50 / 100);
+  JUMP_LABEL (insn) = qimode_label;
+
+  /* Generate original signed/unsigned divimod.  */
+  div = gen_divmod4_1 (operands[0], operands[1],
+		       operands[2], operands[3]);
+  emit_insn (div);
+
+  /* Branch to the end.  */
+  emit_jump_insn (gen_jump (end_label));
+  emit_barrier ();
+
+  /* Generate 8bit unsigned divide.  */
+  emit_label (qimode_label);
+  /* Don't use operands[0] for result of 8bit divide since not all
+     registers support QImode ZERO_EXTRACT.  */
+  tmp0 = simplify_gen_subreg (HImode, scratch, mode, 0);
+  tmp1 = simplify_gen_subreg (HImode, operands[2], mode, 0);
+  tmp2 = simplify_gen_subreg (QImode, operands[3], mode, 0);
+  emit_insn (gen_udivmodhiqi3 (tmp0, tmp1, tmp2));
+
+  if (signed_p)
+    {
+      div = gen_rtx_DIV (SImode, operands[2], operands[3]);
+      mod = gen_rtx_MOD (SImode, operands[2], operands[3]);
+    }
+  else
+    {
+      div = gen_rtx_UDIV (SImode, operands[2], operands[3]);
+      mod = gen_rtx_UMOD (SImode, operands[2], operands[3]);
+    }
+
+  /* Extract remainder from AH.  */
+  tmp1 = gen_rtx_ZERO_EXTRACT (mode, tmp0, GEN_INT (8), GEN_INT (8));
+  if (REG_P (operands[1]))
+    insn = emit_move_insn (operands[1], tmp1);
+  else
+    {
+      /* Need a new scratch register since the old one has result 
+	 of 8bit divide.  */
+      scratch = gen_reg_rtx (mode);
+      emit_move_insn (scratch, tmp1);
+      insn = emit_move_insn (operands[1], scratch);
+    }
+  set_unique_reg_note (insn, REG_EQUAL, mod);
+
+  /* Zero extend quotient from AL.  */
+  tmp1 = gen_lowpart (QImode, tmp0);
+  insn = emit_insn (gen_zero_extend (operands[0], tmp1));
+  set_unique_reg_note (insn, REG_EQUAL, div);
+
+  emit_label (end_label);
 }
 
 #define LEA_SEARCH_THRESHOLD 12

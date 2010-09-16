@@ -388,3 +388,7 @@ Support F16C built-in functions and code generation
 mfentry
 Target Report Var(flag_fentry) Init(-1)
 Emit profiling counter call at function entry before prologue.
+
+m8bit-idiv
+Target Report Mask(USE_8BIT_IDIV) Save
+Expand 32bit/64bit integer divide into 8bit unsigned integer divide with run-time check

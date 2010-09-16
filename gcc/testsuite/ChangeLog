@@ -1,3 +1,24 @@
+2010-09-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/i386/divmod-1.c: New.
+	* gcc.target/i386/divmod-2.c: Likewise.
+	* gcc.target/i386/divmod-3.c: Likewise.
+	* gcc.target/i386/divmod-4.c: Likewise.
+	* gcc.target/i386/divmod-4a.c: Likewise.
+	* gcc.target/i386/divmod-5.c: Likewise.
+	* gcc.target/i386/divmod-6.c: Likewise.
+	* gcc.target/i386/divmod-7.c: Likewise.
+	* gcc.target/i386/divmod-8.c: Likewise.
+	* gcc.target/i386/udivmod-1.c: Likewise.
+	* gcc.target/i386/udivmod-2.c: Likewise.
+	* gcc.target/i386/udivmod-3.c: Likewise.
+	* gcc.target/i386/udivmod-4.c: Likewise.
+	* gcc.target/i386/udivmod-4a.c: Likewise.
+	* gcc.target/i386/udivmod-5.c: Likewise.
+	* gcc.target/i386/udivmod-6.c: Likewise.
+	* gcc.target/i386/udivmod-7.c: Likewise.
+	* gcc.target/i386/udivmod-8.c: Likewise.
+
 2010-09-16  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/lto/pr45679-1_0.C: New file.
