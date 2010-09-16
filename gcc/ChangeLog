@@ -1,3 +1,20 @@
+2010-09-16  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45623
+	* tree-ssa-structalias.c (get_constraint_for_ptr_offset): Adjust.
+	(get_constraint_for_component_ref): If computing a constraint
+	for the rhs handle type punning through unions.
+	(get_constraint_for_address_of): Adjust.
+	(get_constraint_for_1): Likewise.
+	(get_constraint_for): Likewise.
+	(get_constraint_for_rhs): New function.
+	(do_structure_copy): Adjust.
+	(make_constraint_to): Likewise.
+	(handle_const_call): Likewise.
+	(find_func_aliases): Likewise.
+	(process_ipa_clobber): Likewise.
+	(create_variable_info_for): Likewise.
+
 2010-09-16  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vectorizer.c: Fix documentation.
