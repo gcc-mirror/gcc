@@ -1619,7 +1619,6 @@ extern bool tidy_control_flow (basic_block, bool);
 extern void free_bb_note_pool (void);
 
 extern void sel_remove_empty_bb (basic_block, bool, bool);
-extern bool maybe_tidy_empty_bb (basic_block, bool);
 extern void purge_empty_blocks (void);
 extern basic_block sel_split_edge (edge);
 extern basic_block sel_create_recovery_block (insn_t);
