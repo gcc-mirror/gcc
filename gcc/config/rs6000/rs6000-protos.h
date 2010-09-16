@@ -153,7 +153,6 @@ extern enum direction function_arg_padding (enum machine_mode, const_tree);
 
 #endif /* TREE_CODE */
 
-extern void optimization_options (int, int);
 extern int direct_return (void);
 extern int first_reg_to_save (void);
 extern int first_fp_reg_to_save (void);

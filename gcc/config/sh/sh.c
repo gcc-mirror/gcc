@@ -183,6 +183,7 @@ static int noncall_uses_reg (rtx, rtx, rtx *);
 static rtx gen_block_redirect (rtx, int, int);
 static void sh_reorg (void);
 static void sh_option_override (void);
+static void sh_option_optimization (int, int);
 static void output_stack_adjust (int, rtx, int, HARD_REG_SET *, bool);
 static rtx frame_insn (rtx);
 static rtx push (int);
@@ -339,6 +340,8 @@ static const struct attribute_spec sh_attribute_table[] =
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE sh_option_override
+#undef TARGET_OPTION_OPTIMIZATION
+#define TARGET_OPTION_OPTIMIZATION sh_option_optimization
 
 #undef TARGET_PRINT_OPERAND
 #define TARGET_PRINT_OPERAND sh_print_operand
@@ -694,8 +697,8 @@ sh_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED,
 }
 
 /* Set default optimization options.  */
-void
-sh_optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
+static void
+sh_option_optimization (int level, int size)
 {
   if (level)
     {

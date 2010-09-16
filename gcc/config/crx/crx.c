@@ -1,6 +1,6 @@
 /* Output routines for GCC for CRX.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -130,6 +130,7 @@ static bool crx_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_U
 static int crx_address_cost (rtx, bool);
 static bool crx_legitimate_address_p (enum machine_mode, rtx, bool);
 static bool crx_can_eliminate (const int, const int);
+static void crx_option_optimization (int, int);
 
 /*****************************************************************************/
 /* RTL VALIDITY								     */
@@ -174,6 +175,10 @@ static const struct attribute_spec crx_attribute_table[] = {
   {NULL, 0, 0, false, false, false, NULL}
 };
 
+/* Option handling.  */
+
+#undef	TARGET_OPTION_OPTIMIZATION
+#define	TARGET_OPTION_OPTIMIZATION	crx_option_optimization
 
 /* Initialize 'targetm' variable which contains pointers to functions and data
  * relating to the target machine.  */
@@ -1441,4 +1446,14 @@ crx_expand_epilogue (void)
     emit_jump_insn (gen_popret_RA_return ());
   else
     emit_jump_insn (gen_pop_and_popret_return (GEN_INT (sum_regs)));
+}
+
+/* Implement TARGET_OPTION_OPTIMIZATION.  */
+static void
+crx_option_optimization (int level, int size)
+{
+  /* Put each function in its own section so that PAGE-instruction
+     relaxation can do its best.  */
+  if (level || size)
+    flag_function_sections = 1;
 }

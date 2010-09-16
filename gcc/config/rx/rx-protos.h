@@ -28,7 +28,6 @@
 extern void		rx_conditional_register_usage (void);
 extern void		rx_expand_prologue (void);
 extern int		rx_initial_elimination_offset (int, int);
-extern void		rx_set_optimization_options (void);
 
 #ifdef RTX_CODE
 extern bool		rx_compare_redundant (rtx);

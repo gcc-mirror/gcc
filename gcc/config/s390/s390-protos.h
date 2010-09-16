@@ -34,7 +34,6 @@ extern bool s390_check_symref_alignment (rtx addr, HOST_WIDE_INT alignment);
 
 /* Declare functions in s390.c.  */
 
-extern void optimization_options (int, int);
 extern HOST_WIDE_INT s390_initial_elimination_offset (int, int);
 extern void s390_emit_prologue (void);
 extern void s390_emit_epilogue (bool);

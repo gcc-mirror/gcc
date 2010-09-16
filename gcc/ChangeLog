@@ -1,5 +1,102 @@
 2010-09-16  Joseph Myers  <joseph@codesourcery.com>
 
+	* target.def (target_option.optimization): New hook.
+	* doc/tm.texi.in (OPTIMIZATION_OPTIONS): Change to
+	TARGET_OPTION_OPTIMIZATION hook.
+	* doc/tm.texi: Regenerate.
+	* hooks.c (hook_void_int_int): New.
+	* hooks.h (hook_void_int_int): Declare.
+	* opts.c: Don't include tm_p.h.
+	(decode_options): Use targetm.target_option.optimization instead
+	of OPTIMIZATION_OPTIONS.
+	* system.h (OPTIMIZATION_OPTIONS): Poison.
+	* config/arm/arm-protos.h (arm_optimization_options): Remove.
+	* config/arm/arm.c (TARGET_OPTION_OPTIMIZATION): Define.
+	(arm_optimization_options): Rename to arm_option_optimization.
+	Make static.
+	* config/arm/arm.h (OPTIMIZATION_OPTIONS): Remove.
+	* config/cris/cris.c (TARGET_OPTION_OPTIMIZATION): Define.
+	(cris_option_optimization): New.
+	* config/cris/cris.h (OPTIMIZATION_OPTIONS): Remove.
+	* config/crx/crx.c (TARGET_OPTION_OPTIMIZATION): Define.
+	(crx_option_optimization): New.
+	* config/crx/crx.h (OPTIMIZATION_OPTIONS): Remove.
+	* config/frv/frv-protos.h (frv_optimization_options): Remove.
+	* config/frv/frv.c (TARGET_OPTION_OPTIMIZATION): Define.
+	(frv_optimization_options): Rename to frv_option_optimization.
+	Make static.
+	* config/frv/frv.h (OPTIMIZATION_OPTIONS): Remove.
+	* config/h8300/h8300.c (h8300_option_optimization): New.
+	(TARGET_OPTION_OPTIMIZATION): Define.
+	* config/h8300/h8300.h (OPTIMIZATION_OPTIONS): Remove.
+	* config/i386/i386-protos.h (optimization_options): Remove.
+	* config/i386/i386.c (optimization_options): Rename to
+	ix86_option_optimization.  Make static.
+	(TARGET_OPTION_OPTIMIZATION): Define.
+	* config/i386/i386.h (OPTIMIZATION_OPTIONS): Remove.
+	* config/ia64/ia64-protos.h (ia64_optimization_options): Remove.
+	* config/ia64/ia64.c (TARGET_OPTION_OPTIMIZATION): Define.
+	(ia64_optimization_options): Rename to ia64_option_optimization.
+	Make static.  Call SUBTARGET_OPTIMIZATION_OPTIONS.
+	* config/ia64/ia64.h (OPTIMIZATION_OPTIONS): Remove.  Remove
+	commented-out definition.
+	* config/ia64/vms.h (SUBTARGET_OPTIMIZATION_OPTIONS): Define
+	instead of OPTIMIZATION_OPTIONS.
+	* config/m32r/m32r.c (TARGET_OPTION_OPTIMIZATION): Define.
+	(m32r_option_optimization): New.
+	* config/m32r/m32r.h (OPTIMIZATION_OPTIONS): Remove.
+	* config/m68hc11/m68hc11-protos.h (m68hc11_optimization_options):
+	Remove.
+	* config/mcore/mcore.c (TARGET_OPTION_OPTIMIZATION): Define.
+	(mcore_option_optimization): New.
+	* config/mcore/mcore.h (OPTIMIZATION_OPTIONS): Remove.
+	* config/mep/mep-protos.h (mep_optimization_options): Remove.
+	* config/mep/mep.c (TARGET_OPTION_OPTIMIZATION): Define.
+	(mep_optimization_options): Rename to mep_option_optimization.
+	Make static.  Take unused level and size parameters.
+	* config/mep/mep.h (OPTIMIZATION_OPTIONS): Remove.
+	* config/mmix/mmix.c (TARGET_OPTION_OPTIMIZATION): Define.
+	(mmix_option_optimization): New.
+	* config/mmix/mmix.h (OPTIMIZATION_OPTIONS): Remove.
+	* config/pdp11/pdp11.c (TARGET_OPTION_OPTIMIZATION): Define.
+	(pdp11_option_optimization): New.
+	* config/pdp11/pdp11.h (OPTIMIZATION_OPTIONS): Remove.
+	* config/rs6000/rs6000-protos.h (optimization_options): Remove.
+	* config/rs6000/rs6000.c (TARGET_OPTION_OPTIMIZATION): Define.
+	(optimization_options): Rename to rs6000_option_optimization.
+	Make static.
+	* config/rs6000/rs6000.h (OPTIMIZATION_OPTIONS): Remove.
+	* config/rx/rx-protos.h (rx_set_optimization_options): Remove.
+	* config/rx/rx.c (rx_set_optimization_options): Rename to
+	rx_option_optimization.  Make static.  Take unused level and size
+	parameters.
+	(TARGET_OPTION_OPTIMIZATION): Define.
+	* config/rx/rx.h (OPTIMIZATION_OPTIONS): Remove.
+	* config/s390/s390-protos.h (optimization_options): Remove.
+	* config/s390/s390.c (optimization_options): Rename to
+	s390_option_optimization.  Make static.  Don't mark size parameter
+	unused.
+	(TARGET_OPTION_OPTIMIZATION): Define.
+	* config/s390/s390.h (OPTIMIZATION_OPTIONS): Remove.
+	* config/sh/sh-protos.h (sh_optimization_options): Remove.
+	* config/sh/sh.c (TARGET_OPTION_OPTIMIZATION): Define.
+	(sh_optimization_options): Rename to sh_option_optimization.  Make
+	static.  Don't mark parameters unused.
+	* config/sh/sh.h (OPTIMIZATION_OPTIONS): Remove.
+	* config/spu/spu-protos.h (spu_optimization_options): Remove.
+	* config/spu/spu.c (TARGET_OPTION_OPTIMIZATION): Define.
+	(spu_optimization_options): Rename to spu_option_optimization.
+	Make static.
+	* config/spu/spu.h (OPTIMIZATION_OPTIONS): Remove.
+	* config/v850/v850.c (TARGET_OPTION_OPTIMIZATION): Define.
+	(v850_option_optimization): New.
+	* config/v850/v850.h (OPTIMIZATION_OPTIONS): Remove.
+	* config/xtensa/xtensa.c (TARGET_OPTION_OPTIMIZATION): Define.
+	(xtensa_option_optimization): New.
+	* config/xtensa/xtensa.h (OPTIMIZATION_OPTIONS): Remove.
+
+2010-09-16  Joseph Myers  <joseph@codesourcery.com>
+
 	* doc/tm.texi.in (OVERRIDE_OPTIONS): Remove documentation.
 	(C_COMMON_OVERRIDE_OPTIONS): Don't refer to OVERRIDE_OPTIONS.
 	* doc/tm.texi: Regenerate.

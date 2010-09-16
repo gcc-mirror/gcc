@@ -38,7 +38,6 @@ extern frv_cpu_t frv_cpu_type;			/* value of -mcpu= */
 /* Define functions defined in frv.c */
 extern void frv_expand_prologue			(void);
 extern void frv_expand_epilogue			(bool);
-extern void frv_optimization_options		(int, int);
 extern void frv_conditional_register_usage	(void);
 extern frv_stack_t *frv_stack_info		(void);
 extern void frv_debug_stack			(frv_stack_t *);

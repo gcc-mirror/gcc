@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 
-extern int m68hc11_optimization_options (int,int);
 extern void m68hc11_conditional_register_usage (void);
 extern int hard_regno_mode_ok (int, enum machine_mode);
 extern int m68hc11_hard_regno_rename_ok (int, int);

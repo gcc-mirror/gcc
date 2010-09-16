@@ -118,14 +118,6 @@ enum processor_type
 };
 
 extern enum processor_type ia64_tune;
-
-/* Some machines may desire to change what optimizations are performed for
-   various optimization levels.  This macro, if defined, is executed once just
-   after the optimization level is determined and before the remainder of the
-   command options have been parsed.  Values set in this macro are used as the
-   default values for the other command line options.  */
-
-/* #define OPTIMIZATION_OPTIONS(LEVEL,SIZE) */
 
 /* Driver configuration */
 
@@ -1896,9 +1888,5 @@ struct GTY(()) machine_function
 
 /* Switch on code for querying unit reservations.  */
 #define CPU_UNITS_QUERY 1
-
-/* Define this to change the optimizations performed by default.  */
-#define OPTIMIZATION_OPTIONS(LEVEL, SIZE) \
-  ia64_optimization_options ((LEVEL), (SIZE))
 
 /* End of ia64.h */

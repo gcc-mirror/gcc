@@ -202,6 +202,7 @@ static rtx gen_fr_spill_x (rtx, rtx, rtx);
 static rtx gen_fr_restore_x (rtx, rtx, rtx);
 
 static void ia64_option_override (void);
+static void ia64_option_optimization (int, int);
 static bool ia64_can_eliminate (const int, const int);
 static enum machine_mode hfa_element_mode (const_tree, bool);
 static void ia64_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
@@ -361,6 +362,8 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE ia64_option_override
+#undef TARGET_OPTION_OPTIMIZATION
+#define TARGET_OPTION_OPTIMIZATION ia64_option_optimization
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE ia64_output_function_prologue
@@ -10719,10 +10722,14 @@ ia64_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1, const_tree ty
 }
 
 /* Implement overriding of the optimization options.  */
-void
-ia64_optimization_options (int level ATTRIBUTE_UNUSED,
-                           int size ATTRIBUTE_UNUSED)
+static void
+ia64_option_optimization (int level ATTRIBUTE_UNUSED,
+			  int size ATTRIBUTE_UNUSED)
 {
+#ifdef SUBTARGET_OPTIMIZATION_OPTIONS
+  SUBTARGET_OPTIMIZATION_OPTIONS;
+#endif
+
   /* Let the scheduler form additional regions.  */
   set_param_value ("max-sched-extend-regions-iters", 2);
 

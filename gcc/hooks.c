@@ -181,6 +181,11 @@ hook_void_tree_treeptr (tree a ATTRIBUTE_UNUSED, tree *b ATTRIBUTE_UNUSED)
 {
 }
 
+void
+hook_void_int_int (int a ATTRIBUTE_UNUSED, int b ATTRIBUTE_UNUSED)
+{
+}
+
 bool
 hook_bool_tree_false (tree a ATTRIBUTE_UNUSED)
 {

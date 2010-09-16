@@ -216,6 +216,7 @@ static tree arm_build_builtin_va_list (void);
 static void arm_expand_builtin_va_start (tree, rtx);
 static tree arm_gimplify_va_arg_expr (tree, tree, gimple_seq *, gimple_seq *);
 static void arm_option_override (void);
+static void arm_option_optimization (int, int);
 static bool arm_handle_option (size_t, const char *, int);
 static void arm_target_help (void);
 static unsigned HOST_WIDE_INT arm_shift_truncation_mask (enum machine_mode);
@@ -321,6 +322,8 @@ static const struct attribute_spec arm_attribute_table[] =
 #define TARGET_HELP arm_target_help
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE arm_option_override
+#undef  TARGET_OPTION_OPTIMIZATION
+#define TARGET_OPTION_OPTIMIZATION arm_option_optimization
 
 #undef  TARGET_COMP_TYPE_ATTRIBUTES
 #define TARGET_COMP_TYPE_ATTRIBUTES arm_comp_type_attributes
@@ -22627,8 +22630,8 @@ arm_order_regs_for_local_alloc (void)
 }
 
 /* Set default optimization options.  */
-void
-arm_optimization_options (int level, int size ATTRIBUTE_UNUSED)
+static void
+arm_option_optimization (int level, int size ATTRIBUTE_UNUSED)
 {
   /* Enable section anchors by default at -O1 or higher.
      Use 2 to distinguish from an explicit -fsection-anchors

@@ -310,21 +310,6 @@ extern enum m32r_sdata m32r_sdata;
 #define SUBTARGET_OPTIMIZATION_OPTIONS
 #endif
 
-#define OPTIMIZATION_OPTIONS(LEVEL, SIZE)	\
-  do						\
-    {						\
-      if (LEVEL == 1)				\
-	flag_regmove = TRUE;			\
-      						\
-      if (SIZE)					\
-	{					\
-	  flag_omit_frame_pointer = TRUE;	\
-	}					\
-      						\
-      SUBTARGET_OPTIMIZATION_OPTIONS		\
-    }						\
-  while (0)
-
 /* Define this macro if debugging can be performed even without a
    frame pointer.  If this macro is defined, GCC will turn on the
    `-fomit-frame-pointer' option whenever `-O' is specified.  */

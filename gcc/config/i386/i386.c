@@ -4516,8 +4516,8 @@ x86_output_aligned_bss (FILE *file, tree decl ATTRIBUTE_UNUSED,
   ASM_OUTPUT_SKIP (file, size ? size : 1);
 }
 
-void
-optimization_options (int level, int size ATTRIBUTE_UNUSED)
+static void
+ix86_option_optimization (int level, int size ATTRIBUTE_UNUSED)
 {
   /* For -O2 and beyond, turn off -fschedule-insns by default.  It tends to
      make the problem with not enough registers even worse.  */
@@ -32504,6 +32504,8 @@ ix86_units_per_simd_word (enum machine_mode mode)
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE ix86_option_override
+#undef TARGET_OPTION_OPTIMIZATION
+#define TARGET_OPTION_OPTIMIZATION ix86_option_optimization
 
 #undef TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST ix86_register_move_cost

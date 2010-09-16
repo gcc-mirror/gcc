@@ -791,9 +791,9 @@ used to alter option flag variables which only exist in those
 frontends.
 @end defmac
 
-@defmac OPTIMIZATION_OPTIONS (@var{level}, @var{size})
+@deftypefn {Target Hook} void TARGET_OPTION_OPTIMIZATION (int @var{level}, int @var{size})
 Some machines may desire to change what optimizations are performed for
-various optimization levels.   This macro, if defined, is executed once
+various optimization levels.   This hook, if defined, is executed once
 just after the optimization level is determined and before the remainder
 of the command options have been parsed.  Values set in this macro are
 used as the default values for the other command line options.
@@ -808,9 +808,9 @@ options are changed via @code{#pragma GCC optimize} or by using the
 @code{optimize} attribute.
 
 @strong{Do not examine @code{write_symbols} in
-this macro!} The debugging options are not supposed to alter the
+this hook!}  The debugging options are not supposed to alter the
 generated code.
-@end defmac
+@end deftypefn
 
 @deftypefn {Target Hook} void TARGET_HELP (void)
 This hook is called in response to the user invoking
@@ -9414,7 +9414,7 @@ Define this macro if GCC should produce debugging output for VMS
 in response to the @option{-g} option.  The default behavior for VMS
 is to generate minimal debug info for a traceback in the absence of
 @option{-g} unless explicitly overridden with @option{-g0}.  This
-behavior is controlled by @code{OPTIMIZATION_OPTIONS} and
+behavior is controlled by @code{TARGET_OPTION_OPTIMIZATION} and
 @code{TARGET_OPTION_OVERRIDE}.
 @end defmac
 
@@ -9762,7 +9762,7 @@ a particular target machine.  You can override the hook
 once just after all the command options have been parsed.
 
 Don't use this hook to turn on various extra optimizations for
-@option{-O}.  That is what @code{OPTIMIZATION_OPTIONS} is for.
+@option{-O}.  That is what @code{TARGET_OPTION_OPTIMIZATION} is for.
 
 If you need to do something whenever the optimization level is
 changed via the optimize attribute or pragma, see
