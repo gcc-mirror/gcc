@@ -149,19 +149,6 @@ extern int target_flags;
 #define TARGET_VERSION \
   fprintf (stderr, " (MMIX)")
 
-#define OPTIMIZATION_OPTIONS(LEVEL, SIZE)	\
-  do						\
-    {						\
-      if (LEVEL >= 1)				\
-	flag_regmove = TRUE;			\
-      						\
-      if (SIZE || LEVEL > 1)			\
-	{					\
-	  flag_omit_frame_pointer = TRUE;	\
-	}					\
-    }						\
-  while (0)
-
 /* This one will have to wait a little bit; right now we can't debug
    neither with or without a frame-pointer.  */
 /* #define CAN_DEBUG_WITHOUT_FP */

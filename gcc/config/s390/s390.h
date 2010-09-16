@@ -149,9 +149,6 @@ extern int s390_arch_flags;
 #define TARGET_VERSION fprintf (stderr, " (S/390)");
 #endif
 
-/* Hook to override options.  */
-#define OPTIMIZATION_OPTIONS(LEVEL, SIZE) optimization_options(LEVEL, SIZE)
-
 /* Frame pointer is not used for debugging.  */
 #define CAN_DEBUG_WITHOUT_FP
 

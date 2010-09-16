@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for NEC V850 series
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -50,6 +50,7 @@
 
 /* Function prototypes for stupid compilers:  */
 static bool v850_handle_option       (size_t, const char *, int);
+static void v850_option_optimization (int, int);
 static void const_double_split       (rtx, HOST_WIDE_INT *, HOST_WIDE_INT *);
 static int  const_costs_int          (HOST_WIDE_INT, int);
 static int  const_costs		     (rtx, enum rtx_code);
@@ -218,6 +219,9 @@ static const struct attribute_spec v850_attribute_table[] =
 #undef TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING v850_strict_argument_naming
 
+#undef TARGET_OPTION_OPTIMIZATION
+#define TARGET_OPTION_OPTIMIZATION v850_option_optimization
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Set the maximum size of small memory area TYPE to the value given
@@ -277,6 +281,21 @@ v850_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
     default:
       return true;
     }
+}
+
+/* Implement TARGET_OPTION_OPTIMIZATION.  */
+
+static void
+v850_option_optimization (int level, int size ATTRIBUTE_UNUSED)
+{
+  if (level)
+    /* Note - we no longer enable MASK_EP when optimizing.  This is
+       because of a hardware bug which stops the SLD and SST instructions
+       from correctly detecting some hazards.  If the user is sure that
+       their hardware is fixed or that their program will not encounter
+       the conditions that trigger the bug then they can enable -mep by
+       hand.  */
+    target_flags |= MASK_PROLOG_FUNCTION;
 }
 
 /* Handle the TARGET_PASS_BY_REFERENCE target hook.

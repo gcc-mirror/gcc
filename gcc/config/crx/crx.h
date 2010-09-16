@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for CRX.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -53,14 +53,6 @@ do {								\
 #endif
 
 #define TARGET_VERSION fputs (" (CRX/ELF)", stderr);
-
-/* Put each function in its own section so that PAGE-instruction
- * relaxation can do its best.  */
-#define OPTIMIZATION_OPTIONS(LEVEL, SIZEFLAG)	\
-    do {					\
-	if ((LEVEL) || (SIZEFLAG))		\
-	    flag_function_sections = 1;	\
-    } while (0)
 
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP

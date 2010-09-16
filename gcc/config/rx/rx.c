@@ -2162,8 +2162,10 @@ rx_handle_option (size_t code, const char *  arg ATTRIBUTE_UNUSED, int value)
   return true;
 }
 
-void
-rx_set_optimization_options (void)
+/* Implement TARGET_OPTION_OPTIMIZATION.  */
+
+static void
+rx_option_optimization (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
 {
   static bool first_time = TRUE;
   static bool saved_allow_rx_fpu = TRUE;
@@ -2802,6 +2804,9 @@ rx_memory_move_cost (enum machine_mode mode, enum reg_class regclass, bool in)
 
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE			rx_option_override
+
+#undef  TARGET_OPTION_OPTIMIZATION
+#define TARGET_OPTION_OPTIMIZATION		rx_option_optimization
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

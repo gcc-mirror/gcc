@@ -163,8 +163,6 @@ extern int target_flags;
 /* end-coproc-selection-table */
 
 #define CAN_DEBUG_WITHOUT_FP
-
-#define OPTIMIZATION_OPTIONS(LEVEL, FOR_SIZE) mep_optimization_options ()
 
 
 #define BITS_BIG_ENDIAN 0

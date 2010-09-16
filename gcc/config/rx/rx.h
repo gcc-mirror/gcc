@@ -632,9 +632,6 @@ extern int rx_float_compare_mode;
 #define TARGET_OPTION_TRANSLATE_TABLE \
   {"-nofpu", "-mnofpu" }
 
-#define OPTIMIZATION_OPTIONS(LEVEL,SIZE) \
-  rx_set_optimization_options ()
-
 #define TARGET_USE_FPU		(! TARGET_NO_USE_FPU)
 
 /* This macro is used to decide when RX FPU instructions can be used.  */

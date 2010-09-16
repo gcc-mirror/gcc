@@ -328,15 +328,6 @@ extern int target_flags;
 
 #define CRIS_SUBTARGET_HANDLE_OPTION(x, y, z)
 
-#define OPTIMIZATION_OPTIONS(OPTIMIZE, SIZE)	\
-  do						\
-    {						\
-      if ((OPTIMIZE) >= 2 || (SIZE))		\
-	flag_omit_frame_pointer = 1;		\
-    }						\
-  while (0)
-
-
 /* Node: Storage Layout */
 
 #define BITS_BIG_ENDIAN 0

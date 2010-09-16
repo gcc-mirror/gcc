@@ -1465,8 +1465,8 @@ s390_init_machine_status (void)
 
    SIZE is nonzero if `-Os' is specified and zero otherwise.  */
 
-void
-optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
+static void
+s390_option_optimization (int level ATTRIBUTE_UNUSED, int size)
 {
   /* ??? There are apparently still problems with -fcaller-saves.  */
   flag_caller_saves = 0;
@@ -1675,7 +1675,7 @@ s390_option_override (void)
   if (!PARAM_SET_P (PARAM_SIMULTANEOUS_PREFETCHES))
     set_param_value ("simultaneous-prefetches", 6);
 
-  /* This cannot reside in optimization_options since HAVE_prefetch
+  /* This cannot reside in s390_option_optimization since HAVE_prefetch
      requires the arch flags to be evaluated already.  Since prefetching
      is beneficial on s390, we enable it if available.  */
   if (flag_prefetch_loop_arrays < 0 && HAVE_prefetch && optimize >= 3)
@@ -10425,6 +10425,9 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE s390_option_override
+
+#undef TARGET_OPTION_OPTIMIZATION
+#define TARGET_OPTION_OPTIMIZATION s390_option_optimization
 
 #undef	TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO s390_encode_section_info

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler. NEC V850 series
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2007, 2008, 2009  Free Software Foundation, Inc.
+   2007, 2008, 2009, 2010  Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -140,39 +140,6 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
 
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP
-
-/* Some machines may desire to change what optimizations are
-   performed for various optimization levels.   This macro, if
-   defined, is executed once just after the optimization level is
-   determined and before the remainder of the command options have
-   been parsed.  Values set in this macro are used as the default
-   values for the other command line options.
-
-   LEVEL is the optimization level specified; 2 if `-O2' is
-   specified, 1 if `-O' is specified, and 0 if neither is specified.
-
-   SIZE is nonzero if `-Os' is specified, 0 otherwise.  
-
-   You should not use this macro to change options that are not
-   machine-specific.  These should uniformly selected by the same
-   optimization level on all supported machines.  Use this macro to
-   enable machine-specific optimizations.
-
-   *Do not examine `write_symbols' in this macro!* The debugging
-   options are not supposed to alter the generated code.  */
-
-#define OPTIMIZATION_OPTIONS(LEVEL,SIZE)				\
-{									\
-  if (LEVEL)								\
-    /* Note - we no longer enable MASK_EP when optimizing.  This is	\
-       because of a hardware bug which stops the SLD and SST instructions\
-       from correctly detecting some hazards.  If the user is sure that \
-       their hardware is fixed or that their program will not encounter \
-       the conditions that trigger the bug then they can enable -mep by \
-       hand.  */							\
-    target_flags |= MASK_PROLOG_FUNCTION;				\
-}
-
 
 /* Target machine storage layout */
 

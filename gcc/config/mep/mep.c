@@ -291,8 +291,8 @@ mep_conditional_register_usage (void)
     global_regs[i] = 1;
 }
 
-void
-mep_optimization_options (void)
+static void
+mep_option_optimization (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
 {
   /* The first scheduling pass often increases register pressure and tends
      to result in more spill code.  Only run it when specifically asked.  */
@@ -7411,6 +7411,8 @@ mep_asm_init_sections (void)
 #define TARGET_HANDLE_OPTION            mep_handle_option
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE		mep_option_override
+#undef  TARGET_OPTION_OPTIMIZATION
+#define TARGET_OPTION_OPTIMIZATION	mep_option_optimization
 #undef  TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS	TARGET_DEFAULT
 #undef  TARGET_ALLOCATE_INITIAL_VALUE

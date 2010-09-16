@@ -498,9 +498,6 @@ extern int arm_arch_hwdiv;
    that is controlled by the APCS-FRAME option.  */
 #define CAN_DEBUG_WITHOUT_FP
 
-#define OPTIMIZATION_OPTIONS(LEVEL,SIZE)		\
-	arm_optimization_options ((LEVEL), (SIZE))
-
 /* Nonzero if PIC code requires explicit qualifiers to generate
    PLT and GOT relocs rather than the assembler doing so implicitly.
    Subtargets can override these if required.  */

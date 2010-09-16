@@ -470,8 +470,6 @@ do { \
 
 #define DRIVER_SELF_SPECS "%{m2a:%{ml:%eSH2a does not support little-endian}}"
 
-#define OPTIMIZATION_OPTIONS(LEVEL,SIZE) sh_optimization_options (LEVEL, SIZE)
-
 #define ASSEMBLER_DIALECT assembler_dialect
 
 extern int assembler_dialect;

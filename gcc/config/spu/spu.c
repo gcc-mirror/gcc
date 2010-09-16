@@ -150,6 +150,7 @@ char regs_ever_allocated[FIRST_PSEUDO_REGISTER];
 
 /*  Prototypes and external defs.  */
 static void spu_option_override (void);
+static void spu_option_optimization (int, int);
 static void spu_init_builtins (void);
 static tree spu_builtin_decl (unsigned, bool);
 static bool spu_scalar_mode_supported_p (enum machine_mode mode);
@@ -468,10 +469,13 @@ static const struct attribute_spec spu_attribute_table[] =
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE spu_option_override
 
+#undef TARGET_OPTION_OPTIMIZATION
+#define TARGET_OPTION_OPTIMIZATION spu_option_optimization
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-void
-spu_optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
+static void
+spu_option_optimization (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
 {
   /* Override some of the default param values.  With so many registers
      larger values are better for these params.  */

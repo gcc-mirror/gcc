@@ -74,18 +74,6 @@ extern unsigned xtensa_current_frame_size;
 #define HAVE_AS_TLS 0
 #endif
 
-/* Reordering blocks for Xtensa is not a good idea unless the compiler
-   understands the range of conditional branches.  Currently all branch
-   relaxation for Xtensa is handled in the assembler, so GCC cannot do a
-   good job of reordering blocks.  Do not enable reordering unless it is
-   explicitly requested.  */
-#define OPTIMIZATION_OPTIONS(LEVEL, SIZE)				\
-  do									\
-    {									\
-      flag_reorder_blocks = 0;						\
-    }									\
-  while (0)
-
 
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS()					\
