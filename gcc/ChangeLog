@@ -1,3 +1,9 @@
+2010-09-16  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/m32r/m32r.c (TARGET_MEMORY_MOVE_COSTS): Remove.
+	(TARGET_MEMORY_MOVE_COST): Define.
+	(m32r_function_arg): Annotate argument 'type' with ATTRIBUTE_UNUSED.
+
 2010-09-16  Alexander Monakov  <amonakov@ispras.ru>
 
 	* sel-sched.c (move_cond_jump): Use tidy_control_flow instead of
