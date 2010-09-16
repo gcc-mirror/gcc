@@ -2279,6 +2279,53 @@ gfc_get_mixed_entry_union (gfc_namespace *ns)
   return type;
 }
 
+/* Create a "fn spec" based on the formal arguments;
+   cf. create_function_arglist.  */
+
+static tree
+create_fn_spec (gfc_symbol *sym, tree fntype)
+{
+  char spec[150];
+  size_t spec_len;
+  gfc_formal_arglist *f;
+  tree tmp;
+
+  memset (&spec, 0, sizeof (spec));
+  spec[0] = '.';
+  spec_len = 1;
+
+  if (sym->attr.entry_master)
+    spec[spec_len++] = 'R';
+  if (gfc_return_by_reference (sym))
+    {
+      gfc_symbol *result = sym->result ? sym->result : sym;
+
+      if (result->attr.pointer || sym->attr.proc_pointer)
+	spec[spec_len++] = '.';
+      else
+	spec[spec_len++] = 'w';
+      if (sym->ts.type == BT_CHARACTER)
+	spec[spec_len++] = 'R';
+    }
+
+  for (f = sym->formal; f; f = f->next)
+    if (spec_len < sizeof (spec))
+      {
+	if (!f->sym || f->sym->attr.pointer || f->sym->attr.target
+	    || f->sym->attr.external || f->sym->attr.cray_pointer)
+	  spec[spec_len++] = '.';
+	else if (f->sym->attr.intent == INTENT_IN)
+	  spec[spec_len++] = 'r';
+	else if (f->sym)
+	  spec[spec_len++] = 'w';
+      }
+
+  tmp = build_tree_list (NULL_TREE, build_string (spec_len, spec));
+  tmp = tree_cons (get_identifier ("fn spec"), tmp, TYPE_ATTRIBUTES (fntype));
+  return build_type_attribute_variant (fntype, tmp);
+}
+
+
 tree
 gfc_get_function_type (gfc_symbol * sym)
 {
@@ -2420,6 +2467,7 @@ gfc_get_function_type (gfc_symbol * sym)
     type = gfc_sym_type (sym);
 
   type = build_function_type (type, typelist);
+  type = create_fn_spec (sym, type);
 
   return type;
 }

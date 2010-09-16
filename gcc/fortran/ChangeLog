@@ -1,3 +1,9 @@
+2010-09-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43665
+	* trans-types.c (create_fn_spec): New function.
+	(gfc_get_function_type): Call it.
+
 2010-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* gfortran.h (walk_code_fn_t, walk_expr_fn_t): New types.
