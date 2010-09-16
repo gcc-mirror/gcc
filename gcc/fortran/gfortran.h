@@ -2886,4 +2886,10 @@ gfc_symtree* gfc_get_tbp_symtree (gfc_symtree**, const char*);
 
 void gfc_run_passes (gfc_namespace *);
 
+typedef int (*walk_code_fn_t) (gfc_code **, int *, void *);
+typedef int (*walk_expr_fn_t) (gfc_expr **, int *, void *);
+
+int gfc_expr_walker (gfc_expr **, walk_expr_fn_t, void *);
+int gfc_code_walker (gfc_code **, walk_code_fn_t, walk_expr_fn_t, void *);
+
 #endif /* GCC_GFORTRAN_H  */

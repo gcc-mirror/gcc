@@ -1,3 +1,15 @@
+2010-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.h (walk_code_fn_t, walk_expr_fn_t): New types.
+	(gfc_expr_walker, gfc_code_walker): New prototypes.
+	* frontend-passes.c (gfc_expr_walker, gfc_code_walker): New functions.
+	(WALK_SUBEXPR, WALK_SUBEXPR_TAIL, WALK_SUBCODE): Define.
+	(optimize_namespace): Use gfc_code_walker.
+	(optimize_code, optimize_expr): Rewritten as gfc_code_walker hooks.
+	(optimize_expr_0, optimize_code_node,
+	optimize_actual_arglist): Removed.
+	(optimize_assignment): Don't call optimize_expr_0.
+
 2010-09-16  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45674
