@@ -27564,7 +27564,6 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
     }
 }
 
-#ifdef ASM_OUTPUT_MAX_SKIP_PAD
 /* We don't have exact information about the insn sizes, but we may assume
    quite safely that we are informed about all 1 byte insns and memory
    address sizes.  This is enough to eliminate unnecessary padding in
@@ -27625,6 +27624,8 @@ min_insn_size (rtx insn)
   else
     return 2;
 }
+
+#ifdef ASM_OUTPUT_MAX_SKIP_PAD
 
 /* AMD K8 core mispredicts jumps when there are more than 3 jumps in 16 byte
    window.  */
