@@ -1,3 +1,8 @@
+2010-09-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45674
+	* gfortran.dg/class_dummy_2.f03: New.
+
 2010-09-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45623

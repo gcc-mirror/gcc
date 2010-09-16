@@ -1428,10 +1428,10 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       && actual->ts.u.derived && actual->ts.u.derived->ts.is_iso_c)
     return 1;
 
-  if (formal->ts.type == BT_CLASS)
+  if (formal->ts.type == BT_CLASS && actual->ts.type == BT_DERIVED)
     /* Make sure the vtab symbol is present when
        the module variables are generated.  */
-    gfc_find_derived_vtab (formal->ts.u.derived);
+    gfc_find_derived_vtab (actual->ts.u.derived);
 
   if (actual->ts.type == BT_PROCEDURE)
     {
