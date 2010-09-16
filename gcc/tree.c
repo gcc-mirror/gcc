@@ -294,6 +294,8 @@ tree_node_structure_for_code (enum tree_code code)
 	    return TS_TYPE_DECL;
 	  case FUNCTION_DECL:
 	    return TS_FUNCTION_DECL;
+	  case TRANSLATION_UNIT_DECL:
+	    return TS_TRANSLATION_UNIT_DECL;
 	  default:
 	    return TS_DECL_NON_COMMON;
 	  }
@@ -464,6 +466,10 @@ initialize_tree_contains_struct (void)
 	  MARK_TS_DECL_NON_COMMON (code);
 	  break;
 
+	case TS_TRANSLATION_UNIT_DECL:
+	  MARK_TS_DECL_COMMON (code);
+	  break;
+
 	default:
 	  gcc_unreachable ();
 	}
@@ -471,7 +477,6 @@ initialize_tree_contains_struct (void)
 
   /* Basic consistency checks for attributes used in fold.  */
   gcc_assert (tree_contains_struct[FUNCTION_DECL][TS_DECL_NON_COMMON]);
-  gcc_assert (tree_contains_struct[TRANSLATION_UNIT_DECL][TS_DECL_NON_COMMON]);
   gcc_assert (tree_contains_struct[TYPE_DECL][TS_DECL_NON_COMMON]);
   gcc_assert (tree_contains_struct[CONST_DECL][TS_DECL_COMMON]);
   gcc_assert (tree_contains_struct[VAR_DECL][TS_DECL_COMMON]);
@@ -500,7 +505,6 @@ initialize_tree_contains_struct (void)
   gcc_assert (tree_contains_struct[VAR_DECL][TS_DECL_WITH_VIS]);
   gcc_assert (tree_contains_struct[FUNCTION_DECL][TS_DECL_WITH_VIS]);
   gcc_assert (tree_contains_struct[TYPE_DECL][TS_DECL_WITH_VIS]);
-  gcc_assert (tree_contains_struct[TRANSLATION_UNIT_DECL][TS_DECL_WITH_VIS]);
   gcc_assert (tree_contains_struct[VAR_DECL][TS_VAR_DECL]);
   gcc_assert (tree_contains_struct[FIELD_DECL][TS_FIELD_DECL]);
   gcc_assert (tree_contains_struct[PARM_DECL][TS_PARM_DECL]);
@@ -4032,6 +4036,21 @@ build_fn_decl (const char *name, tree type)
   TREE_NOTHROW (decl) = 1;
 
   return decl;
+}
+
+VEC(tree,gc) *all_translation_units;
+
+/* Builds a new translation-unit decl with name NAME, queues it in the
+   global list of translation-unit decls and returns it.   */
+
+tree
+build_translation_unit_decl (tree name)
+{
+  tree tu = build_decl (UNKNOWN_LOCATION, TRANSLATION_UNIT_DECL,
+			name, NULL_TREE);
+  TRANSLATION_UNIT_LANGUAGE (tu) = lang_hooks.name;
+  VEC_safe_push (tree, gc, all_translation_units, tu);
+  return tu;
 }
 
 

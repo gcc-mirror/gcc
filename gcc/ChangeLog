@@ -1,3 +1,36 @@
+2010-09-16  Richard Guenther  <rguenther@suse.de>
+
+	* tree.c (tree_node_structure_for_code): TRANSLATION_UNIT_DECL
+	is TS_TRANSLATION_UNIT_DECL.
+	(initialize_tree_contains_struct): Adjust.
+	(all_translation_units): New global vector.
+	(build_translation_unit_decl): New function.
+	* tree.h (TRANSLATION_UNIT_LANGUAGE): New macro.
+	(struct tree_translation_unit_decl): New.
+	(all_translation_units): Declare.
+	(union tree_node): Add translation_unit_decl member.
+	(build_translation_unit_decl): Declare.
+	* treestruct.def (TS_TRANSLATION_UNIT_DECL): New.
+	* lto-streamer-out.c (pack_ts_translation_unit_decl_value_fields):
+	New function.
+	(pack_value_fields): Call it.
+	(lto_output_tree_ref): Handle references to TRANSLATION_UNIT_DECL.
+	(lto_output_ts_translation_unit_decl_tree_pointers): New function.
+	(lto_output_tree_pointers): Call it.
+	* lto-streamer-in.c (lto_input_tree_ref): Handle references
+	to TRANSLATION_UNIT_DECL.
+	(unpack_ts_translation_unit_decl_value_fields): New function.
+	(unpack_value_fields): Call it.
+	(lto_input_ts_translation_unit_decl_tree_pointers): New function.
+	(lto_input_tree_pointers): Call it.
+	* lto-streamer.c (check_handled_ts_structures): Adjust.
+	* lto-streamer.h (enum LTO_tags): Add LTO_translation_unit_decl_ref.
+	* c-decl.c (all_translation_units): Remove.
+	(pop_scope): Use build_translation_unit_decl.
+	(collect_all_refs): Adjust.
+	(for_each_global_decl): Likewise.
+	(c_write_global_declarations): Likewise.
+
 2010-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/45686
