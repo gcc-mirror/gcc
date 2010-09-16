@@ -447,11 +447,14 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 
   clone_of = node->clone_of;
   while (clone_of
-	 && (ref = lto_cgraph_encoder_lookup (encoder, node->clone_of)) == LCC_NOT_FOUND)
+	 && (ref = lto_cgraph_encoder_lookup (encoder, clone_of)) == LCC_NOT_FOUND)
     if (clone_of->prev_sibling_clone)
       clone_of = clone_of->prev_sibling_clone;
     else
       clone_of = clone_of->clone_of;
+
+  if (LTO_cgraph_analyzed_node)
+    gcc_assert (clone_of || !node->clone_of);
   if (!clone_of)
     lto_output_sleb128_stream (ob->main_stream, LCC_NOT_FOUND);
   else

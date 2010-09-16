@@ -407,22 +407,26 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		  if (!clone)
 		    {
 		      cgraph_release_function_body (node);
-		      node->analyzed = false;
 		      node->local.inlinable = false;
+		      if (node->prev_sibling_clone)
+			node->prev_sibling_clone->next_sibling_clone = node->next_sibling_clone;
+		      else if (node->clone_of)
+			node->clone_of->clones = node->next_sibling_clone;
+		      if (node->next_sibling_clone)
+			node->next_sibling_clone->prev_sibling_clone = node->prev_sibling_clone;
+#ifdef ENABLE_CHECKING
+		      if (node->clone_of)
+			node->former_clone_of = node->clone_of->decl;
+#endif
+		      node->clone_of = NULL;
+		      node->next_sibling_clone = NULL;
+		      node->prev_sibling_clone = NULL;
 		    }
 		  else
 		    gcc_assert (!clone->in_other_partition);
+		  node->analyzed = false;
 		  cgraph_node_remove_callees (node);
 		  ipa_remove_all_references (&node->ref_list);
-		  if (node->prev_sibling_clone)
-		    node->prev_sibling_clone->next_sibling_clone = node->next_sibling_clone;
-		  else if (node->clone_of)
-		    node->clone_of->clones = node->next_sibling_clone;
-		  if (node->next_sibling_clone)
-		    node->next_sibling_clone->prev_sibling_clone = node->prev_sibling_clone;
-		  node->clone_of = NULL;
-		  node->next_sibling_clone = NULL;
-		  node->prev_sibling_clone = NULL;
 		}
 	      else
 		cgraph_remove_node (node);

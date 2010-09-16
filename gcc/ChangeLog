@@ -1,3 +1,11 @@
+2010-09-16  Jan Hubicka  <jh@suse.cz>
+
+	* lto-cgraph.c (lto_output_node): Fix handling of clones.
+	* ipa.c (cgraph_remove_unreachabloe_nodes): Fix handling of
+	unreachable clones with reachable clones.
+	* tree-inline.c (copy_bb): Fix sanity checking when producing
+	unreachable clone.
+
 2010-09-16  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/m32r/m32r.c (TARGET_MEMORY_MOVE_COSTS): Remove.
