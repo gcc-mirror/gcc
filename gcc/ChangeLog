@@ -1,3 +1,21 @@
+2010-09-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386-protos.h (ix86_split_idivmod): New prototype.
+
+	* config/i386/i386.c (predict_jump): Add prototype.
+	(flag_opts): Add -m8bit-idiv.
+	(ix86_split_idivmod): New.
+
+	* config/i386/i386.md (UNSPEC_DIV_ALREADY_SPLIT): New.
+	Add 2 splitters for SI/DI mode divide.
+	(divmod<mode>4_1): New pattern.
+	(udivmod<mode>4_1): Likewise.
+	(testdi_ccno_1): Likewise.
+
+	* config/i386/i386.opt (m8bit-idiv): New.
+
+	* doc/invoke.texi: Document -m8bit-idiv.
+
 2010-09-16  Reza Yazdani  <reza.yazdani@amd.com>
 
 	PR bootstrap/45680

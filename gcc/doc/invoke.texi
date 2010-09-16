@@ -602,7 +602,7 @@ Objective-C and Objective-C++ Dialects}.
 -momit-leaf-frame-pointer  -mno-red-zone -mno-tls-direct-seg-refs @gol
 -mcmodel=@var{code-model} -mabi=@var{name} @gol
 -m32  -m64 -mlarge-data-threshold=@var{num} @gol
--msse2avx -mfentry}
+-msse2avx -mfentry -m8bit-idiv}
 
 @emph{IA-64 Options}
 @gccoptlist{-mbig-endian  -mlittle-endian  -mgnu-as  -mgnu-ld  -mno-pic @gol
@@ -12647,6 +12647,16 @@ If profiling is active @option{-pg} put the profiling
 counter call before prologue.
 Note: On x86 architectures the attribute @code{ms_hook_prologue}
 isn't possible at the moment for @option{-mfentry} and @option{-pg}.
+
+@item -m8bit-idiv
+@itemx -mno-8bit-idiv
+@opindex 8bit-idiv
+On some processors, like Intel Atom, 8bit unsigned integer divide is
+much faster than 32bit/64bit integer divide.  This option will generate a
+runt-time check.  If both dividend and divisor are within range of 0
+to 255, 8bit unsigned integer divide will be used instead of
+32bit/64bit integer divide.
+
 @end table
 
 These @samp{-m} switches are supported in addition to the above
