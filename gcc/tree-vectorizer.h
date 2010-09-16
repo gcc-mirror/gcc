@@ -582,6 +582,8 @@ extern VEC(vec_void_p,heap) *stmt_vec_info_vec;
 void init_stmt_vec_info_vec (void);
 void free_stmt_vec_info_vec (void);
 
+/* Return a stmt_vec_info corresponding to STMT.  */
+
 static inline stmt_vec_info
 vinfo_for_stmt (gimple stmt)
 {
@@ -591,6 +593,8 @@ vinfo_for_stmt (gimple stmt)
 
   return (stmt_vec_info) VEC_index (vec_void_p, stmt_vec_info_vec, uid - 1);
 }
+
+/* Set vectorizer information INFO for STMT.  */
 
 static inline void
 set_vinfo_for_stmt (gimple stmt, stmt_vec_info info)
@@ -606,6 +610,8 @@ set_vinfo_for_stmt (gimple stmt, stmt_vec_info info)
   else
     VEC_replace (vec_void_p, stmt_vec_info_vec, uid - 1, (vec_void_p) info);
 }
+
+/* Return the earlier statement between STMT1 and STMT2.  */
 
 static inline gimple
 get_earlier_stmt (gimple stmt1, gimple stmt2)
@@ -633,6 +639,8 @@ get_earlier_stmt (gimple stmt1, gimple stmt2)
     return stmt2;
 }
 
+/* Return the later statement between STMT1 and STMT2.  */
+
 static inline gimple
 get_later_stmt (gimple stmt1, gimple stmt2)
 {
@@ -659,6 +667,9 @@ get_later_stmt (gimple stmt1, gimple stmt2)
     return stmt2;
 }
 
+/* Return TRUE if a statement represented by STMT_INFO is a part of a
+   pattern.  */
+
 static inline bool
 is_pattern_stmt_p (stmt_vec_info stmt_info)
 {
@@ -674,6 +685,8 @@ is_pattern_stmt_p (stmt_vec_info stmt_info)
   return false;
 }
 
+/* Return true if BB is a loop header.  */
+
 static inline bool
 is_loop_header_bb_p (basic_block bb)
 {
@@ -682,6 +695,8 @@ is_loop_header_bb_p (basic_block bb)
   gcc_checking_assert (EDGE_COUNT (bb->preds) == 1);
   return false;
 }
+
+/* Set inside loop vectorization cost.  */
 
 static inline void
 stmt_vinfo_set_inside_of_loop_cost (stmt_vec_info stmt_info, slp_tree slp_node,
@@ -693,6 +708,8 @@ stmt_vinfo_set_inside_of_loop_cost (stmt_vec_info stmt_info, slp_tree slp_node,
     STMT_VINFO_INSIDE_OF_LOOP_COST (stmt_info) = cost;
 }
 
+/* Set inside loop vectorization cost.  */
+
 static inline void
 stmt_vinfo_set_outside_of_loop_cost (stmt_vec_info stmt_info, slp_tree slp_node,
 				     int cost)
@@ -702,6 +719,8 @@ stmt_vinfo_set_outside_of_loop_cost (stmt_vec_info stmt_info, slp_tree slp_node,
   else
     STMT_VINFO_OUTSIDE_OF_LOOP_COST (stmt_info) = cost;
 }
+
+/* Return pow2 (X).  */
 
 static inline int
 vect_pow2 (int x)
@@ -723,11 +742,16 @@ vect_pow2 (int x)
 #define DR_MISALIGNMENT(DR)   ((int) (size_t) (DR)->aux)
 #define SET_DR_MISALIGNMENT(DR, VAL)   ((DR)->aux = (void *) (size_t) (VAL))
 
+/* Return TRUE if the data access is aligned, and FALSE otherwise.  */
+
 static inline bool
 aligned_access_p (struct data_reference *data_ref_info)
 {
   return (DR_MISALIGNMENT (data_ref_info) == 0);
 }
+
+/* Return TRUE if the alignment of the data access is known, and FALSE
+   otherwise.  */
 
 static inline bool
 known_alignment_for_access_p (struct data_reference *data_ref_info)

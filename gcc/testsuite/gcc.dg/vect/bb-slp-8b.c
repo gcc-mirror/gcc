@@ -36,7 +36,7 @@ main1 (unsigned int x, unsigned int y)
       || out[1] != (in[1] + 142) * y
       || out[2] != (in[2] + 2) * x
       || out[3] != (in[3] + 31) * y)
-    abort();
+    abort ();
 
   return 0;
 }

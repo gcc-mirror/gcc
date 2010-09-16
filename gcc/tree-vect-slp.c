@@ -147,7 +147,7 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 	}
 
       /* Check if DEF_STMT is a part of a pattern in LOOP and get the def stmt
-         from the pattern. Check that all the stmts of the node are in the
+         from the pattern.  Check that all the stmts of the node are in the
          pattern.  */
       if (loop && def_stmt && gimple_bb (def_stmt)
           && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
@@ -299,7 +299,7 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 
 /* Recursively build an SLP tree starting from NODE.
    Fail (and return FALSE) if def-stmts are not isomorphic, require data
-   permutation or are of unsupported types of operation. Otherwise, return
+   permutation or are of unsupported types of operation.  Otherwise, return
    TRUE.  */
 
 static bool
@@ -542,7 +542,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
               if (prev_first_load)
                 {
                   /* Check that there are no loads from different interleaving
-                     chains in the same node. The only exception is complex
+                     chains in the same node.  The only exception is complex
                      numbers.  */
                   if (prev_first_load != first_load
                       && rhs_code != REALPART_EXPR 
@@ -582,7 +582,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
                                         ncopies_for_cost, *node);
                 }
 
-              /* Store the place of this load in the interleaving chain. In
+              /* Store the place of this load in the interleaving chain.  In
                  case that permutation is needed we later decide if a specific
                  permutation is supported.  */
               load_place = vect_get_place_in_interleaving_chain (stmt,
@@ -729,7 +729,7 @@ vect_print_slp_tree (slp_tree node)
 
 /* Mark the tree rooted at NODE with MARK (PURE_SLP or HYBRID).
    If MARK is HYBRID, it refers to a specific stmt in NODE (the stmt at index
-   J). Otherwise, MARK is PURE_SLP and J is -1, which indicates that all the
+   J).  Otherwise, MARK is PURE_SLP and J is -1, which indicates that all the
    stmts in NODE are to be marked.  */
 
 static void
@@ -897,7 +897,7 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
 
   /* In case of reduction every load permutation is allowed, since the order
      of the reduction statements is not important (as opposed to the case of
-     strided stores). The only condition we need to check is that all the 
+     strided stores).  The only condition we need to check is that all the
      load nodes are of the same size and have the same permutation (and then
      rearrange all the nodes of the SLP instance according to this 
      permutation).  */
@@ -920,7 +920,7 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
       real_c = real_b + real_a;
       imag_c = imag_a + imag_b;
      i.e., we have {real_b, imag_a} and {real_a, imag_b} instead of 
-     {real_a, imag_a} and {real_b, imag_b}. We check here that if interleaving
+     {real_a, imag_a} and {real_b, imag_b}.  We check here that if interleaving
      chains are mixed, they match the above pattern.  */
   if (complex_numbers)
     {
@@ -969,7 +969,7 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
   stmt = VEC_index (gimple, SLP_TREE_SCALAR_STMTS (node), 0);
   /* LOAD_PERMUTATION is a list of indices of all the loads of the SLP
      instance, not all the loads belong to the same node or interleaving
-     group. Hence, we need to divide them into groups according to
+     group.  Hence, we need to divide them into groups according to
      GROUP_SIZE.  */
   number_of_groups = VEC_length (int, load_permutation) / group_size;
 
@@ -1002,7 +1002,7 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
 
       if (!bad_permutation)
         {
-          /* This permutaion is valid for reduction. Since the order of the
+          /* This permutaion is valid for reduction.  Since the order of the
              statements in the nodes is not important unless they are memory
              accesses, we can rearrange the statements in all the nodes 
              according to the order of the loads.  */
@@ -1064,9 +1064,10 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
 /* Find the first load in the loop that belongs to INSTANCE.
    When loads are in several SLP nodes, there can be a case in which the first
    load does not appear in the first SLP node to be transformed, causing
-   incorrect order of statements. Since we generate all the loads together,
+   incorrect order of statements.  Since we generate all the loads together,
    they must be inserted before the first load of the SLP instance and not
    before the first load of the first node of the instance.  */
+
 static gimple
 vect_find_first_load_in_slp_instance (slp_instance instance)
 {
@@ -1083,6 +1084,7 @@ vect_find_first_load_in_slp_instance (slp_instance instance)
 
 
 /* Find the last store in SLP INSTANCE.  */
+
 static gimple
 vect_find_last_store_in_slp_instance (slp_instance instance)
 {
@@ -1100,7 +1102,7 @@ vect_find_last_store_in_slp_instance (slp_instance instance)
 }
 
 
-/* Analyze an SLP instance starting from a group of strided stores. Call
+/* Analyze an SLP instance starting from a group of strided stores.  Call
    vect_build_slp_tree to build a tree of packed stmts if possible.
    Return FALSE if it's impossible to SLP any stmt in the loop.  */
 
@@ -1274,7 +1276,7 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
 }
 
 
-/* Check if there are stmts in the loop can be vectorized using SLP. Build SLP
+/* Check if there are stmts in the loop can be vectorized using SLP.  Build SLP
    trees of packed scalar stmts if SLP is possible.  */
 
 bool
@@ -1339,9 +1341,9 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
       if (unrolling_factor < SLP_INSTANCE_UNROLLING_FACTOR (instance))
 	unrolling_factor = SLP_INSTANCE_UNROLLING_FACTOR (instance);
 
-      /* Mark all the stmts that belong to INSTANCE as PURE_SLP stmts. Later we
+      /* Mark all the stmts that belong to INSTANCE as PURE_SLP stmts.  Later we
 	 call vect_detect_hybrid_slp () to find stmts that need hybrid SLP and
-	 loop-based vectorization. Such stmts will be marked as HYBRID.  */
+	 loop-based vectorization.  Such stmts will be marked as HYBRID.  */
       vect_mark_slp_stmts (SLP_INSTANCE_TREE (instance), pure_slp, -1);
       decided_to_slp++;
     }
@@ -1355,7 +1357,7 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
 
 
 /* Find stmts that must be both vectorized and SLPed (since they feed stmts that
-   can't be SLPed) in the tree rooted at NODE. Mark such stmts as HYBRID.  */
+   can't be SLPed) in the tree rooted at NODE.  Mark such stmts as HYBRID.  */
 
 static void
 vect_detect_hybrid_slp_stmts (slp_tree node)
@@ -1493,7 +1495,7 @@ vect_slp_analyze_node_operations (bb_vec_info bb_vinfo, slp_tree node)
 }
 
 
-/* Analyze statements in SLP instances of the basic block. Return TRUE if the
+/* Analyze statements in SLP instances of the basic block.  Return TRUE if the
    operations are supported. */
 
 static bool
@@ -1523,7 +1525,7 @@ vect_slp_analyze_operations (bb_vec_info bb_vinfo)
 
 /* Check if loads and stores are mixed in the basic block (in that
    case if we are not sure that the accesses differ, we can't vectorize the
-   basic block). Also return FALSE in case that there is statement marked as
+   basic block).  Also return FALSE in case that there is statement marked as
    not vectorizable.  */
 
 static bool
@@ -1783,11 +1785,11 @@ vect_slp_analyze_bb (basic_block bb)
 
 
 /* SLP costs are calculated according to SLP instance unrolling factor (i.e.,
-   the number of created vector stmts depends on the unrolling factor). However,
-   the actual number of vector stmts for every SLP node depends on VF which is
-   set later in vect_analyze_operations(). Hence, SLP costs should be updated.
-   In this function we assume that the inside costs calculated in
-   vect_model_xxx_cost are linear in ncopies.  */
+   the number of created vector stmts depends on the unrolling factor).
+   However, the actual number of vector stmts for every SLP node depends on
+   VF which is set later in vect_analyze_operations ().  Hence, SLP costs
+   should be updated.  In this function we assume that the inside costs
+   calculated in vect_model_xxx_cost are linear in ncopies.  */
 
 void
 vect_update_slp_costs_according_to_vf (loop_vec_info loop_vinfo)
@@ -1846,7 +1848,7 @@ vect_get_constant_vectors (slp_tree slp_node, VEC(tree,heap) **vec_oprnds,
       op_num = reduc_index - 1;
       op = gimple_op (stmt, op_num + 1);
       /* For additional copies (see the explanation of NUMBER_OF_COPIES below)
-         we need either neutral operands or the original operands. See
+         we need either neutral operands or the original operands.  See
          get_initial_def_for_reduction() for details.  */
       switch (code)
         {
@@ -2051,7 +2053,7 @@ vect_get_slp_defs (slp_tree slp_node, VEC (tree,heap) **vec_oprnds0,
       number_of_vects = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
       /* Number of vector stmts was calculated according to LHS in
          vect_schedule_slp_instance(), fix it by replacing LHS with RHS, if
-         necessary. See vect_get_smallest_scalar_type() for details.  */
+         necessary.  See vect_get_smallest_scalar_type () for details.  */
       vect_get_smallest_scalar_type (first_stmt, &lhs_size_unit,
                                      &rhs_size_unit);
       if (rhs_size_unit != lhs_size_unit)
@@ -2065,7 +2067,7 @@ vect_get_slp_defs (slp_tree slp_node, VEC (tree,heap) **vec_oprnds0,
   *vec_oprnds0 = VEC_alloc (tree, heap, number_of_vects);
 
   /* SLP_NODE corresponds either to a group of stores or to a group of
-     unary/binary operations. We don't call this function for loads.  
+     unary/binary operations.  We don't call this function for loads.
      For reduction defs we call vect_get_constant_vectors(), since we are
      looking for initial loop invariant values.  */
   if (SLP_TREE_LEFT (slp_node) && reduc_index == -1)
@@ -2167,7 +2169,7 @@ vect_create_mask_and_perm (gimple stmt, gimple next_scalar_stmt,
 
 /* Given FIRST_MASK_ELEMENT - the mask element in element representation,
    return in CURRENT_MASK_ELEMENT its equivalent in target specific
-   representation. Check that the mask is valid and return FALSE if not.
+   representation.  Check that the mask is valid and return FALSE if not.
    Return TRUE in NEED_NEXT_VECTOR if the permutation requires to move to
    the next vector, i.e., the current first vector is not needed.  */
 
@@ -2321,8 +2323,8 @@ vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
      The masks for a's should be: {0,0,0,3} {3,3,6,6} {6,9,9,9} (in target
      scpecific type, e.g., in bytes for Altivec.
      The last mask is illegal since we assume two operands for permute
-     operation, and the mask element values can't be outside that range. Hence,
-     the last mask must be converted into {2,5,5,5}.
+     operation, and the mask element values can't be outside that range.
+     Hence, the last mask must be converted into {2,5,5,5}.
      For the first two permutations we need the first and the second input
      vectors: {a0,b0,c0,a1} and {b1,c1,a2,b2}, and for the last permutation
      we need the second and the third vectors: {b1,c1,a2,b2} and
@@ -2438,7 +2440,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
   group_size = SLP_INSTANCE_GROUP_SIZE (instance);
 
   /* For each SLP instance calculate number of vector stmts to be created
-     for the scalar stmts in each node of the SLP tree. Number of vector
+     for the scalar stmts in each node of the SLP tree.  Number of vector
      elements in one vector iteration is the number of scalar elements in
      one scalar iteration (GROUP_SIZE) multiplied by VF divided by vector
      size.  */
@@ -2491,6 +2493,8 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
   return is_store;
 }
 
+
+/* Generate vector code for all SLP instances in the loop/basic block.  */
 
 bool
 vect_schedule_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)

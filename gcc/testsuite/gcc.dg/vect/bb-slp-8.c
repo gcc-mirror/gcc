@@ -15,8 +15,8 @@ main1 (unsigned int x, unsigned int y, unsigned int *pin, unsigned int *pout)
   int i;
   unsigned int a0, a1, a2, a3;
  
-  /* pin and pout may alias. But since all the loads are before the first store
-     the basic block is vectorizable.  */
+  /* pin and pout may alias.  But since all the loads are before the first
+     store the basic block is vectorizable.  */
   a0 = *pin++ + 23;
   a1 = *pin++ + 142;
   a2 = *pin++ + 2;
@@ -35,7 +35,7 @@ main1 (unsigned int x, unsigned int y, unsigned int *pin, unsigned int *pout)
       || out[1] != (in[1] + 142) * y
       || out[2] != (in[2] + 2) * x
       || out[3] != (in[3] + 31) * y)
-    abort();
+    abort ();
 
   return 0;
 }

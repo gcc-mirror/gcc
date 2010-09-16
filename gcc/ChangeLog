@@ -1,3 +1,22 @@
+2010-09-16  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vectorizer.c: Fix documentation.
+	* tree-vectorizer.h (vinfo_for_stmt): Add documentation.
+	(set_vinfo_for_stmt, get_earlier_stmt, get_later_stmt,
+	is_pattern_stmt_p, is_loop_header_bb_p,
+	stmt_vinfo_set_inside_of_loop_cost,
+	stmt_vinfo_set_outside_of_loop_cost, vect_pow2, aligned_access_p,
+	known_alignment_for_access_p): Likewise.
+	* tree-vect-loop.c: Fix documentation.
+	(vect_get_cost): Start function name from new line.
+	* tree-vect-data-refs.c: Fix documentation.
+	* tree-vect_stmts.c: Likewise.
+	(vect_create_vectorized_promotion_stmts): Always free vec_tmp.
+	(vectorizable_store): Free vec_oprnds if allocated.
+	(vectorizable_condition): Initialize several variables to avoid
+	warnings.
+	* tree-vect-slp.c: Fix documentation.
+
 2010-09-16  Richard Guenther  <rguenther@suse.de>
 
 	* tree.c (tree_node_structure_for_code): TRANSLATION_UNIT_DECL
