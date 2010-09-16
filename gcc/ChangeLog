@@ -1,5 +1,12 @@
 2010-09-16  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md: Remove unneeded empty conditions and
+	preparation statements from expanders.
+	* config/i386/mmx.md: Ditto.
+	* config/i386/sse.md: Ditto.
+
+2010-09-16  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.h (PUSH_ROUNDING): Redefine using UNITS_PER_WORD.
 
 2010-09-15  Eric Botcazou  <ebotcazou@adacore.com>
