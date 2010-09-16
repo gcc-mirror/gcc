@@ -1,3 +1,9 @@
+2010-09-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45674
+	* interface.c (compare_parameter): Create vtab for actual argument,
+	instead of formal (if needed).
+
 2010-09-15  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45577
