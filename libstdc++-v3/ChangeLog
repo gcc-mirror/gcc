@@ -1,3 +1,22 @@
+2010-09-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/complex (complex<float>::operator=(float),
+	complex<float>::operator+=(float),
+	complex<float>::operator-=(float),
+	complex<double>::operator=(double),
+	complex<double>::operator+=(double),
+	complex<double>::operator-=(double),
+	complex<long double>::operator=(long double),
+	complex<long double>::operator+=(long double),
+	complex<long double>::operator-=(long double)): Simplify a tad,
+	just forward to the underlying __complex__ T operators, as
+	operator*= and operator/= already do.
+
+	* include/std/complex (complex<float>, complex<double>,
+	complex<long double>): Simplify spelling of return types, just
+	say complex, instead of complex<float>, complex<double>,
+	complex<long double>, respectively.
+
 2010-09-15  François Dumont  <francois.cppdevs@free.fr>
 
 	* testsuite/lib/libstdc++.exp,([check_v3_target_namedlocale]):
