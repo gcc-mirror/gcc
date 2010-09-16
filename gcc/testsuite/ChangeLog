@@ -1,3 +1,9 @@
+2010-09-16  Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/bb-slp-8.c: Fix documentation, add space between function
+	name and parentheses.
+	* gcc.dg/vect/bb-slp-8a.c, gcc.dg/vect/bb-slp-8b.c: Likewise.
+
 2010-09-15  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/parse/parameter-declaration-2.C: New.

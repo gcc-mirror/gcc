@@ -76,7 +76,7 @@ along with GCC; see the file COPYING3.  If not see
    had successfully passed the analysis phase.
         Throughout this pass we make a distinction between two types of
    data: scalars (which are represented by SSA_NAMES), and memory references
-   ("data-refs"). These two types of data require different handling both
+   ("data-refs").  These two types of data require different handling both
    during analysis and transformation. The types of data-refs that the
    vectorizer currently supports are ARRAY_REFS which base is an array DECL
    (not a pointer), and INDIRECT_REFS through pointers; both array and pointer
@@ -97,10 +97,10 @@ along with GCC; see the file COPYING3.  If not see
    =====================
         The loop transformation phase scans all the stmts in the loop, and
    creates a vector stmt (or a sequence of stmts) for each scalar stmt S in
-   the loop that needs to be vectorized. It inserts the vector code sequence
+   the loop that needs to be vectorized.  It inserts the vector code sequence
    just before the scalar stmt S, and records a pointer to the vector code
    in STMT_VINFO_VEC_STMT (stmt_info) (stmt_info is the stmt_vec_info struct
-   attached to S). This pointer will be used for the vectorization of following
+   attached to S).  This pointer will be used for the vectorization of following
    stmts which use the def of stmt S. Stmt S is removed if it writes to memory;
    otherwise, we rely on dead code elimination for removing it.
 
@@ -112,7 +112,7 @@ along with GCC; see the file COPYING3.  If not see
 
    To vectorize stmt S2, the vectorizer first finds the stmt that defines
    the operand 'b' (S1), and gets the relevant vector def 'vb' from the
-   vector stmt VS1 pointed to by STMT_VINFO_VEC_STMT (stmt_info (S1)). The
+   vector stmt VS1 pointed to by STMT_VINFO_VEC_STMT (stmt_info (S1)).  The
    resulting sequence would be:
 
    VS1: vb = px[i];
@@ -128,13 +128,13 @@ along with GCC; see the file COPYING3.  If not see
         Currently the only target specific information that is used is the
    size of the vector (in bytes) - "TARGET_VECTORIZE_UNITS_PER_SIMD_WORD".
    Targets that can support different sizes of vectors, for now will need
-   to specify one value for "TARGET_VECTORIZE_UNITS_PER_SIMD_WORD". More
+   to specify one value for "TARGET_VECTORIZE_UNITS_PER_SIMD_WORD".  More
    flexibility will be added in the future.
 
         Since we only vectorize operations which vector form can be
    expressed using existing tree codes, to verify that an operation is
    supported, the vectorizer checks the relevant optab at the relevant
-   machine_mode (e.g, optab_handler (add_optab, V8HImode)). If
+   machine_mode (e.g, optab_handler (add_optab, V8HImode)).  If
    the value found is CODE_FOR_nothing, then there's no target support, and
    we can't vectorize the stmt.
 
@@ -144,14 +144,14 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Function vect_determine_vectorization_factor
 
-   Determine the vectorization factor (VF). VF is the number of data elements
+   Determine the vectorization factor (VF).  VF is the number of data elements
    that are operated upon in parallel in a single iteration of the vectorized
-   loop. For example, when vectorizing a loop that operates on 4byte elements,
+   loop.  For example, when vectorizing a loop that operates on 4byte elements,
    on a target with vector size (VS) 16byte, the VF is set to 4, since 4
    elements can fit in a single vector register.
 
    We currently support vectorization of loops in which all types operated upon
-   are of the same size. Therefore this function currently sets VF according to
+   are of the same size.  Therefore this function currently sets VF according to
    the size of the types operated upon, and fails if there are multiple sizes
    in the loop.
 
@@ -438,7 +438,7 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
 /* Function vect_analyze_scalar_cycles_1.
 
    Examine the cross iteration def-use cycles of scalar variables
-   in LOOP. LOOP_VINFO represents the loop that is now being
+   in LOOP.  LOOP_VINFO represents the loop that is now being
    considered for vectorization (can be LOOP, or an outer-loop
    enclosing LOOP).  */
 
@@ -454,7 +454,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_analyze_scalar_cycles ===");
 
-  /* First - identify all inductions. Reduction detection assumes that all the
+  /* First - identify all inductions.  Reduction detection assumes that all the
      inductions have been identified, therefore, this order must not be
      changed.  */
   for (gsi = gsi_start_phis  (bb); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -470,7 +470,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 	  print_gimple_stmt (vect_dump, phi, 0, TDF_SLIM);
 	}
 
-      /* Skip virtual phi's. The data dependences that are associated with
+      /* Skip virtual phi's.  The data dependences that are associated with
          virtual defs/uses (i.e., memory accesses) are analyzed elsewhere.  */
       if (!is_gimple_reg (SSA_NAME_VAR (def)))
 	continue;
@@ -569,7 +569,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 /* Function vect_analyze_scalar_cycles.
 
    Examine the cross iteration def-use cycles of scalar variables, by
-   analyzing the loop-header PHIs of scalar variables; Classify each
+   analyzing the loop-header PHIs of scalar variables.  Classify each
    cycle as one of the following: invariant, induction, reduction, unknown.
    We do that for the loop represented by LOOP_VINFO, and also to its
    inner-loop, if exists.
@@ -1125,8 +1125,8 @@ vect_analyze_loop_form (struct loop *loop)
 
 /* Get cost by calling cost target builtin.  */
 
-static inline 
-int vect_get_cost (enum vect_cost_for_stmt type_of_cost)
+static inline int
+vect_get_cost (enum vect_cost_for_stmt type_of_cost)
 {
   tree dummy_type = NULL;
   int dummy = 0;
@@ -1301,7 +1301,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
       return false;
     }
 
-  /* Analyze cost. Decide if worth while to vectorize.  */
+  /* Analyze cost.  Decide if worth while to vectorize.  */
 
   /* Once VF is set, SLP costs should be updated since the number of created
      vector stmts depends on VF.  */
@@ -1374,7 +1374,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 /* Function vect_analyze_loop.
 
    Apply a set of analyses on LOOP, and create a loop_vec_info struct
-   for it. The different analyses will record information in the
+   for it.  The different analyses will record information in the
    loop_vec_info struct.  */
 loop_vec_info
 vect_analyze_loop (struct loop *loop)
@@ -1594,7 +1594,7 @@ reduction_code_for_scalar_code (enum tree_code code,
 }
 
 
-/* Error reporting helper for vect_is_simple_reduction below. GIMPLE statement
+/* Error reporting helper for vect_is_simple_reduction below.  GIMPLE statement
    STMT is printed with a message MSG. */
 
 static void
@@ -1608,7 +1608,7 @@ report_vect_op (gimple stmt, const char *msg)
 /* Function vect_is_simple_reduction_1
 
    (1) Detect a cross-iteration def-use cycle that represents a simple
-   reduction computation. We look for the following pattern:
+   reduction computation.  We look for the following pattern:
 
    loop_header:
      a1 = phi < a0, a2 >
@@ -2023,7 +2023,7 @@ vect_get_single_scalar_iteraion_cost (loop_vec_info loop_vinfo)
   int nbbs = loop->num_nodes, factor, scalar_single_iter_cost = 0;
   int innerloop_iters, i, stmt_cost;
 
-  /* Count statements in scalar loop. Using this as scalar cost for a single
+  /* Count statements in scalar loop.  Using this as scalar cost for a single
      iteration for now.
 
      TODO: Add outer loop support.
@@ -2308,7 +2308,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
      something more reasonable.  */
 
   /* If the number of iterations is known and we do not do versioning, we can
-     decide whether to vectorize at compile time. Hence the scalar version
+     decide whether to vectorize at compile time.  Hence the scalar version
      do not carry cost model guard costs.  */
   if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
       || LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo)
@@ -2339,7 +2339,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
     }
 
   /* Calculate number of iterations required to make the vector version
-     profitable, relative to the loop bodies only. The following condition
+     profitable, relative to the loop bodies only.  The following condition
      must hold true:
      SIC * niters + SOC > VIC * ((niters-PL_ITERS-EP_ITERS)/VF) + VOC
      where
@@ -2556,7 +2556,7 @@ vect_model_induction_cost (stmt_vec_info stmt_info, int ncopies)
 
    Output:
    Return a vector variable, initialized with the first VF values of
-   the induction variable. E.g., for an iv with IV_PHI='X' and
+   the induction variable.  E.g., for an iv with IV_PHI='X' and
    evolution S, for a vector of 4 units, we want to return:
    [X, X + S, X + 2*S, X + 3*S].  */
 
@@ -2638,8 +2638,8 @@ get_initial_def_for_induction (gimple iv_phi)
   if (nested_in_vect_loop)
     {
       /* iv_loop is nested in the loop to be vectorized.  init_expr had already
-	 been created during vectorization of previous stmts; We obtain it from
-	 the STMT_VINFO_VEC_STMT of the defining stmt. */
+	 been created during vectorization of previous stmts.  We obtain it
+	 from the STMT_VINFO_VEC_STMT of the defining stmt.  */
       tree iv_def = PHI_ARG_DEF_FROM_EDGE (iv_phi,
                                            loop_preheader_edge (iv_loop));
       vec_init = vect_get_vec_def_for_operand (iv_def, iv_phi, NULL);
@@ -2905,7 +2905,7 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
     gcc_assert (loop == (gimple_bb (stmt))->loop_father);
 
   /* In case of double reduction we only create a vector variable to be put
-     in the reduction phi node. The actual statement creation is done in
+     in the reduction phi node.  The actual statement creation is done in
      vect_create_epilog_for_reduction.  */
   if (adjustment_def && nested_in_vect_loop
       && TREE_CODE (init_val) == SSA_NAME
@@ -3023,7 +3023,7 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
      reduction statements. 
    STMT is the scalar reduction stmt that is being vectorized.
    NCOPIES is > 1 in case the vectorization factor (VF) is bigger than the
-     number of elements that we can fit in a vectype (nunits). In this case
+     number of elements that we can fit in a vectype (nunits).  In this case
      we have to generate more than one vector stmt - i.e - we need to "unroll"
      the vector stmt by a factor VF/nunits.  For more details see documentation
      in vectorizable_operation.
@@ -3314,7 +3314,7 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
   /* In case this is a reduction in an inner-loop while vectorizing an outer
      loop - we don't need to extract a single scalar result at the end of the
      inner-loop (unless it is double reduction, i.e., the use of reduction is
-     outside the outer-loop). The final vector of partial results will be used
+     outside the outer-loop).  The final vector of partial results will be used
      in the vectorized outer-loop, or reduced to a scalar result at the end of
      the outer-loop.  */
   if (nested_in_vect_loop && !double_reduc)
@@ -3473,7 +3473,7 @@ vect_create_epilog_for_reduction (VEC (tree, heap) *vect_defs, gimple stmt,
             }
 
           /* The only case where we need to reduce scalar results in SLP, is
-             unrolling. If the size of SCALAR_RESULTS is greater than 
+             unrolling.  If the size of SCALAR_RESULTS is greater than
              GROUP_SIZE, we reduce them combining elements modulo 
              GROUP_SIZE.  */
           if (slp_node)
@@ -3579,7 +3579,7 @@ vect_finalize_reduction:
       VEC_replace (gimple, new_phis, 0, epilog_stmt);
     }
 
-  /* 2.6  Handle the loop-exit phis. Replace the uses of scalar loop-exit
+  /* 2.6  Handle the loop-exit phis.  Replace the uses of scalar loop-exit
           phis with new adjusted scalar results, i.e., replace use <s_out0>
           with use <s_out4>.        
 
@@ -3605,8 +3605,8 @@ vect_finalize_reduction:
           use <s_out4> */
 
   /* In SLP we may have several statements in NEW_PHIS and REDUCTION_PHIS (in 
-     case that GROUP_SIZE is greater than vectorization factor). Therefore, we
-     need to match SCALAR_RESULTS with corresponding statements. The first
+     case that GROUP_SIZE is greater than vectorization factor).  Therefore, we
+     need to match SCALAR_RESULTS with corresponding statements.  The first
      (GROUP_SIZE / number of new vector stmts) scalar results correspond to
      the first vector stmt, etc.  
      (RATIO is equal to (GROUP_SIZE / number of new vector stmts)).  */ 
@@ -3639,7 +3639,7 @@ vect_finalize_reduction:
 
       phis = VEC_alloc (gimple, heap, 3);
       /* Find the loop-closed-use at the loop exit of the original scalar
-         result. (The reduction result is expected to have two immediate uses -
+         result.  (The reduction result is expected to have two immediate uses -
          one at the latch block, and one at the loop exit).  */
       FOR_EACH_IMM_USE_FAST (use_p, imm_iter, scalar_dest)
         if (!flow_bb_inside_loop_p (loop, gimple_bb (USE_STMT (use_p))))
@@ -3740,7 +3740,7 @@ vect_finalize_reduction:
                   vect_phi_res = PHI_RESULT (vect_phi);
 
                   /* Replace the use, i.e., set the correct vs1 in the regular
-                     reduction phi node. FORNOW, NCOPIES is always 1, so the
+                     reduction phi node.  FORNOW, NCOPIES is always 1, so the
                      loop is redundant.  */
                   use = reduction_phi;
                   for (j = 0; j < ncopies; j++)
@@ -3764,8 +3764,8 @@ vect_finalize_reduction:
 
       phis = VEC_alloc (gimple, heap, 3);
       /* Find the loop-closed-use at the loop exit of the original scalar
-         result. (The reduction result is expected to have two immediate uses -
-         one at the latch block, and one at the loop exit). For double 
+         result.  (The reduction result is expected to have two immediate uses,
+         one at the latch block, and one at the loop exit).  For double
          reductions we are looking for exit phis of the outer loop.  */
       FOR_EACH_IMM_USE_FAST (use_p, imm_iter, scalar_dest)
         {
@@ -3814,7 +3814,7 @@ vect_finalize_reduction:
    Return FALSE if not a vectorizable STMT, TRUE otherwise.
 
    This function also handles reduction idioms (patterns) that have been
-   recognized in advance during vect_pattern_recog. In this case, STMT may be
+   recognized in advance during vect_pattern_recog.  In this case, STMT may be
    of this form:
      X = pattern_expr (arg0, arg1, ..., X)
    and it's STMT_VINFO_RELATED_STMT points to the last stmt in the original
@@ -3835,9 +3835,9 @@ vect_finalize_reduction:
 
    Upon entry to this function, STMT_VINFO_VECTYPE records the vectype that
    indicates what is the actual level of parallelism (V8HI in the example), so
-   that the right vectorization factor would be derived. This vectype
+   that the right vectorization factor would be derived.  This vectype
    corresponds to the type of arguments to the reduction stmt, and should *NOT*
-   be used to create the vectorized stmt. The right vectype for the vectorized
+   be used to create the vectorized stmt.  The right vectype for the vectorized
    stmt is obtained from the type of the result X:
         get_vectype_for_scalar_type (TREE_TYPE (X))
 
@@ -3934,7 +3934,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       gcc_assert (!STMT_VINFO_IN_PATTERN_P (stmt_info));
     }
 
-  /* 3. Check the operands of the operation. The first operands are defined
+  /* 3. Check the operands of the operation.  The first operands are defined
         inside the loop body. The last operand is the reduction variable,
         which is defined by the loop-header-phi.  */
 
@@ -3979,7 +3979,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
     return false;
 
   /* All uses but the last are expected to be defined in the loop.
-     The last use is the reduction variable. In case of nested cycle this
+     The last use is the reduction variable.  In case of nested cycle this
      assumption is not true: we use reduc_index to record the index of the
      reduction variable.  */
   for (i = 0; i < op_type-1; i++)
@@ -4110,7 +4110,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
           1. The tree-code that is used to create the vector operation in the
              epilog code (that reduces the partial results) is not the
              tree-code of STMT, but is rather the tree-code of the original
-             stmt from the pattern that STMT is replacing. I.e, in the example
+             stmt from the pattern that STMT is replacing.  I.e, in the example
              above we want to use 'widen_sum' in the loop, but 'plus' in the
              epilog.
           2. The type (mode) we use to check available target support
@@ -4513,7 +4513,7 @@ vectorizable_induction (gimple phi, gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
 
 /* Function vectorizable_live_operation.
 
-   STMT computes a value that is used outside the loop. Check if
+   STMT computes a value that is used outside the loop.  Check if
    it can be supported.  */
 
 bool
@@ -4554,7 +4554,7 @@ vectorizable_live_operation (gimple stmt,
   gcc_assert (rhs_class != GIMPLE_UNARY_RHS || op_type == unary_op);
   gcc_assert (rhs_class != GIMPLE_BINARY_RHS || op_type == binary_op);
 
-  /* FORNOW: support only if all uses are invariant. This means
+  /* FORNOW: support only if all uses are invariant.  This means
      that the scalar operations can remain in place, unvectorized.
      The original last scalar value that they compute will be used.  */
 
@@ -4665,7 +4665,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
      compile time constant), or it is a constant that doesn't divide by the
      vectorization factor, then an epilog loop needs to be created.
      We therefore duplicate the loop: the original loop will be vectorized,
-     and will compute the first (n/VF) iterations. The second copy of the loop
+     and will compute the first (n/VF) iterations.  The second copy of the loop
      will remain scalar and will compute the remaining (n%VF) iterations.
      (VF is the vectorization factor).  */
 

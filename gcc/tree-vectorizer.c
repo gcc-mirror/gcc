@@ -208,7 +208,7 @@ vectorize_loops (void)
   /*  ----------- Analyze loops. -----------  */
 
   /* If some loop was duplicated, it gets bigger number
-     than all previously defined loops. This fact allows us to run
+     than all previously defined loops.  This fact allows us to run
      only over initial loops skipping newly generated ones.  */
   FOR_EACH_LOOP (li, loop, 0)
     if (optimize_loop_nest_for_speed_p (loop))
