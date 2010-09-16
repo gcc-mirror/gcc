@@ -1,6 +1,6 @@
 /* Output routines for Motorola MCore processor
    Copyright (C) 1993, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008,
-   2009 Free Software Foundation, Inc.
+   2009, 2010 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -149,6 +149,7 @@ static int        mcore_arg_partial_bytes       (CUMULATIVE_ARGS *,
 						 tree, bool);
 static void       mcore_asm_trampoline_template (FILE *);
 static void       mcore_trampoline_init		(rtx, tree, rtx);
+static void       mcore_option_override		(void);
 
 /* MCore specific attributes.  */
 
@@ -224,6 +225,9 @@ static const struct attribute_spec mcore_attribute_table[] =
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE	mcore_asm_trampoline_template
 #undef  TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT		mcore_trampoline_init
+
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE mcore_option_override
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2679,8 +2683,8 @@ mcore_is_same_reg (rtx x, rtx y)
   return 0;
 }
 
-void
-mcore_override_options (void)
+static void
+mcore_option_override (void)
 {
   /* Only the m340 supports little endian code.  */
   if (TARGET_LITTLE_END && ! TARGET_M340)

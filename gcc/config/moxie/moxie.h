@@ -303,8 +303,6 @@ enum reg_class
    pointer registers are already assumed to be used as needed.  */
 #define EPILOGUE_USES(R) (R == MOXIE_R5)
 
-#define OVERRIDE_OPTIONS moxie_override_options ()
-
 /* Storage Layout */
 
 #define BITS_BIG_ENDIAN 0

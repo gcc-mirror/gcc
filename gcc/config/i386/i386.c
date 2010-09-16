@@ -2803,17 +2803,12 @@ ix86_debug_options (void)
   return;
 }
 
-/* Sometimes certain combinations of command options do not make
-   sense on a particular target machine.  You can define a macro
-   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
-   defined, is executed once just after all the command options have
-   been parsed.
+/* Override various settings based on options.  If MAIN_ARGS_P, the
+   options are from the command line, otherwise they are from
+   attributes.  */
 
-   Don't use this macro to turn on various extra optimizations for
-   `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
-
-void
-override_options (bool main_args_p)
+static void
+ix86_option_override_internal (bool main_args_p)
 {
   int i;
   unsigned int ix86_arch_mask, ix86_tune_mask;
@@ -3709,6 +3704,14 @@ override_options (bool main_args_p)
       = build_target_option_node ();
 }
 
+/* Implement the TARGET_OPTION_OVERRIDE hook.  */
+
+static void
+ix86_option_override (void)
+{
+  ix86_option_override_internal (true);
+}
+
 /* Update register usage after having seen the compiler flags.  */
 
 void
@@ -4105,9 +4108,10 @@ ix86_valid_target_attribute_tree (tree args)
   if (! ix86_valid_target_attribute_inner_p (args, option_strings))
     return NULL_TREE;
 
-  /* If the changed options are different from the default, rerun override_options,
-     and then save the options away.  The string options are are attribute options,
-     and will be undone when we copy the save structure.  */
+  /* If the changed options are different from the default, rerun
+     ix86_option_override_internal, and then save the options away.
+     The string options are are attribute options, and will be undone
+     when we copy the save structure.  */
   if (ix86_isa_flags != def->ix86_isa_flags
       || target_flags != def->target_flags
       || option_strings[IX86_FUNCTION_SPECIFIC_ARCH]
@@ -4133,7 +4137,7 @@ ix86_valid_target_attribute_tree (tree args)
 	ix86_fpmath_string = "sse,387";
 
       /* Do any overrides, such as arch=xxx, or tune=xxx support.  */
-      override_options (false);
+      ix86_option_override_internal (false);
 
       /* Add any builtin functions with the new isa if any.  */
       ix86_add_new_builtins (ix86_isa_flags);
@@ -4529,8 +4533,9 @@ optimization_options (int level, int size ATTRIBUTE_UNUSED)
 
   /* The default values of these switches depend on the TARGET_64BIT
      that is not known at this moment.  Mark these values with 2 and
-     let user the to override these.  In case there is no command line option
-     specifying them, we will set the defaults in override_options.  */
+     let user the to override these.  In case there is no command line
+     option specifying them, we will set the defaults in
+     ix86_option_override_internal.  */
   if (optimize >= 1)
     flag_omit_frame_pointer = 2;
 
@@ -7901,9 +7906,9 @@ ix86_frame_pointer_required (void)
   if (SUBTARGET_FRAME_POINTER_REQUIRED)
     return true;
 
-  /* In override_options, TARGET_OMIT_LEAF_FRAME_POINTER turns off
-     the frame pointer by default.  Turn it back on now if we've not
-     got a leaf function.  */
+  /* In ix86_option_override_internal, TARGET_OMIT_LEAF_FRAME_POINTER
+     turns off the frame pointer by default.  Turn it back on now if
+     we've not got a leaf function.  */
   if (TARGET_OMIT_LEAF_FRAME_POINTER
       && (!current_function_is_leaf
 	  || ix86_current_function_calls_tls_descriptor))
@@ -32496,6 +32501,9 @@ ix86_units_per_simd_word (enum machine_mode mode)
 
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION ix86_handle_option
+
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE ix86_option_override
 
 #undef TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST ix86_register_move_cost

@@ -134,8 +134,6 @@ extern int target_flags;
 
 #define TARGET_VERSION fprintf (stderr, " (Toshiba Media Processor (MeP))");
 
-#define OVERRIDE_OPTIONS mep_override_options ();
-
 /* The MeP config tool will add TARGET_OPTION_TRANSLATE_TABLE here.  */
 #define TARGET_OPTION_TRANSLATE_TABLE \
   {"-mall-opts", "-maverage -mmult -mdiv -mbitops -mleadz \

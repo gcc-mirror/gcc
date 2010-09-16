@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 2002, 2003, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2007, 2010 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -19,7 +19,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 /* 128-bit floating point.  ABI_V4 uses IEEE quad, AIX/Darwin
-   adjust this in rs6000_override_options.  */
+   adjust this in rs6000_option_override_internal.  */
 FLOAT_MODE (TF, 16, ieee_quad_format);
 
 /* Add any extra modes needed to represent the condition code.

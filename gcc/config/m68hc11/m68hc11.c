@@ -61,6 +61,7 @@ Note:
 #include "target-def.h"
 #include "df.h"
 
+static void m68hc11_option_override (void);
 static void emit_move_after_reload (rtx, rtx, rtx);
 static rtx simplify_logical (enum machine_mode, int, rtx, rtx *);
 static void m68hc11_emit_logical (enum machine_mode, enum rtx_code, rtx *);
@@ -293,10 +294,13 @@ static const struct attribute_spec m68hc11_attribute_table[] =
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT m68hc11_trampoline_init
 
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE m68hc11_option_override
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-int
-m68hc11_override_options (void)
+static void
+m68hc11_option_override (void)
 {
   memset (m68hc11_reg_valid_for_index, 0,
 	  sizeof (m68hc11_reg_valid_for_index));
@@ -361,7 +365,6 @@ m68hc11_override_options (void)
       if (TARGET_LONG_CALLS)
         current_function_far = 1;
     }
-  return 0;
 }
 
 

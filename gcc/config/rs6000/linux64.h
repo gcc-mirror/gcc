@@ -162,10 +162,10 @@ extern enum rs6000_cmodel cmodel;
 
 #ifdef	RS6000_BI_ARCH
 
-#undef	OVERRIDE_OPTIONS
-#define	OVERRIDE_OPTIONS \
-  rs6000_override_options (((TARGET_DEFAULT ^ target_flags) & MASK_64BIT) \
-			   ? (char *) 0 : TARGET_CPU_DEFAULT)
+#undef	OPTION_TARGET_CPU_DEFAULT
+#define	OPTION_TARGET_CPU_DEFAULT \
+  (((TARGET_DEFAULT ^ target_flags) & MASK_64BIT) \
+   ? (char *) 0 : TARGET_CPU_DEFAULT)
 
 #endif
 

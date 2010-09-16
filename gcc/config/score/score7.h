@@ -1,5 +1,5 @@
 /* score7.h for Sunplus S+CORE processor
-   Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Sunnorth
 
    This file is part of GCC.
@@ -90,7 +90,7 @@ extern section *score7_select_rtx_section (enum machine_mode mode, rtx x,
 extern bool score7_in_small_data_p (tree decl);
 extern void score7_asm_file_start (void);
 extern void score7_asm_file_end (void);
-extern void score7_override_options (void);
+extern void score7_option_override (void);
 extern int score7_reg_class (int regno);
 extern enum reg_class score7_preferred_reload_class (rtx x ATTRIBUTE_UNUSED,
                                                      enum reg_class rclass);

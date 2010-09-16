@@ -328,16 +328,6 @@
         #endif  */
 #define TARGET_VERSION fprintf (stderr, _(" (frv)"))
 
-/* Sometimes certain combinations of command options do not make sense on a
-   particular target machine.  You can define a macro `OVERRIDE_OPTIONS' to
-   take account of this.  This macro, if defined, is executed once just after
-   all the command options have been parsed.
-
-   Don't use this macro to turn on various extra optimizations for `-O'.  That
-   is what `OPTIMIZATION_OPTIONS' is for.  */
-
-#define OVERRIDE_OPTIONS frv_override_options ()
-
 /* Some machines may desire to change what optimizations are performed for
    various optimization levels.  This macro, if defined, is executed once just
    after the optimization level is determined and before the remainder of the

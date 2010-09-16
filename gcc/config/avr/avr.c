@@ -49,6 +49,7 @@
 /* Maximal allowed offset for an address in the LD command */
 #define MAX_LD_OFFSET(MODE) (64 - (signed)GET_MODE_SIZE (MODE))
 
+static void avr_option_override (void);
 static int avr_naked_function_p (tree);
 static int interrupt_function_p (tree);
 static int signal_function_p (tree);
@@ -192,10 +193,13 @@ static const struct attribute_spec avr_attribute_table[] =
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE avr_can_eliminate
 
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE avr_option_override
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-void
-avr_override_options (void)
+static void
+avr_option_override (void)
 {
   const struct mcu_type_s *t;
 

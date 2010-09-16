@@ -124,8 +124,6 @@ extern GTY(()) section *progmem_section;
 
 #define TARGET_VERSION fprintf (stderr, " (GNU assembler syntax)");
 
-#define OVERRIDE_OPTIONS avr_override_options ()
-
 #define CAN_DEBUG_WITHOUT_FP
 
 #define BITS_BIG_ENDIAN 0

@@ -499,10 +499,6 @@ extern enum cmodel sparc_cmodel;
 
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP
-
-/* Option handling.  */
-
-#define OVERRIDE_OPTIONS  sparc_override_options ()
 
 /* Mask of all CPU selection flags.  */
 #define MASK_ISA \

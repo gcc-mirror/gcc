@@ -619,18 +619,8 @@ extern unsigned char rs6000_recip_bits[];
 #define RS6000_RECIP_HIGH_PRECISION_P(MODE) \
   ((MODE) == SFmode || (MODE) == V4SFmode || TARGET_RECIP_PRECISION)
 
-/* Sometimes certain combinations of command options do not make sense
-   on a particular target machine.  You can define a macro
-   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
-   defined, is executed once just after all the command options have
-   been parsed.
-
-   Do not use this macro to turn on various extra optimizations for
-   `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.
-
-   On the RS/6000 this is used to define the target cpu type.  */
-
-#define OVERRIDE_OPTIONS rs6000_override_options (TARGET_CPU_DEFAULT)
+/* The default CPU for TARGET_OPTION_OVERRIDE.  */
+#define OPTION_TARGET_CPU_DEFAULT TARGET_CPU_DEFAULT
 
 /* Define this to change the optimizations performed by default.  */
 #define OPTIMIZATION_OPTIONS(LEVEL,SIZE) optimization_options(LEVEL,SIZE)

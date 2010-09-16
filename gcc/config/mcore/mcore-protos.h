@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in mcore.c
-   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2007
+   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2007, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Nick Clifton (nickc@redhat.com)
 
@@ -29,7 +29,6 @@ extern int          mcore_initial_elimination_offset	(int, int);
 extern int          mcore_byte_offset            	(unsigned int);
 extern int          mcore_halfword_offset        	(unsigned int);
 extern int          mcore_const_trick_uses_not   	(HOST_WIDE_INT);
-extern void         mcore_override_options       	(void);
 extern int          mcore_dllexport_name_p       	(const char *);
 extern int          mcore_dllimport_name_p       	(const char *);
 extern int          mcore_naked_function_p       	(void);

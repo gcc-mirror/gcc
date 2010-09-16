@@ -1,6 +1,6 @@
 /* Output variables, constants and external declarations, for GNU compiler.
    Copyright (C) 1996, 1997, 1998, 2000, 2001, 2002, 2004, 2005, 2007, 2008,
-   2009
+   2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -337,17 +337,16 @@ typedef struct crtl_name_spec
 /* The VMS convention is to always provide minimal debug info
    for a traceback unless specifically overridden.  */
 
-#undef OVERRIDE_OPTIONS
-#define OVERRIDE_OPTIONS                            \
-{                                                   \
+#undef SUBTARGET_OVERRIDE_OPTIONS
+#define SUBTARGET_OVERRIDE_OPTIONS                  \
+do {                                                \
   if (write_symbols == NO_DEBUG                     \
       && debug_info_level == DINFO_LEVEL_NONE)      \
     {                                               \
       write_symbols = VMS_DEBUG;                    \
       debug_info_level = DINFO_LEVEL_TERSE;         \
     }                                               \
-   override_options ();                             \
-}
+} while (0)
 
 /* Link with vms-dwarf2.o if -g (except -g0). This causes the
    VMS link to pull all the dwarf2 debug sections together.  */

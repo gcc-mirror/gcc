@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for picoChip
-   Copyright (C) 2001, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2008, 2009, 2010 Free Software Foundation, Inc.
 
    Contributed by picoChip Designs Ltd. (http://www.picochip.com)
    Maintained by Daniel Towner (daniel.towner@picochip.com) and
@@ -83,12 +83,6 @@ extern enum picochip_dfa_type picochip_schedule_type;
 #define TARGET_HAS_MUL_UNIT (picochip_has_mul_unit)
 #define TARGET_HAS_MAC_UNIT (picochip_has_mac_unit)
 #define TARGET_HAS_MULTIPLY (picochip_has_mac_unit || picochip_has_mul_unit)
-
-/* Allow some options to be overriden.  In particular, the 2nd
-   scheduling pass option is switched off, and a machine dependent
-   reorganisation ensures that it is run later on, after the second
-   jump optimisation. */
-#define OVERRIDE_OPTIONS picochip_override_options()
 
 #define CAN_DEBUG_WITHOUT_FP 1
 

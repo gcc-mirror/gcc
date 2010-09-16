@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC for Motorola 680x0/ColdFire.
    Copyright (C) 1987, 1988, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -273,8 +273,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define TUNE_MAC	((m68k_tune_flags & FL_CF_MAC) != 0)
 #define TUNE_EMAC	((m68k_tune_flags & FL_CF_EMAC) != 0)
-
-#define OVERRIDE_OPTIONS   override_options()
 
 /* These are meant to be redefined in the host dependent files */
 #define SUBTARGET_OVERRIDE_OPTIONS

@@ -231,10 +231,10 @@ moxie_init_machine_status (void)
 }
 
 
-/* The OVERRIDE_OPTIONS worker.
+/* The TARGET_OPTION_OVERRIDE worker.
    All this curently does is set init_machine_status.  */
-void
-moxie_override_options (void)
+static void
+moxie_option_override (void)
 {
   /* Set the per-function-data initializer.  */
   init_machine_status = moxie_init_machine_status;
@@ -566,6 +566,9 @@ moxie_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE moxie_asm_trampoline_template
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT moxie_trampoline_init
+
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE moxie_option_override
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

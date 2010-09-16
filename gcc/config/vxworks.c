@@ -1,5 +1,5 @@
 /* Common VxWorks target definitions for GNU compiler.
-   Copyright (C) 2007, 2008
+   Copyright (C) 2007, 2008, 2010
    Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
@@ -120,7 +120,7 @@ vxworks_emutls_var_init (tree var, tree decl, tree tmpl_addr)
   return build_constructor (type, v);
 }
 
-/* Do VxWorks-specific parts of OVERRIDE_OPTIONS.  */
+/* Do VxWorks-specific parts of TARGET_OPTION_OVERRIDE.  */
 
 void
 vxworks_override_options (void)

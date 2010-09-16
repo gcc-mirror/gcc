@@ -76,9 +76,12 @@ static bool
 lm32_legitimate_address_p (enum machine_mode mode, rtx x, bool strict);
 static HOST_WIDE_INT lm32_compute_frame_size (int size);
 static bool lm32_handle_option (size_t code, const char *arg, int value);
+static void lm32_option_override (void);
 
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION lm32_handle_option
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE lm32_option_override
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST hook_int_rtx_bool_0
 #undef TARGET_RTX_COSTS
@@ -713,8 +716,8 @@ lm32_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED, int value)
 }
 
 /* Override command line options.  */
-void
-lm32_override_options (void)
+static void
+lm32_option_override (void)
 {
   /* We must have sign-extend enabled if barrel-shift isn't.  */
   if (!TARGET_BARREL_SHIFT_ENABLED && !TARGET_SIGN_EXTEND_ENABLED)
