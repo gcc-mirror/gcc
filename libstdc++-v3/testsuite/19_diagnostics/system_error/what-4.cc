@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2007, 2008, 2009
+// Copyright (C) 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -20,7 +20,6 @@
 
 // 19.1 Exception classes
 
-#include <cstring>
 #include <string>
 #include <system_error>
 #include <testsuite_hooks.h>

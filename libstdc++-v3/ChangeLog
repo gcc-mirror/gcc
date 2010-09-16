@@ -1,5 +1,20 @@
 2010-09-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/std/system_error (system_error::system_error(error_code),
+	system_error(error_code, const string&), system_error(int, const
+	error_category&), system_error(int, const error_category&,
+	const string&)): Fix for what() to return the NBTS recommended in
+	the Note in 19.5.6.2/14.
+	* testsuite/19_diagnostics/system_error/cons-1.cc: Adjust.
+	* testsuite/19_diagnostics/system_error/what-1.cc: Likewise.
+	* testsuite/19_diagnostics/system_error/what-2.cc: Likewise.
+	* testsuite/19_diagnostics/system_error/what-big.cc: Likewise.
+	* testsuite/19_diagnostics/system_error/what-3.cc: Likewise.
+
+	* testsuite/19_diagnostics/system_error/what-4.cc: Tidy includes.
+
+2010-09-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/std/complex (complex<float>::operator=(float),
 	complex<float>::operator+=(float),
 	complex<float>::operator-=(float),

@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,7 +17,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <cstring>
 #include <string>
 #include <system_error>
 #include <testsuite_hooks.h>
@@ -30,7 +29,7 @@ void test01()
   bool test __attribute__((unused)) = true;
   const std::string xxx(10000, 'x');
   test_type t(std::error_code(), xxx);
-  VERIFY( std::strcmp(t.what(), xxx.c_str()) == 0 );
+  VERIFY( std::string(t.what()).find(xxx) != std::string::npos );
 }
 
 int main(void)
