@@ -1,5 +1,10 @@
 2010-09-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/stl_raw_storage_iter.h (raw_storage_iterator<>::
+	operator=(const _Tp&)): Use std::__addressof.
+
+2010-09-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/std/system_error (system_error::system_error(error_code),
 	system_error(error_code, const string&), system_error(int, const
 	error_category&), system_error(int, const error_category&,
