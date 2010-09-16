@@ -341,15 +341,13 @@
   [(set (match_operand:V2SF 0 "register_operand" "")
         (minus:V2SF (match_operand:V2SF 1 "register_operand" "")
 		    (match_operand:V2SF 2 "nonimmediate_operand" "")))]
-  "TARGET_3DNOW"
-  "")
+  "TARGET_3DNOW")
 
 (define_expand "mmx_subrv2sf3"
   [(set (match_operand:V2SF 0 "register_operand" "")
         (minus:V2SF (match_operand:V2SF 2 "register_operand" "")
 		    (match_operand:V2SF 1 "nonimmediate_operand" "")))]
-  "TARGET_3DNOW"
-  "")
+  "TARGET_3DNOW")
 
 (define_insn "*mmx_subv2sf3"
   [(set (match_operand:V2SF 0 "register_operand" "=y,y")
@@ -1623,8 +1621,7 @@
 		      (match_operand:V8QI 2 "register_operand" "")
 		      (match_dup 0)]
 		     UNSPEC_MASKMOV))]
-  "TARGET_SSE || TARGET_3DNOW_A"
-  "")
+  "TARGET_SSE || TARGET_3DNOW_A")
 
 (define_insn "*mmx_maskmovq"
   [(set (mem:V8QI (match_operand:SI 0 "register_operand" "D"))
