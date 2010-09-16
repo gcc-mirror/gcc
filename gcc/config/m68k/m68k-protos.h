@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Sun 68000/68020 version.
-   Copyright (C) 2000, 2002, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2000, 2002, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -94,7 +94,6 @@ extern int flags_in_68881 (void);
 extern void m68k_expand_prologue (void);
 extern bool m68k_use_return_insn (void);
 extern void m68k_expand_epilogue (bool);
-extern void override_options (void);
 extern const char *m68k_cpp_cpu_ident (const char *);
 extern const char *m68k_cpp_cpu_family (const char *);
 extern void init_68881_table (void);

@@ -63,6 +63,7 @@ enum m32r_sdata m32r_sdata = M32R_SDATA_DEFAULT;
 
 /* Forward declaration.  */
 static bool  m32r_handle_option (size_t, const char *, int);
+static void  m32r_option_override (void);
 static void  init_reg_tables (void);
 static void  block_move_call (rtx, rtx, rtx);
 static int   m32r_is_insn (rtx);
@@ -150,6 +151,8 @@ static const struct attribute_spec m32r_attribute_table[] =
 #define TARGET_DEFAULT_TARGET_FLAGS TARGET_CPU_DEFAULT
 #undef  TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION m32r_handle_option
+#undef  TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE m32r_option_override
 
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO m32r_encode_section_info
@@ -251,7 +254,7 @@ m32r_handle_option (size_t code, const char *arg, int value)
     }
 }
 
-/* Called by OVERRIDE_OPTIONS to initialize various things.  */
+/* Called by m32r_option_override to initialize various things.  */
 
 void
 m32r_init (void)
@@ -266,6 +269,15 @@ m32r_init (void)
   /* Provide default value if not specified.  */
   if (!g_switch_set)
     g_switch_value = SDATA_DEFAULT_SIZE;
+}
+
+static void
+m32r_option_override (void)
+{
+  /* These need to be done at start up.
+     It's convenient to do them here.  */
+  m32r_init ();
+  SUBTARGET_OVERRIDE_OPTIONS;
 }
 
 /* Vectors to keep interesting information about registers where it can easily

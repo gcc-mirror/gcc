@@ -2314,7 +2314,7 @@ ia64_file_start (void)
 {
   /* Variable tracking should be run after all optimizations which change order
      of insns.  It also needs a valid CFG.  This can't be done in
-     ia64_override_options, because flag_var_tracking is finalized after
+     ia64_option_override, because flag_var_tracking is finalized after
      that.  */
   ia64_flag_var_tracking = flag_var_tracking;
   flag_var_tracking = 0;

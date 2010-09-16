@@ -117,6 +117,8 @@ picochip_asm_named_section (const char *name,
 
 static rtx picochip_static_chain (const_tree, bool);
 
+static void picochip_option_override (void);
+
 /* Lookup table mapping a register number to the earliest containing
    class.  Used by REGNO_REG_CLASS.  */
 const enum reg_class picochip_regno_reg_class[FIRST_PSEUDO_REGISTER] =
@@ -301,8 +303,11 @@ static char picochip_get_vliw_alu_id (void);
 #undef TARGET_STATIC_CHAIN
 #define TARGET_STATIC_CHAIN picochip_static_chain
 
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE picochip_option_override
+
 #undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
-#define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE picochip_override_options
+#define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE picochip_option_override
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -317,9 +322,13 @@ picochip_return_in_memory(const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
   return ((unsigned HOST_WIDE_INT) int_size_in_bytes (type) > 4);
 }
 
-/* Allow certain command options to be overriden. */
-void
-picochip_override_options (void)
+/* Allow some options to be overriden.  In particular, the 2nd
+   scheduling pass option is switched off, and a machine dependent
+   reorganisation ensures that it is run later on, after the second
+   jump optimisation. */
+
+static void
+picochip_option_override (void)
 {
   /* If we are optimizing for stack, dont let inliner to inline functions
      that could potentially increase stack size.*/
@@ -1760,7 +1769,7 @@ picochip_asm_file_start (void)
 
   /* Variable tracking should be run after all optimizations which change order
      of insns.  It also needs a valid CFG.  This can't be done in
-     picochip_override_options, because flag_var_tracking is finalized after
+     picochip_option_override, because flag_var_tracking is finalized after
      that.  */
   picochip_flag_var_tracking = flag_var_tracking;
   flag_var_tracking = 0;

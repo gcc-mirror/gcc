@@ -333,7 +333,7 @@
 	 (const_string "alu")))
 
 ; Load scheduling, set from the arm_ld_sched variable
-; initialized by arm_override_options() 
+; initialized by arm_option_override()
 (define_attr "ldsched" "no,yes" (const (symbol_ref "arm_ld_sched")))
 
 ;; Classification of NEON instructions for scheduling purposes.

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, Argonaut ARC cpu.
-   Copyright (C) 2000, 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2004, 2007, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -54,7 +54,6 @@ extern int shift_operator (rtx, enum machine_mode);
 extern enum arc_function_type arc_compute_function_type (tree);
 
 
-extern void arc_init (void);
 extern unsigned int arc_compute_frame_size (int);
 extern void arc_save_restore (FILE *, const char *, unsigned int,
 			      unsigned int, const char *);

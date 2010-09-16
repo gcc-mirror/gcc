@@ -1,5 +1,5 @@
 /* score.h for Sunplus S+CORE processor
-   Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Sunnorth.
 
    This file is part of GCC.
@@ -97,8 +97,6 @@
 
 #define TARGET_VERSION \
       fprintf (stderr, "Sunplus S+core rev=%s", SCORE_GCC_VERSION);
-
-#define OVERRIDE_OPTIONS       score_override_options ()
 
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP
@@ -235,7 +233,7 @@
 
    Regarding coprocessor registers: without evidence to the contrary,
    it's best to assume that each coprocessor register has a unique
-   use.  This can be overridden, in, e.g., override_options() or
+   use.  This can be overridden, in, e.g., TARGET_OPTION_OVERRIDE or
    CONDITIONAL_REGISTER_USAGE should the assumption be inappropriate
    for a particular target.  */
 

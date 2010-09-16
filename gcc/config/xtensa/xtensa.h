@@ -1,5 +1,5 @@
 /* Definitions of Tensilica's Xtensa target machine for GNU compiler.
-   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
@@ -73,8 +73,6 @@ extern unsigned xtensa_current_frame_size;
 #ifndef HAVE_AS_TLS
 #define HAVE_AS_TLS 0
 #endif
-
-#define OVERRIDE_OPTIONS override_options ()
 
 /* Reordering blocks for Xtensa is not a good idea unless the compiler
    understands the range of conditional branches.  Currently all branch

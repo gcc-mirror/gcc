@@ -1,5 +1,5 @@
 /* score3.c for Sunplus S+CORE processor
-   Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Sunnorth
 
    This file is part of GCC.
@@ -635,9 +635,9 @@ score3_asm_file_end (void)
     }
 }
 
-/* Implement OVERRIDE_OPTIONS macro.  */
+/* Implement TARGET_OPTION_OVERRIDE hook.  */
 void
-score3_override_options (void)
+score3_option_override (void)
 {
   flag_pic = false;
   if (!flag_pic)

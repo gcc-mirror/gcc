@@ -149,8 +149,6 @@ extern int target_flags;
 #define TARGET_VERSION \
   fprintf (stderr, " (MMIX)")
 
-#define OVERRIDE_OPTIONS mmix_override_options ()
-
 #define OPTIMIZATION_OPTIONS(LEVEL, SIZE)	\
   do						\
     {						\

@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Vitesse IQ2000 processors
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -147,6 +147,7 @@ static enum machine_mode gpr_mode;
 /* Initialize the GCC target structure.  */
 static struct machine_function* iq2000_init_machine_status (void);
 static bool iq2000_handle_option      (size_t, const char *, int);
+static void iq2000_option_override    (void);
 static section *iq2000_select_rtx_section (enum machine_mode, rtx,
 					   unsigned HOST_WIDE_INT);
 static void iq2000_init_builtins      (void);
@@ -182,6 +183,8 @@ static bool iq2000_print_operand_punct_valid_p (unsigned char code);
 #define TARGET_ASM_SELECT_RTX_SECTION	iq2000_select_rtx_section
 #undef  TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION		iq2000_handle_option
+#undef  TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE		iq2000_option_override
 #undef  TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS		iq2000_rtx_costs
 #undef  TARGET_ADDRESS_COST
@@ -1428,8 +1431,8 @@ iq2000_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
 
 /* Detect any conflicts in the switches.  */
 
-void
-override_options (void)
+static void
+iq2000_option_override (void)
 {
   target_flags &= ~MASK_GPOPT;
 

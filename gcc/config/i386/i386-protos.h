@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* Functions in i386.c */
-extern void override_options (bool);
 extern void optimization_options (int, int);
 extern void ix86_conditional_register_usage (void);
 

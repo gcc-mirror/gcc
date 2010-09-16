@@ -919,14 +919,6 @@ default_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
   return rclass;
 }
 
-void
-default_target_option_override (void)
-{
-#ifdef OVERRIDE_OPTIONS
-  OVERRIDE_OPTIONS;
-#endif
-}
-
 bool
 default_handle_c_option (size_t code ATTRIBUTE_UNUSED,
 			 const char *arg ATTRIBUTE_UNUSED,

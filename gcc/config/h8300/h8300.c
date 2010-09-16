@@ -305,8 +305,8 @@ enum h8_cpu
 
 /* Initialize various cpu specific globals at start up.  */
 
-void
-h8300_init_once (void)
+static void
+h8300_option_override (void)
 {
   static const char *const h8_push_ops[2] = { "push" , "push.l" };
   static const char *const h8_pop_ops[2]  = { "pop"  , "pop.l"  };
@@ -5921,5 +5921,8 @@ h8300_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT h8300_trampoline_init
+
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE h8300_option_override
 
 struct gcc_target targetm = TARGET_INITIALIZER;

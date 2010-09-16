@@ -149,6 +149,7 @@ static struct spu_builtin_range spu_builtin_range[] = {
 char regs_ever_allocated[FIRST_PSEUDO_REGISTER];
 
 /*  Prototypes and external defs.  */
+static void spu_option_override (void);
 static void spu_init_builtins (void);
 static tree spu_builtin_decl (unsigned, bool);
 static bool spu_scalar_mode_supported_p (enum machine_mode mode);
@@ -464,6 +465,9 @@ static const struct attribute_spec spu_attribute_table[] =
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT spu_trampoline_init
 
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE spu_option_override
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 void
@@ -477,12 +481,9 @@ spu_optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
   flag_rename_registers = 1;
 }
 
-/* Sometimes certain combinations of command options do not make sense
-   on a particular target machine.  You can define a macro
-   OVERRIDE_OPTIONS to take account of this. This macro, if defined, is
-   executed once just after all the command options have been parsed.  */
-void
-spu_override_options (void)
+/* Implement TARGET_OPTION_OVERRIDE.  */
+static void
+spu_option_override (void)
 {
   /* Small loops will be unpeeled at -O3.  For SPU it is more important
      to keep code small by default.  */

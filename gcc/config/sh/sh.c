@@ -331,7 +331,7 @@ static const struct attribute_spec sh_attribute_table[] =
 #undef TARGET_ASM_UNALIGNED_SI_OP
 #define TARGET_ASM_UNALIGNED_SI_OP "\t.ualong\t"
 
-/* These are NULLed out on non-SH5 in OVERRIDE_OPTIONS.  */
+/* These are NULLed out on non-SH5 in TARGET_OPTION_OVERRIDE.  */
 #undef TARGET_ASM_UNALIGNED_DI_OP
 #define TARGET_ASM_UNALIGNED_DI_OP "\t.uaquad\t"
 #undef TARGET_ASM_ALIGNED_DI_OP
@@ -720,7 +720,7 @@ sh_optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
 	target_flags |= MASK_SAVE_ALL_TARGET_REGS;
     }
   /* Likewise, we can't meaningfully test TARGET_SH2E / TARGET_IEEE
-     here, so leave it to OVERRIDE_OPTIONS to set
+     here, so leave it to TARGET_OPTION_OVERRIDE to set
     flag_finite_math_only.  We set it to 2 here so we know if the user
     explicitly requested this to be on or off.  */
   flag_finite_math_only = 2;

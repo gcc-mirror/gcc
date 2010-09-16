@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for SPARC targeting the VxWorks run time environment.
-   Copyright (C) 2007 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,14 +27,8 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
-#undef OVERRIDE_OPTIONS
-#define OVERRIDE_OPTIONS			\
-  do						\
-    {						\
-      VXWORKS_OVERRIDE_OPTIONS;			\
-      sparc_override_options ();		\
-    }						\
-  while (0)
+#undef SUBTARGET_OVERRIDE_OPTIONS
+#define SUBTARGET_OVERRIDE_OPTIONS VXWORKS_OVERRIDE_OPTIONS
 
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC VXWORKS_ADDITIONAL_CPP_SPEC

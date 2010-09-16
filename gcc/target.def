@@ -2311,7 +2311,7 @@ DEFHOOK
 (override,
  "",
  void, (void),
- default_target_option_override)
+ hook_void_void)
 
 /* Function to determine if one function can inline another function.  */
 #undef HOOK_PREFIX

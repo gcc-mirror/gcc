@@ -256,8 +256,8 @@ alpha_mangle_type (const_tree type)
 
 /* Parse target option strings.  */
 
-void
-override_options (void)
+static void
+alpha_option_override (void)
 {
   static const struct cpu_table {
     const char *const name;
@@ -282,6 +282,10 @@ override_options (void)
 
   int const ct_size = ARRAY_SIZE (cpu_table);
   int i;
+
+#ifdef SUBTARGET_OVERRIDE_OPTIONS
+  SUBTARGET_OVERRIDE_OPTIONS;
+#endif
 
   /* Unicos/Mk doesn't have shared libraries.  */
   if (TARGET_ABI_UNICOSMK && flag_pic)
@@ -11156,6 +11160,9 @@ alpha_init_libfuncs (void)
   (TARGET_DEFAULT | TARGET_CPU_DEFAULT | TARGET_DEFAULT_EXPLICIT_RELOCS)
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION alpha_handle_option
+
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE alpha_option_override
 
 #ifdef TARGET_ALTERNATE_LONG_DOUBLE_MANGLING
 #undef TARGET_MANGLE_TYPE

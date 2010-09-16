@@ -1,3 +1,200 @@
+2010-09-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/tm.texi.in (OVERRIDE_OPTIONS): Remove documentation.
+	(C_COMMON_OVERRIDE_OPTIONS): Don't refer to OVERRIDE_OPTIONS.
+	* doc/tm.texi: Regenerate.
+	* system.h (OVERRIDE_OPTIONS): Poison.
+	* target.def (override): Default to hook_void_void.
+	* targhooks.c (default_target_option_override): Remove.
+	* genmodes.c, machmode.def: Update comments mentioning
+	OVERRIDE_OPTIONS.
+	* config/alpha/alpha-modes.def: Update comment mentioning
+	alpha_override_options.
+	* config/alpha/alpha-protos.h (override_options): Remove.
+	* config/alpha/alpha.c (override_options): Rename to
+	alpha_option_override.  Call SUBTARGET_OVERRIDE_OPTIONS.  Make
+	static.
+	(TARGET_OPTION_OVERRIDE): Define.
+	* config/alpha/alpha.h (OVERRIDE_OPTIONS): Remove.
+	* config/alpha/vms.h (SUBTARGET_OVERRIDE_OPTIONS): Define instead
+	of OVERRIDE_OPTIONS.
+	* config/arc/arc-protos.h (arc_init): Remove.
+	* config/arc/arc.c (TARGET_OPTION_OVERRIDE): Define.
+	(arc_init): Rename to arc_option_override.  Make static.
+	* config/arc/arc.h (ARC_EXTENSION_CPU): Correct comment.
+	(OVERRIDE_OPTIONS): Remove.
+	* config/arm/arm-protos.h (arm_override_options): Remove.
+	* config/arm/arm.c (TARGET_OPTION_OVERRIDE): Define.
+	(arm_override_options): Rename to arm_option_override.  Make
+	static.  Call SUBTARGET_OVERRIDE_OPTIONS.
+	* config/arm/arm.h (OVERRIDE_OPTIONS): Remove.
+	* config/arm/arm.md: Update comment referring to
+	arm_override_options.
+	* config/arm/vxworks.h (SUBTARGET_OVERRIDE_OPTIONS): Define
+	instead of OVERRIDE_OPTIONS.
+	* config/avr/avr-protos.h (avr_override_options): Remove.
+	* config/avr/avr.c (TARGET_OPTION_OVERRIDE): Define.
+	(avr_override_options): Rename to avr_option_override.  Make
+	static.
+	* config/avr/avr.h (OVERRIDE_OPTIONS): Remove.
+	* config/bfin/bfin-protos.h (override_options): Remove (twice).
+	* config/bfin/bfin.c (override_options): Rename to
+	bfin_option_override.  Make static.
+	(TARGET_OPTION_OVERRIDE): Define.
+	* config/bfin/bfin.h (OVERRIDE_OPTIONS): Remove.
+	* config/cris/cris-protos.h (cris_override_options): Remove.
+	* config/cris/cris.c (TARGET_OPTION_OVERRIDE): Define.
+	(cris_override_options): Rename to cris_option_override.  Make
+	static.
+	* config/cris/cris.h (OVERRIDE_OPTIONS): Remove.
+	* config/frv/frv-protos.h (frv_override_options): Remove.
+	* config/frv/frv.c (TARGET_OPTION_OVERRIDE): Define.
+	(frv_override_options): Rename to frv_option_override.  Make
+	static.
+	* config/frv/frv.h (OVERRIDE_OPTIONS): Remove.
+	* config/h8300/h8300-protos.h (h8300_init_once): Remove.
+	* config/h8300/h8300.c (h8300_init_once): Rename to
+	h8300_option_override.  Make static.
+	(TARGET_OPTION_OVERRIDE): Define.
+	* config/h8300/h8300.h (OVERRIDE_OPTIONS): Remove.
+	* config/i386/i386-protos.h (override_options): Remove.
+	* config/i386/i386.c (override_options): Rename to
+	ix86_option_override_internal.  Make static.  Comments referring
+	to this function and callers changed.
+	(ix86_option_override): New.
+	(TARGET_OPTION_OVERRIDE): Define.
+	* config/i386/i386.h (OVERRIDE_OPTION): Remove.
+	* config/i386/linux64.h (DEFAULT_PCC_STRUCT_RETURN): Update
+	comment.
+	* config/ia64/ia64.c (ia64_file_start): Update comment referring
+	to ia64_override_options.
+	* config/iq2000/iq2000-protos.h (override_options): Remove.
+	* config/iq2000/iq2000.c (TARGET_OPTION_OVERRIDE): Define.
+	(override_options): Rename to iq2000_option_override.  Make
+	static.
+	* config/iq2000/iq2000.h (OVERRIDE_OPTIONS): Remove.
+	* config/lm32/lm32-protos.h (lm32_override_options): Remove.
+	* config/lm32/lm32.c (TARGET_OPTION_OVERRIDE): Define.
+	(lm32_override_options): Rename to lm32_option_override.  Make
+	static.
+	* config/lm32/lm32.h (OVERRIDE_OPTIONS): Remove.
+	* config/m32r/m32r.c (TARGET_OPTION_OVERRIDE): Define.
+	(m32r_option_override): New.
+	(m32r_init): Update comment.
+	* config/m32r/m32r.h (OVERRIDE_OPTIONS): Remove.
+	* config/m68hc11/m68hc11-protos.h (m68hc11_override_options):
+	Remove.
+	* config/m68hc11/m68hc11.c (TARGET_OPTION_OVERRIDE): Define.
+	(m68hc11_override_options): Rename to m68hc11_option_override.
+	Make static.  Return void.
+	* config/m68hc11/m68hc11.h (OVERRIDE_OPTIONS): Remove.
+	* config/m68k/m68k-protos.h (override_options): Remove.
+	* config/m68k/m68k.c (TARGET_OPTION_OVERRIDE): Define.
+	(override_options): Rename to m68k_option_override.  Make static.
+	* config/m68k/m68k.h (OVERRIDE_OPTIONS): Remove.
+	* config/mcore/mcore-protos.h (mcore_override_options): Remove.
+	* config/mcore/mcore.c (TARGET_OPTION_OVERRIDE): Define.
+	(mcore_override_options): Rename to mcore_option_override.  Make
+	static.
+	* config/mcore/mcore.h (OVERRIDE_OPTIONS): Remove.
+	* config/mep/mep-protos.h (mep_override_options): Remove.
+	* config/mep/mep.c (TARGET_OPTION_OVERRIDE): Define.
+	(mep_override_options): Rename to mep_option_override.  Make
+	static.
+	* config/mep/mep.h (OVERRIDE_OPTIONS): Remove.
+	* config/mmix/mmix-protos.h (mmix_override_options): Remove.
+	* config/mmix/mmix.c (TARGET_OPTION_OVERRIDE): Define.
+	(mmix_override_options): Rename to mmix_option_override.  Make
+	static.
+	* config/mmix/mmix.h (OVERRIDE_OPTIONS): Remove.
+	* config/mn10300/mn10300-protos.h (mn10300_override_options):
+	Remove.
+	* config/mn10300/mn10300.c (TARGET_OPTION_OVERRIDE): Define.
+	(mn10300_override_options): Rename to mn10300_option_override.
+	Make static.
+	* config/mn10300/mn10300.h (OVERRIDE_OPTIONS): Remove.
+	* config/moxie/moxie-protos.h (moxie_override_options): Remove.
+	* config/moxie/moxie.c (moxie_override_options): Rename to
+	moxie_option_override.  Make static.
+	(TARGET_OPTION_OVERRIDE): Define.
+	* config/moxie/moxie.h (OVERRIDE_OPTIONS): Remove.
+	* config/picochip/picochip-protos.h (picochip_override_options):
+	Remove.  Update comment referring to picochip_override_options.
+	* config/picochip/picochip.c (TARGET_OPTION_OVERRIDE): Define.
+	(picochip_override_options): Rename to picochip_option_override.
+	Make static.  Update comment and definition of
+	TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE.
+	* config/picochip/picochip.h (OVERRIDE_OPTIONS): Remove.
+	* config/rs6000/aix43.h (SUBTARGET_OVERRIDE_OPTIONS): Update
+	comment.
+	* config/rs6000/aix51.h (SUBTARGET_OVERRIDE_OPTIONS): Update
+	comment.
+	* config/rs6000/aix52.h (SUBTARGET_OVERRIDE_OPTIONS): Update
+	comment.
+	* config/rs6000/aix53.h (SUBTARGET_OVERRIDE_OPTIONS): Update
+	comment.
+	* config/rs6000/aix61.h (SUBTARGET_OVERRIDE_OPTIONS): Update
+	comment.
+	* config/rs6000/linux64.h (OPTION_TARGET_CPU_DEFAULT): Define
+	instead of OVERRIDE_OPTIONS.
+	* config/rs6000/rs6000-modes.def: Update comment referring to
+	rs6000_override_options.
+	* config/rs6000/rs6000-protos.h (rs6000_override_options): Remove.
+	* config/rs6000/rs6000.c (TARGET_OPTION_OVERRIDE): Define.
+	(rs6000_override_options): Rename to
+	rs6000_option_override_internal.  Make static.  Commented
+	referring to rs6000_override_options and OVERRIDE_OPTIONS updated.
+	(rs6000_option_override): New.
+	* config/rs6000/rs6000.h (OPTION_TARGET_CPU_DEFAULT): Define
+	instead of OVERRIDE_OPTIONS.
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Update
+	comment.
+	* config/s390/s390-protos.h (override_options): Remove.
+	* config/s390/s390.c (override_options): Rename to
+	s390_option_override.  Make static.
+	(TARGET_OPTION_OVERRIDE): Define.
+	* config/s390/s390.h (OVERRIDE_OPTIONS): Remove.
+	* config/score/score-protos.h (score_override_options): Remove.
+	* config/score/score.c (TARGET_OPTION_OVERRIDE): Define.
+	(score_override_options): Rename to score_option_override.  Make
+	static.
+	* config/score/score.h (OVERRIDE_OPTIONS): Remove.
+	Update comment referring to override_options.
+	* config/score/score3.c (score3_override_options): Rename to
+	score3_option_override.
+	* config/score/score3.h (score3_override_options): Rename to
+	score3_option_override.
+	* config/score/score7.c (score7_override_options): Rename to
+	score7_option_override.
+	* config/score/score7.h (score7_override_options): Rename to
+	score7_option_override.
+	* config/sh/sh.c: Update comments referring to OVERRIDE_OPTIONS.
+	* config/sparc/sparc.c (TARGET_OPTION_OVERRIDE): Define.
+	(sparc_override_options): Rename to sparc_option_override.  Make
+	static.  Call SUBTARGET_OVERRIDE_OPTIONS.
+	* config/sparc/sparc.h (OVERRIDE_OPTIONS): Remove.
+	* config/sparc/vxworks.h (SUBTARGET_OVERRIDE_OPTIONS): Define
+	instead of OVERRIDE_OPTIONS.
+	* config/spu/spu-protos.h (spu_override_options): Remove.
+	* config/spu/spu.c (TARGET_OPTION_OVERRIDE): Define.
+	(spu_override_options): Rename to spu_option_override.  Make
+	static.
+	* config/spu/spu.h (OVERRIDE_OPTIONS): Remove.
+	* config/vax/elf.h (SUBTARGET_OVERRIDE_OPTIONS): Define instead of
+	OVERRIDE_OPTIONS.
+	* config/vax/vax-protos.h (override_options): Remove.
+	* config/vax/vax.c (TARGET_OPTION_OVERRIDE): Define.
+	(override_options): Rename to vax_option_override.  Make static.
+	Call SUBTARGET_OVERRIDE_OPTIONS.
+	* config/vax/vax.h (OVERRIDE_OPTIONS): Remove.
+	* config/vxworks.c: Update comment referring to OVERRIDE_OPTIONS.
+	* config/vxworks.h: Update comment referring to OVERRIDE_OPTIONS.
+	* config/xtensa/xtensa-protos.h (override_options): Remove.
+	* config/xtensa/xtensa.c (TARGET_OPTION_OVERRIDE): Define.
+	(override_options): Rename to xtensa_option_override.  Make
+	static.
+	* config/xtensa/xtensa.h (OVERRIDE_OPTIONS): Remove.
+
 2010-09-16  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45623

@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Renesas H8/300 version
-   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2007, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -95,7 +96,6 @@ extern int h8300_eightbit_data_p (tree);
 extern int h8300_tiny_data_p (tree);
 #endif /* TREE_CODE */
 
-extern void h8300_init_once (void);
 extern int h8300_can_use_return_insn_p (void);
 extern void h8300_expand_prologue (void);
 extern void h8300_expand_epilogue (void);

@@ -349,6 +349,7 @@ static HOST_WIDE_INT frame_base_offset;
 int sparc_indent_opcode = 0;
 
 static bool sparc_handle_option (size_t, const char *, int);
+static void sparc_option_override (void);
 static void sparc_init_modes (void);
 static void scan_record_type (tree, int *, int *, int *);
 static int function_arg_slotno (const CUMULATIVE_ARGS *, enum machine_mode,
@@ -595,6 +596,8 @@ static bool fpu_option_set = false;
 #define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION sparc_handle_option
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE sparc_option_override
 
 #if TARGET_GNU_TLS && defined(HAVE_AS_SPARC_UA_PCREL)
 #undef TARGET_ASM_OUTPUT_DWARF_DTPREL
@@ -651,8 +654,8 @@ sparc_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
 /* Validate and override various options, and do some machine dependent
    initialization.  */
 
-void
-sparc_override_options (void)
+static void
+sparc_option_override (void)
 {
   static struct code_model {
     const char *const name;
@@ -727,6 +730,10 @@ sparc_override_options (void)
   const struct cpu_table *cpu;
   const struct sparc_cpu_select *sel;
   int fpu;
+
+#ifdef SUBTARGET_OVERRIDE_OPTIONS
+  SUBTARGET_OVERRIDE_OPTIONS;
+#endif
 
 #ifndef SPARC_BI_ARCH
   /* Check for unsupported architecture size.  */

@@ -22,7 +22,6 @@
 
 
 extern int function_arg_regno_p (int r);
-extern void avr_override_options (void);
 extern void avr_cpu_cpp_builtins (struct cpp_reader * pfile);
 extern int avr_ret_register (void);
 extern bool class_likely_spilled_p (int c);

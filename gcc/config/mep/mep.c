@@ -302,8 +302,8 @@ mep_optimization_options (void)
   flag_omit_frame_pointer = 1;
 }
 
-void
-mep_override_options (void)
+static void
+mep_option_override (void)
 {
   if (flag_pic == 1)
     warning (OPT_fpic, "-fpic is not supported");
@@ -7409,6 +7409,8 @@ mep_asm_init_sections (void)
 #define TARGET_VECTOR_MODE_SUPPORTED_P	mep_vector_mode_supported_p
 #undef  TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION            mep_handle_option
+#undef  TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE		mep_option_override
 #undef  TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS	TARGET_DEFAULT
 #undef  TARGET_ALLOCATE_INITIAL_VALUE

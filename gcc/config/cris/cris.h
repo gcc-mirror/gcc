@@ -1,6 +1,6 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008,
-   2009 Free Software Foundation, Inc.
+   2009, 2010 Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -327,8 +327,6 @@ extern int target_flags;
 #define TARGET_V32 (cris_cpu_version >= CRIS_CPU_V32)
 
 #define CRIS_SUBTARGET_HANDLE_OPTION(x, y, z)
-
-#define OVERRIDE_OPTIONS cris_override_options ()
 
 #define OPTIMIZATION_OPTIONS(OPTIMIZE, SIZE)	\
   do						\

@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on the Argonaut ARC cpu.
    Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-   2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2004, 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -95,6 +95,7 @@ static bool arc_return_in_memory (const_tree, const_tree);
 static bool arc_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				   const_tree, bool);
 static void arc_trampoline_init (rtx, tree, rtx);
+static void arc_option_override (void);
 
 
 /* ARC specific attributs.  */
@@ -129,6 +130,9 @@ static const struct attribute_spec arc_attribute_table[] =
 
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION arc_handle_option
+
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE arc_option_override
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS arc_rtx_costs
@@ -173,10 +177,11 @@ arc_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
     }
 }
 
-/* Called by OVERRIDE_OPTIONS to initialize various things.  */
+/* Implement TARGET_OPTION_OVERRIDE.
+   These need to be done at start up.  It's convenient to do them here.  */
 
-void
-arc_init (void)
+static void
+arc_option_override (void)
 {
   char *tmp;
   

@@ -1,5 +1,5 @@
 /* score-protos.h for Sunplus S+CORE processor
-   Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -59,7 +59,6 @@ extern void score_init_cumulative_args (CUMULATIVE_ARGS *cum,
 extern void score_declare_object (FILE *stream, const char *name,
                                   const char *directive, const char *fmt, ...);
 extern int score_output_external (FILE *file, tree decl, const char *name);
-extern void score_override_options (void);
 extern enum reg_class score_secondary_reload_class (enum reg_class rclass,
                                                     enum machine_mode mode,
                                                     rtx x);

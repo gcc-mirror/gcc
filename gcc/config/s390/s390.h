@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390
    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-   2007, 2008, 2009 Free Software Foundation, Inc.
+   2007, 2008, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com).
                   Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
@@ -149,9 +149,8 @@ extern int s390_arch_flags;
 #define TARGET_VERSION fprintf (stderr, " (S/390)");
 #endif
 
-/* Hooks to override options.  */
+/* Hook to override options.  */
 #define OPTIMIZATION_OPTIONS(LEVEL, SIZE) optimization_options(LEVEL, SIZE)
-#define OVERRIDE_OPTIONS override_options ()
 
 /* Frame pointer is not used for debugging.  */
 #define CAN_DEBUG_WITHOUT_FP

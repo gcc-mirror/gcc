@@ -19,7 +19,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-extern void mmix_override_options (void);
 extern void mmix_init_expanders (void);
 extern int mmix_eh_return_data_regno (int);
 extern int mmix_initial_elimination_offset (int, int);

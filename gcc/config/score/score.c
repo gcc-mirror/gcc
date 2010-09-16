@@ -51,6 +51,8 @@
 #include "score3.h"
 #include "df.h"
 
+static void score_option_override (void);
+
 #undef  TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START           score_asm_file_start
 
@@ -67,6 +69,8 @@
 #define TARGET_DEFAULT_TARGET_FLAGS     TARGET_DEFAULT
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION            score_handle_option
+#undef TARGET_OPTION_OVERRIDE
+#define TARGET_OPTION_OVERRIDE          score_option_override
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS	score_legitimize_address
@@ -351,16 +355,16 @@ score_handle_option (size_t code, const char *arg, int value)
     }
 }
 
-/* Implement OVERRIDE_OPTIONS macro.  */
-void
-score_override_options (void)
+/* Implement TARGET_OPTION_OVERRIDE hook.  */
+static void
+score_option_override (void)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_override_options ();
+    return score7_option_override ();
   else if (TARGET_SCORE3)
-    return score3_override_options ();
+    return score3_option_override ();
 
-  return score7_override_options ();
+  return score7_option_override ();
 }
 
 /* Implement REGNO_REG_CLASS macro.  */
