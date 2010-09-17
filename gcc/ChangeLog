@@ -1,4 +1,21 @@
 2010-09-17  H.J. Lu  <hongjiu.lu@intel.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (initial_ix86_tune_features): Add
+	X86_TUNE_PAD_SHORT_FUNCTION.
+	(ix86_code_end): Pad with 8 NOPs for TARGET_PAD_SHORT_FUNCTION.
+	(ix86_count_insn): New.
+	(ix86_pad_short_function): Likewise.
+	(ix86_reorg): Support TARGET_PAD_SHORT_FUNCTION.
+
+	* config/i386/i386.h (ix86_tune_indices): Add
+	X86_TUNE_PAD_SHORT_FUNCTION.
+	(TARGET_PAD_SHORT_FUNCTION): New.
+
+	* config/i386/i386.md (UNSPEC_NOPS): New.
+	(nops): Likewise.
+
+2010-09-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/45234
 	* calls.c (expand_call): Make sure that all variable sized

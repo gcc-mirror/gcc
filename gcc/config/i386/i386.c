@@ -1576,6 +1576,9 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   /* X86_TUNE_PAD_RETURNS */
   m_AMD_MULTIPLE | m_CORE2 | m_GENERIC,
 
+  /* X86_TUNE_PAD_SHORT_FUNCTION: Pad short funtion.  */
+  m_ATOM,
+
   /* X86_TUNE_EXT_80387_CONSTANTS */
   m_K6_GEODE | m_ATHLON_K8 | m_ATOM | m_PENT4 | m_NOCONA | m_PPRO
   | m_CORE2 | m_GENERIC,
@@ -8021,6 +8024,11 @@ ix86_code_end (void)
 
       xops[0] = gen_rtx_REG (Pmode, regno);
       xops[1] = gen_rtx_MEM (Pmode, stack_pointer_rtx);
+      /* Pad stack IP move with 4 instructions.  2 NOPs count as 1
+         instruction.  */
+      if (TARGET_PAD_SHORT_FUNCTION)
+	output_asm_insn ("nop; nop; nop; nop; nop; nop; nop; nop",
+			 xops);
       output_asm_insn ("mov%z0\t{%1, %0|%0, %1}", xops);
       output_asm_insn ("ret", xops);
       final_end_function ();
@@ -27882,6 +27890,120 @@ ix86_pad_returns (void)
     }
 }
 
+/* Count the minimum number of instructions in BB.  Return 4 if the
+   number of instructions >= 4.  */
+
+static int 
+ix86_count_insn_bb (basic_block bb)
+{
+  rtx insn;
+  int insn_count = 0;
+
+  /* Count number of instructions in this block.  Return 4 if the number
+     of instructions >= 4.  */
+  FOR_BB_INSNS (bb, insn)
+    {
+      /* Only happen in exit blocks.  */
+      if (JUMP_P (insn)
+	  && GET_CODE (PATTERN (insn)) == RETURN)
+	break;
+
+      if (NONDEBUG_INSN_P (insn)
+	  && GET_CODE (PATTERN (insn)) != USE
+	  && GET_CODE (PATTERN (insn)) != CLOBBER)
+	{
+	  insn_count++;
+	  if (insn_count >= 4)
+	    return insn_count;
+	}
+    }
+
+  return insn_count;
+}
+
+
+/* Count the minimum number of instructions in code path in BB.  
+   Return 4 if the number of instructions >= 4.  */
+
+static int 
+ix86_count_insn (basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+  int min_prev_count;
+
+  /* Only bother counting instructions along paths with no
+     more than 2 basic blocks between entry and exit.  Given
+     that BB has an edge to exit, determine if a predecessor
+     of BB has an edge from entry.  If so, compute the number
+     of instructions in the predecessor block.  If there
+     happen to be multiple such blocks, compute the minimum.  */
+  min_prev_count = 4;
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      edge prev_e;
+      edge_iterator prev_ei;
+
+      if (e->src == ENTRY_BLOCK_PTR)
+	{
+	  min_prev_count = 0;
+	  break;
+	}
+      FOR_EACH_EDGE (prev_e, prev_ei, e->src->preds)
+	{
+	  if (prev_e->src == ENTRY_BLOCK_PTR)
+	    {
+	      int count = ix86_count_insn_bb (e->src);
+	      if (count < min_prev_count)
+		min_prev_count = count;
+	      break;
+	    }
+	}
+    }
+
+  if (min_prev_count < 4)
+    min_prev_count += ix86_count_insn_bb (bb);
+
+  return min_prev_count;
+}
+
+/* Pad short funtion to 4 instructions.   */
+
+static void
+ix86_pad_short_function (void)
+{
+  edge e;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
+    {
+      rtx ret = BB_END (e->src);
+      if (JUMP_P (ret) && GET_CODE (PATTERN (ret)) == RETURN)
+	{
+	  int insn_count = ix86_count_insn (e->src);
+
+	  /* Pad short function.  */
+	  if (insn_count < 4)
+	    {
+	      rtx insn = ret;
+
+	      /* Find epilogue.  */
+	      while (insn
+		     && (!NOTE_P (insn)
+			 || NOTE_KIND (insn) != NOTE_INSN_EPILOGUE_BEG))
+		insn = PREV_INSN (insn);
+
+	      if (!insn)
+		insn = ret;
+
+	      /* Two NOPs are counted as one instruction.  */
+	      insn_count = 2 * (4  - insn_count);
+	      emit_insn_before (gen_nops (GEN_INT (insn_count)), insn);
+	    }
+	}
+    }
+}
+
 /* Implement machine specific optimizations.  We implement padding of returns
    for K8 CPUs and pass to avoid 4 jumps in the single 16 byte window.  */
 static void
@@ -27889,7 +28011,9 @@ ix86_reorg (void)
 {
   if (optimize && optimize_function_for_speed_p (cfun))
     {
-      if (TARGET_PAD_RETURNS)
+      if (TARGET_PAD_SHORT_FUNCTION)
+	ix86_pad_short_function ();
+      else if (TARGET_PAD_RETURNS)
 	ix86_pad_returns ();
 #ifdef ASM_OUTPUT_MAX_SKIP_PAD
       if (TARGET_FOUR_JUMP_LIMIT)
