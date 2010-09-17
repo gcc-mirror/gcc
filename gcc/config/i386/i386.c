@@ -2025,9 +2025,6 @@ static enum calling_abi ix86_function_abi (const_tree);
 static int ix86_tune_defaulted;
 static int ix86_arch_specified;
 
-/* Bit flags that specify the ISA we are compiling for.  */
-int ix86_isa_flags = TARGET_64BIT_DEFAULT | TARGET_SUBTARGET_ISA_DEFAULT;
-
 /* A mask of ix86_isa_flags that includes bit X if X
    was set or cleared on the command line.  */
 static int ix86_isa_flags_explicit;

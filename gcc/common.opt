@@ -23,6 +23,9 @@
 
 ; Please try to keep this file in ASCII collating order.
 
+Variable
+int target_flags
+
 ###
 Driver
 
@@ -552,11 +555,11 @@ Common Report Var(flag_dump_noaddr)
 Suppress output of addresses in debugging dumps
 
 fdump-unnumbered
-Common Report Var(flag_dump_unnumbered) VarExists
+Common Report Var(flag_dump_unnumbered)
 Suppress output of instruction numbers, line number notes and addresses in debugging dumps
 
 fdump-unnumbered-links
-Common Report Var(flag_dump_unnumbered_links) VarExists
+Common Report Var(flag_dump_unnumbered_links)
 Suppress output of previous and next insn numbers in debugging dumps
 
 fdwarf2-cfi-asm
@@ -1511,16 +1514,27 @@ Just generate unwind tables for exception handling
 fuse-linker-plugin
 Common Undocumented
 
+; Positive if we should track variables, negative if we should run
+; the var-tracking pass only to discard debug annotations, zero if
+; we're not to run it.  When flag_var_tracking == 2 (AUTODETECT_VALUE) it
+; will be set according to optimize, debug_info_level and debug_hooks
+; in process_options ().
 fvar-tracking
-Common Report Var(flag_var_tracking) VarExists Optimization
+Common Report Var(flag_var_tracking) Init(2) Optimization
 Perform variable tracking
 
+; Positive if we should track variables at assignments, negative if
+; we should run the var-tracking pass only to discard debug
+; annotations.  When flag_var_tracking_assignments ==
+; AUTODETECT_VALUE it will be set according to flag_var_tracking.
 fvar-tracking-assignments
-Common Report Var(flag_var_tracking_assignments) VarExists Optimization
+Common Report Var(flag_var_tracking_assignments) Init(2) Optimization
 Perform variable tracking by annotating assignments
 
+; Nonzero if we should toggle flag_var_tracking_assignments after
+; processing options and computing its default.  */
 fvar-tracking-assignments-toggle
-Common Report Var(flag_var_tracking_assignments_toggle) VarExists Optimization
+Common Report Var(flag_var_tracking_assignments_toggle) Optimization
 Toggle -fvar-tracking-assignments
 
 fvar-tracking-uninit

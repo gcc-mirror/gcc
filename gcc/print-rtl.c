@@ -58,6 +58,10 @@ static void print_rtx (const_rtx);
    the assembly output file.  */
 const char *print_rtx_head = "";
 
+#ifdef GENERATOR_FILE
+/* These are defined from the .opt file when not used in generator
+   programs.  */
+
 /* Nonzero means suppress output of instruction numbers
    in debugging dumps.
    This must be defined here so that programs like gencodes can be linked.  */
@@ -67,6 +71,7 @@ int flag_dump_unnumbered = 0;
    and next insns in debugging dumps.
    This must be defined here so that programs like gencodes can be linked.  */
 int flag_dump_unnumbered_links = 0;
+#endif
 
 /* Nonzero means use simplified format without flags, modes, etc.  */
 int flag_simple = 0;

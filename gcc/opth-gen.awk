@@ -28,6 +28,7 @@ BEGIN {
 	n_opts = 0
 	n_langs = 0
 	n_target_save = 0
+	n_extra_vars = 0
 	n_extra_masks = 0
 	FS=SUBSEP
 }
@@ -42,6 +43,10 @@ BEGIN {
 			# Make sure the declarations are put in source order
 			target_save_decl[n_target_save] = $2
 			n_target_save++
+		}
+		else if ($1 == "Variable") {
+			extra_vars[n_extra_vars] = $2
+			n_extra_vars++
 		}
 		else {
 			name = opt_args("Mask", $1)
@@ -65,11 +70,16 @@ print ""
 print "#ifndef OPTIONS_H"
 print "#define OPTIONS_H"
 print ""
-print "extern int target_flags;"
 print "extern int target_flags_explicit;"
 print ""
 
 have_save = 0;
+
+for (i = 0; i < n_extra_vars; i++) {
+	var = extra_vars[i]
+	sub(" *=.*", "", var)
+	print "extern " var ";"
+}
 
 for (i = 0; i < n_opts; i++) {
 	if (flag_set_p("Save", flags[i]))
