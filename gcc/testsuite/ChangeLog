@@ -1,5 +1,10 @@
 2010-09-17  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR middle-end/45234
+	* gcc.dg/torture/stackalign/alloca-5.c: New.
+
+2010-09-17  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR middle-end/45678
 	* gcc.dg/torture/pr45678-2.c: New.
 
