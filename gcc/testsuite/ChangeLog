@@ -1,3 +1,15 @@
+2010-09-17  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/43432
+	* lib/target-supports.exp (check_effective_target_vect_perm_byte,
+	check_effective_target_vect_perm_short): New predicates.
+	(check_effective_target_vect_perm): Include x86_64.
+	* gcc.dg/vect/pr43432.c: New test.
+	* gcc.dg/vect/vect-114.c: Adjust.
+	* gcc.dg/vect/vect-15.c: Ditto.
+	* gcc.dg/vect/slp-perm-8.c: Use new predicate.
+	* gcc.dg/vect/slp-perm-9.c: Ditto.
+
 2010-09-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR testsuite/45692	

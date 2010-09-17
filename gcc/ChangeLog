@@ -1,3 +1,15 @@
+2010-09-17  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/43432
+	* tree-vect-data-refs.c (vect_analyze_data_ref_access):
+	Accept backwards consecutive accesses.
+	(vect_create_data_ref_ptr): If step is negative generate
+	decreasing IVs.
+	* tree-vect-stmts.c (vectorizable_store): Reject negative steps.
+	(perm_mask_for_reverse, reverse_vec_elements): New functions.
+	(vectorizable_load): Handle loads with negative steps when easily
+	possible.
+
 2010-09-03  Jan Hubicka  <jh@suse.cz>
 
 	* lto-cgraph.c (compute_ltrans_boundary): Use const_value_known.
