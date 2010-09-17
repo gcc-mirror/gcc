@@ -48,49 +48,12 @@
 #define streq(a,b) (strcmp (a, b) == 0)
 #endif
 
-/* Function prototypes for stupid compilers:  */
-static bool v850_handle_option       (size_t, const char *, int);
-static void v850_option_optimization (int, int);
-static void const_double_split       (rtx, HOST_WIDE_INT *, HOST_WIDE_INT *);
-static int  const_costs_int          (HOST_WIDE_INT, int);
-static int  const_costs		     (rtx, enum rtx_code);
-static bool v850_rtx_costs	     (rtx, int, int, int *, bool);
-static void substitute_ep_register   (rtx, rtx, int, int, rtx *, rtx *);
-static void v850_reorg		     (void);
-static int  ep_memory_offset         (enum machine_mode, int);
-static void v850_set_data_area       (tree, v850_data_area);
-static tree v850_handle_interrupt_attribute (tree *, tree, tree, int, bool *);
-static tree v850_handle_data_area_attribute (tree *, tree, tree, int, bool *);
-static void v850_insert_attributes   (tree, tree *);
-static void v850_asm_init_sections   (void);
-static section *v850_select_section (tree, int, unsigned HOST_WIDE_INT);
-static void v850_encode_data_area    (tree, rtx);
-static void v850_encode_section_info (tree, rtx, int);
-static int v850_issue_rate (void);
-static bool v850_return_in_memory    (const_tree, const_tree);
-static rtx v850_function_value (const_tree, const_tree, bool);
-static void v850_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
-					 tree, int *, int);
-static bool v850_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
-				    const_tree, bool);
-static int v850_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
-				   tree, bool);
-static bool v850_strict_argument_naming (CUMULATIVE_ARGS *);
-static rtx v850_function_arg (CUMULATIVE_ARGS *, enum machine_mode,
-			      const_tree, bool);
-static void v850_function_arg_advance (CUMULATIVE_ARGS *, enum machine_mode,
-				       const_tree, bool);
-static bool v850_can_eliminate       (const int, const int);
-static void v850_asm_trampoline_template (FILE *);
-static void v850_trampoline_init (rtx, tree, rtx);
-static void v850_print_operand (FILE *, rtx, int);
 static void v850_print_operand_address (FILE *, rtx);
-static bool v850_print_operand_punct_valid_p (unsigned char code);
 
 /* Information about the various small memory areas.  */
 struct small_memory_info small_memory[ (int)SMALL_MEMORY_max ] =
 {
-  /* name	max	physical max */
+  /* Name	Max	Physical max.  */
   { "tda",	0,		256 },
   { "sda",	0,		65536 },
   { "zda",	0,		32768 },
@@ -113,116 +76,11 @@ rtx v850_compare_op0, v850_compare_op1;
 /* Whether current function is an interrupt handler.  */
 static int v850_interrupt_p = FALSE;
 
-static GTY(()) section *rosdata_section;
-static GTY(()) section *rozdata_section;
-static GTY(()) section *tdata_section;
-static GTY(()) section *zdata_section;
-static GTY(()) section *zbss_section;
-
-/* V850 specific attributes.  */
-
-static const struct attribute_spec v850_attribute_table[] =
-{
-  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
-  { "interrupt_handler", 0, 0, true,  false, false, v850_handle_interrupt_attribute },
-  { "interrupt",         0, 0, true,  false, false, v850_handle_interrupt_attribute },
-  { "sda",               0, 0, true,  false, false, v850_handle_data_area_attribute },
-  { "tda",               0, 0, true,  false, false, v850_handle_data_area_attribute },
-  { "zda",               0, 0, true,  false, false, v850_handle_data_area_attribute },
-  { NULL,                0, 0, false, false, false, NULL }
-};
-
-
-/* Initialize the GCC target structure.  */
-#undef TARGET_ASM_ALIGNED_HI_OP
-#define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
-
-#undef TARGET_PRINT_OPERAND
-#define TARGET_PRINT_OPERAND v850_print_operand
-#undef TARGET_PRINT_OPERAND_ADDRESS
-#define TARGET_PRINT_OPERAND_ADDRESS v850_print_operand_address
-#undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
-#define TARGET_PRINT_OPERAND_PUNCT_VALID_P v850_print_operand_punct_valid_p
-
-#undef TARGET_ATTRIBUTE_TABLE
-#define TARGET_ATTRIBUTE_TABLE v850_attribute_table
-
-#undef TARGET_INSERT_ATTRIBUTES
-#define TARGET_INSERT_ATTRIBUTES v850_insert_attributes
-
-#undef  TARGET_ASM_SELECT_SECTION
-#define TARGET_ASM_SELECT_SECTION  v850_select_section
-
-/* The assembler supports switchable .bss sections, but
-   v850_select_section doesn't yet make use of them.  */
-#undef  TARGET_HAVE_SWITCHABLE_BSS_SECTIONS
-#define TARGET_HAVE_SWITCHABLE_BSS_SECTIONS false
-
-#undef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO v850_encode_section_info
-
-#undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
-#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
-
-#undef TARGET_DEFAULT_TARGET_FLAGS
-#define TARGET_DEFAULT_TARGET_FLAGS (MASK_DEFAULT | MASK_APP_REGS)
-#undef TARGET_HANDLE_OPTION
-#define TARGET_HANDLE_OPTION v850_handle_option
-
-#undef TARGET_RTX_COSTS
-#define TARGET_RTX_COSTS v850_rtx_costs
-
-#undef TARGET_ADDRESS_COST
-#define TARGET_ADDRESS_COST hook_int_rtx_bool_0
-
-#undef TARGET_MACHINE_DEPENDENT_REORG
-#define TARGET_MACHINE_DEPENDENT_REORG v850_reorg
-
-#undef TARGET_SCHED_ISSUE_RATE
-#define TARGET_SCHED_ISSUE_RATE v850_issue_rate
-
-#undef TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
-
-#undef TARGET_RETURN_IN_MEMORY
-#define TARGET_RETURN_IN_MEMORY v850_return_in_memory
-
-#undef TARGET_FUNCTION_VALUE
-#define TARGET_FUNCTION_VALUE v850_function_value
-
-#undef TARGET_PASS_BY_REFERENCE
-#define TARGET_PASS_BY_REFERENCE v850_pass_by_reference
-
-#undef TARGET_CALLEE_COPIES
-#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
-
-#undef TARGET_SETUP_INCOMING_VARARGS
-#define TARGET_SETUP_INCOMING_VARARGS v850_setup_incoming_varargs
-
-#undef TARGET_ARG_PARTIAL_BYTES
-#define TARGET_ARG_PARTIAL_BYTES v850_arg_partial_bytes
-
-#undef TARGET_FUNCTION_ARG
-#define TARGET_FUNCTION_ARG v850_function_arg
-
-#undef TARGET_FUNCTION_ARG_ADVANCE
-#define TARGET_FUNCTION_ARG_ADVANCE v850_function_arg_advance
-
-#undef TARGET_CAN_ELIMINATE
-#define TARGET_CAN_ELIMINATE v850_can_eliminate
-
-#undef TARGET_ASM_TRAMPOLINE_TEMPLATE
-#define TARGET_ASM_TRAMPOLINE_TEMPLATE v850_asm_trampoline_template
-#undef TARGET_TRAMPOLINE_INIT
-#define TARGET_TRAMPOLINE_INIT v850_trampoline_init
-
-#undef TARGET_STRICT_ARGUMENT_NAMING
-#define TARGET_STRICT_ARGUMENT_NAMING v850_strict_argument_naming
-
-#undef TARGET_OPTION_OPTIMIZATION
-#define TARGET_OPTION_OPTIMIZATION v850_option_optimization
-
-struct gcc_target targetm = TARGET_INITIALIZER;
+static GTY(()) section * rosdata_section;
+static GTY(()) section * rozdata_section;
+static GTY(()) section * tdata_section;
+static GTY(()) section * zdata_section;
+static GTY(()) section * zbss_section;
 
 /* Set the maximum size of small memory area TYPE to the value given
    by VALUE.  Return true if VALUE was syntactically correct.  VALUE
@@ -1120,7 +978,7 @@ v850_float_nz_comparison_operator (rtx op, enum machine_mode mode)
 }
 
 enum machine_mode
-v850_select_cc_mode (enum rtx_code cond, rtx op0, rtx op1)
+v850_select_cc_mode (enum rtx_code cond, rtx op0, rtx op1 ATTRIBUTE_UNUSED)
 {
   if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
     {
@@ -2022,8 +1880,6 @@ expand_epilogue (void)
       && !interrupt_handler)
     {
       int alloc_stack = (4 * num_restore);
-      int restore_func_len;
-      int restore_normal_len;
 
       /* Don't bother checking if we don't actually save any space.  */
       if (use_prolog_function (num_restore, actual_fsize))
@@ -2221,6 +2077,9 @@ notice_update_cc (rtx body, rtx insn)
     case CC_CLOBBER:
       /* Insn doesn't leave CC in a usable state.  */
       CC_STATUS_INIT;
+      break;
+
+    default:
       break;
     }
 }
@@ -3157,6 +3016,14 @@ v850_select_section (tree exp,
   return readonly_data_section;
 }
 
+/* Worker function for TARGET_FUNCTION_VALUE_REGNO_P.  */
+
+static bool
+v850_function_value_regno_p (const unsigned int regno)
+{
+  return (regno == 10);
+}
+
 /* Worker function for TARGET_RETURN_IN_MEMORY.  */
 
 static bool
@@ -3168,7 +3035,7 @@ v850_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 
 /* Worker function for TARGET_FUNCTION_VALUE.  */
 
-rtx
+static rtx
 v850_function_value (const_tree valtype, 
                     const_tree fn_decl_or_type ATTRIBUTE_UNUSED,
                     bool outgoing ATTRIBUTE_UNUSED)
@@ -3233,4 +3100,111 @@ v850_issue_rate (void)
 {
   return (TARGET_V850E2_ALL? 2 : 1);
 }
+
+/* V850 specific attributes.  */
+
+static const struct attribute_spec v850_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "interrupt_handler", 0, 0, true,  false, false, v850_handle_interrupt_attribute },
+  { "interrupt",         0, 0, true,  false, false, v850_handle_interrupt_attribute },
+  { "sda",               0, 0, true,  false, false, v850_handle_data_area_attribute },
+  { "tda",               0, 0, true,  false, false, v850_handle_data_area_attribute },
+  { "zda",               0, 0, true,  false, false, v850_handle_data_area_attribute },
+  { NULL,                0, 0, false, false, false, NULL }
+};
+
+/* Initialize the GCC target structure.  */
+#undef  TARGET_ASM_ALIGNED_HI_OP
+#define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
+
+#undef  TARGET_PRINT_OPERAND
+#define TARGET_PRINT_OPERAND v850_print_operand
+#undef  TARGET_PRINT_OPERAND_ADDRESS
+#define TARGET_PRINT_OPERAND_ADDRESS v850_print_operand_address
+#undef  TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#define TARGET_PRINT_OPERAND_PUNCT_VALID_P v850_print_operand_punct_valid_p
+
+#undef  TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE v850_attribute_table
+
+#undef  TARGET_INSERT_ATTRIBUTES
+#define TARGET_INSERT_ATTRIBUTES v850_insert_attributes
+
+#undef  TARGET_ASM_SELECT_SECTION
+#define TARGET_ASM_SELECT_SECTION  v850_select_section
+
+/* The assembler supports switchable .bss sections, but
+   v850_select_section doesn't yet make use of them.  */
+#undef  TARGET_HAVE_SWITCHABLE_BSS_SECTIONS
+#define TARGET_HAVE_SWITCHABLE_BSS_SECTIONS false
+
+#undef  TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO v850_encode_section_info
+
+#undef  TARGET_ASM_FILE_START_FILE_DIRECTIVE
+#define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
+
+#undef  TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS (MASK_DEFAULT | MASK_APP_REGS)
+#undef  TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION v850_handle_option
+
+#undef  TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS v850_rtx_costs
+
+#undef  TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST hook_int_rtx_bool_0
+
+#undef  TARGET_MACHINE_DEPENDENT_REORG
+#define TARGET_MACHINE_DEPENDENT_REORG v850_reorg
+
+#undef  TARGET_SCHED_ISSUE_RATE
+#define TARGET_SCHED_ISSUE_RATE v850_issue_rate
+
+#undef  TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P v850_function_value_regno_p
+#undef  TARGET_FUNCTION_VALUE
+#define TARGET_FUNCTION_VALUE v850_function_value
+
+#undef  TARGET_PROMOTE_PROTOTYPES
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
+
+#undef  TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY v850_return_in_memory
+
+#undef  TARGET_PASS_BY_REFERENCE
+#define TARGET_PASS_BY_REFERENCE v850_pass_by_reference
+
+#undef  TARGET_CALLEE_COPIES
+#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
+
+#undef  TARGET_SETUP_INCOMING_VARARGS
+#define TARGET_SETUP_INCOMING_VARARGS v850_setup_incoming_varargs
+
+#undef  TARGET_ARG_PARTIAL_BYTES
+#define TARGET_ARG_PARTIAL_BYTES v850_arg_partial_bytes
+
+#undef  TARGET_FUNCTION_ARG
+#define TARGET_FUNCTION_ARG v850_function_arg
+
+#undef  TARGET_FUNCTION_ARG_ADVANCE
+#define TARGET_FUNCTION_ARG_ADVANCE v850_function_arg_advance
+
+#undef  TARGET_CAN_ELIMINATE
+#define TARGET_CAN_ELIMINATE v850_can_eliminate
+
+#undef  TARGET_ASM_TRAMPOLINE_TEMPLATE
+#define TARGET_ASM_TRAMPOLINE_TEMPLATE v850_asm_trampoline_template
+#undef  TARGET_TRAMPOLINE_INIT
+#define TARGET_TRAMPOLINE_INIT v850_trampoline_init
+
+#undef  TARGET_STRICT_ARGUMENT_NAMING
+#define TARGET_STRICT_ARGUMENT_NAMING v850_strict_argument_naming
+
+#undef  TARGET_OPTION_OPTIMIZATION
+#define TARGET_OPTION_OPTIMIZATION v850_option_optimization
+
+struct gcc_target targetm = TARGET_INITIALIZER;
+
 #include "gt-v850.h"
