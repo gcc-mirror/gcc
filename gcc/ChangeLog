@@ -1,3 +1,9 @@
+2010-09-17  Sebastian Pop  <sebastian.pop@amd.com>
+
+	Revert commit: 2009-12-16  Ben Elliston  <bje@au.ibm.com>
+	* tree-data-ref.c (dot_rdg_1): Added back.
+	(dot_rdg): Same.  Added "#if 0" around system call.
+
 2010-09-17  H.J. Lu  <hongjiu.lu@intel.com>
 	    Richard Henderson  <rth@redhat.com>
 
