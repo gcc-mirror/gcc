@@ -49,36 +49,6 @@ list_cons(void* head, struct objc_list* tail)
   return cell;
 }
 
-/* Return the length of a list, list_length(NULL) returns zero */
-
-static inline int
-list_length(struct objc_list* list)
-{
-  int i = 0;
-  while(list)
-    {
-      i += 1;
-      list = list->tail;
-    }
-  return i;
-}
-
-/* Return the Nth element of LIST, where N count from zero.  If N 
-   larger than the list length, NULL is returned  */
-
-static inline void*
-list_nth(int indx, struct objc_list* list)
-{
-  while(indx-- != 0)
-    {
-      if(list->tail)
-	list = list->tail;
-      else
-	return 0;
-    }
-  return list->head;
-}
-
 /* Remove the element at the head by replacing it by its successor */
 
 static inline void
@@ -98,18 +68,6 @@ list_remove_head(struct objc_list** list)
 }
 
 
-/* Remove the element with `car' set to ELEMENT */
-
-static inline void
-list_remove_elem(struct objc_list** list, void* elem)
-{
-  while (*list) {
-    if ((*list)->head == elem)
-      list_remove_head(list);
-    list = &((*list)->tail);
-  }
-}
-
 /* Map FUNCTION over all elements in LIST */
 
 static inline void
@@ -120,20 +78,6 @@ list_mapcar(struct objc_list* list, void(*function)(void*))
       (*function)(list->head);
       list = list->tail;
     }
-}
-
-/* Return element that has ELEM as car */
-
-static inline struct objc_list**
-list_find(struct objc_list** list, void* elem)
-{
-  while(*list)
-    {
-    if ((*list)->head == elem)
-      return list;
-    list = &((*list)->tail);
-    }
-  return NULL;
 }
 
 /* Free list (backwards recursive) */
