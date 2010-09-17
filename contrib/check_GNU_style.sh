@@ -84,8 +84,11 @@ col (){
 	| grep -v ':+++' \
 	| cut -f 2 -d '+' \
 	| awk '{ if (length ($0) > 80) print $0 }' \
-	> $tmp && printf "\n$msg\n"
-    cat $tmp
+	> $tmp
+    if [ -s $tmp ]; then
+	printf "\n$msg\n"
+	cat $tmp
+    fi
 }
 
 col 'Lines should not exceed 80 characters.' $*

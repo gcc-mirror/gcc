@@ -1,3 +1,8 @@
+2010-07-02  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* check_GNU_style.sh: Do not print warning messages when there are
+	no occurences.
+
 2010-09-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc_update: Handle hg, too.
