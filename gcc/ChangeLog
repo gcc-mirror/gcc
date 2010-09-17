@@ -1,3 +1,7 @@
+2010-09-03  Jan Hubicka  <jh@suse.cz>
+
+	* lto-cgraph.c (compute_ltrans_boundary): Use const_value_known.
+
 2010-09-03  Naveen H.S  <naveen.S@kpitcummins.com>
 
 	* config/v850/v850.c (v850_function_value_regno_p): Make static.

@@ -1,3 +1,7 @@
+2010-09-17  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_promote_cross_file_statics): Use const_value_known.
+
 2010-09-17  Richard Guenther  <rguenther@suse.de>
 
 	* lang.opt (flag_wpa): Also enable for the driver.
