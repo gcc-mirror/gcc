@@ -1,8 +1,18 @@
 #include <objc/objc.h>
 #include <objc/Object.h>
 
+#ifdef __NEXT_RUNTIME__
+/* This test only runs for the GNU runtime.  */
+
+int main(void)
+{
+  return 0;
+}
+
+#else
+
 /* Test throwing a nil exception.  A 'nil' exception can only be
- * caugth by a generic exception handler.
+   caugth by a generic exception handler.
  */
 
 int main (void)
@@ -36,3 +46,5 @@ int main (void)
 
   return 0;
 }
+
+#endif
