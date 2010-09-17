@@ -123,6 +123,8 @@ OBJC_H = \
   sarray.h \
   thr.h \
   \
+  hash.h \
+  objc-list.h \
   typedstream.h
 
 # User-visible header files containing deprecated APIs, from the

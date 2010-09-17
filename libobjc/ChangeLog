@@ -1,5 +1,11 @@
 2010-09-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	* objc-private/objc-list.h (list_remove_elem): Unused function
+	removed.  (list_nth): Unused function removed.  (list_find):
+	Unused function removed.  (list_lenght): Unused function removed.
+	
+2010-09-17  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	* objc/hash.h: Moved into objc/deprecated/hash.h; objc/hash.h
 	replaced with a placeholder including the file from the
 	deprecated/ directory.
@@ -20,7 +26,6 @@
 	* sarray.c: Same change.
 	* sendmsg.c: Same change.
 	* Makefile.in (OBJC_DEPRECATED_H): Added hash.h and objc-list.h.
-	(OBJC_H): Removed hash.h and objc-list.h
 
 2010-09-14  Nicola Pero  <nicola.pero@meta-innovation.com>
 
