@@ -1,3 +1,8 @@
+2010-09-16  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_materialize_function): Do not tamper with STATIC and
+	EXTERNAL flags. 
+
 2010-09-15  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* lto-tree.h (struct lang_type): Add variable_size GTY option.

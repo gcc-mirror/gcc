@@ -1,3 +1,8 @@
+2010-09-16  Jan Hubicka  <jh@suse.cz>
+
+	* lto-cgraph.c (input_overwrite_node): Do not set DECL_EXTERNAL when
+	processing clone.
+
 2010-09-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386-protos.h (ix86_split_idivmod): New prototype.

@@ -956,7 +956,16 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->lowered = bp_unpack_value (bp, 1);
   node->analyzed = tag == LTO_cgraph_analyzed_node;
   node->in_other_partition = bp_unpack_value (bp, 1);
-  if (node->in_other_partition)
+  if (node->in_other_partition
+      /* Avoid updating decl when we are seeing just inline clone.
+	 When inlining function that has functions already inlined into it,
+	 we produce clones of inline clones.
+
+	 WPA partitioning might put each clone into different unit and
+	 we might end up streaming inline clone from other partition
+	 to support clone we are interested in. */
+      && (!node->clone_of
+	  || node->clone_of->decl != node->decl))
     {
       DECL_EXTERNAL (node->decl) = 1;
       TREE_STATIC (node->decl) = 0;
