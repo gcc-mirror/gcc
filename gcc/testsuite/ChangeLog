@@ -1,3 +1,9 @@
+2010-09-17  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR testsuite/45692	
+	* objc/execute/exceptions/throw-nil.m: Run the test only with the
+	GNU runtime.
+
 2010-09-17  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/pr27898.c: Use -flto instead of -combine.
