@@ -1,3 +1,20 @@
+2010-09-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2010-07-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/22_locale/num_put/put/char/14220.cc: XFAIL on Solaris
+	9/x86, 32-bit Solaris 10/x86 and 64-bit Solaris 10/SPARC.
+	* testsuite/22_locale/num_put/put/wchar_t/14220.cc: XFAIL on
+	Solaris 9/x86 and 32-bit Solaris 10/x86.
+
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/12.cc:
+	Only XFAIL on Solaris 8 and 9.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/12.cc:
+	Likewise.
+
+	* testsuite/ext/enc_filebuf/char/13598.cc: XFAIL before Solaris 11.
+
 2010-09-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/29_atomics/atomic/cons/copy_neg.cc: Further adjust
