@@ -1369,7 +1369,7 @@
 )
 
 (define_insn "bitclr"
-  [(set:SI (match_operand:SI 0 "register_operand" "+r")
+  [(set:SI (match_operand:SI 0 "register_operand" "=r")
 	   (and:SI (match_operand:SI 1 "register_operand" "0")
 		   (not:SI (ashift:SI (const_int 1)
 				      (match_operand:SI 2 "nonmemory_operand" "ri")))))]
@@ -1379,7 +1379,7 @@
 )
 
 (define_insn "bitclr_in_memory"
-  [(set:QI (match_operand:QI 0 "memory_operand" "+m")
+  [(set:QI (match_operand:QI 0 "memory_operand" "=m")
 	   (and:QI (match_operand:QI 1 "memory_operand" "0")
 		   (not:QI (ashift:QI (const_int 1)
 				      (match_operand:QI 2 "nonmemory_operand" "ri")))))]
@@ -1803,7 +1803,7 @@
 
 ;; Clear Processor Status Word
 (define_insn "clrpsw"
-  [(unspec:SI [(match_operand:SI 0 "immediate_operand" "i")]
+  [(unspec_volatile:SI [(match_operand:SI 0 "immediate_operand" "i")]
 	      UNSPEC_BUILTIN_CLRPSW)
    (clobber (reg:CC CC_REG))]
   ""
@@ -1813,7 +1813,7 @@
 
 ;; Set Processor Status Word
 (define_insn "setpsw"
-  [(unspec:SI [(match_operand:SI 0 "immediate_operand" "i")]
+  [(unspec_volatile:SI [(match_operand:SI 0 "immediate_operand" "i")]
 	      UNSPEC_BUILTIN_SETPSW)
    (clobber (reg:CC CC_REG))]
   ""
@@ -1824,7 +1824,7 @@
 ;; Move from control register
 (define_insn "mvfc"
   [(set (match_operand:SI             0 "register_operand" "=r")
-	(unspec:SI [(match_operand:SI 1 "immediate_operand" "i")]
+	(unspec_volatile:SI [(match_operand:SI 1 "immediate_operand" "i")]
 		   UNSPEC_BUILTIN_MVFC))]
   ""
   "mvfc\t%C1, %0"
@@ -1833,7 +1833,7 @@
 
 ;; Move to control register
 (define_insn "mvtc"
-  [(unspec:SI [(match_operand:SI 0 "immediate_operand" "i,i")
+  [(unspec_volatile:SI [(match_operand:SI 0 "immediate_operand" "i,i")
 	       (match_operand:SI 1 "nonmemory_operand" "r,i")]
 	      UNSPEC_BUILTIN_MVTC)]
   ""
@@ -1848,7 +1848,7 @@
 
 ;; Move to interrupt priority level
 (define_insn "mvtipl"
-  [(unspec:SI [(match_operand:SI 0 "immediate_operand" "Uint04")]
+  [(unspec_volatile:SI [(match_operand:SI 0 "immediate_operand" "Uint04")]
 	      UNSPEC_BUILTIN_MVTIPL)]
   ""
   "mvtipl\t%0"
