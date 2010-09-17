@@ -1,3 +1,8 @@
+2010-09-17  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/45678
+	* gcc.dg/torture/pr45678-1.c: New testcase.
+
 2010-09-17  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/43432
