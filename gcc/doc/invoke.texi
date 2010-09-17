@@ -161,7 +161,7 @@ in the following sections.
 @table @emph
 @item Overall Options
 @xref{Overall Options,,Options Controlling the Kind of Output}.
-@gccoptlist{-c  -S  -E  -o @var{file}  -combine  -no-canonical-prefixes  @gol
+@gccoptlist{-c  -S  -E  -o @var{file}  -no-canonical-prefixes  @gol
 -pipe  -pass-exit-codes  @gol
 -x @var{language}  -v  -###  --help@r{[}=@var{class}@r{[},@dots{}@r{]]}  --target-help  @gol
 --version -wrapper@@@var{file} -fplugin=@var{file} -fplugin-arg-@var{name}=@var{arg}  @gol
@@ -1194,23 +1194,6 @@ Use pipes rather than temporary files for communication between the
 various stages of compilation.  This fails to work on some systems where
 the assembler is unable to read from a pipe; but the GNU assembler has
 no trouble.
-
-@item -combine
-@opindex combine
-If you are compiling multiple source files, this option tells the driver
-to pass all the source files to the compiler at once (for those
-languages for which the compiler can handle this).  This will allow
-intermodule analysis (IMA) to be performed by the compiler.  Currently the only
-language for which this is supported is C@.  If you pass source files for
-multiple languages to the driver, using this option, the driver will invoke
-the compiler(s) that support IMA once each, passing each compiler all the
-source files appropriate for it.  For those languages that do not support
-IMA this option will be ignored, and the compiler will be invoked once for
-each source file in that language.  If you use this option in conjunction
-with @option{-save-temps}, the compiler will generate multiple
-pre-processed files
-(one for each source file), but only one (combined) @file{.o} or
-@file{.s} file.
 
 @item --help
 @opindex help
@@ -6757,7 +6740,7 @@ layout in order to better utilize spatial locality.  This transformation is
 affective for programs containing arrays of structures.  Available in two
 compilation modes: profile-based (enabled with @option{-fprofile-generate})
 or static (which uses built-in heuristics).  It works only in whole program
-mode, so it requires @option{-fwhole-program} and @option{-combine} to be
+mode, so it requires @option{-fwhole-program} to be
 enabled.  Structures considered @samp{cold} by this transformation are not
 affected (see @option{--param struct-reorg-cold-struct-ratio=@var{value}}).
 
@@ -7462,7 +7445,7 @@ and those merged by attribute @code{externally_visible} become static functions
 and in effect are optimized more aggressively by interprocedural optimizers. If @command{gold} is used as the linker plugin, @code{externally_visible} attributes are automatically added to functions (not variable yet due to a current @command{gold} issue) that are accessed outside of LTO objects according to resolution file produced by @command{gold}.  For other linkers that cannot generate resolution file, explicit @code{externally_visible} attributes are still necessary.
 While this option is equivalent to proper use of the @code{static} keyword for
 programs consisting of a single file, in combination with option
-@option{-combine}, @option{-flto} or @option{-fwhopr} this flag can be used to
+@option{-flto} or @option{-fwhopr} this flag can be used to
 compile many smaller scale programs since the functions and variables become
 local for the whole combined compilation unit, not for the single source file
 itself.

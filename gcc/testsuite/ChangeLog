@@ -1,3 +1,29 @@
+2010-09-17  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/pr27898.c: Use -flto instead of -combine.
+	* gcc.dg/pr28706.c: Likewise.
+	* gcc.dg/pr28712.c: Likewise.
+	* gcc.dg/pr30762-1.c: Likewise.
+	* gcc.dg/pr30762-2.c: Likewise.
+	* gcc.dg/pr31529-1.c: Likewise.
+	* gcc.dg/pr31529-2.c: Likewise.
+	* gcc.dg/pr34457-1.c: Likewise.
+	* gcc.dg/pr34457-2.c: Likewise.
+	* gcc.dg/pr34668-1.c: Likewise.
+	* gcc.dg/pr34668-2.c: Likewise.
+	* gcc.dg/pr34989-1.c: Likewise.
+	* gcc.dg/pr34989-2.c: Likewise.
+	* gcc.dg/pr43557-1.c: Likewise.
+	* gcc.dg/pr43557-2.c: Likewise.
+	* gcc.dg/debug/pr41893-1.c: Likewise.
+	* gcc.dg/matrix/matrix.exp: Do not use -combine.
+	* gcc.dg/matrix/matrix-3.c: Drop dg-options.
+	* gcc.dg/matrix/matrix-4.c: Likewise.
+	* gcc.dg/struct/struct-reorg.exp: Do not use -combine.
+	* gcc.dg/struct/wo_prof_empty_str.c: Drop dg-options.
+	* gcc.dg/struct/wo_prof_escape_arg_to_local.c: Likewise.
+	* gcc.dg/struct/wo_prof_escape_return.c: Likewise.
+
 2010-09-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43665

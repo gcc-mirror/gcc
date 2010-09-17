@@ -959,7 +959,7 @@ static const struct compiler default_compilers[] =
   {".java", "#Java", 0, 0, 0}, {".class", "#Java", 0, 0, 0},
   {".zip", "#Java", 0, 0, 0}, {".jar", "#Java", 0, 0, 0},
   /* Next come the entries for C.  */
-  {".c", "@c", 0, 1, 1},
+  {".c", "@c", 0, 0, 1},
   {"@c",
    /* cc1 has an integrated ISO C preprocessor.  We should invoke the
       external preprocessor if -save-temps is given.  */
@@ -967,20 +967,13 @@ static const struct compiler default_compilers[] =
       %{!E:%{!M:%{!MM:\
           %{traditional|ftraditional:\
 %eGNU C no longer supports -traditional without -E}\
-       %{!combine:\
-	  %{save-temps*|traditional-cpp|no-integrated-cpp:%(trad_capable_cpp) \
-		%(cpp_options) -o %{save-temps*:%b.i} %{!save-temps*:%g.i} \n\
-		    cc1 -fpreprocessed %{save-temps*:%b.i} %{!save-temps*:%g.i} \
-			%(cc1_options)}\
-	  %{!save-temps*:%{!traditional-cpp:%{!no-integrated-cpp:\
-		cc1 %(cpp_unique_options) %(cc1_options)}}}\
-          %{!fsyntax-only:%(invoke_as)}} \
-      %{combine:\
-	  %{save-temps*|traditional-cpp|no-integrated-cpp:%(trad_capable_cpp) \
-		%(cpp_options) -o %{save-temps*:%b.i} %{!save-temps*:%g.i}}\
-	  %{!save-temps*:%{!traditional-cpp:%{!no-integrated-cpp:\
-		cc1 %(cpp_unique_options) %(cc1_options)}}\
-                %{!fsyntax-only:%(invoke_as)}}}}}}", 0, 1, 1},
+      %{save-temps*|traditional-cpp|no-integrated-cpp:%(trad_capable_cpp) \
+	  %(cpp_options) -o %{save-temps*:%b.i} %{!save-temps*:%g.i} \n\
+	    cc1 -fpreprocessed %{save-temps*:%b.i} %{!save-temps*:%g.i} \
+	  %(cc1_options)}\
+      %{!save-temps*:%{!traditional-cpp:%{!no-integrated-cpp:\
+	  cc1 %(cpp_unique_options) %(cc1_options)}}}\
+      %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 1},
   {"-",
    "%{!E:%e-E or -x required when input is from standard input}\
     %(trad_capable_cpp) %(cpp_options) %(cpp_debug_options)", 0, 0, 0},
@@ -1000,7 +993,7 @@ static const struct compiler default_compilers[] =
 		cc1 %(cpp_unique_options) %(cc1_options)\
                     %{!fdump-ada-spec*:-o %g.s %{!o*:--output-pch=%i.gch}\
                     %W{o*:--output-pch=%*}}%V}}}}}}", 0, 0, 0},
-  {".i", "@cpp-output", 0, 1, 0},
+  {".i", "@cpp-output", 0, 0, 0},
   {"@cpp-output",
    "%{!M:%{!MM:%{!E:cc1 -fpreprocessed %i %(cc1_options) %{!fsyntax-only:%(invoke_as)}}}}", 0, 1, 0},
   {".s", "@assembler", 0, 1, 0},
@@ -1078,7 +1071,6 @@ static const struct option_map option_map[] =
    {"--classpath", "-fclasspath=", "aj"},
    {"--bootclasspath", "-fbootclasspath=", "aj"},
    {"--CLASSPATH", "-fclasspath=", "aj"},
-   {"--combine", "-combine", 0},
    {"--comments", "-C", 0},
    {"--comments-in-macros", "-CC", 0},
    {"--compile", "-c", 0},
@@ -3322,7 +3314,6 @@ display_help (void)
   fputs (_("  -Xassembler <arg>        Pass <arg> on to the assembler\n"), stdout);
   fputs (_("  -Xpreprocessor <arg>     Pass <arg> on to the preprocessor\n"), stdout);
   fputs (_("  -Xlinker <arg>           Pass <arg> on to the linker\n"), stdout);
-  fputs (_("  -combine                 Pass multiple source files to compiler at once\n"), stdout);
   fputs (_("  -save-temps              Do not delete intermediate files\n"), stdout);
   fputs (_("  -save-temps=<arg>        Do not delete intermediate files\n"), stdout);
   fputs (_("\
@@ -3761,8 +3752,6 @@ driver_handle_option (const struct cl_decoded_option *decoded,
 
     case OPT_pipe:
       validated = true;
-      /* Fall through.  */
-    case OPT_combine:
       /* These options set the variables specified in common.opt
 	 automatically, but do need to be saved for spec
 	 processing.  */
@@ -7003,10 +6992,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 
   explicit_link_files = XCNEWVEC (char, n_infiles);
 
-  if (combine_flag)
-    combine_inputs = true;
-  else
-    combine_inputs = false;
+  combine_inputs = have_o || flag_wpa;
 
   for (i = 0; (int) i < n_infiles; i++)
     {
@@ -7039,63 +7025,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
     }
 
   if (!combine_inputs && have_c && have_o && lang_n_infiles > 1)
-   fatal_error ("cannot specify -o with -c, -S or -E with multiple files");
-
-  if (combine_flag && save_temps_flag)
-    {
-      bool save_combine_inputs = combine_inputs;
-      /* Must do a separate pre-processing pass for C & Objective-C files, to
-	 obtain individual .i files.  */
-
-      combine_inputs = false;
-      for (i = 0; (int) i < n_infiles; i++)
-	{
-	  int this_file_error = 0;
-
-	  input_file_number = i;
-	  set_input (infiles[i].name);
-	  if (infiles[i].incompiler
-	      && (infiles[i].incompiler)->needs_preprocessing)
-	    input_file_compiler = infiles[i].incompiler;
-	  else
-	    continue;
-
-	  if (input_file_compiler)
-	    {
-	      if (input_file_compiler->spec[0] == '#')
-		{
-		  error ("%s: %s compiler not installed on this system",
-			 gcc_input_filename, &input_file_compiler->spec[1]);
-		  this_file_error = 1;
-		}
-	      else
-		{
-		  value = do_spec (input_file_compiler->spec);
-		  infiles[i].preprocessed = true;
-		  if (!have_o_argbuf_index)
-		    fatal_error ("spec %qs is invalid",
-				 input_file_compiler->spec);
-		  infiles[i].name = argbuf[have_o_argbuf_index];
-		  infiles[i].incompiler
-		    = lookup_compiler (infiles[i].name,
-				       strlen (infiles[i].name),
-				       infiles[i].language);
-
-		  if (value < 0)
-		    this_file_error = 1;
-		}
-	    }
-
-	  if (this_file_error)
-	    {
-	      delete_failure_queue ();
-	      errorcount++;
-	      break;
-	    }
-	  clear_failure_queue ();
-	}
-      combine_inputs = save_combine_inputs;
-    }
+    fatal_error ("cannot specify -o with -c, -S or -E with multiple files");
 
   for (i = 0; (int) i < n_infiles; i++)
     {
@@ -7115,12 +7045,9 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 
       /* Figure out which compiler from the file's suffix.  */
 
-      if (! combine_inputs)
-	input_file_compiler
-	  = lookup_compiler (infiles[i].name, input_filename_length,
-			     infiles[i].language);
-      else
-	input_file_compiler = infiles[i].incompiler;
+      input_file_compiler
+	= lookup_compiler (infiles[i].name, input_filename_length,
+			   infiles[i].language);
 
       if (input_file_compiler)
 	{

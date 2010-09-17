@@ -1,5 +1,20 @@
 2010-09-17  Richard Guenther  <rguenther@suse.de>
 
+	* common.opt (combine): Remove.
+	* gcc.c (default_compilers): Remove specs testing combine.
+	The C compilers no longer can combine.
+	(option_map): Remove -combine.
+	(display_help): Remove -combine.
+	(driver_handle_option): Remove OPT_combine handling.
+	(compile_input_file_p): Remove.
+	(do_spec): Remove code concerning combine.
+	(main): Likewise.
+	* doc/invoke.texi: Remove traces of -combine.
+	* lto-wrapper.c (run_gcc): Do not pass -combine to the compiler
+	driver.
+
+2010-09-17  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/45678
 	* builtins.c (fold_builtin_memory_op): Always properly adjust
 	alignment of memory accesses.

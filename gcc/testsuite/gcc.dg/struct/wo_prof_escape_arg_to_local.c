@@ -1,5 +1,3 @@
-/* { dg-options "-O3 -fno-inline -fno-ipa-sra -fdump-ipa-all -fipa-struct-reorg -fwhole-program -combine" } */
-/* { dg-do compile } */
 /* { dg-do run } */
 
 #include <stdlib.h>

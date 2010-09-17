@@ -1,6 +1,4 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fipa-matrix-reorg -fdump-ipa-matrix-reorg -c -fwhole-program -combine"  } */
-
 
 #include <stdio.h>
 #include <stdlib.h>

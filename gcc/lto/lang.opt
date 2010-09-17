@@ -33,7 +33,7 @@ LTO Joined Var(ltrans_output_list)
 Specify a file to which a list of files output by LTRANS is written.
 
 fwpa
-LTO Report Var(flag_wpa) Optimization
+LTO Driver Report Var(flag_wpa) Optimization
 Run the link-time optimizer in whole program analysis (WPA) mode.
 
 fresolution=
