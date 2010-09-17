@@ -950,7 +950,7 @@ dot_deps_1 (FILE *file, scop_p scop)
 
 /* Display all the data dependences in SCoP using dotty.  */
 
-void
+DEBUG_FUNCTION void
 dot_deps (scop_p scop)
 {
   /* When debugging, enable the following code.  This cannot be used
@@ -971,7 +971,7 @@ dot_deps (scop_p scop)
 
 /* Display all the statement dependences in SCoP using dotty.  */
 
-void
+DEBUG_FUNCTION void
 dot_deps_stmt (scop_p scop)
 {
   /* When debugging, enable the following code.  This cannot be used

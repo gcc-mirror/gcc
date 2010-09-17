@@ -1,5 +1,13 @@
 2010-09-17  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite-dependences.c (dot_deps): Add DEBUG_FUNCTION.
+	(dot_deps_stmt): Same.
+	* graphite-poly.c (dot_lst): Same.
+	* graphite-scop-detection.c (dot_all_scops): Same.
+	(dot_scop): Same.
+
+2010-09-17  Sebastian Pop  <sebastian.pop@amd.com>
+
 	Revert commit: 2009-12-16  Ben Elliston  <bje@au.ibm.com>
 	* tree-data-ref.c (dot_rdg_1): Added back.
 	(dot_rdg): Same.  Added "#if 0" around system call.
