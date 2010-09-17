@@ -29,6 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc/objc-exception.h"
 #include "unwind.h"
 #include "unwind-pe.h"
+#include <string.h> /* For memcpy */
 
 /* This hook allows libraries to sepecify special actions when an
    exception is thrown without a handler in place.  This is deprecated

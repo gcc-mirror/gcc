@@ -28,7 +28,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define __objc_api_INCLUDE_GNU
 
 #include "objc.h"
-#include "hash.h"
+#ifndef GNU_LIBOBJC_COMPILING_LIBOBJC_ITSELF
+# include "deprecated/hash.h"
+#endif
 #include "thr.h"
 #include "objc-decls.h"
 #include <stdio.h>

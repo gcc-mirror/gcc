@@ -23,6 +23,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "objc-private/common.h"
+#include <string.h> /* For memset */
 #include "tconfig.h"         /* include defs of bzero for target */
 #include "objc/objc.h"
 #include "objc/objc-api.h"
