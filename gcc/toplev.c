@@ -291,23 +291,6 @@ int flag_dump_rtl_in_asm = 0;
    the support provided depends on the backend.  */
 rtx stack_limit_rtx;
 
-/* Positive if we should track variables, negative if we should run
-   the var-tracking pass only to discard debug annotations, zero if
-   we're not to run it.  When flag_var_tracking == AUTODETECT_VALUE it
-   will be set according to optimize, debug_info_level and debug_hooks
-   in process_options ().  */
-int flag_var_tracking = AUTODETECT_VALUE;
-
-/* Positive if we should track variables at assignments, negative if
-   we should run the var-tracking pass only to discard debug
-   annotations.  When flag_var_tracking_assignments ==
-   AUTODETECT_VALUE it will be set according to flag_var_tracking.  */
-int flag_var_tracking_assignments = AUTODETECT_VALUE;
-
-/* Nonzero if we should toggle flag_var_tracking_assignments after
-   processing options and computing its default.  */
-int flag_var_tracking_assignments_toggle = 0;
-
 /* Type of stack check.  */
 enum stack_check_type flag_stack_check = NO_STACK_CHECK;
 

@@ -19,6 +19,10 @@
 ; along with GCC; see the file COPYING3.  If not see
 ; <http://www.gnu.org/licenses/>.
 
+; Bit flags that specify the ISA we are compiling for.
+Variable
+int ix86_isa_flags = TARGET_64BIT_DEFAULT | TARGET_SUBTARGET_ISA_DEFAULT
+
 ;; Definitions to add to the cl_target_option structure
 ;; -march= processor
 TargetSave

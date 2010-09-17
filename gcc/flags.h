@@ -164,11 +164,6 @@ extern int rtl_dump_and_exit;
 
 extern int flag_gen_aux_info;
 
-/* Nonzero means suppress output of instruction numbers and line number
-   notes in debugging dumps.  */
-
-extern int flag_dump_unnumbered;
-
 /* True if printing into -fdump-final-insns= dump.  */
 
 extern bool final_insns_dump_p;
@@ -300,9 +295,6 @@ enum graph_dump_types
   vcg
 };
 extern enum graph_dump_types graph_dump_format;
-
-/* Nonzero if we should track variables.  */
-extern int flag_var_tracking;
 
 /* True if flag_speculative_prefetching was set by user.  Used to suppress
    warning message in case flag was set by -fprofile-{generate,use}.  */

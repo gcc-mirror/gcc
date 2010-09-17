@@ -30,6 +30,7 @@ BEGIN {
 	n_opts = 0
 	n_langs = 0
 	n_target_save = 0
+	n_extra_vars = 0
         quote = "\042"
 	comma = ","
 	FS=SUBSEP
@@ -47,6 +48,10 @@ BEGIN {
 			# Make sure the declarations are put in source order
 			target_save_decl[n_target_save] = $2
 			n_target_save++
+		}
+		else if ($1 == "Variable") {
+			extra_vars[n_extra_vars] = $2
+			n_extra_vars++
 		}
 		else {
 			name = opt_args("Mask", $1)
@@ -72,7 +77,6 @@ print "#include " quote "opts.h" quote
 print "#include " quote "intl.h" quote
 print ""
 print "#ifdef GCC_DRIVER"
-print "int target_flags;"
 print "int target_flags_explicit;"
 print "#else"
 print "#include " quote "flags.h" quote
@@ -81,6 +85,9 @@ print "#endif /* GCC_DRIVER */"
 print ""
 
 have_save = 0;
+for (i = 0; i < n_extra_vars; i++) {
+	print extra_vars[i] ";"
+}
 for (i = 0; i < n_opts; i++) {
 	if (flag_set_p("Save", flags[i]))
 		have_save = 1;
@@ -90,11 +97,7 @@ for (i = 0; i < n_opts; i++) {
 		continue;
 
 	if (flag_set_p("VarExists", flags[i])) {
-		# Need it for the gcc driver.
-		if (name in var_seen)
-			continue;
-		init = ""
-		gcc_driver = 1
+		continue;
 	}
 	else {
 		init = opt_args("Init", flags[i])
@@ -102,16 +105,11 @@ for (i = 0; i < n_opts; i++) {
 			init = " = " init;
 		else if (name in var_seen)
 			continue;
-		gcc_driver = 0
 	}
 
-	if (gcc_driver == 1)
-		print "#ifdef GCC_DRIVER"
 	print "/* Set by -" opts[i] "."
 	print "   " help[i] "  */"
 	print var_type(flags[i]) name init ";"
-	if (gcc_driver == 1)
-		print "#endif /* GCC_DRIVER */"
 	print ""
 
 	var_seen[name] = 1;

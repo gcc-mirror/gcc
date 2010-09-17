@@ -46,11 +46,6 @@
 #include "target-def.h"
 #include "df.h"
 
-/* Maximum size we are allowed to grow the stack in a single operation.
-   If we want more, we must do it in increments of at most this size.
-   If this value is 0, we don't check at all.  */
-int mcore_stack_increment = STACK_UNITS_MAXSTEP;
-
 /* For dumping information about frame sizes.  */
 char * mcore_current_function_name = 0;
 long   mcore_current_compilation_timestamp = 0;

@@ -1,3 +1,26 @@
+2010-09-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/options.texi (Variable): Document.
+	* optc-gen.awk, opth-gen.awk: Handle Variable records.  Don't
+	generate target_flags declarations explicitly.  Don't define
+	VarExists variables for the driver.
+	* common.opt (target_flags): New Variable record.
+	(flag_dump_unnumbered, flag_dump_unnumbered_links,
+	flag_var_tracking, flag_var_tracking_assignments,
+	flag_var_tracking_assignments_toggle): Don't mark variables with
+	VarExists.
+	* config/i386/i386.c (ix86_isa_flags): Don't define here.
+	* config/i386/i386.opt (ix86_isa_flags): Define here.
+	* config/mcore/mcore.c (mcore_stack_increment): Don't define here.
+	* config/mcore/mcore.opt (mcore_stack_increment): Don't mark with
+	VarExists.
+	* flags.h (flag_dump_unnumbered, flag_var_tracking): Remove.
+	* print-rtl.c (flag_dump_unnumbered, flag_dump_unnumbered_links):
+	Only define for generator programs.
+	* rtlanal.c (target_flags): Remove.
+	* toplev.c (flag_var_tracking, flag_var_tracking_assignments,
+	flag_var_tracking_assignments_toggle): Remove.
+
 2010-09-17  Michael Matz  <matz@suse.de>
 
 	PR tree-optimization/43432

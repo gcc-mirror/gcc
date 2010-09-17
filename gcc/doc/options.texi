@@ -41,6 +41,17 @@ records have two fields: the string @samp{TargetSave}, and a
 declaration type to go in the @code{cl_target_option} structure.
 
 @item
+A variable record to define a variable used to store option
+information.  These records have two fields: the string
+@samp{Variable}, and a declaration of the type and name of the
+variable, optionally with an initializer (but without any trailing
+@samp{;}).  These records may be used for variables used for many
+options where declaring the variable and its initializer by omitting
+@code{VarExists} from a single option definition record would be
+inappropriate, or for variables set in option handlers rather than
+referenced by @code{Var} properties.
+
+@item
 An option definition record.  These records have the following fields:
 @enumerate
 @item
