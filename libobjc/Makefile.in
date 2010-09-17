@@ -117,11 +117,9 @@ OBJC_H = \
   Object.h \
   Protocol.h \
   encoding.h \
-  hash.h \
   message.h \
   objc-api.h \
   objc-decls.h \
-  objc-list.h \
   sarray.h \
   thr.h \
   \
@@ -133,6 +131,8 @@ OBJC_DEPRECATED_H = \
   MetaClass.h \
   Object.h \
   STR.h \
+  hash.h \
+  objc-list.h \
   objc_error.h \
   objc_malloc.h \
   objc_unexpected_exception.h \

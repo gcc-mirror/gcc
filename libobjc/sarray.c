@@ -29,6 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc/thr.h"
 #include "objc-private/runtime.h"
 #include <stdio.h>
+#include <string.h> /* For memset */
 #include "assert.h"
 
 int nbuckets = 0;					/* !T:MUTEX */

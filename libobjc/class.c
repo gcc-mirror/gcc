@@ -93,6 +93,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc/objc-api.h"
 #include "objc/thr.h"
 #include "objc-private/runtime.h"            /* the kitchen sink */
+#include <string.h> /* For memset */
 
 /* We use a table which maps a class name to the corresponding class
  * pointer.  The first part of this file defines this table, and

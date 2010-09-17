@@ -40,6 +40,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc/sarray.h"
 #include "objc/encoding.h"
 #include "runtime-info.h"
+#include <string.h> /* For strlen */
 
 /* This is how we hack STRUCT_VALUE to be 1 or 0.   */
 #define gen_rtx(args...) 1

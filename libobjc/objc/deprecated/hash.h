@@ -29,7 +29,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <stddef.h>
 #include <string.h>
-#include "objc.h"
 
 #ifdef __cplusplus
 extern "C" {
