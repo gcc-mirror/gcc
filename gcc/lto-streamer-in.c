@@ -2241,7 +2241,7 @@ lto_input_ts_translation_unit_decl_tree_pointers (struct lto_input_block *ib,
 						  struct data_in *data_in,
 						  tree expr)
 {
-  TRANSLATION_UNIT_LANGUAGE (expr) = input_string (data_in, ib);
+  TRANSLATION_UNIT_LANGUAGE (expr) = xstrdup (input_string (data_in, ib));
   VEC_safe_push (tree, gc, all_translation_units, expr);
 }
 
