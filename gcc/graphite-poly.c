@@ -1269,7 +1269,7 @@ dot_lst_1 (FILE *file, lst_p lst)
 
 /* Display the LST using dotty.  */
 
-void
+DEBUG_FUNCTION void
 dot_lst (lst_p lst)
 {
   /* When debugging, enable the following code.  This cannot be used
