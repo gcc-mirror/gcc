@@ -1,3 +1,9 @@
+2010-09-17  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/45678
+	* builtins.c (fold_builtin_memory_op): Always properly adjust
+	alignment of memory accesses.
+
 2010-09-16  Jan Hubicka  <jh@suse.cz>
 
 	* lto-cgraph.c (input_overwrite_node): Do not set DECL_EXTERNAL when

@@ -8555,12 +8555,21 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
       STRIP_NOPS (srcvar);
       if (TREE_CODE (srcvar) == ADDR_EXPR
 	  && var_decl_component_p (TREE_OPERAND (srcvar, 0))
-	  && tree_int_cst_equal (TYPE_SIZE_UNIT (srctype), len)
-	  && (!STRICT_ALIGNMENT
-	      || !destvar
-	      || src_align >= TYPE_ALIGN (desttype)))
-	srcvar = fold_build2 (MEM_REF, destvar ? desttype : srctype,
-			      srcvar, off0);
+	  && tree_int_cst_equal (TYPE_SIZE_UNIT (srctype), len))
+	{
+	  if (!destvar
+	      || src_align >= TYPE_ALIGN (desttype))
+	    srcvar = fold_build2 (MEM_REF, destvar ? desttype : srctype,
+				  srcvar, off0);
+	  else if (!STRICT_ALIGNMENT)
+	    {
+	      srctype = build_aligned_type (TYPE_MAIN_VARIANT (desttype),
+					    src_align);
+	      srcvar = fold_build2 (MEM_REF, srctype, srcvar, off0);
+	    }
+	  else
+	    srcvar = NULL_TREE;
+	}
       else
 	srcvar = NULL_TREE;
 
@@ -8569,19 +8578,31 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 
       if (srcvar == NULL_TREE)
 	{
-	  if (STRICT_ALIGNMENT
-	      && src_align < TYPE_ALIGN (desttype))
-	    return NULL_TREE;
 	  STRIP_NOPS (src);
-	  srcvar = fold_build2 (MEM_REF, desttype, src, off0);
+	  if (src_align >= TYPE_ALIGN (desttype))
+	    srcvar = fold_build2 (MEM_REF, desttype, src, off0);
+	  else
+	    {
+	      if (STRICT_ALIGNMENT)
+		return NULL_TREE;
+	      srctype = build_aligned_type (TYPE_MAIN_VARIANT (desttype),
+					    src_align);
+	      srcvar = fold_build2 (MEM_REF, srctype, src, off0);
+	    }
 	}
       else if (destvar == NULL_TREE)
 	{
-	  if (STRICT_ALIGNMENT
-	      && dest_align < TYPE_ALIGN (srctype))
-	    return NULL_TREE;
 	  STRIP_NOPS (dest);
-	  destvar = fold_build2 (MEM_REF, srctype, dest, off0);
+	  if (dest_align >= TYPE_ALIGN (srctype))
+	    destvar = fold_build2 (MEM_REF, srctype, dest, off0);
+	  else
+	    {
+	      if (STRICT_ALIGNMENT)
+		return NULL_TREE;
+	      desttype = build_aligned_type (TYPE_MAIN_VARIANT (srctype),
+					     dest_align);
+	      destvar = fold_build2 (MEM_REF, desttype, dest, off0);
+	    }
 	}
 
       expr = build2 (MODIFY_EXPR, TREE_TYPE (destvar), destvar, srcvar);
