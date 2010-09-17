@@ -596,10 +596,6 @@ struct cum_arg { int nbytes; int anonymous_args; };
 #define LIBCALL_VALUE(MODE) \
   gen_rtx_REG (MODE, 10)
 
-/* 1 if N is a possible register number for a function value.  */
-
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == 10)
-
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
@@ -1071,6 +1067,10 @@ extern union tree_node * GHS_current_section_names [(int) COUNT_OF_GHS_SECTION_K
 
 #define TARGET_ASM_INIT_SECTIONS v850_asm_init_sections
 
+/* Define this so that the cc1plus will not think that system header files
+   need an implicit 'extern "C" { ... }' assumed.  This breaks testing C++
+   in a build directory where the libstdc++ header files are found via a
+   -isystem <path-to-build-dir>.  */
+#define NO_IMPLICIT_EXTERN_C
+
 #endif /* ! GCC_V850_H */
-
-

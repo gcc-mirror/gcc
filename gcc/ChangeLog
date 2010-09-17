@@ -1,3 +1,10 @@
+2010-09-03  Naveen H.S  <naveen.S@kpitcummins.com>
+
+	* config/v850/v850.c (v850_function_value_regno_p): Make static.
+	Adjust comments. Declare.
+	(TARGET_FUNCTION_VALUE_REGNO_P): Define.
+	* config/v850/v850.h (FUNCTION_VALUE_REGNO_P): Delete.
+
 2010-09-17  Richard Guenther  <rguenther@suse.de>
 
 	* common.opt (combine): Remove.
