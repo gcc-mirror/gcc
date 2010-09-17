@@ -160,9 +160,6 @@ lto_materialize_function (struct cgraph_node *node)
      and also functions that are needed to produce virtual clones.  */
   if (node->analyzed || has_analyzed_clone_p (node))
     {
-      /* This function has a definition.  */
-      TREE_STATIC (decl) = 1;
-
       /* Clones don't need to be read.  */
       if (node->clone_of)
 	return;
@@ -198,8 +195,6 @@ lto_materialize_function (struct cgraph_node *node)
       if (!flag_wpa)
 	ggc_collect ();
     }
-  else
-    DECL_EXTERNAL (decl) = 1;
 
   /* Let the middle end know about the function.  */
   rest_of_decl_compilation (decl, 1, 0);
