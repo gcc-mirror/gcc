@@ -1,5 +1,20 @@
 2010-09-17  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* gcc.target/i386/pad-1.c: New.
+	* gcc.target/i386/pad-2.c: Likewise.
+	* gcc.target/i386/pad-3.c: Likewise.
+	* gcc.target/i386/pad-4.c: Likewise.
+	* gcc.target/i386/pad-5a.c: Likewise.
+	* gcc.target/i386/pad-5b.c: Likewise.
+	* gcc.target/i386/pad-6a.c: Likewise.
+	* gcc.target/i386/pad-6b.c: Likewise.
+	* gcc.target/i386/pad-7.c: Likewise.
+	* gcc.target/i386/pad-8.c: Likewise.
+	* gcc.target/i386/pad-9.c: Likewise.
+	* gcc.target/i386/pad-10.c: Likewise.
+
+2010-09-17  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR middle-end/45234
 	* gcc.dg/torture/stackalign/alloca-5.c: New.
 
