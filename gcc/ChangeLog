@@ -1,3 +1,10 @@
+2010-09-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/45234
+	* calls.c (expand_call): Make sure that all variable sized
+	adjustments are multiple of preferred stack boundary after
+	stack alignment.
+
 2010-09-17  DJ Delorie  <dj@redhat.com>
 
 	* config/rx/rx.c (rx_print_operand): If __builtin_rx_setpsw() is
