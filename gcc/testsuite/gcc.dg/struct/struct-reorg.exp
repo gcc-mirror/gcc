@@ -20,7 +20,7 @@
 load_lib gcc-dg.exp
 load_lib target-supports.exp
 
-set STRUCT_REORG_CFLAGS "-O3 -fipa-struct-reorg -fdump-ipa-all -fwhole-program -combine"
+set STRUCT_REORG_CFLAGS "-O3 -fipa-struct-reorg -fdump-ipa-all -fwhole-program"
 
 # Initialize `dg'.
 dg-init
@@ -51,7 +51,7 @@ load_lib profopt.exp
 # These are globals used by profopt-execute.  The first is options
 # needed to generate profile data, the second is options to use the
 # profile data.
-set common "-O3 -fwhole-program -combine"
+set common "-O3 -fwhole-program"
 set profile_option [concat $common " -fprofile-generate"]
 set feedback_option [concat $common " -fprofile-use -fipa-struct-reorg -fdump-ipa-all"]
 

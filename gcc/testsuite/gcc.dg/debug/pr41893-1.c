@@ -1,6 +1,7 @@
 /* PR debug/41893 */
-/* { dg-do compile } */
-/* { dg-options "-combine -fwhole-program -O" } */
+/* { dg-do link } */
+/* { dg-require-effective-target-lto } */
+/* { dg-options "-flto -fwhole-program -O -r -nostdlib" } */
 /* { dg-additional-sources "pr41893-2.c" } */
 
 struct S { int v; };

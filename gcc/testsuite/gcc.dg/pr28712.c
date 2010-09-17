@@ -1,6 +1,7 @@
 /* PR c/28712 */
-/* { dg-do compile } */
-/* { dg-options "--combine" } */
+/* { dg-do link } */
+/* { dg-require-effective-target-lto } */
+/* { dg-options "-flto -r -nostdlib" } */
 /* { dg-additional-sources "pr28712.c pr28712.c" } */
 
 struct A;

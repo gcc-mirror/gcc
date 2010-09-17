@@ -309,9 +309,6 @@ Common Separate RejectDriver
 auxbase-strip
 Common Separate RejectDriver
 
-combine
-Driver Var(combine_flag)
-
 c
 Driver
 

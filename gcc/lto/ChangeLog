@@ -1,3 +1,7 @@
+2010-09-17  Richard Guenther  <rguenther@suse.de>
+
+	* lang.opt (flag_wpa): Also enable for the driver.
+
 2010-09-16  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (lto_materialize_function): Do not tamper with STATIC and

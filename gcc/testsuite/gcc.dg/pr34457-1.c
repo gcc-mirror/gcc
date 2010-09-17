@@ -1,7 +1,8 @@
 /* PR c/34457 */
-/* { dg-do compile } */
+/* { dg-do link } */
 /* { dg-require-effective-target trampolines } */
-/* { dg-options "--combine -O2" } */
+/* { dg-require-effective-target-lto } */
+/* { dg-options "-flto -r -nostdlib -O2" } */
 /* { dg-additional-sources "pr34457-2.c" } */
    
 

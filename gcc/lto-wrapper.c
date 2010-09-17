@@ -423,7 +423,6 @@ run_gcc (unsigned argc, char *argv[])
 	argv_ptr[0] = linker_output;
       argv_ptr[1] = "-o";
       argv_ptr[2] = flto_out;
-      argv_ptr[3] = "-combine";
     }
   else if (lto_mode == LTO_MODE_WHOPR)
     {
@@ -459,15 +458,14 @@ run_gcc (unsigned argc, char *argv[])
       strcpy (tmp, ltrans_output_file);
 
       argv_ptr[2] = "-fwpa";
-      argv_ptr[3] = "-combine";
     }
   else
     fatal ("invalid LTO mode");
 
   /* Append the input objects and possible preceeding arguments.  */
   for (i = 1; i < argc; ++i)
-    argv_ptr[3 + i] = argv[i];
-  argv_ptr[3 + i] = NULL;
+    argv_ptr[2 + i] = argv[i];
+  argv_ptr[2 + i] = NULL;
 
   fork_execute (CONST_CAST (char **, new_argv));
 
