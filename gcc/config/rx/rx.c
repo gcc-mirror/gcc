@@ -1905,7 +1905,7 @@ rx_expand_builtin_mvtipl (rtx arg)
   if (rx_cpu_type == RX610)
     return NULL_RTX;
 
-  if (! CONST_INT_P (arg) || ! IN_RANGE (arg, 0, (1 << 4) - 1))
+  if (! CONST_INT_P (arg) || ! IN_RANGE (INTVAL (arg), 0, (1 << 4) - 1))
     return NULL_RTX;
 
   emit_insn (gen_mvtipl (arg));
@@ -1974,6 +1974,31 @@ rx_expand_builtin_round (rtx arg, rtx target)
   return target;
 }
 
+static int
+valid_psw_flag (rtx op, char *which)
+{
+  static int mvtc_inform_done = 0;
+
+  if (GET_CODE (op) == CONST_INT)
+    switch (INTVAL (op))
+      {
+      case 0: case 'c': case 'C':
+      case 1: case 'z': case 'Z':
+      case 2: case 's': case 'S':
+      case 3: case 'o': case 'O':
+      case 8: case 'i': case 'I':
+      case 9: case 'u': case 'U':
+	return 1;
+      }
+
+  error ("__builtin_rx_%s takes 'C', 'Z', 'S', 'O', 'I', or 'U'", which);
+  if (!mvtc_inform_done)
+    error ("use __builtin_rx_mvtc (0, ... ) to write arbitrary values to PSW");
+  mvtc_inform_done = 1;
+
+  return 0;
+}
+
 static rtx
 rx_expand_builtin (tree exp,
 		   rtx target,
@@ -1989,10 +2014,14 @@ rx_expand_builtin (tree exp,
   switch (fcode)
     {
     case RX_BUILTIN_BRK:     emit_insn (gen_brk ()); return NULL_RTX;
-    case RX_BUILTIN_CLRPSW:  return rx_expand_void_builtin_1_arg
-	(op, gen_clrpsw, false);
-    case RX_BUILTIN_SETPSW:  return rx_expand_void_builtin_1_arg
-	(op, gen_setpsw, false);
+    case RX_BUILTIN_CLRPSW:
+      if (!valid_psw_flag (op, "clrpsw"))
+	return NULL_RTX;
+      return rx_expand_void_builtin_1_arg (op, gen_clrpsw, false);
+    case RX_BUILTIN_SETPSW:
+      if (!valid_psw_flag (op, "setpsw"))
+	return NULL_RTX;
+      return rx_expand_void_builtin_1_arg (op, gen_setpsw, false);
     case RX_BUILTIN_INT:     return rx_expand_void_builtin_1_arg
 	(op, gen_int, false);
     case RX_BUILTIN_MACHI:   return rx_expand_builtin_mac (exp, gen_machi);
