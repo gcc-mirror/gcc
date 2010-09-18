@@ -1204,13 +1204,14 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
   basic_block new_bb = bb->aux;
   edge_iterator ei;
   tree phi;
+  edge new_edge;
+  bool inserted = false;
 
   for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
     {
       tree res = PHI_RESULT (phi);
       tree new_res = res;
       tree new_phi;
-      edge new_edge;
 
       if (is_gimple_reg (res))
 	{
@@ -1234,12 +1235,18 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
 		  tree stmts = NULL_TREE;
 		  new_arg = force_gimple_operand (new_arg, &stmts,
 						  true, NULL);
-		  bsi_insert_on_edge_immediate (new_edge, stmts);
+		  bsi_insert_on_edge (new_edge, stmts);
+		  inserted = true;
 		}
 	      add_phi_arg (new_phi, new_arg, new_edge);
 	    }
 	}
     }
+
+  /* Commit the delayed edge insertions.  */
+  if (inserted)
+    FOR_EACH_EDGE (new_edge, ei, new_bb->preds)
+      bsi_commit_one_edge_insert (new_edge, NULL);
 }
 
 /* Wrapper for remap_decl so it can be used as a callback.  */
