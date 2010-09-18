@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fomit-frame-pointer -march=atom -S" } */
+/* { dg-options "-O2 -fomit-frame-pointer -march=atom -fno-pic -S" } */
 /* { dg-final { scan-assembler-not "nop" } } */
 /* { dg-final { scan-assembler-not "rep" } } */
 

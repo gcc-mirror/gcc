@@ -1,3 +1,8 @@
+2010-09-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/45719
+	* gcc.target/i386/pad-3.c: Pass -fno-pic.
+
 2010-09-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/pad-1.c: New.
