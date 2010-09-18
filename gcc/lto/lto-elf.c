@@ -674,7 +674,7 @@ lto_obj_file_open (const char *filename, bool writable)
 			     NULL);
   if (!elf_file->elf)
     {
-      error ("could not open ELF file: %s", elf_errmsg (0));
+      error ("could not open %s as an ELF file: %s", fname, elf_errmsg (0));
       goto fail;
     }
 
