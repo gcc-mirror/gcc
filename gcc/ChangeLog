@@ -1,3 +1,7 @@
+2010-09-18  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config.gcc (*-w64-mingw*): Correct typo about t-dfprules.
+
 2010-09-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45709
