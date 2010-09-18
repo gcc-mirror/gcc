@@ -365,6 +365,7 @@ gfc_expr_walker (gfc_expr **e, walk_expr_fn_t exprfn, void *data)
 	    /* Fall through to the variable case in order to walk the
 	       the reference.  */
 
+	  case EXPR_SUBSTRING:
 	  case EXPR_VARIABLE:
 	    for (r = (*e)->ref; r; r = r->next)
 	      {

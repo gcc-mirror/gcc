@@ -1,4 +1,9 @@
-2010-09-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+2010-09-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (gfc_expr_walker):  Also
+	handle EXPR_SUBSTRING.
+
+2010-09-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* frontend-passes.c (gfc_expr_walker):  Handle
 	constructors and references.
