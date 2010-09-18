@@ -1,3 +1,20 @@
+2010-09-18  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* hash.c: Include objc-private/hash.h instead of objc/hash.h.
+
+	* objc/sarray.h: Moved into objc/deprecated/sarray.h;
+	objc/sarray.h replaced with a placeholder including the file from
+	the deprecated/ directory.
+	* objc-private/sarray.h: New file (private copy of sarray.h).
+	* hash.c: Include <assert.h> instead of "assert.h"
+	* sarray.c: Include <assert.h> instead of "assert.h".  Include
+	objc-private/sarray.h instead of objc/sarray.h.
+	* selector.c: Include objc-private/sarray.h instead of
+	objc/sarray.h.
+	* sendmsg.c: Include <assert.h>.  Include objc-private/sarray.h
+	instead of objc/sarray.h.
+	* Makefile.in (OBJC_DEPRECATED_H): Added sarray.h.	
+
 2010-09-17  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* objc-private/objc-list.h (list_remove_elem): Unused function

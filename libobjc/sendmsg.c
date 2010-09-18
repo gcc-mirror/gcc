@@ -37,9 +37,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc/objc-api.h"
 #include "objc/thr.h"
 #include "objc-private/runtime.h"
-#include "objc/sarray.h"
+#include "objc-private/sarray.h"
 #include "objc/encoding.h"
 #include "runtime-info.h"
+#include <assert.h> /* For assert */
 #include <string.h> /* For strlen */
 
 /* This is how we hack STRUCT_VALUE to be 1 or 0.   */
