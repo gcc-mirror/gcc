@@ -1,3 +1,7 @@
+2010-09-18  Tijl Coosemans <tijl@coosemans.org>
+
+	* config/i386/freebsd.h (SUBTARGET32_DEFAULT_CPU): Add.
+
 2010-09-18  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config.gcc (*-w64-mingw*): Correct typo about t-dfprules.
