@@ -1,3 +1,11 @@
+2010-09-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-04-07  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/43628
+	* g++.dg/debug/dwarf2/typedef2.C: New test.
+
 2010-09-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:

@@ -1,3 +1,11 @@
+2010-09-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-04-07  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/43628
+	* dwarf2out.c (modified_type_die): Ignore artificial typedefs.
+
 2010-09-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45709
