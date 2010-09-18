@@ -1,5 +1,15 @@
 2010-09-18  Jan Hubicka  <jh@suse.cz>
 
+	PR tree-optimization/45453
+	* cgraphunit.c (cgraph_finalize_function): Consider comdat & external
+	virtual functions are reachable.
+	* ipa-inline.c (cgraph_clone_inlined_nodes): Likewise.
+	* ipa.c (cgraph_remove_unreachable_nodes): Likewise.
+	* ipa-prop.c (ipa_modify_formal_parameters): Clear DECL_VIRTUAL_P
+	when modifying function.
+
+2010-09-18  Jan Hubicka  <jh@suse.cz>
+
 	PR tree-optimization/45605
 	* cgraphunit.c (cgraph_analyze_functions): Allocate bitmap obstack.
 	* gimple-fold.c (static_object_in_other_unit_p): New function.
