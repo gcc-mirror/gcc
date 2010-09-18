@@ -1,3 +1,9 @@
+2010-09-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45709
+	* tree-inline.c (copy_phis_for_bb): Delay commit of edge
+	insertions until after all PHI nodes of the block are processed.
+
 2010-09-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
