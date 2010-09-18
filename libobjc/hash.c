@@ -23,11 +23,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "objc-private/common.h"
-#include "assert.h"
+#include <assert.h> /* For assert */
 
 #include "objc/objc.h"
 #include "objc/objc-api.h"
-#include "objc/hash.h"
+#include "objc-private/hash.h"
 #include "objc-private/runtime.h"		/* for DEBUG_PRINTF */
 
 /* These two macros determine when a hash table is full and

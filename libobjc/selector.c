@@ -29,7 +29,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "objc-private/hash.h"
 #include "objc-private/objc-list.h" 
 #include "objc-private/runtime.h"
-#include "objc/sarray.h"
+#include "objc-private/sarray.h"
 #include "objc/encoding.h"
 
 /* Initial selector hash table size. Value doesn't matter much */
