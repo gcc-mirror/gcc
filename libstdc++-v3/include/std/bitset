@@ -53,8 +53,8 @@
 
 #define _GLIBCXX_BITSET_BITS_PER_WORD  (__CHAR_BIT__ * sizeof(unsigned long))
 #define _GLIBCXX_BITSET_WORDS(__n) \
- ((__n) < 1 ? 0 : ((__n) + _GLIBCXX_BITSET_BITS_PER_WORD - 1) \
-                  / _GLIBCXX_BITSET_BITS_PER_WORD)
+  ((__n) / _GLIBCXX_BITSET_BITS_PER_WORD + \
+   ((__n) % _GLIBCXX_BITSET_BITS_PER_WORD == 0 ? 0 : 1))
 
 _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
 

@@ -1,3 +1,10 @@
+2010-09-17  Luc Hermitte  <hermitte@free.fr>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/45713
+	* include/std/bitset: Fix _GLIBCXX_BITSET_WORDS macro.
+	* testsuite/23_containers/bitset/45713.cc: New.
+
 2010-09-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_raw_storage_iter.h (raw_storage_iterator<>::
