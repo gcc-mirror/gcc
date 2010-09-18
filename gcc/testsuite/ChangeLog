@@ -1,3 +1,13 @@
+2010-09-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45709
+	* g++.dg/torture/pr45709-2.C: New testcase.
+
+2010-09-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45709
+	* g++.dg/torture/pr45709.C: New testcase.
+
 2010-09-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/45719
