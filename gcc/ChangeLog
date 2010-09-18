@@ -1,3 +1,9 @@
+2010-09-18  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45709
+	* tree-inline.c (copy_phis_for_bb): Fixup new_edge when
+	we splitted it.
+
 2010-09-17  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite-dependences.c (dot_deps): Add DEBUG_FUNCTION.

@@ -2021,8 +2021,11 @@ copy_phis_for_bb (basic_block bb, copy_body_data *id)
 		  && !is_gimple_val (new_arg))
 		{
 		  gimple_seq stmts = NULL;
+		  basic_block tem;
 		  new_arg = force_gimple_operand (new_arg, &stmts, true, NULL);
-		  gsi_insert_seq_on_edge_immediate (new_edge, stmts);
+		  tem = gsi_insert_seq_on_edge_immediate (new_edge, stmts);
+		  if (tem)
+		    new_edge = single_succ_edge (tem);
 		}
 	      add_phi_arg (new_phi, new_arg, new_edge,
 			   gimple_phi_arg_location_from_edge (phi, old_edge));
