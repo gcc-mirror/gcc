@@ -1,3 +1,7 @@
+2010-09-18  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/initlist44.C: New.
+
 2010-09-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45709
