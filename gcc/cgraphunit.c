@@ -363,7 +363,13 @@ cgraph_finalize_function (tree decl, bool nested)
      there.  */
   if ((TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
       || DECL_STATIC_CONSTRUCTOR (decl)
-      || DECL_STATIC_DESTRUCTOR (decl))
+      || DECL_STATIC_DESTRUCTOR (decl)
+      /* COMDAT virtual functions may be referenced by vtable from
+	 other compilatoin unit.  Still we want to devirtualize calls
+	 to those so we need to analyze them.
+	 FIXME: We should introduce may edges for this purpose and update
+	 their handling in unreachable function removal and inliner too.  */
+      || (DECL_VIRTUAL_P (decl) && (DECL_COMDAT (decl) || DECL_EXTERNAL (decl))))
     cgraph_mark_reachable_node (node);
 
   /* If we've not yet emitted decl, tell the debug info about it.  */

@@ -2120,6 +2120,7 @@ ipa_modify_formal_parameters (tree fndecl, ipa_parm_adjustment_vec adjustments,
     }
 
   TREE_TYPE (fndecl) = new_type;
+  DECL_VIRTUAL_P (fndecl) = 0;
   if (otypes)
     VEC_free (tree, heap, otypes);
   VEC_free (tree, heap, oparms);

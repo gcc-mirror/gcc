@@ -251,6 +251,12 @@ cgraph_clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	 In that case just go ahead and re-use it.  */
       if (!e->callee->callers->next_caller
 	  && cgraph_can_remove_if_no_direct_calls_p (e->callee)
+	  /* Inlining might enable more devirtualizing, so we want to remove
+	     those only after all devirtualizable virtual calls are processed.
+	     Lacking may edges in callgraph we just preserve them post
+	     inlining.  */
+	  && (!DECL_VIRTUAL_P (e->callee->decl)
+	      || (!DECL_COMDAT (e->callee->decl) && !DECL_EXTERNAL (e->callee->decl)))
 	  /* Don't reuse if more than one function shares a comdat group.
 	     If the other function(s) are needed, we need to emit even
 	     this function out of line.  */

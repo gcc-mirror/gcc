@@ -238,7 +238,12 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 #endif
   varpool_reset_queue ();
   for (node = cgraph_nodes; node; node = node->next)
-    if (!cgraph_can_remove_if_no_direct_calls_and_refs_p (node)
+    if ((!cgraph_can_remove_if_no_direct_calls_and_refs_p (node)
+	 /* Keep around virtual functions for possible devirtualization.  */
+	 || (!before_inlining_p
+	     && !node->global.inlined_to
+	     && DECL_VIRTUAL_P (node->decl)
+	     && (DECL_COMDAT (node->decl) || DECL_EXTERNAL (node->decl))))
 	&& ((!DECL_EXTERNAL (node->decl))
             || before_inlining_p))
       {
