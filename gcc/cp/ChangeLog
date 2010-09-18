@@ -1,3 +1,8 @@
+2010-09-18  Jason Merrill  <jason@redhat.com>
+
+	* call.c (compare_ics): Do lvalue/rvalue reference binding
+	comparison for ck_list, too.
+
 2010-09-15  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (finish_id_expression): Diagnose use of function

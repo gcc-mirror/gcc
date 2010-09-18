@@ -6859,9 +6859,8 @@ compare_ics (conversion *ics1, conversion *ics2)
       /* We couldn't make up our minds; try to figure it out below.  */
     }
 
-  if (ics1->ellipsis_p || ics1->kind == ck_list)
-    /* Both conversions are ellipsis conversions or both are building a
-       std::initializer_list.  */
+  if (ics1->ellipsis_p)
+    /* Both conversions are ellipsis conversions.  */
     return 0;
 
   /* User-defined  conversion sequence U1 is a better conversion sequence
@@ -6870,16 +6869,24 @@ compare_ics (conversion *ics1, conversion *ics2)
      ond standard conversion sequence of U1 is  better  than  the  second
      standard conversion sequence of U2.  */
 
-  if (ics1->user_conv_p)
+  /* Handle list-conversion with the same code even though it isn't always
+     ranked as a user-defined conversion and it doesn't have a second
+     standard conversion sequence; it will still have the desired effect.
+     Specifically, we need to do the reference binding comparison at the
+     end of this function.  */
+
+  if (ics1->user_conv_p || ics1->kind == ck_list)
     {
       conversion *t1;
       conversion *t2;
 
       for (t1 = ics1; t1->kind != ck_user; t1 = t1->u.next)
-	if (t1->kind == ck_ambig || t1->kind == ck_aggr)
+	if (t1->kind == ck_ambig || t1->kind == ck_aggr
+	    || t1->kind == ck_list)
 	  break;
       for (t2 = ics2; t2->kind != ck_user; t2 = t2->u.next)
-	if (t2->kind == ck_ambig || t2->kind == ck_aggr)
+	if (t2->kind == ck_ambig || t2->kind == ck_aggr
+	    || t2->kind == ck_list)
 	  break;
 
       if (t1->kind != t2->kind)
