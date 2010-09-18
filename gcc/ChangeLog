@@ -1,3 +1,13 @@
+2010-09-18  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimization/45605
+	* cgraphunit.c (cgraph_analyze_functions): Allocate bitmap obstack.
+	* gimple-fold.c (static_object_in_other_unit_p): New function.
+	(canonicalize_constructor_val): Use it.
+	(get_symbol_constant_value): Be reaqdy for canonicalize_constructor_val
+	returning NULL.
+	(gimple_fold_obj_type_ref_known_binfo): Use static_object_in_other_unit_p.
+
 2010-09-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45709

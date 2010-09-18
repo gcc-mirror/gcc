@@ -31,6 +31,61 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "target.h"
 
+/* Return true when DECL is static object in other partition.
+   In that case we must prevent folding as we can't refer to
+   the symbol.
+
+   We can get into it in two ways:
+     1) When analyzing C++ virtual tables.
+	C++ virtual tables do have known constructors even
+	when they are keyed to other compilation unit.
+	Those tables can contain pointers to methods and vars
+	in other units.  Those methods have both STATIC and EXTERNAL
+	set.
+     2) In WHOPR mode devirtualization might lead to reference
+	to method that was partitioned elsehwere.
+	In this case we have static VAR_DECL or FUNCTION_DECL
+	that has no corresponding callgraph/varpool node
+	declaring the body.  */
+	
+static bool
+static_object_in_other_unit_p (tree decl)
+{
+  struct varpool_node *vnode;
+  struct cgraph_node *node;
+
+  if (!TREE_STATIC (decl)
+      || TREE_PUBLIC (decl) || DECL_COMDAT (decl))
+    return false;
+  /* External flag is set, so we deal with C++ reference
+     to static object from other file.  */
+  if (DECL_EXTERNAL (decl))
+    {
+      /* Just be sure it is not big in frontend setting
+	 flags incorrectly.  Those variables should never
+	 be finalized.  */
+      gcc_checking_assert (!(vnode = varpool_get_node (decl))
+			   || !vnode->finalized);
+      return true;
+    }
+  /* We are not at ltrans stage; so don't worry about WHOPR.  */
+  if (!flag_ltrans)
+    return false;
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      node = cgraph_get_node (decl);
+      if (!node || !node->analyzed)
+	return true;
+    }
+  else if (TREE_CODE (decl) == VAR_DECL)
+    {
+      vnode = varpool_get_node (decl);
+      if (!vnode || !vnode->finalized)
+	return true;
+    }
+  return false;
+}
+
 /* CVAL is value taken from DECL_INITIAL of variable.  Try to transorm it into
    acceptable form for is_gimple_min_invariant.   */
 
@@ -50,6 +105,11 @@ canonicalize_constructor_val (tree cval)
   if (TREE_CODE (cval) == ADDR_EXPR)
     {
       tree base = get_base_address (TREE_OPERAND (cval, 0));
+      if (base
+	  && (TREE_CODE (base) == VAR_DECL
+	      || TREE_CODE (base) == FUNCTION_DECL)
+	  && static_object_in_other_unit_p (base))
+	return NULL_TREE;
       if (base && TREE_CODE (base) == VAR_DECL)
 	add_referenced_var (base);
     }
@@ -70,8 +130,10 @@ get_symbol_constant_value (tree sym)
       if (val)
 	{
 	  val = canonicalize_constructor_val (val);
-	  if (is_gimple_min_invariant (val))
+	  if (val && is_gimple_min_invariant (val))
 	    return val;
+	  else
+	    return NULL_TREE;
 	}
       /* Variables declared 'const' without an initializer
 	 have zero as the initializer if they may not be
@@ -1370,7 +1432,6 @@ gimple_fold_obj_type_ref_known_binfo (HOST_WIDE_INT token, tree known_binfo)
 {
   HOST_WIDE_INT i;
   tree v, fndecl;
-  struct cgraph_node *node;
 
   v = BINFO_VIRTUALS (known_binfo);
   i = 0;
@@ -1382,13 +1443,11 @@ gimple_fold_obj_type_ref_known_binfo (HOST_WIDE_INT token, tree known_binfo)
     }
 
   fndecl = TREE_VALUE (v);
-  node = cgraph_get_node (fndecl);
   /* When cgraph node is missing and function is not public, we cannot
      devirtualize.  This can happen in WHOPR when the actual method
      ends up in other partition, because we found devirtualization
      possibility too late.  */
-  if ((!node || (!node->analyzed && !node->in_other_partition))
-      && (!TREE_PUBLIC (fndecl) || DECL_COMDAT (fndecl)))
+  if (static_object_in_other_unit_p (fndecl))
     return NULL;
   return build_fold_addr_expr (fndecl);
 }
