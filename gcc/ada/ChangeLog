@@ -1,5 +1,16 @@
 2010-09-19  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gnat_pushdecl): Do not do anything special
+	for PARM_DECLs.
+	(end_subprog_body): If the body is a BIND_EXPR, make its associated
+	block the top-level one.
+	(build_function_stub): Build a statement group for the whole function.
+	* gcc-interface/utils.c (Subprogram_Body_to_gnu): If copy-in/copy-out
+	is used, create the enclosing block early and process first the OUT
+	parameters.
+
+2010-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Enumeration_Type>: Do
 	not generate debug info for individual enumerators.
 

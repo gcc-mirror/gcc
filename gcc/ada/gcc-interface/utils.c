@@ -473,14 +473,8 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	}
       else if (!DECL_EXTERNAL (decl))
 	{
-	  tree block;
-	  /* Fake PARM_DECLs go into the topmost block of the function.  */
-	  if (TREE_CODE (decl) == PARM_DECL)
-	    block = BLOCK_SUPERCONTEXT (current_binding_level->block);
-	  else
-	    block = current_binding_level->block;
-	  DECL_CHAIN (decl) = BLOCK_VARS (block);
-	  BLOCK_VARS (block) = decl;
+	  DECL_CHAIN (decl) = BLOCK_VARS (current_binding_level->block);
+	  BLOCK_VARS (current_binding_level->block) = decl;
 	}
     }
 
@@ -1907,6 +1901,13 @@ end_subprog_body (tree body)
   /* Mark the RESULT_DECL as being in this subprogram. */
   DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;
 
+  /* The body should be a BIND_EXPR whose BLOCK is the top-level one.  */
+  if (TREE_CODE (body) == BIND_EXPR)
+    {
+      BLOCK_SUPERCONTEXT (BIND_EXPR_BLOCK (body)) = fndecl;
+      DECL_INITIAL (fndecl) = BIND_EXPR_BLOCK (body);
+    }
+
   DECL_SAVED_TREE (fndecl) = body;
 
   current_function_decl = DECL_CONTEXT (fndecl);
@@ -3228,15 +3229,18 @@ build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog)
   tree gnu_subprog_type, gnu_subprog_addr, gnu_subprog_call;
   tree gnu_stub_param, gnu_arg_types, gnu_param;
   tree gnu_stub_decl = DECL_FUNCTION_STUB (gnu_subprog);
-  tree gnu_body;
   VEC(tree,gc) *gnu_param_vec = NULL;
 
   gnu_subprog_type = TREE_TYPE (gnu_subprog);
 
+  /* Initialize the information structure for the function.  */
+  allocate_struct_function (gnu_stub_decl, false);
+  set_cfun (NULL);
+
   begin_subprog_body (gnu_stub_decl);
-  gnat_pushlevel ();
 
   start_stmt_group ();
+  gnat_pushlevel ();
 
   /* Loop over the parameters of the stub and translate any of them
      passed by descriptor into a by reference one.  */
@@ -3258,8 +3262,6 @@ build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog)
       VEC_safe_push (tree, gc, gnu_param_vec, gnu_param);
     }
 
-  gnu_body = end_stmt_group ();
-
   /* Invoke the internal subprogram.  */
   gnu_subprog_addr = build1 (ADDR_EXPR, build_pointer_type (gnu_subprog_type),
 			     gnu_subprog);
@@ -3268,16 +3270,13 @@ build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog)
 
   /* Propagate the return value, if any.  */
   if (VOID_TYPE_P (TREE_TYPE (gnu_subprog_type)))
-    append_to_statement_list (gnu_subprog_call, &gnu_body);
+    add_stmt (gnu_subprog_call);
   else
-    append_to_statement_list (build_return_expr (DECL_RESULT (gnu_stub_decl),
-						 gnu_subprog_call),
-			      &gnu_body);
+    add_stmt (build_return_expr (DECL_RESULT (gnu_stub_decl),
+				 gnu_subprog_call));
 
   gnat_poplevel ();
-
-  allocate_struct_function (gnu_stub_decl, false);
-  end_subprog_body (gnu_body);
+  end_subprog_body (end_stmt_group ());
 }
 
 /* Build a type to be used to represent an aliased object whose nominal type
