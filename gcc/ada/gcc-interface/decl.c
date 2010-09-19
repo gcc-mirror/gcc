@@ -1525,7 +1525,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      = create_var_decl (get_entity_name (gnat_literal), NULL_TREE,
 				 gnu_type, gnu_value, true, false, false,
 				 false, NULL, gnat_literal);
-
+	    /* Do not generate debug info for individual enumerators.  */
+	    DECL_IGNORED_P (gnu_literal) = 1;
 	    save_gnu_tree (gnat_literal, gnu_literal, false);
 	    gnu_literal_list = tree_cons (DECL_NAME (gnu_literal),
 					  gnu_value, gnu_literal_list);
