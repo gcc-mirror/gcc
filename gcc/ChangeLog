@@ -1,3 +1,10 @@
+2010-09-19  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/45714
+	* tree-vect-stmts.c (vect_transform_stmt): Use a dummy statement
+	created in vectorizable_call instead of the original statement in
+	def stmt updates.
+
 2010-09-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386-protos.h (split_double_mode): New prototype.

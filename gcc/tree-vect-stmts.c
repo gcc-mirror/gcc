@@ -4516,7 +4516,7 @@ vect_transform_stmt (gimple stmt, gimple_stmt_iterator *gsi,
   bool is_store = false;
   gimple vec_stmt = NULL;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-  gimple orig_stmt_in_pattern;
+  gimple orig_stmt_in_pattern, orig_scalar_stmt = stmt;
   bool done;
 
   switch (STMT_VINFO_TYPE (stmt_info))
@@ -4584,6 +4584,7 @@ vect_transform_stmt (gimple stmt, gimple_stmt_iterator *gsi,
     case call_vec_info_type:
       gcc_assert (!slp_node);
       done = vectorizable_call (stmt, gsi, &vec_stmt);
+      stmt = gsi_stmt (*gsi);
       break;
 
     case reduc_vec_info_type:
@@ -4662,7 +4663,8 @@ vect_transform_stmt (gimple stmt, gimple_stmt_iterator *gsi,
 	     documentation of vect_pattern_recog.  */
 	  if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
 	    {
-	      gcc_assert (STMT_VINFO_RELATED_STMT (stmt_vinfo) == stmt);
+	      gcc_assert (STMT_VINFO_RELATED_STMT (stmt_vinfo)
+                           == orig_scalar_stmt);
 	      STMT_VINFO_VEC_STMT (stmt_vinfo) = vec_stmt;
 	    }
 	}
