@@ -1,3 +1,9 @@
+2010-09-19  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/44246
+	* lto-cgraph.c (input_cgraph_1, input_varpool_1): Avoid
+	processing same node twice.
+
 2010-09-19  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/bfin/bfin.h (CLASS_LIKELY_SPILLED_P): Remove.
