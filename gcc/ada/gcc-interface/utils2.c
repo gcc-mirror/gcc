@@ -1603,10 +1603,9 @@ build_simple_component_ref (tree record_variable, tree component,
   if (!field)
     return NULL_TREE;
 
-  /* If this field is not in the specified record, see if we can find
-     something in the record whose original field is the same as this one. */
+  /* If this field is not in the specified record, see if we can find a field
+     in the specified record whose original field is the same as this one.  */
   if (DECL_CONTEXT (field) != record_type)
-    /* Check if there is a field with name COMPONENT in the record.  */
     {
       tree new_field;
 
@@ -1615,6 +1614,21 @@ build_simple_component_ref (tree record_variable, tree component,
 	   new_field = DECL_CHAIN (new_field))
 	if (SAME_FIELD_P (field, new_field))
 	  break;
+
+      /* Next, see if we're looking for an inherited component in an extension.
+	 If so, look thru the extension directly.  */
+      if (!new_field
+	  && TREE_CODE (record_variable) == VIEW_CONVERT_EXPR
+	  && TYPE_ALIGN_OK (record_type)
+	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (record_variable, 0)))
+	     == RECORD_TYPE
+	  && TYPE_ALIGN_OK (TREE_TYPE (TREE_OPERAND (record_variable, 0))))
+	{
+	  ref = build_simple_component_ref (TREE_OPERAND (record_variable, 0),
+					    NULL_TREE, field, no_fold_p);
+	  if (ref)
+	    return ref;
+	}
 
       /* Next, loop thru DECL_INTERNAL_P components if we haven't found
          the component in the first search. Doing this search in 2 steps

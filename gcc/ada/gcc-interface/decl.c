@@ -421,17 +421,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	}
 
       /* If we have an external constant that we are not defining, get the
-	 expression that is was defined to represent.  We may throw that
-	 expression away later if it is not a constant.  Do not retrieve the
-	 expression if it is an aggregate or allocator, because in complex
-	 instantiation contexts it may not be expanded  */
+	 expression that is was defined to represent.  We may throw it away
+	 later if it is not a constant.  But do not retrieve the expression
+	 if it is an allocator because the designated type might be dummy
+	 at this point.  */
       if (!definition
-	  && Present (Expression (Declaration_Node (gnat_entity)))
 	  && !No_Initialization (Declaration_Node (gnat_entity))
-	  && (Nkind (Expression (Declaration_Node (gnat_entity)))
-	      != N_Aggregate)
-	  && (Nkind (Expression (Declaration_Node (gnat_entity)))
-	      != N_Allocator))
+	  && Present (Expression (Declaration_Node (gnat_entity)))
+	  && Nkind (Expression (Declaration_Node (gnat_entity)))
+	     != N_Allocator)
 	gnu_expr = gnat_to_gnu (Expression (Declaration_Node (gnat_entity)));
 
       /* Ignore deferred constant definitions without address clause since
