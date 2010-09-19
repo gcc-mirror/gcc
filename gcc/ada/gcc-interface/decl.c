@@ -3558,7 +3558,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    gnu_type = TYPE_POINTER_TO (gnu_desig_type);
 	    if (!gnu_type)
 	      {
-		tree gnu_template_type = make_node (ENUMERAL_TYPE);
+		tree gnu_template_type = make_node (RECORD_TYPE);
 		tree gnu_ptr_template = build_pointer_type (gnu_template_type);
 		tree gnu_array_type = make_node (ENUMERAL_TYPE);
 		tree gnu_ptr_array = build_pointer_type (gnu_array_type);
