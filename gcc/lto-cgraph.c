@@ -1292,10 +1292,19 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
 
       len = lto_input_uleb128 (ib);
     }
-
+  /* AUX pointers should be all non-zero for nodes read from the stream.  */
+#ifdef ENABLE_CHECKING
+  FOR_EACH_VEC_ELT (cgraph_node_ptr, nodes, i, node)
+    gcc_assert (node->aux);
+#endif
   FOR_EACH_VEC_ELT (cgraph_node_ptr, nodes, i, node)
     {
       int ref = (int) (intptr_t) node->global.inlined_to;
+
+      /* We share declaration of builtins, so we may read same node twice.  */
+      if (!node->aux)
+	continue;
+      node->aux = NULL;
 
       /* Fixup inlined_to from reference to pointer.  */
       if (ref != LCC_NOT_FOUND)
@@ -1311,6 +1320,8 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
       else
 	node->same_comdat_group = NULL;
     }
+  FOR_EACH_VEC_ELT (cgraph_node_ptr, nodes, i, node)
+    node->aux = (void *)1;
   return nodes;
 }
 
@@ -1332,9 +1343,17 @@ input_varpool_1 (struct lto_file_decl_data *file_data,
 		     input_varpool_node (file_data, ib));
       len--;
     }
+#ifdef ENABLE_CHECKING
+  FOR_EACH_VEC_ELT (varpool_node_ptr, varpool, i, node)
+    gcc_assert (!node->aux);
+#endif
   FOR_EACH_VEC_ELT (varpool_node_ptr, varpool, i, node)
     {
       int ref = (int) (intptr_t) node->same_comdat_group;
+      /* We share declaration of builtins, so we may read same node twice.  */
+      if (node->aux)
+	continue;
+      node->aux = (void *)1;
 
       /* Fixup same_comdat_group from reference to pointer.  */
       if (ref != LCC_NOT_FOUND)
@@ -1342,6 +1361,8 @@ input_varpool_1 (struct lto_file_decl_data *file_data,
       else
 	node->same_comdat_group = NULL;
     }
+  FOR_EACH_VEC_ELT (varpool_node_ptr, varpool, i, node)
+    node->aux = NULL;
   return varpool;
 }
 

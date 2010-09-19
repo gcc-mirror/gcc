@@ -1,3 +1,8 @@
+2010-09-19  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/44246
+	* gcc.c-torture/compile/pr44246.c:New file.
+
 2010-09-19  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/45714
