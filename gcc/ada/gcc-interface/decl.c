@@ -3510,7 +3510,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    && TYPE_IS_DUMMY_P
 		       (TREE_TYPE (get_gnu_tree (gnat_desig_equiv))))
 		|| (!in_main_unit
-		    && defer_incomplete_level
+		    && defer_incomplete_level != 0
 		    && !present_gnu_tree (gnat_desig_equiv))
 		|| (in_main_unit
 		    && is_from_limited_with
@@ -3594,7 +3594,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    access type may be the full view of a private type.  Note
 		    that the unconstrained array case is handled above.  */
 		 || ((!in_main_unit || imported_p)
-		     && defer_incomplete_level
+		     && defer_incomplete_level != 0
 		     && !present_gnu_tree (gnat_desig_equiv)
 		     && (Is_Record_Type (gnat_desig_rep)
 			 || Is_Array_Type (gnat_desig_rep)))
@@ -3728,7 +3728,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       Besides, variants of this non-dummy type might have been created
 	       along the way.  update_pointer_to is expected to properly take
 	       care of those situations.  */
-	    if (!defer_incomplete_level && !is_from_limited_with_in_main_unit)
+	    if (defer_incomplete_level == 0
+		&& !is_from_limited_with_in_main_unit)
 	      update_pointer_to (TYPE_MAIN_VARIANT (gnu_old_desig_type),
 				 gnat_to_gnu_type (gnat_desig_equiv));
 	    else
@@ -5045,7 +5046,7 @@ rest_of_type_decl_compilation (tree decl)
 {
   /* We need to defer finalizing the type if incomplete types
      are being deferred or if they are being processed.  */
-  if (defer_incomplete_level || defer_finalize_level)
+  if (defer_incomplete_level != 0 || defer_finalize_level != 0)
     VEC_safe_push (tree, heap, defer_finalize_list, decl);
   else
     rest_of_type_decl_compilation_no_defer (decl);
