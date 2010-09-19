@@ -593,12 +593,14 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
   others_decl
     = create_var_decl (get_identifier ("OTHERS"),
 		       get_identifier ("__gnat_others_value"),
-		       integer_type_node, 0, 1, 0, 1, 1, 0, Empty);
+		       integer_type_node, NULL_TREE, true, false, true, false,
+		       NULL, Empty);
 
   all_others_decl
     = create_var_decl (get_identifier ("ALL_OTHERS"),
 		       get_identifier ("__gnat_all_others_value"),
-		       integer_type_node, 0, 1, 0, 1, 1, 0, Empty);
+		       integer_type_node, NULL_TREE, true, false, true, false,
+		       NULL, Empty);
 
   main_identifier_node = get_identifier ("main");
 
@@ -2788,8 +2790,8 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	  /* Create an explicit temporary holding the copy.  This ensures that
 	     its lifetime is as narrow as possible around a statement.  */
 	  gnu_temp = create_var_decl (create_tmp_var_name ("A"), NULL_TREE,
-				      TREE_TYPE (gnu_name), NULL_TREE, false,
-				      false, false, false, NULL, Empty);
+				      TREE_TYPE (gnu_name), NULL_TREE,
+				      false, false, false, false, NULL, Empty);
 	  DECL_ARTIFICIAL (gnu_temp) = 1;
 	  DECL_IGNORED_P (gnu_temp) = 1;
 
@@ -3210,8 +3212,8 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
       gnu_jmpsave_decl = create_var_decl (get_identifier ("JMPBUF_SAVE"),
 					  NULL_TREE, jmpbuf_ptr_type,
 					  build_call_0_expr (get_jmpbuf_decl),
-					  false, false, false, false, NULL,
-					  gnat_node);
+					  false, false, false, false,
+					  NULL, gnat_node);
       DECL_ARTIFICIAL (gnu_jmpsave_decl) = 1;
 
       /* The __builtin_setjmp receivers will immediately reinstall it.  Now
@@ -3220,8 +3222,8 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 	 it is uninitialized, although they will never be actually taken.  */
       TREE_NO_WARNING (gnu_jmpsave_decl) = 1;
       gnu_jmpbuf_decl = create_var_decl (get_identifier ("JMP_BUF"),
-					 NULL_TREE, jmpbuf_type,
-					 NULL_TREE, false, false, false, false,
+					 NULL_TREE, jmpbuf_type, NULL_TREE,
+					 false, false, false, false,
 					 NULL, gnat_node);
       DECL_ARTIFICIAL (gnu_jmpbuf_decl) = 1;
 
@@ -3273,12 +3275,11 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
       gnat_pushlevel ();
 
       VEC_safe_push (tree, gc, gnu_except_ptr_stack,
-		     create_var_decl (get_identifier ("EXCEPT_PTR"),
-				      NULL_TREE,
+		     create_var_decl (get_identifier ("EXCEPT_PTR"), NULL_TREE,
 				      build_pointer_type (except_type_node),
 				      build_call_0_expr (get_excptr_decl),
-							 false,
-				      false, false, false, NULL, gnat_node));
+				      false, false, false, false,
+				      NULL, gnat_node));
 
       /* Generate code for each handler. The N_Exception_Handler case does the
 	 real work and returns a COND_EXPR for each handler, which we chain
@@ -3537,8 +3538,8 @@ Exception_Handler_to_gnu_zcx (Node_Id gnat_node)
 		       1, integer_zero_node);
   gnu_incoming_exc_ptr = create_var_decl (get_identifier ("EXPTR"), NULL_TREE,
 					  ptr_type_node, gnu_current_exc_ptr,
-					  false, false, false, false, NULL,
-					  gnat_node);
+					  false, false, false, false,
+					  NULL, gnat_node);
 
   add_stmt_with_node (build_call_1_expr (begin_handler_decl,
 					 gnu_incoming_exc_ptr),
@@ -3997,13 +3998,16 @@ gnat_to_gnu (Node_Id gnat_node)
 	     is frozen.  */
 	  if (Present (Freeze_Node (gnat_temp)))
 	    {
-	      if ((Is_Public (gnat_temp) || global_bindings_p ())
-		  && !TREE_CONSTANT (gnu_expr))
+	      bool public_flag = Is_Public (gnat_temp);
+
+	      if (TREE_CONSTANT (gnu_expr))
+		;
+	      else if (public_flag || global_bindings_p ())
 		gnu_expr
 		  = create_var_decl (create_concat_name (gnat_temp, "init"),
-				     NULL_TREE, TREE_TYPE (gnu_expr),
-				     gnu_expr, false, Is_Public (gnat_temp),
-				     false, false, NULL, gnat_temp);
+				     NULL_TREE, TREE_TYPE (gnu_expr), gnu_expr,
+				     false, public_flag, false, false,
+				     NULL, gnat_temp);
 	      else
 		gnu_expr = gnat_save_expr (gnu_expr);
 

@@ -1,5 +1,19 @@
 2010-09-19  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Explicitly test _LEVEL
+	variables against zero in all cases.
+	(rest_of_type_decl_compilation): Likewise.
+	* gcc-interface/trans.c (gigi): Pass properly typed constants to
+	create_var_decl.
+	(call_to_gnu): Fix formatting.
+	(Handled_Sequence_Of_Statements_to_gnu): Likewise.
+	(Exception_Handler_to_gnu_zcx): Likewise.
+	(gnat_to_gnu) <N_Object_Declaration>: Short-circuit handling of
+	constant
+	expressions in presence of a freeze node.
+
+2010-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Constant>: Look into
 	expressions for external constants that are aggregates.
 	* gcc-interface/utils2.c (build_simple_component_ref): If the field
