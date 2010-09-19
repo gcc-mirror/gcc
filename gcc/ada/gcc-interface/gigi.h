@@ -259,6 +259,9 @@ extern void post_error_ne_tree_2 (const char *msg, Node_Id node, Entity_Id ent,
    if none.  */
 extern tree get_exception_label (char kind);
 
+/* Return the decl for the current elaboration procedure.  */
+extern tree get_elaboration_procedure (void);
+
 /* If nonzero, pretend we are allocating at global level.  */
 extern int force_global;
 
@@ -403,6 +406,7 @@ extern int global_bindings_p (void);
 /* Enter and exit a new binding level.  */
 extern void gnat_pushlevel (void);
 extern void gnat_poplevel (void);
+extern void gnat_zaplevel (void);
 
 /* Set SUPERCONTEXT of the BLOCK for the current binding level to FNDECL
    and point FNDECL to this BLOCK.  */

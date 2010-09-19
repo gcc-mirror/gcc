@@ -357,10 +357,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
      another compilation unit) public entities, show we are at global level
      for the purpose of computing scopes.  Don't do this for components or
      discriminants since the relevant test is whether or not the record is
-     being defined.  */
+     being defined.  Don't do this for constants either as we'll look into
+     their defining expression in the local context.  */
   if (!definition
       && kind != E_Component
       && kind != E_Discriminant
+      && kind != E_Constant
       && Is_Public (gnat_entity)
       && !Is_Statically_Allocated (gnat_entity))
     force_global++, this_global = true;
@@ -430,7 +432,28 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  && Present (Expression (Declaration_Node (gnat_entity)))
 	  && Nkind (Expression (Declaration_Node (gnat_entity)))
 	     != N_Allocator)
-	gnu_expr = gnat_to_gnu (Expression (Declaration_Node (gnat_entity)));
+	{
+	  bool went_into_elab_proc = false;
+
+	  /* The expression may contain N_Expression_With_Actions nodes and
+	     thus object declarations from other units.  In this case, even
+	     though the expression will eventually be discarded since not a
+	     constant, the declarations would be stuck either in the global
+	     varpool or in the current scope.  Therefore we force the local
+	     context and create a fake scope that we'll zap at the end.  */
+	  if (!current_function_decl)
+	    {
+	      current_function_decl = get_elaboration_procedure ();
+	      went_into_elab_proc = true;
+	    }
+	  gnat_pushlevel ();
+
+	  gnu_expr = gnat_to_gnu (Expression (Declaration_Node (gnat_entity)));
+
+	  gnat_zaplevel ();
+	  if (went_into_elab_proc)
+	    current_function_decl = NULL_TREE;
+	}
 
       /* Ignore deferred constant definitions without address clause since
 	 they are processed fully in the front-end.  If No_Initialization
@@ -926,10 +949,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		   that for the renaming.  At the global level, we can only do
 		   this if we know no SAVE_EXPRs need be made, because the
 		   expression we return might be used in arbitrary conditional
-		   branches so we must force the SAVE_EXPRs evaluation
-		   immediately and this requires a function context.  */
+		   branches so we must force the evaluation of the SAVE_EXPRs
+		   immediately and this requires a proper function context.
+		   Note that an external constant is at the global level.  */
 		if (!Materialize_Entity (gnat_entity)
-		    && (!global_bindings_p ()
+		    && (!((!definition && kind == E_Constant)
+			  || global_bindings_p ())
 			|| (staticp (gnu_expr)
 			    && !TREE_SIDE_EFFECTS (gnu_expr))))
 		  {
@@ -940,7 +965,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		      {
 			/* ??? No DECL_EXPR is created so we need to mark
 			   the expression manually lest it is shared.  */
-			if (global_bindings_p ())
+			if ((!definition && kind == E_Constant)
+			    || global_bindings_p ())
 			  MARK_VISITED (maybe_stable_expr);
 			gnu_decl = maybe_stable_expr;
 			save_gnu_tree (gnat_entity, gnu_decl, true);
@@ -1359,11 +1385,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  }
 
 	/* If this is a renaming pointer, attach the renamed object to it and
-	   register it if we are at top level.  */
+	   register it if we are at the global level.  Note that an external
+	   constant is at the global level.  */
 	if (TREE_CODE (gnu_decl) == VAR_DECL && renamed_obj)
 	  {
 	    SET_DECL_RENAMED_OBJECT (gnu_decl, renamed_obj);
-	    if (global_bindings_p ())
+	    if ((!definition && kind == E_Constant) || global_bindings_p ())
 	      {
 		DECL_RENAMING_GLOBAL_P (gnu_decl) = 1;
 		record_global_renaming_pointer (gnu_decl);
@@ -5977,7 +6004,7 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, tree gnu_name,
 					     IDENTIFIER_POINTER (gnu_name)),
 			 NULL_TREE, TREE_TYPE (gnu_expr), gnu_expr,
 			 !need_debug, Is_Public (gnat_entity),
-			 !definition, false, NULL, gnat_entity);
+			 !definition, expr_global, NULL, gnat_entity);
 
   /* We only need to use this variable if we are in global context since GCC
      can do the right thing in the local case.  */
