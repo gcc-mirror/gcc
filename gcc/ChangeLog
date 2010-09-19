@@ -1,3 +1,17 @@
+2010-09-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-protos.h (split_double_mode): New prototype.
+	(split_di, split_ti): Remove prototypes.
+	* config/i386/i386.c (split_double_mode): New function.
+	(split_di, split_ti): Remove.
+	(ix86_expand_branch): Use split_double_mode.
+	(ix86_split_to_parts): Ditto.
+	(ix86_split_ashl): Ditto.
+	(ix86_split_ashr): Ditto.
+	(ix86_split_lshr): Ditto.
+	(ix86_force_to_memory): Ditto.
+	* config/i386/i386.md: Use split_double_mode in double-mode splitters.
+
 2010-09-18  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/45453
@@ -16,7 +30,8 @@
 	(canonicalize_constructor_val): Use it.
 	(get_symbol_constant_value): Be reaqdy for canonicalize_constructor_val
 	returning NULL.
-	(gimple_fold_obj_type_ref_known_binfo): Use static_object_in_other_unit_p.
+	(gimple_fold_obj_type_ref_known_binfo): Use
+	static_object_in_other_unit_p.
 
 2010-09-18  Richard Guenther  <rguenther@suse.de>
 
@@ -35,8 +50,7 @@
 2010-09-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45709
-	* tree-inline.c (copy_phis_for_bb): Fixup new_edge when
-	we splitted it.
+	* tree-inline.c (copy_phis_for_bb): Fixup new_edge when we splitted it.
 
 2010-09-17  Sebastian Pop  <sebastian.pop@amd.com>
 
@@ -48,7 +62,9 @@
 
 2010-09-17  Sebastian Pop  <sebastian.pop@amd.com>
 
-	Revert commit: 2009-12-16  Ben Elliston  <bje@au.ibm.com>
+	Revert:
+	2009-12-16  Ben Elliston  <bje@au.ibm.com>
+
 	* tree-data-ref.c (dot_rdg_1): Added back.
 	(dot_rdg): Same.  Added "#if 0" around system call.
 
@@ -82,8 +98,7 @@
 	passed an invalid value, print an error instead of ICEing.
 	(valid_psw_flag): New.
 	(rx_expand_builtin): Call it for setpsw/clrpsw.
-	(rx_expand_builtin_mvtipl): Pass an integer to IN_RANGE, not an
-	RTX.
+	(rx_expand_builtin_mvtipl): Pass an integer to IN_RANGE, not an RTX.
 
 	* config/rx/rx.md (bitclr): Don't mark the output as early-clobber.
 	(bitclr_in_memory): Likewise.
@@ -159,8 +174,7 @@
 	(do_spec): Remove code concerning combine.
 	(main): Likewise.
 	* doc/invoke.texi: Remove traces of -combine.
-	* lto-wrapper.c (run_gcc): Do not pass -combine to the compiler
-	driver.
+	* lto-wrapper.c (run_gcc): Do not pass -combine to the compiler driver.
 
 2010-09-17  Richard Guenther  <rguenther@suse.de>
 
@@ -331,8 +345,7 @@
 	alpha_override_options.
 	* config/alpha/alpha-protos.h (override_options): Remove.
 	* config/alpha/alpha.c (override_options): Rename to
-	alpha_option_override.  Call SUBTARGET_OVERRIDE_OPTIONS.  Make
-	static.
+	alpha_option_override.  Call SUBTARGET_OVERRIDE_OPTIONS.  Make static.
 	(TARGET_OPTION_OVERRIDE): Define.
 	* config/alpha/alpha.h (OVERRIDE_OPTIONS): Remove.
 	* config/alpha/vms.h (SUBTARGET_OVERRIDE_OPTIONS): Define instead
@@ -347,14 +360,12 @@
 	(arm_override_options): Rename to arm_option_override.  Make
 	static.  Call SUBTARGET_OVERRIDE_OPTIONS.
 	* config/arm/arm.h (OVERRIDE_OPTIONS): Remove.
-	* config/arm/arm.md: Update comment referring to
-	arm_override_options.
+	* config/arm/arm.md: Update comment referring to arm_override_options.
 	* config/arm/vxworks.h (SUBTARGET_OVERRIDE_OPTIONS): Define
 	instead of OVERRIDE_OPTIONS.
 	* config/avr/avr-protos.h (avr_override_options): Remove.
 	* config/avr/avr.c (TARGET_OPTION_OVERRIDE): Define.
-	(avr_override_options): Rename to avr_option_override.  Make
-	static.
+	(avr_override_options): Rename to avr_option_override.  Make static.
 	* config/avr/avr.h (OVERRIDE_OPTIONS): Remove.
 	* config/bfin/bfin-protos.h (override_options): Remove (twice).
 	* config/bfin/bfin.c (override_options): Rename to
@@ -363,13 +374,11 @@
 	* config/bfin/bfin.h (OVERRIDE_OPTIONS): Remove.
 	* config/cris/cris-protos.h (cris_override_options): Remove.
 	* config/cris/cris.c (TARGET_OPTION_OVERRIDE): Define.
-	(cris_override_options): Rename to cris_option_override.  Make
-	static.
+	(cris_override_options): Rename to cris_option_override.  Make static.
 	* config/cris/cris.h (OVERRIDE_OPTIONS): Remove.
 	* config/frv/frv-protos.h (frv_override_options): Remove.
 	* config/frv/frv.c (TARGET_OPTION_OVERRIDE): Define.
-	(frv_override_options): Rename to frv_option_override.  Make
-	static.
+	(frv_override_options): Rename to frv_option_override.  Make static.
 	* config/frv/frv.h (OVERRIDE_OPTIONS): Remove.
 	* config/h8300/h8300-protos.h (h8300_init_once): Remove.
 	* config/h8300/h8300.c (h8300_init_once): Rename to
@@ -383,26 +392,22 @@
 	(ix86_option_override): New.
 	(TARGET_OPTION_OVERRIDE): Define.
 	* config/i386/i386.h (OVERRIDE_OPTION): Remove.
-	* config/i386/linux64.h (DEFAULT_PCC_STRUCT_RETURN): Update
-	comment.
+	* config/i386/linux64.h (DEFAULT_PCC_STRUCT_RETURN): Update comment.
 	* config/ia64/ia64.c (ia64_file_start): Update comment referring
 	to ia64_override_options.
 	* config/iq2000/iq2000-protos.h (override_options): Remove.
 	* config/iq2000/iq2000.c (TARGET_OPTION_OVERRIDE): Define.
-	(override_options): Rename to iq2000_option_override.  Make
-	static.
+	(override_options): Rename to iq2000_option_override.  Make static.
 	* config/iq2000/iq2000.h (OVERRIDE_OPTIONS): Remove.
 	* config/lm32/lm32-protos.h (lm32_override_options): Remove.
 	* config/lm32/lm32.c (TARGET_OPTION_OVERRIDE): Define.
-	(lm32_override_options): Rename to lm32_option_override.  Make
-	static.
+	(lm32_override_options): Rename to lm32_option_override.  Make static.
 	* config/lm32/lm32.h (OVERRIDE_OPTIONS): Remove.
 	* config/m32r/m32r.c (TARGET_OPTION_OVERRIDE): Define.
 	(m32r_option_override): New.
 	(m32r_init): Update comment.
 	* config/m32r/m32r.h (OVERRIDE_OPTIONS): Remove.
-	* config/m68hc11/m68hc11-protos.h (m68hc11_override_options):
-	Remove.
+	* config/m68hc11/m68hc11-protos.h (m68hc11_override_options): Remove.
 	* config/m68hc11/m68hc11.c (TARGET_OPTION_OVERRIDE): Define.
 	(m68hc11_override_options): Rename to m68hc11_option_override.
 	Make static.  Return void.
@@ -418,16 +423,13 @@
 	* config/mcore/mcore.h (OVERRIDE_OPTIONS): Remove.
 	* config/mep/mep-protos.h (mep_override_options): Remove.
 	* config/mep/mep.c (TARGET_OPTION_OVERRIDE): Define.
-	(mep_override_options): Rename to mep_option_override.  Make
-	static.
+	(mep_override_options): Rename to mep_option_override.  Make static.
 	* config/mep/mep.h (OVERRIDE_OPTIONS): Remove.
 	* config/mmix/mmix-protos.h (mmix_override_options): Remove.
 	* config/mmix/mmix.c (TARGET_OPTION_OVERRIDE): Define.
-	(mmix_override_options): Rename to mmix_option_override.  Make
-	static.
+	(mmix_override_options): Rename to mmix_option_override.  Make static.
 	* config/mmix/mmix.h (OVERRIDE_OPTIONS): Remove.
-	* config/mn10300/mn10300-protos.h (mn10300_override_options):
-	Remove.
+	* config/mn10300/mn10300-protos.h (mn10300_override_options): Remove.
 	* config/mn10300/mn10300.c (TARGET_OPTION_OVERRIDE): Define.
 	(mn10300_override_options): Rename to mn10300_option_override.
 	Make static.
@@ -444,16 +446,11 @@
 	Make static.  Update comment and definition of
 	TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE.
 	* config/picochip/picochip.h (OVERRIDE_OPTIONS): Remove.
-	* config/rs6000/aix43.h (SUBTARGET_OVERRIDE_OPTIONS): Update
-	comment.
-	* config/rs6000/aix51.h (SUBTARGET_OVERRIDE_OPTIONS): Update
-	comment.
-	* config/rs6000/aix52.h (SUBTARGET_OVERRIDE_OPTIONS): Update
-	comment.
-	* config/rs6000/aix53.h (SUBTARGET_OVERRIDE_OPTIONS): Update
-	comment.
-	* config/rs6000/aix61.h (SUBTARGET_OVERRIDE_OPTIONS): Update
-	comment.
+	* config/rs6000/aix43.h (SUBTARGET_OVERRIDE_OPTIONS): Update comment.
+	* config/rs6000/aix51.h (SUBTARGET_OVERRIDE_OPTIONS): Update comment.
+	* config/rs6000/aix52.h (SUBTARGET_OVERRIDE_OPTIONS): Update comment.
+	* config/rs6000/aix53.h (SUBTARGET_OVERRIDE_OPTIONS): Update comment.
+	* config/rs6000/aix61.h (SUBTARGET_OVERRIDE_OPTIONS): Update comment.
 	* config/rs6000/linux64.h (OPTION_TARGET_CPU_DEFAULT): Define
 	instead of OVERRIDE_OPTIONS.
 	* config/rs6000/rs6000-modes.def: Update comment referring to
@@ -466,8 +463,7 @@
 	(rs6000_option_override): New.
 	* config/rs6000/rs6000.h (OPTION_TARGET_CPU_DEFAULT): Define
 	instead of OVERRIDE_OPTIONS.
-	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Update
-	comment.
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Update comment.
 	* config/s390/s390-protos.h (override_options): Remove.
 	* config/s390/s390.c (override_options): Rename to
 	s390_option_override.  Make static.
@@ -510,8 +506,7 @@
 	* config/vxworks.h: Update comment referring to OVERRIDE_OPTIONS.
 	* config/xtensa/xtensa-protos.h (override_options): Remove.
 	* config/xtensa/xtensa.c (TARGET_OPTION_OVERRIDE): Define.
-	(override_options): Rename to xtensa_option_override.  Make
-	static.
+	(override_options): Rename to xtensa_option_override.  Make static.
 	* config/xtensa/xtensa.h (OVERRIDE_OPTIONS): Remove.
 
 2010-09-16  Richard Guenther  <rguenther@suse.de>
@@ -5486,7 +5481,7 @@
 	PR target/45142
 	* config/i386/sse.md (vec_set<mode>_0): Do not set mode attribute for
 	alternative 2.
-	(vec_set<moode>_0 splitter): Use SSEMODE4S mode iterator to also
+	(vec_set<mode>_0 splitter): Use SSEMODE4S mode iterator to also
 	split V4SI operands.
 
 2010-08-01  Anatoly Sokolov  <aesok@post.ru>
