@@ -1,5 +1,13 @@
 2010-09-19  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/const1.adb: Rename into...
+	* gnat.dg/constant1.adb: ...this.
+	* gnat.dg/constant2.adb: New test.
+	* gnat.dg/constant2_pkg1.ads: New helper.
+	* gnat.dg/constant2_pkg2.ad[sb]: Likewise.
+
+2010-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/specs/constant1.ads: New test.
 	* gnat.dg/specs/constant1_pkg.ads: New helper.
 

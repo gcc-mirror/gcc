@@ -411,6 +411,22 @@ gnat_poplevel (void)
   free_binding_level = level;
 }
 
+/* Exit a binding level and discard the associated BLOCK.  */
+
+void
+gnat_zaplevel (void)
+{
+  struct gnat_binding_level *level = current_binding_level;
+  tree block = level->block;
+
+  BLOCK_CHAIN (block) = free_block_chain;
+  free_block_chain = block;
+
+  /* Free this binding structure.  */
+  current_binding_level = level->chain;
+  level->chain = free_binding_level;
+  free_binding_level = level;
+}
 
 /* Records a ..._DECL node DECL as belonging to the current lexical scope
    and uses GNAT_NODE for location information and propagating flags.  */
@@ -441,13 +457,12 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
   add_decl_expr (decl, gnat_node);
 
   /* Put the declaration on the list.  The list of declarations is in reverse
-     order.  The list will be reversed later.  Put global variables in the
-     globals list and builtin functions in a dedicated list to speed up
-     further lookups.  Don't put TYPE_DECLs for UNCONSTRAINED_ARRAY_TYPE into
-     the list, as they will cause trouble with the debugger and aren't needed
-     anyway.  */
-  if (TREE_CODE (decl) != TYPE_DECL
-      || TREE_CODE (TREE_TYPE (decl)) != UNCONSTRAINED_ARRAY_TYPE)
+     order.  The list will be reversed later.  Put global declarations in the
+     globals list and local ones in the current block.  But skip TYPE_DECLs
+     for UNCONSTRAINED_ARRAY_TYPE in both cases, as they will cause trouble
+     with the debugger and aren't needed anyway.  */
+  if (!(TREE_CODE (decl) == TYPE_DECL
+        && TREE_CODE (TREE_TYPE (decl)) == UNCONSTRAINED_ARRAY_TYPE))
     {
       if (global_bindings_p ())
 	{
@@ -456,7 +471,7 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 	  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl))
 	    VEC_safe_push (tree, gc, builtin_decls, decl);
 	}
-      else
+      else if (!DECL_EXTERNAL (decl))
 	{
 	  tree block;
 	  /* Fake PARM_DECLs go into the topmost block of the function.  */
@@ -1371,12 +1386,11 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
       && !have_global_bss_p ())
     DECL_COMMON (var_decl) = 1;
 
-  /* If it's public and not external, always allocate storage for it.
-     At the global binding level we need to allocate static storage for the
-     variable if and only if it's not external. If we are not at the top level
-     we allocate automatic storage unless requested not to.  */
+  /* At the global binding level, we need to allocate static storage for the
+     variable if it isn't external.  Otherwise, we allocate automatic storage
+     unless requested not to.  */
   TREE_STATIC (var_decl)
-    = !extern_flag && (public_flag || static_flag || global_bindings_p ());
+    = !extern_flag && (static_flag || global_bindings_p ());
 
   /* For an external constant whose initializer is not absolute, do not emit
      debug info.  In DWARF this would mean a global relocation in a read-only

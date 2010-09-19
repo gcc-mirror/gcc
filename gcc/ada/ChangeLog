@@ -1,5 +1,28 @@
 2010-09-19  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (get_elaboration_procedure): Declare.
+	(gnat_zaplevel): Likewise.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not force global
+	binding level for an external constant.
+	<E_Constant>: Force the local context and create a fake scope before
+	translating the defining expression of an external constant.
+	<object>: Treat external constants at the global level explicitly for
+	renaming declarations.
+	(elaborate_expression_1): Force the variable to be static if the
+	expression is global.
+	* gcc-interface/trans.c (get_elaboration_procedure): New function.
+	(call_to_gnu): Use it.
+	(gnat_to_gnu): Likewise.
+	<N_Object_Declaration>: Do not test Is_Public to force the creation of
+	an initialization variable.
+	(add_decl_expr): Discard the statement if the declaration is external.
+	* gcc-interface/utils.c (gnat_pushdecl): Do not put the declaration in
+	the current block if it is external.
+	(create_var_decl_1): Do not test Is_Public to set TREE_STATIC.
+	(gnat_zaplevel): New global function.
+
+2010-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Explicitly test _LEVEL
 	variables against zero in all cases.
 	(rest_of_type_decl_compilation): Likewise.
