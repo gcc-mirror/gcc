@@ -2236,40 +2236,48 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
     = GGC_CNEW (struct language_function);
 
   begin_subprog_body (gnu_subprog_decl);
-  gnu_cico_list = TYPE_CI_CO_LIST (gnu_subprog_type);
 
-  /* If there are Out parameters, we need to ensure that the return statement
-     properly copies them out.  We do this by making a new block and converting
-     any inner return into a goto to a label at the end of the block.  */
-  push_stack (&gnu_return_label_stack, NULL_TREE,
-	      gnu_cico_list ? create_artificial_label (input_location)
-	      : NULL_TREE);
+  /* If there are In Out or Out parameters, we need to ensure that the return
+     statement properly copies them out.  We do this by making a new block and
+     converting any return into a goto to a label at the end of the block.  */
+  gnu_cico_list = TYPE_CI_CO_LIST (gnu_subprog_type);
+  if (gnu_cico_list)
+    {
+      push_stack (&gnu_return_label_stack, NULL_TREE,
+		  create_artificial_label (input_location));
+
+      start_stmt_group ();
+      gnat_pushlevel ();
+
+      /* See whether there are parameters for which we don't have a GCC tree
+	 yet.  These must be Out parameters.  Make a VAR_DECL for them and
+	 put it into TYPE_CI_CO_LIST, which must contain an empty entry too.
+	 We can match up the entries because TYPE_CI_CO_LIST is in the order
+	 of the parameters.  */
+      for (gnat_param = First_Formal_With_Extras (gnat_subprog_id);
+	   Present (gnat_param);
+	   gnat_param = Next_Formal_With_Extras (gnat_param))
+	if (!present_gnu_tree (gnat_param))
+	  {
+	    tree gnu_cico_entry = gnu_cico_list;
+
+	    /* Skip any entries that have been already filled in; they must
+	       correspond to In Out parameters.  */
+	    while (gnu_cico_entry && TREE_VALUE (gnu_cico_entry))
+	      gnu_cico_entry = TREE_CHAIN (gnu_cico_entry);
+
+	    /* Do any needed references for padded types.  */
+	    TREE_VALUE (gnu_cico_entry)
+	      = convert (TREE_TYPE (TREE_PURPOSE (gnu_cico_entry)),
+			 gnat_to_gnu_entity (gnat_param, NULL_TREE, 1));
+	  }
+    }
+  else
+    push_stack (&gnu_return_label_stack, NULL_TREE, NULL_TREE);
 
   /* Get a tree corresponding to the code for the subprogram.  */
   start_stmt_group ();
   gnat_pushlevel ();
-
-  /* See if there are any parameters for which we don't yet have GCC entities.
-     These must be for Out parameters for which we will be making VAR_DECL
-     nodes here.  Fill them in to TYPE_CI_CO_LIST, which must contain the empty
-     entry as well.  We can match up the entries because TYPE_CI_CO_LIST is in
-     the order of the parameters.  */
-  for (gnat_param = First_Formal_With_Extras (gnat_subprog_id);
-       Present (gnat_param);
-       gnat_param = Next_Formal_With_Extras (gnat_param))
-    if (!present_gnu_tree (gnat_param))
-      {
-	/* Skip any entries that have been already filled in; they must
-	   correspond to In Out parameters.  */
-	for (; gnu_cico_list && TREE_VALUE (gnu_cico_list);
-	     gnu_cico_list = TREE_CHAIN (gnu_cico_list))
-	  ;
-
-	/* Do any needed references for padded types.  */
-	TREE_VALUE (gnu_cico_list)
-	  = convert (TREE_TYPE (TREE_PURPOSE (gnu_cico_list)),
-		     gnat_to_gnu_entity (gnat_param, NULL_TREE, 1));
-      }
 
   /* On VMS, establish our condition handler to possibly turn a condition into
      the corresponding exception if the subprogram has a foreign convention or
@@ -2295,6 +2303,44 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   gnat_poplevel ();
   gnu_result = end_stmt_group ();
 
+  /* If we are dealing with a return from an Ada procedure with parameters
+     passed by copy-in/copy-out, we need to return a record containing the
+     final values of these parameters.  If the list contains only one entry,
+     return just that entry though.
+
+     For a full description of the copy-in/copy-out parameter mechanism, see
+     the part of the gnat_to_gnu_entity routine dealing with the translation
+     of subprograms.
+
+     We need to make a block that contains the definition of that label and
+     the copying of the return value.  It first contains the function, then
+     the label and copy statement.  */
+  if (gnu_cico_list)
+    {
+      tree gnu_retval;
+
+      add_stmt (gnu_result);
+      add_stmt (build1 (LABEL_EXPR, void_type_node,
+			TREE_VALUE (gnu_return_label_stack)));
+
+      if (list_length (gnu_cico_list) == 1)
+	gnu_retval = TREE_VALUE (gnu_cico_list);
+      else
+	gnu_retval = gnat_build_constructor (TREE_TYPE (gnu_subprog_type),
+					     gnu_cico_list);
+
+      if (DECL_P (gnu_retval) && DECL_BY_REF_P (gnu_retval))
+	gnu_retval = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_retval);
+
+      add_stmt_with_node
+	(build_return_expr (DECL_RESULT (gnu_subprog_decl), gnu_retval),
+	 End_Label (Handled_Statement_Sequence (gnat_node)));
+      gnat_poplevel ();
+      gnu_result = end_stmt_group ();
+    }
+
+  pop_stack (&gnu_return_label_stack);
+
   /* If we populated the parameter attributes cache, we need to make sure
      that the cached expressions are evaluated on all possible paths.  */
   cache = DECL_STRUCT_FUNCTION (gnu_subprog_decl)->language->parm_attr_cache;
@@ -2318,38 +2364,6 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
       add_stmt (gnu_result);
       gnu_result = end_stmt_group ();
     }
-
-  /* If we made a special return label, we need to make a block that contains
-     the definition of that label and the copying to the return value.  That
-     block first contains the function, then the label and copy statement.  */
-  if (TREE_VALUE (gnu_return_label_stack))
-    {
-      tree gnu_retval;
-
-      start_stmt_group ();
-      gnat_pushlevel ();
-      add_stmt (gnu_result);
-      add_stmt (build1 (LABEL_EXPR, void_type_node,
-			TREE_VALUE (gnu_return_label_stack)));
-
-      gnu_cico_list = TYPE_CI_CO_LIST (gnu_subprog_type);
-      if (list_length (gnu_cico_list) == 1)
-	gnu_retval = TREE_VALUE (gnu_cico_list);
-      else
-	gnu_retval = gnat_build_constructor (TREE_TYPE (gnu_subprog_type),
-					     gnu_cico_list);
-
-      if (DECL_P (gnu_retval) && DECL_BY_REF_P (gnu_retval))
-	gnu_retval = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_retval);
-
-      add_stmt_with_node
-	(build_return_expr (DECL_RESULT (gnu_subprog_decl), gnu_retval),
-	 End_Label (Handled_Statement_Sequence (gnat_node)));
-      gnat_poplevel ();
-      gnu_result = end_stmt_group ();
-    }
-
-  pop_stack (&gnu_return_label_stack);
 
   /* Set the end location.  */
   Sloc_to_locus
