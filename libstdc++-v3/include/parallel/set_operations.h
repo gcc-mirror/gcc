@@ -103,11 +103,11 @@ namespace __gnu_parallel
       }
 
       _DifferenceType
-      __count(_IIter __a, _IIter __b, _IIter __c, _IIter d) const
+      __count(_IIter __a, _IIter __b, _IIter __c, _IIter __d) const
       {
 	_DifferenceType __counter = 0;
 
-	while (__a != __b && __c != d)
+	while (__a != __b && __c != __d)
           {
             if (_M_comp(*__a, *__c))
               {
@@ -126,12 +126,12 @@ namespace __gnu_parallel
               }
           }
 
-	return __counter + (__b - __a) + (d - __c);
+	return __counter + (__b - __a) + (__d - __c);
       }
 
       _OutputIterator
-      __first_empty(_IIter __c, _IIter d, _OutputIterator __out) const
-      { return std::copy(__c, d, __out); }
+      __first_empty(_IIter __c, _IIter __d, _OutputIterator __out) const
+      { return std::copy(__c, __d, __out); }
 
       _OutputIterator
       __second_empty(_IIter __a, _IIter __b, _OutputIterator __out) const
@@ -153,10 +153,10 @@ namespace __gnu_parallel
       _Compare _M_comp;
 
       _OutputIterator
-      _M_invoke(_IIter __a, _IIter __b, _IIter __c, _IIter d,
+      _M_invoke(_IIter __a, _IIter __b, _IIter __c, _IIter __d,
 		_OutputIterator __r) const
       {
-	while (__a != __b && __c != d)
+	while (__a != __b && __c != __d)
           {
             if (_M_comp(*__a, *__c))
               {
@@ -177,11 +177,11 @@ namespace __gnu_parallel
 
       _DifferenceType
       __count(_IIter __a, _IIter __b,
-	      _IIter __c, _IIter d) const
+	      _IIter __c, _IIter __d) const
       {
 	_DifferenceType __counter = 0;
 
-	while (__a != __b && __c != d)
+	while (__a != __b && __c != __d)
           {
             if (_M_comp(*__a, *__c))
               {

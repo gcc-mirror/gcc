@@ -148,7 +148,7 @@ namespace __gnu_profile
     __stack() const
     { return _M_stack; }
     
-    virtual void __write(FILE* f) const = 0;
+    virtual void __write(FILE* __f) const = 0;
 
   protected:
     __stack_t _M_stack;

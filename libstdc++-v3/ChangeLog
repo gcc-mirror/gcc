@@ -1,3 +1,14 @@
+2010-09-19  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* include/ext/throw_allocator.h
+	(hash<__gnu_cxx::throw_value_limit>::operator()): Uglify local.
+	(hash<__gnu_cxx::throw_value_random>::operator()): Likewise.
+	* include/parallel/set_operations.h (__symmetric_difference_func):
+	Uglify remaining arguments to __count, __first_empty, _M_invoke.
+	(__difference_func): Likewise for __count.
+	* include/profile/impl/profiler_node.h
+	(__object_info_base::__write): Uglify parameter.
+
 2010-09-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* src/hash_bytes.cc: Compile load_bytes and shift_mix only when
