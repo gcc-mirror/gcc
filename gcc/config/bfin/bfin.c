@@ -2543,6 +2543,29 @@ bfin_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 
   return NO_REGS;
 }
+
+/* Implement TARGET_CLASS_LIKELY_SPILLED_P.  */
+
+static bool
+bfin_class_likely_spilled_p (reg_class_t rclass)
+{
+  switch (rclass)
+    {
+      case PREGS_CLOBBERED:
+      case PROLOGUE_REGS:
+      case P0REGS:
+      case D0REGS:
+      case D1REGS:
+      case D2REGS:
+      case CCREGS:
+        return true;
+
+      default:
+        break;
+    }
+
+  return false;
+}
 
 /* Implement TARGET_HANDLE_OPTION.  */
 
@@ -6634,6 +6657,9 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD bfin_secondary_reload
+
+#undef TARGET_CLASS_LIKELY_SPILLED_P
+#define TARGET_CLASS_LIKELY_SPILLED_P bfin_class_likely_spilled_p
 
 #undef TARGET_DELEGITIMIZE_ADDRESS
 #define TARGET_DELEGITIMIZE_ADDRESS bfin_delegitimize_address

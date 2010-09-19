@@ -1,3 +1,9 @@
+2010-09-19  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/bfin/bfin.h (CLASS_LIKELY_SPILLED_P): Remove.
+	* config/bfin/bfin.c (TARGET_CLASS_LIKELY_SPILLED_P): Define.
+	(bfin_class_likely_spilled_p): New function
+
 2010-09-19  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/45714

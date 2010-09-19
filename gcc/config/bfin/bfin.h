@@ -750,15 +750,6 @@ enum reg_class
    registers.  */
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
-#define CLASS_LIKELY_SPILLED_P(CLASS) \
-    ((CLASS) == PREGS_CLOBBERED \
-     || (CLASS) == PROLOGUE_REGS \
-     || (CLASS) == P0REGS \
-     || (CLASS) == D0REGS \
-     || (CLASS) == D1REGS \
-     || (CLASS) == D2REGS \
-     || (CLASS) == CCREGS)
-
 /* Do not allow to store a value in REG_CC for any mode */
 /* Do not allow to store value in pregs if mode is not SI*/
 #define HARD_REGNO_MODE_OK(REGNO, MODE) hard_regno_mode_ok((REGNO), (MODE))
