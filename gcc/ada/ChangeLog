@@ -1,5 +1,10 @@
 2010-09-19  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Enumeration_Type>: Do
+	not generate debug info for individual enumerators.
+
+2010-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Access_Type>: Use record
 	type instead of enumeral type as the dummy type built for the template
 	type of fat pointers.
