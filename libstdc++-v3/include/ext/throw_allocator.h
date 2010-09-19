@@ -737,8 +737,8 @@ namespace std
       size_t
       operator()(const __gnu_cxx::throw_value_limit& __val) const
       {
-	std::hash<std::size_t> h;
-	size_t __result = h(__val._M_i);
+	std::hash<std::size_t> __h;
+	size_t __result = __h(__val._M_i);
 	return __result;
       }
     };
@@ -751,8 +751,8 @@ namespace std
       size_t
       operator()(const __gnu_cxx::throw_value_random& __val) const
       {
-	std::hash<std::size_t> h;
-	size_t __result = h(__val._M_i);
+	std::hash<std::size_t> __h;
+	size_t __result = __h(__val._M_i);
 	return __result;
       }
     };
