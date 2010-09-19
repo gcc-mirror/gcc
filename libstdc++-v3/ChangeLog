@@ -1,3 +1,8 @@
+2010-09-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* src/hash_bytes.cc: Compile load_bytes and shift_mix only when
+	__SIZEOF_SIZE_T__ == 8.
+
 2010-09-17  Luc Hermitte  <hermitte@free.fr>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
