@@ -13248,15 +13248,33 @@ i386_asm_output_addr_const_extra (FILE *file, rtx x)
   return true;
 }
 
-/* Split one or more DImode RTL references into pairs of SImode
+/* Split one or more double-mode RTL references into pairs of half-mode
    references.  The RTL can be REG, offsettable MEM, integer constant, or
-   CONST_DOUBLE.  "operands" is a pointer to an array of DImode RTL to
+   CONST_DOUBLE.  "operands" is a pointer to an array of double-mode RTLs to
    split and "num" is its length.  lo_half and hi_half are output arrays
    that parallel "operands".  */
 
 void
-split_di (rtx operands[], int num, rtx lo_half[], rtx hi_half[])
+split_double_mode (enum machine_mode mode, rtx operands[],
+		   int num, rtx lo_half[], rtx hi_half[])
 {
+  enum machine_mode half_mode;
+  unsigned int byte;
+
+  switch (mode)
+    {
+    case TImode:
+      half_mode = DImode;
+      break;
+    case DImode:
+      half_mode = SImode;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  byte = GET_MODE_SIZE (half_mode);
+
   while (num--)
     {
       rtx op = operands[num];
@@ -13265,44 +13283,17 @@ split_di (rtx operands[], int num, rtx lo_half[], rtx hi_half[])
          but we still have to handle it.  */
       if (MEM_P (op))
 	{
-	  lo_half[num] = adjust_address (op, SImode, 0);
-	  hi_half[num] = adjust_address (op, SImode, 4);
+	  lo_half[num] = adjust_address (op, half_mode, 0);
+	  hi_half[num] = adjust_address (op, half_mode, byte);
 	}
       else
 	{
-	  lo_half[num] = simplify_gen_subreg (SImode, op,
+	  lo_half[num] = simplify_gen_subreg (half_mode, op,
 					      GET_MODE (op) == VOIDmode
-					      ? DImode : GET_MODE (op), 0);
-	  hi_half[num] = simplify_gen_subreg (SImode, op,
+					      ? mode : GET_MODE (op), 0);
+	  hi_half[num] = simplify_gen_subreg (half_mode, op,
 					      GET_MODE (op) == VOIDmode
-					      ? DImode : GET_MODE (op), 4);
-	}
-    }
-}
-/* Split one or more TImode RTL references into pairs of DImode
-   references.  The RTL can be REG, offsettable MEM, integer constant, or
-   CONST_DOUBLE.  "operands" is a pointer to an array of DImode RTL to
-   split and "num" is its length.  lo_half and hi_half are output arrays
-   that parallel "operands".  */
-
-void
-split_ti (rtx operands[], int num, rtx lo_half[], rtx hi_half[])
-{
-  while (num--)
-    {
-      rtx op = operands[num];
-
-      /* simplify_subreg refuse to split volatile memory addresses, but we
-         still have to handle it.  */
-      if (MEM_P (op))
-	{
-	  lo_half[num] = adjust_address (op, DImode, 0);
-	  hi_half[num] = adjust_address (op, DImode, 8);
-	}
-      else
-	{
-	  lo_half[num] = simplify_gen_subreg (DImode, op, TImode, 0);
-	  hi_half[num] = simplify_gen_subreg (DImode, op, TImode, 8);
+					      ? mode : GET_MODE (op), byte);
 	}
     }
 }
@@ -16273,9 +16264,10 @@ ix86_expand_compare (enum rtx_code code, rtx op0, rtx op1)
 void
 ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
 {
+  enum machine_mode mode = GET_MODE (op0);
   rtx tmp;
 
-  switch (GET_MODE (op0))
+  switch (mode)
     {
     case SFmode:
     case DFmode:
@@ -16306,18 +16298,11 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
 	    tmp = op0, op0 = op1, op1 = tmp;
 	    code = swap_condition (code);
 	  }
-	if (GET_MODE (op0) == DImode)
-	  {
-	    split_di (&op0, 1, lo+0, hi+0);
-	    split_di (&op1, 1, lo+1, hi+1);
-	    submode = SImode;
-	  }
-	else
-	  {
-	    split_ti (&op0, 1, lo+0, hi+0);
-	    split_ti (&op1, 1, lo+1, hi+1);
-	    submode = DImode;
-	  }
+
+	split_double_mode (mode, &op0, 1, lo+0, hi+0);
+	split_double_mode (mode, &op1, 1, lo+1, hi+1);
+
+	submode = mode == DImode ? SImode : DImode;
 
 	/* When comparing for equality, we can use (hi0^hi1)|(lo0^lo1) to
 	   avoid two branches.  This costs one extra insn, so disable when
@@ -16474,7 +16459,7 @@ ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
   enum machine_mode mode =
     GET_MODE (op0) != VOIDmode ? GET_MODE (op0) : GET_MODE (op1);
 
-  /* Do not handle DImode compares that go through special path.  */
+  /* Do not handle double-mode compares that go through special path.  */
   if (mode == (TARGET_64BIT ? TImode : DImode))
     return false;
 
@@ -17686,8 +17671,8 @@ ix86_expand_int_addcc (rtx operands[])
 }
 
 
-/* Split operands 0 and 1 into SImode parts.  Similar to split_di, but
-   works for floating pointer parameters and nonoffsetable memories.
+/* Split operands 0 and 1 into half-mode parts.  Similar to split_double_mode,
+   but works for floating pointer parameters and nonoffsetable memories.
    For pushes, it returns just stack offsets; the values will be saved
    in the right order.  Maximally three parts are generated.  */
 
@@ -17740,7 +17725,7 @@ ix86_split_to_parts (rtx operand, rtx *parts, enum machine_mode mode)
   if (!TARGET_64BIT)
     {
       if (mode == DImode)
-	split_di (&operand, 1, &parts[0], &parts[1]);
+	split_double_mode (mode, &operand, 1, &parts[0], &parts[1]);
       else
 	{
 	  int i;
@@ -17791,7 +17776,7 @@ ix86_split_to_parts (rtx operand, rtx *parts, enum machine_mode mode)
   else
     {
       if (mode == TImode)
-	split_ti (&operand, 1, &parts[0], &parts[1]);
+	split_double_mode (mode, &operand, 1, &parts[0], &parts[1]);
       if (mode == XFmode || mode == TFmode)
 	{
 	  enum machine_mode upper_mode = mode==XFmode ? SImode : DImode;
@@ -17862,7 +17847,7 @@ ix86_split_long_move (rtx operands[])
   /* The DFmode expanders may ask us to move double.
      For 64bit target this is single move.  By hiding the fact
      here we simplify i386.md splitters.  */
-  if (GET_MODE_SIZE (GET_MODE (operands[0])) == 8 && TARGET_64BIT)
+  if (TARGET_64BIT && GET_MODE_SIZE (GET_MODE (operands[0])) == 8)
     {
       /* Optimize constant pool reference to immediates.  This is used by
 	 fp moves, that force all constants to memory to allow combining.  */
@@ -18104,7 +18089,7 @@ ix86_split_ashl (rtx *operands, rtx scratch, enum machine_mode mode)
 
   if (CONST_INT_P (operands[2]))
     {
-      (mode == DImode ? split_di : split_ti) (operands, 2, low, high);
+      split_double_mode (mode, operands, 2, low, high);
       count = INTVAL (operands[2]) & (single_width * 2 - 1);
 
       if (count >= single_width)
@@ -18127,7 +18112,7 @@ ix86_split_ashl (rtx *operands, rtx scratch, enum machine_mode mode)
       return;
     }
 
-  (mode == DImode ? split_di : split_ti) (operands, 1, low, high);
+  split_double_mode (mode, operands, 1, low, high);
 
   if (operands[1] == const1_rtx)
     {
@@ -18204,7 +18189,7 @@ ix86_split_ashl (rtx *operands, rtx scratch, enum machine_mode mode)
       if (!rtx_equal_p (operands[0], operands[1]))
 	emit_move_insn (operands[0], operands[1]);
 
-      (mode == DImode ? split_di : split_ti) (operands, 1, low, high);
+      split_double_mode (mode, operands, 1, low, high);
       emit_insn ((mode == DImode
 		  ? gen_x86_shld
 		  : gen_x86_64_shld) (high[0], low[0], operands[2]));
@@ -18237,7 +18222,7 @@ ix86_split_ashr (rtx *operands, rtx scratch, enum machine_mode mode)
 
   if (CONST_INT_P (operands[2]))
     {
-      (mode == DImode ? split_di : split_ti) (operands, 2, low, high);
+      split_double_mode (mode, operands, 2, low, high);
       count = INTVAL (operands[2]) & (single_width * 2 - 1);
 
       if (count == single_width * 2 - 1)
@@ -18281,7 +18266,7 @@ ix86_split_ashr (rtx *operands, rtx scratch, enum machine_mode mode)
       if (!rtx_equal_p (operands[0], operands[1]))
 	emit_move_insn (operands[0], operands[1]);
 
-      (mode == DImode ? split_di : split_ti) (operands, 1, low, high);
+      split_double_mode (mode, operands, 1, low, high);
 
       emit_insn ((mode == DImode
 		  ? gen_x86_shrd
@@ -18318,7 +18303,7 @@ ix86_split_lshr (rtx *operands, rtx scratch, enum machine_mode mode)
 
   if (CONST_INT_P (operands[2]))
     {
-      (mode == DImode ? split_di : split_ti) (operands, 2, low, high);
+      split_double_mode (mode, operands, 2, low, high);
       count = INTVAL (operands[2]) & (single_width * 2 - 1);
 
       if (count >= single_width)
@@ -18349,7 +18334,7 @@ ix86_split_lshr (rtx *operands, rtx scratch, enum machine_mode mode)
       if (!rtx_equal_p (operands[0], operands[1]))
 	emit_move_insn (operands[0], operands[1]);
 
-      (mode == DImode ? split_di : split_ti) (operands, 1, low, high);
+      split_double_mode (mode, operands, 1, low, high);
 
       emit_insn ((mode == DImode
 		  ? gen_x86_shrd
@@ -26144,7 +26129,7 @@ ix86_force_to_memory (enum machine_mode mode, rtx operand)
 	case DImode:
 	  {
 	    rtx operands[2];
-	    split_di (&operand, 1, operands, operands + 1);
+	    split_double_mode (mode, &operand, 1, operands, operands + 1);
 	    emit_insn (
 			gen_rtx_SET (VOIDmode,
 				     gen_rtx_MEM (SImode,
