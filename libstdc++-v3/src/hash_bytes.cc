@@ -45,6 +45,7 @@ namespace
     return result;
   }
 
+#if __SIZEOF_SIZE_T__ == 8
   // Loads n bytes, where 1 <= n < 8.
   inline std::size_t
   load_bytes(const char* p, int n)
@@ -60,6 +61,7 @@ namespace
   inline std::size_t
   shift_mix(std::size_t v)
   { return v ^ (v >> 47);}
+#endif
 }
 
 namespace std
