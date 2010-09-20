@@ -1,3 +1,11 @@
+2010-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/45695
+	* combine.c (try_combine): Don't try to swap the two patterns, if the
+	chosen order is not possible, just give up.  For HAVE_cc0 targets,
+	check if XVECEXP (newpat, 0, 0) doesn't use REGs or MEMs set by insns
+	in between i2 and i3.
+
 2010-09-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/42775
