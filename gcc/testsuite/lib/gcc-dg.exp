@@ -461,8 +461,21 @@ proc cleanup-ipa-dump { suffix } {
 }
 
 # Remove a stack usage file for the current test.
-proc cleanup-stack-usage { args } {
-  cleanup-dump "su"
+proc cleanup-stack-usage { } {
+    # This assumes that we are two frames down from dg-test or some other proc
+    # that stores the filename of the testcase in a local variable "name".
+    # A cleaner solution would require a new DejaGnu release.
+    upvar 2 name testcase
+    # The name might include a list of options; extract the file name.
+    set testcase [lindex $testcase 0]
+    remove-build-file "[file rootname [file tail $testcase]].su"
+
+    # Clean up files for additional source files.
+    if [info exists additional_sources] {
+	foreach srcfile $additional_sources {
+	    remove-build-file "[file rootname [file tail $srcfile]].su"
+	}
+    }
 }
 
 # Remove all dump files with the provided suffix.

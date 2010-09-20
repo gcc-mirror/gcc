@@ -200,5 +200,5 @@ end
 ! { # Commented out as failing at -O0: dg-final { scan-tree-dump-times "_gfortran_abort" 32 "optimized" } }
 !
 ! cleanup
-! { #dg-final { cleanup-tree-dump "original" } }
+! { dg-final { cleanup-tree-dump "original" } }
 ! { dg-final { cleanup-tree-dump "optimized" } }
