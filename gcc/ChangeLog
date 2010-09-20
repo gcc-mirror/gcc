@@ -1,3 +1,12 @@
+2010-09-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_expand_ashl_const): Rewrite using
+	indirect functions.
+	(ix86_split_ashl): Ditto.
+	(ix86_split_ashr): Ditto.
+	(ix86_split_lshr): Ditto.
+	(ix86_adjust_counter): Ditto.
+
 2010-09-20  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	* c-family/c-common.h (constant_string_class): Documented with
@@ -17,7 +26,7 @@
 	(gen_inheritance_die): Assume DW_ACCESS_public as the default
 	for dwarf_version > 2 and parent other than DW_TAG_class_type.
 
-2010-09-20  Rafael Carre   <rafael.carre@gmail.com>
+2010-09-20  Rafael Carre  <rafael.carre@gmail.com>
 
 	PR target/45726
 	* arm.md (arm_movt): Only enable on machines with MOVT.
@@ -59,7 +68,7 @@
 	too and work for automatic vars.
 	(varpool_finalize_decl): Use const_value_known_p.
 
-2010-09-20  Rafael Carre   <rafael.carre@gmail.com>
+2010-09-20  Rafael Carre  <rafael.carre@gmail.com>
 
 	PR target/45726
 	* arm.md (arm_movtas_ze): Only enable on machine with MOVT.
