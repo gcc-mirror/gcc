@@ -1,5 +1,10 @@
 2010-09-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (any_cfis_emitted): New static variable.
+	(add_fde_cfi): Set it.
+	(dwarf2out_frame_debug): Clear it before processing,
+	if it is set afterwards, flush any queued reg saves.
+
 	PR debug/45124
 	* dwarf2out.c (add_accessibility_attribute): Assume
 	DW_ACCESS_private as the default for dwarf_version > 2
