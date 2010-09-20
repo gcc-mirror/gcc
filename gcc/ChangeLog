@@ -1,3 +1,17 @@
+2010-09-20  Jie Zhang  <jie@codesourcery.com>
+
+	* config/arm/arm.c (arm_address_offset_is_imm): New.
+	(arm_early_store_addr_dep): New.
+	(arm_early_load_addr_dep): New.
+	* config/arm/arm-protos.h (arm_early_store_addr_dep): Declare.
+	(arm_early_load_addr_dep): Declare.
+	(arm_address_offset_is_imm): Declare.
+	* config/arm/cortex-m4.md: New file.
+	* config/arm/cortex-m4-fpu.md: New file.
+	* config/arm/arm.md: Include cortex-m4.md and cortex-m4-fpu.md.
+	(attr generic_sched): Exclude cortexm4.
+	(attr generic_vfp): Exclude cortexm4.
+
 2010-09-20  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/45704
