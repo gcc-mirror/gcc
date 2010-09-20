@@ -1,3 +1,10 @@
+2010-09-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR libstdc++/45711
+	* src/Makefile.am (stamp-debug): Also adjust possibly-relative
+	file names in MKDIR_P, and, for consistency, also top_build_prefix.
+	* src/Makefile.in: Regenerate.
+
 2010-09-19  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* include/ext/throw_allocator.h
