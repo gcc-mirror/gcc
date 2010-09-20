@@ -1342,9 +1342,7 @@ get_base_constructor (tree base, tree *offset)
   switch (TREE_CODE (base))
     {
     case VAR_DECL:
-      if (!TREE_READONLY (base)
-	  || ((TREE_STATIC (base) || DECL_EXTERNAL (base))
-	      && !varpool_get_node (base)->const_value_known))
+      if (!const_value_known_p (base))
 	return NULL_TREE;
 
       /* Fallthru.  */

@@ -813,8 +813,7 @@ compute_ltrans_boundary (struct lto_out_decl_state *state,
       if (DECL_INITIAL (vnode->decl)
 	  && !lto_varpool_encoder_encode_initializer_p (varpool_encoder,
 						        vnode)
-	  && (DECL_IN_CONSTANT_POOL (vnode->decl)
-	      || vnode->const_value_known))
+	  && const_value_known_p (vnode->decl))
 	{
 	  lto_set_varpool_encoder_encode_initializer (varpool_encoder, vnode);
 	  add_references (encoder, varpool_encoder, &vnode->ref_list);

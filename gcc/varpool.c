@@ -359,21 +359,42 @@ decide_is_variable_needed (struct varpool_node *node, tree decl)
   return true;
 }
 
-/* Return if NODE is constant and its initial value is known (so we can do
-   constant folding).  The decision depends on whole program decisions
-   and can not be recomputed at ltrans stage for variables from other
-   partitions.  For this reason the new value should be always combined
-   with the previous knowledge.  */
+/* Return if DECL is constant and its initial value is known (so we can do
+   constant folding using DECL_INITIAL (decl)).  */
 
 bool
-varpool_decide_const_value_known (struct varpool_node *node)
+const_value_known_p (tree decl)
 {
-  tree decl = node->decl;
+  struct varpool_node *vnode;
 
-  gcc_assert (TREE_STATIC (decl) || DECL_EXTERNAL (decl));
+  if (TREE_CODE (decl) == PARM_DECL
+      || TREE_CODE (decl) == RESULT_DECL)
+    return false;
+
+  if (TREE_CODE (decl) == CONST_DECL
+      || DECL_IN_CONSTANT_POOL (decl))
+    return true;
+
   gcc_assert (TREE_CODE (decl) == VAR_DECL);
+
   if (!TREE_READONLY (decl))
     return false;
+
+  /* Gimplifier takes away constructors of local vars  */
+  if (!TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
+    return DECL_INITIAL (decl) != NULL;
+
+  gcc_assert (TREE_STATIC (decl) || DECL_EXTERNAL (decl));
+
+  /* In WHOPR mode we can put variable into one partition
+     and make it external in the other partition.  In this
+     case we still know the value, but it can't be determined
+     from DECL flags.  For this reason we keep const_value_known
+     flag in varpool nodes.  */
+  if ((vnode = varpool_get_node (decl))
+      && vnode->const_value_known)
+    return true;
+
   /* Variables declared 'const' without an initializer
      have zero as the initializer if they may not be
      overridden at link or run time.  */
@@ -423,7 +444,7 @@ varpool_finalize_decl (tree decl)
      there.  */
   else if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
     varpool_mark_needed_node (node);
-  node->const_value_known |= varpool_decide_const_value_known (node);
+  node->const_value_known |= const_value_known_p (node->decl);
   if (cgraph_global_info_ready)
     varpool_assemble_pending_decls ();
 }

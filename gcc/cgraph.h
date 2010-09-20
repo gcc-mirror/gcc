@@ -728,7 +728,7 @@ void varpool_empty_needed_queue (void);
 bool varpool_extra_name_alias (tree, tree);
 const char * varpool_node_name (struct varpool_node *node);
 void varpool_reset_queue (void);
-bool varpool_decide_const_value_known (struct varpool_node *node);
+bool const_value_known_p (tree);
 
 /* Walk all reachable static variables.  */
 #define FOR_EACH_STATIC_VARIABLE(node) \

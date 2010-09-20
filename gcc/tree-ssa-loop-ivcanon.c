@@ -162,10 +162,8 @@ constant_after_peeling (tree op, gimple stmt, struct loop *loop)
       /* First make fast look if we see constant array inside.  */
       while (handled_component_p (base))
 	base = TREE_OPERAND (base, 0);
-      if ((DECL_P (base)
-      	   && TREE_STATIC (base)
-	   && TREE_READONLY (base)
-	   && varpool_get_node (base)->const_value_known)
+      if ((DECL_P (base) == VAR_DECL
+	   && const_value_known_p (base))
 	  || CONSTANT_CLASS_P (base))
 	{
 	  /* If so, see if we understand all the indices.  */
