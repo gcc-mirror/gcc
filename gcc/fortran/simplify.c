@@ -235,7 +235,8 @@ is_constant_array_expr (gfc_expr *e)
 
   for (c = gfc_constructor_first (e->value.constructor);
        c; c = gfc_constructor_next (c))
-    if (c->expr->expr_type != EXPR_CONSTANT)
+    if (c->expr->expr_type != EXPR_CONSTANT
+	  && c->expr->expr_type != EXPR_STRUCTURE)
       return false;
 
   return true;
@@ -4550,6 +4551,8 @@ gfc_simplify_pack (gfc_expr *array, gfc_expr *mask, gfc_expr *vector)
     return NULL;
 
   result = gfc_get_array_expr (array->ts.type, array->ts.kind, &array->where);
+  if (array->ts.type == BT_DERIVED)
+    result->ts.u.derived = array->ts.u.derived;
 
   array_ctor = gfc_constructor_first (array->value.constructor);
   vector_ctor = vector
@@ -4982,6 +4985,8 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
 
   result = gfc_get_array_expr (source->ts.type, source->ts.kind,
 			       &source->where);
+  if (source->ts.type == BT_DERIVED)
+    result->ts.u.derived = source->ts.u.derived;
   result->rank = rank;
   result->shape = gfc_get_shape (rank);
   for (i = 0; i < rank; i++)
@@ -5732,6 +5737,8 @@ gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_exp
 
       result = gfc_get_array_expr (source->ts.type, source->ts.kind,
 				   &source->where);
+      if (source->ts.type == BT_DERIVED)
+	result->ts.u.derived = source->ts.u.derived;
       result->rank = 1;
       result->shape = gfc_get_shape (result->rank);
       mpz_init_set_si (result->shape[0], ncopies);
@@ -5750,6 +5757,8 @@ gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_exp
 
       result = gfc_get_array_expr (source->ts.type, source->ts.kind,
 				   &source->where);
+      if (source->ts.type == BT_DERIVED)
+	result->ts.u.derived = source->ts.u.derived;
       result->rank = source->rank + 1;
       result->shape = gfc_get_shape (result->rank);
 
@@ -6038,6 +6047,8 @@ gfc_simplify_transpose (gfc_expr *matrix)
 
   if (matrix->ts.type == BT_CHARACTER)
     result->ts.u.cl = matrix->ts.u.cl;
+  else if (matrix->ts.type == BT_DERIVED)
+    result->ts.u.derived = matrix->ts.u.derived;
 
   matrix_rows = mpz_get_si (matrix->shape[0]);
   matrix_cols = mpz_get_si (matrix->shape[1]);
@@ -6341,6 +6352,8 @@ gfc_simplify_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
 
   result = gfc_get_array_expr (vector->ts.type, vector->ts.kind,
 			       &vector->where);
+  if (vector->ts.type == BT_DERIVED)
+    result->ts.u.derived = vector->ts.u.derived;
   result->rank = mask->rank;
   result->shape = gfc_copy_shape (mask->shape, mask->rank);
 
