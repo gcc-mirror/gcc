@@ -1,3 +1,7 @@
+2010-09-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* g++.dg/tree-ssa/pr45605.C: Add "\\".
+
 2010-09-20  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/45704
