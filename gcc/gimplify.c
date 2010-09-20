@@ -4200,9 +4200,18 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 	     This kind of code arises in C++ when an object is bound
 	     to a const reference, and if "x" is a TARGET_EXPR we want
 	     to take advantage of the optimization below.  */
+	    bool volatile_p = TREE_THIS_VOLATILE (*from_p);
 	    tree t = gimple_fold_indirect_ref_rhs (TREE_OPERAND (*from_p, 0));
 	    if (t)
 	      {
+		if (TREE_THIS_VOLATILE (t) != volatile_p)
+		  {
+		    if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration)
+		      t = build_simple_mem_ref_loc (EXPR_LOCATION (*from_p),
+						    build_fold_addr_expr (t));
+		    if (REFERENCE_CLASS_P (t))
+		      TREE_THIS_VOLATILE (t) = volatile_p;
+		  }
 		*from_p = t;
 		ret = GS_OK;
 		changed = true;
