@@ -405,8 +405,9 @@ struct constraint_expr
 typedef struct constraint_expr ce_s;
 DEF_VEC_O(ce_s);
 DEF_VEC_ALLOC_O(ce_s, heap);
-static void get_constraint_for_1 (tree, VEC(ce_s, heap) **, bool);
+static void get_constraint_for_1 (tree, VEC(ce_s, heap) **, bool, bool);
 static void get_constraint_for (tree, VEC(ce_s, heap) **);
+static void get_constraint_for_rhs (tree, VEC(ce_s, heap) **);
 static void do_deref (VEC (ce_s, heap) **);
 
 /* Our set constraints are made up of two constraint expressions, one
@@ -2841,7 +2842,7 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
      does not change the points-to solution.  */
   if (!use_field_sensitive)
     {
-      get_constraint_for (ptr, results);
+      get_constraint_for_rhs (ptr, results);
       return;
     }
 
@@ -2861,7 +2862,7 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
 	rhsoffset = UNKNOWN_OFFSET;
     }
 
-  get_constraint_for (ptr, results);
+  get_constraint_for_rhs (ptr, results);
   if (rhsoffset == 0)
     return;
 
@@ -2939,11 +2940,13 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
 
 
 /* Given a COMPONENT_REF T, return the constraint_expr vector for it.
-   If address_p is true the result will be taken its address of.  */
+   If address_p is true the result will be taken its address of.
+   If lhs_p is true then the constraint expression is assumed to be used
+   as the lhs.  */
 
 static void
 get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results,
-				  bool address_p)
+				  bool address_p, bool lhs_p)
 {
   tree orig_t = t;
   HOST_WIDE_INT bitsize = -1;
@@ -2970,11 +2973,34 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results,
       return;
     }
 
+  /* Handle type-punning through unions.  If we are extracting a pointer
+     from a union via a possibly type-punning access that pointer
+     points to anything, similar to a conversion of an integer to
+     a pointer.  */
+  if (!lhs_p)
+    {
+      tree u;
+      for (u = t;
+	   TREE_CODE (u) == COMPONENT_REF || TREE_CODE (u) == ARRAY_REF;
+	   u = TREE_OPERAND (u, 0))
+	if (TREE_CODE (u) == COMPONENT_REF
+	    && TREE_CODE (TREE_TYPE (TREE_OPERAND (u, 0))) == UNION_TYPE)
+	  {
+	    struct constraint_expr temp;
+
+	    temp.offset = 0;
+	    temp.var = anything_id;
+	    temp.type = ADDRESSOF;
+	    VEC_safe_push (ce_s, heap, *results, &temp);
+	    return;
+	  }
+    }
+
   t = get_ref_base_and_extent (t, &bitpos, &bitsize, &bitmaxsize);
 
   /* Pretend to take the address of the base, we'll take care of
      adding the required subset of sub-fields below.  */
-  get_constraint_for_1 (t, results, true);
+  get_constraint_for_1 (t, results, true, lhs_p);
   gcc_assert (VEC_length (ce_s, *results) == 1);
   result = VEC_last (ce_s, *results);
 
@@ -3096,8 +3122,6 @@ do_deref (VEC (ce_s, heap) **constraints)
     }
 }
 
-static void get_constraint_for_1 (tree, VEC (ce_s, heap) **, bool);
-
 /* Given a tree T, return the constraint expression for taking the
    address of it.  */
 
@@ -3107,7 +3131,7 @@ get_constraint_for_address_of (tree t, VEC (ce_s, heap) **results)
   struct constraint_expr *c;
   unsigned int i;
 
-  get_constraint_for_1 (t, results, true);
+  get_constraint_for_1 (t, results, true, true);
 
   for (i = 0; VEC_iterate (ce_s, *results, i, c); i++)
     {
@@ -3121,7 +3145,8 @@ get_constraint_for_address_of (tree t, VEC (ce_s, heap) **results)
 /* Given a tree T, return the constraint expression for it.  */
 
 static void
-get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p)
+get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p,
+		      bool lhs_p)
 {
   struct constraint_expr temp;
 
@@ -3181,17 +3206,19 @@ get_constraint_for_1 (tree t, VEC (ce_s, heap) **results, bool address_p)
 	  {
 	  case INDIRECT_REF:
 	    {
-	      get_constraint_for_1 (TREE_OPERAND (t, 0), results, address_p);
+	      get_constraint_for_1 (TREE_OPERAND (t, 0), results, address_p,
+				    lhs_p);
 	      do_deref (results);
 	      return;
 	    }
 	  case ARRAY_REF:
 	  case ARRAY_RANGE_REF:
 	  case COMPONENT_REF:
-	    get_constraint_for_component_ref (t, results, address_p);
+	    get_constraint_for_component_ref (t, results, address_p, lhs_p);
 	    return;
 	  case VIEW_CONVERT_EXPR:
-	    get_constraint_for_1 (TREE_OPERAND (t, 0), results, address_p);
+	    get_constraint_for_1 (TREE_OPERAND (t, 0), results, address_p,
+				  lhs_p);
 	    return;
 	  /* We are missing handling for TARGET_MEM_REF here.  */
 	  default:;
@@ -3233,7 +3260,18 @@ get_constraint_for (tree t, VEC (ce_s, heap) **results)
 {
   gcc_assert (VEC_length (ce_s, *results) == 0);
 
-  get_constraint_for_1 (t, results, false);
+  get_constraint_for_1 (t, results, false, true);
+}
+
+/* Given a gimple tree T, return the constraint expression vector for it
+   to be used as the rhs of a constraint.  */
+
+static void
+get_constraint_for_rhs (tree t, VEC (ce_s, heap) **results)
+{
+  gcc_assert (VEC_length (ce_s, *results) == 0);
+
+  get_constraint_for_1 (t, results, false, false);
 }
 
 
@@ -3275,7 +3313,7 @@ do_structure_copy (tree lhsop, tree rhsop)
   unsigned j;
 
   get_constraint_for (lhsop, &lhsc);
-  get_constraint_for (rhsop, &rhsc);
+  get_constraint_for_rhs (rhsop, &rhsc);
   lhsp = VEC_index (ce_s, lhsc, 0);
   rhsp = VEC_index (ce_s, rhsc, 0);
   if (lhsp->type == DEREF
@@ -3333,7 +3371,7 @@ make_constraint_to (unsigned id, tree op)
   includes.offset = 0;
   includes.type = SCALAR;
 
-  get_constraint_for (op, &rhsc);
+  get_constraint_for_rhs (op, &rhsc);
   for (j = 0; VEC_iterate (ce_s, rhsc, j, c); j++)
     process_constraint (new_constraint (includes, *c));
   VEC_free (ce_s, heap, rhsc);
@@ -3559,7 +3597,7 @@ handle_const_call (gimple stmt, VEC(ce_s, heap) **results)
 	  VEC(ce_s, heap) *argc = NULL;
 	  unsigned i;
 	  struct constraint_expr *argp;
-	  get_constraint_for (arg, &argc);
+	  get_constraint_for_rhs (arg, &argc);
 	  for (i = 0; VEC_iterate (ce_s, argc, i, argp); ++i)
 	    VEC_safe_push (ce_s, heap, *results, argp);
 	  VEC_free(ce_s, heap, argc);
@@ -3649,7 +3687,7 @@ find_func_aliases (gimple origt)
 	      tree strippedrhs = PHI_ARG_DEF (t, i);
 
 	      STRIP_NOPS (strippedrhs);
-	      get_constraint_for (gimple_phi_arg_def (t, i), &rhsc);
+	      get_constraint_for_rhs (gimple_phi_arg_def (t, i), &rhsc);
 
 	      for (j = 0; VEC_iterate (ce_s, lhsc, j, c); j++)
 		{
@@ -3843,7 +3881,7 @@ find_func_aliases (gimple origt)
 	      struct constraint_expr *rhsp;
 	      tree arg = gimple_call_arg (t, j);
 
-	      get_constraint_for (arg, &rhsc);
+	      get_constraint_for_rhs (arg, &rhsc);
 	      if (TREE_CODE (decl) != FUNCTION_DECL)
 		{
 		  lhs.type = DEREF;
@@ -3914,7 +3952,7 @@ find_func_aliases (gimple origt)
 		    && !(POINTER_TYPE_P (gimple_expr_type (t))
 			 && !POINTER_TYPE_P (TREE_TYPE (rhsop))))
 		   || gimple_assign_single_p (t))
-	    get_constraint_for (rhsop, &rhsc);
+	    get_constraint_for_rhs (rhsop, &rhsc);
 	  else
 	    {
 	      temp.type = ADDRESSOF;
