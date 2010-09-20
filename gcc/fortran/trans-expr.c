@@ -3169,27 +3169,16 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
       if (gfc_option.rtcheck & GFC_RTCHECK_POINTER && e != NULL)
         {
-	  symbol_attribute *attr;
+	  symbol_attribute attr;
 	  char *msg;
 	  tree cond;
 
-	  if (e->expr_type == EXPR_VARIABLE)
-	    attr = &e->symtree->n.sym->attr;
-	  else if (e->expr_type == EXPR_FUNCTION)
-	    {
-	      /* For intrinsic functions, the gfc_attr are not available.  */
-	      if (e->symtree->n.sym->attr.generic && e->value.function.isym)
-		goto end_pointer_check;
-
-	      if (e->symtree->n.sym->attr.generic)
-		attr = &e->value.function.esym->attr;
-	      else
-		attr = &e->symtree->n.sym->result->attr;
-	    }
+	  if (e->expr_type == EXPR_VARIABLE || e->expr_type == EXPR_FUNCTION)
+	    attr = gfc_expr_attr (e);
 	  else
 	    goto end_pointer_check;
 
-          if (attr->optional)
+          if (attr.optional)
 	    {
               /* If the actual argument is an optional pointer/allocatable and
 		 the formal argument takes an nonpointer optional value,
@@ -3198,16 +3187,16 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		 See Fortran 2003, Section 12.4.1.6 item (7)+(8).  */
 	      tree present, null_ptr, type;
 
-	      if (attr->allocatable
+	      if (attr.allocatable
 		  && (fsym == NULL || !fsym->attr.allocatable))
 		asprintf (&msg, "Allocatable actual argument '%s' is not "
 			  "allocated or not present", e->symtree->n.sym->name);
-	      else if (attr->pointer
+	      else if (attr.pointer
 		       && (fsym == NULL || !fsym->attr.pointer))
 		asprintf (&msg, "Pointer actual argument '%s' is not "
 			  "associated or not present",
 			  e->symtree->n.sym->name);
-	      else if (attr->proc_pointer
+	      else if (attr.proc_pointer
 		       && (fsym == NULL || !fsym->attr.proc_pointer))
 		asprintf (&msg, "Proc-pointer actual argument '%s' is not "
 			  "associated or not present",
@@ -3231,15 +3220,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	    }
           else
 	    {
-	      if (attr->allocatable
+	      if (attr.allocatable
 		  && (fsym == NULL || !fsym->attr.allocatable))
 		asprintf (&msg, "Allocatable actual argument '%s' is not "
 		      "allocated", e->symtree->n.sym->name);
-	      else if (attr->pointer
+	      else if (attr.pointer
 		       && (fsym == NULL || !fsym->attr.pointer))
 		asprintf (&msg, "Pointer actual argument '%s' is not "
 		      "associated", e->symtree->n.sym->name);
-	      else if (attr->proc_pointer
+	      else if (attr.proc_pointer
 		       && (fsym == NULL || !fsym->attr.proc_pointer))
 		asprintf (&msg, "Proc-pointer actual argument '%s' is not "
 		      "associated", e->symtree->n.sym->name);

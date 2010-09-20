@@ -1,3 +1,9 @@
+2010-09-20  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/45438
+	* trans-expr.c (gfc_conv_procedure_call): Fix pointer checking for
+	TBPs, PPCs and pointer/allocatable components.
+
 2010-09-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/45081
