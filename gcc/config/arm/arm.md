@@ -11191,7 +11191,7 @@
                    (const_int 16)
                    (const_int 16))
         (match_operand:SI 1 "const_int_operand" ""))]
-  "TARGET_32BIT"
+  "arm_arch_thumb2"
   "movt%?\t%0, %c1"
  [(set_attr "predicable" "yes")
    (set_attr "length" "4")]
