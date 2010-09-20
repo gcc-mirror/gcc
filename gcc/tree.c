@@ -6123,9 +6123,6 @@ type_hash_canon (unsigned int hashcode, tree type)
      being passed.  */
   gcc_assert (TYPE_MAIN_VARIANT (type) == type);
 
-  if (!lang_hooks.types.hash_types)
-    return type;
-
   /* See if the type is in the hash table already.  If so, return it.
      Otherwise, add the type.  */
   t1 = type_hash_lookup (hashcode, type);
@@ -7093,21 +7090,20 @@ build_nonstandard_integer_type (unsigned HOST_WIDE_INT precision,
   ret = itype;
   if (host_integerp (TYPE_MAX_VALUE (itype), 1))
     ret = type_hash_canon (tree_low_cst (TYPE_MAX_VALUE (itype), 1), itype);
-  if (precision <= MAX_INT_CACHED_PREC && lang_hooks.types.hash_types)
+  if (precision <= MAX_INT_CACHED_PREC)
     nonstandard_integer_type_cache[precision + unsignedp] = ret;
 
   return ret;
 }
 
-/* Create a range of some discrete type TYPE (an INTEGER_TYPE,
-   ENUMERAL_TYPE or BOOLEAN_TYPE), with low bound LOWVAL and
-   high bound HIGHVAL.  */
+/* Create a range of some discrete type TYPE (an INTEGER_TYPE, ENUMERAL_TYPE
+   or BOOLEAN_TYPE) with low bound LOWVAL and high bound HIGHVAL.  If SHARED
+   is true, reuse such a type that has already been constructed.  */
 
-tree
-build_range_type (tree type, tree lowval, tree highval)
+static tree
+build_range_type_1 (tree type, tree lowval, tree highval, bool shared)
 {
   tree itype = make_node (INTEGER_TYPE);
-  hashval_t hash;
 
   TREE_TYPE (itype) = type;
 
@@ -7131,10 +7127,32 @@ build_range_type (tree type, tree lowval, tree highval)
       SET_TYPE_STRUCTURAL_EQUALITY (itype);
       return itype;
     }
-  hash = iterative_hash_expr (TYPE_MIN_VALUE (itype), 0);
-  hash = iterative_hash_expr (TYPE_MAX_VALUE (itype), hash);
-  hash = iterative_hash_hashval_t (TYPE_HASH (type), hash);
-  return type_hash_canon (hash, itype);
+
+  if (shared)
+    {
+      hashval_t hash = iterative_hash_expr (TYPE_MIN_VALUE (itype), 0);
+      hash = iterative_hash_expr (TYPE_MAX_VALUE (itype), hash);
+      hash = iterative_hash_hashval_t (TYPE_HASH (type), hash);
+      itype = type_hash_canon (hash, itype);
+    }
+
+  return itype;
+}
+
+/* Wrapper around build_range_type_1 with SHARED set to true.  */
+
+tree
+build_range_type (tree type, tree lowval, tree highval)
+{
+  return build_range_type_1 (type, lowval, highval, true);
+}
+
+/* Wrapper around build_range_type_1 with SHARED set to false.  */
+
+tree
+build_nonshared_range_type (tree type, tree lowval, tree highval)
+{
+  return build_range_type_1 (type, lowval, highval, false);
 }
 
 /* Create a type of integers to be the TYPE_DOMAIN of an ARRAY_TYPE.
@@ -7205,13 +7223,12 @@ subrange_type_for_debug_p (const_tree type, tree *lowval, tree *highval)
 
 /* Construct, lay out and return the type of arrays of elements with ELT_TYPE
    and number of elements specified by the range of values of INDEX_TYPE.
-   If such a type has already been constructed, reuse it.  */
+   If SHARED is true, reuse such a type that has already been constructed.  */
 
-tree
-build_array_type (tree elt_type, tree index_type)
+static tree
+build_array_type_1 (tree elt_type, tree index_type, bool shared)
 {
   tree t;
-  hashval_t hashcode = 0;
 
   if (TREE_CODE (elt_type) == FUNCTION_TYPE)
     {
@@ -7231,10 +7248,13 @@ build_array_type (tree elt_type, tree index_type)
   if (TYPE_STRUCTURAL_EQUALITY_P (t))
     return t;
 
-  hashcode = iterative_hash_object (TYPE_HASH (elt_type), hashcode);
-  if (index_type)
-    hashcode = iterative_hash_object (TYPE_HASH (index_type), hashcode);
-  t = type_hash_canon (hashcode, t);
+  if (shared)
+    {
+      hashval_t hashcode = iterative_hash_object (TYPE_HASH (elt_type), 0);
+      if (index_type)
+	hashcode = iterative_hash_object (TYPE_HASH (index_type), hashcode);
+      t = type_hash_canon (hashcode, t);
+    }
 
   if (TYPE_CANONICAL (t) == t)
     {
@@ -7244,11 +7264,29 @@ build_array_type (tree elt_type, tree index_type)
       else if (TYPE_CANONICAL (elt_type) != elt_type
 	       || (index_type && TYPE_CANONICAL (index_type) != index_type))
 	TYPE_CANONICAL (t)
-	  = build_array_type (TYPE_CANONICAL (elt_type),
-			      index_type ? TYPE_CANONICAL (index_type) : NULL);
+	  = build_array_type_1 (TYPE_CANONICAL (elt_type),
+				index_type
+				? TYPE_CANONICAL (index_type) : NULL_TREE,
+				shared);
     }
 
   return t;
+}
+
+/* Wrapper around build_array_type_1 with SHARED set to true.  */
+
+tree
+build_array_type (tree elt_type, tree index_type)
+{
+  return build_array_type_1 (elt_type, index_type, true);
+}
+
+/* Wrapper around build_array_type_1 with SHARED set to false.  */
+
+tree
+build_nonshared_array_type (tree elt_type, tree index_type)
+{
+  return build_array_type_1 (elt_type, index_type, false);
 }
 
 /* Recursively examines the array elements of TYPE, until a non-array

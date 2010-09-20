@@ -178,7 +178,6 @@ extern tree lhd_make_node (enum tree_code);
 #define LANG_HOOKS_GET_ARRAY_DESCR_INFO	NULL
 #define LANG_HOOKS_GET_SUBRANGE_BOUNDS	NULL
 #define LANG_HOOKS_RECONSTRUCT_COMPLEX_TYPE reconstruct_complex_type
-#define LANG_HOOKS_HASH_TYPES		true
 
 #define LANG_HOOKS_FOR_TYPES_INITIALIZER { \
   LANG_HOOKS_MAKE_TYPE, \
@@ -195,8 +194,7 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_TYPE_HASH_EQ, \
   LANG_HOOKS_GET_ARRAY_DESCR_INFO, \
   LANG_HOOKS_GET_SUBRANGE_BOUNDS, \
-  LANG_HOOKS_RECONSTRUCT_COMPLEX_TYPE, \
-  LANG_HOOKS_HASH_TYPES \
+  LANG_HOOKS_RECONSTRUCT_COMPLEX_TYPE \
 }
 
 /* Declaration hooks.  */

@@ -1106,10 +1106,8 @@ create_subprog_type (tree return_type, tree param_decl_list, tree cico_list,
 
   /* TYPE may have been shared since GCC hashes types.  If it has a different
      CICO_LIST, make a copy.  Likewise for the various flags.  */
-  if (TYPE_CI_CO_LIST (type) != cico_list
-      || TYPE_RETURN_UNCONSTRAINED_P (type) != return_unconstrained_p
-      || TYPE_RETURN_BY_DIRECT_REF_P (type) != return_by_direct_ref_p
-      || TREE_ADDRESSABLE (type) != return_by_invisi_ref_p)
+  if (!fntype_same_flags_p (type, cico_list, return_unconstrained_p,
+			    return_by_direct_ref_p, return_by_invisi_ref_p))
     {
       type = copy_type (type);
       TYPE_CI_CO_LIST (type) = cico_list;
@@ -1165,17 +1163,9 @@ tree
 create_index_type (tree min, tree max, tree index, Node_Id gnat_node)
 {
   /* First build a type for the desired range.  */
-  tree type = build_range_type (sizetype, min, max);
+  tree type = build_nonshared_range_type (sizetype, min, max);
 
-  /* If this type has the TYPE_INDEX_TYPE we want, return it.  */
-  if (TYPE_INDEX_TYPE (type) == index)
-    return type;
-
-  /* Otherwise, if TYPE_INDEX_TYPE is set, make a copy.  Note that we have
-     no way of sharing these types, but that's only a small hole.  */
-  if (TYPE_INDEX_TYPE (type))
-    type = copy_type (type);
-
+  /* Then set the index type.  */
   SET_TYPE_INDEX_TYPE (type, index);
   create_type_decl (NULL_TREE, type, NULL, true, false, gnat_node);
 
@@ -1194,26 +1184,12 @@ create_range_type (tree type, tree min, tree max)
     type = sizetype;
 
   /* First build a type with the base range.  */
-  range_type
-    = build_range_type (type, TYPE_MIN_VALUE (type), TYPE_MAX_VALUE (type));
-
-  min = convert (type, min);
-  max = convert (type, max);
-
-  /* If this type has the TYPE_RM_{MIN,MAX}_VALUE we want, return it.  */
-  if (TYPE_RM_MIN_VALUE (range_type)
-      && TYPE_RM_MAX_VALUE (range_type)
-      && operand_equal_p (TYPE_RM_MIN_VALUE (range_type), min, 0)
-      && operand_equal_p (TYPE_RM_MAX_VALUE (range_type), max, 0))
-    return range_type;
-
-  /* Otherwise, if TYPE_RM_{MIN,MAX}_VALUE is set, make a copy.  */
-  if (TYPE_RM_MIN_VALUE (range_type) || TYPE_RM_MAX_VALUE (range_type))
-    range_type = copy_type (range_type);
+  range_type = build_nonshared_range_type (type, TYPE_MIN_VALUE (type),
+						 TYPE_MAX_VALUE (type));
 
   /* Then set the actual range.  */
-  SET_TYPE_RM_MIN_VALUE (range_type, min);
-  SET_TYPE_RM_MAX_VALUE (range_type, max);
+  SET_TYPE_RM_MIN_VALUE (range_type, convert (type, min));
+  SET_TYPE_RM_MAX_VALUE (range_type, convert (type, max));
 
   return range_type;
 }
@@ -2120,6 +2096,18 @@ gnat_types_compatible_p (tree t1, tree t2)
     return 1;
 
   return 0;
+}
+
+/* Return true if T, a FUNCTION_TYPE, has the specified list of flags.  */
+
+bool
+fntype_same_flags_p (const_tree t, tree cico_list, bool return_unconstrained_p,
+		     bool return_by_direct_ref_p, bool return_by_invisi_ref_p)
+{
+  return TYPE_CI_CO_LIST (t) == cico_list
+	 && TYPE_RETURN_UNCONSTRAINED_P (t) == return_unconstrained_p
+	 && TYPE_RETURN_BY_DIRECT_REF_P (t) == return_by_direct_ref_p
+	 && TREE_ADDRESSABLE (t) == return_by_invisi_ref_p;
 }
 
 /* EXP is an expression for the size of an object.  If this size contains

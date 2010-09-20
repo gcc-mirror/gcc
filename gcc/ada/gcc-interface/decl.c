@@ -2070,7 +2070,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* Now build the array type.  */
 	for (index = ndim - 1; index >= 0; index--)
 	  {
-	    tem = build_array_type (tem, gnu_index_types[index]);
+	    tem = build_nonshared_array_type (tem, gnu_index_types[index]);
 	    TYPE_MULTI_ARRAY_P (tem) = (index > 0);
 	    if (array_type_has_nonaliased_component (tem, gnat_entity))
 	      TYPE_NONALIASED_COMPONENT (tem) = 1;
@@ -2403,7 +2403,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  /* Now build the array type.  */
 	  for (index = ndim - 1; index >= 0; index --)
 	    {
-	      gnu_type = build_array_type (gnu_type, gnu_index_types[index]);
+	      gnu_type = build_nonshared_array_type (gnu_type,
+						     gnu_index_types[index]);
 	      TYPE_MULTI_ARRAY_P (gnu_type) = (index > 0);
 	      if (array_type_has_nonaliased_component (gnu_type, gnat_entity))
 		TYPE_NONALIASED_COMPONENT (gnu_type) = 1;
@@ -2649,8 +2650,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			       gnat_entity);
 
 	gnu_type
-	  = build_array_type (gnat_to_gnu_type (Component_Type (gnat_entity)),
-			      gnu_index_type);
+	  = build_nonshared_array_type (gnat_to_gnu_type
+					(Component_Type (gnat_entity)),
+					gnu_index_type);
 	if (array_type_has_nonaliased_component (gnu_type, gnat_entity))
 	  TYPE_NONALIASED_COMPONENT (gnu_type) = 1;
 	relate_alias_sets (gnu_type, gnu_string_type, ALIAS_SET_COPY);
@@ -8610,7 +8612,7 @@ substitute_in_type (tree t, tree f, tree r)
 	if (component == TREE_TYPE (t) && domain == TYPE_DOMAIN (t))
 	  return t;
 
-	nt = build_array_type (component, domain);
+	nt = build_nonshared_array_type (component, domain);
 	TYPE_ALIGN (nt) = TYPE_ALIGN (t);
 	TYPE_USER_ALIGN (nt) = TYPE_USER_ALIGN (t);
 	SET_TYPE_MODE (nt, TYPE_MODE (t));

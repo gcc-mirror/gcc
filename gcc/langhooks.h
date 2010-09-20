@@ -138,11 +138,6 @@ struct lang_hooks_for_types
      return values from functions.  The argument TYPE is the top of the
      chain, and BOTTOM is the new type which we will point to.  */
   tree (*reconstruct_complex_type) (tree, tree);
-
-  /* Nonzero if types that are identical are to be hashed so that only
-     one copy is kept.  If a language requires unique types for each
-     user-specified type, such as Ada, this should be set to TRUE.  */
-  bool hash_types;
 };
 
 /* Language hooks related to decls and the symbol table.  */
