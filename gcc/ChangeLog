@@ -1,3 +1,10 @@
+2010-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/45695
+	* combine.c (try_combine): When splitting a two set pattern,
+	make sure the pattern which will be put into i2 doesn't use REGs
+	or MEMs set by insns in between i2 and i3.
+
 2010-09-19  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/44246
