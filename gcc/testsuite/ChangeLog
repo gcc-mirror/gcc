@@ -1,3 +1,7 @@
+2010-09-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/gcc-dg.exp (clanup-stack-usage): Really remove .su files.
+
 2010-09-20  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45438
@@ -8281,7 +8285,7 @@
 	* gfortran.dg/read_x_eof.f90: New test.
 	* gfortran.dg/read_x_past.f: Update test.
 
-2010-03-10  Jan Hubicka   <jh@suse.cz>
+2010-03-10  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/compile/pr43288.c: New test.
 
