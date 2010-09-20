@@ -1008,7 +1008,7 @@ lto_promote_cross_file_statics (void)
 	 from this partition that are not in this partition.
 	 This needs to be done recursively.  */
       for (vnode = varpool_nodes; vnode; vnode = vnode->next)
-	if ((vnode->const_value_known || DECL_IN_CONSTANT_POOL (vnode->decl))
+	if (const_value_known_p (vnode->decl)
 	    && DECL_INITIAL (vnode->decl)
 	    && !varpool_node_in_set_p (vnode, vset)
 	    && referenced_from_this_partition_p (&vnode->ref_list, set, vset)

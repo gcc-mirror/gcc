@@ -1,3 +1,8 @@
+2010-09-20  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimize/45605
+	* g++.dg/tree-ssa/pr45605.C: New testcase.
+
 2010-09-20  Michael Matz  <matz@suse.de>
 
 	PR testsuite/45706

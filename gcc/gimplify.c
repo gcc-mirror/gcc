@@ -2479,8 +2479,11 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
     {
       /* The CALL_EXPR in *EXPR_P is already in GIMPLE form, so all we
 	 have to do is replicate it as a GIMPLE_CALL tuple.  */
+      gimple_stmt_iterator gsi;
       call = gimple_build_call_from_tree (*expr_p);
       gimplify_seq_add_stmt (pre_p, call);
+      gsi = gsi_last (*pre_p);
+      fold_stmt (&gsi);
       *expr_p = NULL_TREE;
     }
 

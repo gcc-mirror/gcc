@@ -1,3 +1,21 @@
+2010-09-20  Jan Hubicka  <jh@suse.cz>
+
+	PR tree-optimize/45605
+	* cgraph.h (const_value_known_p): Declare.
+	(varpool_decide_const_value_known): Remove.
+	* tree-ssa-ccp.c (get_base_constructor): Use it.
+	* lto-cgraph.c (compute_ltrans_boundary): Likewise.
+	* expr.c (string_constant): Likewise.
+	* tree-ssa-loop-ivcanon.c (constant_after_peeling): Likewise.
+	* ipa.c (ipa_discover_readonly_nonaddressable_var,
+	function_and_variable_visibility): Likewise.
+	* gimplify.c (gimplify_call_expr): Likewise.
+	* gimple-fold.c (get_symbol_constant_value): Likewise.
+	* varpool.c (varpool_decide_const_value_known): Replace by...
+	(const_value_known_p): ... this one; handle other kinds of DECLs
+	too and work for automatic vars.
+	(varpool_finalize_decl): Use const_value_known_p.
+
 2010-09-20  Rafael Carre   <rafael.carre@gmail.com>
 
 	PR target/45726

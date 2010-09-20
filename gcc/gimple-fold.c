@@ -122,9 +122,7 @@ canonicalize_constructor_val (tree cval)
 tree
 get_symbol_constant_value (tree sym)
 {
-  if ((TREE_STATIC (sym) || DECL_EXTERNAL (sym))
-      && (TREE_CODE (sym) == CONST_DECL
-	  || varpool_get_node (sym)->const_value_known))
+  if (const_value_known_p (sym))
     {
       tree val = DECL_INITIAL (sym);
       if (val)
