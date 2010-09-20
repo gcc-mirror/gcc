@@ -1284,13 +1284,6 @@ enum reg_class
      || reg_classes_intersect_p (VFP_REGS, (CLASS))	\
    : 0)
 
-/* We need to define this for LO_REGS on thumb.  Otherwise we can end up
-   using r0-r4 for function arguments, r7 for the stack frame and don't
-   have enough left over to do doubleword arithmetic.  */
-#define CLASS_LIKELY_SPILLED_P(CLASS)	\
-    ((TARGET_THUMB && (CLASS) == LO_REGS)	\
-     || (CLASS) == CC_REG)
-
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS  (TARGET_THUMB1 ? LO_REGS : GENERAL_REGS)
 #define BASE_REG_CLASS   (TARGET_THUMB1 ? LO_REGS : CORE_REGS)
