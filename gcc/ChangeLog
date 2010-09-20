@@ -1,3 +1,8 @@
+2010-09-20  Rafael Carre   <rafael.carre@gmail.com>
+
+	PR target/45726
+	* arm.md (arm_movtas_ze): Only enable on machine with MOVT.
+
 2010-09-20  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45705
