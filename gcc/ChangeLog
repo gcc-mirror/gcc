@@ -1,3 +1,8 @@
+2010-09-20  Rafael Carre   <rafael.carre@gmail.com>
+
+	PR target/45726
+	* arm.md (arm_movt): Only enable on machines with MOVT.
+
 2010-09-20  Jie Zhang  <jie@codesourcery.com>
 
 	* config/arm/arm.c (arm_address_offset_is_imm): New.
