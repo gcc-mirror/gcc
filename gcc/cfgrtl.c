@@ -422,7 +422,10 @@ rest_of_pass_free_cfg (void)
   /* The resource.c machinery uses DF but the CFG isn't guaranteed to be
      valid at that point so it would be too late to call df_analyze.  */
   if (optimize > 0 && flag_delayed_branch)
-    df_analyze ();
+    {
+      df_note_add_problem ();
+      df_analyze ();
+    }
 #endif
 
   free_bb_for_insn ();
