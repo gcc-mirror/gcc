@@ -1,3 +1,9 @@
+2010-09-20  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/arm/arm.h (CLASS_LIKELY_SPILLED_P): Remove.
+	* config/arm/arm.c (TARGET_CLASS_LIKELY_SPILLED_P): Define.
+	(arm_class_likely_spilled_p): New function.
+
 2010-09-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_expand_ashl_const): Rewrite using

@@ -239,6 +239,7 @@ static rtx arm_pic_static_addr (rtx orig, rtx reg);
 static bool cortex_a9_sched_adjust_cost (rtx, rtx, rtx, int *);
 static bool xscale_sched_adjust_cost (rtx, rtx, rtx, int *);
 static unsigned int arm_units_per_simd_word (enum machine_mode);
+static bool arm_class_likely_spilled_p (reg_class_t);
 
 
 /* Table of machine attributes.  */
@@ -544,6 +545,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE arm_can_eliminate
+
+#undef TARGET_CLASS_LIKELY_SPILLED_P
+#define TARGET_CLASS_LIKELY_SPILLED_P arm_class_likely_spilled_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -21950,6 +21954,22 @@ arm_units_per_simd_word (enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return (TARGET_NEON
 	  ? (TARGET_NEON_VECTORIZE_QUAD ? 16 : 8) : UNITS_PER_WORD);
+}
+
+/* Implement TARGET_CLASS_LIKELY_SPILLED_P.
+ 
+   We need to define this for LO_REGS on thumb.  Otherwise we can end up
+   using r0-r4 for function arguments, r7 for the stack frame and don't
+   have enough left over to do doubleword arithmetic.  */
+
+static bool
+arm_class_likely_spilled_p (reg_class_t rclass)
+{
+  if ((TARGET_THUMB && rclass == LO_REGS)
+      || rclass  == CC_REG)
+    return true;
+
+  return false;
 }
 
 /* Implements target hook small_register_classes_for_mode_p.  */
