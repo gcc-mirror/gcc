@@ -13345,6 +13345,34 @@ arm_attr_length_move_neon (rtx insn)
     return 4;
 }
 
+/* Return nonzero if the offset in the address is an immediate.  Otherwise,
+   return zero.  */
+
+int
+arm_address_offset_is_imm (rtx insn)
+{
+  rtx mem, addr;
+
+  extract_insn_cached (insn);
+
+  if (REG_P (recog_data.operand[0]))
+    return 0;
+
+  mem = recog_data.operand[0];
+
+  gcc_assert (MEM_P (mem));
+
+  addr = XEXP (mem, 0);
+
+  if (GET_CODE (addr) == REG
+      || (GET_CODE (addr) == PLUS
+	  && GET_CODE (XEXP (addr, 0)) == REG
+	  && GET_CODE (XEXP (addr, 1)) == CONST_INT))
+    return 1;
+  else
+    return 0;
+}
+
 /* Output an ADD r, s, #n where n may be too big for one instruction.
    If adding zero to one register, output nothing.  */
 const char *
@@ -21501,6 +21529,38 @@ arm_no_early_store_addr_dep (rtx producer, rtx consumer)
   addr = XEXP (addr, 0);
 
   return !reg_overlap_mentioned_p (value, addr);
+}
+
+/* Return nonzero if the CONSUMER instruction (a store) does need
+   PRODUCER's value to calculate the address.  */
+
+int
+arm_early_store_addr_dep (rtx producer, rtx consumer)
+{
+  return !arm_no_early_store_addr_dep (producer, consumer);
+}
+
+/* Return nonzero if the CONSUMER instruction (a load) does need
+   PRODUCER's value to calculate the address.  */
+
+int
+arm_early_load_addr_dep (rtx producer, rtx consumer)
+{
+  rtx value = PATTERN (producer);
+  rtx addr = PATTERN (consumer);
+
+  if (GET_CODE (value) == COND_EXEC)
+    value = COND_EXEC_CODE (value);
+  if (GET_CODE (value) == PARALLEL)
+    value = XVECEXP (value, 0, 0);
+  value = XEXP (value, 0);
+  if (GET_CODE (addr) == COND_EXEC)
+    addr = COND_EXEC_CODE (addr);
+  if (GET_CODE (addr) == PARALLEL)
+    addr = XVECEXP (addr, 0, 0);
+  addr = XEXP (addr, 1);
+
+  return reg_overlap_mentioned_p (value, addr);
 }
 
 /* Return nonzero if the CONSUMER instruction (an ALU op) does not
