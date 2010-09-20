@@ -1,3 +1,8 @@
+2010-09-20  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* c-family/c-common.h (constant_string_class): Documented with
+	comment identical to the one already in c-common.c.
+
 2010-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (any_cfis_emitted): New static variable.
