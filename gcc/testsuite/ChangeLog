@@ -1,3 +1,11 @@
+2010-09-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-09-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/45234
+	* gcc.dg/torture/stackalign/alloca-5.c: New.
+
 2010-09-18  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45709
