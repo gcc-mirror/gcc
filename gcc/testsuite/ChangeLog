@@ -1,3 +1,8 @@
+2010-09-20  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45705
+	* gcc.dg/tree-ssa/ssa-dom-dse-1.c: New testcase.
+
 2010-09-20  Michael Matz  <matz@suse.de>
 
 	PR testsuite/45706
