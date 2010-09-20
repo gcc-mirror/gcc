@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_float } */
-/* { dg-options "-O3 -ffast-math -fdump-tree-vect-details" } */
 
 
 void vector_fmul_reverse_c(float *dst, const float *src0, const float *src1,
