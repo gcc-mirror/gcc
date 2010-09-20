@@ -1,3 +1,18 @@
+2010-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Replace calls to
+	build_array_type with calls to build_nonshared_array_type.
+	(substitute_in_type): Likewise.
+	* gcc-interface/misc.c (LANG_HOOKS_HASH_TYPES): Delete.
+	(LANG_HOOKS_TYPE_HASH_EQ): Define.
+	(gnat_post_options): Add 'static' keyword.
+	(gnat_type_hash_eq): New static function.
+	* gcc-interface/utils.c (fntype_same_flags_p): New function.
+	(create_subprog_type): Call it.
+	(create_index_type): Call build_nonshared_range_type and tidy up.
+	(create_range_type): Likewise.
+	* gcc-interface/gigi.h (fntype_same_flags_p): Declare.
+
 2010-09-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (gnat_pushdecl): Do not do anything special

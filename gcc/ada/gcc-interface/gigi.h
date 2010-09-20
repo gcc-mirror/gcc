@@ -447,6 +447,9 @@ extern tree gnat_signed_type (tree type_node);
    transparently converted to each other.  */
 extern int gnat_types_compatible_p (tree t1, tree t2);
 
+/* Return true if T, a FUNCTION_TYPE, has the specified list of flags.  */
+extern bool fntype_same_flags_p (const_tree, tree, bool, bool, bool);
+
 /* Create an expression whose value is that of EXPR,
    converted to type TYPE.  The TREE_TYPE of the value
    is always TYPE.  This function implements all reasonable

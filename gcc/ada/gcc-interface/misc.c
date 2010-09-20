@@ -72,6 +72,7 @@ static void gnat_print_decl		(FILE *, tree, int);
 static void gnat_print_type		(FILE *, tree, int);
 static const char *gnat_printable_name	(tree, int);
 static const char *gnat_dwarf_name	(tree, int);
+static bool gnat_type_hash_eq		(const_tree, const_tree);
 static tree gnat_return_tree		(tree);
 static void gnat_parse_file		(int);
 static void internal_error_function	(diagnostic_context *,
@@ -98,8 +99,8 @@ static tree gnat_eh_personality		(void);
 #define LANG_HOOKS_POST_OPTIONS		gnat_post_options
 #undef  LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE		gnat_parse_file
-#undef  LANG_HOOKS_HASH_TYPES
-#define LANG_HOOKS_HASH_TYPES		false
+#undef  LANG_HOOKS_TYPE_HASH_EQ
+#define LANG_HOOKS_TYPE_HASH_EQ		gnat_type_hash_eq
 #undef  LANG_HOOKS_GETDECLS
 #define LANG_HOOKS_GETDECLS		lhd_return_null_tree_v
 #undef  LANG_HOOKS_PUSHDECL
@@ -304,7 +305,7 @@ gnat_init_options (unsigned int decoded_options_count,
 
 /* Post-switch processing.  */
 
-bool
+static bool
 gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
 {
   /* Excess precision other than "fast" requires front-end
@@ -593,6 +594,20 @@ gnat_dwarf_name (tree decl, int verbosity ATTRIBUTE_UNUSED)
 {
   gcc_assert (DECL_P (decl));
   return (const char *) IDENTIFIER_POINTER (DECL_NAME (decl));
+}
+
+/* Return true if types T1 and T2 are identical for type hashing purposes.
+   Called only after doing all language independent checks.  At present,
+   this function is only called when both types are FUNCTION_TYPE.  */
+
+static bool
+gnat_type_hash_eq (const_tree t1, const_tree t2)
+{
+  gcc_assert (TREE_CODE (t1) == FUNCTION_TYPE);
+  return fntype_same_flags_p (t1, TYPE_CI_CO_LIST (t2),
+			      TYPE_RETURN_UNCONSTRAINED_P (t2),
+			      TYPE_RETURN_BY_DIRECT_REF_P (t2),
+			      TREE_ADDRESSABLE (t2));
 }
 
 /* Do nothing (return the tree node passed).  */

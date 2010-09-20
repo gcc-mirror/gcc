@@ -1,3 +1,20 @@
+2010-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* langhooks.h (struct lang_hooks_for_types): Remove hash_types field.
+	* langhooks-def.h (LANG_HOOKS_HASH_TYPES): Delete.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Remove LANG_HOOKS_HASH_TYPES.
+	* system.h (LANG_HOOKS_HASH_TYPES): Poison.
+	* tree.c (type_hash_canon): Do not test lang_hooks.types.hash_types.
+	(build_nonstandard_integer_type): Likewise.
+	(build_range_type_1): New function, built from...
+	(build_range_type): ...this.  Call build_range_type_1.
+	(build_nonshared_range_type): New function.
+	(build_array_type_1): New function, built from...
+	(build_array_type: ...this.  Call build_array_type_1.
+	(build_nonshared_array_type): New function.
+	* tree.h (build_nonshared_range_type): Declare.
+	(build_nonshared_array_type): Likewise.
+
 2010-09-20  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/arm/arm.h (CLASS_LIKELY_SPILLED_P): Remove.
