@@ -1,5 +1,10 @@
 2010-09-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/45728
+	* expr.c (expand_expr_real_1): If op0 isn't REG or MEM, try
+	gen_lowpart_common first and if that fails, force_reg first
+	before calling gen_lowpart.
+
 	PR rtl-optimization/45695
 	* combine.c (try_combine): Don't try to swap the two patterns, if the
 	chosen order is not possible, just give up.  For HAVE_cc0 targets,
