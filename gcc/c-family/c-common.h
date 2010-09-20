@@ -561,7 +561,7 @@ extern int flag_hosted;
 
 extern int print_struct_values;
 
-/* ???.  Undocumented.  */
+/* Tells the compiler what is the constant string class for ObjC.  */
 
 extern const char *constant_string_class_name;
 
