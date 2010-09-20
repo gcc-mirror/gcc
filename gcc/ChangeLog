@@ -1,3 +1,12 @@
+2010-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/45124
+	* dwarf2out.c (add_accessibility_attribute): Assume
+	DW_ACCESS_private as the default for dwarf_version > 2
+	and DW_TAG_class_type parent.
+	(gen_inheritance_die): Assume DW_ACCESS_public as the default
+	for dwarf_version > 2 and parent other than DW_TAG_class_type.
+
 2010-09-20  Rafael Carre   <rafael.carre@gmail.com>
 
 	PR target/45726

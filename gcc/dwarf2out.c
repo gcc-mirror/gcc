@@ -15921,10 +15921,22 @@ add_AT_location_description (dw_die_ref die, enum dwarf_attribute attr_kind,
 static void
 add_accessibility_attribute (dw_die_ref die, tree decl)
 {
+  /* In DWARF3+ the default is DW_ACCESS_private only in DW_TAG_class_type
+     children, otherwise the default is DW_ACCESS_public.  In DWARF2
+     the default has always been DW_ACCESS_public.  */
   if (TREE_PROTECTED (decl))
     add_AT_unsigned (die, DW_AT_accessibility, DW_ACCESS_protected);
   else if (TREE_PRIVATE (decl))
-    add_AT_unsigned (die, DW_AT_accessibility, DW_ACCESS_private);
+    {
+      if (dwarf_version == 2
+	  || die->die_parent == NULL
+	  || die->die_parent->die_tag != DW_TAG_class_type)
+	add_AT_unsigned (die, DW_AT_accessibility, DW_ACCESS_private);
+    }
+  else if (dwarf_version > 2
+	   && die->die_parent
+	   && die->die_parent->die_tag == DW_TAG_class_type)
+    add_AT_unsigned (die, DW_AT_accessibility, DW_ACCESS_public);
 }
 
 /* Attach the specialized form of location attribute used for data members of
@@ -19643,10 +19655,20 @@ gen_inheritance_die (tree binfo, tree access, dw_die_ref context_die)
   if (BINFO_VIRTUAL_P (binfo))
     add_AT_unsigned (die, DW_AT_virtuality, DW_VIRTUALITY_virtual);
 
+  /* In DWARF3+ the default is DW_ACCESS_private only in DW_TAG_class_type
+     children, otherwise the default is DW_ACCESS_public.  In DWARF2
+     the default has always been DW_ACCESS_private.  */
   if (access == access_public_node)
-    add_AT_unsigned (die, DW_AT_accessibility, DW_ACCESS_public);
+    {
+      if (dwarf_version == 2
+	  || context_die->die_tag == DW_TAG_class_type)
+      add_AT_unsigned (die, DW_AT_accessibility, DW_ACCESS_public);
+    }
   else if (access == access_protected_node)
     add_AT_unsigned (die, DW_AT_accessibility, DW_ACCESS_protected);
+  else if (dwarf_version > 2
+	   && context_die->die_tag != DW_TAG_class_type)
+    add_AT_unsigned (die, DW_AT_accessibility, DW_ACCESS_private);
 }
 
 /* Generate a DIE for a class member.  */
