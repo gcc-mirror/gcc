@@ -1,3 +1,9 @@
+2010-09-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/42775
+	* cfgrtl.c (rest_of_pass_free_cfg): Recompute notes if delay slot
+	scheduling is enabled.
+
 2010-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/45728
