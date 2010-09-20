@@ -1,3 +1,13 @@
+2010-09-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2010-09-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/45234
+	* calls.c (expand_call): Make sure that all variable sized
+	adjustments are multiple of preferred stack boundary after
+	stack alignment.
+
 2010-09-20  Rafael Carre   <rafael.carre@gmail.com>
 
 	PR target/45726
