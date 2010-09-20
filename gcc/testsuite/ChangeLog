@@ -1,3 +1,9 @@
+2010-09-20  Michael Matz  <matz@suse.de>
+
+	PR testsuite/45706
+	* lib/target-supports.exp (check_effective_target_vect_perm):
+	Add i?86-*-*.
+
 2010-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/45695
