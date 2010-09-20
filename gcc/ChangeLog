@@ -1,5 +1,10 @@
 2010-09-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/45728
+	* expr.c (expand_expr_real_1): If op0 isn't REG or MEM, try
+	gen_lowpart_common first and if that fails, force_reg first
+	before calling gen_lowpart.
+
 	PR middle-end/45678
 	* cfgexpand.c (expand_one_stack_var_at): Use
 	crtl->max_used_stack_slot_alignment as max_align, instead
