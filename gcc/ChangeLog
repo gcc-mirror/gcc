@@ -1,3 +1,11 @@
+2010-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/45678
+	* cfgexpand.c (expand_one_stack_var_at): Use
+	crtl->max_used_stack_slot_alignment as max_align, instead
+	of maximum of that and PREFERRED_STACK_BOUNDARY.
+	Don't call update_stack_alignment.
+
 2010-09-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* langhooks.h (struct lang_hooks_for_types): Remove hash_types field.

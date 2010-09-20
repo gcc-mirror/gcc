@@ -738,12 +738,10 @@ expand_one_stack_var_at (tree decl, HOST_WIDE_INT offset)
       offset -= frame_phase;
       align = offset & -offset;
       align *= BITS_PER_UNIT;
-      max_align = MAX (crtl->max_used_stack_slot_alignment,
-		       PREFERRED_STACK_BOUNDARY);
+      max_align = crtl->max_used_stack_slot_alignment;
       if (align == 0 || align > max_align)
 	align = max_align;
 
-      update_stack_alignment (align);
       DECL_ALIGN (decl) = align;
       DECL_USER_ALIGN (decl) = 0;
     }
