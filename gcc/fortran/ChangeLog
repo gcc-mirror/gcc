@@ -1,3 +1,12 @@
+2010-09-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/45081
+	* simplify.c (is_constant_array_expr): Allow structure array
+	elements as well as constants.
+	(gfc_simplify_pack, gfc_simplify_reshape, gfc_simplify_spread,
+	gfc_simplify_transpose, gfc_simplify_unpack): Copy the derived
+	type of source to the result.
+
 2010-09-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* frontend-passes.c (gfc_expr_walker):  Also
