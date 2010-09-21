@@ -2770,7 +2770,7 @@ conv_isocbinding_procedure (gfc_se * se, gfc_symbol * sym,
 
 int
 gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
-			 gfc_actual_arglist * arg, gfc_expr * expr,
+			 gfc_actual_arglist * args, gfc_expr * expr,
 			 VEC(tree,gc) *append_args)
 {
   gfc_interface_mapping mapping;
@@ -2789,6 +2789,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   VEC(tree,gc) *stringargs;
   tree result = NULL;
   gfc_formal_arglist *formal;
+  gfc_actual_arglist *arg;
   int has_alternate_specifier = 0;
   bool need_interface_mapping;
   bool callee_alloc;
@@ -2809,7 +2810,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   gfc_clear_ts (&ts);
 
   if (sym->from_intmod == INTMOD_ISO_C_BINDING
-      && conv_isocbinding_procedure (se, sym, arg))
+      && conv_isocbinding_procedure (se, sym, args))
     return 0;
 
   gfc_is_proc_ptr_comp (expr, &comp);
@@ -2859,7 +2860,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
     }
 
   /* Evaluate the arguments.  */
-  for (; arg != NULL; arg = arg->next, formal = formal ? formal->next : NULL)
+  for (arg = args; arg != NULL;
+       arg = arg->next, formal = formal ? formal->next : NULL)
     {
       e = arg->expr;
       fsym = formal ? formal->sym : NULL;
@@ -3039,6 +3041,24 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		f = f || !comp->attr.always_explicit;
 	      else
 		f = f || !sym->attr.always_explicit;
+
+	      /* If the argument is a function call that may not create
+		 a temporary for the result, we have to check that we
+		 can do it, i.e. that there is no alias between this 
+		 argument and another one.  */
+	      if (gfc_get_noncopying_intrinsic_argument (e) != NULL)
+		{
+		  sym_intent intent;
+
+		  if (fsym != NULL)
+		    intent = fsym->attr.intent;
+		  else
+		    intent = INTENT_UNKNOWN;
+
+		  if (gfc_check_fncall_dependency (e, intent, sym, args,
+						   NOT_ELEMENTAL))
+		    parmse.force_tmp = 1;
+		}
 
 	      if (e->expr_type == EXPR_VARIABLE
 		    && is_subref_array (e))

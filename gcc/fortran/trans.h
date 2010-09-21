@@ -81,6 +81,11 @@ typedef struct gfc_se
   /* If set, gfc_conv_procedure_call does not put byref calls into se->pre.  */
   unsigned no_function_call:1;
 
+  /* If set, we will force the creation of a temporary. Useful to disable
+     non-copying procedure argument passing optimizations, when some function
+     args alias.  */
+  unsigned force_tmp:1;
+
   /* Scalarization parameters.  */
   struct gfc_se *parent;
   struct gfc_ss *ss;
