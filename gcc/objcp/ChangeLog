@@ -1,3 +1,9 @@
+2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/25965	
+	* objcp-decl.c (objcp_finish_struct): Call
+	objc_get_interface_ivars() and check for duplicate ivars.
+
 2010-06-28  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* objcp-lang.c: Do not include except.h.

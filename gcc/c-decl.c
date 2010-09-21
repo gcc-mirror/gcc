@@ -6718,6 +6718,17 @@ detect_field_duplicates (tree fieldlist)
   tree x, y;
   int timeout = 10;
 
+  /* If the struct is the list of instance variables of an Objective-C
+     class, then we need to add all the instance variables of
+     superclasses before checking for duplicates (since you can't have
+     an instance variable in a subclass with the same name as an
+     instance variable in a superclass).  objc_get_interface_ivars()
+     leaves fieldlist unchanged if we are not in this case, so in that
+     case nothing changes compared to C.
+  */
+  if (c_dialect_objc ())
+    fieldlist = objc_get_interface_ivars (fieldlist);
+
   /* First, see if there are more than "a few" fields.
      This is trivially true if there are zero or one fields.  */
   if (!fieldlist)

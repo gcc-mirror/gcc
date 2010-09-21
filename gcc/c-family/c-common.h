@@ -962,6 +962,7 @@ extern tree objc_build_string_object (tree);
 extern tree objc_get_protocol_qualified_type (tree, tree);
 extern tree objc_get_class_reference (tree);
 extern tree objc_get_class_ivars (tree);
+extern tree objc_get_interface_ivars (tree);
 extern void objc_start_class_interface (tree, tree, tree);
 extern void objc_start_category_interface (tree, tree, tree);
 extern void objc_start_protocol (tree, tree);
