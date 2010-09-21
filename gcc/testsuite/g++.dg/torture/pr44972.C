@@ -74,7 +74,7 @@ class optional : public optional_base<T>
 
     T const& get() const ;
 
-    T const* operator->() const { ((this->is_initialized()) ? static_cast<void> (0) : __assert_fail ("this->is_initialized()", "pr44972.C", 78, __PRETTY_FUNCTION__)) ; return this->get_ptr_impl() ; }
+    T const* operator->() const { assert(this->is_initialized()) ; return this->get_ptr_impl() ; }
 
 } ;
 
