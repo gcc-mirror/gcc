@@ -2491,7 +2491,7 @@ write_expression (tree expr)
       tree scope = TREE_OPERAND (expr, 0);
       tree member = TREE_OPERAND (expr, 1);
 
-      if (!abi_version_at_least (2))
+      if (!abi_version_at_least (2) && DECL_P (member))
 	{
 	  write_string ("sr");
 	  write_type (scope);
