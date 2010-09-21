@@ -1,3 +1,11 @@
+2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/23710
+	* c-family/c-common.h (objc_start_method_definition): Return bool
+	instead of void.
+	* c-family/stub-objc.c (objc_start_method_definition): Return bool
+	instead of void.
+
 2010-09-15  Ian Lance Taylor  <iant@google.com>
 
 	* c-common.c (parse_optimize_options): Do not capitalize warning
