@@ -2260,7 +2260,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
       break;
 
     case IOR:
-      if (trueop1 == const0_rtx)
+      if (trueop1 == CONST0_RTX (mode))
 	return op0;
       if (CONST_INT_P (trueop1)
 	  && ((INTVAL (trueop1) & GET_MODE_MASK (mode))
@@ -2402,7 +2402,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
       break;
 
     case XOR:
-      if (trueop1 == const0_rtx)
+      if (trueop1 == CONST0_RTX (mode))
 	return op0;
       if (CONST_INT_P (trueop1)
 	  && ((INTVAL (trueop1) & GET_MODE_MASK (mode))
