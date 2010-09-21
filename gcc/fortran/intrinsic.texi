@@ -143,7 +143,7 @@ Some basic guidelines for editing this document:
 * @code{GMTIME}:        GMTIME,    Convert time to GMT info
 * @code{HOSTNM}:        HOSTNM,    Get system host name
 * @code{HUGE}:          HUGE,      Largest number of a kind
-* @code{HYPOT}:         HYPOT,     Euclidian distance function
+* @code{HYPOT}:         HYPOT,     Euclidean distance function
 * @code{IACHAR}:        IACHAR,    Code in @acronym{ASCII} collating sequence
 * @code{IALL}:          IALL,      Bitwise AND of array elements
 * @code{IAND}:          IAND,      Bitwise logical and
@@ -156,7 +156,7 @@ Some basic guidelines for editing this document:
 * @code{IDATE}:         IDATE,     Current local time (day/month/year)
 * @code{IEOR}:          IEOR,      Bitwise logical exclusive or
 * @code{IERRNO}:        IERRNO,    Function to get the last system error number
-* @code{IMAGE_INDEX}:   IMAGE_INDEX, Cosubscript to image index convertion
+* @code{IMAGE_INDEX}:   IMAGE_INDEX, Cosubscript to image index conversion
 * @code{INDEX}:         INDEX intrinsic, Position of a substring within a string
 * @code{INT}:           INT,       Convert to integer type
 * @code{INT2}:          INT2,      Convert to 16-bit integer type
@@ -1443,7 +1443,7 @@ Inverse function: @ref{TAN}
 @item @emph{Description}:
 @code{ATAN2(Y, X)} computes the principal value of the argument
 function of the complex number @math{X + i Y}. This function can
-be used to transform from carthesian into polar coordinates and
+be used to transform from Cartesian into polar coordinates and
 allows to determine the angle in the correct quadrant.
 
 @item @emph{Standard}:
@@ -1660,7 +1660,7 @@ of the first kind of the orders @var{N1} to @var{N2}.
 Fortran 2008 and later, negative @var{N} is allowed as GNU extension
 
 @item @emph{Class}:
-Elemental function, except for the tranformational function
+Elemental function, except for the transformational function
 @code{BESSEL_JN(N1, N2, X)}
 
 @item @emph{Syntax}:
@@ -1820,7 +1820,7 @@ of the first kind of the orders @var{N1} to @var{N2}.
 Fortran 2008 and later, negative @var{N} is allowed as GNU extension
 
 @item @emph{Class}:
-Elemental function, except for the tranformational function
+Elemental function, except for the transformational function
 @code{BESSEL_YN(N1, N2, X)}
 
 @item @emph{Syntax}:
@@ -4114,7 +4114,7 @@ end program test_exec
 @item @emph{Note}:
 
 Because this intrinsic is implemented in terms of the @code{system()}
-function call, its behavior with respect to signalling is processor
+function call, its behavior with respect to signaling is processor
 dependent. In particular, on POSIX-compliant systems, the SIGINT and
 SIGQUIT signals will be ignored, and the SIGCHLD will be blocked. As
 such, if the parent process is terminated, the child process might not be
@@ -6169,7 +6169,7 @@ The correspondence between characters and their codes is not necessarily
 the same across different GNU Fortran implementations.
 
 @item @emph{Standard}:
-Fortan 95 and later, with @var{KIND} argument Fortran 2003 and later
+Fortran 95 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
@@ -6285,7 +6285,7 @@ end program test_idate
 
 @table @asis
 @item @emph{Description}:
-@code{IEOR} returns the bitwise boolean exclusive-OR of @var{I} and
+@code{IEOR} returns the bitwise Boolean exclusive-OR of @var{I} and
 @var{J}.
 
 @item @emph{Standard}:
@@ -6588,7 +6588,7 @@ The return value is a @code{INTEGER(8)} variable.
 
 @table @asis
 @item @emph{Description}:
-@code{IOR} returns the bitwise boolean inclusive-OR of @var{I} and
+@code{IOR} returns the bitwise Boolean inclusive-OR of @var{I} and
 @var{J}.
 
 @item @emph{Standard}:
@@ -9112,7 +9112,7 @@ end program test_nint
 
 @table @asis
 @item @emph{Description}:
-Calculates the Euclidean vector norm (@math{L_2}) norm of
+Calculates the Euclidean vector norm (@math{L_2} norm) of
 of @var{ARRAY} along dimension @var{DIM}.
 
 @item @emph{Standard}:
@@ -9163,7 +9163,7 @@ END PROGRAM
 
 @table @asis
 @item @emph{Description}:
-@code{NOT} returns the bitwise boolean inverse of @var{I}.
+@code{NOT} returns the bitwise Boolean inverse of @var{I}.
 
 @item @emph{Standard}:
 Fortran 95 and later
@@ -9200,7 +9200,7 @@ argument.
 @item @emph{Description}:
 Returns a disassociated pointer.
 
-If @var{MOLD} is present, a dissassociated pointer of the same type is
+If @var{MOLD} is present, a disassociated pointer of the same type is
 returned, otherwise the type is determined by context.
 
 In Fortran 95, @var{MOLD} is optional. Please note that Fortran 2003
@@ -9409,7 +9409,7 @@ END PROGRAM
 
 @table @asis
 @item @emph{Description}:
-Calculates the partity, i.e. the reduction using @code{.XOR.},
+Calculates the parity, i.e. the reduction using @code{.XOR.},
 of @var{MASK} along dimension @var{DIM}.
 
 @item @emph{Standard}:
