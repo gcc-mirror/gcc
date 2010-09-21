@@ -21014,16 +21014,7 @@ dwarf2out_decl (tree decl)
       /* Don't bother trying to generate any DIEs to represent any of the
 	 normal built-in types for the language we are compiling.  */
       if (DECL_IS_BUILTIN (decl))
-	{
-	  /* OK, we need to generate one for `bool' so GDB knows what type
-	     comparisons have.  */
-	  if (is_cxx ()
-	      && TREE_CODE (TREE_TYPE (decl)) == BOOLEAN_TYPE
-	      && ! DECL_IGNORED_P (decl))
-	    modified_type_die (TREE_TYPE (decl), 0, 0, NULL);
-
-	  return;
-	}
+	return;
 
       /* If we are in terse mode, don't generate any DIEs for types.  */
       if (debug_info_level <= DINFO_LEVEL_TERSE)
