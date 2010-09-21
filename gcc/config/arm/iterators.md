@@ -381,6 +381,10 @@
 (define_mode_attr qhs_zextenddi_cond [(SI "") (HI "&& arm_arch6") (QI "")])
 (define_mode_attr qhs_sextenddi_cond [(SI "") (HI "&& arm_arch6")
 				      (QI "&& arm_arch6")])
+(define_mode_attr qhs_extenddi_op [(SI "s_register_operand")
+				   (HI "nonimmediate_operand")
+				   (QI "nonimmediate_operand")])
+(define_mode_attr qhs_extenddi_cstr [(SI "r") (HI "rm") (QI "rm")])
 
 ;;----------------------------------------------------------------------------
 ;; Code attributes

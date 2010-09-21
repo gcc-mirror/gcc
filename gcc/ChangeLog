@@ -1,3 +1,10 @@
+2010-09-21  Bernd Schmidt  <bernds@codesourcery.com>
+
+	* config/arm/iterators.md (qhs_extenddi_op): New mode_attr.
+	(qhs_extenddi_cstr): Likewise.
+	* config/arm/arm.md (zero_extend<mode>di2, extend<mode>di2): Use
+	them for the source operand.
+
 2010-09-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_split_ashl): Rename single_width variable
