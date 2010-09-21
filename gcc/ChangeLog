@@ -1,3 +1,11 @@
+2010-09-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45580
+	* tree-ssa-propagate.c (substitute_and_fold): Always replace
+	regular uses.
+	* gimple-fold.c (gimple_fold_obj_type_ref): For a BINFO without
+	virtuals fold the call into a regular indirect one.
+
 2010-09-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/42775

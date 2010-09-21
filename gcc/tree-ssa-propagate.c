@@ -1122,12 +1122,12 @@ substitute_and_fold (ssa_prop_get_value_fn get_value_fn,
 	    {
 	      did_replace = true;
 	      prop_stats.num_stmts_folded++;
+	      stmt = gsi_stmt (oldi);
+	      update_stmt (stmt);
 	    }
 
-	  /* Only replace real uses if we couldn't fold the
-	     statement using value range information.  */
-	  if (get_value_fn
-	      && !did_replace)
+	  /* Replace real uses in the statement.  */
+	  if (get_value_fn)
 	    did_replace |= replace_uses_in (stmt, get_value_fn);
 
 	  /* If we made a replacement, fold the statement.  */

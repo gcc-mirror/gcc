@@ -1,3 +1,8 @@
+2010-09-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45580
+	* g++.dg/torture/pr45580.C: New testcase.
+
 2010-09-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* lib/gcc-dg.exp (clanup-stack-usage): Really remove .su files.
