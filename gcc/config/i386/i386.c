@@ -8648,19 +8648,27 @@ ix86_expand_prologue (void)
   else
     {
       rtx eax = gen_rtx_REG (Pmode, AX_REG);
-      bool eax_live;
+      rtx r10 = NULL;
+      bool eax_live = false;
+      bool r10_live = false;
       rtx t;
 
-      if (cfun->machine->call_abi == MS_ABI)
-	eax_live = false;
-      else
-	eax_live = ix86_eax_live_at_start_p ();
+      if (TARGET_64BIT)
+        r10_live = (DECL_STATIC_CHAIN (current_function_decl) != 0);
+      if (!TARGET_64BIT_MS_ABI)
+        eax_live = ix86_eax_live_at_start_p ();
 
       if (eax_live)
 	{
 	  emit_insn (gen_push (eax));
 	  allocate -= UNITS_PER_WORD;
 	}
+      if (r10_live)
+       {
+         r10 = gen_rtx_REG (Pmode, R10_REG);
+         emit_insn (gen_push (r10));
+         allocate -= UNITS_PER_WORD;
+       }
 
       emit_move_insn (eax, GEN_INT (allocate));
 
@@ -8679,7 +8687,30 @@ ix86_expand_prologue (void)
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
 
-      if (eax_live)
+      if (eax_live && r10_live)
+	{
+	  if (frame_pointer_needed)
+	    {
+	      t = plus_constant (hard_frame_pointer_rtx,
+				 allocate
+				 - frame.to_allocate
+				 - frame.nregs * UNITS_PER_WORD);
+	      emit_move_insn (r10, gen_rtx_MEM (Pmode, t));
+	      t = plus_constant (hard_frame_pointer_rtx,
+				 allocate + UNITS_PER_WORD
+				 - frame.to_allocate
+				 - frame.nregs * UNITS_PER_WORD);
+	      emit_move_insn (eax, gen_rtx_MEM (Pmode, t));
+	    }
+          else
+	    {
+	      t = plus_constant (stack_pointer_rtx, allocate);
+	      emit_move_insn (r10, gen_rtx_MEM (Pmode, t));
+	      t = plus_constant (stack_pointer_rtx, allocate + UNITS_PER_WORD);
+	      emit_move_insn (eax, gen_rtx_MEM (Pmode, t));
+	    }
+	}
+      else if (eax_live || r10_live)
 	{
 	  if (frame_pointer_needed)
 	    t = plus_constant (hard_frame_pointer_rtx,
@@ -8688,7 +8719,7 @@ ix86_expand_prologue (void)
 			       - frame.nregs * UNITS_PER_WORD);
 	  else
 	    t = plus_constant (stack_pointer_rtx, allocate);
-	  emit_move_insn (eax, gen_rtx_MEM (Pmode, t));
+	  emit_move_insn ((eax_live ? eax : r10), gen_rtx_MEM (Pmode, t));
 	}
     }
 
