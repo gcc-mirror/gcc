@@ -1,3 +1,9 @@
+2010-09-21  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR target/45694
+	* config/i386/i386.c (ix86_expand_prologue): Save r10 in case that
+	static chain-register is used for 64-bit.
+
 2010-09-21  Richard Guenther  <rguenther@suse.de>
 
 	* dwarf2out.c (is_cu_die): New function.
