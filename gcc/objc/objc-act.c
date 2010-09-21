@@ -371,6 +371,8 @@ int objc_public_flag;
 /* Use to generate method labels.  */
 static int method_slot = 0;
 
+static int objc_collecting_ivars = 0;
+
 #define BUFSIZE		1024
 
 static char *errbuf;	/* Buffer for error diagnostics */
@@ -3451,6 +3453,21 @@ objc_get_class_ivars (tree class_name)
 	 class_name);
 
   return error_mark_node;
+}
+
+/* Called when checking the variables in a struct.  If we are not
+   doing the ivars list inside an @interface context, then returns
+   fieldlist unchanged.  Else, returns the list of class ivars.
+*/
+tree
+objc_get_interface_ivars (tree fieldlist)
+{
+  if (!objc_collecting_ivars || !objc_interface_context 
+      || TREE_CODE (objc_interface_context) != CLASS_INTERFACE_TYPE
+      || CLASS_SUPER_NAME (objc_interface_context) == NULL_TREE)
+    return fieldlist;
+
+  return get_class_ivars (objc_interface_context, true);
 }
 
 /* Used by: build_private_template, continue_class,
@@ -7714,7 +7731,9 @@ continue_class (tree klass)
       push_lang_context (lang_name_c);
 #endif /* OBJCPLUS */
 
+      objc_collecting_ivars = 1;
       build_private_template (klass);
+      objc_collecting_ivars = 0;
 
 #ifdef OBJCPLUS
       pop_lang_context ();

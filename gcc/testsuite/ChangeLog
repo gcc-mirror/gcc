@@ -1,3 +1,16 @@
+2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.
+
+	2005-10-11  Fariborz Jahanian <fjahanian@apple.com>
+
+	        Radar 4291785
+	        
+	        objc.dg/naming-4.m: New
+	        objc.dg/naming-5.m: New
+	        obj-c++.dg/naming-1.mm: New
+	        obj-c++.dg/naming-2.mm: New
+
 2010-09-21  Jonathan Wakely  <redi@gcc.gnu.org>
 	    Jack Howarth  <howarth@bromo.med.uc.edu>
 
