@@ -1,3 +1,10 @@
+2010-09-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_split_ashl): Rename single_width variable
+	to half_width.  Use GET_MODE_BITSIZE to calculate mode size.
+	(ix86_split_ashr): Ditto.
+	(ix86_split_lshr): Ditto.
+
 2010-09-21  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/45580

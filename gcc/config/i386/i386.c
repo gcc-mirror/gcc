@@ -18079,23 +18079,23 @@ ix86_split_ashl (rtx *operands, rtx scratch, enum machine_mode mode)
 {
   rtx (*gen_ashl3)(rtx, rtx, rtx);
   rtx (*gen_shld)(rtx, rtx, rtx);
+  int half_width = GET_MODE_BITSIZE (mode) >> 1;
 
   rtx low[2], high[2];
   int count;
-  const int single_width = mode == DImode ? 32 : 64;
 
   if (CONST_INT_P (operands[2]))
     {
       split_double_mode (mode, operands, 2, low, high);
-      count = INTVAL (operands[2]) & (single_width * 2 - 1);
+      count = INTVAL (operands[2]) & (GET_MODE_BITSIZE (mode) - 1);
 
-      if (count >= single_width)
+      if (count >= half_width)
 	{
 	  emit_move_insn (high[0], low[1]);
 	  emit_move_insn (low[0], const0_rtx);
 
-	  if (count > single_width)
-	    ix86_expand_ashl_const (high[0], count - single_width, mode);
+	  if (count > half_width)
+	    ix86_expand_ashl_const (high[0], count - half_width, mode);
 	}
       else
 	{
@@ -18124,7 +18124,7 @@ ix86_split_ashl (rtx *operands, rtx scratch, enum machine_mode mode)
 
 	  ix86_expand_clear (low[0]);
 	  ix86_expand_clear (high[0]);
-	  emit_insn (gen_testqi_ccz_1 (operands[2], GEN_INT (single_width)));
+	  emit_insn (gen_testqi_ccz_1 (operands[2], GEN_INT (half_width)));
 
 	  d = gen_lowpart (QImode, low[0]);
 	  d = gen_rtx_STRICT_LOW_PART (VOIDmode, d);
@@ -18231,34 +18231,34 @@ ix86_split_ashr (rtx *operands, rtx scratch, enum machine_mode mode)
   rtx (*gen_ashr3)(rtx, rtx, rtx)
     = mode == DImode ? gen_ashrsi3 : gen_ashrdi3;
   rtx (*gen_shrd)(rtx, rtx, rtx);
+  int half_width = GET_MODE_BITSIZE (mode) >> 1;
 
   rtx low[2], high[2];
   int count;
-  const int single_width = mode == DImode ? 32 : 64;
 
   if (CONST_INT_P (operands[2]))
     {
       split_double_mode (mode, operands, 2, low, high);
-      count = INTVAL (operands[2]) & (single_width * 2 - 1);
+      count = INTVAL (operands[2]) & (GET_MODE_BITSIZE (mode) - 1);
 
-      if (count == single_width * 2 - 1)
+      if (count == GET_MODE_BITSIZE (mode) - 1)
 	{
 	  emit_move_insn (high[0], high[1]);
 	  emit_insn (gen_ashr3 (high[0], high[0],
-				GEN_INT (single_width - 1)));
+				GEN_INT (half_width - 1)));
 	  emit_move_insn (low[0], high[0]);
 
 	}
-      else if (count >= single_width)
+      else if (count >= half_width)
 	{
 	  emit_move_insn (low[0], high[1]);
 	  emit_move_insn (high[0], low[0]);
 	  emit_insn (gen_ashr3 (high[0], high[0],
-				GEN_INT (single_width - 1)));
+				GEN_INT (half_width - 1)));
 
-	  if (count > single_width)
+	  if (count > half_width)
 	    emit_insn (gen_ashr3 (low[0], low[0],
-				  GEN_INT (count - single_width)));
+				  GEN_INT (count - half_width)));
 	}
       else
 	{
@@ -18290,7 +18290,7 @@ ix86_split_ashr (rtx *operands, rtx scratch, enum machine_mode mode)
 
 	  emit_move_insn (scratch, high[0]);
 	  emit_insn (gen_ashr3 (scratch, scratch,
-				GEN_INT (single_width - 1)));
+				GEN_INT (half_width - 1)));
 	  emit_insn (gen_x86_shift_adj_1 (low[0], high[0], operands[2],
 					  scratch));
 	}
@@ -18310,24 +18310,24 @@ ix86_split_lshr (rtx *operands, rtx scratch, enum machine_mode mode)
   rtx (*gen_lshr3)(rtx, rtx, rtx)
     = mode == DImode ? gen_lshrsi3 : gen_lshrdi3;
   rtx (*gen_shrd)(rtx, rtx, rtx);
+  int half_width = GET_MODE_BITSIZE (mode) >> 1;
 
   rtx low[2], high[2];
   int count;
-  const int single_width = mode == DImode ? 32 : 64;
 
   if (CONST_INT_P (operands[2]))
     {
       split_double_mode (mode, operands, 2, low, high);
-      count = INTVAL (operands[2]) & (single_width * 2 - 1);
+      count = INTVAL (operands[2]) & (GET_MODE_BITSIZE (mode) - 1);
 
-      if (count >= single_width)
+      if (count >= half_width)
 	{
 	  emit_move_insn (low[0], high[1]);
 	  ix86_expand_clear (high[0]);
 
-	  if (count > single_width)
+	  if (count > half_width)
 	    emit_insn (gen_lshr3 (low[0], low[0],
-				  GEN_INT (count - single_width)));
+				  GEN_INT (count - half_width)));
 	}
       else
 	{
