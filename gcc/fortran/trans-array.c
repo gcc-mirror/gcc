@@ -5136,7 +5136,6 @@ get_array_charlen (gfc_expr *expr, gfc_se *se)
 }
 
 
-
 /* Convert an array for passing as an actual argument.  Expressions and
    vector subscripts are evaluated and stored in a temporary, which is then
    passed.  For whole arrays the descriptor is passed.  For array sections
@@ -5158,13 +5157,18 @@ get_array_charlen (gfc_expr *expr, gfc_se *se)
 	 EXPR is the right-hand side of a pointer assignment and
 	 se->expr is the descriptor for the previously-evaluated
 	 left-hand side.  The function creates an assignment from
-	 EXPR to se->expr.  */
+	 EXPR to se->expr.  
+
+
+   The se->force_tmp flag disables the non-copying descriptor optimization
+   that is used for transpose. It may be used in cases where there is an
+   alias between the transpose argument and another argument in the same
+   function call.  */
 
 void
 gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 {
   gfc_loopinfo loop;
-  gfc_ss *secss;
   gfc_ss_info *info;
   int need_tmp;
   int n;
@@ -5175,7 +5179,9 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
   tree offset;
   int full;
   bool subref_array_target = false;
+  gfc_expr *arg;
 
+  gcc_assert (ss != NULL);
   gcc_assert (ss != gfc_ss_terminator);
 
   /* Special case things we know we can pass easily.  */
@@ -5185,21 +5191,20 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       /* If we have a linear array section, we can pass it directly.
 	 Otherwise we need to copy it into a temporary.  */
 
-      /* Find the SS for the array section.  */
-      secss = ss;
-      while (secss != gfc_ss_terminator && secss->type != GFC_SS_SECTION)
-	secss = secss->next;
-
-      gcc_assert (secss != gfc_ss_terminator);
-      info = &secss->data.info;
+      gcc_assert (ss->type == GFC_SS_SECTION);
+      gcc_assert (ss->expr == expr);
+      info = &ss->data.info;
 
       /* Get the descriptor for the array.  */
-      gfc_conv_ss_descriptor (&se->pre, secss, 0);
+      gfc_conv_ss_descriptor (&se->pre, ss, 0);
       desc = info->descriptor;
 
       subref_array_target = se->direct_byref && is_subref_array (expr);
       need_tmp = gfc_ref_needs_temporary_p (expr->ref)
 			&& !subref_array_target;
+
+      if (se->force_tmp)
+	need_tmp = 1;
 
       if (need_tmp)
 	full = 0;
@@ -5214,6 +5219,14 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	full = 0;
       else
 	full = gfc_full_array_ref_p (info->ref, NULL);
+
+      if (full)
+	for (n = 0; n < info->dimen; n++)
+	  if (info->dim[n] != n)
+	    {
+	      full = 0;
+	      break;
+	    }
 
       if (full)
 	{
@@ -5245,30 +5258,45 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       break;
       
     case EXPR_FUNCTION:
+
+      /* We don't need to copy data in some cases.  */
+      arg = gfc_get_noncopying_intrinsic_argument (expr);
+      if (arg)
+	{
+	  /* This is a call to transpose...  */
+	  gcc_assert (expr->value.function.isym->id == GFC_ISYM_TRANSPOSE);
+	  /* ... which has already been handled by the scalarizer, so
+	     that we just need to get its argument's descriptor.  */
+	  gfc_conv_expr_descriptor (se, expr->value.function.actual->expr, ss);
+	  return;
+	}
+
       /* A transformational function return value will be a temporary
 	 array descriptor.  We still need to go through the scalarizer
 	 to create the descriptor.  Elemental functions ar handled as
 	 arbitrary expressions, i.e. copy to a temporary.  */
-      secss = ss;
-      /* Look for the SS for this function.  */
-      while (secss != gfc_ss_terminator
-	     && (secss->type != GFC_SS_FUNCTION || secss->expr != expr))
-      	secss = secss->next;
 
       if (se->direct_byref)
 	{
-	  gcc_assert (secss != gfc_ss_terminator);
+	  gcc_assert (ss->type == GFC_SS_FUNCTION && ss->expr == expr);
 
 	  /* For pointer assignments pass the descriptor directly.  */
-	  se->ss = secss;
+	  if (se->ss == NULL)
+	    se->ss = ss;
+	  else
+	    gcc_assert (se->ss == ss);
 	  se->expr = gfc_build_addr_expr (NULL_TREE, se->expr);
 	  gfc_conv_expr (se, expr);
 	  return;
 	}
 
-      if (secss == gfc_ss_terminator)
+      if (ss->expr != expr)
 	{
 	  /* Elemental function.  */
+	  gcc_assert ((expr->value.function.esym != NULL
+		       && expr->value.function.esym->attr.elemental)
+		      || (expr->value.function.isym != NULL
+			  && expr->value.function.isym->elemental));
 	  need_tmp = 1;
 	  if (expr->ts.type == BT_CHARACTER
 		&& expr->ts.u.cl->length->expr_type != EXPR_CONSTANT)
@@ -5279,7 +5307,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       else
 	{
 	  /* Transformational function.  */
-	  info = &secss->data.info;
+	  info = &ss->data.info;
 	  need_tmp = 0;
 	}
       break;
@@ -5292,12 +5320,10 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	{
 	  need_tmp = 0;
 	  info = &ss->data.info;
-	  secss = ss;
 	}
       else
 	{
 	  need_tmp = 1;
-	  secss = NULL;
 	  info = NULL;
 	}
       break;
@@ -5305,10 +5331,14 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
     default:
       /* Something complicated.  Copy it into a temporary.  */
       need_tmp = 1;
-      secss = NULL;
       info = NULL;
       break;
     }
+
+  /* If we are creating a temporary, we don't need to bother about aliases
+     anymore.  */
+  if (need_tmp)
+    se->force_tmp = 0;
 
   gfc_init_loopinfo (&loop);
 
@@ -5421,7 +5451,6 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	se->string_length =  gfc_get_expr_charlen (expr);
 
       desc = info->descriptor;
-      gcc_assert (secss && secss != gfc_ss_terminator);
       if (se->direct_byref && !se->byref_noassign)
 	{
 	  /* For pointer assignments we fill in the destination.  */
@@ -5439,12 +5468,11 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	}
 
       offset = gfc_index_zero_node;
-      dim = 0;
 
       /* The following can be somewhat confusing.  We have two
          descriptors, a new one and the original array.
          {parm, parmtype, dim} refer to the new one.
-         {desc, type, n, secss, loop} refer to the original, which maybe
+         {desc, type, n, loop} refer to the original, which maybe
          a descriptorless array.
          The bounds of the scalarization are the bounds of the section.
          We don't have to worry about numeric overflows when calculating
@@ -5479,9 +5507,6 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	    }
 	  else
 	    {
-	      /* Check we haven't somehow got out of sync.  */
-	      gcc_assert (info->dim[dim] == n);
-
 	      /* Evaluate and remember the start of the section.  */
 	      start = info->start[n];
 	      stride = gfc_evaluate_now (stride, &loop.pre);
@@ -5505,6 +5530,14 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	  /* Vector subscripts need copying and are handled elsewhere.  */
 	  if (info->ref)
 	    gcc_assert (info->ref->u.ar.dimen_type[n] == DIMEN_RANGE);
+ 
+	  /* look for the corresponding scalarizer dimension: dim.  */
+	  for (dim = 0; dim < ndim; dim++)
+	    if (info->dim[dim] == n)
+	      break;
+
+	  /* loop exited early: the DIM being looked for has been found.  */
+	  gcc_assert (dim < ndim);
 
 	  /* Set the new lower bound.  */
 	  from = loop.from[dim];
@@ -5559,8 +5592,6 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	  /* Store the new stride.  */
 	  gfc_conv_descriptor_stride_set (&loop.pre, parm,
 					  gfc_rank_cst[dim], stride);
-
-	  dim++;
 	}
 
       if (se->data_not_needed)

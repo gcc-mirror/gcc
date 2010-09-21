@@ -61,10 +61,10 @@
   if (u /= v) call abort
 
 
-  a = foo(transpose(c)) ! Unnecessary { dg-warning "Creating array temporary" }
+  a = foo(transpose(c))
   if (any(a /= p+1)) call abort
 
-  write(u,*) foo(transpose(c))    ! 2 temps, should be 1 { dg-warning "Creating array temporary" }
+  write(u,*) foo(transpose(c))    ! { dg-warning "Creating array temporary" }
   write(v,*) p+1
   if (u /= v) call abort
 
@@ -77,10 +77,10 @@
   if (u /= v) call abort
 
 
-  e = foo(transpose(e))     ! 2 temps, should be 1 { dg-warning "Creating array temporary" }
+  e = foo(transpose(e))     ! { dg-warning "Creating array temporary" }
   if (any(e /= 2*s+1)) call abort
 
-  write(u,*) transpose(foo(transpose(e))-1)     ! 2 temps, should be 1 { dg-warning "Creating array temporary" }
+  write(u,*) transpose(foo(transpose(e))-1)     ! { dg-warning "Creating array temporary" }
   write(v,*) 2*s+1
   if (u /= v) call abort
 
@@ -141,28 +141,46 @@
   if (u /= v) call abort
 
 
-  if (any(transpose(matmul(a,c)) /= matmul(transpose(c), transpose(a)))) call abort      ! 4 temps, should be 2 { dg-warning "Creating array temporary" }
+  if (any(transpose(matmul(a,c)) /= matmul(transpose(c), transpose(a)))) call abort      ! 2 temps { dg-warning "Creating array temporary" }
 
   write(u,*) transpose(matmul(a,c))     ! { dg-warning "Creating array temporary" }
-  write(v,*) matmul(transpose(c), transpose(a))     ! 3 temps, should be 1 { dg-warning "Creating array temporary" }
+  write(v,*) matmul(transpose(c), transpose(a))     ! { dg-warning "Creating array temporary" }
   if (u /= v) call abort
 
 
-  if (any(transpose(matmul(e,a)) /= matmul(transpose(a), transpose(e)))) call abort     ! 4 temps, should be 2 { dg-warning "Creating array temporary" }
+  if (any(transpose(matmul(e,a)) /= matmul(transpose(a), transpose(e)))) call abort     ! 2 temps { dg-warning "Creating array temporary" }
 
   write(u,*) transpose(matmul(e,a))     ! { dg-warning "Creating array temporary" }
-  write(v,*) matmul(transpose(a), transpose(e))     ! 3 temps, should be 1 { dg-warning "Creating array temporary" }
+  write(v,*) matmul(transpose(a), transpose(e))     ! { dg-warning "Creating array temporary" }
   if (u /= v) call abort
 
 
-  call baz (transpose(a))       ! Unnecessary { dg-warning "Creating array temporary" }
+  call baz (transpose(a))
 
-  call toto (f, transpose (e))
-  if (any (f /= 4 * s + 12)) call abort
 
-  call toto (f, transpose (f))          ! { dg-warning "Creating array temporary" }
-  if (any (f /= 8 * r + 24)) call abort
+  call toto1 (a, transpose (c))
+  if (any (a /= 2 * p + 12)) call abort
 
+  call toto1 (e, transpose (e))          ! { dg-warning "Creating array temporary" }
+  if (any (e /= 4 * s + 12)) call abort
+
+
+  call toto2 (c, transpose (a))
+  if (any (c /= 2 * q + 13)) call abort
+
+  call toto2 (e, transpose(e))           ! { dg-warning "Creating array temporary" }
+  if (any (e /= 4 * r + 13)) call abort
+
+  call toto2 (e, transpose(transpose(e)))           ! { dg-warning "Creating array temporary" }
+  if (any (e /= 4 * r + 14)) call abort
+
+
+  call toto3 (e, transpose(e))
+  if (any (e /= 4 * r + 14)) call abort
+
+
+  call titi (nx, e, transpose(e))           ! { dg-warning "Creating array temporary" }
+  if (any (e /= 4 * s + 17)) call abort
 
   contains
 
@@ -182,22 +200,38 @@
     integer, intent(in) :: x(:,:)
   end subroutine baz
 
-  elemental subroutine toto (x, y)
+  elemental subroutine toto1 (x, y)
     integer, intent(out) :: x
     integer, intent(in)  :: y
     x = y + y
-  end subroutine toto
+  end subroutine toto1
+
+  subroutine toto2 (x, y)
+    integer, dimension(:,:), intent(out) :: x
+    integer, dimension(:,:), intent(in)  :: y
+    x = y + 1
+  end subroutine toto2
+
+  subroutine toto3 (x, y)
+    integer, dimension(:,:), intent(in) :: x, y
+  end subroutine toto3
 
 end
+
+subroutine titi (n, x, y)
+  integer :: n, x(n,n), y(n,n)
+  x = y + 3
+end subroutine titi
+
 ! No call to transpose
 ! { dg-final { scan-tree-dump-times "_gfortran_transpose" 0 "original" } }
 !
-! 34 temporaries
-! { dg-final { scan-tree-dump-times "struct\[^\\n\]*atmp" 34 "original" } }
+! 24 temporaries
+! { dg-final { scan-tree-dump-times "struct\[^\\n\]*atmp" 24 "original" } }
 !
 ! 2 tests optimized out
-! { dg-final { scan-tree-dump-times "_gfortran_abort" 34 "original" } }
-! { # Commented out as failing at -O0: dg-final { scan-tree-dump-times "_gfortran_abort" 32 "optimized" } }
+! { dg-final { scan-tree-dump-times "_gfortran_abort" 39 "original" } }
+! { # Commented out as failing at -O0: dg-final { scan-tree-dump-times "_gfortran_abort" 37 "optimized" } }
 !
 ! cleanup
 ! { dg-final { cleanup-tree-dump "original" } }

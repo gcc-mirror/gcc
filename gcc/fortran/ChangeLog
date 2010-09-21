@@ -1,3 +1,27 @@
+2010-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/45648
+	* trans-array.c (gfc_conv_expr_descriptor): Calculate dim out of n and
+	info->dim.
+
+	PR fortran/45648
+	* trans-array.c (gfc_conv_expr_descriptor): Unset full if we are
+	accessing dimensions in reversed order. 
+
+	PR fortran/45648
+	* trans-array.c (gfc_conv_expr_descriptor): Special case noncopying
+	intrinsic function call. 
+
+	* trans-array.c (gfc_conv_expr_descriptor): Remove ss lookup.
+	Update asserts accordingly.
+
+	PR fortran/45648
+	* trans.h (gfc_se): New field force_tmp. 
+	* trans-expr.c (gfc_conv_procedure_call): Check for argument alias
+	and set parmse.force_tmp if some alias is found. 
+	* trans-array.c (gfc_conv_expr_descriptor): Force a temporary creation
+	if se->force_tmp is set. 
+
 2010-09-20  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/45438

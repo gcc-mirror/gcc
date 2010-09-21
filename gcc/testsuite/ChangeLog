@@ -1,3 +1,14 @@
+2010-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/45648
+	* gfortran.dg/inline_transpose_1.f90: Update temporary's locations
+	and counts. Add non-elemental function call check.
+
+	PR fortran/45648
+	* gfortran.dg/inline_transpose_1.f90: Add function calls with aliasing
+	arguments checks. Update temporary counts.
+	* gfortran.dg/transpose_optimization_1.f90: New.
+
 2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	Merge from 'apple/trunk' branch on FSF servers.
