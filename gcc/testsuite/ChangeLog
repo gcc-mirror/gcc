@@ -1,3 +1,13 @@
+2010-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline
+	2010-09-17  Richard Guenther  <rguenther@suse.de>
+		    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/45678
+	* gcc.dg/torture/pr45678-1.c: New.
+	* gcc.dg/torture/pr45678-2.c: Likewise.
+
 2010-09-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline

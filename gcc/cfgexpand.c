@@ -826,7 +826,7 @@ dump_stack_var_partition (void)
 static void
 expand_one_stack_var_at (tree decl, HOST_WIDE_INT offset)
 {
-  HOST_WIDE_INT align;
+  HOST_WIDE_INT align, max_align;
   rtx x;
 
   /* If this fails, we've overflowed the stack frame.  Error nicely?  */
@@ -839,8 +839,9 @@ expand_one_stack_var_at (tree decl, HOST_WIDE_INT offset)
   offset -= frame_phase;
   align = offset & -offset;
   align *= BITS_PER_UNIT;
-  if (align > STACK_BOUNDARY || align == 0)
-    align = STACK_BOUNDARY;
+  max_align = crtl->max_used_stack_slot_alignment;
+  if (align == 0 || align > max_align)
+    align = max_align;
   DECL_ALIGN (decl) = align;
   DECL_USER_ALIGN (decl) = 0;
 
