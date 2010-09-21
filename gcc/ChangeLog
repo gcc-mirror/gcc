@@ -1,3 +1,9 @@
+2010-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/45739
+	* simplify-rtx.c (simplify_binary_operation_1): Optimize even
+	vector mode | CONST0_RTX (mode) and ^ CONST0_RTX (mode).
+
 2010-09-21  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/rs6000/rs6000.h (OUTPUT_ADDR_CONST_EXTRA): Remove macros.
