@@ -1,3 +1,13 @@
+2010-09-21  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/41085
+	Backport from mainline
+	2010-07-27  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/45051
+	* reload1.c (delete_output_reload): Use refers_to_regno_p rather
+	than reg_mentioned_p.
+
 2010-09-21  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR target/45694
