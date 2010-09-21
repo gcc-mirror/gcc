@@ -9692,7 +9692,7 @@ ix86_expand_prologue (void)
     }
   else
     {
-      rtx eax = gen_rtx_REG (Pmode, AX_REG);;
+      rtx eax = gen_rtx_REG (Pmode, AX_REG);
       rtx r10 = NULL;
       bool eax_live = false;
       bool r10_live = false;
