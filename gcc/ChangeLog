@@ -1,3 +1,12 @@
+2010-09-21  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/rs6000/rs6000.h (OUTPUT_ADDR_CONST_EXTRA): Remove macros.
+	* config/rs6000/rs6000-protos.h (rs6000_output_addr_const_extra):
+	Remove.
+	* config/rs6000/rs6000.c (rs6000_output_addr_const_extra): Make
+	static.
+	(TTARGET_ASM_OUTPUT_ADDR_CONST_EXTRA): Define.
+
 2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/25965
