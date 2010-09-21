@@ -1,5 +1,29 @@
 2010-09-21  Richard Guenther  <rguenther@suse.de>
 
+	* dwarf2out.c (is_cu_die): New function.
+	(add_pubtype): Use it.
+	(gen_subprogram_die): Likewise.
+	(gen_struct_or_union_type_die): Likewise.
+	(dwarf2out_finish): Likewise.
+	(comp_unit_die): Rename to ...
+	(single_comp_unit_die): ... this.
+	(comp_unit_die): New function lazily constructing and
+	returning single_comp_unit_die.
+	(is_cxx, is_fortran, is_ada, debug_dwarf, break_out_comdat_types,
+	base_type_die, subrange_type_die, modified_type_die,
+	lower_bound_default, add_bound_info, add_prototyped_attribute,
+	dwarf2out_vms_debug_main_pointer, scope_die_for, retry_incomplete_types,
+	dwarf2out_abstract_function, gen_type_die_with_usage, get_context_die,
+	force_decl_die, gen_namespace_die, dwarf2out_decl,
+	dwarf2out_start_source_file, dwarf2out_end_source_file,
+	prune_unused_types, dwarf2out_finish): Use it.
+	(gen_compile_unit_die): For GNU GIMPLE derive DW_AT_language from
+	the global list of translation-unit decls.
+	(dwarf2out_init): Do not create single_comp_unit_die here.
+	(force_decl_die): Handle TRANSLATION_UNIT_DECL.
+
+2010-09-21  Richard Guenther  <rguenther@suse.de>
+
 	* dwarf2out.c (dwarf2out_decl): Do not always generate a DIE
 	for bool for C++.
 

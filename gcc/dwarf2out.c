@@ -5878,7 +5878,7 @@ skeleton_chain_node;
 static unsigned long next_die_offset;
 
 /* Record the root of the DIE's built for the current compilation unit.  */
-static GTY(()) dw_die_ref comp_unit_die;
+static GTY(()) dw_die_ref single_comp_unit_die;
 
 /* A list of type DIEs that have been separated into comdat sections.  */
 static GTY(()) comdat_type_node *comdat_type_list;
@@ -6498,6 +6498,15 @@ static char ranges_section_label[2 * MAX_ARTIFICIAL_LABEL_BYTES];
 #endif
 
 
+/* Return the root of the DIE's built for the current compilation unit.  */
+static dw_die_ref
+comp_unit_die (void)
+{
+  if (!single_comp_unit_die)
+    single_comp_unit_die = gen_compile_unit_die (NULL);
+  return single_comp_unit_die;
+}
+
 /* We allow a language front-end to designate a function that is to be
    called to "demangle" any name before it is put into a DIE.  */
 
@@ -7691,7 +7700,7 @@ get_AT_file (dw_die_ref die, enum dwarf_attribute attr_kind)
 static inline bool
 is_cxx (void)
 {
-  unsigned int lang = get_AT_unsigned (comp_unit_die, DW_AT_language);
+  unsigned int lang = get_AT_unsigned (comp_unit_die (), DW_AT_language);
 
   return lang == DW_LANG_C_plus_plus || lang == DW_LANG_ObjC_plus_plus;
 }
@@ -7701,7 +7710,7 @@ is_cxx (void)
 static inline bool
 is_fortran (void)
 {
-  unsigned int lang = get_AT_unsigned (comp_unit_die, DW_AT_language);
+  unsigned int lang = get_AT_unsigned (comp_unit_die (), DW_AT_language);
 
   return (lang == DW_LANG_Fortran77
 	  || lang == DW_LANG_Fortran90
@@ -7713,7 +7722,7 @@ is_fortran (void)
 static inline bool
 is_ada (void)
 {
-  unsigned int lang = get_AT_unsigned (comp_unit_die, DW_AT_language);
+  unsigned int lang = get_AT_unsigned (comp_unit_die (), DW_AT_language);
 
   return lang == DW_LANG_Ada95 || lang == DW_LANG_Ada83;
 }
@@ -8456,7 +8465,7 @@ DEBUG_FUNCTION void
 debug_dwarf (void)
 {
   print_indent = 0;
-  print_die (comp_unit_die, stderr);
+  print_die (comp_unit_die (), stderr);
   if (! DWARF2_ASM_LINE_DEBUG_INFO)
     print_dwarf_line_table (stderr);
 }
@@ -9506,6 +9515,14 @@ is_symbol_die (dw_die_ref c)
 	  || c->die_tag == DW_TAG_module);
 }
 
+/* Returns true iff C is a compile-unit DIE.  */
+
+static inline bool
+is_cu_die (dw_die_ref c)
+{
+  return c && c->die_tag == DW_TAG_compile_unit;
+}
+
 static char *
 gen_internal_sym (const char *prefix)
 {
@@ -10031,7 +10048,7 @@ break_out_comdat_types (dw_die_ref die)
            add it to the list of comdat types.  */
         unit = new_die (DW_TAG_type_unit, NULL, NULL);
         add_AT_unsigned (unit, DW_AT_language,
-                         get_AT_unsigned (comp_unit_die, DW_AT_language));
+                         get_AT_unsigned (comp_unit_die (), DW_AT_language));
         type_node = ggc_alloc_cleared_comdat_type_node ();
         type_node->root_die = unit;
         type_node->next = comdat_type_list;
@@ -11353,7 +11370,7 @@ add_pubtype (tree decl, dw_die_ref die)
 
   e.name = NULL;
   if ((TREE_PUBLIC (decl)
-       || die->die_parent == comp_unit_die)
+       || is_cu_die (die->die_parent))
       && (die->die_tag == DW_TAG_typedef || COMPLETE_TYPE_P (decl)))
     {
       e.die = die;
@@ -12557,7 +12574,7 @@ base_type_die (tree type)
       gcc_unreachable ();
     }
 
-  base_type_result = new_die (DW_TAG_base_type, comp_unit_die, type);
+  base_type_result = new_die (DW_TAG_base_type, comp_unit_die (), type);
 
   add_AT_unsigned (base_type_result, DW_AT_byte_size,
 		   int_size_in_bytes (type));
@@ -12648,7 +12665,7 @@ subrange_type_die (tree type, tree low, tree high, dw_die_ref context_die)
   const HOST_WIDE_INT size_in_bytes = int_size_in_bytes (type);
 
   if (context_die == NULL)
-    context_die = comp_unit_die;
+    context_die = comp_unit_die ();
 
   subrange_die = new_die (DW_TAG_subrange_type, context_die, type);
 
@@ -12743,17 +12760,17 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
 
   if (is_const_type)
     {
-      mod_type_die = new_die (DW_TAG_const_type, comp_unit_die, type);
+      mod_type_die = new_die (DW_TAG_const_type, comp_unit_die (), type);
       sub_die = modified_type_die (type, 0, is_volatile_type, context_die);
     }
   else if (is_volatile_type)
     {
-      mod_type_die = new_die (DW_TAG_volatile_type, comp_unit_die, type);
+      mod_type_die = new_die (DW_TAG_volatile_type, comp_unit_die (), type);
       sub_die = modified_type_die (type, 0, 0, context_die);
     }
   else if (code == POINTER_TYPE)
     {
-      mod_type_die = new_die (DW_TAG_pointer_type, comp_unit_die, type);
+      mod_type_die = new_die (DW_TAG_pointer_type, comp_unit_die (), type);
       add_AT_unsigned (mod_type_die, DW_AT_byte_size,
 		       simple_type_size_in_bits (type) / BITS_PER_UNIT);
       item_type = TREE_TYPE (type);
@@ -12764,10 +12781,10 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
   else if (code == REFERENCE_TYPE)
     {
       if (TYPE_REF_IS_RVALUE (type) && dwarf_version >= 4)
-	mod_type_die = new_die (DW_TAG_rvalue_reference_type, comp_unit_die,
+	mod_type_die = new_die (DW_TAG_rvalue_reference_type, comp_unit_die (),
 				type);
       else
-	mod_type_die = new_die (DW_TAG_reference_type, comp_unit_die, type);
+	mod_type_die = new_die (DW_TAG_reference_type, comp_unit_die (), type);
       add_AT_unsigned (mod_type_die, DW_AT_byte_size,
 		       simple_type_size_in_bits (type) / BITS_PER_UNIT);
       item_type = TREE_TYPE (type);
@@ -17126,7 +17143,7 @@ add_comp_dir_attribute (dw_die_ref die)
 static int
 lower_bound_default (void)
 {
-  switch (get_AT_unsigned (comp_unit_die, DW_AT_language))
+  switch (get_AT_unsigned (comp_unit_die (), DW_AT_language))
     {
     case DW_LANG_C:
     case DW_LANG_C89:
@@ -17255,7 +17272,7 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
 	  break;
 
 	if (current_function_decl == 0)
-	  ctx = comp_unit_die;
+	  ctx = comp_unit_die ();
 	else
 	  ctx = lookup_decl_die (current_function_decl);
 
@@ -17448,7 +17465,7 @@ add_bit_size_attribute (dw_die_ref die, tree decl)
 static inline void
 add_prototyped_attribute (dw_die_ref die, tree func_type)
 {
-  if (get_AT_unsigned (comp_unit_die, DW_AT_language) == DW_LANG_C89
+  if (get_AT_unsigned (comp_unit_die (), DW_AT_language) == DW_LANG_C89
       && TYPE_ARG_TYPES (func_type) != NULL)
     add_AT_flag (die, DW_AT_prototyped, 1);
 }
@@ -17628,17 +17645,17 @@ dwarf2out_vms_debug_main_pointer (void)
 			       current_function_funcdef_no);
   add_AT_lbl_id (die, DW_AT_entry_pc, label);
 
-  /* Make it the first child of comp_unit_die.  */
-  die->die_parent = comp_unit_die;
-  if (comp_unit_die->die_child)
+  /* Make it the first child of comp_unit_die ().  */
+  die->die_parent = comp_unit_die ();
+  if (comp_unit_die ()->die_child)
     {
-      die->die_sib = comp_unit_die->die_child->die_sib;
-      comp_unit_die->die_child->die_sib = die;
+      die->die_sib = comp_unit_die ()->die_child->die_sib;
+      comp_unit_die ()->die_child->die_sib = die;
     }
   else
     {
       die->die_sib = die;
-      comp_unit_die->die_child = die;
+      comp_unit_die ()->die_child = die;
     }
 }
 #endif /* VMS_DEBUGGING_INFO */
@@ -17693,7 +17710,7 @@ scope_die_for (tree t, dw_die_ref context_die)
     containing_scope = NULL_TREE;
 
   if (containing_scope == NULL_TREE)
-    scope_die = comp_unit_die;
+    scope_die = comp_unit_die ();
   else if (TYPE_P (containing_scope))
     {
       /* For types, we can just look up the appropriate DIE.  But
@@ -17713,7 +17730,7 @@ scope_die_for (tree t, dw_die_ref context_die)
 
 	  /* If none of the current dies are suitable, we get file scope.  */
 	  if (scope_die == NULL)
-	    scope_die = comp_unit_die;
+	    scope_die = comp_unit_die ();
 	}
       else
 	scope_die = lookup_type_die (containing_scope);
@@ -18217,7 +18234,7 @@ retry_incomplete_types (void)
   for (i = VEC_length (tree, incomplete_types) - 1; i >= 0; i--)
     if (should_emit_struct_debug (VEC_index (tree, incomplete_types, i),
 				  DINFO_USAGE_DIR_USE))
-      gen_type_die (VEC_index (tree, incomplete_types, i), comp_unit_die);
+      gen_type_die (VEC_index (tree, incomplete_types, i), comp_unit_die ());
 }
 
 /* Determine what tag to use for a record type.  */
@@ -18587,7 +18604,7 @@ dwarf2out_abstract_function (tree decl)
       context = decl_class_context (decl);
       if (context)
 	gen_type_die_for_member
-	  (context, decl, decl_function_context (decl) ? NULL : comp_unit_die);
+	  (context, decl, decl_function_context (decl) ? NULL : comp_unit_die ());
     }
 
   /* Pretend we've just finished compiling this function.  */
@@ -18751,7 +18768,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	 instances of inlines, since the spec requires the out-of-line copy
 	 to have the same parent.  For local class methods, this doesn't
 	 apply; we just use the old DIE.  */
-      if ((old_die->die_parent == comp_unit_die || context_die == NULL)
+      if ((is_cu_die (old_die->die_parent) || context_die == NULL)
 	  && (DECL_ARTIFICIAL (decl)
 	      || (get_AT_file (old_die, DW_AT_decl_file) == file_index
 		  && (get_AT_unsigned (old_die, DW_AT_decl_line)
@@ -19613,6 +19630,38 @@ gen_compile_unit_die (const char *filename)
 
   add_AT_string (die, DW_AT_producer, producer);
 
+  /* If our producer is LTO try to figure out a common language to use
+     from the global list of translation units.  */
+  if (strcmp (language_string, "GNU GIMPLE") == 0)
+    {
+      unsigned i;
+      tree t;
+      const char *common_lang = NULL;
+
+      FOR_EACH_VEC_ELT (tree, all_translation_units, i, t)
+	{
+	  if (!TRANSLATION_UNIT_LANGUAGE (t))
+	    continue;
+	  if (!common_lang)
+	    common_lang = TRANSLATION_UNIT_LANGUAGE (t);
+	  else if (strcmp (common_lang, TRANSLATION_UNIT_LANGUAGE (t)) == 0)
+	    ;
+	  else if (strncmp (common_lang, "GNU C", 5) == 0
+		   && strncmp (TRANSLATION_UNIT_LANGUAGE (t), "GNU C", 5) == 0)
+	    /* Mixing C and C++ is ok, use C++ in that case.  */
+	    common_lang = "GNU C++";
+	  else
+	    {
+	      /* Fall back to C.  */
+	      common_lang = NULL;
+	      break;
+	    }
+	}
+
+      if (common_lang)
+	language_string = common_lang;
+    }
+
   language = DW_LANG_C89;
   if (strcmp (language_string, "GNU C++") == 0)
     language = DW_LANG_C_plus_plus;
@@ -19772,7 +19821,7 @@ gen_struct_or_union_type_die (tree type, dw_die_ref context_die,
 
   scope_die = scope_die_for (type, context_die);
 
-  if (! type_die || (nested && scope_die == comp_unit_die))
+  if (! type_die || (nested && is_cu_die (scope_die)))
     /* First occurrence of type or toplevel definition of nested class.  */
     {
       dw_die_ref old_die = type_die;
@@ -20149,7 +20198,7 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
 	    tree name = TYPE_NAME (type);
 	    if (TREE_CODE (name) == TYPE_DECL)
 	      name = DECL_NAME (name);
-            type_die = new_die (DW_TAG_unspecified_type, comp_unit_die, type);
+            type_die = new_die (DW_TAG_unspecified_type, comp_unit_die (), type);
             add_name_attribute (type_die, IDENTIFIER_POINTER (name));
             equate_type_number_to_die (type, type_die);
           }
@@ -20379,7 +20428,7 @@ get_context_die (tree context)
       else
 	return force_decl_die (context);
     }
-  return comp_unit_die;
+  return comp_unit_die ();
 }
 
 /* Returns the DIE for decl.  A DIE will always be returned.  */
@@ -20425,7 +20474,11 @@ force_decl_die (tree decl)
 	    dwarf2out_decl (decl);
 	  else
 	    /* DWARF2 has neither DW_TAG_module, nor DW_TAG_namespace.  */
-	    decl_die = comp_unit_die;
+	    decl_die = comp_unit_die ();
+	  break;
+
+	case TRANSLATION_UNIT_DECL:
+	  decl_die = comp_unit_die ();
 	  break;
 
 	default:
@@ -20522,7 +20575,7 @@ gen_namespace_die (tree decl, dw_die_ref context_die)
   if (DECL_ABSTRACT_ORIGIN (decl) == NULL)
     {
       /* Output a real namespace or module.  */
-      context_die = setup_namespace_context (decl, comp_unit_die);
+      context_die = setup_namespace_context (decl, comp_unit_die ());
       namespace_die = new_die (is_fortran ()
 			       ? DW_TAG_module : DW_TAG_namespace,
 			       context_die, decl);
@@ -20549,7 +20602,7 @@ gen_namespace_die (tree decl, dw_die_ref context_die)
 
       if (DECL_CONTEXT (decl) == NULL_TREE
 	  || TREE_CODE (DECL_CONTEXT (decl)) == NAMESPACE_DECL)
-	context_die = setup_namespace_context (decl, comp_unit_die);
+	context_die = setup_namespace_context (decl, comp_unit_die ());
       /* Now create the namespace alias DIE.  */
       namespace_die = new_die (DW_TAG_imported_declaration, context_die, decl);
       add_name_and_src_coords_attributes (namespace_die, decl);
@@ -20920,7 +20973,7 @@ dwarf2out_imported_module_or_decl (tree decl, tree name, tree context,
 void
 dwarf2out_decl (tree decl)
 {
-  dw_die_ref context_die = comp_unit_die;
+  dw_die_ref context_die = comp_unit_die ();
 
   switch (TREE_CODE (decl))
     {
@@ -21565,7 +21618,7 @@ dwarf2out_start_source_file (unsigned int lineno, const char *filename)
       /* Record the beginning of the file for break_out_includes.  */
       dw_die_ref bincl_die;
 
-      bincl_die = new_die (DW_TAG_GNU_BINCL, comp_unit_die, NULL);
+      bincl_die = new_die (DW_TAG_GNU_BINCL, comp_unit_die (), NULL);
       add_AT_string (bincl_die, DW_AT_name, remap_debug_filename (filename));
     }
 
@@ -21589,7 +21642,7 @@ dwarf2out_end_source_file (unsigned int lineno ATTRIBUTE_UNUSED)
 {
   if (flag_eliminate_dwarf2_dups && dwarf_version < 4)
     /* Record the end of the file for break_out_includes.  */
-    new_die (DW_TAG_GNU_EINCL, comp_unit_die, NULL);
+    new_die (DW_TAG_GNU_EINCL, comp_unit_die (), NULL);
 
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
@@ -21674,14 +21727,6 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
   /* Allocate the table that maps insn UIDs to vtable slot indexes.  */
   vcall_insn_table = htab_create_ggc (10, vcall_insn_table_hash,
                                       vcall_insn_table_eq, NULL);
-
-  /* Generate the initial DIE for the .debug section.  Note that the (string)
-     value given in the DW_AT_name attribute of the DW_TAG_compile_unit DIE
-     will (typically) be a relative pathname and that this pathname should be
-     taken as being relative to the directory from which the compiler was
-     invoked when the given (base) source file was compiled.  We will fill
-     in this value in dwarf2out_finish.  */
-  comp_unit_die = gen_compile_unit_die (NULL);
 
   incomplete_types = VEC_alloc (tree, gc, 64);
 
@@ -22092,7 +22137,7 @@ prune_unused_types (void)
 
 #if ENABLE_ASSERT_CHECKING
   /* All the marks should already be clear.  */
-  verify_marks_clear (comp_unit_die);
+  verify_marks_clear (comp_unit_die ());
   for (node = limbo_die_list; node; node = node->next)
     verify_marks_clear (node->die);
   for (ctnode = comdat_type_list; ctnode; ctnode = ctnode->next)
@@ -22103,7 +22148,7 @@ prune_unused_types (void)
   premark_types_used_by_global_vars ();
 
   /* Set the mark on nodes that are actually used.  */
-  prune_unused_types_walk (comp_unit_die);
+  prune_unused_types_walk (comp_unit_die ());
   for (node = limbo_die_list; node; node = node->next)
     prune_unused_types_walk (node->die);
   for (ctnode = comdat_type_list; ctnode; ctnode = ctnode->next)
@@ -22128,14 +22173,14 @@ prune_unused_types (void)
     htab_traverse (debug_str_hash, prune_indirect_string, NULL);
   else if (debug_str_hash)
     htab_empty (debug_str_hash);
-  prune_unused_types_prune (comp_unit_die);
+  prune_unused_types_prune (comp_unit_die ());
   for (node = limbo_die_list; node; node = node->next)
     prune_unused_types_prune (node->die);
   for (ctnode = comdat_type_list; ctnode; ctnode = ctnode->next)
     prune_unused_types_prune (ctnode->root_die);
 
   /* Leave the marks clear.  */
-  prune_unmark_dies (comp_unit_die);
+  prune_unmark_dies (comp_unit_die ());
   for (node = limbo_die_list; node; node = node->next)
     prune_unmark_dies (node->die);
   for (ctnode = comdat_type_list; ctnode; ctnode = ctnode->next)
@@ -22354,15 +22399,15 @@ dwarf2out_finish (const char *filename)
 
   /* Add the name for the main input file now.  We delayed this from
      dwarf2out_init to avoid complications with PCH.  */
-  add_name_attribute (comp_unit_die, remap_debug_filename (filename));
+  add_name_attribute (comp_unit_die (), remap_debug_filename (filename));
   if (!IS_ABSOLUTE_PATH (filename))
-    add_comp_dir_attribute (comp_unit_die);
-  else if (get_AT (comp_unit_die, DW_AT_comp_dir) == NULL)
+    add_comp_dir_attribute (comp_unit_die ());
+  else if (get_AT (comp_unit_die (), DW_AT_comp_dir) == NULL)
     {
       bool p = false;
       htab_traverse (file_table, file_table_relative_p, &p);
       if (p)
-	add_comp_dir_attribute (comp_unit_die);
+	add_comp_dir_attribute (comp_unit_die ());
     }
 
   for (i = 0; i < VEC_length (deferred_locations, deferred_locations_list); i++)
@@ -22389,11 +22434,11 @@ dwarf2out_finish (const char *filename)
 
 	  if (origin)
 	    add_child_die (origin->die_parent, die);
-	  else if (die == comp_unit_die)
+	  else if (is_cu_die (die))
 	    ;
 	  else if (seen_error ())
 	    /* It's OK to be confused by errors in the input.  */
-	    add_child_die (comp_unit_die, die);
+	    add_child_die (comp_unit_die (), die);
 	  else
 	    {
 	      /* In certain situations, the lexical block containing a
@@ -22423,14 +22468,14 @@ dwarf2out_finish (const char *filename)
 	      if (origin)
 	        add_child_die (origin, die);
 	      else
-	        add_child_die (comp_unit_die, die);
+	        add_child_die (comp_unit_die (), die);
 	    }
 	}
     }
 
   limbo_die_list = NULL;
 
-  resolve_addr (comp_unit_die);
+  resolve_addr (comp_unit_die ());
 
   for (node = deferred_asm_name; node; node = node->next)
     {
@@ -22454,12 +22499,12 @@ dwarf2out_finish (const char *filename)
   /* Generate separate CUs for each of the include files we've seen.
      They will go into limbo_die_list.  */
   if (flag_eliminate_dwarf2_dups && dwarf_version < 4)
-    break_out_includes (comp_unit_die);
+    break_out_includes (comp_unit_die ());
 
   /* Generate separate COMDAT sections for type DIEs. */
   if (dwarf_version >= 4)
     {
-      break_out_comdat_types (comp_unit_die);
+      break_out_comdat_types (comp_unit_die ());
 
       /* Each new type_unit DIE was added to the limbo die list when created.
          Since these have all been added to comdat_type_list, clear the
@@ -22471,7 +22516,7 @@ dwarf2out_finish (const char *filename)
          references to the main compile unit).  */
       for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
         copy_decls_for_unworthy_types (ctnode->root_die);
-      copy_decls_for_unworthy_types (comp_unit_die);
+      copy_decls_for_unworthy_types (comp_unit_die ());
 
       /* In the process of copying declarations from one unit to another,
          we may have left some declarations behind that are no longer
@@ -22481,7 +22526,7 @@ dwarf2out_finish (const char *filename)
 
   /* Traverse the DIE's and add add sibling attributes to those DIE's
      that have children.  */
-  add_sibling_attributes (comp_unit_die);
+  add_sibling_attributes (comp_unit_die ());
   for (node = limbo_die_list; node; node = node->next)
     add_sibling_attributes (node->die);
   for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
@@ -22501,8 +22546,8 @@ dwarf2out_finish (const char *filename)
   if (!have_multiple_function_sections
       || !(dwarf_version >= 3 || !dwarf_strict))
     {
-      add_AT_lbl_id (comp_unit_die, DW_AT_low_pc, text_section_label);
-      add_AT_lbl_id (comp_unit_die, DW_AT_high_pc, text_end_label);
+      add_AT_lbl_id (comp_unit_die (), DW_AT_low_pc, text_section_label);
+      add_AT_lbl_id (comp_unit_die (), DW_AT_high_pc, text_end_label);
     }
 
   else
@@ -22515,14 +22560,14 @@ dwarf2out_finish (const char *filename)
 	 absolute.  Historically, we've emitted the unexpected
 	 DW_AT_entry_pc instead of DW_AT_low_pc for this purpose.
 	 Emit both to give time for other tools to adapt.  */
-      add_AT_addr (comp_unit_die, DW_AT_low_pc, const0_rtx);
-      add_AT_addr (comp_unit_die, DW_AT_entry_pc, const0_rtx);
+      add_AT_addr (comp_unit_die (), DW_AT_low_pc, const0_rtx);
+      add_AT_addr (comp_unit_die (), DW_AT_entry_pc, const0_rtx);
 
       if (text_section_used)
-	add_ranges_by_labels (comp_unit_die, text_section_label,
+	add_ranges_by_labels (comp_unit_die (), text_section_label,
 			      text_end_label, &range_list_added);
       if (flag_reorder_blocks_and_partition && cold_text_section_used)
-	add_ranges_by_labels (comp_unit_die, cold_text_section_label,
+	add_ranges_by_labels (comp_unit_die (), cold_text_section_label,
 			      cold_end_label, &range_list_added);
 
       for (fde_idx = 0; fde_idx < fde_table_in_use; fde_idx++)
@@ -22532,18 +22577,18 @@ dwarf2out_finish (const char *filename)
 	  if (fde->dw_fde_switched_sections)
 	    {
 	      if (!fde->in_std_section)
-		add_ranges_by_labels (comp_unit_die,
+		add_ranges_by_labels (comp_unit_die (),
 				      fde->dw_fde_hot_section_label,
 				      fde->dw_fde_hot_section_end_label,
 				      &range_list_added);
 	      if (!fde->cold_in_std_section)
-		add_ranges_by_labels (comp_unit_die,
+		add_ranges_by_labels (comp_unit_die (),
 				      fde->dw_fde_unlikely_section_label,
 				      fde->dw_fde_unlikely_section_end_label,
 				      &range_list_added);
 	    }
 	  else if (!fde->in_std_section)
-	    add_ranges_by_labels (comp_unit_die, fde->dw_fde_begin,
+	    add_ranges_by_labels (comp_unit_die (), fde->dw_fde_begin,
 				  fde->dw_fde_end, &range_list_added);
 	}
 
@@ -22552,11 +22597,11 @@ dwarf2out_finish (const char *filename)
     }
 
   if (debug_info_level >= DINFO_LEVEL_NORMAL)
-    add_AT_lineptr (comp_unit_die, DW_AT_stmt_list,
+    add_AT_lineptr (comp_unit_die (), DW_AT_stmt_list,
 		    debug_line_section_label);
 
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
-    add_AT_macptr (comp_unit_die, DW_AT_macro_info, macinfo_section_label);
+    add_AT_macptr (comp_unit_die (), DW_AT_macro_info, macinfo_section_label);
 
   /* Output all of the compilation units.  We put the main one last so that
      the offsets are available to output_pubnames.  */
@@ -22586,7 +22631,7 @@ dwarf2out_finish (const char *filename)
 
   /* Output the main compilation unit if non-empty or if .debug_macinfo
      has been emitted.  */
-  output_comp_unit (comp_unit_die, debug_info_level >= DINFO_LEVEL_VERBOSE);
+  output_comp_unit (comp_unit_die (), debug_info_level >= DINFO_LEVEL_VERBOSE);
 
   /* Output the abbreviation table.  */
   switch_to_section (debug_abbrev_section);
