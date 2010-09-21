@@ -1793,13 +1793,13 @@ fi],[if test x"$default_enable_lto" = x"yes" ; then
       *) enable_lto=no ;;
     esac
   else
-  # Apart from ELF platforms, only Windows supports LTO so far.  It
-  # would also be nice to check the binutils support, but we don't
+  # Apart from ELF platforms, only Windows and Darwin support LTO so far.
+  # It would also be nice to check the binutils support, but we don't
   # have gcc_GAS_CHECK_FEATURE available here.  For now, we'll just
   # warn during gcc/ subconfigure; unless you're bootstrapping with
   # -flto it won't be needed until after installation anyway.
     case $target in
-      *-cygwin*|*-mingw*) ;;
+      *-cygwin*|*-mingw* | *-apple-darwin*) ;;
       *) if test x"$enable_lto" = x"yes"; then
 	AC_MSG_ERROR([LTO support is not enabled for this target.])
         fi
