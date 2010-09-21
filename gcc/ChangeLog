@@ -9,6 +9,17 @@
 
 2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	PR objc/23710
+	* c-family/c-common.h (objc_start_method_definition): Return bool
+	instead of void.
+	* c-family/stub-objc.c (objc_start_method_definition): Return bool
+	instead of void.
+	* c-parser.c (c_parser_objc_method_definition): Check the return
+	value of objc_start_method_definition and if false is returned,
+	parse the method definition but emit no code.
+	
+2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	PR objc/25965
 	* c-decl.c (detect_field_duplicates): If compiling Objective-C,
 	call objc_get_interface_ivars ().

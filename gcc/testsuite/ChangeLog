@@ -11,6 +11,11 @@
 
 2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	PR objc/23710
+	* objc.dg/invalid-method-1.m: New.
+
+2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	Merge from 'apple/trunk' branch on FSF servers.
 
 	2005-10-11  Fariborz Jahanian <fjahanian@apple.com>
