@@ -996,6 +996,7 @@ static tree rs6000_builtin_vectorized_libmass (tree, tree, tree);
 static tree rs6000_builtin_vectorized_function (tree, tree, tree);
 static int rs6000_savres_strategy (rs6000_stack_t *, bool, int, int);
 static void rs6000_restore_saved_cr (rtx, int);
+static bool rs6000_output_addr_const_extra (FILE *, rtx);
 static void rs6000_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void rs6000_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void rs6000_output_mi_thunk (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT,
@@ -1431,6 +1432,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #define TARGET_ASM_FUNCTION_PROLOGUE rs6000_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE rs6000_output_function_epilogue
+
+#undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
+#define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA rs6000_output_addr_const_extra
 
 #undef TARGET_LEGITIMIZE_ADDRESS
 #define TARGET_LEGITIMIZE_ADDRESS rs6000_legitimize_address
@@ -16026,9 +16030,9 @@ print_operand_address (FILE *file, rtx x)
     gcc_unreachable ();
 }
 
-/* Implement OUTPUT_ADDR_CONST_EXTRA for address X.  */
+/* Implement TARGET_OUTPUT_ADDR_CONST_EXTRA.  */
 
-bool
+static bool
 rs6000_output_addr_const_extra (FILE *file, rtx x)
 {
   if (GET_CODE (x) == UNSPEC)
