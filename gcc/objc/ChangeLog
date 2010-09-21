@@ -1,5 +1,12 @@
 2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
+	PR objc/23710
+	* objc-act.c (objc_start_method_definition): Do not abort upon a
+	'method definition not in @implementation context' error.  Return
+	'false' instead.
+
+2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
 	PR objc/25965
 	* objc-act.c (objc_get_interface_ivars): New function.
 	(objc_collecting_ivars): New variable.

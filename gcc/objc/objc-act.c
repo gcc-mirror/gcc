@@ -777,18 +777,30 @@ void
 objc_add_method_declaration (tree decl)
 {
   if (!objc_interface_context)
-    fatal_error ("method declaration not in @interface context");
+    {
+      /* PS: At the moment, due to how the parser works, it should be
+	 impossible to get here.  But it's good to have the check in
+	 case the parser changes.
+      */
+      fatal_error ("method declaration not in @interface context");
+    }
 
   objc_add_method (objc_interface_context,
 		   decl,
 		   objc_inherit_code == CLASS_METHOD_DECL);
 }
 
-void
+/* Return 'true' if the method definition could be started, and
+   'false' if not (because we are outside an @implementation context).
+*/
+bool
 objc_start_method_definition (tree decl)
 {
   if (!objc_implementation_context)
-    fatal_error ("method definition not in @implementation context");
+    {
+      error ("method definition not in @implementation context");
+      return false;
+    }
 
 #ifndef OBJCPLUS
   /* Indicate no valid break/continue context by setting these variables
@@ -801,6 +813,7 @@ objc_start_method_definition (tree decl)
 		   decl,
 		   objc_inherit_code == CLASS_METHOD_DECL);
   start_method_def (decl);
+  return true;
 }
 
 void

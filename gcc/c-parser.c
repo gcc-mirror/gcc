@@ -6597,9 +6597,19 @@ c_parser_objc_method_definition (c_parser *parser)
       return;
     }
   parser->objc_pq_context = false;
-  objc_start_method_definition (decl);
-  add_stmt (c_parser_compound_statement (parser));
-  objc_finish_method_definition (current_function_decl);
+  if (objc_start_method_definition (decl))
+    {
+      add_stmt (c_parser_compound_statement (parser));
+      objc_finish_method_definition (current_function_decl);
+    }
+  else
+    {
+      /* This code is executed when we find a method definition
+	 outside of an @implementation context.  Parse the method (to
+	 keep going) but do not emit any code.
+      */
+      c_parser_compound_statement (parser);
+    }
 }
 
 /* Parse an objc-methodprotolist.
