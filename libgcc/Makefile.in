@@ -870,6 +870,10 @@ endif
 	for file in $$parts; do					\
 	  rm -f $(gcc_objdir)$(MULTISUBDIR)/$$file;		\
 	  $(INSTALL_DATA) $$file $(gcc_objdir)$(MULTISUBDIR)/;	\
+	  case $$file in 					\
+	    *.a)						\
+	      $(RANLIB) $(gcc_objdir)$(MULTISUBDIR)/$$file ;;	\
+	  esac;							\
 	done
 
 # Build extra startfiles in the gcc directory, for unconverted
@@ -903,6 +907,10 @@ gcc-extra-parts:
 	for file in $$parts; do					\
 	  rm -f $(gcc_objdir)$(MULTISUBDIR)/$$file;		\
 	  $(INSTALL_DATA) $$file $(gcc_objdir)$(MULTISUBDIR)/;	\
+	  case $$file in 					\
+	    *.a)						\
+	      $(RANLIB) $(gcc_objdir)$(MULTISUBDIR)/$$file ;;	\
+	  esac;							\
 	done
 
 all: $(extra-parts)
@@ -958,6 +966,10 @@ install-leaf: $(install-shared) $(install-libunwind)
 	for file in $$parts; do					\
 	  rm -f $(DESTDIR)$(inst_libdir)/$$file;		\
 	  $(INSTALL_DATA) $$file $(DESTDIR)$(inst_libdir)/;	\
+	  case $$file in 					\
+	    *.a)						\
+	      $(RANLIB) $(gcc_objdir)$(MULTISUBDIR)/$$file ;;	\
+	  esac;							\
 	done
 
 install: install-leaf
