@@ -931,6 +931,16 @@ arm*linux*eabi)
     ;;
 esac
 
+LIBMATHSPEC=
+# extra LD Flags which are required for targets
+case "${host}" in
+*-*-darwin*)
+     ;;
+*)
+     LIBMATHSPEC=-lm
+     ;;
+esac
+
 # Check for --no-merge-exidx-entries, an ARM-specific linker option.
 AC_CACHE_CHECK([for --no-merge-exidx-entries], [libgcj_cv_exidx],
   [saved_ldflags="$LDFLAGS"
@@ -956,6 +966,7 @@ fi
 AC_SUBST(extra_ldflags_libjava)
 AC_SUBST(extra_ldflags)
 AC_SUBST(LIBSTDCXXSPEC)
+AC_SUBST(LIBMATHSPEC)
 
 AC_SUBST(LIBGCJTESTSPEC)
 
