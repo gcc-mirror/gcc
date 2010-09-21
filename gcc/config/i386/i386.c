@@ -9692,17 +9692,25 @@ ix86_expand_prologue (void)
     }
   else
     {
-      rtx eax = gen_rtx_REG (Pmode, AX_REG);
-      bool eax_live;
+      rtx eax = gen_rtx_REG (Pmode, AX_REG);;
+      rtx r10 = NULL;
+      bool eax_live = false;
+      bool r10_live = false;
 
-      if (cfun->machine->call_abi == MS_ABI)
-	eax_live = false;
-      else
-	eax_live = ix86_eax_live_at_start_p ();
+      if (TARGET_64BIT)
+        r10_live = (DECL_STATIC_CHAIN (current_function_decl) != 0);
+      if (!TARGET_64BIT_MS_ABI)
+        eax_live = ix86_eax_live_at_start_p ();
 
       if (eax_live)
 	{
 	  emit_insn (gen_push (eax));
+	  allocate -= UNITS_PER_WORD;
+	}
+      if (r10_live)
+	{
+	  r10 = gen_rtx_REG (Pmode, R10_REG);
+	  emit_insn (gen_push (r10));
 	  allocate -= UNITS_PER_WORD;
 	}
 
@@ -9720,10 +9728,17 @@ ix86_expand_prologue (void)
 	}
       m->fs.sp_offset += allocate;
 
-      if (eax_live)
+      if (r10_live && eax_live)
+        {
+	  t = choose_baseaddr (m->fs.sp_offset - allocate);
+	  emit_move_insn (r10, gen_frame_mem (Pmode, t));
+	  t = choose_baseaddr (m->fs.sp_offset - allocate - UNITS_PER_WORD);
+	  emit_move_insn (eax, gen_frame_mem (Pmode, t));
+	}
+      else if (eax_live || r10_live)
 	{
 	  t = choose_baseaddr (m->fs.sp_offset - allocate);
-	  emit_move_insn (eax, gen_frame_mem (Pmode, t));
+	  emit_move_insn ((eax_live ? eax : r10), gen_frame_mem (Pmode, t));
 	}
     }
   gcc_assert (m->fs.sp_offset == frame.stack_pointer_offset);
