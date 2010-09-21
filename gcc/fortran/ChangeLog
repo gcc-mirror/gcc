@@ -1,3 +1,9 @@
+2010-09-21  Jason Blevins  <jrblevin@sdf.org>
+
+	* intrinsics.texi (HYPOT, IMAGE_INDEX, BESSEL_JN, BESSEL_YN,
+	execute_command_line, IEOR, IOR, NORM2, NOT, NULL, PARITY):
+	Correct spelling.
+
 2010-09-21  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/45648
