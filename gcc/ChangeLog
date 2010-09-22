@@ -1,3 +1,8 @@
+2010-09-22  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* postreload.c (move2add_note_store): Add reg_symbol_ref[] checks
+	to update conditions. Fix reg_mode[] check.
+
 2010-09-22  Hariharan Sandanagobalane <hariharan@picochip.com>
 
 	* config/picochip/picochip.md (movhicc): Use expand to check whether
