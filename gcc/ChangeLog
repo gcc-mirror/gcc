@@ -1,3 +1,13 @@
+2010-09-22  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssanames.c (release_dead_ssa_names): Do not remove
+	callee edges here.
+	* passes.c (init_optimization_passes): Remove early CFG cleanup.
+	* tree-optimize.c (execute_cleanup_cfg_pre_ipa): Remove.
+	(pass_cleanup_cfg): Likewise.
+	(execute_fixup_cfg): Cleanup.
+	* tree-pass.h (pass_cleanup_cfg): Remove.
+
 2010-09-22  Martin Jambor  <mjambor@suse.cz>
 
 	* gimple-fold.c (fold_gimple_call): New parameter inplace, do not fold
