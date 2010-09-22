@@ -100,18 +100,17 @@ am__objects_5 = atomic.lo bitmap_allocator.lo pool_allocator.lo \
 	compatibility-c++0x.lo compatibility-debug_list.lo \
 	compatibility-list.lo complex_io.lo ctype.lo debug.lo \
 	functexcept.lo globals_io.lo hash_c++0x.lo hash_tr1.lo \
-	hashtable_c++0x.lo hashtable_tr1.lo hash_bytes.lo ios.lo \
-	ios_failure.lo ios_init.lo ios_locale.lo limits.lo list.lo \
-	debug_list.lo locale.lo locale_init.lo locale_facets.lo \
-	localename.lo math_stubs_float.lo math_stubs_long_double.lo \
-	stdexcept.lo strstream.lo system_error.lo tree.lo \
-	allocator-inst.lo concept-inst.lo fstream-inst.lo ext-inst.lo \
-	ios-inst.lo iostream-inst.lo istream-inst.lo istream.lo \
-	locale-inst.lo misc-inst.lo ostream-inst.lo sstream-inst.lo \
-	streambuf-inst.lo streambuf.lo string-inst.lo valarray-inst.lo \
-	wlocale-inst.lo wstring-inst.lo mutex.lo condition_variable.lo \
-	chrono.lo thread.lo future.lo $(am__objects_1) \
-	$(am__objects_4)
+	hashtable_c++0x.lo hashtable_tr1.lo ios.lo ios_failure.lo \
+	ios_init.lo ios_locale.lo limits.lo list.lo debug_list.lo \
+	locale.lo locale_init.lo locale_facets.lo localename.lo \
+	math_stubs_float.lo math_stubs_long_double.lo stdexcept.lo \
+	strstream.lo system_error.lo tree.lo allocator-inst.lo \
+	concept-inst.lo fstream-inst.lo ext-inst.lo ios-inst.lo \
+	iostream-inst.lo istream-inst.lo istream.lo locale-inst.lo \
+	misc-inst.lo ostream-inst.lo sstream-inst.lo streambuf-inst.lo \
+	streambuf.lo string-inst.lo valarray-inst.lo wlocale-inst.lo \
+	wstring-inst.lo mutex.lo condition_variable.lo chrono.lo \
+	thread.lo future.lo $(am__objects_1) $(am__objects_4)
 am_libstdc___la_OBJECTS = $(am__objects_5)
 libstdc___la_OBJECTS = $(am_libstdc___la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -384,7 +383,6 @@ sources = \
 	hash_tr1.cc \
 	hashtable_c++0x.cc \
 	hashtable_tr1.cc \
-	hash_bytes.cc \
 	ios.cc \
 	ios_failure.cc \
 	ios_init.cc \
@@ -885,11 +883,6 @@ hash_c++0x.o: hash_c++0x.cc
 hashtable_c++0x.lo: hashtable_c++0x.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 hashtable_c++0x.o: hashtable_c++0x.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-hash_bytes.lo: hash_bytes.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-hash_bytes.o: hash_bytes.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 limits.lo: limits.cc

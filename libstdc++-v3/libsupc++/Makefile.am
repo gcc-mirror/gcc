@@ -69,6 +69,7 @@ sources = \
 	function_type_info.cc \
 	fundamental_type_info.cc \
 	guard.cc \
+	hash_bytes.cc \
 	new_handler.cc \
 	new_op.cc \
 	new_opnt.cc \

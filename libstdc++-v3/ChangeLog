@@ -1,3 +1,15 @@
+2010-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* src/hash_bytes.cc: Move...
+	* libsupc++/hash_bytes.cc: ... here.
+	* src/Makefile.am: Adjust.
+	* libsupc++/Makefile.am: Likewise.
+	* config/abi/pre/gnu.ver: Likewise.
+	* libsupc++/typeinfo (type_info::hash_code): Add in C++0x mode.
+	* src/Makefile.in: Regenerate.
+	* libsupc++/Makefile.am: Likewise.
+	* testsuite/18_support/type_info/hash_code.cc: New.
+
 2010-09-20  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR libstdc++/45711
