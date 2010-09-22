@@ -14,7 +14,7 @@
 	* config/abi/pre/gnu.ver: Export new symbols.
 	* testsuite/27_io/basic_filebuf/seekoff/char/45628-1.cc: New,
 	verifies that seekoff(0, ios::cur) preserves buffers.
-	* testsuite/27_io/basic_filebuf/seekoff/char/45628-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/45628-2.cc: Likewise.
 	for codecvt case. More lenient as it may still flush put area.
 	* testsuite/27_io/basic_filebuf/seekoff/char/4.cc: Modify to
 	check that seekoff is not required between read and write.
