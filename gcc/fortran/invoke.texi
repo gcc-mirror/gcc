@@ -253,7 +253,7 @@ the default width of @code{DOUBLE PRECISION} to 16 bytes if possible, unless
 
 @item -fdollar-ok
 @opindex @code{fdollar-ok}
-@cindex $
+@cindex @code{$}
 @cindex symbol names
 @cindex character set
 Allow @samp{$} as a valid non-first character in a symbol name. Symbols 
@@ -717,7 +717,7 @@ The following example will trigger the warning.
 @item -Wampersand
 @opindex @code{Wampersand}
 @cindex warnings, ampersand
-@cindex &
+@cindex @code{&}
 Warn about missing ampersand in continued character constants. The warning is
 given with @option{-Wampersand}, @option{-pedantic}, @option{-std=f95},
 @option{-std=f2003} and @option{-std=f2008}. Note: With no ampersand
@@ -851,10 +851,10 @@ is not included in @option{-Wall} but is implied by @option{-Wall -Wextra}.
 
 @item -Walign-commons
 @opindex @code{Walign-commons}
-@cindex warnings, alignment of COMMON blocks
-@cindex alignment of COMMON blocks
+@cindex warnings, alignment of @code{COMMON} blocks
+@cindex alignment of @code{COMMON} blocks
 By default, @command{gfortran} warns about any occasion of variables being
-padded for proper alignment inside a COMMON block. This warning can be turned
+padded for proper alignment inside a @code{COMMON} block. This warning can be turned
 off via @option{-Wno-align-commons}. See also @option{-falign-commons}.
 
 @item -Werror
@@ -929,8 +929,8 @@ debugging options.
 @cindex directory, options
 @cindex options, directory search
 @cindex search path
-@cindex INCLUDE directive
-@cindex directive, INCLUDE
+@cindex @code{INCLUDE} directive
+@cindex directive, @code{INCLUDE}
 These options affect how GNU Fortran searches
 for files specified by the @code{INCLUDE} directive and where it searches
 for previously compiled modules.
@@ -1313,13 +1313,13 @@ array constructors.  The code below requires this option to expand
 the array at compile time.
 
 @smallexample
-@code{program test}
-@code{implicit none}
-@code{integer j}
-@code{integer, parameter :: n = 100000}
-@code{integer, parameter :: i(n) = (/ (2*j, j = 1, n) /)}
-@code{print '(10(I0,1X))', i}
-@code{end program test}
+program test
+implicit none
+integer j
+integer, parameter :: n = 100000
+integer, parameter :: i(n) = (/ (2*j, j = 1, n) /)
+print '(10(I0,1X))', i
+end program test
 @end smallexample
 
 @emph{Caution:  This option can lead to long compile times and excessively
@@ -1427,14 +1427,14 @@ needs to be enabled (e.g. via @option{-ffpe-trap}).
 
 @item -falign-commons
 @opindex @code{falign-commons}
-@cindex alignment of COMMON blocks
+@cindex alignment of @code{COMMON} blocks
 By default, @command{gfortran} enforces proper alignment of all variables in a
-COMMON block by padding them as needed. On certain platforms this is mandatory,
-on others it increases performance. If a COMMON block is not declared with
+@code{COMMON} block by padding them as needed. On certain platforms this is mandatory,
+on others it increases performance. If a @code{COMMON} block is not declared with
 consistent data types everywhere, this padding can cause trouble, and
-@option{-fno-align-commons } can be used to disable automatic alignment. The
-same form of this option should be used for all files that share a COMMON block.
-To avoid potential alignment issues in COMMON blocks, it is recommended to order
+@option{-fno-align-commons} can be used to disable automatic alignment. The
+same form of this option should be used for all files that share a @code{COMMON} block.
+To avoid potential alignment issues in @code{COMMON} blocks, it is recommended to order
 objects from largests to smallest.
 
 @item -fno-protect-parens
@@ -1442,8 +1442,8 @@ objects from largests to smallest.
 @cindex re-association of parenthesed expressions
 By default the parentheses in expression are honored for all optimization
 levels such that the compiler does not do any re-association. Using
-@option{-fno-protect-parens} allows the compiler to reorder REAL and
-COMPLEX expressions to produce faster code. Note that for the re-association
+@option{-fno-protect-parens} allows the compiler to reorder @code{REAL} and
+@code{COMPLEX} expressions to produce faster code. Note that for the re-association
 optimization @option{-fno-signed-zeros} and @option{-fno-trapping-math}
 need to be in effect.
 @end table

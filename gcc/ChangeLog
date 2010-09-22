@@ -1,3 +1,26 @@
+2010-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/contrib.texi (Contributors): Allow URL to wrap in PDF
+	output.
+	* doc/cppopts.texi: Fix markup of index entry.
+	* doc/extend.texi (Constructing Calls): Fix markup of
+	__builtin_va_arg_pack and __builtin_va_arg_pack_len definition.
+	(Conditionals, C++ Comments, Pragmas, Unnamed Fields, Thread-Local)
+	(Vague Linkage, C++ Attributes): Fix markup of index entries and
+	keywords.
+	* doc/invoke.texi (Option Summary): Fix spacing.  Rewrap to
+	avoid long lines.
+	(C Dialect Options, C++ Dialect Options, Warning Options)
+	(Debugging Options, Spec Files, Darwin Options)
+	(i386 and x86-64 Options, MIPS Options)
+	(RS/6000 and PowerPC Options, Code Gen Options): Fix markup of
+	index entries, avoid abbreviations, allow URLs to wrap, avoid
+	long lines, avoid overlong pages from long @itemx lists.
+	* doc/objc.texi (Garbage Collection): Allow URLs to wrap.
+	* doc/standards.texi (Standards): Likewise.
+	* doc/trouble.texi (Incompatibilities): Fix markup of index
+	entry.
+
 2010-09-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* opts-common.c (prune_options): Make static.  Work with decoded

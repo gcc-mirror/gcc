@@ -1,3 +1,10 @@
+2010-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* texi2pod.pl: Replace @@ before @{ and @}, for @samp{@@}.
+	Also escape characters with grave accents, to be fixed ...
+	(unmunge): ... here.
+	(postprocess): Also handle @/ and @acronym{...}.
+
 2010-07-02  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* check_GNU_style.sh: Do not print warning messages when there are

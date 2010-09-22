@@ -568,7 +568,7 @@ the containing function.  You should specify, for @var{result}, a value
 returned by @code{__builtin_apply}.
 @end deftypefn
 
-@deftypefn {Built-in Function} __builtin_va_arg_pack ()
+@deftypefn {Built-in Function} {} __builtin_va_arg_pack ()
 This built-in function represents all anonymous arguments of an inline
 function.  It can be used only in inline functions which will be always
 inlined, never compiled as a separate function, such as those using
@@ -594,7 +594,7 @@ myprintf (FILE *f, const char *format, ...)
 @end smallexample
 @end deftypefn
 
-@deftypefn {Built-in Function} __builtin_va_arg_pack_len ()
+@deftypefn {Built-in Function} {size_t} __builtin_va_arg_pack_len ()
 This built-in function returns the number of anonymous arguments of
 an inline function.  It can be used only in inline functions which
 will be always inlined, never compiled as a separate function, such
@@ -796,8 +796,8 @@ This example is perfectly equivalent to
 x ? x : y
 @end smallexample
 
-@cindex side effect in ?:
-@cindex ?: side effect
+@cindex side effect in @code{?:}
+@cindex @code{?:} side effect
 @noindent
 In this simple case, the ability to omit the middle operand is not
 especially useful.  When it becomes useful is when the first operand does,
@@ -3900,7 +3900,7 @@ extension is irrelevant.
 
 @node C++ Comments
 @section C++ Style Comments
-@cindex //
+@cindex @code{//}
 @cindex C++ comments
 @cindex comments, C++ style
 
@@ -12370,7 +12370,7 @@ bit-fields.  See the Solaris man page for @code{cmn_err} for more information.
 @node Pragmas
 @section Pragmas Accepted by GCC
 @cindex pragmas
-@cindex #pragma
+@cindex @code{#pragma}
 
 GCC supports several types of pragmas, primarily in order to compile
 code originally written for other compilers.  Note that in general
@@ -12936,8 +12936,8 @@ versions earlier than 4.4.
 
 @node Unnamed Fields
 @section Unnamed struct/union fields within structs/unions
-@cindex struct
-@cindex union
+@cindex @code{struct}
+@cindex @code{union}
 
 As permitted by ISO C1X and for compatibility with other compilers,
 GCC allows you to define
@@ -12989,7 +12989,7 @@ previously defined structure or union type with a tag.
 @section Thread-Local Storage
 @cindex Thread-Local Storage
 @cindex @acronym{TLS}
-@cindex __thread
+@cindex @code{__thread}
 
 Thread-local storage (@acronym{TLS}) is a mechanism by which variables
 are allocated such that there is one instance of the variable per extant
@@ -13442,15 +13442,15 @@ vtable will still be emitted in every translation unit which defines it.
 Make sure that any inline virtuals are declared inline in the class
 body, even if they are not defined there.
 
-@item type_info objects
-@cindex type_info
+@item @code{type_info} objects
+@cindex @code{type_info}
 @cindex RTTI
 C++ requires information about types to be written out in order to
 implement @samp{dynamic_cast}, @samp{typeid} and exception handling.
-For polymorphic classes (classes with virtual functions), the type_info
+For polymorphic classes (classes with virtual functions), the @samp{type_info}
 object is written out along with the vtable so that @samp{dynamic_cast}
 can determine the dynamic type of a class object at runtime.  For all
-other types, we write out the type_info object when it is used: when
+other types, we write out the @samp{type_info} object when it is used: when
 applying @samp{typeid} to an expression, throwing an object, or
 referring to a type in a catch clause or exception specification.
 
@@ -13770,7 +13770,7 @@ Some attributes only make sense for C++ programs.
 
 @table @code
 @item init_priority (@var{priority})
-@cindex init_priority attribute
+@cindex @code{init_priority} attribute
 
 
 In Standard C++, objects defined at namespace scope are guaranteed to be
@@ -13795,7 +13795,7 @@ Note that the particular values of @var{priority} do not matter; only their
 relative ordering.
 
 @item java_interface
-@cindex java_interface attribute
+@cindex @code{java_interface} attribute
 
 This type attribute informs C++ that the class is a Java interface.  It may
 only be applied to classes declared within an @code{extern "Java"} block.

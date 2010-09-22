@@ -1,3 +1,14 @@
+2010-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* gfortran.texi (Argument list functions): Allow URL to wrap.
+	* intrinsic.texi (GETGID, GETPID, GETUID, IMAGE_INDEX)
+	(IS_IOSTAT_END, IS_IOSTAT_EOR, NUM_IMAGES, THIS_IMAGE)
+	(ISO_FORTRAN_ENV): Fix markup in index entries, and a couple of
+	code markups in the text.
+	* invoke.texi (Fortran Dialect Options)
+	(Error and Warning Options, Directory Options, Code Gen Options):
+	Likewise.  Remove @code inside @smallexample.
+
 2010-09-22  Joseph Myers  <joseph@codesourcery.com>
 
 	* gfortranspec.c (lang_specific_driver): Handle OPT__version and
