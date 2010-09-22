@@ -1,4 +1,11 @@
-2010-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+2010-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR java/44095
+	* config/sparc/linux.h (ASM_SPEC): Pass -K PIC if -findirect-dispatch
+	is specified and the suffix of the file isn't ".c".
+	* config/sparc/linux64.h (ASM_SPEC): Likewise.
+
+2010-09-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/contrib.texi (Contributors): Allow URL to wrap in PDF
 	output.
