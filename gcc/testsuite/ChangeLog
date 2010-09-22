@@ -1,3 +1,19 @@
+2010-09-22  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* gcc.dg/pr28706.c: Typo fix to dg-require-effective-target lto.
+
+2010-09-22  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* gcc.dg/debug/pr41893-1.c: Typo fix to dg-require-effective-target lto.
+	* gcc.dg/pr27898.c: Likewise.
+	* gcc.dg/pr28712.c: Likewise.
+	* gcc.dg/pr30762-1.c: Likewise.
+	* gcc.dg/pr31529-1.c: Likewise.
+	* gcc.dg/pr34457-1.c: Likewise.
+	* gcc.dg/pr34668-1.c: Likewise.
+	* gcc.dg/pr34989-1.c: Likewise.
+	* gcc.dg/pr43557-1.c: Likewise.
+
 2010-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/45739
