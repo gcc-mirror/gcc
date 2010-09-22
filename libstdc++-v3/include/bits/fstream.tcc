@@ -1,7 +1,7 @@
 // File based streams -*- C++ -*-
 
 // Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-// 2007, 2008, 2009
+// 2007, 2008, 2009, 2010
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -205,8 +205,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       int_type __ret = traits_type::eof();
       const bool __testin = _M_mode & ios_base::in;
-      if (__testin && !_M_writing)
+      if (__testin)
 	{
+         if (_M_writing)
+           {
+             __ret = overflow();
+             if (__ret == traits_type::eof())
+               return __ret;
+             _M_set_buffer(-1);
+             _M_writing = false;
+           }
 	  // Check for pback madness, and if so switch back to the
 	  // normal buffers and jet outta here before expensive
 	  // fileops happen...
@@ -357,8 +365,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       int_type __ret = traits_type::eof();
       const bool __testin = _M_mode & ios_base::in;
-      if (__testin && !_M_writing)
+      if (__testin)
 	{
+         if (_M_writing)
+           {
+             __ret = overflow();
+             if (__ret == traits_type::eof())
+               return __ret;
+             _M_set_buffer(-1);
+             _M_writing = false;
+           }
 	  // Remember whether the pback buffer is active, otherwise below
 	  // we may try to store in it a second char (libstdc++/9761).
 	  const bool __testpb = _M_pback_init;
@@ -410,8 +426,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       int_type __ret = traits_type::eof();
       const bool __testeof = traits_type::eq_int_type(__c, __ret);
       const bool __testout = _M_mode & ios_base::out;
-      if (__testout && !_M_reading)
+      if (__testout)
 	{
+          if (_M_reading)
+            {
+              _M_destroy_pback();
+              const int __gptr_off = _M_get_ext_pos(_M_state_last);
+              if (_M_seek(__gptr_off, ios_base::cur, _M_state_last)
+                  == pos_type(off_type(-1)))
+                return __ret;
+            }
 	  if (this->pbase() < this->pptr())
 	    {
 	      // If appropriate, append the overflow char.
@@ -691,12 +715,20 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       if (__width < 0)
 	__width = 0;
 
-      pos_type __ret =  pos_type(off_type(-1));
+      pos_type __ret = pos_type(off_type(-1));
       const bool __testfail = __off != 0 && __width <= 0;
       if (this->is_open() && !__testfail)
 	{
+	  // tellg and tellp queries do not affect any state, unless
+	  // ! always_noconv and the put sequence is not empty.
+	  // In that case, determining the position requires converting the
+	  // put sequence. That doesn't use ext_buf, so requires a flush.
+	  bool __no_movement = __way == ios_base::cur && __off == 0
+	    && (!_M_writing || _M_codecvt->always_noconv());
+
 	  // Ditch any pback buffers to avoid confusion.
-	  _M_destroy_pback();
+	  if (!__no_movement)
+	    _M_destroy_pback();
 
 	  // Correct state at destination. Note that this is the correct
 	  // state for the current position during output, because
@@ -707,24 +739,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  off_type __computed_off = __off * __width;
 	  if (_M_reading && __way == ios_base::cur)
 	    {
-	      if (_M_codecvt->always_noconv())
-		__computed_off += this->gptr() - this->egptr();
-	      else
+	      __state = _M_state_last;
+	      __computed_off += _M_get_ext_pos(__state);
+	    }
+	  if (!__no_movement)
+	    __ret = _M_seek(__computed_off, __way, __state);
+	  else
+	    {
+	      if (_M_writing)
+		__computed_off = this->pptr() - this->pbase();
+	      
+ 	      off_type __file_off = _M_file.seekoff(0, ios_base::cur);
+ 	      if (__file_off != off_type(-1))
 		{
-		  // Calculate offset from _M_ext_buf that corresponds
-		  // to gptr(). Note: uses _M_state_last, which
-		  // corresponds to eback().
-		  const int __gptr_off =
-		    _M_codecvt->length(_M_state_last, _M_ext_buf, _M_ext_next,
-				       this->gptr() - this->eback());
-		  __computed_off += _M_ext_buf + __gptr_off - _M_ext_end;
-
-		  // _M_state_last is modified by codecvt::length() so
-		  // it now corresponds to gptr().
-		  __state = _M_state_last;
+		  __ret = __file_off + __computed_off;
+		  __ret.state(__state);
 		}
 	    }
-	  __ret = _M_seek(__computed_off, __way, __state);
 	}
       return __ret;
     }
@@ -756,21 +787,42 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       pos_type __ret = pos_type(off_type(-1));
       if (_M_terminate_output())
 	{
-	  // Returns pos_type(off_type(-1)) in case of failure.
-	  __ret = pos_type(_M_file.seekoff(__off, __way));
-	  if (__ret != pos_type(off_type(-1)))
+	  off_type __file_off = _M_file.seekoff(__off, __way);
+	  if (__file_off != off_type(-1))
 	    {
 	      _M_reading = false;
 	      _M_writing = false;
 	      _M_ext_next = _M_ext_end = _M_ext_buf;
 	      _M_set_buffer(-1);
 	      _M_state_cur = __state;
+	      __ret = __file_off;
 	      __ret.state(_M_state_cur);
 	    }
 	}
       return __ret;
     }
 
+  // Returns the distance from the end of the ext buffer to the point
+  // corresponding to gptr(). This is a negative value. Updates __state
+  // from eback() correspondence to gptr().
+  template<typename _CharT, typename _Traits>
+    int basic_filebuf<_CharT, _Traits>::
+    _M_get_ext_pos(__state_type& __state)
+    {
+      if (_M_codecvt->always_noconv())
+        return this->gptr() - this->egptr();
+      else
+        {
+          // Calculate offset from _M_ext_buf that corresponds to
+          // gptr(). Precondition: __state == _M_state_last, which
+          // corresponds to eback().
+          const int __gptr_off =
+            _M_codecvt->length(__state, _M_ext_buf, _M_ext_next,
+                               this->gptr() - this->eback());
+          return _M_ext_buf + __gptr_off - _M_ext_end;
+        }
+    }
+    
   template<typename _CharT, typename _Traits>
     bool
     basic_filebuf<_CharT, _Traits>::

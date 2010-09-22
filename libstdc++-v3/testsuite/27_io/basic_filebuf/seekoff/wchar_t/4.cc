@@ -31,7 +31,7 @@ void test01()
   typedef wfilebuf::pos_type pos_type;
   const char name[] = "tmp_seekoff-4.tst";
 
-  const size_t size = 10;
+  const size_t size = 12;
   wchar_t buf[size];
   streamsize n;
 
@@ -46,7 +46,7 @@ void test01()
   VERIFY( n == 3 );
   VERIFY( !wmemcmp(buf, L"abc", 3) );
 
-  fb.pubseekoff(0, ios_base::cur);
+  // Check read => write without pubseekoff(0, ios_base::cur)
 
   n = fb.sputn(L"ef", 2);
   VERIFY( n == 2 );
@@ -58,8 +58,16 @@ void test01()
   VERIFY( !wmemcmp(buf, L"abcef", 5) );
 
   fb.pubseekoff(0, ios_base::beg);
-  n = fb.sputn(L"ghijkl", 6);
-  VERIFY( n == 6 );
+  n = fb.sputn(L"gh", 2);
+  VERIFY( n == 2 );
+  
+  // Check write => read without pubseekoff(0, ios_base::cur)
+
+  n = fb.sgetn( buf, 3 );
+  VERIFY( !memcmp(buf, L"cef", 3) );
+
+  n = fb.sputn(L"ijkl", 4);
+  VERIFY( n == 4 );
 
   fb.pubseekoff(0, ios_base::beg);
   n = fb.sgetn(buf, 2);
@@ -72,8 +80,8 @@ void test01()
 
   fb.pubseekoff(0, ios_base::beg);
   n = fb.sgetn(buf, size);
-  VERIFY( n == 9 );
-  VERIFY( !wmemcmp(buf, L"ghijklmno", 9) );
+  VERIFY( n == 12 );
+  VERIFY( !wmemcmp(buf, L"ghcefijklmno", 12) );
 
   fb.close();
 }

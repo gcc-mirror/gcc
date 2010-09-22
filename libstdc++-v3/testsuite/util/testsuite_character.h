@@ -294,7 +294,7 @@ namespace std
 		const extern_type* end, size_t max) const
       {
 	const extern_type* beg = from;
-	while (from < end && max)
+	while (from < end)
 	  {
 	    unsigned char c = *from;
 	    if (c & 0xc0)
@@ -304,6 +304,8 @@ namespace std
 		++from;
 		continue;
 	      }
+	    
+	    if (max == 0) break;
 
 	    unsigned char tmp;
 	    if (state.value & 0x8)
