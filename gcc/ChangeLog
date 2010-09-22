@@ -1,3 +1,9 @@
+2010-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/35664
+	* config/sparc/constraints.md ('e'): Return NO_REGS if !TARGET_FPU.
+	('f'): Likewise.
+
 2010-09-22  Tristan Gingold  <gingold@adacore.com>
 
 	* config/alpha/alpha.c (alpha_use_linkage): Initialize target field.
