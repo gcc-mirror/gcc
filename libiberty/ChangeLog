@@ -1,35 +1,16 @@
+2010-09-22 Tristan Gingold  <gingold@adacore.com>
+
+	* cplus-dem.c (ada_demangle): Add comments.
+	Handle stream and controlled type operations.
+	Decoding of some uppercase letters moved before separators.
+	* testsuite/demangle-expected: Add tests.
+
 2010-09-10  James Lyon  <jameslyon0@googlemail.com>
 
 	http://sourceware.org/bugzilla/show_bug.cgi?id=11572
 	* cp-demangle.c (d_find_pack): Add case for
 	DEMANGLE_COMPONENT_LAMBDA.
 	* testsuite/demangle-expected: Add regression test.
-
-diff --git a/libiberty/cp-demangle.c b/libiberty/cp-demangle.c
-index d2d15e9..39c8cc0 100644
---- a/libiberty/cp-demangle.c
-+++ b/libiberty/cp-demangle.c
-@@ -3480,6 +3480,7 @@ d_find_pack (struct d_print_info *dpi,
-	case DEMANGLE_COMPONENT_PACK_EXPANSION:
-	return NULL;
-
-+    case DEMANGLE_COMPONENT_LAMBDA:
-	case DEMANGLE_COMPONENT_NAME:
-	case DEMANGLE_COMPONENT_OPERATOR:
-	case DEMANGLE_COMPONENT_BUILTIN_TYPE:
-diff --git a/libiberty/testsuite/demangle-expected b/libiberty/testsuite/demangle-expected
-index 15a0fe7..0085564 100644
---- a/libiberty/testsuite/demangle-expected
-+++ b/libiberty/testsuite/demangle-expected
-@@ -4052,3 +4052,8 @@ prot.lock.update
-	--format=gnu-v3
-	DFA
-	DFA
-+#
-+# http://sourceware.org/bugzilla/show_bug.cgi?id=11572
-+--format=auto
-+_ZN3Psi7VariantIIcPKcEE5visitIIRZN11VariantTest9TestVisit11test_methodEvEUlS2_E0_RZNS6_11test_methodEvEUlcE1_RZNS6_11test_methodEvEUlNS_4NoneEE_EEENS_13VariantDetail19SelectVisitorResultIIDpT_EE4typeEDpOSG_
-+Psi::VariantDetail::SelectVisitorResult<VariantTest::TestVisit::test_method()::{lambda(char const*)#2}&, VariantTest::TestVisit::test_method()::{lambda(char)#3}&, VariantTest::TestVisit::test_method()::{lambda(Psi::None)#1}&>::type Psi::Variant<char, char const*>::visit<VariantTest::TestVisit::test_method()::{lambda(char const*)#2}&, VariantTest::TestVisit::test_method()::{lambda(char)#3}&, VariantTest::TestVisit::test_method()::{lambda(Psi::None)#1}&>((VariantTest::TestVisit::test_method()::{lambda(Psi::None)#1}&&&)...)
 
 2010-09-08  Tristan Gingold  <gingold@adacore.com>
 
