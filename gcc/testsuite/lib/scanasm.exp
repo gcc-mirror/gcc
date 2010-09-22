@@ -339,7 +339,7 @@ proc dg-function-on-line { args } {
 	}
     }
 
-    set pattern [format {%s:[^\t]*(\t.(frame|mask|file)[^\t]*)*\t[^:]+:%d\n} \
+    set pattern [format {%s:[^\t]*(\t.(fnstart|frame|mask|file)[^\t]*)*\t[^:]+:%d\n} \
                  $symbol $line]
 
     # The lack of spaces around $pattern is important, since they'd

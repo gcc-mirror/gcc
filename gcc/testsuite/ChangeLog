@@ -1,5 +1,10 @@
 2010-09-22  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
+	* lib/scanasm.exp(dg-function-on-line): Permit .fnstart to appear in
+        the regexp pattern between the expected label and location string.
+
+2010-09-22  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
 	* gcc.dg/pr28706.c: Typo fix to dg-require-effective-target lto.
 
 2010-09-22  Marcus Shawcroft  <marcus.shawcroft@arm.com>
