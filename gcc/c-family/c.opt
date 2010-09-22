@@ -34,8 +34,152 @@ C++
 Language
 ObjC++
 
+-all-warnings
+C ObjC C++ ObjC++ Warning Alias(Wall)
+
+-ansi
+C ObjC C++ ObjC++ Alias(ansi)
+
+-assert
+C ObjC C++ ObjC++ Separate Alias(A) MissingArgError(assertion missing after %qs)
+
+-assert=
+C ObjC C++ ObjC++ Joined Alias(A) MissingArgError(assertion missing after %qs)
+
+-comments
+C ObjC C++ ObjC++ Alias(C)
+
+-comments-in-macros
+C ObjC C++ ObjC++ Alias(CC)
+
+-define-macro
+C ObjC C++ ObjC++ Separate Alias(D) MissingArgError(macro name missing after %qs)
+
+-define-macro=
+C ObjC C++ ObjC++ Joined Alias(D) MissingArgError(macro name missing after %qs)
+
+-dependencies
+C ObjC C++ ObjC++ Alias(M)
+
+-dump
+C ObjC C++ ObjC++ Separate Alias(d)
+
+-dump=
+C ObjC C++ ObjC++ Joined Alias(d)
+
+-imacros
+C ObjC C++ ObjC++ Separate Alias(imacros) MissingArgError(missing filename after %qs)
+
+-imacros=
+C ObjC C++ ObjC++ Joined Alias(imacros) MissingArgError(missing filename after %qs)
+
+-include
+C ObjC C++ ObjC++ Separate Alias(include) MissingArgError(missing filename after %qs)
+
+-include=
+C ObjC C++ ObjC++ Joined Alias(include) MissingArgError(missing filename after %qs)
+
+-include-barrier
+C ObjC C++ ObjC++ Alias(I, -)
+
+-include-directory
+C ObjC C++ ObjC++ Separate Alias(I) MissingArgError(missing path after %qs)
+
+-include-directory=
+C ObjC C++ ObjC++ Joined Alias(I) MissingArgError(missing path after %qs)
+
+-include-directory-after
+C ObjC C++ ObjC++ Separate Alias(idirafter) MissingArgError(missing path after %qs)
+
+-include-directory-after=
+C ObjC C++ ObjC++ Joined Alias(idirafter) MissingArgError(missing path after %qs)
+
+-include-prefix
+C ObjC C++ ObjC++ Separate Alias(iprefix)
+
+-include-prefix=
+C ObjC C++ ObjC++ JoinedOrMissing Alias(iprefix)
+
+-include-with-prefix
+C ObjC C++ ObjC++ Separate Alias(iwithprefix)
+
+-include-with-prefix=
+C ObjC C++ ObjC++ JoinedOrMissing Alias(iwithprefix)
+
+-include-with-prefix-after
+C ObjC C++ ObjC++ Separate Alias(iwithprefix)
+
+-include-with-prefix-after=
+C ObjC C++ ObjC++ JoinedOrMissing Alias(iwithprefix)
+
+-include-with-prefix-before
+C ObjC C++ ObjC++ Separate Alias(iwithprefixbefore)
+
+-include-with-prefix-before=
+C ObjC C++ ObjC++ JoinedOrMissing Alias(iwithprefixbefore)
+
+-no-integrated-cpp
+Driver Alias(no-integrated-cpp)
+
+-no-line-commands
+C ObjC C++ ObjC++ Alias(P)
+
+-no-standard-includes
+C ObjC C++ ObjC++ Alias(nostdinc)
+
+-no-warnings
+C ObjC C++ ObjC++ Alias(w)
+
+-output
+C ObjC C++ ObjC++ Separate Alias(o)
+
+-output=
+C ObjC C++ ObjC++ Joined Alias(o)
+
 -output-pch=
 C ObjC C++ ObjC++ Joined Separate
+
+-pedantic
+C ObjC C++ ObjC++ Alias(pedantic)
+
+-pedantic-errors
+C ObjC C++ ObjC++ Alias(pedantic-errors)
+
+-preprocess
+C ObjC C++ ObjC++ Undocumented Alias(E)
+
+-print-missing-file-dependencies
+C ObjC C++ ObjC++ Alias(MG)
+
+-trace-includes
+C ObjC C++ ObjC++ Alias(H)
+
+-traditional
+Driver Alias(traditional)
+
+-traditional-cpp
+C ObjC C++ ObjC++ Alias(traditional-cpp)
+
+-trigraphs
+C ObjC C++ ObjC++ Alias(trigraphs)
+
+-undefine-macro
+C ObjC C++ ObjC++ Separate Alias(U) MissingArgError(macro name missing after %qs)
+
+-undefine-macro=
+C ObjC C++ ObjC++ Joined Alias(U) MissingArgError(macro name missing after %qs)
+
+-user-dependencies
+C ObjC C++ ObjC++ Alias(MM)
+
+-verbose
+Common C ObjC C++ ObjC++ Alias(v)
+
+-write-dependencies
+C ObjC C++ ObjC++ NoDriverArg Separate Alias(MD) MissingArgError(missing filename after %qs)
+
+-write-user-dependencies
+C ObjC C++ ObjC++ NoDriverArg Separate Alias(MMD) MissingArgError(missing filename after %qs)
 
 A
 C ObjC C++ ObjC++ Joined Separate MissingArgError(assertion missing after %qs)
@@ -932,6 +1076,9 @@ C ObjC C++ ObjC++ Joined Separate
 lang-asm
 C Undocumented RejectDriver
 
+no-integrated-cpp
+Driver
+
 nostdinc
 C ObjC C++ ObjC++
 Do not search standard system include directories (those specified with -isystem will still be used)
@@ -1037,6 +1184,9 @@ Conform to the ISO 1999 C standard
 std=iso9899:199x
 C ObjC Alias(std=c99)
 Deprecated in favor of -std=iso9899:1999
+
+traditional
+Driver
 
 traditional-cpp
 C ObjC C++ ObjC++

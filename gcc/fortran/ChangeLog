@@ -1,3 +1,17 @@
+2010-09-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* gfortranspec.c (lang_specific_driver): Handle OPT__version and
+	OPT__help instead of OPT_fversion and OPT_fhelp.
+	* lang.opt (-all-warnings, -assert, -assert=, -comments,
+	-comments-in-macros, -define-macro, -define-macro=, -dependencies,
+	-dump, -dump=, -include-barrier, -include-directory,
+	-include-directory=, -include-directory-after,
+	-include-directory-after=, -include-prefix, -include-prefix=,
+	-no-line-commands, -no-standard-includes, -output, -output=,
+	-preprocess, -print-missing-file-dependencies, -trace-includes,
+	-undefine-macro, -undefine-macro=, -user-dependencies, -verbose,
+	-write-dependencies, -write-user-dependencies): New.
+
 2010-09-21  Jason Blevins  <jrblevin@sdf.org>
 
 	* intrinsics.texi (HYPOT, IMAGE_INDEX, BESSEL_JN, BESSEL_YN,

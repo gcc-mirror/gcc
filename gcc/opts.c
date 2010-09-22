@@ -1429,7 +1429,6 @@ common_handle_option (const struct cl_decoded_option *decoded,
       verbose = true;
       break;
 
-    case OPT_fhelp:
     case OPT__help:
       {
 	unsigned int all_langs_mask = (1U << cl_lang_count) - 1;
@@ -1451,7 +1450,6 @@ common_handle_option (const struct cl_decoded_option *decoded,
 	break;
       }
 
-    case OPT_ftarget_help:
     case OPT__target_help:
       print_specific_help (CL_TARGET, CL_UNDOCUMENTED, 0);
       exit_after_options = true;
@@ -1461,7 +1459,6 @@ common_handle_option (const struct cl_decoded_option *decoded,
 	targetm.help ();
       break;
 
-    case OPT_fhelp_:
     case OPT__help_:
       {
 	const char * a = arg;
@@ -1580,7 +1577,6 @@ common_handle_option (const struct cl_decoded_option *decoded,
 	break;
       }
 
-    case OPT_fversion:
     case OPT__version:
       exit_after_options = true;
       break;

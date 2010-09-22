@@ -238,7 +238,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  added--;
 	  break;
 
-	case OPT_fhelp:
+	case OPT__help:
 	  want_spec_file = 0;
 	  break;
 

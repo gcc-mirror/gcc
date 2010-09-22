@@ -24,6 +24,48 @@
 Language
 Java
 
+-CLASSPATH
+Java Separate Alias(fclasspath=)
+
+-all-warnings
+Java Alias(Wall)
+
+-bootclasspath
+Java Separate Alias(fbootclasspath=)
+
+-classpath
+Java Separate Alias(fclasspath=)
+
+-dependencies
+Java Alias(M)
+
+-encoding
+Java Separate Alias(fencoding=)
+
+-extdirs
+Java Separate Alias(fextdirs=)
+
+-include-directory
+Java Separate Alias(I)
+
+-include-directory=
+Java Joined Alias(I)
+
+-output-class-directory
+Java Separate Alias(foutput-class-dir=)
+
+-output-class-directory=
+Java Joined Alias(foutput-class-dir=)
+
+-resource
+Java Separate Alias(fcompile-resource=)
+
+-resource=
+Java Joined Alias(fcompile-resource=)
+
+-user-dependencies
+Java Alias(MM)
+
 C
 Driver
 ; Java driver option in fact distinct from C-family option with the same name.

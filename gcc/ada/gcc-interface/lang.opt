@@ -1,5 +1,5 @@
 ; Options for the Ada front end.
-; Copyright (C) 2003, 2007, 2008 Free Software Foundation, Inc.
+; Copyright (C) 2003, 2007, 2008, 2010 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -24,6 +24,24 @@
 
 Language
 Ada
+
+-all-warnings
+Ada Alias(Wall)
+
+-include-barrier
+Ada Alias(I, -)
+
+-include-directory
+Ada Separate Alias(I)
+
+-include-directory=
+Ada Joined Alias(I)
+
+-no-standard-includes
+Ada Alias(nostdinc)
+
+-no-standard-libraries
+Ada Alias(nostdlib)
 
 I
 Ada Joined Separate

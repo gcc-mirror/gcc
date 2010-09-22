@@ -1,3 +1,9 @@
+2010-09-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc-interface/lang.opt (-all-warnings, -include-barrier,
+	-include-directory, -include-directory=, -no-standard-includes,
+	-no-standard-libraries): New.
+
 2010-09-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Replace calls to

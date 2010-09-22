@@ -29,36 +29,207 @@ int target_flags
 ###
 Driver
 
+-assemble
+Driver Alias(S)
+
+-compile
+Driver Alias(c)
+
+-coverage
+Driver Alias(coverage)
+
+-debug
+Common Alias(g)
+
+-dump
+Common Separate Alias(d)
+
+-dump=
+Common Joined Alias(d)
+
+-dumpbase
+Common Separate Alias(dumpbase)
+
+-dumpdir
+Common Separate Alias(dumpdir)
+
+-entry
+Driver Separate Alias(e)
+
+-entry=
+Driver Joined Alias(e)
+
+-extra-warnings
+Common Warning Alias(Wextra)
+
+-for-assembler
+Driver Separate Alias(Xassembler)
+
+-for-assembler=
+Driver JoinedOrMissing Alias(Xassembler)
+
+-for-linker
+Driver Separate Alias(Xlinker)
+
+-for-linker=
+Driver JoinedOrMissing Alias(Xlinker)
+
+-force-link
+Driver Separate Alias(u)
+
+-force-link=
+Driver Joined Alias(u)
+
 -help
-Common Driver
+Common Driver Var(help_flag)
 Display this information
 
 -help=
 Common Driver Report Joined
 --help=<class>	Display descriptions of a specific class of options.  <class> is one or more of optimizers, target, warnings, undocumented, params
 
+-language
+Driver Separate Alias(x)
+
+-language=
+Driver Joined Alias(x)
+
+-library-directory
+Driver Separate Alias(L)
+
+-library-directory=
+Driver Joined Alias(L)
+
+-no-canonical-prefixes
+Driver Alias(no-canonical-prefixes)
+
+-no-standard-libraries
+Driver Alias(nostdlib)
+
+-no-warnings
+Common Alias(w)
+
+-optimize
+Common Alias(O)
+
+-output
+Common Driver Separate Alias(o) MissingArgError(missing filename after %qs)
+
+-output=
+Common Driver Joined Alias(o) MissingArgError(missing filename after %qs)
+
+-pass-exit-codes
+Driver Alias(pass-exit-codes)
+
+-pedantic
+Common Alias(pedantic)
+
+-pedantic-errors
+Common Alias(pedantic-errors)
+
+-pie
+Common Alias(pie)
+
+-pipe
+Driver Alias(pipe)
+
+-prefix
+Driver Separate Alias(B)
+
+-prefix=
+Driver JoinedOrMissing Alias(B)
+
+-preprocess
+Driver Alias(E)
+
+-print-file-name
+Driver Separate Alias(print-file-name=)
+
+-print-file-name=
+Driver JoinedOrMissing Alias(print-file-name=)
+
+-print-libgcc-file-name
+Driver Alias(print-libgcc-file-name)
+
+-print-multi-directory
+Driver Alias(print-multi-directory)
+
+-print-multi-lib
+Driver Alias(print-multi-lib)
+
+-print-multi-os-directory
+Driver Alias(print-multi-os-directory)
+
+-print-prog-name
+Driver Separate Alias(print-prog-name=)
+
+-print-prog-name=
+Driver JoinedOrMissing Alias(print-prog-name=)
+
+-print-search-dirs
+Driver Alias(print-search-dirs)
+
+-print-sysroot
+Driver Alias(print-sysroot)
+
+-print-sysroot-headers-suffix
+Driver Alias(print-sysroot-headers-suffix)
+
+-profile
+Common Alias(p)
+
+-save-temps
+Driver Alias(save-temps)
+
+-shared
+Common Alias(shared)
+
+-specs
+Driver Separate Alias(specs=)
+
+-specs=
+Driver Joined Alias(specs=)
+
+-static
+Driver Alias(static)
+
+-symbolic
+Driver Alias(symbolic)
+
 -target-help
 Common Driver
 Alias for --help=target
 
-;; The following four entries are to work around the gcc driver
-;; program's insatiable desire to turn options starting with a
-;; double dash (--) into options starting with a dash f (-f).
+-time
+Driver Alias(time)
+
+-verbose
+Driver Alias(v)
+
+;; The driver used to convert options such as --help into forms such
+;; as -fhelp; the following four entries are for compatibility with
+;; any direct uses of those (undocumented) -f forms
 fhelp
-Common Driver Var(help_flag)
+Common Driver Alias(-help)
 
 fhelp=
-Common Driver Joined
+Common Driver Joined Alias(-help=)
 
 ftarget-help
-Common Driver
+Common Driver Alias(-target-help)
 
 fversion
-Common Driver
+Common Driver Alias(-version)
 
 -param
 Common Separate
 --param <param>=<value>	Set parameter <param> to value.  See below for a complete list of parameters
+
+-param=
+Common Joined Alias(-param)
+
+-sysroot
+Driver Separate Alias(-sysroot=)
 
 -sysroot=
 Driver JoinedOrMissing
@@ -312,6 +483,9 @@ Common Separate RejectDriver
 auxbase-strip
 Common Separate RejectDriver
 
+coverage
+Driver
+
 c
 Driver
 
@@ -335,6 +509,9 @@ Driver
 
 dumpversion
 Driver
+
+e
+Driver Joined Separate
 
 ; The version of the C++ ABI in use.  The following values are allowed:
 ;
@@ -1744,6 +1921,9 @@ Driver Var(report_times)
 time=
 Driver JoinedOrMissing
 
+u
+Driver Joined Separate
+
 v
 Driver
 
@@ -1785,6 +1965,9 @@ Driver
 ; Documented for Fortran, but always accepted by driver.
 
 static-libstdc++
+Driver
+
+symbolic
 Driver
 
 pie
