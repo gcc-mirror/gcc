@@ -1,3 +1,29 @@
+2010-09-22  David Krauss  <potswa@mac.com>
+
+	PR libstdc++/45628
+	* include/bits/fstream.tcc (basic_filebuf::underflow): Add state
+	transition to avoid modality requiring seekoff(0,ios::cur).
+	(basic_filebuf::pbackfail): Likewise.
+	(basic_filebuf::overflow): Likewise.
+	(basic_filebuf::_M_seek): Avoid minor unnecessary conversion.
+	(basic_filebuf::seekoff): Remove code to _M_get_ext_pos; make
+	(0, ios::cur) a special case preserving buffer contents.
+	(basic_filebuf::_M_get_ext_pos): New function to obtain status
+	about codecvt extern_t buffer for overflow and seekoff.
+	* include/std/fstream (basic_filebuf::_M_get_ext_pos): Likewise.
+	* config/abi/pre/gnu.ver: Export new symbols.
+	* testsuite/27_io/basic_filebuf/seekoff/char/45628-1.cc: New,
+	verifies that seekoff(0, ios::cur) preserves buffers.
+	* testsuite/27_io/basic_filebuf/seekoff/char/45628-2.cc: Likewise.
+	for codecvt case. More lenient as it may still flush put area.
+	* testsuite/27_io/basic_filebuf/seekoff/char/4.cc: Modify to
+	check that seekoff is not required between read and write.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sync/wchar_t/1.cc: Remove.
+	* testsuite/27_io/basic_filebuf/sync/wchar_t/1.cc: Likewise.
+	* testsuite/util/testsuite_character.h (codecvt::do_length): Comply
+	with 22.2.1.5.2/10 "Returns ... the LARGEST value in the range..."
+
 2010-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/functional_hash.h (__hash_base): Add.

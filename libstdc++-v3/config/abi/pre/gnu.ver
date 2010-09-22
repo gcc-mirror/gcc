@@ -332,7 +332,13 @@ GLIBCXX_3.4 {
     # std::basic_filebuf
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EEC*;
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EED*;
-    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE[0-3]*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE0*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE13*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE15*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE16*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE19*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE2*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE3*;
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE4openEPKc*;
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE4sync*;
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE[5-9]*;
@@ -1177,6 +1183,9 @@ GLIBCXX_3.4.15 {
     _ZNKSs4backEv;
     _ZNSbIwSt11char_traitsIwESaIwEE4backEv;
     _ZNKSbIwSt11char_traitsIwESaIwEE4backEv;
+
+    # basic_filebuf::_M_get_ext_pos
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE14_M_get_ext_pos*;
 
 } GLIBCXX_3.4.14;
 
