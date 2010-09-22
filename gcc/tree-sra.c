@@ -216,6 +216,9 @@ struct access
      cannot be called from within FOR_EACH_REFERENCED_VAR. */
   unsigned grp_to_be_replaced : 1;
 
+  /* Should TREE_NO_WARNING of a replacement be set?  */
+  unsigned grp_no_warning : 1;
+
   /* Is it possible that the group refers to data which might be (directly or
      otherwise) modified?  */
   unsigned grp_maybe_modified : 1;
@@ -1714,7 +1717,10 @@ create_access_replacement (struct access *access, bool rename)
 	  }
       SET_DECL_DEBUG_EXPR (repl, debug_expr);
       DECL_DEBUG_EXPR_IS_FROM (repl) = 1;
-      TREE_NO_WARNING (repl) = TREE_NO_WARNING (access->base);
+      if (access->grp_no_warning)
+	TREE_NO_WARNING (repl) = 1;
+      else
+	TREE_NO_WARNING (repl) = TREE_NO_WARNING (access->base);
     }
   else
     TREE_NO_WARNING (repl) = 1;
@@ -1970,12 +1976,17 @@ create_artificial_child_access (struct access *parent, struct access *model,
   tree expr = parent->base;
 
   gcc_assert (!model->grp_unscalarizable_region);
-  if (!build_user_friendly_ref_for_offset (&expr, TREE_TYPE (expr), new_offset,
-					   model->type))
-    return NULL;
 
   access = (struct access *) pool_alloc (access_pool);
   memset (access, 0, sizeof (struct access));
+  if (!build_user_friendly_ref_for_offset (&expr, TREE_TYPE (expr), new_offset,
+					   model->type))
+    {
+      access->grp_no_warning = true;
+      expr = build_ref_for_model (EXPR_LOCATION (parent->base), parent->base,
+				  new_offset, model, NULL, false);
+    }
+
   access->base = parent->base;
   access->expr = expr;
   access->offset = new_offset;
@@ -2016,11 +2027,16 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
     {
       tree t = lacc->base;
 
+      lacc->type = racc->type;
       if (build_user_friendly_ref_for_offset (&t, TREE_TYPE (t), lacc->offset,
 					      racc->type))
+	lacc->expr = t;
+      else
 	{
-	  lacc->expr = t;
-	  lacc->type = racc->type;
+	  lacc->expr = build_ref_for_model (EXPR_LOCATION (lacc->base),
+					    lacc->base, lacc->offset,
+					    racc, NULL, false);
+	  lacc->grp_no_warning = true;
 	}
       return false;
     }

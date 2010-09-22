@@ -1,3 +1,12 @@
+2010-09-22  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (struct access): New field grp_no_warning.
+	(create_access_replacement): Set TREE_NO_WARNING according to
+	 grp_no_warning.
+	(create_artificial_child_access): Use build_ref_for_model and set
+	grp_no_warning if build_user_friendly_ref_for_offset fails.
+	(propagate_subaccesses_across_link): Likewise.
+
 2010-09-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/35664
