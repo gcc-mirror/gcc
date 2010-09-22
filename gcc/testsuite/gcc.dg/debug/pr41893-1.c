@@ -1,6 +1,6 @@
 /* PR debug/41893 */
 /* { dg-do link } */
-/* { dg-require-effective-target-lto } */
+/* { dg-require-effective-target lto } */
 /* { dg-options "-flto -fwhole-program -O -r -nostdlib" } */
 /* { dg-additional-sources "pr41893-2.c" } */
 
