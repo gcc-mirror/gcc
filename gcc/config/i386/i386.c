@@ -19238,7 +19238,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
     {
       unsigned int i;
       enum stringop_alg alg = libcall;
-      for (i = 0; i < NAX_STRINGOP_ALGS; i++)
+      for (i = 0; i < MAX_STRINGOP_ALGS; i++)
 	{
 	  /* We get here if the algorithms that were not libcall-based
 	     were rep-prefix based and we are unable to use rep prefixes
@@ -19284,7 +19284,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
       int i;
       bool any_alg_usable_p = true;
 
-      for (i = 0; i < NAX_STRINGOP_ALGS; i++)
+      for (i = 0; i < MAX_STRINGOP_ALGS; i++)
         {
           enum stringop_alg candidate = algs->size[i].alg;
           any_alg_usable_p = any_alg_usable_p && ALG_USABLE_P (candidate);

@@ -1,3 +1,8 @@
+2010-09-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (MAX_STRINGOP_ALGS): Fix typo in the name.
+	* config/i386/i386.c (decide_alg): Update for rename.
+
 2010-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/45739
@@ -9,8 +14,7 @@
 	* config/rs6000/rs6000.h (OUTPUT_ADDR_CONST_EXTRA): Remove macros.
 	* config/rs6000/rs6000-protos.h (rs6000_output_addr_const_extra):
 	Remove.
-	* config/rs6000/rs6000.c (rs6000_output_addr_const_extra): Make
-	static.
+	* config/rs6000/rs6000.c (rs6000_output_addr_const_extra): Make static.
 	(TTARGET_ASM_OUTPUT_ADDR_CONST_EXTRA): Define.
 
 2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
