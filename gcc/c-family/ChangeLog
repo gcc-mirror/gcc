@@ -1,10 +1,16 @@
 2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/23710
-	* c-family/c-common.h (objc_start_method_definition): Return bool
-	instead of void.
-	* c-family/stub-objc.c (objc_start_method_definition): Return bool
-	instead of void.
+	* c-common.h (objc_start_method_definition): Return bool instead
+	of void.
+	* stub-objc.c (objc_start_method_definition): Return bool instead
+	of void.
+
+2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	PR objc/25965
+	* c-common.h (objc_get_interface_ivars): New declaration.
+	* stub-objc.c (objc_get_interface_ivars): New stub.
 
 2010-09-15  Ian Lance Taylor  <iant@google.com>
 
