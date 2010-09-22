@@ -385,7 +385,7 @@ such as @samp{+=}.  GCC, following the ISO standard, does not
 allow this.
 
 @cindex apostrophes
-@cindex '
+@cindex @code{'}
 @item
 GCC complains about unterminated character constants inside of
 preprocessing conditionals that fail.  Some programs have English

@@ -188,9 +188,9 @@ changes to the C++ language, some of which have been implemented in an
 experimental C++0x mode in GCC@. The C++0x mode in GCC tracks the draft
 working paper for the C++0x standard; the latest working paper is
 available on the ISO C++ committee's web site at
-@uref{http://www.open-std.org/jtc1/sc22/wg21/}. For information
+@uref{http://www.open-std.org/@/jtc1/@/sc22/@/wg21/}. For information
 regarding the C++0x features available in the experimental C++0x mode,
-see @uref{http://gcc.gnu.org/projects/cxx0x.html}. To select this
+see @uref{http://gcc.gnu.org/projects/@/cxx0x.html}. To select this
 standard in GCC, use the option @option{-std=c++0x}; to obtain all the
 diagnostics required by the standard, you should also specify
 @option{-pedantic} (or @option{-pedantic-errors} if you want them to be
@@ -214,7 +214,7 @@ Objective-C Language'', available at a number of web sites:
 
 @itemize
 @item
-@uref{http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/ObjectiveC/}
+@uref{http://developer.apple.com/@/mac/@/library/@/documentation/@/Cocoa/@/Conceptual/@/ObjectiveC/}
 is a recent (and periodically updated) version;
 @item
 @uref{http://objc.toodarkpark.net}

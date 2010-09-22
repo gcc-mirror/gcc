@@ -5464,7 +5464,7 @@ END PROGRAM
 @node GETGID
 @section @code{GETGID} --- Group ID function
 @fnindex GETGID
-@cindex system, group id
+@cindex system, group ID
 
 @table @asis
 @item @emph{Description}:
@@ -5541,8 +5541,8 @@ END PROGRAM
 @node GETPID
 @section @code{GETPID} --- Process ID function
 @fnindex GETPID
-@cindex system, process id
-@cindex process id
+@cindex system, process ID
+@cindex process ID
 
 @table @asis
 @item @emph{Description}:
@@ -5580,7 +5580,7 @@ end program info
 @node GETUID
 @section @code{GETUID} --- User ID function
 @fnindex GETUID
-@cindex system, user id
+@cindex system, user ID
 @cindex user id
 
 @table @asis
@@ -6351,7 +6351,7 @@ kind.
 @node IMAGE_INDEX
 @section @code{IMAGE_INDEX} --- Function that converts a cosubscript to an image index
 @fnindex IMAGE_INDEX
-@cindex coarray, IMAGE_INDEX
+@cindex coarray, @code{IMAGE_INDEX}
 @cindex images, cosubscript to image index conversion
 
 @table @asis
@@ -6734,7 +6734,7 @@ end program test_irand
 @node IS_IOSTAT_END
 @section @code{IS_IOSTAT_END} --- Test for end-of-file value
 @fnindex IS_IOSTAT_END
-@cindex IOSTAT, end of file
+@cindex @code{IOSTAT}, end of file
 
 @table @asis
 @item @emph{Description}:
@@ -6760,7 +6760,7 @@ Elemental function
 @item @emph{Return value}:
 Returns a @code{LOGICAL} of the default kind, which @code{.TRUE.} if
 @var{I} has the value which indicates an end of file condition for
-IOSTAT= specifiers, and is @code{.FALSE.} otherwise.
+@code{IOSTAT=} specifiers, and is @code{.FALSE.} otherwise.
 
 @item @emph{Example}:
 @smallexample
@@ -6779,7 +6779,7 @@ END PROGRAM
 @node IS_IOSTAT_EOR
 @section @code{IS_IOSTAT_EOR} --- Test for end-of-record value
 @fnindex IS_IOSTAT_EOR
-@cindex IOSTAT, end of record
+@cindex @code{IOSTAT}, end of record
 
 @table @asis
 @item @emph{Description}:
@@ -6805,7 +6805,7 @@ Elemental function
 @item @emph{Return value}:
 Returns a @code{LOGICAL} of the default kind, which @code{.TRUE.} if
 @var{I} has the value which indicates an end of file condition for
-IOSTAT= specifiers, and is @code{.FALSE.} otherwise.
+@code{IOSTAT=} specifiers, and is @code{.FALSE.} otherwise.
 
 @item @emph{Example}:
 @smallexample
@@ -9238,7 +9238,7 @@ REAL, POINTER, DIMENSION(:) :: VEC => NULL ()
 @node NUM_IMAGES
 @section @code{NUM_IMAGES} --- Function that returns the number of images
 @fnindex NUM_IMAGES
-@cindex coarray, NUM_IMAGES
+@cindex coarray, @code{NUM_IMAGES}
 @cindex images, number of
 
 @table @asis
@@ -11868,7 +11868,7 @@ end program test_tanh
 @node THIS_IMAGE
 @section @code{THIS_IMAGE} --- Function that returns the cosubscript index of this image
 @fnindex THIS_IMAGE
-@cindex coarray, THIS_IMAGE
+@cindex coarray, @code{THIS_IMAGE}
 @cindex images, index of this image
 
 @table @asis
@@ -12625,16 +12625,16 @@ size of 16, 32, and 64 bits. It is negative if a target platform
 does not support the particular kind. (Fortran 2008 or later.)
 
 @item @code{IOSTAT_END}:
-The value assigned to the variable passed to the IOSTAT= specifier of
+The value assigned to the variable passed to the @code{IOSTAT=} specifier of
 an input/output statement if an end-of-file condition occurred.
 
 @item @code{IOSTAT_EOR}:
-The value assigned to the variable passed to the IOSTAT= specifier of
+The value assigned to the variable passed to the @code{IOSTAT=} specifier of
 an input/output statement if an end-of-record condition occurred.
 
 @item @code{IOSTAT_INQUIRE_INTERNAL_UNIT}:
 Scalar default-integer constant, used by @code{INQUIRE} for the
-IOSTAT= specifier to denote an that a unit number identifies an
+@code{IOSTAT=} specifier to denote an that a unit number identifies an
 internal unit. (Fortran 2008 or later.)
 
 @item @code{NUMERIC_STORAGE_SIZE}:

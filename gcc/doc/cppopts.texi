@@ -188,8 +188,8 @@ without @samp{-pedantic} but treats as warnings.
 
 @item -M
 @opindex M
-@cindex make
-@cindex dependencies, make
+@cindex @command{make}
+@cindex dependencies, @command{make}
 Instead of outputting the result of preprocessing, output a rule
 suitable for @command{make} describing the dependencies of the main
 source file.  The preprocessor outputs one @command{make} rule containing

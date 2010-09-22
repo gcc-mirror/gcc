@@ -1685,7 +1685,7 @@ C
 @end smallexample
 
 For details refer to the g77 manual
-@uref{http://gcc.gnu.org/onlinedocs/gcc-3.4.6/g77/index.html#Top}.
+@uref{http://gcc.gnu.org/@/onlinedocs/@/gcc-3.4.6/@/g77/@/index.html#Top}.
 
 Also, @code{c_by_val.f} and its partner @code{c_by_val.c} of the
 GNU Fortran testsuite are worth a look.
