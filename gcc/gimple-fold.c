@@ -1486,7 +1486,7 @@ gimple_fold_obj_type_ref (tree ref, tree known_type)
    It is assumed that the operands have been previously folded.  */
 
 static bool
-fold_gimple_call (gimple_stmt_iterator *gsi)
+fold_gimple_call (gimple_stmt_iterator *gsi, bool inplace)
 {
   gimple stmt = gsi_stmt (*gsi);
 
@@ -1494,7 +1494,7 @@ fold_gimple_call (gimple_stmt_iterator *gsi)
 
   /* Check for builtins that CCP can handle using information not
      available in the generic fold routines.  */
-  if (callee && DECL_BUILT_IN (callee))
+  if (!inplace && callee && DECL_BUILT_IN (callee))
     {
       tree result = gimple_fold_builtin (stmt);
 
@@ -1511,7 +1511,6 @@ fold_gimple_call (gimple_stmt_iterator *gsi)
          there requires that we create a new CALL_EXPR, and that requires
          copying EH region info to the new node.  Easier to just do it
          here where we can just smash the call operand.  */
-      /* ??? Is there a good reason not to do this in fold_stmt_inplace?  */
       callee = gimple_call_fn (stmt);
       if (TREE_CODE (callee) == OBJ_TYPE_REF
           && TREE_CODE (OBJ_TYPE_REF_OBJECT (callee)) == ADDR_EXPR)
@@ -1578,9 +1577,7 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace)
 		changed = true;
 	      }
 	  }
-      /* The entire statement may be replaced in this case.  */
-      if (!inplace)
-	changed |= fold_gimple_call (gsi);
+      changed |= fold_gimple_call (gsi, inplace);
       break;
 
     case GIMPLE_ASM:
