@@ -27,6 +27,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h" /* For SWITCH_TAKES_ARG, WORD_SWITCH_TAKES_ARG and
 		   TARGET_OPTION_TRANSLATE_TABLE.  */
 
+static void prune_options (struct cl_decoded_option **, unsigned int *);
+
 /* Perform a binary search to find which option the command-line INPUT
    matches.  Returns its index in the option array, and
    OPT_SPECIAL_unknown on failure.
@@ -698,10 +700,9 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
 
   if (argv_copied)
     free (argv);
-  opt_array = XRESIZEVEC (struct cl_decoded_option, opt_array,
-			  num_decoded_options);
   *decoded_options = opt_array;
   *decoded_options_count = num_decoded_options;
+  prune_options (decoded_options, decoded_options_count);
 }
 
 /* Return true if NEXT_OPT_IDX cancels OPT_IDX.  Return false if the
@@ -724,119 +725,77 @@ cancel_option (int opt_idx, int next_opt_idx, int orig_next_opt_idx)
 
 /* Filter out options canceled by the ones after them.  */
 
-void
-prune_options (int *argcp, char ***argvp)
+static void
+prune_options (struct cl_decoded_option **decoded_options,
+	       unsigned int *decoded_options_count)
 {
-  int argc = *argcp;
-  int *options = XNEWVEC (int, argc);
-  /* We will only return this replacement argv if we remove at least
-     one argument, so it does not need to be size (argc + 1) to
-     make room for the terminating NULL because we will always have
-     freed up at least one slot when we end up using it at all.  */
-  char **argv = XNEWVEC (char *, argc);
-  int i, arg_count, need_prune = 0;
+  unsigned int old_decoded_options_count = *decoded_options_count;
+  struct cl_decoded_option *old_decoded_options = *decoded_options;
+  unsigned int new_decoded_options_count;
+  struct cl_decoded_option *new_decoded_options
+    = XNEWVEC (struct cl_decoded_option, old_decoded_options_count);
+  unsigned int i;
   const struct cl_option *option;
-  size_t opt_index;
-
-  /* Scan all arguments.  */
-  for (i = 1; i < argc; i++)
-    {
-      int value = 1;
-      const char *opt = (*argvp) [i];
-
-      opt_index = find_opt (opt + 1, -1);
-      if (opt_index == OPT_SPECIAL_unknown
-	  && (opt[1] == 'W' || opt[1] == 'f' || opt[1] == 'm')
-	  && opt[2] == 'n' && opt[3] == 'o' && opt[4] == '-')
-	{
-	  char *dup;
-
-	  /* Drop the "no-" from negative switches.  */
-	  size_t len = strlen (opt) - 3;
-
-	  dup = XNEWVEC (char, len + 1);
-	  dup[0] = '-';
-	  dup[1] = opt[1];
-	  memcpy (dup + 2, opt + 5, len - 2 + 1);
-	  opt = dup;
-	  value = 0;
-	  opt_index = find_opt (opt + 1, -1);
-	  free (dup);
-	}
-
-      if (opt_index == OPT_SPECIAL_unknown)
-	{
-cont:
-	  options [i] = 0;
-	  continue;
-	}
-
-      option = &cl_options[opt_index];
-      if (option->neg_index < 0)
-	goto cont;
-
-      /* Skip joined switches.  */
-      if ((option->flags & CL_JOINED))
-	goto cont;
-
-      /* Reject negative form of switches that don't take negatives as
-	 unrecognized.  */
-      if (!value && (option->flags & CL_REJECT_NEGATIVE))
-	goto cont;
-
-      options [i] = (int) opt_index;
-      need_prune |= options [i];
-    }
-
-  if (!need_prune)
-    goto done;
 
   /* Remove arguments which are negated by others after them.  */
-  argv [0] = (*argvp) [0];
-  arg_count = 1;
-  for (i = 1; i < argc; i++)
+  new_decoded_options_count = 0;
+  for (i = 0; i < old_decoded_options_count; i++)
     {
-      int j, opt_idx;
+      unsigned int j, opt_idx, next_opt_idx;
 
-      opt_idx = options [i];
-      if (opt_idx)
-	{
-	  int next_opt_idx;
-	  for (j = i + 1; j < argc; j++)
-	    {
-	      next_opt_idx = options [j];
-	      if (next_opt_idx
-		  && cancel_option (opt_idx, next_opt_idx,
-				    next_opt_idx))
-		break;
-	    }
-	}
-      else
+      if (old_decoded_options[i].errors & ~CL_ERR_WRONG_LANG)
 	goto keep;
 
-      if (j == argc)
+      opt_idx = old_decoded_options[i].opt_index;
+      switch (opt_idx)
 	{
+	case OPT_SPECIAL_unknown:
+	case OPT_SPECIAL_ignore:
+	case OPT_SPECIAL_program_name:
+	case OPT_SPECIAL_input_file:
+	  goto keep;
+
+	default:
+	  gcc_assert (opt_idx < cl_options_count);
+	  option = &cl_options[opt_idx];
+	  if (option->neg_index < 0)
+	    goto keep;
+
+	  /* Skip joined switches.  */
+	  if ((option->flags & CL_JOINED))
+	    goto keep;
+
+	  for (j = i + 1; j < old_decoded_options_count; j++)
+	    {
+	      if (old_decoded_options[j].errors & ~CL_ERR_WRONG_LANG)
+		continue;
+	      next_opt_idx = old_decoded_options[j].opt_index;
+	      if (next_opt_idx >= cl_options_count)
+		continue;
+	      if (cl_options[next_opt_idx].neg_index < 0)
+		continue;
+	      if ((cl_options[next_opt_idx].flags & CL_JOINED))
+		  continue;
+	      if (cancel_option (opt_idx, next_opt_idx, next_opt_idx))
+		break;
+	    }
+	  if (j == old_decoded_options_count)
+	    {
 keep:
-	  argv [arg_count] = (*argvp) [i];
-	  arg_count++;
+	      new_decoded_options[new_decoded_options_count]
+		= old_decoded_options[i];
+	      new_decoded_options_count++;
+	    }
+	  break;
 	}
     }
 
-  if (arg_count != argc)
-    {
-      *argcp = arg_count;
-      *argvp = argv;
-      /* Add NULL-termination.  Guaranteed not to overflow because
-	 arg_count here can only be less than argc.  */
-      argv[arg_count] = 0;
-    }
-  else
-    {
-done:
-      free (argv);
-    }
-
-  free (options);
+  free (old_decoded_options);
+  new_decoded_options = XRESIZEVEC (struct cl_decoded_option,
+				    new_decoded_options,
+				    new_decoded_options_count);
+  *decoded_options = new_decoded_options;
+  *decoded_options_count = new_decoded_options_count;
 }
 
 /* Handle option DECODED for the language indicated by LANG_MASK,

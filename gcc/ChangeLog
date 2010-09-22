@@ -1,5 +1,30 @@
 2010-09-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* opts-common.c (prune_options): Make static.  Work with decoded
+	options.
+	(decode_cmdline_options_to_array): Call prune_options.  Don't
+	resize option array here.
+	* opts.h (prune_options): Remove prototype.
+	* gcc.c (process_command): Take decoded options; don't call
+	decode_cmdline_options_to_array here.  Use decoded options for
+	argv[0].
+	(main): Call decode_cmdline_options_to_array here instead of
+	prune_options.  Update call to process_command.
+	* config/darwin-driver.c: Include opts.h.
+	(darwin_default_min_version): Work with decoded options.  Don't
+	handle -b or -V here.
+	* config/darwin.h (darwin_default_min_version): Update prototype.
+	(GCC_DRIVER_HOST_INITIALIZATION): Update call to
+	darwin_default_min_version.
+	* config/i386/cygwin.h (mingw_scan): Update prototype.
+	(GCC_DRIVER_HOST_INITIALIZATION): Update call to mingw_scan.
+	* config/i386/cygwin1.c: Include opts.h.
+	(mingw_scan): Work with decoded options.
+	* config/i386/t-cygwin (cygwin1.o): Update dependencies.
+	* config/t-darwin (darwin-driver.o): Update dependencies.
+
+2010-09-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* common.opt (-assemble, -compile, -coverage, -debug, -dump,
 	-dump=, -dumpbase, -dumpdir, -entry, -entry=, -extra-warnings,
 	-for-assembler, -for-assembler=, -for-linker, -for-linker=,

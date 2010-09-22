@@ -252,12 +252,13 @@ char *cvt_to_mingw[] =
 #undef GEN_CVT_ARRAY
 #endif /*GEN_CVT_ARRAY*/
 
-void mingw_scan (int, const char * const *, const char **);
+void mingw_scan (unsigned int, const struct cl_decoded_option *,
+		 const char **);
 #if 1
 #define GCC_DRIVER_HOST_INITIALIZATION \
 do \
 { \
-  mingw_scan(argc, (const char * const *) argv, &spec_machine); \
+  mingw_scan (decoded_options_count, decoded_options, &spec_machine);	\
   } \
 while (0)
 #else
@@ -277,7 +278,7 @@ do \
   add_prefix (&startfile_prefixes,\
 	      concat (standard_startfile_prefix, "w32api", NULL),\
 	      "GCC", PREFIX_PRIORITY_LAST, 0, NULL);\
-  mingw_scan(argc, (const char * const *) argv, &spec_machine); \
+  mingw_scan (decoded_options_count, decoded_options, &spec_machine);	\
   } \
 while (0)
 #endif
