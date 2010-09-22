@@ -1,3 +1,9 @@
+2010-09-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/45723
+	* io/open.c (new_unit): On POSITION_APPEND don't seek if file length is
+	zero.
+
 2010-09-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/45532
@@ -6,7 +12,8 @@
 
 2010-09-12  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
-	* intrinsics/pack_generic.c (pack): Add missing return and fix whitespace.
+	* intrinsics/pack_generic.c (pack): Add missing return and fix
+	whitespace.
 	* intrinsics/cshift0.c (cshift0): Fix whitespace.
 	* intrinsics/unpack_generic.c (unpack1, unpack0): Fix whitespace.
 
