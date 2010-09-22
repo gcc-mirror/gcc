@@ -1,3 +1,21 @@
+2010-09-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (-all-warnings, -ansi, -assert, -assert=, -comments,
+	-comments-in-macros, -define-macro, -define-macro=, -dependencies,
+	-dump, -dump=, -imacros, -imacros=, -include, -include=,
+	-include-barrier, -include-directory, -include-directory=,
+	-include-directory-after, -include-directory-after=,
+	-include-prefix, -include-prefix=, -include-with-prefix,
+	-include-with-prefix=, -include-with-prefix-after,
+	-include-with-prefix-after=, -include-with-prefix-before,
+	-include-with-prefix-before=, -no-integrated-cpp,
+	-no-line-commands, -no-standard-includes, -no-warnings, -output,
+	-output=, -pedantic, -pedantic-errors, -preprocess,
+	-print-missing-file-dependencies, -trace-includes, -traditional,
+	-traditional-cpp, -trigraphs, -undefine-macro, -undefine-macro=,
+	-user-dependencies, -verbose, -write-dependencies,
+	-write-user-dependencies, no-integrated-cpp, traditional): New.
+
 2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/23710

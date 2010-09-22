@@ -25,6 +25,96 @@
 Language
 Fortran
 
+-all-warnings
+Fortran Alias(Wall)
+
+-assert
+Fortran Separate Alias(A)
+
+-assert=
+Fortran Joined Alias(A)
+
+-comments
+Fortran Alias(C)
+
+-comments-in-macros
+Fortran Alias(CC)
+
+-define-macro
+Fortran Separate Alias(D)
+
+-define-macro=
+Fortran Joined Alias(D)
+
+-dependencies
+Fortran Alias(M)
+
+-dump
+Fortran Separate Alias(d)
+
+-dump=
+Fortran Joined Alias(d)
+
+-include-barrier
+Fortran Alias(I, -)
+
+-include-directory
+Fortran Separate Alias(I)
+
+-include-directory=
+Fortran Joined Alias(I)
+
+-include-directory-after
+Fortran Separate Alias(idirafter)
+
+-include-directory-after=
+Fortran Joined Alias(idirafter)
+
+-include-prefix
+Fortran Separate Alias(iprefix)
+
+-include-prefix=
+Fortran JoinedOrMissing Alias(iprefix)
+
+-no-line-commands
+Fortran Alias(P)
+
+-no-standard-includes
+Fortran Alias(nostdinc)
+
+-output
+Fortran Separate Alias(o)
+
+-output=
+Fortran Joined Alias(o)
+
+-preprocess
+Fortran Undocumented Alias(E)
+
+-print-missing-file-dependencies
+Fortran Alias(MG)
+
+-trace-includes
+Fortran Alias(H)
+
+-undefine-macro
+Fortran Separate Alias(U)
+
+-undefine-macro=
+Fortran Joined Alias(U)
+
+-user-dependencies
+Fortran Alias(MM)
+
+-verbose
+Fortran Alias(v)
+
+-write-dependencies
+Fortran NoDriverArg Separate Alias(MD)
+
+-write-user-dependencies
+Fortran NoDriverArg Separate Alias(MMD)
+
 A
 Fortran Joined Separate
 ; Documented in C

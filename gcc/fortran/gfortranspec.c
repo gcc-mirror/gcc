@@ -271,7 +271,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  verbose = 1;
 	  break;
 
-	case OPT_fversion:
+	case OPT__version:
 	  printf ("GNU Fortran %s%s\n", pkgversion_string, version_string);
 	  printf ("Copyright %s 2010 Free Software Foundation, Inc.\n\n",
 		  _("(C)"));
@@ -282,7 +282,7 @@ For more information about these matters, see the file named COPYING\n\n"));
 	  exit (0);
 	  break;
 
-	case OPT_fhelp:
+	case OPT__help:
 	  /* Let gcc.c handle this, as it has a really
 	     cool facility for handling --help and --verbose --help.  */
 	  return;

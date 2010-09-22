@@ -24,7 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "options.h"
 #include "diagnostic.h"
-#include "tm.h" /* For SWITCH_TAKES_ARG and WORD_SWITCH_TAKES_ARG.  */
+#include "tm.h" /* For SWITCH_TAKES_ARG, WORD_SWITCH_TAKES_ARG and
+		   TARGET_OPTION_TRANSLATE_TABLE.  */
 
 /* Perform a binary search to find which option the command-line INPUT
    matches.  Returns its index in the option array, and
@@ -53,7 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 size_t
 find_opt (const char *input, int lang_mask)
 {
-  size_t mn, mx, md, opt_len;
+  size_t mn, mn_orig, mx, md, opt_len;
   size_t match_wrong_lang;
   int comp;
 
@@ -73,6 +74,8 @@ find_opt (const char *input, int lang_mask)
       else
 	mn = md;
     }
+
+  mn_orig = mn;
 
   /* This is the switch that is the best match but for a different
      front end, or OPT_SPECIAL_unknown if there is no match at all.  */
@@ -105,6 +108,40 @@ find_opt (const char *input, int lang_mask)
       mn = opt->back_chain;
     }
   while (mn != cl_options_count);
+
+  if (match_wrong_lang == OPT_SPECIAL_unknown && input[0] == '-')
+    {
+      /* Long options, starting "--", may be abbreviated if the
+	 abbreviation is unambiguous.  This only applies to options
+	 not taking a joined argument, and abbreviations of "--option"
+	 are permitted even if there is a variant "--option=".  */
+      size_t mnc = mn_orig + 1;
+      size_t cmp_len = strlen (input);
+      while (mnc < cl_options_count
+	     && strncmp (input, cl_options[mnc].opt_text + 1, cmp_len) == 0)
+	{
+	  /* Option matching this abbreviation.  OK if it is the first
+	     match and that does not take a joined argument, or the
+	     second match, taking a joined argument and with only '='
+	     added to the first match; otherwise considered
+	     ambiguous.  */
+	  if (mnc == mn_orig + 1
+	      && !(cl_options[mnc].flags & CL_JOINED))
+	    match_wrong_lang = mnc;
+	  else if (mnc == mn_orig + 2
+		   && match_wrong_lang == mn_orig + 1
+		   && (cl_options[mnc].flags & CL_JOINED)
+		   && (cl_options[mnc].opt_len
+		       == cl_options[mn_orig + 1].opt_len + 1)
+		   && strncmp (cl_options[mnc].opt_text + 1,
+			       cl_options[mn_orig + 1].opt_text + 1,
+			       cl_options[mn_orig + 1].opt_len) == 0)
+	    ; /* OK, as long as there are no more matches.  */
+	  else
+	    return OPT_SPECIAL_unknown;
+	  mnc++;
+	}
+    }
 
   /* Return the best wrong match, or OPT_SPECIAL_unknown if none.  */
   return match_wrong_lang;
@@ -197,6 +234,46 @@ generate_canonical_option (size_t opt_index, const char *arg, int value,
     }
 }
 
+/* Structure describing mappings from options on the command line to
+   options to look up with find_opt.  */
+struct option_map
+{
+  /* Prefix of the option on the command line.  */
+  const char *opt0;
+  /* If two argv elements are considered to be merged into one option,
+     prefix for the second element, otherwise NULL.  */
+  const char *opt1;
+  /* The new prefix to map to.  */
+  const char *new_prefix;
+  /* Whether at least one character is needed following opt1 or opt0
+     for this mapping to be used.  (--optimize= is valid for -O, but
+     --warn- is not valid for -W.)  */
+  bool another_char_needed;
+  /* Whether the original option is a negated form of the option
+     resulting from this map.  */
+  bool negated;
+};
+static const struct option_map option_map[] =
+  {
+    { "-Wno-", NULL, "-W", false, true },
+    { "-fno-", NULL, "-f", false, true },
+    { "-mno-", NULL, "-m", false, true },
+    { "--debug=", NULL, "-g", false, false },
+    { "--machine-", NULL, "-m", true, false },
+    { "--machine-no-", NULL, "-m", false, true },
+    { "--machine=", NULL, "-m", false, false },
+    { "--machine=no-", NULL, "-m", false, true },
+    { "--machine", "", "-m", false, false },
+    { "--machine", "no-", "-m", false, true },
+    { "--optimize=", NULL, "-O", false, false },
+    { "--std=", NULL, "-std=", false, false },
+    { "--std", "", "-std=", false, false },
+    { "--warn-", NULL, "-W", true, false },
+    { "--warn-no-", NULL, "-W", false, true },
+    { "--", NULL, "-f", true, false },
+    { "--no-", NULL, "-f", false, true }
+  };
+
 /* Decode the switch beginning at ARGV for the language indicated by
    LANG_MASK (including CL_COMMON and CL_TARGET if applicable), into
    the structure *DECODED.  Returns the number of switches
@@ -207,10 +284,10 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
 		       struct cl_decoded_option *decoded)
 {
   size_t opt_index;
-  const char *opt, *arg = 0;
-  char *dup = 0;
+  const char *arg = 0;
   int value = 1;
-  unsigned int result = 1, i;
+  unsigned int result = 1, i, extra_args;
+  int adjust_len = 0;
   size_t total_len;
   char *p;
   const struct cl_option *option;
@@ -220,28 +297,50 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
   bool joined_arg_flag;
   bool have_separate_arg = false;
 
-  opt = argv[0];
+  extra_args = 0;
 
-  opt_index = find_opt (opt + 1, lang_mask);
-  if (opt_index == OPT_SPECIAL_unknown
-      && (opt[1] == 'W' || opt[1] == 'f' || opt[1] == 'm')
-      && opt[2] == 'n' && opt[3] == 'o' && opt[4] == '-')
+  opt_index = find_opt (argv[0] + 1, lang_mask);
+  i = 0;
+  while (opt_index == OPT_SPECIAL_unknown
+	 && i < ARRAY_SIZE (option_map))
     {
-      /* Drop the "no-" from negative switches.  */
-      size_t len = strlen (opt) - 3;
+      const char *opt0 = option_map[i].opt0;
+      const char *opt1 = option_map[i].opt1;
+      const char *new_prefix = option_map[i].new_prefix;
+      bool another_char_needed = option_map[i].another_char_needed;
+      size_t opt0_len = strlen (opt0);
+      size_t opt1_len = (opt1 == NULL ? 0 : strlen (opt1));
+      size_t optn_len = (opt1 == NULL ? opt0_len : opt1_len);
+      size_t new_prefix_len = strlen (new_prefix);
 
-      dup = XNEWVEC (char, len + 1);
-      dup[0] = '-';
-      dup[1] = opt[1];
-      memcpy (dup + 2, opt + 5, len - 2 + 1);
-      opt = dup;
-      value = 0;
-      opt_index = find_opt (opt + 1, lang_mask);
+      extra_args = (opt1 == NULL ? 0 : 1);
+      value = !option_map[i].negated;
+
+      if (strncmp (argv[0], opt0, opt0_len) == 0
+	  && (opt1 == NULL
+	      || (argv[1] != NULL && strncmp (argv[1], opt1, opt1_len) == 0))
+	  && (!another_char_needed
+	      || argv[extra_args][optn_len] != 0))
+	{
+	  size_t arglen = strlen (argv[extra_args]);
+	  char *dup;
+
+	  adjust_len = (int) optn_len - (int) new_prefix_len;
+	  dup = XNEWVEC (char, arglen + 1 - adjust_len);
+	  memcpy (dup, new_prefix, new_prefix_len);
+	  memcpy (dup + new_prefix_len, argv[extra_args] + optn_len,
+		  arglen - optn_len + 1);
+	  opt_index = find_opt (dup + 1, lang_mask);
+	  free (dup);
+	}
+      i++;
     }
 
   if (opt_index == OPT_SPECIAL_unknown)
     {
       arg = argv[0];
+      extra_args = 0;
+      value = 1;
       goto done;
     }
 
@@ -257,6 +356,7 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
       goto done;
     }
 
+  result = extra_args + 1;
   warn_message = option->warn_message;
 
   /* Check to see if the option is disabled for this configuration.  */
@@ -276,18 +376,16 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
       /* Have arg point to the original switch.  This is because
 	 some code, such as disable_builtin_function, expects its
 	 argument to be persistent until the program exits.  */
-      arg = argv[0] + cl_options[opt_index].opt_len + 1;
-      if (!value)
-	arg += strlen ("no-");
+      arg = argv[extra_args] + cl_options[opt_index].opt_len + 1 + adjust_len;
 
       if (*arg == '\0' && !(option->flags & CL_MISSING_OK))
 	{
 	  if (separate_arg_flag)
 	    {
-	      arg = argv[1];
-	      result = 2;
+	      arg = argv[extra_args + 1];
+	      result = extra_args + 2;
 	      if (arg == NULL)
-		result = 1;
+		result = extra_args + 1;
 	      else
 		have_separate_arg = true;
 	    }
@@ -298,10 +396,10 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
     }
   else if (separate_arg_flag)
     {
-      arg = argv[1];
-      result = 2;
+      arg = argv[extra_args + 1];
+      result = extra_args + 2;
       if (arg == NULL)
-	result = 1;
+	result = extra_args + 1;
       else
 	have_separate_arg = true;
     }
@@ -329,7 +427,8 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
 	  const struct cl_option *new_option = &cl_options[new_opt_index];
 
 	  /* The new option must not be an alias itself.  */
-	  gcc_assert (new_option->alias_target == N_OPTS);
+	  gcc_assert (new_option->alias_target == N_OPTS
+		      || (new_option->flags & CL_SEPARATE_ALIAS));
 
 	  if (option->neg_alias_arg)
 	    {
@@ -363,7 +462,11 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
 	  if (!(errors & CL_ERR_MISSING_ARG))
 	    {
 	      if (separate_arg_flag || joined_arg_flag)
-		gcc_assert (arg != NULL);
+		{
+		  if ((option->flags & CL_MISSING_OK) && arg == NULL)
+		    arg = "";
+		  gcc_assert (arg != NULL);
+		}
 	      else
 		gcc_assert (arg == NULL);
 	    }
@@ -392,8 +495,6 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
     }
 
  done:
-  if (dup)
-    free (dup);
   decoded->opt_index = opt_index;
   decoded->arg = arg;
   decoded->value = value;
@@ -455,6 +556,17 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
   return result;
 }
 
+#ifdef TARGET_OPTION_TRANSLATE_TABLE
+static const struct {
+  const char *const option_found;
+  const char *const replacements;
+} target_option_translations[] =
+{
+  TARGET_OPTION_TRANSLATE_TABLE,
+  { 0, 0 }
+};
+#endif
+
 /* Decode command-line options (ARGC and ARGV being the arguments of
    main) into an array, setting *DECODED_OPTIONS to a pointer to that
    array and *DECODED_OPTIONS_COUNT to the number of entries in the
@@ -470,9 +582,10 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
 				 struct cl_decoded_option **decoded_options,
 				 unsigned int *decoded_options_count)
 {
-  unsigned int n, i;
+  unsigned int n, i, target_translate_from;
   struct cl_decoded_option *opt_array;
   unsigned int num_decoded_options;
+  bool argv_copied = false;
 
   opt_array = XNEWVEC (struct cl_decoded_option, argc);
 
@@ -489,6 +602,7 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
   opt_array[0].errors = 0;
   num_decoded_options = 1;
 
+  target_translate_from = 1;
   for (i = 1; i < argc; i += n)
     {
       const char *opt = argv[i];
@@ -502,11 +616,88 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
 	  continue;
 	}
 
+      if (i >= target_translate_from && (lang_mask & CL_DRIVER))
+	{
+#ifdef TARGET_OPTION_TRANSLATE_TABLE
+	  int tott_idx;
+
+	  for (tott_idx = 0;
+	       target_option_translations[tott_idx].option_found;
+	       tott_idx++)
+	    {
+	      if (strcmp (target_option_translations[tott_idx].option_found,
+			  argv[i]) == 0)
+		{
+		  unsigned int spaces = 0;
+		  unsigned int m = 0;
+		  const char *sp;
+		  char *np;
+
+		  for (sp = target_option_translations[tott_idx].replacements;
+		       *sp; sp++)
+		    {
+		      if (*sp == ' ')
+			{
+			  spaces++;
+			  while (*sp == ' ')
+			    sp++;
+			  sp--;
+			}
+		    }
+
+		  if (spaces)
+		    {
+		      int new_argc = argc + spaces;
+		      if (argv_copied)
+			argv = XRESIZEVEC (const char *, argv, new_argc + 1);
+		      else
+			{
+			  const char **new_argv = XNEWVEC (const char *,
+							   new_argc + 1);
+			  memcpy (new_argv, argv,
+				  (argc + 1) * sizeof (const char *));
+			  argv = new_argv;
+			  argv_copied = true;
+			}
+		      memmove (&argv[i] + spaces, &argv[i],
+			       (argc + 1 - i) * sizeof (const char *));
+		      argc = new_argc;
+		      opt_array = XRESIZEVEC (struct cl_decoded_option,
+					      opt_array, argc);
+		    }
+
+		  sp = target_option_translations[tott_idx].replacements;
+		  np = xstrdup (sp);
+
+		  while (1)
+		    {
+		      while (*np == ' ')
+			np++;
+		      if (*np == 0)
+			break;
+		      argv[i + m++] = np;
+		      while (*np != ' ' && *np)
+			np++;
+		      if (*np == 0)
+			break;
+		      *np++ = 0;
+		    }
+
+		  target_translate_from = i + m;
+		  gcc_assert (m == spaces + 1);
+		  break;
+		}
+	    }
+#endif
+	}
+
       n = decode_cmdline_option (argv + i, lang_mask,
 				 &opt_array[num_decoded_options]);
       num_decoded_options++;
     }
 
+  if (argv_copied)
+    free (argv);
   opt_array = XRESIZEVEC (struct cl_decoded_option, opt_array,
 			  num_decoded_options);
   *decoded_options = opt_array;

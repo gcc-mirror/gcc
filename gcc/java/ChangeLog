@@ -1,3 +1,13 @@
+2010-09-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* jvspec.c (lang_specific_driver): Handle OPT__help instead of
+	OPT_fhelp.
+	* lang.opt (-CLASSPATH, -all-warnings, -bootclasspath, -classpath,
+	-dependencies, -encoding, -extdirs, -include-directory,
+	-include-directory=, -output-class-directory,
+	-output-class-directory=, -resource, -resource=,
+	-user-dependencies): New.
+
 2010-09-16  Richard Guenther  <rguenther@suse.de>
 
 	* jcf-parse.c (current_file_list): Remove.

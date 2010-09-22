@@ -1,3 +1,44 @@
+2010-09-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* common.opt (-assemble, -compile, -coverage, -debug, -dump,
+	-dump=, -dumpbase, -dumpdir, -entry, -entry=, -extra-warnings,
+	-for-assembler, -for-assembler=, -for-linker, -for-linker=,
+	-force-link, -force-link=, -language, -language=,
+	-library-directory, -library-directory=, -no-canonical-prefixes,
+	-no-standard-libraries, -no-warnings, -optimize, -output,
+	-output=, -pass-exit-codes, -pedantic, -pedantic-errors, -pie,
+	-pipe, -prefix, -prefix=, -preprocess, -print-file-name,
+	-print-file-name=, -print-libgcc-file-name,
+	-print-multi-directory, -print-multi-lib,
+	-print-multi-os-directory, -print-prog-name, -print-prog-name=,
+	-print-search-dirs, -print-sysroot, -print-sysroot-headers-suffix,
+	-profile, -save-temps, -shared, -specs, -specs=, -static,
+	-symbolic, -time, -verbose, -param=, -sysroot, coverage, e, u,
+	symbolic): New.
+	(fhelp, fhelp=, ftarget-help, fversion): Make into aliases.
+	* gcc.c (A Short Introduction to Adding a Command-Line Option):
+	Remove comment.
+	(cc1_options): Correct specs for passing down --help,
+	--target-help and --help=*.  Add spec for passing down --version.
+	(struct option_map, option_map, target_option_translations,
+	translate_options): Remove.
+	(driver_handle_option): Handle OPT__version, OPT__help, OPT__help_
+	and OPT__target_help instead of OPT_fversion, OPT_fhelp,
+	OPT_fhelp_ and OPT_ftarget_help.
+	(process_command): Don't call translate_options.  Call
+	decode_cmdline_options_to_array before checking for
+	-no-canonical-prefixes using decoded options.
+	* opts-common.c (tm.h): Update comment on #include.
+	(find_opt): Allow abbreviations of long options.
+	(struct option_map, option_map): New.
+	(decode_cmdline_option): Use them instead of hardcoding -Wno, -fno
+	and -mno handling.
+	(target_option_translations): New.
+	(decode_cmdline_options_to_array): Handle
+	TARGET_OPTION_TRANSLATE_TABLE in driver.
+	* opts.c (common_handle_option): Don't handle OPT_fhelp,
+	OPT_ftarget_help, OPT_fhelp_ or OPT_fversion.
+
 2010-09-22  Richard Guenther  <rguenther@suse.de>
 
 	* tree-inline.c (optimize_inline_calls): Schedule cleanups
