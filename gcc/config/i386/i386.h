@@ -90,7 +90,7 @@ enum stringop_alg
    unrolled_loop
 };
 
-#define NAX_STRINGOP_ALGS 4
+#define MAX_STRINGOP_ALGS 4
 
 /* Specify what algorithm to use for stringops on known size.
    When size is unknown, the UNKNOWN_SIZE alg is used.  When size is
@@ -107,7 +107,7 @@ struct stringop_algs
   const struct stringop_strategy {
     const int max;
     const enum stringop_alg alg;
-  } size [NAX_STRINGOP_ALGS];
+  } size [MAX_STRINGOP_ALGS];
 };
 
 /* Define the specific costs for a given cpu */
