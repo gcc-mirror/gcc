@@ -1,3 +1,9 @@
+2010-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/45739
+	* gcc.target/i386/pr45739.c: Tighten up scan-assembler-not
+	regexps.
+
 2010-09-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/mnofpu.c: New test.

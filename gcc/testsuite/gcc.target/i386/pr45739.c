@@ -20,5 +20,5 @@ bar (void)
   var = _mm_or_si128 (var, zero);
 }
 
-/* { dg-final { scan-assembler-not "pxor" } } */
-/* { dg-final { scan-assembler-not "por" } } */
+/* { dg-final { scan-assembler-not "pxor\[^\n\]*xmm" } } */
+/* { dg-final { scan-assembler-not "por\[^\n\]*xmm" } } */
