@@ -56,9 +56,6 @@ namespace std
    * @{
    */
 
-  template<typename _Tp>
-    struct hash;
-
   /// thread
   class thread
   {
@@ -224,7 +221,7 @@ namespace std
   /// std::hash specialization for thread::id.
   template<>
     struct hash<thread::id>
-    : public std::unary_function<thread::id, size_t>
+    : public __hash_base<size_t, thread::id>
     {
       size_t
       operator()(const thread::id& __id) const

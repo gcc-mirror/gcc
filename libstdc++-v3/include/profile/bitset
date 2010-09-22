@@ -359,7 +359,7 @@ namespace __profile
   /// std::hash specialization for bitset.
   template<size_t _Nb>
     struct hash<__profile::bitset<_Nb>>
-    : public std::unary_function<__profile::bitset<_Nb>, size_t>
+    : public __hash_base<size_t, __profile::bitset<_Nb>>
     {
       size_t
       operator()(const __profile::bitset<_Nb>& __b) const

@@ -505,7 +505,7 @@ namespace __profile
   /// std::hash specialization for vector<bool>.
   template<typename _Alloc>
     struct hash<__profile::vector<bool, _Alloc>>
-    : public std::unary_function<__profile::vector<bool, _Alloc>, size_t>
+    : public __hash_base<size_t, __profile::vector<bool, _Alloc>>
     {
       size_t
       operator()(const __profile::vector<bool, _Alloc>& __b) const

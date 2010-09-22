@@ -385,7 +385,7 @@ namespace __debug
   /// std::hash specialization for bitset.
   template<size_t _Nb>
     struct hash<__debug::bitset<_Nb>>
-    : public std::unary_function<__debug::bitset<_Nb>, size_t>
+    : public __hash_base<size_t, __debug::bitset<_Nb>>
     {
       size_t
       operator()(const __debug::bitset<_Nb>& __b) const

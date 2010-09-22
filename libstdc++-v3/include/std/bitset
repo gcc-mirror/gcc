@@ -1495,7 +1495,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /// std::hash specialization for bitset.
   template<size_t _Nb>
     struct hash<_GLIBCXX_STD_D::bitset<_Nb>>
-    : public std::unary_function<_GLIBCXX_STD_D::bitset<_Nb>, size_t>
+    : public __hash_base<size_t, _GLIBCXX_STD_D::bitset<_Nb>>
     {
       size_t
       operator()(const _GLIBCXX_STD_D::bitset<_Nb>& __b) const
@@ -1507,7 +1507,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<>
     struct hash<_GLIBCXX_STD_D::bitset<0>>
-    : public std::unary_function<_GLIBCXX_STD_D::bitset<0>, size_t>
+    : public __hash_base<size_t, _GLIBCXX_STD_D::bitset<0>>
     {
       size_t
       operator()(const _GLIBCXX_STD_D::bitset<0>&) const

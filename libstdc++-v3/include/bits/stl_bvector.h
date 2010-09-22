@@ -1038,7 +1038,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /// std::hash specialization for vector<bool>.
   template<typename _Alloc>
     struct hash<_GLIBCXX_STD_D::vector<bool, _Alloc>>
-    : public std::unary_function<_GLIBCXX_STD_D::vector<bool, _Alloc>, size_t>
+    : public __hash_base<size_t, _GLIBCXX_STD_D::vector<bool, _Alloc>>
     {
       size_t
       operator()(const _GLIBCXX_STD_D::vector<bool, _Alloc>& __b) const;
