@@ -1,3 +1,7 @@
+2010-09-22  Tristan Gingold  <gingold@adacore.com>
+
+	* config/alpha/alpha.c (alpha_use_linkage): Initialize target field.
+
 2010-09-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (MAX_STRINGOP_ALGS): Fix typo in the name.
@@ -23,13 +27,13 @@
 	* c-parser.c (c_parser_objc_method_definition): Check the return
 	value of objc_start_method_definition and if false is returned,
 	parse the method definition but emit no code.
-	
+
 2010-09-21  Nicola Pero  <nicola.pero@meta-innovation.com>
 
 	PR objc/25965
 	* c-decl.c (detect_field_duplicates): If compiling Objective-C,
 	call objc_get_interface_ivars ().
-	
+
 2010-09-21  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR target/45694
