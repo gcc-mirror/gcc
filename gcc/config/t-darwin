@@ -36,7 +36,7 @@ darwin-f.o: $(srcdir)/config/darwin-f.c $(CONFIG_H) $(SYSTEM_H) coretypes.h
 	  $(srcdir)/config/darwin-f.c $(PREPROCESSOR_DEFINES)
 
 darwin-driver.o: $(srcdir)/config/darwin-driver.c \
-  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H)
+  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) opts.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(srcdir)/config/darwin-driver.c
 

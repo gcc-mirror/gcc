@@ -261,7 +261,7 @@ static void display_help (void);
 static void add_preprocessor_option (const char *, int);
 static void add_assembler_option (const char *, int);
 static void add_linker_option (const char *, int);
-static void process_command (int, const char **);
+static void process_command (unsigned int, struct cl_decoded_option *);
 static int execute (void);
 static void alloc_args (void);
 static void clear_args (void);
@@ -3506,7 +3506,8 @@ driver_handle_option (const struct cl_decoded_option *decoded,
    Store its length in `n_switches'.  */
 
 static void
-process_command (int argc, const char **argv)
+process_command (unsigned int decoded_options_count,
+		 struct cl_decoded_option *decoded_options)
 {
   const char *temp;
   char *temp1;
@@ -3514,8 +3515,7 @@ process_command (int argc, const char **argv)
   char *(*get_relative_prefix) (const char *, const char *,
 				const char *) = NULL;
   struct cl_option_handlers handlers;
-  struct cl_decoded_option *decoded_options;
-  unsigned int decoded_options_count, j;
+  unsigned int j;
 
   GET_ENVIRONMENT (gcc_exec_prefix, "GCC_EXEC_PREFIX");
 
@@ -3536,9 +3536,6 @@ process_command (int argc, const char **argv)
 	}
     }
 
-  decode_cmdline_options_to_array (argc, argv, CL_DRIVER,
-				   &decoded_options, &decoded_options_count);
-
   /* Handle any -no-canonical-prefixes flag early, to assign the function
      that builds relative prefixes.  This function creates default search
      paths that are needed later in normal option handling.  */
@@ -3555,17 +3552,18 @@ process_command (int argc, const char **argv)
     get_relative_prefix = make_relative_prefix;
 
   /* Set up the default search paths.  If there is no GCC_EXEC_PREFIX,
-     see if we can create it from the pathname specified in argv[0].  */
+     see if we can create it from the pathname specified in
+     decoded_options[0].arg.  */
 
   gcc_libexec_prefix = standard_libexec_prefix;
 #ifndef VMS
   /* FIXME: make_relative_prefix doesn't yet work for VMS.  */
   if (!gcc_exec_prefix)
     {
-      gcc_exec_prefix = get_relative_prefix (argv[0],
+      gcc_exec_prefix = get_relative_prefix (decoded_options[0].arg,
 					     standard_bindir_prefix,
 					     standard_exec_prefix);
-      gcc_libexec_prefix = get_relative_prefix (argv[0],
+      gcc_libexec_prefix = get_relative_prefix (decoded_options[0].arg,
 					     standard_bindir_prefix,
 					     standard_libexec_prefix);
       if (gcc_exec_prefix)
@@ -3592,7 +3590,8 @@ process_command (int argc, const char **argv)
 #endif
   /* From this point onward, gcc_exec_prefix is non-null if the toolchain
      is relocated. The toolchain was either relocated using GCC_EXEC_PREFIX
-     or an automatically created GCC_EXEC_PREFIX from argv[0].  */
+     or an automatically created GCC_EXEC_PREFIX from
+     decoded_options[0].arg.  */
 
   /* Do language-specific adjustment/addition of flags.  */
   lang_specific_driver (&decoded_options, &decoded_options_count,
@@ -3888,7 +3887,7 @@ process_command (int argc, const char **argv)
      ``make_relative_prefix'' is not compiled for VMS, so don't call it.  */
   if (target_system_root && !target_system_root_changed && gcc_exec_prefix)
     {
-      char *tmp_prefix = get_relative_prefix (argv[0],
+      char *tmp_prefix = get_relative_prefix (decoded_options[0].arg,
 					      standard_bindir_prefix,
 					      target_system_root);
       if (tmp_prefix && access_check (tmp_prefix, F_OK) == 0)
@@ -6099,6 +6098,8 @@ main (int argc, char **argv)
   const char *p;
   struct user_specs *uptr;
   char **old_argv = argv;
+  struct cl_decoded_option *decoded_options;
+  unsigned int decoded_options_count;
 
   /* Initialize here, not in definition.  The IRIX 6 O32 cc sometimes chokes
      on ?: in file-scope variable initializations.  */
@@ -6117,7 +6118,10 @@ main (int argc, char **argv)
   if (argv != old_argv)
     at_file_supplied = true;
 
-  prune_options (&argc, &argv);
+  decode_cmdline_options_to_array (argc, CONST_CAST2 (const char **, char **,
+						      argv),
+				   CL_DRIVER,
+				   &decoded_options, &decoded_options_count);
 
 #ifdef GCC_DRIVER_HOST_INITIALIZATION
   /* Perform host dependent initialization when needed.  */
@@ -6207,7 +6211,7 @@ main (int argc, char **argv)
      Make a table of specified input files (infiles, n_infiles).
      Decode switches that are handled locally.  */
 
-  process_command (argc, CONST_CAST2 (const char **, char **, argv));
+  process_command (decoded_options_count, decoded_options);
 
   /* Initialize the vector of specs to just the default.
      This means one element containing 0s, as a terminator.  */

@@ -1059,9 +1059,10 @@ extern int flag_apple_kext;
 #define TARGET_HAS_TARGETCM 1
 
 #ifndef CROSS_DIRECTORY_STRUCTURE
-extern void darwin_default_min_version (int * argc, char *** argv);
+extern void darwin_default_min_version (unsigned int *decoded_options_count,
+					struct cl_decoded_option **decoded_options);
 #define GCC_DRIVER_HOST_INITIALIZATION \
-  darwin_default_min_version (&argc, &argv)
+  darwin_default_min_version (&decoded_options_count, &decoded_options)
 #endif /* CROSS_DIRECTORY_STRUCTURE */
 
 /* The Apple assembler and linker do not support constructor priorities.  */

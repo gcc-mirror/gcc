@@ -206,7 +206,6 @@ extern void decode_cmdline_options_to_array (unsigned int argc,
 					     unsigned int lang_mask,
 					     struct cl_decoded_option **decoded_options,
 					     unsigned int *decoded_options_count);
-extern void prune_options (int *argcp, char ***argvp);
 extern void decode_options (unsigned int argc, const char **argv,
 			    struct cl_decoded_option **decoded_options,
 			    unsigned int *decoded_options_count);

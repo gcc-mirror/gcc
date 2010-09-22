@@ -22,32 +22,42 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "opts.h"
 #include <string.h>
 
 void
-mingw_scan (int argc ATTRIBUTE_UNUSED,
-            const char *const *argv,
+mingw_scan (unsigned int decoded_options_count,
+	    const struct cl_decoded_option *decoded_options,
             const char **spec_machine)
 {
+  unsigned int i;
   putenv (xstrdup ("GCC_CYGWIN_MINGW=0"));
  
-  while (*++argv)
-    if (strcmp (*argv, "-mno-win32") == 0)
-      putenv (xstrdup ("GCC_CYGWIN_WIN32=0"));
-    else if (strcmp (*argv, "-mwin32") == 0)
-      putenv (xstrdup ("GCC_CYGWIN_WIN32=1"));
-    else if (strcmp (*argv, "-mno-cygwin") == 0)
+  for (i = 1; i < decoded_options_count; i++)
+    switch (decoded_options[i].opt_index)
       {
-	char *p = strstr (*spec_machine, "-cygwin");
-	if (p)
+      case OPT_mwin32:
+	if (decoded_options[i].value == 0)
+	  putenv (xstrdup ("GCC_CYGWIN_WIN32=0"));
+	else
+	  putenv (xstrdup ("GCC_CYGWIN_WIN32=1"));
+	break;
+
+      case OPT_mcygwin:
+	if (decoded_options[i].value == 0)
 	  {
-	    int len = p - *spec_machine;
-	    char *s = XNEWVEC (char, strlen (*spec_machine) + 3);
-	    memcpy (s, *spec_machine, len);
-	    strcpy (s + len, "-mingw32");
-	    *spec_machine = s;
+	    char *p = strstr (*spec_machine, "-cygwin");
+	    if (p)
+	      {
+		int len = p - *spec_machine;
+		char *s = XNEWVEC (char, strlen (*spec_machine) + 3);
+		memcpy (s, *spec_machine, len);
+		strcpy (s + len, "-mingw32");
+		*spec_machine = s;
+	      }
+	    putenv (xstrdup ("GCC_CYGWIN_MINGW=1"));
 	  }
-	putenv (xstrdup ("GCC_CYGWIN_MINGW=1"));
+	break;
       }
   return;
 }

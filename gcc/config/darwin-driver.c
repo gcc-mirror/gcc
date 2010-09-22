@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "gcc.h"
+#include "opts.h"
 #include <sys/sysctl.h>
 #include "xregex.h"
 
@@ -32,11 +33,12 @@ along with GCC; see the file COPYING3.  If not see
    of the system on which the compiler is running.  */
 
 void
-darwin_default_min_version (int * argc_p, char *** argv_p)
+darwin_default_min_version (unsigned int *decoded_options_count,
+			    struct cl_decoded_option **decoded_options)
 {
-  const int argc = *argc_p;
-  char ** const argv = *argv_p;
-  int i;
+  const unsigned int argc = *decoded_options_count;
+  struct cl_decoded_option *const argv = *decoded_options;
+  unsigned int i;
   char osversion[32];
   size_t osversion_len = sizeof (osversion) - 1;
   static int osversion_name[2] = { CTL_KERN, KERN_OSRELEASE };
@@ -44,34 +46,17 @@ darwin_default_min_version (int * argc_p, char *** argv_p)
   char * version_pend;
   int major_vers;
   char minor_vers[6];
-  static char new_flag[sizeof ("-mmacosx-version-min=10.0.0") + 6];
+  static char new_flag[sizeof ("10.0.0") + 6];
 
   /* If the command-line is empty, just return.  */
   if (argc <= 1)
-    return;
-  /* Don't do this if the user has specified -b or -V at the start
-     of the command-line.  */
-  if (argv[1][0] == '-'
-      && (argv[1][1] == 'V' ||
-	  ((argv[1][1] == 'b') && (NULL != strchr(argv[1] + 2,'-')))))
     return;
   
   /* Don't do this if the user specified -mmacosx-version-min= or
      -mno-macosx-version-min.  */
   for (i = 1; i < argc; i++)
-    if (argv[i][0] == '-')
-      {
-	const char * const p = argv[i];
-	if (strncmp (p, "-mno-macosx-version-min", 23) == 0
-	    || strncmp (p, "-mmacosx-version-min", 20) == 0)
-	  return;
-	
-	/* It doesn't count if it's an argument to a different switch.  */
-	if (p[0] == '-'
-	    && ((SWITCH_TAKES_ARG (p[1]) > (p[2] != 0))
-		|| WORD_SWITCH_TAKES_ARG (p + 1)))
-	  i++;
-      }
+    if (argv[i].opt_index == OPT_mmacosx_version_min_)
+      return;
 
   /* Retrieve the deployment target from the environment and insert
      it as a flag.  */
@@ -84,12 +69,14 @@ darwin_default_min_version (int * argc_p, char *** argv_p)
 	   to ignore the environment variable, as if it was never set.  */
 	&& macosx_deployment_target[0])
       {
-	++*argc_p;
-	*argv_p = XNEWVEC (char *, *argc_p);
-	(*argv_p)[0] = argv[0];
-	(*argv_p)[1] = concat ("-mmacosx-version-min=",
-			       macosx_deployment_target, NULL);
-	memcpy (*argv_p + 2, argv + 1, (argc - 1) * sizeof (char *));
+	++*decoded_options_count;
+	*decoded_options = XNEWVEC (struct cl_decoded_option,
+				    *decoded_options_count);
+	(*decoded_options)[0] = argv[0];
+	generate_option (OPT_mmacosx_version_min_, macosx_deployment_target,
+			 1, CL_DRIVER, &(*decoded_options)[1]);
+	memcpy (*decoded_options + 2, argv + 1,
+		(argc - 1) * sizeof (struct cl_decoded_option *));
 	return;
       }
   }
@@ -128,17 +115,20 @@ darwin_default_min_version (int * argc_p, char *** argv_p)
   if (major_vers - 4 <= 4)
     /* On 10.4 and earlier, the old linker is used which does not
        support three-component system versions.  */
-    sprintf (new_flag, "-mmacosx-version-min=10.%d", major_vers - 4);
+    sprintf (new_flag, "10.%d", major_vers - 4);
   else
-    sprintf (new_flag, "-mmacosx-version-min=10.%d.%s", major_vers - 4,
+    sprintf (new_flag, "10.%d.%s", major_vers - 4,
 	     minor_vers);
 
   /* Add the new flag.  */
-  ++*argc_p;
-  *argv_p = XNEWVEC (char *, *argc_p);
-  (*argv_p)[0] = argv[0];
-  (*argv_p)[1] = new_flag;
-  memcpy (*argv_p + 2, argv + 1, (argc - 1) * sizeof (char *));
+  ++*decoded_options_count;
+  *decoded_options = XNEWVEC (struct cl_decoded_option,
+			      *decoded_options_count);
+  (*decoded_options)[0] = argv[0];
+  generate_option (OPT_mmacosx_version_min_, new_flag,
+		   1, CL_DRIVER, &(*decoded_options)[1]);
+  memcpy (*decoded_options + 2, argv + 1,
+	  (argc - 1) * sizeof (struct cl_decoded_option *));
   return;
   
  parse_failed:
