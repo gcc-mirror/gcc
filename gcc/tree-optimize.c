@@ -158,7 +158,6 @@ struct gimple_opt_pass pass_all_early_optimizations =
 static unsigned int
 execute_cleanup_cfg_post_optimizing (void)
 {
-  fold_cond_expr_cond ();
   cleanup_tree_cfg ();
   cleanup_dead_labels ();
   group_case_labels ();

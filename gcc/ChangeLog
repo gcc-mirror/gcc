@@ -1,3 +1,14 @@
+2010-09-22  Richard Guenther  <rguenther@suse.de>
+
+	* tree-inline.c (optimize_inline_calls): Schedule cleanups
+	only if we inlined something.  Block compaction and conditional
+	folding are done by cfg cleanup.  Schedule update-address-taken.
+	(tree_function_versioning): Remove redundant call to number_blocks.
+	* tree-optimize.c (execute_cleanup_cfg_post_optimizing): Conditional
+	folding is done by cfg cleanup.
+	* passes.c (init_optimization_passes): Remove update-address-taken
+	pass after IPA inlining.
+
 2010-09-22  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* postreload.c (move2add_note_store): Add reg_symbol_ref[] checks

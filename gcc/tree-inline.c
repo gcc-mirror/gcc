@@ -4162,6 +4162,7 @@ optimize_inline_calls (tree fn)
   basic_block bb;
   int last = n_basic_blocks;
   struct gimplify_ctx gctx;
+  bool inlined_p = false;
 
   /* There is no point in performing inlining if errors have already
      occurred -- and we might crash if we try to inline invalid
@@ -4201,7 +4202,7 @@ optimize_inline_calls (tree fn)
      follow it; we'll trudge through them, processing their CALL_EXPRs
      along the way.  */
   FOR_EACH_BB (bb)
-    gimple_expand_calls_inline (bb, &id);
+    inlined_p |= gimple_expand_calls_inline (bb, &id);
 
   pop_gimplify_context (NULL);
 
@@ -4217,18 +4218,19 @@ optimize_inline_calls (tree fn)
     }
 #endif
 
-  /* Fold the statements before compacting/renumbering the basic blocks.  */
+  /* Fold queued statements.  */
   fold_marked_statements (last, id.statements_to_fold);
   pointer_set_destroy (id.statements_to_fold);
 
   gcc_assert (!id.debug_stmts);
 
-  /* Renumber the (code) basic_blocks consecutively.  */
-  compact_blocks ();
+  /* If we didn't inline into the function there is nothing to do.  */
+  if (!inlined_p)
+    return 0;
+
   /* Renumber the lexical scoping (non-code) blocks consecutively.  */
   number_blocks (fn);
 
-  fold_cond_expr_cond ();
   delete_unreachable_blocks_update_callgraph (&id);
 #ifdef ENABLE_CHECKING
   verify_cgraph_node (id.dst_node);
@@ -4241,6 +4243,7 @@ optimize_inline_calls (tree fn)
   return (TODO_update_ssa
 	  | TODO_cleanup_cfg
 	  | (gimple_in_ssa_p (cfun) ? TODO_remove_unused_locals : 0)
+	  | (gimple_in_ssa_p (cfun) ? TODO_update_address_taken : 0)
 	  | (profile_status != PROFILE_ABSENT ? TODO_rebuild_frequencies : 0));
 }
 
@@ -5117,9 +5120,6 @@ tree_function_versioning (tree old_decl, tree new_decl,
       				     args_to_skip, &vars);
 
   DECL_INITIAL (new_decl) = remap_blocks (DECL_INITIAL (id.src_fn), &id);
-
-  /* Renumber the lexical scoping (non-code) blocks consecutively.  */
-  number_blocks (id.dst_fn);
 
   declare_inline_vars (DECL_INITIAL (new_decl), vars);
 
