@@ -1,5 +1,18 @@
 2010-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/std/typeindex: New.
+	* include/Makefile.am: Add.
+	* include/Makefile.in: Regenerate.
+	* include/precompiled/stdc++.h: Add.
+	* testsuite/20_util/typeindex/comparison_operators.cc: New.
+	* testsuite/20_util/typeindex/hash.cc: Likewise.
+	* testsuite/20_util/typeindex/hash_code.cc: Likewise.
+	* testsuite/20_util/typeindex/name.cc: Likewise.
+
+	* testsuite/18_support/type_info/hash_code.cc: Tweak.
+
+2010-09-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* src/hash_bytes.cc: Move...
 	* libsupc++/hash_bytes.cc: ... here.
 	* src/Makefile.am: Adjust.
