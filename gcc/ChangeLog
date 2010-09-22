@@ -1,3 +1,8 @@
+2010-09-22  Hariharan Sandanagobalane <hariharan@picochip.com>
+
+	* config/picochip/picochip.md (movhicc): Use expand to check whether
+	movhicc is available and split it after reload.
+
 2010-09-22  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssanames.c (release_dead_ssa_names): Do not remove
