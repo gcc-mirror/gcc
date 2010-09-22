@@ -10029,6 +10029,7 @@ alpha_use_linkage (rtx func, tree cfundecl, int lflag, int rflag)
 
       al = ggc_alloc_alpha_links ();
       al->num = cfaf->num;
+      al->target = NULL;
 
       node = splay_tree_lookup (alpha_links_tree, (splay_tree_key) name);
       if (node)
