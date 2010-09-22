@@ -1,5 +1,12 @@
 2010-09-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR java/44095
+	* config/sparc/linux.h (ASM_SPEC): Pass -K PIC if -findirect-dispatch
+	is specified and the suffix of the file isn't ".c".
+	* config/sparc/linux64.h (ASM_SPEC): Likewise.
+
+2010-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR target/35664
 	* config/sparc/constraints.md ('e'): Return NO_REGS if !TARGET_FPU.
 	('f'): Likewise.
