@@ -338,8 +338,8 @@ release_dead_ssa_names (void)
   int n = 0;
   referenced_var_iterator rvi;
 
-  /* Current defs point to various dead SSA names that in turn points to dead
-     statements so bunch of dead memory is held from releasing.  */
+  /* Current defs point to various dead SSA names that in turn point to
+     eventually dead variables so a bunch of memory is held live.  */
   FOR_EACH_REFERENCED_VAR (t, rvi)
     set_current_def (t, NULL);
   /* Now release the freelist.  */
@@ -356,12 +356,10 @@ release_dead_ssa_names (void)
     }
   FREE_SSANAMES (cfun) = NULL;
 
-  /* Cgraph edges has been invalidated and point to dead statement.  We need to
-     remove them now and will rebuild it before next IPA pass.  */
-  cgraph_node_remove_callees (cgraph_node (current_function_decl));
-
+  statistics_counter_event (cfun, "SSA names released", n);
   if (dump_file)
-    fprintf (dump_file, "Released %i names, %.2f%%\n", n, n * 100.0 / num_ssa_names);
+    fprintf (dump_file, "Released %i names, %.2f%%\n",
+	     n, n * 100.0 / num_ssa_names);
   return 0;
 }
 

@@ -149,37 +149,6 @@ struct gimple_opt_pass pass_all_early_optimizations =
  }
 };
 
-/* Pass: cleanup the CFG just before expanding trees to RTL.
-   This is just a round of label cleanups and case node grouping
-   because after the tree optimizers have run such cleanups may
-   be necessary.  */
-
-static unsigned int
-execute_cleanup_cfg_pre_ipa (void)
-{
-  cleanup_tree_cfg ();
-  return 0;
-}
-
-struct gimple_opt_pass pass_cleanup_cfg =
-{
- {
-  GIMPLE_PASS,
-  "cleanup_cfg",			/* name */
-  NULL,					/* gate */
-  execute_cleanup_cfg_pre_ipa,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_dump_func			/* todo_flags_finish */
- }
-};
-
 
 /* Pass: cleanup the CFG just before expanding trees to RTL.
    This is just a round of label cleanups and case node grouping
@@ -260,7 +229,7 @@ execute_free_datastructures (void)
   return 0;
 }
 
-/* Pass: fixup_cfg.  IPA passes, compilation of earlier functions or inlining
+/* IPA passes, compilation of earlier functions or inlining
    might have changed some properties, such as marked functions nothrow,
    pure, const or noreturn.
    Remove redundant edges and basic blocks, and create new ones if necessary.
@@ -306,7 +275,6 @@ execute_fixup_cfg (void)
 		  if (gimple_in_ssa_p (cfun))
 		    {
 		      todo |= TODO_update_ssa | TODO_cleanup_cfg;
-		      mark_symbols_for_renaming (stmt);
 		      update_stmt (stmt);
 		    }
 		}
@@ -316,11 +284,11 @@ execute_fixup_cfg (void)
 		todo |= TODO_cleanup_cfg;
 	     }
 
-	  maybe_clean_eh_stmt (stmt);
+	  if (maybe_clean_eh_stmt (stmt)
+	      && gimple_purge_dead_eh_edges (bb))
+	    todo |= TODO_cleanup_cfg;
 	}
 
-      if (gimple_purge_dead_eh_edges (bb))
-	todo |= TODO_cleanup_cfg;
       FOR_EACH_EDGE (e, ei, bb->succs)
         e->count = (e->count * count_scale
 		    + REG_BR_PROB_BASE / 2) / REG_BR_PROB_BASE;
