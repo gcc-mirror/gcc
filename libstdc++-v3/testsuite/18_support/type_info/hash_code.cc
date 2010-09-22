@@ -22,37 +22,54 @@
 #include <typeinfo>
 #include <testsuite_hooks.h>
 
-class Abraca { };
-Abraca a1, a2_;
-const Abraca a2 = a2_;
-
-class Dabra { };
-Dabra d1;
-
 void test01()
 {
   bool test __attribute__((unused)) = true;
+  using namespace std;
 
-  VERIFY( typeid(int) != typeid(double) );
-  VERIFY( typeid(int).hash_code() != typeid(double).hash_code() );
+  class Abraca { };
+  Abraca a1, a2_;
 
-  VERIFY( typeid(a1) == typeid(a2) );
-  VERIFY( typeid(a1).hash_code() == typeid(a2).hash_code() );
+  typedef const Abraca cAbraca;
+  cAbraca a2 = a2_;
 
-  VERIFY( typeid(Abraca) == typeid(const Abraca) );
-  VERIFY( typeid(Abraca).hash_code() == typeid(const Abraca).hash_code() );
+  class Dabra { };
+  Dabra d1;
 
-  VERIFY( typeid(Abraca) == typeid(a2) );
-  VERIFY( typeid(Abraca).hash_code() == typeid(a2).hash_code() );
+  const type_info& to01 = typeid(int);
+  const type_info& to02 = typeid(double);
+  VERIFY( to01 != to02 );
+  VERIFY( to01.hash_code() != to02.hash_code() );
 
-  VERIFY( typeid(Abraca) == typeid(const Abraca&) );
-  VERIFY( typeid(Abraca).hash_code() == typeid(const Abraca&).hash_code() );
+  const type_info& to03 = typeid(a1);
+  const type_info& to04 = typeid(a2);
+  VERIFY( to03 == to04 );
+  VERIFY( to03.hash_code() == to04.hash_code() );
 
-  VERIFY( typeid(Abraca) != typeid(Dabra) );
-  VERIFY( typeid(Abraca).hash_code() != typeid(Dabra).hash_code() );
+  const type_info& to05 = typeid(Abraca);
+  const type_info& to06 = typeid(cAbraca);
+  VERIFY( to05 == to06 );
+  VERIFY( to05.hash_code() == to06.hash_code() );
 
-  VERIFY( typeid(a1) != typeid(d1) );
-  VERIFY( typeid(a1).hash_code() != typeid(d1).hash_code() );
+  const type_info& to07 = typeid(Abraca);
+  const type_info& to08 = typeid(a2);
+  VERIFY( to07 == to08 );
+  VERIFY( to07.hash_code() == to08.hash_code() );
+
+  const type_info& to09 = typeid(Abraca);
+  const type_info& to10 = typeid(const Abraca&);
+  VERIFY( to09 == to10 );
+  VERIFY( to09.hash_code() == to10.hash_code() );
+
+  const type_info& to11 = typeid(Abraca);
+  const type_info& to12 = typeid(Dabra);
+  VERIFY( to11 != to12 );
+  VERIFY( to11.hash_code() != to12.hash_code() );
+
+  const type_info& to13 = typeid(a1);
+  const type_info& to14 = typeid(d1);
+  VERIFY( to13 != to14 );
+  VERIFY( to13.hash_code() != to14.hash_code() );
 }
 
 int main()
