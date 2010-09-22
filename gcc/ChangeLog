@@ -1,5 +1,12 @@
 2010-09-22  Martin Jambor  <mjambor@suse.cz>
 
+	* gimple-fold.c (fold_gimple_call): New parameter inplace, do not fold
+	builtins if it is true.
+	(fold_stmt_1): Call, fold_gimple_call always, pass inplace as a
+	parameter.
+
+2010-09-22  Martin Jambor  <mjambor@suse.cz>
+
 	* tree-sra.c (struct access): New field grp_no_warning.
 	(create_access_replacement): Set TREE_NO_WARNING according to
 	 grp_no_warning.
