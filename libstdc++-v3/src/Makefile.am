@@ -179,7 +179,6 @@ sources = \
 	hash_tr1.cc \
 	hashtable_c++0x.cc \
 	hashtable_tr1.cc \
-	hash_bytes.cc \
 	ios.cc \
 	ios_failure.cc \
 	ios_init.cc \
@@ -308,11 +307,6 @@ hash_c++0x.o: hash_c++0x.cc
 hashtable_c++0x.lo: hashtable_c++0x.cc
 	$(LTCXXCOMPILE) -std=gnu++0x -c $<
 hashtable_c++0x.o: hashtable_c++0x.cc
-	$(CXXCOMPILE) -std=gnu++0x -c $<
-
-hash_bytes.lo: hash_bytes.cc
-	$(LTCXXCOMPILE) -std=gnu++0x -c $<
-hash_bytes.o: hash_bytes.cc
 	$(CXXCOMPILE) -std=gnu++0x -c $<
 
 limits.lo: limits.cc

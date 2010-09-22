@@ -78,6 +78,11 @@ namespace __cxxabiv1
 
 namespace std 
 {
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+  size_t
+  _Hash_bytes(const void* __ptr, size_t __len, size_t __seed);
+#endif
+
   /**
    *  @brief  Part of RTTI.
    *
@@ -134,6 +139,18 @@ namespace std
 #endif
     bool operator!=(const type_info& __arg) const
     { return !operator==(__arg); }
+
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+    size_t hash_code() const throw()
+    {
+#  if !__GXX_MERGED_TYPEINFO_NAMES
+      return _Hash_bytes(name(), __builtin_strlen(name()),
+			 static_cast<size_t>(0xc70f6907UL));
+#  else
+      return reinterpret_cast<size_t>(__name);
+#  endif
+    }
+#endif // __GXX_EXPERIMENTAL_CXX0X__
 
     // Return true if this is a pointer type of some kind
     virtual bool __is_pointer_p() const;

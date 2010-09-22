@@ -32,8 +32,7 @@
 // function apears to be better in both speed and hash quality, and
 // FNV is provided primarily for backward compatibility.
 
-#include <cstring>
-#include <bits/functional_hash.h>
+#include <bits/c++config.h>
 
 namespace
 {
@@ -41,7 +40,7 @@ namespace
   unaligned_load(const char* p)
   {
     std::size_t result;
-    std::memcpy(&result, p, sizeof(result));
+    __builtin_memcpy(&result, p, sizeof(result));
     return result;
   }
 
@@ -50,7 +49,7 @@ namespace
   inline std::size_t
   load_bytes(const char* p, int n)
   {
-    size_t result = 0;
+    std::size_t result = 0;
     --n;
     do
       result = (result << 8) + static_cast<unsigned char>(p[n]);

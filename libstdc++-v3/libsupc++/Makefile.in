@@ -95,10 +95,10 @@ am__objects_1 = array_type_info.lo atexit_arm.lo bad_cast.lo \
 	eh_globals.lo eh_personality.lo eh_ptr.lo eh_term_handler.lo \
 	eh_terminate.lo eh_throw.lo eh_type.lo eh_unex_handler.lo \
 	enum_type_info.lo function_type_info.lo \
-	fundamental_type_info.lo guard.lo new_handler.lo new_op.lo \
-	new_opnt.lo new_opv.lo new_opvnt.lo pbase_type_info.lo \
-	pmem_type_info.lo pointer_type_info.lo pure.lo \
-	si_class_type_info.lo tinfo.lo tinfo2.lo vec.lo \
+	fundamental_type_info.lo guard.lo hash_bytes.lo new_handler.lo \
+	new_op.lo new_opnt.lo new_opv.lo new_opvnt.lo \
+	pbase_type_info.lo pmem_type_info.lo pointer_type_info.lo \
+	pure.lo si_class_type_info.lo tinfo.lo tinfo2.lo vec.lo \
 	vmi_class_type_info.lo vterminate.lo
 @GLIBCXX_HOSTED_TRUE@am__objects_2 = cp-demangle.lo
 am_libsupc___la_OBJECTS = $(am__objects_1) $(am__objects_2)
@@ -364,6 +364,7 @@ sources = \
 	function_type_info.cc \
 	fundamental_type_info.cc \
 	guard.cc \
+	hash_bytes.cc \
 	new_handler.cc \
 	new_op.cc \
 	new_opnt.cc \
