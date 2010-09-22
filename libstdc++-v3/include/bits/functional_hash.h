@@ -33,7 +33,6 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-#include <bits/stl_function.h>
 
 namespace std
 {
@@ -45,9 +44,16 @@ namespace std
    *  @{
    */
 
+  template<typename _Result, typename _Arg>
+    struct __hash_base
+    {
+      typedef _Result     result_type;
+      typedef _Arg      argument_type;
+    };
+
   /// Primary class template hash.
   template<typename _Tp>
-    struct hash : public std::unary_function<_Tp, size_t>
+    struct hash : public __hash_base<size_t, _Tp>
     {
       size_t
       operator()(_Tp __val) const;
@@ -55,7 +61,7 @@ namespace std
 
   /// Partial specializations for pointer types.
   template<typename _Tp>
-    struct hash<_Tp*> : public std::unary_function<_Tp*, size_t>
+    struct hash<_Tp*> : public __hash_base<size_t, _Tp*>
     {
       size_t
       operator()(_Tp* __p) const

@@ -353,7 +353,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /// std::hash specialization for error_code.
   template<>
     struct hash<error_code>
-    : public std::unary_function<error_code, size_t>
+    : public __hash_base<size_t, error_code>
     {
       size_t
       operator()(const error_code& __e) const

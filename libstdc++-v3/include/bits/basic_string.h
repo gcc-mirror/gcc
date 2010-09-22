@@ -2925,7 +2925,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /// std::hash specialization for string.
   template<>
     struct hash<string>
-    : public std::unary_function<string, size_t>
+    : public __hash_base<size_t, string>
     {
       size_t
       operator()(const string& __s) const
@@ -2936,7 +2936,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /// std::hash specialization for wstring.
   template<>
     struct hash<wstring>
-    : public std::unary_function<wstring, size_t>
+    : public __hash_base<size_t, wstring>
     {
       size_t
       operator()(const wstring& __s) const
@@ -2950,7 +2950,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /// std::hash specialization for u16string.
   template<>
     struct hash<u16string>
-    : public std::unary_function<u16string, size_t>
+    : public __hash_base<size_t, u16string>
     {
       size_t
       operator()(const u16string& __s) const
@@ -2961,7 +2961,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /// std::hash specialization for u32string.
   template<>
     struct hash<u32string>
-    : public std::unary_function<u32string, size_t>
+    : public __hash_base<size_t, u32string>
     {
       size_t
       operator()(const u32string& __s) const

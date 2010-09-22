@@ -35,9 +35,7 @@
 # include <bits/c++0x_warning.h>
 #else
 
-#include <bits/c++config.h>
 #include <typeinfo>
-#include <bits/stl_function.h> // For unary_function
 
 namespace std
 {
@@ -92,8 +90,10 @@ namespace std
   /// std::hash specialization for type_index.
   template<>
     struct hash<type_index>
-    : public std::unary_function<type_index, size_t>
     {
+      typedef size_t        result_type;
+      typedef type_index  argument_type;
+
       size_t
       operator()(const type_index& __ti) const
       { return __ti.hash_code(); }
