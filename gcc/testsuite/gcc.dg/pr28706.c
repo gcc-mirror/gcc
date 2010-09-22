@@ -1,6 +1,6 @@
 /* PR c/28706 */
 /* { dg-do link } */
-/* { dg-require-effective-target-lto } */
+/* { dg-require-effective-target lto } */
 /* { dg-options "-flto -r -nostdlib" } */
 /* { dg-additional-sources "pr28706.c" } */
 
