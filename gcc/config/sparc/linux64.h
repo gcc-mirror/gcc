@@ -236,7 +236,8 @@ along with GCC; see the file COPYING3.  If not see
 %{Ym,*} \
 %{Wa,*:%*} \
 -s \
-%{fpic|fPIC|fpie|fPIE|findirect-dispatch:-K PIC} \
+%{fpic|fPIC|fpie|fPIE:-K PIC} \
+%{!.c:%{findirect-dispatch:-K PIC}} \
 %{mlittle-endian:-EL} \
 %(asm_cpu) %(asm_arch) %(asm_relax)"
 
