@@ -2419,10 +2419,6 @@ extern int making_const_table;
 	  & ~ (unsigned HOST_WIDE_INT) 0xffffffff)		\
        : 0))))
 
-#define OUTPUT_ADDR_CONST_EXTRA(file, x, fail)		\
-  if (arm_output_addr_const_extra (file, x) == FALSE)	\
-    goto fail
-
 /* A C expression whose value is RTL representing the value of the return
    address for the frame COUNT steps up from the current frame.  */
 

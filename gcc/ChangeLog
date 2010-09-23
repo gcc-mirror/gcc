@@ -1,3 +1,10 @@
+2010-09-23  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/arm/arm.h (OUTPUT_ADDR_CONST_EXTRA): Remove.
+	* config/arm/arm-protos.h (arm_output_addr_const_extra): Remove.
+	* config/arm/arm.c (TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA): Define.
+	(arm_output_addr_const_extra): Make static.
+
 2010-09-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (UNSPECV_NOPS): Rename from UNSPEC_NOPS and
