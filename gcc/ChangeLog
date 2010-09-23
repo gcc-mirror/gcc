@@ -1,9 +1,12 @@
 2010-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* tree-flow.h (execute_update_addresses_taken): Adjust.
+	* tree-flow.h (execute_update_addresses_taken): Remove parameter.
 	* tree-ssa.c (maybe_optimize_var): Tweak comment and dump messages.
-	(execute_update_addresses_taken): Remove parameter and OPTIMIZE test.
-	* passes.c (execute_function_todo): Adjust calls to above function.
+	(execute_update_addresses_taken): Remove parameter.  Execute the
+	optimization unconditionally.
+	* passes.c (execute_function_todo): Call execute_update_addresses_taken
+	unconditionally if TODO_rebuild_alias is set, else only when optimizing
+	if TODO_update_address_taken is set.
 
 2010-09-23  Anatoly Sokolov  <aesok@post.ru>
 
