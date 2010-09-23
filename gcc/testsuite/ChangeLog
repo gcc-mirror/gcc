@@ -1,3 +1,9 @@
+2010-09-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from mainline
+	PR libfortran/45532
+	* gfortran.dg/namelist_64.f90: New test.
+
 2010-09-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/mnofpu.c: New test.
