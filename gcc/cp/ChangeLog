@@ -1,3 +1,10 @@
+2010-09-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* typeck.c (warn_args_num): Use warning 'too many arguments to
+	method [methodname]' for an Objective-C method instead of the less
+	satisfactory 'too many arguments to function' (with no method
+	name).
+
 2010-09-21  Jason Merrill  <jason@redhat.com>
 
 	* mangle.c (write_expression) [SCOPE_REF]: Only do -fabi-version=1

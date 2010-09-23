@@ -2897,8 +2897,13 @@ convert_arguments (tree typelist, VEC(tree,gc) *values,
 
       if (type == void_type_node)
 	{
-	  error_at (input_location,
-		    "too many arguments to function %qE", function);
+	  if (selector)
+	    error_at (input_location,
+		      "too many arguments to method %qE", selector);
+	  else
+	    error_at (input_location,
+		      "too many arguments to function %qE", function);
+
 	  if (fundecl && !DECL_BUILT_IN (fundecl))
 	    inform (DECL_SOURCE_LOCATION (fundecl), "declared here");
 	  return parmnum;

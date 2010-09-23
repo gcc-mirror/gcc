@@ -1,3 +1,16 @@
+2010-09-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	* obj-c++.dg/too-many-args.mm: New file.
+
+2010-09-24  Nicola Pero  <nicola.pero@meta-innovation.com>
+
+	Merge from 'apple/trunk' branch on FSF servers.
+
+	2006-03-27 Fariborz Jahanian <fjahanian@apple.com>
+
+	Radar 4491608
+	* objc.dg/too-many-args.m: New
+
 2010-09-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45744
