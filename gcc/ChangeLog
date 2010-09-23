@@ -1,3 +1,10 @@
+2010-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-flow.h (execute_update_addresses_taken): Adjust.
+	* tree-ssa.c (maybe_optimize_var): Tweak comment and dump messages.
+	(execute_update_addresses_taken): Remove parameter and OPTIMIZE test.
+	* passes.c (execute_function_todo): Adjust calls to above function.
+
 2010-09-23  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/arm/arm.h (OUTPUT_ADDR_CONST_EXTRA): Remove.

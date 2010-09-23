@@ -1206,15 +1206,13 @@ execute_function_todo (void *data)
       cfun->last_verified &= ~TODO_verify_ssa;
     }
 
-  if (flags & TODO_update_address_taken)
-    execute_update_addresses_taken (true);
-
   if (flags & TODO_rebuild_alias)
     {
-      if (!(flags & TODO_update_address_taken))
-	execute_update_addresses_taken (true);
+      execute_update_addresses_taken ();
       compute_may_aliases ();
     }
+  else if (optimize && (flags & TODO_update_address_taken))
+    execute_update_addresses_taken ();
 
   if (flags & TODO_remove_unused_locals)
     remove_unused_locals ();
