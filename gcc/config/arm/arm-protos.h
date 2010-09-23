@@ -151,8 +151,6 @@ extern const char *arm_output_memory_barrier (rtx *);
 extern const char *arm_output_sync_insn (rtx, rtx *);
 extern unsigned int arm_sync_loop_insns (rtx , rtx *);
 
-extern bool arm_output_addr_const_extra (FILE *, rtx);
-
 #if defined TREE_CODE
 extern void arm_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
 extern bool arm_pad_arg_upward (enum machine_mode, const_tree);
