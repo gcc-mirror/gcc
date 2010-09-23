@@ -2159,6 +2159,7 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
       new_stmt
 	= gimple_call_copy_skip_args (e->call_stmt,
 				      e->callee->clone.combined_args_to_skip);
+      gimple_call_set_fndecl (new_stmt, e->callee->decl);
 
       if (gimple_vdef (new_stmt)
 	  && TREE_CODE (gimple_vdef (new_stmt)) == SSA_NAME)
@@ -2168,10 +2169,11 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
       gsi_replace (&gsi, new_stmt, true);
     }
   else
-    new_stmt = e->call_stmt;
-
-  gimple_call_set_fndecl (new_stmt, e->callee->decl);
-  update_stmt (new_stmt);
+    {
+      new_stmt = e->call_stmt;
+      gimple_call_set_fndecl (new_stmt, e->callee->decl);
+      update_stmt (new_stmt);
+    }
 
   cgraph_set_call_stmt_including_clones (e->caller, e->call_stmt, new_stmt);
 
