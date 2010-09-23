@@ -1,3 +1,8 @@
+2010-09-23  Tobias Burnus  <burnus@net-b.de>
+
+	* intrinsic.texi (OpenMP modules): Add named constants of
+	OMP_LIB.
+
 2010-09-23  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/38936

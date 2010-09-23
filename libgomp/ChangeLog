@@ -1,3 +1,10 @@
+2010-09-23  Tobias Burnus  <burnus@net-b.de>
+
+	* libgomp.texi (omp_get_nested, omp_set_nested, omp_set_dynamic):
+	Change Fortran datatype to LOGICAL.
+	(omp_set_lock, omp_test_lock, omp_unset_lock, omp_set_nested_lock,
+	omp_unset_nested_lock): Use intent(inout) instead of intent(out).
+
 2010-08-21  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.

@@ -12773,7 +12773,7 @@ a form of two Fortran 90 modules, named @code{OMP_LIB} and
 @code{OMP_LIB_KINDS}, and in a form of a Fortran @code{include} file named
 @file{omp_lib.h}. The procedures provided by @code{OMP_LIB} can be found
 in the @ref{Top,,Introduction,libgomp,GNU OpenMP runtime library} manual,
-the named constants defined in the @code{OMP_LIB_KINDS} module are listed
+the named constants defined in the modules are listed
 below.
 
 For details refer to the actual
@@ -12789,4 +12789,19 @@ named constants:
 @item @code{omp_lock_kind}
 @item @code{omp_nest_lock_kind}
 @item @code{omp_sched_kind}
+@end table
+
+@code{OMP_LIB} provides the scalar default-integer
+named constant @code{openmp_version} with a value of the form
+@var{yyyymm}, where @code{yyyy} is the year and @var{mm} the month
+of the OpenMP version; for OpenMP v3.0 the value is @code{200805}.
+
+And the following scalar integer named constants of the
+kind @code{omp_sched_kind}:
+
+@table @asis
+@item @code{omp_sched_static}
+@item @code{omp_sched_dynamic}
+@item @code{omp_sched_guided}
+@item @code{omp_sched_auto}
 @end table
