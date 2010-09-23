@@ -23,7 +23,7 @@ CONTAINS
      TYPE(node_type), POINTER :: node
      TYPE(node_type), POINTER :: give_next
      give_next => node%next ! { dg-error "Bad target" }
-     node%next => give_next ! { dg-error "Bad pointer object" }
+     node%next => give_next ! { dg-error "variable definition context" }
   END FUNCTION
 ! Comment #2
   PURE integer FUNCTION give_next2(i)
@@ -55,14 +55,14 @@ CONTAINS
     TYPE(T1), POINTER :: RES
     RES => A  ! { dg-error "Bad target" }
     RES => B  ! { dg-error "Bad target" }
-    B => RES  ! { dg-error "Bad pointer object" }
+    B => RES  ! { dg-error "variable definition context" }
   END FUNCTION
   PURE FUNCTION TST2(A) RESULT(RES)
     TYPE(T1), INTENT(IN), TARGET :: A
     TYPE(T1), POINTER :: RES
     allocate (RES)
     RES = A
-    B = RES  ! { dg-error "Cannot assign" }
+    B = RES  ! { dg-error "variable definition context" }
     RES = B
   END FUNCTION
 END MODULE pr20882

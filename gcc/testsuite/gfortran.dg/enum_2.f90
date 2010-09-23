@@ -9,5 +9,7 @@ program main
     enumerator blue = 1  ! { dg-error "Syntax error in ENUMERATOR definition" }
   end enum
 
+  red = 42 ! { dg-error "variable definition context" }
+
   enumerator :: sun  ! { dg-error "ENUM" }
 end program main

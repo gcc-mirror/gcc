@@ -23,15 +23,15 @@ program main
   integer   :: j 
   logical   :: asgnd
   protected :: j ! { dg-error "only allowed in specification part of a module" }
-  a = 43       ! { dg-error "Assigning to PROTECTED variable" }
-  ap => null() ! { dg-error "Assigning to PROTECTED variable" }
-  nullify(ap)  ! { dg-error "Assigning to PROTECTED variable" }
-  ap => at     ! { dg-error "Assigning to PROTECTED variable" }
-  ap = 3       ! { dg-error "Assigning to PROTECTED variable" }
-  allocate(ap) ! { dg-error "Assigning to PROTECTED variable" }
-  ap = 73      ! { dg-error "Assigning to PROTECTED variable" }
-  call increment(a,at) ! { dg-error "use-associated with PROTECTED attribute" }
-  call pointer_assignments(ap) ! { dg-error "is use-associated with PROTECTED attribute" }
+  a = 43       ! { dg-error "variable definition context" }
+  ap => null() ! { dg-error "pointer association context" }
+  nullify(ap)  ! { dg-error "pointer association context" }
+  ap => at     ! { dg-error "pointer association context" }
+  ap = 3       ! OK
+  allocate(ap) ! { dg-error "pointer association context" }
+  ap = 73      ! OK
+  call increment(a,at) ! { dg-error "variable definition context" }
+  call pointer_assignments(ap) ! { dg-error "pointer association context" }
   asgnd = pointer_check(ap)
 contains
   subroutine increment(a1,a3)

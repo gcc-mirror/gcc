@@ -784,6 +784,9 @@ typedef struct
   unsigned alloc_comp:1, pointer_comp:1, proc_pointer_comp:1,
 	   private_comp:1, zero_comp:1, coarray_comp:1;
 
+  /* This is a temporary selector for SELECT TYPE.  */
+  unsigned select_type_temporary:1;
+
   /* Attributes set by compiler extensions (!GCC$ ATTRIBUTES).  */
   unsigned ext_attr:EXT_ATTR_NUM;
 
@@ -2726,6 +2729,7 @@ bool gfc_has_ultimate_allocatable (gfc_expr *);
 bool gfc_has_ultimate_pointer (gfc_expr *);
 
 gfc_expr* gfc_build_intrinsic_call (const char*, locus, unsigned, ...);
+gfc_try gfc_check_vardef_context (gfc_expr*, bool, const char*);
 
 
 /* st.c */

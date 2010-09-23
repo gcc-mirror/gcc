@@ -11,5 +11,5 @@ interface
   end subroutine foo
 end interface
 character :: n(5)
-call foo( (n) ) ! { dg-error "must be definable" }
+call foo( (n) ) ! { dg-error "Non-variable expression" }
 end

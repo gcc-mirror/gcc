@@ -38,7 +38,7 @@ type(t) :: x
 
 x%ptr2 => x       ! { dg-error "Invalid procedure pointer assignment" }
 
-x => x%ptr2       ! { dg-error "Pointer assignment to non-POINTER" }
+x => x%ptr2       ! { dg-error "Non-POINTER in pointer association context" }
 
 print *, x%ptr1() ! { dg-error "attribute conflicts with" }
 call x%ptr2()     ! { dg-error "attribute conflicts with" }

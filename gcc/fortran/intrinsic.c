@@ -3585,6 +3585,19 @@ check_arglist (gfc_actual_arglist **ap, gfc_intrinsic_sym *sym,
 		       gfc_typename (&actual->expr->ts));
 	  return FAILURE;
 	}
+
+      /* If the formal argument is INTENT([IN]OUT), check for definability.  */
+      if (formal->intent == INTENT_INOUT || formal->intent == INTENT_OUT)
+	{
+	  const char* context = (error_flag
+				 ? _("actual argument to INTENT = OUT/INOUT")
+				 : NULL);
+
+	  /* No pointer arguments for intrinsics.  */
+	  if (gfc_check_vardef_context (actual->expr, false, context)
+		== FAILURE)
+	    return FAILURE;
+	}
     }
 
   return SUCCESS;

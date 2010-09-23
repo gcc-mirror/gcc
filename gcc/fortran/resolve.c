@@ -2859,8 +2859,6 @@ gfc_iso_c_func_interface (gfc_symbol *sym, gfc_actual_arglist *args,
 
 /* Resolve a function call, which means resolving the arguments, then figuring
    out which entity the name refers to.  */
-/* TODO: Check procedure arguments so that an INTENT(IN) isn't passed
-   to INTENT(OUT) or INTENT(INOUT).  */
 
 static gfc_try
 resolve_function (gfc_expr *expr)
@@ -6131,12 +6129,9 @@ gfc_resolve_iterator (gfc_iterator *iter, bool real_ok)
       == FAILURE)
     return FAILURE;
 
-  if (gfc_pure (NULL) && gfc_impure_variable (iter->var->symtree->n.sym))
-    {
-      gfc_error ("Cannot assign to loop variable in PURE procedure at %L",
-		 &iter->var->where);
-      return FAILURE;
-    }
+  if (gfc_check_vardef_context (iter->var, false, _("iterator variable"))
+      == FAILURE)
+    return FAILURE;
 
   if (gfc_resolve_iterator_expr (iter->start, real_ok,
 				 "Start expression in DO loop") == FAILURE)
@@ -6331,13 +6326,10 @@ static gfc_try
 resolve_deallocate_expr (gfc_expr *e)
 {
   symbol_attribute attr;
-  int allocatable, pointer, check_intent_in;
+  int allocatable, pointer;
   gfc_ref *ref;
   gfc_symbol *sym;
   gfc_component *c;
-
-  /* Check INTENT(IN), unless the object is a sub-component of a pointer.  */
-  check_intent_in = 1;
 
   if (gfc_resolve_expr (e) == FAILURE)
     return FAILURE;
@@ -6359,9 +6351,6 @@ resolve_deallocate_expr (gfc_expr *e)
     }
   for (ref = e->ref; ref; ref = ref->next)
     {
-      if (pointer)
-	check_intent_in = 0;
-
       switch (ref->type)
 	{
 	case REF_ARRAY:
@@ -6399,12 +6388,11 @@ resolve_deallocate_expr (gfc_expr *e)
       return FAILURE;
     }
 
-  if (check_intent_in && sym->attr.intent == INTENT_IN)
-    {
-      gfc_error ("Cannot deallocate INTENT(IN) variable '%s' at %L",
-		 sym->name, &e->where);
-      return FAILURE;
-    }
+  if (pointer
+      && gfc_check_vardef_context (e, true, _("DEALLOCATE object")) == FAILURE)
+    return FAILURE;
+  if (gfc_check_vardef_context (e, false, _("DEALLOCATE object")) == FAILURE)
+    return FAILURE;
 
   if (e->ts.type == BT_CLASS)
     {
@@ -6461,6 +6449,31 @@ gfc_expr_to_initialize (gfc_expr *e)
       }
 
   return result;
+}
+
+
+/* If the last ref of an expression is an array ref, return a copy of the
+   expression with that one removed.  Otherwise, a copy of the original
+   expression.  This is used for allocate-expressions and pointer assignment
+   LHS, where there may be an array specification that needs to be stripped
+   off when using gfc_check_vardef_context.  */
+
+static gfc_expr*
+remove_last_array_ref (gfc_expr* e)
+{
+  gfc_expr* e2;
+  gfc_ref** r;
+
+  e2 = gfc_copy_expr (e);
+  for (r = &e2->ref; *r; r = &(*r)->next)
+    if ((*r)->type == REF_ARRAY && !(*r)->next)
+      {
+	gfc_free_ref_list (*r);
+	*r = NULL;
+	break;
+      }
+
+  return e2;
 }
 
 
@@ -6526,17 +6539,16 @@ conformable_arrays (gfc_expr *e1, gfc_expr *e2)
 static gfc_try
 resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 {
-  int i, pointer, allocatable, dimension, check_intent_in, is_abstract;
+  int i, pointer, allocatable, dimension, is_abstract;
   int codimension;
   symbol_attribute attr;
   gfc_ref *ref, *ref2;
+  gfc_expr *e2;
   gfc_array_ref *ar;
   gfc_symbol *sym = NULL;
   gfc_alloc *a;
   gfc_component *c;
-
-  /* Check INTENT(IN), unless the object is a sub-component of a pointer.  */
-  check_intent_in = 1;
+  gfc_try t;
 
   /* Mark the ultimost array component as being in allocate to allow DIMEN_STAR
      checking of coarrays.  */
@@ -6588,9 +6600,6 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
 
       for (ref = e->ref; ref; ref2 = ref, ref = ref->next)
 	{
-	  if (pointer)
-	    check_intent_in = 0;
-
 	  switch (ref->type)
 	    {
  	      case REF_ARRAY:
@@ -6677,12 +6686,18 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
       goto failure;
     }
 
-  if (check_intent_in && sym->attr.intent == INTENT_IN)
-    {
-      gfc_error ("Cannot allocate INTENT(IN) variable '%s' at %L",
-		 sym->name, &e->where);
-      goto failure;
-    }
+  /* In the variable definition context checks, gfc_expr_attr is used
+     on the expression.  This is fooled by the array specification
+     present in e, thus we have to eliminate that one temporarily.  */
+  e2 = remove_last_array_ref (e);
+  t = SUCCESS;
+  if (t == SUCCESS && pointer)
+    t = gfc_check_vardef_context (e2, true, _("ALLOCATE object"));
+  if (t == SUCCESS)
+    t = gfc_check_vardef_context (e2, false, _("ALLOCATE object"));
+  gfc_free_expr (e2);
+  if (t == FAILURE)
+    goto failure;
 
   if (!code->expr3)
     {
@@ -6733,9 +6748,9 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
   if (pointer || (dimension == 0 && codimension == 0))
     goto success;
 
-  /* Make sure the next-to-last reference node is an array specification.  */
+  /* Make sure the last reference node is an array specifiction.  */
 
-  if (ref2 == NULL || ref2->type != REF_ARRAY || ref2->u.ar.type == AR_FULL
+  if (!ref2 || ref2->type != REF_ARRAY || ref2->u.ar.type == AR_FULL
       || (dimension && ref2->u.ar.dimen == 0))
     {
       gfc_error ("Array specification required in ALLOCATE statement "
@@ -6846,20 +6861,13 @@ resolve_allocate_deallocate (gfc_code *code, const char *fcn)
   gfc_expr *stat, *errmsg, *pe, *qe;
   gfc_alloc *a, *p, *q;
 
-  stat = code->expr1 ? code->expr1 : NULL;
-
-  errmsg = code->expr2 ? code->expr2 : NULL;
+  stat = code->expr1;
+  errmsg = code->expr2;
 
   /* Check the stat variable.  */
   if (stat)
     {
-      if (stat->symtree->n.sym->attr.intent == INTENT_IN)
-	gfc_error ("Stat-variable '%s' at %L cannot be INTENT(IN)",
-		   stat->symtree->n.sym->name, &stat->where);
-
-      if (gfc_pure (NULL) && gfc_impure_variable (stat->symtree->n.sym))
-	gfc_error ("Illegal stat-variable at %L for a PURE procedure",
-		   &stat->where);
+      gfc_check_vardef_context (stat, false, _("STAT variable"));
 
       if ((stat->ts.type != BT_INTEGER
 	   && !(stat->ref && (stat->ref->type == REF_ARRAY
@@ -6902,13 +6910,7 @@ resolve_allocate_deallocate (gfc_code *code, const char *fcn)
 	gfc_warning ("ERRMSG at %L is useless without a STAT tag",
 		     &errmsg->where);
 
-      if (errmsg->symtree->n.sym->attr.intent == INTENT_IN)
-	gfc_error ("Errmsg-variable '%s' at %L cannot be INTENT(IN)",
-		   errmsg->symtree->n.sym->name, &errmsg->where);
-
-      if (gfc_pure (NULL) && gfc_impure_variable (errmsg->symtree->n.sym))
-	gfc_error ("Illegal errmsg-variable at %L for a PURE procedure",
-		   &errmsg->where);
+      gfc_check_vardef_context (errmsg, false, _("ERRMSG variable"));
 
       if ((errmsg->ts.type != BT_CHARACTER
 	   && !(errmsg->ref
@@ -7539,7 +7541,6 @@ static void
 resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 {
   gfc_expr* target;
-  bool to_var;
 
   gcc_assert (sym->assoc);
   gcc_assert (sym->attr.flavor == FL_VARIABLE);
@@ -7573,22 +7574,8 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
   gcc_assert (sym->ts.type != BT_UNKNOWN);
 
   /* See if this is a valid association-to-variable.  */
-  to_var = (target->expr_type == EXPR_VARIABLE
-	    && !gfc_has_vector_subscript (target));
-  if (sym->assoc->variable && !to_var)
-    {
-      if (target->expr_type == EXPR_VARIABLE)
-	gfc_error ("'%s' at %L associated to vector-indexed target can not"
-		   " be used in a variable definition context",
-		   sym->name, &sym->declared_at);
-      else
-	gfc_error ("'%s' at %L associated to expression can not"
-		   " be used in a variable definition context",
-		   sym->name, &sym->declared_at);
-
-      return;
-    }
-  sym->assoc->variable = to_var;
+  sym->assoc->variable = (target->expr_type == EXPR_VARIABLE
+			  && !gfc_has_vector_subscript (target));
 
   /* Finally resolve if this is an array or not.  */
   if (sym->attr.dimension && target->rank == 0)
@@ -7617,7 +7604,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 /* Resolve a SELECT TYPE statement.  */
 
 static void
-resolve_select_type (gfc_code *code)
+resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 {
   gfc_symbol *selector_type;
   gfc_code *body, *new_st, *if_st, *tail;
@@ -7895,8 +7882,13 @@ resolve_select_type (gfc_code *code)
 	default_case->next = if_st;
     }
 
-  resolve_select (code);
+  /* Resolve the internal code.  This can not be done earlier because
+     it requires that the sym->assoc of selectors is set already.  */
+  gfc_current_ns = ns;
+  gfc_resolve_blocks (code->block, gfc_current_ns);
+  gfc_current_ns = old_ns;
 
+  resolve_select (code);
 }
 
 
@@ -8657,7 +8649,6 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 	}
     }
 
-
   if (lhs->ts.type == BT_CHARACTER
 	&& gfc_option.warn_character_truncation)
     {
@@ -8698,15 +8689,6 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 
   if (gfc_pure (NULL))
     {
-      if (gfc_impure_variable (lhs->symtree->n.sym))
-	{
-	  gfc_error ("Cannot assign to variable '%s' in PURE "
-		     "procedure at %L",
-		      lhs->symtree->n.sym->name,
-		      &lhs->where);
-	  return rval;
-	}
-
       if (lhs->ts.type == BT_DERIVED
 	    && lhs->expr_type == EXPR_VARIABLE
 	    && lhs->ts.u.derived->attr.pointer_comp
@@ -8810,9 +8792,8 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	      gfc_resolve_omp_do_blocks (code, ns);
 	      break;
 	    case EXEC_SELECT_TYPE:
-	      gfc_current_ns = code->ext.block.ns;
-	      gfc_resolve_blocks (code->block, gfc_current_ns);
-	      gfc_current_ns = ns;
+	      /* Blocks are handled in resolve_select_type because we have
+		 to transform the SELECT TYPE into ASSOCIATE first.  */
 	      break;
 	    case EXEC_OMP_WORKSHARE:
 	      omp_workshare_save = omp_workshare_flag;
@@ -8899,6 +8880,10 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	  if (t == FAILURE)
 	    break;
 
+	  if (gfc_check_vardef_context (code->expr1, false, _("assignment"))
+		== FAILURE)
+	    break;
+
 	  if (resolve_ordinary_assign (code, ns))
 	    {
 	      if (code->op == EXEC_COMPCALL)
@@ -8923,11 +8908,27 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	  break;
 
 	case EXEC_POINTER_ASSIGN:
-	  if (t == FAILURE)
-	    break;
+	  {
+	    gfc_expr* e;
 
-	  gfc_check_pointer_assign (code->expr1, code->expr2);
-	  break;
+	    if (t == FAILURE)
+	      break;
+
+	    /* This is both a variable definition and pointer assignment
+	       context, so check both of them.  For rank remapping, a final
+	       array ref may be present on the LHS and fool gfc_expr_attr
+	       used in gfc_check_vardef_context.  Remove it.  */
+	    e = remove_last_array_ref (code->expr1);
+	    t = gfc_check_vardef_context (e, true, _("pointer assignment"));
+	    if (t == SUCCESS)
+	      t = gfc_check_vardef_context (e, false, _("pointer assignment"));
+	    gfc_free_expr (e);
+	    if (t == FAILURE)
+	      break;
+
+	    gfc_check_pointer_assign (code->expr1, code->expr2);
+	    break;
+	  }
 
 	case EXEC_ARITHMETIC_IF:
 	  if (t == SUCCESS
@@ -8970,7 +8971,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	  break;
 
 	case EXEC_SELECT_TYPE:
-	  resolve_select_type (code);
+	  resolve_select_type (code, ns);
 	  break;
 
 	case EXEC_BLOCK:

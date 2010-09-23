@@ -1,3 +1,32 @@
+2010-09-23  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/38936
+	PR fortran/44044
+	PR fortran/45474
+	* gfortran.dg/intrinsic_intent_1.f03: New test.
+	* gfortran.dg/select_type_17.f03: New test.
+	* gfortran.dg/associate_5.f03: More definability tests.
+	* gfortran.dg/enum_2.f90: Check definability.
+	* gfortran.dg/allocatable_dummy_2.f90: Change expected error message.
+	* gfortran.dg/allocate_alloc_opt_2.f90: Ditto.
+	* gfortran.dg/char_expr_2.f90: Ditto.
+	* gfortran.dg/deallocate_alloc_opt_2.f90: Ditto.
+	* gfortran.dg/enum_5.f90: Ditto.
+	* gfortran.dg/equiv_constraint_8.f90: Ditto.
+	* gfortran.dg/impure_assignment_2.f90: Ditto.
+	* gfortran.dg/impure_assignment_3.f90: Ditto.
+	* gfortran.dg/intent_out_1.f90: Ditto.
+	* gfortran.dg/intent_out_3.f90: Ditto.
+	* gfortran.dg/pointer_assign_7.f90: Ditto.
+	* gfortran.dg/pointer_intent_3.f90: Ditto.
+	* gfortran.dg/pr19936_1.f90: Ditto.
+	* gfortran.dg/proc_ptr_comp_3.f90: Ditto.
+	* gfortran.dg/simpleif_2.f90: Ditto.
+	* gfortran.dg/protected_5.f90: Ditto.
+	* gfortran.dg/protected_4.f90: Ditto and remove invalid error check.
+	* gfortran.dg/protected_6.f90: Ditto.
+	* gfortran.dg/protected_7.f90: Ditto.
+
 2010-09-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/45710
