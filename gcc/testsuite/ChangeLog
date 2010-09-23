@@ -1,3 +1,8 @@
+2010-09-23  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/45565
+	* g++.dg/ipa/pr45565.C: New testcase.
+
 2010-09-23  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/45745

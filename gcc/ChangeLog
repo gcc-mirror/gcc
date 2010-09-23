@@ -1,5 +1,11 @@
 2010-09-23  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/45565
+	* cgraphunit.c (cgraph_redirect_edge_call_stmt_to_callee):
+	Make sure to adjust the fndecl before replacing the stmt.
+
+2010-09-23  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/45750
 	* gimplify.c (gimplify_expr): Properly pass on GS_ERROR when
 	gimplifying MEM_REF.
