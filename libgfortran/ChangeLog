@@ -1,3 +1,10 @@
+2010-09-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from mainline:
+	PR libfortran/45532
+	* io/list_read.c (nml_get_obj_data): Set first_nl if the previous
+	is NULL.
+
 2010-09-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backport from mainline:
