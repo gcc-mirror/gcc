@@ -1,6 +1,6 @@
 /* PR middle-end/37009 */
 /* { dg-do run { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
-/* { dg-options "-m32 -mincoming-stack-boundary=2 -mpreferred-stack-boundary=2" } */
+/* { dg-options "-mincoming-stack-boundary=2 -mpreferred-stack-boundary=2" } */
 
 #include "check.h"
 
