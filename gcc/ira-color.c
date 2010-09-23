@@ -82,6 +82,12 @@ static alloc_pool splay_tree_node_pool;
    more costly although simpler.  */
 static VEC(ira_allocno_t,heap) *removed_splay_allocno_vec;
 
+/* Helper for qsort comparison callbacks - return a positive integer if
+   X > Y, or a negative value otherwise.  Use a conditional expression
+   instead of a difference computation to insulate from possible overflow
+   issues, e.g. X - Y < 0 for some X > 0 and Y < 0.  */
+#define SORTGT(x,y) (((x) > (y)) ? 1 : -1)
+
 
 
 /* This page contains functions used to find conflicts using allocno
@@ -1744,8 +1750,8 @@ allocno_priority_compare_func (const void *v1p, const void *v2p)
 
   pri1 = allocno_priorities[ALLOCNO_NUM (a1)];
   pri2 = allocno_priorities[ALLOCNO_NUM (a2)];
-  if (pri2 - pri1)
-    return pri2 - pri1;
+  if (pri2 != pri1)
+    return SORTGT (pri2, pri1);
 
   /* If regs are equally good, sort by allocnos, so that the results of
      qsort leave nothing to chance.  */
