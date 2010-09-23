@@ -101,7 +101,6 @@ static int noce_find_if_block (basic_block, edge, edge, int);
 static int cond_exec_find_if_block (ce_if_block_t *);
 static int find_if_case_1 (basic_block, edge, edge);
 static int find_if_case_2 (basic_block, edge, edge);
-static int find_memory (rtx *, void *);
 static int dead_or_predicable (basic_block, basic_block, basic_block,
 			       basic_block, int);
 static void noce_emit_move_insn (rtx, rtx);
@@ -3882,15 +3881,6 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
   return TRUE;
 }
 
-/* A subroutine of dead_or_predicable called through for_each_rtx.
-   Return 1 if a memory is found.  */
-
-static int
-find_memory (rtx *px, void *data ATTRIBUTE_UNUSED)
-{
-  return MEM_P (*px);
-}
-
 /* Used by the code above to perform the actual rtl transformations.
    Return TRUE if successful.
 
@@ -3992,131 +3982,38 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
       earliest = jump;
     }
 #endif
+  /* If we allocated new pseudos (e.g. in the conditional move
+     expander called from noce_emit_cmove), we must resize the
+     array first.  */
+  if (max_regno < max_reg_num ())
+    max_regno = max_reg_num ();
+
   /* Try the NCE path if the CE path did not result in any changes.  */
   if (n_validated_changes == 0)
     {
+      rtx cond;
+      regset live;
+      bool success;
+
       /* In the non-conditional execution case, we have to verify that there
 	 are no trapping operations, no calls, no references to memory, and
 	 that any registers modified are dead at the branch site.  */
 
-      rtx insn, cond, prev;
-      bitmap merge_set, merge_set_noclobber, test_live, test_set;
-      unsigned i, fail = 0;
-      bitmap_iterator bi;
-
-      /* Check for no calls or trapping operations.  */
-      for (insn = head; ; insn = NEXT_INSN (insn))
-	{
-	  if (CALL_P (insn))
-	    return FALSE;
-	  if (NONDEBUG_INSN_P (insn))
-	    {
-	      if (may_trap_p (PATTERN (insn)))
-		return FALSE;
-
-	      /* ??? Even non-trapping memories such as stack frame
-		 references must be avoided.  For stores, we collect
-		 no lifetime info; for reads, we'd have to assert
-		 true_dependence false against every store in the
-		 TEST range.  */
-	      if (for_each_rtx (&PATTERN (insn), find_memory, NULL))
-		return FALSE;
-	    }
-	  if (insn == end)
-	    break;
-	}
-
-      if (! any_condjump_p (jump))
+      if (!any_condjump_p (jump))
 	return FALSE;
 
       /* Find the extent of the conditional.  */
       cond = noce_get_condition (jump, &earliest, false);
-      if (! cond)
+      if (!cond)
 	return FALSE;
 
-      /* Collect:
-	   MERGE_SET = set of registers set in MERGE_BB
-	   MERGE_SET_NOCLOBBER = like MERGE_SET, but only includes registers
-	     that are really set, not just clobbered.
-	   TEST_LIVE = set of registers live at EARLIEST
-	   TEST_SET = set of registers set between EARLIEST and the
-	     end of the block.  */
-
-      merge_set = BITMAP_ALLOC (&reg_obstack);
-      merge_set_noclobber = BITMAP_ALLOC (&reg_obstack);
-      test_live = BITMAP_ALLOC (&reg_obstack);
-      test_set = BITMAP_ALLOC (&reg_obstack);
-
-      /* ??? bb->local_set is only valid during calculate_global_regs_live,
-	 so we must recompute usage for MERGE_BB.  Not so bad, I suppose,
-         since we've already asserted that MERGE_BB is small.  */
-      /* If we allocated new pseudos (e.g. in the conditional move
-	 expander called from noce_emit_cmove), we must resize the
-	 array first.  */
-      if (max_regno < max_reg_num ())
-	max_regno = max_reg_num ();
-
-      FOR_BB_INSNS (merge_bb, insn)
-	{
-	  if (NONDEBUG_INSN_P (insn))
-	    {
-	      df_simulate_find_defs (insn, merge_set);
-	      df_simulate_find_noclobber_defs (insn, merge_set_noclobber);
-	    }
-	}
-
-      /* For small register class machines, don't lengthen lifetimes of
-	 hard registers before reload.  */
-      if (! reload_completed
-	  && targetm.small_register_classes_for_mode_p (VOIDmode))
-	{
-          EXECUTE_IF_SET_IN_BITMAP (merge_set_noclobber, 0, i, bi)
-	    {
-	      if (i < FIRST_PSEUDO_REGISTER
-		  && ! fixed_regs[i]
-		  && ! global_regs[i])
-		fail = 1;
-	    }
-	}
-
-      /* For TEST, we're interested in a range of insns, not a whole block.
-	 Moreover, we're interested in the insns live from OTHER_BB.  */
-
-      /* The loop below takes the set of live registers
-         after JUMP, and calculates the live set before EARLIEST. */
-      bitmap_copy (test_live, df_get_live_in (other_bb));
-      df_simulate_initialize_backwards (test_bb, test_live);
-      for (insn = jump; ; insn = prev)
-	{
-	  if (INSN_P (insn))
-	    {
-	      df_simulate_find_defs (insn, test_set);
-	      df_simulate_one_insn_backwards (test_bb, insn, test_live);
-	    }
-	  prev = PREV_INSN (insn);
-	  if (insn == earliest)
-	    break;
-	}
-
-      /* We can perform the transformation if
-	   MERGE_SET_NOCLOBBER & TEST_SET
-	 and
-	   MERGE_SET & TEST_LIVE)
-	 and
-	   TEST_SET & DF_LIVE_IN (merge_bb)
-	 are empty.  */
-
-      if (bitmap_intersect_p (test_set, merge_set_noclobber)
-	  || bitmap_intersect_p (test_live, merge_set)
-	  || bitmap_intersect_p (test_set, df_get_live_in (merge_bb)))
-	fail = 1;
-
-      BITMAP_FREE (merge_set_noclobber);
-      BITMAP_FREE (merge_set);
-      BITMAP_FREE (test_live);
-      BITMAP_FREE (test_set);
-
-      if (fail)
+      live = BITMAP_ALLOC (&reg_obstack);
+      simulate_backwards_to_point (merge_bb, live, end);
+      success = can_move_insns_across (head, end, earliest, jump,
+				       merge_bb, live,
+				       df_get_live_in (other_bb), NULL);
+      BITMAP_FREE (live);
+      if (!success)
 	return FALSE;
     }
 

@@ -1,3 +1,24 @@
+2010-09-23  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/44374
+	* basic-block.h (enum bb_flags): Add BB_MODIFIED.
+	* df-core.c (df_set_bb_dirty): Set it.
+	* ifcvt.c (find_memory): Remove function.
+	(dead_or_predicable): Use can_move_insns_across.
+	* df.h (can_move_insns_across): Declare function.
+	* cfgcleanup.c (block_was_dirty): New static variable.
+	(try_crossjump_bb, try_forward_edges): Test BB_MODIFIED flag rather
+	than df_get_bb_dirty.
+	(try_head_merge_bb): New static function.
+	(try_optimize_cfg): Call it.  Call df_analyze if block_was_dirty
+	is set.
+	* df-problems.c: Include "target.h"
+	(df_simulate_find_uses): New static function.
+	(MEMREF_NORMAL, MEMREF_VOLATILE): New macros.
+	(find_memory, find_memory_store): New static functions.
+	(can_move_insns_across): New function.
+	* Makefile.in (df-problems.o): Update dependencies.
+
 2010-09-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR java/44095

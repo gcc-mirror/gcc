@@ -1,3 +1,11 @@
+2010-09-23  Bernd Schmidt  <bernds@codesourcery.com>
+
+	PR rtl-optimization/44374
+	* gcc.target/arm/headmerge-1.c: New test.
+	* gcc.target/arm/headmerge-2.c: New test.
+	* gcc.target/i386/headmerge-1.c: New test.
+	* gcc.target/i386/headmerge-2.c: New test.
+
 2010-09-23  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/38936
