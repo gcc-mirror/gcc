@@ -1630,6 +1630,20 @@ namelist_write_newline (st_parameter_dt *dtp)
     {
       gfc_offset record;
       int finished;
+      char *p;
+      int length = dtp->u.p.current_unit->bytes_left;
+
+      p = write_block (dtp, length);
+      if (p == NULL)
+	return;
+
+      if (unlikely (is_char4_unit (dtp)))
+	{
+	  gfc_char4_t *p4 = (gfc_char4_t *) p;
+	  memset4 (p4, ' ', length);
+	}
+      else
+	memset (p, ' ', length);
 
       /* Now that the current record has been padded out,
 	 determine where the next record in the array is. */
