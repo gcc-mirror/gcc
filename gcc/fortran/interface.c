@@ -1655,36 +1655,6 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 }
 
 
-/* Given a symbol of a formal argument list and an expression, see if
-   the two are compatible as arguments.  Returns nonzero if
-   compatible, zero if not compatible.  */
-
-static int
-compare_parameter_protected (gfc_symbol *formal, gfc_expr *actual)
-{
-  if (actual->expr_type != EXPR_VARIABLE)
-    return 1;
-
-  if (!actual->symtree->n.sym->attr.is_protected)
-    return 1;
-
-  if (!actual->symtree->n.sym->attr.use_assoc)
-    return 1;
-
-  if (formal->attr.intent == INTENT_IN
-      || formal->attr.intent == INTENT_UNKNOWN)
-    return 1;
-
-  if (!actual->symtree->n.sym->attr.pointer)
-    return 0;
-
-  if (actual->symtree->n.sym->attr.pointer && formal->attr.pointer)
-    return 0;
-
-  return 1;
-}
-
-
 /* Returns the storage size of a symbol (formal argument) or
    zero if it cannot be determined.  */
 
@@ -2205,27 +2175,20 @@ compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	}
 
       /* Check intent = OUT/INOUT for definable actual argument.  */
-      if ((a->expr->expr_type != EXPR_VARIABLE
-	   || (a->expr->symtree->n.sym->attr.flavor != FL_VARIABLE
-	       && a->expr->symtree->n.sym->attr.flavor != FL_PROCEDURE))
-	  && (f->sym->attr.intent == INTENT_OUT
-	      || f->sym->attr.intent == INTENT_INOUT))
+      if ((f->sym->attr.intent == INTENT_OUT
+	  || f->sym->attr.intent == INTENT_INOUT))
 	{
-	  if (where)
-	    gfc_error ("Actual argument at %L must be definable as "
-		       "the dummy argument '%s' is INTENT = OUT/INOUT",
-		       &a->expr->where, f->sym->name);
-	  return 0;
-	}
+	  const char* context = (where
+				 ? _("actual argument to INTENT = OUT/INOUT")
+				 : NULL);
 
-      if (!compare_parameter_protected(f->sym, a->expr))
-	{
-	  if (where)
-	    gfc_error ("Actual argument at %L is use-associated with "
-		       "PROTECTED attribute and dummy argument '%s' is "
-		       "INTENT = OUT/INOUT",
-		       &a->expr->where,f->sym->name);
-	  return 0;
+	  if (f->sym->attr.pointer
+	      && gfc_check_vardef_context (a->expr, true, context)
+		   == FAILURE)
+	    return 0;
+	  if (gfc_check_vardef_context (a->expr, false, context)
+		== FAILURE)
+	    return 0;
 	}
 
       if ((f->sym->attr.intent == INTENT_OUT

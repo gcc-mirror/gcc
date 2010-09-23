@@ -6,7 +6,7 @@ subroutine sub(i, j, err)
    integer, intent(in), allocatable :: i(:)
    integer, allocatable :: m(:)
    integer n
-   allocate(i(2))                    ! { dg-error "Cannot allocate" "" }
-   allocate(m(2), stat=j)            ! { dg-error "cannot be" "" }
-   allocate(m(2),stat=n,errmsg=err)  ! { dg-error "cannot be" "" }
+   allocate(i(2)) ! { dg-error "variable definition context" }
+   allocate(m(2), stat=j) ! { dg-error "variable definition context" }
+   allocate(m(2),stat=n,errmsg=err) ! { dg-error "variable definition context" }
 end subroutine sub

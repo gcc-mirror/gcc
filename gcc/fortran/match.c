@@ -978,13 +978,6 @@ gfc_match_iterator (gfc_iterator *iter, int init_flag)
       goto cleanup;
     }
 
-  if (var->symtree->n.sym->attr.intent == INTENT_IN)
-    {
-      gfc_error ("Loop variable '%s' at %C cannot be INTENT(IN)",
-		 var->symtree->n.sym->name);
-      goto cleanup;
-    }
-
   gfc_match_char ('=');
 
   var->symtree->n.sym->attr.implied_index = 1;
@@ -1847,9 +1840,7 @@ gfc_match_associate (void)
 
       /* The `variable' field is left blank for now; because the target is not
 	 yet resolved, we can't use gfc_has_vector_subscript to determine it
-	 for now.  Instead, if the symbol is matched as variable, this field
-	 is set -- and during resolution we check that.  */
-      newAssoc->variable = 0;
+	 for now.  This is set during resolution.  */
 
       /* Put it into the list.  */
       newAssoc->next = new_st.ext.block.assoc;
@@ -3165,12 +3156,6 @@ gfc_match_nullify (void)
 
       if (gfc_check_do_variable (p->symtree))
 	goto cleanup;
-
-      if (gfc_pure (NULL) && gfc_impure_variable (p->symtree->n.sym))
-	{
-	  gfc_error ("Illegal variable in NULLIFY at %C for a PURE procedure");
-	  goto cleanup;
-	}
 
       /* build ' => NULL() '.  */
       e = gfc_get_null_expr (&gfc_current_locus);
@@ -4523,6 +4508,7 @@ select_type_set_tmp (gfc_typespec *ts)
 			      &tmp->n.sym->as, false);
       tmp->n.sym->attr.class_ok = 1;
     }
+  tmp->n.sym->attr.select_type_temporary = 1;
 
   /* Add an association for it, so the rest of the parser knows it is
      an associate-name.  The target will be set during resolution.  */

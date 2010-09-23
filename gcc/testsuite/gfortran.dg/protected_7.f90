@@ -13,8 +13,8 @@ program p
   integer, pointer :: unprotected_pointer
   ! The next two lines should be rejected; see PR 37513 why
   ! we get such a strange error message.
-  protected_pointer => unprotected_pointer ! { dg-error "only allowed in specification part" }
-  protected_pointer =  unprotected_pointer ! { dg-error "only allowed in specification part" }
+  protected_pointer => unprotected_pointer ! { dg-error "pointer association context" }
+  protected_pointer =  unprotected_pointer ! OK
   unprotected_pointer => protected_target  ! { dg-error "target has PROTECTED attribute" }
   unprotected_pointer => protected_pointer ! OK
 end program p
